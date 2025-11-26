@@ -48,7 +48,7 @@
         
         .list-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 5px; }
         .scroll-area { flex: 1; overflow-y: auto; padding: 10px; }
-        .item-row { border-bottom: 1px solid #444; padding: 12px 5px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;}
+        .item-row { border-bottom: 1px solid #444; padding: 8px 5px; cursor: pointer; display: flex; align-items: center;}
         .item-row:hover { background: #222; }
         .item-row.selected { background: #333; border: 1px solid var(--accent); }
         
@@ -673,24 +673,29 @@ const Battle = {
         document.getElementById('battle-ui').style.display = 'flex';
         document.getElementById('field-ui').style.display = 'none';
         Battle.enemies = [];
+        
         Game.party.forEach(p => { if(p) p.refreshBonuses(); });
 
+        const floorFactor = Math.floor(Dungeon.floor / 5);
         const num = 1 + rand(Dungeon.inDungeon ? 3 : 2);
         
-        // ダンジョン出現ロジック
-        let pool = DB.MONSTERS.filter(m => Dungeon.floor >= (m.minF || 0) && Dungeon.floor <= (m.maxF || 999));
-        if(pool.length === 0) pool = [DB.MONSTERS[0]]; 
+        if(Dungeon.inDungeon && Dungeon.floor % 10 === 0 && Dungeon.floor > 0) {
+            const boss = new Monster(DB.MONSTERS.find(m=>m.name.includes('ドラゴン')||m.name.includes('魔王'))); // Fallback
+            if(boss) boss.hp *= (1 + Dungeon.floor * 0.1);
+            Battle.enemies.push(boss || new Monster(DB.MONSTERS[0]));
+        } else {
+            let list = DB.MONSTERS.filter(m => !m.name.includes('ドラゴン') && !m.name.includes('魔王') && m.id !== 26);
+            if(Dungeon.inDungeon && rand(100) < 2) list = [DB.MONSTERS.find(m=>m.id===26)];
 
-        for(let i=0; i<num; i++) {
-            const base = pool[rand(pool.length)];
-            const m = new Monster(base);
-            const scale = 1 + Dungeon.floor * 0.05;
-            m.hp = Math.floor(m.hp * scale);
-            m.atk = Math.floor(m.atk * scale);
-            m.name += String.fromCharCode(65+i);
-            Battle.enemies.push(m);
+            for(let i=0; i<num; i++) {
+                const base = list[Math.min(list.length-1, rand(list.length) + Math.min(2, floorFactor))];
+                const m = new Monster(base);
+                m.hp = Math.floor(m.hp * (1 + Dungeon.floor * 0.05));
+                m.atk = Math.floor(m.atk * (1 + Dungeon.floor * 0.05));
+                m.name += String.fromCharCode(65+i);
+                Battle.enemies.push(m);
+            }
         }
-        
         Battle.log("モンスターが現れた！");
         Battle.refreshView();
         Battle.onRootPhase();
@@ -798,7 +803,7 @@ const Battle = {
         } else if(sk.target==='自分') {
             cb([Game.party[Battle.currActorIdx]]);
         } else {
-            UI.showList(list, t => { cb([t]); return true; }, false, true); 
+            UI.showList(list, t => { cb([t]); return true; }, false, true); // Show detail status
         }
     },
 
@@ -1220,7 +1225,7 @@ const UI = {
             for(let i=0; i<4; i++) {
                 const p = Game.party[i];
                 html += `<div class="item-row" onclick="UI.swapMember(${i})">
-                    [${i+1}] ${p ? `${p.name} <span class="rarity-${p.rarity}">[${p.rarity}]</span> (${p.job})` : '--- 空き ---'}
+                    [${i+1}] ${p ? `${p.name} <span class="rarity-${p.rarity}">[${p.rarity}]</span> (${p.job}) Lv.${p.level} <small>HP:${p.hp} MP:${p.mp}</small>` : '--- 空き ---'}
                 </div>`;
             }
             UI.openSubScreen("パーティ編成 (タップで入替)", html);
@@ -1368,6 +1373,8 @@ const UI = {
         document.getElementById('sub-screen').style.display = 'flex';
     },
 
+    // Helper
+    // showDetailStatus: Show HP/MP/Lv etc in list item
     showList: (items, onSelect, showDesc = false, showDetailStatus = false) => {
         const m = document.getElementById('list-modal');
         const c = document.getElementById('list-container');
@@ -1375,6 +1382,7 @@ const UI = {
         c.innerHTML = '';
         d.innerText = showDesc ? 'タップで説明を表示' : '';
 
+        // Reset cancel button behavior
         const btn = m.querySelector('.btn');
         btn.onclick = () => UI.closeList();
 
@@ -1389,6 +1397,7 @@ const UI = {
             if(item.count) info += ` x${item.count}`;
             
             let statusHtml = '';
+            // Enhanced status display for Party Form / Equip / Char List
             if(showDetailStatus && item.maxHp) {
                 statusHtml = `
                 <div style="font-size:9px; color:#ccc; margin-left:5px;">
@@ -1396,9 +1405,10 @@ const UI = {
                     HP ${item.hp}/${item.maxHp} MP ${item.mp}/${item.maxMp} 攻${item.getStat('atk')}
                 </div>`;
             } else if (showDetailStatus && item.hp !== undefined) {
+                 // Simple Item Target
                  statusHtml = `
                 <div style="font-size:9px; margin-top:2px;">
-                    HP ${item.hp}/${item.maxHp} MP ${item.mp}/${item.maxMp}
+                    HP ${item.hp}/${item.maxHp}
                 </div>`;
             }
 
