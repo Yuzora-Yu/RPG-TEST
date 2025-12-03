@@ -769,7 +769,12 @@ const Battle = {
         Battle.party.forEach((p, index) => {
             const div = document.createElement('div');
             div.className = 'p-box';
-            const hpPer = (p.hp / p.baseMaxHp) * 100;
+
+            // HPの割合計算
+            const hpPer = (p.baseMaxHp > 0) ? (p.hp / p.baseMaxHp) * 100 : 0;
+            // ★追加: MPの割合計算
+            const mpPer = (p.baseMaxMp > 0) ? (p.mp / p.baseMaxMp) * 100 : 0;
+
             const isActor = (Battle.phase === 'input' && index === Battle.currentActorIndex);
             if(isActor) div.style.border = "2px solid yellow";
             
@@ -779,6 +784,8 @@ const Battle = {
                 <div style="font-size:10px; font-weight:bold; ${nameStyle} overflow:hidden; white-space:nowrap;">${p.name}</div>
                 <div class="bar-container"><div class="bar-hp" style="width:${hpPer}%"></div></div>
                 <div class="p-val">${p.hp}/${p.baseMaxHp}</div>
+                <div class="bar-container"><div class="bar-mp" style="width:${mpPer}%"></div></div>
+                <div class="p-val">${p.mp}/${p.baseMaxMp}</div>
             `;
             container.appendChild(div);
         });
