@@ -125,7 +125,7 @@ const Dungeon = {
     // --- フロア生成分岐 ---
     generateFloor: () => {
         Dungeon.map = [];
-        
+    
         if (Dungeon.floor > 0 && Dungeon.floor % 10 === 0) {
             // 10階ごと: ボス部屋
             Dungeon.generateBossRoom();
