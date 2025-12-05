@@ -8,7 +8,7 @@ const CONST = {
     // +値の抽選確率 (上から順に判定)
     PLUS_RATES: { 3: 0.05, 2: 0.15, 1: 0.40 }, // 残り40%は+0
 
-    GACHA_RATES: { R:50, SR:30, SSR:13, UR:5, EX:2 },
+    GACHA_RATES: { N:0, R:50, SR:30, SSR:13, UR:5, EX:2 },
     SMITH_RATES: { 1: { R:80, SR:15, SSR:5 }, 10: { R:10, SR:30, SSR:40, UR:15, EX:5 } },
     POKER_ODDS: { ROYAL_FLUSH: 500, STRAIGHT_FLUSH: 100, FOUR_CARD: 30, FULL_HOUSE: 10, FLUSH: 8, STRAIGHT: 5, THREE_CARD: 3, TWO_PAIR: 2, JACKS_OR_BETTER: 1 },
 
