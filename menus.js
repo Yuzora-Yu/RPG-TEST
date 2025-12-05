@@ -19,9 +19,12 @@ const Menu = {
     closeAll: () => {
         document.getElementById('menu-overlay').style.display = 'none';
         document.querySelectorAll('.sub-screen').forEach(e => e.style.display = 'none');
+        const assignModal = document.getElementById('assign-modal');
+        if(assignModal) assignModal.style.display = 'none';
+        Menu.closeDialog();
     },
 
-    // パーティステータスバー更新（HP/MPバーなど）
+    // パーティステータスバー更新
     renderPartyBar: () => {
         const bars = document.querySelectorAll('.party-bar'); 
         bars.forEach(bar => {
@@ -36,7 +39,6 @@ const Menu = {
                     const curMp = p.currentMp!==undefined ? p.currentMp : stats.maxMp;
                     const lbText = p.limitBreak > 0 ? `<span style="color:#ffd700; font-size:9px; margin-left:2px;">+${p.limitBreak}</span>` : '';
 
-                    // 名前と+値を1行に収めるフレックスレイアウト
                     div.innerHTML = `
                         <div style="flex:1; display:flex; flex-direction:column; justify-content:center; width:100%; overflow:hidden;">
                             <div style="display:flex; align-items:center; width:100%;">
@@ -64,11 +66,11 @@ const Menu = {
 
     // --- サブ画面遷移 ---
     openSubScreen: (id) => {
-        document.getElementById('menu-overlay').style.display = 'none'; // メインを隠す
+        document.getElementById('menu-overlay').style.display = 'none';
         document.querySelectorAll('.sub-screen').forEach(e => e.style.display = 'none');
-        document.getElementById('sub-screen-' + id).style.display = 'flex';
+        const target = document.getElementById('sub-screen-' + id);
+        if(target) target.style.display = 'flex';
         
-        // 初期化処理呼び出し
         if(id === 'party') MenuParty.init();
         if(id === 'equip') MenuEquip.init();
         if(id === 'items') MenuItems.init();
@@ -82,8 +84,198 @@ const Menu = {
 
     closeSubScreen: (id) => {
         document.getElementById('sub-screen-' + id).style.display = 'none';
-        document.getElementById('menu-overlay').style.display = 'flex'; // メインに戻る
+        document.getElementById('menu-overlay').style.display = 'flex';
         Menu.renderPartyBar();
+    },
+
+    // --- 画面内ログ/確認ダイアログ制御 ---
+    getDialogEl: (id) => document.getElementById(id),
+
+    // レアリティごとのカラーコード取得
+    getRarityColor: (rarity) => {
+        if(rarity==='N') return '#a0a0a0';
+        if(rarity==='R') return '#40e040';
+        if(rarity==='SR') return '#40e0e0';
+        if(rarity==='SSR') return '#ff4444';
+        if(rarity==='UR') return '#e040e0';
+        if(rarity==='EX') return '#ffff00';
+        return '#fff';
+    },
+
+    // 装備詳細HTML生成 (仲間詳細、装備部位表示、所持装備一覧など、縦長表示用)
+    getEquipDetailHTML: (equip) => {
+        let html = '';
+        const rarity = equip.rarity || 'N';
+        const rarityColor = Menu.getRarityColor(rarity);
+        
+        // 基礎効果
+        let baseStats = [];
+        if (equip.data) {
+            if (equip.data.atk) baseStats.push(`攻+${equip.data.atk}`);
+            if (equip.data.def) baseStats.push(`防+${equip.data.def}`);
+            if (equip.data.mag) baseStats.push(`魔+${equip.data.mag}`);
+            if (equip.data.spd) baseStats.push(`速+${equip.data.spd}`);
+            if (equip.data.finDmg) baseStats.push(`与ダメ+${equip.data.finDmg}%`);
+            if (equip.data.finRed) baseStats.push(`被ダメ-${equip.data.finRed}`);
+            
+            if(typeof CONST !== 'undefined' && CONST.ELEMENTS) {
+                CONST.ELEMENTS.forEach(elm => {
+                    if (equip.data.elmAtk && equip.data.elmAtk[elm]) baseStats.push(`${elm}攻+${equip.data.elmAtk[elm]}`);
+                    if (equip.data.elmRes && equip.data.elmRes[elm]) baseStats.push(`${elm}耐+${equip.data.elmRes[elm]}`);
+                });
+            }
+        }
+        const baseEffect = baseStats.length > 0 ? baseStats.join(' ') : 'なし';
+
+        // 追加オプション (レアリティ表記あり)
+        let optsHTML = '';
+        if (equip.opts && equip.opts.length > 0) {
+            const optsList = equip.opts.map(o => {
+                const optRarity = o.rarity || 'N';
+                const optColor = Menu.getRarityColor(optRarity);
+                const unit = o.unit === 'val' ? '' : o.unit;
+                return `<span style="color:${optColor};">[${o.label}+${o.val}${unit} ${optRarity}]</span>`;
+            }).join(' ');
+            optsHTML = `<div style="font-size:10px; color:#aaa; margin-top:2px;">${optsList}</div>`;
+        }
+
+        // シナジー
+        let synergyHTML = '';
+        if (equip.isSynergy) {
+             const syn = App.checkSynergy(equip);
+             if(syn) synergyHTML = `<div style="font-size:10px; color:${syn.color||'#f88'}; margin-top:2px;">★${syn.name}: ${syn.desc}</div>`;
+        }
+
+        html += `
+            <div style="font-size:12px; font-weight:bold; color:${rarityColor}; margin-bottom:2px;">
+                ${equip.name}
+            </div>
+            <div style="font-size:10px; color:#ccc;">${baseEffect}</div>
+            ${optsHTML}
+            ${synergyHTML}
+        `;
+        return html;
+    },
+    
+    // ★新規追加: 装備選択リスト用のコンパクトHTML (2. 装備変更で使用)
+    getEquipDetailHTML_for_EquipList: (equip) => {
+        const rarity = equip.rarity || 'N';
+        const rarityColor = Menu.getRarityColor(rarity);
+
+        // 基礎効果をコンパクトにまとめる
+        let baseStats = [];
+        if (equip.data) {
+            if (equip.data.atk) baseStats.push(`攻+${equip.data.atk}`);
+            if (equip.data.def) baseStats.push(`防+${equip.data.def}`);
+            if (equip.data.mag) baseStats.push(`魔+${equip.data.mag}`);
+            if (equip.data.spd) baseStats.push(`速+${equip.data.spd}`);
+            // HP/MPは表示が長くなるため省略
+        }
+        const baseEffect = baseStats.length > 0 ? baseStats.join(' / ') : '基本効果なし';
+        
+        // 追加オプションをコンパクトにまとめる (レアリティ表記あり)
+        let optsHTML = '';
+        if (equip.opts && equip.opts.length > 0) {
+            optsHTML = equip.opts.map(o => {
+                const optRarity = o.rarity || 'N';
+                const optColor = Menu.getRarityColor(optRarity);
+                const unit = o.unit === 'val' ? '' : o.unit;
+                // [攻+5 R] の形式
+                return `<span style="color:${optColor};">${o.label}+${o.val}${unit} (${optRarity})</span>`;
+            }).join(', ');
+        }
+        
+        let synergyHTML = '';
+        if (equip.isSynergy) {
+             const syn = App.checkSynergy(equip);
+             if(syn) synergyHTML = `<span style="color:${syn.color||'#f88'};">★${syn.name}</span>`;
+        }
+        
+        // レイアウト: 
+        // <div style="flex:1;">
+        //   <div style="名前 (色)">
+        //   <div style="基礎効果">
+        // </div>
+        // <div style="追加効果">
+        return `
+            <div style="flex:1; min-width:0;">
+                <div style="font-weight:bold; color:${rarityColor};">${equip.name} ${synergyHTML}</div>
+                <div style="font-size:10px; color:#aaa; margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                    ${baseEffect}
+                </div>
+            </div>
+            ${optsHTML ? `<div style="font-size:10px; color:#ccc; text-align:right; margin-left:10px;">${optsHTML}</div>` : ''}
+        `;
+    },
+
+    msg: (text, callback) => {
+        const area = Menu.getDialogEl('menu-dialog-area');
+        const textEl = Menu.getDialogEl('menu-dialog-text');
+        const btnEl = Menu.getDialogEl('menu-dialog-buttons');
+        
+        if (!area) { 
+            console.warn("Dialog area missing. Using alert."); 
+            alert(text); 
+            if (callback) callback(); 
+            return; 
+        }
+        
+        textEl.innerHTML = text.replace(/\n/g, '<br>');
+        btnEl.innerHTML = '';
+
+        const okBtn = document.createElement('button');
+        okBtn.className = 'btn';
+        okBtn.style.width = '80px';
+        okBtn.innerText = 'OK';
+        okBtn.onclick = () => {
+            Menu.closeDialog();
+            if (callback) callback();
+        };
+        btnEl.appendChild(okBtn);
+        area.style.display = 'flex';
+    },
+
+    confirm: (text, yesCallback, noCallback) => {
+        const area = Menu.getDialogEl('menu-dialog-area');
+        const textEl = Menu.getDialogEl('menu-dialog-text');
+        const btnEl = Menu.getDialogEl('menu-dialog-buttons');
+
+        if (!area) {
+            if(confirm(text)) { if(yesCallback) yesCallback(); }
+            else { if(noCallback) noCallback(); }
+            return;
+        }
+
+        textEl.innerHTML = text.replace(/\n/g, '<br>');
+        btnEl.innerHTML = '';
+
+        const yesBtn = document.createElement('button');
+        yesBtn.className = 'btn';
+        yesBtn.style.width = '80px';
+        yesBtn.innerText = 'はい';
+        yesBtn.onclick = () => {
+            Menu.closeDialog();
+            if (yesCallback) yesCallback();
+        };
+        
+        const noBtn = document.createElement('button');
+        noBtn.className = 'btn';
+        noBtn.style.width = '80px';
+        noBtn.style.background = '#555';
+        noBtn.innerText = 'いいえ';
+        noBtn.onclick = () => {
+            Menu.closeDialog();
+            if (noCallback) noCallback();
+        };
+        
+        btnEl.appendChild(yesBtn);
+        btnEl.appendChild(noBtn);
+        area.style.display = 'flex';
+    },
+
+    closeDialog: () => {
+        const area = document.getElementById('menu-dialog-area');
+        if (area) area.style.display = 'none';
     }
 };
 
@@ -172,56 +364,96 @@ const MenuEquip = {
     targetChar: null, targetPart: null, selectedEquipId: null,
     
     init: () => { 
-        MenuEquip.changeScreen('char');
-        MenuEquip.renderCharList();
+        // 初期化時に、パーティの先頭をターゲットにする
+        const partyUids = App.data.party.filter(uid => uid);
+        if(partyUids.length > 0) {
+            MenuEquip.targetChar = App.getChar(partyUids[0]);
+        } else {
+             // メンバーがいない場合は処理しない
+             return; 
+        }
+        
+        // 装備部位画面に直接遷移
+        MenuEquip.changeScreen('part');
+        MenuEquip.renderPartList();
     },
     
     changeScreen: (id) => {
-        ['char','part','item'].forEach(s => document.getElementById(`equip-screen-${s}`).style.display = 'none');
-        document.getElementById(`equip-screen-${id}`).style.display = 'flex';
-    },
-    
-    renderCharList: () => {
-        const list = document.getElementById('equip-char-list');
-        list.innerHTML = '';
-        
-        // パーティメンバーのみ表示
-        App.data.party.forEach(uid => {
-            if(!uid) return;
-            const c = App.getChar(uid);
-            if(!c) return;
-
-            const div = document.createElement('div');
-            div.className = 'list-item';
-            div.innerHTML = App.createCharHTML(c);
-            div.onclick = () => {
-                MenuEquip.targetChar = c;
-                MenuEquip.changeScreen('part');
-                MenuEquip.renderPartList();
-            };
-            list.appendChild(div);
+        // 'char'画面は廃止
+        ['char','part','item'].forEach(s => {
+            const el = document.getElementById(`equip-screen-${s}`);
+            if(el) el.style.display = 'none';
         });
+        const target = document.getElementById(`equip-screen-${id}`);
+        if(target) target.style.display = 'flex';
+    },
+
+    // ★追加: キャラクター切り替え機能
+    switchChar: (dir) => {
+        if (!MenuEquip.targetChar) return;
+        const partyUids = App.data.party.filter(uid => uid);
+        let idx = partyUids.indexOf(MenuEquip.targetChar.uid);
+        
+        if (idx === -1) idx = 0; // 見つからない場合は先頭へ
+        
+        let newIdx = idx + dir;
+        if (newIdx < 0) newIdx = partyUids.length - 1;
+        if (newIdx >= partyUids.length) newIdx = 0;
+        
+        MenuEquip.targetChar = App.getChar(partyUids[newIdx]);
+        
+        // 装備部位リストを再描画
+        MenuEquip.renderPartList();
+        
+        // アイテム選択画面から切り替えた場合、部位選択画面に戻す
+        if (document.getElementById('equip-screen-item').style.display === 'flex') {
+            MenuEquip.changeScreen('part'); 
+        }
     },
     
     renderPartList: () => {
         const c = MenuEquip.targetChar;
+        if (!c) { /* エラー処理 */ return; }
+
         const s = App.calcStats(c);
-        document.getElementById('char-status').innerHTML = `
-            <b>${c.name}</b> (Lv.${c.level})<br>
-            <div style="display:grid; grid-template-columns:1fr 1fr; font-size:11px;">
-                <span>HP: ${s.maxHp}</span> <span>MP: ${s.maxMp}</span>
-                <span>攻: ${s.atk}</span> <span>魔: ${s.mag}</span>
-                <span>防: ${s.def}</span> <span>速: ${s.spd}</span>
-            </div>
-        `;
         
-        const list = document.getElementById('list-part');
+        // ステータス表示 (★修正: キャラ切り替えボタンを追加)
+        const statEl = document.getElementById('char-status');
+        if(statEl) {
+            statEl.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; background:#444; padding:5px; border-radius:4px;">
+                    <button class="btn" style="padding:2px 10px; font-size:12px;" onclick="MenuEquip.switchChar(-1)">＜</button>
+                    <span style="font-weight:bold; font-size:14px;">${c.name}</span>
+                    <button class="btn" style="padding:2px 10px; font-size:12px;" onclick="MenuEquip.switchChar(1)">＞</button>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:5px; font-size:11px; margin-top:5px; background:#222; padding:5px; border-radius:4px;">
+                    <span>攻: ${s.atk}</span> <span>防: ${s.def}</span>
+                    <span>魔: ${s.mag}</span> <span>速: ${s.spd}</span>
+                </div>
+            `;
+        }
+        
+        // 正しいID 'equip-slot-list' を優先的に取得する
+        let list = document.getElementById('equip-slot-list');
+        if (!list) list = document.getElementById('list-part'); // フォールバック
+        if (!list) return;
+
         list.innerHTML = '';
         CONST.PARTS.forEach(part => {
             const eq = c.equips[part];
             const div = document.createElement('div');
             div.className = 'list-item';
-            div.innerHTML = `<div style="width:40px; color:#aaa;">${part}</div><div style="flex:1">${eq ? eq.name : '----'}</div>`;
+            
+            // 装備の詳細HTMLを取得して表示
+            let detail = '<span style="color:#555;">装備なし</span>';
+            if(eq) detail = Menu.getEquipDetailHTML(eq);
+
+            div.innerHTML = `
+                <div style="display:flex; align-items:flex-start;">
+                    <div style="width:40px; color:#aaa; font-weight:bold; margin-top:2px;">${part}</div>
+                    <div style="flex:1;">${detail}</div>
+                </div>
+            `;
             div.onclick = () => {
                 MenuEquip.targetPart = part;
                 MenuEquip.changeScreen('item');
@@ -232,16 +464,29 @@ const MenuEquip = {
     },
     
     renderItemList: () => {
-        const list = document.getElementById('list-item-candidates');
+        // ID揺れ吸収
+        let list = document.getElementById('equip-list');
+        if(!list) list = document.getElementById('list-item-candidates');
+        if(!list) return;
+
         list.innerHTML = '';
         const footer = document.getElementById('equip-footer');
-        footer.innerHTML = "タップで詳細<br>もう一度タップで装備";
+        
+        // ヘッダー表示
+        const header = document.getElementById('equip-item-header');
+        if(header) header.innerText = `${MenuEquip.targetChar.name} - ${MenuEquip.targetPart}を選択中`;
+
+        if(footer) footer.innerHTML = "装備を選択すると能力変化を確認できます";
         MenuEquip.selectedEquipId = null;
 
         const part = MenuEquip.targetPart;
         const candidates = [];
-        candidates.push({id:'remove', name:'(外す)', isRemove:true});
+        candidates.push({id:'remove', name:'(装備を外す)', isRemove:true});
+        
+        // インベントリから該当部位を抽出
         App.data.inventory.filter(i => i.type === part).forEach(i => candidates.push(i));
+        
+        // 他のキャラが装備しているものも候補に入れる
         App.data.characters.forEach(other => {
             if(other.uid !== MenuEquip.targetChar.uid && other.equips[part]) {
                 candidates.push({...other.equips[part], owner:other.name});
@@ -252,31 +497,33 @@ const MenuEquip = {
             const div = document.createElement('div');
             div.className = 'list-item';
             
-            let txt = item.name;
-            let style = "";
-            if(item.isSynergy) style = "color:#ff4444; font-weight:bold;";
-            
-            if(item.owner) txt += ` <span style="color:#f88; font-size:10px;">[${item.owner}]</span>`;
-            if(item.isRemove) txt = `<span style="color:#aaa;">${item.name}</span>`;
-            
-            div.innerHTML = `<div style="${style}">${txt}</div>`;
+            let html = '';
+            if(item.isRemove) {
+                html = `<div style="color:#aaa; font-weight:bold;">${item.name}</div>`;
+            } else {
+                html = Menu.getEquipDetailHTML_for_EquipList(item); 
+                if(item.owner) {
+                    html += `<div style="text-align:right; font-size:10px; color:#f88; margin-left:10px;">[${item.owner} 装備中]</div>`;
+                }
+            }
+            div.style.display = 'flex';
+            div.style.alignItems = 'center';
+            div.innerHTML = html;
             
             div.onclick = () => {
                 if(MenuEquip.selectedEquipId === item.id) {
+                    // 2回タップで決定
                     MenuEquip.doEquip(item.isRemove ? null : item);
                 } else {
+                    // 1回タップで選択＆比較表示
                     MenuEquip.selectedEquipId = item.id;
                     Array.from(list.children).forEach(c => c.classList.remove('selected'));
                     div.classList.add('selected');
                     
                     if(item.isRemove) {
-                        footer.innerText = "装備を外します。もう一度タップで実行。";
+                        MenuEquip.renderStatsComparison(null);
                     } else {
-                        let desc = `<b>${item.name}</b>\n攻:${item.data.atk||0} 防:${item.data.def||0} 魔:${item.data.mag||0} 速:${item.data.spd||0}`;
-                        if(item.opts) item.opts.forEach(o => desc += ` [${o.label}+${o.val}]`);
-                        const syn = App.checkSynergy(item);
-                        if(syn) desc += `<br><span style="color:#f88">★${syn.name}: ${syn.desc}</span>`;
-                        footer.innerHTML = desc;
+                        MenuEquip.renderStatsComparison(item);
                     }
                 }
             };
@@ -284,20 +531,61 @@ const MenuEquip = {
         });
     },
     
+    renderStatsComparison: (newItem) => {
+        const c = MenuEquip.targetChar;
+        const part = MenuEquip.targetPart;
+        const footer = document.getElementById('equip-footer');
+        if(!footer) return;
+        
+        const currentStats = App.calcStats(c);
+        
+        // ダミーキャラを作って装備変更後のステータスを計算
+        const dummy = JSON.parse(JSON.stringify(c));
+        dummy.equips[part] = newItem; 
+        const newStats = App.calcStats(dummy);
+        
+        const diff = (key) => {
+            const d = newStats[key] - currentStats[key];
+            if(d > 0) return `<span style="color:#4f4;">+${d}</span>`;
+            if(d < 0) return `<span style="color:#f44;">${d}</span>`;
+            return `<span style="color:#888;">±0</span>`;
+        };
+
+        const itemName = newItem ? newItem.name : '装備なし';
+        
+        footer.innerHTML = `
+            <div style="font-size:10px; color:#aaa; margin-bottom:2px;">変更後の変化: ${itemName}</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; font-size:11px;">
+                <div>攻: ${newStats.atk} (${diff('atk')})</div>
+                <div>防: ${newStats.def} (${diff('def')})</div>
+                <div>魔: ${newStats.mag} (${diff('mag')})</div>
+                <div>速: ${newStats.spd} (${diff('spd')})</div>
+            </div>
+            <div style="text-align:right; color:#ffd700; font-size:10px; margin-top:2px;">もう一度タップで決定</div>
+        `;
+    },
+    
     doEquip: (item) => {
         const c = MenuEquip.targetChar;
         const p = MenuEquip.targetPart;
+        const oldItem = c.equips[p];
         
-        if(c.equips[p]) App.data.inventory.push(c.equips[p]);
+        if(oldItem) App.data.inventory.push(oldItem);
         
         if(item) {
             const owner = App.data.characters.find(ch => ch.equips[p] && ch.equips[p].id === item.id);
-            if(owner) owner.equips[p] = null;
+            if(owner) {
+                owner.equips[p] = null;
+            }
+            
             const idx = App.data.inventory.findIndex(i => i.id === item.id);
             if(idx > -1) App.data.inventory.splice(idx, 1);
+            
             c.equips[p] = item;
+            // 装備完了時のダイアログは表示しない (ユーザー要望)
         } else {
             c.equips[p] = null;
+            // 装備解除時のダイアログは表示しない (ユーザー要望)
         }
         
         App.save();
@@ -307,180 +595,174 @@ const MenuEquip = {
 };
 
 /* ==========================================================================
-   3. 道具使用
+   3. 道具
    ========================================================================== */
 const MenuItems = {
-    selectedItem: null, selectedId: null, targetId: null,
-    init: () => { MenuItems.changeScreen('list'); MenuItems.renderList(); },
-    
-    changeScreen: (id) => {
-        ['list','target'].forEach(s => document.getElementById(`item-screen-${s}`).style.display = (s===id?'flex':'none'));
+    selectedItem: null,
+    init: () => {
+        document.getElementById('sub-screen-items').style.display = 'flex';
+        MenuItems.changeScreen('list');
     },
-    
+    changeScreen: (mode) => {
+        document.getElementById('item-screen-list').style.display = (mode==='list'?'flex':'none');
+        document.getElementById('item-screen-target').style.display = (mode==='target'?'flex':'none');
+        if(mode==='list') MenuItems.renderList();
+    },
     renderList: () => {
         const list = document.getElementById('list-items');
-        const footer = document.getElementById('item-footer');
         list.innerHTML = '';
-        footer.innerHTML = "タップで詳細<br>もう一度タップで使用";
-        MenuItems.selectedId = null;
-
-        Object.keys(App.data.items).forEach(idStr => {
-            const id = parseInt(idStr);
-            const count = App.data.items[id];
-            const item = DB.ITEMS.find(i => i.id === id);
-            if(item) {
-                const div = document.createElement('div');
-                div.className = 'list-item';
-                div.innerHTML = `<div>${item.name}</div><div>x${count}</div>`;
-                div.onclick = () => {
-                    if(count <= 0) return;
-                    if(MenuItems.selectedId === item.id) {
-                        MenuItems.selectedItem = item;
-                        MenuItems.changeScreen('target');
-                        MenuItems.renderTargets();
-                    } else {
-                        MenuItems.selectedId = item.id;
-                        Array.from(list.children).forEach(c => c.classList.remove('selected'));
-                        div.classList.add('selected');
-                        footer.innerText = `${item.desc}\nもう一度タップで対象選択`;
-                    }
-                };
-                list.appendChild(div);
-            }
-        });
-    },
-    
-    renderTargets: () => {
-        const list = document.getElementById('list-item-targets');
-        list.innerHTML = '';
-        MenuItems.targetId = null;
         
-        App.data.characters.forEach(c => {
+        const items = [];
+        Object.keys(App.data.items).forEach(id => {
+            const def = DB.ITEMS.find(i=>i.id == id);
+            if(def && App.data.items[id] > 0) items.push({def:def, count:App.data.items[id]});
+        });
+
+        items.forEach(it => {
             const div = document.createElement('div');
             div.className = 'list-item';
-            div.innerHTML = App.createCharHTML(c);
+            // ★修正: 道具名の下に備考欄を表示
+            div.innerHTML = `
+                <div style="flex:1;">
+                    <div style="font-weight:bold;">${it.def.name}</div>
+                    <div style="font-size:10px; color:#aaa;">${it.def.desc}</div>
+                </div>
+                <div>x${it.count}</div>
+            `;
             div.onclick = () => {
-                if(MenuItems.targetId === c.uid) {
-                    MenuItems.useItem(c);
+                if(it.def.type.includes('回復') || it.def.type.includes('蘇生')) {
+                    MenuItems.selectedItem = it.def;
+                    MenuItems.renderTargetList();
                 } else {
-                    MenuItems.targetId = c.uid;
-                    Array.from(list.children).forEach(ch => ch.classList.remove('selected'));
-                    div.classList.add('selected');
+                    document.getElementById('item-footer').innerText = "使用できないアイテムです";
                 }
             };
             list.appendChild(div);
         });
     },
-
-    useItem: (c) => {
-        const item = MenuItems.selectedItem;
-        const stats = App.calcStats(c);
-        let used = false;
+    renderTargetList: () => {
+        MenuItems.changeScreen('target');
+        const list = document.getElementById('list-item-targets');
+        list.innerHTML = '';
         
-        if(item.type === 'HP回復') {
-            const old = c.currentHp !== undefined ? c.currentHp : stats.maxHp;
-            const recover = Math.min(item.val, stats.maxHp - old);
-            if(recover > 0) {
-                c.currentHp = old + recover;
-                used = true;
-                const footer = document.getElementById('item-footer');
-                if(footer) footer.innerText = `${c.name}のHPが${recover}回復した！`;
-                App.log(`${c.name}のHPが${recover}回復した`);
-            } else {
-                const footer = document.getElementById('item-footer');
-                if(footer) footer.innerText = "効果がなかった...";
-            }
-        } else if(item.type === 'MP回復') {
-            const old = c.currentMp !== undefined ? c.currentMp : stats.maxMp;
-            const recover = Math.min(item.val, stats.maxMp - old);
-            if(recover > 0) {
-                c.currentMp = old + recover;
-                used = true;
-                const footer = document.getElementById('item-footer');
-                if(footer) footer.innerText = `${c.name}のMPが${recover}回復した！`;
-                App.log(`${c.name}のMPが${recover}回復した`);
-            }
-        }
+        App.data.party.forEach(uid => {
+            if(!uid) return;
+            const c = App.getChar(uid);
+            const div = document.createElement('div');
+            div.className = 'list-item';
+            div.innerHTML = App.createCharHTML(c);
+            div.onclick = () => MenuItems.useItem(c);
+            list.appendChild(div);
+        });
+    },
+    useItem: (target) => {
+        const item = MenuItems.selectedItem;
+        if(App.data.items[item.id] <= 0) return;
 
-        if(used) {
-            App.data.items[item.id]--;
-            if(App.data.items[item.id] <= 0) delete App.data.items[item.id];
-            App.save();
-            Menu.renderPartyBar();
+        Menu.confirm(`${target.name} に ${item.name} を使いますか？`, () => {
+            let success = false;
+            const s = App.calcStats(target);
             
-            setTimeout(() => {
-                if(App.data.items[item.id]) {
-                    MenuItems.changeScreen('list');
-                    MenuItems.renderList();
-                } else {
-                    MenuItems.init();
-                }
-            }, 1000);
-        } else {
-            setTimeout(() => MenuItems.changeScreen('list'), 500);
-        }
+            if(item.type === 'HP回復') {
+                if(target.currentHp >= s.maxHp) { Menu.msg("HPは満タンです"); return; }
+                const healVal = item.val;
+                target.currentHp = Math.min(s.maxHp, (target.currentHp||s.maxHp) + healVal);
+                success = true;
+            } else if(item.type === 'MP回復') {
+                if(target.currentMp >= s.maxMp) { Menu.msg("MPは満タンです"); return; }
+                const healVal = item.val;
+                target.currentMp = Math.min(s.maxMp, (target.currentMp||s.maxMp) + healVal);
+                success = true;
+            } else if(item.type === '蘇生') {
+                if(target.currentHp > 0) { Menu.msg("生き返っています"); return; }
+                target.currentHp = Math.floor(s.maxHp * 0.5);
+                success = true;
+            }
+
+            if(success) {
+                App.data.items[item.id]--;
+                if(App.data.items[item.id]<=0) delete App.data.items[item.id];
+                App.save();
+                
+                Menu.msg(`${target.name}は回復した！`, () => {
+                    MenuItems.renderTargetList();
+                    Menu.renderPartyBar();
+                });
+            }
+        });
     }
 };
 
 /* ==========================================================================
-   4. 所持装備一覧 (売却)
+   4. 所持装備一覧 (修正版: 売却確認をメニュー内で行う)
    ========================================================================== */
 const MenuInventory = {
-    selectedId: null,
-    init: () => { MenuInventory.render(); },
-    
+    init: () => {
+        document.getElementById('sub-screen-inventory').style.display = 'flex';
+        MenuInventory.render();
+    },
     render: () => {
-        const list = document.getElementById('inventory-list');
-        const footer = document.getElementById('inventory-footer');
-        list.innerHTML = '';
-        footer.innerHTML = "タップで詳細<br>もう一度タップで売却";
         document.getElementById('inventory-gold').innerText = App.data.gold;
-        MenuInventory.selectedId = null;
+        const list = document.getElementById('inventory-list');
+        list.innerHTML = '';
+        const footer = document.getElementById('inventory-footer');
+        footer.innerHTML = "アイテムをタップすると売却メニューが開きます";
 
         if(App.data.inventory.length === 0) {
-            list.innerHTML = '<div style="padding:10px; color:#888;">装備を持っていません</div>';
+            list.innerHTML = '<div style="padding:10px; color:#888;">装備品を持っていません</div>';
             return;
         }
 
-        App.data.inventory.forEach(eq => {
+        // 新しい順に表示
+        const items = [...App.data.inventory].reverse();
+
+        items.forEach(item => {
             const div = document.createElement('div');
             div.className = 'list-item';
-            
-            let effects = [];
-            if(eq.data.atk) effects.push(`攻${eq.data.atk}`);
-            if(eq.data.def) effects.push(`防${eq.data.def}`);
-            if(eq.opts.length) effects.push(`★${eq.opts.length}`);
-            
+            div.style.flexDirection = 'column';
+            div.style.alignItems = 'flex-start';
+
+            // 装備中なら所有者名を表示
+            let ownerName = '';
+            const owner = App.data.characters.find(c => c.equips[item.type] && c.equips[item.type].id === item.id);
+            if(owner) ownerName = ` <span style="font-size:10px; color:#f88;">[装備中:${owner.name}]</span>`;
+
             div.innerHTML = `
-                <div>
-                    <div style="font-weight:bold">${eq.name}</div>
-                    <div style="font-size:10px; color:#aaa;">${eq.type}|${effects.join(' ')}</div>
+                <div style="display:flex; justify-content:space-between; width:100%;">
+                    <div>${item.name}${ownerName}</div>
+                    <div style="font-size:11px; color:#ffd700;">${Math.floor(item.val/2)}G</div>
                 </div>
-                <div style="font-size:12px; color:#ffd700;">${Math.floor(eq.val/2)}G</div>
+                ${Menu.getEquipDetailHTML(item)}
             `;
             
             div.onclick = () => {
-                if(MenuInventory.selectedId === eq.id) {
-                    const price = Math.floor(eq.val / 2);
-                    App.data.gold += price;
-                    const idx = App.data.inventory.findIndex(i => i.id === eq.id);
-                    App.data.inventory.splice(idx, 1);
-                    App.save();
-                    
-                    footer.innerText = `${eq.name}を売却しました。`;
-                    setTimeout(() => MenuInventory.render(), 500);
-                } else {
-                    MenuInventory.selectedId = eq.id;
-                    Array.from(list.children).forEach(c => c.classList.remove('selected'));
-                    div.classList.add('selected');
-                    
-                    let desc = `<b>${eq.name}</b> 売値:${Math.floor(eq.val/2)}G`;
-                    if(eq.opts) eq.opts.forEach(o => desc += ` [${o.label}+${o.val}]`);
-                    desc += "\n<span style='color:#f88'>もう一度タップで売却</span>";
-                    footer.innerHTML = desc;
-                }
+                MenuInventory.sell(item.id, item.val, item.name);
             };
             list.appendChild(div);
+        });
+    },
+    sell: (id, val, name) => {
+        const idx = App.data.inventory.findIndex(i => i.id === id);
+        if(idx === -1) return;
+        
+        const item = App.data.inventory[idx];
+        const owner = App.data.characters.find(c => c.equips[item.type] && c.equips[item.type].id === item.id);
+        
+        if(owner) {
+            Menu.msg(`${owner.name}が装備中のため売却できません。\n先に装備を外してください。`);
+            return;
+        }
+
+        const price = Math.floor(val / 2);
+        
+        // 画面内ダイアログで確認
+        Menu.confirm(`${name} を\n${price}G で売却しますか？`, () => {
+            App.data.inventory.splice(idx, 1);
+            App.data.gold += price;
+            App.save();
+            Menu.msg(`${price}G で売却しました`, () => {
+                MenuInventory.render();
+            });
         });
     }
 };
@@ -489,33 +771,58 @@ const MenuInventory = {
    5. 仲間一覧 & 詳細 (3タブ + 主人公振分)
    ========================================================================== */
 const MenuAllies = {
-    selectedChar: null, currentTab: 1,
+    selectedChar: null, 
+    currentTab: 1,
     
-    // 初期化：一覧表示モードにする
+    // 振り分け用一時データ
+    tempAlloc: null,
+
+    // 初期化
     init: () => {
         document.getElementById('allies-list-view').style.display = 'flex';
         document.getElementById('allies-detail-view').style.display = 'none';
         MenuAllies.renderList();
+        
+        // 振り分け用モーダルがHTMLにない場合、動的に生成しておく（初回のみ）
+        MenuAllies.createAllocModalDOM();
     },
 
-    // ★スクロールのポイント：全員分をループで追加するだけで、CSS側が自動でスクロールしてくれます
+    // 一覧描画
     renderList: () => {
         const list = document.getElementById('allies-list');
         list.innerHTML = '';
         
         App.data.characters.forEach(c => {
             const div = document.createElement('div');
-            div.className = 'list-item'; // CSSでクリック時の見た目などが定義済み
-            div.innerHTML = App.createCharHTML(c); // main.jsの共通関数で見た目を作成
+            div.className = 'list-item';
+            div.innerHTML = App.createCharHTML(c);
             
-            // クリックしたら詳細画面へ
             div.onclick = () => {
                 MenuAllies.selectedChar = c;
-                MenuAllies.currentTab = 1;
+                // タブはリセットせず、以前の状態を維持するか、1に戻す
+                // MenuAllies.currentTab = 1; 
                 MenuAllies.renderDetail();
             };
             list.appendChild(div);
         });
+    },
+
+    // キャラクター切り替え
+    switchChar: (dir) => {
+        if (!MenuAllies.selectedChar) return;
+        
+        const chars = App.data.characters;
+        let idx = chars.findIndex(c => c.uid === MenuAllies.selectedChar.uid);
+        
+        if (idx === -1) idx = 0;
+        
+        // インデックス計算 (ループ)
+        let newIdx = idx + dir;
+        if (newIdx < 0) newIdx = chars.length - 1;
+        if (newIdx >= chars.length) newIdx = 0;
+        
+        MenuAllies.selectedChar = chars[newIdx];
+        MenuAllies.renderDetail();
     },
 
     // 詳細画面の描画
@@ -524,12 +831,28 @@ const MenuAllies = {
         document.getElementById('allies-detail-view').style.display = 'flex';
         
         const c = MenuAllies.selectedChar;
+        const playerObj = new Player(c); // スキル等取得用
+        
         const s = App.calcStats(c);
         const hp = c.currentHp !== undefined ? c.currentHp : s.maxHp;
         const mp = c.currentMp !== undefined ? c.currentMp : s.maxMp;
         const lb = c.limitBreak || 0;
         
-        // 主人公(p1)のみ、ステータス振分ボタンを表示
+        const nextExp = App.getNextExp(c);
+        const nextExpText = nextExp === Infinity ? "MAX" : nextExp;
+
+        // --- ナビゲーションボタン (新規追加) ---
+        // 仲間一覧に戻るボタンの代わりに、上部で切り替えを行えるようにする
+        // ※「一覧へ戻る」はHTML側のフッターボタンで行う想定
+        const navHtml = `
+            <div style="display:flex; justify-content:space-between; align-items:center; background:#333; padding:5px; margin-bottom:5px; border-radius:4px;">
+                <button class="btn" style="padding:2px 10px; font-size:12px;" onclick="MenuAllies.switchChar(-1)">＜ 前</button>
+                <span style="font-weight:bold; font-size:14px;">${c.name}</span>
+                <button class="btn" style="padding:2px 10px; font-size:12px;" onclick="MenuAllies.switchChar(1)">次 ＞</button>
+            </div>
+        `;
+
+        // 主人公用振分ボタン (モーダル起動)
         let allocHtml = '';
         if(c.uid === 'p1') {
             const totalPt = Math.floor(lb / 10) * 10;
@@ -538,11 +861,11 @@ const MenuAllies = {
             const free = totalPt - used;
             
             allocHtml = `<div style="background:#440; padding:5px; margin-top:5px; font-size:12px; display:flex; justify-content:space-between; align-items:center;">
-                <span>振分Pt 残り: <b>${free}</b></span> <button class="btn" onclick="MenuAllies.openAlloc()">振分</button>
+                <span>振分Pt 残り: <b>${free}</b></span> <button class="btn" onclick="MenuAllies.openAllocModal()">振分変更</button>
             </div>`;
         }
 
-        // タブボタンの生成
+        // タブ生成
         const tabContainer = document.getElementById('allies-tabs');
         tabContainer.innerHTML = '';
         const tabs = ['基本', '装備', '技能'];
@@ -554,19 +877,21 @@ const MenuAllies = {
             tabContainer.appendChild(btn);
         }
 
-        // 内容の表示
         const content = document.getElementById('allies-detail-content');
-        let html = '';
+        let html = navHtml; // ナビゲーションを最上部に追加
         
         if(MenuAllies.currentTab === 1) { 
-            // 基本ステータス
+            // --- 1タブ目: 基本 ---
             html += `
             <div style="padding:10px; display:flex; gap:10px; background:#222;">
                 <div style="width:60px; height:60px; background:#444; display:flex; align-items:center; justify-content:center;">${c.img?'<img src="'+c.img+'" style="width:100%;height:100%;object-fit:cover;">':'IMG'}</div>
-                <div>
+                <div style="flex:1;">
                     <div style="font-size:16px; font-weight:bold;">${c.name} <span style="color:#ff0">+${lb}</span></div>
                     <div style="font-size:12px; color:#aaa;">${c.job} / ${c.rarity}</div>
-                    <div>Lv.${c.level}</div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:2px;">
+                        <span>Lv.${c.level}</span>
+                        <span style="font-size:10px; color:#ffd700;">Exp: ${c.exp} / Next: ${nextExpText}</span>
+                    </div>
                 </div>
             </div>
             ${allocHtml}
@@ -583,90 +908,217 @@ const MenuAllies = {
                 <br><b>属性耐性</b><br>
                 ${CONST.ELEMENTS.map(e => `<span>${e}:${s.elmRes[e]||0}</span>`).join(' ')}
                 <hr style="border-color:#444">
-                <b>特殊補正</b><br>
-                <div>魔法ダメ増:${s.magDmg}% 特技ダメ増:${s.sklDmg}%</div>
-                <div>最終与ダメ増:${s.finDmg}% 最終被ダメ減:${s.finRed}</div>
-                <div>MP消費減:${s.mpRed}%</div>
+                <b>特殊補正</b>
+                <div style="color:#ccc; margin-top:4px;">
+                    <div>魔法ダメ増: <span style="color:#fff">${s.magDmg}%</span></div>
+                    <div>特技ダメ増: <span style="color:#fff">${s.sklDmg}%</span></div>
+                    <div>与ダメ増: <span style="color:#fff">${s.finDmg}%</span></div>
+                    <div>被ダメ減: <span style="color:#fff">${s.finRed}</span></div>
+                    <div>MP消費減: <span style="color:#fff">${s.mpRed}%</span></div>
+                </div>
             </div>`;
         } else if(MenuAllies.currentTab === 2) { 
-            // 装備リスト
+            // --- 2タブ目: 装備 ---
             html += `<div style="padding:10px;">`;
             CONST.PARTS.forEach(p => {
                 const eq = c.equips[p];
-                html += `<div class="list-item" style="cursor:default;">
-                    <div style="width:40px; color:#aaa;">${p}</div>
-                    <div>${eq ? eq.name : 'なし'}</div>
+                let detail = '';
+                let nameColor = '#fff';
+                
+                if (eq) {
+                    // 基礎ステータス
+                    let stats = [];
+                    if(eq.data.atk) stats.push(`攻+${eq.data.atk}`);
+                    if(eq.data.def) stats.push(`防+${eq.data.def}`);
+                    if(eq.data.mag) stats.push(`魔+${eq.data.mag}`);
+                    if(eq.data.spd) stats.push(`速+${eq.data.spd}`);
+                    
+                    // 追加オプション
+                    if(eq.opts) {
+                        eq.opts.forEach(o => {
+                            let valStr = o.unit === '%' ? `${o.val}%` : `${o.val}`;
+                            // レアリティ色
+                            let rColor = '#aaa';
+                            if(o.rarity === 'SR') rColor = '#40e0e0';
+                            if(o.rarity === 'SSR') rColor = '#ff4444';
+                            if(o.rarity === 'UR') rColor = '#ff00ff';
+                            if(o.rarity === 'EX') rColor = '#ffff00';
+                            stats.push(`<span style="color:${rColor};">[${o.label}+${valStr} ${o.rarity||''}]</span>`);
+                        });
+                    }
+                    if(eq.isSynergy) nameColor = '#ff4444';
+                    detail = stats.join(' ');
+                }
+
+                html += `<div class="list-item" style="cursor:default; flex-direction:column; align-items:flex-start;">
+                    <div style="display:flex; width:100%;">
+                        <div style="width:40px; color:#aaa;">${p}</div>
+                        <div style="font-weight:bold; color:${nameColor};">${eq ? eq.name : 'なし'}</div>
+                    </div>
+                    ${eq ? `<div style="font-size:10px; margin-left:40px; line-height:1.2; margin-top:2px;">${detail}</div>` : ''}
                 </div>`;
             });
             html += `</div>`;
         } else if(MenuAllies.currentTab === 3) { 
-            // スキルリスト
+            // --- 3タブ目: 技能 ---
             html += `<div style="padding:10px;">`;
-            if(c.skills.length===0) html += 'なし';
-            c.skills.forEach(sk => {
-                html += `<div class="list-item">
-                    <div>${sk.name}</div>
-                    <div style="font-size:10px; color:#aaa;">${sk.type} MP:${sk.mp}<br>${sk.desc}</div>
-                </div>`;
-            });
+            if(!playerObj.skills || playerObj.skills.length===0) {
+                html += '<div style="color:#888;">習得しているスキルはありません</div>';
+            } else {
+                playerObj.skills.forEach(sk => {
+                    html += `<div class="list-item">
+                        <div style="flex:1; min-width:0;">
+                            <div>
+                                <span style="font-weight:bold;">${sk.name}</span>
+                                <span style="font-size:10px; color:#aaa;">(${sk.type})</span>
+                            </div>
+                            <div style="font-size:10px; color:#ccc; margin-top:2px;">${sk.desc || ''}</div>
+                        </div>
+                        <div style="font-size:12px; color:#88f; text-align:right; min-width:60px;">MP:${sk.mp}</div>
+                    </div>`;
+                });
+            }
             html += `</div>`;
         }
         
         content.innerHTML = html;
     },
-    
-    // 振分機能
-    openAlloc: () => {
+
+    // --- 能力値振り分け (モーダル版) ---
+
+    // モーダルDOM生成 (存在しない場合のみ)
+    createAllocModalDOM: () => {
+        if(document.getElementById('alloc-modal')) return;
+        
+        const div = document.createElement('div');
+        div.id = 'alloc-modal';
+        div.style.cssText = 'position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; display:none; flex-direction:column; justify-content:center; align-items:center;';
+        
+        div.innerHTML = `
+            <div style="width:90%; max-width:320px; max-height:80%; background:#222; border:2px solid #fff; display:flex; flex-direction:column;">
+                <div class="header-bar"><span>能力値振分</span></div>
+                <div style="padding:10px; text-align:center; border-bottom:1px solid #444;">
+                    残りポイント: <span id="alloc-free-pts" style="color:#ffd700; font-weight:bold; font-size:18px;">0</span>
+                </div>
+                <div id="alloc-list" class="scroll-area" style="flex:1; padding:10px;"></div>
+                <div style="padding:10px; display:flex; gap:10px; justify-content:center; border-top:1px solid #444;">
+                    <button class="menu-btn" style="width:100px; background:#400040;" onclick="MenuAllies.saveAlloc()">決定</button>
+                    <button class="menu-btn" style="width:100px;" onclick="MenuAllies.closeAllocModal()">キャンセル</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(div);
+    },
+
+    openAllocModal: () => {
         const c = MenuAllies.selectedChar;
+        if(!c || c.uid !== 'p1') return;
+
+        // 計算用のデータを準備
         const lb = c.limitBreak || 0;
         const totalPt = Math.floor(lb / 10) * 10;
+        
+        // 現在の振分状況をコピー
+        MenuAllies.tempAlloc = JSON.parse(JSON.stringify(c.alloc || {}));
+        MenuAllies.tempTotalPt = totalPt;
+        
+        MenuAllies.renderAllocModal();
+        document.getElementById('alloc-modal').style.display = 'flex';
+    },
+
+    closeAllocModal: () => {
+        document.getElementById('alloc-modal').style.display = 'none';
+        MenuAllies.tempAlloc = null;
+    },
+
+    renderAllocModal: () => {
+        const alloc = MenuAllies.tempAlloc;
         let used = 0;
-        if(!c.alloc) c.alloc = {};
-        for(let k in c.alloc) used += c.alloc[k];
-        const free = totalPt - used;
-        
-        if(free <= 0) { alert("振分ポイントがありません (ランク+10ごとに獲得)"); return; }
-        
-        const type = prompt("強化する項目を入力してください\n(火攻, 水攻... 火耐, 水耐...)\n残り: "+free);
-        if(!type) return;
-        
-        let key = null;
-        if(type.includes('攻')) {
-            const elm = type.replace('攻','');
-            if(CONST.ELEMENTS.includes(elm)) key = `elmAtk_${elm}`;
-        } else if(type.includes('耐')) {
-            const elm = type.replace('耐','');
-            if(CONST.ELEMENTS.includes(elm)) key = `elmRes_${elm}`;
+        for(let k in alloc) used += alloc[k];
+        const free = MenuAllies.tempTotalPt - used;
+
+        document.getElementById('alloc-free-pts').innerText = free;
+        const list = document.getElementById('alloc-list');
+        list.innerHTML = '';
+
+        // 振分可能な項目リスト (属性攻撃・属性耐性)
+        const items = [];
+        CONST.ELEMENTS.forEach(elm => {
+            items.push({ key: `elmAtk_${elm}`, label: `${elm}属性攻撃` });
+            items.push({ key: `elmRes_${elm}`, label: `${elm}属性耐性` });
+        });
+
+        items.forEach(item => {
+            const val = alloc[item.key] || 0;
+            const div = document.createElement('div');
+            div.style.cssText = 'display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; background:#333; padding:5px; border-radius:4px;';
+            
+            div.innerHTML = `
+                <div style="font-size:12px;">${item.label}</div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <button class="btn" style="padding:2px 8px;" onclick="MenuAllies.adjustAlloc('${item.key}', -1)">－</button>
+                    <span style="width:30px; text-align:center; font-weight:bold;">${val}</span>
+                    <button class="btn" style="padding:2px 8px;" onclick="MenuAllies.adjustAlloc('${item.key}', 1)">＋</button>
+                </div>
+            `;
+            list.appendChild(div);
+        });
+    },
+
+    adjustAlloc: (key, delta) => {
+        const alloc = MenuAllies.tempAlloc;
+        let used = 0;
+        for(let k in alloc) used += alloc[k];
+        const free = MenuAllies.tempTotalPt - used;
+        const currentVal = alloc[key] || 0;
+
+        // 減らす場合: 0未満にしない
+        if (delta < 0) {
+            if (currentVal + delta < 0) return; // 0未満ガード
+            alloc[key] = currentVal + delta;
+            if (alloc[key] <= 0) delete alloc[key];
+        } 
+        // 増やす場合: 空きポイントが必要
+        else {
+            if (free < delta) return;
+            alloc[key] = currentVal + delta;
         }
-        
-        if(key) {
-            const valStr = prompt("振るポイント数を入力", "10");
-            const val = parseInt(valStr);
-            if(val > 0 && val <= free) {
-                c.alloc[key] = (c.alloc[key]||0) + val;
-                App.save();
-                MenuAllies.renderDetail();
-            } else {
-                alert("数値が不正です");
-            }
-        } else {
-            alert("項目名が正しくありません。\n例: 「火攻」「闇耐」");
+
+        MenuAllies.renderAllocModal();
+    },
+
+    saveAlloc: () => {
+        const c = MenuAllies.selectedChar;
+        if(c && MenuAllies.tempAlloc) {
+            c.alloc = MenuAllies.tempAlloc;
+            App.save();
+            MenuAllies.renderDetail();
+            // ★修正: alert -> Menu.msg
+            Menu.msg("振分を保存しました");
         }
+        MenuAllies.closeAllocModal();
     }
 };
 
 /* ==========================================================================
-   6. スキル使用 (回復魔法)
+   6. スキル使用
    ========================================================================== */
 const MenuSkills = {
-    targetChar: null, selectedSkill: null, targetId: null,
-    
-    init: () => { MenuSkills.changeScreen('char'); MenuSkills.renderCharList(); },
-    
-    changeScreen: (id) => {
-        ['char','skill','target'].forEach(s => document.getElementById(`skill-screen-${s}`).style.display = (s===id?'flex':'none'));
+    selectedCharUid: null,
+    selectedSkill: null,
+
+    init: () => {
+        document.getElementById('sub-screen-skills').style.display = 'flex';
+        MenuSkills.changeScreen('char');
     },
-    
+
+    changeScreen: (mode) => {
+        document.getElementById('skill-screen-char').style.display = (mode==='char'?'flex':'none');
+        document.getElementById('skill-screen-skill').style.display = (mode==='skill'?'flex':'none');
+        document.getElementById('skill-screen-target').style.display = (mode==='target'?'flex':'none');
+        if(mode==='char') MenuSkills.renderCharList();
+    },
+
     renderCharList: () => {
         const list = document.getElementById('skill-char-list');
         list.innerHTML = '';
@@ -677,95 +1129,123 @@ const MenuSkills = {
             div.className = 'list-item';
             div.innerHTML = App.createCharHTML(c);
             div.onclick = () => {
-                MenuSkills.targetChar = c;
-                MenuSkills.changeScreen('skill');
+                MenuSkills.selectedCharUid = uid;
                 MenuSkills.renderSkillList();
             };
             list.appendChild(div);
         });
     },
-    
+
     renderSkillList: () => {
+        MenuSkills.changeScreen('skill');
         const list = document.getElementById('skill-list');
         list.innerHTML = '';
-        const c = MenuSkills.targetChar;
-        const skills = c.skills.filter(s => ['回復','蘇生'].includes(s.type));
+        
+        const c = App.getChar(MenuSkills.selectedCharUid);
+        const player = new Player(c);
+        
+        // 移動中に使えるスキル (回復・蘇生)
+        const skills = player.skills.filter(s => s.type.includes('回復') || s.type.includes('蘇生'));
         
         if(skills.length === 0) {
-            list.innerHTML = '<div style="padding:10px; color:#888">使用可能なスキルがありません</div>';
+            list.innerHTML = '<div style="padding:10px; color:#888;">使用可能なスキルがありません</div>';
             return;
         }
-        
+
         skills.forEach(sk => {
             const div = document.createElement('div');
             div.className = 'list-item';
-            div.innerHTML = `<div>${sk.name}</div><div style="color:#88f">MP:${sk.mp}</div>`;
+            // ★要望: スキル名の下に備考欄を小さく表示
+            div.innerHTML = `
+                <div style="flex:1;">
+                    <div style="font-weight:bold;">${sk.name}</div>
+                    <div style="font-size:10px; color:#aaa;">${sk.desc || ''}</div>
+                </div>
+                <div style="font-size:12px; color:#88f;">MP:${sk.mp}</div>
+            `;
             div.onclick = () => {
-                const s = App.calcStats(c);
-                const curMp = c.currentMp !== undefined ? c.currentMp : s.maxMp;
-                if(curMp < sk.mp) {
-                    document.getElementById('skill-footer').innerText = "MPが足りません";
+                if(c.currentMp < sk.mp) {
+                    Menu.msg("MPが足りません");
                     return;
                 }
-                
                 MenuSkills.selectedSkill = sk;
-                MenuSkills.changeScreen('target');
                 MenuSkills.renderTargetList();
             };
             list.appendChild(div);
         });
     },
-    
+
     renderTargetList: () => {
+        MenuSkills.changeScreen('target');
         const list = document.getElementById('skill-target-list');
         list.innerHTML = '';
-        MenuSkills.targetId = null;
-        
-        App.data.characters.forEach(t => {
+
+        App.data.party.forEach(uid => {
+            if(!uid) return;
+            const c = App.getChar(uid);
             const div = document.createElement('div');
             div.className = 'list-item';
-            div.innerHTML = App.createCharHTML(t);
-            div.onclick = () => {
-                if(MenuSkills.targetId === t.uid) {
-                    MenuSkills.executeSkill(t);
-                } else {
-                    MenuSkills.targetId = t.uid;
-                    Array.from(list.children).forEach(ch => ch.classList.remove('selected'));
-                    div.classList.add('selected');
-                }
-            };
+            div.innerHTML = App.createCharHTML(c);
+            div.onclick = () => MenuSkills.useSkill(c);
             list.appendChild(div);
         });
     },
-    
-    executeSkill: (target) => {
-        const caster = MenuSkills.targetChar;
-        const skill = MenuSkills.selectedSkill;
-        const sCaster = App.calcStats(caster);
-        const sTarget = App.calcStats(target);
+
+    useSkill: (target) => {
+        const actorData = App.getChar(MenuSkills.selectedCharUid);
+        const sk = MenuSkills.selectedSkill;
         
-        const cMp = caster.currentMp !== undefined ? caster.currentMp : sCaster.maxMp;
-        caster.currentMp = cMp - skill.mp;
-        
-        let val = skill.val || (sCaster.mag + skill.base) * skill.rate;
-        val = Math.floor(val);
-        const tHp = target.currentHp !== undefined ? target.currentHp : sTarget.maxHp;
-        
-        if(skill.type === '蘇生') {
-            if(target.isDead) {
-                target.currentHp = Math.floor(sTarget.maxHp * 0.5);
-                App.log(`${target.name}は生き返った！`);
-            } else {
-                App.log("効果がなかった");
-            }
-        } else {
-            target.currentHp = Math.min(tHp + val, sTarget.maxHp);
-            App.log(`${target.name}のHPが${val}回復！`);
+        if(actorData.currentMp < sk.mp) {
+            Menu.msg("MPが足りません");
+            return;
         }
-        
-        App.save();
-        Menu.renderPartyBar();
-        setTimeout(() => MenuSkills.init(), 800);
+
+        // ★修正: 確認ダイアログを使用
+        Menu.confirm(`${target.name} に ${sk.name} を使いますか？`, () => {
+            let targets = [target];
+            if(sk.target === '全体') {
+                targets = App.data.party.map(uid => App.getChar(uid)).filter(c=>c);
+            }
+
+            let effected = false;
+            const actorStats = App.calcStats(actorData); 
+            const mag = actorStats.mag; 
+
+            targets.forEach(t => {
+                const s = App.calcStats(t);
+                const tMaxHp = s.maxHp;
+                
+                if(sk.type.includes('回復')) {
+                    if(t.currentHp < tMaxHp && (!t.currentHp || t.currentHp > 0)) { 
+                        let base = sk.base || 0;
+                        let rec = 0;
+                        if(sk.fix) rec = sk.base;
+                        else rec = Math.floor((mag + base) * (sk.rate || 1.0));
+                        
+                        t.currentHp = Math.min(tMaxHp, (t.currentHp||0) + rec);
+                        effected = true;
+                    }
+                } else if(sk.type.includes('蘇生')) {
+                    if(!t.currentHp || t.currentHp <= 0) {
+                        t.currentHp = Math.floor(tMaxHp * 0.5);
+                        effected = true;
+                    }
+                }
+            });
+
+            if(effected) {
+                actorData.currentMp -= sk.mp;
+                App.save();
+                
+                // ★完了メッセージ
+                Menu.msg(`${sk.name}を使用した！`, () => {
+                    MenuSkills.renderTargetList(); 
+                    Menu.renderPartyBar();
+                });
+            } else {
+                Menu.msg("効果がありませんでした");
+            }
+        });
     }
 };
 
