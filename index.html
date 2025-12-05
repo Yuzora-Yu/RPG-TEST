@@ -14,17 +14,17 @@
         * { box-sizing: border-box; touch-action: manipulation; user-select: none; }
         body { background: var(--bg-color); color: var(--text-color); font-family: 'DotGothic16', sans-serif; margin: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         #game-container { position: relative; width: 100%; max-width: 600px; height: 100%; max-height: 900px; background: #000; border: 2px solid #333; display: flex; flex-direction: column; overflow: hidden; }
-        .scene-layer { flex: 1; position: relative; display: none; flex-direction: column; width: 100%; height: 100%; background: #000; }
         
-        /* UIパーツ */
-        .header-bar { padding: 10px; background: #222; border-bottom: 1px solid #fff; display: flex; justify-content: space-between; align-items: center; }
+        /* 共通パーツ */
+        .scene-layer { flex: 1; position: relative; display: none; flex-direction: column; width: 100%; height: 100%; background: #000; }
+        .header-bar { padding: 10px; background: #222; border-bottom: 1px solid #fff; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
         .btn { background: #333; border: 2px solid #666; color: #fff; padding: 5px 10px; font-size: 12px; cursor: pointer; border-radius: 4px; }
         .scroll-area { flex: 1; overflow-y: auto; min-height: 0; }
-        .list-item { padding: 10px; border-bottom: 1px solid #444; cursor: pointer; }
+        .list-item { padding: 10px; border-bottom: 1px solid #444; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .list-item:hover { background: #222; }
         .list-item.selected { background: #333; border-left: 3px solid var(--accent); }
-        .footer-info { padding: 10px; background: #111; border-top: 1px solid #444; white-space: pre-wrap; font-size: 12px; color: #ccc; min-height: 60px; }
-        .tab-bar { display: flex; border-bottom: 1px solid #444; background: #222; }
+        .footer-info { padding: 10px; background: #111; border-top: 1px solid #444; white-space: pre-wrap; font-size: 12px; color: #ccc; min-height: 60px; flex-shrink: 0; }
+        .tab-bar { display: flex; border-bottom: 1px solid #444; background: #222; flex-shrink: 0; }
         .tab-btn { flex: 1; background: transparent; border: none; color: #888; padding: 10px; font-family: inherit; cursor: pointer; border-bottom: 2px solid transparent; }
         .tab-btn.active { color: #fff; border-bottom: 2px solid var(--accent); }
 
@@ -38,197 +38,163 @@
         .msg-box { font-size: 14px; text-align: center; width: 100%; }
         #action-indicator { display: none; margin-top: 5px; background: var(--accent); color: #000; font-weight: bold; padding: 8px 20px; border-radius: 4px; cursor: pointer; animation: pulse 1s infinite; pointer-events: auto; }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-        #controls { height: 160px; background: #222; display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; flex-shrink: 0; border-top: 2px solid #fff; }
-        .dpad { display: grid; grid-template-columns: 50px 50px 50px; grid-template-rows: 50px 50px 50px; gap: 2px; }
-        .btn-d { background: #333; border: 2px solid #666; color: #fff; font-size: 18px; border-radius: 4px; cursor: pointer; }
-        .action-pad { display: flex; flex-direction: column; gap: 10px; width: 100px; }
-        .btn-act { background: #404080; border: 2px solid #6688ff; color: #fff; height: 50px; border-radius: 4px; font-family: inherit; font-size: 14px; cursor: pointer; }
 
-        /* メニュー */
+        /* --- コントローラーエリアのスタイル変更 --- */
+        #controls { 
+            /* 高さを拡張して大きなボタンが入るようにする */
+            height: 260px; 
+            background: #222; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            /* 左右の余白を少し詰めてボタン領域を確保 */
+            padding: 10px 10px; 
+            flex-shrink: 0; 
+            border-top: 2px solid #fff; 
+        }
+
+        /* 十字キーのグリッド配置設定 */
+        .dpad { 
+            display: grid; 
+            /* 65px x 3列 */
+            grid-template-columns: 65px 65px 65px; 
+            /* 65px x 3行 */
+            grid-template-rows: 65px 65px 65px; 
+            gap: 5px; 
+            /* エリア定義で配置を指定 */
+            grid-template-areas: 
+                ".    up    ."
+                "left  .   right"
+                ".   down   .";
+        }
+
+        /* 各ボタンを定義したエリアに配置 */
+        .d-up    { grid-area: up; }
+        .d-left  { grid-area: left; }
+        .d-right { grid-area: right; }
+        .d-down  { grid-area: down; }
+
+        /* 十字キーボタンの見た目 */
+        .btn-d { 
+            background: #333; 
+            border: 2px solid #666; 
+            color: #fff; 
+            font-size: 28px; /* 矢印を見やすく大きく */
+            border-radius: 8px; /* 角を少し丸く */
+            cursor: pointer; 
+        }
+        .btn-d:active {
+            background: #555;
+            transform: scale(0.95);
+        }
+
+        /* 右側のアクションボタンエリア */
+        .action-pad { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 20px; /* ボタン間隔を広げる */
+            width: 90px; /* 十字キー圧迫回避のため少し幅調整 */
+        }
+
+        /* MENU/決定ボタンの見た目 */
+        .btn-act { 
+            background: #404080; 
+            border: 2px solid #6688ff; 
+            color: #fff; 
+            height: 60px; /* こちらも押しやすく高く */
+            border-radius: 8px; 
+            font-family: inherit; 
+            font-size: 16px; 
+            cursor: pointer; 
+        }
+        .btn-act:active {
+            background: #5050a0;
+            transform: scale(0.95);
+        }
+
+        /* メニュー共通 */
         #menu-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 100; display: none; flex-direction: column; justify-content: center; align-items: center; }
         .menu-window { width: 90%; max-width: 400px; height: 80%; background: #222; border: 2px solid #fff; display: flex; flex-direction: column; }
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 20px; overflow-y: auto; flex: 1; }
         .menu-btn { background: #333; border: 1px solid #fff; color: #fff; padding: 15px; font-family: inherit; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .sub-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #101010; z-index: 200; display: none; flex-direction: column; }
 
-        /* リスト表示コンテナ (flex) */
-        #allies-list-view, #party-screen-slots, #party-screen-chars, 
-        #equip-screen-char, #equip-screen-part, #equip-screen-item,
-        #item-screen-list, #item-screen-target, #skill-screen-char, 
-        #skill-screen-skill, #skill-screen-target, #smith-screen-select {
-            display: flex; flex-direction: column; flex: 1; min-height: 0;
-        }
+        /* Flex Column Container (サブ画面内部用) */
+        .flex-col-container { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 
-        /* --- 仲間一覧・詳細表示スタイル --- */
-        .char-row { 
-            display: flex; align-items: center; width: 100%; 
-            /* border-bottomはlist-itemで定義済み */
-        }
-        .char-thumb { 
-            width: 48px; height: 48px; background: #444; margin-right:12px; 
-            overflow: hidden; border: 1px solid #666; border-radius: 4px;
-            display: flex; align-items: center; justify-content: center;
-        }
+        /* キャラクター表示系 */
+        .char-row { display: flex; align-items: center; width: 100%; }
+        .char-thumb { width: 48px; height: 48px; background: #444; margin-right:12px; overflow: hidden; border: 1px solid #666; border-radius: 4px; display: flex; align-items: center; justify-content: center; }
         .char-info { flex: 1; min-width: 0; }
-        .char-name { 
-            font-weight: bold; font-size: 14px; color: #fff;
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
-        }
+        .char-name { font-weight: bold; font-size: 14px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .char-meta { font-size: 11px; color: #aaa; margin-bottom: 4px; }
-        .char-stats { 
-            font-size: 11px; color: #ddd; 
-            display: flex; gap: 8px; flex-wrap: wrap;
-        }
+        .char-stats { font-size: 11px; color: #ddd; display: flex; gap: 8px; flex-wrap: wrap; }
         .tag-party { font-size: 10px; background: var(--accent); color: #000; padding: 1px 4px; border-radius: 2px; margin-right: 5px; }
-        
-        /* レアリティ色 */
-        .rarity-N { color: var(--rare-n); } .rarity-R { color: var(--rare-r); }
-        .rarity-SR { color: var(--rare-sr); } .rarity-UR { color: var(--rare-ur); }
-        .rarity-EX { color: var(--rare-ex); text-shadow: 0 0 5px yellow; }
 
-        /* ステータスバー (画面上部 / 戦闘中) */
-        .party-bar { 
-            background: #111; border-top: 1px solid #fff; padding: 4px; 
-            display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 4px; 
-            font-size: 9px; text-align: center; min-height: 60px; 
-        }
-        .p-box { 
-            border: 1px solid #444; padding: 4px; 
-            display: flex; flex-direction: column; justify-content: space-between; 
-            overflow: hidden; 
-        }
+        /* ステータスバー */
+        .party-bar { background: #111; border-top: 1px solid #fff; padding: 4px; display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 4px; font-size: 9px; text-align: center; min-height: 60px; flex-shrink: 0; }
+        .p-box { border: 1px solid #444; padding: 4px; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; }
         .bar-container { width: 100%; height: 4px; background: #333; margin: 1px 0; }
         .bar-hp { height: 100%; background: var(--danger); }
         .bar-mp { height: 100%; background: var(--mp); }
         .p-val { font-size: 9px; color: #ccc; line-height: 1; text-align: right; margin-bottom: 1px; }
 
-        /* バトル画面レイアウト */
-        #battle-scene { 
-            display: none; background: #222; 
-            flex-direction: column; justify-content: space-between; 
-        }
-        
-        /* 敵エリア */
-        #enemy-container { 
-            flex: 1; display: flex; justify-content: center; align-items: center; flex-wrap: wrap; 
-            min-height: 150px;
-        }
-        .enemy-sprite { 
-            width: 90px; height: 90px; background: #444; border: 2px solid #f00; 
-            margin: 5px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; 
-            cursor: pointer; position: relative;
-        }
+        /* バトル画面 */
+        #battle-scene { display: none; background: #222; flex-direction: column; justify-content: space-between; }
+        #enemy-container { flex: 1; display: flex; justify-content: center; align-items: center; flex-wrap: wrap; min-height: 150px; }
+        .enemy-sprite { width: 90px; height: 90px; background: #444; border: 2px solid #f00; margin: 5px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; cursor: pointer; position: relative; }
         .enemy-sprite.dead { opacity: 0.5; filter: grayscale(100%); }
         .enemy-hp-bar { width: 80%; height: 4px; background: #333; margin-top: 2px; }
         .enemy-hp-val { height: 100%; background: var(--danger); transition: width 0.2s; }
-        
-        /* 戦闘情報エリア (ログ + コマンド) */
-        #battle-info { 
-            height: 300px; /* 十分な高さを確保 */
-            background: #000; 
-            display: flex; flex-direction: column; 
-            border-top: 2px solid #fff; 
-        }
-        
-        /* 戦闘ログ */
-        #battle-log { 
-            flex: 1; 
-            overflow-y: auto; 
-            font-size: 14px; 
-            padding: 8px 12px; 
-            color: #ddd; 
-            line-height: 1.4;
-            border-bottom: 1px solid #333;
-            text-align: left;
-        }
-        
-        /* 現在の行動キャラ表示 */
-        #battle-actor-name { 
-            background: linear-gradient(90deg, #003, #005, #003); 
-            color: var(--accent); 
-            padding: 6px 10px; font-size: 16px; font-weight: bold; 
-            border-bottom: 1px solid #555; text-align: center; 
-            display: none; /* JSで表示制御 */
-        }
-        
-        /* コマンドグリッド */
-        .cmd-grid { 
-            display: grid; grid-template-columns: 1fr 1fr 1fr; 
-            gap: 8px; padding: 8px; height: 110px; 
-        }
-        .cmd-btn { 
-            background: #444; color: #fff; border: 2px solid #888; 
-            cursor: pointer; font-size: 16px; font-weight: bold; border-radius: 6px;
-        }
+        #battle-info { height: 300px; background: #000; display: flex; flex-direction: column; border-top: 2px solid #fff; flex-shrink: 0; }
+        #battle-log { flex: 1; overflow-y: auto; font-size: 14px; padding: 8px 12px; color: #ddd; line-height: 1.4; border-bottom: 1px solid #333; text-align: left; }
+        #battle-actor-name { background: linear-gradient(90deg, #003, #005, #003); color: var(--accent); padding: 6px 10px; font-size: 16px; font-weight: bold; border-bottom: 1px solid #555; text-align: center; display: none; }
+        .cmd-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; padding: 8px; height: 110px; }
+        .cmd-btn { background: #444; color: #fff; border: 2px solid #888; cursor: pointer; font-size: 16px; font-weight: bold; border-radius: 6px; }
         .cmd-btn:active { background: #666; transform: translateY(2px); }
         .cmd-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        /* 戦闘サブウィンドウ */
-        #battle-target-window, #battle-list-window {
-            position: absolute; left: 10px; right: 10px; bottom: 10px;
-            background: rgba(0,0,0,0.95); border: 2px solid #fff; 
-            z-index: 20; display: none; flex-direction: column;
-        }
+        #battle-target-window, #battle-list-window { position: absolute; left: 10px; right: 10px; bottom: 10px; background: rgba(0,0,0,0.95); border: 2px solid #fff; z-index: 20; display: none; flex-direction: column; }
         #battle-target-window { bottom: 140px; padding: 10px; max-height: 50%; }
         #battle-list-window { top: 60px; bottom: 60px; }
-        .battle-target-btn {
-            background: #333; border: 1px solid #666; color: #fff; 
-            padding: 12px; margin: 2px; cursor: pointer; 
-            text-align: left; font-size: 14px; width: 100%;
-        }
-        .battle-target-btn:active { background: #555; }
+        .battle-target-btn { background: #333; border: 1px solid #666; color: #fff; padding: 12px; margin: 2px; cursor: pointer; text-align: left; font-size: 14px; width: 100%; }
 
-        /* ガチャ演出 */
-        .gacha-orb { width:100px; height:100px; border-radius:50%; margin:auto; }
-        .gacha-orb.silver { background: radial-gradient(circle, #fff, #888); box-shadow: 0 0 20px #fff; }
-        .gacha-orb.gold { background: radial-gradient(circle, #ffeb3b, #f57f17); box-shadow: 0 0 30px #ffeb3b; }
-        .gacha-orb.rainbow { background: conic-gradient(red, yellow, lime, aqua, blue, magenta, red); animation: spin 1s linear infinite; box-shadow: 0 0 50px #fff; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-        .gacha-card { background:#333; border:1px solid #fff; padding:5px; text-align:center; font-size:10px; }
-        .gacha-card .rarity { font-weight:bold; font-size:14px; }
-        .gacha-card .rarity.R { color:silver; }
-        .gacha-card .rarity.SR { color:gold; }
-        .gacha-card .rarity.SSR { color:#ff4444; }
-        .gacha-card .rarity.UR { color:#ff00ff; text-shadow:0 0 5px #fff; }
-        .gacha-card .rarity.EX { color:#ffff00; text-shadow:0 0 10px red; }
-        .gacha-card .new-badge { background:red; color:white; padding:2px; border-radius:3px; }
-        #gacha-performance { display:none; position:absolute; top:0; left:0; width:100%; height:100%; background: #000; z-index:300; flex-direction:column; align-items:center; justify-content:center; perspective: 1000px; overflow: hidden; }
-        .gacha-card-scene { width: 200px; height: 300px; position: relative; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; margin-bottom: 20px; }
+/* ドロップ確定時のフラッシュ演出 */
+@keyframes flash-screen {
+    0% { opacity: 0; background: #fff; }
+    10% { opacity: 0.8; }
+    100% { opacity: 0; display: none; }
+}
+.flash-effect {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: #fff; z-index: 9999; pointer-events: none;
+    opacity: 0;
+}
+.flash-active {
+    animation: flash-screen 0.5s ease-out forwards;
+}
+
+/* ログの装飾用クラス */
+.log-rare-drop { color: #ff4444; font-weight: bold; text-shadow: 0 0 5px #f00; }
+
+        /* ガチャ演出 (省略・既存維持) */
+        .gacha-card-scene { width: 200px; height: 300px; position: relative; transform-style: preserve-3d; transition: transform 0.6s; margin-bottom: 20px; }
         .gacha-card-scene.flipped { transform: rotateY(180deg); }
         .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 2px solid #fff; box-shadow: 0 0 15px rgba(255,255,255,0.2); }
         .card-front { background: #222; transform: rotateY(180deg); padding: 10px; border-color: #444; }
         .card-back { background: radial-gradient(circle, #444, #111); }
-        .card-back.rare-silver { background: radial-gradient(circle, #ddd, #888); border-color: silver; }
-        .card-back.rare-gold { background: radial-gradient(circle, #ffd700, #ff8c00); border-color: gold; box-shadow: 0 0 20px gold; }
-        .card-back.rare-rainbow { background: linear-gradient(135deg, #f00, #ff0, #0f0, #0ff, #00f, #f0f); border-color: #fff; box-shadow: 0 0 30px #fff; animation: rainbow-glow 1s infinite; }
-        @keyframes rainbow-glow { 0%{filter:hue-rotate(0deg);} 100%{filter:hue-rotate(360deg);} }
-        #freeze-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 400; display: none; pointer-events: none; }
-        #freeze-overlay.noise { background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48ZmlsdGVyIGlkPSJub2lzZSI+PHBmZVR1cmJ1bGVuY2UgdHlwZT0iZnJhY3RhbE5vaXNlIiBiYXNlRnJlcXVlbmN5PSIwLjg1IiBudW1PY3RhdmVzPSIzIiBzdGl0Y2hUaWxlcz0ic3RpdGNoIiAvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbHRlcj0idXJsKCNub2lzZSkiIG9wYWNpdHk9IjAuNCIvPjwvc3ZnPg=='); opacity: 0.5; }
-        @keyframes heavy-shake { 0% { transform: translate(0, 0) rotate(0deg); } 10% { transform: translate(-5px, -5px) rotate(-2deg); } 20% { transform: translate(5px, 5px) rotate(2deg); } 30% { transform: translate(-5px, 5px) rotate(-2deg); } 40% { transform: translate(5px, -5px) rotate(2deg); } 50% { transform: translate(-5px, -5px) rotate(-2deg); } 60% { transform: translate(5px, 5px) rotate(2deg); } 70% { transform: translate(-5px, 5px) rotate(-2deg); } 80% { transform: translate(5px, -5px) rotate(2deg); } 90% { transform: translate(-5px, -5px) rotate(-2deg); } 100% { transform: translate(0, 0) rotate(0deg); } }
-        .heavy-shake-anim { animation: heavy-shake 0.5s linear; }
-        @keyframes flash { 0%{background:white; opacity:1;} 100%{background:transparent; opacity:0;} }
-        .flash-anim { animation: flash 0.5s ease-out forwards; }
-        @keyframes flash-triple { 0% { opacity: 0; } 20% { opacity: 1; } 40% { opacity: 0; } 60% { opacity: 1; } 80% { opacity: 0; } 100% { opacity: 1; } }
-        .flash-triple-anim { animation: flash-triple 0.5s linear forwards; }
-        .gacha-result-card { background:#333; border:1px solid #fff; padding:5px; text-align:center; font-size:10px; display: flex; flex-direction: column; align-items: center; position: relative; min-height: 70px; }
-        .gacha-result-card.result-glow { border: 2px solid gold; box-shadow: 0 0 10px gold, inset 0 0 10px gold; animation: pulse-glow 2s infinite; }
-        @keyframes pulse-glow { 0%{box-shadow:0 0 10px gold;} 50%{box-shadow:0 0 20px yellow;} 100%{box-shadow:0 0 10px gold;} }
-        .gacha-result-card .thumb { width: 40px; height: 40px; background: #555; margin-bottom: 5px; }
+        .gacha-result-card { background:#333; border:1px solid #fff; padding:5px; text-align:center; font-size:10px; display: flex; flex-direction: column; align-items: center; min-height: 70px; }
         .new-badge { background:red; color:white; padding:1px 3px; border-radius:3px; font-size:9px; font-weight:bold; }
-        #modal-rates { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 250; display: none; flex-direction: column; }
         #white-out-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 500; display: none; opacity: 0; transition: opacity 0.3s, background-color 0.5s; pointer-events: none; }
         #white-out-overlay.black-turn { background-color: #000 !important; }
-        #flash-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 550; display: none; opacity: 0; pointer-events: none; }
     </style>
 </head>
 <body>
 
 <div id="game-container">
-    <!-- エフェクト用オーバーレイ -->
     <div id="white-out-overlay"></div>
-    <div id="flash-overlay"></div>
+    <div id="drop-flash" class="flash-effect"></div>
+    <div id="flash-overlay" style="position:absolute; top:0; left:0; width:100%; height:100%; background:#fff; z-index:550; display:none; opacity:0; pointer-events:none;"></div>
 
-    <!-- 1. フィールド画面 -->
     <div id="field-scene" class="scene-layer">
         <div id="canvas-wrapper">
             <canvas id="field-canvas" width="320" height="320"></canvas>
@@ -257,20 +223,14 @@
         </div>
     </div>
 
-    <!-- 2. バトル画面 -->
     <div id="battle-scene" class="scene-layer">
         <button id="btn-auto" class="btn" style="position:absolute; top:10px; right:10px; z-index:10; width:80px;" onclick="Battle.toggleAuto()">AUTO: OFF</button>
         <div id="enemy-container"></div>
-        
-        <!-- パーティステータス (上部固定) -->
         <div class="party-bar" id="battle-party-bar"></div>
         
         <div id="battle-info">
-            <!-- ログ -->
             <div id="battle-log"></div>
-            <!-- 現在の行動者表示 -->
             <div id="battle-actor-name"></div>
-            <!-- コマンド -->
             <div class="cmd-grid" id="command-root">
                 <button class="cmd-btn" onclick="Battle.selectCommand('attack')">こうげき</button>
                 <button class="cmd-btn" onclick="Battle.selectCommand('skill')">とくぎ</button>
@@ -280,14 +240,12 @@
             </div>
         </div>
 
-        <!-- ターゲット選択ウィンドウ -->
         <div id="battle-target-window">
             <div style="text-align:center; color:#fff; margin-bottom:5px;">対象を選択</div>
             <div id="battle-target-list" style="display:grid; grid-template-columns:1fr 1fr; gap:5px;"></div>
             <button class="btn" style="width:100%; margin-top:5px;" onclick="Battle.cancelSubMenu()">戻る</button>
         </div>
 
-        <!-- リスト選択ウィンドウ -->
         <div id="battle-list-window">
             <div class="header-bar"><span id="battle-list-title">選択</span></div>
             <div id="battle-list-content" class="scroll-area" style="padding:5px;"></div>
@@ -295,7 +253,6 @@
         </div>
     </div>
 
-    <!-- 3. メインメニュー -->
     <div id="menu-overlay">
         <div class="menu-window">
             <div class="header-bar"><span>MENU</span> <button class="btn" onclick="Menu.closeMainMenu()">閉じる</button></div>
@@ -311,30 +268,114 @@
                 <button class="menu-btn" onclick="Menu.openSubScreen('blacksmith')">鍛冶屋</button>
                 <button class="menu-btn" style="background:#400040;" onclick="Dungeon.enter()">ダンジョン</button>
                 <button class="menu-btn" style="background:#664400;" onclick="Menu.openSubScreen('gacha')">ガチャ</button>
-                <button class="menu-btn" style="background:#333; grid-column:span 2;" onclick="App.save(); alert('保存しました')">セーブ</button>
+                <button class="menu-btn" style="background:#333; grid-column:span 2;" onclick="App.save(); Menu.msg('保存しました');">セーブ</button>
                 <button class="menu-btn" style="background:#500; grid-column:span 2;" onclick="App.returnToTitle()">タイトルへ</button>
             </div>
         </div>
     </div>
 
-    <!-- サブスクリーン群 -->
-    <div id="sub-screen-allies" class="sub-screen"><div class="header-bar"><span>仲間一覧</span> <button class="btn" onclick="Menu.closeSubScreen('allies')">戻る</button></div><div id="allies-list-view" style="display:flex; flex-direction:column; flex:1; min-height:0;"><div id="allies-list" class="scroll-area"></div></div><div id="allies-detail-view" style="display:none; flex-direction:column; flex:1; min-height:0; background:#1a1a1a;"><div class="tab-bar" id="allies-tabs"></div><div id="allies-detail-content" class="scroll-area"></div><button class="btn" style="margin:10px;" onclick="document.getElementById('allies-detail-view').style.display='none'; document.getElementById('allies-list-view').style.display='flex';">一覧へ戻る</button></div></div>
-    
-    <div id="sub-screen-party" class="sub-screen"><div class="header-bar"><span>パーティ編成</span> <button class="btn" onclick="Menu.closeSubScreen('party')">戻る</button></div><div id="party-screen-slots" style="display:flex; flex-direction:column; flex:1; min-height:0;"><div style="padding:5px; text-align:center; font-size:12px; color:#aaa;">スロットを選択</div><div id="party-slot-list" class="scroll-area"></div></div><div id="party-screen-chars" style="display:none; flex-direction:column; flex:1; min-height:0;"><div style="padding:5px; background:#333; text-align:center; font-size:12px;">メンバーを選択</div><div id="party-char-list" class="scroll-area"></div></div></div>
-    
-    <div id="sub-screen-equip" class="sub-screen"><div class="header-bar"><span>装備変更</span> <button class="btn" onclick="Menu.closeSubScreen('equip')">戻る</button></div><div id="equip-screen-char" style="display:flex; flex-direction:column; flex:1; min-height:0;"><div style="padding:5px; text-align:center; font-size:12px;">キャラを選択</div><div id="equip-char-list" class="scroll-area"></div></div><div id="equip-screen-part" style="display:none; flex-direction:column; flex:1; min-height:0;"><div id="char-status" style="padding:10px; border-bottom:1px solid #444; font-size:12px;"></div><div style="padding:5px; text-align:center; font-size:12px; background:#333;">部位を選択</div><div id="list-part" class="scroll-area"></div><button class="btn" style="margin:10px;" onclick="MenuEquip.changeScreen('char')">戻る</button></div><div id="equip-screen-item" style="display:none; flex-direction:column; flex:1; min-height:0;"><div style="padding:5px; background:#333; text-align:center; font-size:12px;" id="equip-item-header"></div><div id="list-item-candidates" class="scroll-area"></div><div id="equip-footer" class="footer-info"></div><button class="btn" style="margin:10px;" onclick="MenuEquip.changeScreen('part')">戻る</button></div></div>
-    
-    <div id="sub-screen-items" class="sub-screen"><div class="header-bar"><span>道具</span> <button class="btn" onclick="Menu.closeSubScreen('items')">戻る</button></div><div id="item-screen-list" style="display:flex; flex-direction:column; flex:1; min-height:0;"><div id="list-items" class="scroll-area"></div><div id="item-footer" class="footer-info"></div></div><div id="item-screen-target" style="display:none; flex-direction:column; flex:1; min-height:0;"><div style="padding:5px; background:#333; text-align:center; font-size:12px;">使用対象を選択</div><div id="list-item-targets" class="scroll-area"></div><button class="btn" style="margin:10px;" onclick="MenuItems.changeScreen('list')">戻る</button></div></div>
-    
-    <div id="sub-screen-inventory" class="sub-screen"><div class="header-bar"><span>所持装備</span> <span style="font-size:12px;">G:<span id="inventory-gold">0</span></span> <button class="btn" onclick="Menu.closeSubScreen('inventory')">戻る</button></div><div id="inventory-list" class="scroll-area"></div><div class="footer-info" id="inventory-footer"></div></div>
-    
-    <div id="sub-screen-skills" class="sub-screen"><div class="header-bar"><span>スキル</span> <button class="btn" onclick="Menu.closeSubScreen('skills')">戻る</button></div><div id="skill-screen-char" style="display:flex; flex-direction:column; flex:1; min-height:0;"><div style="padding:5px; text-align:center; font-size:12px;">使用者を選択</div><div id="skill-char-list" class="scroll-area"></div></div><div id="skill-screen-skill" style="display:none; flex-direction:column; flex:1; min-height:0;"><div style="padding:5px; text-align:center; font-size:12px;">スキルを選択</div><div id="skill-list" class="scroll-area"></div><button class="btn" style="margin:10px;" onclick="MenuSkills.changeScreen('char')">戻る</button></div><div id="skill-screen-target" style="display:none; flex-direction:column; flex:1; min-height:0;"><div style="padding:5px; text-align:center; font-size:12px;">対象を選択</div><div id="skill-target-list" class="scroll-area"></div><button class="btn" style="margin:10px;" onclick="MenuSkills.changeScreen('skill')">戻る</button></div></div>
-    
-    <div id="sub-screen-book" class="sub-screen"><div class="header-bar"><span>魔物図鑑</span> <button class="btn" onclick="Menu.closeSubScreen('book')">戻る</button></div><div id="book-list" class="scroll-area"></div></div>
-    
-    <div id="sub-screen-blacksmith" class="sub-screen"><div class="header-bar"><span>鍛冶屋</span> <button class="btn" onclick="Menu.closeSubScreen('blacksmith')">戻る</button></div><div id="smith-screen-main" style="display:flex; flex-direction:column; flex:1; align-items:center; justify-content:center; gap:20px; min-height:0;"><div id="smith-info" style="color:#ffd770;"></div><button class="menu-btn" style="width:200px;" onclick="MenuBlacksmith.selectMode('enhance')">装備強化</button><button class="menu-btn" style="width:200px;" onclick="MenuBlacksmith.selectMode('expand')">スロット拡張</button></div><div id="smith-screen-select" style="display:none; flex-direction:column; flex:1; min-height:0;"><div id="smith-list" class="scroll-area"></div><div id="smith-footer" class="footer-info"></div><button class="btn" style="margin:10px;" onclick="MenuBlacksmith.changeScreen('main')">戻る</button></div><div id="smith-screen-main" style="display:flex; flex-direction:column; flex:1; align-items:center; justify-content:center; gap:20px;"><div id="smith-info" style="color:#ffd770;"></div><button class="menu-btn" style="width:200px;" onclick="MenuBlacksmith.selectMode('enhance')">装備強化</button><button class="menu-btn" style="width:200px;" onclick="MenuBlacksmith.selectMode('expand')">スロット拡張</button></div><div id="smith-screen-select" style="display:none; flex-direction:column; flex:1;"><div id="smith-list" class="scroll-area"></div><div id="smith-footer" class="footer-info"></div><button class="btn" style="margin:10px;" onclick="MenuBlacksmith.changeScreen('main')">戻る</button></div></div>
+<div id="sub-screen-party" class="sub-screen">
+        <div class="header-bar"><span>パーティ編成</span> <button class="btn" onclick="Menu.closeSubScreen('party')">戻る</button></div>
+        <div id="party-screen-slots" class="flex-col-container">
+            <div style="padding:5px; text-align:center; font-size:12px; color:#aaa;">スロットを選択</div>
+            <div id="party-slot-list" class="scroll-area"></div>
+        </div>
+        <div id="party-screen-chars" class="flex-col-container" style="display:none;">
+            <div style="padding:5px; background:#333; text-align:center; font-size:12px;">メンバーを選択</div>
+            <div id="party-char-list" class="scroll-area"></div>
+        </div>
+    </div>
 
-    <!-- ガチャ画面 -->
+    <div id="sub-screen-equip" class="sub-screen">
+        <div class="header-bar"><span>装備変更</span> <button class="btn" onclick="Menu.closeSubScreen('equip')">戻る</button></div>
+        <div id="equip-screen-char" class="flex-col-container">
+            <div style="padding:5px; text-align:center; font-size:12px;">キャラを選択</div>
+            <div id="equip-char-list" class="scroll-area"></div>
+        </div>
+        <div id="equip-screen-part" class="flex-col-container" style="display:none;">
+            <div id="char-status" style="padding:10px; border-bottom:1px solid #444; font-size:12px;"></div>
+            <div style="padding:5px; text-align:center; font-size:12px; background:#333;">部位を選択</div>
+            <div id="equip-slot-list" class="scroll-area" id="list-part"></div> <div id="list-part" class="scroll-area" style="display:none;"></div> <button class="btn" style="margin:10px;" onclick="MenuEquip.changeScreen('char')">戻る</button>
+        </div>
+        <div id="equip-screen-item" class="flex-col-container" style="display:none;">
+            <div style="padding:5px; background:#333; text-align:center; font-size:12px;" id="equip-item-header"></div>
+            <div id="equip-list" class="scroll-area"></div> <div id="list-item-candidates" style="display:none;"></div> <div id="equip-footer" class="footer-info"></div>
+            <button class="btn" style="margin:10px;" onclick="MenuEquip.changeScreen('part')">戻る</button>
+        </div>
+    </div>
+
+    <div id="sub-screen-inventory" class="sub-screen">
+        <div class="header-bar">
+            <span>所持装備</span> 
+            <span style="font-size:12px;">G:<span id="inventory-gold">0</span></span> 
+            <button class="btn" onclick="Menu.closeSubScreen('inventory')">戻る</button>
+        </div>
+        <div id="inventory-list" class="scroll-area"></div>
+        <div id="inventory-footer" class="footer-info"></div>
+    </div>
+
+    <div id="sub-screen-items" class="sub-screen">
+        <div class="header-bar"><span>道具</span> <button class="btn" onclick="Menu.closeSubScreen('items')">戻る</button></div>
+        <div id="item-screen-list" class="flex-col-container">
+            <div id="list-items" class="scroll-area"></div>
+            <div id="item-footer" class="footer-info"></div>
+        </div>
+        <div id="item-screen-target" class="flex-col-container" style="display:none;">
+            <div style="padding:5px; background:#333; text-align:center; font-size:12px;">使用対象を選択</div>
+            <div id="list-item-targets" class="scroll-area"></div>
+            <button class="btn" style="margin:10px;" onclick="MenuItems.changeScreen('list')">戻る</button>
+        </div>
+    </div>
+
+    <div id="sub-screen-allies" class="sub-screen">
+        <div class="header-bar"><span>仲間一覧</span> <button class="btn" onclick="Menu.closeSubScreen('allies')">戻る</button></div>
+        <div id="allies-list-view" class="flex-col-container">
+            <div id="allies-list" class="scroll-area"></div>
+        </div>
+        <div id="allies-detail-view" class="flex-col-container" style="display:none; background:#1a1a1a;">
+            <div class="tab-bar" id="allies-tabs"></div>
+            <div id="allies-detail-content" class="scroll-area"></div>
+            <button class="btn" style="margin:10px;" onclick="document.getElementById('allies-detail-view').style.display='none'; document.getElementById('allies-list-view').style.display='flex';">一覧へ戻る</button>
+        </div>
+    </div>
+
+    <div id="sub-screen-skills" class="sub-screen">
+        <div class="header-bar"><span>スキル</span> <button class="btn" onclick="Menu.closeSubScreen('skills')">戻る</button></div>
+        <div id="skill-screen-char" class="flex-col-container">
+            <div style="padding:5px; text-align:center; font-size:12px;">使用者を選択</div>
+            <div id="skill-char-list" class="scroll-area"></div>
+        </div>
+        <div id="skill-screen-skill" class="flex-col-container" style="display:none;">
+            <div style="padding:5px; text-align:center; font-size:12px;">スキルを選択</div>
+            <div id="skill-list" class="scroll-area"></div>
+            <button class="btn" style="margin:10px;" onclick="MenuSkills.changeScreen('char')">戻る</button>
+        </div>
+        <div id="skill-screen-target" class="flex-col-container" style="display:none;">
+            <div style="padding:5px; text-align:center; font-size:12px;">対象を選択</div>
+            <div id="skill-target-list" class="scroll-area"></div>
+            <button class="btn" style="margin:10px;" onclick="MenuSkills.changeScreen('skill')">戻る</button>
+        </div>
+    </div>
+
+    <div id="sub-screen-book" class="sub-screen">
+        <div class="header-bar"><span>魔物図鑑</span> <button class="btn" onclick="Menu.closeSubScreen('book')">戻る</button></div>
+        <div id="book-list" class="scroll-area"></div>
+    </div>
+
+    <div id="sub-screen-blacksmith" class="sub-screen">
+        <div class="header-bar"><span>鍛冶屋</span> <button class="btn" onclick="Menu.closeSubScreen('blacksmith')">戻る</button></div>
+        <div id="smith-screen-main" class="flex-col-container" style="align-items:center; justify-content:center; gap:20px;">
+            <div id="smith-info" style="color:#ffd770;"></div>
+            <button class="menu-btn" style="width:200px;" onclick="MenuBlacksmith.selectMode('enhance')">装備強化</button>
+            <button class="menu-btn" style="width:200px;" onclick="MenuBlacksmith.selectMode('expand')">スロット拡張</button>
+        </div>
+        <div id="smith-screen-select" class="flex-col-container" style="display:none;">
+            <div id="smith-list" class="scroll-area"></div>
+            <div id="smith-footer" class="footer-info"></div>
+            <button class="btn" style="margin:10px;" onclick="MenuBlacksmith.changeScreen('main')">戻る</button>
+        </div>
+    </div>
+
     <div id="sub-screen-gacha" class="sub-screen">
         <div class="header-bar">
             <span>ガチャ</span> <span style="font-size:12px;">GEM:<span id="gacha-gem">0</span></span>
@@ -354,28 +395,23 @@
         </div>
     </div>
 
-    <!-- 施設 -->
     <div id="inn-scene" class="scene-layer"><div class="header-bar"><span>宿屋</span></div><div id="inn-content" style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center;"></div></div>
     <div id="medal-scene" class="scene-layer"><div class="header-bar"><span>メダル王の館</span> <span style="font-size:12px;">所持: <span id="medal-count">0</span>枚</span> <button class="btn" onclick="App.changeScene('field')">出る</button></div><div style="padding:10px; text-align:center; font-size:12px;">ちいさなメダルと景品を交換します</div><div id="medal-list" class="scroll-area"></div></div>
     <div id="casino-scene" class="scene-layer"><div class="header-bar"><span>カジノ</span> <span style="font-size:12px; color:#ffd700;">GEM: <span id="casino-gem">0</span></span></div><div id="casino-area-title" style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:20px;"><button class="menu-btn" style="width:200px;" onclick="Casino.startGame('poker')">ポーカー</button><button class="menu-btn" style="width:200px;" onclick="Casino.startGame('bj')">ブラックジャック</button><button class="btn" onclick="App.changeScene('field')">出る</button></div><div id="casino-area-game" style="flex:1; display:none; flex-direction:column;"><div id="casino-board" style="flex:1; display:flex; flex-direction:column; justify-content:center; padding:10px;"></div><div style="background:#222; padding:10px; text-align:center; min-height:40px;" id="casino-msg"></div><div id="casino-actions" style="padding:10px; display:flex; justify-content:center; gap:10px; background:#111;"></div></div></div>
 
-    <!-- ガチャ演出レイヤー -->
     <div id="gacha-performance" class="scene-layer">
-        <div id="freeze-overlay"></div>
-        <div id="white-out-overlay"></div>
+        <div id="freeze-overlay" style="position:absolute; top:0; left:0; width:100%; height:100%; background:black; z-index:400; display:none;"></div>
         <div id="gacha-stage" style="flex:1; display:flex; align-items:center; justify-content:center;"></div>
         <div style="padding:20px; display:flex; justify-content:center;">
             <button id="btn-gacha-skip" class="btn" onclick="Gacha.skip()">スキップ</button>
         </div>
     </div>
-
-    <!-- 確率モーダル -->
-    <div id="modal-rates">
+    
+    <div id="modal-rates" style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:250; display:none; flex-direction:column;">
         <div class="header-bar"><span>提供割合</span> <button class="btn" onclick="document.getElementById('modal-rates').style.display='none'">閉じる</button></div>
         <div id="rates-content" class="scroll-area" style="padding:10px; color:#fff; font-size:12px;"></div>
     </div>
     
-    <!-- 結果一覧 -->
     <div id="gacha-result-overlay" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:#000; z-index:350; flex-direction:column;">
         <div class="header-bar"><span>召喚結果</span></div>
         <div id="gacha-results-list" class="scroll-area" style="display:grid; grid-template-columns:repeat(5, 1fr); gap:5px; padding:10px;"></div>
@@ -388,9 +424,17 @@
         </div>
     </div>
 
-</div>
+    <div id="assign-modal" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; justify-content:center; align-items:center;">
+         </div>
 
-<script src="database.js"></script>
+    <div id="menu-dialog-area" style="display:none; position:absolute; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); justify-content:center; align-items:center; z-index:2000;">
+        <div style="background:var(--win-bg); border:2px solid var(--win-border); padding:20px; border-radius:4px; max-width:90%; width:300px; text-align:center; display:flex; flex-direction:column; gap:15px;">
+            <div id="menu-dialog-text" style="font-size:14px; min-height:20px;"></div>
+            <div id="menu-dialog-buttons" style="display:flex; justify-content:space-around; gap:10px;"></div>
+        </div>
+    </div>
+
+</div> <script src="database.js"></script>
 <script src="dungeon.js"></script>
 <script src="gacha.js"></script>
 <script src="facilities.js"></script>
@@ -398,6 +442,15 @@
 <script src="main.js"></script>
 <script src="battle.js"></script>
 <script src="menus.js"></script>
-<script>window.onload = () => { if(typeof App!=='undefined'&&App.initGameHub)App.initGameHub(); };</script>
+<script>
+    // 起動処理
+    window.onload = () => { 
+        if(typeof App !== 'undefined' && App.initGameHub) {
+            App.initGameHub();
+        } else {
+            console.error("App module not found.");
+        }
+    };
+</script>
 </body>
 </html>
