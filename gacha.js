@@ -19,22 +19,43 @@ const Gacha = {
     showRates: () => {
         const modal = document.getElementById('modal-rates');
         const content = document.getElementById('rates-content');
+        
+        // ★ここが重要：JSで強制的に優先度をガチャ画面(500)より高くする
+        modal.style.zIndex = 750;
         modal.style.display = 'flex';
         
         let html = `<h3>レアリティ別提供割合</h3>`;
+        
+        // 確率表示（N:0% は表示しないように > 0 でフィルタ）
         for(let r of CONST.RARITY.slice().reverse()) {
-            html += `<div>${r}: ${CONST.GACHA_RATES[r]}%</div>`;
+            if (CONST.GACHA_RATES[r] > 0) {
+                html += `<div>${r}: ${CONST.GACHA_RATES[r]}%</div>`;
+            }
         }
+
         html += `<hr><h3>排出対象一覧</h3>`;
+        
+        // キャラ一覧表示
         for(let r of CONST.RARITY.slice().reverse()) {
+            // 排出率0%のレアリティ（Nなど）はリストに出さない
+            if (CONST.GACHA_RATES[r] <= 0) continue;
+
             const targets = DB.CHARACTERS.filter(c => c.rarity === r);
             if(targets.length > 0) {
-                html += `<div style="margin-top:10px; color:${r==='EX'?'#ff0':(r==='UR'?'#f0f':'#fff')}">[${r}]</div>`;
+                // 文字色設定
+                let color = '#fff';
+                if(r==='EX') color = '#ff0';
+                else if(r==='UR') color = '#f0f';
+                else if(r==='SSR') color = '#f44';
+                else if(r==='SR') color = 'gold';
+
+                html += `<div style="margin-top:10px; color:${color}; font-weight:bold;">[${r}]</div>`;
                 targets.forEach(c => html += `<div>${c.name} (${c.job})</div>`);
             }
         }
         content.innerHTML = html;
     },
+
 
     pull: (count) => {
         const cost = count * 300;
