@@ -109,21 +109,37 @@ const Battle = {
         const floor = App.data.progress.floor || 1; 
 
         if (isBoss) {
-            const base = DB.MONSTERS.find(m => m.id === 100) || DB.MONSTERS[0];
-            const m = new Monster(base, 1.0 + (floor * 0.1));
-            m.name = "ダンジョンボス"; m.id = base.id;
+            const base = DB.MONSTERS.find(m => m.id === 1000) || DB.MONSTERS[DB.MONSTERS.length-1];
+            // ボス補正
+            const m = new Monster(base, 1.0 + (floor * 0.05));
+            m.name = `B${floor}階ボス`; 
+            m.id = base.id;
             newEnemies.push(m);
-            Battle.log("ボスが現れた！");
+            Battle.log("フロアボスが現れた！");
         } else {
             Battle.log("モンスターが現れた！");
             const count = 1 + Math.floor(Math.random() * 3);
-            const pool = DB.MONSTERS.filter(m => floor >= m.minF && m.id < 100);
-            const basePool = pool.length > 0 ? pool : [DB.MONSTERS[0]];
+            
+            // ★階層に基づいたランクの敵を選出
+            // 現在の階層 ± 5 くらいのランク帯から選ぶ
+            const minRank = Math.max(1, floor - 5);
+            const maxRank = floor + 2;
+            
+            let pool = DB.MONSTERS.filter(m => m.rank >= minRank && m.rank <= maxRank && m.id < 1000);
+            
+            // 候補がなければランクが近いものを探す
+            if(pool.length === 0) {
+                pool = DB.MONSTERS.filter(m => m.rank <= floor && m.id < 1000);
+            }
+            // それでもなければスライム(Rank1)
+            if(pool.length === 0) pool = [DB.MONSTERS[0]];
             
             for(let i=0; i<count; i++) {
-                const base = basePool[Math.floor(Math.random()*basePool.length)];
-                const m = new Monster(base, 1.0 + floor*0.05);
-                m.name += String.fromCharCode(65+i); m.id = base.id;
+                const base = pool[Math.floor(Math.random()*pool.length)];
+                // 階層が進むと少しずつ強くなる補正
+                const m = new Monster(base, 1.0);
+                m.name += String.fromCharCode(65+i); 
+                m.id = base.id;
                 newEnemies.push(m);
             }
         }
@@ -135,7 +151,10 @@ const Battle = {
         const el = Battle.getEl('battle-log');
         if (el) {
             const line = document.createElement('div');
-            line.innerText = msg;
+            
+            // ★ここを修正: innerText だとタグが文字として表示されてしまうため、innerHTML に変更
+            line.innerHTML = msg; 
+            
             el.appendChild(line);
             el.scrollTop = el.scrollHeight;
         }
@@ -761,10 +780,11 @@ const Battle = {
         });
     },
     
-    renderPartyStatus: () => {
-        // ★修正: HTML側のID(party-status-container)と一致させる
-        const container = Battle.getEl('party-status-container'); 
+renderPartyStatus: () => {
+        // ★修正: index.htmlにある正しいID 'battle-party-bar' を指定
+        const container = Battle.getEl('battle-party-bar');
         if(!container) return;
+        
         container.innerHTML = '';
         Battle.party.forEach((p, index) => {
             const div = document.createElement('div');
@@ -772,7 +792,7 @@ const Battle = {
 
             // HPの割合計算
             const hpPer = (p.baseMaxHp > 0) ? (p.hp / p.baseMaxHp) * 100 : 0;
-            // ★追加: MPの割合計算
+            // MPの割合計算
             const mpPer = (p.baseMaxMp > 0) ? (p.mp / p.baseMaxMp) * 100 : 0;
 
             const isActor = (Battle.phase === 'input' && index === Battle.currentActorIndex);
@@ -791,15 +811,27 @@ const Battle = {
         });
     },
 
+/* battle.js の Battle.win 関数を以下に差し替え */
+
     win: () => {
         Battle.phase = 'result';
         Battle.active = false;
         
-        const gold = 50 + Math.floor(Math.random()*50);
-        const exp = 100;
-        App.data.gold += gold;
+        let totalExp = 0;
+        let totalGold = 0;
+        let maxEnemyRank = 1; // 倒した敵の中で最も高いランクを記録
         
-        // 図鑑登録
+        Battle.enemies.forEach(e => {
+            const base = DB.MONSTERS.find(m => m.id === e.baseId);
+            if(base) {
+                totalExp += base.exp;
+                totalGold += base.gold;
+                if(base.rank > maxEnemyRank) maxEnemyRank = base.rank;
+            }
+        });
+
+        App.data.gold += totalGold;
+        
         Battle.enemies.forEach(e => {
             if(!App.data.book) App.data.book = { monsters: [] };
             if(e.id && !App.data.book.monsters.includes(e.id)) {
@@ -807,19 +839,87 @@ const Battle = {
             }
         });
 
+        // ドロップ処理 (ランク依存)
         const drops = [];
+        let hasRareDrop = false;
+
         Battle.enemies.forEach(e => {
-            if (e.drop && Math.random() < 0.3) {
-                const item = DB.ITEMS.find(i=>i.id===e.drop) || DB.EQUIPS.find(eq=>eq.id===e.drop);
-                if(item) {
-                    drops.push(item.name);
-                    if(item.type.includes('回復') || item.type.includes('素材')) App.data.items[item.id] = (App.data.items[item.id]||0)+1;
+            // ドロップ判定 (一律30% + ランク補正微量)
+            // 敵のランクに基づいた装備を生成する
+            const base = DB.MONSTERS.find(m => m.id === e.baseId);
+            const dropRank = base ? base.rank : 1;
+
+            if (Math.random() < 0.3) {
+                // アイテムか装備か (アイテム30%, 装備70%)
+                if (Math.random() < 0.3) {
+                    // アイテムはランダム
+                    const item = DB.ITEMS[Math.floor(Math.random() * DB.ITEMS.length)];
+                    if(item.type !== '貴重品') {
+                        App.data.items[item.id] = (App.data.items[item.id]||0)+1;
+                        drops.push({name: item.name, isRare: false});
+                    }
+                } else {
+                    // 装備生成 (敵ランクを渡す)
+                    const newEquip = App.createRandomEquip('drop', dropRank);
+                    App.data.inventory.push(newEquip);
+                    
+                    // +3装備ならレア演出フラグ
+                    const isRare = (newEquip.plus === 3);
+                    if(isRare) hasRareDrop = true;
+                    
+                    drops.push({
+                        name: newEquip.name, 
+                        isRare: isRare,
+                        rank: newEquip.rank
+                    });
                 }
             }
         });
 
-        Battle.log(`\n★勝利！\n獲得: ${gold}G, ${exp}EXP`);
-        if(drops.length > 0) Battle.log(`ドロップ: ${drops.join(', ')}`);
+        // ログ表示
+        Battle.log(`\n★勝利！\n獲得: ${totalGold}G`);
+        
+        if(drops.length > 0) {
+            drops.forEach(d => {
+                if(d.isRare) {
+                    // ★赤文字演出
+                    Battle.log(`<span class="log-rare-drop">レア！ ${d.name} を手に入れた！</span>`);
+                } else {
+                    Battle.log(`ドロップ: ${d.name}`);
+                }
+            });
+        }
+
+        // ★フラッシュ演出 (+3装備があった場合)
+        if(hasRareDrop) {
+            const flash = document.getElementById('drop-flash');
+            if(flash) {
+                flash.style.display = 'block';
+                flash.classList.remove('flash-active');
+                void flash.offsetWidth; // リフロー
+                flash.classList.add('flash-active');
+            }
+        }
+
+        // 経験値処理
+        const surviveMembers = Battle.party.filter(p => !p.isDead);
+        if (surviveMembers.length > 0) {
+            Battle.log(`経験値: ${totalExp}EXP を獲得`);
+            surviveMembers.forEach(p => {
+                const charData = App.data.characters.find(c => c.uid === p.uid);
+                if (charData && typeof App.gainExp === 'function') {
+                    const logs = App.gainExp(charData, totalExp);
+                    if (logs.length > 0) {
+                        logs.forEach(msg => Battle.log(msg));
+                        p.hp = charData.currentHp;
+                        p.mp = charData.currentMp;
+                        p.baseMaxHp = App.calcStats(charData).maxHp; 
+                    }
+                }
+            });
+            Battle.renderPartyStatus();
+        }
+
         Battle.log("\n▼ 画面タップで終了 ▼");
         
         if(App.data.battle.isBossBattle && typeof Dungeon !== 'undefined') {
