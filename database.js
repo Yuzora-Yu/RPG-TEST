@@ -1,13 +1,21 @@
 /* database.js */
 
 const CONST = {
-    SAVE_KEY: 'QoE_SaveData_v25_FullParty', // キー更新
+    SAVE_KEY: 'QoE_SaveData_v30_HackSlash', // キー更新
     PARTS: ['武器', '盾', '頭', '体', '足'],
     ELEMENTS: ['火', '水', '風', '雷', '光', '闇', '混沌'],
-    RARITY: ['R', 'SR', 'SSR', 'UR', 'EX'],
-    GACHA_RATES: { R:50, SR:30, SSR:15, UR:4.9, EX:0.1 },
+    RARITY: ['N', 'R', 'SR', 'SSR', 'UR', 'EX'], // Nを追加
+    // +値の抽選確率 (上から順に判定)
+    PLUS_RATES: { 3: 0.05, 2: 0.15, 1: 0.40 }, // 残り40%は+0
+
+    GACHA_RATES: { R:50, SR:30, SSR:13, UR:5, EX:2 },
     SMITH_RATES: { 1: { R:80, SR:15, SSR:5 }, 10: { R:10, SR:30, SSR:40, UR:15, EX:5 } },
-    POKER_ODDS: { ROYAL_FLUSH: 500, STRAIGHT_FLUSH: 100, FOUR_CARD: 30, FULL_HOUSE: 10, FLUSH: 8, STRAIGHT: 5, THREE_CARD: 3, TWO_PAIR: 2, JACKS_OR_BETTER: 1 }
+    POKER_ODDS: { ROYAL_FLUSH: 500, STRAIGHT_FLUSH: 100, FOUR_CARD: 30, FULL_HOUSE: 10, FLUSH: 8, STRAIGHT: 5, THREE_CARD: 3, TWO_PAIR: 2, JACKS_OR_BETTER: 1 },
+
+    MAX_LEVEL: 99,
+    EXP_BASE: 100,
+    EXP_GROWTH: 1.05,
+    RARITY_EXP_MULT: { N:1.0, R:1.1, SR:1.2, SSR:1.3, UR:1.5, EX:2.0 }
 };
 
 const MAP_DATA = [
@@ -45,6 +53,22 @@ const MAP_DATA = [
     "WWWWGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGWWWWWWW",
     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
 ];
+
+// ★追加: レベルごとの習得スキル定義 (簡易版)
+// キャラクターIDごと、あるいはジョブごとに定義するのが理想ですが、
+// ここでは簡易的にジョブ名で判定する例、もしくはキャラクターデータに追加します。
+// 今回は CHARACTERS データに `skills` プロパティを追加して管理します。
+
+// DB.CHARACTERS の定義を少し修正して、習得スキル情報を追加する例
+// (既存の lbSkills は限界突破用なので、レベルアップ習得用を追加)
+/*
+    例:
+    { ..., job:'戦士', learnSkills: { 5: 40, 10: 41 } } // Lv5で火炎斬り(40), Lv10ではやぶさ斬り(41)
+*/
+
+// DB.CHARACTERS を更新するのは大変なので、後述の main.js の処理で
+// 簡易的な「ジョブ別習得スキルテーブル」を作って参照するようにします。
+
 
 const DB = {
     SKILLS: [
@@ -93,41 +117,33 @@ const DB = {
         {id:5, name:'世界樹の葉', type:'蘇生', val:100, desc:'死んだ仲間を生き返らせる', target:'単体', price:1000},
         {id:99, name:'ちいさなメダル', type:'貴重品', val:0, desc:'世界各地に散らばるメダル', target:'なし', price:0}
     ],
-    MONSTERS: [
-        {id:1, name:'スライム', hp:40, mp:0, atk:20, def:5, spd:8, mag:5, exp:10, gold:10, acts:[1], minF:0, drop:1},
-        {id:2, name:'ドラキー', hp:55, mp:10, atk:25, def:8, spd:15, mag:10, exp:15, gold:15, acts:[1,10], minF:0, drop:1},
-        {id:3, name:'ゴースト', hp:40, mp:20, atk:18, def:30, spd:15, mag:20, exp:12, gold:15, acts:[1,10], minF:0, drop:3},
-        {id:10, name:'ドラゴン', hp:500, mp:50, atk:80, def:60, spd:20, mag:20, exp:500, gold:200, acts:[1,100], minF:5, drop:2},
-        {id:100, name:'ダンジョンボス', hp:1000, mp:100, atk:100, def:80, spd:20, mag:30, exp:2000, gold:500, acts:[1,100], minF:999, drop:3}
-    ],
-    EQUIPS: [
-        {id:1, name:'銅の剣', type:'武器', val:100, minF:0, data:{atk:10}},
-        {id:2, name:'鉄の剣', type:'武器', val:500, minF:5, data:{atk:25}},
-        {id:3, name:'炎の剣', type:'武器', val:2000, minF:15, data:{atk:45, elmAtk:{'火':30}}},
-        {id:4, name:'ひかりのつるぎ', type:'武器', val:10000, minF:40, data:{atk:120, spd:20}},
-        {id:11, name:'皮の盾', type:'盾', val:100, minF:0, data:{def:5}},
-        {id:12, name:'鉄の盾', type:'盾', val:800, minF:5, data:{def:15}},
-        {id:13, name:'魔法の盾', type:'盾', val:2000, minF:20, data:{def:12, finRed:5}},
-        {id:21, name:'布の服', type:'体', val:50, minF:0, data:{def:5}},
-        {id:22, name:'皮の鎧', type:'体', val:300, minF:5, data:{def:12}},
-        {id:23, name:'鉄の鎧', type:'体', val:1000, minF:10, data:{def:25}},
-        {id:24, name:'魔法のローブ', type:'体', val:2500, minF:20, data:{def:20, mag:20}},
-        {id:31, name:'皮の帽子', type:'頭', val:100, minF:0, data:{def:3}},
-        {id:41, name:'革の靴', type:'足', val:100, minF:0, data:{def:2, spd:5}}
-    ],
+
+
+
+
+    // ★モンスターデータ (ランク1～100)
+    // ランク = そのまま出現階層の目安になります
+    MONSTERS: [], // 下部で生成
+
+    // ★装備データ (ランク1～100)
+    EQUIPS: [], // 下部で生成
+
+    // オプション抽選ルール
     OPT_RULES: [
-        {key:'atk', name:'攻撃', unit:'val', allowed:['R','SR','SSR','UR'], min:{R:1,SR:6,SSR:11,UR:21}, max:{R:5,SR:10,SSR:20,UR:50}},
-        {key:'def', name:'防御', unit:'val', allowed:['R','SR','SSR','UR'], min:{R:1,SR:6,SSR:11,UR:21}, max:{R:5,SR:10,SSR:20,UR:50}},
-        {key:'hp', name:'HP', unit:'val', allowed:['R','SR','SSR','UR'], min:{R:10,SR:50,SSR:100,UR:300}, max:{R:40,SR:90,SSR:290,UR:500}},
-        {key:'spd', name:'素早さ', unit:'val', allowed:['R','SR','SSR','UR'], min:{R:1,SR:3,SSR:6,UR:11}, max:{R:2,SR:5,SSR:10,UR:20}},
-        {key:'finDmg', name:'与ダメ', unit:'%', allowed:['UR','EX'], min:{UR:1,EX:5}, max:{UR:4,EX:10}},
+        {key:'atk', name:'攻撃', unit:'val', allowed:['N','R','SR','SSR','UR'], min:{N:1,R:5,SR:10,SSR:20,UR:50}, max:{N:4,R:9,SR:19,SSR:49,UR:100}},
+        {key:'def', name:'防御', unit:'val', allowed:['N','R','SR','SSR','UR'], min:{N:1,R:5,SR:10,SSR:20,UR:50}, max:{N:4,R:9,SR:19,SSR:49,UR:100}},
+        {key:'hp', name:'HP', unit:'val', allowed:['N','R','SR','SSR','UR'], min:{N:10,R:50,SR:100,SSR:300,UR:500}, max:{N:40,R:90,SR:290,SSR:490,UR:1000}},
+        {key:'spd', name:'素早さ', unit:'val', allowed:['N','R','SR','SSR','UR'], min:{N:1,R:2,SR:4,SSR:8,UR:15}, max:{N:1,R:3,SR:7,SSR:14,UR:30}},
+        {key:'finDmg', name:'与ダメ', unit:'%', allowed:['SSR','UR','EX'], min:{SSR:1,UR:3,EX:5}, max:{SSR:2,UR:5,EX:10}},
         {key:'elmAtk', elm:'火', name:'火攻', unit:'val', allowed:['UR','EX'], min:{UR:5,EX:15}, max:{UR:10,EX:30}},
         {key:'elmAtk', elm:'雷', name:'雷攻', unit:'val', allowed:['UR','EX'], min:{UR:5,EX:15}, max:{UR:10,EX:30}}
     ],
+
     SYNERGIES: [
         { key: 'spd', count: 3, name: '疾風怒濤', effect: 'doubleAction', desc: '50%で2回行動', color:'#f88' },
         { key: 'hp', count: 3, name: '吸血', effect: 'drain', desc: '与ダメの10%回復', color:'#f88' }
     ],
+
     MEDAL_REWARDS: [
         { medals: 5, name: '上やくそう x3', type: 'item', id: 2, count: 3 },
         { medals: 10, name: '魔法の小瓶 x5', type: 'item', id: 3, count: 5 },
@@ -135,6 +151,106 @@ const DB = {
         { medals: 50, name: '神秘の鎧', type: 'equip', equipId: 901, base: {name:'神秘の鎧', type:'体', val:20000, data:{def:50, finRed:20}} }
     ]
 };
+
+// --- データ生成ロジック (ランク1～100の装備・モンスターを一括生成) ---
+(() => {
+    // ティア定義 (名前の接頭辞と基礎パラメータ倍率)
+    const TIERS = [
+        { rank:1, name:'ボロの', mult:0.5 },
+        { rank:5, name:'銅の', mult:1.0 },
+        { rank:10, name:'鉄の', mult:1.5 },
+        { rank:20, name:'鋼の', mult:2.5 },
+        { rank:30, name:'白銀の', mult:4.0 },
+        { rank:40, name:'黄金の', mult:6.0 },
+        { rank:50, name:'プラチナ', mult:9.0 },
+        { rank:60, name:'ミスリル', mult:13.0 },
+        { rank:70, name:'オリハルコン', mult:18.0 },
+        { rank:80, name:'アダマン', mult:25.0 },
+        { rank:90, name:'英雄の', mult:35.0 },
+        { rank:100, name:'神々の', mult:50.0 }
+    ];
+
+    // 装備ベース
+    const EQUIP_TYPES = [
+        { type:'武器', baseName:'剣', stat:'atk', baseVal:10 },
+        { type:'武器', baseName:'斧', stat:'atk', baseVal:15, spdMod:-2 },
+        { type:'武器', baseName:'短剣', stat:'atk', baseVal:8, spdMod:5 },
+        { type:'盾', baseName:'盾', stat:'def', baseVal:5 },
+        { type:'頭', baseName:'兜', stat:'def', baseVal:3 },
+        { type:'体', baseName:'鎧', stat:'def', baseVal:8 },
+        { type:'体', baseName:'ローブ', stat:'def', baseVal:5, magMod:5 },
+        { type:'足', baseName:'ブーツ', stat:'spd', baseVal:5, defMod:2 }
+    ];
+
+    // 装備生成
+    TIERS.forEach(tier => {
+        EQUIP_TYPES.forEach((eq, idx) => {
+            const data = {};
+            data[eq.stat] = Math.floor(eq.baseVal * tier.mult);
+            if(eq.spdMod) data.spd = Math.floor(eq.spdMod * (1 + tier.rank/20));
+            if(eq.magMod) data.mag = Math.floor(eq.magMod * (1 + tier.rank/20));
+            if(eq.defMod) data.def = Math.floor(eq.defMod * (1 + tier.rank/20));
+
+            DB.EQUIPS.push({
+                id: `eq_${tier.rank}_${idx}`,
+                rank: tier.rank,
+                name: `${tier.name}${eq.baseName}`,
+                type: eq.type,
+                val: tier.rank * 100,
+                minF: tier.rank, // 出現階層目安
+                data: data
+            });
+        });
+    });
+
+    // モンスターベース
+    const MONSTER_TYPES = [
+        { name:'スライム', hp:30, atk:10, def:5, exp:10 },
+        { name:'バット', hp:20, atk:15, def:3, exp:12 },
+        { name:'ウルフ', hp:50, atk:20, def:10, exp:20 },
+        { name:'ゴースト', hp:40, atk:15, def:30, exp:25 },
+        { name:'オーク', hp:100, atk:30, def:20, exp:50 },
+        { name:'ナイト', hp:150, atk:40, def:50, exp:100 },
+        { name:'デーモン', hp:300, atk:80, def:60, exp:300 },
+        { name:'ドラゴン', hp:500, atk:100, def:80, exp:500 }
+    ];
+
+    // モンスター生成 (ランク1～100までを埋める)
+    for(let r=1; r<=100; r++) {
+        // ランクに応じて強さをスケーリング
+        // 10ランクごとにベースモンスターが切り替わるイメージ
+        const typeIdx = Math.min(MONSTER_TYPES.length-1, Math.floor((r-1)/12)); 
+        const base = MONSTER_TYPES[typeIdx];
+        const scale = 1.0 + (r * 0.2); // ランクごとの倍率
+        
+        // 名前接頭辞
+        let prefix = "";
+        if(r % 10 >= 5) prefix = "強・";
+        if(r > 50) prefix = "真・";
+        if(r > 80) prefix = "極・";
+
+        DB.MONSTERS.push({
+            id: r,
+            rank: r,
+            minF: r, // 出現階層
+            name: `${prefix}${base.name} Lv${r}`,
+            hp: Math.floor(base.hp * scale * scale), // HPは二次関数的に増やす
+            mp: 10 + r * 2,
+            atk: Math.floor(base.atk * scale),
+            def: Math.floor(base.def * scale),
+            spd: 10 + r,
+            mag: 10 + r,
+            exp: Math.floor(base.exp * scale),
+            gold: Math.floor(r * 10),
+            acts: [1], // 基本攻撃のみ (手抜き)
+            drop: null // ドロップはロジックで決定するためnullでOK
+        });
+    }
+    // ボス
+    DB.MONSTERS.push({id:1000, rank:100, minF:999, name:'ダンジョンボス', hp:50000, mp:1000, atk:500, def:300, spd:100, mag:100, exp:50000, gold:10000, acts:[1,100]});
+
+})();
+
 
 // ★修正: 初期パーティを4人に設定
 const INITIAL_DATA_TEMPLATE = {
@@ -144,7 +260,7 @@ const INITIAL_DATA_TEMPLATE = {
     location: { x: 23, y: 60 },
     progress: { floor: 0 },
     blacksmith: { level: 1, exp: 0 },
-    dungeon: { maxFloor: 0, tryCount: 0 },
+    dungeon: { maxFloor: 0, tryCount: 0, map: null, width: 30, height: 30 },
     book: { monsters: [] },
     battle: { active: false },
     // 4人パーティ (ID: p1, p2, p3, p4)
