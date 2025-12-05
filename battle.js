@@ -496,15 +496,36 @@ const Battle = {
         if(nameDiv) nameDiv.style.display = 'none';
         Battle.log("--- ターン開始 ---");
 
-        // 1. 敵アクション生成
+        // 1. 敵アクション生成 (★修正: actsからランダム選択)
         Battle.enemies.forEach(e => {
             if (!e.isDead) {
                 const spd = e.getStat('spd');
+                
+                // 行動リスト(acts)からランダムに1つ選ぶ。なければ通常攻撃(1)
+                const acts = e.acts && e.acts.length > 0 ? e.acts : [1];
+                const actId = acts[Math.floor(Math.random() * acts.length)];
+                
+                let actionType = 'enemy_attack'; // デフォルトは通常攻撃
+                let skillData = null;
+                let targetScope = 'single'; // AI用ターゲット決定のヒント
+
+                // IDが1以外ならスキル情報を検索
+                if (actId !== 1) {
+                    const skill = DB.SKILLS.find(s => s.id === actId);
+                    if (skill) {
+                        actionType = 'skill';
+                        skillData = skill;
+                        targetScope = skill.target; // 単体/全体/ランダム
+                    }
+                }
+
                 Battle.commandQueue.push({
-                    type: 'enemy_attack',
+                    type: actionType,
                     actor: e,
                     speed: spd * (0.9 + Math.random() * 0.2),
-                    isEnemy: true
+                    isEnemy: true,
+                    data: skillData,
+                    targetScope: targetScope
                 });
             }
         });
@@ -517,20 +538,22 @@ const Battle = {
             if (!Battle.active) break;
             if (!cmd.actor || cmd.actor.hp <= 0) continue; 
 
-            let target = cmd.target;
-            
+            // ターゲット決定ロジック (敵の攻撃時)
             if (cmd.isEnemy) {
                 const aliveParty = Battle.party.filter(p => p && !p.isDead);
                 if (aliveParty.length === 0) break;
-                target = aliveParty[Math.floor(Math.random() * aliveParty.length)];
-                cmd.target = target;
+
+                // 全体攻撃なら全員対象にするなどの処理は processAction で行われるが、
+                // 単体攻撃の場合はここでターゲットを決めておく
+                if (!cmd.target) {
+                     cmd.target = aliveParty[Math.floor(Math.random() * aliveParty.length)];
+                }
             } else {
-                // 味方行動：ターゲット生存確認（ここでは省略、processAction内で処理を厳密化）
+                // 味方行動
             }
 
             await Battle.processAction(cmd);
             
-            // ★修正: processAction後、必ず描画更新と終了チェックを行う
             Battle.updateDeadState();
             Battle.renderEnemies();
             Battle.renderPartyStatus();
