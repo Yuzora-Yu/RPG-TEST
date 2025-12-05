@@ -186,6 +186,20 @@
         .new-badge { background:red; color:white; padding:1px 3px; border-radius:3px; font-size:9px; font-weight:bold; }
         #white-out-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 500; display: none; opacity: 0; transition: opacity 0.3s, background-color 0.5s; pointer-events: none; }
         #white-out-overlay.black-turn { background-color: #000 !important; }
+
+        /* --- ガチャ演出画面の配置修正 --- */
+        #gacha-performance {
+            position: absolute !important; /* 強制的に絶対配置 */
+            top: 0 !important;             /* 一番上へ */
+            left: 0 !important;            /* 左端へ */
+            width: 100%;
+            height: 100%;
+            z-index: 600; /* サブ画面(500)よりさらに手前に表示 */
+            background: #000;
+            display: none; /* 初期状態は非表示 */
+            flex-direction: column;
+        }
+        
     </style>
 </head>
 <body>
