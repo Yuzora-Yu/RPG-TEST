@@ -29,35 +29,76 @@ const Dungeon = {
 
     nextFloor: () => {
         App.data.progress.floor++;
+        
+        // ★修正: 新しいフロアに進む前に、古いマップデータをクリアする
+        App.data.dungeon.map = null; 
+        
         Dungeon.loadFloor();
     },
 
     loadFloor: () => {
         Dungeon.floor = App.data.progress.floor;
         
-        if(Dungeon.floor > App.data.dungeon.maxFloor) {
-            App.data.dungeon.maxFloor = Dungeon.floor;
-            const hero = App.getChar('p1');
-            if(hero) {
-                hero.limitBreak = Math.max(0, Dungeon.floor - 1);
-                App.log(`階層記録更新！主人公が+${hero.limitBreak}に強化された！`);
+        // ★マップデータが保存されているかチェック (リロード時)
+        if (App.data.dungeon.map) {
+            // 保存されたマップを復元
+            Dungeon.map = App.data.dungeon.map;
+            Dungeon.width = App.data.dungeon.width;
+            Dungeon.height = App.data.dungeon.height;
+            App.log(`地下 ${Dungeon.floor} 階の冒険を再開します。`);
+        } else {
+            // ★マップがない場合 (新規フロア到達時)
+            
+            // ▼▼▼ 強化処理をここに移動 ▼▼▼
+            if(Dungeon.floor > App.data.dungeon.maxFloor) {
+                App.data.dungeon.maxFloor = Dungeon.floor;
+                const hero = App.getChar('p1');
+                if(hero) {
+                    hero.limitBreak = Math.max(0, Dungeon.floor - 1);
+                    App.log(`階層記録更新！主人公が+${hero.limitBreak}に強化された！`);
+                }
             }
+            // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+            
+            Dungeon.generateFloor();
+            // 生成したマップを保存しておく
+            Dungeon.saveMapData();
+            App.log(`地下 ${Dungeon.floor} 階に到達した`);
         }
         
-        Dungeon.generateFloor();
+        // 共通処理: 画面反映
+        Field.currentMapData = { 
+            width: Dungeon.width, 
+            height: Dungeon.height, 
+            tiles: Dungeon.map, 
+            isDungeon: true 
+        };
         App.changeScene('field');
-        App.log(`地下 ${Dungeon.floor} 階に到達した`);
         
-        // ★追加: ボス戦フラグをリセット
         if (App.data.battle) App.data.battle.isBossBattle = false;
         App.clearAction();
     },
 
+    // ★新規追加: マップ保存用ヘルパー関数
+    saveMapData: () => {
+        App.data.dungeon.map = Dungeon.map;
+        App.data.dungeon.width = Dungeon.width;
+        App.data.dungeon.height = Dungeon.height;
+        App.save();
+    },
+
     exit: () => {
+        // ★保存されているマップ情報をクリア
+        App.data.dungeon.map = null;
+        App.data.dungeon.width = 30;
+        App.data.dungeon.height = 30;
+
         Field.currentMapData = null;
         App.data.location.x = 23;
         App.data.location.y = 28;
         App.data.progress.floor = 0;
+        
+        App.save(); // 念のためここでセーブ
         App.changeScene('field');
         App.log("フィールドに戻った");
         App.clearAction();
@@ -125,7 +166,7 @@ const Dungeon = {
     // --- フロア生成分岐 ---
     generateFloor: () => {
         Dungeon.map = [];
-    
+        
         if (Dungeon.floor > 0 && Dungeon.floor % 10 === 0) {
             // 10階ごと: ボス部屋
             Dungeon.generateBossRoom();
