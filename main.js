@@ -21,6 +21,13 @@ class Entity {
         this.level = data.level || 1;
         this.img = data.img || null;
         this.limitBreak = data.limitBreak || 0;
+
+        this.level = data.level || 1;
+        
+        // ★追加: 経験値プロパティ (初期値0)
+        this.exp = data.exp || 0;
+        // 次のレベルまでの必要経験値を計算して保持しておくと便利ですが、
+        // セーブデータ容量削減のため、都度計算するか、App側で管理します。
     }
 
     getStat(key) {
@@ -87,6 +94,8 @@ class Entity {
     }
 }
 
+/* main.js */
+
 class Player extends Entity {
     constructor(data) {
         super(data);
@@ -96,8 +105,32 @@ class Player extends Entity {
         
         // 基本スキル
         this.skills = DB.SKILLS.filter(s => s.mp >= 0 && s.id < 100); 
-        
-        // マスタデータ参照 (固有スキル習得)
+
+        // =========================================================
+        // ★修正ポイント: レベルアップ習得スキルの反映処理を追加
+        // =========================================================
+        const LEARN_TABLE = {
+            '戦士': { 5: 40, 10: 41, 20: 50 },
+            '僧侶': { 5: 20, 10: 21, 20: 22, 30: 30 },
+            '魔法剣士': { 5: 10, 10: 40, 20: 12 },
+            '賢者': { 5: 11, 10: 21, 20: 13, 30: 22 },
+            '勇者': { 5: 20, 10: 40, 20: 42, 30: 22, 40: 301 }
+        };
+        const table = LEARN_TABLE[data.job];
+        if (table) {
+            for (let lv in table) {
+                if (data.level >= parseInt(lv)) {
+                    const sk = DB.SKILLS.find(s => s.id === table[lv]);
+                    // 重複チェックして追加
+                    if (sk && !this.skills.find(s => s.id === sk.id)) {
+                        this.skills.push(sk);
+                    }
+                }
+            }
+        }
+        // =========================================================
+
+        // マスタデータ参照 (固有スキル習得: 限界突破など)
         if(data.charId) {
             const master = DB.CHARACTERS.find(c => c.id === data.charId);
             if(master && master.lbSkills) {
@@ -114,7 +147,7 @@ class Player extends Entity {
             }
         }
         
-        // 主人公の特別スキル
+        // 主人公の特別スキル (既存コード維持)
         if(data.isHero) {
             if(this.limitBreak >= 10) this.skills.push(DB.SKILLS.find(s=>s.id===12)); // バギ
             if(this.limitBreak >= 50) this.skills.push(DB.SKILLS.find(s=>s.id===13)); // ライデイン
@@ -147,6 +180,8 @@ class Monster extends Entity {
 // アプリケーションコア
 // ==========================================================================
 
+/* main.js - App修正版 */
+
 const App = {
     data: null,
     pendingAction: null, 
@@ -154,25 +189,66 @@ const App = {
     // index.html用初期化
     initGameHub: () => {
         App.load();
-        if(!App.data) { window.location.href = 'main.html'; return; }
-        
-        // 戦闘中なら復帰、そうでなければフィールドへ
+        if(!App.data) { 
+            if(window.location.href.indexOf('main.html') === -1) {
+                window.location.href = 'main.html'; 
+            }
+            return; 
+        }
+
+        // 1. 座標の復元
+        if(App.data.location) {
+            Field.x = App.data.location.x;
+            Field.y = App.data.location.y;
+        }
+
+        // 2. ダンジョン情報の復元
+        if (App.data.progress && App.data.progress.floor > 0 && typeof Dungeon !== 'undefined') {
+            Dungeon.floor = App.data.progress.floor;
+            if (App.data.dungeon && App.data.dungeon.map) {
+                Dungeon.map = App.data.dungeon.map;
+                Dungeon.width = App.data.dungeon.width;
+                Dungeon.height = App.data.dungeon.height;
+                Field.currentMapData = {
+                    width: Dungeon.width,
+                    height: Dungeon.height,
+                    tiles: Dungeon.map,
+                    isDungeon: true
+                };
+            }
+        }
+
+        // 3. シーン分岐
         if (App.data.battle && App.data.battle.active) {
             App.log("戦闘に復帰します...");
             App.changeScene('battle');
         } else {
-            App.log("冒険を開始します。");
-            if(App.data.location) {
-                // 正規化して読み込み (50x32範囲内へ)
-                Field.x = App.data.location.x % 50;
-                Field.y = App.data.location.y % 32;
+            App.log("冒険を開始します。"); // ← ここでログが出るはず
+            
+            if (App.data.progress && App.data.progress.floor > 0) {
+                if (typeof Dungeon !== 'undefined') {
+                    if (Field.currentMapData) {
+                        App.changeScene('field');
+                        App.log(`地下 ${Dungeon.floor} 階の冒険を再開します。`);
+                    } else {
+                        Dungeon.loadFloor();
+                    }
+                } else {
+                    App.log("警告: Dungeonモジュール未ロード。フィールドへ戻ります。");
+                    App.changeScene('field');
+                }
+            } else {
+                if(App.data.location) {
+                    Field.x = Field.x % 50;
+                    Field.y = Field.y % 32;
+                }
+                App.changeScene('field');
             }
-            App.changeScene('field');
         }
         
-        // キー入力ハンドリング
+        // キー入力
         window.addEventListener('keydown', e => {
-            if(document.getElementById('field-scene').style.display === 'flex') {
+            if(document.getElementById('field-scene') && document.getElementById('field-scene').style.display === 'flex') {
                 if(Menu.isMenuOpen()) return;
                 if(['ArrowUp', 'w'].includes(e.key)) Field.move(0, -1);
                 if(['ArrowDown', 's'].includes(e.key)) Field.move(0, 1);
@@ -185,7 +261,7 @@ const App = {
             }
         });
 
-        // 画面ボタンハンドリング
+        // ボタン設定
         const bind = (id, fn) => { const el = document.getElementById(id); if(el) el.onclick = fn; };
         bind('btn-up', () => Field.move(0, -1));
         bind('btn-down', () => Field.move(0, 1));
@@ -195,7 +271,6 @@ const App = {
         bind('btn-ok', () => { if(App.pendingAction) App.executeAction(); else Menu.openMainMenu(); });
     },
 
-    // アクションボタン制御
     setAction: (label, callback) => {
         const btn = document.getElementById('action-indicator');
         if(!btn) return;
@@ -211,20 +286,17 @@ const App = {
     executeAction: () => {
         if(App.pendingAction) {
             const act = App.pendingAction;
-            App.clearAction(); // 実行前にクリア（重複防止）
+            App.clearAction();
             act();
         }
     },
 
-    // main.html用初期化
     initTitleScreen: () => { 
         App.load(); 
         const btn = document.getElementById('btn-continue'); 
         if(App.data && btn) { 
             btn.disabled = false; 
-            
-            let name = '勇者';
-            let lv = 1;
+            let name = '勇者'; let lv = 1;
             if(App.data.party && App.data.party[0]) {
                 const c = App.data.characters.find(ch => ch.uid === App.data.party[0]);
                 if(c) { name = c.name; lv = c.level; }
@@ -233,13 +305,11 @@ const App = {
         } 
     },
 
-    // データIO
     load: () => { 
         try { 
             const j=localStorage.getItem(CONST.SAVE_KEY); 
             if(j){ 
                 App.data=JSON.parse(j); 
-                // データ補正
                 if(!App.data.book) App.data.book = { monsters: [] }; 
                 if(!App.data.battle) App.data.battle = { active: false }; 
             } 
@@ -258,7 +328,6 @@ const App = {
         }
     },
     
-    // 新規ゲーム開始 (画像対応)
     startNewGame: () => {
         const fileInput = document.getElementById('player-icon');
         if(fileInput && fileInput.files && fileInput.files[0]) {
@@ -281,14 +350,9 @@ const App = {
         App.data = JSON.parse(JSON.stringify(INITIAL_DATA_TEMPLATE));
         App.data.characters[0].name = name;
         App.data.characters[0].img = imgSrc; 
-        
-        // 初期位置設定 (23, 60) -> 実質 (23, 28)
         App.data.location = { x: 23, y: 60 }; 
         App.data.walkCount = 0;
-
-        // 初期アイテム配布
         for(let i=0;i<5;i++) App.data.inventory.push(App.createRandomEquip()); 
-        
         try {
             localStorage.setItem(CONST.SAVE_KEY, JSON.stringify(App.data));
             window.location.href='index.html'; 
@@ -296,18 +360,94 @@ const App = {
             alert("データ作成に失敗しました。");
         }
     },
-    
+
+    createRandomEquip: (source, rank = 1) => {
+        // ① ランクに基づいたベース装備の抽選
+        // 目標ランク ～ 目標ランク-15 までの範囲の装備を候補とする
+        let candidates = DB.EQUIPS.filter(e => e.rank <= rank && e.rank >= Math.max(1, rank - 15));
+        
+        // 候補がない場合（低ランク時など）は、ランク以下の全装備から抽選
+        if (candidates.length === 0) {
+            candidates = DB.EQUIPS.filter(e => e.rank <= rank);
+        }
+        // それでもなければ最低ランクのもの
+        if (candidates.length === 0) {
+            candidates = [DB.EQUIPS[0]];
+        }
+
+        const base = candidates[Math.floor(Math.random() * candidates.length)];
+        
+        // ② +値 (+0～+3) の抽選
+        // ランクが高いほど+値がつきやすい補正を入れることも可能だが、今回は一律確率
+        const r = Math.random();
+        let plus = 0;
+        
+        // 判定順: +3 (5%) -> +2 (15%) -> +1 (40%) -> +0 (残り)
+        if (r < CONST.PLUS_RATES[3]) plus = 3;
+        else if (r < CONST.PLUS_RATES[3] + CONST.PLUS_RATES[2]) plus = 2;
+        else if (r < CONST.PLUS_RATES[3] + CONST.PLUS_RATES[2] + CONST.PLUS_RATES[1]) plus = 1;
+
+        // ドロップ以外（初期装備など）の場合は固定値
+        if (source === 'init') plus = 0;
+        
+        // オブジェクト生成
+        const eq = { 
+            id: Date.now() + Math.random().toString(), 
+            rank: base.rank, // ランク情報を保持
+            name: base.name, 
+            type: base.type, 
+            val: base.val * (1 + plus * 0.5), // 売値補正
+            data: JSON.parse(JSON.stringify(base.data)), 
+            opts: [],
+            plus: plus // +値を保持
+        };
+        
+        // ③ オプションの付与
+        for(let i=0; i<plus; i++) {
+            // ベース装備のランクに応じて、オプションのレアリティ抽選確率を変える
+            // ランク100ならUR以上が出やすい、などのロジック
+            const tierRatio = Math.min(1, rank / 100);
+            
+            // オプション候補選定
+            const rule = DB.OPT_RULES[Math.floor(Math.random()*DB.OPT_RULES.length)];
+            
+            // レアリティ抽選
+            let r = 'N';
+            const rarRnd = Math.random() + (tierRatio * 0.3); // ランク補正
+            
+            if(rarRnd > 0.98 && rule.allowed.includes('EX')) r='EX';
+            else if(rarRnd > 0.90 && rule.allowed.includes('UR')) r='UR';
+            else if(rarRnd > 0.75 && rule.allowed.includes('SSR')) r='SSR';
+            else if(rarRnd > 0.55 && rule.allowed.includes('SR')) r='SR';
+            else if(rarRnd > 0.30 && rule.allowed.includes('R')) r='R';
+            else r = rule.allowed[0];
+
+            const min = rule.min[r]||1, max = rule.max[r]||10;
+            eq.opts.push({
+                key:rule.key, elm:rule.elm, label:rule.name, 
+                val:Math.floor(Math.random()*(max-min+1))+min, unit:rule.unit, rarity:r
+            });
+        }
+
+        if(plus > 0) eq.name += `+${plus}`;
+        
+        // シナジー判定 (+3の場合のみチャンスあり)
+        if(plus === 3 && App.checkSynergy(eq)) eq.isSynergy = true;
+        
+        return eq;
+    },
+
+
     continueGame: () => { window.location.href='index.html'; },
     returnToTitle: () => { App.save(); window.location.href='main.html'; },
     
-    // シーン切り替え
     changeScene: (sceneId) => {
         document.querySelectorAll('.scene-layer').forEach(e => e.style.display = 'none');
         const target = document.getElementById(sceneId + '-scene');
         if(target) target.style.display = 'flex';
         
         if(typeof Menu !== 'undefined') Menu.closeAll();
-        App.clearAction(); // シーン変わったらアクションリセット
+        App.clearAction();
 
         if(sceneId === 'field') Field.init();
         if(sceneId === 'battle') Battle.init();
@@ -318,10 +458,9 @@ const App = {
 
     getChar: (uid) => App.data ? App.data.characters.find(c => c.uid === uid) : null,
 
-    // ステータス計算 (基礎*倍率 -> 振分 -> 装備)
     calcStats: (char) => {
         const lb = char.limitBreak || 0;
-        const multiplier = 1 + (lb * 0.05); // 限界突破補正 (+5%)
+        const multiplier = 1 + (lb * 0.05); 
         
         let s = {
             maxHp: Math.floor(char.hp * multiplier),
@@ -334,7 +473,6 @@ const App = {
         };
         CONST.ELEMENTS.forEach(e => { s.elmAtk[e]=0; s.elmRes[e]=0; });
 
-        // 主人公の振分ポイント
         if(char.uid === 'p1' && char.alloc) {
             for(let key in char.alloc) {
                 const [type, elm] = key.split('_');
@@ -343,7 +481,6 @@ const App = {
             }
         }
 
-        // 装備補正
         CONST.PARTS.forEach(part => {
             const eq = char.equips ? char.equips[part] : null;
             if(eq) {
@@ -400,8 +537,17 @@ const App = {
         return eq;
     },
     checkSynergy: (eq) => { if(!eq.opts||eq.opts.length<3) return null; const fk=eq.opts[0].key; if(eq.opts.every(o=>o.key===fk)) return DB.SYNERGIES.find(s=>s.key===fk&&s.count<=eq.opts.length); return null; },
-    log: (msg) => { const e=document.getElementById('msg-text'); if(e) e.innerText=msg; },
-    // ★修正: 詳細なキャラ表示HTML生成 (Lv, HP, MP, ステータスを表示)
+
+// --- ログ表示 ---
+    log: (msg) => {
+        const e = document.getElementById('msg-text');
+        if(e) {
+            // ★修正: 履歴を残さず、常に新しいメッセージで上書きする
+            e.innerHTML = msg; 
+        }
+        console.log(`[App] ${msg}`);
+    },
+    
     createCharHTML: (c) => {
         const s = App.calcStats(c);
         const hp = c.currentHp !== undefined ? c.currentHp : s.maxHp;
@@ -425,8 +571,80 @@ const App = {
                 </div>
             </div>
         </div>`;
+    },
+
+    getNextExp: (char) => {
+        if (char.level >= CONST.MAX_LEVEL) return Infinity;
+        const base = CONST.EXP_BASE * Math.pow(CONST.EXP_GROWTH, char.level - 1);
+        const rarityMult = CONST.RARITY_EXP_MULT[char.rarity] || 1.0;
+        return Math.floor(base * rarityMult);
+    },
+
+    gainExp: (charData, expGain) => {
+        if (!charData.exp) charData.exp = 0;
+        charData.exp += expGain;
+        let logs = [];
+        
+        while (charData.level < CONST.MAX_LEVEL) {
+            const nextExp = App.getNextExp(charData);
+            if (charData.exp >= nextExp) {
+                charData.exp -= nextExp;
+                charData.level++;
+                
+                // 基礎ステータス上昇
+                const growRate = 0.02 + Math.random() * 0.03;
+                const incHp = Math.max(1, Math.floor(charData.hp * growRate));
+                const incMp = Math.max(1, Math.floor(charData.mp * growRate));
+                const incAtk = Math.max(1, Math.floor(charData.atk * growRate));
+                const incDef = Math.max(1, Math.floor(charData.def * growRate));
+                const incSpd = Math.max(1, Math.floor(charData.spd * growRate));
+                const incMag = Math.max(1, Math.floor(charData.mag * growRate));
+
+                charData.hp += incHp;
+                charData.mp += incMp;
+                charData.atk += incAtk;
+                charData.def += incDef;
+                charData.spd += incSpd;
+                charData.mag += incMag;
+                
+                // ★修正: 全回復ボーナス (装備補正込みの最大値まで回復させる)
+                // 以前は charData.currentHp = charData.hp (素のHP) としていたため、装備分が減って見えていました。
+                const stats = App.calcStats(charData);
+                charData.currentHp = stats.maxHp;
+                charData.currentMp = stats.maxMp;
+
+                let logMsg = `${charData.name}はLv${charData.level}になった！<br>` +
+                             `HP+${incHp}, MP+${incMp}, 攻+${incAtk}, 防+${incDef}, 速+${incSpd}, 魔+${incMag}`;
+
+                const newSkill = App.checkNewSkill(charData);
+                if (newSkill) {
+                    logMsg += `<br><span style="color:#ffff00;">${newSkill.name}を覚えた！</span>`;
+                }
+                logs.push(logMsg);
+            } else {
+                break;
+            }
+        }
+        return logs;
+    },
+
+    checkNewSkill: (charData) => {
+        const LEARN_TABLE = {
+            '戦士': { 5: 40, 10: 41, 20: 50 },
+            '僧侶': { 5: 20, 10: 21, 20: 22, 30: 30 },
+            '魔法剣士': { 5: 10, 10: 40, 20: 12 },
+            '賢者': { 5: 11, 10: 21, 20: 13, 30: 22 },
+            '勇者': { 5: 20, 10: 40, 20: 42, 30: 22, 40: 301 }
+        };
+        const table = LEARN_TABLE[charData.job];
+        if (table && table[charData.level]) {
+            const skillId = table[charData.level];
+            return DB.SKILLS.find(s => s.id === skillId);
+        }
+        return null;
     }
 };
+
 
 /* ==========================================================================
    フィールド処理
