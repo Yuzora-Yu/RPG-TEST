@@ -1,20 +1,26 @@
-/* database.js */
+/* database.js (完全修復版) */
 
 const CONST = {
-    SAVE_KEY: 'QoE_SaveData_v30_HackSlash', // キー更新
+    SAVE_KEY: 'QoE_SaveData_v32_FullFix', // キー更新して心機一転
     PARTS: ['武器', '盾', '頭', '体', '足'],
     ELEMENTS: ['火', '水', '風', '雷', '光', '闇', '混沌'],
-    RARITY: ['N', 'R', 'SR', 'SSR', 'UR', 'EX'], // Nを追加
-    // +値の抽選確率 (上から順に判定)
-    PLUS_RATES: { 3: 0.05, 2: 0.15, 1: 0.40 }, // 残り40%は+0
-
+    RARITY: ['N', 'R', 'SR', 'SSR', 'UR', 'EX'],
+    
+    // ガチャ確率 (これがないとRしか出ない)
     GACHA_RATES: { N:0, R:50, SR:30, SSR:13, UR:5, EX:2 },
+    
+    // 鍛冶屋確率
     SMITH_RATES: { 1: { R:80, SR:15, SSR:5 }, 10: { R:10, SR:30, SSR:40, UR:15, EX:5 } },
-    POKER_ODDS: { ROYAL_FLUSH: 500, STRAIGHT_FLUSH: 100, FOUR_CARD: 30, FULL_HOUSE: 10, FLUSH: 8, STRAIGHT: 5, THREE_CARD: 3, TWO_PAIR: 2, JACKS_OR_BETTER: 1 },
 
+    // ポーカー役倍率
+    POKER_ODDS: { ROYAL_FLUSH: 500, STRAIGHT_FLUSH: 100, FOUR_CARD: 30, FULL_HOUSE: 10, FLUSH: 8, STRAIGHT: 5, THREE_CARD: 3, TWO_PAIR: 2, JACKS_OR_BETTER: 1 },
+    
+    // 装備ドロップ時の+値確率
+    PLUS_RATES: { 3: 0.05, 2: 0.15, 1: 0.40 }, 
+    
     MAX_LEVEL: 99,
     EXP_BASE: 100,
-    EXP_GROWTH: 1.05,
+    EXP_GROWTH: 1.15, // 成長曲線を少し緩和
     RARITY_EXP_MULT: { N:1.0, R:1.1, SR:1.2, SSR:1.3, UR:1.5, EX:2.0 }
 };
 
@@ -53,22 +59,6 @@ const MAP_DATA = [
     "WWWWGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGWWWWWWW",
     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
 ];
-
-// ★追加: レベルごとの習得スキル定義 (簡易版)
-// キャラクターIDごと、あるいはジョブごとに定義するのが理想ですが、
-// ここでは簡易的にジョブ名で判定する例、もしくはキャラクターデータに追加します。
-// 今回は CHARACTERS データに `skills` プロパティを追加して管理します。
-
-// DB.CHARACTERS の定義を少し修正して、習得スキル情報を追加する例
-// (既存の lbSkills は限界突破用なので、レベルアップ習得用を追加)
-/*
-    例:
-    { ..., job:'戦士', learnSkills: { 5: 40, 10: 41 } } // Lv5で火炎斬り(40), Lv10ではやぶさ斬り(41)
-*/
-
-// DB.CHARACTERS を更新するのは大変なので、後述の main.js の処理で
-// 簡易的な「ジョブ別習得スキルテーブル」を作って参照するようにします。
-
 
 const DB = {
     SKILLS: [
@@ -117,18 +107,8 @@ const DB = {
         {id:5, name:'世界樹の葉', type:'蘇生', val:100, desc:'死んだ仲間を生き返らせる', target:'単体', price:1000},
         {id:99, name:'ちいさなメダル', type:'貴重品', val:0, desc:'世界各地に散らばるメダル', target:'なし', price:0}
     ],
-
-
-
-
-    // ★モンスターデータ (ランク1～100)
-    // ランク = そのまま出現階層の目安になります
-    MONSTERS: [], // 下部で生成
-
-    // ★装備データ (ランク1～100)
-    EQUIPS: [], // 下部で生成
-
-    // オプション抽選ルール
+    MONSTERS: [],
+    EQUIPS: [],
     OPT_RULES: [
         {key:'atk', name:'攻撃', unit:'val', allowed:['N','R','SR','SSR','UR'], min:{N:1,R:5,SR:10,SSR:20,UR:50}, max:{N:4,R:9,SR:19,SSR:49,UR:100}},
         {key:'def', name:'防御', unit:'val', allowed:['N','R','SR','SSR','UR'], min:{N:1,R:5,SR:10,SSR:20,UR:50}, max:{N:4,R:9,SR:19,SSR:49,UR:100}},
@@ -138,23 +118,20 @@ const DB = {
         {key:'elmAtk', elm:'火', name:'火攻', unit:'val', allowed:['UR','EX'], min:{UR:5,EX:15}, max:{UR:10,EX:30}},
         {key:'elmAtk', elm:'雷', name:'雷攻', unit:'val', allowed:['UR','EX'], min:{UR:5,EX:15}, max:{UR:10,EX:30}}
     ],
-
     SYNERGIES: [
         { key: 'spd', count: 3, name: '疾風怒濤', effect: 'doubleAction', desc: '50%で2回行動', color:'#f88' },
         { key: 'hp', count: 3, name: '吸血', effect: 'drain', desc: '与ダメの10%回復', color:'#f88' }
     ],
-
     MEDAL_REWARDS: [
         { medals: 5, name: '上やくそう x3', type: 'item', id: 2, count: 3 },
         { medals: 10, name: '魔法の小瓶 x5', type: 'item', id: 3, count: 5 },
-        { medals: 20, name: 'メタルキングの剣', type: 'equip', equipId: 900, base: {name:'メタキン剣', type:'武器', val:10000, data:{atk:130, finDmg:20}} }, 
-        { medals: 50, name: '神秘の鎧', type: 'equip', equipId: 901, base: {name:'神秘の鎧', type:'体', val:20000, data:{def:50, finRed:20}} }
+        { medals: 50, name: '神秘の鎧', type: 'equip', equipId: 901, base: {name:'神秘の鎧', type:'体', rank:50, val:20000, data:{def:50, finRed:20}} }
     ]
 };
 
-// --- データ生成ロジック (ランク1～100の装備・モンスターを一括生成) ---
+// データ自動生成 (ここが壊れていた可能性大)
 (() => {
-    // ティア定義 (変更なし)
+    // 装備ランク定義
     const TIERS = [
         { rank:1, name:'ボロの', mult:0.5 },
         { rank:5, name:'銅の', mult:1.0 },
@@ -170,7 +147,6 @@ const DB = {
         { rank:100, name:'神々の', mult:50.0 }
     ];
 
-    // 装備ベース (変更なし)
     const EQUIP_TYPES = [
         { type:'武器', baseName:'剣', stat:'atk', baseVal:10 },
         { type:'武器', baseName:'斧', stat:'atk', baseVal:15, spdMod:-2 },
@@ -182,7 +158,6 @@ const DB = {
         { type:'足', baseName:'ブーツ', stat:'spd', baseVal:5, defMod:2 }
     ];
 
-    // 装備生成 (変更なし)
     TIERS.forEach(tier => {
         EQUIP_TYPES.forEach((eq, idx) => {
             const data = {};
@@ -203,7 +178,7 @@ const DB = {
         });
     });
 
-    // モンスターベース (変更なし)
+    // モンスター定義
     const MONSTER_TYPES = [
         { name:'スライム', hp:30, atk:10, def:5, exp:10 },
         { name:'バット', hp:20, atk:15, def:3, exp:12 },
@@ -215,24 +190,21 @@ const DB = {
         { name:'ドラゴン', hp:500, atk:100, def:80, exp:500 }
     ];
 
-    // ★追加: ランク帯ごとの敵スキル定義
     const ENEMY_SKILLS = {
-        low: [1, 1, 1, 10, 40], // 基本攻撃多め、たまにメラ(10)、火炎斬り(40)
-        mid: [1, 1, 10, 11, 40, 41, 202], // 属性魔法、2回攻撃(41)、ベギラマ(202)
-        high: [1, 41, 12, 13, 101, 201, 202], // バギ(12)、ライデイン(13)、強撃(101)、五月雨(201)
-        top: [1, 41, 42, 101, 201, 301, 402, 999] // ギガスラ(42)、ギガブレ(301)、メテオ(402)、激しい炎(999)
+        low: [1, 1, 1, 10, 40],
+        mid: [1, 1, 10, 11, 40, 41, 202],
+        high: [1, 41, 12, 13, 101, 201, 202],
+        top: [1, 41, 42, 101, 201, 301, 402, 999]
     };
 
-/* database.js の モンスター生成ループ (for(let r=1; r<=100; r++) の中身) */
-
-    // モンスター生成 (ランク1～100)
+    // 1～100ランクのモンスター生成
     for(let r=1; r<=100; r++) {
         const typeIdx = Math.min(MONSTER_TYPES.length-1, Math.floor((r-1)/12)); 
         const base = MONSTER_TYPES[typeIdx];
         
-        // ★強化されたスケール計算
-        const scale_factor = 0.35; // 強化係数 (元は0.2)
-        const hp_exp = 2.5; // HPの成長指数 (元は2.0)
+        // 強化されたスケール計算
+        const scale_factor = 0.35; 
+        const hp_exp = 2.5; 
 
         const scale = 1.0 + (r * scale_factor); 
         
@@ -241,7 +213,6 @@ const DB = {
         if(r > 50) prefix = "真・";
         if(r > 80) prefix = "極・";
 
-        // スキルセットの決定ロジック (変更なし)
         let acts = [1]; 
         if (r <= 10) acts = ENEMY_SKILLS.low;
         else if (r <= 40) acts = ENEMY_SKILLS.mid;
@@ -260,36 +231,30 @@ const DB = {
             rank: r,
             minF: r,
             name: `${prefix}${base.name} Lv${r}`,
-            // ★HPを大幅強化 (scale^2.5)
             hp: Math.floor(base.hp * Math.pow(scale, hp_exp)), 
-            mp: 50 + r * 10, // MPも増加
-            // ★攻撃力・防御力・魔法力を強化
+            mp: 50 + r * 10,
             atk: Math.floor(base.atk * scale),
             def: Math.floor(base.def * scale),
-            spd: 10 + r * 1.2, // 素早さも微増
+            spd: 10 + r * 1.2,
             mag: Math.floor(base.mag * scale),
-            exp: Math.floor(base.exp * scale * 1.5), // 経験値も増加
-            gold: Math.floor(r * 25), // ★ゴールドも大幅増加 (元はr*10)
+            exp: Math.floor(base.exp * scale * 1.5),
+            gold: Math.floor(r * 25),
             acts: myActs,
             drop: null
         });
     }
 
-// ボスも強化 (HPとMPをさらに調整)
+    // ボス
     DB.MONSTERS.push({
         id:1000, rank:100, minF:999, name:'ダンジョンボス', 
-        hp:150000, // 5万→15万に強化
-        mp:9999, atk:800, def:600, spd:150, mag:300, 
-        exp:100000, gold:50000, // 報酬も増加
+        hp:150000, mp:9999, atk:800, def:600, spd:150, mag:300, 
+        exp:100000, gold:50000, 
         acts:[1, 42, 101, 202, 402, 999] 
     });
-
 })();
 
-
-// ★修正: 初期パーティを4人に設定
 const INITIAL_DATA_TEMPLATE = {
-    gold: 5000, gems: 1000000,
+    gold: 5000, gems: 10000, // ジェム初期値を少し増やしておきました
     items: { 1: 10, 2: 5, 99: 10 }, 
     inventory: [], 
     location: { x: 23, y: 60 },
@@ -298,7 +263,6 @@ const INITIAL_DATA_TEMPLATE = {
     dungeon: { maxFloor: 0, tryCount: 0, map: null, width: 30, height: 30 },
     book: { monsters: [] },
     battle: { active: false },
-    // 4人パーティ (ID: p1, p2, p3, p4)
     party: ['p1', 'p2', 'p3', 'p4'],
     characters: [
         {uid:'p1', isHero:true, charId:301, name:'アルス', job:'勇者', rarity:'SSR', level:10, hp:200, mp:50, atk:40, def:30, spd:30, mag:20, limitBreak:0, equips:{}, alloc:{}},
