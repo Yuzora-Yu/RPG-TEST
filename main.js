@@ -261,14 +261,59 @@ const App = {
             }
         });
 
-        // ボタン設定
-        const bind = (id, fn) => { const el = document.getElementById(id); if(el) el.onclick = fn; };
-        bind('btn-up', () => Field.move(0, -1));
-        bind('btn-down', () => Field.move(0, 1));
-        bind('btn-left', () => Field.move(-1, 0));
-        bind('btn-right', () => Field.move(1, 0));
-        bind('btn-menu', () => Menu.openMainMenu());
-        bind('btn-ok', () => { if(App.pendingAction) App.executeAction(); else Menu.openMainMenu(); });
+                // ▼▼▼ ここから下を書き換え（長押し対応） ▼▼▼
+
+        // 長押し移動用のタイマー変数
+        let moveTimer = null;
+
+        // 移動開始（初回実行＋ループ開始）
+        const startMove = (dx, dy) => {
+            if(moveTimer) clearInterval(moveTimer);
+            if(Menu.isMenuOpen()) return; // メニュー中は動かない
+            
+            Field.move(dx, dy); // タップした瞬間に1歩動く
+            
+            // 0.15秒ごとに移動を繰り返す
+            moveTimer = setInterval(() => {
+                if(Menu.isMenuOpen()) { stopMove(); return; }
+                Field.move(dx, dy);
+            }, 150); 
+        };
+
+        // 移動停止
+        const stopMove = (e) => {
+            if(e) e.preventDefault(); // スマホでの誤作動防止
+            if(moveTimer) clearInterval(moveTimer);
+            moveTimer = null;
+        };
+
+        // ボタンにイベントを登録する関数
+        const bindPad = (id, dx, dy) => {
+            const el = document.getElementById(id);
+            if(!el) return;
+
+            // PC (マウス操作)
+            el.onmousedown = (e) => { e.preventDefault(); startMove(dx, dy); };
+            el.onmouseup = stopMove;
+            el.onmouseleave = stopMove;
+
+            // スマホ (タッチ操作)
+            el.ontouchstart = (e) => { e.preventDefault(); startMove(dx, dy); };
+            el.ontouchend = stopMove;
+        };
+
+        // 十字キーの設定
+        bindPad('btn-up', 0, -1);
+        bindPad('btn-down', 0, 1);
+        bindPad('btn-left', -1, 0);
+        bindPad('btn-right', 1, 0);
+
+        // その他のボタン (これらはワンクリックでOK)
+        const bindClick = (id, fn) => { const el = document.getElementById(id); if(el) el.onclick = fn; };
+        bindClick('btn-menu', () => Menu.openMainMenu());
+        bindClick('btn-ok', () => { if(App.pendingAction) App.executeAction(); else Menu.openMainMenu(); });
+
+        // ▲▲▲ 書き換えここまで ▲▲▲
     },
 
     setAction: (label, callback) => {
