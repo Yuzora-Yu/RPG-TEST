@@ -1,4 +1,4 @@
-/* gacha.js */
+/* gacha.js (完全版: 確率表示修正 + 激アツ演出対応) */
 
 const Gacha = {
     queue: [],
@@ -16,17 +16,17 @@ const Gacha = {
         document.getElementById('gacha-confirm-view').style.display = (view==='confirm'?'flex':'none');
     },
 
+    // ★修正済み: 提供割合表示
     showRates: () => {
         const modal = document.getElementById('modal-rates');
         const content = document.getElementById('rates-content');
         
-        // ★ここが重要：JSで強制的に優先度をガチャ画面(500)より高くする
+        // 強制的に優先度を高くする
         modal.style.zIndex = 750;
         modal.style.display = 'flex';
         
         let html = `<h3>レアリティ別提供割合</h3>`;
         
-        // 確率表示（N:0% は表示しないように > 0 でフィルタ）
         for(let r of CONST.RARITY.slice().reverse()) {
             if (CONST.GACHA_RATES[r] > 0) {
                 html += `<div>${r}: ${CONST.GACHA_RATES[r]}%</div>`;
@@ -35,14 +35,11 @@ const Gacha = {
 
         html += `<hr><h3>排出対象一覧</h3>`;
         
-        // キャラ一覧表示
         for(let r of CONST.RARITY.slice().reverse()) {
-            // 排出率0%のレアリティ（Nなど）はリストに出さない
             if (CONST.GACHA_RATES[r] <= 0) continue;
 
             const targets = DB.CHARACTERS.filter(c => c.rarity === r);
             if(targets.length > 0) {
-                // 文字色設定
                 let color = '#fff';
                 if(r==='EX') color = '#ff0';
                 else if(r==='UR') color = '#f0f';
@@ -55,7 +52,6 @@ const Gacha = {
         }
         content.innerHTML = html;
     },
-
 
     pull: (count) => {
         const cost = count * 300;
@@ -108,7 +104,6 @@ const Gacha = {
         }
         App.save();
         
-        // 白転演出開始
         Gacha.playWhiteFlash(hasEX);
     },
 
@@ -128,17 +123,19 @@ const Gacha = {
     playWhiteFlash: (hasEX) => {
         const wo = document.getElementById('white-out-overlay');
         
-        // EX確定時は途中で黒くなるクラスを付与
         if(hasEX) wo.classList.add('black-turn');
         else wo.classList.remove('black-turn');
         
         wo.style.display = 'block';
-        void wo.offsetWidth; // リフロー
+        void wo.offsetWidth; 
         wo.style.opacity = 1;
 
         setTimeout(() => {
             document.getElementById('sub-screen-gacha').style.display = 'none';
-            document.getElementById('gacha-performance').style.display = 'flex';
+            // ★ここ重要: 演出画面も強制的に最前面へ
+            const stage = document.getElementById('gacha-performance');
+            stage.style.display = 'flex';
+            
             Gacha.currentIndex = 0;
             Gacha.isSkipped = false;
             
@@ -149,12 +146,10 @@ const Gacha = {
                 wo.style.display = 'none';
                 wo.classList.remove('black-turn');
             }, 500);
-        }, hasEX ? 1500 : 500); // EX時は少し溜める
+        }, hasEX ? 1500 : 500); 
     },
 
- 
-/* gacha.js - drawNextCard の大幅強化版 */
-
+    // ★最新版: 激アツ演出対応ロジック
     drawNextCard: () => {
         if (Gacha.isSkipped) return;
         if (Gacha.currentIndex >= Gacha.queue.length) {
@@ -182,7 +177,7 @@ const Gacha = {
         card.className = 'gacha-card-scene';
         
         // --- 演出パターン決定ロジック ---
-        // 高レア(UR/EX)の場合、カード背面をあえて「銀(R)」や「金(SR)」に偽装する（昇格演出用）
+        // 高レア(UR/EX)の場合、カード背面をあえて「銀(R)」や「金(SR)」に偽装する
         let isFakeSilver = false;
         let playPromotion = false; // 昇格演出フラグ
         let playGodRay = false;    // 天撃演出フラグ
@@ -224,38 +219,34 @@ const Gacha = {
         // --- タップ時の処理 ---
         card.onclick = () => {
             if(card.classList.contains('flipped')) {
-                // 既に開いていれば次へ
                 Gacha.currentIndex++;
                 Gacha.drawNextCard();
                 return;
             }
 
-            // 操作ブロック
             card.style.pointerEvents = 'none';
 
-            // --- 演出実行関数 ---
+            // めくり実行関数
             const doFlip = () => {
                 card.classList.add('flipped');
-                card.style.pointerEvents = 'auto'; // 操作再開
+                card.style.pointerEvents = 'auto';
                 
                 // 開いた瞬間のフラッシュ (高レアのみ)
                 if(['SSR','UR','EX'].includes(char.rarity)) {
                     const flash = document.getElementById('flash-overlay');
                     flash.style.display = 'block';
-                    flash.className = 'flash-anim'; // index.htmlにある既存クラス
+                    flash.className = 'flash-anim';
                     setTimeout(()=> { flash.style.display='none'; flash.className=''; }, 300);
                 }
             };
 
             // 1. 【昇格演出】（銀色がガタガタ震えて虹色に割れる）
             if (playPromotion) {
-                card.classList.add('card-crack-anim'); // 激しく震える
+                card.classList.add('card-crack-anim');
                 setTimeout(() => {
-                    // 背面を虹色に差し替え
                     const back = card.querySelector('.card-back');
                     back.className = 'card-face card-back rare-rainbow';
                     
-                    // 強烈なフラッシュ
                     const flash = document.getElementById('flash-overlay');
                     flash.style.display = 'block';
                     flash.className = 'flash-anim';
@@ -263,9 +254,9 @@ const Gacha = {
                         flash.style.display='none'; 
                         flash.className='';
                         card.classList.remove('card-crack-anim');
-                        doFlip(); // めくる
+                        doFlip(); 
                     }, 200);
-                }, 500); // 0.5秒タメる
+                }, 500);
                 return;
             }
 
@@ -278,32 +269,27 @@ const Gacha = {
                 setTimeout(() => {
                     layer.style.display = 'none';
                     doFlip();
-                }, 1500); // 1.5秒演出
+                }, 1500); 
                 return;
             }
 
             // 3. 【カットイン演出】（文字がドーン！）
             if (playCutIn) {
                 layer.style.display = 'block';
-                effBg.className = 'god-ray-bg'; // 背景暗く
+                effBg.className = 'god-ray-bg'; 
                 effText.className = 'cut-in-text';
                 effText.innerHTML = char.rarity === 'EX' ? "神 降 臨" : "激 熱 !!";
                 
                 setTimeout(() => {
                     layer.style.display = 'none';
                     doFlip();
-                }, 800); // 0.8秒演出
+                }, 800);
                 return;
             }
 
             // 通常オープン
             doFlip();
         };
-    },
-
-
-    nextStep: () => {
-        // タップ待ちにするため、自動では進まない (タップで currentIndex++ して drawNextCard)
     },
 
     skip: () => {
@@ -314,6 +300,9 @@ const Gacha = {
     finish: () => {
         document.getElementById('gacha-performance').style.display = 'none';
         document.getElementById('freeze-overlay').style.display = 'none';
+        // 演出レイヤーも隠す
+        const layer = document.getElementById('gacha-effect-layer');
+        if(layer) layer.style.display = 'none';
         
         const overlay = document.getElementById('gacha-result-overlay');
         const list = document.getElementById('gacha-results-list');
@@ -353,7 +342,7 @@ const Gacha = {
     closeResult: () => {
         document.getElementById('gacha-result-overlay').style.display = 'none';
         document.getElementById('sub-screen-gacha').style.display = 'flex';
-        Gacha.init(); // 表示更新
+        Gacha.init(); 
         if(typeof Menu!=='undefined') Menu.renderPartyBar();
     },
 
@@ -366,14 +355,6 @@ const Gacha = {
         return '#333';
     },
     getRarityTextColor: (r) => {
-        if(r==='R') return 'silver';
-        if(r==='SR') return 'gold';
-        if(r==='SSR') return '#ff4444';
-        if(r==='UR') return '#ff00ff';
-        if(r==='EX') return '#ffff00';
-        return '#fff';
-    },
-    getRarityBorder: (r) => {
         if(r==='R') return 'silver';
         if(r==='SR') return 'gold';
         if(r==='SSR') return '#ff4444';
