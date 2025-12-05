@@ -154,7 +154,7 @@ const DB = {
 
 // --- データ生成ロジック (ランク1～100の装備・モンスターを一括生成) ---
 (() => {
-    // ティア定義 (名前の接頭辞と基礎パラメータ倍率)
+    // ティア定義 (変更なし)
     const TIERS = [
         { rank:1, name:'ボロの', mult:0.5 },
         { rank:5, name:'銅の', mult:1.0 },
@@ -170,7 +170,7 @@ const DB = {
         { rank:100, name:'神々の', mult:50.0 }
     ];
 
-    // 装備ベース
+    // 装備ベース (変更なし)
     const EQUIP_TYPES = [
         { type:'武器', baseName:'剣', stat:'atk', baseVal:10 },
         { type:'武器', baseName:'斧', stat:'atk', baseVal:15, spdMod:-2 },
@@ -182,7 +182,7 @@ const DB = {
         { type:'足', baseName:'ブーツ', stat:'spd', baseVal:5, defMod:2 }
     ];
 
-    // 装備生成
+    // 装備生成 (変更なし)
     TIERS.forEach(tier => {
         EQUIP_TYPES.forEach((eq, idx) => {
             const data = {};
@@ -197,13 +197,13 @@ const DB = {
                 name: `${tier.name}${eq.baseName}`,
                 type: eq.type,
                 val: tier.rank * 100,
-                minF: tier.rank, // 出現階層目安
+                minF: tier.rank,
                 data: data
             });
         });
     });
 
-    // モンスターベース
+    // モンスターベース (変更なし)
     const MONSTER_TYPES = [
         { name:'スライム', hp:30, atk:10, def:5, exp:10 },
         { name:'バット', hp:20, atk:15, def:3, exp:12 },
@@ -215,39 +215,74 @@ const DB = {
         { name:'ドラゴン', hp:500, atk:100, def:80, exp:500 }
     ];
 
-    // モンスター生成 (ランク1～100までを埋める)
+    // ★追加: ランク帯ごとの敵スキル定義
+    const ENEMY_SKILLS = {
+        low: [1, 1, 1, 10, 40], // 基本攻撃多め、たまにメラ(10)、火炎斬り(40)
+        mid: [1, 1, 10, 11, 40, 41, 202], // 属性魔法、2回攻撃(41)、ベギラマ(202)
+        high: [1, 41, 12, 13, 101, 201, 202], // バギ(12)、ライデイン(13)、強撃(101)、五月雨(201)
+        top: [1, 41, 42, 101, 201, 301, 402, 999] // ギガスラ(42)、ギガブレ(301)、メテオ(402)、激しい炎(999)
+    };
+
+/* database.js の モンスター生成ループ (for(let r=1; r<=100; r++) の中身) */
+
+    // モンスター生成 (ランク1～100)
     for(let r=1; r<=100; r++) {
-        // ランクに応じて強さをスケーリング
-        // 10ランクごとにベースモンスターが切り替わるイメージ
         const typeIdx = Math.min(MONSTER_TYPES.length-1, Math.floor((r-1)/12)); 
         const base = MONSTER_TYPES[typeIdx];
-        const scale = 1.0 + (r * 0.2); // ランクごとの倍率
         
-        // 名前接頭辞
+        // ★強化されたスケール計算
+        const scale_factor = 0.35; // 強化係数 (元は0.2)
+        const hp_exp = 2.5; // HPの成長指数 (元は2.0)
+
+        const scale = 1.0 + (r * scale_factor); 
+        
         let prefix = "";
         if(r % 10 >= 5) prefix = "強・";
         if(r > 50) prefix = "真・";
         if(r > 80) prefix = "極・";
 
+        // スキルセットの決定ロジック (変更なし)
+        let acts = [1]; 
+        if (r <= 10) acts = ENEMY_SKILLS.low;
+        else if (r <= 40) acts = ENEMY_SKILLS.mid;
+        else if (r <= 80) acts = ENEMY_SKILLS.high;
+        else acts = ENEMY_SKILLS.top;
+
+        const myActs = [1];
+        const skillCount = r > 50 ? 3 : 2; 
+        for(let i=0; i<skillCount; i++) {
+            const skill = acts[Math.floor(Math.random() * acts.length)];
+            if(!myActs.includes(skill)) myActs.push(skill);
+        }
+
         DB.MONSTERS.push({
             id: r,
             rank: r,
-            minF: r, // 出現階層
+            minF: r,
             name: `${prefix}${base.name} Lv${r}`,
-            hp: Math.floor(base.hp * scale * scale), // HPは二次関数的に増やす
-            mp: 10 + r * 2,
+            // ★HPを大幅強化 (scale^2.5)
+            hp: Math.floor(base.hp * Math.pow(scale, hp_exp)), 
+            mp: 50 + r * 10, // MPも増加
+            // ★攻撃力・防御力・魔法力を強化
             atk: Math.floor(base.atk * scale),
             def: Math.floor(base.def * scale),
-            spd: 10 + r,
-            mag: 10 + r,
-            exp: Math.floor(base.exp * scale),
-            gold: Math.floor(r * 10),
-            acts: [1], // 基本攻撃のみ (手抜き)
-            drop: null // ドロップはロジックで決定するためnullでOK
+            spd: 10 + r * 1.2, // 素早さも微増
+            mag: Math.floor(base.mag * scale),
+            exp: Math.floor(base.exp * scale * 1.5), // 経験値も増加
+            gold: Math.floor(r * 25), // ★ゴールドも大幅増加 (元はr*10)
+            acts: myActs,
+            drop: null
         });
     }
-    // ボス
-    DB.MONSTERS.push({id:1000, rank:100, minF:999, name:'ダンジョンボス', hp:50000, mp:1000, atk:500, def:300, spd:100, mag:100, exp:50000, gold:10000, acts:[1,100]});
+
+// ボスも強化 (HPとMPをさらに調整)
+    DB.MONSTERS.push({
+        id:1000, rank:100, minF:999, name:'ダンジョンボス', 
+        hp:150000, // 5万→15万に強化
+        mp:9999, atk:800, def:600, spd:150, mag:300, 
+        exp:100000, gold:50000, // 報酬も増加
+        acts:[1, 42, 101, 202, 402, 999] 
+    });
 
 })();
 
