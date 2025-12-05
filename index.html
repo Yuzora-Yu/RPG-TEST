@@ -39,87 +39,22 @@
         #action-indicator { display: none; margin-top: 5px; background: var(--accent); color: #000; font-weight: bold; padding: 8px 20px; border-radius: 4px; cursor: pointer; animation: pulse 1s infinite; pointer-events: auto; }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
-        /* --- コントローラーエリアのスタイル変更 --- */
-        #controls { 
-            /* 高さを拡張して大きなボタンが入るようにする */
-            height: 260px; 
-            background: #222; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            /* 左右の余白を少し詰めてボタン領域を確保 */
-            padding: 10px 10px; 
-            flex-shrink: 0; 
-            border-top: 2px solid #fff; 
-        }
-
-        /* 十字キーのグリッド配置設定 */
-        .dpad { 
-            display: grid; 
-            /* 65px x 3列 */
-            grid-template-columns: 65px 65px 65px; 
-            /* 65px x 3行 */
-            grid-template-rows: 65px 65px 65px; 
-            gap: 5px; 
-            /* エリア定義で配置を指定 */
-            grid-template-areas: 
-                ".    up    ."
-                "left  .   right"
-                ".   down   .";
-        }
-
-        /* 各ボタンを定義したエリアに配置 */
-        .d-up    { grid-area: up; }
-        .d-left  { grid-area: left; }
-        .d-right { grid-area: right; }
-        .d-down  { grid-area: down; }
-
-        /* 十字キーボタンの見た目 */
-        .btn-d { 
-            background: #333; 
-            border: 2px solid #666; 
-            color: #fff; 
-            font-size: 28px; /* 矢印を見やすく大きく */
-            border-radius: 8px; /* 角を少し丸く */
-            cursor: pointer; 
-        }
-        .btn-d:active {
-            background: #555;
-            transform: scale(0.95);
-        }
-
-        /* 右側のアクションボタンエリア */
-        .action-pad { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 20px; /* ボタン間隔を広げる */
-            width: 90px; /* 十字キー圧迫回避のため少し幅調整 */
-        }
-
-        /* MENU/決定ボタンの見た目 */
-        .btn-act { 
-            background: #404080; 
-            border: 2px solid #6688ff; 
-            color: #fff; 
-            height: 60px; /* こちらも押しやすく高く */
-            border-radius: 8px; 
-            font-family: inherit; 
-            font-size: 16px; 
-            cursor: pointer; 
-        }
-        .btn-act:active {
-            background: #5050a0;
-            transform: scale(0.95);
-        }
+        /* --- コントローラーエリア --- */
+        #controls { height: 260px; background: #222; display: flex; justify-content: space-between; align-items: center; padding: 10px 10px; flex-shrink: 0; border-top: 2px solid #fff; }
+        .dpad { display: grid; grid-template-columns: 65px 65px 65px; grid-template-rows: 65px 65px 65px; gap: 5px; grid-template-areas: ". up ." "left . right" ". down ."; }
+        .d-up { grid-area: up; } .d-left { grid-area: left; } .d-right { grid-area: right; } .d-down { grid-area: down; }
+        .btn-d { background: #333; border: 2px solid #666; color: #fff; font-size: 28px; border-radius: 8px; cursor: pointer; }
+        .btn-d:active { background: #555; transform: scale(0.95); }
+        .action-pad { display: flex; flex-direction: column; gap: 20px; width: 90px; }
+        .btn-act { background: #404080; border: 2px solid #6688ff; color: #fff; height: 60px; border-radius: 8px; font-family: inherit; font-size: 16px; cursor: pointer; }
+        .btn-act:active { background: #5050a0; transform: scale(0.95); }
 
         /* メニュー共通 */
         #menu-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 100; display: none; flex-direction: column; justify-content: center; align-items: center; }
         .menu-window { width: 90%; max-width: 400px; height: 80%; background: #222; border: 2px solid #fff; display: flex; flex-direction: column; }
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 20px; overflow-y: auto; flex: 1; }
         .menu-btn { background: #333; border: 1px solid #fff; color: #fff; padding: 15px; font-family: inherit; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .sub-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #101010; z-index: 500; display: none; flex-direction: column; }
-
-        /* Flex Column Container (サブ画面内部用) */
+        .sub-screen { position: absolute !important; top: 0 !important; left: 0 !important; width: 100%; height: 100%; background: #101010; z-index: 500; display: none; flex-direction: column; }
         .flex-col-container { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 
         /* キャラクター表示系 */
@@ -158,25 +93,13 @@
         #battle-list-window { top: 60px; bottom: 60px; }
         .battle-target-btn { background: #333; border: 1px solid #666; color: #fff; padding: 12px; margin: 2px; cursor: pointer; text-align: left; font-size: 14px; width: 100%; }
 
-/* ドロップ確定時のフラッシュ演出 */
-@keyframes flash-screen {
-    0% { opacity: 0; background: #fff; }
-    10% { opacity: 0.8; }
-    100% { opacity: 0; display: none; }
-}
-.flash-effect {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: #fff; z-index: 9999; pointer-events: none;
-    opacity: 0;
-}
-.flash-active {
-    animation: flash-screen 0.5s ease-out forwards;
-}
+        /* ドロップ確定時のフラッシュ演出 */
+        @keyframes flash-screen { 0% { opacity: 0; background: #fff; } 10% { opacity: 0.8; } 100% { opacity: 0; display: none; } }
+        .flash-effect { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; pointer-events: none; opacity: 0; }
+        .flash-active { animation: flash-screen 0.5s ease-out forwards; }
+        .log-rare-drop { color: #ff4444; font-weight: bold; text-shadow: 0 0 5px #f00; }
 
-/* ログの装飾用クラス */
-.log-rare-drop { color: #ff4444; font-weight: bold; text-shadow: 0 0 5px #f00; }
-
-        /* ガチャ演出 (省略・既存維持) */
+        /* ガチャ演出 */
         .gacha-card-scene { width: 200px; height: 300px; position: relative; transform-style: preserve-3d; transition: transform 0.6s; margin-bottom: 20px; }
         .gacha-card-scene.flipped { transform: rotateY(180deg); }
         .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 2px solid #fff; box-shadow: 0 0 15px rgba(255,255,255,0.2); }
@@ -187,80 +110,21 @@
         #white-out-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 500; display: none; opacity: 0; transition: opacity 0.3s, background-color 0.5s; pointer-events: none; }
         #white-out-overlay.black-turn { background-color: #000 !important; }
 
-        /* --- ガチャ激アツ演出用CSS --- */
-
-/* 演出レイヤー全体 */
-#gacha-effect-layer {
-    position: absolute !important; top: 0; left: 0; width: 100%; height: 100%;
-    z-index: 800; pointer-events: none; overflow: hidden;
-}
-
-/* 1. 天撃（God Ray）用 */
-.god-ray-bg {
-    background: radial-gradient(circle, transparent 20%, #000 90%);
-    animation: dim-screen 0.2s forwards;
-}
-.god-ray-beam {
-    position: absolute; top: 50%; left: 50%; width: 200%; height: 200%;
-    background: conic-gradient(from 0deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000);
-    transform: translate(-50%, -50%);
-    opacity: 0;
-    mix-blend-mode: hard-light;
-    animation: ray-spin 2s linear infinite, ray-appear 0.5s ease-out forwards;
-}
-@keyframes dim-screen { from {background:transparent;} to {background:rgba(0,0,0,0.8);} }
-@keyframes ray-spin { from {transform: translate(-50%, -50%) rotate(0deg);} to {transform: translate(-50%, -50%) rotate(360deg);} }
-@keyframes ray-appear { 0% {opacity:0; scale:0;} 50% {opacity:1; scale:1.5;} 100% {opacity:0; scale:3;} }
-
-/* 2. 昇格（Crack）用 */
-.card-crack-anim {
-    animation: shake-hard 0.5s ease-in-out, flash-white 0.2s 0.5s;
-}
-@keyframes shake-hard {
-    0% { transform: translate(0,0) rotate(0); }
-    25% { transform: translate(-5px, 5px) rotate(-5deg); }
-    50% { transform: translate(5px, -5px) rotate(5deg); }
-    75% { transform: translate(-5px, -5px) rotate(-5deg); }
-    100% { transform: translate(0,0) rotate(0); }
-}
-@keyframes flash-white {
-    0%, 100% { filter: brightness(1); }
-    50% { filter: brightness(10); } /* ピカッ！ */
-}
-
-/* 3. カットイン（Cut-In）用 */
-.cut-in-text {
-    position: absolute; top: 40%; left: 0; width: 100%;
-    text-align: center; font-size: 60px; font-weight: bold;
-    color: #ffd700; text-shadow: 4px 4px 0 #ff0000;
-    transform: scale(0) rotate(-10deg);
-    animation: text-smash 0.6s cubic-bezier(0.17, 0.67, 0.83, 0.67) forwards;
-}
-@keyframes text-smash {
-    0% { transform: scale(3) rotate(-10deg); opacity: 0; }
-    50% { transform: scale(1) rotate(-10deg); opacity: 1; }
-    90% { transform: scale(1) rotate(-10deg); opacity: 1; }
-    100% { transform: scale(1.5) rotate(-10deg); opacity: 0; }
-}
+        /* ガチャ激アツ演出 */
+        #gacha-effect-layer { position: absolute !important; top: 0; left: 0; width: 100%; height: 100%; z-index: 800; pointer-events: none; overflow: hidden; }
+        .god-ray-bg { background: radial-gradient(circle, transparent 20%, #000 90%); animation: dim-screen 0.2s forwards; }
+        .god-ray-beam { position: absolute; top: 50%; left: 50%; width: 200%; height: 200%; background: conic-gradient(from 0deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000); transform: translate(-50%, -50%); opacity: 0; mix-blend-mode: hard-light; animation: ray-spin 2s linear infinite, ray-appear 0.5s ease-out forwards; }
+        @keyframes dim-screen { from {background:transparent;} to {background:rgba(0,0,0,0.8);} }
+        @keyframes ray-spin { from {transform: translate(-50%, -50%) rotate(0deg);} to {transform: translate(-50%, -50%) rotate(360deg);} }
+        @keyframes ray-appear { 0% {opacity:0; scale:0;} 50% {opacity:1; scale:1.5;} 100% {opacity:0; scale:3;} }
+        .card-crack-anim { animation: shake-hard 0.5s ease-in-out, flash-white 0.2s 0.5s; }
+        @keyframes shake-hard { 0% { transform: translate(0,0) rotate(0); } 25% { transform: translate(-5px, 5px) rotate(-5deg); } 50% { transform: translate(5px, -5px) rotate(5deg); } 75% { transform: translate(-5px, -5px) rotate(-5deg); } 100% { transform: translate(0,0) rotate(0); } }
+        @keyframes flash-white { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(10); } }
+        .cut-in-text { position: absolute; top: 40%; left: 0; width: 100%; text-align: center; font-size: 60px; font-weight: bold; color: #ffd700; text-shadow: 4px 4px 0 #ff0000; transform: scale(0) rotate(-10deg); animation: text-smash 0.6s cubic-bezier(0.17, 0.67, 0.83, 0.67) forwards; }
+        @keyframes text-smash { 0% { transform: scale(3) rotate(-10deg); opacity: 0; } 50% { transform: scale(1) rotate(-10deg); opacity: 1; } 90% { transform: scale(1) rotate(-10deg); opacity: 1; } 100% { transform: scale(1.5) rotate(-10deg); opacity: 0; } }
         
-        /* --- ガチャ演出画面の配置修正 --- */
-        #gacha-performance {
-            position: absolute !important; /* 強制的に絶対配置 */
-            top: 0 !important;             /* 一番上へ */
-            left: 0 !important;            /* 左端へ */
-            width: 100%;
-            height: 100%;
-            z-index: 600; /* サブ画面(500)よりさらに手前に表示 */
-            background: #000;
-            display: none; /* 初期状態は非表示 */
-            flex-direction: column;
-        }
-
-        /* --- 提供割合モーダルの配置修正 --- */
-        #modal-rates {
-            z-index: 700 !important; /* ガチャ画面(500)や演出(600)より手前に */
-        }
-        
+        #gacha-performance { position: absolute !important; top: 0 !important; left: 0 !important; width: 100%; height: 100%; z-index: 600; background: #000; display: none; flex-direction: column; }
+        #modal-rates { z-index: 700 !important; }
     </style>
 </head>
 <body>
@@ -270,9 +134,10 @@
     <div id="drop-flash" class="flash-effect"></div>
 
     <div id="gacha-effect-layer" style="display:none;">
-    <div id="effect-bg"></div>
-    <div id="effect-text"></div>
-    <div id="effect-ray"></div>
+        <div id="effect-bg"></div>
+        <div id="effect-text"></div>
+        <div id="effect-ray"></div>
+    </div>
 
     <div id="flash-overlay" style="position:absolute; top:0; left:0; width:100%; height:100%; background:#fff; z-index:550; display:none; opacity:0; pointer-events:none;"></div>
 
@@ -280,14 +145,8 @@
         <div id="canvas-wrapper">
             <canvas id="field-canvas" width="320" height="320"></canvas>
             <div class="ui-layer">
-                <div class="info-box">
-                    <span id="loc-name">フィールド</span> <br>
-                    G: <span id="disp-gold">0</span> | GEM: <span id="disp-gem">0</span>
-                </div>
-                <div class="msg-area">
-                    <div class="msg-box" id="msg-text">Quest of Elements</div>
-                    <div id="action-indicator" onclick="App.executeAction()">アクション</div>
-                </div>
+                <div class="info-box"><span id="loc-name">フィールド</span> <br>G: <span id="disp-gold">0</span> | GEM: <span id="disp-gem">0</span></div>
+                <div class="msg-area"><div class="msg-box" id="msg-text">Quest of Elements</div><div id="action-indicator" onclick="App.executeAction()">アクション</div></div>
             </div>
         </div>
         <div id="controls">
@@ -308,7 +167,6 @@
         <button id="btn-auto" class="btn" style="position:absolute; top:10px; right:10px; z-index:10; width:80px;" onclick="Battle.toggleAuto()">AUTO: OFF</button>
         <div id="enemy-container"></div>
         <div class="party-bar" id="battle-party-bar"></div>
-        
         <div id="battle-info">
             <div id="battle-log"></div>
             <div id="battle-actor-name"></div>
@@ -320,18 +178,8 @@
                 <button id="btn-run" class="cmd-btn" style="grid-column:span 2;" onclick="Battle.run()">にげる</button>
             </div>
         </div>
-
-        <div id="battle-target-window">
-            <div style="text-align:center; color:#fff; margin-bottom:5px;">対象を選択</div>
-            <div id="battle-target-list" style="display:grid; grid-template-columns:1fr 1fr; gap:5px;"></div>
-            <button class="btn" style="width:100%; margin-top:5px;" onclick="Battle.cancelSubMenu()">戻る</button>
-        </div>
-
-        <div id="battle-list-window">
-            <div class="header-bar"><span id="battle-list-title">選択</span></div>
-            <div id="battle-list-content" class="scroll-area" style="padding:5px;"></div>
-            <button class="btn" style="margin:10px;" onclick="Battle.cancelSubMenu()">戻る</button>
-        </div>
+        <div id="battle-target-window"><div style="text-align:center; color:#fff; margin-bottom:5px;">対象を選択</div><div id="battle-target-list" style="display:grid; grid-template-columns:1fr 1fr; gap:5px;"></div><button class="btn" style="width:100%; margin-top:5px;" onclick="Battle.cancelSubMenu()">戻る</button></div>
+        <div id="battle-list-window"><div class="header-bar"><span id="battle-list-title">選択</span></div><div id="battle-list-content" class="scroll-area" style="padding:5px;"></div><button class="btn" style="margin:10px;" onclick="Battle.cancelSubMenu()">戻る</button></div>
     </div>
 
     <div id="menu-overlay">
@@ -355,87 +203,42 @@
         </div>
     </div>
 
-<div id="sub-screen-party" class="sub-screen">
+    <div id="sub-screen-party" class="sub-screen">
         <div class="header-bar"><span>パーティ編成</span> <button class="btn" onclick="Menu.closeSubScreen('party')">戻る</button></div>
-        <div id="party-screen-slots" class="flex-col-container">
-            <div style="padding:5px; text-align:center; font-size:12px; color:#aaa;">スロットを選択</div>
-            <div id="party-slot-list" class="scroll-area"></div>
-        </div>
-        <div id="party-screen-chars" class="flex-col-container" style="display:none;">
-            <div style="padding:5px; background:#333; text-align:center; font-size:12px;">メンバーを選択</div>
-            <div id="party-char-list" class="scroll-area"></div>
-        </div>
+        <div id="party-screen-slots" class="flex-col-container"><div style="padding:5px; text-align:center; font-size:12px; color:#aaa;">スロットを選択</div><div id="party-slot-list" class="scroll-area"></div></div>
+        <div id="party-screen-chars" class="flex-col-container" style="display:none;"><div style="padding:5px; background:#333; text-align:center; font-size:12px;">メンバーを選択</div><div id="party-char-list" class="scroll-area"></div></div>
     </div>
 
     <div id="sub-screen-equip" class="sub-screen">
         <div class="header-bar"><span>装備変更</span> <button class="btn" onclick="Menu.closeSubScreen('equip')">戻る</button></div>
-        <div id="equip-screen-char" class="flex-col-container">
-            <div style="padding:5px; text-align:center; font-size:12px;">キャラを選択</div>
-            <div id="equip-char-list" class="scroll-area"></div>
-        </div>
-        <div id="equip-screen-part" class="flex-col-container" style="display:none;">
-            <div id="char-status" style="padding:10px; border-bottom:1px solid #444; font-size:12px;"></div>
-            <div style="padding:5px; text-align:center; font-size:12px; background:#333;">部位を選択</div>
-            <div id="equip-slot-list" class="scroll-area" id="list-part"></div> <div id="list-part" class="scroll-area" style="display:none;"></div> <button class="btn" style="margin:10px;" onclick="MenuEquip.changeScreen('char')">戻る</button>
-        </div>
-        <div id="equip-screen-item" class="flex-col-container" style="display:none;">
-            <div style="padding:5px; background:#333; text-align:center; font-size:12px;" id="equip-item-header"></div>
-            <div id="equip-list" class="scroll-area"></div> <div id="list-item-candidates" style="display:none;"></div> <div id="equip-footer" class="footer-info"></div>
-            <button class="btn" style="margin:10px;" onclick="MenuEquip.changeScreen('part')">戻る</button>
-        </div>
+        <div id="equip-screen-char" class="flex-col-container"><div style="padding:5px; text-align:center; font-size:12px;">キャラを選択</div><div id="equip-char-list" class="scroll-area"></div></div>
+        <div id="equip-screen-part" class="flex-col-container" style="display:none;"><div id="char-status" style="padding:10px; border-bottom:1px solid #444; font-size:12px;"></div><div style="padding:5px; text-align:center; font-size:12px; background:#333;">部位を選択</div><div id="equip-slot-list" class="scroll-area"></div><button class="btn" style="margin:10px;" onclick="MenuEquip.changeScreen('char')">戻る</button></div>
+        <div id="equip-screen-item" class="flex-col-container" style="display:none;"><div style="padding:5px; background:#333; text-align:center; font-size:12px;" id="equip-item-header"></div><div id="equip-list" class="scroll-area"></div><div id="equip-footer" class="footer-info"></div><button class="btn" style="margin:10px;" onclick="MenuEquip.changeScreen('part')">戻る</button></div>
     </div>
 
     <div id="sub-screen-inventory" class="sub-screen">
-        <div class="header-bar">
-            <span>所持装備</span> 
-            <span style="font-size:12px;">G:<span id="inventory-gold">0</span></span> 
-            <button class="btn" onclick="Menu.closeSubScreen('inventory')">戻る</button>
-        </div>
+        <div class="header-bar"><span>所持装備</span> <span style="font-size:12px;">G:<span id="inventory-gold">0</span></span> <button class="btn" onclick="Menu.closeSubScreen('inventory')">戻る</button></div>
         <div id="inventory-list" class="scroll-area"></div>
         <div id="inventory-footer" class="footer-info"></div>
     </div>
 
     <div id="sub-screen-items" class="sub-screen">
         <div class="header-bar"><span>道具</span> <button class="btn" onclick="Menu.closeSubScreen('items')">戻る</button></div>
-        <div id="item-screen-list" class="flex-col-container">
-            <div id="list-items" class="scroll-area"></div>
-            <div id="item-footer" class="footer-info"></div>
-        </div>
-        <div id="item-screen-target" class="flex-col-container" style="display:none;">
-            <div style="padding:5px; background:#333; text-align:center; font-size:12px;">使用対象を選択</div>
-            <div id="list-item-targets" class="scroll-area"></div>
-            <button class="btn" style="margin:10px;" onclick="MenuItems.changeScreen('list')">戻る</button>
-        </div>
+        <div id="item-screen-list" class="flex-col-container"><div id="list-items" class="scroll-area"></div><div id="item-footer" class="footer-info"></div></div>
+        <div id="item-screen-target" class="flex-col-container" style="display:none;"><div style="padding:5px; background:#333; text-align:center; font-size:12px;">使用対象を選択</div><div id="list-item-targets" class="scroll-area"></div><button class="btn" style="margin:10px;" onclick="MenuItems.changeScreen('list')">戻る</button></div>
     </div>
 
     <div id="sub-screen-allies" class="sub-screen">
         <div class="header-bar"><span>仲間一覧</span> <button class="btn" onclick="Menu.closeSubScreen('allies')">戻る</button></div>
-        <div id="allies-list-view" class="flex-col-container">
-            <div id="allies-list" class="scroll-area"></div>
-        </div>
-        <div id="allies-detail-view" class="flex-col-container" style="display:none; background:#1a1a1a;">
-            <div class="tab-bar" id="allies-tabs"></div>
-            <div id="allies-detail-content" class="scroll-area"></div>
-            <button class="btn" style="margin:10px;" onclick="document.getElementById('allies-detail-view').style.display='none'; document.getElementById('allies-list-view').style.display='flex';">一覧へ戻る</button>
-        </div>
+        <div id="allies-list-view" class="flex-col-container"><div id="allies-list" class="scroll-area"></div></div>
+        <div id="allies-detail-view" class="flex-col-container" style="display:none; background:#1a1a1a;"><div class="tab-bar" id="allies-tabs"></div><div id="allies-detail-content" class="scroll-area"></div><button class="btn" style="margin:10px;" onclick="document.getElementById('allies-detail-view').style.display='none'; document.getElementById('allies-list-view').style.display='flex';">一覧へ戻る</button></div>
     </div>
 
     <div id="sub-screen-skills" class="sub-screen">
         <div class="header-bar"><span>スキル</span> <button class="btn" onclick="Menu.closeSubScreen('skills')">戻る</button></div>
-        <div id="skill-screen-char" class="flex-col-container">
-            <div style="padding:5px; text-align:center; font-size:12px;">使用者を選択</div>
-            <div id="skill-char-list" class="scroll-area"></div>
-        </div>
-        <div id="skill-screen-skill" class="flex-col-container" style="display:none;">
-            <div style="padding:5px; text-align:center; font-size:12px;">スキルを選択</div>
-            <div id="skill-list" class="scroll-area"></div>
-            <button class="btn" style="margin:10px;" onclick="MenuSkills.changeScreen('char')">戻る</button>
-        </div>
-        <div id="skill-screen-target" class="flex-col-container" style="display:none;">
-            <div style="padding:5px; text-align:center; font-size:12px;">対象を選択</div>
-            <div id="skill-target-list" class="scroll-area"></div>
-            <button class="btn" style="margin:10px;" onclick="MenuSkills.changeScreen('skill')">戻る</button>
-        </div>
+        <div id="skill-screen-char" class="flex-col-container"><div style="padding:5px; text-align:center; font-size:12px;">使用者を選択</div><div id="skill-char-list" class="scroll-area"></div></div>
+        <div id="skill-screen-skill" class="flex-col-container" style="display:none;"><div style="padding:5px; text-align:center; font-size:12px;">スキルを選択</div><div id="skill-list" class="scroll-area"></div><button class="btn" style="margin:10px;" onclick="MenuSkills.changeScreen('char')">戻る</button></div>
+        <div id="skill-screen-target" class="flex-col-container" style="display:none;"><div style="padding:5px; text-align:center; font-size:12px;">対象を選択</div><div id="skill-target-list" class="scroll-area"></div><button class="btn" style="margin:10px;" onclick="MenuSkills.changeScreen('skill')">戻る</button></div>
     </div>
 
     <div id="sub-screen-book" class="sub-screen">
@@ -458,10 +261,7 @@
     </div>
 
     <div id="sub-screen-gacha" class="sub-screen">
-        <div class="header-bar">
-            <span>ガチャ</span> <span style="font-size:12px;">GEM:<span id="gacha-gem">0</span></span>
-            <button class="btn" onclick="Menu.closeSubScreen('gacha')">戻る</button>
-        </div>
+        <div class="header-bar"><span>ガチャ</span> <span style="font-size:12px;">GEM:<span id="gacha-gem">0</span></span> <button class="btn" onclick="Menu.closeSubScreen('gacha')">戻る</button></div>
         <div id="gacha-menu-view" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px;">
             <div style="font-size:24px; color:#ffd700;">プレミアムガチャ</div>
             <div style="text-align:center; font-size:12px; color:#ccc;">強力な仲間を召喚しよう！<br>UR, EXは超強力！</div>
@@ -478,14 +278,17 @@
 
     <div id="inn-scene" class="scene-layer"><div class="header-bar"><span>宿屋</span></div><div id="inn-content" style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center;"></div></div>
     <div id="medal-scene" class="scene-layer"><div class="header-bar"><span>メダル王の館</span> <span style="font-size:12px;">所持: <span id="medal-count">0</span>枚</span> <button class="btn" onclick="App.changeScene('field')">出る</button></div><div style="padding:10px; text-align:center; font-size:12px;">ちいさなメダルと景品を交換します</div><div id="medal-list" class="scroll-area"></div></div>
-    <div id="casino-scene" class="scene-layer"><div class="header-bar"><span>カジノ</span> <span style="font-size:12px; color:#ffd700;">GEM: <span id="casino-gem">0</span></span></div><div id="casino-area-title" style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:20px;"><button class="menu-btn" style="width:200px;" onclick="Casino.startGame('poker')">ポーカー</button><button class="menu-btn" style="width:200px;" onclick="Casino.startGame('bj')">ブラックジャック</button><button class="btn" onclick="App.changeScene('field')">出る</button></div><div id="casino-area-game" style="flex:1; display:none; flex-direction:column;"><div id="casino-board" style="flex:1; display:flex; flex-direction:column; justify-content:center; padding:10px;"></div><div style="background:#222; padding:10px; text-align:center; min-height:40px;" id="casino-msg"></div><div id="casino-actions" style="padding:10px; display:flex; justify-content:center; gap:10px; background:#111;"></div></div></div>
+    
+    <div id="casino-scene" class="scene-layer">
+        <div class="header-bar"><span>カジノ</span> <span style="font-size:12px; color:#ffd700;">GEM: <span id="casino-gem">0</span></span></div>
+        <div id="casino-area-title" style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:20px;"><button class="menu-btn" style="width:200px;" onclick="Casino.startGame('poker')">ポーカー</button><button class="menu-btn" style="width:200px;" onclick="Casino.startGame('bj')">ブラックジャック</button><button class="btn" onclick="App.changeScene('field')">出る</button></div>
+        <div id="casino-area-game" style="flex:1; display:none; flex-direction:column;"><div id="casino-board" style="flex:1; display:flex; flex-direction:column; justify-content:center; padding:10px;"></div><div style="background:#222; padding:10px; text-align:center; min-height:40px;" id="casino-msg"></div><div id="casino-actions" style="padding:10px; display:flex; justify-content:center; gap:10px; background:#111;"></div></div>
+    </div>
 
     <div id="gacha-performance" class="scene-layer">
         <div id="freeze-overlay" style="position:absolute; top:0; left:0; width:100%; height:100%; background:black; z-index:400; display:none;"></div>
         <div id="gacha-stage" style="flex:1; display:flex; align-items:center; justify-content:center;"></div>
-        <div style="padding:20px; display:flex; justify-content:center;">
-            <button id="btn-gacha-skip" class="btn" onclick="Gacha.skip()">スキップ</button>
-        </div>
+        <div style="padding:20px; display:flex; justify-content:center;"><button id="btn-gacha-skip" class="btn" onclick="Gacha.skip()">スキップ</button></div>
     </div>
     
     <div id="modal-rates" style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:250; display:none; flex-direction:column;">
@@ -505,9 +308,6 @@
         </div>
     </div>
 
-    <div id="assign-modal" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; justify-content:center; align-items:center;">
-         </div>
-
     <div id="menu-dialog-area" style="display:none; position:absolute; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); justify-content:center; align-items:center; z-index:2000;">
         <div style="background:var(--win-bg); border:2px solid var(--win-border); padding:20px; border-radius:4px; max-width:90%; width:300px; text-align:center; display:flex; flex-direction:column; gap:15px;">
             <div id="menu-dialog-text" style="font-size:14px; min-height:20px;"></div>
@@ -515,7 +315,9 @@
         </div>
     </div>
 
-</div> <script src="database.js"></script>
+</div>
+
+<script src="database.js"></script>
 <script src="dungeon.js"></script>
 <script src="gacha.js"></script>
 <script src="facilities.js"></script>
@@ -523,13 +325,15 @@
 <script src="main.js"></script>
 <script src="battle.js"></script>
 <script src="menus.js"></script>
+
 <script>
-    // 起動処理
-    window.onload = () => { 
+    // 起動時処理
+    window.onload = () => {
         if(typeof App !== 'undefined' && App.initGameHub) {
             App.initGameHub();
         } else {
-            console.error("App module not found.");
+            console.error("App module not found or failed to load.");
+            alert("エラー: データベースまたはスクリプトの読み込みに失敗しました。");
         }
     };
 </script>
