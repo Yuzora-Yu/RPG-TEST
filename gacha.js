@@ -152,6 +152,9 @@ const Gacha = {
         }, hasEX ? 1500 : 500); // EX時は少し溜める
     },
 
+ 
+/* gacha.js - drawNextCard の大幅強化版 */
+
     drawNextCard: () => {
         if (Gacha.isSkipped) return;
         if (Gacha.currentIndex >= Gacha.queue.length) {
@@ -163,21 +166,48 @@ const Gacha = {
         const stage = document.getElementById('gacha-stage');
         stage.innerHTML = '';
 
+        // 演出レイヤーの取得とリセット
+        const layer = document.getElementById('gacha-effect-layer');
+        const effBg = document.getElementById('effect-bg');
+        const effText = document.getElementById('effect-text');
+        const effRay = document.getElementById('effect-ray');
+        
+        if(layer) {
+            layer.style.display = 'none';
+            effBg.className = ''; effText.className = ''; effRay.className = '';
+            effText.innerHTML = '';
+        }
+
         const card = document.createElement('div');
         card.className = 'gacha-card-scene';
         
-        // 裏面色: SRはRと同じ(silver)
-        let backClass = 'rare-silver';
-        if(['SSR'].includes(char.rarity)) backClass = 'rare-gold';
-        if(['UR','EX'].includes(char.rarity)) backClass = 'rare-rainbow';
-        
-        // 昇格演出判定 (UR/EXはたまにSilverから昇格)
-        let isPromotion = false;
-        if(['UR','EX'].includes(char.rarity) && Math.random() < 0.3) {
-            backClass = 'rare-silver';
-            isPromotion = true;
+        // --- 演出パターン決定ロジック ---
+        // 高レア(UR/EX)の場合、カード背面をあえて「銀(R)」や「金(SR)」に偽装する（昇格演出用）
+        let isFakeSilver = false;
+        let playPromotion = false; // 昇格演出フラグ
+        let playGodRay = false;    // 天撃演出フラグ
+        let playCutIn = false;     // カットインフラグ
+
+        if (['UR', 'EX'].includes(char.rarity)) {
+            const rnd = Math.random();
+            if (rnd < 0.33) {
+                playPromotion = true; // 33%で昇格演出（銀→虹）
+                isFakeSilver = true;
+            } else if (rnd < 0.66) {
+                playGodRay = true;    // 33%で天撃演出
+            } else {
+                playCutIn = true;     // 33%でカットイン
+            }
         }
 
+        // カード背面のクラス決定
+        let backClass = 'rare-silver'; // デフォルト銀
+        if (!isFakeSilver) {
+            if(['SSR'].includes(char.rarity)) backClass = 'rare-gold';
+            if(['UR','EX'].includes(char.rarity)) backClass = 'rare-rainbow';
+        }
+
+        // カード生成
         card.innerHTML = `
             <div class="card-face card-back ${backClass}">
                 <div style="font-size:40px;">?</div>
@@ -191,86 +221,86 @@ const Gacha = {
         `;
         stage.appendChild(card);
 
-        const triggerOpen = () => {
-             card.classList.add('flipped');
-             if(['UR'].includes(char.rarity)) {
-                 // 通常の高レアは単発フラッシュ
-                 const flash = document.getElementById('flash-overlay');
-                 flash.style.display = 'block';
-                 flash.className = 'flash-anim';
-                 setTimeout(()=> { flash.style.display='none'; flash.className=''; }, 300);
-             }
-             Gacha.nextStep();
-        };
-
+        // --- タップ時の処理 ---
         card.onclick = () => {
             if(card.classList.contains('flipped')) {
-                // めくった後は次へ
+                // 既に開いていれば次へ
                 Gacha.currentIndex++;
                 Gacha.drawNextCard();
                 return;
             }
 
-            // 昇格演出: 激しい揺れ＋フラッシュして裏面変化
-            if(isPromotion) {
-                // 画面揺れ
-                document.getElementById('game-container').classList.add('heavy-shake-anim');
-                setTimeout(() => document.getElementById('game-container').classList.remove('heavy-shake-anim'), 500);
-                
-                // フラッシュ
-                const flash = document.getElementById('flash-overlay');
-                flash.style.display = 'block';
-                flash.className = 'flash-anim';
-                
-                // 色変化
-                setTimeout(() => {
-                    const back = card.querySelector('.card-back');
-                    back.className = 'card-face card-back rare-rainbow';
-                    flash.style.display = 'none'; 
-                    flash.className = '';
-                    
-                    // 自動で開く
-                    setTimeout(triggerOpen, 200);
-                }, 200); // フラッシュのピークで色変え
+            // 操作ブロック
+            card.style.pointerEvents = 'none';
 
-                isPromotion = false;
-                return; // ここで一旦処理終了、自動オープンへ
-            }
-
-            // EX演出: フリーズ -> 3連フラッシュ -> 開く
-            if (char.rarity === 'EX') {
-                card.style.pointerEvents = 'none'; // 操作不能
+            // --- 演出実行関数 ---
+            const doFlip = () => {
+                card.classList.add('flipped');
+                card.style.pointerEvents = 'auto'; // 操作再開
                 
-                // 暗転 (ノイズ)
-                const fz = document.getElementById('freeze-overlay');
-                fz.classList.add('noise');
-                fz.style.display = 'block';
-                
-                setTimeout(() => {
-                    fz.style.display = 'none';
-                    fz.classList.remove('noise');
-                    
-                    // 3連フラッシュ
+                // 開いた瞬間のフラッシュ (高レアのみ)
+                if(['SSR','UR','EX'].includes(char.rarity)) {
                     const flash = document.getElementById('flash-overlay');
                     flash.style.display = 'block';
-                    flash.className = 'flash-triple-anim';
+                    flash.className = 'flash-anim'; // index.htmlにある既存クラス
+                    setTimeout(()=> { flash.style.display='none'; flash.className=''; }, 300);
+                }
+            };
 
+            // 1. 【昇格演出】（銀色がガタガタ震えて虹色に割れる）
+            if (playPromotion) {
+                card.classList.add('card-crack-anim'); // 激しく震える
+                setTimeout(() => {
+                    // 背面を虹色に差し替え
+                    const back = card.querySelector('.card-back');
+                    back.className = 'card-face card-back rare-rainbow';
+                    
+                    // 強烈なフラッシュ
+                    const flash = document.getElementById('flash-overlay');
+                    flash.style.display = 'block';
+                    flash.className = 'flash-anim';
                     setTimeout(() => {
-                        flash.style.display = 'none';
-                        flash.className = '';
-                        card.classList.add('flipped');
-                        
-                        // 次へ進むために操作可能に戻す
-                        card.style.pointerEvents = 'auto';
-                        Gacha.nextStep();
-                    }, 500); // フラッシュ終了後
-                }, 3000); // 3秒フリーズ
-            } else {
-                // 通常オープン
-                triggerOpen();
+                        flash.style.display='none'; 
+                        flash.className='';
+                        card.classList.remove('card-crack-anim');
+                        doFlip(); // めくる
+                    }, 200);
+                }, 500); // 0.5秒タメる
+                return;
             }
+
+            // 2. 【天撃演出】（画面暗転＆虹色の光）
+            if (playGodRay) {
+                layer.style.display = 'block';
+                effBg.className = 'god-ray-bg';
+                effRay.className = 'god-ray-beam';
+                
+                setTimeout(() => {
+                    layer.style.display = 'none';
+                    doFlip();
+                }, 1500); // 1.5秒演出
+                return;
+            }
+
+            // 3. 【カットイン演出】（文字がドーン！）
+            if (playCutIn) {
+                layer.style.display = 'block';
+                effBg.className = 'god-ray-bg'; // 背景暗く
+                effText.className = 'cut-in-text';
+                effText.innerHTML = char.rarity === 'EX' ? "神 降 臨" : "激 熱 !!";
+                
+                setTimeout(() => {
+                    layer.style.display = 'none';
+                    doFlip();
+                }, 800); // 0.8秒演出
+                return;
+            }
+
+            // 通常オープン
+            doFlip();
         };
     },
+
 
     nextStep: () => {
         // タップ待ちにするため、自動では進まない (タップで currentIndex++ して drawNextCard)
