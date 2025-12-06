@@ -1,4 +1,4 @@
-/* menus.js (画像・名前変更機能付き) */
+/* menus.js (パーティバー画像表示対応版) */
 
 const Menu = {
     // --- メインメニュー制御 ---
@@ -24,7 +24,7 @@ const Menu = {
         Menu.closeDialog();
     },
 
-    // パーティステータスバー更新
+    // ★修正: パーティステータスバー更新 (画像表示対応)
     renderPartyBar: () => {
         const bars = document.querySelectorAll('.party-bar'); 
         bars.forEach(bar => {
@@ -32,6 +32,9 @@ const Menu = {
             App.data.party.forEach(uid => {
                 const div = document.createElement('div');
                 div.className = 'p-box';
+                // 少し高さを確保するためにCSSクラスに依存せずスタイル調整
+                div.style.justifyContent = 'flex-start'; 
+                
                 if(uid) {
                     const p = App.getChar(uid);
                     const stats = App.calcStats(p);
@@ -39,17 +42,22 @@ const Menu = {
                     const curMp = p.currentMp!==undefined ? p.currentMp : stats.maxMp;
                     const lbText = p.limitBreak > 0 ? `<span style="color:#ffd700; font-size:9px; margin-left:2px;">+${p.limitBreak}</span>` : '';
 
+                    // ★追加: 画像HTML生成
+                    const imgHtml = p.img 
+                        ? `<img src="${p.img}" style="width:32px; height:32px; object-fit:cover; border-radius:4px; border:1px solid #666; margin-bottom:2px;">`
+                        : `<div style="width:32px; height:32px; background:#333; border-radius:4px; border:1px solid #666; display:flex; align-items:center; justify-content:center; color:#555; font-size:8px; margin-bottom:2px;">IMG</div>`;
+
                     div.innerHTML = `
-                        <div style="flex:1; display:flex; flex-direction:column; justify-content:center; width:100%; overflow:hidden;">
-                            <div style="display:flex; align-items:center; width:100%;">
-                                <div style="font-weight:bold; color:#fff; font-size:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; text-align:left;">
+                        <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; overflow:hidden; padding-top:2px;">
+                            ${imgHtml}
+                            <div style="display:flex; align-items:center; width:100%; justify-content:center;">
+                                <div style="font-weight:bold; color:#fff; font-size:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:90%;">
                                     ${p.name}
                                 </div>
                                 ${lbText}
                             </div>
-                            <div style="font-size:9px; color:#aaa; text-align:left; white-space:nowrap; overflow:hidden;">${p.job} Lv.${p.level}</div>
-                        </div>
-                        <div style="width:100%;">
+                            </div>
+                        <div style="width:100%; margin-top:2px;">
                             <div class="bar-container"><div class="bar-hp" style="width:${Math.min(100, (curHp/stats.maxHp)*100)}%"></div></div>
                             <div class="p-val">${curHp}/${stats.maxHp}</div>
                             <div class="bar-container"><div class="bar-mp" style="width:${Math.min(100, (curMp/stats.maxMp)*100)}%"></div></div>
