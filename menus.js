@@ -156,6 +156,43 @@ const Menu = {
         `;
         return html;
     },
+
+    // 汎用選択ダイアログ (ボタン名を指定可能)
+    choice: (text, label1, func1, label2, func2) => {
+        const area = Menu.getDialogEl('menu-dialog-area');
+        const textEl = Menu.getDialogEl('menu-dialog-text');
+        const btnEl = Menu.getDialogEl('menu-dialog-buttons');
+
+        if (!area) return;
+
+        textEl.innerHTML = text.replace(/\n/g, '<br>');
+        btnEl.innerHTML = '';
+
+        // ボタン1
+        const btn1 = document.createElement('button');
+        btn1.className = 'btn';
+        btn1.style.minWidth = '80px';
+        btn1.innerText = label1;
+        btn1.onclick = () => {
+            Menu.closeDialog();
+            if (func1) func1();
+        };
+        
+        // ボタン2
+        const btn2 = document.createElement('button');
+        btn2.className = 'btn';
+        btn2.style.minWidth = '80px';
+        btn2.style.background = '#555'; // 少し色を変える
+        btn2.innerText = label2;
+        btn2.onclick = () => {
+            Menu.closeDialog();
+            if (func2) func2();
+        };
+        
+        btnEl.appendChild(btn1);
+        btnEl.appendChild(btn2);
+        area.style.display = 'flex';
+    },
     
     // ★新規追加: 装備選択リスト用のコンパクトHTML (2. 装備変更で使用)
     getEquipDetailHTML_for_EquipList: (equip) => {
