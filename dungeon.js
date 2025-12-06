@@ -1,72 +1,92 @@
-/* dungeon.js */
+/* dungeon.js (チェックポイント選択機能付き) */
 
 const Dungeon = {
     floor: 0, width: 30, height: 30, map: [], pendingAction: null,
     
+    // 突入処理（チェックポイント判定）
     enter: () => {
-        // メニューボタンから呼ばれた場合
         if (typeof Menu !== 'undefined') Menu.closeAll();
         
+        // 既にダンジョン内にいる場合の脱出処理
         if (Field.currentMapData && Field.currentMapData.isDungeon) {
-            // ★修正: ボス部屋タイル('B')に乗っている場合は脱出不可 (前回の修正を維持)
             const isBossFloor = Dungeon.floor > 0 && Dungeon.floor % 10 === 0;
             if (isBossFloor && Dungeon.map[Field.y][Field.x] === 'B') {
                 App.log("今は逃げられない！ボスを倒すしかない！");
                 return;
             }
-            
             App.log("ダンジョンから脱出しますか？");
             App.setAction("脱出する", Dungeon.exit);
             return;
         }
 
-        if(App.data.progress.floor === 0) {
-            App.data.progress.floor = 1;
-            App.data.dungeon.tryCount++;
+        // --- チェックポイント判定 ---
+        const maxF = App.data.dungeon.maxFloor || 0;
+        
+        // チェックポイント計算: (最高到達階-1) ÷ 10 の切り捨て × 10 + 1
+        // 例: 12階到達 -> (11/10)=1 -> 10+1 = 11階から再開可能
+        // 例: 9階到達 -> (8/10)=0 -> 0+1 = 1階 (選択肢なし)
+        const checkpoint = Math.floor((maxF - 1) / 10) * 10 + 1;
+
+        if (checkpoint > 1) {
+            // 選択ダイアログを表示
+            Menu.choice(
+                `ダンジョンに入ります。\n(最高到達: ${maxF}階)`,
+                "1階から", () => Dungeon.start(1),
+                `${checkpoint}階から`, () => Dungeon.start(checkpoint)
+            );
+        } else {
+            // チェックポイントなし（通常スタート）
+            Dungeon.start(1);
         }
+    },
+
+    // ゲーム開始実行（階層を指定してスタート）
+    start: (startFloor) => {
+        App.data.progress.floor = startFloor;
+        App.data.dungeon.tryCount++;
+        
+        // マップデータをクリアして新規生成を強制する
+        App.data.dungeon.map = null;
+        
         Dungeon.loadFloor();
     },
 
     nextFloor: () => {
         App.data.progress.floor++;
-        
-        // ★修正: 新しいフロアに進む前に、古いマップデータをクリアする
         App.data.dungeon.map = null; 
-        
         Dungeon.loadFloor();
     },
 
     loadFloor: () => {
         Dungeon.floor = App.data.progress.floor;
         
-        // ★マップデータが保存されているかチェック (リロード時)
         if (App.data.dungeon.map) {
-            // 保存されたマップを復元
+            // 中断データからの復帰
             Dungeon.map = App.data.dungeon.map;
             Dungeon.width = App.data.dungeon.width;
             Dungeon.height = App.data.dungeon.height;
             App.log(`地下 ${Dungeon.floor} 階の冒険を再開します。`);
         } else {
-            // ★マップがない場合 (新規フロア到達時)
+            // 新規フロア生成
             
-            // ▼▼▼ 強化処理をここに移動 ▼▼▼
+            // 最高到達階の更新記録
             if(Dungeon.floor > App.data.dungeon.maxFloor) {
                 App.data.dungeon.maxFloor = Dungeon.floor;
+                // 到達ボーナス（主人公強化）
                 const hero = App.getChar('p1');
                 if(hero) {
+                    // ボーナス値計算 (例: 階層-1)
                     hero.limitBreak = Math.max(0, Dungeon.floor - 1);
-                    App.log(`階層記録更新！主人公が+${hero.limitBreak}に強化された！`);
+                    // ログは少しウザいので、記録更新時のみ控えめに
+                    // App.log(`階層記録更新！`);
                 }
             }
-            // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
             
             Dungeon.generateFloor();
-            // 生成したマップを保存しておく
             Dungeon.saveMapData();
             App.log(`地下 ${Dungeon.floor} 階に到達した`);
         }
         
-        // 共通処理: 画面反映
         Field.currentMapData = { 
             width: Dungeon.width, 
             height: Dungeon.height, 
@@ -79,7 +99,6 @@ const Dungeon = {
         App.clearAction();
     },
 
-    // ★新規追加: マップ保存用ヘルパー関数
     saveMapData: () => {
         App.data.dungeon.map = Dungeon.map;
         App.data.dungeon.width = Dungeon.width;
@@ -88,7 +107,6 @@ const Dungeon = {
     },
 
     exit: () => {
-        // ★保存されているマップ情報をクリア
         App.data.dungeon.map = null;
         App.data.dungeon.width = 30;
         App.data.dungeon.height = 30;
@@ -98,7 +116,7 @@ const Dungeon = {
         App.data.location.y = 28;
         App.data.progress.floor = 0;
         
-        App.save(); // 念のためここでセーブ
+        App.save();
         App.changeScene('field');
         App.log("フィールドに戻った");
         App.clearAction();
@@ -108,11 +126,8 @@ const Dungeon = {
         const tile = Dungeon.map[y][x];
         App.clearAction();
 
-        // 宝箱処理を先に実行し、タイルを'T'に変えてしまう
         if(tile === 'C') { 
             Dungeon.openChest(x, y); 
-            // 宝箱を開けた瞬間はエンカウント抽選をスキップ（アクション待ちにする必要はない）
-            // openChest内で Field.render() が呼ばれ、タイルが'T'に変わる
             return; 
         }
 
@@ -127,13 +142,10 @@ const Dungeon = {
             });
         } 
         
-        // ★修正: S (階段), B (ボス) のマスに乗っている間はアクション待ちなのでエンカウント抽選をスキップ
-        // C (宝箱) は openChest で処理が完結しタイルがTに変わるため、ここではチェック不要。
         if (tile === 'S' || tile === 'B') {
             return;
         }
 
-        // 通常エンカウント (ダンジョン内は一律8%)
         if(Math.random() < 0.08) { 
             App.log("魔物が襲いかかってきた！"); 
             setTimeout(() => App.changeScene('battle'), 300); 
@@ -144,13 +156,15 @@ const Dungeon = {
         Dungeon.map[y][x] = 'T'; 
         Field.render();
         
+        // 階層ランクに応じたドロップ
         const r = Math.random(); let msg = "";
-        // ... (宝箱の中身処理は省略) ...
         if(r < 0.1) {
             const item = DB.ITEMS.find(i => i.name === 'ちいさなメダル');
             msg = "ちいさなメダル"; App.data.items[item.id] = (App.data.items[item.id]||0)+1;
         } else if (r < 0.5) {
+            // 階層に基づいた装備
             const eq = App.createRandomEquip('chest', Dungeon.floor);
+            // 宝箱からは+2まで
             eq.name = eq.name.replace(/\+\d+/, (m)=>{ let v=parseInt(m.replace('+','')); return `+${Math.min(2,v)}`; });
             App.data.inventory.push(eq);
             msg = `${eq.name}`;
@@ -163,32 +177,22 @@ const Dungeon = {
         App.save();
     },
 
-    // --- フロア生成分岐 ---
     generateFloor: () => {
         Dungeon.map = [];
         
         if (Dungeon.floor > 0 && Dungeon.floor % 10 === 0) {
-            // 10階ごと: ボス部屋
             Dungeon.generateBossRoom();
         } else {
-            // 通常階: 3パターンからランダム (迷路型5%に調整済み)
             const r = Math.random();
             let type;
-            if (r < 0.05) { 
-                type = 2; // 迷路 (25x25)
-            } else if (r < 0.55) { 
-                type = 0; // 部屋+通路 (30x30)
-            } else { 
-                type = 1; // 虫食い洞窟 (30x30)
-            }
+            if (r < 0.05) type = 2; // 迷路
+            else if (r < 0.55) type = 0; // 部屋
+            else type = 1; // 洞窟
             
-            if (type === 0) {
-                Dungeon.generateRoomMap(); 
-            } else if (type === 1) {
-                Dungeon.generateCaveMap(); 
-            } else {
-                Dungeon.generateMazeMap(); 
-            }
+            if (type === 0) Dungeon.generateRoomMap(); 
+            else if (type === 1) Dungeon.generateCaveMap(); 
+            else Dungeon.generateMazeMap(); 
+            
             Dungeon.setPlayerRandomSpawn();
         }
         
@@ -202,9 +206,6 @@ const Dungeon = {
         App.data.location.y = Field.y;
     },
 
-    // ... (generateBossRoom, generateRoomMap, generateCaveMap, generateMazeMap, connectRooms, placeStairsAndChests, setPlayerRandomSpawn は変更なし) ...
-    
-    // ボス部屋 (11x11)
     generateBossRoom: () => {
         const w = 11, h = 11; 
         Dungeon.width = w; Dungeon.height = h;
@@ -216,16 +217,14 @@ const Dungeon = {
             }
             Dungeon.map.push(row);
         }
-        Dungeon.map[5][5] = 'B'; // ボス位置
-        Field.x = 5; Field.y = 8; // プレイヤー初期位置
+        Dungeon.map[5][5] = 'B';
+        Field.x = 5; Field.y = 8;
     },
 
-    // ① 小部屋と通路 (部屋生成法)
     generateRoomMap: () => {
         Dungeon.width = 30; Dungeon.height = 30;
         const w = Dungeon.width, h = Dungeon.height;
         let map = Array(h).fill(0).map(() => Array(w).fill('W'));
-        
         const rooms = [];
         const roomCount = 5 + Math.min(5, Math.floor(Dungeon.floor/5));
         
@@ -254,7 +253,6 @@ const Dungeon = {
         Dungeon.placeStairsAndChests();
     },
 
-    // ② 虫食い形式 (Drunkard's Walk)
     generateCaveMap: () => {
         Dungeon.width = 30; Dungeon.height = 30;
         const w = Dungeon.width, h = Dungeon.height;
@@ -287,7 +285,6 @@ const Dungeon = {
         Dungeon.placeStairsAndChests();
     },
 
-    // ③ 通路のみ (迷路生成: 穴掘り法)
     generateMazeMap: () => {
         Dungeon.width = 25; Dungeon.height = 25;
         const w = Dungeon.width, h = Dungeon.height;
@@ -384,12 +381,9 @@ const Dungeon = {
 
     onBossDefeated: () => {
         App.log(`地下 ${Dungeon.floor} 階ボス撃破！階段が出現した。`);
-        // ボスがいたマス('B')を階段('S')に置き換える
         Dungeon.map[Field.y][Field.x] = 'S'; 
         Field.render();
         App.setAction("次の階へ", Dungeon.nextFloor);
-
-        // ボス戦フラグをリセット
         if (App.data.battle) App.data.battle.isBossBattle = false;
     }
 };
