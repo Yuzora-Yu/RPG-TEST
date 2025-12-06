@@ -1,7 +1,7 @@
-/* database.js (レグナード実装・オプション拡張版) */
+/* database.js (バランス調整版) */
 
 const CONST = {
-    SAVE_KEY: 'QoE_SaveData_v33_Regnard', // キー更新
+    SAVE_KEY: 'QoE_SaveData_v34_Balance', // キー更新
     PARTS: ['武器', '盾', '頭', '体', '足'],
     ELEMENTS: ['火', '水', '風', '雷', '光', '闇', '混沌'],
     RARITY: ['N', 'R', 'SR', 'SSR', 'UR', 'EX'],
@@ -61,32 +61,33 @@ const MAP_DATA = [
 ];
 
 const DB = {
+    // ★スキル調整: 倍率(rate)と固定値(base)を下げ、ステータス依存度を高める
     SKILLS: [
         {id:1, name:'こうげき', type:'物理', target:'単体', mp:0, rate:1.0, count:1, base:0, elm:null, desc:'通常攻撃'},
-        {id:10, name:'メラ', type:'魔法', target:'単体', mp:2, rate:1.5, count:1, base:20, elm:'火', desc:'小火球'},
-        {id:11, name:'ヒャド', type:'魔法', target:'単体', mp:3, rate:1.5, count:1, base:25, elm:'水', desc:'氷の刃'},
-        {id:12, name:'バギ', type:'魔法', target:'全体', mp:5, rate:0.8, count:1, base:30, elm:'風', desc:'真空の刃'},
-        {id:13, name:'ライデイン', type:'魔法', target:'単体', mp:8, rate:2.0, count:1, base:50, elm:'雷', desc:'落雷'},
+        {id:10, name:'メラ', type:'魔法', target:'単体', mp:2, rate:1.2, count:1, base:10, elm:'火', desc:'小火球'},
+        {id:11, name:'ヒャド', type:'魔法', target:'単体', mp:3, rate:1.2, count:1, base:12, elm:'水', desc:'氷の刃'},
+        {id:12, name:'バギ', type:'魔法', target:'全体', mp:5, rate:0.8, count:1, base:15, elm:'風', desc:'真空の刃'},
+        {id:13, name:'ライデイン', type:'魔法', target:'単体', mp:8, rate:1.8, count:1, base:30, elm:'雷', desc:'落雷'},
         {id:20, name:'ホイミ', type:'回復', target:'単体', mp:3, rate:1.5, count:1, base:30, elm:null, desc:'小回復'},
         {id:21, name:'ベホイミ', type:'回復', target:'単体', mp:6, rate:2.5, count:1, base:80, elm:null, desc:'中回復'},
         {id:22, name:'ベホマラー', type:'回復', target:'全体', mp:12, rate:1.5, count:1, base:60, elm:null, desc:'全体回復'},
         {id:30, name:'ザオラル', type:'蘇生', target:'単体', mp:8, rate:0.5, count:1, base:0, elm:null, desc:'50%蘇生'},
-        {id:40, name:'火炎斬り', type:'物理', target:'単体', mp:4, rate:1.5, count:1, base:10, elm:'火', desc:'炎の剣技'},
-        {id:41, name:'はやぶさ斬り', type:'物理', target:'単体', mp:6, rate:0.75, count:2, base:0, elm:null, desc:'2回攻撃'},
-        {id:42, name:'ギガスラッシュ', type:'物理', target:'全体', mp:15, rate:2.5, count:1, base:100, elm:'光', desc:'光の剣技'},
+        {id:40, name:'火炎斬り', type:'物理', target:'単体', mp:4, rate:1.3, count:1, base:5, elm:'火', desc:'炎の剣技'},
+        {id:41, name:'はやぶさ斬り', type:'物理', target:'単体', mp:6, rate:0.7, count:2, base:0, elm:null, desc:'2回攻撃'},
+        {id:42, name:'ギガスラッシュ', type:'物理', target:'全体', mp:15, rate:2.0, count:1, base:50, elm:'光', desc:'光の剣技'},
         {id:50, name:'バイキルト', type:'強化', target:'単体', mp:6, rate:0, count:1, base:0, buff:{atk:1.5}, desc:'攻撃増'},
-        {id:101, name:'強撃', type:'物理', target:'単体', mp:5, rate:2.0, count:1, base:10, desc:'力強い一撃'},
-        {id:102, name:'癒しの風', type:'回復', target:'全体', mp:15, rate:1.0, count:1, base:50, desc:'全体小回復'},
-        {id:201, name:'五月雨突き', type:'物理', target:'ランダム', mp:10, rate:0.8, count:4, base:0, desc:'4回攻撃'},
-        {id:202, name:'ベギラマ', type:'魔法', target:'全体', mp:12, rate:1.5, count:1, base:40, elm:'雷', desc:'雷の帯'},
-        {id:301, name:'ギガブレイク', type:'物理', target:'全体', mp:30, rate:4.0, count:1, base:200, elm:'雷', desc:'最強の剣技'},
-        {id:401, name:'ゴッドハンド', type:'物理', target:'単体', mp:30, rate:5.0, count:1, base:200, elm:'光', desc:'神の拳'},
-        {id:402, name:'メテオ', type:'魔法', target:'全体', mp:50, rate:4.0, count:1, base:300, elm:'火', desc:'隕石落とし'},
+        {id:101, name:'強撃', type:'物理', target:'単体', mp:5, rate:1.5, count:1, base:10, desc:'力強い一撃'},
+        {id:102, name:'癒しの風', type:'回復', target:'全体', mp:15, rate:1.0, count:1, base:40, desc:'全体小回復'},
+        {id:201, name:'五月雨突き', type:'物理', target:'ランダム', mp:10, rate:0.6, count:4, base:0, desc:'4回攻撃'},
+        {id:202, name:'ベギラマ', type:'魔法', target:'全体', mp:12, rate:1.2, count:1, base:20, elm:'雷', desc:'雷の帯'},
+        {id:301, name:'ギガブレイク', type:'物理', target:'全体', mp:30, rate:2.5, count:1, base:80, elm:'雷', desc:'最強の剣技'},
+        {id:401, name:'ゴッドハンド', type:'物理', target:'単体', mp:30, rate:3.0, count:1, base:100, elm:'光', desc:'神の拳'},
+        {id:402, name:'メテオ', type:'魔法', target:'全体', mp:50, rate:2.5, count:1, base:100, elm:'火', desc:'隕石落とし'},
         {id:403, name:'フルケア', type:'回復', target:'単体', mp:40, rate:0, count:1, base:9999, fix:true, desc:'完全回復'},
-        {id:901, name:'ジェネシス', type:'魔法', target:'全体', mp:100, rate:10.0, count:1, base:1000, elm:'混沌', desc:'【EX】天地創造の光'},
-        {id:902, name:'ラグナロク', type:'物理', target:'全体', mp:80, rate:5.0, count:5, base:100, elm:'闇', desc:'【EX】終焉の5連撃'},
+        {id:901, name:'ジェネシス', type:'魔法', target:'全体', mp:100, rate:5.0, count:1, base:500, elm:'混沌', desc:'【EX】天地創造の光'},
+        {id:902, name:'ラグナロク', type:'物理', target:'全体', mp:80, rate:3.0, count:5, base:50, elm:'闇', desc:'【EX】終焉の5連撃'},
         {id:903, name:'リザレクション', type:'蘇生', target:'全体', mp:200, rate:1.0, count:1, base:100, desc:'【EX】味方全員を完全蘇生'},
-        {id:999, name:'激しい炎', type:'特殊', target:'全体', mp:0, rate:0, count:1, base:50, fix:true, elm:'火', desc:'全体炎'}
+        {id:999, name:'激しい炎', type:'特殊', target:'全体', mp:0, rate:0, count:1, base:80, fix:true, elm:'火', desc:'全体炎'}
     ],
     CHARACTERS: [
         {id:101, name:'戦士ジョン', job:'戦士', rarity:'R', hp:150, mp:20, atk:40, def:30, spd:20, mag:10, lbSkills:{50:101, 99:201}},
@@ -110,7 +111,7 @@ const DB = {
     MONSTERS: [],
     EQUIPS: [],
     
-    // ★装備オプションの大幅拡張
+    // 装備オプション
     OPT_RULES: [
         {key:'atk', name:'攻撃', unit:'val', allowed:['N','R','SR','SSR','UR','EX'], min:{N:1,R:5,SR:10,SSR:20,UR:50,EX:80}, max:{N:4,R:9,SR:19,SSR:49,UR:100,EX:200}},
         {key:'def', name:'防御', unit:'val', allowed:['N','R','SR','SSR','UR','EX'], min:{N:1,R:5,SR:10,SSR:20,UR:50,EX:80}, max:{N:4,R:9,SR:19,SSR:49,UR:100,EX:200}},
@@ -121,7 +122,6 @@ const DB = {
         {key:'finDmg', name:'与ダメ', unit:'%', allowed:['SSR','UR','EX'], min:{SSR:1,UR:3,EX:5}, max:{SSR:2,UR:5,EX:10}},
         {key:'finRed', name:'被ダメ', unit:'val', allowed:['SSR','UR','EX'], min:{SSR:5,UR:10,EX:20}, max:{SSR:10,UR:20,EX:50}},
         
-        // 属性攻撃
         {key:'elmAtk', elm:'火', name:'火攻', unit:'val', allowed:['SR','SSR','UR','EX'], min:{SR:5,SSR:10,UR:20,EX:40}, max:{SR:9,SSR:19,UR:39,EX:80}},
         {key:'elmAtk', elm:'水', name:'水攻', unit:'val', allowed:['SR','SSR','UR','EX'], min:{SR:5,SSR:10,UR:20,EX:40}, max:{SR:9,SSR:19,UR:39,EX:80}},
         {key:'elmAtk', elm:'風', name:'風攻', unit:'val', allowed:['SR','SSR','UR','EX'], min:{SR:5,SSR:10,UR:20,EX:40}, max:{SR:9,SSR:19,UR:39,EX:80}},
@@ -129,7 +129,6 @@ const DB = {
         {key:'elmAtk', elm:'光', name:'光攻', unit:'val', allowed:['SSR','UR','EX'], min:{SSR:15,UR:30,EX:60}, max:{SSR:29,UR:59,EX:120}},
         {key:'elmAtk', elm:'闇', name:'闇攻', unit:'val', allowed:['SSR','UR','EX'], min:{SSR:15,UR:30,EX:60}, max:{SSR:29,UR:59,EX:120}},
 
-        // 属性耐性
         {key:'elmRes', elm:'火', name:'火耐', unit:'val', allowed:['R','SR','SSR','UR','EX'], min:{R:5,SR:10,SSR:20,UR:40,EX:80}, max:{R:9,SR:19,SSR:39,UR:79,EX:150}},
         {key:'elmRes', elm:'水', name:'水耐', unit:'val', allowed:['R','SR','SSR','UR','EX'], min:{R:5,SR:10,SSR:20,UR:40,EX:80}, max:{R:9,SR:19,SSR:39,UR:79,EX:150}},
         {key:'elmRes', elm:'風', name:'風耐', unit:'val', allowed:['R','SR','SSR','UR','EX'], min:{R:5,SR:10,SSR:20,UR:40,EX:80}, max:{R:9,SR:19,SSR:39,UR:79,EX:150}},
@@ -141,7 +140,7 @@ const DB = {
     SYNERGIES: [
         { key: 'spd', count: 3, name: '疾風怒濤', effect: 'doubleAction', desc: '50%で2回行動', color:'#f88' },
         { key: 'hp', count: 3, name: '吸血', effect: 'drain', desc: '与ダメの10%回復', color:'#f88' },
-        { key: 'mag', count: 3, name: '魔力暴走', effect: 'magCrit', desc: '魔法がたまに会心', color:'#88f' } // 魔力シナジーも追加
+        { key: 'mag', count: 3, name: '魔力暴走', effect: 'magCrit', desc: '魔法がたまに会心', color:'#88f' }
     ],
     MEDAL_REWARDS: [
         { medals: 5, name: '上やくそう x3', type: 'item', id: 2, count: 3 },
@@ -152,7 +151,6 @@ const DB = {
 
 // データ自動生成
 (() => {
-    // 装備ランク定義
     const TIERS = [
         { rank:1, name:'ボロの', mult:0.5 },
         { rank:5, name:'銅の', mult:1.0 },
@@ -160,12 +158,12 @@ const DB = {
         { rank:20, name:'鋼の', mult:2.5 },
         { rank:30, name:'白銀の', mult:4.0 },
         { rank:40, name:'黄金の', mult:6.0 },
-        { rank:50, name:'プラチナ', mult:9.0 },
-        { rank:60, name:'ミスリル', mult:13.0 },
-        { rank:70, name:'オリハルコン', mult:18.0 },
-        { rank:80, name:'アダマン', mult:25.0 },
-        { rank:90, name:'英雄の', mult:35.0 },
-        { rank:100, name:'神々の', mult:50.0 }
+        { rank:50, name:'プラチナ', mult:10.0 }, // 少し強化
+        { rank:60, name:'ミスリル', mult:15.0 }, // 少し強化
+        { rank:70, name:'オリハルコン', mult:22.0 }, // 強化
+        { rank:80, name:'アダマン', mult:30.0 }, // 強化
+        { rank:90, name:'英雄の', mult:45.0 }, // 強化
+        { rank:100, name:'神々の', mult:60.0 }  // 強化
     ];
 
     const EQUIP_TYPES = [
@@ -199,16 +197,15 @@ const DB = {
         });
     });
 
-    // モンスター定義
     const MONSTER_TYPES = [
-        { name:'スライム', hp:30, atk:10, def:5, exp:10 },
+        { name:'スライム', hp:30, atk:12, def:5, exp:10 }, // 基礎Atk微増
         { name:'バット', hp:20, atk:15, def:3, exp:12 },
-        { name:'ウルフ', hp:50, atk:20, def:10, exp:20 },
-        { name:'ゴースト', hp:40, atk:15, def:30, exp:25 },
-        { name:'オーク', hp:100, atk:30, def:20, exp:50 },
-        { name:'ナイト', hp:150, atk:40, def:50, exp:100 },
-        { name:'デーモン', hp:300, atk:80, def:60, exp:300 },
-        { name:'ドラゴン', hp:500, atk:100, def:80, exp:500 }
+        { name:'ウルフ', hp:50, atk:22, def:10, exp:20 },
+        { name:'ゴースト', hp:40, atk:18, def:30, exp:25 },
+        { name:'オーク', hp:100, atk:35, def:20, exp:50 },
+        { name:'ナイト', hp:150, atk:45, def:50, exp:100 },
+        { name:'デーモン', hp:300, atk:90, def:60, exp:300 },
+        { name:'ドラゴン', hp:500, atk:120, def:80, exp:500 }
     ];
 
     const ENEMY_SKILLS = {
@@ -218,12 +215,12 @@ const DB = {
         top: [1, 41, 42, 101, 201, 301, 402, 999]
     };
 
-    // 1～100ランクのモンスター生成
     for(let r=1; r<=100; r++) {
         const typeIdx = Math.min(MONSTER_TYPES.length-1, Math.floor((r-1)/12)); 
         const base = MONSTER_TYPES[typeIdx];
         
-        const scale_factor = 0.35; 
+        // ★強化: 成長係数をアップ (0.35 -> 0.45)
+        const scale_factor = 0.45; 
         const hp_exp = 2.5; 
 
         const scale = 1.0 + (r * scale_factor); 
@@ -264,12 +261,11 @@ const DB = {
         });
     }
 
-    // ボス: レグナード
+    // ボス: レグナード (HP強化)
     DB.MONSTERS.push({
         id:1000, rank:100, minF:999, name:'レグナード', 
-        hp:15000, mp:9999, atk:800, def:600, spd:150, mag:300, 
+        hp:50000, mp:9999, atk:1500, def:800, spd:200, mag:500, 
         exp:100000, gold:50000, 
-        // 技構成: 通常, ライデイン, ギガスラ, ベギラマ, ギガブレ, ゴッドハンド, メテオ, ジェネシス, ラグナロク, 激しい炎
         acts:[1, 13, 42, 202, 301, 401, 402, 901, 902, 999] 
     });
 })();
