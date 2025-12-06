@@ -1,10 +1,33 @@
-/* menus.js (パーティバー画像表示対応版) */
+/* menus.js (JobLv表示・セーブボタン削除版) */
 
 const Menu = {
     // --- メインメニュー制御 ---
     openMainMenu: () => {
         document.getElementById('menu-overlay').style.display = 'flex';
         Menu.renderPartyBar();
+        
+        // メニューボタン生成 (毎回再生成しないと状態が古いままになる場合があるため)
+        // ボタンの並び順を変更したい場合はここを編集
+        const grid = document.querySelector('#menu-overlay .menu-grid');
+        if(grid) {
+            grid.innerHTML = `
+                <button class="menu-btn" onclick="Menu.openSubScreen('party')">仲間編成</button>
+                <button class="menu-btn" onclick="Menu.openSubScreen('equip')">装備変更</button>
+                <button class="menu-btn" onclick="Menu.openSubScreen('inventory')">所持装備</button>
+                <button class="menu-btn" onclick="Menu.openSubScreen('items')">道具</button>
+                <button class="menu-btn" onclick="Menu.openSubScreen('allies')">仲間一覧</button>
+                <button class="menu-btn" onclick="Menu.openSubScreen('skills')">スキル</button>
+                <button class="menu-btn" onclick="Menu.openSubScreen('book')">魔物図鑑</button>
+                <button class="menu-btn" onclick="Menu.openSubScreen('blacksmith')">鍛冶屋</button>
+                <button class="menu-btn" style="background:#400040;" onclick="Dungeon.enter()">ダンジョン</button>
+                <button class="menu-btn" style="background:#664400;" onclick="Menu.openSubScreen('gacha')">ガチャ</button>
+                
+                <button class="menu-btn" style="background:#004444;" onclick="App.downloadSave()">データ出力</button>
+                <button class="menu-btn" style="background:#004444;" onclick="App.importSave()">データ読込</button>
+                
+                <button class="menu-btn" style="background:#500; grid-column:span 2;" onclick="App.returnToTitle()">タイトルへ</button>
+            `;
+        }
     },
     
     closeMainMenu: () => {
@@ -24,7 +47,7 @@ const Menu = {
         Menu.closeDialog();
     },
 
-    // ★修正: パーティステータスバー更新 (画像表示対応)
+    // パーティステータスバー更新
     renderPartyBar: () => {
         const bars = document.querySelectorAll('.party-bar'); 
         bars.forEach(bar => {
@@ -32,9 +55,10 @@ const Menu = {
             App.data.party.forEach(uid => {
                 const div = document.createElement('div');
                 div.className = 'p-box';
-                // 少し高さを確保するためにCSSクラスに依存せずスタイル調整
+                // 画像が入るためレイアウト調整
                 div.style.justifyContent = 'flex-start'; 
-                
+                div.style.paddingTop = '2px';
+
                 if(uid) {
                     const p = App.getChar(uid);
                     const stats = App.calcStats(p);
@@ -42,13 +66,13 @@ const Menu = {
                     const curMp = p.currentMp!==undefined ? p.currentMp : stats.maxMp;
                     const lbText = p.limitBreak > 0 ? `<span style="color:#ffd700; font-size:9px; margin-left:2px;">+${p.limitBreak}</span>` : '';
 
-                    // ★追加: 画像HTML生成
+                    // 画像HTML生成
                     const imgHtml = p.img 
                         ? `<img src="${p.img}" style="width:32px; height:32px; object-fit:cover; border-radius:4px; border:1px solid #666; margin-bottom:2px;">`
                         : `<div style="width:32px; height:32px; background:#333; border-radius:4px; border:1px solid #666; display:flex; align-items:center; justify-content:center; color:#555; font-size:8px; margin-bottom:2px;">IMG</div>`;
 
                     div.innerHTML = `
-                        <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; overflow:hidden; padding-top:2px;">
+                        <div style="flex:1; display:flex; flex-direction:column; align-items:center; width:100%; overflow:hidden;">
                             ${imgHtml}
                             <div style="display:flex; align-items:center; width:100%; justify-content:center;">
                                 <div style="font-weight:bold; color:#fff; font-size:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:90%;">
@@ -56,8 +80,9 @@ const Menu = {
                                 </div>
                                 ${lbText}
                             </div>
-                            </div>
-                        <div style="width:100%; margin-top:2px;">
+                            <div style="font-size:9px; color:#aaa; margin-bottom:2px;">${p.job} Lv.${p.level}</div>
+                        </div>
+                        <div style="width:100%;">
                             <div class="bar-container"><div class="bar-hp" style="width:${Math.min(100, (curHp/stats.maxHp)*100)}%"></div></div>
                             <div class="p-val">${curHp}/${stats.maxHp}</div>
                             <div class="bar-container"><div class="bar-mp" style="width:${Math.min(100, (curMp/stats.maxMp)*100)}%"></div></div>
@@ -96,8 +121,10 @@ const Menu = {
         Menu.renderPartyBar();
     },
 
+    // --- 画面内ログ/確認ダイアログ制御 ---
     getDialogEl: (id) => document.getElementById(id),
 
+    // レアリティごとのカラーコード取得
     getRarityColor: (rarity) => {
         if(rarity==='N') return '#a0a0a0';
         if(rarity==='R') return '#40e040';
@@ -108,11 +135,13 @@ const Menu = {
         return '#fff';
     },
 
+    // 装備詳細HTML生成
     getEquipDetailHTML: (equip) => {
         let html = '';
         const rarity = equip.rarity || 'N';
         const rarityColor = Menu.getRarityColor(rarity);
         
+        // 基礎効果
         let baseStats = [];
         if (equip.data) {
             if (equip.data.atk) baseStats.push(`攻+${equip.data.atk}`);
@@ -131,6 +160,7 @@ const Menu = {
         }
         const baseEffect = baseStats.length > 0 ? baseStats.join(' ') : 'なし';
 
+        // 追加オプション
         let optsHTML = '';
         if (equip.opts && equip.opts.length > 0) {
             const optsList = equip.opts.map(o => {
@@ -142,6 +172,7 @@ const Menu = {
             optsHTML = `<div style="font-size:10px; color:#aaa; margin-top:2px;">${optsList}</div>`;
         }
 
+        // シナジー
         let synergyHTML = '';
         if (equip.isSynergy) {
              const syn = App.checkSynergy(equip);
@@ -149,7 +180,9 @@ const Menu = {
         }
 
         html += `
-            <div style="font-size:12px; font-weight:bold; color:${rarityColor}; margin-bottom:2px;">${equip.name}</div>
+            <div style="font-size:12px; font-weight:bold; color:${rarityColor}; margin-bottom:2px;">
+                ${equip.name}
+            </div>
             <div style="font-size:10px; color:#ccc;">${baseEffect}</div>
             ${optsHTML}
             ${synergyHTML}
@@ -189,7 +222,9 @@ const Menu = {
         return `
             <div style="flex:1; min-width:0;">
                 <div style="font-weight:bold; color:${rarityColor};">${equip.name} ${synergyHTML}</div>
-                <div style="font-size:10px; color:#aaa; margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${baseEffect}</div>
+                <div style="font-size:10px; color:#aaa; margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                    ${baseEffect}
+                </div>
             </div>
             ${optsHTML ? `<div style="font-size:10px; color:#ccc; text-align:right; margin-left:10px;">${optsHTML}</div>` : ''}
         `;
@@ -200,7 +235,12 @@ const Menu = {
         const textEl = Menu.getDialogEl('menu-dialog-text');
         const btnEl = Menu.getDialogEl('menu-dialog-buttons');
         
-        if (!area) { alert(text); if (callback) callback(); return; }
+        if (!area) { 
+            console.warn("Dialog area missing. Using alert."); 
+            alert(text); 
+            if (callback) callback(); 
+            return; 
+        }
         
         textEl.innerHTML = text.replace(/\n/g, '<br>');
         btnEl.innerHTML = '';
@@ -702,7 +742,7 @@ const MenuInventory = {
 };
 
 /* ==========================================================================
-   5. 仲間一覧 & 詳細 (画像・名前変更機能追加)
+   5. 仲間一覧 & 詳細
    ========================================================================== */
 const MenuAllies = {
     selectedChar: null, 
@@ -743,7 +783,6 @@ const MenuAllies = {
         MenuAllies.renderDetail();
     },
 
-    // ★追加: 画像アップロード
     uploadImage: (input, uid) => {
         if (input.files && input.files[0]) {
             const file = input.files[0];
@@ -762,7 +801,6 @@ const MenuAllies = {
         }
     },
 
-    // ★追加: 名前編集モード切替
     toggleNameEdit: () => {
         const disp = document.getElementById('char-name-display');
         const edit = document.getElementById('char-name-edit');
@@ -773,7 +811,6 @@ const MenuAllies = {
         }
     },
 
-    // ★追加: 名前保存
     saveName: (uid) => {
         const input = document.getElementById('char-name-input');
         const newName = input.value.trim();
@@ -1025,24 +1062,21 @@ const MenuAllies = {
 };
 
 /* ==========================================================================
-   6. スキル使用
+   6. スキル使用 ～ 8. 鍛冶屋 (変更なし)
    ========================================================================== */
 const MenuSkills = {
     selectedCharUid: null,
     selectedSkill: null,
-
     init: () => {
         document.getElementById('sub-screen-skills').style.display = 'flex';
         MenuSkills.changeScreen('char');
     },
-
     changeScreen: (mode) => {
         document.getElementById('skill-screen-char').style.display = (mode==='char'?'flex':'none');
         document.getElementById('skill-screen-skill').style.display = (mode==='skill'?'flex':'none');
         document.getElementById('skill-screen-target').style.display = (mode==='target'?'flex':'none');
         if(mode==='char') MenuSkills.renderCharList();
     },
-
     renderCharList: () => {
         const list = document.getElementById('skill-char-list');
         list.innerHTML = '';
@@ -1059,27 +1093,21 @@ const MenuSkills = {
             list.appendChild(div);
         });
     },
-
     renderSkillList: () => {
         MenuSkills.changeScreen('skill');
         const list = document.getElementById('skill-list');
         list.innerHTML = '';
-        
         const c = App.getChar(MenuSkills.selectedCharUid);
         const player = new Player(c);
-        
-        // 移動中に使えるスキル (回復・蘇生)
         const skills = player.skills.filter(s => s.type.includes('回復') || s.type.includes('蘇生'));
         
         if(skills.length === 0) {
             list.innerHTML = '<div style="padding:10px; color:#888;">使用可能なスキルがありません</div>';
             return;
         }
-
         skills.forEach(sk => {
             const div = document.createElement('div');
             div.className = 'list-item';
-            // ★要望: スキル名の下に備考欄を小さく表示
             div.innerHTML = `
                 <div style="flex:1;">
                     <div style="font-weight:bold;">${sk.name}</div>
@@ -1088,22 +1116,17 @@ const MenuSkills = {
                 <div style="font-size:12px; color:#88f;">MP:${sk.mp}</div>
             `;
             div.onclick = () => {
-                if(c.currentMp < sk.mp) {
-                    Menu.msg("MPが足りません");
-                    return;
-                }
+                if(c.currentMp < sk.mp) { Menu.msg("MPが足りません"); return; }
                 MenuSkills.selectedSkill = sk;
                 MenuSkills.renderTargetList();
             };
             list.appendChild(div);
         });
     },
-
     renderTargetList: () => {
         MenuSkills.changeScreen('target');
         const list = document.getElementById('skill-target-list');
         list.innerHTML = '';
-
         App.data.party.forEach(uid => {
             if(!uid) return;
             const c = App.getChar(uid);
@@ -1114,38 +1137,25 @@ const MenuSkills = {
             list.appendChild(div);
         });
     },
-
     useSkill: (target) => {
         const actorData = App.getChar(MenuSkills.selectedCharUid);
         const sk = MenuSkills.selectedSkill;
-        
-        if(actorData.currentMp < sk.mp) {
-            Menu.msg("MPが足りません");
-            return;
-        }
-
-        // ★修正: 確認ダイアログを使用
+        if(actorData.currentMp < sk.mp) { Menu.msg("MPが足りません"); return; }
         Menu.confirm(`${target.name} に ${sk.name} を使いますか？`, () => {
             let targets = [target];
-            if(sk.target === '全体') {
-                targets = App.data.party.map(uid => App.getChar(uid)).filter(c=>c);
-            }
-
+            if(sk.target === '全体') targets = App.data.party.map(uid => App.getChar(uid)).filter(c=>c);
             let effected = false;
             const actorStats = App.calcStats(actorData); 
             const mag = actorStats.mag; 
-
             targets.forEach(t => {
                 const s = App.calcStats(t);
                 const tMaxHp = s.maxHp;
-                
                 if(sk.type.includes('回復')) {
                     if(t.currentHp < tMaxHp && (!t.currentHp || t.currentHp > 0)) { 
                         let base = sk.base || 0;
                         let rec = 0;
                         if(sk.fix) rec = sk.base;
                         else rec = Math.floor((mag + base) * (sk.rate || 1.0));
-                        
                         t.currentHp = Math.min(tMaxHp, (t.currentHp||0) + rec);
                         effected = true;
                     }
@@ -1156,12 +1166,9 @@ const MenuSkills = {
                     }
                 }
             });
-
             if(effected) {
                 actorData.currentMp -= sk.mp;
                 App.save();
-                
-                // ★完了メッセージ
                 Menu.msg(`${sk.name}を使用した！`, () => {
                     MenuSkills.renderTargetList(); 
                     Menu.renderPartyBar();
@@ -1173,24 +1180,18 @@ const MenuSkills = {
     }
 };
 
-/* ==========================================================================
-   7. 魔物図鑑
-   ========================================================================== */
 const MenuBook = {
     init: () => {
         const list = document.getElementById('book-list');
         list.innerHTML = '';
         const defeated = App.data.book.monsters || [];
-        
         DB.MONSTERS.forEach(m => {
             const isKnown = defeated.includes(m.id);
             const div = document.createElement('div');
             div.className = 'list-item';
-            
             if(isKnown) {
                 const dropItem = DB.EQUIPS.find(e=>e.id===m.drop) || DB.ITEMS.find(i=>i.id===m.drop);
                 const dropName = dropItem ? dropItem.name : '-';
-                
                 div.innerHTML = `
                     <div style="font-weight:bold; color:#f88;">${m.name}</div>
                     <div style="font-size:10px; line-height:1.4;">
@@ -1207,15 +1208,11 @@ const MenuBook = {
     }
 };
 
-/* ==========================================================================
-   8. 鍛冶屋
-   ========================================================================== */
 const MenuBlacksmith = {
     mode: null,
     init: () => {
         document.getElementById('smith-screen-main').style.display = 'flex';
         document.getElementById('smith-screen-select').style.display = 'none';
-        
         const lv = App.data.blacksmith.level;
         const exp = App.data.blacksmith.exp;
         document.getElementById('smith-info').innerText = `鍛冶屋Lv: ${lv} (Exp: ${exp})`;
@@ -1234,30 +1231,27 @@ const MenuBlacksmith = {
         list.innerHTML = '';
         const footer = document.getElementById('smith-footer');
         footer.innerText = MenuBlacksmith.mode === 'enhance' ? "強化する装備を選択" : "拡張する装備(+3)を選択";
-        
         App.data.inventory.forEach(eq => {
             if(MenuBlacksmith.mode === 'expand' && (!eq.opts || eq.opts.length < 3)) return;
-            
             const div = document.createElement('div');
             div.className = 'list-item';
             div.innerHTML = `<div>${eq.name}</div>`;
             div.onclick = () => {
                 if(MenuBlacksmith.mode === 'enhance') {
-                    alert("強化機能: 今回の実装範囲外です（素材選択UIが必要）");
+                    Menu.msg("強化機能: 今回の実装範囲外です（素材選択UIが必要）");
                 } else {
                     if(App.data.gems < 500) { footer.innerText = "ジェム不足(500)"; return; }
-                    
-                    if(confirm("500ジェム消費してスロットを追加しますか？")) {
+                    Menu.confirm("500ジェム消費してスロットを追加しますか？", () => {
                         App.data.gems -= 500;
                         const keys = ['atk','def','hp'];
                         const key = keys[Math.floor(Math.random()*3)];
                         const newOpt = Blacksmith.expandSlot(eq.id, key);
                         if(newOpt) {
-                            alert(`追加: ${newOpt.label} +${newOpt.val} (${newOpt.rarity})`);
+                            Menu.msg(`追加: ${newOpt.label} +${newOpt.val} (${newOpt.rarity})`);
                             App.save();
                             MenuBlacksmith.init();
                         }
-                    }
+                    });
                 }
             };
             list.appendChild(div);
