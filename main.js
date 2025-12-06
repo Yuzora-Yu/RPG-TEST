@@ -1,4 +1,4 @@
-/* main.js (完全統合・勇者スキル変更版) */
+/* main.js (長押し移動復活・完全版) */
 
 // ==========================================================================
 // 設定：職業別習得スキルテーブル
@@ -32,8 +32,8 @@ const JOB_SKILLS = {
     '聖騎士':   { 1:21, 5:51, 10:53, 15:103, 20:22, 25:30, 30:402, 35:410, 40:31, 50:408 },     
     '上忍':     { 3:14, 8:307, 15:47, 20:201, 25:104, 30:105, 35:405, 40:406, 45:306, 50:106 }, 
 
-    // --- 超級職 ---
-    '勇者':     { 1:20, 3:10, 8:40, 15:13, 25:21, 30:103, 35:22, 40:408, 45:401, 50:409 },      
+    // --- 超級職 (勇者強化) ---
+    '勇者':     { 1:20, 3:10, 8:40, 12:41, 15:13, 25:21, 28:203, 30:103, 35:22, 40:408, 45:401, 50:409 }, 
     '竜騎士':   { 1:40, 5:12, 10:43, 15:304, 20:201, 30:603, 35:605, 40:401, 45:609, 50:405 },  
     '聖女':     { 1:21, 5:22, 10:50, 12:304, 15:51, 20:52, 25:53, 30:23, 33:309, 35:403, 40:31, 50:410 }, 
     '魔王':     { 1:10, 5:14, 10:13, 15:302, 20:308, 25:307, 30:404, 35:306, 38:105, 40:411, 45:405, 50:412 }, 
@@ -92,10 +92,7 @@ class Entity {
     }
 
     takeDamage(damage) {
-        if (damage <= 0) {
-            // App.log(`ダメージを与えられない！`); // ログ過多防止のためコメントアウト
-            return 0;
-        }
+        if (damage <= 0) return 0;
         this.hp -= damage;
         if (this.hp < 0) this.hp = 0;
         if (this.hp <= 0) {
@@ -125,10 +122,8 @@ class Player extends Entity {
         this.uid = data.uid;
         this.equips = data.equips || {};
         
-        // 基本スキル (ID100未満)
         this.skills = [DB.SKILLS.find(s => s.id === 1)]; 
 
-        // 職業スキル習得
         const table = JOB_SKILLS[data.job];
         if (table) {
             for (let lv = 1; lv <= data.level; lv++) {
@@ -141,7 +136,6 @@ class Player extends Entity {
             }
         }
 
-        // 固有スキル (限界突破)
         if(data.charId) {
             const master = DB.CHARACTERS.find(c => c.id === data.charId);
             if(master && master.lbSkills) {
@@ -156,7 +150,6 @@ class Player extends Entity {
             }
         }
         
-        // 主人公の特別スキル (★修正: ザオラルと天下無双)
         if(data.isHero) {
             const addHeroSkill = (sid) => {
                 const sk = DB.SKILLS.find(s => s.id === sid);
@@ -199,8 +192,7 @@ const App = {
         App.load();
         if(!App.data) { 
             if(window.location.href.indexOf('main.html') === -1) {
-                // 初回起動やデータがない場合はタイトル画面へ
-                // window.location.href = 'main.html'; (コメントアウト: 統合環境でのループ防止)
+                // window.location.href = 'main.html'; 
             }
             return; 
         }
@@ -210,7 +202,6 @@ const App = {
             Field.y = App.data.location.y;
         }
 
-        // ダンジョン情報復元
         if (App.data.progress && App.data.progress.floor > 0 && typeof Dungeon !== 'undefined') {
             Dungeon.floor = App.data.progress.floor;
             if (App.data.dungeon && App.data.dungeon.map) {
@@ -226,7 +217,6 @@ const App = {
             }
         }
 
-        // シーン分岐
         if (App.data.battle && App.data.battle.active) {
             App.log("戦闘に復帰します...");
             App.changeScene('battle');
@@ -244,7 +234,6 @@ const App = {
                     App.changeScene('field');
                 }
             } else {
-                // フィールド座標正規化
                 const mapW = typeof MAP_DATA !== 'undefined' ? MAP_DATA[0].length : 50;
                 const mapH = typeof MAP_DATA !== 'undefined' ? MAP_DATA.length : 32;
                 if(App.data.location) {
@@ -255,7 +244,23 @@ const App = {
             }
         }
         
-        // キー入力リスナー
+        // ★修正: 長押し移動対応
+        let moveTimer = null;
+        const startMove = (dx, dy) => {
+            if(moveTimer) clearInterval(moveTimer);
+            if(typeof Menu !== 'undefined' && Menu.isMenuOpen()) return;
+            Field.move(dx, dy); 
+            moveTimer = setInterval(() => {
+                if(typeof Menu !== 'undefined' && Menu.isMenuOpen()) { stopMove(); return; }
+                Field.move(dx, dy);
+            }, 150); 
+        };
+        const stopMove = (e) => {
+            if(e) e.preventDefault(); 
+            if(moveTimer) clearInterval(moveTimer);
+            moveTimer = null;
+        };
+
         window.addEventListener('keydown', e => {
             if(document.getElementById('field-scene') && document.getElementById('field-scene').style.display === 'flex') {
                 if(typeof Menu !== 'undefined' && Menu.isMenuOpen()) return;
@@ -270,14 +275,23 @@ const App = {
             }
         });
 
-        // ボタンイベントバインド
-        const bind = (id, fn) => { const el = document.getElementById(id); if(el) el.onclick = fn; };
-        bind('btn-up', () => Field.move(0, -1));
-        bind('btn-down', () => Field.move(0, 1));
-        bind('btn-left', () => Field.move(-1, 0));
-        bind('btn-right', () => Field.move(1, 0));
-        bind('btn-menu', () => { if(typeof Menu !== 'undefined') Menu.openMainMenu(); });
-        bind('btn-ok', () => { if(App.pendingAction) App.executeAction(); else if(typeof Menu !== 'undefined') Menu.openMainMenu(); });
+        const bindPad = (id, dx, dy) => {
+            const el = document.getElementById(id);
+            if(!el) return;
+            el.onmousedown = (e) => { e.preventDefault(); startMove(dx, dy); };
+            el.onmouseup = stopMove;
+            el.onmouseleave = stopMove;
+            el.ontouchstart = (e) => { e.preventDefault(); startMove(dx, dy); };
+            el.ontouchend = stopMove;
+        };
+        bindPad('btn-up', 0, -1);
+        bindPad('btn-down', 0, 1);
+        bindPad('btn-left', -1, 0);
+        bindPad('btn-right', 1, 0);
+
+        const bindClick = (id, fn) => { const el = document.getElementById(id); if(el) el.onclick = fn; };
+        bindClick('btn-menu', () => { if(typeof Menu !== 'undefined') Menu.openMainMenu(); });
+        bindClick('btn-ok', () => { if(App.pendingAction) App.executeAction(); else if(typeof Menu !== 'undefined') Menu.openMainMenu(); });
     },
 
     setAction: (label, callback) => {
@@ -355,7 +369,6 @@ const App = {
         App.data = JSON.parse(JSON.stringify(INITIAL_DATA_TEMPLATE));
         App.data.characters[0].name = name;
         App.data.characters[0].img = imgSrc; 
-        App.data.location = { x: 23, y: 60 }; // 初期位置
         for(let i=0;i<5;i++) App.data.inventory.push(App.createRandomEquip('init', 1)); 
         try {
             localStorage.setItem(CONST.SAVE_KEY, JSON.stringify(App.data));
@@ -383,7 +396,6 @@ const App = {
 
     getChar: (uid) => App.data ? App.data.characters.find(c => c.uid === uid) : null,
 
-    // ★修正: 属性計算を優先する計算式
     calcStats: (char) => {
         const lb = char.limitBreak || 0;
         const multiplier = 1 + (lb * 0.05); 
@@ -399,7 +411,6 @@ const App = {
         };
         CONST.ELEMENTS.forEach(e => { s.elmAtk[e]=0; s.elmRes[e]=0; });
 
-        // 振り分け反映
         if(char.uid === 'p1' && char.alloc) {
             for(let key in char.alloc) {
                 if (key.includes('_')) {
@@ -414,7 +425,6 @@ const App = {
             }
         }
 
-        // 装備反映
         CONST.PARTS.forEach(part => {
             const eq = char.equips ? char.equips[part] : null;
             if(eq) {
@@ -432,7 +442,6 @@ const App = {
                     if(o.unit === 'val') {
                         if(o.key === 'hp') s.maxHp += o.val;
                         else if(o.key === 'mp') s.maxMp += o.val;
-                        // 属性値を先にチェック
                         else if(o.key === 'elmAtk') s.elmAtk[o.elm] += o.val;
                         else if(o.key === 'elmRes') s.elmRes[o.elm] += o.val;
                         else if(s[o.key] !== undefined && typeof s[o.key] === 'number') s[o.key] += o.val;
@@ -445,7 +454,6 @@ const App = {
         return s;
     },
 
-    // ★修正: 第3引数 fixedPlus 対応
     createRandomEquip: (source, rank = 1, fixedPlus = null) => {
         let candidates = DB.EQUIPS.filter(e => e.rank <= rank && e.rank >= Math.max(1, rank - 15));
         if (candidates.length === 0) candidates = DB.EQUIPS.filter(e => e.rank <= rank);
@@ -550,7 +558,9 @@ const App = {
 
                 let logMsg = `${charData.name}はLv${charData.level}になった！<br>HP+${incHp}, MP+${incMp}`;
                 const newSkill = App.checkNewSkill(charData);
-                if (newSkill) logMsg += `<br><span style="color:#ffff00;">${newSkill.name}を覚えた！</span>`;
+                if (newSkill) {
+                    logMsg += `<br><span style="color:#ffff00;">${newSkill.name}を覚えた！</span>`;
+                }
                 logs.push(logMsg);
             } else { break; }
         }
@@ -563,7 +573,6 @@ const App = {
         return null;
     },
 
-    // --- セーブデータ書き出し (ダウンロード) ---
     downloadSave: () => {
         if (!App.data) {
             if(typeof Menu !== 'undefined') Menu.msg("セーブデータがありません");
@@ -583,7 +592,6 @@ const App = {
         URL.revokeObjectURL(url);
     },
 
-    // --- セーブデータ読み込み (アップロード) ---
     importSave: () => {
         const input = document.createElement('input');
         input.type = 'file';
@@ -616,7 +624,6 @@ const App = {
     }
 };
 
-/* Field定義 */
 const Field = {
     x: 23, y: 28, ready: false, currentMapData: null,
     
@@ -717,8 +724,7 @@ const Field = {
         }
         ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(cx, cy, 10, 0, Math.PI*2); ctx.fill(); ctx.strokeStyle = '#000'; ctx.stroke();
         let locName = Field.currentMapData ? `地下${Dungeon.floor}階` : `フィールド(${Field.x},${Field.y})`;
-        const locNameEl = document.getElementById('loc-name');
-        if(locNameEl) locNameEl.innerText = locName;
+        document.getElementById('loc-name').innerText = locName;
 
         const mmSize = 80; const mmX = w - mmSize - 10; const mmY = 10; const range = 10; 
         ctx.save(); ctx.globalAlpha = 0.6; ctx.fillStyle = '#000'; ctx.fillRect(mmX, mmY, mmSize, mmSize); ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.strokeRect(mmX, mmY, mmSize, mmSize);
