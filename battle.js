@@ -83,6 +83,8 @@ const Battle = {
         Battle.startInputPhase();
     },
 
+   /* battle.js の generateNewEnemies 関数を修正 */
+
     generateNewEnemies: (isBoss) => {
         const newEnemies = [];
         const floor = App.data.progress.floor || 1; 
@@ -91,30 +93,45 @@ const Battle = {
             let bossId = 1000; 
             let bossScale = 1.0;
             let extraBosses = []; 
+            let msg = "強大な魔物が現れた！";
 
-            if (floor <= 40) {
-                bossId = 1010; 
-                Battle.log("魔戦士デュランが現れた！");
-            } else if (floor <= 80) {
-                bossId = 1020; 
-                bossScale = 1.0 + ((floor - 40) * 0.01); 
-                Battle.log("魔王ムドーが現れた！");
+            // 階層ごとのボスID指定 (database.jsの定義に合わせる)
+            if (floor === 10) {
+                bossId = 1010; msg = "バトルレックスが現れた！";
+            } else if (floor === 20) {
+                bossId = 1020; msg = "魔王のつかいが現れた！";
+            } else if (floor === 30) {
+                bossId = 1030; msg = "デュランが現れた！";
+            } else if (floor === 40) {
+                bossId = 1040; msg = "ジャミラスが現れた！";
+            } else if (floor === 50) {
+                bossId = 1050; msg = "グラコスが現れた！";
+            } else if (floor === 60) {
+                bossId = 1060; msg = "魔王ムドーが現れた！";
+            } else if (floor === 70) {
+                bossId = 1070; msg = "アクバーが現れた！";
+            } else if (floor === 80) {
+                bossId = 1080; // アトラス
+                extraBosses = [1081, 1082]; // バズズ, ベリアル
+                msg = "悪霊の神々が現れた！";
             } else if (floor === 90) {
-                bossId = 1030; 
-                extraBosses = [1031, 1032]; 
-                Battle.log("悪霊の神々が現れた！");
+                bossId = 1090; msg = "大神官ハーゴンが現れた！";
             } else if (floor === 100) {
-                bossId = 1040; 
-                Battle.log("破壊神シドーが現れた！");
+                bossId = 1100; msg = "破壊神シドーが現れた！";
             } else {
-                bossId = 1000; 
+                // 101階以降: レグナード (階層補正あり)
+                bossId = 1000;
                 bossScale = 1.0 + ((floor - 100) * 0.1);
-                Battle.log("竜神レグナードが現れた！");
+                msg = "常闇の竜レグナードが現れた！";
             }
 
-            const base = DB.MONSTERS.find(m => m.id === bossId) || DB.MONSTERS[DB.MONSTERS.length-1];
+            Battle.log(msg);
+
+            const base = DB.MONSTERS.find(m => m.id === bossId) || DB.MONSTERS.find(m => m.id === 1000);
             const m = new Monster(base, bossScale);
             m.name = base.name; m.id = base.id;
+            // ボスの行動回数も引き継ぐ
+            if(base.actCount) m.actCount = base.actCount;
             newEnemies.push(m);
 
             extraBosses.forEach(eid => {
@@ -122,6 +139,7 @@ const Battle = {
                 if(eBase) {
                     const em = new Monster(eBase, bossScale);
                     em.name = eBase.name; em.id = eBase.id;
+                    if(eBase.actCount) em.actCount = eBase.actCount;
                     newEnemies.push(em);
                 }
             });
@@ -130,11 +148,12 @@ const Battle = {
             Battle.log("モンスターが現れた！");
             const count = 1 + Math.floor(Math.random() * 3);
             
+            // メタル系出現判定 (5%)
             if (Math.random() < 0.05) {
-                let metalId = 201; 
-                if (floor >= 20) metalId = 202; 
-                if (floor >= 50) metalId = 203; 
-                if (floor >= 100) metalId = 204; 
+                let metalId = 201; // メタルスライム
+                if (floor >= 20) metalId = 202; // はぐれメタル
+                if (floor >= 50) metalId = 203; // メタルキング
+                if (floor >= 100) metalId = 204; // プラチナキング
                 
                 const metalBase = DB.MONSTERS.find(m => m.id === metalId);
                 if(metalBase && floor >= metalBase.minF) {
@@ -145,16 +164,29 @@ const Battle = {
                 }
             }
 
+            // 通常モンスター抽選
+            // 現在の階層 ± 5 くらいのランク帯から選ぶ
             const minRank = Math.max(1, floor - 5);
             const maxRank = floor + 2;
-            let pool = DB.MONSTERS.filter(m => m.rank >= minRank && m.rank <= maxRank && m.id < 200);
             
-            if(pool.length === 0) pool = DB.MONSTERS.filter(m => m.rank <= floor && m.id < 200);
+            // ID < 200 (通常モンスター) に限定
+            let pool = DB.MONSTERS.filter(m => 
+                m.rank >= minRank && 
+                m.rank <= maxRank && 
+                m.id < 200
+            );
+            
+            // 候補がなければ条件を緩める
+            if(pool.length === 0) {
+                pool = DB.MONSTERS.filter(m => m.rank <= floor && m.id < 200);
+            }
+            // それでもなければスライム
             if(pool.length === 0) pool = [DB.MONSTERS[0]];
             
             for(let i=0; i<count; i++) {
                 const base = pool[Math.floor(Math.random()*pool.length)];
                 const m = new Monster(base, 1.0);
+                // 同名モンスターの区別用サフィックス (A, B, C...)
                 m.name += String.fromCharCode(65+i); 
                 m.id = base.id;
                 newEnemies.push(m);
@@ -162,6 +194,7 @@ const Battle = {
         }
         return newEnemies;
     },
+
 
     log: (msg) => {
         const el = Battle.getEl('battle-log');
