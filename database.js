@@ -7,7 +7,7 @@ const CONST = {
     RARITY: ['N', 'R', 'SR', 'SSR', 'UR', 'EX'],
     
     // ガチャ確率 (これがないとRしか出ない)
-    GACHA_RATES: { N:0, R:50, SR:30, SSR:13, UR:5, EX:2 },
+    GACHA_RATES: { N:0, R:50, SR:30, SSR:14, UR:5, EX:1 },
     
     // 鍛冶屋確率
     SMITH_RATES: { 1: { R:80, SR:15, SSR:5 }, 10: { R:10, SR:30, SSR:40, UR:15, EX:5 } },
@@ -247,14 +247,14 @@ const DB = {
     // ボス
     DB.MONSTERS.push({
         id:1000, rank:100, minF:999, name:'ダンジョンボス', 
-        hp:150000, mp:9999, atk:800, def:600, spd:150, mag:300, 
+        hp:15000, mp:9999, atk:800, def:600, spd:150, mag:300, 
         exp:100000, gold:50000, 
         acts:[1, 42, 101, 202, 402, 999] 
     });
 })();
 
 const INITIAL_DATA_TEMPLATE = {
-    gold: 5000, gems: 10000, // ジェム初期値を少し増やしておきました
+    gold: 5000, gems: 100000, // ジェム初期値を少し増やしておきました
     items: { 1: 10, 2: 5, 99: 10 }, 
     inventory: [], 
     location: { x: 23, y: 60 },
