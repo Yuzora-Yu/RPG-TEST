@@ -286,22 +286,26 @@ const DB = {
         });
     });
 
+   
+/* database.js の 雑魚敵生成ロジック部分 (上書き用) */
+
+    // ★修正: 基礎ステータスを高めに設定しつつ、個性を強調
     const MONSTER_TYPES = [
-        { name:'スライム', hp:300, atk:100, def:80, spd:80, mag:80, exp:10, gold:10 }, 
-        { name:'ドラキー', hp:400, atk:120, def:90, spd:110, mag:90, exp:12, gold:12 },
-        { name:'さまようよろい', hp:600, atk:150, def:100, spd:100, mag:80, exp:20, gold:20 },
-        { name:'ゴースト', hp:850, atk:130, def:150, spd:90, mag:150, exp:25, gold:25 },
-        { name:'オーク', hp:1000, atk:180, def:120, spd:80, mag:60, exp:50, gold:50 },
-        { name:'キラーマシン', hp:1800, atk:200, def:200, spd:90, mag:100, exp:100, gold:100 },
-        { name:'アークデーモン', hp:2100, atk:250, def:180, spd:120, mag:250, exp:300, gold:300 },
-        { name:'ドラゴン', hp:2500, atk:350, def:250, spd:150, mag:200, exp:500, gold:500 },
-        { name:'ホイミスライム', hp:500, atk:80, def:80, spd:70, mag:150, exp:15, gold:15 }, 
-        { name:'ベビーサタン', hp:900, atk:120, def:100, spd:110, mag:300, exp:40, gold:40 }, 
-        { name:'キラーマシン2', hp:2200, atk:300, def:250, spd:130, mag:50, exp:150, gold:150, actCount:2 } 
+        // 名前, HP, 攻, 防, 速, 魔, 経験値, 金
+        { name:'スライム', hp:300, atk:80, def:80, spd:80, mag:50, exp:10, gold:10 },       // バランス・最弱
+        { name:'ドラキー', hp:250, atk:90, def:60, spd:130, mag:100, exp:12, gold:15 },     // 高速・魔法
+        { name:'さまようよろい', hp:500, atk:110, def:160, spd:50, mag:20, exp:25, gold:30 }, // 高耐久・鈍足
+        { name:'ゴースト', hp:350, atk:90, def:70, spd:110, mag:130, exp:20, gold:20 },     // 魔法・素早い
+        { name:'オーク', hp:800, atk:130, def:90, spd:70, mag:40, exp:40, gold:35 },        // 高HP・パワー
+        { name:'キラーマシン', hp:600, atk:150, def:140, spd:120, mag:30, exp:80, gold:80 },// 高ステータス物理
+        { name:'アークデーモン', hp:700, atk:120, def:100, spd:90, mag:180, exp:100, gold:90 }, // 高魔力・タフ
+        { name:'ドラゴン', hp:1000, atk:170, def:110, spd:80, mag:80, exp:150, gold:120 },  // 全体的に高い
+        { name:'ホイミスライム', hp:400, atk:60, def:70, spd:100, mag:120, exp:20, gold:20 }, // 回復役・そこそこ速い
+        { name:'ベビーサタン', hp:450, atk:80, def:70, spd:110, mag:200, exp:50, gold:50 },   // 高魔力・紙装甲
+        { name:'キラーマシン2', hp:900, atk:200, def:180, spd:150, mag:50, exp:250, gold:250, actCount:2 } // 最強雑魚
     ];
 
-    // ★修正: 雑魚敵のスキルセット (低:3種, 中:4種, 高:5種)
-    // ※ID:1(通常攻撃)やID:2(防御)を混ぜて行動パターンを構成
+    // スキルセット (ランク別割り当て)
     const MONSTER_SKILL_SETS = {
         'スライム': { 
             low: [1, 10, 2],                  // 攻撃, メラ, 防御
@@ -361,12 +365,13 @@ const DB = {
     };
 
     for(let r=1; r<=100; r++) {
-        // 種類数が増えたのでインデックス計算を調整 (全体から均等に選出)
+        // 種類選出 (全11種)
         const typeIdx = Math.floor((r - 1) / (100 / MONSTER_TYPES.length));
         const base = MONSTER_TYPES[Math.min(typeIdx, MONSTER_TYPES.length - 1)];
         
-        const scale_factor = 0.45; 
-        const hp_exp = 1.2; 
+        // ★修正: 成長率 (ランク100で約30倍)
+        const scale_factor = 0.3; 
+        const hp_exp = 1.2; // HPは1.2乗 (爆発的増加を防ぐ)
 
         const scale = 1.0 + (r * scale_factor); 
         
@@ -375,7 +380,7 @@ const DB = {
         if(r > 50) prefix = "真・";
         if(r > 80) prefix = "極・";
 
-        // ★修正: ランクと種類に応じたスキル割り当て
+        // スキルセット決定
         let myActs = [1];
         const skillSet = MONSTER_SKILL_SETS[base.name];
         if (skillSet) {
@@ -386,23 +391,56 @@ const DB = {
             myActs = sourceActs; 
         }
 
-        DB.MONSTERS.push({
-            id: r,
-            rank: r,
-            minF: r,
-            name: `${prefix}${base.name} Lv${r}`,
-            hp: Math.floor(base.hp * Math.pow(scale, hp_exp)), 
-            mp: 50 + r * 10,
-            atk: Math.floor(base.atk * scale),
-            def: Math.floor(base.def * scale),
-            spd: Math.floor(base.spd * scale),
-            mag: Math.floor(base.mag * scale),
-            gold: Math.floor(base.gold * scale * 1.5),
-            exp: Math.floor(base.exp * scale * 1.5),
-            acts: myActs,
-            actCount: base.actCount || 1,
-            drop: null
-        });
+        // 1ランクにつき2体生成
+        for(let i=0; i<2; i++) {
+            // 中心に近いランクのモンスターをランダムに選ぶ（バリエーション出し）
+            // ※今回はbase固定で、IDを少しずらして登録
+            DB.MONSTERS.push({
+                id: r + (i * 0.1),
+                rank: r,
+                minF: r,
+                name: `${prefix}${base.name} Lv${r}`,
+                // ★修正: HP計算式 (base * scale^1.2)
+                hp: Math.floor(base.hp * Math.pow(scale, hp_exp)), 
+                mp: 50 + r * 5,
+                atk: Math.floor(base.atk * scale),
+                def: Math.floor(base.def * scale),
+                // ★修正: 素早さ・魔力・Goldも基礎値依存
+                spd: Math.floor(base.spd * scale),
+                mag: Math.floor(base.mag * scale),
+                gold: Math.floor(base.gold * scale),
+                exp: Math.floor(base.exp * scale),
+                acts: myActs,
+                actCount: base.actCount || 1,
+                drop: null
+            });
+        }
+
+        // 30%でホイミスライム追加 (全ランク帯)
+        if (Math.random() < 0.3) {
+            const hoimiBase = MONSTER_TYPES.find(m => m.name === 'ホイミスライム');
+            let hoimiActs = MONSTER_SKILL_SETS['ホイミスライム'].low;
+            if (r >= 30) hoimiActs = MONSTER_SKILL_SETS['ホイミスライム'].mid;
+            if (r >= 70) hoimiActs = MONSTER_SKILL_SETS['ホイミスライム'].high;
+
+            DB.MONSTERS.push({
+                id: r + 0.5,
+                rank: r,
+                minF: r,
+                name: `${prefix}ホイミン Lv${r}`,
+                hp: Math.floor(hoimiBase.hp * Math.pow(scale, hp_exp)),
+                mp: 100 + r * 10,
+                atk: Math.floor(hoimiBase.atk * scale),
+                def: Math.floor(hoimiBase.def * scale),
+                spd: Math.floor(hoimiBase.spd * scale),
+                mag: Math.floor(hoimiBase.mag * scale),
+                gold: Math.floor(hoimiBase.gold * scale),
+                exp: Math.floor(hoimiBase.exp * scale),
+                acts: hoimiActs,
+                actCount: 1,
+                drop: null
+            });
+        }
     }
 
     // --- メタル系 (防御力9999に強化) ---
