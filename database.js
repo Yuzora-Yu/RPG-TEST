@@ -73,8 +73,8 @@ const DB = {
         {id:20, name:'ホイミ', type:'回復', target:'単体', mp:3, rate:1.5, count:1, base:30, elm:null, desc:'小回復'},
         {id:21, name:'ベホイミ', type:'回復', target:'単体', mp:6, rate:2.5, count:1, base:80, elm:null, desc:'中回復'},
         {id:22, name:'ベホマラー', type:'回復', target:'全体', mp:12, rate:1.5, count:1, base:60, elm:null, desc:'全体回復'},
-        {id:23, name:'ベホマ', type:'回復', target:'単体', mp:10, rate:0, count:1, base:999, fix:true, desc:'全回復'},
-        {id:24, name:'ベホマズン', type:'回復', target:'全体', mp:30, rate:0, count:1, base:999, fix:true, desc:'全体全回復'},
+        {id:23, name:'ベホマ', type:'回復', target:'単体', mp:10, rate:0, count:1, base:9999, fix:true, desc:'全回復'},
+        {id:24, name:'ベホマズン', type:'回復', target:'全体', mp:30, rate:0, count:1, base:9999, fix:true, desc:'全体全回復'},
         {id:30, name:'ザオラル', type:'蘇生', target:'単体', mp:8, rate:0.5, count:1, base:0, elm:null, desc:'50%蘇生'},
         {id:31, name:'ザオリク', type:'蘇生', target:'単体', mp:20, rate:1.0, count:1, base:0, elm:null, desc:'100%蘇生'},
 
