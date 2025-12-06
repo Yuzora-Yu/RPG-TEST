@@ -1,4 +1,4 @@
-/* battle.js (ボス分岐・2回行動対応版) */
+/* battle.js (戦闘画面画像表示・JobLv表示対応版) */
 
 const Battle = {
     active: false,
@@ -28,10 +28,12 @@ const Battle = {
         const logEl = Battle.getEl('battle-log');
         if(logEl) logEl.innerHTML = '';
 
+        // パーティ生成
         Battle.party = App.data.party.map(uid => {
             if(!uid) return null;
             const charData = App.getChar(uid);
             if(!charData) return null;
+            
             const player = new Player(charData);
             const stats = App.calcStats(charData);
             player.baseMaxHp = stats.maxHp; 
@@ -48,6 +50,7 @@ const Battle = {
             return;
         }
 
+        // 敵生成・復帰
         if (App.data.battle && App.data.battle.active && Array.isArray(App.data.battle.enemies) && App.data.battle.enemies.length > 0) {
             Battle.log("戦闘に復帰した！");
             Battle.enemies = App.data.battle.enemies.map(e => {
@@ -56,7 +59,6 @@ const Battle = {
                 m.hp = e.hp; m.baseMaxHp = e.maxHp; m.name = e.name; m.id = e.baseId; 
                 m.isDead = m.hp <= 0;
                 m.isFled = false; 
-                // 復帰時も行動回数を反映
                 if(base.actCount) m.actCount = base.actCount;
                 return m;
             }).filter(e => e !== null);
@@ -88,17 +90,16 @@ const Battle = {
         const floor = App.data.progress.floor || 1; 
 
         if (isBoss) {
-            // ★ボスの分岐ロジック
-            let bossId = 1000; // デフォルト: レグナード
+            let bossId = 1000; 
             let bossScale = 1.0;
-            let extraBosses = []; // 追加ボス用（90階など）
+            let extraBosses = []; 
 
             if (floor <= 40) {
                 bossId = 1010; // デュラン
                 Battle.log("魔戦士デュランが現れた！");
             } else if (floor <= 80) {
                 bossId = 1020; // ムドー
-                bossScale = 1.0 + ((floor - 40) * 0.01); // 少しずつ強化
+                bossScale = 1.0 + ((floor - 40) * 0.01); 
                 Battle.log("魔王ムドーが現れた！");
             } else if (floor === 90) {
                 bossId = 1030; // アトラス
@@ -108,19 +109,16 @@ const Battle = {
                 bossId = 1040; // シドー
                 Battle.log("破壊神シドーが現れた！");
             } else {
-                // 101階以降: レグナード (階層補正あり)
-                bossId = 1000;
+                bossId = 1000; // レグナード
                 bossScale = 1.0 + ((floor - 100) * 0.1);
                 Battle.log("竜神レグナードが現れた！");
             }
 
-            // メインボス生成
             const base = DB.MONSTERS.find(m => m.id === bossId) || DB.MONSTERS[DB.MONSTERS.length-1];
             const m = new Monster(base, bossScale);
             m.name = base.name; m.id = base.id;
             newEnemies.push(m);
 
-            // 追加ボス生成 (90階用)
             extraBosses.forEach(eid => {
                 const eBase = DB.MONSTERS.find(m => m.id === eid);
                 if(eBase) {
@@ -134,7 +132,7 @@ const Battle = {
             Battle.log("モンスターが現れた！");
             const count = 1 + Math.floor(Math.random() * 3);
             
-            // メタル系判定
+            // メタル系
             if (Math.random() < 0.05) {
                 let metalId = 201; 
                 if (floor >= 20) metalId = 202; 
@@ -369,7 +367,7 @@ const Battle = {
             div.innerHTML = `<div>${sk.name} (${sk.target})</div><div style="color:#88f">MP:${sk.mp}</div>`;
             div.onclick = (e) => {
                 e.stopPropagation();
-                if (sk.id === 500) { 
+                if (sk.id === 500) {
                      if (actor.mp <= 0) { Battle.log("MPが足りません"); return; }
                 } else {
                      if (actor.mp < sk.mp) { Battle.log("MPが足りません"); return; }
@@ -474,9 +472,7 @@ const Battle = {
 
         Battle.enemies.forEach(e => {
             if (!e.isDead && !e.isFled) {
-                // ★修正: 2回行動対応
                 const count = e.actCount || 1;
-                
                 for(let i=0; i<count; i++) {
                     const spd = e.getStat('spd');
                     const acts = e.acts && e.acts.length > 0 ? e.acts : [1];
@@ -500,7 +496,6 @@ const Battle = {
                     Battle.commandQueue.push({
                         type: actionType,
                         actor: e,
-                        // 連続行動でも順番がバラけるように乱数幅を持たせる
                         speed: spd * (0.8 + Math.random() * 0.4), 
                         isEnemy: true,
                         data: skillData,
@@ -543,10 +538,6 @@ const Battle = {
         Battle.saveBattleState();
         Battle.startInputPhase();
     },
-
-    // ... processAction, updateDeadState, checkFinish, getRandomAliveEnemy, saveBattleState, renderEnemies は前回と同じ ...
-    // ... renderPartyStatus (画像表示対応済み) も同じ ...
-    // ※コード長削減のため、変更のない後半部分は省略せず全て記述します。
 
     processAction: async (cmd) => {
         const actor = cmd.actor;
@@ -782,28 +773,10 @@ const Battle = {
         }
     },
 
-    updateDeadState: () => {
-        [...Battle.party, ...Battle.enemies].forEach(e => {
-            if (e && e.hp <= 0 && !e.isFled) { e.hp = 0; e.isDead = true; }
-        });
-    },
-
-    checkFinish: () => {
-        if (Battle.enemies.every(e => e.isDead || e.isFled)) {
-            setTimeout(Battle.win, 800);
-            return true;
-        }
-        if (Battle.party.every(p => p.isDead)) {
-            setTimeout(Battle.lose, 800);
-            return true;
-        }
-        return false;
-    },
-    
+    // ★修正: 画像表示とJobLv表示の追加
     renderPartyStatus: () => {
         const container = Battle.getEl('battle-party-bar');
         if(!container) return;
-        
         container.innerHTML = '';
         Battle.party.forEach((p, index) => {
             const div = document.createElement('div');
@@ -814,10 +787,9 @@ const Battle = {
             const hpPer = (p.baseMaxHp > 0) ? (p.hp / p.baseMaxHp) * 100 : 0;
             const mpPer = (p.baseMaxMp > 0) ? (p.mp / p.baseMaxMp) * 100 : 0;
 
-            // 行動選択中のキャラを強調
             const isActor = (Battle.phase === 'input' && index === Battle.currentActorIndex);
             if(isActor) {
-                div.style.border = "2px solid yellow";
+                div.style.border = "2px solid #ffd700"; // 強調表示
                 div.style.background = "#333";
             }
             
@@ -825,8 +797,8 @@ const Battle = {
             
             // 画像表示
             const imgHtml = p.img 
-                ? `<img src="${p.img}" style="width:32px; height:32px; object-fit:cover; border-radius:4px; border:1px solid #666; margin-bottom:1px;">`
-                : `<div style="width:32px; height:32px; background:#222; border-radius:4px; border:1px solid #444; display:flex; align-items:center; justify-content:center; color:#555; font-size:8px; margin-bottom:1px;">IMG</div>`;
+                ? `<img src="${p.img}" style="width:32px; height:32px; object-fit:cover; border-radius:4px; border:1px solid #666; margin-bottom:2px;">`
+                : `<div style="width:32px; height:32px; background:#222; border-radius:4px; border:1px solid #444; display:flex; align-items:center; justify-content:center; color:#555; font-size:8px; margin-bottom:2px;">IMG</div>`;
 
             div.innerHTML = `
                 <div style="flex:1; display:flex; flex-direction:column; align-items:center; width:100%; overflow:hidden;">
@@ -849,6 +821,69 @@ const Battle = {
                 Battle.log(`【${p.name}】 ${p.job}Lv${p.level} HP:${p.hp}/${p.baseMaxHp} MP:${p.mp}/${p.baseMaxMp}`);
             };
 
+            container.appendChild(div);
+        });
+    },
+
+    updateDeadState: () => {
+        [...Battle.party, ...Battle.enemies].forEach(e => {
+            if (e && e.hp <= 0 && !e.isFled) { e.hp = 0; e.isDead = true; }
+        });
+    },
+
+    checkFinish: () => {
+        if (Battle.enemies.every(e => e.isDead || e.isFled)) {
+            setTimeout(Battle.win, 800);
+            return true;
+        }
+        if (Battle.party.every(p => p.isDead)) {
+            setTimeout(Battle.lose, 800);
+            return true;
+        }
+        return false;
+    },
+
+    getRandomAliveEnemy: () => {
+        const alive = Battle.enemies.filter(e => !e.isDead && !e.isFled);
+        if (alive.length === 0) return null;
+        return alive[Math.floor(Math.random() * alive.length)];
+    },
+
+    saveBattleState: () => {
+        const activeEnemies = Battle.enemies.filter(e => !e.isFled);
+        App.data.battle.enemies = activeEnemies.map(e => ({
+            baseId: e.id, hp: e.hp, maxHp: e.baseMaxHp, name: e.name
+        }));
+        Battle.party.forEach(p => {
+            if(p && p.uid) {
+                const d = App.data.characters.find(c => c.uid === p.uid);
+                if(d) { d.currentHp = p.hp; d.currentMp = p.mp; }
+            }
+        });
+        App.save();
+    },
+
+    renderEnemies: () => {
+        const container = Battle.getEl('enemy-container');
+        if(!container) return;
+        container.innerHTML = '';
+        Battle.enemies.forEach(e => {
+            if(e.isFled) return; 
+            const div = document.createElement('div');
+            div.className = `enemy-sprite ${e.hp<=0?'dead':''}`;
+            if(e.hp > 0) {
+                const hpPer = (e.hp / e.baseMaxHp) * 100;
+                div.innerHTML = `<div style="font-size:10px; text-shadow:1px 1px 0 #000;">${e.name}</div><div class="enemy-hp-bar"><div class="enemy-hp-val" style="width:${hpPer}%"></div></div>`;
+                div.onclick = (event) => {
+                    event.stopPropagation();
+                    if(Battle.phase==='target_select' && (Battle.selectingAction==='attack'||Battle.selectingAction==='skill')) {
+                        Battle.selectTarget(e);
+                    }
+                };
+            } else {
+                div.style.opacity = 0.5;
+                div.innerHTML = `<div style="font-size:10px; color:#888;">${e.name}<br>DEAD</div>`;
+            }
             container.appendChild(div);
         });
     },
