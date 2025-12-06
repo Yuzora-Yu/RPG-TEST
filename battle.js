@@ -1,4 +1,4 @@
-/* battle.js (レグナード対応・全体攻撃修正版) */
+/* battle.js (攻撃回数対応版) */
 
 const Battle = {
     active: false,
@@ -86,15 +86,11 @@ const Battle = {
         const floor = App.data.progress.floor || 1; 
 
         if (isBoss) {
-            // ★修正: ボスID:1000(レグナード)を検索
             const base = DB.MONSTERS.find(m => m.id === 1000) || DB.MONSTERS[DB.MONSTERS.length-1];
-            
-            // ★修正: 階層補正 (10階層ごとに10%ずつ強化)
-            // 10階=1.1倍, 20階=1.2倍 ... 100階=2.0倍
             const bossScale = 1.0 + (Math.floor(floor / 10) * 0.1);
             
             const m = new Monster(base, bossScale);
-            m.name = base.name; // ★修正: 名前を上書きせずDBの名前(レグナード)を使用
+            m.name = base.name; 
             m.id = base.id;
             newEnemies.push(m);
             Battle.log("魔王の威圧感を感じる……！");
@@ -446,7 +442,7 @@ const Battle = {
                     isEnemy: true,
                     data: skillData,
                     targetScope: targetScope,
-                    target: null // ターゲットはprocessActionで決定
+                    target: null 
                 });
             }
         });
@@ -457,8 +453,6 @@ const Battle = {
             if (!Battle.active) break;
             if (!cmd.actor || cmd.actor.hp <= 0) continue; 
 
-            // ★修正: 単体攻撃の場合のみここでターゲットをランダム決定
-            // 全体攻撃(targetScope='全体')の場合はターゲットを決めず、processActionで一括処理させる
             if (cmd.isEnemy && !cmd.target && cmd.targetScope !== '全体' && cmd.targetScope !== 'ランダム') {
                 const aliveParty = Battle.party.filter(p => p && !p.isDead);
                 if (aliveParty.length === 0) break;
@@ -530,6 +524,7 @@ const Battle = {
         let mpCost = 0;
         let effectType = null;
         let element = null;
+        let hitCount = 1; // デフォルト攻撃回数
 
         if (cmd.type === 'skill') {
             skillName = data.name;
@@ -539,6 +534,7 @@ const Battle = {
             mpCost = data.mp;
             effectType = data.type;
             element = data.elm;
+            hitCount = (typeof data.count === 'number') ? data.count : 1; // ★攻撃回数を取得
             
             if (actor.mp < mpCost) {
                 Battle.log(`【${actor.name}】は${skillName}を唱えたがMPが足りない！`);
@@ -550,11 +546,9 @@ const Battle = {
 
         Battle.log(`【${actor.name}】の${skillName}！`);
 
-        // ★修正: ターゲット決定ロジック (敵の全体攻撃に対応)
         let targets = [];
         let scope = cmd.targetScope;
         
-        // プレイヤーのコマンドの場合、cmd.target に 'all_enemy' 等が入っている
         if (!scope && cmd.target === 'all_enemy') scope = '全体';
         if (!scope && cmd.target === 'all_ally') scope = '全体';
 
@@ -562,22 +556,21 @@ const Battle = {
              if (cmd.isEnemy) {
                  targets = Battle.party.filter(p => p && !p.isDead);
              } else {
-                 if (['回復','蘇生','強化'].includes(effectType)) {
-                     targets = Battle.party.filter(p => p); 
-                 } else {
-                     targets = Battle.enemies.filter(e => !e.isDead);
-                 }
+                 if (['回復','蘇生','強化'].includes(effectType)) targets = Battle.party.filter(p => p); 
+                 else targets = Battle.enemies.filter(e => !e.isDead);
              }
         } else if (scope === 'ランダム') {
+             // ランダムでもここでは1人決めるだけ（攻撃ループ内で処理を変えるのは複雑なため、1人に連撃とする）
              const pool = cmd.isEnemy ? Battle.party.filter(p => p && !p.isDead) : Battle.enemies.filter(e => !e.isDead);
              if(pool.length > 0) targets = [pool[Math.floor(Math.random()*pool.length)]];
         } else {
-             targets = [target]; // 単体
+             targets = [target];
         }
 
         for (let t of targets) {
             if (!t || t.isDead) continue;
 
+            // 回復・蘇生処理
             if (effectType && ['回復','蘇生'].includes(effectType)) {
                 if (effectType === '蘇生') {
                     if (t.isDead) {
@@ -603,69 +596,77 @@ const Battle = {
                 continue;
             }
 
-            // --- ダメージ計算 ---
-            let atkVal = isPhysical ? actor.getStat('atk') : actor.getStat('mag');
-            
-            // 属性攻撃力加算
-            if (element) {
-                const elmAtk = actor.getStat('elmAtk') || {};
-                const bonus = elmAtk[element] || 0;
-                atkVal += bonus;
-            }
+            // --- ★攻撃処理ループ（多段ヒット対応） ---
+            for (let i = 0; i < hitCount; i++) {
+                if (t.isDead) break; // 死体蹴り防止
 
-            let defVal = t.getStat('def');
-            let dmg = (atkVal + baseDmg - defVal / 2) * multiplier;
-            
-            // 属性耐性による軽減
-            if (element) {
-                const elmRes = t.getStat('elmRes') || {};
-                const res = elmRes[element] || 0;
-                const cutRate = Math.min(0.8, res / 100); 
-                dmg = dmg * (1.0 - cutRate);
-            }
-
-            dmg = dmg * (0.9 + Math.random() * 0.2);
-            
-            const finDmg = actor.getStat('finDmg') || 0;
-            if(finDmg > 0) dmg = dmg * (1 + finDmg/100);
-
-            const finRed = t.getStat('finRed') || 0;
-            dmg -= finRed;
-
-            if (dmg < 1) dmg = 1;
-            if (t.status && t.status.defend) dmg = Math.floor(dmg / 2);
-            dmg = Math.floor(dmg);
-
-            t.hp -= dmg;
-            
-            let dmgColor = '#fff';
-            if(element === '火') dmgColor = '#f88';
-            if(element === '水') dmgColor = '#88f';
-            if(element === '雷') dmgColor = '#ff0';
-            if(element === '風') dmgColor = '#8f8';
-            if(element === '光') dmgColor = '#ffc';
-            if(element === '闇') dmgColor = '#a8f';
-            
-            Battle.log(`【${t.name}】に<span style="color:${dmgColor}">${dmg}</span>のダメージ！`);
-            
-            if(actor.synergy && actor.synergy.effect === 'drain') {
-                const drain = Math.floor(dmg * 0.1);
-                if(drain > 0) {
-                    actor.hp = Math.min(actor.baseMaxHp, actor.hp + drain);
-                    Battle.log(`【${actor.name}】はHPを${drain}吸収した`);
+                // ステータス取得
+                let atkVal = isPhysical ? actor.getStat('atk') : actor.getStat('mag');
+                
+                // 属性攻撃力加算
+                if (element) {
+                    const elmAtk = actor.getStat('elmAtk') || {};
+                    const bonus = elmAtk[element] || 0;
+                    atkVal += bonus;
                 }
-            }
 
-            Battle.renderEnemies();
-            Battle.renderPartyStatus();
+                let defVal = t.getStat('def');
+                let dmg = (atkVal + baseDmg - defVal / 2) * multiplier;
+                
+                // 属性耐性による軽減
+                if (element) {
+                    const elmRes = t.getStat('elmRes') || {};
+                    const res = elmRes[element] || 0;
+                    const cutRate = Math.min(0.8, res / 100); 
+                    dmg = dmg * (1.0 - cutRate);
+                }
 
-            if (t.hp <= 0) {
-                t.hp = 0; t.isDead = true;
-                Battle.log(`【${t.name}】は倒れた！`);
+                dmg = dmg * (0.9 + Math.random() * 0.2);
+                
+                const finDmg = actor.getStat('finDmg') || 0;
+                if(finDmg > 0) dmg = dmg * (1 + finDmg/100);
+
+                const finRed = t.getStat('finRed') || 0;
+                dmg -= finRed;
+
+                if (dmg < 1) dmg = 1;
+                if (t.status && t.status.defend) dmg = Math.floor(dmg / 2);
+                dmg = Math.floor(dmg);
+
+                t.hp -= dmg;
+                
+                let dmgColor = '#fff';
+                if(element === '火') dmgColor = '#f88';
+                if(element === '水') dmgColor = '#88f';
+                if(element === '雷') dmgColor = '#ff0';
+                if(element === '風') dmgColor = '#8f8';
+                if(element === '光') dmgColor = '#ffc';
+                if(element === '闇') dmgColor = '#a8f';
+                
+                Battle.log(`【${t.name}】に<span style="color:${dmgColor}">${dmg}</span>のダメージ！`);
+                
+                if(actor.synergy && actor.synergy.effect === 'drain') {
+                    const drain = Math.floor(dmg * 0.1);
+                    if(drain > 0) {
+                        actor.hp = Math.min(actor.baseMaxHp, actor.hp + drain);
+                        // Battle.log(`【${actor.name}】はHPを${drain}吸収した`); // ログ過多防止のためコメントアウト
+                    }
+                }
+
                 Battle.renderEnemies();
                 Battle.renderPartyStatus();
+
+                if (t.hp <= 0) {
+                    t.hp = 0; t.isDead = true;
+                    Battle.log(`【${t.name}】は倒れた！`);
+                    Battle.renderEnemies();
+                    Battle.renderPartyStatus();
+                }
+                
+                // 連撃の間隔を開ける
+                if (hitCount > 1) await Battle.wait(150);
             }
-            await Battle.wait(200);
+            await Battle.wait(100); // ターゲット変更間隔
         }
     },
 
@@ -742,14 +743,7 @@ const Battle = {
             const isActor = (Battle.phase === 'input' && index === Battle.currentActorIndex);
             if(isActor) div.style.border = "2px solid yellow";
             let nameStyle = p.isDead ? 'color:red; text-decoration:line-through;' : 'color:white;';
-            
-            div.innerHTML = `
-                <div style="font-size:10px; font-weight:bold; ${nameStyle} overflow:hidden; white-space:nowrap;">${p.name}</div>
-                <div class="bar-container"><div class="bar-hp" style="width:${hpPer}%"></div></div>
-                <div class="p-val">${p.hp}/${p.baseMaxHp}</div>
-                <div class="bar-container"><div class="bar-mp" style="width:${mpPer}%"></div></div>
-                <div class="p-val">${p.mp}/${p.baseMaxMp}</div>
-            `;
+            div.innerHTML = `<div style="font-size:10px; font-weight:bold; ${nameStyle} overflow:hidden; white-space:nowrap;">${p.name}</div><div class="bar-container"><div class="bar-hp" style="width:${hpPer}%"></div></div><div class="p-val">${p.hp}/${p.baseMaxHp}</div><div class="bar-container"><div class="bar-mp" style="width:${mpPer}%"></div></div><div class="p-val">${p.mp}/${p.baseMaxMp}</div>`;
             container.appendChild(div);
         });
     },
