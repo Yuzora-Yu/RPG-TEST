@@ -1,4 +1,4 @@
-/* battle.js (完全修正版: 敵AoE対応 + 属性計算 + 階層補正) */
+/* battle.js (レグナード対応・全体攻撃修正版) */
 
 const Battle = {
     active: false,
@@ -86,16 +86,18 @@ const Battle = {
         const floor = App.data.progress.floor || 1; 
 
         if (isBoss) {
-            // ボスID:1000(レグナード)を取得
+            // ★修正: ボスID:1000(レグナード)を検索
             const base = DB.MONSTERS.find(m => m.id === 1000) || DB.MONSTERS[DB.MONSTERS.length-1];
-            // ボスも階層に応じて強化 (10階ごとに+20%程度)
-            const bossScale = 1.0 + (Math.floor(floor/10) * 0.2);
+            
+            // ★修正: 階層補正 (10階層ごとに10%ずつ強化)
+            // 10階=1.1倍, 20階=1.2倍 ... 100階=2.0倍
+            const bossScale = 1.0 + (Math.floor(floor / 10) * 0.1);
             
             const m = new Monster(base, bossScale);
-            m.name = base.name; // そのままの名前を使用
+            m.name = base.name; // ★修正: 名前を上書きせずDBの名前(レグナード)を使用
             m.id = base.id;
             newEnemies.push(m);
-            Battle.log("強大な気配だ……！");
+            Battle.log("魔王の威圧感を感じる……！");
         } else {
             Battle.log("モンスターが現れた！");
             const count = 1 + Math.floor(Math.random() * 3);
@@ -455,7 +457,8 @@ const Battle = {
             if (!Battle.active) break;
             if (!cmd.actor || cmd.actor.hp <= 0) continue; 
 
-            // 単体攻撃の場合のターゲット選定 (全体攻撃はprocessActionで一括処理)
+            // ★修正: 単体攻撃の場合のみここでターゲットをランダム決定
+            // 全体攻撃(targetScope='全体')の場合はターゲットを決めず、processActionで一括処理させる
             if (cmd.isEnemy && !cmd.target && cmd.targetScope !== '全体' && cmd.targetScope !== 'ランダム') {
                 const aliveParty = Battle.party.filter(p => p && !p.isDead);
                 if (aliveParty.length === 0) break;
