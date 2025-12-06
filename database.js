@@ -1,12 +1,12 @@
-/* database.js (完全修復版) */
+/* database.js (レグナード実装・オプション拡張版) */
 
 const CONST = {
-    SAVE_KEY: 'QoE_SaveData_v32_FullFix', // キー更新して心機一転
+    SAVE_KEY: 'QoE_SaveData_v33_Regnard', // キー更新
     PARTS: ['武器', '盾', '頭', '体', '足'],
     ELEMENTS: ['火', '水', '風', '雷', '光', '闇', '混沌'],
     RARITY: ['N', 'R', 'SR', 'SSR', 'UR', 'EX'],
     
-    // ガチャ確率 (これがないとRしか出ない)
+    // ガチャ確率
     GACHA_RATES: { N:0, R:50, SR:30, SSR:14, UR:5, EX:1 },
     
     // 鍛冶屋確率
@@ -20,7 +20,7 @@ const CONST = {
     
     MAX_LEVEL: 99,
     EXP_BASE: 100,
-    EXP_GROWTH: 1.15, // 成長曲線を少し緩和
+    EXP_GROWTH: 1.15,
     RARITY_EXP_MULT: { N:1.0, R:1.1, SR:1.2, SSR:1.3, UR:1.5, EX:2.0 }
 };
 
@@ -109,18 +109,39 @@ const DB = {
     ],
     MONSTERS: [],
     EQUIPS: [],
+    
+    // ★装備オプションの大幅拡張
     OPT_RULES: [
-        {key:'atk', name:'攻撃', unit:'val', allowed:['N','R','SR','SSR','UR'], min:{N:1,R:5,SR:10,SSR:20,UR:50}, max:{N:4,R:9,SR:19,SSR:49,UR:100}},
-        {key:'def', name:'防御', unit:'val', allowed:['N','R','SR','SSR','UR'], min:{N:1,R:5,SR:10,SSR:20,UR:50}, max:{N:4,R:9,SR:19,SSR:49,UR:100}},
-        {key:'hp', name:'HP', unit:'val', allowed:['N','R','SR','SSR','UR'], min:{N:10,R:50,SR:100,SSR:300,UR:500}, max:{N:40,R:90,SR:290,SSR:490,UR:1000}},
-        {key:'spd', name:'素早さ', unit:'val', allowed:['N','R','SR','SSR','UR'], min:{N:1,R:2,SR:4,SSR:8,UR:15}, max:{N:1,R:3,SR:7,SSR:14,UR:30}},
+        {key:'atk', name:'攻撃', unit:'val', allowed:['N','R','SR','SSR','UR','EX'], min:{N:1,R:5,SR:10,SSR:20,UR:50,EX:80}, max:{N:4,R:9,SR:19,SSR:49,UR:100,EX:200}},
+        {key:'def', name:'防御', unit:'val', allowed:['N','R','SR','SSR','UR','EX'], min:{N:1,R:5,SR:10,SSR:20,UR:50,EX:80}, max:{N:4,R:9,SR:19,SSR:49,UR:100,EX:200}},
+        {key:'mag', name:'魔力', unit:'val', allowed:['N','R','SR','SSR','UR','EX'], min:{N:1,R:5,SR:10,SSR:20,UR:50,EX:80}, max:{N:4,R:9,SR:19,SSR:49,UR:100,EX:200}},
+        {key:'hp', name:'HP', unit:'val', allowed:['N','R','SR','SSR','UR','EX'], min:{N:10,R:50,SR:100,SSR:300,UR:500,EX:1000}, max:{N:40,R:90,SR:290,SSR:490,UR:1000,EX:2500}},
+        {key:'mp', name:'MP', unit:'val', allowed:['N','R','SR','SSR','UR','EX'], min:{N:5,R:10,SR:30,SSR:50,UR:100,EX:200}, max:{N:9,R:29,SR:49,SSR:99,UR:199,EX:500}},
+        {key:'spd', name:'速さ', unit:'val', allowed:['N','R','SR','SSR','UR','EX'], min:{N:1,R:2,SR:4,SSR:8,UR:15,EX:30}, max:{N:1,R:3,SR:7,SSR:14,UR:30,EX:60}},
         {key:'finDmg', name:'与ダメ', unit:'%', allowed:['SSR','UR','EX'], min:{SSR:1,UR:3,EX:5}, max:{SSR:2,UR:5,EX:10}},
-        {key:'elmAtk', elm:'火', name:'火攻', unit:'val', allowed:['UR','EX'], min:{UR:5,EX:15}, max:{UR:10,EX:30}},
-        {key:'elmAtk', elm:'雷', name:'雷攻', unit:'val', allowed:['UR','EX'], min:{UR:5,EX:15}, max:{UR:10,EX:30}}
+        {key:'finRed', name:'被ダメ', unit:'val', allowed:['SSR','UR','EX'], min:{SSR:5,UR:10,EX:20}, max:{SSR:10,UR:20,EX:50}},
+        
+        // 属性攻撃
+        {key:'elmAtk', elm:'火', name:'火攻', unit:'val', allowed:['SR','SSR','UR','EX'], min:{SR:5,SSR:10,UR:20,EX:40}, max:{SR:9,SSR:19,UR:39,EX:80}},
+        {key:'elmAtk', elm:'水', name:'水攻', unit:'val', allowed:['SR','SSR','UR','EX'], min:{SR:5,SSR:10,UR:20,EX:40}, max:{SR:9,SSR:19,UR:39,EX:80}},
+        {key:'elmAtk', elm:'風', name:'風攻', unit:'val', allowed:['SR','SSR','UR','EX'], min:{SR:5,SSR:10,UR:20,EX:40}, max:{SR:9,SSR:19,UR:39,EX:80}},
+        {key:'elmAtk', elm:'雷', name:'雷攻', unit:'val', allowed:['SR','SSR','UR','EX'], min:{SR:5,SSR:10,UR:20,EX:40}, max:{SR:9,SSR:19,UR:39,EX:80}},
+        {key:'elmAtk', elm:'光', name:'光攻', unit:'val', allowed:['SSR','UR','EX'], min:{SSR:15,UR:30,EX:60}, max:{SSR:29,UR:59,EX:120}},
+        {key:'elmAtk', elm:'闇', name:'闇攻', unit:'val', allowed:['SSR','UR','EX'], min:{SSR:15,UR:30,EX:60}, max:{SSR:29,UR:59,EX:120}},
+
+        // 属性耐性
+        {key:'elmRes', elm:'火', name:'火耐', unit:'val', allowed:['R','SR','SSR','UR','EX'], min:{R:5,SR:10,SSR:20,UR:40,EX:80}, max:{R:9,SR:19,SSR:39,UR:79,EX:150}},
+        {key:'elmRes', elm:'水', name:'水耐', unit:'val', allowed:['R','SR','SSR','UR','EX'], min:{R:5,SR:10,SSR:20,UR:40,EX:80}, max:{R:9,SR:19,SSR:39,UR:79,EX:150}},
+        {key:'elmRes', elm:'風', name:'風耐', unit:'val', allowed:['R','SR','SSR','UR','EX'], min:{R:5,SR:10,SSR:20,UR:40,EX:80}, max:{R:9,SR:19,SSR:39,UR:79,EX:150}},
+        {key:'elmRes', elm:'雷', name:'雷耐', unit:'val', allowed:['R','SR','SSR','UR','EX'], min:{R:5,SR:10,SSR:20,UR:40,EX:80}, max:{R:9,SR:19,SSR:39,UR:79,EX:150}},
+        {key:'elmRes', elm:'光', name:'光耐', unit:'val', allowed:['SSR','UR','EX'], min:{SSR:10,UR:20,EX:40}, max:{SSR:19,UR:39,EX:80}},
+        {key:'elmRes', elm:'闇', name:'闇耐', unit:'val', allowed:['SSR','UR','EX'], min:{SSR:10,UR:20,EX:40}, max:{SSR:19,UR:39,EX:80}}
     ],
+
     SYNERGIES: [
         { key: 'spd', count: 3, name: '疾風怒濤', effect: 'doubleAction', desc: '50%で2回行動', color:'#f88' },
-        { key: 'hp', count: 3, name: '吸血', effect: 'drain', desc: '与ダメの10%回復', color:'#f88' }
+        { key: 'hp', count: 3, name: '吸血', effect: 'drain', desc: '与ダメの10%回復', color:'#f88' },
+        { key: 'mag', count: 3, name: '魔力暴走', effect: 'magCrit', desc: '魔法がたまに会心', color:'#88f' } // 魔力シナジーも追加
     ],
     MEDAL_REWARDS: [
         { medals: 5, name: '上やくそう x3', type: 'item', id: 2, count: 3 },
@@ -129,7 +150,7 @@ const DB = {
     ]
 };
 
-// データ自動生成 (ここが壊れていた可能性大)
+// データ自動生成
 (() => {
     // 装備ランク定義
     const TIERS = [
@@ -202,7 +223,6 @@ const DB = {
         const typeIdx = Math.min(MONSTER_TYPES.length-1, Math.floor((r-1)/12)); 
         const base = MONSTER_TYPES[typeIdx];
         
-        // 強化されたスケール計算
         const scale_factor = 0.35; 
         const hp_exp = 2.5; 
 
@@ -244,17 +264,18 @@ const DB = {
         });
     }
 
-    // ボス
+    // ボス: レグナード
     DB.MONSTERS.push({
-        id:1000, rank:100, minF:999, name:'ダンジョンボス', 
+        id:1000, rank:100, minF:999, name:'レグナード', 
         hp:15000, mp:9999, atk:800, def:600, spd:150, mag:300, 
         exp:100000, gold:50000, 
-        acts:[1, 42, 101, 202, 402, 999] 
+        // 技構成: 通常, ライデイン, ギガスラ, ベギラマ, ギガブレ, ゴッドハンド, メテオ, ジェネシス, ラグナロク, 激しい炎
+        acts:[1, 13, 42, 202, 301, 401, 402, 901, 902, 999] 
     });
 })();
 
 const INITIAL_DATA_TEMPLATE = {
-    gold: 5000, gems: 100000, // ジェム初期値を少し増やしておきました
+    gold: 5000, gems: 100000,
     items: { 1: 10, 2: 5, 99: 10 }, 
     inventory: [], 
     location: { x: 23, y: 60 },
