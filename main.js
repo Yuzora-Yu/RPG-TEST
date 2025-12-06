@@ -1,43 +1,43 @@
-/* main.js */
+/* main.js (完全統合・勇者スキル変更版) */
 
 // ==========================================================================
-// 設定：職業別習得スキルテーブル (勇者強化版)
+// 設定：職業別習得スキルテーブル
 // ==========================================================================
 const JOB_SKILLS = {
     // --- 基本職 ---
-    '戦士':     { 2:40, 5:44, 8:50, 12:101, 16:41, 20:43, 25:102, 30:202, 35:46, 45:402 },      // 火炎斬り, 兜割り, バイキルト, 強撃, はやぶさ, 雷鳴突き, 渾身, 爆裂拳, ウイングアッパー, ゴッドハンド
-    '僧侶':     { 1:20, 4:12, 7:51, 10:21, 13:304, 16:30, 20:53, 25:22, 30:309, 40:31 },        // ホイミ, バギ, スカラ, ベホイミ, バギマ, ザオラル, マジックバリア, ベホマラー, バギクロス, ザオリク
-    '魔法使い': { 1:10, 4:11, 7:60, 10:308, 14:301, 18:303, 22:304, 28:305, 35:306, 45:407 },   // メラ, ヒャド, ルカニ, イオラ, メラミ, ヒャダルコ, バギマ, メラゾーマ, イオナズン, メラガイアー
-    '武闘家':   { 2:52, 5:46, 9:41, 13:101, 17:202, 22:43, 28:102, 35:402, 42:105, 50:106 },    // ピオリム, ウイングアッパー, はやぶさ, 強撃, 爆裂拳, 雷鳴突き, 渾身, ゴッドハンド, しんくうは, 天下無双
-    '盗賊':     { 2:11, 5:61, 9:52, 13:41, 17:201, 22:14, 28:104, 34:203, 40:47, 48:405 },      // ヒャド, ボミオス, ピオリム, はやぶさ, 五月雨, ドルマ, 暗黒剣, さみだれ剣, ブラッドソード, ジゴスパーク
-    '踊り子':   { 2:10, 5:12, 9:52, 13:60, 17:61, 22:308, 27:304, 33:22, 40:105, 48:410 },      // メラ, バギ, ピオリム, ルカニ, ボミオス, イオラ, バギマ, ベホマラー, しんくうは, シャイニング
-    '狩人':     { 2:11, 5:12, 9:41, 13:201, 17:61, 22:101, 27:46, 33:202, 40:203, 48:105 },     // ヒャド, バギ, はやぶさ, 五月雨, ボミオス, 強撃, ウイングアッパー, 爆裂拳, さみだれ剣, しんくうは
-    '商人':     { 2:20, 5:50, 9:51, 13:60, 17:61, 22:44, 27:53, 33:101, 40:102, 50:23 },        // ホイミ, バイキルト, スカラ, ルカニ, ボミオス, 兜割り, マジックバリア, 強撃, 渾身, ベホマ
-    '傭兵':     { 2:40, 5:44, 9:101, 13:41, 17:50, 22:102, 27:202, 33:104, 40:103, 48:106 },    // 火炎斬り, 兜割り, 強撃, はやぶさ, バイキルト, 渾身, 爆裂拳, 暗黒剣, ギガスラッシュ, 天下無双
-    'シスター': { 1:20, 5:21, 9:30, 13:51, 17:12, 22:53, 27:22, 33:304, 40:31, 48:24 },         // ホイミ, ベホイミ, ザオラル, スカラ, バギ, マジックバリア, ベホマラー, バギマ, ザオリク, ベホマズン
+    '戦士':     { 2:40, 5:44, 8:50, 12:101, 16:41, 20:43, 25:102, 30:202, 35:46, 45:402 },      
+    '僧侶':     { 1:20, 4:12, 7:51, 10:21, 13:304, 16:30, 20:53, 25:22, 30:309, 40:31 },        
+    '魔法使い': { 1:10, 4:11, 7:60, 10:308, 14:301, 18:303, 22:304, 28:305, 35:306, 45:407 },   
+    '武闘家':   { 2:52, 5:46, 9:41, 13:101, 17:202, 22:43, 28:102, 35:402, 42:105, 50:106 },    
+    '盗賊':     { 2:11, 5:61, 9:52, 13:41, 17:201, 22:14, 28:104, 34:203, 40:47, 48:405 },      
+    '踊り子':   { 2:10, 5:12, 9:52, 13:60, 17:61, 22:308, 27:304, 33:22, 40:105, 48:410 },      
+    '狩人':     { 2:11, 5:12, 9:41, 13:201, 17:61, 22:101, 27:46, 33:202, 40:203, 48:105 },     
+    '商人':     { 2:20, 5:50, 9:51, 13:60, 17:61, 22:44, 27:53, 33:101, 40:102, 50:23 },        
+    '傭兵':     { 2:40, 5:44, 9:101, 13:41, 17:50, 22:102, 27:202, 33:104, 40:103, 48:106 },    
+    'シスター': { 1:20, 5:21, 9:30, 13:51, 17:12, 22:53, 27:22, 33:304, 40:31, 48:24 },         
 
     // --- 上級職 ---
-    '魔法剣士': { 1:10, 5:40, 10:13, 15:42, 20:302, 25:43, 30:301, 35:46, 40:103, 50:401 },     // メラ, 火炎, ライデイン, 氷結, ベギラマ, 雷鳴, メラミ, ウイングアッパー, ギガスラ, ギガブレ
-    '賢者':     { 1:20, 5:10, 10:21, 15:308, 20:301, 25:22, 30:11, 35:304, 40:306, 50:500 },    // ホイミ, メラ, ベホイミ, イオラ, メラミ, ベホマラー, ヒャド, バギマ, イオナズン, マダンテ
-    '忍者':     { 3:14, 8:41, 15:104, 20:304, 25:201, 30:47, 35:305, 40:309, 45:106, 50:405 },  // ドルマ, はやぶさ, 暗黒剣, バギマ, 五月雨, ブラッド, メラゾーマ, バギクロス, 天下無双, ジゴスパ
-    'パラディン':{ 1:20, 5:51, 10:42, 15:21, 20:53, 25:103, 30:23, 35:403, 40:12, 45:309 },     // ホイミ, スカラ, 氷結, ベホイミ, Mバリア, ギガスラ, ベホマ, フルケア, バギ, バギクロス
-    'ダークナイト':{ 3:14, 8:40, 15:104, 20:60, 25:307, 30:47, 35:102, 40:401, 45:411, 50:405 },// ドルマ, 火炎, 暗黒剣, ルカニ, ドルモーア, ブラッド, 渾身, ギガブレ, ラグナ, ジゴスパ
-    'ウィザード':{ 1:10, 5:11, 10:13, 15:308, 20:301, 25:303, 30:310, 35:305, 40:306, 50:407 }, // メラ, ヒャド, ライデイン, イオラ, メラミ, ヒャダルコ, ベギラゴン, メラゾーマ, イオナズン, メラガイアー
-    '侍':       { 3:40, 8:42, 12:43, 18:41, 25:46, 30:101, 35:203, 40:102, 45:301, 50:106 },    // 属性斬りx3, はやぶさ, ウイング, 強撃, さみだれ, 渾身, ギガブレ, 天下無双
-    '拳法家':   { 3:20, 8:50, 12:46, 18:101, 25:202, 30:102, 35:402, 40:106, 45:603, 50:609 },  // ホイミ, バイキ, ウイング, 強撃, 爆裂, 渾身, ゴッド, 天下無双, 激しい炎, 煉獄火炎
-    'スーパースター':{ 2:20, 5:52, 10:12, 15:308, 20:304, 25:22, 30:105, 35:306, 40:309, 50:410 }, // ホイミ, ピオリム, バギ, イオラ, バギマ, ベホマラー, しんくうは, イオナズン, バギクロス, シャイニング
-    '海賊':     { 3:11, 8:40, 12:43, 18:46, 25:101, 30:201, 35:303, 40:309, 45:406, 50:310 },   // ヒャド, 火炎, 雷鳴, ウイング, 強撃, 五月雨, ヒャダルコ, バギクロス, マヒャデ, ベギラゴン
-    '召喚士':   { 1:10, 5:11, 10:13, 15:308, 20:302, 25:305, 30:404, 35:405, 40:406, 50:309 },  // メラ, ヒャド, ライデイン, イオラ, ベギラマ, メラゾーマ, メテオ, ジゴスパ, マヒャデ, バギクロス
-    'ソルジャー':{ 2:40, 5:42, 10:43, 15:44, 20:46, 25:103, 30:102, 35:203, 40:301, 50:409 },   // 属性斬り, 兜割り, ウイング, ギガスラ, 渾身, さみだれ, ギガブレ, ギガクロス
-    '聖騎士':   { 1:21, 5:51, 10:53, 15:103, 20:22, 25:30, 30:402, 35:410, 40:31, 50:408 },     // ベホイミ, スカラ, Mバリア, ギガスラ, ベホマラー, ザオラル, ゴッド, シャイニング, ザオリク, ギガデイン
-    '上忍':     { 3:14, 8:307, 15:47, 20:201, 25:104, 30:105, 35:405, 40:406, 45:306, 50:106 }, // ドルマ, ドルモーア, ブラッド, 五月雨, 暗黒剣, しんくうは, ジゴスパ, マヒャデ, イオナズン, 天下無双
+    '魔法剣士': { 1:10, 5:40, 10:13, 15:42, 20:302, 25:43, 30:301, 35:46, 40:103, 50:401 },     
+    '賢者':     { 1:20, 5:10, 10:21, 15:308, 20:301, 25:22, 30:11, 35:304, 40:306, 50:500 },    
+    '忍者':     { 3:14, 8:41, 15:104, 20:304, 25:201, 30:47, 35:305, 40:309, 45:106, 50:405 },  
+    'パラディン':{ 1:20, 5:51, 10:42, 15:21, 20:53, 25:103, 30:23, 35:403, 40:12, 45:309 },     
+    'ダークナイト':{ 3:14, 8:40, 15:104, 20:60, 25:307, 30:47, 35:102, 40:401, 45:411, 50:405 },
+    'ウィザード':{ 1:10, 5:11, 10:13, 15:308, 20:301, 25:303, 30:310, 35:305, 40:306, 50:407 }, 
+    '侍':       { 3:40, 8:42, 12:43, 18:41, 25:46, 30:101, 35:203, 40:102, 45:301, 50:106 },    
+    '拳法家':   { 3:20, 8:50, 12:46, 18:101, 25:202, 30:102, 35:402, 40:106, 45:603, 50:609 },  
+    'スーパースター':{ 2:20, 5:52, 10:12, 15:308, 20:304, 25:22, 30:105, 35:306, 40:309, 50:410 }, 
+    '海賊':     { 3:11, 8:40, 12:43, 18:46, 25:101, 30:201, 35:303, 40:309, 45:406, 50:310 },   
+    '召喚士':   { 1:10, 5:11, 10:13, 15:308, 20:302, 25:305, 30:404, 35:405, 40:406, 50:309 },  
+    'ソルジャー':{ 2:40, 5:42, 10:43, 15:44, 20:46, 25:103, 30:102, 35:203, 40:301, 50:409 },   
+    '聖騎士':   { 1:21, 5:51, 10:53, 15:103, 20:22, 25:30, 30:402, 35:410, 40:31, 50:408 },     
+    '上忍':     { 3:14, 8:307, 15:47, 20:201, 25:104, 30:105, 35:405, 40:406, 45:306, 50:106 }, 
 
-    // --- 超級職 (★勇者強化) ---
-    '勇者':     { 1:20, 3:10, 8:40, 12:41, 15:13, 25:21, 28:203, 30:103, 35:22, 40:408, 45:401, 50:409 }, // ホイミ, メラ, 火炎, ★はやぶさ, ライデイン, ベホイミ, ★さみだれ, ギガスラ, ベホマラー, ギガデイン, ギガブレ, ギガクロス
-    '竜騎士':   { 1:40, 5:12, 10:43, 15:304, 20:201, 30:603, 35:605, 40:401, 45:609, 50:405 },  // 火炎, バギ, 雷鳴, バギマ, 五月雨, 激しい炎, しゃくねつ, ギガブレ, 煉獄火炎, ジゴスパ
-    '聖女':     { 1:21, 5:22, 10:50, 12:304, 15:51, 20:52, 25:53, 30:23, 33:309, 35:403, 40:31, 50:410 }, // ベホイミ, ベホマラー, バイキ, スカラ, ピオリム, Mバリア, ベホマ, フルケア, ザオリク, シャイニング
-    '魔王':     { 1:10, 5:14, 10:13, 15:302, 20:308, 25:307, 30:404, 35:306, 38:105, 40:411, 45:405, 50:412 }, // メラ, ドルマ, ライデイン, ベギラマ, イオラ, ドルモーア, メテオ, イオナズン, しんくうは, ラグナ, ジゴスパ, イオグランデ
-    '神':       { 1:403, 5:47, 10:901, 20:902, 30:903, 35:905, 40:407, 45:406, 50:408, 55:412, 60:405, 65:106 } // フルケア, ブラッド, ジェネシス, ラグナ, リザレク, やみのはどう, メラガイ, マヒャデ, ギガデイン, イオグランデ, ジゴスパ, 天下無双
+    // --- 超級職 ---
+    '勇者':     { 1:20, 3:10, 8:40, 15:13, 25:21, 30:103, 35:22, 40:408, 45:401, 50:409 },      
+    '竜騎士':   { 1:40, 5:12, 10:43, 15:304, 20:201, 30:603, 35:605, 40:401, 45:609, 50:405 },  
+    '聖女':     { 1:21, 5:22, 10:50, 12:304, 15:51, 20:52, 25:53, 30:23, 33:309, 35:403, 40:31, 50:410 }, 
+    '魔王':     { 1:10, 5:14, 10:13, 15:302, 20:308, 25:307, 30:404, 35:306, 38:105, 40:411, 45:405, 50:412 }, 
+    '神':       { 1:403, 5:47, 10:901, 20:902, 30:903, 35:905, 40:407, 45:406, 50:408, 55:412, 60:405, 65:106 } 
 };
 
 // ==========================================================================
@@ -92,7 +92,10 @@ class Entity {
     }
 
     takeDamage(damage) {
-        if (damage <= 0) return 0;
+        if (damage <= 0) {
+            // App.log(`ダメージを与えられない！`); // ログ過多防止のためコメントアウト
+            return 0;
+        }
         this.hp -= damage;
         if (this.hp < 0) this.hp = 0;
         if (this.hp <= 0) {
@@ -122,8 +125,10 @@ class Player extends Entity {
         this.uid = data.uid;
         this.equips = data.equips || {};
         
+        // 基本スキル (ID100未満)
         this.skills = [DB.SKILLS.find(s => s.id === 1)]; 
 
+        // 職業スキル習得
         const table = JOB_SKILLS[data.job];
         if (table) {
             for (let lv = 1; lv <= data.level; lv++) {
@@ -136,23 +141,29 @@ class Player extends Entity {
             }
         }
 
+        // 固有スキル (限界突破)
         if(data.charId) {
             const master = DB.CHARACTERS.find(c => c.id === data.charId);
             if(master && master.lbSkills) {
                 if(this.limitBreak >= 50 && master.lbSkills[50]) {
                     const sk = DB.SKILLS.find(s => s.id === master.lbSkills[50]);
-                    if(sk) this.skills.push(sk);
+                    if(sk && !this.skills.find(s => s.id === sk.id)) this.skills.push(sk);
                 }
                 if(this.limitBreak >= 99 && master.lbSkills[99]) {
                     const sk = DB.SKILLS.find(s => s.id === master.lbSkills[99]);
-                    if(sk) this.skills.push(sk);
+                    if(sk && !this.skills.find(s => s.id === sk.id)) this.skills.push(sk);
                 }
             }
         }
         
+        // 主人公の特別スキル (★修正: ザオラルと天下無双)
         if(data.isHero) {
-            if(this.limitBreak >= 10 && !this.skills.find(s=>s.id===12)) this.skills.push(DB.SKILLS.find(s=>s.id===12)); 
-            if(this.limitBreak >= 50 && !this.skills.find(s=>s.id===13)) this.skills.push(DB.SKILLS.find(s=>s.id===13));
+            const addHeroSkill = (sid) => {
+                const sk = DB.SKILLS.find(s => s.id === sid);
+                if(sk && !this.skills.find(s => s.id === sk.id)) this.skills.push(sk);
+            };
+            if(this.limitBreak >= 10) addHeroSkill(30);  // ザオラル
+            if(this.limitBreak >= 50) addHeroSkill(106); // 天下無双
         }
 
         this.synergy = App.checkSynergy(this.equips);
@@ -172,6 +183,7 @@ class Monster extends Entity {
         this.baseStats.mag = Math.floor((data.mag || 10) * scale);
         this.acts = data.acts || [1];
         this.baseId = data.id;
+        this.actCount = data.actCount || 1;
     }
 }
 
@@ -185,13 +197,20 @@ const App = {
 
     initGameHub: () => {
         App.load();
-        if(!App.data) { return; }
+        if(!App.data) { 
+            if(window.location.href.indexOf('main.html') === -1) {
+                // 初回起動やデータがない場合はタイトル画面へ
+                // window.location.href = 'main.html'; (コメントアウト: 統合環境でのループ防止)
+            }
+            return; 
+        }
 
         if(App.data.location) {
             Field.x = App.data.location.x;
             Field.y = App.data.location.y;
         }
 
+        // ダンジョン情報復元
         if (App.data.progress && App.data.progress.floor > 0 && typeof Dungeon !== 'undefined') {
             Dungeon.floor = App.data.progress.floor;
             if (App.data.dungeon && App.data.dungeon.map) {
@@ -199,79 +218,66 @@ const App = {
                 Dungeon.width = App.data.dungeon.width;
                 Dungeon.height = App.data.dungeon.height;
                 Field.currentMapData = {
-                    width: Dungeon.width, height: Dungeon.height, tiles: Dungeon.map, isDungeon: true
+                    width: Dungeon.width,
+                    height: Dungeon.height,
+                    tiles: Dungeon.map,
+                    isDungeon: true
                 };
             }
         }
 
+        // シーン分岐
         if (App.data.battle && App.data.battle.active) {
             App.log("戦闘に復帰します...");
             App.changeScene('battle');
         } else {
             App.log("冒険を開始します。");
             if (App.data.progress && App.data.progress.floor > 0) {
-                if (Field.currentMapData) {
-                    App.changeScene('field');
-                    App.log(`地下 ${Dungeon.floor} 階の冒険を再開します。`);
+                if (typeof Dungeon !== 'undefined') {
+                    if (Field.currentMapData) {
+                        App.changeScene('field');
+                        App.log(`地下 ${Dungeon.floor} 階の冒険を再開します。`);
+                    } else {
+                        Dungeon.loadFloor();
+                    }
                 } else {
-                    if(typeof Dungeon !== 'undefined') Dungeon.loadFloor();
+                    App.changeScene('field');
                 }
             } else {
+                // フィールド座標正規化
+                const mapW = typeof MAP_DATA !== 'undefined' ? MAP_DATA[0].length : 50;
+                const mapH = typeof MAP_DATA !== 'undefined' ? MAP_DATA.length : 32;
                 if(App.data.location) {
-                    Field.x = App.data.location.x;
-                    Field.y = App.data.location.y;
+                    Field.x = App.data.location.x % mapW;
+                    Field.y = App.data.location.y % mapH;
                 }
                 App.changeScene('field');
             }
         }
         
+        // キー入力リスナー
         window.addEventListener('keydown', e => {
             if(document.getElementById('field-scene') && document.getElementById('field-scene').style.display === 'flex') {
-                if(Menu.isMenuOpen()) return;
+                if(typeof Menu !== 'undefined' && Menu.isMenuOpen()) return;
                 if(['ArrowUp', 'w'].includes(e.key)) Field.move(0, -1);
                 if(['ArrowDown', 's'].includes(e.key)) Field.move(0, 1);
                 if(['ArrowLeft', 'a'].includes(e.key)) Field.move(-1, 0);
                 if(['ArrowRight', 'd'].includes(e.key)) Field.move(1, 0);
                 if(e.key === 'Enter' || e.key === ' ') {
                     if(App.pendingAction) App.executeAction();
-                    else Menu.openMainMenu();
+                    else if(typeof Menu !== 'undefined') Menu.openMainMenu();
                 }
             }
         });
 
-        let moveTimer = null;
-        const startMove = (dx, dy) => {
-            if(moveTimer) clearInterval(moveTimer);
-            if(Menu.isMenuOpen()) return;
-            Field.move(dx, dy); 
-            moveTimer = setInterval(() => {
-                if(Menu.isMenuOpen()) { stopMove(); return; }
-                Field.move(dx, dy);
-            }, 150); 
-        };
-        const stopMove = (e) => {
-            if(e) e.preventDefault(); 
-            if(moveTimer) clearInterval(moveTimer);
-            moveTimer = null;
-        };
-        const bindPad = (id, dx, dy) => {
-            const el = document.getElementById(id);
-            if(!el) return;
-            el.onmousedown = (e) => { e.preventDefault(); startMove(dx, dy); };
-            el.onmouseup = stopMove;
-            el.onmouseleave = stopMove;
-            el.ontouchstart = (e) => { e.preventDefault(); startMove(dx, dy); };
-            el.ontouchend = stopMove;
-        };
-
-        bindPad('btn-up', 0, -1);
-        bindPad('btn-down', 0, 1);
-        bindPad('btn-left', -1, 0);
-        bindPad('btn-right', 1, 0);
-
-        const bindClick = (id, fn) => { const el = document.getElementById(id); if(el) el.onclick = fn; };
-        bindClick('btn-menu', () => Menu.openMainMenu());
-        bindClick('btn-ok', () => { if(App.pendingAction) App.executeAction(); else Menu.openMainMenu(); });
+        // ボタンイベントバインド
+        const bind = (id, fn) => { const el = document.getElementById(id); if(el) el.onclick = fn; };
+        bind('btn-up', () => Field.move(0, -1));
+        bind('btn-down', () => Field.move(0, 1));
+        bind('btn-left', () => Field.move(-1, 0));
+        bind('btn-right', () => Field.move(1, 0));
+        bind('btn-menu', () => { if(typeof Menu !== 'undefined') Menu.openMainMenu(); });
+        bind('btn-ok', () => { if(App.pendingAction) App.executeAction(); else if(typeof Menu !== 'undefined') Menu.openMainMenu(); });
     },
 
     setAction: (label, callback) => {
@@ -331,9 +337,14 @@ const App = {
     startNewGame: () => {
         const fileInput = document.getElementById('player-icon');
         if(fileInput && fileInput.files && fileInput.files[0]) {
+            const file = fileInput.files[0];
+            if(file.size > 500 * 1024) {
+                alert("画像サイズが大きすぎます(500KB以下)");
+                return;
+            }
             const reader = new FileReader();
             reader.onload = (e) => { App.createGameData(e.target.result); };
-            reader.readAsDataURL(fileInput.files[0]);
+            reader.readAsDataURL(file);
         } else {
             App.createGameData(null);
         }
@@ -344,6 +355,7 @@ const App = {
         App.data = JSON.parse(JSON.stringify(INITIAL_DATA_TEMPLATE));
         App.data.characters[0].name = name;
         App.data.characters[0].img = imgSrc; 
+        App.data.location = { x: 23, y: 60 }; // 初期位置
         for(let i=0;i<5;i++) App.data.inventory.push(App.createRandomEquip('init', 1)); 
         try {
             localStorage.setItem(CONST.SAVE_KEY, JSON.stringify(App.data));
@@ -371,7 +383,7 @@ const App = {
 
     getChar: (uid) => App.data ? App.data.characters.find(c => c.uid === uid) : null,
 
-    // ★修正: 属性判定の順序を修正したcalcStats
+    // ★修正: 属性計算を優先する計算式
     calcStats: (char) => {
         const lb = char.limitBreak || 0;
         const multiplier = 1 + (lb * 0.05); 
@@ -387,6 +399,7 @@ const App = {
         };
         CONST.ELEMENTS.forEach(e => { s.elmAtk[e]=0; s.elmRes[e]=0; });
 
+        // 振り分け反映
         if(char.uid === 'p1' && char.alloc) {
             for(let key in char.alloc) {
                 if (key.includes('_')) {
@@ -401,6 +414,7 @@ const App = {
             }
         }
 
+        // 装備反映
         CONST.PARTS.forEach(part => {
             const eq = char.equips ? char.equips[part] : null;
             if(eq) {
@@ -418,7 +432,7 @@ const App = {
                     if(o.unit === 'val') {
                         if(o.key === 'hp') s.maxHp += o.val;
                         else if(o.key === 'mp') s.maxMp += o.val;
-                        // ★ここが修正箇所
+                        // 属性値を先にチェック
                         else if(o.key === 'elmAtk') s.elmAtk[o.elm] += o.val;
                         else if(o.key === 'elmRes') s.elmRes[o.elm] += o.val;
                         else if(s[o.key] !== undefined && typeof s[o.key] === 'number') s[o.key] += o.val;
@@ -431,6 +445,7 @@ const App = {
         return s;
     },
 
+    // ★修正: 第3引数 fixedPlus 対応
     createRandomEquip: (source, rank = 1, fixedPlus = null) => {
         let candidates = DB.EQUIPS.filter(e => e.rank <= rank && e.rank >= Math.max(1, rank - 15));
         if (candidates.length === 0) candidates = DB.EQUIPS.filter(e => e.rank <= rank);
@@ -535,9 +550,7 @@ const App = {
 
                 let logMsg = `${charData.name}はLv${charData.level}になった！<br>HP+${incHp}, MP+${incMp}`;
                 const newSkill = App.checkNewSkill(charData);
-                if (newSkill) {
-                    logMsg += `<br><span style="color:#ffff00;">${newSkill.name}を覚えた！</span>`;
-                }
+                if (newSkill) logMsg += `<br><span style="color:#ffff00;">${newSkill.name}を覚えた！</span>`;
                 logs.push(logMsg);
             } else { break; }
         }
@@ -603,13 +616,14 @@ const App = {
     }
 };
 
+/* Field定義 */
 const Field = {
     x: 23, y: 28, ready: false, currentMapData: null,
     
     init: () => {
         if(App.data && !Field.currentMapData) {
-            const mapW = MAP_DATA[0].length;
-            const mapH = MAP_DATA.length;
+            const mapW = typeof MAP_DATA !== 'undefined' ? MAP_DATA[0].length : 50;
+            const mapH = typeof MAP_DATA !== 'undefined' ? MAP_DATA.length : 32;
             Field.x = App.data.location.x % mapW;
             Field.y = App.data.location.y % mapH;
         }
@@ -636,8 +650,8 @@ const Field = {
             Field.render();
             Dungeon.handleMove(nx, ny);
         } else {
-            const mapW = MAP_DATA[0].length;
-            const mapH = MAP_DATA.length;
+            const mapW = typeof MAP_DATA !== 'undefined' ? MAP_DATA[0].length : 50;
+            const mapH = typeof MAP_DATA !== 'undefined' ? MAP_DATA.length : 32;
             nx = (nx + mapW) % mapW; ny = (ny + mapH) % mapH;
             
             tile = MAP_DATA[ny][nx];
@@ -673,8 +687,8 @@ const Field = {
         const cx = w / 2; const cy = h / 2;
         const rangeX = Math.ceil(w / (2 * ts)) + 1;
         const rangeY = Math.ceil(h / (2 * ts)) + 1;
-        const mapW = Field.currentMapData ? Field.currentMapData.width : MAP_DATA[0].length;
-        const mapH = Field.currentMapData ? Field.currentMapData.height : MAP_DATA.length;
+        const mapW = Field.currentMapData ? Field.currentMapData.width : (typeof MAP_DATA!=='undefined'?MAP_DATA[0].length:50);
+        const mapH = Field.currentMapData ? Field.currentMapData.height : (typeof MAP_DATA!=='undefined'?MAP_DATA.length:32);
 
         for (let dy = -rangeY; dy <= rangeY; dy++) {
             for (let dx = -rangeX; dx <= rangeX; dx++) {
@@ -703,7 +717,8 @@ const Field = {
         }
         ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(cx, cy, 10, 0, Math.PI*2); ctx.fill(); ctx.strokeStyle = '#000'; ctx.stroke();
         let locName = Field.currentMapData ? `地下${Dungeon.floor}階` : `フィールド(${Field.x},${Field.y})`;
-        document.getElementById('loc-name').innerText = locName;
+        const locNameEl = document.getElementById('loc-name');
+        if(locNameEl) locNameEl.innerText = locName;
 
         const mmSize = 80; const mmX = w - mmSize - 10; const mmY = 10; const range = 10; 
         ctx.save(); ctx.globalAlpha = 0.6; ctx.fillStyle = '#000'; ctx.fillRect(mmX, mmY, mmSize, mmSize); ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.strokeRect(mmX, mmY, mmSize, mmSize);
