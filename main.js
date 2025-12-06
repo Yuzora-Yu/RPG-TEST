@@ -1,9 +1,7 @@
-/* main.js (calcStats復活・完全版) */
-
-/* main.js */
+/* main.js (完全統合版: 全機能入り) */
 
 // ==========================================================================
-// 設定：職業別習得スキルテーブル (全職対応・習得数増量版)
+// 設定：職業別習得スキルテーブル
 // ==========================================================================
 const JOB_SKILLS = {
     // --- 基本職 ---
@@ -124,7 +122,7 @@ class Player extends Entity {
         this.uid = data.uid;
         this.equips = data.equips || {};
         
-        this.skills = [DB.SKILLS.find(s => s.id === 1)]; // 初期は「こうげき」のみ
+        this.skills = [DB.SKILLS.find(s => s.id === 1)]; 
 
         const table = JOB_SKILLS[data.job];
         if (table) {
@@ -180,9 +178,6 @@ class Monster extends Entity {
 // ==========================================================================
 // アプリケーションコア
 // ==========================================================================
-
-// ↓ ここから先(const App = ...)は変更なし
-
 
 const App = {
     data: null,
@@ -376,7 +371,6 @@ const App = {
 
     getChar: (uid) => App.data ? App.data.characters.find(c => c.uid === uid) : null,
 
-    // ★追加: ステータス計算処理 (通常ステータス + 属性 + 装備補正)
     calcStats: (char) => {
         const lb = char.limitBreak || 0;
         const multiplier = 1 + (lb * 0.05); 
@@ -553,6 +547,58 @@ const App = {
         const table = JOB_SKILLS[charData.job];
         if (table && table[charData.level]) return DB.SKILLS.find(s => s.id === table[charData.level]);
         return null;
+    },
+
+    // --- セーブデータ書き出し (ダウンロード) ---
+    downloadSave: () => {
+        if (!App.data) {
+            if(typeof Menu !== 'undefined') Menu.msg("セーブデータがありません");
+            else alert("セーブデータがありません");
+            return;
+        }
+        const json = JSON.stringify(App.data);
+        const blob = new Blob([json], {type: "application/json"});
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `QoE_SaveData_${Date.now()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    },
+
+    // --- セーブデータ読み込み (アップロード) ---
+    importSave: () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const loadedData = JSON.parse(event.target.result);
+                    if (loadedData.gold !== undefined && loadedData.party && loadedData.characters) {
+                        if (confirm("現在のデータを上書きして復元しますか？\n(ページがリロードされます)")) {
+                            localStorage.setItem(CONST.SAVE_KEY, JSON.stringify(loadedData));
+                            location.reload(); 
+                        }
+                    } else {
+                        alert("不正なセーブデータ形式です");
+                    }
+                } catch (err) {
+                    alert("ファイルの読み込みに失敗しました");
+                    console.error(err);
+                }
+            };
+            reader.readAsText(file);
+        };
+        input.click(); 
     }
 };
 
@@ -674,64 +720,4 @@ const Field = {
         }
         ctx.restore();
     }
-
-    /* main.js の Appオブジェクト内に追加 */
-
-    // --- セーブデータ書き出し (ダウンロード) ---
-    downloadSave: () => {
-        if (!App.data) {
-            Menu.msg("セーブデータがありません");
-            return;
-        }
-        // データをJSON文字列化
-        const json = JSON.stringify(App.data);
-        const blob = new Blob([json], {type: "application/json"});
-        const url = URL.createObjectURL(blob);
-        
-        // ダウンロード用リンクを生成してクリック
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `QoE_SaveData_${Date.now()}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    },
-
-    // --- セーブデータ読み込み (アップロード) ---
-    importSave: () => {
-        // ファイル選択ダイアログを動的に生成
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = '.json';
-        
-        input.onchange = (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                try {
-                    const loadedData = JSON.parse(event.target.result);
-                    
-                    // 簡易チェック: 必須データが含まれているか
-                    if (loadedData.gold !== undefined && loadedData.party && loadedData.characters) {
-                        if (confirm("現在のデータを上書きして復元しますか？\n(ページがリロードされます)")) {
-                            localStorage.setItem(CONST.SAVE_KEY, JSON.stringify(loadedData));
-                            location.reload(); // 再読み込みして反映
-                        }
-                    } else {
-                        alert("不正なセーブデータ形式です");
-                    }
-                } catch (err) {
-                    alert("ファイルの読み込みに失敗しました");
-                    console.error(err);
-                }
-            };
-            reader.readAsText(file);
-        };
-        
-        input.click(); // ダイアログを開く
-    },
-    
 };
