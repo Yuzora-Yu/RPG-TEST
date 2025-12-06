@@ -256,14 +256,14 @@ const DB = {
     // ★修正: 敵ステータスをUR仲間準拠に引き上げ
     // 参考UR: HP1200, ATK100~300
     const MONSTER_TYPES = [
-        { name:'スライム', hp:800, atk:100, def:80, spd:80, mag:80, exp:10, gold:10 }, 
-        { name:'バット', hp:900, atk:120, def:90, spd:110, mag:90, exp:12, gold:12 },
-        { name:'ウルフ', hp:1000, atk:150, def:100, spd:100, mag:80, exp:20, gold:20 },
+        { name:'スライム', hp:300, atk:100, def:80, spd:80, mag:80, exp:10, gold:10 }, 
+        { name:'ドラキー', hp:400, atk:120, def:90, spd:110, mag:90, exp:12, gold:12 },
+        { name:'さまようよろい', hp:600, atk:150, def:100, spd:100, mag:80, exp:20, gold:20 },
         { name:'ゴースト', hp:850, atk:130, def:150, spd:90, mag:150, exp:25, gold:25 },
-        { name:'オーク', hp:1500, atk:180, def:120, spd:80, mag:60, exp:50, gold:50 },
-        { name:'ナイト', hp:1800, atk:200, def:200, spd:90, mag:100, exp:100, gold:100 },
-        { name:'デーモン', hp:2500, atk:250, def:180, spd:120, mag:250, exp:300, gold:300 },
-        { name:'ドラゴン', hp:3500, atk:350, def:250, spd:150, mag:200, exp:500, gold:500 }
+        { name:'オーク', hp:1000, atk:180, def:120, spd:80, mag:60, exp:50, gold:50 },
+        { name:'キラーマシン', hp:1800, atk:200, def:200, spd:90, mag:100, exp:100, gold:100 },
+        { name:'アークデーモン', hp:2100, atk:250, def:180, spd:120, mag:250, exp:300, gold:300 },
+        { name:'ドラゴン', hp:2500, atk:350, def:250, spd:150, mag:200, exp:500, gold:500 }
     ];
 
     const ENEMY_SKILLS = {
@@ -363,7 +363,7 @@ const DB = {
     // 40階まで: デュラン (物理主体)
     DB.MONSTERS.push({
         id: 1010, rank: 40, minF: 999, name: 'デュラン',
-        hp: 20000, mp: 100, atk: 600, def: 400, spd: 150, mag: 100,
+        hp: 10000, mp: 100, atk: 600, def: 400, spd: 150, mag: 100,
         exp: 20000, gold: 5000,
         acts: [1, 40, 41, 42, 43, 44, 101, 102, 104], // 初級〜中級物理
         actCount: 1
@@ -372,7 +372,7 @@ const DB = {
     // 80階まで: ムドー (魔法主体)
     DB.MONSTERS.push({
         id: 1020, rank: 80, minF: 999, name: 'ムドー',
-        hp: 40000, mp: 500, atk: 300, def: 500, spd: 200, mag: 800,
+        hp: 25000, mp: 500, atk: 300, def: 500, spd: 200, mag: 800,
         exp: 40000, gold: 10000,
         acts: [10, 11, 12, 13, 14, 301, 302, 303, 304, 305, 306, 307], // 初級〜上級魔法
         actCount: 1
@@ -382,7 +382,7 @@ const DB = {
     // アトラス (物理)
     DB.MONSTERS.push({
         id: 1030, rank: 90, minF: 999, name: 'アトラス',
-        hp: 30000, mp: 50, atk: 1200, def: 400, spd: 250, mag: 50,
+        hp: 45000, mp: 50, atk: 1200, def: 400, spd: 250, mag: 50,
         exp: 25000, gold: 5000,
         acts: [1, 101, 102, 44], 
         actCount: 1
@@ -390,7 +390,7 @@ const DB = {
     // バズズ (魔法・デバフ)
     DB.MONSTERS.push({
         id: 1031, rank: 90, minF: 999, name: 'バズズ',
-        hp: 20000, mp: 300, atk: 400, def: 300, spd: 400, mag: 700,
+        hp: 27000, mp: 300, atk: 400, def: 300, spd: 400, mag: 700,
         exp: 25000, gold: 5000,
         acts: [13, 302, 306, 500, 30, 60, 61], 
         actCount: 1
@@ -398,7 +398,7 @@ const DB = {
     // ベリアル (バランス・回復)
     DB.MONSTERS.push({
         id: 1032, rank: 90, minF: 999, name: 'ベリアル',
-        hp: 25000, mp: 300, atk: 800, def: 500, spd: 300, mag: 500,
+        hp: 32000, mp: 300, atk: 800, def: 500, spd: 300, mag: 500,
         exp: 25000, gold: 5000,
         acts: [1, 40, 305, 306, 22, 50], 
         actCount: 1
@@ -407,7 +407,7 @@ const DB = {
     // 100階: シドー (破壊神・2回行動)
     DB.MONSTERS.push({
         id: 1040, rank: 100, minF: 999, name: 'シドー',
-        hp: 150000, mp: 999, atk: 2000, def: 1000, spd: 500, mag: 1000,
+        hp: 100000, mp: 999, atk: 2000, def: 1000, spd: 500, mag: 1000,
         exp: 200000, gold: 50000,
         acts: [1, 103, 404, 407, 999, 23, 60], // ギガスラ, メテオ, メラガイアー, 激しい炎, ベホマ, ルカニ
         actCount: 2 // 2回行動
@@ -416,7 +416,7 @@ const DB = {
     // 101階以降: レグナード (竜神・凶悪・2回行動)
     DB.MONSTERS.push({
         id: 1000, rank: 100, minF: 999, name: 'レグナード', 
-        hp: 300000, mp: 9999, atk: 3000, def: 2000, spd: 800, mag: 1500, 
+        hp: 150000, mp: 9999, atk: 3000, def: 2000, spd: 800, mag: 1500, 
         exp: 500000, gold: 100000, 
         acts: [1, 401, 402, 405, 406, 901, 902, 905, 999], // ギガブレ, ゴッド, ジゴスパ, マヒャデ, ジェネシス, ラグナ, やみのはどう
         actCount: 2 // 2回行動
