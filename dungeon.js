@@ -86,6 +86,8 @@ const Dungeon = {
         App.save();
     },
 
+    /* dungeon.js の exit 関数を修正 */
+
     exit: () => {
         // ダンジョン情報をクリア
         App.data.dungeon.map = null;
@@ -94,16 +96,26 @@ const Dungeon = {
 
         Field.currentMapData = null;
         
-        // ★修正: 脱出時の座標を「ゲーム開始地点(23, 60)」に固定
-        App.data.location.x = 23;
-        App.data.location.y = 60;
+        // ★修正: 座標を計算不要な「28」に直接指定し、Field変数にも即時反映させる
+        const targetX = 23;
+        const targetY = 28; // (60 % 32 = 28 なので、実体は28)
+        
+        App.data.location.x = targetX;
+        App.data.location.y = targetY;
         App.data.progress.floor = 0;
+        
+        // メモリ上の座標も強制同期（これが重要）
+        if(typeof Field !== 'undefined') {
+            Field.x = targetX;
+            Field.y = targetY;
+        }
         
         App.save();
         App.changeScene('field');
         App.log("フィールドに戻った");
         App.clearAction();
     },
+
     
     handleMove: (x, y) => {
         const tile = Dungeon.map[y][x];
