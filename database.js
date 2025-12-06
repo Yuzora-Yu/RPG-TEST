@@ -97,6 +97,7 @@ const DB = {
         {id:53, name:'マジックバリア', type:'強化', target:'全体', mp:8, rate:0, count:1, base:0, buff:{mag:1.5}, desc:'魔法防御アップ'},
         {id:60, name:'ルカニ', type:'弱体', target:'単体', mp:4, rate:0, count:1, base:0, buff:{def:0.7}, desc:'敵の守備ダウン'},
         {id:61, name:'ボミオス', type:'弱体', target:'全体', mp:6, rate:0, count:1, base:0, buff:{spd:0.7}, desc:'敵の素早さダウン'},
+        {id:55, name:'フォースブレイク', type: '弱体', target: '単体', mp: 20, rate: 0, count: 1, base: 0, buff: { elmResDown: 100 }, desc: '敵の全属性耐性を激減させる' },
 
         // --- 中級・上級物理 ---
         {id:101, name:'強撃', type:'物理', target:'単体', mp:5, rate:1.8, count:1, base:10, desc:'力強い一撃'},
@@ -132,15 +133,15 @@ const DB = {
         {id:402, name:'ゴッドハンド', type:'物理', target:'単体', mp:35, rate:3.5, count:1, base:150, elm:'光', desc:'神の拳'},
         {id:403, name:'フルケア', type:'回復', target:'単体', mp:40, rate:0, count:1, base:9999, fix:true, desc:'完全回復'},
         // ★変更: メテオを混沌属性に
-        {id:404, name:'メテオ', type:'魔法', target:'ランダム', mp:50, rate:3.0, count:7, base:150, elm:'火', desc:'隕石落とし'},
+        {id:404, name:'メテオ', type:'魔法', target:'ランダム', mp:50, rate:0.7, count:7, base:150, elm:'火', desc:'隕石落とし'},
         {id:405, name:'ジゴスパーク', type:'魔法', target:'全体', mp:45, rate:2.8, count:1, base:120, elm:'混沌', desc:'地獄の雷'},
         {id:406, name:'マヒャデドス', type:'魔法', target:'全体', mp:45, rate:2.8, count:1, base:120, elm:'水', desc:'極大氷魔法'},
         {id:407, name:'メラガイアー', type:'魔法', target:'単体', mp:30, rate:4.0, count:1, base:200, elm:'火', desc:'極大火炎'},
 
         {id:408, name:'ギガデイン', type:'魔法', target:'全体', mp:60, rate:3.5, count:1, base:180, elm:'雷', desc:'極大雷呪文'},
-        {id:409, name:'ギガクロスブレイク', type:'物理', target:'単体', mp:50, rate:2.5, count:2, base:100, elm:'雷', desc:'雷の2連撃'},
+        {id:409, name:'ギガクロスブレイク', type:'物理', target:'単体', mp:50, rate:3.5, count:2, base:100, elm:'雷', desc:'雷の2連撃'},
         {id:410, name:'シャイニング', type:'魔法', target:'全体', mp:70, rate:3.8, count:1, base:200, elm:'光', desc:'聖なる光'},
-        {id:411, name:'ラグナブレード', type:'物理', target:'単体', mp:60, rate:5.5, count:1, base:300, elm:'混沌', desc:'混沌の一撃'},
+        {id:411, name:'ラグナブレード', type:'物理', target:'単体', mp:60, rate:7.5, count:1, base:300, elm:'混沌', desc:'混沌の一撃'},
         {id:412, name:'イオグランデ', type:'魔法', target:'全体', mp:65, rate:3.5, count:1, base:180, elm:'光', desc:'極大爆発'},
         
         {id:500, name:'マダンテ', type:'魔法', target:'全体', mp:0, rate:10.0, count:1, base:0, desc:'全MPを消費し大爆発'},
