@@ -1,333 +1,901 @@
-/* database.js (スキル大幅拡張版) */
+/* battle.js (ランダム攻撃バラけ対応版) */
 
-const CONST = {
-    SAVE_KEY: 'QoE_SaveData_v35_SkillExp', // キー更新
-    PARTS: ['武器', '盾', '頭', '体', '足'],
-    ELEMENTS: ['火', '水', '風', '雷', '光', '闇', '混沌'],
-    RARITY: ['N', 'R', 'SR', 'SSR', 'UR', 'EX'],
+const Battle = {
+    active: false,
+    auto: false,
+    phase: 'init',
+    party: [],
+    enemies: [],
+    commandQueue: [], 
+    currentActorIndex: 0, 
+    selectingAction: null, 
+    selectedItemOrSkill: null,
     
-    // ガチャ確率
-    GACHA_RATES: { N:0, R:50, SR:30, SSR:14, UR:5, EX:1 },
+    getEl: (id) => {
+        const el = document.getElementById(id);
+        if (!el) return null;
+        return el;
+    },
     
-    // 鍛冶屋確率
-    SMITH_RATES: { 1: { R:80, SR:15, SSR:5 }, 10: { R:10, SR:30, SSR:40, UR:15, EX:5 } },
-
-    // ポーカー役倍率
-    POKER_ODDS: { ROYAL_FLUSH: 500, STRAIGHT_FLUSH: 100, FOUR_CARD: 30, FULL_HOUSE: 10, FLUSH: 8, STRAIGHT: 5, THREE_CARD: 3, TWO_PAIR: 2, JACKS_OR_BETTER: 1 },
-    
-    // 装備ドロップ時の+値確率
-    PLUS_RATES: { 3: 0.05, 2: 0.15, 1: 0.40 }, 
-    
-    MAX_LEVEL: 99,
-    EXP_BASE: 100,
-    EXP_GROWTH: 1.15,
-    RARITY_EXP_MULT: { N:1.0, R:1.1, SR:1.2, SSR:1.3, UR:1.5, EX:2.0 }
-};
-
-const MAP_DATA = [
-    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-    "WWWWWWWWWWGGGGGGGGGGGGGGGGGGGGGGWWWWWWWWWWWWWWWWWW",
-    "WWWWWWWWGGGGGGGGGGGGGFFFFFFGGGGGGGGWWWWWWWWWWWWWWW",
-    "WWWWWWGGGGGGGGGGGGGGGFFFFFFGGGGGGGGGGWWWWWWWWWWWWW",
-    "WWWWWGGGGGGGGGGGGGGGGFFFFFFGGGGGGGGGGGGWWWWWWWWWWW",
-    "WWWWGGGGGGMMMGGGGGGGGGGGGGGGGGGGGGGGGGGGGWWWWWWWWW",
-    "WWWWGGGGGMMMMMGGGGGGGGGGGGGGGGGGGGGGGGGGGGWWWWWWWW",
-    "WWWGGGGGGGGGGGGMGGGGGGGGGGGGGGGGGGGGGGGGGGWWWWWWWW",
-    "WWWGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGWWWWWWWW",
-    "WWWGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGWWWWWWWW",
-    "WWWGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGWWWWWWWW",
-    "WWWWGGGGGGMMMGGGGGGGGGGGGGGGGGGGGGGGGGGGGWWWWWWWWW",
-    "WWWWGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGWWWWWWWWWW",
-    "WWWWWGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGWWWWWWWWWWW",
-    "WWWWWWGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGWWWWWWWWWWWW",
-    "WWWWWWWWWWWWWWWWWWWWWWBBBWWWWWWWWWWWWWWWWWWWWWWWWW",
-    "WWWWWWWWWWWWWWWWWWWWWWBBBWWWWWWWWWWWWWWWWWWWWWWWWW",
-    "WWWWWWWWWWWWWWWWWWGGGGGGGGGGGWWWWWWWWWWWWWWWWWWWWW",
-    "WWWWWWWWWWWWWWWWGGGGGGGGGGGGGGGWWWWWWWWWWWWWWWWWWW",
-    "WWWWWWWWWWWWWWGGGGGGGGGGGGGGGGGGGWWWWWWWWWWWWWWWWW",
-    "WWWWWWWWWWWWWGGGGGGGGGGGGGGGGGGGGGWWWWWWWWWWWWWWWW",
-    "WWWWWWWWWWWWGGGGGGGGGGGGGGGGGGGGGGGWWWWWWWWWWWWWWW",
-    "WWWWWWWWWWWGGGGGGGGGGGGGGGGGGGGGGGGGWWWWWWWWWWWWWW",
-    "WWWWWWWWWWGGGGGGGGGGGGGGGGGGGGGGGGGGGWWWWWWWWWWWW",
-    "WWWWWWWWWGGGGGGGGGGGGGGGGGGGGGGGGGGGGGWWWWWWWWWWWW",
-    "WWWWWWWWGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGWWWWWWWWWWW",
-    "GGGGGGGGGGGGGGGGGGGGGIEKGGGGGGGGGGGGGGGGGGGGGGGGGG",
-    "WWWWWWWGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGWWWWWWWWWW",
-    "WWWWWWGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGWWWWWWWWW",
-    "WWWWWGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGWWWWWWWW",
-    "WWWWGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGWWWWWWW",
-    "WWWWGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGWWWWWWW",
-    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-];
-
-const DB = {
-    SKILLS: [
-        // --- 基本 ---
-        {id:1, name:'こうげき', type:'物理', target:'単体', mp:0, rate:1.0, count:1, base:0, elm:null, desc:'通常攻撃'},
-        {id:2, name:'ぼうぎょ', type:'特殊', target:'自分', mp:0, rate:0, count:0, base:0, elm:null, desc:'ダメージ軽減'},
-
-        // --- 初級魔法 ---
-        {id:10, name:'メラ', type:'魔法', target:'単体', mp:2, rate:1.2, count:1, base:10, elm:'火', desc:'小火球'},
-        {id:11, name:'ヒャド', type:'魔法', target:'単体', mp:3, rate:1.2, count:1, base:12, elm:'水', desc:'氷の刃'},
-        {id:12, name:'バギ', type:'魔法', target:'全体', mp:5, rate:0.8, count:1, base:15, elm:'風', desc:'真空の刃'},
-        {id:13, name:'ライデイン', type:'魔法', target:'単体', mp:6, rate:1.5, count:1, base:20, elm:'雷', desc:'落雷'},
-        {id:14, name:'ドルマ', type:'魔法', target:'単体', mp:4, rate:1.4, count:1, base:15, elm:'闇', desc:'闇の弾'},
-
-        // --- 回復・補助 ---
-        {id:20, name:'ホイミ', type:'回復', target:'単体', mp:3, rate:1.5, count:1, base:30, elm:null, desc:'小回復'},
-        {id:21, name:'ベホイミ', type:'回復', target:'単体', mp:6, rate:2.5, count:1, base:80, elm:null, desc:'中回復'},
-        {id:22, name:'ベホマラー', type:'回復', target:'全体', mp:12, rate:1.5, count:1, base:60, elm:null, desc:'全体回復'},
-        {id:23, name:'ベホマ', type:'回復', target:'単体', mp:10, rate:0, count:1, base:999, fix:true, desc:'全回復'},
-        {id:30, name:'ザオラル', type:'蘇生', target:'単体', mp:8, rate:0.5, count:1, base:0, elm:null, desc:'50%蘇生'},
-        {id:31, name:'ザオリク', type:'蘇生', target:'単体', mp:20, rate:1.0, count:1, base:0, elm:null, desc:'100%蘇生'},
-
-        // --- 物理スキル（初級・属性剣） ---
-        {id:40, name:'火炎斬り', type:'物理', target:'単体', mp:4, rate:1.3, count:1, base:5, elm:'火', desc:'炎の剣技'},
-        {id:41, name:'はやぶさ斬り', type:'物理', target:'単体', mp:6, rate:0.7, count:2, base:0, elm:null, desc:'2回攻撃'},
-        {id:42, name:'氷結斬り', type:'物理', target:'単体', mp:4, rate:1.3, count:1, base:5, elm:'水', desc:'氷の剣技'},
-        {id:43, name:'雷鳴突き', type:'物理', target:'単体', mp:4, rate:1.3, count:1, base:5, elm:'雷', desc:'雷の槍技'},
-        {id:44, name:'兜割り', type:'物理', target:'単体', mp:4, rate:1.2, count:1, base:5, buff:{def:0.8}, desc:'敵の守備を下げる'},
-
-        // --- 強化・弱体 ---
-        {id:50, name:'バイキルト', type:'強化', target:'単体', mp:8, rate:0, count:1, base:0, buff:{atk:1.5}, desc:'攻撃力アップ'},
-        {id:51, name:'スカラ', type:'強化', target:'単体', mp:4, rate:0, count:1, base:0, buff:{def:1.5}, desc:'守備力アップ'},
-        {id:52, name:'ピオリム', type:'強化', target:'全体', mp:6, rate:0, count:1, base:0, buff:{spd:1.3}, desc:'素早さアップ'},
-        {id:60, name:'ルカニ', type:'強化', target:'単体', mp:4, rate:0, count:1, base:0, buff:{def:0.7}, desc:'敵の守備ダウン'}, // type:'強化'にしてbuffに0.7を入れると弱体になる仕様
-        {id:61, name:'ボミオス', type:'強化', target:'全体', mp:6, rate:0, count:1, base:0, buff:{spd:0.7}, desc:'敵の素早さダウン'},
-
-        // --- 中級・上級物理 ---
-        {id:101, name:'強撃', type:'物理', target:'単体', mp:5, rate:1.8, count:1, base:10, desc:'力強い一撃'},
-        {id:102, name:'渾身斬り', type:'物理', target:'単体', mp:10, rate:2.5, count:1, base:30, desc:'渾身の一撃'},
-        {id:103, name:'ギガスラッシュ', type:'物理', target:'全体', mp:15, rate:2.0, count:1, base:50, elm:'光', desc:'光の剣技'},
-        {id:104, name:'暗黒剣', type:'物理', target:'単体', mp:12, rate:2.2, count:1, base:40, elm:'闇', desc:'闇の剣技'},
-        {id:201, name:'五月雨突き', type:'物理', target:'ランダム', mp:10, rate:0.6, count:4, base:0, desc:'4回攻撃'},
-        {id:202, name:'爆裂拳', type:'物理', target:'ランダム', mp:12, rate:0.7, count:4, base:0, desc:'4回攻撃'},
-
-        // --- 中級・上級魔法 ---
-        {id:301, name:'メラミ', type:'魔法', target:'単体', mp:6, rate:1.8, count:1, base:40, elm:'火', desc:'中火球'},
-        {id:302, name:'ベギラマ', type:'魔法', target:'全体', mp:10, rate:1.5, count:1, base:30, elm:'雷', desc:'雷の帯'},
-        {id:303, name:'ヒャダルコ', type:'魔法', target:'全体', mp:10, rate:1.5, count:1, base:30, elm:'水', desc:'氷の波動'},
-        {id:304, name:'バギマ', type:'魔法', target:'全体', mp:10, rate:1.5, count:1, base:30, elm:'風', desc:'真空の嵐'},
-        {id:305, name:'メラゾーマ', type:'魔法', target:'単体', mp:15, rate:2.8, count:1, base:100, elm:'火', desc:'大火球'},
-        {id:306, name:'イオナズン', type:'魔法', target:'全体', mp:25, rate:2.2, count:1, base:80, elm:'光', desc:'大爆発'},
-        {id:307, name:'ドルモーア', type:'魔法', target:'単体', mp:15, rate:2.8, count:1, base:100, elm:'闇', desc:'闇の爆発'},
-
-        // --- 最上級・EX ---
-        {id:401, name:'ギガブレイク', type:'物理', target:'全体', mp:30, rate:2.8, count:1, base:100, elm:'雷', desc:'最強の剣技'},
-        {id:402, name:'ゴッドハンド', type:'物理', target:'単体', mp:35, rate:3.5, count:1, base:150, elm:'光', desc:'神の拳'},
-        {id:403, name:'フルケア', type:'回復', target:'単体', mp:40, rate:0, count:1, base:9999, fix:true, desc:'完全回復'},
-        {id:404, name:'メテオ', type:'魔法', target:'全体', mp:50, rate:3.0, count:1, base:150, elm:'火', desc:'隕石落とし'},
-        {id:405, name:'ジゴスパーク', type:'魔法', target:'全体', mp:45, rate:2.8, count:1, base:120, elm:'雷', desc:'地獄の雷'},
-        {id:406, name:'マヒャデドス', type:'魔法', target:'全体', mp:45, rate:2.8, count:1, base:120, elm:'水', desc:'極大氷魔法'},
-        {id:407, name:'メラガイアー', type:'魔法', target:'単体', mp:30, rate:4.0, count:1, base:200, elm:'火', desc:'極大火炎'},
-
-        // --- ボス・神級 ---
-        {id:901, name:'ジェネシス', type:'魔法', target:'全体', mp:100, rate:5.0, count:1, base:500, elm:'混沌', desc:'【EX】天地創造の光'},
-        {id:902, name:'ラグナロク', type:'物理', target:'全体', mp:80, rate:3.0, count:5, base:50, elm:'闇', desc:'【EX】終焉の5連撃'},
-        {id:903, name:'リザレクション', type:'蘇生', target:'全体', mp:200, rate:1.0, count:1, base:100, desc:'【EX】味方全員を完全蘇生'},
-        {id:999, name:'激しい炎', type:'特殊', target:'全体', mp:0, rate:0, count:1, base:80, fix:true, elm:'火', desc:'全体炎'}
-    ],
-    CHARACTERS: [
-        {id:101, name:'戦士ジョン', job:'戦士', rarity:'R', hp:150, mp:20, atk:40, def:30, spd:20, mag:10, lbSkills:{50:101, 99:201}},
-        {id:102, name:'僧侶マリー', job:'僧侶', rarity:'R', hp:120, mp:50, atk:20, def:20, spd:25, mag:40, lbSkills:{50:20, 99:102}},
-        {id:201, name:'魔法剣士アラン', job:'魔法剣士', rarity:'SR', hp:200, mp:60, atk:50, def:40, spd:35, mag:50, lbSkills:{50:202, 99:42}},
-        {id:202, name:'賢者ソフィア', job:'賢者', rarity:'SR', hp:180, mp:100, atk:30, def:30, spd:30, mag:80, lbSkills:{50:102, 99:22}},
-        {id:301, name:'勇者アルス', job:'勇者', rarity:'SSR', hp:300, mp:100, atk:80, def:60, spd:50, mag:50, lbSkills:{50:42, 99:401}},
-        {id:302, name:'竜騎士カイン', job:'竜騎士', rarity:'SSR', hp:350, mp:50, atk:90, def:70, spd:60, mag:20, lbSkills:{50:201, 99:402}},
-        {id:401, name:'聖女ジャンヌ', job:'聖女', rarity:'UR', hp:500, mp:300, atk:50, def:80, spd:70, mag:150, lbSkills:{50:22, 99:403}},
-        {id:402, name:'魔王ギル', job:'魔王', rarity:'UR', hp:600, mp:200, atk:150, def:100, spd:40, mag:120, lbSkills:{50:402, 99:901}},
-        {id:501, name:'創造神ゼノン', job:'神', rarity:'EX', hp:9999, mp:999, atk:999, def:999, spd:999, mag:999, lbSkills:{50:901, 99:903}}
-    ],
-    ITEMS: [
-        {id:1, name:'やくそう', type:'HP回復', val:100, desc:'HPを約100回復', target:'単体', price:10},
-        {id:2, name:'上やくそう', type:'HP回復', val:300, desc:'HPを約300回復', target:'単体', price:50},
-        {id:3, name:'魔法の小瓶', type:'MP回復', val:30, desc:'MPを約30回復', target:'単体', price:100},
-        {id:4, name:'魔法の聖水', type:'MP回復', val:100, desc:'MPを約100回復', target:'単体', price:500},
-        {id:5, name:'世界樹の葉', type:'蘇生', val:100, desc:'死んだ仲間を生き返らせる', target:'単体', price:1000},
-        {id:99, name:'ちいさなメダル', type:'貴重品', val:0, desc:'世界各地に散らばるメダル', target:'なし', price:0}
-    ],
-    MONSTERS: [],
-    EQUIPS: [],
-    
-    // 装備オプション
-    OPT_RULES: [
-        {key:'atk', name:'攻撃', unit:'val', allowed:['N','R','SR','SSR','UR','EX'], min:{N:1,R:5,SR:10,SSR:20,UR:50,EX:80}, max:{N:4,R:9,SR:19,SSR:49,UR:100,EX:200}},
-        {key:'def', name:'防御', unit:'val', allowed:['N','R','SR','SSR','UR','EX'], min:{N:1,R:5,SR:10,SSR:20,UR:50,EX:80}, max:{N:4,R:9,SR:19,SSR:49,UR:100,EX:200}},
-        {key:'mag', name:'魔力', unit:'val', allowed:['N','R','SR','SSR','UR','EX'], min:{N:1,R:5,SR:10,SSR:20,UR:50,EX:80}, max:{N:4,R:9,SR:19,SSR:49,UR:100,EX:200}},
-        {key:'hp', name:'HP', unit:'val', allowed:['N','R','SR','SSR','UR','EX'], min:{N:10,R:50,SR:100,SSR:300,UR:500,EX:1000}, max:{N:40,R:90,SR:290,SSR:490,UR:1000,EX:2500}},
-        {key:'mp', name:'MP', unit:'val', allowed:['N','R','SR','SSR','UR','EX'], min:{N:5,R:10,SR:30,SSR:50,UR:100,EX:200}, max:{N:9,R:29,SR:49,SSR:99,UR:199,EX:500}},
-        {key:'spd', name:'速さ', unit:'val', allowed:['N','R','SR','SSR','UR','EX'], min:{N:1,R:2,SR:4,SSR:8,UR:15,EX:30}, max:{N:1,R:3,SR:7,SSR:14,UR:30,EX:60}},
-        {key:'finDmg', name:'与ダメ', unit:'%', allowed:['SSR','UR','EX'], min:{SSR:1,UR:3,EX:5}, max:{SSR:2,UR:5,EX:10}},
-        {key:'finRed', name:'被ダメ', unit:'val', allowed:['SSR','UR','EX'], min:{SSR:5,UR:10,EX:20}, max:{SSR:10,UR:20,EX:50}},
+    init: () => {
+        Battle.active = true;
+        Battle.phase = 'init';
+        Battle.commandQueue = [];
+        Battle.currentActorIndex = 0;
+        Battle.auto = false;
+        Battle.updateAutoButton();
         
-        {key:'elmAtk', elm:'火', name:'火攻', unit:'val', allowed:['SR','SSR','UR','EX'], min:{SR:5,SSR:10,UR:20,EX:40}, max:{SR:9,SSR:19,UR:39,EX:80}},
-        {key:'elmAtk', elm:'水', name:'水攻', unit:'val', allowed:['SR','SSR','UR','EX'], min:{SR:5,SSR:10,UR:20,EX:40}, max:{SR:9,SSR:19,UR:39,EX:80}},
-        {key:'elmAtk', elm:'風', name:'風攻', unit:'val', allowed:['SR','SSR','UR','EX'], min:{SR:5,SSR:10,UR:20,EX:40}, max:{SR:9,SSR:19,UR:39,EX:80}},
-        {key:'elmAtk', elm:'雷', name:'雷攻', unit:'val', allowed:['SR','SSR','UR','EX'], min:{SR:5,SSR:10,UR:20,EX:40}, max:{SR:9,SSR:19,UR:39,EX:80}},
-        {key:'elmAtk', elm:'光', name:'光攻', unit:'val', allowed:['SSR','UR','EX'], min:{SSR:15,UR:30,EX:60}, max:{SSR:29,UR:59,EX:120}},
-        {key:'elmAtk', elm:'闇', name:'闇攻', unit:'val', allowed:['SSR','UR','EX'], min:{SSR:15,UR:30,EX:60}, max:{SSR:29,UR:59,EX:120}},
+        const logEl = Battle.getEl('battle-log');
+        if(logEl) logEl.innerHTML = '';
 
-        {key:'elmRes', elm:'火', name:'火耐', unit:'val', allowed:['R','SR','SSR','UR','EX'], min:{R:5,SR:10,SSR:20,UR:40,EX:80}, max:{R:9,SR:19,SSR:39,UR:79,EX:150}},
-        {key:'elmRes', elm:'水', name:'水耐', unit:'val', allowed:['R','SR','SSR','UR','EX'], min:{R:5,SR:10,SSR:20,UR:40,EX:80}, max:{R:9,SR:19,SSR:39,UR:79,EX:150}},
-        {key:'elmRes', elm:'風', name:'風耐', unit:'val', allowed:['R','SR','SSR','UR','EX'], min:{R:5,SR:10,SSR:20,UR:40,EX:80}, max:{R:9,SR:19,SSR:39,UR:79,EX:150}},
-        {key:'elmRes', elm:'雷', name:'雷耐', unit:'val', allowed:['R','SR','SSR','UR','EX'], min:{R:5,SR:10,SSR:20,UR:40,EX:80}, max:{R:9,SR:19,SSR:39,UR:79,EX:150}},
-        {key:'elmRes', elm:'光', name:'光耐', unit:'val', allowed:['SSR','UR','EX'], min:{SSR:10,UR:20,EX:40}, max:{SSR:19,UR:39,EX:80}},
-        {key:'elmRes', elm:'闇', name:'闇耐', unit:'val', allowed:['SSR','UR','EX'], min:{SSR:10,UR:20,EX:40}, max:{SSR:19,UR:39,EX:80}}
-    ],
+        Battle.party = App.data.party.map(uid => {
+            if(!uid) return null;
+            const charData = App.getChar(uid);
+            if(!charData) return null;
+            
+            const player = new Player(charData);
+            const stats = App.calcStats(charData);
+            player.baseMaxHp = stats.maxHp; 
+            player.baseMaxMp = stats.maxMp;
+            player.hp = Math.min(player.hp, stats.maxHp);
+            player.mp = Math.min(player.mp, stats.maxMp);
+            player.isDead = player.hp <= 0;
+            return player;
+        }).filter(p => p !== null);
 
-    SYNERGIES: [
-        { key: 'spd', count: 3, name: '疾風怒濤', effect: 'doubleAction', desc: '50%で2回行動', color:'#f88' },
-        { key: 'hp', count: 3, name: '吸血', effect: 'drain', desc: '与ダメの10%回復', color:'#f88' },
-        { key: 'mag', count: 3, name: '魔力暴走', effect: 'magCrit', desc: '魔法がたまに会心', color:'#88f' }
-    ],
-    MEDAL_REWARDS: [
-        { medals: 5, name: '上やくそう x3', type: 'item', id: 2, count: 3 },
-        { medals: 10, name: '魔法の小瓶 x5', type: 'item', id: 3, count: 5 },
-        { medals: 15, name: '世界樹の葉 x1', type: 'item', id: 5, count: 1 },
-        { medals: 50, name: '神秘の鎧', type: 'equip', equipId: 901, base: {name:'神秘の鎧', type:'体', rank:50, val:20000, data:{def:50, finRed:20}} },
-        { medals: 60, name: 'メタルキングの盾', type: 'equip', equipId: 902, base: {name:'メタキン盾', type:'盾', rank:80, val:25000, data:{def:60, elmRes:{'火':10,'水':10,'風':10,'雷':10}}} },
-        { medals: 70, name: 'メタルキングヘルム', type: 'equip', equipId: 903, base: {name:'メタキン兜', type:'頭', rank:80, val:28000, data:{def:45, mp:50, elmRes:{'光':20,'闇':20}}} },
-        { medals: 80, name: 'メタルキングの剣', type: 'equip', equipId: 904, base: {name:'メタキン剣', type:'武器', rank:90, val:40000, data:{atk:160, spd:15}} }
-    ]
-};
-
-// データ自動生成
-(() => {
-    const TIERS = [
-        { rank:1, name:'ボロの', mult:0.5 },
-        { rank:5, name:'銅の', mult:1.0 },
-        { rank:10, name:'鉄の', mult:1.5 },
-        { rank:20, name:'鋼の', mult:2.5 },
-        { rank:30, name:'白銀の', mult:4.0 },
-        { rank:40, name:'黄金の', mult:6.0 },
-        { rank:50, name:'プラチナ', mult:10.0 },
-        { rank:60, name:'ミスリル', mult:15.0 },
-        { rank:70, name:'オリハルコン', mult:22.0 },
-        { rank:80, name:'アダマン', mult:30.0 },
-        { rank:90, name:'英雄の', mult:45.0 },
-        { rank:100, name:'神々の', mult:60.0 } 
-    ];
-
-    const EQUIP_TYPES = [
-        { type:'武器', baseName:'剣', stat:'atk', baseVal:10 },
-        { type:'武器', baseName:'斧', stat:'atk', baseVal:15, spdMod:-2 },
-        { type:'武器', baseName:'短剣', stat:'atk', baseVal:8, spdMod:5 },
-        { type:'盾', baseName:'盾', stat:'def', baseVal:5 },
-        { type:'頭', baseName:'兜', stat:'def', baseVal:3 },
-        { type:'体', baseName:'鎧', stat:'def', baseVal:8 },
-        { type:'体', baseName:'ローブ', stat:'def', baseVal:5, magMod:5 },
-        { type:'足', baseName:'ブーツ', stat:'spd', baseVal:5, defMod:2 }
-    ];
-
-    TIERS.forEach(tier => {
-        EQUIP_TYPES.forEach((eq, idx) => {
-            const data = {};
-            data[eq.stat] = Math.floor(eq.baseVal * tier.mult);
-            if(eq.spdMod) data.spd = Math.floor(eq.spdMod * (1 + tier.rank/20));
-            if(eq.magMod) data.mag = Math.floor(eq.magMod * (1 + tier.rank/20));
-            if(eq.defMod) data.def = Math.floor(eq.defMod * (1 + tier.rank/20));
-
-            DB.EQUIPS.push({
-                id: `eq_${tier.rank}_${idx}`,
-                rank: tier.rank,
-                name: `${tier.name}${eq.baseName}`,
-                type: eq.type,
-                val: tier.rank * 100,
-                minF: tier.rank,
-                data: data
-            });
-        });
-    });
-
-    const MONSTER_TYPES = [
-        { name:'スライム', hp:30, atk:12, def:5, exp:10 }, 
-        { name:'バット', hp:20, atk:15, def:3, exp:12 },
-        { name:'ウルフ', hp:50, atk:22, def:10, exp:20 },
-        { name:'ゴースト', hp:40, atk:18, def:30, exp:25 },
-        { name:'オーク', hp:100, atk:35, def:20, exp:50 },
-        { name:'ナイト', hp:150, atk:45, def:50, exp:100 },
-        { name:'デーモン', hp:300, atk:90, def:60, exp:300 },
-        { name:'ドラゴン', hp:500, atk:120, def:80, exp:500 }
-    ];
-
-    // ★敵スキルテーブル (DB.SKILLSのIDと対応)
-    const ENEMY_SKILLS = {
-        low: [1, 1, 10, 40, 44], // メラ, 火炎斬り, 兜割り
-        mid: [1, 1, 11, 12, 41, 42, 60], // ヒャド, バギ, はやぶさ, 氷結, ルカニ
-        high: [1, 13, 301, 302, 101, 104, 61], // ライデイン, メラミ, ベギラマ, 強撃, 暗黒剣, ボミオス
-        top: [1, 102, 103, 305, 306, 307, 401] // 渾身, ギガスラ, メラゾーマ, イオナズン, ドルモーア, ギガブレ
-    };
-
-    for(let r=1; r<=100; r++) {
-        const typeIdx = Math.min(MONSTER_TYPES.length-1, Math.floor((r-1)/12)); 
-        const base = MONSTER_TYPES[typeIdx];
-        
-        const scale_factor = 0.45; 
-        const hp_exp = 2.5; 
-
-        const scale = 1.0 + (r * scale_factor); 
-        
-        let prefix = "";
-        if(r % 10 >= 5) prefix = "強・";
-        if(r > 50) prefix = "真・";
-        if(r > 80) prefix = "極・";
-
-        let acts = [1]; 
-        if (r <= 10) acts = ENEMY_SKILLS.low;
-        else if (r <= 40) acts = ENEMY_SKILLS.mid;
-        else if (r <= 80) acts = ENEMY_SKILLS.high;
-        else acts = ENEMY_SKILLS.top;
-
-        const myActs = [1];
-        const skillCount = r > 50 ? 3 : 2; 
-        for(let i=0; i<skillCount; i++) {
-            const skill = acts[Math.floor(Math.random() * acts.length)];
-            if(!myActs.includes(skill)) myActs.push(skill);
+        if (Battle.party.length === 0 || Battle.party.every(p => p.isDead)) {
+            App.log("戦えるメンバーがいません！");
+            Battle.endBattle(true);
+            return;
         }
 
-        DB.MONSTERS.push({
-            id: r,
-            rank: r,
-            minF: r,
-            name: `${prefix}${base.name} Lv${r}`,
-            hp: Math.floor(base.hp * Math.pow(scale, hp_exp)), 
-            mp: 50 + r * 10,
-            atk: Math.floor(base.atk * scale),
-            def: Math.floor(base.def * scale),
-            spd: 10 + r * 1.2,
-            mag: Math.floor(base.mag * scale),
-            exp: Math.floor(base.exp * scale * 1.5),
-            gold: Math.floor(r * 25),
-            acts: myActs,
-            drop: null
+        if (App.data.battle && App.data.battle.active && Array.isArray(App.data.battle.enemies) && App.data.battle.enemies.length > 0) {
+            Battle.log("戦闘に復帰した！");
+            Battle.enemies = App.data.battle.enemies.map(e => {
+                const base = DB.MONSTERS.find(m => m.id === e.baseId) || DB.MONSTERS[0];
+                const m = new Monster(base, 1.0);
+                m.hp = e.hp; m.baseMaxHp = e.maxHp; m.name = e.name; m.id = e.baseId; 
+                m.isDead = m.hp <= 0;
+                return m;
+            }).filter(e => e !== null);
+        } else {
+            const isBoss = App.data.battle && App.data.battle.isBossBattle;
+            Battle.enemies = Battle.generateNewEnemies(isBoss); 
+            
+            App.data.battle = {
+                active: true, isBossBattle: isBoss,
+                enemies: Battle.enemies.map(e => ({ baseId: e.id, hp: e.baseMaxHp, maxHp: e.baseMaxHp, name: e.name }))
+            };
+            App.save();
+        }
+        
+        Battle.renderEnemies();
+        Battle.renderPartyStatus();
+        
+        const scene = document.getElementById('battle-scene');
+        if(scene) {
+            scene.onclick = (e) => {
+                if (Battle.phase === 'result') Battle.endBattle(false);
+            };
+        }
+        Battle.startInputPhase();
+    },
+
+    generateNewEnemies: (isBoss) => {
+        const newEnemies = [];
+        const floor = App.data.progress.floor || 1; 
+
+        if (isBoss) {
+            const base = DB.MONSTERS.find(m => m.id === 1000) || DB.MONSTERS[DB.MONSTERS.length-1];
+            const bossScale = 1.0 + (Math.floor(floor / 10) * 0.1);
+            
+            const m = new Monster(base, bossScale);
+            m.name = base.name; 
+            m.id = base.id;
+            newEnemies.push(m);
+            Battle.log("魔王の威圧感を感じる……！");
+        } else {
+            Battle.log("モンスターが現れた！");
+            const count = 1 + Math.floor(Math.random() * 3);
+            
+            const minRank = Math.max(1, floor - 5);
+            const maxRank = floor + 2;
+            let pool = DB.MONSTERS.filter(m => m.rank >= minRank && m.rank <= maxRank && m.id < 1000);
+            
+            if(pool.length === 0) pool = DB.MONSTERS.filter(m => m.rank <= floor && m.id < 1000);
+            if(pool.length === 0) pool = [DB.MONSTERS[0]];
+            
+            for(let i=0; i<count; i++) {
+                const base = pool[Math.floor(Math.random()*pool.length)];
+                const m = new Monster(base, 1.0);
+                m.name += String.fromCharCode(65+i); 
+                m.id = base.id;
+                newEnemies.push(m);
+            }
+        }
+        return newEnemies;
+    },
+
+    log: (msg) => {
+        const el = Battle.getEl('battle-log');
+        if (el) {
+            const line = document.createElement('div');
+            line.innerHTML = msg; 
+            el.appendChild(line);
+            el.scrollTop = el.scrollHeight;
+        }
+        console.log(`[Battle] ${msg}`);
+    },
+
+    startInputPhase: () => {
+        if (!Battle.active) return;
+        Battle.phase = 'input';
+        Battle.commandQueue = [];
+        Battle.currentActorIndex = 0;
+        Battle.closeSubMenu();
+        Battle.findNextActor();
+    },
+
+    findNextActor: () => {
+        while (Battle.currentActorIndex < Battle.party.length) {
+            const actor = Battle.party[Battle.currentActorIndex];
+            if (!actor || actor.isDead) {
+                Battle.commandQueue.push({ type:'dead', actor:actor, speed:0 });
+                Battle.currentActorIndex++;
+                continue; 
+            }
+            Battle.phase = 'input';
+            break;
+        }
+
+        if (Battle.currentActorIndex >= Battle.party.length) {
+            Battle.executeTurn();
+            return;
+        }
+
+        const actor = Battle.party[Battle.currentActorIndex];
+        Battle.renderPartyStatus();
+        const nameDiv = Battle.getEl('battle-actor-name');
+        if(nameDiv) {
+            nameDiv.style.display = 'block';
+            nameDiv.innerText = `【${actor.name}】の行動`;
+        }
+        
+        Battle.updateCommandButtons(); 
+        Battle.log(`${actor.name}はどうする？`);
+
+        if (Battle.auto) {
+            const target = Battle.getRandomAliveEnemy();
+            Battle.registerAction({ type: 'attack', actor: actor, target: target });
+        }
+    },
+
+    goBack: () => {
+        if (Battle.currentActorIndex > 0) {
+            Battle.commandQueue.pop(); 
+            Battle.currentActorIndex--;
+            while (Battle.currentActorIndex >= 0 && (!Battle.party[Battle.currentActorIndex] || Battle.party[Battle.currentActorIndex].isDead)) {
+                Battle.currentActorIndex--;
+            }
+            if(Battle.currentActorIndex < 0) Battle.currentActorIndex = 0;
+            Battle.closeSubMenu();
+            Battle.phase = 'input'; 
+            Battle.findNextActor();
+        }
+    },
+
+    updateCommandButtons: () => {
+        const cmdRoot = Battle.getEl('command-root');
+        if(cmdRoot && cmdRoot.children.length >= 5) {
+            const btn = cmdRoot.children[4];
+            const firstAlive = Battle.party.findIndex(p => p && !p.isDead);
+            const newBtn = btn.cloneNode(true);
+            if (Battle.currentActorIndex === firstAlive) {
+                newBtn.innerText = "にげる";
+                newBtn.onclick = Battle.run;
+                if (App.data.battle.isBossBattle) newBtn.disabled = true;
+                else newBtn.disabled = false;
+            } else {
+                newBtn.innerText = "もどる";
+                newBtn.onclick = Battle.goBack;
+                newBtn.disabled = false;
+            }
+            btn.parentNode.replaceChild(newBtn, btn);
+        }
+    },
+
+    selectCommand: (type) => {
+        if (Battle.phase !== 'input' || Battle.auto) return;
+        Battle.selectingAction = type;
+        Battle.selectedItemOrSkill = null;
+
+        if (type === 'attack') {
+            Battle.log("攻撃対象を選択してください");
+            Battle.openTargetWindow('enemy');
+        } 
+        else if (type === 'skill') Battle.openSkillList();
+        else if (type === 'item') Battle.openItemList();
+        else if (type === 'defend') {
+            const actor = Battle.party[Battle.currentActorIndex];
+            Battle.registerAction({ type: 'defend', actor: actor });
+        }
+    },
+
+    openTargetWindow: (targetType, actionData = null) => { 
+        const win = Battle.getEl('battle-target-window');
+        const list = Battle.getEl('battle-target-list');
+        const listWin = Battle.getEl('battle-list-window');
+        if (!win || !list) return;
+        if (listWin) listWin.style.display = 'none'; 
+
+        win.style.display = 'flex';
+        list.innerHTML = '';
+        Battle.phase = 'target_select';
+
+        let targets = [];
+        let actualTargetType = targetType;
+        
+        if(actionData) {
+            const type = actionData.type || '';
+            const range = actionData.target || '単体';
+            if (range === '単体') {
+                if (type === '蘇生') actualTargetType = 'ally_dead';
+                else if (type.includes('回復') || type === '強化') actualTargetType = 'ally';
+                else if (type === '弱体') actualTargetType = 'enemy';
+                else actualTargetType = 'enemy';
+            } else if (range === '全体') {
+                if (type.includes('回復') || ['蘇生','強化'].includes(type)) actualTargetType = 'all_ally';
+                else actualTargetType = 'all_enemy';
+            } else if (range === 'ランダム') {
+                actualTargetType = 'enemy';
+            }
+        }
+
+        if (actualTargetType === 'enemy') targets = Battle.enemies.filter(e => !e.isDead);
+        else if (actualTargetType === 'ally') targets = Battle.party.filter(p => p && !p.isDead);
+        else if (actualTargetType === 'ally_dead') targets = Battle.party.filter(p => p && p.isDead);
+
+        if (actualTargetType === 'all_enemy' || actualTargetType === 'all_ally') {
+            const actor = Battle.party[Battle.currentActorIndex];
+            Battle.registerAction({ 
+                type: Battle.selectingAction, 
+                actor: actor, 
+                target: actualTargetType, 
+                data: Battle.selectedItemOrSkill 
+            });
+            return;
+        }
+
+        if (targets.length === 0) {
+            Battle.log("対象がいません");
+            setTimeout(Battle.cancelSubMenu, 800);
+            return;
+        }
+
+        targets.forEach(t => {
+            const btn = document.createElement('button');
+            btn.className = 'battle-target-btn';
+            btn.innerText = t.name;
+            if(t.isDead && actualTargetType !== 'ally_dead') btn.disabled = true;
+            btn.onclick = (e) => { e.stopPropagation(); Battle.selectTarget(t); };
+            list.appendChild(btn);
         });
-    }
+    },
 
-    // ボス: レグナード
-    DB.MONSTERS.push({
-        id:1000, rank:100, minF:999, name:'レグナード', 
-        hp:50000, mp:9999, atk:1500, def:800, spd:200, mag:500, 
-        exp:100000, gold:50000, 
-        // 技: 通常, ライデイン, ギガスラ, ベギラマ, ギガブレ, ゴッドハンド, メテオ, ジェネシス, ラグナロク, 激しい炎
-        acts:[1, 13, 103, 302, 401, 402, 404, 901, 902, 999] 
-    });
-})();
+    selectTarget: (target) => {
+        if (Battle.phase !== 'target_select') return;
+        const actor = Battle.party[Battle.currentActorIndex];
+        Battle.registerAction({
+            type: Battle.selectingAction,
+            actor: actor,
+            target: target,
+            data: Battle.selectedItemOrSkill
+        });
+    },
 
-const INITIAL_DATA_TEMPLATE = {
-    gold: 5000, gems: 100000,
-    items: { 1: 10, 2: 5, 99: 10 }, 
-    inventory: [], 
-    location: { x: 23, y: 60 },
-    progress: { floor: 0 },
-    blacksmith: { level: 1, exp: 0 },
-    dungeon: { maxFloor: 0, tryCount: 0, map: null, width: 30, height: 30 },
-    book: { monsters: [] },
-    battle: { active: false },
-    party: ['p1', 'p2', 'p3', 'p4'],
-    characters: [
-        {uid:'p1', isHero:true, charId:301, name:'アルス', job:'勇者', rarity:'SSR', level:1, hp:200, mp:50, atk:40, def:30, spd:30, mag:20, limitBreak:0, equips:{}, alloc:{}},
-        {uid:'p2', charId:101, name:'ジョン', job:'戦士', rarity:'R', level:1, hp:180, mp:20, atk:50, def:40, spd:20, mag:5, limitBreak:0, equips:{}},
-        {uid:'p3', charId:201, name:'アラン', job:'魔法剣士', rarity:'SR', level:1, hp:160, mp:60, atk:40, def:30, spd:35, mag:40, limitBreak:0, equips:{}},
-        {uid:'p4', charId:102, name:'マリー', job:'僧侶', rarity:'R', level:1, hp:140, mp:80, atk:20, def:20, spd:25, mag:50, limitBreak:0, equips:{}}
-    ]
+    openSkillList: () => {
+        const actor = Battle.party[Battle.currentActorIndex];
+        const win = Battle.getEl('battle-list-window');
+        const title = Battle.getEl('battle-list-title');
+        const content = Battle.getEl('battle-list-content');
+        const targetWin = Battle.getEl('battle-target-window');
+        if (!win || !title || !content) return;
+        if (targetWin) targetWin.style.display = 'none';
+
+        win.style.display = 'flex';
+        title.innerText = "特技・魔法";
+        content.innerHTML = '';
+        Battle.phase = 'skill_select';
+
+        if (!actor.skills || actor.skills.length === 0) {
+            content.innerHTML = '<div style="padding:10px">特技がありません</div>';
+            return;
+        }
+
+        actor.skills.forEach(sk => {
+            const div = document.createElement('div');
+            div.className = 'list-item';
+            div.innerHTML = `<div>${sk.name} (${sk.target})</div><div style="color:#88f">MP:${sk.mp}</div>`;
+            div.onclick = (e) => {
+                e.stopPropagation();
+                if (actor.mp < sk.mp) { Battle.log("MPが足りません"); return; }
+                Battle.selectedItemOrSkill = sk;
+                Battle.openTargetWindow(sk.target, sk);
+            };
+            content.appendChild(div);
+        });
+    },
+
+    openItemList: () => {
+        const win = Battle.getEl('battle-list-window');
+        const title = Battle.getEl('battle-list-title');
+        const content = Battle.getEl('battle-list-content');
+        const targetWin = Battle.getEl('battle-target-window');
+        if (!win || !title || !content) return;
+        if (targetWin) targetWin.style.display = 'none';
+        
+        win.style.display = 'flex';
+        title.innerText = "道具";
+        content.innerHTML = '';
+        Battle.phase = 'item_select';
+
+        const items = [];
+        Object.keys(App.data.items).forEach(id => {
+            const it = DB.ITEMS.find(i=>i.id==id);
+            if(it && (it.type.includes('回復') || it.type.includes('蘇生')) && App.data.items[id] > 0) { 
+                items.push({def:it, count:App.data.items[id]});
+            }
+        });
+
+        if (items.length === 0) {
+            content.innerHTML = '<div style="padding:10px">使える道具がありません</div>';
+            return;
+        }
+
+        items.forEach(obj => {
+            const div = document.createElement('div');
+            div.className = 'list-item';
+            div.innerHTML = `<div>${obj.def.name}</div><div>x${obj.count}</div>`;
+            div.onclick = (e) => {
+                e.stopPropagation();
+                Battle.selectedItemOrSkill = obj.def;
+                // ここでターゲットタイプを決め打ちする必要はない。openTargetWindowに任せる。
+                Battle.openTargetWindow('ally', obj.def);
+            };
+            content.appendChild(div);
+        });
+    },
+
+    cancelSubMenu: () => {
+        Battle.closeSubMenu();
+        Battle.phase = 'input';
+        Battle.selectingAction = null;
+        Battle.selectedItemOrSkill = null;
+        Battle.log("コマンドを選択してください");
+    },
+    
+    closeSubMenu: () => {
+        const winT = Battle.getEl('battle-target-window');
+        const winL = Battle.getEl('battle-list-window');
+        if(winT) winT.style.display = 'none';
+        if(winL) winL.style.display = 'none';
+    },
+
+    registerAction: (actionObj) => {
+        const spd = actionObj.actor.getStat('spd');
+        actionObj.speed = spd * (0.9 + Math.random() * 0.2);
+        Battle.commandQueue.push(actionObj);
+        Battle.closeSubMenu();
+        Battle.currentActorIndex++;
+        Battle.findNextActor();
+    },
+
+    run: () => {
+        if (Battle.phase !== 'input') return;
+        if (App.data.battle.isBossBattle) {
+            Battle.log("ボスからは逃げられない！");
+            return;
+        }
+        if(Math.random() < 0.5) {
+            Battle.log("逃げ出した！");
+            Battle.endBattle(false);
+        } else {
+            Battle.log("回り込まれてしまった！");
+            Battle.commandQueue = [];
+            Battle.party.forEach(p => {
+                if(p && !p.isDead) Battle.commandQueue.push({ type:'defend', actor:p, speed: p.getStat('spd') });
+            });
+            Battle.executeTurn();
+        }
+    },
+
+    executeTurn: async () => {
+        Battle.phase = 'execution';
+        const nameDiv = Battle.getEl('battle-actor-name');
+        if(nameDiv) nameDiv.style.display = 'none';
+        Battle.log("--- ターン開始 ---");
+
+        Battle.enemies.forEach(e => {
+            if (!e.isDead) {
+                const spd = e.getStat('spd');
+                const acts = e.acts && e.acts.length > 0 ? e.acts : [1];
+                const actId = acts[Math.floor(Math.random() * acts.length)];
+                
+                let actionType = 'enemy_attack'; 
+                let skillData = null;
+                let targetScope = 'single'; 
+
+                if (actId !== 1) {
+                    const skill = DB.SKILLS.find(s => s.id === actId);
+                    if (skill) {
+                        actionType = 'skill';
+                        skillData = skill;
+                        targetScope = skill.target; 
+                    }
+                }
+
+                Battle.commandQueue.push({
+                    type: actionType,
+                    actor: e,
+                    speed: spd * (0.9 + Math.random() * 0.2),
+                    isEnemy: true,
+                    data: skillData,
+                    targetScope: targetScope,
+                    target: null 
+                });
+            }
+        });
+
+        Battle.commandQueue.sort((a, b) => b.speed - a.speed);
+
+        for (const cmd of Battle.commandQueue) {
+            if (!Battle.active) break;
+            if (!cmd.actor || cmd.actor.hp <= 0) continue; 
+
+            if (cmd.isEnemy && !cmd.target && cmd.targetScope !== '全体' && cmd.targetScope !== 'ランダム') {
+                const aliveParty = Battle.party.filter(p => p && !p.isDead);
+                if (aliveParty.length === 0) break;
+                cmd.target = aliveParty[Math.floor(Math.random() * aliveParty.length)];
+            }
+
+            await Battle.processAction(cmd);
+            Battle.updateDeadState();
+            Battle.renderEnemies();
+            Battle.renderPartyStatus();
+            if (Battle.checkFinish()) return;
+            await Battle.wait(500);
+        }
+        Battle.saveBattleState();
+        Battle.startInputPhase();
+    },
+
+    processAction: async (cmd) => {
+        const actor = cmd.actor;
+        const data = cmd.data;
+        const target = cmd.target;
+
+        if (cmd.type === 'defend') {
+            Battle.log(`【${actor.name}】は身を守っている`);
+            actor.status = actor.status || {};
+            actor.status.defend = true;
+            return;
+        }
+        if(actor.status) actor.status.defend = false;
+
+        if (cmd.type === 'item') {
+            const item = data;
+            Battle.log(`【${actor.name}】は${item.name}を使った！`);
+            if (App.data.items[item.id] > 0) {
+                if(item.type !== '貴重品') {
+                    App.data.items[item.id]--;
+                    if(App.data.items[item.id]<=0) delete App.data.items[item.id];
+                }
+                const targets = (cmd.target === 'all_ally') ? Battle.party : [target];
+                for (let t of targets) {
+                    if (!t) continue;
+                    
+                    if (item.type === '蘇生') {
+                        if (t.isDead) {
+                            t.isDead = false; t.hp = Math.floor(t.baseMaxHp * 0.5);
+                            Battle.log(`【${t.name}】は生き返った！`);
+                        } else Battle.log(`【${t.name}】には効果がなかった`);
+                    } else if (item.type === 'HP回復') {
+                        if(!t.isDead) {
+                            const val = typeof item.val === 'number' ? item.val : 0;
+                            const rec = Math.min(t.baseMaxHp - t.hp, val);
+                            t.hp += rec; Battle.log(`【${t.name}】のHPが${rec}回復！`);
+                        }
+                    } else if (item.type === 'MP回復') {
+                         if(!t.isDead) {
+                            const val = typeof item.val === 'number' ? item.val : 0;
+                            const rec = Math.min(t.baseMaxMp - t.mp, val);
+                            t.mp += rec; Battle.log(`【${t.name}】のMPが${rec}回復！`);
+                        }
+                    }
+                }
+            }
+            Battle.renderPartyStatus();
+            return;
+        }
+
+        let skillName = "攻撃";
+        let isPhysical = true;
+        let multiplier = 1.0;
+        let baseDmg = 0;
+        let mpCost = 0;
+        let effectType = null;
+        let element = null;
+        let hitCount = 1;
+
+        if (cmd.type === 'skill') {
+            skillName = data.name;
+            isPhysical = (data.type === '物理');
+            multiplier = data.rate;
+            baseDmg = data.base;
+            mpCost = data.mp;
+            effectType = data.type;
+            element = data.elm;
+            hitCount = (typeof data.count === 'number') ? data.count : 1;
+            
+            if (actor.mp < mpCost) {
+                Battle.log(`【${actor.name}】は${skillName}を唱えたがMPが足りない！`);
+                return;
+            }
+            actor.mp -= mpCost;
+            Battle.renderPartyStatus();
+        }
+
+        Battle.log(`【${actor.name}】の${skillName}！`);
+
+        let targets = [];
+        let scope = cmd.targetScope;
+        
+        if (!scope && cmd.target === 'all_enemy') scope = '全体';
+        if (!scope && cmd.target === 'all_ally') scope = '全体';
+
+        if (scope === '全体') {
+             if (cmd.isEnemy) {
+                 targets = Battle.party.filter(p => p && !p.isDead);
+             } else {
+                 if (['回復','蘇生','強化'].includes(effectType)) targets = Battle.party.filter(p => p); 
+                 else targets = Battle.enemies.filter(e => !e.isDead);
+             }
+        } else if (scope === 'ランダム') {
+             // ★修正: ランダムの場合は、ループ開始用のダミーとして「誰か1人」をtargetsに入れる
+             const pool = cmd.isEnemy ? Battle.party.filter(p => p && !p.isDead) : Battle.enemies.filter(e => !e.isDead);
+             if(pool.length > 0) targets = [pool[0]];
+        } else {
+             targets = [target];
+        }
+
+        for (let t of targets) {
+            if (!t) continue;
+
+            if (effectType && ['回復','蘇生','強化','弱体'].includes(effectType)) {
+                if (effectType === '蘇生') {
+                    if (t.isDead) {
+                        t.isDead = false; t.hp = Math.floor(t.baseMaxHp * 0.5);
+                        Battle.log(`【${t.name}】は生き返った！`);
+                    } else { Battle.log(`【${t.name}】には効果がなかった`); }
+                } else if (effectType === '強化') {
+                    if (!t.isDead && data.buff) {
+                        for(let key in data.buff) t.buffs[key] = data.buff[key];
+                        Battle.log(`【${t.name}】の能力が上がった！`);
+                    }
+                } else if (effectType === '弱体') { 
+                    if (!t.isDead && data.buff) {
+                        for(let key in data.buff) t.buffs[key] = data.buff[key];
+                        Battle.log(`【${t.name}】の能力が下がった！`);
+                    }
+                } else { 
+                    if (!t.isDead) {
+                        let base = (typeof data.base === 'number') ? data.base : 0;
+                        let rate = (typeof data.rate === 'number') ? data.rate : 1.0;
+                        let rec = 0;
+                        if (typeof data.val === 'number' || data.fix) rec = base;
+                        else {
+                            const mag = actor.getStat('mag') || 0;
+                            rec = (mag + base) * rate;
+                        }
+                        rec = Math.floor(rec);
+                        t.hp = Math.min(t.baseMaxHp, t.hp + rec);
+                        Battle.log(`【${t.name}】のHPが${rec}回復！`);
+                    }
+                }
+                Battle.renderPartyStatus(); 
+                continue;
+            }
+
+            for (let i = 0; i < hitCount; i++) {
+                // ★修正: ランダム攻撃の場合、1発ごとにターゲットを再抽選
+                let targetToHit = t;
+                if (scope === 'ランダム') {
+                    const pool = cmd.isEnemy ? Battle.party.filter(p => p && !p.isDead) : Battle.enemies.filter(e => !e.isDead);
+                    if (pool.length === 0) break;
+                    targetToHit = pool[Math.floor(Math.random() * pool.length)];
+                }
+
+                if (targetToHit.isDead) {
+                    // ランダム以外でターゲットが死んでいたら攻撃終了
+                    if (scope !== 'ランダム') break;
+                    // ランダムなら次のターゲットを探せているはずだが、念のため
+                    continue; 
+                }
+
+                let atkVal = isPhysical ? actor.getStat('atk') : actor.getStat('mag');
+                if (element) {
+                    const elmAtk = actor.getStat('elmAtk') || {};
+                    const bonus = elmAtk[element] || 0;
+                    atkVal += bonus;
+                }
+
+                let defVal = isPhysical ? targetToHit.getStat('def') : targetToHit.getStat('mag');
+                let resistance = isPhysical ? Math.floor(defVal / 2) : Math.floor(defVal / 3);
+
+                let dmg = (atkVal - resistance + baseDmg) * multiplier;
+                
+                if (element) {
+                    const elmRes = targetToHit.getStat('elmRes') || {};
+                    const res = elmRes[element] || 0;
+                    const cutRate = Math.min(0.8, res / 100); 
+                    dmg = dmg * (1.0 - cutRate);
+                }
+
+                dmg = dmg * (0.9 + Math.random() * 0.2);
+                
+                const finDmg = actor.getStat('finDmg') || 0;
+                if(finDmg > 0) dmg = dmg * (1 + finDmg/100);
+
+                const finRed = targetToHit.getStat('finRed') || 0;
+                dmg -= finRed;
+
+                if (dmg < 1) dmg = 1;
+                if (targetToHit.status && targetToHit.status.defend) dmg = Math.floor(dmg / 2);
+                dmg = Math.floor(dmg);
+
+                targetToHit.hp -= dmg;
+                
+                let dmgColor = '#fff';
+                if(element === '火') dmgColor = '#f88';
+                if(element === '水') dmgColor = '#88f';
+                if(element === '雷') dmgColor = '#ff0';
+                if(element === '風') dmgColor = '#8f8';
+                if(element === '光') dmgColor = '#ffc';
+                if(element === '闇') dmgColor = '#a8f';
+                
+                Battle.log(`【${targetToHit.name}】に<span style="color:${dmgColor}">${dmg}</span>のダメージ！`);
+                
+                if(cmd.type === 'skill' && data.buff) {
+                    for(let key in data.buff) {
+                        targetToHit.buffs[key] = data.buff[key];
+                        if(data.buff[key] < 1) Battle.log(`【${targetToHit.name}】の能力が下がった！`);
+                        else Battle.log(`【${targetToHit.name}】の能力が上がった！`);
+                    }
+                }
+
+                if(actor.synergy && actor.synergy.effect === 'drain') {
+                    const drain = Math.floor(dmg * 0.1);
+                    if(drain > 0) {
+                        actor.hp = Math.min(actor.baseMaxHp, actor.hp + drain);
+                    }
+                }
+
+                Battle.renderEnemies();
+                Battle.renderPartyStatus();
+
+                if (targetToHit.hp <= 0) {
+                    targetToHit.hp = 0; targetToHit.isDead = true;
+                    Battle.log(`【${targetToHit.name}】は倒れた！`);
+                    Battle.renderEnemies();
+                    Battle.renderPartyStatus();
+                }
+                
+                if (hitCount > 1) await Battle.wait(150);
+            }
+            await Battle.wait(100);
+        }
+    },
+
+    updateDeadState: () => {
+        [...Battle.party, ...Battle.enemies].forEach(e => {
+            if (e && e.hp <= 0) { e.hp = 0; e.isDead = true; }
+        });
+    },
+
+    checkFinish: () => {
+        if (Battle.enemies.every(e => e.isDead)) {
+            setTimeout(Battle.win, 800);
+            return true;
+        }
+        if (Battle.party.every(p => p.isDead)) {
+            setTimeout(Battle.lose, 800);
+            return true;
+        }
+        return false;
+    },
+
+    getRandomAliveEnemy: () => {
+        const alive = Battle.enemies.filter(e => !e.isDead);
+        if (alive.length === 0) return null;
+        return alive[Math.floor(Math.random() * alive.length)];
+    },
+
+    saveBattleState: () => {
+        App.data.battle.enemies = Battle.enemies.map(e => ({
+            baseId: e.id, hp: e.hp, maxHp: e.baseMaxHp, name: e.name
+        }));
+        Battle.party.forEach(p => {
+            if(p && p.uid) {
+                const d = App.data.characters.find(c => c.uid === p.uid);
+                if(d) { d.currentHp = p.hp; d.currentMp = p.mp; }
+            }
+        });
+        App.save();
+    },
+
+    renderEnemies: () => {
+        const container = Battle.getEl('enemy-container');
+        if(!container) return;
+        container.innerHTML = '';
+        Battle.enemies.forEach(e => {
+            const div = document.createElement('div');
+            div.className = `enemy-sprite ${e.hp<=0?'dead':''}`;
+            if(e.hp > 0) {
+                const hpPer = (e.hp / e.baseMaxHp) * 100;
+                div.innerHTML = `<div style="font-size:10px; text-shadow:1px 1px 0 #000;">${e.name}</div><div class="enemy-hp-bar"><div class="enemy-hp-val" style="width:${hpPer}%"></div></div>`;
+                div.onclick = (event) => {
+                    event.stopPropagation();
+                    if(Battle.phase==='target_select' && (Battle.selectingAction==='attack'||Battle.selectingAction==='skill')) {
+                        Battle.selectTarget(e);
+                    }
+                };
+            } else {
+                div.style.opacity = 0.5;
+                div.innerHTML = `<div style="font-size:10px; color:#888;">${e.name}<br>DEAD</div>`;
+            }
+            container.appendChild(div);
+        });
+    },
+    
+    renderPartyStatus: () => {
+        const container = Battle.getEl('battle-party-bar');
+        if(!container) return;
+        container.innerHTML = '';
+        Battle.party.forEach((p, index) => {
+            const div = document.createElement('div');
+            div.className = 'p-box';
+            const hpPer = (p.baseMaxHp > 0) ? (p.hp / p.baseMaxHp) * 100 : 0;
+            const mpPer = (p.baseMaxMp > 0) ? (p.mp / p.baseMaxMp) * 100 : 0;
+            const isActor = (Battle.phase === 'input' && index === Battle.currentActorIndex);
+            if(isActor) div.style.border = "2px solid yellow";
+            let nameStyle = p.isDead ? 'color:red; text-decoration:line-through;' : 'color:white;';
+            div.innerHTML = `<div style="font-size:10px; font-weight:bold; ${nameStyle} overflow:hidden; white-space:nowrap;">${p.name}</div><div class="bar-container"><div class="bar-hp" style="width:${hpPer}%"></div></div><div class="p-val">${p.hp}/${p.baseMaxHp}</div><div class="bar-container"><div class="bar-mp" style="width:${mpPer}%"></div></div><div class="p-val">${p.mp}/${p.baseMaxMp}</div>`;
+            container.appendChild(div);
+        });
+    },
+
+    win: () => {
+        Battle.phase = 'result';
+        Battle.active = false;
+        let totalExp = 0, totalGold = 0, maxEnemyRank = 1; 
+        
+        Battle.enemies.forEach(e => {
+            const base = DB.MONSTERS.find(m => m.id === e.baseId);
+            if(base) {
+                totalExp += base.exp; totalGold += base.gold;
+                if(base.rank > maxEnemyRank) maxEnemyRank = base.rank;
+            }
+        });
+
+        App.data.gold += totalGold;
+        Battle.enemies.forEach(e => {
+            if(!App.data.book) App.data.book = { monsters: [] };
+            if(e.id && !App.data.book.monsters.includes(e.id)) App.data.book.monsters.push(e.id);
+        });
+
+        const drops = [];
+        let hasRareDrop = false;
+
+        Battle.enemies.forEach(e => {
+            const base = DB.MONSTERS.find(m => m.id === e.baseId);
+            const dropRank = base ? base.rank : 1;
+
+            if (base && base.id === 1000) {
+                const newEquip = App.createRandomEquip('drop', dropRank, 3); 
+                App.data.inventory.push(newEquip);
+                hasRareDrop = true;
+                drops.push({ name: newEquip.name, isRare: true });
+            } 
+            else if (Math.random() < 0.3) {
+                if (Math.random() < 0.3) {
+                    const item = DB.ITEMS[Math.floor(Math.random() * DB.ITEMS.length)];
+                    if(item.type !== '貴重品') {
+                        App.data.items[item.id] = (App.data.items[item.id]||0)+1;
+                        drops.push({name: item.name, isRare: false});
+                    }
+                } else {
+                    const newEquip = App.createRandomEquip('drop', dropRank); 
+                    App.data.inventory.push(newEquip);
+                    const isRare = (newEquip.plus === 3);
+                    if(isRare) hasRareDrop = true;
+                    drops.push({ name: newEquip.name, isRare: isRare });
+                }
+            }
+        });
+
+        Battle.log(`\n★勝利！\n獲得: ${totalGold}G`);
+        if(drops.length > 0) {
+            drops.forEach(d => {
+                if(d.isRare) Battle.log(`<span class="log-rare-drop">レア！ ${d.name} を手に入れた！</span>`);
+                else Battle.log(`ドロップ: ${d.name}`);
+            });
+        }
+
+        if(hasRareDrop) {
+            const flash = document.getElementById('drop-flash');
+            if(flash) {
+                flash.style.display = 'block'; flash.classList.remove('flash-active');
+                void flash.offsetWidth; flash.classList.add('flash-active');
+            }
+        }
+
+        const surviveMembers = Battle.party.filter(p => !p.isDead);
+        if (surviveMembers.length > 0) {
+            Battle.log(`経験値: ${totalExp}EXP を獲得`);
+            surviveMembers.forEach(p => {
+                const charData = App.data.characters.find(c => c.uid === p.uid);
+                if (charData && typeof App.gainExp === 'function') {
+                    const logs = App.gainExp(charData, totalExp);
+                    if (logs.length > 0) {
+                        logs.forEach(msg => Battle.log(msg));
+                        p.hp = charData.currentHp; p.mp = charData.currentMp; p.baseMaxHp = App.calcStats(charData).maxHp; 
+                    }
+                }
+            });
+            Battle.renderPartyStatus();
+        }
+
+        Battle.log("\n▼ 画面タップで終了 ▼");
+        if(App.data.battle.isBossBattle && typeof Dungeon !== 'undefined') Dungeon.onBossDefeated();
+    },
+
+    lose: () => {
+        Battle.active = false;
+        Battle.log("全滅した...");
+        Battle.endBattle(true);
+    },
+
+    endBattle: (isGameOver = false) => {
+        App.data.battle = { active: false };
+        Battle.party.forEach(p => {
+            if(p && p.uid) {
+                const d = App.data.characters.find(c => c.uid === p.uid);
+                if(d) { d.currentHp = p.hp; d.currentMp = p.mp; }
+            }
+        });
+        App.save();
+
+        if (isGameOver) {
+            if (typeof Dungeon !== 'undefined' && Field.currentMapData && Field.currentMapData.isDungeon) {
+                setTimeout(() => {
+                    App.data.characters.forEach(c => { if(App.data.party.includes(c.uid)) c.currentHp = 1; });
+                    Dungeon.exit(); 
+                }, 2000);
+            } else { setTimeout(() => App.returnToTitle(), 2000); }
+        } else { setTimeout(() => App.changeScene('field'), 500); }
+    },
+    
+    toggleAuto: () => {
+        Battle.auto = !Battle.auto;
+        Battle.updateAutoButton();
+        if(Battle.phase === 'input') Battle.findNextActor();
+    },
+    updateAutoButton: () => {
+        const btn = Battle.getEl('btn-auto');
+        if(btn) {
+            btn.innerText = `AUTO: ${Battle.auto?'ON':'OFF'}`;
+            btn.style.background = Battle.auto ? '#d00' : '#333';
+        }
+    },
+    wait: (ms) => new Promise(resolve => setTimeout(resolve, ms))
 };
