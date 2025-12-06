@@ -1180,34 +1180,6 @@ const MenuSkills = {
     }
 };
 
-const MenuBook = {
-    init: () => {
-        const list = document.getElementById('book-list');
-        list.innerHTML = '';
-        const defeated = App.data.book.monsters || [];
-        DB.MONSTERS.forEach(m => {
-            const isKnown = defeated.includes(m.id);
-            const div = document.createElement('div');
-            div.className = 'list-item';
-            if(isKnown) {
-                const dropItem = DB.EQUIPS.find(e=>e.id===m.drop) || DB.ITEMS.find(i=>i.id===m.drop);
-                const dropName = dropItem ? dropItem.name : '-';
-                div.innerHTML = `
-                    <div style="font-weight:bold; color:#f88;">${m.name}</div>
-                    <div style="font-size:10px; line-height:1.4;">
-                        HP:${m.hp} EXP:${m.exp} G:${m.gold}<br>
-                        ドロップ: ${dropName}<br>
-                        スキル: ${m.acts.map(id=>DB.SKILLS.find(s=>s.id===id)?.name).join(', ')}
-                    </div>
-                `;
-            } else {
-                div.innerHTML = `<div style="color:#888;">？？？</div>`;
-            }
-            list.appendChild(div);
-        });
-    }
-};
-
 /* ==========================================================================
    7. 魔物図鑑 (レイアウト刷新版)
    ========================================================================== */
