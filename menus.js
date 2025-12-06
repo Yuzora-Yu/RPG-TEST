@@ -1208,52 +1208,76 @@ const MenuBook = {
     }
 };
 
-const MenuBlacksmith = {
-    mode: null,
+/* ==========================================================================
+   7. 魔物図鑑 (レイアウト刷新版)
+   ========================================================================== */
+const MenuBook = {
     init: () => {
-        document.getElementById('smith-screen-main').style.display = 'flex';
-        document.getElementById('smith-screen-select').style.display = 'none';
-        const lv = App.data.blacksmith.level;
-        const exp = App.data.blacksmith.exp;
-        document.getElementById('smith-info').innerText = `鍛冶屋Lv: ${lv} (Exp: ${exp})`;
-    },
-    selectMode: (mode) => {
-        MenuBlacksmith.mode = mode;
-        MenuBlacksmith.changeScreen('select');
-        MenuBlacksmith.renderBaseList();
-    },
-    changeScreen: (id) => {
-        document.getElementById('smith-screen-main').style.display = (id==='main'?'flex':'none');
-        document.getElementById('smith-screen-select').style.display = (id==='select'?'flex':'none');
-    },
-    renderBaseList: () => {
-        const list = document.getElementById('smith-list');
+        const list = document.getElementById('book-list');
         list.innerHTML = '';
-        const footer = document.getElementById('smith-footer');
-        footer.innerText = MenuBlacksmith.mode === 'enhance' ? "強化する装備を選択" : "拡張する装備(+3)を選択";
-        App.data.inventory.forEach(eq => {
-            if(MenuBlacksmith.mode === 'expand' && (!eq.opts || eq.opts.length < 3)) return;
+        const defeated = App.data.book.monsters || [];
+        
+        // 登録順（ID順）またはランク順にソートしたい場合はここでsortしても良い
+        // 今回はデータベースの並び順（強さ順に近い）で表示
+        
+        DB.MONSTERS.forEach(m => {
+            const isKnown = defeated.includes(m.id);
             const div = document.createElement('div');
             div.className = 'list-item';
-            div.innerHTML = `<div>${eq.name}</div>`;
-            div.onclick = () => {
-                if(MenuBlacksmith.mode === 'enhance') {
-                    Menu.msg("強化機能: 今回の実装範囲外です（素材選択UIが必要）");
-                } else {
-                    if(App.data.gems < 500) { footer.innerText = "ジェム不足(500)"; return; }
-                    Menu.confirm("500ジェム消費してスロットを追加しますか？", () => {
-                        App.data.gems -= 500;
-                        const keys = ['atk','def','hp'];
-                        const key = keys[Math.floor(Math.random()*3)];
-                        const newOpt = Blacksmith.expandSlot(eq.id, key);
-                        if(newOpt) {
-                            Menu.msg(`追加: ${newOpt.label} +${newOpt.val} (${newOpt.rarity})`);
-                            App.save();
-                            MenuBlacksmith.init();
-                        }
-                    });
+            div.style.alignItems = 'flex-start'; // 上揃えにする
+
+            if(isKnown) {
+                // ドロップ品名の解決
+                let dropName = 'なし';
+                if(m.drop) {
+                    const dropItem = DB.EQUIPS.find(e=>e.id===m.drop) || DB.ITEMS.find(i=>i.id===m.drop);
+                    if(dropItem) dropName = dropItem.name;
                 }
-            };
+
+                // スキル名の解決
+                const skillNames = m.acts.map(id => {
+                    const s = DB.SKILLS.find(k => k.id === id);
+                    return s ? s.name : '通常攻撃';
+                }).join(', ');
+
+                // 画像枠 + 4行情報のレイアウト
+                div.innerHTML = `
+                    <div style="width:64px; height:64px; background:#222; border:1px solid #444; margin-right:10px; flex-shrink:0; display:flex; align-items:center; justify-content:center; color:#555; font-size:10px;">
+                        NO IMAGE
+                    </div>
+                    
+                    <div style="flex:1; display:flex; flex-direction:column; justify-content:space-between; min-height:64px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:2px; margin-bottom:2px;">
+                            <span style="font-size:15px; font-weight:bold; color:#f88;">${m.name}</span>
+                            <span style="font-size:11px; color:#aaa;">Rank:${m.rank}</span>
+                        </div>
+                        
+                        <div style="font-size:10px; color:#ccc; display:flex; gap:6px;">
+                            <span>HP:${m.hp}</span>
+                            <span>攻:${m.atk}</span>
+                            <span>防:${m.def}</span>
+                            <span>魔:${m.mag}</span>
+                            <span>速:${m.spd}</span>
+                        </div>
+                        
+                        <div style="font-size:10px; color:#aaa; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;">
+                            行動: ${skillNames}
+                        </div>
+                        
+                        <div style="font-size:10px; color:#ffd700;">
+                            EXP:${m.exp} / GOLD:${m.gold} / Drop:${dropName}
+                        </div>
+                    </div>
+                `;
+            } else {
+                // 未発見時の表示
+                div.innerHTML = `
+                    <div style="width:64px; height:64px; background:#111; border:1px solid #333; margin-right:10px; flex-shrink:0;"></div>
+                    <div style="flex:1; display:flex; align-items:center; height:64px;">
+                        <span style="color:#444; font-size:20px; letter-spacing:2px;">？？？</span>
+                    </div>
+                `;
+            }
             list.appendChild(div);
         });
     }
