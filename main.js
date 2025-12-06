@@ -674,4 +674,64 @@ const Field = {
         }
         ctx.restore();
     }
+
+    /* main.js の Appオブジェクト内に追加 */
+
+    // --- セーブデータ書き出し (ダウンロード) ---
+    downloadSave: () => {
+        if (!App.data) {
+            Menu.msg("セーブデータがありません");
+            return;
+        }
+        // データをJSON文字列化
+        const json = JSON.stringify(App.data);
+        const blob = new Blob([json], {type: "application/json"});
+        const url = URL.createObjectURL(blob);
+        
+        // ダウンロード用リンクを生成してクリック
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `QoE_SaveData_${Date.now()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    },
+
+    // --- セーブデータ読み込み (アップロード) ---
+    importSave: () => {
+        // ファイル選択ダイアログを動的に生成
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const loadedData = JSON.parse(event.target.result);
+                    
+                    // 簡易チェック: 必須データが含まれているか
+                    if (loadedData.gold !== undefined && loadedData.party && loadedData.characters) {
+                        if (confirm("現在のデータを上書きして復元しますか？\n(ページがリロードされます)")) {
+                            localStorage.setItem(CONST.SAVE_KEY, JSON.stringify(loadedData));
+                            location.reload(); // 再読み込みして反映
+                        }
+                    } else {
+                        alert("不正なセーブデータ形式です");
+                    }
+                } catch (err) {
+                    alert("ファイルの読み込みに失敗しました");
+                    console.error(err);
+                }
+            };
+            reader.readAsText(file);
+        };
+        
+        input.click(); // ダイアログを開く
+    },
+    
 };
