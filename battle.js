@@ -1,4 +1,4 @@
-/* battle.js (逃走・マダンテ・全属性耐性対応版) */
+/* battle.js (出現判定修正・完全版) */
 
 const Battle = {
     active: false,
@@ -56,7 +56,7 @@ const Battle = {
                 const m = new Monster(base, 1.0);
                 m.hp = e.hp; m.baseMaxHp = e.maxHp; m.name = e.name; m.id = e.baseId; 
                 m.isDead = m.hp <= 0;
-                m.isFled = false; // 逃走フラグ
+                m.isFled = false; 
                 return m;
             }).filter(e => e !== null);
         } else {
@@ -87,6 +87,7 @@ const Battle = {
         const floor = App.data.progress.floor || 1; 
 
         if (isBoss) {
+            // ボス確定 (ID:1000)
             const base = DB.MONSTERS.find(m => m.id === 1000) || DB.MONSTERS[DB.MONSTERS.length-1];
             const bossScale = 1.0 + (Math.floor(floor / 10) * 0.1);
             
@@ -99,26 +100,38 @@ const Battle = {
             Battle.log("モンスターが現れた！");
             const count = 1 + Math.floor(Math.random() * 3);
             
-            // メタル系出現判定 (低確率)
-            if (Math.random() < 0.05) { // 5%でメタル系
-                let metalId = 201; // メタルスライム
-                if (floor >= 20) metalId = 202; // はぐれメタル
-                if (floor >= 50) metalId = 203; // メタルキング
+            // --- メタル系出現判定 (5%) ---
+            if (Math.random() < 0.05) {
+                let metalId = 201; // メタルスライム (minF: 5)
+                if (floor >= 20) metalId = 202; // はぐれメタル (minF: 20)
+                if (floor >= 50) metalId = 203; // メタルキング (minF: 50)
                 
                 const metalBase = DB.MONSTERS.find(m => m.id === metalId);
-                if(metalBase) {
+                // ★修正: 階層条件を満たしている場合のみ出現
+                if(metalBase && floor >= metalBase.minF) {
                     const m = new Monster(metalBase, 1.0);
                     m.name = metalBase.name; m.id = metalBase.id;
                     newEnemies.push(m);
-                    return newEnemies; // メタルが出たらそれだけ（またはお供を入れるならここを調整）
+                    return newEnemies; // メタルが出るときは単体(または固定構成)とする
                 }
             }
 
+            // --- 通常モンスター抽選 ---
             const minRank = Math.max(1, floor - 5);
             const maxRank = floor + 2;
-            let pool = DB.MONSTERS.filter(m => m.rank >= minRank && m.rank <= maxRank && m.id < 1000 && m.id < 200); // 200番台はメタル系なので除外
             
-            if(pool.length === 0) pool = DB.MONSTERS.filter(m => m.rank <= floor && m.id < 1000 && m.id < 200);
+            // ★修正: ID < 200 (通常モンスター) に限定してフィルタリング
+            let pool = DB.MONSTERS.filter(m => 
+                m.rank >= minRank && 
+                m.rank <= maxRank && 
+                m.id < 200 // メタル系(200番台)やボス(1000)を除外
+            );
+            
+            // 候補がなければ条件を緩める
+            if(pool.length === 0) {
+                pool = DB.MONSTERS.filter(m => m.rank <= floor && m.id < 200);
+            }
+            // それでもなければスライム
             if(pool.length === 0) pool = [DB.MONSTERS[0]];
             
             for(let i=0; i<count; i++) {
@@ -256,11 +269,11 @@ const Battle = {
             const range = actionData.target || '単体';
             if (range === '単体') {
                 if (type === '蘇生') actualTargetType = 'ally_dead';
-                else if (['回復','強化'].includes(type)) actualTargetType = 'ally';
+                else if (type.includes('回復') || type === '強化') actualTargetType = 'ally';
                 else if (type === '弱体') actualTargetType = 'enemy';
                 else actualTargetType = 'enemy';
             } else if (range === '全体') {
-                if (['回復','蘇生','強化'].includes(type)) actualTargetType = 'all_ally';
+                if (type.includes('回復') || ['蘇生','強化'].includes(type)) actualTargetType = 'all_ally';
                 else actualTargetType = 'all_enemy';
             } else if (range === 'ランダム') {
                 actualTargetType = 'enemy';
@@ -334,8 +347,7 @@ const Battle = {
             div.innerHTML = `<div>${sk.name} (${sk.target})</div><div style="color:#88f">MP:${sk.mp}</div>`;
             div.onclick = (e) => {
                 e.stopPropagation();
-                // マダンテ(MP0表記)は残MPが0より大きければ使用可能
-                if (sk.id === 500) {
+                if (sk.id === 500) { // マダンテ
                      if (actor.mp <= 0) { Battle.log("MPが足りません"); return; }
                 } else {
                      if (actor.mp < sk.mp) { Battle.log("MPが足りません"); return; }
@@ -448,8 +460,7 @@ const Battle = {
                 let skillData = null;
                 let targetScope = 'single'; 
 
-                // ★修正: 敵の逃走(ID:9)の判定
-                if (actId === 9) {
+                if (actId === 9) { // 逃げる
                     actionType = 'flee';
                 } else if (actId !== 1) {
                     const skill = DB.SKILLS.find(s => s.id === actId);
@@ -478,11 +489,11 @@ const Battle = {
             if (!Battle.active) break;
             if (!cmd.actor || cmd.actor.hp <= 0 || cmd.actor.isFled) continue; 
 
-            // ★追加: 敵の逃走実行
+            // 敵の逃走処理
             if (cmd.type === 'flee') {
                  Battle.log(`【${cmd.actor.name}】は逃げ出した！`);
-                 cmd.actor.isFled = true; // 逃走フラグ
-                 cmd.actor.hp = 0; // HP0扱いにして戦闘不能処理へ回す（ただしisDeadにはしない）
+                 cmd.actor.isFled = true;
+                 cmd.actor.hp = 0; 
                  Battle.renderEnemies();
                  if (Battle.checkFinish()) return;
                  await Battle.wait(500);
@@ -520,7 +531,6 @@ const Battle = {
         if(actor.status) actor.status.defend = false;
 
         if (cmd.type === 'item') {
-            // (アイテム処理は変更なし)
             const item = data;
             Battle.log(`【${actor.name}】は${item.name}を使った！`);
             if (App.data.items[item.id] > 0) {
@@ -531,6 +541,7 @@ const Battle = {
                 const targets = (cmd.target === 'all_ally') ? Battle.party : [target];
                 for (let t of targets) {
                     if (!t) continue;
+                    
                     if (item.type === '蘇生') {
                         if (t.isDead) {
                             t.isDead = false; t.hp = Math.floor(t.baseMaxHp * 0.5);
@@ -573,9 +584,8 @@ const Battle = {
             element = data.elm;
             hitCount = (typeof data.count === 'number') ? data.count : 1;
             
-            // ★追加: マダンテ(ID:500)の特殊消費処理
-            if (data.id === 500) {
-                mpCost = actor.mp; // 残り全MP
+            if (data.id === 500) { // マダンテ
+                mpCost = actor.mp; 
             }
 
             if (actor.mp < mpCost && data.id !== 500) {
@@ -588,10 +598,9 @@ const Battle = {
 
         Battle.log(`【${actor.name}】の${skillName}！`);
 
-        // ★追加: マダンテのダメージ計算 (MPx5)
+        // マダンテ処理 (固定ダメージ)
         if (data && data.id === 500) {
             const dmg = mpCost * 5;
-            // 全体攻撃
             const targets = cmd.isEnemy ? Battle.party.filter(p=>p && !p.isDead) : Battle.enemies.filter(e=>!e.isDead && !e.isFled);
             
             for (let t of targets) {
@@ -602,7 +611,7 @@ const Battle = {
             Battle.renderEnemies();
             Battle.renderPartyStatus();
             await Battle.wait(500);
-            return; // マダンテ終了
+            return;
         }
 
         let targets = [];
@@ -687,11 +696,9 @@ const Battle = {
 
                 let dmg = (atkVal - resistance + baseDmg) * multiplier;
                 
-                // ★修正: 属性耐性 (100%カット可能に)
                 if (element) {
                     const elmRes = targetToHit.getStat('elmRes') || {};
                     const res = elmRes[element] || 0;
-                    // 1ポイント1%カット、上限なし
                     const cutRate = res / 100; 
                     dmg = dmg * (1.0 - cutRate);
                 }
@@ -751,12 +758,11 @@ const Battle = {
 
     updateDeadState: () => {
         [...Battle.party, ...Battle.enemies].forEach(e => {
-            if (e && e.hp <= 0 && !e.isFled) { e.hp = 0; e.isDead = true; }
+            if (e && e.hp <= 0) { e.hp = 0; e.isDead = true; }
         });
     },
 
     checkFinish: () => {
-        // 全員死亡 または 逃走 で敵がいなくなったら勝利
         if (Battle.enemies.every(e => e.isDead || e.isFled)) {
             setTimeout(Battle.win, 800);
             return true;
@@ -775,7 +781,6 @@ const Battle = {
     },
 
     saveBattleState: () => {
-        // 逃げた敵は保存しない（次回戦闘時にいないものとする）
         const activeEnemies = Battle.enemies.filter(e => !e.isFled);
         App.data.battle.enemies = activeEnemies.map(e => ({
             baseId: e.id, hp: e.hp, maxHp: e.baseMaxHp, name: e.name
@@ -794,8 +799,7 @@ const Battle = {
         if(!container) return;
         container.innerHTML = '';
         Battle.enemies.forEach(e => {
-            if(e.isFled) return; // 逃げた敵は表示しない
-            
+            if(e.isFled) return; 
             const div = document.createElement('div');
             div.className = `enemy-sprite ${e.hp<=0?'dead':''}`;
             if(e.hp > 0) {
@@ -837,7 +841,6 @@ const Battle = {
         Battle.active = false;
         let totalExp = 0, totalGold = 0, maxEnemyRank = 1; 
         
-        // ★修正: 逃げた敵(isFled)からは経験値・ゴールドを得られない
         Battle.enemies.forEach(e => {
             if (e.isDead && !e.isFled) {
                 const base = DB.MONSTERS.find(m => m.id === e.baseId);
@@ -860,7 +863,7 @@ const Battle = {
         let hasRareDrop = false;
 
         Battle.enemies.forEach(e => {
-            if (e.isFled) return; // 逃げた敵からはドロップなし
+            if (e.isFled) return; 
             
             const base = DB.MONSTERS.find(m => m.id === e.baseId);
             const dropRank = base ? base.rank : 1;
