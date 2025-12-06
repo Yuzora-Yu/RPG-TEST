@@ -1,7 +1,7 @@
-/* main.js (完全修正・統合版) */
+/* main.js */
 
 // ==========================================================================
-// 設定：職業別習得スキルテーブル (新スキル対応版)
+// 設定：職業別習得スキルテーブル (勇者強化版)
 // ==========================================================================
 const JOB_SKILLS = {
     // --- 基本職 ---
@@ -32,8 +32,8 @@ const JOB_SKILLS = {
     '聖騎士':   { 1:21, 5:51, 10:53, 15:103, 20:22, 25:30, 30:402, 35:410, 40:31, 50:408 },     // ベホイミ, スカラ, Mバリア, ギガスラ, ベホマラー, ザオラル, ゴッド, シャイニング, ザオリク, ギガデイン
     '上忍':     { 3:14, 8:307, 15:47, 20:201, 25:104, 30:105, 35:405, 40:406, 45:306, 50:106 }, // ドルマ, ドルモーア, ブラッド, 五月雨, 暗黒剣, しんくうは, ジゴスパ, マヒャデ, イオナズン, 天下無双
 
-    // --- 超級職 ---
-    '勇者':     { 1:20, 3:10, 8:40, 15:13, 25:21, 30:103, 35:22, 40:408, 45:401, 50:409 },      // ホイミ, メラ, 火炎, ライデイン, ベホイミ, ギガスラ, ベホマラー, ギガデイン, ギガブレ, ギガクロス
+    // --- 超級職 (★勇者強化) ---
+    '勇者':     { 1:20, 3:10, 8:40, 12:41, 15:13, 25:21, 28:203, 30:103, 35:22, 40:408, 45:401, 50:409 }, // ホイミ, メラ, 火炎, ★はやぶさ, ライデイン, ベホイミ, ★さみだれ, ギガスラ, ベホマラー, ギガデイン, ギガブレ, ギガクロス
     '竜騎士':   { 1:40, 5:12, 10:43, 15:304, 20:201, 30:603, 35:605, 40:401, 45:609, 50:405 },  // 火炎, バギ, 雷鳴, バギマ, 五月雨, 激しい炎, しゃくねつ, ギガブレ, 煉獄火炎, ジゴスパ
     '聖女':     { 1:21, 5:22, 10:50, 12:304, 15:51, 20:52, 25:53, 30:23, 33:309, 35:403, 40:31, 50:410 }, // ベホイミ, ベホマラー, バイキ, スカラ, ピオリム, Mバリア, ベホマ, フルケア, ザオリク, シャイニング
     '魔王':     { 1:10, 5:14, 10:13, 15:302, 20:308, 25:307, 30:404, 35:306, 38:105, 40:411, 45:405, 50:412 }, // メラ, ドルマ, ライデイン, ベギラマ, イオラ, ドルモーア, メテオ, イオナズン, しんくうは, ラグナ, ジゴスパ, イオグランデ
@@ -122,7 +122,6 @@ class Player extends Entity {
         this.uid = data.uid;
         this.equips = data.equips || {};
         
-        // 初期スキルは「こうげき」のみ
         this.skills = [DB.SKILLS.find(s => s.id === 1)]; 
 
         const table = JOB_SKILLS[data.job];
@@ -130,7 +129,6 @@ class Player extends Entity {
             for (let lv = 1; lv <= data.level; lv++) {
                 if (table[lv]) {
                     const skill = DB.SKILLS.find(s => s.id === table[lv]);
-                    // 未習得なら追加
                     if (skill && !this.skills.find(s => s.id === skill.id)) {
                         this.skills.push(skill);
                     }
@@ -143,23 +141,18 @@ class Player extends Entity {
             if(master && master.lbSkills) {
                 if(this.limitBreak >= 50 && master.lbSkills[50]) {
                     const sk = DB.SKILLS.find(s => s.id === master.lbSkills[50]);
-                    if(sk && !this.skills.find(s => s.id === sk.id)) this.skills.push(sk);
+                    if(sk) this.skills.push(sk);
                 }
                 if(this.limitBreak >= 99 && master.lbSkills[99]) {
                     const sk = DB.SKILLS.find(s => s.id === master.lbSkills[99]);
-                    if(sk && !this.skills.find(s => s.id === sk.id)) this.skills.push(sk);
+                    if(sk) this.skills.push(sk);
                 }
             }
         }
         
         if(data.isHero) {
-            // 勇者の特別スキル (重複チェック付き)
-            const addHeroSkill = (sid) => {
-                const sk = DB.SKILLS.find(s => s.id === sid);
-                if(sk && !this.skills.find(s => s.id === sk.id)) this.skills.push(sk);
-            };
-            if(this.limitBreak >= 10) addHeroSkill(12); // バギ
-            if(this.limitBreak >= 50) addHeroSkill(13); // ライデイン
+            if(this.limitBreak >= 10 && !this.skills.find(s=>s.id===12)) this.skills.push(DB.SKILLS.find(s=>s.id===12)); 
+            if(this.limitBreak >= 50 && !this.skills.find(s=>s.id===13)) this.skills.push(DB.SKILLS.find(s=>s.id===13));
         }
 
         this.synergy = App.checkSynergy(this.equips);
@@ -179,7 +172,6 @@ class Monster extends Entity {
         this.baseStats.mag = Math.floor((data.mag || 10) * scale);
         this.acts = data.acts || [1];
         this.baseId = data.id;
-        this.actCount = data.actCount || 1; // 行動回数
     }
 }
 
@@ -226,8 +218,8 @@ const App = {
                 }
             } else {
                 if(App.data.location) {
-                    Field.x = Field.x % 50;
-                    Field.y = Field.y % 32;
+                    Field.x = App.data.location.x;
+                    Field.y = App.data.location.y;
                 }
                 App.changeScene('field');
             }
@@ -379,6 +371,7 @@ const App = {
 
     getChar: (uid) => App.data ? App.data.characters.find(c => c.uid === uid) : null,
 
+    // ★修正: 属性判定の順序を修正したcalcStats
     calcStats: (char) => {
         const lb = char.limitBreak || 0;
         const multiplier = 1 + (lb * 0.05); 
@@ -425,6 +418,7 @@ const App = {
                     if(o.unit === 'val') {
                         if(o.key === 'hp') s.maxHp += o.val;
                         else if(o.key === 'mp') s.maxMp += o.val;
+                        // ★ここが修正箇所
                         else if(o.key === 'elmAtk') s.elmAtk[o.elm] += o.val;
                         else if(o.key === 'elmRes') s.elmRes[o.elm] += o.val;
                         else if(s[o.key] !== undefined && typeof s[o.key] === 'number') s[o.key] += o.val;
@@ -541,7 +535,9 @@ const App = {
 
                 let logMsg = `${charData.name}はLv${charData.level}になった！<br>HP+${incHp}, MP+${incMp}`;
                 const newSkill = App.checkNewSkill(charData);
-                if (newSkill) logMsg += `<br><span style="color:#ffff00;">${newSkill.name}を覚えた！</span>`;
+                if (newSkill) {
+                    logMsg += `<br><span style="color:#ffff00;">${newSkill.name}を覚えた！</span>`;
+                }
                 logs.push(logMsg);
             } else { break; }
         }
@@ -554,6 +550,7 @@ const App = {
         return null;
     },
 
+    // --- セーブデータ書き出し (ダウンロード) ---
     downloadSave: () => {
         if (!App.data) {
             if(typeof Menu !== 'undefined') Menu.msg("セーブデータがありません");
@@ -573,6 +570,7 @@ const App = {
         URL.revokeObjectURL(url);
     },
 
+    // --- セーブデータ読み込み (アップロード) ---
     importSave: () => {
         const input = document.createElement('input');
         input.type = 'file';
