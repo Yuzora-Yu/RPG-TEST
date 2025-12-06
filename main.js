@@ -1,4 +1,4 @@
-/* main.js (重複削除・完全修正版) */
+/* main.js (完全統合・属性耐性対応版) */
 
 // ==========================================================================
 // クラス定義
@@ -13,7 +13,7 @@ class Entity {
         this.mp = data.currentMp !== undefined ? data.currentMp : this.baseMaxMp;
         this.baseStats = { atk:data.atk||0, def:data.def||0, spd:data.spd||0, mag:data.mag||0 };
         this.buffs = { atk:1, def:1, spd:1, mag:1 };
-        this.status = {}; 
+        this.status = {};
         this.isDead = this.hp <= 0;
         
         this.job = data.job || '冒険者';
@@ -82,7 +82,6 @@ class Player extends Entity {
         this.uid = data.uid;
         this.equips = data.equips || {};
         
-        // スキル習得
         this.skills = DB.SKILLS.filter(s => s.mp >= 0 && s.id < 100); 
 
         const LEARN_TABLE = {
@@ -104,7 +103,6 @@ class Player extends Entity {
             }
         }
 
-        // 限界突破スキル
         if(data.charId) {
             const master = DB.CHARACTERS.find(c => c.id === data.charId);
             if(master && master.lbSkills) {
@@ -152,7 +150,6 @@ const App = {
     data: null,
     pendingAction: null, 
 
-    // ゲーム初期化 & 入力設定
     initGameHub: () => {
         App.load();
         if(!App.data) { return; }
@@ -162,7 +159,6 @@ const App = {
             Field.y = App.data.location.y;
         }
 
-        // ダンジョン復元
         if (App.data.progress && App.data.progress.floor > 0 && typeof Dungeon !== 'undefined') {
             Dungeon.floor = App.data.progress.floor;
             if (App.data.dungeon && App.data.dungeon.map) {
@@ -175,7 +171,6 @@ const App = {
             }
         }
 
-        // シーン分岐
         if (App.data.battle && App.data.battle.active) {
             App.log("戦闘に復帰します...");
             App.changeScene('battle');
@@ -197,7 +192,6 @@ const App = {
             }
         }
         
-        // --- キー入力 (PC) ---
         window.addEventListener('keydown', e => {
             if(document.getElementById('field-scene') && document.getElementById('field-scene').style.display === 'flex') {
                 if(Menu.isMenuOpen()) return;
@@ -212,9 +206,7 @@ const App = {
             }
         });
 
-        // --- タッチ操作 (長押し移動対応) ---
         let moveTimer = null;
-
         const startMove = (dx, dy) => {
             if(moveTimer) clearInterval(moveTimer);
             if(Menu.isMenuOpen()) return;
@@ -224,21 +216,17 @@ const App = {
                 Field.move(dx, dy);
             }, 150); 
         };
-
         const stopMove = (e) => {
             if(e) e.preventDefault(); 
             if(moveTimer) clearInterval(moveTimer);
             moveTimer = null;
         };
-
         const bindPad = (id, dx, dy) => {
             const el = document.getElementById(id);
             if(!el) return;
-            // PC
             el.onmousedown = (e) => { e.preventDefault(); startMove(dx, dy); };
             el.onmouseup = stopMove;
             el.onmouseleave = stopMove;
-            // Mobile
             el.ontouchstart = (e) => { e.preventDefault(); startMove(dx, dy); };
             el.ontouchend = stopMove;
         };
@@ -350,6 +338,7 @@ const App = {
 
     getChar: (uid) => App.data ? App.data.characters.find(c => c.uid === uid) : null,
 
+    // ★修正済み: 属性耐性・MP・魔力などを反映する最新版
     calcStats: (char) => {
         const lb = char.limitBreak || 0;
         const multiplier = 1 + (lb * 0.05); 
@@ -382,14 +371,18 @@ const App = {
                 if(eq.data.mag) s.mag += eq.data.mag;
                 if(eq.data.finDmg) s.finDmg += eq.data.finDmg;
                 if(eq.data.finRed) s.finRed += eq.data.finRed;
+                
+                // 基礎効果の属性値
                 if(eq.data.elmAtk) for(let e in eq.data.elmAtk) s.elmAtk[e] += eq.data.elmAtk[e];
+                if(eq.data.elmRes) for(let e in eq.data.elmRes) s.elmRes[e] += eq.data.elmRes[e];
 
                 if(eq.opts) eq.opts.forEach(o => {
                     if(o.unit === 'val') {
                         if(o.key === 'hp') s.maxHp += o.val;
                         else if(o.key === 'mp') s.maxMp += o.val;
-                        else if(s[o.key] !== undefined) s[o.key] += o.val;
+                        else if(s[o.key] !== undefined) s[o.key] += o.val; 
                         else if(o.key === 'elmAtk') s.elmAtk[o.elm] += o.val;
+                        else if(o.key === 'elmRes') s.elmRes[o.elm] += o.val;
                     } else {
                         if(s[o.key] !== undefined) s[o.key] += o.val;
                     }
