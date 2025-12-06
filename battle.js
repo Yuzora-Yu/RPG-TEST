@@ -1,4 +1,4 @@
-/* battle.js (出現判定修正・完全版) */
+/* battle.js (画像表示・タップ感・最新ロジック統合版) */
 
 const Battle = {
     active: false,
@@ -87,7 +87,6 @@ const Battle = {
         const floor = App.data.progress.floor || 1; 
 
         if (isBoss) {
-            // ボス確定 (ID:1000)
             const base = DB.MONSTERS.find(m => m.id === 1000) || DB.MONSTERS[DB.MONSTERS.length-1];
             const bossScale = 1.0 + (Math.floor(floor / 10) * 0.1);
             
@@ -100,38 +99,26 @@ const Battle = {
             Battle.log("モンスターが現れた！");
             const count = 1 + Math.floor(Math.random() * 3);
             
-            // --- メタル系出現判定 (5%) ---
+            // メタル系出現判定 (5%)
             if (Math.random() < 0.05) {
                 let metalId = 201; // メタルスライム (minF: 5)
                 if (floor >= 20) metalId = 202; // はぐれメタル (minF: 20)
                 if (floor >= 50) metalId = 203; // メタルキング (minF: 50)
                 
                 const metalBase = DB.MONSTERS.find(m => m.id === metalId);
-                // ★修正: 階層条件を満たしている場合のみ出現
                 if(metalBase && floor >= metalBase.minF) {
                     const m = new Monster(metalBase, 1.0);
                     m.name = metalBase.name; m.id = metalBase.id;
                     newEnemies.push(m);
-                    return newEnemies; // メタルが出るときは単体(または固定構成)とする
+                    return newEnemies;
                 }
             }
 
-            // --- 通常モンスター抽選 ---
             const minRank = Math.max(1, floor - 5);
             const maxRank = floor + 2;
+            let pool = DB.MONSTERS.filter(m => m.rank >= minRank && m.rank <= maxRank && m.id < 200); 
             
-            // ★修正: ID < 200 (通常モンスター) に限定してフィルタリング
-            let pool = DB.MONSTERS.filter(m => 
-                m.rank >= minRank && 
-                m.rank <= maxRank && 
-                m.id < 200 // メタル系(200番台)やボス(1000)を除外
-            );
-            
-            // 候補がなければ条件を緩める
-            if(pool.length === 0) {
-                pool = DB.MONSTERS.filter(m => m.rank <= floor && m.id < 200);
-            }
-            // それでもなければスライム
+            if(pool.length === 0) pool = DB.MONSTERS.filter(m => m.rank <= floor && m.id < 200);
             if(pool.length === 0) pool = [DB.MONSTERS[0]];
             
             for(let i=0; i<count; i++) {
@@ -347,7 +334,7 @@ const Battle = {
             div.innerHTML = `<div>${sk.name} (${sk.target})</div><div style="color:#88f">MP:${sk.mp}</div>`;
             div.onclick = (e) => {
                 e.stopPropagation();
-                if (sk.id === 500) { // マダンテ
+                if (sk.id === 500) {
                      if (actor.mp <= 0) { Battle.log("MPが足りません"); return; }
                 } else {
                      if (actor.mp < sk.mp) { Battle.log("MPが足りません"); return; }
@@ -460,7 +447,7 @@ const Battle = {
                 let skillData = null;
                 let targetScope = 'single'; 
 
-                if (actId === 9) { // 逃げる
+                if (actId === 9) {
                     actionType = 'flee';
                 } else if (actId !== 1) {
                     const skill = DB.SKILLS.find(s => s.id === actId);
@@ -489,7 +476,6 @@ const Battle = {
             if (!Battle.active) break;
             if (!cmd.actor || cmd.actor.hp <= 0 || cmd.actor.isFled) continue; 
 
-            // 敵の逃走処理
             if (cmd.type === 'flee') {
                  Battle.log(`【${cmd.actor.name}】は逃げ出した！`);
                  cmd.actor.isFled = true;
@@ -598,11 +584,10 @@ const Battle = {
 
         Battle.log(`【${actor.name}】の${skillName}！`);
 
-        // マダンテ処理 (固定ダメージ)
+        // マダンテ処理
         if (data && data.id === 500) {
             const dmg = mpCost * 5;
             const targets = cmd.isEnemy ? Battle.party.filter(p=>p && !p.isDead) : Battle.enemies.filter(e=>!e.isDead && !e.isFled);
-            
             for (let t of targets) {
                 t.hp -= dmg;
                 Battle.log(`【${t.name}】に<span style="color:#fa0">${dmg}</span>のダメージ！`);
@@ -756,9 +741,61 @@ const Battle = {
         }
     },
 
+    // ★修正: 画像表示対応
+    renderPartyStatus: () => {
+        const container = Battle.getEl('battle-party-bar');
+        if(!container) return;
+        container.innerHTML = '';
+        Battle.party.forEach((p, index) => {
+            const div = document.createElement('div');
+            div.className = 'p-box';
+            // 画像表示用にスタイル調整
+            div.style.justifyContent = 'flex-start'; 
+            div.style.paddingTop = '2px';
+
+            const hpPer = (p.baseMaxHp > 0) ? (p.hp / p.baseMaxHp) * 100 : 0;
+            const mpPer = (p.baseMaxMp > 0) ? (p.mp / p.baseMaxMp) * 100 : 0;
+
+            const isActor = (Battle.phase === 'input' && index === Battle.currentActorIndex);
+            if(isActor) {
+                div.style.border = "2px solid yellow"; // アクティブキャラ強調
+                div.style.background = "#333";
+            }
+            
+            let nameStyle = p.isDead ? 'color:red; text-decoration:line-through;' : 'color:white;';
+            
+            // 画像表示
+            const imgHtml = p.img 
+                ? `<img src="${p.img}" style="width:32px; height:32px; object-fit:cover; border-radius:4px; border:1px solid #666; margin-bottom:2px;">`
+                : `<div style="width:32px; height:32px; background:#222; border-radius:4px; border:1px solid #444; display:flex; align-items:center; justify-content:center; color:#555; font-size:8px; margin-bottom:2px;">IMG</div>`;
+
+            div.innerHTML = `
+                <div style="flex:1; display:flex; flex-direction:column; align-items:center; width:100%; overflow:hidden;">
+                    ${imgHtml}
+                    <div style="font-size:10px; font-weight:bold; ${nameStyle} overflow:hidden; white-space:nowrap; width:100%; text-align:center;">
+                        ${p.name}
+                    </div>
+                </div>
+                <div style="width:100%;">
+                    <div class="bar-container"><div class="bar-hp" style="width:${hpPer}%"></div></div>
+                    <div class="p-val">${p.hp}/${p.baseMaxHp}</div>
+                    <div class="bar-container"><div class="bar-mp" style="width:${mpPer}%"></div></div>
+                    <div class="p-val">${p.mp}/${p.baseMaxMp}</div>
+                </div>
+            `;
+            
+            div.onclick = () => {
+                if(Battle.phase !== 'input') return;
+                Battle.log(`【${p.name}】 HP:${p.hp}/${p.baseMaxHp} MP:${p.mp}/${p.baseMaxMp}`);
+            };
+
+            container.appendChild(div);
+        });
+    },
+
     updateDeadState: () => {
         [...Battle.party, ...Battle.enemies].forEach(e => {
-            if (e && e.hp <= 0) { e.hp = 0; e.isDead = true; }
+            if (e && e.hp <= 0 && !e.isFled) { e.hp = 0; e.isDead = true; }
         });
     },
 
@@ -815,23 +852,6 @@ const Battle = {
                 div.style.opacity = 0.5;
                 div.innerHTML = `<div style="font-size:10px; color:#888;">${e.name}<br>DEAD</div>`;
             }
-            container.appendChild(div);
-        });
-    },
-    
-    renderPartyStatus: () => {
-        const container = Battle.getEl('battle-party-bar');
-        if(!container) return;
-        container.innerHTML = '';
-        Battle.party.forEach((p, index) => {
-            const div = document.createElement('div');
-            div.className = 'p-box';
-            const hpPer = (p.baseMaxHp > 0) ? (p.hp / p.baseMaxHp) * 100 : 0;
-            const mpPer = (p.baseMaxMp > 0) ? (p.mp / p.baseMaxMp) * 100 : 0;
-            const isActor = (Battle.phase === 'input' && index === Battle.currentActorIndex);
-            if(isActor) div.style.border = "2px solid yellow";
-            let nameStyle = p.isDead ? 'color:red; text-decoration:line-through;' : 'color:white;';
-            div.innerHTML = `<div style="font-size:10px; font-weight:bold; ${nameStyle} overflow:hidden; white-space:nowrap;">${p.name}</div><div class="bar-container"><div class="bar-hp" style="width:${hpPer}%"></div></div><div class="p-val">${p.hp}/${p.baseMaxHp}</div><div class="bar-container"><div class="bar-mp" style="width:${mpPer}%"></div></div><div class="p-val">${p.mp}/${p.baseMaxMp}</div>`;
             container.appendChild(div);
         });
     },
