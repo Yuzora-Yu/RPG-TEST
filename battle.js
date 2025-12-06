@@ -1,4 +1,4 @@
-/* battle.js (全体蘇生修正・強化スキル対応版) */
+/* battle.js (ボス確定+3ドロップ対応) */
 
 const Battle = {
     active: false,
@@ -493,7 +493,7 @@ const Battle = {
                 }
                 const targets = (cmd.target === 'all_ally') ? Battle.party : [target];
                 for (let t of targets) {
-                    if (!t) continue; // ★修正: 死体スキップをやめて、各効果内で判定
+                    if (!t) continue; 
                     
                     if (item.type === '蘇生') {
                         if (t.isDead) {
@@ -568,7 +568,6 @@ const Battle = {
         }
 
         for (let t of targets) {
-            // ★修正: ここでの汎用的な死体スキップをやめました（蘇生のために）
             if (!t) continue;
 
             if (effectType && ['回復','蘇生','強化'].includes(effectType)) {
@@ -578,12 +577,11 @@ const Battle = {
                         Battle.log(`【${t.name}】は生き返った！`);
                     } else { Battle.log(`【${t.name}】には効果がなかった`); }
                 } else if (effectType === '強化') {
-                    // ★追加: 強化（バフ）スキルの処理
                     if (!t.isDead && data.buff) {
                         for(let key in data.buff) t.buffs[key] = data.buff[key];
                         Battle.log(`【${t.name}】の能力が上がった！`);
                     }
-                } else { // 回復
+                } else { 
                     if (!t.isDead) {
                         let base = (typeof data.base === 'number') ? data.base : 0;
                         let rate = (typeof data.rate === 'number') ? data.rate : 1.0;
@@ -602,9 +600,8 @@ const Battle = {
                 continue;
             }
 
-            // --- 攻撃処理ループ ---
             for (let i = 0; i < hitCount; i++) {
-                if (t.isDead) break; // ★死体蹴り防止はここで個別に実施
+                if (t.isDead) break; 
 
                 let atkVal = isPhysical ? actor.getStat('atk') : actor.getStat('mag');
                 if (element) {
@@ -774,7 +771,15 @@ const Battle = {
             const base = DB.MONSTERS.find(m => m.id === e.baseId);
             const dropRank = base ? base.rank : 1;
 
-            if (Math.random() < 0.3) {
+            // ★修正: ボス(ID:1000)なら確定で+3装備
+            if (base && base.id === 1000) {
+                const newEquip = App.createRandomEquip('drop', dropRank, 3); // 第3引数で+3指定
+                App.data.inventory.push(newEquip);
+                hasRareDrop = true;
+                drops.push({ name: newEquip.name, isRare: true });
+            } 
+            // 通常のドロップ判定
+            else if (Math.random() < 0.3) {
                 if (Math.random() < 0.3) {
                     const item = DB.ITEMS[Math.floor(Math.random() * DB.ITEMS.length)];
                     if(item.type !== '貴重品') {
@@ -782,7 +787,7 @@ const Battle = {
                         drops.push({name: item.name, isRare: false});
                     }
                 } else {
-                    const newEquip = App.createRandomEquip('drop', dropRank);
+                    const newEquip = App.createRandomEquip('drop', dropRank); // +値はランダム
                     App.data.inventory.push(newEquip);
                     const isRare = (newEquip.plus === 3);
                     if(isRare) hasRareDrop = true;
