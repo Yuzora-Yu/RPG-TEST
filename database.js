@@ -1,7 +1,7 @@
-/* database.js (バランス調整版) */
+/* database.js (スキル大幅拡張版) */
 
 const CONST = {
-    SAVE_KEY: 'QoE_SaveData_v34_Balance', // キー更新
+    SAVE_KEY: 'QoE_SaveData_v35_SkillExp', // キー更新
     PARTS: ['武器', '盾', '頭', '体', '足'],
     ELEMENTS: ['火', '水', '風', '雷', '光', '闇', '混沌'],
     RARITY: ['N', 'R', 'SR', 'SSR', 'UR', 'EX'],
@@ -61,29 +61,67 @@ const MAP_DATA = [
 ];
 
 const DB = {
-    // ★スキル調整: 倍率(rate)と固定値(base)を下げ、ステータス依存度を高める
     SKILLS: [
+        // --- 基本 ---
         {id:1, name:'こうげき', type:'物理', target:'単体', mp:0, rate:1.0, count:1, base:0, elm:null, desc:'通常攻撃'},
+        {id:2, name:'ぼうぎょ', type:'特殊', target:'自分', mp:0, rate:0, count:0, base:0, elm:null, desc:'ダメージ軽減'},
+
+        // --- 初級魔法 ---
         {id:10, name:'メラ', type:'魔法', target:'単体', mp:2, rate:1.2, count:1, base:10, elm:'火', desc:'小火球'},
         {id:11, name:'ヒャド', type:'魔法', target:'単体', mp:3, rate:1.2, count:1, base:12, elm:'水', desc:'氷の刃'},
         {id:12, name:'バギ', type:'魔法', target:'全体', mp:5, rate:0.8, count:1, base:15, elm:'風', desc:'真空の刃'},
-        {id:13, name:'ライデイン', type:'魔法', target:'単体', mp:8, rate:1.8, count:1, base:30, elm:'雷', desc:'落雷'},
+        {id:13, name:'ライデイン', type:'魔法', target:'単体', mp:6, rate:1.5, count:1, base:20, elm:'雷', desc:'落雷'},
+        {id:14, name:'ドルマ', type:'魔法', target:'単体', mp:4, rate:1.4, count:1, base:15, elm:'闇', desc:'闇の弾'},
+
+        // --- 回復・補助 ---
         {id:20, name:'ホイミ', type:'回復', target:'単体', mp:3, rate:1.5, count:1, base:30, elm:null, desc:'小回復'},
         {id:21, name:'ベホイミ', type:'回復', target:'単体', mp:6, rate:2.5, count:1, base:80, elm:null, desc:'中回復'},
         {id:22, name:'ベホマラー', type:'回復', target:'全体', mp:12, rate:1.5, count:1, base:60, elm:null, desc:'全体回復'},
+        {id:23, name:'ベホマ', type:'回復', target:'単体', mp:10, rate:0, count:1, base:999, fix:true, desc:'全回復'},
         {id:30, name:'ザオラル', type:'蘇生', target:'単体', mp:8, rate:0.5, count:1, base:0, elm:null, desc:'50%蘇生'},
+        {id:31, name:'ザオリク', type:'蘇生', target:'単体', mp:20, rate:1.0, count:1, base:0, elm:null, desc:'100%蘇生'},
+
+        // --- 物理スキル（初級・属性剣） ---
         {id:40, name:'火炎斬り', type:'物理', target:'単体', mp:4, rate:1.3, count:1, base:5, elm:'火', desc:'炎の剣技'},
         {id:41, name:'はやぶさ斬り', type:'物理', target:'単体', mp:6, rate:0.7, count:2, base:0, elm:null, desc:'2回攻撃'},
-        {id:42, name:'ギガスラッシュ', type:'物理', target:'全体', mp:15, rate:2.0, count:1, base:50, elm:'光', desc:'光の剣技'},
-        {id:50, name:'バイキルト', type:'強化', target:'単体', mp:6, rate:0, count:1, base:0, buff:{atk:1.5}, desc:'攻撃増'},
-        {id:101, name:'強撃', type:'物理', target:'単体', mp:5, rate:1.5, count:1, base:10, desc:'力強い一撃'},
-        {id:102, name:'癒しの風', type:'回復', target:'全体', mp:15, rate:1.0, count:1, base:40, desc:'全体小回復'},
+        {id:42, name:'氷結斬り', type:'物理', target:'単体', mp:4, rate:1.3, count:1, base:5, elm:'水', desc:'氷の剣技'},
+        {id:43, name:'雷鳴突き', type:'物理', target:'単体', mp:4, rate:1.3, count:1, base:5, elm:'雷', desc:'雷の槍技'},
+        {id:44, name:'兜割り', type:'物理', target:'単体', mp:4, rate:1.2, count:1, base:5, buff:{def:0.8}, desc:'敵の守備を下げる'},
+
+        // --- 強化・弱体 ---
+        {id:50, name:'バイキルト', type:'強化', target:'単体', mp:8, rate:0, count:1, base:0, buff:{atk:1.5}, desc:'攻撃力アップ'},
+        {id:51, name:'スカラ', type:'強化', target:'単体', mp:4, rate:0, count:1, base:0, buff:{def:1.5}, desc:'守備力アップ'},
+        {id:52, name:'ピオリム', type:'強化', target:'全体', mp:6, rate:0, count:1, base:0, buff:{spd:1.3}, desc:'素早さアップ'},
+        {id:60, name:'ルカニ', type:'弱体', target:'単体', mp:4, rate:0, count:1, base:0, buff:{def:0.7}, desc:'敵の守備ダウン'},
+        {id:61, name:'ボミオス', type:'弱体', target:'全体', mp:6, rate:0, count:1, base:0, buff:{spd:0.7}, desc:'敵の素早さダウン'},
+
+        // --- 中級・上級物理 ---
+        {id:101, name:'強撃', type:'物理', target:'単体', mp:5, rate:1.8, count:1, base:10, desc:'力強い一撃'},
+        {id:102, name:'渾身斬り', type:'物理', target:'単体', mp:10, rate:2.5, count:1, base:30, desc:'渾身の一撃'},
+        {id:103, name:'ギガスラッシュ', type:'物理', target:'全体', mp:15, rate:2.0, count:1, base:50, elm:'光', desc:'光の剣技'},
+        {id:104, name:'暗黒剣', type:'物理', target:'単体', mp:12, rate:2.2, count:1, base:40, elm:'闇', desc:'闇の剣技'},
         {id:201, name:'五月雨突き', type:'物理', target:'ランダム', mp:10, rate:0.6, count:4, base:0, desc:'4回攻撃'},
-        {id:202, name:'ベギラマ', type:'魔法', target:'全体', mp:12, rate:1.2, count:1, base:20, elm:'雷', desc:'雷の帯'},
-        {id:301, name:'ギガブレイク', type:'物理', target:'全体', mp:30, rate:2.5, count:1, base:80, elm:'雷', desc:'最強の剣技'},
-        {id:401, name:'ゴッドハンド', type:'物理', target:'単体', mp:30, rate:3.0, count:1, base:100, elm:'光', desc:'神の拳'},
-        {id:402, name:'メテオ', type:'魔法', target:'全体', mp:50, rate:2.5, count:1, base:100, elm:'火', desc:'隕石落とし'},
+        {id:202, name:'爆裂拳', type:'物理', target:'ランダム', mp:12, rate:0.7, count:4, base:0, desc:'4回攻撃'},
+
+        // --- 中級・上級魔法 ---
+        {id:301, name:'メラミ', type:'魔法', target:'単体', mp:6, rate:1.8, count:1, base:40, elm:'火', desc:'中火球'},
+        {id:302, name:'ベギラマ', type:'魔法', target:'全体', mp:10, rate:1.5, count:1, base:30, elm:'雷', desc:'雷の帯'},
+        {id:303, name:'ヒャダルコ', type:'魔法', target:'全体', mp:10, rate:1.5, count:1, base:30, elm:'水', desc:'氷の波動'},
+        {id:304, name:'バギマ', type:'魔法', target:'全体', mp:10, rate:1.5, count:1, base:30, elm:'風', desc:'真空の嵐'},
+        {id:305, name:'メラゾーマ', type:'魔法', target:'単体', mp:15, rate:2.8, count:1, base:100, elm:'火', desc:'大火球'},
+        {id:306, name:'イオナズン', type:'魔法', target:'全体', mp:25, rate:2.2, count:1, base:80, elm:'光', desc:'大爆発'},
+        {id:307, name:'ドルモーア', type:'魔法', target:'単体', mp:15, rate:2.8, count:1, base:100, elm:'闇', desc:'闇の爆発'},
+
+        // --- 最上級・EX ---
+        {id:401, name:'ギガブレイク', type:'物理', target:'全体', mp:30, rate:2.8, count:1, base:100, elm:'雷', desc:'最強の剣技'},
+        {id:402, name:'ゴッドハンド', type:'物理', target:'単体', mp:35, rate:3.5, count:1, base:150, elm:'光', desc:'神の拳'},
         {id:403, name:'フルケア', type:'回復', target:'単体', mp:40, rate:0, count:1, base:9999, fix:true, desc:'完全回復'},
+        {id:404, name:'メテオ', type:'魔法', target:'全体', mp:50, rate:3.0, count:1, base:150, elm:'火', desc:'隕石落とし'},
+        {id:405, name:'ジゴスパーク', type:'魔法', target:'全体', mp:45, rate:2.8, count:1, base:120, elm:'雷', desc:'地獄の雷'},
+        {id:406, name:'マヒャデドス', type:'魔法', target:'全体', mp:45, rate:2.8, count:1, base:120, elm:'水', desc:'極大氷魔法'},
+        {id:407, name:'メラガイアー', type:'魔法', target:'単体', mp:30, rate:4.0, count:1, base:200, elm:'火', desc:'極大火炎'},
+
+        // --- ボス・神級 ---
         {id:901, name:'ジェネシス', type:'魔法', target:'全体', mp:100, rate:5.0, count:1, base:500, elm:'混沌', desc:'【EX】天地創造の光'},
         {id:902, name:'ラグナロク', type:'物理', target:'全体', mp:80, rate:3.0, count:5, base:50, elm:'闇', desc:'【EX】終焉の5連撃'},
         {id:903, name:'リザレクション', type:'蘇生', target:'全体', mp:200, rate:1.0, count:1, base:100, desc:'【EX】味方全員を完全蘇生'},
@@ -142,24 +180,13 @@ const DB = {
         { key: 'hp', count: 3, name: '吸血', effect: 'drain', desc: '与ダメの10%回復', color:'#f88' },
         { key: 'mag', count: 3, name: '魔力暴走', effect: 'magCrit', desc: '魔法がたまに会心', color:'#88f' }
     ],
-
     MEDAL_REWARDS: [
         { medals: 5, name: '上やくそう x3', type: 'item', id: 2, count: 3 },
         { medals: 10, name: '魔法の小瓶 x5', type: 'item', id: 3, count: 5 },
-        
-        // ★追加: 蘇生アイテム
         { medals: 15, name: '世界樹の葉 x1', type: 'item', id: 5, count: 1 },
-        
-        // 既存: 体装備
         { medals: 50, name: '神秘の鎧', type: 'equip', equipId: 901, base: {name:'神秘の鎧', type:'体', rank:50, val:20000, data:{def:50, finRed:20}} },
-        
-        // ★追加: 盾 (全属性耐性持ち)
         { medals: 60, name: 'メタルキングの盾', type: 'equip', equipId: 902, base: {name:'メタキン盾', type:'盾', rank:80, val:25000, data:{def:60, elmRes:{'火':10,'水':10,'風':10,'雷':10}}} },
-        
-        // ★追加: 頭 (状態異常耐性イメージで光闇耐性)
         { medals: 70, name: 'メタルキングヘルム', type: 'equip', equipId: 903, base: {name:'メタキン兜', type:'頭', rank:80, val:28000, data:{def:45, mp:50, elmRes:{'光':20,'闇':20}}} },
-        
-        // ★追加: 武器 (高火力)
         { medals: 80, name: 'メタルキングの剣', type: 'equip', equipId: 904, base: {name:'メタキン剣', type:'武器', rank:90, val:40000, data:{atk:160, spd:15}} }
     ]
 };
@@ -173,12 +200,12 @@ const DB = {
         { rank:20, name:'鋼の', mult:2.5 },
         { rank:30, name:'白銀の', mult:4.0 },
         { rank:40, name:'黄金の', mult:6.0 },
-        { rank:50, name:'プラチナ', mult:10.0 }, // 少し強化
-        { rank:60, name:'ミスリル', mult:15.0 }, // 少し強化
-        { rank:70, name:'オリハルコン', mult:22.0 }, // 強化
-        { rank:80, name:'アダマン', mult:30.0 }, // 強化
-        { rank:90, name:'英雄の', mult:45.0 }, // 強化
-        { rank:100, name:'神々の', mult:60.0 }  // 強化
+        { rank:50, name:'プラチナ', mult:10.0 },
+        { rank:60, name:'ミスリル', mult:15.0 },
+        { rank:70, name:'オリハルコン', mult:22.0 },
+        { rank:80, name:'アダマン', mult:30.0 },
+        { rank:90, name:'英雄の', mult:45.0 },
+        { rank:100, name:'神々の', mult:60.0 } 
     ];
 
     const EQUIP_TYPES = [
@@ -213,7 +240,7 @@ const DB = {
     });
 
     const MONSTER_TYPES = [
-        { name:'スライム', hp:30, atk:12, def:5, exp:10 }, // 基礎Atk微増
+        { name:'スライム', hp:30, atk:12, def:5, exp:10 }, 
         { name:'バット', hp:20, atk:15, def:3, exp:12 },
         { name:'ウルフ', hp:50, atk:22, def:10, exp:20 },
         { name:'ゴースト', hp:40, atk:18, def:30, exp:25 },
@@ -223,18 +250,18 @@ const DB = {
         { name:'ドラゴン', hp:500, atk:120, def:80, exp:500 }
     ];
 
+    // ★敵スキルテーブル (DB.SKILLSのIDと対応)
     const ENEMY_SKILLS = {
-        low: [1, 1, 1, 10, 40],
-        mid: [1, 1, 10, 11, 40, 41, 202],
-        high: [1, 41, 12, 13, 101, 201, 202],
-        top: [1, 41, 42, 101, 201, 301, 402, 999]
+        low: [1, 1, 10, 40, 44], // メラ, 火炎斬り, 兜割り
+        mid: [1, 1, 11, 12, 41, 42, 60], // ヒャド, バギ, はやぶさ, 氷結, ルカニ
+        high: [1, 13, 301, 302, 101, 104, 61], // ライデイン, メラミ, ベギラマ, 強撃, 暗黒剣, ボミオス
+        top: [1, 102, 103, 305, 306, 307, 401] // 渾身, ギガスラ, メラゾーマ, イオナズン, ドルモーア, ギガブレ
     };
 
     for(let r=1; r<=100; r++) {
         const typeIdx = Math.min(MONSTER_TYPES.length-1, Math.floor((r-1)/12)); 
         const base = MONSTER_TYPES[typeIdx];
         
-        // ★強化: 成長係数をアップ (0.35 -> 0.45)
         const scale_factor = 0.45; 
         const hp_exp = 2.5; 
 
@@ -276,18 +303,19 @@ const DB = {
         });
     }
 
-    // ボス: レグナード (HP強化)
+    // ボス: レグナード
     DB.MONSTERS.push({
         id:1000, rank:100, minF:999, name:'レグナード', 
-        hp:50000, mp:9999, atk:1500, def:800, spd:200, mag:500, 
+        hp:35000, mp:9999, atk:600, def:500, spd:200, mag:400, 
         exp:100000, gold:50000, 
-        acts:[1, 13, 42, 202, 301, 401, 402, 901, 902, 999] 
+        // 技: 通常, ライデイン, ギガスラ, ベギラマ, ギガブレ, ゴッドハンド, メテオ, ジェネシス, ラグナロク, 激しい炎
+        acts:[1, 13, 103, 302, 401, 402, 404, 901, 902, 999] 
     });
 })();
 
 const INITIAL_DATA_TEMPLATE = {
     gold: 5000, gems: 100000,
-    items: { 1: 10, 2: 5, 99: 10 }, 
+    items: { 1: 10, 2: 5, 99: 100 }, 
     inventory: [], 
     location: { x: 23, y: 60 },
     progress: { floor: 0 },
@@ -297,9 +325,9 @@ const INITIAL_DATA_TEMPLATE = {
     battle: { active: false },
     party: ['p1', 'p2', 'p3', 'p4'],
     characters: [
-        {uid:'p1', isHero:true, charId:301, name:'アルス', job:'勇者', rarity:'SSR', level:10, hp:200, mp:50, atk:40, def:30, spd:30, mag:20, limitBreak:0, equips:{}, alloc:{}},
-        {uid:'p2', charId:101, name:'ジョン', job:'戦士', rarity:'R', level:8, hp:180, mp:20, atk:50, def:40, spd:20, mag:5, limitBreak:0, equips:{}},
-        {uid:'p3', charId:201, name:'アラン', job:'魔法剣士', rarity:'SR', level:8, hp:160, mp:60, atk:40, def:30, spd:35, mag:40, limitBreak:0, equips:{}},
-        {uid:'p4', charId:102, name:'マリー', job:'僧侶', rarity:'R', level:8, hp:140, mp:80, atk:20, def:20, spd:25, mag:50, limitBreak:0, equips:{}}
+        {uid:'p1', isHero:true, charId:301, name:'アルス', job:'勇者', rarity:'SSR', level:1, hp:200, mp:50, atk:40, def:30, spd:30, mag:20, limitBreak:0, equips:{}, alloc:{}},
+        {uid:'p2', charId:101, name:'ジョン', job:'戦士', rarity:'R', level:1, hp:180, mp:20, atk:50, def:40, spd:20, mag:5, limitBreak:0, equips:{}},
+        {uid:'p3', charId:201, name:'アラン', job:'魔法剣士', rarity:'SR', level:1, hp:160, mp:60, atk:40, def:30, spd:35, mag:40, limitBreak:0, equips:{}},
+        {uid:'p4', charId:102, name:'マリー', job:'僧侶', rarity:'R', level:1, hp:140, mp:80, atk:20, def:20, spd:25, mag:50, limitBreak:0, equips:{}}
     ]
 };
