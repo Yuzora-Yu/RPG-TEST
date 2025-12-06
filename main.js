@@ -525,13 +525,18 @@ const App = {
     }
 };
 
+/* main.js の Field オブジェクトを修正 */
+
 const Field = {
-    x: 23, y: 60, ready: false, currentMapData: null,
+    x: 23, y: 28, ready: false, currentMapData: null, // 初期値も修正(y:60->28)
     
     init: () => {
         if(App.data && !Field.currentMapData) {
-            Field.x = App.data.location.x % 50;
-            Field.y = App.data.location.y % 32;
+            // マップサイズに合わせて正規化
+            const mapW = MAP_DATA[0].length;
+            const mapH = MAP_DATA.length;
+            Field.x = App.data.location.x % mapW;
+            Field.y = App.data.location.y % mapH;
         }
         Field.ready = true;
         Field.render();
@@ -547,6 +552,7 @@ const Field = {
         App.clearAction();
 
         if (Field.currentMapData) {
+            // ダンジョン内
             if(nx < 0 || nx >= Field.currentMapData.width || ny < 0 || ny >= Field.currentMapData.height) return;
             tile = Field.currentMapData.tiles[ny][nx];
             if (tile === 'W') return; 
@@ -556,19 +562,29 @@ const Field = {
             Field.render();
             Dungeon.handleMove(nx, ny);
         } else {
-            const mapW = 50; const mapH = 32;
-            nx = (nx + mapW) % mapW; ny = (ny + mapH) % mapH;
+            // ★修正: マップデータからサイズを動的に取得
+            const mapW = MAP_DATA[0].length;
+            const mapH = MAP_DATA.length;
+            
+            // ループ計算
+            nx = (nx + mapW) % mapW;
+            ny = (ny + mapH) % mapH;
+            
             tile = MAP_DATA[ny][nx];
+
             if (tile === 'M') { App.log("山だ"); return; }
             if (tile === 'W') { App.log("海だ"); return; }
 
             Field.x = nx; Field.y = ny; 
             App.data.location.x = nx; App.data.location.y = ny; 
+            
             if(App.data.walkCount === undefined) App.data.walkCount = 0;
             App.data.walkCount++;
+
             App.save(); 
             Field.render();
 
+            // イベント判定
             if (tile === 'I') { App.log("宿屋がある"); App.setAction("宿屋に入る", () => App.changeScene('inn')); }
             else if (tile === 'K') { App.log("カジノがある"); App.setAction("カジノに入る", () => App.changeScene('casino')); }
             else if (tile === 'E') { App.log("交換所がある"); App.setAction("メダル交換", () => App.changeScene('medal')); }
@@ -576,7 +592,11 @@ const Field = {
                 let rate = 0.03;
                 if (App.data.walkCount > 30) rate = 0.08;
                 else if (App.data.walkCount > 15) rate = 0.05;
-                if(Math.random() < rate) { App.data.walkCount = 0; App.log("敵だ！"); setTimeout(()=>App.changeScene('battle'),300); }
+                if(Math.random() < rate) { 
+                    App.data.walkCount = 0; 
+                    App.log("敵だ！"); 
+                    setTimeout(()=>App.changeScene('battle'),300); 
+                }
             }
         }
     },
@@ -592,22 +612,41 @@ const Field = {
         const rangeX = Math.ceil(w / (2 * ts)) + 1;
         const rangeY = Math.ceil(h / (2 * ts)) + 1;
 
+        // ★修正: 描画時もマップサイズを動的に取得
+        const mapW = Field.currentMapData ? Field.currentMapData.width : MAP_DATA[0].length;
+        const mapH = Field.currentMapData ? Field.currentMapData.height : MAP_DATA.length;
+
         for (let dy = -rangeY; dy <= rangeY; dy++) {
             for (let dx = -rangeX; dx <= rangeX; dx++) {
                 const drawX = Math.floor(cx + (dx * ts) - (ts / 2));
                 const drawY = Math.floor(cy + (dy * ts) - (ts / 2));
-                let tx = Field.x + dx; let ty = Field.y + dy; let tile = 'W';
+                
+                let tx = Field.x + dx; 
+                let ty = Field.y + dy; 
+                let tile = 'W';
 
                 if (Field.currentMapData) {
-                    if (tx >= 0 && tx < Field.currentMapData.width && ty >= 0 && ty < Field.currentMapData.height) tile = Field.currentMapData.tiles[ty][tx];
+                    if (tx >= 0 && tx < mapW && ty >= 0 && ty < mapH) tile = Field.currentMapData.tiles[ty][tx];
                 } else {
-                    const mapW = 50; const mapH = 32;
+                    // ループ計算
                     const lx = ((tx % mapW) + mapW) % mapW;
                     const ly = ((ty % mapH) + mapH) % mapH;
                     tile = MAP_DATA[ly][lx];
                 }
 
-                if(tile==='G') ctx.fillStyle='#282'; else if(tile==='W') ctx.fillStyle='#228'; else if(tile==='M') ctx.fillStyle='#642'; else if(tile==='T') ctx.fillStyle='#444'; else if(tile==='S') ctx.fillStyle='#dd0'; else if(tile==='C') ctx.fillStyle='#0dd'; else if(tile==='B') ctx.fillStyle='#d00'; else if(tile==='I') ctx.fillStyle='#fff'; else if(tile==='K') ctx.fillStyle='#ff0'; else if(tile==='E') ctx.fillStyle='#aaf'; else ctx.fillStyle='#000'; 
+                // タイル色分け
+                if(tile==='G') ctx.fillStyle='#282'; 
+                else if(tile==='W') ctx.fillStyle='#228'; 
+                else if(tile==='M') ctx.fillStyle='#642'; 
+                else if(tile==='T') ctx.fillStyle='#444'; 
+                else if(tile==='S') ctx.fillStyle='#dd0'; 
+                else if(tile==='C') ctx.fillStyle='#0dd'; 
+                else if(tile==='B') ctx.fillStyle='#d00'; 
+                else if(tile==='I') ctx.fillStyle='#fff'; 
+                else if(tile==='K') ctx.fillStyle='#ff0'; 
+                else if(tile==='E') ctx.fillStyle='#aaf'; 
+                else ctx.fillStyle='#000'; 
+                
                 ctx.fillRect(drawX, drawY, ts, ts);
                 
                 if(['S','C','B','I','K','E'].includes(tile)) {
@@ -618,20 +657,31 @@ const Field = {
                 }
             }
         }
+        
+        // プレイヤー描画
         ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(cx, cy, 10, 0, Math.PI*2); ctx.fill(); ctx.strokeStyle = '#000'; ctx.stroke();
+        
         let locName = Field.currentMapData ? `地下${Dungeon.floor}階` : `フィールド(${Field.x},${Field.y})`;
         document.getElementById('loc-name').innerText = locName;
 
+        // ミニマップ
         const mmSize = 80; const mmX = w - mmSize - 10; const mmY = 10; const range = 10; 
         ctx.save(); ctx.globalAlpha = 0.6; ctx.fillStyle = '#000'; ctx.fillRect(mmX, mmY, mmSize, mmSize); ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.strokeRect(mmX, mmY, mmSize, mmSize);
         const dms = mmSize / (range*2); 
+        
         for(let dy = -range; dy < range; dy++) {
             for(let dx = -range; dx < range; dx++) {
                 let tx = Field.x + dx; let ty = Field.y + dy; let tile = 'W';
-                if (Field.currentMapData) { if(tx>=0 && tx<Field.currentMapData.width && ty>=0 && ty<Field.currentMapData.height) tile = Field.currentMapData.tiles[ty][tx]; } 
-                else { const mapW = 50; const mapH = 32; tile = MAP_DATA[((ty%mapH)+mapH)%mapH][((tx%mapW)+mapW)%mapW]; }
+                
+                if (Field.currentMapData) { 
+                    if(tx>=0 && tx<mapW && ty>=0 && ty<mapH) tile = Field.currentMapData.tiles[ty][tx]; 
+                } else { 
+                    tile = MAP_DATA[((ty%mapH)+mapH)%mapH][((tx%mapW)+mapW)%mapW]; 
+                }
+                
                 ctx.fillStyle = '#000';
                 if(tile === 'W') ctx.fillStyle = '#228'; else if(tile === 'G') ctx.fillStyle = '#282'; else if(tile === 'M') ctx.fillStyle = '#642'; else if(tile === 'T') ctx.fillStyle = '#666'; else if(tile === 'S') ctx.fillStyle = '#ff0'; else if(tile === 'C') ctx.fillStyle = '#0ff'; else if(tile === 'B') ctx.fillStyle = '#f00'; else if(tile === 'I') ctx.fillStyle = '#fff'; else if(tile === 'K') ctx.fillStyle = '#ff0'; else if(tile === 'E') ctx.fillStyle = '#aaf'; 
+                
                 if (dx===0 && dy===0) ctx.fillStyle = '#fff'; 
                 if (ctx.fillStyle !== '#000') ctx.fillRect(mmX + (dx + range) * dms, mmY + (dy + range) * dms, dms, dms);
             }
