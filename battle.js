@@ -1,4 +1,4 @@
-/* battle.js (ランダム攻撃修正版) */
+/* battle.js (新ボス・新スキル・行動回数完全対応版) */
 
 const Battle = {
     active: false,
@@ -28,6 +28,7 @@ const Battle = {
         const logEl = Battle.getEl('battle-log');
         if(logEl) logEl.innerHTML = '';
 
+        // パーティ生成
         Battle.party = App.data.party.map(uid => {
             if(!uid) return null;
             const charData = App.getChar(uid);
@@ -49,6 +50,7 @@ const Battle = {
             return;
         }
 
+        // 敵生成・復帰
         if (App.data.battle && App.data.battle.active && Array.isArray(App.data.battle.enemies) && App.data.battle.enemies.length > 0) {
             Battle.log("戦闘に復帰した！");
             Battle.enemies = App.data.battle.enemies.map(e => {
@@ -57,6 +59,7 @@ const Battle = {
                 m.hp = e.hp; m.baseMaxHp = e.maxHp; m.name = e.name; m.id = e.baseId; 
                 m.isDead = m.hp <= 0;
                 m.isFled = false; 
+                // ★修正: 行動回数を確実に引き継ぐ
                 if(base.actCount) m.actCount = base.actCount;
                 return m;
             }).filter(e => e !== null);
@@ -88,35 +91,50 @@ const Battle = {
         const floor = App.data.progress.floor || 1; 
 
         if (isBoss) {
+            // ★新ボスIDに対応した分岐ロジック
             let bossId = 1000; 
             let bossScale = 1.0;
             let extraBosses = []; 
+            let msg = "強大な魔物が現れた！";
 
-            if (floor <= 40) {
-                bossId = 1010; 
-                Battle.log("魔戦士デュランが現れた！");
-            } else if (floor <= 80) {
-                bossId = 1020; 
-                bossScale = 1.0 + ((floor - 40) * 0.01); 
-                Battle.log("魔王ムドーが現れた！");
+            if (floor === 10) {
+                bossId = 1010; msg = "バトルレックスが現れた！";
+            } else if (floor === 20) {
+                bossId = 1020; msg = "魔王のつかいが現れた！";
+            } else if (floor === 30) {
+                bossId = 1030; msg = "魔戦士デュランが現れた！";
+            } else if (floor === 40) {
+                bossId = 1040; msg = "ジャミラスが現れた！";
+            } else if (floor === 50) {
+                bossId = 1050; msg = "グラコスが現れた！";
+            } else if (floor === 60) {
+                bossId = 1060; msg = "魔王ムドーが現れた！";
+            } else if (floor === 70) {
+                bossId = 1070; msg = "アクバーが現れた！";
+            } else if (floor === 80) {
+                bossId = 1080; // アトラス
+                extraBosses = [1081, 1082]; // バズズ, ベリアル
+                msg = "悪霊の神々が現れた！";
             } else if (floor === 90) {
-                bossId = 1030; 
-                extraBosses = [1031, 1032]; 
-                Battle.log("悪霊の神々が現れた！");
+                bossId = 1090; msg = "大神官ハーゴンが現れた！";
             } else if (floor === 100) {
-                bossId = 1040; 
-                Battle.log("破壊神シドーが現れた！");
+                bossId = 1100; msg = "破壊神シドーが現れた！";
             } else {
-                bossId = 1000; 
+                // 101階以降: レグナード (階層補正あり)
+                bossId = 1000;
                 bossScale = 1.0 + ((floor - 100) * 0.1);
-                Battle.log("竜神レグナードが現れた！");
+                msg = "竜神レグナードが現れた！";
             }
 
+            Battle.log(msg);
+
+            // メインボス
             const base = DB.MONSTERS.find(m => m.id === bossId) || DB.MONSTERS[DB.MONSTERS.length-1];
             const m = new Monster(base, bossScale);
             m.name = base.name; m.id = base.id;
             newEnemies.push(m);
 
+            // お供 (80階用)
             extraBosses.forEach(eid => {
                 const eBase = DB.MONSTERS.find(m => m.id === eid);
                 if(eBase) {
@@ -130,13 +148,15 @@ const Battle = {
             Battle.log("モンスターが現れた！");
             const count = 1 + Math.floor(Math.random() * 3);
             
+            // メタル系出現判定 (5%)
             if (Math.random() < 0.05) {
-                let metalId = 201; 
-                if (floor >= 20) metalId = 202; 
-                if (floor >= 50) metalId = 203; 
-                if (floor >= 100) metalId = 204; 
+                let metalId = 201; // メタルスライム
+                if (floor >= 20) metalId = 202; // はぐれメタル
+                if (floor >= 50) metalId = 203; // メタルキング
+                if (floor >= 100) metalId = 204; // プラチナキング
                 
                 const metalBase = DB.MONSTERS.find(m => m.id === metalId);
+                // 階層条件を満たしている場合のみ出現
                 if(metalBase && floor >= metalBase.minF) {
                     const m = new Monster(metalBase, 1.0);
                     m.name = metalBase.name; m.id = metalBase.id;
@@ -145,10 +165,13 @@ const Battle = {
                 }
             }
 
+            // 通常モンスター抽選
             const minRank = Math.max(1, floor - 5);
             const maxRank = floor + 2;
+            // ID < 200 (通常モンスター) に限定
             let pool = DB.MONSTERS.filter(m => m.rank >= minRank && m.rank <= maxRank && m.id < 200);
             
+            // 候補がなければ条件を緩める
             if(pool.length === 0) pool = DB.MONSTERS.filter(m => m.rank <= floor && m.id < 200);
             if(pool.length === 0) pool = [DB.MONSTERS[0]];
             
@@ -294,7 +317,7 @@ const Battle = {
                 if (type.includes('回復') || ['蘇生','強化'].includes(type)) actualTargetType = 'all_ally';
                 else actualTargetType = 'all_enemy';
             } else if (range === 'ランダム') {
-                actualTargetType = 'random'; // ランダムは専用タイプへ
+                actualTargetType = 'random';
             }
         }
 
@@ -302,7 +325,7 @@ const Battle = {
         else if (actualTargetType === 'ally') targets = Battle.party.filter(p => p && !p.isDead);
         else if (actualTargetType === 'ally_dead') targets = Battle.party.filter(p => p && p.isDead);
 
-        // 即時登録が必要なタイプ (全体、ランダム)
+        // 即時登録 (全体、ランダム)
         if (actualTargetType === 'all_enemy' || actualTargetType === 'all_ally' || actualTargetType === 'random') {
             const actor = Battle.party[Battle.currentActorIndex];
             Battle.registerAction({ 
@@ -310,7 +333,7 @@ const Battle = {
                 actor: actor, 
                 target: actualTargetType, 
                 data: Battle.selectedItemOrSkill,
-                targetScope: actionData ? actionData.target : null // ★重要: ここでスコープを引き継ぐ
+                targetScope: actionData ? actionData.target : null
             });
             return;
         }
@@ -367,7 +390,7 @@ const Battle = {
             div.innerHTML = `<div>${sk.name} (${sk.target})</div><div style="color:#88f">MP:${sk.mp}</div>`;
             div.onclick = (e) => {
                 e.stopPropagation();
-                if (sk.id === 500) { 
+                if (sk.id === 500) { // マダンテ
                      if (actor.mp <= 0) { Battle.log("MPが足りません"); return; }
                 } else {
                      if (actor.mp < sk.mp) { Battle.log("MPが足りません"); return; }
@@ -476,6 +499,7 @@ const Battle = {
 
         Battle.enemies.forEach(e => {
             if (!e.isDead && !e.isFled) {
+                // 行動回数分ループ
                 const count = e.actCount || 1;
                 for(let i=0; i<count; i++) {
                     const spd = e.getStat('spd');
@@ -485,11 +509,13 @@ const Battle = {
                     let actionType = 'enemy_attack'; 
                     let skillData = null;
                     let targetScope = 'single'; 
+                    let priority = spd * (0.8 + Math.random() * 0.4);
 
                     if (actId === 9) {
                         actionType = 'flee';
-                    } else if (actId === 2) {
+                    } else if (actId === 2) { 
                         actionType = 'defend';
+                        priority = 99999;
                     } else if (actId !== 1) {
                         const skill = DB.SKILLS.find(s => s.id === actId);
                         if (skill) {
@@ -502,7 +528,7 @@ const Battle = {
                     Battle.commandQueue.push({
                         type: actionType,
                         actor: e,
-                        speed: actionType === 'defend' ? 99999 : spd * (0.8 + Math.random() * 0.4), 
+                        speed: priority,
                         isEnemy: true,
                         data: skillData,
                         targetScope: targetScope,
@@ -528,7 +554,6 @@ const Battle = {
                  continue;
             }
 
-            // ターゲット未定の単体攻撃ならランダム決定
             if (cmd.isEnemy && !cmd.target && cmd.targetScope !== '全体' && cmd.targetScope !== 'ランダム') {
                 const aliveParty = Battle.party.filter(p => p && !p.isDead);
                 if (aliveParty.length === 0) break;
@@ -624,6 +649,7 @@ const Battle = {
 
         Battle.log(`【${actor.name}】の${skillName}！`);
 
+        // マダンテ
         if (data && data.id === 500) {
             const dmg = mpCost * 5;
             const targets = cmd.isEnemy ? Battle.party.filter(p=>p && !p.isDead) : Battle.enemies.filter(e=>!e.isDead && !e.isFled);
@@ -640,8 +666,6 @@ const Battle = {
 
         let targets = [];
         let scope = cmd.targetScope;
-        
-        // プレイヤーの全体/ランダム指定がある場合、それを優先
         if (!scope && cmd.target === 'all_enemy') scope = '全体';
         if (!scope && cmd.target === 'all_ally') scope = '全体';
         if (!scope && cmd.target === 'random') scope = 'ランダム';
@@ -654,7 +678,6 @@ const Battle = {
                  else targets = Battle.enemies.filter(e => !e.isDead && !e.isFled);
              }
         } else if (scope === 'ランダム') {
-             // 抽選用のプールから仮のターゲットを設定（ループ内で再抽選）
              const pool = cmd.isEnemy ? Battle.party.filter(p => p && !p.isDead) : Battle.enemies.filter(e => !e.isDead && !e.isFled);
              if(pool.length > 0) targets = [pool[0]];
         } else {
@@ -700,7 +723,6 @@ const Battle = {
             }
 
             for (let i = 0; i < hitCount; i++) {
-                // ランダム攻撃時のターゲット再抽選
                 let targetToHit = t;
                 if (scope === 'ランダム') {
                     const pool = cmd.isEnemy ? Battle.party.filter(p => p && !p.isDead) : Battle.enemies.filter(e => !e.isDead && !e.isFled);
