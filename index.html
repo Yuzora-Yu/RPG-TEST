@@ -18,11 +18,15 @@
         /* 共通パーツ */
         .scene-layer { flex: 1; position: relative; display: none; flex-direction: column; width: 100%; height: 100%; background: #000; }
         .header-bar { padding: 10px; background: #222; border-bottom: 1px solid #fff; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
-        .btn { background: #333; border: 2px solid #666; color: #fff; padding: 5px 10px; font-size: 12px; cursor: pointer; border-radius: 4px; }
+        .btn { background: #333; border: 2px solid #666; color: #fff; padding: 5px 10px; font-size: 12px; cursor: pointer; border-radius: 4px; transition: transform 0.1s, background 0.1s; }
+        .btn:active { transform: translateY(2px); background: #555; }
+        
         .scroll-area { flex: 1; overflow-y: auto; min-height: 0; }
         .list-item { padding: 10px; border-bottom: 1px solid #444; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .list-item:hover { background: #222; }
+        .list-item:active { background: #444; transform: scale(0.99); } /* リストタップ感 */
         .list-item.selected { background: #333; border-left: 3px solid var(--accent); }
+        
         .footer-info { padding: 10px; background: #111; border-top: 1px solid #444; white-space: pre-wrap; font-size: 12px; color: #ccc; min-height: 60px; flex-shrink: 0; }
         .tab-bar { display: flex; border-bottom: 1px solid #444; background: #222; flex-shrink: 0; }
         .tab-btn { flex: 1; background: transparent; border: none; color: #888; padding: 10px; font-family: inherit; cursor: pointer; border-bottom: 2px solid transparent; }
@@ -53,7 +57,9 @@
         #menu-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 100; display: none; flex-direction: column; justify-content: center; align-items: center; }
         .menu-window { width: 90%; max-width: 400px; height: 80%; background: #222; border: 2px solid #fff; display: flex; flex-direction: column; }
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 20px; overflow-y: auto; flex: 1; }
-        .menu-btn { background: #333; border: 1px solid #fff; color: #fff; padding: 15px; font-family: inherit; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .menu-btn { background: #333; border: 1px solid #fff; color: #fff; padding: 15px; font-family: inherit; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.1s; }
+        .menu-btn:active { transform: translateY(2px); background: #444; }
+        
         .sub-screen { position: absolute !important; top: 0 !important; left: 0 !important; width: 100%; height: 100%; background: #101010; z-index: 500; display: none; flex-direction: column; }
         .flex-col-container { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 
@@ -66,9 +72,20 @@
         .char-stats { font-size: 11px; color: #ddd; display: flex; gap: 8px; flex-wrap: wrap; }
         .tag-party { font-size: 10px; background: var(--accent); color: #000; padding: 1px 4px; border-radius: 2px; margin-right: 5px; }
 
-        /* ステータスバー */
-        .party-bar { background: #111; border-top: 1px solid #fff; padding: 4px; display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 4px; font-size: 9px; text-align: center; min-height: 60px; flex-shrink: 0; }
-        .p-box { border: 1px solid #444; padding: 4px; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; }
+        /* ステータスバー (画像表示用に拡張) */
+        .party-bar { 
+            background: #111; 
+            border-top: 1px solid #fff; 
+            padding: 4px; 
+            display: grid; 
+            grid-template-columns: 1fr 1fr 1fr 1fr; 
+            gap: 4px; 
+            font-size: 9px; 
+            text-align: center; 
+            min-height: 80px; /* 高さを確保 */
+            flex-shrink: 0; 
+        }
+        .p-box { border: 1px solid #444; padding: 2px; display: flex; flex-direction: column; justify-content: flex-start; overflow: hidden; }
         .bar-container { width: 100%; height: 4px; background: #333; margin: 1px 0; }
         .bar-hp { height: 100%; background: var(--danger); }
         .bar-mp { height: 100%; background: var(--mp); }
@@ -81,17 +98,21 @@
         .enemy-sprite.dead { opacity: 0.5; filter: grayscale(100%); }
         .enemy-hp-bar { width: 80%; height: 4px; background: #333; margin-top: 2px; }
         .enemy-hp-val { height: 100%; background: var(--danger); transition: width 0.2s; }
+        
         #battle-info { height: 300px; background: #000; display: flex; flex-direction: column; border-top: 2px solid #fff; flex-shrink: 0; }
         #battle-log { flex: 1; overflow-y: auto; font-size: 14px; padding: 8px 12px; color: #ddd; line-height: 1.4; border-bottom: 1px solid #333; text-align: left; }
         #battle-actor-name { background: linear-gradient(90deg, #003, #005, #003); color: var(--accent); padding: 6px 10px; font-size: 16px; font-weight: bold; border-bottom: 1px solid #555; text-align: center; display: none; }
+        
         .cmd-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; padding: 8px; height: 110px; }
-        .cmd-btn { background: #444; color: #fff; border: 2px solid #888; cursor: pointer; font-size: 16px; font-weight: bold; border-radius: 6px; }
+        .cmd-btn { background: #444; color: #fff; border: 2px solid #888; cursor: pointer; font-size: 16px; font-weight: bold; border-radius: 6px; transition: transform 0.1s; }
         .cmd-btn:active { background: #666; transform: translateY(2px); }
         .cmd-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
         #battle-target-window, #battle-list-window { position: absolute; left: 10px; right: 10px; bottom: 10px; background: rgba(0,0,0,0.95); border: 2px solid #fff; z-index: 20; display: none; flex-direction: column; }
         #battle-target-window { bottom: 140px; padding: 10px; max-height: 50%; }
         #battle-list-window { top: 60px; bottom: 60px; }
         .battle-target-btn { background: #333; border: 1px solid #666; color: #fff; padding: 12px; margin: 2px; cursor: pointer; text-align: left; font-size: 14px; width: 100%; }
+        .battle-target-btn:active { background: #555; transform: scale(0.98); }
 
         /* ドロップ確定時のフラッシュ演出 */
         @keyframes flash-screen { 0% { opacity: 0; background: #fff; } 10% { opacity: 0.8; } 100% { opacity: 0; display: none; } }
@@ -167,6 +188,7 @@
         <button id="btn-auto" class="btn" style="position:absolute; top:10px; right:10px; z-index:10; width:80px;" onclick="Battle.toggleAuto()">AUTO: OFF</button>
         <div id="enemy-container"></div>
         <div class="party-bar" id="battle-party-bar"></div>
+        
         <div id="battle-info">
             <div id="battle-log"></div>
             <div id="battle-actor-name"></div>
@@ -197,7 +219,11 @@
                 <button class="menu-btn" onclick="Menu.openSubScreen('blacksmith')">鍛冶屋</button>
                 <button class="menu-btn" style="background:#400040;" onclick="Dungeon.enter()">ダンジョン</button>
                 <button class="menu-btn" style="background:#664400;" onclick="Menu.openSubScreen('gacha')">ガチャ</button>
-                <button class="menu-btn" style="background:#333; grid-column:span 2;" onclick="App.save(); Menu.msg('保存しました');">セーブ</button>
+                <button class="menu-btn" style="background:#333;" onclick="App.save(); Menu.msg('保存しました');">セーブ</button>
+                
+                <button class="menu-btn" style="background:#004444;" onclick="App.downloadSave()">データ出力</button>
+                <button class="menu-btn" style="background:#004444;" onclick="App.importSave()">データ読込</button>
+                
                 <button class="menu-btn" style="background:#500; grid-column:span 2;" onclick="App.returnToTitle()">タイトルへ</button>
             </div>
         </div>
@@ -308,6 +334,9 @@
         </div>
     </div>
 
+    <div id="assign-modal" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; justify-content:center; align-items:center;">
+         </div>
+
     <div id="menu-dialog-area" style="display:none; position:absolute; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); justify-content:center; align-items:center; z-index:2000;">
         <div style="background:var(--win-bg); border:2px solid var(--win-border); padding:20px; border-radius:4px; max-width:90%; width:300px; text-align:center; display:flex; flex-direction:column; gap:15px;">
             <div id="menu-dialog-text" style="font-size:14px; min-height:20px;"></div>
@@ -315,7 +344,7 @@
         </div>
     </div>
 
-</div>
+</div> 
 
 <script src="database.js"></script>
 <script src="dungeon.js"></script>
@@ -327,12 +356,12 @@
 <script src="menus.js"></script>
 
 <script>
-    // 起動時処理
-    window.onload = () => {
+    // 起動処理
+    window.onload = () => { 
         if(typeof App !== 'undefined' && App.initGameHub) {
             App.initGameHub();
         } else {
-            console.error("App module not found or failed to load.");
+            console.error("App module not found.");
             alert("エラー: データベースまたはスクリプトの読み込みに失敗しました。");
         }
     };
