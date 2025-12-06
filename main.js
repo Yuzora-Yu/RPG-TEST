@@ -1,18 +1,18 @@
-/* main.js (スキル習得ロジック修正版) */
+/* main.js (ボスドロップ対応・完全版) */
 
 // ==========================================================================
 // 設定：職業別習得スキルテーブル
 // ==========================================================================
 const JOB_SKILLS = {
-    '戦士':     { 3:40, 8:50, 15:41, 20:101 },          // 火炎斬り, バイキルト, はやぶさ斬り, 強撃
-    '僧侶':     { 2:20, 5:12, 10:21, 15:30, 25:22 },    // ホイミ, バギ, ベホイミ, ザオラル, ベホマラー
-    '魔法剣士': { 3:10, 8:40, 15:13, 20:202 },          // メラ, 火炎斬り, ライデイン, ベギラマ
-    '賢者':     { 2:10, 5:20, 10:11, 18:21, 25:22 },    // メラ, ホイミ, ヒャド, ベホイミ, ベホマラー
-    '勇者':     { 3:20, 5:10, 10:40, 15:13, 25:42, 35:301 }, // ホイミ, メラ, 火炎斬り, ライデイン, ギガスラ, ギガブレ
-    '竜騎士':   { 5:40, 10:12, 20:201, 30:999 },        // 火炎斬り, バギ, 五月雨突き, 激しい炎
-    '聖女':     { 1:20, 10:22, 20:50, 30:403 },         // ホイミ, ベホマラー, バイキルト, フルケア
-    '魔王':     { 1:10, 10:13, 20:202, 30:402 },        // メラ, ライデイン, ベギラマ, メテオ
-    '神':       { 1:403, 10:901, 20:902, 30:903 }       // フルケア, ジェネシス, ラグナロク, リザレクション
+    '戦士':     { 3:40, 8:50, 15:41, 20:101 },          
+    '僧侶':     { 2:20, 5:12, 10:21, 15:30, 25:22 },    
+    '魔法剣士': { 3:10, 8:40, 15:13, 20:202 },          
+    '賢者':     { 2:10, 5:20, 10:11, 18:21, 25:22 },    
+    '勇者':     { 3:20, 5:10, 10:40, 15:13, 25:42, 35:301 }, 
+    '竜騎士':   { 5:40, 10:12, 20:201, 30:999 },        
+    '聖女':     { 1:20, 10:22, 20:50, 30:403 },         
+    '魔王':     { 1:10, 10:13, 20:202, 30:402 },        
+    '神':       { 1:403, 10:901, 20:902, 30:903 }       
 };
 
 // ==========================================================================
@@ -97,17 +97,13 @@ class Player extends Entity {
         this.uid = data.uid;
         this.equips = data.equips || {};
         
-        // ★修正: 初期スキルは「こうげき」のみ
         this.skills = [DB.SKILLS.find(s => s.id === 1)]; 
 
-        // ★修正: 現在のレベルまでの習得スキルを一括取得
         const table = JOB_SKILLS[data.job];
         if (table) {
-            // レベル1から現在のレベルまでループチェック
             for (let lv = 1; lv <= data.level; lv++) {
                 if (table[lv]) {
                     const skill = DB.SKILLS.find(s => s.id === table[lv]);
-                    // 重複チェックして追加
                     if (skill && !this.skills.find(s => s.id === skill.id)) {
                         this.skills.push(skill);
                     }
@@ -115,7 +111,6 @@ class Player extends Entity {
             }
         }
 
-        // 限界突破スキル (既存ロジック維持)
         if(data.charId) {
             const master = DB.CHARACTERS.find(c => c.id === data.charId);
             if(master && master.lbSkills) {
@@ -130,7 +125,6 @@ class Player extends Entity {
             }
         }
         
-        // 勇者特典 (既存ロジック維持)
         if(data.isHero) {
             if(this.limitBreak >= 10 && !this.skills.find(s=>s.id===12)) this.skills.push(DB.SKILLS.find(s=>s.id===12)); 
             if(this.limitBreak >= 50 && !this.skills.find(s=>s.id===13)) this.skills.push(DB.SKILLS.find(s=>s.id===13));
@@ -384,6 +378,7 @@ const App = {
                 if(eq.data.mag) s.mag += eq.data.mag;
                 if(eq.data.finDmg) s.finDmg += eq.data.finDmg;
                 if(eq.data.finRed) s.finRed += eq.data.finRed;
+                
                 if(eq.data.elmAtk) for(let e in eq.data.elmAtk) s.elmAtk[e] += eq.data.elmAtk[e];
                 if(eq.data.elmRes) for(let e in eq.data.elmRes) s.elmRes[e] += eq.data.elmRes[e];
 
@@ -403,20 +398,26 @@ const App = {
         return s;
     },
 
-    createRandomEquip: (source, rank = 1) => {
+    // ★修正: 第3引数 fixedPlus を追加
+    createRandomEquip: (source, rank = 1, fixedPlus = null) => {
         let candidates = DB.EQUIPS.filter(e => e.rank <= rank && e.rank >= Math.max(1, rank - 15));
         if (candidates.length === 0) candidates = DB.EQUIPS.filter(e => e.rank <= rank);
         if (candidates.length === 0) candidates = [DB.EQUIPS[0]];
 
         const base = candidates[Math.floor(Math.random() * candidates.length)];
         
-        const r = Math.random();
         let plus = 0;
-        if (r < CONST.PLUS_RATES[3]) plus = 3;
-        else if (r < CONST.PLUS_RATES[3] + CONST.PLUS_RATES[2]) plus = 2;
-        else if (r < CONST.PLUS_RATES[3] + CONST.PLUS_RATES[2] + CONST.PLUS_RATES[1]) plus = 1;
-
-        if (source === 'init') plus = 0;
+        
+        // ★修正: fixedPlusが指定されていれば優先
+        if (fixedPlus !== null) {
+            plus = fixedPlus;
+        } else {
+            const r = Math.random();
+            if (r < CONST.PLUS_RATES[3]) plus = 3;
+            else if (r < CONST.PLUS_RATES[3] + CONST.PLUS_RATES[2]) plus = 2;
+            else if (r < CONST.PLUS_RATES[3] + CONST.PLUS_RATES[2] + CONST.PLUS_RATES[1]) plus = 1;
+            if (source === 'init') plus = 0;
+        }
         
         const eq = { 
             id: Date.now() + Math.random().toString(), 
@@ -503,36 +504,26 @@ const App = {
                 charData.currentMp = stats.maxMp;
 
                 let logMsg = `${charData.name}はLv${charData.level}になった！<br>HP+${incHp}, MP+${incMp}`;
-                
-                // ★修正: レベルアップ時のスキル習得判定
                 const newSkill = App.checkNewSkill(charData);
-                if (newSkill) {
-                    logMsg += `<br><span style="color:#ffff00;">${newSkill.name}を覚えた！</span>`;
-                }
+                if (newSkill) logMsg += `<br><span style="color:#ffff00;">${newSkill.name}を覚えた！</span>`;
                 logs.push(logMsg);
             } else { break; }
         }
         return logs;
     },
 
-    // ★修正: 共通テーブルを参照して新スキルをチェック
     checkNewSkill: (charData) => {
         const table = JOB_SKILLS[charData.job];
-        if (table && table[charData.level]) {
-            return DB.SKILLS.find(s => s.id === table[charData.level]);
-        }
+        if (table && table[charData.level]) return DB.SKILLS.find(s => s.id === table[charData.level]);
         return null;
     }
 };
 
-/* main.js の Field オブジェクトを修正 */
-
 const Field = {
-    x: 23, y: 28, ready: false, currentMapData: null, // 初期値も修正(y:60->28)
+    x: 23, y: 28, ready: false, currentMapData: null,
     
     init: () => {
         if(App.data && !Field.currentMapData) {
-            // マップサイズに合わせて正規化
             const mapW = MAP_DATA[0].length;
             const mapH = MAP_DATA.length;
             Field.x = App.data.location.x % mapW;
@@ -552,7 +543,6 @@ const Field = {
         App.clearAction();
 
         if (Field.currentMapData) {
-            // ダンジョン内
             if(nx < 0 || nx >= Field.currentMapData.width || ny < 0 || ny >= Field.currentMapData.height) return;
             tile = Field.currentMapData.tiles[ny][nx];
             if (tile === 'W') return; 
@@ -562,29 +552,21 @@ const Field = {
             Field.render();
             Dungeon.handleMove(nx, ny);
         } else {
-            // ★修正: マップデータからサイズを動的に取得
             const mapW = MAP_DATA[0].length;
             const mapH = MAP_DATA.length;
-            
-            // ループ計算
-            nx = (nx + mapW) % mapW;
-            ny = (ny + mapH) % mapH;
+            nx = (nx + mapW) % mapW; ny = (ny + mapH) % mapH;
             
             tile = MAP_DATA[ny][nx];
-
             if (tile === 'M') { App.log("山だ"); return; }
             if (tile === 'W') { App.log("海だ"); return; }
 
             Field.x = nx; Field.y = ny; 
             App.data.location.x = nx; App.data.location.y = ny; 
-            
             if(App.data.walkCount === undefined) App.data.walkCount = 0;
             App.data.walkCount++;
-
             App.save(); 
             Field.render();
 
-            // イベント判定
             if (tile === 'I') { App.log("宿屋がある"); App.setAction("宿屋に入る", () => App.changeScene('inn')); }
             else if (tile === 'K') { App.log("カジノがある"); App.setAction("カジノに入る", () => App.changeScene('casino')); }
             else if (tile === 'E') { App.log("交換所がある"); App.setAction("メダル交換", () => App.changeScene('medal')); }
@@ -592,11 +574,7 @@ const Field = {
                 let rate = 0.03;
                 if (App.data.walkCount > 30) rate = 0.08;
                 else if (App.data.walkCount > 15) rate = 0.05;
-                if(Math.random() < rate) { 
-                    App.data.walkCount = 0; 
-                    App.log("敵だ！"); 
-                    setTimeout(()=>App.changeScene('battle'),300); 
-                }
+                if(Math.random() < rate) { App.data.walkCount = 0; App.log("敵だ！"); setTimeout(()=>App.changeScene('battle'),300); }
             }
         }
     },
@@ -611,8 +589,6 @@ const Field = {
         const cx = w / 2; const cy = h / 2;
         const rangeX = Math.ceil(w / (2 * ts)) + 1;
         const rangeY = Math.ceil(h / (2 * ts)) + 1;
-
-        // ★修正: 描画時もマップサイズを動的に取得
         const mapW = Field.currentMapData ? Field.currentMapData.width : MAP_DATA[0].length;
         const mapH = Field.currentMapData ? Field.currentMapData.height : MAP_DATA.length;
 
@@ -620,33 +596,17 @@ const Field = {
             for (let dx = -rangeX; dx <= rangeX; dx++) {
                 const drawX = Math.floor(cx + (dx * ts) - (ts / 2));
                 const drawY = Math.floor(cy + (dy * ts) - (ts / 2));
-                
-                let tx = Field.x + dx; 
-                let ty = Field.y + dy; 
-                let tile = 'W';
+                let tx = Field.x + dx; let ty = Field.y + dy; let tile = 'W';
 
                 if (Field.currentMapData) {
                     if (tx >= 0 && tx < mapW && ty >= 0 && ty < mapH) tile = Field.currentMapData.tiles[ty][tx];
                 } else {
-                    // ループ計算
                     const lx = ((tx % mapW) + mapW) % mapW;
                     const ly = ((ty % mapH) + mapH) % mapH;
                     tile = MAP_DATA[ly][lx];
                 }
 
-                // タイル色分け
-                if(tile==='G') ctx.fillStyle='#282'; 
-                else if(tile==='W') ctx.fillStyle='#228'; 
-                else if(tile==='M') ctx.fillStyle='#642'; 
-                else if(tile==='T') ctx.fillStyle='#444'; 
-                else if(tile==='S') ctx.fillStyle='#dd0'; 
-                else if(tile==='C') ctx.fillStyle='#0dd'; 
-                else if(tile==='B') ctx.fillStyle='#d00'; 
-                else if(tile==='I') ctx.fillStyle='#fff'; 
-                else if(tile==='K') ctx.fillStyle='#ff0'; 
-                else if(tile==='E') ctx.fillStyle='#aaf'; 
-                else ctx.fillStyle='#000'; 
-                
+                if(tile==='G') ctx.fillStyle='#282'; else if(tile==='W') ctx.fillStyle='#228'; else if(tile==='M') ctx.fillStyle='#642'; else if(tile==='T') ctx.fillStyle='#444'; else if(tile==='S') ctx.fillStyle='#dd0'; else if(tile==='C') ctx.fillStyle='#0dd'; else if(tile==='B') ctx.fillStyle='#d00'; else if(tile==='I') ctx.fillStyle='#fff'; else if(tile==='K') ctx.fillStyle='#ff0'; else if(tile==='E') ctx.fillStyle='#aaf'; else ctx.fillStyle='#000'; 
                 ctx.fillRect(drawX, drawY, ts, ts);
                 
                 if(['S','C','B','I','K','E'].includes(tile)) {
@@ -657,31 +617,20 @@ const Field = {
                 }
             }
         }
-        
-        // プレイヤー描画
         ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(cx, cy, 10, 0, Math.PI*2); ctx.fill(); ctx.strokeStyle = '#000'; ctx.stroke();
-        
         let locName = Field.currentMapData ? `地下${Dungeon.floor}階` : `フィールド(${Field.x},${Field.y})`;
         document.getElementById('loc-name').innerText = locName;
 
-        // ミニマップ
         const mmSize = 80; const mmX = w - mmSize - 10; const mmY = 10; const range = 10; 
         ctx.save(); ctx.globalAlpha = 0.6; ctx.fillStyle = '#000'; ctx.fillRect(mmX, mmY, mmSize, mmSize); ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.strokeRect(mmX, mmY, mmSize, mmSize);
         const dms = mmSize / (range*2); 
-        
         for(let dy = -range; dy < range; dy++) {
             for(let dx = -range; dx < range; dx++) {
                 let tx = Field.x + dx; let ty = Field.y + dy; let tile = 'W';
-                
-                if (Field.currentMapData) { 
-                    if(tx>=0 && tx<mapW && ty>=0 && ty<mapH) tile = Field.currentMapData.tiles[ty][tx]; 
-                } else { 
-                    tile = MAP_DATA[((ty%mapH)+mapH)%mapH][((tx%mapW)+mapW)%mapW]; 
-                }
-                
+                if (Field.currentMapData) { if(tx>=0 && tx<mapW && ty>=0 && ty<mapH) tile = Field.currentMapData.tiles[ty][tx]; } 
+                else { tile = MAP_DATA[((ty%mapH)+mapH)%mapH][((tx%mapW)+mapW)%mapW]; }
                 ctx.fillStyle = '#000';
                 if(tile === 'W') ctx.fillStyle = '#228'; else if(tile === 'G') ctx.fillStyle = '#282'; else if(tile === 'M') ctx.fillStyle = '#642'; else if(tile === 'T') ctx.fillStyle = '#666'; else if(tile === 'S') ctx.fillStyle = '#ff0'; else if(tile === 'C') ctx.fillStyle = '#0ff'; else if(tile === 'B') ctx.fillStyle = '#f00'; else if(tile === 'I') ctx.fillStyle = '#fff'; else if(tile === 'K') ctx.fillStyle = '#ff0'; else if(tile === 'E') ctx.fillStyle = '#aaf'; 
-                
                 if (dx===0 && dy===0) ctx.fillStyle = '#fff'; 
                 if (ctx.fillStyle !== '#000') ctx.fillRect(mmX + (dx + range) * dms, mmY + (dy + range) * dms, dms, dms);
             }
