@@ -1,4 +1,4 @@
-/* battle.js (戦闘画面画像表示・JobLv表示対応版) */
+/* battle.js (完全統合版) */
 
 const Battle = {
     active: false,
@@ -59,6 +59,7 @@ const Battle = {
                 m.hp = e.hp; m.baseMaxHp = e.maxHp; m.name = e.name; m.id = e.baseId; 
                 m.isDead = m.hp <= 0;
                 m.isFled = false; 
+                // 復帰時も行動回数を反映
                 if(base.actCount) m.actCount = base.actCount;
                 return m;
             }).filter(e => e !== null);
@@ -90,6 +91,7 @@ const Battle = {
         const floor = App.data.progress.floor || 1; 
 
         if (isBoss) {
+            // ボスの分岐ロジック
             let bossId = 1000; 
             let bossScale = 1.0;
             let extraBosses = []; 
@@ -101,11 +103,11 @@ const Battle = {
                 bossId = 1020; // ムドー
                 bossScale = 1.0 + ((floor - 40) * 0.01); 
                 Battle.log("魔王ムドーが現れた！");
-            } else if (floor === 90) {
+            } else if (floor <= 90) {
                 bossId = 1030; // アトラス
-                extraBosses = [1031, 1032]; // ベリアル, バズズ
+                extraBosses = [1031, 1032]; // バズズ, ベリアル
                 Battle.log("悪霊の神々が現れた！");
-            } else if (floor === 100) {
+            } else if (floor <= 100) {
                 bossId = 1040; // シドー
                 Battle.log("破壊神シドーが現れた！");
             } else {
@@ -132,13 +134,15 @@ const Battle = {
             Battle.log("モンスターが現れた！");
             const count = 1 + Math.floor(Math.random() * 3);
             
-            // メタル系
+            // メタル系出現判定 (5%)
             if (Math.random() < 0.05) {
-                let metalId = 201; 
-                if (floor >= 20) metalId = 202; 
-                if (floor >= 50) metalId = 203; 
+                let metalId = 201; // メタルスライム
+                if (floor >= 20) metalId = 202; // はぐれメタル
+                if (floor >= 50) metalId = 203; // メタルキング
+                if (floor >= 100) metalId = 204; // プラチナキング
                 
                 const metalBase = DB.MONSTERS.find(m => m.id === metalId);
+                // 階層条件を満たしている場合のみ出現
                 if(metalBase && floor >= metalBase.minF) {
                     const m = new Monster(metalBase, 1.0);
                     m.name = metalBase.name; m.id = metalBase.id;
@@ -147,8 +151,10 @@ const Battle = {
                 }
             }
 
+            // 通常モンスター抽選
             const minRank = Math.max(1, floor - 5);
             const maxRank = floor + 2;
+            // ID < 200 (通常モンスター) に限定
             let pool = DB.MONSTERS.filter(m => m.rank >= minRank && m.rank <= maxRank && m.id < 200);
             
             if(pool.length === 0) pool = DB.MONSTERS.filter(m => m.rank <= floor && m.id < 200);
@@ -367,7 +373,7 @@ const Battle = {
             div.innerHTML = `<div>${sk.name} (${sk.target})</div><div style="color:#88f">MP:${sk.mp}</div>`;
             div.onclick = (e) => {
                 e.stopPropagation();
-                if (sk.id === 500) {
+                if (sk.id === 500) { // マダンテ
                      if (actor.mp <= 0) { Battle.log("MPが足りません"); return; }
                 } else {
                      if (actor.mp < sk.mp) { Battle.log("MPが足りません"); return; }
@@ -472,7 +478,9 @@ const Battle = {
 
         Battle.enemies.forEach(e => {
             if (!e.isDead && !e.isFled) {
+                // 2回行動
                 const count = e.actCount || 1;
+                
                 for(let i=0; i<count; i++) {
                     const spd = e.getStat('spd');
                     const acts = e.acts && e.acts.length > 0 ? e.acts : [1];
@@ -496,6 +504,7 @@ const Battle = {
                     Battle.commandQueue.push({
                         type: actionType,
                         actor: e,
+                        // 連続行動でも順番がバラけるように乱数幅を持たせる
                         speed: spd * (0.8 + Math.random() * 0.4), 
                         isEnemy: true,
                         data: skillData,
@@ -617,6 +626,7 @@ const Battle = {
 
         Battle.log(`【${actor.name}】の${skillName}！`);
 
+        // マダンテ処理
         if (data && data.id === 500) {
             const dmg = mpCost * 5;
             const targets = cmd.isEnemy ? Battle.party.filter(p=>p && !p.isDead) : Battle.enemies.filter(e=>!e.isDead && !e.isFled);
@@ -773,61 +783,9 @@ const Battle = {
         }
     },
 
-    // ★修正: 画像表示とJobLv表示の追加
-    renderPartyStatus: () => {
-        const container = Battle.getEl('battle-party-bar');
-        if(!container) return;
-        container.innerHTML = '';
-        Battle.party.forEach((p, index) => {
-            const div = document.createElement('div');
-            div.className = 'p-box';
-            div.style.justifyContent = 'flex-start'; 
-            div.style.paddingTop = '2px';
-
-            const hpPer = (p.baseMaxHp > 0) ? (p.hp / p.baseMaxHp) * 100 : 0;
-            const mpPer = (p.baseMaxMp > 0) ? (p.mp / p.baseMaxMp) * 100 : 0;
-
-            const isActor = (Battle.phase === 'input' && index === Battle.currentActorIndex);
-            if(isActor) {
-                div.style.border = "2px solid #ffd700"; // 強調表示
-                div.style.background = "#333";
-            }
-            
-            let nameStyle = p.isDead ? 'color:red; text-decoration:line-through;' : 'color:white;';
-            
-            // 画像表示
-            const imgHtml = p.img 
-                ? `<img src="${p.img}" style="width:32px; height:32px; object-fit:cover; border-radius:4px; border:1px solid #666; margin-bottom:2px;">`
-                : `<div style="width:32px; height:32px; background:#222; border-radius:4px; border:1px solid #444; display:flex; align-items:center; justify-content:center; color:#555; font-size:8px; margin-bottom:2px;">IMG</div>`;
-
-            div.innerHTML = `
-                <div style="flex:1; display:flex; flex-direction:column; align-items:center; width:100%; overflow:hidden;">
-                    ${imgHtml}
-                    <div style="font-size:10px; font-weight:bold; ${nameStyle} overflow:hidden; white-space:nowrap; width:100%; text-align:center; line-height:1.2;">
-                        ${p.name}
-                    </div>
-                    <div style="font-size:8px; color:#aaa; margin-bottom:2px; line-height:1;">${p.job} Lv.${p.level}</div>
-                </div>
-                <div style="width:100%;">
-                    <div class="bar-container"><div class="bar-hp" style="width:${hpPer}%"></div></div>
-                    <div class="p-val">${p.hp}/${p.baseMaxHp}</div>
-                    <div class="bar-container"><div class="bar-mp" style="width:${mpPer}%"></div></div>
-                    <div class="p-val">${p.mp}/${p.baseMaxMp}</div>
-                </div>
-            `;
-            
-            div.onclick = () => {
-                if(Battle.phase !== 'input') return;
-                Battle.log(`【${p.name}】 ${p.job}Lv${p.level} HP:${p.hp}/${p.baseMaxHp} MP:${p.mp}/${p.baseMaxMp}`);
-            };
-
-            container.appendChild(div);
-        });
-    },
-
     updateDeadState: () => {
         [...Battle.party, ...Battle.enemies].forEach(e => {
-            if (e && e.hp <= 0 && !e.isFled) { e.hp = 0; e.isDead = true; }
+            if (e && e.hp <= 0) { e.hp = 0; e.isDead = true; }
         });
     },
 
@@ -850,6 +808,7 @@ const Battle = {
     },
 
     saveBattleState: () => {
+        // 逃げた敵は保存しない
         const activeEnemies = Battle.enemies.filter(e => !e.isFled);
         App.data.battle.enemies = activeEnemies.map(e => ({
             baseId: e.id, hp: e.hp, maxHp: e.baseMaxHp, name: e.name
@@ -887,6 +846,57 @@ const Battle = {
             container.appendChild(div);
         });
     },
+    
+    renderPartyStatus: () => {
+        const container = Battle.getEl('battle-party-bar');
+        if(!container) return;
+        container.innerHTML = '';
+        Battle.party.forEach((p, index) => {
+            const div = document.createElement('div');
+            div.className = 'p-box';
+            div.style.justifyContent = 'flex-start'; 
+            div.style.paddingTop = '2px';
+
+            const hpPer = (p.baseMaxHp > 0) ? (p.hp / p.baseMaxHp) * 100 : 0;
+            const mpPer = (p.baseMaxMp > 0) ? (p.mp / p.baseMaxMp) * 100 : 0;
+
+            const isActor = (Battle.phase === 'input' && index === Battle.currentActorIndex);
+            if(isActor) {
+                div.style.border = "2px solid yellow";
+                div.style.background = "#333";
+            }
+            
+            let nameStyle = p.isDead ? 'color:red; text-decoration:line-through;' : 'color:white;';
+            
+            // 画像表示
+            const imgHtml = p.img 
+                ? `<img src="${p.img}" style="width:32px; height:32px; object-fit:cover; border-radius:4px; border:1px solid #666; margin-bottom:1px;">`
+                : `<div style="width:32px; height:32px; background:#222; border-radius:4px; border:1px solid #444; display:flex; align-items:center; justify-content:center; color:#555; font-size:8px; margin-bottom:1px;">IMG</div>`;
+
+            div.innerHTML = `
+                <div style="flex:1; display:flex; flex-direction:column; align-items:center; width:100%; overflow:hidden;">
+                    ${imgHtml}
+                    <div style="font-size:10px; font-weight:bold; ${nameStyle} overflow:hidden; white-space:nowrap; width:100%; text-align:center; line-height:1.2;">
+                        ${p.name}
+                    </div>
+                    <div style="font-size:8px; color:#aaa; margin-bottom:2px; line-height:1;">${p.job} Lv.${p.level}</div>
+                </div>
+                <div style="width:100%;">
+                    <div class="bar-container"><div class="bar-hp" style="width:${hpPer}%"></div></div>
+                    <div class="p-val">${p.hp}/${p.baseMaxHp}</div>
+                    <div class="bar-container"><div class="bar-mp" style="width:${mpPer}%"></div></div>
+                    <div class="p-val">${p.mp}/${p.baseMaxMp}</div>
+                </div>
+            `;
+            
+            div.onclick = () => {
+                if(Battle.phase !== 'input') return;
+                Battle.log(`【${p.name}】 ${p.job}Lv${p.level} HP:${p.hp}/${p.baseMaxHp} MP:${p.mp}/${p.baseMaxMp}`);
+            };
+
+            container.appendChild(div);
+        });
+    },
 
     win: () => {
         Battle.phase = 'result';
@@ -920,7 +930,8 @@ const Battle = {
             const base = DB.MONSTERS.find(m => m.id === e.baseId);
             const dropRank = base ? base.rank : 1;
 
-            if (base && base.id === 1000) {
+            // ★修正: ボスID 1000以上の場合は確定で+3ドロップ
+            if (base && base.id >= 1000) {
                 const newEquip = App.createRandomEquip('drop', dropRank, 3); 
                 App.data.inventory.push(newEquip);
                 hasRareDrop = true;
