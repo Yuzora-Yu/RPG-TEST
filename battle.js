@@ -1,4 +1,4 @@
-/* battle.js (ボス確定+3ドロップ対応) */
+/* battle.js (ダメージ計算式調整版) */
 
 const Battle = {
     active: false,
@@ -87,6 +87,7 @@ const Battle = {
 
         if (isBoss) {
             const base = DB.MONSTERS.find(m => m.id === 1000) || DB.MONSTERS[DB.MONSTERS.length-1];
+            // 階層補正
             const bossScale = 1.0 + (Math.floor(floor / 10) * 0.1);
             
             const m = new Monster(base, bossScale);
@@ -493,7 +494,7 @@ const Battle = {
                 }
                 const targets = (cmd.target === 'all_ally') ? Battle.party : [target];
                 for (let t of targets) {
-                    if (!t) continue; 
+                    if (!t) continue;
                     
                     if (item.type === '蘇生') {
                         if (t.isDead) {
@@ -603,16 +604,31 @@ const Battle = {
             for (let i = 0; i < hitCount; i++) {
                 if (t.isDead) break; 
 
+                // --- ★修正箇所: ダメージ計算ロジック ---
+                
+                // 1. 攻撃値の取得 (物理:ATK, 魔法:MAG)
                 let atkVal = isPhysical ? actor.getStat('atk') : actor.getStat('mag');
+                
+                // 2. 属性攻撃力加算
                 if (element) {
                     const elmAtk = actor.getStat('elmAtk') || {};
                     const bonus = elmAtk[element] || 0;
                     atkVal += bonus;
                 }
 
-                let defVal = t.getStat('def');
-                let dmg = (atkVal + baseDmg - defVal / 2) * multiplier;
+                // 3. 防御値の取得 (物理:DEF, 魔法:MAG)
+                // 魔法防御は敵の「魔力」を参照する
+                let defVal = isPhysical ? t.getStat('def') : t.getStat('mag');
                 
+                // 抵抗値計算 (魔法は少し通りやすく /3 とする)
+                let resistance = isPhysical ? Math.floor(defVal / 2) : Math.floor(defVal / 3);
+
+                // 4. ダメージ算出: (攻撃値 - 抵抗値 + 基礎) * 倍率
+                // 固定値ダメージ(baseDmg)は防御で軽減されない位置に配置
+                // 倍率は最後に掛けることで、ステータス差が影響しやすくなる
+                let dmg = (atkVal - resistance + baseDmg) * multiplier;
+                
+                // 5. 属性耐性 (最終ダメージをカット)
                 if (element) {
                     const elmRes = t.getStat('elmRes') || {};
                     const res = elmRes[element] || 0;
@@ -620,6 +636,7 @@ const Battle = {
                     dmg = dmg * (1.0 - cutRate);
                 }
 
+                // 6. 乱数・補正
                 dmg = dmg * (0.9 + Math.random() * 0.2);
                 
                 const finDmg = actor.getStat('finDmg') || 0;
@@ -771,14 +788,12 @@ const Battle = {
             const base = DB.MONSTERS.find(m => m.id === e.baseId);
             const dropRank = base ? base.rank : 1;
 
-            // ★修正: ボス(ID:1000)なら確定で+3装備
             if (base && base.id === 1000) {
-                const newEquip = App.createRandomEquip('drop', dropRank, 3); // 第3引数で+3指定
+                const newEquip = App.createRandomEquip('drop', dropRank, 3); 
                 App.data.inventory.push(newEquip);
                 hasRareDrop = true;
                 drops.push({ name: newEquip.name, isRare: true });
             } 
-            // 通常のドロップ判定
             else if (Math.random() < 0.3) {
                 if (Math.random() < 0.3) {
                     const item = DB.ITEMS[Math.floor(Math.random() * DB.ITEMS.length)];
@@ -787,7 +802,7 @@ const Battle = {
                         drops.push({name: item.name, isRare: false});
                     }
                 } else {
-                    const newEquip = App.createRandomEquip('drop', dropRank); // +値はランダム
+                    const newEquip = App.createRandomEquip('drop', dropRank); 
                     App.data.inventory.push(newEquip);
                     const isRare = (newEquip.plus === 3);
                     if(isRare) hasRareDrop = true;
