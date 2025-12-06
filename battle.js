@@ -1,4 +1,4 @@
-/* battle.js (攻撃回数対応版) */
+/* battle.js (全体蘇生修正・強化スキル対応版) */
 
 const Battle = {
     active: false,
@@ -493,7 +493,8 @@ const Battle = {
                 }
                 const targets = (cmd.target === 'all_ally') ? Battle.party : [target];
                 for (let t of targets) {
-                    if (!t) continue;
+                    if (!t) continue; // ★修正: 死体スキップをやめて、各効果内で判定
+                    
                     if (item.type === '蘇生') {
                         if (t.isDead) {
                             t.isDead = false; t.hp = Math.floor(t.baseMaxHp * 0.5);
@@ -524,7 +525,7 @@ const Battle = {
         let mpCost = 0;
         let effectType = null;
         let element = null;
-        let hitCount = 1; // デフォルト攻撃回数
+        let hitCount = 1;
 
         if (cmd.type === 'skill') {
             skillName = data.name;
@@ -534,7 +535,7 @@ const Battle = {
             mpCost = data.mp;
             effectType = data.type;
             element = data.elm;
-            hitCount = (typeof data.count === 'number') ? data.count : 1; // ★攻撃回数を取得
+            hitCount = (typeof data.count === 'number') ? data.count : 1;
             
             if (actor.mp < mpCost) {
                 Battle.log(`【${actor.name}】は${skillName}を唱えたがMPが足りない！`);
@@ -560,7 +561,6 @@ const Battle = {
                  else targets = Battle.enemies.filter(e => !e.isDead);
              }
         } else if (scope === 'ランダム') {
-             // ランダムでもここでは1人決めるだけ（攻撃ループ内で処理を変えるのは複雑なため、1人に連撃とする）
              const pool = cmd.isEnemy ? Battle.party.filter(p => p && !p.isDead) : Battle.enemies.filter(e => !e.isDead);
              if(pool.length > 0) targets = [pool[Math.floor(Math.random()*pool.length)]];
         } else {
@@ -568,16 +568,22 @@ const Battle = {
         }
 
         for (let t of targets) {
-            if (!t || t.isDead) continue;
+            // ★修正: ここでの汎用的な死体スキップをやめました（蘇生のために）
+            if (!t) continue;
 
-            // 回復・蘇生処理
-            if (effectType && ['回復','蘇生'].includes(effectType)) {
+            if (effectType && ['回復','蘇生','強化'].includes(effectType)) {
                 if (effectType === '蘇生') {
                     if (t.isDead) {
                         t.isDead = false; t.hp = Math.floor(t.baseMaxHp * 0.5);
                         Battle.log(`【${t.name}】は生き返った！`);
                     } else { Battle.log(`【${t.name}】には効果がなかった`); }
-                } else { 
+                } else if (effectType === '強化') {
+                    // ★追加: 強化（バフ）スキルの処理
+                    if (!t.isDead && data.buff) {
+                        for(let key in data.buff) t.buffs[key] = data.buff[key];
+                        Battle.log(`【${t.name}】の能力が上がった！`);
+                    }
+                } else { // 回復
                     if (!t.isDead) {
                         let base = (typeof data.base === 'number') ? data.base : 0;
                         let rate = (typeof data.rate === 'number') ? data.rate : 1.0;
@@ -596,14 +602,11 @@ const Battle = {
                 continue;
             }
 
-            // --- ★攻撃処理ループ（多段ヒット対応） ---
+            // --- 攻撃処理ループ ---
             for (let i = 0; i < hitCount; i++) {
-                if (t.isDead) break; // 死体蹴り防止
+                if (t.isDead) break; // ★死体蹴り防止はここで個別に実施
 
-                // ステータス取得
                 let atkVal = isPhysical ? actor.getStat('atk') : actor.getStat('mag');
-                
-                // 属性攻撃力加算
                 if (element) {
                     const elmAtk = actor.getStat('elmAtk') || {};
                     const bonus = elmAtk[element] || 0;
@@ -613,7 +616,6 @@ const Battle = {
                 let defVal = t.getStat('def');
                 let dmg = (atkVal + baseDmg - defVal / 2) * multiplier;
                 
-                // 属性耐性による軽減
                 if (element) {
                     const elmRes = t.getStat('elmRes') || {};
                     const res = elmRes[element] || 0;
@@ -649,7 +651,6 @@ const Battle = {
                     const drain = Math.floor(dmg * 0.1);
                     if(drain > 0) {
                         actor.hp = Math.min(actor.baseMaxHp, actor.hp + drain);
-                        // Battle.log(`【${actor.name}】はHPを${drain}吸収した`); // ログ過多防止のためコメントアウト
                     }
                 }
 
@@ -663,10 +664,9 @@ const Battle = {
                     Battle.renderPartyStatus();
                 }
                 
-                // 連撃の間隔を開ける
                 if (hitCount > 1) await Battle.wait(150);
             }
-            await Battle.wait(100); // ターゲット変更間隔
+            await Battle.wait(100);
         }
     },
 
