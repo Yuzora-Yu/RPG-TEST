@@ -803,6 +803,7 @@ const Battle = {
     renderPartyStatus: () => {
         const container = Battle.getEl('battle-party-bar');
         if(!container) return;
+        
         container.innerHTML = '';
         Battle.party.forEach((p, index) => {
             const div = document.createElement('div');
@@ -813,6 +814,7 @@ const Battle = {
             const hpPer = (p.baseMaxHp > 0) ? (p.hp / p.baseMaxHp) * 100 : 0;
             const mpPer = (p.baseMaxMp > 0) ? (p.mp / p.baseMaxMp) * 100 : 0;
 
+            // 行動選択中のキャラを強調
             const isActor = (Battle.phase === 'input' && index === Battle.currentActorIndex);
             if(isActor) {
                 div.style.border = "2px solid yellow";
@@ -821,16 +823,18 @@ const Battle = {
             
             let nameStyle = p.isDead ? 'color:red; text-decoration:line-through;' : 'color:white;';
             
+            // 画像表示
             const imgHtml = p.img 
-                ? `<img src="${p.img}" style="width:32px; height:32px; object-fit:cover; border-radius:4px; border:1px solid #666; margin-bottom:2px;">`
-                : `<div style="width:32px; height:32px; background:#222; border-radius:4px; border:1px solid #444; display:flex; align-items:center; justify-content:center; color:#555; font-size:8px; margin-bottom:2px;">IMG</div>`;
+                ? `<img src="${p.img}" style="width:32px; height:32px; object-fit:cover; border-radius:4px; border:1px solid #666; margin-bottom:1px;">`
+                : `<div style="width:32px; height:32px; background:#222; border-radius:4px; border:1px solid #444; display:flex; align-items:center; justify-content:center; color:#555; font-size:8px; margin-bottom:1px;">IMG</div>`;
 
             div.innerHTML = `
                 <div style="flex:1; display:flex; flex-direction:column; align-items:center; width:100%; overflow:hidden;">
                     ${imgHtml}
-                    <div style="font-size:10px; font-weight:bold; ${nameStyle} overflow:hidden; white-space:nowrap; width:100%; text-align:center;">
+                    <div style="font-size:10px; font-weight:bold; ${nameStyle} overflow:hidden; white-space:nowrap; width:100%; text-align:center; line-height:1.2;">
                         ${p.name}
                     </div>
+                    <div style="font-size:8px; color:#aaa; margin-bottom:2px; line-height:1;">${p.job} Lv.${p.level}</div>
                 </div>
                 <div style="width:100%;">
                     <div class="bar-container"><div class="bar-hp" style="width:${hpPer}%"></div></div>
@@ -842,7 +846,7 @@ const Battle = {
             
             div.onclick = () => {
                 if(Battle.phase !== 'input') return;
-                Battle.log(`【${p.name}】 HP:${p.hp}/${p.baseMaxHp} MP:${p.mp}/${p.baseMaxMp}`);
+                Battle.log(`【${p.name}】 ${p.job}Lv${p.level} HP:${p.hp}/${p.baseMaxHp} MP:${p.mp}/${p.baseMaxMp}`);
             };
 
             container.appendChild(div);
