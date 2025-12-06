@@ -1,4 +1,19 @@
-/* main.js (完全統合・属性耐性対応版) */
+/* main.js (スキル習得ロジック修正版) */
+
+// ==========================================================================
+// 設定：職業別習得スキルテーブル
+// ==========================================================================
+const JOB_SKILLS = {
+    '戦士':     { 3:40, 8:50, 15:41, 20:101 },          // 火炎斬り, バイキルト, はやぶさ斬り, 強撃
+    '僧侶':     { 2:20, 5:12, 10:21, 15:30, 25:22 },    // ホイミ, バギ, ベホイミ, ザオラル, ベホマラー
+    '魔法剣士': { 3:10, 8:40, 15:13, 20:202 },          // メラ, 火炎斬り, ライデイン, ベギラマ
+    '賢者':     { 2:10, 5:20, 10:11, 18:21, 25:22 },    // メラ, ホイミ, ヒャド, ベホイミ, ベホマラー
+    '勇者':     { 3:20, 5:10, 10:40, 15:13, 25:42, 35:301 }, // ホイミ, メラ, 火炎斬り, ライデイン, ギガスラ, ギガブレ
+    '竜騎士':   { 5:40, 10:12, 20:201, 30:999 },        // 火炎斬り, バギ, 五月雨突き, 激しい炎
+    '聖女':     { 1:20, 10:22, 20:50, 30:403 },         // ホイミ, ベホマラー, バイキルト, フルケア
+    '魔王':     { 1:10, 10:13, 20:202, 30:402 },        // メラ, ライデイン, ベギラマ, メテオ
+    '神':       { 1:403, 10:901, 20:902, 30:903 }       // フルケア, ジェネシス, ラグナロク, リザレクション
+};
 
 // ==========================================================================
 // クラス定義
@@ -13,7 +28,7 @@ class Entity {
         this.mp = data.currentMp !== undefined ? data.currentMp : this.baseMaxMp;
         this.baseStats = { atk:data.atk||0, def:data.def||0, spd:data.spd||0, mag:data.mag||0 };
         this.buffs = { atk:1, def:1, spd:1, mag:1 };
-        this.status = {};
+        this.status = {}; 
         this.isDead = this.hp <= 0;
         
         this.job = data.job || '冒険者';
@@ -82,27 +97,25 @@ class Player extends Entity {
         this.uid = data.uid;
         this.equips = data.equips || {};
         
-        this.skills = DB.SKILLS.filter(s => s.mp >= 0 && s.id < 100); 
+        // ★修正: 初期スキルは「こうげき」のみ
+        this.skills = [DB.SKILLS.find(s => s.id === 1)]; 
 
-        const LEARN_TABLE = {
-            '戦士': { 5: 40, 10: 41, 20: 50 },
-            '僧侶': { 5: 20, 10: 21, 20: 22, 30: 30 },
-            '魔法剣士': { 5: 10, 10: 40, 20: 12 },
-            '賢者': { 5: 11, 10: 21, 20: 13, 30: 22 },
-            '勇者': { 5: 20, 10: 40, 20: 42, 30: 22, 40: 301 }
-        };
-        const table = LEARN_TABLE[data.job];
+        // ★修正: 現在のレベルまでの習得スキルを一括取得
+        const table = JOB_SKILLS[data.job];
         if (table) {
-            for (let lv in table) {
-                if (data.level >= parseInt(lv)) {
-                    const sk = DB.SKILLS.find(s => s.id === table[lv]);
-                    if (sk && !this.skills.find(s => s.id === sk.id)) {
-                        this.skills.push(sk);
+            // レベル1から現在のレベルまでループチェック
+            for (let lv = 1; lv <= data.level; lv++) {
+                if (table[lv]) {
+                    const skill = DB.SKILLS.find(s => s.id === table[lv]);
+                    // 重複チェックして追加
+                    if (skill && !this.skills.find(s => s.id === skill.id)) {
+                        this.skills.push(skill);
                     }
                 }
             }
         }
 
+        // 限界突破スキル (既存ロジック維持)
         if(data.charId) {
             const master = DB.CHARACTERS.find(c => c.id === data.charId);
             if(master && master.lbSkills) {
@@ -117,9 +130,10 @@ class Player extends Entity {
             }
         }
         
+        // 勇者特典 (既存ロジック維持)
         if(data.isHero) {
-            if(this.limitBreak >= 10) this.skills.push(DB.SKILLS.find(s=>s.id===12)); 
-            if(this.limitBreak >= 50) this.skills.push(DB.SKILLS.find(s=>s.id===13));
+            if(this.limitBreak >= 10 && !this.skills.find(s=>s.id===12)) this.skills.push(DB.SKILLS.find(s=>s.id===12)); 
+            if(this.limitBreak >= 50 && !this.skills.find(s=>s.id===13)) this.skills.push(DB.SKILLS.find(s=>s.id===13));
         }
 
         this.synergy = App.checkSynergy(this.equips);
@@ -338,7 +352,6 @@ const App = {
 
     getChar: (uid) => App.data ? App.data.characters.find(c => c.uid === uid) : null,
 
-    // ★修正済み: 属性耐性・MP・魔力などを反映する最新版
     calcStats: (char) => {
         const lb = char.limitBreak || 0;
         const multiplier = 1 + (lb * 0.05); 
@@ -371,8 +384,6 @@ const App = {
                 if(eq.data.mag) s.mag += eq.data.mag;
                 if(eq.data.finDmg) s.finDmg += eq.data.finDmg;
                 if(eq.data.finRed) s.finRed += eq.data.finRed;
-                
-                // 基礎効果の属性値
                 if(eq.data.elmAtk) for(let e in eq.data.elmAtk) s.elmAtk[e] += eq.data.elmAtk[e];
                 if(eq.data.elmRes) for(let e in eq.data.elmRes) s.elmRes[e] += eq.data.elmRes[e];
 
@@ -492,24 +503,24 @@ const App = {
                 charData.currentMp = stats.maxMp;
 
                 let logMsg = `${charData.name}はLv${charData.level}になった！<br>HP+${incHp}, MP+${incMp}`;
+                
+                // ★修正: レベルアップ時のスキル習得判定
                 const newSkill = App.checkNewSkill(charData);
-                if (newSkill) logMsg += `<br><span style="color:#ffff00;">${newSkill.name}を覚えた！</span>`;
+                if (newSkill) {
+                    logMsg += `<br><span style="color:#ffff00;">${newSkill.name}を覚えた！</span>`;
+                }
                 logs.push(logMsg);
             } else { break; }
         }
         return logs;
     },
 
+    // ★修正: 共通テーブルを参照して新スキルをチェック
     checkNewSkill: (charData) => {
-        const LEARN_TABLE = {
-            '戦士': { 5: 40, 10: 41, 20: 50 },
-            '僧侶': { 5: 20, 10: 21, 20: 22, 30: 30 },
-            '魔法剣士': { 5: 10, 10: 40, 20: 12 },
-            '賢者': { 5: 11, 10: 21, 20: 13, 30: 22 },
-            '勇者': { 5: 20, 10: 40, 20: 42, 30: 22, 40: 301 }
-        };
-        const table = LEARN_TABLE[charData.job];
-        if (table && table[charData.level]) return DB.SKILLS.find(s => s.id === table[charData.level]);
+        const table = JOB_SKILLS[charData.job];
+        if (table && table[charData.level]) {
+            return DB.SKILLS.find(s => s.id === table[charData.level]);
+        }
         return null;
     }
 };
