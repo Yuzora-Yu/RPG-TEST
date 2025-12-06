@@ -105,7 +105,7 @@ const DB = {
         {id:104, name:'暗黒剣', type:'物理', target:'単体', mp:12, rate:2.2, count:1, base:40, elm:'闇', desc:'闇の剣技'},
         
         // ★追加: 風属性全体物理、6回攻撃
-        {id:105, name:'しんくうは', type:'物理', target:'全体', mp:15, rate:1.8, count:1, base:30, elm:'風', desc:'真空の刃'},
+        {id:105, name:'しんくうは', type:'物理', target:'全体', mp:15, rate:1.8, count:2, base:30, elm:'風', desc:'真空の刃'},
         {id:106, name:'天下無双', type:'物理', target:'単体', mp:30, rate:0.5, count:6, base:0, desc:'怒涛の6連撃'},
 
         {id:201, name:'五月雨突き', type:'物理', target:'ランダム', mp:10, rate:0.6, count:4, base:0, desc:'4回攻撃'},
@@ -132,8 +132,8 @@ const DB = {
         {id:402, name:'ゴッドハンド', type:'物理', target:'単体', mp:35, rate:3.5, count:1, base:150, elm:'光', desc:'神の拳'},
         {id:403, name:'フルケア', type:'回復', target:'単体', mp:40, rate:0, count:1, base:9999, fix:true, desc:'完全回復'},
         // ★変更: メテオを混沌属性に
-        {id:404, name:'メテオ', type:'魔法', target:'全体', mp:50, rate:3.0, count:1, base:150, elm:'混沌', desc:'隕石落とし'},
-        {id:405, name:'ジゴスパーク', type:'魔法', target:'全体', mp:45, rate:2.8, count:1, base:120, elm:'雷', desc:'地獄の雷'},
+        {id:404, name:'メテオ', type:'魔法', target:'ランダム', mp:50, rate:3.0, count:7, base:150, elm:'火', desc:'隕石落とし'},
+        {id:405, name:'ジゴスパーク', type:'魔法', target:'全体', mp:45, rate:2.8, count:1, base:120, elm:'混沌', desc:'地獄の雷'},
         {id:406, name:'マヒャデドス', type:'魔法', target:'全体', mp:45, rate:2.8, count:1, base:120, elm:'水', desc:'極大氷魔法'},
         {id:407, name:'メラガイアー', type:'魔法', target:'単体', mp:30, rate:4.0, count:1, base:200, elm:'火', desc:'極大火炎'},
 
