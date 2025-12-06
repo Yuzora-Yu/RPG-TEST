@@ -55,6 +55,7 @@ const MAP_DATA = [
 
 /* database.js の SKILLS 部分を差し替え */
 
+const DB = {
     SKILLS: [
         // --- 基本 ---
         {id:1, name:'こうげき', type:'物理', target:'単体', mp:0, rate:1.0, count:1, base:0, elm:null, desc:'通常攻撃'},
