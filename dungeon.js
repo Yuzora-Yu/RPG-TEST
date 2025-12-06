@@ -1,4 +1,4 @@
-/* dungeon.js (チェックポイント選択機能付き) */
+/* dungeon.js (脱出座標修正版) */
 
 const Dungeon = {
     floor: 0, width: 30, height: 30, map: [], pendingAction: null,
@@ -7,7 +7,6 @@ const Dungeon = {
     enter: () => {
         if (typeof Menu !== 'undefined') Menu.closeAll();
         
-        // 既にダンジョン内にいる場合の脱出処理
         if (Field.currentMapData && Field.currentMapData.isDungeon) {
             const isBossFloor = Dungeon.floor > 0 && Dungeon.floor % 10 === 0;
             if (isBossFloor && Dungeon.map[Field.y][Field.x] === 'B') {
@@ -19,35 +18,24 @@ const Dungeon = {
             return;
         }
 
-        // --- チェックポイント判定 ---
         const maxF = App.data.dungeon.maxFloor || 0;
-        
-        // チェックポイント計算: (最高到達階-1) ÷ 10 の切り捨て × 10 + 1
-        // 例: 12階到達 -> (11/10)=1 -> 10+1 = 11階から再開可能
-        // 例: 9階到達 -> (8/10)=0 -> 0+1 = 1階 (選択肢なし)
         const checkpoint = Math.floor((maxF - 1) / 10) * 10 + 1;
 
         if (checkpoint > 1) {
-            // 選択ダイアログを表示
             Menu.choice(
                 `ダンジョンに入ります。\n(最高到達: ${maxF}階)`,
                 "1階から", () => Dungeon.start(1),
                 `${checkpoint}階から`, () => Dungeon.start(checkpoint)
             );
         } else {
-            // チェックポイントなし（通常スタート）
             Dungeon.start(1);
         }
     },
 
-    // ゲーム開始実行（階層を指定してスタート）
     start: (startFloor) => {
         App.data.progress.floor = startFloor;
         App.data.dungeon.tryCount++;
-        
-        // マップデータをクリアして新規生成を強制する
         App.data.dungeon.map = null;
-        
         Dungeon.loadFloor();
     },
 
@@ -61,24 +49,16 @@ const Dungeon = {
         Dungeon.floor = App.data.progress.floor;
         
         if (App.data.dungeon.map) {
-            // 中断データからの復帰
             Dungeon.map = App.data.dungeon.map;
             Dungeon.width = App.data.dungeon.width;
             Dungeon.height = App.data.dungeon.height;
             App.log(`地下 ${Dungeon.floor} 階の冒険を再開します。`);
         } else {
-            // 新規フロア生成
-            
-            // 最高到達階の更新記録
             if(Dungeon.floor > App.data.dungeon.maxFloor) {
                 App.data.dungeon.maxFloor = Dungeon.floor;
-                // 到達ボーナス（主人公強化）
                 const hero = App.getChar('p1');
                 if(hero) {
-                    // ボーナス値計算 (例: 階層-1)
                     hero.limitBreak = Math.max(0, Dungeon.floor - 1);
-                    // ログは少しウザいので、記録更新時のみ控えめに
-                    // App.log(`階層記録更新！`);
                 }
             }
             
@@ -107,13 +87,16 @@ const Dungeon = {
     },
 
     exit: () => {
+        // ダンジョン情報をクリア
         App.data.dungeon.map = null;
         App.data.dungeon.width = 30;
         App.data.dungeon.height = 30;
 
         Field.currentMapData = null;
+        
+        // ★修正: 脱出時の座標を「ゲーム開始地点(23, 60)」に固定
         App.data.location.x = 23;
-        App.data.location.y = 28;
+        App.data.location.y = 60;
         App.data.progress.floor = 0;
         
         App.save();
@@ -156,15 +139,12 @@ const Dungeon = {
         Dungeon.map[y][x] = 'T'; 
         Field.render();
         
-        // 階層ランクに応じたドロップ
         const r = Math.random(); let msg = "";
         if(r < 0.1) {
             const item = DB.ITEMS.find(i => i.name === 'ちいさなメダル');
             msg = "ちいさなメダル"; App.data.items[item.id] = (App.data.items[item.id]||0)+1;
         } else if (r < 0.5) {
-            // 階層に基づいた装備
             const eq = App.createRandomEquip('chest', Dungeon.floor);
-            // 宝箱からは+2まで
             eq.name = eq.name.replace(/\+\d+/, (m)=>{ let v=parseInt(m.replace('+','')); return `+${Math.min(2,v)}`; });
             App.data.inventory.push(eq);
             msg = `${eq.name}`;
