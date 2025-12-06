@@ -1,4 +1,4 @@
-/* battle.js (HP吸収スキル対応・完全版) */
+/* battle.js (HP吸収ログ有効化・完全版) */
 
 const Battle = {
     active: false,
@@ -28,6 +28,7 @@ const Battle = {
         const logEl = Battle.getEl('battle-log');
         if(logEl) logEl.innerHTML = '';
 
+        // パーティ生成
         Battle.party = App.data.party.map(uid => {
             if(!uid) return null;
             const charData = App.getChar(uid);
@@ -49,6 +50,7 @@ const Battle = {
             return;
         }
 
+        // 敵生成・復帰
         if (App.data.battle && App.data.battle.active && Array.isArray(App.data.battle.enemies) && App.data.battle.enemies.length > 0) {
             Battle.log("戦闘に復帰した！");
             Battle.enemies = App.data.battle.enemies.map(e => {
@@ -83,8 +85,6 @@ const Battle = {
         Battle.startInputPhase();
     },
 
-   /* battle.js の generateNewEnemies 関数を修正 */
-
     generateNewEnemies: (isBoss) => {
         const newEnemies = [];
         const floor = App.data.progress.floor || 1; 
@@ -95,13 +95,12 @@ const Battle = {
             let extraBosses = []; 
             let msg = "強大な魔物が現れた！";
 
-            // 階層ごとのボスID指定 (database.jsの定義に合わせる)
             if (floor === 10) {
                 bossId = 1010; msg = "バトルレックスが現れた！";
             } else if (floor === 20) {
                 bossId = 1020; msg = "魔王のつかいが現れた！";
             } else if (floor === 30) {
-                bossId = 1030; msg = "デュランが現れた！";
+                bossId = 1030; msg = "魔戦士デュランが現れた！";
             } else if (floor === 40) {
                 bossId = 1040; msg = "ジャミラスが現れた！";
             } else if (floor === 50) {
@@ -119,10 +118,9 @@ const Battle = {
             } else if (floor === 100) {
                 bossId = 1100; msg = "破壊神シドーが現れた！";
             } else {
-                // 101階以降: レグナード (階層補正あり)
-                bossId = 1000;
+                bossId = 1000; 
                 bossScale = 1.0 + ((floor - 100) * 0.1);
-                msg = "常闇の竜レグナードが現れた！";
+                msg = "竜神レグナードが現れた！";
             }
 
             Battle.log(msg);
@@ -130,7 +128,6 @@ const Battle = {
             const base = DB.MONSTERS.find(m => m.id === bossId) || DB.MONSTERS.find(m => m.id === 1000);
             const m = new Monster(base, bossScale);
             m.name = base.name; m.id = base.id;
-            // ボスの行動回数も引き継ぐ
             if(base.actCount) m.actCount = base.actCount;
             newEnemies.push(m);
 
@@ -148,7 +145,6 @@ const Battle = {
             Battle.log("モンスターが現れた！");
             const count = 1 + Math.floor(Math.random() * 3);
             
-            // メタル系出現判定 (5%)
             if (Math.random() < 0.05) {
                 let metalId = 201; // メタルスライム
                 if (floor >= 20) metalId = 202; // はぐれメタル
@@ -164,29 +160,16 @@ const Battle = {
                 }
             }
 
-            // 通常モンスター抽選
-            // 現在の階層 ± 5 くらいのランク帯から選ぶ
             const minRank = Math.max(1, floor - 5);
             const maxRank = floor + 2;
+            let pool = DB.MONSTERS.filter(m => m.rank >= minRank && m.rank <= maxRank && m.id < 200);
             
-            // ID < 200 (通常モンスター) に限定
-            let pool = DB.MONSTERS.filter(m => 
-                m.rank >= minRank && 
-                m.rank <= maxRank && 
-                m.id < 200
-            );
-            
-            // 候補がなければ条件を緩める
-            if(pool.length === 0) {
-                pool = DB.MONSTERS.filter(m => m.rank <= floor && m.id < 200);
-            }
-            // それでもなければスライム
+            if(pool.length === 0) pool = DB.MONSTERS.filter(m => m.rank <= floor && m.id < 200);
             if(pool.length === 0) pool = [DB.MONSTERS[0]];
             
             for(let i=0; i<count; i++) {
                 const base = pool[Math.floor(Math.random()*pool.length)];
                 const m = new Monster(base, 1.0);
-                // 同名モンスターの区別用サフィックス (A, B, C...)
                 m.name += String.fromCharCode(65+i); 
                 m.id = base.id;
                 newEnemies.push(m);
@@ -194,7 +177,6 @@ const Battle = {
         }
         return newEnemies;
     },
-
 
     log: (msg) => {
         const el = Battle.getEl('battle-log');
@@ -671,6 +653,7 @@ const Battle = {
 
         let targets = [];
         let scope = cmd.targetScope;
+        
         if (!scope && cmd.target === 'all_enemy') scope = '全体';
         if (!scope && cmd.target === 'all_ally') scope = '全体';
         if (!scope && cmd.target === 'random') scope = 'ランダム';
@@ -783,16 +766,14 @@ const Battle = {
                 
                 Battle.log(`【${targetToHit.name}】に<span style="color:${dmgColor}">${dmg}</span>のダメージ！`);
                 
-                // ★追加: HP吸収処理
+                // ★追加: HP吸収処理(ログ追加版)
                 if (data && data.drain) {
-                    // 吸収量はダメージの100%とする（スキル性能として）
                     const drainAmt = dmg;
                     if(drainAmt > 0) {
                          const oldHp = actor.hp;
                          actor.hp = Math.min(actor.baseMaxHp, actor.hp + drainAmt);
-                         // ログを出すと親切
                          const healed = actor.hp - oldHp;
-                         // if(healed > 0) Battle.log(`【${actor.name}】はHPを${healed}吸収した！`);
+                         if(healed > 0) Battle.log(`【${actor.name}】はHPを${healed}回復した！`);
                     }
                 }
 
