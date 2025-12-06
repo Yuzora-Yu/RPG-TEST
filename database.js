@@ -312,15 +312,15 @@ const DB = {
         // 名前, HP, 攻, 防, 速, 魔, 経験値, 金
         { name:'スライム', hp:300, atk:80, def:80, spd:80, mag:50, exp:10, gold:10 },       // バランス・最弱
         { name:'ドラキー', hp:250, atk:90, def:60, spd:130, mag:100, exp:12, gold:15 },     // 高速・魔法
-        { name:'さまようよろい', hp:500, atk:110, def:160, spd:50, mag:20, exp:25, gold:30 }, // 高耐久・鈍足
+        { name:'さまようよろい', hp:400, atk:110, def:160, spd:50, mag:20, exp:25, gold:30 }, // 高耐久・鈍足
         { name:'ゴースト', hp:350, atk:90, def:70, spd:110, mag:130, exp:20, gold:20 },     // 魔法・素早い
-        { name:'オーク', hp:800, atk:130, def:90, spd:70, mag:40, exp:40, gold:35 },        // 高HP・パワー
-        { name:'キラーマシン', hp:600, atk:150, def:140, spd:120, mag:30, exp:80, gold:80 },// 高ステータス物理
-        { name:'アークデーモン', hp:700, atk:120, def:100, spd:90, mag:180, exp:100, gold:90 }, // 高魔力・タフ
-        { name:'ドラゴン', hp:1000, atk:170, def:110, spd:80, mag:80, exp:150, gold:120 },  // 全体的に高い
-        { name:'ホイミスライム', hp:400, atk:60, def:70, spd:100, mag:120, exp:20, gold:20 }, // 回復役・そこそこ速い
-        { name:'ベビーサタン', hp:450, atk:80, def:70, spd:110, mag:200, exp:50, gold:50 },   // 高魔力・紙装甲
-        { name:'キラーマシン2', hp:900, atk:200, def:180, spd:150, mag:50, exp:250, gold:250, actCount:2 } // 最強雑魚
+        { name:'オーク', hp:500, atk:130, def:90, spd:70, mag:40, exp:40, gold:35 },        // 高HP・パワー
+        { name:'キラーマシン', hp:450, atk:150, def:140, spd:120, mag:30, exp:80, gold:80 },// 高ステータス物理
+        { name:'アークデーモン', hp:400, atk:120, def:100, spd:90, mag:180, exp:100, gold:90 }, // 高魔力・タフ
+        { name:'ドラゴン', hp:600, atk:170, def:110, spd:80, mag:80, exp:150, gold:120 },  // 全体的に高い
+        { name:'ホイミスライム', hp:280, atk:60, def:70, spd:100, mag:120, exp:20, gold:20 }, // 回復役・そこそこ速い
+        { name:'ベビーサタン', hp:250, atk:80, def:70, spd:110, mag:200, exp:50, gold:50 },   // 高魔力・紙装甲
+        { name:'キラーマシン2', hp:750, atk:200, def:180, spd:130, mag:50, exp:250, gold:250, actCount:2 } // 最強雑魚
     ];
 
 /* database.js の MONSTER_SKILL_SETS 定義以降を上書き */
@@ -488,7 +488,7 @@ const DB = {
     // 10階: バトルレックス (炎と物理)
     DB.MONSTERS.push({
         id: 1010, rank: 10, minF: 999, name: 'バトルレックス',
-        hp: 3000, mp: 100, atk: 200, def: 100, spd: 50, mag: 50,
+        hp: 5000, mp: 100, atk: 520, def: 350, spd: 50, mag: 150,
         exp: 1000, gold: 500,
         acts: [1, 40, 101, 44, 601, 603], // 攻撃, 火炎斬り, 強撃, 兜割り, 火炎の息, 激しい炎
         actCount: 1
@@ -497,7 +497,7 @@ const DB = {
     // 20階: 魔王のつかい (魔法とランダム物理・2回)
     DB.MONSTERS.push({
         id: 1020, rank: 20, minF: 999, name: '魔王のつかい',
-        hp: 5000, mp: 200, atk: 250, def: 150, spd: 80, mag: 150,
+        hp: 9000, mp: 200, atk: 750, def: 520, spd: 80, mag: 650,
         exp: 2000, gold: 1000,
         acts: [1, 301, 302, 303, 201, 202, 307], // メラミ, ベギラマ, ヒャダルコ, 五月雨, 爆裂, ドルモーア
         actCount: 2
@@ -506,7 +506,7 @@ const DB = {
     // 30階: デュラン (中級物理・2回)
     DB.MONSTERS.push({
         id: 1030, rank: 30, minF: 999, name: 'デュラン',
-        hp: 8000, mp: 200, atk: 400, def: 200, spd: 100, mag: 100,
+        hp: 17000, mp: 800, atk: 1400, def: 900, spd: 250, mag: 100,
         exp: 4000, gold: 2000,
         acts: [1, 41, 44, 101, 102, 104, 105], // はやぶさ, 兜割り, 強撃, 渾身, 暗黒剣, しんくうは
         actCount: 2
@@ -515,7 +515,7 @@ const DB = {
     // 40階: ジャミラス (ブレス、魔法・2回)
     DB.MONSTERS.push({
         id: 1040, rank: 40, minF: 999, name: 'ジャミラス',
-        hp: 12000, mp: 300, atk: 350, def: 250, spd: 150, mag: 300,
+        hp: 30000, mp: 1300, atk: 1650, def: 1550, spd: 450, mag: 1300,
         exp: 6000, gold: 3000,
         acts: [1, 304, 309, 601, 603, 605], // バギマ, バギクロス, 火炎の息, 激しい炎, しゃくねつ
         actCount: 2
@@ -524,7 +524,7 @@ const DB = {
     // 50階: グラコス (上級物理、弱体、水・2回)
     DB.MONSTERS.push({
         id: 1050, rank: 50, minF: 999, name: 'グラコス',
-        hp: 18000, mp: 400, atk: 500, def: 300, spd: 120, mag: 200,
+        hp: 48000, mp: 4200, atk: 2500, def: 2300, spd: 500, mag: 2100,
         exp: 10000, gold: 5000,
         acts: [1, 42, 303, 602, 604, 60, 61], // 氷結斬り, ヒャダルコ, こごえる吹雪, かがやく息, ルカニ, ボミオス
         actCount: 2
@@ -533,7 +533,7 @@ const DB = {
     // 60階: ムドー (上級魔法、ブレス、状態異常・2回)
     DB.MONSTERS.push({
         id: 1060, rank: 60, minF: 999, name: 'ムドー',
-        hp: 25000, mp: 500, atk: 400, def: 350, spd: 140, mag: 500,
+        hp: 75000, mp: 5800, atk: 3400, def: 2350, spd: 740, mag: 4500,
         exp: 15000, gold: 8000,
         acts: [305, 306, 307, 605, 606, 607, 52, 60], // メラゾーマ, イオナズン, ドルモーア, しゃくねつ, 絶対零度, 毒の息, ピオリム, ルカニ
         actCount: 2
@@ -542,7 +542,7 @@ const DB = {
     // 70階: アクバー (上級魔法、上級物理・2回)
     DB.MONSTERS.push({
         id: 1070, rank: 70, minF: 999, name: 'アクバー',
-        hp: 35000, mp: 600, atk: 600, def: 400, spd: 160, mag: 600,
+        hp: 97000, mp: 6000, atk: 4600, def: 3400, spd: 950, mag: 4600,
         exp: 20000, gold: 10000,
         acts: [1, 103, 306, 405, 406, 407, 53], // ギガスラ, イオナズン, ジゴスパ, マヒャデ, メラガイアー, マジックバリア
         actCount: 2
@@ -551,24 +551,24 @@ const DB = {
     // 80階: 悪霊の神々 (3体)
     DB.MONSTERS.push({
         id: 1080, rank: 80, minF: 999, name: 'アトラス',
-        hp: 40000, mp: 100, atk: 1200, def: 400, spd: 150, mag: 50,
+        hp: 90000, mp: 1000, atk: 6200, def: 2000, spd: 150, mag: 50,
         exp: 10000, gold: 5000, acts: [1, 101, 102, 44, 409, 106], actCount: 1 // 天下無双追加
     });
     DB.MONSTERS.push({
         id: 1081, rank: 80, minF: 999, name: 'バズズ',
-        hp: 25000, mp: 500, atk: 500, def: 300, spd: 250, mag: 700,
+        hp: 55000, mp: 5500, atk: 4500, def: 3300, spd: 1250, mag: 4700,
         exp: 10000, gold: 5000, acts: [13, 306, 500, 30, 60, 61, 406], actCount: 1
     });
     DB.MONSTERS.push({
         id: 1082, rank: 80, minF: 999, name: 'ベリアル',
-        hp: 30000, mp: 400, atk: 700, def: 400, spd: 180, mag: 500,
+        hp: 60000, mp: 8400, atk: 4700, def: 4000, spd: 450, mag: 5500,
         exp: 10000, gold: 5000, acts: [1, 305, 306, 22, 50, 412, 609], actCount: 1 // 煉獄火炎追加
     });
 
     // 90階: ハーゴン (超級魔法)
     DB.MONSTERS.push({
         id: 1090, rank: 90, minF: 999, name: 'ハーゴン',
-        hp: 60000, mp: 999, atk: 600, def: 500, spd: 200, mag: 900,
+        hp: 150000, mp: 9999, atk: 5600, def: 5500, spd: 1600, mag: 8000,
         exp: 50000, gold: 20000,
         acts: [404, 405, 406, 407, 412, 500, 905], // メテオ〜イオグランデ、マダンテ、やみのはどう
         actCount: 2
@@ -577,7 +577,7 @@ const DB = {
     // 100階: シドー (破壊神・2回)
     DB.MONSTERS.push({
         id: 1100, rank: 100, minF: 999, name: 'シドー',
-        hp: 100000, mp: 999, atk: 1500, def: 1000, spd: 300, mag: 800,
+        hp: 250000, mp: 9999, atk: 8500, def: 6000, spd: 1500, mag: 7800,
         exp: 100000, gold: 50000,
         acts: [1, 103, 404, 407, 609, 23, 60, 411], // 煉獄火炎、ラグナブレード追加
         actCount: 2 
@@ -586,7 +586,7 @@ const DB = {
     // 101階以降: レグナード (竜神・凶悪・2回)
     DB.MONSTERS.push({
         id: 1000, rank: 100, minF: 999, name: 'レグナード', 
-        hp: 200000, mp: 9999, atk: 2500, def: 1500, spd: 500, mag: 1200, 
+        hp: 400000, mp: 99999, atk: 12500, def: 8500, spd: 2500, mag: 9800, 
         exp: 200000, gold: 100000, 
         acts: [1, 401, 402, 405, 406, 901, 902, 905, 609], // 煉獄火炎追加
         actCount: 2 
