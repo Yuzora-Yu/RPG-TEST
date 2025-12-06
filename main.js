@@ -1,4 +1,4 @@
-/* main.js (ボスドロップ対応・完全版) */
+/* main.js (calcStats復活・完全版) */
 
 // ==========================================================================
 // 設定：職業別習得スキルテーブル (新スキル対応版)
@@ -346,6 +346,7 @@ const App = {
 
     getChar: (uid) => App.data ? App.data.characters.find(c => c.uid === uid) : null,
 
+    // ★追加: ステータス計算処理 (通常ステータス + 属性 + 装備補正)
     calcStats: (char) => {
         const lb = char.limitBreak || 0;
         const multiplier = 1 + (lb * 0.05); 
@@ -363,9 +364,15 @@ const App = {
 
         if(char.uid === 'p1' && char.alloc) {
             for(let key in char.alloc) {
-                const [type, elm] = key.split('_');
-                if(type === 'elmAtk') s.elmAtk[elm] += char.alloc[key];
-                if(type === 'elmRes') s.elmRes[elm] += char.alloc[key];
+                if (key.includes('_')) {
+                    const [type, elm] = key.split('_');
+                    if(type === 'elmAtk' && s.elmAtk[elm] !== undefined) s.elmAtk[elm] += char.alloc[key];
+                    if(type === 'elmRes' && s.elmRes[elm] !== undefined) s.elmRes[elm] += char.alloc[key];
+                } else {
+                    if (key === 'hp') s.maxHp += char.alloc[key];
+                    else if (key === 'mp') s.maxMp += char.alloc[key];
+                    else if (s[key] !== undefined) s[key] += char.alloc[key];
+                }
             }
         }
 
@@ -398,7 +405,6 @@ const App = {
         return s;
     },
 
-    // ★修正: 第3引数 fixedPlus を追加
     createRandomEquip: (source, rank = 1, fixedPlus = null) => {
         let candidates = DB.EQUIPS.filter(e => e.rank <= rank && e.rank >= Math.max(1, rank - 15));
         if (candidates.length === 0) candidates = DB.EQUIPS.filter(e => e.rank <= rank);
@@ -407,8 +413,6 @@ const App = {
         const base = candidates[Math.floor(Math.random() * candidates.length)];
         
         let plus = 0;
-        
-        // ★修正: fixedPlusが指定されていれば優先
         if (fixedPlus !== null) {
             plus = fixedPlus;
         } else {
@@ -504,8 +508,11 @@ const App = {
                 charData.currentMp = stats.maxMp;
 
                 let logMsg = `${charData.name}はLv${charData.level}になった！<br>HP+${incHp}, MP+${incMp}`;
+                
                 const newSkill = App.checkNewSkill(charData);
-                if (newSkill) logMsg += `<br><span style="color:#ffff00;">${newSkill.name}を覚えた！</span>`;
+                if (newSkill) {
+                    logMsg += `<br><span style="color:#ffff00;">${newSkill.name}を覚えた！</span>`;
+                }
                 logs.push(logMsg);
             } else { break; }
         }
