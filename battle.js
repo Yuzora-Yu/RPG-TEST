@@ -1,4 +1,4 @@
-/* battle.js (HP吸収ログ有効化・完全版) */
+/* battle.js (敵回復AI修正・吸収量調整版) */
 
 const Battle = {
     active: false,
@@ -110,8 +110,8 @@ const Battle = {
             } else if (floor === 70) {
                 bossId = 1070; msg = "アクバーが現れた！";
             } else if (floor === 80) {
-                bossId = 1080; // アトラス
-                extraBosses = [1081, 1082]; // バズズ, ベリアル
+                bossId = 1080; 
+                extraBosses = [1081, 1082]; 
                 msg = "悪霊の神々が現れた！";
             } else if (floor === 90) {
                 bossId = 1090; msg = "大神官ハーゴンが現れた！";
@@ -146,10 +146,10 @@ const Battle = {
             const count = 1 + Math.floor(Math.random() * 3);
             
             if (Math.random() < 0.05) {
-                let metalId = 201; // メタルスライム
-                if (floor >= 20) metalId = 202; // はぐれメタル
-                if (floor >= 50) metalId = 203; // メタルキング
-                if (floor >= 100) metalId = 204; // プラチナキング
+                let metalId = 201; 
+                if (floor >= 20) metalId = 202; 
+                if (floor >= 50) metalId = 203; 
+                if (floor >= 100) metalId = 204; 
                 
                 const metalBase = DB.MONSTERS.find(m => m.id === metalId);
                 if(metalBase && floor >= metalBase.minF) {
@@ -542,10 +542,33 @@ const Battle = {
                  continue;
             }
 
+            // 敵のターゲット選択 (★修正: 敵AIのターゲット決定)
             if (cmd.isEnemy && !cmd.target && cmd.targetScope !== '全体' && cmd.targetScope !== 'ランダム') {
-                const aliveParty = Battle.party.filter(p => p && !p.isDead);
-                if (aliveParty.length === 0) break;
-                cmd.target = aliveParty[Math.floor(Math.random() * aliveParty.length)];
+                let isSupport = false;
+                if (cmd.data && (cmd.data.type.includes('回復') || cmd.data.type === '強化' || cmd.data.type === '蘇生')) {
+                    isSupport = true;
+                }
+
+                if (isSupport) {
+                    // 味方(敵陣営)をターゲット
+                    let pool = Battle.enemies.filter(e => !e.isDead && !e.isFled);
+                    // 蘇生なら死体対象(簡易)
+                    if (cmd.data && cmd.data.type.includes('蘇生')) {
+                         pool = Battle.enemies.filter(e => e.isDead && !e.isFled);
+                    }
+                    
+                    if (pool.length > 0) {
+                        cmd.target = pool[Math.floor(Math.random() * pool.length)];
+                    } else {
+                        // 対象がいなければ自分(生きている場合)
+                        cmd.target = cmd.actor; 
+                    }
+                } else {
+                    // 攻撃ならプレイヤーをターゲット
+                    const aliveParty = Battle.party.filter(p => p && !p.isDead);
+                    if (aliveParty.length === 0) break;
+                    cmd.target = aliveParty[Math.floor(Math.random() * aliveParty.length)];
+                }
             }
 
             await Battle.processAction(cmd);
@@ -660,7 +683,13 @@ const Battle = {
 
         if (scope === '全体') {
              if (cmd.isEnemy) {
-                 targets = Battle.party.filter(p => p && !p.isDead);
+                 // ★修正: 敵の全体スキル(回復/強化)は敵全体へ、攻撃はプレイヤー全体へ
+                 if (['回復','蘇生','強化'].includes(effectType)) {
+                     targets = Battle.enemies.filter(e => !e.isDead && !e.isFled);
+                     if(effectType==='蘇生') targets = Battle.enemies.filter(e => e.isDead && !e.isFled);
+                 } else {
+                     targets = Battle.party.filter(p => p && !p.isDead);
+                 }
              } else {
                  if (['回復','蘇生','強化'].includes(effectType)) targets = Battle.party.filter(p => p); 
                  else targets = Battle.enemies.filter(e => !e.isDead && !e.isFled);
@@ -766,9 +795,9 @@ const Battle = {
                 
                 Battle.log(`【${targetToHit.name}】に<span style="color:${dmgColor}">${dmg}</span>のダメージ！`);
                 
-                // ★追加: HP吸収処理(ログ追加版)
+                // ★修正: HP吸収量25% & ログ表示
                 if (data && data.drain) {
-                    const drainAmt = dmg;
+                    const drainAmt = Math.floor(dmg * 0.25);
                     if(drainAmt > 0) {
                          const oldHp = actor.hp;
                          actor.hp = Math.min(actor.baseMaxHp, actor.hp + drainAmt);
