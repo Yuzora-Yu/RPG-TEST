@@ -53,7 +53,8 @@ const MAP_DATA = [
     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
 ];
 
-const DB = {
+/* database.js の SKILLS 部分を差し替え */
+
     SKILLS: [
         // --- 基本 ---
         {id:1, name:'こうげき', type:'物理', target:'単体', mp:0, rate:1.0, count:1, base:0, elm:null, desc:'通常攻撃'},
@@ -83,6 +84,10 @@ const DB = {
         {id:43, name:'雷鳴突き', type:'物理', target:'単体', mp:4, rate:1.3, count:1, base:5, elm:'雷', desc:'雷の槍技'},
         {id:44, name:'兜割り', type:'物理', target:'単体', mp:4, rate:1.2, count:1, base:5, buff:{def:0.8}, desc:'敵の守備を下げる'},
         {id:45, name:'メタル斬り', type:'物理', target:'単体', mp:5, rate:0, count:1, base:2, fix:true, desc:'メタルに固定ダメージ'},
+        
+        // ★追加: 風属性物理、混沌属性吸収物理
+        {id:46, name:'ウイングアッパー', type:'物理', target:'単体', mp:6, rate:1.4, count:1, base:10, elm:'風', desc:'風の拳'},
+        {id:47, name:'ブラッドソード', type:'物理', target:'単体', mp:8, rate:1.5, count:1, base:20, elm:'混沌', drain:true, desc:'HP吸収'},
 
         // --- 強化・弱体 ---
         {id:50, name:'バイキルト', type:'強化', target:'単体', mp:8, rate:0, count:1, base:0, buff:{atk:1.5}, desc:'攻撃力アップ'},
@@ -97,25 +102,36 @@ const DB = {
         {id:102, name:'渾身斬り', type:'物理', target:'単体', mp:10, rate:2.5, count:1, base:30, desc:'渾身の一撃'},
         {id:103, name:'ギガスラッシュ', type:'物理', target:'全体', mp:15, rate:2.0, count:1, base:50, elm:'光', desc:'光の剣技'},
         {id:104, name:'暗黒剣', type:'物理', target:'単体', mp:12, rate:2.2, count:1, base:40, elm:'闇', desc:'闇の剣技'},
+        
+        // ★追加: 風属性全体物理、6回攻撃
+        {id:105, name:'しんくうは', type:'物理', target:'全体', mp:15, rate:1.8, count:1, base:30, elm:'風', desc:'真空の刃'},
+        {id:106, name:'天下無双', type:'物理', target:'単体', mp:30, rate:0.5, count:6, base:0, desc:'怒涛の6連撃'},
+
         {id:201, name:'五月雨突き', type:'物理', target:'ランダム', mp:10, rate:0.6, count:4, base:0, desc:'4回攻撃'},
         {id:202, name:'爆裂拳', type:'物理', target:'ランダム', mp:12, rate:0.7, count:4, base:0, desc:'4回攻撃'},
         {id:203, name:'さみだれ剣', type:'物理', target:'ランダム', mp:15, rate:0.6, count:4, base:10, desc:'4回斬撃'},
 
         // --- 中級・上級魔法 ---
         {id:301, name:'メラミ', type:'魔法', target:'単体', mp:6, rate:1.8, count:1, base:40, elm:'火', desc:'中火球'},
-        {id:302, name:'ベギラマ', type:'魔法', target:'全体', mp:10, rate:1.5, count:1, base:30, elm:'雷', desc:'雷の帯'},
+        // ★変更: ベギラマを火属性に
+        {id:302, name:'ベギラマ', type:'魔法', target:'全体', mp:10, rate:1.5, count:1, base:30, elm:'火', desc:'灼熱の帯'},
         {id:303, name:'ヒャダルコ', type:'魔法', target:'全体', mp:10, rate:1.5, count:1, base:30, elm:'水', desc:'氷の波動'},
         {id:304, name:'バギマ', type:'魔法', target:'全体', mp:10, rate:1.5, count:1, base:30, elm:'風', desc:'真空の嵐'},
         {id:305, name:'メラゾーマ', type:'魔法', target:'単体', mp:15, rate:2.8, count:1, base:100, elm:'火', desc:'大火球'},
         {id:306, name:'イオナズン', type:'魔法', target:'全体', mp:25, rate:2.2, count:1, base:80, elm:'光', desc:'大爆発'},
         {id:307, name:'ドルモーア', type:'魔法', target:'単体', mp:15, rate:2.8, count:1, base:100, elm:'闇', desc:'闇の爆発'},
         {id:308, name:'イオラ', type:'魔法', target:'全体', mp:12, rate:1.2, count:1, base:40, elm:'光', desc:'中爆発'},
+        
+        // ★追加: 風・火の上級魔法
+        {id:309, name:'バギクロス', type:'魔法', target:'全体', mp:25, rate:2.2, count:1, base:80, elm:'風', desc:'真空の大嵐'},
+        {id:310, name:'ベギラゴン', type:'魔法', target:'全体', mp:25, rate:2.2, count:1, base:80, elm:'火', desc:'灼熱の波動'},
 
         // --- 最上級・EX ---
         {id:401, name:'ギガブレイク', type:'物理', target:'全体', mp:30, rate:2.8, count:1, base:100, elm:'雷', desc:'最強の剣技'},
         {id:402, name:'ゴッドハンド', type:'物理', target:'単体', mp:35, rate:3.5, count:1, base:150, elm:'光', desc:'神の拳'},
         {id:403, name:'フルケア', type:'回復', target:'単体', mp:40, rate:0, count:1, base:9999, fix:true, desc:'完全回復'},
-        {id:404, name:'メテオ', type:'魔法', target:'全体', mp:50, rate:3.0, count:1, base:150, elm:'火', desc:'隕石落とし'},
+        // ★変更: メテオを混沌属性に
+        {id:404, name:'メテオ', type:'魔法', target:'全体', mp:50, rate:3.0, count:1, base:150, elm:'混沌', desc:'隕石落とし'},
         {id:405, name:'ジゴスパーク', type:'魔法', target:'全体', mp:45, rate:2.8, count:1, base:120, elm:'雷', desc:'地獄の雷'},
         {id:406, name:'マヒャデドス', type:'魔法', target:'全体', mp:45, rate:2.8, count:1, base:120, elm:'水', desc:'極大氷魔法'},
         {id:407, name:'メラガイアー', type:'魔法', target:'単体', mp:30, rate:4.0, count:1, base:200, elm:'火', desc:'極大火炎'},
@@ -147,6 +163,7 @@ const DB = {
 
         {id:999, name:'激しい炎', type:'特殊', target:'全体', mp:0, rate:0, count:1, base:80, fix:true, elm:'火', desc:'全体炎'}
     ],
+    
     CHARACTERS: [
         {id:301, name:'アルス', job:'勇者', rarity:'N', hp:800, mp:300, atk:150, def:120, spd:100, mag:100, lbSkills:{50:42, 99:401}},
         {id:101, name:'ジョン', job:'戦士', rarity:'R', hp:150, mp:20, atk:40, def:30, spd:20, mag:10, lbSkills:{50:101, 99:44}},
