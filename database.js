@@ -334,64 +334,6 @@ const DB = {
         }
     };
 
-    for(let r=1; r<=100; r++) {
-        // 種類選出 (全11種)
-        const typeIdx = Math.floor((r - 1) / (100 / MONSTER_TYPES.length));
-        const base = MONSTER_TYPES[Math.min(typeIdx, MONSTER_TYPES.length - 1)];
-        
-        // ★修正: 成長率 (ランク100で約30倍)
-        const scale_factor = 0.3; 
-        const hp_exp = 1.2; // HPは1.2乗 (爆発的増加を防ぐ)
-
-        const scale = 1.0 + (r * scale_factor); 
-        
-        let prefix = "";
-        if(r % 10 >= 5) prefix = "強・";
-        if(r > 50) prefix = "真・";
-        if(r > 80) prefix = "極・";
-
-        // スキルセット決定
-        let myActs = [1];
-        const skillSet = MONSTER_SKILL_SETS[base.name];
-        if (skillSet) {
-            let sourceActs = [];
-            if (r < 30) sourceActs = skillSet.low;
-            else if (r < 70) sourceActs = skillSet.mid;
-            else sourceActs = skillSet.high;
-            myActs = sourceActs; 
-        }
-
-        // 1ランクにつき2体生成
-        for(let i=0; i<2; i++) {
-            // 中心に近いランクのモンスターをランダムに選ぶ（バリエーション出し）
-            // ※今回はbase固定で、IDを少しずらして登録
-            DB.MONSTERS.push({
-                id: r + (i * 0.1),
-                rank: r,
-                minF: r,
-                name: `${prefix}${base.name} Lv${r}`,
-                // ★修正: HP計算式 (base * scale^1.2)
-                hp: Math.floor(base.hp * Math.pow(scale, hp_exp)), 
-                mp: 50 + r * 5,
-                atk: Math.floor(base.atk * scale),
-                def: Math.floor(base.def * scale),
-                // ★修正: 素早さ・魔力・Goldも基礎値依存
-                spd: Math.floor(base.spd * scale),
-                mag: Math.floor(base.mag * scale),
-                gold: Math.floor(base.gold * scale),
-                exp: Math.floor(base.exp * scale),
-                acts: myActs,
-                actCount: base.actCount || 1,
-                drop: null
-            });
-        }
-
-        // 30%でホイミスライム追加 (全ランク帯)
-        if (Math.random() < 0.3) {
-            const hoimiBase = MONSTER_TYPES.find(m => m.name === 'ホイミスライム');
-            let hoimiActs = MONSTER_SKILL_SETS['ホイミスライム'].low;
-
-
 /* database.js の MONSTER_SKILL_SETS 定義以降を上書き */
 
     // 種類ごとのランク別スキル設定 (新スキル・ブレス対応版)
