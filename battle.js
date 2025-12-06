@@ -1,4 +1,4 @@
-/* battle.js (防御最優先・敵防御対応・完全版) */
+/* battle.js (ランダム攻撃修正版) */
 
 const Battle = {
     active: false,
@@ -28,7 +28,6 @@ const Battle = {
         const logEl = Battle.getEl('battle-log');
         if(logEl) logEl.innerHTML = '';
 
-        // パーティ生成
         Battle.party = App.data.party.map(uid => {
             if(!uid) return null;
             const charData = App.getChar(uid);
@@ -50,7 +49,6 @@ const Battle = {
             return;
         }
 
-        // 敵生成・復帰
         if (App.data.battle && App.data.battle.active && Array.isArray(App.data.battle.enemies) && App.data.battle.enemies.length > 0) {
             Battle.log("戦闘に復帰した！");
             Battle.enemies = App.data.battle.enemies.map(e => {
@@ -95,21 +93,21 @@ const Battle = {
             let extraBosses = []; 
 
             if (floor <= 40) {
-                bossId = 1010; // デュラン
+                bossId = 1010; 
                 Battle.log("魔戦士デュランが現れた！");
             } else if (floor <= 80) {
-                bossId = 1020; // ムドー
+                bossId = 1020; 
                 bossScale = 1.0 + ((floor - 40) * 0.01); 
                 Battle.log("魔王ムドーが現れた！");
             } else if (floor === 90) {
-                bossId = 1030; // アトラス
-                extraBosses = [1031, 1032]; // バズズ, ベリアル
+                bossId = 1030; 
+                extraBosses = [1031, 1032]; 
                 Battle.log("悪霊の神々が現れた！");
             } else if (floor === 100) {
-                bossId = 1040; // シドー
+                bossId = 1040; 
                 Battle.log("破壊神シドーが現れた！");
             } else {
-                bossId = 1000; // レグナード
+                bossId = 1000; 
                 bossScale = 1.0 + ((floor - 100) * 0.1);
                 Battle.log("竜神レグナードが現れた！");
             }
@@ -132,7 +130,6 @@ const Battle = {
             Battle.log("モンスターが現れた！");
             const count = 1 + Math.floor(Math.random() * 3);
             
-            // メタル系出現判定 (5%)
             if (Math.random() < 0.05) {
                 let metalId = 201; 
                 if (floor >= 20) metalId = 202; 
@@ -148,7 +145,6 @@ const Battle = {
                 }
             }
 
-            // 通常モンスター抽選
             const minRank = Math.max(1, floor - 5);
             const maxRank = floor + 2;
             let pool = DB.MONSTERS.filter(m => m.rank >= minRank && m.rank <= maxRank && m.id < 200);
@@ -298,7 +294,7 @@ const Battle = {
                 if (type.includes('回復') || ['蘇生','強化'].includes(type)) actualTargetType = 'all_ally';
                 else actualTargetType = 'all_enemy';
             } else if (range === 'ランダム') {
-                actualTargetType = 'enemy';
+                actualTargetType = 'random'; // ランダムは専用タイプへ
             }
         }
 
@@ -306,13 +302,15 @@ const Battle = {
         else if (actualTargetType === 'ally') targets = Battle.party.filter(p => p && !p.isDead);
         else if (actualTargetType === 'ally_dead') targets = Battle.party.filter(p => p && p.isDead);
 
-        if (actualTargetType === 'all_enemy' || actualTargetType === 'all_ally') {
+        // 即時登録が必要なタイプ (全体、ランダム)
+        if (actualTargetType === 'all_enemy' || actualTargetType === 'all_ally' || actualTargetType === 'random') {
             const actor = Battle.party[Battle.currentActorIndex];
             Battle.registerAction({ 
                 type: Battle.selectingAction, 
                 actor: actor, 
                 target: actualTargetType, 
-                data: Battle.selectedItemOrSkill 
+                data: Battle.selectedItemOrSkill,
+                targetScope: actionData ? actionData.target : null // ★重要: ここでスコープを引き継ぐ
             });
             return;
         }
@@ -369,7 +367,7 @@ const Battle = {
             div.innerHTML = `<div>${sk.name} (${sk.target})</div><div style="color:#88f">MP:${sk.mp}</div>`;
             div.onclick = (e) => {
                 e.stopPropagation();
-                if (sk.id === 500) { // マダンテ
+                if (sk.id === 500) { 
                      if (actor.mp <= 0) { Battle.log("MPが足りません"); return; }
                 } else {
                      if (actor.mp < sk.mp) { Battle.log("MPが足りません"); return; }
@@ -440,14 +438,11 @@ const Battle = {
 
     registerAction: (actionObj) => {
         const spd = actionObj.actor.getStat('spd');
-        
-        // ★修正: 防御は最優先(99999)
         if (actionObj.type === 'defend') {
             actionObj.speed = 99999; 
         } else {
             actionObj.speed = spd * (0.9 + Math.random() * 0.2);
         }
-        
         Battle.commandQueue.push(actionObj);
         Battle.closeSubMenu();
         Battle.currentActorIndex++;
@@ -490,14 +485,11 @@ const Battle = {
                     let actionType = 'enemy_attack'; 
                     let skillData = null;
                     let targetScope = 'single'; 
-                    let priority = spd * (0.8 + Math.random() * 0.4);
 
                     if (actId === 9) {
                         actionType = 'flee';
-                    } else if (actId === 2) { 
-                        // ★修正: 敵の防御(ID:2)も最優先タイプに変換
+                    } else if (actId === 2) {
                         actionType = 'defend';
-                        priority = 99999;
                     } else if (actId !== 1) {
                         const skill = DB.SKILLS.find(s => s.id === actId);
                         if (skill) {
@@ -510,7 +502,7 @@ const Battle = {
                     Battle.commandQueue.push({
                         type: actionType,
                         actor: e,
-                        speed: priority, 
+                        speed: actionType === 'defend' ? 99999 : spd * (0.8 + Math.random() * 0.4), 
                         isEnemy: true,
                         data: skillData,
                         targetScope: targetScope,
@@ -536,6 +528,7 @@ const Battle = {
                  continue;
             }
 
+            // ターゲット未定の単体攻撃ならランダム決定
             if (cmd.isEnemy && !cmd.target && cmd.targetScope !== '全体' && cmd.targetScope !== 'ランダム') {
                 const aliveParty = Battle.party.filter(p => p && !p.isDead);
                 if (aliveParty.length === 0) break;
@@ -647,6 +640,8 @@ const Battle = {
 
         let targets = [];
         let scope = cmd.targetScope;
+        
+        // プレイヤーの全体/ランダム指定がある場合、それを優先
         if (!scope && cmd.target === 'all_enemy') scope = '全体';
         if (!scope && cmd.target === 'all_ally') scope = '全体';
         if (!scope && cmd.target === 'random') scope = 'ランダム';
@@ -659,6 +654,7 @@ const Battle = {
                  else targets = Battle.enemies.filter(e => !e.isDead && !e.isFled);
              }
         } else if (scope === 'ランダム') {
+             // 抽選用のプールから仮のターゲットを設定（ループ内で再抽選）
              const pool = cmd.isEnemy ? Battle.party.filter(p => p && !p.isDead) : Battle.enemies.filter(e => !e.isDead && !e.isFled);
              if(pool.length > 0) targets = [pool[0]];
         } else {
@@ -704,6 +700,7 @@ const Battle = {
             }
 
             for (let i = 0; i < hitCount; i++) {
+                // ランダム攻撃時のターゲット再抽選
                 let targetToHit = t;
                 if (scope === 'ランダム') {
                     const pool = cmd.isEnemy ? Battle.party.filter(p => p && !p.isDead) : Battle.enemies.filter(e => !e.isDead && !e.isFled);
@@ -866,7 +863,7 @@ const Battle = {
 
             const isActor = (Battle.phase === 'input' && index === Battle.currentActorIndex);
             if(isActor) {
-                div.style.border = "2px solid yellow";
+                div.style.border = "2px solid #ffd700";
                 div.style.background = "#333";
             }
             
