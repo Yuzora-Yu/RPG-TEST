@@ -1237,7 +1237,7 @@ const MenuBook = {
                         </div>
                         
                         <div style="font-size:10px; color:#ffd700;">
-                            EXP:${m.exp} / GOLD:${m.gold} / Drop:${dropName}
+                            EXP:${m.exp} / GOLD:${m.gold}
                         </div>
                     </div>
                 `;
