@@ -53,7 +53,8 @@ const MAP_DATA = [
     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
 ];
 
-/* database.js の SKILLS 部分を差し替え */
+/* database.js (スキル・アイテム調整版) */
+
 const DB = {
     SKILLS: [
         // --- 基本 ---
@@ -72,8 +73,11 @@ const DB = {
         {id:20, name:'ホイミ', type:'回復', target:'単体', mp:3, rate:1.2, count:1, base:80, elm:null, desc:'小回復'},
         {id:21, name:'ベホイミ', type:'回復', target:'単体', mp:6, rate:1.8, count:1, base:230, elm:null, desc:'中回復'},
         {id:22, name:'ベホマラー', type:'回復', target:'全体', mp:12, rate:1.2, count:1, base:110, elm:null, desc:'全体回復'},
-        {id:23, name:'ベホマ', type:'回復', target:'単体', mp:10, rate:0, count:1, base:9999, fix:true, desc:'全回復'},
-        {id:24, name:'ベホマズン', type:'回復', target:'全体', mp:30, rate:0, count:1, base:9999, fix:true, desc:'全体全回復'},
+        // ★修正: ベホマ/ベホマズンに倍率設定(fix解除)、フルケア基礎値99999
+        {id:23, name:'ベホマ', type:'回復', target:'単体', mp:10, rate:0.2, count:1, base:9999, desc:'全回復'},
+        {id:24, name:'ベホマズン', type:'回復', target:'全体', mp:30, rate:0.2, count:1, base:9999, desc:'全体全回復'},
+        {id:403, name:'フルケア', type:'回復', target:'単体', mp:40, rate:0, count:1, base:99999, fix:true, desc:'完全回復'},
+        
         {id:30, name:'ザオラル', type:'蘇生', target:'単体', mp:8, rate:0.5, count:1, base:20, elm:null, desc:'50%蘇生'},
         {id:31, name:'ザオリク', type:'蘇生', target:'単体', mp:20, rate:0.8, count:1, base:50, elm:null, desc:'100%蘇生'},
 
@@ -84,8 +88,6 @@ const DB = {
         {id:43, name:'雷鳴突き', type:'物理', target:'単体', mp:4, rate:1.0, count:1, base:55, elm:'雷', desc:'雷の槍技'},
         {id:44, name:'兜割り', type:'物理', target:'単体', mp:4, rate:1.0, count:1, base:55, buff:{def:0.8}, desc:'敵の守備を下げる'},
         {id:45, name:'メタル斬り', type:'物理', target:'単体', mp:5, rate:0, count:1, base:22, fix:true, desc:'メタルに固定ダメージ'},
-        
-        // ★追加: 風属性物理、混沌属性吸収物理
         {id:46, name:'ウイングアッパー', type:'物理', target:'単体', mp:6, rate:1.1, count:1, base:60, elm:'風', desc:'風の拳'},
         {id:47, name:'ブラッドソード', type:'物理', target:'単体', mp:8, rate:1.2, count:1, base:70, elm:'混沌', drain:true, desc:'HP吸収'},
 
@@ -103,10 +105,11 @@ const DB = {
         {id:102, name:'渾身斬り', type:'物理', target:'単体', mp:10, rate:1.8, count:1, base:180, desc:'渾身の一撃'},
         {id:103, name:'ギガスラッシュ', type:'物理', target:'全体', mp:15, rate:1.4, count:1, base:200, elm:'光', desc:'光の剣技'},
         {id:104, name:'暗黒剣', type:'物理', target:'単体', mp:12, rate:1.5, count:1, base:190, elm:'闇', desc:'闇の剣技'},
-        
-        // ★追加: 風属性全体物理、6回攻撃
         {id:105, name:'しんくうは', type:'物理', target:'全体', mp:15, rate:1.4, count:2, base:80, elm:'風', desc:'真空の刃'},
         {id:106, name:'天下無双', type:'物理', target:'単体', mp:30, rate:0.5, count:6, base:20, desc:'怒涛の6連撃'},
+        
+        // ★修正: ベース999に強化
+        {id:107, name:'テールスイング', type:'物理', target:'全体', mp:25, rate:0.8, count:2, base:999, desc:'強烈な尻尾攻撃2連'},
 
         {id:201, name:'五月雨突き', type:'物理', target:'ランダム', mp:10, rate:0.5, count:4, base:20, desc:'4回攻撃'},
         {id:202, name:'爆裂拳', type:'物理', target:'ランダム', mp:12, rate:0.6, count:4, base:20, desc:'4回攻撃'},
@@ -114,7 +117,6 @@ const DB = {
 
         // --- 中級・上級魔法 ---
         {id:301, name:'メラミ', type:'魔法', target:'単体', mp:6, rate:1.4, count:1, base:90, elm:'火', desc:'中火球'},
-        // ★変更: ベギラマを火属性に
         {id:302, name:'ベギラマ', type:'魔法', target:'全体', mp:10, rate:1.2, count:1, base:80, elm:'火', desc:'灼熱の帯'},
         {id:303, name:'ヒャダルコ', type:'魔法', target:'全体', mp:10, rate:1.2, count:1, base:80, elm:'水', desc:'氷の波動'},
         {id:304, name:'バギマ', type:'魔法', target:'全体', mp:10, rate:1.2, count:1, base:80, elm:'風', desc:'真空の嵐'},
@@ -122,27 +124,28 @@ const DB = {
         {id:306, name:'イオナズン', type:'魔法', target:'全体', mp:25, rate:1.5, count:1, base:230, elm:'光', desc:'大爆発'},
         {id:307, name:'ドルモーア', type:'魔法', target:'単体', mp:15, rate:2.0, count:1, base:250, elm:'闇', desc:'闇の爆発'},
         {id:308, name:'イオラ', type:'魔法', target:'全体', mp:12, rate:1.0, count:1, base:90, elm:'光', desc:'中爆発'},
-        
-        // ★追加: 風・火の上級魔法
         {id:309, name:'バギクロス', type:'魔法', target:'全体', mp:25, rate:1.5, count:1, base:230, elm:'風', desc:'真空の大嵐'},
         {id:310, name:'ベギラゴン', type:'魔法', target:'全体', mp:25, rate:1.5, count:1, base:230, elm:'火', desc:'灼熱の波動'},
 
         // --- 最上級・EX ---
         {id:401, name:'ギガブレイク', type:'物理', target:'全体', mp:30, rate:2.0, count:1, base:250, elm:'雷', desc:'最強の剣技'},
         {id:402, name:'ゴッドハンド', type:'物理', target:'単体', mp:35, rate:2.1, count:1, base:450, elm:'光', desc:'神の拳'},
-        {id:403, name:'フルケア', type:'回復', target:'単体', mp:40, rate:0, count:1, base:9999, fix:true, desc:'完全回復'},
-        // ★変更: メテオを混沌属性に
         {id:404, name:'メテオ', type:'魔法', target:'ランダム', mp:50, rate:0.6, count:7, base:170, elm:'火', desc:'隕石落とし'},
         {id:405, name:'ジゴスパーク', type:'魔法', target:'全体', mp:45, rate:2.0, count:1, base:270, elm:'混沌', desc:'地獄の雷'},
         {id:406, name:'マヒャデドス', type:'魔法', target:'全体', mp:45, rate:2.0, count:1, base:270, elm:'水', desc:'極大氷魔法'},
         {id:407, name:'メラガイアー', type:'魔法', target:'単体', mp:30, rate:2.4, count:1, base:500, elm:'火', desc:'極大火炎'},
-
         {id:408, name:'ギガデイン', type:'魔法', target:'全体', mp:60, rate:2.1, count:1, base:480, elm:'雷', desc:'極大雷呪文'},
         {id:409, name:'ギガクロスブレイク', type:'物理', target:'単体', mp:50, rate:2.1, count:2, base:400, elm:'雷', desc:'雷の2連撃'},
         {id:410, name:'シャイニング', type:'魔法', target:'全体', mp:70, rate:2.3, count:1, base:500, elm:'光', desc:'聖なる光'},
         {id:411, name:'ラグナブレード', type:'物理', target:'単体', mp:60, rate:4.5, count:1, base:600, elm:'混沌', desc:'混沌の一撃'},
         {id:412, name:'イオグランデ', type:'魔法', target:'全体', mp:65, rate:2.1, count:1, base:480, elm:'光', desc:'極大爆発'},
         
+        // ★修正: レート上昇、守備大幅ダウン
+        {id:413, name:'裁きの雷霆', type:'魔法', target:'ランダム', mp:45, rate:0.9, count:5, base:100, elm:'雷', buff:{def:0.5}, desc:'雷魔法超ダメージ5連・守備激減'},
+        // ★修正: ベース999に強化
+        {id:414, name:'グランドクロス', type:'物理', target:'全体', mp:40, rate:1.0, count:2, base:999, elm:'風', desc:'十字に切り裂く2連撃'},
+        {id:415, name:'絶対零度', type:'魔法', target:'単体', mp:50, rate:2.5, count:1, base:450, elm:'水', desc:'凍てつく極大魔法'},
+
         {id:500, name:'マダンテ', type:'魔法', target:'全体', mp:0, rate:6.0, count:1, base:300, desc:'全MPを消費し大爆発'},
 
         // --- ブレス ---
@@ -155,24 +158,35 @@ const DB = {
         {id:607, name:'どくのいき', type:'魔法', target:'全体', mp:0, rate:0.8, count:1, base:80, elm:'闇', desc:'毒の息'},
         {id:608, name:'いなずま', type:'魔法', target:'全体', mp:0, rate:0.8, count:1, base:110, elm:'雷', desc:'稲妻'},
         {id:609, name:'煉獄火炎', type:'魔法', target:'全体', mp:0, rate:0.8, count:1, base:250, elm:'混沌', desc:'地獄の炎'},
+        
+        // ★修正: レート上昇、全ステータスダウン
+        {id:610, name:'シャイニングブレス', type:'魔法', target:'全体', mp:20, rate:1.4, count:1, base:150, elm:'光', buff:{atk:0.8, def:0.8, spd:0.8, mag:0.8}, desc:'光のブレス・全能力ダウン'},
+        // ★修正: レート上昇、全属性耐性ダウン(-50)
+        {id:611, name:'ダークネスブレス', type:'魔法', target:'全体', mp:20, rate:1.4, count:1, base:150, elm:'闇', buff:{elmResDown:50}, desc:'闇のブレス・属性耐性ダウン'},
 
         // --- ボス・神級 ---
         {id:901, name:'ジェネシス', type:'魔法', target:'全体', mp:100, rate:3.0, count:1, base:800, elm:'混沌', desc:'【EX】天地創造の光'},
         {id:902, name:'ラグナロク', type:'物理', target:'ランダム', mp:80, rate:1.8, count:5, base:350, elm:'闇', desc:'【EX】終焉の5連撃'},
         {id:903, name:'リザレクション', type:'蘇生', target:'全体', mp:200, rate:0.8, count:1, base:150, desc:'【EX】味方全員を完全蘇生'},
         {id:905, name:'やみのはどう', type:'弱体', target:'全体', mp:50, rate:0, count:1, base:20, buff:{atk:0.7, def:0.7, mag:0.7, spd:0.7}, desc:'全能力ダウン'},
+        {id:906, name:'創世の魔力', type:'魔法', target:'全体', mp:150, rate:3.0, count:1, base:800, elm:'混沌', desc:'【EX】世界を創り変える力'},
 
-        {id:999, name:'激しい炎', type:'特殊', target:'全体', mp:0, rate:0, count:1, base:80, fix:true, elm:'火', desc:'全体炎'},
-        // --- New Skills ---
-        {id:610, name:'シャイニングブレス', type:'魔法', target:'全体', mp:20, rate:1.0, count:1, base:150, elm:'光', buff:{def:0.8}, desc:'光のブレス・守備ダウン'},
-        {id:611, name:'ダークネスブレス', type:'魔法', target:'全体', mp:20, rate:1.0, count:1, base:150, elm:'闇', buff:{atk:0.8}, desc:'闇のブレス・攻撃ダウン'},
-        {id:413, name:'裁きの雷霆', type:'魔法', target:'ランダム', mp:45, rate:0.6, count:5, base:100, elm:'雷', desc:'雷魔法超ダメージ5連'},
-        {id:107, name:'テールスイング', type:'物理', target:'全体', mp:25, rate:0.8, count:2, base:120, desc:'強烈な尻尾攻撃2連'},
-        {id:414, name:'グランドクロス', type:'物理', target:'全体', mp:40, rate:1.0, count:2, base:180, elm:'風', desc:'十字に切り裂く2連撃'},
-        {id:415, name:'絶対零度', type:'魔法', target:'単体', mp:50, rate:2.5, count:1, base:450, elm:'水', desc:'凍てつく極大魔法'},
-        {id:906, name:'創世の魔力', type:'魔法', target:'全体', mp:150, rate:3.0, count:1, base:800, elm:'混沌', desc:'【EX】世界を創り変える力'}
+        {id:999, name:'激しい炎', type:'特殊', target:'全体', mp:0, rate:0, count:1, base:80, fix:true, elm:'火', desc:'全体炎'}
     ],
-    
+
+    ITEMS: [
+        {id:1, name:'やくそう', type:'HP回復', val:100, desc:'HPを約100回復', target:'単体', price:10},
+        {id:2, name:'上やくそう', type:'HP回復', val:300, desc:'HPを約300回復', target:'単体', price:50},
+        {id:3, name:'魔法の小瓶', type:'MP回復', val:30, desc:'MPを約30回復', target:'単体', price:100},
+        {id:4, name:'魔法の聖水', type:'MP回復', val:100, desc:'MPを約100回復', target:'単体', price:500},
+        {id:5, name:'世界樹の葉', type:'蘇生', val:100, desc:'死んだ仲間を生き返らせる', target:'単体', price:1000},
+        // ★追加アイテム
+        {id:6, name:'世界樹の雫', type:'HP回復', val:9999, desc:'味方全員のHPを全回復', target:'全体', price:5000},
+        {id:7, name:'エルフの飲み薬', type:'MP回復', val:9999, desc:'MPを全回復', target:'単体', price:3000},
+        
+        {id:99, name:'ちいさなメダル', type:'貴重品', val:0, desc:'世界各地に散らばるメダル', target:'なし', price:0}
+    ],
+            
     CHARACTERS: [
         {id:301, name:'アルス', job:'勇者', rarity:'N', hp:800, mp:300, atk:190, def:140, spd:120, mag:140, lbSkills:{50:402, 99:903}},
         {id:101, name:'ジョン', job:'戦士', rarity:'R', hp:150, mp:20, atk:40, def:30, spd:20, mag:10, lbSkills:{50:101, 99:44}},
@@ -205,21 +219,9 @@ const DB = {
         {id:501, name:'ゼノン', job:'神', rarity:'EX', hp:4000, mp:1500, atk:900, def:600, spd:400, mag:800, lbSkills:{50:55, 99:500}}
     ],
     
-    ITEMS: [
-        {id:1, name:'やくそう', type:'HP回復', val:100, desc:'HPを約100回復', target:'単体', price:10},
-        {id:2, name:'上やくそう', type:'HP回復', val:300, desc:'HPを約300回復', target:'単体', price:50},
-        {id:3, name:'魔法の小瓶', type:'MP回復', val:30, desc:'MPを約30回復', target:'単体', price:100},
-        {id:4, name:'魔法の聖水', type:'MP回復', val:100, desc:'MPを約100回復', target:'単体', price:500},
-        {id:5, name:'世界樹の葉', type:'蘇生', val:100, desc:'死んだ仲間を生き返らせる', target:'単体', price:1000},
-        {id:99, name:'ちいさなメダル', type:'貴重品', val:0, desc:'世界各地に散らばるメダル', target:'なし', price:0}
-    ],
     MONSTERS: [],
     EQUIPS: [],
-    
-/* database.js (OPT_RULES修正: ステータスOPを％に変更) */
-
-// ... (前半のCONST, SKILLS等は変更なし、OPT_RULESのみ差し替え) ...
-
+  
     OPT_RULES: [
         // ★修正: unitを'%'に変更し、値をパーセンテージ用に調整
         {key:'atk', name:'攻撃', unit:'%', allowed:['N','R','SR','SSR','UR','EX'], min:{N:1,R:3,SR:5,SSR:10,UR:15,EX:25}, max:{N:3,R:5,SR:10,SSR:15,UR:25,EX:50}},
