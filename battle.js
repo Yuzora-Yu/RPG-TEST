@@ -1,4 +1,4 @@
-/* battle.js (計算式刷新 & 敵AI蘇生判断修正版) */
+/* battle.js (完全版: マダンテ属性・軽減対応 & DQ式計算) */
 
 const Battle = {
     active: false,
@@ -298,11 +298,11 @@ const Battle = {
             const range = actionData.target || '単体';
             if (range === '単体') {
                 if (type === '蘇生') actualTargetType = 'ally_dead';
-                else if (type.includes('回復') || type === '強化') actualTargetType = 'ally';
+                else if (type.includes('回復') || type === '強化' || type === 'MP回復') actualTargetType = 'ally';
                 else if (type === '弱体') actualTargetType = 'enemy';
                 else actualTargetType = 'enemy';
             } else if (range === '全体') {
-                if (type.includes('回復') || ['蘇生','強化'].includes(type)) actualTargetType = 'all_ally';
+                if (type.includes('回復') || ['蘇生','強化','MP回復'].includes(type)) actualTargetType = 'all_ally';
                 else actualTargetType = 'all_enemy';
             } else if (range === 'ランダム') {
                 actualTargetType = 'random';
@@ -406,7 +406,7 @@ const Battle = {
         if (App.data.items) {
             Object.keys(App.data.items).forEach(id => {
                 const it = DB.ITEMS.find(i=>i.id==id);
-                if(it && (it.type.includes('回復') || it.type.includes('蘇生')) && App.data.items[id] > 0) { 
+                if(it && (it.type.includes('回復') || it.type.includes('蘇生') || it.type.includes('MP回復')) && App.data.items[id] > 0) { 
                     items.push({def:it, count:App.data.items[id]});
                 }
             });
@@ -493,7 +493,18 @@ const Battle = {
                     const spd = e.getStat('spd');
                     const acts = e.acts && e.acts.length > 0 ? e.acts : [1];
                     if (acts.length === 0) acts.push(1);
-                    const actId = acts[Math.floor(Math.random() * acts.length)];
+                    
+                    // MPを考慮して行動を選択
+                    let validActs = acts.filter(id => {
+                        if ([1, 2, 9].includes(id)) return true; // 通常攻撃等はOK
+                        const s = DB.SKILLS.find(k => k.id === id);
+                        if (!s) return false;
+                        if (s.id === 500) return true; // マダンテはMPがあれば全部使う
+                        return e.mp >= s.mp;
+                    });
+                    
+                    if (validActs.length === 0) validActs = [1];
+                    const actId = validActs[Math.floor(Math.random() * validActs.length)];
                     
                     let actionType = 'enemy_attack'; 
                     let skillData = null;
@@ -510,7 +521,7 @@ const Battle = {
                             skillData = skill;
                             targetScope = skill.target; 
                         } else {
-                            console.warn(`Enemy skill ID ${actId} not found. Fallback to attack.`);
+                            console.warn(`Enemy skill ID ${actId} not found.`);
                             actionType = 'enemy_attack';
                         }
                     }
@@ -544,17 +555,15 @@ const Battle = {
                  continue;
             }
 
-            // --- 敵AIのターゲット選択 (蘇生チェック追加) ---
             if (cmd.isEnemy && !cmd.target && cmd.targetScope !== '全体' && cmd.targetScope !== 'ランダム') {
                 let isSupport = false;
-                if (cmd.data && (cmd.data.type.includes('回復') || cmd.data.type === '強化' || cmd.data.type === '蘇生')) {
+                if (cmd.data && (cmd.data.type.includes('回復') || cmd.data.type === '強化' || cmd.data.type === '蘇生' || cmd.data.type === 'MP回復')) {
                     isSupport = true;
                 }
 
                 if (isSupport) {
                     let pool = [];
                     if (cmd.data && cmd.data.type === '蘇生') {
-                         // ★修正: 蘇生対象は死んでいる仲間のみ
                          pool = Battle.enemies.filter(e => e.isDead && !e.isFled);
                     } else {
                          pool = Battle.enemies.filter(e => !e.isDead && !e.isFled);
@@ -563,9 +572,7 @@ const Battle = {
                     if (pool.length > 0) {
                         cmd.target = pool[Math.floor(Math.random() * pool.length)];
                     } else {
-                        // 対象がいない場合
                         if (cmd.data.type === '蘇生') {
-                             // ★修正: 蘇生対象がいない場合はプレイヤー攻撃へ変更
                              cmd.type = 'enemy_attack';
                              cmd.data = null; 
                              const aliveParty = Battle.party.filter(p => p && !p.isDead);
@@ -618,6 +625,7 @@ const Battle = {
                 const targets = (cmd.target === 'all_ally') ? Battle.party : [target];
                 for (let t of targets) {
                     if (!t) continue;
+                    
                     if (item.type === '蘇生') {
                         if (t.isDead) {
                             t.isDead = false; t.hp = Math.floor(t.baseMaxHp * 0.5);
@@ -625,15 +633,17 @@ const Battle = {
                         } else Battle.log(`【${t.name}】には効果がなかった`);
                     } else if (item.type === 'HP回復') {
                         if(!t.isDead) {
-                            const val = typeof item.val === 'number' ? item.val : 0;
-                            const rec = Math.min(t.baseMaxHp - t.hp, val);
-                            t.hp += rec; Battle.log(`【${t.name}】のHPが${rec}回復！`); Battle.renderPartyStatus();
+                            let rec = item.val;
+                            if (item.val >= 9999) rec = t.baseMaxHp;
+                            t.hp = Math.min(t.baseMaxHp, t.hp + rec);
+                            Battle.log(`【${t.name}】のHPが${rec}回復！`); Battle.renderPartyStatus();
                         }
                     } else if (item.type === 'MP回復') {
                          if(!t.isDead) {
-                            const val = typeof item.val === 'number' ? item.val : 0;
-                            const rec = Math.min(t.baseMaxMp - t.mp, val);
-                            t.mp += rec; Battle.log(`【${t.name}】のMPが${rec}回復！`); Battle.renderPartyStatus();
+                            let rec = item.val;
+                            if (item.val >= 9999) rec = t.baseMaxMp;
+                            t.mp = Math.min(t.baseMaxMp, t.mp + rec);
+                            Battle.log(`【${t.name}】のMPが${rec}回復！`); Battle.renderPartyStatus();
                         }
                     }
                 }
@@ -673,14 +683,42 @@ const Battle = {
 
         Battle.log(`【${actor.name}】の${skillName}！`);
 
-        // マダンテ (固定)
+        // ★修正: マダンテの属性計算対応
+        // マダンテ (固定だが属性等は通す)
         if (data && data.id === 500) {
-            const dmg = mpCost * 5;
+            let dmg = mpCost * 5;
+            
             const targets = cmd.isEnemy ? Battle.party.filter(p=>p && !p.isDead) : Battle.enemies.filter(e=>!e.isDead && !e.isFled);
             for (let t of targets) {
                 if(!t) continue;
-                t.hp -= dmg;
-                Battle.log(`【${t.name}】に<span style="color:#fa0">${dmg}</span>のダメージ！`);
+                
+                // 1. 属性耐性 (マダンテは混沌扱いと仮定、またはDBに従う)
+                const elm = data.elm || '混沌';
+                const elmRes = t.getStat('elmRes') || {};
+                let resVal = elmRes[elm] || 0;
+                
+                if (t.buffs && t.buffs.elmResDown) resVal -= t.buffs.elmResDown;
+                
+                let finalDmg = dmg;
+                if (resVal >= 100) {
+                    finalDmg = 0;
+                } else {
+                    finalDmg = Math.floor(finalDmg * (1.0 - resVal / 100));
+                }
+
+                // 2. 被ダメ軽減
+                let finRed = t.getStat('finRed') || 0;
+                if (finRed > 80) finRed = 80;
+                if (finRed > 0) finalDmg = Math.floor(finalDmg * (1.0 - finRed / 100));
+
+                // 3. 与ダメUP
+                const finDmgVal = actor.getStat('finDmg') || 0;
+                if (finDmgVal > 0) finalDmg = Math.floor(finalDmg * (1.0 + finDmgVal / 100));
+                
+                if(finalDmg < 0) finalDmg = 0;
+
+                t.hp -= finalDmg;
+                Battle.log(`【${t.name}】に<span style="color:#d4d">${finalDmg}</span>のダメージ！`);
                 if (t.hp <= 0) { t.hp = 0; t.isDead = true; Battle.log(`【${t.name}】は倒れた！`); }
             }
             Battle.renderEnemies();
@@ -697,14 +735,14 @@ const Battle = {
 
         if (scope === '全体') {
              if (cmd.isEnemy) {
-                 if (['回復','蘇生','強化'].includes(effectType)) {
+                 if (['回復','蘇生','強化','MP回復'].includes(effectType)) {
                      targets = Battle.enemies.filter(e => !e.isDead && !e.isFled);
                      if(effectType==='蘇生') targets = Battle.enemies.filter(e => e.isDead && !e.isFled);
                  } else {
                      targets = Battle.party.filter(p => p && !p.isDead);
                  }
              } else {
-                 if (['回復','蘇生','強化'].includes(effectType)) targets = Battle.party.filter(p => p); 
+                 if (['回復','蘇生','強化','MP回復'].includes(effectType)) targets = Battle.party.filter(p => p); 
                  else targets = Battle.enemies.filter(e => !e.isDead && !e.isFled);
              }
         } else if (scope === 'ランダム') {
@@ -718,7 +756,7 @@ const Battle = {
             if (!t) continue;
 
             // 回復・補助系
-            if (effectType && ['回復','蘇生','強化','弱体'].includes(effectType)) {
+            if (effectType && ['回復','蘇生','強化','弱体','MP回復'].includes(effectType)) {
                 if (effectType === '蘇生') {
                     if (t.isDead) {
                         t.isDead = false; t.hp = Math.floor(t.baseMaxHp * 0.5);
@@ -735,15 +773,26 @@ const Battle = {
                         if(data.buff.elmResDown) Battle.log(`【${t.name}】の属性耐性が下がった！`);
                         else Battle.log(`【${t.name}】の能力が下がった！`);
                     }
+                } else if (effectType === 'MP回復') {
+                     if (!t.isDead) {
+                        let amount = 0;
+                        if (data.ratio) amount = Math.floor(t.baseMaxMp * data.ratio);
+                        else amount = data.base;
+                        t.mp = Math.min(t.baseMaxMp, t.mp + amount);
+                        Battle.log(`【${t.name}】のMPが${amount}回復！`);
+                     }
                 } else { 
+                    // HP回復
                     if (!t.isDead) {
-                        let base = (typeof data.base === 'number') ? data.base : 0;
-                        let rate = (typeof data.rate === 'number') ? data.rate : 1.0;
                         let rec = 0;
-                        if (typeof data.val === 'number' || data.fix) rec = base;
-                        else {
-                            const mag = actor.getStat('mag') || 0;
-                            rec = (mag + base) * rate;
+                        if (data.ratio) {
+                            rec = Math.floor(t.baseMaxHp * data.ratio);
+                        } else {
+                            if (typeof data.val === 'number' || data.fix) rec = baseDmg; 
+                            else {
+                                const mag = actor.getStat('mag') || 0;
+                                rec = (mag + baseDmg) * skillRate;
+                            }
                         }
                         rec = Math.floor(rec);
                         t.hp = Math.min(t.baseMaxHp, t.hp + rec);
@@ -754,7 +803,7 @@ const Battle = {
                 continue;
             }
 
-            // --- ダメージ計算処理 (多段ヒット対応) ---
+            // --- ダメージ計算 ---
             for (let i = 0; i < hitCount; i++) {
                 let targetToHit = t;
                 if (scope === 'ランダム') {
@@ -768,10 +817,7 @@ const Battle = {
                     continue; 
                 }
 
-                // =========================================================================
-                // ★ 計算式刷新: (攻/2) - (守/4) + 基礎 + 倍率乗算 + 属性・与ダメ乗算
-                // =========================================================================
-
+                // DQ式計算式: (攻/2) - (守/4)
                 let atkVal = 0, defVal = 0;
                 if (isPhysical) {
                     atkVal = actor.getStat('atk');
@@ -781,69 +827,55 @@ const Battle = {
                     defVal = targetToHit.getStat('mag');
                 }
 
-                // 1. 基礎計算: (ステータス/2) - (防御/4) + スキル基礎値
-                let baseStatPart = Math.floor(atkVal / 2);
-                let defPart = Math.floor(defVal / 4);
-                let baseDmgCalc = (baseStatPart - defPart) + baseDmg;
-                
+                let baseDmgCalc = 0;
+                if (isPhysical) {
+                    let attackPart = Math.floor(atkVal / 2) * skillRate; 
+                    let defensePart = Math.floor(defVal / 4);
+                    baseDmgCalc = (attackPart - defensePart) + baseDmg;
+                } else {
+                    let magicPart = Math.floor(atkVal / 2) * skillRate; 
+                    let resistPart = Math.floor(defVal / 4);
+                    baseDmgCalc = baseDmg + (magicPart - resistPart);
+                }
+
                 if (baseDmgCalc < 1) baseDmgCalc = 1;
 
-                // 2. 倍率・属性攻撃補正: × (スキル倍率 + 属性攻撃%)
-                let elmAtkVal = 0;
-                if (element) {
-                    elmAtkVal = (actor.getStat('elmAtk') || {})[element] || 0;
-                }
-                let multiplier = skillRate + (elmAtkVal / 100);
-                if (multiplier < 0) multiplier = 0;
-
-                let dmg = Math.floor(baseDmgCalc * multiplier);
-
-                // 3. 属性耐性計算: 耐性100%以上は完全無効 (0ダメージ)
+                let bonusRate = 0;
+                let cutRate = 0;
                 let isImmune = false;
+
                 if (element) {
+                    const elmAtkVal = (actor.getStat('elmAtk') || {})[element] || 0;
+                    if(elmAtkVal > 0) bonusRate += elmAtkVal;
+
                     const elmRes = targetToHit.getStat('elmRes') || {};
                     let resVal = elmRes[element] || 0;
-                    
-                    // フォースブレイク等 (デバフ)
                     if (targetToHit.buffs && targetToHit.buffs.elmResDown) {
                         resVal -= targetToHit.buffs.elmResDown;
                     }
-                    
-                    if (resVal >= 100) {
-                        dmg = 0;
-                        isImmune = true;
-                    } else {
-                        // 耐性による軽減 (負の値ならダメージ増)
-                        dmg = Math.floor(dmg * (1.0 - resVal / 100));
-                    }
+                    if (resVal >= 100) isImmune = true;
+                    else cutRate += resVal;
                 }
 
-                // 4. 被ダメージ軽減% (最大80%)
+                const finDmgVal = actor.getStat('finDmg') || 0;
+                if(finDmgVal > 0) bonusRate += finDmgVal;
+
                 let finRed = targetToHit.getStat('finRed') || 0;
                 if (finRed > 80) finRed = 80;
-                if (finRed > 0) {
-                    dmg = Math.floor(dmg * (1.0 - finRed / 100));
-                }
+                if (finRed > 0) cutRate += finRed;
 
-                // 5. 最終与ダメージ%
-                const finDmgVal = actor.getStat('finDmg') || 0;
-                if (finDmgVal > 0) {
-                    dmg = Math.floor(dmg * (1.0 + finDmgVal / 100));
-                }
+                let dmg = baseDmgCalc;
+                dmg = dmg * (1.0 + bonusRate / 100);
+                dmg = dmg * (1.0 - cutRate / 100);
+                dmg = dmg * (0.9 + Math.random() * 0.2);
 
-                // 乱数 (0.9 ~ 1.1)
-                dmg = Math.floor(dmg * (0.9 + Math.random() * 0.2));
-
-                // 防御中 (半減)
                 if (targetToHit.status && targetToHit.status.defend) {
-                    dmg = Math.floor(dmg * 0.5);
+                    dmg = dmg * 0.5;
                 }
 
-                // 完全無効でなければ最低1保証
+                dmg = Math.floor(dmg);
                 if (!isImmune && dmg < 1) dmg = 1;
                 if (isImmune) dmg = 0;
-
-                // =========================================================================
 
                 targetToHit.hp -= dmg;
                 
