@@ -1,4 +1,4 @@
-/* battle.js (完全版: マダンテ属性・軽減対応 & DQ式計算) */
+/* battle.js (AI修正版: MP0時のマダンテ回避 & DQ式計算) */
 
 const Battle = {
     active: false,
@@ -494,12 +494,12 @@ const Battle = {
                     const acts = e.acts && e.acts.length > 0 ? e.acts : [1];
                     if (acts.length === 0) acts.push(1);
                     
-                    // MPを考慮して行動を選択
+                    // ★修正: MPを考慮 (マダンテはMP>0ならOK)
                     let validActs = acts.filter(id => {
-                        if ([1, 2, 9].includes(id)) return true; // 通常攻撃等はOK
+                        if ([1, 2, 9].includes(id)) return true;
                         const s = DB.SKILLS.find(k => k.id === id);
                         if (!s) return false;
-                        if (s.id === 500) return true; // マダンテはMPがあれば全部使う
+                        if (s.id === 500) return e.mp > 0; // マダンテはMP0なら選ばない
                         return e.mp >= s.mp;
                     });
                     
@@ -683,16 +683,15 @@ const Battle = {
 
         Battle.log(`【${actor.name}】の${skillName}！`);
 
-        // ★修正: マダンテの属性計算対応
-        // マダンテ (固定だが属性等は通す)
+        // マダンテ (属性対応版)
         if (data && data.id === 500) {
             let dmg = mpCost * 5;
-            
             const targets = cmd.isEnemy ? Battle.party.filter(p=>p && !p.isDead) : Battle.enemies.filter(e=>!e.isDead && !e.isFled);
+            
             for (let t of targets) {
                 if(!t) continue;
                 
-                // 1. 属性耐性 (マダンテは混沌扱いと仮定、またはDBに従う)
+                // 1. 属性耐性 (マダンテは混沌扱いと仮定)
                 const elm = data.elm || '混沌';
                 const elmRes = t.getStat('elmRes') || {};
                 let resVal = elmRes[elm] || 0;
@@ -827,6 +826,7 @@ const Battle = {
                     defVal = targetToHit.getStat('mag');
                 }
 
+                // 1. 基礎計算
                 let baseDmgCalc = 0;
                 if (isPhysical) {
                     let attackPart = Math.floor(atkVal / 2) * skillRate; 
@@ -840,6 +840,7 @@ const Battle = {
 
                 if (baseDmgCalc < 1) baseDmgCalc = 1;
 
+                // 2. 最終補正 (乗算)
                 let bonusRate = 0;
                 let cutRate = 0;
                 let isImmune = false;
@@ -876,6 +877,8 @@ const Battle = {
                 dmg = Math.floor(dmg);
                 if (!isImmune && dmg < 1) dmg = 1;
                 if (isImmune) dmg = 0;
+
+                // =========================================================================
 
                 targetToHit.hp -= dmg;
                 
