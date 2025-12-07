@@ -106,10 +106,10 @@ const DB = {
         {id:103, name:'ギガスラッシュ', type:'物理', target:'全体', mp:15, rate:1.4, count:1, base:200, elm:'光', desc:'光の剣技'},
         {id:104, name:'暗黒剣', type:'物理', target:'単体', mp:12, rate:1.5, count:1, base:190, elm:'闇', desc:'闇の剣技'},
         {id:105, name:'しんくうは', type:'物理', target:'全体', mp:15, rate:1.4, count:2, base:80, elm:'風', desc:'真空の刃'},
-        {id:106, name:'天下無双', type:'物理', target:'単体', mp:30, rate:0.5, count:6, base:20, desc:'怒涛の6連撃'},
+        {id:106, name:'天下無双', type:'物理', target:'単体', mp:30, rate:0.6, count:6, base:20, desc:'怒涛の6連撃'},
         
         // ★修正: ベース999に強化
-        {id:107, name:'テールスイング', type:'物理', target:'全体', mp:25, rate:0.8, count:2, base:999, desc:'強烈な尻尾攻撃2連'},
+        {id:107, name:'テールスイング', type:'物理', target:'全体', mp:25, rate:1, count:2, base:1999, desc:'強烈な尻尾攻撃2連'},
 
         {id:201, name:'五月雨突き', type:'物理', target:'ランダム', mp:10, rate:0.5, count:4, base:20, desc:'4回攻撃'},
         {id:202, name:'爆裂拳', type:'物理', target:'ランダム', mp:12, rate:0.6, count:4, base:20, desc:'4回攻撃'},
@@ -166,7 +166,7 @@ const DB = {
 
         // --- ボス・神級 ---
         {id:901, name:'ジェネシス', type:'魔法', target:'全体', mp:100, rate:3.0, count:1, base:800, elm:'混沌', desc:'【EX】天地創造の光'},
-        {id:902, name:'ラグナロク', type:'物理', target:'ランダム', mp:80, rate:1.8, count:5, base:350, elm:'闇', desc:'【EX】終焉の5連撃'},
+        {id:902, name:'ラグナロク', type:'物理', target:'ランダム', mp:80, rate:1.4, count:5, base:350, elm:'闇', desc:'【EX】終焉の5連撃'},
         {id:903, name:'リザレクション', type:'蘇生', target:'全体', mp:200, rate:0.8, count:1, base:150, desc:'【EX】味方全員を完全蘇生'},
         {id:905, name:'やみのはどう', type:'弱体', target:'全体', mp:50, rate:0, count:1, base:20, buff:{atk:0.7, def:0.7, mag:0.7, spd:0.7}, desc:'全能力ダウン'},
         {id:906, name:'創世の魔力', type:'魔法', target:'全体', mp:150, rate:3.0, count:1, base:800, elm:'混沌', desc:'【EX】世界を創り変える力'},
@@ -400,13 +400,20 @@ const DB = {
         }
     };
 
+
     for(let r=1; r<=100; r++) {
-        const typeIdx = Math.floor((r - 1) / (100 / MONSTER_TYPES.length));
-        const base = MONSTER_TYPES[Math.min(typeIdx, MONSTER_TYPES.length - 1)];
+        // ★修正: 重複無しで3種類を選出する
+        // インデックスの配列を作成してシャッフル
+        let indices = Array.from({length: MONSTER_TYPES.length}, (_, i) => i);
+        for(let i = indices.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [indices[i], indices[j]] = [indices[j], indices[i]];
+        }
+        // 先頭3つを取得
+        const selectedIndices = indices.slice(0, 3);
         
         const scale_factor = 0.3; 
         const hp_exp = 1.2; 
-
         const scale = 1.0 + (r * scale_factor); 
         
         let prefix = "";
@@ -414,20 +421,19 @@ const DB = {
         if(r > 50) prefix = "真・";
         if(r > 80) prefix = "極・";
 
-        let myActs = [1];
-        const skillSet = MONSTER_SKILL_SETS[base.name];
-        if (skillSet) {
-            let sourceActs = [];
-            if (r < 30) sourceActs = skillSet.low;
-            else if (r < 70) sourceActs = skillSet.mid;
-            else sourceActs = skillSet.high;
-            myActs = sourceActs; 
-        }
+        // 選ばれた3種類を生成
+        selectedIndices.forEach((idx, i) => {
+            const base = MONSTER_TYPES[idx];
+            let myActs = [1];
+            const skillSet = MONSTER_SKILL_SETS[base.name];
+            if (skillSet) {
+                if (r < 30) myActs = skillSet.low;
+                else if (r < 70) myActs = skillSet.mid;
+                else myActs = skillSet.high;
+            }
 
-        // 1ランクにつき2体生成
-        for(let i=0; i<2; i++) {
             DB.MONSTERS.push({
-                id: r + (i * 0.1),
+                id: r + (i * 0.01), // ID衝突回避
                 rank: r,
                 minF: r,
                 name: `${prefix}${base.name} Lv${r}`,
@@ -443,9 +449,9 @@ const DB = {
                 actCount: base.actCount || 1,
                 drop: null
             });
-        }
+        });
 
-        // 30%でホイミスライム追加
+        // ★修正: 30%でホイミスライム追加 (名前は通常ルール)
         if (Math.random() < 0.3) {
             const hoimiBase = MONSTER_TYPES.find(m => m.name === 'ホイミスライム');
             let hoimiActs = MONSTER_SKILL_SETS['ホイミスライム'].low;
@@ -456,7 +462,7 @@ const DB = {
                 id: r + 0.5,
                 rank: r,
                 minF: r,
-                name: `${prefix}ホイミン Lv${r}`,
+                name: `${prefix}${hoimiBase.name} Lv${r}`, // "強・ホイミスライム"等になる
                 hp: Math.floor(hoimiBase.hp * Math.pow(scale, hp_exp)),
                 mp: 100 + r * 10,
                 atk: Math.floor(hoimiBase.atk * scale),
@@ -475,29 +481,28 @@ const DB = {
     // --- メタル系 ---
     DB.MONSTERS.push({
         id:201, rank:10, minF:5, name:'メタルスライム',
-        hp:4, mp:999, atk:50, def:9999, spd:999, mag:50,
+        hp:4, mp:999, atk:50, def:99999, spd:9999, mag:500,
         exp:1000, gold:50, acts:[1, 10, 9], 
-        elmRes:{'火':100,'水':100,'風':100,'雷':100,'光':100,'闇':100}
+        elmRes:{'火':100,'水':100,'風':100,'雷':100,'光':100,'闇':100,'混沌':100}
     });
     DB.MONSTERS.push({
         id:202, rank:40, minF:20, name:'はぐれメタル',
-        hp:8, mp:999, atk:150, def:9999, spd:999, mag:100,
+        hp:8, mp:999, atk:150, def:99999, spd:25500, mag:2550,
         exp:10000, gold:200, acts:[1, 302, 9], 
-        elmRes:{'火':100,'水':100,'風':100,'雷':100,'光':100,'闇':100}
+        elmRes:{'火':1000,'水':1000,'風':1000,'雷':1000,'光':1000,'闇':1000,'混沌':1000}
     });
     DB.MONSTERS.push({
         id:203, rank:80, minF:50, name:'メタルキング',
-        hp:20, mp:999, atk:400, def:9999, spd:999, mag:300,
+        hp:20, mp:9999, atk:400, def:99999, spd:99999, mag:9999,
         exp:30000, gold:1000, acts:[1, 306, 9], 
-        elmRes:{'火':100,'水':100,'風':100,'雷':100,'光':100,'闇':100}
+        elmRes:{'火':1000,'水':1000,'風':1000,'雷':1000,'光':1000,'闇':1000,'混沌':1000}
     });
     DB.MONSTERS.push({
         id:204, rank:100, minF:101, name:'プラチナキング',
-        hp:50, mp:999, atk:1000, def:9999, spd:999, mag:500,
+        hp:50, mp:9999, atk:1000, def:99999, spd:9999, mag:20000,
         exp:100000, gold:5000, acts:[1, 406, 407, 9], 
-        elmRes:{'火':100,'水':100,'風':100,'雷':100,'光':100,'闇':100}
+        elmRes:{'火':1000,'水':1000,'風':1000,'雷':1000,'光':1000,'闇':1000,'混沌':1000}
     });
-
     // --- ボス定義 (10階ごと・スキル強化版) ---
 
     // 10階: バトルレックス (炎と物理)
@@ -566,24 +571,24 @@ const DB = {
     // 80階: 悪霊の神々 (3体)
     DB.MONSTERS.push({
         id: 1080, rank: 80, minF: 999, name: 'アトラス',
-        hp: 90000, mp: 1000, atk: 6200, def: 2000, spd: 150, mag: 50,
+        hp: 90000, mp: 1000, atk: 7500, def: 2000, spd: 1150, mag: 450,
         exp: 10000, gold: 5000, acts: [1, 101, 102, 44, 409, 106], actCount: 1 // 天下無双追加
     });
     DB.MONSTERS.push({
         id: 1081, rank: 80, minF: 999, name: 'バズズ',
-        hp: 55000, mp: 5500, atk: 4500, def: 3300, spd: 1250, mag: 4700,
+        hp: 55000, mp: 5500, atk: 6000, def: 5300, spd: 2100, mag: 5700,
         exp: 10000, gold: 5000, acts: [13, 306, 500, 30, 60, 61, 406], actCount: 1
     });
     DB.MONSTERS.push({
         id: 1082, rank: 80, minF: 999, name: 'ベリアル',
-        hp: 60000, mp: 8400, atk: 4700, def: 4000, spd: 450, mag: 5500,
+        hp: 60000, mp: 8400, atk: 6700, def: 6000, spd: 1450, mag: 6500,
         exp: 10000, gold: 5000, acts: [1, 305, 306, 22, 50, 412, 609], actCount: 1 // 煉獄火炎追加
     });
 
     // 90階: ハーゴン (超級魔法)
     DB.MONSTERS.push({
         id: 1090, rank: 90, minF: 999, name: 'ハーゴン',
-        hp: 150000, mp: 9999, atk: 5600, def: 5500, spd: 1600, mag: 8000,
+        hp: 150000, mp: 7000, atk: 5600, def: 6500, spd: 2500, mag: 8500,
         exp: 50000, gold: 20000,
         acts: [404, 405, 406, 407, 412, 500, 905], // メテオ〜イオグランデ、マダンテ、やみのはどう
         actCount: 2
@@ -592,7 +597,7 @@ const DB = {
     // 100階: シドー (破壊神・2回)
     DB.MONSTERS.push({
         id: 1100, rank: 100, minF: 999, name: 'シドー',
-        hp: 250000, mp: 9999, atk: 8500, def: 6000, spd: 1500, mag: 7800,
+        hp: 250000, mp: 9999, atk: 9500, def: 8000, spd: 3500, mag: 8800,
         exp: 100000, gold: 50000,
         acts: [1, 103, 404, 407, 609, 23, 60, 411], // 煉獄火炎、ラグナブレード追加
         actCount: 3 
@@ -601,7 +606,7 @@ const DB = {
     // 101階以降: レグナード (竜神・凶悪・2回)
     DB.MONSTERS.push({
         id: 1000, rank: 100, minF: 999, name: 'レグナード', 
-        hp: 400000, mp: 99999, atk: 12500, def: 8500, spd: 2500, mag: 9800, 
+        hp: 400000, mp: 99999, atk: 13500, def: 9999, spd: 3500, mag: 9999, 
         exp: 200000, gold: 100000, 
         acts: [1, 401, 402, 405, 406, 901, 902, 905, 609, 610, 611, 413, 107], // 煉獄火炎追加
         actCount: 3 
