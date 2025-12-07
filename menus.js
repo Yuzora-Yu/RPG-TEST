@@ -399,6 +399,7 @@ const MenuParty = {
 /* ==========================================================================
    2. 装備変更
    ========================================================================== */
+/* 2. 装備変更 (戻るボタン修正 & 並び順修正版) */
 const MenuEquip = {
     targetChar: null, targetPart: null, selectedEquipId: null,
     
@@ -443,6 +444,13 @@ const MenuEquip = {
         if (!c) return;
         const s = App.calcStats(c);
         
+        // ★修正: 戻るボタンの挙動を強制的に「メニューを閉じる」に変更
+        const screenPart = document.getElementById('equip-screen-part');
+        if(screenPart) {
+            const backBtn = screenPart.querySelector('button.btn'); // 最後のボタン(戻る)を取得
+            if(backBtn) backBtn.onclick = () => Menu.closeSubScreen('equip');
+        }
+        
         const statEl = document.getElementById('char-status');
         if(statEl) {
             statEl.innerHTML = `
@@ -459,7 +467,6 @@ const MenuEquip = {
         }
         
         let list = document.getElementById('equip-slot-list');
-        if (!list) list = document.getElementById('list-part');
         if (!list) return;
 
         list.innerHTML = '';
@@ -487,7 +494,6 @@ const MenuEquip = {
     
     renderItemList: () => {
         let list = document.getElementById('equip-list');
-        if(!list) list = document.getElementById('list-item-candidates');
         if(!list) return;
 
         list.innerHTML = '';
@@ -498,14 +504,24 @@ const MenuEquip = {
         
         MenuEquip.selectedEquipId = null;
         const part = MenuEquip.targetPart;
-        const candidates = [];
-        candidates.push({id:'remove', name:'(装備を外す)', isRemove:true});
+        let candidates = [];
+        candidates.push({id:'remove', name:'(装備を外す)', isRemove:true, rank:999, plus:999}); // ソート用ダミー値
         
+        // インベントリから抽出
         App.data.inventory.filter(i => i.type === part).forEach(i => candidates.push(i));
+        // 他キャラ装備中から抽出
         App.data.characters.forEach(other => {
             if(other.uid !== MenuEquip.targetChar.uid && other.equips[part]) {
                 candidates.push({...other.equips[part], owner:other.name});
             }
+        });
+
+        // ★修正: ソート (ランク降順 > +値降順)
+        candidates.sort((a, b) => {
+            if (a.isRemove) return -1;
+            if (b.isRemove) return 1;
+            if (b.rank !== a.rank) return b.rank - a.rank;
+            return (b.plus || 0) - (a.plus || 0);
         });
 
         candidates.forEach(item => {
@@ -684,29 +700,75 @@ const MenuItems = {
 /* ==========================================================================
    4. 所持装備一覧
    ========================================================================== */
+/* 4. 所持装備一覧 (並び順修正 & まとめて売却機能版) */
 const MenuInventory = {
+    selectedIds: [],
+
     init: () => {
         document.getElementById('sub-screen-inventory').style.display = 'flex';
+        MenuInventory.selectedIds = [];
         MenuInventory.render();
     },
+
     render: () => {
         document.getElementById('inventory-gold').innerText = App.data.gold;
         const list = document.getElementById('inventory-list');
         list.innerHTML = '';
         const footer = document.getElementById('inventory-footer');
-        footer.innerHTML = "アイテムをタップすると売却メニューが開きます";
+        footer.innerHTML = ""; // フッターはボタンエリアとして使うのでクリア
+
+        // ★追加: まとめて売却用の操作パネル
+        const ctrlPanel = document.createElement('div');
+        ctrlPanel.style.padding = '10px';
+        ctrlPanel.style.background = '#222';
+        ctrlPanel.style.borderBottom = '1px solid #444';
+        ctrlPanel.style.display = 'flex';
+        ctrlPanel.style.justifyContent = 'space-between';
+        ctrlPanel.style.alignItems = 'center';
+        
+        const countSpan = document.createElement('span');
+        countSpan.id = 'inv-select-count';
+        countSpan.style.fontSize = '12px';
+        countSpan.style.color = '#aaa';
+        countSpan.innerText = '選択: 0個';
+        
+        const sellBtn = document.createElement('button');
+        sellBtn.className = 'btn';
+        sellBtn.style.background = '#500';
+        sellBtn.innerText = '選択を売却';
+        sellBtn.onclick = () => MenuInventory.sellSelected();
+        
+        ctrlPanel.appendChild(countSpan);
+        ctrlPanel.appendChild(sellBtn);
+        list.appendChild(ctrlPanel);
 
         if(App.data.inventory.length === 0) {
-            list.innerHTML = '<div style="padding:10px; color:#888;">装備品を持っていません</div>';
+            const msg = document.createElement('div');
+            msg.style.padding = '10px';
+            msg.style.color = '#888';
+            msg.innerText = '装備品を持っていません';
+            list.appendChild(msg);
             return;
         }
-        const items = [...App.data.inventory].reverse();
+
+        // ★修正: ソート (ランク降順 > +値降順)
+        const items = [...App.data.inventory].sort((a, b) => {
+            if (b.rank !== a.rank) return b.rank - a.rank;
+            return (b.plus || 0) - (a.plus || 0);
+        });
 
         items.forEach(item => {
             const div = document.createElement('div');
             div.className = 'list-item';
             div.style.flexDirection = 'column';
             div.style.alignItems = 'flex-start';
+            div.style.position = 'relative';
+
+            // 選択状態のスタイル
+            if(MenuInventory.selectedIds.includes(item.id)) {
+                div.style.background = '#442222';
+                div.style.borderLeft = '3px solid #f44';
+            }
 
             let ownerName = '';
             const owner = App.data.characters.find(c => c.equips[item.type] && c.equips[item.type].id === item.id);
@@ -714,29 +776,64 @@ const MenuInventory = {
 
             div.innerHTML = `
                 <div style="display:flex; justify-content:space-between; width:100%;">
-                    <div>${item.name}${ownerName}</div>
+                    <div style="display:flex; align-items:center;">
+                        <input type="checkbox" ${MenuInventory.selectedIds.includes(item.id) ? 'checked' : ''} style="pointer-events:none; margin-right:5px;">
+                        <span>${item.name}${ownerName}</span>
+                    </div>
                     <div style="font-size:11px; color:#ffd700;">${Math.floor(item.val/2)}G</div>
                 </div>
                 ${Menu.getEquipDetailHTML(item)}
             `;
-            div.onclick = () => MenuInventory.sell(item.id, item.val, item.name);
+            
+            // タップで選択トグル
+            div.onclick = () => {
+                if(owner) {
+                    Menu.msg(`${owner.name}が装備中のため選択できません`);
+                    return;
+                }
+                MenuInventory.toggleSelect(item.id);
+            };
             list.appendChild(div);
         });
     },
-    sell: (id, val, name) => {
-        const idx = App.data.inventory.findIndex(i => i.id === id);
-        if(idx === -1) return;
-        const item = App.data.inventory[idx];
-        const owner = App.data.characters.find(c => c.equips[item.type] && c.equips[item.type].id === item.id);
-        
-        if(owner) { Menu.msg(`${owner.name}が装備中のため売却できません。\n先に装備を外してください。`); return; }
 
-        const price = Math.floor(val / 2);
-        Menu.confirm(`${name} を\n${price}G で売却しますか？`, () => {
-            App.data.inventory.splice(idx, 1);
-            App.data.gold += price;
+    toggleSelect: (id) => {
+        const idx = MenuInventory.selectedIds.indexOf(id);
+        if(idx > -1) MenuInventory.selectedIds.splice(idx, 1);
+        else MenuInventory.selectedIds.push(id);
+        
+        MenuInventory.render();
+        // 選択数更新
+        const span = document.getElementById('inv-select-count');
+        if(span) span.innerText = `選択: ${MenuInventory.selectedIds.length}個`;
+    },
+
+    sellSelected: () => {
+        if(MenuInventory.selectedIds.length === 0) {
+            Menu.msg("売却する装備を選択してください");
+            return;
+        }
+
+        let totalVal = 0;
+        const targets = [];
+        MenuInventory.selectedIds.forEach(id => {
+            const item = App.data.inventory.find(i => i.id === id);
+            if(item) {
+                targets.push(item);
+                totalVal += Math.floor(item.val / 2);
+            }
+        });
+
+        Menu.confirm(`${targets.length}個の装備を\n合計 ${totalVal}G で売却しますか？`, () => {
+            // 売却処理
+            MenuInventory.selectedIds.forEach(id => {
+                const idx = App.data.inventory.findIndex(i => i.id === id);
+                if(idx > -1) App.data.inventory.splice(idx, 1);
+            });
+            App.data.gold += totalVal;
+            MenuInventory.selectedIds = []; // リセット
             App.save();
-            Menu.msg(`${price}G で売却しました`, () => MenuInventory.render());
+            Menu.msg(`${totalVal}G で売却しました`, () => MenuInventory.render());
         });
     }
 };
@@ -744,6 +841,7 @@ const MenuInventory = {
 /* ==========================================================================
    5. 仲間一覧 & 詳細
    ========================================================================== */
+/* 5. 仲間一覧 (並び順修正 & 特殊ステータス表示追加版) */
 const MenuAllies = {
     selectedChar: null, 
     currentTab: 1,
@@ -759,7 +857,17 @@ const MenuAllies = {
     renderList: () => {
         const list = document.getElementById('allies-list');
         list.innerHTML = '';
-        App.data.characters.forEach(c => {
+        
+        // ソート: レベル(降順) > レアリティ(降順)
+        const rarityVal = { N:1, R:2, SR:3, SSR:4, UR:5, EX:6 };
+        const chars = [...App.data.characters].sort((a, b) => {
+            if (b.level !== a.level) return b.level - a.level;
+            const rA = rarityVal[a.rarity] || 0;
+            const rB = rarityVal[b.rarity] || 0;
+            return rB - rA;
+        });
+
+        chars.forEach(c => {
             const div = document.createElement('div');
             div.className = 'list-item';
             div.innerHTML = App.createCharHTML(c);
@@ -773,7 +881,14 @@ const MenuAllies = {
 
     switchChar: (dir) => {
         if (!MenuAllies.selectedChar) return;
-        const chars = App.data.characters;
+        const rarityVal = { N:1, R:2, SR:3, SSR:4, UR:5, EX:6 };
+        const chars = [...App.data.characters].sort((a, b) => {
+            if (b.level !== a.level) return b.level - a.level;
+            const rA = rarityVal[a.rarity] || 0;
+            const rB = rarityVal[b.rarity] || 0;
+            return rB - rA;
+        });
+
         let idx = chars.findIndex(c => c.uid === MenuAllies.selectedChar.uid);
         if (idx === -1) idx = 0;
         let newIdx = idx + dir;
@@ -906,6 +1021,11 @@ const MenuAllies = {
                     <span>攻: ${s.atk}</span> <span>防: ${s.def}</span>
                     <span>魔: ${s.mag}</span> <span>速: ${s.spd}</span>
                 </div>
+                
+                <div style="display:grid; grid-template-columns:1fr 1fr; margin-top:5px; color:#ffd700;">
+                    <span>与ダメ:+${s.finDmg}%</span> <span>被ダメ:-${s.finRed}%</span>
+                </div>
+
                 <hr style="border-color:#444">
                 <b>属性攻撃</b><br>
                 ${CONST.ELEMENTS.map(e => `<span>${e}:${s.elmAtk[e]||0}</span>`).join(' ')}
@@ -1060,6 +1180,7 @@ const MenuAllies = {
         MenuAllies.closeAllocModal();
     }
 };
+
 
 /* ==========================================================================
    6. スキル使用 ～ 8. 鍛冶屋 (変更なし)
