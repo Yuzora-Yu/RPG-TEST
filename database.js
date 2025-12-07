@@ -73,10 +73,10 @@ const DB = {
         {id:20, name:'ホイミ', type:'回復', target:'単体', mp:3, rate:1.2, count:1, base:80, elm:null, desc:'小回復'},
         {id:21, name:'ベホイミ', type:'回復', target:'単体', mp:6, rate:1.8, count:1, base:230, elm:null, desc:'中回復'},
         {id:22, name:'ベホマラー', type:'回復', target:'全体', mp:12, rate:1.2, count:1, base:110, elm:null, desc:'全体回復'},
-        // ★修正: ベホマ/ベホマズンに倍率設定(fix解除)、フルケア基礎値99999
-        {id:23, name:'ベホマ', type:'回復', target:'単体', mp:10, rate:0.2, count:1, base:9999, desc:'全回復'},
-        {id:24, name:'ベホマズン', type:'回復', target:'全体', mp:30, rate:0.2, count:1, base:9999, desc:'全体全回復'},
-        {id:403, name:'フルケア', type:'回復', target:'単体', mp:40, rate:0, count:1, base:99999, fix:true, desc:'完全回復'},
+        // ★修正: フルケア基礎値99999
+        {id:23, name:'ベホマ', type:'回復', target:'単体', mp:100, rate:0, count:1, base:29999, fix:true, desc:'超回復'},
+        {id:24, name:'ベホマズン', type:'回復', target:'全体', mp:300, rate:0, count:1, base:29999, fix:true, desc:'全体超回復'},
+        {id:403, name:'フルケア', type:'回復', target:'単体', mp:500, rate:0, count:1, base:99999, fix:true, desc:'完全回復'},
         
         {id:30, name:'ザオラル', type:'蘇生', target:'単体', mp:8, rate:0.5, count:1, base:20, elm:null, desc:'50%蘇生'},
         {id:31, name:'ザオリク', type:'蘇生', target:'単体', mp:20, rate:0.8, count:1, base:50, elm:null, desc:'100%蘇生'},
@@ -216,7 +216,7 @@ const DB = {
         {id:304, name:'クラウド', job:'ソルジャー', rarity:'SSR', hp:550, mp:80, atk:130, def:80, spd:65, mag:50, lbSkills:{50:42, 99:202}},
         {id:305, name:'セシル', job:'聖騎士', rarity:'SSR', hp:600, mp:120, atk:100, def:110, spd:50, mag:70, lbSkills:{50:23, 99:103}},
         {id:306, name:'エッジ', job:'上忍', rarity:'SSR', hp:450, mp:90, atk:110, def:60, spd:100, mag:60, lbSkills:{50:302, 99:43}},
-        {id:401, name:'ジャンヌ', job:'聖女', rarity:'UR', hp:1200, mp:600, atk:150, def:180, spd:180, mag:530, lbSkills:{50:403, 99:903}},
+        {id:401, name:'ジャンヌ', job:'聖女', rarity:'UR', hp:1200, mp:600, atk:150, def:180, spd:180, mag:530, lbSkills:{50:24, 99:903}},
         {id:402, name:'ギル', job:'魔王', rarity:'UR', hp:1500, mp:400, atk:380, def:250, spd:200, mag:380, lbSkills:{50:406, 99:901}},
         {id:501, name:'ゼノン', job:'神', rarity:'EX', hp:4000, mp:1500, atk:900, def:600, spd:400, mag:800, lbSkills:{50:55, 99:500}}
     ],
