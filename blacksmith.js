@@ -1,4 +1,4 @@
-/* blacksmith.js (修正版: 表示エラー解消・タイトル制御修正) */
+/* blacksmith.js (完全版: 強化素材選択時の詳細表示対応) */
 
 const MenuBlacksmith = {
     mode: null, 
@@ -37,7 +37,6 @@ const MenuBlacksmith = {
         }
     },
 
-    // ヘッダータイトル更新用ヘルパー
     updateTitle: (text) => {
         const titleEl = document.querySelector('#sub-screen-blacksmith .header-bar span');
         if(titleEl) titleEl.innerText = text;
@@ -74,13 +73,11 @@ const MenuBlacksmith = {
             </div>
         `;
         
-        // オプション選択画面の動的生成 (なければ作る)
         if(!document.getElementById('smith-screen-option')) {
             const div = document.createElement('div');
             div.id = 'smith-screen-option';
             div.className = 'flex-col-container';
             div.style.display = 'none';
-            // ヘッダーは共通のものを使うので、ここには戻るボタンだけ配置
             div.innerHTML = `
                 <div id="smith-option-header" style="padding:10px; text-align:center; color:#ffd700; font-size:12px; background:#333;"></div>
                 <div id="smith-option-list" class="scroll-area"></div>
@@ -96,12 +93,11 @@ const MenuBlacksmith = {
         MenuBlacksmith.renderTargetList();
     },
 
-    // --- 1. ベース選択 (装備中も含む) ---
+    // --- 1. ベース選択 ---
     renderTargetList: () => {
         const list = document.getElementById('smith-list');
         const footer = document.getElementById('smith-footer');
         
-        // タイトル更新 (ここがエラーの原因だったので修正)
         MenuBlacksmith.updateTitle(MenuBlacksmith.mode === 'transfer' ? '継承: ベース選択' : '強化: ベース選択');
         
         list.innerHTML = '';
@@ -111,13 +107,11 @@ const MenuBlacksmith = {
         
         if(footer) footer.innerHTML = `<div style="text-align:center; color:#ffd700;">${prompt}</div>`;
 
-        // 全候補取得 (インベントリ + 装備中)
         const candidates = MenuBlacksmith.getAllCandidates();
         
-        // フィルタリング
         const items = candidates.filter(c => {
-            if (MenuBlacksmith.mode === 'transfer') return c.item.plus === 3; // +3のみ
-            else return c.item.opts && c.item.opts.length > 0; // オプション持ちのみ
+            if (MenuBlacksmith.mode === 'transfer') return c.item.plus === 3; 
+            else return c.item.opts && c.item.opts.length > 0; 
         });
 
         if (items.length === 0) {
@@ -153,7 +147,7 @@ const MenuBlacksmith = {
         });
     },
 
-    // --- 2-A. 素材選択 (継承用: 1つ選ぶ) ---
+    // --- 2-A. 素材選択 (継承用) ---
     renderMaterialList_Transfer: () => {
         const list = document.getElementById('smith-list');
         const footer = document.getElementById('smith-footer');
@@ -201,7 +195,7 @@ const MenuBlacksmith = {
             const color = Menu.getRarityColor(opt.rarity);
             div.innerHTML = `<div style="color:${color}; font-weight:bold;">${opt.label} +${opt.val}${opt.unit==='%'?'%':''} (${opt.rarity})</div>`;
             div.onclick = () => {
-                MenuBlacksmith.state.targetOptIdx = idx; // 素材側のインデックス
+                MenuBlacksmith.state.targetOptIdx = idx;
                 MenuBlacksmith.confirmTransfer();
             };
             list.appendChild(div);
@@ -223,7 +217,6 @@ const MenuBlacksmith = {
             div.className = 'list-item';
             const color = Menu.getRarityColor(opt.rarity);
             
-            // コスト計算
             const cost = MenuBlacksmith.getEnhanceCost(opt.rarity);
 
             div.innerHTML = `
@@ -233,7 +226,7 @@ const MenuBlacksmith = {
                 </div>
             `;
             div.onclick = () => {
-                MenuBlacksmith.state.targetOptIdx = idx; // ターゲット側のインデックス
+                MenuBlacksmith.state.targetOptIdx = idx;
                 MenuBlacksmith.state.requiredCount = cost;
                 MenuBlacksmith.renderMaterialList_Enhance();
             };
@@ -241,7 +234,7 @@ const MenuBlacksmith = {
         });
     },
 
-    // --- 3-B. 素材選択 (強化用: 複数選ぶ) ---
+    // --- 3-B. 素材選択 (強化用) ---
     renderMaterialList_Enhance: () => {
         MenuBlacksmith.changeScreen('select');
         MenuBlacksmith.updateTitle('強化: 素材選択');
@@ -251,7 +244,7 @@ const MenuBlacksmith = {
         list.innerHTML = '';
 
         const req = MenuBlacksmith.state.requiredCount;
-        MenuBlacksmith.state.materials = []; // リセット
+        MenuBlacksmith.state.materials = []; 
 
         const updateFooter = () => {
             const current = MenuBlacksmith.state.materials.length;
@@ -267,7 +260,6 @@ const MenuBlacksmith = {
         };
         updateFooter();
 
-        // 素材候補 (インベントリのみ、ターゲット以外)
         const items = App.data.inventory.filter(i => i.id !== MenuBlacksmith.state.target.id);
         
         if (items.length < req) {
@@ -287,7 +279,13 @@ const MenuBlacksmith = {
             };
             updateVisual();
 
-            div.innerHTML = `<div style="pointer-events:none;">${item.name} <span style="font-size:10px; color:#888;">(Rank:${item.rank})</span></div>`;
+            // ★修正: 素材選択時にもオプション詳細を表示
+            div.innerHTML = `
+                <div style="pointer-events:none; flex:1;">
+                    <div>${item.name} <span style="font-size:10px; color:#888;">(Rank:${item.rank})</span></div>
+                    ${Menu.getEquipDetailHTML(item)}
+                </div>
+            `;
 
             div.onclick = () => {
                 const idx = MenuBlacksmith.state.materials.indexOf(item.id);
@@ -341,7 +339,6 @@ const MenuBlacksmith = {
         const optIdx = MenuBlacksmith.state.targetOptIdx;
         const lv = App.data.blacksmith.level || 1;
 
-        // レアリティ抽選
         const rateObj = MenuBlacksmith.getRateObj(lv);
         const r = Math.random() * 100;
         let current = 0;
@@ -377,7 +374,6 @@ const MenuBlacksmith = {
         });
 
         if (Math.random() * 100 < rate) {
-            // 成功: 数値上昇
             const rule = DB.OPT_RULES.find(r => r.key === opt.key && (r.elm === opt.elm || !r.elm));
             let increased = false;
             
@@ -408,7 +404,6 @@ const MenuBlacksmith = {
         }
     },
 
-    // --- ヘルパー ---
     getAllCandidates: () => {
         let list = [];
         App.data.inventory.forEach(i => list.push({ item: i, owner: null }));
