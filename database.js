@@ -13,7 +13,7 @@ const CONST = {
     
     MAX_LEVEL: 99,
     EXP_BASE: 100,
-    EXP_GROWTH: 1.15,
+    EXP_GROWTH: 1.05,
     RARITY_EXP_MULT: { N:1.0, R:1.1, SR:1.2, SSR:1.3, UR:1.5, EX:2.0 }
 };
 
@@ -167,7 +167,7 @@ const DB = {
     ],
     
     CHARACTERS: [
-        {id:301, name:'アルス', job:'勇者', rarity:'N', hp:800, mp:300, atk:150, def:120, spd:100, mag:100, lbSkills:{50:42, 99:401}},
+        {id:301, name:'アルス', job:'勇者', rarity:'N', hp:800, mp:300, atk:190, def:140, spd:120, mag:140, lbSkills:{50:402, 99:903}},
         {id:101, name:'ジョン', job:'戦士', rarity:'R', hp:150, mp:20, atk:40, def:30, spd:20, mag:10, lbSkills:{50:101, 99:44}},
         {id:102, name:'マリー', job:'僧侶', rarity:'R', hp:120, mp:50, atk:20, def:20, spd:25, mag:40, lbSkills:{50:20, 99:30}},
         {id:103, name:'ボブ', job:'盗賊', rarity:'R', hp:130, mp:30, atk:30, def:20, spd:50, mag:10, lbSkills:{50:41, 99:201}},
@@ -193,9 +193,9 @@ const DB = {
         {id:304, name:'クラウド', job:'ソルジャー', rarity:'SSR', hp:550, mp:80, atk:130, def:80, spd:65, mag:50, lbSkills:{50:42, 99:202}},
         {id:305, name:'セシル', job:'聖騎士', rarity:'SSR', hp:600, mp:120, atk:100, def:110, spd:50, mag:70, lbSkills:{50:23, 99:103}},
         {id:306, name:'エッジ', job:'上忍', rarity:'SSR', hp:450, mp:90, atk:110, def:60, spd:100, mag:60, lbSkills:{50:302, 99:43}},
-        {id:401, name:'ジャンヌ', job:'聖女', rarity:'UR', hp:1200, mp:500, atk:100, def:150, spd:120, mag:300, lbSkills:{50:403, 99:903}},
-        {id:402, name:'ギル', job:'魔王', rarity:'UR', hp:1500, mp:400, atk:300, def:200, spd:100, mag:250, lbSkills:{50:402, 99:901}},
-        {id:501, name:'ゼノン', job:'神', rarity:'EX', hp:4000, mp:1500, atk:900, def:600, spd:400, mag:800, lbSkills:{50:901, 99:903}}
+        {id:401, name:'ジャンヌ', job:'聖女', rarity:'UR', hp:1200, mp:600, atk:150, def:180, spd:180, mag:530, lbSkills:{50:403, 99:903}},
+        {id:402, name:'ギル', job:'魔王', rarity:'UR', hp:1500, mp:400, atk:380, def:250, spd:200, mag:380, lbSkills:{50:406, 99:901}},
+        {id:501, name:'ゼノン', job:'神', rarity:'EX', hp:4000, mp:1500, atk:900, def:600, spd:400, mag:800, lbSkills:{50:404, 99:500}}
     ],
     ITEMS: [
         {id:1, name:'やくそう', type:'HP回復', val:100, desc:'HPを約100回復', target:'単体', price:10},
