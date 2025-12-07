@@ -398,7 +398,6 @@ const App = {
 
 
     /* main.js (calcStats修正: ％上昇対応版) */
-
     calcStats: (char) => {
         const lb = char.limitBreak || 0;
         const multiplier = 1 + (lb * 0.05); 
@@ -449,7 +448,7 @@ const App = {
 
                 // 追加オプション処理
                 if(eq.opts) eq.opts.forEach(o => {
-                    // ★修正: unitが'%'の場合、pctModsに加算
+                    // ★ここが重要: unitが'%'の場合、pctModsに加算
                     if(o.unit === '%') {
                         if(o.key === 'hp') pctMods.maxHp += o.val;
                         else if(o.key === 'mp') pctMods.maxMp += o.val;
@@ -488,7 +487,8 @@ const App = {
         s.mag = Math.floor(s.mag * (1 + pctMods.mag / 100));
 
         return s;
-    },    
+    },
+   
 
     createRandomEquip: (source, rank = 1, fixedPlus = null) => {
         let candidates = DB.EQUIPS.filter(e => e.rank <= rank && e.rank >= Math.max(1, rank - 15));
