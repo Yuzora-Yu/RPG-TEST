@@ -1,7 +1,6 @@
-/* facilities.js (完全版: 宿屋・メダル・カジノ[GEM/GOLD選択式]) */
+/* facilities.js (完全版: カジノUI改善・リトライ機能・ヘッダー常時表示) */
 
 const Facilities = {
-    // 転送サービスの選択中階層保持用
     teleportFloor: 1,
 
     // --- 宿屋 ---
@@ -173,10 +172,10 @@ const Facilities = {
     }
 };
 
-// --- カジノ機能 (GEM/GOLD選択 & ハイロー) ---
+// --- カジノ機能 (UI/UX改善版) ---
 const Casino = {
     betGold: 0,
-    currentPayout: 0, // 現在の配当プール
+    currentPayout: 0, 
     targetCurrency: 'gem', // 'gem' | 'gold'
     currentGame: null,
     deck: [],
@@ -184,58 +183,83 @@ const Casino = {
     dealerHand: [],
     doubleUpCard: null,
     
+    // UI更新ヘルパー: ヘッダーに所持金・GEMを表示
+    updateHeader: () => {
+        const header = document.querySelector('#casino-scene .header-bar');
+        if(header) {
+            header.innerHTML = `
+                <span>カジノ</span> 
+                <span style="font-size:12px;">
+                    <span style="color:#4f4">GEM:${App.data.gems.toLocaleString()}</span> / 
+                    <span style="color:#ffd700">G:${App.data.gold.toLocaleString()}</span>
+                </span>
+                <button class="btn" onclick="App.changeScene('field')">出る</button>
+            `;
+        }
+    },
+
     init: () => {
-        document.getElementById('casino-gem').innerText = App.data.gems;
+        Casino.updateHeader();
         document.getElementById('casino-area-title').style.display = 'flex';
         document.getElementById('casino-area-game').style.display = 'none';
         
-        let goldDisplay = document.getElementById('casino-gold-display');
-        if(!goldDisplay) {
-            goldDisplay = document.createElement('div');
-            goldDisplay.id = 'casino-gold-display';
-            goldDisplay.style.color = '#ffd770';
-            goldDisplay.style.marginBottom = '20px';
-            const titleArea = document.getElementById('casino-area-title');
-            titleArea.insertBefore(goldDisplay, titleArea.firstChild);
-        }
-        goldDisplay.innerText = `所持金: ${App.data.gold.toLocaleString()} G`;
+        // メインメニュー表示
+        const titleArea = document.getElementById('casino-area-title');
+        titleArea.innerHTML = `
+            <div style="font-size:20px; color:#fff; margin-bottom:10px;">GAME SELECT</div>
+            <button class="menu-btn" style="width:240px;" onclick="Casino.selectSettings('poker')">ポーカー</button>
+            <button class="menu-btn" style="width:240px;" onclick="Casino.selectSettings('bj')">ブラックジャック</button>
+        `;
     },
 
-    startGame: (gameType) => {
-        // ★モード選択
-        Menu.choice(
-            "景品を選択してください",
-            "GEM (1000G ⇒ 1GEM)", () => Casino.selectBet(gameType, 'gem'),
-            "GOLD (コインを増やす)", () => Casino.selectBet(gameType, 'gold')
-        );
-    },
-
-    selectBet: (gameType, target) => {
-        Casino.targetCurrency = target;
-        const unit = target === 'gem' ? 'GEM' : 'G';
-        
-        // ベット額選択 (両モード共通で高額ベットを用意)
-        Menu.choice(
-            `賭け金を選択 (受取: ${unit})`,
-            `100,000 G`, () => Casino.readyGame(gameType, 100000),
-            `1,000,000 G`, () => Casino.readyGame(gameType, 1000000)
-        );
-    },
-
-    readyGame: (gameType, bet) => {
-        if(App.data.gold < bet) { Menu.msg("GOLDが足りません"); return; }
-        
-        App.data.gold -= bet;
-        Casino.betGold = bet;
-        Casino.currentPayout = 0;
+    // 設定選択画面（ゲーム内HTML書き換え）
+    selectSettings: (gameType) => {
         Casino.currentGame = gameType;
-        App.save();
+        const titleArea = document.getElementById('casino-area-title');
+        
+        titleArea.innerHTML = `
+            <div style="font-size:16px; color:#fff; margin-bottom:10px;">設定を選択</div>
+            
+            <div style="margin-bottom:5px; color:#aaa; font-size:12px;">① 景品を選択</div>
+            <div style="display:flex; gap:10px; margin-bottom:20px;">
+                <button class="btn" id="btn-target-gem" style="width:110px; background:#004444;" onclick="Casino.setTarget('gem')">GEM (交換)</button>
+                <button class="btn" id="btn-target-gold" style="width:110px; background:#333;" onclick="Casino.setTarget('gold')">GOLD (増やす)</button>
+            </div>
 
+            <div style="margin-bottom:5px; color:#aaa; font-size:12px;">② 賭け金を選択</div>
+            <button class="menu-btn" style="width:230px; margin-bottom:10px;" onclick="Casino.tryStart(100000)">100,000 G</button>
+            <button class="menu-btn" style="width:230px; margin-bottom:20px;" onclick="Casino.tryStart(1000000)">1,000,000 G</button>
+            
+            <button class="btn" style="width:100px; background:#555;" onclick="Casino.init()">戻る</button>
+        `;
+        // 初期選択
+        Casino.targetCurrency = 'gem';
+    },
+
+    setTarget: (target) => {
+        Casino.targetCurrency = target;
+        document.getElementById('btn-target-gem').style.background = target==='gem' ? '#004444' : '#333';
+        document.getElementById('btn-target-gold').style.background = target==='gold' ? '#444400' : '#333';
+    },
+
+    tryStart: (bet) => {
+        if(App.data.gold < bet) { Menu.msg("GOLDが足りません"); return; }
+        Casino.betGold = bet;
+        Casino.readyGame();
+    },
+
+    readyGame: () => {
+        // GOLD消費
+        App.data.gold -= Casino.betGold;
+        App.save();
+        Casino.updateHeader();
+
+        Casino.currentPayout = 0;
         document.getElementById('casino-area-title').style.display = 'none';
         document.getElementById('casino-area-game').style.display = 'flex';
         
-        if(gameType === 'poker') Casino.startPoker();
-        if(gameType === 'bj') Casino.startBJ();
+        if(Casino.currentGame === 'poker') Casino.startPoker();
+        if(Casino.currentGame === 'bj') Casino.startBJ();
     },
 
     // --- 共通: トランプ機能 ---
@@ -285,12 +309,12 @@ const Casino = {
         if(canDraw) {
             actions.innerHTML = `<button class="btn" style="width:120px; height:50px; font-size:16px;" onclick="Casino.drawPoker()">交換 / 勝負</button>`;
         } else {
-            actions.innerHTML = `<button class="btn" onclick="Casino.init()">戻る</button>`;
+            actions.innerHTML = ``; // 結果画面へ
         }
     },
 
     toggleHold: (idx) => {
-        if(document.querySelector('#casino-actions button').innerText === '戻る') return;
+        if(document.getElementById('casino-actions').innerHTML === '') return; // 操作不能時
         Casino.hand[idx].hold = !Casino.hand[idx].hold;
         Casino.renderPoker(true);
     },
@@ -304,15 +328,13 @@ const Casino = {
             }
         });
         
-        // 役判定
         const result = Casino.checkPokerHand(Casino.hand);
         
-        // ★配当計算 (モード分岐)
         let payout = 0;
         if (Casino.targetCurrency === 'gem') {
-            payout = Math.floor((Casino.betGold / 1000) * result.rate); // 1000G = 1GEM
+            payout = Math.floor((Casino.betGold / 1000) * result.rate);
         } else {
-            payout = Math.floor(Casino.betGold * result.rate); // 1G = 1G
+            payout = Math.floor(Casino.betGold * result.rate);
         }
         
         Casino.renderPoker(false);
@@ -329,7 +351,11 @@ const Casino = {
             `;
         } else {
             msg.innerHTML = "残念...<br>配当なし";
-            actions.innerHTML = `<button class="btn" onclick="Casino.init()">戻る</button>`;
+            // ★リトライボタンの表示
+            actions.innerHTML = `
+                <button class="btn" style="width:120px;" onclick="Casino.readyGame()">もう一度</button>
+                <button class="btn" style="width:100px; background:#555;" onclick="Casino.init()">やめる</button>
+            `;
         }
     },
 
@@ -450,12 +476,11 @@ const Casino = {
         }
 
         if(win) {
-            // ★配当計算 (モード分岐)
             let payout = 0;
             if (Casino.targetCurrency === 'gem') {
-                payout = Math.floor((Casino.betGold / 1000) * rate); // 1000G = 1GEM
+                payout = Math.floor((Casino.betGold / 1000) * rate);
             } else {
-                payout = Math.floor(Casino.betGold * rate); // 1G = 1G
+                payout = Math.floor(Casino.betGold * rate);
             }
             Casino.currentPayout = payout;
             
@@ -466,7 +491,11 @@ const Casino = {
                 <button class="btn" style="width:120px;" onclick="Casino.collectPayout()">受け取る</button>
             `;
         } else {
-            actions.innerHTML = `<button class="btn" onclick="Casino.init()">戻る</button>`;
+            // ★リトライボタン
+            actions.innerHTML = `
+                <button class="btn" style="width:120px;" onclick="Casino.readyGame()">もう一度</button>
+                <button class="btn" style="width:100px; background:#555;" onclick="Casino.init()">やめる</button>
+            `;
         }
     },
 
@@ -486,9 +515,6 @@ const Casino = {
         msg.innerHTML = `ダブルアップ挑戦中！<br>現在の獲得: <span style="color:#4f4; font-size:18px;">${Casino.currentPayout.toLocaleString()} ${unit}</span><br>次は High(上) か Low(下) か？`;
 
         const cur = Casino.doubleUpCard;
-        // High/Lowにおける強さ (Aが最強)
-        // const rankStr = (cur.rank === 1) ? 'A' : (cur.rank === 13 ? 'K' : (cur.rank === 12 ? 'Q' : (cur.rank === 11 ? 'J' : cur.rank)));
-        
         let html = `
             <div style="display:flex; justify-content:center; align-items:center; gap:20px;">
                 <div style="text-align:center;">
@@ -514,7 +540,7 @@ const Casino = {
 
     checkDoubleUp: (choice) => {
         const nextCard = Casino.deck.pop();
-        const getStrength = (r) => (r === 1 ? 14 : r); // Aを最強(14)に
+        const getStrength = (r) => (r === 1 ? 14 : r); 
         
         const curVal = getStrength(Casino.doubleUpCard.rank);
         const nextVal = getStrength(nextCard.rank);
@@ -523,7 +549,6 @@ const Casino = {
         if (choice === 'high' && nextVal > curVal) win = true;
         if (choice === 'low' && nextVal < curVal) win = true;
         
-        // 結果表示
         const board = document.getElementById('casino-board');
         const actions = document.getElementById('casino-actions');
         const msg = document.getElementById('casino-msg');
@@ -541,7 +566,7 @@ const Casino = {
         if (win) {
             Casino.currentPayout *= 2;
             Casino.doubleUpCard = nextCard;
-            msg.innerHTML = `<span style="color:#f88; font-size:20px;">WIN!</span><br>配当が倍になりました！<br>現在: <span style="color:#4f4;">${Casino.currentPayout.toLocaleString()} ${unit}</span>`;
+            msg.innerHTML = `<span style="color:#f88; font-size:20px;">WIN!</span><br>倍になりました！<br>現在: <span style="color:#4f4;">${Casino.currentPayout.toLocaleString()} ${unit}</span>`;
             actions.innerHTML = `
                 <button class="btn" style="width:150px; background:#d00;" onclick="Casino.renderDoubleUp()">さらに倍！</button>
                 <button class="btn" style="width:100px;" onclick="Casino.collectPayout()">受け取る</button>
@@ -549,7 +574,11 @@ const Casino = {
         } else {
             Casino.currentPayout = 0;
             msg.innerHTML = `<span style="color:#88f; font-size:20px;">LOSE...</span><br>配当を失いました。`;
-            actions.innerHTML = `<button class="btn" onclick="Casino.init()">戻る</button>`;
+            // ★リトライボタン
+            actions.innerHTML = `
+                <button class="btn" style="width:120px;" onclick="Casino.readyGame()">もう一度</button>
+                <button class="btn" style="width:100px; background:#555;" onclick="Casino.init()">やめる</button>
+            `;
         }
     },
 
@@ -562,7 +591,17 @@ const Casino = {
             App.data.gold += Casino.currentPayout;
         }
         App.save();
+        Casino.updateHeader();
         
-        Menu.msg(`${Casino.currentPayout.toLocaleString()} ${unit} を獲得しました！`, () => Casino.init());
+        Menu.msg(`${Casino.currentPayout.toLocaleString()} ${unit} を獲得しました！`, () => {
+            // ★受取後もリトライ画面へ
+            const actions = document.getElementById('casino-actions');
+            const msg = document.getElementById('casino-msg');
+            msg.innerHTML = "次のゲームをプレイしますか？";
+            actions.innerHTML = `
+                <button class="btn" style="width:120px;" onclick="Casino.readyGame()">もう一度</button>
+                <button class="btn" style="width:100px; background:#555;" onclick="Casino.init()">やめる</button>
+            `;
+        });
     }
 };
