@@ -1,4 +1,4 @@
-/* battle.js (完全版: シナジー判定修正 & マダンテMP0回避 & DQ式計算) */
+/* battle.js (完全版: 既存装備のシナジー救済 & マダンテMP0回避 & DQ式計算) */
 
 const Battle = {
     active: false,
@@ -44,15 +44,19 @@ const Battle = {
                 player.mp = Math.min(player.mp, stats.maxMp);
                 player.isDead = player.hp <= 0;
 
-                // ★修正: シナジー情報の再取得
-                // Playerクラスのコンストラクタがバグっている可能性があるため、ここで再設定
+                // ★修正: 既存装備でもシナジー判定を行うように変更
+                // (eq.isSynergy のチェックを外し、毎回 checkSynergy を走らせる)
                 player.synergy = null;
                 if (player.equips) {
                     for (let key in player.equips) {
                         const eq = player.equips[key];
-                        if (eq && eq.isSynergy && typeof App.checkSynergy === 'function') {
+                        if (eq && typeof App.checkSynergy === 'function') {
                              const syn = App.checkSynergy(eq);
-                             if(syn) { player.synergy = syn; break; } // 1つ有効なら適用
+                             if(syn) { 
+                                 player.synergy = syn;
+                                 eq.isSynergy = true; // ついでにフラグも立てておく
+                                 break; 
+                             }
                         }
                     }
                 }
@@ -420,7 +424,7 @@ const Battle = {
         if (App.data.items) {
             Object.keys(App.data.items).forEach(id => {
                 const it = DB.ITEMS.find(i=>i.id==id);
-                if(it && (it.type.includes('回復') || it.type.includes('蘇生') || it.type.includes('MP回復')) && App.data.items[id] > 0) { 
+                if(it && (it.type.includes('回復') || it.type.includes('蘇生')) && App.data.items[id] > 0) { 
                     items.push({def:it, count:App.data.items[id]});
                 }
             });
@@ -508,7 +512,7 @@ const Battle = {
                     const acts = e.acts && e.acts.length > 0 ? e.acts : [1];
                     if (acts.length === 0) acts.push(1);
                     
-                    // ★修正: MP0時のマダンテ回避
+                    // MPを考慮して行動を選択 (マダンテMP0回避含む)
                     let validActs = acts.filter(id => {
                         if ([1, 2, 9].includes(id)) return true;
                         const s = DB.SKILLS.find(k => k.id === id);
@@ -571,7 +575,7 @@ const Battle = {
 
             if (cmd.isEnemy && !cmd.target && cmd.targetScope !== '全体' && cmd.targetScope !== 'ランダム') {
                 let isSupport = false;
-                if (cmd.data && (cmd.data.type.includes('回復') || cmd.data.type === '強化' || cmd.data.type === '蘇生' || cmd.data.type === 'MP回復')) {
+                if (cmd.data && (cmd.data.type.includes('回復') || cmd.data.type === '強化' || cmd.data.type === '蘇生')) {
                     isSupport = true;
                 }
 
@@ -730,12 +734,12 @@ const Battle = {
                 t.hp -= finalDmg;
                 Battle.log(`【${t.name}】に<span style="color:#d4d">${finalDmg}</span>のダメージ！`);
                 
-                // ★追加: マダンテでもシナジー吸血発動
+                // シナジー吸血
                 if (actor.synergy && actor.synergy.effect === 'drain') {
                     const drain = Math.floor(finalDmg * 0.1);
                     if (drain > 0) {
                         actor.hp = Math.min(actor.baseMaxHp, actor.hp + drain);
-                        Battle.log(`【${actor.name}】は吸収効果でHPを${drain}回復！`);
+                        Battle.log(`【${actor.name}】はシナジー効果でHPを${drain}回復！`);
                     }
                 }
 
@@ -775,7 +779,7 @@ const Battle = {
         for (let t of targets) {
             if (!t) continue;
 
-            // 回復・補助系
+            // 回復・補助系 (割合回復対応)
             if (effectType && ['回復','蘇生','強化','弱体','MP回復'].includes(effectType)) {
                 if (effectType === '蘇生') {
                     if (t.isDead) {
@@ -910,7 +914,7 @@ const Battle = {
                 
                 Battle.log(`【${targetToHit.name}】に<span style="color:${dmgColor}">${dmg}</span>のダメージ！`);
                 
-                // ドレイン
+                // ドレイン (特技等)
                 if (data && data.drain) {
                     const drainAmt = Math.floor(dmg * 0.25);
                     if(drainAmt > 0) {
@@ -932,7 +936,7 @@ const Battle = {
                     }
                 }
 
-                // ★追加: シナジー吸血 (通常攻撃・スキル)
+                // ★追加: シナジー吸血 (通常攻撃・スキル共通)
                 if(actor.synergy && actor.synergy.effect === 'drain') {
                     const drain = Math.floor(dmg * 0.1);
                     if (drain > 0) {
