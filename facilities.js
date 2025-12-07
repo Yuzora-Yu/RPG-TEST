@@ -1,23 +1,61 @@
-/* facilities.js (完全版: 宿屋・メダル・カジノ+ダブルアップ) */
+/* facilities.js (完全版: 宿屋転送機能追加・メダル・カジノ統合) */
 
 const Facilities = {
+    // 転送サービスの選択中階層保持用
+    teleportFloor: 1,
+
     // --- 宿屋 ---
     initInn: () => {
         const container = document.getElementById('inn-content');
         const cost = 50;
+        const teleportCost = 1000000;
+        const maxF = App.data.dungeon.maxFloor || 0;
+        
+        // 転送階層の初期化・範囲制限
+        if (Facilities.teleportFloor < 1) Facilities.teleportFloor = 1;
+        if (maxF > 0 && Facilities.teleportFloor > maxF) Facilities.teleportFloor = maxF;
+        
+        // 転送サービスのHTML生成
+        let teleportHtml = '';
+        if (maxF > 0) {
+            teleportHtml = `
+                <div style="margin-top:15px; border-top:1px solid #444; padding-top:10px; width:100%; text-align:center;">
+                    <div style="font-size:14px; color:#aaa; margin-bottom:5px;">ダンジョン転送サービス</div>
+                    <div style="font-size:12px; color:#ffd700; margin-bottom:10px;">コスト: ${teleportCost.toLocaleString()} G</div>
+                    
+                    <div style="display:flex; justify-content:center; align-items:center; gap:5px; margin-bottom:15px;">
+                        <button class="btn" style="padding:5px 10px; font-size:10px;" onclick="Facilities.adjustFloor(-10)">-10</button>
+                        <button class="btn" style="padding:5px 15px;" onclick="Facilities.adjustFloor(-1)">＜</button>
+                        <span style="font-size:18px; font-weight:bold; width:50px;">${Facilities.teleportFloor}F</span>
+                        <button class="btn" style="padding:5px 15px;" onclick="Facilities.adjustFloor(1)">＞</button>
+                        <button class="btn" style="padding:5px 10px; font-size:10px;" onclick="Facilities.adjustFloor(10)">+10</button>
+                    </div>
+                    
+                    <button class="menu-btn" style="width:200px; margin:0 auto; background:#004444;" onclick="Facilities.teleport(${teleportCost})">転送する</button>
+                </div>
+            `;
+        } else {
+            teleportHtml = `
+                <div style="margin-top:20px; border-top:1px solid #444; padding-top:10px; width:100%; text-align:center; color:#555;">
+                    <div style="font-size:12px;">ダンジョン未到達のため<br>転送サービスは利用できません</div>
+                </div>
+            `;
+        }
+
         container.innerHTML = `
-            <div style="font-size:16px; margin-bottom:20px;">
+            <div style="font-size:16px; margin-bottom:10px;">
                 ようこそ、旅人よ。<br>
                 1泊 ${cost} G です。<br>
                 HPとMPが全回復します。
             </div>
-            <div style="margin-bottom:20px; font-size:20px; color:#ffd700;">
-                所持金: ${App.data.gold} G
+            <div style="margin-bottom:10px; font-size:20px; color:#ffd700;">
+                所持金: ${App.data.gold.toLocaleString()} G
             </div>
             <div style="display:flex; gap:20px; justify-content:center;">
                 <button class="menu-btn" onclick="Facilities.stayInn(${cost})">泊まる</button>
                 <button class="menu-btn" style="background:#555;" onclick="App.changeScene('field')">出る</button>
             </div>
+            ${teleportHtml}
         `;
     },
 
@@ -36,6 +74,39 @@ const Facilities = {
             App.save();
             Facilities.initInn();
             Menu.msg("ぐっすり休んで体力が回復した！");
+        });
+    },
+
+    adjustFloor: (delta) => {
+        const maxF = App.data.dungeon.maxFloor || 0;
+        if (maxF === 0) return;
+        
+        let next = Facilities.teleportFloor + delta;
+        if (next < 1) next = 1;
+        if (next > maxF) next = maxF;
+        
+        Facilities.teleportFloor = next;
+        Facilities.initInn();
+    },
+
+    teleport: (cost) => {
+        const floor = Facilities.teleportFloor;
+        if (App.data.gold < cost) {
+            Menu.msg("お金が足りないようだ。");
+            return;
+        }
+        
+        Menu.confirm(`${cost.toLocaleString()} G を支払って\n地下 ${floor} 階へ移動しますか？`, () => {
+            App.data.gold -= cost;
+            App.save();
+            
+            if (typeof Dungeon !== 'undefined') {
+                // ダンジョン開始処理 (Dungeon.startは内部でシーン切り替えを行う)
+                Dungeon.start(floor);
+                App.log(`転送サービスで地下 ${floor} 階へ移動しました`);
+            } else {
+                Menu.msg("エラー: Dungeonモジュールが見つかりません");
+            }
         });
     },
 
@@ -129,7 +200,7 @@ const Casino = {
             const titleArea = document.getElementById('casino-area-title');
             titleArea.insertBefore(goldDisplay, titleArea.firstChild);
         }
-        goldDisplay.innerText = `所持金: ${App.data.gold} G`;
+        goldDisplay.innerText = `所持金: ${App.data.gold.toLocaleString()} G`;
     },
 
     startGame: (gameType) => {
@@ -188,7 +259,7 @@ const Casino = {
         const actions = document.getElementById('casino-actions');
         const msg = document.getElementById('casino-msg');
         
-        msg.innerHTML = `BET: <span style="color:#ffd700">${Casino.betGold} G</span><br>交換するカードをタップしてください`;
+        msg.innerHTML = `BET: <span style="color:#ffd700">${Casino.betGold.toLocaleString()} G</span><br>交換するカードをタップしてください`;
         
         let html = '<div style="display:flex; gap:5px; justify-content:center;">';
         Casino.hand.forEach((c, i) => {
@@ -312,7 +383,7 @@ const Casino = {
         if(pScore >= 21) {
             Casino.finishBJ();
         } else {
-            msg.innerHTML = `BET: <span style="color:#ffd700">${Casino.betGold} G</span><br>ヒット(もう1枚) か スタンド(勝負) か`;
+            msg.innerHTML = `BET: <span style="color:#ffd700">${Casino.betGold.toLocaleString()} G</span><br>ヒット(もう1枚) か スタンド(勝負) か`;
             actions.innerHTML = `
                 <button class="btn" style="width:100px; background:#004444;" onclick="Casino.hitBJ()">HIT</button>
                 <button class="btn" style="width:100px; background:#550000;" onclick="Casino.finishBJ()">STAND</button>
