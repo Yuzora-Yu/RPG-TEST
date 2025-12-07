@@ -80,7 +80,9 @@ const DB = {
         
         {id:30, name:'ザオラル', type:'蘇生', target:'単体', mp:8, rate:0.5, count:1, base:20, elm:null, desc:'50%蘇生'},
         {id:31, name:'ザオリク', type:'蘇生', target:'単体', mp:20, rate:0.8, count:1, base:50, elm:null, desc:'100%蘇生'},
-
+        {id:80, name:'めいそう', type:'回復', target:'単体', mp:0, rate:0, count:1, base:0, ratio:0.5, desc:'HPを50%回復'},
+        {id:81, name:'無念無想', type:'MP回復', target:'単体', mp:0, rate:0, count:1, base:0, ratio:0.5, desc:'MPを50%回復'},
+        
         // --- 物理スキル ---
         {id:40, name:'火炎斬り', type:'物理', target:'単体', mp:4, rate:1.0, count:1, base:55, elm:'火', desc:'炎の剣技'},
         {id:41, name:'はやぶさ斬り', type:'物理', target:'単体', mp:6, rate:0.6, count:2, base:20, elm:null, desc:'2回攻撃'},
@@ -590,7 +592,7 @@ const DB = {
         id: 1090, rank: 90, minF: 999, name: 'ハーゴン',
         hp: 150000, mp: 7000, atk: 5600, def: 6500, spd: 2500, mag: 8500,
         exp: 50000, gold: 20000,
-        acts: [404, 405, 406, 407, 412, 500, 905], // メテオ〜イオグランデ、マダンテ、やみのはどう
+        acts: [404, 405, 406, 407, 412, 500, 905, 81], // メテオ〜イオグランデ、マダンテ、やみのはどう
         actCount: 2
     });
 
@@ -599,7 +601,7 @@ const DB = {
         id: 1100, rank: 100, minF: 999, name: 'シドー',
         hp: 250000, mp: 9999, atk: 9500, def: 8000, spd: 3500, mag: 8800,
         exp: 100000, gold: 50000,
-        acts: [1, 103, 404, 407, 609, 23, 60, 411], // 煉獄火炎、ラグナブレード追加
+        acts: [1, 103, 404, 407, 609, 23, 60, 411, 80], // 煉獄火炎、ラグナブレード追加
         actCount: 3 
     });
 
