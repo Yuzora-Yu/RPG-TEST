@@ -1,4 +1,4 @@
-/* dungeon.js (脱出座標修正版) */
+/* dungeon.js (完全版: 赤宝箱1%・出現数調整・確率調整済み) */
 
 const Dungeon = {
     floor: 0, width: 30, height: 30, map: [], pendingAction: null,
@@ -86,8 +86,6 @@ const Dungeon = {
         App.save();
     },
 
-    /* dungeon.js の exit 関数を修正 */
-
     exit: () => {
         // ダンジョン情報をクリア
         App.data.dungeon.map = null;
@@ -96,15 +94,13 @@ const Dungeon = {
 
         Field.currentMapData = null;
         
-        // ★修正: 座標を計算不要な「28」に直接指定し、Field変数にも即時反映させる
         const targetX = 23;
-        const targetY = 28; // (60 % 32 = 28 なので、実体は28)
+        const targetY = 28; 
         
         App.data.location.x = targetX;
         App.data.location.y = targetY;
         App.data.progress.floor = 0;
         
-        // メモリ上の座標も強制同期（これが重要）
         if(typeof Field !== 'undefined') {
             Field.x = targetX;
             Field.y = targetY;
@@ -115,14 +111,17 @@ const Dungeon = {
         App.log("フィールドに戻った");
         App.clearAction();
     },
-
     
     handleMove: (x, y) => {
         const tile = Dungeon.map[y][x];
         App.clearAction();
 
         if(tile === 'C') { 
-            Dungeon.openChest(x, y); 
+            Dungeon.openChest(x, y, 'normal'); // 通常宝箱
+            return; 
+        }
+        if(tile === 'R') { 
+            Dungeon.openChest(x, y, 'rare');   // 赤宝箱(+3確定)
             return; 
         }
 
@@ -147,24 +146,68 @@ const Dungeon = {
         }
     },
 
-    openChest: (x, y) => {
+    openChest: (x, y, type) => {
         Dungeon.map[y][x] = 'T'; 
         Field.render();
         
-        const r = Math.random(); let msg = "";
-        if(r < 0.1) {
-            const item = DB.ITEMS.find(i => i.name === 'ちいさなメダル');
-            msg = "ちいさなメダル"; App.data.items[item.id] = (App.data.items[item.id]||0)+1;
-        } else if (r < 0.5) {
-            const eq = App.createRandomEquip('chest', Dungeon.floor);
-            eq.name = eq.name.replace(/\+\d+/, (m)=>{ let v=parseInt(m.replace('+','')); return `+${Math.min(2,v)}`; });
+        let msg = "";
+
+        if (type === 'rare') {
+            // ★赤宝箱: +3装備確定
+            const eq = App.createRandomEquip('chest', Dungeon.floor, 3);
+            if(App.checkSynergy(eq)) eq.isSynergy = true;
             App.data.inventory.push(eq);
-            msg = `${eq.name}`;
+            msg = `<span style="color:#ff4444; font-weight:bold;">激レア！ ${eq.name}</span>`;
+            
+            // レア演出用フラッシュ
+            const flash = document.getElementById('drop-flash');
+            if(flash) {
+                flash.style.display = 'block'; 
+                flash.classList.remove('flash-active');
+                void flash.offsetWidth; 
+                flash.classList.add('flash-active');
+            }
+
         } else {
-            const gold = Math.floor(Math.random() * (1000 * Dungeon.floor)) + 100;
-            App.data.gold += gold;
-            msg = `${gold} G`;
+            // ★通常宝箱: 確率分岐
+            // メダル20% | アイテム30% | GOLD20% | +1装備20% | +2装備10%
+            const r = Math.random(); 
+            
+            if (r < 0.2) {
+                // メダル (20%)
+                const item = DB.ITEMS.find(i => i.id === 99);
+                if(item) {
+                    msg = item.name;
+                    App.data.items[item.id] = (App.data.items[item.id]||0)+1;
+                }
+            } else if (r < 0.5) {
+                // アイテム (30%)
+                const candidates = DB.ITEMS.filter(i => i.id !== 99);
+                if (candidates.length > 0) {
+                    const item = candidates[Math.floor(Math.random() * candidates.length)];
+                    msg = item.name;
+                    App.data.items[item.id] = (App.data.items[item.id]||0)+1;
+                } else {
+                    msg = "空っぽ";
+                }
+            } else if (r < 0.7) {
+                // GOLD (20%)
+                const gold = Math.floor(Math.random() * (500 * Dungeon.floor)) + 100;
+                App.data.gold += gold;
+                msg = `${gold} G`;
+            } else if (r < 0.9) {
+                // +1装備 (20%)
+                const eq = App.createRandomEquip('chest', Dungeon.floor, 1);
+                App.data.inventory.push(eq);
+                msg = `${eq.name}`;
+            } else {
+                // +2装備 (10%)
+                const eq = App.createRandomEquip('chest', Dungeon.floor, 2);
+                App.data.inventory.push(eq);
+                msg = `${eq.name}`;
+            }
         }
+        
         App.log(`宝箱: ${msg} を入手`);
         App.save();
     },
@@ -342,22 +385,29 @@ const Dungeon = {
         
         if(floors.length === 0) return;
 
+        // 階段
         const sIdx = Math.floor(Math.random() * floors.length);
         const sPos = floors[sIdx];
         Dungeon.map[sPos.y][sPos.x] = 'S';
         floors.splice(sIdx, 1);
 
-        let chests = 1 + Math.floor(Dungeon.floor / 3);
-        if (Dungeon.width === 25 && Dungeon.height === 25) { 
-            chests = 4 + Math.floor(Dungeon.floor / 2); 
-        }
+        // ★修正: 宝箱の数 (3〜8個)
+        let chests = Math.floor(Math.random() * 6) + 3;
 
         for(let i=0; i<chests; i++) {
             if(floors.length === 0) break;
             const cIdx = Math.floor(Math.random() * floors.length);
             const cPos = floors[cIdx];
-            Dungeon.map[cPos.y][cPos.x] = 'C';
+            Dungeon.map[cPos.y][cPos.x] = 'C'; // 通常宝箱
             floors.splice(cIdx, 1);
+        }
+
+        // ★追加: 1%の確率で赤宝箱(+3確定)を配置
+        if (Math.random() < 0.01 && floors.length > 0) {
+            const rIdx = Math.floor(Math.random() * floors.length);
+            const rPos = floors[rIdx];
+            Dungeon.map[rPos.y][rPos.x] = 'R'; // 赤宝箱
+            floors.splice(rIdx, 1);
         }
     },
     
