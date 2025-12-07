@@ -1,4 +1,4 @@
-/* blacksmith.js (鍛冶屋: 継承+4化 & 能力強化) */
+/* blacksmith.js (修正版: ボタン描画対応・分割管理用) */
 
 const MenuBlacksmith = {
     mode: null, // 'transfer' | 'enhance'
@@ -33,20 +33,30 @@ const MenuBlacksmith = {
     renderMain: () => {
         const lv = App.data.blacksmith.level || 1;
         const exp = App.data.blacksmith.exp || 0;
-        const next = lv * 100; // 簡易的な必要経験値
+        const next = lv * 100;
 
-        const info = document.getElementById('smith-info');
-        info.innerHTML = `
-            <div style="font-size:18px; font-weight:bold;">鍛冶屋 Lv.${lv}</div>
-            <div style="font-size:12px; color:#aaa;">熟練度: ${exp} / ${next}</div>
-            <hr style="border-color:#444; margin:10px 0;">
-            <div style="font-size:12px; text-align:left;">
-                <b>■ 能力継承 (+4作成)</b><br>
-                +3装備にオプションを追加し、+4へ進化させます。<br>
-                レアリティは鍛冶屋Lvに応じて再抽選されます。<br><br>
-                <b>■ 能力強化</b><br>
-                不要な装備を消費して、オプション数値を強化します。<br>
-                成功率は鍛冶屋Lvに依存します。
+        // ★修正: 親コンテナの中身を丸ごと書き換えて、ボタンもJS側で制御する
+        const container = document.getElementById('smith-screen-main');
+        if(!container) return;
+
+        container.innerHTML = `
+            <div id="smith-info" style="color:#ffd770; text-align:center;">
+                <div style="font-size:18px; font-weight:bold;">鍛冶屋 Lv.${lv}</div>
+                <div style="font-size:12px; color:#aaa;">熟練度: ${exp} / ${next}</div>
+                <hr style="border-color:#444; margin:10px 0;">
+                <div style="font-size:12px; text-align:left; padding:0 10px;">
+                    <b>■ 能力継承 (+4作成)</b><br>
+                    +3装備にオプションを追加し、+4へ進化させます。<br>
+                    レアリティは鍛冶屋Lvに応じて再抽選されます。<br><br>
+                    <b>■ 能力強化</b><br>
+                    不要な装備を消費して、オプション数値を強化します。<br>
+                    成功率は鍛冶屋Lvに依存します。
+                </div>
+            </div>
+            
+            <div style="display:flex; flex-direction:column; gap:20px; margin-top:20px;">
+                <button class="menu-btn" style="width:200px;" onclick="MenuBlacksmith.selectMode('transfer')">能力継承 (+4作成)</button>
+                <button class="menu-btn" style="width:200px;" onclick="MenuBlacksmith.selectMode('enhance')">能力強化</button>
             </div>
         `;
     },
@@ -91,7 +101,15 @@ const MenuBlacksmith = {
             }
         }
 
-        document.querySelector('#smith-screen-select .header-bar span').innerText = step === 'target' ? 'ベース選択' : '素材選択';
+        // ヘッダー書き換え
+        const headerTitle = document.querySelector('#sub-screen-blacksmith .header-bar span');
+        if(headerTitle) headerTitle.innerText = step === 'target' ? 'ベース選択' : '素材選択';
+        
+        // select画面のヘッダータイトルがある場合(index.htmlの構造による)
+        const selectHeader = document.querySelector('#smith-screen-select .header-bar span');
+        if(selectHeader) selectHeader.innerText = step === 'target' ? 'ベース選択' : '素材選択';
+
+
         footer.innerHTML = `<div style="text-align:center; color:#ffd700;">${prompt}</div>`;
 
         if (items.length === 0) {
@@ -261,8 +279,6 @@ const MenuBlacksmith = {
         if(App.data.blacksmith.exp >= next) {
             App.data.blacksmith.exp -= next;
             App.data.blacksmith.level++;
-            // レベルアップ演出は簡易的にログで
-            // Menu.msg(`鍛冶屋レベルが ${App.data.blacksmith.level} に上がりました！`); // 連続処理の邪魔になるので今回はなし
         }
     }
 };
