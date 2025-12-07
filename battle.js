@@ -1,4 +1,4 @@
-/* battle.js (最終版: 耐性100%無効化対応) */
+/* battle.js (DQ式計算: (攻/2)-(守/4) & 最終補正乗算版) */
 
 const Battle = {
     active: false,
@@ -752,73 +752,98 @@ const Battle = {
                 }
 
                 // =========================================================================
-                // ★ 計算式刷新: 倍率加算 & 耐性完全無効化対応
+                // ★ DQ式計算式: 攻/2 - 守/4
                 // =========================================================================
 
-                // 【Step 1】基礎ダメージ: (攻撃力 - 防御力/2) + スキル威力
-                let atkVal = isPhysical ? actor.getStat('atk') : actor.getStat('mag');
-                let defVal = isPhysical ? targetToHit.getStat('def') : targetToHit.getStat('mag');
-                let resistance = isPhysical ? Math.floor(defVal / 2) : Math.floor(defVal / 3);
+                let atkVal = 0, defVal = 0;
                 
-                let dmg = (atkVal - resistance) + baseDmg;
-                if (dmg < 1) dmg = 1;
-
-                // 【Step 2】倍率の合算 (スキル倍率 + 属性強化% + 与ダメUP%)
-                let totalMultiplier = skillRate;
-
-                // 属性攻撃補正 (%)
-                if (element) {
-                    const elmAtkVal = (actor.getStat('elmAtk') || {})[element] || 0;
-                    if(elmAtkVal > 0) totalMultiplier += (elmAtkVal / 100);
+                // --- ステータス取得 ---
+                if (isPhysical) {
+                    atkVal = actor.getStat('atk');
+                    defVal = targetToHit.getStat('def');
+                } else {
+                    atkVal = actor.getStat('mag');
+                    defVal = targetToHit.getStat('mag');
                 }
 
-                // 最終与ダメージ補正 (%)
-                const finDmgVal = actor.getStat('finDmg') || 0;
-                if(finDmgVal > 0) totalMultiplier += (finDmgVal / 100);
+                // --- 1. 基礎ダメージ計算 ---
+                // 物理: (攻撃力/2 * 倍率) - (守備力/4) + 固定値
+                // 魔法: 固定値 + (魔力/2 * 倍率) - (敵魔力/4)
+                
+                let baseDmgCalc = 0;
+                
+                if (isPhysical) {
+                    // 物理
+                    let attackPart = Math.floor(atkVal / 2) * skillRate; // 攻撃パート
+                    let defensePart = Math.floor(defVal / 4);            // 防御パート
+                    baseDmgCalc = (attackPart - defensePart) + baseDmg;
+                } else {
+                    // 魔法
+                    let magicPart = Math.floor(atkVal / 2) * skillRate; // 魔力パート
+                    let resistPart = Math.floor(defVal / 4);            // 抵抗パート
+                    baseDmgCalc = baseDmg + (magicPart - resistPart);
+                }
 
-                // 倍率適用
-                dmg = dmg * totalMultiplier;
+                if (baseDmgCalc < 1) baseDmgCalc = 1;
 
-                // 乱数 (0.9 ~ 1.1)
-                dmg = dmg * (0.9 + Math.random() * 0.2);
+                // --- 2. 最終補正 (乗算) ---
+                // [1 + (属性% + 与ダメ%)] × [1 - (属性耐性% + 被ダメカット%)]
+                
+                let bonusRate = 0; // 加算するボーナス%
+                let cutRate = 0;   // 減算するカット%
+                let isImmune = false;
 
-                // 【Step 3】最終軽減処理 (属性耐性 & 被ダメカット)
-                let isImmune = false; // 完全無効化フラグ
-
-                // 属性耐性 (%)
+                // 属性補正
                 if (element) {
+                    // 攻撃側: 属性強化
+                    const elmAtkVal = (actor.getStat('elmAtk') || {})[element] || 0;
+                    if(elmAtkVal > 0) bonusRate += elmAtkVal;
+
+                    // 防御側: 属性耐性
                     const elmRes = targetToHit.getStat('elmRes') || {};
                     let resVal = elmRes[element] || 0;
-                    // フォースブレイク
+                    
+                    // フォースブレイク等
                     if (targetToHit.buffs && targetToHit.buffs.elmResDown) {
                         resVal -= targetToHit.buffs.elmResDown;
                     }
                     
-                    // ★修正: 耐性100%以上の場合はダメージを0にする
-                    if (resVal >= 100) {
-                        dmg = 0;
-                        isImmune = true;
-                    } else {
-                        dmg = dmg * (1.0 - resVal / 100);
-                    }
+                    // 耐性100%以上は完全無効
+                    if (resVal >= 100) isImmune = true;
+                    else cutRate += resVal;
                 }
 
-                // 被ダメージ軽減 (%) - 上限80%
+                // 与ダメUP / 被ダメカット
+                const finDmgVal = actor.getStat('finDmg') || 0;
+                if(finDmgVal > 0) bonusRate += finDmgVal;
+
                 let finRed = targetToHit.getStat('finRed') || 0;
                 if (finRed > 80) finRed = 80;
-                if (finRed > 0) dmg = dmg * (1.0 - finRed / 100);
+                if (finRed > 0) cutRate += finRed;
+
+                // --- 計算適用 ---
+                let dmg = baseDmgCalc;
+                
+                // ボーナス乗算
+                dmg = dmg * (1.0 + bonusRate / 100);
+                
+                // カット乗算
+                dmg = dmg * (1.0 - cutRate / 100);
+
+                // 乱数 (0.9 ~ 1.1)
+                dmg = dmg * (0.9 + Math.random() * 0.2);
 
                 // 防御中 (半減)
                 if (targetToHit.status && targetToHit.status.defend) {
-                    dmg = Math.floor(dmg * 0.5);
+                    dmg = dmg * 0.5;
                 }
 
-                // 整数化 & 最低保証
+                // 整数化
                 dmg = Math.floor(dmg);
                 
-                // ★修正: 完全無効化されていない場合のみ最低1保証
+                // 完全無効でなければ最低1保証
                 if (!isImmune && dmg < 1) dmg = 1;
-                // 完全無効化なら0
+                // 完全無効なら0固定
                 if (isImmune) dmg = 0;
 
                 // =========================================================================
@@ -1121,3 +1146,5 @@ const Battle = {
     },
     wait: (ms) => new Promise(resolve => setTimeout(resolve, ms))
 };
+
+}
