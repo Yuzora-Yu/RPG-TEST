@@ -1,28 +1,41 @@
-/* blacksmith.js (修正版: ボタン描画対応・分割管理用) */
+/* blacksmith.js (完全版: 任意OP継承・個別強化・装備中強化対応) */
 
 const MenuBlacksmith = {
     mode: null, // 'transfer' | 'enhance'
-    targetItem: null,
-    materialItem: null,
-    selectedMaterialId: null,
+    
+    // 選択状態保持
+    state: {
+        target: null,       // ベース装備
+        targetIsEquipped: false, // 装備中かどうか
+        material: null,     // 継承用素材 (1つ)
+        materials: [],      // 強化用素材リスト (複数)
+        targetOptIdx: -1,   // 強化/継承したいオプションのインデックス
+        requiredCount: 0    // 強化に必要な素材数
+    },
 
     init: () => {
         document.getElementById('sub-screen-blacksmith').style.display = 'flex';
-        MenuBlacksmith.resetSelection();
+        MenuBlacksmith.resetState();
         MenuBlacksmith.changeScreen('main');
     },
 
-    resetSelection: () => {
+    resetState: () => {
         MenuBlacksmith.mode = null;
-        MenuBlacksmith.targetItem = null;
-        MenuBlacksmith.materialItem = null;
-        MenuBlacksmith.selectedMaterialId = null;
+        MenuBlacksmith.state = {
+            target: null, targetIsEquipped: false,
+            material: null, materials: [],
+            targetOptIdx: -1, requiredCount: 0
+        };
     },
 
     changeScreen: (screenId) => {
-        // 表示切り替え
-        ['main', 'select'].forEach(id => {
+        // 画面切り替え (main, select, option)
+        ['main', 'select', 'option'].forEach(id => {
             const el = document.getElementById(`smith-screen-${id}`);
+            if(!el && id !== 'main') {
+                // 動的生成が必要なサブ画面コンテナがなければ作る
+                // (既存のHTML構造に依存せず動かすための保険)
+            }
             if(el) el.style.display = (id === screenId) ? 'flex' : 'none';
         });
 
@@ -35,7 +48,6 @@ const MenuBlacksmith = {
         const exp = App.data.blacksmith.exp || 0;
         const next = lv * 100;
 
-        // ★修正: 親コンテナの中身を丸ごと書き換えて、ボタンもJS側で制御する
         const container = document.getElementById('smith-screen-main');
         if(!container) return;
 
@@ -46,11 +58,12 @@ const MenuBlacksmith = {
                 <hr style="border-color:#444; margin:10px 0;">
                 <div style="font-size:12px; text-align:left; padding:0 10px;">
                     <b>■ 能力継承 (+4作成)</b><br>
-                    +3装備にオプションを追加し、+4へ進化させます。<br>
+                    +3装備に、素材の<span style="color:#f88">指定したオプション</span>を移植します。<br>
                     レアリティは鍛冶屋Lvに応じて再抽選されます。<br><br>
                     <b>■ 能力強化</b><br>
-                    不要な装備を消費して、オプション数値を強化します。<br>
-                    成功率は鍛冶屋Lvに依存します。
+                    指定したオプションを強化します。<br>
+                    オプションのランクが高いほど、多くの素材が必要です。<br>
+                    (EX:10個, N:1個など)
                 </div>
             </div>
             
@@ -59,133 +72,272 @@ const MenuBlacksmith = {
                 <button class="menu-btn" style="width:200px;" onclick="MenuBlacksmith.selectMode('enhance')">能力強化</button>
             </div>
         `;
+        
+        // サブ画面用のDOMコンテナ準備 (存在しない場合)
+        if(!document.getElementById('smith-screen-option')) {
+            const div = document.createElement('div');
+            div.id = 'smith-screen-option';
+            div.className = 'flex-col-container';
+            div.style.display = 'none';
+            div.innerHTML = `
+                <div class="header-bar"><span>オプション選択</span> <button class="btn" onclick="MenuBlacksmith.init()">戻る</button></div>
+                <div id="smith-option-header" style="padding:10px; text-align:center; color:#ffd700; font-size:12px;"></div>
+                <div id="smith-option-list" class="scroll-area"></div>
+            `;
+            container.parentElement.appendChild(div);
+        }
     },
 
     selectMode: (mode) => {
         MenuBlacksmith.mode = mode;
-        MenuBlacksmith.targetItem = null;
         MenuBlacksmith.changeScreen('select');
-        MenuBlacksmith.renderList('target');
+        MenuBlacksmith.renderTargetList();
     },
 
-    // --- リスト表示 (Target / Material) ---
-    renderList: (step) => {
+    // --- 1. ベース選択 (装備中も含む) ---
+    renderTargetList: () => {
         const list = document.getElementById('smith-list');
         const footer = document.getElementById('smith-footer');
+        document.querySelector('#smith-screen-select .header-bar span').innerText = 'ベース選択';
         list.innerHTML = '';
-        
-        let items = [];
+
         let prompt = "";
-
-        // ステップごとのフィルタリング
-        if (step === 'target') {
-            if (MenuBlacksmith.mode === 'transfer') {
-                // 継承: +3の装備のみ
-                items = App.data.inventory.filter(i => i.plus === 3);
-                prompt = "ベースにする装備(+3)を選択してください";
-            } else {
-                // 強化: オプションを持っている装備
-                items = App.data.inventory.filter(i => i.opts && i.opts.length > 0);
-                prompt = "強化したい装備を選択してください";
-            }
-        } else if (step === 'material') {
-            // 素材: ターゲット以外
-            items = App.data.inventory.filter(i => i.id !== MenuBlacksmith.targetItem.id);
-            
-            if (MenuBlacksmith.mode === 'transfer') {
-                // 継承素材: オプションを1つ以上持っていること
-                items = items.filter(i => i.opts && i.opts.length > 0);
-                prompt = "オプションを引き継ぐ素材を選択してください";
-            } else {
-                prompt = "消費する素材を選択してください";
-            }
-        }
-
-        // ヘッダー書き換え
-        const headerTitle = document.querySelector('#sub-screen-blacksmith .header-bar span');
-        if(headerTitle) headerTitle.innerText = step === 'target' ? 'ベース選択' : '素材選択';
-        
-        // select画面のヘッダータイトルがある場合(index.htmlの構造による)
-        const selectHeader = document.querySelector('#smith-screen-select .header-bar span');
-        if(selectHeader) selectHeader.innerText = step === 'target' ? 'ベース選択' : '素材選択';
-
-
+        if (MenuBlacksmith.mode === 'transfer') prompt = "ベースにする装備(+3)を選択してください";
+        else prompt = "強化したい装備を選択してください";
         footer.innerHTML = `<div style="text-align:center; color:#ffd700;">${prompt}</div>`;
+
+        // 全候補取得 (インベントリ + 装備中)
+        const candidates = MenuBlacksmith.getAllCandidates();
+        
+        // フィルタリング
+        const items = candidates.filter(c => {
+            if (MenuBlacksmith.mode === 'transfer') return c.item.plus === 3; // +3のみ
+            else return c.item.opts && c.item.opts.length > 0; // オプション持ちのみ
+        });
 
         if (items.length === 0) {
             list.innerHTML = '<div style="padding:20px; text-align:center; color:#888;">対象となる装備がありません</div>';
             return;
         }
 
-        items.forEach(item => {
+        items.forEach(c => {
+            const item = c.item;
             const div = document.createElement('div');
             div.className = 'list-item';
             
-            // 装備中チェック
-            let ownerName = "";
-            const owner = App.data.characters.find(c => c.equips[item.type] && c.equips[item.type].id === item.id);
-            if(owner) ownerName = ` <span style="font-size:10px; color:#f88;">[${owner.name}]</span>`;
+            let ownerInfo = c.owner ? ` <span style="font-size:10px; color:#f88;">[${c.owner} 装備中]</span>` : '';
 
             div.innerHTML = `
                 <div style="flex:1;">
-                    <div>${item.name}${ownerName}</div>
+                    <div>${item.name}${ownerInfo}</div>
                     ${Menu.getEquipDetailHTML(item)}
                 </div>
             `;
             
             div.onclick = () => {
-                if (owner) {
-                    Menu.msg(`${owner.name}が装備中のため選択できません`);
-                    return;
-                }
+                MenuBlacksmith.state.target = item;
+                MenuBlacksmith.state.targetIsEquipped = !!c.owner;
 
-                if (step === 'target') {
-                    MenuBlacksmith.targetItem = item;
-                    MenuBlacksmith.renderList('material');
+                if (MenuBlacksmith.mode === 'transfer') {
+                    // 継承: 次は素材選択
+                    MenuBlacksmith.renderMaterialList_Transfer();
                 } else {
-                    MenuBlacksmith.materialItem = item;
-                    MenuBlacksmith.confirmExecution();
+                    // 強化: 次はオプション選択
+                    MenuBlacksmith.renderOptionList_Enhance();
                 }
             };
             list.appendChild(div);
         });
     },
 
-    // --- 実行確認 ---
-    confirmExecution: () => {
-        const target = MenuBlacksmith.targetItem;
-        const material = MenuBlacksmith.materialItem;
-        const lv = App.data.blacksmith.level || 1;
+    // --- 2-A. 素材選択 (継承用: 1つ選ぶ) ---
+    renderMaterialList_Transfer: () => {
+        const list = document.getElementById('smith-list');
+        const footer = document.getElementById('smith-footer');
+        document.querySelector('#smith-screen-select .header-bar span').innerText = '素材選択';
+        list.innerHTML = '';
+        footer.innerHTML = `<div style="text-align:center; color:#ffd700;">オプションを引き継ぐ素材を選択してください</div>`;
 
-        if (MenuBlacksmith.mode === 'transfer') {
-            // 継承 (+4化)
-            const rateObj = MenuBlacksmith.getRateObj(lv);
-            let rateStr = "";
-            for (let r in rateObj) if(rateObj[r]>0) rateStr += `${r}:${rateObj[r]}% `;
+        // 素材はインベントリのみ (装備中は不可) & 自分自身以外 & オプション持ち
+        const items = App.data.inventory.filter(i => 
+            i.id !== MenuBlacksmith.state.target.id && 
+            i.opts && i.opts.length > 0
+        );
 
-            Menu.confirm(
-                `【能力継承】\n\nベース: ${target.name}\n素材: ${material.name}\n\n素材からオプションを1つ引き継ぎ、\n+4装備へ進化させます。\n\n※レアリティは再抽選されます\n確率: ${rateStr}`,
-                () => MenuBlacksmith.executeTransfer()
-            );
-
-        } else {
-            // 強化
-            const successRate = Math.min(95, 50 + (lv * 5));
-            
-            Menu.confirm(
-                `【能力強化】\n\nベース: ${target.name}\n素材: ${material.name}\n\n素材を消費してオプション値を強化します。\n成功率: ${successRate}%\n\nよろしいですか？`,
-                () => MenuBlacksmith.executeEnhance(successRate)
-            );
+        if (items.length === 0) {
+            list.innerHTML = '<div style="padding:20px; text-align:center; color:#888;">素材にできる装備がありません</div>';
+            return;
         }
+
+        items.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'list-item';
+            div.innerHTML = `<div style="flex:1;"><div>${item.name}</div>${Menu.getEquipDetailHTML(item)}</div>`;
+            div.onclick = () => {
+                MenuBlacksmith.state.material = item;
+                // 次へ: オプション選択
+                MenuBlacksmith.renderOptionList_Transfer();
+            };
+            list.appendChild(div);
+        });
     },
 
-    // --- 処理実行: 継承 ---
+    // --- 2-B. オプション選択 (継承用) ---
+    renderOptionList_Transfer: () => {
+        MenuBlacksmith.changeScreen('option');
+        const list = document.getElementById('smith-option-list');
+        const header = document.getElementById('smith-option-header');
+        list.innerHTML = '';
+        header.innerText = `素材: ${MenuBlacksmith.state.material.name} から\n移植するオプションを選択してください`;
+
+        MenuBlacksmith.state.material.opts.forEach((opt, idx) => {
+            const div = document.createElement('div');
+            div.className = 'list-item';
+            const color = Menu.getRarityColor(opt.rarity);
+            div.innerHTML = `<div style="color:${color}; font-weight:bold;">${opt.label} +${opt.val}${opt.unit==='%'?'%':''} (${opt.rarity})</div>`;
+            div.onclick = () => {
+                MenuBlacksmith.state.targetOptIdx = idx; // 素材側のインデックス
+                MenuBlacksmith.confirmTransfer();
+            };
+            list.appendChild(div);
+        });
+    },
+
+    // --- 3-A. オプション選択 (強化用) ---
+    renderOptionList_Enhance: () => {
+        MenuBlacksmith.changeScreen('option');
+        const list = document.getElementById('smith-option-list');
+        const header = document.getElementById('smith-option-header');
+        list.innerHTML = '';
+        header.innerText = `強化するオプションを選択してください`;
+
+        MenuBlacksmith.state.target.opts.forEach((opt, idx) => {
+            const div = document.createElement('div');
+            div.className = 'list-item';
+            const color = Menu.getRarityColor(opt.rarity);
+            
+            // コスト計算
+            const cost = MenuBlacksmith.getEnhanceCost(opt.rarity);
+
+            div.innerHTML = `
+                <div style="flex:1;">
+                    <div style="color:${color}; font-weight:bold;">${opt.label} +${opt.val}${opt.unit==='%'?'%':''} (${opt.rarity})</div>
+                    <div style="font-size:10px; color:#aaa;">必要素材数: ${cost}個</div>
+                </div>
+            `;
+            div.onclick = () => {
+                MenuBlacksmith.state.targetOptIdx = idx; // ターゲット側のインデックス
+                MenuBlacksmith.state.requiredCount = cost;
+                // 次へ: 複数素材選択
+                MenuBlacksmith.renderMaterialList_Enhance();
+            };
+            list.appendChild(div);
+        });
+    },
+
+    // --- 3-B. 素材選択 (強化用: 複数選ぶ) ---
+    renderMaterialList_Enhance: () => {
+        MenuBlacksmith.changeScreen('select');
+        const list = document.getElementById('smith-list');
+        const footer = document.getElementById('smith-footer');
+        document.querySelector('#smith-screen-select .header-bar span').innerText = '素材選択';
+        list.innerHTML = '';
+
+        const req = MenuBlacksmith.state.requiredCount;
+        MenuBlacksmith.state.materials = []; // リセット
+
+        // 更新用関数
+        const updateFooter = () => {
+            const current = MenuBlacksmith.state.materials.length;
+            const color = current === req ? '#4f4' : '#fff';
+            footer.innerHTML = `
+                <div style="text-align:center;">
+                    必要数: <span style="color:${color}; font-weight:bold;">${current} / ${req}</span>
+                </div>
+                ${current === req ? '<button class="menu-btn" style="width:100%; margin-top:5px; background:#d00;" onclick="MenuBlacksmith.confirmEnhance()">決定</button>' : ''}
+            `;
+        };
+        updateFooter();
+
+        // 素材候補 (インベントリのみ、ターゲット以外)
+        const items = App.data.inventory.filter(i => i.id !== MenuBlacksmith.state.target.id);
+        
+        if (items.length < req) {
+            list.innerHTML = '<div style="padding:20px; text-align:center; color:#f44;">素材が足りません</div>';
+            return;
+        }
+
+        items.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'list-item';
+            div.style.cursor = 'pointer';
+
+            // チェックボックス風UI
+            const updateVisual = () => {
+                const isSelected = MenuBlacksmith.state.materials.includes(item.id);
+                div.style.background = isSelected ? '#442222' : 'transparent';
+                div.style.borderLeft = isSelected ? '3px solid #f44' : 'none';
+            };
+            updateVisual();
+
+            div.innerHTML = `<div style="pointer-events:none;">${item.name} <span style="font-size:10px; color:#888;">(Rank:${item.rank})</span></div>`;
+
+            div.onclick = () => {
+                const idx = MenuBlacksmith.state.materials.indexOf(item.id);
+                if (idx > -1) {
+                    // 解除
+                    MenuBlacksmith.state.materials.splice(idx, 1);
+                } else {
+                    // 追加 (上限まで)
+                    if (MenuBlacksmith.state.materials.length < req) {
+                        MenuBlacksmith.state.materials.push(item.id);
+                    }
+                }
+                updateVisual();
+                updateFooter();
+            };
+            list.appendChild(div);
+        });
+    },
+
+    // --- 実行確認: 継承 ---
+    confirmTransfer: () => {
+        const target = MenuBlacksmith.state.target;
+        const material = MenuBlacksmith.state.material;
+        const opt = material.opts[MenuBlacksmith.state.targetOptIdx];
+        const lv = App.data.blacksmith.level || 1;
+        
+        const rateObj = MenuBlacksmith.getRateObj(lv);
+        let rateStr = "";
+        for (let r in rateObj) if(rateObj[r]>0) rateStr += `${r}:${rateObj[r]}% `;
+
+        Menu.confirm(
+            `【能力継承】\n\nベース: ${target.name}\n移植: ${opt.label} (${opt.rarity})\n\nこのオプションを追加し、\n+4装備へ進化させます。\n\n※レアリティは再抽選されます\n確率: ${rateStr}`,
+            () => MenuBlacksmith.executeTransfer()
+        );
+    },
+
+    // --- 実行確認: 強化 ---
+    confirmEnhance: () => {
+        const target = MenuBlacksmith.state.target;
+        const opt = target.opts[MenuBlacksmith.state.targetOptIdx];
+        const lv = App.data.blacksmith.level || 1;
+        const successRate = Math.min(95, 50 + (lv * 5));
+
+        Menu.confirm(
+            `【能力強化】\n\n対象: ${opt.label} (${opt.rarity})\n消費素材: ${MenuBlacksmith.state.materials.length}個\n\n成功率: ${successRate}%\n成功すると数値が上昇します。\nよろしいですか？`,
+            () => MenuBlacksmith.executeEnhance(successRate)
+        );
+    },
+
+    // --- 実行処理: 継承 ---
     executeTransfer: () => {
-        const target = MenuBlacksmith.targetItem;
-        const material = MenuBlacksmith.materialItem;
+        const target = MenuBlacksmith.state.target;
+        const material = MenuBlacksmith.state.material;
+        const optIdx = MenuBlacksmith.state.targetOptIdx;
         const lv = App.data.blacksmith.level || 1;
 
-        // 1. レアリティ抽選
+        // レアリティ抽選
         const rateObj = MenuBlacksmith.getRateObj(lv);
         const r = Math.random() * 100;
         let current = 0;
@@ -195,78 +347,96 @@ const MenuBlacksmith = {
             current += rateObj[key];
         }
 
-        // 2. オプション移植 (素材からランダム1つ)
-        if (!material.opts || material.opts.length === 0) {
-            Menu.msg("素材にオプションがありません"); return;
-        }
-        const pickOpt = material.opts[Math.floor(Math.random() * material.opts.length)];
-        // コピーを作成して追加
+        // オプション移植
+        const pickOpt = material.opts[optIdx];
         const newOpt = JSON.parse(JSON.stringify(pickOpt));
         
-        // 3. データ更新
         target.plus = 4;
         target.rarity = newRarity;
-        target.name = target.name.replace(/\+\d/, '') + '+4'; // 名前更新
+        target.name = target.name.replace(/\+\d/, '') + '+4';
         target.opts.push(newOpt);
         
         // 素材削除
         const matIdx = App.data.inventory.findIndex(i => i.id === material.id);
         if(matIdx > -1) App.data.inventory.splice(matIdx, 1);
 
-        // 経験値
         MenuBlacksmith.gainExp(50);
-
         App.save();
-        Menu.msg(`成功！\n${target.name} (Rank:${newRarity}) が完成しました！`, () => {
-            MenuBlacksmith.init();
-        });
+        Menu.msg(`成功！\n${target.name} (Rank:${newRarity}) が完成しました！`, () => MenuBlacksmith.init());
     },
 
-    // --- 処理実行: 強化 ---
+    // --- 実行処理: 強化 ---
     executeEnhance: (rate) => {
-        const target = MenuBlacksmith.targetItem;
-        const material = MenuBlacksmith.materialItem;
+        const target = MenuBlacksmith.state.target;
+        const opt = target.opts[MenuBlacksmith.state.targetOptIdx];
+        
+        // 素材一括削除
+        MenuBlacksmith.state.materials.forEach(mid => {
+            const idx = App.data.inventory.findIndex(i => i.id === mid);
+            if(idx > -1) App.data.inventory.splice(idx, 1);
+        });
 
-        // 素材削除
-        const matIdx = App.data.inventory.findIndex(i => i.id === material.id);
-        if(matIdx > -1) App.data.inventory.splice(matIdx, 1);
-
-        // 判定
         if (Math.random() * 100 < rate) {
-            let log = [];
-            target.opts.forEach(opt => {
-                // ルール参照
-                const rule = DB.OPT_RULES.find(r => r.key === opt.key && (r.elm === opt.elm || !r.elm));
-                if (rule) {
-                    const maxVal = rule.max[opt.rarity] || 999;
-                    const isPct = (opt.unit === '%');
-                    
-                    // 強化値: %なら+1、固定値なら+2 (ただし上限まで)
-                    const increase = isPct ? 1 : 2; 
-                    
-                    if (opt.val < maxVal) {
-                        opt.val = Math.min(maxVal, opt.val + increase);
-                        log.push(`${opt.label}↑`);
-                    }
-                }
-            });
-
-            MenuBlacksmith.gainExp(10);
-            App.save();
+            // 成功: 数値上昇
+            const rule = DB.OPT_RULES.find(r => r.key === opt.key && (r.elm === opt.elm || !r.elm));
+            let increased = false;
             
-            if (log.length > 0) Menu.msg(`強化成功！\n${log.join(', ')}`, () => MenuBlacksmith.init());
+            if (rule) {
+                const maxVal = rule.max[opt.rarity] || 999;
+                const isPct = (opt.unit === '%');
+                const increase = isPct ? 1 : 2; // %なら1、固定なら2上昇
+                
+                if (opt.val < maxVal) {
+                    opt.val = Math.min(maxVal, opt.val + increase);
+                    increased = true;
+                }
+            } else {
+                // ルールが見つからない場合はとりあえず+1
+                opt.val += 1;
+                increased = true;
+            }
+
+            MenuBlacksmith.gainExp(20);
+            App.save();
+
+            if (increased) Menu.msg(`強化成功！\n${opt.label} の値が上昇しました！`, () => MenuBlacksmith.init());
             else Menu.msg("強化成功！\n(これ以上数値は上がりません)", () => MenuBlacksmith.init());
 
         } else {
+            // 失敗
             MenuBlacksmith.gainExp(5);
             App.save();
             Menu.msg("失敗しました...\n素材は失われました。", () => MenuBlacksmith.init());
         }
     },
 
-    // --- ユーティリティ ---
+    // --- ヘルパー関数 ---
+    
+    // 全候補取得 (インベントリ + 装備中)
+    getAllCandidates: () => {
+        let list = [];
+        // インベントリ
+        App.data.inventory.forEach(i => list.push({ item: i, owner: null }));
+        // 装備中
+        App.data.characters.forEach(c => {
+            CONST.PARTS.forEach(part => {
+                const eq = c.equips[part];
+                if (eq) list.push({ item: eq, owner: c.name });
+            });
+        });
+        return list;
+    },
+
+    getEnhanceCost: (rarity) => {
+        if(rarity === 'EX') return 10;
+        if(rarity === 'UR') return 7;
+        if(rarity === 'SSR') return 5;
+        if(rarity === 'SR') return 3;
+        if(rarity === 'R') return 2;
+        return 1;
+    },
+
     getRateObj: (lv) => {
-        // レベルに応じてテーブルを切り替える
         if (lv >= 10) return CONST.SMITH_RATES[10];
         return CONST.SMITH_RATES[1];
     },
@@ -274,7 +444,6 @@ const MenuBlacksmith = {
     gainExp: (val) => {
         if(!App.data.blacksmith) App.data.blacksmith = { level:1, exp:0 };
         App.data.blacksmith.exp += val;
-        
         const next = App.data.blacksmith.level * 100;
         if(App.data.blacksmith.exp >= next) {
             App.data.blacksmith.exp -= next;
