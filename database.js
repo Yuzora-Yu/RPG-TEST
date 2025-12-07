@@ -132,7 +132,7 @@ const DB = {
         // --- 最上級・EX ---
         {id:401, name:'ギガブレイク', type:'物理', target:'全体', mp:30, rate:2.0, count:1, base:250, elm:'雷', desc:'最強の剣技'},
         {id:402, name:'ゴッドハンド', type:'物理', target:'単体', mp:35, rate:2.1, count:1, base:450, elm:'光', desc:'神の拳'},
-        {id:404, name:'メテオ', type:'魔法', target:'ランダム', mp:50, rate:0.6, count:7, base:170, elm:'火', desc:'隕石落とし'},
+        {id:404, name:'プチメテオ', type:'魔法', target:'ランダム', mp:50, rate:0.6, count:7, base:170, elm:'火', desc:'隕石落とし'},
         {id:405, name:'ジゴスパーク', type:'魔法', target:'全体', mp:45, rate:2.0, count:1, base:270, elm:'混沌', desc:'地獄の雷'},
         {id:406, name:'マヒャデドス', type:'魔法', target:'全体', mp:45, rate:2.0, count:1, base:270, elm:'水', desc:'極大氷魔法'},
         {id:407, name:'メラガイアー', type:'魔法', target:'単体', mp:30, rate:2.4, count:1, base:500, elm:'火', desc:'極大火炎'},
@@ -148,7 +148,7 @@ const DB = {
         {id:414, name:'グランドクロス', type:'物理', target:'全体', mp:40, rate:1.0, count:2, base:999, elm:'風', desc:'十字に切り裂く2連撃'},
         {id:415, name:'絶対零度', type:'魔法', target:'単体', mp:50, rate:2.5, count:1, base:450, elm:'水', desc:'凍てつく極大魔法'},
 
-        {id:500, name:'マダンテ', type:'魔法', target:'全体', mp:0, rate:6.0, count:1, base:300, desc:'全MPを消費し大爆発'},
+        {id:500, name:'マダンテ', type:'魔法', target:'全体', mp:0, rate:6.0, count:1, base:300, elm:'混沌', desc:'全MPを消費し大爆発'},
 
         // --- ブレス ---
         {id:601, name:'火炎の息', type:'魔法', target:'全体', mp:0, rate:0.8, count:1, base:90, elm:'火', desc:'炎の息'},
