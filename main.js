@@ -660,6 +660,8 @@ const App = {
     }
 };
 
+/* main.js (Fieldオブジェクト抜粋: 赤宝箱描画対応) */
+
 const Field = {
     x: 23, y: 28, ready: false, currentMapData: null,
     
@@ -747,10 +749,24 @@ const Field = {
                     tile = MAP_DATA[ly][lx];
                 }
 
-                if(tile==='G') ctx.fillStyle='#282'; else if(tile==='W') ctx.fillStyle='#228'; else if(tile==='M') ctx.fillStyle='#642'; else if(tile==='T') ctx.fillStyle='#444'; else if(tile==='S') ctx.fillStyle='#dd0'; else if(tile==='C') ctx.fillStyle='#0dd'; else if(tile==='B') ctx.fillStyle='#d00'; else if(tile==='I') ctx.fillStyle='#fff'; else if(tile==='K') ctx.fillStyle='#ff0'; else if(tile==='E') ctx.fillStyle='#aaf'; else ctx.fillStyle='#000'; 
+                // ★修正: 'R' (赤宝箱) の色指定を追加 (#f00)
+                if(tile==='G') ctx.fillStyle='#282'; 
+                else if(tile==='W') ctx.fillStyle='#228'; 
+                else if(tile==='M') ctx.fillStyle='#642'; 
+                else if(tile==='T') ctx.fillStyle='#444'; 
+                else if(tile==='S') ctx.fillStyle='#dd0'; 
+                else if(tile==='C') ctx.fillStyle='#0dd'; 
+                else if(tile==='R') ctx.fillStyle='#f00'; // 赤宝箱
+                else if(tile==='B') ctx.fillStyle='#d00'; 
+                else if(tile==='I') ctx.fillStyle='#fff'; 
+                else if(tile==='K') ctx.fillStyle='#ff0'; 
+                else if(tile==='E') ctx.fillStyle='#aaf'; 
+                else ctx.fillStyle='#000'; 
+                
                 ctx.fillRect(drawX, drawY, ts, ts);
                 
-                if(['S','C','B','I','K','E'].includes(tile)) {
+                // ★修正: 文字表示対象に 'R' を追加
+                if(['S','C','R','B','I','K','E'].includes(tile)) {
                     ctx.fillStyle = '#000'; ctx.font = '20px sans-serif';
                     let char = tile;
                     if(!Field.currentMapData) { if(tile==='I') char='宿'; if(tile==='K') char='カ'; if(tile==='E') char='交'; }
@@ -770,8 +786,21 @@ const Field = {
                 let tx = Field.x + dx; let ty = Field.y + dy; let tile = 'W';
                 if (Field.currentMapData) { if(tx>=0 && tx<mapW && ty>=0 && ty<mapH) tile = Field.currentMapData.tiles[ty][tx]; } 
                 else { tile = MAP_DATA[((ty%mapH)+mapH)%mapH][((tx%mapW)+mapW)%mapW]; }
+                
                 ctx.fillStyle = '#000';
-                if(tile === 'W') ctx.fillStyle = '#228'; else if(tile === 'G') ctx.fillStyle = '#282'; else if(tile === 'M') ctx.fillStyle = '#642'; else if(tile === 'T') ctx.fillStyle = '#666'; else if(tile === 'S') ctx.fillStyle = '#ff0'; else if(tile === 'C') ctx.fillStyle = '#0ff'; else if(tile === 'B') ctx.fillStyle = '#f00'; else if(tile === 'I') ctx.fillStyle = '#fff'; else if(tile === 'K') ctx.fillStyle = '#ff0'; else if(tile === 'E') ctx.fillStyle = '#aaf'; 
+                // ★修正: ミニマップの 'R' 対応
+                if(tile === 'W') ctx.fillStyle = '#228'; 
+                else if(tile === 'G') ctx.fillStyle = '#282'; 
+                else if(tile === 'M') ctx.fillStyle = '#642'; 
+                else if(tile === 'T') ctx.fillStyle = '#666'; 
+                else if(tile === 'S') ctx.fillStyle = '#ff0'; 
+                else if(tile === 'C') ctx.fillStyle = '#0ff'; 
+                else if(tile === 'R') ctx.fillStyle = '#f00'; // 赤宝箱
+                else if(tile === 'B') ctx.fillStyle = '#f00'; 
+                else if(tile === 'I') ctx.fillStyle = '#fff'; 
+                else if(tile === 'K') ctx.fillStyle = '#ff0'; 
+                else if(tile === 'E') ctx.fillStyle = '#aaf'; 
+                
                 if (dx===0 && dy===0) ctx.fillStyle = '#fff'; 
                 if (ctx.fillStyle !== '#000') ctx.fillRect(mmX + (dx + range) * dms, mmY + (dy + range) * dms, dms, dms);
             }
