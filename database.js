@@ -13,7 +13,7 @@ const CONST = {
     
     MAX_LEVEL: 99,
     EXP_BASE: 100,
-    EXP_GROWTH: 1.05,
+    EXP_GROWTH: 1.1,
     RARITY_EXP_MULT: { N:1.0, R:1.1, SR:1.2, SSR:1.3, UR:1.5, EX:2.0 }
 };
 
