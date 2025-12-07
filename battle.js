@@ -1,4 +1,4 @@
-/* battle.js (敵回復AI修正・吸収量調整版) */
+/* battle.js (ダメージ計算式修正版: %カット・属性強化・フォースブレイク対応) */
 
 const Battle = {
     active: false,
@@ -542,7 +542,7 @@ const Battle = {
                  continue;
             }
 
-            // 敵のターゲット選択 (★修正: 敵AIのターゲット決定)
+            // 敵のターゲット選択
             if (cmd.isEnemy && !cmd.target && cmd.targetScope !== '全体' && cmd.targetScope !== 'ランダム') {
                 let isSupport = false;
                 if (cmd.data && (cmd.data.type.includes('回復') || cmd.data.type === '強化' || cmd.data.type === '蘇生')) {
@@ -550,21 +550,16 @@ const Battle = {
                 }
 
                 if (isSupport) {
-                    // 味方(敵陣営)をターゲット
                     let pool = Battle.enemies.filter(e => !e.isDead && !e.isFled);
-                    // 蘇生なら死体対象(簡易)
                     if (cmd.data && cmd.data.type.includes('蘇生')) {
                          pool = Battle.enemies.filter(e => e.isDead && !e.isFled);
                     }
-                    
                     if (pool.length > 0) {
                         cmd.target = pool[Math.floor(Math.random() * pool.length)];
                     } else {
-                        // 対象がいなければ自分(生きている場合)
                         cmd.target = cmd.actor; 
                     }
                 } else {
-                    // 攻撃ならプレイヤーをターゲット
                     const aliveParty = Battle.party.filter(p => p && !p.isDead);
                     if (aliveParty.length === 0) break;
                     cmd.target = aliveParty[Math.floor(Math.random() * aliveParty.length)];
@@ -683,7 +678,6 @@ const Battle = {
 
         if (scope === '全体') {
              if (cmd.isEnemy) {
-                 // ★修正: 敵の全体スキル(回復/強化)は敵全体へ、攻撃はプレイヤー全体へ
                  if (['回復','蘇生','強化'].includes(effectType)) {
                      targets = Battle.enemies.filter(e => !e.isDead && !e.isFled);
                      if(effectType==='蘇生') targets = Battle.enemies.filter(e => e.isDead && !e.isFled);
@@ -718,7 +712,12 @@ const Battle = {
                 } else if (effectType === '弱体') { 
                     if (!t.isDead && data.buff) {
                         for(let key in data.buff) t.buffs[key] = data.buff[key];
-                        Battle.log(`【${t.name}】の能力が下がった！`);
+                        // ★修正: フォースブレイク(elmResDown)対応
+                        if(data.buff.elmResDown) {
+                            Battle.log(`【${t.name}】の属性耐性が大幅に下がった！`);
+                        } else {
+                            Battle.log(`【${t.name}】の能力が下がった！`);
+                        }
                     }
                 } else { 
                     if (!t.isDead) {
@@ -753,31 +752,43 @@ const Battle = {
                 }
 
                 let atkVal = isPhysical ? actor.getStat('atk') : actor.getStat('mag');
-                if (element) {
-                    const elmAtk = actor.getStat('elmAtk') || {};
-                    const bonus = elmAtk[element] || 0;
-                    atkVal += bonus;
-                }
-
                 let defVal = isPhysical ? targetToHit.getStat('def') : targetToHit.getStat('mag');
                 let resistance = isPhysical ? Math.floor(defVal / 2) : Math.floor(defVal / 3);
 
                 let dmg = (atkVal - resistance + baseDmg) * multiplier;
                 
+                // ★修正: 属性攻撃アップを % 乗算に変更
                 if (element) {
+                    // 攻撃側: 属性攻撃力 (20 = 20%アップ)
+                    const elmAtk = actor.getStat('elmAtk') || {};
+                    const bonus = elmAtk[element] || 0;
+                    if(bonus > 0) dmg = dmg * (1 + bonus / 100);
+
+                    // 防御側: 属性耐性 & フォースブレイク計算
                     const elmRes = targetToHit.getStat('elmRes') || {};
-                    const res = elmRes[element] || 0;
-                    const cutRate = res / 100; 
+                    let resVal = elmRes[element] || 0;
+                    
+                    // フォースブレイク(耐性ダウン)の適用
+                    if (targetToHit.buffs && targetToHit.buffs.elmResDown) {
+                        resVal -= targetToHit.buffs.elmResDown;
+                    }
+
+                    const cutRate = resVal / 100; 
                     dmg = dmg * (1.0 - cutRate);
                 }
 
                 dmg = dmg * (0.9 + Math.random() * 0.2);
                 
+                // ★修正: 最終ダメージアップを % 乗算に (元々そうだが明示)
                 const finDmg = actor.getStat('finDmg') || 0;
                 if(finDmg > 0) dmg = dmg * (1 + finDmg/100);
 
-                const finRed = targetToHit.getStat('finRed') || 0;
-                dmg -= finRed;
+                // ★修正: 被ダメージ軽減を % カットに変更 (最大80%)
+                let finRed = targetToHit.getStat('finRed') || 0;
+                if (finRed > 80) finRed = 80; // キャップ
+                if (finRed > 0) {
+                    dmg = dmg * (1 - finRed / 100);
+                }
 
                 if (dmg < 1) dmg = 1;
                 if (targetToHit.status && targetToHit.status.defend) dmg = Math.floor(dmg / 2);
@@ -795,7 +806,6 @@ const Battle = {
                 
                 Battle.log(`【${targetToHit.name}】に<span style="color:${dmgColor}">${dmg}</span>のダメージ！`);
                 
-                // ★修正: HP吸収量25% & ログ表示
                 if (data && data.drain) {
                     const drainAmt = Math.floor(dmg * 0.25);
                     if(drainAmt > 0) {
@@ -809,8 +819,10 @@ const Battle = {
                 if(cmd.type === 'skill' && data.buff) {
                     for(let key in data.buff) {
                         targetToHit.buffs[key] = data.buff[key];
-                        if(data.buff[key] < 1) Battle.log(`【${targetToHit.name}】の能力が下がった！`);
-                        else Battle.log(`【${targetToHit.name}】の能力が上がった！`);
+                        if(key !== 'elmResDown') {
+                            if(data.buff[key] < 1) Battle.log(`【${targetToHit.name}】の能力が下がった！`);
+                            else Battle.log(`【${targetToHit.name}】の能力が上がった！`);
+                        }
                     }
                 }
 
