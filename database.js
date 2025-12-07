@@ -195,7 +195,7 @@ const DB = {
         {id:306, name:'エッジ', job:'上忍', rarity:'SSR', hp:450, mp:90, atk:110, def:60, spd:100, mag:60, lbSkills:{50:302, 99:43}},
         {id:401, name:'ジャンヌ', job:'聖女', rarity:'UR', hp:1200, mp:600, atk:150, def:180, spd:180, mag:530, lbSkills:{50:403, 99:903}},
         {id:402, name:'ギル', job:'魔王', rarity:'UR', hp:1500, mp:400, atk:380, def:250, spd:200, mag:380, lbSkills:{50:406, 99:901}},
-        {id:501, name:'ゼノン', job:'神', rarity:'EX', hp:4000, mp:1500, atk:900, def:600, spd:400, mag:800, lbSkills:{50:404, 99:500}}
+        {id:501, name:'ゼノン', job:'神', rarity:'EX', hp:4000, mp:1500, atk:900, def:600, spd:400, mag:800, lbSkills:{50:55, 99:500}}
     ],
     ITEMS: [
         {id:1, name:'やくそう', type:'HP回復', val:100, desc:'HPを約100回復', target:'単体', price:10},
