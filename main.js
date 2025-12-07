@@ -396,10 +396,14 @@ const App = {
 
     getChar: (uid) => App.data ? App.data.characters.find(c => c.uid === uid) : null,
 
+
+    /* main.js (calcStats修正: ％上昇対応版) */
+
     calcStats: (char) => {
         const lb = char.limitBreak || 0;
         const multiplier = 1 + (lb * 0.05); 
         
+        // 1. 基礎ステータス（キャラ素体）
         let s = {
             maxHp: Math.floor(char.hp * multiplier),
             maxMp: Math.floor(char.mp * multiplier),
@@ -411,6 +415,7 @@ const App = {
         };
         CONST.ELEMENTS.forEach(e => { s.elmAtk[e]=0; s.elmRes[e]=0; });
 
+        // 2. 割り振りポイント加算
         if(char.uid === 'p1' && char.alloc) {
             for(let key in char.alloc) {
                 if (key.includes('_')) {
@@ -425,9 +430,13 @@ const App = {
             }
         }
 
+        // 3. 装備補正（固定値加算 & %補正値集計）
+        let pctMods = { maxHp:0, maxMp:0, atk:0, def:0, spd:0, mag:0 }; // %加算用
+
         CONST.PARTS.forEach(part => {
             const eq = char.equips ? char.equips[part] : null;
             if(eq) {
+                // 基本性能（固定値）の加算
                 if(eq.data.atk) s.atk += eq.data.atk;
                 if(eq.data.def) s.def += eq.data.def;
                 if(eq.data.spd) s.spd += eq.data.spd;
@@ -438,21 +447,48 @@ const App = {
                 if(eq.data.elmAtk) for(let e in eq.data.elmAtk) s.elmAtk[e] += eq.data.elmAtk[e];
                 if(eq.data.elmRes) for(let e in eq.data.elmRes) s.elmRes[e] += eq.data.elmRes[e];
 
+                // 追加オプション処理
                 if(eq.opts) eq.opts.forEach(o => {
-                    if(o.unit === 'val') {
+                    // ★修正: unitが'%'の場合、pctModsに加算
+                    if(o.unit === '%') {
+                        if(o.key === 'hp') pctMods.maxHp += o.val;
+                        else if(o.key === 'mp') pctMods.maxMp += o.val;
+                        else if(o.key === 'atk') pctMods.atk += o.val;
+                        else if(o.key === 'def') pctMods.def += o.val;
+                        else if(o.key === 'spd') pctMods.spd += o.val;
+                        else if(o.key === 'mag') pctMods.mag += o.val;
+                        
+                        // elmAtk, elmRes, finDmgなどはそのまま加算
+                        else if(o.key === 'elmAtk') s.elmAtk[o.elm] += o.val;
+                        else if(o.key === 'elmRes') s.elmRes[o.elm] += o.val;
+                        else if(s[o.key] !== undefined && typeof s[o.key] === 'number') s[o.key] += o.val;
+                    } 
+                    // 従来の'val'(固定値)の場合
+                    else if(o.unit === 'val') {
                         if(o.key === 'hp') s.maxHp += o.val;
                         else if(o.key === 'mp') s.maxMp += o.val;
                         else if(o.key === 'elmAtk') s.elmAtk[o.elm] += o.val;
                         else if(o.key === 'elmRes') s.elmRes[o.elm] += o.val;
                         else if(s[o.key] !== undefined && typeof s[o.key] === 'number') s[o.key] += o.val;
-                    } else {
+                    } 
+                    // その他（ユニット指定なし等）
+                    else {
                         if(s[o.key] !== undefined && typeof s[o.key] === 'number') s[o.key] += o.val;
                     }
                 });
             }
         });
+
+        // 4. ％補正の適用（基礎+固定値 に対する乗算）
+        s.maxHp = Math.floor(s.maxHp * (1 + pctMods.maxHp / 100));
+        s.maxMp = Math.floor(s.maxMp * (1 + pctMods.maxMp / 100));
+        s.atk = Math.floor(s.atk * (1 + pctMods.atk / 100));
+        s.def = Math.floor(s.def * (1 + pctMods.def / 100));
+        s.spd = Math.floor(s.spd * (1 + pctMods.spd / 100));
+        s.mag = Math.floor(s.mag * (1 + pctMods.mag / 100));
+
         return s;
-    },
+    },    
 
     createRandomEquip: (source, rank = 1, fixedPlus = null) => {
         let candidates = DB.EQUIPS.filter(e => e.rank <= rank && e.rank >= Math.max(1, rank - 15));
