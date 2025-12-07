@@ -1,4 +1,4 @@
-/* blacksmith.js (完全版: 強化素材選択時の詳細表示対応) */
+/* blacksmith.js (完全版: 強化時もシナジー再判定) */
 
 const MenuBlacksmith = {
     mode: null, 
@@ -279,7 +279,6 @@ const MenuBlacksmith = {
             };
             updateVisual();
 
-            // ★修正: 素材選択時にもオプション詳細を表示
             div.innerHTML = `
                 <div style="pointer-events:none; flex:1;">
                     <div>${item.name} <span style="font-size:10px; color:#888;">(Rank:${item.rank})</span></div>
@@ -339,6 +338,7 @@ const MenuBlacksmith = {
         const optIdx = MenuBlacksmith.state.targetOptIdx;
         const lv = App.data.blacksmith.level || 1;
 
+        // レアリティ抽選
         const rateObj = MenuBlacksmith.getRateObj(lv);
         const r = Math.random() * 100;
         let current = 0;
@@ -356,6 +356,13 @@ const MenuBlacksmith = {
         target.name = target.name.replace(/\+\d/, '') + '+4';
         target.opts.push(newOpt);
         
+        // ★修正: シナジー再判定
+        if (typeof App.checkSynergy === 'function') {
+            if (App.checkSynergy(target)) target.isSynergy = true;
+            else target.isSynergy = false;
+        }
+
+        // 素材削除
         const matIdx = App.data.inventory.findIndex(i => i.id === material.id);
         if(matIdx > -1) App.data.inventory.splice(matIdx, 1);
 
@@ -389,6 +396,12 @@ const MenuBlacksmith = {
             } else {
                 opt.val += 1;
                 increased = true;
+            }
+
+            // ★追加: 強化成功時も念のためシナジー再判定 (数値変動による影響は少ないが整合性のため)
+            if (typeof App.checkSynergy === 'function') {
+                if (App.checkSynergy(target)) target.isSynergy = true;
+                else target.isSynergy = false;
             }
 
             MenuBlacksmith.gainExp(20);
