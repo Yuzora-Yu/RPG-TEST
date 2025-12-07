@@ -1,4 +1,4 @@
-/* facilities.js (完全版: カジノUI改善・リトライ機能・ヘッダー常時表示) */
+/* facilities.js (完全版: カジノ所持金チェック修正済み) */
 
 const Facilities = {
     teleportFloor: 1,
@@ -172,7 +172,7 @@ const Facilities = {
     }
 };
 
-// --- カジノ機能 (UI/UX改善版) ---
+// --- カジノ機能 ---
 const Casino = {
     betGold: 0,
     currentPayout: 0, 
@@ -183,7 +183,6 @@ const Casino = {
     dealerHand: [],
     doubleUpCard: null,
     
-    // UI更新ヘルパー: ヘッダーに所持金・GEMを表示
     updateHeader: () => {
         const header = document.querySelector('#casino-scene .header-bar');
         if(header) {
@@ -203,7 +202,6 @@ const Casino = {
         document.getElementById('casino-area-title').style.display = 'flex';
         document.getElementById('casino-area-game').style.display = 'none';
         
-        // メインメニュー表示
         const titleArea = document.getElementById('casino-area-title');
         titleArea.innerHTML = `
             <div style="font-size:20px; color:#fff; margin-bottom:10px;">GAME SELECT</div>
@@ -212,7 +210,6 @@ const Casino = {
         `;
     },
 
-    // 設定選択画面（ゲーム内HTML書き換え）
     selectSettings: (gameType) => {
         Casino.currentGame = gameType;
         const titleArea = document.getElementById('casino-area-title');
@@ -232,7 +229,6 @@ const Casino = {
             
             <button class="btn" style="width:100px; background:#555;" onclick="Casino.init()">戻る</button>
         `;
-        // 初期選択
         Casino.targetCurrency = 'gem';
     },
 
@@ -243,12 +239,17 @@ const Casino = {
     },
 
     tryStart: (bet) => {
-        if(App.data.gold < bet) { Menu.msg("GOLDが足りません"); return; }
         Casino.betGold = bet;
         Casino.readyGame();
     },
 
     readyGame: () => {
+        // ★修正: リトライ時も所持金チェックを行う
+        if (App.data.gold < Casino.betGold) {
+            Menu.msg("GOLDが足りません", () => Casino.init());
+            return;
+        }
+
         // GOLD消費
         App.data.gold -= Casino.betGold;
         App.save();
@@ -309,12 +310,12 @@ const Casino = {
         if(canDraw) {
             actions.innerHTML = `<button class="btn" style="width:120px; height:50px; font-size:16px;" onclick="Casino.drawPoker()">交換 / 勝負</button>`;
         } else {
-            actions.innerHTML = ``; // 結果画面へ
+            actions.innerHTML = ``; 
         }
     },
 
     toggleHold: (idx) => {
-        if(document.getElementById('casino-actions').innerHTML === '') return; // 操作不能時
+        if(document.getElementById('casino-actions').innerHTML === '') return;
         Casino.hand[idx].hold = !Casino.hand[idx].hold;
         Casino.renderPoker(true);
     },
@@ -351,7 +352,6 @@ const Casino = {
             `;
         } else {
             msg.innerHTML = "残念...<br>配当なし";
-            // ★リトライボタンの表示
             actions.innerHTML = `
                 <button class="btn" style="width:120px;" onclick="Casino.readyGame()">もう一度</button>
                 <button class="btn" style="width:100px; background:#555;" onclick="Casino.init()">やめる</button>
@@ -491,7 +491,6 @@ const Casino = {
                 <button class="btn" style="width:120px;" onclick="Casino.collectPayout()">受け取る</button>
             `;
         } else {
-            // ★リトライボタン
             actions.innerHTML = `
                 <button class="btn" style="width:120px;" onclick="Casino.readyGame()">もう一度</button>
                 <button class="btn" style="width:100px; background:#555;" onclick="Casino.init()">やめる</button>
@@ -574,7 +573,6 @@ const Casino = {
         } else {
             Casino.currentPayout = 0;
             msg.innerHTML = `<span style="color:#88f; font-size:20px;">LOSE...</span><br>配当を失いました。`;
-            // ★リトライボタン
             actions.innerHTML = `
                 <button class="btn" style="width:120px;" onclick="Casino.readyGame()">もう一度</button>
                 <button class="btn" style="width:100px; background:#555;" onclick="Casino.init()">やめる</button>
@@ -594,7 +592,6 @@ const Casino = {
         Casino.updateHeader();
         
         Menu.msg(`${Casino.currentPayout.toLocaleString()} ${unit} を獲得しました！`, () => {
-            // ★受取後もリトライ画面へ
             const actions = document.getElementById('casino-actions');
             const msg = document.getElementById('casino-msg');
             msg.innerHTML = "次のゲームをプレイしますか？";
