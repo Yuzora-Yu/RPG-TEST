@@ -1,4 +1,4 @@
-/* battle.js (DQ式計算: (攻/2)-(守/4) & 最終補正乗算版) */
+/* battle.js (計算式刷新 & 敵AI蘇生判断修正版) */
 
 const Battle = {
     active: false,
@@ -29,20 +29,23 @@ const Battle = {
         if(logEl) logEl.innerHTML = '';
 
         // パーティ生成
-        Battle.party = App.data.party.map(uid => {
-            if(!uid) return null;
-            const charData = App.getChar(uid);
-            if(!charData) return null;
-            
-            const player = new Player(charData);
-            const stats = App.calcStats(charData);
-            player.baseMaxHp = stats.maxHp; 
-            player.baseMaxMp = stats.maxMp;
-            player.hp = Math.min(player.hp, stats.maxHp);
-            player.mp = Math.min(player.mp, stats.maxMp);
-            player.isDead = player.hp <= 0;
-            return player;
-        }).filter(p => p !== null);
+        Battle.party = [];
+        if (App.data && App.data.party) {
+            Battle.party = App.data.party.map(uid => {
+                if(!uid) return null;
+                const charData = App.getChar(uid);
+                if(!charData) return null;
+                
+                const player = new Player(charData);
+                const stats = App.calcStats(charData);
+                player.baseMaxHp = stats.maxHp; 
+                player.baseMaxMp = stats.maxMp;
+                player.hp = Math.min(player.hp, stats.maxHp);
+                player.mp = Math.min(player.mp, stats.maxMp);
+                player.isDead = player.hp <= 0;
+                return player;
+            }).filter(p => p !== null);
+        }
 
         if (Battle.party.length === 0 || Battle.party.every(p => p.isDead)) {
             App.log("戦えるメンバーがいません！");
@@ -54,7 +57,8 @@ const Battle = {
         if (App.data.battle && App.data.battle.active && Array.isArray(App.data.battle.enemies) && App.data.battle.enemies.length > 0) {
             Battle.log("戦闘に復帰した！");
             Battle.enemies = App.data.battle.enemies.map(e => {
-                const base = DB.MONSTERS.find(m => m.id === e.baseId) || DB.MONSTERS[0];
+                const base = DB.MONSTERS.find(m => m.id === e.baseId);
+                if (!base) return null;
                 const m = new Monster(base, 1.0);
                 m.hp = e.hp; m.baseMaxHp = e.maxHp; m.name = e.name; m.id = e.baseId; 
                 m.isDead = m.hp <= 0;
@@ -95,41 +99,27 @@ const Battle = {
             let extraBosses = []; 
             let msg = "強大な魔物が現れた！";
 
-            if (floor === 10) {
-                bossId = 1010; msg = "バトルレックスが現れた！";
-            } else if (floor === 20) {
-                bossId = 1020; msg = "魔王のつかいが現れた！";
-            } else if (floor === 30) {
-                bossId = 1030; msg = "魔戦士デュランが現れた！";
-            } else if (floor === 40) {
-                bossId = 1040; msg = "ジャミラスが現れた！";
-            } else if (floor === 50) {
-                bossId = 1050; msg = "グラコスが現れた！";
-            } else if (floor === 60) {
-                bossId = 1060; msg = "魔王ムドーが現れた！";
-            } else if (floor === 70) {
-                bossId = 1070; msg = "アクバーが現れた！";
-            } else if (floor === 80) {
-                bossId = 1080; 
-                extraBosses = [1081, 1082]; 
-                msg = "悪霊の神々が現れた！";
-            } else if (floor === 90) {
-                bossId = 1090; msg = "大神官ハーゴンが現れた！";
-            } else if (floor === 100) {
-                bossId = 1100; msg = "破壊神シドーが現れた！";
-            } else {
-                bossId = 1000; 
-                bossScale = 1.0 + ((floor - 100) * 0.1);
-                msg = "竜神レグナードが現れた！";
-            }
+            if (floor === 10) { bossId = 1010; msg = "バトルレックスが現れた！"; }
+            else if (floor === 20) { bossId = 1020; msg = "魔王のつかいが現れた！"; }
+            else if (floor === 30) { bossId = 1030; msg = "魔戦士デュランが現れた！"; }
+            else if (floor === 40) { bossId = 1040; msg = "ジャミラスが現れた！"; }
+            else if (floor === 50) { bossId = 1050; msg = "グラコスが現れた！"; }
+            else if (floor === 60) { bossId = 1060; msg = "魔王ムドーが現れた！"; }
+            else if (floor === 70) { bossId = 1070; msg = "アクバーが現れた！"; }
+            else if (floor === 80) { bossId = 1080; extraBosses = [1081, 1082]; msg = "悪霊の神々が現れた！"; }
+            else if (floor === 90) { bossId = 1090; msg = "大神官ハーゴンが現れた！"; }
+            else if (floor === 100) { bossId = 1100; msg = "破壊神シドーが現れた！"; }
+            else { bossId = 1000; bossScale = 1.0 + ((floor - 100) * 0.1); msg = "竜神レグナードが現れた！"; }
 
             Battle.log(msg);
 
             const base = DB.MONSTERS.find(m => m.id === bossId) || DB.MONSTERS.find(m => m.id === 1000);
-            const m = new Monster(base, bossScale);
-            m.name = base.name; m.id = base.id;
-            if(base.actCount) m.actCount = base.actCount;
-            newEnemies.push(m);
+            if (base) {
+                const m = new Monster(base, bossScale);
+                m.name = base.name; m.id = base.id;
+                if(base.actCount) m.actCount = base.actCount;
+                newEnemies.push(m);
+            }
 
             extraBosses.forEach(eid => {
                 const eBase = DB.MONSTERS.find(m => m.id === eid);
@@ -169,10 +159,12 @@ const Battle = {
             
             for(let i=0; i<count; i++) {
                 const base = pool[Math.floor(Math.random()*pool.length)];
-                const m = new Monster(base, 1.0);
-                m.name += String.fromCharCode(65+i); 
-                m.id = base.id;
-                newEnemies.push(m);
+                if (base) {
+                    const m = new Monster(base, 1.0);
+                    m.name += String.fromCharCode(65+i); 
+                    m.id = base.id;
+                    newEnemies.push(m);
+                }
             }
         }
         return newEnemies;
@@ -228,7 +220,11 @@ const Battle = {
 
         if (Battle.auto) {
             const target = Battle.getRandomAliveEnemy();
-            Battle.registerAction({ type: 'attack', actor: actor, target: target });
+            if (target) {
+                Battle.registerAction({ type: 'attack', actor: actor, target: target });
+            } else {
+                Battle.registerAction({ type: 'defend', actor: actor });
+            }
         }
     },
 
@@ -407,12 +403,14 @@ const Battle = {
         Battle.phase = 'item_select';
 
         const items = [];
-        Object.keys(App.data.items).forEach(id => {
-            const it = DB.ITEMS.find(i=>i.id==id);
-            if(it && (it.type.includes('回復') || it.type.includes('蘇生')) && App.data.items[id] > 0) { 
-                items.push({def:it, count:App.data.items[id]});
-            }
-        });
+        if (App.data.items) {
+            Object.keys(App.data.items).forEach(id => {
+                const it = DB.ITEMS.find(i=>i.id==id);
+                if(it && (it.type.includes('回復') || it.type.includes('蘇生')) && App.data.items[id] > 0) { 
+                    items.push({def:it, count:App.data.items[id]});
+                }
+            });
+        }
 
         if (items.length === 0) {
             content.innerHTML = '<div style="padding:10px">使える道具がありません</div>';
@@ -494,6 +492,7 @@ const Battle = {
                 for(let i=0; i<count; i++) {
                     const spd = e.getStat('spd');
                     const acts = e.acts && e.acts.length > 0 ? e.acts : [1];
+                    if (acts.length === 0) acts.push(1);
                     const actId = acts[Math.floor(Math.random() * acts.length)];
                     
                     let actionType = 'enemy_attack'; 
@@ -510,6 +509,9 @@ const Battle = {
                             actionType = 'skill';
                             skillData = skill;
                             targetScope = skill.target; 
+                        } else {
+                            console.warn(`Enemy skill ID ${actId} not found. Fallback to attack.`);
+                            actionType = 'enemy_attack';
                         }
                     }
 
@@ -542,6 +544,7 @@ const Battle = {
                  continue;
             }
 
+            // --- 敵AIのターゲット選択 (蘇生チェック追加) ---
             if (cmd.isEnemy && !cmd.target && cmd.targetScope !== '全体' && cmd.targetScope !== 'ランダム') {
                 let isSupport = false;
                 if (cmd.data && (cmd.data.type.includes('回復') || cmd.data.type === '強化' || cmd.data.type === '蘇生')) {
@@ -549,14 +552,27 @@ const Battle = {
                 }
 
                 if (isSupport) {
-                    let pool = Battle.enemies.filter(e => !e.isDead && !e.isFled);
-                    if (cmd.data && cmd.data.type.includes('蘇生')) {
+                    let pool = [];
+                    if (cmd.data && cmd.data.type === '蘇生') {
+                         // ★修正: 蘇生対象は死んでいる仲間のみ
                          pool = Battle.enemies.filter(e => e.isDead && !e.isFled);
+                    } else {
+                         pool = Battle.enemies.filter(e => !e.isDead && !e.isFled);
                     }
+
                     if (pool.length > 0) {
                         cmd.target = pool[Math.floor(Math.random() * pool.length)];
                     } else {
-                        cmd.target = cmd.actor; 
+                        // 対象がいない場合
+                        if (cmd.data.type === '蘇生') {
+                             // ★修正: 蘇生対象がいない場合はプレイヤー攻撃へ変更
+                             cmd.type = 'enemy_attack';
+                             cmd.data = null; 
+                             const aliveParty = Battle.party.filter(p => p && !p.isDead);
+                             if(aliveParty.length > 0) cmd.target = aliveParty[Math.floor(Math.random() * aliveParty.length)];
+                        } else {
+                            cmd.target = cmd.actor; 
+                        }
                     }
                 } else {
                     const aliveParty = Battle.party.filter(p => p && !p.isDead);
@@ -594,7 +610,7 @@ const Battle = {
         if (cmd.type === 'item') {
             const item = data;
             Battle.log(`【${actor.name}】は${item.name}を使った！`);
-            if (App.data.items[item.id] > 0) {
+            if (App.data.items && App.data.items[item.id] > 0) {
                 if(item.type !== '貴重品') {
                     App.data.items[item.id]--;
                     if(App.data.items[item.id]<=0) delete App.data.items[item.id];
@@ -628,7 +644,7 @@ const Battle = {
         // --- スキル・攻撃処理 ---
         let skillName = "攻撃";
         let isPhysical = true;
-        let skillRate = 1.0; // スキル倍率
+        let skillRate = 1.0; 
         let baseDmg = 0;
         let mpCost = 0;
         let effectType = null;
@@ -662,6 +678,7 @@ const Battle = {
             const dmg = mpCost * 5;
             const targets = cmd.isEnemy ? Battle.party.filter(p=>p && !p.isDead) : Battle.enemies.filter(e=>!e.isDead && !e.isFled);
             for (let t of targets) {
+                if(!t) continue;
                 t.hp -= dmg;
                 Battle.log(`【${t.name}】に<span style="color:#fa0">${dmg}</span>のダメージ！`);
                 if (t.hp <= 0) { t.hp = 0; t.isDead = true; Battle.log(`【${t.name}】は倒れた！`); }
@@ -752,12 +769,10 @@ const Battle = {
                 }
 
                 // =========================================================================
-                // ★ DQ式計算式: 攻/2 - 守/4
+                // ★ 計算式刷新: (攻/2) - (守/4) + 基礎 + 倍率乗算 + 属性・与ダメ乗算
                 // =========================================================================
 
                 let atkVal = 0, defVal = 0;
-                
-                // --- ステータス取得 ---
                 if (isPhysical) {
                     atkVal = actor.getStat('atk');
                     defVal = targetToHit.getStat('def');
@@ -766,84 +781,66 @@ const Battle = {
                     defVal = targetToHit.getStat('mag');
                 }
 
-                // --- 1. 基礎ダメージ計算 ---
-                // 物理: (攻撃力/2 * 倍率) - (守備力/4) + 固定値
-                // 魔法: 固定値 + (魔力/2 * 倍率) - (敵魔力/4)
+                // 1. 基礎計算: (ステータス/2) - (防御/4) + スキル基礎値
+                let baseStatPart = Math.floor(atkVal / 2);
+                let defPart = Math.floor(defVal / 4);
+                let baseDmgCalc = (baseStatPart - defPart) + baseDmg;
                 
-                let baseDmgCalc = 0;
-                
-                if (isPhysical) {
-                    // 物理
-                    let attackPart = Math.floor(atkVal / 2) * skillRate; // 攻撃パート
-                    let defensePart = Math.floor(defVal / 4);            // 防御パート
-                    baseDmgCalc = (attackPart - defensePart) + baseDmg;
-                } else {
-                    // 魔法
-                    let magicPart = Math.floor(atkVal / 2) * skillRate; // 魔力パート
-                    let resistPart = Math.floor(defVal / 4);            // 抵抗パート
-                    baseDmgCalc = baseDmg + (magicPart - resistPart);
-                }
-
                 if (baseDmgCalc < 1) baseDmgCalc = 1;
 
-                // --- 2. 最終補正 (乗算) ---
-                // [1 + (属性% + 与ダメ%)] × [1 - (属性耐性% + 被ダメカット%)]
-                
-                let bonusRate = 0; // 加算するボーナス%
-                let cutRate = 0;   // 減算するカット%
-                let isImmune = false;
-
-                // 属性補正
+                // 2. 倍率・属性攻撃補正: × (スキル倍率 + 属性攻撃%)
+                let elmAtkVal = 0;
                 if (element) {
-                    // 攻撃側: 属性強化
-                    const elmAtkVal = (actor.getStat('elmAtk') || {})[element] || 0;
-                    if(elmAtkVal > 0) bonusRate += elmAtkVal;
+                    elmAtkVal = (actor.getStat('elmAtk') || {})[element] || 0;
+                }
+                let multiplier = skillRate + (elmAtkVal / 100);
+                if (multiplier < 0) multiplier = 0;
 
-                    // 防御側: 属性耐性
+                let dmg = Math.floor(baseDmgCalc * multiplier);
+
+                // 3. 属性耐性計算: 耐性100%以上は完全無効 (0ダメージ)
+                let isImmune = false;
+                if (element) {
                     const elmRes = targetToHit.getStat('elmRes') || {};
                     let resVal = elmRes[element] || 0;
                     
-                    // フォースブレイク等
+                    // フォースブレイク等 (デバフ)
                     if (targetToHit.buffs && targetToHit.buffs.elmResDown) {
                         resVal -= targetToHit.buffs.elmResDown;
                     }
                     
-                    // 耐性100%以上は完全無効
-                    if (resVal >= 100) isImmune = true;
-                    else cutRate += resVal;
+                    if (resVal >= 100) {
+                        dmg = 0;
+                        isImmune = true;
+                    } else {
+                        // 耐性による軽減 (負の値ならダメージ増)
+                        dmg = Math.floor(dmg * (1.0 - resVal / 100));
+                    }
                 }
 
-                // 与ダメUP / 被ダメカット
-                const finDmgVal = actor.getStat('finDmg') || 0;
-                if(finDmgVal > 0) bonusRate += finDmgVal;
-
+                // 4. 被ダメージ軽減% (最大80%)
                 let finRed = targetToHit.getStat('finRed') || 0;
                 if (finRed > 80) finRed = 80;
-                if (finRed > 0) cutRate += finRed;
+                if (finRed > 0) {
+                    dmg = Math.floor(dmg * (1.0 - finRed / 100));
+                }
 
-                // --- 計算適用 ---
-                let dmg = baseDmgCalc;
-                
-                // ボーナス乗算
-                dmg = dmg * (1.0 + bonusRate / 100);
-                
-                // カット乗算
-                dmg = dmg * (1.0 - cutRate / 100);
+                // 5. 最終与ダメージ%
+                const finDmgVal = actor.getStat('finDmg') || 0;
+                if (finDmgVal > 0) {
+                    dmg = Math.floor(dmg * (1.0 + finDmgVal / 100));
+                }
 
                 // 乱数 (0.9 ~ 1.1)
-                dmg = dmg * (0.9 + Math.random() * 0.2);
+                dmg = Math.floor(dmg * (0.9 + Math.random() * 0.2));
 
                 // 防御中 (半減)
                 if (targetToHit.status && targetToHit.status.defend) {
-                    dmg = dmg * 0.5;
+                    dmg = Math.floor(dmg * 0.5);
                 }
 
-                // 整数化
-                dmg = Math.floor(dmg);
-                
                 // 完全無効でなければ最低1保証
                 if (!isImmune && dmg < 1) dmg = 1;
-                // 完全無効なら0固定
                 if (isImmune) dmg = 0;
 
                 // =========================================================================
