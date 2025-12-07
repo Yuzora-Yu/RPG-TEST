@@ -1,4 +1,4 @@
-/* battle.js (完全版: シナジー吸血対応 & ログ表示追加) */
+/* battle.js (完全版: シナジー判定修正 & マダンテMP0回避 & DQ式計算) */
 
 const Battle = {
     active: false,
@@ -43,6 +43,20 @@ const Battle = {
                 player.hp = Math.min(player.hp, stats.maxHp);
                 player.mp = Math.min(player.mp, stats.maxMp);
                 player.isDead = player.hp <= 0;
+
+                // ★修正: シナジー情報の再取得
+                // Playerクラスのコンストラクタがバグっている可能性があるため、ここで再設定
+                player.synergy = null;
+                if (player.equips) {
+                    for (let key in player.equips) {
+                        const eq = player.equips[key];
+                        if (eq && eq.isSynergy && typeof App.checkSynergy === 'function') {
+                             const syn = App.checkSynergy(eq);
+                             if(syn) { player.synergy = syn; break; } // 1つ有効なら適用
+                        }
+                    }
+                }
+
                 return player;
             }).filter(p => p !== null);
         }
@@ -406,7 +420,7 @@ const Battle = {
         if (App.data.items) {
             Object.keys(App.data.items).forEach(id => {
                 const it = DB.ITEMS.find(i=>i.id==id);
-                if(it && (it.type.includes('回復') || it.type.includes('蘇生')) && App.data.items[id] > 0) { 
+                if(it && (it.type.includes('回復') || it.type.includes('蘇生') || it.type.includes('MP回復')) && App.data.items[id] > 0) { 
                     items.push({def:it, count:App.data.items[id]});
                 }
             });
@@ -494,7 +508,7 @@ const Battle = {
                     const acts = e.acts && e.acts.length > 0 ? e.acts : [1];
                     if (acts.length === 0) acts.push(1);
                     
-                    // MPを考慮して行動を選択 (マダンテMP0回避含む)
+                    // ★修正: MP0時のマダンテ回避
                     let validActs = acts.filter(id => {
                         if ([1, 2, 9].includes(id)) return true;
                         const s = DB.SKILLS.find(k => k.id === id);
@@ -557,7 +571,7 @@ const Battle = {
 
             if (cmd.isEnemy && !cmd.target && cmd.targetScope !== '全体' && cmd.targetScope !== 'ランダム') {
                 let isSupport = false;
-                if (cmd.data && (cmd.data.type.includes('回復') || cmd.data.type === '強化' || cmd.data.type === '蘇生')) {
+                if (cmd.data && (cmd.data.type.includes('回復') || cmd.data.type === '強化' || cmd.data.type === '蘇生' || cmd.data.type === 'MP回復')) {
                     isSupport = true;
                 }
 
@@ -923,7 +937,7 @@ const Battle = {
                     const drain = Math.floor(dmg * 0.1);
                     if (drain > 0) {
                         actor.hp = Math.min(actor.baseMaxHp, actor.hp + drain);
-                        Battle.log(`【${actor.name}】は吸収効果でHPを${drain}回復！`);
+                        Battle.log(`【${actor.name}】はシナジー効果でHPを${drain}回復！`);
                     }
                 }
 
