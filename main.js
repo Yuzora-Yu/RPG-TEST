@@ -590,9 +590,23 @@ const App = {
         return eq;
     },
     
-    checkSynergy: (eq) => { if(!eq.opts||eq.opts.length<3) return null; const fk=eq.opts[0].key; if(eq.opts.every(o=>o.key===fk)) return DB.SYNERGIES.find(s=>s.key===fk&&s.count<=eq.opts.length); return null; },
+    // 修正: オプション内に指定のキーが規定数(count)以上あれば発動するように変更
+    checkSynergy: (eq) => { 
+        if (!eq || !eq.opts) return null;
 
-};
+        // 定義されている全シナジーをチェック
+        for (const syn of DB.SYNERGIES) {
+            // その装備のオプションの中に、シナジー条件のキー(key)がいくつあるか数える
+            const count = eq.opts.filter(o => o.key === syn.key).length;
+            
+            // 規定数以上あれば、そのシナジーを返す
+            if (count >= syn.count) {
+                return syn;
+            }
+        }
+        return null; 
+    },
+
 
     log: (msg) => {
         const e = document.getElementById('msg-text');
