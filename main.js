@@ -1,4 +1,4 @@
-/* main.js (長押し移動復活・完全版) */
+/* main.js (長押し移動復活・シナジーeffect付与対応版) */
 
 // ==========================================================================
 // 設定：職業別習得スキルテーブル
@@ -122,44 +122,55 @@ class Player extends Entity {
         this.uid = data.uid;
         this.equips = data.equips || {};
         
+        this.sp = data.sp !== undefined ? data.sp : 0;
+        this.tree = data.tree || { ATK:0, MAG:0, SPD:0, HP:0, MP:0 };
+
         this.skills = [DB.SKILLS.find(s => s.id === 1)]; 
 
         const table = JOB_SKILLS[data.job];
         if (table) {
             for (let lv = 1; lv <= data.level; lv++) {
-                if (table[lv]) {
-                    const skill = DB.SKILLS.find(s => s.id === table[lv]);
-                    if (skill && !this.skills.find(s => s.id === skill.id)) {
-                        this.skills.push(skill);
-                    }
-                }
+                if (table[lv]) this.learnSkill(table[lv]);
             }
         }
 
         if(data.charId) {
             const master = DB.CHARACTERS.find(c => c.id === data.charId);
             if(master && master.lbSkills) {
-                if(this.limitBreak >= 50 && master.lbSkills[50]) {
-                    const sk = DB.SKILLS.find(s => s.id === master.lbSkills[50]);
-                    if(sk && !this.skills.find(s => s.id === sk.id)) this.skills.push(sk);
-                }
-                if(this.limitBreak >= 99 && master.lbSkills[99]) {
-                    const sk = DB.SKILLS.find(s => s.id === master.lbSkills[99]);
-                    if(sk && !this.skills.find(s => s.id === sk.id)) this.skills.push(sk);
-                }
+                if(this.limitBreak >= 50 && master.lbSkills[50]) this.learnSkill(master.lbSkills[50]);
+                if(this.limitBreak >= 99 && master.lbSkills[99]) this.learnSkill(master.lbSkills[99]);
             }
         }
         
         if(data.isHero) {
-            const addHeroSkill = (sid) => {
-                const sk = DB.SKILLS.find(s => s.id === sid);
-                if(sk && !this.skills.find(s => s.id === sk.id)) this.skills.push(sk);
-            };
-            if(this.limitBreak >= 10) addHeroSkill(30);  // ザオラル
-            if(this.limitBreak >= 50) addHeroSkill(106); // 天下無双
+            if(this.limitBreak >= 10) this.learnSkill(30);  // ザオラル
+            if(this.limitBreak >= 50) this.learnSkill(106); // 天下無双
+        }
+
+        // スキルツリー習得スキル
+        if (this.tree) {
+            for (let key in this.tree) {
+                const level = this.tree[key];
+                const treeDef = CONST.SKILL_TREES[key];
+                if (treeDef) {
+                    for (let i = 0; i < level; i++) {
+                        const step = treeDef.steps[i];
+                        if (step && step.skillId) {
+                            this.learnSkill(step.skillId);
+                        }
+                    }
+                }
+            }
         }
 
         this.synergy = App.checkSynergy(this.equips);
+    }
+
+    learnSkill(sid) {
+        const sk = DB.SKILLS.find(s => s.id === sid);
+        if(sk && !this.skills.find(s => s.id === sk.id)) {
+            this.skills.push(sk);
+        }
     }
 }
 
@@ -190,16 +201,18 @@ const App = {
 
     initGameHub: () => {
         App.load();
-        
-        // セーブデータがない場合
         if(!App.data) { 
-            // 現在のページが main.html (タイトル) でなければ飛ばす
             if(window.location.href.indexOf('main.html') === -1) {
-                window.location.href = 'main.html'; 
+                // window.location.href = 'main.html'; 
             }
             return; 
         }
-        
+
+        // ★追加: 既存データのシナジー情報を更新 (ロード時に毎回チェック)
+        if (App.data) {
+            App.refreshAllSynergies();
+        }
+
         if(App.data.location) {
             Field.x = App.data.location.x;
             Field.y = App.data.location.y;
@@ -247,7 +260,6 @@ const App = {
             }
         }
         
-        // ★修正: 長押し移動対応
         let moveTimer = null;
         const startMove = (dx, dy) => {
             if(moveTimer) clearInterval(moveTimer);
@@ -295,6 +307,27 @@ const App = {
         const bindClick = (id, fn) => { const el = document.getElementById(id); if(el) el.onclick = fn; };
         bindClick('btn-menu', () => { if(typeof Menu !== 'undefined') Menu.openMainMenu(); });
         bindClick('btn-ok', () => { if(App.pendingAction) App.executeAction(); else if(typeof Menu !== 'undefined') Menu.openMainMenu(); });
+    },
+    
+    // ★追加: シナジー情報の更新
+    refreshAllSynergies: () => {
+        const check = (item) => {
+            if (!item) return;
+            const syn = App.checkSynergy(item);
+            if (syn) {
+                item.isSynergy = true;
+                item.effect = syn.effect; // effectを付与
+            } else {
+                item.isSynergy = false;
+                delete item.effect;
+            }
+        };
+        if (App.data.inventory) { App.data.inventory.forEach(check); }
+        if (App.data.characters) {
+            App.data.characters.forEach(c => {
+                if (c.equips) { Object.values(c.equips).forEach(check); }
+            });
+        }
     },
 
     setAction: (label, callback) => {
@@ -372,6 +405,11 @@ const App = {
         App.data = JSON.parse(JSON.stringify(INITIAL_DATA_TEMPLATE));
         App.data.characters[0].name = name;
         App.data.characters[0].img = imgSrc; 
+        
+        // 初期SP
+        App.data.characters[0].sp = 0;
+        App.data.characters[0].tree = { ATK:0, MAG:0, SPD:0, HP:0, MP:0 };
+
         for(let i=0;i<5;i++) App.data.inventory.push(App.createRandomEquip('init', 1)); 
         try {
             localStorage.setItem(CONST.SAVE_KEY, JSON.stringify(App.data));
@@ -399,13 +437,10 @@ const App = {
 
     getChar: (uid) => App.data ? App.data.characters.find(c => c.uid === uid) : null,
 
-
-    /* main.js (calcStats修正: ％上昇対応版) */
     calcStats: (char) => {
         const lb = char.limitBreak || 0;
         const multiplier = 1 + (lb * 0.05); 
         
-        // 1. 基礎ステータス（キャラ素体）
         let s = {
             maxHp: Math.floor(char.hp * multiplier),
             maxMp: Math.floor(char.mp * multiplier),
@@ -417,7 +452,6 @@ const App = {
         };
         CONST.ELEMENTS.forEach(e => { s.elmAtk[e]=0; s.elmRes[e]=0; });
 
-        // 2. 割り振りポイント加算
         if(char.uid === 'p1' && char.alloc) {
             for(let key in char.alloc) {
                 if (key.includes('_')) {
@@ -432,13 +466,11 @@ const App = {
             }
         }
 
-        // 3. 装備補正（固定値加算 & %補正値集計）
-        let pctMods = { maxHp:0, maxMp:0, atk:0, def:0, spd:0, mag:0 }; // %加算用
+        let pctMods = { maxHp:0, maxMp:0, atk:0, def:0, spd:0, mag:0 }; 
 
         CONST.PARTS.forEach(part => {
             const eq = char.equips ? char.equips[part] : null;
             if(eq) {
-                // 基本性能（固定値）の加算
                 if(eq.data.atk) s.atk += eq.data.atk;
                 if(eq.data.def) s.def += eq.data.def;
                 if(eq.data.spd) s.spd += eq.data.spd;
@@ -449,9 +481,7 @@ const App = {
                 if(eq.data.elmAtk) for(let e in eq.data.elmAtk) s.elmAtk[e] += eq.data.elmAtk[e];
                 if(eq.data.elmRes) for(let e in eq.data.elmRes) s.elmRes[e] += eq.data.elmRes[e];
 
-                // 追加オプション処理
                 if(eq.opts) eq.opts.forEach(o => {
-                    // ★ここが重要: unitが'%'の場合、pctModsに加算
                     if(o.unit === '%') {
                         if(o.key === 'hp') pctMods.maxHp += o.val;
                         else if(o.key === 'mp') pctMods.maxMp += o.val;
@@ -459,13 +489,10 @@ const App = {
                         else if(o.key === 'def') pctMods.def += o.val;
                         else if(o.key === 'spd') pctMods.spd += o.val;
                         else if(o.key === 'mag') pctMods.mag += o.val;
-                        
-                        // elmAtk, elmRes, finDmgなどはそのまま加算
                         else if(o.key === 'elmAtk') s.elmAtk[o.elm] += o.val;
                         else if(o.key === 'elmRes') s.elmRes[o.elm] += o.val;
                         else if(s[o.key] !== undefined && typeof s[o.key] === 'number') s[o.key] += o.val;
                     } 
-                    // 従来の'val'(固定値)の場合
                     else if(o.unit === 'val') {
                         if(o.key === 'hp') s.maxHp += o.val;
                         else if(o.key === 'mp') s.maxMp += o.val;
@@ -473,7 +500,6 @@ const App = {
                         else if(o.key === 'elmRes') s.elmRes[o.elm] += o.val;
                         else if(s[o.key] !== undefined && typeof s[o.key] === 'number') s[o.key] += o.val;
                     } 
-                    // その他（ユニット指定なし等）
                     else {
                         if(s[o.key] !== undefined && typeof s[o.key] === 'number') s[o.key] += o.val;
                     }
@@ -481,7 +507,20 @@ const App = {
             }
         });
 
-        // 4. ％補正の適用（基礎+固定値 に対する乗算）
+        // スキルツリー補正
+        if (char.tree) {
+            const t = char.tree;
+            if (t.ATK) pctMods.atk += t.ATK * 5;
+            if (t.MAG) pctMods.mag += t.MAG * 5;
+            if (t.SPD) pctMods.spd += t.SPD * 5;
+            if (t.HP)  pctMods.maxHp += t.HP * 5;
+            if (t.MP) {
+                pctMods.def += t.MP * 5;
+                pctMods.maxMp += t.MP * 5;
+                if (t.MP >= 5) s.finRed += 10;
+            }
+        }
+
         s.maxHp = Math.floor(s.maxHp * (1 + pctMods.maxHp / 100));
         s.maxMp = Math.floor(s.maxMp * (1 + pctMods.maxMp / 100));
         s.atk = Math.floor(s.atk * (1 + pctMods.atk / 100));
@@ -491,7 +530,6 @@ const App = {
 
         return s;
     },
-   
 
     createRandomEquip: (source, rank = 1, fixedPlus = null) => {
         let candidates = DB.EQUIPS.filter(e => e.rank <= rank && e.rank >= Math.max(1, rank - 15));
@@ -540,12 +578,21 @@ const App = {
         }
 
         if(plus > 0) eq.name += `+${plus}`;
-        if(plus === 3 && App.checkSynergy(eq)) eq.isSynergy = true;
+        // ★修正: 生成時にもシナジー効果を付与
+        if(plus === 3) {
+             const syn = App.checkSynergy(eq);
+             if(syn) {
+                 eq.isSynergy = true;
+                 eq.effect = syn.effect;
+             }
+        }
         
         return eq;
     },
     
     checkSynergy: (eq) => { if(!eq.opts||eq.opts.length<3) return null; const fk=eq.opts[0].key; if(eq.opts.every(o=>o.key===fk)) return DB.SYNERGIES.find(s=>s.key===fk&&s.count<=eq.opts.length); return null; },
+
+};
 
     log: (msg) => {
         const e = document.getElementById('msg-text');
