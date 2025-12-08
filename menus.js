@@ -1516,14 +1516,14 @@ const MenuBook = {
         list.innerHTML = '';
         const defeated = App.data.book.monsters || [];
         
-        // 登録順（ID順）またはランク順にソートしたい場合はここでsortしても良い
-        // 今回はデータベースの並び順（強さ順に近い）で表示
+        // ★画像データの参照を取得
+        const g = (typeof GRAPHICS !== 'undefined' && GRAPHICS.images) ? GRAPHICS.images : {};
         
         DB.MONSTERS.forEach(m => {
             const isKnown = defeated.includes(m.id);
             const div = document.createElement('div');
             div.className = 'list-item';
-            div.style.alignItems = 'flex-start'; // 上揃えにする
+            div.style.alignItems = 'flex-start';
 
             if(isKnown) {
                 // ドロップ品名の解決
@@ -1539,10 +1539,26 @@ const MenuBook = {
                     return s ? s.name : '通常攻撃';
                 }).join(', ');
 
-                // 画像枠 + 4行情報のレイアウト
+                // --- ★画像表示ロジック ---
+                let imgContent = 'NO IMAGE';
+                
+                // バトルと同じ名前クリーニング処理
+                let baseName = m.name
+                    .replace(/^(強・|真・|極・|神・)+/, '') 
+                    .replace(/ Lv\d+[A-Z]?$/, '')
+                    .replace(/[A-Z]$/, '')
+                    .trim();
+                
+                const imgKey = 'monster_' + baseName;
+
+                if (g[imgKey]) {
+                    // 画像があればimgタグを埋め込む (枠内に収まるようにcontain指定)
+                    imgContent = `<img src="${g[imgKey].src}" style="width:100%; height:100%; object-fit:contain;">`;
+                }
+
                 div.innerHTML = `
                     <div style="width:64px; height:64px; background:#222; border:1px solid #444; margin-right:10px; flex-shrink:0; display:flex; align-items:center; justify-content:center; color:#555; font-size:10px;">
-                        NO IMAGE
+                        ${imgContent}
                     </div>
                     
                     <div style="flex:1; display:flex; flex-direction:column; justify-content:space-between; min-height:64px;">
