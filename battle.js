@@ -1,4 +1,4 @@
-/* battle.js (完全版: シナジー効果をpassiveに統合 & ロジック一本化) */
+/* battle.js (完全版: effect付与対応・ロジック一本化) */
 
 const Battle = {
     active: false,
@@ -44,10 +44,10 @@ const Battle = {
                 player.mp = Math.min(player.mp, stats.maxMp);
                 player.isDead = player.hp <= 0;
 
-                // ★修正: パッシブ効果の統合 (スキルツリー + シナジー)
+                // パッシブ効果の統合 (スキルツリー + 装備シナジー)
                 player.passive = {};
                 
-                // 1. スキルツリーからパッシブを取得
+                // 1. スキルツリー
                 if (charData.tree) {
                     for (let key in charData.tree) {
                         const level = charData.tree[key];
@@ -62,24 +62,18 @@ const Battle = {
                     }
                 }
 
-                // 2. 装備シナジーからパッシブを取得 (統合)
-                player.synergy = null; // 表示用
+                // 2. 装備シナジー (effectプロパティを参照)
+                player.synergy = null;
                 if (player.equips) {
                     for (let key in player.equips) {
                         const eq = player.equips[key];
-                        if (eq && typeof App.checkSynergy === 'function') {
-                             const syn = App.checkSynergy(eq);
-                             if(syn) { 
-                                 player.synergy = syn;
-                                 eq.isSynergy = true; 
-                                 
-                                 // ★ここが重要: シナジー効果をpassiveフラグとして登録
-                                 // (例: syn.effect='doubleAction' -> player.passive.doubleAction = true)
-                                 if (syn.effect) {
-                                     player.passive[syn.effect] = true;
-                                 }
-                                 break; 
-                             }
+                        if (eq && eq.isSynergy && eq.effect) {
+                             // 名前などの表示用に一応取得
+                             const syn = typeof App.checkSynergy === 'function' ? App.checkSynergy(eq) : null;
+                             if(syn) player.synergy = syn;
+
+                             // パッシブ有効化
+                             player.passive[eq.effect] = true;
                         }
                     }
                 }
@@ -535,7 +529,7 @@ const Battle = {
                     const acts = e.acts && e.acts.length > 0 ? e.acts : [1];
                     if (acts.length === 0) acts.push(1);
                     
-                    // MPを考慮して行動を選択 (マダンテMP0回避含む)
+                    // MPを考慮 (マダンテMP0回避含む)
                     let validActs = acts.filter(id => {
                         if ([1, 2, 9].includes(id)) return true;
                         const s = DB.SKILLS.find(k => k.id === id);
@@ -580,15 +574,13 @@ const Battle = {
             }
         });
         
-        // ★修正: プレイヤーのコマンドにパッシブ効果を適用 (2回行動/最速行動)
+        // プレイヤーのパッシブ効果適用 (2回行動/最速行動)
         const playerCommands = Battle.commandQueue.filter(c => !c.isEnemy && c.type !== 'dead' && c.type !== 'defend');
         Battle.commandQueue = Battle.commandQueue.filter(c => c.isEnemy || c.type === 'dead' || c.type === 'defend'); 
         
         for(let cmd of playerCommands) {
             const actor = cmd.actor;
-            // passive.doubleAction: 20%で2回行動
             const isDoubleAction = actor.passive && actor.passive.doubleAction && Math.random() < 0.2;
-            // passive.fastestAction: 20%で最速行動
             const isFastestAction = actor.passive && actor.passive.fastestAction && Math.random() < 0.2;
             
             if (isFastestAction) {
@@ -622,7 +614,6 @@ const Battle = {
                  continue;
             }
 
-            // 敵AIターゲット選択
             if (cmd.isEnemy && !cmd.target && cmd.targetScope !== '全体' && cmd.targetScope !== 'ランダム') {
                 let isSupport = false;
                 if (cmd.data && (cmd.data.type.includes('回復') || cmd.data.type === '強化' || cmd.data.type === '蘇生')) {
@@ -664,7 +655,7 @@ const Battle = {
             await Battle.wait(500);
         }
 
-        // ★修正: ターン終了時自動回復 (passive.hpRegen)
+        // ターン終了時自動回復 (passive.hpRegen)
         Battle.party.forEach(p => {
              if (p && !p.isDead && p.passive && p.passive.hpRegen) {
                  const rec = Math.floor(p.baseMaxHp * 0.05);
@@ -763,7 +754,7 @@ const Battle = {
 
         Battle.log(`【${actor.name}】の${skillName}！`);
 
-        // マダンテ (属性・軽減対応)
+        // マダンテ
         if (data && data.id === 500) {
             let dmg = mpCost * 5;
             const targets = cmd.isEnemy ? Battle.party.filter(p=>p && !p.isDead) : Battle.enemies.filter(e=>!e.isDead && !e.isFled);
@@ -777,17 +768,11 @@ const Battle = {
                 if (t.buffs && t.buffs.elmResDown) resVal -= t.buffs.elmResDown;
                 
                 let finalDmg = dmg;
-                if (resVal >= 100) {
-                    finalDmg = 0;
-                } else {
-                    finalDmg = Math.floor(finalDmg * (1.0 - resVal / 100));
-                }
+                if (resVal >= 100) finalDmg = 0;
+                else finalDmg = Math.floor(finalDmg * (1.0 - resVal / 100));
 
                 let finRed = t.getStat('finRed') || 0;
-                
-                // ★修正: パッシブ被ダメ軽減 (passive.finRed10)
                 if (t.passive && t.passive.finRed10) finRed += 10;
-
                 if (finRed > 80) finRed = 80;
                 if (finRed > 0) finalDmg = Math.floor(finalDmg * (1.0 - finRed / 100));
 
@@ -799,7 +784,6 @@ const Battle = {
                 t.hp -= finalDmg;
                 Battle.log(`【${t.name}】に<span style="color:#d4d">${finalDmg}</span>のダメージ！`);
                 
-                // ★修正: シナジー吸血 (passive.drain)
                 if (actor.passive && actor.passive.drain) {
                     const drain = Math.floor(finalDmg * 0.1);
                     if (drain > 0) {
@@ -844,8 +828,7 @@ const Battle = {
         for (let t of targets) {
             if (!t) continue;
 
-            // 回復・補助系
-            if (effectType && ['回復','蘇生','強化','弱体','MP回復'].includes(effectType)) {
+            if (effectType && ['回復','蘇生','強化','弱体'].includes(effectType)) {
                 if (effectType === '蘇生') {
                     if (t.isDead) {
                         t.isDead = false; t.hp = Math.floor(t.baseMaxHp * 0.5);
@@ -862,26 +845,13 @@ const Battle = {
                         if(data.buff.elmResDown) Battle.log(`【${t.name}】の属性耐性が下がった！`);
                         else Battle.log(`【${t.name}】の能力が下がった！`);
                     }
-                } else if (effectType === 'MP回復') {
-                     if (!t.isDead) {
-                        let amount = 0;
-                        if (data.ratio) amount = Math.floor(t.baseMaxMp * data.ratio);
-                        else amount = data.base;
-                        t.mp = Math.min(t.baseMaxMp, t.mp + amount);
-                        Battle.log(`【${t.name}】のMPが${amount}回復！`);
-                     }
                 } else { 
-                    // HP回復
                     if (!t.isDead) {
                         let rec = 0;
-                        if (data.ratio) {
-                            rec = Math.floor(t.baseMaxHp * data.ratio);
-                        } else {
-                            if (typeof data.val === 'number' || data.fix) rec = baseDmg; 
-                            else {
-                                const mag = actor.getStat('mag') || 0;
-                                rec = (mag + baseDmg) * skillRate;
-                            }
+                        if (typeof data.val === 'number' || data.fix) rec = baseDmg; 
+                        else {
+                            const mag = actor.getStat('mag') || 0;
+                            rec = (mag + baseDmg) * skillRate;
                         }
                         rec = Math.floor(rec);
                         t.hp = Math.min(t.baseMaxHp, t.hp + rec);
@@ -892,7 +862,6 @@ const Battle = {
                 continue;
             }
 
-            // --- ダメージ計算 ---
             for (let i = 0; i < hitCount; i++) {
                 let targetToHit = t;
                 if (scope === 'ランダム') {
@@ -906,14 +875,12 @@ const Battle = {
                     continue; 
                 }
 
-                // DQ式計算
                 let atkVal = 0, defVal = 0;
-                let ignoreDefense = false; // 防御無視
+                let ignoreDefense = false;
 
                 if (isPhysical) {
                     atkVal = actor.getStat('atk');
                     defVal = targetToHit.getStat('def');
-                    // ★修正: ATK passive.atkIgnoreDef
                     if (cmd.type === 'skill' && actor.passive && actor.passive.atkIgnoreDef && Math.random() < 0.2) {
                         ignoreDefense = true;
                         Battle.log(`【${actor.name}】の${skillName}は防御を無視！`);
@@ -936,7 +903,6 @@ const Battle = {
 
                 if (baseDmgCalc < 1) baseDmgCalc = 1;
 
-                // ★修正: MAG passive.magCrit
                 if (!isPhysical && cmd.type === 'skill' && actor.passive && actor.passive.magCrit && Math.random() < 0.2) {
                      baseDmgCalc *= 2;
                      Battle.log(`【${actor.name}】の${skillName}が魔力暴走！`);
@@ -963,7 +929,6 @@ const Battle = {
                 if(finDmgVal > 0) bonusRate += finDmgVal;
 
                 let finRed = targetToHit.getStat('finRed') || 0;
-                // ★修正: MP passive.finRed10
                 if (targetToHit.passive && targetToHit.passive.finRed10) finRed += 10;
                 
                 if (finRed > 80) finRed = 80;
@@ -995,11 +960,9 @@ const Battle = {
                 
                 Battle.log(`【${targetToHit.name}】に<span style="color:${dmgColor}">${dmg}</span>のダメージ！`);
                 
-                // ★修正: スキル吸血とパッシブ吸血を統合
-                // スキルのdrainがある場合 or passive.drainがある場合
                 let drainRate = 0;
-                if (data && data.drain) drainRate = 0.25; // スキル吸血は25%
-                else if (actor.passive && actor.passive.drain) drainRate = 0.1; // パッシブ吸血は10%
+                if (data && data.drain) drainRate = 0.25; 
+                else if (actor.passive && actor.passive.drain) drainRate = 0.1;
                 
                 if (drainRate > 0) {
                     const drainAmt = Math.floor(dmg * drainRate);
@@ -1008,6 +971,16 @@ const Battle = {
                          actor.hp = Math.min(actor.baseMaxHp, actor.hp + drainAmt);
                          const healed = actor.hp - oldHp;
                          if(healed > 0) Battle.log(`【${actor.name}】は吸収効果でHPを${healed}回復した！`);
+                    }
+                }
+
+                if(cmd.type === 'skill' && data.buff) {
+                    for(let key in data.buff) {
+                        targetToHit.buffs[key] = data.buff[key];
+                        if(key !== 'elmResDown') {
+                            if(data.buff[key] < 1) Battle.log(`【${targetToHit.name}】の能力が下がった！`);
+                            else Battle.log(`【${targetToHit.name}】の能力が上がった！`);
+                        }
                     }
                 }
 
@@ -1026,7 +999,7 @@ const Battle = {
             await Battle.wait(100);
         }
     },
-
+    
     updateDeadState: () => {
         [...Battle.party, ...Battle.enemies].forEach(e => {
             if (e && e.hp <= 0 && !e.isFled) { e.hp = 0; e.isDead = true; }
