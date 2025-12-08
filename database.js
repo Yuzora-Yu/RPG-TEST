@@ -236,7 +236,7 @@ const DB = {
     {id:609, name:'煉獄火炎', type:'魔法', target:'全体', mp:0, rate:1.4, count:1, base:250, elm:'混沌', desc:'地獄の炎'},
     {id:610, name:'シャイニングブレス', type:'魔法', target:'全体', mp:50, rate:1.4, count:1, base:150, elm:'光', buff:{atk:0.8, def:0.8, spd:0.8, mag:0.8}, desc:'光のブレス・全能力ダウン'},
     {id:611, name:'ダークネスブレス', type:'魔法', target:'全体', mp:50, rate:1.4, count:1, base:150, elm:'闇', buff:{elmResDown:50}, desc:'闇のブレス・属性耐性ダウン'},
-    {id:999, name:'激しい炎', type:'特殊', target:'全体', mp:0, rate:0, count:1, base:500, fix:true, elm:'火', desc:'全体炎'}
+    {id:999, name:'激しい炎', type:'特殊', target:'全体', mp:0, rate:0, count:1, base:500, fix:true, elm:'火', desc:'全体炎'},
 
     // --- ボス・神級（MP超増加） ---
     {id:901, name:'ジェネシス', type:'魔法', target:'全体', mp:500, rate:3.0, count:1, base:800, elm:'混沌', desc:'【EX】天地創造の光'},
@@ -251,7 +251,7 @@ const DB = {
     {id:922, name:'サイコストーム', type:'魔法', target:'ランダム', mp:700, rate:1.0, count:4, base:300, drain:true, desc:'精神の嵐・HP吸収'},
     {id:923, name:'カラミティエンド', type:'物理', target:'単体', mp:700, rate:6.0, count:1, base:500, buff:{def:0.2}, desc:'厄災の終焉'},
     {id:924, name:'カラミティウォール', type:'魔法', target:'全体', mp:1000, rate:2.0, count:1, base:1000, elm:'混沌', desc:'厄災の壁'},
-    {id:925, name:'カイザーフェニックス', type:'魔法', target:'単体', mp:1000, rate:3.0, count:1, base:5000, elm:'火', desc:'皇帝の不死鳥'},
+    {id:925, name:'カイザーフェニックス', type:'魔法', target:'単体', mp:1000, rate:3.0, count:1, base:5000, elm:'火', desc:'皇帝の不死鳥'}
 
 ],
 
@@ -881,7 +881,7 @@ MEDAL_REWARDS: [
         elmRes: {'火':70, '水':70, '風':70, '光':70, '闇':70, '雷':30, '混沌':30},
         actCount: 3 
     });
-
+	
 })();
 
 // 初期データ (1人パーティに変更)
