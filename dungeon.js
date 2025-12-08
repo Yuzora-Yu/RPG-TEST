@@ -1,14 +1,46 @@
-/* dungeon.js (完全版: 赤宝箱1%・出現数調整・確率調整済み) */
+/* dungeon.js (完全統合版: 赤宝箱・出現ロジック・101階対応) */
 
 const Dungeon = {
     floor: 0, width: 30, height: 30, map: [], pendingAction: null,
     
-    // 突入処理（チェックポイント判定）
+    // --- 敵取得ロジック (統合) ---
+    // Battleシーンから呼び出される想定の関数
+    getEnemy: (floor) => {
+        // 1. その階層固定のボスがいるかチェック (DB.MONSTERSから検索)
+        const boss = DB.MONSTERS.find(m => m.minF === floor && m.actCount);
+        if (boss) {
+            return JSON.parse(JSON.stringify(boss));
+        }
+
+        // 2. レア敵（メタル系など）の抽選 (確率5%)
+        if (Math.random() < 0.05) {
+            const rares = DB.MONSTERS.filter(m => !m.actCount && m.minF <= floor);
+            if (rares.length > 0) {
+                const rareEnemy = rares[Math.floor(Math.random() * rares.length)];
+                return JSON.parse(JSON.stringify(rareEnemy));
+            }
+        }
+
+        // 3. 通常敵の生成 (generateEnemyを使用)
+        // database.js で定義した関数を呼び出す
+        if (window.generateEnemy) {
+            return window.generateEnemy(floor);
+        }
+
+        // フォールバック
+        return {
+            id: Date.now(), name: 'スライム', hp: 50, mp: 10, atk: 10, def: 10, spd: 10, mag: 10,
+            exp: 5, gold: 5, skills: [1], resists: {}
+        };
+    },
+
+    // --- ダンジョン突入・進行 ---
     enter: () => {
         if (typeof Menu !== 'undefined') Menu.closeAll();
         
         if (Field.currentMapData && Field.currentMapData.isDungeon) {
             const isBossFloor = Dungeon.floor > 0 && Dungeon.floor % 10 === 0;
+            // ボスフロアかつ、まだボスがいる場合は逃げられない
             if (isBossFloor && Dungeon.map[Field.y][Field.x] === 'B') {
                 App.log("今は逃げられない！ボスを倒すしかない！");
                 return;
@@ -112,6 +144,7 @@ const Dungeon = {
         App.clearAction();
     },
     
+    // --- 移動・イベント処理 ---
     handleMove: (x, y) => {
         const tile = Dungeon.map[y][x];
         App.clearAction();
@@ -132,6 +165,7 @@ const Dungeon = {
             App.log("ボスの気配がする…");
             App.setAction("ボスと戦う", () => {
                 if (App.data.battle) App.data.battle.isBossBattle = true;
+                // Boss戦はBattle.start内で Dungeon.getEnemy(floor) を呼び出してボスを取得する想定
                 App.changeScene('battle');
             });
         } 
@@ -140,6 +174,7 @@ const Dungeon = {
             return;
         }
 
+        // ランダムエンカウント
         if(Math.random() < 0.08) { 
             App.log("魔物が襲いかかってきた！"); 
             setTimeout(() => App.changeScene('battle'), 300); 
@@ -212,6 +247,7 @@ const Dungeon = {
         App.save();
     },
 
+    // --- マップ生成ロジック ---
     generateFloor: () => {
         Dungeon.map = [];
         
