@@ -1,4 +1,4 @@
-/* main.js (長押し移動復活・シナジーeffect付与対応版) */
+/* main.js (長押し移動復活・シナジーeffect付与・Base64画像描画対応版) */
 
 // ==========================================================================
 // 設定：職業別習得スキルテーブル
@@ -195,6 +195,19 @@ const App = {
     pendingAction: null, 
 
     initGameHub: () => {
+        // ★修正: 画像読み込み待機処理を追加
+        // assets.js があり、GRAPHICSが定義されていればロードしてからゲーム開始
+        if(typeof GRAPHICS !== 'undefined') {
+            GRAPHICS.load(() => {
+                App.startGameLogic();
+            });
+        } else {
+            // なければ即開始 (フォールバック)
+            App.startGameLogic();
+        }
+    },
+
+    startGameLogic: () => {
         App.load();
         if(!App.data) { 
             if(window.location.href.indexOf('main.html') === -1) {
@@ -203,7 +216,7 @@ const App = {
             return; 
         }
 
-        // ★追加: 既存データのシナジー情報を更新 (ロード時に毎回チェック)
+        // シナジー情報の更新
         if (App.data) {
             App.refreshAllSynergies();
         }
@@ -304,14 +317,14 @@ const App = {
         bindClick('btn-ok', () => { if(App.pendingAction) App.executeAction(); else if(typeof Menu !== 'undefined') Menu.openMainMenu(); });
     },
     
-    // ★追加: シナジー情報の更新
+    // シナジー情報の更新
     refreshAllSynergies: () => {
         const check = (item) => {
             if (!item) return;
             const syn = App.checkSynergy(item);
             if (syn) {
                 item.isSynergy = true;
-                item.effect = syn.effect; // effectを付与
+                item.effect = syn.effect; 
             } else {
                 item.isSynergy = false;
                 delete item.effect;
@@ -401,7 +414,6 @@ const App = {
         App.data.characters[0].name = name;
         App.data.characters[0].img = imgSrc; 
         
-        // 初期SP
         App.data.characters[0].sp = 0;
         App.data.characters[0].tree = { ATK:0, MAG:0, SPD:0, HP:0, MP:0 };
 
@@ -573,7 +585,7 @@ const App = {
         }
 
         if(plus > 0) eq.name += `+${plus}`;
-        // ★修正: 生成時にもシナジー効果を付与
+        // 生成時にもシナジー効果を付与
         if(plus === 3) {
              const syn = App.checkSynergy(eq);
              if(syn) {
@@ -585,16 +597,11 @@ const App = {
         return eq;
     },
     
-    // 修正: オプション内に指定のキーが規定数(count)以上あれば発動するように変更
+    // オプション内に指定のキーが規定数(count)以上あれば発動
     checkSynergy: (eq) => { 
         if (!eq || !eq.opts) return null;
-
-        // 定義されている全シナジーをチェック
         for (const syn of DB.SYNERGIES) {
-            // その装備のオプションの中に、シナジー条件のキー(key)がいくつあるか数える
             const count = eq.opts.filter(o => o.key === syn.key).length;
-            
-            // 規定数以上あれば、そのシナジーを返す
             if (count >= syn.count) {
                 return syn;
             }
@@ -719,10 +726,13 @@ const App = {
     }
 };
 
-/* main.js (Fieldオブジェクト抜粋: 赤宝箱描画対応) */
+/* main.js (Fieldオブジェクト: グラフィック描画対応) */
 
 const Field = {
-    x: 23, y: 28, ready: false, currentMapData: null,
+    x: 23, y: 28, 
+    dir: 0, // ★追加: 向き (0:下, 1:左, 2:右, 3:上)
+	step: 1, // ★追加: 歩行アニメ用 (1 または 2)
+    ready: false, currentMapData: null,
     
     init: () => {
         if(App.data && !Field.currentMapData) {
@@ -739,6 +749,15 @@ const Field = {
     },
 
     move: (dx, dy) => {
+        // ★追加: 移動方向に応じて向きを更新
+        if (dy > 0) Field.dir = 0; // 下
+        else if (dx < 0) Field.dir = 1; // 左
+        else if (dx > 0) Field.dir = 2; // 右
+        else if (dy < 0) Field.dir = 3; // 上
+	
+		// ★追加: 1歩ごとに step を 1 ⇔ 2 で切り替える
+        Field.step = (Field.step === 1) ? 2 : 1;
+
         let nx = Field.x + dx;
         let ny = Field.y + dy;
         let tile = 'W';
@@ -747,6 +766,7 @@ const Field = {
         if (Field.currentMapData) {
             if(nx < 0 || nx >= Field.currentMapData.width || ny < 0 || ny >= Field.currentMapData.height) return;
             tile = Field.currentMapData.tiles[ny][nx];
+            // ダンジョン内では 'W' は壁として移動不可
             if (tile === 'W') return; 
             Field.x = nx; Field.y = ny;
             App.data.location.x = nx; App.data.location.y = ny;
@@ -781,6 +801,8 @@ const Field = {
         }
     },
 
+/* main.js の Field.render 部分のみ抜粋・修正 */
+
     render: () => {
         const canvas = document.getElementById('field-canvas');
         if(!canvas) return;
@@ -793,6 +815,9 @@ const Field = {
         const rangeY = Math.ceil(h / (2 * ts)) + 1;
         const mapW = Field.currentMapData ? Field.currentMapData.width : (typeof MAP_DATA!=='undefined'?MAP_DATA[0].length:50);
         const mapH = Field.currentMapData ? Field.currentMapData.height : (typeof MAP_DATA!=='undefined'?MAP_DATA.length:32);
+
+        // GRAPHICSオブジェクトが存在するか安全確認
+        const g = (typeof GRAPHICS !== 'undefined' && GRAPHICS.images) ? GRAPHICS.images : {};
 
         for (let dy = -rangeY; dy <= rangeY; dy++) {
             for (let dx = -rangeX; dx <= rangeX; dx++) {
@@ -808,35 +833,114 @@ const Field = {
                     tile = MAP_DATA[ly][lx];
                 }
 
-                // ★修正: 'R' (赤宝箱) の色指定を追加 (#f00)
-                if(tile==='G') ctx.fillStyle='#282'; 
-                else if(tile==='W') ctx.fillStyle='#228'; 
-                else if(tile==='M') ctx.fillStyle='#642'; 
-                else if(tile==='T') ctx.fillStyle='#444'; 
-                else if(tile==='S') ctx.fillStyle='#dd0'; 
-                else if(tile==='C') ctx.fillStyle='#0dd'; 
-                else if(tile==='R') ctx.fillStyle='#f00'; // 赤宝箱
-                else if(tile==='B') ctx.fillStyle='#d00'; 
-                else if(tile==='I') ctx.fillStyle='#fff'; 
-                else if(tile==='K') ctx.fillStyle='#ff0'; 
-                else if(tile==='E') ctx.fillStyle='#aaf'; 
-                else ctx.fillStyle='#000'; 
+                // -------------------------------------------------
+                // 1. 背景（床）の描画
+                // -------------------------------------------------
+                let drawnFloor = false;
+                if (tile !== 'W') { // 壁以外は床を描く
+                    // ダンジョンかフィールドかで床画像を切り替え
+                    const floorKey = Field.currentMapData ? 'dungeon_floor' : 'floor';
+                    
+                    if (g[floorKey]) {
+                        // 画像があれば描画
+                        ctx.drawImage(g[floorKey], drawX, drawY, ts, ts);
+                        drawnFloor = true;
+                    } else {
+                        // 画像がなければデフォルト色（濃いグレー）
+                        ctx.fillStyle = '#222'; 
+                        ctx.fillRect(drawX, drawY, ts, ts);
+                    }
+                }
+
+                // -------------------------------------------------
+                // 2. オブジェクト/タイルの描画
+                // -------------------------------------------------
+                let imgKey = null;
                 
-                ctx.fillRect(drawX, drawY, ts, ts);
-                
-                // ★修正: 文字表示対象に 'R' を追加
-                if(['S','C','R','B','I','K','E'].includes(tile)) {
-                    ctx.fillStyle = '#000'; ctx.font = '20px sans-serif';
+                // タイル文字から画像キーへのマッピング
+                if (tile === 'W') imgKey = Field.currentMapData ? 'wall' : 'sea'; // ダンジョンは壁、フィールドは海
+                else if (tile === 'M') imgKey = 'mountain';
+                else if (tile === 'S') imgKey = 'stairs';
+                else if (tile === 'C') imgKey = 'chest';
+                else if (tile === 'R') imgKey = 'chest_rare';
+                else if (tile === 'B') imgKey = 'boss';
+                else if (tile === 'I') imgKey = 'inn';
+                else if (tile === 'K') imgKey = 'casino';
+                else if (tile === 'E') imgKey = 'medal';
+
+                // 画像表示 or 元の色表示 の分岐
+                if (imgKey && g[imgKey]) {
+                    // ★アセットがある場合：画像を描画
+                    ctx.drawImage(g[imgKey], drawX, drawY, ts, ts);
+                } else {
+                    // ★アセットがない場合：元の色塗りロジック (フォールバック)
+                    let color = null;
+                    
+                    if(tile === 'G') color = '#282'; 
+                    else if(tile === 'W') color = '#228'; 
+                    else if(tile === 'M') color = '#642'; 
+                    else if(tile === 'T') color = '#444'; 
+                    else if(tile === 'S') color = '#dd0'; 
+                    else if(tile === 'C') color = '#0dd'; 
+                    else if(tile === 'R') color = '#f00'; 
+                    else if(tile === 'B') color = '#d00'; 
+                    else if(tile === 'I') color = '#fff'; 
+                    else if(tile === 'K') color = '#ff0'; 
+                    else if(tile === 'E') color = '#aaf'; 
+                    
+                    // 色設定があり、かつ「床画像の上に描画する必要がある」または「床ではない」場合
+                    // ※ 'G'などは床画像がある場合、上で描画済みなのでスキップしてもよいが、
+                    //   画像がない場合はここで色を塗る必要がある。
+                    if (color) {
+                        // 床画像を描画済みで、かつタイルが床系(G, T)の場合は重ね塗りを避ける（半透明なら別だが）
+                        // ここではシンプルに「画像がないなら塗る」とする
+                        if (!drawnFloor || (tile !== 'G' && tile !== 'T')) {
+                            ctx.fillStyle = color;
+                            ctx.fillRect(drawX, drawY, ts, ts);
+                        }
+                    }
+                }
+
+                // 文字の重ね表示 (画像があっても分かりやすくするため残す、不要なら削除可)
+                if(['C','R','B','I','K','E'].includes(tile)) {
+                    ctx.fillStyle = (imgKey && g[imgKey]) ? '#fff' : '#000'; // 画像上なら白文字、色塗り上なら黒文字
+                    ctx.font = '20px sans-serif';
                     let char = tile;
                     if(!Field.currentMapData) { if(tile==='I') char='宿'; if(tile==='K') char='カ'; if(tile==='E') char='交'; }
                     ctx.fillText(char, drawX+6, drawY+24);
                 }
             }
         }
-        ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(cx, cy, 10, 0, Math.PI*2); ctx.fill(); ctx.strokeStyle = '#000'; ctx.stroke();
+        
+        // -------------------------------------------------
+        // ★プレイヤー描画 (アニメーション対応)
+        // -------------------------------------------------
+        const pBaseKeys = ['hero_down', 'hero_left', 'hero_right', 'hero_up'];
+        const pBase = pBaseKeys[Field.dir] || 'hero_down';
+        
+        // キーを合成する: "hero_down" + "_" + "1" -> "hero_down_1"
+        const pKey = `${pBase}_${Field.step}`; 
+        
+        if (g[pKey]) {
+            // 画像があれば描画
+            ctx.drawImage(g[pKey], cx - ts/2, cy - ts/2, ts, ts);
+        } else {
+            // 画像がない、またはキーが見つからない場合のフォールバック（白丸）
+            // 開発中はキー間違いに気づけるように、ここに来たらログを出すのもあり
+            // console.warn('Missing image:', pKey);
+            ctx.fillStyle = '#fff'; 
+            ctx.beginPath(); 
+            ctx.arc(cx, cy, 10, 0, Math.PI*2); 
+            ctx.fill(); 
+            ctx.strokeStyle = '#000'; 
+            ctx.stroke();
+        }
+
+        // ロケーション名表示などはそのまま
         let locName = Field.currentMapData ? `地下${Dungeon.floor}階` : `フィールド(${Field.x},${Field.y})`;
         document.getElementById('loc-name').innerText = locName;
 
+        // ミニマップ描画 (簡略化のため従来通りの色塗りで維持)
         const mmSize = 80; const mmX = w - mmSize - 10; const mmY = 10; const range = 10; 
         ctx.save(); ctx.globalAlpha = 0.6; ctx.fillStyle = '#000'; ctx.fillRect(mmX, mmY, mmSize, mmSize); ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.strokeRect(mmX, mmY, mmSize, mmSize);
         const dms = mmSize / (range*2); 
@@ -847,15 +951,14 @@ const Field = {
                 else { tile = MAP_DATA[((ty%mapH)+mapH)%mapH][((tx%mapW)+mapW)%mapW]; }
                 
                 ctx.fillStyle = '#000';
-                // ★修正: ミニマップの 'R' 対応
                 if(tile === 'W') ctx.fillStyle = '#228'; 
                 else if(tile === 'G') ctx.fillStyle = '#282'; 
                 else if(tile === 'M') ctx.fillStyle = '#642'; 
                 else if(tile === 'T') ctx.fillStyle = '#666'; 
                 else if(tile === 'S') ctx.fillStyle = '#ff0'; 
                 else if(tile === 'C') ctx.fillStyle = '#0ff'; 
-                else if(tile === 'R') ctx.fillStyle = '#f00'; // 赤宝箱
-                else if(tile === 'B') ctx.fillStyle = '#f00'; 
+                else if(tile === 'R') ctx.fillStyle = '#f00'; 
+                else if(tile === 'B') ctx.fillStyle = '#d00'; 
                 else if(tile === 'I') ctx.fillStyle = '#fff'; 
                 else if(tile === 'K') ctx.fillStyle = '#ff0'; 
                 else if(tile === 'E') ctx.fillStyle = '#aaf'; 
