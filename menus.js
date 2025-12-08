@@ -135,6 +135,7 @@ const Menu = {
         return '#fff';
     },
 
+/* menus.js (Menuオブジェクト部分: 装備詳細にシナジー表示を追加) */
     // 装備詳細HTML生成
     getEquipDetailHTML: (equip) => {
         let html = '';
@@ -172,11 +173,17 @@ const Menu = {
             optsHTML = `<div style="font-size:10px; color:#aaa; margin-top:2px;">${optsList}</div>`;
         }
 
-        // シナジー
+        // ★修正: シナジー (常時チェックして表示)
         let synergyHTML = '';
-        if (equip.isSynergy) {
+        if (typeof App !== 'undefined' && typeof App.checkSynergy === 'function') {
              const syn = App.checkSynergy(equip);
-             if(syn) synergyHTML = `<div style="font-size:10px; color:${syn.color||'#f88'}; margin-top:2px;">★${syn.name}: ${syn.desc}</div>`;
+             if(syn) {
+                 synergyHTML = `
+                    <div style="margin-top:4px; padding:2px 4px; background:rgba(255,255,255,0.1); border-radius:2px;">
+                        <div style="font-size:11px; font-weight:bold; color:${syn.color||'#f88'};">★シナジー: ${syn.name}</div>
+                        <div style="font-size:10px; color:#ddd;">${syn.desc}</div>
+                    </div>`;
+             }
         }
 
         html += `
@@ -188,6 +195,48 @@ const Menu = {
             ${synergyHTML}
         `;
         return html;
+    },
+    
+    // 簡易リスト用詳細HTML
+    getEquipDetailHTML_for_EquipList: (equip) => {
+        const rarity = equip.rarity || 'N';
+        const rarityColor = Menu.getRarityColor(rarity);
+
+        let baseStats = [];
+        if (equip.data) {
+            if (equip.data.atk) baseStats.push(`攻+${equip.data.atk}`);
+            if (equip.data.def) baseStats.push(`防+${equip.data.def}`);
+            if (equip.data.mag) baseStats.push(`魔+${equip.data.mag}`);
+            if (equip.data.spd) baseStats.push(`速+${equip.data.spd}`);
+        }
+        const baseEffect = baseStats.length > 0 ? baseStats.join(' / ') : '基本効果なし';
+        
+        let optsHTML = '';
+        if (equip.opts && equip.opts.length > 0) {
+            optsHTML = equip.opts.map(o => {
+                const optRarity = o.rarity || 'N';
+                const optColor = Menu.getRarityColor(optRarity);
+                const unit = o.unit === 'val' ? '' : o.unit;
+                return `<span style="color:${optColor};">${o.label}+${o.val}${unit} (${optRarity})</span>`;
+            }).join(', ');
+        }
+        
+        // ★修正: シナジー (常時チェック)
+        let synergyHTML = '';
+        if (typeof App !== 'undefined' && typeof App.checkSynergy === 'function') {
+             const syn = App.checkSynergy(equip);
+             if(syn) synergyHTML = `<span style="color:${syn.color||'#f88'}; margin-left:5px; font-size:10px;">★${syn.name}</span>`;
+        }
+        
+        return `
+            <div style="flex:1; min-width:0;">
+                <div style="font-weight:bold; color:${rarityColor};">${equip.name} ${synergyHTML}</div>
+                <div style="font-size:10px; color:#aaa; margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                    ${baseEffect}
+                </div>
+            </div>
+            ${optsHTML ? `<div style="font-size:10px; color:#ccc; text-align:right; margin-left:10px; max-width:40%; overflow:hidden; white-space:nowrap;">${optsHTML}</div>` : ''}
+        `;
     },
     
     getEquipDetailHTML_for_EquipList: (equip) => {
@@ -841,24 +890,29 @@ const MenuInventory = {
 /* ==========================================================================
    5. 仲間一覧 & 詳細
    ========================================================================== */
-/* 5. 仲間一覧 (並び順修正 & 特殊ステータス表示追加版) */
+
 const MenuAllies = {
     selectedChar: null, 
     currentTab: 1,
     tempAlloc: null,
-
+    
     init: () => {
+        // 必要なDOM要素を先に生成
+        MenuAllies.createAllocModalDOM(); 
+        MenuAllies.createTreeViewDOM(); 
+
         document.getElementById('allies-list-view').style.display = 'flex';
         document.getElementById('allies-detail-view').style.display = 'none';
+        
+        const treeView = document.getElementById('allies-tree-view');
+        if (treeView) treeView.style.display = 'none';
+        
         MenuAllies.renderList();
-        MenuAllies.createAllocModalDOM();
     },
 
     renderList: () => {
         const list = document.getElementById('allies-list');
         list.innerHTML = '';
-        
-        // ソート: レベル(降順) > レアリティ(降順)
         const rarityVal = { N:1, R:2, SR:3, SSR:4, UR:5, EX:6 };
         const chars = [...App.data.characters].sort((a, b) => {
             if (b.level !== a.level) return b.level - a.level;
@@ -894,8 +948,15 @@ const MenuAllies = {
         let newIdx = idx + dir;
         if (newIdx < 0) newIdx = chars.length - 1;
         if (newIdx >= chars.length) newIdx = 0;
-        MenuAllies.selectedChar = chars[newIdx];
-        MenuAllies.renderDetail();
+        MenuAllies.selectedChar = chars[newIdx]; 
+        
+        // 現在開いている画面に合わせて更新
+        const treeView = document.getElementById('allies-tree-view');
+        if (treeView && treeView.style.display === 'flex') {
+            MenuAllies.renderTreeView();
+        } else {
+            MenuAllies.renderDetail();
+        }
     },
 
     uploadImage: (input, uid) => {
@@ -941,7 +1002,11 @@ const MenuAllies = {
     },
 
     renderDetail: () => {
-        document.getElementById('allies-list-view').style.display = 'none';
+        document.getElementById('allies-list-view').style.display = 'none'; 
+        
+        const treeView = document.getElementById('allies-tree-view');
+        if (treeView) treeView.style.display = 'none';
+        
         document.getElementById('allies-detail-view').style.display = 'flex';
         
         const c = MenuAllies.selectedChar;
@@ -950,6 +1015,7 @@ const MenuAllies = {
         const hp = c.currentHp !== undefined ? c.currentHp : s.maxHp;
         const mp = c.currentMp !== undefined ? c.currentMp : s.maxMp;
         const lb = c.limitBreak || 0;
+        const sp = c.sp || 0;
         const nextExp = App.getNextExp(c);
         const nextExpText = nextExp === Infinity ? "MAX" : nextExp;
 
@@ -961,14 +1027,21 @@ const MenuAllies = {
             </div>
         `;
 
+        const treeBtnHtml = `
+            <div style="background:#004444; padding:5px; margin-top:5px; font-size:12px; display:flex; justify-content:space-between; align-items:center;">
+                <span>所持SP: <b style="color:#ffd700; font-size:14px;">${sp}</b></span> 
+                <button class="menu-btn" style="padding:5px 15px; font-size:12px;" onclick="MenuAllies.openTreeView()">スキル習得</button>
+            </div>
+        `;
+
         let allocHtml = '';
         if(c.uid === 'p1') {
             const totalPt = Math.floor(lb / 10) * 10;
             let used = 0;
             if(c.alloc) for(let k in c.alloc) used += c.alloc[k];
             const free = totalPt - used;
-            allocHtml = `<div style="background:#440; padding:5px; margin-top:5px; font-size:12px; display:flex; justify-content:space-between; align-items:center;">
-                <span>振分Pt 残り: <b>${free}</b></span> <button class="btn" onclick="MenuAllies.openAllocModal()">振分変更</button>
+            allocHtml = `<div style="background:#444400; padding:5px; margin-top:2px; font-size:12px; display:flex; justify-content:space-between; align-items:center;">
+                <span>ボーナスPt: <b>${free}</b></span> <button class="btn" style="padding:2px 5px;" onclick="MenuAllies.openAllocModal()">振分</button>
             </div>`;
         }
 
@@ -987,6 +1060,24 @@ const MenuAllies = {
         let html = navHtml;
         
         if(MenuAllies.currentTab === 1) { 
+            let activeSynergies = [];
+            if (c.equips) {
+                CONST.PARTS.forEach(p => {
+                    const eq = c.equips[p];
+                    if (eq && typeof App.checkSynergy === 'function') {
+                        const syn = App.checkSynergy(eq);
+                        if (syn) activeSynergies.push({ part: p, name: syn.name, desc: syn.desc, color: syn.color });
+                    }
+                });
+            }
+            let synergiesHtml = '';
+            if (activeSynergies.length > 0) {
+                synergiesHtml += `<hr style="border-color:#444"><div style="font-size:12px; font-weight:bold; margin-bottom:5px;">発動中のシナジー</div>`;
+                activeSynergies.forEach(syn => {
+                    synergiesHtml += `<div style="font-size:11px; color:${syn.color||'#fff'}; margin-bottom:2px;">[${syn.part}] ★${syn.name}: ${syn.desc}</div>`;
+                });
+            }
+
             html += `
             <div style="padding:10px; display:flex; gap:10px; background:#222;">
                 <div style="position:relative; width:60px; height:60px; background:#444; border:1px solid #666; border-radius:4px; cursor:pointer; overflow:hidden;"
@@ -1013,6 +1104,7 @@ const MenuAllies = {
                     </div>
                 </div>
             </div>
+            ${treeBtnHtml}
             ${allocHtml}
             <div style="padding:10px; line-height:1.6; font-size:12px;">
                 <div>HP: ${hp}/${s.maxHp}  MP: ${mp}/${s.maxMp}</div>
@@ -1031,36 +1123,25 @@ const MenuAllies = {
                 ${CONST.ELEMENTS.map(e => `<span>${e}:${s.elmAtk[e]||0}</span>`).join(' ')}
                 <br><b>属性耐性</b><br>
                 ${CONST.ELEMENTS.map(e => `<span>${e}:${s.elmRes[e]||0}</span>`).join(' ')}
+                
+                ${synergiesHtml}
             </div>`;
         } else if(MenuAllies.currentTab === 2) { 
             html += `<div style="padding:10px;">`;
             CONST.PARTS.forEach(p => {
                 const eq = c.equips[p];
-                let detail = '';
-                let nameColor = '#fff';
                 if (eq) {
-                    let stats = [];
-                    if(eq.data.atk) stats.push(`攻+${eq.data.atk}`);
-                    if(eq.data.def) stats.push(`防+${eq.data.def}`);
-                    if(eq.data.mag) stats.push(`魔+${eq.data.mag}`);
-                    if(eq.data.spd) stats.push(`速+${eq.data.spd}`);
-                    if(eq.opts) {
-                        eq.opts.forEach(o => {
-                            let valStr = o.unit === '%' ? `${o.val}%` : `${o.val}`;
-                            let rColor = Menu.getRarityColor(o.rarity||'N');
-                            stats.push(`<span style="color:${rColor};">[${o.label}+${valStr}]</span>`);
-                        });
-                    }
-                    if(eq.isSynergy) nameColor = '#ff4444';
-                    detail = stats.join(' ');
+                    html += `<div class="list-item" style="cursor:default; flex-direction:column; align-items:flex-start;">
+                        <div style="width:100%; display:flex; justify-content:space-between;">
+                            <span style="color:#aaa;">${p}</span>
+                        </div>
+                        <div style="width:100%; margin-top:2px;">
+                            ${Menu.getEquipDetailHTML(eq)}
+                        </div>
+                    </div>`;
+                } else {
+                    html += `<div class="list-item" style="cursor:default;"><span style="color:#aaa;">${p}</span> <span style="color:#555;">なし</span></div>`;
                 }
-                html += `<div class="list-item" style="cursor:default; flex-direction:column; align-items:flex-start;">
-                    <div style="display:flex; width:100%;">
-                        <div style="width:40px; color:#aaa;">${p}</div>
-                        <div style="font-weight:bold; color:${nameColor};">${eq ? eq.name : 'なし'}</div>
-                    </div>
-                    ${eq ? `<div style="font-size:10px; margin-left:40px; line-height:1.2; margin-top:2px;">${detail}</div>` : ''}
-                </div>`;
             });
             html += `</div>`;
         } else if(MenuAllies.currentTab === 3) { 
@@ -1081,6 +1162,131 @@ const MenuAllies = {
             html += `</div>`;
         }
         content.innerHTML = html;
+    },
+
+    createTreeViewDOM: () => {
+        if(document.getElementById('allies-tree-view')) return;
+        const div = document.createElement('div');
+        div.id = 'allies-tree-view';
+        div.className = 'flex-col-container';
+        div.style.display = 'none';
+        div.style.background = '#1a1a1a';
+        div.innerHTML = `
+            <div class="header-bar" id="tree-header"></div>
+            <div id="tree-content" class="scroll-area" style="padding:10px;"></div>
+            <button class="btn" style="margin:10px;" onclick="MenuAllies.renderDetail()">戻る</button>
+        `;
+        document.getElementById('sub-screen-allies').appendChild(div);
+    },
+
+    openTreeView: () => {
+        document.getElementById('allies-detail-view').style.display = 'none';
+        document.getElementById('allies-tree-view').style.display = 'flex';
+        MenuAllies.renderTreeView();
+    },
+
+    renderTreeView: () => {
+        const c = MenuAllies.selectedChar;
+        const sp = c.sp || 0;
+        
+        const header = document.getElementById('tree-header');
+        header.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+                <div style="display:flex; align-items:center;">
+                    <button class="btn" style="padding:2px 10px;" onclick="MenuAllies.switchChar(-1)">＜</button>
+                    <span style="margin:0 10px;">${c.name} (SP:${sp})</span>
+                    <button class="btn" style="padding:2px 10px;" onclick="MenuAllies.switchChar(1)">＞</button>
+                </div>
+                <button class="btn" style="background:#500; font-size:10px; padding:2px 5px;" onclick="MenuAllies.resetTree()">RESET</button>
+            </div>
+        `;
+
+        const list = document.getElementById('tree-content');
+        list.innerHTML = '';
+        
+        if (!c.tree) c.tree = { ATK:0, MAG:0, SPD:0, HP:0, MP:0 };
+        
+        for (let key in CONST.SKILL_TREES) {
+            const treeDef = CONST.SKILL_TREES[key];
+            const currentLevel = c.tree[key] || 0;
+            const maxLevel = treeDef.steps.length;
+            
+            const div = document.createElement('div');
+            div.style.cssText = "background:#222; border:1px solid #444; border-radius:4px; margin-bottom:10px; padding:5px;";
+            
+            let html = `<div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                <span style="font-weight:bold; color:#ffd700;">${treeDef.name} Lv.${currentLevel}</span>
+                <span style="font-size:11px; color:#aaa;">(${currentLevel}/${maxLevel})</span>
+            </div>`;
+            
+            html += `<div style="display:flex; gap:2px; margin-bottom:5px;">`;
+            for(let i=0; i<maxLevel; i++) {
+                const step = treeDef.steps[i];
+                const achieved = (i < currentLevel);
+                const isNext = (i === currentLevel);
+                const bg = achieved ? '#008888' : (isNext ? '#444' : '#222');
+                const border = isNext ? '1px solid #fff' : '1px solid #444';
+                
+                html += `<div style="flex:1; background:${bg}; border:${border}; height:6px; border-radius:2px;"></div>`;
+            }
+            html += `</div>`;
+            
+            if (currentLevel < maxLevel) {
+                const nextStep = treeDef.steps[currentLevel];
+                const reqTotal = treeDef.costs[currentLevel];
+                const prevReq = (currentLevel > 0) ? treeDef.costs[currentLevel-1] : 0;
+                const cost = reqTotal - prevReq;
+                const canAfford = (sp >= cost);
+                
+                html += `
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div style="font-size:12px;">次: <span style="color:#fff;">${nextStep.desc}</span></div>
+                        <button class="btn" style="font-size:11px; padding:4px 8px; background:${canAfford?'#d00':'#333'};" 
+                            onclick="MenuAllies.unlockTree('${key}', ${cost})" ${canAfford?'':'disabled'}>
+                            習得 SP:${cost}
+                        </button>
+                    </div>
+                `;
+            } else {
+                html += `<div style="font-size:12px; text-align:center; color:#4f4;">MASTER!</div>`;
+            }
+            div.innerHTML = html;
+            list.appendChild(div);
+        }
+    },
+
+    unlockTree: (key, cost) => {
+        const c = MenuAllies.selectedChar;
+        if (c.sp >= cost) {
+            c.sp -= cost;
+            c.tree[key] = (c.tree[key] || 0) + 1;
+            App.save();
+            MenuAllies.renderTreeView();
+            Menu.renderPartyBar(); 
+        }
+    },
+
+    resetTree: () => {
+        const c = MenuAllies.selectedChar;
+        Menu.confirm("スキルポイントを初期化しますか？", () => {
+            let totalReturned = 0;
+            for (let key in c.tree) {
+                const lv = c.tree[key];
+                if (lv > 0) {
+                    const treeDef = CONST.SKILL_TREES[key];
+                    if (treeDef && treeDef.costs[lv - 1]) {
+                        totalReturned += treeDef.costs[lv - 1];
+                    }
+                    c.tree[key] = 0;
+                }
+            }
+            c.sp = (c.sp || 0) + totalReturned;
+            
+            App.save();
+            MenuAllies.renderTreeView();
+            Menu.renderPartyBar();
+            Menu.msg(`スキルをリセットしました。\n(返還SP: ${totalReturned})`);
+        });
     },
 
     createAllocModalDOM: () => {
@@ -1180,7 +1386,6 @@ const MenuAllies = {
         MenuAllies.closeAllocModal();
     }
 };
-
 
 /* ==========================================================================
    6. スキル使用 ～ 8. 鍛冶屋 (変更なし)
