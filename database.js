@@ -11,10 +11,74 @@ const CONST = {
     POKER_ODDS: { ROYAL_FLUSH: 500, STRAIGHT_FLUSH: 100, FOUR_CARD: 30, FULL_HOUSE: 10, FLUSH: 8, STRAIGHT: 5, THREE_CARD: 3, TWO_PAIR: 2, JACKS_OR_BETTER: 1 },
     PLUS_RATES: { 3: 0.10, 2: 0.30, 1: 0.60 }, 
     
-    MAX_LEVEL: 99,
+    MAX_LEVEL: 100,
     EXP_BASE: 100,
     EXP_GROWTH: 1.1,
-    RARITY_EXP_MULT: { N:1.0, R:1.1, SR:1.2, SSR:1.3, UR:1.5, EX:2.0 }
+    RARITY_EXP_MULT: { N:1.0, R:1.1, SR:1.2, SSR:1.3, UR:1.5, EX:2.0 },
+	
+// ★修正: パッシブID (passive) を追加して、バトル側で判定できるようにする
+    SKILL_TREES: {
+        // 攻撃力 (ATK)
+        ATK: {
+            name: '攻撃強化',
+            steps: [
+                { desc: '物理攻撃力 +5%' },
+                { desc: '物理攻撃力 +10%' },
+                { desc: '物理攻撃力 +15% / 渾身斬り(102)習得', skillId: 102 },
+                { desc: '物理攻撃力 +20% / さみだれ剣(203)習得', skillId: 203 },
+                { desc: '物理攻撃力 +25% / 物理スキル使用時20％で防御無視', passive: 'atkIgnoreDef' }
+            ],
+            costs: [5, 12, 22, 35, 50]
+        },
+        // 魔力 (MAG)
+        MAG: {
+            name: '魔力強化',
+            steps: [
+                { desc: '魔法攻撃力 +5%' },
+                { desc: '魔法攻撃力 +10%' },
+                { desc: '魔法攻撃力 +15% / ベギラマ(302)習得', skillId: 302 },
+                { desc: '魔法攻撃力 +20% / メラゾーマ(305)習得', skillId: 305 },
+                { desc: '魔法攻撃力 +25% / 魔法スキル使用時20％でダメージ2倍', passive: 'magCrit' }
+            ],
+            costs: [5, 12, 22, 35, 50]
+        },
+        // 素早さ (SPD)
+        SPD: {
+            name: '素早さ強化',
+            steps: [
+                { desc: '素早さ +5%' },
+                { desc: '素早さ +10%' },
+                { desc: '素早さ +15% / ピオリム(52)習得', skillId: 52 },
+                { desc: '素早さ +20% / 戦闘時20%で最速行動', passive: 'fastestAction' }, // Lv4で習得
+                { desc: '素早さ +25% / 戦闘時20%で2回行動', passive: 'doubleAction' }  // Lv5で習得
+            ],
+            costs: [5, 12, 22, 35, 50]
+        },
+        // HP
+        HP: {
+            name: '生命力強化',
+            steps: [
+                { desc: '最大HP +10%' },
+                { desc: '最大HP +15%' },
+                { desc: '最大HP +20% / ベホマラー(22)習得', skillId: 22 },
+                { desc: '最大HP +25% / ザオラル(30)習得', skillId: 30 },
+                { desc: '最大HP +30% / 毎ターン終了時HP5％回復', passive: 'hpRegen' }
+            ],
+            costs: [5, 12, 22, 35, 50]
+        },
+        // 防御・MP
+        MP: {
+            name: '防御・精神力強化',
+            steps: [
+                { desc: '防御力 +5% / 最大MP +5%' },
+                { desc: '防御力 +10%' },
+                { desc: '防御力 +15% / 無念無想(81)習得', skillId: 81 },
+                { desc: '防御力 +20% / マジックバリア(53)習得', skillId: 53 },
+                { desc: '防御力 +25% / 被ダメージ軽減 +10%', passive: 'finRed10' }
+            ],
+            costs: [5, 12, 22, 35, 50]
+       }
+    }
 };
 
 const MAP_DATA = [
@@ -79,7 +143,7 @@ const DB = {
         {id:403, name:'フルケア', type:'回復', target:'単体', mp:500, rate:0, count:1, base:99999, fix:true, desc:'完全回復'},
         
         {id:30, name:'ザオラル', type:'蘇生', target:'単体', mp:8, rate:0.5, count:1, base:20, elm:null, desc:'50%蘇生'},
-        {id:31, name:'ザオリク', type:'蘇生', target:'単体', mp:20, rate:0.8, count:1, base:50, elm:null, desc:'100%蘇生'},
+        {id:31, name:'ザオリク', type:'蘇生', target:'単体', mp:20, rate:1, count:1, base:50, elm:null, desc:'100%蘇生'},
         {id:80, name:'めいそう', type:'回復', target:'単体', mp:0, rate:0, count:1, base:0, ratio:0.5, desc:'HPを50%回復'},
         {id:81, name:'無念無想', type:'MP回復', target:'単体', mp:0, rate:0, count:1, base:0, ratio:0.5, desc:'MPを50%回復'},
         
@@ -253,9 +317,9 @@ const DB = {
     ],
     
     SYNERGIES: [
-        { key: 'spd', count: 3, name: '疾風怒濤', effect: 'doubleAction', desc: '50%で2回行動', color:'#f88' },
-        { key: 'hp', count: 3, name: '吸血', effect: 'drain', desc: '与ダメの10%回復', color:'#f88' },
-        { key: 'mag', count: 3, name: '魔力暴走', effect: 'magCrit', desc: '魔法がたまに会心', color:'#88f' }
+        { key: 'spd', count: 3, name: '疾風怒濤', effect: 'doubleAction', desc: '戦闘時20%で2回行動', color:'#f88' },
+        { key: 'hp', count: 3, name: '吸血', effect: 'drain', desc: '与えたダメージの10%を回復', color:'#f88' },
+        { key: 'mag', count: 3, name: '魔力暴走', effect: 'magCrit', desc: '魔法スキル使用時20％でダメージ2倍', color:'#88f' }
     ],
 
     MEDAL_REWARDS: [
