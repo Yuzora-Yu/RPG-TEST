@@ -446,9 +446,8 @@ const MenuParty = {
 };
 
 /* ==========================================================================
-   2. 装備変更
+   2. 装備変更 (詳細表示統一版)
    ========================================================================== */
-/* 2. 装備変更 (戻るボタン修正 & 並び順修正版) */
 const MenuEquip = {
     targetChar: null, targetPart: null, selectedEquipId: null,
     
@@ -493,10 +492,9 @@ const MenuEquip = {
         if (!c) return;
         const s = App.calcStats(c);
         
-        // ★修正: 戻るボタンの挙動を強制的に「メニューを閉じる」に変更
         const screenPart = document.getElementById('equip-screen-part');
         if(screenPart) {
-            const backBtn = screenPart.querySelector('button.btn'); // 最後のボタン(戻る)を取得
+            const backBtn = screenPart.querySelector('button.btn'); 
             if(backBtn) backBtn.onclick = () => Menu.closeSubScreen('equip');
         }
         
@@ -554,18 +552,15 @@ const MenuEquip = {
         MenuEquip.selectedEquipId = null;
         const part = MenuEquip.targetPart;
         let candidates = [];
-        candidates.push({id:'remove', name:'(装備を外す)', isRemove:true, rank:999, plus:999}); // ソート用ダミー値
+        candidates.push({id:'remove', name:'(装備を外す)', isRemove:true, rank:999, plus:999}); 
         
-        // インベントリから抽出
         App.data.inventory.filter(i => i.type === part).forEach(i => candidates.push(i));
-        // 他キャラ装備中から抽出
         App.data.characters.forEach(other => {
             if(other.uid !== MenuEquip.targetChar.uid && other.equips[part]) {
                 candidates.push({...other.equips[part], owner:other.name});
             }
         });
 
-        // ★修正: ソート (ランク降順 > +値降順)
         candidates.sort((a, b) => {
             if (a.isRemove) return -1;
             if (b.isRemove) return 1;
@@ -577,13 +572,19 @@ const MenuEquip = {
             const div = document.createElement('div');
             div.className = 'list-item';
             
-            let html = '';
-            if(item.isRemove) html = `<div style="color:#aaa; font-weight:bold;">${item.name}</div>`;
-            else {
-                html = Menu.getEquipDetailHTML_for_EquipList(item); 
-                if(item.owner) html += `<div style="text-align:right; font-size:10px; color:#f88; margin-left:10px;">[${item.owner} 装備中]</div>`;
+            if(item.isRemove) {
+                div.innerHTML = `<div style="color:#aaa; font-weight:bold; width:100%; text-align:center; padding:5px;">${item.name}</div>`;
+            } else {
+                // ★修正: 詳細表示に変更
+                div.style.flexDirection = 'column';
+                div.style.alignItems = 'flex-start';
+
+                let html = Menu.getEquipDetailHTML(item); 
+                if(item.owner) {
+                    html = `<div style="width:100%; text-align:right; font-size:10px; color:#f88; margin-bottom:2px;">[${item.owner} 装備中]</div>` + html;
+                }
+                div.innerHTML = html;
             }
-            div.style.display = 'flex'; div.style.alignItems = 'center'; div.innerHTML = html;
             
             div.onclick = () => {
                 if(MenuEquip.selectedEquipId === item.id) MenuEquip.doEquip(item.isRemove ? null : item);
@@ -1552,13 +1553,14 @@ const MenuBook = {
                         
                         <div style="font-size:10px; color:#ccc; display:flex; gap:6px;">
                             <span>HP:${m.hp}</span>
+							<span>MP:${m.mp}</span>
                             <span>攻:${m.atk}</span>
                             <span>防:${m.def}</span>
                             <span>魔:${m.mag}</span>
                             <span>速:${m.spd}</span>
                         </div>
                         
-                        <div style="font-size:10px; color:#aaa; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;">
+                        <div style="font-size:10px; color:#aaa; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:350px;">
                             行動: ${skillNames}
                         </div>
                         
