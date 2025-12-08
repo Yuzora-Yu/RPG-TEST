@@ -190,13 +190,16 @@ const App = {
 
     initGameHub: () => {
         App.load();
+        
+        // セーブデータがない場合
         if(!App.data) { 
+            // 現在のページが main.html (タイトル) でなければ飛ばす
             if(window.location.href.indexOf('main.html') === -1) {
-                // window.location.href = 'main.html'; 
+                window.location.href = 'main.html'; 
             }
             return; 
         }
-
+        
         if(App.data.location) {
             Field.x = App.data.location.x;
             Field.y = App.data.location.y;
