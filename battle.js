@@ -923,21 +923,108 @@ const Battle = {
         App.save();
     },
 
+	// --- 敵描画関数の書き換え（名前とHPバーを下にまとめる版） ---
     renderEnemies: () => {
-        const container = Battle.getEl('enemy-container'); if(!container) return;
+        const container = Battle.getEl('enemy-container');
+        if(!container) return;
         container.innerHTML = '';
+
+        const g = (typeof GRAPHICS !== 'undefined' && GRAPHICS.images) ? GRAPHICS.images : {};
+
         Battle.enemies.forEach(e => {
             if(e.isFled) return; 
-            const div = document.createElement('div'); div.className = `enemy-sprite ${e.hp<=0?'dead':''}`;
+            const div = document.createElement('div');
+            
+            div.className = `enemy-sprite ${e.hp<=0?'dead':''}`;
+            
+            // ★変更: 名前とバーが下に来る分、下のマージンを大きく確保
+            // (上は少し、下はたっぷりとって重なり防止)
+            div.style.cssText = "position: relative; margin: 5px 8px 35px 8px; overflow: visible;"; 
+            
+            // --- 1. 名前処理 ---
+            let baseName = e.name
+                .replace(/^(強・|真・|極・|神・)+/, '') 
+                .replace(/ Lv\d+[A-Z]?$/, '')
+                .replace(/[A-Z]$/, '')
+                .trim();
+            
+            const imgKey = 'monster_' + baseName;
+            const hasImage = g[imgKey] ? true : false;
+
+            // --- 2. 画像表示 ---
+            let imgHtml = '';
+            if (hasImage) {
+                div.style.border = 'none'; 
+                div.style.background = 'transparent';
+                imgHtml = `<img src="${g[imgKey].src}" style="position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:100%; height:100%; object-fit:contain; z-index:0; pointer-events:none;">`;
+            }
+
             if(e.hp > 0) {
                 const hpPer = (e.hp / e.baseMaxHp) * 100;
-                div.innerHTML = `<div style="font-size:10px; text-shadow:1px 1px 0 #000;">${e.name}</div><div class="enemy-hp-bar"><div class="enemy-hp-val" style="width:${hpPer}%"></div></div>`;
-                div.onclick = (event) => { event.stopPropagation(); if(Battle.phase==='target_select' && (Battle.selectingAction==='attack'||Battle.selectingAction==='skill')) Battle.selectTarget(e); };
-            } else { div.style.opacity = 0.5; div.innerHTML = `<div style="font-size:10px; color:#888;">${e.name}<br>DEAD</div>`; }
+                
+                div.innerHTML = `
+                    ${imgHtml}
+                    
+                    <div style="
+                        position: absolute; 
+                        top: 100%; /* 枠の下端 */
+                        left: 50%; 
+                        transform: translateX(-50%); 
+                        width: 140%; /* 名前が長くても折り返さないよう広めに */
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        z-index: 10;
+                        pointer-events: none;
+                    ">
+                        <div style="
+                            font-size: 10px; 
+                            color: #fff; 
+                            text-shadow: 1px 1px 0 #000; 
+                            white-space: nowrap; 
+                            margin-top: 2px;
+                            line-height: 1.2;
+                        ">
+                            ${e.name}
+                        </div>
+
+                        <div class="enemy-hp-bar" style="
+                            width: 80%; 
+                            height: 5px; 
+                            border: 1px solid #000; 
+                            background: #333;
+                            margin-top: 2px;
+                        ">
+                            <div class="enemy-hp-val" style="width:${hpPer}%; height:100%; background:#ff4444; transition:width 0.2s;"></div>
+                        </div>
+                    </div>
+                `;
+                
+                div.onclick = (event) => { 
+                    event.stopPropagation(); 
+                    if(Battle.phase==='target_select' && (Battle.selectingAction==='attack'||Battle.selectingAction==='skill')) {
+                        Battle.selectTarget(e); 
+                    }
+                };
+            } else { 
+                div.style.opacity = 0.5; 
+                // DEAD状態でも名前は下に表示し、DEAD文字は画像中央に
+                div.innerHTML = `
+                    ${imgHtml}
+                    
+                    <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); font-size:12px; color:#f88; font-weight:bold; text-shadow:1px 1px 0 #000; z-index:10;">
+                        DEAD
+                    </div>
+
+                    <div style="position:absolute; top:100%; left:50%; transform:translateX(-50%); width:140%; text-align:center; font-size:10px; color:#aaa; text-shadow:1px 1px 0 #000; margin-top:2px;">
+                        ${e.name}
+                    </div>
+                `;
+            }
             container.appendChild(div);
         });
     },
-    
+	
     renderPartyStatus: () => {
         const container = Battle.getEl('battle-party-bar'); if(!container) return;
         container.innerHTML = '';
