@@ -207,18 +207,21 @@ const App = {
     pendingAction: null, 
 
     initGameHub: () => {
-        // ★修正: 画像読み込み待機処理を追加
-        // assets.js があり、GRAPHICSが定義されていればロードしてからゲーム開始
-        if(typeof GRAPHICS !== 'undefined') {
+        // assets.js が読み込まれており、かつ画像定義がある場合のみロード待機する
+        // (こうすることで、画像がない場合でもゲームが止まらずに開始できます)
+        if(typeof GRAPHICS !== 'undefined' && GRAPHICS.data && Object.keys(GRAPHICS.data).length > 0) {
+            console.log("Loading assets...");
             GRAPHICS.load(() => {
+                console.log("Assets loaded.");
                 App.startGameLogic();
             });
         } else {
-            // なければ即開始 (フォールバック)
+            // アセットがない、または定義が空の場合は即座にゲームを開始
+            console.log("No assets found or GRAPHICS undefined. Starting game immediately.");
             App.startGameLogic();
         }
     },
-
+	
     startGameLogic: () => {
         App.load();
         if(!App.data) { 
