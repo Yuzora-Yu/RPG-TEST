@@ -1507,17 +1507,16 @@ const MenuSkills = {
     }
 };
 
-
 /* ==========================================================================
    7. 魔物図鑑 (詳細表示・エディタ風UI版)
    ========================================================================== */
 const MenuBook = {
     // 状態管理
-    currentMode: 'list', // 'list' or 'detail'
+    currentMode: 'list',
     selectedMonster: null,
 
     init: () => {
-        // コンテナの準備（詳細表示用のエリアがなければ作る）
+        // コンテナの準備
         const container = document.getElementById('sub-screen-book');
         if (!document.getElementById('book-detail-view')) {
             const detailDiv = document.createElement('div');
@@ -1528,9 +1527,29 @@ const MenuBook = {
             detailDiv.style.padding = '10px';
             container.appendChild(detailDiv);
         }
-
-        // リスト表示モードで開始
         MenuBook.showList();
+    },
+
+    // 画像取得ヘルパー (詳細・リスト共通)
+    getMonsterImgSrc: (m) => {
+        // 1. 個別データ(m.img)があれば最優先
+        if (m.img) return m.img;
+
+        // 2. assets.js (GRAPHICS.images) から検索
+        if (typeof GRAPHICS === 'undefined' || !GRAPHICS.images) return null;
+
+        let baseName = m.name
+            .replace(/^(強・|真・|極・|神・)+/, '') 
+            .replace(/ Lv\d+[A-Z]?$/, '')
+            .replace(/[A-Z]$/, '')
+            .trim();
+        
+        const imgKey = 'monster_' + baseName;
+        // 画像オブジェクトが存在すれば src を返す
+        if (GRAPHICS.images[imgKey]) {
+            return GRAPHICS.images[imgKey].src;
+        }
+        return null;
     },
 
     // --- リスト画面 ---
@@ -1538,7 +1557,6 @@ const MenuBook = {
         document.getElementById('book-list').style.display = 'block';
         document.getElementById('book-detail-view').style.display = 'none';
         
-        // ヘッダーのボタンを「戻る」に戻す
         const headerBtn = document.querySelector('#sub-screen-book .header-bar button');
         if(headerBtn) {
             headerBtn.innerText = '戻る';
@@ -1553,9 +1571,6 @@ const MenuBook = {
         list.innerHTML = '';
         const defeated = App.data.book.monsters || [];
         
-        // 画像データの参照を取得 (GRAPHICS.imagesはmain.jsの起動時にロードされている前提)
-        const g = (typeof GRAPHICS !== 'undefined' && GRAPHICS.images) ? GRAPHICS.images : {};
-        
         DB.MONSTERS.forEach(m => {
             const isKnown = defeated.includes(m.id);
             const div = document.createElement('div');
@@ -1563,27 +1578,15 @@ const MenuBook = {
             div.style.alignItems = 'flex-start';
 
             if(isKnown) {
-                // スキル名の解決
                 const skillNames = (m.acts || []).map(id => {
                     const s = DB.SKILLS.find(k => k.id === id);
                     return s ? s.name : '通常攻撃';
                 }).join(', ');
 
-                // 画像表示ロジック
-                let imgContent = '<span style="color:#555;font-size:10px;">NO IMG</span>';
-                
-                // 名前から修飾語（強・Lvなど）を取り除いてキーを作成
-                let baseName = m.name
-                    .replace(/^(強・|真・|極・|神・)+/, '') 
-                    .replace(/ Lv\d+[A-Z]?$/, '')
-                    .replace(/[A-Z]$/, '')
-                    .trim();
-                const imgKey = 'monster_' + baseName;
-
-                if (g[imgKey]) {
-                    // src属性にはロード済みのImageオブジェクトのsrc(Base64)を使用
-                    imgContent = `<img src="${g[imgKey].src}" style="width:100%; height:100%; object-fit:contain;">`;
-                }
+                const imgSrc = MenuBook.getMonsterImgSrc(m);
+                const imgContent = imgSrc 
+                    ? `<img src="${imgSrc}" style="width:100%; height:100%; object-fit:contain;">`
+                    : `<span style="color:#555;font-size:10px;">NO IMG</span>`;
 
                 div.innerHTML = `
                     <div style="width:64px; height:64px; background:#1a1a1a; border:1px solid #444; margin-right:10px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
@@ -1595,22 +1598,15 @@ const MenuBook = {
                             <span style="font-size:11px; color:#aaa;">Rank:${m.rank}</span>
                         </div>
                         <div style="font-size:10px; color:#ccc; display:flex; gap:6px;">
-                            <span>HP:${m.hp}</span>
-                            <span>攻:${m.atk}</span>
-                            <span>防:${m.def}</span>
-                            <span>速:${m.spd}</span>
+                            <span>HP:${m.hp}</span> <span>攻:${m.atk}</span> <span>防:${m.def}</span> <span>速:${m.spd}</span>
                         </div>
                         <div style="font-size:10px; color:#aaa; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;">
                             行動: ${skillNames}
                         </div>
                     </div>
                 `;
-                
-                // タップで詳細表示
                 div.onclick = () => MenuBook.showDetail(m);
-
             } else {
-                // 未発見時の表示
                 div.innerHTML = `
                     <div style="width:64px; height:64px; background:#111; border:1px solid #333; margin-right:10px; flex-shrink:0;"></div>
                     <div style="flex:1; display:flex; align-items:center; height:64px;">
@@ -1622,51 +1618,43 @@ const MenuBook = {
         });
     },
 
-    // --- 詳細画面 (エディタ風) ---
+    // --- 詳細画面 ---
     showDetail: (monster) => {
         const view = document.getElementById('book-detail-view');
         const list = document.getElementById('book-list');
-        
         list.style.display = 'none';
         view.style.display = 'block';
         view.scrollTop = 0;
 
-        // ヘッダーのボタンを「一覧へ」に変更
         const headerBtn = document.querySelector('#sub-screen-book .header-bar button');
         if(headerBtn) {
             headerBtn.innerText = '一覧へ';
             headerBtn.onclick = () => MenuBook.showList();
         }
 
-        // 画像取得ロジック (詳細用)
-        const g = (typeof GRAPHICS !== 'undefined' && GRAPHICS.images) ? GRAPHICS.images : {};
-        let baseName = monster.name
-            .replace(/^(強・|真・|極・|神・)+/, '') 
-            .replace(/ Lv\d+[A-Z]?$/, '')
-            .replace(/[A-Z]$/, '')
-            .trim();
-        const imgKey = 'monster_' + baseName;
-        
-        // assets.jsのImageオブジェクトからsrc(Base64)を取得
-        const imgSrc = g[imgKey] ? g[imgKey].src : null;
-        
+        const imgSrc = MenuBook.getMonsterImgSrc(monster);
         const imgHtml = imgSrc 
             ? `<img src="${imgSrc}" style="max-height:100%; max-width:100%; object-fit:contain;">`
             : `<div style="color:#555;">NO IMAGE</div>`;
 
-        // 耐性ラベル定義 (エディタと合わせる)
         const resistLabels = {
             Poison: '毒・猛毒', Shock: '感電', Fear: '怯え',
             Seal: '封印系', Debuff: '弱体化', InstantDeath: '即死/割合'
         };
         const elements = ['火','水','風','雷','光','闇','混沌'];
 
-        // データがない場合の初期値
         const res = monster.resists || {};
         const elmRes = monster.elmRes || {};
         const acts = monster.acts || [1];
+        
+        // ★修正: 1,2,9以外のスキルIDを解決
+        const actListHtml = acts.map(actId => {
+            const s = DB.SKILLS.find(k => k.id === actId);
+            const sName = s ? s.name : (actId===1?'通常攻撃':(actId===2?'防御':(actId===9?'逃げる':'不明')));
+            const sIdText = s ? `(ID:${s.id})` : '';
+            return `<div style="background:#333; padding:4px 8px; border-radius:3px; font-size:12px;">${sName} <span style="color:#666; font-size:10px;">${sIdText}</span></div>`;
+        }).join('');
 
-        // HTML生成
         let html = `
             <div style="font-family:sans-serif; color:#ddd;">
                 <div style="display:flex; justify-content:space-between; align-items:end; border-bottom:1px solid #555; padding-bottom:5px; margin-bottom:10px;">
@@ -1715,12 +1703,7 @@ const MenuBook = {
                         <span>${monster.actCount||1} 回行動</span>
                     </div>
                     <div style="display:flex; flex-direction:column; gap:4px;">
-                        ${acts.map(actId => {
-                            const s = DB.SKILLS.find(k => k.id === actId);
-                            const sName = s ? s.name : (actId===1?'通常攻撃':(actId===2?'防御':'不明'));
-                            const sIdText = s ? `(ID:${s.id})` : '';
-                            return `<div style="background:#333; padding:4px 8px; border-radius:3px; font-size:12px;">${sName} <span style="color:#666; font-size:10px;">${sIdText}</span></div>`;
-                        }).join('')}
+                        ${actListHtml}
                     </div>
                 </div>
 
@@ -1761,4 +1744,3 @@ const MenuBook = {
         view.innerHTML = html;
     }
 };
-
