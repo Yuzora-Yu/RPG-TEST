@@ -723,7 +723,7 @@ MEDAL_REWARDS: [
 
     // 10階: バトルレックス (炎と物理)
     DB.MONSTERS.push({
-        id: 1010, rank: 10, minF: 999, name: 'バトルレックス',
+        id: 1010, rank: 10, minF: 10, name: 'バトルレックス',
         hp: 10000, mp: 1000, atk: 520, def: 350, spd: 150, mag: 150,
         exp: 1000, gold: 500,
         acts: [1, 40, 101, 44, 601, 603], // 攻撃, 火炎斬り, 強撃, 兜割り, 火炎の息, 激しい炎, しゃくねつ
@@ -732,7 +732,7 @@ MEDAL_REWARDS: [
 
     // 20階: 魔王のつかい (魔法とランダム物理・2回)
     DB.MONSTERS.push({
-        id: 1020, rank: 20, minF: 999, name: '魔王のつかい',
+        id: 1020, rank: 20, minF: 20, name: '魔王のつかい',
         hp: 15000, mp: 1200, atk: 950, def: 520, spd: 580, mag: 850,
         exp: 2000, gold: 1000,
         acts: [1, 301, 302, 303, 201, 202, 307], // メラミ, ベギラマ, ヒャダルコ, 五月雨, 爆裂, ドルモーア
@@ -741,7 +741,7 @@ MEDAL_REWARDS: [
 
     // 30階: デュラン (中級物理・2回)
     DB.MONSTERS.push({
-        id: 1030, rank: 30, minF: 999, name: 'デュラン',
+        id: 1030, rank: 30, minF: 30, name: 'デュラン',
         hp: 22000, mp: 2500, atk: 1600, def: 900, spd: 850, mag: 800,
         exp: 4000, gold: 2000,
         acts: [1, 41, 44, 101, 102, 104, 105], // はやぶさ, 兜割り, 強撃, 渾身, 暗黒剣, しんくうは
@@ -750,7 +750,7 @@ MEDAL_REWARDS: [
 
     // 40階: ジャミラス (ブレス、魔法・2回)
     DB.MONSTERS.push({
-        id: 1040, rank: 40, minF: 999, name: 'ジャミラス',
+        id: 1040, rank: 40, minF: 40, name: 'ジャミラス',
         hp: 35000, mp: 3300, atk: 2500, def: 2550, spd: 1050, mag: 2300,
         exp: 6000, gold: 3000,
         acts: [1, 304, 309, 601, 603, 605], // バギマ, バギクロス, 火炎の息, 激しい炎, しゃくねつ
@@ -759,7 +759,7 @@ MEDAL_REWARDS: [
 
     // 50階: グラコス (上級物理、弱体、水・2回)
     DB.MONSTERS.push({
-        id: 1050, rank: 50, minF: 999, name: 'グラコス',
+        id: 1050, rank: 50, minF: 50, name: 'グラコス',
         hp: 48000, mp: 4200, atk: 3300, def: 4300, spd: 1500, mag: 3100,
         exp: 10000, gold: 5000,
         acts: [1, 42, 303, 602, 604, 60, 61], // 氷結斬り, ヒャダルコ, こごえる吹雪, かがやく息, ルカニ, ボミオス
@@ -768,7 +768,7 @@ MEDAL_REWARDS: [
 
     // 60階: ムドー (上級魔法、ブレス、状態異常・2回)
     DB.MONSTERS.push({
-        id: 1060, rank: 60, minF: 999, name: 'ムドー',
+        id: 1060, rank: 60, minF: 60, name: 'ムドー',
         hp: 80000, mp: 6800, atk: 3400, def: 4750, spd: 2740, mag: 6500,
         exp: 15000, gold: 8000,
         acts: [305, 306, 307, 605, 606, 607], // メラゾーマ, イオナズン, ドルモーア, しゃくねつ, 絶対零度, 毒の息
@@ -777,7 +777,7 @@ MEDAL_REWARDS: [
 
     // 70階: アクバー (上級魔法、上級物理・2回)
     DB.MONSTERS.push({
-        id: 1070, rank: 70, minF: 999, name: 'アクバー',
+        id: 1070, rank: 70, minF: 70, name: 'アクバー',
         hp: 105000, mp: 8000, atk: 6600, def: 5400, spd: 2950, mag: 7600,
         exp: 20000, gold: 10000,
         acts: [1, 103, 306, 405, 406, 407, 53], // ギガスラ, イオナズン, ジゴスパ, マヒャデ, メラガイアー, マジックバリア
@@ -786,24 +786,24 @@ MEDAL_REWARDS: [
 
     // 80階: 悪霊の神々 (3体)
     DB.MONSTERS.push({
-        id: 1080, rank: 80, minF: 999, name: 'アトラス',
+        id: 1080, rank: 80, minF: 80, name: 'アトラス',
         hp: 105000, mp: 6000, atk: 7500, def: 2000, spd: 1150, mag: 1450,
         exp: 10000, gold: 5000, acts: [1, 101, 102, 44, 409, 106], actCount: 1 // 天下無双追加
     });
     DB.MONSTERS.push({
-        id: 1081, rank: 80, minF: 999, name: 'バズズ',
+        id: 1081, rank: 80, minF: 80, name: 'バズズ',
         hp: 75000, mp: 6500, atk: 6000, def: 5300, spd: 3500, mag: 6700,
         exp: 10000, gold: 5000, acts: [13, 306, 500, 30, 60, 61, 406], actCount: 1
     });
     DB.MONSTERS.push({
-        id: 1082, rank: 80, minF: 999, name: 'ベリアル',
+        id: 1082, rank: 80, minF: 80, name: 'ベリアル',
         hp: 80000, mp: 8400, atk: 6700, def: 6000, spd: 2450, mag: 6500,
         exp: 10000, gold: 5000, acts: [1, 305, 306, 22, 50, 412, 609], actCount: 1 // 煉獄火炎追加
     });
 
     // 90階: ハーゴン (超級魔法)
     DB.MONSTERS.push({
-        id: 1090, rank: 90, minF: 999, name: 'ハーゴン',
+        id: 1090, rank: 90, minF: 90, name: 'ハーゴン',
         hp: 180000, mp: 8000, atk: 5600, def: 6700, spd: 3500, mag: 8800,
         exp: 50000, gold: 20000,
         acts: [404, 405, 406, 407, 412, 500, 905, 81], // メテオ〜イオグランデ、マダンテ、やみのはどう
@@ -812,7 +812,7 @@ MEDAL_REWARDS: [
 
 // 100階: シドー (破壊神・3回)
     DB.MONSTERS.push({
-        id: 1100, rank: 100, minF: 999, name: 'シドー',
+        id: 1100, rank: 100, minF: 100, name: 'シドー',
         hp: 250000, mp: 9999, atk: 9999, def: 9999, spd: 3800, mag: 9999,
         exp: 100000, gold: 50000,
         acts: [1, 103, 404, 407, 609, 23, 60, 411, 80], // 煉獄火炎、ラグナブレード追加
