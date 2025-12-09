@@ -7,37 +7,41 @@ const JOB_SKILLS = {
     // --- 基本職 ---
     '戦士':     { 2:40, 5:44, 8:50, 12:101, 16:41, 20:43, 25:102, 30:202, 35:46, 45:402 },      
     '僧侶':     { 1:20, 4:12, 7:51, 10:21, 13:304, 16:30, 20:53, 25:22, 30:309, 40:31 },        
-    '魔法使い': { 1:10, 4:11, 7:60, 10:308, 14:301, 18:303, 22:304, 28:305, 35:306, 45:407 },   
+    '魔法使い':  { 1:10, 4:11, 7:60, 10:308, 14:301, 18:303, 22:304, 28:305, 35:306, 45:407 },   
     '武闘家':   { 2:52, 5:46, 9:41, 13:101, 17:202, 22:43, 28:102, 35:402, 42:105, 50:106 },    
     '盗賊':     { 2:11, 5:61, 9:52, 13:41, 17:201, 22:14, 28:104, 34:203, 40:47, 48:405 },      
-    '踊り子':   { 2:10, 5:12, 9:52, 13:60, 17:61, 22:308, 27:304, 33:22, 40:105, 48:410 },      
+    '踊り子':    { 2:10, 5:12, 9:52, 13:60, 17:61, 22:308, 27:304, 33:22, 40:105, 48:410 },      
     '狩人':     { 2:11, 5:12, 9:41, 13:201, 17:61, 22:101, 27:46, 33:202, 40:203, 48:105 },     
     '商人':     { 2:20, 5:50, 9:51, 13:60, 17:61, 22:44, 27:53, 33:101, 40:102, 50:23 },        
     '傭兵':     { 2:40, 5:44, 9:101, 13:41, 17:50, 22:102, 27:202, 33:104, 40:103, 48:106 },    
-    'シスター': { 1:20, 5:21, 9:30, 13:51, 17:12, 22:53, 27:22, 33:304, 40:31, 48:24 },         
+    'シスター':   { 1:20, 5:21, 9:30, 13:51, 17:12, 22:53, 27:22, 33:304, 40:31, 48:24 },         
 
     // --- 上級職 ---
-    '魔法剣士': { 1:10, 5:40, 10:13, 15:42, 20:302, 25:43, 30:301, 35:46, 40:103, 50:401 },     
+    '魔法剣士':  { 1:10, 5:40, 10:13, 15:42, 20:302, 25:43, 30:301, 35:46, 40:103, 50:401 },     
     '賢者':     { 1:20, 5:10, 10:21, 15:308, 20:301, 25:22, 30:11, 35:304, 40:306, 50:500 },    
     '忍者':     { 3:14, 8:41, 15:104, 20:304, 25:201, 30:47, 35:305, 40:309, 45:106, 50:405 },  
-    'パラディン':{ 1:20, 5:51, 10:42, 15:21, 20:53, 25:103, 30:23, 35:403, 40:12, 45:309 },     
-    'ダークナイト':{ 3:14, 8:40, 15:104, 20:60, 25:307, 30:47, 35:102, 40:401, 45:411, 50:405 },
-    'ウィザード':{ 1:10, 5:11, 10:13, 15:308, 20:301, 25:303, 30:310, 35:305, 40:306, 50:407 }, 
+    'パラディン':  { 1:20, 5:51, 10:42, 15:21, 20:53, 25:103, 30:23, 35:403, 40:12, 45:309 },     
+    'ダークナイト': { 3:14, 8:40, 15:104, 20:60, 25:307, 30:47, 35:102, 40:401, 45:411, 50:405 },
+    'ウィザード':  { 1:10, 5:11, 10:13, 15:308, 20:301, 25:303, 30:310, 35:305, 40:306, 50:407 }, 
     '侍':       { 3:40, 8:42, 12:43, 18:41, 25:46, 30:101, 35:203, 40:102, 45:301, 50:106 },    
     '拳法家':   { 3:20, 8:50, 12:46, 18:101, 25:202, 30:102, 35:402, 40:106, 45:603, 50:609 },  
     'スーパースター':{ 2:20, 5:52, 10:12, 15:308, 20:304, 25:22, 30:105, 35:306, 40:309, 50:410 }, 
     '海賊':     { 3:11, 8:40, 12:43, 18:46, 25:101, 30:201, 35:303, 40:309, 45:406, 50:310 },   
     '召喚士':   { 1:10, 5:11, 10:13, 15:308, 20:302, 25:305, 30:404, 35:405, 40:406, 50:309 },  
-    'ソルジャー':{ 2:40, 5:42, 10:43, 15:44, 20:46, 25:103, 30:102, 35:203, 40:301, 50:409 },   
+    'ソルジャー':  { 2:40, 5:42, 10:43, 15:44, 20:46, 25:103, 30:102, 35:203, 40:301, 50:409 },   
     '聖騎士':   { 1:21, 5:51, 10:53, 15:103, 20:22, 25:30, 30:402, 35:410, 40:31, 50:408 },     
     '上忍':     { 3:14, 8:307, 15:47, 20:201, 25:104, 30:105, 35:405, 40:406, 45:306, 50:106 }, 
 
-    // --- 超級職 (勇者強化) ---
-    '勇者':     { 1:20, 3:10, 8:40, 12:41, 15:13, 25:21, 28:203, 30:103, 32:50, 35:22, 40:408, 45:401, 50:409, 70:109, 80:24, 90:420, 99:421 }, 
+    // --- 超級職 ---
+    //'勇者':     { 1:20, 3:10, 8:40, 12:41, 15:13, 25:21, 28:203, 30:103, 32:50, 35:22, 40:408, 45:401, 50:409, 70:109, 80:24, 90:420, 99:421 }, 
+    '勇者':     { 1:20, 2:30, 3:31, 4:80, 5:81, 6:50, 7:51, 8:52, 9:53, 10:60, 11:61, 12:55, 13:56, 14:57, 15:58, 16:59, 17:62, 18:63, 19:22, 20:23, 21:24, 22:403, 23:450, 24:451, 25:452, 26:601, 27:602, 28:603, 29:604, 30:605, 31:606, 32:607, 33:608, 34:609, 35:610, 36:611, 37:701, 38:103, 39:104, 40:105, 41:106, 42:107, 43:108, 44:109, 45:110, 46:111, 47:112, 48:113, 49:305, 50:306, 51:307, 52:309, 53:310, 54:401, 55:402, 56:404, 57:405, 58:406, 59:407, 60:408, 61:409, 62:410, 63:411, 64:412, 65:413, 66:414, 67:415, 68:420, 69:421, 70:500, 71:901, 72:902, 73:903, 74:905, 75:906, 76:907, 77:908, 78:920, 79:921, 80:922, 81:923, 82:924, 83:925, 84:926, 85:453, 86:454, 87:999 },
+    '聖女':     { 1:20, 2:30, 3:31, 4:80, 5:81, 6:50, 7:51, 8:52, 9:53, 10:60, 11:61, 12:55, 13:56, 14:57, 15:58, 16:59, 17:62, 18:63, 19:22, 20:23, 21:24, 22:403, 23:450, 24:451, 25:452, 26:601, 27:602, 28:603, 29:604, 30:605, 31:606, 32:607, 33:608, 34:609, 35:610, 36:611, 37:701, 38:103, 39:104, 40:105, 41:106, 42:107, 43:108, 44:109, 45:110, 46:111, 47:112, 48:113, 49:305, 50:306, 51:307, 52:309, 53:310, 54:401, 55:402, 56:404, 57:405, 58:406, 59:407, 60:408, 61:409, 62:410, 63:411, 64:412, 65:413, 66:414, 67:415, 68:420, 69:421, 70:500, 71:901, 72:902, 73:903, 74:905, 75:906, 76:907, 77:908, 78:920, 79:921, 80:922, 81:923, 82:924, 83:925, 84:926, 85:453, 86:454, 87:999 },
+    '魔王':     { 1:20, 2:30, 3:31, 4:80, 5:81, 6:50, 7:51, 8:52, 9:53, 10:60, 11:61, 12:55, 13:56, 14:57, 15:58, 16:59, 17:62, 18:63, 19:22, 20:23, 21:24, 22:403, 23:450, 24:451, 25:452, 26:601, 27:602, 28:603, 29:604, 30:605, 31:606, 32:607, 33:608, 34:609, 35:610, 36:611, 37:701, 38:103, 39:104, 40:105, 41:106, 42:107, 43:108, 44:109, 45:110, 46:111, 47:112, 48:113, 49:305, 50:306, 51:307, 52:309, 53:310, 54:401, 55:402, 56:404, 57:405, 58:406, 59:407, 60:408, 61:409, 62:410, 63:411, 64:412, 65:413, 66:414, 67:415, 68:420, 69:421, 70:500, 71:901, 72:902, 73:903, 74:905, 75:906, 76:907, 77:908, 78:920, 79:921, 80:922, 81:923, 82:924, 83:925, 84:926, 85:453, 86:454, 87:999 },
+    '神':     { 1:20, 2:30, 3:31, 4:80, 5:81, 6:50, 7:51, 8:52, 9:53, 10:60, 11:61, 12:55, 13:56, 14:57, 15:58, 16:59, 17:62, 18:63, 19:22, 20:23, 21:24, 22:403, 23:450, 24:451, 25:452, 26:601, 27:602, 28:603, 29:604, 30:605, 31:606, 32:607, 33:608, 34:609, 35:610, 36:611, 37:701, 38:103, 39:104, 40:105, 41:106, 42:107, 43:108, 44:109, 45:110, 46:111, 47:112, 48:113, 49:305, 50:306, 51:307, 52:309, 53:310, 54:401, 55:402, 56:404, 57:405, 58:406, 59:407, 60:408, 61:409, 62:410, 63:411, 64:412, 65:413, 66:414, 67:415, 68:420, 69:421, 70:500, 71:901, 72:902, 73:903, 74:905, 75:906, 76:907, 77:908, 78:920, 79:921, 80:922, 81:923, 82:924, 83:925, 84:926, 85:453, 86:454, 87:999 }, 
     '竜騎士':   { 1:40, 5:12, 10:43, 15:304, 20:201, 30:603, 35:605, 40:401, 45:609, 50:405 },  
-    '聖女':     { 1:21, 5:22, 10:50, 12:304, 15:51, 20:52, 25:53, 30:23, 33:309, 35:403, 40:31, 50:410, 60:24 , 70:56, 90:403 ,99:404 }, 
-    '魔王':     { 1:10, 5:14, 10:13, 15:302, 20:308, 25:307, 30:404, 32:53, 35:306, 38:105, 40:411, 45:405, 50:412, 60:55, 70:610, 75:611, 80:415, 99:500 }, 
-    '神':       { 1:403, 5:47, 10:901, 20:902, 30:903, 35:905, 40:407, 45:406, 50:408, 55:412, 60:405, 65:106, 70:56, 75:110, 80:404, 99:906 } 
+    //'聖女':     { 1:21, 5:22, 10:50, 12:304, 15:51, 20:52, 25:53, 30:23, 33:309, 35:403, 40:31, 50:410, 60:24 , 70:56, 90:403 ,99:450 }, 
+    //'魔王':     { 1:10, 5:14, 10:13, 15:302, 20:308, 25:307, 30:404, 32:53, 35:306, 38:105, 40:411, 45:405, 50:412, 60:55, 70:610, 75:611, 80:415, 99:500 }, 
+    //'神':      { 1:403, 5:47, 10:901, 20:902, 30:903, 35:905, 40:407, 45:406, 50:408, 55:412, 60:405, 65:106, 70:56, 75:110, 80:450, 99:906 } 
 };
 
 // ==========================================================================
@@ -56,6 +60,9 @@ class Entity {
         this.status = {}; 
         this.isDead = this.hp <= 0;
         
+        // ★追加: 耐性データの読み込み
+        this.resists = data.resists || {};
+
         this.job = data.job || '冒険者';
         this.rarity = data.rarity || 'N';
         this.level = data.level || 1;
@@ -65,6 +72,11 @@ class Entity {
     }
 
     getStat(key) {
+        // ★修正: モンスターの「耐性」データも正しく参照できるようにする
+        if (key === 'resists' && !(this instanceof Player)) {
+            return this.resists || {};
+        }
+
         let val = this.baseStats[key] || 0;
         if(this instanceof Player) {
             const stats = App.calcStats(this.originData);
@@ -444,35 +456,83 @@ const App = {
 
     getChar: (uid) => App.data ? App.data.characters.find(c => c.uid === uid) : null,
 
-    calcStats: (char) => {
-        const lb = char.limitBreak || 0;
-        const multiplier = 1 + (lb * 0.05); 
+    // ★新規追加: 限界突破処理（共通化）
+    applyLimitBreak: (char) => {
+        // 1. 仲間は+99まで (主人公は制限なし)
+        if (!char.isHero && (char.limitBreak || 0) >= 99) return;
+
+        // 2. 限界突破数を加算
+        char.limitBreak = (char.limitBreak || 0) + 1;
+
+        // 3. DBの基礎ステータスを取得
+        const master = DB.CHARACTERS.find(c => c.id === char.charId) || char;
+
+        // 4. 基礎ステータスの10%を加算
+        const rate = 0.10;
         
+        ['hp', 'mp', 'atk', 'def', 'spd', 'mag'].forEach(key => {
+            const baseVal = master[key] || 10;
+            const increase = Math.floor(baseVal * rate);
+            char[key] = (char[key] || baseVal) + increase;
+        });
+
+        // 全回復してあげる
+        const s = App.calcStats(char);
+        char.currentHp = s.maxHp;
+        char.currentMp = s.maxMp;
+
+        App.log(`${char.name}は限界突破した！(+${char.limitBreak})`);
+    },
+
+    // ★修正: ステータス計算 (耐性対応・base定義追加版)
+    calcStats: (char) => {
+        // ★追加: DBからマスタデータを取得して base とする
+        const base = DB.CHARACTERS.find(c => c.id === char.charId) || char;
+
+        // 倍率計算はせず、現在値をそのまま採用
         let s = {
-            maxHp: Math.floor(char.hp * multiplier),
-            maxMp: Math.floor(char.mp * multiplier),
-            atk: Math.floor(char.atk * multiplier),
-            def: Math.floor(char.def * multiplier),
-            spd: Math.floor(char.spd * multiplier),
-            mag: Math.floor(char.mag * multiplier),
-            elmAtk: {}, elmRes: {}, magDmg: 0, sklDmg: 0, finDmg: 0, finRed: 0, mpRed: 0
+            maxHp: char.hp,
+            maxMp: char.mp,
+            atk: char.atk,
+            def: char.def,
+            spd: char.spd,
+            mag: char.mag,
+            elmAtk: {}, elmRes: {}, magDmg: 0, sklDmg: 0, finDmg: 0, finRed: 0, mpRed: 0,
+            
+            // ★追加: 状態異常耐性の初期化 (デフォルト0)
+            resists: {
+                Poison: 0,      // 毒・猛毒
+                Shock: 0,       // 感電
+                Fear: 0,        // 怯え
+                Seal: 0,        // 封印系 (呪文・特技・回復)
+                Debuff: 0,      // ステータス弱体
+                InstantDeath: 0 // 割合ダメージ・即死
+            }
         };
+        
         CONST.ELEMENTS.forEach(e => { s.elmAtk[e]=0; s.elmRes[e]=0; });
 
+        // ★追加: DB(マスタ)に耐性設定があれば適用
+        if(base.resists) {
+            for(let key in base.resists) s.resists[key] = base.resists[key];
+        }
+
+        // 1. ユーザー配分ポイント (主人公のみ)
         if(char.uid === 'p1' && char.alloc) {
             for(let key in char.alloc) {
                 if (key.includes('_')) {
                     const [type, elm] = key.split('_');
-                    if(type === 'elmAtk' && s.elmAtk[elm] !== undefined) s.elmAtk[elm] += char.alloc[key];
-                    if(type === 'elmRes' && s.elmRes[elm] !== undefined) s.elmRes[elm] += char.alloc[key];
+                    if(type === 'elmAtk') s.elmAtk[elm] = (s.elmAtk[elm] || 0) + char.alloc[key];
+                    if(type === 'elmRes') s.elmRes[elm] = (s.elmRes[elm] || 0) + char.alloc[key];
                 } else {
-                    if (key === 'hp') s.maxHp += char.alloc[key];
-                    else if (key === 'mp') s.maxMp += char.alloc[key];
-                    else if (s[key] !== undefined && typeof s[key] === 'number') s[key] += char.alloc[key];
+                    if (key === 'hp') s.maxHp += char.alloc[key] * 10; 
+                    else if (key === 'mp') s.maxMp += char.alloc[key] * 2;
+                    else if (s[key] !== undefined) s[key] += char.alloc[key];
                 }
             }
         }
 
+        // 2. 装備補正 (固定値 & %)
         let pctMods = { maxHp:0, maxMp:0, atk:0, def:0, spd:0, mag:0 }; 
 
         CONST.PARTS.forEach(part => {
@@ -484,7 +544,6 @@ const App = {
                 if(eq.data.mag) s.mag += eq.data.mag;
                 if(eq.data.finDmg) s.finDmg += eq.data.finDmg;
                 if(eq.data.finRed) s.finRed += eq.data.finRed;
-                
                 if(eq.data.elmAtk) for(let e in eq.data.elmAtk) s.elmAtk[e] += eq.data.elmAtk[e];
                 if(eq.data.elmRes) for(let e in eq.data.elmRes) s.elmRes[e] += eq.data.elmRes[e];
 
@@ -496,28 +555,29 @@ const App = {
                         else if(o.key === 'def') pctMods.def += o.val;
                         else if(o.key === 'spd') pctMods.spd += o.val;
                         else if(o.key === 'mag') pctMods.mag += o.val;
-                        else if(o.key === 'elmAtk') s.elmAtk[o.elm] += o.val;
-                        else if(o.key === 'elmRes') s.elmRes[o.elm] += o.val;
-                        else if(s[o.key] !== undefined && typeof s[o.key] === 'number') s[o.key] += o.val;
-                    } 
-                    else if(o.unit === 'val') {
+                        else if(o.key === 'elmAtk') s.elmAtk[o.elm] = (s.elmAtk[o.elm]||0) + o.val;
+                        else if(o.key === 'elmRes') s.elmRes[o.elm] = (s.elmRes[o.elm]||0) + o.val;
+                        else if(s[o.key] !== undefined) s[o.key] += o.val; // 特殊ステータスなど
+                        // ★追加: 耐性OPがあればここで加算 (例: resists_Poison)
+                        else if(o.key.startsWith('resists_')) {
+                            const resKey = o.key.replace('resists_', '');
+                            if(s.resists[resKey] !== undefined) s.resists[resKey] += o.val;
+                        }
+                    } else if(o.unit === 'val') {
                         if(o.key === 'hp') s.maxHp += o.val;
                         else if(o.key === 'mp') s.maxMp += o.val;
-                        else if(o.key === 'elmAtk') s.elmAtk[o.elm] += o.val;
-                        else if(o.key === 'elmRes') s.elmRes[o.elm] += o.val;
-                        else if(s[o.key] !== undefined && typeof s[o.key] === 'number') s[o.key] += o.val;
+                        else if(o.key === 'elmAtk') s.elmAtk[o.elm] = (s.elmAtk[o.elm]||0) + o.val;
+                        else if(o.key === 'elmRes') s.elmRes[o.elm] = (s.elmRes[o.elm]||0) + o.val;
+                        else if(s[o.key] !== undefined) s[o.key] += o.val;
                     } 
-                    else {
-                        if(s[o.key] !== undefined && typeof s[o.key] === 'number') s[o.key] += o.val;
-                    }
                 });
             }
         });
 
-        // スキルツリー補正
+        // 3. スキルツリー補正 (%)
         if (char.tree) {
             const t = char.tree;
-            if (t.ATK) pctMods.atk += t.ATK * 5;
+            if (t.ATK) pctMods.atk += t.ATK * 5; 
             if (t.MAG) pctMods.mag += t.MAG * 5;
             if (t.SPD) pctMods.spd += t.SPD * 5;
             if (t.HP)  pctMods.maxHp += t.HP * 5;
@@ -528,6 +588,7 @@ const App = {
             }
         }
 
+        // 最終計算: 固定値合計 × (1 + %補正/100)
         s.maxHp = Math.floor(s.maxHp * (1 + pctMods.maxHp / 100));
         s.maxMp = Math.floor(s.maxMp * (1 + pctMods.maxMp / 100));
         s.atk = Math.floor(s.atk * (1 + pctMods.atk / 100));
@@ -536,6 +597,57 @@ const App = {
         s.mag = Math.floor(s.mag * (1 + pctMods.mag / 100));
 
         return s;
+    },
+
+    // ★修正: レベルアップ処理 (DB基礎値の4〜8%を加算)
+    gainExp: (charData, expGain) => {
+        if (!charData.exp) charData.exp = 0;
+        charData.exp += expGain;
+        let logs = [];
+        
+        // レベル上限100
+        while (charData.level < 100) {
+            const nextExp = App.getNextExp(charData);
+            if (charData.exp >= nextExp) {
+                charData.exp -= nextExp;
+                charData.level++;
+                
+                // DBの基礎値を取得
+                const master = DB.CHARACTERS.find(c => c.id === charData.charId) || charData;
+
+                // 成長率: 4% 〜 8%
+                const minRate = 0.04;
+                const maxRate = 0.08;
+                const rate = minRate + Math.random() * (maxRate - minRate);
+
+                const incHp = Math.max(1, Math.floor((master.hp || 100) * rate));
+                const incMp = Math.max(1, Math.floor((master.mp || 50) * rate));
+                const incAtk = Math.max(1, Math.floor((master.atk || 10) * rate));
+                const incDef = Math.max(1, Math.floor((master.def || 10) * rate));
+                const incSpd = Math.max(1, Math.floor((master.spd || 10) * rate));
+                const incMag = Math.max(1, Math.floor((master.mag || 10) * rate));
+
+                charData.hp += incHp; charData.mp += incMp;
+                charData.atk += incAtk; charData.def += incDef;
+                charData.spd += incSpd; charData.mag += incMag;
+                
+                // HP/MP全回復
+                const stats = App.calcStats(charData);
+                charData.currentHp = stats.maxHp;
+                charData.currentMp = stats.maxMp;
+
+                let logMsg = `${charData.name}はLv${charData.level}になった！<br>HP+${incHp}, 攻+${incAtk}...`;
+                const newSkill = App.checkNewSkill(charData);
+                if (newSkill) {
+                    if(!charData.skills) charData.skills = [];
+                    const hasSkill = charData.skills.some(s => s.id === newSkill.id);
+                    // 本来はインスタンス側で管理するが、ログ用にチェック
+                    logMsg += `<br><span style="color:#ffff00;">${newSkill.name}を覚えた！</span>`;
+                }
+                logs.push(logMsg);
+            } else { break; }
+        }
+        return logs;
     },
 
     createRandomEquip: (source, rank = 1, fixedPlus = null) => {
@@ -569,7 +681,7 @@ const App = {
             const rule = DB.OPT_RULES[Math.floor(Math.random()*DB.OPT_RULES.length)];
             
             let r = 'N';
-            const rarRnd = Math.random() + (tierRatio * 0.3);
+            const rarRnd = Math.random() + (tierRatio * 0.1);
             if(rarRnd > 0.98 && rule.allowed.includes('EX')) r='EX';
             else if(rarRnd > 0.90 && rule.allowed.includes('UR')) r='UR';
             else if(rarRnd > 0.75 && rule.allowed.includes('SSR')) r='SSR';
@@ -636,31 +748,47 @@ const App = {
         charData.exp += expGain;
         let logs = [];
         
-        while (charData.level < CONST.MAX_LEVEL) {
+        // レベル上限100
+        while (charData.level < 100) {
             const nextExp = App.getNextExp(charData);
             if (charData.exp >= nextExp) {
                 charData.exp -= nextExp;
                 charData.level++;
                 
-                const growRate = 0.02 + Math.random() * 0.03;
-                const incHp = Math.max(1, Math.floor(charData.hp * growRate));
-                const incMp = Math.max(1, Math.floor(charData.mp * growRate));
-                const incAtk = Math.max(1, Math.floor(charData.atk * growRate));
-                const incDef = Math.max(1, Math.floor(charData.def * growRate));
-                const incSpd = Math.max(1, Math.floor(charData.spd * growRate));
-                const incMag = Math.max(1, Math.floor(charData.mag * growRate));
+                // ★追加: SPを1獲得
+                charData.sp = (charData.sp || 0) + 1;
+
+                // DBの基礎値を取得
+                const master = DB.CHARACTERS.find(c => c.id === charData.charId) || charData;
+
+                // 成長率: 4% 〜 8%
+                const minRate = 0.04;
+                const maxRate = 0.08;
+                const rate = minRate + Math.random() * (maxRate - minRate);
+
+                const incHp = Math.max(1, Math.floor((master.hp || 100) * rate));
+                const incMp = Math.max(1, Math.floor((master.mp || 50) * rate));
+                const incAtk = Math.max(1, Math.floor((master.atk || 10) * rate));
+                const incDef = Math.max(1, Math.floor((master.def || 10) * rate));
+                const incSpd = Math.max(1, Math.floor((master.spd || 10) * rate));
+                const incMag = Math.max(1, Math.floor((master.mag || 10) * rate));
 
                 charData.hp += incHp; charData.mp += incMp;
                 charData.atk += incAtk; charData.def += incDef;
                 charData.spd += incSpd; charData.mag += incMag;
                 
+                // HP/MP全回復
                 const stats = App.calcStats(charData);
                 charData.currentHp = stats.maxHp;
                 charData.currentMp = stats.maxMp;
 
-                let logMsg = `${charData.name}はLv${charData.level}になった！<br>HP+${incHp}, MP+${incMp}`;
+                // ログにSP獲得も追記
+                let logMsg = `${charData.name}はLv${charData.level}になった！(SP+1)<br>HP+${incHp}, 攻+${incAtk}...`;
+                
                 const newSkill = App.checkNewSkill(charData);
                 if (newSkill) {
+                    if(!charData.skills) charData.skills = [];
+                    // 本来はインスタンス側で管理するが、ログ用にチェック
                     logMsg += `<br><span style="color:#ffff00;">${newSkill.name}を覚えた！</span>`;
                 }
                 logs.push(logMsg);
