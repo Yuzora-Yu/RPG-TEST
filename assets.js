@@ -3,7 +3,6 @@ const GRAPHICS = {
 	images: {},
     loadedCount: 0,
     totalCount: 0,
-	​
     // ここに画像データを定義します。
     // ※現在は仮の色付き四角形です。ドット絵を作成したら文字列を差し替えてください。
     data: {
