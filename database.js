@@ -140,39 +140,48 @@ const DB = {
     {id:23, name:'ベホイム', type:'回復', target:'単体', mp:250, rate:0, count:1, base:29999, fix:true, desc:'超回復'},
     {id:24, name:'ベホマラー', type:'回復', target:'全体', mp:1200, rate:0, count:1, base:29999, fix:true, desc:'全体超回復'},
     {id:403, name:'ベホマ', type:'回復', target:'単体', mp:2000, rate:0, count:1, base:99999, fix:true, desc:'完全回復'},
-    {id:404, name:'ベホマズン', type:'回復', target:'全体', mp:4000, rate:0, count:1, base:99999, fix:true, desc:'全体完全回復'},
-    
+    {id:450, name:'ベホマズン', type:'回復', target:'全体', mp:4000, rate:0, count:1, base:99999, fix:true, desc:'全体完全回復'},
+    {id:451, name:'いやしのあめ', type:'特殊', target:'全体', mp:300, rate:0, count:1, base:0, HPRegen:0.1, turn:5, desc:'毎ターンHP回復'},
+    {id:452, name:'まりょくのかぜ', type:'特殊', target:'全体', mp:20, rate:0, count:1, base:0, MPRegen:0.05, turn:5, desc:'毎ターンMP回復'},
+    {id:453, name:'秒間ホイミ', type:'回復', target:'単体', mp:200, rate:1.5, count:1, base:999, priority:20, desc:'使い手の少ない最速の回復呪文'},
+    {id:454, name:'不死鳥の灰', type:'回復', target:'自分', mp:2000, rate:1, count:1, base:99999, CureAilments:true, priority:-20, desc:'全てを受け止めて生還する不死鳥'},
+ 
     {id:30, name:'ザオラル', type:'蘇生', target:'単体', mp:60, rate:0.5, count:1, base:20, elm:null, desc:'50%蘇生'},
     {id:31, name:'ザオリク', type:'蘇生', target:'単体', mp:300, rate:1, count:1, base:50, elm:null, desc:'100%蘇生'},
-    {id:80, name:'めいそう', type:'回復', target:'単体', mp:0, rate:0, count:1, base:0, ratio:0.5, desc:'HPを50%回復'},
-    {id:81, name:'無念無想', type:'MP回復', target:'単体', mp:0, rate:0, count:1, base:0, ratio:0.5, desc:'MPを50%回復'},
+    {id:80, name:'めいそう', type:'回復', target:'自分', mp:0, rate:0, count:1, base:0, ratio:0.5, desc:'HPを50%回復'},
+    {id:81, name:'無念無想', type:'MP回復', target:'自分', mp:0, rate:0, count:1, base:0, ratio:0.5, desc:'MPを50%回復'},
     
     // --- 物理スキル（威力に見合うMPへ） ---
     {id:40, name:'火炎斬り', type:'物理', target:'単体', mp:15, rate:1.0, count:1, base:55, elm:'火', desc:'炎の剣技'},
     {id:41, name:'はやぶさ斬り', type:'物理', target:'単体', mp:25, rate:0.6, count:2, base:20, elm:null, desc:'2回攻撃'},
     {id:42, name:'氷結斬り', type:'物理', target:'単体', mp:15, rate:1.0, count:1, base:55, elm:'水', desc:'氷の剣技'},
     {id:43, name:'雷鳴突き', type:'物理', target:'単体', mp:15, rate:1.0, count:1, base:55, elm:'雷', desc:'雷の槍技'},
-    {id:44, name:'兜割り', type:'物理', target:'単体', mp:15, rate:1.0, count:1, base:55, buff:{def:0.8}, desc:'敵の守備を下げる'},
+    {id:44, name:'兜割り', type:'物理', target:'単体', mp:15, rate:1.0, count:1, base:55, debuff:{def:0.8}, desc:'敵の守備を下げる'},
     {id:45, name:'メタル斬り', type:'物理', target:'単体', mp:20, rate:0, count:1, base:22, fix:true, desc:'メタルに固定ダメージ'},
     {id:46, name:'ウイングアッパー', type:'物理', target:'単体', mp:20, rate:1.1, count:1, base:60, elm:'風', desc:'風の拳'},
     {id:47, name:'ブラッドソード', type:'物理', target:'単体', mp:30, rate:1.2, count:1, base:70, elm:'混沌', drain:true, desc:'HP吸収'},
 
     // --- 追加物理スキル ---
     {id:48, name:'ミラクルソード', type:'物理', target:'単体', mp:35, rate:0.7, count:1, base:50, drain:true, desc:'奇跡の剣技・HP回復'},
-    {id:49, name:'疾風突き', type:'物理', target:'単体', mp:20, rate:0.5, count:1, base:0, priority:1, desc:'神速の突き'},
+    {id:49, name:'疾風突き', type:'物理', target:'単体', mp:20, rate:0.5, count:1, base:0, priority:2, desc:'疾風の如き速さの一撃'},
 
     // --- 強化・弱体 ---
     {id:50, name:'バイキルト', type:'強化', target:'単体', mp:40, rate:0, count:1, base:20, buff:{atk:1.5}, desc:'攻撃力アップ'},
     {id:51, name:'スカラ', type:'強化', target:'単体', mp:20, rate:0, count:1, base:20, buff:{def:1.5}, desc:'守備力アップ'},
     {id:52, name:'ピオリム', type:'強化', target:'全体', mp:30, rate:0, count:1, base:20, buff:{spd:1.3}, desc:'素早さアップ'},
     {id:53, name:'マジックバリア', type:'強化', target:'全体', mp:40, rate:0, count:1, base:20, buff:{mag:1.5}, desc:'魔法防御アップ'},
-    {id:60, name:'ルカニ', type:'弱体', target:'単体', mp:20, rate:0, count:1, base:20, buff:{def:0.7}, desc:'敵の守備ダウン'},
-    {id:61, name:'ボミオス', type:'弱体', target:'全体', mp:30, rate:0, count:1, base:20, buff:{spd:0.7}, desc:'敵の素早さダウン'},
-    {id:55, name:'フォースブレイク', type: '弱体', target: '単体', mp: 150, rate: 0, count: 1, base: 20, buff: { elmResDown: 100 }, desc: '敵の全属性耐性を激減させる' },
+    {id:60, name:'ルカニ', type:'弱体', target:'単体', mp:20, rate:0, count:1, base:20, SuccessRate:0.7, debuff:{def:0.5}, desc:'敵の守備ダウン'},
+    {id:61, name:'ボミオス', type:'弱体', target:'全体', mp:30, rate:0, count:1, base:20, SuccessRate:0.7, debuff:{spd:0.7}, desc:'敵の素早さダウン'},
+    {id:55, name:'フォースブレイク', type: '弱体', target: '単体', mp: 150, rate: 0, count: 1, base: 20, debuff: { elmResDown: 100 }, desc: '敵の全属性耐性を激減させる' },
     
-    {id:56, name:'ひかりのはどう', type:'強化', target:'全体', mp:250, rate:0, count:1, base:0, buff:{atk:1.1, def:1.1, spd:1.1, mag:1.1}, desc:'味方全体の全ステータスUP'},
-
-    // --- 中級・上級物理（消費10倍近くへ） ---
+    {id:56, name:'ひかりのはどう', type:'特殊', target:'全体', mp:550, rate:0, count:1, base:0, debuff_reset:true, desc:'味方全体の状態異常と弱体を解除'},
+    {id:57, name:'いてつくはどう', type:'特殊', target:'全体', mp:250, rate:0, count:1, base:0, buff_reset:true, desc:'敵全体の強化を解除'},
+    {id:58, name:'たたかいのドラム', type:'強化', target:'全体', mp:550, rate:0, count:1, base:0, buff:{atk:1.2, def:1.2, spd:1.2, mag:1.2}, turn:5, desc:'味方全体の全ステータスUP'},
+    {id:59, name:'パラディンガード', type:'強化', target:'全体', mp:2000, rate:0, count:1, base:0, buff:{ elmResUp: 80 }, turn:2, desc:'味方全体の全属性耐性超上昇'},	
+    {id:62, name:'キアリク', type:'回復', target:'全体', mp:100, rate:0, count:1, base:0, CureAilments: true, desc:'味方全体の状態異常を治療する'},
+    {id:63, name:'世界樹の陽光', type:'回復', target:'全体', mp:3000, rate:1, count:1, base:99999, CureAilments:true, desc:'味方全体のHPを超回復し、状態異常を治療する'},
+ 
+ // --- 中級・上級物理（消費10倍近くへ） ---
     {id:101, name:'強撃', type:'物理', target:'単体', mp:40, rate:1.4, count:1, base:60, desc:'力強い一撃'},
     {id:102, name:'渾身斬り', type:'物理', target:'単体', mp:80, rate:1.8, count:1, base:180, desc:'渾身の一撃'},
     {id:103, name:'ギガスラッシュ', type:'物理', target:'全体', mp:150, rate:1.4, count:1, base:200, elm:'光', desc:'光の剣技'},
@@ -185,7 +194,11 @@ const DB = {
     {id:108, name:'超はやぶさ斬り', type:'物理', target:'単体', mp:180, rate:0.7, count:4, base:50, desc:'超高速の4連撃'},
     {id:109, name:'不死鳥天舞', type:'物理', target:'単体', mp:220, rate:0.7, count:4, base:100, drain:true, desc:'再生を伴う4連撃'},
     {id:110, name:'九龍連斬', type:'物理', target:'単体', mp:300, rate:0.6, count:9, base:50, desc:'9頭の龍の如き連撃'},
-    {id:111, name:'魔人の絶技', type:'物理', target:'単体', mp:350, rate:1.1, count:6, base:100, desc:'八つの刃で切り刻む'},
+    {id:111, name:'魔人の絶技', type:'物理', target:'単体', mp:350, rate:1.1, count:6, base:100, desc:'魔人のごとき6連続攻撃'},
+
+    {id:112, name:'魔人斬り', type:'物理', target:'単体', mp:10, rate:2.5, count:1, base:0, SuccessRate:0.25, IgnoreDefense:true, desc:'当たる確率は低いが、防御無視の会心攻撃'},
+    {id:113, name:'大魔人斬り', type:'物理', target:'単体', mp:300, rate:3.0, count:1, base:0, SuccessRate:0.5, IgnoreDefense:true, desc:'防御無視の強烈な会心攻撃'},
+    {id:111, name:'八刀一閃', type:'物理', target:'単体', mp:350, rate:1.1, count:6, base:100, priority:4, desc:'誰よりも速く八つの刃で切り刻む'},
 
     {id:201, name:'五月雨突き', type:'物理', target:'ランダム', mp:80, rate:0.5, count:4, base:20, desc:'4回攻撃'},
     {id:202, name:'爆裂拳', type:'物理', target:'ランダム', mp:100, rate:0.6, count:4, base:20, desc:'4回攻撃'},
@@ -206,22 +219,23 @@ const DB = {
     // --- 最上級・EX・神級（MP消費10倍以上、必殺技化） ---
     {id:401, name:'ギガブレイク', type:'物理', target:'全体', mp:450, rate:2.0, count:1, base:250, elm:'雷', desc:'最強の剣技'},
     {id:402, name:'ゴッドハンド', type:'物理', target:'単体', mp:500, rate:2.1, count:1, base:450, elm:'光', desc:'神の拳'},
-    {id:404, name:'プチメテオ', type:'魔法', target:'ランダム', mp:600, rate:0.6, count:7, base:170, elm:'火', desc:'隕石落とし'},
+    {id:404, name:'プチメテオ', type:'魔法', target:'ランダム', mp:600, rate:0.6, count:7, base:170, elm:'火', desc:'小隕石落とし'},
     {id:405, name:'ジゴスパーク', type:'魔法', target:'全体', mp:550, rate:2.0, count:1, base:270, elm:'混沌', desc:'地獄の雷'},
     {id:406, name:'マヒャデドス', type:'魔法', target:'全体', mp:550, rate:2.0, count:1, base:270, elm:'水', desc:'極大氷魔法'},
     {id:407, name:'メラガイアー', type:'魔法', target:'単体', mp:400, rate:2.4, count:1, base:500, elm:'火', desc:'極大火炎'},
     {id:408, name:'ギガデイン', type:'魔法', target:'全体', mp:500, rate:2.1, count:1, base:480, elm:'雷', desc:'極大雷呪文'},
     {id:409, name:'ギガクロスブレイク', type:'物理', target:'単体', mp:650, rate:2.1, count:2, base:400, elm:'雷', desc:'雷の2連撃'},
     {id:410, name:'シャイニング', type:'魔法', target:'全体', mp:600, rate:2.3, count:1, base:500, elm:'光', desc:'聖なる光'},
-    {id:411, name:'ラグナブレード', type:'物理', target:'単体', mp:550, rate:4.5, count:1, base:600, elm:'混沌', buff:{def:0.5}, desc:'混沌の一撃'},
+    {id:411, name:'ラグナブレード', type:'物理', target:'単体', mp:550, rate:4.5, count:1, base:600, elm:'混沌', debuff:{def:0.5}, desc:'混沌の一撃'},
     {id:412, name:'イオグランデ', type:'魔法', target:'全体', mp:550, rate:2.1, count:1, base:480, elm:'光', desc:'極大爆発'},
-    {id:413, name:'裁きの雷霆', type:'魔法', target:'ランダム', mp:500, rate:0.9, count:5, base:100, elm:'雷', buff:{def:0.5}, desc:'雷魔法超ダメージ5連・守備激減'},
+    {id:413, name:'裁きの雷霆', type:'魔法', target:'ランダム', mp:500, rate:0.9, count:4, base:100, elm:'雷', Shock: true, SuccessRate: 1, desc:'雷魔法超ダメージ5連・感電付与'},
     {id:414, name:'グランドクロス', type:'物理', target:'全体', mp:500, rate:1.0, count:2, base:999, elm:'風', desc:'十字に切り裂く2連撃'},
     {id:415, name:'絶対零度', type:'魔法', target:'単体', mp:600, rate:2.5, count:1, base:450, elm:'水', desc:'凍てつく極大魔法'},
-    {id:500, name:'マダンテ', type:'魔法', target:'全体', mp:0, rate:6.0, count:1, base:300, elm:'混沌', desc:'全MPを消費し大爆発'},
+	{id:416, name:'メテオ', type:'魔法', target:'単体', mp:900, rate:1.1, count:7, base:450, elm:'火', desc:'隕石落とし'},
+    {id:500, name:'マダンテ', type:'魔法', target:'全体', mp:0, rate:6.0, count:1, base:300, priority:-1, elm:'混沌', desc:'全MPを消費し大爆発'},
 
     // --- 追加最上級・神級スキル ---
-    {id:420, name:'神避', type:'物理', target:'全体', mp:500, rate:1.2, count:1, base:0, priority:1, desc:'神速で全てを薙ぎ払う'},
+    {id:420, name:'神避', type:'物理', target:'全体', mp:500, rate:1.2, count:1, base:0, priority:5, desc:'神速で全てを薙ぎ払う'},
     {id:421, name:'アルテマソード', type:'物理', target:'単体', mp:600, rate:6.0, count:1, base:500, desc:'究極の剣技'},
 
     // --- ブレス（MP消費なしのまま、または微増だがブレスはMP0が通例のため維持） ---
@@ -231,39 +245,51 @@ const DB = {
     {id:604, name:'かがやく息', type:'魔法', target:'全体', mp:0, rate:0.8, count:1, base:150, elm:'水', desc:'極寒の息'},
     {id:605, name:'しゃくねつ', type:'魔法', target:'全体', mp:0, rate:0.8, count:1, base:200, elm:'火', desc:'灼熱の業火'},
     {id:606, name:'絶対零度', type:'魔法', target:'全体', mp:0, rate:0.8, count:1, base:200, elm:'水', desc:'全てを凍らす息'},
-    {id:607, name:'どくのいき', type:'魔法', target:'全体', mp:0, rate:0.8, count:1, base:80, elm:'闇', desc:'毒の息'},
+    {id:607, name:'暗黒のきり', type:'魔法', target:'全体', mp:0, rate:0.8, count:1, base:80, elm:'闇', desc:'暗黒のきり'},
     {id:608, name:'いなずま', type:'魔法', target:'全体', mp:0, rate:0.8, count:1, base:110, elm:'雷', desc:'稲妻'},
     {id:609, name:'煉獄火炎', type:'魔法', target:'全体', mp:0, rate:1.4, count:1, base:250, elm:'混沌', desc:'地獄の炎'},
-    {id:610, name:'シャイニングブレス', type:'魔法', target:'全体', mp:50, rate:1.4, count:1, base:150, elm:'光', buff:{atk:0.8, def:0.8, spd:0.8, mag:0.8}, desc:'光のブレス・全能力ダウン'},
-    {id:611, name:'ダークネスブレス', type:'魔法', target:'全体', mp:50, rate:1.4, count:1, base:150, elm:'闇', buff:{elmResDown:50}, desc:'闇のブレス・属性耐性ダウン'},
-    {id:999, name:'激しい炎', type:'特殊', target:'全体', mp:0, rate:0, count:1, base:500, fix:true, elm:'火', desc:'全体炎'},
+    {id:610, name:'シャイニングブレス', type:'魔法', target:'全体', mp:50, rate:1.4, count:1, base:150, elm:'光', SpellSeal:true, SkillSeal:true, HealSeal:true, SuccessRate:0.5, turn:3, desc:'光のブレス・スキル封印'},
+    {id:611, name:'ダークネスブレス', type:'魔法', target:'全体', mp:50, rate:1.4, count:1, base:150, elm:'闇', debuff:{elmResDown:50}, SuccessRate:0.5, turn:3, desc:'闇のブレス・属性耐性ダウン'},
+    {id:999, name:'アルテマ', type:'魔法', target:'単体', mp:0, rate:0, count:1, base:99999, fix:true, priority:-1, desc:'単体極大ダメージ'},
 
+     // --- 状態異常 ---
+    {id:701, name:'どくのいき', type:'特殊', target:'全体', mp:0, rate:0, count:1, base:500, Poison:true, SuccessRate:0.8, desc:'どくのいき'},
+ 
     // --- ボス・神級（MP超増加） ---
     {id:901, name:'ジェネシス', type:'魔法', target:'全体', mp:500, rate:3.0, count:1, base:800, elm:'混沌', desc:'【EX】天地創造の光'},
-    {id:902, name:'ラグナロク', type:'物理', target:'ランダム', mp:700, rate:1.2, count:5, base:350, elm:'闇', desc:'【EX】終焉の5連撃'},
+    {id:902, name:'ラグナロク', type:'物理', target:'ランダム', mp:700, rate:1.0, count:5, base:350, elm:'闇', desc:'【EX】終焉の5連撃'},
     {id:903, name:'ザオリーマ', type:'蘇生', target:'全体', mp:1000, rate:0.8, count:1, base:150, desc:'【EX】味方全員を完全蘇生'},
-    {id:905, name:'やみのはどう', type:'弱体', target:'全体', mp:500, rate:0, count:1, base:20, buff:{atk:0.7, def:0.7, mag:0.7, spd:0.7}, desc:'全能力ダウン'},
-    {id:906, name:'創世の魔力', type:'魔法', target:'全体', mp:1000, rate:3.5, count:1, base:800, elm:'混沌', buff:{atk:0.7, def:0.7, mag:0.7, spd:0.7}, desc:'【EX】世界を創り変える力'},
+    {id:905, name:'やみのはどう', type:'弱体', target:'全体', mp:500, rate:0, count:1, base:20, SuccessRate:0.8, debuff:{atk:0.7, def:0.7, mag:0.7, spd:0.7}, desc:'全能力ダウン'},
+    {id:906, name:'創世の魔力', type:'魔法', target:'全体', mp:1000, rate:3.5, count:1, base:800, elm:'混沌', debuff:{atk:0.7, def:0.7, mag:0.7, spd:0.7}, desc:'【EX】世界を創り変える力'},
+    {id:907, name:'おぞましいおたけび', type:'特殊', target:'全体', mp:1000, rate:0, count:1, base:0, PercentDamage:0.5, Fear:true, SuccessRate:0.5, turn:1, desc:'心まで凍り付く恐ろしいおたけび'},
+    {id:908, name:'魔触', type:'魔法', target:'全体', mp:1000, rate:0.7, count:2, base:50, Fear:true, ToxicPoison:true, SpellSeal:true, SkillSeal:true, HealSeal:true, SuccessRate:0.3, turn:1, elm:'混沌', desc:'闇の根源より漏れ出る災禍'},
 
     // --- 追加ボス専用スキル ---
-    {id:920, name:'王者の一閃', type:'物理', target:'単体', mp:300, rate:5.0, count:1, base:0, desc:'王者の威光を纏った一撃'},
+    {id:920, name:'王者の一閃', type:'物理', target:'単体', mp:300, rate:4.0, count:1, base:0, debuff:{def:0.5}, priority:-1, desc:'王者の威光を纏った一撃'},
     {id:921, name:'サイコキャノン', type:'魔法', target:'単体', mp:300, rate:1.5, count:1, base:500, drain:true, desc:'精神エネルギー砲・HP吸収'},
     {id:922, name:'サイコストーム', type:'魔法', target:'ランダム', mp:700, rate:1.0, count:4, base:300, drain:true, desc:'精神の嵐・HP吸収'},
-    {id:923, name:'カラミティエンド', type:'物理', target:'単体', mp:700, rate:6.0, count:1, base:500, buff:{def:0.2}, desc:'厄災の終焉'},
+    {id:923, name:'カラミティエンド', type:'物理', target:'単体', mp:1200, rate:3.0, count:1, base:500, IgnoreDefense:true, SuccessRate:1, desc:'全てを断ち切る大魔王の右腕'},
     {id:924, name:'カラミティウォール', type:'魔法', target:'全体', mp:1000, rate:2.0, count:1, base:1000, elm:'混沌', desc:'厄災の壁'},
-    {id:925, name:'カイザーフェニックス', type:'魔法', target:'単体', mp:1000, rate:3.0, count:1, base:5000, elm:'火', desc:'皇帝の不死鳥'}
-
+    {id:925, name:'カイザーフェニックス', type:'魔法', target:'単体', mp:1000, rate:3.0, count:1, base:5000, elm:'火', desc:'大魔王のメラゾーマ'},
+    {id:926, name:'心ない天使', type:'特殊', target:'単体', mp:5000, rate:0, count:1, base:0, PercentDamage:0.99, SuccessRate:1, priority:-5, desc:'無慈悲な一撃'}
 ],
 
     ITEMS: [
-        {id:1, name:'やくそう', type:'HP回復', val:100, desc:'HPを約100回復', target:'単体', price:10},
-        {id:2, name:'上やくそう', type:'HP回復', val:300, desc:'HPを約300回復', target:'単体', price:50},
-        {id:3, name:'魔法の小瓶', type:'MP回復', val:30, desc:'MPを約30回復', target:'単体', price:100},
-        {id:4, name:'魔法の聖水', type:'MP回復', val:100, desc:'MPを約100回復', target:'単体', price:500},
-        {id:5, name:'世界樹の葉', type:'蘇生', val:100, desc:'死んだ仲間を生き返らせる', target:'単体', price:10000},
-        {id:6, name:'世界樹の雫', type:'HP回復', val:99999, desc:'味方全員のHPを全回復', target:'全体', price:500000},
-        {id:7, name:'エルフの飲み薬', type:'MP回復', val:9999, desc:'MPを全回復', target:'単体', price:300000},
-        {id:99, name:'ちいさなメダル', type:'貴重品', val:0, desc:'世界各地に散らばるメダル', target:'なし', price:0}
+        {id:1, rank:1, name:'やくそう', type:'HP回復', val:100, desc:'HPを約100回復', target:'単体', price:10},
+        {id:8, rank:1, name:'毒消し草', type:'状態異常回復', cures:['Poison', 'ToxicPoison'], desc:'毒・猛毒を解毒する', target:'単体', price:20},
+        {id:3, rank:2, name:'魔法の小瓶', type:'MP回復', val:30, desc:'MPを約30回復', target:'単体', price:100},
+        {id:2, rank:3, name:'上やくそう', type:'HP回復', val:300, desc:'HPを約300回復', target:'単体', price:50},
+        {id:9, rank:4, name:'やまびこ草', type:'状態異常回復', cures:['SpellSeal'], desc:'呪文封印を解除する', target:'単体', price:150},
+        {id:10, rank:4, name:'記憶の実', type:'状態異常回復', cures:['SkillSeal'], desc:'特技封印を解除する', target:'単体', price:150},
+        {id:11, rank:4, name:'妖精の涙', type:'状態異常回復', cures:['HealSeal'], desc:'回復封印を解除する', target:'単体', price:150},
+        {id:4, rank:5, name:'魔法の聖水', type:'MP回復', val:100, desc:'MPを約100回復', target:'単体', price:500},
+        {id:5, rank:6, name:'世界樹の葉', type:'蘇生', val:100, desc:'死んだ仲間を生き返らせる', target:'単体', price:10000},
+        {id:13, rank:7, name:'超やくそう', type:'HP回復', val:9999, desc:'HPを全回復', target:'単体', price:2000},
+        {id:12, rank:8, name:'世界樹の木の実', type:'状態異常回復', CureAilments:true, desc:'味方ひとりの全状態異常を治す', target:'単体', price:20000},
+        {id:14, rank:9, name:'賢者の聖水', type:'MP回復', val:9999, desc:'MPを全回復', target:'単体', price:10000},
+        {id:7, rank:10, name:'エルフの飲み薬', type:'MP回復', val:99999, desc:'MPを全回復', target:'単体', price:300000},
+        {id:6, rank:11, name:'世界樹の雫', type:'HP回復', val:99999, desc:'味方全員のHPを全回復', target:'全体', price:500000},
+        {id:99, rank:99, name:'ちいさなメダル', type:'貴重品', val:0, desc:'世界各地に散らばるメダル', target:'なし', price:0}
     ],
             
 CHARACTERS: [
@@ -282,9 +308,6 @@ CHARACTERS: [
         {id:108, name:'リサ', job:'商人', rarity:'R', hp:400, mp:200, atk:85, def:85, spd:70, mag:70, lbSkills:{50:50, 99:51}, sp:1},
         {id:109, name:'ガイル', job:'傭兵', rarity:'R', hp:480, mp:100, atk:125, def:100, spd:60, mag:20, lbSkills:{50:101, 99:102}, sp:1},
         {id:110, name:'サラ', job:'シスター', rarity:'R', hp:310, mp:580, atk:45, def:55, spd:85, mag:150, lbSkills:{50:21, 99:30}, sp:1},
-
-        // --- SR (ベビーサタン基準: HP平均500, MP400, MAG200 前後) ---
-        // ベビーサタンはHP低めだが味方SRとしてはHP500程度を確保しつつ、特化ステータスを伸ばす
         {id:201, name:'アラン', job:'魔法剣士', rarity:'SR', hp:550, mp:350, atk:140, def:120, spd:110, mag:160, lbSkills:{50:42, 99:202}, sp:1},
         {id:202, name:'ソフィア', job:'賢者', rarity:'SR', hp:480, mp:500, atk:80, def:90, spd:100, mag:220, lbSkills:{50:22, 99:306}, sp:1},
         {id:203, name:'ハヤテ', job:'忍者', rarity:'SR', hp:450, mp:300, atk:150, def:80, spd:200, mag:100, lbSkills:{50:41, 99:104}, sp:1},
@@ -295,9 +318,6 @@ CHARACTERS: [
         {id:208, name:'リン', job:'拳法家', rarity:'SR', hp:580, mp:180, atk:175, def:100, spd:160, mag:60, lbSkills:{50:202, 99:401}, sp:1},
         {id:209, name:'シルビア', job:'スーパースター', rarity:'SR', hp:500, mp:450, atk:110, def:110, spd:150, mag:180, lbSkills:{50:52, 99:22}, sp:1},
         {id:210, name:'ゴードン', job:'海賊', rarity:'SR', hp:680, mp:220, atk:160, def:130, spd:100, mag:70, lbSkills:{50:43, 99:201}, sp:1},
-
-        // --- SSR (アークデーモン基準: HP800, MP600, ATK180, MAG250 前後) ---
-        // アークデーモン(HP400)は敵としては低めなので、味方SSRとしては倍のHP800程度を基準にする
         {id:302, name:'カイン', job:'竜騎士', rarity:'SSR', hp:900, mp:400, atk:220, def:180, spd:160, mag:120, lbSkills:{50:201, 99:405}, sp:1},
         {id:303, name:'ティナ', job:'召喚士', rarity:'SSR', hp:750, mp:800, atk:100, def:120, spd:140, mag:300, lbSkills:{50:404, 99:901}, sp:1},
         {id:304, name:'クラウド', job:'ソルジャー', rarity:'SSR', hp:950, mp:350, atk:240, def:160, spd:150, mag:100, lbSkills:{50:42, 99:202}, sp:1},
@@ -367,8 +387,6 @@ MEDAL_REWARDS: [
 };
 
 /* database.js (モンスター生成ロジック修正版) */
-
-// データ自動生成
 // データ自動生成
 (() => {
     const TIERS = [
@@ -448,10 +466,11 @@ MEDAL_REWARDS: [
         { minRank:15, name:'ホイミスライム', hp:280, mp:800, atk:60, def:70, spd:100, mag:120, exp:20, gold:20 },
         { minRank:20, name:'ベビーサタン', hp:250, mp:400, atk:80, def:70, spd:110, mag:200, exp:50, gold:50 },
         { minRank:30, name:'オーク', hp:500, mp:400, atk:130, def:90, spd:70, mag:40, exp:40, gold:35 },
-        { minRank:40, name:'アークデーモン', hp:400, mp:600, atk:120, def:100, spd:90, mag:180, exp:100, gold:90 },
-        { minRank:50, name:'キラーマシン', hp:450, mp:400, atk:150, def:140, spd:120, mag:30, exp:80, gold:80 },
-        { minRank:60, name:'ドラゴン', hp:550, mp:500, atk:170, def:110, spd:80, mag:80, exp:150, gold:120 },
-        { minRank:80, name:'キラーマシン2', hp:650, mp:500, atk:200, def:180, spd:130, mag:50, exp:250, gold:250, actCount:2 }
+        { minRank:40, name:'ランプのまおう', hp:400, mp:600, atk:120, def:100, spd:90, mag:180, exp:100, gold:90 },
+        { minRank:50, name:'キラーマシン', hp:450, mp:400, atk:150, def:140, spd:120, mag:30, exp:120, gold:80 },
+        { minRank:60, name:'ドラゴン', hp:550, mp:500, atk:170, def:110, spd:80, mag:80, exp:200, gold:120 },
+        { minRank:80, name:'キラーマシン2', hp:650, mp:500, atk:200, def:180, spd:130, mag:50, exp:350, gold:250, actCount:2 },
+		{ minRank:90, name:'ヘルバトラー', hp:700, mp:700, atk:250, def:200, spd:180, mag:350, exp:450, gold:350, actCount:2 }
     ];
 
     // --- 雑魚敵用スキルセット ---
@@ -492,7 +511,7 @@ MEDAL_REWARDS: [
             high: [1, 203, 401, 105, 302],
             god: [109, 401, 108, 420, 105] 
         },
-        'アークデーモン': { 
+        'ランプのまおう': { 
             low: [1, 302, 2], 
             mid: [1, 308, 304, 601], 
             high: [1, 306, 310, 412, 605],
@@ -521,6 +540,12 @@ MEDAL_REWARDS: [
             mid: [1, 203, 608, 42], 
             high: [1, 401, 409, 608, 106],
             god: [409, 408, 420, 111] 
+        },
+        'ヘルバトラー': { 
+            low: [1, 14, 303, 308], 
+            mid: [1, 301, 308,310, 404], 
+            high: [305, 306, 404, 412, 605],
+            god: [404, 407, 412, 611, 902, 903] 
         }
     };
 // 自動生成ロジック (事前生成ループ)
@@ -642,25 +667,57 @@ MEDAL_REWARDS: [
         id:201, rank:10, minF:5, name:'メタルスライム',
         hp:4, mp:999, atk:50, def:99999, spd:9999, mag:500,
         exp:1000, gold:50, acts:[1, 10, 9], 
-        elmRes:{'火':100,'水':100,'風':100,'雷':100,'光':100,'闇':100,'混沌':100}
+        elmRes:{'火':100,'水':100,'風':100,'雷':100,'光':100,'闇':100,'混沌':100},
+		resists: {
+        Poison: 100,      // 毒無効
+        Shock: 100,       // 感電無効
+        Fear: 50,         // 怯え50%軽減
+        Seal: 100,        // 封印無効
+        Debuff: 100,      // ルカニ等無効
+        InstantDeath: 100 // 割合ダメージ無効
+		}
     });
     DB.MONSTERS.push({
         id:202, rank:40, minF:20, name:'はぐれメタル',
         hp:8, mp:999, atk:150, def:99999, spd:25500, mag:2550,
         exp:20000, gold:200, acts:[1, 302, 9], 
-        elmRes:{'火':1000,'水':1000,'風':1000,'雷':1000,'光':1000,'闇':1000,'混沌':1000}
+        elmRes:{'火':1000,'水':1000,'風':1000,'雷':1000,'光':1000,'闇':1000,'混沌':1000},
+		resists: {
+        Poison: 100,      // 毒無効
+        Shock: 100,       // 感電無効
+        Fear: 50,         // 怯え50%軽減
+        Seal: 100,        // 封印無効
+        Debuff: 100,      // ルカニ等無効
+        InstantDeath: 100 // 割合ダメージ無効
+		}
     });
     DB.MONSTERS.push({
         id:203, rank:80, minF:50, name:'メタルキング',
         hp:20, mp:9999, atk:400, def:99999, spd:99999, mag:9999,
         exp:100000, gold:1000, acts:[1, 306, 9], 
-        elmRes:{'火':1000,'水':1000,'風':1000,'雷':1000,'光':1000,'闇':1000,'混沌':1000}
+        elmRes:{'火':1000,'水':1000,'風':1000,'雷':1000,'光':1000,'闇':1000,'混沌':1000},
+		resists: {
+        Poison: 100,      // 毒無効
+        Shock: 100,       // 感電無効
+        Fear: 50,         // 怯え50%軽減
+        Seal: 100,        // 封印無効
+        Debuff: 100,      // ルカニ等無効
+        InstantDeath: 100 // 割合ダメージ無効
+		}
     });
     DB.MONSTERS.push({
         id:204, rank:100, minF:101, name:'プラチナキング',
         hp:50, mp:9999, atk:1000, def:99999, spd:9999, mag:20000,
         exp:500000, gold:5000, acts:[1, 406, 407, 9], 
-        elmRes:{'火':1000,'水':1000,'風':1000,'雷':1000,'光':1000,'闇':1000,'混沌':1000}
+        elmRes:{'火':1000,'水':1000,'風':1000,'雷':1000,'光':1000,'闇':1000,'混沌':1000},
+		resists: {
+        Poison: 100,      // 毒無効
+        Shock: 100,       // 感電無効
+        Fear: 50,         // 怯え50%軽減
+        Seal: 100,        // 封印無効
+        Debuff: 100,      // ルカニ等無効
+        InstantDeath: 100 // 割合ダメージ無効
+		}
     });
     // --- ボス定義 (10階ごと・スキル強化版) ---
 
@@ -760,7 +817,15 @@ MEDAL_REWARDS: [
         exp: 100000, gold: 50000,
         acts: [1, 103, 404, 407, 609, 23, 60, 411, 80], // 煉獄火炎、ラグナブレード追加
         elmRes: {'火':20, '水':20, '風':20, '雷':20, '光':20, '闇':20, '混沌':20}, // ★全属性耐性20%
-        actCount: 3 
+        actCount: 3 ,
+		resists: {
+        Poison: 100,      // 毒無効
+        Shock: 100,       // 感電無効
+        Fear: 100,         // 怯え無効
+        Seal: 100,        // 封印無効
+        Debuff: 0,      
+        InstantDeath: 100 // 割合ダメージ無効
+		}
     });
 
 // --- 110階〜 裏ボス定義 ---
@@ -772,7 +837,15 @@ MEDAL_REWARDS: [
         exp: 200000, gold: 100000, 
         acts: [1, 401, 402, 405, 406, 901, 902, 905, 609, 610, 611, 413, 107],
         elmRes: {'火':20, '水':20, '風':20, '雷':20, '光':20, '闇':20, '混沌':20},
-        actCount: 3 
+        actCount: 3 ,
+		resists: {
+        Poison: 100,      // 毒無効
+        Shock: 100,       // 感電無効
+        Fear: 100,         // 怯え無効
+        Seal: 100,        // 封印無効
+        Debuff: 0,      
+        InstantDeath: 100 // 割合ダメージ無効
+		}
     });
 
     // 120階: 大魔王ゾーマ (氷・闇・サイコ系)
@@ -782,7 +855,15 @@ MEDAL_REWARDS: [
         exp: 300000, gold: 150000, 
         acts: [406, 415, 307, 921, 922, 606, 905], // マヒャデドス, 絶対零度, ドルモーア, サイコキャノン/ストーム
         elmRes: {'水':100, '闇':100}, 
-        actCount: 3 
+        actCount: 3 ,
+		resists: {
+        Poison: 100,      // 毒無効
+        Shock: 100,       // 感電無効
+        Fear: 100,         // 怯え無効
+        Seal: 100,        // 封印無効
+        Debuff: 0,      
+        InstantDeath: 100 // 割合ダメージ無効
+		}
     });
 
     // 130階: しんりゅう (ブレス・神級技)
@@ -792,7 +873,15 @@ MEDAL_REWARDS: [
         exp: 400000, gold: 200000, 
         acts: [609, 610, 611, 404, 420, 402, 901], // 煉獄火炎, ブレス系, プチメテオ, 神避, ゴッドハンド, ジェネシス
         elmRes: {'風':100, '光':100, '混沌':100}, 
-        actCount: 3 
+        actCount: 3 ,
+		resists: {
+        Poison: 100,      // 毒無効
+        Shock: 100,       // 感電無効
+        Fear: 100,         // 怯え無効
+        Seal: 100,        // 封印無効
+        Debuff: 0,      
+        InstantDeath: 100 // 割合ダメージ無効
+		}
     });
 
     // 140階: レグナードⅡ (全属性40%耐性)
@@ -802,44 +891,90 @@ MEDAL_REWARDS: [
         exp: 500000, gold: 250000, 
         acts: [1, 401, 402, 901, 902, 609, 610, 611, 413, 107],
         elmRes: {'火':40, '水':40, '風':40, '雷':40, '光':40, '闇':40, '混沌':40},
-        actCount: 3 
+        actCount: 3 ,
+		resists: {
+        Poison: 100,      // 毒無効
+        Shock: 100,       // 感電無効
+        Fear: 100,         // 怯え無効
+        Seal: 100,        // 封印無効
+        Debuff: 0,      
+        InstantDeath: 100 // 割合ダメージ無効
+		}
     });
 
     // 150階: 四天王強 (4体)
     DB.MONSTERS.push({
         id: 1150, rank: 150, minF: 150, name: 'グラコス強', 
-        hp: 400000, mp: 99999, atk: 19000, def: 12000, spd: 4000, mag: 14000, exp: 200000, gold: 100000, acts: [42, 406, 606, 421], actCount: 2 
+        hp: 400000, mp: 99999, atk: 19000, def: 12000, spd: 4000, mag: 14000, exp: 200000, gold: 100000, acts: [42, 406, 606, 421], actCount: 2 ,
+		resists: {
+        Poison: 100,      // 毒無効
+        Shock: 100,       // 感電無効   
+        InstantDeath: 50
+		}
     });
     DB.MONSTERS.push({
         id: 1151, rank: 150, minF: 150, name: 'ジャミラス強', 
-        hp: 350000, mp: 99999, atk: 18000, def: 11000, spd: 6000, mag: 15000, exp: 200000, gold: 100000, acts: [309, 414, 605, 610], actCount: 2 
+        hp: 350000, mp: 99999, atk: 18000, def: 11000, spd: 6000, mag: 15000, exp: 200000, gold: 100000, acts: [309, 414, 605, 610], actCount: 2 ,
+		resists: {
+        Poison: 100,      // 毒無効
+        Shock: 100,       // 感電無効   
+        InstantDeath: 50
+		} 
     });
     DB.MONSTERS.push({
         id: 1152, rank: 150, minF: 150, name: 'ムドー強', 
-        hp: 380000, mp: 99999, atk: 14000, def: 13000, spd: 3500, mag: 18000, exp: 200000, gold: 100000, acts: [305, 407, 306, 412, 607, 905], actCount: 2 
+        hp: 380000, mp: 99999, atk: 14000, def: 13000, spd: 3500, mag: 18000, exp: 200000, gold: 100000, acts: [305, 407, 306, 412, 607, 905], actCount: 2 ,
+		resists: {
+        Poison: 100,      // 毒無効
+        Shock: 100,       // 感電無効   
+        InstantDeath: 50
+		} 
     });
     DB.MONSTERS.push({
         id: 1153, rank: 150, minF: 150, name: 'デュラン強', 
-        hp: 500000, mp: 99999, atk: 22000, def: 15000, spd: 5000, mag: 9000, exp: 200000, gold: 100000, acts: [102, 106, 401, 402, 420], actCount: 2 
+        hp: 500000, mp: 99999, atk: 22000, def: 15000, spd: 5000, mag: 9000, exp: 200000, gold: 100000, acts: [102, 106, 401, 402, 420], actCount: 2 ,
+		resists: {
+        Poison: 100,      // 毒無効
+        Shock: 100,       // 感電無効   
+        InstantDeath: 50
+		} 
     });
 
     // 160階: デスタムーア最終形態 (右手・本体・左手)
     DB.MONSTERS.push({
         id: 1160, rank: 160, minF: 160, name: 'デスタムーア左手', // 物理＆蘇生
         hp: 420000, mp: 99999, atk: 27000, def: 13000, spd: 6000, mag: 5000, 
-        exp: 0, gold: 0, acts: [106, 401, 409, 411, 414, 31, 903], actCount: 2 // ザオリク, リザレクション
+        exp: 0, gold: 0, acts: [106, 401, 409, 411, 414, 31, 903], actCount: 2 ,
+		resists: {
+        Poison: 100,      // 毒無効
+        Shock: 100,       // 感電無効   
+        InstantDeath: 50
+		} 
     });
     DB.MONSTERS.push({
         id: 1161, rank: 160, minF: 160, name: 'デスタムーア', // 本体：ブレス
         hp: 800000, mp: 99999, atk: 20000, def: 20000, spd: 5000, mag: 25000, 
         exp: 800000, gold: 400000, acts: [605, 606, 609, 610, 611, 999, 905], 
         elmRes: {'火':20, '水':20, '風':20, '雷':20, '光':20, '闇':20, '混沌':20},
-        actCount: 2
+        actCount: 2,
+		resists: {
+        Poison: 100,      // 毒無効
+        Shock: 100,       // 感電無効
+        Fear: 100,         // 怯え無効
+        Seal: 100,        // 封印無効
+        Debuff: 100,      
+        InstantDeath: 100 // 割合ダメージ無効
+		}
     });
     DB.MONSTERS.push({
         id: 1162, rank: 160, minF: 160, name: 'デスタムーア右手', // 魔法＆回復
         hp: 400000, mp: 99999, atk: 10000, def: 15000, spd: 4000, mag: 27000, 
-        exp: 0, gold: 0, acts: [407, 406, 412, 405, 24, 403], actCount: 2 // ベホマズン, フルケア
+        exp: 0, gold: 0, acts: [407, 406, 412, 405, 24, 403], actCount: 2,
+		resists: {
+        Poison: 100,      // 毒無効
+        Shock: 100,       // 感電無効   
+        InstantDeath: 50
+		} 
     });
 
     // 170階: レグナードⅢ (全属性60%耐性)
@@ -849,7 +984,15 @@ MEDAL_REWARDS: [
         exp: 1000000, gold: 500000, 
         acts: [1, 401, 402, 901, 902, 609, 610, 611, 413, 107, 420],
         elmRes: {'火':60, '水':60, '風':60, '雷':60, '光':60, '闇':60, '混沌':60},
-        actCount: 3 
+        actCount: 3 ,
+		resists: {
+        Poison: 100,      // 毒無効
+        Shock: 100,       // 感電無効
+        Fear: 100,         // 怯え無効
+        Seal: 100,        // 封印無効
+        Debuff: 50,      
+        InstantDeath: 100 // 割合ダメージ無効
+		}
     });
 
     // 180階: ダークドレアム (物理最強)
@@ -859,7 +1002,15 @@ MEDAL_REWARDS: [
         exp: 1500000, gold: 750000, 
         acts: [111, 414, 401, 409, 421, 106, 920, 923], // 八刀一閃, グランドクロス, アルテマ, カラミティエンド
         elmRes: {'火':100, '水':100, '風':100, '雷':100},
-        actCount: 3 
+        actCount: 3 ,
+		resists: {
+        Poison: 100,      // 毒無効
+        Shock: 100,       // 感電無効
+        Fear: 100,         // 怯え無効
+        Seal: 100,        // 封印無効
+        Debuff: 50,      
+        InstantDeath: 100 // 割合ダメージ無効
+		}
     });
 
     // 190階: レグナードⅣ (全属性80%耐性)
@@ -869,7 +1020,15 @@ MEDAL_REWARDS: [
         exp: 2000000, gold: 1000000, 
         acts: [1, 401, 402, 901, 902, 609, 610, 611, 413, 107, 420, 906],
         elmRes: {'火':80, '水':80, '風':80, '雷':80, '光':80, '闇':80, '混沌':80},
-        actCount: 3 
+        actCount: 3 ,
+		resists: {
+        Poison: 100,      // 毒無効
+        Shock: 100,       // 感電無効
+        Fear: 100,         // 怯え無効
+        Seal: 100,        // 封印無効
+        Debuff: 100,      
+        InstantDeath: 100 // 割合ダメージ無効
+		}
     });
 
     // 200階: 大魔王バーン (ラスボス)
@@ -879,7 +1038,15 @@ MEDAL_REWARDS: [
         exp: 9999999, gold: 9999999, 
         acts: [923, 924, 925, 420, 901, 906, 412, 407, 920], // カラミティ系, カイザーフェニックス
         elmRes: {'火':70, '水':70, '風':70, '光':70, '闇':70, '雷':30, '混沌':30},
-        actCount: 3 
+        actCount: 3 ,
+		resists: {
+        Poison: 100,      // 毒無効
+        Shock: 100,       // 感電無効
+        Fear: 100,         // 怯え無効
+        Seal: 100,        // 封印無効
+        Debuff: 100,      
+        InstantDeath: 100 // 割合ダメージ無効
+		}
     });
 	
 })();
@@ -900,3 +1067,5 @@ const INITIAL_DATA_TEMPLATE = {
         {uid:'p1', isHero:true, charId:301, name:'アルス', job:'勇者', rarity:'N', level:1, hp:800, mp:300, atk:150, def:120, spd:100, mag:100, limitBreak:0, sp:1,tree:{"ATK":0,"MAG":0,"SPD":0,"HP":0,"MP":0}, equips:{}, alloc:{}}
     ]
 };
+// エディタ用：windowオブジェクトにDBを登録して参照可能にする
+window.DB = DB;
