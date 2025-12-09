@@ -942,7 +942,7 @@ MEDAL_REWARDS: [
 
     // 160階: デスタムーア最終形態 (右手・本体・左手)
     DB.MONSTERS.push({
-        id: 1160, rank: 160, minF: 160, name: 'デスタムーア左手', // 物理＆蘇生
+        id: 1160, rank: 160, minF: 160, name: 'みぎて', // 物理＆蘇生
         hp: 420000, mp: 99999, atk: 27000, def: 13000, spd: 6000, mag: 5000, 
         exp: 0, gold: 0, acts: [106, 401, 409, 411, 414, 31, 903], actCount: 2 ,
 		resists: {
@@ -967,7 +967,7 @@ MEDAL_REWARDS: [
 		}
     });
     DB.MONSTERS.push({
-        id: 1162, rank: 160, minF: 160, name: 'デスタムーア右手', // 魔法＆回復
+        id: 1162, rank: 160, minF: 160, name: 'ひだりて', // 魔法＆回復
         hp: 400000, mp: 99999, atk: 10000, def: 15000, spd: 4000, mag: 27000, 
         exp: 0, gold: 0, acts: [407, 406, 412, 405, 24, 403], actCount: 2,
 		resists: {
