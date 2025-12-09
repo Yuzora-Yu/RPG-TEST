@@ -1508,15 +1508,51 @@ const MenuSkills = {
 };
 
 /* ==========================================================================
-   7. 魔物図鑑 (レイアウト刷新版)
+   7. 魔物図鑑 (詳細表示・エディタ風UI版)
    ========================================================================== */
 const MenuBook = {
+    // 状態管理
+    currentMode: 'list', // 'list' or 'detail'
+    selectedMonster: null,
+
     init: () => {
+        // コンテナの準備（詳細表示用のエリアがなければ作る）
+        const container = document.getElementById('sub-screen-book');
+        if (!document.getElementById('book-detail-view')) {
+            const detailDiv = document.createElement('div');
+            detailDiv.id = 'book-detail-view';
+            detailDiv.className = 'flex-col-container';
+            detailDiv.style.display = 'none';
+            detailDiv.style.background = '#222'; 
+            detailDiv.style.padding = '10px';
+            container.appendChild(detailDiv);
+        }
+
+        // リスト表示モードで開始
+        MenuBook.showList();
+    },
+
+    // --- リスト画面 ---
+    showList: () => {
+        document.getElementById('book-list').style.display = 'block';
+        document.getElementById('book-detail-view').style.display = 'none';
+        
+        // ヘッダーのボタンを「戻る」に戻す
+        const headerBtn = document.querySelector('#sub-screen-book .header-bar button');
+        if(headerBtn) {
+            headerBtn.innerText = '戻る';
+            headerBtn.onclick = () => Menu.closeSubScreen('book');
+        }
+
+        MenuBook.renderList();
+    },
+
+    renderList: () => {
         const list = document.getElementById('book-list');
         list.innerHTML = '';
         const defeated = App.data.book.monsters || [];
         
-        // ★画像データの参照を取得
+        // 画像データの参照を取得
         const g = (typeof GRAPHICS !== 'undefined' && GRAPHICS.images) ? GRAPHICS.images : {};
         
         DB.MONSTERS.forEach(m => {
@@ -1526,65 +1562,49 @@ const MenuBook = {
             div.style.alignItems = 'flex-start';
 
             if(isKnown) {
-                // ドロップ品名の解決
-                let dropName = 'なし';
-                if(m.drop) {
-                    const dropItem = DB.EQUIPS.find(e=>e.id===m.drop) || DB.ITEMS.find(i=>i.id===m.drop);
-                    if(dropItem) dropName = dropItem.name;
-                }
-
                 // スキル名の解決
-                const skillNames = m.acts.map(id => {
+                const skillNames = (m.acts || []).map(id => {
                     const s = DB.SKILLS.find(k => k.id === id);
                     return s ? s.name : '通常攻撃';
                 }).join(', ');
 
-                // --- ★画像表示ロジック ---
-                let imgContent = 'NO IMAGE';
-                
-                // バトルと同じ名前クリーニング処理
+                // 画像表示ロジック (リスト用)
+                let imgContent = '<span style="color:#555;font-size:10px;">NO IMG</span>';
                 let baseName = m.name
                     .replace(/^(強・|真・|極・|神・)+/, '') 
                     .replace(/ Lv\d+[A-Z]?$/, '')
                     .replace(/[A-Z]$/, '')
                     .trim();
-                
                 const imgKey = 'monster_' + baseName;
 
                 if (g[imgKey]) {
-                    // 画像があればimgタグを埋め込む (枠内に収まるようにcontain指定)
                     imgContent = `<img src="${g[imgKey].src}" style="width:100%; height:100%; object-fit:contain;">`;
                 }
 
                 div.innerHTML = `
-                    <div style="width:64px; height:64px; background:#222; border:1px solid #444; margin-right:10px; flex-shrink:0; display:flex; align-items:center; justify-content:center; color:#555; font-size:10px;">
+                    <div style="width:64px; height:64px; background:#1a1a1a; border:1px solid #444; margin-right:10px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
                         ${imgContent}
                     </div>
-                    
                     <div style="flex:1; display:flex; flex-direction:column; justify-content:space-between; min-height:64px;">
                         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:2px; margin-bottom:2px;">
                             <span style="font-size:15px; font-weight:bold; color:#f88;">${m.name}</span>
                             <span style="font-size:11px; color:#aaa;">Rank:${m.rank}</span>
                         </div>
-                        
                         <div style="font-size:10px; color:#ccc; display:flex; gap:6px;">
                             <span>HP:${m.hp}</span>
-							<span>MP:${m.mp}</span>
                             <span>攻:${m.atk}</span>
                             <span>防:${m.def}</span>
-                            <span>魔:${m.mag}</span>
                             <span>速:${m.spd}</span>
                         </div>
-                        
-                        <div style="font-size:10px; color:#aaa; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:350px;">
+                        <div style="font-size:10px; color:#aaa; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;">
                             行動: ${skillNames}
-                        </div>
-                        
-                        <div style="font-size:10px; color:#ffd700;">
-                            EXP:${m.exp} / GOLD:${m.gold}
                         </div>
                     </div>
                 `;
+                
+                // タップで詳細表示
+                div.onclick = () => MenuBook.showDetail(m);
+
             } else {
                 // 未発見時の表示
                 div.innerHTML = `
@@ -1596,5 +1616,141 @@ const MenuBook = {
             }
             list.appendChild(div);
         });
+    },
+
+    // --- 詳細画面 (エディタ風) ---
+    showDetail: (monster) => {
+        const view = document.getElementById('book-detail-view');
+        const list = document.getElementById('book-list');
+        
+        list.style.display = 'none';
+        view.style.display = 'block';
+        view.scrollTop = 0;
+
+        // ヘッダーのボタンを「一覧へ」に変更
+        const headerBtn = document.querySelector('#sub-screen-book .header-bar button');
+        if(headerBtn) {
+            headerBtn.innerText = '一覧へ';
+            headerBtn.onclick = () => MenuBook.showList();
+        }
+
+        // 画像取得ロジック (詳細用)
+        const g = (typeof GRAPHICS !== 'undefined' && GRAPHICS.images) ? GRAPHICS.images : {};
+        let baseName = monster.name
+            .replace(/^(強・|真・|極・|神・)+/, '') 
+            .replace(/ Lv\d+[A-Z]?$/, '')
+            .replace(/[A-Z]$/, '')
+            .trim();
+        const imgKey = 'monster_' + baseName;
+        const imgSrc = g[imgKey] ? g[imgKey].src : null;
+        const imgHtml = imgSrc 
+            ? `<img src="${imgSrc}" style="max-height:100%; max-width:100%; object-fit:contain;">`
+            : `<div style="color:#555;">NO IMAGE</div>`;
+
+        // 耐性ラベル定義 (エディタと合わせる)
+        const resistLabels = {
+            Poison: '毒・猛毒', Shock: '感電', Fear: '怯え',
+            Seal: '封印系', Debuff: '弱体化', InstantDeath: '即死/割合'
+        };
+        const elements = ['火','水','風','雷','光','闇','混沌'];
+
+        // データがない場合の初期値
+        const res = monster.resists || {};
+        const elmRes = monster.elmRes || {};
+        const acts = monster.acts || [1];
+
+        // HTML生成 (エディタのレイアウトをCSS Grid/Flexで再現)
+        let html = `
+            <div style="font-family:sans-serif; color:#ddd;">
+                <div style="display:flex; justify-content:space-between; align-items:end; border-bottom:1px solid #555; padding-bottom:5px; margin-bottom:10px;">
+                    <div>
+                        <div style="font-size:10px; color:#aaa;">ID:${monster.id}</div>
+                        <div style="font-size:18px; font-weight:bold; color:#ffd700;">${monster.name}</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <span style="font-size:12px; background:#444; padding:2px 6px; border-radius:4px;">Rank: ${monster.rank}</span>
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:10px; margin-bottom:15px;">
+                    <div style="width:100px; height:120px; background:#000; border:1px solid #555; display:flex; align-items:center; justify-content:center; flex-shrink:0; border-radius:4px;">
+                        ${imgHtml}
+                    </div>
+
+                    <div style="flex:1;">
+                        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:5px; margin-bottom:8px;">
+                            <div style="background:#333; padding:4px; border-radius:3px;">
+                                <div style="font-size:9px; color:#aaa;">HP</div>
+                                <div style="font-weight:bold; color:#8f8;">${monster.hp}</div>
+                            </div>
+                            <div style="background:#333; padding:4px; border-radius:3px;">
+                                <div style="font-size:9px; color:#aaa;">MP</div>
+                                <div style="font-weight:bold; color:#88f;">${monster.mp}</div>
+                            </div>
+                            <div style="background:#333; padding:4px; border-radius:3px;">
+                                <div style="font-size:9px; color:#aaa;">EXP</div>
+                                <div style="font-weight:bold; color:#fff;">${monster.exp}</div>
+                            </div>
+                        </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:2px; font-size:11px;">
+                            <div style="display:flex; justify-content:space-between; background:#2a2a2a; padding:2px 4px;"><span>攻撃</span><span>${monster.atk}</span></div>
+                            <div style="display:flex; justify-content:space-between; background:#2a2a2a; padding:2px 4px;"><span>防御</span><span>${monster.def}</span></div>
+                            <div style="display:flex; justify-content:space-between; background:#2a2a2a; padding:2px 4px;"><span>素早</span><span>${monster.spd}</span></div>
+                            <div style="display:flex; justify-content:space-between; background:#2a2a2a; padding:2px 4px;"><span>魔力</span><span>${monster.mag}</span></div>
+                            <div style="display:flex; justify-content:space-between; background:#2a2a2a; padding:2px 4px; color:#ffd700; grid-column:span 2;"><span>GOLD</span><span>${monster.gold} G</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background:#252525; border:1px solid #444; border-radius:4px; padding:8px; margin-bottom:15px;">
+                    <div style="display:flex; justify-content:space-between; font-size:12px; color:#aaa; margin-bottom:5px;">
+                        <span>行動パターン</span>
+                        <span>回数: ${monster.actCount||1}</span>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        ${acts.map(actId => {
+                            const s = DB.SKILLS.find(k => k.id === actId);
+                            const sName = s ? s.name : (actId===1?'通常攻撃':(actId===2?'防御':'不明'));
+                            const sIdText = s ? `(ID:${s.id})` : '';
+                            return `<div style="background:#333; padding:4px 8px; border-radius:3px; font-size:12px;">${sName} <span style="color:#666; font-size:10px;">${sIdText}</span></div>`;
+                        }).join('')}
+                    </div>
+                </div>
+
+                <div>
+                    <div style="font-size:12px; color:#ffd700; margin-bottom:4px;">耐性データ (%)</div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                        <div style="background:#222; border:1px solid #444; border-radius:4px; padding:5px;">
+                            <div style="font-size:10px; color:#88f; margin-bottom:3px; text-align:center;">属性耐性</div>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:2px;">
+                                ${elements.map(e => `
+                                    <div style="display:flex; justify-content:space-between; background:#333; padding:2px 4px; border-radius:2px;">
+                                        <span style="font-size:10px; color:#aaa;">${e}</span>
+                                        <span style="font-size:10px;">${elmRes[e]||0}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        <div style="background:#222; border:1px solid #444; border-radius:4px; padding:5px;">
+                            <div style="font-size:10px; color:#f88; margin-bottom:3px; text-align:center;">状態異常耐性</div>
+                            <div style="display:flex; flex-direction:column; gap:2px;">
+                                ${Object.keys(resistLabels).map(key => `
+                                    <div style="display:flex; justify-content:space-between; background:#333; padding:2px 4px; border-radius:2px;">
+                                        <span style="font-size:10px; color:#aaa;">${resistLabels[key]}</span>
+                                        <span style="font-size:10px;">${res[key]||0}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top:20px; text-align:center; font-size:10px; color:#555;">
+                    Quest of Elements - Monster Database
+                </div>
+            </div>
+        `;
+        
+        view.innerHTML = html;
     }
 };
