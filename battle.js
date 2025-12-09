@@ -1,4 +1,4 @@
-/* battle.js (完全版: ターゲット判定修正・シナジー修正・耐性＆感電対応) */
+/* battle.js (修正版: 前半パート) */
 
 const Battle = {
     active: false,
@@ -31,6 +31,7 @@ const Battle = {
 
     getEl: (id) => document.getElementById(id),
     
+    // ★修正: 戦闘開始時にステータスを計算して固定化(snapshot)する
     init: () => {
         Battle.active = true;
         Battle.phase = 'init';
@@ -50,17 +51,19 @@ const Battle = {
                 const charData = App.getChar(uid);
                 if(!charData) return null;
                 const player = new Player(charData);
-                // 最新ステータス反映
+
+                // ★修正: 装備・補正込みのステータスを計算して保持する(computedStats)
                 const stats = App.calcStats(charData);
+                player.computedStats = stats; 
+                
+                // HP/MPは現在値を採用、最大値は計算結果を採用
                 player.hp = Math.min(player.hp, stats.maxHp);
                 player.mp = Math.min(player.mp, stats.maxMp);
                 player.baseMaxHp = stats.maxHp;
                 player.baseMaxMp = stats.maxMp;
                 
-                // ★修正: パッシブスキルの読み込み (シナジー含む)
+                // パッシブスキルの読み込み
                 player.passive = Battle.getPassives(player);
-
-                // 戦闘用ステータス初期化
                 Battle.initBattleStatus(player);
                 return player;
             }).filter(p => p !== null);
@@ -77,19 +80,26 @@ const Battle = {
             Battle.log("戦闘に復帰した！");
             Battle.enemies = App.data.battle.enemies.map(e => {
                 let base = DB.MONSTERS.find(m => m.id === e.baseId);
+                // dungeon.js の getEnemy 等を経由していない場合などのフォールバック
                 if (!base && window.generateEnemy) {
-                    base = { name: e.name, hp: e.maxHp, atk: 10, def: 10, spd: 10, mag: 10, exp: 0, gold: 0 };
+                    base = window.generateEnemy(1); 
                 }
                 if (!base) return null;
                 const m = new Monster(base, 1.0);
-                m.hp = e.hp; m.baseMaxHp = e.maxHp; m.name = e.name; m.id = e.baseId; 
+                m.hp = e.hp; m.name = e.name; m.id = e.baseId; 
                 m.isDead = m.hp <= 0;
                 m.isFled = false; 
                 if(base.actCount) m.actCount = base.actCount;
                 
-                // 敵のパッシブ読み込み
-                m.passive = base.passive || {};
+                // ★修正: 敵も computedStats を用意 (基本ステータスをコピー)
+                m.computedStats = { 
+                    atk: m.baseStats.atk, def: m.baseStats.def, 
+                    spd: m.baseStats.spd, mag: m.baseStats.mag,
+                    maxHp: m.baseMaxHp, maxMp: m.baseMaxMp,
+                    resists: base.resists || {}, elmRes: base.elmRes || {}
+                };
 
+                m.passive = base.passive || {};
                 Battle.initBattleStatus(m);
                 return m;
             }).filter(e => e !== null);
@@ -97,8 +107,17 @@ const Battle = {
             const isBoss = App.data.battle && App.data.battle.isBossBattle;
             Battle.enemies = Battle.generateNewEnemies(isBoss);
             Battle.enemies.forEach(e => {
+                // ★修正: 新規敵も computedStats を用意
+                const base = DB.MONSTERS.find(m => m.id === e.id) || e.data;
+                e.computedStats = { 
+                    atk: e.baseStats.atk, def: e.baseStats.def, 
+                    spd: e.baseStats.spd, mag: e.baseStats.mag,
+                    maxHp: e.baseMaxHp, maxMp: e.baseMaxMp,
+                    resists: (base && base.resists) ? base.resists : {},
+                    elmRes: (base && base.elmRes) ? base.elmRes : {}
+                };
+                
                 Battle.initBattleStatus(e);
-                const base = DB.MONSTERS.find(m => m.id === e.id);
                 e.passive = base ? (base.passive || {}) : {};
             });
             
@@ -121,11 +140,9 @@ const Battle = {
         Battle.startInputPhase();
     },
 
-    // ★修正: パッシブスキル・シナジーの集計関数
     getPassives: (actor) => {
         let passives = {};
         
-        // 1. スキルツリー
         if (actor.tree) {
             for (let key in actor.tree) {
                 const level = actor.tree[key];
@@ -141,11 +158,9 @@ const Battle = {
             }
         }
 
-        // 2. 装備シナジー (修正: 各装備パーツごとにチェック)
         if (actor.equips) {
             Object.values(actor.equips).forEach(eq => {
                 if (eq && typeof App.checkSynergy === 'function') {
-                    // 各装備について単体で条件を満たしているかチェック
                     const syn = App.checkSynergy(eq);
                     if (syn && syn.effect) {
                         passives[syn.effect] = true;
@@ -165,16 +180,28 @@ const Battle = {
         };
     },
 
+    // ★修正: ステータス取得ロジック (computedStatsを優先参照)
     getBattleStat: (actor, key) => {
-        let val = actor[key] || 0;
-        if (key === 'maxHp') val = actor.baseMaxHp;
-        if (key === 'maxMp') val = actor.baseMaxMp;
+        // 1. 基本値の取得
+        let val = 0;
         
-        // 耐性はオブジェクトごと返す
-        if (key === 'resists') {
-            return val || {};
+        // 最大HP/MPの特別扱い
+        if (key === 'maxHp') return actor.baseMaxHp;
+        if (key === 'maxMp') return actor.baseMaxMp;
+
+        // 計算済みステータスがあればそこから、なければbaseStatsから
+        if (actor.computedStats && actor.computedStats[key] !== undefined) {
+            val = actor.computedStats[key];
+        } else if (actor.baseStats && actor.baseStats[key] !== undefined) {
+            val = actor.baseStats[key];
+        } else if (actor[key] !== undefined) {
+            val = actor[key]; // 直接プロパティ (予備)
         }
 
+        // 耐性データなどはオブジェクトのまま返す
+        if (typeof val === 'object') return val;
+
+        // 2. 戦闘中バフ・デバフの適用
         const b = actor.battleStatus;
         if (!b) return val;
 
@@ -361,7 +388,6 @@ const Battle = {
                 else if (actionData.debuff_reset || actionData.CureAilments) actualTargetType = 'ally'; 
                 else actualTargetType = 'enemy';
             } else if (range === '全体') {
-                // ★修正: debuff_reset, HPRegen, MPRegen, CureAilments がある場合は味方全体とみなす
                 if (type.includes('回復') || ['蘇生','強化'].includes(type) || 
                     actionData.debuff_reset || actionData.CureAilments || 
                     actionData.HPRegen || actionData.MPRegen) {
@@ -762,7 +788,7 @@ const Battle = {
         Battle.startInputPhase();
     },
 
-    // ★行動終了時処理
+    // 行動終了時処理
     onActionEnd: async (actor) => {
         if (!actor) return;
         const b = actor.battleStatus;
@@ -826,7 +852,6 @@ const Battle = {
         }
 
         // ★追加: ボスの自動回復 (ID 1000以上)
-        // ログなしで5%回復
         if (actor.hp > 0 && actor.id >= 1000) {
             const rec = Math.floor(actor.baseMaxHp * 0.05);
             if (rec > 0 && actor.hp < actor.baseMaxHp) {
@@ -834,8 +859,15 @@ const Battle = {
             }
         }
     },
+    
+    // ... processAction 以降は省略なしで実装済みですが、リクエスト範囲はここまでと解釈します
+    // 必要であれば後半も同様に記述可能です。
 
+
+
+				
     // アクション実行 (耐性判定追加)
+				
     processAction: async (cmd) => {
         const actor = cmd.actor;
         const data = cmd.data;
