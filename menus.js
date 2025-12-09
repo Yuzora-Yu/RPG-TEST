@@ -1507,6 +1507,7 @@ const MenuSkills = {
     }
 };
 
+
 /* ==========================================================================
    7. 魔物図鑑 (詳細表示・エディタ風UI版)
    ========================================================================== */
@@ -1552,7 +1553,7 @@ const MenuBook = {
         list.innerHTML = '';
         const defeated = App.data.book.monsters || [];
         
-        // 画像データの参照を取得
+        // 画像データの参照を取得 (GRAPHICS.imagesはmain.jsの起動時にロードされている前提)
         const g = (typeof GRAPHICS !== 'undefined' && GRAPHICS.images) ? GRAPHICS.images : {};
         
         DB.MONSTERS.forEach(m => {
@@ -1568,8 +1569,10 @@ const MenuBook = {
                     return s ? s.name : '通常攻撃';
                 }).join(', ');
 
-                // 画像表示ロジック (リスト用)
+                // 画像表示ロジック
                 let imgContent = '<span style="color:#555;font-size:10px;">NO IMG</span>';
+                
+                // 名前から修飾語（強・Lvなど）を取り除いてキーを作成
                 let baseName = m.name
                     .replace(/^(強・|真・|極・|神・)+/, '') 
                     .replace(/ Lv\d+[A-Z]?$/, '')
@@ -1578,6 +1581,7 @@ const MenuBook = {
                 const imgKey = 'monster_' + baseName;
 
                 if (g[imgKey]) {
+                    // src属性にはロード済みのImageオブジェクトのsrc(Base64)を使用
                     imgContent = `<img src="${g[imgKey].src}" style="width:100%; height:100%; object-fit:contain;">`;
                 }
 
@@ -1642,7 +1646,10 @@ const MenuBook = {
             .replace(/[A-Z]$/, '')
             .trim();
         const imgKey = 'monster_' + baseName;
+        
+        // assets.jsのImageオブジェクトからsrc(Base64)を取得
         const imgSrc = g[imgKey] ? g[imgKey].src : null;
+        
         const imgHtml = imgSrc 
             ? `<img src="${imgSrc}" style="max-height:100%; max-width:100%; object-fit:contain;">`
             : `<div style="color:#555;">NO IMAGE</div>`;
@@ -1659,7 +1666,7 @@ const MenuBook = {
         const elmRes = monster.elmRes || {};
         const acts = monster.acts || [1];
 
-        // HTML生成 (エディタのレイアウトをCSS Grid/Flexで再現)
+        // HTML生成
         let html = `
             <div style="font-family:sans-serif; color:#ddd;">
                 <div style="display:flex; justify-content:space-between; align-items:end; border-bottom:1px solid #555; padding-bottom:5px; margin-bottom:10px;">
@@ -1705,7 +1712,7 @@ const MenuBook = {
                 <div style="background:#252525; border:1px solid #444; border-radius:4px; padding:8px; margin-bottom:15px;">
                     <div style="display:flex; justify-content:space-between; font-size:12px; color:#aaa; margin-bottom:5px;">
                         <span>行動パターン</span>
-                        <span>回数: ${monster.actCount||1}</span>
+                        <span>${monster.actCount||1} 回行動</span>
                     </div>
                     <div style="display:flex; flex-direction:column; gap:4px;">
                         ${acts.map(actId => {
@@ -1754,3 +1761,4 @@ const MenuBook = {
         view.innerHTML = html;
     }
 };
+
