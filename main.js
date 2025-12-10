@@ -486,20 +486,27 @@ const App = {
 
         App.log(`${char.name}は限界突破した！(+${char.limitBreak})`);
     },
-
-    // ★修正: ステータス計算 (耐性対応・base定義追加版)
+	
+// ステータス計算 (リミットブレイク計算式を適用)
     calcStats: (char) => {
-        // ★追加: DBからマスタデータを取得して base とする
-        const base = DB.CHARACTERS.find(c => c.id === char.charId) || char;
+        // DBのマスタデータを取得 (基礎ステータス参照用)
+        const master = DB.CHARACTERS.find(c => c.id === char.charId) || char;
+        
+        // リミットブレイク回数 (なければ0)
+        const lb = char.limitBreak || 0;
+        // 加算率 (10%)
+        const lbRate = 0.10;
 
-        // 倍率計算はせず、現在値をそのまま採用
+        // ① 計算式: セーブデータの値 + (基礎ステータス × 10% × LB回数)
+        // ※これが「ゲーム内で使用する素のステータス」になります
         let s = {
-            maxHp: char.hp,
-            maxMp: char.mp,
-            atk: char.atk,
-            def: char.def,
-            spd: char.spd,
-            mag: char.mag,
+            maxHp: char.hp + Math.floor((master.hp || 100) * lbRate * lb),
+            maxMp: char.mp + Math.floor((master.mp || 50) * lbRate * lb),
+            atk: char.atk + Math.floor((master.atk || 10) * lbRate * lb),
+            def: char.def + Math.floor((master.def || 10) * lbRate * lb),
+            spd: char.spd + Math.floor((master.spd || 10) * lbRate * lb),
+            mag: char.mag + Math.floor((master.mag || 10) * lbRate * lb),
+            
             elmAtk: {}, elmRes: {}, magDmg: 0, sklDmg: 0, finDmg: 0, finRed: 0, mpRed: 0,
             
             // ★追加: 状態異常耐性の初期化 (デフォルト0)
