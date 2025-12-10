@@ -1508,7 +1508,7 @@ const MenuSkills = {
 };
 
 /* ==========================================================================
-   7. 魔物図鑑 (詳細表示・エディタ風UI版)
+   7. 魔物図鑑 (詳細表示・エディタ風UI・スクロール＆レイアウト調整版)
    ========================================================================== */
 const MenuBook = {
     // 状態管理
@@ -1524,31 +1524,23 @@ const MenuBook = {
             detailDiv.className = 'flex-col-container';
             detailDiv.style.display = 'none';
             detailDiv.style.background = '#222'; 
-            detailDiv.style.padding = '10px';
+            detailDiv.style.height = '100%'; // 高さ確保
             container.appendChild(detailDiv);
         }
         MenuBook.showList();
     },
 
-    // 画像取得ヘルパー (詳細・リスト共通)
+    // 画像取得ヘルパー
     getMonsterImgSrc: (m) => {
-        // 1. 個別データ(m.img)があれば最優先
         if (m.img) return m.img;
-
-        // 2. assets.js (GRAPHICS.images) から検索
         if (typeof GRAPHICS === 'undefined' || !GRAPHICS.images) return null;
-
         let baseName = m.name
             .replace(/^(強・|真・|極・|神・)+/, '') 
             .replace(/ Lv\d+[A-Z]?$/, '')
             .replace(/[A-Z]$/, '')
             .trim();
-        
         const imgKey = 'monster_' + baseName;
-        // 画像オブジェクトが存在すれば src を返す
-        if (GRAPHICS.images[imgKey]) {
-            return GRAPHICS.images[imgKey].src;
-        }
+        if (GRAPHICS.images[imgKey]) return GRAPHICS.images[imgKey].src;
         return null;
     },
 
@@ -1562,7 +1554,6 @@ const MenuBook = {
             headerBtn.innerText = '戻る';
             headerBtn.onclick = () => Menu.closeSubScreen('book');
         }
-
         MenuBook.renderList();
     },
 
@@ -1618,13 +1609,35 @@ const MenuBook = {
         });
     },
 
+    // --- 前後のモンスターへ切り替え ---
+    switchMonster: (dir) => {
+        const defeatedIds = App.data.book.monsters || [];
+        const validMonsters = DB.MONSTERS.filter(m => defeatedIds.includes(m.id));
+        
+        if (validMonsters.length === 0) return;
+
+        let currentIndex = -1;
+        if (MenuBook.selectedMonster) {
+            currentIndex = validMonsters.findIndex(m => m.id === MenuBook.selectedMonster.id);
+        }
+
+        let newIndex = currentIndex + dir;
+        if (newIndex < 0) newIndex = validMonsters.length - 1;
+        if (newIndex >= validMonsters.length) newIndex = 0;
+
+        MenuBook.showDetail(validMonsters[newIndex]);
+    },
+
     // --- 詳細画面 ---
     showDetail: (monster) => {
+        MenuBook.selectedMonster = monster;
+
         const view = document.getElementById('book-detail-view');
         const list = document.getElementById('book-list');
         list.style.display = 'none';
-        view.style.display = 'block';
-        view.scrollTop = 0;
+        view.style.display = 'flex'; // flexboxに変更して高さを制御
+        view.style.flexDirection = 'column';
+        view.style.overflow = 'hidden'; // 親はスクロールさせない
 
         const headerBtn = document.querySelector('#sub-screen-book .header-bar button');
         if(headerBtn) {
@@ -1647,16 +1660,24 @@ const MenuBook = {
         const elmRes = monster.elmRes || {};
         const acts = monster.acts || [1];
         
-        // ★修正: 1,2,9以外のスキルIDを解決
         const actListHtml = acts.map(actId => {
             const s = DB.SKILLS.find(k => k.id === actId);
             const sName = s ? s.name : (actId===1?'通常攻撃':(actId===2?'防御':(actId===9?'逃げる':'不明')));
             const sIdText = s ? `(ID:${s.id})` : '';
-            return `<div style="background:#333; padding:4px 8px; border-radius:3px; font-size:12px;">${sName} <span style="color:#666; font-size:10px;">${sIdText}</span></div>`;
+            return `<div style="background:#333; padding:4px 8px; border-radius:3px; font-size:12px; margin-bottom:2px;">${sName} <span style="color:#666; font-size:10px;">${sIdText}</span></div>`;
         }).join('');
 
         let html = `
-            <div style="font-family:sans-serif; color:#ddd;">
+            <div style="padding:10px; background:#222; border-bottom:1px solid #444;">
+                <div style="display:flex; justify-content:space-between; align-items:center; background:#333; padding:5px; border-radius:4px;">
+                    <button class="btn" style="padding:2px 10px; font-size:12px;" onclick="MenuBook.switchMonster(-1)">＜ 前</button>
+                    <span style="font-size:12px; color:#aaa;">図鑑ナビ</span>
+                    <button class="btn" style="padding:2px 10px; font-size:12px;" onclick="MenuBook.switchMonster(1)">次 ＞</button>
+                </div>
+            </div>
+
+            <div style="flex:1; overflow-y:auto; padding:10px; font-family:sans-serif; color:#ddd;">
+                
                 <div style="display:flex; justify-content:space-between; align-items:end; border-bottom:1px solid #555; padding-bottom:5px; margin-bottom:10px;">
                     <div>
                         <div style="font-size:10px; color:#aaa;">ID:${monster.id}</div>
@@ -1697,21 +1718,22 @@ const MenuBook = {
                     </div>
                 </div>
 
-                <div style="background:#252525; border:1px solid #444; border-radius:4px; padding:8px; margin-bottom:15px;">
-                    <div style="display:flex; justify-content:space-between; font-size:12px; color:#aaa; margin-bottom:5px;">
-                        <span>行動パターン</span>
-                        <span>${monster.actCount||1} 回行動</span>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    
+                    <div style="background:#252525; border:1px solid #444; border-radius:4px; padding:8px;">
+                        <div style="display:flex; justify-content:space-between; font-size:12px; color:#aaa; margin-bottom:5px; border-bottom:1px solid #444; padding-bottom:2px;">
+                            <span>行動パターン</span>
+                            <span style="font-size:10px;">${monster.actCount||1}回</span>
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:2px;">
+                            ${actListHtml}
+                        </div>
                     </div>
-                    <div style="display:flex; flex-direction:column; gap:4px;">
-                        ${actListHtml}
-                    </div>
-                </div>
 
-                <div>
-                    <div style="font-size:12px; color:#ffd700; margin-bottom:4px;">耐性データ (%)</div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                    <div style="display:flex; flex-direction:column; gap:8px;">
+                        
                         <div style="background:#222; border:1px solid #444; border-radius:4px; padding:5px;">
-                            <div style="font-size:10px; color:#88f; margin-bottom:3px; text-align:center;">属性耐性</div>
+                            <div style="font-size:10px; color:#88f; margin-bottom:3px; text-align:center; border-bottom:1px solid #333;">属性耐性 (%)</div>
                             <div style="display:grid; grid-template-columns:1fr 1fr; gap:2px;">
                                 ${elements.map(e => `
                                     <div style="display:flex; justify-content:space-between; background:#333; padding:2px 4px; border-radius:2px;">
@@ -1721,8 +1743,9 @@ const MenuBook = {
                                 `).join('')}
                             </div>
                         </div>
+
                         <div style="background:#222; border:1px solid #444; border-radius:4px; padding:5px;">
-                            <div style="font-size:10px; color:#f88; margin-bottom:3px; text-align:center;">状態異常耐性</div>
+                            <div style="font-size:10px; color:#f88; margin-bottom:3px; text-align:center; border-bottom:1px solid #333;">状態異常耐性</div>
                             <div style="display:flex; flex-direction:column; gap:2px;">
                                 ${Object.keys(resistLabels).map(key => `
                                     <div style="display:flex; justify-content:space-between; background:#333; padding:2px 4px; border-radius:2px;">
@@ -1732,6 +1755,7 @@ const MenuBook = {
                                 `).join('')}
                             </div>
                         </div>
+
                     </div>
                 </div>
 
