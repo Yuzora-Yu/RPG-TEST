@@ -6,9 +6,9 @@ window.SKILLS_DATA = [
         "type": "物理",
         "target": "単体",
         "mp": 0,
-        "rate": 0.8,
+        "rate": 1,
         "count": 1,
-        "base": 50,
+        "base": 0,
         "elm": null,
         "desc": "通常攻撃"
     },
@@ -23,6 +23,19 @@ window.SKILLS_DATA = [
         "base": 20,
         "elm": null,
         "desc": "ダメージ軽減"
+    },
+    {
+        "id": 3,
+        "name": "こうげき",
+        "type": "物理",
+        "target": "単体",
+        "mp": 0,
+        "rate": 0.8,
+        "count": 2,
+        "base": 0,
+        "desc": "2回攻撃",
+        "elm": null,
+        "drain": true
     },
     {
         "id": 9,
@@ -1260,6 +1273,60 @@ window.SKILLS_DATA = [
         "SuccessRate": 50,
         "turn": 3,
         "desc": "闇のブレス・属性耐性ダウン"
+    },
+    {
+        "id": 612,
+        "name": "霜白の氷塊",
+        "type": "魔法",
+        "target": "全体",
+        "mp": 0,
+        "rate": 0.8,
+        "count": 1,
+        "base": 1000,
+        "desc": "",
+        "elm": "水"
+    },
+    {
+        "id": 613,
+        "name": "紅蓮の炎",
+        "type": "物理",
+        "target": "全体",
+        "mp": 0,
+        "rate": 0.8,
+        "count": 1,
+        "base": 1000,
+        "desc": "",
+        "elm": "火"
+    },
+    {
+        "id": 614,
+        "name": "ウイングダイブ",
+        "type": "物理",
+        "target": "全体",
+        "mp": 350,
+        "rate": 1.1,
+        "count": 2,
+        "base": 500,
+        "desc": "",
+        "elm": "風"
+    },
+    {
+        "id": 615,
+        "name": "竜の咆哮",
+        "type": "特殊",
+        "target": "単体",
+        "mp": 0,
+        "rate": 1,
+        "count": 1,
+        "base": 0,
+        "desc": "",
+        "buff_reset": true,
+        "Fear": true,
+        "SuccessRate": 100,
+        "PercentDamage": 0,
+        "turn": 1,
+        "priority": -20,
+        "elm": null
     },
     {
         "id": 701,
