@@ -96,9 +96,17 @@ const Gacha = {
             current += rate;
         }
         const pool = DB.CHARACTERS.filter(c => c.rarity === selectedRarity);
-        return pool.length > 0 ? pool[Math.floor(Math.random() * pool.length)] : DB.CHARACTERS[0];
+        
+        // ★修正: JSON.parse(JSON.stringify(...)) を使って
+        // マスタデータの「参照」ではなく「完全なコピー」を返すようにする
+        if (pool.length > 0) {
+            const pick = pool[Math.floor(Math.random() * pool.length)];
+            return JSON.parse(JSON.stringify(pick));
+        } else {
+            return JSON.parse(JSON.stringify(DB.CHARACTERS[0]));
+        }
     },
-
+    
     playWhiteFlash: (hasEX) => {
         const wo = document.getElementById('white-out-overlay');
         wo.classList.remove('black-turn');
