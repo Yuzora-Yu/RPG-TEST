@@ -490,7 +490,7 @@ const App = {
 // ステータス計算 (リミットブレイク計算式を適用)
     calcStats: (char) => {
         // DBのマスタデータを取得 (基礎ステータス参照用)
-        const master = DB.CHARACTERS.find(c => c.id === char.charId) || char;
+        const base = DB.CHARACTERS.find(c => c.id === char.charId) || char;
         
         // リミットブレイク回数 (なければ0)
         const lb = char.limitBreak || 0;
@@ -500,12 +500,12 @@ const App = {
         // ① 計算式: セーブデータの値 + (基礎ステータス × 10% × LB回数)
         // ※これが「ゲーム内で使用する素のステータス」になります
         let s = {
-            maxHp: char.hp + Math.floor((master.hp || 100) * lbRate * lb),
-            maxMp: char.mp + Math.floor((master.mp || 50) * lbRate * lb),
-            atk: char.atk + Math.floor((master.atk || 10) * lbRate * lb),
-            def: char.def + Math.floor((master.def || 10) * lbRate * lb),
-            spd: char.spd + Math.floor((master.spd || 10) * lbRate * lb),
-            mag: char.mag + Math.floor((master.mag || 10) * lbRate * lb),
+            maxHp: char.hp + Math.floor((base.hp || 100) * lbRate * lb),
+            maxMp: char.mp + Math.floor((base.mp || 50) * lbRate * lb),
+            atk: char.atk + Math.floor((base.atk || 10) * lbRate * lb),
+            def: char.def + Math.floor((base.def || 10) * lbRate * lb),
+            spd: char.spd + Math.floor((base.spd || 10) * lbRate * lb),
+            mag: char.mag + Math.floor((base.mag || 10) * lbRate * lb),
             
             elmAtk: {}, elmRes: {}, magDmg: 0, sklDmg: 0, finDmg: 0, finRed: 0, mpRed: 0,
             
