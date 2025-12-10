@@ -1048,7 +1048,7 @@ const MenuAllies = {
 
         const tabContainer = document.getElementById('allies-tabs');
         tabContainer.innerHTML = '';
-        const tabs = ['基本', '装備', '技能'];
+        const tabs = ['基本', '装備', 'スキル'];
         for(let i=1; i<=3; i++) {
             const btn = document.createElement('button');
             btn.className = `tab-btn ${MenuAllies.currentTab===i?'active':''}`;
@@ -1598,7 +1598,7 @@ const MenuBook = {
                             <span style="font-size:11px; color:#aaa;">Rank:${m.rank}</span>
                         </div>
                         <div style="font-size:10px; color:#ccc; display:flex; gap:6px;">
-                            <span>HP:${m.hp}</span> <span>攻:${m.atk}</span> <span>防:${m.def}</span> <span>速:${m.spd}</span>
+                            <span>HP:${m.hp}</span> <span>攻:${m.atk}</span> <span>防:${m.def}</span> <span>魔:${m.mag}</span> <span>速:${m.spd}</span>
                         </div>
                         <div style="font-size:10px; color:#aaa; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;">
                             行動: ${skillNames}
