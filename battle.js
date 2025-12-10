@@ -1333,54 +1333,52 @@ init: () => {
         const g = (typeof GRAPHICS !== 'undefined' && GRAPHICS.images) ? GRAPHICS.images : {};
         
         Battle.enemies.forEach(e => {
-            if(e.isFled) return; 
-            const div = document.createElement('div');
-            div.className = `enemy-sprite ${e.hp<=0?'dead':''}`;
+        if(e.isFled) return; 
+        const div = document.createElement('div');
+        div.className = `enemy-sprite ${e.hp<=0?'dead':''}`;
+        
+        // 下のマージン(18px)
+        div.style.cssText = "position: relative; margin: 0px 4px 18px 4px; width: 96px; height: 96px; overflow: visible;"; 
+        
+        let baseName = e.name.replace(/^(強・|真・|極・|神・)+/, '').replace(/ Lv\d+[A-Z]?$/, '').replace(/[A-Z]$/, '').trim();
+        const imgKey = 'monster_' + baseName;
+        const hasImage = g[imgKey] ? true : false;
+        let imgHtml = '';
+        
+        if (hasImage) {
+            div.style.border = 'none'; div.style.background = 'transparent';
+            imgHtml = `<img src="${g[imgKey].src}" style="position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:100%; height:100%; object-fit:contain; z-index:0; pointer-events:none;">`;
+        }
+        
+        if(e.hp > 0) {
+            const hpPer = (e.hp / e.baseMaxHp) * 100;
+            const hpRatio = e.hp / e.baseMaxHp;
             
-            // ③画像を大きく(width/height指定)、左右と上のマージンを詰める(margin調整)
-            // 下のマージン(28px)は名前とHPバーの表示領域として確保
-            div.style.cssText = "position: relative; margin: 0px 4px 28px 4px; width: 96px; height: 96px; overflow: visible;"; 
+            const nameColor = hpRatio < 0.5 ? '#ff4' : '#fff';
             
-            let baseName = e.name.replace(/^(強・|真・|極・|神・)+/, '').replace(/ Lv\d+[A-Z]?$/, '').replace(/[A-Z]$/, '').trim();
-            const imgKey = 'monster_' + baseName;
-            const hasImage = g[imgKey] ? true : false;
-            let imgHtml = '';
-            
-            if (hasImage) {
-                div.style.border = 'none'; div.style.background = 'transparent';
-                imgHtml = `<img src="${g[imgKey].src}" style="position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:100%; height:100%; object-fit:contain; z-index:0; pointer-events:none;">`;
-            }
-            
-            if(e.hp > 0) {
-                const hpPer = (e.hp / e.baseMaxHp) * 100;
-                const hpRatio = e.hp / e.baseMaxHp; // HP割合計算
-                
-                // ②HPが半分(0.5)を下回ったら名前を黄色(#ff4)、それ以外は白(#fff)
-                const nameColor = hpRatio < 0.5 ? '#ff4' : '#fff';
-                
-                // ①画像の下はHPバーと名前だけにする（構成は維持しつつスタイル整理）
-                div.innerHTML = `
-                    ${imgHtml}
-                    <div style="position: absolute; top: 100%; left: 50%; transform: translateX(-50%); width: 140%; display: flex; flex-direction: column; align-items: center; z-index: 10; pointer-events: none;">
-                        <div style="font-size: 11px; color: ${nameColor}; text-shadow: 1px 1px 0 #000; white-space: nowrap; margin-top: 0px; line-height: 1.2; font-weight:bold;">${e.name}</div>
-                        <div class="enemy-hp-bar" style="width: 90%; height: 6px; border: 1px solid #000; background: #333; margin-top: 1px;">
-                            <div class="enemy-hp-val" style="width:${hpPer}%; height:100%; background:#ff4444; transition:width 0.2s;"></div>
-                        </div>
-                    </div>`;
+            div.innerHTML = `
+                ${imgHtml}
+                <div style="position: absolute; top: 100%; left: 50%; transform: translateX(-50%); width: 100%; display: flex; flex-direction: column; align-items: center; z-index: 10; pointer-events: none;">
+                    <div style="font-size: 11px; color: ${nameColor}; text-shadow: 1px 1px 0 #000; white-space: nowrap; margin-top: 0px; line-height: 1.2;">${e.name}</div>
                     
-                div.onclick = (event) => { 
-                    event.stopPropagation(); 
-                    if(Battle.phase==='target_select' && (Battle.selectingAction==='attack'||Battle.selectingAction==='skill')) { 
-                        Battle.selectTarget(e); 
-                    } 
-                };
-            } else { 
-                div.style.opacity = 0.5; 
-                div.innerHTML = `${imgHtml}<div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); font-size:14px; color:#f88; font-weight:bold; text-shadow:1px 1px 0 #000; z-index:10;">DEAD</div>`;
-            }
-            container.appendChild(div);
-        });
-    },
+                    <div class="enemy-hp-bar" style="width: 70%; height: 6px; border: 1px solid #000; background: #333; margin-top: 1px;">
+                        <div class="enemy-hp-val" style="width:${hpPer}%; height:100%; background:#ff4444; transition:width 0.2s;"></div>
+                    </div>
+                </div>`;
+                
+            div.onclick = (event) => { 
+                event.stopPropagation(); 
+                if(Battle.phase==='target_select' && (Battle.selectingAction==='attack'||Battle.selectingAction==='skill')) { 
+                    Battle.selectTarget(e); 
+                } 
+            };
+        } else { 
+            div.style.opacity = 0.5; 
+            div.innerHTML = `${imgHtml}<div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); font-size:14px; color:#f88; font-weight:bold; text-shadow:1px 1px 0 #000; z-index:10;">DEAD</div>`;
+        }
+        container.appendChild(div);
+    });
+},
 
 
     renderPartyStatus: () => {
