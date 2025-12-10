@@ -1,4 +1,4 @@
-/* battle.js (修正版: 前半パート) */
+/* battle.js (完全版: ターゲット判定修正・シナジー修正・耐性＆感電対応) */
 
 const Battle = {
     active: false,
@@ -31,8 +31,7 @@ const Battle = {
 
     getEl: (id) => document.getElementById(id),
     
-    // ★修正: 戦闘開始時にステータスを計算して固定化(snapshot)する
-    init: () => {
+init: () => {
         Battle.active = true;
         Battle.phase = 'init';
         Battle.commandQueue = [];
@@ -51,18 +50,24 @@ const Battle = {
                 const charData = App.getChar(uid);
                 if(!charData) return null;
                 const player = new Player(charData);
-
-                // ★修正: 装備・補正込みのステータスを計算して保持する(computedStats)
-                const stats = App.calcStats(charData);
-                player.computedStats = stats; 
                 
-                // HP/MPは現在値を採用、最大値は計算結果を採用
+                // ★修正: 計算済みステータス(装備・職業補正込)を戦闘用プロパティとしてセット
+                const stats = App.calcStats(charData);
                 player.hp = Math.min(player.hp, stats.maxHp);
                 player.mp = Math.min(player.mp, stats.maxMp);
                 player.baseMaxHp = stats.maxHp;
                 player.baseMaxMp = stats.maxMp;
+
+                // ここで atk, def 等をコピーしないと battle.js で 0 になる
+                player.atk = stats.atk;
+                player.def = stats.def;
+                player.spd = stats.spd;
+                player.mag = stats.mag;
+                player.elmAtk = stats.elmAtk || {};
+                player.elmRes = stats.elmRes || {};
+                player.finDmg = stats.finDmg || 0;
+                player.finRed = stats.finRed || 0;
                 
-                // パッシブスキルの読み込み
                 player.passive = Battle.getPassives(player);
                 Battle.initBattleStatus(player);
                 return player;
@@ -80,24 +85,26 @@ const Battle = {
             Battle.log("戦闘に復帰した！");
             Battle.enemies = App.data.battle.enemies.map(e => {
                 let base = DB.MONSTERS.find(m => m.id === e.baseId);
-                // dungeon.js の getEnemy 等を経由していない場合などのフォールバック
                 if (!base && window.generateEnemy) {
-                    base = window.generateEnemy(1); 
+                    base = { name: e.name, hp: e.maxHp, atk: 10, def: 10, spd: 10, mag: 10, exp: 0, gold: 0 };
                 }
                 if (!base) return null;
                 const m = new Monster(base, 1.0);
-                m.hp = e.hp; m.name = e.name; m.id = e.baseId; 
+                m.hp = e.hp; m.baseMaxHp = e.maxHp; m.name = e.name; m.id = e.baseId; 
                 m.isDead = m.hp <= 0;
-                m.isFled = false; 
+                m.isFled = false;
                 if(base.actCount) m.actCount = base.actCount;
-                
-                // ★修正: 敵も computedStats を用意 (基本ステータスをコピー)
-                m.computedStats = { 
-                    atk: m.baseStats.atk, def: m.baseStats.def, 
-                    spd: m.baseStats.spd, mag: m.baseStats.mag,
-                    maxHp: m.baseMaxHp, maxMp: m.baseMaxMp,
-                    resists: base.resists || {}, elmRes: base.elmRes || {}
-                };
+
+                // ★修正: 敵の baseStats を戦闘用プロパティに展開
+                m.atk = m.baseStats.atk;
+                m.def = m.baseStats.def;
+                m.spd = m.baseStats.spd;
+                m.mag = m.baseStats.mag;
+                // 敵は elmAtk/elmRes がデータ構造上存在しない場合があるので初期化
+                m.elmAtk = {}; 
+                m.elmRes = {};
+                m.finDmg = 0;
+                m.finRed = 0;
 
                 m.passive = base.passive || {};
                 Battle.initBattleStatus(m);
@@ -107,17 +114,8 @@ const Battle = {
             const isBoss = App.data.battle && App.data.battle.isBossBattle;
             Battle.enemies = Battle.generateNewEnemies(isBoss);
             Battle.enemies.forEach(e => {
-                // ★修正: 新規敵も computedStats を用意
-                const base = DB.MONSTERS.find(m => m.id === e.id) || e.data;
-                e.computedStats = { 
-                    atk: e.baseStats.atk, def: e.baseStats.def, 
-                    spd: e.baseStats.spd, mag: e.baseStats.mag,
-                    maxHp: e.baseMaxHp, maxMp: e.baseMaxMp,
-                    resists: (base && base.resists) ? base.resists : {},
-                    elmRes: (base && base.elmRes) ? base.elmRes : {}
-                };
-                
                 Battle.initBattleStatus(e);
+                const base = DB.MONSTERS.find(m => m.id === e.id);
                 e.passive = base ? (base.passive || {}) : {};
             });
             
@@ -140,9 +138,11 @@ const Battle = {
         Battle.startInputPhase();
     },
 
+    // ★修正: パッシブスキル・シナジーの集計関数
     getPassives: (actor) => {
         let passives = {};
         
+        // 1. スキルツリー
         if (actor.tree) {
             for (let key in actor.tree) {
                 const level = actor.tree[key];
@@ -158,9 +158,11 @@ const Battle = {
             }
         }
 
+        // 2. 装備シナジー (修正: 各装備パーツごとにチェック)
         if (actor.equips) {
             Object.values(actor.equips).forEach(eq => {
                 if (eq && typeof App.checkSynergy === 'function') {
+                    // 各装備について単体で条件を満たしているかチェック
                     const syn = App.checkSynergy(eq);
                     if (syn && syn.effect) {
                         passives[syn.effect] = true;
@@ -180,28 +182,23 @@ const Battle = {
         };
     },
 
-    // ★修正: ステータス取得ロジック (computedStatsを優先参照)
     getBattleStat: (actor, key) => {
-        // 1. 基本値の取得
-        let val = 0;
+        // ★修正: actor[key] が 0/undefined の場合、main.js の getStat メソッドがあればそちらを試す
+        let val = (actor[key] !== undefined) ? actor[key] : 0;
         
-        // 最大HP/MPの特別扱い
-        if (key === 'maxHp') return actor.baseMaxHp;
-        if (key === 'maxMp') return actor.baseMaxMp;
-
-        // 計算済みステータスがあればそこから、なければbaseStatsから
-        if (actor.computedStats && actor.computedStats[key] !== undefined) {
-            val = actor.computedStats[key];
-        } else if (actor.baseStats && actor.baseStats[key] !== undefined) {
-            val = actor.baseStats[key];
-        } else if (actor[key] !== undefined) {
-            val = actor[key]; // 直接プロパティ (予備)
+        if (val === 0 && typeof actor.getStat === 'function') {
+             // main.js の Player/Monster クラスのメソッド経由で取得を試みる
+             val = actor.getStat(key);
         }
 
-        // 耐性データなどはオブジェクトのまま返す
-        if (typeof val === 'object') return val;
+        if (key === 'maxHp') val = actor.baseMaxHp;
+        if (key === 'maxMp') val = actor.baseMaxMp;
+        
+        // 耐性はオブジェクトごと返す
+        if (key === 'resists') {
+            return actor.resists || val || {};
+        }
 
-        // 2. 戦闘中バフ・デバフの適用
         const b = actor.battleStatus;
         if (!b) return val;
 
@@ -215,6 +212,17 @@ const Battle = {
         const newEnemies = [];
         const floor = App.data.progress.floor || 1; 
 
+        // 敵生成時の共通処理ヘルパー
+        const setupEnemyStats = (m) => {
+            m.atk = m.baseStats.atk;
+            m.def = m.baseStats.def;
+            m.spd = m.baseStats.spd;
+            m.mag = m.baseStats.mag;
+            m.elmAtk = {}; m.elmRes = {};
+            m.finDmg = 0; m.finRed = 0;
+            return m;
+        };
+
         if (isBoss) {
             Battle.log("強大な魔物が現れた！");
             const bosses = DB.MONSTERS.filter(m => m.minF === floor && m.actCount && m.id >= 1000);
@@ -223,18 +231,19 @@ const Battle = {
                     const m = new Monster(base, 1.0);
                     m.name = base.name; m.id = base.id;
                     m.actCount = base.actCount || 1;
-                    newEnemies.push(m);
+                    newEnemies.push(setupEnemyStats(m)); // ★適用
                 });
             } else {
                 const base = DB.MONSTERS.find(m => m.id === 1000);
-                if (base) newEnemies.push(new Monster(base, 1.0));
+                if (base) newEnemies.push(setupEnemyStats(new Monster(base, 1.0))); // ★適用
             }
         } else {
             Battle.log("モンスターが現れた！");
             if (Math.random() < 0.05) {
                 const rares = DB.MONSTERS.filter(m => !m.actCount && m.minF <= floor && m.id < 1000);
                 if (rares.length > 0) {
-                    newEnemies.push(new Monster(rares[Math.floor(Math.random() * rares.length)], 1.0));
+                    const m = new Monster(rares[Math.floor(Math.random() * rares.length)], 1.0);
+                    newEnemies.push(setupEnemyStats(m)); // ★適用
                     return newEnemies;
                 }
             }
@@ -244,7 +253,7 @@ const Battle = {
                     const enemyData = window.generateEnemy(floor);
                     const m = new Monster(enemyData, 1.0);
                     if (count > 1) m.name += String.fromCharCode(65+i);
-                    newEnemies.push(m);
+                    newEnemies.push(setupEnemyStats(m)); // ★適用
                 }
             }
         }
@@ -388,6 +397,7 @@ const Battle = {
                 else if (actionData.debuff_reset || actionData.CureAilments) actualTargetType = 'ally'; 
                 else actualTargetType = 'enemy';
             } else if (range === '全体') {
+                // ★修正: debuff_reset, HPRegen, MPRegen, CureAilments がある場合は味方全体とみなす
                 if (type.includes('回復') || ['蘇生','強化'].includes(type) || 
                     actionData.debuff_reset || actionData.CureAilments || 
                     actionData.HPRegen || actionData.MPRegen) {
@@ -788,7 +798,7 @@ const Battle = {
         Battle.startInputPhase();
     },
 
-    // 行動終了時処理
+    // ★行動終了時処理
     onActionEnd: async (actor) => {
         if (!actor) return;
         const b = actor.battleStatus;
@@ -852,6 +862,7 @@ const Battle = {
         }
 
         // ★追加: ボスの自動回復 (ID 1000以上)
+        // ログなしで5%回復
         if (actor.hp > 0 && actor.id >= 1000) {
             const rec = Math.floor(actor.baseMaxHp * 0.05);
             if (rec > 0 && actor.hp < actor.baseMaxHp) {
@@ -859,15 +870,8 @@ const Battle = {
             }
         }
     },
-    
-    // ... processAction 以降は省略なしで実装済みですが、リクエスト範囲はここまでと解釈します
-    // 必要であれば後半も同様に記述可能です。
 
-
-
-				
     // アクション実行 (耐性判定追加)
-				
     processAction: async (cmd) => {
         const actor = cmd.actor;
         const data = cmd.data;
@@ -1321,35 +1325,64 @@ const Battle = {
         Battle.party.forEach(p => { if(p && p.uid) { const d = App.data.characters.find(c => c.uid === p.uid); if(d) { d.currentHp = p.hp; d.currentMp = p.mp; } } });
         App.save();
     },
-    renderEnemies: () => {
+
+	renderEnemies: () => {
         const container = Battle.getEl('enemy-container');
         if(!container) return;
         container.innerHTML = '';
         const g = (typeof GRAPHICS !== 'undefined' && GRAPHICS.images) ? GRAPHICS.images : {};
+        
         Battle.enemies.forEach(e => {
             if(e.isFled) return; 
             const div = document.createElement('div');
             div.className = `enemy-sprite ${e.hp<=0?'dead':''}`;
-            div.style.cssText = "position: relative; margin: 5px 8px 35px 8px; overflow: visible;"; 
+            
+            // ③画像を大きく(width/height指定)、左右と上のマージンを詰める(margin調整)
+            // 下のマージン(28px)は名前とHPバーの表示領域として確保
+            div.style.cssText = "position: relative; margin: 0px 4px 28px 4px; width: 96px; height: 96px; overflow: visible;"; 
+            
             let baseName = e.name.replace(/^(強・|真・|極・|神・)+/, '').replace(/ Lv\d+[A-Z]?$/, '').replace(/[A-Z]$/, '').trim();
             const imgKey = 'monster_' + baseName;
             const hasImage = g[imgKey] ? true : false;
             let imgHtml = '';
+            
             if (hasImage) {
                 div.style.border = 'none'; div.style.background = 'transparent';
                 imgHtml = `<img src="${g[imgKey].src}" style="position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:100%; height:100%; object-fit:contain; z-index:0; pointer-events:none;">`;
             }
+            
             if(e.hp > 0) {
                 const hpPer = (e.hp / e.baseMaxHp) * 100;
-                div.innerHTML = `${imgHtml}<div style="position: absolute; top: 100%; left: 50%; transform: translateX(-50%); width: 140%; display: flex; flex-direction: column; align-items: center; z-index: 10; pointer-events: none;"><div style="font-size: 10px; color: #fff; text-shadow: 1px 1px 0 #000; white-space: nowrap; margin-top: 2px; line-height: 1.2;">${e.name}</div><div class="enemy-hp-bar" style="width: 80%; height: 5px; border: 1px solid #000; background: #333; margin-top: 2px;"><div class="enemy-hp-val" style="width:${hpPer}%; height:100%; background:#ff4444; transition:width 0.2s;"></div></div></div>`;
-                div.onclick = (event) => { event.stopPropagation(); if(Battle.phase==='target_select' && (Battle.selectingAction==='attack'||Battle.selectingAction==='skill')) { Battle.selectTarget(e); } };
+                const hpRatio = e.hp / e.baseMaxHp; // HP割合計算
+                
+                // ②HPが半分(0.5)を下回ったら名前を黄色(#ff4)、それ以外は白(#fff)
+                const nameColor = hpRatio < 0.5 ? '#ff4' : '#fff';
+                
+                // ①画像の下はHPバーと名前だけにする（構成は維持しつつスタイル整理）
+                div.innerHTML = `
+                    ${imgHtml}
+                    <div style="position: absolute; top: 100%; left: 50%; transform: translateX(-50%); width: 140%; display: flex; flex-direction: column; align-items: center; z-index: 10; pointer-events: none;">
+                        <div style="font-size: 11px; color: ${nameColor}; text-shadow: 1px 1px 0 #000; white-space: nowrap; margin-top: 0px; line-height: 1.2; font-weight:bold;">${e.name}</div>
+                        <div class="enemy-hp-bar" style="width: 90%; height: 6px; border: 1px solid #000; background: #333; margin-top: 1px;">
+                            <div class="enemy-hp-val" style="width:${hpPer}%; height:100%; background:#ff4444; transition:width 0.2s;"></div>
+                        </div>
+                    </div>`;
+                    
+                div.onclick = (event) => { 
+                    event.stopPropagation(); 
+                    if(Battle.phase==='target_select' && (Battle.selectingAction==='attack'||Battle.selectingAction==='skill')) { 
+                        Battle.selectTarget(e); 
+                    } 
+                };
             } else { 
                 div.style.opacity = 0.5; 
-                div.innerHTML = `${imgHtml}<div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); font-size:12px; color:#f88; font-weight:bold; text-shadow:1px 1px 0 #000; z-index:10;">DEAD</div><div style="position:absolute; top:100%; left:50%; transform:translateX(-50%); width:140%; text-align:center; font-size:10px; color:#aaa; text-shadow:1px 1px 0 #000; margin-top:2px;">${e.name}</div>`;
+                div.innerHTML = `${imgHtml}<div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); font-size:14px; color:#f88; font-weight:bold; text-shadow:1px 1px 0 #000; z-index:10;">DEAD</div>`;
             }
             container.appendChild(div);
         });
     },
+
+
     renderPartyStatus: () => {
         const container = Battle.getEl('battle-party-bar'); if(!container) return;
         container.innerHTML = '';
