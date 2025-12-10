@@ -5,8 +5,8 @@ window.ITEMS_DATA = [
         "rank": 1,
         "name": "やくそう",
         "type": "HP回復",
-        "val": 100,
-        "desc": "HPを約100回復",
+        "val": 200,
+        "desc": "HPを200回復",
         "target": "単体",
         "price": 10
     },
@@ -25,27 +25,27 @@ window.ITEMS_DATA = [
     },
     {
         "id": 3,
-        "rank": 2,
+        "rank": 5,
         "name": "魔法の小瓶",
         "type": "MP回復",
-        "val": 30,
-        "desc": "MPを約30回復",
+        "val": 50,
+        "desc": "MPを50回復",
         "target": "単体",
         "price": 100
     },
     {
         "id": 2,
-        "rank": 3,
+        "rank": 5,
         "name": "上やくそう",
         "type": "HP回復",
-        "val": 300,
-        "desc": "HPを約300回復",
+        "val": 1000,
+        "desc": "HPを1000回復",
         "target": "単体",
         "price": 50
     },
     {
         "id": 9,
-        "rank": 4,
+        "rank": 10,
         "name": "やまびこ草",
         "type": "状態異常回復",
         "cures": [
@@ -57,7 +57,7 @@ window.ITEMS_DATA = [
     },
     {
         "id": 10,
-        "rank": 4,
+        "rank": 10,
         "name": "記憶の実",
         "type": "状態異常回復",
         "cures": [
@@ -69,7 +69,7 @@ window.ITEMS_DATA = [
     },
     {
         "id": 11,
-        "rank": 4,
+        "rank": 10,
         "name": "妖精の涙",
         "type": "状態異常回復",
         "cures": [
@@ -81,17 +81,17 @@ window.ITEMS_DATA = [
     },
     {
         "id": 4,
-        "rank": 5,
+        "rank": 20,
         "name": "魔法の聖水",
         "type": "MP回復",
-        "val": 100,
-        "desc": "MPを約100回復",
+        "val": 500,
+        "desc": "MPを500回復",
         "target": "単体",
         "price": 500
     },
     {
         "id": 5,
-        "rank": 6,
+        "rank": 30,
         "name": "世界樹の葉",
         "type": "蘇生",
         "val": 100,
@@ -101,17 +101,17 @@ window.ITEMS_DATA = [
     },
     {
         "id": 13,
-        "rank": 7,
+        "rank": 40,
         "name": "超やくそう",
         "type": "HP回復",
         "val": 9999,
-        "desc": "HPを全回復",
+        "desc": "HPを9999回復",
         "target": "単体",
         "price": 2000
     },
     {
         "id": 12,
-        "rank": 8,
+        "rank": 50,
         "name": "世界樹の木の実",
         "type": "状態異常回復",
         "CureAilments": true,
@@ -129,30 +129,30 @@ window.ITEMS_DATA = [
     },
     {
         "id": 14,
-        "rank": 9,
+        "rank": 60,
         "name": "賢者の聖水",
         "type": "MP回復",
         "val": 9999,
-        "desc": "MPを全回復",
+        "desc": "MPを9999回復",
         "target": "単体",
         "price": 10000
     },
     {
         "id": 7,
-        "rank": 10,
+        "rank": 70,
         "name": "エルフの飲み薬",
         "type": "MP回復",
-        "val": 9999,
+        "val": 999999,
         "desc": "MPを全回復",
         "target": "単体",
         "price": 300000
     },
     {
         "id": 6,
-        "rank": 11,
+        "rank": 80,
         "name": "世界樹の雫",
         "type": "HP回復",
-        "val": 99999,
+        "val": 999999,
         "desc": "味方全員のHPを全回復",
         "target": "全体",
         "price": 500000
