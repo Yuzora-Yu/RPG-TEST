@@ -971,22 +971,131 @@ init: () => {
         let successRate = rawSuccessRate;
         if (successRate <= 1 && successRate > 0) successRate *= 100;
 
-        // マダンテ
-        if (data && data.id === 500) {
-            let dmg = mpCost * 5;
-            const targets = cmd.isEnemy ? Battle.party.filter(p=>p && !p.isDead) : Battle.enemies.filter(e=>!e.isDead && !e.isFled);
-            for (let t of targets) {
-                if(!t) continue;
-                t.hp -= dmg;
-                Battle.log(`【${t.name}】に<span style="color:#d4d">${dmg}</span>のダメージ！`);
-                if (t.hp <= 0) { t.hp = 0; t.isDead = true; Battle.log(`【${t.name}】は倒れた！`); }
+        // マダンテ系 (ID 500～505) : 属性・軽減・回数・範囲対応
+        if (data && data.id >= 500 && data.id <= 505) {
+            let baseBaseDmg = mpCost * 5; // 基礎ダメージ
+            let hitCount = (typeof data.count === 'number') ? data.count : 1; // 回数設定
+            
+            // --- ターゲット候補プール ---
+            const pool = cmd.isEnemy ? Battle.party.filter(p=>p && !p.isDead) : Battle.enemies.filter(e=>!e.isDead && !e.isFled);
+            
+            // --- ターゲットリストの決定 ---
+            // ループを回すためのリストを作成します
+            let loopTargets = [];
+            
+            if (cmd.targetScope === 'ランダム') {
+                // ランダムの場合は「攻撃回数分だけ都度ターゲットを決める」ため、
+                // 外側のループはダミーで1回だけ回るようにします
+                if (pool.length > 0) loopTargets = [pool[0]];
+            } else if (cmd.targetScope === '単体' && cmd.target) {
+                // 単体指定
+                if (!cmd.target.isDead) loopTargets = [cmd.target];
+            } else {
+                // 全体 (またはその他)
+                loopTargets = pool;
             }
-            Battle.renderEnemies();
-            Battle.renderPartyStatus();
+
+            // --- 実行ループ ---
+            // 全体攻撃の場合: 敵A(x回) → 敵B(x回)... の順で処理
+            // ランダムの場合: ダミー(1回) → 内側で毎回ランダム選択(x回)
+            for (let t of loopTargets) {
+                if (!t) continue;
+                if (cmd.targetScope !== 'ランダム' && t.isDead) continue;
+
+                // 回数分ループ
+                for (let i = 0; i < hitCount; i++) {
+                    
+                    // 実際にヒットさせる対象を決定
+                    let targetToHit = t;
+                    
+                    if (cmd.targetScope === 'ランダム') {
+                        // ランダム指定なら、生存者プールから毎回再抽選
+                        const currentPool = cmd.isEnemy ? Battle.party.filter(p=>p && !p.isDead) : Battle.enemies.filter(e=>!e.isDead && !e.isFled);
+                        if (currentPool.length === 0) break; // もう誰もいない
+                        targetToHit = currentPool[Math.floor(Math.random() * currentPool.length)];
+                    }
+
+                    if (!targetToHit || targetToHit.isDead) continue;
+
+                    // --- 補正計算 ---
+                    let bonusRate = 0; 
+                    let cutRate = 0;   
+                    let isImmune = false; 
+
+                    // 1. 属性補正
+                    if (element) {
+                        const elmAtkVal = (Battle.getBattleStat(actor, 'elmAtk') || {})[element] || 0;
+                        if (elmAtkVal > 0) bonusRate += elmAtkVal;
+
+                        const baseRes = (targetToHit.getStat('elmRes') || {})[element] || 0;
+                        const buffRes = (targetToHit.battleStatus.buffs['elmResUp'] || {}).val || 0;
+                        const debuffRes = (targetToHit.battleStatus.debuffs['elmResDown'] || {}).val || 0;
+                        let resVal = baseRes + buffRes - debuffRes;
+
+                        if (resVal >= 100) isImmune = true; 
+                        else cutRate += resVal;             
+                    }
+
+                    // 2. 与ダメージアップ
+                    const finDmgVal = Battle.getBattleStat(actor, 'finDmg') || 0; 
+                    if (finDmgVal > 0) bonusRate += finDmgVal;
+
+                    // 3. 被ダメージ軽減
+                    let finRed = Battle.getBattleStat(targetToHit, 'finRed') || 0;
+                    if (targetToHit.passive && targetToHit.passive.finRed10) finRed += 10;
+                    if (finRed > 80) finRed = 80;
+                    if (finRed > 0) cutRate += finRed;
+
+                    // --- 最終ダメージ計算 ---
+                    let dmg = baseBaseDmg;
+
+                    if (!isImmune) {
+                        if (bonusRate > 0) dmg = dmg * (1.0 + bonusRate / 100);
+                        dmg = dmg * (1.0 - cutRate / 100);
+                        dmg = dmg * (0.9 + Math.random() * 0.2); // 乱数
+                        if (targetToHit.status && targetToHit.status.defend) dmg = dmg * 0.5; // 防御
+                        dmg = Math.floor(dmg);
+                        if (dmg < 1) dmg = 1;
+                    } else {
+                        dmg = 0;
+                    }
+
+                    // --- 適用とログ ---
+                    targetToHit.hp -= dmg;
+                    
+                    let dmgColor = '#fff';
+                    if(element === '火') dmgColor = '#f88'; 
+                    else if(element === '水') dmgColor = '#88f'; 
+                    else if(element === '雷') dmgColor = '#ff0';
+                    else if(element === '風') dmgColor = '#8f8'; 
+                    else if(element === '光') dmgColor = '#ffc'; 
+                    else if(element === '闇') dmgColor = '#a8f'; 
+                    else if(element === '混沌') dmgColor = '#d4d';
+
+                    if (dmg === 0) {
+                        Battle.log(`ミス！ 【${targetToHit.name}】は ダメージを うけない！`);
+                    } else {
+                        Battle.log(`【${targetToHit.name}】に<span style="color:${dmgColor}">${dmg}</span>のダメージ！`);
+                    }
+
+                    if (targetToHit.hp <= 0) { 
+                        targetToHit.hp = 0; 
+                        targetToHit.isDead = true; 
+                        Battle.log(`【${targetToHit.name}】は倒れた！`); 
+                    }
+
+                    // 連続攻撃時の描画更新とウェイト
+                    Battle.renderEnemies();
+                    Battle.renderPartyStatus();
+                    if (hitCount > 1) await Battle.wait(150);
+                }
+            }
+            
             await Battle.wait(500);
             return;
         }
 
+		
         // ターゲット決定
         let targets = [];
         let scope = cmd.targetScope;
