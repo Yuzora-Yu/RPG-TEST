@@ -243,7 +243,7 @@ const Menu = {
 };
 
 /* ==========================================================================
-   1. 仲間編成 (一覧UI統一・ステータス表示追加版)
+   1. 仲間編成 (下部ボタン追加版)
    ========================================================================== */
 const MenuParty = {
     targetSlot: 0,
@@ -258,6 +258,7 @@ const MenuParty = {
         list.innerHTML = '';
         
         for(let i=0; i<4; i++) {
+            // ... (中略: 既存のスロット生成ループ処理はそのまま) ...
             const uid = App.data.party[i];
             const div = document.createElement('div');
             div.className = 'list-item';
@@ -265,22 +266,12 @@ const MenuParty = {
             if (uid) {
                 const c = App.getChar(uid);
                 const s = App.calcStats(c);
-                
-                // 現在値取得
                 const curHp = c.currentHp !== undefined ? c.currentHp : s.maxHp;
                 const curMp = c.currentMp !== undefined ? c.currentMp : s.maxMp;
-                
-                // 表示用テキスト
-                const lbText = c.limitBreak > 0 
-                    ? `<span style="color:#f0f; font-weight:bold; font-size:11px;">+${c.limitBreak}</span>` 
-                    : '';
+                const lbText = c.limitBreak > 0 ? `<span style="color:#f0f; font-weight:bold; font-size:11px;">+${c.limitBreak}</span>` : '';
                 const rarityLabel = (c.uid === 'p1') ? 'Player' : `[${c.rarity}]`;
                 const rarityColor = (c.uid === 'p1') ? '#ffd700' : Menu.getRarityColor(c.rarity);
-                
-                // 画像
-                const imgHtml = c.img 
-                    ? `<img src="${c.img}" style="width:40px; height:40px; object-fit:cover; border-radius:4px; border:1px solid #555;">`
-                    : `<div style="width:40px; height:40px; background:#333; display:flex; align-items:center; justify-content:center; color:#555; font-size:9px; border-radius:4px; border:1px solid #555;">IMG</div>`;
+                const imgHtml = c.img ? `<img src="${c.img}" style="width:40px; height:40px; object-fit:cover; border-radius:4px; border:1px solid #555;">` : `<div style="width:40px; height:40px; background:#333; display:flex; align-items:center; justify-content:center; color:#555; font-size:9px; border-radius:4px; border:1px solid #555;">IMG</div>`;
 
                 div.innerHTML = `
                     <div style="display:flex; align-items:center; width:100%;">
@@ -288,18 +279,14 @@ const MenuParty = {
                         <div style="margin-right:10px;">${imgHtml}</div>
                         <div style="flex:1;">
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
-                                <div style="font-size:13px; font-weight:bold; color:#fff;">
-                                    ${c.name} ${lbText} <span style="font-size:10px; color:#aaa; font-weight:normal;">(${c.job})</span>
-                                </div>
+                                <div style="font-size:13px; font-weight:bold; color:#fff;">${c.name} ${lbText} <span style="font-size:10px; color:#aaa; font-weight:normal;">(${c.job})</span></div>
                                 <div style="font-size:11px; font-weight:bold; color:${rarityColor};">${rarityLabel}</div>
                             </div>
-                            
                             <div style="font-size:11px; color:#ddd; display:flex; align-items:baseline; margin-bottom:1px;">
                                 <span style="color:#ffd700; font-weight:bold; margin-right:8px;">Lv.${c.level}</span>
                                 <span style="margin-right:8px;">HP <span style="color:#8f8;">${curHp}/${s.maxHp}</span></span>
                                 <span>MP <span style="color:#88f;">${curMp}/${s.maxMp}</span></span>
                             </div>
-
                             <div style="font-size:10px; color:#aaa; display:flex; gap:8px;">
                                 <span>攻:${s.atk}</span> <span>防:${s.def}</span> <span>魔:${s.mag}</span> <span>速:${s.spd}</span>
                             </div>
@@ -308,7 +295,6 @@ const MenuParty = {
                     </div>
                 `;
             } else {
-                // 空きスロット
                 div.innerHTML = `
                     <div style="display:flex; align-items:center; width:100%; height:40px;">
                         <div style="margin-right:10px; font-size:14px; font-weight:bold; color:#aaa; width:15px;">${i+1}.</div>
@@ -317,7 +303,6 @@ const MenuParty = {
                     </div>
                 `;
             }
-            
             div.onclick = () => {
                 MenuParty.targetSlot = i;
                 document.getElementById('party-screen-slots').style.display = 'none';
@@ -326,27 +311,29 @@ const MenuParty = {
             };
             list.appendChild(div);
         }
+        
+        // ★追加: 画面下部の閉じるボタン
+        const closeBtnDiv = document.createElement('div');
+        closeBtnDiv.style.marginTop = '20px';
+        closeBtnDiv.innerHTML = `<button class="btn" style="width:100%; background:#444;" onclick="Menu.closeSubScreen('party')">閉じる</button>`;
+        list.appendChild(closeBtnDiv);
     },
     
     renderCharList: () => {
         const list = document.getElementById('party-char-list');
         list.innerHTML = '<div class="list-item" style="justify-content:center; color:#f88;" onclick="MenuParty.setMember(null)">(この枠を空にする)</div>';
         
+        // ... (中略: 既存のキャラリスト生成処理) ...
         const rarityVal = { N:1, R:2, SR:3, SSR:4, UR:5, EX:6 };
-        
-        // ソート順: PT参加 > レアリティ(主人公優先) > レベル > ID (MenuAlliesと統一)
         const chars = [...App.data.characters].sort((a, b) => {
             const aInParty = App.data.party.includes(a.uid);
             const bInParty = App.data.party.includes(b.uid);
             if (aInParty !== bInParty) return bInParty - aInParty;
-
             if (a.uid === 'p1') return -1;
             if (b.uid === 'p1') return 1;
-
             const rA = rarityVal[a.rarity] || 0;
             const rB = rarityVal[b.rarity] || 0;
             if (rA !== rB) return rB - rA;
-
             if (b.level !== a.level) return b.level - a.level;
             return a.charId - b.charId;
         });
@@ -358,52 +345,44 @@ const MenuParty = {
             
             const curHp = c.currentHp !== undefined ? c.currentHp : s.maxHp;
             const curMp = c.currentMp !== undefined ? c.currentMp : s.maxMp;
-            
-            const inParty = App.data.party.includes(c.uid) 
-                ? '<span style="color:#4ff; font-weight:bold; font-size:10px; margin-right:4px;">[PT]</span>' 
-                : '';
-
-            const lbText = c.limitBreak > 0 
-                ? `<span style="color:#f0f; font-weight:bold; font-size:11px;">+${c.limitBreak}</span>` 
-                : '';
-                
+            const inParty = App.data.party.includes(c.uid) ? '<span style="color:#4ff; font-weight:bold; font-size:10px; margin-right:4px;">[PT]</span>' : '';
+            const lbText = c.limitBreak > 0 ? `<span style="color:#f0f; font-weight:bold; font-size:11px;">+${c.limitBreak}</span>` : '';
             const rarityLabel = (c.uid === 'p1') ? 'Player' : `[${c.rarity}]`;
             const rarityColor = (c.uid === 'p1') ? '#ffd700' : Menu.getRarityColor(c.rarity);
-
-            const imgHtml = c.img 
-                ? `<img src="${c.img}" style="width:40px; height:40px; object-fit:cover; border-radius:4px; border:1px solid #555;">`
-                : `<div style="width:40px; height:40px; background:#333; display:flex; align-items:center; justify-content:center; color:#555; font-size:9px; border-radius:4px; border:1px solid #555;">IMG</div>`;
+            const imgHtml = c.img ? `<img src="${c.img}" style="width:40px; height:40px; object-fit:cover; border-radius:4px; border:1px solid #555;">` : `<div style="width:40px; height:40px; background:#333; display:flex; align-items:center; justify-content:center; color:#555; font-size:9px; border-radius:4px; border:1px solid #555;">IMG</div>`;
 
             div.innerHTML = `
                 <div style="display:flex; align-items:center; width:100%;">
                     <div style="margin-right:10px;">${imgHtml}</div>
                     <div style="flex:1;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
-                            <div style="font-size:13px; font-weight:bold; color:#fff;">
-                                ${inParty}${c.name} ${lbText} <span style="font-size:10px; color:#aaa; font-weight:normal;">(${c.job})</span>
-                            </div>
+                            <div style="font-size:13px; font-weight:bold; color:#fff;">${inParty}${c.name} ${lbText} <span style="font-size:10px; color:#aaa; font-weight:normal;">(${c.job})</span></div>
                             <div style="font-size:11px; font-weight:bold; color:${rarityColor};">${rarityLabel}</div>
                         </div>
-                        
                         <div style="font-size:11px; color:#ddd; display:flex; align-items:baseline; margin-bottom:1px;">
                             <span style="color:#ffd700; font-weight:bold; margin-right:8px;">Lv.${c.level}</span>
                             <span style="margin-right:8px;">HP <span style="color:#8f8;">${curHp}/${s.maxHp}</span></span>
                             <span>MP <span style="color:#88f;">${curMp}/${s.maxMp}</span></span>
                         </div>
-
                         <div style="font-size:10px; color:#aaa; display:flex; gap:8px;">
                             <span>攻:${s.atk}</span> <span>防:${s.def}</span> <span>魔:${s.mag}</span> <span>速:${s.spd}</span>
                         </div>
                     </div>
                 </div>
             `;
-            
             div.onclick = () => MenuParty.setMember(c.uid);
             list.appendChild(div);
         });
+
+        // ★追加: 画面下部の戻るボタン (スロット選択へ)
+        const backBtnDiv = document.createElement('div');
+        backBtnDiv.style.marginTop = '20px';
+        backBtnDiv.innerHTML = `<button class="btn" style="width:100%; background:#444;" onclick="document.getElementById('party-screen-chars').style.display='none'; document.getElementById('party-screen-slots').style.display='flex';">スロット選択に戻る</button>`;
+        list.appendChild(backBtnDiv);
     },
     
     setMember: (uid) => {
+        // ... (既存のsetMemberロジックは変更なし) ...
         if (uid === null) {
             const currentCount = App.data.party.filter(id => id !== null).length;
             if (App.data.party[MenuParty.targetSlot] !== null && currentCount <= 1) {
@@ -421,7 +400,6 @@ const MenuParty = {
         MenuParty.renderSlots();
     }
 };
-
 
 /* ==========================================================================
    2.: プレイ状況画面 (クールな2列表示・文字サイズ調整版)
@@ -442,7 +420,7 @@ const MenuStatus = {
         div.innerHTML = `
             <div class="header-bar">
                 <span>プレイ状況</span>
-                <button class="btn" style="padding:4px 10px;" onclick="Menu.closeSubScreen('status')">閉じる</button>
+                <button class="btn" style="padding:4px 10px;" onclick="Menu.closeSubScreen('status')">戻る</button>
             </div>
             <div id="status-content" class="scroll-area" style="padding:20px; font-family:sans-serif;"></div>
         `;
@@ -491,7 +469,7 @@ const MenuStatus = {
             { label: '冒険開始日時', val: startDateStr, color: '#aaa', fontSize: '12px' },
         ];
 
-        // ★変更点：2列表示 (grid-template-columns: 1fr 1fr) と文字サイズ調整
+        // ★変更点：2列表示のHTML生成後にボタンを追加
         let html = `<div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">`;
         items.forEach(item => {
             html += `
@@ -502,6 +480,13 @@ const MenuStatus = {
             `;
         });
         html += `</div>`;
+
+        // ★追加: 下部閉じるボタン
+        html += `
+            <div style="margin-top:20px;">
+                <button class="btn" style="width:100%; background:#444;" onclick="Menu.closeSubScreen('status')">閉じる</button>
+            </div>
+        `;
 
         content.innerHTML = html;
     }
@@ -910,6 +895,12 @@ const MenuAllies = {
             };
             list.appendChild(div);
         });
+		
+		// ★追加: リスト画面下部の閉じるボタン
+        const closeBtnDiv = document.createElement('div');
+        closeBtnDiv.style.marginTop = '20px';
+        closeBtnDiv.innerHTML = `<button class="btn" style="width:100%; background:#444;" onclick="Menu.closeSubScreen('allies')">閉じる</button>`;
+        list.appendChild(closeBtnDiv);
     },
 
     switchChar: (dir) => {
@@ -1357,6 +1348,10 @@ const MenuAllies = {
                 <div style="display:flex; margin-bottom:10px;">${tabBtns}</div>
 
                 <div>${contentHtml}</div>
+				<div style="margin-top:20px; display:flex; gap:10px; padding-bottom:10px;">
+                    <button class="btn" style="flex:1; background:#444;" onclick="MenuAllies.renderList()">一覧に戻る</button>
+                    <button class="btn" style="flex:1; background:#444;" onclick="Menu.closeSubScreen('allies')">メニューを閉じる</button>
+                </div>
             </div>
         `;
     },
@@ -1635,7 +1630,7 @@ const MenuAllies = {
 
 
 /* ==========================================================================
-   6. スキル使用 ～ 8. 鍛冶屋 (変更なし)
+   6. スキル使用
    ========================================================================== */
 const MenuSkills = {
     selectedCharUid: null,
@@ -1754,7 +1749,7 @@ const MenuSkills = {
 };
 
 /* ==========================================================================
-   7. 魔物図鑑 (詳細表示・エディタ風UI・スクロール＆レイアウト調整版)
+   7. 魔物図鑑 (詳細表示・行動確率非表示版)
    ========================================================================== */
 const MenuBook = {
     // 状態管理
@@ -1815,10 +1810,12 @@ const MenuBook = {
             div.style.alignItems = 'flex-start';
 
             if(isKnown) {
-                const skillNames = (m.acts || []).map(id => {
+                // リスト表示用: 行動内容の概要
+                const skillNames = (m.acts || []).map(act => {
+                    const id = (typeof act === 'object') ? act.id : act;
                     const s = DB.SKILLS.find(k => k.id === id);
                     return s ? s.name : '通常攻撃';
-                }).join(', ');
+                }).slice(0, 3).join(', ') + ((m.acts||[]).length > 3 ? '...' : '');
 
                 const imgSrc = MenuBook.getMonsterImgSrc(m);
                 const imgContent = imgSrc 
@@ -1881,9 +1878,9 @@ const MenuBook = {
         const view = document.getElementById('book-detail-view');
         const list = document.getElementById('book-list');
         list.style.display = 'none';
-        view.style.display = 'flex'; // flexboxに変更して高さを制御
+        view.style.display = 'flex'; 
         view.style.flexDirection = 'column';
-        view.style.overflow = 'hidden'; // 親はスクロールさせない
+        view.style.overflow = 'hidden'; 
 
         const headerBtn = document.querySelector('#sub-screen-book .header-bar button');
         if(headerBtn) {
@@ -1906,11 +1903,26 @@ const MenuBook = {
         const elmRes = monster.elmRes || {};
         const acts = monster.acts || [1];
         
-        const actListHtml = acts.map(actId => {
+        const actListHtml = acts.map(act => {
+            const actId = (typeof act === 'object') ? act.id : act;
+            const cond = (typeof act === 'object') ? act.condition : 0;
+            // 確率は表示しない
+
             const s = DB.SKILLS.find(k => k.id === actId);
             const sName = s ? s.name : (actId===1?'通常攻撃':(actId===2?'防御':(actId===9?'逃げる':'不明')));
             const sIdText = s ? `(ID:${s.id})` : '';
-            return `<div style="background:#333; padding:4px 8px; border-radius:3px; font-size:12px; margin-bottom:2px;">${sName} <span style="color:#666; font-size:10px;">${sIdText}</span></div>`;
+            
+            // 条件テキスト生成
+            let condText = '';
+            if (cond === 1) condText = '<span style="color:#f88;">(HP≧50%)</span>';
+            else if (cond === 2) condText = '<span style="color:#88f;">(HP≦50%)</span>';
+            else if (cond === 3) condText = '<span style="color:#f0f;">(状態異常)</span>';
+            
+            return `
+                <div style="background:#333; padding:4px 8px; border-radius:3px; font-size:12px; margin-bottom:2px; display:flex; justify-content:space-between;">
+                    <span>${sName} <span style="color:#666; font-size:10px;">${sIdText}</span></span>
+                    <span style="font-size:10px; color:#ccc;">${condText}</span>
+                </div>`;
         }).join('');
 
         let html = `
@@ -2005,8 +2017,9 @@ const MenuBook = {
                     </div>
                 </div>
 
-                <div style="margin-top:20px; text-align:center; font-size:10px; color:#555;">
-                    Quest of Elements - Monster Database
+                <div style="margin-top:20px; display:flex; gap:10px; padding-bottom:10px;">
+                    <button class="btn" style="flex:1; background:#444;" onclick="MenuBook.showList()">一覧に戻る</button>
+                    <button class="btn" style="flex:1; background:#444;" onclick="Menu.closeSubScreen('book')">メニューを閉じる</button>
                 </div>
             </div>
         `;
