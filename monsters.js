@@ -14,9 +14,21 @@ window.MONSTERS_DATA = [
         "gold": 21,
         "exp": 16,
         "acts": [
-            1,
-            14,
-            2
+            {
+                "id": 1,
+                "rate": 34,
+                "condition": 0
+            },
+            {
+                "id": 14,
+                "rate": 33,
+                "condition": 0
+            },
+            {
+                "id": 2,
+                "rate": 33,
+                "condition": 0
+            }
         ],
         "actCount": 1,
         "drop": null,
@@ -17681,14 +17693,46 @@ window.MONSTERS_DATA = [
         "exp": 15000,
         "gold": 8000,
         "acts": [
-            407,
-            306,
-            307,
-            605,
-            606,
-            905,
-            57,
-            3
+            {
+                "id": 407,
+                "rate": 13,
+                "condition": 0
+            },
+            {
+                "id": 306,
+                "rate": 13,
+                "condition": 0
+            },
+            {
+                "id": 307,
+                "rate": 13,
+                "condition": 0
+            },
+            {
+                "id": 605,
+                "rate": 13,
+                "condition": 0
+            },
+            {
+                "id": 606,
+                "rate": 12,
+                "condition": 0
+            },
+            {
+                "id": 905,
+                "rate": 12,
+                "condition": 0
+            },
+            {
+                "id": 57,
+                "rate": 12,
+                "condition": 0
+            },
+            {
+                "id": 3,
+                "rate": 12,
+                "condition": 0
+            }
         ],
         "actCount": 2,
         "elmRes": {},
@@ -17708,12 +17752,36 @@ window.MONSTERS_DATA = [
         "exp": 20000,
         "gold": 10000,
         "acts": [
-            1,
-            306,
-            405,
-            406,
-            407,
-            57
+            {
+                "id": 1,
+                "rate": 10,
+                "condition": 0
+            },
+            {
+                "id": 306,
+                "rate": 25,
+                "condition": 1
+            },
+            {
+                "id": 405,
+                "rate": 20,
+                "condition": 2
+            },
+            {
+                "id": 406,
+                "rate": 20,
+                "condition": 0
+            },
+            {
+                "id": 407,
+                "rate": 20,
+                "condition": 0
+            },
+            {
+                "id": 57,
+                "rate": 5,
+                "condition": 0
+            }
         ],
         "actCount": 2,
         "elmRes": {},
@@ -17726,17 +17794,38 @@ window.MONSTERS_DATA = [
         "name": "アトラス",
         "hp": 105000,
         "mp": 6000,
-        "atk": 7500,
+        "atk": 8000,
         "def": 2000,
         "spd": 1150,
         "mag": 1450,
         "exp": 10000,
         "gold": 5000,
         "acts": [
-            113,
-            101,
-            102,
-            44
+            {
+                "id": 113,
+                "rate": 50,
+                "condition": 0
+            },
+            {
+                "id": 101,
+                "rate": 20,
+                "condition": 0
+            },
+            {
+                "id": 102,
+                "rate": 20,
+                "condition": 0
+            },
+            {
+                "id": 44,
+                "rate": 9,
+                "condition": 0
+            },
+            {
+                "id": 1,
+                "rate": 1,
+                "condition": 0
+            }
         ],
         "actCount": 1,
         "elmRes": {},
@@ -17749,20 +17838,48 @@ window.MONSTERS_DATA = [
         "name": "バズズ",
         "hp": 75000,
         "mp": 6500,
-        "atk": 6000,
+        "atk": 6500,
         "def": 5300,
         "spd": 3500,
         "mag": 6700,
         "exp": 10000,
         "gold": 5000,
         "acts": [
-            412,
-            500,
-            309,
-            202,
-            46,
-            81,
-            57
+            {
+                "id": 412,
+                "rate": 15,
+                "condition": 0
+            },
+            {
+                "id": 500,
+                "rate": 10,
+                "condition": 2
+            },
+            {
+                "id": 309,
+                "rate": 20,
+                "condition": 0
+            },
+            {
+                "id": 202,
+                "rate": 20,
+                "condition": 0
+            },
+            {
+                "id": 46,
+                "rate": 25,
+                "condition": 0
+            },
+            {
+                "id": 81,
+                "rate": 5,
+                "condition": 2
+            },
+            {
+                "id": 57,
+                "rate": 5,
+                "condition": 0
+            }
         ],
         "actCount": 1,
         "elmRes": {},
@@ -17775,20 +17892,53 @@ window.MONSTERS_DATA = [
         "name": "ベリアル",
         "hp": 80000,
         "mp": 8400,
-        "atk": 6700,
+        "atk": 7000,
         "def": 6000,
         "spd": 2450,
         "mag": 6500,
         "exp": 10000,
         "gold": 5000,
         "acts": [
-            1,
-            305,
-            306,
-            24,
-            50,
-            412,
-            609
+            {
+                "id": 1,
+                "rate": 1,
+                "condition": 0
+            },
+            {
+                "id": 305,
+                "rate": 15,
+                "condition": 1
+            },
+            {
+                "id": 306,
+                "rate": 15,
+                "condition": 1
+            },
+            {
+                "id": 24,
+                "rate": 10,
+                "condition": 2
+            },
+            {
+                "id": 50,
+                "rate": 10,
+                "condition": 0
+            },
+            {
+                "id": 412,
+                "rate": 17,
+                "condition": 2
+            },
+            {
+                "id": 609,
+                "rate": 17,
+                "condition": 2
+            },
+            {
+                "id": 405,
+                "rate": 15,
+                "condition": 2
+            }
         ],
         "actCount": 1,
         "elmRes": {},
@@ -17808,14 +17958,46 @@ window.MONSTERS_DATA = [
         "exp": 50000,
         "gold": 20000,
         "acts": [
-            404,
-            405,
-            406,
-            407,
-            412,
-            500,
-            57,
-            81
+            {
+                "id": 404,
+                "rate": 20,
+                "condition": 0
+            },
+            {
+                "id": 405,
+                "rate": 15,
+                "condition": 2
+            },
+            {
+                "id": 406,
+                "rate": 15,
+                "condition": 0
+            },
+            {
+                "id": 407,
+                "rate": 15,
+                "condition": 0
+            },
+            {
+                "id": 412,
+                "rate": 10,
+                "condition": 0
+            },
+            {
+                "id": 500,
+                "rate": 10,
+                "condition": 2
+            },
+            {
+                "id": 57,
+                "rate": 5,
+                "condition": 0
+            },
+            {
+                "id": 81,
+                "rate": 10,
+                "condition": 2
+            }
         ],
         "actCount": 2,
         "elmRes": {},
@@ -17835,13 +18017,41 @@ window.MONSTERS_DATA = [
         "exp": 100000,
         "gold": 50000,
         "acts": [
-            111,
-            202,
-            412,
-            406,
-            403,
-            411,
-            57
+            {
+                "id": 111,
+                "rate": 15,
+                "condition": 0
+            },
+            {
+                "id": 202,
+                "rate": 20,
+                "condition": 0
+            },
+            {
+                "id": 412,
+                "rate": 15,
+                "condition": 0
+            },
+            {
+                "id": 406,
+                "rate": 20,
+                "condition": 0
+            },
+            {
+                "id": 403,
+                "rate": 10,
+                "condition": 2
+            },
+            {
+                "id": 411,
+                "rate": 15,
+                "condition": 2
+            },
+            {
+                "id": 57,
+                "rate": 5,
+                "condition": 0
+            }
         ],
         "elmRes": {
             "火": 20,
@@ -17876,16 +18086,56 @@ window.MONSTERS_DATA = [
         "exp": 200000,
         "gold": 100000,
         "acts": [
-            3,
-            614,
-            612,
-            613,
-            610,
-            611,
-            413,
-            107,
-            56,
-            57
+            {
+                "id": 3,
+                "rate": 15,
+                "condition": 0
+            },
+            {
+                "id": 614,
+                "rate": 10,
+                "condition": 1
+            },
+            {
+                "id": 612,
+                "rate": 10,
+                "condition": 1
+            },
+            {
+                "id": 613,
+                "rate": 10,
+                "condition": 1
+            },
+            {
+                "id": 610,
+                "rate": 10,
+                "condition": 2
+            },
+            {
+                "id": 611,
+                "rate": 10,
+                "condition": 2
+            },
+            {
+                "id": 413,
+                "rate": 10,
+                "condition": 2
+            },
+            {
+                "id": 107,
+                "rate": 10,
+                "condition": 2
+            },
+            {
+                "id": 56,
+                "rate": 10,
+                "condition": 3
+            },
+            {
+                "id": 57,
+                "rate": 5,
+                "condition": 0
+            }
         ],
         "elmRes": {
             "火": 20,
@@ -17920,14 +18170,46 @@ window.MONSTERS_DATA = [
         "exp": 300000,
         "gold": 150000,
         "acts": [
-            406,
-            415,
-            307,
-            921,
-            922,
-            606,
-            905,
-            57
+            {
+                "id": 406,
+                "rate": 15,
+                "condition": 0
+            },
+            {
+                "id": 415,
+                "rate": 10,
+                "condition": 0
+            },
+            {
+                "id": 307,
+                "rate": 10,
+                "condition": 1
+            },
+            {
+                "id": 921,
+                "rate": 20,
+                "condition": 0
+            },
+            {
+                "id": 922,
+                "rate": 15,
+                "condition": 2
+            },
+            {
+                "id": 606,
+                "rate": 15,
+                "condition": 2
+            },
+            {
+                "id": 905,
+                "rate": 10,
+                "condition": 0
+            },
+            {
+                "id": 57,
+                "rate": 5,
+                "condition": 0
+            }
         ],
         "elmRes": {
             "水": 100,
@@ -17957,14 +18239,46 @@ window.MONSTERS_DATA = [
         "exp": 400000,
         "gold": 200000,
         "acts": [
-            610,
-            410,
-            402,
-            404,
-            416,
-            413,
-            56,
-            63
+            {
+                "id": 610,
+                "rate": 13,
+                "condition": 0
+            },
+            {
+                "id": 410,
+                "rate": 13,
+                "condition": 0
+            },
+            {
+                "id": 402,
+                "rate": 13,
+                "condition": 0
+            },
+            {
+                "id": 404,
+                "rate": 13,
+                "condition": 1
+            },
+            {
+                "id": 416,
+                "rate": 12,
+                "condition": 2
+            },
+            {
+                "id": 413,
+                "rate": 12,
+                "condition": 2
+            },
+            {
+                "id": 56,
+                "rate": 12,
+                "condition": 3
+            },
+            {
+                "id": 63,
+                "rate": 12,
+                "condition": 2
+            }
         ],
         "elmRes": {
             "風": 100,
@@ -17995,16 +18309,56 @@ window.MONSTERS_DATA = [
         "exp": 500000,
         "gold": 250000,
         "acts": [
-            3,
-            614,
-            612,
-            613,
-            610,
-            611,
-            413,
-            107,
-            615,
-            56
+            {
+                "id": 3,
+                "rate": 15,
+                "condition": 0
+            },
+            {
+                "id": 614,
+                "rate": 10,
+                "condition": 1
+            },
+            {
+                "id": 612,
+                "rate": 10,
+                "condition": 1
+            },
+            {
+                "id": 613,
+                "rate": 10,
+                "condition": 1
+            },
+            {
+                "id": 610,
+                "rate": 10,
+                "condition": 0
+            },
+            {
+                "id": 611,
+                "rate": 10,
+                "condition": 0
+            },
+            {
+                "id": 413,
+                "rate": 5,
+                "condition": 2
+            },
+            {
+                "id": 107,
+                "rate": 15,
+                "condition": 2
+            },
+            {
+                "id": 615,
+                "rate": 5,
+                "condition": 2
+            },
+            {
+                "id": 56,
+                "rate": 10,
+                "condition": 3
+            }
         ],
         "elmRes": {
             "火": 40,
@@ -18039,12 +18393,36 @@ window.MONSTERS_DATA = [
         "exp": 200000,
         "gold": 100000,
         "acts": [
-            42,
-            406,
-            606,
-            203,
-            105,
-            58
+            {
+                "id": 42,
+                "rate": 17,
+                "condition": 1
+            },
+            {
+                "id": 406,
+                "rate": 17,
+                "condition": 0
+            },
+            {
+                "id": 606,
+                "rate": 17,
+                "condition": 0
+            },
+            {
+                "id": 203,
+                "rate": 17,
+                "condition": 0
+            },
+            {
+                "id": 105,
+                "rate": 16,
+                "condition": 0
+            },
+            {
+                "id": 58,
+                "rate": 16,
+                "condition": 0
+            }
         ],
         "actCount": 2,
         "resists": {
@@ -18073,12 +18451,36 @@ window.MONSTERS_DATA = [
         "exp": 200000,
         "gold": 100000,
         "acts": [
-            609,
-            605,
-            611,
-            109,
-            613,
-            56
+            {
+                "id": 609,
+                "rate": 17,
+                "condition": 1
+            },
+            {
+                "id": 605,
+                "rate": 17,
+                "condition": 1
+            },
+            {
+                "id": 611,
+                "rate": 17,
+                "condition": 2
+            },
+            {
+                "id": 109,
+                "rate": 17,
+                "condition": 2
+            },
+            {
+                "id": 613,
+                "rate": 16,
+                "condition": 2
+            },
+            {
+                "id": 56,
+                "rate": 16,
+                "condition": 3
+            }
         ],
         "actCount": 2,
         "resists": {
@@ -18108,12 +18510,41 @@ window.MONSTERS_DATA = [
         "exp": 200000,
         "gold": 100000,
         "acts": [
-            407,
-            412,
-            413,
-            609,
-            907,
-            905
+            {
+                "id": 407,
+                "rate": 15,
+                "condition": 1
+            },
+            {
+                "id": 412,
+                "rate": 15,
+                "condition": 0
+            },
+            {
+                "id": 413,
+                "rate": 14,
+                "condition": 2
+            },
+            {
+                "id": 609,
+                "rate": 14,
+                "condition": 0
+            },
+            {
+                "id": 907,
+                "rate": 14,
+                "condition": 2
+            },
+            {
+                "id": 905,
+                "rate": 14,
+                "condition": 3
+            },
+            {
+                "id": 404,
+                "rate": 14,
+                "condition": 0
+            }
         ],
         "actCount": 2,
         "resists": {
@@ -18142,11 +18573,31 @@ window.MONSTERS_DATA = [
         "exp": 200000,
         "gold": 100000,
         "acts": [
-            41,
-            111,
-            405,
-            414,
-            57
+            {
+                "id": 41,
+                "rate": 35,
+                "condition": 0
+            },
+            {
+                "id": 111,
+                "rate": 20,
+                "condition": 0
+            },
+            {
+                "id": 405,
+                "rate": 20,
+                "condition": 0
+            },
+            {
+                "id": 414,
+                "rate": 20,
+                "condition": 0
+            },
+            {
+                "id": 57,
+                "rate": 5,
+                "condition": 0
+            }
         ],
         "actCount": 2,
         "resists": {
@@ -18176,11 +18627,36 @@ window.MONSTERS_DATA = [
         "exp": 0,
         "gold": 0,
         "acts": [
-            111,
-            113,
-            411,
-            55,
-            31
+            {
+                "id": 111,
+                "rate": 15,
+                "condition": 0
+            },
+            {
+                "id": 113,
+                "rate": 25,
+                "condition": 1
+            },
+            {
+                "id": 411,
+                "rate": 20,
+                "condition": 2
+            },
+            {
+                "id": 55,
+                "rate": 10,
+                "condition": 2
+            },
+            {
+                "id": 31,
+                "rate": 10,
+                "condition": 0
+            },
+            {
+                "id": 202,
+                "rate": 20,
+                "condition": 0
+            }
         ],
         "actCount": 2,
         "resists": {
@@ -18205,15 +18681,51 @@ window.MONSTERS_DATA = [
         "exp": 800000,
         "gold": 400000,
         "acts": [
-            500,
-            612,
-            613,
-            610,
-            611,
-            908,
-            907,
-            81,
-            57
+            {
+                "id": 500,
+                "rate": 5,
+                "condition": 2
+            },
+            {
+                "id": 612,
+                "rate": 15,
+                "condition": 0
+            },
+            {
+                "id": 613,
+                "rate": 15,
+                "condition": 0
+            },
+            {
+                "id": 610,
+                "rate": 15,
+                "condition": 0
+            },
+            {
+                "id": 611,
+                "rate": 15,
+                "condition": 0
+            },
+            {
+                "id": 908,
+                "rate": 10,
+                "condition": 2
+            },
+            {
+                "id": 907,
+                "rate": 10,
+                "condition": 2
+            },
+            {
+                "id": 81,
+                "rate": 10,
+                "condition": 2
+            },
+            {
+                "id": 57,
+                "rate": 5,
+                "condition": 0
+            }
         ],
         "elmRes": {
             "火": 20,
@@ -18248,13 +18760,41 @@ window.MONSTERS_DATA = [
         "exp": 0,
         "gold": 0,
         "acts": [
-            407,
-            406,
-            412,
-            922,
-            24,
-            403,
-            56
+            {
+                "id": 407,
+                "rate": 13,
+                "condition": 1
+            },
+            {
+                "id": 406,
+                "rate": 13,
+                "condition": 0
+            },
+            {
+                "id": 412,
+                "rate": 14,
+                "condition": 0
+            },
+            {
+                "id": 922,
+                "rate": 15,
+                "condition": 2
+            },
+            {
+                "id": 24,
+                "rate": 15,
+                "condition": 2
+            },
+            {
+                "id": 403,
+                "rate": 10,
+                "condition": 2
+            },
+            {
+                "id": 56,
+                "rate": 20,
+                "condition": 3
+            }
         ],
         "actCount": 2,
         "resists": {
@@ -18279,18 +18819,66 @@ window.MONSTERS_DATA = [
         "exp": 1000000,
         "gold": 500000,
         "acts": [
-            3,
-            907,
-            80,
-            614,
-            612,
-            613,
-            610,
-            611,
-            413,
-            107,
-            615,
-            56
+            {
+                "id": 3,
+                "rate": 9,
+                "condition": 0
+            },
+            {
+                "id": 907,
+                "rate": 9,
+                "condition": 0
+            },
+            {
+                "id": 80,
+                "rate": 9,
+                "condition": 2
+            },
+            {
+                "id": 614,
+                "rate": 9,
+                "condition": 1
+            },
+            {
+                "id": 612,
+                "rate": 8,
+                "condition": 1
+            },
+            {
+                "id": 613,
+                "rate": 8,
+                "condition": 1
+            },
+            {
+                "id": 610,
+                "rate": 8,
+                "condition": 0
+            },
+            {
+                "id": 611,
+                "rate": 8,
+                "condition": 0
+            },
+            {
+                "id": 413,
+                "rate": 8,
+                "condition": 2
+            },
+            {
+                "id": 107,
+                "rate": 8,
+                "condition": 0
+            },
+            {
+                "id": 615,
+                "rate": 8,
+                "condition": 2
+            },
+            {
+                "id": 56,
+                "rate": 8,
+                "condition": 3
+            }
         ],
         "elmRes": {
             "火": 60,
@@ -18325,12 +18913,46 @@ window.MONSTERS_DATA = [
         "exp": 1500000,
         "gold": 750000,
         "acts": [
-            111,
-            414,
-            401,
-            409,
-            907,
-            57
+            {
+                "id": 111,
+                "rate": 15,
+                "condition": 2
+            },
+            {
+                "id": 414,
+                "rate": 15,
+                "condition": 0
+            },
+            {
+                "id": 401,
+                "rate": 20,
+                "condition": 0
+            },
+            {
+                "id": 409,
+                "rate": 15,
+                "condition": 2
+            },
+            {
+                "id": 907,
+                "rate": 15,
+                "condition": 2
+            },
+            {
+                "id": 57,
+                "rate": 5,
+                "condition": 0
+            },
+            {
+                "id": 108,
+                "rate": 10,
+                "condition": 1
+            },
+            {
+                "id": 3,
+                "rate": 5,
+                "condition": 0
+            }
         ],
         "elmRes": {
             "火": 100,
@@ -18362,18 +18984,66 @@ window.MONSTERS_DATA = [
         "exp": 2000000,
         "gold": 1000000,
         "acts": [
-            3,
-            80,
-            907,
-            614,
-            612,
-            613,
-            610,
-            611,
-            107,
-            413,
-            615,
-            906
+            {
+                "id": 3,
+                "rate": 10,
+                "condition": 0
+            },
+            {
+                "id": 80,
+                "rate": 10,
+                "condition": 2
+            },
+            {
+                "id": 907,
+                "rate": 10,
+                "condition": 0
+            },
+            {
+                "id": 614,
+                "rate": 5,
+                "condition": 1
+            },
+            {
+                "id": 612,
+                "rate": 5,
+                "condition": 1
+            },
+            {
+                "id": 613,
+                "rate": 5,
+                "condition": 1
+            },
+            {
+                "id": 610,
+                "rate": 10,
+                "condition": 0
+            },
+            {
+                "id": 611,
+                "rate": 10,
+                "condition": 0
+            },
+            {
+                "id": 107,
+                "rate": 10,
+                "condition": 0
+            },
+            {
+                "id": 413,
+                "rate": 10,
+                "condition": 2
+            },
+            {
+                "id": 615,
+                "rate": 10,
+                "condition": 2
+            },
+            {
+                "id": 906,
+                "rate": 5,
+                "condition": 2
+            }
         ],
         "elmRes": {
             "火": 80,
@@ -18408,13 +19078,41 @@ window.MONSTERS_DATA = [
         "exp": 9999999,
         "gold": 9999999,
         "acts": [
-            923,
-            924,
-            925,
-            907,
-            906,
-            454,
-            908
+            {
+                "id": 923,
+                "rate": 20,
+                "condition": 0
+            },
+            {
+                "id": 924,
+                "rate": 15,
+                "condition": 0
+            },
+            {
+                "id": 925,
+                "rate": 20,
+                "condition": 0
+            },
+            {
+                "id": 907,
+                "rate": 10,
+                "condition": 2
+            },
+            {
+                "id": 906,
+                "rate": 15,
+                "condition": 2
+            },
+            {
+                "id": 454,
+                "rate": 10,
+                "condition": 2
+            },
+            {
+                "id": 908,
+                "rate": 10,
+                "condition": 2
+            }
         ],
         "elmRes": {
             "火": 70,
