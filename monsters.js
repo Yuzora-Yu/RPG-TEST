@@ -17418,9 +17418,21 @@ window.MONSTERS_DATA = [
         "exp": 1000,
         "gold": 50,
         "acts": [
-            1,
-            10,
-            9
+            {
+                "id": 1,
+                "rate": 20,
+                "condition": 0
+            },
+            {
+                "id": 10,
+                "rate": 20,
+                "condition": 0
+            },
+            {
+                "id": 9,
+                "rate": 60,
+                "condition": 0
+            }
         ],
         "elmRes": {
             "火": 100,
@@ -17449,14 +17461,26 @@ window.MONSTERS_DATA = [
         "mp": 999,
         "atk": 150,
         "def": 99999,
-        "spd": 25500,
-        "mag": 2550,
+        "spd": 25555,
+        "mag": 2555,
         "exp": 20000,
         "gold": 200,
         "acts": [
-            1,
-            302,
-            9
+            {
+                "id": 1,
+                "rate": 10,
+                "condition": 0
+            },
+            {
+                "id": 302,
+                "rate": 25,
+                "condition": 0
+            },
+            {
+                "id": 9,
+                "rate": 45,
+                "condition": 0
+            }
         ],
         "elmRes": {
             "火": 1000,
@@ -17484,15 +17508,27 @@ window.MONSTERS_DATA = [
         "hp": 20,
         "mp": 9999,
         "atk": 400,
-        "def": 99999,
+        "def": 999999,
         "spd": 99999,
         "mag": 9999,
         "exp": 100000,
         "gold": 1000,
         "acts": [
-            1,
-            306,
-            9
+            {
+                "id": 1,
+                "rate": 5,
+                "condition": 0
+            },
+            {
+                "id": 306,
+                "rate": 25,
+                "condition": 0
+            },
+            {
+                "id": 9,
+                "rate": 70,
+                "condition": 0
+            }
         ],
         "elmRes": {
             "火": 1000,
@@ -17520,17 +17556,37 @@ window.MONSTERS_DATA = [
         "hp": 50,
         "mp": 9999,
         "atk": 1000,
-        "def": 99999,
+        "def": 999999,
         "spd": 9999,
         "mag": 20000,
         "exp": 500000,
         "gold": 5000,
         "acts": [
-            1,
-            406,
-            407,
-            500,
-            9
+            {
+                "id": 1,
+                "rate": 5,
+                "condition": 0
+            },
+            {
+                "id": 406,
+                "rate": 5,
+                "condition": 0
+            },
+            {
+                "id": 407,
+                "rate": 5,
+                "condition": 0
+            },
+            {
+                "id": 500,
+                "rate": 10,
+                "condition": 0
+            },
+            {
+                "id": 9,
+                "rate": 75,
+                "condition": 0
+            }
         ],
         "elmRes": {
             "火": 1000,
@@ -17548,7 +17604,8 @@ window.MONSTERS_DATA = [
             "Seal": 100,
             "Debuff": 100,
             "InstantDeath": 100
-        }
+        },
+        "actCount": 2
     },
     {
         "id": 1010,
@@ -17564,12 +17621,36 @@ window.MONSTERS_DATA = [
         "exp": 1000,
         "gold": 500,
         "acts": [
-            1,
-            40,
-            44,
-            601,
-            603,
-            41
+            {
+                "id": 1,
+                "rate": 17,
+                "condition": 0
+            },
+            {
+                "id": 40,
+                "rate": 17,
+                "condition": 0
+            },
+            {
+                "id": 44,
+                "rate": 17,
+                "condition": 0
+            },
+            {
+                "id": 601,
+                "rate": 17,
+                "condition": 0
+            },
+            {
+                "id": 603,
+                "rate": 16,
+                "condition": 0
+            },
+            {
+                "id": 41,
+                "rate": 16,
+                "condition": 0
+            }
         ],
         "actCount": 1,
         "elmRes": {},
