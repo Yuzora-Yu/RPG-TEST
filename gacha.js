@@ -1,4 +1,4 @@
-/* gacha.js (完全版: 黒転演出 + 提供割合 + 激アツ演出) */
+/* gacha.js (完全版: 黒転演出 + 提供割合 + 激アツ演出 + 新規SP反映修正版) */
 const Gacha = {
     queue: [],
     currentIndex: 0,
@@ -75,7 +75,19 @@ const Gacha = {
                 result.hp = owned.hp; result.mp = owned.mp; result.atk = owned.atk;
                 result.def = owned.def; result.spd = owned.spd; result.mag = owned.mag;
             } else {
-                const newChar = { uid: 'c' + Date.now() + i, charId: result.id, name: result.name, job: result.job, rarity: result.rarity, hp: result.hp, mp: result.mp, atk: result.atk, def: result.def, spd: result.spd, mag: result.mag, level: 1, limitBreak: 0, equips: {} };
+                const newChar = { 
+                    uid: 'c' + Date.now() + i, 
+                    charId: result.id, 
+                    name: result.name, 
+                    job: result.job, 
+                    rarity: result.rarity, 
+                    hp: result.hp, mp: result.mp, 
+                    atk: result.atk, def: result.def, spd: result.spd, mag: result.mag, 
+                    level: 1, 
+                    limitBreak: 0, 
+                    sp: result.sp || 0, // ★修正: 初期SPを反映
+                    equips: {} 
+                };
                 App.data.characters.push(newChar);
                 result.isNew = true;
                 result.limitBreak = 0;
@@ -97,8 +109,6 @@ const Gacha = {
         }
         const pool = DB.CHARACTERS.filter(c => c.rarity === selectedRarity);
         
-        // ★修正: JSON.parse(JSON.stringify(...)) を使って
-        // マスタデータの「参照」ではなく「完全なコピー」を返すようにする
         if (pool.length > 0) {
             const pick = pool[Math.floor(Math.random() * pool.length)];
             return JSON.parse(JSON.stringify(pick));
