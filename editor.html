@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>RPG Data Editor v2.8</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: #1a1a1a; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; padding: 20px; font-size: 14px; }
+        .editor-container { max-width: 1400px; margin: 0 auto; background: #2d2d2d; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        
+        /* 入力フォーム共通 */
+        input, textarea, select { 
+            background: #383838; color: #fff; border: 1px solid #555; padding: 4px 8px; border-radius: 4px; width: 100%; 
+            transition: border-color 0.2s;
+        }
+        input:focus, textarea:focus, select:focus { border-color: #ffd700; outline: none; }
+        label { display: block; font-size: 0.75rem; color: #aaa; margin-bottom: 2px; }
+
+        /* テーブル */
+        table { width: 100%; border-collapse: separate; border-spacing: 0; }
+        th { background: #222; color: #ffd700; padding: 10px; text-align: left; font-weight: 600; border-bottom: 2px solid #444; position: sticky; top: 0; z-index: 10; }
+        td { border-bottom: 1px solid #444; padding: 8px; vertical-align: top; background: #2d2d2d; }
+        tr:hover td { background: #333; }
+
+        /* タブ */
+        .tab-btn { padding: 10px 20px; cursor: pointer; background: #222; border-bottom: 2px solid transparent; color: #888; font-weight: bold; transition: all 0.2s; }
+        .tab-btn:hover { color: #ddd; background: #333; }
+        .tab-btn.active { border-bottom: 2px solid #ffd700; color: #ffd700; background: #383838; }
+
+        /* ボタン */
+        .btn { padding: 5px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; transition: opacity 0.2s; white-space: nowrap; }
+        .btn:hover { opacity: 0.9; }
+        .btn-primary { background: #005f5f; color: white; }
+        .btn-secondary { background: #444; color: white; border: 1px solid #666; }
+        .btn-danger { background: #8b0000; color: white; }
+        .btn-success { background: #2e7d32; color: white; }
+        .btn-save { background: #d32f2f; color: white; padding: 8px 16px; display: flex; align-items: center; gap: 5px; }
+        .btn-export { background: #5e35b1; color: white; }
+        
+        .save-area { display: flex; justify-content: flex-end; padding: 10px; background: #222; margin-bottom: 10px; border-radius: 4px; align-items: center; gap: 10px; }
+        
+        /* フィルタボタン */
+        .filter-btn { font-size: 12px; padding: 2px 8px; border-radius: 12px; background: #444; color: #aaa; border: 1px solid transparent; margin-right: 4px; }
+        .filter-btn.active { background: #005f5f; color: #fff; border-color: #00aaaa; }
+
+        /* テキスト出力エリア */
+        .export-box { width: 100%; height: 150px; background: #111; color: #0f0; font-family: monospace; font-size: 12px; padding: 10px; border: 1px solid #444; margin-top: 10px; white-space: pre; overflow-x: auto; }
+    </style>
+</head>
+<body>
+
+<div id="app" class="editor-container">
+    <div class="flex justify-between items-center mb-6 border-b border-gray-700 pb-4">
+        <div>
+            <h1 class="text-2xl font-bold text-yellow-400">RPG Data Editor <span class="text-sm text-gray-500">v2.8</span></h1>
+            <p class="text-xs text-gray-400">データカテゴリごとに別ファイルとして保存します</p>
+        </div>
+        <div class="text-right">
+            <button @click="saveSystemFile" class="btn bg-gray-600 text-xs">システム設定(database.js)のみ保存</button>
+        </div>
+    </div>
+
+    <div class="flex mb-4 border-b border-gray-700">
+        <button v-for="tab in tabs" :key="tab.id" 
+            class="tab-btn" :class="{active: currentTab===tab.id}" 
+            @click="currentTab=tab.id">
+            {{ tab.name }}
+        </button>
+    </div>
+
+    <div v-if="currentTab==='skills'">
+        <div class="bg-gray-800 p-3 rounded mb-4 border border-gray-600 flex flex-wrap gap-4 items-center justify-between">
+            <div class="flex items-center gap-2">
+                <button @click="addSkill" class="btn btn-primary">+ 新規スキル作成</button>
+                <button @click="sortSkills" class="btn btn-secondary">ID順ソート</button>
+            </div>
+            <div class="flex items-center gap-1 overflow-x-auto max-w-[600px]">
+                <span class="text-xs text-gray-400 mr-1">フィルタ:</span>
+                <button class="filter-btn" :class="{active: skillFilter === 'ALL'}" @click="skillFilter = 'ALL'">ALL</button>
+                <button v-for="t in skillTypes" :key="t" class="filter-btn" :class="{active: skillFilter === t}" @click="skillFilter = t">{{ t }}</button>
+            </div>
+            <div><button @click="toggleExport('skills')" class="btn btn-export text-xs">DB用テキスト出力</button></div>
+        </div>
+
+        <div v-if="showExport.skills" class="mb-4">
+            <div class="flex justify-between items-end mb-1">
+                <label class="text-xs text-purple-300">▼ DB直書き用フォーマット (Ctrl+A で全選択してコピー)</label>
+                <button @click="showExport.skills = false" class="text-xs text-gray-500 hover:text-white">閉じる</button>
+            </div>
+            <textarea class="export-box" readonly v-model="exportText.skills"></textarea>
+        </div>
+
+        <div class="save-area">
+            <button @click="savePartial('skills')" class="btn btn-save">💾 スキルデータ (skills.js) を保存</button>
+        </div>
+
+        <div class="overflow-x-auto h-[70vh]">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr>
+                        <th style="width:80px">ID</th>
+                        <th style="width:150px">基本情報</th>
+                        <th style="width:160px">タイプ/対象/属性</th>
+                        <th style="width:180px">威力/効果</th>
+                        <th>詳細・追加効果</th>
+                        <th style="width:50px">削除</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(s, index) in filteredSkills" :key="s._uid">
+                        <td><input type="number" v-model.number="s.id" class="text-center font-mono text-yellow-200 bg-gray-800 font-bold text-lg"></td>
+                        <td>
+                            <label>名前</label><input type="text" v-model="s.name" class="font-bold">
+                            <label class="mt-1">説明</label><input type="text" v-model="s.desc" class="text-xs">
+                        </td>
+                        <td>
+                            <div class="grid grid-cols-2 gap-1">
+                                <div class="col-span-2"><label>タイプ</label>
+                                    <select v-model="s.type">
+                                        <option v-for="t in skillTypes" :value="t">{{t}}</option>
+                                    </select>
+                                </div>
+                                <div><label>属性</label>
+                                    <select v-model="s.elm">
+                                        <option :value="null">なし</option>
+                                        <option v-for="e in elements" :value="e">{{e}}</option>
+                                    </select>
+                                </div>
+                                <div><label>対象</label>
+                                    <select v-model="s.target">
+                                        <option v-for="t in skillTargets" :value="t">{{t}}</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="flex gap-2">
+                                <div class="flex-1"><label>基本威力</label><input type="number" v-model.number="s.base"></div>
+                                <div class="flex-1"><label>倍率</label><input type="number" v-model.number="s.rate" step="0.1"></div>
+                            </div>
+                            <div class="flex gap-2 mt-1">
+                                <div class="flex-1"><label>MP</label><input type="number" v-model.number="s.mp" class="text-blue-300"></div>
+                                <div class="flex-1"><label>回数</label><input type="number" v-model.number="s.count"></div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="grid grid-cols-4 gap-2 text-xs mb-2">
+                                <div><label>優先度</label><input type="number" v-model.number="s.priority" placeholder="0"></div>
+                                <div><label>命中(%)</label><input type="number" v-model.number="s.SuccessRate" placeholder="100"></div>
+                                <div><label>割合ダメ</label><input type="number" v-model.number="s.PercentDamage" placeholder="0~1" step="0.1"></div>
+                                <div><label class="text-purple-300 font-bold">継続ターン</label><input type="number" v-model.number="s.turn" placeholder="0"></div>
+                            </div>
+                            
+                            <div class="grid grid-cols-3 gap-y-1 gap-x-1 text-[11px] mb-2 bg-gray-900 p-1.5 rounded border border-gray-700">
+                                <label class="flex items-center cursor-pointer hover:text-white"><input type="checkbox" v-model="s.drain" class="w-3 h-3 mr-1">吸収</label>
+                                <label class="flex items-center cursor-pointer hover:text-white"><input type="checkbox" v-model="s.fix" class="w-3 h-3 mr-1">固定ダメ</label>
+                                <label class="flex items-center cursor-pointer hover:text-white text-red-300" title="防御無視"><input type="checkbox" v-model="s.IgnoreDefense" class="w-3 h-3 mr-1">防御無視</label>
+                                
+                                <label class="flex items-center cursor-pointer hover:text-white text-green-300" title="味方の状態異常を回復"><input type="checkbox" v-model="s.CureAilments" class="w-3 h-3 mr-1">異常消去</label>
+                                <label class="flex items-center cursor-pointer hover:text-white text-blue-300" title="味方のデバフを解除"><input type="checkbox" v-model="s.debuff_reset" class="w-3 h-3 mr-1">デバフ消去</label>
+                                <label class="flex items-center cursor-pointer hover:text-white text-orange-300" title="敵のバフを解除"><input type="checkbox" v-model="s.buff_reset" class="w-3 h-3 mr-1">バフ消去</label>
+                            </div>
+                            
+                            <div class="bg-gray-800 p-2 rounded mb-2">
+                                <label class="text-xs font-bold text-yellow-500 mb-1 block">状態異常付与</label>
+                                <div class="grid grid-cols-4 gap-y-1 gap-x-2">
+                                    <label v-for="(label, key) in ailmentLabels" :key="key" class="flex items-center cursor-pointer text-xs hover:text-white transition-colors">
+                                        <input type="checkbox" v-model="s[key]" class="w-3 h-3 mr-1 accent-red-500"> {{label}}
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2 text-xs">
+                                <div><label>Buff (例: atk:1.5)</label><input type="text" :value="objToString(s.buff)" @input="s.buff = stringToObj($event.target.value)"></div>
+                                <div><label>Debuff</label><input type="text" :value="objToString(s.debuff)" @input="s.debuff = stringToObj($event.target.value)"></div>
+                            </div>
+                        </td>
+                        <td class="text-center align-middle">
+                            <button @click="removeList(db.SKILLS, db.SKILLS.indexOf(s))" class="btn btn-danger text-xs">×</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div v-if="currentTab==='monsters'">
+        <div class="bg-gray-800 p-2 rounded mb-2 border border-gray-600 flex justify-end">
+            <button @click="toggleExport('monsters')" class="btn btn-export text-xs">DB用テキスト出力</button>
+        </div>
+        <div v-if="showExport.monsters" class="mb-4">
+            <div class="flex justify-between items-end mb-1">
+                <label class="text-xs text-purple-300">▼ DB直書き用フォーマット</label>
+                <button @click="showExport.monsters = false" class="text-xs text-gray-500 hover:text-white">閉じる</button>
+            </div>
+            <textarea class="export-box" readonly v-model="exportText.monsters"></textarea>
+        </div>
+
+        <div class="save-area">
+            <button @click="savePartial('monsters')" class="btn btn-save">💾 モンスターデータ (monsters.js) を保存</button>
+        </div>
+        <div class="grid grid-cols-12 gap-4 h-[70vh]">
+            <div class="col-span-3 overflow-y-auto pr-2 border-r border-gray-600">
+                <div v-for="(m, index) in db.MONSTERS" :key="m._uid" 
+                     class="p-2 border-b border-gray-700 cursor-pointer hover:bg-gray-700 flex items-center gap-2"
+                     :class="{'bg-gray-700 border-l-4 border-yellow-500': selectedMonster === m}"
+                     @click="selectMonster(m)">
+                    <img :src="m.img || dummyImg" class="w-8 h-8 object-cover bg-black rounded border border-gray-600">
+                    <div>
+                        <div class="font-bold text-sm">{{ m.name }}</div>
+                        <div class="text-xs text-gray-400">ID:{{m.id}} / Rank:{{m.rank}}</div>
+                    </div>
+                </div>
+                <button @click="addMonster" class="btn btn-primary w-full mt-2">+ 新規追加</button>
+            </div>
+
+            <div class="col-span-9 overflow-y-auto pl-2" v-if="selectedMonster">
+                <div class="grid grid-cols-12 gap-4">
+                    <div class="col-span-4 space-y-2">
+                        <h3 class="text-yellow-400 border-b border-gray-600 pb-1 mb-2">基本設定</h3>
+                        <div><label>ID</label><input type="number" v-model.number="selectedMonster.id"></div>
+                        <div><label>名前</label><input type="text" v-model="selectedMonster.name"></div>
+                        <div class="flex gap-2">
+                            <div><label>Rank</label><input type="number" v-model.number="selectedMonster.rank"></div>
+                            <div><label>HP</label><input type="number" v-model.number="selectedMonster.hp"></div>
+                            <div><label>MP</label><input type="number" v-model.number="selectedMonster.mp"></div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div><label>EXP</label><input type="number" v-model.number="selectedMonster.exp"></div>
+                            <div><label>GOLD</label><input type="number" v-model.number="selectedMonster.gold"></div>
+                        </div>
+                        <div class="mt-4 p-2 bg-black rounded text-center border border-gray-600">
+                            <img :src="selectedMonster.img || dummyImg" class="h-24 mx-auto object-contain mb-2">
+                            <label class="btn btn-primary text-xs cursor-pointer block">
+                                画像を選択 (Base64)
+                                <input type="file" accept="image/*" class="hidden" @change="e => handleImageUpload(e, selectedMonster)">
+                            </label>
+                        </div>
+                        <div class="mt-4 text-right">
+                            <button @click="removeList(db.MONSTERS, db.MONSTERS.indexOf(selectedMonster)); selectedMonster=null" class="btn btn-danger text-xs">削除</button>
+                        </div>
+                    </div>
+
+                    <div class="col-span-8 space-y-2">
+                        <h3 class="text-yellow-400 border-b border-gray-600 pb-1 mb-2">ステータス & スキル</h3>
+                        <div class="grid grid-cols-4 gap-2 mb-4">
+                            <div><label>攻撃力</label><input type="number" v-model.number="selectedMonster.atk"></div>
+                            <div><label>守備力</label><input type="number" v-model.number="selectedMonster.def"></div>
+                            <div><label>素早さ</label><input type="number" v-model.number="selectedMonster.spd"></div>
+                            <div><label>魔力</label><input type="number" v-model.number="selectedMonster.mag"></div>
+                        </div>
+
+                        <div class="bg-gray-800 p-3 rounded mb-4 border border-gray-600">
+                            <div class="flex justify-between items-center mb-2">
+                                <label class="text-sm font-bold text-gray-300">行動パターン</label>
+                                <div class="text-xs">回数: <input type="number" v-model.number="selectedMonster.actCount" class="w-12 text-center inline-block"></div>
+                            </div>
+                            <div class="max-h-48 overflow-y-auto pr-1">
+                                <div v-for="(act, idx) in selectedMonster.acts" :key="idx" class="flex gap-1 mb-2 items-center bg-gray-900 p-1 rounded">
+                                    
+                                    <select v-model.number="act.condition" class="w-24 text-xs bg-gray-700 border-none mr-1" title="使用条件">
+                                        <option :value="0">常時</option>
+                                        <option :value="1">HP≧50%</option>
+                                        <option :value="2">HP≦50%</option>
+                                        <option :value="3">状態異常</option>
+                                    </select>
+
+                                    <select v-model="act.id" class="flex-1 text-xs bg-gray-800 border-none mr-1">
+                                        <option :value="1">通常攻撃 (ID:1)</option>
+                                        <option :value="2">防御 (ID:2)</option>
+                                        <option :value="9">逃げる (ID:9)</option>
+                                        <option disabled>--- スキル ---</option>
+                                        <option v-for="s in db.SKILLS" :value="s.id">{{ s.name }} (ID:{{s.id}})</option>
+                                    </select>
+
+                                    <div class="flex items-center w-16">
+                                        <input type="number" v-model.number="act.rate" class="w-full text-right text-xs bg-gray-700 border-none" placeholder="%">
+                                        <span class="text-xs text-gray-500 ml-1">%</span>
+                                    </div>
+
+                                    <button @click="selectedMonster.acts.splice(idx, 1)" class="btn btn-danger px-2 py-0 text-xs h-6">×</button>
+                                </div>
+                            </div>
+                            <div class="flex gap-2 mt-2">
+                                <button @click="addMonsterAct" class="btn btn-success text-xs flex-1">+ 行動追加</button>
+                                <button @click="recalcMonsterActs" class="btn btn-secondary text-xs flex-1">均等割り振り</button>
+                            </div>
+                        </div>
+
+                        <h3 class="text-yellow-400 border-b border-gray-600 pb-1 mb-2">耐性設定 (％)</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-gray-800 p-2 rounded border border-gray-600">
+                                <label class="text-xs font-bold text-blue-300 mb-1">属性耐性 (elmRes)</label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div v-for="e in elements" :key="e" class="flex items-center">
+                                        <span class="text-xs w-8 text-gray-400">{{e}}</span>
+                                        <input type="number" v-model.number="selectedMonster.elmRes[e]" class="text-xs text-right h-6" placeholder="0">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-gray-800 p-2 rounded border border-gray-600">
+                                <label class="text-xs font-bold text-red-300 mb-1">状態異常耐性 (resists)</label>
+                                <div class="grid grid-cols-1 gap-1">
+                                    <div v-for="(label, key) in resistLabels" :key="key" class="flex items-center justify-between">
+                                        <span class="text-xs text-gray-400">{{label}}</span>
+                                        <input type="number" v-model.number="selectedMonster.resists[key]" class="text-xs text-right h-6 w-16" placeholder="0">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div v-else class="col-span-9 flex items-center justify-center text-gray-500">
+                モンスターを選択してください
+            </div>
+        </div>
+    </div>
+
+    <div v-if="currentTab==='characters'">
+        <div class="bg-gray-800 p-2 rounded mb-2 border border-gray-600 flex justify-end">
+            <button @click="toggleExport('characters')" class="btn btn-export text-xs">DB用テキスト出力</button>
+        </div>
+        <div v-if="showExport.characters" class="mb-4">
+            <div class="flex justify-between items-end mb-1">
+                <label class="text-xs text-purple-300">▼ DB直書き用フォーマット</label>
+                <button @click="showExport.characters = false" class="text-xs text-gray-500 hover:text-white">閉じる</button>
+            </div>
+            <textarea class="export-box" readonly v-model="exportText.characters"></textarea>
+        </div>
+
+        <div class="save-area">
+            <button @click="savePartial('characters')" class="btn btn-save">💾 キャラデータ (characters.js) を保存</button>
+        </div>
+        <table class="w-full">
+            <thead>
+                <tr>
+                    <th style="width:60px">画像</th>
+                    <th style="width:60px">ID</th>
+                    <th style="width:200px">名前/職業/レア</th>
+                    <th>基礎ステータス (HP/MP/攻/防/速/魔)</th>
+                    <th style="width:220px">成長/LBスキル</th>
+                    <th style="width:50px">削除</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="(c, index) in db.CHARACTERS" :key="c._uid">
+                    <td class="text-center align-middle">
+                        <label class="cursor-pointer block">
+                            <img :src="c.img || dummyImg" class="w-10 h-10 object-cover rounded bg-black mx-auto border border-gray-600">
+                            <input type="file" accept="image/*" class="hidden" @change="e => handleImageUpload(e, c)">
+                        </label>
+                    </td>
+                    <td class="align-middle"><input type="number" v-model.number="c.id" class="text-center"></td>
+                    <td>
+                        <div class="flex gap-1 mb-1"><input type="text" v-model="c.name" placeholder="名前" class="font-bold"></div>
+                        <div class="flex gap-1">
+                            <input type="text" v-model="c.job" placeholder="職業" class="text-xs">
+                            <select v-model="c.rarity" class="w-16 text-xs bg-gray-800">
+                                <option>N</option><option>R</option><option>SR</option><option>SSR</option><option>UR</option><option>EX</option>
+                            </select>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="grid grid-cols-3 gap-1">
+                            <input type="number" v-model.number="c.hp" placeholder="HP" title="HP" class="text-green-200">
+                            <input type="number" v-model.number="c.mp" placeholder="MP" title="MP" class="text-blue-200">
+                            <input type="number" v-model.number="c.atk" placeholder="攻" title="攻撃">
+                            <input type="number" v-model.number="c.def" placeholder="防" title="防御">
+                            <input type="number" v-model.number="c.spd" placeholder="速" title="素早さ">
+                            <input type="number" v-model.number="c.mag" placeholder="魔" title="魔力">
+                        </div>
+                    </td>
+                    <td>
+                        <div class="grid grid-cols-2 gap-1 mb-1">
+                            <div class="text-xs">SP初期値 <input type="number" v-model.number="c.sp" class="w-12 text-center"></div>
+                            <div class="text-xs">Lv初期値 <input type="number" v-model.number="c.level" class="w-12 text-center"></div>
+                        </div>
+                        <div class="bg-gray-800 p-1 rounded border border-gray-600">
+                            <div class="flex items-center mb-1">
+                                <span class="text-xs w-8 text-yellow-500">LB50</span>
+                                <select v-model.number="c.lbSkills[50]" class="text-xs h-6 bg-gray-900 border-none w-full">
+                                    <option :value="undefined">-</option>
+                                    <option v-for="s in db.SKILLS" :value="s.id">{{s.name}}</option>
+                                </select>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="text-xs w-8 text-yellow-500">LB99</span>
+                                <select v-model.number="c.lbSkills[99]" class="text-xs h-6 bg-gray-900 border-none w-full">
+                                    <option :value="undefined">-</option>
+                                    <option v-for="s in db.SKILLS" :value="s.id">{{s.name}}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="text-center align-middle">
+                        <button @click="removeList(db.CHARACTERS, index)" class="btn btn-danger text-xs">×</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="mt-4"><button @click="addCharacter" class="btn btn-primary w-full">+ 仲間を追加</button></div>
+    </div>
+
+    <div v-if="currentTab==='items'">
+        <div class="bg-gray-800 p-2 rounded mb-2 border border-gray-600 flex justify-end">
+            <button @click="toggleExport('items')" class="btn btn-export text-xs">DB用テキスト出力</button>
+        </div>
+        <div v-if="showExport.items" class="mb-4">
+            <div class="flex justify-between items-end mb-1">
+                <label class="text-xs text-purple-300">▼ DB直書き用フォーマット</label>
+                <button @click="showExport.items = false" class="text-xs text-gray-500 hover:text-white">閉じる</button>
+            </div>
+            <textarea class="export-box" readonly v-model="exportText.items"></textarea>
+        </div>
+
+        <div class="save-area">
+            <button @click="savePartial('items')" class="btn btn-save">💾 アイテムデータ (items.js) を保存</button>
+        </div>
+        <table class="w-full">
+            <thead>
+                <tr>
+                    <th style="width:80px">ID / Rank</th>
+                    <th style="width:150px">名前</th>
+                    <th style="width:120px">タイプ</th>
+                    <th>効果値/価格</th>
+                    <th>説明/対象/特殊効果</th>
+                    <th style="width:50px">削除</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="(item, index) in db.ITEMS" :key="item._uid">
+                    <td class="align-middle">
+                        <div class="flex flex-col gap-1">
+                            <input type="number" v-model.number="item.id" class="text-center text-xs" placeholder="ID" title="ID">
+                            <div class="flex items-center">
+                                <span class="text-[10px] text-gray-500 w-4 text-center">R</span>
+                                <input type="number" v-model.number="item.rank" class="text-center text-yellow-200 bg-gray-900 font-bold text-xs" placeholder="Rank" title="Rank">
+                            </div>
+                        </div>
+                    </td>
+                    <td><input type="text" v-model="item.name" class="font-bold"></td>
+                    <td>
+                        <select v-model="item.type">
+                            <option>HP回復</option><option>MP回復</option><option>蘇生</option><option>状態異常回復</option><option>貴重品</option>
+                        </select>
+                    </td>
+                    <td>
+                        <div class="flex gap-1 mb-1"><label>効果</label><input type="number" v-model.number="item.val"></div>
+                        <div class="flex gap-1"><label>価格</label><input type="number" v-model.number="item.price" class="text-yellow-200"></div>
+                    </td>
+                    <td>
+                        <div class="flex gap-1 mb-1">
+                            <input type="text" v-model="item.desc" placeholder="説明" class="flex-1 text-xs">
+                            <select v-model="item.target" class="w-20 text-xs"><option>単体</option><option>全体</option><option>なし</option></select>
+                        </div>
+                        <div class="flex gap-1 text-xs">
+                            <input type="text" :value="item.cures ? item.cures.join(',') : ''" @input="item.cures=$event.target.value.split(',')" placeholder="治療(Poison,Shock...)">
+                        </div>
+                    </td>
+                    <td class="text-center align-middle">
+                        <button @click="removeList(db.ITEMS, index)" class="btn btn-danger text-xs">×</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="mt-4"><button @click="addItem" class="btn btn-primary w-full">+ アイテムを追加</button></div>
+    </div>
+
+    <div v-if="currentTab==='jobs'">
+        <div class="save-area">
+            <button @click="saveJobFile" class="btn btn-save">💾 職業データ (job_data.js) を保存</button>
+        </div>
+        
+        <div class="bg-gray-800 p-2 rounded mb-4 border border-gray-600 flex justify-between items-start">
+            <div class="flex flex-wrap gap-2 flex-1 mr-4">
+                <button v-for="(skills, jobName) in jobSkills" :key="jobName"
+                    class="btn mb-1" :class="currentJob===jobName ? 'btn-primary' : 'bg-gray-700'"
+                    @click="currentJob=jobName">
+                    {{ jobName }}
+                </button>
+                <button @click="addNewJob" class="btn bg-gray-600 border border-dashed border-gray-400 text-gray-300 mb-1">+ 新規職</button>
+            </div>
+            <div>
+                <button @click="toggleExport('jobs')" class="btn btn-export text-xs whitespace-nowrap">DB用テキスト出力</button>
+            </div>
+        </div>
+
+        <div v-if="showExport.jobs" class="mb-4">
+            <div class="flex justify-between items-end mb-1">
+                <label class="text-xs text-purple-300">▼ DB直書き用フォーマット</label>
+                <button @click="showExport.jobs = false" class="text-xs text-gray-500 hover:text-white">閉じる</button>
+            </div>
+            <textarea class="export-box" readonly v-model="exportText.jobs"></textarea>
+        </div>
+
+        <div v-if="currentJob" class="bg-gray-800 p-4 rounded border border-gray-600">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-yellow-400">{{ currentJob }} の習得スキル</h3>
+                <button @click="removeJob(currentJob)" class="btn btn-danger text-xs">この職業を削除</button>
+            </div>
+            
+            <div class="grid grid-cols-5 gap-2 max-h-96 overflow-y-auto">
+                <div v-for="lv in 100" :key="lv" class="flex items-center bg-gray-900 p-1 rounded border border-gray-700">
+                    <span class="text-xs text-gray-500 w-6 text-right mr-1">{{ lv }}</span>
+                    <select :value="jobSkills[currentJob][lv] || ''" 
+                            @change="updateJobSkill(currentJob, lv, $event.target.value)"
+                            class="text-xs p-1 h-6 w-full bg-gray-800 border-none outline-none"
+                            :class="{'text-yellow-200 font-bold': jobSkills[currentJob][lv]}">
+                        <option value="">-</option>
+                        <option v-for="s in db.SKILLS" :value="s.id">{{ s.name }} ({{s.id}})</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="skills.js"></script>
+<script src="monsters.js"></script>
+<script src="characters.js"></script>
+<script src="items.js"></script>
+<script src="job_data.js"></script>
+<script src="database.js"></script>
+
+<script>
+const { createApp, ref, reactive, computed, watch } = Vue;
+
+createApp({
+    setup() {
+        const assignUid = (list) => {
+            if(!list) return [];
+            return list.map(item => {
+                if(!item._uid) item._uid = Math.random().toString(36).substring(2) + Date.now().toString(36);
+                return item;
+            });
+        };
+
+        const getInitialData = (key, fallbackKey) => {
+            let data = [];
+            if (window[key]) data = window[key];
+            else if (window.DB && window.DB[fallbackKey]) data = window.DB[fallbackKey];
+            return assignUid(data);
+        };
+
+        const db = reactive({
+            SKILLS: getInitialData('SKILLS_DATA', 'SKILLS'),
+            MONSTERS: getInitialData('MONSTERS_DATA', 'MONSTERS'),
+            CHARACTERS: getInitialData('CHARACTERS_DATA', 'CHARACTERS'),
+            ITEMS: getInitialData('ITEMS_DATA', 'ITEMS'),
+            EQUIPS: window.DB ? (window.DB.EQUIPS || []) : [],
+            OPT_RULES: window.DB ? (window.DB.OPT_RULES || []) : [],
+            SYNERGIES: window.DB ? (window.DB.SYNERGIES || []) : [],
+            MEDAL_REWARDS: window.DB ? (window.DB.MEDAL_REWARDS || []) : []
+        });
+        
+        if(db.SKILLS.length > 0) db.SKILLS.sort((a,b) => a.id - b.id);
+
+        const jobSkills = reactive(window.JOB_SKILLS || window.JOB_SKILLS_DATA || {});
+
+        const currentTab = ref('skills');
+        const selectedMonster = ref(null);
+        const currentJob = ref(Object.keys(jobSkills)[0] || null);
+        const dummyImg = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"; 
+
+        // Filter & Export States
+        const skillFilter = ref('ALL');
+        const showExport = reactive({ skills: false, jobs: false, monsters: false, characters: false, items: false });
+        const exportText = reactive({ skills: '', jobs: '', monsters: '', characters: '', items: '' });
+
+        const tabs = [
+            {id:'skills', name:'スキル'},
+            {id:'monsters', name:'モンスター'},
+            {id:'characters', name:'仲間キャラ'},
+            {id:'items', name:'アイテム'},
+            {id:'jobs', name:'職業(習得)'}
+        ];
+        const skillTypes = ['物理','魔法','回復','蘇生','強化','弱体','特殊','MP回復'];
+        const skillTargets = ['単体','全体','ランダム','自分','なし'];
+        const elements = ['火','水','風','雷','光','闇','混沌'];
+        
+        const ailmentLabels = { 
+            Poison:'毒', ToxicPoison:'猛毒', Shock:'感電', Fear:'怯え', 
+            SpellSeal:'呪文封印', SkillSeal:'技封印', HealSeal:'回復封印' 
+        };
+        const resistLabels = {
+            Poison: '毒・猛毒',
+            Shock: '感電',
+            Fear: '怯え',
+            Seal: '封印系',
+            Debuff: '弱体化',
+            InstantDeath: '即死/割合'
+        };
+
+        const objToString = (obj) => {
+            if(!obj) return '';
+            return Object.entries(obj).map(([k,v]) => `${k}:${v}`).join(', ');
+        };
+        const stringToObj = (str) => {
+            if(!str) return null;
+            const obj = {};
+            str.split(',').forEach(part => {
+                const [k, v] = part.split(':');
+                if(k && v) obj[k.trim()] = Number(v.trim());
+            });
+            return obj;
+        };
+
+        const handleImageUpload = (event, targetObj) => {
+            const file = event.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => { targetObj.img = e.target.result; };
+            reader.readAsDataURL(file);
+        };
+
+        // MONSTER SELECTION & AUTO-MIGRATION FOR ACTS
+        const selectMonster = (m) => {
+            selectedMonster.value = m;
+            if (!m.elmRes) m.elmRes = {};
+            if (!m.resists) m.resists = {};
+            
+            // Migrate acts from [id, id] to [{id, rate, condition}, ...]
+            if (!m.acts) m.acts = [{id:1, rate:100, condition:0}];
+            else if (m.acts.length > 0 && typeof m.acts[0] === 'number') {
+                const count = m.acts.length;
+                const baseRate = Math.floor(100 / count);
+                const remainder = 100 % count;
+                m.acts = m.acts.map((id, idx) => ({
+                    id: id,
+                    rate: baseRate + (idx < remainder ? 1 : 0),
+                    condition: 0
+                }));
+            } else {
+                // Ensure all existing acts objects have condition
+                m.acts.forEach(a => {
+                    if(a.condition === undefined) a.condition = 0;
+                });
+            }
+        };
+
+        const addMonsterAct = () => {
+            if(selectedMonster.value) {
+                selectedMonster.value.acts.push({id: 1, rate: 0, condition: 0});
+            }
+        };
+
+        const recalcMonsterActs = () => {
+            if(selectedMonster.value && selectedMonster.value.acts.length > 0) {
+                const acts = selectedMonster.value.acts;
+                const count = acts.length;
+                const baseRate = Math.floor(100 / count);
+                const remainder = 100 % count;
+                acts.forEach((a, idx) => {
+                    a.rate = baseRate + (idx < remainder ? 1 : 0);
+                });
+            }
+        };
+
+        const removeList = (list, index) => {
+            if(confirm('本当に削除しますか？')) list.splice(index, 1);
+        };
+        
+        const addSkill = () => {
+            const newId = db.SKILLS.length > 0 ? Math.max(...db.SKILLS.map(s=>s.id)) + 1 : 1;
+            db.SKILLS.unshift({ 
+                id: newId, 
+                _uid: Math.random().toString(36), 
+                name: '新規スキル', type: '物理', target: '単体', mp: 0, rate: 1.0, count: 1, base: 0, desc: '' 
+            });
+        };
+        const sortSkills = () => {
+            db.SKILLS.sort((a, b) => a.id - b.id);
+        };
+        const filteredSkills = computed(() => {
+            if (skillFilter.value === 'ALL') return db.SKILLS;
+            return db.SKILLS.filter(s => s.type === skillFilter.value);
+        });
+
+        const addMonster = () => {
+            const newM = { 
+                id: Date.now(), 
+                _uid: Math.random().toString(36),
+                rank: 1, name: '新規モンスター', hp: 100, mp: 0, 
+                atk: 10, def: 10, spd: 10, mag: 10, exp: 10, gold: 10, 
+                acts: [{id:1, rate:100, condition:0}], actCount: 1, img: null,
+                elmRes: {}, resists: {}
+            };
+            db.MONSTERS.push(newM);
+            selectMonster(newM);
+        };
+        const addCharacter = () => {
+            db.CHARACTERS.push({
+                id: Date.now(), 
+                _uid: Math.random().toString(36),
+                name: '新人', job: '冒険者', rarity: 'N',
+                hp: 100, mp: 50, atk: 10, def: 10, spd: 10, mag: 10,
+                sp: 0, level: 1, lbSkills: {}, img: null
+            });
+        };
+        const addItem = () => {
+            db.ITEMS.push({ 
+                id: Date.now()%10000, 
+                _uid: Math.random().toString(36),
+                rank: 1,
+                name: '新規アイテム', type: 'HP回復', val: 100, price: 10, 
+                desc: '', target: '単体' 
+            });
+        };
+
+        const addNewJob = () => {
+            const name = prompt("新しい職業名を入力してください");
+            if(name && !jobSkills[name]) {
+                jobSkills[name] = {};
+                currentJob.value = name;
+            }
+        };
+        const removeJob = (name) => {
+            if(confirm(`職業「${name}」を削除しますか？`)) {
+                delete jobSkills[name];
+                currentJob.value = Object.keys(jobSkills)[0] || null;
+            }
+        };
+        const updateJobSkill = (job, lv, skillId) => {
+            if(skillId) jobSkills[job][lv] = Number(skillId);
+            else delete jobSkills[job][lv];
+        };
+
+        // --- EXPORT FUNCTION ---
+        const generateExport = (list, type) => {
+            let text = "";
+            let sorted = [...list];
+            if(sorted.length > 0 && sorted[0].id !== undefined) {
+                sorted.sort((a,b) => a.id - b.id);
+            }
+
+            sorted.forEach(item => {
+                let props = [];
+                let priorityKeys = [];
+                if (type === 'skills') priorityKeys = ['id', 'name', 'type', 'target', 'mp', 'rate', 'count', 'base', 'elm', 'desc'];
+                else if (type === 'monsters') priorityKeys = ['id', 'rank', 'minF', 'name', 'hp', 'mp', 'atk', 'def', 'spd', 'mag', 'gold', 'exp', 'acts', 'actCount'];
+                else if (type === 'characters') priorityKeys = ['id', 'name', 'job', 'rarity', 'hp', 'mp', 'atk', 'def', 'spd', 'mag', 'lbSkills', 'sp'];
+                else if (type === 'items') priorityKeys = ['id', 'rank', 'name', 'type', 'val', 'desc', 'target', 'price'];
+
+                priorityKeys.forEach(k => {
+                    if (item.hasOwnProperty(k)) {
+                        let val = item[k];
+                        if (k === 'acts' && type === 'monsters') {
+                            if(Array.isArray(val) && val.length > 0 && typeof val[0] === 'object') {
+                                // Update export format to include condition
+                                const actStr = val.map(a => `{id:${a.id}, rate:${a.rate}, condition:${a.condition||0}}`).join(', ');
+                                props.push(`${k}: [${actStr}]`);
+                            } else {
+                                props.push(`${k}:${JSON.stringify(val)}`);
+                            }
+                        } else {
+                            if (val === null) props.push(`${k}:null`);
+                            else if (typeof val === 'string') props.push(`${k}:'${val}'`);
+                            else if (typeof val === 'object') props.push(`${k}:${JSON.stringify(val)}`);
+                            else props.push(`${k}:${val}`);
+                        }
+                    }
+                });
+
+                Object.keys(item).forEach(k => {
+                    if (k === '_uid' || k === 'img') return;
+                    if (priorityKeys.includes(k)) return;
+                    let val = item[k];
+                    if (val === undefined || val === false) return;
+                    if (typeof val === 'object' && val !== null && Object.keys(val).length === 0) return;
+
+                    if (val === null) props.push(`${k}:null`);
+                    else if (typeof val === 'string') props.push(`${k}:'${val}'`);
+                    else if (typeof val === 'object') props.push(`${k}:${JSON.stringify(val)}`);
+                    else props.push(`${k}:${val}`);
+                });
+
+                text += `{${props.join(', ')}},\n`;
+            });
+            return text;
+        };
+
+        const toggleExport = (type) => {
+            if (showExport[type]) {
+                showExport[type] = false;
+            } else {
+                if (type === 'jobs') {
+                    let text = "";
+                    for (const [job, skills] of Object.entries(jobSkills)) {
+                        const levels = Object.keys(skills).sort((a,b) => Number(a) - Number(b));
+                        const skillPairs = levels.map(lv => `${lv}:${skills[lv]}`).join(', ');
+                        text += `'${job}': { ${skillPairs} },\n`;
+                    }
+                    exportText.jobs = text;
+                } else {
+                    let list = [];
+                    if (type === 'skills') list = db.SKILLS;
+                    else if (type === 'monsters') list = db.MONSTERS;
+                    else if (type === 'characters') list = db.CHARACTERS;
+                    else if (type === 'items') list = db.ITEMS;
+                    exportText[type] = generateExport(list, type);
+                }
+                showExport[type] = true;
+            }
+        };
+
+        const pickerOptions = {
+            id: 'rpg_data_save',
+            types: [{ description: 'JavaScript File', accept: {'text/javascript': ['.js']} }]
+        };
+
+        const savePartial = async (type) => {
+            let content = '';
+            let fileName = '';
+            const clean = (arr) => JSON.parse(JSON.stringify(arr)).map(i => { delete i._uid; return i; });
+
+            if (type === 'skills') {
+                db.SKILLS.sort((a,b) => a.id - b.id);
+                content = `/* skills.js */\nwindow.SKILLS_DATA = ${JSON.stringify(clean(db.SKILLS), null, 4)};\n`;
+                fileName = 'skills.js';
+            } else if (type === 'monsters') {
+                content = `/* monsters.js */\nwindow.MONSTERS_DATA = ${JSON.stringify(clean(db.MONSTERS), null, 4)};\n`;
+                fileName = 'monsters.js';
+            } else if (type === 'characters') {
+                content = `/* characters.js */\nwindow.CHARACTERS_DATA = ${JSON.stringify(clean(db.CHARACTERS), null, 4)};\n`;
+                fileName = 'characters.js';
+            } else if (type === 'items') {
+                content = `/* items.js */\nwindow.ITEMS_DATA = ${JSON.stringify(clean(db.ITEMS), null, 4)};\n`;
+                fileName = 'items.js';
+            }
+
+            try {
+                const handle = await window.showSaveFilePicker({ ...pickerOptions, suggestedName: fileName });
+                const writable = await handle.createWritable();
+                await writable.write(content);
+                await writable.close();
+                alert(`${fileName} を保存しました！`);
+            } catch(e) { console.error(e); }
+        };
+
+        const saveJobFile = async () => {
+            const content = `/* job_data.js */\nwindow.JOB_SKILLS_DATA = ${JSON.stringify(jobSkills, null, 4)};\nwindow.JOB_SKILLS = window.JOB_SKILLS_DATA;\n`;
+            try {
+                const handle = await window.showSaveFilePicker({ ...pickerOptions, suggestedName: 'job_data.js' });
+                const writable = await handle.createWritable();
+                await writable.write(content);
+                await writable.close();
+                alert('job_data.js を保存しました！');
+            } catch(e) { console.error(e); }
+        };
+
+        const saveSystemFile = async () => {
+            const content = `/* database.js */\n\n` +
+                            `const CONST = ${JSON.stringify(window.CONST || {}, null, 4)};\n\n` +
+                            `const DB = {\n` +
+                            `    SKILLS: window.SKILLS_DATA || [],\n` +
+                            `    ITEMS: window.ITEMS_DATA || [],\n` +
+                            `    CHARACTERS: window.CHARACTERS_DATA || [],\n` +
+                            `    MONSTERS: window.MONSTERS_DATA || [],\n` +
+                            `    EQUIPS: ${JSON.stringify(db.EQUIPS || [], null, 4)},\n` +
+                            `    OPT_RULES: ${JSON.stringify(db.OPT_RULES || [], null, 4)},\n` +
+                            `    SYNERGIES: ${JSON.stringify(db.SYNERGIES || [], null, 4)},\n` +
+                            `    MEDAL_REWARDS: ${JSON.stringify(db.MEDAL_REWARDS || [], null, 4)}\n` +
+                            `};\n` +
+                            `window.DB = DB;`;
+            try {
+                const handle = await window.showSaveFilePicker({ ...pickerOptions, suggestedName: 'database.js' });
+                const writable = await handle.createWritable();
+                await writable.write(content);
+                await writable.close();
+                alert('database.js を保存しました！');
+            } catch(e) { console.error(e); }
+        };
+
+        return {
+            db, jobSkills, currentTab, selectedMonster, currentJob,
+            tabs, skillTypes, skillTargets, elements, dummyImg, ailmentLabels, resistLabels,
+            objToString, stringToObj, handleImageUpload, selectMonster,
+            removeList, addSkill, addMonster, addCharacter, addItem,
+            addNewJob, removeJob, updateJobSkill,
+            savePartial, saveJobFile, saveSystemFile,
+            skillFilter, filteredSkills, sortSkills,
+            showExport, exportText, toggleExport,
+            addMonsterAct, recalcMonsterActs
+        };
+    }
+}).mount('#app');
+</script>
+</body>
+</html>
