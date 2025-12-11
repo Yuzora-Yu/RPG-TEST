@@ -31,6 +31,7 @@ class Entity {
         this.img = data.img || null;
         this.limitBreak = data.limitBreak || 0;
         this.exp = data.exp || 0;
+		this.sp = data.sp || 0;
     }
 
     getStat(key) {
@@ -96,7 +97,8 @@ class Player extends Entity {
         this.uid = data.uid;
         this.equips = data.equips || {};
         
-        this.sp = data.sp !== undefined ? data.sp : 0;
+		// ★修正: Entityで設定されたspをそのまま使う (再定義しない)
+        //this.sp = data.sp !== undefined ? data.sp : 0;
         this.tree = data.tree || { ATK:0, MAG:0, SPD:0, HP:0, MP:0 };
 
         this.skills = [DB.SKILLS.find(s => s.id === 1)]; 
@@ -388,7 +390,7 @@ const App = {
         App.data.characters[0].name = name;
         App.data.characters[0].img = imgSrc; 
         
-        App.data.characters[0].sp = 0;
+        //App.data.characters[0].sp = 0;
         App.data.characters[0].tree = { ATK:0, MAG:0, SPD:0, HP:0, MP:0 };
 
         for(let i=0;i<5;i++) App.data.inventory.push(App.createRandomEquip('init', 1)); 
@@ -552,7 +554,7 @@ const App = {
         return s;
     },
 
-    // ★修正: レベルアップ処理 (DB基礎値の4〜8%を加算)
+// ★修正: レベルアップ処理 (DB基礎値の4〜8%を加算 + SP加算)
     gainExp: (charData, expGain) => {
         if (!charData.exp) charData.exp = 0;
         charData.exp += expGain;
@@ -572,11 +574,11 @@ const App = {
                 const minRate = 0.04;
                 const maxRate = 0.08;
                 const rate1 = minRate + Math.random() * (maxRate - minRate);
-				const rate2 = minRate + Math.random() * (maxRate - minRate);
-				const rate3 = minRate + Math.random() * (maxRate - minRate);
-				const rate4 = minRate + Math.random() * (maxRate - minRate);
-				const rate5 = minRate + Math.random() * (maxRate - minRate);
-				const rate6 = minRate + Math.random() * (maxRate - minRate);
+                const rate2 = minRate + Math.random() * (maxRate - minRate);
+                const rate3 = minRate + Math.random() * (maxRate - minRate);
+                const rate4 = minRate + Math.random() * (maxRate - minRate);
+                const rate5 = minRate + Math.random() * (maxRate - minRate);
+                const rate6 = minRate + Math.random() * (maxRate - minRate);
 
                 const incHp = Math.max(1, Math.floor((master.hp || 100) * rate1 * 2));
                 const incMp = Math.max(1, Math.floor((master.mp || 50) * rate2));
@@ -588,6 +590,10 @@ const App = {
                 charData.hp += incHp; charData.mp += incMp;
                 charData.atk += incAtk; charData.def += incDef;
                 charData.spd += incSpd; charData.mag += incMag;
+                
+                // ★追加: SP加算処理
+                if (charData.sp === undefined) charData.sp = 0;
+                charData.sp++; 
                 
                 // HP/MP全回復
                 const stats = App.calcStats(charData);
