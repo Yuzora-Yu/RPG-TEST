@@ -1,4 +1,4 @@
-/* battle.js (完全版: ターゲット判定修正・シナジー修正・耐性＆感電対応) */
+/* battle.js (AI行動ロジック刷新版: 条件・制約・確率抽選対応) */
 
 const Battle = {
     active: false,
@@ -31,7 +31,7 @@ const Battle = {
 
     getEl: (id) => document.getElementById(id),
     
-init: () => {
+    init: () => {
         Battle.active = true;
         Battle.phase = 'init';
         Battle.commandQueue = [];
@@ -51,14 +51,12 @@ init: () => {
                 if(!charData) return null;
                 const player = new Player(charData);
                 
-                // ★修正: 計算済みステータス(装備・職業補正込)を戦闘用プロパティとしてセット
                 const stats = App.calcStats(charData);
                 player.hp = Math.min(player.hp, stats.maxHp);
                 player.mp = Math.min(player.mp, stats.maxMp);
                 player.baseMaxHp = stats.maxHp;
                 player.baseMaxMp = stats.maxMp;
 
-                // ここで atk, def 等をコピーしないと battle.js で 0 になる
                 player.atk = stats.atk;
                 player.def = stats.def;
                 player.spd = stats.spd;
@@ -94,13 +92,12 @@ init: () => {
                 m.isDead = m.hp <= 0;
                 m.isFled = false;
                 if(base.actCount) m.actCount = base.actCount;
+                if(base.acts) m.acts = base.acts; // 復帰時もactsを継承
 
-                // ★修正: 敵の baseStats を戦闘用プロパティに展開
                 m.atk = m.baseStats.atk;
                 m.def = m.baseStats.def;
                 m.spd = m.baseStats.spd;
                 m.mag = m.baseStats.mag;
-                // 敵は elmAtk/elmRes がデータ構造上存在しない場合があるので初期化
                 m.elmAtk = {}; 
                 m.elmRes = {};
                 m.finDmg = 0;
@@ -138,11 +135,8 @@ init: () => {
         Battle.startInputPhase();
     },
 
-    // ★修正: パッシブスキル・シナジーの集計関数
     getPassives: (actor) => {
         let passives = {};
-        
-        // 1. スキルツリー
         if (actor.tree) {
             for (let key in actor.tree) {
                 const level = actor.tree[key];
@@ -150,69 +144,43 @@ init: () => {
                 if (treeDef) {
                     for (let i = 0; i < level; i++) {
                         const step = treeDef.steps[i];
-                        if (step.passive) {
-                            passives[step.passive] = true;
-                        }
+                        if (step.passive) passives[step.passive] = true;
                     }
                 }
             }
         }
-
-        // 2. 装備シナジー (修正: 各装備パーツごとにチェック)
         if (actor.equips) {
             Object.values(actor.equips).forEach(eq => {
                 if (eq && typeof App.checkSynergy === 'function') {
-                    // 各装備について単体で条件を満たしているかチェック
                     const syn = App.checkSynergy(eq);
-                    if (syn && syn.effect) {
-                        passives[syn.effect] = true;
-                    }
+                    if (syn && syn.effect) passives[syn.effect] = true;
                 }
             });
         }
-
         return passives;
     },
 
     initBattleStatus: (actor) => {
-        actor.battleStatus = {
-            buffs: {},   
-            debuffs: {}, 
-            ailments: {} 
-        };
+        actor.battleStatus = { buffs: {}, debuffs: {}, ailments: {} };
     },
 
     getBattleStat: (actor, key) => {
-        // ★修正: actor[key] が 0/undefined の場合、main.js の getStat メソッドがあればそちらを試す
         let val = (actor[key] !== undefined) ? actor[key] : 0;
-        
-        if (val === 0 && typeof actor.getStat === 'function') {
-             // main.js の Player/Monster クラスのメソッド経由で取得を試みる
-             val = actor.getStat(key);
-        }
-
+        if (val === 0 && typeof actor.getStat === 'function') val = actor.getStat(key);
         if (key === 'maxHp') val = actor.baseMaxHp;
         if (key === 'maxMp') val = actor.baseMaxMp;
-        
-        // 耐性はオブジェクトごと返す
-        if (key === 'resists') {
-            return actor.resists || val || {};
-        }
+        if (key === 'resists') return actor.resists || val || {};
 
         const b = actor.battleStatus;
         if (!b) return val;
-
         if (b.buffs[key]) val = Math.floor(val * b.buffs[key].val);
         if (b.debuffs[key]) val = Math.floor(val * b.debuffs[key].val);
-
         return val;
     },
 
     generateNewEnemies: (isBoss) => {
         const newEnemies = [];
         const floor = App.data.progress.floor || 1; 
-
-        // 敵生成時の共通処理ヘルパー
         const setupEnemyStats = (m) => {
             m.atk = m.baseStats.atk;
             m.def = m.baseStats.def;
@@ -229,13 +197,12 @@ init: () => {
             if (bosses.length > 0) {
                 bosses.forEach(base => {
                     const m = new Monster(base, 1.0);
-                    m.name = base.name; m.id = base.id;
-                    m.actCount = base.actCount || 1;
-                    newEnemies.push(setupEnemyStats(m)); // ★適用
+                    m.name = base.name; m.id = base.id; m.actCount = base.actCount || 1;
+                    newEnemies.push(setupEnemyStats(m));
                 });
             } else {
                 const base = DB.MONSTERS.find(m => m.id === 1000);
-                if (base) newEnemies.push(setupEnemyStats(new Monster(base, 1.0))); // ★適用
+                if (base) newEnemies.push(setupEnemyStats(new Monster(base, 1.0)));
             }
         } else {
             Battle.log("モンスターが現れた！");
@@ -243,7 +210,7 @@ init: () => {
                 const rares = DB.MONSTERS.filter(m => !m.actCount && m.minF <= floor && m.id < 1000);
                 if (rares.length > 0) {
                     const m = new Monster(rares[Math.floor(Math.random() * rares.length)], 1.0);
-                    newEnemies.push(setupEnemyStats(m)); // ★適用
+                    newEnemies.push(setupEnemyStats(m));
                     return newEnemies;
                 }
             }
@@ -253,7 +220,7 @@ init: () => {
                     const enemyData = window.generateEnemy(floor);
                     const m = new Monster(enemyData, 1.0);
                     if (count > 1) m.name += String.fromCharCode(65+i);
-                    newEnemies.push(setupEnemyStats(m)); // ★適用
+                    newEnemies.push(setupEnemyStats(m));
                 }
             }
         }
@@ -341,8 +308,7 @@ init: () => {
             if (Battle.currentActorIndex === firstAlive) {
                 newBtn.innerText = "にげる";
                 newBtn.onclick = Battle.run;
-                if (App.data.battle.isBossBattle) newBtn.disabled = true;
-                else newBtn.disabled = false;
+                newBtn.disabled = !!App.data.battle.isBossBattle;
             } else {
                 newBtn.innerText = "もどる";
                 newBtn.onclick = Battle.goBack;
@@ -397,7 +363,6 @@ init: () => {
                 else if (actionData.debuff_reset || actionData.CureAilments) actualTargetType = 'ally'; 
                 else actualTargetType = 'enemy';
             } else if (range === '全体') {
-                // ★修正: debuff_reset, HPRegen, MPRegen, CureAilments がある場合は味方全体とみなす
                 if (type.includes('回復') || ['蘇生','強化'].includes(type) || 
                     actionData.debuff_reset || actionData.CureAilments || 
                     actionData.HPRegen || actionData.MPRegen) {
@@ -412,7 +377,7 @@ init: () => {
             }
         }
 
-        if (actualTargetType === 'all_enemy' || actualTargetType === 'all_ally' || actualTargetType === 'random' || actualTargetType === 'self') {
+        if (['all_enemy', 'all_ally', 'random', 'self'].includes(actualTargetType)) {
             const actor = Battle.party[Battle.currentActorIndex];
             let targetObj = actualTargetType;
             if (actualTargetType === 'self') targetObj = actor;
@@ -597,11 +562,8 @@ init: () => {
         let finalSpeed = spd * (0.9 + Math.random() * 0.2);
         let priority = 0;
         
-        if (actionObj.type === 'defend') {
-            priority = 1; 
-        } else if (actionObj.data && actionObj.data.priority) {
-            priority = actionObj.data.priority;
-        }
+        if (actionObj.type === 'defend') priority = 1; 
+        else if (actionObj.data && actionObj.data.priority) priority = actionObj.data.priority;
 
         actionObj.speed = finalSpeed + (priority * 100000);
 
@@ -630,43 +592,101 @@ init: () => {
         }
     },
 
+    // ★修正: 敵AIロジック刷新
     executeTurn: async () => {
         Battle.phase = 'execution';
         const nameDiv = Battle.getEl('battle-actor-name');
         if(nameDiv) nameDiv.style.display = 'none';
         Battle.log("--- ターン開始 ---");
 
-        // 敵AI
+        // 敵AI行動決定プロセス
         Battle.enemies.forEach(e => {
             if (!e.isDead && !e.isFled) {
                 const count = e.actCount || 1;
+                
+                // 生の行動データを取得（古い配列形式への互換対応）
+                let rawActs = e.acts || [];
+                if (rawActs.length === 0) rawActs = [{ id: 1, rate: 100, condition: 0 }];
+
                 for(let i=0; i<count; i++) {
-                    const spd = Battle.getBattleStat(e, 'spd');
-                    const acts = e.acts && e.acts.length > 0 ? e.acts : [1];
-                    
-                    let validActs = acts.filter(id => {
-                        if ([1, 2, 9].includes(id)) return true;
-                        const s = DB.SKILLS.find(k => k.id === id);
+                    // ① 行動フラグと制約によるフィルタリング
+                    const validActions = rawActs.filter(actObj => {
+                        // オブジェクト/数値のゆらぎ吸収
+                        const actId = (typeof actObj === 'object') ? actObj.id : actObj;
+                        const condition = (typeof actObj === 'object') ? (actObj.condition || 0) : 0;
+                        
+                        // Condition Check (0:常時, 1:HP>=50%, 2:HP<=50%, 3:状態異常)
+                        if (condition === 1) {
+                            if ((e.hp / e.baseMaxHp) < 0.5) return false;
+                        } else if (condition === 2) {
+                            if ((e.hp / e.baseMaxHp) > 0.5) return false;
+                        } else if (condition === 3) {
+                            const hasAilment = Object.keys(e.battleStatus.ailments).length > 0;
+                            const hasDebuff = Object.keys(e.battleStatus.debuffs).length > 0;
+                            if (!hasAilment && !hasDebuff) return false;
+                        }
+
+                        // Existing Constraints Check
+                        if ([1, 2, 9].includes(actId)) return true; // 通常攻撃、防御、逃げるは常にOK
+
+                        const s = DB.SKILLS.find(k => k.id === actId);
                         if (!s) return false;
-                        if (s.id === 500) return e.mp > 0;
-                        if (e.mp < s.mp) return false;
+
+                        // MP Check
+                        if (s.id === 500) { if (e.mp <= 0) return false; } // マダンテ
+                        else if (e.mp < s.mp) return false;
+
+                        // Seal Check
                         if (e.battleStatus.ailments['SpellSeal'] && s.type === '魔法') return false;
                         if (e.battleStatus.ailments['SkillSeal'] && s.type === '物理') return false;
-                        if (e.battleStatus.ailments['HealSeal'] && (s.type === '回復' || s.type === '蘇生')) return false;
+                        if (e.battleStatus.ailments['HealSeal'] && (s.type.includes('回復') || s.type === '蘇生')) return false;
+
+                        // Logic: Don't use Revive if no dead allies
+                        if (s.type === '蘇生') {
+                            const hasDeadAlly = Battle.enemies.some(ally => ally.isDead && !ally.isFled);
+                            if (!hasDeadAlly) return false;
+                        }
+
                         return true;
                     });
+
+                    // ② 行動抽選 (残った候補から確率案分)
+                    let selectedActId = 1; // Default Attack
                     
-                    if (validActs.length === 0) validActs = [1];
-                    const actId = validActs[Math.floor(Math.random() * validActs.length)];
-                    
+                    if (validActions.length > 0) {
+                        // 確率の合計値を算出 (数値形式の場合は一律10とみなす)
+                        let totalWeight = validActions.reduce((sum, a) => {
+                            const r = (typeof a === 'object') ? (a.rate || 0) : 10;
+                            return sum + r;
+                        }, 0);
+
+                        if (totalWeight <= 0) {
+                            // 全ての確率が0ならランダム
+                            const rndObj = validActions[Math.floor(Math.random() * validActions.length)];
+                            selectedActId = (typeof rndObj === 'object') ? rndObj.id : rndObj;
+                        } else {
+                            // 重み付け抽選
+                            let r = Math.random() * totalWeight;
+                            for (const act of validActions) {
+                                const rate = (typeof act === 'object') ? (act.rate || 0) : 10;
+                                r -= rate;
+                                if (r < 0) {
+                                    selectedActId = (typeof act === 'object') ? act.id : act;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    // ③ 行動キューへの登録
                     let actionType = 'enemy_attack'; 
                     let skillData = null;
                     let targetScope = 'single'; 
 
-                    if (actId === 9) { actionType = 'flee'; }
-                    else if (actId === 2) { actionType = 'defend'; }
-                    else if (actId !== 1) {
-                        const skill = DB.SKILLS.find(s => s.id === actId);
+                    if (selectedActId === 9) { actionType = 'flee'; }
+                    else if (selectedActId === 2) { actionType = 'defend'; }
+                    else if (selectedActId !== 1) {
+                        const skill = DB.SKILLS.find(s => s.id === selectedActId);
                         if (skill) {
                             actionType = 'skill';
                             skillData = skill;
@@ -674,6 +694,7 @@ init: () => {
                         }
                     }
 
+                    let spd = Battle.getBattleStat(e, 'spd');
                     let baseSpeed = spd * (0.8 + Math.random() * 0.4);
                     let priority = 0;
                     
@@ -695,6 +716,7 @@ init: () => {
             }
         });
         
+        // プレイヤーの行動キュー処理
         const playerCommands = Battle.commandQueue.filter(c => !c.isEnemy && c.type !== 'skip' && c.type !== 'defend');
         Battle.commandQueue = Battle.commandQueue.filter(c => c.isEnemy || c.type === 'skip' || c.type === 'defend'); 
         
@@ -721,7 +743,7 @@ init: () => {
 
         Battle.commandQueue.sort((a, b) => b.speed - a.speed);
 
-        // --- 行動ループ ---
+        // --- 行動実行ループ ---
         for (const cmd of Battle.commandQueue) {
             if (!Battle.active) break;
             const actor = cmd.actor;
@@ -754,8 +776,6 @@ init: () => {
             // ターゲット自動選択 (敵AI)
             if (cmd.isEnemy && !cmd.target && cmd.targetScope !== '全体' && cmd.targetScope !== 'ランダム') {
                 let isSupport = false;
-                
-                // ★修正: 特殊タイプでも回復・強化系効果があればサポート判定
                 const type = cmd.data ? cmd.data.type : '';
                 if (cmd.data && (
                     type.includes('回復') || type === '強化' || type === '蘇生' || type === 'MP回復' || 
@@ -772,6 +792,7 @@ init: () => {
                     if (pool.length > 0) cmd.target = pool[Math.floor(Math.random() * pool.length)];
                     else {
                         if (cmd.data.type === '蘇生') {
+                             // 蘇生対象がいない場合は通常攻撃に切り替え
                              cmd.type = 'enemy_attack'; cmd.data = null; 
                              const aliveParty = Battle.party.filter(p => p && !p.isDead);
                              if(aliveParty.length > 0) cmd.target = aliveParty[Math.floor(Math.random() * aliveParty.length)];
@@ -798,12 +819,10 @@ init: () => {
         Battle.startInputPhase();
     },
 
-    // ★行動終了時処理
     onActionEnd: async (actor) => {
         if (!actor) return;
         const b = actor.battleStatus;
 
-        // 1. バフ・デバフのターン経過
         ['buffs', 'debuffs', 'ailments'].forEach(cat => {
             for (let key in b[cat]) {
                 const eff = b[cat][key];
@@ -819,7 +838,6 @@ init: () => {
             }
         });
 
-        // 2. 毒 / 猛毒 / 感電
         if (actor.hp > 0) {
             let dmgRate = 0;
             let msgType = '';
@@ -836,7 +854,6 @@ init: () => {
             }
         }
 
-        // 3. リジェネ (バフ由来)
         if (actor.hp > 0 && b.buffs['HPRegen']) {
             let rec = Math.floor(actor.baseMaxHp * b.buffs['HPRegen'].val);
             if (rec > 0) {
@@ -852,7 +869,6 @@ init: () => {
             }
         }
 
-        // 4. パッシブのリジェネ (味方)
         if (actor.hp > 0 && actor.passive && actor.passive.hpRegen) {
              const rec = Math.floor(actor.baseMaxHp * 0.05);
              if (rec > 0 && actor.hp < actor.baseMaxHp) {
@@ -861,8 +877,6 @@ init: () => {
              }
         }
 
-        // ★追加: ボスの自動回復 (ID 1000以上)
-        // ログなしで5%回復
         if (actor.hp > 0 && actor.id >= 1000) {
             const rec = Math.floor(actor.baseMaxHp * 0.05);
             if (rec > 0 && actor.hp < actor.baseMaxHp) {
@@ -871,7 +885,6 @@ init: () => {
         }
     },
 
-    // アクション実行 (耐性判定追加)
     processAction: async (cmd) => {
         const actor = cmd.actor;
         const data = cmd.data;
@@ -971,58 +984,38 @@ init: () => {
         let successRate = rawSuccessRate;
         if (successRate <= 1 && successRate > 0) successRate *= 100;
 
-        // マダンテ系 (ID 500～505) : 属性・軽減・回数・範囲対応
         if (data && data.id >= 500 && data.id <= 505) {
-            let baseBaseDmg = mpCost * 5; // 基礎ダメージ
-            let hitCount = (typeof data.count === 'number') ? data.count : 1; // 回数設定
-            
-            // --- ターゲット候補プール ---
+            let baseBaseDmg = mpCost * 5;
+            let hitCount = (typeof data.count === 'number') ? data.count : 1;
             const pool = cmd.isEnemy ? Battle.party.filter(p=>p && !p.isDead) : Battle.enemies.filter(e=>!e.isDead && !e.isFled);
-            
-            // --- ターゲットリストの決定 ---
-            // ループを回すためのリストを作成します
             let loopTargets = [];
             
             if (cmd.targetScope === 'ランダム') {
-                // ランダムの場合は「攻撃回数分だけ都度ターゲットを決める」ため、
-                // 外側のループはダミーで1回だけ回るようにします
                 if (pool.length > 0) loopTargets = [pool[0]];
             } else if (cmd.targetScope === '単体' && cmd.target) {
-                // 単体指定
                 if (!cmd.target.isDead) loopTargets = [cmd.target];
             } else {
-                // 全体 (またはその他)
                 loopTargets = pool;
             }
 
-            // --- 実行ループ ---
-            // 全体攻撃の場合: 敵A(x回) → 敵B(x回)... の順で処理
-            // ランダムの場合: ダミー(1回) → 内側で毎回ランダム選択(x回)
             for (let t of loopTargets) {
                 if (!t) continue;
                 if (cmd.targetScope !== 'ランダム' && t.isDead) continue;
 
-                // 回数分ループ
                 for (let i = 0; i < hitCount; i++) {
-                    
-                    // 実際にヒットさせる対象を決定
                     let targetToHit = t;
-                    
                     if (cmd.targetScope === 'ランダム') {
-                        // ランダム指定なら、生存者プールから毎回再抽選
                         const currentPool = cmd.isEnemy ? Battle.party.filter(p=>p && !p.isDead) : Battle.enemies.filter(e=>!e.isDead && !e.isFled);
-                        if (currentPool.length === 0) break; // もう誰もいない
+                        if (currentPool.length === 0) break;
                         targetToHit = currentPool[Math.floor(Math.random() * currentPool.length)];
                     }
 
                     if (!targetToHit || targetToHit.isDead) continue;
 
-                    // --- 補正計算 ---
                     let bonusRate = 0; 
                     let cutRate = 0;   
                     let isImmune = false; 
 
-                    // 1. 属性補正
                     if (element) {
                         const elmAtkVal = (Battle.getBattleStat(actor, 'elmAtk') || {})[element] || 0;
                         if (elmAtkVal > 0) bonusRate += elmAtkVal;
@@ -1036,31 +1029,27 @@ init: () => {
                         else cutRate += resVal;             
                     }
 
-                    // 2. 与ダメージアップ
                     const finDmgVal = Battle.getBattleStat(actor, 'finDmg') || 0; 
                     if (finDmgVal > 0) bonusRate += finDmgVal;
 
-                    // 3. 被ダメージ軽減
                     let finRed = Battle.getBattleStat(targetToHit, 'finRed') || 0;
                     if (targetToHit.passive && targetToHit.passive.finRed10) finRed += 10;
                     if (finRed > 80) finRed = 80;
                     if (finRed > 0) cutRate += finRed;
 
-                    // --- 最終ダメージ計算 ---
                     let dmg = baseBaseDmg;
 
                     if (!isImmune) {
                         if (bonusRate > 0) dmg = dmg * (1.0 + bonusRate / 100);
                         dmg = dmg * (1.0 - cutRate / 100);
-                        dmg = dmg * (0.9 + Math.random() * 0.2); // 乱数
-                        if (targetToHit.status && targetToHit.status.defend) dmg = dmg * 0.5; // 防御
+                        dmg = dmg * (0.9 + Math.random() * 0.2);
+                        if (targetToHit.status && targetToHit.status.defend) dmg = dmg * 0.5;
                         dmg = Math.floor(dmg);
                         if (dmg < 1) dmg = 1;
                     } else {
                         dmg = 0;
                     }
 
-                    // --- 適用とログ ---
                     targetToHit.hp -= dmg;
                     
                     let dmgColor = '#fff';
@@ -1084,7 +1073,6 @@ init: () => {
                         Battle.log(`【${targetToHit.name}】は倒れた！`); 
                     }
 
-                    // 連続攻撃時の描画更新とウェイト
                     Battle.renderEnemies();
                     Battle.renderPartyStatus();
                     if (hitCount > 1) await Battle.wait(150);
@@ -1095,21 +1083,16 @@ init: () => {
             return;
         }
 
-		
-        // ターゲット決定
         let targets = [];
         let scope = cmd.targetScope;
         if (!scope && cmd.target === 'all_enemy') scope = '全体';
         if (!scope && cmd.target === 'all_ally') scope = '全体';
         if (!scope && cmd.target === 'random') scope = 'ランダム';
 
-        // ★判定用関数: 味方対象のスキルかどうか (回復・強化・特殊効果フラグ持ち)
         const isSupportSkill = (d) => {
             if (!d) return false;
             const type = d.type || '';
-            // 基本サポートタイプ
             if (['回復','蘇生','強化','MP回復'].includes(type)) return true;
-            // 特殊効果フラグによる判定
             if (d.debuff_reset || d.CureAilments || d.HPRegen || d.MPRegen) return true;
             return false;
         };
@@ -1118,28 +1101,20 @@ init: () => {
 
         if (scope === '全体') {
              if (cmd.isEnemy) {
-                 // 敵が使用する場合
                  if (isSupport) {
-                     // 敵にとっての味方 (モンスター)
                      targets = Battle.enemies.filter(e => !e.isDead && !e.isFled);
                      if(effectType==='蘇生') targets = Battle.enemies.filter(e => e.isDead && !e.isFled);
                  } else {
-                     // 敵にとっての敵 (プレイヤー)
                      targets = Battle.party.filter(p => p && !p.isDead);
                  }
              } else {
-                 // プレイヤーが使用する場合
                  if (isSupport) {
-                     // プレイヤーにとっての味方 (パーティ)
-                     // 蘇生や回復の細かいフィルタリングは後段の適用処理で行うため、ここでは全員取得
                      targets = Battle.party.filter(p => p); 
                  } else {
-                     // プレイヤーにとっての敵 (モンスター)
                      targets = Battle.enemies.filter(e => !e.isDead && !e.isFled);
                  }
              }
         } else if (scope === 'ランダム') {
-             // ランダム対象の場合もサポート判定を入れる（念のため）
              let pool = [];
              if (cmd.isEnemy) {
                  pool = isSupport ? Battle.enemies.filter(e => !e.isDead && !e.isFled) : Battle.party.filter(p => p && !p.isDead);
@@ -1148,11 +1123,9 @@ init: () => {
              }
              if(pool.length > 0) targets = [pool[Math.floor(Math.random() * pool.length)]];
         } else {
-            // 単体指定 (openTargetWindowで決定済み)
             targets = [cmd.target];
         }
 
-        // 効果適用ヘルパー (耐性チェックあり)
         const applyEffects = (t, d) => {
             const checkResist = (type) => {
                 const resistKey = Battle.RESIST_MAP[type] || type;
@@ -1224,18 +1197,14 @@ init: () => {
             if (d.SkillSeal) addAilment('SkillSeal', `【${t.name}】の 特技が封じられた！`);
             if (d.HealSeal) addAilment('HealSeal', `【${t.name}】の 回復が封じられた！`);
             
-			// 4. 割合ダメージ (InstantDeath耐性判定あり)
             if (d.PercentDamage) {
-                // 命中判定(successRate) と 耐性判定(checkResist) の両方をチェック
                 if ((Math.random() * 100 <= successRate) && !checkResist('PercentDamage')) {
-                    // 成功時: 現在HPに対する割合ダメージ
                     let pdmg = Math.floor(t.hp * d.PercentDamage);
                     if(pdmg < 1) pdmg = 1;
                     t.hp -= pdmg;
                     Battle.log(`【${t.name}】に ${pdmg} のダメージ！`);
                     if (t.hp <= 0) { t.hp = 0; t.isDead = true; Battle.log(`【${t.name}】は倒れた！`); }
                 } else {
-                    // 失敗時 (命中せず or 耐性で無効化)
                     Battle.log(`【${t.name}】にはきかなかった！`);
                 }
             }
@@ -1244,14 +1213,12 @@ init: () => {
         for (let t of targets) {
             if (!t) continue;
 
-            // --- 補助スキル ---
             if (effectType && ['回復','蘇生','強化','弱体','特殊','MP回復'].includes(effectType)) {
                 if (successRate < 100 && Math.random() * 100 > successRate) {
                     Battle.log(`ミス！ 【${t.name}】には効かなかった！`);
                     continue;
                 }
 
-                // 1. 蘇生
                 if (effectType === '蘇生') {
                     if (t.isDead) { 
                         t.isDead = false; 
@@ -1263,7 +1230,6 @@ init: () => {
                     }
                 } 
                 
-                // 2. HP回復
                 if (effectType === '回復') {
                     if (!t.isDead) {
                         let rec = 0;
@@ -1275,7 +1241,6 @@ init: () => {
                     }
                 } 
                 
-                // 3. MP回復
                 if (effectType === 'MP回復') {
                     if (!t.isDead) {
                         let rec = baseDmg;
@@ -1285,7 +1250,6 @@ init: () => {
                     }
                 }
 
-                // 4. その他効果 (強化・弱体・状態異常など)
                 if (!t.isDead) {
                     applyEffects(t, data);
                 }
@@ -1294,7 +1258,6 @@ init: () => {
                 continue;
             }
 
-            // --- 攻撃スキル ---
             for (let i = 0; i < hitCount; i++) {
                 let targetToHit = t;
                 if (scope === 'ランダム') {
@@ -1393,7 +1356,6 @@ init: () => {
                     }
                 }
 
-                // 攻撃付随の効果（攻撃ヒット時は確率で適用）
                 if (cmd.type === 'skill') {
                     if (Math.random() * 100 <= successRate) {
                         applyEffects(targetToHit, data);
@@ -1446,7 +1408,6 @@ init: () => {
         const div = document.createElement('div');
         div.className = `enemy-sprite ${e.hp<=0?'dead':''}`;
         
-        // 下のマージン(18px)
         div.style.cssText = "position: relative; margin: 0px 4px 18px 4px; width: 96px; height: 96px; overflow: visible;"; 
         
         let baseName = e.name.replace(/^(強・|真・|極・|神・)+/, '').replace(/ Lv\d+[A-Z]?$/, '').replace(/[A-Z]$/, '').trim();
@@ -1462,14 +1423,12 @@ init: () => {
         if(e.hp > 0) {
             const hpPer = (e.hp / e.baseMaxHp) * 100;
             const hpRatio = e.hp / e.baseMaxHp;
-            
             const nameColor = hpRatio < 0.5 ? '#ff4' : '#fff';
             
             div.innerHTML = `
                 ${imgHtml}
                 <div style="position: absolute; top: 100%; left: 50%; transform: translateX(-50%); width: 100%; display: flex; flex-direction: column; align-items: center; z-index: 10; pointer-events: none;">
                     <div style="font-size: 11px; color: ${nameColor}; text-shadow: 1px 1px 0 #000; white-space: nowrap; margin-top: 0px; line-height: 1.2;">${e.name}</div>
-                    
                     <div class="enemy-hp-bar" style="width: 70%; height: 6px; border: 1px solid #000; background: #333; margin-top: 1px;">
                         <div class="enemy-hp-val" style="width:${hpPer}%; height:100%; background:#ff4444; transition:width 0.2s;"></div>
                     </div>
@@ -1488,7 +1447,6 @@ init: () => {
         container.appendChild(div);
     });
 },
-
 
     renderPartyStatus: () => {
         const container = Battle.getEl('battle-party-bar'); if(!container) return;
