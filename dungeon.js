@@ -7,7 +7,8 @@ const Dungeon = {
     // Battleシーンから呼び出される想定の関数
     getEnemy: (floor) => {
         // 1. その階層固定のボスがいるかチェック (DB.MONSTERSから検索)
-        const boss = DB.MONSTERS.find(m => m.minF === floor && m.actCount);
+		// IDが1000以上、かつ階層が一致するものをボスとする
+		const boss = DB.MONSTERS.find(m => m.minF === floor && m.id >= 1000);
         if (boss) {
             return JSON.parse(JSON.stringify(boss));
         }
