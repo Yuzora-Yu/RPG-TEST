@@ -1322,6 +1322,19 @@ const Battle = {
                     Battle.log(msg);
                 }
             };
+			
+			if (d.PercentDamage) {
+                if ((Math.random() * 100 <= successRate) && !checkResist('PercentDamage')) {
+                    let pdmg = Math.floor(t.hp * d.PercentDamage);
+                    if(pdmg < 1) pdmg = 1;
+                    t.hp -= pdmg;
+                    Battle.log(`【${t.name}】に ${pdmg} のダメージ！`);
+                    if (t.hp <= 0) { t.hp = 0; t.isDead = true; Battle.log(`【${t.name}】は倒れた！`); }
+                } else {
+                    Battle.log(`【${t.name}】にはきかなかった！`);
+                }
+            }
+			
             // ★修正: 各 addAilment の呼び出し前に checkProc を挟む
             // (確率判定に受かったら → 耐性判定(addAilment) へ進む)
 
@@ -1334,18 +1347,7 @@ const Battle = {
             if (d.SkillSeal && checkProc(d.SkillSeal)) addAilment('SkillSeal', `【${t.name}】の 特技が封じられた！`);
             if (d.HealSeal && checkProc(d.HealSeal)) addAilment('HealSeal', `【${t.name}】の 回復が封じられた！`);
 			
-            if (d.PercentDamage) {
-                if ((Math.random() * 100 <= successRate) && !checkResist('PercentDamage')) {
-                    let pdmg = Math.floor(t.hp * d.PercentDamage);
-                    if(pdmg < 1) pdmg = 1;
-                    t.hp -= pdmg;
-                    Battle.log(`【${t.name}】に ${pdmg} のダメージ！`);
-                    if (t.hp <= 0) { t.hp = 0; t.isDead = true; Battle.log(`【${t.name}】は倒れた！`); }
-                } else {
-                    Battle.log(`【${t.name}】にはきかなかった！`);
-                }
-            }
-        };
+                    };
 
         for (let t of targets) {
             if (!t) continue;
