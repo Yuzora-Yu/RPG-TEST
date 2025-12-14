@@ -3,7 +3,7 @@ window.SKILLS_DATA = [
     {
         "id": 1,
         "name": "こうげき",
-        "type": "物理",
+        "type": "通常攻撃",
         "target": "単体",
         "mp": 0,
         "rate": 1,
@@ -374,16 +374,17 @@ window.SKILLS_DATA = [
     {
         "id": 55,
         "name": "フォースブレイク",
-        "type": "弱体",
+        "type": "物理",
         "target": "単体",
         "mp": 150,
-        "rate": 0,
+        "rate": 1.2,
         "count": 1,
-        "base": 20,
+        "base": 0,
         "debuff": {
             "elmResDown": 100
         },
-        "desc": "敵の全属性耐性を激減させる"
+        "desc": "敵の全属性耐性を激減させる",
+        "SuccessRate": 200
     },
     {
         "id": 56,
@@ -395,7 +396,8 @@ window.SKILLS_DATA = [
         "count": 1,
         "base": 0,
         "debuff_reset": true,
-        "desc": "味方全体の状態異常と弱体を解除"
+        "desc": "味方全体の状態異常と弱体を解除",
+        "CureAilments": true
     },
     {
         "id": 57,
@@ -475,7 +477,7 @@ window.SKILLS_DATA = [
     {
         "id": 62,
         "name": "キアリク",
-        "type": "回復",
+        "type": "特殊",
         "target": "全体",
         "mp": 100,
         "rate": 0,
@@ -494,7 +496,8 @@ window.SKILLS_DATA = [
         "count": 1,
         "base": 99999,
         "CureAilments": true,
-        "desc": "味方全体のHPを超回復し、状態異常を治療する"
+        "desc": "味方全体のHPを超回復し、状態異常を治療する",
+        "debuff_reset": true
     },
     {
         "id": 80,
@@ -995,7 +998,8 @@ window.SKILLS_DATA = [
         "elm": "雷",
         "Shock": true,
         "SuccessRate": 100,
-        "desc": "雷魔法超ダメージ5連・感電付与"
+        "desc": "雷魔法超ダメージ5連・感電付与",
+        "turn": 5
     },
     {
         "id": 414,
@@ -1314,7 +1318,7 @@ window.SKILLS_DATA = [
         "id": 615,
         "name": "竜の咆哮",
         "type": "特殊",
-        "target": "単体",
+        "target": "全体",
         "mp": 0,
         "rate": 1,
         "count": 1,
