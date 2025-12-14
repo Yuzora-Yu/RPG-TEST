@@ -17610,7 +17610,7 @@ window.MONSTERS_DATA = [
     {
         "id": 1010,
         "rank": 10,
-        "minF": 999,
+        "minF": 10,
         "name": "バトルレックス",
         "hp": 10000,
         "mp": 1000,
@@ -17659,7 +17659,7 @@ window.MONSTERS_DATA = [
     {
         "id": 1020,
         "rank": 20,
-        "minF": 999,
+        "minF": 20,
         "name": "魔王のつかい",
         "hp": 15000,
         "mp": 1200,
@@ -17685,7 +17685,7 @@ window.MONSTERS_DATA = [
     {
         "id": 1030,
         "rank": 30,
-        "minF": 999,
+        "minF": 30,
         "name": "デュラン",
         "hp": 22000,
         "mp": 2500,
@@ -17712,7 +17712,7 @@ window.MONSTERS_DATA = [
     {
         "id": 1040,
         "rank": 40,
-        "minF": 999,
+        "minF": 40,
         "name": "ジャミラス",
         "hp": 35000,
         "mp": 3300,
@@ -17737,7 +17737,7 @@ window.MONSTERS_DATA = [
     {
         "id": 1050,
         "rank": 50,
-        "minF": 999,
+        "minF": 50,
         "name": "グラコス",
         "hp": 48000,
         "mp": 4200,
@@ -17763,7 +17763,7 @@ window.MONSTERS_DATA = [
     {
         "id": 1060,
         "rank": 60,
-        "minF": 999,
+        "minF": 60,
         "name": "ムドー",
         "hp": 80000,
         "mp": 6800,
@@ -17822,7 +17822,7 @@ window.MONSTERS_DATA = [
     {
         "id": 1070,
         "rank": 70,
-        "minF": 999,
+        "minF": 70,
         "name": "アクバー",
         "hp": 105000,
         "mp": 8000,
@@ -17871,7 +17871,7 @@ window.MONSTERS_DATA = [
     {
         "id": 1080,
         "rank": 80,
-        "minF": 999,
+        "minF": 80,
         "name": "アトラス",
         "hp": 105000,
         "mp": 6000,
@@ -17915,7 +17915,7 @@ window.MONSTERS_DATA = [
     {
         "id": 1081,
         "rank": 80,
-        "minF": 999,
+        "minF": 80,
         "name": "バズズ",
         "hp": 75000,
         "mp": 6500,
@@ -17969,7 +17969,7 @@ window.MONSTERS_DATA = [
     {
         "id": 1082,
         "rank": 80,
-        "minF": 999,
+        "minF": 80,
         "name": "ベリアル",
         "hp": 80000,
         "mp": 8400,
@@ -18028,7 +18028,7 @@ window.MONSTERS_DATA = [
     {
         "id": 1090,
         "rank": 90,
-        "minF": 999,
+        "minF": 90,
         "name": "ハーゴン",
         "hp": 180000,
         "mp": 8000,
@@ -18087,7 +18087,7 @@ window.MONSTERS_DATA = [
     {
         "id": 1100,
         "rank": 100,
-        "minF": 999,
+        "minF": 100,
         "name": "シドー",
         "hp": 250000,
         "mp": 9999,
