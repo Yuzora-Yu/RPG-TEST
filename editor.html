@@ -2,7 +2,9 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>RPG Data Editor v2.8</title>
+    <title>PRISMA ABYSS -Data Editor- v2.8</title>
+	<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22>
+    <text y=%22.9em%22 font-size=%2290%22>⚔️</text></svg>">
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -53,7 +55,7 @@
 <div id="app" class="editor-container">
     <div class="flex justify-between items-center mb-6 border-b border-gray-700 pb-4">
         <div>
-            <h1 class="text-2xl font-bold text-yellow-400">RPG Data Editor <span class="text-sm text-gray-500">v2.8</span></h1>
+            <h1 class="text-2xl font-bold text-yellow-400">PRISMA ABYSS Data Editor <span class="text-sm text-gray-500">v2.8</span></h1>
             <p class="text-xs text-gray-400">データカテゴリごとに別ファイルとして保存します</p>
         </div>
         <div class="text-right">
@@ -226,9 +228,14 @@
                             <div><label>HP</label><input type="number" v-model.number="selectedMonster.hp"></div>
                             <div><label>MP</label><input type="number" v-model.number="selectedMonster.mp"></div>
                         </div>
+
                         <div class="grid grid-cols-2 gap-2">
-                            <div><label>EXP</label><input type="number" v-model.number="selectedMonster.exp"></div>
-                            <div><label>GOLD</label><input type="number" v-model.number="selectedMonster.gold"></div>
+                            <div><label>Rank</label><input type="number" v-model.number="selectedMonster.rank"></div>
+                            <div><label>出現階層 (minF)</label><input type="number" v-model.number="selectedMonster.minF"></div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div><label>HP</label><input type="number" v-model.number="selectedMonster.hp"></div>
+                            <div><label>MP</label><input type="number" v-model.number="selectedMonster.mp"></div>
                         </div>
                         <div class="mt-4 p-2 bg-black rounded text-center border border-gray-600">
                             <img :src="selectedMonster.img || dummyImg" class="h-24 mx-auto object-contain mb-2">
@@ -684,7 +691,7 @@ createApp({
             const newM = { 
                 id: Date.now(), 
                 _uid: Math.random().toString(36),
-                rank: 1, name: '新規モンスター', hp: 100, mp: 0, 
+                rank: 1, minF: 1, name: '新規モンスター', hp: 100, mp: 0, // ★ここに minF: 1 を追加
                 atk: 10, def: 10, spd: 10, mag: 10, exp: 10, gold: 10, 
                 acts: [{id:1, rate:100, condition:0}], actCount: 1, img: null,
                 elmRes: {}, resists: {}
@@ -692,6 +699,7 @@ createApp({
             db.MONSTERS.push(newM);
             selectMonster(newM);
         };
+		
         const addCharacter = () => {
             db.CHARACTERS.push({
                 id: Date.now(), 
