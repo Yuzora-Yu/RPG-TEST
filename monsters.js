@@ -18229,7 +18229,7 @@ window.MONSTERS_DATA = [
         },
         "actCount": 3,
         "resists": {
-            "Poison": 100,
+            "Poison": 0,
             "Shock": 100,
             "Fear": 100,
             "Seal": 100,
