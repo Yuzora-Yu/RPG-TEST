@@ -31,6 +31,14 @@ const Battle = {
 
     getEl: (id) => document.getElementById(id),
     
+	// ★追加: モンスター名を赤字にするヘルパー関数
+    getColoredName: (actor) => {
+        if (actor instanceof Monster) {
+            return `<span style="color:#ff4444; font-weight:bold;">${actor.name}</span>`;
+        }
+        return `【${actor.name}】`;
+    },
+	
     init: () => {
         Battle.active = true;
         Battle.phase = 'init';
@@ -67,7 +75,15 @@ const Battle = {
                 player.finRed = stats.finRed || 0;
                 
                 player.passive = Battle.getPassives(player);
-                Battle.initBattleStatus(player);
+				
+                //Battle.initBattleStatus(player);
+				// ★修正: 保存された状態があれば復元、なければ初期化
+                if (charData.battleStatus) {
+                    player.battleStatus = JSON.parse(JSON.stringify(charData.battleStatus));
+                } else {
+                    Battle.initBattleStatus(player);
+                }
+				
                 return player;
             }).filter(p => p !== null);
         }
@@ -104,7 +120,14 @@ const Battle = {
                 m.finRed = 0;
 
                 m.passive = base.passive || {};
-                Battle.initBattleStatus(m);
+                //Battle.initBattleStatus(m);
+				// ★修正: 保存された状態があれば復元、なければ初期化
+                if (e.battleStatus) {
+                    m.battleStatus = e.battleStatus;
+                } else {
+                    Battle.initBattleStatus(m);
+                }
+				
                 return m;
             }).filter(e => e !== null);
         } else {
@@ -324,11 +347,11 @@ const Battle = {
         Battle.selectedItemOrSkill = null;
 
         if (type === 'attack') {
-            const actor = Battle.party[Battle.currentActorIndex];
-            if (actor.battleStatus.ailments['SkillSeal']) {
-                Battle.log("攻撃特技が封印されていて動けない！");
-                return;
-            }
+            //const actor = Battle.party[Battle.currentActorIndex];
+            //if (actor.battleStatus.ailments['SkillSeal']) {
+            //    Battle.log("攻撃特技が封印されていて動けない！");
+            //    return;
+            //}
             Battle.log("攻撃対象を選択してください");
             Battle.openTargetWindow('enemy');
         } 
@@ -450,8 +473,8 @@ const Battle = {
             
             let isDisabled = false;
             let note = "";
-            if (actor.battleStatus.ailments['SpellSeal'] && sk.type === '魔法') { isDisabled = true; note = "(封印)"; }
-            if (actor.battleStatus.ailments['SkillSeal'] && sk.type === '物理') { isDisabled = true; note = "(封印)"; }
+            if (actor.battleStatus.ailments['SpellSeal'] && (sk.type === '魔法' || sk.type === '強化' || sk.type === '弱体')) { isDisabled = true; note = "(封印)"; }
+            if (actor.battleStatus.ailments['SkillSeal'] && (sk.type === '物理' || sk.type === '特殊')) { isDisabled = true; note = "(封印)"; }
             if (actor.battleStatus.ailments['HealSeal'] && (sk.type === '回復' || sk.type === '蘇生')) { isDisabled = true; note = "(封印)"; }
 
             let elmHtml = '';
@@ -592,6 +615,96 @@ const Battle = {
         }
     },
 
+// ★追加: 敵の行動を決定する関数 (再評価用)
+    decideEnemyAction: (e) => {
+        // 生の行動データを取得
+        let rawActs = e.acts || [];
+        if (rawActs.length === 0) rawActs = [{ id: 1, rate: 100, condition: 0 }];
+
+        // ① 行動フラグと制約によるフィルタリング
+        const validActions = rawActs.filter(actObj => {
+            const actId = (typeof actObj === 'object') ? actObj.id : actObj;
+            const condition = (typeof actObj === 'object') ? (actObj.condition || 0) : 0;
+            
+            // Condition Check
+            if (condition === 1) { // HP>=50%
+                if ((e.hp / e.baseMaxHp) < 0.5) return false;
+            } else if (condition === 2) { // HP<=50%
+                if ((e.hp / e.baseMaxHp) > 0.5) return false;
+            } else if (condition === 3) { // 状態異常時
+                const hasAilment = Object.keys(e.battleStatus.ailments).length > 0;
+                const hasDebuff = Object.keys(e.battleStatus.debuffs).length > 0;
+                if (!hasAilment && !hasDebuff) return false;
+            }
+
+            // スキル情報の取得
+            if ([1, 2, 9].includes(actId)) return true;
+            const s = DB.SKILLS.find(k => k.id === actId);
+            if (!s) return false;
+
+            // MP Check
+            if (s.id === 500) { if (e.mp <= 0) return false; }
+            else if (e.mp < s.mp) return false;
+
+            // Seal Check (現在の状態を参照)
+            if (e.battleStatus.ailments['SpellSeal'] && (['魔法','強化','弱体'].includes(s.type))) return false;
+            if (e.battleStatus.ailments['SkillSeal'] && (['物理','特殊'].includes(s.type))) return false;
+            if (e.battleStatus.ailments['HealSeal'] && (['回復','蘇生','MP回復'].includes(s.type))) return false;
+			// ※通常攻撃(ID:1)は除外済
+
+            // Logic: 蘇生対象がいなければ使わない
+            if (s.type === '蘇生') {
+                const hasDeadAlly = Battle.enemies.some(ally => ally.isDead && !ally.isFled);
+                if (!hasDeadAlly) return false;
+            }
+
+            return true;
+        });
+
+        // ② 行動抽選
+        let selectedActId = 1; // Default
+        if (validActions.length > 0) {
+            let totalWeight = validActions.reduce((sum, a) => sum + ((typeof a === 'object') ? (a.rate || 0) : 10), 0);
+            if (totalWeight <= 0) {
+                const rndObj = validActions[Math.floor(Math.random() * validActions.length)];
+                selectedActId = (typeof rndObj === 'object') ? rndObj.id : rndObj;
+            } else {
+                let r = Math.random() * totalWeight;
+                for (const act of validActions) {
+                    const rate = (typeof act === 'object') ? (act.rate || 0) : 10;
+                    r -= rate;
+                    if (r < 0) {
+                        selectedActId = (typeof act === 'object') ? act.id : act;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // ③ 結果データの構築
+        let actionType = 'enemy_attack'; 
+        let skillData = null;
+        let targetScope = 'single'; 
+
+        if (selectedActId === 9) { actionType = 'flee'; }
+        else if (selectedActId === 2) { actionType = 'defend'; }
+        else if (selectedActId !== 1) {
+            const skill = DB.SKILLS.find(s => s.id === selectedActId);
+            if (skill) {
+                actionType = 'skill';
+                skillData = skill;
+                targetScope = skill.target; 
+            }
+        }
+        
+        // 優先度の取得(速度計算用には使わないがデータとして返す)
+        let priority = 0;
+        if (actionType === 'defend') priority = 1;
+        else if (skillData && skillData.priority) priority = skillData.priority;
+
+        return { type: actionType, data: skillData, targetScope: targetScope, priority: priority };
+    },
+
     // ★修正: 敵AIロジック刷新
     executeTurn: async () => {
         Battle.phase = 'execution';
@@ -599,117 +712,26 @@ const Battle = {
         if(nameDiv) nameDiv.style.display = 'none';
         Battle.log("--- ターン開始 ---");
 
-        // 敵AI行動決定プロセス
+        // 敵AI行動決定プロセス (ターン開始時の仮決定: 素早さ計算のため)
         Battle.enemies.forEach(e => {
             if (!e.isDead && !e.isFled) {
                 const count = e.actCount || 1;
-                
-                // 生の行動データを取得（古い配列形式への互換対応）
-                let rawActs = e.acts || [];
-                if (rawActs.length === 0) rawActs = [{ id: 1, rate: 100, condition: 0 }];
-
                 for(let i=0; i<count; i++) {
-                    // ① 行動フラグと制約によるフィルタリング
-                    const validActions = rawActs.filter(actObj => {
-                        // オブジェクト/数値のゆらぎ吸収
-                        const actId = (typeof actObj === 'object') ? actObj.id : actObj;
-                        const condition = (typeof actObj === 'object') ? (actObj.condition || 0) : 0;
-                        
-                        // Condition Check (0:常時, 1:HP>=50%, 2:HP<=50%, 3:状態異常)
-                        if (condition === 1) {
-                            if ((e.hp / e.baseMaxHp) < 0.5) return false;
-                        } else if (condition === 2) {
-                            if ((e.hp / e.baseMaxHp) > 0.5) return false;
-                        } else if (condition === 3) {
-                            const hasAilment = Object.keys(e.battleStatus.ailments).length > 0;
-                            const hasDebuff = Object.keys(e.battleStatus.debuffs).length > 0;
-                            if (!hasAilment && !hasDebuff) return false;
-                        }
-
-                        // Existing Constraints Check
-                        if ([1, 2, 9].includes(actId)) return true; // 通常攻撃、防御、逃げるは常にOK
-
-                        const s = DB.SKILLS.find(k => k.id === actId);
-                        if (!s) return false;
-
-                        // MP Check
-                        if (s.id === 500) { if (e.mp <= 0) return false; } // マダンテ
-                        else if (e.mp < s.mp) return false;
-
-                        // Seal Check
-                        if (e.battleStatus.ailments['SpellSeal'] && s.type === '魔法') return false;
-                        if (e.battleStatus.ailments['SkillSeal'] && s.type === '物理') return false;
-                        if (e.battleStatus.ailments['HealSeal'] && (s.type.includes('回復') || s.type === '蘇生')) return false;
-
-                        // Logic: Don't use Revive if no dead allies
-                        if (s.type === '蘇生') {
-                            const hasDeadAlly = Battle.enemies.some(ally => ally.isDead && !ally.isFled);
-                            if (!hasDeadAlly) return false;
-                        }
-
-                        return true;
-                    });
-
-                    // ② 行動抽選 (残った候補から確率案分)
-                    let selectedActId = 1; // Default Attack
+                    // ★修正: 新しい関数で行動を決定
+                    const decision = Battle.decideEnemyAction(e);
                     
-                    if (validActions.length > 0) {
-                        // 確率の合計値を算出 (数値形式の場合は一律10とみなす)
-                        let totalWeight = validActions.reduce((sum, a) => {
-                            const r = (typeof a === 'object') ? (a.rate || 0) : 10;
-                            return sum + r;
-                        }, 0);
-
-                        if (totalWeight <= 0) {
-                            // 全ての確率が0ならランダム
-                            const rndObj = validActions[Math.floor(Math.random() * validActions.length)];
-                            selectedActId = (typeof rndObj === 'object') ? rndObj.id : rndObj;
-                        } else {
-                            // 重み付け抽選
-                            let r = Math.random() * totalWeight;
-                            for (const act of validActions) {
-                                const rate = (typeof act === 'object') ? (act.rate || 0) : 10;
-                                r -= rate;
-                                if (r < 0) {
-                                    selectedActId = (typeof act === 'object') ? act.id : act;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-
-                    // ③ 行動キューへの登録
-                    let actionType = 'enemy_attack'; 
-                    let skillData = null;
-                    let targetScope = 'single'; 
-
-                    if (selectedActId === 9) { actionType = 'flee'; }
-                    else if (selectedActId === 2) { actionType = 'defend'; }
-                    else if (selectedActId !== 1) {
-                        const skill = DB.SKILLS.find(s => s.id === selectedActId);
-                        if (skill) {
-                            actionType = 'skill';
-                            skillData = skill;
-                            targetScope = skill.target; 
-                        }
-                    }
-
+                    // 素早さ計算 (仮決定の内容に基づく)
                     let spd = Battle.getBattleStat(e, 'spd');
                     let baseSpeed = spd * (0.8 + Math.random() * 0.4);
-                    let priority = 0;
-                    
-                    if (actionType === 'defend') priority = 1;
-                    else if (skillData && skillData.priority) priority = skillData.priority;
-                    
-                    const finalSpeed = baseSpeed + (priority * 100000);
+                    const finalSpeed = baseSpeed + (decision.priority * 100000);
 
                     Battle.commandQueue.push({
-                        type: actionType,
+                        type: decision.type,
                         actor: e,
                         speed: finalSpeed,
                         isEnemy: true,
-                        data: skillData,
-                        targetScope: targetScope,
+                        data: decision.data,
+                        targetScope: decision.targetScope,
                         target: null 
                     });
                 }
@@ -753,6 +775,16 @@ const Battle = {
                 continue;
             }
             if (!actor || actor.hp <= 0 || actor.isFled) continue;
+
+            // ★追加: 敵の場合、行動直前に再思考する
+            if (cmd.isEnemy) {
+                const reDecision = Battle.decideEnemyAction(actor);
+                cmd.type = reDecision.type;
+                cmd.data = reDecision.data;
+                cmd.targetScope = reDecision.targetScope;
+                // ※ speed(行動順)は変更しない（ターン開始時のまま）
+            }
+
 
             if (actor.battleStatus.ailments['Fear']) {
                 if (Math.random() < (actor.battleStatus.ailments['Fear'].chance || 0.5)) {
@@ -888,7 +920,37 @@ const Battle = {
     processAction: async (cmd) => {
         const actor = cmd.actor;
         const data = cmd.data;
-        
+        const actorName = Battle.getColoredName(actor);
+
+        // --- ★追加: 実行時の封印チェック ---
+        const type = data ? data.type : '通常攻撃';
+        const ailments = actor.battleStatus.ailments;
+
+        // 1. 呪文封印 (魔法・強化・弱体)
+        if (ailments['SpellSeal']) {
+            if (['魔法', '強化', '弱体'].includes(type)) {
+                Battle.log(`${actorName}は 呪文が封じられていて動けない！`);
+                return;
+            }
+        }
+
+        // 2. 特技封印 (物理・特殊) ※通常攻撃は除く
+        if (ailments['SkillSeal']) {
+            if (['物理', '特殊'].includes(type) && type !== '通常攻撃') {
+                Battle.log(`${actorName}は 特技が封じられていて動けない！`);
+                return;
+            }
+        }
+
+        // 3. 回復封印 (回復・蘇生)
+        if (ailments['HealSeal']) {
+            if (type.includes('回復') || type === '蘇生') {
+                Battle.log(`${actorName}は 回復が封じられていて動けない！`);
+                return;
+            }
+        }
+        // ------------------------------------
+		
         if (cmd.type === 'defend') {
             Battle.log(`【${actor.name}】は身を守っている`);
             actor.status = actor.status || {};
@@ -960,7 +1022,7 @@ const Battle = {
 
         if (cmd.type === 'skill') {
             skillName = data.name;
-            isPhysical = (data.type === '物理');
+            isPhysical = (data.type === '物理' || data.type === '通常攻撃');
             skillRate = data.rate;
             baseDmg = data.base;
             mpCost = data.mp;
@@ -997,6 +1059,9 @@ const Battle = {
             } else {
                 loopTargets = pool;
             }
+
+            Battle.renderEnemies();
+            Battle.renderPartyStatus();
 
             for (let t of loopTargets) {
                 if (!t) continue;
@@ -1126,23 +1191,56 @@ const Battle = {
             targets = [cmd.target];
         }
 
+        // --- 内部関数: 効果適用ロジック (改修版) ---
         const applyEffects = (t, d) => {
             const checkResist = (type) => {
+                // ★修正: デバフ成功率(successRate)が200%以上なら、耐性100%でも貫通する
+                if (type === 'Debuff' && successRate >= 200) return false;
+
                 const resistKey = Battle.RESIST_MAP[type] || type;
                 const resistVal = (t.getStat('resists') || {})[resistKey] || 0;
                 if (Math.random() * 100 < resistVal) return true;
                 return false;
             };
 
+            // ★修正: バフ (強化) 処理
             if (d.buff) {
-                for(let key in d.buff) {
-                    const val = d.buff[key];
+                for (let key in d.buff) {
+                    const val = d.buff[key]; // 新しい倍率 (例: 1.5)
                     const turn = d.turn || null; 
-                    t.battleStatus.buffs[key] = { val: val, turns: turn };
                     const name = Battle.statNames[key] || key.toUpperCase();
-                    Battle.log(`【${t.name}】の ${name} があがった！`);
+
+                    // 全属性耐性アップ (累積なし、上限100)
+                    if (key === 'elmResUp') {
+                        let newVal = val;
+                        if (newVal > 100) newVal = 100; // 上限100%
+                        if (newVal < -100) newVal = -100; // 下限-100%
+                        
+                        // 累積せず上書き (ターンも更新)
+                        t.battleStatus.buffs[key] = { val: newVal, turns: turn };
+                        Battle.log(`【${t.name}】の ${name} が あがった！`);
+                    }
+                    // ステータスアップ (累積あり、最大2.5倍)
+                    else {
+                        // 現在の倍率を取得 (なければ1.0)
+                        let currentVal = (t.battleStatus.buffs[key] && t.battleStatus.buffs[key].val) || 1.0;
+                        
+                        // 累積計算 (乗算)
+                        let newVal = currentVal * val;
+                        
+                        // 上限キャップ (最大2.5倍)
+                        if (newVal > 2.5) newVal = 2.5;
+
+                        // 適用 (ターン数は上書きリセット)
+                        t.battleStatus.buffs[key] = { val: newVal, turns: turn };
+                        
+                        // ログに現在の倍率を表示
+                        Battle.log(`【${t.name}】の ${name} があがった！`);
+                    }
                 }
             }
+
+            // リジェネ系 (累積なし、上書き)
             if (d.HPRegen) { 
                 t.battleStatus.buffs['HPRegen'] = { val: d.HPRegen, turns: d.turn }; 
                 Battle.log(`【${t.name}】の HPが徐々に回復する！`);
@@ -1157,26 +1255,54 @@ const Battle = {
             }
             if (d.debuff_reset) {
                 t.battleStatus.debuffs = {};
-                t.battleStatus.ailments = {}; 
-                Battle.log(`【${t.name}】の 悪い効果が消え去った！`);
+                Battle.log(`【${t.name}】の 能力低下が 元に戻った！`);
             }
             
+            // ★修正: デバフ (弱体) 処理
             if (d.debuff) {
+                // 耐性チェック (200%貫通ロジックは checkResist 内に記述済)
                 if (!checkResist('Debuff')) {
-                    for(let key in d.debuff) {
-                        const val = d.debuff[key];
+                    for (let key in d.debuff) {
+                        const val = d.debuff[key]; // 新しい倍率 (例: 0.8)
                         const turn = d.turn || null;
-                        t.battleStatus.debuffs[key] = { val: val, turns: turn };
                         const name = Battle.statNames[key] || key.toUpperCase();
-                        Battle.log(`【${t.name}】の ${name} がさがった！`);
+
+                        // 全属性耐性ダウン (累積なし)
+                        if (key === 'elmResDown') {
+                            let newVal = val;
+                            if (newVal > 100) newVal = 100;
+                            if (newVal < -100) newVal = -100;
+
+                            // 累積せず上書き
+                            t.battleStatus.debuffs[key] = { val: newVal, turns: turn };
+                            Battle.log(`【${t.name}】の ${name} が さがった！`);
+                        }
+                        // ステータスダウン (累積あり、最小0.1倍)
+                        else {
+                            // 現在の倍率を取得 (なければ1.0)
+                            let currentVal = (t.battleStatus.debuffs[key] && t.battleStatus.debuffs[key].val) || 1.0;
+
+                            // 累積計算 (乗算)
+                            let newVal = currentVal * val;
+
+                            // 下限キャップ (最小0.1倍)
+                            if (newVal < 0.1) newVal = 0.1;
+
+                            // 適用 (ターン数は上書きリセット)
+                            t.battleStatus.debuffs[key] = { val: newVal, turns: turn };
+
+                            // ログに現在の倍率を表示
+                            Battle.log(`【${t.name}】の ${name} がさがった！`);
+                        }
                     }
-                } else Battle.log(`【${t.name}】は 弱体効果をレジストした！`);
+                } else {
+                    Battle.log(`【${t.name}】には きかなかった！`);
+                }
             }
+			
             if (d.buff_reset) {
-                if (!checkResist('Debuff')) {
-                    t.battleStatus.buffs = {};
-                    Battle.log(`【${t.name}】の良い効果がかき消された！`);
-                } else Battle.log(`【${t.name}】には きかなかった！`);
+                t.battleStatus.buffs = {};
+                Battle.log(`【${t.name}】の良い効果がかき消された！`);
             }
             
             const addAilment = (key, msg, chance=null) => {
@@ -1390,10 +1516,30 @@ const Battle = {
         if (alive.length === 0) return null;
         return alive[Math.floor(Math.random() * alive.length)];
     },
-    saveBattleState: () => {
+	saveBattleState: () => {
         const activeEnemies = Battle.enemies.filter(e => !e.isFled);
-        App.data.battle.enemies = activeEnemies.map(e => ({ baseId: e.id, hp: e.hp, maxHp: e.baseMaxHp, name: e.name }));
-        Battle.party.forEach(p => { if(p && p.uid) { const d = App.data.characters.find(c => c.uid === p.uid); if(d) { d.currentHp = p.hp; d.currentMp = p.mp; } } });
+        
+        // ★修正: 敵データに battleStatus を含める
+        App.data.battle.enemies = activeEnemies.map(e => ({ 
+            baseId: e.id, 
+            hp: e.hp, 
+            maxHp: e.baseMaxHp, 
+            name: e.name,
+            actCount: e.actCount, // 行動回数も保存推奨
+            acts: e.acts,         // 行動パターンも保存推奨
+            battleStatus: e.battleStatus // ★これが必要
+        }));
+
+        Battle.party.forEach(p => { 
+            if(p && p.uid) { 
+                const d = App.data.characters.find(c => c.uid === p.uid); 
+                if(d) { 
+                    d.currentHp = p.hp; 
+                    d.currentMp = p.mp; 
+                    d.battleStatus = p.battleStatus; // ★修正: 味方データにも battleStatus を保存
+                } 
+            } 
+        });
         App.save();
     },
 
@@ -1459,8 +1605,85 @@ const Battle = {
             let nameStyle = p.isDead ? 'color:red; text-decoration:line-through;' : 'color:white;';
             const imgHtml = p.img ? `<img src="${p.img}" style="width:32px; height:32px; object-fit:cover; border-radius:4px; border:1px solid #666; margin-bottom:1px;">` : `<div style="width:32px; height:32px; background:#222; border-radius:4px; border:1px solid #444; display:flex; align-items:center; justify-content:center; color:#555; font-size:8px; margin-bottom:1px;">IMG</div>`;
             div.innerHTML = `<div style="flex:1; display:flex; flex-direction:column; align-items:center; width:100%; overflow:hidden;">${imgHtml}<div style="font-size:10px; font-weight:bold; ${nameStyle} overflow:hidden; white-space:nowrap; width:100%; text-align:center; line-height:1.2;">${p.name}</div><div style="font-size:8px; color:#aaa; margin-bottom:2px; line-height:1;">${p.job} Lv.${p.level}</div></div><div style="width:100%;"><div class="bar-container"><div class="bar-hp" style="width:${hpPer}%"></div></div><div class="p-val">${p.hp}/${p.baseMaxHp}</div><div class="bar-container"><div class="bar-mp" style="width:${mpPer}%"></div></div><div class="p-val">${p.mp}/${p.baseMaxMp}</div></div>`;
-            div.onclick = () => { if(Battle.phase !== 'input') return; Battle.log(`【${p.name}】 ${p.job}Lv${p.level} HP:${p.hp}/${p.baseMaxHp} MP:${p.mp}/${p.baseMaxMp}`); };
-            container.appendChild(div);
+            
+			//div.onclick = () => { if(Battle.phase !== 'input') return; Battle.log(`【${p.name}】 ${p.job}Lv${p.level} HP:${p.hp}/${p.baseMaxHp} MP:${p.mp}/${p.baseMaxMp}`); };
+            div.onclick = () => { 
+                if(Battle.phase !== 'input') return; 
+                const t = p; // 対象を p から t にリネーム
+
+                // 基本情報 (名前, レベル, HP, MP)
+                let msg = `【${t.name}】 ${t.job}Lv${t.level} HP:${t.hp}/${t.baseMaxHp} MP:${t.mp}/${t.baseMaxMp}`;
+                
+                // 状態異常・バフ・デバフの収集
+                const statusList = [];
+                const b = t.battleStatus;
+                
+                if (b) {
+                    // 1. 状態異常 (Ailments)
+                    for (let key in b.ailments) {
+                        const turns = b.ailments[key].turns;
+                        const tStr = (turns !== null && turns !== undefined) ? `${turns}T` : '永続';
+                        const name = Battle.statNames[key] || key.toUpperCase();
+                        // 状態異常は倍率がないため、名前とターンのみ表示
+                        statusList.push(`<span style="color:#f88">${name}</span>(${tStr})`);
+                    }
+
+                    // 2. バフ (Buffs)
+                    for (let key in b.buffs) {
+                        const turns = b.buffs[key].turns;
+                        const val = b.buffs[key].val; // 倍率または値
+                        const name = Battle.statNames[key] || key.toUpperCase();
+                        const tStr = (turns !== null && turns !== undefined) ? `${turns}T` : '永続';
+                        
+                        let display = `<span style="color:#8f8">${name}↑</span>`;
+                        
+                        // 全属性耐性はパーセント表示
+                        if (key === 'elmResUp') {
+                            display += `(${val}%)`; 
+                        } 
+                        // HPRegen/MPRegenはターンのみ
+                        else if (key === 'HPRegen' || key === 'MPRegen') {
+                            display += `(${tStr})`; 
+                        }
+                        // その他ステータスバフは倍率表示
+                        else {
+                            display += `(x${val.toFixed(2)})(${tStr})`; 
+                        }
+                        statusList.push(display);
+                    }
+                    
+                    // 3. デバフ (Debuffs)
+                    for (let key in b.debuffs) {
+                        const turns = b.debuffs[key].turns;
+                        const val = b.debuffs[key].val; // 倍率または値
+                        const name = Battle.statNames[key] || key.toUpperCase();
+                        const tStr = (turns !== null && turns !== undefined) ? `${turns}T` : '永続';
+
+                        let display = `<span style="color:#88f">${name}↓</span>`;
+
+                        // 全属性耐性ダウンはパーセント表示
+                        if (key === 'elmResDown') {
+                            display += `(${val}%)`; 
+                        } 
+                        // その他ステータスデバフは倍率表示
+                        else {
+                            display += `(x${val.toFixed(2)})(${tStr})`; 
+                        }
+                        statusList.push(display);
+                    }
+                }
+
+                // ログ出力
+                if (statusList.length > 0) {
+                    msg += `<br>状態: ${statusList.join(', ')}`;
+                } else {
+                    msg += `<br>状態: 正常`;
+                }
+                
+                Battle.log(msg); 
+            };
+			
+			container.appendChild(div);
         });
     },
     win: () => {
@@ -1496,7 +1719,16 @@ const Battle = {
     lose: () => { Battle.active = false; Battle.log("全滅した..."); Battle.endBattle(true); },
     endBattle: (isGameOver = false) => {
         App.data.battle = { active: false };
-        Battle.party.forEach(p => { if(p && p.uid) { const d = App.data.characters.find(c => c.uid === p.uid); if(d) { d.currentHp = p.hp; d.currentMp = p.mp; } } });
+        Battle.party.forEach(p => { 
+            if(p && p.uid) { 
+                const d = App.data.characters.find(c => c.uid === p.uid); 
+                if(d) { 
+                    d.currentHp = p.hp; 
+                    d.currentMp = p.mp; 
+                    delete d.battleStatus; // ★追加: 戦闘終了時は状態異常などをクリーンアップ
+                } 
+            } 
+        });
         App.save();
         if (isGameOver) { if (typeof Dungeon !== 'undefined' && Field.currentMapData && Field.currentMapData.isDungeon) { setTimeout(() => { App.data.characters.forEach(c => { if(App.data.party.includes(c.uid)) c.currentHp = 1; }); Dungeon.exit(); }, 2000); } else { setTimeout(() => App.returnToTitle(), 2000); } } else { setTimeout(() => App.changeScene('field'), 500); }
     },
