@@ -1193,6 +1193,13 @@ const Battle = {
 
         // --- 内部関数: 効果適用ロジック (改修版) ---
         const applyEffects = (t, d) => {
+			// ★追加: 個別の発動確率をチェックする関数
+            const checkProc = (val) => {
+                let rate = successRate; // デフォルトはスキルのSuccessRate(50)を使う
+                if (typeof val === 'number') rate = val; // データ側で "Poison": 30 とか書いてあればそっち優先
+                return Math.random() * 100 < rate;
+            };
+			
             const checkResist = (type) => {
                 // ★修正: デバフ成功率(successRate)が200%以上なら、耐性100%でも貫通する
                 if (type === 'Debuff' && successRate >= 200) return false;
@@ -1315,14 +1322,18 @@ const Battle = {
                     Battle.log(msg);
                 }
             };
-            if (d.Poison) addAilment('Poison', `【${t.name}】は どくにおかされた！`);
-            if (d.ToxicPoison) addAilment('ToxicPoison', `【${t.name}】は もうどくにおかされた！`);
-            if (d.Shock) addAilment('Shock', `【${t.name}】は 感電してしまった！`);
-            if (d.Fear) addAilment('Fear', `【${t.name}】は 怯えてしまった！`, 0.5);
-            if (d.SpellSeal) addAilment('SpellSeal', `【${t.name}】の 呪文が封じられた！`);
-            if (d.SkillSeal) addAilment('SkillSeal', `【${t.name}】の 特技が封じられた！`);
-            if (d.HealSeal) addAilment('HealSeal', `【${t.name}】の 回復が封じられた！`);
+            // ★修正: 各 addAilment の呼び出し前に checkProc を挟む
+            // (確率判定に受かったら → 耐性判定(addAilment) へ進む)
+
+            if (d.Poison && checkProc(d.Poison)) addAilment('Poison', `【${t.name}】は どくにおかされた！`);
+            if (d.ToxicPoison && checkProc(d.ToxicPoison)) addAilment('ToxicPoison', `【${t.name}】は もうどくにおかされた！`);
+            if (d.Shock && checkProc(d.Shock)) addAilment('Shock', `【${t.name}】は 感電してしまった！`);
+            if (d.Fear && checkProc(d.Fear)) addAilment('Fear', `【${t.name}】は 怯えてしまった！`, 0.5);
             
+            if (d.SpellSeal && checkProc(d.SpellSeal)) addAilment('SpellSeal', `【${t.name}】の 呪文が封じられた！`);
+            if (d.SkillSeal && checkProc(d.SkillSeal)) addAilment('SkillSeal', `【${t.name}】の 特技が封じられた！`);
+            if (d.HealSeal && checkProc(d.HealSeal)) addAilment('HealSeal', `【${t.name}】の 回復が封じられた！`);
+			
             if (d.PercentDamage) {
                 if ((Math.random() * 100 <= successRate) && !checkResist('PercentDamage')) {
                     let pdmg = Math.floor(t.hp * d.PercentDamage);
@@ -1483,9 +1494,10 @@ const Battle = {
                 }
 
                 if (cmd.type === 'skill') {
-                    if (Math.random() * 100 <= successRate) {
-                        applyEffects(targetToHit, data);
-                    }
+                    //if (Math.random() * 100 <= successRate) {
+                    //    applyEffects(targetToHit, data);
+                    //}
+					applyEffects(targetToHit, data);
                 }
 
                 Battle.renderEnemies(); Battle.renderPartyStatus();
