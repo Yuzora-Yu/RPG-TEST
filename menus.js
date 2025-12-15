@@ -236,6 +236,56 @@ const Menu = {
         area.style.display = 'flex';
     },
     
+	choice: (text, label1, callback1, label2, callback2) => {
+        const area = Menu.getDialogEl('menu-dialog-area');
+        const textEl = Menu.getDialogEl('menu-dialog-text');
+        const btnEl = Menu.getDialogEl('menu-dialog-buttons');
+        
+        // ダイアログ要素がない場合の安全策
+        if (!area) { 
+            if(confirm(text + "\n\n" + label1 + " -> OK\n" + label2 + " -> キャンセル")) {
+                if(callback1) callback1(); 
+            } else {
+                if(callback2) callback2(); 
+            }
+            return; 
+        }
+
+        textEl.innerHTML = text.replace(/\n/g, '<br>');
+        btnEl.innerHTML = '';
+        
+        // ボタン1 (例: 1階から)
+        const btn1 = document.createElement('button');
+        btn1.className = 'btn';
+        btn1.style.minWidth = '100px';
+        btn1.style.padding = '0 10px';
+        btn1.innerText = label1;
+        btn1.onclick = () => { Menu.closeDialog(); if (callback1) callback1(); };
+        
+        // ボタン2 (例: xx階から)
+        const btn2 = document.createElement('button');
+        btn2.className = 'btn';
+        btn2.style.minWidth = '100px';
+        btn2.style.padding = '0 10px';
+        btn2.style.background = '#555';
+        btn2.innerText = label2;
+        btn2.onclick = () => { Menu.closeDialog(); if (callback2) callback2(); };
+        
+        // キャンセル用（選択せずに閉じる）
+        const btnCancel = document.createElement('button');
+        btnCancel.className = 'btn';
+        btnCancel.style.marginLeft = '10px';
+        btnCancel.style.background = '#333';
+        btnCancel.innerText = 'やめる';
+        btnCancel.onclick = () => { Menu.closeDialog(); };
+
+        btnEl.appendChild(btn1);
+        btnEl.appendChild(btn2);
+        btnEl.appendChild(btnCancel); // やめるボタンもあると親切です
+        
+        area.style.display = 'flex';
+    },
+	
     closeDialog: () => {
         const area = document.getElementById('menu-dialog-area');
         if (area) area.style.display = 'none';
