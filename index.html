@@ -300,6 +300,28 @@
         </div>
         <div id="battle-target-window"><div style="text-align:center; color:#fff; margin-bottom:5px;">対象を選択</div><div id="battle-target-list" style="display:grid; grid-template-columns:1fr 1fr; gap:5px;"></div><button class="btn" style="width:100%; margin-top:5px;" onclick="Battle.cancelSubMenu()">戻る</button></div>
         <div id="battle-list-window"><div class="header-bar"><span id="battle-list-title">選択</span></div><div id="battle-list-content" class="scroll-area" style="padding:5px;"></div><button class="btn" style="margin:10px;" onclick="Battle.cancelSubMenu()">戻る</button></div>
+		
+		<div id="battle-status-modal" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; z-index:2000; justify-content:center; align-items:center;">
+        <div style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7);" onclick="Battle.closeStatusModal()"></div>
+        
+        <div style="position:relative; width:280px; background:#222; border:2px solid #fff; border-radius:8px; padding:10px; display:flex; flex-direction:column; gap:10px; box-shadow: 0 0 15px rgba(0,0,0,0.8);">
+            
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #444; padding-bottom:5px;">
+                <div id="modal-char-name" style="font-weight:bold; color:#fff; font-size:16px;">キャラ名</div>
+                <button class="btn" style="padding:2px 8px; font-size:12px;" onclick="Battle.closeStatusModal()">×</button>
+            </div>
+
+            <div id="modal-char-content" style="font-size:13px; color:#ddd; min-height:100px;">
+                </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">
+                <button class="btn" style="width:60px;" onclick="Battle.switchStatusChar(-1)">＜</button>
+                <span style="font-size:11px; color:#888;">切替</span>
+                <button class="btn" style="width:60px;" onclick="Battle.switchStatusChar(1)">＞</button>
+            </div>
+        </div>
+		</div>
+		
     </div>
 
     <div id="menu-overlay">
