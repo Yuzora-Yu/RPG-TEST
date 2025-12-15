@@ -266,6 +266,8 @@ const Dungeon = {
             else Dungeon.generateMazeMap(); 
             
             Dungeon.setPlayerRandomSpawn();
+			// ★追加: 生成タイプを保存 (0,1は通常、2は迷路として扱うため記録)
+            App.data.dungeon.genType = type;
         }
         
         Field.currentMapData = { 
