@@ -15,8 +15,22 @@
         }
         * { box-sizing: border-box; touch-action: manipulation; user-select: none; }
         body { background: var(--bg-color); color: var(--text-color); font-family: 'DotGothic16', sans-serif; margin: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        #game-container { position: relative; width: 100%; max-width: 600px; height: 100%; max-height: 900px; background: #000; border: 2px solid #333; display: flex; flex-direction: column; overflow: hidden; }
-        
+        /* ★修正1: ゲーム全体の枠を戦闘画面サイズ(340px)に統一 */
+		#game-container {
+        position: relative;
+        width: 100%;
+        max-width: 340px; /* 600px から 340px に変更 */
+        height: 100%;
+        max-height: 900px;
+        background: #000;
+        border: 2px solid #333;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        margin: 0 auto; /* PC表示時に画面中央に来るように追加 */
+        box-shadow: 0 0 20px rgba(0,0,0,0.5); /* 雰囲気アップ用の影(お好みで) */
+		}
+		
         /* 共通パーツ */
         .scene-layer { flex: 1; position: relative; display: none; flex-direction: column; width: 100%; height: 100%; background: #000; }
         .header-bar { padding: 10px; background: #222; border-bottom: 1px solid #fff; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
@@ -104,15 +118,15 @@
         /* バトル画面 */
         /* 親枠：背景設定は削除し、黒塗りにしておく */
 		#battle-scene {
-			width: 340px;
-			margin: 0 auto;
+			width: 100%; /* 340px から 100% に変更 */
+			/* margin: 0 auto; ← 削除 (親が中央揃えなので不要) */
 			display: flex;
 			flex-direction: column;
 			height: 100%;
 			position: relative;
-			border: 2px solid #444;
+			border: none; /* 親の枠線があるので削除、あるいは border-top等のみ残す */
 			overflow: hidden;
-			background-color: #000; /* ★背景画像ではなく黒背景にする */
+			background-color: #000;
 		}
 
 		/* 子枠（上半分）：ここに背景が表示される */
