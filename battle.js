@@ -45,6 +45,7 @@ const Battle = {
         Battle.commandQueue = [];
         Battle.currentActorIndex = 0;
         Battle.auto = false;
+		Battle.skillScrollPositions = {};
         Battle.updateAutoButton();
         
         const logEl = Battle.getEl('battle-log');
@@ -500,7 +501,7 @@ const Battle = {
         Battle.phase = 'skill_select';
 
         if (!actor.skills || actor.skills.length === 0) {
-            content.innerHTML = '<div style="padding:10px">特技がありません</div>';
+            content.innerHTML = '<div style="padding:10px; font-size:12px;">特技がありません</div>';
             return;
         }
 
@@ -529,18 +530,23 @@ const Battle = {
                 elmHtml = `<span style="color:${color}; margin-right:3px;">[${sk.elm}]</span>`;
             }
 
+            // ★修正: フォントサイズを全体的に縮小調整
+            // 名前: bold削除, 14px相当→12px
+            // 注釈/ターゲット: 10px→9px
+            // 説明文: 10px→9px
+            // MP: 12px→11px
             div.innerHTML = `
                 <div style="flex:1; min-width:0; ${isDisabled?'color:#888':''}">
                     <div style="display:flex; align-items:center;">
-                        <span style="font-weight:bold; margin-right:5px;">${sk.name}</span>
-                        <span style="font-size:10px; color:#f44;">${note}</span>
-                        <span style="font-size:10px; color:#aaa; margin-left:auto; margin-right:5px;">(${sk.target})</span>
+                        <span style="font-size:12px; font-weight:bold; margin-right:5px;">${sk.name}</span>
+                        <span style="font-size:9px; color:#f44;">${note}</span>
+                        <span style="font-size:9px; color:#aaa; margin-left:auto; margin-right:5px;">(${sk.target})</span>
                     </div>
-                    <div style="font-size:10px; color:#ccc; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                    <div style="font-size:9px; color:#ccc; margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
                         ${elmHtml}${sk.desc || ''}
                     </div>
                 </div>
-                <div style="font-size:12px; color:#88f; text-align:right; min-width:50px;">MP:${sk.mp}</div>
+                <div style="font-size:11px; color:#88f; text-align:right; min-width:40px;">MP:${sk.mp}</div>
             `;
 
             div.onclick = (e) => {
@@ -556,6 +562,25 @@ const Battle = {
             };
             content.appendChild(div);
         });
+
+        // ★追加: スクロール位置の復元と保存イベントの設定
+        // actor.uid をキーにして位置を管理します
+        const uid = actor.uid || ('temp_' + Battle.currentActorIndex); // uidがない場合のフォールバック
+        
+        // 保存された位置があれば復元
+        if (Battle.skillScrollPositions && Battle.skillScrollPositions[uid] !== undefined) {
+            content.scrollTop = Battle.skillScrollPositions[uid];
+        } else {
+            content.scrollTop = 0;
+        }
+
+        // スクロール時に現在位置を保存
+        content.onscroll = function() {
+            if (Battle.phase === 'skill_select') {
+                if (!Battle.skillScrollPositions) Battle.skillScrollPositions = {};
+                Battle.skillScrollPositions[uid] = content.scrollTop;
+            }
+        };
     },
 
     openItemList: () => {
@@ -1596,7 +1621,9 @@ const Battle = {
         App.save();
     },
 
-/* battle.js の renderEnemies 関数 */
+
+
+
 
     renderEnemies: () => {
         const container = Battle.getEl('enemy-container');
@@ -1707,86 +1734,133 @@ const Battle = {
             const imgHtml = p.img ? `<img src="${p.img}" style="width:32px; height:32px; object-fit:cover; border-radius:4px; border:1px solid #666; margin-bottom:1px;">` : `<div style="width:32px; height:32px; background:#222; border-radius:4px; border:1px solid #444; display:flex; align-items:center; justify-content:center; color:#555; font-size:8px; margin-bottom:1px;">IMG</div>`;
             div.innerHTML = `<div style="flex:1; display:flex; flex-direction:column; align-items:center; width:100%; overflow:hidden;">${imgHtml}<div style="font-size:10px; font-weight:bold; ${nameStyle} overflow:hidden; white-space:nowrap; width:100%; text-align:center; line-height:1.2;">${p.name}</div><div style="font-size:8px; color:#aaa; margin-bottom:2px; line-height:1;">${p.job} Lv.${p.level}</div></div><div style="width:100%;"><div class="bar-container"><div class="bar-hp" style="width:${hpPer}%"></div></div><div class="p-val">${p.hp}/${p.baseMaxHp}</div><div class="bar-container"><div class="bar-mp" style="width:${mpPer}%"></div></div><div class="p-val">${p.mp}/${p.baseMaxMp}</div></div>`;
             
-			//div.onclick = () => { if(Battle.phase !== 'input') return; Battle.log(`【${p.name}】 ${p.job}Lv${p.level} HP:${p.hp}/${p.baseMaxHp} MP:${p.mp}/${p.baseMaxMp}`); };
+			// ★修正: クリック時の処理をモーダルオープンに変更
             div.onclick = () => { 
-                if(Battle.phase !== 'input') return; 
-                const t = p; // 対象を p から t にリネーム
-
-                // 基本情報 (名前, レベル, HP, MP)
-                let msg = `【${t.name}】 ${t.job}Lv${t.level} HP:${t.hp}/${t.baseMaxHp} MP:${t.mp}/${t.baseMaxMp}`;
-                
-                // 状態異常・バフ・デバフの収集
-                const statusList = [];
-                const b = t.battleStatus;
-                
-                if (b) {
-                    // 1. 状態異常 (Ailments)
-                    for (let key in b.ailments) {
-                        const turns = b.ailments[key].turns;
-                        const tStr = (turns !== null && turns !== undefined) ? `${turns}T` : '永続';
-                        const name = Battle.statNames[key] || key.toUpperCase();
-                        // 状態異常は倍率がないため、名前とターンのみ表示
-                        statusList.push(`<span style="color:#f88">${name}</span>(${tStr})`);
-                    }
-
-                    // 2. バフ (Buffs)
-                    for (let key in b.buffs) {
-                        const turns = b.buffs[key].turns;
-                        const val = b.buffs[key].val; // 倍率または値
-                        const name = Battle.statNames[key] || key.toUpperCase();
-                        const tStr = (turns !== null && turns !== undefined) ? `${turns}T` : '永続';
-                        
-                        let display = `<span style="color:#8f8">${name}↑</span>`;
-                        
-                        // 全属性耐性はパーセント表示
-                        if (key === 'elmResUp') {
-                            display += `(${val}%)`; 
-                        } 
-                        // HPRegen/MPRegenはターンのみ
-                        else if (key === 'HPRegen' || key === 'MPRegen') {
-                            display += `(${tStr})`; 
-                        }
-                        // その他ステータスバフは倍率表示
-                        else {
-                            display += `(x${val.toFixed(2)})(${tStr})`; 
-                        }
-                        statusList.push(display);
-                    }
-                    
-                    // 3. デバフ (Debuffs)
-                    for (let key in b.debuffs) {
-                        const turns = b.debuffs[key].turns;
-                        const val = b.debuffs[key].val; // 倍率または値
-                        const name = Battle.statNames[key] || key.toUpperCase();
-                        const tStr = (turns !== null && turns !== undefined) ? `${turns}T` : '永続';
-
-                        let display = `<span style="color:#88f">${name}↓</span>`;
-
-                        // 全属性耐性ダウンはパーセント表示
-                        if (key === 'elmResDown') {
-                            display += `(${val}%)`; 
-                        } 
-                        // その他ステータスデバフは倍率表示
-                        else {
-                            display += `(x${val.toFixed(2)})(${tStr})`; 
-                        }
-                        statusList.push(display);
-                    }
-                }
-
-                // ログ出力
-                if (statusList.length > 0) {
-                    msg += `<br>状態: ${statusList.join(', ')}`;
-                } else {
-                    msg += `<br>状態: 正常`;
-                }
-                
-                Battle.log(msg); 
+                if(Battle.phase !== 'input') return;
+                // モーダルを開く (引数に現在のメンバーのインデックスを渡す)
+                Battle.openStatusModal(index);
             };
-			
-			container.appendChild(div);
+            
+            container.appendChild(div);
         });
     },
+	
+
+    // --- ステータスモーダル制御 ---
+    statusModalTargetIndex: 0,
+
+    openStatusModal: (index) => {
+        const modal = document.getElementById('battle-status-modal');
+        if (modal) {
+            Battle.statusModalTargetIndex = index;
+            modal.style.display = 'flex';
+            Battle.renderStatusModalContent();
+        }
+    },
+
+    closeStatusModal: () => {
+        const modal = document.getElementById('battle-status-modal');
+        if (modal) modal.style.display = 'none';
+    },
+
+    switchStatusChar: (dir) => {
+        const partySize = Battle.party.length;
+        if (partySize === 0) return;
+
+        Battle.statusModalTargetIndex += dir;
+        if (Battle.statusModalTargetIndex >= partySize) Battle.statusModalTargetIndex = 0;
+        if (Battle.statusModalTargetIndex < 0) Battle.statusModalTargetIndex = partySize - 1;
+
+        Battle.renderStatusModalContent();
+    },
+
+    renderStatusModalContent: () => {
+        const char = Battle.party[Battle.statusModalTargetIndex];
+        if (!char) return;
+
+        // 名前更新
+        const nameEl = document.getElementById('modal-char-name');
+        if (nameEl) nameEl.innerText = char.name;
+
+        // コンテンツ生成
+        const contentEl = document.getElementById('modal-char-content');
+        if (!contentEl) return;
+
+        const maxHp = char.baseMaxHp;
+        const maxMp = char.baseMaxMp;
+        const hpPer = Math.floor((char.hp / maxHp) * 100);
+        const mpPer = Math.floor((char.mp / maxMp) * 100);
+
+        // ★修正: レイアウト調整 (バーを細く、文字を小さく、数値エリアを確保)
+        let html = `
+            <div style="display:flex; align-items:center; margin-bottom:10px;">
+                <div style="width:48px; height:48px; border:1px solid #555; margin-right:10px; border-radius:4px; overflow:hidden; display:flex; justify-content:center; align-items:center; background:#333;">
+                    ${char.img ? `<img src="${char.img}" style="width:100%; height:100%; object-fit:cover;">` : '<span style="font-size:10px; color:#888;">IMG</span>'}
+                </div>
+                <div style="flex:1;">
+                    <div style="font-size:12px; color:#aaa; margin-bottom:2px;">${char.job} Lv.${char.level}</div>
+                    
+                    <div style="display:flex; align-items:center; font-size:10px; margin-bottom:2px;">
+                        <span style="width:20px; color:#f88; font-weight:bold;">HP</span>
+                        <div style="flex:1; height:4px; background:#333; margin:0 5px; border-radius:2px;"><div style="width:${hpPer}%; height:100%; background:#f44; border-radius:2px;"></div></div>
+                        <span style="width:85px; text-align:right; letter-spacing:-0.5px;">${char.hp}/${maxHp}</span>
+                    </div>
+
+                    <div style="display:flex; align-items:center; font-size:10px;">
+                        <span style="width:20px; color:#88f; font-weight:bold;">MP</span>
+                        <div style="flex:1; height:4px; background:#333; margin:0 5px; border-radius:2px;"><div style="width:${mpPer}%; height:100%; background:#48f; border-radius:2px;"></div></div>
+                        <span style="width:85px; text-align:right; letter-spacing:-0.5px;">${char.mp}/${maxMp}</span>
+                    </div>
+                </div>
+            </div>
+            <div style="border-top:1px solid #444; padding-top:8px;">
+                <div style="font-size:11px; color:#aaa; margin-bottom:4px;">状態変化</div>
+        `;
+
+        // バフ・デバフ一覧作成 (ここは変更なし)
+        const statusList = [];
+        const b = char.battleStatus;
+        if (b) {
+            for (let key in b.ailments) {
+                const turns = b.ailments[key].turns;
+                const name = Battle.statNames[key] || key;
+                statusList.push(`<div style="color:#f88;">● ${name} <span style="font-size:10px; color:#aaa;">(${turns}T)</span></div>`);
+            }
+            for (let key in b.buffs) {
+                const turns = b.buffs[key].turns;
+                const val = b.buffs[key].val;
+                const name = Battle.statNames[key] || key;
+                const tStr = (turns !== null && turns !== undefined) ? `${turns}T` : '∞';
+                let valStr = '';
+                if(key==='elmResUp') valStr = `(${val}%)`;
+                else if(key!=='HPRegen' && key!=='MPRegen') valStr = `(x${val.toFixed(2)})`;
+                
+                statusList.push(`<div style="color:#8f8;">▲ ${name}${valStr} <span style="font-size:10px; color:#aaa;">(${tStr})</span></div>`);
+            }
+            for (let key in b.debuffs) {
+                const turns = b.debuffs[key].turns;
+                const val = b.debuffs[key].val;
+                const name = Battle.statNames[key] || key;
+                const tStr = (turns !== null && turns !== undefined) ? `${turns}T` : '∞';
+                let valStr = '';
+                if(key==='elmResDown') valStr = `(${val}%)`;
+                else valStr = `(x${val.toFixed(2)})`;
+
+                statusList.push(`<div style="color:#88f;">▼ ${name}${valStr} <span style="font-size:10px; color:#aaa;">(${tStr})</span></div>`);
+            }
+        }
+
+        if (statusList.length === 0) {
+            html += `<div style="color:#666; font-size:12px; text-align:center; padding:10px;">なし</div>`;
+        } else {
+            html += `<div style="display:grid; grid-template-columns:1fr 1fr; gap:5px;">${statusList.join('')}</div>`;
+        }
+
+        html += `</div>`;
+        contentEl.innerHTML = html;
+    },
+	
+	
     win: () => {
         Battle.phase = 'result'; Battle.active = false;
         let totalExp = 0, totalGold = 0, maxEnemyRank = 1; 
