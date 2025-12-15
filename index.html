@@ -15,20 +15,24 @@
         }
         * { box-sizing: border-box; touch-action: manipulation; user-select: none; }
         body { background: var(--bg-color); color: var(--text-color); font-family: 'DotGothic16', sans-serif; margin: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        /* ★修正1: ゲーム全体の枠を戦闘画面サイズ(340px)に統一 */
+
+        /* ★修正: ゲーム全体の枠をレスポンシブ（可変）対応にする */
 		#game-container {
-        position: relative;
-        width: 100%;
-        max-width: 340px; /* 600px から 340px に変更 */
-        height: 100%;
-        max-height: 900px;
-        background: #000;
-        border: 2px solid #333;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        margin: 0 auto; /* PC表示時に画面中央に来るように追加 */
-        box-shadow: 0 0 20px rgba(0,0,0,0.5); /* 雰囲気アップ用の影(お好みで) */
+			position: relative;
+			
+			width: 100%;             /* スマホの画面幅に合わせて横幅いっぱいに */
+			max-width: 450px;        /* PCやタブレットで大きくなりすぎないよう上限を設定（例: 450px） */
+			
+			height: 100%;            /* 画面の高さに合わせる */
+			max-height: 900px;       /* 縦に長すぎる画面での上限 */
+			
+			background: #000;
+			border: 2px solid #333;
+			display: flex;
+			flex-direction: column;
+			overflow: hidden;
+			margin: 0 auto;          /* 画面中央に配置 */
+			box-shadow: 0 0 20px rgba(0,0,0,0.5); /* 影をつけて浮き上がらせる */
 		}
 		
         /* 共通パーツ */
@@ -115,16 +119,13 @@
         .bar-mp { height: 100%; background: var(--mp); }
         .p-val { font-size: 9px; color: #ccc; line-height: 1; text-align: right; margin-bottom: 1px; }
 
-        /* バトル画面 */
-        /* 親枠：背景設定は削除し、黒塗りにしておく */
+        /* ★修正: バトル画面も親要素に合わせて伸縮させる */
 		#battle-scene {
-			width: 100%; /* 340px から 100% に変更 */
-			/* margin: 0 auto; ← 削除 (親が中央揃えなので不要) */
+			width: 100%;             /* 親要素(game-container)の幅に合わせる */
 			display: flex;
 			flex-direction: column;
 			height: 100%;
 			position: relative;
-			border: none; /* 親の枠線があるので削除、あるいは border-top等のみ残す */
 			overflow: hidden;
 			background-color: #000;
 		}
@@ -137,7 +138,7 @@
 			display: flex;
 			justify-content: center;
 			align-items: flex-end; /* モンスターの足元を揃える */
-			padding-bottom: 20px;
+			padding-bottom: 5px;
 			z-index: 5;
 			
 			/* 万が一JSが効かない場合の初期値 */
@@ -159,8 +160,35 @@
         .enemy-hp-bar { width: 80%; height: 4px; background: #333; margin-top: 2px; }
         .enemy-hp-val { height: 100%; background: var(--danger); transition: width 0.2s; }
         
-        #battle-info { height: 300px; background: #000; display: flex; flex-direction: column; border-top: 2px solid #fff; flex-shrink: 0; }
-        #battle-log { flex: 1; overflow-y: auto; font-size: 14px; padding: 8px 12px; color: #ddd; line-height: 1.4; border-bottom: 1px solid #333; text-align: left; }
+        /* バトル画面下部の操作パネル */
+		#battle-info {
+			/* height: 300px;  ← これを削除またはコメントアウト */
+			
+			/* ★修正: フレックス設定で伸縮可能にする */
+			flex: 0 1 300px;      /* 伸長0(伸びない), 圧縮1(縮む), 基準300px */
+			min-height: 160px;    /* どんなに縮んでもコマンドと名前欄、ログ1行分は確保 */
+			
+			background: #000;
+			display: flex;
+			flex-direction: column;
+			border-top: 2px solid #fff;
+			
+			/* flex-shrink: 0; ← これを削除 (縮めるようにするため) */
+		}
+
+        /* ログエリア */
+		#battle-log {
+			flex: 1;              /* 残りの高さを全て使う */
+			min-height: 0;        /* 縮小限界をなくして親に合わせて縮むようにする */
+			overflow-y: auto;
+			font-size: 14px;
+			padding: 8px 12px;
+			color: #ddd;
+			line-height: 1.4;
+			border-bottom: 1px solid #333;
+			text-align: left;
+		}
+
         #battle-actor-name { background: linear-gradient(90deg, #003, #005, #003); color: var(--accent); padding: 6px 10px; font-size: 16px; font-weight: bold; border-bottom: 1px solid #555; text-align: center; display: none; }
         
         .cmd-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; padding: 8px; height: 110px; }
