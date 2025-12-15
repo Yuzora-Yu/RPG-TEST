@@ -50,6 +50,43 @@ const Battle = {
         const logEl = Battle.getEl('battle-log');
         if(logEl) logEl.innerHTML = '';
 
+		// ★修正: 背景画像の出し分けロジック
+        const enemyArea = document.getElementById('enemy-container');
+        if (enemyArea) {
+            // デフォルトはフィールド
+            let bgKey = 'battle_bg_field';
+
+            // ダンジョン内にいる場合
+            if (typeof Field !== 'undefined' && Field.currentMapData && Field.currentMapData.isDungeon) {
+                const floor = App.data.progress.floor;
+                const type = App.data.dungeon.genType; // dungeon.jsで保存したタイプ
+
+                if (floor % 10 === 0) {
+                    // ボス階層 (10, 20, 30...)
+                    bgKey = 'battle_bg_boss';
+                } else if (type === 2) {
+                    // 迷路フロア
+                    bgKey = 'battle_bg_maze';
+                } else {
+                    // 通常フロア (部屋・洞窟)
+                    bgKey = 'battle_bg_dungeon';
+                }
+            }
+
+            // 画像データの存在チェックと適用
+            if (typeof GRAPHICS !== 'undefined' && GRAPHICS.images && GRAPHICS.images[bgKey]) {
+                enemyArea.style.backgroundImage = `url('${GRAPHICS.images[bgKey].src}')`;
+                enemyArea.style.backgroundSize = 'cover';
+                enemyArea.style.backgroundPosition = 'center bottom';
+                enemyArea.style.backgroundRepeat = 'no-repeat';
+            } else {
+                // 画像がない場合のフォールバック
+                enemyArea.style.backgroundColor = '#222';
+                enemyArea.style.backgroundImage = 'none';
+            }
+        }
+		
+		
         // --- パーティ生成 ---
         Battle.party = [];
         if (App.data && App.data.party) {
@@ -148,13 +185,15 @@ const Battle = {
         
         Battle.renderEnemies();
         Battle.renderPartyStatus();
-        
+
         const scene = document.getElementById('battle-scene');
         if(scene) {
             scene.onclick = (e) => {
+                // 戦闘結果画面(result)のときだけ、クリックで終了処理へ進む
                 if (Battle.phase === 'result') Battle.endBattle(false);
             };
         }
+
         Battle.startInputPhase();
     },
 
@@ -1557,56 +1596,104 @@ const Battle = {
         App.save();
     },
 
-	renderEnemies: () => {
+    renderEnemies: () => {
         const container = Battle.getEl('enemy-container');
         if(!container) return;
         container.innerHTML = '';
         const g = (typeof GRAPHICS !== 'undefined' && GRAPHICS.images) ? GRAPHICS.images : {};
         
+        // 生存している（かつ逃げていない）敵の数をカウント
+        const activeEnemies = Battle.enemies.filter(e => !e.isFled);
+        const count = activeEnemies.length;
+
+        // ★敵の数に応じて幅とスケールを計算
+        let widthPerEnemy = 24; 
+        let scaleFactor = 1.0; // テキストやHPバーの縮小率
+
+        if (count === 3) {
+            widthPerEnemy = 30;
+            scaleFactor = 0.9;
+        } else if (count === 2) {
+            widthPerEnemy = 40;
+            scaleFactor = 1.0;
+        } else if (count === 1) {
+            widthPerEnemy = 50;
+            scaleFactor = 1.1; // 1体なら大きく見せる
+        } else {
+            // 4体以上の場合
+            scaleFactor = 0.8;
+        }
+
         Battle.enemies.forEach(e => {
-        if(e.isFled) return; 
-        const div = document.createElement('div');
-        div.className = `enemy-sprite ${e.hp<=0?'dead':''}`;
-        
-        div.style.cssText = "position: relative; margin: 0px 4px 18px 4px; width: 96px; height: 96px; overflow: visible;"; 
-        
-        let baseName = e.name.replace(/^(強・|真・|極・|神・)+/, '').replace(/ Lv\d+[A-Z]?$/, '').replace(/[A-Z]$/, '').trim();
-        const imgKey = 'monster_' + baseName;
-        const hasImage = g[imgKey] ? true : false;
-        let imgHtml = '';
-        
-        if (hasImage) {
-            div.style.border = 'none'; div.style.background = 'transparent';
-            imgHtml = `<img src="${g[imgKey].src}" style="position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:100%; height:100%; object-fit:contain; z-index:0; pointer-events:none;">`;
-        }
-        
-        if(e.hp > 0) {
-            const hpPer = (e.hp / e.baseMaxHp) * 100;
-            const hpRatio = e.hp / e.baseMaxHp;
-            const nameColor = hpRatio < 0.5 ? '#ff4' : '#fff';
+            if(e.isFled) return; 
+            const div = document.createElement('div');
+            div.className = `enemy-sprite ${e.hp<=0?'dead':''}`;
             
-            div.innerHTML = `
-                ${imgHtml}
-                <div style="position: absolute; top: 100%; left: 50%; transform: translateX(-50%); width: 100%; display: flex; flex-direction: column; align-items: center; z-index: 10; pointer-events: none;">
-                    <div style="font-size: 11px; color: ${nameColor}; text-shadow: 1px 1px 0 #000; white-space: nowrap; margin-top: 0px; line-height: 1.2;">${e.name}</div>
-                    <div class="enemy-hp-bar" style="width: 70%; height: 6px; border: 1px solid #000; background: #333; margin-top: 1px;">
-                        <div class="enemy-hp-val" style="width:${hpPer}%; height:100%; background:#ff4444; transition:width 0.2s;"></div>
-                    </div>
-                </div>`;
+            // スタイル修正: Flexbox用の設定
+            div.style.cssText = `
+                position: relative; 
+                width: ${widthPerEnemy}%; 
+                max-width: 120px; 
+                aspect-ratio: 1 / 1; 
+                margin: 0 1%; 
+                overflow: visible;
+                display: flex;
+                justify-content: center;
+                align-items: flex-end;
+            `;
+            
+            let baseName = e.name.replace(/^(強・|真・|極・|神・)+/, '').replace(/ Lv\d+[A-Z]?$/, '').replace(/[A-Z]$/, '').trim();
+            const imgKey = 'monster_' + baseName;
+            const hasImage = g[imgKey] ? true : false;
+            let imgHtml = '';
+            
+            if (hasImage) {
+                // 画像がある場合
+                div.style.border = 'none'; div.style.background = 'transparent';
+                imgHtml = `<img src="${g[imgKey].src}" style="width:100%; height:100%; object-fit:contain; filter:drop-shadow(0 4px 4px rgba(0,0,0,0.5));">`;
+            } else {
+                // 画像がない場合 (ダミー)
+                div.style.background = '#444';
+                div.style.borderRadius = '8px';
+                imgHtml = `<div style="color:#fff; font-size:10px; display:flex; align-items:center; justify-content:center; height:100%; width:100%;">${e.name.substring(0,2)}</div>`;
+            }
+            
+            if(e.hp > 0) {
+                const hpPer = (e.hp / e.baseMaxHp) * 100;
+                const hpRatio = e.hp / e.baseMaxHp;
+                const nameColor = hpRatio < 0.5 ? '#ff4' : '#fff';
                 
-            div.onclick = (event) => { 
-                event.stopPropagation(); 
-                if(Battle.phase==='target_select' && (Battle.selectingAction==='attack'||Battle.selectingAction==='skill')) { 
-                    Battle.selectTarget(e); 
-                } 
-            };
-        } else { 
-            div.style.opacity = 0.5; 
-            div.innerHTML = `${imgHtml}<div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); font-size:14px; color:#f88; font-weight:bold; text-shadow:1px 1px 0 #000; z-index:10;">DEAD</div>`;
-        }
-        container.appendChild(div);
-    });
-},
+                // ★修正: scaleFactor を使って文字とHPバーのサイズを調整
+                div.innerHTML = `
+                    ${imgHtml}
+                    <div style="position: absolute; bottom: 0; width: 100%; display: flex; flex-direction: column; align-items: center; z-index: 10; pointer-events: none; 
+                        /* ★スケールを敵の数に応じて調整 */
+                        transform: scale(${scaleFactor}); 
+                        transform-origin: bottom center; /* 足元を基準にスケール */
+                        text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;">
+                        
+                        <div style="font-size: 10px; color: ${nameColor}; font-weight:bold; white-space: nowrap; margin-bottom: 2px;">${e.name}</div>
+                        <div class="enemy-hp-bar" style="width: 80%; height: 4px; border: 1px solid #000; background: #333; border-radius: 2px;">
+                            <div class="enemy-hp-val" style="width:${hpPer}%; height:100%; background:#ff4444; transition:width 0.2s; border-radius: 1px;"></div>
+                        </div>
+                    </div>`;
+                    
+                div.onclick = (event) => { 
+                    event.stopPropagation(); 
+                    if(Battle.phase==='target_select' && (Battle.selectingAction==='attack'||Battle.selectingAction==='skill')) { 
+                        Battle.selectTarget(e); 
+                    } 
+                };
+            } else { 
+                div.style.opacity = 0.5; 
+                div.style.filter = 'grayscale(100%)';
+                div.innerHTML = `${imgHtml}<div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); font-size:12px; color:#f88; font-weight:bold; text-shadow:1px 1px 0 #000; z-index:10; white-space:nowrap;">DEAD</div>`;
+            }
+            container.appendChild(div);
+        });
+    },
+
+
 
     renderPartyStatus: () => {
         const container = Battle.getEl('battle-party-bar'); if(!container) return;
