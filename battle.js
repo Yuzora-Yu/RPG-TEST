@@ -1868,17 +1868,52 @@ const Battle = {
         App.data.gold += totalGold;
         Battle.enemies.forEach(e => { if(e.isDead && !e.isFled) { if(!App.data.book) App.data.book = { monsters: [] }; if(e.id && !App.data.book.monsters.includes(e.id)) App.data.book.monsters.push(e.id); } });
         const drops = []; let hasRareDrop = false;
-        Battle.enemies.forEach(e => {
+		
+		
+		Battle.enemies.forEach(e => {
             if (e.isFled) return; 
             const base = DB.MONSTERS.find(m => m.id === e.baseId);
             const dropRank = base ? base.rank : 1;
+
             if (base && base.id >= 1000) {
-                const newEquip = App.createRandomEquip('drop', dropRank, 3); App.data.inventory.push(newEquip); hasRareDrop = true; drops.push({ name: newEquip.name, isRare: true });
-            } else if (Math.random() < 0.3) {
-                if (Math.random() < 0.3) { const item = DB.ITEMS[Math.floor(Math.random() * DB.ITEMS.length)]; if(item.type !== '貴重品') { App.data.items[item.id] = (App.data.items[item.id]||0)+1; drops.push({name: item.name, isRare: false}); } }
-                else { const newEquip = App.createRandomEquip('drop', dropRank); App.data.inventory.push(newEquip); const isRare = (newEquip.plus === 3); if(isRare) hasRareDrop = true; drops.push({ name: newEquip.name, isRare: isRare }); }
+                // ★ボス: 確定ドロップ (変更なし)
+                const newEquip = App.createRandomEquip('drop', dropRank, 3); 
+                App.data.inventory.push(newEquip); 
+                hasRareDrop = true; 
+                drops.push({ name: newEquip.name, isRare: true });
+
+            } else {
+                // ★修正: 通常モンスターのドロップ判定
+                // 0.0 ～ 1.0 の乱数を生成
+                const r = Math.random();
+
+                if (r < 0.2) { 
+                    // ■ 20% : アイテム
+                    // (モンスターのランク以下のアイテムのみ)
+                    const candidates = DB.ITEMS.filter(i => i.rank <= dropRank && i.type !== '貴重品');
+                    
+                    if (candidates.length > 0) {
+                        const item = candidates[Math.floor(Math.random() * candidates.length)]; 
+                        App.data.items[item.id] = (App.data.items[item.id]||0)+1; 
+                        drops.push({name: item.name, isRare: false}); 
+                    } else {
+                        // 該当アイテムがない場合は何も落ちない（あるいは下位ランクの装備にフォールバックさせてもOK）
+                    }
+
+                } else if (r < 0.5) { 
+                    // ■ 30% : 装備 (0.2以上 0.5未満 の範囲なので30%)
+                    const newEquip = App.createRandomEquip('drop', dropRank); 
+                    App.data.inventory.push(newEquip); 
+                    const isRare = (newEquip.plus === 3); 
+                    if(isRare) hasRareDrop = true; 
+                    drops.push({ name: newEquip.name, isRare: isRare });
+                }
+                
+                // ■ 残り50% : 何もなし (r >= 0.5)
             }
         });
+		
+		
         Battle.log(`\n★勝利！\n獲得: ${totalGold}G`);
         if(drops.length > 0) { drops.forEach(d => { if(d.isRare) Battle.log(`<span class="log-rare-drop">レア！ ${d.name} を手に入れた！</span>`); else Battle.log(`ドロップ: ${d.name}`); }); }
         if(hasRareDrop) { const flash = document.getElementById('drop-flash'); if(flash) { flash.style.display = 'block'; flash.classList.remove('flash-active'); void flash.offsetWidth; flash.classList.add('flash-active'); } }
