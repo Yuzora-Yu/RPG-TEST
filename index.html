@@ -102,9 +102,35 @@
         .p-val { font-size: 9px; color: #ccc; line-height: 1; text-align: right; margin-bottom: 1px; }
 
         /* バトル画面 */
-        #battle-scene { display: none; background: #222; flex-direction: column; justify-content: space-between; }
-        #enemy-container { flex: 1; display: flex; justify-content: center; align-items: center; flex-wrap: wrap; min-height: 100px; }
-        
+        /* 親枠：背景設定は削除し、黒塗りにしておく */
+		#battle-scene {
+			width: 340px;
+			margin: 0 auto;
+			display: flex;
+			flex-direction: column;
+			height: 100%;
+			position: relative;
+			border: 2px solid #444;
+			overflow: hidden;
+			background-color: #000; /* ★背景画像ではなく黒背景にする */
+		}
+
+		/* 子枠（上半分）：ここに背景が表示される */
+		#enemy-container {
+			width: 100%;
+			flex: 1; /* ★重要: これで上部の空きスペース(ログより上の部分)を全て埋める */
+			
+			display: flex;
+			justify-content: center;
+			align-items: flex-end; /* モンスターの足元を揃える */
+			padding-bottom: 20px;
+			z-index: 5;
+			
+			/* 万が一JSが効かない場合の初期値 */
+			background-position: center bottom;
+			background-size: cover; 
+		}
+
         /* 敵キャラ表示 */
         .enemy-sprite { 
             width: 90px; height: 90px; 
