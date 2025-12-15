@@ -54,24 +54,39 @@ const Battle = {
 		// ★修正: 背景画像の出し分けロジック
         const enemyArea = document.getElementById('enemy-container');
         if (enemyArea) {
-            // デフォルトはフィールド
+            // デフォルトは草原(フィールド)
             let bgKey = 'battle_bg_field';
 
-            // ダンジョン内にいる場合
+            // ■ ダンジョン内にいる場合
             if (typeof Field !== 'undefined' && Field.currentMapData && Field.currentMapData.isDungeon) {
                 const floor = App.data.progress.floor;
-                const type = App.data.dungeon.genType; // dungeon.jsで保存したタイプ
+                const type = App.data.dungeon.genType; 
 
                 if (floor % 10 === 0) {
-                    // ボス階層 (10, 20, 30...)
                     bgKey = 'battle_bg_boss';
                 } else if (type === 2) {
-                    // 迷路フロア
                     bgKey = 'battle_bg_maze';
                 } else {
-                    // 通常フロア (部屋・洞窟)
                     bgKey = 'battle_bg_dungeon';
                 }
+            } 
+            // ■ 通常フィールドにいる場合 (MAP_DATAを参照)
+            else if (typeof Field !== 'undefined' && typeof MAP_DATA !== 'undefined') {
+                // 現在の座標からタイル文字を取得（マップのループも考慮）
+                const mapW = MAP_DATA[0].length;
+                const mapH = MAP_DATA.length;
+                const tx = ((Field.x % mapW) + mapW) % mapW;
+                const ty = ((Field.y % mapH) + mapH) % mapH;
+                const tile = MAP_DATA[ty][tx];
+
+                // タイル文字に応じて背景を変更
+                if (tile === 'F') {
+                    bgKey = 'battle_bg_forest';   // 森
+                } else if (tile === 'L') {
+                    bgKey = 'battle_bg_mountain'; // 山 (L)
+                } 
+                // 必要であれば 'M' (通常の山) もここに追加
+                // else if (tile === 'M') bgKey = 'battle_bg_mountain';
             }
 
             // 画像データの存在チェックと適用
@@ -81,7 +96,6 @@ const Battle = {
                 enemyArea.style.backgroundPosition = 'center bottom';
                 enemyArea.style.backgroundRepeat = 'no-repeat';
             } else {
-                // 画像がない場合のフォールバック
                 enemyArea.style.backgroundColor = '#222';
                 enemyArea.style.backgroundImage = 'none';
             }
@@ -901,6 +915,21 @@ const Battle = {
                 }
             }
 
+            // ★追加: プレイヤーのターゲットが死んでいる場合のリターゲット処理
+            // (ターゲット指定があり、かつその対象が死んでいる/逃げている場合)
+            if (cmd.target && (cmd.target.isDead || cmd.target.isFled)) {
+                
+                // 対象が「モンスター」の場合のみ、別の生存モンスターを探す
+                if (Battle.enemies.includes(cmd.target)) {
+                    const aliveEnemies = Battle.enemies.filter(e => !e.isDead && !e.isFled);
+                    if (aliveEnemies.length > 0) {
+                        // ランダムに別の敵を選ぶ
+                        const newTarget = aliveEnemies[Math.floor(Math.random() * aliveEnemies.length)];
+                        cmd.target = newTarget;
+                    }
+                }
+            }
+
             await Battle.processAction(cmd);
             await Battle.onActionEnd(actor); 
 
@@ -910,6 +939,19 @@ const Battle = {
             if (Battle.checkFinish()) return;
             await Battle.wait(500);
         }
+
+        // ★追加: ターン終了時のボス自動回復処理
+        // 生存している敵の中にボス(ID>=1000)がいれば回復
+        Battle.enemies.forEach(e => {
+            if (!e.isDead && !e.isFled && e.id >= 1000) {
+                const rec = Math.floor(e.baseMaxHp * 0.05); // 5%回復
+                if (rec > 0 && e.hp < e.baseMaxHp) {
+                    e.hp = Math.min(e.baseMaxHp, e.hp + rec);
+                    //Battle.log(`【${e.name}】の傷が再生していく... (HP+${rec})`);
+                    Battle.renderEnemies(); // HPバー更新
+                }
+            }
+        });
 
         Battle.saveBattleState();
         Battle.startInputPhase();
@@ -973,12 +1015,6 @@ const Battle = {
              }
         }
 
-        if (actor.hp > 0 && actor.id >= 1000) {
-            const rec = Math.floor(actor.baseMaxHp * 0.05);
-            if (rec > 0 && actor.hp < actor.baseMaxHp) {
-                actor.hp = Math.min(actor.baseMaxHp, actor.hp + rec);
-            }
-        }
     },
 
     processAction: async (cmd) => {
@@ -1631,49 +1667,81 @@ const Battle = {
         container.innerHTML = '';
         const g = (typeof GRAPHICS !== 'undefined' && GRAPHICS.images) ? GRAPHICS.images : {};
         
-        const activeEnemies = Battle.enemies.filter(e => !e.isFled);
-        const count = activeEnemies.length;
+        // ★修正1: 配置計算のために「全ての敵の数」を使います
+        const totalCount = Battle.enemies.length;
+        const isBoss = App.data.battle ? App.data.battle.isBossBattle : false;
 
-        // 敵の数に応じた幅とスケール計算
+        // 敵の数に応じた幅とスケール計算 (全員分で計算)
         let widthPerEnemy = 24; 
         let scaleFactor = 1.0; 
+        let maxPixelWidth = 120;
 
-        if (count === 3) { widthPerEnemy = 30; scaleFactor = 0.9; }
-        else if (count === 2) { widthPerEnemy = 40; scaleFactor = 1.0; }
-        else if (count === 1) { widthPerEnemy = 50; scaleFactor = 1.1; }
-        else { scaleFactor = 0.8; }
+        if (isBoss && totalCount === 1) {
+            widthPerEnemy = 40;  
+            scaleFactor = 1.0;   
+            maxPixelWidth = 200; 
+        } 
+        else if (totalCount === 3) { 
+            widthPerEnemy = 30; scaleFactor = 1.0; 
+        }
+        else if (totalCount === 2) { 
+            widthPerEnemy = 30; scaleFactor = 1.0; 
+        }
+        else if (totalCount === 1) { 
+            widthPerEnemy = 30; scaleFactor = 1.0; 
+        }
+        else { 
+            scaleFactor = 0.8; 
+        }
 
+        // ★修正2: 全ての敵を描画ループにかける (死体もスキップしない)
         Battle.enemies.forEach(e => {
-            if(e.isFled) return; 
             const div = document.createElement('div');
-            div.className = `enemy-sprite ${e.hp<=0?'dead':''}`;
+            div.className = `enemy-sprite`; // deadクラスはつけない(見えなくなるので)
             
-            // ★修正1: 画像とテキストを縦に並べる設定 (flex-direction: column)
+            // 共通スタイル (幅やマージンで場所を確保)
             div.style.cssText = `
                 position: relative; 
                 width: ${widthPerEnemy}%; 
-                max-width: 120px; 
-                /* aspect-ratioは削除 (縦長になるため) */
-                margin: 0 1%; 
+                max-width: ${maxPixelWidth}px;
+                margin: 0 1% -0px 1%;
                 overflow: visible;
                 display: flex;
-                flex-direction: column; /* 縦並び */
+                flex-direction: column;
                 justify-content: flex-end;
-                align-items: center;    /* 中央揃え */
+                align-items: center;
+                padding-bottom: 0;
             `;
+
+            // ★修正3: 死んでいる(または逃げた)場合は「見えなくする」だけ
+            if (e.isFled || e.hp <= 0) {
+                div.style.visibility = 'hidden'; // 場所は確保するが見えなくなる
+                container.appendChild(div);
+                return; // 中身(画像やHPバー)は作らなくていいのでここで終了
+            }
             
             let baseName = e.name.replace(/^(強・|真・|極・|神・)+/, '').replace(/ Lv\d+[A-Z]?$/, '').replace(/[A-Z]$/, '').trim();
             const imgKey = 'monster_' + baseName;
             const hasImage = g[imgKey] ? true : false;
             let imgHtml = '';
             
-            // ★修正2: 画像自体にアスペクト比を持たせ、フルサイズ表示
             if (hasImage) {
                 div.style.border = 'none'; div.style.background = 'transparent';
-                imgHtml = `<img src="${g[imgKey].src}" style="width:100%; aspect-ratio:1/1; object-fit:contain; object-position:center bottom; filter:drop-shadow(0 4px 4px rgba(0,0,0,0.5)); display:block;">`;
+                // ★修正2: 画像自体を下寄せ(object-position)にし、さらに transform で少し下げる
+                imgHtml = `<img src="${g[imgKey].src}" style="
+                    width: 100%; 
+                    aspect-ratio: 1/1; 
+                    object-fit: contain; 
+                    object-position: center bottom; /* 画像を下辺に合わせる */
+                    filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5)); 
+                    display: block;
+                    transform: translateY(10px); /* ★重要: 画像を10px下にずらす */
+                ">`;
             } else {
                 div.style.background = 'transparent';
-                imgHtml = `<div style="width:100%; aspect-ratio:1/1; background:#444; border-radius:8px; border:2px solid #fff; display:flex; align-items:center; justify-content:center; color:#fff; font-size:10px;">${e.name.substring(0,2)}</div>`;
+                // ダミー画像の場合もサイズに合わせてフォント調整
+                const dummyFontSize = (isBoss && count === 1) ? '20px' : '10px';
+                imgHtml = `<div style="width:100%; aspect-ratio:1/1; background:#444; border-radius:8px; border:2px solid #fff; display:flex; align-items:center; justify-content:center; color:#fff; font-size:${dummyFontSize};">${e.name.substring(0,2)}</div>`;
             }
             
             if(e.hp > 0) {
@@ -1681,23 +1749,23 @@ const Battle = {
                 const hpRatio = e.hp / e.baseMaxHp;
                 const nameColor = hpRatio < 0.5 ? '#ff4' : '#fff';
                 
-                // ★修正3: absolute配置をやめ、marginで位置調整
                 div.innerHTML = `
                     ${imgHtml}
                     <div style="
-                        width: 140%; /* 少し広げて名前が改行されにくくする */
-                        margin-top: -5px; /* 画像との隙間を詰める */
+                        width: 140%;
+                        /* margin-top: -5px; ← これを調整 */
+                        margin-top: 5px; /* 画像を下げた分、テキストとの隙間を調整 */
                         display: flex; 
                         flex-direction: column; 
                         align-items: center; 
                         z-index: 10; 
                         pointer-events: none; 
                         transform: scale(${scaleFactor}); 
-                        transform-origin: top center; /* 上(画像側)を基準に縮小 */
+                        transform-origin: top center;
                         text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;">
                         
                         <div style="font-size: 10px; color: ${nameColor}; font-weight:bold; white-space: nowrap; margin-bottom: 2px;">${e.name}</div>
-                        <div class="enemy-hp-bar" style="width: 80%; height: 4px; border: 1px solid #000; background: #333; border-radius: 2px;">
+                        <div class="enemy-hp-bar" style="width: 60%; height: 4px; border: 1px solid #000; background: #333; border-radius: 2px;">
                             <div class="enemy-hp-val" style="width:${hpPer}%; height:100%; background:#ff4444; transition:width 0.2s; border-radius: 1px;"></div>
                         </div>
                     </div>`;
@@ -1711,7 +1779,6 @@ const Battle = {
             } else { 
                 div.style.opacity = 0.5; 
                 div.style.filter = 'grayscale(100%)';
-                // DEAD表示も画像の上に重ねるため relative コンテナ内で調整
                 div.innerHTML = `
                     <div style="position:relative; width:100%;">
                         ${imgHtml}
