@@ -959,6 +959,8 @@ const Field = {
                 else if (tile === 'I') imgKey = 'inn';
                 else if (tile === 'K') imgKey = 'casino';
                 else if (tile === 'E') imgKey = 'medal';
+                else if (tile === 'F') imgKey = 'forest';
+                else if (tile === 'L') imgKey = 'Low_mountain';
 
                 // 画像表示 or 元の色表示 の分岐
                 if (imgKey && g[imgKey]) {
@@ -970,7 +972,7 @@ const Field = {
                     
                     if(tile === 'G') color = '#282'; 
                     else if(tile === 'W') color = '#228'; 
-                    else if(tile === 'M') color = '#642'; 
+                    else if(tile === 'M') color = '#333'; 
                     else if(tile === 'T') color = '#444'; 
                     else if(tile === 'S') color = '#dd0'; 
                     else if(tile === 'C') color = '#0dd'; 
@@ -979,6 +981,8 @@ const Field = {
                     else if(tile === 'I') color = '#fff'; 
                     else if(tile === 'K') color = '#ff0'; 
                     else if(tile === 'E') color = '#aaf'; 
+                    else if(tile === 'F') color = '#040'; 
+                    else if(tile === 'L') color = '#642'; 
                     
                     // 色設定があり、かつ「床画像の上に描画する必要がある」または「床ではない」場合
                     // ※ 'G'などは床画像がある場合、上で描画済みなのでスキップしてもよいが、
@@ -994,13 +998,13 @@ const Field = {
                 }
 
                 // 文字の重ね表示 (画像があっても分かりやすくするため残す、不要なら削除可)
-                if(['C','R','B','I','K','E'].includes(tile)) {
-                    ctx.fillStyle = (imgKey && g[imgKey]) ? '#fff' : '#000'; // 画像上なら白文字、色塗り上なら黒文字
-                    ctx.font = '20px sans-serif';
-                    let char = tile;
-                    if(!Field.currentMapData) { if(tile==='I') char='宿'; if(tile==='K') char='カ'; if(tile==='E') char='交'; }
-                    ctx.fillText(char, drawX+6, drawY+24);
-                }
+                //if(['C','R','B','I','K','E'].includes(tile)) {
+                //    ctx.fillStyle = (imgKey && g[imgKey]) ? '#fff' : '#000'; // 画像上なら白文字、色塗り上なら黒文字
+                //    ctx.font = '20px sans-serif';
+                //    let char = tile;
+                //    if(!Field.currentMapData) { if(tile==='I') char='宿'; if(tile==='K') char='カ'; if(tile==='E') char='交'; }
+                //    ctx.fillText(char, drawX+6, drawY+24);
+                //}
             }
         }
         
@@ -1045,7 +1049,7 @@ const Field = {
                 ctx.fillStyle = '#000';
                 if(tile === 'W') ctx.fillStyle = '#228'; 
                 else if(tile === 'G') ctx.fillStyle = '#282'; 
-                else if(tile === 'M') ctx.fillStyle = '#642'; 
+                else if(tile === 'M') ctx.fillStyle = '#333'; 
                 else if(tile === 'T') ctx.fillStyle = '#666'; 
                 else if(tile === 'S') ctx.fillStyle = '#ff0'; 
                 else if(tile === 'C') ctx.fillStyle = '#0ff'; 
@@ -1054,6 +1058,8 @@ const Field = {
                 else if(tile === 'I') ctx.fillStyle = '#fff'; 
                 else if(tile === 'K') ctx.fillStyle = '#ff0'; 
                 else if(tile === 'E') ctx.fillStyle = '#aaf'; 
+                else if(tile === 'F') ctx.fillStyle = '#040'; 
+                else if(tile === 'L') ctx.fillStyle = '#642'; 
                 
                 if (dx===0 && dy===0) ctx.fillStyle = '#fff'; 
                 if (ctx.fillStyle !== '#000') ctx.fillRect(mmX + (dx + range) * dms, mmY + (dy + range) * dms, dms, dms);
