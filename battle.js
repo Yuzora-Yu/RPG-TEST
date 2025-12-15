@@ -1596,50 +1596,43 @@ const Battle = {
         App.save();
     },
 
+/* battle.js の renderEnemies 関数 */
+
     renderEnemies: () => {
         const container = Battle.getEl('enemy-container');
         if(!container) return;
         container.innerHTML = '';
         const g = (typeof GRAPHICS !== 'undefined' && GRAPHICS.images) ? GRAPHICS.images : {};
         
-        // 生存している（かつ逃げていない）敵の数をカウント
         const activeEnemies = Battle.enemies.filter(e => !e.isFled);
         const count = activeEnemies.length;
 
-        // ★敵の数に応じて幅とスケールを計算
+        // 敵の数に応じた幅とスケール計算
         let widthPerEnemy = 24; 
-        let scaleFactor = 1.0; // テキストやHPバーの縮小率
+        let scaleFactor = 1.0; 
 
-        if (count === 3) {
-            widthPerEnemy = 30;
-            scaleFactor = 0.9;
-        } else if (count === 2) {
-            widthPerEnemy = 40;
-            scaleFactor = 1.0;
-        } else if (count === 1) {
-            widthPerEnemy = 50;
-            scaleFactor = 1.1; // 1体なら大きく見せる
-        } else {
-            // 4体以上の場合
-            scaleFactor = 0.8;
-        }
+        if (count === 3) { widthPerEnemy = 30; scaleFactor = 0.9; }
+        else if (count === 2) { widthPerEnemy = 40; scaleFactor = 1.0; }
+        else if (count === 1) { widthPerEnemy = 50; scaleFactor = 1.1; }
+        else { scaleFactor = 0.8; }
 
         Battle.enemies.forEach(e => {
             if(e.isFled) return; 
             const div = document.createElement('div');
             div.className = `enemy-sprite ${e.hp<=0?'dead':''}`;
             
-            // スタイル修正: Flexbox用の設定
+            // ★修正1: 画像とテキストを縦に並べる設定 (flex-direction: column)
             div.style.cssText = `
                 position: relative; 
                 width: ${widthPerEnemy}%; 
                 max-width: 120px; 
-                aspect-ratio: 1 / 1; 
+                /* aspect-ratioは削除 (縦長になるため) */
                 margin: 0 1%; 
                 overflow: visible;
                 display: flex;
-                justify-content: center;
-                align-items: flex-end;
+                flex-direction: column; /* 縦並び */
+                justify-content: flex-end;
+                align-items: center;    /* 中央揃え */
             `;
             
             let baseName = e.name.replace(/^(強・|真・|極・|神・)+/, '').replace(/ Lv\d+[A-Z]?$/, '').replace(/[A-Z]$/, '').trim();
@@ -1647,15 +1640,13 @@ const Battle = {
             const hasImage = g[imgKey] ? true : false;
             let imgHtml = '';
             
+            // ★修正2: 画像自体にアスペクト比を持たせ、フルサイズ表示
             if (hasImage) {
-                // 画像がある場合
                 div.style.border = 'none'; div.style.background = 'transparent';
-                imgHtml = `<img src="${g[imgKey].src}" style="width:100%; height:100%; object-fit:contain; filter:drop-shadow(0 4px 4px rgba(0,0,0,0.5));">`;
+                imgHtml = `<img src="${g[imgKey].src}" style="width:100%; aspect-ratio:1/1; object-fit:contain; object-position:center bottom; filter:drop-shadow(0 4px 4px rgba(0,0,0,0.5)); display:block;">`;
             } else {
-                // 画像がない場合 (ダミー)
-                div.style.background = '#444';
-                div.style.borderRadius = '8px';
-                imgHtml = `<div style="color:#fff; font-size:10px; display:flex; align-items:center; justify-content:center; height:100%; width:100%;">${e.name.substring(0,2)}</div>`;
+                div.style.background = 'transparent';
+                imgHtml = `<div style="width:100%; aspect-ratio:1/1; background:#444; border-radius:8px; border:2px solid #fff; display:flex; align-items:center; justify-content:center; color:#fff; font-size:10px;">${e.name.substring(0,2)}</div>`;
             }
             
             if(e.hp > 0) {
@@ -1663,13 +1654,19 @@ const Battle = {
                 const hpRatio = e.hp / e.baseMaxHp;
                 const nameColor = hpRatio < 0.5 ? '#ff4' : '#fff';
                 
-                // ★修正: scaleFactor を使って文字とHPバーのサイズを調整
+                // ★修正3: absolute配置をやめ、marginで位置調整
                 div.innerHTML = `
                     ${imgHtml}
-                    <div style="position: absolute; bottom: 0; width: 100%; display: flex; flex-direction: column; align-items: center; z-index: 10; pointer-events: none; 
-                        /* ★スケールを敵の数に応じて調整 */
+                    <div style="
+                        width: 140%; /* 少し広げて名前が改行されにくくする */
+                        margin-top: -5px; /* 画像との隙間を詰める */
+                        display: flex; 
+                        flex-direction: column; 
+                        align-items: center; 
+                        z-index: 10; 
+                        pointer-events: none; 
                         transform: scale(${scaleFactor}); 
-                        transform-origin: bottom center; /* 足元を基準にスケール */
+                        transform-origin: top center; /* 上(画像側)を基準に縮小 */
                         text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;">
                         
                         <div style="font-size: 10px; color: ${nameColor}; font-weight:bold; white-space: nowrap; margin-bottom: 2px;">${e.name}</div>
@@ -1687,13 +1684,16 @@ const Battle = {
             } else { 
                 div.style.opacity = 0.5; 
                 div.style.filter = 'grayscale(100%)';
-                div.innerHTML = `${imgHtml}<div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); font-size:12px; color:#f88; font-weight:bold; text-shadow:1px 1px 0 #000; z-index:10; white-space:nowrap;">DEAD</div>`;
+                // DEAD表示も画像の上に重ねるため relative コンテナ内で調整
+                div.innerHTML = `
+                    <div style="position:relative; width:100%;">
+                        ${imgHtml}
+                        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); font-size:12px; color:#f88; font-weight:bold; text-shadow:1px 1px 0 #000; z-index:10; white-space:nowrap;">DEAD</div>
+                    </div>`;
             }
             container.appendChild(div);
         });
     },
-
-
 
     renderPartyStatus: () => {
         const container = Battle.getEl('battle-party-bar'); if(!container) return;
