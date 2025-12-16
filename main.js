@@ -1,4 +1,4 @@
-/* main.js (長押し移動復活・シナジーeffect付与・Base64画像描画対応版) */
+17:13 2025/12/16/* main.js (長押し移動復活・シナジーeffect付与・Base64画像描画対応版) */
 
 // ==========================================================================
 // 設定：職業別習得スキルテーブル
@@ -420,7 +420,9 @@ const App = {
 
     getChar: (uid) => App.data ? App.data.characters.find(c => c.uid === uid) : null,
 
-    // ★修正: ステータス計算 (耐性対応・base義追加版)
+/* main.js の App.calcStats を以下のように修正してください */
+
+    // ★修正: ステータス計算 (耐性対応・攻撃時付与対応版)
     calcStats: (char) => {
         // DBのマスタデータを取得 (基礎ステータス参照用)
         const base = DB.CHARACTERS.find(c => c.id === char.charId) || char;
@@ -428,22 +430,12 @@ const App = {
         // リミットブレイク回数 (なければ0)
         const lb = char.limitBreak || 0;
 		
-        // ★修正: レアリティ別加算率の設定
-        // N:0.4, R:0.3, SR:0.25, SSR:0.2, UR:0.15, EX:0.1
+        // レアリティ別加算率の設定
         const LB_RATES = { 
-            'N': 0.40, 
-            'R': 0.30, 
-            'SR': 0.28, 
-            'SSR': 0.25, 
-            'UR': 0.20, 
-            'EX': 0.10 
+            'N': 0.40, 'R': 0.30, 'SR': 0.28, 'SSR': 0.25, 'UR': 0.20, 'EX': 0.10 
         };
-
-        // ベースのレアリティを参照して率を決定 (未定義ならデフォルト0.1)
         const lbRate = LB_RATES[base.rarity] !== undefined ? LB_RATES[base.rarity] : 0.10;
 
-        // ① 計算式: セーブデータの値 + (基礎ステータス × レート × LB回数)
-        // ※これが「ゲーム内で使用する素のステータス」になります
         let s = {
             maxHp: char.hp + Math.floor((base.hp || 100) * lbRate * lb * 1.5),
             maxMp: char.mp + Math.floor((base.mp || 50) * lbRate * lb),
@@ -454,25 +446,22 @@ const App = {
             
             elmAtk: {}, elmRes: {}, magDmg: 0, sklDmg: 0, finDmg: 0, finRed: 0, mpRed: 0,
             
-            // ★追加: 状態異常耐性の初期化 (デフォルト0)
+            // ★修正: 状態異常耐性の初期化 (キーが増えたため動的に対応できるよう空で用意しても良いが、主要なものは定義)
             resists: {
-                Poison: 0,      // 毒・猛毒
-                Shock: 0,       // 感電
-                Fear: 0,        // 怯え
-                Seal: 0,        // 封印系 (呪文・特技・回復)
-                Debuff: 0,      // ステータス弱体
-                InstantDeath: 0 // 割合ダメージ・即死
+                Poison: 0, ToxicPoison: 0, Shock: 0, Fear: 0, 
+                Debuff: 0, InstantDeath: 0,
+                SkillSeal: 0, SpellSeal: 0, HealSeal: 0
             }
         };
         
         CONST.ELEMENTS.forEach(e => { s.elmAtk[e]=0; s.elmRes[e]=0; });
 
-        // ★追加: DB(マスタ)に耐性設定があれば適用
+        // DB(マスタ)に耐性設定があれば適用
         if(base.resists) {
-            for(let key in base.resists) s.resists[key] = base.resists[key];
+            for(let key in base.resists) s.resists[key] = (s.resists[key] || 0) + base.resists[key];
         }
 
-        // 1. ユーザー配分ポイント (主人公のみ)
+        // 1. ユーザー配分ポイント
         if(char.uid === 'p1' && char.alloc) {
             for(let key in char.alloc) {
                 if (key.includes('_')) {
@@ -487,12 +476,13 @@ const App = {
             }
         }
 
-        // 2. 装備補正 (固定値 & %)
+        // 2. 装備補正
         let pctMods = { maxHp:0, maxMp:0, atk:0, def:0, spd:0, mag:0 }; 
 
         CONST.PARTS.forEach(part => {
             const eq = char.equips ? char.equips[part] : null;
             if(eq) {
+                // 固定値加算
                 if(eq.data.atk) s.atk += eq.data.atk;
                 if(eq.data.def) s.def += eq.data.def;
                 if(eq.data.spd) s.spd += eq.data.spd;
@@ -502,6 +492,7 @@ const App = {
                 if(eq.data.elmAtk) for(let e in eq.data.elmAtk) s.elmAtk[e] += eq.data.elmAtk[e];
                 if(eq.data.elmRes) for(let e in eq.data.elmRes) s.elmRes[e] += eq.data.elmRes[e];
 
+                // オプション補正
                 if(eq.opts) eq.opts.forEach(o => {
                     if(o.unit === '%') {
                         if(o.key === 'hp') pctMods.maxHp += o.val;
@@ -512,12 +503,20 @@ const App = {
                         else if(o.key === 'mag') pctMods.mag += o.val;
                         else if(o.key === 'elmAtk') s.elmAtk[o.elm] = (s.elmAtk[o.elm]||0) + o.val;
                         else if(o.key === 'elmRes') s.elmRes[o.elm] = (s.elmRes[o.elm]||0) + o.val;
-                        else if(s[o.key] !== undefined) s[o.key] += o.val; // 特殊ステータスなど
-                        // ★追加: 耐性OPがあればここで加算 (例: resists_Poison)
+                        
+                        // ★修正: 耐性OP (resists_XX)
                         else if(o.key.startsWith('resists_')) {
                             const resKey = o.key.replace('resists_', '');
-                            if(s.resists[resKey] !== undefined) s.resists[resKey] += o.val;
+                            // 未定義のキーが来ても動的に追加して加算する
+                            s.resists[resKey] = (s.resists[resKey] || 0) + o.val;
                         }
+                        // ★追加: 攻撃時付与OP (attack_XX)
+                        else if(o.key.startsWith('attack_')) {
+                            // s直下にプロパティとして保持 (例: s.attack_Poison = 5)
+                            s[o.key] = (s[o.key] || 0) + o.val;
+                        }
+                        else if(s[o.key] !== undefined) s[o.key] += o.val; 
+                        
                     } else if(o.unit === 'val') {
                         if(o.key === 'hp') s.maxHp += o.val;
                         else if(o.key === 'mp') s.maxMp += o.val;
@@ -526,10 +525,24 @@ const App = {
                         else if(s[o.key] !== undefined) s[o.key] += o.val;
                     } 
                 });
+				
+				// ★追加: シナジー効果のステータス反映
+                // (App.refreshAllSynergiesにより eq.isSynergy / eq.effect が付与されている前提)
+                if (eq.isSynergy && eq.effect) {
+                    if (eq.effect === 'might') s.finDmg += 30;         // 剛力: 与ダメ+30%
+                    if (eq.effect === 'ironWall') s.finRed += 10;      // 鉄壁: 被ダメ軽減+10%
+                    if (eq.effect === 'guardian') pctMods.def += 100;  // 守護: 防御+100%
+                    if (eq.effect === 'divineProtection') {            // 加護: 全耐性+20%
+                        for (let k in s.resists) {
+                            s.resists[k] = (s.resists[k] || 0) + 20;
+                        }
+                    }
+                }
+				
             }
         });
 
-        // 3. スキルツリー補正 (%)
+        // 3. スキルツリー補正
         if (char.tree) {
             const t = char.tree;
             if (t.ATK) pctMods.atk += t.ATK * 5; 
@@ -543,7 +556,7 @@ const App = {
             }
         }
 
-        // 最終計算: 固定値合計 × (1 + %補正/100)
+        // 最終計算
         s.maxHp = Math.floor(s.maxHp * (1 + pctMods.maxHp / 100));
         s.maxMp = Math.floor(s.maxMp * (1 + pctMods.maxMp / 100));
         s.atk = Math.floor(s.atk * (1 + pctMods.atk / 100));
@@ -553,6 +566,7 @@ const App = {
 
         return s;
     },
+
 
 // ★修正: レベルアップ処理 (DB基礎値の4〜8%を加算 + SP加算)
     gainExp: (charData, expGain) => {
@@ -614,6 +628,9 @@ const App = {
         return logs;
     },
 
+/* main.js の App.createRandomEquip を以下のように修正してください */
+
+    // ★修正: 装備タイプごとのオプションフィルタリング対応版
     createRandomEquip: (source, rank = 1, fixedPlus = null) => {
         let candidates = DB.EQUIPS.filter(e => e.rank <= rank && e.rank >= Math.max(1, rank - 15));
         if (candidates.length === 0) candidates = DB.EQUIPS.filter(e => e.rank <= rank);
@@ -640,9 +657,21 @@ const App = {
             opts: [], plus: plus 
         };
         
+        // ★追加: この装備で付与可能なオプションキーのリストを取得
+        const allowedKeys = base.possibleOpts || null;
+
         for(let i=0; i<plus; i++) {
             const tierRatio = Math.min(1, rank / 100);
-            const rule = DB.OPT_RULES[Math.floor(Math.random()*DB.OPT_RULES.length)];
+            
+            // ★追加: オプション候補のフィルタリング
+            let optCandidates = DB.OPT_RULES;
+            if (allowedKeys) {
+                optCandidates = DB.OPT_RULES.filter(rule => allowedKeys.includes(rule.key));
+                // 設定ミス等で候補がない場合は全ルールから抽選 (フォールバック)
+                if (optCandidates.length === 0) optCandidates = DB.OPT_RULES;
+            }
+
+            const rule = optCandidates[Math.floor(Math.random() * optCandidates.length)];
             
             let r = 'N';
             const rarRnd = Math.random() + (tierRatio * 0.1);
@@ -672,15 +701,37 @@ const App = {
         
         return eq;
     },
-    
-    // オプション内に指定のキーが規定数(count)以上あれば発動
+
+/* main.js の App.checkSynergy を以下のように修正してください */
+
+    // ★修正: 複合条件・属性条件対応版
     checkSynergy: (eq) => { 
         if (!eq || !eq.opts) return null;
+
         for (const syn of DB.SYNERGIES) {
-            const count = eq.opts.filter(o => o.key === syn.key).length;
-            if (count >= syn.count) {
-                return syn;
+            let match = false;
+
+            // パターンA: 複合条件 (req配列がある場合)
+            if (syn.req) {
+                // req内のすべての条件を満たしているかチェック
+                const allMet = syn.req.every(req => {
+                    const count = eq.opts.filter(o => o.key === req.key).length;
+                    return count >= req.count;
+                });
+                if (allMet) match = true;
             }
+            // パターンB: 属性指定条件 (key と elm がある場合)
+            else if (syn.key && syn.elm) {
+                const count = eq.opts.filter(o => o.key === syn.key && o.elm === syn.elm).length;
+                if (count >= syn.count) match = true;
+            }
+            // パターンC: 単一キー条件 (既存ロジック)
+            else if (syn.key) {
+                const count = eq.opts.filter(o => o.key === syn.key).length;
+                if (count >= syn.count) match = true;
+            }
+
+            if (match) return syn;
         }
         return null; 
     },
