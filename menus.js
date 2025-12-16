@@ -1066,7 +1066,7 @@ const MenuAllies = {
 
         let contentHtml = '';
 
-        if (MenuAllies.currentTab === 1) {
+if (MenuAllies.currentTab === 1) {
             let activeSynergies = [];
             if (c.equips) {
                 CONST.PARTS.forEach(p => {
@@ -1096,24 +1096,32 @@ const MenuAllies = {
 
             const treeBtn = `<button class="btn" style="width:100%; margin-top:5px; background:#004444; font-size:11px;" onclick="MenuAllies.openTreeView()">スキル習得画面へ (SP:${c.sp||0})</button>`;
 
+            // ★追加: 状態異常の表示用ラベル定義
+            const ailmentLabels = {
+                Poison: '毒', ToxicPoison: '猛毒', Shock: '感電', Fear: '怯え',
+                Debuff: '弱体', InstantDeath: '即死',
+                SkillSeal: '技封', SpellSeal: '魔封', HealSeal: '癒封'
+            };
+
             contentHtml = `
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom:10px;">
-                    <div style="background:#332222; border:1px solid #554444; border-radius:4px; padding:6px; text-align:center; font-size:11px;">
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom:8px;">
+                    <div style="background:#332222; border:1px solid #554444; border-radius:4px; padding:4px; text-align:center; font-size:11px;">
                         <div style="color:#aaa; font-size:9px;">与ダメージ</div>
                         <div style="color:#f88; font-weight:bold;">+${s.finDmg}%</div>
                     </div>
-                    <div style="background:#222233; border:1px solid #444455; border-radius:4px; padding:6px; text-align:center; font-size:11px;">
+                    <div style="background:#222233; border:1px solid #444455; border-radius:4px; padding:4px; text-align:center; font-size:11px;">
                         <div style="color:#aaa; font-size:9px;">被ダメージ</div>
                         <div style="color:#88f; font-weight:bold;">-${s.finRed}%</div>
                     </div>
                 </div>
 
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                    <div style="background:#222; border:1px solid #444; border-radius:4px; padding:5px;">
-                        <div style="font-size:10px; color:#f88; margin-bottom:3px; text-align:center; border-bottom:1px solid #333;">属性攻撃</div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px;">
+                    
+                    <div style="background:#222; border:1px solid #444; border-radius:4px; padding:4px;">
+                        <div style="font-size:9px; color:#f88; margin-bottom:3px; text-align:center; border-bottom:1px solid #333;">属性攻撃</div>
                         <div style="display:flex; flex-direction:column; gap:1px;">
                             ${CONST.ELEMENTS.map(e => `
-                                <div style="display:flex; justify-content:space-between; background:#333; padding:1px 4px; border-radius:2px; font-size:10px;">
+                                <div style="display:flex; justify-content:space-between; background:#2a2a2a; padding:1px 3px; border-radius:2px; font-size:9px;">
                                     <span style="color:#aaa;">${e}</span>
                                     <span>${s.elmAtk[e]||0}%</span>
                                 </div>
@@ -1121,13 +1129,25 @@ const MenuAllies = {
                         </div>
                     </div>
 
-                    <div style="background:#222; border:1px solid #444; border-radius:4px; padding:5px;">
-                        <div style="font-size:10px; color:#88f; margin-bottom:3px; text-align:center; border-bottom:1px solid #333;">属性耐性</div>
+                    <div style="background:#222; border:1px solid #444; border-radius:4px; padding:4px;">
+                        <div style="font-size:9px; color:#88f; margin-bottom:3px; text-align:center; border-bottom:1px solid #333;">属性耐性</div>
                         <div style="display:flex; flex-direction:column; gap:1px;">
                             ${CONST.ELEMENTS.map(e => `
-                                <div style="display:flex; justify-content:space-between; background:#333; padding:1px 4px; border-radius:2px; font-size:10px;">
+                                <div style="display:flex; justify-content:space-between; background:#2a2a2a; padding:1px 3px; border-radius:2px; font-size:9px;">
                                     <span style="color:#aaa;">${e}</span>
                                     <span>${s.elmRes[e]||0}%</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div style="background:#222; border:1px solid #444; border-radius:4px; padding:4px;">
+                        <div style="font-size:9px; color:#f8f; margin-bottom:3px; text-align:center; border-bottom:1px solid #333;">異常耐性</div>
+                        <div style="display:flex; flex-direction:column; gap:1px;">
+                            ${Object.keys(ailmentLabels).map(key => `
+                                <div style="display:flex; justify-content:space-between; background:#2a2a2a; padding:1px 3px; border-radius:2px; font-size:9px;">
+                                    <span style="color:#aaa;">${ailmentLabels[key]}</span>
+                                    <span>${(s.resists && s.resists[key])||0}%</span>
                                 </div>
                             `).join('')}
                         </div>
@@ -1141,7 +1161,9 @@ const MenuAllies = {
                 </div>
             `;
         }
-        
+
+/* menus.js MenuAllies.renderDetail 内の Tab 2 部分の修正案 */
+
         else if (MenuAllies.currentTab === 2) {
             
             if (MenuAllies.targetPart) {
@@ -1228,23 +1250,33 @@ const MenuAllies = {
                         statRows += gridEnd;
                     });
                     
-                    contentHtml = `
-                        <div style="padding:10px; text-align:center; font-weight:bold; color:#ffd700; border-bottom:1px solid #444;">
-                            装備変更の確認 (${MenuAllies.targetPart})
-                        </div>
-                        <div style="padding:10px; text-align:center; font-size:14px; color:${itemColor}; margin-bottom:10px;">
-                            ${itemName} に変更しますか？
-                        </div>
-                        <div style="background:#222; border:1px solid #444; border-radius:4px; margin-bottom:20px; padding:10px;">
-                            ${statRows}
-                        </div>
-                        <div style="display:flex; gap:10px;">
+                    // ★ボタンパーツを変数化（上下で共通利用）
+                    const buttonsHtml = `
+                        <div style="display:flex; gap:10px; margin: 10px 0;">
                             <button class="btn" style="flex:1; background:#555;" onclick="MenuAllies.selectedEquip=null; MenuAllies.renderDetail()">やめる</button>
                             <button class="btn" style="flex:1; background:#d00;" onclick="MenuAllies.doEquip()">変更する</button>
                         </div>
                     `;
+					
+                    contentHtml = `
+                        <div style="padding:10px; text-align:center; font-weight:bold; color:#ffd700; border-bottom:1px solid #444;">
+                            装備変更の確認 (${MenuAllies.targetPart})
+                        </div>
+                        <div style="padding:5px; text-align:center; font-size:14px; color:${itemColor}; margin-bottom:3px;">
+                            ${itemName} に変更しますか？
+                        </div>
+						
+                        ${buttonsHtml}
+						
+                        <div style="background:#222; border:1px solid #444; border-radius:4px; margin-bottom:10px; padding:10px;">
+                            ${statRows}
+                        </div>
+
+                        ${buttonsHtml}
+                    `;
 
                 } else {
+                    // (装備候補リスト表示部分は変更なし)
                     const p = MenuAllies.targetPart;
                     let candidates = [];
                     candidates.push({id:'remove', name:'(装備を外す)', isRemove:true, rank:999, plus:999}); 
@@ -1292,6 +1324,7 @@ const MenuAllies = {
                 }
 
             } else {
+                // (部位選択リスト表示部分は変更なし)
                 let listHtml = '';
                 CONST.PARTS.forEach(p => {
                     const eq = c.equips[p];
@@ -1313,6 +1346,7 @@ const MenuAllies = {
                 contentHtml = `<div style="display:flex; flex-direction:column; gap:2px;">${listHtml}</div>`;
             }
         }
+
 
         else if (MenuAllies.currentTab === 3) {
             const playerObj = new Player(c);
