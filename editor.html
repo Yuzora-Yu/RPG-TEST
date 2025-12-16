@@ -98,92 +98,196 @@
         </div>
 
         <div class="overflow-x-auto h-[70vh]">
-            <table class="w-full text-sm">
-                <thead>
-                    <tr>
-                        <th style="width:80px">ID</th>
-                        <th style="width:150px">基本情報</th>
-                        <th style="width:160px">タイプ/対象/属性</th>
-                        <th style="width:180px">威力/効果</th>
-                        <th>詳細・追加効果</th>
-                        <th style="width:50px">削除</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="(s, index) in filteredSkills" :key="s._uid">
-                        <td><input type="number" v-model.number="s.id" class="text-center font-mono text-yellow-200 bg-gray-800 font-bold text-lg"></td>
-                        <td>
-                            <label>名前</label><input type="text" v-model="s.name" class="font-bold">
-                            <label class="mt-1">説明</label><input type="text" v-model="s.desc" class="text-xs">
-                        </td>
-                        <td>
-                            <div class="grid grid-cols-2 gap-1">
-                                <div class="col-span-2"><label>タイプ</label>
-                                    <select v-model="s.type">
-                                        <option v-for="t in skillTypes" :value="t">{{t}}</option>
-                                    </select>
-                                </div>
-                                <div><label>属性</label>
-                                    <select v-model="s.elm">
-                                        <option :value="null">なし</option>
-                                        <option v-for="e in elements" :value="e">{{e}}</option>
-                                    </select>
-                                </div>
-                                <div><label>対象</label>
-                                    <select v-model="s.target">
-                                        <option v-for="t in skillTargets" :value="t">{{t}}</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="flex gap-2">
-                                <div class="flex-1"><label>基本威力</label><input type="number" v-model.number="s.base"></div>
-                                <div class="flex-1"><label>倍率</label><input type="number" v-model.number="s.rate" step="0.1"></div>
-                            </div>
-                            <div class="flex gap-2 mt-1">
-                                <div class="flex-1"><label>MP</label><input type="number" v-model.number="s.mp" class="text-blue-300"></div>
-                                <div class="flex-1"><label>回数</label><input type="number" v-model.number="s.count"></div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="grid grid-cols-4 gap-2 text-xs mb-2">
-                                <div><label>優先度</label><input type="number" v-model.number="s.priority" placeholder="0"></div>
-                                <div><label>命中(%)</label><input type="number" v-model.number="s.SuccessRate" placeholder="100"></div>
-                                <div><label>割合ダメ</label><input type="number" v-model.number="s.PercentDamage" placeholder="0~1" step="0.1"></div>
-                                <div><label class="text-purple-300 font-bold">継続ターン</label><input type="number" v-model.number="s.turn" placeholder="0"></div>
-                            </div>
-                            
-                            <div class="grid grid-cols-3 gap-y-1 gap-x-1 text-[11px] mb-2 bg-gray-900 p-1.5 rounded border border-gray-700">
-                                <label class="flex items-center cursor-pointer hover:text-white"><input type="checkbox" v-model="s.drain" class="w-3 h-3 mr-1">吸収</label>
-                                <label class="flex items-center cursor-pointer hover:text-white"><input type="checkbox" v-model="s.fix" class="w-3 h-3 mr-1">固定ダメ</label>
-                                <label class="flex items-center cursor-pointer hover:text-white text-red-300" title="防御無視"><input type="checkbox" v-model="s.IgnoreDefense" class="w-3 h-3 mr-1">防御無視</label>
-                                
-                                <label class="flex items-center cursor-pointer hover:text-white text-green-300" title="味方の状態異常を回復"><input type="checkbox" v-model="s.CureAilments" class="w-3 h-3 mr-1">異常消去</label>
-                                <label class="flex items-center cursor-pointer hover:text-white text-blue-300" title="味方のデバフを解除"><input type="checkbox" v-model="s.debuff_reset" class="w-3 h-3 mr-1">デバフ消去</label>
-                                <label class="flex items-center cursor-pointer hover:text-white text-orange-300" title="敵のバフを解除"><input type="checkbox" v-model="s.buff_reset" class="w-3 h-3 mr-1">バフ消去</label>
-                            </div>
-                            
-                            <div class="bg-gray-800 p-2 rounded mb-2">
-                                <label class="text-xs font-bold text-yellow-500 mb-1 block">状態異常付与</label>
-                                <div class="grid grid-cols-4 gap-y-1 gap-x-2">
-                                    <label v-for="(label, key) in ailmentLabels" :key="key" class="flex items-center cursor-pointer text-xs hover:text-white transition-colors">
-                                        <input type="checkbox" v-model="s[key]" class="w-3 h-3 mr-1 accent-red-500"> {{label}}
-                                    </label>
-                                </div>
-                            </div>
+		
+		<table class="w-full text-sm">
+			<thead>
+				<tr>
+					<th style="width:60px" class="text-center">ID</th>
+					<th style="width:320px">基本設定</th>
+					<th>詳細・追加効果</th>
+					<th style="width:50px" class="text-center">削除</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr v-for="(s, index) in filteredSkills" :key="s._uid">
+					<td class="align-top">
+						<input type="number" v-model.number="s.id" class="text-center font-mono text-yellow-200 bg-gray-800 font-bold text-lg h-10">
+					</td>
 
-                            <div class="grid grid-cols-2 gap-2 text-xs">
-                                <div><label>Buff (例: atk:1.5)</label><input type="text" :value="objToString(s.buff)" @input="s.buff = stringToObj($event.target.value)"></div>
-                                <div><label>Debuff</label><input type="text" :value="objToString(s.debuff)" @input="s.debuff = stringToObj($event.target.value)"></div>
-                            </div>
-                        </td>
-                        <td class="text-center align-middle">
-                            <button @click="removeList(db.SKILLS, db.SKILLS.indexOf(s))" class="btn btn-danger text-xs">×</button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+					<td class="align-top">
+						<div class="flex flex-col gap-2">
+							<div>
+								<input type="text" v-model="s.name" class="font-bold mb-1" placeholder="スキル名">
+								<textarea v-model="s.desc" class="text-xs h-12 resize-none" placeholder="スキルの説明文"></textarea>
+							</div>
+
+							<div class="bg-gray-800 p-2 rounded border border-gray-700 grid grid-cols-3 gap-1">
+								<div>
+									<label class="text-[10px]">タイプ</label>
+									<select v-model="s.type" class="text-xs h-6 p-0 px-1">
+										<option v-for="t in skillTypes" :value="t">{{t}}</option>
+									</select>
+								</div>
+								<div>
+									<label class="text-[10px]">属性</label>
+									<select v-model="s.elm" class="text-xs h-6 p-0 px-1">
+										<option :value="null">-</option>
+										<option v-for="e in elements" :value="e">{{e}}</option>
+									</select>
+								</div>
+								<div>
+									<label class="text-[10px]">対象</label>
+									<select v-model="s.target" class="text-xs h-6 p-0 px-1">
+										<option v-for="t in skillTargets" :value="t">{{t}}</option>
+									</select>
+								</div>
+							</div>
+
+							<div class="bg-gray-800 p-2 rounded border border-gray-700">
+								<div class="grid grid-cols-2 gap-2 mb-2">
+									<div><label class="text-[10px]">基本威力</label><input type="number" v-model.number="s.base" class="text-xs h-6 text-right"></div>
+									<div><label class="text-[10px]">倍率</label><input type="number" v-model.number="s.rate" step="0.1" class="text-xs h-6 text-right"></div>
+								</div>
+								<div class="grid grid-cols-2 gap-2">
+									<div><label class="text-[10px] text-blue-300">消費MP</label><input type="number" v-model.number="s.mp" class="text-xs h-6 text-right text-blue-200"></div>
+									<div><label class="text-[10px]">攻撃回数</label><input type="number" v-model.number="s.count" class="text-xs h-6 text-right"></div>
+								</div>
+							</div>
+						</div>
+					</td>
+
+					<td class="align-top">
+						<div class="grid grid-cols-1 lg:grid-cols-2 gap-2">
+							<div class="space-y-2">
+								<div class="grid grid-cols-4 gap-1 text-xs">
+									<div><label>優先度</label><input type="number" v-model.number="s.priority" placeholder="0" class="h-6 text-center"></div>
+									<div><label>命中%</label><input type="number" v-model.number="s.SuccessRate" placeholder="100" class="h-6 text-center"></div>
+									<div><label>割合</label><input type="number" v-model.number="s.PercentDamage" placeholder="0~1" step="0.1" class="h-6 text-center"></div>
+									<div><label class="text-purple-300">ターン</label><input type="number" v-model.number="s.turn" placeholder="0" class="h-6 text-center"></div>
+								</div>
+								
+								<div class="grid grid-cols-3 gap-y-1 gap-x-1 text-[10px] bg-gray-900 p-1.5 rounded border border-gray-700">
+									<label class="flex items-center cursor-pointer hover:text-white"><input type="checkbox" v-model="s.drain" class="w-3 h-3 mr-1">吸収</label>
+									<label class="flex items-center cursor-pointer hover:text-white"><input type="checkbox" v-model="s.fix" class="w-3 h-3 mr-1">固定ダメ</label>
+									<label class="flex items-center cursor-pointer hover:text-white text-red-300" title="防御無視"><input type="checkbox" v-model="s.IgnoreDefense" class="w-3 h-3 mr-1">防御無視</label>
+									
+									<label class="flex items-center cursor-pointer hover:text-white text-green-300" title="味方の状態異常を回復"><input type="checkbox" v-model="s.CureAilments" class="w-3 h-3 mr-1">異常消去</label>
+									<label class="flex items-center cursor-pointer hover:text-white text-blue-300" title="味方のデバフを解除"><input type="checkbox" v-model="s.debuff_reset" class="w-3 h-3 mr-1">デバフ消去</label>
+									<label class="flex items-center cursor-pointer hover:text-white text-orange-300" title="敵のバフを解除"><input type="checkbox" v-model="s.buff_reset" class="w-3 h-3 mr-1">バフ消去</label>
+								</div>
+								
+								<div class="bg-gray-800 p-2 rounded">
+									<label class="text-[10px] font-bold text-yellow-500 mb-1 block">状態異常付与</label>
+									<div class="grid grid-cols-2 gap-y-1 gap-x-2">
+										<label v-for="(label, key) in ailmentLabels" :key="key" class="flex items-center cursor-pointer text-[10px] hover:text-white transition-colors">
+											<input type="checkbox" v-model="s[key]" class="w-3 h-3 mr-1 accent-red-500"> {{label}}
+										</label>
+									</div>
+								</div>
+							</div>
+
+							<div class="space-y-2">
+								<div class="bg-gray-800 p-2 rounded border border-gray-600">
+									<label class="text-[10px] font-bold text-green-400 mb-1 block">バフ (強化)</label>
+									<div class="grid grid-cols-4 gap-1 mb-1">
+										<div v-for="k in ['atk','def','spd','mag']" :key="k" class="flex items-center">
+											<span class="text-[9px] w-4 text-gray-400">{{k.toUpperCase().substr(0,1)}}</span>
+											<input type="number" step="0.1" placeholder="1.0" 
+												   :value="s.buff && s.buff[k] ? s.buff[k] : ''" 
+												   @input="updateBuff(s, k, $event.target.value)"
+												   class="text-[10px] h-5 bg-gray-900 border border-gray-700 text-center px-0">
+										</div>
+									</div>
+									<div class="grid grid-cols-2 gap-1 mb-1">
+										<div class="flex items-center">
+											<span class="text-[9px] w-8 text-gray-400">HPリジェ</span>
+											<input type="number" step="0.01" placeholder="0.05"
+												   :value="s.HPRegen || ''" 
+												   @input="s.HPRegen = $event.target.value ? Number($event.target.value) : undefined"
+												   class="text-[10px] h-5 bg-gray-900 border border-gray-700 text-center px-0">
+										</div>
+										<div class="flex items-center">
+											<span class="text-[9px] w-8 text-gray-400">MPリジェ</span>
+											<input type="number" step="0.01" placeholder="0.05"
+												   :value="s.MPRegen || ''" 
+												   @input="s.MPRegen = $event.target.value ? Number($event.target.value) : undefined"
+												   class="text-[10px] h-5 bg-gray-900 border border-gray-700 text-center px-0">
+										</div>
+									</div>
+									
+									<div class="grid grid-cols-1 gap-1">
+										<div class="flex items-center">
+											<span class="text-[9px] w-12 text-blue-300">全属性耐性</span>
+											<input type="number" placeholder="%" 
+												   :value="s.buff && s.buff['elmResUp'] ? s.buff['elmResUp'] : ''" 
+												   @input="updateBuff(s, 'elmResUp', $event.target.value)"
+												   class="text-[10px] h-5 bg-gray-900 border border-gray-700 text-center text-blue-200">
+										</div>
+										
+										<div class="mt-1">
+											<details class="text-[10px]">
+												<summary class="cursor-pointer text-gray-500 hover:text-white">状態異常耐性バフ...</summary>
+												<div class="grid grid-cols-2 gap-1 mt-1 bg-gray-900 p-1 rounded">
+													<div v-for="(label, key) in resistLabels" :key="key" class="flex items-center justify-between px-1">
+														<span class="text-[9px] text-gray-400">{{label}}</span>
+														<input type="number" placeholder="%" 
+															   :value="s.buff && s.buff['resists_'+key] ? s.buff['resists_'+key] : ''"
+															   @input="updateBuff(s, 'resists_'+key, $event.target.value)"
+															   class="w-8 text-[10px] h-4 bg-gray-800 border border-gray-600 text-center px-0">
+													</div>
+												</div>
+											</details>
+										</div>
+									</div>
+								</div>
+
+								<div class="bg-gray-800 p-2 rounded border border-gray-600">
+									<label class="text-[10px] font-bold text-red-400 mb-1 block">デバフ (弱体)</label>
+									<div class="grid grid-cols-4 gap-1 mb-1">
+										<div v-for="k in ['atk','def','spd','mag']" :key="k" class="flex items-center">
+											<span class="text-[9px] w-4 text-gray-400">{{k.toUpperCase().substr(0,1)}}</span>
+											<input type="number" step="0.1" placeholder="1.0" 
+												   :value="s.debuff && s.debuff[k] ? s.debuff[k] : ''" 
+												   @input="updateDebuff(s, k, $event.target.value)"
+												   class="text-[10px] h-5 bg-gray-900 border border-gray-700 text-center text-red-200 px-0">
+										</div>
+									</div>
+									<div class="grid grid-cols-1 gap-1">
+										<div class="flex items-center">
+											<span class="text-[9px] w-12 text-blue-300">全属性耐性</span>
+											<input type="number" placeholder="%" 
+												   :value="s.debuff && s.debuff['elmResDown'] ? s.debuff['elmResDown'] : ''" 
+												   @input="updateDebuff(s, 'elmResDown', $event.target.value)"
+												   class="text-[10px] h-5 bg-gray-900 border border-gray-700 text-center text-red-200">
+										</div>
+
+										<div class="mt-1">
+											<details class="text-[10px]">
+												<summary class="cursor-pointer text-gray-500 hover:text-white">状態異常耐性ダウン...</summary>
+												<div class="grid grid-cols-2 gap-1 mt-1 bg-gray-900 p-1 rounded">
+													<div v-for="(label, key) in resistLabels" :key="key" class="flex items-center justify-between px-1">
+														<span class="text-[9px] text-gray-400">{{label}}</span>
+														<input type="number" placeholder="%" 
+															   :value="s.debuff && s.debuff['resists_'+key] ? s.debuff['resists_'+key] : ''"
+															   @input="updateDebuff(s, 'resists_'+key, $event.target.value)"
+															   class="w-8 text-[10px] h-4 bg-gray-800 border border-gray-600 text-center px-0">
+													</div>
+												</div>
+											</details>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</td>
+					
+					<td class="text-center align-middle">
+						<button @click="removeList(db.SKILLS, db.SKILLS.indexOf(s))" class="btn btn-danger text-xs">×</button>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+
         </div>
     </div>
 
@@ -585,7 +689,7 @@ createApp({
             {id:'items', name:'アイテム'},
             {id:'jobs', name:'職業(習得)'}
         ];
-        const skillTypes = ['物理','魔法','回復','蘇生','強化','弱体','特殊','MP回復'];
+        const skillTypes = ['物理','魔法','回復','蘇生','強化','弱体','特殊','MP回復','通常攻撃'];
         const skillTargets = ['単体','全体','ランダム','自分','なし'];
         const elements = ['火','水','風','雷','光','闇','混沌'];
         
@@ -735,6 +839,30 @@ createApp({
         const updateJobSkill = (job, lv, skillId) => {
             if(skillId) jobSkills[job][lv] = Number(skillId);
             else delete jobSkills[job][lv];
+        };
+
+		// ★追加: バフ更新用ヘルパー関数
+        const updateBuff = (skill, key, value) => {
+            if (!skill.buff) skill.buff = {};
+            if (value === '' || value === null || value === undefined) {
+                delete skill.buff[key];
+                // 空なら buff プロパティ自体を削除してスッキリさせる
+                if (Object.keys(skill.buff).length === 0) delete skill.buff;
+            } else {
+                skill.buff[key] = Number(value);
+            }
+        };
+
+        // ★追加: デバフ更新用ヘルパー関数
+        const updateDebuff = (skill, key, value) => {
+            if (!skill.debuff) skill.debuff = {};
+            if (value === '' || value === null || value === undefined) {
+                delete skill.debuff[key];
+                // 空なら debuff プロパティ自体を削除してスッキリさせる
+                if (Object.keys(skill.debuff).length === 0) delete skill.debuff;
+            } else {
+                skill.debuff[key] = Number(value);
+            }
         };
 
         // --- EXPORT FUNCTION ---
@@ -892,10 +1020,12 @@ createApp({
             savePartial, saveJobFile, saveSystemFile,
             skillFilter, filteredSkills, sortSkills,
             showExport, exportText, toggleExport,
-            addMonsterAct, recalcMonsterActs
+            addMonsterAct, recalcMonsterActs,
+			updateBuff, updateDebuff
         };
     }
 }).mount('#app');
 </script>
 </body>
 </html>
+
