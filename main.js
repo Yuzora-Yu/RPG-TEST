@@ -187,7 +187,7 @@ const App = {
         App.load();
         if(!App.data) { 
             if(window.location.href.indexOf('main.html') === -1) {
-                // window.location.href = 'main.html'; 
+                 window.location.href = 'main.html'; 
             }
             return; 
         }
