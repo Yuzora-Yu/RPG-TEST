@@ -19,13 +19,16 @@ const Battle = {
         SpellSeal: '呪文封印', SkillSeal: '特技封印', HealSeal: '回復封印',HPRegen: 'HP回復' ,MPRegen: 'MP回復'
     },
     
-    // 状態異常と耐性IDの対応表
+    // 状態異常と耐性IDの対応表 (拡張)
     RESIST_MAP: {
         Poison: 'Poison', ToxicPoison: 'Poison',
         Shock: 'Shock',
         Fear: 'Fear',
-        SpellSeal: 'Seal', SkillSeal: 'Seal', HealSeal: 'Seal',
-        PercentDamage: 'InstantDeath',
+        SpellSeal: 'SpellSeal', // ★修正: 個別の封印耐性を参照するように変更
+        SkillSeal: 'SkillSeal', 
+        HealSeal: 'HealSeal',
+        PercentDamage: 'InstantDeath', // 即死ガードで割合ダメも防ぐ
+        InstantDeath: 'InstantDeath',
         Debuff: 'Debuff'
     },
 
@@ -111,6 +114,7 @@ const Battle = {
                 if(!charData) return null;
                 const player = new Player(charData);
                 
+                // ここで呼び出す calcStats には、既にシナジー効果(守護など)が含まれている
                 const stats = App.calcStats(charData);
                 player.hp = Math.min(player.hp, stats.maxHp);
                 player.mp = Math.min(player.mp, stats.maxMp);
@@ -126,14 +130,38 @@ const Battle = {
                 player.finDmg = stats.finDmg || 0;
                 player.finRed = stats.finRed || 0;
                 
+				// パッシブ・シナジー取得
                 player.passive = Battle.getPassives(player);
 				
-                //Battle.initBattleStatus(player);
+				// ★追加: 「スキル習得」シナジー (混沌の刃/壁)
+                // passiveに { grantSkill: スキルID } が入っている場合
+                if (player.equips) {
+                    Object.values(player.equips).forEach(eq => {
+                        if (eq.isSynergy && eq.effect === 'grantSkill' && typeof App.checkSynergy === 'function') {
+                             const syn = App.checkSynergy(eq);
+                             if (syn && syn.value) {
+                                 // スキルを未習得なら一時的に追加
+                                 if (!player.skills.find(s => s.id === syn.value)) {
+                                     const newSkill = DB.SKILLS.find(s => s.id === syn.value);
+                                     if (newSkill) player.skills.push(newSkill);
+                                 }
+                             }
+                        }
+                    });
+                }
+				
 				// ★修正: 保存された状態があれば復元、なければ初期化
                 if (charData.battleStatus) {
                     player.battleStatus = JSON.parse(JSON.stringify(charData.battleStatus));
                 } else {
                     Battle.initBattleStatus(player);
+                }
+				
+				// ★追加: 「軍神」シナジー (開幕バフ)
+                // 戦闘開始時(ターン数undefinedの永続バフとして付与)
+                if (player.passive.warGod) {
+                    player.battleStatus.buffs['atk'] = { val: 1.5, turns: null };
+                    player.battleStatus.buffs['mag'] = { val: 1.5, turns: null };
                 }
 				
                 return player;
@@ -241,20 +269,49 @@ const Battle = {
         actor.battleStatus = { buffs: {}, debuffs: {}, ailments: {} };
     },
 
+    // ★修正: ステータス取得時にシナジー補正を適用
     getBattleStat: (actor, key) => {
         let val = (actor[key] !== undefined) ? actor[key] : 0;
         if (val === 0 && typeof actor.getStat === 'function') val = actor.getStat(key);
         if (key === 'maxHp') val = actor.baseMaxHp;
         if (key === 'maxMp') val = actor.baseMaxMp;
-        if (key === 'resists') return actor.resists || val || {};
+
+        // ★修正: 耐性取得時、バフ(加算)とデバフ(減算)を計算
+        if (key === 'resists') {
+            const base = actor.resists || val || {};
+            const res = { ...base }; 
+
+            // バフ (加算)
+            if (actor.battleStatus && actor.battleStatus.buffs) {
+                for (let bKey in actor.battleStatus.buffs) {
+                    if (bKey.startsWith('resists_')) {
+                        const ailment = bKey.replace('resists_', '');
+                        res[ailment] = (res[ailment] || 0) + actor.battleStatus.buffs[bKey].val;
+                    }
+                }
+            }
+
+            // ★追加: デバフ (減算)
+            if (actor.battleStatus && actor.battleStatus.debuffs) {
+                for (let dKey in actor.battleStatus.debuffs) {
+                    if (dKey.startsWith('resists_')) {
+                        const ailment = dKey.replace('resists_', '');
+                        // デバフ値(例:30)を引く
+                        res[ailment] = (res[ailment] || 0) - actor.battleStatus.debuffs[dKey].val;
+                    }
+                }
+            }
+            return res;
+        }
 
         const b = actor.battleStatus;
         if (!b) return val;
+        
         if (b.buffs[key]) val = Math.floor(val * b.buffs[key].val);
         if (b.debuffs[key]) val = Math.floor(val * b.debuffs[key].val);
         return val;
     },
-
+	
     generateNewEnemies: (isBoss) => {
         const newEnemies = [];
         const floor = App.data.progress.floor || 1; 
@@ -1195,27 +1252,27 @@ const Battle = {
                     }
 
                     const finDmgVal = Battle.getBattleStat(actor, 'finDmg') || 0; 
-                    if (finDmgVal > 0) bonusRate += finDmgVal;
+					if(finDmgVal > 0) bonusRate += finDmgVal;
 
-                    let finRed = Battle.getBattleStat(targetToHit, 'finRed') || 0;
-                    if (targetToHit.passive && targetToHit.passive.finRed10) finRed += 10;
-                    if (finRed > 80) finRed = 80;
-                    if (finRed > 0) cutRate += finRed;
+					let finRed = Battle.getBattleStat(targetToHit, 'finRed') || 0;
+					// パッシブスキル等の加算は残すが、シナジー分の重複記述は削除
+					if (targetToHit.passive && targetToHit.passive.finRed10) finRed += 10;
+					
+					if (finRed > 80) finRed = 80; 
+					if (finRed > 0) cutRate += finRed;
 
-                    let dmg = baseBaseDmg;
+					let dmg = baseDmgCalc;
+					if (dmg > 0) {
+						dmg = dmg * (1.0 + bonusRate / 100);
+						dmg = dmg * (1.0 - cutRate / 100);
+						dmg = dmg * (0.9 + Math.random() * 0.2);
+						if (targetToHit.status && targetToHit.status.defend) dmg = dmg * 0.5;
+						dmg = Math.floor(dmg);
+						if (!isImmune && dmg < 1) dmg = 1;
+					}
+					if (isImmune) dmg = 0;
 
-                    if (!isImmune) {
-                        if (bonusRate > 0) dmg = dmg * (1.0 + bonusRate / 100);
-                        dmg = dmg * (1.0 - cutRate / 100);
-                        dmg = dmg * (0.9 + Math.random() * 0.2);
-                        if (targetToHit.status && targetToHit.status.defend) dmg = dmg * 0.5;
-                        dmg = Math.floor(dmg);
-                        if (dmg < 1) dmg = 1;
-                    } else {
-                        dmg = 0;
-                    }
-
-                    targetToHit.hp -= dmg;
+					targetToHit.hp -= dmg;
                     
                     let dmgColor = '#fff';
                     if(element === '火') dmgColor = '#f88'; 
@@ -1305,48 +1362,62 @@ const Battle = {
                 if (type === 'Debuff' && successRate >= 200) return false;
 
                 const resistKey = Battle.RESIST_MAP[type] || type;
-                const resistVal = (t.getStat('resists') || {})[resistKey] || 0;
+                // ★修正: 耐性値の取得 (getBattleStatで加護などが乗った値を取得)
+                const resistVal = (Battle.getBattleStat(t, 'resists') || {})[resistKey] || 0;
                 if (Math.random() * 100 < resistVal) return true;
                 return false;
             };
 
-            // ★修正: バフ (強化) 処理
+            // ★修正: バフ (強化) 処理 (ログまとめ対応版)
             if (d.buff) {
+                let resistCount = 0;      // 耐性バフの適用数
+                let lastResistName = "";  // 最後に適用した耐性名（1つだけの時に使用）
+
                 for (let key in d.buff) {
-                    const val = d.buff[key]; // 新しい倍率 (例: 1.5)
+                    const val = d.buff[key];
                     const turn = d.turn || null; 
                     const name = Battle.statNames[key] || key.toUpperCase();
 
-                    // 全属性耐性アップ (累積なし、上限100)
+                    // ■ 全属性耐性アップ (特殊処理)
                     if (key === 'elmResUp') {
                         let newVal = val;
-                        if (newVal > 100) newVal = 100; // 上限100%
-                        if (newVal < -100) newVal = -100; // 下限-100%
-                        
-                        // 累積せず上書き (ターンも更新)
+                        if (newVal > 100) newVal = 100;
+                        if (newVal < -100) newVal = -100;
                         t.battleStatus.buffs[key] = { val: newVal, turns: turn };
                         Battle.log(`【${t.name}】の ${name} が あがった！`);
                     }
-                    // ステータスアップ (累積あり、最大2.5倍)
+                    // ■ 状態異常耐性アップ (resists_XX)
+                    else if (key.startsWith('resists_')) {
+                        // 値をそのままセット（加算用）
+                        t.battleStatus.buffs[key] = { val: val, turns: turn };
+                        
+                        // カウントアップと名前の記録（ログはここでは出さない）
+                        resistCount++;
+                        const ailment = key.replace('resists_', '');
+                        lastResistName = Battle.statNames[ailment] || ailment;
+                    }
+                    // ■ 通常ステータスアップ (atk, defなど)
                     else {
-                        // 現在の倍率を取得 (なければ1.0)
                         let currentVal = (t.battleStatus.buffs[key] && t.battleStatus.buffs[key].val) || 1.0;
-                        
-                        // 累積計算 (乗算)
                         let newVal = currentVal * val;
-                        
-                        // 上限キャップ (最大2.5倍)
                         if (newVal > 2.5) newVal = 2.5;
-
-                        // 適用 (ターン数は上書きリセット)
                         t.battleStatus.buffs[key] = { val: newVal, turns: turn };
-                        
-                        // ログに現在の倍率を表示
                         Battle.log(`【${t.name}】の ${name} があがった！`);
                     }
                 }
-            }
 
+                // ★追加: 耐性バフのログをまとめて出力
+                if (resistCount > 0) {
+                    if (resistCount === 1) {
+                        // 1つだけなら具体名で表示 (例: 毒耐性が あがった！)
+                        Battle.log(`【${t.name}】の ${lastResistName}耐性 があがった！`);
+                    } else {
+                        // 2つ以上ならまとめて表示
+                        Battle.log(`【${t.name}】の 状態異常耐性 があがった！`);
+                    }
+                }
+            }
+			
             // リジェネ系 (累積なし、上書き)
             if (d.HPRegen) { 
                 t.battleStatus.buffs['HPRegen'] = { val: d.HPRegen, turns: d.turn }; 
@@ -1365,48 +1436,62 @@ const Battle = {
                 Battle.log(`【${t.name}】の 能力低下が 元に戻った！`);
             }
             
+			/* battle.js の applyEffects 内、if (d.debuff) ブロックを修正 */
+
             // ★修正: デバフ (弱体) 処理
             if (d.debuff) {
-                // 耐性チェック (200%貫通ロジックは checkResist 内に記述済)
+                // 耐性チェック (Debuff耐性で防がれるか確認)
                 if (!checkResist('Debuff')) {
+                    
+                    let resistDownCount = 0;      // 耐性ダウンの適用数
+                    let lastResistName = "";      // 最後に適用した耐性名
+
                     for (let key in d.debuff) {
-                        const val = d.debuff[key]; // 新しい倍率 (例: 0.8)
+                        const val = d.debuff[key];
                         const turn = d.turn || null;
                         const name = Battle.statNames[key] || key.toUpperCase();
 
-                        // 全属性耐性ダウン (累積なし)
+                        // ■ 全属性耐性ダウン (既存)
                         if (key === 'elmResDown') {
                             let newVal = val;
                             if (newVal > 100) newVal = 100;
                             if (newVal < -100) newVal = -100;
-
-                            // 累積せず上書き
                             t.battleStatus.debuffs[key] = { val: newVal, turns: turn };
                             Battle.log(`【${t.name}】の ${name} が さがった！`);
                         }
-                        // ステータスダウン (累積あり、最小0.1倍)
+                        // ■ 状態異常耐性ダウン (resists_XX) - ★追加
+                        else if (key.startsWith('resists_')) {
+                            // 値をそのままセット (getBattleStatで減算に使用)
+                            t.battleStatus.debuffs[key] = { val: val, turns: turn };
+                            
+                            resistDownCount++;
+                            const ailment = key.replace('resists_', '');
+                            lastResistName = Battle.statNames[ailment] || ailment;
+                        }
+                        // ■ 通常ステータスダウン (atk, defなど - 既存)
                         else {
-                            // 現在の倍率を取得 (なければ1.0)
                             let currentVal = (t.battleStatus.debuffs[key] && t.battleStatus.debuffs[key].val) || 1.0;
-
-                            // 累積計算 (乗算)
                             let newVal = currentVal * val;
-
-                            // 下限キャップ (最小0.1倍)
                             if (newVal < 0.1) newVal = 0.1;
-
-                            // 適用 (ターン数は上書きリセット)
                             t.battleStatus.debuffs[key] = { val: newVal, turns: turn };
-
-                            // ログに現在の倍率を表示
                             Battle.log(`【${t.name}】の ${name} がさがった！`);
                         }
                     }
+
+                    // ★追加: 耐性ダウンのログをまとめて出力
+                    if (resistDownCount > 0) {
+                        if (resistDownCount === 1) {
+                            Battle.log(`【${t.name}】の ${lastResistName}耐性 がさがった！`);
+                        } else {
+                            Battle.log(`【${t.name}】の 状態異常耐性 がさがった！`);
+                        }
+                    }
+
                 } else {
                     Battle.log(`【${t.name}】には きかなかった！`);
                 }
             }
-			
+
             if (d.buff_reset) {
                 t.battleStatus.buffs = {};
                 Battle.log(`【${t.name}】の良い効果がかき消された！`);
@@ -1517,10 +1602,15 @@ const Battle = {
                 if (data && data.IgnoreDefense) ignoreDefense = true;
                 if (cmd.type === 'skill' && actor.passive && actor.passive.atkIgnoreDef && Math.random() < 0.2) ignoreDefense = true;
 
+				// ★追加: 「貫通」シナジー (攻撃時20%で防御無視)
+                if (isPhysical && actor.passive && actor.passive.pierce && Math.random() < 0.2) {
+                    ignoreDefense = true;
+                }
+
                 if (isPhysical) {
                     atkVal = Battle.getBattleStat(actor, 'atk'); 
                     defVal = Battle.getBattleStat(targetToHit, 'def');
-                    if (ignoreDefense) Battle.log(`【${actor.name}】の${skillName}は防御を無視！`);
+                    if (ignoreDefense) Battle.log(`かいしんの一撃！`); //(`【${actor.name}】の${skillName}は防御を貫いた！`);
                 } else { 
                     atkVal = Battle.getBattleStat(actor, 'mag'); 
                     defVal = Battle.getBattleStat(targetToHit, 'mag'); 
@@ -1543,7 +1633,7 @@ const Battle = {
 
                 if (!isPhysical && cmd.type === 'skill' && actor.passive && actor.passive.magCrit && Math.random() < 0.2) { 
                     baseDmgCalc *= 2; 
-                    Battle.log(`【${actor.name}】の${skillName}が魔力暴走！`); 
+                    Battle.log(`魔力が暴走する！`);  //(`【${actor.name}】の${skillName}が魔力暴走！`); 
                 }
 
                 let bonusRate = 0, cutRate = 0, isImmune = false;
@@ -1559,8 +1649,8 @@ const Battle = {
 
                 const finDmgVal = Battle.getBattleStat(actor, 'finDmg') || 0; 
                 if(finDmgVal > 0) bonusRate += finDmgVal;
+				
                 let finRed = Battle.getBattleStat(targetToHit, 'finRed') || 0;
-                if (targetToHit.passive && targetToHit.passive.finRed10) finRed += 10;
                 if (finRed > 80) finRed = 80; if (finRed > 0) cutRate += finRed;
 
                 let dmg = baseDmgCalc;
@@ -1594,7 +1684,38 @@ const Battle = {
                          const healed = actor.hp - oldHp; if(healed > 0) Battle.log(`【${actor.name}】は吸収効果でHPを${healed}回復した！`);
                     }
                 }
+				
+				// ★追加: 「吸魔」シナジー (与ダメ1% MP回復)
+                if (dmg > 0 && actor.passive && actor.passive.drainMp) {
+                    const mpDrain = Math.max(1, Math.floor(dmg * 0.01));
+                    const oldMp = actor.mp;
+                    actor.mp = Math.min(actor.baseMaxMp, actor.mp + mpDrain);
+                    // ログは出しすぎるとうるさいので省略、あるいは統合してもよい
+                }
+				
+				// ★追加: 攻撃時状態異常付与 (attack_Poison / attack_Fear)
+                if (dmg > 0 && isPhysical) {
+                    const tryStatus = (key, name, ailmentKey) => {
+                        // actor.getStat で stats 内の attack_XX を参照
+                        const chance = (actor.getStat(key) || 0);
+                        if (chance > 0 && Math.random() * 100 < chance) {
+                            // 耐性チェック
+                            const resistKey = Battle.RESIST_MAP[ailmentKey] || ailmentKey;
+                            const resistVal = (Battle.getBattleStat(targetToHit, 'resists') || {})[resistKey] || 0;
+                            
+                            if (Math.random() * 100 >= resistVal) {
+                                if (!targetToHit.battleStatus.ailments[ailmentKey]) {
+                                    targetToHit.battleStatus.ailments[ailmentKey] = { turns: 3, chance: (ailmentKey==='Fear'?0.5:null) };
+                                    Battle.log(`【${targetToHit.name}】は ${name}！`);
+                                }
+                            }
+                        }
+                    };
 
+                    tryStatus('attack_Poison', '毒におかされた', 'Poison');
+                    tryStatus('attack_Fear', '怯えてしまった', 'Fear');
+                }
+				
                 if (cmd.type === 'skill') {
                     //if (Math.random() * 100 <= successRate) {
                     //    applyEffects(targetToHit, data);
@@ -1682,9 +1803,17 @@ const Battle = {
             widthPerEnemy = 40;  
             scaleFactor = 1.0;   
             maxPixelWidth = 200; 
-			paddingBottomVal = "20px"; // ★追加: ボス1体の時だけ10pxにする
-			marginTopVal = "-10px"; // ★追加: ボス1体の時だけ0pxにする
+			paddingBottomVal = "20px"; // ★追加: ボスの時だけ10pxにする
+			marginTopVal = "-10px"; // ★追加: ボスの時だけ0pxにする
         } 
+        else if (isBoss && totalCount === 4) { 
+            scaleFactor = 0.8; 
+			paddingBottomVal = "0px"; // ★追加: ボスの時だけ0pxにする
+		}
+        else if (isBoss && totalCount === 3) { 
+            widthPerEnemy = 30; scaleFactor = 1.0; 
+			paddingBottomVal = "10px"; // ★追加: ボスの時だけ0pxにする
+		}
         else if (totalCount === 3) { 
             widthPerEnemy = 30; scaleFactor = 1.0; 
         }
@@ -1887,34 +2016,75 @@ const Battle = {
                 <div style="font-size:11px; color:#aaa; margin-bottom:4px;">状態変化</div>
         `;
 
-        // バフ・デバフ一覧作成 (ここは変更なし)
+        // バフ・デバフ一覧作成
         const statusList = [];
         const b = char.battleStatus;
         if (b) {
+            // 状態異常 (Ailments) - 変更なし
             for (let key in b.ailments) {
                 const turns = b.ailments[key].turns;
                 const name = Battle.statNames[key] || key;
                 statusList.push(`<div style="color:#f88;">● ${name} <span style="font-size:10px; color:#aaa;">(${turns}T)</span></div>`);
             }
+
+            // バフ (Buffs) - ★修正: 耐性系の表示対応
             for (let key in b.buffs) {
                 const turns = b.buffs[key].turns;
                 const val = b.buffs[key].val;
-                const name = Battle.statNames[key] || key;
                 const tStr = (turns !== null && turns !== undefined) ? `${turns}T` : '∞';
+                
+                let name = Battle.statNames[key] || key;
                 let valStr = '';
-                if(key==='elmResUp') valStr = `(${val}%)`;
-                else if(key!=='HPRegen' && key!=='MPRegen') valStr = `(x${val.toFixed(2)})`;
+
+                // 全属性耐性
+                if(key === 'elmResUp') {
+                    name = '全属性耐性';
+                    valStr = `(+${val}%)`;
+                }
+                // ★追加: 状態異常耐性 (resists_XX)
+                else if (key.startsWith('resists_')) {
+                    const baseKey = key.replace('resists_', '');
+                    const label = Battle.statNames[baseKey] || baseKey;
+                    name = `${label}耐性`; // 例: 毒耐性
+                    valStr = `(+${val}%)`;
+                }
+                // HP/MPリジェネ
+                else if(key === 'HPRegen' || key === 'MPRegen') {
+                    valStr = ''; // リジェネは数値表示なし
+                }
+                // 通常ステータス (倍率表示)
+                else {
+                    valStr = `(x${val.toFixed(2)})`;
+                }
                 
                 statusList.push(`<div style="color:#8f8;">▲ ${name}${valStr} <span style="font-size:10px; color:#aaa;">(${tStr})</span></div>`);
             }
+
+            // デバフ (Debuffs) - ★修正: 耐性系の表示対応
             for (let key in b.debuffs) {
                 const turns = b.debuffs[key].turns;
                 const val = b.debuffs[key].val;
-                const name = Battle.statNames[key] || key;
                 const tStr = (turns !== null && turns !== undefined) ? `${turns}T` : '∞';
+                
+                let name = Battle.statNames[key] || key;
                 let valStr = '';
-                if(key==='elmResDown') valStr = `(${val}%)`;
-                else valStr = `(x${val.toFixed(2)})`;
+
+                // 全属性耐性ダウン
+                if(key === 'elmResDown') {
+                    name = '全属性耐性';
+                    valStr = `(${val}%)`; // マイナス表記は▼で表現されるので数値はそのまま
+                }
+                // ★追加: 状態異常耐性ダウン (resists_XX)
+                else if (key.startsWith('resists_')) {
+                    const baseKey = key.replace('resists_', '');
+                    const label = Battle.statNames[baseKey] || baseKey;
+                    name = `${label}耐性`;
+                    valStr = `(-${val}%)`;
+                }
+                // 通常ステータス (倍率表示)
+                else {
+                    valStr = `(x${val.toFixed(2)})`;
+                }
 
                 statusList.push(`<div style="color:#88f;">▼ ${name}${valStr} <span style="font-size:10px; color:#aaa;">(${tStr})</span></div>`);
             }
