@@ -33,8 +33,16 @@ const Menu = {
     },
     
     isMenuOpen: () => {
-        return document.getElementById('menu-overlay').style.display !== 'none' ||
-               document.querySelectorAll('.sub-screen[style*="flex"]').length > 0;
+        // ★修正: 文字列検索(style*="flex")をやめ、各要素の display プロパティを直接チェックする
+        // (これにより、flex-direction等のスタイル設定があっても誤判定しなくなる)
+        
+        if (document.getElementById('menu-overlay').style.display !== 'none') return true;
+        
+        const subs = document.querySelectorAll('.sub-screen');
+        for (let i = 0; i < subs.length; i++) {
+            if (subs[i].style.display !== 'none' && subs[i].style.display !== '') return true;
+        }
+        return false;
     },
 
     closeAll: () => {
