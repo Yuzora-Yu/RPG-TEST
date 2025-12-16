@@ -1675,11 +1675,15 @@ const Battle = {
         let widthPerEnemy = 24; 
         let scaleFactor = 1.0; 
         let maxPixelWidth = 120;
+		let paddingBottomVal = "30px"; // ★追加: デフォルトは40px
+		let marginTopVal = "10px"; // ★追加: デフォルトは3px
 
         if (isBoss && totalCount === 1) {
             widthPerEnemy = 40;  
             scaleFactor = 1.0;   
             maxPixelWidth = 200; 
+			paddingBottomVal = "20px"; // ★追加: ボス1体の時だけ10pxにする
+			marginTopVal = "-10px"; // ★追加: ボス1体の時だけ0pxにする
         } 
         else if (totalCount === 3) { 
             widthPerEnemy = 30; scaleFactor = 1.0; 
@@ -1710,7 +1714,7 @@ const Battle = {
                 flex-direction: column;
                 justify-content: flex-end;
                 align-items: center;
-                padding-bottom: 0;
+                padding-bottom: ${paddingBottomVal};
             `;
 
             // ★修正3: 死んでいる(または逃げた)場合は「見えなくする」だけ
@@ -1753,8 +1757,7 @@ const Battle = {
                     ${imgHtml}
                     <div style="
                         width: 140%;
-                        /* margin-top: -5px; ← これを調整 */
-                        margin-top: 5px; /* 画像を下げた分、テキストとの隙間を調整 */
+                        margin-top: ${marginTopVal}; /* ★修正: 変数を適用 */
                         display: flex; 
                         flex-direction: column; 
                         align-items: center; 
