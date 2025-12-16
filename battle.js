@@ -1261,7 +1261,7 @@ const Battle = {
 					if (finRed > 80) finRed = 80; 
 					if (finRed > 0) cutRate += finRed;
 
-					let dmg = baseDmgCalc;
+					let dmg = baseBaseDmg;
 					if (dmg > 0) {
 						dmg = dmg * (1.0 + bonusRate / 100);
 						dmg = dmg * (1.0 - cutRate / 100);
