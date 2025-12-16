@@ -758,60 +758,6 @@ const App = {
         return Math.floor(base * rarityMult);
     },
 
-    gainExp: (charData, expGain) => {
-        if (!charData.exp) charData.exp = 0;
-        charData.exp += expGain;
-        let logs = [];
-        
-        // レベル上限100
-        while (charData.level < 100) {
-            const nextExp = App.getNextExp(charData);
-            if (charData.exp >= nextExp) {
-                charData.exp -= nextExp;
-                charData.level++;
-                
-                // ★追加: SPを1獲得
-                charData.sp = (charData.sp || 0) + 1;
-
-                // DBの基礎値を取得
-                const master = DB.CHARACTERS.find(c => c.id === charData.charId) || charData;
-
-                // 成長率: 4% 〜 8%
-                const minRate = 0.04;
-                const maxRate = 0.08;
-                const rate = minRate + Math.random() * (maxRate - minRate);
-
-                const incHp = Math.max(1, Math.floor((master.hp || 100) * rate));
-                const incMp = Math.max(1, Math.floor((master.mp || 50) * rate));
-                const incAtk = Math.max(1, Math.floor((master.atk || 10) * rate));
-                const incDef = Math.max(1, Math.floor((master.def || 10) * rate));
-                const incSpd = Math.max(1, Math.floor((master.spd || 10) * rate));
-                const incMag = Math.max(1, Math.floor((master.mag || 10) * rate));
-
-                charData.hp += incHp; charData.mp += incMp;
-                charData.atk += incAtk; charData.def += incDef;
-                charData.spd += incSpd; charData.mag += incMag;
-                
-                // HP/MP全回復
-                const stats = App.calcStats(charData);
-                charData.currentHp = stats.maxHp;
-                charData.currentMp = stats.maxMp;
-
-                // ログにSP獲得も追記
-                let logMsg = `${charData.name}はLv${charData.level}になった！(SP+1)<br>HP+${incHp}, 攻+${incAtk}...`;
-                
-                const newSkill = App.checkNewSkill(charData);
-                if (newSkill) {
-                    if(!charData.skills) charData.skills = [];
-                    // 本来はインスタンス側で管理するが、ログ用にチェック
-                    logMsg += `<br><span style="color:#ffff00;">${newSkill.name}を覚えた！</span>`;
-                }
-                logs.push(logMsg);
-            } else { break; }
-        }
-        return logs;
-    },
-
     checkNewSkill: (charData) => {
         const table = JOB_SKILLS[charData.job];
         if (table && table[charData.level]) return DB.SKILLS.find(s => s.id === table[charData.level]);
