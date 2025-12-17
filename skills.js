@@ -651,7 +651,7 @@ window.SKILLS_DATA = [
         "id": 83,
         "name": "臥薪嘗胆",
         "type": "強化",
-        "target": "単体",
+        "target": "自分",
         "mp": 250,
         "rate": 0,
         "count": 0,
