@@ -1137,8 +1137,7 @@ const Battle = {
                             Battle.log(`【${t.name}】は生き返った！`); 
                         }
                         else Battle.log(`【${t.name}】には効果がなかった`);
-                    }
-                    } else if (item.type === '回復') {
+                    } else if (item.type === 'HP回復') {
                         if(!t.isDead) {
                             let rec = item.val; if (item.val >= 9999) rec = t.baseMaxHp;
                             t.hp = Math.min(t.baseMaxHp, t.hp + rec); Battle.log(`【${t.name}】のHPが${rec}回復！`);
