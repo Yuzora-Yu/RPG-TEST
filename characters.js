@@ -82,8 +82,8 @@ window.CHARACTERS_DATA = [
         "spd": 90,
         "mag": 160,
         "lbSkills": {
-            "50": 404,
-            "99": 407
+            "50": 921,
+            "99": 55
         },
         "sp": 1
     },
@@ -124,7 +124,7 @@ window.CHARACTERS_DATA = [
     {
         "id": 107,
         "name": "トム",
-        "job": "狩人",
+        "job": "武闘家",
         "rarity": "R",
         "hp": 360,
         "mp": 250,
@@ -134,14 +134,14 @@ window.CHARACTERS_DATA = [
         "mag": 60,
         "lbSkills": {
             "50": 605,
-            "99": 105
+            "99": 920
         },
         "sp": 1
     },
     {
         "id": 108,
         "name": "リサ",
-        "job": "商人",
+        "job": "盗賊",
         "rarity": "R",
         "hp": 400,
         "mp": 200,
@@ -158,7 +158,7 @@ window.CHARACTERS_DATA = [
     {
         "id": 109,
         "name": "ガイル",
-        "job": "傭兵",
+        "job": "戦士",
         "rarity": "R",
         "hp": 480,
         "mp": 100,
@@ -175,7 +175,7 @@ window.CHARACTERS_DATA = [
     {
         "id": 110,
         "name": "サラ",
-        "job": "シスター",
+        "job": "僧侶",
         "rarity": "R",
         "hp": 310,
         "mp": 580,
@@ -202,7 +202,7 @@ window.CHARACTERS_DATA = [
         "mag": 160,
         "lbSkills": {
             "50": 408,
-            "99": 905
+            "99": 421
         },
         "sp": 1
     },
@@ -218,7 +218,7 @@ window.CHARACTERS_DATA = [
         "spd": 100,
         "mag": 220,
         "lbSkills": {
-            "50": 24,
+            "50": 57,
             "99": 903
         },
         "sp": 1
@@ -235,7 +235,7 @@ window.CHARACTERS_DATA = [
         "spd": 200,
         "mag": 100,
         "lbSkills": {
-            "50": 701,
+            "50": 905,
             "99": 413
         },
         "sp": 1
@@ -260,7 +260,7 @@ window.CHARACTERS_DATA = [
     {
         "id": 205,
         "name": "バロン",
-        "job": "ダークナイト",
+        "job": "バトルマスター",
         "rarity": "SR",
         "hp": 650,
         "mp": 300,
@@ -269,7 +269,7 @@ window.CHARACTERS_DATA = [
         "spd": 90,
         "mag": 90,
         "lbSkills": {
-            "50": 203,
+            "50": 55,
             "99": 411
         },
         "sp": 1
@@ -277,7 +277,7 @@ window.CHARACTERS_DATA = [
     {
         "id": 206,
         "name": "ミネルバ",
-        "job": "ウィザード",
+        "job": "賢者",
         "rarity": "SR",
         "hp": 420,
         "mp": 600,
@@ -286,8 +286,8 @@ window.CHARACTERS_DATA = [
         "spd": 120,
         "mag": 250,
         "lbSkills": {
-            "50": 404,
-            "99": 410
+            "50": 415,
+            "99": 63
         },
         "sp": 1
     },
@@ -311,7 +311,7 @@ window.CHARACTERS_DATA = [
     {
         "id": 208,
         "name": "リン",
-        "job": "拳法家",
+        "job": "バトルマスター",
         "rarity": "SR",
         "hp": 580,
         "mp": 180,
@@ -337,7 +337,7 @@ window.CHARACTERS_DATA = [
         "spd": 150,
         "mag": 180,
         "lbSkills": {
-            "50": 62,
+            "50": 109,
             "99": 24
         },
         "sp": 1
@@ -345,7 +345,7 @@ window.CHARACTERS_DATA = [
     {
         "id": 210,
         "name": "ゴードン",
-        "job": "海賊",
+        "job": "侍",
         "rarity": "SR",
         "hp": 680,
         "mp": 220,
@@ -355,7 +355,7 @@ window.CHARACTERS_DATA = [
         "mag": 70,
         "lbSkills": {
             "50": 22,
-            "99": 106
+            "99": 118
         },
         "sp": 1
     },
@@ -371,15 +371,15 @@ window.CHARACTERS_DATA = [
         "spd": 160,
         "mag": 120,
         "lbSkills": {
-            "50": 105,
-            "99": 405
+            "50": 405,
+            "99": 107
         },
         "sp": 1
     },
     {
         "id": 303,
         "name": "ティナ",
-        "job": "召喚士",
+        "job": "天地雷鳴士",
         "rarity": "SSR",
         "hp": 750,
         "mp": 800,
@@ -388,7 +388,7 @@ window.CHARACTERS_DATA = [
         "spd": 140,
         "mag": 300,
         "lbSkills": {
-            "50": 404,
+            "50": 921,
             "99": 416
         },
         "sp": 1
@@ -396,7 +396,7 @@ window.CHARACTERS_DATA = [
     {
         "id": 304,
         "name": "クラウド",
-        "job": "ソルジャー",
+        "job": "ゴッドハンド",
         "rarity": "SSR",
         "hp": 950,
         "mp": 350,
@@ -405,15 +405,15 @@ window.CHARACTERS_DATA = [
         "spd": 150,
         "mag": 100,
         "lbSkills": {
-            "50": 103,
-            "99": 111
+            "50": 907,
+            "99": 926
         },
         "sp": 1
     },
     {
         "id": 305,
         "name": "セシル",
-        "job": "聖騎士",
+        "job": "パラディン",
         "rarity": "SSR",
         "hp": 1000,
         "mp": 500,
@@ -430,7 +430,7 @@ window.CHARACTERS_DATA = [
     {
         "id": 306,
         "name": "エッジ",
-        "job": "上忍",
+        "job": "忍者",
         "rarity": "SSR",
         "hp": 800,
         "mp": 450,
@@ -440,7 +440,7 @@ window.CHARACTERS_DATA = [
         "mag": 150,
         "lbSkills": {
             "50": 110,
-            "99": 414
+            "99": 908
         },
         "sp": 1
     },
