@@ -18290,6 +18290,11 @@ window.MONSTERS_DATA = [
                 "id": 57,
                 "rate": 5,
                 "condition": 0
+            },
+            {
+                "id": 90,
+                "rate": 5,
+                "condition": 2
             }
         ],
         "elmRes": {
@@ -18794,7 +18799,7 @@ window.MONSTERS_DATA = [
             },
             {
                 "id": 907,
-                "rate": 10,
+                "rate": 5,
                 "condition": 2
             },
             {
@@ -18806,6 +18811,11 @@ window.MONSTERS_DATA = [
                 "id": 57,
                 "rate": 5,
                 "condition": 0
+            },
+            {
+                "id": 90,
+                "rate": 5,
+                "condition": 2
             }
         ],
         "elmRes": {
@@ -19030,9 +19040,9 @@ window.MONSTERS_DATA = [
                 "condition": 1
             },
             {
-                "id": 3,
+                "id": 420,
                 "rate": 5,
-                "condition": 0
+                "condition": 2
             }
         ],
         "elmRes": {
@@ -19161,7 +19171,7 @@ window.MONSTERS_DATA = [
         "acts": [
             {
                 "id": 923,
-                "rate": 20,
+                "rate": 15,
                 "condition": 0
             },
             {
@@ -19181,7 +19191,7 @@ window.MONSTERS_DATA = [
             },
             {
                 "id": 906,
-                "rate": 15,
+                "rate": 10,
                 "condition": 2
             },
             {
@@ -19191,6 +19201,11 @@ window.MONSTERS_DATA = [
             },
             {
                 "id": 908,
+                "rate": 10,
+                "condition": 2
+            },
+            {
+                "id": 90,
                 "rate": 10,
                 "condition": 2
             }
