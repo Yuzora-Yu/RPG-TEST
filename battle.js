@@ -1128,8 +1128,16 @@ const Battle = {
                 for (let t of targets) {
                     if (!t) continue;
                     if (item.type === '蘇生') {
-                        if (t.isDead) { t.isDead = false; t.hp = Math.floor(t.baseMaxHp * 0.5); Battle.log(`【${t.name}】は生き返った！`); }
+                        if (t.isDead) { 
+                            t.isDead = false; 
+                            // item.rate があれば使い、なければ1(100%)とする
+                            let rate = (item.rate !== undefined) ? item.rate : 1;
+                            t.hp = Math.floor(t.baseMaxHp * rate); 
+                            if(t.hp < 1) t.hp = 1;
+                            Battle.log(`【${t.name}】は生き返った！`); 
+                        }
                         else Battle.log(`【${t.name}】には効果がなかった`);
+                    }
                     } else if (item.type === 'HP回復') {
                         if(!t.isDead) {
                             let rec = item.val; if (item.val >= 9999) rec = t.baseMaxHp;
@@ -1180,7 +1188,9 @@ const Battle = {
         if (cmd.type === 'skill') {
             skillName = data.name;
             isPhysical = (data.type === '物理' || data.type === '通常攻撃');
-            skillRate = data.rate;
+            //skillRate = data.rate;
+			// ★修正: skillRateがundefinedにならないよう安全策
+            if (data.rate !== undefined) skillRate = data.rate;
             baseDmg = data.base;
             mpCost = data.mp;
             effectType = data.type;
@@ -1538,21 +1548,29 @@ const Battle = {
             if (!t) continue;
 
             if (effectType && ['回復','蘇生','強化','弱体','特殊','MP回復'].includes(effectType)) {
+                // ★修正: 成功率判定 (SuccessRate)
+                // 100未満の場合のみ判定を行い、失敗したら「ミス！」と表示してスキップ
                 if (successRate < 100 && Math.random() * 100 > successRate) {
                     Battle.log(`ミス！ 【${t.name}】には効かなかった！`);
                     continue;
                 }
 
+                // ★修正: 蘇生処理 (SuccessRate判定を通過後に実行)
                 if (effectType === '蘇生') {
                     if (t.isDead) { 
                         t.isDead = false; 
-                        t.hp = Math.floor(t.baseMaxHp * (data.rate || 0.5)); 
+                        // skillRate(data.rate) を使用して回復量を計算
+                        // 未設定(undefined)の場合はデフォルト0.5 (50%)
+                        let rate = (skillRate !== undefined) ? skillRate : 0.5;
+                        t.hp = Math.floor(t.baseMaxHp * rate);
+                        if (t.hp < 1) t.hp = 1;
                         Battle.log(`【${t.name}】は生き返った！`); 
                     } else {
                         Battle.log(`【${t.name}】には効果がなかった`);
+                        // 生存者に蘇生を使った場合は失敗扱い(消費はする)
                         continue;
                     }
-                } 
+                }
                 
                 if (effectType === '回復') {
                     if (!t.isDead) {
