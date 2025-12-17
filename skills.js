@@ -9,7 +9,6 @@ window.SKILLS_DATA = [
         "rate": 1,
         "count": 1,
         "base": 0,
-        "elm": null,
         "desc": "通常攻撃"
     },
     {
@@ -21,7 +20,6 @@ window.SKILLS_DATA = [
         "rate": 0,
         "count": 0,
         "base": 20,
-        "elm": null,
         "desc": "ダメージ軽減"
     },
     {
@@ -34,7 +32,6 @@ window.SKILLS_DATA = [
         "count": 2,
         "base": 0,
         "desc": "2回攻撃",
-        "elm": null,
         "drain": true
     },
     {
@@ -109,6 +106,30 @@ window.SKILLS_DATA = [
         "desc": "闇の弾"
     },
     {
+        "id": 15,
+        "name": "ギラ",
+        "type": "魔法",
+        "target": "全体",
+        "mp": 9,
+        "rate": 0.85,
+        "count": 1,
+        "base": 45,
+        "elm": "火",
+        "desc": "炎の閃光"
+    },
+    {
+        "id": 16,
+        "name": "イオ",
+        "type": "魔法",
+        "target": "全体",
+        "mp": 10,
+        "rate": 1,
+        "count": 1,
+        "base": 55,
+        "elm": "光",
+        "desc": "光の小爆発"
+    },
+    {
         "id": 20,
         "name": "ホイミ",
         "type": "回復",
@@ -117,7 +138,6 @@ window.SKILLS_DATA = [
         "rate": 1.2,
         "count": 1,
         "base": 80,
-        "elm": null,
         "desc": "小回復"
     },
     {
@@ -129,7 +149,6 @@ window.SKILLS_DATA = [
         "rate": 1.8,
         "count": 1,
         "base": 230,
-        "elm": null,
         "desc": "中回復"
     },
     {
@@ -137,11 +156,10 @@ window.SKILLS_DATA = [
         "name": "ハッスルダンス",
         "type": "回復",
         "target": "全体",
-        "mp": 120,
+        "mp": 200,
         "rate": 1.2,
         "count": 1,
         "base": 110,
-        "elm": null,
         "desc": "全体回復"
     },
     {
@@ -153,8 +171,8 @@ window.SKILLS_DATA = [
         "rate": 0,
         "count": 1,
         "base": 29999,
-        "fix": true,
-        "desc": "超回復"
+        "desc": "超回復",
+        "fix": true
     },
     {
         "id": 24,
@@ -165,20 +183,20 @@ window.SKILLS_DATA = [
         "rate": 0,
         "count": 1,
         "base": 29999,
-        "fix": true,
-        "desc": "全体超回復"
+        "desc": "全体超回復",
+        "fix": true
     },
     {
         "id": 30,
         "name": "ザオラル",
         "type": "蘇生",
         "target": "単体",
-        "mp": 60,
+        "mp": 100,
         "rate": 0.5,
         "count": 1,
         "base": 20,
-        "elm": null,
-        "desc": "50%蘇生"
+        "desc": "50%蘇生",
+        "SuccessRate": 50
     },
     {
         "id": 31,
@@ -189,8 +207,8 @@ window.SKILLS_DATA = [
         "rate": 1,
         "count": 1,
         "base": 50,
-        "elm": null,
-        "desc": "100%蘇生"
+        "desc": "100%蘇生",
+        "SuccessRate": 100
     },
     {
         "id": 40,
@@ -198,7 +216,7 @@ window.SKILLS_DATA = [
         "type": "物理",
         "target": "単体",
         "mp": 15,
-        "rate": 1,
+        "rate": 1.1,
         "count": 1,
         "base": 55,
         "elm": "火",
@@ -213,7 +231,6 @@ window.SKILLS_DATA = [
         "rate": 0.6,
         "count": 2,
         "base": 20,
-        "elm": null,
         "desc": "2回攻撃"
     },
     {
@@ -222,7 +239,7 @@ window.SKILLS_DATA = [
         "type": "物理",
         "target": "単体",
         "mp": 15,
-        "rate": 1,
+        "rate": 1.1,
         "count": 1,
         "base": 55,
         "elm": "水",
@@ -234,7 +251,7 @@ window.SKILLS_DATA = [
         "type": "物理",
         "target": "単体",
         "mp": 15,
-        "rate": 1,
+        "rate": 1.1,
         "count": 1,
         "base": 55,
         "elm": "雷",
@@ -246,13 +263,15 @@ window.SKILLS_DATA = [
         "type": "物理",
         "target": "単体",
         "mp": 15,
-        "rate": 1,
+        "rate": 0.9,
         "count": 1,
         "base": 55,
+        "desc": "敵の守備を下げる",
+        "SuccessRate": 100,
+        "turn": 5,
         "debuff": {
             "def": 0.8
-        },
-        "desc": "敵の守備を下げる"
+        }
     },
     {
         "id": 45,
@@ -263,8 +282,8 @@ window.SKILLS_DATA = [
         "rate": 0,
         "count": 1,
         "base": 22,
-        "fix": true,
-        "desc": "メタルに固定ダメージ"
+        "desc": "メタルに固定ダメージ",
+        "fix": true
     },
     {
         "id": 46,
@@ -272,8 +291,8 @@ window.SKILLS_DATA = [
         "type": "物理",
         "target": "単体",
         "mp": 20,
-        "rate": 1.1,
-        "count": 1,
+        "rate": 0.8,
+        "count": 2,
         "base": 60,
         "elm": "風",
         "desc": "風の拳"
@@ -288,8 +307,8 @@ window.SKILLS_DATA = [
         "count": 1,
         "base": 70,
         "elm": "混沌",
-        "drain": true,
-        "desc": "HP吸収"
+        "desc": "HP吸収",
+        "drain": true
     },
     {
         "id": 48,
@@ -297,11 +316,11 @@ window.SKILLS_DATA = [
         "type": "物理",
         "target": "単体",
         "mp": 35,
-        "rate": 0.7,
+        "rate": 0.8,
         "count": 1,
         "base": 50,
-        "drain": true,
-        "desc": "奇跡の剣技・HP回復"
+        "desc": "奇跡の剣技・HP回復",
+        "drain": true
     },
     {
         "id": 49,
@@ -312,8 +331,8 @@ window.SKILLS_DATA = [
         "rate": 0.5,
         "count": 1,
         "base": 0,
-        "priority": 2,
-        "desc": "疾風の如き速さの一撃"
+        "desc": "疾風の如き速さの一撃",
+        "priority": 2
     },
     {
         "id": 50,
@@ -324,24 +343,26 @@ window.SKILLS_DATA = [
         "rate": 0,
         "count": 1,
         "base": 20,
+        "desc": "攻撃力アップ",
+        "turn": 5,
         "buff": {
             "atk": 1.5
-        },
-        "desc": "攻撃力アップ"
+        }
     },
     {
         "id": 51,
-        "name": "スカラ",
+        "name": "スクルト",
         "type": "強化",
-        "target": "単体",
+        "target": "全体",
         "mp": 20,
         "rate": 0,
         "count": 1,
         "base": 20,
+        "desc": "守備力アップ",
+        "turn": 5,
         "buff": {
             "def": 1.5
-        },
-        "desc": "守備力アップ"
+        }
     },
     {
         "id": 52,
@@ -352,10 +373,11 @@ window.SKILLS_DATA = [
         "rate": 0,
         "count": 1,
         "base": 20,
+        "desc": "素早さアップ",
+        "turn": 5,
         "buff": {
             "spd": 1.3
-        },
-        "desc": "素早さアップ"
+        }
     },
     {
         "id": 53,
@@ -365,11 +387,27 @@ window.SKILLS_DATA = [
         "mp": 40,
         "rate": 0,
         "count": 1,
-        "base": 20,
+        "base": 0,
+        "desc": "全属性耐性アップ",
+        "turn": 5,
         "buff": {
-            "mag": 1.5
-        },
-        "desc": "魔法防御アップ"
+            "elmResUp": 30
+        }
+    },
+    {
+        "id": 54,
+        "name": "魔力覚醒",
+        "type": "強化",
+        "target": "自分",
+        "mp": 100,
+        "rate": 0,
+        "count": 1,
+        "base": 0,
+        "desc": "魔力超上昇",
+        "turn": 5,
+        "buff": {
+            "mag": 2
+        }
     },
     {
         "id": 55,
@@ -380,11 +418,12 @@ window.SKILLS_DATA = [
         "rate": 1.2,
         "count": 1,
         "base": 0,
+        "desc": "敵の全属性耐性を激減させる",
+        "SuccessRate": 190,
+        "turn": 2,
         "debuff": {
             "elmResDown": 100
-        },
-        "desc": "敵の全属性耐性を激減させる",
-        "SuccessRate": 200
+        }
     },
     {
         "id": 56,
@@ -395,9 +434,9 @@ window.SKILLS_DATA = [
         "rate": 0,
         "count": 1,
         "base": 0,
-        "debuff_reset": true,
         "desc": "味方全体の状態異常と弱体を解除",
-        "CureAilments": true
+        "CureAilments": true,
+        "debuff_reset": true
     },
     {
         "id": 57,
@@ -408,8 +447,8 @@ window.SKILLS_DATA = [
         "rate": 0,
         "count": 1,
         "base": 0,
-        "buff_reset": true,
-        "desc": "敵全体の強化を解除"
+        "desc": "敵全体の強化を解除",
+        "buff_reset": true
     },
     {
         "id": 58,
@@ -420,14 +459,14 @@ window.SKILLS_DATA = [
         "rate": 0,
         "count": 1,
         "base": 0,
+        "desc": "味方全体の全ステータスUP",
+        "turn": 5,
         "buff": {
             "atk": 1.2,
             "def": 1.2,
             "spd": 1.2,
             "mag": 1.2
-        },
-        "turn": 5,
-        "desc": "味方全体の全ステータスUP"
+        }
     },
     {
         "id": 59,
@@ -438,11 +477,11 @@ window.SKILLS_DATA = [
         "rate": 0,
         "count": 1,
         "base": 0,
+        "desc": "味方全体の全属性耐性超上昇",
+        "turn": 2,
         "buff": {
             "elmResUp": 80
-        },
-        "turn": 2,
-        "desc": "味方全体の全属性耐性超上昇"
+        }
     },
     {
         "id": 60,
@@ -453,11 +492,12 @@ window.SKILLS_DATA = [
         "rate": 0,
         "count": 1,
         "base": 20,
+        "desc": "敵の守備ダウン",
         "SuccessRate": 70,
+        "turn": 5,
         "debuff": {
-            "def": 0.5
-        },
-        "desc": "敵の守備ダウン"
+            "def": 0.7
+        }
     },
     {
         "id": 61,
@@ -468,11 +508,12 @@ window.SKILLS_DATA = [
         "rate": 0,
         "count": 1,
         "base": 20,
+        "desc": "敵の素早さダウン",
         "SuccessRate": 70,
+        "turn": 5,
         "debuff": {
             "spd": 0.7
-        },
-        "desc": "敵の素早さダウン"
+        }
     },
     {
         "id": 62,
@@ -483,8 +524,8 @@ window.SKILLS_DATA = [
         "rate": 0,
         "count": 1,
         "base": 0,
-        "CureAilments": true,
-        "desc": "味方全体の状態異常を治療する"
+        "desc": "味方全体の状態異常を治療する",
+        "CureAilments": true
     },
     {
         "id": 63,
@@ -495,9 +536,81 @@ window.SKILLS_DATA = [
         "rate": 1,
         "count": 1,
         "base": 99999,
-        "CureAilments": true,
         "desc": "味方全体のHPを超回復し、状態異常を治療する",
+        "CureAilments": true,
         "debuff_reset": true
+    },
+    {
+        "id": 64,
+        "name": "ルカナン",
+        "type": "弱体",
+        "target": "全体",
+        "mp": 100,
+        "rate": 0,
+        "count": 1,
+        "base": 20,
+        "desc": "敵の守備ダウン",
+        "SuccessRate": 70,
+        "turn": 5,
+        "debuff": {
+            "def": 0.7
+        }
+    },
+    {
+        "id": 65,
+        "name": "ヘナトス",
+        "type": "弱体",
+        "target": "単体",
+        "mp": 150,
+        "rate": 0,
+        "count": 1,
+        "base": 20,
+        "desc": "敵の攻撃ダウン",
+        "SuccessRate": 70,
+        "turn": 5,
+        "debuff": {
+            "atk": 0.7
+        }
+    },
+    {
+        "id": 70,
+        "name": "弓聖の守り星",
+        "type": "強化",
+        "target": "全体",
+        "mp": 250,
+        "rate": 0,
+        "count": 1,
+        "base": 0,
+        "desc": "味方全体の状態異常耐性アップ",
+        "turn": 3,
+        "buff": {
+            "resists_Poison": 50,
+            "resists_Shock": 50,
+            "resists_Fear": 50,
+            "resists_Seal": 50,
+            "resists_Debuff": 50,
+            "resists_InstantDeath": 50
+        }
+    },
+    {
+        "id": 71,
+        "name": "キラキラポーン",
+        "type": "強化",
+        "target": "単体",
+        "mp": 150,
+        "rate": 0,
+        "count": 1,
+        "base": 0,
+        "desc": "味方単体の状態異常無効",
+        "turn": 5,
+        "buff": {
+            "resists_Poison": 100,
+            "resists_Shock": 100,
+            "resists_Fear": 100,
+            "resists_Seal": 100,
+            "resists_Debuff": 100,
+            "resists_InstantDeath": 100
+        }
     },
     {
         "id": 80,
@@ -508,7 +621,6 @@ window.SKILLS_DATA = [
         "rate": 0,
         "count": 1,
         "base": 0,
-        "ratio": 0.5,
         "desc": "HPを50%回復"
     },
     {
@@ -520,12 +632,64 @@ window.SKILLS_DATA = [
         "rate": 0,
         "count": 1,
         "base": 0,
-        "ratio": 0.5,
         "desc": "MPを50%回復"
     },
     {
+        "id": 82,
+        "name": "不撓不屈",
+        "type": "特殊",
+        "target": "自分",
+        "mp": 50,
+        "rate": 0,
+        "count": 1,
+        "base": 0,
+        "desc": "自身の弱体・状態異常を解除",
+        "CureAilments": true,
+        "debuff_reset": true
+    },
+    {
+        "id": 83,
+        "name": "臥薪嘗胆",
+        "type": "強化",
+        "target": "単体",
+        "mp": 250,
+        "rate": 0,
+        "count": 0,
+        "base": 0,
+        "desc": "精神を集中し攻撃力を大幅に上げる",
+        "buff": {
+            "atk": 2.5
+        },
+        "turn": 3
+    },
+    {
+        "id": 90,
+        "name": "やみのころも",
+        "type": "強化",
+        "target": "自分",
+        "mp": 0,
+        "rate": 0,
+        "count": 1,
+        "base": 0,
+        "desc": "自身の全ステータス・属性耐性・状態異常耐性UP",
+        "turn": 5,
+        "buff": {
+            "atk": 1.5,
+            "def": 1.5,
+            "spd": 1.5,
+            "mag": 1.5,
+            "elmResUp": 50,
+            "resists_Poison": 100,
+            "resists_Shock": 100,
+            "resists_Fear": 100,
+            "resists_Seal": 100,
+            "resists_Debuff": 100,
+            "resists_InstantDeath": 100
+        }
+    },
+    {
         "id": 101,
-        "name": "強撃",
+        "name": "せいけん突き",
         "type": "物理",
         "target": "単体",
         "mp": 40,
@@ -563,7 +727,7 @@ window.SKILLS_DATA = [
         "type": "物理",
         "target": "単体",
         "mp": 120,
-        "rate": 1.5,
+        "rate": 1.7,
         "count": 1,
         "base": 190,
         "elm": "闇",
@@ -574,19 +738,19 @@ window.SKILLS_DATA = [
         "name": "しんくうは",
         "type": "物理",
         "target": "全体",
-        "mp": 140,
+        "mp": 270,
         "rate": 1.4,
         "count": 2,
         "base": 80,
         "elm": "風",
-        "desc": "真空の刃"
+        "desc": "敵全体に真空の刃"
     },
     {
         "id": 106,
         "name": "天下無双",
         "type": "物理",
         "target": "単体",
-        "mp": 250,
+        "mp": 350,
         "rate": 0.6,
         "count": 6,
         "base": 20,
@@ -597,7 +761,7 @@ window.SKILLS_DATA = [
         "name": "テールスイング",
         "type": "物理",
         "target": "全体",
-        "mp": 200,
+        "mp": 600,
         "rate": 1,
         "count": 2,
         "base": 1999,
@@ -623,8 +787,8 @@ window.SKILLS_DATA = [
         "rate": 0.7,
         "count": 4,
         "base": 100,
-        "drain": true,
-        "desc": "再生を伴う4連撃"
+        "desc": "再生を伴う4連撃",
+        "drain": true
     },
     {
         "id": 110,
@@ -639,26 +803,15 @@ window.SKILLS_DATA = [
     },
     {
         "id": 111,
-        "name": "魔人の絶技",
-        "type": "物理",
-        "target": "単体",
-        "mp": 350,
-        "rate": 1.1,
-        "count": 6,
-        "base": 100,
-        "desc": "魔人のごとき6連続攻撃"
-    },
-    {
-        "id": 111,
         "name": "八刀一閃",
         "type": "物理",
         "target": "単体",
-        "mp": 350,
-        "rate": 1.1,
-        "count": 6,
+        "mp": 800,
+        "rate": 1,
+        "count": 8,
         "base": 100,
-        "priority": 4,
-        "desc": "誰よりも速く八つの刃で切り刻む"
+        "desc": "誰よりも速く八つの刃で切り刻む",
+        "priority": 4
     },
     {
         "id": 112,
@@ -666,12 +819,12 @@ window.SKILLS_DATA = [
         "type": "物理",
         "target": "単体",
         "mp": 10,
-        "rate": 2.5,
+        "rate": 2,
         "count": 1,
         "base": 0,
+        "desc": "当たる確率は低いが、防御無視の会心攻撃",
         "SuccessRate": 25,
-        "IgnoreDefense": true,
-        "desc": "当たる確率は低いが、防御無視の会心攻撃"
+        "IgnoreDefense": true
     },
     {
         "id": 113,
@@ -682,13 +835,219 @@ window.SKILLS_DATA = [
         "rate": 3,
         "count": 1,
         "base": 0,
+        "desc": "防御無視の強烈な会心攻撃",
         "SuccessRate": 50,
-        "IgnoreDefense": true,
-        "desc": "防御無視の強烈な会心攻撃"
+        "IgnoreDefense": true
+    },
+    {
+        "id": 114,
+        "name": "蒼天魔斬",
+        "type": "物理",
+        "target": "単体",
+        "mp": 400,
+        "rate": 2,
+        "count": 1,
+        "base": 200,
+        "desc": "相手をひるませる強力な一撃",
+        "SuccessRate": 90,
+        "turn": 1,
+        "Fear": true
+    },
+    {
+        "id": 115,
+        "name": "マジックアロー",
+        "type": "物理",
+        "target": "単体",
+        "mp": 150,
+        "rate": 1,
+        "count": 1,
+        "base": 150,
+        "desc": "相手の魔力を下げる一撃",
+        "SuccessRate": 90,
+        "turn": 5,
+        "debuff": {
+            "mag": 0.7
+        }
+    },
+    {
+        "id": 116,
+        "name": "やいばくだき",
+        "type": "物理",
+        "target": "単体",
+        "mp": 150,
+        "rate": 1,
+        "count": 1,
+        "base": 150,
+        "desc": "相手の攻撃力を下げる一撃",
+        "SuccessRate": 90,
+        "turn": 5,
+        "debuff": {
+            "atk": 0.7
+        }
+    },
+    {
+        "id": 117,
+        "name": "鉄甲斬",
+        "type": "物理",
+        "target": "単体",
+        "mp": 900,
+        "rate": 2,
+        "count": 1,
+        "base": 350,
+        "desc": "相手の守備力と素早さを下げる一撃",
+        "SuccessRate": 100,
+        "turn": 3,
+        "debuff": {
+            "def": 0.7,
+            "spd": 0.7
+        }
+    },
+    {
+        "id": 118,
+        "name": "真やいばくだき",
+        "type": "物理",
+        "target": "単体",
+        "mp": 900,
+        "rate": 2,
+        "count": 1,
+        "base": 350,
+        "desc": "相手の攻撃力と魔力を大きく下げる一撃",
+        "SuccessRate": 100,
+        "turn": 3,
+        "debuff": {
+            "atk": 0.3,
+            "mag": 0.3
+        }
+    },
+    {
+        "id": 150,
+        "name": "ぶんまわし",
+        "type": "物理",
+        "target": "全体",
+        "mp": 50,
+        "rate": 0.8,
+        "count": 1,
+        "base": 50,
+        "desc": "全体物理攻撃"
+    },
+    {
+        "id": 151,
+        "name": "さみだれ斬り",
+        "type": "物理",
+        "target": "全体",
+        "mp": 80,
+        "rate": 1.1,
+        "count": 1,
+        "base": 80,
+        "desc": "全体物理攻撃"
+    },
+    {
+        "id": 152,
+        "name": "狼牙突き",
+        "type": "物理",
+        "target": "全体",
+        "mp": 120,
+        "rate": 1.3,
+        "count": 1,
+        "base": 120,
+        "desc": "全体物理攻撃"
+    },
+    {
+        "id": 153,
+        "name": "オノむそう",
+        "type": "物理",
+        "target": "全体",
+        "mp": 200,
+        "rate": 1.5,
+        "count": 1,
+        "base": 200,
+        "desc": "全体物理攻撃"
+    },
+    {
+        "id": 154,
+        "name": "デュアルカッター",
+        "type": "物理",
+        "target": "全体",
+        "mp": 250,
+        "rate": 1.1,
+        "count": 2,
+        "base": 250,
+        "desc": "全体物理攻撃2連"
+    },
+    {
+        "id": 155,
+        "name": "天魔旋風脚",
+        "type": "物理",
+        "target": "全体",
+        "mp": 500,
+        "rate": 1.2,
+        "count": 2,
+        "base": 350,
+        "desc": "全体物理攻撃2連"
+    },
+    {
+        "id": 156,
+        "name": "紅蓮剣舞",
+        "type": "物理",
+        "target": "全体",
+        "mp": 300,
+        "rate": 1.5,
+        "count": 1,
+        "base": 250,
+        "elm": "火",
+        "desc": "闇属性全体物理攻撃"
+    },
+    {
+        "id": 157,
+        "name": "黒の斬撃",
+        "type": "物理",
+        "target": "全体",
+        "mp": 300,
+        "rate": 1.5,
+        "count": 1,
+        "base": 250,
+        "elm": "闇",
+        "desc": "闇属性全体物理攻撃"
+    },
+    {
+        "id": 158,
+        "name": "ギガスロー",
+        "type": "物理",
+        "target": "全体",
+        "mp": 300,
+        "rate": 1.5,
+        "count": 1,
+        "base": 250,
+        "elm": "雷",
+        "desc": "雷属性全体物理攻撃"
+    },
+    {
+        "id": 159,
+        "name": "絶対零刀",
+        "type": "物理",
+        "target": "全体",
+        "mp": 300,
+        "rate": 1.5,
+        "count": 1,
+        "base": 250,
+        "elm": "水",
+        "desc": "氷属性全体物理攻撃"
+    },
+    {
+        "id": 160,
+        "name": "紫電一閃",
+        "type": "物理",
+        "target": "全体",
+        "mp": 550,
+        "rate": 1.8,
+        "count": 1,
+        "base": 350,
+        "elm": "闇",
+        "desc": "闇属性全体物理攻撃"
     },
     {
         "id": 201,
-        "name": "五月雨突き",
+        "name": "さみだれ突き",
         "type": "物理",
         "target": "ランダム",
         "mp": 80,
@@ -699,7 +1058,7 @@ window.SKILLS_DATA = [
     },
     {
         "id": 202,
-        "name": "爆裂拳",
+        "name": "ばくれつけん",
         "type": "物理",
         "target": "ランダム",
         "mp": 100,
@@ -718,6 +1077,127 @@ window.SKILLS_DATA = [
         "count": 4,
         "base": 50,
         "desc": "4回斬撃"
+    },
+    {
+        "id": 204,
+        "name": "キラージャグリング",
+        "type": "物理",
+        "target": "ランダム",
+        "mp": 120,
+        "rate": 0.5,
+        "count": 6,
+        "base": 50,
+        "desc": "6回ランダム攻撃"
+    },
+    {
+        "id": 205,
+        "name": "超さみだれ突き",
+        "type": "物理",
+        "target": "ランダム",
+        "mp": 350,
+        "rate": 1.1,
+        "count": 4,
+        "base": 100,
+        "desc": "強力なランダム4回攻撃"
+    },
+    {
+        "id": 206,
+        "name": "ゴッドジャグリング",
+        "type": "物理",
+        "target": "ランダム",
+        "mp": 500,
+        "rate": 0.7,
+        "count": 8,
+        "base": 50,
+        "desc": "攻撃力をさげることがある8回ランダム攻撃",
+        "SuccessRate": 70,
+        "debuff": {
+            "atk": 0.7
+        }
+    },
+    {
+        "id": 207,
+        "name": "シャイニングボウ",
+        "type": "物理",
+        "target": "ランダム",
+        "mp": 550,
+        "rate": 0.7,
+        "count": 6,
+        "base": 200,
+        "elm": "光",
+        "desc": "光のランダム6回攻撃"
+    },
+    {
+        "id": 210,
+        "name": "氷結乱撃",
+        "type": "物理",
+        "target": "単体",
+        "mp": 80,
+        "rate": 0.5,
+        "count": 4,
+        "base": 20,
+        "elm": "水",
+        "desc": "氷の4回攻撃"
+    },
+    {
+        "id": 211,
+        "name": "タイガークロー",
+        "type": "物理",
+        "target": "単体",
+        "mp": 120,
+        "rate": 1,
+        "count": 3,
+        "base": 150,
+        "desc": "強力な爪の3回攻撃"
+    },
+    {
+        "id": 212,
+        "name": "ライガークラッシュ",
+        "type": "物理",
+        "target": "単体",
+        "mp": 700,
+        "rate": 1.2,
+        "count": 5,
+        "base": 450,
+        "desc": "強力な爪の5回攻撃"
+    },
+    {
+        "id": 213,
+        "name": "紅蓮連撃",
+        "type": "物理",
+        "target": "単体",
+        "mp": 1000,
+        "rate": 1,
+        "count": 6,
+        "base": 450,
+        "elm": "火",
+        "desc": "敵単体に6連続の炎属性物理ダメージ"
+    },
+    {
+        "id": 250,
+        "name": "ヴァイパーファング",
+        "type": "物理",
+        "target": "単体",
+        "mp": 10,
+        "rate": 0.8,
+        "count": 1,
+        "base": 20,
+        "desc": "どく攻撃",
+        "SuccessRate": 90,
+        "Poison": true
+    },
+    {
+        "id": 251,
+        "name": "サンダーボルト",
+        "type": "物理",
+        "target": "単体",
+        "mp": 350,
+        "rate": 1.2,
+        "count": 1,
+        "base": 150,
+        "desc": "敵を感電させる強力な一撃",
+        "SuccessRate": 70,
+        "Shock": true
     },
     {
         "id": 301,
@@ -785,7 +1265,7 @@ window.SKILLS_DATA = [
         "type": "魔法",
         "target": "全体",
         "mp": 250,
-        "rate": 1.5,
+        "rate": 1.7,
         "count": 1,
         "base": 230,
         "elm": "光",
@@ -840,6 +1320,30 @@ window.SKILLS_DATA = [
         "desc": "灼熱の波動"
     },
     {
+        "id": 311,
+        "name": "マヒャド",
+        "type": "魔法",
+        "target": "全体",
+        "mp": 250,
+        "rate": 1.5,
+        "count": 1,
+        "base": 230,
+        "elm": "水",
+        "desc": "貫く氷塊"
+    },
+    {
+        "id": 312,
+        "name": "ドルクマ",
+        "type": "魔法",
+        "target": "単体",
+        "mp": 40,
+        "rate": 1.4,
+        "count": 1,
+        "base": 90,
+        "elm": "闇",
+        "desc": "闇の中爆発"
+    },
+    {
         "id": 401,
         "name": "ギガブレイク",
         "type": "物理",
@@ -872,8 +1376,8 @@ window.SKILLS_DATA = [
         "rate": 0,
         "count": 1,
         "base": 99999,
-        "fix": true,
-        "desc": "完全回復"
+        "desc": "完全回復",
+        "fix": true
     },
     {
         "id": 404,
@@ -928,7 +1432,7 @@ window.SKILLS_DATA = [
         "name": "ギガデイン",
         "type": "魔法",
         "target": "全体",
-        "mp": 500,
+        "mp": 750,
         "rate": 2.1,
         "count": 1,
         "base": 480,
@@ -957,7 +1461,7 @@ window.SKILLS_DATA = [
         "count": 1,
         "base": 500,
         "elm": "光",
-        "desc": "聖なる光"
+        "desc": "敵全体を打ち滅ぼす聖なる光"
     },
     {
         "id": 411,
@@ -969,17 +1473,18 @@ window.SKILLS_DATA = [
         "count": 1,
         "base": 600,
         "elm": "混沌",
+        "desc": "守備力を大きく下げる神を切り裂く混沌の一撃",
+        "turn": 5,
         "debuff": {
             "def": 0.5
-        },
-        "desc": "混沌の一撃"
+        }
     },
     {
         "id": 412,
         "name": "イオグランデ",
         "type": "魔法",
         "target": "全体",
-        "mp": 550,
+        "mp": 750,
         "rate": 2.1,
         "count": 1,
         "base": 480,
@@ -996,10 +1501,10 @@ window.SKILLS_DATA = [
         "count": 4,
         "base": 100,
         "elm": "雷",
-        "Shock": true,
-        "SuccessRate": 100,
         "desc": "雷魔法超ダメージ5連・感電付与",
-        "turn": 5
+        "SuccessRate": 100,
+        "turn": 3,
+        "Shock": true
     },
     {
         "id": 414,
@@ -1007,7 +1512,7 @@ window.SKILLS_DATA = [
         "type": "物理",
         "target": "全体",
         "mp": 500,
-        "rate": 1,
+        "rate": 1.5,
         "count": 2,
         "base": 999,
         "elm": "風",
@@ -1029,36 +1534,158 @@ window.SKILLS_DATA = [
         "id": 416,
         "name": "メテオ",
         "type": "魔法",
-        "target": "単体",
+        "target": "ランダム",
         "mp": 900,
         "rate": 1.1,
         "count": 7,
-        "base": 450,
+        "base": 350,
         "elm": "火",
         "desc": "隕石落とし"
     },
     {
+        "id": 417,
+        "name": "グランドネビュラ",
+        "type": "物理",
+        "target": "全体",
+        "mp": 900,
+        "rate": 2.1,
+        "count": 1,
+        "base": 350,
+        "elm": "光",
+        "desc": "敵全体に聖なる光の一撃"
+    },
+    {
         "id": 420,
-        "name": "神避",
+        "name": "疾風迅雷",
         "type": "物理",
         "target": "全体",
         "mp": 500,
         "rate": 1.2,
-        "count": 1,
+        "count": 2,
         "base": 0,
-        "priority": 5,
-        "desc": "神速で全てを薙ぎ払う"
+        "desc": "神速で敵全体を薙ぎ払う",
+        "priority": 5
     },
     {
         "id": 421,
         "name": "アルテマソード",
         "type": "物理",
         "target": "単体",
-        "mp": 600,
-        "rate": 6,
+        "mp": 1000,
+        "rate": 4,
         "count": 1,
         "base": 500,
-        "desc": "究極の剣技"
+        "desc": "防御を無視する究極の剣技",
+        "SuccessRate": 100,
+        "IgnoreDefense": true
+    },
+    {
+        "id": 422,
+        "name": "バギムーチョ",
+        "type": "魔法",
+        "target": "全体",
+        "mp": 550,
+        "rate": 2,
+        "count": 1,
+        "base": 270,
+        "elm": "風",
+        "desc": "極大風魔法"
+    },
+    {
+        "id": 423,
+        "name": "ドルマドン",
+        "type": "魔法",
+        "target": "単体",
+        "mp": 400,
+        "rate": 2.4,
+        "count": 1,
+        "base": 500,
+        "elm": "闇",
+        "desc": "極大闇魔法"
+    },
+    {
+        "id": 424,
+        "name": "ギラグレイド",
+        "type": "魔法",
+        "target": "全体",
+        "mp": 550,
+        "rate": 2,
+        "count": 1,
+        "base": 270,
+        "elm": "火",
+        "desc": "極大炎魔法"
+    },
+    {
+        "id": 425,
+        "name": "神速メラガイアー",
+        "type": "魔法",
+        "target": "ランダム",
+        "mp": 1500,
+        "rate": 2,
+        "count": 3,
+        "base": 270,
+        "elm": "火",
+        "desc": "失われた3連続の極大火炎"
+    },
+    {
+        "id": 426,
+        "name": "連続ドルマドン",
+        "type": "魔法",
+        "target": "ランダム",
+        "mp": 1500,
+        "rate": 2,
+        "count": 3,
+        "base": 270,
+        "elm": "闇",
+        "desc": "失われた3連続の極大闇魔法"
+    },
+    {
+        "id": 427,
+        "name": "ジゴデイン",
+        "type": "魔法",
+        "target": "全体",
+        "mp": 1250,
+        "rate": 3,
+        "count": 1,
+        "base": 700,
+        "elm": "雷",
+        "desc": "失われた極大雷呪文"
+    },
+    {
+        "id": 428,
+        "name": "氷塊マヒャデドス",
+        "type": "魔法",
+        "target": "全体",
+        "mp": 1400,
+        "rate": 2,
+        "count": 2,
+        "base": 450,
+        "elm": "水",
+        "desc": "失われた2連続の極大氷呪文"
+    },
+    {
+        "id": 429,
+        "name": "烈風バギムーチョ",
+        "type": "魔法",
+        "target": "全体",
+        "mp": 1400,
+        "rate": 1,
+        "count": 4,
+        "base": 250,
+        "elm": "風",
+        "desc": "失われた4連続の極大風呪文"
+    },
+    {
+        "id": 430,
+        "name": "イオマータ",
+        "type": "魔法",
+        "target": "ランダム",
+        "mp": 1000,
+        "rate": 0.7,
+        "count": 8,
+        "base": 90,
+        "elm": "光",
+        "desc": "失われた8連続の爆発呪文"
     },
     {
         "id": 450,
@@ -1069,8 +1696,8 @@ window.SKILLS_DATA = [
         "rate": 0,
         "count": 1,
         "base": 99999,
-        "fix": true,
-        "desc": "全体完全回復"
+        "desc": "全体完全回復",
+        "fix": true
     },
     {
         "id": 451,
@@ -1081,22 +1708,22 @@ window.SKILLS_DATA = [
         "rate": 0,
         "count": 1,
         "base": 0,
-        "HPRegen": 0.1,
+        "desc": "毎ターンHP回復",
         "turn": 5,
-        "desc": "毎ターンHP回復"
+        "HPRegen": 0.1
     },
     {
         "id": 452,
         "name": "まりょくのかぜ",
         "type": "特殊",
         "target": "全体",
-        "mp": 20,
+        "mp": 100,
         "rate": 0,
         "count": 1,
         "base": 0,
-        "MPRegen": 0.05,
+        "desc": "毎ターンMP回復",
         "turn": 5,
-        "desc": "毎ターンMP回復"
+        "MPRegen": 0.05
     },
     {
         "id": 453,
@@ -1107,8 +1734,8 @@ window.SKILLS_DATA = [
         "rate": 1.5,
         "count": 1,
         "base": 999,
-        "priority": 20,
-        "desc": "使い手の少ない最速の回復呪文"
+        "desc": "使い手の少ない最速の回復呪文",
+        "priority": 20
     },
     {
         "id": 454,
@@ -1119,9 +1746,9 @@ window.SKILLS_DATA = [
         "rate": 1,
         "count": 1,
         "base": 99999,
-        "CureAilments": true,
+        "desc": "全てを受け止めて生還する不死鳥",
         "priority": -20,
-        "desc": "全てを受け止めて生還する不死鳥"
+        "CureAilments": true
     },
     {
         "id": 500,
@@ -1132,9 +1759,35 @@ window.SKILLS_DATA = [
         "rate": 6,
         "count": 1,
         "base": 300,
-        "priority": -1,
         "elm": "混沌",
-        "desc": "全MPを消費し大爆発"
+        "desc": "全MPを消費し大爆発",
+        "priority": -1
+    },
+    {
+        "id": 501,
+        "name": "クラス・マダンテ",
+        "type": "魔法",
+        "target": "ランダム",
+        "mp": 0,
+        "rate": 3,
+        "count": 3,
+        "base": 300,
+        "elm": "光",
+        "desc": "全MPを消費しランダムに光属性の大ダメージ",
+        "priority": -1
+    },
+    {
+        "id": 502,
+        "name": "メルゼズ・ドア",
+        "type": "魔法",
+        "target": "単体",
+        "mp": 0,
+        "rate": 10,
+        "count": 1,
+        "base": 300,
+        "elm": "闇",
+        "desc": "全MPを消費し敵一人に闇属性の超ダメージ",
+        "priority": -1
     },
     {
         "id": 601,
@@ -1142,7 +1795,7 @@ window.SKILLS_DATA = [
         "type": "魔法",
         "target": "全体",
         "mp": 0,
-        "rate": 0.8,
+        "rate": 0.7,
         "count": 1,
         "base": 90,
         "elm": "火",
@@ -1154,9 +1807,9 @@ window.SKILLS_DATA = [
         "type": "魔法",
         "target": "全体",
         "mp": 0,
-        "rate": 0.8,
+        "rate": 0.9,
         "count": 1,
-        "base": 100,
+        "base": 200,
         "elm": "水",
         "desc": "冷たい息"
     },
@@ -1166,9 +1819,9 @@ window.SKILLS_DATA = [
         "type": "魔法",
         "target": "全体",
         "mp": 0,
-        "rate": 0.8,
+        "rate": 0.9,
         "count": 1,
-        "base": 130,
+        "base": 250,
         "elm": "火",
         "desc": "激しい炎"
     },
@@ -1178,9 +1831,9 @@ window.SKILLS_DATA = [
         "type": "魔法",
         "target": "全体",
         "mp": 0,
-        "rate": 0.8,
+        "rate": 1.1,
         "count": 1,
-        "base": 150,
+        "base": 450,
         "elm": "水",
         "desc": "極寒の息"
     },
@@ -1190,9 +1843,9 @@ window.SKILLS_DATA = [
         "type": "魔法",
         "target": "全体",
         "mp": 0,
-        "rate": 0.8,
+        "rate": 1.1,
         "count": 1,
-        "base": 200,
+        "base": 400,
         "elm": "火",
         "desc": "灼熱の業火"
     },
@@ -1202,7 +1855,7 @@ window.SKILLS_DATA = [
         "type": "魔法",
         "target": "全体",
         "mp": 0,
-        "rate": 0.8,
+        "rate": 1.5,
         "count": 1,
         "base": 200,
         "elm": "水",
@@ -1214,9 +1867,9 @@ window.SKILLS_DATA = [
         "type": "魔法",
         "target": "全体",
         "mp": 0,
-        "rate": 0.8,
+        "rate": 1.2,
         "count": 1,
-        "base": 80,
+        "base": 200,
         "elm": "闇",
         "desc": "暗黒のきり"
     },
@@ -1226,9 +1879,9 @@ window.SKILLS_DATA = [
         "type": "魔法",
         "target": "全体",
         "mp": 0,
-        "rate": 0.8,
+        "rate": 1.2,
         "count": 1,
-        "base": 110,
+        "base": 200,
         "elm": "雷",
         "desc": "稲妻"
     },
@@ -1238,9 +1891,9 @@ window.SKILLS_DATA = [
         "type": "魔法",
         "target": "全体",
         "mp": 0,
-        "rate": 1.4,
+        "rate": 2,
         "count": 1,
-        "base": 250,
+        "base": 450,
         "elm": "混沌",
         "desc": "地獄の炎"
     },
@@ -1249,34 +1902,34 @@ window.SKILLS_DATA = [
         "name": "シャイニングブレス",
         "type": "魔法",
         "target": "全体",
-        "mp": 50,
-        "rate": 1.4,
+        "mp": 450,
+        "rate": 2.5,
         "count": 1,
-        "base": 150,
+        "base": 800,
         "elm": "光",
-        "SpellSeal": true,
-        "SkillSeal": true,
-        "HealSeal": true,
+        "desc": "光のブレス・スキル封印",
         "SuccessRate": 50,
         "turn": 3,
-        "desc": "光のブレス・スキル封印"
+        "SpellSeal": true,
+        "SkillSeal": true,
+        "HealSeal": true
     },
     {
         "id": 611,
         "name": "ダークネスブレス",
         "type": "魔法",
         "target": "全体",
-        "mp": 50,
-        "rate": 1.4,
+        "mp": 550,
+        "rate": 2.5,
         "count": 1,
-        "base": 150,
+        "base": 800,
         "elm": "闇",
-        "debuff": {
-            "elmResDown": 50
-        },
+        "desc": "闇のブレス・属性耐性ダウン",
         "SuccessRate": 50,
         "turn": 3,
-        "desc": "闇のブレス・属性耐性ダウン"
+        "debuff": {
+            "elmResDown": 50
+        }
     },
     {
         "id": 612,
@@ -1284,10 +1937,9 @@ window.SKILLS_DATA = [
         "type": "魔法",
         "target": "全体",
         "mp": 0,
-        "rate": 0.8,
+        "rate": 1.8,
         "count": 1,
-        "base": 1000,
-        "desc": "",
+        "base": 800,
         "elm": "水"
     },
     {
@@ -1296,10 +1948,9 @@ window.SKILLS_DATA = [
         "type": "物理",
         "target": "全体",
         "mp": 0,
-        "rate": 0.8,
+        "rate": 1.8,
         "count": 1,
-        "base": 1000,
-        "desc": "",
+        "base": 800,
         "elm": "火"
     },
     {
@@ -1308,10 +1959,9 @@ window.SKILLS_DATA = [
         "type": "物理",
         "target": "全体",
         "mp": 350,
-        "rate": 1.1,
+        "rate": 1.3,
         "count": 2,
         "base": 500,
-        "desc": "",
         "elm": "風"
     },
     {
@@ -1323,14 +1973,36 @@ window.SKILLS_DATA = [
         "rate": 1,
         "count": 1,
         "base": 0,
-        "desc": "",
-        "buff_reset": true,
-        "Fear": true,
-        "SuccessRate": 100,
-        "PercentDamage": 0,
-        "turn": 1,
         "priority": -20,
-        "elm": null
+        "SuccessRate": 190,
+        "PercentDamage": 0.1,
+        "turn": 1,
+        "buff_reset": true,
+        "Fear": true
+    },
+    {
+        "id": 616,
+        "name": "流星",
+        "type": "魔法",
+        "target": "ランダム",
+        "mp": 0,
+        "rate": 1.5,
+        "count": 3,
+        "base": 1500,
+        "elm": "闇"
+    },
+    {
+        "id": 617,
+        "name": "邪神の爪",
+        "type": "物理",
+        "target": "単体",
+        "mp": 0,
+        "rate": 1.5,
+        "count": 3,
+        "base": 300,
+        "SuccessRate": 100,
+        "turn": 10,
+        "Poison": true
     },
     {
         "id": 701,
@@ -1340,45 +2012,169 @@ window.SKILLS_DATA = [
         "mp": 0,
         "rate": 0,
         "count": 1,
-        "base": 500,
-        "Poison": true,
+        "base": 0,
+        "desc": "どくのいき",
         "SuccessRate": 80,
-        "desc": "どくのいき"
+        "turn": 10,
+        "Poison": true
+    },
+    {
+        "id": 702,
+        "name": "もうどくのいき",
+        "type": "特殊",
+        "target": "全体",
+        "mp": 200,
+        "rate": 0,
+        "count": 1,
+        "base": 0,
+        "desc": "もうどくのいき",
+        "SuccessRate": 80,
+        "turn": 10,
+        "ToxicPoison": true
+    },
+    {
+        "id": 703,
+        "name": "おたけび",
+        "type": "特殊",
+        "target": "全体",
+        "mp": 0,
+        "rate": 0,
+        "count": 1,
+        "base": 0,
+        "desc": "相手をひるませる叫び",
+        "SuccessRate": 80,
+        "turn": 1,
+        "Fear": true
+    },
+    {
+        "id": 704,
+        "name": "マホトーン",
+        "type": "特殊",
+        "target": "全体",
+        "mp": 150,
+        "rate": 0,
+        "count": 1,
+        "base": 0,
+        "desc": "魔法と回復を封印する",
+        "SuccessRate": 80,
+        "turn": 5,
+        "SpellSeal": true,
+        "HealSeal": true
+    },
+    {
+        "id": 705,
+        "name": "スキルブレイク",
+        "type": "特殊",
+        "target": "全体",
+        "mp": 150,
+        "rate": 0,
+        "count": 1,
+        "base": 0,
+        "desc": "特技を封印する",
+        "SuccessRate": 80,
+        "turn": 5,
+        "SkillSeal": true
+    },
+    {
+        "id": 801,
+        "name": "ザキ",
+        "type": "特殊",
+        "target": "単体",
+        "mp": 250,
+        "rate": 0,
+        "count": 1,
+        "base": 0,
+        "desc": "即死呪文",
+        "SuccessRate": 30,
+        "PercentDamage": 1
+    },
+    {
+        "id": 802,
+        "name": "ザラキ",
+        "type": "特殊",
+        "target": "全体",
+        "mp": 700,
+        "rate": 0,
+        "count": 1,
+        "base": 0,
+        "desc": "即死呪文",
+        "SuccessRate": 30,
+        "PercentDamage": 1
+    },
+    {
+        "id": 803,
+        "name": "ザラキーマ",
+        "type": "特殊",
+        "target": "全体",
+        "mp": 1500,
+        "rate": 0,
+        "count": 1,
+        "base": 0,
+        "desc": "高確率の即死呪文",
+        "SuccessRate": 50,
+        "PercentDamage": 1
+    },
+    {
+        "id": 804,
+        "name": "死の踊り",
+        "type": "特殊",
+        "target": "全体",
+        "mp": 500,
+        "rate": 0,
+        "count": 1,
+        "base": 0,
+        "desc": "敵全体を低確率で死にいざなう魔の踊り",
+        "SuccessRate": 20,
+        "PercentDamage": 1
+    },
+    {
+        "id": 805,
+        "name": "地獄の舞い",
+        "type": "特殊",
+        "target": "ランダム",
+        "mp": 2000,
+        "rate": 0,
+        "count": 3,
+        "base": 0,
+        "desc": "敵を無差別に死にいざなう地獄の舞い",
+        "SuccessRate": 70,
+        "PercentDamage": 1
     },
     {
         "id": 901,
-        "name": "ジェネシス",
+        "name": "ビッグバン",
         "type": "魔法",
         "target": "全体",
-        "mp": 500,
+        "mp": 666,
         "rate": 3,
         "count": 1,
         "base": 800,
         "elm": "混沌",
-        "desc": "【EX】天地創造の光"
+        "desc": "天地を創造した混沌の光"
     },
     {
         "id": 902,
         "name": "ラグナロク",
         "type": "物理",
         "target": "ランダム",
-        "mp": 700,
+        "mp": 1100,
         "rate": 1,
         "count": 5,
         "base": 350,
         "elm": "闇",
-        "desc": "【EX】終焉の5連撃"
+        "desc": "終焉の5連撃"
     },
     {
         "id": 903,
         "name": "ザオリーマ",
         "type": "蘇生",
         "target": "全体",
-        "mp": 1000,
-        "rate": 0.8,
+        "mp": 2000,
+        "rate": 1,
         "count": 1,
         "base": 150,
-        "desc": "【EX】味方全員を完全蘇生"
+        "desc": "味方全員を完全蘇生",
+        "SuccessRate": 1
     },
     {
         "id": 905,
@@ -1389,14 +2185,15 @@ window.SKILLS_DATA = [
         "rate": 0,
         "count": 1,
         "base": 20,
-        "SuccessRate": 0.8,
+        "desc": "全能力ダウン",
+        "SuccessRate": 80,
+        "turn": 4,
         "debuff": {
             "atk": 0.7,
             "def": 0.7,
             "mag": 0.7,
             "spd": 0.7
-        },
-        "desc": "全能力ダウン"
+        }
     },
     {
         "id": 906,
@@ -1408,13 +2205,14 @@ window.SKILLS_DATA = [
         "count": 1,
         "base": 800,
         "elm": "混沌",
+        "desc": "世界を創り変える力",
+        "turn": 4,
         "debuff": {
             "atk": 0.7,
             "def": 0.7,
             "mag": 0.7,
             "spd": 0.7
-        },
-        "desc": "【EX】世界を創り変える力"
+        }
     },
     {
         "id": 907,
@@ -1425,11 +2223,11 @@ window.SKILLS_DATA = [
         "rate": 0,
         "count": 1,
         "base": 0,
+        "desc": "心まで凍り付く恐ろしいおたけび",
+        "SuccessRate": 50,
         "PercentDamage": 0.5,
-        "Fear": true,
-        "SuccessRate": 0.5,
         "turn": 1,
-        "desc": "心まで凍り付く恐ろしいおたけび"
+        "Fear": true
     },
     {
         "id": 908,
@@ -1440,15 +2238,53 @@ window.SKILLS_DATA = [
         "rate": 0.7,
         "count": 2,
         "base": 50,
-        "Fear": true,
-        "ToxicPoison": true,
-        "SpellSeal": true,
-        "SkillSeal": true,
-        "HealSeal": true,
+        "elm": "混沌",
+        "desc": "闇の根源より漏れ出る災禍",
         "SuccessRate": 30,
         "turn": 1,
-        "elm": "混沌",
-        "desc": "闇の根源より漏れ出る災禍"
+        "ToxicPoison": true,
+        "Fear": true,
+        "SpellSeal": true,
+        "SkillSeal": true,
+        "HealSeal": true
+    },
+    {
+        "id": 909,
+        "name": "はげしいおたけび",
+        "type": "特殊",
+        "target": "全体",
+        "mp": 500,
+        "rate": 0,
+        "count": 1,
+        "base": 0,
+        "desc": "恐ろしいおたけび",
+        "SuccessRate": 80,
+        "PercentDamage": 0.2,
+        "turn": 1,
+        "Fear": true
+    },
+    {
+        "id": 910,
+        "name": "死グモのトゲ",
+        "type": "特殊",
+        "target": "全体",
+        "mp": 900,
+        "rate": 0,
+        "count": 1,
+        "base": 0,
+        "SuccessRate": 90,
+        "PercentDamage": 0.6
+    },
+    {
+        "id": 911,
+        "name": "ねんじボール",
+        "type": "魔法",
+        "target": "ランダム",
+        "mp": 500,
+        "rate": 1,
+        "count": 3,
+        "base": 250,
+        "elm": "闇"
     },
     {
         "id": 920,
@@ -1459,11 +2295,11 @@ window.SKILLS_DATA = [
         "rate": 4,
         "count": 1,
         "base": 0,
+        "desc": "王者の威光を纏った一撃",
+        "priority": -1,
         "debuff": {
             "def": 0.5
-        },
-        "priority": -1,
-        "desc": "王者の威光を纏った一撃"
+        }
     },
     {
         "id": 921,
@@ -1474,8 +2310,8 @@ window.SKILLS_DATA = [
         "rate": 1.5,
         "count": 1,
         "base": 500,
-        "drain": true,
-        "desc": "精神エネルギー砲・HP吸収"
+        "desc": "精神エネルギー砲・HP吸収",
+        "drain": true
     },
     {
         "id": 922,
@@ -1486,8 +2322,8 @@ window.SKILLS_DATA = [
         "rate": 1,
         "count": 4,
         "base": 300,
-        "drain": true,
-        "desc": "精神の嵐・HP吸収"
+        "desc": "精神の嵐・HP吸収",
+        "drain": true
     },
     {
         "id": 923,
@@ -1498,9 +2334,9 @@ window.SKILLS_DATA = [
         "rate": 3,
         "count": 1,
         "base": 500,
-        "IgnoreDefense": true,
+        "desc": "全てを断ち切る大魔王の右腕",
         "SuccessRate": 100,
-        "desc": "全てを断ち切る大魔王の右腕"
+        "IgnoreDefense": true
     },
     {
         "id": 924,
@@ -1535,10 +2371,10 @@ window.SKILLS_DATA = [
         "rate": 0,
         "count": 1,
         "base": 0,
-        "PercentDamage": 0.99,
-        "SuccessRate": 100,
+        "desc": "無慈悲な一撃",
         "priority": -5,
-        "desc": "無慈悲な一撃"
+        "SuccessRate": 100,
+        "PercentDamage": 0.99
     },
     {
         "id": 999,
@@ -1549,8 +2385,8 @@ window.SKILLS_DATA = [
         "rate": 0,
         "count": 1,
         "base": 99999,
-        "fix": true,
+        "desc": "単体極大ダメージ",
         "priority": -1,
-        "desc": "単体極大ダメージ"
+        "fix": true
     }
 ];
