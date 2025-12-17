@@ -191,6 +191,28 @@ const App = {
             }
             return; 
         }
+		
+		// ★追加: 既存セーブデータの職業情報をDBマスタに合わせて強制上書き
+        if (App.data.characters) {
+            App.data.characters.forEach(c => {
+                // charId（マスタID）を持っているキャラのみ対象
+                if (c.charId) {
+                    const master = DB.CHARACTERS.find(m => m.id === c.charId);
+                    if (master && master.job) {
+                        // 職業が変更されていれば上書き更新
+                        if (c.job !== master.job) {
+                            console.log(`[DataFix] ${c.name}の職業を修正: ${c.job} -> ${master.job}`);
+                            c.job = master.job;
+                            
+                            // ※必要であればレアリティもここで同期可能
+                            // c.rarity = master.rarity; 
+                        }
+                    }
+                }
+            });
+            // 修正結果を即座に保存（次回以降のため）
+            App.save();
+        }
 
         // シナジー情報の更新
         if (App.data) {
