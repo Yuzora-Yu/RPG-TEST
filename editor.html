@@ -74,9 +74,15 @@
     <div v-if="currentTab==='skills'">
         <div class="bg-gray-800 p-3 rounded mb-4 border border-gray-600 flex flex-wrap gap-4 items-center justify-between">
             <div class="flex items-center gap-2">
-                <button @click="addSkill" class="btn btn-primary">+ 新規スキル作成</button>
-                <button @click="sortSkills" class="btn btn-secondary">ID順ソート</button>
-            </div>
+				<button @click="addSkill" class="btn btn-primary">+ 新規スキル作成</button>
+				<button @click="sortSkills" class="btn btn-secondary">ID順ソート</button>
+			</div>
+			<div class="flex gap-2">
+				<button @click="downloadCSV('skills')" class="btn bg-green-700 text-white text-xs">CSV出力</button>
+				<button @click="triggerCSVImport('skills')" class="btn bg-green-900 text-white text-xs border border-green-700">CSV取込</button>
+				
+				<button @click="toggleExport('skills')" class="btn btn-export text-xs">DB用テキスト出力</button>
+			</div>
             <div class="flex items-center gap-1 overflow-x-auto max-w-[600px]">
                 <span class="text-xs text-gray-400 mr-1">フィルタ:</span>
                 <button class="filter-btn" :class="{active: skillFilter === 'ALL'}" @click="skillFilter = 'ALL'">ALL</button>
@@ -292,9 +298,12 @@
     </div>
 
     <div v-if="currentTab==='monsters'">
-        <div class="bg-gray-800 p-2 rounded mb-2 border border-gray-600 flex justify-end">
-            <button @click="toggleExport('monsters')" class="btn btn-export text-xs">DB用テキスト出力</button>
-        </div>
+        <div class="bg-gray-800 p-2 rounded mb-2 border border-gray-600 flex justify-end gap-2">
+			<button @click="downloadCSV('monsters')" class="btn bg-green-700 text-white text-xs">CSV出力</button>
+			<button @click="triggerCSVImport('monsters')" class="btn bg-green-900 text-white text-xs border border-green-700">CSV取込</button>
+
+			<button @click="toggleExport('monsters')" class="btn btn-export text-xs">DB用テキスト出力</button>
+		</div>
         <div v-if="showExport.monsters" class="mb-4">
             <div class="flex justify-between items-end mb-1">
                 <label class="text-xs text-purple-300">▼ DB直書き用フォーマット</label>
@@ -468,8 +477,13 @@
                     <td>
                         <div class="flex gap-1 mb-1"><input type="text" v-model="c.name" placeholder="名前" class="font-bold"></div>
                         <div class="flex gap-1">
-                            <input type="text" v-model="c.job" placeholder="職業" class="text-xs">
-                            <select v-model="c.rarity" class="w-16 text-xs bg-gray-800">
+                            <select v-model="c.job" class="text-xs bg-gray-800 border border-gray-500 w-full" title="職業を選択">
+                                <option v-for="(skills, jobName) in jobSkills" :key="jobName" :value="jobName">
+                                    {{ jobName }}
+                                </option>
+                            </select>
+                            
+                            <select v-model="c.rarity" class="w-20 text-xs bg-gray-800 border border-gray-500">
                                 <option>N</option><option>R</option><option>SR</option><option>SSR</option><option>UR</option><option>EX</option>
                             </select>
                         </div>
@@ -638,7 +652,7 @@
 <script src="database.js"></script>
 
 <script>
-const { createApp, ref, reactive, computed, watch } = Vue;
+const { createApp, ref, reactive, computed, watch, toRaw } = Vue;
 
 createApp({
     setup() {
@@ -978,7 +992,10 @@ createApp({
         };
 
         const saveJobFile = async () => {
-            const content = `/* job_data.js */\nwindow.JOB_SKILLS_DATA = ${JSON.stringify(jobSkills, null, 4)};\nwindow.JOB_SKILLS = window.JOB_SKILLS_DATA;\n`;
+            // ★修正: リアクティブオブジェクトを「生のオブジェクト」に変換してから保存
+            const rawData = toRaw(jobSkills);
+            const content = `/* job_data.js */\nwindow.JOB_SKILLS_DATA = ${JSON.stringify(rawData, null, 4)};\nwindow.JOB_SKILLS = window.JOB_SKILLS_DATA;\n`;
+            
             try {
                 const handle = await window.showSaveFilePicker({ ...pickerOptions, suggestedName: 'job_data.js' });
                 const writable = await handle.createWritable();
@@ -1010,6 +1027,178 @@ createApp({
                 alert('database.js を保存しました！');
             } catch(e) { console.error(e); }
         };
+		
+		/* setup() 内に追加するコード */
+
+        // --- CSV Helper Functions ---
+        
+        // CSV用ヘッダー定義
+        const csvHeaders = {
+            skills: [
+                'id', 'name', 'type', 'target', 'mp', 'rate', 'count', 'base', 'elm', 'desc', 
+                'priority', 'SuccessRate', 'PercentDamage', 'turn', 
+                'drain', 'fix', 'IgnoreDefense', 'CureAilments', 'debuff_reset', 'buff_reset',
+                'buff', 'debuff', 'HPRegen', 'MPRegen',
+                'Poison', 'ToxicPoison', 'Shock', 'Fear', 'SpellSeal', 'SkillSeal', 'HealSeal'
+            ],
+            monsters: [
+                'id', 'name', 'rank', 'minF', 'hp', 'mp', 'atk', 'def', 'spd', 'mag', 'exp', 'gold', 
+                'actCount', 'acts', 'elmRes', 'resists'
+            ]
+        };
+
+        // 値をCSV形式にエスケープ
+        const escapeCSV = (val) => {
+            if (val === null || val === undefined) return '';
+            let str = String(val);
+            if (typeof val === 'object') str = JSON.stringify(val); // オブジェクトはJSON化
+            // カンマ、改行、ダブルクォートが含まれる場合はダブルクォートで囲み、内部のダブルクォートをエスケープ
+            if (str.includes(',') || str.includes('\n') || str.includes('"')) {
+                return `"${str.replace(/"/g, '""')}"`;
+            }
+            return str;
+        };
+
+        // CSVの1行をパース（引用符対応）
+        const parseCSVLine = (line) => {
+            const res = [];
+            let current = '';
+            let inQuote = false;
+            for (let i = 0; i < line.length; i++) {
+                const c = line[i];
+                if (inQuote) {
+                    if (c === '"') {
+                        if (i + 1 < line.length && line[i + 1] === '"') {
+                            current += '"';
+                            i++;
+                        } else {
+                            inQuote = false;
+                        }
+                    } else {
+                        current += c;
+                    }
+                } else {
+                    if (c === '"') {
+                        inQuote = true;
+                    } else if (c === ',') {
+                        res.push(current);
+                        current = '';
+                    } else {
+                        current += c;
+                    }
+                }
+            }
+            res.push(current);
+            return res;
+        };
+
+        // CSVダウンロード実行
+        const downloadCSV = (type) => {
+            const list = type === 'skills' ? db.SKILLS : db.MONSTERS;
+            const headers = csvHeaders[type];
+            if (!list || !headers) return;
+
+            // Header Row
+            let csvContent = headers.join(',') + '\n';
+
+            // Data Rows
+            list.forEach(item => {
+                const row = headers.map(key => {
+                    return escapeCSV(item[key]);
+                });
+                csvContent += row.join(',') + '\n';
+            });
+
+            // BOM付きUTF-8で保存 (Excel文字化け対策)
+            const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${type}_data.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        };
+
+        // CSVアップロードトリガー
+        const triggerCSVImport = (type) => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.csv';
+            input.onchange = (e) => handleCSVImport(e, type);
+            input.click();
+        };
+
+        // CSV取込処理
+        const handleCSVImport = (e, type) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const text = event.target.result;
+                    const lines = text.split(/\r\n|\n/).filter(l => l.trim() !== '');
+                    if (lines.length < 2) return;
+
+                    // ヘッダー解析
+                    const headers = parseCSVLine(lines[0].trim());
+                    
+                    const targetList = type === 'skills' ? db.SKILLS : db.MONSTERS;
+                    let count = 0;
+
+                    for (let i = 1; i < lines.length; i++) {
+                        const row = parseCSVLine(lines[i]);
+                        if (row.length !== headers.length) continue;
+
+                        const data = {};
+                        headers.forEach((key, idx) => {
+                            let val = row[idx];
+                            // 型変換の推論
+                            if (val === '') {
+                                val = undefined;
+                            } else if (!isNaN(Number(val)) && val.trim() !== '') {
+                                val = Number(val);
+                            } else if (val.toLowerCase() === 'true') {
+                                val = true;
+                            } else if (val.toLowerCase() === 'false') {
+                                val = false;
+                            } else if (val.startsWith('{') || val.startsWith('[')) {
+                                try { val = JSON.parse(val); } catch(e) {}
+                            }
+                            // 特定フィールドの補正
+                            if (key === 'img') val = null; // 画像はCSVから戻さない
+                            
+                            data[key] = val;
+                        });
+
+                        if (!data.id) continue;
+
+                        // 既存データの更新 または 新規追加
+                        const existingIdx = targetList.findIndex(item => item.id === data.id);
+                        if (existingIdx >= 0) {
+                            // 画像データなどCSVに含まれない情報は維持する
+                            const oldImg = targetList[existingIdx].img;
+                            const oldUid = targetList[existingIdx]._uid;
+                            targetList[existingIdx] = { ...data, _uid: oldUid, img: oldImg || data.img };
+                        } else {
+                            data._uid = Math.random().toString(36);
+                            targetList.push(data);
+                        }
+                        count++;
+                    }
+                    alert(`${count}件のデータを読み込みました`);
+                    
+                    // ID順にソート
+                    targetList.sort((a, b) => a.id - b.id);
+
+                } catch (err) {
+                    console.error(err);
+                    alert("CSVの読み込みに失敗しました");
+                }
+            };
+            reader.readAsText(file);
+        };
 
         return {
             db, jobSkills, currentTab, selectedMonster, currentJob,
@@ -1021,11 +1210,11 @@ createApp({
             skillFilter, filteredSkills, sortSkills,
             showExport, exportText, toggleExport,
             addMonsterAct, recalcMonsterActs,
-			updateBuff, updateDebuff
+			updateBuff, updateDebuff,
+			downloadCSV, triggerCSVImport
         };
     }
 }).mount('#app');
 </script>
 </body>
 </html>
-
