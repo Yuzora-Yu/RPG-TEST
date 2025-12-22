@@ -618,6 +618,7 @@ window.SKILLS_DATA = [
         "type": "回復",
         "target": "自分",
         "mp": 0,
+		"ratio": 0.5,
         "rate": 0,
         "count": 1,
         "base": 0,
@@ -629,6 +630,7 @@ window.SKILLS_DATA = [
         "type": "MP回復",
         "target": "自分",
         "mp": 0,
+		"ratio": 0.5,
         "rate": 0,
         "count": 1,
         "base": 0,
@@ -1792,7 +1794,7 @@ window.SKILLS_DATA = [
     {
         "id": 601,
         "name": "火炎の息",
-        "type": "魔法",
+        "type": "ブレス",
         "target": "全体",
         "mp": 0,
         "rate": 0.7,
@@ -1804,7 +1806,7 @@ window.SKILLS_DATA = [
     {
         "id": 602,
         "name": "こごえる吹雪",
-        "type": "魔法",
+        "type": "ブレス",
         "target": "全体",
         "mp": 0,
         "rate": 0.9,
@@ -1816,7 +1818,7 @@ window.SKILLS_DATA = [
     {
         "id": 603,
         "name": "はげしい炎",
-        "type": "魔法",
+        "type": "ブレス",
         "target": "全体",
         "mp": 0,
         "rate": 0.9,
@@ -1828,7 +1830,7 @@ window.SKILLS_DATA = [
     {
         "id": 604,
         "name": "かがやく息",
-        "type": "魔法",
+        "type": "ブレス",
         "target": "全体",
         "mp": 0,
         "rate": 1.1,
@@ -1840,7 +1842,7 @@ window.SKILLS_DATA = [
     {
         "id": 605,
         "name": "しゃくねつ",
-        "type": "魔法",
+        "type": "ブレス",
         "target": "全体",
         "mp": 0,
         "rate": 1.1,
@@ -1852,7 +1854,7 @@ window.SKILLS_DATA = [
     {
         "id": 606,
         "name": "絶対零度",
-        "type": "魔法",
+        "type": "ブレス",
         "target": "全体",
         "mp": 0,
         "rate": 1.5,
@@ -1864,7 +1866,7 @@ window.SKILLS_DATA = [
     {
         "id": 607,
         "name": "暗黒のきり",
-        "type": "魔法",
+        "type": "ブレス",
         "target": "全体",
         "mp": 0,
         "rate": 1.2,
@@ -1876,7 +1878,7 @@ window.SKILLS_DATA = [
     {
         "id": 608,
         "name": "いなずま",
-        "type": "魔法",
+        "type": "ブレス",
         "target": "全体",
         "mp": 0,
         "rate": 1.2,
@@ -1888,7 +1890,7 @@ window.SKILLS_DATA = [
     {
         "id": 609,
         "name": "煉獄火炎",
-        "type": "魔法",
+        "type": "ブレス",
         "target": "全体",
         "mp": 0,
         "rate": 2,
@@ -1900,7 +1902,7 @@ window.SKILLS_DATA = [
     {
         "id": 610,
         "name": "シャイニングブレス",
-        "type": "魔法",
+        "type": "ブレス",
         "target": "全体",
         "mp": 450,
         "rate": 2.5,
@@ -1917,7 +1919,7 @@ window.SKILLS_DATA = [
     {
         "id": 611,
         "name": "ダークネスブレス",
-        "type": "魔法",
+        "type": "ブレス",
         "target": "全体",
         "mp": 550,
         "rate": 2.5,
@@ -1934,7 +1936,7 @@ window.SKILLS_DATA = [
     {
         "id": 612,
         "name": "霜白の氷塊",
-        "type": "魔法",
+        "type": "ブレス",
         "target": "全体",
         "mp": 0,
         "rate": 1.8,
@@ -1945,7 +1947,7 @@ window.SKILLS_DATA = [
     {
         "id": 613,
         "name": "紅蓮の炎",
-        "type": "物理",
+        "type": "ブレス",
         "target": "全体",
         "mp": 0,
         "rate": 1.8,
@@ -1983,7 +1985,7 @@ window.SKILLS_DATA = [
     {
         "id": 616,
         "name": "流星",
-        "type": "魔法",
+        "type": "ブレス",
         "target": "ランダム",
         "mp": 0,
         "rate": 1.5,
@@ -2232,7 +2234,7 @@ window.SKILLS_DATA = [
     {
         "id": 908,
         "name": "魔触",
-        "type": "魔法",
+        "type": "ブレス",
         "target": "全体",
         "mp": 1000,
         "rate": 0.7,
