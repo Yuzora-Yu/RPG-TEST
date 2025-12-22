@@ -97,7 +97,7 @@ window.ITEMS_DATA = [
         "val": 100,
         "desc": "死んだ仲間を生き返らせる",
         "target": "単体",
-        "price": 10000
+        "price": 20000
     },
     {
         "id": 13,
@@ -107,7 +107,7 @@ window.ITEMS_DATA = [
         "val": 9999,
         "desc": "HPを9999回復",
         "target": "単体",
-        "price": 2000
+        "price": 20000
     },
     {
         "id": 12,
@@ -135,7 +135,7 @@ window.ITEMS_DATA = [
         "val": 9999,
         "desc": "MPを9999回復",
         "target": "単体",
-        "price": 10000
+        "price": 50000
     },
     {
         "id": 7,
@@ -156,6 +156,16 @@ window.ITEMS_DATA = [
         "desc": "味方全員のHPを全回復",
         "target": "全体",
         "price": 500000
+    },
+	    {
+        "id": 98,
+        "rank": 99,
+        "name": "災厄の楔",
+        "type": "貴重品",
+        "val": 0,
+        "desc": "メダル交換所で災厄の王と戦えるようになる呪物",
+        "target": "なし",
+        "price": 0
     },
     {
         "id": 99,
