@@ -42,6 +42,14 @@ enter: () => {
             });
         }
 
+	// ★追加: 3. 最高到達階から直接開始する選択肢 (これで110階などが表示されます)
+		if (maxF > 1 && !choices.some(c => c.label.includes(`${maxF}階`))) {
+			choices.push({ 
+				label: `${maxF}階から (最高到達)`, 
+				callback: () => Dungeon.start(maxF) 
+			});
+		}
+
         // 選択肢が2つ以上ある場合はリストを表示、1つなら即開始
         if (choices.length > 1) {
             Menu.listChoice(
