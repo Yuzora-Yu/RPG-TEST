@@ -2503,6 +2503,7 @@ findNextActor: () => {
 		} 
 		// 3位：ボスが4体並ぶ場合（少し縮小して詰め込む）
 		else if (isBoss && totalCount === 4) { 
+			widthPerEnemy = 22;
 			scaleFactor = 0.8;    // 4体だと窮屈なので少し小さく
 			paddingBottomVal = "0px";
 		}
@@ -2522,14 +2523,15 @@ findNextActor: () => {
 			paddingBottomVal = "5px";
 			marginTopVal = "-10px";
 		}
-		// 6位：通常の雑魚敵（1体以上）の場合
-		else if (totalCount >= 1) { 
-			widthPerEnemy = 30;
-			scaleFactor = 1.0; 
+		// 6位：通常の雑魚敵（4体以上）の場合
+		else if (totalCount >= 4) { 
+			widthPerEnemy = 22;
+			scaleFactor = 0.8; 
 		}
 		// 例外：敵がいない（または全滅直後）などのデフォルト
 		else { 
-			scaleFactor = 0.8; 
+			widthPerEnemy = 30;
+			scaleFactor = 1.0; 
 		}
 
         // 実際の描画ループ
