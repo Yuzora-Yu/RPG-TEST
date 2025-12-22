@@ -274,16 +274,71 @@ const MenuBlacksmith = {
         footer.innerHTML = '<div style="color:#f88; font-size:11px; text-align:center; font-weight:bold;">継承させたい能力を持つ「素材装備」を選択</div>';
     },
 
+    /* blacksmith.js: renderOptionList_Synthesis の修正 (鍛冶レベル不足判定を追加) */
+
     renderOptionList_Synthesis: () => {
         MenuBlacksmith.changeScreen('option');
         const list = document.getElementById('smith-option-list');
         const header = document.getElementById('smith-option-header');
         header.innerText = "継承させるオプションを選択";
         list.innerHTML = '';
+
+        // --- 鍛冶屋レベルによる「出現し得る最低レアリティ」の特定 ---
+        const rarities = ['N', 'R', 'SR', 'SSR', 'UR', 'EX'];
+        const smithLevel = App.data.blacksmith?.level || 1;
+        
+        // getRateObj(Lv) のロジックに基づき、最低インデックスを算出
+        // Lv10以上:SSR(3), Lv5以上:SR(2), その他:R(1)
+        let minPossibleRarityIdx = 1; 
+        if (smithLevel >= 10) minPossibleRarityIdx = 3;
+        else if (smithLevel >= 5) minPossibleRarityIdx = 2;
+
         MenuBlacksmith.state.material.opts.forEach((opt, idx) => {
-            const div = document.createElement('div'); div.className = 'list-item';
-            div.innerHTML = `<div style="color:${Menu.getRarityColor(opt.rarity)}; font-weight:bold;">${opt.label} +${opt.val} (${opt.rarity})</div>`;
-            div.onclick = () => { MenuBlacksmith.state.targetOptIdx = idx; MenuBlacksmith.confirmSynthesis(); };
+            // ルールの取得 (DB.OPT_RULES または CONST.OPT_RULES)
+            const rules = (typeof DB !== 'undefined' && DB.OPT_RULES) ? DB.OPT_RULES : (typeof CONST !== 'undefined' ? CONST.OPT_RULES : []);
+            const rule = rules.find(r => r.key === opt.key && (r.elm === opt.elm || !r.elm));
+
+            // ★追加: 鍛冶屋レベル不足の判定
+            let isLevelInsufficient = false;
+            let minRequiredRarity = 'N';
+
+            if (rule && rule.allowed) {
+                // オプションが許可している最低レアリティのインデックスを取得
+                const minAllowedIdx = Math.min(...rule.allowed.map(r => rarities.indexOf(r)));
+                minRequiredRarity = rarities[minAllowedIdx];
+                
+                // 抽選される最低レアが、オプションの許可下限を下回る場合はNG
+                if (minPossibleRarityIdx < minAllowedIdx) {
+                    isLevelInsufficient = true;
+                }
+            }
+
+            const div = document.createElement('div'); 
+            div.className = 'list-item';
+            div.style.cssText = 'flex-direction:column; align-items:flex-start; position:relative;';
+            
+            if (isLevelInsufficient) {
+                div.style.opacity = '0.5';
+                div.style.background = '#222';
+            }
+
+            div.innerHTML = `
+                <div style="display:flex; justify-content:space-between; width:100%;">
+                    <span style="color:${Menu.getRarityColor(opt.rarity)}; font-weight:bold;">
+                        ${opt.label} +${opt.val} (${opt.rarity})
+                    </span>
+                </div>
+                ${isLevelInsufficient ? `<div style="color:#f44; font-size:10px; font-weight:bold; margin-top:2px;">⚠️ 鍛冶レベル不足 (最低確定:${minRequiredRarity}が必要)</div>` : ''}
+            `;
+
+            div.onclick = () => {
+                if (isLevelInsufficient) {
+                    Menu.msg(`<span style="color:#f44; font-weight:bold;">鍛冶屋の熟練度が足りません。</span><br><br>この能力を合成で扱うには、最低でも <span style="color:#fff;">${minRequiredRarity}</span> ランク以上が確定するレベルが必要です。<br><br><span style="font-size:10px; color:#aaa;">※現在の最低確定ランク: ${rarities[minPossibleRarityIdx]}</span>`);
+                    return;
+                }
+                MenuBlacksmith.state.targetOptIdx = idx; 
+                MenuBlacksmith.confirmSynthesis(); 
+            };
             list.appendChild(div);
         });
     },
