@@ -2887,15 +2887,26 @@ findNextActor: () => {
 				flash.classList.add('flash-active');
 			}
 		}
+	    // battle.js (Battle.win 関数内)
+// 経験値処理
+const surviveMembers = Battle.party.filter(p => !p.isDead);
+Battle.log(`経験値: ${totalExp} EXP を獲得`);
+surviveMembers.forEach(p => {
+    const charData = App.getChar(p.uid);
+    if (charData) {
+        // レベルアップ処理を実行
+        App.gainExp(charData, totalExp).forEach(msg => Battle.log(msg));
 
-		// 経験値処理
-		const surviveMembers = Battle.party.filter(p => !p.isDead);
-		Battle.log(`経験値: ${totalExp} EXP を獲得`);
-		surviveMembers.forEach(p => {
-			const charData = App.getChar(p.uid);
-			if (charData) App.gainExp(charData, totalExp).forEach(msg => Battle.log(msg));
-		});
-
+        // ★追加: レベルアップ後の全回復状態を、戦闘用インスタンス(p)にも即座に反映させる
+        // これをやらないと、endBattleで「戦闘終了時の減ったHP」で上書きされてしまう
+        p.hp = charData.currentHp;
+        p.mp = charData.currentMp;
+        p.level = charData.level;
+        p.baseMaxHp = charData.currentHp; // 最大HPも増えているため更新
+        p.baseMaxMp = charData.currentMp;
+    }
+});
+	    
 		Battle.log("\n▼ 画面タップで終了 ▼");
 
 		// ★修正: ダンジョンの階段出現 (エスターク戦以外、かつボスの時のみ)
