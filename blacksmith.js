@@ -379,6 +379,9 @@ const MenuBlacksmith = {
     renderMaterialList_Enhance: (resetFilter = true) => {
         const list = document.getElementById('smith-list');
         const footer = document.getElementById('smith-footer');
+		
+		MenuBlacksmith.changeScreen('select');
+		
         MenuBlacksmith.step = 'material';
         if(resetFilter) { MenuBlacksmith.filter = { category: 'ALL', option: 'ALL' }; MenuBlacksmith.renderFilterArea(); }
         const req = MenuBlacksmith.state.requiredCount; MenuBlacksmith.state.materials = [];
