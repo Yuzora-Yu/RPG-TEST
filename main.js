@@ -35,20 +35,37 @@ class Entity {
     }
 
     getStat(key) {
-        // ★修正: モンスターの「耐性」データも正しく参照できるようにする
-        if (key === 'resists' && !(this instanceof Player)) {
-            return this.resists || {};
+        // 耐性系の特別な処理 (Player/Monster 両対応)
+        if (key === 'resists' || key === 'elmRes') {
+            const currentVal = this[key] || {};
+            // インスタンスに値がある(201階層等の動的付与)場合はそれを優先
+            if (Object.keys(currentVal).length > 0) return currentVal;
+
+            // なければ元データから取得
+            if (this instanceof Player) {
+                const stats = App.calcStats(this.originData);
+                return stats[key] || {};
+            } else {
+                return (this.data ? this.data[key] : {}) || {};
+            }
         }
 
-        let val = this.baseStats[key] || 0;
-        if(this instanceof Player) {
+        // 通常ステータス
+        let val = (this.baseStats && this.baseStats[key] !== undefined) ? this.baseStats[key] : 0;
+        
+        if (this instanceof Player) {
             const stats = App.calcStats(this.originData);
             val = stats[key] || 0;
+        } else {
+            // モンスターの場合はインスタンスの値を優先 (scale適用済みの数値)
+            if (this[key] !== undefined) val = this[key];
         }
-        if(this.buffs[key]) val = Math.floor(val * this.buffs[key]);
+
+        // バフ・デバフの乗算処理
+        if (this.buffs && this.buffs[key]) val = Math.floor(val * this.buffs[key]);
         return val;
     }
-
+		
     getStats() {
         if(this instanceof Player) {
             return App.calcStats(this.originData);
@@ -97,11 +114,15 @@ class Player extends Entity {
         this.uid = data.uid;
         this.equips = data.equips || {};
         
-		// ★修正: Entityで設定されたspをそのまま使う (再定義しない)
-        //this.sp = data.sp !== undefined ? data.sp : 0;
-        this.tree = data.tree || { ATK:0, MAG:0, SPD:0, HP:0, MP:0 };
+        // ★最重要修正: コンフィグの参照をインスタンスに引き継ぐ
+        // これにより、MenuAlliesで書き換えた内容が戦闘中のactorからも見えるようになります
+        this.config = data.config || { fullAuto: false, hiddenSkills: [] };
+        
+        // 万が一データ側にconfigがなければ、初期値をデータ側にもセットして参照を同期させる
+        if (!data.config) data.config = this.config;
 
-        this.skills = [DB.SKILLS.find(s => s.id === 1)]; 
+        this.tree = data.tree || { ATK:0, MAG:0, SPD:0, HP:0, MP:0 };
+        this.skills = [DB.SKILLS.find(s => s.id === 1)];
 
         const table = JOB_SKILLS[data.job];
         if (table) {
@@ -150,15 +171,33 @@ class Monster extends Entity {
         super(data);
         this.id = data.id;
         this.data = data;
-        this.hp = Math.floor((data.hp || 100) * scale);
+        
+        // ★修正: 30階以下の敵調整ロジック (確認済)
+        let hpMod = 1.0;
+        let statMod = 1.0;
+        
+        // data.rank が存在する場合のみ適用 (ボス等は対象外にしたい場合は条件追加)
+        if (data.rank && data.rank <= 30) {
+            hpMod = 0.8; // HP 20%ダウン
+            statMod = 1.1; // 攻撃・魔力 10%アップ
+        }
+
+        this.hp = Math.floor((data.hp || 100) * scale * hpMod);
         this.baseMaxHp = this.hp;
-        this.baseStats.atk = Math.floor((data.atk || 10) * scale);
-        this.baseStats.def = Math.floor((data.def || 10) * scale);
+        
+        // 攻撃力等は少し高くして、戦闘のテンポを上げる（受けるダメ増、敵すぐ死ぬ）
+        this.baseStats.atk = Math.floor((data.atk || 10) * scale * statMod);
+        this.baseStats.def = Math.floor((data.def || 10) * scale); 
         this.baseStats.spd = Math.floor((data.spd || 10) * scale);
-        this.baseStats.mag = Math.floor((data.mag || 10) * scale);
+        this.baseStats.mag = Math.floor((data.mag || 10) * scale * statMod);
+        
         this.acts = data.acts || [1];
         this.baseId = data.id;
         this.actCount = data.actCount || 1;
+        
+        // ★追加: ブレス耐性などの初期化（あれば）
+        this.resists = data.resists || {};
+		this.elmRes = data.elmRes || {};
     }
 }
 
@@ -190,6 +229,22 @@ const App = {
                  window.location.href = 'main.html'; 
             }
             return; 
+        }
+		
+		// ★追加: 既存セーブデータの拡張（コンフィグ初期化）
+        if (App.data.characters) {
+            App.data.characters.forEach(c => {
+                if (!c.config) c.config = { fullAuto: false, hiddenSkills: [] };
+                
+                // charId修正ロジック（既存）
+                if (c.charId) {
+                    const master = DB.CHARACTERS.find(m => m.id === c.charId);
+                    if (master && master.job && c.job !== master.job) {
+                        c.job = master.job;
+                    }
+                }
+            });
+            App.save();
         }
 		
 		// ★追加: 既存セーブデータの職業情報をDBマスタに合わせて強制上書き
@@ -296,15 +351,25 @@ const App = {
             }
         });
 
-        const bindPad = (id, dx, dy) => {
-            const el = document.getElementById(id);
-            if(!el) return;
-            el.onmousedown = (e) => { e.preventDefault(); startMove(dx, dy); };
-            el.onmouseup = stopMove;
-            el.onmouseleave = stopMove;
-            el.ontouchstart = (e) => { e.preventDefault(); startMove(dx, dy); };
-            el.ontouchend = stopMove;
-        };
+        /* main.js の bindPad 部分を以下のロジックに差し替えてください */
+		const bindPad = (id, dx, dy) => {
+			const el = document.getElementById(id);
+			if(!el) return;
+
+			// マウス操作
+			el.onmousedown = (e) => { e.preventDefault(); startMove(dx, dy); };
+			el.onmouseup = stopMove;
+			el.onmouseleave = stopMove;
+
+			// タッチ操作（エラー対策版）
+			el.ontouchstart = (e) => { 
+				// ブラウザ側で「キャンセル可能(cancelable)」な場合のみ preventDefault を呼ぶ
+				// これにより Intervention エラーを回避し、かつボタンの誤作動（意図しないスクロール）を防ぎます
+				if (e.cancelable) e.preventDefault(); 
+				startMove(dx, dy); 
+			};
+			el.ontouchend = stopMove;
+		};
         bindPad('btn-up', 0, -1);
         bindPad('btn-down', 0, 1);
         bindPad('btn-left', -1, 0);
@@ -376,15 +441,40 @@ const App = {
             if(j){ 
                 App.data=JSON.parse(j); 
                 if(!App.data.book) App.data.book = { monsters: [] }; 
+				
+				if (!App.data.book.killCounts) {
+					App.data.book.killCounts = {}; 
+				}
+				
                 if(!App.data.battle) App.data.battle = { active: false }; 
+				
+				// ★追加: 統計データオブジェクトがない場合の初期化
+				if(!App.data.stats) {
+					App.data.stats = {
+						maxGold: 0,
+						maxGems: 0,
+						wipeoutCount: 0,
+						totalSteps: 0,
+						totalBattles: 0,
+						maxDamage: { val: 0, actor: '', skill: '' },
+						startTime: Date.now()
+					};
+				}
             } 
         }catch(e){ console.error(e); } 
     },
+	
     save: () => { 
         if(App.data && Field.ready) { 
             App.data.location.x=Field.x; 
             App.data.location.y=Field.y; 
         } 
+		
+		// ★追加: 最大所持記録の更新
+		if(!App.data.stats) App.data.stats = { maxGold: 0, maxGems: 0 };
+		if(App.data.gold > (App.data.stats.maxGold || 0)) App.data.stats.maxGold = App.data.gold;
+		if(App.data.gems > (App.data.stats.maxGems || 0)) App.data.stats.maxGems = App.data.gems;
+		
         try {
             localStorage.setItem(CONST.SAVE_KEY, JSON.stringify(App.data));
         } catch(e) { console.error(e); }
