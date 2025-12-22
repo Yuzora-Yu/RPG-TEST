@@ -297,13 +297,13 @@
         </div>
     </div>
 
-    <div v-if="currentTab==='monsters'">
+    <div v-if="currentTab === 'monsters'">
         <div class="bg-gray-800 p-2 rounded mb-2 border border-gray-600 flex justify-end gap-2">
-			<button @click="downloadCSV('monsters')" class="btn bg-green-700 text-white text-xs">CSV出力</button>
-			<button @click="triggerCSVImport('monsters')" class="btn bg-green-900 text-white text-xs border border-green-700">CSV取込</button>
+            <button @click="downloadCSV('monsters')" class="btn bg-green-700 text-white text-xs">CSV出力</button>
+            <button @click="triggerCSVImport('monsters')" class="btn bg-green-900 text-white text-xs border border-green-700">CSV取込</button>
+            <button @click="toggleExport('monsters')" class="btn btn-export text-xs">DB用テキスト出力</button>
+        </div>
 
-			<button @click="toggleExport('monsters')" class="btn btn-export text-xs">DB用テキスト出力</button>
-		</div>
         <div v-if="showExport.monsters" class="mb-4">
             <div class="flex justify-between items-end mb-1">
                 <label class="text-xs text-purple-300">▼ DB直書き用フォーマット</label>
@@ -315,126 +315,129 @@
         <div class="save-area">
             <button @click="savePartial('monsters')" class="btn btn-save">💾 モンスターデータ (monsters.js) を保存</button>
         </div>
-        <div class="grid grid-cols-12 gap-4 h-[70vh]">
-            <div class="col-span-3 overflow-y-auto pr-2 border-r border-gray-600">
-                <div v-for="(m, index) in db.MONSTERS" :key="m._uid" 
-                     class="p-2 border-b border-gray-700 cursor-pointer hover:bg-gray-700 flex items-center gap-2"
-                     :class="{'bg-gray-700 border-l-4 border-yellow-500': selectedMonster === m}"
-                     @click="selectMonster(m)">
-                    <img :src="m.img || dummyImg" class="w-8 h-8 object-cover bg-black rounded border border-gray-600">
-                    <div>
-                        <div class="font-bold text-sm">{{ m.name }}</div>
-                        <div class="text-xs text-gray-400">ID:{{m.id}} / Rank:{{m.rank}}</div>
+
+        <div class="grid grid-cols-12 gap-4 h-[75vh]">
+            <div class="col-span-3 overflow-y-auto pr-2 border-r border-gray-600 flex flex-col">
+                <div v-for="m in db.MONSTERS" :key="m._uid" 
+                     @click="selectMonster(m)"
+                     :class="['p-3 mb-2 cursor-pointer rounded border transition-all duration-200', selectedMonster && selectedMonster.id === m.id ? 'bg-blue-900 border-blue-400 shadow-inner' : 'bg-gray-700 border-gray-600 hover:bg-gray-600']">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="font-mono text-[10px] text-gray-400">ID: {{m.id}}</span>
+                        <span v-if="m.isRare" class="text-[10px] bg-yellow-500 text-black px-1.5 py-0.5 rounded font-bold">RARE</span>
                     </div>
+                    <div class="font-bold text-white truncate">{{m.name}}</div>
+                    <div class="text-[10px] text-gray-400 mt-1">Rank: {{m.rank}} / minF: {{m.minF}}</div>
                 </div>
-                <button @click="addMonster" class="btn btn-primary w-full mt-2">+ 新規追加</button>
+                <button @click="addMonster" class="btn btn-primary w-full mt-2 font-bold shadow-lg">+ 新規追加</button>
             </div>
 
             <div class="col-span-9 overflow-y-auto pl-2" v-if="selectedMonster">
-                <div class="grid grid-cols-12 gap-4">
-                    <div class="col-span-4 space-y-2">
-                        <h3 class="text-yellow-400 border-b border-gray-600 pb-1 mb-2">基本設定</h3>
+                <div class="grid grid-cols-12 gap-6">
+                    
+                    <div class="col-span-4 space-y-4">
+                        <h3 class="text-yellow-400 border-b border-gray-600 pb-1 font-bold">基本設定</h3>
                         <div><label>ID</label><input type="number" v-model.number="selectedMonster.id"></div>
-                        <div><label>名前</label><input type="text" v-model="selectedMonster.name"></div>
-                        <div class="flex gap-2">
-                            <div><label>Rank</label><input type="number" v-model.number="selectedMonster.rank"></div>
-                            <div><label>HP</label><input type="number" v-model.number="selectedMonster.hp"></div>
-                            <div><label>MP</label><input type="number" v-model.number="selectedMonster.mp"></div>
+                        <div><label>名前</label><input type="text" v-model="selectedMonster.name" class="font-bold text-lg"></div>
+                        
+                        <div class="grid grid-cols-2 gap-2">
+                            <div><label>出現Rank</label><input type="number" v-model.number="selectedMonster.rank"></div>
+                            <div><label>開始階層(minF)</label><input type="number" v-model.number="selectedMonster.minF"></div>
                         </div>
 
                         <div class="grid grid-cols-2 gap-2">
-                            <div><label>Rank</label><input type="number" v-model.number="selectedMonster.rank"></div>
-                            <div><label>出現階層 (minF)</label><input type="number" v-model.number="selectedMonster.minF"></div>
+                            <div><label>HP</label><input type="number" v-model.number="selectedMonster.hp" class="text-green-300"></div>
+                            <div><label>MP</label><input type="number" v-model.number="selectedMonster.mp" class="text-blue-300"></div>
                         </div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <div><label>HP</label><input type="number" v-model.number="selectedMonster.hp"></div>
-                            <div><label>MP</label><input type="number" v-model.number="selectedMonster.mp"></div>
+
+                        <div class="flex items-center p-2 bg-gray-900 border border-gray-700 rounded shadow-inner">
+                            <input type="checkbox" id="m-rare" v-model="selectedMonster.isRare" class="w-5 h-5 accent-yellow-500">
+                            <label for="m-rare" class="ml-2 text-yellow-400 font-bold text-sm cursor-pointer select-none">レアモンスター判定</label>
                         </div>
-                        <div class="mt-4 p-2 bg-black rounded text-center border border-gray-600">
-                            <img :src="selectedMonster.img || dummyImg" class="h-24 mx-auto object-contain mb-2">
+
+                        <div class="p-2 bg-black rounded text-center border border-gray-600 shadow-md">
+                            <img :src="selectedMonster.img || dummyImg" class="h-32 mx-auto object-contain mb-2">
                             <label class="btn btn-primary text-xs cursor-pointer block">
                                 画像を選択 (Base64)
                                 <input type="file" accept="image/*" class="hidden" @change="e => handleImageUpload(e, selectedMonster)">
                             </label>
                         </div>
-                        <div class="mt-4 text-right">
-                            <button @click="removeList(db.MONSTERS, db.MONSTERS.indexOf(selectedMonster)); selectedMonster=null" class="btn btn-danger text-xs">削除</button>
+
+                        <div class="pt-4">
+                            <button @click="removeList(db.MONSTERS, db.MONSTERS.indexOf(selectedMonster)); selectedMonster=null" 
+                                    class="btn btn-danger w-full text-xs py-2 shadow-lg">このモンスターを削除</button>
                         </div>
                     </div>
 
-                    <div class="col-span-8 space-y-2">
-                        <h3 class="text-yellow-400 border-b border-gray-600 pb-1 mb-2">ステータス & スキル</h3>
-                        <div class="grid grid-cols-4 gap-2 mb-4">
+                    <div class="col-span-8 space-y-4">
+                        <h3 class="text-yellow-400 border-b border-gray-600 pb-1 font-bold">ステータス & 報酬・耐性</h3>
+                        
+                        <div class="grid grid-cols-6 gap-2">
                             <div><label>攻撃力</label><input type="number" v-model.number="selectedMonster.atk"></div>
                             <div><label>守備力</label><input type="number" v-model.number="selectedMonster.def"></div>
                             <div><label>素早さ</label><input type="number" v-model.number="selectedMonster.spd"></div>
                             <div><label>魔力</label><input type="number" v-model.number="selectedMonster.mag"></div>
+                            <div class="col-span-1 bg-blue-900 bg-opacity-20"><label class="text-blue-300">経験値</label><input type="number" v-model.number="selectedMonster.exp" class="border-blue-700"></div>
+                            <div class="col-span-1 bg-yellow-900 bg-opacity-20"><label class="text-yellow-300">GOLD</label><input type="number" v-model.number="selectedMonster.gold" class="border-yellow-700"></div>
                         </div>
 
-                        <div class="bg-gray-800 p-3 rounded mb-4 border border-gray-600">
+                        <div class="bg-gray-800 p-3 rounded border border-gray-600 shadow-md">
                             <div class="flex justify-between items-center mb-2">
-                                <label class="text-sm font-bold text-gray-300">行動パターン</label>
-                                <div class="text-xs">回数: <input type="number" v-model.number="selectedMonster.actCount" class="w-12 text-center inline-block"></div>
+                                <label class="text-sm font-bold text-green-400">行動パターン設定</label>
+                                <div class="text-xs text-gray-400">1ターンの行動回数: <input type="number" v-model.number="selectedMonster.actCount" class="w-10 text-center bg-gray-900 border-gray-700"></div>
                             </div>
-                            <div class="max-h-48 overflow-y-auto pr-1">
-                                <div v-for="(act, idx) in selectedMonster.acts" :key="idx" class="flex gap-1 mb-2 items-center bg-gray-900 p-1 rounded">
-                                    
-                                    <select v-model.number="act.condition" class="w-24 text-xs bg-gray-700 border-none mr-1" title="使用条件">
+                            <div class="max-h-40 overflow-y-auto pr-1 space-y-1">
+                                <div v-for="(act, idx) in selectedMonster.acts" :key="idx" class="flex gap-2 items-center bg-gray-900 p-1 rounded border border-gray-700">
+                                    <select v-model.number="act.condition" class="w-24 text-xs bg-gray-700 border-none">
                                         <option :value="0">常時</option>
                                         <option :value="1">HP≧50%</option>
                                         <option :value="2">HP≦50%</option>
-                                        <option :value="3">状態異常</option>
+                                        <option :value="3">状態異常中</option>
                                     </select>
-
-                                    <select v-model="act.id" class="flex-1 text-xs bg-gray-800 border-none mr-1">
-                                        <option :value="1">通常攻撃 (ID:1)</option>
-                                        <option :value="2">防御 (ID:2)</option>
-                                        <option :value="9">逃げる (ID:9)</option>
-                                        <option disabled>--- スキル ---</option>
+                                    <select v-model="act.id" class="flex-1 text-xs bg-gray-800 border-none">
                                         <option v-for="s in db.SKILLS" :value="s.id">{{ s.name }} (ID:{{s.id}})</option>
                                     </select>
-
                                     <div class="flex items-center w-16">
-                                        <input type="number" v-model.number="act.rate" class="w-full text-right text-xs bg-gray-700 border-none" placeholder="%">
+                                        <input type="number" v-model.number="act.rate" class="w-full text-right text-xs bg-gray-700 border-none">
                                         <span class="text-xs text-gray-500 ml-1">%</span>
                                     </div>
-
-                                    <button @click="selectedMonster.acts.splice(idx, 1)" class="btn btn-danger px-2 py-0 text-xs h-6">×</button>
+                                    <button @click="selectedMonster.acts.splice(idx, 1)" class="text-red-500 font-bold px-2 hover:text-red-300">×</button>
                                 </div>
                             </div>
                             <div class="flex gap-2 mt-2">
                                 <button @click="addMonsterAct" class="btn btn-success text-xs flex-1">+ 行動追加</button>
-                                <button @click="recalcMonsterActs" class="btn btn-secondary text-xs flex-1">均等割り振り</button>
+                                <button @click="recalcMonsterActs" class="btn btn-secondary text-xs flex-1">重みを均等化</button>
                             </div>
                         </div>
 
-                        <h3 class="text-yellow-400 border-b border-gray-600 pb-1 mb-2">耐性設定 (％)</h3>
                         <div class="grid grid-cols-2 gap-4">
-                            <div class="bg-gray-800 p-2 rounded border border-gray-600">
-                                <label class="text-xs font-bold text-blue-300 mb-1">属性耐性 (elmRes)</label>
-                                <div class="grid grid-cols-2 gap-2">
-                                    <div v-for="e in elements" :key="e" class="flex items-center">
-                                        <span class="text-xs w-8 text-gray-400">{{e}}</span>
-                                        <input type="number" v-model.number="selectedMonster.elmRes[e]" class="text-xs text-right h-6" placeholder="0">
+                            <div class="bg-gray-800 p-3 rounded border border-gray-600 shadow-md">
+                                <label class="text-xs font-bold text-red-400 mb-2 block uppercase tracking-widest">属性耐性 (%)</label>
+                                <div class="grid grid-cols-2 gap-x-3 gap-y-1">
+                                    <div v-for="el in elements" :key="el" class="flex items-center justify-between">
+                                        <span class="text-[10px] text-gray-500">{{el}}</span>
+                                        <input type="number" v-model.number="selectedMonster.elmRes[el]" class="w-12 text-right text-[10px] h-5 py-0">
                                     </div>
                                 </div>
                             </div>
-                            <div class="bg-gray-800 p-2 rounded border border-gray-600">
-                                <label class="text-xs font-bold text-red-300 mb-1">状態異常耐性 (resists)</label>
-                                <div class="grid grid-cols-1 gap-1">
+                            <div class="bg-gray-800 p-3 rounded border border-gray-600 shadow-md">
+                                <label class="text-xs font-bold text-purple-400 mb-2 block uppercase tracking-widest">状態異常耐性 (%)</label>
+                                <div class="space-y-1">
                                     <div v-for="(label, key) in resistLabels" :key="key" class="flex items-center justify-between">
-                                        <span class="text-xs text-gray-400">{{label}}</span>
-                                        <input type="number" v-model.number="selectedMonster.resists[key]" class="text-xs text-right h-6 w-16" placeholder="0">
+                                        <span class="text-[10px] text-gray-500">{{label}}</span>
+                                        <input type="number" v-model.number="selectedMonster.resists[key]" class="w-16 text-right text-[10px] h-5 py-0">
                                     </div>
                                 </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>
-            <div v-else class="col-span-9 flex items-center justify-center text-gray-500">
-                モンスターを選択してください
+
+            <div v-else class="col-span-9 flex items-center justify-center text-gray-600 border-2 border-dashed border-gray-800 rounded-lg">
+                <div class="text-center">
+                    <div class="text-4xl mb-2">👾</div>
+                    <p>左側のリストからモンスターを選択してください</p>
+                </div>
             </div>
         </div>
     </div>
@@ -703,7 +706,7 @@ createApp({
             {id:'items', name:'アイテム'},
             {id:'jobs', name:'職業(習得)'}
         ];
-        const skillTypes = ['物理','魔法','回復','蘇生','強化','弱体','特殊','MP回復','通常攻撃'];
+        const skillTypes = ['物理','魔法','ブレス','回復','蘇生','強化','弱体','特殊','MP回復','通常攻撃'];
         const skillTargets = ['単体','全体','ランダム','自分','なし'];
         const elements = ['火','水','風','雷','光','闇','混沌'];
         
@@ -805,15 +808,33 @@ createApp({
             return db.SKILLS.filter(s => s.type === skillFilter.value);
         });
 
+        // 新規モンスター追加
         const addMonster = () => {
             const newM = { 
                 id: Date.now(), 
-                _uid: Math.random().toString(36),
-                rank: 1, minF: 1, name: '新規モンスター', hp: 100, mp: 0, // ★ここに minF: 1 を追加
-                atk: 10, def: 10, spd: 10, mag: 10, exp: 10, gold: 10, 
-                acts: [{id:1, rate:100, condition:0}], actCount: 1, img: null,
-                elmRes: {}, resists: {}
+                _uid: Math.random().toString(36).substring(2, 11),
+                rank: 1, 
+                minF: 1, 
+                name: '新規モンスター', 
+                isRare: false, // ★初期値
+                hp: 100, 
+                mp: 0, 
+                atk: 10, 
+                def: 10, 
+                spd: 10, 
+                mag: 10, 
+                exp: 10,   // ★初期値
+                gold: 10,  // ★初期値
+                acts: [{id: 1, rate: 100, condition: 0}], 
+                actCount: 1, 
+                img: null,
+                elmRes: {}, 
+                resists: {}
             };
+            // 耐性データの初期化
+            elements.forEach(el => newM.elmRes[el] = 0);
+            Object.keys(resistLabels).forEach(key => newM.resists[key] = 0);
+
             db.MONSTERS.push(newM);
             selectMonster(newM);
         };
