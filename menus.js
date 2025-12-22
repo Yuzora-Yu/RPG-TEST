@@ -294,6 +294,48 @@ const Menu = {
         area.style.display = 'flex';
     },
 	
+	// 複数の選択肢をリスト表示するダイアログ
+    listChoice: (text, choices) => {
+        const area = Menu.getDialogEl('menu-dialog-area');
+        const textEl = Menu.getDialogEl('menu-dialog-text');
+        const btnEl = Menu.getDialogEl('menu-dialog-buttons');
+        
+        if (!area) return;
+
+        textEl.innerHTML = text.replace(/\n/g, '<br>');
+        btnEl.innerHTML = '';
+        // 縦並びに変更
+        btnEl.style.flexDirection = 'column'; 
+        btnEl.style.gap = '8px';
+
+        choices.forEach(c => {
+            const btn = document.createElement('button');
+            btn.className = 'btn';
+            btn.style.width = '100%';
+            btn.style.padding = '10px';
+            btn.innerText = c.label;
+            btn.onclick = () => { 
+                btnEl.style.flexDirection = 'row'; // 他のダイアログのために横並びに戻す
+                Menu.closeDialog(); 
+                if (c.callback) c.callback(); 
+            };
+            btnEl.appendChild(btn);
+        });
+
+        const btnCancel = document.createElement('button');
+        btnCancel.className = 'btn';
+        btnCancel.style.width = '100%';
+        btnCancel.style.background = '#444';
+        btnCancel.innerText = 'やめる';
+        btnCancel.onclick = () => { 
+            btnEl.style.flexDirection = 'row'; 
+            Menu.closeDialog(); 
+        };
+        btnEl.appendChild(btnCancel);
+        
+        area.style.display = 'flex';
+    },
+	
     closeDialog: () => {
         const area = document.getElementById('menu-dialog-area');
         if (area) area.style.display = 'none';
@@ -462,34 +504,26 @@ const MenuParty = {
 /* ==========================================================================
    2.: プレイ状況画面 (クールな2列表示・文字サイズ調整版)
    ========================================================================== */
+
+/* menus.js の MenuStatus オブジェクトを最新・高機能版に差し替え */
+
 const MenuStatus = {
     createDOM: () => {
         if(document.getElementById('sub-screen-status')) return;
-        
-        // 親コンテナ生成
         const div = document.createElement('div');
         div.id = 'sub-screen-status';
-        div.className = 'sub-screen'; // 共通CSSクラス
+        div.className = 'sub-screen';
         div.style.display = 'none';
         div.style.flexDirection = 'column';
-        div.style.background = '#1a1a1a';
-        div.style.color = '#fff';
-        
+        div.style.background = '#101010';
         div.innerHTML = `
             <div class="header-bar">
-                <span>プレイ状況</span>
-                <button class="btn" style="padding:4px 10px;" onclick="Menu.closeSubScreen('status')">戻る</button>
+                <span style="color:#ffd700; font-weight:bold;">⚔️ 冒険の記録</span>
+                <button class="btn" onclick="Menu.closeSubScreen('status')">戻る</button>
             </div>
-            <div id="status-content" class="scroll-area" style="padding:20px; font-family:sans-serif;"></div>
+            <div id="status-content" class="scroll-area" style="padding:15px; background:linear-gradient(180deg, #101010 0%, #1a1a1a 100%);"></div>
         `;
-
-        // id="app" があればそこへ、なければ body へ追加 (前回の修正を維持)
-        const app = document.getElementById('app');
-        if (app) {
-            app.appendChild(div);
-        } else {
-            document.body.appendChild(div);
-        }
+        document.getElementById('game-container').appendChild(div);
     },
 
     init: () => {
@@ -502,51 +536,67 @@ const MenuStatus = {
         if(!content) return;
         
         const stats = App.data.stats || {};
-        const dungeon = App.data.dungeon || {};
-        const progress = App.data.progress || {};
+        const dungeon = App.data.dungeon || { maxFloor: 0, tryCount: 0 };
+        
+        // モンスター図鑑の計算
+        const bookCount = App.data.book ? App.data.book.monsters.length : 0;
+        const totalMonsters = (typeof DB !== 'undefined' && DB.MONSTERS) ? DB.MONSTERS.length : 0;
+        const bookRate = totalMonsters > 0 ? Math.floor((bookCount / totalMonsters) * 100) : 0;
+        
+        // 最高ダメージデータの取得
+        const maxDmg = stats.maxDamage || { val: 0, actor: '未記録', skill: '-' };
 
-        const getValue = (val, suffix='') => (val !== undefined && val !== null) ? `${val}${suffix}` : '-';
-        const getNum = (val) => (val !== undefined && val !== null) ? val.toLocaleString() : '0';
+        const row = (label, val, color='#fff', fontSize='14px') => `
+            <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #333; align-items:center;">
+                <span style="color:#aaa; font-size:11px;">${label}</span>
+                <span style="color:${color}; font-weight:bold; font-size:${fontSize}; font-family:monospace;">${val}</span>
+            </div>`;
 
-        let startDateStr = '-';
-        if (stats.startTime) {
-            try {
-                const d = new Date(stats.startTime);
-                startDateStr = d.toLocaleString('ja-JP');
-            } catch(e) {}
-        }
-
-        const items = [
-            { label: 'ダンジョン到達階層', val: getValue(progress.floor, 'F'), color: '#ffd700' },
-            { label: 'ダンジョン挑戦回数', val: getNum(dungeon.tryCount) + '回' },
-            { label: '総歩数', val: getNum(stats.totalSteps) + '歩' },
-            { label: '戦闘勝利回数', val: getNum(stats.totalBattles) + '勝' },
-            { label: '全滅回数', val: getNum(stats.wipeoutCount) + '回' },
-            { label: '最大ダブルアップ獲得Gold', val: getNum(stats.maxDoubleUpGold) + 'G', color: '#ffaa00' },
-            { label: '最大ダブルアップ獲得GEM', val: getNum(stats.maxDoubleUpGem) + 'GEM', color: '#ff88ff' },
-            { label: '冒険開始日時', val: startDateStr, color: '#aaa', fontSize: '12px' },
-        ];
-
-        // ★変更点：2列表示のHTML生成後にボタンを追加
-        let html = `<div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">`;
-        items.forEach(item => {
-            html += `
-                <div style="background:#333; padding:8px; border-radius:4px; display:flex; flex-direction:column; justify-content:space-between; height:100%;">
-                    <span style="font-size:11px; color:#ccc; margin-bottom:2px;">${item.label}</span>
-                    <span style="font-weight:bold; font-size:${item.fontSize||'14px'}; color:${item.color||'#fff'}; text-align:right;">${item.val}</span>
+        content.innerHTML = `
+            <div style="background:rgba(255,255,255,0.05); border:1px solid #444; border-radius:8px; padding:12px; margin-bottom:15px; box-shadow:0 4px 10px rgba(0,0,0,0.3);">
+                <div style="font-size:10px; color:#ffd700; margin-bottom:8px; display:flex; align-items:center; gap:5px;">
+                    <span style="background:#ffd700; width:3px; height:12px; display:inline-block;"></span> 冒険の足跡
                 </div>
-            `;
-        });
-        html += `</div>`;
-
-        // ★追加: 下部閉じるボタン
-        html += `
-            <div style="margin-top:20px;">
-                <button class="btn" style="width:100%; background:#444;" onclick="Menu.closeSubScreen('status')">閉じる</button>
+                ${row('ダンジョン最高到達', `${dungeon.maxFloor || 0} 階`, '#ffd700', '16px')}
+                ${row('ダンジョン挑戦回数', `${dungeon.tryCount || 0} 回`)}
+                ${row('モンスター図鑑進捗', `${bookCount} / ${totalMonsters} 種 (${bookRate}%)`, '#44ff44')}
+                ${row('全滅回数', `${stats.wipeoutCount || 0} 回`, '#ff4444')}
             </div>
-        `;
 
-        content.innerHTML = html;
+            <div style="background:rgba(255,255,255,0.05); border:1px solid #444; border-radius:8px; padding:12px; margin-bottom:15px;">
+                <div style="font-size:10px; color:#44ff44; margin-bottom:8px; display:flex; align-items:center; gap:5px;">
+                    <span style="background:#44ff44; width:3px; height:12px; display:inline-block;"></span> 資産の記録
+                </div>
+                ${row('累計最高所持Gold', `${(stats.maxGold || 0).toLocaleString()} G`)}
+                ${row('累計最高所持GEM', `${(stats.maxGems || 0).toLocaleString()} GEM`)}
+            </div>
+
+            <div style="background:rgba(255,255,255,0.05); border:1px solid #f44; border-radius:8px; padding:12px; margin-bottom:15px;">
+                <div style="font-size:10px; color:#ff4444; margin-bottom:8px; display:flex; align-items:center; gap:5px;">
+                    <span style="background:#ff4444; width:3px; height:12px; display:inline-block;"></span> 戦闘の極み
+                </div>
+                <div style="padding:5px 0;">
+                    <div style="font-size:10px; color:#aaa; margin-bottom:5px;">歴代最高ダメージ</div>
+                    <div style="display:flex; justify-content:space-between; align-items:flex-end; border:1px dashed #555; padding:8px; border-radius:4px; background:rgba(0,0,0,0.3);">
+                        <div style="flex:1; min-width:0;">
+                            <div style="font-size:12px; color:#fff; font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                                ${maxDmg.actor}
+                            </div>
+                            <div style="font-size:10px; color:#888; margin-top:2px;">
+                                使用技: ${maxDmg.skill}
+                            </div>
+                        </div>
+                        <div style="text-align:right;">
+                            <span style="font-size:24px; color:#ff4444; font-weight:bold; font-family:'Courier New', monospace; text-shadow:0 0 10px rgba(255,0,0,0.4);">
+                                ${(maxDmg.val || 0).toLocaleString()}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn" style="width:100%; height:45px; background:#333; border:1px solid #666; margin-top:10px; font-weight:bold; letter-spacing:2px;" onclick="Menu.closeSubScreen('status')">メニューへ戻る</button>
+        `;
     }
 };
 
@@ -646,124 +696,171 @@ const MenuItems = {
 };
 
 /* ==========================================================================
-   4. 所持装備一覧
+   4. 所持装備一覧 (フィルタ修正・純粋ソート版)
    ========================================================================== */
-/* 4. 所持装備一覧 (UI改修: 固定ヘッダー & 重複表示修正版) */
 const MenuInventory = {
     selectedIds: [],
+    filter: {
+        category: 'ALL', 
+        option: 'ALL'    
+    },
+    sortMode: 'NEWEST', // 'NEWEST': 取得順, 'RANK': Rank順
 
     init: () => {
         const subScreen = document.getElementById('sub-screen-inventory');
         if (subScreen) {
             subScreen.style.display = 'flex';
             
-            // 操作パネル用の固定コンテナを作成/取得
             let ctrlDiv = document.getElementById('inventory-controls');
             if (!ctrlDiv) {
                 ctrlDiv = document.createElement('div');
                 ctrlDiv.id = 'inventory-controls';
-                ctrlDiv.style.flexShrink = '0'; // 縮まないように
-                ctrlDiv.style.background = '#1a1a1a';
-                
-                // リストの前（ヘッダーバーの次）に挿入
+                ctrlDiv.style.cssText = 'flex-shrink:0; background:#1a1a1a; border-bottom:1px solid #444;';
                 const header = subScreen.querySelector('.header-bar');
-                if (header && header.nextSibling) {
+                if (header) {
                     subScreen.insertBefore(ctrlDiv, header.nextSibling);
                 } else {
                     subScreen.appendChild(ctrlDiv);
                 }
             }
         }
-        
         MenuInventory.selectedIds = [];
         MenuInventory.render();
     },
 
+    // フィルタ・ソート更新
+    updateState: (key, val) => {
+        if (key === 'sortMode') MenuInventory.sortMode = val;
+        else MenuInventory.filter[key] = val;
+        MenuInventory.render();
+    },
+
+    // ロック切り替え
+    toggleLock: (id) => {
+        const item = App.data.inventory.find(i => i.id === id);
+        if (item) {
+            item.locked = !item.locked;
+            App.save();
+            MenuInventory.render();
+        }
+    },
+
+    // メイン描画
     render: () => {
         document.getElementById('inventory-gold').innerText = App.data.gold;
-        
-        // --- 固定操作パネルの描画 ---
         const ctrlDiv = document.getElementById('inventory-controls');
-        if (ctrlDiv) {
-            ctrlDiv.innerHTML = '';
-            const ctrlPanel = document.createElement('div');
-            ctrlPanel.style.padding = '10px';
-            ctrlPanel.style.background = '#222';
-            ctrlPanel.style.borderBottom = '1px solid #444';
-            ctrlPanel.style.display = 'flex';
-            ctrlPanel.style.justifyContent = 'space-between';
-            ctrlPanel.style.alignItems = 'center';
-            
-            const countSpan = document.createElement('span');
-            countSpan.style.fontSize = '12px';
-            countSpan.style.color = '#aaa';
-            countSpan.innerText = `選択: ${MenuInventory.selectedIds.length}個`;
-            
-            const sellBtn = document.createElement('button');
-            sellBtn.className = 'btn';
-            sellBtn.style.background = '#500';
-            sellBtn.innerText = '選択を売却';
-            sellBtn.onclick = () => MenuInventory.sellSelected();
-            
-            ctrlPanel.appendChild(countSpan);
-            ctrlPanel.appendChild(sellBtn);
-            ctrlDiv.appendChild(ctrlPanel);
-        }
+        if (!ctrlDiv) return;
 
-        // --- リストの描画 ---
+        // データ参照の安全確保
+        const rules = (typeof OPT_RULES !== 'undefined') ? OPT_RULES : (typeof DB !== 'undefined' && DB.OPT_RULES ? DB.OPT_RULES : []);
+
+        // --- UI生成: 操作エリア ---
+        ctrlDiv.innerHTML = `
+            <div style="padding:5px; display:flex; gap:4px; overflow-x:auto; background:#222; border-bottom:1px solid #333;">
+                ${['ALL', '武器', '盾', '頭', '体', '足'].map(c => `
+                    <button class="btn" style="padding:2px 10px; font-size:10px; flex-shrink:0; background:${MenuInventory.filter.category === c ? '#008888' : '#444'};" 
+                        onclick="MenuInventory.updateState('category', '${c}')">${c === 'ALL' ? '全て' : c}</button>
+                `).join('')}
+            </div>
+            
+            <div style="padding:5px; background:#1a1a1a; display:flex; align-items:center; gap:8px; border-bottom:1px solid #333;">
+                <div style="flex:1; display:flex; align-items:center; gap:4px;">
+                    <span style="font-size:9px; color:#aaa;">効果:</span>
+                    <select style="background:#333; color:#fff; font-size:10px; border:1px solid #555; flex:1; height:22px;" 
+                        onchange="MenuInventory.updateState('option', this.value)">
+                        <option value="ALL">全て</option>
+                        ${rules.map(opt => {
+                            const val = opt.key + (opt.elm ? '_' + opt.elm : '');
+                            return `<option value="${val}" ${MenuInventory.filter.option === val ? 'selected' : ''}>${opt.name}</option>`;
+                        }).join('')}
+                    </select>
+                </div>
+                <div style="flex:1; display:flex; align-items:center; gap:4px;">
+                    <span style="font-size:9px; color:#aaa;">並替:</span>
+                    <select style="background:#333; color:#fff; font-size:10px; border:1px solid #555; flex:1; height:22px;" 
+                        onchange="MenuInventory.updateState('sortMode', this.value)">
+                        <option value="NEWEST" ${MenuInventory.sortMode === 'NEWEST' ? 'selected' : ''}>取得順</option>
+                        <option value="RANK" ${MenuInventory.sortMode === 'RANK' ? 'selected' : ''}>Rank順</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="padding:8px 10px; display:flex; justify-content:space-between; align-items:center; background:#2a2a2a;">
+                <span style="font-size:11px; color:#aaa;">選択: <span style="color:#fff;">${MenuInventory.selectedIds.length}</span> 個</span>
+                <button class="btn" style="background:${MenuInventory.selectedIds.length > 0 ? '#800' : '#444'}; font-size:11px; padding:4px 12px;" 
+                    onclick="MenuInventory.sellSelected()">選択した装備を売却</button>
+            </div>
+        `;
+
         const list = document.getElementById('inventory-list');
         list.innerHTML = '';
 
-        if(App.data.inventory.length === 0) {
-            const msg = document.createElement('div');
-            msg.style.padding = '10px';
-            msg.style.color = '#888';
-            msg.innerText = '装備品を持っていません';
-            list.appendChild(msg);
+        // --- フィルタリング & ソート ---
+        let items = App.data.inventory.map((item, idx) => ({ ...item, _originalIdx: idx }));
+
+        // 抽出
+        items = items.filter(item => {
+            if (MenuInventory.filter.category !== 'ALL' && item.type !== MenuInventory.filter.category) return false;
+            if (MenuInventory.filter.option !== 'ALL') {
+                if (!item.opts) return false;
+                const targetKey = MenuInventory.filter.option;
+                if (!item.opts.some(o => (o.key + (o.elm ? '_' + o.elm : '')) === targetKey)) return false;
+            }
+            return true;
+        });
+
+        // --- 純粋なソート実行 (ロック優先を排除) ---
+        const rarityOrder = { EX: 6, UR: 5, SSR: 4, SR: 3, R: 2, N: 1 };
+        items.sort((a, b) => {
+            if (MenuInventory.sortMode === 'RANK') {
+                // Rank順 (降順)
+                if (b.rank !== a.rank) return b.rank - a.rank;
+                // 同Rankならレアリティ順
+                const rA = rarityOrder[a.rarity] || 0;
+                const rB = rarityOrder[b.rarity] || 0;
+                if (rB !== rA) return rB - rA;
+                // 同レアリティなら強化値順
+                return (b.plus || 0) - (a.plus || 0);
+            } else {
+                // 取得順 (新しい順: 元のインデックスが大きい方が上)
+                return b._originalIdx - a._originalIdx;
+            }
+        });
+
+        if (items.length === 0) {
+            list.innerHTML = `<div style="padding:40px; text-align:center; color:#555; font-size:12px;">装備がありません</div>`;
             return;
         }
 
-        const items = [...App.data.inventory].sort((a, b) => {
-            if (b.rank !== a.rank) return b.rank - a.rank;
-            return (b.plus || 0) - (a.plus || 0);
-        });
-
+        // --- リスト描画 ---
         items.forEach(item => {
             const div = document.createElement('div');
             div.className = 'list-item';
-            div.style.flexDirection = 'column';
-            div.style.alignItems = 'flex-start';
-            div.style.position = 'relative';
+            div.style.cssText = `flex-direction:column; align-items:flex-start; position:relative; ${MenuInventory.selectedIds.includes(item.id) ? 'background:#422; border-left:3px solid #f44;' : ''}`;
 
-            if(MenuInventory.selectedIds.includes(item.id)) {
-                div.style.background = '#442222';
-                div.style.borderLeft = '3px solid #f44';
-            }
-
-            let ownerName = '';
-            const owner = App.data.characters.find(c => c.equips[item.type] && c.equips[item.type].id === item.id);
-            if(owner) ownerName = ` <span style="font-size:10px; color:#f88;">[装備中:${owner.name}]</span>`;
-
-            // ★修正: ヘッダー行に名前を表示し、詳細は showName=false で呼び出す
+            // 装備中の判定
+            const owner = App.data.characters.find(c => {
+                if (!c.equips) return false;
+                return Object.values(c.equips).some(e => e && e.id === item.id);
+            });
             const rarityColor = Menu.getRarityColor(item.rarity || 'N');
             
             div.innerHTML = `
-                <div style="display:flex; justify-content:space-between; width:100%; border-bottom:1px solid #333; margin-bottom:2px; padding-bottom:2px;">
-                    <div style="display:flex; align-items:center;">
-                        <input type="checkbox" ${MenuInventory.selectedIds.includes(item.id) ? 'checked' : ''} style="pointer-events:none; margin-right:5px;">
+                <div style="display:flex; justify-content:space-between; width:100%; border-bottom:1px solid #333; padding-bottom:4px; margin-bottom:4px;">
+                    <div style="display:flex; align-items:center; gap:5px;">
+                        <input type="checkbox" ${MenuInventory.selectedIds.includes(item.id) ? 'checked' : ''} ${item.locked || owner ? 'disabled' : ''}>
                         <span style="color:${rarityColor}; font-weight:bold;">${item.name}</span>
-                        ${ownerName}
+                        ${item.locked ? '<span style="color:#ffd700; font-size:10px;">🔒</span>' : ''}
+                        ${owner ? `<span style="color:#f88; font-size:9px;">[${owner.name}]</span>` : ''}
                     </div>
-                    <div style="font-size:11px; color:#ffd700;">${Math.floor(item.val/2)}G</div>
+                    <button class="btn" style="padding:2px 8px; font-size:9px; background:${item.locked ? '#644' : '#444'};" 
+                        onclick="event.stopPropagation(); MenuInventory.toggleLock('${item.id}')">${item.locked ? '解除' : 'ロック'}</button>
                 </div>
-                ${Menu.getEquipDetailHTML(item, false)} 
+                ${Menu.getEquipDetailHTML(item, false)}
             `;
             
             div.onclick = () => {
-                if(owner) {
-                    Menu.msg(`${owner.name}が装備中のため選択できません`);
-                    return;
-                }
+                if (item.locked || owner) return;
                 MenuInventory.toggleSelect(item.id);
             };
             list.appendChild(div);
@@ -772,43 +869,32 @@ const MenuInventory = {
 
     toggleSelect: (id) => {
         const idx = MenuInventory.selectedIds.indexOf(id);
-        if(idx > -1) MenuInventory.selectedIds.splice(idx, 1);
+        if (idx > -1) MenuInventory.selectedIds.splice(idx, 1);
         else MenuInventory.selectedIds.push(id);
-        
         MenuInventory.render();
     },
 
     sellSelected: () => {
-        if(MenuInventory.selectedIds.length === 0) {
-            Menu.msg("売却する装備を選択してください");
-            return;
-        }
-
-        let totalVal = 0;
-        const targets = [];
-        MenuInventory.selectedIds.forEach(id => {
-            const item = App.data.inventory.find(i => i.id === id);
-            if(item) {
-                targets.push(item);
-                totalVal += Math.floor(item.val / 2);
-            }
-        });
-
-        Menu.confirm(`${targets.length}個の装備を\n合計 ${totalVal}G で売却しますか？`, () => {
+        const targets = App.data.inventory.filter(i => MenuInventory.selectedIds.includes(i.id));
+        if (targets.length === 0) return Menu.msg("売却するアイテムを選択してください");
+        
+        const totalGold = targets.reduce((sum, i) => sum + Math.floor(i.val / 2), 0);
+        Menu.confirm(`${targets.length} 個の装備を合計 ${totalGold}G で売却しますか？`, () => {
             MenuInventory.selectedIds.forEach(id => {
                 const idx = App.data.inventory.findIndex(i => i.id === id);
-                if(idx > -1) App.data.inventory.splice(idx, 1);
+                if (idx > -1) App.data.inventory.splice(idx, 1);
             });
-            App.data.gold += totalVal;
+            App.data.gold += totalGold;
             MenuInventory.selectedIds = [];
             App.save();
-            Menu.msg(`${totalVal}G で売却しました`, () => MenuInventory.render());
+            Menu.msg(`${totalGold}G 獲得しました`);
+            MenuInventory.render();
         });
     }
 };
 
 /* ==========================================================================
-   5. 仲間一覧 & 詳細 (一覧にもステータス表示を追加)
+   5. 仲間一覧 & 詳細 (装備変更フィルタ・ソート・シナジー反映版)
    ========================================================================== */
 const MenuAllies = {
     selectedChar: null, 
@@ -817,6 +903,9 @@ const MenuAllies = {
     selectedEquip: null,  
     tempAlloc: null,
     _tempCandidates: [], 
+    // ★追加: 装備変更画面用のフィルタ・ソート状態
+    candidateFilter: 'ALL',
+    candidateSortMode: 'RANK',
 
     init: () => {
         let container = document.getElementById('sub-screen-allies');
@@ -867,6 +956,8 @@ const MenuAllies = {
         MenuAllies.currentTab = 1;
         MenuAllies.targetPart = null;
         MenuAllies.selectedEquip = null;
+        MenuAllies.candidateFilter = 'ALL';
+        MenuAllies.candidateSortMode = 'RANK';
         
         MenuAllies.renderList();
     },
@@ -885,14 +976,11 @@ const MenuAllies = {
             const aInParty = App.data.party.includes(a.uid);
             const bInParty = App.data.party.includes(b.uid);
             if (aInParty !== bInParty) return bInParty - aInParty;
-
             if (a.uid === 'p1') return -1;
             if (b.uid === 'p1') return 1;
-
             const rA = rarityVal[a.rarity] || 0;
             const rB = rarityVal[b.rarity] || 0;
             if (rA !== rB) return rB - rA;
-
             if (b.level !== a.level) return b.level - a.level;
             return a.charId - b.charId;
         });
@@ -901,49 +989,32 @@ const MenuAllies = {
             const s = App.calcStats(c);
             const div = document.createElement('div');
             div.className = 'list-item';
-            
             const curHp = c.currentHp !== undefined ? c.currentHp : s.maxHp;
             const curMp = c.currentMp !== undefined ? c.currentMp : s.maxMp;
-            
-            const inParty = App.data.party.includes(c.uid) 
-                ? '<span style="color:#4ff; font-weight:bold; font-size:10px; margin-right:4px;">[PT]</span>' 
-                : '';
-
-            const lbText = c.limitBreak > 0 
-                ? `<span style="color:#f0f; font-weight:bold; font-size:11px;">+${c.limitBreak}</span>` 
-                : '';
-                
+            const inParty = App.data.party.includes(c.uid) ? '<span style="color:#4ff; font-weight:bold; font-size:10px; margin-right:4px;">[PT]</span>' : '';
+            const lbText = c.limitBreak > 0 ? `<span style="color:#f0f; font-weight:bold; font-size:11px;">+${c.limitBreak}</span>` : '';
             const rarityLabel = (c.uid === 'p1') ? 'Player' : `[${c.rarity}]`;
             const rarityColor = (c.uid === 'p1') ? '#ffd700' : Menu.getRarityColor(c.rarity);
-
-            const imgHtml = c.img 
-                ? `<img src="${c.img}" style="width:40px; height:40px; object-fit:cover; border-radius:4px; border:1px solid #555;">`
-                : `<div style="width:40px; height:40px; background:#333; display:flex; align-items:center; justify-content:center; color:#555; font-size:9px; border-radius:4px; border:1px solid #555;">IMG</div>`;
+            const imgHtml = c.img ? `<img src="${c.img}" style="width:40px; height:40px; object-fit:cover; border-radius:4px; border:1px solid #555;">` : `<div style="width:40px; height:40px; background:#333; display:flex; align-items:center; justify-content:center; color:#555; font-size:9px; border-radius:4px; border:1px solid #555;">IMG</div>`;
 
             div.innerHTML = `
                 <div style="display:flex; align-items:center; width:100%;">
                     <div style="margin-right:10px;">${imgHtml}</div>
                     <div style="flex:1;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
-                            <div style="font-size:13px; font-weight:bold; color:#fff;">
-                                ${inParty}${c.name} ${lbText} <span style="font-size:10px; color:#aaa; font-weight:normal;">(${c.job})</span>
-                            </div>
+                            <div style="font-size:13px; font-weight:bold; color:#fff;">${inParty}${c.name} ${lbText} <span style="font-size:10px; color:#aaa; font-weight:normal;">(${c.job})</span></div>
                             <div style="font-size:11px; font-weight:bold; color:${rarityColor};">${rarityLabel}</div>
                         </div>
-                        
                         <div style="font-size:11px; color:#ddd; display:flex; align-items:baseline; margin-bottom:1px;">
                             <span style="color:#ffd700; font-weight:bold; margin-right:8px;">Lv.${c.level}</span>
                             <span style="margin-right:8px;">HP <span style="color:#8f8;">${curHp}/${s.maxHp}</span></span>
                             <span>MP <span style="color:#88f;">${curMp}/${s.maxMp}</span></span>
                         </div>
-
                         <div style="font-size:10px; color:#aaa; display:flex; gap:8px;">
                             <span>攻:${s.atk}</span> <span>防:${s.def}</span> <span>魔:${s.mag}</span> <span>速:${s.spd}</span>
                         </div>
                     </div>
-                </div>
-            `;
-            
+                </div>`;
             div.onclick = () => {
                 MenuAllies.selectedChar = c;
                 MenuAllies.currentTab = 1;
@@ -953,8 +1024,6 @@ const MenuAllies = {
             };
             list.appendChild(div);
         });
-		
-		// ★追加: リスト画面下部の閉じるボタン
         const closeBtnDiv = document.createElement('div');
         closeBtnDiv.style.marginTop = '20px';
         closeBtnDiv.innerHTML = `<button class="btn" style="width:100%; background:#444;" onclick="Menu.closeSubScreen('allies')">閉じる</button>`;
@@ -964,7 +1033,6 @@ const MenuAllies = {
     switchChar: (dir) => {
         if (!MenuAllies.selectedChar) return;
         const rarityVal = { N:1, R:2, SR:3, SSR:4, UR:5, EX:6 };
-        
         const chars = [...App.data.characters].sort((a, b) => {
             const aInParty = App.data.party.includes(a.uid);
             const bInParty = App.data.party.includes(b.uid);
@@ -977,28 +1045,19 @@ const MenuAllies = {
             if (b.level !== a.level) return b.level - a.level;
             return a.charId - b.charId;
         });
-
         let idx = chars.findIndex(c => c.uid === MenuAllies.selectedChar.uid);
         if (idx === -1) idx = 0;
-        let newIdx = idx + dir;
-        if (newIdx < 0) newIdx = chars.length - 1;
-        if (newIdx >= chars.length) newIdx = 0;
-        
+        let newIdx = (idx + dir + chars.length) % chars.length;
         MenuAllies.selectedChar = chars[newIdx]; 
         MenuAllies.targetPart = null;
         MenuAllies.selectedEquip = null;
-        
         const treeView = document.getElementById('allies-tree-view');
-        if (treeView && treeView.style.display === 'flex') {
-            MenuAllies.renderTreeView();
-        } else {
-            MenuAllies.renderDetail();
-        }
+        if (treeView && treeView.style.display === 'flex') MenuAllies.renderTreeView();
+        else MenuAllies.renderDetail();
     },
 
     getEquipFullDetailHTML: (eq) => {
         if (!eq) return '<span style="color:#555;">装備なし</span>';
-        
         let stats = [];
         if(eq.data.atk) stats.push(`攻+${eq.data.atk}`);
         if(eq.data.def) stats.push(`防+${eq.data.def}`);
@@ -1006,9 +1065,7 @@ const MenuAllies = {
         if(eq.data.mag) stats.push(`魔+${eq.data.mag}`);
         if(eq.data.finDmg) stats.push(`与ダメ+${eq.data.finDmg}%`);
         if(eq.data.finRed) stats.push(`被ダメ-${eq.data.finRed}%`);
-        
         let baseHtml = `<div style="font-size:10px; color:#ccc;">${stats.join(' ')}</div>`;
-        
         let optsHtml = '';
         if (eq.opts && eq.opts.length > 0) {
             const optsList = eq.opts.map(o => {
@@ -1018,15 +1075,11 @@ const MenuAllies = {
             }).join('');
             optsHtml = `<div style="margin-top:2px;">${optsList}</div>`;
         }
-
         let synHtml = '';
         if (typeof App.checkSynergy === 'function') {
             const syn = App.checkSynergy(eq);
-            if (syn) {
-                synHtml = `<div style="margin-top:2px; font-size:10px; color:${syn.color||'#f88'};">★${syn.name}: ${syn.desc}</div>`;
-            }
+            if (syn) synHtml = `<div style="margin-top:2px; font-size:10px; color:${syn.color||'#f88'};">★${syn.name}: ${syn.desc}</div>`;
         }
-
         return `<div>${baseHtml}${optsHtml}${synHtml}</div>`;
     },
 
@@ -1061,10 +1114,7 @@ const MenuAllies = {
             }
         };
 
-        const imgHtml = c.img 
-            ? `<img src="${c.img}" style="width:100%; height:100%; object-fit:cover;">`
-            : `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#888;">IMG</div>`;
-
+        const imgHtml = c.img ? `<img src="${c.img}" style="width:100%; height:100%; object-fit:cover;">` : `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#888;">IMG</div>`;
         const tabs = ['基本', '装備', 'スキル'];
         const tabBtns = tabs.map((t, i) => {
             const idx = i + 1;
@@ -1074,7 +1124,7 @@ const MenuAllies = {
 
         let contentHtml = '';
 
-if (MenuAllies.currentTab === 1) {
+        if (MenuAllies.currentTab === 1) {
             let activeSynergies = [];
             if (c.equips) {
                 CONST.PARTS.forEach(p => {
@@ -1092,7 +1142,6 @@ if (MenuAllies.currentTab === 1) {
                     ${activeSynergies.map(syn => `<div style="font-size:10px; color:${syn.color||'#fff'}; margin-bottom:2px;">★${syn.name}</div>`).join('')}
                 </div>`;
             }
-
             let allocBtn = '';
             if(c.uid === 'p1') {
                 const totalPt = Math.floor(lb / 10) * 10;
@@ -1101,82 +1150,43 @@ if (MenuAllies.currentTab === 1) {
                 const free = totalPt - used;
                 allocBtn = `<button class="btn" style="width:100%; margin-top:5px; background:#444400; font-size:11px;" onclick="MenuAllies.openAllocModal()">ボーナスPt振分 (残:${free})</button>`;
             }
-
             const treeBtn = `<button class="btn" style="width:100%; margin-top:5px; background:#004444; font-size:11px;" onclick="MenuAllies.openTreeView()">スキル習得画面へ (SP:${c.sp||0})</button>`;
-
-            // ★追加: 状態異常の表示用ラベル定義
-            const ailmentLabels = {
-                Poison: '毒', ToxicPoison: '猛毒', Shock: '感電', Fear: '怯え',
-                Debuff: '弱体', InstantDeath: '即死',
-                SkillSeal: '技封', SpellSeal: '魔封', HealSeal: '癒封'
-            };
+            const ailmentLabels = { Poison:'毒', ToxicPoison:'猛毒', Shock:'感電', Fear:'怯え', Debuff:'弱体', InstantDeath:'即死', SkillSeal:'技封', SpellSeal:'魔封', HealSeal:'癒封' };
 
             contentHtml = `
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom:8px;">
                     <div style="background:#332222; border:1px solid #554444; border-radius:4px; padding:4px; text-align:center; font-size:11px;">
-                        <div style="color:#aaa; font-size:9px;">与ダメージ</div>
-                        <div style="color:#f88; font-weight:bold;">+${s.finDmg}%</div>
+                        <div style="color:#aaa; font-size:9px;">与ダメージ</div><div style="color:#f88; font-weight:bold;">+${s.finDmg}%</div>
                     </div>
                     <div style="background:#222233; border:1px solid #444455; border-radius:4px; padding:4px; text-align:center; font-size:11px;">
-                        <div style="color:#aaa; font-size:9px;">被ダメージ</div>
-                        <div style="color:#88f; font-weight:bold;">-${s.finRed}%</div>
+                        <div style="color:#aaa; font-size:9px;">被ダメージ</div><div style="color:#88f; font-weight:bold;">-${s.finRed}%</div>
                     </div>
                 </div>
-
                 <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px;">
-                    
                     <div style="background:#222; border:1px solid #444; border-radius:4px; padding:4px;">
                         <div style="font-size:9px; color:#f88; margin-bottom:3px; text-align:center; border-bottom:1px solid #333;">属性攻撃</div>
                         <div style="display:flex; flex-direction:column; gap:1px;">
-                            ${CONST.ELEMENTS.map(e => `
-                                <div style="display:flex; justify-content:space-between; background:#2a2a2a; padding:1px 3px; border-radius:2px; font-size:9px;">
-                                    <span style="color:#aaa;">${e}</span>
-                                    <span>${s.elmAtk[e]||0}%</span>
-                                </div>
-                            `).join('')}
+                            ${CONST.ELEMENTS.map(e => `<div style="display:flex; justify-content:space-between; background:#2a2a2a; padding:1px 3px; border-radius:2px; font-size:9px;"><span style="color:#aaa;">${e}</span><span>${s.elmAtk[e]||0}%</span></div>`).join('')}
                         </div>
                     </div>
-
                     <div style="background:#222; border:1px solid #444; border-radius:4px; padding:4px;">
                         <div style="font-size:9px; color:#88f; margin-bottom:3px; text-align:center; border-bottom:1px solid #333;">属性耐性</div>
                         <div style="display:flex; flex-direction:column; gap:1px;">
-                            ${CONST.ELEMENTS.map(e => `
-                                <div style="display:flex; justify-content:space-between; background:#2a2a2a; padding:1px 3px; border-radius:2px; font-size:9px;">
-                                    <span style="color:#aaa;">${e}</span>
-                                    <span>${s.elmRes[e]||0}%</span>
-                                </div>
-                            `).join('')}
+                            ${CONST.ELEMENTS.map(e => `<div style="display:flex; justify-content:space-between; background:#2a2a2a; padding:1px 3px; border-radius:2px; font-size:9px;"><span style="color:#aaa;">${e}</span><span>${s.elmRes[e]||0}%</span></div>`).join('')}
                         </div>
                     </div>
-
                     <div style="background:#222; border:1px solid #444; border-radius:4px; padding:4px;">
                         <div style="font-size:9px; color:#f8f; margin-bottom:3px; text-align:center; border-bottom:1px solid #333;">異常耐性</div>
                         <div style="display:flex; flex-direction:column; gap:1px;">
-                            ${Object.keys(ailmentLabels).map(key => `
-                                <div style="display:flex; justify-content:space-between; background:#2a2a2a; padding:1px 3px; border-radius:2px; font-size:9px;">
-                                    <span style="color:#aaa;">${ailmentLabels[key]}</span>
-                                    <span>${(s.resists && s.resists[key])||0}%</span>
-                                </div>
-                            `).join('')}
+                            ${Object.keys(ailmentLabels).map(key => `<div style="display:flex; justify-content:space-between; background:#2a2a2a; padding:1px 3px; border-radius:2px; font-size:9px;"><span style="color:#aaa;">${ailmentLabels[key]}</span><span>${(s.resists && s.resists[key])||0}%</span></div>`).join('')}
                         </div>
                     </div>
                 </div>
-                
-                <div style="display:flex; flex-direction:column; margin-top:10px;">
-                    ${treeBtn}
-                    ${allocBtn}
-                    ${synergiesHtml}
-                </div>
-            `;
-        }
-
-/* menus.js MenuAllies.renderDetail 内の Tab 2 部分の修正案 */
-
-        else if (MenuAllies.currentTab === 2) {
-            
+                <div style="display:flex; flex-direction:column; margin-top:10px;">${treeBtn}${allocBtn}${synergiesHtml}</div>`;
+        } else if (MenuAllies.currentTab === 2) {
             if (MenuAllies.targetPart) {
-                
                 if (MenuAllies.selectedEquip) {
+                    // ★ご要望のステータス詳細比較ロジックを完全に復活
                     const newItem = MenuAllies.selectedEquip;
                     const isRemove = newItem.isRemove;
                     const dummy = JSON.parse(JSON.stringify(c));
@@ -1184,49 +1194,18 @@ if (MenuAllies.currentTab === 1) {
                     else dummy.equips[MenuAllies.targetPart] = newItem;
                     const sCur = App.calcStats(c);
                     const sNew = App.calcStats(dummy);
-                    
+
                     const statRow = (label, key, isPercent=false, isReduc=false) => {
-                        let v1, v2, diff;
-                        if (isPercent && key.includes('_')) {
-                            const [prop, subKey] = key.split('_');
-                            v1 = sCur[prop][subKey] || 0;
-                            v2 = sNew[prop][subKey] || 0;
-                        } else {
-                            v1 = sCur[key] || 0;
-                            v2 = sNew[key] || 0;
-                        }
-
-                        diff = v2 - v1;
-                        let unit = isPercent ? '%' : '';
+                        let v1, v2;
+                        if (isPercent && key.includes('_')) { const [prop, subKey] = key.split('_'); v1 = sCur[prop][subKey] || 0; v2 = sNew[prop][subKey] || 0; }
+                        else { v1 = sCur[key] || 0; v2 = sNew[key] || 0; }
+                        let diff = v2 - v1;
                         let color = diff > 0 ? '#4f4' : (diff < 0 ? '#f44' : '#888');
-                        let diffStr;
-
-                        if (isReduc) {
-                            color = diff < 0 ? '#4f4' : (diff > 0 ? '#f44' : '#888');
-                        }
-                        
-                        if (diff === 0) {
-                            diffStr = '±0';
-                            color = '#888';
-                        } else {
-                            diffStr = (diff > 0 ? '+' : '') + diff.toString();
-                        }
-                        
-                        return `
-                            <div style="font-size:11px; background:#2c2c2c; padding:4px; border-radius:2px; display:flex; flex-direction:column; justify-content:space-between; height:100%;">
-                                <div style="color:#aaa; font-size:10px; white-space:nowrap; text-align:center; font-weight:bold;">${label}</div>
-                                <div style="text-align:center;">
-                                    <span style="color:#888; font-size:10px;">${v1}${unit} →</span> 
-                                    <span style="color:${color}; font-weight:bold;">${v2}${unit}</span> 
-                                    <span style="font-size:9px; color:${color};">(${diffStr}${unit})</span>
-                                </div>
-                            </div>
-                        `;
+                        if (isReduc) color = diff < 0 ? '#4f4' : (diff > 0 ? '#f44' : '#888');
+                        let diffStr = (diff === 0) ? '±0' : (diff > 0 ? '+' : '') + diff;
+                        return `<div style="font-size:11px; background:#2c2c2c; padding:4px; border-radius:2px; display:flex; flex-direction:column; justify-content:space-between; height:100%;"><div style="color:#aaa; font-size:10px; text-align:center; font-weight:bold;">${label}</div><div style="text-align:center;"><span style="color:#888; font-size:10px;">${v1}${isPercent?'%':''} →</span> <span style="color:${color}; font-weight:bold;">${v2}${isPercent?'%':''}</span> <span style="font-size:9px; color:${color};">(${diffStr}${isPercent?'%':''})</span></div></div>`;
                     };
-                    
-                    let itemName = isRemove ? '装備を外す' : newItem.name;
-                    let itemColor = isRemove ? '#aaa' : Menu.getRarityColor(newItem.rarity);
-                    
+
                     let statRows = '';
                     const gridStart = '<div style="display:grid; grid-template-columns:1fr 1fr; gap:4px; margin-bottom:8px;">';
                     const gridEnd = '</div>';
@@ -1257,203 +1236,144 @@ if (MenuAllies.currentTab === 1) {
                         statRows += statRow(`${e}耐性`, `elmRes_${e}`, true, false);
                         statRows += gridEnd;
                     });
-                    
-                    // ★ボタンパーツを変数化（上下で共通利用）
-                    const buttonsHtml = `
-                        <div style="display:flex; gap:10px; margin: 10px 0;">
-                            <button class="btn" style="flex:1; background:#555;" onclick="MenuAllies.selectedEquip=null; MenuAllies.renderDetail()">やめる</button>
-                            <button class="btn" style="flex:1; background:#d00;" onclick="MenuAllies.doEquip()">変更する</button>
-                        </div>
-                    `;
-					
-                    contentHtml = `
-                        <div style="padding:10px; text-align:center; font-weight:bold; color:#ffd700; border-bottom:1px solid #444;">
-                            装備変更の確認 (${MenuAllies.targetPart})
-                        </div>
-                        <div style="padding:5px; text-align:center; font-size:14px; color:${itemColor}; margin-bottom:3px;">
-                            ${itemName} に変更しますか？
-                        </div>
-						
-                        ${buttonsHtml}
-						
-                        <div style="background:#222; border:1px solid #444; border-radius:4px; margin-bottom:10px; padding:10px;">
-                            ${statRows}
-                        </div>
 
-                        ${buttonsHtml}
-                    `;
-
+                    const buttonsHtml = `<div style="display:flex; gap:10px; margin: 10px 0;"><button class="btn" style="flex:1; background:#555;" onclick="MenuAllies.selectedEquip=null; MenuAllies.renderDetail()">やめる</button><button class="btn" style="flex:1; background:#d00;" onclick="MenuAllies.doEquip()">変更する</button></div>`;
+                    contentHtml = `<div style="padding:10px; text-align:center; color:#ffd700; font-weight:bold; border-bottom:1px solid #444;">装備変更の確認 (${MenuAllies.targetPart})</div><div style="padding:5px; text-align:center; font-size:14px; color:${isRemove?'#aaa':Menu.getRarityColor(newItem.rarity)}; margin-bottom:3px;">${isRemove?'(装備を外す)':newItem.name} に変更しますか？</div>${buttonsHtml}<div style="background:#222; border:1px solid #444; border-radius:4px; margin-bottom:10px; padding:10px;">${statRows}</div>${buttonsHtml}`;
                 } else {
-                    // (装備候補リスト表示部分は変更なし)
+                    // ★改修点: 装備候補リスト画面 (フィルタ・ソート追加)
                     const p = MenuAllies.targetPart;
-                    let candidates = [];
-                    candidates.push({id:'remove', name:'(装備を外す)', isRemove:true, rank:999, plus:999}); 
-                    
-                    App.data.inventory.filter(i => i.type === p).forEach(i => candidates.push(i));
-                    App.data.characters.forEach(other => {
-                        if(other.uid !== c.uid && other.equips[p]) {
-                            candidates.push({...other.equips[p], owner:other.name});
-                        }
-                    });
+                    const rules = (typeof OPT_RULES !== 'undefined') ? OPT_RULES : (typeof DB !== 'undefined' && DB.OPT_RULES ? DB.OPT_RULES : []);
 
+                    // 1. 候補の収集 (インデックスを保持)
+                    let candidates = [{id:'remove', name:'(装備を外す)', isRemove:true, _originalIdx:-999}]; 
+                    App.data.inventory.filter(i => i.type === p).forEach((i, idx) => candidates.push({...i, _originalIdx: idx}));
+                    App.data.characters.forEach(other => { if(other.uid !== c.uid && other.equips[p]) candidates.push({...other.equips[p], owner:other.name, _originalIdx: -1}); });
+
+                    // 2. フィルタリング
+                    if (MenuAllies.candidateFilter !== 'ALL') {
+                        candidates = candidates.filter(item => {
+                            if (item.isRemove) return true;
+                            if (!item.opts) return false;
+                            return item.opts.some(o => (o.key + (o.elm ? '_' + o.elm : '')) === MenuAllies.candidateFilter);
+                        });
+                    }
+
+                    // 3. ソート (純粋ソート)
+                    const rarityOrder = { EX: 6, UR: 5, SSR: 4, SR: 3, R: 2, N: 1 };
                     candidates.sort((a, b) => {
-                        if (a.isRemove) return -1;
-                        if (b.isRemove) return 1;
-                        if (b.rank !== a.rank) return b.rank - a.rank;
-                        return (b.plus || 0) - (a.plus || 0);
-                    });
-
-                    let itemsHtml = candidates.map((item, idx) => {
-                        let html = '';
-                        if(item.isRemove) {
-                            html = `<div style="color:#aaa; font-weight:bold; width:100%; text-align:center;">${item.name}</div>`;
+                        if (a.isRemove) return -1; if (b.isRemove) return 1;
+                        if (MenuAllies.candidateSortMode === 'RANK') {
+                            if (b.rank !== a.rank) return b.rank - a.rank;
+                            const rA = rarityOrder[a.rarity] || 0;
+                            const rB = rarityOrder[b.rarity] || 0;
+                            if (rB !== rA) return rB - rA;
+                            return (b.plus || 0) - (a.plus || 0);
                         } else {
-                            const color = Menu.getRarityColor(item.rarity);
-                            html = `<div style="font-weight:bold; color:${color};">${item.name}</div>`;
-                            if(item.owner) html += `<div style="text-align:right; font-size:9px; color:#f88;">[${item.owner} 装備中]</div>`;
-                            html += MenuAllies.getEquipFullDetailHTML(item);
+                            return b._originalIdx - a._originalIdx;
                         }
-                        
-                        return `<div class="list-item" style="flex-direction:column; align-items:flex-start;" 
-                                    onclick="MenuAllies.selectCandidate(${idx}, ${item.isRemove?'true':'false'})">
-                                    ${html}
-                                </div>`;
-                    }).join('');
+                    });
 
                     MenuAllies._tempCandidates = candidates;
 
                     contentHtml = `
-                        <div style="margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
-                            <span style="font-weight:bold; color:#ffd700;">${p} を選択中</span>
-                            <button class="btn" style="background:#555; font-size:11px;" onclick="MenuAllies.targetPart=null; MenuAllies.renderDetail()">戻る</button>
+                        <div style="margin-bottom:8px; display:flex; flex-direction:column; gap:4px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <span style="font-weight:bold; color:#ffd700;">${p} の変更</span>
+                                <button class="btn" style="background:#555; font-size:10px; padding:2px 8px;" onclick="MenuAllies.targetPart=null; MenuAllies.renderDetail()">戻る</button>
+                            </div>
+                            <div style="display:flex; gap:4px; align-items:center;">
+                                <select style="background:#333; color:#fff; font-size:10px; flex:1; height:20px;" onchange="MenuAllies.candidateFilter=this.value; MenuAllies.renderDetail()">
+                                    <option value="ALL">全ての効果</option>
+                                    ${rules.map(opt => `<option value="${opt.key}${opt.elm?'_'+opt.elm:''}" ${MenuAllies.candidateFilter===(opt.key+(opt.elm?'_'+opt.elm:''))?'selected':''}>${opt.name}</option>`).join('')}
+                                </select>
+                                <select style="background:#333; color:#fff; font-size:10px; flex:1; height:20px;" onchange="MenuAllies.candidateSortMode=this.value; MenuAllies.renderDetail()">
+                                    <option value="RANK" ${MenuAllies.candidateSortMode==='RANK'?'selected':''}>Rank順</option>
+                                    <option value="NEWEST" ${MenuAllies.candidateSortMode==='NEWEST'?'selected':''}>取得順</option>
+                                </select>
+                            </div>
                         </div>
-                        <div style="display:flex; flex-direction:column; gap:2px;">${itemsHtml}</div>
-                    `;
+                        <div style="display:flex; flex-direction:column; gap:2px;">
+                            ${candidates.map((item, idx) => `
+                                <div class="list-item" style="flex-direction:column; align-items:flex-start;" onclick="MenuAllies.selectCandidate(${idx}, ${item.isRemove?'true':'false'})">
+                                    <div style="font-weight:bold; color:${item.isRemove ? '#aaa' : Menu.getRarityColor(item.rarity)};">${item.name} ${item.owner ? `<span style="color:#f88; font-size:9px;">[${item.owner}装備中]</span>` : ''}</div>
+                                    ${!item.isRemove ? MenuAllies.getEquipFullDetailHTML(item) : ''}
+                                </div>`).join('')}
+                        </div>`;
                 }
-
             } else {
-                // (部位選択リスト表示部分は変更なし)
                 let listHtml = '';
                 CONST.PARTS.forEach(p => {
                     const eq = c.equips[p];
-                    let detailHtml = MenuAllies.getEquipFullDetailHTML(eq);
-                    let itemName = eq ? eq.name : 'なし';
-                    let itemRarityColor = eq ? Menu.getRarityColor(eq.rarity) : '#888';
-
-                    listHtml += `
-                        <div class="list-item" style="align-items:center;" onclick="MenuAllies.targetPart='${p}'; MenuAllies.selectedEquip=null; MenuAllies.renderDetail();">
-                            <div style="width:30px; font-size:10px; color:#aaa; font-weight:bold;">${p}</div>
-                            <div style="flex:1;">
-                                <div style="font-size:12px; font-weight:bold; color:${itemRarityColor};">${itemName}</div>
-                                ${detailHtml}
-                            </div>
-                            <div style="font-size:10px; color:#aaa; margin-left:5px;">変更 &gt;</div>
-                        </div>
-                    `;
+                    listHtml += `<div class="list-item" style="align-items:center;" onclick="MenuAllies.targetPart='${p}'; MenuAllies.selectedEquip=null; MenuAllies.renderDetail();"><div style="width:30px; font-size:10px; color:#aaa; font-weight:bold;">${p}</div><div style="flex:1;"><div style="font-size:12px; font-weight:bold; color:${eq ? Menu.getRarityColor(eq.rarity) : '#888'};">${eq ? eq.name : 'なし'}</div>${MenuAllies.getEquipFullDetailHTML(eq)}</div><div style="font-size:10px; color:#aaa; margin-left:5px;">変更 &gt;</div></div>`;
                 });
                 contentHtml = `<div style="display:flex; flex-direction:column; gap:2px;">${listHtml}</div>`;
             }
-        }
-
-
-        else if (MenuAllies.currentTab === 3) {
+        } else if (MenuAllies.currentTab === 3) {
+            // ★スキル封印機能を追加した Tab 3 (デザインはリスト形式を維持)
             const playerObj = new Player(c);
+            if (!c.config) c.config = { fullAuto: false, hiddenSkills: [] };
+            const autoStatus = c.config.fullAuto;
             let skillHtml = '';
             if(!playerObj.skills || playerObj.skills.length===0) {
                 skillHtml = '<div style="padding:20px; text-align:center; color:#555;">習得スキルなし</div>';
             } else {
                 skillHtml = playerObj.skills.map(sk => {
+                    const isHidden = c.config.hiddenSkills.includes(Number(sk.id));
                     return `
-                        <div style="background:#252525; border:1px solid #444; border-radius:4px; padding:6px; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center;">
+                        <div style="background:${isHidden ? 'rgba(0,0,0,0.2)' : '#252525'}; border:1px solid #444; border-radius:4px; padding:6px; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center;">
                             <div style="flex:1;">
-                                <div style="font-size:12px; font-weight:bold; color:#ddd;">${sk.name} <span style="font-size:10px; color:#888;">(${sk.type})</span></div>
+                                <div style="font-size:12px; font-weight:bold; color:${isHidden ? '#666' : '#ddd'};">${sk.name} <span style="font-size:10px; color:#888;">(${sk.type})</span></div>
                                 <div style="font-size:10px; color:#aaa;">${sk.desc || ''}</div>
                             </div>
-                            <div style="font-size:11px; color:#88f; margin-left:10px; white-space:nowrap;">MP:${sk.mp}</div>
-                        </div>
-                    `;
+                            <div style="text-align:right; min-width:80px;">
+                                <div style="font-size:11px; color:#88f; margin-bottom:4px;">MP:${sk.mp}</div>
+                                <button class="btn" style="padding:2px 8px; font-size:10px; background:${isHidden ? '#555' : '#3a3'};" onclick="MenuAllies.toggleSkillVisibility(${sk.id})">
+                                    ${isHidden ? '封印中' : '使用許可'}
+                                </button>
+                            </div>
+                        </div>`;
                 }).join('');
             }
-            contentHtml = `<div style="display:flex; flex-direction:column;">${skillHtml}</div>`;
+            contentHtml = `
+                <div style="margin-bottom:10px; padding:8px; background:#333; border-radius:4px; border:1px solid #444;">
+                    <button class="btn" style="width:100%; background:${autoStatus ? '#d00' : '#444'}; font-weight:bold; font-size:11px;" onclick="MenuAllies.toggleFullAuto()">
+                        フルオート(スキル使用): ${autoStatus ? 'ON' : 'OFF'}
+                    </button>
+                </div>
+                <div style="display:flex; flex-direction:column;">${skillHtml}</div>`;
         }
 
         const view = document.getElementById('allies-detail-view');
         view.innerHTML = `
-            <div style="padding:10px 10px 0 10px; background:#222;">
-                <button class="btn" style="width:100%; background:#444;" onclick="MenuAllies.renderList()">一覧に戻る</button>
-            </div>
-
-            <div style="padding:10px; background:#222; border-bottom:1px solid #444;">
-                <div style="display:flex; justify-content:space-between; align-items:center; background:#333; padding:5px; border-radius:4px;">
-                    <button class="btn" style="padding:2px 10px; font-size:12px;" onclick="MenuAllies.switchChar(-1)">＜ 前</button>
-                    <span style="font-size:12px; color:#aaa;">仲間詳細</span>
-                    <button class="btn" style="padding:2px 10px; font-size:12px;" onclick="MenuAllies.switchChar(1)">次 ＞</button>
-                </div>
-            </div>
-
-            <div style="flex:1; overflow-y:auto; padding:10px; font-family:sans-serif; color:#ddd;">
-                
+            <div style="padding:10px 10px 0 10px; background:#222;"><button class="btn" style="width:100%; background:#444;" onclick="MenuAllies.renderList()">一覧に戻る</button></div>
+            <div style="padding:10px; background:#222; border-bottom:1px solid #444;"><div style="display:flex; justify-content:space-between; align-items:center; background:#333; padding:5px; border-radius:4px;"><button class="btn" style="padding:2px 10px; font-size:12px;" onclick="MenuAllies.switchChar(-1)">＜ 前</button><span style="font-size:12px; color:#aaa;">仲間詳細</span><button class="btn" style="padding:2px 10px; font-size:12px;" onclick="MenuAllies.switchChar(1)">次 ＞</button></div></div>
+            <div class="scroll-container-inner" style="flex:1; overflow-y:auto; padding:10px; font-family:sans-serif; color:#ddd;">
                 <div style="display:flex; gap:10px; margin-bottom:10px;">
-                    <div style="position:relative; width:80px; height:80px; background:#000; border:1px solid #555; display:flex; align-items:center; justify-content:center; flex-shrink:0; border-radius:4px; cursor:pointer;" onclick="document.getElementById('file-upload-${c.uid}').click()">
-                        ${imgHtml}
-                        <div style="position:absolute; bottom:0; width:100%; background:rgba(0,0,0,0.6); color:#fff; font-size:8px; text-align:center;">画像変更</div>
-                    </div>
+                    <div style="position:relative; width:80px; height:80px; background:#000; border:1px solid #555; display:flex; align-items:center; justify-content:center; flex-shrink:0; border-radius:4px; cursor:pointer;" onclick="document.getElementById('file-upload-${c.uid}').click()">${imgHtml}<div style="position:absolute; bottom:0; width:100%; background:rgba(0,0,0,0.6); color:#fff; font-size:8px; text-align:center;">画像変更</div></div>
                     <input type="file" id="file-upload-${c.uid}" style="display:none" accept="image/*" onchange="MenuAllies.uploadImage(this, '${c.uid}')">
-
                     <div style="flex:1;">
-                        <div id="char-name-display" style="display:flex; align-items:center; margin-bottom:2px;">
-                            <div style="font-size:16px; font-weight:bold; color:#fff; margin-right:5px;">${c.name}</div>
-                            <div style="font-size:12px; color:#f0f; font-weight:bold;">+${lb}</div>
-                            <button class="btn" style="margin-left:auto; padding:0 6px; font-size:10px;" onclick="window.toggleNameEdit()">✎</button>
-                        </div>
-                        <div id="char-name-edit" style="display:none; align-items:center; margin-bottom:2px;">
-                            <input type="text" id="char-name-input" value="${c.name}" maxlength="10" style="width:100px; background:#333; color:#fff; border:1px solid #888; padding:2px; font-size:12px;">
-                            <button class="btn" style="margin-left:5px; padding:2px 6px; font-size:10px;" onclick="window.saveName()">OK</button>
-                        </div>
-
+                        <div id="char-name-display" style="display:flex; align-items:center; margin-bottom:2px;"><div style="font-size:16px; font-weight:bold; color:#fff; margin-right:5px;">${c.name}</div><div style="font-size:12px; color:#f0f; font-weight:bold;">+${lb}</div><button class="btn" style="margin-left:auto; padding:0 6px; font-size:10px;" onclick="window.toggleNameEdit()">✎</button></div>
+                        <div id="char-name-edit" style="display:none; align-items:center; margin-bottom:2px;"><input type="text" id="char-name-input" value="${c.name}" maxlength="10" style="width:100px; background:#333; color:#fff; border:1px solid #888; padding:2px; font-size:12px;"><button class="btn" style="margin-left:5px; padding:2px 6px; font-size:10px;" onclick="window.saveName()">OK</button></div>
                         <div style="font-size:11px; color:#aaa; margin-bottom:4px;">${c.job} / ${c.rarity} Rank</div>
-                        
-                        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:4px;">
-                            <div style="background:#333; padding:2px 4px; border-radius:3px;">
-                                <div style="font-size:8px; color:#aaa;">HP</div>
-                                <div style="font-weight:bold; font-size:11px; color:#8f8;">${hp}/${s.maxHp}</div>
-                            </div>
-                            <div style="background:#333; padding:2px 4px; border-radius:3px;">
-                                <div style="font-size:8px; color:#aaa;">MP</div>
-                                <div style="font-weight:bold; font-size:11px; color:#88f;">${mp}/${s.maxMp}</div>
-                            </div>
-                            <div style="background:#333; padding:2px 4px; border-radius:3px;">
-                                <div style="font-size:8px; color:#aaa;">Exp</div>
-                                <div style="font-weight:bold; font-size:9px; color:#fff;">N:${nextExpText} / T:${c.exp}</div>
-                            </div>
-                        </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:4px;"><div style="background:#333; padding:2px 4px; border-radius:3px;"><div style="font-size:8px; color:#aaa;">HP</div><div style="font-weight:bold; font-size:11px; color:#8f8;">${hp}/${s.maxHp}</div></div><div style="background:#333; padding:2px 4px; border-radius:3px;"><div style="font-size:8px; color:#aaa;">MP</div><div style="font-weight:bold; font-size:11px; color:#88f;">${mp}/${s.maxMp}</div></div><div style="background:#333; padding:2px 4px; border-radius:3px;"><div style="font-size:8px; color:#aaa;">Exp</div><div style="font-weight:bold; font-size:9px; color:#fff;">N:${nextExpText} / T:${c.exp}</div></div></div>
                     </div>
                 </div>
-
                 <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:2px; margin-bottom:10px;">
                     <div style="background:#2a2a2a; padding:4px; text-align:center;"><span style="font-size:10px; color:#aaa;">攻撃力</span><br><span style="font-weight:bold; font-size:12px;">${s.atk}</span></div>
                     <div style="background:#2a2a2a; padding:4px; text-align:center;"><span style="font-size:10px; color:#aaa;">防御力</span><br><span style="font-weight:bold; font-size:12px;">${s.def}</span></div>
                     <div style="background:#2a2a2a; padding:4px; text-align:center;"><span style="font-size:10px; color:#aaa;">素早さ</span><br><span style="font-weight:bold; font-size:12px;">${s.spd}</span></div>
                     <div style="background:#2a2a2a; padding:4px; text-align:center;"><span style="font-size:10px; color:#aaa;">魔力</span><br><span style="font-weight:bold; font-size:12px;">${s.mag}</span></div>
                 </div>
-
                 <div style="display:flex; margin-bottom:10px;">${tabBtns}</div>
-
                 <div>${contentHtml}</div>
-				<div style="margin-top:20px; display:flex; gap:10px; padding-bottom:10px;">
-                    <button class="btn" style="flex:1; background:#444;" onclick="MenuAllies.renderList()">一覧に戻る</button>
-                    <button class="btn" style="flex:1; background:#444;" onclick="Menu.closeSubScreen('allies')">メニューを閉じる</button>
-                </div>
+                <div style="margin-top:20px; display:flex; gap:10px; padding-bottom:10px;"><button class="btn" style="flex:1; background:#444;" onclick="MenuAllies.renderList()">一覧に戻る</button><button class="btn" style="flex:1; background:#444;" onclick="Menu.closeSubScreen('allies')">メニューを閉じる</button></div>
             </div>
         `;
     },
-    
+
     selectCandidate: (idx, isRemove) => {
-        if (isRemove) {
-            MenuAllies.selectedEquip = { isRemove: true, name: '(装備を外す)' };
-        } else {
-            MenuAllies.selectedEquip = MenuAllies._tempCandidates[idx];
-        }
+        if (isRemove) MenuAllies.selectedEquip = { isRemove: true, name: '(装備を外す)' };
+        else MenuAllies.selectedEquip = MenuAllies._tempCandidates[idx];
         MenuAllies.renderDetail();
     },
 
@@ -1461,30 +1381,45 @@ if (MenuAllies.currentTab === 1) {
         const c = MenuAllies.selectedChar;
         const p = MenuAllies.targetPart;
         const newItem = MenuAllies.selectedEquip;
-        
         const oldItem = c.equips[p];
         if(oldItem) App.data.inventory.push(oldItem);
-        
-        if(newItem && newItem.isRemove) {
-            c.equips[p] = null;
-        } else if(newItem) {
+        if(newItem && newItem.isRemove) c.equips[p] = null;
+        else if(newItem) {
             let itemIdx = App.data.inventory.findIndex(i => i.id === newItem.id);
-            if(itemIdx > -1) {
-                c.equips[p] = App.data.inventory[itemIdx];
-                App.data.inventory.splice(itemIdx, 1);
-            } else {
-                const owner = App.data.characters.find(ch => ch.equips[p] && ch.equips[p].id === newItem.id);
-                if(owner) {
-                    c.equips[p] = owner.equips[p];
-                    owner.equips[p] = null;
-                }
-            }
+            if(itemIdx > -1) { c.equips[p] = App.data.inventory[itemIdx]; App.data.inventory.splice(itemIdx, 1); }
+            else { const owner = App.data.characters.find(ch => ch.equips[p] && ch.equips[p].id === newItem.id); if(owner) { c.equips[p] = owner.equips[p]; owner.equips[p] = null; } }
         }
-        
         App.save();
         MenuAllies.selectedEquip = null;
         MenuAllies.targetPart = null;
         MenuAllies.renderDetail();
+    },
+
+    toggleSkillVisibility: (sid) => {
+        const c = MenuAllies.selectedChar;
+        if (!c || !c.config) return;
+        const numSid = Number(sid);
+        const index = c.config.hiddenSkills.indexOf(numSid);
+        if (index > -1) c.config.hiddenSkills.splice(index, 1);
+        else c.config.hiddenSkills.push(numSid);
+        App.save();
+        MenuAllies.refreshDetailScroll();
+    },
+
+    toggleFullAuto: () => {
+        const c = MenuAllies.selectedChar;
+        if (!c || !c.config) return;
+        c.config.fullAuto = !c.config.fullAuto;
+        App.save();
+        MenuAllies.refreshDetailScroll();
+    },
+
+    refreshDetailScroll: () => {
+        const container = document.querySelector('#allies-detail-view .scroll-container-inner');
+        const scrollPos = container ? container.scrollTop : 0;
+        MenuAllies.renderDetail();
+        const newContainer = document.querySelector('#allies-detail-view .scroll-container-inner');
+        if (newContainer) newContainer.scrollTop = scrollPos;
     },
 
     uploadImage: (input, uid) => {
@@ -1494,12 +1429,7 @@ if (MenuAllies.currentTab === 1) {
             const reader = new FileReader();
             reader.onload = (e) => {
                 const char = App.getChar(uid);
-                if (char) {
-                    char.img = e.target.result;
-                    App.save();
-                    Menu.renderPartyBar();
-                    MenuAllies.renderDetail();
-                }
+                if (char) { char.img = e.target.result; App.save(); Menu.renderPartyBar(); MenuAllies.renderDetail(); }
             };
             reader.readAsDataURL(file);
         }
@@ -1512,11 +1442,7 @@ if (MenuAllies.currentTab === 1) {
         div.className = 'flex-col-container';
         div.style.display = 'none';
         div.style.background = '#1a1a1a';
-        div.innerHTML = `
-            <div class="header-bar" id="tree-header"></div>
-            <div id="tree-content" class="scroll-area" style="padding:10px;"></div>
-            <button class="btn" style="margin:10px;" onclick="MenuAllies.renderDetail()">戻る</button>
-        `;
+        div.innerHTML = `<div class="header-bar" id="tree-header"></div><div id="tree-content" class="scroll-area" style="padding:10px;"></div><button class="btn" style="margin:10px;" onclick="MenuAllies.renderDetail()">戻る</button>`;
         document.getElementById('sub-screen-allies').appendChild(div);
     },
 
@@ -1530,16 +1456,7 @@ if (MenuAllies.currentTab === 1) {
         const c = MenuAllies.selectedChar;
         const sp = c.sp || 0;
         const header = document.getElementById('tree-header');
-        header.innerHTML = `
-            <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
-                <div style="display:flex; align-items:center;">
-                    <button class="btn" style="padding:2px 10px;" onclick="MenuAllies.switchChar(-1)">＜</button>
-                    <span style="margin:0 10px;">${c.name} (SP:${sp})</span>
-                    <button class="btn" style="padding:2px 10px;" onclick="MenuAllies.switchChar(1)">＞</button>
-                </div>
-                <button class="btn" style="background:#500; font-size:10px; padding:2px 5px;" onclick="MenuAllies.resetTree()">RESET</button>
-            </div>
-        `;
+        header.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;"><div style="display:flex; align-items:center;"><button class="btn" style="padding:2px 10px;" onclick="MenuAllies.switchChar(-1)">＜</button><span style="margin:0 10px;">${c.name} (SP:${sp})</span><button class="btn" style="padding:2px 10px;" onclick="MenuAllies.switchChar(1)">＞</button></div><button class="btn" style="background:#500; font-size:10px; padding:2px 5px;" onclick="MenuAllies.resetTree()">RESET</button></div>`;
         const list = document.getElementById('tree-content');
         list.innerHTML = '';
         if (!c.tree) c.tree = { ATK:0, MAG:0, SPD:0, HP:0, MP:0 };
@@ -1549,47 +1466,27 @@ if (MenuAllies.currentTab === 1) {
             const maxLevel = treeDef.steps.length;
             const div = document.createElement('div');
             div.style.cssText = "background:#222; border:1px solid #444; border-radius:4px; margin-bottom:10px; padding:5px;";
-            let html = `<div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                <span style="font-weight:bold; color:#ffd700;">${treeDef.name} Lv.${currentLevel}</span>
-                <span style="font-size:11px; color:#aaa;">(${currentLevel}/${maxLevel})</span>
-            </div>`;
-            html += `<div style="display:flex; gap:2px; margin-bottom:5px;">`;
+            let html = `<div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span style="font-weight:bold; color:#ffd700;">${treeDef.name} Lv.${currentLevel}</span><span style="font-size:11px; color:#aaa;">(${currentLevel}/${maxLevel})</span></div><div style="display:flex; gap:2px; margin-bottom:5px;">`;
             for(let i=0; i<maxLevel; i++) {
-                const step = treeDef.steps[i];
                 const achieved = (i < currentLevel);
                 const isNext = (i === currentLevel);
-                const bg = achieved ? '#008888' : (isNext ? '#444' : '#222');
-                const border = isNext ? '1px solid #fff' : '1px solid #444';
-                html += `<div style="flex:1; background:${bg}; border:${border}; height:6px; border-radius:2px;"></div>`;
+                html += `<div style="flex:1; background:${achieved ? '#008888' : (isNext ? '#444' : '#222')}; border:${isNext ? '1px solid #fff' : '1px solid #444'}; height:6px; border-radius:2px;"></div>`;
             }
             html += `</div>`;
             if (currentLevel < maxLevel) {
                 const nextStep = treeDef.steps[currentLevel];
                 const reqTotal = treeDef.costs[currentLevel];
-                const prevReq = (currentLevel > 0) ? treeDef.costs[currentLevel-1] : 0;
-                const cost = reqTotal - prevReq;
+                const cost = reqTotal - ((currentLevel > 0) ? treeDef.costs[currentLevel-1] : 0);
                 const canAfford = (sp >= cost);
-                html += `<div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div style="font-size:12px;">次: <span style="color:#fff;">${nextStep.desc}</span></div>
-                    <button class="btn" style="font-size:11px; padding:4px 8px; background:${canAfford?'#d00':'#333'};" onclick="MenuAllies.unlockTree('${key}', ${cost})" ${canAfford?'':'disabled'}>習得 SP:${cost}</button>
-                </div>`;
-            } else {
-                html += `<div style="font-size:12px; text-align:center; color:#4f4;">MASTER!</div>`;
-            }
-            div.innerHTML = html;
-            list.appendChild(div);
+                html += `<div style="display:flex; justify-content:space-between; align-items:center;"><div style="font-size:12px;">次: <span style="color:#fff;">${nextStep.desc}</span></div><button class="btn" style="font-size:11px; padding:4px 8px; background:${canAfford?'#d00':'#333'};" onclick="MenuAllies.unlockTree('${key}', ${cost})" ${canAfford?'':'disabled'}>習得 SP:${cost}</button></div>`;
+            } else { html += `<div style="font-size:12px; text-align:center; color:#4f4;">MASTER!</div>`; }
+            div.innerHTML = html; list.appendChild(div);
         }
     },
 
     unlockTree: (key, cost) => {
         const c = MenuAllies.selectedChar;
-        if (c.sp >= cost) {
-            c.sp -= cost;
-            c.tree[key] = (c.tree[key] || 0) + 1;
-            App.save();
-            MenuAllies.renderTreeView();
-            Menu.renderPartyBar(); 
-        }
+        if (c.sp >= cost) { c.sp -= cost; c.tree[key] = (c.tree[key] || 0) + 1; App.save(); MenuAllies.renderTreeView(); Menu.renderPartyBar(); }
     },
 
     resetTree: () => {
@@ -1598,17 +1495,9 @@ if (MenuAllies.currentTab === 1) {
             let totalReturned = 0;
             for (let key in c.tree) {
                 const lv = c.tree[key];
-                if (lv > 0) {
-                    const treeDef = CONST.SKILL_TREES[key];
-                    if (treeDef && treeDef.costs[lv - 1]) totalReturned += treeDef.costs[lv - 1];
-                    c.tree[key] = 0;
-                }
+                if (lv > 0) { const treeDef = CONST.SKILL_TREES[key]; if (treeDef && treeDef.costs[lv - 1]) totalReturned += treeDef.costs[lv - 1]; c.tree[key] = 0; }
             }
-            c.sp = (c.sp || 0) + totalReturned;
-            App.save();
-            MenuAllies.renderTreeView();
-            Menu.renderPartyBar();
-            Menu.msg(`スキルをリセットしました。\n(返還SP: ${totalReturned})`);
+            c.sp = (c.sp || 0) + totalReturned; App.save(); MenuAllies.renderTreeView(); Menu.renderPartyBar(); Menu.msg(`スキルをリセットしました。\n(返還SP: ${totalReturned})`);
         });
     },
 
@@ -1617,19 +1506,7 @@ if (MenuAllies.currentTab === 1) {
         const div = document.createElement('div');
         div.id = 'alloc-modal';
         div.style.cssText = 'position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; display:none; flex-direction:column; justify-content:center; align-items:center;';
-        div.innerHTML = `
-            <div style="width:90%; max-width:320px; max-height:80%; background:#222; border:2px solid #fff; display:flex; flex-direction:column;">
-                <div class="header-bar"><span>能力値振分</span></div>
-                <div style="padding:10px; text-align:center; border-bottom:1px solid #444;">
-                    残りポイント: <span id="alloc-free-pts" style="color:#ffd700; font-weight:bold; font-size:18px;">0</span>
-                </div>
-                <div id="alloc-list" class="scroll-area" style="flex:1; padding:10px;"></div>
-                <div style="padding:10px; display:flex; gap:10px; justify-content:center; border-top:1px solid #444;">
-                    <button class="menu-btn" style="width:100px; background:#400040;" onclick="MenuAllies.saveAlloc()">決定</button>
-                    <button class="menu-btn" style="width:100px;" onclick="MenuAllies.closeAllocModal()">キャンセル</button>
-                </div>
-            </div>
-        `;
+        div.innerHTML = `<div style="width:90%; max-width:320px; max-height:80%; background:#222; border:2px solid #fff; display:flex; flex-direction:column;"><div class="header-bar"><span>能力値振分</span></div><div style="padding:10px; text-align:center; border-bottom:1px solid #444;">残りポイント: <span id="alloc-free-pts" style="color:#ffd700; font-weight:bold; font-size:18px;">0</span></div><div id="alloc-list" class="scroll-area" style="flex:1; padding:10px;"></div><div style="padding:10px; display:flex; gap:10px; justify-content:center; border-top:1px solid #444;"><button class="menu-btn" style="width:100px; background:#400040;" onclick="MenuAllies.saveAlloc()">決定</button><button class="menu-btn" style="width:100px;" onclick="MenuAllies.closeAllocModal()">キャンセル</button></div></div>`;
         document.body.appendChild(div);
     },
 
@@ -1644,82 +1521,46 @@ if (MenuAllies.currentTab === 1) {
         document.getElementById('alloc-modal').style.display = 'flex';
     },
 
-    closeAllocModal: () => {
-        document.getElementById('alloc-modal').style.display = 'none';
-        MenuAllies.tempAlloc = null;
-    },
+    closeAllocModal: () => { document.getElementById('alloc-modal').style.display = 'none'; MenuAllies.tempAlloc = null; },
 
     renderAllocModal: () => {
         const alloc = MenuAllies.tempAlloc;
-        let used = 0;
-        for(let k in alloc) used += alloc[k];
+        let used = 0; for(let k in alloc) used += alloc[k];
         const free = MenuAllies.tempTotalPt - used;
         document.getElementById('alloc-free-pts').innerText = free;
-        const list = document.getElementById('alloc-list');
-        list.innerHTML = '';
+        const list = document.getElementById('alloc-list'); list.innerHTML = '';
         const items = [];
-        CONST.ELEMENTS.forEach(elm => {
-            items.push({ key: `elmAtk_${elm}`, label: `${elm}属性攻撃` });
-            items.push({ key: `elmRes_${elm}`, label: `${elm}属性耐性` });
-        });
-        items.push({ key: `finDmg`, label: `与ダメージ` });
-        items.push({ key: `finRed`, label: `被ダメージ軽減` });
-        
+        CONST.ELEMENTS.forEach(elm => { items.push({ key: `elmAtk_${elm}`, label: `${elm}属性攻撃` }); items.push({ key: `elmRes_${elm}`, label: `${elm}属性耐性` }); });
+        items.push({ key: `finDmg`, label: `与ダメージ` }); items.push({ key: `finRed`, label: `被ダメージ軽減` });
         items.forEach(item => {
             const val = alloc[item.key] || 0;
             const unit = item.key.includes('fin') || item.key.includes('elm') ? '%' : '';
-
             const div = document.createElement('div');
             div.style.cssText = 'display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; background:#333; padding:4px; border-radius:4px;';
-            div.innerHTML = `
-                <div style="font-size:11px;">${item.label}</div>
-                <div style="display:flex; align-items:center; gap:2px;">
-                    <button class="btn" style="padding:2px 6px; font-size:10px;" onclick="MenuAllies.adjustAlloc('${item.key}', -10)">-10</button>
-                    <button class="btn" style="padding:2px 8px; font-size:12px;" onclick="MenuAllies.adjustAlloc('${item.key}', -1)">－</button>
-                    <span style="width:30px; text-align:center; font-weight:bold; font-size:12px;">${val}${unit}</span>
-                    <button class="btn" style="padding:2px 8px; font-size:12px;" onclick="MenuAllies.adjustAlloc('${item.key}', 1)">＋</button>
-                    <button class="btn" style="padding:2px 6px; font-size:10px;" onclick="MenuAllies.adjustAlloc('${item.key}', 10)">+10</button>
-                </div>
-            `;
+            div.innerHTML = `<div style="font-size:11px;">${item.label}</div><div style="display:flex; align-items:center; gap:2px;"><button class="btn" style="padding:2px 6px; font-size:10px;" onclick="MenuAllies.adjustAlloc('${item.key}', -10)">-10</button><button class="btn" style="padding:2px 8px; font-size:12px;" onclick="MenuAllies.adjustAlloc('${item.key}', -1)">－</button><span style="width:30px; text-align:center; font-weight:bold; font-size:12px;">${val}${unit}</span><button class="btn" style="padding:2px 8px; font-size:12px;" onclick="MenuAllies.adjustAlloc('${item.key}', 1)">＋</button><button class="btn" style="padding:2px 6px; font-size:10px;" onclick="MenuAllies.adjustAlloc('${item.key}', 10)">+10</button></div>`;
             list.appendChild(div);
         });
     },
 
     adjustAlloc: (key, delta) => {
         const alloc = MenuAllies.tempAlloc;
-        let used = 0;
-        for(let k in alloc) used += alloc[k];
+        let used = 0; for(let k in alloc) used += alloc[k];
         const free = MenuAllies.tempTotalPt - used;
         const currentVal = alloc[key] || 0;
-        
         let actualDelta = delta;
-
-        if (delta < 0) {
-            if (currentVal + delta < 0) actualDelta = -currentVal;
-        } else {
-            if (free < delta) actualDelta = free;
-        }
-
+        if (delta < 0) { if (currentVal + delta < 0) actualDelta = -currentVal; }
+        else { if (free < delta) actualDelta = free; }
         if (actualDelta === 0) return;
-
-        alloc[key] = currentVal + actualDelta;
-        if (alloc[key] <= 0) delete alloc[key];
-        
+        alloc[key] = currentVal + actualDelta; if (alloc[key] <= 0) delete alloc[key];
         MenuAllies.renderAllocModal();
     },
 
     saveAlloc: () => {
         const c = MenuAllies.selectedChar;
-        if(c && MenuAllies.tempAlloc) {
-            c.alloc = MenuAllies.tempAlloc;
-            App.save();
-            MenuAllies.renderDetail();
-            Menu.msg("振分を保存しました");
-        }
+        if(c && MenuAllies.tempAlloc) { c.alloc = MenuAllies.tempAlloc; App.save(); MenuAllies.renderDetail(); Menu.msg("振分を保存しました"); }
         MenuAllies.closeAllocModal();
     }
 };
-
 
 /* ==========================================================================
    6. スキル使用
@@ -1894,14 +1735,18 @@ const MenuBook = {
         const list = document.getElementById('book-list');
         list.innerHTML = '';
         const defeated = App.data.book.monsters || [];
+        const killCounts = App.data.book.killCounts || {}; // 討伐データ取得
         
         DB.MONSTERS.forEach(m => {
             const isKnown = defeated.includes(m.id);
             const div = document.createElement('div');
             div.className = 'list-item';
             div.style.alignItems = 'flex-start';
+            div.style.padding = '8px'; // 微調整: 余白の最適化
 
             if(isKnown) {
+                const killCount = killCounts[m.id] || 0; // 討伐数取得
+                
                 // リスト表示用: 行動内容の概要
                 const skillNames = (m.acts || []).map(act => {
                     const id = (typeof act === 'object') ? act.id : act;
@@ -1915,13 +1760,13 @@ const MenuBook = {
                     : `<span style="color:#555;font-size:10px;">NO IMG</span>`;
 
                 div.innerHTML = `
-                    <div style="width:64px; height:64px; background:#1a1a1a; border:1px solid #444; margin-right:10px; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
+                    <div style="width:64px; height:64px; background:#1a1a1a; border:1px solid #444; margin-right:10px; flex-shrink:0; display:flex; align-items:center; justify-content:center; border-radius:4px;">
                         ${imgContent}
                     </div>
                     <div style="flex:1; display:flex; flex-direction:column; justify-content:space-between; min-height:64px;">
                         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:2px; margin-bottom:2px;">
                             <span style="font-size:15px; font-weight:bold; color:#f88;">${m.name}</span>
-                            <span style="font-size:11px; color:#aaa;">Rank:${m.rank}</span>
+                            <span style="font-size:10px; color:#ffd700; background:rgba(255,215,0,0.1); padding:0 4px; border-radius:2px;">討伐数: ${killCount}</span>
                         </div>
                         <div style="font-size:10px; color:#ccc; display:flex; gap:6px;">
                             <span>HP:${m.hp}</span> <span>攻:${m.atk}</span> <span>防:${m.def}</span> <span>魔:${m.mag}</span> <span>速:${m.spd}</span>
@@ -1934,9 +1779,9 @@ const MenuBook = {
                 div.onclick = () => MenuBook.showDetail(m);
             } else {
                 div.innerHTML = `
-                    <div style="width:64px; height:64px; background:#111; border:1px solid #333; margin-right:10px; flex-shrink:0;"></div>
+                    <div style="width:64px; height:64px; background:#111; border:1px solid #333; margin-right:10px; flex-shrink:0; border-radius:4px;"></div>
                     <div style="flex:1; display:flex; align-items:center; height:64px;">
-                        <span style="color:#444; font-size:20px; letter-spacing:2px;">？？？</span>
+                        <span style="color:#444; font-size:20px; letter-spacing:4px; font-weight:bold;">？？？</span>
                     </div>
                 `;
             }
@@ -1963,9 +1808,11 @@ const MenuBook = {
         MenuBook.showDetail(validMonsters[newIndex]);
     },
 
-    // --- 詳細画面 ---
+	// --- 詳細画面 (討伐数・ステータス枠の統一版) ---
     showDetail: (monster) => {
         MenuBook.selectedMonster = monster;
+        // 討伐数データの取得
+        const killCount = (App.data.book.killCounts && App.data.book.killCounts[monster.id]) || 0;
 
         const view = document.getElementById('book-detail-view');
         const list = document.getElementById('book-list');
@@ -1998,13 +1845,10 @@ const MenuBook = {
         const actListHtml = acts.map(act => {
             const actId = (typeof act === 'object') ? act.id : act;
             const cond = (typeof act === 'object') ? act.condition : 0;
-            // 確率は表示しない
-
             const s = DB.SKILLS.find(k => k.id === actId);
             const sName = s ? s.name : (actId===1?'通常攻撃':(actId===2?'防御':(actId===9?'逃げる':'不明')));
             const sIdText = s ? `(ID:${s.id})` : '';
             
-            // 条件テキスト生成
             let condText = '';
             if (cond === 1) condText = '<span style="color:#f88;">(HP≧50%)</span>';
             else if (cond === 2) condText = '<span style="color:#88f;">(HP≦50%)</span>';
@@ -2030,50 +1874,50 @@ const MenuBook = {
                 
                 <div style="display:flex; justify-content:space-between; align-items:end; border-bottom:1px solid #555; padding-bottom:5px; margin-bottom:10px;">
                     <div>
-                        <div style="font-size:10px; color:#aaa;">ID:${monster.id}</div>
+                        <div style="font-size:10px; color:#aaa; margin-bottom:2px;">ID:${monster.id}</div>
                         <div style="font-size:18px; font-weight:bold; color:#ffd700;">${monster.name}</div>
                     </div>
                     <div style="text-align:right;">
-                        <span style="font-size:12px; background:#444; padding:2px 6px; border-radius:4px;">Rank: ${monster.rank}</span>
+                        <span style="font-size:12px; background:#444; padding:2px 8px; border-radius:4px; border:1px solid #555;">Rank: ${monster.rank}</span>
                     </div>
                 </div>
 
                 <div style="display:flex; gap:10px; margin-bottom:15px;">
-                    <div style="width:100px; height:120px; background:#000; border:1px solid #555; display:flex; align-items:center; justify-content:center; flex-shrink:0; border-radius:4px;">
+                    <div style="width:100px; height:120px; background:#000; border:1px solid #555; display:flex; align-items:center; justify-content:center; flex-shrink:0; border-radius:4px; box-shadow: inset 0 0 10px rgba(255,255,255,0.05);">
                         ${imgHtml}
                     </div>
 
                     <div style="flex:1;">
                         <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:5px; margin-bottom:8px;">
-                            <div style="background:#333; padding:4px; border-radius:3px;">
+                            <div style="background:#333; padding:4px; border-radius:3px; border:1px solid #444;">
                                 <div style="font-size:9px; color:#aaa;">HP</div>
                                 <div style="font-weight:bold; color:#8f8;">${monster.hp}</div>
                             </div>
-                            <div style="background:#333; padding:4px; border-radius:3px;">
+                            <div style="background:#333; padding:4px; border-radius:3px; border:1px solid #444;">
                                 <div style="font-size:9px; color:#aaa;">MP</div>
                                 <div style="font-weight:bold; color:#88f;">${monster.mp}</div>
                             </div>
-                            <div style="background:#333; padding:4px; border-radius:3px;">
-                                <div style="font-size:9px; color:#aaa;">EXP</div>
-                                <div style="font-weight:bold; color:#fff;">${monster.exp}</div>
+                            <div style="background:#333; padding:4px; border-radius:3px; border:1px solid #444;">
+                                <div style="font-size:9px; color:#aaa;">討伐数</div>
+                                <div style="font-weight:bold; color:#ffd700;">${killCount}</div>
                             </div>
                         </div>
                         <div style="display:grid; grid-template-columns:1fr 1fr; gap:2px; font-size:11px;">
-                            <div style="display:flex; justify-content:space-between; background:#2a2a2a; padding:2px 4px;"><span>攻撃</span><span>${monster.atk}</span></div>
-                            <div style="display:flex; justify-content:space-between; background:#2a2a2a; padding:2px 4px;"><span>防御</span><span>${monster.def}</span></div>
-                            <div style="display:flex; justify-content:space-between; background:#2a2a2a; padding:2px 4px;"><span>素早</span><span>${monster.spd}</span></div>
-                            <div style="display:flex; justify-content:space-between; background:#2a2a2a; padding:2px 4px;"><span>魔力</span><span>${monster.mag}</span></div>
-                            <div style="display:flex; justify-content:space-between; background:#2a2a2a; padding:2px 4px; color:#ffd700; grid-column:span 2;"><span>GOLD</span><span>${monster.gold} G</span></div>
+                            <div style="display:flex; justify-content:space-between; background:#2a2a2a; padding:2px 6px; border-radius:2px;"><span>攻撃</span><span>${monster.atk}</span></div>
+                            <div style="display:flex; justify-content:space-between; background:#2a2a2a; padding:2px 6px; border-radius:2px;"><span>防御</span><span>${monster.def}</span></div>
+                            <div style="display:flex; justify-content:space-between; background:#2a2a2a; padding:2px 6px; border-radius:2px;"><span>素早</span><span>${monster.spd}</span></div>
+                            <div style="display:flex; justify-content:space-between; background:#2a2a2a; padding:2px 6px; border-radius:2px;"><span>魔力</span><span>${monster.mag}</span></div>
+                            <div style="display:flex; justify-content:space-between; background:#2a2a2a; padding:2px 6px; border-radius:2px;"><span>GOLD</span><span>${monster.gold}</span></div>
+                            <div style="display:flex; justify-content:space-between; background:#2a2a2a; padding:2px 6px; border-radius:2px;"><span>EXP</span><span>${monster.exp}</span></div>
                         </div>
                     </div>
                 </div>
 
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    
                     <div style="background:#252525; border:1px solid #444; border-radius:4px; padding:8px;">
                         <div style="display:flex; justify-content:space-between; font-size:12px; color:#aaa; margin-bottom:5px; border-bottom:1px solid #444; padding-bottom:2px;">
                             <span>行動パターン</span>
-                            <span style="font-size:10px;">${monster.actCount||1}回</span>
+                            <span style="font-size:10px;">${monster.actCount||1}回行動</span>
                         </div>
                         <div style="display:flex; flex-direction:column; gap:2px;">
                             ${actListHtml}
@@ -2081,7 +1925,6 @@ const MenuBook = {
                     </div>
 
                     <div style="display:flex; flex-direction:column; gap:8px;">
-                        
                         <div style="background:#222; border:1px solid #444; border-radius:4px; padding:5px;">
                             <div style="font-size:10px; color:#88f; margin-bottom:3px; text-align:center; border-bottom:1px solid #333;">属性耐性 (%)</div>
                             <div style="display:grid; grid-template-columns:1fr 1fr; gap:2px;">
@@ -2105,7 +1948,6 @@ const MenuBook = {
                                 `).join('')}
                             </div>
                         </div>
-
                     </div>
                 </div>
 
