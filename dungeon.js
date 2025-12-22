@@ -3,45 +3,14 @@
 const Dungeon = {
     floor: 0, width: 30, height: 30, map: [], pendingAction: null,
     
-    // --- 敵取得ロジック (統合) ---
-    // Battleシーンから呼び出される想定の関数
-    getEnemy: (floor) => {
-        // 1. その階層固定のボスがいるかチェック (DB.MONSTERSから検索)
-		// IDが1000以上、かつ階層が一致するものをボスとする
-		const boss = DB.MONSTERS.find(m => m.minF === floor && m.id >= 1000);
-        if (boss) {
-            return JSON.parse(JSON.stringify(boss));
-        }
-
-        // 2. レア敵（メタル系など）の抽選 (確率5%)
-        if (Math.random() < 0.05) {
-            const rares = DB.MONSTERS.filter(m => !m.actCount && m.minF <= floor);
-            if (rares.length > 0) {
-                const rareEnemy = rares[Math.floor(Math.random() * rares.length)];
-                return JSON.parse(JSON.stringify(rareEnemy));
-            }
-        }
-
-        // 3. 通常敵の生成 (generateEnemyを使用)
-        // database.js で定義した関数を呼び出す
-        if (window.generateEnemy) {
-            return window.generateEnemy(floor);
-        }
-
-        // フォールバック
-        return {
-            id: Date.now(), name: 'スライム', hp: 50, mp: 10, atk: 10, def: 10, spd: 10, mag: 10,
-            exp: 5, gold: 5, skills: [1], resists: {}
-        };
-    },
 
     // --- ダンジョン突入・進行 ---
-    enter: () => {
+enter: () => {
         if (typeof Menu !== 'undefined') Menu.closeAll();
         
+        // ダンジョン内での脱出判定
         if (Field.currentMapData && Field.currentMapData.isDungeon) {
             const isBossFloor = Dungeon.floor > 0 && Dungeon.floor % 10 === 0;
-            // ボスフロアかつ、まだボスがいる場合は逃げられない
             if (isBossFloor && Dungeon.map[Field.y][Field.x] === 'B') {
                 App.log("今は逃げられない！ボスを倒すしかない！");
                 return;
@@ -52,19 +21,37 @@ const Dungeon = {
         }
 
         const maxF = App.data.dungeon.maxFloor || 0;
-        const checkpoint = Math.floor((maxF - 1) / 10) * 10 + 1;
+        const choices = [{ label: "1階から", callback: () => Dungeon.start(1) }];
 
-        if (checkpoint > 1) {
-            Menu.choice(
-                `ダンジョンに入ります。\n(最高到達: ${maxF}階)`,
-                "1階から", () => Dungeon.start(1),
-                `${checkpoint}階から`, () => Dungeon.start(checkpoint)
+        // 特定のチェックポイント (51, 101, 151)
+        [51, 101, 151,201,251,301].forEach(checkpoint => {
+            if (maxF >= checkpoint) {
+                choices.push({ 
+                    label: `${checkpoint}階から`, 
+                    callback: () => Dungeon.start(checkpoint) 
+                });
+            }
+        });
+
+        // 10階ごとの最新チェックポイント（既にリストにある場合は除外）
+        const latestCheckpoint = Math.floor((maxF - 1) / 10) * 10 + 1;
+        if (latestCheckpoint > 1 && !choices.some(c => c.label.includes(`${latestCheckpoint}階`))) {
+            choices.push({ 
+                label: `${latestCheckpoint}階から (最新)`, 
+                callback: () => Dungeon.start(latestCheckpoint) 
+            });
+        }
+
+        // 選択肢が2つ以上ある場合はリストを表示、1つなら即開始
+        if (choices.length > 1) {
+            Menu.listChoice(
+                `ダンジョンに入ります。\n(最高到達階層: ${maxF}階)`,
+                choices
             );
         } else {
             Dungeon.start(1);
         }
     },
-
     start: (startFloor) => {
         App.data.progress.floor = startFloor;
         App.data.dungeon.tryCount++;
@@ -193,7 +180,7 @@ const Dungeon = {
             const eq = App.createRandomEquip('chest', Dungeon.floor, 3);
             if(App.checkSynergy(eq)) eq.isSynergy = true;
             App.data.inventory.push(eq);
-            msg = `<span style="color:#ff4444; font-weight:bold;">激レア！ ${eq.name}</span>`;
+            msg = `なんと <span style="color:#ff4444; font-weight:bold;"> ${eq.name}</span>`;
             
             // レア演出用フラッシュ
             const flash = document.getElementById('drop-flash');
@@ -217,8 +204,8 @@ const Dungeon = {
                     App.data.items[item.id] = (App.data.items[item.id]||0)+1;
                 }
             } else if (r < 0.5) {
-                // アイテム (30%)
-                const candidates = DB.ITEMS.filter(i => i.id !== 99);
+                // ★修正: 抽選時に「貴重品」を除外
+                const candidates = DB.ITEMS.filter(i => i.id !== 99 && i.type !== '貴重品');
                 if (candidates.length > 0) {
                     const item = candidates[Math.floor(Math.random() * candidates.length)];
                     msg = item.name;
@@ -244,7 +231,7 @@ const Dungeon = {
             }
         }
         
-        App.log(`宝箱: ${msg} を入手`);
+        App.log(`${msg} を手に入れた！`);
         App.save();
     },
 
@@ -255,20 +242,25 @@ const Dungeon = {
         if (Dungeon.floor > 0 && Dungeon.floor % 10 === 0) {
             Dungeon.generateBossRoom();
         } else {
-            const r = Math.random();
-            let type;
-            if (r < 0.05) type = 2; // 迷路
-            else if (r < 0.55) type = 0; // 部屋
-            else type = 1; // 洞窟
-            
-            if (type === 0) Dungeon.generateRoomMap(); 
-            else if (type === 1) Dungeon.generateCaveMap(); 
-            else Dungeon.generateMazeMap(); 
-            
-            Dungeon.setPlayerRandomSpawn();
-			// ★追加: 生成タイプを保存 (0,1は通常、2は迷路として扱うため記録)
-            App.data.dungeon.genType = type;
-        }
+            // ★追加: 2%の確率でレア宝物庫フロア
+            if (Math.random() < 0.02) {
+                Dungeon.generateTreasureRoom();
+            } else {
+				const r = Math.random();
+				let type;
+				if (r < 0.05) type = 2; // 迷路
+				else if (r < 0.55) type = 0; // 部屋
+				else type = 1; // 洞窟
+				
+				if (type === 0) Dungeon.generateRoomMap(); 
+				else if (type === 1) Dungeon.generateCaveMap(); 
+				else Dungeon.generateMazeMap(); 
+				
+				Dungeon.setPlayerRandomSpawn();
+				// ★追加: 生成タイプを保存 (0,1は通常、2は迷路として扱うため記録)
+				App.data.dungeon.genType = type;
+			}
+		}
         
         Field.currentMapData = { 
             width: Dungeon.width, 
@@ -293,6 +285,32 @@ const Dungeon = {
         }
         Dungeon.map[5][5] = 'B';
         Field.x = 5; Field.y = 8;
+    },
+	
+	/**
+     * レア宝箱が5つある特別な小部屋
+     */
+    generateTreasureRoom: () => {
+        App.log(`<span style="color:#ffd700; font-weight:bold;">隠し部屋を見つけた！</span>`);
+        const w = 11, h = 11; 
+        Dungeon.width = w; Dungeon.height = h;
+        for(let y=0; y<h; y++) {
+            let row = [];
+            for(let x=0; x<w; x++) { 
+                if(x===0||x===w-1||y===0||y===h-1) row.push('W'); 
+                else row.push('T'); 
+            }
+            Dungeon.map.push(row);
+        }
+        // 階段の配置
+        Dungeon.map[2][5] = 'S'; 
+        // レア宝箱5つの配置
+        Dungeon.map[4][3] = 'R'; Dungeon.map[4][7] = 'R';
+        Dungeon.map[5][5] = 'R';
+        Dungeon.map[6][3] = 'R'; Dungeon.map[6][7] = 'R';
+
+        Field.x = 5; Field.y = 8; // プレイヤーの開始位置
+        App.data.dungeon.genType = 0; // 通常フロア扱い
     },
 
     generateRoomMap: () => {
