@@ -2623,13 +2623,29 @@ findNextActor: () => {
             const isActor = (Battle.phase === 'input' && index === Battle.currentActorIndex);
             if(isActor) { div.style.border = "2px solid #ffd700"; div.style.background = "#333"; }
             let nameStyle = p.isDead ? 'color:red; text-decoration:line-through;' : 'color:white;';
-            const imgHtml = p.img ? `<img src="${p.img}" style="width:32px; height:32px; object-fit:cover; border-radius:4px; border:1px solid #666; margin-bottom:1px;">` : `<div style="width:32px; height:32px; background:#222; border-radius:4px; border:1px solid #444; display:flex; align-items:center; justify-content:center; color:#555; font-size:8px; margin-bottom:1px;">IMG</div>`;
-            div.innerHTML = `<div style="flex:1; display:flex; flex-direction:column; align-items:center; width:100%; overflow:hidden;">${imgHtml}<div style="font-size:10px; font-weight:bold; ${nameStyle} overflow:hidden; white-space:nowrap; width:100%; text-align:center; line-height:1.2;">${p.name}</div><div style="font-size:8px; color:#aaa; margin-bottom:2px; line-height:1;">${p.job} Lv.${p.level}</div></div><div style="width:100%;"><div class="bar-container"><div class="bar-hp" style="width:${hpPer}%"></div></div><div class="p-val">${p.hp}/${p.baseMaxHp}</div><div class="bar-container"><div class="bar-mp" style="width:${mpPer}%"></div></div><div class="p-val">${p.mp}/${p.baseMaxMp}</div></div>`;
+			
+			// ★修正箇所: マスタデータから画像を取得して統合
+            const master = DB.CHARACTERS.find(m => m.id === p.charId);
+            const imgUrl = p.img || (master ? master.img : null);
+            const imgHtml = imgUrl ? `<img src="${imgUrl}" style="width:32px; height:32px; object-fit:cover; border-radius:4px; border:1px solid #666; margin-bottom:1px;">` : `<div style="width:32px; height:32px; background:#222; border-radius:4px; border:1px solid #444; display:flex; align-items:center; justify-content:center; color:#555; font-size:8px; margin-bottom:1px;">IMG</div>`;
             
-			// ★修正: クリック時の処理をモーダルオープンに変更
-            div.onclick = () => { 
+            // --- 消えていた部分を復活 ---
+            div.innerHTML = `
+                <div style="flex:1; display:flex; flex-direction:column; align-items:center; width:100%; overflow:hidden;">
+                    ${imgHtml}
+                    <div style="font-size:10px; font-weight:bold; ${nameStyle} overflow:hidden; white-space:nowrap; width:100%; text-align:center; line-height:1.2;">${p.name}</div>
+                    <div style="font-size:8px; color:#aaa; margin-bottom:2px; line-height:1;">${p.job} Lv.${p.level}</div>
+                </div>
+                <div style="width:100%;">
+                    <div class="bar-container"><div class="bar-hp" style="width:${hpPer}%"></div></div>
+                    <div class="p-val">${p.hp}/${p.baseMaxHp}</div>
+                    <div class="bar-container"><div class="bar-mp" style="width:${mpPer}%"></div></div>
+                    <div class="p-val">${p.mp}/${p.baseMaxMp}</div>
+                </div>
+            `;
+			
+            div.onclick = () => { 
                 if(Battle.phase !== 'input') return;
-                // モーダルを開く (引数に現在のメンバーのインデックスを渡す)
                 Battle.openStatusModal(index);
             };
             
@@ -2682,12 +2698,16 @@ findNextActor: () => {
         const maxMp = char.baseMaxMp;
         const hpPer = Math.floor((char.hp / maxHp) * 100);
         const mpPer = Math.floor((char.mp / maxMp) * 100);
+		
+		// ★修正箇所: マスタデータから画像を取得
+        const master = DB.CHARACTERS.find(m => m.id === char.charId);
+        const imgUrl = char.img || (master ? master.img : null);
 
-        // ★修正: レイアウト調整 (バーを細く、文字を小さく、数値エリアを確保)
+        // ★修正箇所: char.img ではなく imgUrl を使用
         let html = `
             <div style="display:flex; align-items:center; margin-bottom:10px;">
                 <div style="width:48px; height:48px; border:1px solid #555; margin-right:10px; border-radius:4px; overflow:hidden; display:flex; justify-content:center; align-items:center; background:#333;">
-                    ${char.img ? `<img src="${char.img}" style="width:100%; height:100%; object-fit:cover;">` : '<span style="font-size:10px; color:#888;">IMG</span>'}
+                    ${imgUrl ? `<img src="${imgUrl}" style="width:100%; height:100%; object-fit:cover;">` : '<span style="font-size:10px; color:#888;">IMG</span>'}
                 </div>
                 <div style="flex:1;">
                     <div style="font-size:12px; color:#aaa; margin-bottom:2px;">${char.job} Lv.${char.level}</div>
