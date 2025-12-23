@@ -244,6 +244,69 @@
         
         #gacha-performance { position: absolute !important; top: 0 !important; left: 0 !important; width: 100%; height: 100%; z-index: 600; background: #000; display: none; flex-direction: column; }
         #modal-rates { z-index: 700 !important; }
+		
+		/* =========================================
+		   ガチャ結果画面: レアリティ別特別演出
+		========================================= */
+
+		/* --- UR: オーロラのような神秘的な輝き --- */
+		.style-aurora {
+			/* 背景: 青、紫、緑が混ざり合うグラデーション */
+			background: linear-gradient(135deg, #003366, #660066, #006633, #003366);
+			background-size: 300% 300%; /* アニメーションのためにサイズを大きく */
+			
+			/* 枠線と発光: 青緑系の光 */
+			border: 1px solid #00ffff;
+			box-shadow: 
+				0 0 10px rgba(0, 255, 255, 0.7),
+				0 0 20px rgba(138, 43, 226, 0.5),
+				inset 0 0 15px rgba(0, 255, 255, 0.3);
+				
+			/* 背景をゆっくり動かすアニメーション */
+			animation: aurora-shift 6s ease infinite alternate;
+			color: #fff; /* テキストカラーを白系に強制 */
+		}
+		/* URのレアリティ文字を少し見やすく調整 */
+		.style-aurora div:first-child {
+			text-shadow: 0 0 5px #00ffff;
+		}
+
+		@keyframes aurora-shift {
+			0% { background-position: 0% 50%; }
+			100% { background-position: 100% 50%; }
+		}
+
+
+		/* --- EX: 赤と金の荘厳な雰囲気 --- */
+		.style-majestic {
+			/* 背景: 深い赤から黒への重厚なグラデーション */
+			background: linear-gradient(to bottom, #8B0000, #2b0000);
+			
+			/* 枠線: 豪華な金の縁取り */
+			border: 2px solid #FFD700;
+			
+			/* 発光: 強く脈打つ赤と金の光 */
+			box-shadow: 
+				0 0 15px #ff0000,
+				0 0 30px #FFD700,
+				inset 0 0 20px rgba(255, 215, 0, 0.5);
+				
+			/* 全体をゆっくり脈打たせる */
+			animation: majestic-pulse 2s ease-in-out infinite alternate;
+			color: #FFD700; /* テキストカラーを金色に強制 */
+		}
+		/* EXのレアリティ文字をさらに際立たせる */
+		.style-majestic div:first-child {
+			color: #FFD700 !important;
+			text-shadow: 1px 1px 2px #000, 0 0 5px #FFD700;
+			font-size: 1.1em; /* 少し大きく */
+		}
+
+		@keyframes majestic-pulse {
+			0% { box-shadow: 0 0 15px #ff0000, 0 0 30px #FFD700, inset 0 0 10px rgba(255, 215, 0, 0.3); }
+			100% { box-shadow: 0 0 25px #ff0000, 0 0 50px #FFD700, inset 0 0 30px rgba(255, 215, 0, 0.7); }
+		}
+		
     </style>
 </head>
 <body>
