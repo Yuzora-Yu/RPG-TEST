@@ -146,18 +146,37 @@ const Gacha = {
         }, hasEX ? 2500 : 800);
     },
 
-    drawNextCard: () => {
+drawNextCard: () => {
         if (Gacha.isSkipped) return;
         if (Gacha.currentIndex >= Gacha.queue.length) { Gacha.finish(); return; }
         const char = Gacha.queue[Gacha.currentIndex];
+
+        // 画像取得ロジック
+        const master = DB.CHARACTERS.find(m => m.id === char.id);
+        const owned = App.data.characters.find(c => c.charId === char.id);
+        const displayImg = (owned && owned.img) || (master ? master.img : null);
+
+        // ★修正: 縁や背景を一切持たないイラストのみのタグ
+        const imgTag = displayImg 
+            ? `<img src="${displayImg}" style="width:130px; height:130px; object-fit:contain; margin-bottom:5px; border:none !important; background:transparent !important; box-shadow:none !important;">` 
+            : `<div style="width:130px; height:130px; margin-bottom:5px;"></div>`;
+
         const stage = document.getElementById('gacha-stage');
         stage.innerHTML = '';
+        
+        // エフェクトレイヤーの初期化（要素が存在する場合のみ実行）
         const layer = document.getElementById('gacha-effect-layer');
-        if(layer) { layer.style.display = 'none'; document.getElementById('effect-bg').className=''; document.getElementById('effect-text').className=''; document.getElementById('effect-ray').className=''; document.getElementById('effect-text').innerHTML=''; }
+        if(layer) {
+            layer.style.display = 'none';
+            const eb = document.getElementById('effect-bg'); if(eb) eb.className = '';
+            const et = document.getElementById('effect-text'); if(et) { et.className = ''; et.innerHTML = ''; }
+            const er = document.getElementById('effect-ray'); if(er) er.className = '';
+        }
 
         const card = document.createElement('div');
         card.className = 'gacha-card-scene';
-        
+
+        // --- 演出判定 ---
         let isFakeSilver = false;
         let playPromotion = false, playGodRay = false, playCutIn = false;
         if (['UR', 'EX'].includes(char.rarity)) {
@@ -173,16 +192,30 @@ const Gacha = {
             if(['UR','EX'].includes(char.rarity)) backClass = 'rare-rainbow';
         }
 
-        card.innerHTML = `<div class="card-face card-back ${backClass}"><div style="font-size:40px;">?</div></div><div class="card-face card-front" style="background:${Gacha.getRarityColor(char.rarity)}"><div style="font-size:20px; font-weight:bold; color:${Gacha.getRarityTextColor(char.rarity)}">${char.rarity}</div><div style="margin:10px 0; font-size:16px;">${char.name}</div><div style="font-size:12px;">${char.job}</div>${char.isNew ? '<div class="new-badge">NEW!</div>' : '<div style="color:#fff; font-size:10px;">限界突破!</div>'}</div>`;
+        // --- ★重要: HTMLの中身をセットしてステージに追加 ---
+        card.innerHTML = `
+            <div class="card-face card-back ${backClass}">
+                <div style="font-size:40px;">?</div>
+            </div>
+            <div class="card-face card-front" style="background:${Gacha.getRarityColor(char.rarity)}">
+                <div style="font-size:18px; font-weight:bold; color:${Gacha.getRarityTextColor(char.rarity)}; margin-bottom:5px;">${char.rarity}</div>
+                ${imgTag}
+                <div style="font-size:16px; font-weight:bold; color:#fff; text-shadow:1px 1px 2px #000;">${char.name}</div>
+                <div style="font-size:11px; color:#ccc;">${char.job}</div>
+                ${char.isNew ? '<div class="new-badge">NEW!</div>' : '<div style="color:#fff; font-size:10px; background:rgba(0,0,0,0.5); padding:2px 8px; border-radius:10px; margin-top:5px;">限界突破!</div>'}
+            </div>`;
         stage.appendChild(card);
 
+        // クリック時の挙動定義
         const doFlip = () => {
             card.classList.add('flipped');
             card.style.pointerEvents = 'auto';
             if(['SSR','UR','EX'].includes(char.rarity)) {
                 const flash = document.getElementById('flash-overlay');
-                flash.style.display = 'block'; flash.className = 'flash-anim';
-                setTimeout(()=> { flash.style.display='none'; flash.className=''; }, 300);
+                if(flash) {
+                    flash.style.display = 'block'; flash.className = 'flash-anim';
+                    setTimeout(()=> { flash.style.display='none'; flash.className=''; }, 300);
+                }
             }
         };
 
@@ -192,25 +225,33 @@ const Gacha = {
             if (playPromotion) {
                 card.classList.add('card-crack-anim');
                 setTimeout(() => {
-                    card.querySelector('.card-back').className = 'card-face card-back rare-rainbow';
+                    const cb = card.querySelector('.card-back');
+                    if(cb) cb.className = 'card-face card-back rare-rainbow';
                     const flash = document.getElementById('flash-overlay');
-                    flash.style.display = 'block'; flash.className = 'flash-anim';
-                    setTimeout(() => { flash.style.display='none'; flash.className=''; card.classList.remove('card-crack-anim'); doFlip(); }, 200);
+                    if(flash) { flash.style.display = 'block'; flash.className = 'flash-anim'; }
+                    setTimeout(() => { 
+                        if(flash) { flash.style.display='none'; flash.className=''; }
+                        card.classList.remove('card-crack-anim'); 
+                        doFlip(); 
+                    }, 200);
                 }, 500);
                 return;
             }
-            if (playGodRay) {
+            if (playGodRay && layer) {
                 layer.style.display = 'block';
-                document.getElementById('effect-bg').className = 'god-ray-bg';
-                document.getElementById('effect-ray').className = 'god-ray-beam';
+                const eb = document.getElementById('effect-bg'); if(eb) eb.className = 'god-ray-bg';
+                const er = document.getElementById('effect-ray'); if(er) er.className = 'god-ray-beam';
                 setTimeout(() => { layer.style.display = 'none'; doFlip(); }, 1500);
                 return;
             }
-            if (playCutIn) {
+            if (playCutIn && layer) {
                 layer.style.display = 'block';
-                document.getElementById('effect-bg').className = 'god-ray-bg';
-                document.getElementById('effect-text').className = 'cut-in-text';
-                document.getElementById('effect-text').innerHTML = char.rarity === 'EX' ? "神 降 臨" : "激 熱 !!";
+                const eb = document.getElementById('effect-bg'); if(eb) eb.className = 'god-ray-bg';
+                const et = document.getElementById('effect-text'); 
+                if(et) {
+                    et.className = 'cut-in-text';
+                    et.innerHTML = char.rarity === 'EX' ? "神 降 臨" : "激 熱 !!";
+                }
                 setTimeout(() => { layer.style.display = 'none'; doFlip(); }, 800);
                 return;
             }
@@ -226,9 +267,32 @@ const Gacha = {
         const list = document.getElementById('gacha-results-list');
         list.innerHTML = '';
         Gacha.queue.forEach(c => {
+			
+			// ★追加: 画像取得ロジック
+            const master = DB.CHARACTERS.find(m => m.id === c.id);
+            const owned = App.data.characters.find(ownedChar => ownedChar.charId === c.id);
+            const displayImg = (owned && owned.img) || (master ? master.img : null);
+            
+            // サムネイルのスタイル決定
+            const thumbStyle = displayImg ? `background-image: url('${displayImg}'); background-size: cover; background-position: center;` : `background: #444;`;
+			
             const div = document.createElement('div'); div.className = 'gacha-result-card';
-            if(['UR','EX'].includes(c.rarity)) div.classList.add('result-glow');
-            div.innerHTML = `<div style="color:${Gacha.getRarityTextColor(c.rarity)}; font-weight:bold;">${c.rarity}</div><div class="thumb"></div><div style="font-size:9px; overflow:hidden; white-space:nowrap; width:100%;">${c.name}</div>${c.isNew ? '<span class="new-badge">NEW</span>' : '<span style="font-size:8px; color:#aaa;">限界突破</span>'}<div style="font-size:8px; margin-top:2px; line-height:1.2;">HP:${c.hp} MP:${c.mp}<br>攻:${c.atk} 防:${c.def}<br>速:${c.spd} 魔:${c.mag}</div>`;
+            // ★修正箇所: レアリティに応じて特別なスタイルクラスを付与
+            if(c.rarity === 'UR') {
+                div.classList.add('style-aurora'); // UR用クラス
+            } else if(c.rarity === 'EX') {
+                div.classList.add('style-majestic'); // EX用クラス
+            } else if (c.rarity === 'SSR') {
+                 div.classList.add('result-glow'); // SSRは従来の軽い発光を残す場合
+            }
+            div.innerHTML = `
+                <div style="color:${Gacha.getRarityTextColor(c.rarity)}; font-weight:bold;">${c.rarity}</div>
+                <div class="thumb" style="${thumbStyle} width:40px; height:40px; margin:4px auto; border-radius:4px; border:1px solid #555;"></div>
+                <div style="font-size:9px; overflow:hidden; white-space:nowrap; width:100%; font-weight:bold;">${c.name}</div>
+                ${c.isNew ? '<span class="new-badge">NEW</span>' : '<span style="font-size:8px; color:#aaa;">限界突破</span>'}
+                <div style="font-size:8px; margin-top:2px; line-height:1.2; color:#ccc;">
+                    HP:${c.hp} MP:${c.mp}<br>攻:${c.atk} 防:${c.def}<br>速:${c.spd} 魔:${c.mag}
+                </div>`;
             list.appendChild(div);
         });
         document.getElementById('btn-gacha-retry').innerText = `${Gacha.pendingCount}連リトライ`;
