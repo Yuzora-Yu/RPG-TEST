@@ -63,6 +63,7 @@ const Menu = {
                 div.style.justifyContent = 'flex-start'; 
                 div.style.paddingTop = '2px';
 
+// --- Menu.renderPartyBar 内 ---
                 if(uid) {
                     const p = App.getChar(uid);
                     const stats = App.calcStats(p);
@@ -70,8 +71,12 @@ const Menu = {
                     const curMp = p.currentMp!==undefined ? p.currentMp : stats.maxMp;
                     const lbText = p.limitBreak > 0 ? `<span style="color:#ffd700; font-size:9px; margin-left:2px;">+${p.limitBreak}</span>` : '';
 
-                    const imgHtml = p.img 
-                        ? `<img src="${p.img}" style="width:32px; height:32px; object-fit:cover; border-radius:4px; border:1px solid #666; margin-bottom:2px;">`
+                    // ★修正箇所: マスタデータから画像を取得
+                    const master = DB.CHARACTERS.find(m => m.id === p.charId);
+                    const imgUrl = p.img || (master ? master.img : null);
+
+                    const imgHtml = imgUrl 
+                        ? `<img src="${imgUrl}" style="width:32px; height:32px; object-fit:cover; border-radius:4px; border:1px solid #666; margin-bottom:2px;">`
                         : `<div style="width:32px; height:32px; background:#333; border-radius:4px; border:1px solid #666; display:flex; align-items:center; justify-content:center; color:#555; font-size:8px; margin-bottom:2px;">IMG</div>`;
 
                     div.innerHTML = `
@@ -371,7 +376,12 @@ const MenuParty = {
                 const lbText = c.limitBreak > 0 ? `<span style="color:#f0f; font-weight:bold; font-size:11px;">+${c.limitBreak}</span>` : '';
                 const rarityLabel = (c.uid === 'p1') ? 'Player' : `[${c.rarity}]`;
                 const rarityColor = (c.uid === 'p1') ? '#ffd700' : Menu.getRarityColor(c.rarity);
-                const imgHtml = c.img ? `<img src="${c.img}" style="width:40px; height:40px; object-fit:cover; border-radius:4px; border:1px solid #555;">` : `<div style="width:40px; height:40px; background:#333; display:flex; align-items:center; justify-content:center; color:#555; font-size:9px; border-radius:4px; border:1px solid #555;">IMG</div>`;
+				
+				// ★修正箇所: マスタデータから画像を取得
+                const master = DB.CHARACTERS.find(m => m.id === c.charId);
+                const imgUrl = c.img || (master ? master.img : null);
+                const imgHtml = imgUrl ? `<img src="${imgUrl}" style="width:40px; height:40px; object-fit:cover; border-radius:4px; border:1px solid #555;">` : `<div style="width:40px; height:40px; background:#333; display:flex; align-items:center; justify-content:center; color:#555; font-size:9px; border-radius:4px; border:1px solid #555;">IMG</div>`;
+                //const imgHtml = c.img ? `<img src="${c.img}" style="width:40px; height:40px; object-fit:cover; border-radius:4px; border:1px solid #555;">` : `<div style="width:40px; height:40px; background:#333; display:flex; align-items:center; justify-content:center; color:#555; font-size:9px; border-radius:4px; border:1px solid #555;">IMG</div>`;
 
                 div.innerHTML = `
                     <div style="display:flex; align-items:center; width:100%;">
@@ -449,7 +459,13 @@ const MenuParty = {
             const lbText = c.limitBreak > 0 ? `<span style="color:#f0f; font-weight:bold; font-size:11px;">+${c.limitBreak}</span>` : '';
             const rarityLabel = (c.uid === 'p1') ? 'Player' : `[${c.rarity}]`;
             const rarityColor = (c.uid === 'p1') ? '#ffd700' : Menu.getRarityColor(c.rarity);
-            const imgHtml = c.img ? `<img src="${c.img}" style="width:40px; height:40px; object-fit:cover; border-radius:4px; border:1px solid #555;">` : `<div style="width:40px; height:40px; background:#333; display:flex; align-items:center; justify-content:center; color:#555; font-size:9px; border-radius:4px; border:1px solid #555;">IMG</div>`;
+            
+			// ★修正箇所: マスタデータから画像を取得
+            const master = DB.CHARACTERS.find(m => m.id === c.charId);
+            const imgUrl = c.img || (master ? master.img : null);
+            const imgHtml = imgUrl ? `<img src="${imgUrl}" style="width:40px; height:40px; object-fit:cover; border-radius:4px; border:1px solid #555;">` : `<div style="width:40px; height:40px; background:#333; display:flex; align-items:center; justify-content:center; color:#555; font-size:9px; border-radius:4px; border:1px solid #555;">IMG</div>`;
+			
+			//const imgHtml = c.img ? `<img src="${c.img}" style="width:40px; height:40px; object-fit:cover; border-radius:4px; border:1px solid #555;">` : `<div style="width:40px; height:40px; background:#333; display:flex; align-items:center; justify-content:center; color:#555; font-size:9px; border-radius:4px; border:1px solid #555;">IMG</div>`;
 
             div.innerHTML = `
                 <div style="display:flex; align-items:center; width:100%;">
@@ -995,7 +1011,13 @@ const MenuAllies = {
             const lbText = c.limitBreak > 0 ? `<span style="color:#f0f; font-weight:bold; font-size:11px;">+${c.limitBreak}</span>` : '';
             const rarityLabel = (c.uid === 'p1') ? 'Player' : `[${c.rarity}]`;
             const rarityColor = (c.uid === 'p1') ? '#ffd700' : Menu.getRarityColor(c.rarity);
-            const imgHtml = c.img ? `<img src="${c.img}" style="width:40px; height:40px; object-fit:cover; border-radius:4px; border:1px solid #555;">` : `<div style="width:40px; height:40px; background:#333; display:flex; align-items:center; justify-content:center; color:#555; font-size:9px; border-radius:4px; border:1px solid #555;">IMG</div>`;
+            
+			// ★修正箇所: マスタデータから画像を取得
+            const master = DB.CHARACTERS.find(m => m.id === c.charId);
+            const imgUrl = c.img || (master ? master.img : null);
+            const imgHtml = imgUrl ? `<img src="${imgUrl}" style="width:40px; height:40px; object-fit:cover; border-radius:4px; border:1px solid #555;">` : `<div style="width:40px; height:40px; background:#333; display:flex; align-items:center; justify-content:center; color:#555; font-size:9px; border-radius:4px; border:1px solid #555;">IMG</div>`;
+			
+			//const imgHtml = c.img ? `<img src="${c.img}" style="width:40px; height:40px; object-fit:cover; border-radius:4px; border:1px solid #555;">` : `<div style="width:40px; height:40px; background:#333; display:flex; align-items:center; justify-content:center; color:#555; font-size:9px; border-radius:4px; border:1px solid #555;">IMG</div>`;
 
             div.innerHTML = `
                 <div style="display:flex; align-items:center; width:100%;">
@@ -1091,6 +1113,11 @@ const MenuAllies = {
         
         const c = MenuAllies.selectedChar;
         const s = App.calcStats(c);
+		
+		// ★修正箇所: マスタデータから画像を取得
+        const master = DB.CHARACTERS.find(m => m.id === c.charId);
+        const imgUrl = c.img || (master ? master.img : null);
+		
         const hp = c.currentHp !== undefined ? c.currentHp : s.maxHp;
         const mp = c.currentMp !== undefined ? c.currentMp : s.maxMp;
         const lb = c.limitBreak || 0;
@@ -1113,9 +1140,13 @@ const MenuAllies = {
                 MenuAllies.renderDetail();
             }
         };
-
-        const imgHtml = c.img ? `<img src="${c.img}" style="width:100%; height:100%; object-fit:cover;">` : `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#888;">IMG</div>`;
-        const tabs = ['基本', '装備', 'スキル'];
+		
+		// ★修正箇所: p.img ではなく、上で定義した imgUrl を使用
+        const imgHtml = imgUrl ? `<img src="${imgUrl}" style="width:100%; height:100%; object-fit:cover;">` : `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#888;">IMG</div>`;
+		
+        //const imgHtml = c.img ? `<img src="${c.img}" style="width:100%; height:100%; object-fit:cover;">` : `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#888;">IMG</div>`;
+        
+		const tabs = ['基本', '装備', 'スキル'];
         const tabBtns = tabs.map((t, i) => {
             const idx = i + 1;
             const active = MenuAllies.currentTab === idx ? 'border-bottom:2px solid #ffd700; color:#ffd700;' : 'color:#888;';
