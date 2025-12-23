@@ -28,7 +28,14 @@ class Entity {
         this.job = data.job || '冒険者';
         this.rarity = data.rarity || 'N';
         this.level = data.level || 1;
-        this.img = data.img || null;
+		
+		// ★画像読み込みロジックの修正
+        // data.img（セーブデータ/個別データ）があればそれを、
+        // なければマスタデータ（characters.js）からIDを元に探す
+        const master = DB.CHARACTERS.find(c => c.id === (data.charId || data.id));
+        this.img = data.img || (master ? master.img : null);
+        //this.img = data.img || null;
+		
         this.limitBreak = data.limitBreak || 0;
         this.exp = data.exp || 0;
 		this.sp = data.sp || 0;
@@ -859,8 +866,26 @@ const App = {
         const s = App.calcStats(c);
         const hp = c.currentHp !== undefined ? c.currentHp : s.maxHp;
         const mp = c.currentMp !== undefined ? c.currentMp : s.maxMp;
-        const img = c.img ? `<img src="${c.img}" style="width:100%; height:100%; object-fit:cover;">` : 'IMG';
-        return `<div class="char-row"><div class="char-thumb">${img}</div><div class="char-info"><div class="char-name">${c.name} <span class="rarity-${c.rarity}">[${c.rarity}]</span> +${c.limitBreak||0}</div><div class="char-meta">${c.job} Lv.${c.level}</div><div class="char-stats"><span style="color:#f88;">HP:${hp}/${s.maxHp}</span><span style="color:#88f;">MP:${mp}/${s.maxMp}</span><span>攻:${s.atk}</span> <span>防:${s.def}</span> <span>魔:${s.mag}</span> <span>速:${s.spd}</span></div></div></div>`;
+		
+		// ★ここを修正：c.imgが空ならマスタから取得
+        const master = DB.CHARACTERS.find(m => m.id === c.charId);
+        const displayImg = c.img || (master ? master.img : null);
+        
+        const imgTag = displayImg ? `<img src="${displayImg}" style="width:100%; height:100%; object-fit:cover;">` : 'IMG';
+        
+        return `
+            <div class="char-row">
+                <div class="char-thumb">${imgTag}</div>
+                <div class="char-info">
+                    <div class="char-name">${c.name} <span class="rarity-${c.rarity}">[${c.rarity}]</span> +${c.limitBreak||0}</div>
+                    <div class="char-meta">${c.job} Lv.${c.level}</div>
+                    <div class="char-stats">
+                        <span style="color:#f88;">HP:${hp}/${s.maxHp}</span>
+                        <span style="color:#88f;">MP:${mp}/${s.maxMp}</span>
+                        <span>攻:${s.atk}</span> <span>防:${s.def}</span> <span>魔:${s.mag}</span> <span>速:${s.spd}</span>
+                    </div>
+                </div>
+            </div>`;
     },
 
     getNextExp: (char) => {
