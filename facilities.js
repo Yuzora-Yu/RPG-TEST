@@ -184,39 +184,74 @@ const Facilities = {
         Facilities.showModal('medal-scene', "メダル景品リスト", html);
     },
 
-	// --- メダル交換の実行処理 ---
-	execMedal: (r) => {
+	// --- メダル交換の実行処理 (修正版) ---
+    execMedal: (r) => {
         App.data.items[99] -= r.medals;
+        
         if(r.type === 'item') { 
             App.data.items[r.id] = (App.data.items[r.id] || 0) + r.count; 
         }
         else { 
-            // 1. 指定された部位(r.base.type)と同じマスタデータをDBから1つ探す
-            // これにより、その部位専用の possibleOpts (抽選候補) を取得できる
-            const template = DB.EQUIPS.find(e => e.type === r.base.type) || DB.EQUIPS[0];
+            // 1. 指定された部位 (r.base.type) に一致するマスタデータを1つ取得
+            // これにより、剣なら「武器」、ブーツなら「足」の possibleOpts を正しく引き継げる
+            const baseTemplate = DB.EQUIPS.find(e => e.type === r.base.type) || DB.EQUIPS[0];
+
+            // 2. 装備オブジェクトを手動構築 (App.createRandomEquip のロジックを正確に再現)
+            const eq = { 
+                id: Date.now() + Math.random().toString(), 
+                rank: r.base.rank, 
+                name: r.base.name + "+3", 
+                type: r.base.type, // ★ここで「武器」「足」などを正確に設定
+                val: r.base.val * 2.5, // +3 の価値補正
+                data: JSON.parse(JSON.stringify(r.base.data)), // メタルキング固有のステータス
+                opts: [], 
+                plus: 3,
+                possibleOpts: baseTemplate.possibleOpts // 合致した部位のオプション候補リスト
+            };
             
-            // 2. その部位のルールを持ったベース装備を生成
-            const eq = App.createRandomEquip('medal', r.base.rank, 3); 
-            
-            // 3. 部位に適合するオプション候補(possibleOpts)を強制的に上書き
-            // これで武器なら武器、足なら足のオプションしか付かなくなる
-            eq.possibleOpts = template.possibleOpts;
-            
-            // 4. 改めて名前やステータス、部位をメタルキング仕様に固定
-            eq.name = r.base.name + "+3";
-            eq.type = r.base.type;
-            eq.rank = r.base.rank;
-            eq.val  = r.base.val;
-            
-            // マスタの固定ステータスを反映
-            Object.assign(eq.data, r.base.data);
-            
-            // ★もし App.createRandomEquip が既にオプションを決定済みの場合は、
-            // ここで再度オプションを再抽選する処理（App.rollOptions(eq) 等）を
-            // 呼び出す必要があるかもしれません。
+            // 3. 部位に適合したオプションを3つ抽選
+            const allowedKeys = eq.possibleOpts;
+            for(let i=0; i<3; i++) {
+                const tierRatio = Math.min(1, r.base.rank / 100);
+                
+                // 部位ごとのルールでフィルタリング
+                let optCandidates = DB.OPT_RULES;
+                if (allowedKeys) {
+                    optCandidates = DB.OPT_RULES.filter(rule => allowedKeys.includes(rule.key));
+                    if (optCandidates.length === 0) optCandidates = DB.OPT_RULES;
+                }
+
+                const rule = optCandidates[Math.floor(Math.random() * optCandidates.length)];
+                
+                // レアリティ抽選
+                let rarity = 'N';
+                const rarRnd = Math.random() + (tierRatio * 0.1);
+                if(rarRnd > 0.98 && rule.allowed.includes('EX')) rarity='EX';
+                else if(rarRnd > 0.90 && rule.allowed.includes('UR')) rarity='UR';
+                else if(rarRnd > 0.75 && rule.allowed.includes('SSR')) rarity='SSR';
+                else if(rarRnd > 0.55 && rule.allowed.includes('SR')) rarity='SR';
+                else if(rarRnd > 0.30 && rule.allowed.includes('R')) rarity='R';
+                else rarity = rule.allowed[0];
+
+                const min = rule.min[rarity]||1, max = rule.max[rarity]||10;
+                eq.opts.push({
+                    key:rule.key, elm:rule.elm, label:rule.name, 
+                    val:Math.floor(Math.random()*(max-min+1))+min, unit:rule.unit, rarity:rarity
+                });
+            }
+
+            // 4. シナジー判定 (App側に checkSynergy が存在する場合)
+            if(typeof App.checkSynergy === 'function') {
+                 const syn = App.checkSynergy(eq);
+                 if(syn) {
+                     eq.isSynergy = true;
+                     eq.effect = syn.effect;
+                 }
+            }
             
             App.data.inventory.push(eq); 
         }
+        
         App.save(); 
         Facilities.closeModal('medal-scene'); 
         Facilities.initMedal();
