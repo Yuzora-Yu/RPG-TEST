@@ -4,8 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PRISMA ABYSS - Title</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22>
-    <text y=%22.9em%22 font-size=%2290%22>⚔️</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚔️</text></svg>">
+    <link rel="manifest" href="manifest.json">
+
+    <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+    </script>
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=DotGothic16&display=swap');
         :root {
@@ -14,141 +21,59 @@
             --accent: #ffd700;
             --btn-bg: #333;
             --btn-border: #fff;
+            --danger: #ff4444;
+            --modal-bg: rgba(0, 0, 0, 0.9);
         }
         body {
             background: var(--bg-color);
             color: var(--text-color);
             font-family: 'DotGothic16', sans-serif;
             margin: 0;
-            padding: 0;
             height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
+            padding-top: 20px;
+            overflow-y: auto;
             user-select: none;
-            -webkit-user-select: none;
-        }
-        
-		/* ロゴアニメーション（画像用に修正） */
-        .title-logo {
-            /* テキスト用のスタイルを削除し、画像コンテナとして定義 */
-            margin-bottom: 20px; /* 画像とサブタイトルの間隔 */
-            text-align: center;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            
-            /* ふわふわ浮くアニメーションは維持 */
-            animation: float 3s infinite ease-in-out;
         }
 
-        /* 画像自体のスタイル */
-        .title-logo img {
-            max-width: 90%; /* 画面からはみ出さないように */
-            width: 320px;   /* 基本の幅（好みに応じて変更してください） */
-            height: auto;   /* アスペクト比を維持 */
-            
-            /* ドット絵などの場合、ボケないようにする設定（任意） */
-            image-rendering: pixelated; 
-            image-rendering: -moz-crisp-edges;
-        }
+        /* 既存デザインの維持 */
+        .title-logo { text-align: center; margin-bottom: 15px; width: 100%; max-width: 400px; }
+        .title-logo img { max-width: 80%; height: auto; }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+        .input-group { width: 280px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px; }
+        input[type="text"] { 
+            background: #222; border: 1px solid #666; color: #fff; padding: 10px; 
+            font-family: inherit; text-align: center; border-radius: 4px; 
         }
-		
-        /* 入力エリア */
-        .input-group {
-            margin-bottom: 25px;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-            width: 100%;
-            max-width: 300px;
-        }
-        input[type="text"] {
-            padding: 12px;
-            font-size: 18px;
-            font-family: inherit;
-            text-align: center;
-            background: #222;
-            color: #fff;
-            border: 2px solid #666;
-            border-radius: 4px;
-            width: 100%;
-            box-sizing: border-box;
-            transition: border-color 0.3s;
-        }
-        input[type="text"]:focus {
-            border-color: var(--accent);
-            outline: none;
-        }
-        .file-input-wrapper {
-            font-size: 12px;
-            color: #888;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-            width: 100%;
-        }
-        input[type="file"] {
-            font-size: 11px;
-            color: #aaa;
-            width: 100%;
-        }
-        
-        /* ボタンエリア */
-        .btn-container {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            width: 260px;
-        }
+        .file-input-wrapper { font-size: 12px; color: #aaa; text-align: center; }
+        .file-input-wrapper label { display: block; margin-bottom: 5px; }
+
+        .btn-container { display: flex; flex-direction: column; gap: 12px; width: 280px; margin-bottom: 30px; }
         .btn {
-            background: var(--btn-bg);
-            border: 2px solid var(--btn-border);
-            color: #fff;
-            padding: 15px;
-            font-family: inherit;
-            font-size: 18px;
-            cursor: pointer;
-            border-radius: 4px;
-            transition: all 0.1s;
-            position: relative;
-            overflow: hidden;
+            background: var(--btn-bg); border: 2px solid var(--btn-border); color: var(--text-color);
+            padding: 12px; font-family: 'DotGothic16', sans-serif; font-size: 18px;
+            cursor: pointer; transition: all 0.2s; text-align: center; border-radius: 4px;
         }
-        .btn:active {
-            transform: translateY(2px);
-            background: #555;
-        }
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            border-color: #666;
-            color: #888;
-            background: #222;
-        }
-        /* ボタンのバリエーション */
-        .btn-new { border-color: #88f; }
-        .btn-load { border-color: var(--accent); }
-        .btn-import { background: #004444; border-color: #00aaaa; font-size: 14px; padding: 10px; }
+        .btn:active { transform: scale(0.98); }
+        .btn:disabled { opacity: 0.5; cursor: default; }
 
-        /* データ削除リンク */
-        .data-reset {
-            margin-top: 40px;
-            font-size: 12px;
-            color: #666;
-            text-decoration: underline;
-            cursor: pointer;
-            opacity: 0.6;
-            transition: opacity 0.3s;
+        /* モーダル専用スタイル */
+        #modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--modal-bg); display: none; justify-content: center; align-items: center; z-index: 2000;
         }
-        .data-reset:hover { opacity: 1; color: #ff4444; }
+        #modal-content {
+            background: #1a1a1a; border: 2px solid var(--accent); padding: 20px;
+            width: 300px; display: flex; flex-direction: column; gap: 12px; border-radius: 8px;
+        }
+        .modal-title { text-align: center; font-size: 18px; margin-bottom: 5px; color: var(--accent); }
+        .btn-modal { font-size: 14px; padding: 10px; }
+        .btn-danger { border-color: var(--danger); color: var(--danger); }
+        .btn-close { margin-top: 5px; background: #333; border-color: #666; font-size: 12px; }
+        hr { width: 100%; border: 0; border-top: 1px solid #444; margin: 5px 0; }
     </style>
 </head>
 <body>
@@ -159,7 +84,6 @@
 
     <div class="input-group">
         <input type="text" id="player-name" placeholder="名前を入力" value="アルス" maxlength="8">
-        
         <div class="file-input-wrapper">
             <label>主人公アイコン (任意)</label>
             <input type="file" id="player-icon" accept="image/*">
@@ -167,45 +91,52 @@
     </div>
 
     <div class="btn-container">
-        <button class="btn btn-new" onclick="App.startNewGame()">ニューゲーム</button>
-        <button class="btn btn-load" id="btn-continue" onclick="App.continueGame()" disabled>コンティニュー</button>
-        
-        <button class="btn btn-import" onclick="App.importSave()">バックアップ読込</button>
+        <button class="btn btn-new" onclick="startGameConfirm()">はじめから</button>
+        <button class="btn btn-load" id="btn-continue" onclick="App.continueGame()" disabled>つづきから</button>
+        <hr>
+        <button class="btn" onclick="toggleModal(true)">データ管理</button>
     </div>
 
-    <div class="data-reset" onclick="deleteSaveData()">セーブデータを削除</div>
+    <div id="modal-overlay" onclick="if(event.target === this) toggleModal(false)">
+        <div id="modal-content">
+            <div class="modal-title">データ管理</div>
+            
+            <button class="btn btn-modal" onclick="App.importSave()">バックアップから復元</button>
+            <hr>
+            <button id="installBtn" class="btn btn-modal" style="display:none;">アプリをインストール</button>
+            <button id="updateBtn" class="btn btn-modal" onclick="updateApp()">アプリを更新</button>
+            <hr>
+            <button id="deleteBtn" class="btn btn-modal btn-danger" onclick="deleteSaveData()">セーブデータを削除</button>
+            
+            <button class="btn btn-close" onclick="toggleModal(false)">戻る</button>
+        </div>
+    </div>
 
-<script src="assets.js"></script>
-<script src="skills.js"></script>
-<script src="monsters.js"></script>
-<script src="characters.js"></script>
-<script src="items.js"></script>
-<script src="job_data.js"></script>
-
-<script src="database.js"></script>
-<script src="dungeon.js"></script>
-<script src="gacha.js"></script>
-<script src="facilities.js"></script>
-<script src="blacksmith.js"></script>
-<script src="main.js"></script>
-<script src="battle.js"></script>
-<script src="menus.js"></script>
+    <script src="assets.js"></script>
+    <script src="skills.js"></script>
+    <script src="monsters.js"></script>
+    <script src="characters.js"></script>
+    <script src="items.js"></script>
+    <script src="job_data.js"></script>
+    <script src="database.js"></script>
+    <script src="dungeon.js"></script>
+    <script src="gacha.js"></script>
+    <script src="facilities.js"></script>
+    <script src="blacksmith.js"></script>
+    <script src="main.js"></script>
+    <script src="battle.js"></script>
+    <script src="menus.js"></script>
 
     <script>
-        // 起動時処理
+        // 起動時処理（既存維持 + 内部ロジック通り）
         window.onload = () => {
             if(typeof App !== 'undefined' && App.initTitleScreen) {
-                // main.js の初期化関数を呼び出し
                 App.initTitleScreen();
-                
-                // ロード済みデータがあればボタンを更新
                 if(App.data) {
                     const btn = document.getElementById('btn-continue');
                     btn.disabled = false;
-                    
                     let name = '勇者';
                     let lv = 1;
-                    // パーティ先頭のキャラ情報を取得して表示
                     if(App.data.party && App.data.party[0]) {
                         const char = App.data.characters.find(c => c.uid === App.data.party[0]);
                         if(char) {
@@ -220,7 +151,22 @@
             }
         };
 
-        // データ削除機能
+        // 「はじめから」の警告処理
+        function startGameConfirm() {
+            if (typeof App !== 'undefined' && App.data) {
+                if (!confirm('プレイ済みのデータがある場合はデータが消えてしまいますが、よろしいですか？')) {
+                    return;
+                }
+            }
+            App.startNewGame();
+        }
+
+        // モーダル開閉
+        function toggleModal(show) {
+            document.getElementById('modal-overlay').style.display = show ? 'flex' : 'none';
+        }
+
+        // データ削除（既存維持）
         function deleteSaveData() {
             if(typeof CONST === 'undefined' || !CONST.SAVE_KEY) {
                 alert('データベースエラー: CONSTが読み込まれていません');
@@ -229,6 +175,42 @@
             if(confirm('本当にセーブデータを削除しますか？\n失われたデータは復元できません。')) {
                 localStorage.removeItem(CONST.SAVE_KEY);
                 location.reload();
+            }
+        }
+        
+        // PWAインストール機能（既存維持）
+        let deferredPrompt;
+        window.addEventListener("beforeinstallprompt", (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById("installBtn").style.display = "block";
+        });
+
+        document.getElementById("installBtn").addEventListener("click", async () => {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+                document.getElementById("installBtn").style.display = "none";
+            }
+            deferredPrompt = null;
+        });
+
+        // アプリ更新（既存維持）
+        function updateApp() {
+            if (confirm('アプリのキャッシュをクリアして最新版に更新しますか？')) {
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.getRegistrations().then(regs => {
+                        regs.forEach(reg => reg.unregister());
+                        caches.keys().then(keys => {
+                            keys.forEach(key => caches.delete(key));
+                        });
+                    }).then(() => {
+                        location.reload(true);
+                    });
+                } else {
+                    location.reload(true);
+                }
             }
         }
     </script>
