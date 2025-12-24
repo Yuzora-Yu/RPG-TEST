@@ -1,4 +1,4 @@
-const CACHE_NAME = "rpg-test-v1";
+const CACHE_NAME = "rpg-test-v2";
 const FILES_TO_CACHE = [
   "main.html",
   "index.html",
@@ -42,3 +42,4 @@ self.addEventListener("activate", (e) => {
     )
   );
 });
+
