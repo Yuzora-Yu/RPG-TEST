@@ -308,15 +308,15 @@ const Gacha = {
 			div.style.overflow = 'visible'; 
 			
             div.innerHTML = `
-                <div style="margin-top:5px; color:#ffd700; font-size:8px; margin-bottom:1px; font-weight:bold; text-shadow:1px 1px 0px #000;">${Gacha.getStars(c.rarity)}</div>
-                <div style="margin-top:2px; color:${Gacha.getRarityTextColor(c.rarity)}; font-weight:bold; text-shadow:1px 1px 0px #000; font-size:11px;">${c.rarity}</div>
-                <div class="thumb" style="background:transparent; border:1px solid rgba(255,255,255,0.1); border-radius:4px; margin:4px auto; width:40px; height:40px; overflow:hidden; display:flex; align-items:center; justify-content:center;">${thumbHtml}</div>
-                <div style="font-size:9px; overflow:hidden; white-space:nowrap; width:100%; font-weight:bold; color:#fff;">${displayName}</div>
-                ${c.isNew ? '<span class="new-badge">NEW</span>' : '<span style="font-size:8px; color:#aaa;">限界突破</span>'}
-                <div style="margin-top:5px; font-size:8px; margin-top:2px; line-height:1.3; color:#eee;">
-                    HP:${c.hp}<br>MP:${c.mp}<br>攻:${c.atk}<br>防:${c.def}<br>速:${c.spd}<br>魔:${c.mag}
-                </div>`;
-            list.appendChild(div);
+				<div style="margin-top:5px; color:#ffd700; font-size:8px; margin-bottom:1px; font-weight:bold; text-shadow:1px 1px 0px #000;">${Gacha.getStars(c.rarity)}</div>
+				<div style="margin-top:2px; color:${Gacha.getRarityTextColor(c.rarity)}; font-weight:bold; text-shadow:1px 1px 0px #000; font-size:11px;">${c.rarity}</div>
+				<div class="thumb" style="background:transparent; border:1px solid rgba(255,255,255,0.1); border-radius:4px; margin:4px auto; width:40px; height:40px; overflow:hidden; display:flex; align-items:center; justify-content:center;">${thumbHtml}</div>
+				<div style="font-size:9px; overflow:hidden; white-space:nowrap; width:100%; font-weight:bold; color:#fff;">${displayName}</div>
+				${c.isNew ? '<span class="new-badge">NEW</span>' : '<span style="font-size:8px; color:#aaa;">限界突破</span>'}
+				<div style="margin-top:5px; font-size:8px; margin-top:2px; line-height:1.3; color:#eee;">
+					HP:${st.hp}<br>MP:${st.mp}<br>攻:${st.atk}<br>防:${st.def}<br>速:${st.spd}<br>魔:${st.mag}
+				</div>`;
+			list.appendChild(div);
         });
 
         // 遷移時にフラッシュなどは呼び出さず、即座に表示を切り替え
