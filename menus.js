@@ -88,7 +88,7 @@ const Menu = {
                                 </div>
                                 ${lbText}
                             </div>
-                            <div style="font-size:9px; color:#aaa; margin-bottom:2px;">${p.job} Lv.${p.level}</div>
+                            <div style="font-size:6px; color:#aaa; margin-bottom:2px;">${p.job} Lv.${p.level}</div>
                         </div>
                         <div style="width:100%;">
                             <div class="bar-container"><div class="bar-hp" style="width:${Math.min(100, (curHp/stats.maxHp)*100)}%"></div></div>
