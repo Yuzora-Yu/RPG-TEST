@@ -618,7 +618,7 @@ window.SKILLS_DATA = [
         "type": "回復",
         "target": "自分",
         "mp": 0,
-		"ratio": 0.5,
+        "ratio": 0.5,
         "rate": 0,
         "count": 1,
         "base": 0,
@@ -630,7 +630,7 @@ window.SKILLS_DATA = [
         "type": "MP回復",
         "target": "自分",
         "mp": 0,
-		"ratio": 0.5,
+        "ratio": 0.5,
         "rate": 0,
         "count": 1,
         "base": 0,
@@ -920,6 +920,17 @@ window.SKILLS_DATA = [
             "atk": 0.3,
             "mag": 0.3
         }
+    },
+    {
+        "id": 119,
+        "name": "魔人の絶技",
+        "type": "物理",
+        "target": "単体",
+        "mp": 550,
+        "rate": 1.1,
+        "count": 6,
+        "base": 100,
+        "desc": "魔人のごとき6連続攻撃"
     },
     {
         "id": 150,
