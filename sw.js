@@ -1,9 +1,9 @@
-const CACHE_NAME = "rpg-test-v2";
+const CACHE_NAME = "prisma-abyss-v1";
 const FILES_TO_CACHE = [
+  "./", // ルート
   "main.html",
   "index.html",
-  "editor.html",
-
+  "manifest.json", // ★追加
   "main.js",
   "menus.js",
   "database.js",
@@ -20,22 +20,19 @@ const FILES_TO_CACHE = [
   "job_data.js"
 ];
 
-// インストール時に全部キャッシュ
+// インストール時にキャッシュ
 self.addEventListener("install", (e) => {
+  // ★追加: 新しいService Workerを即座に待機状態から有効化する
+  self.skipWaiting();
   e.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(FILES_TO_CACHE))
   );
 });
 
-// キャッシュ優先
-self.addEventListener("fetch", (e) => {
-  e.respondWith(
-    caches.match(e.request).then((res) => res || fetch(e.request))
-  );
-});
-
-// 古いキャッシュ削除
+// 有効化時に古いキャッシュを削除
 self.addEventListener("activate", (e) => {
+  // ★追加: 制御下のページをすぐに現在のService Workerで支配する
+  e.waitUntil(clients.claim());
   e.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(keys.map((k) => k !== CACHE_NAME && caches.delete(k)))
@@ -43,3 +40,12 @@ self.addEventListener("activate", (e) => {
   );
 });
 
+// フェッチ（通信）発生時の処理
+self.addEventListener("fetch", (e) => {
+  e.respondWith(
+    caches.match(e.target ? e.target : e.request).then((res) => {
+      // キャッシュがあれば返し、なければネットワークへ（オフライン時はここでエラーになる）
+      return res || fetch(e.request);
+    })
+  );
+});
