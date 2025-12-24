@@ -184,14 +184,34 @@ const Facilities = {
         Facilities.showModal('medal-scene', "メダル景品リスト", html);
     },
 
+	// --- メダル交換の実行処理 ---
     execMedal: (r) => {
         App.data.items[99] -= r.medals;
-        if(r.type === 'item') { App.data.items[r.id] = (App.data.items[r.id] || 0) + r.count; }
-        else { const eq = App.createRandomEquip('medal', r.base.rank, 3); eq.name = r.base.name + "+3"; App.data.inventory.push(eq); }
-        App.save(); Facilities.closeModal('medal-scene'); Facilities.initMedal();
+        if(r.type === 'item') { 
+            App.data.items[r.id] = (App.data.items[r.id] || 0) + r.count; 
+        }
+        else { 
+            // 1. まずベースとなる装備オブジェクトを生成（+3のオプション枠を確保）
+            const eq = App.createRandomEquip('medal', r.base.rank, 3); 
+            
+            // 2. ★重要：景品設定（r.base）の値を強制的に反映させる
+            eq.name = r.base.name + "+3";
+            eq.type = r.base.type;  // これで「武器」や「足」が正しく設定されます
+            eq.rank = r.base.rank;
+            eq.val  = r.base.val;
+            
+            // 3. ステータスをランダム値ではなく、メタルキングシリーズの固定値に設定
+            // (createRandomEquipで付与されたランダムオプションは保持されます)
+            Object.assign(eq.data, r.base.data); 
+            
+            App.data.inventory.push(eq); 
+        }
+        App.save(); 
+        Facilities.closeModal('medal-scene'); 
+        Facilities.initMedal();
         Menu.msg(r.name + "を 受け取った！");
     },
-
+	
     // --- 3. カジノ ---
     initCasino: () => {
         if (!App.data.casinoState) App.data.casinoState = { isPlaying: false, currentGame: null };
