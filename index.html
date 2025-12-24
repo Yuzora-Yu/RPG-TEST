@@ -6,7 +6,8 @@
     <title>PRISMA ABYSS</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22>
     <text y=%22.9em%22 font-size=%2290%22>⚔️</text></svg>">
-    <style>
+    
+	    <style>
         @import url('https://fonts.googleapis.com/css2?family=DotGothic16&display=swap');
         :root {
             --bg-color: #101010; --win-bg: rgba(0,0,0,0.95); --win-border: #fff;
@@ -307,8 +308,266 @@
 			100% { box-shadow: 0 0 25px #ff0000, 0 0 50px #FFD700, inset 0 0 30px rgba(255, 215, 0, 0.7); }
 		}
 		
+		/* =========================================
+		   ガチャ演出・結果画面：追記専用（不具合修正版）
+		========================================= */
+
+		/* 1. カードの見切れ・位置ずれの根本修正 */
+		#gacha-performance {
+			display: none;
+			flex-direction: column;
+			justify-content: center !important; /* 垂直中央 */
+			align-items: center !important;     /* 水平中央 */
+			overflow: hidden !important;
+		}
+
+		/* 反転時の位置ずれを防止するため、本体のtransformを安定させる */
+		.gacha-card-scene {
+			margin: 0 !important;
+			transform-origin: center center !important;
+			display: flex !important;
+			justify-content: center;
+			align-items: center;
+		}
+
+		/* 2. 裏面：メタリック演出（SSR以上） */
+		.card-back.rare-gold, .card-back.rare-rainbow {
+			overflow: hidden;
+			position: relative;
+		}
+
+		/* EXの裏面：赤黒配色 + 金枠 */
+		.pre-glow-ex.card-back {
+			background: linear-gradient(to bottom, #8B0000, #000000) !important;
+			border: 2px solid #FFD700 !important;
+		}
+
+		/* URの裏面：オーロラ配色 + 濃いオーロラ枠 */
+		.pre-glow-ur.card-back {
+			background: linear-gradient(135deg, #003366, #660066, #006633, #003366) !important;
+			background-size: 300% 300%;
+			border: 2px solid #003366 !important;
+			animation: aurora-shift 6s ease infinite alternate;
+		}
+
+		/* SSRの裏面：金 + 銀枠 */
+		.rare-gold.card-back {
+			background: linear-gradient(to bottom, #ffd700, #664400) !important;
+			border: 2px solid #c0c0c0 !important;
+		}
+
+		/* 斜めのメタリック光沢（カードを動かさないように擬似要素のみを移動） */
+		.card-back.rare-gold::after, .card-back.rare-rainbow::after {
+			content: "";
+			position: absolute;
+			top: -150%; left: -150%;
+			width: 400%; height: 400%;
+			background: linear-gradient(135deg, rgba(255,255,255,0) 42%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0) 58%);
+			animation: metallic-sweep 3s infinite linear;
+			pointer-events: none;
+			z-index: 5;
+		}
+
+		@keyframes metallic-sweep {
+			from { transform: translate(0, 0); }
+			to { transform: translate(30%, 30%); }
+		}
+
+		/* 3. 演出中：予兆「もや」演出 */
+		/* 枠線(border)をもや(shadow)より前面にするため多層shadowを使用 */
+		.pre-glow-ssr { box-shadow: 0 0 30px 5px rgba(255, 215, 0, 0.5) !important; }
+		.pre-glow-ur { box-shadow: 0 0 40px 10px rgba(0, 255, 255, 0.6), 0 0 60px 15px rgba(138, 43, 226, 0.4) !important; }
+		.pre-glow-ex { box-shadow: 0 0 40px 10px rgba(255, 0, 0, 0.7), 0 0 70px 20px rgba(255, 215, 0, 0.5) !important; }
+
+		/* 4. UR/EX/SSR 表面デザイン（完全配色復元） */
+
+		/* UR: 元の配色を完全復元 + もや + オーロラ枠 */
+		.style-aurora {
+			background: linear-gradient(135deg, #003366, #660066, #006633, #003366) !important;
+			background-size: 300% 300% !important;
+			border: 2px solid #00ffff !important; /* オーロラ枠 */
+			box-shadow: 0 0 10px rgba(0, 255, 255, 0.7), 0 0 20px rgba(138, 43, 226, 0.5), inset 0 0 15px rgba(0, 255, 255, 0.3) !important;
+			animation: aurora-shift 6s ease infinite alternate;
+			color: #fff;
+		}
+
+		/* EX: 赤黒 + 金枠 + もや */
+		.style-majestic {
+			background: linear-gradient(to bottom, #8B0000, #000000) !important;
+			border: 2px solid #FFD700 !important; /* 金枠 */
+			box-shadow: 0 0 15px #ff0000, 0 0 30px #FFD700, inset 0 0 20px rgba(255, 215, 0, 0.5) !important;
+			color: #FFD700;
+		}
+
+		/* SSR表面: 金 + 銀枠(演出時) */
+		.style-gold {
+			background: linear-gradient(to bottom, #ffd700, #664400) !important;
+			border: 2px solid #c0c0c0 !important;
+			box-shadow: 0 0 20px rgba(255, 215, 0, 0.6) !important;
+			color: #fff;
+		}
+
+		/* 5. 結果画面調整 */
+		#gacha-results-list .gacha-result-card {
+			width: 64px !important;
+			min-height: 180px;
+			overflow: visible !important;
+			position: relative;
+		}
+		/* 結果画面のSSR以下は白枠へ */
+		#gacha-results-list .style-gold { border: 1px solid #fff !important; }
+
+		@keyframes aurora-shift { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+		
+		/* =========================================
+		   ガチャ演出・結果画面：最終調整（追記用）
+		========================================= */
+
+		/* 1. 裏面：オーロラ配色を表面の指定に合わせる */
+		.pre-glow-ur.card-back, .card-back.rare-rainbow {
+			background: linear-gradient(135deg, #003366, #660066, #006633, #003366) !important;
+			background-size: 300% 300% !important;
+			animation: aurora-shift 6s ease infinite alternate;
+			border: 2px solid #00ffff !important; 
+		}
+		
+		/* EXの裏面は赤黒 */
+        .pre-glow-ex.card-back { 
+			background: linear-gradient(to bottom, #8B0000, #000000) !important; 
+			border: 2px solid #FFD700 !important; /* 金枠 */
+			}
+
+		/* 2. 裏面：メタリック演出をSSR/UR/EXに適用 */
+		.card-back.rare-gold, .card-back.rare-rainbow {
+			overflow: hidden;
+			position: relative;
+		}
+		.card-back.rare-gold::after, .card-back.rare-rainbow::after {
+			content: ""; position: absolute; top: -150%; left: -150%; width: 400%; height: 400%;
+			background: linear-gradient(135deg, rgba(255,255,255,0) 42%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0) 58%);
+			animation: metallic-sweep 3s infinite linear;
+			pointer-events: none; z-index: 5;
+		}
+		@keyframes metallic-sweep { from { transform: translate(0, 0); } to { transform: translate(30%, 30%); } }
+
+		/* 3. 表面：UR完全配色復元（指示通りのhexコード） */
+		.style-aurora {
+			background: linear-gradient(135deg, #003366, #660066, #006633, #003366) !important;
+			background-size: 300% 300% !important;
+			animation: aurora-shift 6s ease infinite alternate;
+			border: 1px solid #00ffff !important; /* 表面は明るいオーロラ枠 */
+			box-shadow: 
+				0 0 10px rgba(0, 255, 255, 0.7),
+				0 0 20px rgba(138, 43, 226, 0.5),
+				inset 0 0 15px rgba(0, 255, 255, 0.3) !important;
+			color: #fff;
+		}
+
+		/* 4. もや（オーラ）演出の再定義 */
+		.pre-glow-ssr { border: 2px solid #c0c0c0 !important; box-shadow: 0 0 30px 5px rgba(255, 215, 0, 0.5) !important; }
+		.pre-glow-ur { box-shadow: 0 0 40px 10px rgba(0, 255, 255, 0.6), 0 0 60px 15px rgba(138, 43, 226, 0.4) !important; }
+		.pre-glow-ex { border: 2px solid #ffd700 !important; box-shadow: 0 0 40px 10px rgba(255, 0, 0, 0.7), 0 0 70px 20px rgba(255, 215, 0, 0.5) !important; }
+
+		/* 5. 位置ずれ修正 */
+		#gacha-performance { justify-content: center !important; align-items: center !important; }
+		.gacha-card-scene { margin: 0 !important; transform-origin: center center !important; }
+
+		@keyframes aurora-shift { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+		
+		/* 白銀背景の定義が確実に行われているか確認 */
+		#gacha-performance.confirmed {
+			background: radial-gradient(circle, #ffffff 0%, #a0a0a0 100%) !important;
+			transition: background 0.8s ease-in-out;
+		}
+		
+		/* --- フラッシュ演出の修正 --- */
+		#flash-overlay {
+			position: fixed !important;
+			top: 0; left: 0; width: 100vw; height: 100vh;
+			background: #fff;
+			z-index: 100000 !important;
+			display: none;
+			pointer-events: none;
+			opacity: 1;
+		}
+		.flash-multiple { animation: flash-sequence 0.8s forwards; }
+		@keyframes flash-sequence { 
+			0%, 20%, 40%, 60% { opacity: 0; } 
+			10%, 30%, 50% { opacity: 1; } 
+			100% { opacity: 0; } 
+		}
+		
+		/* --- SSR: うす暗い金色に調整 --- */
+		.card-back.rare-gold { 
+			background: linear-gradient(to bottom, #996600, #442200) !important; 
+		}
+		.style-gold {
+			background: linear-gradient(to bottom, #996600, #442200) !important;
+			border: 2px solid #c0c0c0 !important;
+			box-shadow: 0 0 20px rgba(153, 102, 0, 0.4) !important;
+		}
+		.pre-glow-ssr { 
+			border: 2px solid #c0c0c0 !important; 
+			box-shadow: 0 0 30px 5px rgba(153, 102, 0, 0.4) !important; 
+		}
+		
+		/* --- カード表面：内側の線 (2px内側に1px) --- */
+		.card-inner-border {
+			position: absolute;
+			top: 2px; left: 2px; right: 2px; bottom: 2px;
+			border: 1px solid #fff; /* デフォルト白 */
+			border-radius: 10px;
+			pointer-events: none;
+			z-index: 2;
+		}
+
+		/* レアリティ別の内側の線の色 */
+		.style-aurora .card-inner-border, .pre-glow-ur .card-inner-border { border-color: #00ffff !important; }
+		.style-majestic .card-inner-border, .pre-glow-ex .card-inner-border { border-color: #FFD700 !important; }
+		.pre-glow-ssr .card-inner-border, .style-gold .card-inner-border { border-color: #c0c0c0 !important; }
+		
+		/* --- 1. R/SR/通常カード：表面の周囲の白枠を強制的に復活 --- */
+		/* .card-front に設定されている border-color: #444 を白で上書きします */
+		.card-face.card-front:not(.style-aurora):not(.style-majestic):not(.style-gold) {
+			border: 2px solid #fff !important;
+		}
+
+		/* 結果画面の小さなカード用調整 */
+		#gacha-results-list .card-inner-border {
+			display: none !important;
+		}
+		/* 1. SSR以下の全てのカード（SSR, SR, R）を結果画面で白枠に固定 */
+		#gacha-results-list .gacha-result-card:not(.style-aurora):not(.style-majestic) {
+			border: 1px solid #fff !important;
+		}
+
+		/* 2. URの枠線をオーロラ色（指示通りの明るい青緑）に維持 */
+		#gacha-results-list .style-aurora {
+			border: 1px solid #00ffff !important;
+			box-shadow: 
+				0 0 10px rgba(0, 255, 255, 0.7),
+				0 0 20px rgba(138, 43, 226, 0.5),
+				inset 0 0 15px rgba(0, 255, 255, 0.3) !important;
+		}
+
+		/* 3. EXの枠線を金色に維持 */
+		#gacha-results-list .style-majestic {
+			border: 1px solid #FFD700 !important;
+			box-shadow: 
+				0 0 15px #ff0000, 
+				0 0 30px #FFD700, 
+				inset 0 0 20px rgba(255, 215, 0, 0.5) !important;
+		}
+
+		/* 4. SSRは結果画面では白枠にする（表面の金背景は維持） */
+		#gacha-results-list .style-gold {
+			border: 1px solid #fff !important;
+		}
+		
     </style>
+	
 </head>
+
 <body>
 
 <div id="game-container">
@@ -321,8 +580,9 @@
         <div id="effect-ray"></div>
     </div>
 
-    <div id="flash-overlay" style="position:absolute; top:0; left:0; width:100%; height:100%; background:#fff; z-index:550; display:none; opacity:0; pointer-events:none;"></div>
-
+	
+    <div id="flash-overlay"></div>
+	
     <div id="field-scene" class="scene-layer">
         <div id="canvas-wrapper">
             <canvas id="field-canvas" width="320" height="320"></canvas>
@@ -497,7 +757,8 @@
     <div id="gacha-performance" class="scene-layer">
         <div id="freeze-overlay" style="position:absolute; top:0; left:0; width:100%; height:100%; background:black; z-index:400; display:none;"></div>
         <div id="gacha-stage" style="flex:1; display:flex; align-items:center; justify-content:center;"></div>
-        <div style="padding:20px; display:flex; justify-content:center;"><button id="btn-gacha-skip" class="btn" onclick="Gacha.skip()">スキップ</button></div>
+        <div style="padding:20px; display:flex; justify-content:center;">
+		<button id="btn-gacha-skip" class="btn" onclick="Gacha.skip(event)">スキップ</button></div>
     </div>
     
     <div id="modal-rates" style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:250; display:none; flex-direction:column;">
