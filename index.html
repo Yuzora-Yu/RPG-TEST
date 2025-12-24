@@ -15,7 +15,15 @@
             --rare-n: #a0a0a0; --rare-r: #40e040; --rare-sr: #40e0e0; --rare-ur: #e040e0; --rare-ex: #ffff00;
         }
         * { box-sizing: border-box; touch-action: manipulation; user-select: none; }
-        body { background: var(--bg-color); color: var(--text-color); font-family: 'DotGothic16', sans-serif; margin: 0; height: 100dvh; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        body { background: var(--bg-color); color: var(--text-color); font-family: 'DotGothic16', sans-serif; margin: 0; 
+            /* JSが動かない場合のフォールバック */
+    height: 100vh; 
+    /* JSで計算した「本当の高さ」を優先適用 */
+    height: calc(var(--vh, 1vh) * 100);
+    overflow: hidden; /* ゲーム画面なので基本はhiddenでOK */
+    margin: 0;
+    padding: 0;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; }
 
         /* ★修正: ゲーム全体の枠をレスポンシブ（可変）対応にする */
 		#game-container {
@@ -816,6 +824,20 @@
             alert("エラー: データベースまたはスクリプトの読み込みに失敗しました。");
         }
     };
+    
+    // 実際の高さを計算してCSS変数 --vh にセットする関数
+    function setAppHeight() {
+        const vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+    }
+
+    // 画面リサイズ時や向きが変わった時に実行
+    window.addEventListener('resize', setAppHeight);
+    window.addEventListener('orientationchange', setAppHeight);
+
+    // 初回実行
+    setAppHeight();
+    
 </script>
 </body>
 </html>
