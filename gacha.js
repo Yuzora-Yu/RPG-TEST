@@ -33,6 +33,8 @@ const Gacha = {
                 html += `<div>${r}: ${CONST.GACHA_RATES[r]}%</div>`;
             }
         }
+		
+		// --- showRates 関数内の排出対象一覧ループ部分 ---
         html += `<hr><h3>排出対象一覧</h3>`;
         for(let r of CONST.RARITY.slice().reverse()) {
             if (CONST.GACHA_RATES[r] <= 0) continue;
@@ -41,7 +43,15 @@ const Gacha = {
                 let color = '#fff';
                 if(r==='EX') color = '#ff0'; else if(r==='UR') color = '#f0f'; else if(r==='SSR') color = '#f44'; else if(r==='SR') color = 'gold';
                 html += `<div style="margin-top:10px; color:${color}; font-weight:bold;">[${r}]</div>`;
-                targets.forEach(c => html += `<div>${c.name} (${c.job})</div>`);
+                
+                targets.forEach(c => {
+                    // ★追加：セーブデータ（所有キャラクター）から名前を検索
+                    const owned = App.data.characters.find(oc => oc.charId === c.id);
+                    // 所有していればその名前を、なければデータベースのデフォルト名を使用
+                    const displayName = (owned && owned.name) || c.name;
+                    
+                    html += `<div>${displayName} (${c.job})</div>`;
+                });
             }
         }
         content.innerHTML = html;
@@ -180,6 +190,8 @@ const Gacha = {
 
         const master = DB.CHARACTERS.find(m => m.id === char.id);
         const owned = App.data.characters.find(c => c.charId === char.id);
+		
+		const displayName = (owned && owned.name) || (master ? master.name : char.name);
         const displayImg = (owned && owned.img) || (master ? master.img : null);
         const imgTag = displayImg 
             ? `<img src="${displayImg}" style="width:130px; height:130px; object-fit:contain; margin-bottom:5px; border:none !important; background:transparent !important; pointer-events:none;">` 
@@ -214,7 +226,7 @@ const Gacha = {
                 <div class="card-inner-border"></div> <div style="color:#ffd700; font-size:12px; margin-bottom:2px; font-weight:bold; text-shadow:1px 1px 2px #000;">${Gacha.getStars(char.rarity)}</div>
                 <div style="font-size:18px; font-weight:bold; color:${Gacha.getRarityTextColor(char.rarity)}; margin-bottom:5px; text-shadow: 1px 1px 2px #000;">${char.rarity}</div>
                 ${imgTag}
-                <div style="font-size:16px; font-weight:bold; color:#fff; text-shadow:1px 1px 2px #000;">${char.name}</div>
+                <div style="font-size:16px; font-weight:bold; color:#fff; text-shadow:1px 1px 2px #000;">${displayName}</div>
                 <div style="font-size:11px; color:#ccc; text-shadow: 1px 1px 1px #000;">${char.job}</div>
                 ${char.isNew ? '<div class="new-badge">NEW!</div>' : '<div style="color:#fff; font-size:10px; background:rgba(0,0,0,0.5); padding:2px 8px; border-radius:10px; margin-top:5px;">限界突破!</div>'}
             </div>`;
@@ -277,6 +289,9 @@ const Gacha = {
         Gacha.queue.forEach(c => {
             const master = DB.CHARACTERS.find(m => m.id === c.id);
             const owned = App.data.characters.find(oc => oc.charId === c.id);
+			
+			// ★修正：名前もセーブデータ優先、なければマスタから取得
+            const displayName = (owned && owned.name) || (master ? master.name : c.name);
             const displayImg = (owned && owned.img) || (master ? master.img : null);
             
             const thumbHtml = displayImg 
@@ -296,7 +311,7 @@ const Gacha = {
                 <div style="margin-top:5px; color:#ffd700; font-size:8px; margin-bottom:1px; font-weight:bold; text-shadow:1px 1px 0px #000;">${Gacha.getStars(c.rarity)}</div>
                 <div style="margin-top:2px; color:${Gacha.getRarityTextColor(c.rarity)}; font-weight:bold; text-shadow:1px 1px 0px #000; font-size:11px;">${c.rarity}</div>
                 <div class="thumb" style="background:transparent; border:1px solid rgba(255,255,255,0.1); border-radius:4px; margin:4px auto; width:40px; height:40px; overflow:hidden; display:flex; align-items:center; justify-content:center;">${thumbHtml}</div>
-                <div style="font-size:9px; overflow:hidden; white-space:nowrap; width:100%; font-weight:bold; color:#fff;">${c.name}</div>
+                <div style="font-size:9px; overflow:hidden; white-space:nowrap; width:100%; font-weight:bold; color:#fff;">${displayName}</div>
                 ${c.isNew ? '<span class="new-badge">NEW</span>' : '<span style="font-size:8px; color:#aaa;">限界突破</span>'}
                 <div style="margin-top:5px; font-size:8px; margin-top:2px; line-height:1.3; color:#eee;">
                     HP:${c.hp}<br>MP:${c.mp}<br>攻:${c.atk}<br>防:${c.def}<br>速:${c.spd}<br>魔:${c.mag}
