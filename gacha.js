@@ -294,6 +294,8 @@ const Gacha = {
             const displayName = (owned && owned.name) || (master ? master.name : c.name);
             const displayImg = (owned && owned.img) || (master ? master.img : null);
             
+			const st = master || c;
+			
             const thumbHtml = displayImg 
 			? `<img src="${displayImg}" style="width:100%; height:100%; object-fit:cover; border-radius:3px; background:transparent;">` // 背景透過
 			: '';
