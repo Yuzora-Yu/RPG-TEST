@@ -185,24 +185,35 @@ const Facilities = {
     },
 
 	// --- メダル交換の実行処理 ---
-    execMedal: (r) => {
+	execMedal: (r) => {
         App.data.items[99] -= r.medals;
         if(r.type === 'item') { 
             App.data.items[r.id] = (App.data.items[r.id] || 0) + r.count; 
         }
         else { 
-            // 1. まずベースとなる装備オブジェクトを生成（+3のオプション枠を確保）
+            // 1. 指定された部位(r.base.type)と同じマスタデータをDBから1つ探す
+            // これにより、その部位専用の possibleOpts (抽選候補) を取得できる
+            const template = DB.EQUIPS.find(e => e.type === r.base.type) || DB.EQUIPS[0];
+            
+            // 2. その部位のルールを持ったベース装備を生成
             const eq = App.createRandomEquip('medal', r.base.rank, 3); 
             
-            // 2. ★重要：景品設定（r.base）の値を強制的に反映させる
+            // 3. 部位に適合するオプション候補(possibleOpts)を強制的に上書き
+            // これで武器なら武器、足なら足のオプションしか付かなくなる
+            eq.possibleOpts = template.possibleOpts;
+            
+            // 4. 改めて名前やステータス、部位をメタルキング仕様に固定
             eq.name = r.base.name + "+3";
-            eq.type = r.base.type;  // これで「武器」や「足」が正しく設定されます
+            eq.type = r.base.type;
             eq.rank = r.base.rank;
             eq.val  = r.base.val;
             
-            // 3. ステータスをランダム値ではなく、メタルキングシリーズの固定値に設定
-            // (createRandomEquipで付与されたランダムオプションは保持されます)
-            Object.assign(eq.data, r.base.data); 
+            // マスタの固定ステータスを反映
+            Object.assign(eq.data, r.base.data);
+            
+            // ★もし App.createRandomEquip が既にオプションを決定済みの場合は、
+            // ここで再度オプションを再抽選する処理（App.rollOptions(eq) 等）を
+            // 呼び出す必要があるかもしれません。
             
             App.data.inventory.push(eq); 
         }
