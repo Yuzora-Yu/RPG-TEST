@@ -573,6 +573,12 @@
 		}
 		
     </style>
+
+	<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js');
+}
+	</script>
 	
 </head>
 
@@ -837,7 +843,7 @@
 
     // 初回実行
     setAppHeight();
-    
+
 </script>
 </body>
 </html>
