@@ -645,6 +645,129 @@
         </div>
     </div>
 
+<div v-if="currentTab==='equips'">
+        <div class="bg-gray-800 p-3 rounded mb-4 border border-gray-600 space-y-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <button @click="addEquipMaster" class="btn btn-primary">+ 新規装備追加</button>
+                    <button @click="toggleExport('equips')" class="btn btn-export text-xs">DB用テキスト出力</button>
+                </div>
+                <button @click="savePartial('equips')" class="btn btn-save">💾 装備データ (equips.js) を保存</button>
+            </div>
+            
+            <div class="flex items-center gap-1 overflow-x-auto pb-1 border-t border-gray-700 pt-2">
+                <span class="text-xs text-gray-400 mr-1 shrink-0">ベースフィルタ:</span>
+                <button class="filter-btn" :class="{active: equipFilter === 'ALL'}" @click="equipFilter = 'ALL'">ALL</button>
+                <button v-for="b in allBaseNames" :key="b" 
+                        class="filter-btn" :class="{active: equipFilter === b}" 
+                        @click="equipFilter = b">{{ b }}</button>
+            </div>
+        </div>
+
+        <div v-if="showExport.equips" class="mb-4">
+            <div class="flex justify-between items-end mb-1">
+                <label class="text-xs text-purple-300">▼ DB直書き用フォーマット</label>
+                <button @click="showExport.equips = false" class="text-xs text-gray-500 hover:text-white">閉じる</button>
+            </div>
+            <textarea class="export-box" readonly v-model="exportText.equips"></textarea>
+        </div>
+
+        <div class="overflow-x-auto h-[70vh] border border-gray-700 rounded">
+            <table class="w-full text-sm">
+                <thead class="sticky top-0 z-20">
+                    <tr>
+                        <th style="width:60px" class="text-center text-[11px]">Rank</th>
+                        <th style="width:150px" class="text-[11px]">基本設定</th>
+                        <th style="width:140px" class="text-[11px]">ステータス</th>
+                        <th style="width:280px" class="text-[11px]">属性・特殊効果</th>
+                        <th style="width:180px" class="text-[11px]">オプション候補</th>
+                        <th style="width:40px" class="text-center text-[11px]">消</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(e, index) in filteredEquips" :key="e._uid">
+                        <td class="align-top">
+                            <input type="number" v-model.number="e.rank" class="text-center font-bold text-yellow-200 h-8 text-[11px]">
+                        </td>
+                        <td class="align-top space-y-1">
+                            <input type="text" v-model="e.name" class="font-bold border-blue-900 h-7 text-[12px]" placeholder="装備名">
+                            <div class="grid grid-cols-2 gap-1">
+                                <select v-model="e.type" @change="onEquipTypeChange(e)" class="text-[10px] h-6 p-0 px-1 bg-gray-800">
+                                    <option v-for="(bases, type) in equipTypeMap" :key="type" :value="type">{{type}}</option>
+                                </select>
+                                <select v-model="e.baseName" class="text-[10px] h-6 p-0 px-1 bg-gray-700">
+                                    <option v-for="b in equipTypeMap[e.type]" :key="b" :value="b">{{b}}</option>
+                                </select>
+                            </div>
+                        </td>
+                        <td class="align-top">
+                            <div class="grid grid-cols-2 gap-x-2 gap-y-1 bg-gray-900 p-1.5 rounded border border-gray-700">
+                                <div v-for="stat in mainStatKeys" :key="stat.k" class="flex items-center justify-between gap-1">
+                                    <span class="text-[9px] text-gray-500 leading-tight shrink-0">{{stat.n}}</span>
+                                    <input type="number" v-model.number="e.data[stat.k]" 
+                                           class="text-[10px] h-5 w-12 p-0 text-right bg-gray-800 border-none rounded">
+                                </div>
+                            </div>
+                        </td>
+                        <td class="align-top space-y-2">
+                            <div class="grid grid-cols-2 gap-2">
+                                <div class="space-y-1">
+                                    <div class="bg-gray-800 p-1 rounded border border-red-900/50">
+                                        <label class="text-[8px] font-bold text-red-400 mb-1 block uppercase">属性攻撃 (+)</label>
+                                        <div class="grid grid-cols-4 gap-1">
+                                            <div v-for="el in elements" :key="el" class="flex flex-col items-center bg-gray-900 rounded py-0.5">
+                                                <span class="text-[8px] text-gray-500">{{el[0]}}</span>
+                                                <input type="number" :value="e.data.elmAtk ? e.data.elmAtk[el] : ''"
+                                                       @input="setElmAtk(e, el, $event.target.value)"
+                                                       class="text-[10px] h-4 w-full bg-transparent border-none p-0 text-center text-red-200">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="bg-gray-800 p-1 rounded border border-blue-900/50">
+                                        <label class="text-[8px] font-bold text-blue-400 mb-1 block uppercase">属性耐性 (%)</label>
+                                        <div class="grid grid-cols-4 gap-1">
+                                            <div v-for="el in elements" :key="el" class="flex flex-col items-center bg-gray-900 rounded py-0.5">
+                                                <span class="text-[8px] text-gray-500">{{el[0]}}</span>
+                                                <input type="number" :value="e.data.elmRes ? e.data.elmRes[el] : ''"
+                                                       @input="setElmRes(e, el, $event.target.value)"
+                                                       class="text-[10px] h-4 w-full bg-transparent border-none p-0 text-center text-blue-200">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bg-gray-800 p-1 rounded border border-purple-900/50">
+                                    <label class="text-[8px] font-bold text-purple-400 mb-1 block uppercase">異常付与・耐性 (%)</label>
+                                    <div class="grid grid-cols-1 gap-0.5 max-h-32 overflow-y-auto pr-1">
+                                        <div v-for="eff in specialEffKeys" :key="eff.k" class="flex items-center justify-between gap-1 bg-gray-900 rounded px-1">
+                                            <span class="text-[8px] text-gray-500 shrink-0">{{eff.n}}</span>
+                                            <input type="number" :value="e.data[eff.k] || ''"
+                                                   @input="setSpecial(e, eff.k, $event.target.value)"
+                                                   class="text-[9px] h-4 w-8 bg-transparent border-none p-0 text-right text-purple-200">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="align-top">
+                            <div class="flex flex-wrap gap-x-1 gap-y-1 bg-gray-900 p-1 rounded max-h-40 overflow-y-auto border border-gray-700">
+                                <label v-for="opt in allOptionKeys" :key="opt" 
+                                       class="flex items-center text-[8px] cursor-pointer shrink-0 py-0 px-1 rounded hover:bg-gray-700"
+                                       :class="e.possibleOpts && e.possibleOpts.includes(opt) ? 'text-yellow-400 font-bold' : 'text-gray-500'">
+                                    <input type="checkbox" :checked="e.possibleOpts && e.possibleOpts.includes(opt)"
+                                           @change="toggleEquipOpt(e, opt)" class="w-2 h-2 mr-1">
+                                    {{opt}}
+                                </label>
+                            </div>
+                        </td>
+                        <td class="text-center align-middle">
+                            <button @click="removeList(db.EQUIP_MASTER, db.EQUIP_MASTER.indexOf(e))" class="text-red-700 hover:text-red-500 font-bold text-lg">×</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
 </div>
 
 <script src="skills.js"></script>
@@ -652,6 +775,7 @@
 <script src="characters.js"></script>
 <script src="items.js"></script>
 <script src="job_data.js"></script>
+<script src="equips.js"></script>
 <script src="database.js"></script>
 
 <script>
@@ -679,6 +803,9 @@ createApp({
             MONSTERS: getInitialData('MONSTERS_DATA', 'MONSTERS'),
             CHARACTERS: getInitialData('CHARACTERS_DATA', 'CHARACTERS'),
             ITEMS: getInitialData('ITEMS_DATA', 'ITEMS'),
+            // EQUIP_MASTER(equips.js)を読み込むように修正
+            EQUIP_MASTER: getInitialData('EQUIP_MASTER', 'EQUIP_MASTER'), 
+            // 以下既存
             EQUIPS: window.DB ? (window.DB.EQUIPS || []) : [],
             OPT_RULES: window.DB ? (window.DB.OPT_RULES || []) : [],
             SYNERGIES: window.DB ? (window.DB.SYNERGIES || []) : [],
@@ -696,16 +823,105 @@ createApp({
 
         // Filter & Export States
         const skillFilter = ref('ALL');
-        const showExport = reactive({ skills: false, jobs: false, monsters: false, characters: false, items: false });
-        const exportText = reactive({ skills: '', jobs: '', monsters: '', characters: '', items: '' });
+        const showExport = reactive({ skills: false, jobs: false, monsters: false, characters: false, items: false, equips: false }); // equipsを追加
+        const exportText = reactive({ skills: '', jobs: '', monsters: '', characters: '', items: '', equips: '' }); // equipsを追加
 
         const tabs = [
             {id:'skills', name:'スキル'},
             {id:'monsters', name:'モンスター'},
             {id:'characters', name:'仲間キャラ'},
             {id:'items', name:'アイテム'},
-            {id:'jobs', name:'職業(習得)'}
+            {id:'jobs', name:'職業(習得)'},
+            {id:'equips', name:'装備マスタ'} // ←ここを追加
         ];
+		// --- 装備編集用の定数定義 ---
+        const equipTypeMap = {
+            '武器': ['剣', '斧', '短剣', '杖'],
+            '盾': ['盾', '腕輪'],
+            '頭': ['兜', '帽子'],
+            '体': ['鎧', 'ローブ'],
+            '足': ['ブーツ', 'くつ']
+        };
+
+        const mainStatKeys = [
+            {k:'atk', n:'攻'}, {k:'def', n:'防'}, {k:'mag', n:'魔'}, {k:'spd', n:'速'},
+            {k:'hp', n:'HP'}, {k:'mp', n:'MP'}, {k:'finDmg', n:'与ダメ%'}, {k:'finRed', n:'被ダメ減%'},
+            {k:'pierce', n:'貫通%'}, {k:'doubleAction', n:'2回行動%'}, {k:'fastestAction', n:'先制%'}
+        ];
+
+        const allOptionKeys = [
+            'atk', 'mag', 'spd', 'def', 'hp', 'mp', 'finDmg', 'finRed',
+            'attack_Poison', 'attack_Fear', 'attack_InstantDeath',
+            'resists_Poison', 'resists_Shock', 'resists_Fear', 'resists_Debuff', 'resists_InstantDeath',
+            'resists_SkillSeal', 'resists_SpellSeal', 'resists_HealSeal'
+        ];
+		
+		// --- 装備：特殊効果(状態異常等)の定義 ---
+        const specialEffKeys = [
+            {k:'attack_Poison', n:'毒付与'}, {k:'attack_Fear', n:'怯え付与'}, {k:'attack_InstantDeath', n:'即死付与'},
+            {k:'resists_Poison', n:'毒耐性'}, {k:'resists_Shock', n:'感電耐性'}, {k:'resists_Fear', n:'怯え耐性'},
+            {k:'resists_Debuff', n:'弱体耐性'}, {k:'resists_InstantDeath', n:'即死耐性'},
+            {k:'resists_SkillSeal', n:'技封耐性'}, {k:'resists_SpellSeal', n:'呪封耐性'}, {k:'resists_HealSeal', n:'回復封耐性'}
+        ];
+
+        // 特殊効果の更新用ヘルパー
+        const setSpecial = (e, key, val) => {
+            if (val === 0 || val === "" || val === null) {
+                delete e.data[key];
+            } else {
+                e.data[key] = Number(val);
+            }
+        };
+		
+		// --- 装備フィルタ用の状態 ---
+        const equipFilter = ref('ALL');
+        const allBaseNames = computed(() => {
+            return Object.values(equipTypeMap).flat();
+        });
+
+        const filteredEquips = computed(() => {
+            if (equipFilter.value === 'ALL') return db.EQUIP_MASTER;
+            return db.EQUIP_MASTER.filter(e => e.baseName === equipFilter.value);
+        });
+
+        // 属性耐性(elmRes)の更新用
+        const setElmRes = (e, el, val) => {
+            if (!e.data.elmRes) e.data.elmRes = {};
+            if (val === 0 || val === "" || val === null) {
+                delete e.data.elmRes[el];
+                if (Object.keys(e.data.elmRes).length === 0) delete e.data.elmRes;
+            } else {
+                e.data.elmRes[el] = Number(val);
+            }
+        };
+		
+		// 属性攻撃(elmAtk)の更新用
+        const setElmAtk = (e, el, val) => {
+            if (!e.data.elmAtk) e.data.elmAtk = {};
+            if (val === 0 || val === "" || val === null) {
+                delete e.data.elmAtk[el];
+                if (Object.keys(e.data.elmAtk).length === 0) delete e.data.elmAtk;
+            } else {
+                e.data.elmAtk[el] = Number(val);
+            }
+        };
+
+        // 種別が変わった時にベース名を自動補正する
+        const onEquipTypeChange = (e) => {
+            const possibleBases = equipTypeMap[e.type];
+            if (!possibleBases.includes(e.baseName)) {
+                e.baseName = possibleBases[0];
+            }
+        };
+
+        // オプションのオンオフ切り替え
+        const toggleEquipOpt = (item, optKey) => {
+            if (!item.possibleOpts) item.possibleOpts = [];
+            const idx = item.possibleOpts.indexOf(optKey);
+            if (idx > -1) item.possibleOpts.splice(idx, 1);
+            else item.possibleOpts.push(optKey);
+        };
+		
         const skillTypes = ['物理','魔法','ブレス','回復','蘇生','強化','弱体','特殊','MP回復','通常攻撃'];
         const skillTargets = ['単体','全体','ランダム','自分','なし'];
         const elements = ['火','水','風','雷','光','闇','混沌'];
@@ -857,6 +1073,13 @@ createApp({
                 desc: '', target: '単体' 
             });
         };
+		const addEquipMaster = () => {
+            db.EQUIP_MASTER.unshift({
+                rank: 1, name: '新規装備', type: '武器', baseName: '剣',
+                data: { atk: 10 }, possibleOpts: ['atk', 'mag', 'finDmg'],
+                _uid: Math.random().toString(36)
+            });
+        };
 
         const addNewJob = () => {
             const name = prompt("新しい職業名を入力してください");
@@ -915,6 +1138,7 @@ createApp({
                 else if (type === 'monsters') priorityKeys = ['id', 'rank', 'minF', 'name', 'hp', 'mp', 'atk', 'def', 'spd', 'mag', 'gold', 'exp', 'acts', 'actCount'];
                 else if (type === 'characters') priorityKeys = ['id', 'name', 'job', 'rarity', 'hp', 'mp', 'atk', 'def', 'spd', 'mag', 'lbSkills', 'sp'];
                 else if (type === 'items') priorityKeys = ['id', 'rank', 'name', 'type', 'val', 'desc', 'target', 'price'];
+				else if (type === 'equips') priorityKeys = ['rank', 'name', 'type', 'baseName', 'data', 'possibleOpts']; // ←ここを追加
 
                 priorityKeys.forEach(k => {
                     if (item.hasOwnProperty(k)) {
@@ -1001,6 +1225,9 @@ createApp({
             } else if (type === 'items') {
                 content = `/* items.js */\nwindow.ITEMS_DATA = ${JSON.stringify(clean(db.ITEMS), null, 4)};\n`;
                 fileName = 'items.js';
+            } else if (type === 'equips') {
+                content = `/* equips.js */\nwindow.EQUIP_MASTER = ${JSON.stringify(clean(db.EQUIP_MASTER), null, 4)};\n`;
+                fileName = 'equips.js';
             }
 
             try {
@@ -1231,7 +1458,10 @@ createApp({
             skillFilter, filteredSkills, sortSkills,
             showExport, exportText, toggleExport,
             addMonsterAct, recalcMonsterActs,
-			updateBuff, updateDebuff,
+			updateBuff, updateDebuff,addEquipMaster,
+			equipTypeMap, mainStatKeys, allOptionKeys, onEquipTypeChange, toggleEquipOpt, // これらを追加
+			equipFilter, allBaseNames, filteredEquips, setElmRes,setElmAtk, // これらを追加
+			specialEffKeys, setSpecial, // これらを追加
 			downloadCSV, triggerCSVImport
         };
     }
