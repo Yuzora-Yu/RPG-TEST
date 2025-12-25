@@ -160,14 +160,15 @@ const Menu = {
             if (equip.data.finDmg) baseStats.push(`与ダメ+${equip.data.finDmg}%`);
             if (equip.data.finRed) baseStats.push(`被ダメ-${equip.data.finRed}`);
 			
-			// ★追記: 基礎データに含まれる耐性や特殊効果を動的に抽出
+			// 基礎データ内の耐性・付与効果をループで抽出して表示
             for (let key in equip.data) {
                 if (key.startsWith('resists_')) {
                     const label = Battle.statNames[key.replace('resists_', '')] || key;
                     baseStats.push(`${label}耐+${equip.data[key]}%`);
                 } else if (key.startsWith('attack_')) {
                     const label = Battle.statNames[key.replace('attack_', '')] || key;
-                    baseStats.push(`${label}付与:${equip.data[key]}%`);
+                    // ★表記を変更：「ラベル付与:X%」→「攻撃時X%でラベル」
+                    baseStats.push(`攻撃時${equip.data[key]}%で${label}`);
                 }
             }
 			
@@ -1100,14 +1101,15 @@ const MenuAllies = {
         if(eq.data.finDmg) stats.push(`与ダメ+${eq.data.finDmg}%`);
         if(eq.data.finRed) stats.push(`被ダメ-${eq.data.finRed}%`);
 		
-		// ★追記: 基礎耐性・付与効果もスロット詳細に表示
+		// 基礎耐性・付与効果もスロット詳細に表示
         for (let key in eq.data) {
             if (key.startsWith('resists_')) {
                 const label = Battle.statNames[key.replace('resists_', '')] || key;
                 stats.push(`${label}耐+${eq.data[key]}%`);
             } else if (key.startsWith('attack_')) {
                 const label = Battle.statNames[key.replace('attack_', '')] || key;
-                stats.push(`${label}付与:${eq.data[key]}%`);
+                // ★表記を変更
+                stats.push(`攻撃時${eq.data[key]}%で${label}`);
             }
         }
 		
