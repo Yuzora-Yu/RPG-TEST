@@ -1,5 +1,5 @@
 /* ==========================================================================
-   鍛冶屋システム (合成ロジック刷新・素材ソート完全対応版)
+   鍛冶屋システム (新装備システム・改・真 完全対応版)
    ========================================================================== */
 
 const MenuBlacksmith = {
@@ -44,7 +44,6 @@ const MenuBlacksmith = {
         });
 
         const selectScreen = document.getElementById('smith-screen-select');
-        selectScreen.style.cssText = "display:none; flex-direction:column; height:100%;";
         selectScreen.innerHTML = `
             <div style="padding:8px; background:#222; display:flex; gap:8px; border-bottom:1px solid #333; flex-shrink:0;">
                 <button class="btn" style="flex:1; font-size:11px; background:linear-gradient(#555, #333);" onclick="MenuBlacksmith.changeScreen('main')">鍛冶メニュー</button>
@@ -55,7 +54,6 @@ const MenuBlacksmith = {
         `;
 
         const optScreen = document.getElementById('smith-screen-option');
-        optScreen.style.cssText = "display:none; flex-direction:column; height:100%;";
         optScreen.innerHTML = `
             <div style="padding:8px; background:#222; display:flex; gap:8px; border-bottom:1px solid #333; flex-shrink:0;">
                 <button class="btn" style="flex:1; font-size:11px; background:linear-gradient(#555, #333);" onclick="MenuBlacksmith.changeScreen('main')">鍛冶メニュー</button>
@@ -107,7 +105,6 @@ const MenuBlacksmith = {
         const nextExp = smith.level * 100;
         const progress = Math.min(100, (smith.exp / nextExp) * 100);
         const container = document.getElementById('smith-screen-main');
-        container.style.cssText = "display:flex; flex-direction:column; height:100%; overflow:hidden;";
 
         container.innerHTML = `
             <div style="flex:1; overflow-y:auto; display:flex; flex-direction:column; justify-content:center; padding:20px 5px;">
@@ -127,7 +124,7 @@ const MenuBlacksmith = {
                     </div>
                 </div>
                 <div style="display:flex; flex-direction:column; gap:12px; width: 100%; max-width:320px; margin:0 auto;">
-                    ${MenuBlacksmith.renderMenuBtn('synthesis', '装備合成', '＋３装備に別の装備の能力を継承させ、＋４へ進化させます', 'linear-gradient(135deg, #411, #200)', '#f44')}
+                    ${MenuBlacksmith.renderMenuBtn('synthesis', '装備合成', '＋３装備を＋４へ進化させ、新たな能力を継承します', 'linear-gradient(135deg, #411, #200)', '#f44')}
                     ${MenuBlacksmith.renderMenuBtn('refine', '装備精錬', 'オプションのレアリティを上昇させます (GEM消費)', 'linear-gradient(135deg, #114, #002)', '#44f')}
                     ${MenuBlacksmith.renderMenuBtn('enhance', '装備強化', 'オプションの数値を素材を使って上昇させます', 'linear-gradient(135deg, #131, #020)', '#4f4')}
                 </div>
@@ -145,7 +142,6 @@ const MenuBlacksmith = {
         </button>
     `,
 
-    // --- ① 特典確認モーダル (ユーザー指定の完全版HTML) ---
     showLevelInfo: () => {
         const smith = App.data.blacksmith || { level:1, exp:0 };
         const lv = smith.level;
@@ -161,7 +157,7 @@ const MenuBlacksmith = {
         h += `<div style="display:flex; justify-content:space-between; align-items:baseline; border-bottom:1px solid #ffd700; padding-bottom:3px; margin-bottom:8px;"><span style="color:#ffd700; font-weight:bold; font-size:14px;">鍛冶レベル特典</span><span style="color:#aaa; font-size:10px;">Lv.${lv} <span style="color:#ffd700; font-size:8px;">▶</span> Lv.${lv+1}</span></div>`;
         h += `<div style="display:flex; flex-direction:column;">${row('合成上限', cur.rarity, nxt.rarity, '#f88')}${row('精錬確率', cur.refine+'%', nxt.refine+'%', '#88f')}${row('強化確率', cur.success+'%', nxt.success+'%', '#8f8')}</div>`;
         h += `<div style="margin-top:8px; padding:6px; background:rgba(255,255,255,0.03); border:1px solid #333; border-radius:4px;"><div style="color:#ffd700; font-size:10px; font-weight:bold; margin-bottom:2px;">鍛冶ガイド</div><div style="color:#bbb; font-size:9px; line-height:1.2;">・合成：＋４進化時のレアリティ再抽選上限<br>・精錬：GEM消費でOP昇格(失敗時も消失なし)<br>・強化：素材消費でOP値上昇(Lvで成功率UP)</div></div>`;
-        h += `<div style="margin-top:5px; text-align:center; border-top:1px solid #333; padding-top:2px;"><div style="color:#666; font-size:9px;">100 EXPごとにレベルアップ</div></div></div>`;
+        h += `</div>`;
         Menu.msg(h);
     },
 
@@ -175,7 +171,7 @@ const MenuBlacksmith = {
 
     renderFilterArea: () => {
         const ctrl = document.getElementById('smith-ctrls');
-        const rules = (typeof OPT_RULES !== 'undefined') ? OPT_RULES : (typeof DB !== 'undefined' ? DB.OPT_RULES : []);
+        const rules = DB.OPT_RULES;
         ctrl.innerHTML = `
             <div style="padding:6px; display:flex; gap:5px; overflow-x:auto; background:#111; border-bottom:1px solid #333;">
                 ${['ALL', '武器', '盾', '頭', '体', '足'].map(c => {
@@ -274,8 +270,6 @@ const MenuBlacksmith = {
         footer.innerHTML = '<div style="color:#f88; font-size:11px; text-align:center; font-weight:bold;">継承させたい能力を持つ「素材装備」を選択</div>';
     },
 
-    /* blacksmith.js: renderOptionList_Synthesis の修正 (鍛冶レベル不足判定を追加) */
-
     renderOptionList_Synthesis: () => {
         MenuBlacksmith.changeScreen('option');
         const list = document.getElementById('smith-option-list');
@@ -283,57 +277,37 @@ const MenuBlacksmith = {
         header.innerText = "継承させるオプションを選択";
         list.innerHTML = '';
 
-        // --- 鍛冶屋レベルによる「出現し得る最低レアリティ」の特定 ---
         const rarities = ['N', 'R', 'SR', 'SSR', 'UR', 'EX'];
         const smithLevel = App.data.blacksmith?.level || 1;
-        
-        // getRateObj(Lv) のロジックに基づき、最低インデックスを算出
-        // Lv10以上:SSR(3), Lv5以上:SR(2), その他:R(1)
         let minPossibleRarityIdx = 1; 
         if (smithLevel >= 10) minPossibleRarityIdx = 3;
         else if (smithLevel >= 5) minPossibleRarityIdx = 2;
 
         MenuBlacksmith.state.material.opts.forEach((opt, idx) => {
-            // ルールの取得 (DB.OPT_RULES または CONST.OPT_RULES)
-            const rules = (typeof DB !== 'undefined' && DB.OPT_RULES) ? DB.OPT_RULES : (typeof CONST !== 'undefined' ? CONST.OPT_RULES : []);
-            const rule = rules.find(r => r.key === opt.key && (r.elm === opt.elm || !r.elm));
-
-            // ★追加: 鍛冶屋レベル不足の判定
+            const rule = DB.OPT_RULES.find(r => r.key === opt.key && (r.elm === opt.elm || !r.elm));
             let isLevelInsufficient = false;
             let minRequiredRarity = 'N';
 
             if (rule && rule.allowed) {
-                // オプションが許可している最低レアリティのインデックスを取得
                 const minAllowedIdx = Math.min(...rule.allowed.map(r => rarities.indexOf(r)));
                 minRequiredRarity = rarities[minAllowedIdx];
-                
-                // 抽選される最低レアが、オプションの許可下限を下回る場合はNG
-                if (minPossibleRarityIdx < minAllowedIdx) {
-                    isLevelInsufficient = true;
-                }
+                if (minPossibleRarityIdx < minAllowedIdx) isLevelInsufficient = true;
             }
 
-            const div = document.createElement('div'); 
-            div.className = 'list-item';
-            div.style.cssText = 'flex-direction:column; align-items:flex-start; position:relative;';
-            
-            if (isLevelInsufficient) {
-                div.style.opacity = '0.5';
-                div.style.background = '#222';
-            }
+            const div = document.createElement('div'); div.className = 'list-item';
+            div.style.cssText = 'flex-direction:column; align-items:flex-start;';
+            if (isLevelInsufficient) { div.style.opacity = '0.5'; div.style.background = '#222'; }
 
             div.innerHTML = `
                 <div style="display:flex; justify-content:space-between; width:100%;">
-                    <span style="color:${Menu.getRarityColor(opt.rarity)}; font-weight:bold;">
-                        ${opt.label} +${opt.val} (${opt.rarity})
-                    </span>
+                    <span style="color:${Menu.getRarityColor(opt.rarity)}; font-weight:bold;">${opt.label} +${opt.val} (${opt.rarity})</span>
                 </div>
-                ${isLevelInsufficient ? `<div style="color:#f44; font-size:10px; font-weight:bold; margin-top:2px;">⚠️ 鍛冶レベル不足 (最低確定:${minRequiredRarity}が必要)</div>` : ''}
+                ${isLevelInsufficient ? `<div style="color:#f44; font-size:10px; font-weight:bold; margin-top:2px;">⚠️ 熟練度不足 (最低:${minRequiredRarity}が必要)</div>` : ''}
             `;
 
             div.onclick = () => {
                 if (isLevelInsufficient) {
-                    Menu.msg(`<span style="color:#f44; font-weight:bold;">鍛冶屋の熟練度が足りません。</span><br><br>この能力を合成で扱うには、最低でも <span style="color:#fff;">${minRequiredRarity}</span> ランク以上が確定するレベルが必要です。<br><br><span style="font-size:10px; color:#aaa;">※現在の最低確定ランク: ${rarities[minPossibleRarityIdx]}</span>`);
+                    Menu.msg(`鍛冶屋の熟練度が足りません。最低でも ${minRequiredRarity} ランクが確定するレベルが必要です。`);
                     return;
                 }
                 MenuBlacksmith.state.targetOptIdx = idx; 
@@ -343,7 +317,6 @@ const MenuBlacksmith = {
         });
     },
 
-    // --- ② 合成実行 (オプションレアリティ変動 & 数値抽選ロジック) ---
     confirmSynthesis: () => {
         const target = MenuBlacksmith.state.target;
         const materialOpt = MenuBlacksmith.state.material.opts[MenuBlacksmith.state.targetOptIdx];
@@ -351,31 +324,30 @@ const MenuBlacksmith = {
         const rateObj = MenuBlacksmith.getRateObj(lv);
         let rateStr = Object.entries(rateObj).filter(e => e[1]>0).map(e => `${e[0]}:${e[1]}%`).join(' ');
 
-        Menu.confirm(`【装備合成】ベースを＋４へ進化させベースのレアリティを再抽選します。 (期待値: ${rateStr})`, () => {
-            // 1. ベースレアリティ決定
+        Menu.confirm(`【装備合成】＋４へ進化させベースのレアリティを再抽選します。(期待値: ${rateStr})`, () => {
             let r = Math.random()*100, current = 0, newR = 'R';
             for(let k in rateObj){ if(r < current+rateObj[k]){ newR=k; break; } current+=rateObj[k]; }
             
-            // 2. オプション継承 & 数値抽選
             const rule = DB.OPT_RULES.find(r => r.key === materialOpt.key && (r.elm === materialOpt.elm || !r.elm));
             const newInheritOpt = JSON.parse(JSON.stringify(materialOpt));
-            newInheritOpt.rarity = newR; // アイテムのレアリティに合わせる
+            newInheritOpt.rarity = newR; 
 
             if (rule) {
                 const min = rule.min[newR] || 0;
                 const max = rule.max[newR] || 0;
-                // レアリティ範囲内でのランダム抽選
                 newInheritOpt.val = Math.floor(Math.random() * (max - min + 1)) + min;
             }
 
             target.plus = 4;
             target.rarity = newR;
-            target.name = target.name.replace(/\+\d/, '') + '+4';
+            // 改や真の名称を維持しつつ +4 へ
+            target.name = target.name.replace(/\+\d+$/, "") + "+4";
             target.opts.push(newInheritOpt);
+            target.val = Math.floor(target.val * 1.5); // 価値向上
 
             App.data.inventory.splice(App.data.inventory.findIndex(i => i.id === MenuBlacksmith.state.material.id), 1);
             App.refreshAllSynergies(); MenuBlacksmith.gainExp(50); App.save();
-            Menu.msg(`合成成功！\n${target.name} [${newR}] が完成しました。\n継承効果: ${newInheritOpt.label} +${newInheritOpt.val}`, () => MenuBlacksmith.init());
+            Menu.msg(`合成成功！\n${target.name} [${newR}] が完成しました。\n継承: ${newInheritOpt.label} +${newInheritOpt.val}`, () => MenuBlacksmith.init());
         });
     },
 
@@ -401,15 +373,13 @@ const MenuBlacksmith = {
 
     confirmRefine: (gem, rate, nextR, rule) => {
         if ((App.data.gems || 0) < gem) return Menu.msg("GEMが足りません");
-        Menu.confirm(`【装備精錬】費用: ${gem} GEM / 成功率: ${rate}%\n成功するとレアリティが上昇し数値が下限値へリセットされます。`, () => {
+        Menu.confirm(`【精錬】費用: ${gem} GEM / 成功率: ${rate}%\n成功するとランクアップし数値が${nextR}の下限値へリセットされます。`, () => {
             App.data.gems -= gem;
             if (Math.random()*100 < rate) {
                 const opt = MenuBlacksmith.state.target.opts[MenuBlacksmith.state.targetOptIdx];
                 opt.rarity = nextR; opt.val = rule ? rule.min[nextR] : opt.val;
                 MenuBlacksmith.gainExp(60); App.save(); Menu.msg("精錬成功！", () => MenuBlacksmith.renderOptionList_Refine());
-            } else {
-                MenuBlacksmith.gainExp(15); App.save(); Menu.msg("精錬失敗...", () => MenuBlacksmith.renderOptionList_Refine());
-            }
+            } else { MenuBlacksmith.gainExp(15); App.save(); Menu.msg("精錬失敗...", () => MenuBlacksmith.renderOptionList_Refine()); }
         });
     },
 
@@ -434,12 +404,10 @@ const MenuBlacksmith = {
     renderMaterialList_Enhance: (resetFilter = true) => {
         const list = document.getElementById('smith-list');
         const footer = document.getElementById('smith-footer');
-		
-		MenuBlacksmith.changeScreen('select');
-		
+        MenuBlacksmith.changeScreen('select');
         MenuBlacksmith.step = 'material';
         if(resetFilter) { MenuBlacksmith.filter = { category: 'ALL', option: 'ALL' }; MenuBlacksmith.renderFilterArea(); }
-        const req = MenuBlacksmith.state.requiredCount; MenuBlacksmith.state.materials = [];
+        const req = MenuBlacksmith.state.requiredCount;
         let materials = App.data.inventory.map((i, idx) => ({ ...i, _originalIdx: idx })).filter(i => !i.locked && i.type === MenuBlacksmith.state.target.type && i.id !== MenuBlacksmith.state.target.id);
         const sorted = MenuBlacksmith.applySortAndFilter(materials);
         const updateFooter = () => {
@@ -466,7 +434,7 @@ const MenuBlacksmith = {
         const rule = DB.OPT_RULES.find(r => r.key === opt.key && (r.elm === opt.elm || !r.elm));
         const successRate = Math.min(95, 50 + (App.data.blacksmith.level * 5));
         let inc = rule ? Math.max(1, Math.floor((rule.max[opt.rarity] - rule.min[opt.rarity]) * 0.1)) : 1;
-        Menu.confirm(`【能力強化】成功率: ${successRate}% / 成功すると値が ${inc} 上昇します。`, () => {
+        Menu.confirm(`【能力強化】成功率: ${successRate}% / 成功すると数値が ${inc} 上昇します。`, () => {
             MenuBlacksmith.state.materials.forEach(mid => App.data.inventory.splice(App.data.inventory.findIndex(i => i.id === mid), 1));
             if (Math.random()*100 < successRate) {
                 opt.val += inc; if(rule && opt.val > rule.max[opt.rarity]) opt.val = rule.max[opt.rarity];
