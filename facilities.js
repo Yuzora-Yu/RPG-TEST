@@ -184,48 +184,47 @@ const Facilities = {
         Facilities.showModal('medal-scene', "メダル景品リスト", html);
     },
 
-	// --- メダル交換の実行処理 (修正版) ---
+// --- メダル交換の実行処理 (特殊装備・レプリカ対応版) ---
     execMedal: (r) => {
+        // メダルを消費
         App.data.items[99] -= r.medals;
         
         if(r.type === 'item') { 
+            // アイテムの場合
             App.data.items[r.id] = (App.data.items[r.id] || 0) + r.count; 
         }
         else { 
-            // 1. 指定された部位 (r.base.type) に一致するマスタデータを1つ取得
-            // これにより、剣なら「武器」、ブーツなら「足」の possibleOpts を正しく引き継げる
-            const baseTemplate = DB.EQUIPS.find(e => e.type === r.base.type) || DB.EQUIPS[0];
+            // 装備の場合 (マスタにない特殊装備・レプリカに対応)
+            // 1. 部位マスタ(EQUIP_MASTER)から、この部位(武器/盾等)に適したテンプレートを1つ探す
+            //    これにより「剣」や「鎧」としての抽選ルール(possibleOpts)を取得できる
+            const template = window.EQUIP_MASTER.find(e => e.type === r.base.type) || window.EQUIP_MASTER[0];
 
-            // 2. 装備オブジェクトを手動構築 (App.createRandomEquip のロジックを正確に再現)
+            // 2. 景品設定(r.base)の数値をベースに、装備オブジェクトを構築
             const eq = { 
-                id: Date.now() + Math.random().toString(), 
+                id: Date.now() + Math.random().toString(36).substring(2), 
                 rank: r.base.rank, 
-                name: r.base.name + "+3", 
-                type: r.base.type, // ★ここで「武器」「足」などを正確に設定
-                val: r.base.val * 2.5, // +3 の価値補正
-                data: JSON.parse(JSON.stringify(r.base.data)), // メタルキング固有のステータス
+                name: r.base.name + "+3", // 景品は常に+3
+                type: r.base.type,
+                baseName: template.baseName, // テンプレートから引き継ぎ（UI表示用）
+                val: r.base.val * 2.5, 
+                data: JSON.parse(JSON.stringify(r.base.data)), // 景品リスト(Replica等)の固有ステータス
                 opts: [], 
                 plus: 3,
-                possibleOpts: baseTemplate.possibleOpts // 合致した部位のオプション候補リスト
+                possibleOpts: template.possibleOpts // 部位に合ったオプション候補をセット
             };
             
-            // 3. 部位に適合したオプションを3つ抽選
-            const allowedKeys = eq.possibleOpts;
+            // 3. 3つのオプションを抽選（厳選の楽しさを残すためランクに応じたレアリティで）
             for(let i=0; i<3; i++) {
-                const tierRatio = Math.min(1, r.base.rank / 100);
-                
                 // 部位ごとのルールでフィルタリング
                 let optCandidates = DB.OPT_RULES;
-                if (allowedKeys) {
-                    optCandidates = DB.OPT_RULES.filter(rule => allowedKeys.includes(rule.key));
-                    if (optCandidates.length === 0) optCandidates = DB.OPT_RULES;
+                if (eq.possibleOpts && eq.possibleOpts.length > 0) {
+                    optCandidates = DB.OPT_RULES.filter(rule => eq.possibleOpts.includes(rule.key));
                 }
-
-                const rule = optCandidates[Math.floor(Math.random() * optCandidates.length)];
+                const rule = optCandidates.length > 0 ? optCandidates[Math.floor(Math.random() * optCandidates.length)] : DB.OPT_RULES[0];
                 
-                // レアリティ抽選
+                // レアリティ抽選 (景品なのでNは出にくく調整: +0.15)
                 let rarity = 'N';
-                const rarRnd = Math.random() + (tierRatio * 0.1);
+                const rarRnd = Math.random() + 0.15; 
                 if(rarRnd > 0.98 && rule.allowed.includes('EX')) rarity='EX';
                 else if(rarRnd > 0.90 && rule.allowed.includes('UR')) rarity='UR';
                 else if(rarRnd > 0.75 && rule.allowed.includes('SSR')) rarity='SSR';
@@ -240,13 +239,13 @@ const Facilities = {
                 });
             }
 
-            // 4. シナジー判定 (App側に checkSynergy が存在する場合)
-            if(typeof App.checkSynergy === 'function') {
-                 const syn = App.checkSynergy(eq);
-                 if(syn) {
-                     eq.isSynergy = true;
-                     eq.effect = syn.effect;
-                 }
+            // 4. シナジー判定 (main.jsの機能を利用)
+            if (typeof App.checkSynergy === 'function') {
+                const syn = App.checkSynergy(eq);
+                if(syn) {
+                    eq.isSynergy = true;
+                    eq.effect = syn.effect;
+                }
             }
             
             App.data.inventory.push(eq); 
@@ -254,10 +253,11 @@ const Facilities = {
         
         App.save(); 
         Facilities.closeModal('medal-scene'); 
-        Facilities.initMedal();
+        Facilities.initMedal(); // 画面更新
         Menu.msg(r.name + "を 受け取った！");
     },
-	
+
+
     // --- 3. カジノ ---
     initCasino: () => {
         if (!App.data.casinoState) App.data.casinoState = { isPlaying: false, currentGame: null };
