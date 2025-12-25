@@ -177,70 +177,124 @@ enter: () => {
         }
     },
 
-    openChest: (x, y, type) => {
+// --- 宝箱開封：[1]発見ログ -> [2]演出(レア時) -> [3]取得アイテム表示 ---
+    openChest: async (x, y, type) => {
         Dungeon.map[y][x] = 'T'; 
         Field.render();
         
         let msg = "";
+        let hasRareDrop = false;
+        let hasUltraRareDrop = false;
+        const floor = Dungeon.floor;
 
         if (type === 'rare') {
-            // ★赤宝箱: +3装備確定
-            const eq = App.createRandomEquip('chest', Dungeon.floor, 3);
-            if(App.checkSynergy(eq)) eq.isSynergy = true;
-            App.data.inventory.push(eq);
-            msg = `なんと <span style="color:#ff4444; font-weight:bold;"> ${eq.name}</span>`;
-            
-            // レア演出用フラッシュ
-            const flash = document.getElementById('drop-flash');
-            if(flash) {
-                flash.style.display = 'block'; 
-                flash.classList.remove('flash-active');
-                void flash.offsetWidth; 
-                flash.classList.add('flash-active');
+            // 【赤宝箱】基本は＋３確定 ＆ 0.5%の確率で「改」武器
+            if (Math.random() < 0.005) { // 0.5%で「改」
+                const eq = Dungeon.createEquipWithMinRarity(floor, 3, ['SSR', 'UR', 'EX'], '武器');
+                eq.name = eq.name.replace(/\+3$/, "") + "・改+3";
+                // 基礎ステータスを2倍に補正
+                for (let key in eq.data) {
+                    if (typeof eq.data[key] === 'number') eq.data[key] *= 2;
+                    else if (typeof eq.data[key] === 'object' && eq.data[key] !== null) {
+                        for (let sub in eq.data[key]) eq.data[key][sub] *= 2;
+                    }
+                }
+                eq.val *= 4;
+                App.data.inventory.push(eq);
+                msg = `なんと <span style="color:#ff00ff; font-weight:bold;">${eq.name}</span>`;
+                hasUltraRareDrop = true;
+            } else {
+                // 通常の赤宝箱：＋３確定 ＆ SR以上オプション保証
+                const eq = Dungeon.createEquipWithMinRarity(floor, 3, ['SR', 'SSR', 'UR', 'EX']);
+                App.data.inventory.push(eq);
+                msg = `なんと <span class="log-rare-drop">${eq.name}</span>`;
+                hasRareDrop = true;
             }
-
         } else {
-            // ★通常宝箱: 確率分岐
-            // メダル20% | アイテム30% | GOLD20% | +1装備20% | +2装備10%
-            const r = Math.random(); 
-            
+            // 【通常宝箱】
+            const r = Math.random();
             if (r < 0.2) {
-                // メダル (20%)
+                // ちいさなメダル
                 const item = DB.ITEMS.find(i => i.id === 99);
                 if(item) {
-                    msg = item.name;
                     App.data.items[item.id] = (App.data.items[item.id]||0)+1;
+                    msg = `<span style="color:#ffd700;">${item.name}</span>`;
                 }
             } else if (r < 0.5) {
-                // ★修正: 抽選時に「貴重品」を除外
-                const candidates = DB.ITEMS.filter(i => i.id !== 99 && i.type !== '貴重品');
-                if (candidates.length > 0) {
-                    const item = candidates[Math.floor(Math.random() * candidates.length)];
-                    msg = item.name;
-                    App.data.items[item.id] = (App.data.items[item.id]||0)+1;
-                } else {
-                    msg = "空っぽ";
-                }
+                // アイテム（貴重品除外、階層ランク制限）
+                const candidates = DB.ITEMS.filter(i => i.id !== 99 && i.type !== '貴重品' && i.rank <= floor);
+                const item = candidates.length > 0 ? candidates[Math.floor(Math.random() * candidates.length)] : DB.ITEMS[0];
+                App.data.items[item.id] = (App.data.items[item.id]||0)+1;
+                msg = `${item.name}`;
             } else if (r < 0.7) {
-                // GOLD (20%)
-                const gold = Math.floor(Math.random() * (500 * Dungeon.floor)) + 100;
+                // GOLD
+                const gold = Math.floor(Math.random() * (500 * floor)) + 100;
                 App.data.gold += gold;
-                msg = `${gold} G`;
+                msg = `<span style="color:#ffff00;">${gold} Gold</span>`;
             } else if (r < 0.9) {
-                // +1装備 (20%)
-                const eq = App.createRandomEquip('chest', Dungeon.floor, 1);
+                // ＋１装備
+                const eq = App.createEquipByFloor('chest', floor, 1);
                 App.data.inventory.push(eq);
                 msg = `${eq.name}`;
             } else {
-                // +2装備 (10%)
-                const eq = App.createRandomEquip('chest', Dungeon.floor, 2);
+                // ＋２装備
+                const eq = App.createEquipByFloor('chest', floor, 2);
                 App.data.inventory.push(eq);
                 msg = `${eq.name}`;
             }
         }
+
+        // --- 演出とログ表示 ---
+        App.log(`宝箱を開けた！`);
         
+        if (hasRareDrop || hasUltraRareDrop) {
+            await new Promise(resolve => setTimeout(resolve, 500)); // 溜め
+            
+            if (hasUltraRareDrop) {
+                const uFlash = document.getElementById('drop-flash-ultra') || document.getElementById('drop-flash');
+                if(uFlash) { uFlash.style.display = 'block'; uFlash.className = 'flash-ultra flash-ultra-active'; }
+            } else {
+                const flash = document.getElementById('drop-flash');
+                if(flash) { flash.style.display = 'block'; flash.classList.remove('flash-active'); void flash.offsetWidth; flash.classList.add('flash-active'); }
+            }
+        }
+
         App.log(`${msg} を手に入れた！`);
         App.save();
+    },
+
+    // 内部用：オプションレアリティ保証付き装備生成
+    createEquipWithMinRarity: (floor, plus, minRarityList, forcePart = null) => {
+        let eq = App.createEquipByFloor('drop', floor, plus);
+        
+        // 部位固定ロジック
+        if (forcePart && eq.type !== forcePart) {
+            let attempts = 0;
+            while (eq.type !== forcePart && attempts < 50) {
+                eq = App.createEquipByFloor('drop', floor, plus);
+                attempts++;
+            }
+        }
+
+        const rarities = ['N', 'R', 'SR', 'SSR', 'UR', 'EX'];
+        eq.opts = eq.opts.map(opt => {
+            const rule = DB.OPT_RULES.find(r => r.key === opt.key);
+            if (!rule) return opt;
+            let r = opt.rarity;
+            let att = 0;
+            while (!minRarityList.includes(r) && att < 15) {
+                const rarRnd = Math.random() + 0.3; 
+                if(rarRnd > 0.95 && rule.allowed.includes('EX')) r='EX';
+                else if(rarRnd > 0.80 && rule.allowed.includes('UR')) r='UR';
+                else if(rarRnd > 0.65 && rule.allowed.includes('SSR')) r='SSR';
+                else if(rarRnd > 0.45 && rule.allowed.includes('SR')) r='SR';
+                else r='R';
+                att++;
+            }
+            const min = rule.min[r]||1, max = rule.max[r]||10;
+            return { ...opt, rarity: r, val: Math.floor(Math.random()*(max-min+1))+min };
+        });
+        return eq;
     },
 
     // --- マップ生成ロジック ---
