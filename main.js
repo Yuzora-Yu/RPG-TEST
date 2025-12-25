@@ -512,7 +512,7 @@ const App = {
         //App.data.characters[0].sp = 0;
         App.data.characters[0].tree = { ATK:0, MAG:0, SPD:0, HP:0, MP:0 };
 
-        for(let i=0;i<5;i++) App.data.inventory.push(App.createRandomEquip('init', 1)); 
+        for(let i=0;i<5;i++) App.data.inventory.push(App.createEquipByFloor('init', 1)); 
         try {
             localStorage.setItem(CONST.SAVE_KEY, JSON.stringify(App.data));
             window.location.href='index.html'; 
@@ -606,6 +606,17 @@ const App = {
                 if(eq.data.def) s.def += eq.data.def;
                 if(eq.data.spd) s.spd += eq.data.spd;
                 if(eq.data.mag) s.mag += eq.data.mag;
+				
+				// --- 装備マスタの基礎効果を合算 ---
+                for (let key in eq.data) {
+                    if (key.startsWith('resists_')) {
+                        const resKey = key.replace('resists_', '');
+                        s.resists[resKey] = (s.resists[resKey] || 0) + eq.data[key];
+                    } else if (key.startsWith('attack_')) {
+                        s[key] = (s[key] || 0) + eq.data[key];
+                    }
+                }
+                // --- 既存の固定値・属性補正 ---
                 if(eq.data.finDmg) s.finDmg += eq.data.finDmg;
                 if(eq.data.finRed) s.finRed += eq.data.finRed;
                 if(eq.data.elmAtk) for(let e in eq.data.elmAtk) s.elmAtk[e] += eq.data.elmAtk[e];
@@ -747,16 +758,19 @@ const App = {
         return logs;
     },
 
-/* main.js の App.createRandomEquip を以下のように修正してください */
-
-    // ★修正: 装備タイプごとのオプションフィルタリング対応版
-    createRandomEquip: (source, rank = 1, fixedPlus = null) => {
-        let candidates = DB.EQUIPS.filter(e => e.rank <= rank && e.rank >= Math.max(1, rank - 15));
-        if (candidates.length === 0) candidates = DB.EQUIPS.filter(e => e.rank <= rank);
-        if (candidates.length === 0) candidates = [DB.EQUIPS[0]];
+// --- 新しい装備生成ロジック：マスタ参照 & 201階層以上の真・化対応 ---
+    createEquipByFloor: (source, floor = 1, fixedPlus = null) => {
+        // 1. 参照するRankを決定（マスタは最大200まで）
+        const targetRank = Math.min(200, floor);
+        
+        // 2. 現在のRankに近いマスタデータを抽出（前後15の範囲）
+        let candidates = window.EQUIP_MASTER.filter(e => e.rank <= targetRank && e.rank >= Math.max(1, targetRank - 15));
+        if (candidates.length === 0) candidates = window.EQUIP_MASTER.filter(e => e.rank <= targetRank);
+        if (candidates.length === 0) candidates = [window.EQUIP_MASTER[0]];
 
         const base = candidates[Math.floor(Math.random() * candidates.length)];
         
+        // 3. プラス値の決定
         let plus = 0;
         if (fixedPlus !== null) {
             plus = fixedPlus;
@@ -768,93 +782,114 @@ const App = {
             if (source === 'init') plus = 0;
         }
         
+        // 4. 装備オブジェクトのベース作成（ディープコピー）
         const eq = { 
-            id: Date.now() + Math.random().toString(), 
-            rank: base.rank, name: base.name, type: base.type, 
-            val: base.val * (1 + plus * 0.5), 
+            id: Date.now() + Math.random().toString(36).substring(2), 
+            rank: base.rank, 
+            name: base.name, 
+            type: base.type, 
+            baseName: base.baseName,
+            val: base.rank * 150 * (1 + plus * 0.5), 
             data: JSON.parse(JSON.stringify(base.data)), 
-            opts: [], plus: plus 
+            opts: [], 
+            plus: plus,
+            possibleOpts: base.possibleOpts || []
         };
-        
-        // ★追加: この装備で付与可能なオプションキーのリストを取得
-        const allowedKeys = base.possibleOpts || null;
 
-        for(let i=0; i<plus; i++) {
-            const tierRatio = Math.min(1, rank / 100);
+        // 5. ★201階以降の「真・装備」化ロジック (デフレ調整版)
+        if (floor > 200) {
+            eq.name = "真・" + base.name;
+            const scale = (floor * 1.5) / base.rank;
             
-            // ★追加: オプション候補のフィルタリング
-            let optCandidates = DB.OPT_RULES;
-            if (allowedKeys) {
-                optCandidates = DB.OPT_RULES.filter(rule => allowedKeys.includes(rule.key));
-                // 設定ミス等で候補がない場合は全ルールから抽選 (フォールバック)
-                if (optCandidates.length === 0) optCandidates = DB.OPT_RULES;
+            for (let key in eq.data) {
+                if (typeof eq.data[key] === 'number') {
+                    eq.data[key] = Math.floor(eq.data[key] * scale);
+                } else if (typeof eq.data[key] === 'object' && eq.data[key] !== null) {
+                    for (let subKey in eq.data[key]) {
+                        eq.data[key][subKey] = Math.floor(eq.data[key][subKey] * scale);
+                    }
+                }
             }
-
-            const rule = optCandidates[Math.floor(Math.random() * optCandidates.length)];
-            
-            let r = 'N';
-            const rarRnd = Math.random() + (tierRatio * 0.1);
-            if(rarRnd > 0.98 && rule.allowed.includes('EX')) r='EX';
-            else if(rarRnd > 0.90 && rule.allowed.includes('UR')) r='UR';
-            else if(rarRnd > 0.75 && rule.allowed.includes('SSR')) r='SSR';
-            else if(rarRnd > 0.55 && rule.allowed.includes('SR')) r='SR';
-            else if(rarRnd > 0.30 && rule.allowed.includes('R')) r='R';
-            else r = rule.allowed[0];
-
-            const min = rule.min[r]||1, max = rule.max[r]||10;
-            eq.opts.push({
-                key:rule.key, elm:rule.elm, label:rule.name, 
-                val:Math.floor(Math.random()*(max-min+1))+min, unit:rule.unit, rarity:r
-            });
+            eq.val = Math.floor(eq.val * scale);
         }
 
-        if(plus > 0) eq.name += `+${plus}`;
-        // 生成時にもシナジー効果を付与
-        if(plus === 3) {
-             const syn = App.checkSynergy(eq);
-             if(syn) {
-                 eq.isSynergy = true;
-                 eq.effect = syn.effect;
-             }
+        // 6. オプション付与
+        if (plus > 0) {
+			// 万が一マスタに設定漏れがあっても止まらないようにする
+            const allowedKeys = eq.possibleOpts || [];
+			
+            for(let i=0; i<plus; i++) {
+                let optCandidates = DB.OPT_RULES;
+                if (eq.possibleOpts && eq.possibleOpts.length > 0) {
+                    optCandidates = DB.OPT_RULES.filter(rule => eq.possibleOpts.includes(rule.key));
+                }
+                const rule = optCandidates[Math.floor(Math.random() * optCandidates.length)];
+                
+                let rarity = 'N';
+                const tierRatio = Math.min(1, floor / 200);
+                const rarRnd = Math.random() + (tierRatio * 0.15);
+                if(rarRnd > 0.98 && rule.allowed.includes('EX')) rarity='EX';
+                else if(rarRnd > 0.90 && rule.allowed.includes('UR')) rarity='UR';
+                else if(rarRnd > 0.75 && rule.allowed.includes('SSR')) rarity='SSR';
+                else if(rarRnd > 0.55 && rule.allowed.includes('SR')) rarity='SR';
+                else if(rarRnd > 0.30 && rule.allowed.includes('R')) rarity='R';
+                else rarity = rule.allowed[0];
+
+                const min = rule.min[rarity]||1, max = rule.max[rarity]||10;
+                eq.opts.push({
+                    key: rule.key, elm: rule.elm, label: rule.name, 
+                    val: Math.floor(Math.random()*(max-min+1))+min, unit: rule.unit, rarity: rarity
+                });
+            }
+            eq.name += `+${plus}`;
         }
-        
+
+        // 7. シナジー判定
+        if (plus === 3) {
+            const syn = App.checkSynergy(eq);
+            if (syn) {
+                eq.isSynergy = true;
+                eq.effect = syn.effect;
+            }
+        }
         return eq;
     },
 
-/* main.js の App.checkSynergy を以下のように修正してください */
+    // 互換性維持のためのラッパー（既存の他ファイルからの参照用）
+    createRandomEquip: (source, rank = 1, fixedPlus = null) => {
+        return App.createEquipByFloor(source, rank, fixedPlus);
+    },
 
-    // ★修正: 複合条件・属性条件対応版
+
+	// --- シナジー判定：複合条件・属性条件に完全対応 ---
     checkSynergy: (eq) => { 
-        if (!eq || !eq.opts) return null;
+        if (!eq || !eq.opts || eq.opts.length === 0) return null;
 
         for (const syn of DB.SYNERGIES) {
-            let match = false;
+            let isMatch = false;
 
-            // パターンA: 複合条件 (req配列がある場合)
+            // 1. 複合条件（req配列がある場合：軍神など）
             if (syn.req) {
-                // req内のすべての条件を満たしているかチェック
-                const allMet = syn.req.every(req => {
-                    const count = eq.opts.filter(o => o.key === req.key).length;
-                    return count >= req.count;
+                isMatch = syn.req.every(r => {
+                    const count = eq.opts.filter(o => o.key === r.key).length;
+                    return count >= r.count;
                 });
-                if (allMet) match = true;
             }
-            // パターンB: 属性指定条件 (key と elm がある場合)
+            // 2. 属性指定条件（elmがある場合：混沌の刃など）
             else if (syn.key && syn.elm) {
                 const count = eq.opts.filter(o => o.key === syn.key && o.elm === syn.elm).length;
-                if (count >= syn.count) match = true;
+                isMatch = count >= syn.count;
             }
-            // パターンC: 単一キー条件 (既存ロジック)
+            // 3. 単一条件（count個以上同じキーがある場合：疾風怒濤など）
             else if (syn.key) {
                 const count = eq.opts.filter(o => o.key === syn.key).length;
-                if (count >= syn.count) match = true;
+                isMatch = count >= syn.count;
             }
 
-            if (match) return syn;
+            if (isMatch) return syn;
         }
         return null; 
     },
-
 
     log: (msg) => {
         const e = document.getElementById('msg-text');
