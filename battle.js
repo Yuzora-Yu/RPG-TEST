@@ -360,7 +360,7 @@ const Battle = {
         // --- 201階以降: 自動スケーリング・エンカウントシステム ---
         if (floor >= 201) {
             if (isBoss) {
-                Battle.log(`<span style="color:#ff0000; font-size:1.1em; font-weight:bold;">深淵の守護者が現れた！！</span>`);
+                Battle.log(`<span style="color:#ff0000; font-size:1em; font-weight:bold;">深淵の守護者が現れた！！</span>`);
                 // ボス候補: ID 1000～1200 (1160, 1162は除外)
                 const candidates = DB.MONSTERS.filter(m => 
                     m.id >= 1000 && m.id <= 1200 && m.id !== 1160 && m.id !== 1162
@@ -2407,6 +2407,19 @@ findNextActor: () => {
 
                     tryStatus('attack_Poison', '毒におかされた', 'Poison');
                     tryStatus('attack_Fear', '怯えてしまった', 'Fear');
+					
+					// ★追加: 攻撃時即死の判定 (InstantDeath)
+                    const deathChance = (actor.getStat('attack_InstantDeath') || 0);
+                    if (deathChance > 0 && Math.random() * 100 < deathChance) {
+                        const resVal = (Battle.getBattleStat(targetToHit, 'resists') || {}).InstantDeath || 0;
+                        if (Math.random() * 100 >= resVal) {
+                            targetToHit.hp = 0;
+                            targetToHit.isDead = true;
+                            Battle.log(`<span style="color:#ff00ff; font-weight:bold;">★急所を貫いた！ 【${targetToHit.name}】は 息絶えた！</span>`);
+                        } else {
+                            Battle.log(`【${targetToHit.name}】には 即死攻撃は きかなかった！`);
+                        }
+                    }
                 }
 				
                 if (cmd.type === 'skill') {
@@ -2814,129 +2827,178 @@ findNextActor: () => {
         contentEl.innerHTML = html;
     },
 	
-	
-	win: () => {
-		Battle.phase = 'result'; Battle.active = false;
-		// フラグを安全に取得
-		const isEstark = App.data.battle && App.data.battle.isEstark;
-		const isBossBattle = App.data.battle && App.data.battle.isBossBattle;
 
-		let totalExp = 0, totalGold = 0;
-		
-		// 敵ごとの処理（討伐数カウント・EXP/Gold計算）
-		Battle.enemies.forEach(e => {
-			if (e.isDead && !e.isFled) {
-				// ★追加: 討伐カウントと図鑑登録
-				const id = e.baseId || e.id; // ベースとなるモンスターIDを取得
-				if (id) {
-					// 討伐数の加算
-					if (!App.data.book.killCounts) App.data.book.killCounts = {};
-					App.data.book.killCounts[id] = (App.data.book.killCounts[id] || 0) + 1;
+	// --- 勝利処理：順序 [1]勝利ログ -> [2]経験値/LvUp -> [3]ドロップ判定&表示 ---
+    win: async () => {
+        Battle.phase = 'result'; Battle.active = false;
+        const isEstark = App.data.battle && App.data.battle.isEstark;
+        const isBossBattle = App.data.battle && App.data.battle.isBossBattle;
+        const floor = App.data.progress.floor || 1;
 
-					// 図鑑未登録なら登録
-					if (!App.data.book.monsters.includes(id)) {
-						App.data.book.monsters.push(id);
-						//Battle.log(`図鑑に 【${e.name}】 が登録された！`);
-					}
-				}
+        let totalExp = 0, totalGold = 0;
+        const drops = []; 
+        let hasRareDrop = false;      // 白フラッシュ用
+        let hasUltraRareDrop = false; // 赤黒フラッシュ用
 
-				const base = DB.MONSTERS.find(m => m.id === e.baseId);
-				if(base) { totalExp += base.exp; totalGold += base.gold; }
-			}
-		});
+        // [1] 勝利宣言ログ
+        Battle.log(`\n<span style="color:#ffff00; font-size:1em; font-weight:bold;">戦闘に勝利した！</span>`);
 
-		App.data.gold += totalGold;
-		const drops = []; 
-		let hasRareDrop = false;
+        // データ集計（討伐数・図鑑）
+        Battle.enemies.forEach(e => {
+            if (e.isDead && !e.isFled) {
+                const id = e.baseId || e.id;
+                if (id) {
+                    if (!App.data.book.killCounts) App.data.book.killCounts = {};
+                    App.data.book.killCounts[id] = (App.data.book.killCounts[id] || 0) + 1;
+                    if (!App.data.book.monsters.includes(id)) App.data.book.monsters.push(id);
+                }
+                const base = DB.MONSTERS.find(m => m.id === id);
+                if(base) { totalExp += base.exp; totalGold += base.gold; }
+            }
+        });
 
-		// ★エスターク専用報酬 (GEMとカウントのみ。装備はdropsへ追加)
-		if (isEstark) {
-			App.data.gems = (App.data.gems || 0) + 100000;
-			App.data.estarkKillCount = (App.data.estarkKillCount || 0) + 1;
-			
-			const maxEquipRank = Math.max(...DB.EQUIPS.map(eq => eq.rank));
-			const estarkGift = App.createRandomEquip('drop', maxEquipRank, 3);
-			App.data.inventory.push(estarkGift);
-			
-			// 通常のドロップ配列に入れることで、メッセージとフラッシュを共通化
-			drops.push({ name: estarkGift.name, isRare: true });
-			hasRareDrop = true;
-			Battle.log(`<span style="color:#ffd700; font-weight:bold;">地獄の帝王を撃ち払い、100,000 GEM を獲得した！</span>`);
-		}
+        // [2] 資源獲得・レベルアップ処理
+        App.data.gold += totalGold;
+        Battle.log(` ${totalGold} Goldを獲得！`);
+        Battle.log(` ${totalExp}ポイントの経験値を 獲得した！`);
 
-		// 通常ドロップ判定
-		Battle.enemies.forEach(e => {
-			if (e.isFled) return;
-			const base = DB.MONSTERS.find(m => m.id === e.baseId);
-			if (!base) return; // baseが見つからない場合はスキップ
+        const surviveMembers = Battle.party.filter(p => !p.isDead);
+        surviveMembers.forEach(p => {
+            const charData = App.getChar(p.uid);
+            if (charData) {
+                App.gainExp(charData, totalExp).forEach(msg => Battle.log(msg));
+                p.hp = charData.currentHp; p.mp = charData.currentMp; p.level = charData.level;
+                p.baseMaxHp = charData.currentHp; p.baseMaxMp = charData.currentMp;
+            }
+        });
 
-			if (base.id >= 1000 && !isEstark) {
-				const eq = App.createRandomEquip('drop', base.rank, 3);
-				App.data.inventory.push(eq);
-				drops.push({ name: eq.name, isRare: true });
-				hasRareDrop = true;
-			} else if (!isEstark) {
-				// 通常モンスターのランダムドロップ (20%アイテム / 30%装備)
-				const r = Math.random();
-				if (r < 0.2) {
-					const candidates = DB.ITEMS.filter(i => i.rank <= base.rank && i.type !== '貴重品');
-					if (candidates.length > 0) {
-						const item = candidates[Math.floor(Math.random() * candidates.length)];
-						App.data.items[item.id] = (App.data.items[item.id] || 0) + 1;
-						drops.push({name: item.name, isRare: false});
-					}
-				} else if (r < 0.5) {
-					const eq = App.createRandomEquip('drop', base.rank);
-					App.data.inventory.push(eq);
-					const rare = (eq.plus === 3);
-					if(rare) hasRareDrop = true;
-					drops.push({ name: eq.name, isRare: rare });
-				}
-			}
-		});
+        // オプション再抽選サブ関数 (内部用)
+        const createEquipWithMinRarity = (floor, plus, minRarityList, forcePart = null) => {
+            // ★修正: forcePartがあれば、その部位を指定して生成する
+            let eq = App.createEquipByFloor('drop', floor, plus);
+            
+            // 部位固定が必要な場合 (「改」武器限定対応)
+            if (forcePart && eq.type !== forcePart) {
+                let attempts = 0;
+                while (eq.type !== forcePart && attempts < 50) {
+                    eq = App.createEquipByFloor('drop', floor, plus);
+                    attempts++;
+                }
+            }
 
-		Battle.log(`\n★勝利！\n獲得: ${totalGold} Gold`);
-		drops.forEach(d => {
-			if (d.isRare) Battle.log(`<span class="log-rare-drop">レア！ ${d.name} を手に入れた！</span>`);
-			else Battle.log(`ドロップ: ${d.name}`);
-		});
-		
-		if (hasRareDrop) {
-			const flash = document.getElementById('drop-flash');
-			if(flash) {
-				flash.style.display = 'block';
-				flash.classList.remove('flash-active');
-				void flash.offsetWidth; 
-				flash.classList.add('flash-active');
-			}
-		}
-	    // battle.js (Battle.win 関数内)
-// 経験値処理
-const surviveMembers = Battle.party.filter(p => !p.isDead);
-Battle.log(`経験値: ${totalExp} EXP を獲得`);
-surviveMembers.forEach(p => {
-    const charData = App.getChar(p.uid);
-    if (charData) {
-        // レベルアップ処理を実行
-        App.gainExp(charData, totalExp).forEach(msg => Battle.log(msg));
+            eq.opts = eq.opts.map(opt => {
+                const rule = DB.OPT_RULES.find(r => r.key === opt.key);
+                if (!rule) return opt;
+                let r = opt.rarity;
+                let att = 0;
+                while (!minRarityList.includes(r) && att < 15) {
+                    const rarRnd = Math.random() + 0.3; 
+                    if(rarRnd > 0.95 && rule.allowed.includes('EX')) r='EX';
+                    else if(rarRnd > 0.80 && rule.allowed.includes('UR')) r='UR';
+                    else if(rarRnd > 0.65 && rule.allowed.includes('SSR')) r='SSR';
+                    else if(rarRnd > 0.45 && rule.allowed.includes('SR')) r='SR';
+                    else r='R';
+                    att++;
+                }
+                const min = rule.min[r]||1, max = rule.max[r]||10;
+                return { ...opt, rarity: r, val: Math.floor(Math.random()*(max-min+1))+min };
+            });
+            return eq;
+        };
 
-        // ★追加: レベルアップ後の全回復状態を、戦闘用インスタンス(p)にも即座に反映させる
-        // これをやらないと、endBattleで「戦闘終了時の減ったHP」で上書きされてしまう
-        p.hp = charData.currentHp;
-        p.mp = charData.currentMp;
-        p.level = charData.level;
-        p.baseMaxHp = charData.currentHp; // 最大HPも増えているため更新
-        p.baseMaxMp = charData.currentMp;
-    }
-});
-	    
-		Battle.log("\n▼ 画面タップで終了 ▼");
+        // ドロップ生成（内部リストに溜める）
+        if (isEstark) {
+            const eq = createEquipWithMinRarity(floor, 3, ['UR', 'EX']);
+            App.data.inventory.push(eq);
+            drops.push({ name: eq.name, isRare: true, isUltra: false, isEstark: true });
+            hasRareDrop = true;
+        } else {
+            Battle.enemies.forEach(e => {
+                if (e.isFled) return;
+                const base = DB.MONSTERS.find(m => m.id === e.baseId);
+                if (!base) return;
 
-		// ★修正: ダンジョンの階段出現 (エスターク戦以外、かつボスの時のみ)
-		if (isBossBattle && !isEstark && typeof Dungeon !== 'undefined') {
-			Dungeon.onBossDefeated();
-		}
-	},
+                if (base.id >= 1000) {
+                    // --- ボスドロップ判定 ---
+                    let eq;
+                    // ★2%の低確率
+                    if (Math.random() < 1) { 
+                        // 「改」装備は「武器」限定
+                        eq = createEquipWithMinRarity(floor, 3, ['SSR', 'UR', 'EX'], '武器');
+                        eq.name = eq.name.replace(/\+3$/, "") + "・改+3";
+                        for (let key in eq.data) {
+                            if (typeof eq.data[key] === 'number') eq.data[key] *= 2;
+                            else if (typeof eq.data[key] === 'object' && eq.data[key] !== null) {
+                                for (let sub in eq.data[key]) eq.data[key][sub] *= 2;
+                            }
+                        }
+                        eq.val *= 4;
+						App.data.inventory.push(eq);
+                        hasUltraRareDrop = true;
+                        drops.push({ name: eq.name, isRare: true, type: 'kai' });
+                    } else {
+                        // 通常ボスドロップ
+                        eq = App.createEquipByFloor('drop', floor, 3);
+						App.data.inventory.push(eq);
+                        hasRareDrop = true;
+                        drops.push({ name: eq.name, isRare: true, type: 'boss' });
+                    }
+                } else {
+                    // 通常モンスター
+                    const r = Math.random();
+                    if (r < 0.2) {
+                        const candidates = DB.ITEMS.filter(i => i.rank <= Math.min(200, floor) && i.type !== '貴重品');
+                        if (candidates.length > 0) {
+                            const item = candidates[Math.floor(Math.random() * candidates.length)];
+                            App.data.items[item.id] = (App.data.items[item.id] || 0) + 1;
+                            drops.push({ name: item.name, isRare: false, type: 'item' });
+                        }
+                    } else if (r < 0.35) {
+                        const eq = App.createEquipByFloor('drop', floor);
+                        App.data.inventory.push(eq); // 確実に追加
+                        const isPlus3 = (eq.plus === 3);
+                        if(isPlus3) hasRareDrop = true;
+                        drops.push({ name: eq.name, isRare: isPlus3, type: 'normal' });
+                    }
+                }
+            });
+        }
+
+        // [3] ドロップありならウェイト ＆ 改行
+        if (drops.length > 0) {
+            App.save(); // ★表示前に一度保存して確実にインベントリへ入れる
+            Battle.log("<br>"); // ★修正：確実に1行空ける
+            await Battle.wait(800);
+            
+            // [4] ドロップ表示 & 演出実行
+            if (hasUltraRareDrop) {
+                const uFlash = document.getElementById('drop-flash-ultra') || document.getElementById('drop-flash');
+                if(uFlash) { uFlash.style.display = 'block'; uFlash.className = 'flash-ultra flash-ultra-active'; }
+            } else if (hasRareDrop) {
+                const flash = document.getElementById('drop-flash');
+                if(flash) { flash.style.display = 'block'; flash.classList.remove('flash-active'); void flash.offsetWidth; flash.classList.add('flash-active'); }
+            }
+
+            drops.forEach(d => {
+                if (d.isEstark) {
+                    Battle.log(`<span style="color:#ffd700; font-weight:bold;">100,000 GEM</span> を獲得！`);
+                    Battle.log(`なんと <span style="color:#ffd700; font-weight:bold;">${d.name}</span> を手に入れた！`);
+                } else if (d.isUltra) {
+                    Battle.log(`なんと <span style="color:#ff00ff; font-weight:bold;">${d.name}</span> を手に入れた！`);
+                } else if (d.isRare) {
+                    Battle.log(`なんと <span class="log-rare-drop">${d.name}</span> を手に入れた！`);
+                } else if (d.isItem) {
+                    Battle.log(`${d.name} を手に入れた！`);
+                } else {
+                    Battle.log(`${d.name} を手に入れた！`);
+                }
+            });
+        }
+        
+		App.save(); // ★ここで最終状態を保存（インベントリを確定させる）
+        Battle.log("\n▼ 画面タップで終了 ▼");
+        if (isBossBattle && !isEstark && typeof Dungeon !== 'undefined') Dungeon.onBossDefeated();
+    },
 
     lose: () => { 
 		Battle.active = false; 
