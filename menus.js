@@ -159,6 +159,18 @@ const Menu = {
             if (equip.data.spd) baseStats.push(`速+${equip.data.spd}`);
             if (equip.data.finDmg) baseStats.push(`与ダメ+${equip.data.finDmg}%`);
             if (equip.data.finRed) baseStats.push(`被ダメ-${equip.data.finRed}`);
+			
+			// ★追記: 基礎データに含まれる耐性や特殊効果を動的に抽出
+            for (let key in equip.data) {
+                if (key.startsWith('resists_')) {
+                    const label = Battle.statNames[key.replace('resists_', '')] || key;
+                    baseStats.push(`${label}耐+${equip.data[key]}%`);
+                } else if (key.startsWith('attack_')) {
+                    const label = Battle.statNames[key.replace('attack_', '')] || key;
+                    baseStats.push(`${label}付与:${equip.data[key]}%`);
+                }
+            }
+			
             if(typeof CONST !== 'undefined' && CONST.ELEMENTS) {
                 CONST.ELEMENTS.forEach(elm => {
                     if (equip.data.elmAtk && equip.data.elmAtk[elm]) baseStats.push(`${elm}攻+${equip.data.elmAtk[elm]}`);
@@ -1087,6 +1099,18 @@ const MenuAllies = {
         if(eq.data.mag) stats.push(`魔+${eq.data.mag}`);
         if(eq.data.finDmg) stats.push(`与ダメ+${eq.data.finDmg}%`);
         if(eq.data.finRed) stats.push(`被ダメ-${eq.data.finRed}%`);
+		
+		// ★追記: 基礎耐性・付与効果もスロット詳細に表示
+        for (let key in eq.data) {
+            if (key.startsWith('resists_')) {
+                const label = Battle.statNames[key.replace('resists_', '')] || key;
+                stats.push(`${label}耐+${eq.data[key]}%`);
+            } else if (key.startsWith('attack_')) {
+                const label = Battle.statNames[key.replace('attack_', '')] || key;
+                stats.push(`${label}付与:${eq.data[key]}%`);
+            }
+        }
+		
         let baseHtml = `<div style="font-size:10px; color:#ccc;">${stats.join(' ')}</div>`;
         let optsHtml = '';
         if (eq.opts && eq.opts.length > 0) {
