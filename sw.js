@@ -1,4 +1,4 @@
-const CACHE_NAME = "prisma-abyss-v1.01";
+const CACHE_NAME = "prisma-abyss-v1.03";
 const FILES_TO_CACHE = [
   "./", // ルート
   "main.html",
@@ -12,6 +12,7 @@ const FILES_TO_CACHE = [
   "skills.js",
   "characters.js",
   "battle.js",
+  "equips.js",
   "assets.js",
   "blacksmith.js",
   "dungeon.js",
