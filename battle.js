@@ -17,7 +17,11 @@ const Battle = {
         atk: '攻撃力', def: '守備力', spd: '素早さ', mag: '魔力',
         elmResUp: '全属性耐性', elmResDown: '全属性耐性',
         Poison: '毒', ToxicPoison: '猛毒', Shock: '感電', Fear: '怯え',
-        SpellSeal: '呪文封印', SkillSeal: '特技封印', HealSeal: '回復封印',HPRegen: 'HP回復' ,MPRegen: 'MP回復'
+        SpellSeal: '呪文封印', SkillSeal: '特技封印', HealSeal: '回復封印',HPRegen: 'HP回復' ,MPRegen: 'MP回復',
+        // ★以下を追記・修正
+        InstantDeath: '即死', 
+        Debuff: '弱体',
+        Seal: '封印'
     },
     
     // 状態異常と耐性IDの対応表 (拡張)
@@ -2922,7 +2926,7 @@ findNextActor: () => {
                     // --- ボスドロップ判定 ---
                     let eq;
                     // ★2%の低確率
-                    if (Math.random() < 0.02) { 
+                    if (Math.random() < 1) { 
                         // 「改」装備は「武器」限定
                         eq = createEquipWithMinRarity(floor, 3, ['SSR', 'UR', 'EX'], '武器');
                         eq.name = eq.name.replace(/\+3$/, "") + "・改+3";
