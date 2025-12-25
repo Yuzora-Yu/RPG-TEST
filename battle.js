@@ -2922,7 +2922,7 @@ findNextActor: () => {
                     // --- ボスドロップ判定 ---
                     let eq;
                     // ★2%の低確率
-                    if (Math.random() < 1) { 
+                    if (Math.random() < 0.02) { 
                         // 「改」装備は「武器」限定
                         eq = createEquipWithMinRarity(floor, 3, ['SSR', 'UR', 'EX'], '武器');
                         eq.name = eq.name.replace(/\+3$/, "") + "・改+3";
