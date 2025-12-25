@@ -79,7 +79,6 @@ window.CHARACTERS_DATA = [
     {
         "id": 104,
         "name": "ケイト",
-        "type": "魔法使い",
         "job": "魔法使い",
         "rarity": "R",
         "hp": 300,
