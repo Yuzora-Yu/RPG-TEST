@@ -2289,16 +2289,17 @@ findNextActor: () => {
                     baseDmgCalc = baseDmg;
 				// ★追加: ブレスのダメージ計算式
                 } else if (effectType === 'ブレス') {
-                    // (攻撃 + 魔力) / 5 + 基礎値
+                    // (攻撃 + 魔力) / 6 + 基礎値
                     const atk = Battle.getBattleStat(actor, 'atk');
                     const mag = Battle.getBattleStat(actor, 'mag');
-                    let breathBase = Math.floor((atk + mag) / 5) + baseDmg;
+                    let breathBase = Math.floor((atk + mag) / 6) + baseDmg;
                     
                     // 防御計算 (ブレスは防御と魔法防御の平均で軽減、あるいは専用計算)
                     // ここではシンプルに (防御+魔防)/10 を引く形にします
-                    const tDef = Battle.getBattleStat(targetToHit, 'def');
-                    const tMag = Battle.getBattleStat(targetToHit, 'mag');
-                    let resist = Math.floor((tDef + tMag) / 10);
+					//防御や魔力での軽減はしないようにします。復旧できるようにコメントアウト。
+                    //const tDef = Battle.getBattleStat(targetToHit, 'def');
+                    //const tMag = Battle.getBattleStat(targetToHit, 'mag');
+                    let resist = 0 //Math.floor((tDef + tMag) / 10);
                     
                     baseDmgCalc = Math.floor((breathBase - resist) * skillRate);
                 } else if (isPhysical) {
