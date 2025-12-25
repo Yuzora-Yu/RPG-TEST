@@ -572,6 +572,21 @@
 			border: 1px solid #fff !important;
 		}
 		
+		/* 装備ドロップ：赤黒の超レアフラッシュ */
+		.flash-ultra {
+			position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+			background: linear-gradient(45deg, #000, #f00, #000);
+			z-index: 9999; display: none; pointer-events: none;
+		}
+		/* 赤黒の超レアフラッシュ：白フラッシュと同じ速度へ調整 */
+		.flash-ultra-active {
+			animation: flash-anim-ultra 0.5s ease-out forwards; /* 1.5sから0.5sへ修正 */
+		}
+		@keyframes flash-anim-ultra {
+			0% { opacity: 0.8; } /* 0.9から0.8へ白と統一 */
+			100% { opacity: 0; }
+		}
+				
     </style>
 
 	<script>
@@ -810,6 +825,7 @@ if ('serviceWorker' in navigator) {
 <script src="characters.js"></script>
 <script src="items.js"></script>
 <script src="job_data.js"></script>
+<script src="equips.js"></script>
 
 <script src="database.js"></script>
 <script src="dungeon.js"></script>
