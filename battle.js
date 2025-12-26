@@ -1663,14 +1663,25 @@ findNextActor: () => {
                     eff.turns--;
                     if (eff.turns <= 0) {
                         delete b[cat][key];
-                        if (cat === 'buffs') Battle.log(`【${actor.name}】の ${Battle.statNames[key]||key} アップの効果が切れた！`);
-                        if (cat === 'debuffs') Battle.log(`【${actor.name}】の ${Battle.statNames[key]||key} ダウンの効果が切れた！`);
-                        if (cat === 'ailments') Battle.log(`【${actor.name}】の ${Battle.statNames[key]||key} が解けた！`);
+
+                        // ★修正：表示名の取得ロジック（resists_XX 対応）
+                        const getDisplayName = (k) => {
+                            if (k.startsWith('resists_')) {
+                                const ailment = k.replace('resists_', '');
+                                return (Battle.statNames[ailment] || ailment) + "耐性";
+                            }
+                            return Battle.statNames[k] || k;
+                        };
+
+                        const dispName = getDisplayName(key);
+                        if (cat === 'buffs') Battle.log(`【${actor.name}】の ${dispName} アップの効果が切れた！`);
+                        if (cat === 'debuffs') Battle.log(`【${actor.name}】の ${dispName} ダウンの効果が切れた！`);
+                        if (cat === 'ailments') Battle.log(`【${actor.name}】の ${dispName} が解けた！`);
                     }
                 }
             }
         });
-
+		
         if (actor.hp > 0) {
             let dmgRate = 0;
             let msgType = '';
@@ -2870,9 +2881,19 @@ findNextActor: () => {
         surviveMembers.forEach(p => {
             const charData = App.getChar(p.uid);
             if (charData) {
+                const oldLv = charData.level; // レベルアップ判定用
                 App.gainExp(charData, totalExp).forEach(msg => Battle.log(msg));
-                p.hp = charData.currentHp; p.mp = charData.currentMp; p.level = charData.level;
-                p.baseMaxHp = charData.currentHp; p.baseMaxMp = charData.currentMp;
+                
+                // ★修正：レベルアップした場合のみ、最大ステータスを更新して全快させる
+                if (charData.level > oldLv) {
+                    const stats = App.calcStats(charData);
+                    p.level = charData.level;
+                    p.baseMaxHp = stats.maxHp;
+                    p.baseMaxMp = stats.maxMp;
+                    p.hp = p.baseMaxHp; // レベルアップ特典で全快
+                    p.mp = p.baseMaxMp;
+                }
+                // ※レベルアップしていない場合は p.hp を上書きしない（ダメージを維持する）
             }
         });
 
@@ -2926,7 +2947,7 @@ findNextActor: () => {
                     // --- ボスドロップ判定 ---
                     let eq;
                     // ★2%の低確率
-                    if (Math.random() < 0.5) { 
+                    if (Math.random() < 0.02) { 
                         // 「改」装備は「武器」限定
                         eq = createEquipWithMinRarity(floor, 3, ['SSR', 'UR', 'EX'], '武器');
                         eq.name = eq.name.replace(/\+3$/, "") + "・改+3";
