@@ -279,9 +279,11 @@ const MenuBlacksmith = {
 
         const rarities = ['N', 'R', 'SR', 'SSR', 'UR', 'EX'];
         const smithLevel = App.data.blacksmith?.level || 1;
-        let minPossibleRarityIdx = 1; 
-        if (smithLevel >= 10) minPossibleRarityIdx = 3;
-        else if (smithLevel >= 5) minPossibleRarityIdx = 2;
+
+        // ★修正：現在のレベルで「最高」どこまで届くか
+        let maxPossibleRarityIdx = 3; // Lv1-4: SSR(3)まで
+        if (smithLevel >= 10) maxPossibleRarityIdx = 5; // Lv10-: EX(5)まで
+        else if (smithLevel >= 5) maxPossibleRarityIdx = 4; // Lv5-9: UR(4)まで
 
         MenuBlacksmith.state.material.opts.forEach((opt, idx) => {
             const rule = DB.OPT_RULES.find(r => r.key === opt.key && (r.elm === opt.elm || !r.elm));
@@ -289,9 +291,12 @@ const MenuBlacksmith = {
             let minRequiredRarity = 'N';
 
             if (rule && rule.allowed) {
+                // オプションが要求する最低ランクのインデックス
                 const minAllowedIdx = Math.min(...rule.allowed.map(r => rarities.indexOf(r)));
                 minRequiredRarity = rarities[minAllowedIdx];
-                if (minPossibleRarityIdx < minAllowedIdx) isLevelInsufficient = true;
+                
+                // ★修正：最高到達ランクが、要求最低ランクに届いていない場合のみロック
+                if (maxPossibleRarityIdx < minAllowedIdx) isLevelInsufficient = true;
             }
 
             const div = document.createElement('div'); div.className = 'list-item';
@@ -317,40 +322,69 @@ const MenuBlacksmith = {
         });
     },
 
+/* blacksmith.js */
+
     confirmSynthesis: () => {
         const target = MenuBlacksmith.state.target;
         const materialOpt = MenuBlacksmith.state.material.opts[MenuBlacksmith.state.targetOptIdx];
         const lv = App.data.blacksmith.level;
         const rateObj = MenuBlacksmith.getRateObj(lv);
-        let rateStr = Object.entries(rateObj).filter(e => e[1]>0).map(e => `${e[0]}:${e[1]}%`).join(' ');
+        const rarities = ['N', 'R', 'SR', 'SSR', 'UR', 'EX'];
 
-        Menu.confirm(`【装備合成】＋４へ進化させベースのレアリティを再抽選します。(期待値: ${rateStr})`, () => {
+        Menu.confirm(`【装備合成】＋４へ進化させ、新たな能力を継承します。`, () => {
+            // 1. 合成品質の抽選 (newR)
             let r = Math.random()*100, current = 0, newR = 'R';
             for(let k in rateObj){ if(r < current+rateObj[k]){ newR=k; break; } current+=rateObj[k]; }
             
+            // 2. 継承オプションの作成
             const rule = DB.OPT_RULES.find(r => r.key === materialOpt.key && (r.elm === materialOpt.elm || !r.elm));
             const newInheritOpt = JSON.parse(JSON.stringify(materialOpt));
-            newInheritOpt.rarity = newR; 
 
-            if (rule) {
-                const min = rule.min[newR] || 0;
-                const max = rule.max[newR] || 0;
+            // ★修正：継承オプションのランクのみを個別にクランプ
+            if (rule && rule.allowed) {
+                const allowedIndices = rule.allowed.map(r => rarities.indexOf(r));
+                const minIdx = Math.min(...allowedIndices);
+                const maxIdx = Math.max(...allowedIndices);
+                let resultIdx = rarities.indexOf(newR);
+
+                // ルール1: 合成での継承上限は UR とする
+                if (resultIdx > 4) resultIdx = 4; // 4 = UR
+                // ルール2: オプション固有の最大ランクを超えない
+                if (resultIdx > maxIdx) resultIdx = maxIdx;
+                // ルール3: オプション固有の最低ランクを下回らない
+                if (resultIdx < minIdx) resultIdx = minIdx;
+
+                newInheritOpt.rarity = rarities[resultIdx];
+                
+                // ランクに応じた数値の再抽選
+                const min = rule.min[newInheritOpt.rarity] || 0;
+                const max = rule.max[newInheritOpt.rarity] || 0;
                 newInheritOpt.val = Math.floor(Math.random() * (max - min + 1)) + min;
             }
 
+            // 3. ベース装備の更新 (レアリティは維持、または上位へのみ変化)
             target.plus = 4;
-            target.rarity = newR;
-            // 改や真の名称を維持しつつ +4 へ
+            // 装備自体のレアリティは、抽選結果が元より高い場合のみ上書き（格下げを防ぐ）
+            const oldRIdx = rarities.indexOf(target.rarity);
+            const newRIdx = rarities.indexOf(newR);
+            if (newRIdx > oldRIdx) target.rarity = newR;
+
             target.name = target.name.replace(/\+\d+$/, "") + "+4";
             target.opts.push(newInheritOpt);
-            target.val = Math.floor(target.val * 1.5); // 価値向上
+            target.val = Math.floor(target.val * 1.5);
 
-            App.data.inventory.splice(App.data.inventory.findIndex(i => i.id === MenuBlacksmith.state.material.id), 1);
-            App.refreshAllSynergies(); MenuBlacksmith.gainExp(50); App.save();
-            Menu.msg(`合成成功！\n${target.name} [${newR}] が完成しました。\n継承: ${newInheritOpt.label} +${newInheritOpt.val}`, () => MenuBlacksmith.init());
+            // 4. 後処理
+            const matIdx = App.data.inventory.findIndex(i => i.id === MenuBlacksmith.state.material.id);
+            if (matIdx > -1) App.data.inventory.splice(matIdx, 1);
+            
+            App.refreshAllSynergies(); 
+            MenuBlacksmith.gainExp(50); 
+            App.save();
+            
+            Menu.msg(`合成成功！\n${target.name} が完成しました。\n継承: ${newInheritOpt.label} (${newInheritOpt.rarity})`, () => MenuBlacksmith.init());
         });
     },
-
+	
     renderOptionList_Refine: () => {
         MenuBlacksmith.changeScreen('option');
         const list = document.getElementById('smith-option-list');
@@ -406,7 +440,14 @@ const MenuBlacksmith = {
         const footer = document.getElementById('smith-footer');
         MenuBlacksmith.changeScreen('select');
         MenuBlacksmith.step = 'material';
-        if(resetFilter) { MenuBlacksmith.filter = { category: 'ALL', option: 'ALL' }; MenuBlacksmith.renderFilterArea(); }
+        
+        // ★追加：素材選択リストをリセット
+        MenuBlacksmith.state.materials = []; 
+
+        if(resetFilter) { 
+            MenuBlacksmith.filter = { category: 'ALL', option: 'ALL' }; 
+            MenuBlacksmith.renderFilterArea(); 
+        }
         const req = MenuBlacksmith.state.requiredCount;
         let materials = App.data.inventory.map((i, idx) => ({ ...i, _originalIdx: idx })).filter(i => !i.locked && i.type === MenuBlacksmith.state.target.type && i.id !== MenuBlacksmith.state.target.id);
         const sorted = MenuBlacksmith.applySortAndFilter(materials);
@@ -434,12 +475,29 @@ const MenuBlacksmith = {
         const rule = DB.OPT_RULES.find(r => r.key === opt.key && (r.elm === opt.elm || !r.elm));
         const successRate = Math.min(95, 50 + (App.data.blacksmith.level * 5));
         let inc = rule ? Math.max(1, Math.floor((rule.max[opt.rarity] - rule.min[opt.rarity]) * 0.1)) : 1;
+
         Menu.confirm(`【能力強化】成功率: ${successRate}% / 成功すると数値が ${inc} 上昇します。`, () => {
-            MenuBlacksmith.state.materials.forEach(mid => App.data.inventory.splice(App.data.inventory.findIndex(i => i.id === mid), 1));
-            if (Math.random()*100 < successRate) {
-                opt.val += inc; if(rule && opt.val > rule.max[opt.rarity]) opt.val = rule.max[opt.rarity];
-                MenuBlacksmith.gainExp(25); App.save(); Menu.msg("強化成功！", () => MenuBlacksmith.renderOptionList_Enhance());
-            } else { MenuBlacksmith.gainExp(5); App.save(); Menu.msg("強化失敗...", () => MenuBlacksmith.renderOptionList_Enhance()); }
+            // ★修正：素材消費の安全化と事後処理
+            MenuBlacksmith.state.materials.forEach(mid => {
+                const invIdx = App.data.inventory.findIndex(i => i.id === mid);
+                if (invIdx > -1) {
+                    App.data.inventory.splice(invIdx, 1);
+                }
+            });
+            // ★重要：使用した素材リストを完全に空にする
+            MenuBlacksmith.state.materials = []; 
+
+            if (Math.random() * 100 < successRate) {
+                opt.val += inc; 
+                if (rule && opt.val > rule.max[opt.rarity]) opt.val = rule.max[opt.rarity];
+                MenuBlacksmith.gainExp(25); 
+                App.save(); 
+                Menu.msg("強化成功！", () => MenuBlacksmith.renderOptionList_Enhance());
+            } else { 
+                MenuBlacksmith.gainExp(5); 
+                App.save(); 
+                Menu.msg("強化失敗...", () => MenuBlacksmith.renderOptionList_Enhance()); 
+            }
         });
     },
 
