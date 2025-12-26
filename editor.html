@@ -443,6 +443,20 @@
     </div>
 
     <div v-if="currentTab==='characters'">
+				<div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold text-yellow-500">仲間キャラクター設定</h2>
+                    <div class="flex gap-2">
+                        <button @click="downloadCharacterCSV" class="bg-green-700 hover:bg-green-600 text-white px-3 py-1 rounded text-xs flex items-center gap-1">
+                            <span>📥</span> CSV出力
+                        </button>
+                        <button @click="triggerCSVImport('characters')" class="bg-blue-700 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs flex items-center gap-1">
+                            <span>📤</span> CSV取込
+                        </button>
+                        <button @click="addCharacter" class="bg-yellow-600 hover:bg-yellow-500 text-black font-bold px-4 py-1 rounded text-xs">
+                            + 新規キャラ追加
+                        </button>
+                    </div>
+                </div>
         <div class="bg-gray-800 p-2 rounded mb-2 border border-gray-600 flex justify-end">
             <button @click="toggleExport('characters')" class="btn btn-export text-xs">DB用テキスト出力</button>
         </div>
@@ -522,6 +536,23 @@
                                 </select>
                             </div>
                         </div>
+						
+						<div class="mt-4 bg-gray-900 p-3 rounded border border-gray-700">
+                        <h3 class="text-sm font-bold text-yellow-500 mb-2 border-b border-gray-700 pb-1">アーカイブ (フレーバーテキスト)</h3>
+                        <div v-if="!c.archives" class="py-2">
+                            <button @click="c.archives = {base:'', lv50:'', lb50:'', lv100:'', lb99:''}" 
+                                    class="text-[10px] bg-blue-600 px-2 py-1 rounded hover:bg-blue-700">アーカイブを初期化</button>
+                        </div>
+                        <div v-else class="grid grid-cols-1 gap-3">
+                            <div v-for="(label, key) in {base:'初期', lv50:'レベル50', lb50:'限界突破+50', lv100:'レベル100', lb99:'限界突破+99'}" :key="key">
+                                <label class="block text-[10px] text-gray-500 mb-1">{{ label }} ({{ key }})</label>
+                                <textarea v-model="c.archives[key]" 
+                                          class="w-full bg-gray-800 text-xs p-2 rounded border border-gray-600 h-16 focus:border-yellow-500 outline-none" 
+                                          placeholder="テキストを入力してください..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+						
                     </td>
                     <td class="text-center align-middle">
                         <button @click="removeList(db.CHARACTERS, index)" class="btn btn-danger text-xs">×</button>
@@ -1061,7 +1092,15 @@ createApp({
                 _uid: Math.random().toString(36),
                 name: '新人', job: '冒険者', rarity: 'N',
                 hp: 100, mp: 50, atk: 10, def: 10, spd: 10, mag: 10,
-                sp: 0, level: 1, lbSkills: {}, img: null
+                sp: 0, level: 1, lbSkills: {}, img: null,
+                // ★ここを追記
+                archives: {
+                    base: "",
+                    lv50: "",
+                    lb50: "",
+                    lv100: "",
+                    lb99: ""
+                }
             });
         };
         const addItem = () => {
@@ -1377,7 +1416,58 @@ createApp({
             input.click();
         };
 
-        // CSV取込処理
+		// --- キャラクター専用CSV出力 (修正：大文字のdb.CHARACTERSを参照) ---
+        const downloadCharacterCSV = () => {
+            const list = db.CHARACTERS; // ★大文字に修正
+            if (!list || list.length === 0) {
+                alert("出力するデータがありません");
+                return;
+            }
+
+            const headers = [
+                "id", "name", "job", "rarity", "hp", "mp", "atk", "def", "spd", "mag", //"img", 
+                "resists", "lbSkills",
+                "archive_base", "archive_lv50", "archive_lb50", "archive_lv100", "archive_lb99",
+				"sp", "level"
+            ];
+
+            let csvContent = headers.join(",") + "\n";
+
+            list.forEach(c => {
+                const row = [
+                    c.id,
+                    `"${c.name}"`,
+                    `"${c.job}"`,
+                    `"${c.rarity}"`,
+                    c.hp,
+                    c.mp,
+                    c.atk,
+                    c.def,
+                    c.spd,
+                    c.mag,
+                    //`"${c.img || ''}"`,
+                    `"${JSON.stringify(c.resists || {}).replace(/"/g, '""')}"`,
+                    `"${JSON.stringify(c.lbSkills || {}).replace(/"/g, '""')}"`,
+                    `"${(c.archives?.base || '').replace(/"/g, '""')}"`,
+                    `"${(c.archives?.lv50 || '').replace(/"/g, '""')}"`,
+                    `"${(c.archives?.lb50 || '').replace(/"/g, '""')}"`,
+                    `"${(c.archives?.lv100 || '').replace(/"/g, '""')}"`,
+                    `"${(c.archives?.lb99 || '').replace(/"/g, '""')}"`,
+					c.sp,
+					c.level
+                ];
+					csvContent += row.join(",") + "\n";
+            });
+
+            const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "characters_master.csv";
+            link.click();
+        };
+
+
+// CSV取込処理 (既存項目維持版)
         const handleCSVImport = (e, type) => {
             const file = e.target.files[0];
             if (!file) return;
@@ -1389,10 +1479,13 @@ createApp({
                     const lines = text.split(/\r\n|\n/).filter(l => l.trim() !== '');
                     if (lines.length < 2) return;
 
-                    // ヘッダー解析
                     const headers = parseCSVLine(lines[0].trim());
-                    
-                    const targetList = type === 'skills' ? db.SKILLS : db.MONSTERS;
+                    let targetList;
+                    if (type === 'skills') targetList = db.SKILLS;
+                    else if (type === 'monsters') targetList = db.MONSTERS;
+                    else if (type === 'characters') targetList = db.CHARACTERS;
+                    else return;
+
                     let count = 0;
 
                     for (let i = 1; i < lines.length; i++) {
@@ -1400,44 +1493,50 @@ createApp({
                         if (row.length !== headers.length) continue;
 
                         const data = {};
+                        const archiveData = {}; // 一時保存用
+
                         headers.forEach((key, idx) => {
                             let val = row[idx];
-                            // 型変換の推論
-                            if (val === '') {
-                                val = undefined;
-                            } else if (!isNaN(Number(val)) && val.trim() !== '') {
+                            if (val === '' || val === undefined) return; // ★ここが重要: CSVに値がない項目はdataに入れない
+
+                            // 型変換
+                            if (!isNaN(Number(val)) && val.trim() !== '') {
                                 val = Number(val);
-                            } else if (val.toLowerCase() === 'true') {
-                                val = true;
-                            } else if (val.toLowerCase() === 'false') {
-                                val = false;
                             } else if (val.startsWith('{') || val.startsWith('[')) {
                                 try { val = JSON.parse(val); } catch(e) {}
                             }
-                            // 特定フィールドの補正
-                            if (key === 'img') val = null; // 画像はCSVから戻さない
-                            
-                            data[key] = val;
+
+                            if (key.startsWith('archive_')) {
+                                archiveData[key.replace('archive_', '')] = val;
+                            } else {
+                                data[key] = val;
+                            }
                         });
 
                         if (!data.id) continue;
 
-                        // 既存データの更新 または 新規追加
                         const existingIdx = targetList.findIndex(item => item.id === data.id);
                         if (existingIdx >= 0) {
-                            // 画像データなどCSVに含まれない情報は維持する
-                            const oldImg = targetList[existingIdx].img;
-                            const oldUid = targetList[existingIdx]._uid;
-                            targetList[existingIdx] = { ...data, _uid: oldUid, img: oldImg || data.img };
+                            const oldItem = targetList[existingIdx];
+                            
+                            // ★マージ戦略: 既存(oldItem)をベースに、CSVから抽出した(data)で上書き
+                            const newItem = { ...oldItem, ...data };
+
+                            // Archives の深いマージ (CSVにある言語キーだけ上書き)
+                            if (type === 'characters' && Object.keys(archiveData).length > 0) {
+                                newItem.archives = { ...(oldItem.archives || {}), ...archiveData };
+                            }
+
+                            targetList[existingIdx] = newItem;
                         } else {
+                            // 新規追加の場合は構造を整える
+                            if (type === 'characters') data.archives = archiveData;
                             data._uid = Math.random().toString(36);
                             targetList.push(data);
                         }
                         count++;
                     }
-                    alert(`${count}件のデータを読み込みました`);
-                    
-                    // ID順にソート
+                    alert(`${count}件のデータを更新・追加しました。`);
                     targetList.sort((a, b) => a.id - b.id);
 
                 } catch (err) {
@@ -1446,6 +1545,7 @@ createApp({
                 }
             };
             reader.readAsText(file);
+            e.target.value = "";
         };
 
         return {
@@ -1462,7 +1562,7 @@ createApp({
 			equipTypeMap, mainStatKeys, allOptionKeys, onEquipTypeChange, toggleEquipOpt, // これらを追加
 			equipFilter, allBaseNames, filteredEquips, setElmRes,setElmAtk, // これらを追加
 			specialEffKeys, setSpecial, // これらを追加
-			downloadCSV, triggerCSVImport
+			downloadCSV, triggerCSVImport, downloadCharacterCSV
         };
     }
 }).mount('#app');

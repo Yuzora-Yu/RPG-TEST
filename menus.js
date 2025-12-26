@@ -1180,8 +1180,8 @@ const MenuAllies = {
         }).join('');
 
         let contentHtml = '';
-
-        if (MenuAllies.currentTab === 1) {
+		
+if (MenuAllies.currentTab === 1) {
             let activeSynergies = [];
             if (c.equips) {
                 CONST.PARTS.forEach(p => {
@@ -1192,22 +1192,26 @@ const MenuAllies = {
                     }
                 });
             }
+
             let synergiesHtml = '';
             if (activeSynergies.length > 0) {
-                synergiesHtml = `<div style="margin-top:10px; background:#222; border:1px solid #444; border-radius:4px; padding:5px;">
+                synergiesHtml = `<div style="margin-top:10px; background:rgba(255,255,255,0.05); border:1px solid #444; border-radius:4px; padding:5px;">
                     <div style="font-size:10px; color:#ffd700; margin-bottom:3px; text-align:center;">発動中のシナジー</div>
                     ${activeSynergies.map(syn => `<div style="font-size:10px; color:${syn.color||'#fff'}; margin-bottom:2px;">★${syn.name}</div>`).join('')}
                 </div>`;
             }
-            let allocBtn = '';
-            if(c.uid === 'p1') {
-                const totalPt = Math.floor(lb / 10) * 10;
-                let used = 0;
-                if(c.alloc) for(let k in c.alloc) used += c.alloc[k];
-                const free = totalPt - used;
-                allocBtn = `<button class="btn" style="width:100%; margin-top:5px; background:#444400; font-size:11px;" onclick="MenuAllies.openAllocModal()">ボーナスPt振分 (残:${free})</button>`;
-            }
+
+            const totalAllocPt = Math.floor((lb || 0) / 10) * 10;
+            const usedAllocPt = c.alloc ? Object.values(c.alloc).reduce((a, b) => a + b, 0) : 0;
+            const freeAllocPt = Math.max(0, totalAllocPt - usedAllocPt);
+
+            // ボタンの定義
+            const allocBtn = (c.uid === 'p1') ? `<button class="btn" style="width:100%; margin-top:5px; background:#444400; font-size:11px;" onclick="MenuAllies.openAllocModal()">ボーナスPt振分 (残:${freeAllocPt})</button>` : '';
             const treeBtn = `<button class="btn" style="width:100%; margin-top:5px; background:#004444; font-size:11px;" onclick="MenuAllies.openTreeView()">スキル習得画面へ (SP:${c.sp||0})</button>`;
+            
+            // ★詳細ボタン：サイズとスタイルを統一
+            const archiveBtn = `<button class="btn" style="width:100%; margin-top:5px; background:#602060; font-size:11px;" onclick="MenuAllyDetail.init(MenuAllies.selectedChar)">キャラクター詳細・アーカイブを見る</button>`;
+            
             const ailmentLabels = { Poison:'毒', ToxicPoison:'猛毒', Shock:'感電', Fear:'怯え', Debuff:'弱体', InstantDeath:'即死', SkillSeal:'技封', SpellSeal:'魔封', HealSeal:'癒封' };
 
             contentHtml = `
@@ -1239,7 +1243,12 @@ const MenuAllies = {
                         </div>
                     </div>
                 </div>
-                <div style="display:flex; flex-direction:column; margin-top:10px;">${treeBtn}${allocBtn}${synergiesHtml}</div>`;
+                <div style="display:flex; flex-direction:column; margin-top:10px;">
+                    ${treeBtn}
+                    ${allocBtn}
+                    ${synergiesHtml}
+                    ${archiveBtn}
+                </div>`;
         } else if (MenuAllies.currentTab === 2) {
             if (MenuAllies.targetPart) {
                 if (MenuAllies.selectedEquip) {
@@ -1411,7 +1420,7 @@ const MenuAllies = {
                     <div style="flex:1;">
                         <div id="char-name-display" style="display:flex; align-items:center; margin-bottom:2px;"><div style="font-size:16px; font-weight:bold; color:#fff; margin-right:5px;">${c.name}</div><div style="font-size:12px; color:#f0f; font-weight:bold;">+${lb}</div><button class="btn" style="margin-left:auto; padding:0 6px; font-size:10px;" onclick="window.toggleNameEdit()">✎</button></div>
                         <div id="char-name-edit" style="display:none; align-items:center; margin-bottom:2px;"><input type="text" id="char-name-input" value="${c.name}" maxlength="10" style="width:100px; background:#333; color:#fff; border:1px solid #888; padding:2px; font-size:12px;"><button class="btn" style="margin-left:5px; padding:2px 6px; font-size:10px;" onclick="window.saveName()">OK</button></div>
-                        <div style="font-size:11px; color:#aaa; margin-bottom:4px;">${c.job} / ${c.rarity} Rank</div>
+                        <div style="font-size:11px; color:#aaa; margin-bottom:4px;">${c.job} Lv.${c.level} / ${c.rarity} Rank</div>
                         <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:4px;"><div style="background:#333; padding:2px 4px; border-radius:3px;"><div style="font-size:8px; color:#aaa;">HP</div><div style="font-weight:bold; font-size:11px; color:#8f8;">${hp}/${s.maxHp}</div></div><div style="background:#333; padding:2px 4px; border-radius:3px;"><div style="font-size:8px; color:#aaa;">MP</div><div style="font-weight:bold; font-size:11px; color:#88f;">${mp}/${s.maxMp}</div></div><div style="background:#333; padding:2px 4px; border-radius:3px;"><div style="font-size:8px; color:#aaa;">Exp</div><div style="font-weight:bold; font-size:9px; color:#fff;">N:${nextExpText} / T:${c.exp}</div></div></div>
                     </div>
                 </div>
@@ -2016,5 +2025,225 @@ const MenuBook = {
         `;
         
         view.innerHTML = html;
+    }
+};
+/* ==========================================================================
+   仲間詳細・アーカイブ画面 (完全版: 同期・ソート・固定レイアウト修正)
+   ========================================================================== */
+const MenuAllyDetail = {
+    selectedChar: null,
+    currentMainTab: 'archive', 
+    currentArchive: 'base',
+
+    init: (char) => {
+        MenuAllyDetail.selectedChar = char;
+        MenuAllyDetail.currentMainTab = 'archive';
+        MenuAllyDetail.currentArchive = 'base';
+        MenuAllyDetail.render();
+    },
+
+    render: () => {
+        const c = MenuAllyDetail.selectedChar;
+        const view = document.getElementById('allies-detail-view');
+        
+        // メインタブ (固定エリア: flex-shrink: 0)
+        const tabs = `
+            <div style="display:flex; background:#222; margin-bottom:12px; border-radius:6px; overflow:hidden; border:1px solid #444; flex-shrink:0;">
+                <button onclick="MenuAllyDetail.changeMainTab('archive')" style="flex:1; padding:10px; border:none; background:${MenuAllyDetail.currentMainTab==='archive'?'#ffd700':'#111'}; color:${MenuAllyDetail.currentMainTab==='archive'?'#000':'#666'}; font-weight:bold; font-size:12px;">アーカイブ</button>
+                <button onclick="MenuAllyDetail.changeMainTab('progress')" style="flex:1; padding:10px; border:none; background:${MenuAllyDetail.currentMainTab==='progress'?'#ffd700':'#111'}; color:${MenuAllyDetail.currentMainTab==='progress'?'#000':'#666'}; font-weight:bold; font-size:12px;">成長の記録</button>
+            </div>
+        `;
+
+        // 全体をflex-columnにし、ヘッダー・タブは固定。リスト部分だけをスクロール。
+        view.style.display = 'flex';
+        view.style.flexDirection = 'column';
+        view.innerHTML = `
+            <div class="header-bar" style="background:linear-gradient(#222, #000); border-bottom:1px solid #ffd700; flex-shrink:0;">
+                <button class="btn" onclick="MenuAllies.renderDetail()">戻る</button>
+                <span style="color:#ffd700; font-weight:bold; letter-spacing:2px;">UNIT ARCHIVE</span>
+                <div style="width:50px;"></div>
+            </div>
+            <div style="padding:15px 15px 0 15px; background:#050505; flex-shrink:0;">
+                ${tabs}
+            </div>
+            <div id="ally-detail-body" class="scroll-area" style="padding:0 15px 15px 15px; background:#050505; flex:1; overflow-y:auto;">
+                ${MenuAllyDetail.currentMainTab === 'archive' ? MenuAllyDetail.renderArchive() : MenuAllyDetail.renderProgress()}
+            </div>
+        `;
+    },
+
+    renderArchive: () => {
+        const c = MenuAllyDetail.selectedChar;
+        const master = DB.CHARACTERS.find(m => m.id === c.charId) || {};
+        const rarity = c.rarity || 'N';
+        const stars = { 'N': 1, 'R': 2, 'SR': 3, 'SSR': 4, 'UR': 5, 'EX': 6 }[rarity] || 1;
+        const imgUrl = c.img || master.img;
+
+        let frontRareClass = "";
+        if (rarity === "SSR") frontRareClass = "style-gold";
+        else if (rarity === "UR") frontRareClass = "style-aurora";
+        else if (rarity === "EX") frontRareClass = "style-majestic";
+
+        // カードレイアウト：★ → レアリティ → 画像(枠なし) → 名前 → 職業
+		const cardHtml = `
+					<div style="display:flex; align-items:center; justify-content:center; gap:15px; margin-bottom:20px; user-select:none;">
+						<div onclick="MenuAllyDetail.switchChar(-1)" style="color:#ffd700; font-size:28px; cursor:pointer; text-shadow:2px 2px 4px #000; padding:10px; transition:0.2s; filter:drop-shadow(0 0 5px rgba(255,215,0,0.3));">◀</div>
+						
+						<div style="width:220px; height:320px; position:relative; perspective: 1000px; flex-shrink:0;">
+							<div class="card-face card-front ${frontRareClass}" style="transform:none; width:100%; height:100%; position:relative; border-radius:15px; overflow:hidden; display:flex; flex-direction:column; align-items:center; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 10px 20px rgba(0,0,0,0.5), inset 0 0 20px rgba(0,0,0,0.4); background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0.2) 100%);">
+								
+								<div style="position:absolute; top:10px; left:10px; z-index:2; background:rgba(0,0,0,0.6); padding:2px 8px; border-radius:5px; border:1px solid rgba(255,215,0,0.5); font-weight:bold; font-size:18px; color:#ffd700; text-shadow:0 0 5px #000;">
+									${rarity}
+								</div>
+
+								<div style="position:absolute; top:12px; right:10px; z-index:2; color:#ffd700; font-size:11px; text-shadow:1px 1px 2px #000;">
+									${'★'.repeat(stars)}
+								</div>
+
+								<div style="width:165px; height:165px; margin-top:40px; margin-bottom:10px; display:flex; align-items:center; justify-content:center; position:relative;">
+									<div style="position:absolute; width:140px; height:140px; background:radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%); border-radius:50%;"></div>
+									<img src="${imgUrl || ''}" style="max-width:100%; max-height:100%; object-fit:contain; position:relative; z-index:1; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.8));">
+								</div>
+
+								<div style="width:90%; background:rgba(0,0,0,0.5); border-radius:8px; padding:8px 5px; border-top:1px solid rgba(255,255,255,0.2); backdrop-filter:blur(2px); margin-top:auto; margin-bottom:15px; text-align:center;">
+									<div class="card-name" style="font-size:17px; font-weight:bold; color:#fff; letter-spacing:1px; text-shadow:1px 1px 2px #000; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-bottom:2px;">
+										${c.name}
+									</div>
+									<div class="card-job" style="font-size:11px; color:#ccc; letter-spacing:0.5px; text-transform:uppercase;">
+										— ${c.job} —
+									</div>
+								</div>
+								
+								<div style="position:absolute; inset:5px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; pointer-events:none;"></div>
+							</div>
+						</div>
+
+						<div onclick="MenuAllyDetail.switchChar(1)" style="color:#ffd700; font-size:28px; cursor:pointer; text-shadow:2px 2px 4px #000; padding:10px; transition:0.2s; filter:drop-shadow(0 0 5px rgba(255,215,0,0.3));">▶</div>
+					</div>
+				`;
+		
+        const milestones = [
+            { id: 'base',  label: '初期', cond: () => true },
+            { id: 'lv50',  label: 'Lv50', cond: () => c.level >= 50 },
+            { id: 'lb50',  label: '+50',  cond: () => c.limitBreak >= 50 },
+            { id: 'lv100', label: 'Lv100',cond: () => c.level >= 100 },
+            { id: 'lb99',  label: '+99',  cond: () => c.limitBreak >= 99 }
+        ];
+
+        const archiveBtns = milestones.map(m => {
+            const unlocked = m.cond();
+            const active = MenuAllyDetail.currentArchive === m.id;
+            const style = active ? 'background:#ffd700; color:#000; font-weight:bold;' : 'background:#222; color:#555;';
+            return `<div onclick="${unlocked ? `MenuAllyDetail.changeArchive('${m.id}')` : ''}" 
+                         style="flex:1; text-align:center; font-size:10px; padding:6px 0; cursor:pointer; border-right:1px solid #000; ${style}">
+                         ${unlocked ? m.label : '🔒'}
+                    </div>`;
+        }).join('');
+
+        const archives = master.archives || {};
+        const flavorText = milestones.find(m => m.id === MenuAllyDetail.currentArchive).cond() 
+            ? (archives[MenuAllyDetail.currentArchive] || "記録がありません。")
+            : `<div style="color:#444; text-align:center; padding:30px 10px; font-size:11px;">未解放の記録です<br><br>さらなる成長で紐解かれます</div>`;
+
+        return `
+            ${cardHtml}
+            <div style="background:rgba(255,255,255,0.03); border:1px solid #444; border-radius:8px; overflow:hidden; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);">
+                <div style="display:flex; border-bottom:1px solid #444;">${archiveBtns}</div>
+                <div id="flavor-text-area" style="padding:15px; min-height:120px; font-size:13px; line-height:1.8; color:#bbb; white-space:pre-wrap;">${flavorText}</div>
+            </div>
+            <button class="btn" style="width:100%; margin-top:20px; background:#222; color:#888;" onclick="MenuAllies.renderDetail()">基本画面に戻る</button>
+        `;
+    },
+
+    renderProgress: () => {
+        const c = MenuAllyDetail.selectedChar;
+        const master = DB.CHARACTERS.find(m => m.id === c.charId) || {};
+        const jobData = window.JOB_SKILLS_DATA ? window.JOB_SKILLS_DATA[c.job] : null;
+        if(!jobData) return `<div style="color:#666; text-align:center; padding:40px;">データが存在しません</div>`;
+
+        let html = `<div style="font-size:11px; color:#aaa; margin-bottom:15px; text-align:center;">解放される可能性の断片</div>`;
+        
+        const allPossible = [];
+        // 通常スキル (LV 1-100)
+        Object.entries(jobData).forEach(([lv, skillId]) => {
+            allPossible.push({ id: skillId, type: 'LV', req: parseInt(lv) });
+        });
+        // 限界突破スキル (+50, +99)
+        if(master.lbSkills) {
+            Object.entries(master.lbSkills).forEach(([lbReq, skillId]) => {
+                allPossible.push({ id: skillId, type: 'LB', req: parseInt(lbReq) });
+            });
+        }
+
+        // ★修正: LVスキル(1-100)を先に、その後ろにLBスキルを並べる
+        allPossible.sort((a, b) => {
+            if (a.type !== b.type) return a.type === 'LV' ? -1 : 1;
+            return a.req - b.req;
+        });
+
+        allPossible.forEach(entry => {
+            const isLearned = entry.type === 'LV' ? c.level >= entry.req : c.limitBreak >= entry.req;
+            const skill = DB.SKILLS.find(s => s.id === entry.id);
+            const condText = entry.type === 'LV' ? `Lv.${entry.req}` : `突破+${entry.req}`;
+            if(!skill) return;
+
+            html += `
+                <div style="background:rgba(255,255,255,0.02); border:1px solid #333; padding:12px; margin-bottom:8px; border-radius:10px; display:flex; justify-content:space-between; align-items:center;">
+                    <div style="flex:1; padding-right:10px;">
+                        <div style="font-size:14px; font-weight:bold; color:${isLearned ? '#ffd700' : '#333'};">${isLearned ? skill.name : '？？？？？？'}</div>
+                        <div style="font-size:10px; color:${isLearned ? '#888' : '#222'}; margin-top:2px;">${isLearned ? skill.desc : '未知の能力'}</div>
+                    </div>
+                    <div style="font-size:10px; font-weight:bold; color:${isLearned ? '#4f4' : '#ffd700'}; background:rgba(0,0,0,0.4); padding:4px 10px; border-radius:15px; border:1px solid ${isLearned?'#040':'#440'}; white-space:nowrap;">
+                        ${isLearned ? '修得済' : condText}
+                    </div>
+                </div>`;
+        });
+        
+        html += `<button class="btn" style="width:100%; margin-top:20px; background:#333; color:#888;" onclick="MenuAllies.renderDetail()">基本画面に戻る</button>`;
+        return html;
+    },
+
+    // キャラ切り替え：MenuAllies.selectedChar も同期して「戻る」時のズレを解消
+    switchChar: (dir) => {
+        const rarityVal = { N:1, R:2, SR:3, SSR:4, UR:5, EX:6 };
+        const chars = [...App.data.characters].sort((a, b) => {
+            const aInParty = App.data.party.includes(a.uid);
+            const bInParty = App.data.party.includes(b.uid);
+            if (aInParty !== bInParty) return bInParty - aInParty;
+            if (a.uid === 'p1') return -1;
+            if (b.uid === 'p1') return 1;
+            const rA = rarityVal[a.rarity] || 0;
+            const rB = rarityVal[b.rarity] || 0;
+            if (rA !== rB) return rB - rA;
+            if (b.level !== a.level) return b.level - a.level;
+            return a.charId - b.charId;
+        });
+        let idx = chars.findIndex(ch => ch.uid === MenuAllyDetail.selectedChar.uid);
+        let newIdx = (idx + dir + chars.length) % chars.length;
+        
+        const nextChar = chars[newIdx];
+        MenuAllyDetail.selectedChar = nextChar;
+        // ★重要: 基本画面のターゲットも同期させる
+        MenuAllies.selectedChar = nextChar;
+        
+        MenuAllyDetail.render();
+    },
+
+    changeMainTab: (tab) => {
+        MenuAllyDetail.currentMainTab = tab;
+        MenuAllyDetail.render();
+    },
+
+    // アーカイブのサブタブ切り替え：スクロール位置を保持
+    changeArchive: (milestoneId) => {
+        const body = document.getElementById('ally-detail-body');
+        const scrollPos = body ? body.scrollTop : 0;
+        
+        MenuAllyDetail.currentArchive = milestoneId;
+        MenuAllyDetail.render();
+        
+        // 再描画後にスクロールを戻す
+        const newBody = document.getElementById('ally-detail-body');
+        if (newBody) newBody.scrollTop = scrollPos;
     }
 };

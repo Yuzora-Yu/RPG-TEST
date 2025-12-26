@@ -6,7 +6,7 @@ const CONST = {
     ELEMENTS: ['火', '水', '風', '雷', '光', '闇', '混沌'],
     RARITY: ['N', 'R', 'SR', 'SSR', 'UR', 'EX'],
 	
-    GACHA_RATES: { N:0, R:46.5, SR:32, SSR:18, UR:3, EX:0.5 },
+    GACHA_RATES: { N:0, R:52.5, SR:35, SSR:10, UR:2, EX:0.5 },
     SMITH_RATES: { 1: { R:80, SR:15, SSR:5 }, 10: { R:10, SR:30, SSR:40, UR:15, EX:5 } },
     POKER_ODDS: { ROYAL_FLUSH: 500, STRAIGHT_FLUSH: 100, FOUR_CARD: 30, FULL_HOUSE: 10, FLUSH: 8, STRAIGHT: 5, THREE_CARD: 3, TWO_PAIR: 2, JACKS_OR_BETTER: 1 },
     PLUS_RATES: { 3: 0.10, 2: 0.30, 1: 0.60 }, 
