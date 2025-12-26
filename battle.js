@@ -2925,8 +2925,8 @@ findNextActor: () => {
                 if (base.id >= 1000) {
                     // --- ボスドロップ判定 ---
                     let eq;
-                    // ★3%の低確率
-                    if (Math.random() < 0.03) { 
+                    // ★2%の低確率
+                    if (Math.random() < 0.5) { 
                         // 「改」装備は「武器」限定
                         eq = createEquipWithMinRarity(floor, 3, ['SSR', 'UR', 'EX'], '武器');
                         eq.name = eq.name.replace(/\+3$/, "") + "・改+3";
@@ -2968,38 +2968,70 @@ findNextActor: () => {
             });
         }
 
+/* battle.js: win関数内 [3]ドロップ演出～最後まで */
+
         // [3] ドロップありならウェイト ＆ 改行
         if (drops.length > 0) {
-            App.save(); // ★表示前に一度保存して確実にインベントリへ入れる
-            Battle.log("<br>"); // ★修正：確実に1行空ける
+            App.save(); // 表示前に一度保存して確実にインベントリへ入れる
+            Battle.log("<br>"); // 確実に1行空ける
             await Battle.wait(800);
             
-            // [4] ドロップ表示 & 演出実行
-            if (hasUltraRareDrop) {
-                const uFlash = document.getElementById('drop-flash-ultra') || document.getElementById('drop-flash');
-                if(uFlash) { uFlash.style.display = 'block'; uFlash.className = 'flash-ultra flash-ultra-active'; }
-            } else if (hasRareDrop) {
-                const flash = document.getElementById('drop-flash');
-                if(flash) { flash.style.display = 'block'; flash.classList.remove('flash-active'); void flash.offsetWidth; flash.classList.add('flash-active'); }
+            // [4] 演出実行（優先順位：ウルトラ ＞ レア）
+            if (hasUltraRareDrop || hasRareDrop) {
+                const ultraFlash = document.getElementById('drop-flash-ultra');
+                const rareFlash = document.getElementById('drop-flash');
+
+                let targetEl = null;
+                let activeClass = "";
+
+                // ★優先判定ロジック
+                if (hasUltraRareDrop && ultraFlash) {
+                    targetEl = ultraFlash;
+                    activeClass = 'flash-ultra-active';
+                } else if (hasRareDrop && rareFlash) {
+                    targetEl = rareFlash;
+                    activeClass = 'flash-active';
+                }
+
+                if (targetEl) {
+                    // 全演出要素の状態を一旦リセット
+                    [ultraFlash, rareFlash].forEach(el => {
+                        if (el) {
+                            el.style.display = 'none';
+                            el.classList.remove('flash-active', 'flash-ultra-active');
+                        }
+                    });
+
+                    // 演出開始
+                    void targetEl.offsetWidth; // リフロー強制（再トリガー用）
+                    targetEl.style.display = 'block';
+                    targetEl.classList.add(activeClass);
+
+                    // 終了後に自動で隠す（display: none への復帰）
+                    targetEl.onanimationend = () => {
+                        targetEl.style.display = 'none';
+                        targetEl.classList.remove(activeClass);
+                        targetEl.onanimationend = null;
+                    };
+                }
             }
 
+            // ドロップ内容のログ表示
             drops.forEach(d => {
                 if (d.isEstark) {
                     Battle.log(`<span style="color:#ffd700; font-weight:bold;">100,000 GEM</span> を獲得！`);
                     Battle.log(`なんと <span style="color:#ffd700; font-weight:bold;">${d.name}</span> を手に入れた！`);
-                } else if (d.isUltra) {
+                } else if (d.type === 'kai') { // ウルトラレア（改）
                     Battle.log(`なんと <span style="color:#ff00ff; font-weight:bold;">${d.name}</span> を手に入れた！`);
                 } else if (d.isRare) {
                     Battle.log(`なんと <span class="log-rare-drop">${d.name}</span> を手に入れた！`);
-                } else if (d.isItem) {
-                    Battle.log(`${d.name} を手に入れた！`);
                 } else {
                     Battle.log(`${d.name} を手に入れた！`);
                 }
             });
         }
         
-		App.save(); // ★ここで最終状態を保存（インベントリを確定させる）
+        App.save(); // 最終状態を保存
         Battle.log("\n▼ 画面タップで終了 ▼");
         if (isBossBattle && !isEstark && typeof Dungeon !== 'undefined') Dungeon.onBossDefeated();
     },
