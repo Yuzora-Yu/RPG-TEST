@@ -222,7 +222,7 @@
         .battle-target-btn:active { background: #555; transform: scale(0.98); }
 
         /* ドロップ確定時のフラッシュ演出 */
-        @keyframes flash-screen { 0% { opacity: 0; background: #fff; } 10% { opacity: 0.8; } 100% { opacity: 0; display: none; } }
+        @keyframes flash-screen { 0% { opacity: 0; background: #fff; } 10% { opacity: 0.8; } 100% { opacity: 0; } }
         .flash-effect { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; pointer-events: none; opacity: 0; }
         .flash-active { animation: flash-screen 0.5s ease-out forwards; }
         .log-rare-drop { color: #ff4444; font-weight: bold; text-shadow: 0 0 5px #f00; }
@@ -586,7 +586,8 @@
 			0% { opacity: 0.8; } /* 0.9から0.8へ白と統一 */
 			100% { opacity: 0; }
 		}
-				
+		
+
     </style>
 
 	<script>
@@ -602,6 +603,7 @@ if ('serviceWorker' in navigator) {
 <div id="game-container">
     <div id="white-out-overlay"></div>
     <div id="drop-flash" class="flash-effect"></div>
+	<div id="drop-flash-ultra" class="flash-ultra"></div>
 
     <div id="gacha-effect-layer" style="display:none;">
         <div id="effect-bg"></div>
