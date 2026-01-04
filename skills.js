@@ -168,23 +168,23 @@ window.SKILLS_DATA = [
         "type": "回復",
         "target": "単体",
         "mp": 250,
-        "rate": 0,
+        "rate": 2,
         "count": 1,
-        "base": 29999,
+        "base": 19999,
         "desc": "超回復",
-        "fix": true
+        "fix": false
     },
     {
         "id": 24,
         "name": "ベホマラー",
         "type": "回復",
         "target": "全体",
-        "mp": 1200,
-        "rate": 0,
+        "mp": 800,
+        "rate": 1.5,
         "count": 1,
         "base": 29999,
         "desc": "全体超回復",
-        "fix": true
+        "fix": false
     },
     {
         "id": 30,
@@ -373,7 +373,7 @@ window.SKILLS_DATA = [
         "rate": 0,
         "count": 1,
         "base": 20,
-        "desc": "素早さアップ",
+        "desc": "全体の素早さアップ",
         "turn": 5,
         "buff": {
             "spd": 1.3
@@ -388,7 +388,7 @@ window.SKILLS_DATA = [
         "rate": 0,
         "count": 1,
         "base": 0,
-        "desc": "全属性耐性アップ",
+        "desc": "全体の全属性耐性アップ",
         "turn": 5,
         "buff": {
             "elmResUp": 30
@@ -404,7 +404,7 @@ window.SKILLS_DATA = [
         "count": 1,
         "base": 0,
         "desc": "魔力超上昇",
-        "turn": 5,
+        "turn": 4,
         "buff": {
             "mag": 2
         }
@@ -473,7 +473,7 @@ window.SKILLS_DATA = [
         "name": "パラディンガード",
         "type": "強化",
         "target": "全体",
-        "mp": 2000,
+        "mp": 1500,
         "rate": 0,
         "count": 1,
         "base": 0,
@@ -532,7 +532,7 @@ window.SKILLS_DATA = [
         "name": "世界樹の陽光",
         "type": "回復",
         "target": "全体",
-        "mp": 3000,
+        "mp": 3500,
         "rate": 1,
         "count": 1,
         "base": 99999,
@@ -601,7 +601,7 @@ window.SKILLS_DATA = [
         "rate": 0,
         "count": 1,
         "base": 0,
-        "desc": "味方単体の状態異常無効",
+        "desc": "状態異常をすべて治療し、さらに耐性を最大にする",
         "turn": 10,
         "buff": {
             "resists_Poison": 200,
@@ -617,7 +617,7 @@ window.SKILLS_DATA = [
         "name": "めいそう",
         "type": "回復",
         "target": "自分",
-        "mp": 0,
+        "mp": 50,
         "ratio": 0.5,
         "rate": 0,
         "count": 1,
@@ -658,11 +658,14 @@ window.SKILLS_DATA = [
         "rate": 0,
         "count": 0,
         "base": 0,
-        "desc": "精神を集中し攻撃力を大幅に上げる",
+        "desc": "精神を集中し攻撃力を大幅に上げるが、防御力が下がる",
         "buff": {
             "atk": 2.5
         },
-        "turn": 3
+        "turn": 4,
+        "debuff": {
+            "def": 0.7
+        }
     },
     {
         "id": 90,
@@ -687,7 +690,9 @@ window.SKILLS_DATA = [
             "resists_Seal": 100,
             "resists_Debuff": 100,
             "resists_InstantDeath": 100
-        }
+        },
+        "CureAilments": true,
+        "debuff_reset": true
     },
     {
         "id": 101,
@@ -1386,7 +1391,7 @@ window.SKILLS_DATA = [
         "name": "ベホマ",
         "type": "回復",
         "target": "単体",
-        "mp": 2000,
+        "mp": 1500,
         "rate": 0,
         "count": 1,
         "base": 99999,
@@ -1706,7 +1711,7 @@ window.SKILLS_DATA = [
         "name": "ベホマズン",
         "type": "回復",
         "target": "全体",
-        "mp": 4000,
+        "mp": 2500,
         "rate": 0,
         "count": 1,
         "base": 99999,
@@ -1745,9 +1750,9 @@ window.SKILLS_DATA = [
         "type": "回復",
         "target": "単体",
         "mp": 200,
-        "rate": 1.5,
+        "rate": 2,
         "count": 1,
-        "base": 999,
+        "base": 9999,
         "desc": "使い手の少ない最速の回復呪文",
         "priority": 20
     },
@@ -1759,10 +1764,11 @@ window.SKILLS_DATA = [
         "mp": 2000,
         "rate": 1,
         "count": 1,
-        "base": 99999,
+        "base": 999999,
         "desc": "全てを受け止めて生還する不死鳥",
         "priority": -20,
-        "CureAilments": true
+        "CureAilments": true,
+        "debuff_reset": true
     },
     {
         "id": 500,
@@ -1885,7 +1891,7 @@ window.SKILLS_DATA = [
         "count": 1,
         "base": 200,
         "elm": "闇",
-        "desc": "暗黒のきり"
+        "desc": "暗黒のきりをまき散らし全体闇ダメージ"
     },
     {
         "id": 608,
@@ -1897,7 +1903,7 @@ window.SKILLS_DATA = [
         "count": 1,
         "base": 200,
         "elm": "雷",
-        "desc": "稲妻"
+        "desc": "稲妻を呼び出し全体雷ダメージ"
     },
     {
         "id": 609,
@@ -1909,7 +1915,7 @@ window.SKILLS_DATA = [
         "count": 1,
         "base": 450,
         "elm": "混沌",
-        "desc": "地獄の炎"
+        "desc": "地獄の炎で全体混沌ダメージ"
     },
     {
         "id": 610,
@@ -1921,7 +1927,7 @@ window.SKILLS_DATA = [
         "count": 1,
         "base": 800,
         "elm": "光",
-        "desc": "光のブレス・スキル封印",
+        "desc": "全体光属性極大ダメージ＋スキル封印",
         "SuccessRate": 50,
         "turn": 3,
         "SpellSeal": true,
@@ -1938,7 +1944,7 @@ window.SKILLS_DATA = [
         "count": 1,
         "base": 800,
         "elm": "闇",
-        "desc": "闇のブレス・属性耐性ダウン",
+        "desc": "全体闇属性極大ダメージ＋全属性耐性ダウン",
         "SuccessRate": 50,
         "turn": 3,
         "debuff": {
@@ -1954,7 +1960,11 @@ window.SKILLS_DATA = [
         "rate": 1.8,
         "count": 1,
         "base": 800,
-        "elm": "水"
+        "elm": "水",
+        "debuff": {
+            "mag": 0.7
+        },
+        "desc": "全体水属性極大ダメージ＋魔力低下"
     },
     {
         "id": 613,
@@ -1965,18 +1975,27 @@ window.SKILLS_DATA = [
         "rate": 1.8,
         "count": 1,
         "base": 800,
-        "elm": "火"
+        "elm": "火",
+        "desc": "全体火属性極大ダメージ＋攻撃低下",
+        "debuff": {
+            "atk": 0.7
+        }
     },
     {
         "id": 614,
         "name": "ウイングダイブ",
         "type": "ブレス",
         "target": "全体",
-        "mp": 350,
+        "mp": 550,
         "rate": 1.6,
         "count": 2,
         "base": 500,
-        "elm": "風"
+        "elm": "風",
+        "desc": "風属性全体2回攻撃＋速度大幅減",
+        "turn": 5,
+        "debuff": {
+            "spd": 0.3
+        }
     },
     {
         "id": 615,
@@ -1992,18 +2011,20 @@ window.SKILLS_DATA = [
         "PercentDamage": 0.1,
         "turn": 1,
         "buff_reset": true,
-        "Fear": true
+        "Fear": true,
+        "desc": "激しく咆哮し敵全体を怯ませていい効果を消し去る"
     },
     {
         "id": 616,
         "name": "流星",
         "type": "ブレス",
         "target": "ランダム",
-        "mp": 0,
-        "rate": 1.5,
-        "count": 3,
-        "base": 1500,
-        "elm": "闇"
+        "mp": 550,
+        "rate": 0.9,
+        "count": 6,
+        "base": 1000,
+        "elm": "闇",
+        "desc": "数多の流星がランダムに降り注ぎ闇の大ダメージ"
     },
     {
         "id": 617,
@@ -2011,12 +2032,13 @@ window.SKILLS_DATA = [
         "type": "物理",
         "target": "単体",
         "mp": 0,
-        "rate": 1.5,
+        "rate": 1.4,
         "count": 3,
         "base": 300,
         "SuccessRate": 100,
         "turn": 10,
-        "Poison": true
+        "Poison": true,
+        "desc": "邪神の３連続攻撃"
     },
     {
         "id": 701,
@@ -2188,7 +2210,7 @@ window.SKILLS_DATA = [
         "count": 1,
         "base": 150,
         "desc": "味方全員を完全蘇生",
-        "SuccessRate": 1
+        "SuccessRate": 100
     },
     {
         "id": 905,
@@ -2253,11 +2275,11 @@ window.SKILLS_DATA = [
         "count": 2,
         "base": 50,
         "elm": "混沌",
-        "desc": "闇の根源より漏れ出る災禍",
+        "desc": "闇の根源より漏れ出る災禍を操り異常をまき散らす",
         "SuccessRate": 30,
-        "turn": 1,
+        "turn": 2,
         "ToxicPoison": true,
-        "Fear": true,
+        "Fear": false,
         "SpellSeal": true,
         "SkillSeal": true,
         "HealSeal": true
@@ -2295,10 +2317,11 @@ window.SKILLS_DATA = [
         "type": "魔法",
         "target": "ランダム",
         "mp": 500,
-        "rate": 1,
-        "count": 3,
+        "rate": 1.4,
+        "count": 5,
         "base": 250,
-        "elm": "闇"
+        "elm": "混沌",
+        "desc": "混沌を秘めた球を複数生み出して投げつける"
     },
     {
         "id": 920,
@@ -2326,7 +2349,7 @@ window.SKILLS_DATA = [
         "rate": 1.5,
         "count": 1,
         "base": 500,
-        "desc": "精神エネルギー砲・HP吸収",
+        "desc": "無属性魔法・HP吸収",
         "drain": true
     },
     {
@@ -2338,7 +2361,7 @@ window.SKILLS_DATA = [
         "rate": 1,
         "count": 4,
         "base": 300,
-        "desc": "精神の嵐・HP吸収",
+        "desc": "無属性ランダム4回攻撃魔法・HP吸収",
         "drain": true
     },
     {

@@ -177,5 +177,13 @@ window.ITEMS_DATA = [
         "desc": "世界各地に散らばるメダル",
         "target": "なし",
         "price": 0
-    }
+    },
+	{ "id": 100, "name": "いのちのきのみ", "type": "育成", "desc": "最大HPを増加", "target": "単体", "price": 0 },
+    { "id": 101, "name": "ふしぎのきのみ", "type": "育成", "desc": "最大MPを増加", "target": "単体", "price": 0 },
+    { "id": 102, "name": "ちからのたね", "type": "育成", "desc": "攻撃力を増加", "target": "単体", "price": 0 },
+    { "id": 103, "name": "まりょくのたね", "type": "育成", "desc": "魔力を増加", "target": "単体", "price": 0 },
+    { "id": 104, "name": "すばやさのたね", "type": "育成", "desc": "素早さを増加", "target": "単体", "price": 0 },
+    { "id": 105, "name": "まもりのたね", "type": "育成", "desc": "防御力を増加", "target": "単体", "price": 0 },
+    { "id": 106, "name": "スキルのたね", "type": "育成", "desc": "スキルポイント(SP)を1加算", "target": "単体", "price": 0 },
+    { "id": 107, "name": "転生の実", "type": "育成", "desc": "能力を維持したままLv1に戻る禁断の果実", "target": "単体", "price": 0 }
 ];

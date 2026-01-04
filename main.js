@@ -37,6 +37,8 @@ class Entity {
         //this.img = data.img || null;
 		
         this.limitBreak = data.limitBreak || 0;
+		// ★追加：データから転生回数を読み込む
+        this.reincarnationCount = data.reincarnationCount || 0;
         this.exp = data.exp || 0;
 		this.sp = data.sp || 0;
     }
@@ -949,6 +951,9 @@ const App = {
         
         const imgTag = displayImg ? `<img src="${displayImg}" style="width:100%; height:100%; object-fit:cover;">` : 'IMG';
         
+		// ★追加：転生マークの生成
+        const reincarnated = c.reincarnationCount ? `<span style="color:#00ff00; margin-left:4px;">★${c.reincarnationCount}</span>` : '';
+		
         return `
             <div class="char-row">
                 <div class="char-thumb">${imgTag}</div>

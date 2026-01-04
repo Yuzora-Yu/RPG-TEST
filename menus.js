@@ -630,7 +630,7 @@ const MenuStatus = {
 };
 
 /* ==========================================================================
-   3. 道具
+   3. 道具 (MenuItems) - 育成アイテム対応版
    ========================================================================== */
 const MenuItems = {
     selectedItem: null,
@@ -663,11 +663,13 @@ const MenuItems = {
                 <div>x${it.count}</div>
             `;
             div.onclick = () => {
-                if(it.def.type.includes('回復') || it.def.type.includes('蘇生')) {
+                // 回復・蘇生に加えて「育成」タイプもターゲット選択へ進む
+                if(it.def.type.includes('回復') || it.def.type.includes('蘇生') || it.def.type.includes('育成')) {
                     MenuItems.selectedItem = it.def;
                     MenuItems.renderTargetList();
                 } else {
-                    document.getElementById('item-footer').innerText = "使用できないアイテムです";
+                    const footer = document.getElementById('item-footer');
+                    if(footer) footer.innerText = "使用できないアイテムです";
                 }
             };
             list.appendChild(div);
@@ -689,33 +691,54 @@ const MenuItems = {
     },
     useItem: (target) => {
         const item = MenuItems.selectedItem;
-        if(App.data.items[item.id] <= 0) return;
+        if(!item || App.data.items[item.id] <= 0) return;
 
         Menu.confirm(`${target.name} に ${item.name} を使いますか？`, () => {
             let success = false;
+            let msg = "";
             const s = App.calcStats(target);
-            
+            const master = DB.CHARACTERS.find(c => c.id === target.charId) || target;
+
+            // --- A. 通常の回復アイテム処理 ---
             if(item.type === 'HP回復') {
                 if(target.currentHp >= s.maxHp) { Menu.msg("HPは満タンです"); return; }
-                const healVal = item.val;
-                target.currentHp = Math.min(s.maxHp, (target.currentHp||s.maxHp) + healVal);
-                success = true;
+                target.currentHp = Math.min(s.maxHp, (target.currentHp || 0) + item.val);
+                success = true; msg = `${target.name}は回復した！`;
             } else if(item.type === 'MP回復') {
                 if(target.currentMp >= s.maxMp) { Menu.msg("MPは満タンです"); return; }
-                const healVal = item.val;
-                target.currentMp = Math.min(s.maxMp, (target.currentMp||s.maxMp) + healVal);
-                success = true;
+                target.currentMp = Math.min(s.maxMp, (target.currentMp || 0) + item.val);
+                success = true; msg = `${target.name}は回復した！`;
             } else if(item.type === '蘇生') {
                 if(target.currentHp > 0) { Menu.msg("生き返っています"); return; }
                 target.currentHp = Math.floor(s.maxHp * 0.5);
+                success = true; msg = `${target.name}は生き返った！`;
+            }
+
+            // --- B. 育成アイテム(100-107)の処理 ---
+            else if (item.id >= 100 && item.id <= 107) {
                 success = true;
+                switch(item.id) {
+                    case 100: target.hp += Math.floor(master.hp * 2.0); msg = `${target.name}の最大HPが上がった！`; break;
+                    case 101: target.mp += Math.floor(master.mp * 2.0); msg = `${target.name}の最大MPが上がった！`; break;
+                    case 102: target.atk += Math.floor(master.atk * 1.0); msg = `${target.name}の攻撃力が上がった！`; break;
+                    case 103: target.mag += Math.floor(master.mag * 1.0); msg = `${target.name}の魔力が上がった！`; break;
+                    case 104: target.spd += Math.floor(master.spd * 1.0); msg = `${target.name}の素早さが上がった！`; break;
+                    case 105: target.def += Math.floor(master.def * 1.0); msg = `${target.name}の防御力が上がった！`; break;
+                    case 106: target.sp = (target.sp || 0) + 1; msg = `${target.name}のSPが 1 増えた！`; break;
+                    case 107: target.level = 1;
+                        target.exp = 0;
+                        // ★追加：転生回数をカウントアップ（存在しなければ0から開始）
+                        target.reincarnationCount = (target.reincarnationCount || 0) + 1;
+                        msg = `${target.name}は 転生しレベル1に戻った！\n(転生回数: ${target.reincarnationCount}回目)`; 
+                        break;
+                }
             }
 
             if(success) {
                 App.data.items[item.id]--;
-                if(App.data.items[item.id]<=0) delete App.data.items[item.id];
+                if(App.data.items[item.id] <= 0) delete App.data.items[item.id];
                 App.save();
-                Menu.msg(`${target.name}は回復した！`, () => {
+                Menu.msg(msg, () => {
                     MenuItems.renderTargetList();
                     Menu.renderPartyBar();
                 });
@@ -1375,39 +1398,55 @@ if (MenuAllies.currentTab === 1) {
                 contentHtml = `<div style="display:flex; flex-direction:column; gap:2px;">${listHtml}</div>`;
             }
         } else if (MenuAllies.currentTab === 3) {
-            // ★スキル封印機能を追加した Tab 3 (デザインはリスト形式を維持)
-            const playerObj = new Player(c);
-            if (!c.config) c.config = { fullAuto: false, hiddenSkills: [] };
-            const autoStatus = c.config.fullAuto;
-            let skillHtml = '';
-            if(!playerObj.skills || playerObj.skills.length===0) {
-                skillHtml = '<div style="padding:20px; text-align:center; color:#555;">習得スキルなし</div>';
-            } else {
-                skillHtml = playerObj.skills.map(sk => {
-                    const isHidden = c.config.hiddenSkills.includes(Number(sk.id));
-                    return `
-                        <div style="background:${isHidden ? 'rgba(0,0,0,0.2)' : '#252525'}; border:1px solid #444; border-radius:4px; padding:6px; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center;">
-                            <div style="flex:1;">
-                                <div style="font-size:12px; font-weight:bold; color:${isHidden ? '#666' : '#ddd'};">${sk.name} <span style="font-size:10px; color:#888;">(${sk.type})</span></div>
-                                <div style="font-size:10px; color:#aaa;">${sk.desc || ''}</div>
-                            </div>
-                            <div style="text-align:right; min-width:80px;">
-                                <div style="font-size:11px; color:#88f; margin-bottom:4px;">MP:${sk.mp}</div>
-                                <button class="btn" style="padding:2px 8px; font-size:10px; background:${isHidden ? '#555' : '#3a3'};" onclick="MenuAllies.toggleSkillVisibility(${sk.id})">
-                                    ${isHidden ? '封印中' : '使用許可'}
-                                </button>
-                            </div>
-                        </div>`;
-                }).join('');
-            }
-            contentHtml = `
-                <div style="margin-bottom:10px; padding:8px; background:#333; border-radius:4px; border:1px solid #444;">
-                    <button class="btn" style="width:100%; background:${autoStatus ? '#d00' : '#444'}; font-weight:bold; font-size:11px;" onclick="MenuAllies.toggleFullAuto()">
-                        フルオート(スキル使用): ${autoStatus ? 'ON' : 'OFF'}
-                    </button>
-                </div>
-                <div style="display:flex; flex-direction:column;">${skillHtml}</div>`;
-        }
+			// ★スキル封印機能を追加した Tab 3 (デザインはリスト形式を維持)
+			const playerObj = new Player(c);
+			if (!c.config) c.config = { fullAuto: false, hiddenSkills: [] };
+			const autoStatus = c.config.fullAuto;
+			let skillHtml = '';
+
+			if(!playerObj.skills || playerObj.skills.length === 0) {
+				skillHtml = '<div style="padding:20px; text-align:center; color:#555;">習得スキルなし</div>';
+			} else {
+				skillHtml = playerObj.skills.map(sk => {
+					if (sk.id === 1) return ''; // 通常攻撃は表示しない
+					
+					const isHidden = c.config.hiddenSkills.includes(Number(sk.id));
+
+					// ★追加：属性表示と色分けロジック
+					let elmHtml = '';
+					if (sk.elm) {
+						const colors = { 
+							'火':'#f88', '水':'#88f', '雷':'#ff0', '風':'#8f8', 
+							'光':'#ffc', '闇':'#a8f', '混沌':'#d4d' 
+						};
+						let color = colors[sk.elm] || '#ccc';
+						elmHtml = `<span style="color:${color}; margin-right:3px;">[${sk.elm}]</span>`;
+					}
+
+					return `
+						<div style="background:${isHidden ? 'rgba(0,0,0,0.2)' : '#252525'}; border:1px solid #444; border-radius:4px; padding:6px; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center;">
+							<div style="flex:1;">
+								<div style="font-size:12px; font-weight:bold; color:${isHidden ? '#666' : '#ddd'};">${elmHtml}${sk.name} <span style="font-size:10px; color:#888;">(${sk.type})</span></div>
+								<div style="font-size:10px; color:#aaa;">${sk.desc || ''}</div>
+							</div>
+							<div style="text-align:right; min-width:80px;">
+								<div style="font-size:11px; color:#88f; margin-bottom:4px;">MP:${sk.mp}</div>
+								<button class="btn" style="padding:2px 8px; font-size:10px; background:${isHidden ? '#555' : '#3a3'};" onclick="MenuAllies.toggleSkillVisibility(${sk.id})">
+									${isHidden ? '封印中' : '使用許可'}
+								</button>
+							</div>
+						</div>`;
+				}).join('');
+			}
+			
+			contentHtml = `
+				<div style="margin-bottom:10px; padding:8px; background:#333; border-radius:4px; border:1px solid #444;">
+					<button class="btn" style="width:100%; background:${autoStatus ? '#d00' : '#444'}; font-weight:bold; font-size:11px;" onclick="MenuAllies.toggleFullAuto()">
+						フルオート(スキル使用): ${autoStatus ? 'ON' : 'OFF'}
+					</button>
+				</div>
+				<div style="display:flex; flex-direction:column;">${skillHtml}</div>`;
+		}
 
         const view = document.getElementById('allies-detail-view');
         view.innerHTML = `
@@ -1629,26 +1668,29 @@ if (MenuAllies.currentTab === 1) {
 };
 
 /* ==========================================================================
-   6. スキル使用
-   ========================================================================== */
+    6. スキル使用
+    ========================================================================== */
 const MenuSkills = {
     selectedCharUid: null,
     selectedSkill: null,
+
     init: () => {
         document.getElementById('sub-screen-skills').style.display = 'flex';
         MenuSkills.changeScreen('char');
     },
+
     changeScreen: (mode) => {
-        document.getElementById('skill-screen-char').style.display = (mode==='char'?'flex':'none');
-        document.getElementById('skill-screen-skill').style.display = (mode==='skill'?'flex':'none');
-        document.getElementById('skill-screen-target').style.display = (mode==='target'?'flex':'none');
-        if(mode==='char') MenuSkills.renderCharList();
+        document.getElementById('skill-screen-char').style.display = (mode === 'char' ? 'flex' : 'none');
+        document.getElementById('skill-screen-skill').style.display = (mode === 'skill' ? 'flex' : 'none');
+        document.getElementById('skill-screen-target').style.display = (mode === 'target' ? 'flex' : 'none');
+        if (mode === 'char') MenuSkills.renderCharList();
     },
+
     renderCharList: () => {
         const list = document.getElementById('skill-char-list');
         list.innerHTML = '';
         App.data.party.forEach(uid => {
-            if(!uid) return;
+            if (!uid) return;
             const c = App.getChar(uid);
             const div = document.createElement('div');
             div.className = 'list-item';
@@ -1660,6 +1702,7 @@ const MenuSkills = {
             list.appendChild(div);
         });
     },
+
     renderSkillList: () => {
         MenuSkills.changeScreen('skill');
         const list = document.getElementById('skill-list');
@@ -1667,11 +1710,12 @@ const MenuSkills = {
         const c = App.getChar(MenuSkills.selectedCharUid);
         const player = new Player(c);
         const skills = player.skills.filter(s => s.type.includes('回復') || s.type.includes('蘇生'));
-        
-        if(skills.length === 0) {
+
+        if (skills.length === 0) {
             list.innerHTML = '<div style="padding:10px; color:#888;">使用可能なスキルがありません</div>';
             return;
         }
+
         skills.forEach(sk => {
             const div = document.createElement('div');
             div.className = 'list-item';
@@ -1683,19 +1727,26 @@ const MenuSkills = {
                 <div style="font-size:12px; color:#88f;">MP:${sk.mp}</div>
             `;
             div.onclick = () => {
-                if(c.currentMp < sk.mp) { Menu.msg("MPが足りません"); return; }
+                if (c.currentMp < sk.mp) { Menu.msg("MPが足りません"); return; }
                 MenuSkills.selectedSkill = sk;
-                MenuSkills.renderTargetList();
+
+                // ★全体スキルの場合はターゲット選択をスキップして直接実行へ
+                if (sk.target === '全体') {
+                    MenuSkills.useSkill(null);
+                } else {
+                    MenuSkills.renderTargetList();
+                }
             };
             list.appendChild(div);
         });
     },
+
     renderTargetList: () => {
         MenuSkills.changeScreen('target');
         const list = document.getElementById('skill-target-list');
         list.innerHTML = '';
         App.data.party.forEach(uid => {
-            if(!uid) return;
+            if (!uid) return;
             const c = App.getChar(uid);
             const div = document.createElement('div');
             div.className = 'list-item';
@@ -1704,44 +1755,70 @@ const MenuSkills = {
             list.appendChild(div);
         });
     },
+
     useSkill: (target) => {
         const actorData = App.getChar(MenuSkills.selectedCharUid);
         const sk = MenuSkills.selectedSkill;
-        if(actorData.currentMp < sk.mp) { Menu.msg("MPが足りません"); return; }
-        Menu.confirm(`${target.name} に ${sk.name} を使いますか？`, () => {
-            let targets = [target];
-            if(sk.target === '全体') targets = App.data.party.map(uid => App.getChar(uid)).filter(c=>c);
+        if (!actorData || !sk) return;
+
+        const confirmMsg = (sk.target === '全体') ? `パーティ全体に ${sk.name} を使いますか？` : `${target.name} に ${sk.name} を使いますか？`;
+
+        Menu.confirm(confirmMsg, () => {
+            let targets = (sk.target === '全体') ? App.data.party.map(uid => App.getChar(uid)).filter(c => c) : [target];
             let effected = false;
-            const actorStats = App.calcStats(actorData); 
-            const mag = actorStats.mag; 
+
+            const actorStats = App.calcStats(actorData);
+            const mag = actorStats.mag;
+            
+            // 成功率の取得 (バトルロジック準拠)
+            const rawSuccessRate = sk.SuccessRate !== undefined ? sk.SuccessRate : 100;
+            const successRate = (rawSuccessRate <= 1 && rawSuccessRate > 0) ? rawSuccessRate * 100 : rawSuccessRate;
+
             targets.forEach(t => {
+                if (!t) return;
                 const s = App.calcStats(t);
                 const tMaxHp = s.maxHp;
-                if(sk.type.includes('回復')) {
-                    if(t.currentHp < tMaxHp && (!t.currentHp || t.currentHp > 0)) { 
-                        let base = sk.base || 0;
+
+                // ★成功判定 (バトルと同じ確率計算)
+                if (Math.random() * 100 > successRate) return;
+
+                if (sk.type.includes('回復')) {
+                    // 生存者のみ回復
+                    if (t.currentHp > 0 && t.currentHp < tMaxHp) {
                         let rec = 0;
-                        if(sk.fix) rec = sk.base;
-                        else rec = Math.floor((mag + base) * (sk.rate || 1.0));
-                        t.currentHp = Math.min(tMaxHp, (t.currentHp||0) + rec);
+                        if (sk.ratio) {
+                            rec = Math.floor(tMaxHp * sk.ratio);
+                        } else {
+                            // ★修正：(魔力 * 倍率 + 基礎) * 乱数(0.85～1.15)
+                            const baseVal = sk.fix ? (sk.base || 0) : (mag * (sk.rate || 1.0) + (sk.base || 0));
+                            rec = Math.floor(baseVal * (0.85 + Math.random() * 0.3));
+                        }
+                        t.currentHp = Math.min(tMaxHp, (t.currentHp || 0) + rec);
                         effected = true;
                     }
-                } else if(sk.type.includes('蘇生')) {
-                    if(!t.currentHp || t.currentHp <= 0) {
-                        t.currentHp = Math.floor(tMaxHp * 0.5);
+                } else if (sk.type.includes('蘇生')) {
+                    // 死者のみ蘇生
+                    if (!t.currentHp || t.currentHp <= 0) {
+                        // ★修正：蘇生HP量 (バトルと同じ)
+                        const resRate = sk.rate !== undefined ? sk.rate : 0.5;
+                        t.currentHp = Math.max(1, Math.floor(tMaxHp * resRate));
                         effected = true;
                     }
                 }
             });
-            if(effected) {
+
+            if (effected) {
                 actorData.currentMp -= sk.mp;
                 App.save();
                 Menu.msg(`${sk.name}を使用した！`, () => {
-                    MenuSkills.renderTargetList(); 
+                    // 全体スキルの後はスキル一覧へ、単体はターゲット一覧を更新
+                    if (sk.target === '全体') MenuSkills.renderSkillList();
+                    else MenuSkills.renderTargetList();
                     Menu.renderPartyBar();
                 });
             } else {
                 Menu.msg("効果がありませんでした");
+                if (sk.target === '全体') MenuSkills.renderSkillList();
             }
         });
     }

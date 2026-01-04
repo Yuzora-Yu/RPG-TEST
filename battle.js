@@ -1721,7 +1721,8 @@ findNextActor: () => {
                     if (dmg > 0) {
                         dmg = dmg * (1.0 + bonusRate / 100);
                         dmg = dmg * (1.0 - cutRate / 100);
-                        dmg = dmg * (0.9 + Math.random() * 0.2);
+                        // ★修正：0.9～1.1 から 0.85～1.15 へ変更
+                        dmg = dmg * (0.85 + Math.random() * 0.3); 
                         if (targetToHit.status && targetToHit.status.defend) dmg *= 0.5;
                         dmg = Math.floor(dmg);
                         if (!isImmune && dmg < 1) dmg = 1;
@@ -1891,7 +1892,15 @@ findNextActor: () => {
                     } else { Battle.log(`【${t.name}】には効果がなかった`); continue; }
                 }
                 if (effectType === '回復' && !t.isDead) {
-                    let rec = data.ratio ? Math.floor(t.baseMaxHp * data.ratio) : (data.fix ? baseDmg : (Battle.getBattleStat(actor, 'mag') + baseDmg) * skillRate);
+                    // ★修正：(魔力 * 倍率 + 基礎値) * 乱数(0.85～1.15)
+                    let rec;
+                    if (data.ratio) {
+                        rec = Math.floor(t.baseMaxHp * data.ratio);
+                    } else {
+                        const baseValue = data.fix ? baseDmg : (Battle.getBattleStat(actor, 'mag') * skillRate + baseDmg);
+                        rec = baseValue * (0.85 + Math.random() * 0.3);
+                    }
+                    
                     t.hp = Math.min(t.baseMaxHp, t.hp + Math.floor(rec));
                     Battle.log(`【${t.name}】のHPが${Math.floor(rec)}回復！`);
                 }
@@ -1965,7 +1974,9 @@ findNextActor: () => {
 
                 let dmg = baseDmgCalc;
                 if (dmg > 0) {
-                    dmg = dmg * (1.0 + bonusRate / 100) * (1.0 - cutRate / 100) * (0.9 + Math.random() * 0.2);
+                    // ★修正：末尾の乱数を (0.9 + Math.random() * 0.2) から (0.85 + Math.random() * 0.3) へ変更
+                    dmg = dmg * (1.0 + bonusRate / 100) * (1.0 - cutRate / 100) * (0.85 + Math.random() * 0.3);
+                    
                     if (targetToHit.status?.defend) dmg *= 0.5;
                     dmg = Math.floor(dmg);
                     if (!isImmune && dmg < 1) dmg = 1;
@@ -2613,6 +2624,22 @@ findNextActor: () => {
                 } else {
                     // 通常モンスター
                     const r = Math.random();
+					
+					// ★100階以降の種ドロップ追加
+                    if (floor >= 100 && Math.random() < 0.05) { // 5%の確率で種・実の抽選枠へ
+                         const sr = Math.random();
+                         let sid = null;
+                         if (sr < 0.001) sid = 107;
+                         else if (sr < 0.01) sid = 106;
+                         else if (sr < 0.18) sid = 100 + Math.floor(Math.random() * 6);
+                         
+                         if (sid) {
+                             const item = DB.ITEMS.find(i => i.id === sid);
+                             App.data.items[sid] = (App.data.items[sid] || 0) + 1;
+                             drops.push({ name: item.name, isRare: (sid >= 106), type: 'item' });
+                         }
+                    }
+					
                     if (r < 0.2) {
                         const candidates = DB.ITEMS.filter(i => i.rank <= Math.min(200, floor) && i.type !== '貴重品');
                         if (candidates.length > 0) {
