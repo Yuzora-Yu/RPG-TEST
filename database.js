@@ -178,7 +178,33 @@ const DB = {
             req: [ {key:'hp', count:2}, {key:'mp', count:2} ]
         },
         { key: 'elmAtk', elm: '混沌', count: 4, name: '混沌の刃', effect: 'grantSkill', value: 923, desc: '魔奥義:カラミティエンド習得', color:'#d4d' },
-        { key: 'elmRes', elm: '混沌', count: 4, name: '混沌の壁', effect: 'grantSkill', value: 924, desc: '魔奥義:カラミティウォール習得', color:'#d4d' }
+        { key: 'elmRes', elm: '混沌', count: 4, name: '混沌の壁', effect: 'grantSkill', value: 924, desc: '魔奥義:カラミティウォール習得', color:'#d4d' },
+
+		{ key: 'hp', count: 4, name: '鉄人', effect: 'hpBoost100', desc: '最大HP +100%', color: '#f88' },
+		{ key: 'mp', count: 4, name: '夢幻の悟り', effect: 'sealGuard50', desc: '全封印耐性 +50%', color: '#88f' },
+		{ key: 'atk', count: 4, name: '武神', effect: 'atkDouble', desc: '戦闘開始時 攻撃2倍(永続)', color: '#f88' },
+		{ key: 'mag', count: 4, name: '魔神', effect: 'magDouble', desc: '戦闘開始時 魔力2倍(永続)', color: '#88f' },
+		{ key: 'spd', count: 4, name: '神速', effect: 'spdBoost100', desc: '素早さ +100%', color: '#8f8' },
+		{ key: 'def', count: 4, name: '金剛', effect: 'debuffImmune', desc: '弱体耐性 100%', color: '#8f8' },
+		
+		// 属性極意 (3つで+25%)
+		{ key: 'elmAtk', elm: '火', count: 3, name: '火の極意', effect: 'elmAtk25', desc: '火属性攻撃 +25%', color: '#f88' },
+		{ key: 'elmAtk', elm: '水', count: 3, name: '水の極意', effect: 'elmAtk25', desc: '水属性攻撃 +25%', color: '#88f' },
+		{ key: 'elmAtk', elm: '風', count: 3, name: '風の極意', effect: 'elmAtk25', desc: '風属性攻撃 +25%', color: '#8f8' },
+		{ key: 'elmAtk', elm: '雷', count: 3, name: '雷の極意', effect: 'elmAtk25', desc: '雷属性攻撃 +25%', color: '#ff4' },
+		{ key: 'elmAtk', elm: '光', count: 3, name: '光の極意', effect: 'elmAtk25', desc: '光属性攻撃 +25%', color: '#fff' },
+		{ key: 'elmAtk', elm: '闇', count: 3, name: '闇の極意', effect: 'elmAtk25', desc: '闇属性攻撃 +25%', color: '#a0a' },
+		{ key: 'elmAtk', elm: '混沌', count: 3, name: '混沌の極意', effect: 'elmAtk25', desc: '混沌属性攻撃 +25%', color: '#d4d' },
+
+		// 複合シナジー
+		{ 
+			name: '元素崩壊', effect: 'allResDown20', desc: '攻撃時20%で全耐性50%低下', color: '#8ff',
+			req: [ {key:'elmAtk', elm:'火', count:1}, {key:'elmAtk', elm:'水', count:1}, {key:'elmAtk', elm:'風', count:1}, {key:'elmAtk', elm:'雷', count:1} ]
+		},
+		{ 
+			name: '致命攻撃', effect: 'instantDeath20', desc: '攻撃時20%で即死付与', color: '#d4d',
+			req: [ {key:'elmAtk', elm:'光', count:1}, {key:'elmAtk', elm:'闇', count:1}, {key:'elmAtk', elm:'混沌', count:1}, {key:'finDmg', count:1} ]
+		}	
     ],
 
     MEDAL_REWARDS: [

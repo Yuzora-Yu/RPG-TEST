@@ -173,6 +173,14 @@ const Battle = {
                     player.battleStatus.buffs['mag'] = { val: 1.5, turns: null };
                 }
 				
+                if (player.passive.atkDouble) {
+                    player.battleStatus.buffs['atk'] = { val: 2.0, turns: null };
+                }
+				
+                if (player.passive.magDouble) {
+                    player.battleStatus.buffs['mag'] = { val: 2.0, turns: null };
+                }
+				
                 return player;
             }).filter(p => p !== null);
         }
@@ -1863,6 +1871,7 @@ findNextActor: () => {
                     if (t.hp <= 0) { t.hp = 0; t.isDead = true; Battle.log(`【${t.name}】は倒れた！`); }
                 } else Battle.log(`【${t.name}】にはきかなかった！`);
             }
+			
         };
 // --- [8] メイン実行ループ ---
         for (let t of targets) {
@@ -2007,10 +2016,32 @@ findNextActor: () => {
                         const rv = (Battle.getBattleStat(targetToHit, 'resists') || {}).InstantDeath || 0;
                         if (Math.random() * 100 >= rv) {
                             targetToHit.hp = 0; targetToHit.isDead = true;
-                            Battle.log(`<span style="color:#ff00ff; font-weight:bold;">★急所を貫いた！ 【${targetToHit.name}】は 息絶えた！</span>`);
-                        } else { Battle.log(`【${targetToHit.name}】には 即死攻撃は きかなかった！`); }
+                            Battle.log(`<span style="color:#ff00ff; font-weight:bold;">急所を貫いた！ 【${targetToHit.name}】は 息絶えた！</span>`);
+                        } //else { Battle.log(`【${targetToHit.name}】には 即死攻撃は きかなかった！`); }
                     }
                 }
+				
+				// 攻撃側のシナジーによる追加判定
+				if (actor instanceof Player) {
+					Object.values(actor.equips).forEach(eq => {
+						if (eq && eq.isSynergy && Math.random() < 0.2) {
+							// 四源の浸食: 全属性耐性ダウン
+							if (eq.effect === 'allResDown20' && !t.isDead) {
+								t.battleStatus.debuffs['elmResDown'] = { val: 0.5, turns: 5 };
+								Battle.log(`【${t.name}】の 全属性耐性が 50%低下した！`);
+							}
+							// 終焉の宣告: 即死
+							if (eq.effect === 'instantDeath20' && !t.isDead) {
+								// 耐性チェック (即死耐性が100未満なら)
+								const res = (t.resists && t.resists.InstantDeath) || 0;
+								if (Math.random() * 100 > res) {
+									t.hp = 0; t.isDead = true;
+									Battle.log(`<span style="color:#ff00ff; font-weight:bold;">急所を貫いた！ 【${targetToHit.name}】は 息絶えた！</span>`);
+								}
+							}
+						}
+					});
+				}
 
                 if (cmd.type === 'skill') applyEffects(targetToHit, data);
 

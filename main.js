@@ -667,8 +667,23 @@ const App = {
                             s.resists[k] = (s.resists[k] || 0) + 20;
                         }
                     }
+					
+					if (eq.effect === 'hpBoost100') pctMods.maxHp += 100;
+					if (eq.effect === 'spdBoost100') pctMods.spd += 100;
+					if (eq.effect === 'debuffImmune') s.resists.Debuff = 100;
+					if (eq.effect === 'sealGuard50') {
+						s.resists.SkillSeal = (s.resists.SkillSeal || 0) + 50;
+						s.resists.SpellSeal = (s.resists.SpellSeal || 0) + 50;
+						s.resists.HealSeal = (s.resists.HealSeal || 0) + 50;
+					}
+					if (eq.effect === 'elmAtk25') {
+						// optsの中から 'elmAtk' を持っている要素を探して属性を特定する
+						const elmOpt = eq.opts.find(o => o.key === 'elmAtk');
+						if (elmOpt) {
+							s.elmAtk[elmOpt.elm] = (s.elmAtk[elmOpt.elm] || 0) + 25;
+						}
+					}
                 }
-				
             }
         });
 
@@ -889,10 +904,15 @@ const App = {
         for (const syn of DB.SYNERGIES) {
             let isMatch = false;
 
-            // 1. 複合条件（req配列がある場合：軍神など）
+            // 1. 複合条件（req配列がある場合：四源の浸食・軍神など）
             if (syn.req) {
                 isMatch = syn.req.every(r => {
-                    const count = eq.opts.filter(o => o.key === r.key).length;
+                    // ★修正：key だけでなく、属性(elm)の指定がある場合はそれも一致するかチェックする
+                    const count = eq.opts.filter(o => {
+                        const keyMatch = (o.key === r.key);
+                        const elmMatch = (!r.elm || o.elm === r.elm); // 条件にelmがない、または一致する場合
+                        return keyMatch && elmMatch;
+                    }).length;
                     return count >= r.count;
                 });
             }
