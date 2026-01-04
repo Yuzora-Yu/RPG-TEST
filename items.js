@@ -115,6 +115,7 @@ window.ITEMS_DATA = [
         "name": "世界樹の木の実",
         "type": "状態異常回復",
         "CureAilments": true,
+		"debuff_reset": true,
         "desc": "味方ひとりの全状態異常を治す",
         "target": "単体",
         "price": 20000,

@@ -584,12 +584,12 @@ window.SKILLS_DATA = [
         "desc": "味方全体の状態異常耐性アップ",
         "turn": 3,
         "buff": {
-            "resists_Poison": 50,
-            "resists_Shock": 50,
-            "resists_Fear": 50,
-            "resists_Seal": 50,
-            "resists_Debuff": 50,
-            "resists_InstantDeath": 50
+            "resists_Poison": 80,
+            "resists_Shock": 80,
+            "resists_Fear": 80,
+            "resists_Seal": 80,
+            "resists_Debuff": 80,
+            "resists_InstantDeath": 80
         }
     },
     {
@@ -602,14 +602,14 @@ window.SKILLS_DATA = [
         "count": 1,
         "base": 0,
         "desc": "味方単体の状態異常無効",
-        "turn": 5,
+        "turn": 10,
         "buff": {
-            "resists_Poison": 100,
-            "resists_Shock": 100,
-            "resists_Fear": 100,
-            "resists_Seal": 100,
-            "resists_Debuff": 100,
-            "resists_InstantDeath": 100
+            "resists_Poison": 200,
+            "resists_Shock": 200,
+            "resists_Fear": 200,
+            "resists_Seal": 200,
+            "resists_Debuff": 200,
+            "resists_InstantDeath": 200
         }
     },
     {
@@ -1044,8 +1044,7 @@ window.SKILLS_DATA = [
         "count": 1,
         "base": 250,
         "elm": "水",
-        "desc": "氷属性全体物理攻撃",
-        "Fear": false
+        "desc": "氷属性全体物理攻撃"
     },
     {
         "id": 160,
@@ -1775,7 +1774,7 @@ window.SKILLS_DATA = [
         "count": 1,
         "base": 300,
         "elm": "混沌",
-        "desc": "全MPを消費し大爆発",
+        "desc": "全MPを消費し混沌の大爆発",
         "priority": -1
     },
     {
@@ -1788,7 +1787,7 @@ window.SKILLS_DATA = [
         "count": 3,
         "base": 300,
         "elm": "光",
-        "desc": "全MPを消費しランダムに光属性の大ダメージ",
+        "desc": "全MPを消費しランダムに3回光属性の大ダメージ",
         "priority": -1
     },
     {
@@ -2239,7 +2238,7 @@ window.SKILLS_DATA = [
         "count": 1,
         "base": 0,
         "desc": "心まで凍り付く恐ろしいおたけび",
-        "SuccessRate": 50,
+        "SuccessRate": 70,
         "PercentDamage": 0.5,
         "turn": 1,
         "Fear": true
@@ -2316,7 +2315,6 @@ window.SKILLS_DATA = [
             "def": 0.5
         },
         "IgnoreDefense": true,
-        "Fear": false,
         "SuccessRate": 100
     },
     {
@@ -2400,11 +2398,11 @@ window.SKILLS_DATA = [
         "name": "アルテマ",
         "type": "魔法",
         "target": "全体",
-        "mp": 0,
+        "mp": 9999,
         "rate": 0,
         "count": 1,
         "base": 99999,
-        "desc": "単体極大ダメージ",
+        "desc": "全体極大ダメージ",
         "priority": -1,
         "fix": true
     }

@@ -815,19 +815,40 @@ const App = {
 
         // 6. オプション付与
         if (plus > 0) {
-			// 万が一マスタに設定漏れがあっても止まらないようにする
-            const allowedKeys = eq.possibleOpts || [];
-			
+            // [A] baseName ごとの基本オプション候補定義
+            const BASE_OPTS_MAP = {
+                '剣': ['atk', 'finDmg', 'elmAtk'],
+                '斧': ['atk', 'finDmg', 'elmAtk', 'attack_Fear'],
+                '短剣': ['atk', 'mag', 'finDmg', 'elmAtk', 'attack_Poison'],
+                '杖': ['mag', 'finDmg', 'elmAtk'],
+                '盾': ['def', 'finRed', 'elmRes', 'resists_Debuff', 'resists_InstantDeath'],
+                '腕輪': ['atk', 'mag', 'spd', 'def', 'finDmg', 'elmAtk', 'resists_Debuff', 'resists_InstantDeath'],
+                '兜': ['hp', 'mp', 'def', 'finRed', 'elmRes', 'resists_Fear', 'resists_SkillSeal'],
+                '帽子': ['hp', 'mp', 'mag', 'elmRes', 'resists_SpellSeal', 'resists_HealSeal'],
+                '鎧': ['hp', 'mp', 'def', 'finRed', 'elmRes', 'resists_Poison', 'resists_SkillSeal'],
+                'ローブ': ['hp', 'mp', 'def', 'mag', 'elmAtk', 'elmRes', 'resists_SpellSeal', 'resists_HealSeal'],
+                'ブーツ': ['spd', 'def', 'finRed', 'elmRes', 'resists_Shock'],
+                'くつ': ['spd', 'finDmg', 'elmAtk', 'resists_Shock']
+            };
+
+            // [B] ベース設定とマスタの設定を統合 (重複は排除)
+            let baseDefaults = BASE_OPTS_MAP[eq.baseName] || [];
+            let masterOpts = base.possibleOpts || [];
+            let allowedKeys = [...new Set([...baseDefaults, ...masterOpts])];
+
             for(let i=0; i<plus; i++) {
-                let optCandidates = DB.OPT_RULES;
-                if (eq.possibleOpts && eq.possibleOpts.length > 0) {
-                    optCandidates = DB.OPT_RULES.filter(rule => eq.possibleOpts.includes(rule.key));
-                }
+                // allowedKeys に含まれる key を持つルールだけを抽出
+                let optCandidates = DB.OPT_RULES.filter(rule => allowedKeys.includes(rule.key));
+                
+                // 万が一候補が空になった場合のセーフティ
+                if (optCandidates.length === 0) optCandidates = DB.OPT_RULES;
+
                 const rule = optCandidates[Math.floor(Math.random() * optCandidates.length)];
                 
                 let rarity = 'N';
                 const tierRatio = Math.min(1, floor / 200);
                 const rarRnd = Math.random() + (tierRatio * 0.15);
+                
                 if(rarRnd > 0.98 && rule.allowed.includes('EX')) rarity='EX';
                 else if(rarRnd > 0.90 && rule.allowed.includes('UR')) rarity='UR';
                 else if(rarRnd > 0.75 && rule.allowed.includes('SSR')) rarity='SSR';
