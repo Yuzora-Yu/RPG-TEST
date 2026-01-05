@@ -297,7 +297,7 @@ window.MONSTERS_DATA = [
         "minF": 5,
         "name": "ゴースト Lv5",
         "hp": 1308,
-        "mp": 1500,
+        "mp": 1416,
         "atk": 270,
         "def": 210,
         "spd": 330,
@@ -654,7 +654,7 @@ window.MONSTERS_DATA = [
         "minF": 10,
         "name": "ゴースト Lv10",
         "hp": 2414,
-        "mp": 2500,
+        "mp": 2416,
         "atk": 450,
         "def": 350,
         "spd": 550,
@@ -948,7 +948,7 @@ window.MONSTERS_DATA = [
         "minF": 15,
         "name": "ゴースト Lv15",
         "hp": 3615,
-        "mp": 3500,
+        "mp": 3416,
         "atk": 630,
         "def": 490,
         "spd": 770,
@@ -2000,7 +2000,7 @@ window.MONSTERS_DATA = [
         "minF": 30,
         "name": "ゴースト Lv30",
         "hp": 7599,
-        "mp": 6500,
+        "mp": 6416,
         "atk": 1170,
         "def": 910,
         "spd": 1430,
@@ -2286,7 +2286,7 @@ window.MONSTERS_DATA = [
         "minF": 35,
         "name": "ゴースト Lv35",
         "hp": 9023,
-        "mp": 7500,
+        "mp": 7416,
         "atk": 1350,
         "def": 1050,
         "spd": 1650,
@@ -2333,7 +2333,7 @@ window.MONSTERS_DATA = [
         "mp": 12000,
         "atk": 900,
         "def": 1050,
-        "spd": 1500,
+        "spd": 1416,
         "mag": 1800,
         "gold": 300,
         "exp": 300,
@@ -2355,7 +2355,7 @@ window.MONSTERS_DATA = [
         "mp": 450,
         "atk": 900,
         "def": 1050,
-        "spd": 1500,
+        "spd": 1416,
         "mag": 1800,
         "gold": 300,
         "exp": 300,
@@ -3518,7 +3518,7 @@ window.MONSTERS_DATA = [
         "minF": 50,
         "name": "ゴースト Lv50",
         "hp": 13512,
-        "mp": 10500,
+        "mp": 10416,
         "atk": 1890,
         "def": 1470,
         "spd": 2310,
@@ -4200,13 +4200,13 @@ window.MONSTERS_DATA = [
         "minF": 60,
         "name": "ランプのまおう Lv60",
         "hp": 19036,
-        "mp": 15000,
+        "mp": 14160,
         "atk": 3000,
-        "def": 2500,
+        "def": 2416,
         "spd": 2250,
-        "mag": 4500,
+        "mag": 4416,
         "gold": 2250,
-        "exp": 2500,
+        "exp": 2416,
         "acts": [
             1,
             308,
@@ -4222,7 +4222,7 @@ window.MONSTERS_DATA = [
         "minF": 60,
         "name": "スライム Lv60",
         "hp": 14277,
-        "mp": 5000,
+        "mp": 4160,
         "atk": 2000,
         "def": 2000,
         "spd": 2000,
@@ -4246,7 +4246,7 @@ window.MONSTERS_DATA = [
         "hp": 21416,
         "mp": 10000,
         "atk": 3750,
-        "def": 3500,
+        "def": 3416,
         "spd": 3000,
         "mag": 750,
         "gold": 2000,
@@ -4267,12 +4267,12 @@ window.MONSTERS_DATA = [
         "name": "ホイミスライム Lv60",
         "hp": 13325,
         "mp": 700,
-        "atk": 1500,
+        "atk": 1416,
         "def": 1750,
-        "spd": 2500,
+        "spd": 2416,
         "mag": 3000,
-        "gold": 500,
-        "exp": 500,
+        "gold": 416,
+        "exp": 416,
         "acts": [
             1,
             21,
@@ -4732,7 +4732,7 @@ window.MONSTERS_DATA = [
         "atk": 3336,
         "def": 2780,
         "spd": 2502,
-        "mag": 5004,
+        "mag": 4164,
         "gold": 2502,
         "exp": 2780,
         "acts": [
@@ -4882,7 +4882,7 @@ window.MONSTERS_DATA = [
         "minF": 70,
         "name": "ゴースト Lv70",
         "hp": 19904,
-        "mp": 14500,
+        "mp": 14416,
         "atk": 2610,
         "def": 2030,
         "spd": 3190,
@@ -4985,7 +4985,7 @@ window.MONSTERS_DATA = [
             1,
             412,
             606,
-            500,
+            416,
             307
         ],
         "actCount": 1,
@@ -5124,7 +5124,7 @@ window.MONSTERS_DATA = [
             1,
             412,
             606,
-            500,
+            416,
             307
         ],
         "actCount": 1,
@@ -5277,7 +5277,7 @@ window.MONSTERS_DATA = [
         "minF": 75,
         "name": "ゴースト Lv75",
         "hp": 21562,
-        "mp": 15500,
+        "mp": 15416,
         "atk": 2790,
         "def": 2170,
         "spd": 3410,
@@ -5428,7 +5428,7 @@ window.MONSTERS_DATA = [
             1,
             412,
             606,
-            500,
+            416,
             307
         ],
         "actCount": 1,
@@ -5637,7 +5637,7 @@ window.MONSTERS_DATA = [
             1,
             412,
             606,
-            500,
+            416,
             307
         ],
         "actCount": 1,
@@ -6284,7 +6284,7 @@ window.MONSTERS_DATA = [
             1,
             412,
             606,
-            500,
+            416,
             307
         ],
         "actCount": 1,
@@ -6435,7 +6435,7 @@ window.MONSTERS_DATA = [
         "minF": 90,
         "name": "ゴースト Lv90",
         "hp": 26663,
-        "mp": 18500,
+        "mp": 18416,
         "atk": 3330,
         "def": 2590,
         "spd": 4070,
@@ -6561,7 +6561,7 @@ window.MONSTERS_DATA = [
             1,
             412,
             606,
-            500,
+            416,
             307
         ],
         "actCount": 1,
@@ -6860,7 +6860,7 @@ window.MONSTERS_DATA = [
             1,
             412,
             606,
-            500,
+            416,
             307
         ],
         "actCount": 1,
@@ -7114,7 +7114,7 @@ window.MONSTERS_DATA = [
             1,
             412,
             606,
-            500,
+            416,
             307
         ],
         "actCount": 1,
@@ -7243,7 +7243,7 @@ window.MONSTERS_DATA = [
         "minF": 100,
         "name": "ゴースト Lv100",
         "hp": 30158,
-        "mp": 20500,
+        "mp": 20416,
         "atk": 3690,
         "def": 2870,
         "spd": 4510,
@@ -7301,7 +7301,7 @@ window.MONSTERS_DATA = [
             1,
             412,
             606,
-            500,
+            416,
             307
         ],
         "actCount": 1,
@@ -7357,7 +7357,7 @@ window.MONSTERS_DATA = [
             415,
             609,
             310,
-            500
+            416
         ],
         "actCount": 1,
         "drop": null,
@@ -7387,7 +7387,7 @@ window.MONSTERS_DATA = [
         "acts": [
             407,
             404,
-            500,
+            416,
             103,
             999
         ],
@@ -7414,7 +7414,7 @@ window.MONSTERS_DATA = [
         "def": 13320,
         "spd": 9620,
         "mag": 3700,
-        "gold": 18500,
+        "gold": 18416,
         "exp": 25900,
         "acts": [
             409,
@@ -7480,7 +7480,7 @@ window.MONSTERS_DATA = [
         "gold": 3700,
         "exp": 3700,
         "acts": [
-            500,
+            416,
             412,
             406,
             405
@@ -7545,7 +7545,7 @@ window.MONSTERS_DATA = [
         "acts": [
             407,
             404,
-            500,
+            416,
             103,
             999
         ],
@@ -7626,7 +7626,7 @@ window.MONSTERS_DATA = [
         "def": 14040,
         "spd": 10140,
         "mag": 3900,
-        "gold": 19500,
+        "gold": 19416,
         "exp": 27300,
         "acts": [
             409,
@@ -7691,7 +7691,7 @@ window.MONSTERS_DATA = [
         "gold": 3900,
         "exp": 3900,
         "acts": [
-            500,
+            416,
             412,
             406,
             405
@@ -7724,7 +7724,7 @@ window.MONSTERS_DATA = [
         "acts": [
             407,
             404,
-            500,
+            416,
             103,
             999
         ],
@@ -7841,7 +7841,7 @@ window.MONSTERS_DATA = [
         "acts": [
             407,
             404,
-            500,
+            416,
             103,
             999
         ],
@@ -7868,7 +7868,7 @@ window.MONSTERS_DATA = [
         "def": 14760,
         "spd": 10660,
         "mag": 4100,
-        "gold": 20500,
+        "gold": 20416,
         "exp": 28700,
         "acts": [
             409,
@@ -7904,7 +7904,7 @@ window.MONSTERS_DATA = [
         "acts": [
             412,
             407,
-            500,
+            416,
             609
         ],
         "actCount": 1,
@@ -7964,7 +7964,7 @@ window.MONSTERS_DATA = [
         "gold": 4200,
         "exp": 4200,
         "acts": [
-            500,
+            416,
             412,
             406,
             405
@@ -8072,7 +8072,7 @@ window.MONSTERS_DATA = [
         "name": "神・ヘルバトラー Lv108",
         "hp": 146722,
         "mp": 60200,
-        "atk": 21500,
+        "atk": 21416,
         "def": 17200,
         "spd": 15480,
         "mag": 30100,
@@ -8275,7 +8275,7 @@ window.MONSTERS_DATA = [
         "minF": 110,
         "name": "神・ドラゴン Lv110",
         "hp": 121745,
-        "mp": 45000,
+        "mp": 44160,
         "atk": 15300,
         "def": 9900,
         "spd": 7200,
@@ -8319,7 +8319,7 @@ window.MONSTERS_DATA = [
             415,
             609,
             310,
-            500
+            416
         ],
         "actCount": 1,
         "drop": null,
@@ -8414,7 +8414,7 @@ window.MONSTERS_DATA = [
             415,
             609,
             310,
-            500
+            416
         ],
         "actCount": 1,
         "drop": null,
@@ -8507,7 +8507,7 @@ window.MONSTERS_DATA = [
         "acts": [
             412,
             407,
-            500,
+            416,
             609
         ],
         "actCount": 1,
@@ -8529,7 +8529,7 @@ window.MONSTERS_DATA = [
         "name": "神・ヘルバトラー Lv112",
         "hp": 163249,
         "mp": 65800,
-        "atk": 23500,
+        "atk": 23416,
         "def": 18800,
         "spd": 16920,
         "mag": 32900,
@@ -8659,7 +8659,7 @@ window.MONSTERS_DATA = [
         "name": "神・ヘルバトラー Lv114",
         "hp": 171620,
         "mp": 68600,
-        "atk": 24500,
+        "atk": 24416,
         "def": 19600,
         "spd": 17640,
         "mag": 34300,
@@ -8728,7 +8728,7 @@ window.MONSTERS_DATA = [
         "def": 17640,
         "spd": 12740,
         "mag": 4900,
-        "gold": 24500,
+        "gold": 24416,
         "exp": 34300,
         "acts": [
             409,
@@ -8781,7 +8781,7 @@ window.MONSTERS_DATA = [
         "def": 9000,
         "spd": 7000,
         "mag": 4000,
-        "gold": 3500,
+        "gold": 3416,
         "exp": 4000,
         "acts": [
             409,
@@ -8807,7 +8807,7 @@ window.MONSTERS_DATA = [
         "minF": 115,
         "name": "神・ドラゴン Lv115",
         "hp": 138153,
-        "mp": 50000,
+        "mp": 41600,
         "atk": 17000,
         "def": 11000,
         "spd": 8000,
@@ -8844,14 +8844,14 @@ window.MONSTERS_DATA = [
         "def": 6000,
         "spd": 13000,
         "mag": 10000,
-        "gold": 1500,
+        "gold": 1416,
         "exp": 1200,
         "acts": [
             405,
             415,
             609,
             310,
-            500
+            416
         ],
         "actCount": 1,
         "drop": null,
@@ -8883,7 +8883,7 @@ window.MONSTERS_DATA = [
             415,
             609,
             310,
-            500
+            416
         ],
         "actCount": 1,
         "drop": null,
@@ -8943,7 +8943,7 @@ window.MONSTERS_DATA = [
         "gold": 5100,
         "exp": 5100,
         "acts": [
-            500,
+            416,
             412,
             406,
             405
@@ -9030,7 +9030,7 @@ window.MONSTERS_DATA = [
         "acts": [
             407,
             404,
-            500,
+            416,
             103,
             999
         ],
@@ -9188,7 +9188,7 @@ window.MONSTERS_DATA = [
         "acts": [
             407,
             404,
-            500,
+            416,
             103,
             999
         ],
@@ -9218,7 +9218,7 @@ window.MONSTERS_DATA = [
         "gold": 5400,
         "exp": 5400,
         "acts": [
-            500,
+            416,
             412,
             406,
             405
@@ -9253,7 +9253,7 @@ window.MONSTERS_DATA = [
             415,
             609,
             310,
-            500
+            416
         ],
         "actCount": 1,
         "drop": null,
@@ -9276,7 +9276,7 @@ window.MONSTERS_DATA = [
         "mp": 44000,
         "atk": 12100,
         "def": 17600,
-        "spd": 5500,
+        "spd": 5416,
         "mag": 2200,
         "gold": 3300,
         "exp": 2750,
@@ -9309,13 +9309,13 @@ window.MONSTERS_DATA = [
         "atk": 8800,
         "def": 8800,
         "spd": 8800,
-        "mag": 5500,
+        "mag": 5416,
         "gold": 1100,
         "exp": 1100,
         "acts": [
             407,
             404,
-            500,
+            416,
             103,
             999
         ],
@@ -9338,7 +9338,7 @@ window.MONSTERS_DATA = [
         "name": "神・キラーマシン Lv120",
         "hp": 126731,
         "mp": 44000,
-        "atk": 16500,
+        "atk": 16416,
         "def": 15400,
         "spd": 13200,
         "mag": 3300,
@@ -9379,7 +9379,7 @@ window.MONSTERS_DATA = [
         "acts": [
             412,
             407,
-            500,
+            416,
             609
         ],
         "actCount": 1,
@@ -9465,7 +9465,7 @@ window.MONSTERS_DATA = [
         "name": "神・ヘルバトラー Lv122",
         "hp": 205770,
         "mp": 79800,
-        "atk": 28500,
+        "atk": 28416,
         "def": 22800,
         "spd": 20520,
         "mag": 39900,
@@ -9622,7 +9622,7 @@ window.MONSTERS_DATA = [
         "rank": 123,
         "minF": 123,
         "name": "神・オーク Lv123",
-        "hp": 150078,
+        "hp": 141678,
         "mp": 46400,
         "atk": 15080,
         "def": 10440,
@@ -9813,7 +9813,7 @@ window.MONSTERS_DATA = [
             415,
             609,
             310,
-            500
+            416
         ],
         "actCount": 1,
         "drop": null,
@@ -9875,7 +9875,7 @@ window.MONSTERS_DATA = [
         "acts": [
             412,
             407,
-            500,
+            416,
             609
         ],
         "actCount": 1,
@@ -9971,7 +9971,7 @@ window.MONSTERS_DATA = [
             415,
             609,
             310,
-            500
+            416
         ],
         "actCount": 1,
         "drop": null,
@@ -10001,7 +10001,7 @@ window.MONSTERS_DATA = [
         "acts": [
             407,
             404,
-            500,
+            416,
             103,
             999
         ],
@@ -10033,7 +10033,7 @@ window.MONSTERS_DATA = [
         "acts": [
             412,
             407,
-            500,
+            416,
             609
         ],
         "actCount": 1,
@@ -10066,7 +10066,7 @@ window.MONSTERS_DATA = [
             415,
             609,
             310,
-            500
+            416
         ],
         "actCount": 1,
         "drop": null,
@@ -10087,7 +10087,7 @@ window.MONSTERS_DATA = [
         "name": "神・ヘルバトラー Lv128",
         "hp": 232029,
         "mp": 88200,
-        "atk": 31500,
+        "atk": 31416,
         "def": 25200,
         "spd": 22680,
         "mag": 44100,
@@ -10159,7 +10159,7 @@ window.MONSTERS_DATA = [
         "gold": 6400,
         "exp": 6400,
         "acts": [
-            500,
+            416,
             412,
             406,
             405
@@ -10226,7 +10226,7 @@ window.MONSTERS_DATA = [
             415,
             609,
             310,
-            500
+            416
         ],
         "actCount": 1,
         "drop": null,
@@ -10247,7 +10247,7 @@ window.MONSTERS_DATA = [
         "name": "神・キラーマシン Lv130",
         "hp": 154861,
         "mp": 52000,
-        "atk": 19500,
+        "atk": 19416,
         "def": 18200,
         "spd": 15600,
         "mag": 3900,
@@ -10313,13 +10313,13 @@ window.MONSTERS_DATA = [
         "atk": 10400,
         "def": 10400,
         "spd": 10400,
-        "mag": 6500,
+        "mag": 6416,
         "gold": 1300,
         "exp": 1300,
         "acts": [
             407,
             404,
-            500,
+            416,
             103,
             999
         ],
@@ -10353,7 +10353,7 @@ window.MONSTERS_DATA = [
             415,
             609,
             310,
-            500
+            416
         ],
         "actCount": 1,
         "drop": null,
@@ -10383,7 +10383,7 @@ window.MONSTERS_DATA = [
         "acts": [
             407,
             404,
-            500,
+            416,
             103,
             999
         ],
@@ -10447,7 +10447,7 @@ window.MONSTERS_DATA = [
         "acts": [
             407,
             404,
-            500,
+            416,
             103,
             999
         ],
@@ -10596,7 +10596,7 @@ window.MONSTERS_DATA = [
         "acts": [
             412,
             407,
-            500,
+            416,
             609
         ],
         "actCount": 1,
@@ -10711,7 +10711,7 @@ window.MONSTERS_DATA = [
         "gold": 6900,
         "exp": 6900,
         "acts": [
-            500,
+            416,
             412,
             406,
             405
@@ -10744,7 +10744,7 @@ window.MONSTERS_DATA = [
         "acts": [
             412,
             407,
-            500,
+            416,
             609
         ],
         "actCount": 1,
@@ -10775,7 +10775,7 @@ window.MONSTERS_DATA = [
         "acts": [
             412,
             407,
-            500,
+            416,
             609
         ],
         "actCount": 1,
@@ -10802,7 +10802,7 @@ window.MONSTERS_DATA = [
         "spd": 7000,
         "mag": 2800,
         "gold": 4200,
-        "exp": 3500,
+        "exp": 3416,
         "acts": [
             421,
             420,
@@ -10901,7 +10901,7 @@ window.MONSTERS_DATA = [
         "acts": [
             407,
             404,
-            500,
+            416,
             103,
             999
         ],
@@ -10928,7 +10928,7 @@ window.MONSTERS_DATA = [
         "def": 25560,
         "spd": 18460,
         "mag": 7100,
-        "gold": 35500,
+        "gold": 35416,
         "exp": 49700,
         "acts": [
             409,
@@ -11030,7 +11030,7 @@ window.MONSTERS_DATA = [
             415,
             609,
             310,
-            500
+            416
         ],
         "actCount": 1,
         "drop": null,
@@ -11222,7 +11222,7 @@ window.MONSTERS_DATA = [
             415,
             609,
             310,
-            500
+            416
         ],
         "actCount": 1,
         "drop": null,
@@ -11243,9 +11243,9 @@ window.MONSTERS_DATA = [
         "name": "神・オーク Lv140",
         "hp": 204305,
         "mp": 60000,
-        "atk": 19500,
-        "def": 13500,
-        "spd": 10500,
+        "atk": 19416,
+        "def": 13416,
+        "spd": 10416,
         "mag": 6000,
         "gold": 5250,
         "exp": 6000,
@@ -11275,15 +11275,15 @@ window.MONSTERS_DATA = [
         "hp": 163444,
         "mp": 90000,
         "atk": 18000,
-        "def": 15000,
-        "spd": 13500,
+        "def": 14160,
+        "spd": 13416,
         "mag": 27000,
-        "gold": 13500,
-        "exp": 15000,
+        "gold": 13416,
+        "exp": 14160,
         "acts": [
             412,
             407,
-            500,
+            416,
             609
         ],
         "actCount": 1,
@@ -11306,13 +11306,13 @@ window.MONSTERS_DATA = [
         "hp": 102152,
         "mp": 60000,
         "atk": 12000,
-        "def": 10500,
-        "spd": 16500,
+        "def": 10416,
+        "spd": 16416,
         "mag": 30000,
-        "gold": 7500,
-        "exp": 7500,
+        "gold": 7416,
+        "exp": 7416,
         "acts": [
-            500,
+            416,
             412,
             406,
             405
@@ -11343,7 +11343,7 @@ window.MONSTERS_DATA = [
         "gold": 7600,
         "exp": 7600,
         "acts": [
-            500,
+            416,
             412,
             406,
             405
@@ -11526,7 +11526,7 @@ window.MONSTERS_DATA = [
         "acts": [
             407,
             404,
-            500,
+            416,
             103,
             999
         ],
@@ -11558,7 +11558,7 @@ window.MONSTERS_DATA = [
         "acts": [
             407,
             404,
-            500,
+            416,
             103,
             999
         ],
@@ -11588,7 +11588,7 @@ window.MONSTERS_DATA = [
         "gold": 7800,
         "exp": 7800,
         "acts": [
-            500,
+            416,
             412,
             406,
             405
@@ -11652,7 +11652,7 @@ window.MONSTERS_DATA = [
         "acts": [
             407,
             404,
-            500,
+            416,
             103,
             999
         ],
@@ -12010,7 +12010,7 @@ window.MONSTERS_DATA = [
         "gold": 8200,
         "exp": 8200,
         "acts": [
-            500,
+            416,
             412,
             406,
             405
@@ -12045,7 +12045,7 @@ window.MONSTERS_DATA = [
             415,
             609,
             310,
-            500
+            416
         ],
         "actCount": 1,
         "drop": null,
@@ -12097,7 +12097,7 @@ window.MONSTERS_DATA = [
         "acts": [
             407,
             404,
-            500,
+            416,
             103,
             999
         ],
@@ -12162,7 +12162,7 @@ window.MONSTERS_DATA = [
             415,
             609,
             310,
-            500
+            416
         ],
         "actCount": 1,
         "drop": null,
@@ -12214,7 +12214,7 @@ window.MONSTERS_DATA = [
         "acts": [
             412,
             407,
-            500,
+            416,
             609
         ],
         "actCount": 1,
@@ -12247,7 +12247,7 @@ window.MONSTERS_DATA = [
             415,
             609,
             310,
-            500
+            416
         ],
         "actCount": 1,
         "drop": null,
@@ -12333,7 +12333,7 @@ window.MONSTERS_DATA = [
             415,
             609,
             310,
-            500
+            416
         ],
         "actCount": 1,
         "drop": null,
@@ -12363,7 +12363,7 @@ window.MONSTERS_DATA = [
         "acts": [
             412,
             407,
-            500,
+            416,
             609
         ],
         "actCount": 1,
@@ -12388,13 +12388,13 @@ window.MONSTERS_DATA = [
         "atk": 13600,
         "def": 13600,
         "spd": 13600,
-        "mag": 8500,
+        "mag": 8416,
         "gold": 1700,
         "exp": 1700,
         "acts": [
             407,
             404,
-            500,
+            416,
             103,
             999
         ],
@@ -12578,7 +12578,7 @@ window.MONSTERS_DATA = [
             415,
             609,
             310,
-            500
+            416
         ],
         "actCount": 1,
         "drop": null,
@@ -12608,7 +12608,7 @@ window.MONSTERS_DATA = [
         "acts": [
             412,
             407,
-            500,
+            416,
             609
         ],
         "actCount": 1,
@@ -12637,7 +12637,7 @@ window.MONSTERS_DATA = [
         "gold": 8800,
         "exp": 8800,
         "acts": [
-            500,
+            416,
             412,
             406,
             405
@@ -12670,7 +12670,7 @@ window.MONSTERS_DATA = [
         "acts": [
             412,
             407,
-            500,
+            416,
             609
         ],
         "actCount": 1,
@@ -12746,7 +12746,7 @@ window.MONSTERS_DATA = [
         "name": "神・ヘルバトラー Lv154",
         "hp": 351238,
         "mp": 124600,
-        "atk": 44500,
+        "atk": 44416,
         "def": 35600,
         "spd": 32040,
         "mag": 62300,
@@ -12788,7 +12788,7 @@ window.MONSTERS_DATA = [
         "acts": [
             412,
             407,
-            500,
+            416,
             609
         ],
         "actCount": 1,
@@ -12849,7 +12849,7 @@ window.MONSTERS_DATA = [
         "gold": 9000,
         "exp": 9000,
         "acts": [
-            500,
+            416,
             412,
             406,
             405
@@ -12877,7 +12877,7 @@ window.MONSTERS_DATA = [
         "def": 32400,
         "spd": 23400,
         "mag": 9000,
-        "gold": 45000,
+        "gold": 44160,
         "exp": 63000,
         "acts": [
             409,
@@ -12958,7 +12958,7 @@ window.MONSTERS_DATA = [
         "name": "神・ヘルバトラー Lv156",
         "hp": 360731,
         "mp": 127400,
-        "atk": 45500,
+        "atk": 45416,
         "def": 36400,
         "spd": 32760,
         "mag": 63700,
@@ -13061,7 +13061,7 @@ window.MONSTERS_DATA = [
         "gold": 9200,
         "exp": 9200,
         "acts": [
-            500,
+            416,
             412,
             406,
             405
@@ -13159,7 +13159,7 @@ window.MONSTERS_DATA = [
         "acts": [
             407,
             404,
-            500,
+            416,
             103,
             999
         ],
@@ -13191,7 +13191,7 @@ window.MONSTERS_DATA = [
         "acts": [
             412,
             407,
-            500,
+            416,
             609
         ],
         "actCount": 1,
@@ -13284,7 +13284,7 @@ window.MONSTERS_DATA = [
         "gold": 9400,
         "exp": 9400,
         "acts": [
-            500,
+            416,
             412,
             406,
             405
@@ -13306,7 +13306,7 @@ window.MONSTERS_DATA = [
         "rank": 159,
         "minF": 159,
         "name": "神・ホイミスライム Lv159",
-        "hp": 150019,
+        "hp": 141619,
         "mp": 150400,
         "atk": 11280,
         "def": 13160,
@@ -13338,7 +13338,7 @@ window.MONSTERS_DATA = [
         "minF": 160,
         "name": "神・ゴースト Lv160",
         "hp": 189920,
-        "mp": 95000,
+        "mp": 94160,
         "atk": 17100,
         "def": 13300,
         "spd": 20900,
@@ -13375,10 +13375,10 @@ window.MONSTERS_DATA = [
         "def": 13300,
         "spd": 20900,
         "mag": 38000,
-        "gold": 9500,
-        "exp": 9500,
+        "gold": 9416,
+        "exp": 9416,
         "acts": [
-            500,
+            416,
             412,
             406,
             405
@@ -13402,7 +13402,7 @@ window.MONSTERS_DATA = [
         "name": "神・キラーマシン Lv160",
         "hp": 244183,
         "mp": 76000,
-        "atk": 28500,
+        "atk": 28416,
         "def": 26600,
         "spd": 22800,
         "mag": 5700,
@@ -13569,7 +13569,7 @@ window.MONSTERS_DATA = [
         "acts": [
             407,
             404,
-            500,
+            416,
             103,
             999
         ],
@@ -13632,7 +13632,7 @@ window.MONSTERS_DATA = [
         "acts": [
             412,
             407,
-            500,
+            416,
             609
         ],
         "actCount": 1,
@@ -13886,7 +13886,7 @@ window.MONSTERS_DATA = [
         "acts": [
             412,
             407,
-            500,
+            416,
             609
         ],
         "actCount": 1,
@@ -13919,7 +13919,7 @@ window.MONSTERS_DATA = [
             415,
             609,
             310,
-            500
+            416
         ],
         "actCount": 1,
         "drop": null,
@@ -14042,7 +14042,7 @@ window.MONSTERS_DATA = [
         "gold": 10200,
         "exp": 10200,
         "acts": [
-            500,
+            416,
             412,
             406,
             405
@@ -14075,7 +14075,7 @@ window.MONSTERS_DATA = [
         "acts": [
             412,
             407,
-            500,
+            416,
             609
         ],
         "actCount": 1,
@@ -14108,7 +14108,7 @@ window.MONSTERS_DATA = [
             415,
             609,
             310,
-            500
+            416
         ],
         "actCount": 1,
         "drop": null,
@@ -14138,7 +14138,7 @@ window.MONSTERS_DATA = [
         "acts": [
             412,
             407,
-            500,
+            416,
             609
         ],
         "actCount": 1,
@@ -14201,7 +14201,7 @@ window.MONSTERS_DATA = [
         "acts": [
             412,
             407,
-            500,
+            416,
             609
         ],
         "actCount": 1,
@@ -14234,7 +14234,7 @@ window.MONSTERS_DATA = [
             415,
             609,
             310,
-            500
+            416
         ],
         "actCount": 1,
         "drop": null,
@@ -14286,13 +14286,13 @@ window.MONSTERS_DATA = [
         "minF": 170,
         "name": "神・キラーマシン2 Lv170",
         "hp": 397719,
-        "mp": 105000,
+        "mp": 104160,
         "atk": 42000,
         "def": 37800,
         "spd": 27300,
-        "mag": 10500,
-        "gold": 52500,
-        "exp": 73500,
+        "mag": 10416,
+        "gold": 52416,
+        "exp": 73416,
         "acts": [
             409,
             408,
@@ -14349,7 +14349,7 @@ window.MONSTERS_DATA = [
         "name": "神・キラーマシン Lv170",
         "hp": 275344,
         "mp": 84000,
-        "atk": 31500,
+        "atk": 31416,
         "def": 29400,
         "spd": 25200,
         "mag": 6300,
@@ -14392,7 +14392,7 @@ window.MONSTERS_DATA = [
             415,
             609,
             310,
-            500
+            416
         ],
         "actCount": 1,
         "drop": null,
@@ -14420,7 +14420,7 @@ window.MONSTERS_DATA = [
         "gold": 10600,
         "exp": 10600,
         "acts": [
-            500,
+            416,
             412,
             406,
             405
@@ -14475,7 +14475,7 @@ window.MONSTERS_DATA = [
         "name": "神・ヘルバトラー Lv172",
         "hp": 438121,
         "mp": 149800,
-        "atk": 53500,
+        "atk": 53416,
         "def": 42800,
         "spd": 38520,
         "mag": 74900,
@@ -14517,7 +14517,7 @@ window.MONSTERS_DATA = [
         "acts": [
             412,
             407,
-            500,
+            416,
             609
         ],
         "actCount": 1,
@@ -14676,7 +14676,7 @@ window.MONSTERS_DATA = [
         "acts": [
             412,
             407,
-            500,
+            416,
             609
         ],
         "actCount": 1,
@@ -14771,7 +14771,7 @@ window.MONSTERS_DATA = [
         "acts": [
             407,
             404,
-            500,
+            416,
             103,
             999
         ],
@@ -14825,7 +14825,7 @@ window.MONSTERS_DATA = [
         "name": "神・ヘルバトラー Lv175",
         "hp": 452903,
         "mp": 154000,
-        "atk": 55000,
+        "atk": 54160,
         "def": 44000,
         "spd": 39600,
         "mag": 77000,
@@ -14865,7 +14865,7 @@ window.MONSTERS_DATA = [
         "gold": 11100,
         "exp": 11100,
         "acts": [
-            500,
+            416,
             412,
             406,
             405
@@ -14898,7 +14898,7 @@ window.MONSTERS_DATA = [
         "acts": [
             407,
             404,
-            500,
+            416,
             103,
             999
         ],
@@ -14981,7 +14981,7 @@ window.MONSTERS_DATA = [
         "gold": 11200,
         "exp": 11200,
         "acts": [
-            500,
+            416,
             412,
             406,
             405
@@ -15014,7 +15014,7 @@ window.MONSTERS_DATA = [
         "acts": [
             407,
             404,
-            500,
+            416,
             103,
             999
         ],
@@ -15101,7 +15101,7 @@ window.MONSTERS_DATA = [
         "name": "神・ヘルバトラー Lv178",
         "hp": 467765,
         "mp": 158200,
-        "atk": 56500,
+        "atk": 56416,
         "def": 45200,
         "spd": 40680,
         "mag": 79100,
@@ -15236,7 +15236,7 @@ window.MONSTERS_DATA = [
         "gold": 11400,
         "exp": 11400,
         "acts": [
-            500,
+            416,
             412,
             406,
             405
@@ -15278,7 +15278,7 @@ window.MONSTERS_DATA = [
                 "condition": 0
             },
             {
-                "id": 500,
+                "id": 416,
                 "rate": 25,
                 "condition": 0
             },
@@ -15312,11 +15312,11 @@ window.MONSTERS_DATA = [
         "def": 16100,
         "spd": 25300,
         "mag": 46000,
-        "gold": 11500,
-        "exp": 11500,
+        "gold": 11416,
+        "exp": 11416,
         "acts": [
             {
-                "id": 500,
+                "id": 416,
                 "rate": 25,
                 "condition": 0
             },
@@ -15355,7 +15355,7 @@ window.MONSTERS_DATA = [
         "minF": 180,
         "name": "神・ゴースト Lv180",
         "hp": 238858,
-        "mp": 115000,
+        "mp": 114160,
         "atk": 20700,
         "def": 16100,
         "spd": 25300,
@@ -15437,7 +15437,7 @@ window.MONSTERS_DATA = [
                 "condition": 0
             },
             {
-                "id": 500,
+                "id": 416,
                 "rate": 20,
                 "condition": 0
             }
@@ -15533,7 +15533,7 @@ window.MONSTERS_DATA = [
                 "condition": 0
             },
             {
-                "id": 500,
+                "id": 416,
                 "rate": 25,
                 "condition": 0
             },
@@ -15589,7 +15589,7 @@ window.MONSTERS_DATA = [
         "def": 42120,
         "spd": 30420,
         "mag": 11700,
-        "gold": 58500,
+        "gold": 58416,
         "exp": 81900,
         "acts": [
             409,
@@ -15721,7 +15721,7 @@ window.MONSTERS_DATA = [
             415,
             609,
             310,
-            500
+            416
         ],
         "actCount": 1,
         "drop": null,
@@ -15749,7 +15749,7 @@ window.MONSTERS_DATA = [
         "gold": 11800,
         "exp": 11800,
         "acts": [
-            500,
+            416,
             412,
             406,
             405
@@ -15952,7 +15952,7 @@ window.MONSTERS_DATA = [
         "acts": [
             412,
             407,
-            500,
+            416,
             609
         ],
         "actCount": 1,
@@ -15985,7 +15985,7 @@ window.MONSTERS_DATA = [
             415,
             609,
             310,
-            500
+            416
         ],
         "actCount": 1,
         "drop": null,
@@ -16006,7 +16006,7 @@ window.MONSTERS_DATA = [
         "name": "神・ヘルバトラー Lv186",
         "hp": 507781,
         "mp": 169400,
-        "atk": 60500,
+        "atk": 60416,
         "def": 48400,
         "spd": 43560,
         "mag": 84700,
@@ -16178,7 +16178,7 @@ window.MONSTERS_DATA = [
             415,
             609,
             310,
-            500
+            416
         ],
         "actCount": 1,
         "drop": null,
@@ -16208,7 +16208,7 @@ window.MONSTERS_DATA = [
         "acts": [
             412,
             407,
-            500,
+            416,
             609
         ],
         "actCount": 1,
@@ -16270,7 +16270,7 @@ window.MONSTERS_DATA = [
         "acts": [
             407,
             404,
-            500,
+            416,
             103,
             999
         ],
@@ -16409,11 +16409,11 @@ window.MONSTERS_DATA = [
         "name": "神・さまようよろい Lv190",
         "hp": 301708,
         "mp": 100000,
-        "atk": 27500,
+        "atk": 27416,
         "def": 40000,
-        "spd": 12500,
-        "mag": 5000,
-        "gold": 7500,
+        "spd": 12416,
+        "mag": 4160,
+        "gold": 7416,
         "exp": 6250,
         "acts": [
             421,
@@ -16440,13 +16440,13 @@ window.MONSTERS_DATA = [
         "minF": 190,
         "name": "神・ヘルバトラー Lv190",
         "hp": 527990,
-        "mp": 175000,
-        "atk": 62500,
-        "def": 50000,
-        "spd": 45000,
-        "mag": 87500,
-        "gold": 87500,
-        "exp": 112500,
+        "mp": 174160,
+        "atk": 62416,
+        "def": 41600,
+        "spd": 44160,
+        "mag": 87416,
+        "gold": 87416,
+        "exp": 112416,
         "acts": [
             404,
             407,
@@ -16474,9 +16474,9 @@ window.MONSTERS_DATA = [
         "name": "神・オーク Lv190",
         "hp": 377136,
         "mp": 100000,
-        "atk": 32500,
-        "def": 22500,
-        "spd": 17500,
+        "atk": 32416,
+        "def": 22416,
+        "spd": 17416,
         "mag": 10000,
         "gold": 8750,
         "exp": 10000,
@@ -16632,7 +16632,7 @@ window.MONSTERS_DATA = [
             415,
             609,
             310,
-            500
+            416
         ],
         "actCount": 1,
         "drop": null,
@@ -16750,7 +16750,7 @@ window.MONSTERS_DATA = [
             415,
             609,
             310,
-            500
+            416
         ],
         "actCount": 1,
         "drop": null,
@@ -16875,7 +16875,7 @@ window.MONSTERS_DATA = [
         "acts": [
             412,
             407,
-            500,
+            416,
             609
         ],
         "actCount": 1,
@@ -16908,7 +16908,7 @@ window.MONSTERS_DATA = [
             415,
             609,
             310,
-            500
+            416
         ],
         "actCount": 1,
         "drop": null,
@@ -16962,7 +16962,7 @@ window.MONSTERS_DATA = [
             415,
             609,
             310,
-            500
+            416
         ],
         "actCount": 1,
         "drop": null,
@@ -17104,7 +17104,7 @@ window.MONSTERS_DATA = [
         "def": 47160,
         "spd": 34060,
         "mag": 13100,
-        "gold": 65500,
+        "gold": 65416,
         "exp": 91700,
         "acts": [
             409,
@@ -17235,7 +17235,7 @@ window.MONSTERS_DATA = [
         "acts": [
             412,
             407,
-            500,
+            416,
             609
         ],
         "actCount": 1,
@@ -17261,7 +17261,7 @@ window.MONSTERS_DATA = [
         "def": 47880,
         "spd": 34580,
         "mag": 13300,
-        "gold": 66500,
+        "gold": 66416,
         "exp": 93100,
         "acts": [
             409,
@@ -17336,7 +17336,7 @@ window.MONSTERS_DATA = [
         "name": "神・ヘルバトラー Lv198",
         "hp": 568795,
         "mp": 186200,
-        "atk": 66500,
+        "atk": 66416,
         "def": 53200,
         "spd": 47880,
         "mag": 93100,
@@ -17475,7 +17475,7 @@ window.MONSTERS_DATA = [
                 "condition": 0
             },
             {
-                "id": 500,
+                "id": 416,
                 "rate": 20,
                 "condition": 0
             }
@@ -17552,7 +17552,7 @@ window.MONSTERS_DATA = [
         "minF": 200,
         "name": "神・ドラゴン Lv200",
         "hp": 454987,
-        "mp": 135000,
+        "mp": 134160,
         "atk": 45900,
         "def": 29700,
         "spd": 21600,
@@ -17606,12 +17606,12 @@ window.MONSTERS_DATA = [
         "name": "神・ヘルバトラー Lv200",
         "hp": 579074,
         "mp": 189000,
-        "atk": 67500,
+        "atk": 67416,
         "def": 54000,
         "spd": 48600,
-        "mag": 94500,
-        "gold": 94500,
-        "exp": 121500,
+        "mag": 94416,
+        "gold": 94416,
+        "exp": 121416,
         "acts": [
             {
                 "id": 404,
@@ -17667,7 +17667,7 @@ window.MONSTERS_DATA = [
         "atk": 21600,
         "def": 21600,
         "spd": 21600,
-        "mag": 13500,
+        "mag": 13416,
         "gold": 2700,
         "exp": 2700,
         "acts": [
@@ -17682,7 +17682,7 @@ window.MONSTERS_DATA = [
                 "condition": 0
             },
             {
-                "id": 500,
+                "id": 416,
                 "rate": 20,
                 "condition": 0
             },
@@ -17721,7 +17721,7 @@ window.MONSTERS_DATA = [
         "atk": 50,
         "def": 99999,
         "spd": 9999,
-        "mag": 500,
+        "mag": 416,
         "exp": 1000,
         "gold": 50,
         "acts": [
@@ -17869,8 +17869,8 @@ window.MONSTERS_DATA = [
         "def": 999999,
         "spd": 9999,
         "mag": 20000,
-        "exp": 500000,
-        "gold": 5000,
+        "exp": 416000,
+        "gold": 4160,
         "acts": [
             {
                 "id": 406,
@@ -17889,7 +17889,12 @@ window.MONSTERS_DATA = [
             },
             {
                 "id": 9,
-                "rate": 50,
+                "rate": 40,
+                "condition": 0
+            },
+            {
+                "id": 1,
+                "rate": 10,
                 "condition": 0
             }
         ],
@@ -17968,7 +17973,7 @@ window.MONSTERS_DATA = [
         "rank": 20,
         "minF": 20,
         "name": "魔王のつかい",
-        "hp": 15000,
+        "hp": 14160,
         "mp": 1200,
         "atk": 950,
         "def": 520,
@@ -18025,7 +18030,7 @@ window.MONSTERS_DATA = [
         "minF": 30,
         "name": "デュラン",
         "hp": 22000,
-        "mp": 2500,
+        "mp": 2416,
         "atk": 1600,
         "def": 900,
         "spd": 850,
@@ -18085,7 +18090,7 @@ window.MONSTERS_DATA = [
         "rank": 40,
         "minF": 40,
         "name": "ジャミラス",
-        "hp": 35000,
+        "hp": 34160,
         "mp": 3300,
         "atk": 2500,
         "def": 2550,
@@ -18253,7 +18258,7 @@ window.MONSTERS_DATA = [
         "rank": 70,
         "minF": 70,
         "name": "アクバー",
-        "hp": 105000,
+        "hp": 104160,
         "mp": 8000,
         "atk": 6600,
         "def": 5400,
@@ -18304,14 +18309,14 @@ window.MONSTERS_DATA = [
         "rank": 80,
         "minF": 80,
         "name": "アトラス",
-        "hp": 105000,
+        "hp": 104160,
         "mp": 6000,
         "atk": 8000,
         "def": 2000,
         "spd": 1150,
         "mag": 1450,
         "exp": 10000,
-        "gold": 5000,
+        "gold": 4500,
         "acts": [
             {
                 "id": 113,
@@ -18350,14 +18355,14 @@ window.MONSTERS_DATA = [
         "rank": 80,
         "minF": 80,
         "name": "バズズ",
-        "hp": 75000,
-        "mp": 6500,
-        "atk": 6500,
+        "hp": 74160,
+        "mp": 6416,
+        "atk": 6416,
         "def": 5300,
         "spd": 3500,
         "mag": 6700,
         "exp": 10000,
-        "gold": 5000,
+        "gold": 4500,
         "acts": [
             {
                 "id": 412,
@@ -18473,7 +18478,7 @@ window.MONSTERS_DATA = [
         "def": 6700,
         "spd": 3500,
         "mag": 8800,
-        "exp": 50000,
+        "exp": 41600,
         "gold": 20000,
         "acts": [
             {
@@ -18528,14 +18533,14 @@ window.MONSTERS_DATA = [
         "rank": 100,
         "minF": 100,
         "name": "シドー",
-        "hp": 250000,
+        "hp": 241600,
         "mp": 9999,
         "atk": 9999,
         "def": 9999,
         "spd": 3800,
         "mag": 9999,
         "exp": 100000,
-        "gold": 50000,
+        "gold": 41600,
         "acts": [
             {
                 "id": 119,
@@ -18686,14 +18691,14 @@ window.MONSTERS_DATA = [
         "rank": 120,
         "minF": 120,
         "name": "大魔王ゾーマ",
-        "hp": 550000,
+        "hp": 541600,
         "mp": 99999,
         "atk": 10000,
         "def": 9500,
         "spd": 5200,
         "mag": 18000,
         "exp": 300000,
-        "gold": 150000,
+        "gold": 141600,
         "acts": [
             {
                 "id": 406,
@@ -18836,8 +18841,8 @@ window.MONSTERS_DATA = [
         "def": 15000,
         "spd": 5500,
         "mag": 20000,
-        "exp": 500000,
-        "gold": 250000,
+        "exp": 416000,
+        "gold": 241600,
         "acts": [
             {
                 "id": 3,
@@ -18972,7 +18977,7 @@ window.MONSTERS_DATA = [
         "rank": 150,
         "minF": 150,
         "name": "ジャミラス強",
-        "hp": 350000,
+        "hp": 341600,
         "mp": 99999,
         "atk": 18000,
         "def": 11000,
@@ -19094,7 +19099,7 @@ window.MONSTERS_DATA = [
         "rank": 150,
         "minF": 150,
         "name": "デュラン強",
-        "hp": 500000,
+        "hp": 416000,
         "mp": 99999,
         "atk": 22000,
         "def": 15000,
@@ -19148,7 +19153,7 @@ window.MONSTERS_DATA = [
         "rank": 160,
         "minF": 160,
         "name": "みぎて",
-        "hp": 420000,
+        "hp": 550000,
         "mp": 99999,
         "atk": 27000,
         "def": 13000,
@@ -19202,8 +19207,8 @@ window.MONSTERS_DATA = [
         "rank": 160,
         "minF": 160,
         "name": "デスタムーア",
-        "hp": 800000,
-        "mp": 15000,
+        "hp": 700000,
+        "mp": 14160,
         "atk": 20000,
         "def": 20000,
         "spd": 5000,
@@ -19345,14 +19350,14 @@ window.MONSTERS_DATA = [
         "rank": 170,
         "minF": 170,
         "name": "レグナードⅢ",
-        "hp": 1500000,
+        "hp": 1416000,
         "mp": 99999,
         "atk": 30000,
         "def": 25000,
         "spd": 7000,
         "mag": 30000,
         "exp": 1000000,
-        "gold": 500000,
+        "gold": 416000,
         "acts": [
             {
                 "id": 3,
@@ -19445,8 +19450,8 @@ window.MONSTERS_DATA = [
         "def": 28000,
         "spd": 8000,
         "mag": 20000,
-        "exp": 1500000,
-        "gold": 750000,
+        "exp": 1416000,
+        "gold": 741600,
         "acts": [
             {
                 "id": 119,
@@ -19604,7 +19609,7 @@ window.MONSTERS_DATA = [
         "rank": 200,
         "minF": 200,
         "name": "大魔王バーン",
-        "hp": 5000000,
+        "hp": 4160000,
         "mp": 99999,
         "atk": 55000,
         "def": 45000,

@@ -212,7 +212,27 @@ enter: () => {
             }
         } else {
             // 【通常宝箱】
-            const r = Math.random();
+			// 100階以降の特別抽選
+			if (Dungeon.floor >= 100) {
+				const r = Math.random();
+				let specialItemId = null;
+				if (r < 0.001) specialItemId = 107;      // 転生の実 (0.1%)
+				else if (r < 0.011) specialItemId = 106; // スキルのたね (1%)
+				else if (r < 0.191) {                    // 種・きのみ系 合計18% (各3%)
+					specialItemId = 100 + Math.floor(Math.random() * 6);
+				}
+
+				if (specialItemId) {
+					App.data.items[specialItemId] = (App.data.items[specialItemId] || 0) + 1;
+					const item = DB.ITEMS.find(i => i.id === specialItemId);
+					App.log(`なんと <span style="color:#ffff00;"> ${item.name} </span>を手に入れた！`);
+					App.save();
+					return; // アイテムを手に入れたら終了
+				}
+			}
+
+            const r = Math.random();		
+		
             if (r < 0.2) {
                 // ちいさなメダル
                 const item = DB.ITEMS.find(i => i.id === 99);

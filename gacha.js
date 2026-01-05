@@ -1,21 +1,34 @@
-/* gacha.js (完全版: 黒転演出 + 提供割合 + 激アツ演出) */
+/* gacha.js (完全版: 黒転演出 + 提供割合 + 激アツ演出 + フィールド映り込み完全防止版) */
 const Gacha = {
     queue: [],
     currentIndex: 0,
     isSkipped: false,
     pendingCount: 0,
 	
-	// ★追加: レアリティ別の星を返すヘルパー
+    // ★レアリティ別の星を返すヘルパー
     getStars: (r) => {
         const stars = { 'R': '★★', 'SR': '★★★', 'SSR': '★★★★', 'UR': '★★★★★', 'EX': '★★★★★★' };
         return stars[r] || '';
     },
 
+    // --- 1. init (ガチャ開始時に、画面全体に「絶対に透けない壁」を作る) ---
     init: () => {
+        const gachaScreen = document.getElementById('sub-screen-gacha');
+        if (gachaScreen) {
+            // 背景を完全に不透明な黒に固定し、いかなる場合もフィールドが透けないようにする
+            gachaScreen.style.backgroundColor = '#000';
+            gachaScreen.style.backgroundImage = 'none';
+            gachaScreen.style.position = 'fixed';
+            gachaScreen.style.top = '0';
+            gachaScreen.style.left = '0';
+            gachaScreen.style.width = '100%';
+            gachaScreen.style.height = '100%';
+            gachaScreen.style.zIndex = '500'; // フィールドより上のレイヤー
+        }
         document.getElementById('gacha-gem').innerText = App.data.gems;
         Gacha.switchView('menu');
     },
-
+	
     switchView: (view) => {
         document.getElementById('gacha-menu-view').style.display = (view==='menu'?'flex':'none');
         document.getElementById('gacha-confirm-view').style.display = (view==='confirm'?'flex':'none');
@@ -34,7 +47,6 @@ const Gacha = {
             }
         }
 		
-		// --- showRates 関数内の排出対象一覧ループ部分 ---
         html += `<hr><h3>排出対象一覧</h3>`;
         for(let r of CONST.RARITY.slice().reverse()) {
             if (CONST.GACHA_RATES[r] <= 0) continue;
@@ -45,11 +57,8 @@ const Gacha = {
                 html += `<div style="margin-top:10px; color:${color}; font-weight:bold;">[${r}]</div>`;
                 
                 targets.forEach(c => {
-                    // ★追加：セーブデータ（所有キャラクター）から名前を検索
                     const owned = App.data.characters.find(oc => oc.charId === c.id);
-                    // 所有していればその名前を、なければデータベースのデフォルト名を使用
                     const displayName = (owned && owned.name) || c.name;
-                    
                     html += `<div>${displayName} (${c.job})</div>`;
                 });
             }
@@ -70,22 +79,36 @@ const Gacha = {
         Gacha.pendingCount = 0;
     },
 	
-	// --- executePull (判定フラグの修正) ---
+    // --- 2. executePull (目隠しレイヤーを最前面に即座に展開) ---
     executePull: () => {
         const count = Gacha.pendingCount;
         const cost = count * 300;
-        if(App.data.gems < cost) { alert("GEMが足りません"); Gacha.switchView('menu'); return; }
+        if(App.data.gems < cost) { 
+            alert("GEMが足りません"); 
+            Gacha.switchView('menu'); 
+            return; 
+        }
 
+        // ★最重要：計算を始める前に、即座に白い遮断レイヤーを「最前面」で表示する
+        const wo = document.getElementById('white-out-overlay');
+        if (wo) {
+            wo.style.transition = 'none'; // フェードを待たずに即座に表示
+            wo.style.display = 'block';
+            wo.style.opacity = '1';
+            wo.style.backgroundColor = '#fff';
+            wo.style.zIndex = '9000'; // 結果画面よりもさらに上に配置
+            void wo.offsetWidth; // 描画を強制
+        }
+
+        // データの更新
         App.data.gems -= cost;
         document.getElementById('gacha-gem').innerText = App.data.gems;
         Gacha.queue = [];
         let hasEX = false;
-        let hasUR = false; // ★追加：高レア告知用
+        let hasUR = false;
 
         for(let i=0; i<count; i++) {
             const result = Gacha.lottery();
-            
-            // ★修正：UR または EX が出た場合に hasUR を true にする
             if(result.rarity === 'EX') { hasEX = true; hasUR = true; }
             if(result.rarity === 'UR') { hasUR = true; }
 
@@ -106,11 +129,13 @@ const Gacha = {
             Gacha.queue.push(result);
         }
         App.save();
-        // ★修正：3つの引数を渡す
+        
+        Gacha.switchView('none');
+
+        // アニメーション進行へ
         Gacha.playWhiteFlash(hasEX, hasUR, count); 
     },
 	
-
     lottery: () => {
         const r = Math.random() * 100;
         let current = 0;
@@ -120,10 +145,8 @@ const Gacha = {
             if(r < current + rate) { selectedRarity = rarity; break; }
             current += rate;
         }
-        const pool = DB.CHARACTERS.filter(c => c.rarity === selectedRarity);
+        const pool = DB.CHARACTERS.filter(c => c.rarity === selectedRarity && c.id < 1000);
         
-        // ★修正: JSON.parse(JSON.stringify(...)) を使って
-        // マスタデータの「参照」ではなく「完全なコピー」を返すようにする
         if (pool.length > 0) {
             const pick = pool[Math.floor(Math.random() * pool.length)];
             return JSON.parse(JSON.stringify(pick));
@@ -132,18 +155,17 @@ const Gacha = {
         }
     },
     
-	// --- playWhiteFlash (引数の受け取りを修正) ---
-    // ★修正：(hasEX, hasUR, count) を受け取るように変更
+    // --- playWhiteFlash ---
     playWhiteFlash: (hasEX, hasUR, count) => {
         const wo = document.getElementById('white-out-overlay');
         const flash = document.getElementById('flash-overlay');
+        if(!wo) return;
+
         wo.classList.remove('black-turn');
         wo.style.display = 'block';
-        wo.style.zIndex = 6000;
-        void wo.offsetWidth; 
+        wo.style.zIndex = 9000;
         wo.style.opacity = 1;
 
-        // ②10連かつUR以上確定時、10%の確率で告知フラッシュ
         if (count >= 10 && hasUR && Math.random() < 0.1) {
             setTimeout(() => {
                 if (flash) {
@@ -165,12 +187,19 @@ const Gacha = {
             Gacha.currentIndex = 0;
             Gacha.isSkipped = false;
             Gacha.drawNextCard();
+            
+            // 徐々にフェードアウト
+            wo.style.transition = 'opacity 0.8s ease';
             wo.style.opacity = 0;
-            setTimeout(() => { wo.style.display = 'none'; wo.classList.remove('black-turn'); }, 800);
+            setTimeout(() => { 
+                wo.style.display = 'none'; 
+                wo.classList.remove('black-turn');
+                wo.style.zIndex = 6000; // 元のzIndexに戻す
+            }, 800);
         }, hasEX ? 2500 : 800);
     },
 	
-	// --- drawNextCard 修正版 (昇格・フラッシュ・白銀背景) ---
+    // --- drawNextCard ---
     drawNextCard: () => {
         if (Gacha.isSkipped) return;
         if (Gacha.currentIndex >= Gacha.queue.length) { Gacha.finish(); return; }
@@ -181,7 +210,6 @@ const Gacha = {
         const flash = document.getElementById('flash-overlay');
         stage.innerHTML = '';
 
-        // 背景リセット
         performanceArea.style.pointerEvents = 'auto'; 
         performanceArea.style.transition = 'none';
         performanceArea.classList.remove('confirmed');
@@ -191,7 +219,7 @@ const Gacha = {
         const master = DB.CHARACTERS.find(m => m.id === char.id);
         const owned = App.data.characters.find(c => c.charId === char.id);
 		
-		const displayName = (owned && owned.name) || (master ? master.name : char.name);
+        const displayName = (owned && owned.name) || (master ? master.name : char.name);
         const displayImg = (owned && owned.img) || (master ? master.img : null);
         const imgTag = displayImg 
             ? `<img src="${displayImg}" style="width:130px; height:130px; object-fit:contain; margin-bottom:5px; border:none !important; background:transparent !important; pointer-events:none;">` 
@@ -200,7 +228,6 @@ const Gacha = {
         const card = document.createElement('div');
         card.className = 'gacha-card-scene';
 
-        // 昇格演出判定
         const isURorEX = ['UR', 'EX'].includes(char.rarity);
         const isStealth = isURorEX && Math.random() < 0.2;
 
@@ -216,7 +243,7 @@ const Gacha = {
         let specialClass = "";
         if(char.rarity === 'UR') specialClass = "style-aurora";
         else if(char.rarity === 'EX') specialClass = "style-majestic";
-        else if(char.rarity === 'SSR') specialClass = "style-gold"; // SSRを金に統一
+        else if(char.rarity === 'SSR') specialClass = "style-gold";
 
         card.innerHTML = `
             <div class="card-face card-back ${backClass} ${preGlowClass}">
@@ -233,8 +260,8 @@ const Gacha = {
         stage.appendChild(card);
 
         const doFlip = () => {
-			if (isURorEX) { performanceArea.classList.add('confirmed'); }
-			card.classList.add('flipped');
+            if (isURorEX) { performanceArea.classList.add('confirmed'); }
+            card.classList.add('flipped');
         };
 
         performanceArea.onclick = () => {
@@ -243,39 +270,30 @@ const Gacha = {
                 Gacha.drawNextCard();
                 return;
             }
-
             performanceArea.style.pointerEvents = 'none'; 
-            const shouldFlash = isURorEX && isStealth; // 昇格時のみフラッシュ
-
+            const shouldFlash = isURorEX && isStealth;
             if (flash && shouldFlash) {
                 flash.style.display = 'block'; flash.className = 'flash-multiple';
                 setTimeout(() => { if(flash){ flash.style.display = 'none'; flash.className = ''; } }, 800);
             }
-
             let delay = shouldFlash ? 600 : 250;
             setTimeout(() => { doFlip(); performanceArea.style.pointerEvents = 'auto'; }, delay);
         };
     },
 
     skip: (e) => { 
-        if(e) e.stopPropagation(); // バブリングによるフラッシュ暴発を防止
+        if(e) e.stopPropagation();
         Gacha.isSkipped = true; 
         Gacha.finish(); 
     },
 	
-
-// --- finish 修正版 (単発ならカード表示、連打なら一覧) ---
+    // --- finish (レイアウトを維持したまま一覧/単発分岐) ---
     finish: () => {
         const performanceArea = document.getElementById('gacha-performance');
         const overlay = document.getElementById('gacha-result-overlay');
         const flash = document.getElementById('flash-overlay');
 
-        // 遷移時に演出用のフラッシュを完全に消去
-        if(flash) { 
-            flash.style.display = 'none'; 
-            flash.className = ''; 
-            flash.style.opacity = '1'; 
-        }
+        if(flash) { flash.style.display = 'none'; flash.className = ''; }
         
         performanceArea.style.transition = 'none';
         performanceArea.classList.remove('confirmed');
@@ -286,9 +304,8 @@ const Gacha = {
         const list = document.getElementById('gacha-results-list');
         list.innerHTML = '';
 
-        // ガチャ結果が1つの場合（単発）と複数の場合（10連）で分岐
         if (Gacha.queue.length === 1) {
-            // --- 【単発ガチャ】特製カード表示レイアウト ---
+            // 【単発ガチャ】特製カード表示
             const c = Gacha.queue[0];
             const master = DB.CHARACTERS.find(m => m.id === c.id);
             const owned = App.data.characters.find(oc => oc.charId === c.id);
@@ -337,14 +354,12 @@ const Gacha = {
                     </div>
                 </div>
             `;
-
         } else {
-            // --- 【10連ガチャ】従来のグリッド表示レイアウト ---
+            // 【10連ガチャ】グリッド表示
             list.style.display = 'grid'; 
             list.style.flexDirection = '';
             list.style.alignItems = '';
             list.style.justifyContent = '';
-            // ★修正：上下(15px)と左右(8px)のスペースを確保
             list.style.gap = '10px 5px'; 
             list.style.width = '';
 
@@ -356,8 +371,8 @@ const Gacha = {
                 const st = master || c;
                 
                 const thumbHtml = displayImg 
-                ? `<img src="${displayImg}" style="width:100%; height:100%; object-fit:cover; border-radius:3px; background:transparent;">` 
-                : '';
+                    ? `<img src="${displayImg}" style="width:100%; height:100%; object-fit:cover; border-radius:3px; background:transparent;">` 
+                    : '';
 
                 const div = document.createElement('div'); 
                 div.className = 'gacha-result-card';
@@ -383,8 +398,34 @@ const Gacha = {
         document.getElementById('result-gem-display').innerText = App.data.gems;
     },
 
-    retryPull: () => { document.getElementById('gacha-result-overlay').style.display = 'none'; Gacha.executePull(); },
-    closeResult: () => { document.getElementById('gacha-result-overlay').style.display = 'none'; document.getElementById('sub-screen-gacha').style.display = 'flex'; Gacha.init(); if(typeof Menu!=='undefined') Menu.renderPartyBar(); },
+    // --- 3. retryPull (遮断が完了した「後」に画面を切り替える) ---
+    retryPull: () => { 
+        // 1. まず白い壁を展開（executePull内で実施）
+        Gacha.executePull(); 
+        
+        // 2. 壁が被さった状態で、背後の結果画面を消す
+        // これにより、結果画面が消えた瞬間にフィールドが映り込む隙間を物理的に塞ぎます
+        const resultOverlay = document.getElementById('gacha-result-overlay');
+        if (resultOverlay) {
+            resultOverlay.style.display = 'none'; 
+        }
+    },
+
+    // --- 4. closeResult (終了処理とHUDの更新) ---
+    closeResult: () => { 
+        document.getElementById('gacha-result-overlay').style.display = 'none'; 
+        document.getElementById('sub-screen-gacha').style.display = 'flex'; 
+        Gacha.init(); // 再度背景を黒に保つ
+        
+        // フィールド画面(HUD)のGEM表示を強制同期
+        const fieldGemDisp = document.getElementById('disp-gem');
+        if (fieldGemDisp) {
+            fieldGemDisp.innerText = App.data.gems;
+        }
+
+        if(typeof Menu !== 'undefined') Menu.renderPartyBar(); 
+    },
+	
     getRarityColor: (r) => { if(r==='R') return '#444'; if(r==='SR') return '#664400'; if(r==='SSR') return '#800'; if(r==='UR') return '#404'; if(r==='EX') return '#000'; return '#333'; },
     getRarityTextColor: (r) => { if(r==='R') return 'silver'; if(r==='SR') return 'gold'; if(r==='SSR') return '#ff4444'; if(r==='UR') return '#ff00ff'; if(r==='EX') return '#ffff00'; return '#fff'; }
 };
