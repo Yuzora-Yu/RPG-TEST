@@ -2460,7 +2460,6 @@ findNextActor: () => {
         contentEl.innerHTML = html;
     },
 	
-
 	// --- 勝利処理：順序 [1]勝利ログ -> [2]経験値/LvUp -> [3]ドロップ判定&表示 ---
     win: async () => {
         Battle.phase = 'result'; Battle.active = false;
@@ -2502,7 +2501,7 @@ findNextActor: () => {
                 const oldLv = charData.level; // レベルアップ判定用
                 App.gainExp(charData, totalExp).forEach(msg => Battle.log(msg));
                 
-                // ★修正：レベルアップした場合のみ、最大ステータスを更新して全快させる
+                // レベルアップした場合のみ、最大ステータスを更新して全快させる
                 if (charData.level > oldLv) {
                     const stats = App.calcStats(charData);
                     p.level = charData.level;
@@ -2511,16 +2510,13 @@ findNextActor: () => {
                     p.hp = p.baseMaxHp; // レベルアップ特典で全快
                     p.mp = p.baseMaxMp;
                 }
-                // ※レベルアップしていない場合は p.hp を上書きしない（ダメージを維持する）
             }
         });
 
         // オプション再抽選サブ関数 (内部用)
         const createEquipWithMinRarity = (floor, plus, minRarityList, forcePart = null) => {
-            // ★修正: forcePartがあれば、その部位を指定して生成する
             let eq = App.createEquipByFloor('drop', floor, plus);
             
-            // 部位固定が必要な場合 (「改」武器限定対応)
             if (forcePart && eq.type !== forcePart) {
                 let attempts = 0;
                 while (eq.type !== forcePart && attempts < 50) {
@@ -2549,54 +2545,40 @@ findNextActor: () => {
             return eq;
         };
 
-        // --- [修正箇所] ドロップ生成：エスターク専用ロジック ---
+        // --- ドロップ生成判定 ---
         if (isEstark) {
-            // 1. エスタークの個体情報を取得 (isEstarkフラグまたはID:2000で検索)
             const estarkEnemy = Battle.enemies.find(e => e.isEstark || e.id === 2000 || e.baseId === 2000);
-            
-            // 安全策：万が一取得できなかった場合のフォールバック
             if (!estarkEnemy) {
                 console.error("Estark object not found in win logic");
                 return; 
             }
 
             const estarkId = estarkEnemy.baseId || estarkEnemy.id || 2000;
-            
-            // 2. 討伐数を図鑑から取得
             const killCount = (App.data.book.killCounts && App.data.book.killCounts[estarkId]) 
                               ? App.data.book.killCounts[estarkId] : 1;
 
-            // 3. 報酬計算用の「仮想階層」を決定：(エスタークのランク + 討伐数 * 5)
-            // モンスターデータの rank: 300 を正しく参照します
             const baseRank = estarkEnemy.rank || 300; 
             const rewardFloor = baseRank + (killCount * 5);
 
-            // 4. 装備生成：UR/EX確定、プラス3
             const eq = createEquipWithMinRarity(rewardFloor, 3, ['UR', 'EX']);
-
-            // 5. エスターク報酬補正：基礎価値(val)を3倍に
             eq.val *= 3;
-            
-            // 特別な名称付与（任意：既に+3がついているので、さらに強調する場合）
             eq.name = "【EX】" + eq.name;
-			
-			// ★追加：GEMを実際に加算する処理
+            
             App.data.gems = (App.data.gems || 0) + 100000;
-
-            // 6. インベントリへ追加とログ設定
             App.data.inventory.push(eq);
             
-            // 演出フラグ：赤黒フラッシュ(Ultra)を強制、ドロップリストに追加
             drops.push({ name: eq.name, isRare: true, isUltra: true, isEstark: true });
             hasUltraRareDrop = true; 
-			
-			// ★追加: エスターク討伐時 10% の確率で「転生の実」をドロップ
+
+            // ★追加: エスターク討伐時 10% の確率で「転生の実」をゲット (ウルトラレア扱い)
             if (Math.random() < 0.10) {
                 const fruitId = 107;
                 App.data.items[fruitId] = (App.data.items[fruitId] || 0) + 1;
                 const itemDef = DB.ITEMS.find(i => i.id === fruitId);
                 if (itemDef) {
-                    drops.push({ name: itemDef.name, isRare: true, type: 'item' });
+                    hasUltraRareDrop = true;
+                    // type: 'kai' を指定することでログをピンク色にする
+                    drops.push({ name: itemDef.name, isRare: true, type: 'kai' });
                 }
             }
 
@@ -2609,9 +2591,7 @@ findNextActor: () => {
                 if (base.id >= 1000) {
                     // --- ボスドロップ判定 ---
                     let eq;
-                    // ★2%の低確率
                     if (Math.random() < 0.02) { 
-                        // 「改」装備は「武器」限定
                         eq = createEquipWithMinRarity(floor, 3, ['SSR', 'UR', 'EX'], '武器');
                         eq.name = eq.name.replace(/\+3$/, "") + "・改+3";
                         for (let key in eq.data) {
@@ -2621,47 +2601,51 @@ findNextActor: () => {
                             }
                         }
                         eq.val *= 4;
-						App.data.inventory.push(eq);
+                        App.data.inventory.push(eq);
                         hasUltraRareDrop = true;
                         drops.push({ name: eq.name, isRare: true, type: 'kai' });
                     } else {
-                        // 通常ボスドロップ
                         eq = App.createEquipByFloor('drop', floor, 3);
-						App.data.inventory.push(eq);
+                        App.data.inventory.push(eq);
                         hasRareDrop = true;
                         drops.push({ name: eq.name, isRare: true, type: 'boss' });
                     }
                 } else {
-                    // 通常モンスター
+                    // --- 通常モンスタードロップ判定 ---
                     const r = Math.random();
-					
-					// ★追加：100階以降の育成アイテム（種・実）ドロップ判定
-					if (floor >= 100) {
-						const sr = Math.random();
-						let sid = null;
-						
-						// 内部確率を調整：
-						if (sr < 0.001) {
-							sid = 107;      // 転生の実 (0.1% / 1000体に1個)
-						} else if (sr < 0.011) {
-							sid = 106;      // スキルのたね (1.0% / 100体に1個)
-						} else if (sr < 0.181) {
-							sid = 100 + Math.floor(Math.random() * 6); // 各種 種・きのみ (17% / 約6体に1個)
-						}
+                    
+                    // 100階以降の育成アイテム（種・実）ドロップ判定
+                    if (floor >= 100) {
+                        const sr = Math.random();
+                        let sid = null;
+                        
+                        if (sr < 0.001) {
+                            sid = 107;      // 転生の実 (0.1%)
+                        } else if (sr < 0.011) {
+                            sid = 106;      // スキルのたね (1.0%)
+                        } else if (sr < 0.181) {
+                            sid = 100 + Math.floor(Math.random() * 6); // 各種 種・きのみ (17%)
+                        }
 
-						if (sid) {
-							App.data.items[sid] = (App.data.items[sid] || 0) + 1;
-							const itemDef = DB.ITEMS.find(i => i.id === sid);
-							if (itemDef) {
-								// 希少なもの（ID 106以上）はレア演出用フラグを立てる
-								if (isRare) hasRareDrop = true; // レアなら光らせる
-								drops.push({ name: itemDef.name, isRare: isRare, type: 'item' });
-							}
-						}
-					}
-					
+                        if (sid) {
+                            App.data.items[sid] = (App.data.items[sid] || 0) + 1;
+                            const itemDef = DB.ITEMS.find(i => i.id === sid);
+                            if (itemDef) {
+                                if (sid === 107) {
+                                    // 転生の実：ウルトラレア扱い (赤黒フラッシュ + ピンク文字)
+                                    hasUltraRareDrop = true;
+                                    drops.push({ name: itemDef.name, isRare: true, type: 'kai' });
+                                } else {
+                                    // スキルのたね(106)および通常の種(100-105)：ノーマル扱い
+                                    drops.push({ name: itemDef.name, isRare: false, type: 'item' });
+                                }
+                            }
+                        }
+                    }
+                    
+                    // 通常アイテム/装備判定
                     if (r < 0.2) {
-                        const candidates = DB.ITEMS.filter(i => i.rank <= Math.min(200, floor) && i.type !== '貴重品');
+                        const candidates = DB.ITEMS.filter(i => i.rank <= Math.min(200, floor) && i.type !== '貴重品' && i.id < 100);
                         if (candidates.length > 0) {
                             const item = candidates[Math.floor(Math.random() * candidates.length)];
                             App.data.items[item.id] = (App.data.items[item.id] || 0) + 1;
@@ -2669,7 +2653,7 @@ findNextActor: () => {
                         }
                     } else if (r < 0.35) {
                         const eq = App.createEquipByFloor('drop', floor);
-                        App.data.inventory.push(eq); // 確実に追加
+                        App.data.inventory.push(eq);
                         const isPlus3 = (eq.plus === 3);
                         if(isPlus3) hasRareDrop = true;
                         drops.push({ name: eq.name, isRare: isPlus3, type: 'normal' });
@@ -2680,42 +2664,30 @@ findNextActor: () => {
 
         // [3] ドロップありならウェイト ＆ 改行
         if (drops.length > 0) {
-            App.save(); // 表示前に一度保存して確実にインベントリへ入れる
-            Battle.log("<br>"); // 確実に1行空ける
+            App.save();
+            Battle.log("<br>");
             await Battle.wait(800);
             
             // [4] 演出実行（優先順位：ウルトラ ＞ レア）
             if (hasUltraRareDrop || hasRareDrop) {
                 const ultraFlash = document.getElementById('drop-flash-ultra');
                 const rareFlash = document.getElementById('drop-flash');
-
                 let targetEl = null;
                 let activeClass = "";
 
-                // ★優先判定ロジック
                 if (hasUltraRareDrop && ultraFlash) {
-                    targetEl = ultraFlash;
-                    activeClass = 'flash-ultra-active';
+                    targetEl = ultraFlash; activeClass = 'flash-ultra-active';
                 } else if (hasRareDrop && rareFlash) {
-                    targetEl = rareFlash;
-                    activeClass = 'flash-active';
+                    targetEl = rareFlash; activeClass = 'flash-active';
                 }
 
                 if (targetEl) {
-                    // 全演出要素の状態を一旦リセット
                     [ultraFlash, rareFlash].forEach(el => {
-                        if (el) {
-                            el.style.display = 'none';
-                            el.classList.remove('flash-active', 'flash-ultra-active');
-                        }
+                        if (el) { el.style.display = 'none'; el.classList.remove('flash-active', 'flash-ultra-active'); }
                     });
-
-                    // 演出開始
-                    void targetEl.offsetWidth; // リフロー強制（再トリガー用）
+                    void targetEl.offsetWidth; 
                     targetEl.style.display = 'block';
                     targetEl.classList.add(activeClass);
-
-                    // 終了後に自動で隠す（display: none への復帰）
                     targetEl.onanimationend = () => {
                         targetEl.style.display = 'none';
                         targetEl.classList.remove(activeClass);
@@ -2729,7 +2701,8 @@ findNextActor: () => {
                 if (d.isEstark) {
                     Battle.log(`<span style="color:#ffd700; font-weight:bold;">100,000 GEM</span> を獲得！`);
                     Battle.log(`なんと <span style="color:#ffd700; font-weight:bold;">${d.name}</span> を手に入れた！`);
-                } else if (d.type === 'kai') { // ウルトラレア（改）
+                } else if (d.type === 'kai') {
+                    // 転生の実や「改」装備はここでピンク色に強調
                     Battle.log(`なんと <span style="color:#ff00ff; font-weight:bold;">${d.name}</span> を手に入れた！`);
                 } else if (d.isRare) {
                     Battle.log(`なんと <span class="log-rare-drop">${d.name}</span> を手に入れた！`);
@@ -2739,7 +2712,7 @@ findNextActor: () => {
             });
         }
         
-        App.save(); // 最終状態を保存
+        App.save(); 
         Battle.log("\n▼ 画面タップで終了 ▼");
         if (isBossBattle && !isEstark && typeof Dungeon !== 'undefined') Dungeon.onBossDefeated();
     },
