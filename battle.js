@@ -46,6 +46,15 @@ const Battle = {
         }
         return `【${actor.name}】`;
     },
+
+    // ★追加: スキルが補助（回復・蘇生・強化等）かどうかを判定する
+    isSupportSkill: (d) => {
+        if (!d) return false;
+        const type = d.type || '';
+        if (['回復', '蘇生', '強化', 'MP回復'].includes(type)) return true;
+        if (d.debuff_reset || d.CureAilments || d.HPRegen || d.MPRegen) return true;
+        return false;
+    },
 	
     init: () => {
         Battle.active = true;
@@ -843,144 +852,6 @@ findNextActor: () => {
         });
     },
 
-    goBack: () => {
-        if (Battle.currentActorIndex > 0) {
-            Battle.commandQueue.pop(); 
-            Battle.currentActorIndex--;
-            while (Battle.currentActorIndex >= 0 && (!Battle.party[Battle.currentActorIndex] || Battle.party[Battle.currentActorIndex].isDead)) {
-                Battle.currentActorIndex--;
-            }
-            if(Battle.currentActorIndex < 0) Battle.currentActorIndex = 0;
-            Battle.closeSubMenu();
-            Battle.phase = 'input'; 
-            Battle.findNextActor();
-        }
-    },
-
-    updateCommandButtons: () => {
-        const cmdRoot = Battle.getEl('command-root');
-        if(cmdRoot && cmdRoot.children.length >= 5) {
-            const btn = cmdRoot.children[4];
-            const firstAlive = Battle.party.findIndex(p => p && !p.isDead);
-            const newBtn = btn.cloneNode(true);
-            if (Battle.currentActorIndex === firstAlive) {
-                newBtn.innerText = "にげる";
-                newBtn.onclick = Battle.run;
-                newBtn.disabled = !!App.data.battle.isBossBattle;
-            } else {
-                newBtn.innerText = "もどる";
-                newBtn.onclick = Battle.goBack;
-                newBtn.disabled = false;
-            }
-            btn.parentNode.replaceChild(newBtn, btn);
-        }
-    },
-
-    selectCommand: (type) => {
-        if (Battle.phase !== 'input' || Battle.auto) return;
-        Battle.selectingAction = type;
-        Battle.selectedItemOrSkill = null;
-
-        if (type === 'attack') {
-            //const actor = Battle.party[Battle.currentActorIndex];
-            //if (actor.battleStatus.ailments['SkillSeal']) {
-            //    Battle.log("攻撃特技が封印されていて動けない！");
-            //    return;
-            //}
-            Battle.log("攻撃対象を選択してください");
-            Battle.openTargetWindow('enemy');
-        } 
-        else if (type === 'skill') Battle.openSkillList();
-        else if (type === 'item') Battle.openItemList();
-        else if (type === 'defend') {
-            const actor = Battle.party[Battle.currentActorIndex];
-            Battle.registerAction({ type: 'defend', actor: actor });
-        }
-    },
-
-    openTargetWindow: (targetType, actionData = null) => { 
-        const win = Battle.getEl('battle-target-window');
-        const list = Battle.getEl('battle-target-list');
-        const listWin = Battle.getEl('battle-list-window');
-        if (!win || !list) return;
-        if (listWin) listWin.style.display = 'none'; 
-
-        win.style.display = 'flex';
-        list.innerHTML = '';
-        Battle.phase = 'target_select';
-
-        let targets = [];
-        let actualTargetType = targetType;
-        
-        if(actionData) {
-            const type = actionData.type || '';
-            const range = actionData.target || '単体';
-            if (range === '単体') {
-                if (type === '蘇生') actualTargetType = 'ally_dead';
-                else if (type.includes('回復') || type === '強化' || type === 'MP回復') actualTargetType = 'ally';
-                else if (actionData.debuff_reset || actionData.CureAilments) actualTargetType = 'ally'; 
-                else actualTargetType = 'enemy';
-            } else if (range === '全体') {
-                if (type.includes('回復') || ['蘇生','強化'].includes(type) || 
-                    actionData.debuff_reset || actionData.CureAilments || 
-                    actionData.HPRegen || actionData.MPRegen) {
-                    actualTargetType = 'all_ally';
-                } else {
-                    actualTargetType = 'all_enemy';
-                }
-            } else if (range === 'ランダム') {
-                actualTargetType = 'random';
-            } else if (range === '自分') {
-                actualTargetType = 'self';
-            }
-        }
-
-        if (['all_enemy', 'all_ally', 'random', 'self'].includes(actualTargetType)) {
-            const actor = Battle.party[Battle.currentActorIndex];
-            let targetObj = actualTargetType;
-            if (actualTargetType === 'self') targetObj = actor;
-
-            Battle.registerAction({ 
-                type: Battle.selectingAction, 
-                actor: actor, 
-                target: targetObj, 
-                data: Battle.selectedItemOrSkill,
-                targetScope: actionData ? actionData.target : null 
-            });
-            return;
-        }
-
-        if (actualTargetType === 'enemy') targets = Battle.enemies.filter(e => !e.isDead && !e.isFled);
-        else if (actualTargetType === 'ally') targets = Battle.party.filter(p => p && !p.isDead);
-        else if (actualTargetType === 'ally_dead') targets = Battle.party.filter(p => p && p.isDead);
-
-        if (targets.length === 0) {
-            Battle.log("対象がいません");
-            setTimeout(Battle.cancelSubMenu, 800);
-            return;
-        }
-
-        targets.forEach(t => {
-            const btn = document.createElement('button');
-            btn.className = 'battle-target-btn';
-            btn.innerText = t.name;
-            if(t.isDead && actualTargetType !== 'ally_dead') btn.disabled = true;
-            btn.onclick = (e) => { e.stopPropagation(); Battle.selectTarget(t); };
-            list.appendChild(btn);
-        });
-    },
-
-    selectTarget: (target) => {
-        if (Battle.phase !== 'target_select') return;
-        const actor = Battle.party[Battle.currentActorIndex];
-        Battle.registerAction({
-            type: Battle.selectingAction,
-            actor: actor,
-            target: target,
-            data: Battle.selectedItemOrSkill
-        });
-    },
-
 	openSkillList: () => {
         const actor = Battle.party[Battle.currentActorIndex];
         const win = Battle.getEl('battle-list-window');
@@ -1344,7 +1215,45 @@ findNextActor: () => {
                     Battle.log(`<span style="color:#aaa; font-size:0.9em;">(状況の変化により ${actor.name} は行動を変更)</span>`);
                 }
             }
-            if (cmd.isEnemy) { const reD = Battle.decideEnemyAction(actor); cmd.type = reD.type; cmd.data = reD.data; cmd.targetScope = reD.targetScope; }
+            
+            // ★修正: 敵の行動とターゲットの再評価
+            if (cmd.isEnemy) { 
+                const reD = Battle.decideEnemyAction(actor); 
+                cmd.type = reD.type; 
+                cmd.data = reD.data; 
+                cmd.targetScope = reD.targetScope; 
+                // 行動が再決定されたらターゲットも再設定する必要があるため一旦クリア
+                cmd.target = null; 
+            }
+
+            // ★修正: ターゲット選定（敵の補助スキルがプレイヤーを狙わないように修正）
+            if (cmd.isEnemy && !cmd.target) {
+                const isSupport = Battle.isSupportSkill(cmd.data);
+                if (cmd.targetScope === '自分') {
+                    cmd.target = actor;
+                } else if (cmd.targetScope === '全体') {
+                    cmd.target = isSupport ? 'all_enemy' : 'all_party';
+                } else if (cmd.targetScope === 'ランダム') {
+                    cmd.target = 'random';
+                } else {
+                    // 単体スキルの場合
+                    if (isSupport) {
+                        // 補助スキルの場合は敵側（モンスター陣営）を狙う
+                        let pool = [];
+                        if (cmd.data && cmd.data.type === '蘇生') {
+                            pool = Battle.enemies.filter(e => e.isDead && !e.isFled);
+                        } else {
+                            pool = Battle.enemies.filter(e => !e.isDead && !e.isFled);
+                        }
+                        // 候補がいなければ自分を対象にする
+                        cmd.target = pool.length > 0 ? pool[Math.floor(Math.random() * pool.length)] : actor;
+                    } else {
+                        // 攻撃スキルの場合はプレイヤー側（パーティ陣営）を狙う
+                        const aliveParty = Battle.party.filter(p => p && !p.isDead);
+                        cmd.target = aliveParty.length > 0 ? aliveParty[Math.floor(Math.random() * aliveParty.length)] : null;
+                    }
+                }
+            }
 
             // ★修正：怯え判定（特例：行動時にのみ消費）
             if (actor.battleStatus.ailments['Fear']) {
@@ -1367,26 +1276,21 @@ findNextActor: () => {
                 }
             }
 
-            // 敵の逃走・ターゲットチェック等は既存維持
+            // 敵の逃走
             if (cmd.type === 'flee') {
                 Battle.log(`【${cmd.actor.name}】は逃げ出した！`);
                 cmd.actor.isFled = true; cmd.actor.hp = 0; Battle.renderEnemies();
                 if (Battle.checkFinish()) return; continue;
             }
 
-            if (cmd.isEnemy && !cmd.target) {
-                if (cmd.targetScope === '自分') cmd.target = actor;
-                else if (cmd.targetScope === '全体') cmd.target = 'all_party';
-                else {
+            // ターゲット再チェック（死んでいる対象を避ける）
+            if (cmd.target && typeof cmd.target === 'object' && (cmd.target.isDead || cmd.target.isFled)) {
+                if (Battle.enemies.includes(cmd.target)) {
+                    cmd.target = Battle.getRandomAliveEnemy();
+                } else if (Battle.party.includes(cmd.target) && cmd.data?.type !== '蘇生') {
+                    // プレイヤーが死んでいるなら別の生存者を狙う
                     const aliveParty = Battle.party.filter(p => p && !p.isDead);
                     cmd.target = aliveParty.length > 0 ? aliveParty[Math.floor(Math.random() * aliveParty.length)] : null;
-                }
-            }
-            if (cmd.target && typeof cmd.target === 'object' && (cmd.target.isDead || cmd.target.isFled)) {
-                if (Battle.enemies.includes(cmd.target)) cmd.target = Battle.getRandomAliveEnemy();
-                else if (Battle.party.includes(cmd.target) && cmd.data?.type !== '蘇生') {
-                    const newCmd = Battle.decideAutoAction(actor);
-                    cmd.type = newCmd.type; cmd.target = newCmd.target; cmd.data = newCmd.data;
                 }
             }
 
@@ -1599,7 +1503,7 @@ findNextActor: () => {
                     } else if (item.type === 'MP回復') {
                         if (!t.isDead) {
                             let rec = item.val; if (item.val >= 9999) rec = t.baseMaxMp;
-                            t.mp = Math.min(t.baseMaxMp, t.mp + rec);
+                            t.mp = Math.min(t.baseMaxMp, t.mp + Math.floor(rec));
                             Battle.log(`【${t.name}】のMPが${rec}回復！`);
                         }
                     } else if (item.type === '状態異常回復' && !t.isDead) {
@@ -1757,14 +1661,8 @@ findNextActor: () => {
         if (!skillScope && cmd.target === 'all_ally') skillScope = '全体';
         if (!skillScope && cmd.target === 'random') skillScope = 'ランダム';
 
-        const isSupportSkill = (d) => {
-            if (!d) return false;
-            const type = d.type || '';
-            if (['回復','蘇生','強化','MP回復'].includes(type)) return true;
-            if (d.debuff_reset || d.CureAilments || d.HPRegen || d.MPRegen) return true;
-            return false;
-        };
-        const isSupport = isSupportSkill(data);
+        // 補助スキルの判定
+        const isSupport = Battle.isSupportSkill(data);
 
         if (skillScope === '全体') {
              if (cmd.isEnemy) {
