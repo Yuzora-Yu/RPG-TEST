@@ -113,7 +113,7 @@ const CONST = {
 				{ desc: '防御力 +25%', stats: { defMult: 0.25 } },
 				{ desc: '被ダメージ軽減 +10%', passive: 'finRed10' },
 				{ desc: 'ザオリク習得', skillId: 31 },
-				{ desc: 'ひかりのはどう・ベホマラー習得', skillIds: [56, 24] }
+				{ desc: 'ひかりのはどう習得', skillIds: 56 }
 			]
 		},
 		M_KNIGHT: {
