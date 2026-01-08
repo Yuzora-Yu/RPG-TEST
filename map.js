@@ -161,13 +161,13 @@ const FIXED_DUNGEON_MAPS = {
         tiles: [
             "WWWWWWWWWWWWWWW",
             "WBGGGGGGGGGGWCW", // (13, 1) に宝箱
-            "WWWWWWWGWWWWWGW",
-            "WGWGGGGGWGGGGGW",
+            "WGGWWWWGWWWWWGW",
+            "WWWWGGGGWGGGGGW",
             "WGWWWWWGWWWWWGW",
             "WGGGGGGGGGGGGGW",
             "WWWWWWWWWGWWWWW",
             "WCWGGGGCWGGGGGW", // (1, 7) と (8, 7) に宝箱
-            "WGWGWWWWWWWGWGW",
+            "WGWGWWWWWWWWWGW",
             "WGWGGGGGGGGGGGW",
             "WGWWWWWWWWWGWWW",
             "WGGGGGGGGGGGGGW",
@@ -181,6 +181,8 @@ const FIXED_DUNGEON_MAPS = {
             { x: 1, y: 7, itemId: 2, type: 'item' },   // 上やくそう
             { x: 7, y: 7, itemId: 3, type: 'item' }    // 魔法の小瓶
         ],
+		// ★追加: 出現するモンスターのIDリストを指定
+        monsters: [1, 1.01, 1.5, 2, 2.01, 2.5, 3, 3.01, 4],
 		// ★追加: 固定ボスの設定
         bosses: [
             { x: 1, y: 1, monsterId: 1010 }

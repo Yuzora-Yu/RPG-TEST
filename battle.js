@@ -261,51 +261,57 @@ const Battle = {
 	/**
      * 新規モンスターの生成 (出現数増加・レア複数・深層スケーリング修正版)
      **/
-    generateNewEnemies: (isBoss) => {
+    /* battle.js 内の generateNewEnemies 関数 全文（省略なし） */
+
+    generateNewEnemies: (isBoss, fixedBossId = null) => {
         const newEnemies = [];
         const floor = App.data.progress.floor || 1; 
         const count = isBoss ? (1 + Math.floor(Math.random() * 3)) : (1 + Math.floor(Math.random() * 4));
 
-        const setupEnemyStats = (m) => {
-            m.atk = m.baseStats.atk;
-            m.def = m.baseStats.def;
-            m.spd = m.baseStats.spd;
-            m.mag = m.baseStats.mag;
-            m.elmAtk = JSON.parse(JSON.stringify(m.data.elmAtk || {}));
-            m.elmRes = JSON.parse(JSON.stringify(m.data.elmRes || {}));
+        const setupEnemyStats = (m, base) => {
+            m.atk = m.baseStats?.atk || base.atk || m.atk;
+            m.def = m.baseStats?.def || base.def || m.def;
+            m.spd = m.baseStats?.spd || base.spd || m.spd;
+            m.mag = m.baseStats?.mag || base.mag || m.mag;
+            m.elmAtk = JSON.parse(JSON.stringify(base.elmAtk || {}));
+            m.elmRes = JSON.parse(JSON.stringify(base.elmRes || {}));
             m.finDmg = 0; m.finRed = 0;
             return m;
         };
 
+        // --- A. ボス戦のロジック ---
         if (isBoss) {
             Battle.log("強大な魔物が現れた！");
             
-            // ★最優先: StoryManager でセットされた固定ボスID (1010等) がある場合
-            if (App.data.battle && App.data.battle.fixedBossId) {
-                const base = DB.MONSTERS.find(m => m.id === App.data.battle.fixedBossId);
+            // StoryManagerでセットされた固定ボスIDがあれば最優先
+            const targetId = fixedBossId || (App.data.battle ? App.data.battle.fixedBossId : null);
+
+            if (targetId) {
+                const base = DB.MONSTERS.find(m => m.id === targetId);
                 if (base) {
                     const m = new Monster(base, 1.0);
                     m.name = base.name; m.id = base.id; m.actCount = base.actCount || 1;
                     newEnemies.push(setupEnemyStats(m, base));
-                    return newEnemies; // 固定ボスの場合は単体(または定義通り)で即時返却
+                    return newEnemies; 
                 }
             }
 
+            // ランダムボス（アビス等の階層指定）
             const bosses = DB.MONSTERS.filter(m => m.minF === floor && m.id >= 1000);
             if (bosses.length > 0) {
                 bosses.forEach(base => {
                     const m = new Monster(base, 1.0);
                     m.name = base.name; m.id = base.id; m.actCount = base.actCount || 1;
-                    newEnemies.push(setupEnemyStats(m));
+                    newEnemies.push(setupEnemyStats(m, base));
                 });
             } else {
                 const base = DB.MONSTERS.find(m => m.id === 1000);
-                if (base) newEnemies.push(setupEnemyStats(new Monster(base, 1.0)));
+                if (base) newEnemies.push(setupEnemyStats(new Monster(base, 1.0), base));
             }
             return newEnemies;
         }
 
-        // 201階以降
+        // --- B. 201階以降の特殊スケーリング ---
         if (floor >= 201) {
             Battle.log("強力な魔物の気配がする…！");
             const candidates = DB.MONSTERS.filter(m => m.id >= 101 && m.id <= 999);
@@ -319,18 +325,46 @@ const Battle = {
             return newEnemies;
         }
 
+        // --- C. 通常エンカウントのロジック ---
         Battle.log("魔物が現れた！");
         for(let i=0; i<count; i++) {
             let monsterData = null;
+            
+            // 1. レアモンスター抽選 (既存)
             if (Math.random() < 0.05) { 
                 const rares = DB.MONSTERS.filter(m => m.isRare && m.minF <= floor && floor <= (m.rank * 2));
                 if (rares.length > 0) monsterData = rares[Math.floor(Math.random() * rares.length)];
             }
-            if (!monsterData && window.generateEnemy) monsterData = window.generateEnemy(floor);
+
+            if (!monsterData) {
+                // 2. ★修正: 固定マップ（固定ダンジョン含む）の指定モンスター ID
+                if (Field.currentMapData && Field.currentMapData.isFixed && Field.currentMapData.monsters) {
+                    const ids = Field.currentMapData.monsters;
+                    const mid = ids[Math.floor(Math.random() * ids.length)];
+                    monsterData = DB.MONSTERS.find(m => m.id === mid);
+                }
+                // 3. ★修正: フィールド（ワールドマップ）のストーリー進行度連動ランク
+                else if (!Field.currentMapData) {
+                    const step = App.data.progress.storyStep || 0;
+                    // 例: step 0(ランク1-5), step 1(ランク3-8), step 2(ランク5-11)...
+                    const minRank = Math.max(1, step * 2 + 1);
+                    const maxRank = step * 3 + 5;
+                    const candidates = DB.MONSTERS.filter(m => m.id < 1000 && !m.isRare && m.rank >= minRank && m.rank <= maxRank);
+                    if (candidates.length > 0) {
+                        monsterData = candidates[Math.floor(Math.random() * candidates.length)];
+                    }
+                }
+                // 4. その他（ランダムダンジョン等）は階層から生成
+                else if (window.generateEnemy) {
+                    monsterData = window.generateEnemy(floor);
+                }
+            }
+
+            // モンスターのインスタンス化
             if (monsterData) {
                 const m = new Monster(monsterData, 1.0);
                 if (count > 1) m.name += String.fromCharCode(65+i);
-                newEnemies.push(setupEnemyStats(m));
+                newEnemies.push(setupEnemyStats(m, monsterData));
             }
         }
         return newEnemies;
