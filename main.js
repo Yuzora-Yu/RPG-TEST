@@ -304,6 +304,109 @@ const App = {
     data: null,
     pendingAction: null, 
 
+    // --- 初期データ構造の定義 ---
+    // セーブデータが全くない場合や、マイグレーション時のデフォルト参照用
+    getInitialData: () => {
+        return {
+            location: { area: 'START_VILLAGE', x: 6, y: 4 },
+            progress: { 
+                floor: 0, 
+                storyStep: 0, 
+                flags: {}, 
+                unlocked: { smith: false, gacha: false },
+                clearedDungeons: [],
+                openedChests: {},  
+                defeatedBosses: {} 
+            },
+            inventory: [],
+            items: { "1": 3 }, 
+            characters: [
+                { uid: 'p1', charId: 1, name: 'アルス', job: '勇者', level: 1, exp: 0, hp: 50, mp: 20, atk: 15, def: 10, mag: 10, spd: 10, equips: { '武器':null, '盾':null, '頭':null, '体':null, '足':null }, sp: 0, tree: {}, config: { fullAuto: false, hiddenSkills: [] } }
+            ],
+            party: ['p1', null, null, null],
+            gold: 500,
+            gems: 0,
+            dungeon: { 
+                maxFloor: 0, 
+                tryCount: 0, 
+                returnPoint: null,
+                map: null,
+                width: 30,
+                height: 30
+            },
+            stats: { 
+                wipeoutCount: 0, 
+                maxGold: 0, 
+                maxGems: 0, 
+                maxDamage: { val: 0, actor: '未記録', skill: '-' } 
+            },
+            book: { 
+                monsters: [], 
+                killCounts: {} 
+            }
+        };
+    },
+
+    // --- データ補完ロジック (マイグレーション) ---
+    init: () => {
+        // セーブデータの読み込み
+        App.load();
+
+        // 読み込み失敗、または新規プレイの場合
+        if (!App.data) {
+            App.data = App.getInitialData();
+        }
+
+        const initial = App.getInitialData();
+
+        // 1. location の補完
+        if (!App.data.location) {
+            App.data.location = JSON.parse(JSON.stringify(initial.location));
+        } else {
+            if (!App.data.location.area) App.data.location.area = 'START_VILLAGE';
+            if (App.data.location.x === undefined) App.data.location.x = 6;
+            if (App.data.location.y === undefined) App.data.location.y = 4;
+        }
+
+        // 2. progress の補完
+        if (!App.data.progress) {
+            App.data.progress = JSON.parse(JSON.stringify(initial.progress));
+        } else {
+            if (App.data.progress.storyStep === undefined) App.data.progress.storyStep = 0;
+            if (!App.data.progress.flags) App.data.progress.flags = {};
+            if (!App.data.progress.unlocked) App.data.progress.unlocked = { smith: false, gacha: false };
+            if (!App.data.progress.clearedDungeons) App.data.progress.clearedDungeons = [];
+            if (!App.data.progress.openedChests) App.data.progress.openedChests = {};
+            if (!App.data.progress.defeatedBosses) App.data.progress.defeatedBosses = {};
+        }
+
+        // 3. stats の補完
+        if (!App.data.stats) {
+            App.data.stats = JSON.parse(JSON.stringify(initial.stats));
+        } else {
+            if (App.data.stats.wipeoutCount === undefined) App.data.stats.wipeoutCount = 0;
+            if (!App.data.stats.maxDamage) App.data.stats.maxDamage = { val: 0, actor: '未記録', skill: '-' };
+        }
+
+        // 4. book の補完
+        if (!App.data.book) App.data.book = { monsters: [], killCounts: {} };
+
+        // 5. dungeon の補完
+        if (!App.data.dungeon) App.data.dungeon = JSON.parse(JSON.stringify(initial.dungeon));
+
+        // 6. キャラクターの個別補完
+        if (App.data.characters) {
+            App.data.characters.forEach(c => {
+                if (!c.config) c.config = { fullAuto: false, hiddenSkills: [] };
+                if (c.sp === undefined) c.sp = 0;
+                if (!c.tree) c.tree = {};
+            });
+        }
+
+        // 修正結果を一度保存
+        App.save();
+    },
+
     initGameHub: () => {
         // ★修正: 画像読み込み待機処理を追加
         // assets.js があり、GRAPHICSが定義されていればロードしてからゲーム開始
@@ -318,7 +421,9 @@ const App = {
     },
 
     startGameLogic: () => {
-        App.load();
+        // ★App.load() の代わりに、補完ロジックを含む App.init() を実行
+        App.init();
+
         if(!App.data) { 
             if(window.location.href.indexOf('main.html') === -1) {
                  window.location.href = 'main.html'; 
@@ -1223,10 +1328,24 @@ const App = {
             reader.readAsText(file);
         };
         input.click(); 
+    },
+
+    changeScene: (sceneId) => {
+        document.querySelectorAll('.scene-layer').forEach(e => e.style.display = 'none');
+        const target = document.getElementById(sceneId + '-scene');
+        if(target) target.style.display = 'flex';
+        
+        if(typeof Menu !== 'undefined') Menu.closeAll();
+        App.clearAction();
+
+        if(sceneId === 'field') Field.init();
+        if(sceneId === 'battle') Battle.init();
+        if(sceneId === 'inn') Facilities.initInn();
+        if(sceneId === 'medal') Facilities.initMedal();
+        if(sceneId === 'casino') Casino.init();
     }
 };
 
-/* main.js 内の Field オブジェクト全文 */
 /* main.js 内の Field オブジェクト全文 */
 
 const Field = {
@@ -1237,24 +1356,20 @@ const Field = {
     
     init: () => {
         if(App.data) {
-            // ★重要: App.data.location.area を最新の状態にする
             const areaKey = App.data.location.area || 'WORLD';
             
             // --- マップデータの復元ロジック ---
-            // A. 固定ダンジョン (FIXED_DUNGEON_MAPS) の復元
             if (typeof FIXED_DUNGEON_MAPS !== 'undefined' && FIXED_DUNGEON_MAPS[areaKey]) {
                 Field.currentMapData = { 
                     ...FIXED_DUNGEON_MAPS[areaKey],
                     isDungeon: true,
                     isFixed: true 
                 };
-                Dungeon.floor = App.data.progress.floor || 1;
+                if(typeof Dungeon !== 'undefined') Dungeon.floor = App.data.progress.floor || 1;
             }
-            // B. 通常の固定マップ (FIXED_MAPS: 村・街) の復元
             else if (typeof FIXED_MAPS !== 'undefined' && FIXED_MAPS[areaKey]) {
                 Field.currentMapData = FIXED_MAPS[areaKey];
             }
-            // C. ランダムダンジョン (ABYSS) 
             else if (areaKey === 'ABYSS') {
                 if (App.data.dungeon && App.data.dungeon.map) {
                     Field.currentMapData = {
@@ -1264,9 +1379,8 @@ const Field = {
                         tiles: App.data.dungeon.map,
                         isDungeon: true
                     };
-                    Dungeon.floor = App.data.progress.floor;
+                    if(typeof Dungeon !== 'undefined') Dungeon.floor = App.data.progress.floor;
                 } else {
-                    // マップデータがない状態でABYSSにいる場合はワールドへ戻す（一面海バグ対策）
                     App.data.location.area = 'WORLD';
                     Field.currentMapData = null;
                 }
@@ -1274,11 +1388,10 @@ const Field = {
                 Field.currentMapData = null; // ワールドマップ
             }
 
-            // 座標の復元 (常に location から最新を読む)
+            // 座標の復元
             Field.x = App.data.location.x;
             Field.y = App.data.location.y;
 
-            // ワールドマップモードの時のループ補正
             if (!Field.currentMapData) {
                 const mapW = (typeof MAP_DATA !== 'undefined' && MAP_DATA[0]) ? MAP_DATA[0].length : 100;
                 const mapH = (typeof MAP_DATA !== 'undefined') ? MAP_DATA.length : 100;
@@ -1335,10 +1448,8 @@ const Field = {
             }
             return 'battle_bg_field';
         }
-        const mapW = MAP_DATA[0].length;
-        const mapH = MAP_DATA.length;
-        const tx = ((Field.x % mapW) + mapW) % mapW;
-        const ty = ((Field.y % mapH) + mapH) % mapH;
+        const mapW = MAP_DATA[0].length, mapH = MAP_DATA.length;
+        const tx = ((Field.x % mapW) + mapW) % mapW, ty = ((Field.y % mapH) + mapH) % mapH;
         const tile = MAP_DATA[ty][tx].toUpperCase();
         if (tile === 'F') return 'battle_bg_forest';
         if (tile === 'L') return 'battle_bg_mountain';
@@ -1348,19 +1459,24 @@ const Field = {
 	move: (dx, dy) => {
         if (dy > 0) Field.dir = 0; else if (dx < 0) Field.dir = 1; else if (dx > 0) Field.dir = 2; else if (dy < 0) Field.dir = 3;
         Field.step = (Field.step === 1) ? 2 : 1;
-        let nx = Field.x + dx;
-        let ny = Field.y + dy;
+        let nx = Field.x + dx, ny = Field.y + dy;
         App.clearAction();
 
         if (Field.currentMapData) {
             if (nx < 0 || nx >= Field.currentMapData.width || ny < 0 || ny >= Field.currentMapData.height) return;
             let tile = Field.currentMapData.tiles[ny][nx].toUpperCase();
 
-            // ★追加: 固定宝箱の開封済み判定を移動前に行う (通り抜け可能にするため)
-            if (Field.currentMapData.isFixed && (tile === 'C' || tile === 'R')) {
+            // ★追加: 固定宝箱/ボスの判定を移動前に行う (撃破・取得済みなら通り抜け可能にする)
+            if (Field.currentMapData.isFixed) {
                 const ak = Field.getCurrentAreaKey();
-                if (App.data.progress.openedChests && App.data.progress.openedChests[ak]?.includes(`${nx},${ny}`)) {
-                    tile = 'G'; // 開封済みなら床扱い
+                const posStr = `${nx},${ny}`;
+                // 宝箱チェック
+                if ((tile === 'C' || tile === 'R') && App.data.progress.openedChests && App.data.progress.openedChests[ak]?.includes(posStr)) {
+                    tile = 'G';
+                }
+                // ボスチェック
+                if (tile === 'B' && App.data.progress.defeatedBosses && App.data.progress.defeatedBosses[ak]?.includes(posStr)) {
+                    tile = 'G';
                 }
             }
 
@@ -1384,13 +1500,11 @@ const Field = {
 
             if (!Field.currentMapData.isDungeon) {
                 if (tile === 'I') { App.log("宿屋のようだ。"); App.setAction("泊まる", () => App.changeScene('inn')); }
-                else if (tile === 'K') { App.log("カジノの看板が出ている。"); App.setAction("カジノに入る", () => App.changeScene('casino')); }
-                else if (tile === 'E') { App.log("メダル王の出張所のようだ。"); App.setAction("メダル交換", () => App.changeScene('medal')); }
-                else if (tile === 'D') {
-                    if (App.data.location.area === 'START_VILLAGE') {
-                        App.log("「試練の洞窟」の入口だ。");
-                        App.setAction("洞窟に入る", () => Dungeon.startFixed('START_CAVE'));
-                    }
+                else if (tile === 'K') { App.log("カジノの看板だ。"); App.setAction("カジノに入る", () => App.changeScene('casino')); }
+                else if (tile === 'E') { App.log("交換所のようだ。"); App.setAction("メダル交換", () => App.changeScene('medal')); }
+                else if (tile === 'D' && App.data.location.area === 'START_VILLAGE') {
+                    App.log("「試練の洞窟」の入口だ。");
+                    App.setAction("洞窟に入る", () => Dungeon.startFixed('START_CAVE'));
                 } else if (tile === 'V' || tile === 'T' || tile === 'H') {
                     if (typeof StoryManager !== 'undefined') {
                         const trigger = StoryManager.triggers.find(t => t.area === App.data.location.area && t.x === nx && t.y === ny && t.step === App.data.progress.storyStep);
@@ -1402,7 +1516,7 @@ const Field = {
             if (Field.currentMapData.isDungeon) Dungeon.handleMove(nx, ny);
             App.save(); Field.render();
         } else {
-            const mapW = MAP_DATA[0].length; const mapH = MAP_DATA.length;
+            const mapW = MAP_DATA[0].length, mapH = MAP_DATA.length;
             nx = (nx + mapW) % mapW; ny = (ny + mapH) % mapH;
             const tile = MAP_DATA[ny][nx].toUpperCase();
             if (tile === 'M') { App.log("険しい岩山だ"); return; }
@@ -1436,69 +1550,56 @@ const Field = {
             App.data.walkCount++; App.save(); Field.render();
         }
     },
-	
+
     render: () => {
-        const canvas = document.getElementById('field-canvas');
-        if(!canvas) return;
-        const ctx = canvas.getContext('2d');
-        const ts = 32, w = canvas.width, h = canvas.height;
+        const canvas = document.getElementById('field-canvas'); if(!canvas) return;
+        const ctx = canvas.getContext('2d'), ts = 32, w = canvas.width, h = canvas.height;
         ctx.fillStyle='#000'; ctx.fillRect(0,0,w,h);
-        const cx = w / 2; const cy = h / 2;
-        const rangeX = Math.ceil(w / (2 * ts)) + 1;
-        const rangeY = Math.ceil(h / (2 * ts)) + 1;
+        const cx = w/2, cy = h/2, rangeX = Math.ceil(w/(2*ts))+1, rangeY = Math.ceil(h/(2*ts))+1;
         const mapW = Field.currentMapData ? Field.currentMapData.width : (typeof MAP_DATA !== 'undefined' ? MAP_DATA[0].length : 50);
         const mapH = Field.currentMapData ? Field.currentMapData.height : (typeof MAP_DATA !== 'undefined' ? MAP_DATA.length : 32);
         const g = (typeof GRAPHICS !== 'undefined' && GRAPHICS.images) ? GRAPHICS.images : {};
 
         for (let dy = -rangeY; dy <= rangeY; dy++) {
             for (let dx = -rangeX; dx <= rangeX; dx++) {
-                const drawX = Math.floor(cx + (dx * ts) - (ts / 2));
-                const drawY = Math.floor(cy + (dy * ts) - (ts / 2));
-                let tx = Field.x + dx; let ty = Field.y + dy; let tile = 'W';
-
-                if (Field.currentMapData) {
+                const drawX = Math.floor(cx + (dx * ts) - (ts / 2)), drawY = Math.floor(cy + (dy * ts) - (ts / 2));
+                let tx = Field.x + dx, ty = Field.y + dy, tile = 'W';
+                if (Field.currentMapData) { 
                     if (tx >= 0 && tx < mapW && ty >= 0 && ty < mapH) {
                         tile = Field.currentMapData.tiles[ty][tx];
-                        // ★固定宝箱の開封済みチェック (タイルを床に変更)
-                        if (Field.currentMapData.isFixed && (tile === 'C' || tile === 'R')) {
-                            const areaKey = Field.getCurrentAreaKey();
-                            const posKey = `${tx},${ty}`;
-                            if (App.data.progress.openedChests && App.data.progress.openedChests[areaKey]?.includes(posKey)) {
-                                tile = 'G'; 
-                            }
+                        const ak = Field.getCurrentAreaKey(); const pk = `${tx},${ty}`;
+                        if (Field.currentMapData.isFixed) {
+                            if ((tile === 'C' || tile === 'R') && App.data.progress.openedChests?.[ak]?.includes(pk)) tile = 'G';
+                            if (tile === 'B' && App.data.progress.defeatedBosses?.[ak]?.includes(pk)) tile = 'G';
                         }
                     }
-                } else {
-                    const lx = ((tx % mapW) + mapW) % mapW;
-                    const ly = ((ty % mapH) + mapH) % mapH;
-                    tile = MAP_DATA[ly][lx];
                 }
-
-                const config = Field.getTileConfig(tile);
-                const upper = tile.toUpperCase();
-                let floorConfig = Field.getTileConfig('T');
+                else { tile = MAP_DATA[((ty % mapH) + mapH) % mapH][((tx % mapW) + mapW) % mapW]; }
+                const config = Field.getTileConfig(tile), upper = tile.toUpperCase(), floorConfig = Field.getTileConfig('T');
                 if (g[floorConfig.img]) ctx.drawImage(g[floorConfig.img], drawX, drawY, ts, ts);
                 else { ctx.fillStyle = floorConfig.color; ctx.fillRect(drawX, drawY, ts, ts); }
                 if (upper !== 'T' && upper !== 'G') {
                     if (config.img && g[config.img]) ctx.drawImage(g[config.img], drawX, drawY, ts, ts);
-                    else if (config.color && config.color !== floorConfig.color) {
-                        ctx.fillStyle = config.color; ctx.fillRect(drawX, drawY, ts, ts);
-                    }
+                    else if (config.color && config.color !== floorConfig.color) { ctx.fillStyle = config.color; ctx.fillRect(drawX, drawY, ts, ts); }
                 }
             }
         }
-        const pBaseKeys = ['hero_down', 'hero_left', 'hero_right', 'hero_up'];
-        const pKey = `${pBaseKeys[Field.dir] || 'hero_down'}_${Field.step}`; 
-        if (g[pKey]) ctx.drawImage(g[pKey], cx - ts/2, cy - ts/2, ts, ts);
+        const pKey = `hero_${['down','left','right','up'][Field.dir]}_${Field.step}`; 
+        if (g[pKey]) ctx.drawImage(g[pKey], cx-ts/2, cy-ts/2, ts, ts);
         else { ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(cx, cy, 10, 0, Math.PI*2); ctx.fill(); }
 
         let locName = Field.currentMapData ? Field.currentMapData.name : `世界地図 (${Field.x}, ${Field.y})`;
         if (Field.currentMapData && Field.currentMapData.isDungeon) locName += ` ${Dungeon.floor}階`;
         document.getElementById('loc-name').innerText = locName;
 
-        // ミニマップ描画
-        const mmSize = 80; const mmX = w - mmSize - 10; const mmY = 10; const range = 10; 
+        const mmSize = 80, mmX = w-mmSize-10, mmY = 10, range = 10; 
         ctx.save(); ctx.globalAlpha = 0.6; ctx.fillStyle = '#000'; ctx.fillRect(mmX, mmY, mmSize, mmSize);
+        
+        // ★追加: ミニマップの白い極細枠線
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(mmX, mmY, mmSize, mmSize);
+
         const dms = mmSize / (range*2); 
         for(let mdy = -range; mdy < range; mdy++) {
             for(let mdx = -range; mdx < range; mdx++) {
@@ -1506,14 +1607,12 @@ const Field = {
                 if (Field.currentMapData) { 
                     if(mtx>=0 && mtx<mapW && mty>=0 && mty<mapH) {
                         mtile = Field.currentMapData.tiles[mty][mtx]; 
-                        if (Field.currentMapData.isFixed && (mtile === 'C' || mtile === 'R')) {
-                            const ak = Field.getCurrentAreaKey();
-                            if (App.data.progress.openedChests && App.data.progress.openedChests[ak]?.includes(`${mtx},${mty}`)) mtile = 'G';
-                        }
+                        const ak = Field.getCurrentAreaKey(); const pk = `${mtx},${mty}`;
+                        if (App.data.progress.openedChests?.[ak]?.includes(pk)) mtile = 'G';
+                        if (App.data.progress.defeatedBosses?.[ak]?.includes(pk)) mtile = 'G';
                     }
                 } else { mtile = MAP_DATA[((mty%mapH)+mapH)%mapH][((mtx%mapW)+mapW)%mapW]; }
-                if (mdx===0 && mdy===0) ctx.fillStyle = '#fff'; 
-                else ctx.fillStyle = Field.getTileConfig(mtile).color;
+                if (mdx===0 && mdy===0) ctx.fillStyle = '#fff'; else ctx.fillStyle = Field.getTileConfig(mtile).color;
                 if (ctx.fillStyle !== '#000') ctx.fillRect(mmX + (mdx + range) * dms, mmY + (mdy + range) * dms, dms, dms);
             }
         }

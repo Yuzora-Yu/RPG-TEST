@@ -72,7 +72,6 @@ const Dungeon = {
 			};
 		}
 
-        // ★バグ修正: 突入時に現在地を確実に更新する
         App.data.location.area = 'ABYSS';
         App.data.progress.floor = startFloor;
         App.data.dungeon.tryCount++;
@@ -98,7 +97,6 @@ const Dungeon = {
         // 固定ダンジョンは1階として設定
         App.data.progress.floor = 1; 
         Dungeon.floor = 1;
-        // ★重要: 現在地を固定ダンジョンキーに更新
         App.data.location.area = mapKey;
 
         // Fieldのマップデータを更新
@@ -168,7 +166,6 @@ const Dungeon = {
 			isDungeon: true
         };
 
-        // ★重要: 生成されたランダム座標をセーブデータにも同期させる (一面海バグ修正)
         App.data.location.x = Field.x;
         App.data.location.y = Field.y;
 
@@ -186,6 +183,7 @@ const Dungeon = {
     },
 
     // --- 脱出処理 (安全装置付き) ---
+    // 引数 isWipedOut が true の場合は強制的にデフォルトへ
     exit: (isWipedOut = false) => {
         const returnPoint = App.data.dungeon.returnPoint;
 
@@ -216,11 +214,9 @@ const Dungeon = {
         let isSafe = true;
         try {
             if (!targetMapData || targetArea === 'WORLD') {
-                // ワールドマップの場合: W(海) または M(岩山) なら危険
                 const tile = MAP_DATA[targetY][targetX].toUpperCase();
                 if (tile === 'W' || tile === 'M') isSafe = false;
             } else {
-                // 街や村（固定マップ）の場合: W(壁) なら危険
                 const tile = targetMapData.tiles[targetY][targetX].toUpperCase();
                 if (tile === 'W') isSafe = false;
             }
@@ -228,7 +224,6 @@ const Dungeon = {
             isSafe = false;
         }
 
-        // 3. 不安全な場所（海の上など）だった場合は、初期座標へ強制転送
         if (!isSafe) {
             App.log("<span style='color:#f88;'>帰還先が不安定だったため、安全な場所へ移動しました。</span>");
             targetX = 58;
@@ -315,7 +310,6 @@ const Dungeon = {
         }
     },
 	
-    // --- 宝箱開封：[1]発見ログ -> [2]演出(レア時) -> [3]取得アイテム表示 ---
     openChest: async (x, y, type) => {
         const isFixed = Field.currentMapData && Field.currentMapData.isFixed;
         const areaKey = Field.getCurrentAreaKey();
@@ -426,7 +420,6 @@ const Dungeon = {
         App.save();
     },
 	
-    // 内部用：オプションレアリティ保証付き装備生成
     createEquipWithMinRarity: (floor, plus, minRarityList, forcePart = null) => {
         let eq = App.createEquipByFloor('drop', floor, plus);
         
@@ -458,7 +451,6 @@ const Dungeon = {
         return eq;
     },
 
-    // --- マップ生成ロジック ---
     generateFloor: () => {
         Dungeon.map = [];
         
@@ -490,7 +482,6 @@ const Dungeon = {
             tiles: Dungeon.map, 
             isDungeon: true 
         };
-        // ★座標をセーブデータへ同期
         App.data.location.x = Field.x;
         App.data.location.y = Field.y;
     },
@@ -510,9 +501,6 @@ const Dungeon = {
         Field.x = 5; Field.y = 8;
     },
 	
-	/**
-     * レア宝箱が5つある特別な小部屋
-     */
     generateTreasureRoom: () => {
         App.log(`<span style="color:#ffd700; font-weight:bold;">隠し部屋を見つけた！</span>`);
         const w = 11, h = 11; 
@@ -695,18 +683,39 @@ const Dungeon = {
             const ry = Math.floor(Math.random() * Dungeon.height);
             if(Dungeon.map[ry][rx] === 'T') { 
                 Field.x = rx; Field.y = ry;
-                // ★同期
                 App.data.location.x = rx; App.data.location.y = ry;
                 return; 
             }
         }
     },
 
+    /* dungeon.js 内の onBossDefeated 全文 */
     onBossDefeated: () => {
-        App.log(`地下 ${Dungeon.floor} 階ボス撃破！階段が出現した。`);
-        Dungeon.map[Field.y][Field.x] = 'S'; 
+        App.log(`地下 ${Dungeon.floor} 階ボス撃破！ボスの気配が消えた...`);
+        
+        // ★修正: 固定マップの場合は撃破フラグ(座標ベース)を保存する
+        if (Field.currentMapData && Field.currentMapData.isFixed) {
+            const areaKey = Field.getCurrentAreaKey();
+            const posKey = `${Field.x},${Field.y}`; // プレイヤーの現在座標（ボスと同じ）
+            
+            if (!App.data.progress.defeatedBosses) App.data.progress.defeatedBosses = {};
+            if (!App.data.progress.defeatedBosses[areaKey]) App.data.progress.defeatedBosses[areaKey] = [];
+            
+            if (!App.data.progress.defeatedBosses[areaKey].includes(posKey)) {
+                App.data.progress.defeatedBosses[areaKey].push(posKey);
+            }
+        } else {
+            // ランダムダンジョンの場合は、ボスのいた場所を階段(S)に変える
+            Dungeon.map[Field.y][Field.x] = 'S'; 
+        }
+        
         Field.render();
         App.setAction("次の階へ", Dungeon.nextFloor);
-        if (App.data.battle) App.data.battle.isBossBattle = false;
+        
+        // 戦闘データのクリーンアップ
+        if (App.data.battle) {
+            App.data.battle.isBossBattle = false;
+            App.data.battle.fixedBossId = null; // 固定ボスIDをリセット
+        }
     }
 };

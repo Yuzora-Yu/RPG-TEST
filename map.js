@@ -180,6 +180,10 @@ const FIXED_DUNGEON_MAPS = {
             { x: 13, y: 1, itemId: 106, type: 'item' }, // スキルのたね
             { x: 1, y: 7, itemId: 2, type: 'item' },   // 上やくそう
             { x: 7, y: 7, itemId: 3, type: 'item' }    // 魔法の小瓶
+        ],
+		// ★追加: 固定ボスの設定
+        bosses: [
+            { x: 1, y: 1, monsterId: 1010 }
         ]
     }
 };
