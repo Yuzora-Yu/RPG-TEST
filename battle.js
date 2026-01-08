@@ -74,6 +74,7 @@ const Battle = {
         if (enemyArea) {
             const bgKey = Field.getBattleBg();
             const g = (typeof GRAPHICS !== 'undefined' && GRAPHICS.images) ? GRAPHICS.images : {};
+
             if (g[bgKey]) {
                 enemyArea.style.backgroundImage = `url('${g[bgKey].src}')`;
                 enemyArea.style.backgroundSize = 'cover';
@@ -101,8 +102,27 @@ const Battle = {
                 player.elmAtk = stats.elmAtk || {}; player.elmRes = stats.elmRes || {};
                 player.finDmg = stats.finDmg || 0; player.finRed = stats.finRed || 0;
                 player.passive = Battle.getPassives(player);
+                
+                // シナジー付与スキル習得
+                if (player.equips) {
+                    Object.values(player.equips).forEach(eq => {
+                        if (eq && eq.isSynergy && eq.effects) {
+                            const grantSyn = eq.synergies?.find(s => s.effect === 'grantSkill');
+                            if (grantSyn && grantSyn.value) {
+                                if (!player.skills.find(s => s.id === grantSyn.value)) {
+                                    const newSkill = DB.SKILLS.find(s => s.id === grantSyn.value);
+                                    if (newSkill) player.skills.push(newSkill);
+                                }
+                            }
+                        }
+                    });
+                }
                 if (charData.battleStatus) player.battleStatus = JSON.parse(JSON.stringify(charData.battleStatus));
                 else Battle.initBattleStatus(player);
+
+                if (player.passive.warGod) { player.battleStatus.buffs['atk'] = { val: 1.5, turns: null }; player.battleStatus.buffs['mag'] = { val: 1.5, turns: null }; }
+                if (player.passive.atkDouble) player.battleStatus.buffs['atk'] = { val: 2.0, turns: null };
+                if (player.passive.magDouble) player.battleStatus.buffs['mag'] = { val: 2.0, turns: null };
                 return player;
             }).filter(p => p !== null);
         }
@@ -112,10 +132,12 @@ const Battle = {
             Battle.endBattle(true); return;
         }
 
-        // 敵生成・復帰
+        // 敵の生成フラグ取得
         const isBoss = (App.data.battle && App.data.battle.isBossBattle) || false;
         const isEstark = (App.data.battle && App.data.battle.isEstark) || false;
-		const fixedId = (App.data.battle && App.data.battle.fixedBossId) ? App.data.battle.fixedBossId : null;
+        const fixedId = (App.data.battle && App.data.battle.fixedBossId) ? App.data.battle.fixedBossId : null;
+        // ★追加: StoryManager由来のeventIdを保持
+        const eventId = (App.data.battle && App.data.battle.eventId) ? App.data.battle.eventId : null;
 
         if (App.data.battle && App.data.battle.active && App.data.battle.enemies?.length > 0) {
             Battle.log("戦闘に復帰した！");
@@ -124,32 +146,34 @@ const Battle = {
                 if (!base) return null;
                 const m = new Monster(base, 1.0);
                 m.hp = e.hp; m.baseMaxHp = e.maxHp; m.name = e.name; m.id = e.baseId; m.isDead = m.hp <= 0;
-                m.atk = m.baseStats.atk; m.def = m.baseStats.def; m.spd = m.baseStats.spd; m.mag = m.baseStats.mag;
+                // ステータス適用の安全策
+                m.atk = m.baseStats?.atk || base.atk; m.def = m.baseStats?.def || base.def; 
+                m.spd = m.baseStats?.spd || base.spd; m.mag = m.baseStats?.mag || base.mag;
                 m.elmAtk = JSON.parse(JSON.stringify(base.elmAtk || {})); m.elmRes = JSON.parse(JSON.stringify(base.elmRes || {}));
                 m.passive = base.passive || {};
                 m.battleStatus = e.battleStatus || { buffs:{}, debuffs:{}, ailments:{} };
                 return m;
             }).filter(enemy => enemy !== null);
         } else {
+            // 新規エンカウント
             if (isEstark) {
                 const base = DB.MONSTERS.find(m => m.id === 2000);
                 const scale = 1.0 + ((App.data.estarkKillCount || 0) * 0.05);
                 const m = new Monster(base, scale); m.id = 2000; m.isEstark = true;
                 Battle.enemies = [m];
             } else {
-                Battle.enemies = Battle.generateNewEnemies(isBoss);
+                Battle.enemies = Battle.generateNewEnemies(isBoss, fixedId);
             }
             Battle.enemies.forEach(e => Battle.initBattleStatus(e));
             
-            // ★重要: 生成された敵データと共に fixedBossId も保存する
+            // ★修正: 生成された敵データと共に eventId も保存する
             App.data.battle = { 
                 active: true, 
                 isBossBattle: isBoss, 
                 isEstark: isEstark, 
                 fixedBossId: fixedId, 
-                enemies: Battle.enemies.map(e => ({ 
-                    baseId: e.id, hp: e.hp, maxHp: e.baseMaxHp, name: e.name, battleStatus: e.battleStatus 
-                })) 
+                eventId: eventId, 
+                enemies: Battle.enemies.map(e => ({ baseId: e.id, hp: e.hp, maxHp: e.baseMaxHp, name: e.name, battleStatus: e.battleStatus })) 
             };
             App.save();
         }
@@ -1786,26 +1810,29 @@ findNextActor: () => {
         if (alive.length === 0) return null;
         return alive[Math.floor(Math.random() * alive.length)];
     },
-	saveBattleState: () => {
-        // 現在のフラグを退避
-        const isBoss = App.data.battle.isBossBattle;
-        const isEstark = App.data.battle.isEstark;
-
+	
+	saveBattleState: () => { 
+        const isB = App.data.battle.isBossBattle; 
+        const isE = App.data.battle.isEstark; 
+        const fId = App.data.battle.fixedBossId; 
+        const eId = App.data.battle.eventId; // ★eventIdを退避
+        
         App.data.battle.enemies = Battle.enemies.filter(e => !e.isFled).map(e => ({ 
             baseId: e.id, hp: e.hp, maxHp: e.baseMaxHp, name: e.name, battleStatus: e.battleStatus 
-        }));
-
-        // フラグを再セット
-        App.data.battle.isBossBattle = isBoss;
-        App.data.battle.isEstark = isEstark;
-
-        Battle.party.forEach(p => {
-            const d = App.getChar(p.uid);
-            if(d) { d.currentHp = p.hp; d.currentMp = p.mp; d.battleStatus = p.battleStatus; }
-        });
-        App.save();
+        })); 
+        
+        App.data.battle.isBossBattle = isB; 
+        App.data.battle.isEstark = isE; 
+        App.data.battle.fixedBossId = fId; 
+        App.data.battle.eventId = eId; // ★eventIdを復元
+        
+        Battle.party.forEach(p => { 
+            const d = App.getChar(p.uid); 
+            if(d) { d.currentHp = p.hp; d.currentMp = p.mp; d.battleStatus = p.battleStatus; } 
+        }); 
+        App.save(); 
     },
-
+	
 	renderEnemies: () => {
 		const container = Battle.getEl('enemy-container');
 		if(!container) return;
@@ -2415,7 +2442,21 @@ findNextActor: () => {
         
         App.save(); 
         Battle.log("\n▼ 画面タップで終了 ▼");
-        if (isBossBattle && !isEstark && typeof Dungeon !== 'undefined') Dungeon.onBossDefeated();
+
+        // ★追加・修正：ストーリー後処理の呼び出し
+        //if (isBossBattle && !isEstark) {
+            // 1. ダンジョン側の後処理 (階段出現等)
+        //    if (typeof Dungeon !== 'undefined' && typeof Dungeon.onBossDefeated === 'function') {
+        //        Dungeon.onBossDefeated();
+        //    }
+            
+            // 2. ストーリーイベント由来のバトルの場合、StoryManagerに通知
+            // App.data.battle.eventId にイベントIDが保存されていることが前提
+        //    const eventId = (App.data.battle && App.data.battle.eventId) ? App.data.battle.eventId : null;
+        //    if (eventId && typeof StoryManager !== 'undefined' && typeof StoryManager.onBattleWin === 'function') {
+        //        await StoryManager.onBattleWin(eventId);
+        //    }
+        //}
     },
 
     lose: () => { 
@@ -2429,6 +2470,11 @@ findNextActor: () => {
     endBattle: (isGameOver = false) => {
         const isDungeon = (typeof Dungeon !== 'undefined' && Field.currentMapData && Field.currentMapData.isDungeon);
         
+		// ★追加：戦闘データを消去する前に、必要な情報を退避
+        const isBossBattle = App.data.battle?.isBossBattle || false;
+        const isEstark = App.data.battle?.isEstark || false;
+        const eventId = App.data.battle?.eventId || null;
+		
         // 戦闘データの初期化
         App.data.battle = { active: false };
 
@@ -2462,8 +2508,22 @@ findNextActor: () => {
                 }
             }, 2000);
         } else {
-            // 通常の勝利・逃走
-            setTimeout(() => App.changeScene('field'), 500);
+            // ★修正：setTimeoutをasync化し、画面切り替え後にストーリーを実行
+            setTimeout(async () => {
+                App.changeScene('field');
+                
+                // ★追加：フィールドに戻った後に後処理を実行
+                if (isBossBattle && !isEstark) {
+                    // 1. ダンジョンの後処理（階段出現など）
+                    if (typeof Dungeon !== 'undefined' && typeof Dungeon.onBossDefeated === 'function') {
+                        Dungeon.onBossDefeated();
+                    }
+                    // 2. ストーリーイベントの実行
+                    if (eventId && typeof StoryManager !== 'undefined' && typeof StoryManager.onBattleWin === 'function') {
+                        await StoryManager.onBattleWin(eventId);
+                    }
+                }
+            }, 500);
         }
     },
     toggleAuto: () => { Battle.auto = !Battle.auto; Battle.updateAutoButton(); if(Battle.phase === 'input') Battle.findNextActor(); },

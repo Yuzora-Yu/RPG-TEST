@@ -1457,6 +1457,10 @@ const Field = {
     },
 	
 	move: (dx, dy) => {
+		// ★追加: 一歩歩くごとにログを空欄にする処理
+        const logEl = document.getElementById('msg-text');
+        if (logEl) logEl.innerHTML = '';
+		
         if (dy > 0) Field.dir = 0; else if (dx < 0) Field.dir = 1; else if (dx > 0) Field.dir = 2; else if (dy < 0) Field.dir = 3;
         Field.step = (Field.step === 1) ? 2 : 1;
         let nx = Field.x + dx, ny = Field.y + dy;

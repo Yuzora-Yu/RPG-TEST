@@ -630,7 +630,7 @@ const MenuStatus = {
 };
 
 /* ==========================================================================
-   3. 道具 (MenuItems) - 育成アイテム対応版
+   3. 道具 (MenuItems) - 無限使用バグ修正版
    ========================================================================== */
 const MenuItems = {
     selectedItem: null,
@@ -652,6 +652,10 @@ const MenuItems = {
             if(def && App.data.items[id] > 0) items.push({def:def, count:App.data.items[id]});
         });
 
+        if (items.length === 0) {
+            list.innerHTML = '<div style="padding:20px; text-align:center; color:#555;">道具を持っていません</div>';
+        }
+
         items.forEach(it => {
             const div = document.createElement('div');
             div.className = 'list-item';
@@ -660,7 +664,7 @@ const MenuItems = {
                     <div style="font-weight:bold;">${it.def.name}</div>
                     <div style="font-size:10px; color:#aaa;">${it.def.desc}</div>
                 </div>
-                <div>x${it.count}</div>
+                <div style="font-weight:bold; color:#ffd700;">x${it.count}</div>
             `;
             div.onclick = () => {
                 // 回復・蘇生に加えて「育成」タイプもターゲット選択へ進む
@@ -679,6 +683,15 @@ const MenuItems = {
         MenuItems.changeScreen('target');
         const list = document.getElementById('list-item-targets');
         list.innerHTML = '';
+        
+        // アイテム情報の表示
+        const item = MenuItems.selectedItem;
+        const count = App.data.items[item.id] || 0;
+        const header = document.createElement('div');
+        header.style.cssText = 'padding:10px; background:#333; color:#ffd700; font-size:12px; text-align:center; border-bottom:1px solid #444;';
+        header.innerHTML = `使用中: <b>${item.name}</b> (残り: ${count}個)`;
+        list.appendChild(header);
+
         App.data.party.forEach(uid => {
             if(!uid) return;
             const c = App.getChar(uid);
@@ -691,7 +704,12 @@ const MenuItems = {
     },
     useItem: (target) => {
         const item = MenuItems.selectedItem;
-        if(!item || App.data.items[item.id] <= 0) return;
+        // ★修正: 所持チェックの厳格化 (undefined または 0 以下なら中止)
+        if(!item || !App.data.items[item.id] || App.data.items[item.id] <= 0) {
+            Menu.msg("アイテムを持っていません。");
+            MenuItems.changeScreen('list');
+            return;
+        }
 
         Menu.confirm(`${target.name} に ${item.name} を使いますか？`, () => {
             let success = false;
@@ -727,7 +745,6 @@ const MenuItems = {
                     case 106: target.sp = (target.sp || 0) + 1; msg = `${target.name}のSPが 1 増えた！`; break;
                     case 107: target.level = 1;
                         target.exp = 0;
-                        // ★追加：転生回数をカウントアップ（存在しなければ0から開始）
                         target.reincarnationCount = (target.reincarnationCount || 0) + 1;
                         msg = `${target.name}は 転生しレベル1に戻った！\n(転生回数: ${target.reincarnationCount}回目)`; 
                         break;
@@ -736,10 +753,18 @@ const MenuItems = {
 
             if(success) {
                 App.data.items[item.id]--;
-                if(App.data.items[item.id] <= 0) delete App.data.items[item.id];
+                const currentCount = App.data.items[item.id];
+                
+                if(currentCount <= 0) delete App.data.items[item.id];
+                
                 App.save();
                 Menu.msg(msg, () => {
-                    MenuItems.renderTargetList();
+                    // ★修正: 使い切った(個数がなくなった)場合はリスト画面に戻る
+                    if(!App.data.items[item.id] || App.data.items[item.id] <= 0) {
+                        MenuItems.changeScreen('list');
+                    } else {
+                        MenuItems.renderTargetList();
+                    }
                     Menu.renderPartyBar();
                 });
             }
@@ -948,6 +973,9 @@ const MenuInventory = {
 /* ==========================================================================
    5. 仲間一覧 & 詳細 (装備変更フィルタ・ソート・シナジー反映版)
    ========================================================================== */
+/* ==========================================================================
+   5. 仲間一覧 & 詳細 (装備変更フィルタ・ソート・シナジー反映・画像リセット対応版)
+   ========================================================================== */
 const MenuAllies = {
     selectedChar: null, 
     currentTab: 1,
@@ -955,7 +983,6 @@ const MenuAllies = {
     selectedEquip: null,  
     tempAlloc: null,
     _tempCandidates: [], 
-    // ★追加: 装備変更画面用のフィルタ・ソート状態
     candidateFilter: 'ALL',
     candidateSortMode: 'RANK',
 
@@ -1048,12 +1075,9 @@ const MenuAllies = {
             const rarityLabel = (c.uid === 'p1') ? 'Player' : `[${c.rarity}]`;
             const rarityColor = (c.uid === 'p1') ? '#ffd700' : Menu.getRarityColor(c.rarity);
             
-			// ★修正箇所: マスタデータから画像を取得
             const master = DB.CHARACTERS.find(m => m.id === c.charId);
             const imgUrl = c.img || (master ? master.img : null);
             const imgHtml = imgUrl ? `<img src="${imgUrl}" style="width:40px; height:40px; object-fit:cover; border-radius:4px; border:1px solid #555;">` : `<div style="width:40px; height:40px; background:#333; display:flex; align-items:center; justify-content:center; color:#555; font-size:9px; border-radius:4px; border:1px solid #555;">IMG</div>`;
-			
-			//const imgHtml = c.img ? `<img src="${c.img}" style="width:40px; height:40px; object-fit:cover; border-radius:4px; border:1px solid #555;">` : `<div style="width:40px; height:40px; background:#333; display:flex; align-items:center; justify-content:center; color:#555; font-size:9px; border-radius:4px; border:1px solid #555;">IMG</div>`;
 
             div.innerHTML = `
                 <div style="display:flex; align-items:center; width:100%;">
@@ -1145,7 +1169,6 @@ const MenuAllies = {
             optsHtml = `<div style="margin-top:2px;">${optsList}</div>`;
         }
 
-        // ★修正: シナジー配列をループしてすべて表示する
         let synHtml = '';
         if (typeof App.checkSynergy === 'function') {
             const syns = App.checkSynergy(eq);
@@ -1157,7 +1180,7 @@ const MenuAllies = {
         }
         return `<div>${baseHtml}${optsHtml}${synHtml}</div>`;
     },
-	
+
     renderDetail: () => {
         document.getElementById('allies-list-view').style.display = 'none'; 
         const treeView = document.getElementById('allies-tree-view');
@@ -1167,7 +1190,6 @@ const MenuAllies = {
         const c = MenuAllies.selectedChar;
         const s = App.calcStats(c);
         
-        // ★マスタデータから画像を取得
         const master = DB.CHARACTERS.find(m => m.id === c.charId);
         const imgUrl = c.img || (master ? master.img : null);
         
@@ -1206,7 +1228,6 @@ const MenuAllies = {
         let contentHtml = '';
         
         if (MenuAllies.currentTab === 1) {
-            // ★シナジー判定の修正: +3以上かつ複数表示に対応
             let activeSynergies = [];
             if (c.equips) {
                 CONST.PARTS.forEach(p => {
@@ -1444,7 +1465,13 @@ const MenuAllies = {
             <div style="padding:10px; background:#222; border-bottom:1px solid #444;"><div style="display:flex; justify-content:space-between; align-items:center; background:#333; padding:5px; border-radius:4px;"><button class="btn" style="padding:2px 10px; font-size:12px;" onclick="MenuAllies.switchChar(-1)">＜ 前</button><span style="font-size:12px; color:#aaa;">仲間詳細</span><button class="btn" style="padding:2px 10px; font-size:12px;" onclick="MenuAllies.switchChar(1)">次 ＞</button></div></div>
             <div class="scroll-container-inner" style="flex:1; overflow-y:auto; padding:10px; font-family:sans-serif; color:#ddd;">
                 <div style="display:flex; gap:10px; margin-bottom:10px;">
-                    <div style="position:relative; width:80px; height:80px; background:#000; border:1px solid #555; display:flex; align-items:center; justify-content:center; flex-shrink:0; border-radius:4px; cursor:pointer;" onclick="document.getElementById('file-upload-${c.uid}').click()">${imgHtml}<div style="position:absolute; bottom:0; width:100%; background:rgba(0,0,0,0.6); color:#fff; font-size:8px; text-align:center;">画像変更</div></div>
+                    <div style="position:relative; width:80px; height:80px; background:#000; border:1px solid #555; display:flex; align-items:center; justify-content:center; flex-shrink:0; border-radius:4px;">
+                        <div style="width:100%; height:100%; cursor:pointer;" onclick="document.getElementById('file-upload-${c.uid}').click()">
+                            ${imgHtml}
+                            <div style="position:absolute; bottom:0; width:100%; background:rgba(0,0,0,0.6); color:#fff; font-size:8px; text-align:center; padding:2px 0;">画像変更</div>
+                        </div>
+                        ${c.img ? `<div onclick="event.stopPropagation(); MenuAllies.resetImage('${c.uid}')" style="position:absolute; top:-5px; right:-5px; width:20px; height:20px; background:#d00; color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; border:1px solid #fff; cursor:pointer; z-index:10;">×</div>` : ''}
+                    </div>
                     <input type="file" id="file-upload-${c.uid}" style="display:none" accept="image/*" onchange="MenuAllies.uploadImage(this, '${c.uid}')">
                     <div style="flex:1;">
                         <div id="char-name-display" style="display:flex; align-items:center; margin-bottom:2px;"><div style="font-size:16px; font-weight:bold; color:#fff; margin-right:5px;">${c.name}</div><div style="font-size:12px; color:#f0f; font-weight:bold;">+${lb}</div><button class="btn" style="margin-left:auto; padding:0 6px; font-size:10px;" onclick="window.toggleNameEdit()">✎</button></div>
@@ -1530,6 +1557,19 @@ const MenuAllies = {
         }
     },
 
+    // ★追加: 画像を削除して初期状態（マスタ画像）に戻す
+    resetImage: (uid) => {
+        const char = App.getChar(uid);
+        if (char && char.img) {
+            Menu.confirm("画像を初期状態に戻しますか？", () => {
+                delete char.img; // カスタム画像を削除
+                App.save();
+                Menu.renderPartyBar();
+                MenuAllies.renderDetail();
+            });
+        }
+    },
+
     createTreeViewDOM: () => {
         if(document.getElementById('allies-tree-view')) return;
         const div = document.createElement('div');
@@ -1558,8 +1598,6 @@ const MenuAllies = {
 
         for (let key in CONST.SKILL_TREES) {
             const treeDef = CONST.SKILL_TREES[key];
-
-            // ★追加：キャラクターの転生回数がツリーの要求回数に満たない場合は非表示にする
             if ((treeDef.reqReincarnation || 0) > (c.reincarnationCount || 0)) continue;
 
             const currentLevel = c.tree[key] || 0;

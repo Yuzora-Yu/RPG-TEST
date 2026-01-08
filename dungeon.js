@@ -214,9 +214,11 @@ const Dungeon = {
         let isSafe = true;
         try {
             if (!targetMapData || targetArea === 'WORLD') {
+                // ワールドマップの場合: W(海) または M(岩山) なら危険
                 const tile = MAP_DATA[targetY][targetX].toUpperCase();
                 if (tile === 'W' || tile === 'M') isSafe = false;
             } else {
+                // 街や村（固定マップ）の場合: W(壁) なら危険
                 const tile = targetMapData.tiles[targetY][targetX].toUpperCase();
                 if (tile === 'W') isSafe = false;
             }
@@ -282,6 +284,15 @@ const Dungeon = {
         } 
         // ボス判定
         else if(tile === 'B') {
+            // ★修正: 固定ダンジョンの場合、既にボスを撃破済みなら判定をスキップする (不具合②対応)
+            if (Field.currentMapData.isFixed) {
+                const ak = Field.getCurrentAreaKey();
+                const pk = `${x},${y}`;
+                if (App.data.progress.defeatedBosses && App.data.progress.defeatedBosses[ak]?.includes(pk)) {
+                    return; 
+                }
+            }
+
             if (Field.currentMapData.isFixed && typeof StoryManager !== 'undefined') {
                 const trigger = StoryManager.triggers.find(t => 
                     t.area === App.data.location.area && t.x === x && t.y === y && 
@@ -704,18 +715,21 @@ const Dungeon = {
             if (!App.data.progress.defeatedBosses[areaKey].includes(posKey)) {
                 App.data.progress.defeatedBosses[areaKey].push(posKey);
             }
+            
+            // ★不具合①修正: 固定ダンジョンでは「次の階へ進む」ボタンを出さない
+            App.clearAction();
         } else {
-            // ランダムダンジョンの場合は、ボスのいた場所を階段(S)に変える
+            // ランダムダンジョンの場合は、ボスのいた場所を階段(S)に変え、進行ボタンを出す
             Dungeon.map[Field.y][Field.x] = 'S'; 
+            App.setAction("次の階へ", Dungeon.nextFloor);
         }
         
         Field.render();
-        App.setAction("次の階へ", Dungeon.nextFloor);
         
         // 戦闘データのクリーンアップ
         if (App.data.battle) {
             App.data.battle.isBossBattle = false;
-            App.data.battle.fixedBossId = null; // 固定ボスIDをリセット
+            App.data.battle.fixedBossId = null; 
         }
     }
 };
