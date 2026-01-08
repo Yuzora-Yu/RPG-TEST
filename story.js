@@ -5,7 +5,7 @@ const StoryManager = {
     scripts: {
         'PROLOGUE': [
             { name: '長老', text: 'おお、アルスよ。ついに旅立ちの時が来たか。' },
-            { name: '長老', text: '村の北にある「試練の洞窟」へ向かい、勇者の証を得るのじゃ。' },
+            { name: '長老', text: '村の右上にある「試練の洞窟」へ向かい、勇者の証を得るのじゃ。' },
             { name: 'システム', text: '幼馴染のガイルとサラが仲間に加わった！' }
         ],
         'START_DUNGEON_CLEAR': [
@@ -19,8 +19,8 @@ const StoryManager = {
 
     // 座標ベースのイベントトリガー定義 (area, x, y, 必要step, 実行イベント)
     triggers: [
-        { area: 'START_VILLAGE', x: 7, y: 4, step: 0, eventId: 'start_adventure' },
-        { area: 'START_CAVE', x: 2, y: 2,  step: 1, eventId: 'start_boss_battle' }
+        { area: 'START_VILLAGE', x: 6, y: 3, step: 0, eventId: 'start_adventure' }, // 長老(V)の座標
+        { area: 'START_CAVE', x: 1, y: 1,  step: 1, eventId: 'start_boss_battle' }  // 洞窟ボス(B)の座標
     ],
 
     // イベント実行コア
@@ -29,30 +29,37 @@ const StoryManager = {
         
         switch(eventId) {
             case 'start_adventure':
+                // プロローグ会話を開始
                 await StoryManager.showConversation('PROLOGUE');
-                App.addStoryAlly(101); // ガイル加入 (仮ID)
-                App.addStoryAlly(102); // サラ加入 (仮ID)
+                // 仲間加入
+                App.addStoryAlly(101); // ガイル
+                App.addStoryAlly(102); // サラ
                 data.storyStep = 1;
+                App.log("長老から「勇者の証」を求められた。");
                 break;
                 
             case 'start_boss_battle':
-                App.log("強大な魔物の気配を感じる…！");
-                // ここで固定ボスとの戦闘シーンへ
+                App.log("試練の守護者が立ちはだかる…！");
+                if (!App.data.battle) App.data.battle = {};
+                // 固定ボス戦フラグを立ててバトル開始
+                App.data.battle.isBossBattle = true;
+                App.changeScene('battle');
                 break;
         }
         App.save();
     },
 
-    // 会話表示 (Menu.msgなどを活用)
+    /**
+     * 会話表示 (Menu.msgをPromise化して順次表示)
+     */
     showConversation: async (scriptKey) => {
         const lines = StoryManager.scripts[scriptKey];
         if (!lines) return;
         
         for (const line of lines) {
-            // 既存のMenu.msgが非同期対応していない場合は、
-            // 簡易的にalertやカスタムダイアログで繋ぐか、App.logに流します
-            App.log(`<span style="color:#ffd700;">[${line.name}]</span> ${line.text}`);
-            // await を入れる場合は、ここでタップ待機ロジックを挟みます
+            await new Promise(resolve => {
+                Menu.msg(`<span style="color:#ffd700; font-weight:bold;">[${line.name}]</span><br>${line.text}`, resolve);
+            });
         }
     }
 };

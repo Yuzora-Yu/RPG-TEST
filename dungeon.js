@@ -5,7 +5,7 @@ const Dungeon = {
     
 
     // --- ダンジョン突入・進行 ---
-enter: () => {
+	enter: () => {
         if (typeof Menu !== 'undefined') Menu.closeAll();
         
         // ダンジョン内での脱出判定
@@ -64,9 +64,6 @@ enter: () => {
     // --- ダンジョン突入・進行 ---
     start: (startFloor) => {
 		if (!App.data.dungeon.returnPoint) {
-			// 現在のマップ名からエリアキーを特定して保存しておく
-			const areaKey = Field.getCurrentAreaKey();
-			
 			App.data.dungeon.returnPoint = {
 				x: App.data.location.x,
 				y: App.data.location.y,
@@ -75,10 +72,51 @@ enter: () => {
 			};
 		}
 
+        // ★バグ修正: 突入時に現在地を確実に更新する
+        App.data.location.area = 'ABYSS';
         App.data.progress.floor = startFloor;
         App.data.dungeon.tryCount++;
         App.data.dungeon.map = null;
         Dungeon.loadFloor();
+    },
+	
+    // --- 固定ダンジョン（試練の洞窟など）への進入 ---
+    startFixed: (mapKey) => {
+        const areaDef = FIXED_DUNGEON_MAPS[mapKey];
+        if (!areaDef) return;
+
+        // 帰還地点の保存 (まだ保存されていない場合のみ)
+        if (!App.data.dungeon.returnPoint) {
+            App.data.dungeon.returnPoint = {
+                x: App.data.location.x,
+                y: App.data.location.y,
+                areaKey: App.data.location.area || 'WORLD',
+                mapData: Field.currentMapData ? JSON.parse(JSON.stringify(Field.currentMapData)) : null
+            };
+        }
+
+        // 固定ダンジョンは1階として設定
+        App.data.progress.floor = 1; 
+        Dungeon.floor = 1;
+        // ★重要: 現在地を固定ダンジョンキーに更新
+        App.data.location.area = mapKey;
+
+        // Fieldのマップデータを更新
+        Field.currentMapData = { 
+            ...areaDef,
+            isDungeon: true,
+            isFixed: true // 固定マップフラグ
+        };
+
+        // 初期座標のセット
+        Field.x = areaDef.entryPoint ? areaDef.entryPoint.x : 1;
+        Field.y = areaDef.entryPoint ? areaDef.entryPoint.y : 1;
+        App.data.location.x = Field.x;
+        App.data.location.y = Field.y;
+
+        App.save();
+        App.changeScene('field');
+        App.log(`${areaDef.name}に入った。`);
     },
 
     nextFloor: () => {
@@ -88,6 +126,19 @@ enter: () => {
     },
 
     loadFloor: () => {
+        const areaKey = App.data.location.area;
+        // ★追加：固定ダンジョンの復元チェック
+        if (typeof FIXED_DUNGEON_MAPS !== 'undefined' && FIXED_DUNGEON_MAPS[areaKey]) {
+            Dungeon.floor = App.data.progress.floor || 1;
+            Field.currentMapData = { 
+                ...FIXED_DUNGEON_MAPS[areaKey],
+                isDungeon: true,
+                isFixed: true 
+            };
+            App.changeScene('field');
+            return;
+        }
+
         Dungeon.floor = App.data.progress.floor;
         
         if (App.data.dungeon.map) {
@@ -110,12 +161,17 @@ enter: () => {
         }
         
         Field.currentMapData = { 
-            name: STORY_DATA.areas['ABYSS'].name, // 「深淵の魔窟」をセット
+            name: STORY_DATA.areas['ABYSS'].name,
 			width: Dungeon.width, 
 			height: Dungeon.height, 
 			tiles: Dungeon.map, 
 			isDungeon: true
         };
+
+        // ★重要: 生成されたランダム座標をセーブデータにも同期させる (一面海バグ修正)
+        App.data.location.x = Field.x;
+        App.data.location.y = Field.y;
+
         App.changeScene('field');
         
         if (App.data.battle) App.data.battle.isBossBattle = false;
@@ -129,40 +185,66 @@ enter: () => {
         App.save();
     },
 
-    // --- 脱出処理 ---
-    // 引数 isWipedOut が true の場合は、保存場所を無視してデフォルト座標に戻る
+    // --- 脱出処理 (安全装置付き) ---
     exit: (isWipedOut = false) => {
         const returnPoint = App.data.dungeon.returnPoint;
 
-        // ダンジョン情報のクリア
+        // ダンジョン一時情報のクリア
         App.data.dungeon.map = null;
         App.data.dungeon.width = 30;
         App.data.dungeon.height = 30;
         App.data.progress.floor = 0;
         
-        // 保存していた帰還ポイントをクリア
+        // 保存していた帰還ポイントを一度抽出してからクリア
         App.data.dungeon.returnPoint = null;
 
-        // デフォルトの帰還先 (ワールドマップ)
+        // デフォルトの帰還先 (ワールドマップの安全圏)
         let targetX = 58;
         let targetY = 65;
+        let targetArea = 'WORLD';
         let targetMapData = null; 
 
-        // 全滅しておらず、かつ帰還データがある場合はその場所を復元
+        // 1. 全滅しておらず、かつ帰還データがある場合は一旦その場所を仮セット
         if (!isWipedOut && returnPoint) {
             targetX = returnPoint.x;
             targetY = returnPoint.y;
+            targetArea = returnPoint.areaKey;
             targetMapData = returnPoint.mapData;
         }
 
+        // 2. ★安全装置: 帰還先のタイルが「進行不可能」でないかチェック
+        let isSafe = true;
+        try {
+            if (!targetMapData || targetArea === 'WORLD') {
+                // ワールドマップの場合: W(海) または M(岩山) なら危険
+                const tile = MAP_DATA[targetY][targetX].toUpperCase();
+                if (tile === 'W' || tile === 'M') isSafe = false;
+            } else {
+                // 街や村（固定マップ）の場合: W(壁) なら危険
+                const tile = targetMapData.tiles[targetY][targetX].toUpperCase();
+                if (tile === 'W') isSafe = false;
+            }
+        } catch (e) {
+            isSafe = false;
+        }
+
+        // 3. 不安全な場所（海の上など）だった場合は、初期座標へ強制転送
+        if (!isSafe) {
+            App.log("<span style='color:#f88;'>帰還先が不安定だったため、安全な場所へ移動しました。</span>");
+            targetX = 58;
+            targetY = 65;
+            targetArea = 'WORLD';
+            targetMapData = null;
+        }
+
         // アプリケーションデータへの反映
+        App.data.location.area = targetArea;
         App.data.location.x = targetX;
         App.data.location.y = targetY;
         
         if(typeof Field !== 'undefined') {
             Field.x = targetX;
             Field.y = targetY;
-            // 保存されていたマップデータ（街など）を復元
             Field.currentMapData = targetMapData;
         }
         
@@ -177,35 +259,54 @@ enter: () => {
         App.clearAction();
     },
 	
-    // --- 移動・イベント処理 ---
+    // --- 移動・イベント処理 (全文) ---
     handleMove: (x, y) => {
-        const tile = Dungeon.map[y][x];
+        const tiles = (Field.currentMapData && Field.currentMapData.tiles) ? Field.currentMapData.tiles : Dungeon.map;
+        const tile = tiles[y][x];
         App.clearAction();
 
+        // 宝箱判定
         if(tile === 'C') { 
-            Dungeon.openChest(x, y, 'normal'); // 通常宝箱
+            Dungeon.openChest(x, y, 'normal'); 
             return; 
         }
         if(tile === 'R') { 
-            Dungeon.openChest(x, y, 'rare');   // 赤宝箱(+3確定)
+            Dungeon.openChest(x, y, 'rare'); 
             return; 
         }
 
+        // 階段・出口判定
         if(tile === 'S') {
-            App.log("階段がある。");
-            App.setAction("次の階へ", Dungeon.nextFloor);
-        } else if(tile === 'B') {
+            if (Field.currentMapData.isFixed) {
+                App.log("外への出口がある。");
+                App.setAction("外に出る", () => Dungeon.exit(false));
+            } else {
+                App.log("階段がある。");
+                App.setAction("次の階へ", Dungeon.nextFloor);
+            }
+        } 
+        // ボス判定
+        else if(tile === 'B') {
+            if (Field.currentMapData.isFixed && typeof StoryManager !== 'undefined') {
+                const trigger = StoryManager.triggers.find(t => 
+                    t.area === App.data.location.area && t.x === x && t.y === y && 
+                    t.step === App.data.progress.storyStep
+                );
+                if (trigger) {
+                    App.log("強大な魔物の気配がする…！");
+                    App.setAction("戦う", () => StoryManager.executeEvent(trigger.eventId));
+                    return;
+                }
+            }
+            
             App.log("ボスの気配がする…");
             App.setAction("ボスと戦う", () => {
                 if (App.data.battle) App.data.battle.isBossBattle = true;
-                // Boss戦はBattle.start内で Dungeon.getEnemy(floor) を呼び出してボスを取得する想定
                 App.changeScene('battle');
             });
         } 
         
-        if (tile === 'S' || tile === 'B') {
-            return;
-        }
+        if (tile === 'S' || tile === 'B') return;
 
         // ランダムエンカウント
         if(Math.random() < 0.08) { 
@@ -213,100 +314,106 @@ enter: () => {
             setTimeout(() => App.changeScene('battle'), 300); 
         }
     },
-
-// --- 宝箱開封：[1]発見ログ -> [2]演出(レア時) -> [3]取得アイテム表示 ---
+	
+    // --- 宝箱開封：[1]発見ログ -> [2]演出(レア時) -> [3]取得アイテム表示 ---
     openChest: async (x, y, type) => {
+        const isFixed = Field.currentMapData && Field.currentMapData.isFixed;
+        const areaKey = Field.getCurrentAreaKey();
+
+        // --- 1. 固定マップ（試練の洞窟など）の処理 ---
+        if (isFixed) {
+            const posKey = `${x},${y}`;
+            if (!App.data.progress.openedChests) App.data.progress.openedChests = {};
+            if (!App.data.progress.openedChests[areaKey]) App.data.progress.openedChests[areaKey] = [];
+            
+            if (App.data.progress.openedChests[areaKey].includes(posKey)) return;
+
+            const mapDef = FIXED_DUNGEON_MAPS[areaKey];
+            const chestDef = mapDef.chests ? mapDef.chests.find(c => c.x === x && c.y === y) : null;
+
+            if (chestDef) {
+                App.data.progress.openedChests[areaKey].push(posKey);
+                const item = DB.ITEMS.find(i => i.id === chestDef.itemId);
+                if (item) {
+                    App.data.items[item.id] = (App.data.items[item.id] || 0) + 1;
+                    App.log(`宝箱を開けた！`);
+                    App.log(`<span style="color:#ffd700;">${item.name}</span> を手に入れた！`);
+                } else {
+                    App.log("宝箱は空だった…");
+                }
+            } else {
+                App.log("宝箱は空だった…");
+            }
+            App.save();
+            Field.render(); 
+            return;
+        }
+
+        // --- 2. ランダム生成ダンジョン（深淵の魔窟）の処理 ---
         Dungeon.map[y][x] = 'T'; 
         Field.render();
         
         let msg = "";
-        let hasRareDrop = false;
-        let hasUltraRareDrop = false;
+        let hasRareDrop = false, hasUltraRareDrop = false;
         const floor = Dungeon.floor;
 
         if (type === 'rare') {
-            // 【赤宝箱】基本は＋３確定 ＆ 0.5%の確率で「改」武器
-            if (Math.random() < 0.005) { // 0.5%で「改」
+            if (Math.random() < 0.005) {
                 const eq = Dungeon.createEquipWithMinRarity(floor, 3, ['SSR', 'UR', 'EX'], '武器');
                 eq.name = eq.name.replace(/\+3$/, "") + "・改+3";
-                // 基礎ステータスを2倍に補正
                 for (let key in eq.data) {
                     if (typeof eq.data[key] === 'number') eq.data[key] *= 2;
                     else if (typeof eq.data[key] === 'object' && eq.data[key] !== null) {
                         for (let sub in eq.data[key]) eq.data[key][sub] *= 2;
                     }
                 }
-                eq.val *= 4;
-                App.data.inventory.push(eq);
+                eq.val *= 4; App.data.inventory.push(eq);
                 msg = `なんと <span style="color:#ff00ff; font-weight:bold;">${eq.name}</span>`;
                 hasUltraRareDrop = true;
             } else {
-                // 通常の赤宝箱：＋３確定 ＆ SR以上オプション保証
                 const eq = Dungeon.createEquipWithMinRarity(floor, 3, ['SR', 'SSR', 'UR', 'EX']);
                 App.data.inventory.push(eq);
                 msg = `なんと <span class="log-rare-drop">${eq.name}</span>`;
                 hasRareDrop = true;
             }
         } else {
-            // 【通常宝箱】
-			// 100階以降の特別抽選
-			if (Dungeon.floor >= 100) {
-				const r = Math.random();
-				let specialItemId = null;
-				if (r < 0.001) specialItemId = 107;      // 転生の実 (0.1%)
-				else if (r < 0.011) specialItemId = 106; // スキルのたね (1%)
-				else if (r < 0.191) {                    // 種・きのみ系 合計18% (各3%)
-					specialItemId = 100 + Math.floor(Math.random() * 6);
-				}
-
-				if (specialItemId) {
-					App.data.items[specialItemId] = (App.data.items[specialItemId] || 0) + 1;
-					const item = DB.ITEMS.find(i => i.id === specialItemId);
-					App.log(`なんと <span style="color:#ffff00;"> ${item.name} </span>を手に入れた！`);
-					App.save();
-					return; // アイテムを手に入れたら終了
-				}
-			}
-
-            const r = Math.random();		
-		
-            if (r < 0.2) {
-                // ちいさなメダル
-                const item = DB.ITEMS.find(i => i.id === 99);
-                if(item) {
-                    App.data.items[item.id] = (App.data.items[item.id]||0)+1;
-                    msg = `<span style="color:#ffd700;">${item.name}</span>`;
+            if (Dungeon.floor >= 100) {
+                const r = Math.random();
+                let sid = null;
+                if (r < 0.001) sid = 107;
+                else if (r < 0.011) sid = 106;
+                else if (r < 0.191) sid = 100 + Math.floor(Math.random() * 6);
+                if (sid) {
+                    App.data.items[sid] = (App.data.items[sid] || 0) + 1;
+                    const it = DB.ITEMS.find(i => i.id === sid);
+                    App.log(`宝箱を開けた！`);
+                    App.log(`なんと <span style="color:#ffff00;"> ${it.name} </span>を手に入れた！`);
+                    App.save(); return;
                 }
+            }
+            const r = Math.random();		
+            if (r < 0.2) {
+                const item = DB.ITEMS.find(i => i.id === 99);
+                if(item) { App.data.items[item.id] = (App.data.items[item.id]||0)+1; msg = `<span style="color:#ffd700;">${item.name}</span>`; }
             } else if (r < 0.5) {
-                // アイテム（貴重品除外、階層ランク制限）
                 const candidates = DB.ITEMS.filter(i => i.id !== 99 && i.type !== '貴重品' && i.rank <= floor);
                 const item = candidates.length > 0 ? candidates[Math.floor(Math.random() * candidates.length)] : DB.ITEMS[0];
-                App.data.items[item.id] = (App.data.items[item.id]||0)+1;
-                msg = `${item.name}`;
+                App.data.items[item.id] = (App.data.items[item.id]||0)+1; msg = `${item.name}`;
             } else if (r < 0.7) {
-                // GOLD
                 const gold = Math.floor(Math.random() * (500 * floor)) + 100;
-                App.data.gold += gold;
-                msg = `<span style="color:#ffff00;">${gold} Gold</span>`;
+                App.data.gold += gold; msg = `<span style="color:#ffff00;">${gold} Gold</span>`;
             } else if (r < 0.9) {
-                // ＋１装備
                 const eq = App.createEquipByFloor('chest', floor, 1);
-                App.data.inventory.push(eq);
-                msg = `${eq.name}`;
+                App.data.inventory.push(eq); msg = `${eq.name}`;
             } else {
-                // ＋２装備
                 const eq = App.createEquipByFloor('chest', floor, 2);
-                App.data.inventory.push(eq);
-                msg = `${eq.name}`;
+                App.data.inventory.push(eq); msg = `${eq.name}`;
             }
         }
 
-        // --- 演出とログ表示 ---
         App.log(`宝箱を開けた！`);
-        
         if (hasRareDrop || hasUltraRareDrop) {
-            await new Promise(resolve => setTimeout(resolve, 500)); // 溜め
-            
+            await new Promise(resolve => setTimeout(resolve, 500));
             if (hasUltraRareDrop) {
                 const uFlash = document.getElementById('drop-flash-ultra') || document.getElementById('drop-flash');
                 if(uFlash) { uFlash.style.display = 'block'; uFlash.className = 'flash-ultra flash-ultra-active'; }
@@ -315,16 +422,14 @@ enter: () => {
                 if(flash) { flash.style.display = 'block'; flash.classList.remove('flash-active'); void flash.offsetWidth; flash.classList.add('flash-active'); }
             }
         }
-
         App.log(`${msg} を手に入れた！`);
         App.save();
     },
-
+	
     // 内部用：オプションレアリティ保証付き装備生成
     createEquipWithMinRarity: (floor, plus, minRarityList, forcePart = null) => {
         let eq = App.createEquipByFloor('drop', floor, plus);
         
-        // 部位固定ロジック
         if (forcePart && eq.type !== forcePart) {
             let attempts = 0;
             while (eq.type !== forcePart && attempts < 50) {
@@ -333,7 +438,6 @@ enter: () => {
             }
         }
 
-        const rarities = ['N', 'R', 'SR', 'SSR', 'UR', 'EX'];
         eq.opts = eq.opts.map(opt => {
             const rule = DB.OPT_RULES.find(r => r.key === opt.key);
             if (!rule) return opt;
@@ -361,7 +465,6 @@ enter: () => {
         if (Dungeon.floor > 0 && Dungeon.floor % 10 === 0) {
             Dungeon.generateBossRoom();
         } else {
-            // ★追加: 2%の確率でレア宝物庫フロア
             if (Math.random() < 0.02) {
                 Dungeon.generateTreasureRoom();
             } else {
@@ -376,18 +479,18 @@ enter: () => {
 				else Dungeon.generateMazeMap(); 
 				
 				Dungeon.setPlayerRandomSpawn();
-				// ★追加: 生成タイプを保存 (0,1は通常、2は迷路として扱うため記録)
 				App.data.dungeon.genType = type;
 			}
 		}
         
         Field.currentMapData = { 
-			name: STORY_DATA.areas['ABYSS'].name, // 「深淵の魔窟」をセット
+			name: STORY_DATA.areas['ABYSS'].name,
             width: Dungeon.width, 
             height: Dungeon.height, 
             tiles: Dungeon.map, 
             isDungeon: true 
         };
+        // ★座標をセーブデータへ同期
         App.data.location.x = Field.x;
         App.data.location.y = Field.y;
     },
@@ -422,15 +525,13 @@ enter: () => {
             }
             Dungeon.map.push(row);
         }
-        // 階段の配置
         Dungeon.map[2][5] = 'S'; 
-        // レア宝箱5つの配置
         Dungeon.map[4][3] = 'R'; Dungeon.map[4][7] = 'R';
         Dungeon.map[5][5] = 'R';
         Dungeon.map[6][3] = 'R'; Dungeon.map[6][7] = 'R';
 
-        Field.x = 5; Field.y = 8; // プレイヤーの開始位置
-        App.data.dungeon.genType = 0; // 通常フロア扱い
+        Field.x = 5; Field.y = 8; 
+        App.data.dungeon.genType = 0; 
     },
 
     generateRoomMap: () => {
@@ -568,7 +669,7 @@ enter: () => {
         Dungeon.map[sPos.y][sPos.x] = 'S';
         floors.splice(sIdx, 1);
 
-        // ★修正: 宝箱の数 (3〜8個)
+        // 宝箱の数 (3〜8個)
         let chests = Math.floor(Math.random() * 6) + 3;
 
         for(let i=0; i<chests; i++) {
@@ -579,7 +680,7 @@ enter: () => {
             floors.splice(cIdx, 1);
         }
 
-        // ★追加: 1%の確率で赤宝箱(+3確定)を配置
+        // 1%の確率で赤宝箱(+3確定)を配置
         if (Math.random() < 0.01 && floors.length > 0) {
             const rIdx = Math.floor(Math.random() * floors.length);
             const rPos = floors[rIdx];
@@ -593,7 +694,10 @@ enter: () => {
             const rx = Math.floor(Math.random() * Dungeon.width);
             const ry = Math.floor(Math.random() * Dungeon.height);
             if(Dungeon.map[ry][rx] === 'T') { 
-                Field.x = rx; Field.y = ry; return; 
+                Field.x = rx; Field.y = ry;
+                // ★同期
+                App.data.location.x = rx; App.data.location.y = ry;
+                return; 
             }
         }
     },

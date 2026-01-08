@@ -55,62 +55,28 @@ const Battle = {
         if (d.debuff_reset || d.CureAilments || d.HPRegen || d.MPRegen) return true;
         return false;
     },
-	
+
     init: () => {
         Battle.active = true;
         Battle.phase = 'init';
         Battle.commandQueue = [];
         Battle.currentActorIndex = 0;
         Battle.auto = false;
-		Battle.runAttemptCount = 0; // ★追加: カウントリセット
-		Battle.skillScrollPositions = {};
+        Battle.runAttemptCount = 0; 
+        Battle.skillScrollPositions = {};
         Battle.updateAutoButton();
         
         const logEl = Battle.getEl('battle-log');
         if(logEl) logEl.innerHTML = '';
 
-		// ★修正: 背景画像の出し分けロジック
+        // ★背景管理を Main 側の Field.getBattleBg に統合
         const enemyArea = document.getElementById('enemy-container');
         if (enemyArea) {
-            // デフォルトは草原(フィールド)
-            let bgKey = 'battle_bg_field';
+            const bgKey = Field.getBattleBg();
+            const g = (typeof GRAPHICS !== 'undefined' && GRAPHICS.images) ? GRAPHICS.images : {};
 
-            // ■ ダンジョン内にいる場合
-            // ★追加: エスターク戦専用背景
-            if (App.data.battle && App.data.battle.isEstark) {
-                bgKey = 'battle_bg_lastboss';
-            } else if (typeof Field !== 'undefined' && Field.currentMapData && Field.currentMapData.isDungeon) {
-                const floor = App.data.progress.floor;
-                const type = App.data.dungeon.genType; 
-
-                if (floor % 10 === 0) {
-                    bgKey = 'battle_bg_boss';
-                } else if (type === 2) {
-                    bgKey = 'battle_bg_maze';
-                } else {
-                    bgKey = 'battle_bg_dungeon';
-                }
-            } 
-            // ■ 通常フィールドにいる場合 (MAP_DATAを参照)
-            else if (typeof Field !== 'undefined' && typeof MAP_DATA !== 'undefined') {
-                // 現在の座標からタイル文字を取得（マップのループも考慮）
-                const mapW = MAP_DATA[0].length;
-                const mapH = MAP_DATA.length;
-                const tx = ((Field.x % mapW) + mapW) % mapW;
-                const ty = ((Field.y % mapH) + mapH) % mapH;
-                const tile = MAP_DATA[ty][tx];
-
-                // タイル文字に応じて背景を変更
-                if (tile === 'F') {
-                    bgKey = 'battle_bg_forest';   // 森
-                } else if (tile === 'L') {
-                    bgKey = 'battle_bg_mountain'; // 山 (L)
-                } 
-            }
-
-            // 画像データの存在チェックと適用
-            if (typeof GRAPHICS !== 'undefined' && GRAPHICS.images && GRAPHICS.images[bgKey]) {
-                enemyArea.style.backgroundImage = `url('${GRAPHICS.images[bgKey].src}')`;
+            if (g[bgKey]) {
+                enemyArea.style.backgroundImage = `url('${g[bgKey].src}')`;
                 enemyArea.style.backgroundSize = 'cover';
                 enemyArea.style.backgroundPosition = 'center bottom';
                 enemyArea.style.backgroundRepeat = 'no-repeat';
@@ -119,9 +85,8 @@ const Battle = {
                 enemyArea.style.backgroundImage = 'none';
             }
         }
-		
-		
-        // --- パーティ生成 ---
+        
+        // パーティ生成
         Battle.party = [];
         if (App.data && App.data.party) {
             Battle.party = App.data.party.map(uid => {
@@ -129,162 +94,78 @@ const Battle = {
                 const charData = App.getChar(uid);
                 if(!charData) return null;
                 const player = new Player(charData);
-                
                 const stats = App.calcStats(charData);
                 player.hp = Math.min(player.hp, stats.maxHp);
                 player.mp = Math.min(player.mp, stats.maxMp);
-                player.baseMaxHp = stats.maxHp;
-                player.baseMaxMp = stats.maxMp;
-
-                player.atk = stats.atk;
-                player.def = stats.def;
-                player.spd = stats.spd;
-                player.mag = stats.mag;
-                player.elmAtk = stats.elmAtk || {};
-                player.elmRes = stats.elmRes || {};
-                player.finDmg = stats.finDmg || 0;
-                player.finRed = stats.finRed || 0;
-                
-				// パッシブ・シナジー取得
+                player.baseMaxHp = stats.maxHp; player.baseMaxMp = stats.maxMp;
+                player.atk = stats.atk; player.def = stats.def; player.spd = stats.spd; player.mag = stats.mag;
+                player.elmAtk = stats.elmAtk || {}; player.elmRes = stats.elmRes || {};
+                player.finDmg = stats.finDmg || 0; player.finRed = stats.finRed || 0;
                 player.passive = Battle.getPassives(player);
-				
-				// ★追加: 「スキル習得」シナジー (混沌の刃/壁)
-                // 複数のシナジーが配列で入っていることを考慮してループ処理する
+                
+                // シナジー付与スキル習得
                 if (player.equips) {
-					Object.values(player.equips).forEach(eq => {
-						if (eq && eq.isSynergy && eq.effects && eq.effects.includes('grantSkill')) {
-							// 複数のシナジーの中から 'grantSkill' を持っているものを探す
-                            const grantSyn = eq.synergies.find(s => s.effect === 'grantSkill');
-							if (grantSyn && grantSyn.value) {
-								if (!player.skills.find(s => s.id === grantSyn.value)) {
-									const newSkill = DB.SKILLS.find(s => s.id === grantSyn.value);
-									if (newSkill) player.skills.push(newSkill);
-								}
-							}
-						}
-					});
-				}
-				
-				// 保存された状態があれば復元、なければ初期化
-                if (charData.battleStatus) {
-                    player.battleStatus = JSON.parse(JSON.stringify(charData.battleStatus));
-                } else {
-                    Battle.initBattleStatus(player);
+                    Object.values(player.equips).forEach(eq => {
+                        if (eq && eq.isSynergy && eq.effects) {
+                            const grantSyn = eq.synergies?.find(s => s.effect === 'grantSkill');
+                            if (grantSyn && grantSyn.value) {
+                                if (!player.skills.find(s => s.id === grantSyn.value)) {
+                                    const newSkill = DB.SKILLS.find(s => s.id === grantSyn.value);
+                                    if (newSkill) player.skills.push(newSkill);
+                                }
+                            }
+                        }
+                    });
                 }
-				
-				// 「軍神」シナジー (開幕バフ)
-                if (player.passive.warGod) {
-                    player.battleStatus.buffs['atk'] = { val: 1.5, turns: null };
-                    player.battleStatus.buffs['mag'] = { val: 1.5, turns: null };
-                }
-				
-                if (player.passive.atkDouble) {
-                    player.battleStatus.buffs['atk'] = { val: 2.0, turns: null };
-                }
-				
-                if (player.passive.magDouble) {
-                    player.battleStatus.buffs['mag'] = { val: 2.0, turns: null };
-                }
-				
+                if (charData.battleStatus) player.battleStatus = JSON.parse(JSON.stringify(charData.battleStatus));
+                else Battle.initBattleStatus(player);
+
+                if (player.passive.warGod) { player.battleStatus.buffs['atk'] = { val: 1.5, turns: null }; player.battleStatus.buffs['mag'] = { val: 1.5, turns: null }; }
+                if (player.passive.atkDouble) player.battleStatus.buffs['atk'] = { val: 2.0, turns: null };
+                if (player.passive.magDouble) player.battleStatus.buffs['mag'] = { val: 2.0, turns: null };
                 return player;
             }).filter(p => p !== null);
         }
 
         if (Battle.party.length === 0 || Battle.party.every(p => p.isDead)) {
             App.log("戦えるメンバーがいません！");
-            Battle.endBattle(true);
-            return;
+            Battle.endBattle(true); return;
         }
 
-        // --- 敵生成・復帰 ---
-        if (App.data.battle && App.data.battle.active && Array.isArray(App.data.battle.enemies) && App.data.battle.enemies.length > 0) {
-            const isBoss = App.data.battle.isBossBattle || false;
-            const isEstark = App.data.battle.isEstark || false;
+        // 敵生成・復帰
+        const isBoss = (App.data.battle && App.data.battle.isBossBattle) || false;
+        const isEstark = (App.data.battle && App.data.battle.isEstark) || false;
 
+        if (App.data.battle && App.data.battle.active && App.data.battle.enemies?.length > 0) {
             Battle.log("戦闘に復帰した！");
             Battle.enemies = App.data.battle.enemies.map(e => {
                 let base = DB.MONSTERS.find(m => m.id === e.baseId);
-                if (!base && window.generateEnemy) {
-                    base = { name: e.name, hp: e.maxHp, atk: 10, def: 10, spd: 10, mag: 10, exp: 0, gold: 0 };
-                }
                 if (!base) return null;
                 const m = new Monster(base, 1.0);
-                m.hp = e.hp; m.baseMaxHp = e.maxHp; m.name = e.name; m.id = e.baseId; 
-                m.isDead = m.hp <= 0;
-                m.isFled = false;
-                if(base.actCount) m.actCount = base.actCount;
-                if(base.acts) m.acts = base.acts; 
-
-                m.atk = m.baseStats.atk;
-                m.def = m.baseStats.def;
-                m.spd = m.baseStats.spd;
-                m.mag = m.baseStats.mag;
-                m.elmAtk = JSON.parse(JSON.stringify(base.elmAtk || {}));
-                m.elmRes = JSON.parse(JSON.stringify(base.elmRes || {}));
-                m.finDmg = 0; m.finRed = 0;
+                m.hp = e.hp; m.baseMaxHp = e.maxHp; m.name = e.name; m.id = e.baseId; m.isDead = m.hp <= 0;
+                m.atk = m.baseStats.atk; m.def = m.baseStats.def; m.spd = m.baseStats.spd; m.mag = m.baseStats.mag;
+                m.elmAtk = JSON.parse(JSON.stringify(base.elmAtk || {})); m.elmRes = JSON.parse(JSON.stringify(base.elmRes || {}));
                 m.passive = base.passive || {};
-                
-                if (e.battleStatus) {
-                    m.battleStatus = e.battleStatus;
-                } else {
-                    Battle.initBattleStatus(m);
-                }
+                m.battleStatus = e.battleStatus || { buffs:{}, debuffs:{}, ailments:{} };
                 return m;
             }).filter(enemy => enemy !== null);
-
-            App.data.battle.isBossBattle = isBoss;
-            App.data.battle.isEstark = isEstark;
-
         } else {
-            const isBoss = (App.data.battle && App.data.battle.isBossBattle) || false;
-            const isEstark = (App.data.battle && App.data.battle.isEstark) || false;
-
             if (isEstark) {
                 const base = DB.MONSTERS.find(m => m.id === 2000);
-                if (base) {
-                    const killCount = App.data.estarkKillCount || 0;
-                    const scale = 1.0 + (killCount * 0.05);
-                    const m = new Monster(base, scale);
-                    m.id = 2000;
-					m.isEstark = true; 
-                    m.actCount = base.actCount || 3;
-                    Battle.enemies = [m];
-                    Battle.enemies.forEach(enemy => Battle.initBattleStatus(enemy));
-                }
+                const scale = 1.0 + ((App.data.estarkKillCount || 0) * 0.05);
+                const m = new Monster(base, scale); m.id = 2000; m.isEstark = true;
+                Battle.enemies = [m];
             } else {
                 Battle.enemies = Battle.generateNewEnemies(isBoss);
-                Battle.enemies.forEach(enemy => {
-                    Battle.initBattleStatus(enemy);
-                    const base = DB.MONSTERS.find(m => m.id === enemy.id);
-                    enemy.passive = base ? (base.passive || {}) : {};
-                });
             }
-
-            App.data.battle = {
-                active: true, 
-                isBossBattle: isBoss,
-                isEstark: isEstark,
-                enemies: Battle.enemies.map(enemy => ({ 
-                    baseId: enemy.id, 
-                    hp: enemy.hp, 
-                    maxHp: enemy.baseMaxHp, 
-                    name: enemy.name,
-                    battleStatus: enemy.battleStatus 
-                }))
-            };
+            Battle.enemies.forEach(e => Battle.initBattleStatus(e));
+            App.data.battle = { active: true, isBossBattle: isBoss, isEstark: isEstark, enemies: Battle.enemies.map(e => ({ baseId: e.id, hp: e.hp, maxHp: e.baseMaxHp, name: e.name, battleStatus: e.battleStatus })) };
             App.save();
         }
 
-        Battle.renderEnemies();
-        Battle.renderPartyStatus();
-
+        Battle.renderEnemies(); Battle.renderPartyStatus();
         const scene = document.getElementById('battle-scene');
-        if(scene) {
-            scene.onclick = (e) => {
-                if (Battle.phase === 'result') Battle.endBattle(false);
-            };
-        }
-
+        if(scene) scene.onclick = () => { if (Battle.phase === 'result') Battle.endBattle(false); };
         Battle.startInputPhase();
     },
 	

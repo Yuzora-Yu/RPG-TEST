@@ -31,6 +31,7 @@ const TILE_THEMES = {
 	'START_CAVE': {
         'W': { img: 'wall',         color: '#333' },
         'T': { img: 'dungeon_floor',color: '#666' }, // ダンジョン床
+		'S': { img: 'floor', color: '#282' },
     },
 	
     'FIRE_VILLAGE': {
@@ -1226,6 +1227,7 @@ const App = {
 };
 
 /* main.js 内の Field オブジェクト全文 */
+/* main.js 内の Field オブジェクト全文 */
 
 const Field = {
     x: 23, y: 28, 
@@ -1235,28 +1237,53 @@ const Field = {
     
     init: () => {
         if(App.data) {
+            // ★重要: App.data.location.area を最新の状態にする
             const areaKey = App.data.location.area || 'WORLD';
             
             // --- マップデータの復元ロジック ---
-            // 既に魔窟（isDungeon）の生成・復元が終わっていない場合のみ実行
-            if (!Field.currentMapData || !Field.currentMapData.isDungeon) {
-                if (areaKey !== 'WORLD' && areaKey !== 'ABYSS' && typeof FIXED_MAPS !== 'undefined' && FIXED_MAPS[areaKey]) {
-                    Field.currentMapData = FIXED_MAPS[areaKey];
+            // A. 固定ダンジョン (FIXED_DUNGEON_MAPS) の復元
+            if (typeof FIXED_DUNGEON_MAPS !== 'undefined' && FIXED_DUNGEON_MAPS[areaKey]) {
+                Field.currentMapData = { 
+                    ...FIXED_DUNGEON_MAPS[areaKey],
+                    isDungeon: true,
+                    isFixed: true 
+                };
+                Dungeon.floor = App.data.progress.floor || 1;
+            }
+            // B. 通常の固定マップ (FIXED_MAPS: 村・街) の復元
+            else if (typeof FIXED_MAPS !== 'undefined' && FIXED_MAPS[areaKey]) {
+                Field.currentMapData = FIXED_MAPS[areaKey];
+            }
+            // C. ランダムダンジョン (ABYSS) 
+            else if (areaKey === 'ABYSS') {
+                if (App.data.dungeon && App.data.dungeon.map) {
+                    Field.currentMapData = {
+                        name: STORY_DATA.areas['ABYSS'].name,
+                        width: App.data.dungeon.width,
+                        height: App.data.dungeon.height,
+                        tiles: App.data.dungeon.map,
+                        isDungeon: true
+                    };
+                    Dungeon.floor = App.data.progress.floor;
                 } else {
-                    Field.currentMapData = null; 
+                    // マップデータがない状態でABYSSにいる場合はワールドへ戻す（一面海バグ対策）
+                    App.data.location.area = 'WORLD';
+                    Field.currentMapData = null;
                 }
+            } else {
+                Field.currentMapData = null; // ワールドマップ
+            }
 
-                // セーブデータから物理座標を復元
-                Field.x = App.data.location.x;
-                Field.y = App.data.location.y;
+            // 座標の復元 (常に location から最新を読む)
+            Field.x = App.data.location.x;
+            Field.y = App.data.location.y;
 
-                // ワールドマップモードの時のみ座標をループ補正する
-                if (!Field.currentMapData) {
-                    const mapW = (typeof MAP_DATA !== 'undefined' && MAP_DATA[0]) ? MAP_DATA[0].length : 100;
-                    const mapH = (typeof MAP_DATA !== 'undefined') ? MAP_DATA.length : 100;
-                    Field.x = (Field.x % mapW + mapW) % mapW;
-                    Field.y = (Field.y % mapH + mapH) % mapH;
-                }
+            // ワールドマップモードの時のループ補正
+            if (!Field.currentMapData) {
+                const mapW = (typeof MAP_DATA !== 'undefined' && MAP_DATA[0]) ? MAP_DATA[0].length : 100;
+                const mapH = (typeof MAP_DATA !== 'undefined') ? MAP_DATA.length : 100;
+                Field.x = (Field.x % mapW + mapW) % mapW;
+                Field.y = (Field.y % mapH + mapH) % mapH;
             }
         }
 
@@ -1268,48 +1295,74 @@ const Field = {
         if(typeof Menu !== 'undefined') Menu.renderPartyBar();
     },
 
-    // --- エリア判定ロジックの修正 ---
     getCurrentAreaKey: () => {
         if (!Field.currentMapData) return 'WORLD';
-        
-        // ★修正点: まず STORY_DATA.areas の中で名前が一致するものを探す。
-        // これにより、ダンジョンであっても「深淵の魔窟」なら 'ABYSS' が返るようになる。
+        const locArea = App.data.location.area;
+        if (locArea && (STORY_DATA.areas[locArea] || (typeof FIXED_DUNGEON_MAPS !== 'undefined' && FIXED_DUNGEON_MAPS[locArea]))) {
+            return locArea;
+        }
         const entry = Object.entries(STORY_DATA.areas).find(([key, area]) => area.name === Field.currentMapData.name);
         if (entry) return entry[0];
-
-        // 名前で見つからない場合のみ、ダンジョンなら DEFAULT、それ以外は WORLD
+        if (typeof FIXED_DUNGEON_MAPS !== 'undefined') {
+            const dungeonEntry = Object.entries(FIXED_DUNGEON_MAPS).find(([key, area]) => area.name === Field.currentMapData.name);
+            if (dungeonEntry) return dungeonEntry[0];
+        }
         return Field.currentMapData.isDungeon ? 'DEFAULT' : 'WORLD';
     },
 
-    /**
-     * タイル記号と現在のエリア設定から、描画設定（画像と色）を返す
-     */
     getTileConfig: (tileSign) => {
         const upper = tileSign.toUpperCase();
         const areaKey = Field.getCurrentAreaKey();
         const theme = TILE_THEMES[areaKey] || TILE_THEMES['DEFAULT'];
         
         let config = theme[upper] || TILE_THEMES['DEFAULT'][upper] || { img: null, color: '#000' };
-
-        // 特別判定: 非ダンジョンのエリア（村など）で 'T' に画像指定がない場合、建物を表示
         if (upper === 'T' && Field.currentMapData && !Field.currentMapData.isDungeon && !config.img) {
             return { img: 'inn', color: '#444' };
         }
         return config;
     },
+
+    getBattleBg: () => {
+        if (App.data.battle && App.data.battle.isEstark) return 'battle_bg_lastboss';
+        if (Field.currentMapData) {
+            if (Field.currentMapData.battleBg) return Field.currentMapData.battleBg;
+            if (Field.currentMapData.isDungeon) {
+                const floor = App.data.progress.floor || 0;
+                const genType = App.data.dungeon.genType;
+                if (floor % 10 === 0) return 'battle_bg_boss'; 
+                if (genType === 2) return 'battle_bg_maze';     
+                return 'battle_bg_dungeon';
+            }
+            return 'battle_bg_field';
+        }
+        const mapW = MAP_DATA[0].length;
+        const mapH = MAP_DATA.length;
+        const tx = ((Field.x % mapW) + mapW) % mapW;
+        const ty = ((Field.y % mapH) + mapH) % mapH;
+        const tile = MAP_DATA[ty][tx].toUpperCase();
+        if (tile === 'F') return 'battle_bg_forest';
+        if (tile === 'L') return 'battle_bg_mountain';
+        return 'battle_bg_field';
+    },
 	
 	move: (dx, dy) => {
         if (dy > 0) Field.dir = 0; else if (dx < 0) Field.dir = 1; else if (dx > 0) Field.dir = 2; else if (dy < 0) Field.dir = 3;
         Field.step = (Field.step === 1) ? 2 : 1;
-
         let nx = Field.x + dx;
         let ny = Field.y + dy;
         App.clearAction();
 
         if (Field.currentMapData) {
-            // A. 固定マップ（村・街）または 魔窟内
             if (nx < 0 || nx >= Field.currentMapData.width || ny < 0 || ny >= Field.currentMapData.height) return;
-            const tile = Field.currentMapData.tiles[ny][nx].toUpperCase();
+            let tile = Field.currentMapData.tiles[ny][nx].toUpperCase();
+
+            // ★追加: 固定宝箱の開封済み判定を移動前に行う (通り抜け可能にするため)
+            if (Field.currentMapData.isFixed && (tile === 'C' || tile === 'R')) {
+                const ak = Field.getCurrentAreaKey();
+                if (App.data.progress.openedChests && App.data.progress.openedChests[ak]?.includes(`${nx},${ny}`)) {
+                    tile = 'G'; // 開封済みなら床扱い
+                }
+            }
 
             if (tile === 'W') return; 
 
@@ -1330,106 +1383,57 @@ const Field = {
             App.data.location.x = nx; App.data.location.y = ny;
 
             if (!Field.currentMapData.isDungeon) {
-                if (tile === 'I') {
-                    App.log("宿屋のようだ。");
-                    App.setAction("泊まる", () => App.changeScene('inn'));
-                } else if (tile === 'K') {
-                    App.log("カジノの看板が出ている。");
-                    App.setAction("カジノに入る", () => App.changeScene('casino'));
-                } else if (tile === 'E') {
-                    App.log("メダル王の出張所のようだ。");
-                    App.setAction("メダル交換", () => App.changeScene('medal'));
-                } else if (tile === 'V' || tile === 'T') {
+                if (tile === 'I') { App.log("宿屋のようだ。"); App.setAction("泊まる", () => App.changeScene('inn')); }
+                else if (tile === 'K') { App.log("カジノの看板が出ている。"); App.setAction("カジノに入る", () => App.changeScene('casino')); }
+                else if (tile === 'E') { App.log("メダル王の出張所のようだ。"); App.setAction("メダル交換", () => App.changeScene('medal')); }
+                else if (tile === 'D') {
+                    if (App.data.location.area === 'START_VILLAGE') {
+                        App.log("「試練の洞窟」の入口だ。");
+                        App.setAction("洞窟に入る", () => Dungeon.startFixed('START_CAVE'));
+                    }
+                } else if (tile === 'V' || tile === 'T' || tile === 'H') {
                     if (typeof StoryManager !== 'undefined') {
-                        const trigger = StoryManager.triggers.find(t => 
-                            t.area === App.data.location.area && 
-                            t.x === nx && t.y === ny && 
-                            t.step === App.data.progress.storyStep
-                        );
+                        const trigger = StoryManager.triggers.find(t => t.area === App.data.location.area && t.x === nx && t.y === ny && t.step === App.data.progress.storyStep);
                         if (trigger) App.setAction("話す", () => StoryManager.executeEvent(trigger.eventId));
                         else App.log("誰かいるようだ。");
                     }
                 }
             }
-            
             if (Field.currentMapData.isDungeon) Dungeon.handleMove(nx, ny);
-            
             App.save(); Field.render();
-
         } else {
-            // B. ワールドマップ上
-            const mapW = MAP_DATA[0].length;
-            const mapH = MAP_DATA.length;
+            const mapW = MAP_DATA[0].length; const mapH = MAP_DATA.length;
             nx = (nx + mapW) % mapW; ny = (ny + mapH) % mapH;
-            
             const tile = MAP_DATA[ny][nx].toUpperCase();
             if (tile === 'M') { App.log("険しい岩山だ"); return; }
-            if (tile === 'W') {
-                const hasShip = App.data.progress?.flags?.hasShip;
-                if (!hasShip) { App.log("海は船がないと渡れない…"); return; }
-            }
-
-            Field.x = nx; Field.y = ny; 
-            App.data.location.x = nx; App.data.location.y = ny; 
-
-            // 拠点(I:街, B:城)
+            if (tile === 'W') { if (!App.data.progress?.flags?.hasShip) { App.log("海は船がないと渡れない…"); return; } }
+            Field.x = nx; Field.y = ny; App.data.location.x = nx; App.data.location.y = ny; 
             if (tile === 'I' || tile === 'B') {
                 let targetAreaKey = null;
-                for (let key in STORY_DATA.areas) {
-                    const area = STORY_DATA.areas[key];
-                    if (area.centerX === nx && area.centerY === ny) { targetAreaKey = key; break; }
-                }
-
+                for (let key in STORY_DATA.areas) { if (STORY_DATA.areas[key].centerX === nx && STORY_DATA.areas[key].centerY === ny) { targetAreaKey = key; break; } }
                 if (targetAreaKey && typeof FIXED_MAPS !== 'undefined' && FIXED_MAPS[targetAreaKey]) {
                     const areaDef = FIXED_MAPS[targetAreaKey];
                     App.setAction(`${areaDef.name}に入る`, () => {
-                        App.data.location.area = targetAreaKey;
-                        Field.currentMapData = areaDef;
-
-                        // ★修正：map.js の entryPoint があればそれを使う。なければ計算で出す。
-                        if (areaDef.entryPoint) {
-                            Field.x = areaDef.entryPoint.x;
-                            Field.y = areaDef.entryPoint.y;
-                        } else {
-                            // デフォルト（中央下付近）
-                            Field.x = Math.floor(areaDef.width / 2); 
-                            Field.y = areaDef.height - 3;
-                        }
-
-                        App.data.location.x = Field.x; 
-                        App.data.location.y = Field.y;
-                        
-                        App.log(`${areaDef.name}に入った`);
-                        App.save(); 
-                        App.changeScene('field');
+                        App.data.location.area = targetAreaKey; Field.currentMapData = areaDef;
+                        Field.x = areaDef.entryPoint ? areaDef.entryPoint.x : Math.floor(areaDef.width/2);
+                        Field.y = areaDef.entryPoint ? areaDef.entryPoint.y : areaDef.height - 3;
+                        App.data.location.x = Field.x; App.data.location.y = Field.y;
+                        App.log(`${areaDef.name}に入った`); App.save(); App.changeScene('field');
                     });
-                } else {
-                    App.log("旅人の宿屋がある。");
-                    App.setAction("休む", () => App.changeScene('inn'));
-                }
-            }
+                } else { App.log("小さな休憩所がある。"); App.setAction("休む", () => App.changeScene('inn')); }
+            } 
             else if (tile === 'E') App.setAction("メダル交換", () => App.changeScene('medal'));
             else if (tile === 'K') App.setAction("カジノに入る", () => App.changeScene('casino'));
             else if (tile === 'D') {
                 App.log("不気味な穴が開いている…「深淵の魔窟」だ"); 
-                App.setAction("魔窟に入る", () => { 
-                    App.data.location.area = 'ABYSS'; 
-                    Dungeon.enter(); 
-                });
+                App.setAction("魔窟に入る", () => { App.data.location.area = 'ABYSS'; Dungeon.enter(); });
             }
             else {
-                let rate = 0.03;
-                if (App.data.walkCount > 15) rate = 0.06;
-                if(Math.random() < rate) { 
-                    App.data.walkCount = 0; 
-                    App.log("敵だ！"); 
-                    setTimeout(()=>App.changeScene('battle'), 300); 
-                }
+                let rate = 0.03; if (App.data.walkCount > 15) rate = 0.06;
+                if(Math.random() < rate) { App.data.walkCount = 0; App.log("敵だ！"); setTimeout(()=>App.changeScene('battle'), 300); }
             }
-
             if(App.data.walkCount === undefined) App.data.walkCount = 0;
-            App.data.walkCount++;
-            App.save(); Field.render();
+            App.data.walkCount++; App.save(); Field.render();
         }
     },
 	
@@ -1439,14 +1443,11 @@ const Field = {
         const ctx = canvas.getContext('2d');
         const ts = 32, w = canvas.width, h = canvas.height;
         ctx.fillStyle='#000'; ctx.fillRect(0,0,w,h);
-        
         const cx = w / 2; const cy = h / 2;
         const rangeX = Math.ceil(w / (2 * ts)) + 1;
         const rangeY = Math.ceil(h / (2 * ts)) + 1;
-        
         const mapW = Field.currentMapData ? Field.currentMapData.width : (typeof MAP_DATA !== 'undefined' ? MAP_DATA[0].length : 50);
         const mapH = Field.currentMapData ? Field.currentMapData.height : (typeof MAP_DATA !== 'undefined' ? MAP_DATA.length : 32);
-
         const g = (typeof GRAPHICS !== 'undefined' && GRAPHICS.images) ? GRAPHICS.images : {};
 
         for (let dy = -rangeY; dy <= rangeY; dy++) {
@@ -1456,7 +1457,17 @@ const Field = {
                 let tx = Field.x + dx; let ty = Field.y + dy; let tile = 'W';
 
                 if (Field.currentMapData) {
-                    if (tx >= 0 && tx < mapW && ty >= 0 && ty < mapH) tile = Field.currentMapData.tiles[ty][tx];
+                    if (tx >= 0 && tx < mapW && ty >= 0 && ty < mapH) {
+                        tile = Field.currentMapData.tiles[ty][tx];
+                        // ★固定宝箱の開封済みチェック (タイルを床に変更)
+                        if (Field.currentMapData.isFixed && (tile === 'C' || tile === 'R')) {
+                            const areaKey = Field.getCurrentAreaKey();
+                            const posKey = `${tx},${ty}`;
+                            if (App.data.progress.openedChests && App.data.progress.openedChests[areaKey]?.includes(posKey)) {
+                                tile = 'G'; 
+                            }
+                        }
+                    }
                 } else {
                     const lx = ((tx % mapW) + mapW) % mapW;
                     const ly = ((ty % mapH) + mapH) % mapH;
@@ -1465,32 +1476,19 @@ const Field = {
 
                 const config = Field.getTileConfig(tile);
                 const upper = tile.toUpperCase();
-
-                // 1. 床の描画 (現在のテーマの 'T' 設定を地面として敷く)
                 let floorConfig = Field.getTileConfig('T');
-                if (g[floorConfig.img]) {
-                    ctx.drawImage(g[floorConfig.img], drawX, drawY, ts, ts);
-                } else {
-                    ctx.fillStyle = floorConfig.color;
-                    ctx.fillRect(drawX, drawY, ts, ts);
-                }
-
-                // 2. オブジェクト描画 (壁や宝箱など、T以外のタイル)
+                if (g[floorConfig.img]) ctx.drawImage(g[floorConfig.img], drawX, drawY, ts, ts);
+                else { ctx.fillStyle = floorConfig.color; ctx.fillRect(drawX, drawY, ts, ts); }
                 if (upper !== 'T' && upper !== 'G') {
-                    if (config.img && g[config.img]) {
-                        ctx.drawImage(g[config.img], drawX, drawY, ts, ts);
-                    } else if (config.color && config.color !== floorConfig.color) {
-                        ctx.fillStyle = config.color;
-                        ctx.fillRect(drawX, drawY, ts, ts);
+                    if (config.img && g[config.img]) ctx.drawImage(g[config.img], drawX, drawY, ts, ts);
+                    else if (config.color && config.color !== floorConfig.color) {
+                        ctx.fillStyle = config.color; ctx.fillRect(drawX, drawY, ts, ts);
                     }
                 }
             }
         }
-        
-        // 3. プレイヤー描画
         const pBaseKeys = ['hero_down', 'hero_left', 'hero_right', 'hero_up'];
-        const pBase = pBaseKeys[Field.dir] || 'hero_down';
-        const pKey = `${pBase}_${Field.step}`; 
+        const pKey = `${pBaseKeys[Field.dir] || 'hero_down'}_${Field.step}`; 
         if (g[pKey]) ctx.drawImage(g[pKey], cx - ts/2, cy - ts/2, ts, ts);
         else { ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(cx, cy, 10, 0, Math.PI*2); ctx.fill(); }
 
@@ -1506,17 +1504,16 @@ const Field = {
             for(let mdx = -range; mdx < range; mdx++) {
                 let mtx = Field.x + mdx; let mty = Field.y + mdy; let mtile = 'W';
                 if (Field.currentMapData) { 
-                    if(mtx>=0 && mtx<mapW && mty>=0 && mty<mapH) mtile = Field.currentMapData.tiles[mty][mtx]; 
-                } else { 
-                    mtile = MAP_DATA[((mty%mapH)+mapH)%mapH][((mtx%mapW)+mapW)%mapW]; 
-                }
-                
-                if (mdx===0 && mdy===0) {
-                    ctx.fillStyle = '#fff'; 
-                } else {
-                    const mConfig = Field.getTileConfig(mtile);
-                    ctx.fillStyle = mConfig.color;
-                }
+                    if(mtx>=0 && mtx<mapW && mty>=0 && mty<mapH) {
+                        mtile = Field.currentMapData.tiles[mty][mtx]; 
+                        if (Field.currentMapData.isFixed && (mtile === 'C' || mtile === 'R')) {
+                            const ak = Field.getCurrentAreaKey();
+                            if (App.data.progress.openedChests && App.data.progress.openedChests[ak]?.includes(`${mtx},${mty}`)) mtile = 'G';
+                        }
+                    }
+                } else { mtile = MAP_DATA[((mty%mapH)+mapH)%mapH][((mtx%mapW)+mapW)%mapW]; }
+                if (mdx===0 && mdy===0) ctx.fillStyle = '#fff'; 
+                else ctx.fillStyle = Field.getTileConfig(mtile).color;
                 if (ctx.fillStyle !== '#000') ctx.fillRect(mmX + (mdx + range) * dms, mmY + (mdy + range) * dms, dms, dms);
             }
         }

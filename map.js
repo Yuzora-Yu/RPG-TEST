@@ -124,6 +124,9 @@ const FIXED_MAPS = {
 		// ★追加: 街に入った時の初期座標 (出口Sの少し上などに設定)
         entryPoint: { x: 7, y: 9 },
 		
+		// ★戦闘背景の追加 (村の中で戦う場合)
+        battleBg: 'battle_bg_field',
+		
         // G:床, W:壁, S:出口, V:長老(イベント), I:宿屋/ショップ, H:家 , D:ダンジョン入口
         tiles: [
             "WWWWWWWWWWWWWWW",
@@ -152,20 +155,18 @@ const FIXED_DUNGEON_MAPS = {
         rank: 5,
         width: 15,
         height: 15,
-		
-		// ★追加: 街に入った時の初期座標 (出口Sに設定)
-        entryPoint: { x: 8, y: 14 },
-		
+        entryPoint: { x: 8, y: 13 },
+        battleBg: 'battle_bg_maze',
         // G:床, W:壁, S:階段, C:宝箱, B:ボス
         tiles: [
             "WWWWWWWWWWWWWWW",
-            "WBGGGGGGGGGGWCW",
+            "WBGGGGGGGGGGWCW", // (13, 1) に宝箱
             "WWWWWWWGWWWWWGW",
             "WGWGGGGGWGGGGGW",
             "WGWWWWWGWWWWWGW",
             "WGGGGGGGGGGGGGW",
             "WWWWWWWWWGWWWWW",
-            "WCWGGGGCWGGGGGW",
+            "WCWGGGGCWGGGGGW", // (1, 7) と (8, 7) に宝箱
             "WGWGWWWWWWWGWGW",
             "WGWGGGGGGGGGGGW",
             "WGWWWWWWWWWGWWW",
@@ -173,7 +174,13 @@ const FIXED_DUNGEON_MAPS = {
             "WWWWWWWGGWWWWWW",
             "WWWWWWWSSWWWWWW",
             "WWWWWWWWWWWWWWW"
+        ],
+        // ★追加: 固定宝箱のアイテム設定
+        chests: [
+            { x: 13, y: 1, itemId: 106, type: 'item' }, // スキルのたね
+            { x: 1, y: 7, itemId: 2, type: 'item' },   // 上やくそう
+            { x: 7, y: 7, itemId: 3, type: 'item' }    // 魔法の小瓶
         ]
     }
-    // 今後、FIRE_MOUNTAIN, WATER_TEMPLE などが増えていく
 };
+    // 今後、FIRE_MOUNTAIN, WATER_TEMPLE などが増えていく
