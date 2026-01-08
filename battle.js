@@ -2601,10 +2601,15 @@ findNextActor: () => {
             });
             App.save();
 
-            //Battle.log("\n意識が遠のいていく……");
+            // Battle.log("\n意識が遠のいていく……");
             setTimeout(() => {
-                if (isDungeon) Dungeon.exit(); // ダンジョンなら脱出
-                App.changeScene('field');      // フィールドへ復帰
+                // ダンジョン内の全滅なら引数 true を渡して脱出
+                if (isDungeon) {
+                    Dungeon.exit(true); 
+                } else {
+                    // 通常フィールドでの全滅時はそのままフィールドシーンへ
+                    App.changeScene('field');
+                }
             }, 2000);
         } else {
             // 通常の勝利・逃走

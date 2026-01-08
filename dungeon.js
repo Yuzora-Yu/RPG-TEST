@@ -60,7 +60,21 @@ enter: () => {
             Dungeon.start(1);
         }
     },
+	
+    // --- ダンジョン突入・進行 ---
     start: (startFloor) => {
+		if (!App.data.dungeon.returnPoint) {
+			// 現在のマップ名からエリアキーを特定して保存しておく
+			const areaKey = Field.getCurrentAreaKey();
+			
+			App.data.dungeon.returnPoint = {
+				x: App.data.location.x,
+				y: App.data.location.y,
+				areaKey: typeof Field.getCurrentAreaKey === 'function' ? Field.getCurrentAreaKey() : 'WORLD',
+                mapData: Field.currentMapData ? JSON.parse(JSON.stringify(Field.currentMapData)) : null
+			};
+		}
+
         App.data.progress.floor = startFloor;
         App.data.dungeon.tryCount++;
         App.data.dungeon.map = null;
@@ -96,10 +110,11 @@ enter: () => {
         }
         
         Field.currentMapData = { 
-            width: Dungeon.width, 
-            height: Dungeon.height, 
-            tiles: Dungeon.map, 
-            isDungeon: true 
+            name: STORY_DATA.areas['ABYSS'].name, // 「深淵の魔窟」をセット
+			width: Dungeon.width, 
+			height: Dungeon.height, 
+			tiles: Dungeon.map, 
+			isDungeon: true
         };
         App.changeScene('field');
         
@@ -114,32 +129,54 @@ enter: () => {
         App.save();
     },
 
-    exit: () => {
-        // ダンジョン情報をクリア
+    // --- 脱出処理 ---
+    // 引数 isWipedOut が true の場合は、保存場所を無視してデフォルト座標に戻る
+    exit: (isWipedOut = false) => {
+        const returnPoint = App.data.dungeon.returnPoint;
+
+        // ダンジョン情報のクリア
         App.data.dungeon.map = null;
         App.data.dungeon.width = 30;
         App.data.dungeon.height = 30;
+        App.data.progress.floor = 0;
+        
+        // 保存していた帰還ポイントをクリア
+        App.data.dungeon.returnPoint = null;
 
-        Field.currentMapData = null;
-        
-        const targetX = 23;
-        const targetY = 28; 
-        
+        // デフォルトの帰還先 (ワールドマップ)
+        let targetX = 58;
+        let targetY = 65;
+        let targetMapData = null; 
+
+        // 全滅しておらず、かつ帰還データがある場合はその場所を復元
+        if (!isWipedOut && returnPoint) {
+            targetX = returnPoint.x;
+            targetY = returnPoint.y;
+            targetMapData = returnPoint.mapData;
+        }
+
+        // アプリケーションデータへの反映
         App.data.location.x = targetX;
         App.data.location.y = targetY;
-        App.data.progress.floor = 0;
         
         if(typeof Field !== 'undefined') {
             Field.x = targetX;
             Field.y = targetY;
+            // 保存されていたマップデータ（街など）を復元
+            Field.currentMapData = targetMapData;
         }
         
         App.save();
         App.changeScene('field');
-        App.log("フィールドに戻った");
+        
+        if (isWipedOut) {
+            App.log("命からがら逃げ出した……");
+        } else {
+            App.log("ダンジョンから脱出した");
+        }
         App.clearAction();
     },
-    
+	
     // --- 移動・イベント処理 ---
     handleMove: (x, y) => {
         const tile = Dungeon.map[y][x];
@@ -345,6 +382,7 @@ enter: () => {
 		}
         
         Field.currentMapData = { 
+			name: STORY_DATA.areas['ABYSS'].name, // 「深淵の魔窟」をセット
             width: Dungeon.width, 
             height: Dungeon.height, 
             tiles: Dungeon.map, 

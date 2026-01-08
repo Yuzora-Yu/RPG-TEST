@@ -6,6 +6,85 @@
 
 const JOB_SKILLS = window.JOB_SKILLS || {};
 
+		/**
+ * エリアごとのタイル見た目定義
+ * ここにエリアキーを追加するだけで、新しいマップの見た目を拡張できます。
+ */
+const TILE_THEMES = {
+	'WORLD': {
+        'W': { img: 'sea',          color: '#228' },
+        'M': { img: 'mountain',     color: '#555' },
+        'F': { img: 'forest',       color: '#040' },
+        'L': { img: 'Low_mountain', color: '#642' },
+        'G': { img: 'floor',        color: '#282' },
+		'T': { img: 'floor',        color: '#282' },
+        'I': { img: 'inn',          color: '#ff0' },
+        'B': { img: 'boss',         color: '#d00' },
+    },
+	
+    'START_VILLAGE': {
+        'W': { img: 'forest', color: '#040' },
+        'T': { img: 'floor',  color: '#282' },
+		'G': { img: 'floor',  color: '#282' },
+		'S': { img: 'floor',  color: '#0dd' },
+    },
+	'START_CAVE': {
+        'W': { img: 'wall',         color: '#333' },
+        'T': { img: 'dungeon_floor',color: '#666' }, // ダンジョン床
+    },
+	
+    'FIRE_VILLAGE': {
+        'W': 'magma-rock', // 壁を溶岩岩に
+        'T': 'ash-floor',  // 床を灰の地面に
+    },
+    'WIND_VILLAGE': {
+        'W': 'cliff',      // 壁を断崖に
+        'T': 'highland',   // 床を高原に
+    },
+    'WATER_CITY': {
+        'W': 'canal',      // 壁を運河（進入不可）に
+        'T': 'stone-pave', // 床を石畳に
+    },
+    'BIG_TOWER': {
+        'W': 'brick-wall', // 壁を煉瓦に
+        'T': 'carpet',     // 床を絨毯に
+    },
+    'THUNDER_FORT': {
+        'W': 'metal-wall', // 壁を鉄壁に
+        'T': 'iron-plate', // 床を鉄板に
+    },
+    'LIGHT_PALACE': {
+        'W': 'marble-wall',// 壁を大理石に
+        'T': 'white-tile', // 床を白タイルに
+    },
+    'DARK_CASTLE': {
+        'W': { img: 'wall',         color: '#333' },
+        'T': { img: 'dungeon_floor',color: '#222' }, // ダンジョン床
+    },
+    'ABYSS': {
+        'W': { img: 'wall',         color: '#333' }, // 壁を深淵の壁に
+        'T': { img: 'dungeon_floor',color: '#666' }, // ダンジョン床
+    },
+    'RUINED_SHRINE': {
+        'W': 'ancient-brick', // 壁を古びた煉瓦に
+        'T': 'moss-stone',    // 床を苔むした石に
+    },
+    // デフォルト設定（定義がないマップやダンジョン用）
+    'DEFAULT': { // ダンジョンおよび定義のないマップ用
+        'W': { img: 'wall',         color: '#333' },
+        'T': { img: 'dungeon_floor',color: '#666' }, // ダンジョン床
+        'S': { img: 'stairs',       color: '#dd0' },
+        'C': { img: 'chest',        color: '#0dd' },
+        'R': { img: 'chest_rare',   color: '#f00' },
+        'B': { img: 'boss',         color: '#d00' },
+        'I': { img: 'inn',          color: '#ff0' },
+        'K': { img: 'casino',       color: '#aaf' },
+        'E': { img: 'medal',        color: '#87ceeb' },
+		'H': { img: 'inn',			color: '#deb887' }, // 仮
+        'V': { img: 'inn',          color: '#d00' }, // イベントNPC
+    }
+};
+
 // ==========================================================================
 // クラス定義
 // ==========================================================================
@@ -457,18 +536,26 @@ const App = {
     },
 	
     
-    // シナジー情報の更新
+    // シナジー情報の全更新
     refreshAllSynergies: () => {
         const check = (item) => {
             if (!item) return;
-            const syns = App.checkSynergy(item); // 配列で取得
-            if (syns && syns.length > 0) {
-                item.isSynergy = true;
-                item.effects = syns.map(s => s.effect); // 複数の効果IDを配列で保持
-                item.synergies = syns; // スキル習得等の値参照用にオブジェクト配列も保持
+
+            // ★修正: +3以上（+4等も含む）のみを対象とする。それ未満はシナジーを削除。
+            if (item.plus >= 3) {
+                const syns = App.checkSynergy(item); // 配列で取得
+                if (syns && syns.length > 0) {
+                    item.isSynergy = true;
+                    item.effects = syns.map(s => s.effect); // 複数の効果IDを配列で保持
+                    item.synergies = syns; // 表示・計算用
+                } else {
+                    item.isSynergy = false;
+                    delete item.effects;
+                    delete item.synergies;
+                }
             } else {
+                // +3未満はシナジーを持たせない
                 item.isSynergy = false;
-                delete item.effect; // 旧プロパティの削除
                 delete item.effects;
                 delete item.synergies;
             }
@@ -480,7 +567,7 @@ const App = {
             });
         }
     },
-
+	
     setAction: (label, callback) => {
         const btn = document.getElementById('action-indicator');
         if(!btn) return;
@@ -869,15 +956,14 @@ const App = {
     },
 
 
-	// --- 新しい装備生成ロジック：マスタ参照 & 201階層以上の真・化対応 ---
+	// 装備生成ロジック
     createEquipByFloor: (source, floor = null, fixedPlus = null) => {
-        // floorが渡されない場合は、現在の場所に応じた仮想階層を使用する
         const targetFloor = (floor !== null) ? floor : App.getVirtualFloor();
 		
-        // 1. 参照するRankを決定（マスタは最大200まで）
+        // 1. 参照するRankを決定
         const targetRank = Math.min(200, floor);
         
-        // 2. 現在のRankに近いマスタデータを抽出（前後15の範囲）
+        // 2. 候補を抽出
         let candidates = window.EQUIP_MASTER.filter(e => e.rank <= targetRank && e.rank >= Math.max(1, targetRank - 15));
         if (candidates.length === 0) candidates = window.EQUIP_MASTER.filter(e => e.rank <= targetRank);
         if (candidates.length === 0) candidates = [window.EQUIP_MASTER[0]];
@@ -896,7 +982,7 @@ const App = {
             if (source === 'init') plus = 0;
         }
         
-        // 4. 装備オブジェクトのベース作成（ディープコピー）
+        // 4. ベース作成
         const eq = { 
             id: Date.now() + Math.random().toString(36).substring(2), 
             rank: base.rank, 
@@ -910,7 +996,7 @@ const App = {
             possibleOpts: base.possibleOpts || []
         };
 
-        // 5. ★201階以降の「真・装備」化ロジック (デフレ調整版)
+        // 5. 201階以降の「真・装備」化
         if (floor > 200) {
             eq.name = "真・" + base.name;
             const scale = (floor * 1.5) / base.rank;
@@ -929,7 +1015,6 @@ const App = {
 
         // 6. オプション付与
         if (plus > 0) {
-            // [A] baseName ごとの基本オプション候補定義
             const BASE_OPTS_MAP = {
                 '剣': ['atk', 'finDmg', 'elmAtk'],
                 '斧': ['atk', 'finDmg', 'elmAtk', 'attack_Fear'],
@@ -944,32 +1029,23 @@ const App = {
                 'ブーツ': ['spd', 'def', 'finRed', 'elmRes', 'resists_Shock'],
                 'くつ': ['spd', 'finDmg', 'elmAtk', 'resists_Shock']
             };
-
-            // [B] ベース設定とマスタの設定を統合 (重複は排除)
             let baseDefaults = BASE_OPTS_MAP[eq.baseName] || [];
             let masterOpts = base.possibleOpts || [];
             let allowedKeys = [...new Set([...baseDefaults, ...masterOpts])];
 
             for(let i=0; i<plus; i++) {
-                // allowedKeys に含まれる key を持つルールだけを抽出
                 let optCandidates = DB.OPT_RULES.filter(rule => allowedKeys.includes(rule.key));
-                
-                // 万が一候補が空になった場合のセーフティ
                 if (optCandidates.length === 0) optCandidates = DB.OPT_RULES;
-
                 const rule = optCandidates[Math.floor(Math.random() * optCandidates.length)];
-                
                 let rarity = 'N';
                 const tierRatio = Math.min(1, floor / 200);
                 const rarRnd = Math.random() + (tierRatio * 0.15);
-                
                 if(rarRnd > 0.98 && rule.allowed.includes('EX')) rarity='EX';
                 else if(rarRnd > 0.90 && rule.allowed.includes('UR')) rarity='UR';
                 else if(rarRnd > 0.75 && rule.allowed.includes('SSR')) rarity='SSR';
                 else if(rarRnd > 0.55 && rule.allowed.includes('SR')) rarity='SR';
                 else if(rarRnd > 0.30 && rule.allowed.includes('R')) rarity='R';
                 else rarity = rule.allowed[0];
-
                 const min = rule.min[rarity]||1, max = rule.max[rarity]||10;
                 eq.opts.push({
                     key: rule.key, elm: rule.elm, label: rule.name, 
@@ -979,8 +1055,8 @@ const App = {
             eq.name += `+${plus}`;
         }
 
-        // 7. ★シナジー判定：一致する全てのシナジーを配列で保持するように修正
-        if (plus === 3) {
+        // 7. ★修正: +3以上（+4等も含む）をシナジー判定の対象にする
+        if (plus >= 3) {
             const syns = App.checkSynergy(eq); // 配列を受け取る
             if (syns && syns.length > 0) {
                 eq.isSynergy = true;
@@ -1149,7 +1225,7 @@ const App = {
     }
 };
 
-/* main.js (Fieldオブジェクト: グラフィック描画対応) */
+/* main.js 内の Field オブジェクト全文 */
 
 const Field = {
     x: 23, y: 28, 
@@ -1159,30 +1235,28 @@ const Field = {
     
     init: () => {
         if(App.data) {
-            const areaKey = App.data.location.area;
+            const areaKey = App.data.location.area || 'WORLD';
             
             // --- マップデータの復元ロジック ---
             // 既に魔窟（isDungeon）の生成・復元が終わっていない場合のみ実行
             if (!Field.currentMapData || !Field.currentMapData.isDungeon) {
-                // areaが 'WORLD' や 'ABYSS' 以外で、FIXED_MAPSに定義があればロード
-                if (areaKey && areaKey !== 'WORLD' && areaKey !== 'ABYSS' && typeof FIXED_MAPS !== 'undefined' && FIXED_MAPS[areaKey]) {
+                if (areaKey !== 'WORLD' && areaKey !== 'ABYSS' && typeof FIXED_MAPS !== 'undefined' && FIXED_MAPS[areaKey]) {
                     Field.currentMapData = FIXED_MAPS[areaKey];
                 } else {
-                    // それ以外はすべてワールドマップ（物理的な世界地図）として扱う
                     Field.currentMapData = null; 
                 }
-            }
 
-            // セーブデータから物理座標を復元
-            Field.x = App.data.location.x;
-            Field.y = App.data.location.y;
+                // セーブデータから物理座標を復元
+                Field.x = App.data.location.x;
+                Field.y = App.data.location.y;
 
-            // ワールドマップモードの時のみ座標をループ補正する
-            if (!Field.currentMapData) {
-                const mapW = (typeof MAP_DATA !== 'undefined' && MAP_DATA[0]) ? MAP_DATA[0].length : 100;
-                const mapH = (typeof MAP_DATA !== 'undefined') ? MAP_DATA.length : 100;
-                Field.x = (Field.x % mapW + mapW) % mapW;
-                Field.y = (Field.y % mapH + mapH) % mapH;
+                // ワールドマップモードの時のみ座標をループ補正する
+                if (!Field.currentMapData) {
+                    const mapW = (typeof MAP_DATA !== 'undefined' && MAP_DATA[0]) ? MAP_DATA[0].length : 100;
+                    const mapH = (typeof MAP_DATA !== 'undefined') ? MAP_DATA.length : 100;
+                    Field.x = (Field.x % mapW + mapW) % mapW;
+                    Field.y = (Field.y % mapH + mapH) % mapH;
+                }
             }
         }
 
@@ -1192,6 +1266,36 @@ const Field = {
         if(document.getElementById('disp-gold')) document.getElementById('disp-gold').innerText = App.data.gold;
         if(document.getElementById('disp-gem')) document.getElementById('disp-gem').innerText = App.data.gems;
         if(typeof Menu !== 'undefined') Menu.renderPartyBar();
+    },
+
+    // --- エリア判定ロジックの修正 ---
+    getCurrentAreaKey: () => {
+        if (!Field.currentMapData) return 'WORLD';
+        
+        // ★修正点: まず STORY_DATA.areas の中で名前が一致するものを探す。
+        // これにより、ダンジョンであっても「深淵の魔窟」なら 'ABYSS' が返るようになる。
+        const entry = Object.entries(STORY_DATA.areas).find(([key, area]) => area.name === Field.currentMapData.name);
+        if (entry) return entry[0];
+
+        // 名前で見つからない場合のみ、ダンジョンなら DEFAULT、それ以外は WORLD
+        return Field.currentMapData.isDungeon ? 'DEFAULT' : 'WORLD';
+    },
+
+    /**
+     * タイル記号と現在のエリア設定から、描画設定（画像と色）を返す
+     */
+    getTileConfig: (tileSign) => {
+        const upper = tileSign.toUpperCase();
+        const areaKey = Field.getCurrentAreaKey();
+        const theme = TILE_THEMES[areaKey] || TILE_THEMES['DEFAULT'];
+        
+        let config = theme[upper] || TILE_THEMES['DEFAULT'][upper] || { img: null, color: '#000' };
+
+        // 特別判定: 非ダンジョンのエリア（村など）で 'T' に画像指定がない場合、建物を表示
+        if (upper === 'T' && Field.currentMapData && !Field.currentMapData.isDungeon && !config.img) {
+            return { img: 'inn', color: '#444' };
+        }
+        return config;
     },
 	
 	move: (dx, dy) => {
@@ -1203,20 +1307,17 @@ const Field = {
         App.clearAction();
 
         if (Field.currentMapData) {
-            // ==========================================
             // A. 固定マップ（村・街）または 魔窟内
-            // ==========================================
             if (nx < 0 || nx >= Field.currentMapData.width || ny < 0 || ny >= Field.currentMapData.height) return;
             const tile = Field.currentMapData.tiles[ny][nx].toUpperCase();
 
             if (tile === 'W') return; 
 
-            // 固定マップの出口(S)判定：ワールドマップへ戻る
             if (tile === 'S' && !Field.currentMapData.isDungeon) {
                 const areaKey = App.data.location.area;
                 if (typeof FIXED_MAPS !== 'undefined' && FIXED_MAPS[areaKey]?.exitPoint) {
                     const exit = FIXED_MAPS[areaKey].exitPoint;
-                    App.data.location.area = 'WORLD'; // 状態をワールドに戻す
+                    App.data.location.area = 'WORLD';
                     Field.x = exit.x; Field.y = exit.y;
                     App.data.location.x = exit.x; App.data.location.y = exit.y;
                     Field.currentMapData = null; 
@@ -1225,34 +1326,38 @@ const Field = {
                 }
             }
 
-            // 座標確定
             Field.x = nx; Field.y = ny;
             App.data.location.x = nx; App.data.location.y = ny;
 
-            // 拠点内（非ダンジョン）のアクション
             if (!Field.currentMapData.isDungeon) {
                 if (tile === 'I') {
                     App.log("宿屋のようだ。");
                     App.setAction("泊まる", () => App.changeScene('inn'));
-                } else if (tile === 'E' || tile === 'T') {
+                } else if (tile === 'K') {
+                    App.log("カジノの看板が出ている。");
+                    App.setAction("カジノに入る", () => App.changeScene('casino'));
+                } else if (tile === 'E') {
+                    App.log("メダル王の出張所のようだ。");
+                    App.setAction("メダル交換", () => App.changeScene('medal'));
+                } else if (tile === 'V' || tile === 'T') {
                     if (typeof StoryManager !== 'undefined') {
-                        // 座標一致でイベント実行
-                        const trigger = StoryManager.triggers.find(t => t.area === App.data.location.area && t.x === nx && t.y === ny && t.step === App.data.progress.storyStep);
+                        const trigger = StoryManager.triggers.find(t => 
+                            t.area === App.data.location.area && 
+                            t.x === nx && t.y === ny && 
+                            t.step === App.data.progress.storyStep
+                        );
                         if (trigger) App.setAction("話す", () => StoryManager.executeEvent(trigger.eventId));
                         else App.log("誰かいるようだ。");
                     }
                 }
             }
             
-            // 魔窟（ランダムダンジョン）内のギミック
             if (Field.currentMapData.isDungeon) Dungeon.handleMove(nx, ny);
             
             App.save(); Field.render();
 
         } else {
-            // ==========================================
             // B. ワールドマップ上
-            // ==========================================
             const mapW = MAP_DATA[0].length;
             const mapH = MAP_DATA.length;
             nx = (nx + mapW) % mapW; ny = (ny + mapH) % mapH;
@@ -1267,35 +1372,42 @@ const Field = {
             Field.x = nx; Field.y = ny; 
             App.data.location.x = nx; App.data.location.y = ny; 
 
-            // --- 拠点・施設のアクション判定 ---
-            
             // 拠点(I:街, B:城)
             if (tile === 'I' || tile === 'B') {
-                // 現在の座標(nx, ny)に近い拠点をSTORY_DATAから探す
                 let targetAreaKey = null;
                 for (let key in STORY_DATA.areas) {
                     const area = STORY_DATA.areas[key];
                     if (area.centerX === nx && area.centerY === ny) { targetAreaKey = key; break; }
                 }
 
-                // 該当する固定マップ定義があれば「入る」ボタンを出す
                 if (targetAreaKey && typeof FIXED_MAPS !== 'undefined' && FIXED_MAPS[targetAreaKey]) {
                     const areaDef = FIXED_MAPS[targetAreaKey];
                     App.setAction(`${areaDef.name}に入る`, () => {
-                        App.data.location.area = targetAreaKey; // 内部状態を変更
+                        App.data.location.area = targetAreaKey;
                         Field.currentMapData = areaDef;
-                        // 進入位置：出口(S)の2マス上
-                        Field.x = 8; 
-                        Field.y = Field.currentMapData.height - 3;
-                        App.data.location.x = Field.x; App.data.location.y = Field.y;
+
+                        // ★修正：map.js の entryPoint があればそれを使う。なければ計算で出す。
+                        if (areaDef.entryPoint) {
+                            Field.x = areaDef.entryPoint.x;
+                            Field.y = areaDef.entryPoint.y;
+                        } else {
+                            // デフォルト（中央下付近）
+                            Field.x = Math.floor(areaDef.width / 2); 
+                            Field.y = areaDef.height - 3;
+                        }
+
+                        App.data.location.x = Field.x; 
+                        App.data.location.y = Field.y;
+                        
                         App.log(`${areaDef.name}に入った`);
-                        App.save(); App.changeScene('field');
+                        App.save(); 
+                        App.changeScene('field');
                     });
                 } else {
-                    App.log("小さな休憩所がある。");
+                    App.log("旅人の宿屋がある。");
                     App.setAction("休む", () => App.changeScene('inn'));
                 }
-            } 
+            }
             else if (tile === 'E') App.setAction("メダル交換", () => App.changeScene('medal'));
             else if (tile === 'K') App.setAction("カジノに入る", () => App.changeScene('casino'));
             else if (tile === 'D') {
@@ -1306,7 +1418,6 @@ const Field = {
                 });
             }
             else {
-                // 通常エンカウント
                 let rate = 0.03;
                 if (App.data.walkCount > 15) rate = 0.06;
                 if(Math.random() < rate) { 
@@ -1333,11 +1444,9 @@ const Field = {
         const rangeX = Math.ceil(w / (2 * ts)) + 1;
         const rangeY = Math.ceil(h / (2 * ts)) + 1;
         
-        // マップサイズの取得
         const mapW = Field.currentMapData ? Field.currentMapData.width : (typeof MAP_DATA !== 'undefined' ? MAP_DATA[0].length : 50);
         const mapH = Field.currentMapData ? Field.currentMapData.height : (typeof MAP_DATA !== 'undefined' ? MAP_DATA.length : 32);
 
-        // GRAPHICSオブジェクトが存在するか安全確認
         const g = (typeof GRAPHICS !== 'undefined' && GRAPHICS.images) ? GRAPHICS.images : {};
 
         for (let dy = -rangeY; dy <= rangeY; dy++) {
@@ -1346,119 +1455,52 @@ const Field = {
                 const drawY = Math.floor(cy + (dy * ts) - (ts / 2));
                 let tx = Field.x + dx; let ty = Field.y + dy; let tile = 'W';
 
-                // マップデータからのタイル取得
                 if (Field.currentMapData) {
-                    // 固定マップ（村・ダンジョン）
                     if (tx >= 0 && tx < mapW && ty >= 0 && ty < mapH) tile = Field.currentMapData.tiles[ty][tx];
                 } else {
-                    // 世界地図（ループ処理）
                     const lx = ((tx % mapW) + mapW) % mapW;
                     const ly = ((ty % mapH) + mapH) % mapH;
                     tile = MAP_DATA[ly][lx];
                 }
 
-                // ★重要：map.jsの小文字タイルに対応するため大文字に変換して判定
-                const upperTile = tile.toUpperCase();
+                const config = Field.getTileConfig(tile);
+                const upper = tile.toUpperCase();
 
-                // -------------------------------------------------
-                // 1. 背景（床）の描画
-                // -------------------------------------------------
-                let drawnFloor = false;
-                if (upperTile !== 'W') { 
-                    // ダンジョン内なら石床、それ以外（村や外）なら芝生
-                    const floorKey = (Field.currentMapData && Field.currentMapData.isDungeon) ? 'dungeon_floor' : 'floor';
-                    
-                    if (g[floorKey]) {
-                        ctx.drawImage(g[floorKey], drawX, drawY, ts, ts);
-                        drawnFloor = true;
-                    } else {
-                        // アセットがない場合のデフォルト床色
-                        ctx.fillStyle = (Field.currentMapData && Field.currentMapData.isDungeon) ? '#444' : '#222'; 
-                        ctx.fillRect(drawX, drawY, ts, ts);
-                    }
+                // 1. 床の描画 (現在のテーマの 'T' 設定を地面として敷く)
+                let floorConfig = Field.getTileConfig('T');
+                if (g[floorConfig.img]) {
+                    ctx.drawImage(g[floorConfig.img], drawX, drawY, ts, ts);
+                } else {
+                    ctx.fillStyle = floorConfig.color;
+                    ctx.fillRect(drawX, drawY, ts, ts);
                 }
 
-                // -------------------------------------------------
-                // 2. オブジェクト/タイルの描画
-                // -------------------------------------------------
-                let imgKey = null;
-                
-                // タイル文字から画像キーへのマッピング (upperTileを使用)
-                if (upperTile === 'W') imgKey = Field.currentMapData ? 'wall' : 'sea'; 
-                else if (upperTile === 'M') imgKey = 'mountain';
-                else if (upperTile === 'S') imgKey = 'stairs';
-                else if (upperTile === 'C') imgKey = 'chest';
-                else if (upperTile === 'R') imgKey = 'chest_rare';
-                else if (upperTile === 'B') imgKey = 'boss';
-                else if (upperTile === 'I') imgKey = 'inn';
-                else if (upperTile === 'K') imgKey = 'casino';
-                else if (upperTile === 'E') imgKey = 'medal';
-                else if (upperTile === 'F') imgKey = 'forest';
-                else if (upperTile === 'L') imgKey = 'Low_mountain';
-                else if (upperTile === 'T') imgKey = 'inn'; // 固定マップ内の家など
-
-                if (imgKey && g[imgKey]) {
-                    // 画像を描画
-                    ctx.drawImage(g[imgKey], drawX, drawY, ts, ts);
-                } else {
-                    // 画像がない場合のフォールバック（色塗り）
-                    let color = null;
-                    if(upperTile === 'G') color = '#282';  // 草原
-                    else if(upperTile === 'W') color = '#228'; // 海・水
-                    else if(upperTile === 'M') color = '#333'; // 岩山
-                    else if(upperTile === 'T') color = '#444'; // 建物
-                    else if(upperTile === 'S') color = '#dd0'; // 階段・出口
-                    else if(upperTile === 'C') color = '#0dd'; // 宝箱
-                    else if(upperTile === 'R') color = '#f00'; // レア宝箱
-                    else if(upperTile === 'B') color = '#d00'; // ボス・重要拠点
-                    else if(upperTile === 'I') color = '#fff'; // 宿屋
-                    else if(upperTile === 'K') color = '#ff0'; // カジノ
-                    else if(upperTile === 'E') color = '#aaf'; // メダル
-                    else if(upperTile === 'F') color = '#040'; // 森
-                    else if(upperTile === 'L') color = '#642'; // 低い山
-                    
-                    if (color) {
-                        // 床画像が描画されていない、または上書きが必要なタイルのみ塗る
-                        if (!drawnFloor || (upperTile !== 'G' && upperTile !== 'T')) {
-                            ctx.fillStyle = color;
-                            ctx.fillRect(drawX, drawY, ts, ts);
-                        }
+                // 2. オブジェクト描画 (壁や宝箱など、T以外のタイル)
+                if (upper !== 'T' && upper !== 'G') {
+                    if (config.img && g[config.img]) {
+                        ctx.drawImage(g[config.img], drawX, drawY, ts, ts);
+                    } else if (config.color && config.color !== floorConfig.color) {
+                        ctx.fillStyle = config.color;
+                        ctx.fillRect(drawX, drawY, ts, ts);
                     }
                 }
             }
         }
         
-        // -------------------------------------------------
-        // 3. プレイヤー描画 (アニメーション対応)
-        // -------------------------------------------------
+        // 3. プレイヤー描画
         const pBaseKeys = ['hero_down', 'hero_left', 'hero_right', 'hero_up'];
         const pBase = pBaseKeys[Field.dir] || 'hero_down';
         const pKey = `${pBase}_${Field.step}`; 
-        
-        if (g[pKey]) {
-            ctx.drawImage(g[pKey], cx - ts/2, cy - ts/2, ts, ts);
-        } else {
-            ctx.fillStyle = '#fff'; 
-            ctx.beginPath(); 
-            ctx.arc(cx, cy, 10, 0, Math.PI*2); 
-            ctx.fill(); 
-            ctx.strokeStyle = '#000'; 
-            ctx.stroke();
-        }
+        if (g[pKey]) ctx.drawImage(g[pKey], cx - ts/2, cy - ts/2, ts, ts);
+        else { ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(cx, cy, 10, 0, Math.PI*2); ctx.fill(); }
 
-        // ロケーション名の表示更新
-        let locName = "";
-        if (Field.currentMapData) {
-            locName = Field.currentMapData.name;
-            if (Field.currentMapData.isDungeon) locName += ` ${Dungeon.floor}階`;
-        } else {
-            locName = `世界地図 (${Field.x}, ${Field.y})`;
-        }
+        let locName = Field.currentMapData ? Field.currentMapData.name : `世界地図 (${Field.x}, ${Field.y})`;
+        if (Field.currentMapData && Field.currentMapData.isDungeon) locName += ` ${Dungeon.floor}階`;
         document.getElementById('loc-name').innerText = locName;
 
         // ミニマップ描画
         const mmSize = 80; const mmX = w - mmSize - 10; const mmY = 10; const range = 10; 
-        ctx.save(); ctx.globalAlpha = 0.6; ctx.fillStyle = '#000'; ctx.fillRect(mmX, mmY, mmSize, mmSize); ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.strokeRect(mmX, mmY, mmSize, mmSize);
+        ctx.save(); ctx.globalAlpha = 0.6; ctx.fillStyle = '#000'; ctx.fillRect(mmX, mmY, mmSize, mmSize);
         const dms = mmSize / (range*2); 
         for(let mdy = -range; mdy < range; mdy++) {
             for(let mdx = -range; mdx < range; mdx++) {
@@ -1469,23 +1511,12 @@ const Field = {
                     mtile = MAP_DATA[((mty%mapH)+mapH)%mapH][((mtx%mapW)+mapW)%mapW]; 
                 }
                 
-                const mupper = mtile.toUpperCase();
-                ctx.fillStyle = '#000';
-                if(mupper === 'W') ctx.fillStyle = '#228'; 
-                else if(mupper === 'G') ctx.fillStyle = '#282'; 
-                else if(mupper === 'M') ctx.fillStyle = '#333'; 
-                else if(mupper === 'T') ctx.fillStyle = '#666'; 
-                else if(mupper === 'S') ctx.fillStyle = '#ff0'; 
-                else if(mupper === 'C') ctx.fillStyle = '#0ff'; 
-                else if(mupper === 'R') ctx.fillStyle = '#f00'; 
-                else if(mupper === 'B') ctx.fillStyle = '#d00'; 
-                else if(mupper === 'I') ctx.fillStyle = '#fff'; 
-                else if(mupper === 'K') ctx.fillStyle = '#ff0'; 
-                else if(mupper === 'E') ctx.fillStyle = '#aaf'; 
-                else if(mupper === 'F') ctx.fillStyle = '#040'; 
-                else if(mupper === 'L') ctx.fillStyle = '#642'; 
-                
-                if (mdx===0 && mdy===0) ctx.fillStyle = '#fff'; 
+                if (mdx===0 && mdy===0) {
+                    ctx.fillStyle = '#fff'; 
+                } else {
+                    const mConfig = Field.getTileConfig(mtile);
+                    ctx.fillStyle = mConfig.color;
+                }
                 if (ctx.fillStyle !== '#000') ctx.fillRect(mmX + (mdx + range) * dms, mmY + (mdy + range) * dms, dms, dms);
             }
         }
