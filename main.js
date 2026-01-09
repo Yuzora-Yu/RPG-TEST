@@ -503,6 +503,12 @@ const App = {
         const bindClick = (id, fn) => { const el = document.getElementById(id); if(el) el.onclick = fn; };
         bindClick('btn-menu', () => { if(typeof Menu !== 'undefined') Menu.openMainMenu(); });
         bindClick('btn-ok', () => { if(App.pendingAction) App.executeAction(); else if(typeof Menu !== 'undefined') Menu.openMainMenu(); });
+		
+        // ★ 会話のレジューム実行
+        if (typeof StoryManager !== 'undefined') {
+            StoryManager.resumeActiveConversation();
+        }
+		
     },
 
     /**
