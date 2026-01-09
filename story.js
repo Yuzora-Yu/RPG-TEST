@@ -515,7 +515,7 @@ const StoryManager = {
 				
 				<div style="
 					width: 100%;
-					margin-top: 125px;             /* キャラ画像のpadding(45%)からさらに125px下に配置 */
+					margin-top: 145px;             /* キャラ画像のpadding(45%)からさらに125px下に配置 */
 					background: rgba(0,0,30,0.95); 
 					border: 2px solid #ffd700; /* 枠線を白にする場合は#ffffff */
 					border-radius: 8px;           
