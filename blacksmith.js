@@ -6,7 +6,7 @@ const MenuBlacksmith = {
     mode: null,   
     step: 'target', 
     filter: { category: 'ALL', option: 'ALL' },
-    sortMode: 'RANK',
+    sortMode: 'NEWEST',
     
     state: {
         target: null, material: null, materials: [], targetOptIdx: -1, requiredCount: 0
@@ -69,7 +69,7 @@ const MenuBlacksmith = {
         MenuBlacksmith.step = 'target';
         MenuBlacksmith.state = { target: null, material: null, materials: [], targetOptIdx: -1, requiredCount: 0 };
         MenuBlacksmith.filter = { category: 'ALL', option: 'ALL' };
-        MenuBlacksmith.sortMode = 'RANK';
+        MenuBlacksmith.sortMode = 'NEWEST';
     },
 
     changeScreen: (screenId) => {

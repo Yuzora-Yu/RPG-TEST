@@ -971,9 +971,6 @@ const MenuInventory = {
 };
 
 /* ==========================================================================
-   5. 仲間一覧 & 詳細 (装備変更フィルタ・ソート・シナジー反映版)
-   ========================================================================== */
-/* ==========================================================================
    5. 仲間一覧 & 詳細 (装備変更フィルタ・ソート・シナジー反映・画像リセット対応版)
    ========================================================================== */
 const MenuAllies = {
@@ -984,7 +981,7 @@ const MenuAllies = {
     tempAlloc: null,
     _tempCandidates: [], 
     candidateFilter: 'ALL',
-    candidateSortMode: 'RANK',
+    candidateSortMode: 'NEWEST',
 
     init: () => {
         let container = document.getElementById('sub-screen-allies');
@@ -1036,7 +1033,7 @@ const MenuAllies = {
         MenuAllies.targetPart = null;
         MenuAllies.selectedEquip = null;
         MenuAllies.candidateFilter = 'ALL';
-        MenuAllies.candidateSortMode = 'RANK';
+        MenuAllies.candidateSortMode = 'NEWEST';
         
         MenuAllies.renderList();
     },

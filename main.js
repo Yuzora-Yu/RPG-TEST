@@ -1179,29 +1179,28 @@ const App = {
                 </div>
             </div>`;
     },
-
-    //getNextExp: (char) => {
-    //    if (char.level >= CONST.MAX_LEVEL) return Infinity;
-    //    const base = CONST.EXP_BASE * Math.pow(CONST.EXP_GROWTH, char.level - 1);
-    //    const rarityMult = CONST.RARITY_EXP_MULT[char.rarity] || 1.0;
-    //    return Math.floor(base * rarityMult);
-    //},
 	
 	getNextExp: (charData) => {
         const rCount = charData.reincarnationCount || 0;
-        
-        // 指示1：実効レベル = 現在レベル + (転生回数 * 100)
-        const effectiveLevel = charData.level + (rCount * 100);
-
-        // 指示2：成長率をdatabase.jsから参照し、転生者(r>=1)は -0.03 する
-        let growth = CONST.EXP_GROWTH || 1.08;
-        if (rCount >= 1) growth -= 0.03; // 例：1.08 -> 1.05
-
         const baseExp = CONST.EXP_BASE || 100;
         const rarityMult = (CONST.RARITY_EXP_MULT && CONST.RARITY_EXP_MULT[charData.rarity]) || 1.0;
+        let growth = CONST.EXP_GROWTH || 1.08;
 
-        // 指数関数による計算 (実効レベルを使用)
-        return Math.floor(baseExp * Math.pow(growth, effectiveLevel - 1) * rarityMult);
+        if (rCount === 0) {
+            // 未転生：通常の指数関数計算
+            return Math.floor(baseExp * Math.pow(growth, charData.level - 1) * rarityMult);
+        } else if (rCount === 1) {
+            // 転生1回目：緩和は0.04、実効レベル（level + 100）を使用
+            growth -= 0.04;
+            const effectiveLevel = charData.level + 100;
+            return Math.floor(baseExp * Math.pow(growth, effectiveLevel - 1) * rarityMult);
+        } else {
+            // 転生2回目以降：『200レベル分の乗算 + 現在レベル × (転生回数-1) × 100000』
+            growth -= 0.04; 
+            const exponentialPart = Math.floor(baseExp * Math.pow(growth, 200 - 1) * rarityMult);
+            const additivePart = charData.level * (rCount - 1) * 100000;
+            return exponentialPart + additivePart;
+        }
     },
 
     checkNewSkill: (charData) => {
