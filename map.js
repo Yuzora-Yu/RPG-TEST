@@ -1,192 +1,439 @@
-/* map.js - ワールドマップ・固定ダンジョン・エリア定義 */
-
-const STORY_DATA = {
-    areas: {
-        'START_VILLAGE': { name: '始まりの村', rank: 1,   centerX: 58,  centerY: 64 },
-        'FIRE_VILLAGE':  { name: '炎の里',     rank: 10,  centerX: 98,  centerY: 50 },
-        'WIND_VILLAGE':  { name: '風の集落',   rank: 20,  centerX: 99,  centerY: 38 },
-        'WATER_CITY':    { name: '水上都市',   rank: 30,  centerX: 69,  centerY: 22 },
-        'BIG_TOWER':     { name: '大灯台',     rank: 30,  centerX: 22,  centerY: 80 },
-        'THUNDER_FORT':  { name: '雷の要塞',   rank: 40,  centerX: 46,  centerY: 37 },
-        'LIGHT_PALACE':  { name: '光の宮殿',   rank: 50,  centerX: 68,  centerY: 49 },
-        'DARK_CASTLE':   { name: '魔王城',     rank: 60,  centerX: 9,   centerY: 51 },
-        'ABYSS':         { name: '深淵の魔窟', rank: 70,  centerX: 52,  centerY: 56 },
-        'RUINED_SHRINE': { name: '朽ちた祠',   rank: 300, centerX: 59,  centerY: 57 }, // エスターク用
-        'MEDAL':         { name: 'メダル王',   rank: 1,   centerX: 38,  centerY: 48 },
-        'CASINO':        { name: 'カジノ',     rank: 1,   centerX: 33,  centerY: 19 }
+/* map.js */
+const TILE_THEMES = {
+    "WORLD": {
+        "W": {
+            "img": "sea",
+            "color": "#228"
+        },
+        "M": {
+            "img": "mountain",
+            "color": "#555"
+        },
+        "F": {
+            "img": "forest",
+            "color": "#040"
+        },
+        "L": {
+            "img": "Low_mountain",
+            "color": "#642"
+        },
+        "G": {
+            "img": "floor",
+            "color": "#282"
+        },
+        "T": {
+            "img": "floor",
+            "color": "#282"
+        },
+        "I": {
+            "img": "inn",
+            "color": "#ff0"
+        },
+        "B": {
+            "img": "boss",
+            "color": "#d00"
+        }
+    },
+    "START_VILLAGE": {
+        "W": {
+            "img": "forest",
+            "color": "#040"
+        },
+        "T": {
+            "img": "floor",
+            "color": "#282"
+        },
+        "G": {
+            "img": "floor",
+            "color": "#282"
+        },
+        "S": {
+            "img": "floor",
+            "color": "#0dd"
+        }
+    },
+    "START_CAVE": {
+        "W": {
+            "img": "wall",
+            "color": "#333"
+        },
+        "S": {
+            "img": "floor",
+            "color": "#619861"
+        },
+        "G": {
+            "img": "dungeon_floor",
+            "color": "#666666"
+        }
+    },
+    "FIRE_VILLAGE": {
+        "W": "magma-rock",
+        "T": "ash-floor"
+    },
+    "WIND_VILLAGE": {
+        "W": "cliff",
+        "T": "highland"
+    },
+    "WATER_CITY": {
+        "W": "canal",
+        "T": "stone-pave"
+    },
+    "BIG_TOWER": {
+        "W": "brick-wall",
+        "T": "carpet"
+    },
+    "THUNDER_FORT": {
+        "W": "metal-wall",
+        "T": "iron-plate"
+    },
+    "LIGHT_PALACE": {
+        "W": "marble-wall",
+        "T": "white-tile"
+    },
+    "DARK_CASTLE": {
+        "W": {
+            "img": "wall",
+            "color": "#333"
+        },
+        "T": {
+            "img": "dungeon_floor",
+            "color": "#222"
+        }
+    },
+    "ABYSS": {
+        "W": {
+            "img": "wall",
+            "color": "#333"
+        },
+        "T": {
+            "img": "dungeon_floor",
+            "color": "#666"
+        }
+    },
+    "RUINED_SHRINE": {
+        "W": "ancient-brick",
+        "T": "moss-stone"
+    },
+    "DEFAULT": {
+        "W": {
+            "img": "wall",
+            "color": "#333"
+        },
+        "T": {
+            "img": "dungeon_floor",
+            "color": "#666"
+        },
+        "S": {
+            "img": "stairs",
+            "color": "#dd0"
+        },
+        "C": {
+            "img": "chest",
+            "color": "#0dd"
+        },
+        "R": {
+            "img": "chest_rare",
+            "color": "#f00"
+        },
+        "B": {
+            "img": "boss",
+            "color": "#d00"
+        },
+        "I": {
+            "img": "inn",
+            "color": "#ff0"
+        },
+        "K": {
+            "img": "casino",
+            "color": "#aaf"
+        },
+        "E": {
+            "img": "medal",
+            "color": "#87ceeb"
+        },
+        "H": {
+            "img": "inn",
+            "color": "#deb887"
+        },
+        "V": {
+            "img": "inn",
+            "color": "#d00"
+        }
     }
 };
 
-// auto-generated from provided map image
-// size: W110 x H90
-// G:草原, W:海/川, F:森, L:山, M:岩山(進入不可）
-// I:町/里/祠, E:交換所, K:カジノ, D:魔窟
+const STORY_DATA = {
+    "areas": {
+        "START_VILLAGE": {
+            "name": "始まりの村",
+            "rank": 1,
+            "centerX": 58,
+            "centerY": 64
+        },
+        "FIRE_VILLAGE": {
+            "name": "炎の里",
+            "rank": 10,
+            "centerX": 98,
+            "centerY": 50
+        },
+        "WIND_VILLAGE": {
+            "name": "風の集落",
+            "rank": 20,
+            "centerX": 99,
+            "centerY": 38
+        },
+        "WATER_CITY": {
+            "name": "水上都市",
+            "rank": 30,
+            "centerX": 69,
+            "centerY": 22
+        },
+        "BIG_TOWER": {
+            "name": "大灯台",
+            "rank": 30,
+            "centerX": 22,
+            "centerY": 80
+        },
+        "THUNDER_FORT": {
+            "name": "雷の要塞",
+            "rank": 40,
+            "centerX": 46,
+            "centerY": 37
+        },
+        "LIGHT_PALACE": {
+            "name": "光の宮殿",
+            "rank": 50,
+            "centerX": 68,
+            "centerY": 49
+        },
+        "DARK_CASTLE": {
+            "name": "魔王城",
+            "rank": 60,
+            "centerX": 9,
+            "centerY": 51
+        },
+        "ABYSS": {
+            "name": "深淵の魔窟",
+            "rank": 70,
+            "centerX": 52,
+            "centerY": 56
+        },
+        "RUINED_SHRINE": {
+            "name": "朽ちた祠",
+            "rank": 300,
+            "centerX": 59,
+            "centerY": 57
+        },
+        "MEDAL": {
+            "name": "メダル王",
+            "rank": 1,
+            "centerX": 38,
+            "centerY": 48
+        },
+        "CASINO": {
+            "name": "カジノ",
+            "rank": 1,
+            "centerX": 33,
+            "centerY": 19
+        }
+    }
+};
 
-const MAP_DATA = [
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwggggwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwgggggggwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwgggggggggggwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwgggggggggggggggwwwwwwwggggffffffwwwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwgggggwwwwwwwwwggggggggggggggggggwwwwwwwwwwggggffffffwwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwggEgggggggggggggggggggggggggggggwwwwwwwwwwwwwwggggggffffgwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwggggggggggggggggggggggggggggggggwwwwwwwwwwwwwwwwwwwwggggggggwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwgggggggggggggggwwwwwwwggggwwwwwwwwwwwgggggggwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwggggggggggggwwwwggggiggwwwwwwwwwwwgggggggwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwfgggggggggggggggggwwwwwwwwwwwwwwggggggwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwmfffffggggggggggwwwwwwwwwwwwwwwwggggggwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwmmmmfffffggggggwwwwwwwwwwwwwwwwwggggggwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwmmmmmmfffffgggggwwwwwwwwwwwwwwgwggggggggwwwggwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwmmmmmfffffggggggggggggggggggggggggwgggggggggwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwmwwwwwwmmmmmmfffffggggggggggggggggggggwwwwggggggggggfffwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwmmmmmwwwwwwmmmmmfffffggggggggggggggggggwwwwwggggggggffffffwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwmmmmmmmmwwwwwmmmmmmfffffggggggggggggggwwwwwgggggggggfffffffffwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwmmmmmmmmgwwwwwwwmmmmmffffffffgggggmmmgwwwwwggggggggffffffffffffwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwmmmmmmmgggggwwwwwwmmmmmmfffffffffmmmmgwwwwwggggggffffffffffffffffwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwmmmmmmllggmmmmwwwwwwmmmmmmfffffffmmmmwwwwwwggggggffffffffffffmmmffwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwmmmmmmlllggmmmmmmmwwwwwwmmmmmmmffmmmmmwwwwwwggggggfffffffffffmmmmfffwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwmmmmmlllllggggggmmmmmwwwwwwwmmmmmmmmmmwwwwwwgggggggfffffffffffmmmmfffffwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwmmmmmllllllggggggggmmmmmmwwwwwwwmmmmmmwwwwwwwggggggffffffffffffmmmmmgfffwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwmmmmmlllllllggggigggggfmmmmmwwwwwwwwmmmwwwwwwgggggggffffffffffffmmmmgggggwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwmmmmmmllllllllgggggggggffffmmmmmwwwwwwwwwwwwwmggggggfffffffffffffmmmmggiggwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwmmmmmllllllllllllggggggffffffffmmmmwwwwwwwwwwwmmmgggffffffffffffffmmmmgggggwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwmmmmllllllllllllllmmmmgffffffffffmmmmmwwwwwwwwmmmmmmggfffmmmmfffffmmmmmggggwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwmmmmmlllllllllllllmmmmmffffffffffffffmmmmwwwwwwwwmmmmmmmmmmmmffffffmmmmggggwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwmmmmmllllllllllllllmmmmmffffffffffffffffmmmmwwwwwwwmmmmmmmmmmmfffffmmmmmggwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwmmmmmllllllllllllllmmmmmmffffffffffffffffffmmmmmwwwwwwmmmmmmmmffffffmmmmmwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwmmmmllllllllllllllllmmmmmfffffffffffffffffffffmmmmmwwwwwwmmmmmmmffffmmmmmmwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwmmmmmmmllllllllllllllmmmmmmgfffffffffffggggggggggggmmmmmmwwwwwmmmmmfffffffmmmmmmmmmwwwwwwwwwwwwwww",
-"wwwwwwwwwwmmmmmmmlllllllllllllllmmmmmggggggffffffggggggggggggggggmmmmmwwwwwwmmmgfffffffmmmmmmmmmmmmmmwwwwwwwww",
-"wwwwwwwwmmmmmmmgggggllllllllllmmmmgggggggggggggggggggggggggggggggggmmmmwwwwwwmgggfffffffffgmmmmmmmmmmmmmmwwwww",
-"wwwwwwwmmmmggggggggggglllllmmmmmmggggkgggggggggggggggggggggggggggggggmmmmwwwwwgggggffffffffggggmmmmmmmmmwwwwww",
-"wwwwwwmmmmgggggggggggggmmmmmmmmmmmmggggggggggggggggffffggggggggggggiggmmmmmwwwggggggggggggggggggggggmmmmwwwwww",
-"wwwwwmmmggggggggggggmmmmmmmmmmmmmmmmmmmmmmgggggggggggffffggggggggggggmmmmmmmwwwggggggggggggggggggigmmmmwwwwwww",
-"wwwwmmggiggggggggmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmggggffffgggggggggmmmmmmmmmwwwggggggggggggggggggggmmmmwwwwwww",
-"wwwgggggggggggggmmmmmmwwwwwmmmmmmmmmmmmmmmmmmmmmmmmmmgggggggggggmmmmmmmmfmmmmwwggggggggggggggggggllmmmwwwwwwww",
-"wwwwggggggggggmmmmmwwwwwwwwwwwwwwgggmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmffffffmmwwgggggggggggggggglllmmmmwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwggggggggmmmmmmmmmmmmmmmmmmmmmmmfffffffffffwwwgggggggggggggglllmmmmwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwggggggggggggggggmmmmmmmmmmmmggggffmmmffffwwwgggggggggggglllllmmmmwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwgggggggggggggggdggmmmmmmgggggggmmmmmmffffwwwggggggggggllllllmmmmwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwgggmmgggggggggggmmmmmmigggggmmmmmmmfffffgwwwgggggggglllllllmmmmmwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwgmmmmmmggggggmmmmmmmmmmmmmmmmmmmffffffgggwwwgggggglllllllmmmmmwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwggmmmmmmmmgmmmmmmmmwmmmmmmmmmmffffffggggggggggggllllllmmmmmmmwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwggggmmmmmmmmmmmmmmmmwmmmmmmmffffffffgggggggggglllllllmmmmmmmmmwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwggggmmmmmmmmmmmmmmmmmwmmmmfffffffffffggggggfwwllllllmmmmmmmmmmwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwgmmmmmmmmmmmmmmmmmmmmwwgfffffffffgggggggggffwwllmmmmmmmmmmwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwmmmmmmmmmmmmmmmmmmmffgwwwggggggggggggggggggfffwwmmmmmmmmmmwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwmmmmmmmmmmmmmmmmmmfffffgwwggggggggggggggggggfffwwwwmmmmmmwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwmmmmmmmmmmmmmmmmmffffffggwgggigggggggggggggffffwwwwwmmmwwwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwmmmmmmmmmmmmmmlllfffffgggwwggggggggggggggggffffwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwmmmmmmmmmmmllllllfffffggggwggggggggggggggfffffwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwmmmmmmmmmllllllllllffgggggwgggggggggggggfffffwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwmmmmmmllllllllllllllgggggggwggggggggggffffffwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwmmmmmlllllllllllllggggggggggggggggggggfffffwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwmmmmllllllllllggggggggggggggggggggggggffffwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwgmmmlllllllggggggggfffgggggggggwgggggggggwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwgggglllllgggggggffffffffggggggggwggggggggwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwgggggggggggggggfffffffffffgggggggwgggggggwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwggggggggggggggffffffgggfffffggggggwgggggggwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwgggggggggggggffffffggggggffgggggggwggggggwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwgggggggggggggffffgggggwwggggggggggwwgggggwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwgggggggggggffffgggggwwwwwgggggggggwggggggwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwggggggggggggffggggwwwwwwwwwwgggggggwggggwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwgggggIggggggggggwwwwwwwwwwwwwwwwggggwggwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwgggggggggggggwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwgggggggggggwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwgggggggggwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwggggwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-"wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
-];
+const MAP_DATA = ["WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGGGGGGGWWWWWWWGGGGFFFFFFWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGWWWWWWWWWGGGGGGGGGGGGGGGGGGWWWWWWWWWWGGGGFFFFFFWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGEGGGGGGGGGGGGGGGGGGGGGGGGGGGGGWWWWWWWWWWWWWWGGGGGGFFFFGWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGWWWWWWWWWWWWWWWWWWWWGGGGGGGGWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGGGGGGGWWWWWWWGGGGWWWWWWWWWWWGGGGGGGWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGGGGWWWWGGGGIGGWWWWWWWWWWWGGGGGGGWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWFGGGGGGGGGGGGGGGGGWWWWWWWWWWWWWWGGGGGGWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWMFFFFFGGGGGGGGGGWWWWWWWWWWWWWWWWGGGGGGWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWMMMMFFFFFGGGGGGWWWWWWWWWWWWWWWWWGGGGGGWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWMMMMMMFFFFFGGGGGWWWWWWWWWWWWWWGWGGGGGGGGWWWGGWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWMMMMMFFFFFGGGGGGGGGGGGGGGGGGGGGGGGWGGGGGGGGGWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWMWWWWWWMMMMMMFFFFFGGGGGGGGGGGGGGGGGGGGWWWWGGGGGGGGGGFFFWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWMMMMMWWWWWWMMMMMFFFFFGGGGGGGGGGGGGGGGGGWWWWWGGGGGGGGFFFFFFWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWMMMMMMMMWWWWWMMMMMMFFFFFGGGGGGGGGGGGGGWWWWWGGGGGGGGGFFFFFFFFFWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWMMMMMMMMGWWWWWWWMMMMMFFFFFFFFGGGGGMMMGWWWWWGGGGGGGGFFFFFFFFFFFFWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWMMMMMMMGGGGGWWWWWWMMMMMMFFFFFFFFFMMMMGWWWWWGGGGGGFFFFFFFFFFFFFFFFWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWMMMMMMllGGMMMMWWWWWWMMMMMMFFFFFFFMMMMWWWWWWGGGGGGFFFFFFFFFFFFMMMFFWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWMMMMMMlllGGMMMMMMMWWWWWWMMMMMMMFFMMMMMWWWWWWGGGGGGFFFFFFFFFFFMMMMFFFWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWMMMMMlllllGGGGGGMMMMMWWWWWWWMMMMMMMMMMWWWWWWGGGGGGGFFFFFFFFFFFMMMMFFFFFWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWMMMMMllllllGGGGGGGGMMMMMMWWWWWWWMMMMMMWWWWWWWGGGGGGFFFFFFFFFFFFMMMMMGFFFWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWMMMMMlllllllGGGGIGGGGGFMMMMMWWWWWWWWMMMWWWWWWGGGGGGGFFFFFFFFFFFFMMMMGGGGGWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWMMMMMMllllllllGGGGGGGGGFFFFMMMMMWWWWWWWWWWWWWMGGGGGGFFFFFFFFFFFFFMMMMGGIGGWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWMMMMMllllllllllllGGGGGGFFFFFFFFMMMMWWWWWWWWWWWMMMGGGFFFFFFFFFFFFFFMMMMGGGGGWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWMMMMllllllllllllllMMMMGFFFFFFFFFFMMMMMWWWWWWWWMMMMMMGGFFFMMMMFFFFFMMMMMGGGGWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWMMMMMlllllllllllllMMMMMFFFFFFFFFFFFFFMMMMWWWWWWWWMMMMMMMMMMMMFFFFFFMMMMGGGGWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWMMMMMllllllllllllllMMMMMFFFFFFFFFFFFFFFFMMMMWWWWWWWMMMMMMMMMMMFFFFFMMMMMGGWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWMMMMMllllllllllllllMMMMMMFFFFFFFFFFFFFFFFFFMMMMMWWWWWWMMMMMMMMFFFFFFMMMMMWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWMMMMllllllllllllllllMMMMMFFFFFFFFFFFFFFFFFFFFFMMMMMWWWWWWMMMMMMMFFFFMMMMMMWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWMMMMMMMllllllllllllllMMMMMMGFFFFFFFFFFFGGGGGGGGGGGGMMMMMMWWWWWMMMMMFFFFFFFMMMMMMMMMWWWWWWWWWWWWWWW",
+"WWWWWWWWWWMMMMMMMlllllllllllllllMMMMMGGGGGGFFFFFFGGGGGGGGGGGGGGGGMMMMMWWWWWWMMMGFFFFFFFMMMMMMMMMMMMMMWWWWWWWWW",
+"WWWWWWWWMMMMMMMGGGGGllllllllllMMMMGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGMMMMWWWWWWMGGGFFFFFFFFFGMMMMMMMMMMMMMMWWWWW",
+"WWWWWWWMMMMGGGGGGGGGGGlllllMMMMMMGGGGKGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGMMMMWWWWWGGGGGFFFFFFFFGGGGMMMMMMMMMWWWWWW",
+"WWWWWWMMMMGGGGGGGGGGGGGMMMMMMMMMMMMGGGGGGGGGGGGGGGGFFFFGGGGGGGGGGGGIGGMMMMMWWWGGGGGGGGGGGGGGGGGGGGGGMMMMWWWWWW",
+"WWWWWMMMGGGGGGGGGGGGMMMMMMMMMMMMMMMMMMMMMMGGGGGGGGGGGFFFFGGGGGGGGGGGGMMMMMMMWWWGGGGGGGGGGGGGGGGGGIGMMMMWWWWWWW",
+"WWWWMMGGIGGGGGGGGMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMGGGGFFFFGGGGGGGGGMMMMMMMMMWWWGGGGGGGGGGGGGGGGGGGGMMMMWWWWWWW",
+"WWWGGGGGGGGGGGGGMMMMMMWWWWWMMMMMMMMMMMMMMMMMMMMMMMMMMGGGGGGGGGGGMMMMMMMMFMMMMWWGGGGGGGGGGGGGGGGGGllMMMWWWWWWWW",
+"WWWWGGGGGGGGGGMMMMMWWWWWWWWWWWWWWGGGMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMFFFFFFMMWWGGGGGGGGGGGGGGGGlllMMMMWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGMMMMMMMMMMMMMMMMMMMMMMMFFFFFFFFFFFWWWGGGGGGGGGGGGGGlllMMMMWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGGGGGGGGMMMMMMMMMMMMGGGGFFMMMFFFFWWWGGGGGGGGGGGGlllllMMMMWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGGGGGGGdGGMMMMMMGGGGGGGMMMMMMFFFFWWWGGGGGGGGGGllllllMMMMWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGMMGGGGGGGGGGGMMMMMMIGGGGGMMMMMMMFFFFFGWWWGGGGGGGGlllllllMMMMMWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGMMMMMMGGGGGGMMMMMMMMMMMMMMMMMMMFFFFFFGGGWWWGGGGGGlllllllMMMMMWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGMMMMMMMMGMMMMMMMMWMMMMMMMMMMFFFFFFGGGGGGGGGGGGllllllMMMMMMMWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGMMMMMMMMMMMMMMMMWMMMMMMMFFFFFFFFGGGGGGGGGGlllllllMMMMMMMMMWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGMMMMMMMMMMMMMMMMMWMMMMFFFFFFFFFFFGGGGGGFWWllllllMMMMMMMMMMWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGMMMMMMMMMMMMMMMMMMMMWWGFFFFFFFFFGGGGGGGGGFFWWllMMMMMMMMMMWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWMMMMMMMMMMMMMMMMMMMFFGWWWGGGGGGGGGGGGGGGGGGFFFWWMMMMMMMMMMWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWMMMMMMMMMMMMMMMMMMFFFFFGWWGGGGGGGGGGGGGGGGGGFFFWWWWMMMMMMWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWMMMMMMMMMMMMMMMMMFFFFFFGGWGGGIGGGGGGGGGGGGGFFFFWWWWWMMMWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWMMMMMMMMMMMMMMlllFFFFFGGGWWGGGGGGGGGGGGGGGGFFFFWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWMMMMMMMMMMMllllllFFFFFGGGGWGGGGGGGGGGGGGGFFFFFWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWMMMMMMMMMllllllllllFFGGGGGWGGGGGGGGGGGGGFFFFFWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWMMMMMMllllllllllllllGGGGGGGWGGGGGGGGGGFFFFFFWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWMMMMMlllllllllllllGGGGGGGGGGGGGGGGGGGGFFFFFWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWMMMMllllllllllGGGGGGGGGGGGGGGGGGGGGGGGFFFFWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWGMMMlllllllGGGGGGGGFFFGGGGGGGGGWGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWGGGGlllllGGGGGGGFFFFFFFFGGGGGGGGWGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWGGGGGGGGGGGGGGGFFFFFFFFFFFGGGGGGGWGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWGGGGGGGGGGGGGGFFFFFFGGGFFFFFGGGGGGWGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWGGGGGGGGGGGGGFFFFFFGGGGGGFFGGGGGGGWGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWGGGGGGGGGGGGGFFFFGGGGGWWGGGGGGGGGGWWGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWGGGGGGGGGGGFFFFGGGGGWWWWWGGGGGGGGGWGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWGGGGGGGGGGGGFFGGGGWWWWWWWWWWGGGGGGGWGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWGGGGGIGGGGGGGGGGWWWWWWWWWWWWWWWWGGGGWGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWGGGGGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWGGGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"];
 
 const FIXED_MAPS = {
-    'START_VILLAGE': {
-        name: '始まりの村',
-        width: 15,
-        height: 12,
-		
-		// ★追加: 街に入った時の初期座標 (出口Sの少し上などに設定)
-        entryPoint: { x: 7, y: 9 },
-		
-		// ★戦闘背景の追加 (村の中で戦う場合)
-        battleBg: 'battle_bg_field',
-		
-        // G:床, W:壁, S:出口, V:長老(イベント), I:宿屋/ショップ, H:家 , D:ダンジョン入口
-        tiles: [
+    "START_VILLAGE": {
+        "name": "始まりの村",
+        "width": 15,
+        "height": 12,
+        "entryPoint": {
+            "x": 7,
+            "y": 9
+        },
+        "battleBg": "battle_bg_field",
+        "tiles": [
             "WWWWWWWWWWWWWWW",
             "WHGHGWWWGGGDGWW",
             "WGGGGWWWWGGGGGW",
-            "WGGWWWVWWWWGGGW", // 中央奥に長老の家
+            "WGGWWWVWWWWGGGW",
             "WGGWHGGGHEWGGGW",
-            "WGGIGGGGGGGGGGS", // 左に宿屋、右にショップ
+            "WGGIGGGGGGGGGGS",
             "WGGGGGGGGGGGGGS",
             "WGGWWGGGGWWGGGW",
             "WHGGGGGGGGGGKGW",
             "WHGGGGGGGGGGGGW",
-            "WWWWWWSSWWWWWWW", // 下のSからフィールドへ
+            "WWWWWWSSWWWWWWW",
             "WWWWWWWWWWWWWWW"
         ],
-        // ワールドマップへ出る際の帰還座標
-        exitPoint: { area: 'WORLD', x: 58, y: 65 } 
+        "exitPoint": {
+            "area": "WORLD",
+            "x": 58,
+            "y": 65
+        }
     }
 };
 
-
-// 固定ダンジョンの定義
 const FIXED_DUNGEON_MAPS = {
-    'START_CAVE': {
-        name: '試練の洞窟',
-        rank: 5,
-        width: 15,
-        height: 15,
-        entryPoint: { x: 8, y: 13 },
-        battleBg: 'battle_bg_maze',
-        // G:床, W:壁, S:階段, C:宝箱, B:ボス
-        tiles: [
+    "START_CAVE": {
+        "name": "試練の洞窟",
+        "rank": 5,
+        "width": 15,
+        "height": 15,
+        "entryPoint": {
+            "x": 8,
+            "y": 13
+        },
+        "battleBg": "battle_bg_maze",
+        "tiles": [
             "WWWWWWWWWWWWWWW",
-            "WBGGGGGGGGGGWCW", // (13, 1) に宝箱
-            "WGGWWWWGWWWWWGW",
+            "WBGGGGGGWGGGGCW",
+            "WGGWWWWGWGWWWWW",
             "WWWWGGGGWGGGGGW",
-            "WGWWWWWGWWWWWGW",
-            "WGGGGGGGGGGGGGW",
+            "WCWWGWWGWWWWWGW",
+            "WGGGGWWGGGGGGGW",
             "WWWWWWWWWGWWWWW",
-            "WCWGGGGCWGGGGGW", // (1, 7) と (8, 7) に宝箱
+            "WCWGGGGCWGGGGGW",
             "WGWGWWWWWWWWWGW",
             "WGWGGGGGGGGGGGW",
-            "WGWWWWWWWWWGWWW",
+            "WGWWWWWWWWWGWGW",
             "WGGGGGGGGGGGGGW",
             "WWWWWWWGGWWWWWW",
             "WWWWWWWSSWWWWWW",
             "WWWWWWWWWWWWWWW"
         ],
-        // ★追加: 固定宝箱のアイテム設定
-        chests: [
-            { x: 13, y: 1, itemId: 106, type: 'item' }, // スキルのたね
-            { x: 1, y: 7, itemId: 2, type: 'item' },   // 上やくそう
-            { x: 7, y: 7, itemId: 3, type: 'item' }    // 魔法の小瓶
+        "chests": [
+            {
+                "x": 13,
+                "y": 1,
+                "itemId": 106 /* スキルのたね */,
+                "type": "item"
+            },
+            {
+                "x": 1,
+                "y": 7,
+                "itemId": 1 /* やくそう */,
+                "type": "item"
+            },
+            {
+                "x": 7,
+                "y": 7,
+                "itemId": 3 /* 魔法の小瓶 */,
+                "type": "item"
+            },
+            {
+                "x": 1,
+                "y": 4,
+                "itemId": 99 /* ちいさなメダル */
+            }
         ],
-		// ★追加: 出現するモンスターのIDリストを指定
-        monsters: [1, 1.01, 1.5, 2, 2.01, 2.5, 3, 3.01, 4],
-		// ★追加: 固定ボスの設定
-        bosses: [
-            { x: 1, y: 1, monsterId: 1010 }
+        "monsters": [
+            1 /* ドラキー Lv1 */,
+            1.01 /* スライム Lv1 */,
+            1.5 /* ホイミスライム Lv1 */,
+            2 /* スライム Lv2 */,
+            2.01 /* ドラキー Lv2 */,
+            2.5 /* ホイミスライム Lv2 */,
+            3 /* ドラキー Lv3 */,
+            3.01 /* スライム Lv3 */,
+            4 /* ドラキー Lv4 */,
+            4.01 /* スライム Lv4 */,
+            4.5 /* ホイミスライム Lv4 */
+        ],
+        "bosses": [
+            {
+                "x": 1,
+                "y": 1,
+                "monsterId": 1010 /* バトルレックス */
+            }
         ]
     }
 };
-    // 今後、FIRE_MOUNTAIN, WATER_TEMPLE などが増えていく

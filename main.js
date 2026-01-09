@@ -6,86 +6,6 @@
 
 const JOB_SKILLS = window.JOB_SKILLS || {};
 
-		/**
- * エリアごとのタイル見た目定義
- * ここにエリアキーを追加するだけで、新しいマップの見た目を拡張できます。
- */
-const TILE_THEMES = {
-	'WORLD': {
-        'W': { img: 'sea',          color: '#228' },
-        'M': { img: 'mountain',     color: '#555' },
-        'F': { img: 'forest',       color: '#040' },
-        'L': { img: 'Low_mountain', color: '#642' },
-        'G': { img: 'floor',        color: '#282' },
-		'T': { img: 'floor',        color: '#282' },
-        'I': { img: 'inn',          color: '#ff0' },
-        'B': { img: 'boss',         color: '#d00' },
-    },
-	
-    'START_VILLAGE': {
-        'W': { img: 'forest', color: '#040' },
-        'T': { img: 'floor',  color: '#282' },
-		'G': { img: 'floor',  color: '#282' },
-		'S': { img: 'floor',  color: '#0dd' },
-    },
-	'START_CAVE': {
-        'W': { img: 'wall',         color: '#333' },
-        'T': { img: 'dungeon_floor',color: '#666' }, // ダンジョン床
-		'S': { img: 'floor', color: '#282' },
-    },
-	
-    'FIRE_VILLAGE': {
-        'W': 'magma-rock', // 壁を溶岩岩に
-        'T': 'ash-floor',  // 床を灰の地面に
-    },
-    'WIND_VILLAGE': {
-        'W': 'cliff',      // 壁を断崖に
-        'T': 'highland',   // 床を高原に
-    },
-    'WATER_CITY': {
-        'W': 'canal',      // 壁を運河（進入不可）に
-        'T': 'stone-pave', // 床を石畳に
-    },
-    'BIG_TOWER': {
-        'W': 'brick-wall', // 壁を煉瓦に
-        'T': 'carpet',     // 床を絨毯に
-    },
-    'THUNDER_FORT': {
-        'W': 'metal-wall', // 壁を鉄壁に
-        'T': 'iron-plate', // 床を鉄板に
-    },
-    'LIGHT_PALACE': {
-        'W': 'marble-wall',// 壁を大理石に
-        'T': 'white-tile', // 床を白タイルに
-    },
-    'DARK_CASTLE': {
-        'W': { img: 'wall',         color: '#333' },
-        'T': { img: 'dungeon_floor',color: '#222' }, // ダンジョン床
-    },
-    'ABYSS': {
-        'W': { img: 'wall',         color: '#333' }, // 壁を深淵の壁に
-        'T': { img: 'dungeon_floor',color: '#666' }, // ダンジョン床
-    },
-    'RUINED_SHRINE': {
-        'W': 'ancient-brick', // 壁を古びた煉瓦に
-        'T': 'moss-stone',    // 床を苔むした石に
-    },
-    // デフォルト設定（定義がないマップやダンジョン用）
-    'DEFAULT': { // ダンジョンおよび定義のないマップ用
-        'W': { img: 'wall',         color: '#333' },
-        'T': { img: 'dungeon_floor',color: '#666' }, // ダンジョン床
-        'S': { img: 'stairs',       color: '#dd0' },
-        'C': { img: 'chest',        color: '#0dd' },
-        'R': { img: 'chest_rare',   color: '#f00' },
-        'B': { img: 'boss',         color: '#d00' },
-        'I': { img: 'inn',          color: '#ff0' },
-        'K': { img: 'casino',       color: '#aaf' },
-        'E': { img: 'medal',        color: '#87ceeb' },
-		'H': { img: 'inn',			color: '#deb887' }, // 仮
-        'V': { img: 'inn',          color: '#d00' }, // イベントNPC
-    }
-};
-
 // ==========================================================================
 // クラス定義
 // ==========================================================================
@@ -473,6 +393,10 @@ const App = {
         if (App.data) {
             App.refreshAllSynergies();
         }
+		
+		// ★最重要修正: 戦闘復帰前にFieldを初期化してマップデータを復元する
+        // これにより FIXED_DUNGEON_MAPS 等の背景設定が Battle.init 前に読み込まれます
+        Field.init();
 
         if(App.data.location) {
             Field.x = App.data.location.x;
