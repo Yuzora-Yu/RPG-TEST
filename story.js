@@ -433,7 +433,7 @@ const StoryManager = {
         }
     },
 
-    // ==========================================
+	// ==========================================
     // 6. UI構造の生成
     // ==========================================
 	/**
@@ -488,22 +488,19 @@ const StoryManager = {
 				position: relative;
 				width: 100%;
 				height: 100%;
-				display: flex;
-				flex-direction: column;
-				padding: 40% 20px 20px 20px; /* 上端から40%の位置に中身を配置 */
 				box-sizing: border-box;
 			">
 				
 				<div style="
 					position: absolute;
-					top: 45%;         /* 画面の上から45%の地点を起点とする */
+					top: 45%;         /* 画面の中央（50%）を起点とする */
 					left: 40px;       /* 画面左端からの距離 */
 					width: 150px;     /* キャラ画像の最大幅 */
-					height: 200px;    /* 画像エリアの高さ。align-items:flex-endで下(枠)に接地させる */
+					height: 200px;    /* 画像エリアの高さ */
 					display: flex;
 					align-items: flex-end; 
-					transform: translateY(-100%); /* 起点(45%)から「上」に向かって画像を表示させる */
-					z-index: 5;
+					transform: translateY(-100%); /* 起点(50%)から「上」に向かって画像を表示 */
+					z-index: 5;       /* 吹き出し(z-index:10)より背面に配置 */
 				">
 					<img id="story-portrait" style="
 						max-width: 100%;
@@ -514,10 +511,12 @@ const StoryManager = {
 				</div>
 				
 				<div style="
-					width: 100%;
-					margin-top: 155px;             /* キャラ画像のpadding(45%)からさらに125px下に配置 */
+					position: absolute;
+					top: 45%;                  /* 吹き出しの上端を画面の50%位置に設定 */
+					left: 20px;
+					right: 20px;
 					background: rgba(0,0,30,0.95); 
-					border: 2px solid #ffd700; /* 枠線を白にする場合は#ffffff */
+					border: 2px solid #ffd700; 
 					border-radius: 8px;           
 					padding: 15px;
 					box-sizing: border-box;
@@ -525,8 +524,7 @@ const StoryManager = {
 					max-height: 300px;            
 					overflow-y: auto;             
 					box-shadow: 0 4px 15px rgba(0,0,0,0.5); 
-					z-index: 10;                  
-					position: relative;
+					z-index: 10;               /* キャラ画像より前面に表示 */
 				">
 					<div id="story-name" style="
 						color: #ffd700;
@@ -566,5 +564,4 @@ const StoryManager = {
 		document.body.appendChild(div);
 		return div;
 	}
-	
 };
