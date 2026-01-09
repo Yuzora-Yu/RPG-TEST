@@ -728,7 +728,7 @@ const MenuItems = {
                 success = true; msg = `${target.name}は回復した！`;
             } else if(item.type === '蘇生') {
                 if(target.currentHp > 0) { Menu.msg("生き返っています"); return; }
-                target.currentHp = Math.floor(s.maxHp * 0.5);
+                target.currentHp = Math.floor(s.maxHp * 1);
                 success = true; msg = `${target.name}は生き返った！`;
             }
 
@@ -743,10 +743,17 @@ const MenuItems = {
                     case 104: target.spd += Math.floor(master.spd * 1.0); msg = `${target.name}の素早さが上がった！`; break;
                     case 105: target.def += Math.floor(master.def * 1.0); msg = `${target.name}の防御力が上がった！`; break;
                     case 106: target.sp = (target.sp || 0) + 1; msg = `${target.name}のSPが 1 増えた！`; break;
-                    case 107: target.level = 1;
-                        target.exp = 0;
-                        target.reincarnationCount = (target.reincarnationCount || 0) + 1;
-                        msg = `${target.name}は 転生しレベル1に戻った！\n(転生回数: ${target.reincarnationCount}回目)`; 
+                    case 107: 
+                        // ★修正: ターゲットのレベルが100の時だけ使用可能にする
+                        if (target.level < 100) {
+                            Menu.msg("レベルが不足しており使用できません");
+                            success = false; // アイテム消費を防ぐ
+                        } else {
+                            target.level = 1;
+                            target.exp = 0;
+                            target.reincarnationCount = (target.reincarnationCount || 0) + 1;
+                            msg = `${target.name}は 転生しレベル1に戻った！\n(転生回数: ${target.reincarnationCount}回目)`; 
+                        }
                         break;
                 }
             }
@@ -1458,9 +1465,19 @@ const MenuAllies = {
 
         const view = document.getElementById('allies-detail-view');
         view.innerHTML = `
-            <div style="padding:10px 10px 0 10px; background:#222;"><button class="btn" style="width:100%; background:#444;" onclick="MenuAllies.renderList()">一覧に戻る</button></div>
-            <div style="padding:10px; background:#222; border-bottom:1px solid #444;"><div style="display:flex; justify-content:space-between; align-items:center; background:#333; padding:5px; border-radius:4px;"><button class="btn" style="padding:2px 10px; font-size:12px;" onclick="MenuAllies.switchChar(-1)">＜ 前</button><span style="font-size:12px; color:#aaa;">仲間詳細</span><button class="btn" style="padding:2px 10px; font-size:12px;" onclick="MenuAllies.switchChar(1)">次 ＞</button></div></div>
-            <div class="scroll-container-inner" style="flex:1; overflow-y:auto; padding:10px; font-family:sans-serif; color:#ddd;">
+            <div style="padding:10px 10px 0 10px; background:#222;">
+				<button class="btn" style="width:100%; background:#444;" onclick="MenuAllies.renderList()">一覧に戻る</button>
+			</div>
+            
+			<div style="padding:10px; background:#222; border-bottom:1px solid #444;">
+				<div style="display:flex; justify-content:space-between; align-items:center; background:#333; padding:5px; border-radius:4px;">
+					<button class="btn" style="padding:2px 10px; font-size:12px;" onclick="MenuAllies.switchChar(-1)">＜ 前</button>
+					<span style="font-size:12px; color:#aaa;">仲間詳細</span>
+					<button class="btn" style="padding:2px 10px; font-size:12px;" onclick="MenuAllies.switchChar(1)">次 ＞</button>
+				</div>
+			</div>
+            
+			<div class="scroll-container-inner" style="flex:1; overflow-y:auto; padding:10px; font-family:sans-serif; color:#ddd;">
                 <div style="display:flex; gap:10px; margin-bottom:10px;">
                     <div style="position:relative; width:80px; height:80px; background:#000; border:1px solid #555; display:flex; align-items:center; justify-content:center; flex-shrink:0; border-radius:4px;">
                         <div style="width:100%; height:100%; cursor:pointer;" onclick="document.getElementById('file-upload-${c.uid}').click()">
@@ -1470,22 +1487,83 @@ const MenuAllies = {
                         ${c.img ? `<div onclick="event.stopPropagation(); MenuAllies.resetImage('${c.uid}')" style="position:absolute; top:-5px; right:-5px; width:20px; height:20px; background:#d00; color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; border:1px solid #fff; cursor:pointer; z-index:10;">×</div>` : ''}
                     </div>
                     <input type="file" id="file-upload-${c.uid}" style="display:none" accept="image/*" onchange="MenuAllies.uploadImage(this, '${c.uid}')">
-                    <div style="flex:1;">
-                        <div id="char-name-display" style="display:flex; align-items:center; margin-bottom:2px;"><div style="font-size:16px; font-weight:bold; color:#fff; margin-right:5px;">${c.name}</div><div style="font-size:12px; color:#f0f; font-weight:bold;">+${lb}</div><button class="btn" style="margin-left:auto; padding:0 6px; font-size:10px;" onclick="window.toggleNameEdit()">✎</button></div>
-                        <div id="char-name-edit" style="display:none; align-items:center; margin-bottom:2px;"><input type="text" id="char-name-input" value="${c.name}" maxlength="10" style="width:100px; background:#333; color:#fff; border:1px solid #888; padding:2px; font-size:12px;"><button class="btn" style="margin-left:5px; padding:2px 6px; font-size:10px;" onclick="window.saveName()">OK</button></div>
-                        <div style="font-size:11px; color:#aaa; margin-bottom:4px;">${c.job} Lv.${c.level} / ${c.rarity} Rank</div>
-                        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:4px;"><div style="background:#333; padding:2px 4px; border-radius:3px;"><div style="font-size:8px; color:#aaa;">HP</div><div style="font-weight:bold; font-size:11px; color:#8f8;">${hp}/${s.maxHp}</div></div><div style="background:#333; padding:2px 4px; border-radius:3px;"><div style="font-size:8px; color:#aaa;">MP</div><div style="font-weight:bold; font-size:11px; color:#88f;">${mp}/${s.maxMp}</div></div><div style="background:#333; padding:2px 4px; border-radius:3px;"><div style="font-size:8px; color:#aaa;">Exp</div><div style="font-weight:bold; font-size:9px; color:#fff;">N:${nextExpText} / T:${c.exp}</div></div></div>
-                    </div>
-                </div>
-                <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:2px; margin-bottom:10px;">
-                    <div style="background:#2a2a2a; padding:4px; text-align:center;"><span style="font-size:10px; color:#aaa;">攻撃力</span><br><span style="font-weight:bold; font-size:12px;">${s.atk}</span></div>
-                    <div style="background:#2a2a2a; padding:4px; text-align:center;"><span style="font-size:10px; color:#aaa;">防御力</span><br><span style="font-weight:bold; font-size:12px;">${s.def}</span></div>
-                    <div style="background:#2a2a2a; padding:4px; text-align:center;"><span style="font-size:10px; color:#aaa;">素早さ</span><br><span style="font-weight:bold; font-size:12px;">${s.spd}</span></div>
-                    <div style="background:#2a2a2a; padding:4px; text-align:center;"><span style="font-size:10px; color:#aaa;">魔力</span><br><span style="font-weight:bold; font-size:12px;">${s.mag}</span></div>
-                </div>
-                <div style="display:flex; margin-bottom:10px;">${tabBtns}</div>
-                <div>${contentHtml}</div>
-                <div style="margin-top:20px; display:flex; gap:10px; padding-bottom:10px;"><button class="btn" style="flex:1; background:#444;" onclick="MenuAllies.renderList()">一覧に戻る</button><button class="btn" style="flex:1; background:#444;" onclick="Menu.closeSubScreen('allies')">メニューを閉じる</button></div>
+                    
+					<div style="flex:1;">
+                        <div id="char-name-display" style="display:flex; align-items:center; margin-bottom:2px;">
+							<div style="font-size:16px; font-weight:bold; color:#fff; margin-right:5px;">${c.name}</div>
+							<div style="font-size:12px; color:#f0f; font-weight:bold;">+${lb}</div>
+							<button class="btn" style="margin-left:auto; padding:0 6px; font-size:10px;" onclick="window.toggleNameEdit()">✎</button>
+						</div>
+                        
+						<div id="char-name-edit" style="display:none; align-items:center; margin-bottom:2px;">
+							<input type="text" id="char-name-input" 
+							value="${c.name}" maxlength="10" style="width:100px; background:#333; 
+							color:#fff; border:1px solid #888; padding:2px; font-size:12px;">
+							
+							<button class="btn" style="margin-left:5px; padding:2px 6px; font-size:10px;" 
+							onclick="window.saveName()">OK</button>
+						</div>
+						
+						<div style="font-size:11px; color:#aaa; margin-bottom:4px;">
+							${c.job} Lv.${c.level} / ${c.rarity} Rank${c.reincarnationCount > 0 ? `  ★${c.reincarnationCount}` : ''}
+						</div>
+                    
+						<div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:4px;">
+							<div style="background:#333; padding:2px 4px; border-radius:3px; line-height:1.1;">
+								<div style="font-size:8px; color:#aaa;">HP</div>
+								<div style="color:#8f8; text-align:center; line-height:1">
+									<span style="font-weight:bold; font-size:12px;">${hp}</span>
+								</div>
+								<div style="text-align:right; margin-top:-4px;">
+									<span style="font-size:9px; color:#aaa; opacity:0.8;">/ ${s.maxHp}</span>
+								</div>
+							</div>
+
+							<div style="background:#333; padding:2px 4px; border-radius:3px; line-height:1.1;">
+								<div style="font-size:8px; color:#aaa;">MP</div>
+								<div style="color:#88f; text-align:center; line-height:1;">
+									<span style="font-weight:bold; font-size:12px;">${mp}</span>
+								</div>
+								<div style="text-align:right; margin-top:-4px;">
+									<span style="font-size:9px; color:#aaa; opacity:0.8;">/ ${s.maxMp}</span>
+								</div>
+							</div>
+							
+							<div style="background:#333; padding:2px 4px; border-radius:3px; line-height:1.1;">
+								<div style="font-size:8px; color:#aaa;">NextExp</div>
+								<div style="text-align:center; padding-top:2px;">
+									<span style="font-weight:bold; font-size:12px;">${(nextExpText - c.exp).toLocaleString()}</span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			
+				<div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:4px; margin-top:5px; margin-bottom:12px;">
+					<div style="background:#333; padding:5px 0; text-align:center; line-height:1;">
+						<span style="font-size:10px; color:#aaa; display:block; margin-bottom:2px;">攻撃力</span>
+						<span style="font-weight:bold; font-size:12px; display:block;">${s.atk}</span>
+					</div>
+					<div style="background:#333; padding:5px 0; text-align:center; line-height:1;">
+						<span style="font-size:10px; color:#aaa; display:block; margin-bottom:2px;">防御力</span>
+						<span style="font-weight:bold; font-size:12px; display:block;">${s.def}</span>
+					</div>
+					<div style="background:#333; padding:5px 0; text-align:center; line-height:1;">
+						<span style="font-size:10px; color:#aaa; display:block; margin-bottom:2px;">素早さ</span>
+						<span style="font-weight:bold; font-size:12px; display:block;">${s.spd}</span>
+					</div>
+					<div style="background:#333; padding:5px 0; text-align:center; line-height:1;">
+						<span style="font-size:10px; color:#aaa; display:block; margin-bottom:2px;">魔力</span>
+						<span style="font-weight:bold; font-size:12px; display:block;">${s.mag}</span>
+					</div>
+				</div>
+			
+				<div style="display:flex; margin-bottom:10px;">${tabBtns}</div>
+				<div>${contentHtml}</div>
+				<div style="margin-top:20px; display:flex; gap:10px; padding-bottom:10px;">
+					<button class="btn" style="flex:1; background:#444;" onclick="MenuAllies.renderList()">一覧に戻る</button>
+					<button class="btn" style="flex:1; background:#444;" onclick="Menu.closeSubScreen('allies')">メニューを閉じる</button>
+				</div>
             </div>
         `;
     },

@@ -169,7 +169,24 @@ class Player extends Entity {
                 }
             }
         }
-
+		
+		// 4. シナジーの適用とスキル習得
+        // 既存の判定処理を活かしつつ、各部位の装備が既に持っているシナジー効果からスキルを習得する
+        this.synergy = []; 
+        Object.values(this.equips).forEach(eq => {
+            if (eq && eq.isSynergy && eq.synergies) {
+                eq.synergies.forEach(syn => {
+                    // インスタンスにシナジー情報を蓄積
+                    this.synergy.push(syn);
+                    
+                    // ★修正箇所: grantSkill があればその value (スキルID) を習得
+                    if (syn.effect === 'grantSkill' && syn.value) {
+                        this.learnSkill(syn.value);
+                    }
+                });
+            }
+        });
+		
         this.synergy = App.checkSynergy(this.equips);
     }
 
@@ -392,6 +409,8 @@ const App = {
         // シナジー情報の更新
         if (App.data) {
             App.refreshAllSynergies();
+			// ★新規追加: ゲーム開始時に主人公のリミットブレイクを同期
+            App.syncHeroLimitBreak();
         }
 		
 		// ★最重要修正: 戦闘復帰前にFieldを初期化してマップデータを復元する
@@ -604,6 +623,24 @@ const App = {
         }
     },
 	
+	// --- (App.refreshAllSynergies の後などに追加) ---
+    /**
+     * 主人公のリミットブレイクを進行度（ダンジョン + ストーリー）に合わせて同期する
+     */
+    syncHeroLimitBreak: () => {
+        // 主人公(ID 301 または uid 'p1')を取得
+        const hero = App.data.characters.find(c => c.charId === 301 || c.uid === 'p1');
+        if (hero && App.data && App.data.progress && App.data.dungeon) {
+            // ダンジョンによる加算分 (最高到達階 - 1)
+            const dungeonLB = Math.max(0, (App.data.dungeon.maxFloor || 1) - 1);
+            // ストーリーによる加算分 (storyStep)
+            const storyLB = App.data.progress.storyStep || 0;
+            
+            // 合算値を反映
+            hero.limitBreak = dungeonLB + storyLB;
+        }
+    },
+	
     setAction: (label, callback) => {
         const btn = document.getElementById('action-indicator');
         if(!btn) return;
@@ -739,8 +776,12 @@ const App = {
         // DBのマスタデータを取得 (基礎ステータス参照用)
         const base = DB.CHARACTERS.find(c => c.id === char.charId) || char;
         
-        // リミットブレイク回数 (なければ0)
-        const lb = char.limitBreak || 0;
+        // ★修正: リミットブレイク回数の計算
+        // 主人公(ID 301)の場合のみ、storyStep を加算して実効値を算出する
+        let lb = char.limitBreak || 0;
+        if (char.charId === 301 && App.data && App.data.progress) {
+            lb += (App.data.progress.storyStep || 0);
+        }
         
         // レアリティ別加算率の設定
         const LB_RATES = { 
@@ -936,6 +977,9 @@ const App = {
         if (!charData.exp) charData.exp = 0;
         charData.exp += expGain;
         let logs = [];
+		
+		// 転生回数による補正倍率の計算 (0回なら1倍、1回なら2倍...)
+        const reincMult = 1 + (charData.reincarnationCount || 0);
         
         // レベル上限100
         while (charData.level < 100) {
@@ -952,12 +996,12 @@ const App = {
                 const maxRate = 0.08;
                 const r = () => minRate + Math.random() * (maxRate - minRate);
 
-                const incHp = Math.max(1, Math.floor((master.hp || 100) * r() * 2));
-                const incMp = Math.max(1, Math.floor((master.mp || 50) * r()));
-                const incAtk = Math.max(1, Math.floor((master.atk || 10) * r()));
-                const incDef = Math.max(1, Math.floor((master.def || 10) * r()));
-                const incSpd = Math.max(1, Math.floor((master.spd || 10) * r()));
-                const incMag = Math.max(1, Math.floor((master.mag || 10) * r()));
+                const incHp = Math.max(1, Math.floor(((master.hp || 100)* reincMult) * r() * 2));
+                const incMp = Math.max(1, Math.floor(((master.mp || 50)* reincMult) * r()));
+                const incAtk = Math.max(1, Math.floor(((master.atk || 10)* reincMult) * r()));
+                const incDef = Math.max(1, Math.floor(((master.def || 10)* reincMult) * r()));
+                const incSpd = Math.max(1, Math.floor(((master.spd || 10)* reincMult) * r()));
+                const incMag = Math.max(1, Math.floor(((master.mag || 10)* reincMult) * r()));
 
                 charData.hp += incHp; charData.mp += incMp;
                 charData.atk += incAtk; charData.def += incDef;
@@ -1165,11 +1209,17 @@ const App = {
 		// ★追加：転生マークの生成
         const reincarnated = c.reincarnationCount ? `<span style="color:#00ff00; margin-left:4px;">★${c.reincarnationCount}</span>` : '';
 		
+		// ★修正: 主人公(ID 301)の場合のみ storyStep を加算して表示
+        let lbVal = c.limitBreak || 0;
+        if (c.charId === 301 && App.data && App.data.progress) {
+            lbVal += (App.data.progress.storyStep || 0);
+        }
+		
         return `
             <div class="char-row">
                 <div class="char-thumb">${imgTag}</div>
                 <div class="char-info">
-                    <div class="char-name">${c.name} <span class="rarity-${c.rarity}">[${c.rarity}]</span> +${c.limitBreak||0}</div>
+                    <div class="char-name">${c.name} <span class="rarity-${c.rarity}">[${c.rarity}]</span> +${lbVal}</div>
                     <div class="char-meta">${c.job} Lv.${c.level}</div>
                     <div class="char-stats">
                         <span style="color:#f88;">HP:${hp}/${s.maxHp}</span>
@@ -1180,25 +1230,41 @@ const App = {
             </div>`;
     },
 	
-	getNextExp: (charData) => {
+	/**
+     * 次のレベルまでに必要な経験値を算出する
+     * @param {Object} charData - キャラクターデータ
+     * @returns {number} 必要経験値
+     */
+    getNextExp: (charData) => {
         const rCount = charData.reincarnationCount || 0;
         const baseExp = CONST.EXP_BASE || 100;
         const rarityMult = (CONST.RARITY_EXP_MULT && CONST.RARITY_EXP_MULT[charData.rarity]) || 1.0;
-        let growth = CONST.EXP_GROWTH || 1.08;
+        
+        // 指標となる成長率の取得
+        const growthNormal = CONST.EXP_GROWTH || 1.08; 
+        const growthReinc = growthNormal - 0.04;        // 1.04相当
 
         if (rCount === 0) {
-            // 未転生：通常の指数関数計算
-            return Math.floor(baseExp * Math.pow(growth, charData.level - 1) * rarityMult);
+            // 【フェーズ1】未転生: growth 1.08 で計算
+            return Math.floor(baseExp * Math.pow(growthNormal, charData.level - 1) * rarityMult);
+
         } else if (rCount === 1) {
-            // 転生1回目：緩和は0.04、実効レベル（level + 100）を使用
-            growth -= 0.04;
-            const effectiveLevel = charData.level + 100;
-            return Math.floor(baseExp * Math.pow(growth, effectiveLevel - 1) * rarityMult);
+            // 【フェーズ2】転生1回目: 未転生Lv100時点の経験値 ＋ growth 1.04計算
+            const baseLevel100Exp = Math.floor(baseExp * Math.pow(growthNormal, 100 - 1) * rarityMult);
+            const reincGrowthExp = Math.floor(baseExp * Math.pow(growthReinc, charData.level - 1) * rarityMult);
+            
+            return baseLevel100Exp + reincGrowthExp;
+
         } else {
-            // 転生2回目以降：『200レベル分の乗算 + 現在レベル × (転生回数-1) × 100000』
-            growth -= 0.04; 
-            const exponentialPart = Math.floor(baseExp * Math.pow(growth, 200 - 1) * rarityMult);
-            const additivePart = charData.level * (rCount - 1) * 100000;
+            // 【フェーズ3】転生2回目以降: 200レベル時点の指数計算結果 ＋ 1万ずつの加算
+            // 200レベル時点の指数計算結果（フェーズ2の最大値）
+            const exponentialPart = Math.floor(baseExp * Math.pow(growthNormal, 100 - 1) * rarityMult) 
+                                  + Math.floor(baseExp * Math.pow(growthReinc, 100 - 1) * rarityMult);
+            
+            // 200レベルを超えた通算レベル分（1レベルにつき1万）
+            const levelOver200 = charData.level + (rCount - 2) * 100;
+            const additivePart = levelOver200 * 10000;
+            
             return exponentialPart + additivePart;
         }
     },

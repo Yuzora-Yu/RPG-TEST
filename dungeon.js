@@ -149,9 +149,12 @@ const Dungeon = {
                 App.data.dungeon.maxFloor = Dungeon.floor;
                 const hero = App.getChar('p1');
                 if(hero) {
-                    hero.limitBreak = Math.max(0, Dungeon.floor - 1);
+                    // ★修正: ダンジョン進行によるリミットブレイク更新
+                    // (現在の階層 - 1) + 現在のストーリー進行度
+                    const storyStep = (App.data.progress && App.data.progress.storyStep) || 0;
+                    hero.limitBreak = Math.max(0, Dungeon.floor - 1) + storyStep;
                 }
-            }
+			}
             
             Dungeon.generateFloor();
             Dungeon.saveMapData();

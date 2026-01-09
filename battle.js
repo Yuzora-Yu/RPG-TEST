@@ -29,12 +29,13 @@ const Battle = {
         Poison: 'Poison', ToxicPoison: 'Poison',
         Shock: 'Shock',
         Fear: 'Fear',
-        SpellSeal: 'SpellSeal', // ★修正: 個別の封印耐性を参照するように変更
+        SpellSeal: 'SpellSeal', 
         SkillSeal: 'SkillSeal', 
         HealSeal: 'HealSeal',
-        PercentDamage: 'InstantDeath', // 即死ガードで割合ダメも防ぐ
+        PercentDamage: 'InstantDeath', // 指示通り即死ガードで割合ダメも防ぐ
         InstantDeath: 'InstantDeath',
-        Debuff: 'Debuff'
+        Debuff: 'Debuff',
+        elmResDown: 'Debuff'          // 全属性耐性低下も弱体耐性を参照
     },
 
     getEl: (id) => document.getElementById(id),
@@ -1348,7 +1349,8 @@ findNextActor: () => {
         actor.turnProcessed = true; // 処理済みフラグを立てる
     },
 	
-	processAction: async (cmd) => {
+	/* [battle.js] Battle.processAction 関数の完全記述 */
+    processAction: async (cmd) => {
         const actor = cmd.actor;
         const data = cmd.data;
         const actorName = Battle.getColoredName(actor);
@@ -1490,6 +1492,7 @@ findNextActor: () => {
         let successRate = rawSuccessRate;
         if (successRate <= 1 && successRate > 0) successRate *= 100;
 
+        // --- [5] マダンテ系特殊処理 (吸収パッシブ対応版) ---
         if (data && data.id >= 500 && data.id <= 505) {
             let baseBaseDmg = mpCost * skillRate;
             const pool = cmd.isEnemy ? Battle.party.filter(p=>p && !p.isDead) : Battle.enemies.filter(e=>!e.isDead && !e.isFled);
@@ -1529,6 +1532,21 @@ findNextActor: () => {
                     }
                     if (isImmune) dmg = 0;
                     targetToHit.hp -= dmg;
+
+                    // ★追加: マダンテ系における吸収・MP吸収の処理
+                    if (dmg > 0) {
+                        let dRate = (data && data.drain) ? 0.5 : (actor.passive?.drain ? 0.2 : 0);
+                        if (dRate > 0) {
+                            const dAmt = Math.floor(dmg * dRate);
+                            const oldHp = actor.hp; actor.hp = Math.min(actor.baseMaxHp, actor.hp + dAmt);
+                            if(actor.hp - oldHp > 0) Battle.log(`【${actor.name}】は吸収効果でHPを${actor.hp - oldHp}回復した！`);
+                        }
+                        if (actor.passive?.drainMp) {
+                            const mpAmt = Math.max(1, Math.floor(dmg * 0.01));
+                            actor.mp = Math.min(actor.baseMaxMp, actor.mp + mpAmt);
+                        }
+                    }
+
                     if (!cmd.isEnemy && dmg > (App.data.stats.maxDamage?.val || 0)) {
                         App.data.stats.maxDamage = { val: dmg, actor: actor.name, skill: data ? data.name : "通常攻撃" };
                     }
@@ -1553,15 +1571,7 @@ findNextActor: () => {
         if (!skillScope && cmd.target === 'all_ally') skillScope = '全体';
         if (!skillScope && cmd.target === 'random') skillScope = 'ランダム';
         
-        // ヘルパー関数の定義
-        const isSupportSkill = (d) => {
-            if (!d) return false;
-            const type = d.type || '';
-            if (['回復','蘇生','強化','MP回復'].includes(type)) return true;
-            if (d.debuff_reset || d.CureAilments || d.HPRegen || d.MPRegen) return true;
-            return false;
-        };
-        const isSupport = isSupportSkill(data);
+        const isSupport = Battle.isSupportSkill(data);
 
         if (skillScope === '全体') {
              if (cmd.isEnemy) {
@@ -1576,7 +1586,7 @@ findNextActor: () => {
             targets = [cmd.target];
         }
 
-        // --- [7] 内部関数：効果適用ロジック ---
+        // --- [7] 内部関数：効果適用ロジック (新耐性計算ロジック統合版) ---
         const applyEffects = (t, d) => {
             const checkProc = (val) => {
                 let rate = successRate;
@@ -1584,12 +1594,14 @@ findNextActor: () => {
                 return Math.random() * 100 < rate;
             };
             const checkResist = (type) => {
-                if (type === 'Debuff' && successRate >= 200) return false;
                 const resistKey = Battle.RESIST_MAP[type] || type;
                 const resistVal = (Battle.getBattleStat(t, 'resists') || {})[resistKey] || 0;
-                if (Math.random() * 100 < resistVal) return true;
-                return false;
+                // 指示された新ロジック: 最終成功率 ＝ 成功率 － 耐性
+                const finalChance = Math.max(0, successRate - resistVal);
+                if (Math.random() * 100 < finalChance) return false; // 成功（レジスト失敗）
+                return true; // 失敗（レジスト成功）
             };
+
             if (d.buff) {
                 let resistCount = 0; let lastResistName = "";
                 for (let key in d.buff) {
@@ -1615,30 +1627,38 @@ findNextActor: () => {
             if (d.MPRegen) { t.battleStatus.buffs['MPRegen'] = { val: d.MPRegen, turns: d.turn }; Battle.log(`【${t.name}】の MPが徐々に回復する！`); }
             if (d.CureAilments) { t.battleStatus.ailments = {}; Battle.log(`【${t.name}】の 状態異常が 全て治った！`); }
             if (d.debuff_reset) { t.battleStatus.debuffs = {}; Battle.log(`【${t.name}】の 能力低下が 元に戻った！`); }
+            
+            // デバフ適用 (elmResDown を含め、個別判定フローを維持)
             if (d.debuff) {
-                if (!checkResist('Debuff')) {
-                    let rDownCount = 0; let lastRName = "";
-                    for (let key in d.debuff) {
-                        const turn = d.turn || null;
-                        if (key === 'elmResDown') {
-                            t.battleStatus.debuffs[key] = { val: d.debuff[key], turns: turn };
-                            Battle.log(`【${t.name}】の 全属性耐性 が さがった！`);
-                        } else if (key.startsWith('resists_')) {
-                            t.battleStatus.debuffs[key] = { val: d.debuff[key], turns: turn };
-                            rDownCount++; lastRName = Battle.statNames[key.replace('resists_', '')] || key.replace('resists_', '');
-                        } else {
-                            let cur = (t.battleStatus.debuffs[key] && t.battleStatus.debuffs[key].val) || 1.0;
-                            t.battleStatus.debuffs[key] = { val: Math.max(0.1, cur * d.debuff[key]), turns: turn };
-                            Battle.log(`【${t.name}】の ${Battle.statNames[key]||key} がさがった！`);
-                        }
+                let rDownCount = 0; let lastRName = "";
+                for (let key in d.debuff) {
+                    const turn = d.turn || null;
+                    
+                    // 新ロジックによる個別耐性判定
+                    if (checkResist(key)) {
+                        Battle.log(`【${t.name}】には ${Battle.statNames[key] || key}低下 は きかなかった！`);
+                        continue;
                     }
-                    if (rDownCount > 0) {
-                        if (rDownCount === 1) Battle.log(`【${t.name}】の ${lastRName}耐性 がさがった！`);
-                        else Battle.log(`【${t.name}】の 状態異常耐性 がさがった！`);
+
+                    if (key === 'elmResDown') {
+                        t.battleStatus.debuffs[key] = { val: d.debuff[key], turns: turn };
+                        Battle.log(`【${t.name}】の 全属性耐性 が さがった！`);
+                    } else if (key.startsWith('resists_')) {
+                        t.battleStatus.debuffs[key] = { val: d.debuff[key], turns: turn };
+                        rDownCount++; lastRName = Battle.statNames[key.replace('resists_', '')] || key.replace('resists_', '');
+                    } else {
+                        let cur = (t.battleStatus.debuffs[key] && t.battleStatus.debuffs[key].val) || 1.0;
+                        t.battleStatus.debuffs[key] = { val: Math.max(0.1, cur * d.debuff[key]), turns: turn };
+                        Battle.log(`【${t.name}】の ${Battle.statNames[key]||key} がさがった！`);
                     }
-                } else Battle.log(`【${t.name}】には きかなかった！`);
+                }
+                if (rDownCount > 0) {
+                    if (rDownCount === 1) Battle.log(`【${t.name}】の ${lastRName}耐性 がさがった！`);
+                    else Battle.log(`【${t.name}】の 状態異常耐性 がさがった！`);
+                }
             }
             if (d.buff_reset) { t.battleStatus.buffs = {}; Battle.log(`【${t.name}】の良い効果がかき消された！`); }
+            
             const addA = (k, msg, chance=null) => {
                 if (!t.battleStatus.ailments[k]) {
                     if (checkResist(k)) { Battle.log(`【${t.name}】には ${Battle.statNames[k]||k} は きかなかった！`); return; }
@@ -1652,7 +1672,9 @@ findNextActor: () => {
             if (d.SpellSeal && checkProc(d.SpellSeal)) addA('SpellSeal', `【${t.name}】の 呪文が封じられた！`);
             if (d.SkillSeal && checkProc(d.SkillSeal)) addA('SkillSeal', `【${t.name}】の 特技が封じられた！`);
             if (d.HealSeal && checkProc(d.HealSeal)) addA('HealSeal', `【${t.name}】の 回復が封じられた！`);
+            
             if (d.PercentDamage) {
+                // 指示通り InstantDeath 耐性を参照し、新ロジック(成功率-耐性)を適用
                 if (checkProc() && !checkResist('PercentDamage')) {
                     let pdmg = Math.max(1, Math.floor(t.hp * d.PercentDamage));
                     t.hp -= pdmg; Battle.log(`【${t.name}】に ${pdmg} のダメージ！`);
@@ -1761,6 +1783,8 @@ findNextActor: () => {
                 if (element && eColors[element]) dColor = eColors[element];
                 if (dmg === 0) Battle.log(`ミス！ 【${targetToHit.name}】は ダメージを うけない！`);
                 else Battle.log(`【${targetToHit.name}】に<span style="color:${dColor}">${dmg}</span>のダメージ！`);
+                
+                // 吸収・MP吸収処理の適用
                 if (dmg > 0) {
                     let dRate = (data && data.drain) ? 0.5 : (actor.passive?.drain ? 0.2 : 0);
                     if (dRate > 0) {
@@ -1773,13 +1797,15 @@ findNextActor: () => {
                         actor.mp = Math.min(actor.baseMaxMp, actor.mp + mpAmt);
                     }
                 }
+
                 if (dmg > 0 && isPhysical) {
                     const tryS = (key, name, ailmentKey) => {
                         const ch = (actor.getStat(key) || 0);
                         if (ch > 0 && Math.random() * 100 < ch) {
                             const resK = Battle.RESIST_MAP[ailmentKey] || ailmentKey;
                             const resV = (Battle.getBattleStat(targetToHit, 'resists') || {})[resK] || 0;
-                            if (Math.random() * 100 >= resV && !targetToHit.battleStatus.ailments[ailmentKey]) {
+                            // 状態異常付与も (成功率100 - 耐性) で判定
+                            if (Math.random() * 100 < (100 - resV) && !targetToHit.battleStatus.ailments[ailmentKey]) {
                                 targetToHit.battleStatus.ailments[ailmentKey] = { turns: 3, chance: (ailmentKey==='Fear'?0.5:null) };
                                 Battle.log(`【${targetToHit.name}】は ${name}！`);
                             }
@@ -1790,29 +1816,32 @@ findNextActor: () => {
                     const dc = (actor.getStat('attack_InstantDeath') || 0);
                     if (dc > 0 && Math.random() * 100 < dc) {
                         const rv = (Battle.getBattleStat(targetToHit, 'resists') || {}).InstantDeath || 0;
-                        if (Math.random() * 100 >= rv) {
+                        // 即死パッシブも (成功率100 - 耐性) で判定
+                        if (Math.random() * 100 < (100 - rv)) {
                             targetToHit.hp = 0; targetToHit.isDead = true;
                             Battle.log(`<span style="color:#ff00ff; font-weight:bold;">急所を貫いた！ 【${targetToHit.name}】は 息絶えた！</span>`);
                         } 
                     }
                 }
 				
-				// ★攻撃側のシナジーによる追加判定：複数をループで処理するように修正
+				// シナジー判定：(成功率100 - 耐性) ロジックを適用
 				if (actor instanceof Player) {
 					Object.values(actor.equips).forEach(eq => {
 						if (eq && eq.isSynergy && eq.effects) {
-                            // 保持している全てのシナジー効果を順番に判定
                             eq.effects.forEach(effect => {
                                 if (Math.random() < 0.2) {
-                                    // 四源の浸食: 全属性耐性ダウン
+                                    // 四源の浸食: 全属性耐性ダウン (弱体耐性を参照)
                                     if (effect === 'allResDown20' && !t.isDead) {
-                                        t.battleStatus.debuffs['elmResDown'] = { val: 50, turns: 5 };
-                                        Battle.log(`【${t.name}】の 全属性耐性が 少しさがった！`);
+                                        const dRes = (Battle.getBattleStat(t, 'resists') || {}).Debuff || 0;
+                                        if (Math.random() * 100 < (100 - dRes)) {
+                                            t.battleStatus.debuffs['elmResDown'] = { val: 50, turns: 5 };
+                                            Battle.log(`【${t.name}】の 全属性耐性が 少しさがった！`);
+                                        }
                                     }
-                                    // 終焉の宣告: 即死
+                                    // 終焉の宣告: 即死 (即死耐性を参照)
                                     if (effect === 'instantDeath20' && !t.isDead) {
                                         const res = (t.resists && t.resists.InstantDeath) || 0;
-                                        if (Math.random() * 100 > res) {
+                                        if (Math.random() * 100 < (100 - res)) {
                                             t.hp = 0; t.isDead = true;
                                             Battle.log(`<span style="color:#ff00ff; font-weight:bold;">急所を貫いた！ 【${targetToHit.name}】は 息絶えた！</span>`);
                                         }
