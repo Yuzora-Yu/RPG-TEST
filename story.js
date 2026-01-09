@@ -436,9 +436,9 @@ const StoryManager = {
     // ==========================================
     // 6. UI構造の生成
     // ==========================================
-    /**
+	/**
 	 * ストーリー専用のUI構造（DOM）を生成します。
-	 * 画面上の配置、サイズ、色などの外観をここで一括管理します。
+	 * 画面サイズが変わっても、指定したパーセント位置に自動調整されます。
 	 */
 	createStoryDOM: function() {
 		const div = document.createElement('div');
@@ -457,7 +457,7 @@ const StoryManager = {
 			z-index: 2000;                  /* 他のUIより手前に表示 */
 			display: none;                  /* 初期状態は非表示 */
 			flex-direction: column;
-			justify-content: flex-start;    /* 会話セットを画面上部に配置 */
+			justify-content: flex-start;    /* 配置の基準を上端にする */
 			cursor: pointer;
 			font-family: sans-serif;
 
@@ -487,43 +487,45 @@ const StoryManager = {
 			<div style="
 				position: relative;
 				width: 100%;
+				height: 100%;
 				display: flex;
 				flex-direction: column;
-				padding: 205px 20px 20px 20px; /* 上・右・下・左の余白。一番最初の数値で全体の高さを調整 */
+				padding: 40% 20px 20px 20px; /* 上端から40%の位置に中身を配置 */
 				box-sizing: border-box;
 			">
 				
 				<div style="
 					position: absolute;
-					top: 105px;       /* コンテナ上端からの距離。全体のpadding-topと連動させて調整 */
+					top: 45%;         /* 画面の上から45%の地点を起点とする */
 					left: 40px;       /* 画面左端からの距離 */
 					width: 150px;     /* キャラ画像の最大幅 */
-					height: 200px;    /* キャラ画像の表示高さ */
+					height: 200px;    /* 画像エリアの高さ。align-items:flex-endで下(枠)に接地させる */
 					display: flex;
 					align-items: flex-end; 
-					z-index: 5;       /* メッセージボックス(z-index:10)の背後に配置 */
+					transform: translateY(-100%); /* 起点(45%)から「上」に向かって画像を表示させる */
+					z-index: 5;
 				">
 					<img id="story-portrait" style="
 						max-width: 100%;
 						max-height: 100%;
 						object-fit: contain;
-						filter: drop-shadow(0 0 10px rgba(0,0,0,0.8)); /* キャラに影をつけて視認性アップ */
+						filter: drop-shadow(0 0 10px rgba(0,0,0,0.8));
 					">
 				</div>
 				
 				<div style="
 					width: 100%;
-					margin-top: 80px;             /* 画像との重なり具合。数値が大きいほどボックスが下へ移動 */
-					background: rgba(0,0,30,0.95); /* ボックスの色と透明度 */
-					border: 2px solid #ffd700;    /* 豪華な装飾枠（金） */
-					border-radius: 8px;           /* 角の丸み */
+					margin-top: 125px;             /* キャラ画像のpadding(45%)からさらに125px下に配置 */
+					background: rgba(0,0,30,0.95); 
+					border: 2px solid #ffd700; /* 枠線を白にする場合は#ffffff */
+					border-radius: 8px;           
 					padding: 15px;
 					box-sizing: border-box;
-					min-height: 110px;            /* 最低限確保する高さ */
-					max-height: 300px;            /* 文章が長すぎる場合の最大高さ */
-					overflow-y: auto;             /* 最大高さを超えた場合にスクロール可能にする */
-					box-shadow: 0 4px 15px rgba(0,0,0,0.5); /* ボックスの下に影をつける */
-					z-index: 10;                  /* 画像より手前に表示 */
+					min-height: 110px;            
+					max-height: 300px;            
+					overflow-y: auto;             
+					box-shadow: 0 4px 15px rgba(0,0,0,0.5); 
+					z-index: 10;                  
 					position: relative;
 				">
 					<div id="story-name" style="
@@ -546,15 +548,13 @@ const StoryManager = {
 						text-align: right;
 						color: #ffd700;
 						font-size: 10px;
-						margin-top: 15px;
-						/* 点滅させたい場合は、none を blink 1s infinite に書き換えてください */
+						margin-top: 5px;
 						animation: none;
 					">▼ Click to Next</div>
 				</div>
 			</div>
 
 			<style>
-				/* 点滅アニメーション：animation プロパティで使用します */
 				@keyframes blink {
 					0% { opacity: 1; }
 					50% { opacity: 0; }
@@ -566,4 +566,5 @@ const StoryManager = {
 		document.body.appendChild(div);
 		return div;
 	}
+	
 };
