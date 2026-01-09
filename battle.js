@@ -157,9 +157,24 @@ const Battle = {
         } else {
             // 新規エンカウント
             if (isEstark) {
+                //const base = DB.MONSTERS.find(m => m.id === 2000);
+                //const scale = 1.0 + ((App.data.estarkKillCount || 0) * 0.05);
+                //const m = new Monster(base, scale); m.id = 2000; m.isEstark = true;
+                //Battle.enemies = [m];
+				
+				// エスターク（ID: 2000）の特別スケーリングロジック
                 const base = DB.MONSTERS.find(m => m.id === 2000);
-                const scale = 1.0 + ((App.data.estarkKillCount || 0) * 0.05);
-                const m = new Monster(base, scale); m.id = 2000; m.isEstark = true;
+                
+                // ★修正: 図鑑の討伐回数を参照するように変更
+                const kills = (App.data.book && App.data.book.killCounts) ? (App.data.book.killCounts[2000] || 0) : 0;
+                
+                // ★計算式: (100 + 討伐回数 * 5) % 
+                // 0回討伐なら 1.0(100%)、1回討伐なら 1.05(105%) ...
+                const scale = 1.0 + (kills * 0.05);
+                
+                const m = new Monster(base, scale); 
+                m.id = 2000; 
+                m.isEstark = true;
                 Battle.enemies = [m];
             } else {
                 Battle.enemies = Battle.generateNewEnemies(isBoss, fixedId);
