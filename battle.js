@@ -242,8 +242,15 @@ const Battle = {
             val = actor.getStat(key);
         }
 
-        if (key === 'maxHp') val = actor.baseMaxHp;
-        if (key === 'maxMp') val = actor.baseMaxMp;
+        // ★修正点: maxHp / maxMp も計算済みステータス (getStat) を参照するように変更
+        // これにより、限界突破や装備によるHP/MP上昇が戦闘に反映されます
+        if (key === 'maxHp' || key === 'maxMp') {
+            if (typeof actor.getStat === 'function') {
+                val = actor.getStat(key);
+            } else {
+                val = (key === 'maxHp') ? actor.baseMaxHp : actor.baseMaxMp;
+            }
+        }
 
         // ★修正: 耐性取得時、戦闘中のバフ・デバフ（resists_XXX）を合算する
         if (key === 'resists') {
@@ -1894,10 +1901,11 @@ findNextActor: () => {
     },
 
     checkFinish: () => {
+		if (Battle.party.every(p => p.isDead)) { setTimeout(Battle.lose, 800); return true; }
         if (Battle.enemies.every(e => e.isDead || e.isFled)) { setTimeout(Battle.win, 800); return true; }
-        if (Battle.party.every(p => p.isDead)) { setTimeout(Battle.lose, 800); return true; }
         return false;
     },
+
     getRandomAliveEnemy: () => {
         const alive = Battle.enemies.filter(e => !e.isDead && !e.isFled);
         if (alive.length === 0) return null;
