@@ -187,7 +187,7 @@ class Player extends Entity {
             }
         });
 		
-        this.synergy = App.checkSynergy(this.equips);
+        //this.synergy = App.checkSynergy(this.equips);
     }
 
     learnSkill(sid) {
@@ -310,6 +310,11 @@ const App = {
             App.data.progress = JSON.parse(JSON.stringify(initial.progress));
         } else {
             if (App.data.progress.storyStep === undefined) App.data.progress.storyStep = 0;
+			// ★追加: subStep の初期化
+			if (App.data.progress.subStep === undefined) App.data.progress.subStep = 0;
+			// ★追加: マップタイルの変更履歴（永続化用）
+			if (!App.data.progress.mapChanges) App.data.progress.mapChanges = {};
+			
             if (!App.data.progress.flags) App.data.progress.flags = {};
             if (!App.data.progress.unlocked) App.data.progress.unlocked = { smith: false, gacha: false };
             if (!App.data.progress.clearedDungeons) App.data.progress.clearedDungeons = [];
@@ -410,7 +415,9 @@ const App = {
         if (App.data) {
             App.refreshAllSynergies();
 			// ★新規追加: ゲーム開始時に主人公のリミットブレイクを同期
-            App.syncHeroLimitBreak();
+            if (typeof StoryManager !== 'undefined' && StoryManager.syncHeroLimitBreak) {
+                StoryManager.syncHeroLimitBreak();
+            }
         }
 		
 		// ★最重要修正: 戦闘復帰前にFieldを初期化してマップデータを復元する
@@ -623,23 +630,6 @@ const App = {
         }
     },
 	
-	// --- (App.refreshAllSynergies の後などに追加) ---
-    /**
-     * 主人公のリミットブレイクを進行度（ダンジョン + ストーリー）に合わせて同期する
-     */
-    syncHeroLimitBreak: () => {
-        // 主人公(ID 301 または uid 'p1')を取得
-        const hero = App.data.characters.find(c => c.charId === 301 || c.uid === 'p1');
-        if (hero && App.data && App.data.progress && App.data.dungeon) {
-            // ダンジョンによる加算分 (最高到達階 - 1)
-            const dungeonLB = Math.max(0, (App.data.dungeon.maxFloor || 1) - 1);
-            // ストーリーによる加算分 (storyStep)
-            const storyLB = App.data.progress.storyStep || 0;
-            
-            // 合算値を反映
-            hero.limitBreak = dungeonLB + storyLB;
-        }
-    },
 	
     setAction: (label, callback) => {
         const btn = document.getElementById('action-indicator');
@@ -1460,10 +1450,16 @@ const Field = {
         Field.step = (Field.step === 1) ? 2 : 1;
         let nx = Field.x + dx, ny = Field.y + dy;
         App.clearAction();
+		
+		// ★修正点: エラー回避のため、現在のエリアキーを取得しておく
+        const areaKey = Field.getCurrentAreaKey();
 
         if (Field.currentMapData) {
             if (nx < 0 || nx >= Field.currentMapData.width || ny < 0 || ny >= Field.currentMapData.height) return;
-            let tile = Field.currentMapData.tiles[ny][nx].toUpperCase();
+            
+			//let tile = Field.currentMapData.tiles[ny][nx].toUpperCase();
+			// ★修正: 書き換えられたタイルがあればそれを優先、なければ元のタイルを参照
+			let tile = (App.data.progress.mapChanges?.[areaKey]?.[`${nx},${ny}`] || Field.currentMapData.tiles[ny][nx]).toUpperCase();
 
             // ★追加: 固定宝箱/ボスの判定を移動前に行う (撃破・取得済みなら通り抜け可能にする)
             if (Field.currentMapData.isFixed) {
@@ -1502,18 +1498,35 @@ const Field = {
                 else if (tile === 'K') { App.log("カジノの看板だ。"); App.setAction("カジノに入る", () => App.changeScene('casino')); }
                 else if (tile === 'E') { App.log("交換所のようだ。"); App.setAction("メダル交換", () => App.changeScene('medal')); }
                 else if (tile === 'D' && App.data.location.area === 'START_VILLAGE') {
-                    App.log("「試練の洞窟」の入口だ。");
+                    App.log("洞窟の入口だ");
                     App.setAction("洞窟に入る", () => Dungeon.startFixed('START_CAVE'));
-                } else if (tile === 'V' || tile === 'T' || tile === 'H') {
-                    if (typeof StoryManager !== 'undefined') {
-                        const trigger = StoryManager.triggers.find(t => t.area === App.data.location.area && t.x === nx && t.y === ny && t.step === App.data.progress.storyStep);
-                        if (trigger) App.setAction("話す", () => StoryManager.executeEvent(trigger.eventId));
-                        else App.log("誰かいるようだ。");
+				}
+            }
+			
+			// 会話イベント(V,H)の判定
+            if (tile === 'V' || tile === 'H') {
+                if (typeof StoryManager !== 'undefined') {
+                    // ★修正: 数値型と文字列型の混在による不一致を防ぐため Number() で比較
+                    const trigger = StoryManager.triggers.find(t => 
+                        t.area === App.data.location.area && 
+                        Number(t.x) === Number(nx) && 
+                        Number(t.y) === Number(ny) && 
+                        Number(t.step) === Number(App.data.progress.storyStep) &&
+                        (t.sub === undefined || Number(t.sub) === Number(App.data.progress.subStep))
+                    );
+
+                    if (trigger) {
+                        App.setAction("話す", () => StoryManager.executeEvent(trigger.eventId));
+                    } else {
+                        // ここが表示されるのは、座標は合っているが step や sub が一致しない時
+                        App.log("誰かいるようだ。");
                     }
                 }
             }
+			
             if (Field.currentMapData.isDungeon) Dungeon.handleMove(nx, ny);
             App.save(); Field.render();
+			
         } else {
             const mapW = MAP_DATA[0].length, mapH = MAP_DATA.length;
             nx = (nx + mapW) % mapW; ny = (ny + mapH) % mapH;
@@ -1558,6 +1571,9 @@ const Field = {
         const mapW = Field.currentMapData ? Field.currentMapData.width : (typeof MAP_DATA !== 'undefined' ? MAP_DATA[0].length : 50);
         const mapH = Field.currentMapData ? Field.currentMapData.height : (typeof MAP_DATA !== 'undefined' ? MAP_DATA.length : 32);
         const g = (typeof GRAPHICS !== 'undefined' && GRAPHICS.images) ? GRAPHICS.images : {};
+		
+		// ★修正点: エラー回避のため、現在のエリアキーを取得しておく
+        const areaKey = Field.getCurrentAreaKey();
 
         for (let dy = -rangeY; dy <= rangeY; dy++) {
             for (let dx = -rangeX; dx <= rangeX; dx++) {
@@ -1565,7 +1581,12 @@ const Field = {
                 let tx = Field.x + dx, ty = Field.y + dy, tile = 'W';
                 if (Field.currentMapData) { 
                     if (tx >= 0 && tx < mapW && ty >= 0 && ty < mapH) {
-                        tile = Field.currentMapData.tiles[ty][tx];
+						// ★修正点: エラーが出た行。定義した areaKey を使用し、動的なマップ変更を反映
+                        const posKey = `${tx},${ty}`;
+                        const changedTile = App.data.progress.mapChanges?.[areaKey]?.[posKey];
+						
+                        // ★修正: mapChanges を参照
+						tile = App.data.progress.mapChanges?.[areaKey]?.[`${tx},${ty}`] || Field.currentMapData.tiles[ty][tx];
                         const ak = Field.getCurrentAreaKey(); const pk = `${tx},${ty}`;
                         if (Field.currentMapData.isFixed) {
                             if ((tile === 'C' || tile === 'R') && App.data.progress.openedChests?.[ak]?.includes(pk)) tile = 'G';
@@ -1605,9 +1626,14 @@ const Field = {
                 let mtx = Field.x + mdx; let mty = Field.y + mdy; let mtile = 'W';
                 if (Field.currentMapData) { 
                     if(mtx>=0 && mtx<mapW && mty>=0 && mty<mapH) {
-                        mtile = Field.currentMapData.tiles[mty][mtx]; 
-                        const ak = Field.getCurrentAreaKey(); const pk = `${mtx},${mty}`;
-                        if (App.data.progress.openedChests?.[ak]?.includes(pk)) mtile = 'G';
+                        //mtile = Field.currentMapData.tiles[mty][mtx]; 
+                        const ak = Field.getCurrentAreaKey(); 
+						const pk = `${mtx},${mty}`;
+                        
+						// ★修正: ミニマップでも書き換え後のタイル(mapChanges)を最優先で参照する
+                        mtile = App.data.progress.mapChanges?.[areaKey]?.[pk] || Field.currentMapData.tiles[mty][mtx];
+						
+						if (App.data.progress.openedChests?.[ak]?.includes(pk)) mtile = 'G';
                         if (App.data.progress.defeatedBosses?.[ak]?.includes(pk)) mtile = 'G';
                     }
                 } else { mtile = MAP_DATA[((mty%mapH)+mapH)%mapH][((mtx%mapW)+mapW)%mapW]; }

@@ -263,7 +263,8 @@ const Dungeon = {
     handleMove: (x, y) => {
         const tiles = (Field.currentMapData && Field.currentMapData.tiles) ? Field.currentMapData.tiles : Dungeon.map;
         const tile = tiles[y][x];
-        App.clearAction();
+        
+		//App.clearAction();
 
         // 宝箱判定
         if(tile === 'C') { 

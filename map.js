@@ -64,6 +64,10 @@ const TILE_THEMES = {
         "G": {
             "img": "dungeon_floor",
             "color": "#666666"
+        },
+        "V": {
+            "img": "dungeon_floor",
+            "color": "#dd0000"
         }
     },
     "FIRE_VILLAGE": {
@@ -385,7 +389,7 @@ const FIXED_DUNGEON_MAPS = {
             "WGWGWWWWWWWWWGW",
             "WGWGGGGGGGGGGGW",
             "WGWWWWWWWWWGWGW",
-            "WGGGGGGGGGGGGGW",
+            "WGGGGGGGGGVWGGW",
             "WWWWWWWGGWWWWWW",
             "WWWWWWWSSWWWWWW",
             "WWWWWWWWWWWWWWW"

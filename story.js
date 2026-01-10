@@ -1,6 +1,33 @@
 /* story.js */
 const StoryManager = {
 	// ==========================================
+    // 新規追加: 主人公のリミットブレイク同期
+    // ==========================================
+    /**
+     * 主人公のリミットブレイクを進行度（ダンジョン + ストーリー）に合わせて同期する
+     */
+    syncHeroLimitBreak: function() {
+        if (!App.data || !App.data.characters) return;
+
+        // 主人公(ID 301 または uid 'p1')を取得
+        const hero = App.data.characters.find(c => c.charId === 301 || c.uid === 'p1');
+        if (hero && App.data.progress && App.data.dungeon) {
+            // ダンジョンによる加算分 (最高到達階 - 1)
+            const dungeonLB = Math.max(0, (App.data.dungeon.maxFloor || 1) - 1);
+            // ストーリーによる加算分 (storyStep)
+            const storyLB = App.data.progress.storyStep || 0;
+            
+            // 合算値を反映
+            hero.limitBreak = dungeonLB + storyLB;
+            
+            // ステータスを再計算して反映 (習得スキル等も更新される)
+            if (typeof App.calcStats === 'function') {
+                App.calcStats(hero);
+            }
+        }
+    },
+	
+	// ==========================================
     // 1. 設定項目
     // ==========================================
     textSpeed: 20,      // 通常の文字送り速度 (ミリ秒)
@@ -53,6 +80,50 @@ const StoryManager = {
             "text": "化け物は村北東の大穴の奥に…\nよろしくお願い申し上げる。"
         }
     ],
+	"START_CAVE1": [
+        {
+            "charId": 1002,
+            "name": "",
+            "text": "この奥には化け物がいるんだ。今はどうにか塞いでいるが、いつまでもつか…"
+        },
+		{
+            "charId": 1002,
+            "name": "",
+            "text": "あんた、冒険者か？頼む、村の中央に住んでる長老の話を聞いてくれ。"
+        }
+    ],
+	"START_CAVE2": [
+        {
+            "charId": 1002,
+            "name": "",
+            "text": "マジで、あの化け物と戦いにいくのか…？\nって、[N:109]と[N:110]までついてきたのか！？"
+        },
+		{
+            "charId": 109,
+            "name": "",
+            "text": "この兄ちゃんが、俺たちを助けてくれたんだ。\n俺だってこの村のために戦いたい！"
+        },
+		{
+            "charId": 110,
+            "name": "",
+            "text": "…化け物は、怖いですが…この人なら…\nお願いします、奥へ通してください。"
+        },
+		{
+            "charId": 1002,
+            "name": "",
+            "text": "…わかったよ。この岩を今どける。\n俺は一旦長老のとこへ戻るが…本当に大丈夫か？"
+        },
+		{
+            "charId": 301,
+            "name": "",
+            "text": "お任せください。深淵から生まれし魔物たちは、一匹も通しません。"
+        },
+		{
+            "charId": 1002,
+            "name": "",
+            "text": "…ありがとう。あんたの無事を祈るよ。\n[N:109]と[N:110]も、気を付けるんだぞ。"
+        }
+    ],
     "PROLOGUE3": [
         {
             "charId": 1001,
@@ -77,7 +148,7 @@ const StoryManager = {
         {
             "charId": 109,
             "name": "",
-            "text": "だって、放っておけねえよ！\nこの村だって、あと一歩でボロボロになるとこだったんだ。世界がおかしくなってんなら、俺は助けに行きたい。"
+            "text": "だって、放っておけねえよ！\nこの村だって、あと一歩でボロボロになるとこだったんだ。\n世界がおかしくなってんなら、俺は助けに行きたい。"
         },
         {
             "charId": 110,
@@ -129,13 +200,15 @@ const StoryManager = {
             "text": "火の宝玉が奪われ、里の活気が失われてしまったのだ…"
         }
     ]
-},
+	},
+	
     triggers: [
     {
         "area": "START_VILLAGE",
         "x": 6,
         "y": 3,
         "step": 0,
+		"sub": 0,
         "eventId": "start_adventure"
     },
     {
@@ -143,13 +216,39 @@ const StoryManager = {
         "x": 6,
         "y": 3,
         "step": 1,
+		"sub": 0,
         "eventId": "start_adventure2"
     },
     {
         "area": "START_VILLAGE",
         "x": 6,
         "y": 3,
+        "step": 1,
+		"sub": 1,
+        "eventId": "start_adventure2"
+    },
+    {
+        "area": "START_CAVE",
+        "x": 10,
+        "y": 11,
+        "step": 0,
+		"sub": 0,
+        "eventId": "start_cave1"
+    },
+    {
+        "area": "START_CAVE",
+        "x": 10,
+        "y": 11,
+        "step": 1,
+		"sub": 1,
+        "eventId": "start_cave2"
+    },
+    {
+        "area": "START_VILLAGE",
+        "x": 6,
+        "y": 3,
         "step": 2,
+		"sub": 0,
         "eventId": "start_adventure3"
     },
     {
@@ -157,99 +256,104 @@ const StoryManager = {
         "x": 1,
         "y": 1,
         "step": 1,
+		"sub": 2,
         "eventId": "start_boss_battle"
     }
-],
+	],
+	
     events: {
-    "start_adventure": {
-        "actions": [
-            {
-                "type": "CONV",
-                "value": "PROLOGUE"
-            },
-            {
-                "type": "ALLY",
-                "value": 109
-            },
-            {
-                "type": "ALLY",
-                "value": 110
-            },
-            {
-                "type": "STEP",
-                "value": 1
-            },
-            {
-                "type": "LOG",
-                "value": "北東の洞窟に潜む魔物を討伐しましょう！"
-            }
-        ],
-        "winActions": []
+        "start_adventure": {
+            "actions": [
+                { "type": "CONV", "value": "PROLOGUE" },
+                { "type": "ALLY", "value": 109 /* ガイル */ },
+                { "type": "ALLY", "value": 110 /* サラ */ },
+                { "type": "STEP", "value": 1 },
+                { "type": "SUB",  "value": 1 },
+                { "type": "LOG",  "value": "北東の洞窟に潜む魔物を討伐しましょう！" }
+            ],
+            "winActions": []
+        },
+
+        "start_adventure2": {
+            "actions": [
+                { "type": "CONV", "value": "PROLOGUE2" },
+                { "type": "LOG",  "value": "北東の洞窟に潜む魔物を討伐しましょう！" }
+            ],
+            "winActions": []
+        },
+
+        "start_adventure3": {
+            "actions": [
+                { "type": "CONV", "value": "PROLOGUE3" },
+                { "type": "LOG",  "value": "東の果て「炎の里」へ向かおう！" }
+            ],
+            "winActions": []
+        },
+
+        "start_cave1": {
+            "actions": [
+                { "type": "CONV", "value": "START_CAVE1" }
+            ],
+            "winActions": []
+        },
+
+        "start_cave2": {
+            "actions": [
+                { "type": "CONV", "value": "START_CAVE2" },
+                { "type": "TILE", "area": "START_CAVE", "x": 10, "y": 11, "tile": "G" },
+                { "type": "TILE", "area": "START_CAVE", "x": 11, "y": 11, "tile": "G" },
+                { "type": "LOG",  "value": "洞窟の奥へ進もう！" },
+                { "type": "SUB",  "value": 2 }
+            ],
+            "winActions": []
+        },
+
+        "start_boss_battle": {
+            "actions": [
+                { "type": "LOG",  "value": "巨大な化け物が立ちはだかる…！" },
+                { "type": "BOSS", "value": 1010 /* バトルレックス */ }
+            ],
+            "winActions": [
+                { "type": "CONV", "value": "START_DUNGEON_CLEAR" },
+                { "type": "STEP", "value": 2 },
+                { "type": "SUB",  "value": 0 },
+                { "type": "LOG",  "value": "村を脅かす脅威を打ち払った！長老に報告しよう。" }
+            ]
+        }
     },
-    "start_adventure2": {
-        "actions": [
-            {
-                "type": "CONV",
-                "value": "PROLOGUE2"
-            },
-            {
-                "type": "LOG",
-                "value": "北東の洞窟に潜む魔物を討伐しましょう！"
-            }
-        ],
-        "winActions": []
-    },
-    "start_adventure3": {
-        "actions": [
-            {
-                "type": "CONV",
-                "value": "PROLOGUE3"
-            },
-            {
-                "type": "LOG",
-                "value": "東の果て「炎の里」へ向かおう！"
-            }
-        ],
-        "winActions": []
-    },
-    "start_boss_battle": {
-        "actions": [
-            {
-                "type": "LOG",
-                "value": "巨大な化け物が立ちはだかる…！"
-            },
-            {
-                "type": "BOSS",
-                "value": 1010
-            }
-        ],
-        "winActions": [
-            {
-                "type": "CONV",
-                "value": "START_DUNGEON_CLEAR"
-            },
-            {
-                "type": "STEP",
-                "value": 2
-            },
-            {
-                "type": "LOG",
-                "value": "村を脅かす脅威を打ち払った！長老に報告しよう。"
-            }
-        ]
-    }
-},
+
     // ==========================================
     // 2. 実行コア・勝利後コア
     // ==========================================
-    executeEvent: async function(eventId) {
+	executeEvent: async function(eventId) {
         const data = App.data.progress;
         const event = this.events[eventId];
         if (!event || !event.actions) return;
         for (const action of event.actions) {
             if (action.type === 'CONV') await this.showConversation(action.value);
             if (action.type === 'ALLY') App.addStoryAlly(action.value);
-            if (action.type === 'STEP') data.storyStep = action.value;
+            if (action.type === 'STEP') {
+                data.storyStep = action.value;
+                // ★追加: ステップが変動したタイミングでリミットブレイクを同期
+                this.syncHeroLimitBreak();
+            }
+			
+			// ★追加: subStep の変動
+            if (action.type === 'SUB') {
+                data.subStep = action.value;
+            }
+
+            // ★修正: action.value を介さず、action 自体のプロパティを参照する
+            if (action.type === 'TILE') {
+                const targetArea = action.area || App.data.location.area;
+                if (!data.mapChanges) data.mapChanges = {};
+                if (!data.mapChanges[targetArea]) data.mapChanges[targetArea] = {};
+                // action.x, action.y, action.tile を正しく取得
+                data.mapChanges[targetArea][`${action.x},${action.y}`] = action.tile;
+                
+                if (typeof Field !== 'undefined' && Field.ready) Field.render();
+            }
+			
             if (action.type === 'LOG')  App.log(action.value);
             if (action.type === 'BOSS') {
                 App.data.battle = { active: false, isBossBattle: true, fixedBossId: action.value || 1010, eventId: eventId };
@@ -267,7 +371,25 @@ const StoryManager = {
         for (const action of event.winActions) {
             if (action.type === 'CONV') await this.showConversation(action.value);
             if (action.type === 'ALLY') App.addStoryAlly(action.value);
-            if (action.type === 'STEP') data.storyStep = action.value;
+            if (action.type === 'STEP') {
+                data.storyStep = action.value;
+                // ★追加: 勝利後のステップ変動タイミングでも同期
+                this.syncHeroLimitBreak();
+            }
+			
+			// ★追加: subStep の変動
+            if (action.type === 'SUB') {
+                data.subStep = action.value;
+            }
+
+            // ★追加: タイルの永続的な書き換え
+            if (action.type === 'TILE') {
+                const targetArea = action.area || App.data.location.area;
+                if (!data.mapChanges) data.mapChanges = {};
+                if (!data.mapChanges[targetArea]) data.mapChanges[targetArea] = {};
+                data.mapChanges[targetArea][`${action.x},${action.y}`] = action.tile;
+            }
+			
             if (action.type === 'LOG')  App.log(action.value);
         }
         App.save();
