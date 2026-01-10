@@ -1,4 +1,4 @@
-const CACHE_NAME = "prisma-abyss-v2.05";
+const CACHE_NAME = "prisma-abyss-v2.06";
 const FILES_TO_CACHE = [
   "./", // ルート
   "main.html",
@@ -18,7 +18,9 @@ const FILES_TO_CACHE = [
   "dungeon.js",
   "facilities.js",
   "items.js",
-  "job_data.js"
+  "job_data.js",
+  "map.js",
+  "story.js"
 ];
 
 // インストール時にキャッシュ

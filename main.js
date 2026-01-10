@@ -593,54 +593,37 @@ const App = {
      * ガチャ産キャラクターと同一のデータ構造で初期化する
      */
     addStoryAlly: (charId) => {
-        // window.CHARACTERS_DATA (DB.CHARACTERS) からマスタデータを検索
         const master = window.CHARACTERS_DATA.find(c => c.id === charId);
         if (!master) return;
-        
-        // 重複加入を防止
         if (App.data.characters.some(c => c.charId === charId)) return;
 
-        // マスタデータをディープコピー
-        const newAlly = JSON.parse(JSON.stringify(master));
-        
-        // ユニークIDと基本情報のセット
-        newAlly.uid = 'u' + Date.now() + Math.floor(Math.random() * 1000);
-        newAlly.charId = charId; // マスタIDを明示的に保持
-        newAlly.sp = 0;
-        newAlly.exp = 0;
-        newAlly.level = newAlly.level || 1;
-        newAlly.limitBreak = 0; // 限界突破回数の初期化
-
-        // 装備スロットの初期化 (ガチャキャラクターと同一形式)
-        newAlly.equips = { 
-            '武器': null, 
-            '盾': null, 
-            '頭': null, 
-            '体': null, 
-            '足': null 
+        // 1. 必要な情報だけを抽出した保存用オブジェクトを作成
+        const saveAlly = {
+            uid: 'u' + Date.now() + Math.floor(Math.random() * 1000),
+            charId: charId,
+            name: master.name, // 名前は表示用に保持
+            job: master.job,
+            rarity: master.rarity,
+            level: 1,
+            exp: 0,
+            sp: master.sp,
+            hp: master.hp,
+            mp: master.mp,
+            atk: master.atk,
+            def: master.def,
+            mag: master.mag,
+            spd: master.spd,
+            equips: { '武器': null, '盾': null, '頭': null, '体': null, '足': null },
+            tree: { ATK: 0, MAG: 0, SPD: 0, HP: 0, MP: 0, WARRIOR: 0, MAGE: 0, PRIEST: 0, M_KNIGHT: 0 },
+            config: { fullAuto: false, hiddenSkills: [] },
+            limitBreak: 0,
+            reincarnationCount: 0
+            // ★ img, archives, lbSkills, resists 等の静的データはここには含めない
         };
 
-        // スキルツリーの初期化
-        newAlly.tree = { 
-            ATK: 0, MAG: 0, SPD: 0, HP: 0, MP: 0, 
-            WARRIOR: 0, MAGE: 0, PRIEST: 0, M_KNIGHT: 0 
-        };
-
-        // スキルセットとコンフィグの初期化
-        if (!newAlly.skills) newAlly.skills = [1]; // 初期スキル「こうげき」
-        newAlly.config = { 
-            fullAuto: false, 
-            hiddenSkills: [] 
-        };
-        
-        // 加入処理
-        App.data.characters.push(newAlly);
+        App.data.characters.push(saveAlly);
         App.save();
-        
-        // ログ出力
-        if (typeof App.log === 'function') {
-            App.log(`【仲間加入】${newAlly.name}がパーティに加わった！`);
-        }
+        App.log(`【仲間加入】${saveAlly.name}がパーティに加わった！`);
     },
 	
     

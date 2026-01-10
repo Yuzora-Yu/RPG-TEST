@@ -119,9 +119,22 @@ const Gacha = {
                 result.limitBreak = owned.limitBreak;
             } else {
                 const newChar = { 
-                    uid: 'c' + Date.now() + i, charId: result.id, name: result.name, job: result.job, 
-                    rarity: result.rarity, hp: result.hp, mp: result.mp, atk: result.atk, def: result.def, 
-                    spd: result.spd, mag: result.mag, level: 1, limitBreak: 0, equips: {}, sp: result.sp || 0, img: result.img || null
+                    uid: 'c' + Date.now() + i, 
+					charId: result.id, 
+					name: result.name, 
+					job: result.job, 
+                    rarity: result.rarity, 
+					hp: result.hp, 
+					mp: result.mp, 
+					atk: result.atk, 
+					def: result.def, 
+                    spd: result.spd, 
+					mag: result.mag, 
+					level: 1, 
+					limitBreak: 0, 
+					equips: {}, 
+					sp: result.sp || 0, 
+					//img: result.img || null
                 };
                 App.data.characters.push(newChar);
                 result.isNew = true; result.limitBreak = 0;
