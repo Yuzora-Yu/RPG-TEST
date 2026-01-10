@@ -263,6 +263,11 @@ const App = {
             party: ['p1', null, null, null],
             gold: 500,
             gems: 0,
+			// ★追加：鍛冶データの初期値
+            blacksmith: { 
+                level: 1, 
+                exp: 0 
+            },
             dungeon: { 
                 maxFloor: 0, 
                 tryCount: 0, 
@@ -344,6 +349,11 @@ const App = {
 				if (c.exp === undefined) c.exp = 0; // ★この行を追加
                 if (!c.tree) c.tree = {};
             });
+        }
+		
+		// ★追加: 7. blacksmith の補完
+        if (!App.data.blacksmith) {
+            App.data.blacksmith = { level: 1, exp: 0 };
         }
 
         // 修正結果を一度保存

@@ -307,24 +307,56 @@ const Battle = {
             return m;
         };
 
-        // --- A. ボス戦のロジック ---
-        if (isBoss) {
-            Battle.log("強大な魔物が現れた！");
-            
-            // StoryManagerでセットされた固定ボスIDがあれば最優先
-            const targetId = fixedBossId || (App.data.battle ? App.data.battle.fixedBossId : null);
+        // --- 1. 固定ボスのチェック (Story/Fixed Dungeon) ---
+        // ストーリーイベントや特定のマップタイルで指定されたボスがいれば最優先
+        const targetId = fixedBossId || (App.data.battle ? App.data.battle.fixedBossId : null);
+        if (isBoss && targetId) {
+            const base = DB.MONSTERS.find(m => m.id === targetId);
+            if (base) {
+                const m = new Monster(base, 1.0);
+                m.name = base.name; m.id = base.id; m.actCount = base.actCount || 1;
+                newEnemies.push(setupEnemyStats(m, base));
+                return newEnemies; 
+            }
+        }
 
-            if (targetId) {
-                const base = DB.MONSTERS.find(m => m.id === targetId);
-                if (base) {
-                    const m = new Monster(base, 1.0);
-                    m.name = base.name; m.id = base.id; m.actCount = base.actCount || 1;
-                    newEnemies.push(setupEnemyStats(m, base));
-                    return newEnemies; 
+        // --- 2. 201階以降: 自動スケーリング・エンカウントシステム ---
+        // ★修正: ここに isBoss の判定を組み込み、深層専用の抽選を行います
+        if (floor >= 201) {
+            if (isBoss) {
+                Battle.log(`<span style="color:#ff0000; font-size:1em; font-weight:bold;">深淵の守護者が現れた！！</span>`);
+                // ボス候補: ID 1000～1200 (1160, 1162は除外)
+                const candidates = DB.MONSTERS.filter(m => 
+                    m.id >= 1000 && m.id <= 1200 && m.id !== 1160 && m.id !== 1162
+                );
+                
+                for(let i=0; i<count; i++) {
+                    const base = candidates[Math.floor(Math.random() * candidates.length)];
+                    if(!base) continue;
+                    const m = Battle.createDeepFloorMonster(base, floor, true);
+                    if (count > 1) m.name += String.fromCharCode(65+i);
+                    newEnemies.push(m);
+                }
+            } else {
+                Battle.log("強力な魔物の気配がする…！");
+                // 雑魚候補: ID 101～999
+                const candidates = DB.MONSTERS.filter(m => m.id >= 101 && m.id <= 999);
+                
+                for(let i=0; i<count; i++) {
+                    const base = candidates[Math.floor(Math.random() * candidates.length)];
+                    if(!base) continue;
+                    const m = Battle.createDeepFloorMonster(base, floor, false);
+                    if (count > 1) m.name += String.fromCharCode(65+i);
+                    newEnemies.push(m);
                 }
             }
+            return newEnemies;
+        }
 
-            // ランダムボス（アビス等の階層指定）
+        // --- 3. 通常のボス戦 (200階以下) ---
+        if (isBoss) {
+            Battle.log("強大な魔物が現れた！");
+            // 特定の階層に紐付けられたボスがいれば抽出
             const bosses = DB.MONSTERS.filter(m => m.minF === floor && m.id >= 1000);
             if (bosses.length > 0) {
                 bosses.forEach(base => {
@@ -333,25 +365,13 @@ const Battle = {
                     newEnemies.push(setupEnemyStats(m, base));
                 });
             } else {
+                // 該当がいなければ標準ボス(ID 1000)
                 const base = DB.MONSTERS.find(m => m.id === 1000);
                 if (base) newEnemies.push(setupEnemyStats(new Monster(base, 1.0), base));
             }
             return newEnemies;
         }
-
-        // --- B. 201階以降の特殊スケーリング ---
-        if (floor >= 201) {
-            Battle.log("強力な魔物の気配がする…！");
-            const candidates = DB.MONSTERS.filter(m => m.id >= 101 && m.id <= 999);
-            for(let i=0; i<count; i++) {
-                const base = candidates[Math.floor(Math.random() * candidates.length)];
-                if(!base) continue;
-                const m = Battle.createDeepFloorMonster(base, floor, false);
-                if (count > 1) m.name += String.fromCharCode(65+i);
-                newEnemies.push(m);
-            }
-            return newEnemies;
-        }
+		
 
         // --- C. 通常エンカウントのロジック ---
         Battle.log("魔物が現れた！");
