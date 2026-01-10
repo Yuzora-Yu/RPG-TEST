@@ -1503,26 +1503,44 @@ const Field = {
 				}
             }
 			
-			// 会話イベント(V,H)の判定
-            if (tile === 'V' || tile === 'H') {
+			
+			// ★修正点: 判定ロジックを1つに統合し、ReferenceErrorを防止
+            if (tile === 'V' || tile === 'H' || tile === 'B') {
                 if (typeof StoryManager !== 'undefined') {
-                    // ★修正: 数値型と文字列型の混在による不一致を防ぐため Number() で比較
-                    const trigger = StoryManager.triggers.find(t => 
-                        t.area === App.data.location.area && 
-                        Number(t.x) === Number(nx) && 
-                        Number(t.y) === Number(ny) && 
-                        Number(t.step) === Number(App.data.progress.storyStep) &&
-                        (t.sub === undefined || Number(t.sub) === Number(App.data.progress.subStep))
-                    );
+                    // 判定用の現在値を数値として取得
+                    const currentStep = Number(App.data.progress.storyStep);
+                    const currentSub = Number(App.data.progress.subStep || 0);
+
+                    // トリガーを検索 (stepMin/Max, subMin/Max に完全対応)
+                    const trigger = StoryManager.triggers.find(t => {
+                        const areaMatch = t.area === App.data.location.area;
+                        const posMatch = Number(t.x) === Number(nx) && Number(t.y) === Number(ny);
+                        
+                        // ★修正: (t.stepMax || 999) をやめて厳密に undefined チェックを行う
+                        const stepMatch = (t.step !== undefined) 
+                            ? (Number(t.step) === currentStep)
+                            : (currentStep >= (t.stepMin !== undefined ? t.stepMin : 0) && 
+                               currentStep <= (t.stepMax !== undefined ? t.stepMax : 999));
+                        
+                        const subMatch = (t.sub !== undefined)
+                            ? (Number(t.sub) === currentSub)
+                            : (currentSub >= (t.subMin !== undefined ? t.subMin : 0) && 
+                               currentSub <= (t.subMax !== undefined ? t.subMax : 999));
+
+                        return areaMatch && posMatch && stepMatch && subMatch;
+                    });
 
                     if (trigger) {
-                        App.setAction("話す", () => StoryManager.executeEvent(trigger.eventId));
+                        // 条件に合うイベントが見つかれば「話す」または「調べる」アクションをセット
+                        const actionLabel = (tile === 'B') ? "戦う" : "話す";
+                        App.setAction(actionLabel, () => StoryManager.executeEvent(trigger.eventId));
                     } else {
-                        // ここが表示されるのは、座標は合っているが step や sub が一致しない時
+                        // 座標は合っているが、Step/Sub条件が満たされていない場合
                         App.log("誰かいるようだ。");
                     }
                 }
             }
+
 			
             if (Field.currentMapData.isDungeon) Dungeon.handleMove(nx, ny);
             App.save(); Field.render();

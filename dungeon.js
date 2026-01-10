@@ -286,8 +286,12 @@ const Dungeon = {
                 App.setAction("次の階へ", Dungeon.nextFloor);
             }
         } 
-        // ボス判定
-        else if(tile === 'B') {
+        
+		// ★修正点: StoryManager によるアクション（イベントボス等）が既にある場合は処理を抜ける
+        if (App.pendingAction) return;
+		
+		// ボス判定
+        if(tile === 'B') {
             // ★修正: 固定ダンジョンの場合、既にボスを撃破済みなら判定をスキップする (不具合②対応)
             if (Field.currentMapData.isFixed) {
                 const ak = Field.getCurrentAreaKey();
@@ -297,31 +301,19 @@ const Dungeon = {
                 }
             }
 
-            if (Field.currentMapData.isFixed && typeof StoryManager !== 'undefined') {
-                const trigger = StoryManager.triggers.find(t => 
-                    t.area === App.data.location.area && t.x === x && t.y === y && 
-                    t.step === App.data.progress.storyStep
-                );
-                if (trigger) {
-                    App.log("強大な魔物の気配がする…！");
-                    App.setAction("戦う", () => StoryManager.executeEvent(trigger.eventId));
-                    return;
-                }
-            }
-            
-            App.log("ボスの気配がする…");
+            App.log("ボスの気配が…");
             App.setAction("ボスと戦う", () => {
                 if (App.data.battle) App.data.battle.isBossBattle = true;
                 App.changeScene('battle');
             });
         } 
-        
-        if (tile === 'S' || tile === 'B') return;
 
-        // ランダムエンカウント
-        if(Math.random() < 0.08) { 
-            App.log("魔物が襲いかかってきた！"); 
-            setTimeout(() => App.changeScene('battle'), 300); 
+        // ランダムエンカウント (床タイルの場合のみ)
+        if(tile === 'G' || tile === 'T') {
+            if(Math.random() < 0.08) { 
+                App.log("魔物が襲いかかってきた！"); 
+                setTimeout(() => App.changeScene('battle'), 300); 
+            }
         }
     },
 	

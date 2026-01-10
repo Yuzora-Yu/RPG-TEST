@@ -234,23 +234,23 @@ const Battle = {
     // ★修正: ステータス取得時にシナジー補正を適用
     getBattleStat: (actor, key) => {
         let val = (actor[key] !== undefined) ? actor[key] : 0;
-        //if (val === 0 && typeof actor.getStat === 'function') val = actor.getStat(key);
-		
-		// ★修正点: オブジェクト（resistsやelmRes）が空の場合、または数値が0の場合に getStat を呼び出す
+        
+        // ★修正点: オブジェクト（resistsやelmRes）が空の場合、または数値が0の場合に getStat を呼び出す
+        // これにより、装備やシナジーによる耐性補正が val に格納されます
         const isEmptyObject = (typeof val === 'object' && val !== null && Object.keys(val).length === 0);
         if ((val === 0 || isEmptyObject) && typeof actor.getStat === 'function') {
             val = actor.getStat(key);
         }
-		
+
         if (key === 'maxHp') val = actor.baseMaxHp;
         if (key === 'maxMp') val = actor.baseMaxMp;
 
-        // ★修正: 耐性取得時、バフ(加算)とデバフ(減算)を計算
+        // ★修正: 耐性取得時、戦闘中のバフ・デバフ（resists_XXX）を合算する
         if (key === 'resists') {
-            const base = actor.resists || val || {};
+            // val には既に装備込みの耐性が取得されているため、それをベースにする
+            const base = val || {};
             const res = { ...base }; 
 
-            // バフ (加算)
             if (actor.battleStatus && actor.battleStatus.buffs) {
                 for (let bKey in actor.battleStatus.buffs) {
                     if (bKey.startsWith('resists_')) {
@@ -260,12 +260,10 @@ const Battle = {
                 }
             }
 
-            // ★追加: デバフ (減算)
             if (actor.battleStatus && actor.battleStatus.debuffs) {
                 for (let dKey in actor.battleStatus.debuffs) {
                     if (dKey.startsWith('resists_')) {
                         const ailment = dKey.replace('resists_', '');
-                        // デバフ値(例:30)を引く
                         res[ailment] = (res[ailment] || 0) - actor.battleStatus.debuffs[dKey].val;
                     }
                 }

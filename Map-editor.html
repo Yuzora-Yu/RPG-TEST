@@ -111,12 +111,19 @@
 
             <div style="flex: 1;">
                 <div id="area-meta-editor" class="card" style="display: none;">
-                    <span class="sub-header">エリア設定 (STORY_DATA)</span>
-                    <div class="row">
-                        <div class="col"><span>表示名</span><input type="text" id="area-name-input"></div>
-                        <div class="col"><span>敵ランク</span><input type="number" id="area-rank-input"></div>
-                        <div class="col"><span>世界座標X</span><input type="number" id="area-cx-input"></div>
-                        <div class="col"><span>世界座標Y</span><input type="number" id="area-cy-input"></div>
+                    <span class="sub-header">エリア・初期地点設定</span>
+                    <div id="area-story-meta" style="margin-bottom: 15px;">
+                        <div class="row">
+                            <div class="col"><span>表示名</span><input type="text" id="area-name-input"></div>
+                            <div class="col"><span>敵ランク</span><input type="number" id="area-rank-input"></div>
+                            <div class="col"><span>世界座標X</span><input type="number" id="area-cx-input"></div>
+                            <div class="col"><span>世界座標Y</span><input type="number" id="area-cy-input"></div>
+                        </div>
+                    </div>
+                    <div class="row" style="border-top: 1px solid #333; padding-top: 15px;">
+                        <div class="col"><span>進入位置 X (entryPoint)</span><input type="number" id="area-ex-input"></div>
+                        <div class="col"><span>進入位置 Y (entryPoint)</span><input type="number" id="area-ey-input"></div>
+                        <div class="col" style="flex:2"></div>
                     </div>
                 </div>
 
@@ -222,9 +229,17 @@
 
     function renderLogic() {
         const root = document.getElementById('logic-list'); root.innerHTML = '';
+        
+        // 全マップキーのリストを作成 (TILEプルダウン用)
+        const allMapKeys = Array.from(new Set([
+            ...Object.keys(Data.fixed), 
+            ...Object.keys(Data.dungeon), 
+            ...Object.keys(Data.storyData.areas)
+        ])).sort();
+
         Object.keys(Data.events).forEach(id => {
             const card = document.createElement('div'); card.className = 'card';
-            card.innerHTML = `<div style="display:flex; justify-content:space-between; margin-bottom:15px;"><strong style="color:var(--accent);">ロジックID: ${id}</strong><button class="btn btn-del" onclick="delete Data.events['${id}']; renderLogic();">削除</button></div><div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;"><div><span class="sub-header">実行</span><div id="actions-${id}"></div><select onchange="addAction('${id}', this.value, 'actions'); this.value='';"><option value=\"\">+ アクション追加</option><option value=\"CONV\">会話</option><option value=\"ALLY\">加入</option><option value=\"STEP\">Step</option><option value=\"LOG\">ログ</option><option value=\"BOSS\">ボス</option></select></div><div><span class="sub-header">勝利後</span><div id="winActions-${id}"></div><select onchange="addAction('${id}', this.value, 'winActions'); this.value='';"><option value=\"\">+ アクション追加</option><option value=\"CONV\">会話</option><option value=\"STEP\">Step</option><option value=\"LOG\">ログ</option></select></div></div>`;
+            card.innerHTML = `<div style="display:flex; justify-content:space-between; margin-bottom:15px;"><strong style="color:var(--accent);">ロジックID: ${id}</strong><button class="btn btn-del" onclick="delete Data.events['${id}']; renderLogic();">削除</button></div><div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;"><div><span class="sub-header">実行</span><div id="actions-${id}"></div><select onchange="addAction('${id}', this.value, 'actions'); this.value='';"><option value=\"\">+ アクション追加</option><option value=\"CONV\">会話</option><option value=\"ALLY\">加入</option><option value=\"STEP\">Step</option><option value=\"SUB\">Sub (サブステップ変)</option><option value=\"TILE\">Tile (タイル変)</option><option value=\"LOG\">ログ</option><option value=\"BOSS\">ボス</option></select></div><div><span class="sub-header">勝利後</span><div id="winActions-${id}"></div><select onchange="addAction('${id}', this.value, 'winActions'); this.value='';"><option value=\"\">+ アクション追加</option><option value=\"CONV\">会話</option><option value=\"STEP\">Step</option><option value=\"SUB\">Sub (サブステップ変)</option><option value=\"TILE\">Tile (タイル変)</option><option value=\"LOG\">ログ</option></select></div></div>`;
             ['actions', 'winActions'].forEach(k => {
                 const container = card.querySelector(`#${k}-${id}`);
                 Data.events[id][k].forEach((a, i) => {
@@ -233,6 +248,18 @@
                     if(a.type === 'CONV') input = `<select onchange="Data.events['${id}']['${k}'][${i}].value=this.value">${Object.keys(Data.scripts).map(s=>`<option value=\"${s}\" ${a.value==s?'selected':''}>${s}</option>`).join('')}</select>`;
                     else if(a.type === 'ALLY') input = `<select onchange="Data.events['${id}']['${k}'][${i}].value=Number(this.value)">${Master.chars.map(c=>`<option value=\"${c.id}\" ${a.value==c.id?'selected':''}>${c.name}</option>`).join('')}</select>`;
                     else if(a.type === 'BOSS') input = `<select onchange="Data.events['${id}']['${k}'][${i}].value=Number(this.value)">${Master.monsters.filter(m=>m.id>=1000).map(mo=>`<option value=\"${mo.id}\" ${a.value==mo.id?'selected':''}>${mo.id}: ${mo.name}</option>`).join('')}</select>`;
+                    else if(a.type === 'STEP' || a.type === 'SUB') input = `<input type="number" value="${a.value || 0}" onchange="Data.events['${id}']['${k}'][${i}].value=Number(this.value)">`;
+                    else if(a.type === 'TILE') {
+                        const areaOptions = allMapKeys.map(ak => `<option value="${ak}" ${a.area==ak?'selected':''}>${ak}</option>`).join('');
+                        input = `<div style="display:grid; grid-template-columns:1fr 0.8fr; gap:5px; margin-bottom:5px;">
+                            <select onchange="Data.events['${id}']['${k}'][${i}].area=this.value"><option value="">-- エリア選択 --</option>${areaOptions}</select>
+                            <input type="text" placeholder="Tile" value="${a.tile || ''}" onchange="Data.events['${id}']['${k}'][${i}].tile=this.value">
+                        </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px;">
+                            <input type="number" placeholder="X" value="${a.x || 0}" onchange="Data.events['${id}']['${k}'][${i}].x=Number(this.value)">
+                            <input type="number" placeholder="Y" value="${a.y || 0}" onchange="Data.events['${id}']['${k}'][${i}].y=Number(this.value)">
+                        </div>`;
+                    }
                     else input = `<input type="text" value="${a.value}" onchange="Data.events['${id}']['${k}'][${i}].value=this.value">`;
                     box.innerHTML = `<div style="display:flex; justify-content:space-between; font-size:10px; margin-bottom:5px;"><strong>${a.type}</strong><button class="btn-del" style=\"padding:2px 5px; font-size:9px;\" onclick=\"Data.events['${id}']['${k}'].splice(${i},1); renderLogic();\">×</button></div>${input}`;
                     container.appendChild(box);
@@ -247,7 +274,13 @@
         const trgRoot = document.getElementById('trigger-list'); trgRoot.innerHTML = '';
         Data.triggers.forEach((t, i) => {
             const div = document.createElement('div'); div.className = 'line-item';
-            div.innerHTML = `<div style=\"display:grid; grid-template-columns: 1.5fr 1fr 1fr 1.5fr; gap:10px; flex:1;\"><select onchange=\"Data.triggers[i].area=this.value\">${Object.keys(Data.storyData.areas).map(a=>`<option value=\"${a}\" ${t.area==a?'selected':''}>${a}</option>`).join('')}</select><div style=\"display:flex;gap:2px\"><input type=\"number\" value=\"${t.x}\" onchange=\"Data.triggers[i].x=parseInt(this.value)\"><input type=\"number\" value=\"${t.y}\" onchange=\"Data.triggers[i].y=parseInt(this.value)\"></div><input type=\"number\" value=\"${t.step}\" onchange=\"Data.triggers[i].step=parseInt(this.value)\"><select onchange=\"Data.triggers[i].eventId=this.value\"><option value=\"\">-- ロジック --</option>${Object.keys(Data.events).map(s=>`<option value=\"${s}\" ${t.eventId==s?'selected':''}>${s}</option>`).join('')}</select></div><button class=\"btn btn-del\" onclick=\"Data.triggers.splice(${i},1); renderLogic();\">×</button>`;
+            div.innerHTML = `<div style=\"display:grid; grid-template-columns: 1.2fr 1fr 0.8fr 0.8fr 1.2fr; gap:10px; flex:1;\">
+                <select onchange=\"Data.triggers[${i}].area=this.value\">${Object.keys(Data.storyData.areas).map(a=>`<option value=\"${a}\" ${t.area==a?'selected':''}>${a}</option>`).join('')}</select>
+                <div style=\"display:flex;gap:2px\"><input type=\"number\" value=\"${t.x}\" onchange=\"Data.triggers[${i}].x=parseInt(this.value)\"><input type=\"number\" value=\"${t.y}\" onchange=\"Data.triggers[${i}].y=parseInt(this.value)\"></div>
+                <input type=\"number\" title=\"Step\" placeholder=\"Step\" value=\"${t.step}\" onchange=\"Data.triggers[${i}].step=parseInt(this.value)\">
+                <input type=\"number\" title=\"SubStep\" placeholder=\"Sub\" value=\"${t.sub || 0}\" onchange=\"Data.triggers[${i}].sub=parseInt(this.value)\">
+                <select onchange=\"Data.triggers[${i}].eventId=this.value\"><option value=\"\">-- ロジック --</option>${Object.keys(Data.events).map(s=>`<option value=\"${s}\" ${t.eventId==s?'selected':''}>${s}</option>`).join('')}</select>
+            </div><button class=\"btn btn-del\" onclick=\"Data.triggers.splice(${i},1); renderLogic();\">×</button>`;
             trgRoot.appendChild(div);
         });
     }
@@ -269,19 +302,54 @@
         const key = State.currentMapKey;
         
         const metaDiv = document.getElementById('area-meta-editor');
-        if (Data.storyData.areas[key] && State.currentCategory !== 'WORLD') {
+        const storyMeta = document.getElementById('area-story-meta');
+        
+        if (State.currentCategory === 'WORLD') {
+            metaDiv.style.display = 'none';
+        } else {
             metaDiv.style.display = 'block';
-            const a = Data.storyData.areas[key];
-            document.getElementById('area-name-input').value = a.name;
-            document.getElementById('area-rank-input').value = a.rank;
-            document.getElementById('area-cx-input').value = a.centerX;
-            document.getElementById('area-cy-input').value = a.centerY;
-            ['name','rank','centerX','centerY'].forEach(f => {
-                document.getElementById(`area-${f==='centerX'?'cx':(f==='centerY'?'cy':f)}-input`).onchange = (e) => {
-                    Data.storyData.areas[key][f] = (f==='name'?e.target.value:Number(e.target.value));
+            const m = Data.fixed[key] || Data.dungeon[key];
+            
+            // STORY_DATAが存在する場合（メタデータ編集）
+            if (Data.storyData.areas[key]) {
+                storyMeta.style.display = 'block';
+                const a = Data.storyData.areas[key];
+                document.getElementById('area-name-input').value = a.name || "";
+                document.getElementById('area-rank-input').value = a.rank || 0;
+                document.getElementById('area-cx-input').value = a.centerX || 0;
+                document.getElementById('area-cy-input').value = a.centerY || 0;
+                
+                ['name','rank','centerX','centerY'].forEach(f => {
+                    const elId = `area-${f==='centerX'?'cx':(f==='centerY'?'cy':f)}-input`;
+                    document.getElementById(elId).onchange = (e) => {
+                        Data.storyData.areas[key][f] = (f==='name'?e.target.value:Number(e.target.value));
+                    };
+                });
+            } else {
+                storyMeta.style.display = 'none';
+            }
+
+            // EntryPointの読み込みと編集 (Data.fixed または Data.dungeon の直下を編集)
+            const exInput = document.getElementById('area-ex-input');
+            const eyInput = document.getElementById('area-ey-input');
+            
+            if (m) {
+                // entryPointが存在しない場合は初期化
+                if (!m.entryPoint) m.entryPoint = { x: 0, y: 0 };
+                
+                exInput.value = m.entryPoint.x;
+                eyInput.value = m.entryPoint.y;
+
+                exInput.onchange = (e) => {
+                    m.entryPoint.x = Number(e.target.value);
+                    renderGrid(); // 表示を更新
                 };
-            });
-        } else metaDiv.style.display = 'none';
+                eyInput.onchange = (e) => {
+                    m.entryPoint.y = Number(e.target.value);
+                    renderGrid(); // 表示を更新
+                };
+            }
+        }
 
         renderThemeSub();
         renderGrid();
@@ -320,6 +388,14 @@
             const el = document.createElement('div'); el.className = 'tile';
             const upper = tile.toUpperCase();
             el.style.background = (theme[upper] && theme[upper].color) ? toFullHex(theme[upper].color) : (TILE_DEFS[upper]?.color || '#000');
+            
+            // EntryPointのハイライト表示
+            if (m.entryPoint && m.entryPoint.x === x && m.entryPoint.y === y) {
+                el.style.boxShadow = "inset 0 0 8px #0ff";
+                el.style.border = "1px solid #0ff";
+                el.title = "ENTRY POINT";
+            }
+
             el.innerText = tile;
             el.onmousedown = () => paintTile(x, y, m);
             el.onmouseover = (e) => { if(e.buttons===1) paintTile(x, y, m); };
@@ -377,7 +453,6 @@
             list.appendChild(div);
         });
         
-        // battleBg selector
         if (State.currentCategory === 'DUNGEON') {
             document.getElementById('dungeon-settings').style.display = 'block';
             const bgSel = document.getElementById('dungeon-battlebg-select-dropdown');
@@ -388,7 +463,6 @@
             document.getElementById('dungeon-settings').style.display = 'none';
         }
 
-        // Monsters pool for dungeons / areas
         const pool = document.getElementById('monsters-pool'); pool.innerHTML = '';
         if(m.monsters) m.monsters.forEach((mid, idx) => {
             const div = document.createElement('div'); div.className = 'theme-row'; div.style.gridTemplateColumns='1fr 40px';
@@ -407,7 +481,7 @@
     function updateMonsterPoolValue(idx, val) {
         const m = (Data.fixed[State.currentMapKey] || Data.dungeon[State.currentMapKey]);
         if (m && m.monsters) {
-            m.monsters[idx] = Number(val); // float対応
+            m.monsters[idx] = Number(val);
         }
     }
 
@@ -461,24 +535,27 @@
     function addScriptGroup() { const id = prompt("会話グループID:"); if(id) { Data.scripts[id] = []; renderStory(); } }
     function addLine(id) { Data.scripts[id].push({charId:1000, name:'', text:''}); renderStory(); }
     function addLogicGroup() { const id = prompt("ロジックID:"); if(id) { Data.events[id] = {actions:[], winActions:[]}; renderLogic(); } }
-    function addAction(id, type, key) { Data.events[id][key].push({type: type, value: (type==='STEP'?0:'')}); renderLogic(); }
-    function addTrigger() { Data.triggers.push({area:'START_VILLAGE', x:0, y:0, step:0, eventId:''}); renderLogic(); }
+    function addAction(id, type, key) { 
+        let obj = {type: type};
+        if(type === 'TILE') { obj.area = ""; obj.tile = ""; obj.x = 0; obj.y = 0; }
+        else { obj.value = (type==='STEP'||type==='SUB'||type==='ALLY'||type==='BOSS' ? 0 : ''); }
+        Data.events[id][key].push(obj); 
+        renderLogic(); 
+    }
+    function addTrigger() { Data.triggers.push({area:'START_VILLAGE', x:0, y:0, step:0, sub:0, eventId:''}); renderLogic(); }
     function download(n, t) { const b = new Blob([t], {type:'text/javascript'}); const a = document.createElement('a'); a.href=URL.createObjectURL(b); a.download=n; a.click(); }
 
     function exportStory() {
-        const genFunc = (type) => `        const data = App.data.progress; const event = this.events[eventId]; if (!event || !event.${type}) return; for (const action of event.${type}) { if (action.type === 'CONV') await this.showConversation(action.value); if (action.type === 'ALLY') App.addStoryAlly(action.value); if (action.type === 'STEP') data.storyStep = action.value; if (action.type === 'LOG') App.log(action.value); if (action.type === 'BOSS') { App.data.battle = { active: false, isBossBattle: true, fixedBossId: action.value || 1010, eventId: eventId }; App.save(); App.changeScene('battle'); return; } }`;
-        const content = `/* story.js */\nconst StoryManager = {\n    scripts: ${JSON.stringify(Data.scripts, null, 4)},\n    triggers: ${JSON.stringify(Data.triggers, null, 4)},\n    events: ${JSON.stringify(Data.events, null, 4)},\n    executeEvent: async function(eventId) {\n${genFunc('actions')}\n        App.save();\n    },\n    onBattleWin: async function(eventId) {\n${genFunc('winActions')}\n        App.save();\n    },\n    showConversation: ${StoryManager.showConversation.toString()},\n    createStoryDOM: ${StoryManager.createStoryDOM.toString()}\n};`;
+        const genFunc = (type) => `        const data = App.data.progress; const event = this.events[eventId]; if (!event || !event.${type}) return; for (const action of event.${type}) { if (action.type === 'CONV') await this.showConversation(action.value); if (action.type === 'ALLY') App.addStoryAlly(action.value); if (action.type === 'STEP') { data.storyStep = action.value; this.syncHeroLimitBreak(); } if (action.type === 'SUB') data.subStep = action.value; if (action.type === 'TILE') { const targetArea = action.area || App.data.location.area; if (!data.mapChanges) data.mapChanges = {}; if (!data.mapChanges[targetArea]) data.mapChanges[targetArea] = {}; data.mapChanges[targetArea][\`\${action.x},\${action.y}\`] = action.tile; if (typeof Field !== 'undefined' && Field.ready) Field.render(); } if (action.type === 'LOG') App.log(action.value); if (action.type === 'BOSS') { App.data.battle = { active: false, isBossBattle: true, fixedBossId: action.value || 1010, eventId: eventId }; App.save(); App.changeScene('battle'); return; } }`;
+        const content = `/* story.js */\nconst StoryManager = {\n    scripts: ${JSON.stringify(Data.scripts, null, 4)},\n    triggers: ${JSON.stringify(Data.triggers, null, 4)},\n    events: ${JSON.stringify(Data.events, null, 4)},\n    syncHeroLimitBreak: ${StoryManager.syncHeroLimitBreak ? StoryManager.syncHeroLimitBreak.toString() : 'function() {}'},\n    executeEvent: async function(eventId) {\n${genFunc('actions')}\n        App.save();\n    },\n    onBattleWin: async function(eventId) {\n${genFunc('winActions')}\n        App.save();\n    },\n    showConversation: ${StoryManager.showConversation.toString()},\n    createStoryDOM: ${StoryManager.createStoryDOM.toString()}\n};`;
         download('story.js', content);
     }
 
     function exportMap() {
         const stringifyWithComments = (obj) => {
             let json = JSON.stringify(obj, null, 4);
-            // float/int ID のコメント置換
             json = json.replace(/"itemId": ([0-9.]+)/g, (m, id) => `"itemId": ${id} /* ${Master.items.find(i=>i.id == id)?.name||'不明'} */`);
             json = json.replace(/"monsterId": ([0-9.]+)/g, (m, id) => `"monsterId": ${id} /* ${Master.monsters.find(m=>m.id == id)?.name||'不明'} */`);
-            
-            // monsters 配列のコメント置換
             json = json.replace(/"monsters": \[\s+([\s\S]*?)\s+\]/g, (m, ids) => {
                 const idList = ids.split(',').map(s=>s.trim()).filter(s=>s);
                 const list = idList.map(id => {
