@@ -2289,7 +2289,20 @@ findNextActor: () => {
         Battle.phase = 'result'; Battle.active = false;
         const isEstark = App.data.battle && App.data.battle.isEstark;
         const isBossBattle = App.data.battle && App.data.battle.isBossBattle;
-        const floor = App.data.progress.floor || 1;
+        
+		//const floor = App.data.progress.floor || 1;
+		// ★修正: ドロップ品質を決定する基準階層(floor)の計算
+        let floor = App.data.progress.floor || 1;
+
+        if (Field.currentMapData && Field.currentMapData.isFixed) {
+            // 1. 固定ダンジョンの場合: マップデータの rank を使用
+            floor = Field.currentMapData.rank || 1;
+        } else if (!Field.currentMapData || Field.currentMapData.id === 'WORLD') {
+            // 2. フィールド（ワールドマップ）の場合: storystep * 5 を使用
+            const step = App.data.progress.storyStep || 0;
+            floor = Math.max(1, step * 5); // 0にならないよう最低1を担保
+        }
+        // 3. それ以外（アビス等のランダムダンジョン）: そのまま progress.floor を使用
 
         let totalExp = 0, totalGold = 0;
         const drops = []; 
