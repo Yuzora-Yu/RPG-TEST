@@ -234,7 +234,14 @@ const Battle = {
     // ★修正: ステータス取得時にシナジー補正を適用
     getBattleStat: (actor, key) => {
         let val = (actor[key] !== undefined) ? actor[key] : 0;
-        if (val === 0 && typeof actor.getStat === 'function') val = actor.getStat(key);
+        //if (val === 0 && typeof actor.getStat === 'function') val = actor.getStat(key);
+		
+		// ★修正点: オブジェクト（resistsやelmRes）が空の場合、または数値が0の場合に getStat を呼び出す
+        const isEmptyObject = (typeof val === 'object' && val !== null && Object.keys(val).length === 0);
+        if ((val === 0 || isEmptyObject) && typeof actor.getStat === 'function') {
+            val = actor.getStat(key);
+        }
+		
         if (key === 'maxHp') val = actor.baseMaxHp;
         if (key === 'maxMp') val = actor.baseMaxMp;
 
@@ -1588,20 +1595,39 @@ findNextActor: () => {
 
         // --- [7] 内部関数：効果適用ロジック (新耐性計算ロジック統合版) ---
         const applyEffects = (t, d) => {
+            // 現在の判定に使用する成功率を保持する変数
+            let currentCheckRate = successRate;
+
             const checkProc = (val) => {
                 let rate = successRate;
                 if (typeof val === 'number') rate = val;
+                currentCheckRate = rate; // 耐性判定用に使用した確率を保存
                 return Math.random() * 100 < rate;
             };
+
             const checkResist = (type) => {
                 const resistKey = Battle.RESIST_MAP[type] || type;
                 const resistVal = (Battle.getBattleStat(t, 'resists') || {})[resistKey] || 0;
-                // 指示された新ロジック: 最終成功率 ＝ 成功率 － 耐性
-                const finalChance = Math.max(0, successRate - resistVal);
+                
+                // ★修正：グローバルの successRate ではなく、直前の checkProc で使用した確率で計算
+                const finalChance = Math.max(0, currentCheckRate - resistVal);
+                
                 if (Math.random() * 100 < finalChance) return false; // 成功（レジスト失敗）
                 return true; // 失敗（レジスト成功）
             };
 
+            const addA = (k, msg, chance=null) => {
+                if (!t.battleStatus.ailments[k]) {
+                    if (checkResist(k)) { 
+                        Battle.log(`【${t.name}】には ${Battle.statNames[k]||k} は きかなかった！`); 
+                        return; 
+                    }
+                    t.battleStatus.ailments[k] = { turns: d.turn, chance: chance }; 
+                    Battle.log(msg);
+                }
+            };
+
+            // 各種状態異常の判定実行
             if (d.buff) {
                 let resistCount = 0; let lastResistName = "";
                 for (let key in d.buff) {
@@ -1625,21 +1651,17 @@ findNextActor: () => {
             }
             if (d.HPRegen) { t.battleStatus.buffs['HPRegen'] = { val: d.HPRegen, turns: d.turn }; Battle.log(`【${t.name}】の HPが徐々に回復する！`); }
             if (d.MPRegen) { t.battleStatus.buffs['MPRegen'] = { val: d.MPRegen, turns: d.turn }; Battle.log(`【${t.name}】の MPが徐々に回復する！`); }
-            if (d.CureAilments) { t.battleStatus.ailments = {}; Battle.log(`【${t.name}】の 状態異常が 全て治った！`); }
+            if (d.CureAilments) { t.battleStatus.ailments = {}; Battle.log(`【${t.name}】の状態異常が 全て治った！`); }
             if (d.debuff_reset) { t.battleStatus.debuffs = {}; Battle.log(`【${t.name}】の 能力低下が 元に戻った！`); }
             
-            // デバフ適用 (elmResDown を含め、個別判定フローを維持)
             if (d.debuff) {
                 let rDownCount = 0; let lastRName = "";
                 for (let key in d.debuff) {
                     const turn = d.turn || null;
-                    
-                    // 新ロジックによる個別耐性判定
                     if (checkResist(key)) {
                         Battle.log(`【${t.name}】には ${Battle.statNames[key] || key}低下 は きかなかった！`);
                         continue;
                     }
-
                     if (key === 'elmResDown') {
                         t.battleStatus.debuffs[key] = { val: d.debuff[key], turns: turn };
                         Battle.log(`【${t.name}】の 全属性耐性 が さがった！`);
@@ -1659,12 +1681,7 @@ findNextActor: () => {
             }
             if (d.buff_reset) { t.battleStatus.buffs = {}; Battle.log(`【${t.name}】の良い効果がかき消された！`); }
             
-            const addA = (k, msg, chance=null) => {
-                if (!t.battleStatus.ailments[k]) {
-                    if (checkResist(k)) { Battle.log(`【${t.name}】には ${Battle.statNames[k]||k} は きかなかった！`); return; }
-                    t.battleStatus.ailments[k] = { turns: d.turn, chance: chance }; Battle.log(msg);
-                }
-            };
+            // 各種状態異常の付与
             if (d.Poison && checkProc(d.Poison)) addA('Poison', `【${t.name}】は どくにおかされた！`);
             if (d.ToxicPoison && checkProc(d.ToxicPoison)) addA('ToxicPoison', `【${t.name}】は もうどくにおかされた！`);
             if (d.Shock && checkProc(d.Shock)) addA('Shock', `【${t.name}】は 感電してしまった！`);
@@ -1674,7 +1691,7 @@ findNextActor: () => {
             if (d.HealSeal && checkProc(d.HealSeal)) addA('HealSeal', `【${t.name}】の 回復が封じられた！`);
             
             if (d.PercentDamage) {
-                // 指示通り InstantDeath 耐性を参照し、新ロジック(成功率-耐性)を適用
+                currentCheckRate = successRate; // 割合ダメはスキル成功率依存
                 if (checkProc() && !checkResist('PercentDamage')) {
                     let pdmg = Math.max(1, Math.floor(t.hp * d.PercentDamage));
                     t.hp -= pdmg; Battle.log(`【${t.name}】に ${pdmg} のダメージ！`);
