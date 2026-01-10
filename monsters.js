@@ -17904,6 +17904,57 @@ window.MONSTERS_DATA = [
         },
         "actCount": 2
     },
+	{
+        "id": 1000,
+        "rank": 10,
+        "minF": 10,
+        "name": "バトルレックス",
+        "hp": 3000,
+        "mp": 1000,
+        "atk": 520,
+        "def": 350,
+        "spd": 150,
+        "mag": 150,
+        "exp": 1000,
+        "gold": 500,
+        "acts": [
+            {
+                "id": 1,
+                "rate": 17,
+                "condition": 0
+            },
+            {
+                "id": 40,
+                "rate": 17,
+                "condition": 0
+            },
+            {
+                "id": 44,
+                "rate": 17,
+                "condition": 0
+            },
+            {
+                "id": 601,
+                "rate": 17,
+                "condition": 0
+            },
+            {
+                "id": 603,
+                "rate": 16,
+                "condition": 0
+            },
+            {
+                "id": 41,
+                "rate": 16,
+                "condition": 0
+            }
+        ],
+        "actCount": 1,
+        "elmRes": {},
+        "resists": {
+            "InstantDeath": 99
+        }
+    },
     {
         "id": 1010,
         "rank": 10,

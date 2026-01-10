@@ -394,7 +394,7 @@ const StoryManager = {
             },
             {
                 "type": "BOSS",
-                "value": 1010
+                "value": 1000
             }
         ],
         "winActions": [

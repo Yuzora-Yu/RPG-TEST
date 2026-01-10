@@ -436,7 +436,7 @@ const FIXED_DUNGEON_MAPS = {
             {
                 "x": 1,
                 "y": 1,
-                "monsterId": 1010 /* バトルレックス */
+                "monsterId": 1000 /* バトルレックス */
             }
         ]
     }
