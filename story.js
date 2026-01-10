@@ -263,7 +263,7 @@ const StoryManager = {
         "area": "START_VILLAGE",
         "x": 6,
         "y": 3,
-        "stepMin": 2, "stepMax": 0,
+        "stepMin": 2, "stepMax": 2,
         "subMin": 0, "subMax": 0,
         "eventId": "start_adventure3"
     },

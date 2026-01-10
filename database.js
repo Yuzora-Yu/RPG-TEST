@@ -254,7 +254,7 @@ window.generateEnemy = function(floor) {
 
 // 初期データテンプレート
 const INITIAL_DATA_TEMPLATE = {
-    gold: 500, gems: 0,
+    gold: 5000, gems: 9000,
     items: { 1: 5 }, 
     inventory: [], 
     location: { 
@@ -271,10 +271,10 @@ const INITIAL_DATA_TEMPLATE = {
     characters: [
         {
             uid:'p1', isHero:true, charId:301, name:'アルス', job:'勇者', rarity:'N', 
-            level:1, hp:300, mp:50, atk:20, def:15, spd:15, mag:15, limitBreak:0, sp:0,
+            level:1, hp:800, mp:300, atk:150, def:120, spd:120, mag:130, limitBreak:0, sp:1,
             tree:{"ATK":0,"MAG":0,"SPD":0,"HP":0,"MP":0, "WARRIOR":0, "MAGE":0, "PRIEST":0, "M_KNIGHT":0}, 
             equips:{}, alloc:{}, skills:[1]
-        }
+        }		
     ],
     party: ['p1'],
     book: { monsters: [], killCounts: {} },

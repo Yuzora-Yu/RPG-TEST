@@ -341,6 +341,7 @@ const App = {
             App.data.characters.forEach(c => {
                 if (!c.config) c.config = { fullAuto: false, hiddenSkills: [] };
                 if (c.sp === undefined) c.sp = 0;
+				if (c.exp === undefined) c.exp = 0; // ★この行を追加
                 if (!c.tree) c.tree = {};
             });
         }
@@ -588,6 +589,7 @@ const App = {
         const newAlly = JSON.parse(JSON.stringify(master));
         newAlly.uid = 'u' + Date.now() + Math.floor(Math.random()*1000);
         newAlly.sp = 0;
+		newAlly.exp = 0; // ★この行を追加
         newAlly.tree = { ATK:0, MAG:0, SPD:0, HP:0, MP:0, WARRIOR:0, MAGE:0, PRIEST:0, M_KNIGHT:0 };
         // 初期スキルセット (こうげき)
         if (!newAlly.skills) newAlly.skills = [1];
