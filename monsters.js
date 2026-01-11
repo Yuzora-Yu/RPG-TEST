@@ -17907,14 +17907,14 @@ window.MONSTERS_DATA = [
 	{
         "id": 1000,
         "rank": 10,
-        "minF": 10,
+        "minF": 1,
         "name": "バトルレックス",
-        "hp": 3000,
-        "mp": 1000,
-        "atk": 520,
-        "def": 350,
-        "spd": 150,
-        "mag": 150,
+        "hp": 2000,
+        "mp": 500,
+        "atk": 420,
+        "def": 250,
+        "spd": 130,
+        "mag": 100,
         "exp": 1000,
         "gold": 500,
         "acts": [
@@ -17939,11 +17939,6 @@ window.MONSTERS_DATA = [
                 "condition": 0
             },
             {
-                "id": 603,
-                "rate": 16,
-                "condition": 0
-            },
-            {
                 "id": 41,
                 "rate": 16,
                 "condition": 0
@@ -17959,7 +17954,7 @@ window.MONSTERS_DATA = [
         "id": 1010,
         "rank": 10,
         "minF": 10,
-        "name": "バトルレックス",
+        "name": "バトルレックス強",
         "hp": 10000,
         "mp": 1000,
         "atk": 520,
