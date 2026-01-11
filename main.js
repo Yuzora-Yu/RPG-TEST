@@ -1265,13 +1265,13 @@ const App = {
   // --- 区間（C案） ---
   // 1→2 が 100 になる（eL=1なら 100*1^p = 100）
   if (eL <= 50) {
-    need = baseExp * Math.pow(eL, 1.4);
+    need = baseExp * Math.pow(eL, 1.25);
   } else if (eL <= 100) {
-    need = baseExp * Math.pow(eL, 1.7);
+    need = baseExp * Math.pow(eL, 1.5);
   } else {
     // 転生帯：指数ほど暴れず、でもちゃんと重い
     // ここは好みで調整枠（係数や指数、加算）
-    need = baseExp * Math.pow(eL, 1.65) + 5000 * rCount;
+    need = baseExp * Math.pow(eL, 1.4) + 5000 * rCount;
   }
 
   return Math.ceil(need * rarityMult);
