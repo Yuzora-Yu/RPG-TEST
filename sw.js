@@ -1,4 +1,4 @@
-const CACHE_NAME = "prisma-abyss-v2.06";
+const CACHE_NAME = "prisma-abyss-v2.07";
 const FILES_TO_CACHE = [
   "./", // ルート
   "main.html",
@@ -52,6 +52,7 @@ self.addEventListener("fetch", (e) => {
     })
   );
 });
+
 
 
 
