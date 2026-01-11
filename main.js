@@ -1248,45 +1248,34 @@ const App = {
                 </div>
             </div>`;
     },
-	
-	/**
-     * 次のレベルまでに必要な経験値を算出する
-     * @param {Object} charData - キャラクターデータ
-     * @returns {number} 必要経験値
-     */
-    getNextExp: (charData) => {
-        const rCount = charData.reincarnationCount || 0;
-        const baseExp = CONST.EXP_BASE || 100;
-        const rarityMult = (CONST.RARITY_EXP_MULT && CONST.RARITY_EXP_MULT[charData.rarity]) || 1.0;
-        
-        // 指標となる成長率の取得
-        const growthNormal = CONST.EXP_GROWTH || 1.08; 
-        const growthReinc = growthNormal - 0.04;        // 1.04相当
 
-        if (rCount === 0) {
-            // 【フェーズ1】未転生: growth 1.08 で計算
-            return Math.floor(baseExp * Math.pow(growthNormal, charData.level - 1) * rarityMult);
+	getNextExp: (charData) => {
+  const rCount = charData.reincarnationCount || 0;
+  const baseExp = CONST.EXP_BASE || 100;
 
-        } else if (rCount === 1) {
-            // 【フェーズ2】転生1回目: 未転生Lv100時点の経験値 ＋ growth 1.04計算
-            const baseLevel100Exp = Math.floor(baseExp * Math.pow(growthNormal, 100 - 1) * rarityMult);
-            const reincGrowthExp = Math.floor(baseExp * Math.pow(growthReinc, charData.level - 1) * rarityMult);
-            
-            return baseLevel100Exp + reincGrowthExp;
+  // レアリティ倍率（既存の仕組みを流用）
+  const rarityMult =
+    (CONST.RARITY_EXP_MULT && CONST.RARITY_EXP_MULT[charData.rarity]) || 1.0;
 
-        } else {
-            // 【フェーズ3】転生2回目以降: 200レベル時点の指数計算結果 ＋ 1万ずつの加算
-            // 200レベル時点の指数計算結果（フェーズ2の最大値）
-            const exponentialPart = Math.floor(baseExp * Math.pow(growthNormal, 100 - 1) * rarityMult) 
-                                  + Math.floor(baseExp * Math.pow(growthReinc, 100 - 1) * rarityMult);
-            
-            // 200レベルを超えた通算レベル分（1レベルにつき1万）
-            const levelOver200 = charData.level + (rCount - 2) * 100;
-            const additivePart = levelOver200 * 10000;
-            
-            return exponentialPart + additivePart;
-        }
-    },
+  // ★C案の肝：実質レベル
+  const eL = (charData.level || 1) + rCount * 100;
+
+  let need;
+
+  // --- 区間（C案） ---
+  // 1→2 が 100 になる（eL=1なら 100*1^p = 100）
+  if (eL <= 50) {
+    need = baseExp * Math.pow(eL, 1.4);
+  } else if (eL <= 100) {
+    need = baseExp * Math.pow(eL, 1.7);
+  } else {
+    // 転生帯：指数ほど暴れず、でもちゃんと重い
+    // ここは好みで調整枠（係数や指数、加算）
+    need = baseExp * Math.pow(eL, 1.65) + 5000 * rCount;
+  }
+
+  return Math.ceil(need * rarityMult);
+},
 
     checkNewSkill: (charData) => {
         const table = JOB_SKILLS[charData.job];
