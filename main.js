@@ -1249,33 +1249,158 @@ const App = {
             </div>`;
     },
 
-	getNextExp: (charData) => {
-  const rCount = charData.reincarnationCount || 0;
-  const baseExp = CONST.EXP_BASE || 100;
+/**
+ * 次のレベルまでに必要な経験値を返す
+ *
+ * 設計方針：
+ * - Lv1〜10   ：超軽い（チュートリアル帯）
+ * - Lv11〜49  ：ゆるやかに重くなる（50スキル前の育成）
+ * - Lv50      ：壁（強スキル解放）
+ * - Lv51〜99  ：じわじわ重い（転生前のやり込み）
+ * - Lv100     ：大きな壁（転生条件）
+ * - Lv101〜   ：転生帯（後で調整前提）
+ *
+ * ※ 転生時は「表示Lv1に戻る」が、
+ *    内部的には effectiveLevel = level + 転生回数*100 で扱う
+ */
+function getNextExp(charData) {
 
-  // レアリティ倍率（既存の仕組みを流用）
+  /* =====================================================
+   * 基本情報
+   * ===================================================== */
+
+  // 基本となる経験値（Lv1→2 が 100 になる）
+  const BASE_EXP = CONST.EXP_BASE || 100;
+
+  // 現在レベル（表示レベル）
+  const level = charData.level || 1;
+
+  // 転生回数
+  const reincCount = charData.reincarnationCount || 0;
+
+  // 実質レベル（転生を考慮した内部レベル）
+  const eL = level + reincCount * 100;
+
+  // レアリティ倍率（N/R=1.0, SR=1.4 ...）
   const rarityMult =
     (CONST.RARITY_EXP_MULT && CONST.RARITY_EXP_MULT[charData.rarity]) || 1.0;
 
-  // ★C案の肝：実質レベル
-  const eL = (charData.level || 1) + rCount * 100;
 
-  let need;
+  /* =====================================================
+   * 調整用パラメータ（ここを触れば体感が変わる）
+   * ===================================================== */
 
-  // --- 区間（C案） ---
-  // 1→2 が 100 になる（eL=1なら 100*1^p = 100）
-  if (eL <= 50) {
-    need = baseExp * Math.pow(eL, 1.25);
-  } else if (eL <= 100) {
-    need = baseExp * Math.pow(eL, 1.5);
+  // --- 序盤（1〜10） ---
+  // 小さいほど序盤がさらに軽くなる
+  const P_EARLY = 1.05;
+
+  // --- 11〜49 の目標値 ---
+  // eL=49 の必要経験値（49→50直前）
+  const TARGET_49 = 50000;
+
+  // --- 壁の強さ ---
+  // 49→50 の壁倍率（1.5〜2.5くらいで調整）
+  const WALL_50 = 1.8;
+
+  // 99→100 の壁倍率（1.5〜3.0くらいで調整）
+  const WALL_100 = 2.0;
+
+  // --- 50〜99 の成長 ---
+  // eL=99 の必要経験値（99→100直前）
+  const TARGET_99 = 220000;
+
+  // 50以降の成長指数
+  const P_AFTER_50 = 1.45;
+
+  // --- 転生帯（101+） ---
+  // 転生後の伸び方（仮。あとで調整前提）
+  const P_REINC = 1.5;
+
+  // 101レベルでの増加率（100に対して何％増えるか）
+  const REINC_STEP_RATE = 0.05; // 5%
+
+
+  /* =====================================================
+   * 事前計算（境界値を先に作る）
+   * ===================================================== */
+
+  // --- Lv10 時点 ---
+  const xp10 = BASE_EXP * Math.pow(10, P_EARLY);
+
+  // --- Lv49 までのカーブ（2次関数） ---
+  // xp10 + B * (49 - 10)^2 = TARGET_49 になるように B を決める
+  const B =
+    (TARGET_49 - xp10) / Math.pow(49 - 10, 2);
+
+  const xp49 =
+    xp10 + B * Math.pow(49 - 10, 2); // ≒ TARGET_49
+
+  // --- Lv50（壁） ---
+  const xp50 = xp49 * WALL_50;
+
+  // --- Lv99 までのカーブ（べき乗） ---
+  // xp50 + S * (99 - 50)^P_AFTER_50 = TARGET_99
+  const S =
+    (TARGET_99 - xp50) / Math.pow(99 - 50, P_AFTER_50);
+
+  const xp99 =
+    xp50 + S * Math.pow(99 - 50, P_AFTER_50); // ≒ TARGET_99
+
+  // --- Lv100（壁） ---
+  const xp100 = xp99 * WALL_100;
+
+
+  /* =====================================================
+   * 実際の必要経験値計算
+   * ===================================================== */
+
+  let needExp;
+
+  // --- Lv1〜10：超軽い ---
+  if (eL <= 10) {
+
+    needExp = BASE_EXP * Math.pow(eL, P_EARLY);
+
+  // --- Lv11〜49：なだらかに重く ---
+  } else if (eL <= 49) {
+
+    needExp =
+      xp10 + B * Math.pow(eL - 10, 2);
+
+  // --- Lv50：壁 ---
+  } else if (eL === 50) {
+
+    needExp = xp50;
+
+  // --- Lv51〜99：転生前のやり込み帯 ---
+  } else if (eL <= 99) {
+
+    needExp =
+      xp50 + S * Math.pow(eL - 50, P_AFTER_50);
+
+  // --- Lv100：大きな壁（転生条件） ---
+  } else if (eL === 100) {
+
+    needExp = xp100;
+
+  // --- Lv101〜：転生帯（仮設計） ---
   } else {
-    // 転生帯：指数ほど暴れず、でもちゃんと重い
-    // ここは好みで調整枠（係数や指数、加算）
-    need = baseExp * Math.pow(eL, 1.4) + 5000 * rCount;
+
+    // 101で「100の必要経験値 + 5%」くらいから始まるイメージ
+    const step101 = xp100 * REINC_STEP_RATE;
+
+    needExp =
+      xp100 + step101 * Math.pow(eL - 100, P_REINC);
   }
 
-  return Math.ceil(need * rarityMult);
-},
+
+  /* =====================================================
+   * レアリティ倍率をかけて返す
+   * ===================================================== */
+
+  return Math.ceil(needExp * rarityMult);
+}
+
 
     checkNewSkill: (charData) => {
         const table = JOB_SKILLS[charData.job];
