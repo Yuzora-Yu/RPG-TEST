@@ -1263,7 +1263,8 @@ const App = {
  * ※ 転生時は「表示Lv1に戻る」が、
  *    内部的には effectiveLevel = level + 転生回数*100 で扱う
  */
-function getNextExp(charData) {
+// App の中にある想定： getNextExp: (charData) => { ... }
+getNextExp: (charData) => {
 
   /* =====================================================
    * 基本情報
@@ -1279,9 +1280,11 @@ function getNextExp(charData) {
   const reincCount = charData.reincarnationCount || 0;
 
   // 実質レベル（転生を考慮した内部レベル）
+  // 例：転生1回・表示Lv1 => eL=101
   const eL = level + reincCount * 100;
 
-  // レアリティ倍率（N/R=1.0, SR=1.4 ...）
+  // レアリティ倍率（N/R=1.0, SR=1.4, SSR=1.6, UR=2.0, EX=2.5）
+  // ※ CONST 側にマップが無い場合は 1.0 扱い
   const rarityMult =
     (CONST.RARITY_EXP_MULT && CONST.RARITY_EXP_MULT[charData.rarity]) || 1.0;
 
@@ -1290,117 +1293,97 @@ function getNextExp(charData) {
    * 調整用パラメータ（ここを触れば体感が変わる）
    * ===================================================== */
 
-  // --- 序盤（1〜10） ---
-  // 小さいほど序盤がさらに軽くなる
+  // --- 序盤（1〜10）：超軽い ---
+  // 小さいほど序盤がさらに軽くなる（1.00〜1.15くらいが調整しやすい）
   const P_EARLY = 1.05;
 
-  // --- 11〜49 の目標値 ---
-  // eL=49 の必要経験値（49→50直前）
+  // --- 11〜49：49直前をどう重くするか（ターゲット） ---
+  // eL=49 の必要経験値（49→50の直前）
   const TARGET_49 = 50000;
 
-  // --- 壁の強さ ---
-  // 49→50 の壁倍率（1.5〜2.5くらいで調整）
+  // --- 壁の強さ（段差はキツくてOK方針） ---
+  // 49→50 の壁倍率（例：1.8なら 49の1.8倍）
   const WALL_50 = 1.8;
 
-  // 99→100 の壁倍率（1.5〜3.0くらいで調整）
+  // 99→100 の壁倍率（転生条件の壁）
   const WALL_100 = 2.0;
 
-  // --- 50〜99 の成長 ---
-  // eL=99 の必要経験値（99→100直前）
+  // --- 50〜99：転生前の成長（ターゲット） ---
+  // eL=99 の必要経験値（99→100の直前）
   const TARGET_99 = 220000;
 
-  // 50以降の成長指数
+  // 50以降の成長指数（大きいほど99付近が重くなる）
   const P_AFTER_50 = 1.45;
 
-  // --- 転生帯（101+） ---
-  // 転生後の伸び方（仮。あとで調整前提）
+  // --- 101+（転生帯）：仮置き（後で調整前提） ---
   const P_REINC = 1.5;
 
-  // 101レベルでの増加率（100に対して何％増えるか）
+  // 101の増加分（100の何％を足し幅の基準にするか）
   const REINC_STEP_RATE = 0.05; // 5%
 
 
   /* =====================================================
-   * 事前計算（境界値を先に作る）
+   * 事前計算（境界の値を作る）
    * ===================================================== */
 
-  // --- Lv10 時点 ---
+  // --- eL=10 ---
   const xp10 = BASE_EXP * Math.pow(10, P_EARLY);
 
-  // --- Lv49 までのカーブ（2次関数） ---
-  // xp10 + B * (49 - 10)^2 = TARGET_49 になるように B を決める
-  const B =
-    (TARGET_49 - xp10) / Math.pow(49 - 10, 2);
+  // --- eL=11〜49 を2次関数で作る ---
+  // xp10 + B*(49-10)^2 = TARGET_49 となる B を逆算
+  const B = (TARGET_49 - xp10) / Math.pow(49 - 10, 2);
 
-  const xp49 =
-    xp10 + B * Math.pow(49 - 10, 2); // ≒ TARGET_49
+  const xp49 = xp10 + B * Math.pow(49 - 10, 2); // ≒ TARGET_49
 
-  // --- Lv50（壁） ---
+  // --- eL=50 は壁 ---
   const xp50 = xp49 * WALL_50;
 
-  // --- Lv99 までのカーブ（べき乗） ---
-  // xp50 + S * (99 - 50)^P_AFTER_50 = TARGET_99
-  const S =
-    (TARGET_99 - xp50) / Math.pow(99 - 50, P_AFTER_50);
+  // --- eL=51〜99 をべき乗カーブで作る ---
+  // xp50 + S*(99-50)^P_AFTER_50 = TARGET_99 となる S を逆算
+  const S = (TARGET_99 - xp50) / Math.pow(99 - 50, P_AFTER_50);
 
-  const xp99 =
-    xp50 + S * Math.pow(99 - 50, P_AFTER_50); // ≒ TARGET_99
+  const xp99 = xp50 + S * Math.pow(99 - 50, P_AFTER_50); // ≒ TARGET_99
 
-  // --- Lv100（壁） ---
+  // --- eL=100 は壁 ---
   const xp100 = xp99 * WALL_100;
 
 
   /* =====================================================
-   * 実際の必要経験値計算
+   * 実際の必要経験値
    * ===================================================== */
 
   let needExp;
 
-  // --- Lv1〜10：超軽い ---
   if (eL <= 10) {
-
+    // 1〜10：超軽い
     needExp = BASE_EXP * Math.pow(eL, P_EARLY);
 
-  // --- Lv11〜49：なだらかに重く ---
   } else if (eL <= 49) {
+    // 11〜49：徐々に重く
+    needExp = xp10 + B * Math.pow(eL - 10, 2);
 
-    needExp =
-      xp10 + B * Math.pow(eL - 10, 2);
-
-  // --- Lv50：壁 ---
   } else if (eL === 50) {
-
+    // 50：壁（強スキル）
     needExp = xp50;
 
-  // --- Lv51〜99：転生前のやり込み帯 ---
   } else if (eL <= 99) {
+    // 51〜99：転生前のやり込み
+    needExp = xp50 + S * Math.pow(eL - 50, P_AFTER_50);
 
-    needExp =
-      xp50 + S * Math.pow(eL - 50, P_AFTER_50);
-
-  // --- Lv100：大きな壁（転生条件） ---
   } else if (eL === 100) {
-
+    // 100：壁（転生条件）
     needExp = xp100;
 
-  // --- Lv101〜：転生帯（仮設計） ---
   } else {
-
-    // 101で「100の必要経験値 + 5%」くらいから始まるイメージ
+    // 101+：転生帯（仮）
+    // 100を超えた後も伸びるが、指数ほど破綻しない想定
     const step101 = xp100 * REINC_STEP_RATE;
-
-    needExp =
-      xp100 + step101 * Math.pow(eL - 100, P_REINC);
+    needExp = xp100 + step101 * Math.pow(eL - 100, P_REINC);
   }
 
-
-  /* =====================================================
-   * レアリティ倍率をかけて返す
-   * ===================================================== */
-
+  // レアリティ倍率を反映して切り上げ
   return Math.ceil(needExp * rarityMult);
-}
-
+},
 
     checkNewSkill: (charData) => {
         const table = JOB_SKILLS[charData.job];
