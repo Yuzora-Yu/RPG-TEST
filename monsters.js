@@ -17954,7 +17954,7 @@ window.MONSTERS_DATA = [
         "id": 1010,
         "rank": 10,
         "minF": 10,
-        "name": "バトルレックス強",
+        "name": "バトルレックス",
         "hp": 10000,
         "mp": 1000,
         "atk": 520,
