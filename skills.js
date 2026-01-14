@@ -7,6 +7,8 @@ window.SKILLS_DATA = [
         "target": "単体",
         "mp": 0,
         "rate": 1,
+        "hitRate": 100,    // ★追加: 命中率
+        "critRate": 0,      // ★追加: スキル固有会心率
         "count": 1,
         "base": 0,
         "desc": "通常攻撃"
@@ -86,8 +88,8 @@ window.SKILLS_DATA = [
         "name": "ライデイン",
         "type": "魔法",
         "target": "単体",
-        "mp": 10,
-        "rate": 1.2,
+        "mp": 30,
+        "rate": 1.4,
         "count": 1,
         "base": 70,
         "elm": "雷",
@@ -281,7 +283,7 @@ window.SKILLS_DATA = [
         "mp": 20,
         "rate": 0,
         "count": 1,
-        "base": 22,
+        "base": 1,
         "desc": "メタルに固定ダメージ",
         "fix": true
     },
@@ -465,7 +467,8 @@ window.SKILLS_DATA = [
             "atk": 1.2,
             "def": 1.2,
             "spd": 1.2,
-            "mag": 1.2
+            "mag": 1.2,
+            "mdef": 1.2
         }
     },
     {
@@ -683,6 +686,7 @@ window.SKILLS_DATA = [
             "def": 1.5,
             "spd": 1.5,
             "mag": 1.5,
+            "mdef": 1.5,
             "elmResUp": 50,
             "resists_Poison": 100,
             "resists_Shock": 100,
@@ -745,8 +749,8 @@ window.SKILLS_DATA = [
         "name": "しんくうは",
         "type": "物理",
         "target": "全体",
-        "mp": 270,
-        "rate": 1.1,
+        "mp": 200,
+        "rate": 0.7,
         "count": 2,
         "base": 80,
         "elm": "風",
@@ -830,7 +834,7 @@ window.SKILLS_DATA = [
         "count": 1,
         "base": 0,
         "desc": "当たる確率は低いが、防御無視の会心攻撃",
-        "SuccessRate": 25,
+        "HitRate": 30,
         "IgnoreDefense": true
     },
     {
@@ -838,12 +842,12 @@ window.SKILLS_DATA = [
         "name": "大魔人斬り",
         "type": "物理",
         "target": "単体",
-        "mp": 300,
+        "mp": 200,
         "rate": 3,
         "count": 1,
         "base": 0,
         "desc": "防御無視の強烈な会心攻撃",
-        "SuccessRate": 50,
+        "HitRate": 70,
         "IgnoreDefense": true
     },
     {
@@ -857,6 +861,7 @@ window.SKILLS_DATA = [
         "base": 200,
         "desc": "相手をひるませる強力な一撃",
         "SuccessRate": 90,
+        "HitRate": 100,
         "turn": 1,
         "Fear": true
     },
@@ -871,6 +876,7 @@ window.SKILLS_DATA = [
         "base": 150,
         "desc": "相手の魔力を下げる一撃",
         "SuccessRate": 90,
+        "HitRate": 100,
         "turn": 5,
         "debuff": {
             "mag": 0.7
@@ -887,6 +893,7 @@ window.SKILLS_DATA = [
         "base": 150,
         "desc": "相手の攻撃力を下げる一撃",
         "SuccessRate": 90,
+        "HitRate": 100,
         "turn": 5,
         "debuff": {
             "atk": 0.7
@@ -998,7 +1005,7 @@ window.SKILLS_DATA = [
         "type": "物理",
         "target": "全体",
         "mp": 500,
-        "rate": 1.2,
+        "rate": 1.3,
         "count": 2,
         "base": 350,
         "desc": "全体物理攻撃2連"
@@ -1203,6 +1210,7 @@ window.SKILLS_DATA = [
         "base": 20,
         "desc": "どく攻撃",
         "SuccessRate": 90,
+        "HitRate": 100,
         "Poison": true
     },
     {
@@ -1210,12 +1218,14 @@ window.SKILLS_DATA = [
         "name": "サンダーボルト",
         "type": "物理",
         "target": "単体",
-        "mp": 350,
+        "mp": 180,
         "rate": 1.5,
         "count": 1,
         "base": 150,
+        "elm": "雷",
         "desc": "敵を感電させる強力な一撃",
         "SuccessRate": 70,
+        "HitRate": 100,
         "Shock": true
     },
     {
@@ -1372,7 +1382,7 @@ window.SKILLS_DATA = [
         "count": 1,
         "base": 250,
         "elm": "雷",
-        "desc": "最強の剣技"
+        "desc": "伝説の剣技"
     },
     {
         "id": 402,
@@ -1432,7 +1442,7 @@ window.SKILLS_DATA = [
         "count": 1,
         "base": 270,
         "elm": "水",
-        "desc": "極大氷魔法"
+        "desc": "極大氷呪文"
     },
     {
         "id": 407,
@@ -1444,7 +1454,7 @@ window.SKILLS_DATA = [
         "count": 1,
         "base": 500,
         "elm": "火",
-        "desc": "極大火炎"
+        "desc": "極大火炎呪文"
     },
     {
         "id": 408,
@@ -1468,7 +1478,7 @@ window.SKILLS_DATA = [
         "count": 2,
         "base": 400,
         "elm": "雷",
-        "desc": "雷の2連撃"
+        "desc": "伝説の雷の2連撃"
     },
     {
         "id": 410,
@@ -1851,7 +1861,7 @@ window.SKILLS_DATA = [
         "type": "ブレス",
         "target": "全体",
         "mp": 0,
-        "rate": 1.1,
+        "rate": 1.2,
         "count": 1,
         "base": 450,
         "elm": "水",
@@ -1863,7 +1873,7 @@ window.SKILLS_DATA = [
         "type": "ブレス",
         "target": "全体",
         "mp": 0,
-        "rate": 1.1,
+        "rate": 1.2,
         "count": 1,
         "base": 400,
         "elm": "火",
@@ -1887,7 +1897,7 @@ window.SKILLS_DATA = [
         "type": "ブレス",
         "target": "全体",
         "mp": 0,
-        "rate": 1.2,
+        "rate": 1.0,
         "count": 1,
         "base": 200,
         "elm": "闇",
@@ -2108,6 +2118,7 @@ window.SKILLS_DATA = [
         "base": 0,
         "desc": "特技を封印する",
         "SuccessRate": 80,
+        "HitRate": 100,
         "turn": 5,
         "SkillSeal": true
     },
@@ -2228,7 +2239,8 @@ window.SKILLS_DATA = [
             "atk": 0.7,
             "def": 0.7,
             "mag": 0.7,
-            "spd": 0.7
+            "spd": 0.7,
+            "mdef": 0.7
         }
     },
     {
@@ -2242,12 +2254,15 @@ window.SKILLS_DATA = [
         "base": 800,
         "elm": "混沌",
         "desc": "世界を創り変える力",
+        "SuccessRate": 70,
+        "HitRate": 100,
         "turn": 4,
         "debuff": {
             "atk": 0.7,
             "def": 0.7,
             "mag": 0.7,
-            "spd": 0.7
+            "spd": 0.7,
+            "mdef": 0.7
         }
     },
     {
@@ -2261,6 +2276,7 @@ window.SKILLS_DATA = [
         "base": 0,
         "desc": "心まで凍り付く恐ろしいおたけび",
         "SuccessRate": 70,
+        "HitRate": 100,
         "PercentDamage": 0.5,
         "turn": 1,
         "Fear": true
@@ -2276,6 +2292,7 @@ window.SKILLS_DATA = [
         "base": 50,
         "elm": "混沌",
         "desc": "闇の根源より漏れ出る災禍を操り異常をまき散らす",
+        "HitRate": 100,
         "SuccessRate": 30,
         "turn": 2,
         "ToxicPoison": true,
@@ -2294,6 +2311,7 @@ window.SKILLS_DATA = [
         "count": 1,
         "base": 0,
         "desc": "恐ろしいおたけび",
+        "HitRate": 100,
         "SuccessRate": 80,
         "PercentDamage": 0.2,
         "turn": 1,
@@ -2308,6 +2326,7 @@ window.SKILLS_DATA = [
         "rate": 0,
         "count": 1,
         "base": 0,
+        "HitRate": 100,
         "SuccessRate": 90,
         "PercentDamage": 0.6
     },
@@ -2371,6 +2390,9 @@ window.SKILLS_DATA = [
         "target": "単体",
         "mp": 900,
         "rate": 4,
+        "hitRate": 200,    // ★追加: 命中率
+        "isPerfect": true, // ★追加: 必中フラグ
+        "critRate": 100,    // ★追加: 会心が出やすい
         "count": 1,
         "base": 500,
         "desc": "全てを断ち切る大魔王の右腕",

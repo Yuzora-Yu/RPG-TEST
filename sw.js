@@ -1,4 +1,4 @@
-const CACHE_NAME = "prisma-abyss-v2.07";
+const CACHE_NAME = "prisma-abyss-v2.12";
 const FILES_TO_CACHE = [
   "./", // ルート
   "main.html",
@@ -20,7 +20,8 @@ const FILES_TO_CACHE = [
   "items.js",
   "job_data.js",
   "map.js",
-  "story.js"
+  "story.js",
+  "passiveSkill.js"
 ];
 
 // インストール時にキャッシュ

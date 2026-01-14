@@ -3,18 +3,30 @@ window.CHARACTERS_DATA = [
     {
         "id": 101,
         "name": "ジョセフ",
+		"race": "人間",           // ★新規: 種族
         "job": "戦士",
         "rarity": "R",
         "hp": 450,
-        "mp": 150,
+        "mp": 250,
         "atk": 130,
         "def": 110,
         "spd": 50,
         "mag": 30,
-        "lbSkills": {
-            "50": 83,
-            "99": 160
-        },
+		"mdef": 80,              // ★新規: 魔法防御 (ベース値)
+		"hit": 100,              // ★新規: 命中率 (ベース値: %)
+		"eva": 0,                // ★新規: 回避率 (ベース値: %)
+		"cri": 0,                // ★新規: クリティカル率 (ベース値: %)
+		/**
+		 * ★新規: 固定特性IDの配列 (最大6つ)
+		 * 指示に基づき、ここが空 [] または要素不足の場合は 
+		 * passiveSkill.js のロジックでランダム抽選されます。
+		 * [1つ目, 2つ目(Lv5+), 3つ目(Lv10+), 4つ目(Lv20+), 5つ目(Lv40+), 6つ目(Lv80+)]
+		 */
+		"fixedTraits": [37, 2, 41, 15, null, null],
+		"lbSkills": {
+			"50": 83,
+			"99": 160
+		},
         "sp": 1,
         "img": "data:image/webp;base64,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",
         "level": 1,
@@ -31,15 +43,27 @@ window.CHARACTERS_DATA = [
     {
         "id": 102,
         "name": "マリー",
+		"race": "人間",           // ★新規: 種族
         "job": "僧侶",
         "rarity": "R",
         "hp": 320,
-        "mp": 550,
+        "mp": 350,
         "atk": 40,
         "def": 50,
         "spd": 80,
         "mag": 150,
-        "lbSkills": {
+        "mdef":120,              // ★新規: 魔法防御 ベース値
+		"hit": 100,              // ★新規: 命中率 ベース値: %
+		"eva": 0,                // ★新規: 回避率 ベース値: %
+		"cri": 0,                // ★新規: クリティカル率 ベース値: %
+		/**
+		 * ★新規: 固定特性IDの配列 最大6つ
+		 * 指示に基づき、ここが空 [] または要素不足の場合は 
+		 * passiveSkill.js のロジックでランダム抽選されます。
+		 * [1つ目, 2つ目Lv5+, 3つ目Lv10+, 4つ目Lv20+, 5つ目Lv40+, 6つ目Lv80+]
+		 */
+		"fixedTraits": [13, 7, 50, 30, null, null],
+		"lbSkills": {
             "50": 56,
             "99": 405
         },
@@ -59,6 +83,7 @@ window.CHARACTERS_DATA = [
     {
         "id": 103,
         "name": "ゼリード",
+		"race": "人間",           // ★新規: 種族
         "job": "盗賊",
         "rarity": "R",
         "hp": 380,
@@ -67,7 +92,18 @@ window.CHARACTERS_DATA = [
         "def": 60,
         "spd": 150,
         "mag": 80,
-        "lbSkills": {
+        "mdef": 70,              // ★新規: 魔法防御 ベース値
+		"hit": 100,              // ★新規: 命中率 ベース値: %
+		"eva": 0,                // ★新規: 回避率 ベース値: %
+		"cri": 0,                // ★新規: クリティカル率 ベース値: %
+		/**
+		 * ★新規: 固定特性IDの配列 最大6つ
+		 * 指示に基づき、ここが空 [] または要素不足の場合は 
+		 * passiveSkill.js のロジックでランダム抽選されます。
+		 * [1つ目, 2つ目Lv5+, 3つ目Lv10+, 4つ目Lv20+, 5つ目Lv40+, 6つ目Lv80+]
+		 */
+		"fixedTraits": [32, 4, 41, 57, null, null],
+		"lbSkills": {
             "50": 701,
             "99": 611
         },
@@ -87,16 +123,28 @@ window.CHARACTERS_DATA = [
     {
         "id": 104,
         "name": "ケイト",
+		"race": "人間",           // ★新規: 種族
         "type": "魔法使い",
         "job": "魔法使い",
         "rarity": "R",
         "hp": 300,
-        "mp": 600,
+        "mp": 400,
         "atk": 20,
         "def": 40,
         "spd": 80,
         "mag": 170,
-        "lbSkills": {
+        "mdef":140,              // ★新規: 魔法防御 ベース値
+		"hit": 100,              // ★新規: 命中率 ベース値: %
+		"eva": 0,                // ★新規: 回避率 ベース値: %
+		"cri": 0,                // ★新規: クリティカル率 ベース値: %
+		/**
+		 * ★新規: 固定特性IDの配列 最大6つ
+		 * 指示に基づき、ここが空 [] または要素不足の場合は 
+		 * passiveSkill.js のロジックでランダム抽選されます。
+		 * [1つ目, 2つ目Lv5+, 3つ目Lv10+, 4つ目Lv20+, 5つ目Lv40+, 6つ目Lv80+]
+		 */
+		"fixedTraits": [60, 7, 44, 11, null, null],
+		"lbSkills": {
             "50": 921,
             "99": 55
         },
@@ -116,15 +164,27 @@ window.CHARACTERS_DATA = [
     {
         "id": 105,
         "name": "シャオ",
+		"race": "人間",           // ★新規: 種族
         "job": "武闘家",
         "rarity": "R",
         "hp": 420,
-        "mp": 120,
+        "mp": 220,
         "atk": 140,
         "def": 70,
         "spd": 100,
         "mag": 20,
-        "lbSkills": {
+        "mdef": 90,              // ★新規: 魔法防御 ベース値
+		"hit": 100,              // ★新規: 命中率 ベース値: %
+		"eva": 0,                // ★新規: 回避率 ベース値: %
+		"cri": 0,                // ★新規: クリティカル率 ベース値: %
+		/**
+		 * ★新規: 固定特性IDの配列 最大6つ
+		 * 指示に基づき、ここが空 [] または要素不足の場合は 
+		 * passiveSkill.js のロジックでランダム抽選されます。
+		 * [1つ目, 2つ目Lv5+, 3つ目Lv10+, 4つ目Lv20+, 5つ目Lv40+, 6つ目Lv80+]
+		 */
+		"fixedTraits": [58, 10, 33, 59, null, null],
+		"lbSkills": {
             "50": 155,
             "99": 119
         },
@@ -144,6 +204,7 @@ window.CHARACTERS_DATA = [
     {
         "id": 106,
         "name": "エリーゼ",
+		"race": "人間",           // ★新規: 種族
         "job": "踊り子",
         "rarity": "R",
         "hp": 340,
@@ -152,7 +213,18 @@ window.CHARACTERS_DATA = [
         "def": 60,
         "spd": 90,
         "mag": 120,
-        "lbSkills": {
+        "mdef":120,              // ★新規: 魔法防御 ベース値
+		"hit": 100,              // ★新規: 命中率 ベース値: %
+		"eva": 0,                // ★新規: 回避率 ベース値: %
+		"cri": 0,                // ★新規: クリティカル率 ベース値: %
+		/**
+		 * ★新規: 固定特性IDの配列 最大6つ
+		 * 指示に基づき、ここが空 [] または要素不足の場合は 
+		 * passiveSkill.js のロジックでランダム抽選されます。
+		 * [1つ目, 2つ目Lv5+, 3つ目Lv10+, 4つ目Lv20+, 5つ目Lv40+, 6つ目Lv80+]
+		 */
+		"fixedTraits": [39, 4, 11, 14, null, null],
+		"lbSkills": {
             "50": 109,
             "99": 614
         },
@@ -172,15 +244,27 @@ window.CHARACTERS_DATA = [
     {
         "id": 107,
         "name": "リュウ",
+		"race": "人間",           // ★新規: 種族
         "job": "武闘家",
         "rarity": "R",
-        "hp": 360,
+        "hp": 380,
         "mp": 250,
         "atk": 120,
         "def": 70,
         "spd": 110,
         "mag": 80,
-        "lbSkills": {
+        "mdef": 80,              // ★新規: 魔法防御 ベース値
+		"hit": 100,              // ★新規: 命中率 ベース値: %
+		"eva": 0,                // ★新規: 回避率 ベース値: %
+		"cri": 0,                // ★新規: クリティカル率 ベース値: %
+		/**
+		 * ★新規: 固定特性IDの配列 最大6つ
+		 * 指示に基づき、ここが空 [] または要素不足の場合は 
+		 * passiveSkill.js のロジックでランダム抽選されます。
+		 * [1つ目, 2つ目Lv5+, 3つ目Lv10+, 4つ目Lv20+, 5つ目Lv40+, 6つ目Lv80+]
+		 */
+		"fixedTraits": [59, 10, 17, 18, null, null],
+		"lbSkills": {
             "50": 605,
             "99": 920
         },
@@ -200,15 +284,27 @@ window.CHARACTERS_DATA = [
     {
         "id": 108,
         "name": "アリサ",
+		"race": "人間",           // ★新規: 種族
         "job": "盗賊",
         "rarity": "R",
         "hp": 400,
-        "mp": 200,
+        "mp": 270,
         "atk": 95,
         "def": 70,
         "spd": 130,
         "mag": 60,
-        "lbSkills": {
+        "mdef": 80,              // ★新規: 魔法防御 ベース値
+		"hit": 100,              // ★新規: 命中率 ベース値: %
+		"eva": 0,                // ★新規: 回避率 ベース値: %
+		"cri": 0,                // ★新規: クリティカル率 ベース値: %
+		/**
+		 * ★新規: 固定特性IDの配列 最大6つ
+		 * 指示に基づき、ここが空 [] または要素不足の場合は 
+		 * passiveSkill.js のロジックでランダム抽選されます。
+		 * [1つ目, 2つ目Lv5+, 3つ目Lv10+, 4つ目Lv20+, 5つ目Lv40+, 6つ目Lv80+]
+		 */
+		"fixedTraits": [25, 4, 42, 56, null, null],
+		"lbSkills": {
             "50": 105,
             "99": 118
         },
@@ -228,15 +324,27 @@ window.CHARACTERS_DATA = [
     {
         "id": 109,
         "name": "ガイル",
+		"race": "人間",           // ★新規: 種族
         "job": "戦士",
         "rarity": "R",
         "hp": 480,
-        "mp": 100,
+        "mp": 250,
         "atk": 150,
         "def": 90,
         "spd": 50,
         "mag": 20,
-        "lbSkills": {
+        "mdef": 80,              // ★新規: 魔法防御 ベース値
+		"hit": 100,              // ★新規: 命中率 ベース値: %
+		"eva": 0,                // ★新規: 回避率 ベース値: %
+		"cri": 0,                // ★新規: クリティカル率 ベース値: %
+		/**
+		 * ★新規: 固定特性IDの配列 最大6つ
+		 * 指示に基づき、ここが空 [] または要素不足の場合は 
+		 * passiveSkill.js のロジックでランダム抽選されます。
+		 * [1つ目, 2つ目Lv5+, 3つ目Lv10+, 4つ目Lv20+, 5つ目Lv40+, 6つ目Lv80+]
+		 */
+		"fixedTraits": [58, 3, 38, 23, null, null],
+		"lbSkills": {
             "50": 156,
             "99": 59
         },
@@ -256,15 +364,27 @@ window.CHARACTERS_DATA = [
     {
         "id": 110,
         "name": "サラ",
+		"race": "人間",           // ★新規: 種族
         "job": "僧侶",
         "rarity": "R",
         "hp": 310,
-        "mp": 580,
+        "mp": 480,
         "atk": 55,
         "def": 65,
         "spd": 90,
         "mag": 160,
-        "lbSkills": {
+        "mdef": 170,              // ★新規: 魔法防御 ベース値
+		"hit": 100,              // ★新規: 命中率 ベース値: %
+		"eva": 0,                // ★新規: 回避率 ベース値: %
+		"cri": 0,                // ★新規: クリティカル率 ベース値: %
+		/**
+		 * ★新規: 固定特性IDの配列 最大6つ
+		 * 指示に基づき、ここが空 [] または要素不足の場合は 
+		 * passiveSkill.js のロジックでランダム抽選されます。
+		 * [1つ目, 2つ目Lv5+, 3つ目Lv10+, 4つ目Lv20+, 5つ目Lv40+, 6つ目Lv80+]
+		 */
+		"fixedTraits": [58, 7, 13, 44, null, null],
+		"lbSkills": {
             "50": 50,
             "99": 453
         },
@@ -284,6 +404,7 @@ window.CHARACTERS_DATA = [
     {
         "id": 201,
         "name": "アラン",
+		"race": "人間",           // ★新規: 種族
         "job": "魔法剣士",
         "rarity": "SR",
         "hp": 550,
@@ -292,7 +413,18 @@ window.CHARACTERS_DATA = [
         "def": 130,
         "spd": 110,
         "mag": 180,
-        "lbSkills": {
+        "mdef": 150,              // ★新規: 魔法防御 ベース値
+		"hit": 100,              // ★新規: 命中率 ベース値: %
+		"eva": 0,                // ★新規: 回避率 ベース値: %
+		"cri": 0,                // ★新規: クリティカル率 ベース値: %
+		/**
+		 * ★新規: 固定特性IDの配列 最大6つ
+		 * 指示に基づき、ここが空 [] または要素不足の場合は 
+		 * passiveSkill.js のロジックでランダム抽選されます。
+		 * [1つ目, 2つ目Lv5+, 3つ目Lv10+, 4つ目Lv20+, 5つ目Lv40+, 6つ目Lv80+]
+		 */
+		"fixedTraits": [58, 1, 16, 19, null, null],
+		"lbSkills": {
             "50": 408,
             "99": 421
         },
@@ -312,6 +444,7 @@ window.CHARACTERS_DATA = [
     {
         "id": 202,
         "name": "ソフィア",
+		"race": "人間",           // ★新規: 種族
         "job": "賢者",
         "rarity": "SR",
         "hp": 480,
@@ -320,7 +453,18 @@ window.CHARACTERS_DATA = [
         "def": 90,
         "spd": 100,
         "mag": 230,
-        "lbSkills": {
+        "mdef": 180,              // ★新規: 魔法防御 ベース値
+		"hit": 100,              // ★新規: 命中率 ベース値: %
+		"eva": 0,                // ★新規: 回避率 ベース値: %
+		"cri": 0,                // ★新規: クリティカル率 ベース値: %
+		/**
+		 * ★新規: 固定特性IDの配列 最大6つ
+		 * 指示に基づき、ここが空 [] または要素不足の場合は 
+		 * passiveSkill.js のロジックでランダム抽選されます。
+		 * [1つ目, 2つ目Lv5+, 3つ目Lv10+, 4つ目Lv20+, 5つ目Lv40+, 6つ目Lv80+]
+		 */
+		"fixedTraits": [50, 7, 45, 27, null, null],
+		"lbSkills": {
             "50": 57,
             "99": 903
         },
@@ -340,15 +484,27 @@ window.CHARACTERS_DATA = [
     {
         "id": 203,
         "name": "ハヤテ",
+		"race": "人間",           // ★新規: 種族
         "job": "忍者",
         "rarity": "SR",
         "hp": 450,
-        "mp": 300,
+        "mp": 400,
         "atk": 150,
         "def": 80,
         "spd": 180,
         "mag": 150,
-        "lbSkills": {
+        "mdef": 120,              // ★新規: 魔法防御 ベース値
+		"hit": 100,              // ★新規: 命中率 ベース値: %
+		"eva": 0,                // ★新規: 回避率 ベース値: %
+		"cri": 0,                // ★新規: クリティカル率 ベース値: %
+		/**
+		 * ★新規: 固定特性IDの配列 最大6つ
+		 * 指示に基づき、ここが空 [] または要素不足の場合は 
+		 * passiveSkill.js のロジックでランダム抽選されます。
+		 * [1つ目, 2つ目Lv5+, 3つ目Lv10+, 4つ目Lv20+, 5つ目Lv40+, 6つ目Lv80+]
+		 */
+		"fixedTraits": [8, 4, 26, 22, null, null],
+		"lbSkills": {
             "50": 905,
             "99": 413
         },
@@ -368,15 +524,27 @@ window.CHARACTERS_DATA = [
     {
         "id": 204,
         "name": "レイラ",
+		"race": "人間",           // ★新規: 種族
         "job": "パラディン",
         "rarity": "SR",
         "hp": 700,
-        "mp": 250,
+        "mp": 350,
         "atk": 140,
         "def": 220,
         "spd": 60,
         "mag": 120,
-        "lbSkills": {
+        "mdef": 160,              // ★新規: 魔法防御 ベース値
+		"hit": 100,              // ★新規: 命中率 ベース値: %
+		"eva": 0,                // ★新規: 回避率 ベース値: %
+		"cri": 0,                // ★新規: クリティカル率 ベース値: %
+		/**
+		 * ★新規: 固定特性IDの配列 最大6つ
+		 * 指示に基づき、ここが空 [] または要素不足の場合は 
+		 * passiveSkill.js のロジックでランダム抽選されます。
+		 * [1つ目, 2つ目Lv5+, 3つ目Lv10+, 4つ目Lv20+, 5つ目Lv40+, 6つ目Lv80+]
+		 */
+		"fixedTraits": [16, 1, 17, 51, null, null],
+		"lbSkills": {
             "50": 24,
             "99": 401
         },
@@ -396,6 +564,7 @@ window.CHARACTERS_DATA = [
     {
         "id": 205,
         "name": "バロン",
+		"race": "人間",           // ★新規: 種族
         "job": "バトルマスター",
         "rarity": "SR",
         "hp": 650,
@@ -404,7 +573,18 @@ window.CHARACTERS_DATA = [
         "def": 100,
         "spd": 90,
         "mag": 90,
-        "lbSkills": {
+        "mdef": 100,              // ★新規: 魔法防御 ベース値
+		"hit": 100,              // ★新規: 命中率 ベース値: %
+		"eva": 0,                // ★新規: 回避率 ベース値: %
+		"cri": 0,                // ★新規: クリティカル率 ベース値: %
+		/**
+		 * ★新規: 固定特性IDの配列 最大6つ
+		 * 指示に基づき、ここが空 [] または要素不足の場合は 
+		 * passiveSkill.js のロジックでランダム抽選されます。
+		 * [1つ目, 2つ目Lv5+, 3つ目Lv10+, 4つ目Lv20+, 5つ目Lv40+, 6つ目Lv80+]
+		 */
+		"fixedTraits": [49, 3, 18, 10, null, null],
+		"lbSkills": {
             "50": 119,
             "99": 613
         },
@@ -424,6 +604,7 @@ window.CHARACTERS_DATA = [
     {
         "id": 206,
         "name": "ミネルバ",
+		"race": "人間",           // ★新規: 種族
         "job": "賢者",
         "rarity": "SR",
         "hp": 420,
@@ -432,7 +613,18 @@ window.CHARACTERS_DATA = [
         "def": 70,
         "spd": 120,
         "mag": 250,
-        "lbSkills": {
+        "mdef": 200,              // ★新規: 魔法防御 ベース値
+		"hit": 100,              // ★新規: 命中率 ベース値: %
+		"eva": 0,                // ★新規: 回避率 ベース値: %
+		"cri": 0,                // ★新規: クリティカル率 ベース値: %
+		/**
+		 * ★新規: 固定特性IDの配列 最大6つ
+		 * 指示に基づき、ここが空 [] または要素不足の場合は 
+		 * passiveSkill.js のロジックでランダム抽選されます。
+		 * [1つ目, 2つ目Lv5+, 3つ目Lv10+, 4つ目Lv20+, 5つ目Lv40+, 6つ目Lv80+]
+		 */
+		"fixedTraits": [53, 7, 33, 24, null, null],
+		"lbSkills": {
             "50": 415,
             "99": 63
         },
@@ -452,15 +644,27 @@ window.CHARACTERS_DATA = [
     {
         "id": 207,
         "name": "ハイネ",
+		"race": "人間",           // ★新規: 種族
         "job": "侍",
         "rarity": "SR",
         "hp": 680,
-        "mp": 200,
+        "mp": 300,
         "atk": 220,
         "def": 70,
         "spd": 140,
-        "mag": 50,
-        "lbSkills": {
+        "mag": 90,
+        "mdef": 80,              // ★新規: 魔法防御 ベース値
+		"hit": 100,              // ★新規: 命中率 ベース値: %
+		"eva": 0,                // ★新規: 回避率 ベース値: %
+		"cri": 0,                // ★新規: クリティカル率 ベース値: %
+		/**
+		 * ★新規: 固定特性IDの配列 最大6つ
+		 * 指示に基づき、ここが空 [] または要素不足の場合は 
+		 * passiveSkill.js のロジックでランダム抽選されます。
+		 * [1つ目, 2つ目Lv5+, 3つ目Lv10+, 4つ目Lv20+, 5つ目Lv40+, 6つ目Lv80+]
+		 */
+		"fixedTraits": [9, 1, 10, 19, null, null],
+		"lbSkills": {
             "50": 117,
             "99": 420
         },
@@ -480,15 +684,27 @@ window.CHARACTERS_DATA = [
     {
         "id": 208,
         "name": "リン",
+		"race": "人間",           // ★新規: 種族
         "job": "バトルマスター",
         "rarity": "SR",
         "hp": 580,
         "mp": 350,
-        "atk": 180,
+        "atk": 190,
         "def": 90,
         "spd": 140,
         "mag": 120,
-        "lbSkills": {
+        "mdef": 80,              // ★新規: 魔法防御 ベース値
+		"hit": 100,              // ★新規: 命中率 ベース値: %
+		"eva": 0,                // ★新規: 回避率 ベース値: %
+		"cri": 0,                // ★新規: クリティカル率 ベース値: %
+		/**
+		 * ★新規: 固定特性IDの配列 最大6つ
+		 * 指示に基づき、ここが空 [] または要素不足の場合は 
+		 * passiveSkill.js のロジックでランダム抽選されます。
+		 * [1つ目, 2つ目Lv5+, 3つ目Lv10+, 4つ目Lv20+, 5つ目Lv40+, 6つ目Lv80+]
+		 */
+		"fixedTraits": [9, 3, 38, 49, null, null],
+		"lbSkills": {
             "50": 22,
             "99": 111
         },
@@ -508,6 +724,7 @@ window.CHARACTERS_DATA = [
     {
         "id": 209,
         "name": "シルビア",
+		"race": "人間",           // ★新規: 種族
         "job": "スーパースター",
         "rarity": "SR",
         "hp": 500,
@@ -516,7 +733,18 @@ window.CHARACTERS_DATA = [
         "def": 120,
         "spd": 130,
         "mag": 180,
-        "lbSkills": {
+        "mdef": 160,              // ★新規: 魔法防御 ベース値
+		"hit": 100,              // ★新規: 命中率 ベース値: %
+		"eva": 0,                // ★新規: 回避率 ベース値: %
+		"cri": 0,                // ★新規: クリティカル率 ベース値: %
+		/**
+		 * ★新規: 固定特性IDの配列 最大6つ
+		 * 指示に基づき、ここが空 [] または要素不足の場合は 
+		 * passiveSkill.js のロジックでランダム抽選されます。
+		 * [1つ目, 2つ目Lv5+, 3つ目Lv10+, 4つ目Lv20+, 5つ目Lv40+, 6つ目Lv80+]
+		 */
+		"fixedTraits": [39, 5, 33, 22, null, null],
+		"lbSkills": {
             "50": 609,
             "99": 450
         },
@@ -536,15 +764,27 @@ window.CHARACTERS_DATA = [
     {
         "id": 210,
         "name": "カリン",
+		"race": "人間",           // ★新規: 種族
         "job": "侍",
         "rarity": "SR",
         "hp": 630,
-        "mp": 220,
+        "mp": 280,
         "atk": 240,
         "def": 60,
         "spd": 170,
         "mag": 50,
-        "lbSkills": {
+        "mdef": 100,              // ★新規: 魔法防御 ベース値
+		"hit": 100,              // ★新規: 命中率 ベース値: %
+		"eva": 0,                // ★新規: 回避率 ベース値: %
+		"cri": 0,                // ★新規: クリティカル率 ベース値: %
+		/**
+		 * ★新規: 固定特性IDの配列 最大6つ
+		 * 指示に基づき、ここが空 [] または要素不足の場合は 
+		 * passiveSkill.js のロジックでランダム抽選されます。
+		 * [1つ目, 2つ目Lv5+, 3つ目Lv10+, 4つ目Lv20+, 5つ目Lv40+, 6つ目Lv80+]
+		 */
+		"fixedTraits": [8, 1, 14, 10, null, null],
+		"lbSkills": {
             "50": 118,
             "99": 421
         },
@@ -564,15 +804,27 @@ window.CHARACTERS_DATA = [
     {
         "id": 301,
         "name": "アルス",
+		"race": "人間",           // ★新規: 種族
         "job": "勇者",
         "rarity": "N",
-        "hp": 800,
+        "hp": 700,
         "mp": 300,
         "atk": 150,
         "def": 120,
         "spd": 120,
         "mag": 130,
-        "lbSkills": {
+        "mdef": 120,              // ★新規: 魔法防御 ベース値
+		"hit": 100,              // ★新規: 命中率 ベース値: %
+		"eva": 0,                // ★新規: 回避率 ベース値: %
+		"cri": 0,                // ★新規: クリティカル率 ベース値: %
+		/**
+		 * ★新規: 固定特性IDの配列 最大6つ
+		 * 指示に基づき、ここが空 [] または要素不足の場合は 
+		 * passiveSkill.js のロジックでランダム抽選されます。
+		 * [1つ目, 2つ目Lv5+, 3つ目Lv10+, 4つ目Lv20+, 5つ目Lv40+, 6つ目Lv80+]
+		 */
+		"fixedTraits": [23, null, null, null, null, null],
+		"lbSkills": {
             "50": 57,
             "99": 59
         },
@@ -592,6 +844,7 @@ window.CHARACTERS_DATA = [
     {
         "id": 302,
         "name": "フリーダ",
+		"race": "人間",           // ★新規: 種族
         "job": "竜騎士",
         "rarity": "SSR",
         "hp": 900,
@@ -600,7 +853,18 @@ window.CHARACTERS_DATA = [
         "def": 150,
         "spd": 170,
         "mag": 200,
-        "lbSkills": {
+        "mdef": 150,              // ★新規: 魔法防御 ベース値
+		"hit": 100,              // ★新規: 命中率 ベース値: %
+		"eva": 0,                // ★新規: 回避率 ベース値: %
+		"cri": 0,                // ★新規: クリティカル率 ベース値: %
+		/**
+		 * ★新規: 固定特性IDの配列 最大6つ
+		 * 指示に基づき、ここが空 [] または要素不足の場合は 
+		 * passiveSkill.js のロジックでランダム抽選されます。
+		 * [1つ目, 2つ目Lv5+, 3つ目Lv10+, 4つ目Lv20+, 5つ目Lv40+, 6つ目Lv80+]
+		 */
+		"fixedTraits": [38, 2, 12, 19, null, null],
+		"lbSkills": {
             "50": 909,
             "99": 107
         },
@@ -620,6 +884,7 @@ window.CHARACTERS_DATA = [
     {
         "id": 303,
         "name": "リーシア",
+		"race": "人間",           // ★新規: 種族
         "job": "天地雷鳴士",
         "rarity": "SSR",
         "hp": 750,
@@ -628,7 +893,18 @@ window.CHARACTERS_DATA = [
         "def": 90,
         "spd": 140,
         "mag": 330,
-        "lbSkills": {
+        "mdef": 220,              // ★新規: 魔法防御 ベース値
+		"hit": 100,              // ★新規: 命中率 ベース値: %
+		"eva": 0,                // ★新規: 回避率 ベース値: %
+		"cri": 0,                // ★新規: クリティカル率 ベース値: %
+		/**
+		 * ★新規: 固定特性IDの配列 最大6つ
+		 * 指示に基づき、ここが空 [] または要素不足の場合は 
+		 * passiveSkill.js のロジックでランダム抽選されます。
+		 * [1つ目, 2つ目Lv5+, 3つ目Lv10+, 4つ目Lv20+, 5つ目Lv40+, 6つ目Lv80+]
+		 */
+		"fixedTraits": [11, 7, 26, 50, null, null],
+		"lbSkills": {
             "50": 616,
             "99": 906
         },
@@ -648,6 +924,7 @@ window.CHARACTERS_DATA = [
     {
         "id": 304,
         "name": "クロード",
+		"race": "人間",           // ★新規: 種族
         "job": "ゴッドハンド",
         "rarity": "SSR",
         "hp": 950,
@@ -656,7 +933,18 @@ window.CHARACTERS_DATA = [
         "def": 150,
         "spd": 150,
         "mag": 110,
-        "lbSkills": {
+        "mdef": 150,              // ★新規: 魔法防御 ベース値
+		"hit": 100,              // ★新規: 命中率 ベース値: %
+		"eva": 0,                // ★新規: 回避率 ベース値: %
+		"cri": 0,                // ★新規: クリティカル率 ベース値: %
+		/**
+		 * ★新規: 固定特性IDの配列 最大6つ
+		 * 指示に基づき、ここが空 [] または要素不足の場合は 
+		 * passiveSkill.js のロジックでランダム抽選されます。
+		 * [1つ目, 2つ目Lv5+, 3つ目Lv10+, 4つ目Lv20+, 5つ目Lv40+, 6つ目Lv80+]
+		 */
+		"fixedTraits": [27, 1, 10, 28, null, null],
+		"lbSkills": {
             "50": 56,
             "99": 902
         },
@@ -676,6 +964,7 @@ window.CHARACTERS_DATA = [
     {
         "id": 305,
         "name": "レオン",
+		"race": "人間",           // ★新規: 種族
         "job": "パラディン",
         "rarity": "SSR",
         "hp": 1000,
@@ -684,7 +973,18 @@ window.CHARACTERS_DATA = [
         "def": 220,
         "spd": 90,
         "mag": 200,
-        "lbSkills": {
+        "mdef": 180,              // ★新規: 魔法防御 ベース値
+		"hit": 100,              // ★新規: 命中率 ベース値: %
+		"eva": 0,                // ★新規: 回避率 ベース値: %
+		"cri": 0,                // ★新規: クリティカル率 ベース値: %
+		/**
+		 * ★新規: 固定特性IDの配列 最大6つ
+		 * 指示に基づき、ここが空 [] または要素不足の場合は 
+		 * passiveSkill.js のロジックでランダム抽選されます。
+		 * [1つ目, 2つ目Lv5+, 3つ目Lv10+, 4つ目Lv20+, 5つ目Lv40+, 6つ目Lv80+]
+		 */
+		"fixedTraits": [51, 1, 37, 45, null, null],
+		"lbSkills": {
             "50": 24,
             "99": 926
         },
@@ -704,6 +1004,7 @@ window.CHARACTERS_DATA = [
     {
         "id": 306,
         "name": "シャニー",
+		"race": "人間",           // ★新規: 種族
         "job": "忍者",
         "rarity": "SSR",
         "hp": 800,
@@ -712,7 +1013,18 @@ window.CHARACTERS_DATA = [
         "def": 90,
         "spd": 240,
         "mag": 220,
-        "lbSkills": {
+        "mdef": 240,              // ★新規: 魔法防御 ベース値
+		"hit": 100,              // ★新規: 命中率 ベース値: %
+		"eva": 0,                // ★新規: 回避率 ベース値: %
+		"cri": 0,                // ★新規: クリティカル率 ベース値: %
+		/**
+		 * ★新規: 固定特性IDの配列 最大6つ
+		 * 指示に基づき、ここが空 [] または要素不足の場合は 
+		 * passiveSkill.js のロジックでランダム抽選されます。
+		 * [1つ目, 2つ目Lv5+, 3つ目Lv10+, 4つ目Lv20+, 5つ目Lv40+, 6つ目Lv80+]
+		 */
+		"fixedTraits": [31, 4, 42, 30, null, null],
+		"lbSkills": {
             "50": 110,
             "99": 908
         },
@@ -732,6 +1044,7 @@ window.CHARACTERS_DATA = [
     {
         "id": 401,
         "name": "ルーナ",
+		"race": "人間",           // ★新規: 種族
         "job": "聖女",
         "rarity": "UR",
         "hp": 1500,
@@ -740,7 +1053,18 @@ window.CHARACTERS_DATA = [
         "def": 250,
         "spd": 200,
         "mag": 600,
-        "lbSkills": {
+        "mdef": 480,              // ★新規: 魔法防御 ベース値
+		"hit": 100,              // ★新規: 命中率 ベース値: %
+		"eva": 0,                // ★新規: 回避率 ベース値: %
+		"cri": 0,                // ★新規: クリティカル率 ベース値: %
+		/**
+		 * ★新規: 固定特性IDの配列 最大6つ
+		 * 指示に基づき、ここが空 [] または要素不足の場合は 
+		 * passiveSkill.js のロジックでランダム抽選されます。
+		 * [1つ目, 2つ目Lv5+, 3つ目Lv10+, 4つ目Lv20+, 5つ目Lv40+, 6つ目Lv80+]
+		 */
+		"fixedTraits": [50, 7, 13, 39, null, null],
+		"lbSkills": {
             "50": 922,
             "99": 413
         },
@@ -760,6 +1084,7 @@ window.CHARACTERS_DATA = [
     {
         "id": 402,
         "name": "ゼノン",
+		"race": "魔族",           // ★新規: 種族
         "job": "魔王",
         "rarity": "UR",
         "hp": 1800,
@@ -768,7 +1093,18 @@ window.CHARACTERS_DATA = [
         "def": 300,
         "spd": 250,
         "mag": 450,
-        "lbSkills": {
+        "mdef": 420,              // ★新規: 魔法防御 ベース値
+		"hit": 100,              // ★新規: 命中率 ベース値: %
+		"eva": 0,                // ★新規: 回避率 ベース値: %
+		"cri": 0,                // ★新規: クリティカル率 ベース値: %
+		/**
+		 * ★新規: 固定特性IDの配列 最大6つ
+		 * 指示に基づき、ここが空 [] または要素不足の場合は 
+		 * passiveSkill.js のロジックでランダム抽選されます。
+		 * [1つ目, 2つ目Lv5+, 3つ目Lv10+, 4つ目Lv20+, 5つ目Lv40+, 6つ目Lv80+]
+		 */
+		"fixedTraits": [28, 11, 10, 49, null, null],
+		"lbSkills": {
             "50": 901,
             "99": 902
         },
@@ -788,6 +1124,7 @@ window.CHARACTERS_DATA = [
     {
         "id": 501,
         "name": "リュシオン",
+		"race": "魔族",           // ★新規: 種族
         "job": "神",
         "rarity": "EX",
         "hp": 5000,
@@ -796,7 +1133,18 @@ window.CHARACTERS_DATA = [
         "def": 800,
         "spd": 600,
         "mag": 800,
-        "lbSkills": {
+        "mdef": 800,              // ★新規: 魔法防御 ベース値
+		"hit": 100,              // ★新規: 命中率 ベース値: %
+		"eva": 0,                // ★新規: 回避率 ベース値: %
+		"cri": 0,                // ★新規: クリティカル率 ベース値: %
+		/**
+		 * ★新規: 固定特性IDの配列 最大6つ
+		 * 指示に基づき、ここが空 [] または要素不足の場合は 
+		 * passiveSkill.js のロジックでランダム抽選されます。
+		 * [1つ目, 2つ目Lv5+, 3つ目Lv10+, 4つ目Lv20+, 5つ目Lv40+, 6つ目Lv80+]
+		 */
+		"fixedTraits": [30, 20, 14, 45, null, null],
+		"lbSkills": {
             "50": 90,
             "99": 502
         },
@@ -816,6 +1164,7 @@ window.CHARACTERS_DATA = [
     {
         "id": 1000,
         "name": "システム",
+		"race": "魔族",           // ★新規: 種族
         "job": "冒険者",
         "rarity": "N",
         "hp": 100,
@@ -826,7 +1175,18 @@ window.CHARACTERS_DATA = [
         "mag": 10,
         "sp": 0,
         "level": 1,
-        "lbSkills": {},
+        "mdef": 80,              // ★新規: 魔法防御 ベース値
+		"hit": 100,              // ★新規: 命中率 ベース値: %
+		"eva": 0,                // ★新規: 回避率 ベース値: %
+		"cri": 0,                // ★新規: クリティカル率 ベース値: %
+		/**
+		 * ★新規: 固定特性IDの配列 最大6つ
+		 * 指示に基づき、ここが空 [] または要素不足の場合は 
+		 * passiveSkill.js のロジックでランダム抽選されます。
+		 * [1つ目, 2つ目Lv5+, 3つ目Lv10+, 4つ目Lv20+, 5つ目Lv40+, 6つ目Lv80+]
+		 */
+		"fixedTraits": [37, 2, 41, 15, null, null],
+		"lbSkills": {},
         "img": null,
         "archives": {
             "base": "",
@@ -839,6 +1199,7 @@ window.CHARACTERS_DATA = [
     {
         "id": 1001,
         "name": "長老",
+		"race": "人間",           // ★新規: 種族
         "job": "冒険者",
         "rarity": "N",
         "hp": 100,
@@ -849,7 +1210,18 @@ window.CHARACTERS_DATA = [
         "mag": 10,
         "sp": 0,
         "level": 1,
-        "lbSkills": {},
+        "mdef": 80,              // ★新規: 魔法防御 ベース値
+		"hit": 100,              // ★新規: 命中率 ベース値: %
+		"eva": 0,                // ★新規: 回避率 ベース値: %
+		"cri": 0,                // ★新規: クリティカル率 ベース値: %
+		/**
+		 * ★新規: 固定特性IDの配列 最大6つ
+		 * 指示に基づき、ここが空 [] または要素不足の場合は 
+		 * passiveSkill.js のロジックでランダム抽選されます。
+		 * [1つ目, 2つ目Lv5+, 3つ目Lv10+, 4つ目Lv20+, 5つ目Lv40+, 6つ目Lv80+]
+		 */
+		"fixedTraits": [37, 2, 41, 15, null, null],
+		"lbSkills": {},
         "img": null,
         "archives": {
             "base": "",
@@ -862,6 +1234,7 @@ window.CHARACTERS_DATA = [
     {
         "id": 1002,
         "name": "村人",
+		"race": "人間",           // ★新規: 種族
         "job": "冒険者",
         "rarity": "N",
         "hp": 100,
@@ -872,7 +1245,18 @@ window.CHARACTERS_DATA = [
         "mag": 10,
         "sp": 0,
         "level": 1,
-        "lbSkills": {},
+        "mdef": 80,              // ★新規: 魔法防御 ベース値
+		"hit": 100,              // ★新規: 命中率 ベース値: %
+		"eva": 0,                // ★新規: 回避率 ベース値: %
+		"cri": 0,                // ★新規: クリティカル率 ベース値: %
+		/**
+		 * ★新規: 固定特性IDの配列 最大6つ
+		 * 指示に基づき、ここが空 [] または要素不足の場合は 
+		 * passiveSkill.js のロジックでランダム抽選されます。
+		 * [1つ目, 2つ目Lv5+, 3つ目Lv10+, 4つ目Lv20+, 5つ目Lv40+, 6つ目Lv80+]
+		 */
+		"fixedTraits": [37, 2, 41, 15, null, null],
+		"lbSkills": {},
         "img": null,
         "archives": {
             "base": "",
@@ -885,6 +1269,7 @@ window.CHARACTERS_DATA = [
     {
         "id": 1003,
         "name": "村人",
+		"race": "人間",           // ★新規: 種族
         "job": "冒険者",
         "rarity": "N",
         "hp": 100,
@@ -895,7 +1280,18 @@ window.CHARACTERS_DATA = [
         "mag": 10,
         "sp": 0,
         "level": 1,
-        "lbSkills": {},
+        "mdef": 80,              // ★新規: 魔法防御 ベース値
+		"hit": 100,              // ★新規: 命中率 ベース値: %
+		"eva": 0,                // ★新規: 回避率 ベース値: %
+		"cri": 0,                // ★新規: クリティカル率 ベース値: %
+		/**
+		 * ★新規: 固定特性IDの配列 最大6つ
+		 * 指示に基づき、ここが空 [] または要素不足の場合は 
+		 * passiveSkill.js のロジックでランダム抽選されます。
+		 * [1つ目, 2つ目Lv5+, 3つ目Lv10+, 4つ目Lv20+, 5つ目Lv40+, 6つ目Lv80+]
+		 */
+		"fixedTraits": [37, 2, 41, 15, null, null],
+		"lbSkills": {},
         "img": null,
         "archives": {
             "base": "",
@@ -908,6 +1304,7 @@ window.CHARACTERS_DATA = [
     {
         "id": 1004,
         "name": "衛兵",
+		"race": "人間",           // ★新規: 種族
         "job": "冒険者",
         "rarity": "N",
         "hp": 100,
@@ -918,7 +1315,18 @@ window.CHARACTERS_DATA = [
         "mag": 10,
         "sp": 0,
         "level": 1,
-        "lbSkills": {},
+        "mdef": 80,              // ★新規: 魔法防御 ベース値
+		"hit": 100,              // ★新規: 命中率 ベース値: %
+		"eva": 0,                // ★新規: 回避率 ベース値: %
+		"cri": 0,                // ★新規: クリティカル率 ベース値: %
+		/**
+		 * ★新規: 固定特性IDの配列 最大6つ
+		 * 指示に基づき、ここが空 [] または要素不足の場合は 
+		 * passiveSkill.js のロジックでランダム抽選されます。
+		 * [1つ目, 2つ目Lv5+, 3つ目Lv10+, 4つ目Lv20+, 5つ目Lv40+, 6つ目Lv80+]
+		 */
+		"fixedTraits": [37, 2, 41, 15, null, null],
+		"lbSkills": {},
         "img": null,
         "archives": {
             "base": "",
@@ -931,6 +1339,7 @@ window.CHARACTERS_DATA = [
     {
         "id": 2001,
         "name": "野盗",
+		"race": "人間",           // ★新規: 種族
         "job": "冒険者",
         "rarity": "N",
         "hp": 100,
@@ -941,7 +1350,18 @@ window.CHARACTERS_DATA = [
         "mag": 10,
         "sp": 0,
         "level": 1,
-        "lbSkills": {},
+        "mdef": 80,              // ★新規: 魔法防御 ベース値
+		"hit": 100,              // ★新規: 命中率 ベース値: %
+		"eva": 0,                // ★新規: 回避率 ベース値: %
+		"cri": 0,                // ★新規: クリティカル率 ベース値: %
+		/**
+		 * ★新規: 固定特性IDの配列 最大6つ
+		 * 指示に基づき、ここが空 [] または要素不足の場合は 
+		 * passiveSkill.js のロジックでランダム抽選されます。
+		 * [1つ目, 2つ目Lv5+, 3つ目Lv10+, 4つ目Lv20+, 5つ目Lv40+, 6つ目Lv80+]
+		 */
+		"fixedTraits": [37, 2, 41, 15, null, null],
+		"lbSkills": {},
         "img": null,
         "archives": {
             "base": "",
@@ -954,6 +1374,7 @@ window.CHARACTERS_DATA = [
     {
         "id": 2002,
         "name": "荒くれ",
+		"race": "人間",           // ★新規: 種族
         "job": "冒険者",
         "rarity": "N",
         "hp": 100,
@@ -964,7 +1385,18 @@ window.CHARACTERS_DATA = [
         "mag": 10,
         "sp": 0,
         "level": 1,
-        "lbSkills": {},
+        "mdef": 80,              // ★新規: 魔法防御 ベース値
+		"hit": 100,              // ★新規: 命中率 ベース値: %
+		"eva": 0,                // ★新規: 回避率 ベース値: %
+		"cri": 0,                // ★新規: クリティカル率 ベース値: %
+		/**
+		 * ★新規: 固定特性IDの配列 最大6つ
+		 * 指示に基づき、ここが空 [] または要素不足の場合は 
+		 * passiveSkill.js のロジックでランダム抽選されます。
+		 * [1つ目, 2つ目Lv5+, 3つ目Lv10+, 4つ目Lv20+, 5つ目Lv40+, 6つ目Lv80+]
+		 */
+		"fixedTraits": [37, 2, 41, 15, null, null],
+		"lbSkills": {},
         "img": null,
         "archives": {
             "base": "",
@@ -977,6 +1409,7 @@ window.CHARACTERS_DATA = [
     {
         "id": 1004,
         "name": "騎士",
+		"race": "人間",           // ★新規: 種族
         "job": "冒険者",
         "rarity": "N",
         "hp": 100,
@@ -987,7 +1420,18 @@ window.CHARACTERS_DATA = [
         "mag": 10,
         "sp": 0,
         "level": 1,
-        "lbSkills": {},
+        "mdef": 80,              // ★新規: 魔法防御 ベース値
+		"hit": 100,              // ★新規: 命中率 ベース値: %
+		"eva": 0,                // ★新規: 回避率 ベース値: %
+		"cri": 0,                // ★新規: クリティカル率 ベース値: %
+		/**
+		 * ★新規: 固定特性IDの配列 最大6つ
+		 * 指示に基づき、ここが空 [] または要素不足の場合は 
+		 * passiveSkill.js のロジックでランダム抽選されます。
+		 * [1つ目, 2つ目Lv5+, 3つ目Lv10+, 4つ目Lv20+, 5つ目Lv40+, 6つ目Lv80+]
+		 */
+		"fixedTraits": [37, 2, 41, 15, null, null],
+		"lbSkills": {},
         "img": null,
         "archives": {
             "base": "",
@@ -1000,6 +1444,7 @@ window.CHARACTERS_DATA = [
     {
         "id": 2003,
         "name": "親分",
+		"race": "人間",           // ★新規: 種族
         "job": "冒険者",
         "rarity": "N",
         "hp": 100,
@@ -1010,7 +1455,18 @@ window.CHARACTERS_DATA = [
         "mag": 10,
         "sp": 0,
         "level": 1,
-        "lbSkills": {},
+        "mdef": 80,              // ★新規: 魔法防御 ベース値
+		"hit": 100,              // ★新規: 命中率 ベース値: %
+		"eva": 0,                // ★新規: 回避率 ベース値: %
+		"cri": 0,                // ★新規: クリティカル率 ベース値: %
+		/**
+		 * ★新規: 固定特性IDの配列 最大6つ
+		 * 指示に基づき、ここが空 [] または要素不足の場合は 
+		 * passiveSkill.js のロジックでランダム抽選されます。
+		 * [1つ目, 2つ目Lv5+, 3つ目Lv10+, 4つ目Lv20+, 5つ目Lv40+, 6つ目Lv80+]
+		 */
+		"fixedTraits": [37, 2, 41, 15, null, null],
+		"lbSkills": {},
         "img": null,
         "archives": {
             "base": "",
@@ -1023,6 +1479,7 @@ window.CHARACTERS_DATA = [
     {
         "id": 3001,
         "name": "魔族",
+		"race": "魔族",           // ★新規: 種族
         "job": "冒険者",
         "rarity": "N",
         "hp": 100,
@@ -1033,7 +1490,18 @@ window.CHARACTERS_DATA = [
         "mag": 10,
         "sp": 0,
         "level": 1,
-        "lbSkills": {},
+        "mdef": 80,              // ★新規: 魔法防御 ベース値
+		"hit": 100,              // ★新規: 命中率 ベース値: %
+		"eva": 0,                // ★新規: 回避率 ベース値: %
+		"cri": 0,                // ★新規: クリティカル率 ベース値: %
+		/**
+		 * ★新規: 固定特性IDの配列 最大6つ
+		 * 指示に基づき、ここが空 [] または要素不足の場合は 
+		 * passiveSkill.js のロジックでランダム抽選されます。
+		 * [1つ目, 2つ目Lv5+, 3つ目Lv10+, 4つ目Lv20+, 5つ目Lv40+, 6つ目Lv80+]
+		 */
+		"fixedTraits": [37, 2, 41, 15, null, null],
+		"lbSkills": {},
         "img": null,
         "archives": {
             "base": "",
@@ -1046,6 +1514,7 @@ window.CHARACTERS_DATA = [
     {
         "id": 3002,
         "name": "魔人",
+		"race": "魔族",           // ★新規: 種族
         "job": "冒険者",
         "rarity": "N",
         "hp": 100,
@@ -1056,7 +1525,18 @@ window.CHARACTERS_DATA = [
         "mag": 10,
         "sp": 0,
         "level": 1,
-        "lbSkills": {},
+        "mdef": 80,              // ★新規: 魔法防御 ベース値
+		"hit": 100,              // ★新規: 命中率 ベース値: %
+		"eva": 0,                // ★新規: 回避率 ベース値: %
+		"cri": 0,                // ★新規: クリティカル率 ベース値: %
+		/**
+		 * ★新規: 固定特性IDの配列 最大6つ
+		 * 指示に基づき、ここが空 [] または要素不足の場合は 
+		 * passiveSkill.js のロジックでランダム抽選されます。
+		 * [1つ目, 2つ目Lv5+, 3つ目Lv10+, 4つ目Lv20+, 5つ目Lv40+, 6つ目Lv80+]
+		 */
+		"fixedTraits": [37, 2, 41, 15, null, null],
+		"lbSkills": {},
         "img": null,
         "archives": {
             "base": "",
@@ -1069,6 +1549,7 @@ window.CHARACTERS_DATA = [
     {
         "id": 3003,
         "name": "魔神",
+		"race": "魔族",           // ★新規: 種族
         "job": "冒険者",
         "rarity": "N",
         "hp": 100,
@@ -1079,7 +1560,18 @@ window.CHARACTERS_DATA = [
         "mag": 10,
         "sp": 0,
         "level": 1,
-        "lbSkills": {},
+        "mdef": 80,              // ★新規: 魔法防御 ベース値
+		"hit": 100,              // ★新規: 命中率 ベース値: %
+		"eva": 0,                // ★新規: 回避率 ベース値: %
+		"cri": 0,                // ★新規: クリティカル率 ベース値: %
+		/**
+		 * ★新規: 固定特性IDの配列 最大6つ
+		 * 指示に基づき、ここが空 [] または要素不足の場合は 
+		 * passiveSkill.js のロジックでランダム抽選されます。
+		 * [1つ目, 2つ目Lv5+, 3つ目Lv10+, 4つ目Lv20+, 5つ目Lv40+, 6つ目Lv80+]
+		 */
+		"fixedTraits": [37, 2, 41, 15, null, null],
+		"lbSkills": {},
         "img": null,
         "archives": {
             "base": "",
@@ -1092,6 +1584,7 @@ window.CHARACTERS_DATA = [
     {
         "id": 4001,
         "name": "深淵なる闇",
+		"race": "魔族",           // ★新規: 種族
         "job": "神",
         "rarity": "N",
         "hp": 99999,
@@ -1102,7 +1595,18 @@ window.CHARACTERS_DATA = [
         "mag": 99999,
         "sp": 999,
         "level": 1,
-        "lbSkills": {},
+        "mdef": 80,              // ★新規: 魔法防御 ベース値
+		"hit": 100,              // ★新規: 命中率 ベース値: %
+		"eva": 0,                // ★新規: 回避率 ベース値: %
+		"cri": 0,                // ★新規: クリティカル率 ベース値: %
+		/**
+		 * ★新規: 固定特性IDの配列 最大6つ
+		 * 指示に基づき、ここが空 [] または要素不足の場合は 
+		 * passiveSkill.js のロジックでランダム抽選されます。
+		 * [1つ目, 2つ目Lv5+, 3つ目Lv10+, 4つ目Lv20+, 5つ目Lv40+, 6つ目Lv80+]
+		 */
+		"fixedTraits": [37, 2, 41, 15, null, null],
+		"lbSkills": {},
         "img": null,
         "archives": {
             "base": "",

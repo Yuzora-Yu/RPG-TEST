@@ -242,9 +242,31 @@ const MenuBlacksmith = {
         const sorted = MenuBlacksmith.applySortAndFilter(candidates);
         list.innerHTML = '';
         sorted.forEach(c => {
-            const div = document.createElement('div'); div.className = 'list-item'; div.style.cssText = 'flex-direction:column; align-items:flex-start; background:rgba(255,255,255,0.02); margin-bottom:4px; border:1px solid #333;';
-            div.innerHTML = `<div style="font-weight:bold; color:${Menu.getRarityColor(c.item.rarity)}; border-bottom:1px solid #333; width:100%; padding-bottom:4px; margin-bottom:4px; display:flex; justify-content:space-between;"><span>${c.item.name} ${c.item.locked?'🔒':''}</span>${c.owner ? `<span style="color:#f88; font-size:10px;">[${c.owner}]</span>` : ''}</div>${Menu.getEquipDetailHTML(c.item, false)}`;
-            div.onclick = () => { MenuBlacksmith.state.target = c.item; if (MenuBlacksmith.mode === 'synthesis') MenuBlacksmith.renderMaterialList_Synthesis(true); else if (MenuBlacksmith.mode === 'refine') MenuBlacksmith.renderOptionList_Refine(); else MenuBlacksmith.renderOptionList_Enhance(); };
+            const item = c.item;
+            const div = document.createElement('div'); 
+            div.className = 'list-item'; 
+            div.style.cssText = 'flex-direction:column; align-items:flex-start; background:rgba(255,255,255,0.02); margin-bottom:4px; border:1px solid #333;';
+            
+            // --- 特性表示用のHTML生成 ---
+            let traitHtml = '';
+            if (item.traits && item.traits.length > 0) {
+                traitHtml = `<div style="display:flex; flex-wrap:wrap; gap:2px 6px; margin-top:2px; border-top:1px dashed #444; padding-top:2px; width:100%;">` +
+                    item.traits.map(t => {
+                        const m = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.MASTER[t.id] : null;
+                        return m ? `<span style="color:#00ffff; font-size:9px;">★${m.name} Lv${t.level}</span>` : '';
+                    }).join('') + 
+                `</div>`;
+            }
+
+            div.innerHTML = `
+                <div style="font-weight:bold; color:${Menu.getRarityColor(item.rarity)}; border-bottom:1px solid #333; width:100%; padding-bottom:4px; margin-bottom:4px; display:flex; justify-content:space-between;">
+                    <span>${item.name} ${item.locked?'🔒':''}</span>
+                    ${c.owner ? `<span style="color:#f88; font-size:10px;">[${c.owner}]</span>` : ''}
+                </div>
+                ${Menu.getEquipDetailHTML(item, false)}
+                ${traitHtml}
+            `;
+            div.onclick = () => { MenuBlacksmith.state.target = item; if (MenuBlacksmith.mode === 'synthesis') MenuBlacksmith.renderMaterialList_Synthesis(true); else if (MenuBlacksmith.mode === 'refine') MenuBlacksmith.renderOptionList_Refine(); else MenuBlacksmith.renderOptionList_Enhance(); };
             list.appendChild(div);
         });
         footer.innerHTML = `<div style="text-align:center; color:#ffd700; font-size:11px; font-weight:bold;">${MenuBlacksmith.mode === 'synthesis' ? 'ベースにする＋３装備を選んでください' : '対象の装備を選んでください'}</div>`;
@@ -262,7 +284,22 @@ const MenuBlacksmith = {
         else {
             sorted.forEach(item => {
                 const div = document.createElement('div'); div.className = 'list-item'; div.style.cssText = 'flex-direction:column; align-items:flex-start;';
-                div.innerHTML = `<div style="font-weight:bold; color:${Menu.getRarityColor(item.rarity)}; border-bottom:1px solid #333; width:100%; margin-bottom:4px;">${item.name}</div>${Menu.getEquipDetailHTML(item, false)}`;
+                
+                let traitHtml = '';
+                if (item.traits && item.traits.length > 0) {
+                    traitHtml = `<div style="display:flex; flex-wrap:wrap; gap:2px 6px; margin-top:2px; border-top:1px dashed #444; padding-top:2px; width:100%;">` +
+                        item.traits.map(t => {
+                            const m = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.MASTER[t.id] : null;
+                            return m ? `<span style="color:#00ffff; font-size:9px;">★${m.name} Lv${t.level}</span>` : '';
+                        }).join('') + 
+                    `</div>`;
+                }
+
+                div.innerHTML = `
+                    <div style="font-weight:bold; color:${Menu.getRarityColor(item.rarity)}; border-bottom:1px solid #333; width:100%; margin-bottom:4px;">${item.name}</div>
+                    ${Menu.getEquipDetailHTML(item, false)}
+                    ${traitHtml}
+                `;
                 div.onclick = () => { MenuBlacksmith.state.material = item; MenuBlacksmith.renderOptionList_Synthesis(); };
                 list.appendChild(div);
             });
@@ -389,7 +426,22 @@ const MenuBlacksmith = {
         MenuBlacksmith.changeScreen('option');
         const list = document.getElementById('smith-option-list');
         const header = document.getElementById('smith-option-header');
-        header.innerHTML = `レアリティを昇格させるオプションを選択`;
+        
+		const target = MenuBlacksmith.state.target;
+		let targetTraits = '';
+		if (target.traits && target.traits.length > 0) {
+			targetTraits = `<div style="font-size:9px; color:#0ff; margin-top:2px;">` + 
+				target.traits.map(t => {
+					const m = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.MASTER[t.id] : null;
+					return m ? `★${m.name} Lv${t.level}` : '';
+				}).join(' ') + `</div>`;
+		}
+		header.innerHTML = `
+			<div style="margin-bottom:4px;">${MenuBlacksmith.mode === 'refine' ? '精錬' : '強化'}対象: <span style="color:${Menu.getRarityColor(target.rarity)};">${target.name}</span></div>
+			${targetTraits}
+			<div style="font-size:10px; color:#aaa; margin-top:4px;">${MenuBlacksmith.mode === 'refine' ? '昇格させるオプションを選択' : '強化したい能力を選択'}</div>
+		`;
+		
         list.innerHTML = '';
         MenuBlacksmith.state.target.opts.forEach((opt, idx) => {
             if (opt.rarity === 'EX') return;
@@ -463,7 +515,22 @@ const MenuBlacksmith = {
                 const div = document.createElement('div'); div.className = 'list-item'; div.style.cssText = 'flex-direction:column; align-items:flex-start;';
                 const refresh = () => { div.style.background = MenuBlacksmith.state.materials.includes(item.id) ? 'rgba(0,255,255,0.1)' : 'transparent'; div.style.border = MenuBlacksmith.state.materials.includes(item.id) ? '1px solid #0ff' : '1px solid #333'; };
                 refresh();
-                div.innerHTML = `<div style="font-weight:bold; color:${Menu.getRarityColor(item.rarity)};">${item.name}</div>${Menu.getEquipDetailHTML(item, false)}`;
+
+                let traitHtml = '';
+                if (item.traits && item.traits.length > 0) {
+                    traitHtml = `<div style="display:flex; flex-wrap:wrap; gap:2px 6px; margin-top:2px; border-top:1px dashed #444; padding-top:2px; width:100%;">` +
+                        item.traits.map(t => {
+                            const m = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.MASTER[t.id] : null;
+                            return m ? `<span style="color:#00ffff; font-size:9px;">★${m.name} Lv${t.level}</span>` : '';
+                        }).join('') + 
+                    `</div>`;
+                }
+
+                div.innerHTML = `
+                    <div style="font-weight:bold; color:${Menu.getRarityColor(item.rarity)};">${item.name}</div>
+                    ${Menu.getEquipDetailHTML(item, false)}
+                    ${traitHtml}
+                `;
                 div.onclick = () => { const idx = MenuBlacksmith.state.materials.indexOf(item.id); if(idx > -1) MenuBlacksmith.state.materials.splice(idx,1); else if(MenuBlacksmith.state.materials.length < req) MenuBlacksmith.state.materials.push(item.id); refresh(); updateFooter(); };
                 list.appendChild(div);
             });

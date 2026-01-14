@@ -293,8 +293,8 @@ const EQUIP_MASTER = [
     { rank: 200, name: "創世の腕輪", type: "盾", baseName: "腕輪", data: { def: 6000, atk: 5000, finDmg: 20, resists_Debuff: 50 }, possibleOpts: ['atk', 'def', 'finDmg', 'elmAtk'] },
     { rank: 200, name: "無窮の冠", type: "頭", baseName: "兜", data: { def: 8500, hp: 10000, resists_InstantDeath: 50, resists_Fear: 50 }, possibleOpts: ['hp', 'mp', 'def', 'resists_Fear', 'resists_InstantDeath'] },
     { rank: 200, name: "叡智の宝冠", type: "頭", baseName: "帽子", data: { def: 6500, mag: 11000, mp: 5000, resists_SpellSeal: 50, resists_HealSeal: 50 }, possibleOpts: ['hp', 'mp', 'mag', 'elmRes'] },
-    { rank: 200, name: "創世の神鎧", type: "体", baseName: "鎧", data: { def: 22000, hp: 15000, finRed: 35, resists_SkillSeal: 50 }, possibleOpts: ['hp', 'mp', 'def', 'finRed', 'elmRes'] },
-    { rank: 200, name: "終焉 of 神衣", type: "体", baseName: "ローブ", data: { def: 14000, mag: 15000, mp: 8000, elmRes: {'混沌':50}, resists_Debuff: 50 }, possibleOpts: ['mp', 'mag', 'def', 'elmAtk'] },
+    { rank: 200, name: "創世の神鎧", type: "体", baseName: "鎧", data: { def: 22000, hp: 15000, mdef: 200, cri: 5, hit: 5, eva: 5, finRed: 35, resists_SkillSeal: 50 ,traits: [{ id: 15, level: 3 },{ id: 18, level: 2 }]}, possibleOpts: ['hp', 'mp', 'def', 'finRed', 'elmRes'] },
+    { rank: 200, name: "終焉の神衣", type: "体", baseName: "ローブ", data: { def: 14000, mag: 15000, mp: 8000, elmRes: {'混沌':50}, resists_Debuff: 50 }, possibleOpts: ['mp', 'mag', 'def', 'elmAtk'] },
     { rank: 200, name: "終焉の足跡", type: "足", baseName: "ブーツ", data: { spd: 45000, def: 8000, doubleAction: 20, resists_Shock: 50 }, possibleOpts: ['def', 'spd', 'finDmg', 'finRed', 'elmRes'] },
     { rank: 200, name: "悠久の歩み", type: "足", baseName: "くつ", data: { spd: 180000, fastestAction: 40, resists_Shock: 50 }, possibleOpts: ['spd', 'finDmg', 'finRed', 'elmAtk'] }
 ];

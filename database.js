@@ -144,6 +144,12 @@ const DB = {
         {key:'def', name:'防御', unit:'%', allowed:['N','R','SR','SSR','UR','EX'], min:{N:1,R:2,SR:3,SSR:6,UR:10,EX:15}, max:{N:2,R:3,SR:6,SSR:10,UR:15,EX:25}},
         {key:'mag', name:'魔力', unit:'%', allowed:['N','R','SR','SSR','UR','EX'], min:{N:1,R:2,SR:3,SSR:6,UR:10,EX:15}, max:{N:2,R:3,SR:6,SSR:10,UR:15,EX:25}},
         {key:'spd', name:'速さ', unit:'%', allowed:['N','R','SR','SSR','UR','EX'], min:{N:1,R:2,SR:3,SSR:6,UR:10,EX:15}, max:{N:2,R:3,SR:6,SSR:10,UR:15,EX:25}},
+		{key:'mdef', name:'魔防', unit:'%', allowed:['N','R','SR','SSR','UR','EX'], min:{N:1,R:2,SR:3,SSR:6,UR:10,EX:15}, max:{N:2,R:3,SR:6,SSR:10,UR:15,EX:25}},
+
+        {key:'hit', name:'命中', unit:'%', allowed:['UR','EX'], min:{UR:3,EX:6}, max:{UR:6,EX:10}},
+        {key:'eva', name:'回避', unit:'%', allowed:['UR','EX'], min:{UR:3,EX:6}, max:{UR:6,EX:10}},
+        {key:'cri', name:'会心', unit:'%', allowed:['UR','EX'], min:{UR:3,EX:6}, max:{UR:6,EX:10}},
+
         {key:'hp', name:'HP', unit:'%', allowed:['N','R','SR','SSR','UR','EX'], min:{N:1,R:2,SR:3,SSR:6,UR:10,EX:15}, max:{N:3,R:5,SR:8,SSR:12,UR:18,EX:30}},
         {key:'mp', name:'MP', unit:'%', allowed:['N','R','SR','SSR','UR','EX'], min:{N:1,R:2,SR:3,SSR:6,UR:10,EX:15}, max:{N:3,R:5,SR:8,SSR:12,UR:18,EX:30}},
         {key:'finDmg', name:'与ダメ', unit:'%', allowed:['UR','EX'], min:{UR:10,EX:20}, max:{UR:20,EX:30}},
@@ -271,9 +277,13 @@ const INITIAL_DATA_TEMPLATE = {
     characters: [
         {
             uid:'p1', isHero:true, charId:301, name:'アルス', job:'勇者', rarity:'N', 
-            level:1, hp:800, mp:300, atk:150, def:120, spd:120, mag:130, limitBreak:0, sp:1,
+            level:1, hp:700, mp:300, atk:150, def:120, spd:120, mag:130, 
+            mdef: 120, hit: 100, eva: 0, cri: 0, // ★新規ステータス追加 
+			limitBreak:0, sp:1,
             tree:{"ATK":0,"MAG":0,"SPD":0,"HP":0,"MP":0, "WARRIOR":0, "MAGE":0, "PRIEST":0, "M_KNIGHT":0}, 
-            equips:{}, alloc:{}, skills:[1]
+            equips:{}, alloc:{}, skills:[1],
+            traits: [ { id: 30, level: 1 } ], // ★初期特性の付与
+            disabledTraits: [], // 特性ON/OFF管理用
         }		
     ],
     party: ['p1'],
