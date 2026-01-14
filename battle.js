@@ -3055,7 +3055,7 @@ findNextActor: () => {
 				// --- 2. 装備ドロップ判定 (独立) ---
 				const isBoss = (base.id >= 1000);
 				// 通常敵の装備率は 10% に下方修正。ボスは確定。
-				const equipChance = isBoss ? 100 : 10; 
+				const equipChance = isBoss ? 100 : 30; 
 				if (Math.random() * 100 < equipChance) {
 					let eq;
 					if (isBoss && Math.random() < 0.02) {
@@ -3073,9 +3073,11 @@ findNextActor: () => {
 						// 超レア演出用の type: 'kai'
 						drops.push({ name: eq.name, isRare: true, type: 'kai' });
 					} else {
-						// 通常装備生成 (bonusPlus3 で +3 のなりやすさを判定)
-						let fixedPlus = null;
-						if (Math.random() * 100 < bonusPlus3) fixedPlus = 3;
+						// 通常装備生成
+						// ボスの場合は +3 品質を確定。
+						// 通常敵の場合は「基礎10% + 特性ボーナス」の確率で +3 品質にする。
+						let fixedPlus = isBoss ? 3 : (Math.random() * 100 < (10 + bonusPlus3) ? 3 : null);
+						
 						eq = App.createEquipByFloor('drop', floor, fixedPlus);
 						const isPlus3 = (eq.plus === 3);
 						if (isPlus3 || isBoss) hasRareDrop = true;
@@ -3095,8 +3097,8 @@ findNextActor: () => {
 						}
 					}
 				} else {
-					// 汎用アイテムドロップ率を 5% に下方修正
-					if (Math.random() * 100 < (5 + bonusNormal)) {
+					// 汎用アイテムドロップ率を 10% に下方修正
+					if (Math.random() * 100 < (10 + bonusNormal)) {
 						const candidates = DB.ITEMS.filter(i => i.rank <= Math.min(200, floor) && i.type !== '貴重品' && i.id < 100);
 						if (candidates.length > 0) {
 							const item = candidates[Math.floor(Math.random() * candidates.length)];

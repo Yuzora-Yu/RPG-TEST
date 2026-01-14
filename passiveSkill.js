@@ -65,8 +65,8 @@ const PassiveSkill = {
         53: { id: 53, name: '魔力循環', type: '補助', params: { turn_mp_regen_pct: 1 }, effect: '戦闘中自身のMPが回復する', desc: '毎ターン終了時に、自身のMPがスキル%回復する' },
         54: { id: 54, name: '応急手当', type: '補助', params: { post_battle_hp_regen_pct: 1 }, effect: '戦闘後パーティのHPが少し回復する', desc: '戦闘終了時に、パーティのHPがスキル%回復する' },
         55: { id: 55, name: '魔力充填', type: '補助', params: { post_battle_mp_regen_pct: 1 }, effect: '戦闘後パーティのMPが少し回復する', desc: '戦闘終了時に、パーティのMPがスキル%回復する' },
-        56: { id: 56, name: '解体', type: '補助', params: { drop_normal_pct: 1, drop_rare_pct: 0.5, equip_plus3_pct: 0.33 }, effect: '戦闘後のアイテムドロップ率上昇', desc: '通常ドロップ+スキル%、レアドロップ+スキル/2%、装備の+3確率+スキル/3%上昇' },
-        57: { id: 57, name: '目利き', type: '補助', params: { drop_normal_pct: 1, drop_rare_pct: 0.5, equip_plus3_pct: 0.33 }, effect: '戦闘後のアイテムドロップ率上昇', desc: '通常・レアドロップ、および宝箱から+3装備が出る確率が上昇する' },
+        56: { id: 56, name: '解体', type: '補助', params: { drop_normal_pct: 1, drop_rare_pct: 0.25, equip_plus3_pct: 0.5 }, effect: '戦闘後のアイテムドロップ上昇', desc: '通常ドロップ+スキル%、レアドロップ+スキル/4%、装備の+3確率+スキル/2%上昇' },
+        57: { id: 57, name: '目利き', type: '補助', params: { drop_normal_pct: 1, drop_rare_pct: 0.25, equip_plus3_pct: 0.5 }, effect: '宝箱のアイテムドロップ上昇', desc: '通常ドロップ+スキル%、レアドロップ+スキル/4%、装備の+3確率+スキル/2%上昇' },
         58: { 
 				id: 58, 
 				name: '大器晩成', 
