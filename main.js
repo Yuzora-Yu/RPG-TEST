@@ -302,20 +302,36 @@ const App = {
         // セーブデータの読み込み
         App.load();
 
-        // 読み込み失敗、または新規プレイの場合
-        if (!App.data) {
-            App.data = App.getInitialData();
-        }
+        // --- 修正点1: 読み込み失敗時に自動でデータを作成しない ---
+        // これにより startGameLogic 内の判定が機能し、セーブがない場合はタイトル(main.html)へ飛びます
+        if (!App.data) return;
 
         const initial = App.getInitialData();
 
+        // --- 修正点2: エリアや座標の整合性チェック（安全な復帰） ---
         // 1. location の補完
-        if (!App.data.location) {
-            App.data.location = JSON.parse(JSON.stringify(initial.location));
-        } else {
-            if (!App.data.location.area) App.data.location.area = 'START_VILLAGE';
-            if (App.data.location.x === undefined) App.data.location.x = 6;
-            if (App.data.location.y === undefined) App.data.location.y = 4;
+        if (App.data.location) {
+            const loc = App.data.location;
+            const area = loc.area;
+            
+            // 現在のビルドに存在するエリアか判定
+            const isWorld = (area === 'WORLD');
+            const isAbyss = (area === 'ABYSS');
+            const isFixed = (typeof FIXED_MAPS !== 'undefined' && FIXED_MAPS[area]);
+            const isDungeonMap = (typeof FIXED_DUNGEON_MAPS !== 'undefined' && FIXED_DUNGEON_MAPS[area]);
+
+            if (!isWorld && !isAbyss && !isFixed && !isDungeonMap) {
+                // エリア自体が存在しない（削除・改名された）場合は初期位置へ
+                console.warn(`[Recovery] 非存在エリア '${area}' を検知。初期位置へ復旧します。`);
+                App.data.location = JSON.parse(JSON.stringify(initial.location));
+            } else if (isFixed || isDungeonMap) {
+                // 固定マップの場合、座標が現在のマップの範囲内か判定
+                const mapDef = isFixed ? FIXED_MAPS[area] : FIXED_DUNGEON_MAPS[area];
+                if (mapDef && (loc.x < 0 || loc.x >= mapDef.width || loc.y < 0 || loc.y >= mapDef.height)) {
+                    console.warn(`[Recovery] マップ外座標 (${loc.x}, ${loc.y}) を検知。初期位置へ復旧します。`);
+                    App.data.location = JSON.parse(JSON.stringify(initial.location));
+                }
+            }
         }
 
         // 2. progress の補完
