@@ -371,9 +371,9 @@ const Dungeon = {
 
         checkMembers.forEach(char => {
             if (typeof PassiveSkill !== 'undefined') {
-                bonusNormal += PassiveSkill.getSumValue(char, 'drop_normal_pct');
-                bonusRare   += PassiveSkill.getSumValue(char, 'drop_rare_pct');
-                bonusPlus3  += PassiveSkill.getSumValue(char, 'equip_plus3_pct');
+                bonusNormal += PassiveSkill.getSumValue(char, 'chest_drop_normal_pct');
+                bonusRare   += PassiveSkill.getSumValue(char, 'chest_drop_rare_pct');
+                bonusPlus3  += PassiveSkill.getSumValue(char, 'chest_equip_plus3_pct');
             }
         });
 

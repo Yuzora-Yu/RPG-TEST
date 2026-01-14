@@ -66,7 +66,9 @@ const PassiveSkill = {
         54: { id: 54, name: '応急手当', type: '補助', params: { post_battle_hp_regen_pct: 1 }, effect: '戦闘後パーティのHPが少し回復する', desc: '戦闘終了時に、パーティのHPがスキル%回復する' },
         55: { id: 55, name: '魔力充填', type: '補助', params: { post_battle_mp_regen_pct: 1 }, effect: '戦闘後パーティのMPが少し回復する', desc: '戦闘終了時に、パーティのMPがスキル%回復する' },
         56: { id: 56, name: '解体', type: '補助', params: { drop_normal_pct: 1, drop_rare_pct: 0.25, equip_plus3_pct: 0.5 }, effect: '戦闘後のアイテムドロップ上昇', desc: '通常ドロップ+スキル%、レアドロップ+スキル/4%、装備の+3確率+スキル/2%上昇' },
-        57: { id: 57, name: '目利き', type: '補助', params: { drop_normal_pct: 1, drop_rare_pct: 0.25, equip_plus3_pct: 0.5 }, effect: '宝箱のアイテムドロップ上昇', desc: '通常ドロップ+スキル%、レアドロップ+スキル/4%、装備の+3確率+スキル/2%上昇' },
+		// 57: { id: 57, name: '目利き', type: '補助', params: { drop_normal_pct: 1, drop_rare_pct: 0.25, equip_plus3_pct: 0.5 }, ... }
+		// [修正後] 目利き専用のキーに変更
+		57: { id: 57, name: '目利き', type: '補助', params: { chest_drop_normal_pct: 1, chest_drop_rare_pct: 0.25, chest_equip_plus3_pct: 0.5 }, effect: '宝箱のアイテムドロップ上昇', desc: '通常ドロップ+スキル%、レアドロップ+スキル/4%、装備の+3確率+スキル/2%上昇' },
         58: { 
 				id: 58, 
 				name: '大器晩成', 
