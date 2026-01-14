@@ -8,9 +8,57 @@
     <link rel="manifest" href="manifest.json">
 
     <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js');
-    }
+    // main.html の既存の <script> ブロック内を以下のように更新
+	if ('serviceWorker' in navigator) {
+		navigator.serviceWorker.register('sw.js').then(reg => {
+			// 更新が見つかった場合のリスナー
+			reg.onupdatefound = () => {
+				const installingWorker = reg.installing;
+				installingWorker.onstatechange = () => {
+					// 新しいSWがインストール完了（待機状態）になり、かつ既に制御しているSWがある場合
+					if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+						showUpdatePrompt();
+					}
+				};
+			};
+		});
+	}
+
+	/**
+	 * 更新通知ポップアップを表示する
+	 */
+	function showUpdatePrompt() {
+		const updateDate = "2026/01/14"; // 配信日を手動で更新する箇所
+		const changeLog = "主な変更点：キャラ特性の追加・隊列の追加ほかバグ修正"; // 任意文章
+		
+		const message = `${updateDate}付で最新バージョンが配信されています。\n` +
+						`アプリケーションを最新状態に更新してよろしいですか？\n\n` +
+						`${changeLog}`;
+
+		if (confirm(message)) {
+			// 「はい」の場合、既存の更新処理を実行
+			forceUpdateApp();
+		}
+		// 「いいえ」の場合はそのまま（何もしない）
+	}
+
+	/**
+	 * 既存のupdateAppをベースにした強制更新処理
+	 */
+	function forceUpdateApp() {
+		if ('serviceWorker' in navigator) {
+			navigator.serviceWorker.getRegistrations().then(regs => {
+				regs.forEach(reg => reg.unregister());
+				caches.keys().then(keys => {
+					keys.forEach(key => caches.delete(key));
+				});
+			}).then(() => {
+				location.reload(true);
+			});
+		} else {
+			location.reload(true);
+		}
+	}
     </script>
     
     <style>
