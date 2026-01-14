@@ -255,9 +255,9 @@ const Battle = {
 
     // ★修正: ステータス取得時にシナジー補正を適用
     getBattleStat: (actor, key) => {
-        // 基礎値の取得。mdefが未定義ならmagを代用（主にモンスター用）
-		let val = (actor[key] !== undefined) ? actor[key] : 
-				  (key === 'mdef' && actor['mag'] !== undefined) ? actor['mag'] : 0;
+        // 基礎値の取得。mdefが未定義または0なら、magの0.8倍を代用（主にモンスター用）
+		let val = (actor[key] !== undefined && actor[key] !== 0) ? actor[key] : 
+				  (key === 'mdef' && actor['mag']) ? Math.floor(actor['mag'] * 0.8) : (actor[key] || 0);
         
         // ★修正点: オブジェクト（resistsやelmRes）が空の場合、または数値が0の場合に getStat を呼び出す
         // これにより、装備やシナジーによる耐性補正が val に格納されます
@@ -1815,7 +1815,17 @@ findNextActor: () => {
                         let dmgColor = element ? ({火:'#f88',水:'#88f',雷:'#ff0',風:'#8f8',光:'#ffc',闇:'#a8f',混沌:'#d4d'}[element] || '#fff') : '#fff';
                         if (dmg === 0) Battle.log(`ミス！ 【${targetToHit.name}】は ダメージを うけない！`);
                         else Battle.log(`【${targetToHit.name}】に<span style="color:${dmgColor}">${dmg}</span>のダメージ！`);
-                        if (targetToHit.hp <= 0) { targetToHit.hp = 0; targetToHit.isDead = true; Battle.log(`【${targetToHit.name}】は倒れた！`); }
+                        // [修正] マダンテ系ダメージでも根性判定を行う
+						if (targetToHit.hp <= 0) {
+							const gutsChance = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(targetToHit, 'guts_mult') : 0;
+							if (gutsChance > 0 && Math.random() * 100 < gutsChance) {
+								targetToHit.hp = 1;
+								Battle.log(`【${targetToHit.name}】は 根性で 踏みとどまった！`);
+							} else {
+								targetToHit.hp = 0; targetToHit.isDead = true; 
+								Battle.log(`【${targetToHit.name}】は倒れた！`);
+							}
+						}
                         Battle.renderEnemies(); Battle.renderPartyStatus();
                         if (hitCount > 1) await Battle.wait(150);
                     }
@@ -1935,15 +1945,34 @@ findNextActor: () => {
 				if ((d.SkillSeal > 0) && checkProc(d.SkillSeal, curseBonus)) addA('SkillSeal', `【${t.name}】の 特技が封じられた！`);
 				if ((d.HealSeal > 0) && checkProc(d.HealSeal, curseBonus)) addA('HealSeal', `【${t.name}】の 回復が封じられた！`);
                 
-                if (d.PercentDamage) {
-                    // 割合ダメージ(PercentDamage)は特性対象外とする
-                    currentCheckRate = successRate * ailmentMult;
-                    if (checkProc() && !checkResist('PercentDamage')) {
-                        let pdmg = Math.max(1, Math.floor(t.hp * d.PercentDamage));
-                        t.hp -= pdmg; Battle.log(`【${t.name}】に ${pdmg} のダメージ！`);
-                        if (t.hp <= 0) { t.hp = 0; t.isDead = true; Battle.log(`【${t.name}】は倒れた！`); }
-                    } else Battle.log(`【${t.name}】にはきかなかった！`);
-                }
+                // [修正] 割合ダメージにも「呪い体質(curseBonus)」を適用し、死亡時の根性判定も追加
+				if (d.PercentDamage) {
+					const curseBonus = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(actor, 'proc_curse_bonus') : 0;
+					
+					// 成功率 = (スキルの成功率 + 呪い体質ボーナス) × 会心等の倍率
+					let finalCheckRate = (successRate + curseBonus) * ailmentMult;
+					
+					const resV = (Battle.getBattleStat(t, 'resists') || {}).InstantDeath || 0; // 割合ダメ耐性は即死耐性を参照
+					
+					if (Math.random() * 100 < finalCheckRate && Math.random() * 100 < (100 - resV)) {
+						let pdmg = Math.max(1, Math.floor(t.hp * d.PercentDamage));
+						t.hp -= pdmg; 
+						Battle.log(`【${t.name}】に ${pdmg} のダメージ！`);
+						
+						if (t.hp <= 0) {
+							const gutsChance = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(t, 'guts_mult') : 0;
+							if (gutsChance > 0 && Math.random() * 100 < gutsChance) {
+								t.hp = 1;
+								Battle.log(`【${t.name}】は 根性で 踏みとどまった！`);
+							} else {
+								t.hp = 0; t.isDead = true; 
+								Battle.log(`【${t.name}】は倒れた！`);
+							}
+						}
+					} else {
+						Battle.log(`【${t.name}】にはきかなかった！`);
+					}
+				}
             };
 
             // --- [8] メイン実行ループ ---
@@ -2047,14 +2076,20 @@ findNextActor: () => {
                         }
                     }
 
-                    if (cmd.isEnemy && isPhysical && !cmd.isReaction) {
-                        const preemptRate = PassiveSkill.getSumValue(targetToHit, 'preempt_rate_base');
-                        if (preemptRate > 0 && Math.random() * 100 < preemptRate) {
-                            Battle.log(`【${targetToHit.name}】の 先制攻撃！`);
-                            await Battle.executeReactionAttack(targetToHit, actor);
-                        }
-                    }
+                    // [修正] 攻撃者が誰であっても、受ける側(targetToHit)が先制特性を持っていれば判定を行う
+					if (isPhysical && !cmd.isReaction) {
+						const isMonster = (targetToHit instanceof Monster);
+						// モンスターなら武器制限を無視(ignoreWeapon=true)、プレイヤーなら制限あり
+						const preemptRate = (typeof PassiveSkill !== 'undefined') 
+							? PassiveSkill.getSumValue(targetToHit, 'preempt_rate_base', isMonster) 
+							: 0;
 
+						if (preemptRate > 0 && Math.random() * 100 < preemptRate) {
+							Battle.log(`【${targetToHit.name}】の 先制攻撃！`);
+							await Battle.executeReactionAttack(targetToHit, actor);
+						}
+					}
+					
                     // --- [1] 会心・暴走判定フェーズ ---
 					let isCrit = false;
 					let ailmentChanceMult = 1.0;
@@ -2131,7 +2166,12 @@ findNextActor: () => {
 						else if (effectType === 'ブレス') totalMult *= (1 + PassiveSkill.getSumValue(actor, 'breath_dmg_pct') / 100);
 
 						if (actor.hp <= actor.baseMaxHp * 0.5) totalMult *= (1 + PassiveSkill.getSumValue(actor, 'low_hp_dmg_mult') / 100);
-						if (actor.revengeStack && actor.revengeStack > 0) totalMult *= (1 + (actor.revengeStack * PassiveSkill.getSumValue(actor, 'revenge_dmg_pct')) / 100);
+						
+						if (actor.revengeStack && actor.revengeStack > 0) {
+							const isMonster = (actor instanceof Monster);
+							const revPct = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(actor, 'revenge_dmg_pct', isMonster) : 0;
+							totalMult *= (1 + (actor.revengeStack * revPct) / 100);
+						}
 					}
 
 					// --- [5] 会心・暴走による最終倍率適用とログ出力 ---
@@ -2214,17 +2254,31 @@ findNextActor: () => {
 						if (gutsChance > 0 && Math.random() * 100 < gutsChance) { targetToHit.hp = 1; Battle.log(`【${targetToHit.name}】は 根性で 踏みとどまった！`); }
                     }
                     
-                    // --- 修正: ブレスを含む全ダメージを反射対象にする ---
-					if (dmg > 0) { 
-						if (targetToHit.weaponType === '杖') {
-							const reflectRate = PassiveSkill.getSumValue(targetToHit, 'reflect_dmg_mult');
-							const reflectTrigger = PassiveSkill.getSumValue(targetToHit, 'reflect_trigger_mult');
+                    // --- 反射（理力の壁）判定箇所 ---
+					if (dmg > 0) {
+						const reflectRate = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(targetToHit, 'reflect_dmg_mult') : 0;
+						const reflectTrigger = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(targetToHit, 'reflect_trigger_mult') : 0;
 
-							if (reflectRate > 0 && Math.random() * 100 < reflectTrigger) { 
-								// 反射ダメージ = 元ダメージ * (反射率% + 基礎10%)
-								const refDmg = Math.floor(dmg * (reflectRate / 100 + 0.1)); 
-								actor.hp -= refDmg; 
-								Battle.log(`【${targetToHit.name}】の理力の壁が 反射！ 【${actor.name}】に ${refDmg} のダメージ！`);
+						// [修正] モンスターなら特性のみ、プレイヤーなら「杖装備 ＆ 特性所持」を条件にする
+						const isMonster = (targetToHit instanceof Monster);
+						const hasTrait = reflectRate > 0;
+						const canReflect = isMonster ? hasTrait : (targetToHit.weaponType === '杖' && hasTrait);
+
+						if (canReflect && Math.random() * 100 < (reflectTrigger > 0 ? reflectTrigger : 10)) { 
+							const refDmg = Math.floor(dmg * (reflectRate / 100 + 0.1)); 
+							actor.hp -= refDmg; 
+							Battle.log(`【${targetToHit.name}】の理力の壁が 反射！ 【${actor.name}】に ${refDmg} のダメージ！`);
+
+							// 反射による自爆死の判定と根性処理
+							if (actor.hp <= 0) {
+								const gutsChance = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(actor, 'guts_mult') : 0;
+								if (gutsChance > 0 && Math.random() * 100 < gutsChance) {
+									actor.hp = 1;
+									Battle.log(`【${actor.name}】は 根性で 踏みとどまった！`);
+								} else {
+									actor.hp = 0; actor.isDead = true; 
+									Battle.log(`【${actor.name}】は倒れた！`);
+								}
 							}
 						}
 					}
@@ -2237,21 +2291,26 @@ findNextActor: () => {
 
                     // --- 通常攻撃時の追加状態異常判定 (★特性ID31, 32の組み込み) ---
                     if (dmg > 0 && isPhysical) {
-                        const curseBonus = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(actor, 'proc_curse_bonus') : 0;
-                        const bodyBonus = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(actor, 'proc_body_bonus') : 0;
+						const curseBonus = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(actor, 'proc_curse_bonus') : 0;
+						const bodyBonus = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(actor, 'proc_body_bonus') : 0;
 
-                        const tryS = (key, name, ailmentKey, bonus = 0) => {
-                            const ch = ((actor.getStat(key) || 0) + bonus) * ailmentChanceMult;
-                            if (ch > 0 && Math.random() * 100 < ch) {
-                                const resV = (Battle.getBattleStat(targetToHit, 'resists') || {})[Battle.RESIST_MAP[ailmentKey] || ailmentKey] || 0;
-                                if (Math.random() * 100 < (100 - resV)) {
-                                    targetToHit.battleStatus.ailments[ailmentKey] = { turns: 3, chance: (ailmentKey==='Fear'?0.5:null) };
-                                    Battle.log(`【${targetToHit.name}】は ${name}！`);
-                                }
-                            }
-                        };
-                        tryS('attack_Poison', 'どくにおかされた', 'Poison', bodyBonus);
-                        tryS('attack_Fear', '怯えてしまった', 'Fear', curseBonus);
+						const tryS = (key, name, ailmentKey, bonus = 0) => {
+							// [修正] 基礎付与率を取得
+							const baseChance = (actor.getStat(key) || 0);
+							
+							// [修正] 基礎付与率が0より大きい場合のみ、ボーナスを加算する。0なら0のまま。
+							const ch = (baseChance > 0 ? (baseChance + bonus) : 0) * ailmentChanceMult;
+							
+							if (ch > 0 && Math.random() * 100 < ch) {
+								const resV = (Battle.getBattleStat(targetToHit, 'resists') || {})[Battle.RESIST_MAP[ailmentKey] || ailmentKey] || 0;
+								if (Math.random() * 100 < (100 - resV)) {
+									targetToHit.battleStatus.ailments[ailmentKey] = { turns: 3, chance: (ailmentKey==='Fear'?0.5:null) };
+									Battle.log(`【${targetToHit.name}】は ${name}！`);
+								}
+							}
+						};
+						tryS('attack_Poison', 'どくにおかされた', 'Poison', bodyBonus);
+						tryS('attack_Fear', '怯えてしまった', 'Fear', curseBonus);
                         
                         // [1] まず、装備やスキルに元々設定されている「基礎即死率」を出す
 						const baseID = (actor.getStat('attack_InstantDeath') || 0) + (data?.InstantDeath || 0);
@@ -2289,34 +2348,46 @@ findNextActor: () => {
                         });
                     }
 
-                    if (isPhysical && dmg > 0 && !targetToHit.isDead && !cmd.isReaction) {
-                        const counterRate = PassiveSkill.getSumValue(targetToHit, 'counter_rate_base');
-                        if (counterRate > 0 && Math.random() * 100 < counterRate) {
-                            Battle.log(`【${targetToHit.name}】の 反撃！`);
-                            await Battle.executeReactionAttack(targetToHit, actor);
-                        }
-                    }
+                    // [修正] モンスターなら武器制限を無視、プレイヤーなら制限ありで反撃率を取得
+					if (isPhysical && dmg > 0 && !targetToHit.isDead && !cmd.isReaction) {
+						const isMonster = (targetToHit instanceof Monster);
+						const counterRate = (typeof PassiveSkill !== 'undefined') 
+							? PassiveSkill.getSumValue(targetToHit, 'counter_rate_base', isMonster) 
+							: 0;
+
+						if (counterRate > 0 && Math.random() * 100 < counterRate) {
+							Battle.log(`【${targetToHit.name}】の 反撃！`);
+							await Battle.executeReactionAttack(targetToHit, actor);
+						}
+					}
 
                     if (cmd.type === 'skill') applyEffects(targetToHit, data, ailmentChanceMult);
 
                     if (dmg > 0 && !targetToHit.isDead && targetToHit.hp <= targetToHit.baseMaxHp * 0.5 && !cmd.isReaction) {
-                        const chaseChance = PassiveSkill.getSumValue(actor, 'chase_rate_mult');
-                        if (chaseChance > 0 && Math.random() * 100 < chaseChance) {
-                            Battle.log(`【${actor.name}】の 追い討ち！`);
-                            await Battle.executeReactionAttack(actor, targetToHit);
-                        }
-                    }
+						const isMonster = (actor instanceof Monster);
+						const chaseChance = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(actor, 'chase_rate_mult', isMonster) : 0;
+						if (chaseChance > 0 && Math.random() * 100 < chaseChance) {
+							Battle.log(`【${actor.name}】の 追い討ち！`);
+							await Battle.executeReactionAttack(actor, targetToHit);
+						}
+					}
 
-                    if (!cmd.isEnemy && !cmd.isReaction && !targetToHit.isDead) {
-                        const partners = Battle.party.filter(p => p && p !== actor && !p.isDead);
-                        for (const p of partners) {
-                            const chainChance = PassiveSkill.getSumValue(p, 'chain_rate_base');
-                            if (chainChance > 0 && Math.random() * 100 < chainChance) {
-                                Battle.log(`【${p.name}】が 連携した！`);
-                                await Battle.executeReactionAttack(p, targetToHit);
-                            }
-                        }
-                    }
+                    // [修正] プレイヤー・敵に関わらず、同陣営の仲間が連携できるように変更
+					if (!cmd.isReaction && !targetToHit.isDead) {
+						// 攻撃者が敵なら敵リスト、味方ならパーティリストから生存者（自分以外）を取得
+						const allies = cmd.isEnemy ? Battle.enemies : Battle.party;
+						const partners = allies.filter(p => p && p !== actor && !p.isDead && !p.isFled);
+
+						for (const p of partners) {
+							const isMonsterPartner = (p instanceof Monster);
+							const chainChance = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(p, 'chain_rate_base', isMonsterPartner) : 0;
+							
+							if (chainChance > 0 && Math.random() * 100 < chainChance) {
+								Battle.log(`【${p.name}】が 連携した！`);
+								await Battle.executeReactionAttack(p, targetToHit);
+							}
+						}
+					}
 
                     if (targetToHit.hp <= 0) {
                         targetToHit.hp = 0; targetToHit.isDead = true; Battle.log(`【${targetToHit.name}】は倒れた！`);
@@ -2813,54 +2884,69 @@ findNextActor: () => {
         let hpRecovered = false; // パーティ内の一人でも回復すればtrue
         let mpRecovered = false;
 
-        surviveMembers.forEach(p => {
-            const charData = App.getChar(p.uid);
-            if (charData) {
-                const oldLv = charData.level;
+        // --- 修正版: 勝利リザルトのループ処理 ---
+		for (const p of surviveMembers) {
+			const charData = App.getChar(p.uid);
+			if (!charData) continue;
 
-                // [A] キャラクターのレベルアップログ取得
-                const lvLogs = App.gainExp(charData, totalExp);
-                
-                // [B] 特性の成長ログ取得（内部でbattleCount加算とLvUP判定）
-                let traitGrowthLog = null;
-                if (typeof PassiveSkill !== 'undefined' && PassiveSkill.checkTraitGrowth) {
-                    traitGrowthLog = PassiveSkill.checkTraitGrowth(charData);
-                }
+			const oldLv = charData.level;
 
-                // --- ログ表示の実行順序を固定： キャラLvUP -> 特性LvUP ---
-                lvLogs.forEach(msg => Battle.log(msg));
-                if (traitGrowthLog) Battle.log(traitGrowthLog);
+			// [A] キャラクターのレベルアップログ取得
+			const lvLogs = App.gainExp(charData, totalExp);
 
-                // --- ステータス更新および回復処理 ---
-                if (charData.level > oldLv) {
-                    // レベルアップした場合はステータス更新して全快
-                    const stats = App.calcStats(charData);
-                    p.level = charData.level;
-                    p.baseMaxHp = stats.maxHp;
-                    p.baseMaxMp = stats.maxMp;
-                    p.hp = p.baseMaxHp;
-                    p.mp = p.baseMaxMp;
-                } else {
-                    // レベルアップしなかったキャラに対し、パーティ特性による回復を適用
-                    // HP回復（特性 54:応急手当）
-                    if (partyHpRegen > 0 && p.hp < p.baseMaxHp) {
-                        const amt = Math.floor(p.baseMaxHp * (partyHpRegen / 100));
-                        if (amt > 0) {
-                            p.hp = Math.min(p.baseMaxHp, p.hp + amt);
-                            hpRecovered = true;
-                        }
-                    }
-                    // MP回復（特性 55:魔力充填）
-                    if (partyMpRegen > 0 && p.mp < p.baseMaxMp) {
-                        const amt = Math.floor(p.baseMaxMp * (partyMpRegen / 100));
-                        if (amt > 0) {
-                            p.mp = Math.min(p.baseMaxMp, p.mp + amt);
-                            mpRecovered = true;
-                        }
-                    }
-                }
-            }
-        });
+			// キャラクターのレベルアップログを1つずつ表示（0.6秒刻み）
+			for (const msg of lvLogs) {
+				Battle.log(msg);
+				await Battle.wait(600);
+			}
+
+			// [B] 特性の成長判定
+			let traitGrowthLog = null;
+			if (typeof PassiveSkill !== 'undefined' && PassiveSkill.checkTraitGrowth) {
+				traitGrowthLog = PassiveSkill.checkTraitGrowth(charData);
+			}
+
+			// ★特性レベルアップの演出（表示される直前に溜めを作る）
+			if (traitGrowthLog) {
+				// 特性が出るか出ないかの「醍醐味」を作るための1.2秒待機
+				await Battle.wait(600);
+				
+				const logs = traitGrowthLog.split('<br>');
+				for (const log of logs) {
+					if (log) {
+						Battle.log(log);
+						await Battle.wait(200); // 1つ1つの特性を確認させるための待機
+					}
+				}
+			}
+
+			// --- [C] ステータス更新および回復処理 ---
+			if (charData.level > oldLv) {
+				// レベルアップした場合はステータス更新して全快
+				const stats = App.calcStats(charData);
+				p.level = charData.level;
+				p.baseMaxHp = stats.maxHp;
+				p.baseMaxMp = stats.maxMp;
+				p.hp = p.baseMaxHp;
+				p.mp = p.baseMaxMp;
+			} else {
+				// レベルアップしなかったキャラに対し、パーティ特性による回復（応急手当など）を適用
+				if (partyHpRegen > 0 && p.hp < p.baseMaxHp) {
+					const amt = Math.floor(p.baseMaxHp * (partyHpRegen / 100));
+					if (amt > 0) {
+						p.hp = Math.min(p.baseMaxHp, p.hp + amt);
+						hpRecovered = true;
+					}
+				}
+				if (partyMpRegen > 0 && p.mp < p.baseMaxMp) {
+					const amt = Math.floor(p.baseMaxMp * (partyMpRegen / 100));
+					if (amt > 0) {
+						p.mp = Math.min(p.baseMaxMp, p.mp + amt);
+						mpRecovered = true;
+					}
+				}
+			}
+		}
 
         // --- 2. パーティ全体としての回復ログを一度だけ出力 ---
         if (hpRecovered) {

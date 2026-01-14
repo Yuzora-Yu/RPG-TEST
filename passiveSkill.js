@@ -215,21 +215,24 @@ PassiveSkill.generateEquipmentTraits = function() {
  * @param {string} key - 取得したいパラメータキー
  * @returns {number} 合算された補正値
  */
-/* passiveSkill.js: PassiveSkill.getSumValue */
-PassiveSkill.getSumValue = function(entity, key) {
+/* passiveSkill.js: 第3引数 ignoreWeapon を追加し、武器チェックを分岐させる */
+PassiveSkill.getSumValue = function(entity, key, ignoreWeapon) {
+	// 【簡単修正のポイント】
+    // ignoreWeapon（第3引数）が渡されていない場合、
+    // entity が Monster クラスのインスタンスであれば自動的に ignoreWeapon を true にする
+    if (ignoreWeapon === undefined) {
+        ignoreWeapon = (typeof Monster !== 'undefined' && entity instanceof Monster);
+    }
+	
     let total = 0;
-    // 特性IDごとの合計レベルを算出するマップ
     const traitLvlMap = {};
 
-    // 1. キャラクター自身の特性 (習得分：有効なもののみ)
     if (entity.traits) {
         entity.traits.forEach(t => {
             if (entity.disabledTraits && entity.disabledTraits.includes(t.id)) return;
             traitLvlMap[t.id] = (traitLvlMap[t.id] || 0) + (t.level || 0);
         });
     }
-
-    // 2. 装備品の特性 (装備分：常に有効)
     if (entity.equips) {
         Object.values(entity.equips).forEach(eq => {
             if (eq && eq.traits) {
@@ -240,39 +243,37 @@ PassiveSkill.getSumValue = function(entity, key) {
         });
     }
 
-    // 3. 各特性の値を集計 (加算されたLvを使用)
     for (let id in traitLvlMap) {
         const lv = traitLvlMap[id];
         const m = PassiveSkill.MASTER[id];
         if (!m || !m.params) continue;
-
         const p = m.params;
 
-        // 武器条件チェック
-        if (m.weaponType && entity.weaponType !== m.weaponType) continue;
-        if (p.weaponTypes && !p.weaponTypes.includes(entity.weaponType)) continue;
+        // [修正] ignoreWeapon が true（モンスター）なら武器チェックを飛ばす
+        if (!ignoreWeapon) {
+            if (m.weaponType && entity.weaponType !== m.weaponType) continue;
+            if (p.weaponTypes && !p.weaponTypes.includes(entity.weaponType)) continue;
+        }
 
-        // --- A. 通常のキー合算（耐性・ステ補正など） ---
         if (p[key] !== undefined) {
             total += p[key] * lv;
-            // _mult, _pct 等の場合に対応する _base を一度だけ加算
             if (!key.endsWith('_base')) {
                 const baseKey = key.replace(/(_mult|_rate|_add|_pct)$/, '_base');
                 if (p[baseKey] !== undefined) total += p[baseKey];
             }
         }
 
-        // --- B. 特殊計算セクション ---
-        // ID 18: 根性 (guts_rate)
-        if (key === 'guts_rate' && Number(id) === 18) {
+        // [点検] battle.js から呼ばれる特殊キーの名称を統一
+        // ID 18: 根性
+        if ((key === 'guts_mult' || key === 'guts_rate') && Number(id) === 18) {
             total += (p.guts_rate * lv) + p.guts_base;
         }
         // ID 31: 呪い体質
-        if (key === 'proc_curse_bonus' && Number(id) === 31) {
+        if ((key === 'proc_curse_bonus' || key === 'proc_curse_add') && Number(id) === 31) {
             total += (p.proc_curse_add * lv) + p.proc_curse_base;
         }
         // ID 32: 人体知識
-        if (key === 'proc_body_bonus' && Number(id) === 32) {
+        if ((key === 'proc_body_bonus' || key === 'proc_body_add') && Number(id) === 32) {
             total += (p.proc_body_add * lv) + p.proc_body_base;
         }
     }
