@@ -3007,133 +3007,106 @@ findNextActor: () => {
             eq.val *= 3;
             eq.name = "【EX】" + eq.name;
             
-            App.data.gems = (App.data.gems || 0) + 100000;
+            App.data.gems = (App.data.gems || 0) + 10000;
             App.data.inventory.push(eq);
             
             drops.push({ name: eq.name, isRare: true, isUltra: true, isEstark: true });
             hasUltraRareDrop = true; 
 
-            // エスターク討伐時 10% の確率で「転生の実」をゲット
-            if (Math.random() < 0.10) {
-                const fruitId = 107;
-                App.data.items[fruitId] = (App.data.items[fruitId] || 0) + 1;
-                const itemDef = DB.ITEMS.find(i => i.id === fruitId);
-                if (itemDef) {
-                    hasUltraRareDrop = true;
-                    drops.push({ name: itemDef.name, isRare: true, type: 'kai' });
-                }
-            }
-
         } else {
-            Battle.enemies.forEach(e => {
-                if (e.isFled) return;
-                const base = DB.MONSTERS.find(m => m.id === e.baseId) || e;
+			// --- ドロップ生成判定 (独立・重複可能方式 / type: 'kai' 復活版) ---
+			Battle.enemies.forEach(e => {
+				if (e.isFled) return;
+				const base = DB.MONSTERS.find(m => m.id === (e.baseId || e.id)) || e;
+				const monsterDrops = base.drops;
 
-                // --- A. モンスター固有ドロップ設定 (drops) がある場合 ---
-                if (e.drops) {
-                    // レアドロップ判定
-                    const rareRate = (e.drops.rare.rate || 0) + bonusRare;
-                    if (Math.random() * 100 < rareRate) {
-                        const itemDef = DB.ITEMS.find(i => i.id === e.drops.rare.id);
-                        if (itemDef) {
-                            App.data.items[itemDef.id] = (App.data.items[itemDef.id] || 0) + 1;
-                            hasRareDrop = true;
-                            drops.push({ name: itemDef.name, isRare: true, type: 'boss' });
-                        }
-                    } 
-                    // 通常ドロップ判定
-                    else {
-                        const normRate = (e.drops.normal.rate || 0) + bonusNormal;
-                        if (Math.random() * 100 < normRate) {
-                            const itemDef = DB.ITEMS.find(i => i.id === e.drops.normal.id);
-                            if (itemDef) {
-                                App.data.items[itemDef.id] = (App.data.items[itemDef.id] || 0) + 1;
-                                drops.push({ name: itemDef.name, isRare: false, type: 'item' });
-                            }
-                        }
-                    }
-                }
+				// --- 1. レアドロップ判定 (独立) ---
+				// モンスター固有設定または汎用の「実・種」を判定
+				if (monsterDrops && monsterDrops.rare) {
+					const rareRate = (monsterDrops.rare.rate || 0) + bonusRare;
+					if (Math.random() * 100 < rareRate) {
+						const itemDef = DB.ITEMS.find(i => i.id === monsterDrops.rare.id);
+						if (itemDef) {
+							App.data.items[itemDef.id] = (App.data.items[itemDef.id] || 0) + 1;
+							hasRareDrop = true;
+							// ID:107(転生の実)などは type: 'kai' でマゼンタ表示にする
+							const type = (itemDef.id === 107) ? 'kai' : 'boss';
+							drops.push({ name: itemDef.name, isRare: true, type: type });
+						}
+					}
+				} else if (floor >= 100) {
+					// 汎用の実・種判定 (確率は低めの 0.5% + ボーナス)
+					if (Math.random() * 100 < (0.5 + bonusRare)) {
+						let sid = 100 + Math.floor(Math.random() * 6); // 基本は種
+						if (Math.random() < 0.1) sid = 106; // スキルのたね
+						if (Math.random() < 0.05) sid = 107; // 転生の実
+						
+						const itemDef = DB.ITEMS.find(i => i.id === sid);
+						if (itemDef) {
+							App.data.items[sid] = (App.data.items[sid] || 0) + 1;
+							const isRare = (sid === 107);
+							if (isRare) hasRareDrop = true;
+							// 転生の実なら 'kai'、それ以外は通常アイテム表示
+							drops.push({ name: itemDef.name, isRare: isRare, type: isRare ? 'kai' : 'item' });
+						}
+					}
+				}
 
-                // --- B. ボス・強敵（ID 1000〜）の確定級ドロップロジック ---
-                if (base.id >= 1000) {
-                    let eq;
-                    if (Math.random() < 0.02) { 
-                        eq = createEquipWithMinRarity(floor, 3, ['SSR', 'UR', 'EX'], '武器');
-                        eq.name = eq.name.replace(/\+3$/, "") + "・改+3";
-                        for (let key in eq.data) {
-                            if (typeof eq.data[key] === 'number') eq.data[key] *= 2;
-                            else if (typeof eq.data[key] === 'object' && eq.data[key] !== null) {
-                                for (let sub in eq.data[key]) eq.data[key][sub] *= 2;
-                            }
-                        }
-                        eq.val *= 4;
-                        App.data.inventory.push(eq);
-                        hasUltraRareDrop = true;
-                        drops.push({ name: eq.name, isRare: true, type: 'kai' });
-                    } else {
-                        eq = App.createEquipByFloor('drop', floor, 3);
-                        App.data.inventory.push(eq);
-                        hasRareDrop = true;
-                        drops.push({ name: eq.name, isRare: true, type: 'boss' });
-                    }
-                } 
-                
-                // --- C. 通常ドロップロジック (固有設定がない場合も並行して動かす) ---
-                if (!e.drops) {
-                    const r = Math.random() * 100;
-                    
-                    // 100階以降の育成アイテム判定
-                    if (floor >= 100) {
-                        const sr = Math.random() * 100;
-                        let sid = null;
-                        
-                        let probFruit = (base.isRare ? 5.0 : 0.1) + (bonusRare / 10); 
-                        let probSkill = (base.isRare ? 15.0 : 1.1) + bonusNormal; 
-                        let probSeeds = (base.isRare ? 45.0 : 18.0) + bonusNormal;
+				// --- 2. 装備ドロップ判定 (独立) ---
+				const isBoss = (base.id >= 1000);
+				// 通常敵の装備率は 10% に下方修正。ボスは確定。
+				const equipChance = isBoss ? 100 : 10; 
+				if (Math.random() * 100 < equipChance) {
+					let eq;
+					if (isBoss && Math.random() < 0.02) {
+						// 2%の確率で発生する超強力な「改」装備
+						eq = createEquipWithMinRarity(floor, 3, ['SSR', 'UR', 'EX'], '武器');
+						eq.name = eq.name.replace(/\+3$/, "") + "・改+3";
+						for (let key in eq.data) {
+							if (typeof eq.data[key] === 'number') eq.data[key] *= 2;
+							else if (typeof eq.data[key] === 'object' && eq.data[key] !== null) {
+								for (let sub in eq.data[key]) eq.data[key][sub] *= 2;
+							}
+						}
+						eq.val *= 4;
+						hasUltraRareDrop = true;
+						// 超レア演出用の type: 'kai'
+						drops.push({ name: eq.name, isRare: true, type: 'kai' });
+					} else {
+						// 通常装備生成 (bonusPlus3 で +3 のなりやすさを判定)
+						let fixedPlus = null;
+						if (Math.random() * 100 < bonusPlus3) fixedPlus = 3;
+						eq = App.createEquipByFloor('drop', floor, fixedPlus);
+						const isPlus3 = (eq.plus === 3);
+						if (isPlus3 || isBoss) hasRareDrop = true;
+						drops.push({ name: eq.name, isRare: (isPlus3 || isBoss), type: isBoss ? 'boss' : 'normal' });
+					}
+					App.data.inventory.push(eq);
+				}
 
-                        if (sr < probFruit) sid = 107; 
-                        else if (sr < probSkill) sid = 106;
-                        else if (sr < probSeeds) sid = 100 + Math.floor(Math.random() * 6);
-
-                        if (sid) {
-                            App.data.items[sid] = (App.data.items[sid] || 0) + 1;
-                            const itemDef = DB.ITEMS.find(i => i.id === sid);
-                            if (itemDef) {
-                                if (sid === 107) {
-                                    hasUltraRareDrop = true;
-                                    drops.push({ name: itemDef.name, isRare: true, type: 'kai' });
-                                } else {
-                                    drops.push({ name: itemDef.name, isRare: false, type: 'item' });
-                                }
-                            }
-                        }
-                    }
-                    
-                    // 通常アイテム/装備判定
-                    const itemChance = 20 + bonusNormal;
-                    const equipChance = 35 + bonusNormal;
-
-                    if (r < itemChance) {
-                        const candidates = DB.ITEMS.filter(i => i.rank <= Math.min(200, floor) && i.type !== '貴重品' && i.id < 100);
-                        if (candidates.length > 0) {
-                            const item = candidates[Math.floor(Math.random() * candidates.length)];
-                            App.data.items[item.id] = (App.data.items[item.id] || 0) + 1;
-                            drops.push({ name: item.name, isRare: false, type: 'item' });
-                        }
-                    } else if (r < equipChance) {
-                        // 特性「解体」による+3確率上昇判定
-                        let fixedPlus = null;
-                        if (Math.random() * 100 < bonusPlus3) fixedPlus = 3;
-                        
-                        const eq = App.createEquipByFloor('drop', floor, fixedPlus);
-                        App.data.inventory.push(eq);
-                        const isPlus3 = (eq.plus === 3);
-                        if(isPlus3) hasRareDrop = true;
-                        drops.push({ name: eq.name, isRare: isPlus3, type: 'normal' });
-                    }
-                }
-            });
-        }
+				// --- 3. 通常ドロップ判定 (独立) ---
+				if (monsterDrops && monsterDrops.normal) {
+					const normRate = (monsterDrops.normal.rate || 0) + bonusNormal;
+					if (Math.random() * 100 < normRate) {
+						const itemDef = DB.ITEMS.find(i => i.id === monsterDrops.normal.id);
+						if (itemDef) {
+							App.data.items[itemDef.id] = (App.data.items[itemDef.id] || 0) + 1;
+							drops.push({ name: itemDef.name, isRare: false, type: 'item' });
+						}
+					}
+				} else {
+					// 汎用アイテムドロップ率を 5% に下方修正
+					if (Math.random() * 100 < (5 + bonusNormal)) {
+						const candidates = DB.ITEMS.filter(i => i.rank <= Math.min(200, floor) && i.type !== '貴重品' && i.id < 100);
+						if (candidates.length > 0) {
+							const item = candidates[Math.floor(Math.random() * candidates.length)];
+							App.data.items[item.id] = (App.data.items[item.id] || 0) + 1;
+							drops.push({ name: item.name, isRare: false, type: 'item' });
+						}
+					}
+				}
+			});
+			}
 
         // [3] ドロップありならウェイト ＆ 改行
         if (drops.length > 0) {
@@ -3172,7 +3145,7 @@ findNextActor: () => {
             // ドロップ内容のログ表示
             drops.forEach(d => {
                 if (d.isEstark) {
-                    Battle.log(`<span style="color:#ffd700; font-weight:bold;">100,000 GEM</span> を獲得！`);
+                    Battle.log(`<span style="color:#ffd700; font-weight:bold;">10,000 GEM</span> を獲得！`);
                     Battle.log(`なんと <span style="color:#ffd700; font-weight:bold;">${d.name}</span> を手に入れた！`);
                 } else if (d.type === 'kai') {
                     Battle.log(`なんと <span style="color:#ff00ff; font-weight:bold;">${d.name}</span> を手に入れた！`);

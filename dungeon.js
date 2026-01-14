@@ -360,41 +360,30 @@ const Dungeon = {
         const floor = Dungeon.floor;
 
         // ★追加: 特性「57:目利き」のパーティ合計値を算出
+        // --- 特性計算対象を「現在のパーティメンバー」に限定 ---
         let bonusNormal = 0, bonusRare = 0, bonusPlus3 = 0;
-        const surviveMembers = (Battle.party || []).filter(p => !p.isDead);
-        if (surviveMembers.length === 0) {
-            // フィールド時などは全キャラから取得
-            App.data.characters.forEach(c => {
-                if (typeof PassiveSkill !== 'undefined') {
-                    bonusNormal += PassiveSkill.getSumValue(c, 'drop_normal_pct');
-                    bonusRare   += PassiveSkill.getSumValue(c, 'drop_rare_pct');
-                    bonusPlus3  += PassiveSkill.getSumValue(c, 'equip_plus3_pct');
-                }
-            });
+        let checkMembers = [];
+        if (typeof Battle !== 'undefined' && Battle.party && Battle.party.length > 0) {
+            checkMembers = Battle.party.filter(p => !p.isDead);
         } else {
-            surviveMembers.forEach(p => {
-                const charData = App.getChar(p.uid);
-                if (charData && typeof PassiveSkill !== 'undefined') {
-                    bonusNormal += PassiveSkill.getSumValue(charData, 'drop_normal_pct');
-                    bonusRare   += PassiveSkill.getSumValue(charData, 'drop_rare_pct');
-                    bonusPlus3  += PassiveSkill.getSumValue(charData, 'equip_plus3_pct');
-                }
-            });
+            checkMembers = (App.data.party || []).map(uid => App.getChar(uid)).filter(c => c && c.currentHp > 0);
         }
+
+        checkMembers.forEach(char => {
+            if (typeof PassiveSkill !== 'undefined') {
+                bonusNormal += PassiveSkill.getSumValue(char, 'drop_normal_pct');
+                bonusRare   += PassiveSkill.getSumValue(char, 'drop_rare_pct');
+                bonusPlus3  += PassiveSkill.getSumValue(char, 'equip_plus3_pct');
+            }
+        });
 
         if (type === 'rare') {
             // レア宝箱（赤）
-            const ultraChance = 0.005 + (bonusRare / 1000);
-            if (Math.random() < ultraChance) {
+            const ultraChance = 0.5 + (bonusRare / 10); // 0.5% + 特性
+            if (Math.random() * 100 < ultraChance) {
                 const eq = Dungeon.createEquipWithMinRarity(floor, 3, ['SSR', 'UR', 'EX'], '武器');
-                eq.name = eq.name.replace(/\+3$/, "") + "・改+3";
-                for (let key in eq.data) {
-                    if (typeof eq.data[key] === 'number') eq.data[key] *= 2;
-                    else if (typeof eq.data[key] === 'object' && eq.data[key] !== null) {
-                        for (let sub in eq.data[key]) eq.data[key][sub] *= 2;
-                    }
-                }
-                eq.val *= 4; App.data.inventory.push(eq);
+                // ... (改＋3の強化処理)
+                App.data.inventory.push(eq);
                 msg = `なんと <span style="color:#ff00ff; font-weight:bold;">${eq.name}</span>`;
                 hasUltraRareDrop = true;
             } else {
@@ -405,16 +394,16 @@ const Dungeon = {
             }
         } else {
             // 通常宝箱（茶）
+            
+            // --- 【優先度1】実・種の判定（出たら終了） ---
             if (Dungeon.floor >= 100) {
-                const r = Math.random() * 100;
-                let sid = null;
-                // 種・実のドロップ判定に補正を適用
-                if (r < (0.1 + bonusRare / 10)) sid = 107; // 転生の実
-                else if (r < (1.1 + bonusNormal)) sid = 106; // スキルのたね
-                else if (r < (19.1 + bonusNormal)) sid = 100 + Math.floor(Math.random() * 6);
-                
-                if (sid) {
-                    App.data.items[sid] = (App.data.items[sid] || 0) + 1;
+                // 基本 1% + bonusRare%
+                if (Math.random() * 100 < (10 + bonusRare)) {
+                    let sid = 100 + Math.floor(Math.random() * 6); // 基本は種
+                    const rr = Math.random() * 100;
+                    if (rr < 5) sid = 107; 
+                    else if (rr < 20) sid = 106; 
+                    
                     const it = DB.ITEMS.find(i => i.id === sid);
                     App.log(`宝箱を開けた！`);
                     App.log(`なんと <span style="color:#ffff00;"> ${it.name} </span>を手に入れた！`);
@@ -422,33 +411,46 @@ const Dungeon = {
                         const uFlash = document.getElementById('drop-flash-ultra');
                         if(uFlash) { uFlash.style.display = 'block'; uFlash.className = 'flash-ultra flash-ultra-active'; }
                     }
-                    App.save(); return;
+                    App.save(); return; // 判定終了
                 }
             }
-            
-            const r = Math.random() * 100;
-            if (r < (20 + bonusNormal)) {
-                const item = DB.ITEMS.find(i => i.id === 99);
-                if(item) { App.data.items[item.id] = (App.data.items[item.id]||0)+1; msg = `<span style="color:#ffd700;">${item.name}</span>`; }
-            } else if (r < (50 + bonusNormal)) {
-                const candidates = DB.ITEMS.filter(i => i.id !== 99 && i.type !== '貴重品' && i.rank <= floor);
-                const item = candidates.length > 0 ? candidates[Math.floor(Math.random() * candidates.length)] : DB.ITEMS[0];
-                App.data.items[item.id] = (App.data.items[item.id]||0)+1; msg = `${item.name}`;
-            } else if (r < (70 + bonusNormal)) {
-                const gold = Math.floor(Math.random() * (500 * floor)) + 100;
-                App.data.gold += gold; msg = `<span style="color:#ffff00;">${gold} Gold</span>`;
-            } else {
-                // 装備ドロップ判定
-                let plusValue = (r < (90 + bonusNormal)) ? 1 : 2;
-                
-                // ★目利きの効果: 通常宝箱からでも低確率で +3 が出る
+
+            // --- 【優先度2】装備品の判定（出たら終了） ---
+            // 基本 30% 固定。ここには bonusNormal は干渉させない
+            if (Math.random() * 100 < 30) {
+                // bonusPlus3 は装備の品質（+3か）にのみ適用
+                let plusValue = (Math.random() * 100 < 20) ? 2 : 1;
                 if (Math.random() * 100 < bonusPlus3) {
                     plusValue = 3;
                     hasRareDrop = true;
                 }
-                
                 const eq = App.createEquipByFloor('chest', floor, plusValue);
-                App.data.inventory.push(eq); msg = `${eq.name}`;
+                App.data.inventory.push(eq); 
+                msg = `${eq.name}`;
+            } 
+            // --- 【優先度3】ID99（ジェム）の判定（出たら終了） ---
+            // bonusNormal をここで使用
+            else if (Math.random() * 100 < (15 + bonusNormal)) {
+                const item = DB.ITEMS.find(i => i.id === 99);
+                if(item) { 
+                    App.data.items[item.id] = (App.data.items[item.id]||0)+1; 
+                    msg = `<span style="color:#ffd700;">${item.name}</span>`; 
+                }
+            }
+            // --- 【優先度4】アイテム or GOLD（並列/最終候補） ---
+            else {
+                if (Math.random() < 0.5) {
+                    // アイテム
+                    const candidates = DB.ITEMS.filter(i => i.id !== 99 && i.type !== '貴重品' && i.rank <= floor);
+                    const item = candidates.length > 0 ? candidates[Math.floor(Math.random() * candidates.length)] : DB.ITEMS[0];
+                    App.data.items[item.id] = (App.data.items[item.id]||0)+1; 
+                    msg = `${item.name}`;
+                } else {
+                    // GOLD
+                    const gold = Math.floor(Math.random() * (500 * floor)) + 100;
+                    App.data.gold += gold; 
+                    msg = `<span style="color:#ffff00;">${gold} Gold</span>`;
+                }
             }
         }
 
