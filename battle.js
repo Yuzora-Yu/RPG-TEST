@@ -18,10 +18,15 @@ const Battle = {
         elmResUp: '全属性耐性', elmResDown: '全属性耐性',
         Poison: '毒', ToxicPoison: '猛毒', Shock: '感電', Fear: '怯え',
         SpellSeal: '呪文封印', SkillSeal: '特技封印', HealSeal: '回復封印',HPRegen: 'HP回復' ,MPRegen: 'MP回復',
-        // ★以下を追記・修正
         InstantDeath: '即死', 
         Debuff: '弱体',
-        Seal: '封印'
+        Seal: '封印',
+		resists_Poison: '毒耐性',
+		resists_Shock: '感電耐性',
+		resists_Fear: '怯え耐性',
+		resists_Seal: '封印耐性',
+		resists_InstantDeath: '即死耐性',
+		resists_Debuff: '弱体耐性'
     },
     
     // 状態異常と耐性IDの対応表 (拡張)
@@ -96,6 +101,11 @@ const Battle = {
                 if(!charData) return null;
                 const player = new Player(charData);
                 const stats = App.calcStats(charData);
+				
+				// ★追加：calcStats が作った weaponTypes / weaponType を battle用インスタンスへ引き継ぐ
+				player.weaponTypes = charData.weaponTypes || [];
+				player.weaponType  = charData.weaponType  || '素手';
+				
                 player.hp = Math.min(player.hp, stats.maxHp);
                 player.mp = Math.min(player.mp, stats.maxMp);
                 player.baseMaxHp = stats.maxHp; player.baseMaxMp = stats.maxMp;
@@ -118,6 +128,20 @@ const Battle = {
                         }
                     });
                 }
+				
+				// ★追加：装備固有スキル付与
+				if (player.equips) {
+				  Object.values(player.equips).forEach(eq => {
+					if (!eq || !eq.grantSkills) return;
+					eq.grantSkills.forEach(skillId => {
+					  if (!player.skills.find(s => s.id === skillId)) {
+						const sk = DB.SKILLS.find(s => s.id === skillId);
+						if (sk) player.skills.push(sk);
+					  }
+					});
+				  });
+				}
+				
                 if (charData.battleStatus) player.battleStatus = JSON.parse(JSON.stringify(charData.battleStatus));
                 else Battle.initBattleStatus(player);
 
@@ -1224,9 +1248,9 @@ findNextActor: () => {
         for(let cmd of playerCommands) {
             const actor = cmd.actor;
             // ★特性 8, 47, 48 等の追加行動系は別途フラグ管理されるが、ここでは既存の doubleAction/fastestAction を維持
-            // 固定確率(0.2)を削除し、純粋にスキルツリー等のパッシブフラグのみを参照するように修正
-			const isDouble = (actor.passive && actor.passive.doubleAction); 
-			const isFast = (actor.passive && actor.passive.fastestAction);
+            // 確率（ここでは20%）を判定に加える
+const isDouble = (actor.passive && actor.passive.doubleAction && Math.random() < 0.2); 
+const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 0.2);
 			
             if (isFast) { 
                 cmd.speed = (Battle.getBattleStat(actor, 'spd') * 1.1) + (10 * 100000); 
@@ -1860,7 +1884,7 @@ findNextActor: () => {
             // --- [7] 内部関数：効果適用ロジック (★特性ID31, 32の組み込み) ---
             const applyEffects = (t, d, ailmentMult = 1.0) => {
                 // 特性による成功率ボーナスの算出
-                const curseBonus = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(actor, 'proc_curse_bonus') : 0;
+				const assaBonus = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(actor, 'proc_instantdeath_bonus') : 0;
                 const bodyBonus = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(actor, 'proc_body_bonus') : 0;
 
                 let currentCheckRate = successRate;
@@ -1947,10 +1971,12 @@ findNextActor: () => {
                 
                 // [修正] 割合ダメージにも「呪い体質(curseBonus)」を適用し、死亡時の根性判定も追加
 				if (d.PercentDamage) {
-					const curseBonus = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(actor, 'proc_curse_bonus') : 0;
+					const assaBonus = (typeof PassiveSkill !== 'undefined')
+						? PassiveSkill.getSumValue(actor, 'proc_instantdeath_bonus')
+						: 0;
 					
-					// 成功率 = (スキルの成功率 + 呪い体質ボーナス) × 会心等の倍率
-					let finalCheckRate = (successRate + curseBonus) * ailmentMult;
+					// 成功率 = (スキルの成功率 + 暗殺術ボーナス) × 会心等の倍率
+					let finalCheckRate = (successRate + assaBonus) * ailmentMult;
 					
 					const resV = (Battle.getBattleStat(t, 'resists') || {}).InstantDeath || 0; // 割合ダメ耐性は即死耐性を参照
 					
@@ -2051,18 +2077,43 @@ findNextActor: () => {
                     if (!data || !data.isPerfect) {
                         let baseHit;
 						
-						// スキル本来の命中率を取得（未定義なら100）
-                        const baseHitRate = (data && data.hitRate !== undefined) ? data.hitRate : 100;
+					// 二刀流(特性ID=8)の合計Lvを拾う（本人traits + 装備traits）
+					const getTraitTotalLv = (entity, traitId) => {
+						let lv = 0;
 
-                       if (loop === 1) {
-                            // ★2回目は「本来の命中率」に「二刀流補正(スキル*2 + 50)」を乗算する
-                            const dualHitBonus = PassiveSkill.getSumValue(actor, 'dual_hit_mult');
-                            baseHit = baseHitRate * (dualHitBonus / 100);
-                        } else {
-                            // 1回目は通常通り（ステータス加算）
-                            const hitBonus = PassiveSkill.getSumValue(actor, 'hit_pct');
-                            baseHit = baseHitRate + hitBonus;
-                        }
+						if (entity.traits) {
+							entity.traits.forEach(t => { if (t && t.id === traitId) lv += (t.level || 0); });
+						}
+						if (entity.equips) {
+							Object.values(entity.equips).forEach(eq => {
+								if (!eq || !eq.traits) return;
+								eq.traits.forEach(t => { if (t && t.id === traitId) lv += (t.level || 0); });
+							});
+						}
+						return lv;
+					};
+
+					// スキル本来の命中率を取得（未定義なら100）
+					const baseHitRate = (data && data.hitRate !== undefined) ? data.hitRate : 100;
+
+					// 1回目も2回目も「まずスキル命中 + hit_pct」を作る（共通）
+					const hitBonus = PassiveSkill.getSumValue(actor, 'hit_pct');
+					const firstHitBase = baseHitRate + hitBonus;
+
+					if (loop === 1) {
+						// --- 2回目：半減(=dual_hit_base%) + 二刀流Lv×dual_hit_mult ---
+						const dualLv = getTraitTotalLv(actor, 8);
+
+						// パッシブ(特性8)から調整可能にする
+						const dualParams = (PassiveSkill.MASTER && PassiveSkill.MASTER[8] && PassiveSkill.MASTER[8].params) ? PassiveSkill.MASTER[8].params : {};
+						const halfRatePct = (dualParams.dual_hit_base !== undefined) ? dualParams.dual_hit_base : 50; // 50%の部分
+						const perLvPct    = (dualParams.dual_hit_mult !== undefined) ? dualParams.dual_hit_mult : 2;   // Lvあたり+2%の部分
+
+						baseHit = (firstHitBase * (halfRatePct / 100)) + (dualLv * perLvPct);
+					} else {
+						// 1回目：従来通り（スキル命中 + hit_pct）
+						baseHit = firstHitBase;
+					}
 
                         // 3. targetToHit（モンスター等）の回避率が未定義の場合は 0(%) 扱いとする
                         const targetEvaBase = (targetToHit.eva !== undefined) ? targetToHit.eva : 0;
@@ -2124,8 +2175,11 @@ findNextActor: () => {
 					else if (typeof PassiveSkill !== 'undefined') {
 						// 物理：スキルツリー(atkIgnoreDef) or シナジー(pierce)
 						if (isPhysical) {
-							if (actor.passive?.atkIgnoreDef && Math.random() < 0.2) ignoreDefense = true;
-							if (actor.passive?.pierce && Math.random() < 0.2) ignoreDefense = true;
+							if (actor.passive?.atkIgnoreDef && Math.random() < 0.2) {
+								ignoreDefense = true;
+								Battle.log(`<span style="color:#ff4444; font-weight:bold;">防御を貫通！</span>`);
+								}
+							//if (actor.passive?.pierce && Math.random() < 0.2) ignoreDefense = true;
 						}
 						// ※魔法側の貫通パッシブを実装する場合はここに追加可能
 					}
@@ -2161,10 +2215,6 @@ findNextActor: () => {
 						if (targetToHit.race === '機械' || targetToHit.race === '無生物') totalMult *= (1 + PassiveSkill.getSumValue(actor, 'anti_machine_pct') / 100);
 						if (targetToHit.race === '竜' || targetToHit.race === '竜人') totalMult *= (1 + PassiveSkill.getSumValue(actor, 'anti_dragon_pct') / 100);
 
-						if (isPhysical) totalMult *= (1 + PassiveSkill.getSumValue(actor, 'physical_dmg_pct') / 100);
-						else if (effectType === '魔法') totalMult *= (1 + PassiveSkill.getSumValue(actor, 'magic_dmg_pct') / 100);
-						else if (effectType === 'ブレス') totalMult *= (1 + PassiveSkill.getSumValue(actor, 'breath_dmg_pct') / 100);
-
 						if (actor.hp <= actor.baseMaxHp * 0.5) totalMult *= (1 + PassiveSkill.getSumValue(actor, 'low_hp_dmg_mult') / 100);
 						
 						if (actor.revengeStack && actor.revengeStack > 0) {
@@ -2179,8 +2229,8 @@ findNextActor: () => {
 						// 防御無視に加え、ダメージを1.5倍にする（ご要望どおり魔法も1.5倍で統一）
 						totalMult *= 1.5;
 						
-						// 会心時は状態異常付与率を2倍にする
-						ailmentChanceMult = 2.0;
+						// 会心時は状態異常付与率を1.5倍にする
+						ailmentChanceMult = 1.5;
 						
 						if (isPhysical) {
 							Battle.log(`<span style="color:#ff4444; font-weight:bold;">かいしんの一撃！</span>`);
@@ -2204,10 +2254,8 @@ findNextActor: () => {
                     }
                     bonusRate += Battle.getBattleStat(actor, 'finDmg') || 0;
                     let finRed = (Battle.getBattleStat(targetToHit, 'finRed') || 0) + (targetToHit.passive?.finRed10 ? 10 : 0);
-                    if (isPhysical) finRed += PassiveSkill.getSumValue(targetToHit, 'physical_reduce_pct');
-                    else if (effectType === '魔法') finRed += PassiveSkill.getSumValue(targetToHit, 'magic_reduce_pct');
-                    else if (effectType === 'ブレス') finRed += PassiveSkill.getSumValue(targetToHit, 'breath_reduce_pct');
-                    if (targetToHit.isCovering) finRed += PassiveSkill.getSumValue(targetToHit, 'cover_reduce_mult');
+                    
+					if (targetToHit.isCovering) finRed += PassiveSkill.getSumValue(targetToHit, 'cover_reduce_mult');
                     if (finRed > 80) finRed = 80; cutRate += finRed;
 
                     let dmg = Math.floor(baseDmgCalc * totalMult * (1.0 + bonusRate / 100) * (1.0 - cutRate / 100) * (0.85 + Math.random() * 0.3));
@@ -2262,7 +2310,12 @@ findNextActor: () => {
 						// [修正] モンスターなら特性のみ、プレイヤーなら「杖装備 ＆ 特性所持」を条件にする
 						const isMonster = (targetToHit instanceof Monster);
 						const hasTrait = reflectRate > 0;
-						const canReflect = isMonster ? hasTrait : (targetToHit.weaponType === '杖' && hasTrait);
+
+						// ★追加：weaponType(単数) だけでなく weaponTypes(複数) でも判定
+						const types = targetToHit.weaponTypes || [targetToHit.weaponType || '素手'];
+						const hasStaff = types.includes('杖');
+
+						const canReflect = isMonster ? hasTrait : (hasStaff && hasTrait);
 
 						if (canReflect && Math.random() * 100 < (reflectTrigger > 0 ? reflectTrigger : 10)) { 
 							const refDmg = Math.floor(dmg * (reflectRate / 100 + 0.1)); 
@@ -2292,6 +2345,7 @@ findNextActor: () => {
                     // --- 通常攻撃時の追加状態異常判定 (★特性ID31, 32の組み込み) ---
                     if (dmg > 0 && isPhysical) {
 						const curseBonus = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(actor, 'proc_curse_bonus') : 0;
+						const assaBonus  = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(actor, 'proc_instantdeath_bonus') : 0;
 						const bodyBonus = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(actor, 'proc_body_bonus') : 0;
 
 						const tryS = (key, name, ailmentKey, bonus = 0) => {
@@ -2316,8 +2370,8 @@ findNextActor: () => {
 						const baseID = (actor.getStat('attack_InstantDeath') || 0) + (data?.InstantDeath || 0);
 
 						// [2] 基礎即死率が 0 より大きい場合のみ、特性ボーナスを上乗せする
-						// 基礎が 0 なら、いくら呪い体質があっても 0 のまま
-						const finalID = (baseID > 0 ? (baseID + curseBonus) : 0) * ailmentChanceMult;
+						// 基礎が 0 なら、いくら暗殺術があっても 0 のまま
+						const finalID = (baseID > 0 ? (baseID + assaBonus) : 0) * ailmentChanceMult;
 
 						if (finalID > 0 && Math.random() * 100 < finalID) {
 							const rv = (Battle.getBattleStat(targetToHit, 'resists') || {}).InstantDeath || 0;

@@ -184,7 +184,7 @@ const DB = {
         { key: 'spd', count: 3, name: '疾風怒濤', effect: 'doubleAction', desc: '戦闘時20%で2回行動', color:'#f88' },
         { key: 'hp', count: 3, name: '吸血', effect: 'drain', desc: '与えたダメージの20%を回復', color:'#f88' },
         { key: 'mag', count: 3, name: '魔力暴走', effect: 'magCrit', desc: '魔法スキル使用時20％でダメージ2倍', color:'#88f' },
-        { key: 'atk', count: 3, name: '貫通', effect: 'pierce', desc: '攻撃時20%で防御無視', color:'#f88' },
+        { key: 'atk', count: 3, name: '貫通', effect: 'atkIgnoreDef', desc: '攻撃時20%で防御無視', color:'#f88' },
         { key: 'def', count: 3, name: '守護', effect: 'guardian', desc: '防御力+100%', color:'#8f8' },
         { key: 'mp', count: 3, name: '吸魔', effect: 'drainMp', desc: '与えたダメージの1%MP回復', color:'#88f' },
         { key: 'finDmg', count: 3, name: '剛力', effect: 'might', desc: '与ダメージ+30%', color:'#f88' },

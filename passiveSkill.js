@@ -17,19 +17,19 @@ const PassiveSkill = {
         7:  { id: 7,  name: '杖', type: '武器', weaponType: '杖', params: { mag_pct: 3 }, effect: '杖装備時にステータスが上昇する', desc: '杖装備時の魔力がスキル×3%上昇' },
         //8:  { id: 8,  name: 'ニ刀流', type: '戦闘', params: { dual_dmg_base: 50, dual_hit_base: 50 }, effect: '盾装備不可になり、二刀流が可能になる', desc: '盾装備不可で武器を2本装備できるようになり、二刀流時は全ての攻撃スキルが2回発動する。2回目のダメージ・命中率は(スキル×2)+50%' },
 		8:  { id: 8,  name: 'ニ刀流', type: '戦闘', params: { dual_dmg_mult: 5, dual_dmg_base: 50, dual_hit_mult: 2, dual_hit_base: 50 }, effect: '盾装備不可になり、二刀流が可能になる', desc: '盾装備不可で武器を2本装備できるようになり、二刀流時は全ての攻撃スキルが2回発動する。2回目のダメージは(スキル×5)+50%、命中率は(スキル×2)+50%' },
-        9:  { id: 9,  name: '両手持ち', type: '武器', params: { physical_dmg_pct: 3, hit_pct: 2, cri_pct: 2, two_handed: 1 }, effect: '盾装備が不可になり、両手持ちボーナスを得る', desc: '盾装備不可となり、与ダメージがスキル×3％上昇、命中率がスキル×2%上昇、クリティカル率がスキル×2%上昇' },
+        9:  { id: 9,  name: '両手持ち', type: '武器', params: { physical_dmg_pct: 5, hit_pct: 5, cri_pct: 5, two_handed: 1 }, effect: '盾装備が不可になり、両手持ちボーナスを得る', desc: '盾装備不可となり、与ダメージがスキル×5％上昇、命中率がスキル×5%上昇、クリティカル率がスキル×5%上昇' },
         10: { id: 10, name: '武術', type: '戦闘', params: { physical_dmg_pct: 3 }, effect: '物理攻撃が強くなる', desc: '物理攻撃時の与ダメージがスキル×3%上昇' },
         11: { id: 11, name: '呪文', type: '戦闘', params: { magic_dmg_pct: 3 }, effect: '呪文攻撃が強くなる', desc: '呪文攻撃時の与ダメージがスキル×3%上昇' },
         12: { id: 12, name: '息吹', type: '戦闘', params: { breath_dmg_pct: 3 }, effect: 'ブレス攻撃が強くなる', desc: 'ブレス攻撃時の与ダメージがスキル×3%上昇' },
-        13: { id: 13, name: '治癒', type: '補助', params: { heal_pct: 5 }, effect: '回復力が強くなる', desc: '回復スキル使用時の回復量がスキル×5%上昇' },
-        14: { id: 14, name: '体さばき', type: '補助', params: { eva_pct: 2 }, effect: '敵の攻撃を回避する', desc: '攻撃回避率はスキル×2%' },
-        15: { id: 15, name: '頑丈', type: '補助', params: { physical_reduce_pct: 2 }, effect: '敵からの物理ダメージを減らす', desc: '敵からの物理ダメージ減少率はスキル×2%' },
-        16: { id: 16, name: '魔法壁', type: '補助', params: { magic_reduce_pct: 2 }, effect: '敵からの呪文ダメージを減らす', desc: '敵からの呪文ダメージ減少率はスキル×2%' },
-        17: { id: 17, name: '心頭滅却', type: '補助', params: { breath_reduce_pct: 2, mag_amp_cost_mult: 1 }, effect: '敵からのブレスダメージを減らす', desc: '敵からのブレスダメージ減少率はスキル×2%。特性：魔力増幅（消費MP1.5倍）を伴う' },
+        13: { id: 13, name: '治癒', type: '補助', params: { heal_pct: 5 }, effect: '回復力が上昇する', desc: '回復スキル使用時の回復量がスキル×5%上昇' },
+        14: { id: 14, name: '体さばき', type: '補助', params: { eva_pct: 2 }, effect: '敵の攻撃を回避する', desc: '回避率がスキル×2%上昇' },
+        15: { id: 15, name: '頑丈', type: '補助', params: { physical_reduce_pct: 3 }, effect: '敵からの物理ダメージを減らす', desc: '敵からの物理ダメージをスキル×3%減少' },
+        16: { id: 16, name: '魔法壁', type: '補助', params: { magic_reduce_pct: 3 }, effect: '敵からの呪文ダメージを減らす', desc: '敵からの呪文ダダメージをスキル×3%減少' },
+        17: { id: 17, name: '心頭滅却', type: '補助', params: { breath_reduce_pct: 3 }, effect: '敵からのブレスダメージを減らす', desc: '敵からのブレスダメージダメージをスキル×3%減少' },
         18: { id: 18, name: '根性', type: '補助', params: { guts_rate: 3, guts_base: 20 }, effect: '死亡時に、ギリギリで耐える', desc: '死亡時にギリギリで耐える。発動率は(スキル×3)+20%' },
         19: { id: 19, name: '底力', type: '戦闘', params: { low_hp_dmg_mult: 3, low_hp_dmg_base: 5 }, effect: 'HPが50%以下になると強くなる', desc: '自身のHPが50%以下の時、与ダメージが(スキル×3)+5%上昇' },
-        20: { id: 20, name: '冷静', type: '補助', params: { resists_Fear: 2, resists_SkillSeal: 2, resists_SpellSeal: 2, resists_HealSeal: 2, resists_InstantDeath: 2, resists_base: 10 }, effect: '怯え、封印、即死耐性上昇', desc: '怯え、封印、即死耐性を(スキル×2)+10%上昇' },
-        21: { id: 21, name: '強靭', type: '補助', params: { resists_Poison: 2, resists_ToxicPoison: 2, resists_Shock: 2, resists_Debuff: 2, resists_base: 10 }, effect: '毒、猛毒、感電、弱体耐性上昇', desc: '毒、猛毒、感電、弱体耐性を(スキル×2)+10%上昇' },
+        20: { id: 20, name: '冷静', type: '補助', params: { resists_Fear: 4, resists_SkillSeal: 4, resists_SpellSeal: 4, resists_HealSeal: 4, resists_InstantDeath: 4, resists_base: 10 }, effect: '怯え、封印、即死耐性上昇', desc: '怯え、封印、即死耐性を(スキル×4)+10%上昇' },
+        21: { id: 21, name: '強靭', type: '補助', params: { resists_Poison: 4, resists_ToxicPoison: 4, resists_Shock: 4, resists_Debuff: 4, resists_base: 10 }, effect: '毒、猛毒、感電、弱体耐性上昇', desc: '毒、猛毒、感電、弱体耐性を(スキル×4)+10%上昇' },
         22: { id: 22, name: '急所狙い', type: '戦闘', params: { cri_pct: 2 }, effect: 'クリティカル率が上昇する', desc: 'クリティカル率がスキル×2%上昇' },
         23: { id: 23, name: '火の扱い', type: '戦闘', params: { fire_pierce_pct: 2 }, effect: '攻撃時の火属性耐性無視', desc: '攻撃時、敵の火属性耐性をスキル×2%無視してダメージを与える' },
         24: { id: 24, name: '水の扱い', type: '戦闘', params: { water_pierce_pct: 2 }, effect: '攻撃時の水属性耐性無視', desc: '攻撃時、敵の水属性耐性をスキル×2%無視してダメージを与える' },
@@ -38,9 +38,9 @@ const PassiveSkill = {
         27: { id: 27, name: '光の扱い', type: '戦闘', params: { light_pierce_pct: 2 }, effect: '攻撃時の光属性耐性無視', desc: '攻撃時、敵の光属性耐性をスキル×2%無視してダメージを与える' },
         28: { id: 28, name: '闇の扱い', type: '戦闘', params: { dark_pierce_pct: 2 }, effect: '攻撃時の闇属性耐性無視', desc: '攻撃時、敵の闇属性耐性をスキル×2%無視してダメージを与える' },
         29: { id: 29, name: '混沌の扱い', type: '戦闘', params: { chaos_pierce_pct: 3 }, effect: '攻撃時の混沌属性耐性無視', desc: '攻撃時、敵の混沌属性耐性をスキル×3%無視してダメージを与える' },
-        30: { id: 30, name: '解析', type: '戦闘', params: { all_elm_pierce_pct: 2 }, effect: '攻撃時の全属性耐性無視', desc: '攻撃時、敵の全属性耐性をスキル×2%無視してダメージを与える' },
-		31: { id: 31, name: '呪い体質', type: '戦闘', params: { proc_curse_add: 1, proc_curse_base: 10 }, effect: '怯え、封印、即死の成功率が上昇する', desc: '怯え、封印、即死の成功率をスキル+10%上昇' },
-		32: { id: 32, name: '人体知識', type: '戦闘', params: { proc_body_add: 1, proc_body_base: 10 }, effect: '毒、猛毒、感電、弱体の成功率が上昇する', desc: '毒、猛毒、感電、弱体の成功率をスキル+10%上昇' },
+        30: { id: 30, name: '解析', type: '戦闘', params: { all_elm_pierce_pct: 1 }, effect: '攻撃時の全属性耐性無視', desc: '攻撃時、敵の全属性耐性をスキル%無視してダメージを与える' },
+		31: { id: 31, name: '呪い体質', type: '戦闘', params: { proc_curse_add: 3, proc_curse_base: 10 }, effect: '怯え、封印の成功率が上昇する', desc: '怯え、封印の成功率を(スキル×3)+10%上昇' },
+		32: { id: 32, name: '人体知識', type: '戦闘', params: { proc_body_add: 2, proc_body_base: 10 }, effect: '毒、猛毒、感電、弱体の成功率が上昇する', desc: '毒、猛毒、感電、弱体の成功率を(スキル×2)+10%上昇' },
         33: { id: 33, name: '悪魔ばらい', type: '戦闘', params: { anti_demon_pct: 5 }, effect: '不死・魔族へのダメージ上昇', desc: '不死者や魔族への与ダメージがスキル×5%上昇' },
         34: { id: 34, name: '獣狩り', type: '戦闘', params: { anti_beast_pct: 5 }, effect: '動物・獣人へのダメージ上昇', desc: '動物や獣人への与ダメージがスキル×5%上昇' },
         35: { id: 35, name: 'メカニック', type: '戦闘', params: { anti_machine_pct: 5 }, effect: '機械へのダメージ上昇', desc: '機械への与ダメージがスキル×5%上昇' },
@@ -54,8 +54,8 @@ const PassiveSkill = {
         43: { id: 43, name: '挑発', type: '防御', params: { target_rate_mult: 3, target_rate_base: 10 }, effect: '敵に狙われやすくなる', desc: '攻撃対象に選ばれる確率が(スキル×3)+10%上昇' },
         44: { id: 44, name: '潜伏', type: '防御', params: { target_rate_mult: -3, target_rate_base: -10 }, effect: '敵に狙われる確率が低下する', desc: '攻撃対象に選ばれる確率を(スキル×3)+10%下げる' },
         45: { id: 45, name: '倍返し', type: '戦闘', params: { revenge_dmg_pct: 1 }, effect: '攻撃を受けた次の攻撃で与ダメージ上昇', desc: '敵から攻撃を受けると、次の攻撃ダメージがスキル%上昇（累積可能）' },
-        46: { id: 46, name: '追い討ち', type: '戦闘', params: { chase_rate_mult: 2 }, effect: 'HPの少ない敵に追加攻撃', desc: '敵HPが50%以下の時にスキル×2%で追加攻撃が発動' },
-        47: { id: 47, name: '連携', type: '戦闘', params: { chain_rate_mult: 2, chain_rate_base: 10 }, effect: '仲間の攻撃にあわせ追加攻撃する', desc: '仲間が敵へ攻撃した時に、(スキル×2)+10%で追加攻撃する' },
+        46: { id: 46, name: '追い討ち', type: '戦闘', params: { chase_rate_mult: 5 }, effect: 'HPの少ない敵に追加攻撃', desc: '敵HPが50%以下の時にスキル×5%で追加攻撃が発動' },
+        47: { id: 47, name: '連携', type: '戦闘', params: { chain_rate_mult: 1, chain_rate_base: 5 }, effect: '仲間の攻撃にあわせ追加攻撃する', desc: '仲間が敵へ攻撃した時に、スキル+5%で追加攻撃する' },
         48: { id: 48, name: '先制', type: '戦闘', weaponTypes: ['槍', '短剣', '弓'], params: { preempt_rate_mult: 1, preempt_rate_base: 5 }, effect: '敵の攻撃より先に追加攻撃する', desc: '槍、短剣、弓装備時、敵に攻撃されそうになった時にスキル+5%で先に攻撃する' },
         49: { id: 49, name: '反撃', type: '戦闘', weaponTypes: ['剣', '斧', '短剣'], params: { counter_rate_mult: 1, counter_rate_base: 5 }, effect: '敵の攻撃を受けた時に反撃する', desc: '剣、斧、短剣装備時、敵からダメージを受けた時にスキル+5%で反撃する' },
         //50: { id: 50, name: '理力の壁', type: '補助', weaponType: '杖', params: { reflect_dmg_mult: 2, reflect_dmg_base: 10, reflect_trigger_base: 5 }, effect: '受けたダメージの一部を反射する', desc: '杖装備時、敵からダメージを受けた時にスキル+5%で発動し、ダメージの(スキル×2)+10%を反射する' },
@@ -78,8 +78,13 @@ const PassiveSkill = {
 				effect: 'レベルが上がりにくくなるが、成長率が大きく上昇する', 
 				desc: 'レベルアップに必要な経験値がスキル×5%増加するが、レベルアップ時のステータス上昇量にスキル×10%のボーナスを得る' 
 			},
-        59: { id: 59, name: '武の極み', type: '戦闘', params: { atk_growth_bonus: 3, def_growth_bonus: 3 }, effect: '物理アタッカーの素質', desc: '攻撃力と防御力の成長率がスキル×5%上昇する' },
-        60: { id: 60, name: '魔の極み', type: '戦闘', params: { mag_growth_bonus: 3, mdef_growth_bonus: 3 }, effect: '魔導師の素質', desc: '魔力と魔法防御の成長率がスキル×5%上昇する' }
+        59: { id: 59, name: '武の極み', type: '戦闘', params: { atk_growth_bonus: 3, def_growth_bonus: 3 }, effect: '物理アタッカーの素質', desc: '攻撃力と防御力の成長率がスキル×3%上昇する' },
+        60: { id: 60, name: '魔の極み', type: '戦闘', params: { mag_growth_bonus: 3, mdef_growth_bonus: 3 }, effect: '魔導師の素質', desc: '魔力と魔法防御の成長率がスキル×3%上昇する' },
+		61: { id: 61, name: '暗殺術', type: '戦闘',
+			  params: { proc_instantdeath_add: 1, proc_instantdeath_base: 10, cri_pct: 2 },
+			  effect: '即死成功率とクリティカル率が上昇する',
+			  desc: '即死成功率をスキル+10%上昇、クリティカル率がスキル×2%上昇'
+			}
     }
 };
 
@@ -193,23 +198,33 @@ PassiveSkill.checkTraitGrowth = function(char) {
 };
 
 /**
- * 装備品（+3）に付与される特性をランダム生成する（キャラとは別計算用）
- * @returns {Array} 特性オブジェクトの配列 [{id, level}, ...]
+ * 装備品に付与される特性をランダム生成
+ * @param {Object} opt
+ *  - countMin/countMax: 付与数レンジ（例: 0〜2）
+ *  - lvMin/lvMax: レベルレンジ（例: 1〜3）
  */
-PassiveSkill.generateEquipmentTraits = function() {
-    const traits = [];
-    // 0〜2つ付与
-    const count = Math.floor(Math.random() * 3);
-    
-    for (let i = 0; i < count; i++) {
-        const id = PassiveSkill.getRandomTraitId();
-        const lv = Math.floor(Math.random() * 3) + 1; // Lv 1〜3
-        if (!traits.find(t => t.id === id)) {
-            traits.push({ id: id, level: lv });
-        }
+PassiveSkill.generateEquipmentTraits = function(opt = null) {
+  const traits = [];
+
+  // 後方互換：引数なしなら従来通り
+  const countMin = opt?.countMin ?? 0;
+  const countMax = opt?.countMax ?? 2;
+  const lvMin    = opt?.lvMin    ?? 1;
+  const lvMax    = opt?.lvMax    ?? 3;
+
+  const count = Math.floor(Math.random() * (countMax - countMin + 1)) + countMin;
+
+  for (let i = 0; i < count; i++) {
+    const id = PassiveSkill.getRandomTraitId();
+    const lv = Math.floor(Math.random() * (lvMax - lvMin + 1)) + lvMin;
+
+    if (!traits.find(t => t.id === id)) {
+      traits.push({ id: id, level: lv });
     }
-    return traits;
+  }
+  return traits;
 };
+
 
 /**
  * 特定の補正項目の合計値を算出する
@@ -217,7 +232,6 @@ PassiveSkill.generateEquipmentTraits = function() {
  * @param {string} key - 取得したいパラメータキー
  * @returns {number} 合算された補正値
  */
-/* passiveSkill.js: 第3引数 ignoreWeapon を追加し、武器チェックを分岐させる */
 PassiveSkill.getSumValue = function(entity, key, ignoreWeapon) {
 	// 【簡単修正のポイント】
     // ignoreWeapon（第3引数）が渡されていない場合、
@@ -251,11 +265,25 @@ PassiveSkill.getSumValue = function(entity, key, ignoreWeapon) {
         if (!m || !m.params) continue;
         const p = m.params;
 
-        // [修正] ignoreWeapon が true（モンスター）なら武器チェックを飛ばす
-        if (!ignoreWeapon) {
-            if (m.weaponType && entity.weaponType !== m.weaponType) continue;
-            if (p.weaponTypes && !p.weaponTypes.includes(entity.weaponType)) continue;
-        }
+        // --- 武器条件チェック（複数武器に対応） ---
+		if (!ignoreWeapon) {
+			const types = entity.weaponTypes || [entity.weaponType || '素手'];
+
+			// 「m.weaponType: '杖'」系（例: 50 理力の壁）
+			if (m.weaponType && !types.includes(m.weaponType)) continue;
+
+			// 「m.weaponTypes: ['剣','斧',...]」系（例: 49 反撃, 48 先制）
+			if (m.weaponTypes && !m.weaponTypes.some(t => types.includes(t))) continue;
+
+			// 念のため params 側にも定義があるケースを拾う（将来互換）
+			if (p.weaponTypes && !p.weaponTypes.some(t => types.includes(t))) continue;
+		}
+		
+		// --- resists_* は (スキル×係数) + resists_base を返す ---
+		if (key.startsWith('resists_') && p[key] !== undefined) {
+		  total += (p[key] * lv) + (p.resists_base || 0);
+		  continue; // 下の通常加算に落とさない（重複防止）
+		}
 
         if (p[key] !== undefined) {
             total += p[key] * lv;
@@ -265,7 +293,6 @@ PassiveSkill.getSumValue = function(entity, key, ignoreWeapon) {
             }
         }
 
-        // [点検] battle.js から呼ばれる特殊キーの名称を統一
         // ID 18: 根性
         if ((key === 'guts_mult' || key === 'guts_rate') && Number(id) === 18) {
             total += (p.guts_rate * lv) + p.guts_base;
@@ -278,6 +305,10 @@ PassiveSkill.getSumValue = function(entity, key, ignoreWeapon) {
         if ((key === 'proc_body_bonus' || key === 'proc_body_add') && Number(id) === 32) {
             total += (p.proc_body_add * lv) + p.proc_body_base;
         }
+		// ID 61: 暗殺術
+		if ((key === 'proc_instantdeath_bonus' || key === 'proc_instantdeath_add') && Number(id) === 61) {
+			total += (p.proc_instantdeath_add * lv) + p.proc_instantdeath_base;
+		}
     }
     return total;
 };

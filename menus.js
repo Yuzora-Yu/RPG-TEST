@@ -145,60 +145,84 @@ const Menu = {
         return '#fff';
     },
 
-    /* menus.js 内の getEquipDetailHTML 関数全文 */
-
-    getEquipDetailHTML: (equip, showName = true) => {
+	getEquipDetailHTML: (equip, showName = true) => {
         let html = '';
         const rarity = equip.rarity || 'N';
         const rarityColor = Menu.getRarityColor(rarity);
         
+        // ★ヘルパー関数: 負数時の +- 重複を防止しつつ符号を付与
+        const fV = (v) => (v >= 0 ? `+${v}` : `${v}`);
+        
         let baseStats = [];
         if (equip.data) {
-            if (equip.data.atk) baseStats.push(`攻+${equip.data.atk}`);
-            if (equip.data.def) baseStats.push(`防+${equip.data.def}`);
-            if (equip.data.mag) baseStats.push(`魔+${equip.data.mag}`);
-            if (equip.data.spd) baseStats.push(`速+${equip.data.spd}`);
-            if (equip.data.finDmg) baseStats.push(`与ダメ+${equip.data.finDmg}%`);
-            if (equip.data.finRed) baseStats.push(`被ダメ-${equip.data.finRed}`);
-			
+            // 基礎ステータス (hp, mp, mdef, hit, cri, eva を追加)
+            if (equip.data.atk)  baseStats.push(`攻${fV(equip.data.atk)}`);
+            if (equip.data.def)  baseStats.push(`防${fV(equip.data.def)}`);
+            if (equip.data.mag)  baseStats.push(`魔${fV(equip.data.mag)}`);
+            if (equip.data.mdef) baseStats.push(`魔防${fV(equip.data.mdef)}`);
+            if (equip.data.spd)  baseStats.push(`速${fV(equip.data.spd)}`);
+            if (equip.data.hp)   baseStats.push(`HP${fV(equip.data.hp)}`);
+            if (equip.data.mp)   baseStats.push(`MP${fV(equip.data.mp)}`);
+
+            // 特殊ステータス
+            if (equip.data.hit)    baseStats.push(`命中${fV(equip.data.hit)}%`);
+            if (equip.data.cri)    baseStats.push(`会心${fV(equip.data.cri)}%`);
+            if (equip.data.eva)    baseStats.push(`回避${fV(equip.data.eva)}%`);
+            if (equip.data.finDmg) baseStats.push(`与ダメ${fV(equip.data.finDmg)}%`);
+            if (equip.data.finRed) baseStats.push(`被ダメ${fV(-equip.data.finRed)}%`); // 軽減はマイナスで表現
+
+            // 耐性・状態異常付与 (Battle.statNames がある前提)
             for (let key in equip.data) {
                 if (key.startsWith('resists_')) {
-                    const label = Battle.statNames[key.replace('resists_', '')] || key;
-                    baseStats.push(`${label}耐+${equip.data[key]}%`);
+                    const label = (typeof Battle !== 'undefined' && Battle.statNames) ? (Battle.statNames[key.replace('resists_', '')] || key) : key;
+                    baseStats.push(`${label}耐${fV(equip.data[key])}%`);
                 } else if (key.startsWith('attack_')) {
-                    const label = Battle.statNames[key.replace('attack_', '')] || key;
+                    const label = (typeof Battle !== 'undefined' && Battle.statNames) ? (Battle.statNames[key.replace('attack_', '')] || key) : key;
                     baseStats.push(`攻撃時${equip.data[key]}%で${label}`);
                 }
             }
-			
+            
+            // 属性補正
             if(typeof CONST !== 'undefined' && CONST.ELEMENTS) {
                 CONST.ELEMENTS.forEach(elm => {
-                    if (equip.data.elmAtk && equip.data.elmAtk[elm]) baseStats.push(`${elm}攻+${equip.data.elmAtk[elm]}`);
-                    if (equip.data.elmRes && equip.data.elmRes[elm]) baseStats.push(`${elm}耐+${equip.data.elmRes[elm]}`);
+                    if (equip.data.elmAtk && equip.data.elmAtk[elm]) baseStats.push(`${elm}攻${fV(equip.data.elmAtk[elm])}%`);
+                    if (equip.data.elmRes && equip.data.elmRes[elm]) baseStats.push(`${elm}耐${fV(equip.data.elmRes[elm])}%`);
                 });
             }
         }
+
+        // ★習得スキル (grantSkills) の表示ロジック [] 形式の span にする (改行防止)
+        let skillHTML = '';
+        const gSkills = equip.grantSkills || (equip.data && equip.data.grantSkills);
+        if (gSkills && Array.isArray(gSkills) && gSkills.length > 0) {
+            const skillNames = gSkills.map(sid => {
+                const sk = (typeof DB !== 'undefined' && DB.SKILLS) ? DB.SKILLS.find(s => s.id === sid) : null;
+                return sk ? sk.name : `不明(${sid})`;
+            });
+            skillHTML = ` <span style="color:#ffff00;">[習得:${skillNames.join(', ')}]</span>`;
+        }
         const baseEffect = baseStats.length > 0 ? baseStats.join(' ') : 'なし';
 
+        // オプション表示 (ここも fV で符号修正)
         let optsHTML = '';
         if (equip.opts && equip.opts.length > 0) {
             const optsList = equip.opts.map(o => {
                 const optRarity = o.rarity || 'N';
                 const optColor = Menu.getRarityColor(optRarity);
                 const unit = o.unit === 'val' ? '' : o.unit;
-                return `<span style="color:${optColor};">[${o.label}+${o.val}${unit} ${optRarity}]</span>`;
+                return `<span style="color:${optColor};">[${o.label}${fV(o.val)}${unit} ${optRarity}]</span>`;
             }).join(' ');
             optsHTML = `<div style="font-size:10px; color:#aaa; margin-top:2px;">${optsList}</div>`;
         }
 
+        // シナジー表示 (既存維持)
         let synergyHTML = '';
         if (typeof App !== 'undefined' && typeof App.checkSynergy === 'function') {
-             // ★修正: App.checkSynergy は配列を返すため、配列がある場合にループして全て表示する
              const syns = App.checkSynergy(equip);
              if(syns && syns.length > 0) {
                  synergyHTML = syns.map(syn => `
                     <div style="margin-top:4px; padding:2px 4px; background:rgba(255,255,255,0.1); border-radius:2px;">
-                        <div style="font-size:11px; font-weight:bold; color:${syn.color||'#f88'};">★${syn.name}</div>
+                        <div style="font-size:11px; font-weight:bold; color:${syn.color||'#f88'};">${syn.name}</div>
                         <div style="font-size:10px; color:#ddd;">${syn.desc}</div>
                     </div>`).join('');
              }
@@ -207,12 +231,14 @@ const Menu = {
         if (showName) {
             html += `
                 <div style="font-size:12px; font-weight:bold; color:${rarityColor}; margin-bottom:2px;">
-                    ${equip.name}
+                    ${equip.name} 
                 </div>`;
         }
 
         html += `
-            <div style="font-size:10px; color:#ccc;">${baseEffect}</div>
+            <div style="font-size:10px; color:#ccc;">
+                ${baseEffect}${skillHTML}
+            </div>
             ${optsHTML}
             ${synergyHTML}
         `;
@@ -974,7 +1000,7 @@ const MenuInventory = {
                 traitHtml = `<div style="display:flex; flex-wrap:wrap; gap:2px 6px; margin-top:2px; border-top:1px dashed #444; padding-top:2px; width:100%;">` +
                     item.traits.map(t => {
                         const m = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.MASTER[t.id] : null;
-                        return m ? `<span style="color:#00ffff; font-size:9px;">★${m.name} Lv${t.level}</span>` : '';
+                        return m ? `<span style="color:#00ffff; font-size:9px;">${m.name} Lv${t.level}</span>` : '';
                     }).join('') + 
                 `</div>`;
             }
@@ -1217,65 +1243,91 @@ const MenuAllies = {
         else MenuAllies.renderDetail();
     },
 	
-    /* menus.js 内に追加または修正 */
-	getEquipFullDetailHTML: (eq) => {
+    getEquipFullDetailHTML: (eq) => {
 		if (!eq) return '<span style="color:#555;">装備なし</span>';
+
+		// ★数値の正負に応じて符号を1つだけ付与するヘルパー
+		const fV = (v) => (v >= 0 ? `+${v}` : `${v}`);
+
 		let stats = [];
-		if(eq.data.atk) stats.push(`攻+${eq.data.atk}`);
-		if(eq.data.def) stats.push(`防+${eq.data.def}`);
-		if(eq.data.spd) stats.push(`速+${eq.data.spd}`);
-		if(eq.data.mag) stats.push(`魔+${eq.data.mag}`);
-		if(eq.data.mdef) stats.push(`魔防+${eq.data.mdef}`);
-		if(eq.data.finDmg) stats.push(`与ダメ+${eq.data.finDmg}%`);
-		if(eq.data.finRed) stats.push(`被ダメ-${eq.data.finRed}%`);
-		
-		for (let key in eq.data) {
-			if (key.startsWith('resists_')) {
-				const label = (typeof Battle !== 'undefined' && Battle.statNames) ? (Battle.statNames[key.replace('resists_', '')] || key) : key;
-				stats.push(`${label}耐+${eq.data[key]}%`);
-			} else if (key.startsWith('attack_')) {
-				const label = (typeof Battle !== 'undefined' && Battle.statNames) ? (Battle.statNames[key.replace('attack_', '')] || key) : key;
-				stats.push(`攻撃時${eq.data[key]}%で${label}`);
+		if (eq.data) {
+			// 基礎ステータス (hp, mp, mdef, hit, cri, eva を含む)
+			if (eq.data.atk)  stats.push(`攻${fV(eq.data.atk)}`);
+			if (eq.data.def)  stats.push(`防${fV(eq.data.def)}`);
+			if (eq.data.mag)  stats.push(`魔${fV(eq.data.mag)}`);
+			if (eq.data.mdef) stats.push(`魔防${fV(eq.data.mdef)}`);
+			if (eq.data.spd)  stats.push(`速${fV(eq.data.spd)}`);
+			if (eq.data.hp)   stats.push(`HP${fV(eq.data.hp)}`);
+			if (eq.data.mp)   stats.push(`MP${fV(eq.data.mp)}`);
+
+			// 特殊ステータス
+			if (eq.data.hit)    stats.push(`命中${fV(eq.data.hit)}%`);
+			if (eq.data.cri)    stats.push(`会心${fV(eq.data.cri)}%`);
+			if (eq.data.eva)    stats.push(`回避${fV(eq.data.eva)}%`);
+			if (eq.data.finDmg) stats.push(`与ダメ${fV(eq.data.finDmg)}%`);
+			if (eq.data.finRed) stats.push(`被ダメ${fV(-eq.data.finRed)}%`); // 被ダメージ軽減は負数で表現
+
+			// 耐性・状態異常付与
+			for (let key in eq.data) {
+				if (key.startsWith('resists_')) {
+					const label = (typeof Battle !== 'undefined' && Battle.statNames) ? (Battle.statNames[key.replace('resists_', '')] || key) : key;
+					stats.push(`${label}耐${fV(eq.data[key])}%`);
+				} else if (key.startsWith('attack_')) {
+					const label = (typeof Battle !== 'undefined' && Battle.statNames) ? (Battle.statNames[key.replace('attack_', '')] || key) : key;
+					stats.push(`攻撃時${eq.data[key]}%で${label}`);
+				}
 			}
 		}
+
+		// ★習得スキルを [] 形式の span にする (改行防止)
+		let skillHTML = '';
+		const gSkills = eq.grantSkills || (eq.data && eq.data.grantSkills);
+		if (gSkills && Array.isArray(gSkills) && gSkills.length > 0) {
+			const skillNames = gSkills.map(sid => {
+				const sk = (typeof DB !== 'undefined' && DB.SKILLS) ? DB.SKILLS.find(s => s.id === sid) : null;
+				return sk ? sk.name : `不明(${sid})`;
+			});
+			skillHTML = ` <span style="color:#ffff00; ">[習得:${skillNames.join(', ')}]</span>`;
+		}
+
+		// ステータスとスキルを同じ div に配置
+		let baseHtml = `<div style="font-size:10px; color:#ccc;">${stats.join(' ')}${skillHTML}</div>`;
 		
-		let baseHtml = `<div style="font-size:10px; color:#ccc;">${stats.join(' ')}</div>`;
-		
-		// オプション表示
+		// オプション表示 (ここも fV を適用して符号重複を防止)
 		let optsHtml = '';
 		if (eq.opts && eq.opts.length > 0) {
 			const optsList = eq.opts.map(o => {
 				const color = Menu.getRarityColor(o.rarity || 'N');
 				const unit = o.unit === 'val' ? '' : o.unit;
-				return `<div style="color:${color}; font-size:10px;">[${o.rarity}] ${o.label} +${o.val}${unit}</div>`;
+				return `<div style="color:${color}; font-size:10px;">[${o.rarity}] ${o.label} ${fV(o.val)}${unit}</div>`;
 			}).join('');
 			optsHtml = `<div style="margin-top:2px;">${optsList}</div>`;
 		}
 
-		// ★追加：特性表示 (青文字で目立たせる)
+		// 特性表示 (既存の青文字表示を維持)
 		let traitHtml = '';
 		if (eq.traits && eq.traits.length > 0) {
 			const traitList = eq.traits.map(t => {
-				const m = PassiveSkill.MASTER[t.id];
-				return m ? `<div style="color:#00ffff; font-size:10px;">★${m.name} Lv${t.level}</div>` : '';
+				const m = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.MASTER[t.id] : null;
+				return m ? `<div style="color:#00ffff; font-size:10px;">${m.name} Lv${t.level}</div>` : '';
 			}).join('');
 			traitHtml = `<div style="margin-top:2px; border-top:1px solid rgba(0,255,255,0.2); padding-top:2px;">${traitList}</div>`;
 		}
 
-		// シナジー表示
+		// シナジー表示 (既存維持)
 		let synHtml = '';
-		if (typeof App.checkSynergy === 'function') {
+		if (typeof App !== 'undefined' && typeof App.checkSynergy === 'function') {
 			const syns = App.checkSynergy(eq);
 			if (syns && syns.length > 0) {
 				synHtml = syns.map(syn => 
-					`<div style="margin-top:2px; font-size:10px; color:${syn.color||'#f88'};">★${syn.name}: ${syn.desc}</div>`
+					`<div style="margin-top:2px; font-size:10px; color:${syn.color||'#f88'};">${syn.name}: ${syn.desc}</div>`
 				).join('');
 			}
 		}
 		
 		return `<div>${baseHtml}${optsHtml}${traitHtml}${synHtml}</div>`;
 	},
-
+	
     renderDetail: () => {
         document.getElementById('allies-list-view').style.display = 'none'; 
         const treeView = document.getElementById('allies-tree-view');
@@ -1349,7 +1401,7 @@ const MenuAllies = {
             if (activeSynergies.length > 0) {
                 synergiesHtml = `<div style="margin-top:10px; background:rgba(255,255,255,0.05); border:1px solid #444; border-radius:4px; padding:5px;">
                     <div style="font-size:10px; color:#ffd700; margin-bottom:3px; text-align:center;">発動中のシナジー</div>
-                    ${activeSynergies.map(syn => `<div style="font-size:10px; color:${syn.color||'#fff'}; margin-bottom:2px;">★${syn.name}: ${syn.desc} </div>`).join('')}
+                    ${activeSynergies.map(syn => `<div style="font-size:10px; color:${syn.color||'#fff'}; margin-bottom:2px;">${syn.name}: ${syn.desc} </div>`).join('')}
                 </div>`;
             }
 
@@ -2321,7 +2373,7 @@ const MenuBook = {
         const PS = (typeof PassiveSkill !== 'undefined') ? PassiveSkill : null;
         const traitListHtml = (monster.traits || []).map(t => {
             const m = PS ? PS.MASTER[t.id] : null;
-            return m ? `<span style="background:#111; border:1px solid #00ffff; color:#00ffff; padding:2px 6px; border-radius:3px; font-size:10px; margin-right:4px; margin-bottom:4px; display:inline-block;">★${m.name} Lv.${t.level}</span>` : '';
+            return m ? `<span style="background:#111; border:1px solid #00ffff; color:#00ffff; padding:2px 6px; border-radius:3px; font-size:10px; margin-right:4px; margin-bottom:4px; display:inline-block;">${m.name} Lv.${t.level}</span>` : '';
         }).join('') || '<span style="color:#555; font-size:11px;">特性なし</span>';
 
         // タブ切り替えボタン

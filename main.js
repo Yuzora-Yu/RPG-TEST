@@ -18,7 +18,7 @@ class Entity {
         this.hp = data.currentHp !== undefined ? data.currentHp : this.baseMaxHp;
         this.mp = data.currentMp !== undefined ? data.currentMp : this.baseMaxMp;
         this.baseStats = { atk:data.atk||0, def:data.def||0, spd:data.spd||0, mag:data.mag||0, mdef: data.mdef || 0 };
-        this.buffs = { atk:1, def:1, spd:1, mag:1 };
+        this.buffs = { atk:1, def:1, spd:1, mag:1, mdef:1 };
         this.status = {}; 
         this.isDead = this.hp <= 0;
         
@@ -162,7 +162,7 @@ class Player extends Entity {
             }
         }
         
-        // スキルツリー習得スキル
+        // 3. スキルツリー習得スキル
         if (this.tree) {
             for (let key in this.tree) {
                 const level = this.tree[key];
@@ -170,32 +170,39 @@ class Player extends Entity {
                 if (treeDef) {
                     for (let i = 0; i < level; i++) {
                         const step = treeDef.steps[i];
-                        if (step && step.skillId) {
-                            this.learnSkill(step.skillId);
+                        if (step && step.skillId) this.learnSkill(step.skillId);
+                        // ★複数スキルID対応
+                        if (step && step.skillIds) {
+                            (Array.isArray(step.skillIds) ? step.skillIds : [step.skillIds]).forEach(sid => this.learnSkill(sid));
                         }
                     }
                 }
             }
         }
 		
-		// 4. シナジーの適用とスキル習得
-        // 既存の判定処理を活かしつつ、各部位の装備が既に持っているシナジー効果からスキルを習得する
+		// 4. 装備品そのもののスキル習得およびシナジーの適用
         this.synergy = []; 
         Object.values(this.equips).forEach(eq => {
-            if (eq && eq.isSynergy && eq.synergies) {
+            if (!eq) return;
+
+            // ★追加：装備品自体が持つスキル (grantSkills: [421] など) を習得
+            const gSkills = eq.grantSkills || (eq.data && eq.data.grantSkills);
+            if (Array.isArray(gSkills)) {
+                gSkills.forEach(sid => {
+                    if (sid) this.learnSkill(sid);
+                });
+            }
+
+            // シナジー効果の判定とスキル習得
+            if (eq.isSynergy && eq.synergies) {
                 eq.synergies.forEach(syn => {
-                    // インスタンスにシナジー情報を蓄積
                     this.synergy.push(syn);
-                    
-                    // ★修正箇所: grantSkill があればその value (スキルID) を習得
                     if (syn.effect === 'grantSkill' && syn.value) {
                         this.learnSkill(syn.value);
                     }
                 });
             }
         });
-		
-        //this.synergy = App.checkSynergy(this.equips);
     }
 
     learnSkill(sid) {
@@ -729,34 +736,39 @@ const App = {
         } 
     },
 
-    load: () => { 
-        try { 
-            const j=localStorage.getItem(CONST.SAVE_KEY); 
-            if(j){ 
-                App.data=JSON.parse(j); 
-                if(!App.data.book) App.data.book = { monsters: [] }; 
-				
-				if (!App.data.book.killCounts) {
-					App.data.book.killCounts = {}; 
-				}
-				
-                if(!App.data.battle) App.data.battle = { active: false }; 
-				
-				// ★追加: 統計データオブジェクトがない場合の初期化
-				if(!App.data.stats) {
-					App.data.stats = {
-						maxGold: 0,
-						maxGems: 0,
-						wipeoutCount: 0,
-						totalSteps: 0,
-						totalBattles: 0,
-						maxDamage: { val: 0, actor: '', skill: '' },
-						startTime: Date.now()
-					};
-				}
-            } 
-        }catch(e){ console.error(e); } 
-    },
+load: () => { 
+    try { 
+        const j = localStorage.getItem(CONST.SAVE_KEY); 
+        if(j){ 
+            App.data = JSON.parse(j); 
+            
+            // --- ここから mdef 補完ロジック ---
+            if (App.data.characters) {
+                App.data.characters.forEach(char => {
+                    // mdef が未定義、または null の場合に mag * 0.8 で初期化
+                    if (char.mdef === undefined || char.mdef === null) {
+                        char.mdef = Math.floor((char.mag || 0) * 0.8);
+                    }
+                });
+            }
+            // ----------------------------------
+
+            if(!App.data.book) App.data.book = { monsters: [] }; 
+            if(!App.data.book.killCounts) App.data.book.killCounts = {}; 
+            if(!App.data.battle) App.data.battle = { active: false }; 
+            
+            if(!App.data.stats) {
+                App.data.stats = {
+                    maxGold: 0, maxGems: 0, wipeoutCount: 0,
+                    totalSteps: 0, totalBattles: 0,
+                    maxDamage: { val: 0, actor: '', skill: '' },
+                    startTime: Date.now()
+                };
+            }
+        } 
+    } catch(e) { console.error(e); } 
+},
+
 	
     save: () => { 
         if(App.data && Field.ready) { 
@@ -790,20 +802,46 @@ const App = {
         }
     },
 
-    createGameData: (imgSrc) => {
+	createGameData: (imgSrc) => {
         const name = document.getElementById('player-name').value || 'アルス';
         App.data = JSON.parse(JSON.stringify(INITIAL_DATA_TEMPLATE));
         App.data.characters[0].name = name;
         App.data.characters[0].img = imgSrc; 
         
-        //App.data.characters[0].sp = 0;
+        // スキルツリー初期化
         App.data.characters[0].tree = { ATK:0, MAG:0, SPD:0, HP:0, MP:0 };
 
-        for(let i=0;i<5;i++) App.data.inventory.push(App.createEquipByFloor('init', 1)); 
+        // ★ 主人公の初期装備（武器）を Rank 1 / +3 の武器(eid 1-6)からランダム生成
+        let startWeapon;
+        while (true) {
+            // sourceに'drop'を渡すことで +3 の抽選ロジックを有効化
+            startWeapon = App.createEquipByFloor('drop', 1, 3);
+            
+            // 生成されたアイテムが eid 1〜6 (武器カテゴリ) かチェック
+            // 武器名から「+3」を除去してマスタを検索
+            const baseName = startWeapon.name.replace('+3', '');
+            const master = window.EQUIP_MASTER.find(e => e.name === baseName);
+            
+            // 武器タイプであり、かつ指定された eid 範囲内であれば確定
+            if (master && master.type === '武器' && master.eid >= 1 && master.eid <= 6) {
+                break;
+            }
+        }
+        
+        // 主人公の武器スロットに装備
+        App.data.characters[0].equips['武器'] = startWeapon;
+
+        // 初期インベントリ（残りの5枠は通常通り Rank 1 / +0 で配布）
+        for(let i=0; i<5; i++) {
+            App.data.inventory.push(App.createEquipByFloor('init', 1)); 
+        }
+
         try {
             localStorage.setItem(CONST.SAVE_KEY, JSON.stringify(App.data));
-            window.location.href='index.html'; 
-        } catch(e) { alert("データ作成失敗"); }
+            window.location.href = 'index.html'; 
+        } catch(e) { 
+            alert("データ作成失敗"); 
+        }
     },
     
     continueGame: () => { window.location.href='index.html'; },
@@ -866,15 +904,32 @@ const App = {
         return null;
     };
 
-    /* main-1.js の calcStats 冒頭 */
-    // 武器種の判定 (ここで確実に '斧' 等をセットし、データ末尾の '素手' を上書きする)
-    const weaponEq = getEquip('Weapon'); // 上記の網羅版getEquipを使用
-    if (weaponEq) {
-        const bn = weaponEq.baseName || (weaponEq.data && weaponEq.data.baseName);
-        char.weaponType = bn || '素手';
-    } else {
-        char.weaponType = '素手';
-    }
+    // --- 武器種判定：単数 weaponType を維持しつつ、複数 weaponTypes を追加 ---
+	char.weaponTypes = [];
+
+	// 1) まず「右手相当」を優先（既存getEquip('Weapon')の結果を先頭に）
+	const mainW = getEquip('Weapon');
+	if (mainW) {
+	  const bn = mainW.baseName || (mainW.data && mainW.data.baseName) || '素手';
+	  if (bn && bn !== '素手') char.weaponTypes.push(bn);
+	}
+
+	// 2) つぎに equips 全スロットから武器を拾う（左手武器など）
+	if (char.equips) {
+	  Object.values(char.equips).forEach(eq => {
+		if (!eq) return;
+		if (eq.type === '武器' || eq.type === 'weapon') {
+		  const bn = eq.baseName || (eq.data && eq.data.baseName) || '素手';
+		  if (bn && bn !== '素手' && !char.weaponTypes.includes(bn)) {
+			char.weaponTypes.push(bn);
+		  }
+		}
+	  });
+	}
+
+	// 互換性のため weaponType（単数）も維持：代表値＝先頭、なければ素手
+	char.weaponType = char.weaponTypes[0] || '素手';
+
 
     // リミットブレイク回数の計算（主人公 ID301 は storyStep を加算）
     let lb = char.limitBreak || 0;
@@ -940,37 +995,73 @@ const App = {
         }
     }
 
-    // 2. 装備補正（%乗算用。ただし hit/eva/cri は最終加算）
-    let pctMods = { maxHp: 0, maxMp: 0, atk: 0, def: 0, mdef: 0, spd: 0, mag: 0, hit: 0, eva: 0, cri: 0 };
+	// 2. 装備補正（%乗算用。ただし hit/eva/cri は最終加算）
+	let pctMods = { maxHp: 0, maxMp: 0, atk: 0, def: 0, mdef: 0, spd: 0, mag: 0, hit: 0, eva: 0, cri: 0 };
 
-    CONST.PARTS.forEach(part => {
-        const eq = getEquip(part);
-        if (!eq || !eq.data) return;
+	// --- 追加：装備を「全スロット」から集める（重複キー対策付き） ---
+	const allEquips = [];
+	const seen = new Set();
+	// ★新規追加：集約用スキルSet
+    const allSkillIds = new Set(char.skills || []);
 
-        // 固定値・マスタ定義の加算
-        if (eq.data.atk)  s.atk  += eq.data.atk;
-        if (eq.data.def)  s.def  += eq.data.def;
-        if (eq.data.mdef) s.mdef += eq.data.mdef;
-        if (eq.data.spd)  s.spd  += eq.data.spd;
-        if (eq.data.mag)  s.mag  += eq.data.mag;
-        if (eq.data.hit)  s.hit  += eq.data.hit;
-        if (eq.data.eva)  s.eva  += eq.data.eva;
-        if (eq.data.cri)  s.cri  += eq.data.cri;
+	if (char.equips) {
+		for (const [slotKey, eq] of Object.entries(char.equips)) {
+			if (!eq || !eq.data) continue;
 
-        // 装備マスタの耐性・追加効果
-        for (let key in eq.data) {
-            if (key.startsWith('resists_')) {
-                const resKey = key.replace('resists_', '');
-                s.resists[resKey] = (s.resists[resKey] || 0) + eq.data[key];
-            } else if (key.startsWith('attack_')) {
-                s[key] = (s[key] || 0) + eq.data[key];
-            }
+			// 「同一装備が複数キーに入ってる」ケースの二重加算を避けるための署名
+			// ※プロジェクト側にユニークIDがあるならそれを最優先で使ってください
+			const sig =
+				eq.uid || eq.guid || eq.uniqueId ||
+				`${eq.id || ''}|${eq.name || ''}|${eq.plus || eq.level || ''}|${eq.baseName || (eq.data && eq.data.baseName) || ''}|${slotKey}`;
+
+			if (seen.has(sig)) continue;
+			seen.add(sig);
+			allEquips.push(eq);
+		}
+	}
+
+	// --- 追加：二刀流用の武器種リスト（weaponTypes）を作る。互換のため weaponType も維持 ---
+	char.weaponTypes = [];
+	for (const eq of allEquips) {
+		if (eq && (eq.type === '武器' || eq.type === 'weapon')) {
+			const bn = eq.baseName || (eq.data && eq.data.baseName) || '素手';
+			if (!char.weaponTypes.includes(bn)) char.weaponTypes.push(bn);
+		}
+	}
+	char.weaponType = char.weaponTypes[0] || '素手';
+
+	// --- ここから：装備加算本体（旧CONST.PARTSループの代わり） ---
+	for (const eq of allEquips) {
+		// 固定値・マスタ定義の加算
+		if (eq.data.atk)  s.atk  += eq.data.atk;
+		if (eq.data.def)  s.def  += eq.data.def;
+		if (eq.data.mdef) s.mdef += eq.data.mdef;
+		if (eq.data.spd)  s.spd  += eq.data.spd;
+		if (eq.data.mag)  s.mag  += eq.data.mag;
+		if (eq.data.hit)  s.hit  += eq.data.hit;
+		if (eq.data.eva)  s.eva  += eq.data.eva;
+		if (eq.data.cri)  s.cri  += eq.data.cri;
+		
+		// ★新規追加：装備によるスキル習得
+        const gSkills = eq.grantSkills || (eq.data && eq.data.grantSkills);
+        if (Array.isArray(gSkills)) {
+            gSkills.forEach(id => { if(id) allSkillIds.add(id); });
         }
 
-        if (eq.data.finDmg) s.finDmg += eq.data.finDmg;
-        if (eq.data.finRed) s.finRed += eq.data.finRed;
-        if (eq.data.elmAtk) for (let e in eq.data.elmAtk) s.elmAtk[e] += eq.data.elmAtk[e];
-        if (eq.data.elmRes) for (let e in eq.data.elmRes) s.elmRes[e] += eq.data.elmRes[e];
+		// 装備マスタの耐性・追加効果
+		for (let key in eq.data) {
+			if (key.startsWith('resists_')) {
+				const resKey = key.replace('resists_', '');
+				s.resists[resKey] = (s.resists[resKey] || 0) + eq.data[key];
+			} else if (key.startsWith('attack_')) {
+				s[key] = (s[key] || 0) + eq.data[key];
+			}
+		}
+
+		if (eq.data.finDmg) s.finDmg += eq.data.finDmg;
+		if (eq.data.finRed) s.finRed += eq.data.finRed;
+		if (eq.data.elmAtk) for (let e in eq.data.elmAtk) s.elmAtk[e] += eq.data.elmAtk[e];
+		if (eq.data.elmRes) for (let e in eq.data.elmRes) s.elmRes[e] += eq.data.elmRes[e];
 
         // オプション補正（% / val）
         if (eq.opts) eq.opts.forEach(o => {
@@ -1012,35 +1103,38 @@ const App = {
             }
         });
 
-        // シナジー効果
-        if (eq.isSynergy && eq.effects) {
-            eq.effects.forEach(effect => {
-                if (effect === 'might') s.finDmg += 30;
-                if (effect === 'ironWall') s.finRed += 10;
-                if (effect === 'guardian') pctMods.def += 100;
-
-                if (effect === 'divineProtection') {
-                    for (let k in s.resists) s.resists[k] = (s.resists[k] || 0) + 20;
+        // シナジー効果補正
+            // ここで ReferenceError を防ぐため App.checkSynergy を使用
+            if (typeof App.checkSynergy === 'function') {
+                const syns = App.checkSynergy(eq);
+                if (syns) {
+                    syns.forEach(syn => {
+                        if (syn.effect === 'might') s.finDmg += 30;
+                        if (syn.effect === 'ironWall') s.finRed += 10;
+                        if (syn.effect === 'guardian') pctMods.def += 100;
+                        if (syn.effect === 'divineProtection') {
+                            for (let k in s.resists) s.resists[k] = (s.resists[k] || 0) + 20;
+                        }
+                        if (syn.effect === 'hpBoost100') pctMods.maxHp += 100;
+                        if (syn.effect === 'spdBoost100') pctMods.spd += 100;
+                        if (syn.effect === 'debuffImmune') s.resists.Debuff = 100;
+                        if (syn.effect === 'sealGuard50') {
+                            s.resists.SkillSeal = (s.resists.SkillSeal || 0) + 50;
+                            s.resists.SpellSeal = (s.resists.SpellSeal || 0) + 50;
+                            s.resists.HealSeal  = (s.resists.HealSeal  || 0) + 50;
+                        }
+                        if (syn.effect === 'elmAtk25') {
+                            const elmOpt = eq.opts && eq.opts.find(x => x.key === 'elmAtk');
+                            if (elmOpt) s.elmAtk[elmOpt.elm] = (s.elmAtk[elmOpt.elm] || 0) + 25;
+                        }
+                        // ★シナジーによるスキル習得 (深淵の刃など)
+                        if (syn.effect === 'grantSkill' && syn.value) {
+                            allSkillIds.add(syn.value);
+                        }
+                    });
                 }
-
-                if (effect === 'hpBoost100') pctMods.maxHp += 100;
-                if (effect === 'spdBoost100') pctMods.spd += 100;
-
-                if (effect === 'debuffImmune') s.resists.Debuff = 100;
-
-                if (effect === 'sealGuard50') {
-                    s.resists.SkillSeal = (s.resists.SkillSeal || 0) + 50;
-                    s.resists.SpellSeal = (s.resists.SpellSeal || 0) + 50;
-                    s.resists.HealSeal  = (s.resists.HealSeal  || 0) + 50;
-                }
-
-                if (effect === 'elmAtk25') {
-                    const elmOpt = eq.opts && eq.opts.find(x => x.key === 'elmAtk');
-                    if (elmOpt) s.elmAtk[elmOpt.elm] = (s.elmAtk[elmOpt.elm] || 0) + 25;
-                }
-            });
+            }
         }
-    });
 
     // 3. スキルツリー補正
     const trees = char.unlockedTrees || char.tree;
@@ -1059,6 +1153,7 @@ const App = {
                     if (step.stats.mpMult)  pctMods.maxMp += step.stats.mpMult * 100;
                     if (step.stats.atkMult) pctMods.atk   += step.stats.atkMult * 100;
                     if (step.stats.defMult) pctMods.def   += step.stats.defMult * 100;
+					if (step.stats.defMult) pctMods.mdef   += step.stats.defMult * 100; //mdefもdefスキルツリー参照
                     if (step.stats.spdMult) pctMods.spd   += step.stats.spdMult * 100;
                     if (step.stats.magMult) pctMods.mag   += step.stats.magMult * 100;
 
@@ -1070,6 +1165,10 @@ const App = {
                         });
                     }
                 }
+				
+				// ★新規追加：ツリーによるスキル習得
+                if (step.skillId) allSkillIds.add(step.skillId);
+                if (step.skillIds) (Array.isArray(step.skillIds) ? step.skillIds : [step.skillIds]).forEach(id => allSkillIds.add(id));
 
                 if (step.passive) {
                     if (step.passive === 'finRed10') s.finRed += 10;
@@ -1112,6 +1211,15 @@ const App = {
         pctMods.cri   += PassiveSkill.getSumValue(char, 'cri_pct');
     }
 	
+	const resistKeys = [
+	  'Fear','SkillSeal','SpellSeal','HealSeal','InstantDeath',
+	  'Poison','ToxicPoison','Shock','Debuff'
+	];
+
+	resistKeys.forEach(rk => {
+	  const v = PassiveSkill.getSumValue(char, 'resists_' + rk);
+	  if (v) s.resists[rk] = (s.resists[rk] || 0) + v;
+	});
 	
 	// --- calcStats の内部、オーラ判定の直前に配置 ---
 	const getAuraVal = (entity, traitId, key) => {
@@ -1187,6 +1295,9 @@ const App = {
     s.hit += pctMods.hit;
     s.eva += pctMods.eva;
     s.cri += pctMods.cri;
+	
+	// ★新規追加：習得スキルの書き戻し
+    s.skills = Array.from(allSkillIds);
 
     return s;
 },
@@ -1307,10 +1418,20 @@ const App = {
 		// 1. 参照するRankを決定
 		const targetRank = Math.min(200, targetFloor);
 		
-		// 2. 候補を抽出
-		let candidates = window.EQUIP_MASTER.filter(e => e.rank <= targetRank && e.rank >= Math.max(1, targetRank - 15));
-		if (candidates.length === 0) candidates = window.EQUIP_MASTER.filter(e => e.rank <= targetRank);
-		if (candidates.length === 0) candidates = [window.EQUIP_MASTER[0]];
+		// 2. 候補を抽出（noRandom:true は除外。未指定は false 扱い）
+		const pool = window.EQUIP_MASTER.filter(e => !e.noRandom);
+
+		let candidates;
+
+		// ★201階以降は Rank1〜200 をフルプール（偏り防止）
+		if (targetFloor > 200) {
+		  candidates = pool.filter(e => e.rank >= 1 && e.rank <= 200);
+		} else {
+		  // 従来ロジック（ただし noRandom 除外済み pool を使う）
+		  candidates = pool.filter(e => e.rank <= targetRank && e.rank >= Math.max(1, targetRank - 15));
+		  if (candidates.length === 0) candidates = pool.filter(e => e.rank <= targetRank);
+		  if (candidates.length === 0) candidates = [pool[0]];
+		}
 
 		const base = candidates[Math.floor(Math.random() * candidates.length)];
 		
@@ -1340,41 +1461,47 @@ const App = {
 			possibleOpts: base.possibleOpts || [],
 			traits: [] // 特性格納用
 		};
+		
+		eq.traits = (base.traits ? JSON.parse(JSON.stringify(base.traits)) : []);
+		eq.grantSkills = (base.grantSkills ? JSON.parse(JSON.stringify(base.grantSkills)) : []);
 
-		// ★追加: 基礎ステータスの倍率適用 (+1:x1.1, +2:x1.3, +3:x1.5)
+		// ★基礎ステータス倍率（+1/+2/+3）は主要ステのみ対象
 		const plusMults = { 0: 1.0, 1: 1.1, 2: 1.3, 3: 1.5 };
 		const mult = plusMults[plus] || 1.0;
-		
+
+		// 真・装備化と同一基準
+		const BASE_SCALE_KEYS = new Set([
+		  'atk', 'def', 'mag', 'mdef', 'spd', 'hp', 'mp'
+		]);
+
 		if (mult > 1.0) {
-			for (let key in eq.data) {
-				if (typeof eq.data[key] === 'number') {
-					eq.data[key] = Math.floor(eq.data[key] * mult);
-				} else if (typeof eq.data[key] === 'object' && eq.data[key] !== null) {
-					// elmRes や elmAtk などのオブジェクト内数値も対象
-					for (let subKey in eq.data[key]) {
-						if (typeof eq.data[key][subKey] === 'number') {
-							eq.data[key][subKey] = Math.floor(eq.data[key][subKey] * mult);
-						}
-					}
-				}
+		  for (let key of BASE_SCALE_KEYS) {
+			if (typeof eq.data[key] === 'number') {
+			  eq.data[key] = Math.floor(eq.data[key] * mult);
 			}
+		  }
 		}
 
 		// 5. 201階以降の「真・装備」化
 		if (targetFloor > 200) {
 			eq.name = "真・" + base.name;
 			const scale = (targetFloor * 1.5) / base.rank;
-			
+
+			const TRUE_SCALE_KEYS = new Set(['atk','def','mag','mdef','spd','hp','mp']);
+
 			for (let key in eq.data) {
+				if (!TRUE_SCALE_KEYS.has(key)) continue;
 				if (typeof eq.data[key] === 'number') {
 					eq.data[key] = Math.floor(eq.data[key] * scale);
-				} else if (typeof eq.data[key] === 'object' && eq.data[key] !== null) {
-					for (let subKey in eq.data[key]) {
-						eq.data[key][subKey] = Math.floor(eq.data[key][subKey] * scale);
-					}
 				}
 			}
 			eq.val = Math.floor(eq.val * scale);
+
+			// ★真・装備：特性を 1〜3個、Lv1〜5 で付与（固定traitsは維持してマージ）
+			if (typeof PassiveSkill !== 'undefined' && PassiveSkill.generateEquipmentTraits) {
+				const randTraits = PassiveSkill.generateEquipmentTraits({ countMin: 1, countMax: 3, lvMin: 1, lvMax: 5 });
+				eq.traits = [...(eq.traits || []), ...(randTraits || [])];
+			}
 		}
 
 		// 6. オプション付与
@@ -1423,10 +1550,11 @@ const App = {
 
 		// 7. 特性およびシナジーの判定
 		if (plus >= 3) {
-			// ★新規追加: +3装備に特性を付与 (0〜2個、Lv 1〜3)
-			if (typeof PassiveSkill !== 'undefined' && PassiveSkill.generateEquipmentTraits) {
-				eq.traits = PassiveSkill.generateEquipmentTraits();
-			}
+		  if (typeof PassiveSkill !== 'undefined' && PassiveSkill.generateEquipmentTraits) {
+			const randTraits = PassiveSkill.generateEquipmentTraits();
+			// 固定 + ランダムを結合（同IDが被ったら加算するか、どちらか優先するかは好み）
+			eq.traits = [...(eq.traits || []), ...(randTraits || [])];
+		  }
 
 			const syns = App.checkSynergy(eq);
 			if (syns && syns.length > 0) {
