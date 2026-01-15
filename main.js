@@ -572,9 +572,16 @@ const App = {
         bindClick('btn-menu', () => { if(typeof Menu !== 'undefined') Menu.openMainMenu(); });
         bindClick('btn-ok', () => { if(App.pendingAction) App.executeAction(); else if(typeof Menu !== 'undefined') Menu.openMainMenu(); });
 		
-        // ★ 会話のレジューム実行
+        // ★ 会話とイベントのレジューム実行 (競合を避ける順序)
         if (typeof StoryManager !== 'undefined') {
-            StoryManager.resumeActiveConversation();
+            // 1. まず中断された会話の再開を試みる (あれば再開)
+            const wasConversationResumed = StoryManager.resumeActiveConversation();
+            
+            // 2. 会話が再開されなかった（＝特定の行データがない）場合のみ、
+            //    勝利イベント全体の予約をチェックして再開する
+            if (!wasConversationResumed) {
+                StoryManager.resumePendingBattleWinEvent();
+            }
         }
 		
     },

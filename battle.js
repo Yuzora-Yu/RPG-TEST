@@ -2874,109 +2874,260 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
     },
 	
 	win: async () => {
-        Battle.phase = 'result'; Battle.active = false;
-        const isEstark = App.data.battle && App.data.battle.isEstark;
-        const isBossBattle = App.data.battle && App.data.battle.isBossBattle;
-        
-        // ★ドロップ品質を決定する基準階層(floor)の計算
-        let floor = App.data.progress.floor || 1;
+		// --- [修正の要点] 演出前に戦闘を「非アクティブ」にし、内部処理を完結させる ---
+		// これにより、演出中のリロード時に戦闘シーンに戻る（＝再度報酬が貰える）のを防ぎます
+		Battle.phase = 'result'; 
+		Battle.active = false;
+		if (App.data.battle) App.data.battle.active = false; 
 
-        if (Field.currentMapData && Field.currentMapData.isFixed) {
-            // 1. 固定ダンジョンの場合: マップデータの rank を使用
-            floor = Field.currentMapData.rank || 1;
-        } else if (!Field.currentMapData || Field.currentMapData.id === 'WORLD') {
-            // 2. フィールド（ワールドマップ）の場合: storystep * 5 を使用
-            const step = App.data.progress.storyStep || 0;
-            floor = Math.max(1, step * 5); // 0にならないよう最低1を担保
-        }
-        // 3. それ以外（アビス等のランダムダンジョン）: そのまま progress.floor を使用
+		const isEstark = App.data.battle && App.data.battle.isEstark;
+		const isBossBattle = App.data.battle && App.data.battle.isBossBattle;
+		const eventId = (App.data.battle && App.data.battle.eventId) ? App.data.battle.eventId : null;
+		
+		// --- [追加] 演出前にイベントを予約し、セーブデータに含める ---
+		if (isBossBattle && eventId) {
+			if (!App.data.progress) App.data.progress = {};
+			App.data.progress.pendingBattleWinEventId = eventId;
+		}
+		
+		// ★ドロップ品質を決定する基準階層(floor)の計算
+		let floor = App.data.progress.floor || 1;
 
-        let totalExp = 0, totalGold = 0;
-        const drops = []; 
-        let hasRareDrop = false;      // 白フラッシュ用
-        let hasUltraRareDrop = false; // 赤黒フラッシュ用
+		if (Field.currentMapData && Field.currentMapData.isFixed) {
+			// 1. 固定ダンジョンの場合: マップデータの rank を使用
+			floor = Field.currentMapData.rank || 1;
+		} else if (!Field.currentMapData || Field.currentMapData.id === 'WORLD') {
+			// 2. フィールド（ワールドマップ）の場合: storystep * 5 を使用
+			const step = App.data.progress.storyStep || 0;
+			floor = Math.max(1, step * 5); // 0にならないよう最低1を担保
+		}
+		// 3. それ以外（アビス等のランダムダンジョン）: そのまま progress.floor を使用
 
-        // [1] 勝利宣言ログ
-        Battle.log(`\n<span style="color:#ffff00; font-size:1em; font-weight:bold;">戦闘に勝利した！</span>`);
+		let totalExp = 0, totalGold = 0;
+		const drops = []; 
+		let hasRareDrop = false;      // 白フラッシュ用
+		let hasUltraRareDrop = false; // 赤黒フラッシュ用
 
-        // データ集計（討伐数・図鑑）
-        Battle.enemies.forEach(e => {
-            if (e.isDead && !e.isFled) {
-                const id = e.baseId || e.id;
-                if (id) {
-                    if (!App.data.book.killCounts) App.data.book.killCounts = {};
-                    App.data.book.killCounts[id] = (App.data.book.killCounts[id] || 0) + 1;
-                    if (!App.data.book.monsters.includes(id)) App.data.book.monsters.push(id);
-                }
-                const base = DB.MONSTERS.find(m => m.id === id);
-                if(base) { totalExp += base.exp; totalGold += base.gold; }
-            }
-        });
+		// --- [1] 内部データ集計（討伐数・図鑑・経験値・ゴールドの計算） ---
+		Battle.enemies.forEach(e => {
+			if (e.isDead && !e.isFled) {
+				const id = e.baseId || e.id;
+				if (id) {
+					if (!App.data.book.killCounts) App.data.book.killCounts = {};
+					App.data.book.killCounts[id] = (App.data.book.killCounts[id] || 0) + 1;
+					if (!App.data.book.monsters.includes(id)) App.data.book.monsters.push(id);
+				}
+				const base = DB.MONSTERS.find(m => m.id === id);
+				if(base) { 
+					totalExp += base.exp; 
+					totalGold += base.gold; 
+				}
+			}
+		});
 
-        // [2] 資源獲得・レベルアップ・特性（事後回復）処理
-        App.data.gold += totalGold;
-        Battle.log(` ${totalGold} Goldを獲得！`);
-        Battle.log(` ${totalExp} ポイントの経験値を 獲得した！`);
+		// 報酬の内部加算処理（ログを出す前に実行）
+		App.data.gold += totalGold;
 
-        const surviveMembers = Battle.party.filter(p => !p.isDead);
-        
-        // 特性「56:解体」のパーティ合計値算出
-        let bonusNormal = 0, bonusRare = 0, bonusPlus3 = 0;
-        surviveMembers.forEach(p => {
-            const charData = App.getChar(p.uid);
-            if (charData && typeof PassiveSkill !== 'undefined') {
-                bonusNormal += PassiveSkill.getSumValue(charData, 'drop_normal_pct');
-                bonusRare   += PassiveSkill.getSumValue(charData, 'drop_rare_pct');
-                bonusPlus3  += PassiveSkill.getSumValue(charData, 'equip_plus3_pct');
-            }
-        });
+		const surviveMembers = Battle.party.filter(p => !p.isDead);
+		
+		// 特性「56:解体」のパーティ合計値算出
+		let bonusNormal = 0, bonusRare = 0, bonusPlus3 = 0;
+		surviveMembers.forEach(p => {
+			const charData = App.getChar(p.uid);
+			if (charData && typeof PassiveSkill !== 'undefined') {
+				bonusNormal += PassiveSkill.getSumValue(charData, 'drop_normal_pct');
+				bonusRare   += PassiveSkill.getSumValue(charData, 'drop_rare_pct');
+				bonusPlus3  += PassiveSkill.getSumValue(charData, 'equip_plus3_pct');
+			}
+		});
 
-// --- 1. パーティ全体の特性回復量を事前に集計 ---
-        const partyHpRegen = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getPartySumValue('post_battle_hp_regen_pct') : 0;
-        const partyMpRegen = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getPartySumValue('post_battle_mp_regen_pct') : 0;
-        
-        let hpRecovered = false; // パーティ内の一人でも回復すればtrue
-        let mpRecovered = false;
+		// オプション再抽選サブ関数 (内部用)
+		const createEquipWithMinRarity = (floor, plus, minRarityList, forcePart = null) => {
+			let eq = App.createEquipByFloor('drop', floor, plus);
+			if (forcePart && eq.type !== forcePart) {
+				let attempts = 0;
+				while (eq.type !== forcePart && attempts < 50) {
+					eq = App.createEquipByFloor('drop', floor, plus);
+					attempts++;
+				}
+			}
+			eq.opts = eq.opts.map(opt => {
+				const rule = DB.OPT_RULES.find(r => r.key === opt.key);
+				if (!rule) return opt;
+				let r = opt.rarity;
+				let att = 0;
+				while (!minRarityList.includes(r) && att < 15) {
+					const rarRnd = Math.random() + 0.3; 
+					if(rarRnd > 0.95 && rule.allowed.includes('EX')) r='EX';
+					else if(rarRnd > 0.80 && rule.allowed.includes('UR')) r='UR';
+					else if(rarRnd > 0.65 && rule.allowed.includes('SSR')) r='SSR';
+					else if(rarRnd > 0.45 && rule.allowed.includes('SR')) r='SR';
+					else r='R';
+					att++;
+				}
+				const min = rule.min[r]||1, max = rule.max[r]||10;
+				return { ...opt, rarity: r, val: Math.floor(Math.random()*(max-min+1))+min };
+			});
+			return eq;
+		};
 
-        // --- 修正版: 勝利リザルトのループ処理 ---
+		// --- [2] 報酬アイテムの生成と確定 ---
+		if (isEstark) {
+			const estarkEnemy = Battle.enemies.find(e => e.isEstark || e.id === 2000 || e.baseId === 2000);
+			if (estarkEnemy) {
+				const estarkId = estarkEnemy.baseId || estarkEnemy.id || 2000;
+				const killCount = (App.data.book.killCounts && App.data.book.killCounts[estarkId]) ? App.data.book.killCounts[estarkId] : 1;
+				const baseRank = estarkEnemy.rank || 300; 
+				const rewardFloor = baseRank + (killCount * 5);
+				const eq = createEquipWithMinRarity(rewardFloor, 3, ['UR', 'EX']);
+				eq.val *= 3;
+				eq.name = "【EX】" + eq.name;
+				App.data.gems = (App.data.gems || 0) + 10000;
+				App.data.inventory.push(eq);
+				drops.push({ name: eq.name, isRare: true, isUltra: true, isEstark: true });
+				hasUltraRareDrop = true; 
+			}
+		} else {
+			Battle.enemies.forEach(e => {
+				if (e.isFled) return;
+				const base = DB.MONSTERS.find(m => m.id === (e.baseId || e.id)) || e;
+				const monsterDrops = base.drops;
+
+				// 1. レアドロップ判定 (独立)
+				if (monsterDrops && monsterDrops.rare) {
+					const rareRate = (monsterDrops.rare.rate || 0) + bonusRare;
+					if (Math.random() * 100 < rareRate) {
+						const itemDef = DB.ITEMS.find(i => i.id === monsterDrops.rare.id);
+						if (itemDef) {
+							App.data.items[itemDef.id] = (App.data.items[itemDef.id] || 0) + 1;
+							hasRareDrop = true;
+							const type = (itemDef.id === 107) ? 'kai' : 'boss';
+							drops.push({ name: itemDef.name, isRare: true, type: type });
+						}
+					}
+				} else if (floor >= 100) {
+					if (Math.random() * 100 < (0.5 + bonusRare)) {
+						let sid = 100 + Math.floor(Math.random() * 6);
+						if (Math.random() < 0.1) sid = 106;
+						if (Math.random() < 0.05) sid = 107;
+						const itemDef = DB.ITEMS.find(i => i.id === sid);
+						if (itemDef) {
+							App.data.items[sid] = (App.data.items[sid] || 0) + 1;
+							const isRare = (sid === 107);
+							if (isRare) hasRareDrop = true;
+							drops.push({ name: itemDef.name, isRare: isRare, type: isRare ? 'kai' : 'item' });
+						}
+					}
+				}
+				// 2. 装備ドロップ判定 (独立)
+				const isBoss = (base.id >= 1000);
+				const equipChance = isBoss ? 100 : 30; 
+				if (Math.random() * 100 < equipChance) {
+					let eq;
+					if (isBoss && Math.random() < 0.02) {
+						eq = createEquipWithMinRarity(floor, 3, ['SSR', 'UR', 'EX'], '武器');
+						eq.name = eq.name.replace(/\+3$/, "") + "・改+3";
+						for (let key in eq.data) {
+							if (typeof eq.data[key] === 'number') eq.data[key] *= 2;
+							else if (typeof eq.data[key] === 'object' && eq.data[key] !== null) {
+								for (let sub in eq.data[key]) eq.data[key][sub] *= 2;
+							}
+						}
+						eq.val *= 4;
+						hasUltraRareDrop = true;
+						drops.push({ name: eq.name, isRare: true, type: 'kai' });
+					} else {
+						let fixedPlus = isBoss ? 3 : (Math.random() * 100 < (10 + bonusPlus3) ? 3 : null);
+						eq = App.createEquipByFloor('drop', floor, fixedPlus);
+						const isPlus3 = (eq.plus === 3);
+						if (isPlus3 || isBoss) hasRareDrop = true;
+						drops.push({ name: eq.name, isRare: (isPlus3 || isBoss), type: isBoss ? 'boss' : 'normal' });
+					}
+					App.data.inventory.push(eq);
+				}
+				// 3. 通常ドロップ判定 (独立)
+				if (monsterDrops && monsterDrops.normal) {
+					const normRate = (monsterDrops.normal.rate || 0) + bonusNormal;
+					if (Math.random() * 100 < normRate) {
+						const itemDef = DB.ITEMS.find(i => i.id === monsterDrops.normal.id);
+						if (itemDef) {
+							App.data.items[itemDef.id] = (App.data.items[itemDef.id] || 0) + 1;
+							drops.push({ name: itemDef.name, isRare: false, type: 'item' });
+						}
+					}
+				} else {
+					if (Math.random() * 100 < (10 + bonusNormal)) {
+						const candidates = DB.ITEMS.filter(i => i.rank <= Math.min(200, floor) && i.type !== '貴重品' && i.id < 100);
+						if (candidates.length > 0) {
+							const item = candidates[Math.floor(Math.random() * candidates.length)];
+							App.data.items[item.id] = (App.data.items[item.id] || 0) + 1;
+							drops.push({ name: item.name, isRare: false, type: 'item' });
+						}
+					}
+				}
+			});
+		}
+
+		// --- [3] 世界状態・フラグの先行確定 ---
+		// 演出中のリロード対策として、ボスマスを階段にする等の処理をログ表示前に完結させます
+		if (isBossBattle && !isEstark) {
+			if (typeof Dungeon !== 'undefined' && typeof Dungeon.onBossDefeated === 'function') {
+				Dungeon.onBossDefeated(); // ここで mapChanges 等が更新される
+			}
+			// 注：StoryManager.onBattleWin は会話を伴うため演出の最後に行いますが、
+			// 討伐フラグ自体はこの上の App.save() で確実に永続化されます。
+		}
+
+		// --- [4] セーブの実行（ここで報酬と世界状態を確定・永続化） ---
+		App.save(); 
+
+		// --- [5] ここから勝利演出（ログ表示、レベルアップ、待機など） ---
+		Battle.log(`\n<span style="color:#ffff00; font-size:1em; font-weight:bold;">戦闘に勝利した！</span>`);
+		Battle.log(` ${totalGold} Goldを獲得！`);
+		Battle.log(` ${totalExp} ポイントの経験値を 獲得した！`);
+
+		const partyHpRegen = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getPartySumValue('post_battle_hp_regen_pct') : 0;
+		const partyMpRegen = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getPartySumValue('post_battle_mp_regen_pct') : 0;
+		
+		let hpRecovered = false; 
+		let mpRecovered = false;
+
+		// 勝利リザルトのループ処理
 		for (const p of surviveMembers) {
 			const charData = App.getChar(p.uid);
 			if (!charData) continue;
 
 			const oldLv = charData.level;
 
-			// [A] キャラクターのレベルアップログ取得
+			// キャラクターのレベルアップログ取得 (App.gainExp内でもセーブが走る)
 			const lvLogs = App.gainExp(charData, totalExp);
 
-			// キャラクターのレベルアップログを1つずつ表示（0.6秒刻み）
+			// レベルアップログを順次表示
 			for (const msg of lvLogs) {
 				Battle.log(msg);
 				await Battle.wait(600);
 			}
 
-			// [B] 特性の成長判定
+			// 特性の成長判定
 			let traitGrowthLog = null;
 			if (typeof PassiveSkill !== 'undefined' && PassiveSkill.checkTraitGrowth) {
 				traitGrowthLog = PassiveSkill.checkTraitGrowth(charData);
 			}
 
-			// ★特性レベルアップの演出（表示される直前に溜めを作る）
+			// 特性レベルアップの溜め演出
 			if (traitGrowthLog) {
-				// 特性が出るか出ないかの「醍醐味」を作るための1.2秒待機
 				await Battle.wait(600);
-				
 				const logs = traitGrowthLog.split('<br>');
 				for (const log of logs) {
 					if (log) {
 						Battle.log(log);
-						await Battle.wait(200); // 1つ1つの特性を確認させるための待機
+						await Battle.wait(200);
 					}
 				}
 			}
 
-			// --- [C] ステータス更新および回復処理 ---
+			// ステータス更新および回復処理
 			if (charData.level > oldLv) {
-				// レベルアップした場合はステータス更新して全快
 				const stats = App.calcStats(charData);
 				p.level = charData.level;
 				p.baseMaxHp = stats.maxHp;
@@ -2984,7 +3135,6 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
 				p.hp = p.baseMaxHp;
 				p.mp = p.baseMaxMp;
 			} else {
-				// レベルアップしなかったキャラに対し、パーティ特性による回復（応急手当など）を適用
 				if (partyHpRegen > 0 && p.hp < p.baseMaxHp) {
 					const amt = Math.floor(p.baseMaxHp * (partyHpRegen / 100));
 					if (amt > 0) {
@@ -3002,231 +3152,78 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
 			}
 		}
 
-        // --- 2. パーティ全体としての回復ログを一度だけ出力 ---
-        if (hpRecovered) {
-            Battle.log(`<span style="color:#8f8;">特性：応急手当でパーティのHPが回復した！</span>`);
-        }
-        if (mpRecovered) {
-            Battle.log(`<span style="color:#88f;">特性：魔力充填でパーティのMPが回復した！</span>`);
-        }
+		if (hpRecovered) {
+			Battle.log(`<span style="color:#8f8;">特性：応急手当でパーティのHPが回復した！</span>`);
+		}
+		if (mpRecovered) {
+			Battle.log(`<span style="color:#88f;">特性：魔力充填でパーティのMPが回復した！</span>`);
+		}
 		
-        // オプション再抽選サブ関数 (内部用)
-        const createEquipWithMinRarity = (floor, plus, minRarityList, forcePart = null) => {
-            let eq = App.createEquipByFloor('drop', floor, plus);
-            
-            if (forcePart && eq.type !== forcePart) {
-                let attempts = 0;
-                while (eq.type !== forcePart && attempts < 50) {
-                    eq = App.createEquipByFloor('drop', floor, plus);
-                    attempts++;
-                }
-            }
+		// ドロップ演出
+		if (drops.length > 0) {
+			Battle.log("<br>");
+			await Battle.wait(800);
+			
+			if (hasUltraRareDrop || hasRareDrop) {
+				const ultraFlash = document.getElementById('drop-flash-ultra');
+				const rareFlash = document.getElementById('drop-flash');
+				let targetEl = null;
+				let activeClass = "";
 
-            eq.opts = eq.opts.map(opt => {
-                const rule = DB.OPT_RULES.find(r => r.key === opt.key);
-                if (!rule) return opt;
-                let r = opt.rarity;
-                let att = 0;
-                while (!minRarityList.includes(r) && att < 15) {
-                    const rarRnd = Math.random() + 0.3; 
-                    if(rarRnd > 0.95 && rule.allowed.includes('EX')) r='EX';
-                    else if(rarRnd > 0.80 && rule.allowed.includes('UR')) r='UR';
-                    else if(rarRnd > 0.65 && rule.allowed.includes('SSR')) r='SSR';
-                    else if(rarRnd > 0.45 && rule.allowed.includes('SR')) r='SR';
-                    else r='R';
-                    att++;
-                }
-                const min = rule.min[r]||1, max = rule.max[r]||10;
-                return { ...opt, rarity: r, val: Math.floor(Math.random()*(max-min+1))+min };
-            });
-            return eq;
-        };
-
-        // --- ドロップ生成判定 ---
-        if (isEstark) {
-            const estarkEnemy = Battle.enemies.find(e => e.isEstark || e.id === 2000 || e.baseId === 2000);
-            if (!estarkEnemy) {
-                console.error("Estark object not found in win logic");
-                return; 
-            }
-
-            const estarkId = estarkEnemy.baseId || estarkEnemy.id || 2000;
-            const killCount = (App.data.book.killCounts && App.data.book.killCounts[estarkId]) 
-                              ? App.data.book.killCounts[estarkId] : 1;
-
-            const baseRank = estarkEnemy.rank || 300; 
-            const rewardFloor = baseRank + (killCount * 5);
-
-            const eq = createEquipWithMinRarity(rewardFloor, 3, ['UR', 'EX']);
-            eq.val *= 3;
-            eq.name = "【EX】" + eq.name;
-            
-            App.data.gems = (App.data.gems || 0) + 10000;
-            App.data.inventory.push(eq);
-            
-            drops.push({ name: eq.name, isRare: true, isUltra: true, isEstark: true });
-            hasUltraRareDrop = true; 
-
-        } else {
-			// --- ドロップ生成判定 (独立・重複可能方式 / type: 'kai' 復活版) ---
-			Battle.enemies.forEach(e => {
-				if (e.isFled) return;
-				const base = DB.MONSTERS.find(m => m.id === (e.baseId || e.id)) || e;
-				const monsterDrops = base.drops;
-
-				// --- 1. レアドロップ判定 (独立) ---
-				// モンスター固有設定または汎用の「実・種」を判定
-				if (monsterDrops && monsterDrops.rare) {
-					const rareRate = (monsterDrops.rare.rate || 0) + bonusRare;
-					if (Math.random() * 100 < rareRate) {
-						const itemDef = DB.ITEMS.find(i => i.id === monsterDrops.rare.id);
-						if (itemDef) {
-							App.data.items[itemDef.id] = (App.data.items[itemDef.id] || 0) + 1;
-							hasRareDrop = true;
-							// ID:107(転生の実)などは type: 'kai' でマゼンタ表示にする
-							const type = (itemDef.id === 107) ? 'kai' : 'boss';
-							drops.push({ name: itemDef.name, isRare: true, type: type });
-						}
-					}
-				} else if (floor >= 100) {
-					// 汎用の実・種判定 (確率は低めの 0.5% + ボーナス)
-					if (Math.random() * 100 < (0.5 + bonusRare)) {
-						let sid = 100 + Math.floor(Math.random() * 6); // 基本は種
-						if (Math.random() < 0.1) sid = 106; // スキルのたね
-						if (Math.random() < 0.05) sid = 107; // 転生の実
-						
-						const itemDef = DB.ITEMS.find(i => i.id === sid);
-						if (itemDef) {
-							App.data.items[sid] = (App.data.items[sid] || 0) + 1;
-							const isRare = (sid === 107);
-							if (isRare) hasRareDrop = true;
-							// 転生の実なら 'kai'、それ以外は通常アイテム表示
-							drops.push({ name: itemDef.name, isRare: isRare, type: isRare ? 'kai' : 'item' });
-						}
-					}
+				if (hasUltraRareDrop && ultraFlash) {
+					targetEl = ultraFlash; activeClass = 'flash-ultra-active';
+				} else if (hasRareDrop && rareFlash) {
+					targetEl = rareFlash; activeClass = 'flash-active';
 				}
 
-				// --- 2. 装備ドロップ判定 (独立) ---
-				const isBoss = (base.id >= 1000);
-				// 通常敵の装備率は 10% に下方修正。ボスは確定。
-				const equipChance = isBoss ? 100 : 30; 
-				if (Math.random() * 100 < equipChance) {
-					let eq;
-					if (isBoss && Math.random() < 0.02) {
-						// 2%の確率で発生する超強力な「改」装備
-						eq = createEquipWithMinRarity(floor, 3, ['SSR', 'UR', 'EX'], '武器');
-						eq.name = eq.name.replace(/\+3$/, "") + "・改+3";
-						for (let key in eq.data) {
-							if (typeof eq.data[key] === 'number') eq.data[key] *= 2;
-							else if (typeof eq.data[key] === 'object' && eq.data[key] !== null) {
-								for (let sub in eq.data[key]) eq.data[key][sub] *= 2;
-							}
-						}
-						eq.val *= 4;
-						hasUltraRareDrop = true;
-						// 超レア演出用の type: 'kai'
-						drops.push({ name: eq.name, isRare: true, type: 'kai' });
-					} else {
-						// 通常装備生成
-						// ボスの場合は +3 品質を確定。
-						// 通常敵の場合は「基礎10% + 特性ボーナス」の確率で +3 品質にする。
-						let fixedPlus = isBoss ? 3 : (Math.random() * 100 < (10 + bonusPlus3) ? 3 : null);
-						
-						eq = App.createEquipByFloor('drop', floor, fixedPlus);
-						const isPlus3 = (eq.plus === 3);
-						if (isPlus3 || isBoss) hasRareDrop = true;
-						drops.push({ name: eq.name, isRare: (isPlus3 || isBoss), type: isBoss ? 'boss' : 'normal' });
-					}
-					App.data.inventory.push(eq);
+				if (targetEl) {
+					[ultraFlash, rareFlash].forEach(el => {
+						if (el) { el.style.display = 'none'; el.classList.remove('flash-active', 'flash-ultra-active'); }
+					});
+					void targetEl.offsetWidth; 
+					targetEl.style.display = 'block';
+					targetEl.classList.add(activeClass);
+					targetEl.onanimationend = () => {
+						targetEl.style.display = 'none';
+						targetEl.classList.remove(activeClass);
+						targetEl.onanimationend = null;
+					};
 				}
-
-				// --- 3. 通常ドロップ判定 (独立) ---
-				if (monsterDrops && monsterDrops.normal) {
-					const normRate = (monsterDrops.normal.rate || 0) + bonusNormal;
-					if (Math.random() * 100 < normRate) {
-						const itemDef = DB.ITEMS.find(i => i.id === monsterDrops.normal.id);
-						if (itemDef) {
-							App.data.items[itemDef.id] = (App.data.items[itemDef.id] || 0) + 1;
-							drops.push({ name: itemDef.name, isRare: false, type: 'item' });
-						}
-					}
-				} else {
-					// 汎用アイテムドロップ率を 10% に下方修正
-					if (Math.random() * 100 < (10 + bonusNormal)) {
-						const candidates = DB.ITEMS.filter(i => i.rank <= Math.min(200, floor) && i.type !== '貴重品' && i.id < 100);
-						if (candidates.length > 0) {
-							const item = candidates[Math.floor(Math.random() * candidates.length)];
-							App.data.items[item.id] = (App.data.items[item.id] || 0) + 1;
-							drops.push({ name: item.name, isRare: false, type: 'item' });
-						}
-					}
-				}
-			});
 			}
 
-        // [3] ドロップありならウェイト ＆ 改行
-        if (drops.length > 0) {
-            App.save();
-            Battle.log("<br>");
-            await Battle.wait(800);
-            
-            // [4] 演出実行（優先順位：ウルトラ ＞ レア）
-            if (hasUltraRareDrop || hasRareDrop) {
-                const ultraFlash = document.getElementById('drop-flash-ultra');
-                const rareFlash = document.getElementById('drop-flash');
-                let targetEl = null;
-                let activeClass = "";
+			drops.forEach(d => {
+				if (d.isEstark) {
+					Battle.log(`<span style="color:#ffd700; font-weight:bold;">10,000 GEM</span> を獲得！`);
+					Battle.log(`なんと <span style="color:#ffd700; font-weight:bold;">${d.name}</span> を手に入れた！`);
+				} else if (d.type === 'kai') {
+					Battle.log(`なんと <span style="color:#ff00ff; font-weight:bold;">${d.name}</span> を手に入れた！`);
+				} else if (d.isRare) {
+					Battle.log(`なんと <span class="log-rare-drop">${d.name}</span> を手に入れた！`);
+				} else {
+					Battle.log(`${d.name} を手に入れた！`);
+				}
+			});
+		}
+		
+		App.save(); 
+		Battle.log("\n▼ 画面タップで終了 ▼");
 
-                if (hasUltraRareDrop && ultraFlash) {
-                    targetEl = ultraFlash; activeClass = 'flash-ultra-active';
-                } else if (hasRareDrop && rareFlash) {
-                    targetEl = rareFlash; activeClass = 'flash-active';
-                }
-
-                if (targetEl) {
-                    [ultraFlash, rareFlash].forEach(el => {
-                        if (el) { el.style.display = 'none'; el.classList.remove('flash-active', 'flash-ultra-active'); }
-                    });
-                    void targetEl.offsetWidth; 
-                    targetEl.style.display = 'block';
-                    targetEl.classList.add(activeClass);
-                    targetEl.onanimationend = () => {
-                        targetEl.style.display = 'none';
-                        targetEl.classList.remove(activeClass);
-                        targetEl.onanimationend = null;
-                    };
-                }
-            }
-
-            // ドロップ内容のログ表示
-            drops.forEach(d => {
-                if (d.isEstark) {
-                    Battle.log(`<span style="color:#ffd700; font-weight:bold;">10,000 GEM</span> を獲得！`);
-                    Battle.log(`なんと <span style="color:#ffd700; font-weight:bold;">${d.name}</span> を手に入れた！`);
-                } else if (d.type === 'kai') {
-                    Battle.log(`なんと <span style="color:#ff00ff; font-weight:bold;">${d.name}</span> を手に入れた！`);
-                } else if (d.isRare) {
-                    Battle.log(`なんと <span class="log-rare-drop">${d.name}</span> を手に入れた！`);
-                } else {
-                    Battle.log(`${d.name} を手に入れた！`);
-                }
-            });
-        }
-        
-        App.save(); 
-        Battle.log("\n▼ 画面タップで終了 ▼");
-
-        // ストーリー後処理
-        const eventId = (App.data.battle && App.data.battle.eventId) ? App.data.battle.eventId : null;
-        if (isBossBattle && !isEstark) {
-            if (typeof Dungeon !== 'undefined' && typeof Dungeon.onBossDefeated === 'function') {
-                Dungeon.onBossDefeated();
-            }
-            if (eventId && typeof StoryManager !== 'undefined' && typeof StoryManager.onBattleWin === 'function') {
-                await StoryManager.onBattleWin(eventId);
-            }
-        }
-    },
+		// ストーリー後処理（会話イベント等の実行）
+		// --- [修正] 演出の最後で予約を消化する ---
+		if (isBossBattle && !isEstark) {
+			if (typeof Dungeon !== 'undefined' && typeof Dungeon.onBossDefeated === 'function') {
+				Dungeon.onBossDefeated();
+			}
+			if (eventId && typeof StoryManager !== 'undefined' && typeof StoryManager.onBattleWin === 'function') {
+				// 予約情報を消してから実行
+				if (App.data.progress.pendingBattleWinEventId === eventId) {
+					delete App.data.progress.pendingBattleWinEventId;
+					App.save();
+				}
+				await StoryManager.onBattleWin(eventId);
+			}
+		}
+	},
 	
     lose: () => { 
 		Battle.active = false; 

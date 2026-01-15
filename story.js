@@ -11,18 +11,6 @@ const StoryManager = {
     index: 0,
     onComplete: null,
 	
-	/**
-     * 中断された会話があれば再開する (起動時用)
-     */
-    resumeActiveConversation: function() {
-        if (App.data && App.data.progress.activeConversation) {
-            const { key, index } = App.data.progress.activeConversation;
-            // 少し待機してから再開（シーン切り替え等の完了を待つため）
-            setTimeout(() => {
-                this.showConversation(key, index);
-            }, 500);
-        }
-    },
 
     /**
      * 主人公のリミットブレイクを同期
@@ -35,6 +23,46 @@ const StoryManager = {
             const storyLB = App.data.progress.storyStep || 0;
             hero.limitBreak = dungeonLB + storyLB;
             if (typeof App.calcStats === 'function') App.calcStats(hero);
+        }
+    },
+	
+	/**
+     * 中断された会話があれば再開する
+     */
+    resumeActiveConversation: function() {
+        if (App.data && App.data.progress.activeConversation) {
+            const { key, index } = App.data.progress.activeConversation;
+            // シーン切り替え等の完了を待つため少し待機
+            setTimeout(async () => {
+                await this.showConversation(key, index);
+                this.endConversation(); 
+            }, 600);
+            return true; // 再開したことを呼び出し元に伝える
+        }
+        return false;
+    },
+
+	/**
+     * 勝利後イベントのレジューム
+     */
+    resumePendingBattleWinEvent: async function() {
+        // ★修正: すでに特定の会話行から再開されている場合は、イベントの重複起動を避ける
+        if (App.data && App.data.progress.activeConversation) return;
+
+        if (App.data && App.data.progress && App.data.progress.pendingBattleWinEventId) {
+            const eventId = App.data.progress.pendingBattleWinEventId;
+            
+            // シーンがフィールドに安定するまで待機
+            setTimeout(async () => {
+                console.log(`[Story] 未消化の勝利イベントを再開します: ${eventId}`);
+                // 二重実行防止のため先に予約を消去
+                delete App.data.progress.pendingBattleWinEventId;
+                App.save();
+                
+                if (this.onBattleWin) {
+                    await this.onBattleWin(eventId);
+                }
+            }, 800);
         }
     },
 	
@@ -607,9 +635,39 @@ const StoryManager = {
         }
     },
 
+    /**
+     * 会話ログ画面を表示する (復旧：オーバーレイ形式)
+     */
     showBacklog: function() {
-        const msg = this.backlog.map(b => `${b.name}: ${b.text}`).join('\n');
-        alert(msg || "会話履歴はありません。");
+        // 既存のオーバーレイがあれば削除
+        const old = document.getElementById('backlog-overlay');
+        if (old) old.remove();
+
+        const div = document.createElement('div');
+        div.id = 'backlog-overlay';
+        div.style.cssText = `
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,20,0.95); z-index: 3000;
+            display: flex; flex-direction: column; color: #fff; font-family: sans-serif;
+        `;
+
+        const list = this.backlog.map(b => `
+            <div style="padding: 10px; border-bottom: 1px solid #333;">
+                <div style="color: #ffd700; font-weight: bold; font-size: 12px;">${b.name}</div>
+                <div style="font-size: 14px; margin-top: 4px;">${b.text}</div>
+            </div>
+        `).join('');
+
+        div.innerHTML = `
+            <div style="padding: 15px; background: #111; border-bottom: 2px solid #ffd700; display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-weight:bold; color:#ffd700;">会話ログ</span>
+                <button onclick="document.getElementById('backlog-overlay').remove()" style="background:#444; color:#fff; border:none; padding:5px 15px; border-radius:4px; cursor:pointer;">閉じる</button>
+            </div>
+            <div style="flex:1; overflow-y:auto; padding: 10px;">
+                ${list || '<div style="text-align:center; color:#555; margin-top:50px;">会話履歴はありません。</div>'}
+            </div>
+        `;
+        document.body.appendChild(div);
     },
 	
 	// ==========================================
