@@ -50,7 +50,7 @@ const Battle = {
         if (actor instanceof Monster) {
             return `<span style="color:#ff4444; font-weight:bold;">${actor.name}</span>`;
         }
-        return `【${actor.name}】`;
+        return `${actor.name}`;
     },
 
     // ★追加: スキルが補助（回復・蘇生・強化等）かどうかを判定する
@@ -656,7 +656,7 @@ findNextActor: () => {
         const nameDiv = Battle.getEl('battle-actor-name');
         if(nameDiv) {
             nameDiv.style.display = 'block';
-            nameDiv.innerText = `【${actor.name}】の行動`;
+            nameDiv.innerText = `${actor.name}の行動`;
         }
         Battle.updateCommandButtons(); 
         Battle.log(`${actor.name}はどうする？`);
@@ -1254,14 +1254,14 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
 			
             if (isFast) { 
                 cmd.speed = (Battle.getBattleStat(actor, 'spd') * 1.1) + (10 * 100000); 
-                Battle.log(`【${actor.name}】は最速で行動する！`); 
+                Battle.log(`${actor.name}は最速で行動する！`); 
             }
             Battle.commandQueue.push(cmd);
             if (isDouble) { 
                 let extra = { ...cmd }; 
                 extra.speed = cmd.speed - 1; 
                 Battle.commandQueue.push(extra); 
-                Battle.log(`【${actor.name}】は2回行動する！`); 
+                Battle.log(`${actor.name}は2回行動する！`); 
             }
         }
 
@@ -1364,18 +1364,18 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
                 }
 
                 if (Math.random() < 0.7) {
-                    Battle.log(`【${actor.name}】は 怯えて動けない！`);
-                    if (fearWoreOff) Battle.log(`【${actor.name}】の 怯え が解けた！`);
+                    Battle.log(`${actor.name}は 怯えて動けない！`);
+                    if (fearWoreOff) Battle.log(`${actor.name}の 怯え が解けた！`);
                     await Battle.onActionEnd(actor); // 行動直後のダメージ/リジェネ
                     continue;
                 } else if (fearWoreOff) {
-                    Battle.log(`【${actor.name}】の 怯え が解けた！`);
+                    Battle.log(`${actor.name}の 怯え が解けた！`);
                 }
             }
 
             // 敵の逃走
             if (cmd.type === 'flee') {
-                Battle.log(`【${cmd.actor.name}】は逃げ出した！`);
+                Battle.log(`${cmd.actor.name}は逃げ出した！`);
                 cmd.actor.isFled = true; cmd.actor.hp = 0; Battle.renderEnemies();
                 if (Battle.checkFinish()) return; continue;
             }
@@ -1402,6 +1402,8 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
             Battle.renderEnemies(); Battle.renderPartyStatus();
             if (Battle.checkFinish()) return;
             await Battle.wait(500);
+			Battle.log("<br>"); 
+            await Battle.wait(50);
         }
         
         // 全行動終了後に一括で持続時間および再生特性を更新
@@ -1435,9 +1437,9 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
                                 return Battle.statNames[k] || k;
                             };
                             const dispName = getDisplayName(key);
-                            if (cat === 'buffs') Battle.log(`【${actor.name}】の ${dispName} アップの効果が切れた！`);
-                            if (cat === 'debuffs') Battle.log(`【${actor.name}】の ${dispName} ダウンの効果が切れた！`);
-                            if (cat === 'ailments') Battle.log(`【${actor.name}】の ${dispName} が解けた！`);
+                            if (cat === 'buffs') Battle.log(`${actor.name}の ${dispName} アップの効果が切れた！`);
+                            if (cat === 'debuffs') Battle.log(`${actor.name}の ${dispName} ダウンの効果が切れた！`);
+                            if (cat === 'ailments') Battle.log(`${actor.name}の ${dispName} が解けた！`);
                             delete b[cat][key];
                         }
                     }
@@ -1475,9 +1477,9 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
                         actor.hp = Math.min(actor.baseMaxHp, actor.hp + recHp);
                         // ボスか味方かでログを少し変えるなど、演出の統合
                         if (actor.isBoss) {
-                            //Battle.log(`【${actor.name}】のHPが ${recHp} 回復`);
+                            //Battle.log(`${actor.name}のHPが ${recHp} 回復`);
                         } else {
-                            //Battle.log(`【${actor.name}】のHPが ${recHp} 回復`);
+                            //Battle.log(`${actor.name}のHPが ${recHp} 回復`);
                         }
                     }
                 }
@@ -1487,7 +1489,7 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
                     const recMp = Math.floor(actor.baseMaxMp * (totalMpRegenPct / 100));
                     if (recMp > 0) {
                         actor.mp = Math.min(actor.baseMaxMp, actor.mp + recMp);
-                        //Battle.log(`【${actor.name}】は魔力循環により MPが ${recMp} 回復した`);
+                        //Battle.log(`${actor.name}は魔力循環により MPが ${recMp} 回復した`);
                     }
                 }
             }
@@ -1514,10 +1516,10 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
             let dmg = Math.floor(actor.baseMaxHp * dmgRate);
             if (dmg < 1) dmg = 1;
             actor.hp -= dmg;
-            Battle.log(`【${actor.name}】は ${msgType}のダメージを ${dmg} 受けた！`);
+            Battle.log(`${actor.name}は ${msgType}のダメージを ${dmg} 受けた！`);
             if (actor.hp <= 0) { 
                 actor.hp = 0; actor.isDead = true; 
-                Battle.log(`【${actor.name}】は倒れた！`); 
+                Battle.log(`${actor.name}は倒れた！`); 
                 return;
             }
         }
@@ -1527,14 +1529,14 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
             let rec = Math.floor(actor.baseMaxHp * b.buffs['HPRegen'].val);
             if (rec > 0) {
                 actor.hp = Math.min(actor.baseMaxHp, actor.hp + rec);
-                Battle.log(`【${actor.name}】のHPが ${rec} 回復した！`);
+                Battle.log(`${actor.name}のHPが ${rec} 回復した！`);
             }
         }
         if (b.buffs['MPRegen']) {
             let rec = Math.floor(actor.baseMaxMp * b.buffs['MPRegen'].val);
             if (rec > 0) {
                 actor.mp = Math.min(actor.baseMaxMp, actor.mp + rec);
-                Battle.log(`【${actor.name}】のMPが ${rec} 回復した！`);
+                Battle.log(`${actor.name}のMPが ${rec} 回復した！`);
             }
         }
     },
@@ -1554,9 +1556,9 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
                             return Battle.statNames[k] || k;
                         };
                         const dispName = getDisplayName(key);
-                        if (cat === 'buffs') Battle.log(`【${actor.name}】の ${dispName} アップの効果が切れた！`);
-                        if (cat === 'debuffs') Battle.log(`【${actor.name}】の ${dispName} ダウンの効果が切れた！`);
-                        if (cat === 'ailments') Battle.log(`【${actor.name}】の ${dispName} が解けた！`);
+                        if (cat === 'buffs') Battle.log(`${actor.name}の ${dispName} アップの効果が切れた！`);
+                        if (cat === 'debuffs') Battle.log(`${actor.name}の ${dispName} ダウンの効果が切れた！`);
+                        if (cat === 'ailments') Battle.log(`${actor.name}の ${dispName} が解けた！`);
                         delete b[cat][key];
                     }
                 }
@@ -1599,7 +1601,7 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
 
         // --- [2] 防御の処理 ---
         if (cmd.type === 'defend') {
-            Battle.log(`【${actor.name}】は身を守っている`);
+            Battle.log(`${actor.name}は身を守っている`);
             actor.status = actor.status || {};
             actor.status.defend = true;
             return;
@@ -1609,7 +1611,7 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
         // --- [3] アイテムの処理 ---
         if (cmd.type === 'item') {
             const item = data;
-            Battle.log(`【${actor.name}】は${item.name}を使った！`);
+            Battle.log(`${actor.name}は${item.name}を使った！`);
             if (App.data.items && App.data.items[item.id] > 0) {
                 if (item.type !== '貴重品') {
                     App.data.items[item.id]--;
@@ -1624,20 +1626,20 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
                             let rate = (item.rate !== undefined) ? item.rate : 1;
                             t.hp = Math.floor(t.baseMaxHp * rate); 
                             if(t.hp < 1) t.hp = 1;
-                            Battle.log(`【${t.name}】は生き返った！`); 
+                            Battle.log(`${t.name}は生き返った！`); 
                         }
-                        else Battle.log(`【${t.name}】には効果がなかった`);
+                        else Battle.log(`${t.name}には効果がなかった`);
                     } else if (item.type === 'HP回復') {
                         if (!t.isDead) {
                             let rec = item.val; if (item.val >= 9999) rec = t.baseMaxHp;
                             t.hp = Math.min(t.baseMaxHp, t.hp + rec);
-                            Battle.log(`【${t.name}】のHPが${rec}回復！`);
+                            Battle.log(`${t.name}のHPが${rec}回復！`);
                         }
                     } else if (item.type === 'MP回復') {
                         if (!t.isDead) {
                             let rec = item.val; if (item.val >= 9999) rec = t.baseMaxMp;
                             t.mp = Math.min(t.baseMaxMp, t.mp + Math.floor(rec));
-                            Battle.log(`【${t.name}】のMPが${rec}回復！`);
+                            Battle.log(`${t.name}のMPが${rec}回復！`);
                         }
                     } else if (item.type === '状態異常回復' && !t.isDead) {
                         let cured = false;
@@ -1646,7 +1648,7 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
                                 if (t.battleStatus.ailments[ailment]) {
                                     delete t.battleStatus.ailments[ailment];
                                     const name = Battle.statNames[ailment] || ailment;
-                                    Battle.log(`【${t.name}】の ${name} が治った！`);
+                                    Battle.log(`${t.name}の ${name} が治った！`);
                                     cured = true;
                                 }
                             });
@@ -1654,18 +1656,18 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
                         if (item.CureAilments) {
                             if (Object.keys(t.battleStatus.ailments).length > 0) {
                                 t.battleStatus.ailments = {};
-                                Battle.log(`【${t.name}】の状態異常が 全て治った！`);
+                                Battle.log(`${t.name}の状態異常が 全て治った！`);
                                 cured = true;
                             }
                         }
                         if (item.debuff_reset) {
                             if (Object.keys(t.battleStatus.debuffs).length > 0) {
                                 t.battleStatus.debuffs = {}; 
-                                Battle.log(`【${t.name}】の 能力低下が 元に戻った！`);
+                                Battle.log(`${t.name}の 能力低下が 元に戻った！`);
                                 cured = true;
                             }
                         }
-                        if (!cured) Battle.log(`【${t.name}】には効果がなかった`);
+                        if (!cured) Battle.log(`${t.name}には効果がなかった`);
                     }
                 }
             }
@@ -1702,7 +1704,7 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
 
             if (data.id >= 500 && data.id <= 505) { mpCost = actor.mp; }
             if (actor.mp < mpCost && (data.id < 500 || data.id > 505)) {
-                Battle.log(`【${actor.name}】は${skillName}を唱えたがMPが足りない！`);
+                Battle.log(`${actor.name}は${skillName}を唱えたがMPが足りない！`);
                 return;
             }
             actor.mp -= mpCost;
@@ -1751,12 +1753,12 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
                 // ターゲットが全滅、または指定ターゲットが死亡している場合はループを終了（追撃しない）
                 if (!hasValidTarget) break;
 
-				Battle.log(`【${actor.name}】の 追撃！`);
+				Battle.log(`${actor.name}の 追撃！`);
 				const dualBonus = PassiveSkill.getSumValue(actor, 'dual_dmg_mult');
                 // ★元の倍率に対して二刀流補正を乗算する
                 currentSkillRate = baseSkillRate * (dualBonus / 100);
             } else {
-                Battle.log(`【${actor.name}】の${skillName}！`);
+                Battle.log(`${actor.name}の${skillName}！`);
             }
 
             let successRate = rawSuccessRate;
@@ -1828,7 +1830,7 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
                             if (dRate > 0) {
                                 const dAmt = Math.floor(dmg * dRate);
                                 const oldHp = actor.hp; actor.hp = Math.min(actor.baseMaxHp, actor.hp + dAmt);
-                                if(actor.hp - oldHp > 0) Battle.log(`【${actor.name}】は吸収効果でHPを${actor.hp - oldHp}回復した！`);
+                                if(actor.hp - oldHp > 0) Battle.log(`${actor.name}は吸収効果でHPを${actor.hp - oldHp}回復した！`);
                             }
                             if (actor.passive?.drainMp) { 
                                 const mpAmt = Math.max(1, Math.floor(dmg * 0.01));
@@ -1837,17 +1839,17 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
                         }
 
                         let dmgColor = element ? ({火:'#f88',水:'#88f',雷:'#ff0',風:'#8f8',光:'#ffc',闇:'#a8f',混沌:'#d4d'}[element] || '#fff') : '#fff';
-                        if (dmg === 0) Battle.log(`ミス！ 【${targetToHit.name}】は ダメージを うけない！`);
-                        else Battle.log(`【${targetToHit.name}】に<span style="color:${dmgColor}">${dmg}</span>のダメージ！`);
+                        if (dmg === 0) Battle.log(`ミス！ ${targetToHit.name}は ダメージを うけない！`);
+                        else Battle.log(`${targetToHit.name}に<span style="color:${dmgColor}">${dmg}</span>のダメージ！`);
                         // [修正] マダンテ系ダメージでも根性判定を行う
 						if (targetToHit.hp <= 0) {
 							const gutsChance = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(targetToHit, 'guts_mult') : 0;
 							if (gutsChance > 0 && Math.random() * 100 < gutsChance) {
 								targetToHit.hp = 1;
-								Battle.log(`【${targetToHit.name}】は 根性で 踏みとどまった！`);
+								Battle.log(`${targetToHit.name}は 根性で 踏みとどまった！`);
 							} else {
 								targetToHit.hp = 0; targetToHit.isDead = true; 
-								Battle.log(`【${targetToHit.name}】は倒れた！`);
+								Battle.log(`${targetToHit.name}は倒れた！`);
 							}
 						}
                         Battle.renderEnemies(); Battle.renderPartyStatus();
@@ -1908,7 +1910,7 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
                 const addA = (k, msg, chance=null) => {
                     if (!t.battleStatus.ailments[k]) {
                         if (checkResist(k)) { 
-                            Battle.log(`【${t.name}】には ${Battle.statNames[k]||k} は きかなかった！`); 
+                            Battle.log(`${t.name}には ${Battle.statNames[k]||k} は きかなかった！`); 
                             return; 
                         }
                         t.battleStatus.ailments[k] = { turns: d.turn || 3, chance: chance }; 
@@ -1921,18 +1923,18 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
                         const turn = d.turn || null; 
                         if (key === 'elmResUp') {
                             t.battleStatus.buffs[key] = { val: d.buff[key], turns: turn };
-                            Battle.log(`【${t.name}】の 全属性耐性 が あがった！`);
+                            Battle.log(`${t.name}の 全属性耐性 が あがった！`);
                         } else {
                             let cur = (t.battleStatus.buffs[key] && t.battleStatus.buffs[key].val) || 1.0;
                             t.battleStatus.buffs[key] = { val: Math.min(2.5, cur * d.buff[key]), turns: turn };
-                            Battle.log(`【${t.name}】の ${Battle.statNames[key]||key} があがった！`);
+                            Battle.log(`${t.name}の ${Battle.statNames[key]||key} があがった！`);
                         }
                     }
                 }
-                if (d.HPRegen) { t.battleStatus.buffs['HPRegen'] = { val: d.HPRegen, turns: d.turn }; Battle.log(`【${t.name}】の HPが徐々に回復する！`); }
-                if (d.MPRegen) { t.battleStatus.buffs['MPRegen'] = { val: d.MPRegen, turns: d.turn }; Battle.log(`【${t.name}】の MPが徐々に回復する！`); }
-                if (d.CureAilments) { t.battleStatus.ailments = {}; Battle.log(`【${t.name}】の状態異常が 全て治った！`); }
-                if (d.debuff_reset) { t.battleStatus.debuffs = {}; Battle.log(`【${t.name}】の 能力低下が 元に戻った！`); }
+                if (d.HPRegen) { t.battleStatus.buffs['HPRegen'] = { val: d.HPRegen, turns: d.turn }; Battle.log(`${t.name}の HPが徐々に回復する！`); }
+                if (d.MPRegen) { t.battleStatus.buffs['MPRegen'] = { val: d.MPRegen, turns: d.turn }; Battle.log(`${t.name}の MPが徐々に回復する！`); }
+                if (d.CureAilments) { t.battleStatus.ailments = {}; Battle.log(`${t.name}の状態異常が 全て治った！`); }
+                if (d.debuff_reset) { t.battleStatus.debuffs = {}; Battle.log(`${t.name}の 能力低下が 元に戻った！`); }
                 
                 if (d.debuff) {
                     for (let key in d.debuff) {
@@ -1940,34 +1942,34 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
                         if (!checkProc(successRate, bodyBonus)) continue; 
                         
                         if (checkResist(key)) {
-                            Battle.log(`【${t.name}】には ${Battle.statNames[key] || key}低下 は きかなかった！`);
+                            Battle.log(`${t.name}には ${Battle.statNames[key] || key}低下 は きかなかった！`);
                             continue;
                         }
                         const turn = d.turn || null;
                         if (key === 'elmResDown') {
                             t.battleStatus.debuffs[key] = { val: d.debuff[key], turns: turn };
-                            Battle.log(`【${t.name}】の 全属性耐性 が さがった！`);
+                            Battle.log(`${t.name}の 全属性耐性 が さがった！`);
                         } else {
                             let cur = (t.battleStatus.debuffs[key] && t.battleStatus.debuffs[key].val) || 1.0;
                             t.battleStatus.debuffs[key] = { val: Math.max(0.1, cur * d.debuff[key]), turns: turn };
-                            Battle.log(`【${t.name}】の ${Battle.statNames[key]||key} がさがった！`);
+                            Battle.log(`${t.name}の ${Battle.statNames[key]||key} がさがった！`);
                         }
                     }
                 }
-                if (d.buff_reset) { t.battleStatus.buffs = {}; Battle.log(`【${t.name}】の良い効果がかき消された！`); }
+                if (d.buff_reset) { t.battleStatus.buffs = {}; Battle.log(`${t.name}の良い効果がかき消された！`); }
                 
 				// 1. 毒系・感電・弱体は「人体知識」の対象
 				// 元のデータ(d.Poison等)が 0 より大きい場合のみ、ボーナスを乗せて判定する
-				if ((d.Poison > 0) && checkProc(d.Poison, bodyBonus)) addA('Poison', `【${t.name}】は どくにおかされた！`);
-				if ((d.ToxicPoison > 0) && checkProc(d.ToxicPoison, bodyBonus)) addA('ToxicPoison', `【${t.name}】は もうどくにおかされた！`);
-				if ((d.Shock > 0) && checkProc(d.Shock, bodyBonus)) addA('Shock', `【${t.name}】は 感電してしまった！`);
-				if ((d.Debuff > 0) && checkProc(d.Debuff, bodyBonus)) addA('Debuff', `【${t.name}】の ステータスが低下した！`);
+				if ((d.Poison > 0) && checkProc(d.Poison, bodyBonus)) addA('Poison', `${t.name}は どくにおかされた！`);
+				if ((d.ToxicPoison > 0) && checkProc(d.ToxicPoison, bodyBonus)) addA('ToxicPoison', `${t.name}は もうどくにおかされた！`);
+				if ((d.Shock > 0) && checkProc(d.Shock, bodyBonus)) addA('Shock', `${t.name}は 感電してしまった！`);
+				if ((d.Debuff > 0) && checkProc(d.Debuff, bodyBonus)) addA('Debuff', `${t.name}の ステータスが低下した！`);
 
 				// 2. 怯え・封印系は「呪い体質」の対象
-				if ((d.Fear > 0) && checkProc(d.Fear, curseBonus)) addA('Fear', `【${t.name}】は 怯えてしまった！`, 0.5);
-				if ((d.SpellSeal > 0) && checkProc(d.SpellSeal, curseBonus)) addA('SpellSeal', `【${t.name}】の 呪文が封じられた！`);
-				if ((d.SkillSeal > 0) && checkProc(d.SkillSeal, curseBonus)) addA('SkillSeal', `【${t.name}】の 特技が封じられた！`);
-				if ((d.HealSeal > 0) && checkProc(d.HealSeal, curseBonus)) addA('HealSeal', `【${t.name}】の 回復が封じられた！`);
+				if ((d.Fear > 0) && checkProc(d.Fear, curseBonus)) addA('Fear', `${t.name}は 怯えてしまった！`, 0.5);
+				if ((d.SpellSeal > 0) && checkProc(d.SpellSeal, curseBonus)) addA('SpellSeal', `${t.name}の 呪文が封じられた！`);
+				if ((d.SkillSeal > 0) && checkProc(d.SkillSeal, curseBonus)) addA('SkillSeal', `${t.name}の 特技が封じられた！`);
+				if ((d.HealSeal > 0) && checkProc(d.HealSeal, curseBonus)) addA('HealSeal', `${t.name}の 回復が封じられた！`);
                 
                 // [修正] 割合ダメージにも「呪い体質(curseBonus)」を適用し、死亡時の根性判定も追加
 				if (d.PercentDamage) {
@@ -1983,20 +1985,20 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
 					if (Math.random() * 100 < finalCheckRate && Math.random() * 100 < (100 - resV)) {
 						let pdmg = Math.max(1, Math.floor(t.hp * d.PercentDamage));
 						t.hp -= pdmg; 
-						Battle.log(`【${t.name}】に ${pdmg} のダメージ！`);
+						Battle.log(`${t.name}に ${pdmg} のダメージ！`);
 						
 						if (t.hp <= 0) {
 							const gutsChance = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(t, 'guts_mult') : 0;
 							if (gutsChance > 0 && Math.random() * 100 < gutsChance) {
 								t.hp = 1;
-								Battle.log(`【${t.name}】は 根性で 踏みとどまった！`);
+								Battle.log(`${t.name}は 根性で 踏みとどまった！`);
 							} else {
 								t.hp = 0; t.isDead = true; 
-								Battle.log(`【${t.name}】は倒れた！`);
+								Battle.log(`${t.name}は倒れた！`);
 							}
 						}
 					} else {
-						Battle.log(`【${t.name}】にはきかなかった！`);
+						Battle.log(`${t.name}にはきかなかった！`);
 					}
 				}
             };
@@ -2006,16 +2008,16 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
                 if (!t) continue;
                 if (effectType && ['回復','蘇生','強化','弱体','特殊','MP回復'].includes(effectType)) {
                     if (successRate < 100 && Math.random() * 100 > successRate) {
-                        Battle.log(`ミス！ 【${t.name}】には効かなかった！`);
+                        Battle.log(`ミス！ ${t.name}には効かなかった！`);
                         continue;
                     }
                     if (effectType === '蘇生') {
                         if (t.isDead) { 
                             t.isDead = false; 
                             t.hp = Math.max(1, Math.floor(t.baseMaxHp * (skillRate !== undefined ? skillRate : 0.5)));
-                            Battle.log(`【${t.name}】は生き返った！`); 
+                            Battle.log(`${t.name}は生き返った！`); 
                         } else { 
-                            Battle.log(`【${t.name}】には効果がなかった`); 
+                            Battle.log(`${t.name}には効果がなかった`); 
                             continue; 
                         }
                     }
@@ -2029,12 +2031,12 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
 							rec = baseValue * healBonus * (0.85 + Math.random() * 0.3);
 						}
 						t.hp = Math.min(t.baseMaxHp, t.hp + Math.floor(rec));
-						Battle.log(`【${t.name}】のHPが${Math.floor(rec)}回復！`);
+						Battle.log(`${t.name}のHPが${Math.floor(rec)}回復！`);
 					}
                     if (effectType === 'MP回復' && !t.isDead) {
                         let rec = data.ratio ? Math.floor(t.baseMaxMp * data.ratio) : baseDmg;
                         t.mp = Math.min(t.baseMaxMp, t.mp + Math.floor(rec));
-                        Battle.log(`【${t.name}】のMPが${Math.floor(rec)}回復！`);
+                        Battle.log(`${t.name}のMPが${Math.floor(rec)}回復！`);
                     }
                     if (!t.isDead) applyEffects(t, data);
                     Battle.renderPartyStatus(); 
@@ -2065,7 +2067,7 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
                         if (coverTarget) {
                             const coverChance = PassiveSkill.getSumValue(coverTarget, 'cover_rate_mult');
                             if (coverChance > 0 && Math.random() * 100 < coverChance) {
-                                Battle.log(`【${coverTarget.name}】が 【${targetToHit.name}】を かばった！`);
+                                Battle.log(`${coverTarget.name}が ${targetToHit.name}を かばった！`);
                                 // 攻撃対象を「かばった者」に差し替え
                                 targetToHit = coverTarget; 
                                 targetToHit.isCovering = true;
@@ -2122,7 +2124,7 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
                         const finalHitChance = (baseHit * ((actor.hit || 100) / 100)) - targetEva;
                         
                         if (Math.random() * 100 > finalHitChance) {
-                            Battle.log(`ミス！ 【${targetToHit.name}】に攻撃が当たらない！`);
+                            Battle.log(`ミス！ ${targetToHit.name}は身をかわした！`);
                             await Battle.wait(200); continue; 
                         }
                     }
@@ -2136,7 +2138,7 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
 							: 0;
 
 						if (preemptRate > 0 && Math.random() * 100 < preemptRate) {
-							Battle.log(`【${targetToHit.name}】の 先制攻撃！`);
+							Battle.log(`${targetToHit.name}の 先制攻撃！`);
 							await Battle.executeReactionAttack(targetToHit, actor);
 						}
 					}
@@ -2293,13 +2295,13 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
                     }
                     
                     let dColor = element ? ({火:'#f88',水:'#88f',雷:'#ff0',風:'#8f8',光:'#ffc',闇:'#a8f',混沌:'#d4d'}[element] || '#fff') : '#fff';
-                    if (dmg === 0) Battle.log(`ミス！ 【${targetToHit.name}】は ダメージを うけない！`);
-                    else Battle.log(`【${targetToHit.name}】に<span style="color:${dColor}">${dmg}</span>のダメージ！`);
+                    if (dmg === 0) Battle.log(`ミス！ ${targetToHit.name}は ダメージを うけない！`);
+                    else Battle.log(`${targetToHit.name}に<span style="color:${dColor}">${dmg}</span>のダメージ！`);
 
                     if (targetToHit.hp <= 0) {
                         // MASTERの定義に合わせ guts_mult を呼び出すことで (スキル*3 + 20) を取得
 						const gutsChance = PassiveSkill.getSumValue(targetToHit, 'guts_mult');
-						if (gutsChance > 0 && Math.random() * 100 < gutsChance) { targetToHit.hp = 1; Battle.log(`【${targetToHit.name}】は 根性で 踏みとどまった！`); }
+						if (gutsChance > 0 && Math.random() * 100 < gutsChance) { targetToHit.hp = 1; Battle.log(`${targetToHit.name}は 根性で 踏みとどまった！`); }
                     }
                     
                     // --- 反射（理力の壁）判定箇所 ---
@@ -2320,17 +2322,17 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
 						if (canReflect && Math.random() * 100 < (reflectTrigger > 0 ? reflectTrigger : 10)) { 
 							const refDmg = Math.floor(dmg * (reflectRate / 100 + 0.1)); 
 							actor.hp -= refDmg; 
-							Battle.log(`【${targetToHit.name}】の理力の壁が 反射！ 【${actor.name}】に ${refDmg} のダメージ！`);
+							Battle.log(`${targetToHit.name}の理力の壁が 反射！ ${actor.name}に ${refDmg} のダメージ！`);
 
 							// 反射による自爆死の判定と根性処理
 							if (actor.hp <= 0) {
 								const gutsChance = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(actor, 'guts_mult') : 0;
 								if (gutsChance > 0 && Math.random() * 100 < gutsChance) {
 									actor.hp = 1;
-									Battle.log(`【${actor.name}】は 根性で 踏みとどまった！`);
+									Battle.log(`${actor.name}は 根性で 踏みとどまった！`);
 								} else {
 									actor.hp = 0; actor.isDead = true; 
-									Battle.log(`【${actor.name}】は倒れた！`);
+									Battle.log(`${actor.name}は倒れた！`);
 								}
 							}
 						}
@@ -2359,7 +2361,7 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
 								const resV = (Battle.getBattleStat(targetToHit, 'resists') || {})[Battle.RESIST_MAP[ailmentKey] || ailmentKey] || 0;
 								if (Math.random() * 100 < (100 - resV)) {
 									targetToHit.battleStatus.ailments[ailmentKey] = { turns: 3, chance: (ailmentKey==='Fear'?0.5:null) };
-									Battle.log(`【${targetToHit.name}】は ${name}！`);
+									Battle.log(`${targetToHit.name}は ${name}！`);
 								}
 							}
 						};
@@ -2378,7 +2380,7 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
 							if (Math.random() * 100 < (100 - rv)) { 
 								targetToHit.hp = 0; 
 								targetToHit.isDead = true; 
-								Battle.log(`<span style="color:#ff00ff; font-weight:bold;">急所を貫いた！ 【${targetToHit.name}】は 息絶えた！</span>`); 
+								Battle.log(`<span style="color:#ff00ff; font-weight:bold;">急所を貫いた！ ${targetToHit.name}は 息絶えた！</span>`); 
 							}
 						}
                     }
@@ -2390,11 +2392,11 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
                                     if (Math.random() < 0.2) {
                                         if (effect === 'allResDown20' && !targetToHit.isDead) {
                                             const dRes = (Battle.getBattleStat(targetToHit, 'resists') || {}).Debuff || 0;
-                                            if (Math.random() * 100 < (100 - dRes)) { targetToHit.battleStatus.debuffs['elmResDown'] = { val: 50, turns: 5 }; Battle.log(`【${targetToHit.name}】の 全属性耐性が 少しさがった！`); }
+                                            if (Math.random() * 100 < (100 - dRes)) { targetToHit.battleStatus.debuffs['elmResDown'] = { val: 50, turns: 5 }; Battle.log(`${targetToHit.name}の 全属性耐性が 少しさがった！`); }
                                         }
                                         if (effect === 'instantDeath20' && !targetToHit.isDead) {
                                             const res = (targetToHit.resists?.InstantDeath) || 0;
-                                            if (Math.random() * 100 < (100 - res)) { targetToHit.hp = 0; targetToHit.isDead = true; Battle.log(`<span style="color:#ff00ff; font-weight:bold;">急所を貫いた！ 【${targetToHit.name}】は 息絶えた！</span>`); }
+                                            if (Math.random() * 100 < (100 - res)) { targetToHit.hp = 0; targetToHit.isDead = true; Battle.log(`<span style="color:#ff00ff; font-weight:bold;">急所を貫いた！ ${targetToHit.name}は 息絶えた！</span>`); }
                                         }
                                     }
                                 });
@@ -2410,41 +2412,55 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
 							: 0;
 
 						if (counterRate > 0 && Math.random() * 100 < counterRate) {
-							Battle.log(`【${targetToHit.name}】の 反撃！`);
+							Battle.log(`${targetToHit.name}の 反撃！`);
 							await Battle.executeReactionAttack(targetToHit, actor);
 						}
 					}
 
                     if (cmd.type === 'skill') applyEffects(targetToHit, data, ailmentChanceMult);
 
-                    if (dmg > 0 && !targetToHit.isDead && targetToHit.hp <= targetToHit.baseMaxHp * 0.5 && !cmd.isReaction) {
-						const isMonster = (actor instanceof Monster);
-						const chaseChance = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(actor, 'chase_rate_mult', isMonster) : 0;
-						if (chaseChance > 0 && Math.random() * 100 < chaseChance) {
-							Battle.log(`【${actor.name}】の 追い討ち！`);
-							await Battle.executeReactionAttack(actor, targetToHit);
-						}
-					}
-
-                    // [修正] プレイヤー・敵に関わらず、同陣営の仲間が連携できるように変更
+					// --- 連携部分：同陣営の仲間による追撃 ---
+					// メイン行動が「リアクション攻撃」でなく、かつターゲットが生存している場合に判定
 					if (!cmd.isReaction && !targetToHit.isDead) {
-						// 攻撃者が敵なら敵リスト、味方ならパーティリストから生存者（自分以外）を取得
 						const allies = cmd.isEnemy ? Battle.enemies : Battle.party;
 						const partners = allies.filter(p => p && p !== actor && !p.isDead && !p.isFled);
 
 						for (const p of partners) {
+							// 仲間の攻撃によってターゲットが死亡した場合は、即座に連携ループを中断
+							if (targetToHit.isDead) break;
+
 							const isMonsterPartner = (p instanceof Monster);
 							const chainChance = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(p, 'chain_rate_base', isMonsterPartner) : 0;
 							
 							if (chainChance > 0 && Math.random() * 100 < chainChance) {
-								Battle.log(`【${p.name}】が 連携した！`);
-								await Battle.executeReactionAttack(p, targetToHit);
+								// 実行直前にも生存確認を行う
+								if (!targetToHit.isDead) {
+									Battle.log(`${p.name}が 連携した！`);
+									await Battle.executeReactionAttack(p, targetToHit);
+								}
+							}
+						}
+					}
+					
+					// --- 追い討ち部分：自分自身による追撃 ---
+					// 連携の発生有無に関わらず、現時点でターゲットが生存・HP50%以下なら判定
+					if (dmg > 0 && !targetToHit.isDead && !cmd.isReaction) {
+						if (targetToHit.hp <= targetToHit.baseMaxHp * 0.5) {
+							const isMonster = (actor instanceof Monster);
+							const chaseChance = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(actor, 'chase_rate_mult', isMonster) : 0;
+							
+							if (chaseChance > 0 && Math.random() * 100 < chaseChance) {
+								// 最終的な生存確認
+								if (!targetToHit.isDead) {
+									Battle.log(`${actor.name}の 追い討ち！`);
+									await Battle.executeReactionAttack(actor, targetToHit);
+								}
 							}
 						}
 					}
 
                     if (targetToHit.hp <= 0) {
-                        targetToHit.hp = 0; targetToHit.isDead = true; Battle.log(`【${targetToHit.name}】は倒れた！`);
+                        targetToHit.hp = 0; targetToHit.isDead = true; Battle.log(`${targetToHit.name}は倒れた！`);
                         Battle.renderEnemies(); Battle.renderPartyStatus();
                         break;
                     }
@@ -3019,22 +3035,29 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
 						}
 					}
 				}
+				
 				// 2. 装備ドロップ判定 (独立)
 				const isBoss = (base.id >= 1000);
 				const equipChance = isBoss ? 100 : 30; 
 				if (Math.random() * 100 < equipChance) {
 					let eq;
 					if (isBoss && Math.random() < 0.02) {
+						// 2%の確率で発生する超強力な「改」装備
 						eq = createEquipWithMinRarity(floor, 3, ['SSR', 'UR', 'EX'], '武器');
 						eq.name = eq.name.replace(/\+3$/, "") + "・改+3";
+						
+						// ★追加修正：能力増加は基礎値（主要7ステータス）のみとする
+						const BASE_SCALE_KEYS = new Set(['atk', 'def', 'mag', 'mdef', 'spd', 'hp', 'mp']);
 						for (let key in eq.data) {
-							if (typeof eq.data[key] === 'number') eq.data[key] *= 2;
-							else if (typeof eq.data[key] === 'object' && eq.data[key] !== null) {
-								for (let sub in eq.data[key]) eq.data[key][sub] *= 2;
+							if (!BASE_SCALE_KEYS.has(key)) continue;
+							if (typeof eq.data[key] === 'number') {
+								eq.data[key] *= 2; // 基礎ステータスを2倍
 							}
 						}
+						
 						eq.val *= 4;
 						hasUltraRareDrop = true;
+						// 超レア演出用の type: 'kai'
 						drops.push({ name: eq.name, isRare: true, type: 'kai' });
 					} else {
 						let fixedPlus = isBoss ? 3 : (Math.random() * 100 < (10 + bonusPlus3) ? 3 : null);
@@ -3045,6 +3068,7 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
 					}
 					App.data.inventory.push(eq);
 				}
+				
 				// 3. 通常ドロップ判定 (独立)
 				if (monsterDrops && monsterDrops.normal) {
 					const normRate = (monsterDrops.normal.rate || 0) + bonusNormal;

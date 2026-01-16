@@ -210,7 +210,7 @@ const Menu = {
                 const optRarity = o.rarity || 'N';
                 const optColor = Menu.getRarityColor(optRarity);
                 const unit = o.unit === 'val' ? '' : o.unit;
-                return `<span style="color:${optColor};">[${o.label}${fV(o.val)}${unit} ${optRarity}]</span>`;
+                return `<span style="color:${optColor};">${o.label}${fV(o.val)}${unit} [${optRarity}]</span>`;
             }).join(' ');
             optsHTML = `<div style="font-size:10px; color:#aaa; margin-top:2px;">${optsList}</div>`;
         }
@@ -542,7 +542,7 @@ const MenuParty = {
             const curMp = c.currentMp !== undefined ? c.currentMp : s.maxMp;
             const inParty = App.data.party.includes(c.uid) ? '<span style="color:#4ff; font-weight:bold; font-size:10px; margin-right:4px;">[PT]</span>' : '';
             const lbText = c.limitBreak > 0 ? `<span style="color:#f0f; font-weight:bold; font-size:11px;">+${c.limitBreak}</span>` : '';
-            const rarityLabel = (c.uid === 'p1') ? 'Player' : `[${c.rarity}]`;
+            const rarityLabel = (c.uid === 'p1') ? 'Player' : `${c.rarity}`;
             const rarityColor = (c.uid === 'p1') ? '#ffd700' : Menu.getRarityColor(c.rarity);
             
             const master = DB.CHARACTERS.find(m => m.id === c.charId);
@@ -1161,7 +1161,7 @@ const MenuAllies = {
             const curMp = c.currentMp !== undefined ? c.currentMp : s.maxMp;
             const inParty = App.data.party.includes(c.uid) ? '<span style="color:#4ff; font-weight:bold; font-size:10px; margin-right:4px;">[PT]</span>' : '';
             const lbText = c.limitBreak > 0 ? `<span style="color:#f0f; font-weight:bold; font-size:11px;">+${c.limitBreak}</span>` : '';
-            const rarityLabel = (c.uid === 'p1') ? 'Player' : `[${c.rarity}]`;
+            const rarityLabel = (c.uid === 'p1') ? 'Player' : `${c.rarity}`;
             const rarityColor = (c.uid === 'p1') ? '#ffd700' : Menu.getRarityColor(c.rarity);
             
             const master = DB.CHARACTERS.find(m => m.id === c.charId);
@@ -1651,8 +1651,8 @@ const MenuAllies = {
                     return `
                         <div style="background:${isHidden ? 'rgba(0,0,0,0.2)' : '#252525'}; border:1px solid #444; border-radius:4px; padding:6px; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center;">
                             <div style="flex:1; cursor:pointer;" onclick="MenuSkillDetail.open(${sk.id}, ${JSON.stringify(playerObj.skills).replace(/"/g, '&quot;')})">
-                                <div style="font-size:12px; font-weight:bold; color:${isHidden ? '#666' : '#ddd'};">${elmHtml}${sk.name} <span style="font-size:10px; color:#888;">(${sk.type})</span></div>
-                                <div style="font-size:10px; color:#aaa;">${sk.desc || ''}</div>
+                                <div style="font-size:12px; font-weight:bold; color:${isHidden ? '#666' : '#ddd'};">${sk.name} <span style="font-size:10px; color:#888;">(${sk.type})</span></div>
+                                <div style="font-size:10px; color:#aaa;">${elmHtml}${sk.desc || ''}</div>
                             </div>
                             <div style="text-align:right; min-width:80px;">
                                 <div style="font-size:11px; color:#88f; margin-bottom:4px;">MP:${sk.mp}</div>
@@ -1739,7 +1739,7 @@ const MenuAllies = {
 					// 自力習得はトグル可能
 					buttonHtml = `
 						<button class="btn" style="padding:2px 10px; font-size:10px; background:${isDisabled ? '#444' : '#060'}; color:#fff;" 
-								onclick="event.stopPropagation(); MenuAllies.toggleTrait(${t.id})">
+								onclick="event.stopPropagation(); MenuAllies.toggleTrait(${t.id}); return false;">
 							${isDisabled ? 'OFF' : 'ON'}
 						</button>`;
 				}
@@ -1802,34 +1802,60 @@ const MenuAllies = {
 	
     toggleTrait: (traitId) => {
         const c = MenuAllies.selectedChar;
+        if (!c) return;
+
+        // ★保存：スキルの実装と同じセレクタを使用
+        const selector = '#allies-detail-view .scroll-container-inner';
+        const container = document.querySelector(selector);
+        const scrollPos = container ? container.scrollTop : 0;
+
+        // 特性ON/OFFの切り替え
+        if (!c.disabledTraits) c.disabledTraits = [];
         const idx = c.disabledTraits.indexOf(traitId);
         if (idx >= 0) c.disabledTraits.splice(idx, 1);
         else c.disabledTraits.push(traitId);
-        
-        // 特性OFF時の即時装備解除ロジック
+
+        // 特性変更に伴う装備の強制解除ロジック（最新の状態を反映）
         const PS = (typeof PassiveSkill !== 'undefined') ? PassiveSkill : null;
-		
-		const hasDualWield = PS ? PS.getSumValue(c, 'dual_dmg_base') > 0 : false;
-		const hasTwoHanded = PS ? PS.getSumValue(c, 'two_handed') > 0 : false;
+        if (PS) {
+            const hasDualWield = PS.getSumValue(c, 'dual_dmg_base') > 0;
+            const hasTwoHanded = PS.getSumValue(c, 'two_handed') > 0;
 
-		// 二刀流ONなら「盾」は禁止（盾を持ってたら外す）
-		if (hasDualWield && c.equips['盾'] && (c.equips['盾'].type === '盾')) {
-		  App.data.inventory.push(c.equips['盾']); c.equips['盾'] = null;
-		}
+            const sub = c.equips['盾']; // 盾スロット（左手）
+            if (sub) {
+                const isSubWeapon = (sub.type === '武器' || sub.type === 'weapon');
+                const isSubShield = (sub.type === '盾');
+                
+                let forceRemove = false;
+                if (hasTwoHanded) {
+                    forceRemove = true; // 両手持ち：一切不可
+                } else if (hasDualWield) {
+                    if (isSubShield) forceRemove = true; // 二刀流：盾は不可
+                } else {
+                    if (isSubWeapon) forceRemove = true; // 通常：武器は不可
+                }
 
-		// 二刀流OFFなら「武器2(=盾スロット武器)」は禁止（武器2を持ってたら外す）
-		if (!hasDualWield && c.equips['盾'] && (c.equips['盾'].type === '武器' || c.equips['盾'].type === 'weapon')) {
-		  App.data.inventory.push(c.equips['盾']); c.equips['盾'] = null;
-		}
+                if (forceRemove) {
+                    App.data.inventory.push(sub);
+                    c.equips['盾'] = null;
+                }
+            }
+        }
 
-		// 両手持ちONなら盾スロット自体禁止（全部外す）
-		if (hasTwoHanded && c.equips['盾']) {
-		  App.data.inventory.push(c.equips['盾']); c.equips['盾'] = null;
-		}
+        // データの保存
+        App.save();
 
-        App.save(); MenuAllies.renderDetail(); Menu.renderPartyBar();
+        // 画面の再描画
+        MenuAllies.renderDetail();
+        Menu.renderPartyBar();
+
+        // ★復元：再描画によって生成された新しいコンテナに対して位置を適用
+        const newContainer = document.querySelector(selector);
+        if (newContainer) {
+            newContainer.scrollTop = scrollPos;
+        }
     },
-    
+	
     selectCandidate: (idx, isRemove) => {
         if (isRemove) MenuAllies.selectedEquip = { isRemove: true, name: '(装備を外す)' };
         else MenuAllies.selectedEquip = MenuAllies._tempCandidates[idx];
@@ -2856,19 +2882,20 @@ const MenuTraitDetail = {
     close: () => {
         const el = document.getElementById('trait-detail-modal');
         if (el) el.remove();
+        const resEl = document.getElementById('trait-reroll-result-modal');
+        if (resEl) resEl.remove();
     },
 
+    // --- 再抽選の実行（内部データの書き換えはまだ行わない） ---
     reroll: () => {
         const t = MenuTraitDetail.traitList[MenuTraitDetail.currentIndex];
         const char = MenuAllies.getSelectedChar();
         if (!char || t.isEquip) return;
 
-        // 【修正】Playerクラスは masterID を charId に持っているため、両方で検索
         const masterId = char.charId || char.id;
         const masterData = (typeof window.CHARACTERS_DATA !== 'undefined') ? window.CHARACTERS_DATA : [];
         const charMaster = masterData.find(m => m.id == masterId);
         
-        // 【修正】固定枠の判定を厳密化
         const isFixedSlot = charMaster && charMaster.fixedTraits && 
                             charMaster.fixedTraits[t.slotIndex] !== undefined && 
                             charMaster.fixedTraits[t.slotIndex] !== null;
@@ -2879,48 +2906,157 @@ const MenuTraitDetail = {
             return;
         }
 
-        // 【修正】ダイアログをモーダル(5000)の前に出す
         Menu.confirm(`2000 GEM を使用して特性を再抽選しますか？`, () => {
             const dialogArea = document.getElementById('menu-dialog-area');
-            
             if ((App.data.gems || 0) < 2000) {
                 Menu.msg("GEMが足りません");
                 if(dialogArea) dialogArea.style.zIndex = "50000";
                 return;
             }
 
+            // 初回消費
             App.data.gems -= 2000;
+            
+            // 新しい特性を抽選（重複回避）
             const currentIds = char.traits.map(x => x.id);
             const pool = Object.values(PassiveSkill.MASTER).filter(m => !currentIds.includes(m.id));
             const newMaster = pool[Math.floor(Math.random() * pool.length)];
 
-            char.traits[t.slotIndex] = { id: newMaster.id, level: 1, battleCount: 0 };
+            // ★重要：セーブデータに状態を予約（リロード対策）
+            // この時点では char.traits は書き換えない
+            App.data.progress.rerollState = {
+                charUid: char.uid,
+                slotIndex: t.slotIndex,
+                oldTraitId: char.traits[t.slotIndex].id,
+                newTraitId: newMaster.id
+            };
 
             App.save();
-            App.refreshAllStats();
-            
-            Menu.msg(`特性を再抽選しました！`);
-            if(dialogArea) dialogArea.style.zIndex = "50000";
-
-            MenuTraitDetail.close();
-            MenuAllies.renderDetail(); 
+            MenuTraitDetail.renderRerollResult();
         });
 
-        // confirm表示直後に Z-index を調整
         const dialogArea = document.getElementById('menu-dialog-area');
         if(dialogArea) dialogArea.style.zIndex = "50000";
+    },
+
+    // --- 再抽選の確定・維持処理 ---
+    finalizeReroll: (applyNew) => {
+        const state = App.data.progress.rerollState;
+        if (!state) return;
+
+        const char = App.data.characters.find(c => c.uid === state.charUid);
+        
+        // ★スクロール位置の保存（スキル設定と同じセレクタ）
+        const selector = '#allies-detail-view .scroll-container-inner';
+        const container = document.querySelector(selector);
+        const scrollPos = container ? container.scrollTop : 0;
+
+        if (applyNew && char) {
+            // ここで初めて実際に書き換える
+            char.traits[state.slotIndex] = { id: state.newTraitId, level: 1, battleCount: 0 };
+            App.save(); // refreshAllStatsの代わりにsaveとrenderDetailで更新
+            Menu.msg("新しい特性を習得しました！");
+        } else {
+            Menu.msg("既存の特性を維持しました。");
+        }
+
+        // 予約状態の解除
+        delete App.data.progress.rerollState;
+        App.save();
+        
+        MenuTraitDetail.close();
+        MenuAllies.renderDetail();
+        
+        // ★スクロール位置の復元
+        const newContainer = document.querySelector(selector);
+        if (newContainer) {
+            newContainer.scrollTop = scrollPos;
+        }
+        Menu.renderPartyBar();
+    },
+
+    // --- 比較画面からの追加抽選 ---
+    rerollAgain: () => {
+        const state = App.data.progress.rerollState;
+        if ((App.data.gems || 0) < 2000) {
+            Menu.msg("GEMが足りません");
+            return;
+        }
+
+        const char = App.data.characters.find(c => c.uid === state.charUid);
+        if (!char) return;
+
+        App.data.gems -= 2000;
+
+        // 再抽選（重複回避）
+        const currentIds = char.traits.map(x => x.id);
+        const pool = Object.values(PassiveSkill.MASTER).filter(m => !currentIds.includes(m.id));
+        const newMaster = pool[Math.floor(Math.random() * pool.length)];
+
+        // 状態を更新して保存
+        state.newTraitId = newMaster.id;
+        App.save();
+
+        MenuTraitDetail.renderRerollResult();
+    },
+
+    // --- 新設：再抽選結果の比較・選択画面 ---
+    renderRerollResult: () => {
+        const state = App.data.progress.rerollState;
+        if (!state) return;
+
+        const oldM = PassiveSkill.MASTER[state.oldTraitId];
+        const newM = PassiveSkill.MASTER[state.newTraitId];
+
+        let modal = document.getElementById('trait-reroll-result-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'trait-reroll-result-modal';
+            document.body.appendChild(modal);
+        }
+
+        modal.style.cssText = `position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,20,0.9); z-index:6000; display:flex; align-items:center; justify-content:center;`;
+
+        modal.innerHTML = `
+            <div style="width:320px; background:#111; border:2px solid #ffd700; border-radius:10px; padding:20px; color:#eee; font-family:sans-serif;">
+                <div style="text-align:center; font-weight:bold; color:#ffd700; margin-bottom:15px; font-size:16px;">特性再抽選</div>
+                
+                <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
+                    <div style="background:#222; border:1px solid #444; padding:10px; border-radius:5px; opacity:0.8;">
+                        <div style="font-size:10px; color:#888; margin-bottom:3px;">[既存の特性]</div>
+                        <div style="color:#aaa; font-weight:bold;">${oldM.name}</div>
+                        <div style="font-size:11px; color:#777;">${oldM.desc}</div>
+                    </div>
+                    
+                    <div style="text-align:center; color:#ffd700; font-size:18px; margin:-5px 0;">▼</div>
+
+                    <div style="background:#1a2a1a; border:2px solid #4a4; padding:10px; border-radius:5px;">
+                        <div style="font-size:10px; color:#8f8; margin-bottom:3px;">[再抽選の結果]</div>
+                        <div style="color:#fff; font-weight:bold; font-size:14px;">${newM.name}</div>
+                        <div style="font-size:11px; color:#ccc;">${newM.desc}</div>
+                    </div>
+                </div>
+
+                <div style="background:#333; padding:8px; border-radius:4px; text-align:center; margin-bottom:15px; font-size:12px;">
+                    所持: <span style="color:#ffd700; font-weight:bold;">${(App.data.gems || 0).toLocaleString()} GEM</span>
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    <button class="btn" style="padding:12px; background:#3a3; font-weight:bold; color:white; border:none; border-radius:4px; cursor:pointer;" onclick="MenuTraitDetail.finalizeReroll(true)">この特性に変更する</button>
+                    <button class="btn" style="padding:10px; background:#444; color:white; border:none; border-radius:4px; cursor:pointer;" onclick="MenuTraitDetail.finalizeReroll(false)">既存を維持して戻る</button>
+                    <button class="btn" style="padding:10px; background:#a22; color:white; border:none; border-radius:4px; cursor:pointer; margin-top:5px; font-size:11px;" onclick="MenuTraitDetail.rerollAgain()">
+                        もう一度抽選する (2000 GEM)
+                    </button>
+                </div>
+            </div>
+        `;
     },
 
     render: () => {
         const t = MenuTraitDetail.traitList[MenuTraitDetail.currentIndex];
         const char = MenuAllies.getSelectedChar();
-        
-        if (!t || !char) {
-            console.error("Trait or Character not found:", { t, char, uid: MenuAllies.selectedUid });
-            return;
-        }
+        if (!t || !char) return;
 
-        // 【修正】検索キーを masterId に統一
         const masterId = char.charId || char.id;
         const masterData = (typeof window.CHARACTERS_DATA !== 'undefined') ? window.CHARACTERS_DATA : [];
         const charMaster = masterData.find(m => m.id == masterId);
@@ -2941,7 +3077,7 @@ const MenuTraitDetail = {
         modal.style.cssText = `position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:5000; display:flex; align-items:center; justify-content:center;`;
 
         modal.innerHTML = `
-            <div style="width:310px; background:#111; border:1px solid ${t.isEquip ? '#00ffff' : '#ffd700'}; border-radius:8px; padding:20px; color:#eee; box-shadow:0 10px 40px #000;">
+            <div style="width:310px; background:#111; border:1px solid ${t.isEquip ? '#00ffff' : '#ffd700'}; border-radius:8px; padding:20px; color:#eee; box-shadow:0 10px 40px #000; font-family:sans-serif;">
                 <div style="border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:15px; display:flex; justify-content:space-between; align-items:center;">
                     <span style="color:${t.isEquip ? '#00ffff' : '#ffd700'}; font-size:18px; font-weight:bold;">${t.name}</span>
                     <span style="font-size:10px; background:#333; padding:2px 8px; border-radius:4px; color:#aaa;">${t.isEquip ? '装備品' : (isChangable ? '自由枠' : '固定枠')}</span>
@@ -2959,14 +3095,14 @@ const MenuTraitDetail = {
                 <div style="display:flex; flex-direction:column; gap:12px;">
                     <div style="display:flex; justify-content:space-between; gap:10px;">
                         <div style="display:flex; gap:5px;">
-                            <button class="btn" style="width:45px; height:35px; background:#333; border:1px solid #555;" onclick="MenuTraitDetail.move(-1)">▲</button>
-                            <button class="btn" style="width:45px; height:35px; background:#333; border:1px solid #555;" onclick="MenuTraitDetail.move(1)">▼</button>
+                            <button class="btn" style="width:45px; height:35px; background:#333; color:white; border:1px solid #555; cursor:pointer;" onclick="MenuTraitDetail.move(-1)">▲</button>
+                            <button class="btn" style="width:45px; height:35px; background:#333; color:white; border:1px solid #555; cursor:pointer;" onclick="MenuTraitDetail.move(1)">▼</button>
                         </div>
-                        <button class="btn" style="flex:1; background:#444; border:1px solid #555;" onclick="MenuTraitDetail.close()">閉じる</button>
+                        <button class="btn" style="flex:1; background:#444; color:white; border:1px solid #555; cursor:pointer;" onclick="MenuTraitDetail.close()">閉じる</button>
                     </div>
 
                     ${isChangable ? `
-                        <button class="btn" style="width:100%; padding:12px; background:#1a1a1a; border:1px solid #555; color:#aaa; font-size:12px; font-weight:bold; border-radius:4px;" 
+                        <button class="btn" style="width:100%; padding:12px; background:#1a1a1a; border:1px solid #555; color:#ffd700; font-size:12px; font-weight:bold; border-radius:4px; cursor:pointer;" 
                             onclick="MenuTraitDetail.reroll()">
                             特性を再抽選する (2000 GEM)
                         </button>

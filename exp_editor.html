@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>必要経験値カーブ・エディタ（壁スパイク版）</title>
+  <style>
+    :root{
+      --bg:#0b1020; --panel:#111a33; --panel2:#0f1730;
+      --text:#e9eefc; --muted:#aab3d6; --grid:#243057;
+      --accent:#7aa2ff; --good:#2dd4bf; --warn:#fbbf24; --bad:#fb7185;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", sans-serif;
+      background: linear-gradient(180deg, #070a14 0%, var(--bg) 60%, #070a14 100%);
+      color:var(--text);
+    }
+    header{
+      position: sticky; top:0; z-index:10;
+      background: rgba(7,10,20,0.85);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(36,48,87,0.8);
+    }
+    .wrap{ max-width:1100px; margin:0 auto; padding:14px 14px 22px; }
+    .title{
+      display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap;
+      margin-bottom:10px;
+    }
+    .title h1{ font-size:16px; margin:0; letter-spacing:0.02em; }
+    .title .note{ color:var(--muted); font-size:12px; }
+    .panel{
+      background: linear-gradient(180deg, rgba(17,26,51,0.9), rgba(15,23,48,0.9));
+      border: 1px solid rgba(36,48,87,0.8);
+      border-radius: 12px;
+      padding: 12px;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(6, minmax(140px, 1fr));
+      gap:10px;
+    }
+    @media (max-width: 980px){ .grid{ grid-template-columns: repeat(3, minmax(140px, 1fr)); } }
+    @media (max-width: 520px){ .grid{ grid-template-columns: repeat(2, minmax(140px, 1fr)); } }
+
+    label{ display:block; font-size:12px; color:var(--muted); margin-bottom:6px; }
+    input{
+      width:100%;
+      padding:10px 10px;
+      border-radius:10px;
+      border:1px solid rgba(36,48,87,0.9);
+      background: rgba(6,10,22,0.9);
+      color:var(--text);
+      outline:none;
+    }
+    input:focus{ border-color: rgba(122,162,255,0.95); box-shadow: 0 0 0 3px rgba(122,162,255,0.15); }
+    .row{
+      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+      margin-top:10px;
+    }
+    button{
+      cursor:pointer;
+      border:1px solid rgba(36,48,87,0.9);
+      background: rgba(6,10,22,0.9);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:10px;
+      font-weight:600;
+    }
+    button:hover{ border-color: rgba(122,162,255,0.95); }
+    .pill{
+      font-size:12px; color:var(--muted);
+      padding:6px 10px; border-radius:999px;
+      border:1px solid rgba(36,48,87,0.8);
+      background: rgba(6,10,22,0.65);
+    }
+    .pill strong{ color:var(--text); }
+    .ok{ color:var(--good); }
+    .warn{ color:var(--warn); }
+    .bad{ color:var(--bad); }
+
+    main{ padding: 14px 0 30px; }
+    .tablePanel{ margin-top:14px; }
+    table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      overflow:hidden;
+      border-radius:12px;
+      border:1px solid rgba(36,48,87,0.85);
+      background: rgba(15,23,48,0.65);
+    }
+    thead th{
+      position: sticky; top: 210px; /* header+panel分ざっくり */
+      background: rgba(10,14,28,0.92);
+      backdrop-filter: blur(10px);
+      border-bottom:1px solid rgba(36,48,87,0.85);
+      font-size:12px;
+      color:var(--muted);
+      text-align:right;
+      padding:10px 10px;
+      z-index:5;
+    }
+    thead th:first-child{ text-align:left; }
+    tbody td{
+      padding:9px 10px;
+      border-bottom:1px solid rgba(36,48,87,0.55);
+      text-align:right;
+      font-variant-numeric: tabular-nums;
+      font-size:13px;
+    }
+    tbody tr:nth-child(odd){ background: rgba(6,10,22,0.25); }
+    tbody tr:hover{ background: rgba(122,162,255,0.10); }
+    tbody td:first-child{ text-align:left; color:var(--text); }
+
+    /* 壁や境界のハイライト */
+    .wall50{ background: rgba(251,191,36,0.14) !important; }
+    .wall100{ background: rgba(251,113,133,0.14) !important; }
+    .boundary{ outline: 1px solid rgba(122,162,255,0.35); outline-offset:-1px; }
+
+    .codeArea{
+      margin-top:14px;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:10px;
+    }
+    textarea{
+      width:100%;
+      min-height:240px;
+      resize:vertical;
+      padding:12px;
+      border-radius:12px;
+      border:1px solid rgba(36,48,87,0.9);
+      background: rgba(6,10,22,0.9);
+      color:var(--text);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size:12px;
+      line-height:1.45;
+      outline:none;
+    }
+    textarea:focus{ border-color: rgba(122,162,255,0.95); box-shadow: 0 0 0 3px rgba(122,162,255,0.15); }
+
+    .footerHint{ color:var(--muted); font-size:12px; margin-top:10px; }
+    .small{ font-size:12px; color:var(--muted); }
+    code{ color: #c7d2fe; }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="wrap">
+      <div class="title">
+        <h1>必要経験値カーブ・エディタ（Lv1〜500 / 壁スパイク版）</h1>
+        <div class="note">50・100は「そのレベルだけ」スパイク。次レベルで壁を剥がして戻ります（50→51, 100→101が下がる）。</div>
+      </div>
+
+      <div class="panel">
+        <div class="grid">
+          <div>
+            <label>BASE_EXP（基礎経験値）</label>
+            <input id="BASE_EXP" type="number" step="1" min="0" value="100" />
+          </div>
+
+          <div>
+            <label>P_EARLY（1〜10 べき指数）</label>
+            <input id="P_EARLY" type="number" step="0.01" value="1.05" />
+          </div>
+
+          <div>
+            <label>TARGET_49（eL=49の必要Exp）</label>
+            <input id="TARGET_49" type="number" step="1" min="0" value="35000" />
+          </div>
+
+          <div>
+            <label>WALL_50（49→50 壁倍率）</label>
+            <input id="WALL_50" type="number" step="0.01" min="0" value="1.8" />
+          </div>
+
+          <div>
+            <label>TARGET_99（eL=99の必要Exp）</label>
+            <input id="TARGET_99" type="number" step="1" min="0" value="200000" />
+          </div>
+
+          <div>
+            <label>P_AFTER_50（51〜99 べき指数）</label>
+            <input id="P_AFTER_50" type="number" step="0.01" value="1.3" />
+          </div>
+
+          <div>
+            <label>WALL_100（99→100 壁倍率）</label>
+            <input id="WALL_100" type="number" step="0.01" min="0" value="2.0" />
+          </div>
+
+          <div>
+            <label>P_REINC（101+ べき指数）</label>
+            <input id="P_REINC" type="number" step="0.01" value="1.5" />
+          </div>
+
+          <div>
+            <label>REINC_STEP_RATE（101の増分率）</label>
+            <input id="REINC_STEP_RATE" type="number" step="0.001" value="0.05" />
+          </div>
+        </div>
+
+        <div class="row">
+          <button id="btnRecalc">再計算</button>
+          <button id="btnGenCode">コード生成</button>
+          <button id="btnCopyCode">コードをコピー</button>
+          <span class="pill">境界：<strong>xp10 / xp49 / (50スパイク) / xp99 / (100スパイク)</strong></span>
+          <span id="status" class="pill">準備OK</span>
+        </div>
+
+        <div class="row small" id="boundaryLine"></div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap">
+      <div class="tablePanel">
+        <table>
+          <thead>
+            <tr>
+              <th>レベル(eL)</th>
+              <th>必要Exp（このレベル到達に必要）</th>
+              <th>累計Exp（Lv1→ここまで合計）</th>
+              <th>帯</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+        <div class="footerHint">
+          「必要Exp」は各 eL の <code>needExp</code> を表示。<br/>
+          「累計Exp」は <code>sum(needExp[eL])</code> をLv1から足し上げたもの（あなたのゲーム定義に合わせて調整可）。
+        </div>
+      </div>
+
+      <div class="codeArea">
+        <textarea id="codeOut" spellcheck="false" readonly></textarea>
+        <div class="row">
+          <span class="pill">生成コードはそのままJSに貼れます（パラメータブロック）</span>
+          <span class="pill">このエディタは「壁スパイク方式」（壁レベルだけ×WALL、次で戻る）</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+
+  const inputs = [
+    "BASE_EXP","P_EARLY","TARGET_49","WALL_50","WALL_100","TARGET_99","P_AFTER_50","P_REINC","REINC_STEP_RATE"
+  ].map($);
+
+  const tbody = $("tbody");
+  const status = $("status");
+  const boundaryLine = $("boundaryLine");
+  const codeOut = $("codeOut");
+
+  const MAX_LEVEL = 500;
+
+  function num(id){
+    const el = $(id);
+    const v = Number(el.value);
+    return Number.isFinite(v) ? v : 0;
+  }
+
+  function fmt(n){
+    if (!Number.isFinite(n)) return "NaN";
+    const rounded = Math.round(n);
+    return rounded.toLocaleString("ja-JP");
+  }
+
+  function bandLabel(eL){
+    if (eL <= 10) return "1-10（序盤: べき乗）";
+    if (eL <= 49) return "11-49（2次で49へ）";
+    if (eL === 50) return "50（壁スパイク）";
+    if (eL <= 99) return "51-99（べき乗で99へ）";
+    if (eL === 100) return "100（壁スパイク）";
+    return "101+（転生帯）";
+  }
+
+  function setStatus(text, kind="ok"){
+    status.textContent = text;
+    status.classList.remove("ok","warn","bad");
+    status.classList.add(kind);
+  }
+
+  function getParams(){
+    return {
+      BASE_EXP: num("BASE_EXP"),
+      P_EARLY: num("P_EARLY"),
+      TARGET_49: num("TARGET_49"),
+      WALL_50: num("WALL_50"),
+      WALL_100: num("WALL_100"),
+      TARGET_99: num("TARGET_99"),
+      P_AFTER_50: num("P_AFTER_50"),
+      P_REINC: num("P_REINC"),
+      REINC_STEP_RATE: num("REINC_STEP_RATE"),
+    };
+  }
+
+  // ★壁スパイク方式の境界計算
+  // 50以降のカーブは「壁を剥がした基準値」から始める（=49の値）
+  // 50自体は表示だけ×WALL_50、100も同様
+  function computeBoundary(p){
+    const xp10 = p.BASE_EXP * Math.pow(10, p.P_EARLY);
+
+    // 11〜49（二次）
+    const B = (p.TARGET_49 - xp10) / Math.pow(49 - 10, 2);
+    const xp49 = xp10 + B * Math.pow(49 - 10, 2); // ≒ TARGET_49
+
+    // 50は壁スパイク（表示専用）
+    const xp50_wall = xp49 * p.WALL_50;
+
+    // 51〜99は「壁剥がし基準」=xp49 から TARGET_99へ
+    const base50 = xp49;
+    const S = (p.TARGET_99 - base50) / Math.pow(99 - 50, p.P_AFTER_50);
+    const xp99 = base50 + S * Math.pow(99 - 50, p.P_AFTER_50); // ≒ TARGET_99
+
+    // 100も壁スパイク（表示専用）
+    const xp100_wall = xp99 * p.WALL_100;
+
+    // 101+は「壁剥がし基準」=xp99 から
+    const base100 = xp99;
+
+    return { xp10, B, xp49, xp50_wall, base50, S, xp99, xp100_wall, base100 };
+  }
+
+  function needExpFor(eL, p, b){
+    if (eL <= 10) {
+      return p.BASE_EXP * Math.pow(eL, p.P_EARLY);
+
+    } else if (eL <= 49) {
+      return b.xp10 + b.B * Math.pow(eL - 10, 2);
+
+    } else if (eL === 50) {
+      // ★50だけスパイク
+      return b.xp50_wall;
+
+    } else if (eL <= 99) {
+      // ★51〜99は壁を剥がした基準（base50）から上昇
+      return b.base50 + b.S * Math.pow(eL - 50, p.P_AFTER_50);
+
+    } else if (eL === 100) {
+      // ★100だけスパイク
+      return b.xp100_wall;
+
+    } else {
+      // ★101+は壁を剥がした基準（base100）から上昇
+      const step101 = b.base100 * p.REINC_STEP_RATE;
+      return b.base100 + step101 * Math.pow(eL - 100, p.P_REINC);
+    }
+  }
+
+  function render(){
+    const p = getParams();
+
+    // バリデーション（最低限）
+    const warnings = [];
+    if (p.BASE_EXP < 0) warnings.push("BASE_EXPが負");
+    if (p.TARGET_49 < 0 || p.TARGET_99 < 0) warnings.push("TARGETが負");
+    if (p.WALL_50 < 1.0 || p.WALL_100 < 1.0) warnings.push("WALLは1以上推奨");
+    if (p.P_EARLY <= 0 || p.P_AFTER_50 <= 0 || p.P_REINC <= 0) warnings.push("指数は正が推奨");
+    if (p.REINC_STEP_RATE < 0) warnings.push("REINC_STEP_RATEが負");
+
+    if (warnings.length) setStatus("注意: " + warnings.join(" / "), "warn");
+    else setStatus("計算OK", "ok");
+
+    const b = computeBoundary(p);
+
+    boundaryLine.innerHTML =
+      `xp10=<strong>${fmt(b.xp10)}</strong> / ` +
+      `xp49≈<strong>${fmt(b.xp49)}</strong> / ` +
+      `xp50(壁)=<strong>${fmt(b.xp50_wall)}</strong> / ` +
+      `xp99≈<strong>${fmt(b.xp99)}</strong> / ` +
+      `xp100(壁)=<strong>${fmt(b.xp100_wall)}</strong> ` +
+      `<span class="small">（B=${b.B.toExponential(3)}, S=${b.S.toExponential(3)}）</span>`;
+
+    tbody.innerHTML = "";
+    let cum = 0;
+
+    for (let eL = 1; eL <= MAX_LEVEL; eL++){
+      const ne = needExpFor(eL, p, b);
+      cum += ne;
+
+      const tr = document.createElement("tr");
+      if (eL === 50) tr.classList.add("wall50");
+      if (eL === 100) tr.classList.add("wall100");
+      if ([10,11,49,50,51,99,100,101,200,300,400,500].includes(eL)) tr.classList.add("boundary");
+
+      tr.innerHTML = `
+        <td>Lv ${eL}</td>
+        <td>${fmt(ne)}</td>
+        <td>${fmt(cum)}</td>
+        <td>${bandLabel(eL)}</td>
+      `;
+      tbody.appendChild(tr);
+    }
+  }
+
+  function generateCode(){
+    const p = getParams();
+
+    // 希望のパラメータブロック（現在値で出力）
+    const code =
+`// --- 序盤（1〜10）：超軽い ---
+// 小さいほど序盤がさらに軽くなる（1.00〜1.15くらいが調整しやすい）
+const P_EARLY = ${p.P_EARLY};
+
+// --- 11〜49：49直前をどう重くするか（ターゲット） ---
+// eL=49 の必要経験値（49→50の直前）
+const TARGET_49 = ${Math.round(p.TARGET_49)};
+
+// --- 壁の強さ（段差はキツくてOK方針） ---
+// 49→50 の壁倍率（例：1.8なら 49の1.8倍）
+const WALL_50 = ${p.WALL_50};
+
+// 99→100 の壁倍率（転生条件の壁）
+const WALL_100 = ${p.WALL_100};
+
+// --- 50〜99：転生前の成長（ターゲット） ---
+// eL=99 の必要経験値（99→100の直前）
+const TARGET_99 = ${Math.round(p.TARGET_99)};
+
+// 50以降の成長指数（大きいほど99付近が重くなる）
+const P_AFTER_50 = ${p.P_AFTER_50};
+
+// --- 101+（転生帯）：仮置き（後で調整前提） ---
+const P_REINC = ${p.P_REINC};
+
+// 101の増加分（100の何％を足し幅の基準にするか）
+const REINC_STEP_RATE = ${p.REINC_STEP_RATE}; // ${(p.REINC_STEP_RATE*100).toFixed(1)}%
+
+// ------------------------------------------------------------
+// 注意：このツールは「壁スパイク方式」です。
+// Lv50 と Lv100 だけ ×WALL を適用し、次レベルで壁を剥がした基準に戻ります。
+// （49→50はキツい / 50→51は一度下がってまた上昇）
+// ------------------------------------------------------------`;
+    codeOut.value = code;
+    setStatus("コード生成しました", "ok");
+  }
+
+  async function copyCode(){
+    const text = codeOut.value.trim();
+    if (!text) {
+      setStatus("先に「コード生成」してね", "warn");
+      return;
+    }
+    try{
+      await navigator.clipboard.writeText(text);
+      setStatus("コピーしました", "ok");
+    } catch (e){
+      // フォールバック
+      codeOut.focus();
+      codeOut.select();
+      const ok = document.execCommand("copy");
+      setStatus(ok ? "コピーしました" : "コピー失敗（手動で選択コピーしてね）", ok ? "ok" : "warn");
+    }
+  }
+
+  $("btnRecalc").addEventListener("click", render);
+  $("btnGenCode").addEventListener("click", () => { generateCode(); });
+  $("btnCopyCode").addEventListener("click", copyCode);
+
+  // 入力変更で即時反映（軽くデバウンス）
+  let t = null;
+  for (const el of inputs){
+    el.addEventListener("input", () => {
+      clearTimeout(t);
+      t = setTimeout(render, 60);
+    });
+  }
+
+  render();
+  generateCode();
+})();
+</script>
+</body>
+</html>

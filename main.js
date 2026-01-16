@@ -513,6 +513,22 @@ const App = {
                 App.changeScene('field');
             }
         }
+		
+		// main.js の startGameLogic 内に追加
+		if (App.data && App.data.progress.rerollState) {
+			const state = App.data.progress.rerollState;
+			const char = App.data.characters.find(c => c.uid === state.charUid);
+			if (char) {
+				MenuAllies.selectedChar = char;
+				MenuAllies.selectedUid = char.uid;
+				// 画面を仲間詳細まで進めてから比較モーダルを開く
+				Menu.openSubScreen('allies');
+				MenuAllies.renderDetail();
+				MenuTraitDetail.renderRerollResult();
+			}
+		}
+		
+		
         
         let moveTimer = null;
         const startMove = (dx, dy) => {
@@ -1114,32 +1130,34 @@ load: () => {
             // ここで ReferenceError を防ぐため App.checkSynergy を使用
             if (typeof App.checkSynergy === 'function') {
                 const syns = App.checkSynergy(eq);
-                if (syns) {
-                    syns.forEach(syn => {
-                        if (syn.effect === 'might') s.finDmg += 30;
-                        if (syn.effect === 'ironWall') s.finRed += 10;
-                        if (syn.effect === 'guardian') pctMods.def += 100;
-                        if (syn.effect === 'divineProtection') {
-                            for (let k in s.resists) s.resists[k] = (s.resists[k] || 0) + 20;
-                        }
-                        if (syn.effect === 'hpBoost100') pctMods.maxHp += 100;
-                        if (syn.effect === 'spdBoost100') pctMods.spd += 100;
-                        if (syn.effect === 'debuffImmune') s.resists.Debuff = 100;
-                        if (syn.effect === 'sealGuard50') {
-                            s.resists.SkillSeal = (s.resists.SkillSeal || 0) + 50;
-                            s.resists.SpellSeal = (s.resists.SpellSeal || 0) + 50;
-                            s.resists.HealSeal  = (s.resists.HealSeal  || 0) + 50;
-                        }
-                        if (syn.effect === 'elmAtk25') {
-                            const elmOpt = eq.opts && eq.opts.find(x => x.key === 'elmAtk');
-                            if (elmOpt) s.elmAtk[elmOpt.elm] = (s.elmAtk[elmOpt.elm] || 0) + 25;
-                        }
-                        // ★シナジーによるスキル習得 (深淵の刃など)
-                        if (syn.effect === 'grantSkill' && syn.value) {
-                            allSkillIds.add(syn.value);
-                        }
-                    });
-                }
+				if (syns) {
+					syns.forEach(syn => {
+						if (syn.effect === 'might') s.finDmg += 30;
+						if (syn.effect === 'ironWall') s.finRed += 10;
+						if (syn.effect === 'guardian') pctMods.def += 100;
+						if (syn.effect === 'divineProtection') {
+							for (let k in s.resists) s.resists[k] = (s.resists[k] || 0) + 20;
+						}
+						if (syn.effect === 'hpBoost100') pctMods.maxHp += 100;
+						if (syn.effect === 'spdBoost100') pctMods.spd += 100;
+						if (syn.effect === 'debuffImmune') s.resists.Debuff = 100;
+						if (syn.effect === 'sealGuard50') {
+							s.resists.SkillSeal = (s.resists.SkillSeal || 0) + 50;
+							s.resists.SpellSeal = (s.resists.SpellSeal || 0) + 50;
+							s.resists.HealSeal  = (s.resists.HealSeal  || 0) + 50;
+						}
+						
+						// ★修正：極意系（elmAtk25）。syn.elm を直接参照して加算する
+						if (syn.effect === 'elmAtk25' && syn.elm) {
+							s.elmAtk[syn.elm] = (s.elmAtk[syn.elm] || 0) + 25;
+						}
+
+						// ★シナジーによるスキル習得 (深淵の刃など)
+						if (syn.effect === 'grantSkill' && syn.value) {
+							allSkillIds.add(syn.value);
+						}
+					});
+				}
             }
         }
 
@@ -1699,33 +1717,40 @@ load: () => {
 		 * 調整用パラメータ（ここを触れば体感が変わる）
 		 * ===================================================== */
 
+
 		// --- 序盤（1〜10）：超軽い ---
 		// 小さいほど序盤がさらに軽くなる（1.00〜1.15くらいが調整しやすい）
-		const P_EARLY = 1.05;
+		const P_EARLY = 0.8;
 
 		// --- 11〜49：49直前をどう重くするか（ターゲット） ---
 		// eL=49 の必要経験値（49→50の直前）
-		const TARGET_49 = 35000;
+		const TARGET_49 = 30000;
 
 		// --- 壁の強さ（段差はキツくてOK方針） ---
 		// 49→50 の壁倍率（例：1.8なら 49の1.8倍）
-		const WALL_50 = 1.8;
+		const WALL_50 = 5;
 
 		// 99→100 の壁倍率（転生条件の壁）
-		const WALL_100 = 2.0;
+		const WALL_100 = 5;
 
 		// --- 50〜99：転生前の成長（ターゲット） ---
 		// eL=99 の必要経験値（99→100の直前）
-		const TARGET_99 = 200000;
+		const TARGET_99 = 150000;
 
 		// 50以降の成長指数（大きいほど99付近が重くなる）
 		const P_AFTER_50 = 1.3;
 
 		// --- 101+（転生帯）：仮置き（後で調整前提） ---
-		const P_REINC = 1.5;
+		const P_REINC = 0.6;
 
 		// 101の増加分（100の何％を足し幅の基準にするか）
-		const REINC_STEP_RATE = 0.05; // 5%
+		const REINC_STEP_RATE = 0.05; // 5.0%
+
+		// ------------------------------------------------------------
+		// 注意：このツールは「壁スパイク方式」です。
+		// Lv50 と Lv100 だけ ×WALL を適用し、次レベルで壁を剥がした基準に戻ります。
+		// （49→50はキツい / 50→51は一度下がってまた上昇）
+		// ------------------------------------------------------------
 
 
 		/* =====================================================
@@ -1735,24 +1760,25 @@ load: () => {
 		// --- eL=10 ---
 		const xp10 = BASE_EXP * Math.pow(10, P_EARLY);
 
-		// --- eL=11〜49 を2次関数で作る ---
-		// xp10 + B*(49-10)^2 = TARGET_49 となる B を逆算
+		// --- eL=11〜49（二次） ---
 		const B = (TARGET_49 - xp10) / Math.pow(49 - 10, 2);
-
 		const xp49 = xp10 + B * Math.pow(49 - 10, 2); // ≒ TARGET_49
 
-		// --- eL=50 は壁 ---
-		const xp50 = xp49 * WALL_50;
+		// ★壁は「そのレベルだけ」適用した表示用
+		const xp50_wall = xp49 * WALL_50; // 50だけスパイク
 
-		// --- eL=51〜99 をべき乗カーブで作る ---
-		// xp50 + S*(99-50)^P_AFTER_50 = TARGET_99 となる S を逆算
-		const S = (TARGET_99 - xp50) / Math.pow(99 - 50, P_AFTER_50);
+		// ★50以降の基準（壁を剥がした起点）は xp49 のまま
+		const base50 = xp49;
 
-		const xp99 = xp50 + S * Math.pow(99 - 50, P_AFTER_50); // ≒ TARGET_99
+		// --- eL=51〜99（べき乗：基準base50からTARGET_99へ） ---
+		const S = (TARGET_99 - base50) / Math.pow(99 - 50, P_AFTER_50);
+		const xp99 = base50 + S * Math.pow(99 - 50, P_AFTER_50); // ≒ TARGET_99
 
-		// --- eL=100 は壁 ---
-		const xp100 = xp99 * WALL_100;
+		// ★100も「そのレベルだけ」壁
+		const xp100_wall = xp99 * WALL_100;
 
+		// ★100以降の基準（壁剥がし）は xp99
+		const base100 = xp99;
 
 		/* =====================================================
 		 * 実際の必要経験値の計算
@@ -1761,30 +1787,27 @@ load: () => {
 		let needExp;
 
 		if (eL <= 10) {
-			// 1〜10：超軽い
-			needExp = BASE_EXP * Math.pow(eL, P_EARLY);
+		  needExp = BASE_EXP * Math.pow(eL, P_EARLY);
 
 		} else if (eL <= 49) {
-			// 11〜49：徐々に重く
-			needExp = xp10 + B * Math.pow(eL - 10, 2);
+		  needExp = xp10 + B * Math.pow(eL - 10, 2);
 
 		} else if (eL === 50) {
-			// 50：壁（強スキル）
-			needExp = xp50;
+		  // ★50はスパイクだけ
+		  needExp = xp50_wall;
 
 		} else if (eL <= 99) {
-			// 51〜99：転生前のやり込み
-			needExp = xp50 + S * Math.pow(eL - 50, P_AFTER_50);
+		  // ★51〜99は壁なし基準（base50）から上がっていく
+		  needExp = base50 + S * Math.pow(eL - 50, P_AFTER_50);
 
 		} else if (eL === 100) {
-			// 100：壁（転生条件）
-			needExp = xp100;
+		  // ★100もスパイクだけ
+		  needExp = xp100_wall;
 
 		} else {
-			// 101+：転生帯（仮）
-			// 100を超えた後も伸びるが、指数ほど破綻しない想定
-			const step101 = xp100 * REINC_STEP_RATE;
-			needExp = xp100 + step101 * Math.pow(eL - 100, P_REINC);
+		  // ★101+ は壁を剥がした基準（base100）から成長
+		  const step101 = base100 * REINC_STEP_RATE;
+		  needExp = base100 + step101 * Math.pow(eL - 100, P_REINC);
 		}
 
 		/* =====================================================
