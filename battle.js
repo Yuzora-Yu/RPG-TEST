@@ -1888,6 +1888,7 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
                 // 特性による成功率ボーナスの算出
 				const assaBonus = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(actor, 'proc_instantdeath_bonus') : 0;
                 const bodyBonus = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(actor, 'proc_body_bonus') : 0;
+                const curseBonus = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(actor, 'proc_curse_bonus') : 0; // ★追加
 
                 let currentCheckRate = successRate;
                 

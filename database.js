@@ -71,11 +71,11 @@ const CONST = {
 			reqReincarnation: 0,
 			costs: [5, 12, 22, 35, 50],
 			steps: [
-				{ desc: '最大MP・防御力 +5%', stats: { mpMult: 0.05, defMult: 0.05 } },
-				{ desc: '最大MP・防御力 +10%', stats: { mpMult: 0.05, defMult: 0.05 } },
-				{ desc: '最大MP・防御力 +15% / 無念無想習得', stats: { mpMult: 0.05, defMult: 0.05 }, skillId: 81 },
-				{ desc: '最大MP・防御力 +20% / マジックバリア習得', stats: { mpMult: 0.05, defMult: 0.05 }, skillId: 53 },
-				{ desc: '最大MP・防御力 +25% / 被ダメ軽減 +10%', stats: { mpMult: 0.05, defMult: 0.05 }, passive: 'finRed10' }
+				{ desc: 'MP・防御・魔防 +5%', stats: { mpMult: 0.05, defMult: 0.05 } },
+				{ desc: 'MP・防御・魔防 +10%', stats: { mpMult: 0.05, defMult: 0.05 } },
+				{ desc: 'MP・防御・魔防 +15% / 無念無想習得', stats: { mpMult: 0.05, defMult: 0.05 }, skillId: 81 },
+				{ desc: 'MP・防御・魔防 +20% / マジックバリア習得', stats: { mpMult: 0.05, defMult: 0.05 }, skillId: 53 },
+				{ desc: 'MP・防御・魔防 +25% / 被ダメ軽減 +10%', stats: { mpMult: 0.05, defMult: 0.05 }, passive: 'finRed10' }
 			]
 		},
 
