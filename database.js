@@ -170,6 +170,7 @@ const DB = {
         {key:'elmRes', elm:'混沌', name:'混沌耐', unit:'%', allowed:['SSR','UR','EX'], min:{SSR:10,UR:20,EX:40}, max:{SSR:20,UR:40,EX:80}},
         {key:'attack_Fear', name:'攻撃時怯え', unit:'%', allowed:['R','SR','SSR','UR','EX'], min:{R:1,SR:2,SSR:3,UR:5,EX:10}, max:{R:1,SR:2,SSR:5,UR:10,EX:20}},
         {key:'attack_Poison', name:'攻撃時毒', unit:'%', allowed:['R','SR','SSR','UR','EX'], min:{R:1,SR:2,SSR:3,UR:5,EX:10}, max:{R:1,SR:2,SSR:5,UR:10,EX:20}},
+        {key:'attack_InstantDeath', name:'攻撃時即死', unit:'%', allowed:['EX'], min:{EX:1}, max:{EX:3}},
         {key:'resists_Debuff', name:'弱体ガード', unit:'%', allowed:['R','SR','SSR','UR','EX'], min:{R:5,SR:11,SSR:21,UR:31,EX:50}, max:{R:10,SR:20,SSR:30,UR:40,EX:50}},
         {key:'resists_Fear', name:'怯えガード', unit:'%', allowed:['R','SR','SSR','UR','EX'], min:{R:5,SR:11,SSR:21,UR:31,EX:50}, max:{R:10,SR:20,SSR:30,UR:40,EX:50}},
         {key:'resists_Poison', name:'毒ガード', unit:'%', allowed:['R','SR','SSR','UR','EX'], min:{R:5,SR:11,SSR:21,UR:31,EX:50}, max:{R:10,SR:20,SSR:30,UR:40,EX:50}},

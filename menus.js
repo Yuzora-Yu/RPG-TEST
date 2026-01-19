@@ -202,6 +202,9 @@ const Menu = {
             skillHTML = ` <span style="color:#ffff00;">[習得:${skillNames.join(', ')}]</span>`;
         }
         const baseEffect = baseStats.length > 0 ? baseStats.join(' ') : 'なし';
+		
+		// ★ベース名（杖、剣など）の表示用文字列を作成
+        const baseNameHTML = equip.baseName ? `[${equip.baseName}] ` : '';
 
         // オプション表示 (ここも fV で符号修正)
         let optsHTML = '';
@@ -237,7 +240,7 @@ const Menu = {
 
         html += `
             <div style="font-size:10px; color:#ccc;">
-                ${baseEffect}${skillHTML}
+                ${baseNameHTML}${baseEffect}${skillHTML}
             </div>
             ${optsHTML}
             ${synergyHTML}
@@ -1289,9 +1292,12 @@ const MenuAllies = {
 			});
 			skillHTML = ` <span style="color:#ffff00; ">[習得:${skillNames.join(', ')}]</span>`;
 		}
+		
+		// ★ベース名（杖、剣など）の表示用
+		const baseNameHTML = eq.baseName ? `[${eq.baseName}] ` : '';
 
 		// ステータスとスキルを同じ div に配置
-		let baseHtml = `<div style="font-size:10px; color:#ccc;">${stats.join(' ')}${skillHTML}</div>`;
+		let baseHtml = `<div style="font-size:10px; color:#ccc;">${baseNameHTML}${stats.join(' ')}${skillHTML}</div>`;
 		
 		// オプション表示 (ここも fV を適用して符号重複を防止)
 		let optsHtml = '';

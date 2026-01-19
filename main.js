@@ -1533,19 +1533,19 @@ load: () => {
 		if (plus > 0) {
 			const BASE_OPTS_MAP = {
 				'剣': ['atk', 'hit', 'cri', 'finDmg', 'elmAtk'],
-				'斧': ['atk', 'finDmg', 'elmAtk', 'attack_Fear'],
-				'槍': ['atk', 'hit', 'finDmg'],
+				'斧': ['atk', 'cri', 'finDmg', 'elmAtk', 'attack_Fear'],
+				'槍': ['atk', 'hit', 'cri', 'finDmg', 'elmAtk'],
 				'短剣': ['atk', 'mag', 'eva', 'cri', 'finDmg', 'elmAtk', 'attack_Poison'],
-				'弓': ['atk', 'hit', 'cri', 'finDmg'],
-				'杖': ['mag', 'finDmg', 'elmAtk'],
+				'弓': ['atk', 'mag', 'cri', 'finDmg', 'elmAtk'],
+				'杖': ['mag', 'eva', 'finDmg', 'elmAtk'],
 				'盾': ['def', 'mdef', 'eva', 'finRed', 'elmRes', 'resists_Debuff'],
-				'腕輪': ['atk', 'mag', 'spd', 'def', 'mdef', 'hit', 'eva', 'cri', 'finDmg'],
-				'兜': ['hp', 'mp', 'def', 'mdef', 'resists_Fear', 'resists_SkillSeal'],
-				'帽子': ['hp', 'mp', 'mag', 'mdef', 'elmRes', 'resists_SpellSeal'],
-				'鎧': ['hp', 'mp', 'def', 'mdef', 'finRed', 'resists_Poison'],
-				'ローブ': ['hp', 'mp', 'def', 'mdef', 'mag', 'elmAtk', 'elmRes', 'resists_SpellSeal'],
-				'ブーツ': ['spd', 'def', 'mdef', 'eva', 'resists_Shock'],
-				'くつ': ['spd', 'hit', 'eva', 'finDmg', 'resists_Shock']
+				'腕輪': ['atk', 'mag', 'spd', 'def', 'mdef', 'hit', 'eva', 'cri', 'elmAtk', 'finDmg'],
+				'兜': ['hp', 'mp', 'def', 'mdef', 'elmRes', 'resists_Fear', 'resists_SkillSeal'],
+				'帽子': ['hp', 'mp', 'def', 'mag', 'mdef', 'elmRes', 'resists_HealSeal'],
+				'鎧': ['hp', 'mp', 'def', 'mdef', 'finRed', 'elmRes', 'resists_Poison'],
+				'ローブ': ['hp', 'mp', 'mdef', 'mag', 'elmAtk', 'elmRes', 'resists_SpellSeal'],
+				'ブーツ': ['spd', 'def', 'mdef', 'finRed', 'elmAtk', 'elmRes', 'resists_Shock'],
+				'くつ': ['spd', 'hit', 'eva', 'finDmg', 'elmAtk', 'elmRes', 'resists_Shock']
 			};
 			let baseDefaults = BASE_OPTS_MAP[eq.baseName] || [];
 			let masterOpts = base.possibleOpts || [];

@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>EQUIP_MASTER 統合管理エディター</title>
+    <script src="skills.js"></script>
+    <script src="passiveSkill.js"></script>
+    <script src="equips.js"></script>
+    <style>
+        body { font-family: sans-serif; background: #f0f0f0; padding: 0; margin: 0; font-size: 11px; color: #333; overflow: hidden; }
+        
+        /* ヘッダー・操作エリア */
+        .controls { 
+            background: #fff; padding: 15px; border-bottom: 1px solid #ccc; 
+            display: flex; align-items: center; gap: 10px; z-index: 100; position: relative; 
+        }
+        
+        /* テーブルコンテナの高さ固定：横スクロールバーを画面内に維持 */
+        .table-container { 
+            background: #fff; 
+            overflow: auto; 
+            height: calc(100vh - 70px); 
+            position: relative; 
+        }
+        
+        table { border-collapse: separate; border-spacing: 0; white-space: nowrap; width: 100%; }
+        th, td { border-right: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 4px; text-align: left; vertical-align: top; background: #fff; }
+        
+        /* ヘッダー固定 */
+        th { background: #eee; position: sticky; top: 0; z-index: 30; font-size: 10px; border-bottom: 2px solid #ccc; }
+
+        /* 左端6列固定 (eid, noRandom, rank, name, type, baseName) */
+        .sticky-1 { position: sticky; left: 0; z-index: 25; min-width: 45px; }
+        .sticky-2 { position: sticky; left: 45px; z-index: 25; min-width: 65px; }
+        .sticky-3 { position: sticky; left: 110px; z-index: 25; min-width: 45px; }
+        .sticky-4 { position: sticky; left: 155px; z-index: 25; min-width: 120px; }
+        .sticky-5 { position: sticky; left: 275px; z-index: 25; min-width: 70px; }
+        .sticky-6 { position: sticky; left: 345px; z-index: 25; min-width: 70px; }
+
+        th.sticky-1, th.sticky-2, th.sticky-3, th.sticky-4, th.sticky-5, th.sticky-6 { z-index: 40; background: #ddd !important; }
+        tr:nth-child(even) td { background: #fafafa; }
+        tr:nth-child(even) td[class^="sticky-"] { background: #f4f4f4; }
+
+        input, select { border: 1px solid #ccc; padding: 3px; box-sizing: border-box; font-size: 11px; width: 100%; }
+        input[type="number"] { width: 45px; }
+        input[type="checkbox"] { width: auto; vertical-align: middle; }
+        
+        .edit-box { min-width: 180px; background: #faffff; padding: 3px; border: 1px solid #e0f0f0; border-radius: 3px; }
+        .trait-row { display: flex; gap: 3px; margin-bottom: 4px; align-items: center; border-bottom: 1px dashed #cedede; padding-bottom: 3px; }
+        .trait-row select { font-size: 10px; flex: 1; height: 20px; width: 120px; }
+        .btn-add { background: #3498db; color: white; border: none; padding: 3px 8px; cursor: pointer; border-radius: 3px; font-size: 10px; margin-top: 4px; }
+        .btn-del { background: #e74c3c; color: white; border: none; padding: 2px 5px; cursor: pointer; border-radius: 3px; }
+        
+        .multi-select { max-height: 120px; overflow-y: auto; border: 1px solid #ddd; background: #fff; padding: 4px; font-size: 10px; }
+        .multi-item { display: block; white-space: nowrap; cursor: pointer; }
+        .multi-item:hover { background: #f0f0f0; }
+
+        .h-main { background: #fffde7 !important; }
+        .h-stat { background: #f1f8e9 !important; }
+        .h-spec { background: #f3e5f5 !important; }
+
+        button.main-btn { padding: 8px 15px; cursor: pointer; background: #333; color: white; border: none; border-radius: 4px; font-weight: bold; }
+        .btn-csv-out { background: #27ae60 !important; }
+        .btn-csv-in  { background: #2980b9 !important; }
+        .btn-js-out  { background: #e67e22 !important; }
+    </style>
+</head>
+<body>
+
+    <div class="controls">
+        <h3 style="margin:0; font-size: 13px;">EQUIP_MASTER 統合エディター</h3>
+        <button class="main-btn btn-csv-out" onclick="exportCSV()">② CSV出力</button>
+        <input type="file" id="file-csv" accept=".csv" style="display:none">
+        <button class="main-btn btn-csv-in" onclick="document.getElementById('file-csv').click()">③ CSV取込</button>
+        <button class="main-btn btn-js-out" onclick="exportJS()">④ 更新版JS出力</button>
+        <span id="status" style="margin-left:5px; font-weight:bold; color:#2c3e50;">読込中...</span>
+    </div>
+
+    <div class="table-container">
+        <table id="editor-table">
+            <thead><tr id="header-row"></tr></thead>
+            <tbody id="editor-body"></tbody>
+        </table>
+    </div>
+
+<script>
+    let masterData = [];
+
+    // 表示・出力キーの定義
+    const mainKeys = ['eid', 'noRandom', 'rank', 'name', 'type', 'baseName'];
+    const statKeys = ['atk', 'def', 'mag', 'mdef', 'spd', 'hp', 'mp', 'cri', 'hit', 'eva', 'finRed', 'finDmg'];
+    const attackKeys = ['attack_Fear', 'attack_Poison', 'attack_InstantDeath'];
+    // resists_ToxicPoison, resists_Seal を削除
+    const resistKeys = ['resists_Poison', 'resists_Shock', 'resists_Fear', 'resists_InstantDeath', 'resists_Debuff', 'resists_SkillSeal', 'resists_SpellSeal', 'resists_HealSeal'];
+    
+    // possibleOpts の選択肢
+    const optCandidates = [...statKeys, ...attackKeys, ...resistKeys, 'elmAtk', 'elmRes'];
+
+    window.onload = function() {
+        createHeaders();
+        // マスタ読込チェック
+        const master = window.EQUIP_MASTER || (typeof EQUIP_MASTER !== 'undefined' ? EQUIP_MASTER : null);
+        if (master) {
+            masterData = JSON.parse(JSON.stringify(master));
+            renderTable();
+            document.getElementById('status').innerText = `equips.js (${masterData.length}件) ロード完了`;
+        }
+    };
+
+    function createHeaders() {
+        const tr = document.getElementById('header-row');
+        let html = '';
+        mainKeys.forEach((k, i) => html += `<th class="h-main sticky-${i+1}">${k}</th>`);
+        [...statKeys, ...attackKeys, ...resistKeys].forEach(k => html += `<th class="h-stat">data.${k}</th>`);
+        html += `<th class="h-spec">possibleOpts</th><th class="h-spec">grantSkills</th><th class="h-spec">traits</th>`;
+        tr.innerHTML = html;
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById('editor-body');
+        tbody.innerHTML = '';
+        masterData.forEach((item, idx) => {
+            const tr = document.createElement('tr');
+            
+            // 1. 基本項目 (Sticky)
+            mainKeys.forEach((k, i) => {
+                const td = createCell(idx, k, item[k], "text", false);
+                td.className = `sticky-${i+1}`;
+                tr.appendChild(td);
+            });
+            
+            // 2. data数値
+            [...statKeys, ...attackKeys, ...resistKeys].forEach(k => {
+                const val = (item.data && item.data[k] !== undefined) ? item.data[k] : '';
+                tr.appendChild(createCell(idx, k, val, "number", true));
+            });
+
+            // 3. possibleOpts
+            tr.appendChild(createOptsCell(idx, item.possibleOpts || []));
+
+            // 4. grantSkills
+            tr.appendChild(createSkillsCell(idx, item.grantSkills || []));
+
+            // 5. traits (PassiveSkill紐付け)
+            const traitsData = item.traits || (item.data && item.data.traits) || [];
+            tr.appendChild(createTraitsCell(idx, traitsData));
+
+            tbody.appendChild(tr);
+        });
+    }
+
+    function createCell(idx, key, value, type, isData = false) {
+        const td = document.createElement('td');
+        const inp = document.createElement('input');
+        inp.type = type; inp.value = value || ''; inp.dataset.idx = idx;
+        if (isData) inp.dataset.dkey = key; else inp.dataset.key = key;
+        td.appendChild(inp); return td;
+    }
+
+    function createOptsCell(idx, currentOpts) {
+        const td = document.createElement('td');
+        const container = document.createElement('div');
+        container.className = "multi-select edit-box";
+        optCandidates.forEach(opt => {
+            const label = document.createElement('label');
+            label.className = "multi-item";
+            const checked = currentOpts.includes(opt) ? "checked" : "";
+            label.innerHTML = `<input type="checkbox" data-idx="${idx}" data-opt="${opt}" ${checked} onchange="syncMulti(this, 'possibleOpts')"> ${opt}`;
+            container.appendChild(label);
+        });
+        td.appendChild(container); return td;
+    }
+
+    function createSkillsCell(idx, currentSkills) {
+        const td = document.createElement('td');
+        const container = document.createElement('div');
+        container.className = "multi-select edit-box";
+        const skills = window.SKILLS_DATA || [];
+        skills.forEach(s => {
+            const label = document.createElement('label');
+            label.className = "multi-item";
+            const checked = currentSkills.includes(s.id) ? "checked" : "";
+            label.innerHTML = `<input type="checkbox" data-idx="${idx}" data-skillid="${s.id}" ${checked} onchange="syncMulti(this, 'grantSkills')"> ${s.name} (ID:${s.id})`;
+            container.appendChild(label);
+        });
+        td.appendChild(container); return td;
+    }
+
+    function createTraitsCell(idx, currentTraits) {
+        const td = document.createElement('td');
+        const box = document.createElement('div');
+        box.className = "edit-box";
+        
+        const renderTraits = () => {
+            box.innerHTML = '';
+            currentTraits.forEach((t, tIdx) => {
+                const row = document.createElement('div');
+                row.className = "trait-row";
+                
+                let options = '';
+                // PassiveSkill.MASTER から特性名とIDを紐付け
+                const master = (typeof PassiveSkill !== 'undefined' ? PassiveSkill.MASTER : null) || {};
+                
+                Object.keys(master).forEach(mId => {
+                    const m = master[mId];
+                    const selected = (m.id == t.id) ? "selected" : "";
+                    options += `<option value="${m.id}" ${selected}>${m.name} (ID:${m.id})</option>`;
+                });
+                
+                row.innerHTML = `
+                    <select onchange="updateTrait(${idx}, ${tIdx}, 'id', this.value)">${options}</select>
+                    Lv<input type="number" value="${t.level}" style="width:35px" onchange="updateTrait(${idx}, ${tIdx}, 'level', this.value)">
+                    <button class="btn-del" onclick="removeTrait(${idx}, ${tIdx})">×</button>
+                `;
+                box.appendChild(row);
+            });
+            const addBtn = document.createElement('button');
+            addBtn.className = "btn-add"; addBtn.innerText = "+ 追加";
+            addBtn.onclick = () => {
+                const master = (typeof PassiveSkill !== 'undefined' ? PassiveSkill.MASTER : null) || {};
+                const firstId = Object.keys(master)[0] || 1;
+                currentTraits.push({ id: Number(firstId), level: 1 });
+                renderTraits();
+            };
+            box.appendChild(addBtn);
+        };
+        renderTraits(); td.appendChild(box); return td;
+    }
+
+    function syncMulti(el, type) {
+        const idx = el.dataset.idx;
+        const selector = `input[data-idx="${idx}"][data-${type === 'grantSkills' ? 'skillid' : 'opt'}]`;
+        const checks = document.querySelectorAll(selector);
+        const values = [];
+        checks.forEach(c => { if (c.checked) values.push(type === 'grantSkills' ? Number(c.dataset.skillid) : c.dataset.opt); });
+        masterData[idx][type] = values;
+    }
+
+    function updateTrait(idx, tIdx, key, val) {
+        let target = masterData[idx].traits || (masterData[idx].data && masterData[idx].data.traits);
+        if (!target) { masterData[idx].traits = []; target = masterData[idx].traits; }
+        target[tIdx][key] = Number(val);
+    }
+
+    function removeTrait(idx, tIdx) {
+        let target = masterData[idx].traits || (masterData[idx].data && masterData[idx].data.traits);
+        target.splice(tIdx, 1);
+        renderTable(); 
+    }
+
+    function syncAll() {
+        const inputs = document.querySelectorAll('#editor-body input[data-key], #editor-body input[data-dkey]');
+        inputs.forEach(input => {
+            const idx = input.dataset.idx;
+            const val = input.value;
+            if (input.dataset.key) {
+                const k = input.dataset.key;
+                if (['eid', 'rank'].includes(k)) masterData[idx][k] = Number(val);
+                else if (k === 'noRandom') masterData[idx][k] = (String(val).toLowerCase() === 'true');
+                else masterData[idx][k] = val;
+            } else if (input.dataset.dkey) {
+                if (!masterData[idx].data) masterData[idx].data = {};
+                if (val === '') delete masterData[idx].data[input.dataset.dkey];
+                else masterData[idx].data[input.dataset.dkey] = Number(val);
+            }
+        });
+    }
+
+    function exportCSV() {
+        syncAll();
+        const headers = [...mainKeys, ...statKeys.map(k=>'data.'+k), ...attackKeys.map(k=>'data.'+k), ...resistKeys.map(k=>'data.'+k), 'possibleOpts', 'grantSkills', 'traits'];
+        let csv = headers.join(',') + '\n';
+        masterData.forEach(item => {
+            let row = [];
+            mainKeys.forEach(k => row.push(item[k] ?? ''));
+            [...statKeys, ...attackKeys, ...resistKeys].forEach(k => row.push(item.data?.[k] ?? ''));
+            row.push((item.possibleOpts || []).join('|'));
+            row.push((item.grantSkills || []).join('|'));
+            row.push(JSON.stringify(item.traits || (item.data && item.data.traits) || []).replace(/,/g, ';'));
+            csv += row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',') + '\n';
+        });
+        const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+        const blob = new Blob([bom, csv], { type: "text/csv;charset=utf-8" });
+        const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "equips_master.csv"; a.click();
+    }
+
+    function exportJS() {
+        syncAll();
+        const rows = masterData.map(item => {
+            let parts = [];
+            parts.push(`eid:${item.eid}`);
+            parts.push(`noRandom: ${item.noRandom}`);
+            parts.push(`rank: ${item.rank}`);
+            parts.push(`name: "${item.name}"`);
+            parts.push(`type: "${item.type}"`);
+            parts.push(`baseName: "${item.baseName}"`);
+
+            let d = item.data || {};
+            let dParts = Object.entries(d).map(([dk, dv]) => `${dk}: ${typeof dv === 'object' ? JSON.stringify(dv) : dv}`);
+            parts.push(`data: { ${dParts.join(", ")} }`);
+
+            parts.push(`possibleOpts: [${(item.possibleOpts || []).map(o => `'${o}'`).join(", ")}]`);
+            if (item.grantSkills && item.grantSkills.length > 0) parts.push(`grantSkills: [${item.grantSkills.join(", ")}]`);
+            
+            const trs = item.traits || (item.data && item.data.traits);
+            parts.push(`traits: ${JSON.stringify(trs || [])}`);
+
+            return "    { " + parts.join(", ") + " }";
+        }).join(",\n");
+        
+        const finalContent = `/* ==========================================================================\n   equips.js - 装備品マスタデータベース (旧システム互換体裁)\n   ========================================================================== */\n\nconst EQUIP_MASTER = [\n${rows}\n];\n\nwindow.EQUIP_MASTER = EQUIP_MASTER;`;
+        const blob = new Blob([finalContent], { type: "text/javascript" });
+        const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "equips.js"; a.click();
+    }
+
+    function parseCsvLine(line) {
+        const result = []; let cur = '', inQuote = false;
+        for (let i = 0; i < line.length; i++) {
+            const char = line[i]; const next = line[i+1];
+            if (char === '"') { if (inQuote && next === '"') { cur += '"'; i++; } else inQuote = !inQuote; }
+            else if (char === ',' && !inQuote) { result.push(cur); cur = ''; }
+            else cur += char;
+        }
+        result.push(cur); return result.map(v => v.trim());
+    }
+
+    document.getElementById('file-csv').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const lines = event.target.result.split(/\r\n|\n/);
+            if (lines.length < 2) return;
+            const newMaster = [];
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                const cols = parseCsvLine(lines[i]);
+                let obj = { data: {}, possibleOpts: [], grantSkills: [], traits: [] };
+                let ci = 0;
+                mainKeys.forEach(k => { let v = cols[ci++]; if(v!==undefined){ obj[k] = (k==='eid'||k==='rank') ? Number(v) : (k==='noRandom' ? String(v).toLowerCase()==='true' : v); } });
+                [...statKeys, ...attackKeys, ...resistKeys].forEach(k => { let v = cols[ci++]; if(v!==undefined && v!==''){ obj.data[k] = Number(v); } });
+                let po = cols[ci++]; if(po) obj.possibleOpts = po.split('|');
+                let gs = cols[ci++]; if(gs) obj.grantSkills = gs.split('|').map(Number);
+                let tr = cols[ci++]; if(tr) try { obj.traits = JSON.parse(tr.replace(/;/g, ',')); } catch(e){}
+                newMaster.push(obj);
+            }
+            masterData = newMaster; renderTable();
+            document.getElementById('status').innerText = "CSVを反映しました";
+        };
+        reader.readAsText(file);
+    });
+</script>
+</body>
+</html>
