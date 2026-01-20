@@ -4,6 +4,28 @@ window.MONSTERS_DATA = [
         "id": 1,
         "rank": 1,
         "minF": 1,
+        "name": "スライム Lv1",
+        "hp": 100,
+        "mp": 0,
+        "atk": 142,
+        "def": 70,
+        "spd": 112,
+        "mag": 50,
+        "gold": 14,
+        "exp": 14,
+        "acts": [
+            1,
+            10
+        ],
+        "actCount": 1,
+        "drop": null,
+        "elmRes": {},
+        "resists": {}
+    },
+    {
+        "id": 1.01,
+        "rank": 1,
+        "minF": 1,
         "name": "ドラキー Lv1",
         "hp": 120,
         "mp": 80,
@@ -24,29 +46,6 @@ window.MONSTERS_DATA = [
                 "rate": 33,
                 "condition": 0
             }
-        ],
-        "actCount": 1,
-        "drop": null,
-        "elmRes": {},
-        "resists": {}
-    },
-    {
-        "id": 1.01,
-        "rank": 1,
-        "minF": 1,
-        "name": "スライム Lv1",
-        "hp": 100,
-        "mp": 0,
-        "atk": 142,
-        "def": 70,
-        "spd": 112,
-        "mag": 50,
-        "gold": 14,
-        "exp": 14,
-        "acts": [
-            1,
-            10,
-            2
         ],
         "actCount": 1,
         "drop": null,

@@ -27,49 +27,82 @@ const StoryManager = {
     },
 	
 	/**
-     * 中断された会話があれば再開する
+     * 中断されたイベントまたは会話があれば再開する
      */
     resumeActiveConversation: function() {
-        if (App.data && App.data.progress.activeConversation) {
-            const { key, index } = App.data.progress.activeConversation;
-            // シーン切り替え等の完了を待つため少し待機
-            setTimeout(async () => {
-                await this.showConversation(key, index);
-                this.endConversation(); 
-            }, 600);
-            return true; // 再開したことを呼び出し元に伝える
-        }
-        return false;
+        const data = App.data ? App.data.progress : null;
+        if (!data || (!data.activeEvent && !data.activeConversation)) return false;
+
+        // 実行責任を引き受けたことを即座に返し、main.js側の重複動作を止める
+        (async () => {
+            const { eventId, actionIndex, phase } = data.activeEvent || {};
+            // セリフの途中ならそのインデックスを取得
+            const lineIndex = data.activeConversation ? data.activeConversation.index : 0;
+
+            if (phase === 'win') {
+                await this.onBattleWin(eventId, actionIndex, lineIndex);
+            } else if (eventId) {
+                await this.executeEvent(eventId, false, actionIndex, lineIndex);
+            } else if (data.activeConversation) {
+                await this.showConversation(data.activeConversation.key, lineIndex);
+                this.endConversation();
+            }
+        })();
+        return true;
     },
 
-	/**
-     * 勝利後イベントのレジューム
+    /**
+     * 勝利後イベントのレジューム（インデックス指定対応版）
      */
-    resumePendingBattleWinEvent: async function() {
-        // ★修正: すでに特定の会話行から再開されている場合は、イベントの重複起動を避ける
-        if (App.data && App.data.progress.activeConversation) return;
+    resumePendingBattleWinEvent: function() {
+        const data = App.data ? App.data.progress : null;
+        if (!data || !data.pendingBattleWinEventId) return false;
 
-        if (App.data && App.data.progress && App.data.progress.pendingBattleWinEventId) {
-            const eventId = App.data.progress.pendingBattleWinEventId;
-            
-            // シーンがフィールドに安定するまで待機
-            setTimeout(async () => {
-                console.log(`[Story] 未消化の勝利イベントを再開します: ${eventId}`);
-                // 二重実行防止のため先に予約を消去
-                delete App.data.progress.pendingBattleWinEventId;
-                App.save();
-                
-                if (this.onBattleWin) {
-                    await this.onBattleWin(eventId);
-                }
-            }, 800);
-        }
+        const eventId = data.pendingBattleWinEventId;
+        delete data.pendingBattleWinEventId; // 二重起動防止のため即座に削除
+        App.save();
+
+        (async () => {
+            await this.onBattleWin(eventId, 0, 0);
+        })();
+        return true;
+    },
+
+    /**
+     * 通常予約イベントのレジューム
+     */
+    resumePendingEvent: function() {
+        const data = App.data ? App.data.progress : null;
+        if (!data || !data.pendingEventId) return false;
+
+        const eventId = data.pendingEventId;
+        delete data.pendingEventId;
+        App.save();
+
+        (async () => {
+            await this.executeEvent(eventId, false, 0, 0);
+        })();
+        return true;
     },
 	
 	// ==========================================
     // 1. 会話スクリプト (scripts)
     // ==========================================
 	scripts: {
+	"GAME_START_1": [
+	  { "charId": 1000, "name": "", "text": "……夜明け前。\n村には、不吉な気配が満ちていた。" },
+	  { "charId": 301,  "name": "アルス", "text": "嫌な予感がする……。急ごう。" },
+	  { "charId": 1003, "name": "村人", "text": "きゃあああっ！！" },
+	  { "charId": 1000, "name": "システム", "text": "子供が魔物に襲われている！" }
+	],
+    "BATTLE_RETRY_TALK": [
+      { "charId": 501, "name": "？？？？", "text": "[N:301]よ、まだ倒れてはなりません。\n私に残された最後の権能をもって、今一度、深淵を打ち倒す力を授けます…" }
+    ],
+	"GAME_START_2": [
+	  { "charId": 1001, "name": "長老", "text": "おお……！助かった……。\n子ども達を救ってくださり、本当にありがとうございます。" },
+	  { "charId": 1001, "name": "長老", "text": "……その腕前、ただ者ではありますまい。\nお願いがあるのです。村の奥の家まで来てくだされ。" },
+	  { "charId": 1000, "name": "システム", "text": "こうして、深淵との長い戦いが始まった——。" }
+	],
     "PROLOGUE": [
         {
             "charId": 1001,
@@ -220,17 +253,17 @@ const StoryManager = {
     "START_DUNGEON_CLEAR": [
         {
             "charId": 109,
-            "name": "ガイル",
+            "name": "",
             "text": "やったぜ！さっすが勇者様だな！！"
         },
         {
             "charId": 110,
-            "name": "サラ",
+            "name": "",
             "text": "よかった…これで、この村も救われます。ありがとう、勇者様。"
         },
         {
             "charId": 109,
-            "name": "ガイル",
+            "name": "",
             "text": "さっそく長老さまに報告だ！いそごうぜ！！"
         }
     ],
@@ -306,6 +339,40 @@ const StoryManager = {
 ],
 
     events: {
+	"game_start": {
+	  "actions": [
+		{ "type": "CONV", "value": "GAME_START_1" },
+
+		// 戦闘呼び出し（ID1を2体）
+		{ "type": "BOSS", "value": [1, 1] }
+	  ],
+	  "winActions": [
+		// 戦闘終了後、次の会話
+		{ "type": "STEP", "value": 0 },
+		{ "type": "HEAL" },
+		{ "type": "CONV", "value": "GAME_START_2" },
+
+		// ログに目的表示
+		{ "type": "LOG", "value": "村の奥の長老の家へ向かおう！" }
+
+		// ※イベント終了（winActionsが終われば endConversation() される）
+	  ]
+	},
+	"game_start_retry": {
+        "actions": [
+            { "type": "CONV", "value": "BATTLE_RETRY_TALK" }, // 神秘的な声
+            { "type": "STEP", "value": 99 },     // 力を授ける (StoryStep=99でステータス激増)
+            { "type": "HEAL" },                  // 全回復
+            { "type": "BOSS", "value": [1, 1] }  // 再戦
+        ],
+        "winActions": [
+            { "type": "STEP", "value": 0 },      // 力を返還 (StoryStep=0)
+            { "type": "HEAL" },                  // 全回復
+            { "type": "CONV", "value": "GAME_START_2" },
+            { "type": "LOG", "value": "村の奥の長老の家へ向かおう！" }
+        ]
+    },
+	
     "start_adventure": {
         "actions": [
             {
@@ -450,58 +517,100 @@ const StoryManager = {
     // 4. イベント実行エンジン
     // ==========================================
     /**
-     * イベントを実行
+     * 通常イベント実行
      * @param {string} eventId 
-     * @param {boolean} isSubEvent 入れ子実行フラグ (ReferenceError修正)
+     * @param {boolean} isSubEvent 
+     * @param {number} startActionIndex 命令の開始位置
+     * @param {number} startLineIndex セリフの開始位置
      */
-    executeEvent: async function(eventId, isSubEvent = false) { // ★修正: 引数を追加
+    executeEvent: async function(eventId, isSubEvent = false, startActionIndex = 0, startLineIndex = 0) {
         const data = App.data.progress;
         const event = this.events[eventId];
         if (!event || !event.actions) return;
 
-        for (const action of event.actions) {
-            // BOSSアクション等でループを中断する必要がある場合は 'BREAK' を受け取る
-            const result = await this.processAction(action, eventId);
+        if (!isSubEvent && this.active) return;
+        if (!isSubEvent) this.active = true;
+
+        for (let i = startActionIndex; i < event.actions.length; i++) {
+            if (!isSubEvent) {
+                data.activeEvent = { eventId: eventId, actionIndex: i, phase: 'actions' };
+                App.save();
+            }
+            // 初回ループ時のみ引数の startLineIndex を適用
+            const lineIdx = (i === startActionIndex) ? startLineIndex : 0;
+            const result = await this.processAction(event.actions[i], eventId, lineIdx);
             if (result === 'BREAK') return; 
         }
-		
-		// 全てのアクションが終了し、かつトップレベルの呼び出しならUIを閉じる
+        
         if (!isSubEvent) {
+            delete data.activeEvent;
+            this.active = false;
             this.endConversation();
         }
         App.save();
     },
 
-    onBattleWin: async function(eventId) {
+    /**
+     * 勝利後イベント実行
+     */
+    onBattleWin: async function(eventId, startActionIndex = 0, startLineIndex = 0) {
+        const data = App.data.progress;
         const event = this.events[eventId];
         if (!event || !event.winActions) return;
 
-        for (const action of event.winActions) {
-            const result = await this.processAction(action, eventId);
+        this.active = true;
+
+        for (let i = startActionIndex; i < event.winActions.length; i++) {
+            data.activeEvent = { eventId: eventId, actionIndex: i, phase: 'win' };
+            App.save();
+
+            const lineIdx = (i === startActionIndex) ? startLineIndex : 0;
+            const result = await this.processAction(event.winActions[i], eventId, lineIdx);
             if (result === 'BREAK') return;
         }
 
-        // 勝利後アクション終了時にUIを閉じる
+        delete data.activeEvent;
+        this.active = false;
         this.endConversation();
         App.save();
     },
 
     /**
      * 各アクションの個別処理
+     * @param {Object} action 
+     * @param {string} eventId 
+     * @param {number} lineIndex 再開時のセリフ番号
      */
-    processAction: async function(action, eventId) {
+    processAction: async function(action, eventId, lineIndex = 0) {
         const data = App.data.progress;
         
-        if (action.type === 'CONV') await this.showConversation(action.value);
+        // CONV命令時に lineIndex を渡す
+        if (action.type === 'CONV') await this.showConversation(action.value, lineIndex);
+        
         if (action.type === 'ALLY') App.addStoryAlly(action.value);
-        if (action.type === 'STEP') { data.storyStep = action.value; this.syncHeroLimitBreak(); }
+        
+        if (action.type === 'STEP') { 
+            data.storyStep = action.value; 
+            this.syncHeroLimitBreak(); 
+            if (typeof Menu !== 'undefined') Menu.renderPartyBar();
+        }
+        
+        if (action.type === 'HEAL') {
+            App.data.characters.forEach(c => {
+                const stats = App.calcStats(c);
+                c.currentHp = stats.maxHp;
+                c.currentMp = stats.maxMp;
+            });
+            App.save();
+            if (typeof Menu !== 'undefined') Menu.renderPartyBar();
+            App.log("不思議な力で体力が回復した！");
+        }
+        
         if (action.type === 'SUB')  { data.subStep = action.value; }
         if (action.type === 'LOG')   App.log(action.value);
         
-        // 入れ子イベントの呼び出し（isSubEvent=trueを渡す）
         if (action.type === 'EVENT') await this.executeEvent(action.value, true);
 
-        // 同一イベント内での選択肢分岐
         if (action.type === 'CHOICE') {
             const isYes = await this.showChoice(action.text);
             const branch = isYes ? action.yes : action.no;
@@ -512,7 +621,7 @@ const StoryManager = {
                 }
             }
         }
-		
+        
         if (action.type === 'TILE') {
             const targetArea = action.area || App.data.location.area;
             if (!data.mapChanges) data.mapChanges = {};
@@ -522,9 +631,13 @@ const StoryManager = {
         }
 
         if (action.type === 'BOSS') {
+            delete data.activeEvent;
+            delete data.activeConversation;
+            this.endConversation();
             App.data.battle = { active: false, isBossBattle: true, fixedBossId: action.value || 1, eventId: eventId };
-            App.save(); App.changeScene('battle');
-            return 'BREAK'; // バトル画面へ遷移するため、現在のイベントループを即時中断
+            App.save(); 
+            App.changeScene('battle');
+            return 'BREAK'; 
         }
     },
 	
@@ -566,6 +679,10 @@ const StoryManager = {
         const lines = this.scripts[scriptKey];
         if (!lines) return;
         
+        // すでに会話中の場合は重複して動かさない
+        if (this.isTyping) return;
+        this.isTyping = true;
+
         let overlay = document.getElementById('story-ui-overlay') || this.createStoryDOM();
         overlay.style.display = 'flex';
         
@@ -577,6 +694,7 @@ const StoryManager = {
         for (let i = startFromIndex; i < lines.length; i++) {
             const line = lines[i];
 
+            // 現在のセリフ番号を保存
             if (App.data) {
                 App.data.progress.activeConversation = { key: scriptKey, index: i };
                 App.save();
@@ -618,6 +736,7 @@ const StoryManager = {
         }
         
         if (App.data) { delete App.data.progress.activeConversation; App.save(); }
+		this.isTyping = false;
         // showConversation 自体では閉じず、executeEvent 側の endConversation に任せる
     },
 
@@ -674,9 +793,13 @@ const StoryManager = {
     // 6. UI構造の生成 (背面立ち絵・50%位置維持)
     // ==========================================
     createStoryDOM: function() {
-		const div = document.createElement('div');
-		div.id = 'story-ui-overlay';
+        // 重複生成を完全に防止
+        let div = document.getElementById('story-ui-overlay');
+        if (div) return div;
 
+		div = document.createElement('div');
+		div.id = 'story-ui-overlay';
+		
 		// ==========================================
 		// 1. 画面全体を覆うベースレイヤーの設定
 		// ==========================================

@@ -487,7 +487,7 @@ const App = {
         }
 
         if (App.data.battle && App.data.battle.active) {
-            App.log("戦闘に復帰します...");
+            //App.log("戦闘に復帰します...");
             App.changeScene('battle');
         } else {
             App.log("冒険を開始します。");
@@ -496,7 +496,7 @@ const App = {
                 if (typeof Dungeon !== 'undefined') {
                     if (Field.currentMapData) {
                         App.changeScene('field');
-                        App.log(`地下 ${Dungeon.floor} 階の冒険を再開します。`);
+                        //App.log(`地下 ${Dungeon.floor} 階の冒険を再開します。`);
                     } else {
                         Dungeon.loadFloor(); // これにより魔窟のマップが自動生成・復元される
                     }
@@ -588,17 +588,6 @@ const App = {
         bindClick('btn-menu', () => { if(typeof Menu !== 'undefined') Menu.openMainMenu(); });
         bindClick('btn-ok', () => { if(App.pendingAction) App.executeAction(); else if(typeof Menu !== 'undefined') Menu.openMainMenu(); });
 		
-        // ★ 会話とイベントのレジューム実行 (競合を避ける順序)
-        if (typeof StoryManager !== 'undefined') {
-            // 1. まず中断された会話の再開を試みる (あれば再開)
-            const wasConversationResumed = StoryManager.resumeActiveConversation();
-            
-            // 2. 会話が再開されなかった（＝特定の行データがない）場合のみ、
-            //    勝利イベント全体の予約をチェックして再開する
-            if (!wasConversationResumed) {
-                StoryManager.resumePendingBattleWinEvent();
-            }
-        }
 		
     },
 
@@ -860,11 +849,18 @@ load: () => {
         }
 
         try {
-            localStorage.setItem(CONST.SAVE_KEY, JSON.stringify(App.data));
-            window.location.href = 'index.html'; 
-        } catch(e) { 
-            alert("データ作成失敗"); 
-        }
+			// ★追加: 新規開始時の開幕イベントを予約（イベント全体を actions から実行する）
+			if (!App.data.progress) App.data.progress = {};
+			delete App.data.progress.activeConversation; // 念のため
+
+			// ★ここが重要：勝利後レジューム用ではなく、通常イベント予約として持つ
+			App.data.progress.pendingEventId = 'game_start';
+
+			localStorage.setItem(CONST.SAVE_KEY, JSON.stringify(App.data));
+			window.location.href = 'index.html';
+		} catch(e) {
+			alert("データ作成失敗");
+		}
     },
     
     continueGame: () => { window.location.href='index.html'; },
@@ -1881,22 +1877,31 @@ load: () => {
         App.clearAction();
 
         if(sceneId === 'field') {
-			Field.init();
+            Field.init();
 
-			// ★画面更新時と同じ「会話/勝利イベントの復帰」を、シーン遷移でも実行する
-			if (typeof StoryManager !== 'undefined') {
-				let wasConversationResumed = false;
+            if (typeof StoryManager !== 'undefined') {
+                // 画面描画（Field.init）との競合を避けるため、一瞬待ってから実行
+                setTimeout(() => {
+                    let resumed = false;
 
-				if (typeof StoryManager.resumeActiveConversation === 'function') {
-					wasConversationResumed = StoryManager.resumeActiveConversation();
-				}
+                    // 1. 中断された実行中イベント（会話含む）の復元
+                    if (typeof StoryManager.resumeActiveConversation === 'function') {
+                        resumed = StoryManager.resumeActiveConversation();
+                    }
 
-				// 会話が再開されなかった場合のみ、勝利イベント全体の予約をチェックして再開する
-				if (!wasConversationResumed && typeof StoryManager.resumePendingBattleWinEvent === 'function') {
-					StoryManager.resumePendingBattleWinEvent();
-				}
-			}
-		}
+                    // 2. 新規予約されている通常イベント
+                    if (!resumed && typeof StoryManager.resumePendingEvent === 'function') {
+                        resumed = StoryManager.resumePendingEvent();
+                    }
+
+                    // 3. バトル勝利後の報酬・後日談イベント
+                    if (!resumed && typeof StoryManager.resumePendingBattleWinEvent === 'function') {
+                        resumed = StoryManager.resumePendingBattleWinEvent();
+                    }
+                }, 100);
+            }
+        }
+
 		
         if(sceneId === 'battle') Battle.init();
         if(sceneId === 'inn') Facilities.initInn();

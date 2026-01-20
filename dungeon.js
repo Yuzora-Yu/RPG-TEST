@@ -738,36 +738,48 @@ const Dungeon = {
         }
     },
 
-    /* dungeon.js 内の onBossDefeated 全文 */
-    onBossDefeated: () => {
-        App.log(`地下 ${Dungeon.floor} 階ボス撃破！ボスの気配が消えた...`);
-        
-        // ★修正: 固定マップの場合は撃破フラグ(座標ベース)を保存する
-        if (Field.currentMapData && Field.currentMapData.isFixed) {
-            const areaKey = Field.getCurrentAreaKey();
-            const posKey = `${Field.x},${Field.y}`; // プレイヤーの現在座標（ボスと同じ）
-            
-            if (!App.data.progress.defeatedBosses) App.data.progress.defeatedBosses = {};
-            if (!App.data.progress.defeatedBosses[areaKey]) App.data.progress.defeatedBosses[areaKey] = [];
-            
-            if (!App.data.progress.defeatedBosses[areaKey].includes(posKey)) {
-                App.data.progress.defeatedBosses[areaKey].push(posKey);
-            }
-            
-            // ★不具合①修正: 固定ダンジョンでは「次の階へ進む」ボタンを出さない
-            App.clearAction();
-        } else {
-            // ランダムダンジョンの場合は、ボスのいた場所を階段(S)に変え、進行ボタンを出す
-            Dungeon.map[Field.y][Field.x] = 'S'; 
-            App.setAction("次の階へ", Dungeon.nextFloor);
-        }
-        
-        Field.render();
-        
-        // 戦闘データのクリーンアップ
-        if (App.data.battle) {
-            App.data.battle.isBossBattle = false;
-            App.data.battle.fixedBossId = null; 
-        }
-    }
+    /* dungeon.js 390行目付近 */
+	onBossDefeated: () => {
+		// ★修正: ログ出力を状況に合わせて変更
+		const isAbyss = (App.data.location.area === 'ABYSS');
+		const isFixed = (Field.currentMapData && Field.currentMapData.isFixed);
+
+		if (isAbyss) {
+			App.log(`地下 ${Dungeon.floor} 階ボス撃破！ボスの気配が消えた...`);
+		}
+
+		// 1. 固定マップ（試練の洞窟など）の場合
+		if (isFixed) {
+			const areaKey = Field.getCurrentAreaKey();
+			const posKey = `${Field.x},${Field.y}`;
+			
+			if (!App.data.progress.defeatedBosses) App.data.progress.defeatedBosses = {};
+			if (!App.data.progress.defeatedBosses[areaKey]) App.data.progress.defeatedBosses[areaKey] = [];
+			
+			if (!App.data.progress.defeatedBosses[areaKey].includes(posKey)) {
+				App.data.progress.defeatedBosses[areaKey].push(posKey);
+			}
+			App.clearAction();
+		} 
+		// 2. ランダムダンジョン（ABYSS）の場合
+		else if (isAbyss) {
+			// ボスのいた場所を階段(S)に変え、進行ボタンを出す
+			Dungeon.map[Field.y][Field.x] = 'S'; 
+			App.setAction("次の階へ", Dungeon.nextFloor);
+		}
+		// 3. それ以外（村でのイベントボスなど）
+		else {
+			// マップタイルの変更は行わず、アクションボタンだけクリアする
+			App.clearAction();
+		}
+		
+		if (typeof Field !== 'undefined') Field.render();
+		
+		// 戦闘データのクリーンアップ
+		if (App.data.battle) {
+			App.data.battle.isBossBattle = false;
+			App.data.battle.fixedBossId = null; 
+		}
+	}
+
 };

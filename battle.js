@@ -165,7 +165,7 @@ const Battle = {
         const eventId = (App.data.battle && App.data.battle.eventId) ? App.data.battle.eventId : null;
 
         if (App.data.battle && App.data.battle.active && App.data.battle.enemies?.length > 0) {
-            Battle.log("戦闘に復帰した！");
+            //Battle.log("戦闘に復帰した！");
             Battle.enemies = App.data.battle.enemies.map(e => {
                 let base = DB.MONSTERS.find(m => m.id === e.baseId);
                 if (!base) return null;
@@ -390,17 +390,35 @@ const Battle = {
             return m;
         };
 
-        // --- 1. 固定ボスのチェック (Story/Fixed Dungeon) ---
-        const targetId = fixedBossId || (App.data.battle ? App.data.battle.fixedBossId : null);
-        if (isBoss && targetId) {
-            const base = DB.MONSTERS.find(m => m.id === targetId);
-            if (base) {
-                const m = new Monster(base, 1.0);
-                m.name = base.name; m.id = base.id; m.actCount = base.actCount || 1;
-                newEnemies.push(setupEnemyStats(m, base));
-                return newEnemies; 
-            }
-        }
+        // --- 1. 固定ボスのチェック (Story / Fixed Dungeon) ---
+		const targetId = fixedBossId || (App.data.battle ? App.data.battle.fixedBossId : null);
+		if (isBoss && targetId) {
+			// ★修正: 配列が渡された場合に複数生成するロジックを追加
+			if (Array.isArray(targetId)) {
+				targetId.forEach((id, i) => {
+					const base = DB.MONSTERS.find(m => m.id === id);
+					if (base) {
+						const m = new Monster(base, 1.0);
+						// 複数体いる場合は A, B... と名前をつける
+						m.name = base.name + (targetId.length > 1 ? String.fromCharCode(65 + i) : "");
+						m.id = base.id;
+						m.actCount = base.actCount || 1;
+						newEnemies.push(setupEnemyStats(m, base));
+					}
+				});
+				return newEnemies; 
+			} 
+			// 単体IDの場合（従来通り）
+			else {
+				const base = DB.MONSTERS.find(m => m.id === targetId);
+				if (base) {
+					const m = new Monster(base, 1.0);
+					m.name = base.name; m.id = base.id; m.actCount = base.actCount || 1;
+					newEnemies.push(setupEnemyStats(m, base));
+					return newEnemies; 
+				}
+			}
+		}
 
         // --- 2. 201階以降: 自動スケーリング・エンカウントシステム ---
         if (floor >= 201) {
@@ -2598,7 +2616,7 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
 			scaleFactor = 1.0; 
 			maxPixelWidth = 200;  // 通常のボスサイズ
 			paddingBottomVal = "5px";
-			marginTopVal = "-10px";
+			marginTopVal = "10px";
 		}
 		// 6位：通常の雑魚敵（4体以上）の場合
 		else if (totalCount >= 4) { 
@@ -3257,6 +3275,21 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
 		Battle.log("全滅した..."); 
 		// ★追加: 全滅回数のカウントアップ
 		if(App.data.stats) App.data.stats.wipeoutCount = (App.data.stats.wipeoutCount || 0) + 1;
+		
+		// ★追加: 最初のボス戦(game_start)での特別救済判定
+        const eventId = (App.data.battle && App.data.battle.eventId) ? App.data.battle.eventId : null;
+        if (eventId === 'game_start') {
+            // フィールドに戻った後に「game_start_retry」イベントが走るように予約
+            App.data.progress.pendingEventId = 'game_start_retry';
+            App.save();
+            Battle.endBattle(false); // 全滅扱い(タイトル戻り)にせず、フィールドに戻す
+			
+			// ★追加: 全滅回数のカウントアップ
+			if(App.data.stats) App.data.stats.wipeoutCount = (App.data.stats.wipeoutCount || 1) - 1;
+			
+            return;
+        }
+		
 		Battle.endBattle(true); 
 	},
 	
