@@ -870,21 +870,7 @@ load: () => {
     continueGame: () => { window.location.href='index.html'; },
     returnToTitle: () => { App.save(); window.location.href='main.html'; },
     
-    changeScene: (sceneId) => {
-        document.querySelectorAll('.scene-layer').forEach(e => e.style.display = 'none');
-        const target = document.getElementById(sceneId + '-scene');
-        if(target) target.style.display = 'flex';
-        
-        if(typeof Menu !== 'undefined') Menu.closeAll();
-        App.clearAction();
-
-        if(sceneId === 'field') Field.init();
-        if(sceneId === 'battle') Battle.init();
-        if(sceneId === 'inn') Facilities.initInn();
-        if(sceneId === 'medal') Facilities.initMedal();
-        if(sceneId === 'casino') Casino.init();
-    },
-
+	
     getChar: (uid) => App.data ? App.data.characters.find(c => c.uid === uid) : null,
 
     /* ==========================================================================
@@ -1894,7 +1880,24 @@ load: () => {
         if(typeof Menu !== 'undefined') Menu.closeAll();
         App.clearAction();
 
-        if(sceneId === 'field') Field.init();
+        if(sceneId === 'field') {
+			Field.init();
+
+			// ★画面更新時と同じ「会話/勝利イベントの復帰」を、シーン遷移でも実行する
+			if (typeof StoryManager !== 'undefined') {
+				let wasConversationResumed = false;
+
+				if (typeof StoryManager.resumeActiveConversation === 'function') {
+					wasConversationResumed = StoryManager.resumeActiveConversation();
+				}
+
+				// 会話が再開されなかった場合のみ、勝利イベント全体の予約をチェックして再開する
+				if (!wasConversationResumed && typeof StoryManager.resumePendingBattleWinEvent === 'function') {
+					StoryManager.resumePendingBattleWinEvent();
+				}
+			}
+		}
+		
         if(sceneId === 'battle') Battle.init();
         if(sceneId === 'inn') Facilities.initInn();
         if(sceneId === 'medal') Facilities.initMedal();

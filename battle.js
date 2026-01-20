@@ -3233,21 +3233,23 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
 		App.save(); 
 		Battle.log("\n▼ 画面タップで終了 ▼");
 
+		// ★削除：戦闘画面中にストーリーを実行しない
+		
 		// ストーリー後処理（会話イベント等の実行）
 		// --- [修正] 演出の最後で予約を消化する ---
-		if (isBossBattle && !isEstark) {
-			if (typeof Dungeon !== 'undefined' && typeof Dungeon.onBossDefeated === 'function') {
-				Dungeon.onBossDefeated();
-			}
-			if (eventId && typeof StoryManager !== 'undefined' && typeof StoryManager.onBattleWin === 'function') {
-				// 予約情報を消してから実行
-				if (App.data.progress.pendingBattleWinEventId === eventId) {
-					delete App.data.progress.pendingBattleWinEventId;
-					App.save();
-				}
-				await StoryManager.onBattleWin(eventId);
-			}
-		}
+		//if (isBossBattle && !isEstark) {
+		//	if (typeof Dungeon !== 'undefined' && typeof Dungeon.onBossDefeated === 'function') {
+		//		Dungeon.onBossDefeated();
+		//	}
+		//	if (eventId && typeof StoryManager !== 'undefined' && typeof StoryManager.onBattleWin === 'function') {
+		//		// 予約情報を消してから実行
+		//		if (App.data.progress.pendingBattleWinEventId === eventId) {
+		//			delete App.data.progress.pendingBattleWinEventId;
+		//			App.save();
+		//		}
+		//		await StoryManager.onBattleWin(eventId);
+		//	}
+		//}
 	},
 	
     lose: () => { 
@@ -3299,21 +3301,9 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
                 }
             }, 2000);
         } else {
-            // ★修正：setTimeoutをasync化し、画面切り替え後にストーリーを実行
+            // ★修正：setTimeoutをasync化し、画面切り替え後にmain.jsのinit処理でストーリーを実行（復帰と同対応）
             setTimeout(async () => {
                 App.changeScene('field');
-                
-                // ★追加：フィールドに戻った後に後処理を実行
-                if (isBossBattle && !isEstark) {
-                    // 1. ダンジョンの後処理（階段出現など）
-                    if (typeof Dungeon !== 'undefined' && typeof Dungeon.onBossDefeated === 'function') {
-                        Dungeon.onBossDefeated();
-                    }
-                    // 2. ストーリーイベントの実行
-                    if (eventId && typeof StoryManager !== 'undefined' && typeof StoryManager.onBattleWin === 'function') {
-                        await StoryManager.onBattleWin(eventId);
-                    }
-                }
             }, 500);
         }
     },
