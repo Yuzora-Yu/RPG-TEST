@@ -146,16 +146,18 @@ const Dungeon = {
             App.log(`地下 ${Dungeon.floor} 階の冒険を再開します。`);
         } else {
             if(Dungeon.floor > App.data.dungeon.maxFloor) {
-                App.data.dungeon.maxFloor = Dungeon.floor;
-                const hero = App.getChar('p1');
-                if(hero) {
-                    // ★修正: ダンジョン進行によるリミットブレイク更新
-                    // (現在の階層 - 1) + 現在のストーリー進行度
-                    const storyStep = (App.data.progress && App.data.progress.storyStep) || 0;
-                    hero.limitBreak = Math.max(0, Dungeon.floor - 1) + storyStep;
-                }
+				App.data.dungeon.maxFloor = Dungeon.floor;
+				
+				// 主人公の限界突破を新基準で再計算（story.jsの関数を呼び出すのが安全）
+				if (typeof StoryManager !== 'undefined' && StoryManager.syncHeroLimitBreak) {
+					StoryManager.syncHeroLimitBreak(); // story.jsの新ロジックを呼び出し
+				} else {
+					// フォールバック用
+					const ss = (App.data.progress && App.data.progress.storyStep) || 0;
+					const maxF = App.data.dungeon.maxFloor;
+					hero.limitBreak = Math.max(0, ss - 1) + Math.floor(Math.max(0, maxF - 1) / 10) * 5;
+				}
 			}
-            
             Dungeon.generateFloor();
             Dungeon.saveMapData();
             App.log(`地下 ${Dungeon.floor} 階に到達した`);

@@ -530,20 +530,24 @@ const App = {
 		
 		
         
-        let moveTimer = null;
+        //let moveTimer = null;
         const startMove = (dx, dy) => {
-            if(moveTimer) clearInterval(moveTimer);
+            Field.stopMove(); // 二重起動防止
             if(typeof Menu !== 'undefined' && Menu.isMenuOpen()) return;
             Field.move(dx, dy); 
-            moveTimer = setInterval(() => {
-                if(typeof Menu !== 'undefined' && Menu.isMenuOpen()) { stopMove(); return; }
+            Field.moveTimer = setInterval(() => {
+                // メニューが開いたか、フィールド画面以外になったら停止
+                if((typeof Menu !== 'undefined' && Menu.isMenuOpen()) || 
+                   document.getElementById('field-scene').style.display === 'none') { 
+                    Field.stopMove(); 
+                    return; 
+                }
                 Field.move(dx, dy);
             }, 150); 
         };
         const stopMove = (e) => {
             if(e) e.preventDefault(); 
-            if(moveTimer) clearInterval(moveTimer);
-            moveTimer = null;
+            Field.stopMove(); // ★共通メソッドを呼ぶ
         };
 
         window.addEventListener('keydown', e => {
@@ -936,11 +940,14 @@ load: () => {
 	char.weaponType = char.weaponTypes[0] || '素手';
 
 
-    // リミットブレイク回数の計算（主人公 ID301 は storyStep を加算）
+    // --- 限界突破回数の計算 (主人公 ID301 は独自ロジックで算出) ---
     let lb = char.limitBreak || 0;
-    if (char.charId === 301 && App.data && App.data.progress) {
-        lb += (App.data.progress.storyStep || 0);
-    }
+	if (char.charId === 301 && App.data && App.data.progress) {
+		const ss = (App.data.progress.storyStep || 0);
+		const mf = (App.data.dungeon && App.data.dungeon.maxFloor) || 0;
+		// ロジック統合
+		lb = Math.max(0, ss - 1) + Math.floor(Math.max(0, mf - 1) / 10) * 5;
+	}
 
     // レアリティ別加算率
     const LB_RATES = { 'N': 0.40, 'R': 0.30, 'SR': 0.28, 'SSR': 0.25, 'UR': 0.20, 'EX': 0.10 };
@@ -1357,8 +1364,8 @@ load: () => {
                 }
 
                 // 各倍率の決定 (1.0 + 全体ボーナス + 個別ボーナス)
-                const hpMult   = 1.0 + statBonus;
-                const mpMult   = 1.0 + statBonus;
+                const hpMult   = 2.0 + statBonus;
+                const mpMult   = 2.0 + statBonus;
                 const atkMult  = 1.0 + statBonus + atkBonus;
                 const defMult  = 1.0 + statBonus + defBonus;
                 const magMult  = 1.0 + statBonus + magBonus;
@@ -1366,7 +1373,7 @@ load: () => {
                 const spdMult  = 1.0 + statBonus;
 
                 // 各ステータス上昇量の計算
-                const incHp   = Math.max(1, Math.floor(((master.hp || 100) * reincMult) * r() * 2 * hpMult));
+                const incHp   = Math.max(1, Math.floor(((master.hp || 100) * reincMult) * r() * hpMult));
                 const incMp   = Math.max(1, Math.floor(((master.mp || 50)  * reincMult) * r() * mpMult));
                 const incAtk  = Math.max(1, Math.floor(((master.atk || 10) * reincMult) * r() * atkMult));
                 const incDef  = Math.max(1, Math.floor(((master.def || 10) * reincMult) * r() * defMult));
@@ -1392,31 +1399,35 @@ load: () => {
                 charData.currentHp = stats.maxHp;
                 charData.currentMp = stats.maxMp;
 
-                let logMsg = `${charData.name}はLv${charData.level}になった！<br>HP+${incHp}, 攻+${incAtk}, 魔防+${incMdef}...`;
+                // --- ログの追加（順序を制御） ---
+				// 1. レベルアップ通知
+				logs.push(`<span style="color:#00ff00; font-weight:bold;"><br>${charData.name}は レベル ${charData.level} に上がった！</span>`);
 				
-                // 既存のスキル習得チェック
-                const newSkill = App.checkNewSkill(charData);
-                if (newSkill) {
-                    if(!charData.skills) charData.skills = [];
-                    const hasSkill = charData.skills.includes(newSkill.id);
-                    if(!hasSkill) {
-                        charData.skills.push(newSkill.id);
-                        logMsg += `<br><span style="color:#ffff00;">${newSkill.name}を覚えた！</span>`;
-                    }
-                }
+				// 2. ステータス上昇値（全項目）
+				logs.push(`<span style="font-size:0.9em;">最大HP+${incHp} 最大MP+${incMp} <br>攻撃+${incAtk} 防御+${incDef} 魔力+${incMag} 魔防+${incMdef} 速さ+${incSpd} </span>`);
+
+				// 3. スキル習得ログ
+				const newSkill = App.checkNewSkill(charData);
+				if (newSkill) {
+					if(!charData.skills) charData.skills = [];
+					if(!charData.skills.includes(newSkill.id)) {
+						charData.skills.push(newSkill.id);
+						logs.push(`<span style="color:#ffff00;">${newSkill.name} を覚えた！</span>`);
+					}
+				}
 				
-				// 特性習得チェックの呼び出し
+				// 4. 特性習得ログ
 				if (typeof PassiveSkill !== 'undefined' && PassiveSkill.applyLevelUpTraits) {
 					const traitLog = PassiveSkill.applyLevelUpTraits(charData);
-					if (traitLog) logs.push(traitLog); // 特性習得ログをリザルトに追加
+					if (traitLog) {
+						logs.push(traitLog);
+					}
 				}
-                
-                logs.push(logMsg);
-            } else { break; }
-        }
-        App.save();
-        return logs;
-    },
+			} else { break; }
+		}
+		App.save();
+		return logs;
+	},
 
 	/* main.js: App.createEquipByFloor 関数 */
 	createEquipByFloor: (source, floor = null, fixedPlus = null) => {
@@ -1635,11 +1646,14 @@ load: () => {
 		// ★追加：転生マークの生成
         const reincarnated = c.reincarnationCount ? `<span style="color:#00ff00; margin-left:4px;">★${c.reincarnationCount}</span>` : '';
 		
-		// ★修正: 主人公(ID 301)の場合のみ storyStep を加算して表示
+		// ★修正: 主人公(ID 301)の表示用限界突破値の算出を統一
         let lbVal = c.limitBreak || 0;
-        if (c.charId === 301 && App.data && App.data.progress) {
-            lbVal += (App.data.progress.storyStep || 0);
-        }
+		if (c.charId === 301 && App.data && App.data.progress) {
+			const ss = (App.data.progress.storyStep || 0);
+			const mf = (App.data.dungeon && App.data.dungeon.maxFloor) || 0;
+			// 表示用も新ロジックに統一
+			lbVal = Math.max(0, ss - 1) + Math.floor(Math.max(0, mf - 1) / 10) * 5;
+		}
 		
         return `
             <div class="char-row">
@@ -1914,9 +1928,18 @@ load: () => {
 
 const Field = {
     x: 23, y: 28, 
-    dir: 0, // 向き (0:下, 1:左, 2:右, 3:上)
+    dir: 3, // 向き (0:下, 1:左, 2:右, 3:上)
     step: 1, // 歩行アニメ用 (1 または 2)
     ready: false, currentMapData: null,
+	moveTimer: null, // ★追加：タイマー保持用
+	
+	// ★追加：移動を強制停止するメソッド
+    stopMove: () => {
+        if (Field.moveTimer) {
+            clearInterval(Field.moveTimer);
+            Field.moveTimer = null;
+        }
+    },
     
     init: () => {
         if(App.data) {
@@ -2174,6 +2197,7 @@ const Field = {
                 // エンカウント率自体は 0.03 / 0.06 のまま進行します
 
                 if(Math.random() < rate) { 
+					Field.stopMove(); // ★ここでタイマーを確実に殺す
                     App.data.walkCount = 0; 
                     App.log("敵だ！"); 
                     

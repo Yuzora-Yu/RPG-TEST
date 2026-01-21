@@ -1234,6 +1234,11 @@ findNextActor: () => {
         const nameDiv = Battle.getEl('battle-actor-name');
         if(nameDiv) nameDiv.style.display = 'none';
         Battle.log("--- ターン開始 ---");
+		
+		// ★追加: 先制攻撃時のメッセージ
+        if (Battle.isPreemptive) {
+            Battle.log("<span style='color:#44ff44; font-weight:bold;'>まものたちは おどろき とまどっている！</span>");
+        }
 
         // [準備]全員のターン経過フラグと「今ターンの死亡フラグ」をリセット
         [...Battle.party, ...Battle.enemies].forEach(a => { 
@@ -1243,21 +1248,23 @@ findNextActor: () => {
             }
         });
 
-        // 1. 敵の行動決定
-        Battle.enemies.forEach(e => {
-            if (!e.isDead && !e.isFled) {
-                const count = e.actCount || 1;
-                for(let i=0; i<count; i++) {
-                    const decision = Battle.decideEnemyAction(e);
-                    let spd = Battle.getBattleStat(e, 'spd');
-                    const finalSpeed = (spd * (0.8 + Math.random() * 0.4)) + (decision.priority * 100000);
-                    Battle.commandQueue.push({
-                        type: decision.type, actor: e, speed: finalSpeed, isEnemy: true,
-                        data: decision.data, targetScope: decision.targetScope, target: null 
-                    });
+        // 1. 敵の行動決定 (★先制攻撃フラグが立っている場合は、敵の行動をキューに入れない)
+        if (!Battle.isPreemptive) {
+            Battle.enemies.forEach(e => {
+                if (!e.isDead && !e.isFled) {
+                    const count = e.actCount || 1;
+                    for(let i=0; i<count; i++) {
+                        const decision = Battle.decideEnemyAction(e);
+                        let spd = Battle.getBattleStat(e, 'spd');
+                        const finalSpeed = (spd * (0.8 + Math.random() * 0.4)) + (decision.priority * 100000);
+                        Battle.commandQueue.push({
+                            type: decision.type, actor: e, speed: finalSpeed, isEnemy: true,
+                            data: decision.data, targetScope: decision.targetScope, target: null 
+                        });
+                    }
                 }
-            }
-        });
+            });
+        }
         
         // 2. プレイヤーコマンドの整理
         const playerCommands = Battle.commandQueue.filter(c => !c.isEnemy && c.type !== 'skip' && c.type !== 'defend');
@@ -1267,8 +1274,8 @@ findNextActor: () => {
             const actor = cmd.actor;
             // ★特性 8, 47, 48 等の追加行動系は別途フラグ管理されるが、ここでは既存の doubleAction/fastestAction を維持
             // 確率（ここでは20%）を判定に加える
-const isDouble = (actor.passive && actor.passive.doubleAction && Math.random() < 0.2); 
-const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 0.2);
+			const isDouble = (actor.passive && actor.passive.doubleAction && Math.random() < 0.2); 
+			const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 0.2);
 			
             if (isFast) { 
                 cmd.speed = (Battle.getBattleStat(actor, 'spd') * 1.1) + (10 * 100000); 
@@ -1428,8 +1435,13 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
         await Battle.processEndOfRound();
 
         // ★修正: ボス自然回復（重複）を削除 (processEndOfRound 内に統合済みのため)
-        
-        Battle.saveBattleState(); Battle.startInputPhase();
+		
+        // ★追加: ターン終了時に先制・不意打ちフラグをリセットして次ターンから通常通りにする
+        Battle.isPreemptive = false;
+        Battle.isAmbushed = false;
+		
+        Battle.saveBattleState();
+		Battle.startInputPhase();
     },
 	
     // ターン終了時に全員の状態異常・バフの持続時間を更新する
@@ -3125,9 +3137,9 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
 		App.save(); 
 
 		// --- [5] ここから勝利演出（ログ表示、レベルアップ、待機など） ---
-		Battle.log(`\n<span style="color:#ffff00; font-size:1em; font-weight:bold;">戦闘に勝利した！</span>`);
-		Battle.log(` ${totalGold} Goldを獲得！`);
-		Battle.log(` ${totalExp} ポイントの経験値を 獲得した！`);
+		Battle.log(`<br><span style="color:#ffff00; font-size:1em; font-weight:bold;">戦闘に勝利した！</span>`);
+		Battle.log(`${totalGold} Goldを獲得！`);
+		Battle.log(`${totalExp} ポイントの経験値を 獲得した！`);
 
 		const partyHpRegen = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getPartySumValue('post_battle_hp_regen_pct') : 0;
 		const partyMpRegen = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getPartySumValue('post_battle_mp_regen_pct') : 0;
@@ -3142,13 +3154,13 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
 
 			const oldLv = charData.level;
 
-			// キャラクターのレベルアップログ取得 (App.gainExp内でもセーブが走る)
+			// App.gainExp が [Lv通知, ステ上昇, スキル習得, 特性習得] の順で配列を返す
 			const lvLogs = App.gainExp(charData, totalExp);
 
-			// レベルアップログを順次表示
+			// 1項目ずつウェイトを挟んでログに流す
 			for (const msg of lvLogs) {
 				Battle.log(msg);
-				await Battle.wait(600);
+				await Battle.wait(500); // 1行ごとの余韻
 			}
 
 			// 特性の成長判定
@@ -3330,6 +3342,7 @@ const isFast = (actor.passive && actor.passive.fastestAction && Math.random() < 
                     Dungeon.exit(true); 
                 } else {
                     // 通常フィールドでの全滅時はそのままフィールドシーンへ
+					Dungeon.exit(true); 
                     App.changeScene('field');
                 }
             }, 2000);
