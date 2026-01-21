@@ -825,8 +825,8 @@ window.CHARACTERS_DATA = [
 		 */
 		"fixedTraits": [23, null, null, null, null, null],
 		"lbSkills": {
-            "50": 57,
-            "99": 59
+            "50": 103,
+            "99": 427
         },
         "sp": 1,
         "level": 1,

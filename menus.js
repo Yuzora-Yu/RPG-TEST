@@ -3,11 +3,27 @@
 const Menu = {
     // --- メインメニュー制御 ---
     openMainMenu: () => {
+        // 開く直前に実績の達成判定を最新にする
+        if (typeof MenuAchievements !== 'undefined' && MenuAchievements.checkProgress) {
+            MenuAchievements.checkProgress();
+        }
+
         document.getElementById('menu-overlay').style.display = 'flex';
         Menu.renderPartyBar();
         
         const grid = document.querySelector('#menu-overlay .menu-grid');
         if(grid) {
+            // 通知バッジ（赤丸）の判定
+            // 1. 実績: 「達成済み」かつ「未受取」のものが1つでもあるか
+            const hasUnclaimedAchievement = Object.values(App.data.achievements || {}).some(a => a.completed && !a.claimed);
+            
+            // 2. 取引所: 本日の日付と保存されている最後受取日が一致しない（＝未受取）か
+            const today = (typeof MenuExchange !== 'undefined' && MenuExchange.getTodayStr) ? MenuExchange.getTodayStr() : new Date().toLocaleDateString('sv-SE');
+            const hasUnclaimedDaily = (App.data.flags?.lastGemClaimDate !== today) || (App.data.flags?.lastGoldClaimDate !== today);
+            
+            // バッジ用HTMLパーツ
+            const badge = '<span style="display:inline-block; width:10px; height:10px; background:#ff4444; border-radius:50%; margin-left:5px; vertical-align:middle; box-shadow:0 0 5px #f00; border:1px solid #fff;"></span>';
+
             grid.innerHTML = `
                 <button class="menu-btn" onclick="Menu.openSubScreen('party')">仲間編成</button>
                 <button class="menu-btn" onclick="Menu.openSubScreen('allies')">仲間一覧</button>
@@ -17,9 +33,11 @@ const Menu = {
                 <button class="menu-btn" onclick="Menu.openSubScreen('skills')">スキル</button>
                 <button class="menu-btn" onclick="Menu.openSubScreen('book')">魔物図鑑</button>
                 <button class="menu-btn" onclick="Menu.openSubScreen('status')">プレイ状況</button>
+				<button class="menu-btn" onclick="Menu.openSubScreen('exchange')">取引所${hasUnclaimedDaily ? badge : ''}</button>
+				<button class="menu-btn" onclick="Menu.openSubScreen('achievements')">実績${hasUnclaimedAchievement ? badge : ''}</button>
                 <button class="menu-btn" style="background:#400040;" onclick="Dungeon.enter()">ダンジョン</button>
                 <button class="menu-btn" style="background:#664400;" onclick="Menu.openSubScreen('gacha')">ガチャ</button>
-                
+				
                 <button class="menu-btn" style="background:#004444;" onclick="App.downloadSave()">データ出力</button>
                 <button class="menu-btn" style="background:#004444;" onclick="App.importSave()">データ読込</button>
                 
@@ -33,17 +51,15 @@ const Menu = {
     },
     
     isMenuOpen: () => {
-        // ★修正: 文字列検索(style*="flex")をやめ、各要素の display プロパティを直接チェックする
-        // (これにより、flex-direction等のスタイル設定があっても誤判定しなくなる)
-        
-        if (document.getElementById('menu-overlay').style.display !== 'none') return true;
-        
-        const subs = document.querySelectorAll('.sub-screen');
-        for (let i = 0; i < subs.length; i++) {
-            if (subs[i].style.display !== 'none' && subs[i].style.display !== '') return true;
-        }
-        return false;
-    },
+	  const mo = document.getElementById('menu-overlay');
+	  if (mo && window.getComputedStyle(mo).display !== 'none') return true;
+
+	  const subs = document.querySelectorAll('.sub-screen');
+	  for (let i = 0; i < subs.length; i++) {
+		if (window.getComputedStyle(subs[i]).display !== 'none') return true;
+	  }
+	  return false;
+	},
 
     closeAll: () => {
         document.getElementById('menu-overlay').style.display = 'none';
@@ -124,17 +140,19 @@ const Menu = {
         if(id === 'book') MenuBook.init();
         if(id === 'blacksmith') MenuBlacksmith.init();
         if(id === 'status') MenuStatus.init();
+		if(id === 'exchange') MenuExchange.init();
+		if(id === 'achievements') MenuAchievements.init();
         if(id === 'gacha' && typeof Gacha !== 'undefined') Gacha.init();
     },
 
     closeSubScreen: (id) => {
         document.getElementById('sub-screen-' + id).style.display = 'none';
-        document.getElementById('menu-overlay').style.display = 'flex';
-        Menu.renderPartyBar();
+        // 単に表示するのではなく、バッジ判定を含む openMainMenu を呼び出して戻る
+        Menu.openMainMenu();
     },
 
     getDialogEl: (id) => document.getElementById(id),
-
+	
     getRarityColor: (rarity) => {
         if(rarity==='N') return '#a0a0a0';
         if(rarity==='R') return '#40e040';
@@ -267,30 +285,51 @@ const Menu = {
     },
 
     confirm: (text, yesCallback, noCallback) => {
-        const area = Menu.getDialogEl('menu-dialog-area');
-        const textEl = Menu.getDialogEl('menu-dialog-text');
-        const btnEl = Menu.getDialogEl('menu-dialog-buttons');
+  const area  = Menu.getDialogEl('menu-dialog-area');
 
-        if (!area) { if(confirm(text)) { if(yesCallback) yesCallback(); } else { if(noCallback) noCallback(); } return; }
+  // 暫定の処置で、既存のダイアログDOMを必ず body 直下へ移動（スタッキングコンテキストを回避）
+  //if (area && area.parentElement !== document.body) {
+  //  document.body.appendChild(area);
+  //}
+  const textEl = Menu.getDialogEl('menu-dialog-text');
+  const btnEl  = Menu.getDialogEl('menu-dialog-buttons');
 
-        textEl.innerHTML = text.replace(/\n/g, '<br>');
-        btnEl.innerHTML = '';
-        const yesBtn = document.createElement('button');
-        yesBtn.className = 'btn';
-        yesBtn.style.width = '80px';
-        yesBtn.innerText = 'はい';
-        yesBtn.onclick = () => { Menu.closeDialog(); if (yesCallback) yesCallback(); };
-        const noBtn = document.createElement('button');
-        noBtn.className = 'btn';
-        noBtn.style.width = '80px';
-        noBtn.style.background = '#555';
-        noBtn.innerText = 'いいえ';
-        noBtn.onclick = () => { Menu.closeDialog(); if (noCallback) noCallback(); };
-        btnEl.appendChild(yesBtn);
-        btnEl.appendChild(noBtn);
-        area.style.display = 'flex';
-    },
-    
+  // ★復旧ポイント：無いなら何もしない、ではなくフォールバック
+  if (!area || !textEl || !btnEl) {
+    if (window.confirm(text)) { if (yesCallback) yesCallback(); }
+    else { if (noCallback) noCallback(); }
+    return;
+  }
+
+  // listChoice の影響が残っても崩れないように念のため戻す（副作用の除去）
+  btnEl.style.flexDirection = 'row';
+  btnEl.style.gap = '10px';
+
+  textEl.innerHTML = String(text).replace(/\n/g, '<br>');
+  btnEl.innerHTML = '';
+
+  const yesBtn = document.createElement('button');
+  yesBtn.className = 'btn';
+  yesBtn.style.width = '80px';
+  yesBtn.innerText = 'はい';
+  yesBtn.onclick = () => { Menu.closeDialog(); if (yesCallback) yesCallback(); };
+
+  const noBtn = document.createElement('button');
+  noBtn.className = 'btn';
+  noBtn.style.width = '80px';
+  noBtn.style.background = '#555';
+  noBtn.innerText = 'いいえ';
+  noBtn.onclick = () => { Menu.closeDialog(); if (noCallback) noCallback(); };
+
+  btnEl.appendChild(yesBtn);
+  btnEl.appendChild(noBtn);
+  area.style.position = 'fixed';
+  area.style.zIndex = '1000000';
+  area.style.inset = '0';      // top/left/right/bottom を一括で 0 に
+  area.style.display = 'flex';
+},
+
+	
 	choice: (text, label1, callback1, label2, callback2) => {
         const area = Menu.getDialogEl('menu-dialog-area');
         const textEl = Menu.getDialogEl('menu-dialog-text');
@@ -3120,5 +3159,355 @@ const MenuTraitDetail = {
                 </div>
             </div>
         `;
+    }
+};
+
+/* ==========================================================================
+    8. 取引所 (MenuExchange) - デイリー報酬 & お知らせ
+    ========================================================================== */
+const MenuExchange = {
+    currentPage: 0,
+    itemsPerPage: 5,
+    newsList: [], // スコープエラー回避のためオブジェクト内に保持
+
+    init: () => {
+        document.getElementById('sub-screen-exchange').style.display = 'flex';
+        MenuExchange.currentPage = 0;
+        MenuExchange.render();
+    },
+
+    // 日付チェック (YYYY-MM-DD 形式)
+    getTodayStr: () => new Date().toLocaleDateString('sv-SE'), 
+
+    claimDaily: (type) => {
+        if (!App.data.flags) App.data.flags = {};
+        const today = MenuExchange.getTodayStr();
+        const flagKey = type === 'GEM' ? 'lastGemClaimDate' : 'lastGoldClaimDate';
+
+        if (App.data.flags[flagKey] === today) {
+            Menu.msg("本日は既に受け取っています。");
+            return;
+        }
+
+        const amount = type === 'GEM' ? 1000 : 10000;
+        const label = type === 'GEM' ? 'GEM' : 'GOLD';
+
+        // 既存の Menu.confirm を使用
+        Menu.confirm(`${label}を ${amount.toLocaleString()} 獲得しますか？`, () => {
+            // 「はい」の場合の処理
+            if (type === 'GEM') App.data.gems += amount;
+            else App.data.gold += amount;
+            
+            App.data.flags[flagKey] = today;
+            App.save(); // main.js の既存 save (updateHUD呼び出しを含む) を実行
+			
+            if (typeof Menu.renderPartyBar === 'function') Menu.renderPartyBar();
+        
+            Menu.msg(`${label}を ${amount.toLocaleString()} 獲得しました！`);
+            MenuExchange.render();
+        });
+    },
+    
+    render: () => {
+        const container = document.getElementById('sub-screen-exchange');
+        const today = MenuExchange.getTodayStr();
+        const gemClaimed = App.data.flags?.lastGemClaimDate === today;
+        const goldClaimed = App.data.flags?.lastGoldClaimDate === today;
+
+        // ニュースをソートして保持し、onclickからの参照エラーを防ぐ
+        MenuExchange._news = (typeof NEWS_DATA !== 'undefined') ? [...NEWS_DATA].sort((a, b) => new Date(b.date) - new Date(a.date)) : [];
+        
+        const start = MenuExchange.currentPage * MenuExchange.itemsPerPage;
+        const pagedNews = MenuExchange._news.slice(start, start + MenuExchange.itemsPerPage);
+
+        container.innerHTML = `
+            <div class="header-bar">
+                <span>💎 取引所</span>
+                <button class="btn" onclick="Menu.closeSubScreen('exchange')">戻る</button>
+            </div>
+            <div class="scroll-area" style="padding:15px; background:#111;">
+                <div style="margin-bottom:20px;">
+                    <div style="font-size:12px; color:#ffd700; margin-bottom:10px; border-left:3px solid #ffd700; padding-left:8px;">デイリー報酬</div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <button class="btn" style="height:60px; background:${gemClaimed ? '#333' : '#404'};" onclick="MenuExchange.claimDaily('GEM')" ${gemClaimed ? 'disabled' : ''}>
+                            <div style="font-size:10px;">毎日1000 GEM</div>
+                            <div style="font-weight:bold;">${gemClaimed ? '取得済み' : 'GEMを受け取る'}</div>
+                        </button>
+                        <button class="btn" style="height:60px; background:${goldClaimed ? '#333' : '#440'};" onclick="MenuExchange.claimDaily('GOLD')" ${goldClaimed ? 'disabled' : ''}>
+                            <div style="font-size:10px;">毎日10000 GOLD</div>
+                            <div style="font-weight:bold;">${goldClaimed ? '取得済み' : 'GOLDを受け取る'}</div>
+                        </button>
+                    </div>
+                </div>
+
+                <div style="flex:1;">
+                    <div style="font-size:12px; color:#aaa; margin-bottom:10px; border-left:3px solid #aaa; padding-left:8px;">最新の情報</div>
+                    <div id="news-container">
+                        ${pagedNews.map(n => `
+                            <div class="list-item" style="padding:10px; margin-bottom:5px; flex-direction:column; align-items:flex-start;" 
+                                onclick="MenuNewsDetail.open(${n.id}, MenuExchange._news)">
+                                <div style="font-size:10px; color:#888;">${n.date}</div>
+                                <div style="font-size:13px; font-weight:bold; color:#ddd;">${n.title}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div style="display:flex; justify-content:center; gap:20px; margin-top:10px;">
+                        <button class="btn" style="padding:5px 15px;" ${MenuExchange.currentPage === 0 ? 'disabled' : ''} onclick="MenuExchange.changePage(-1)">前へ</button>
+                        <span style="color:#666; line-height:30px;">${MenuExchange.currentPage + 1} / ${Math.ceil(MenuExchange._news.length / MenuExchange.itemsPerPage)}</span>
+                        <button class="btn" style="padding:5px 15px;" ${start + MenuExchange.itemsPerPage >= MenuExchange._news.length ? 'disabled' : ''} onclick="MenuExchange.changePage(1)">次へ</button>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+	
+    changePage: (dir) => {
+        MenuExchange.currentPage += dir;
+        MenuExchange.render();
+    }
+};
+
+const MenuNewsDetail = {
+    list: [],
+    currentIndex: -1,
+
+    open: (id, list) => {
+        MenuNewsDetail.list = list;
+        MenuNewsDetail.currentIndex = list.findIndex(n => n.id === id);
+        MenuNewsDetail.render();
+    },
+
+    move: (dir) => {
+        const len = MenuNewsDetail.list.length;
+        MenuNewsDetail.currentIndex = (MenuNewsDetail.currentIndex + dir + len) % len;
+        MenuNewsDetail.render();
+    },
+
+    render: () => {
+        const item = MenuNewsDetail.list[MenuNewsDetail.currentIndex];
+        if (!item) return;
+
+        let modal = document.getElementById('news-detail-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'news-detail-modal';
+            document.body.appendChild(modal);
+        }
+        modal.style.cssText = `position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:10000; display:flex; align-items:center; justify-content:center;`;
+        
+        modal.innerHTML = `
+            <div style="width:310px; background:#111; border:2px solid #ffd700; border-radius:10px; padding:20px; color:#eee;">
+                <div style="font-size:10px; color:#888; margin-bottom:5px;">${item.date}</div>
+                <div style="font-size:16px; font-weight:bold; color:#ffd700; border-bottom:1px solid #444; padding-bottom:10px; margin-bottom:15px;">${item.title}</div>
+                <div style="font-size:13px; line-height:1.6; min-height:150px; white-space:pre-wrap; color:#ccc;">${item.body}</div>
+                <div style="display:flex; gap:10px; margin-top:20px;">
+                    <button class="btn" style="flex:1;" onclick="MenuNewsDetail.move(-1)">◀ 前</button>
+                    <button class="btn" style="flex:1;" onclick="MenuNewsDetail.move(1)">次 ▶</button>
+                </div>
+                <button class="btn" style="width:100%; margin-top:10px; background:#444;" onclick="document.getElementById('news-detail-modal').remove()">閉じる</button>
+            </div>
+        `;
+    }
+};
+
+/* ==========================================================================
+   9. 実績 (MenuAchievements) - 自動達成判定・管理
+   ========================================================================== */
+const MenuAchievements = {
+    filter: 'ALL',
+
+    init: () => {
+        document.getElementById('sub-screen-achievements').style.display = 'flex';
+        MenuAchievements.checkProgress();
+        MenuAchievements.render();
+    },
+
+    // エラー③対策：内部メソッドの定義
+    _renderInternal: () => {
+        const container = document.getElementById('sub-screen-achievements');
+        if (container) {
+            const scrollArea = container.querySelector('.scroll-area');
+            if (scrollArea) scrollArea.scrollTop = 0;
+        }
+    },
+
+    checkProgress: () => {
+        if (!App.data.achievements) App.data.achievements = {};
+        const stats = App.data.stats || {};
+        const dungeon = App.data.dungeon || {};
+        const progress = App.data.progress || {};
+        const smith = App.data.blacksmith || {};
+        const book = App.data.book?.monsters || [];
+        const hero = (App.data.characters || []).find(c => c.uid === 'p1') || {};
+
+        ACHIEVEMENTS_DATA.forEach(ach => {
+            if (!App.data.achievements[ach.id] || !App.data.achievements[ach.id].completed) {
+                let val = 0;
+                switch(ach.type) {
+                    case "LV": val = hero.level || 0; break;
+                    case "DMG": val = stats.maxDamage?.val || 0; break;
+                    case "FLOOR": val = dungeon.maxFloor || 0; break;
+                    case "STORY": val = progress.storyStep || 0; break;
+                    case "SMITH": val = smith.level || 0; break;
+                    case "BOOK": val = book.length; break;
+                    case "GOLD": val = stats.maxGold || 0; break;
+                }
+                if (val >= ach.goal) {
+                    if (!App.data.achievements[ach.id]) App.data.achievements[ach.id] = { claimed: false };
+                    App.data.achievements[ach.id].completed = true;
+                }
+            }
+        });
+        App.save();
+    },
+
+    processRewards: (rewards) => {
+        let msgParts = [];
+        rewards.forEach(r => {
+            switch(r.type) {
+                case 'GEM':
+                    App.data.gems += r.val;
+                    msgParts.push(`${r.val} GEM`);
+                    break;
+                case 'GOLD':
+                    App.data.gold += r.val;
+                    msgParts.push(`${r.val} GOLD`);
+                    break;
+                case 'ITEM':
+                    const itemDef = (window.ITEMS_DATA || []).find(i => i.id === r.id);
+                    if (itemDef) {
+                        App.data.items[r.id] = (App.data.items[r.id] || 0) + r.val;
+                        msgParts.push(`${itemDef.name} x${r.val}`);
+                    }
+                    break;
+                case 'EQUIP':
+                    // new-main.js に存在する createEquipById を使用
+                    const newEq = App.createEquipById(r.eid, r.plus || 3);
+                    if (newEq) {
+                        App.data.inventory.push(newEq);
+                        msgParts.push(`${newEq.name}`);
+                    }
+                    break;
+            }
+        });
+        return msgParts.join('、');
+    },
+
+    render: () => {
+        const container = document.getElementById('sub-screen-achievements');
+        const data = (typeof ACHIEVEMENTS_DATA !== 'undefined') ? ACHIEVEMENTS_DATA : [];
+        if (!App.data.achievements) App.data.achievements = {};
+
+        let list = data.filter(a => {
+            const state = App.data.achievements[a.id] || { completed: false, claimed: false };
+            if (MenuAchievements.filter === 'COMPLETED') return state.completed;
+            if (MenuAchievements.filter === 'INCOMPLETE') return !state.completed;
+            return true;
+        });
+
+        list.sort((a, b) => {
+            const sA = App.data.achievements[a.id] || { completed: false, claimed: false };
+            const sB = App.data.achievements[b.id] || { completed: false, claimed: false };
+            const score = (s) => (s.completed && !s.claimed) ? 0 : (!s.completed ? 1 : 2);
+            return score(sA) - score(sB);
+        });
+
+        container.innerHTML = `
+            <div class="header-bar">
+                <span>🏆 実績</span>
+                <button class="btn" onclick="Menu.closeSubScreen('achievements')">戻る</button>
+            </div>
+            <div style="padding:8px; background:#222; display:flex; gap:5px;">
+                ${['ALL', 'INCOMPLETE', 'COMPLETED'].map(f => `
+                    <button class="btn" style="flex:1; font-size:10px; background:${MenuAchievements.filter === f ? '#006666' : '#444'};" 
+                        onclick="MenuAchievements.filter='${f}'; MenuAchievements.render();">${f === 'ALL' ? '全て' : f === 'INCOMPLETE' ? '未達成' : '達成済み'}</button>
+                `).join('')}
+            </div>
+            <div style="padding:10px; background:#1a1a1a; border-bottom:1px solid #333;">
+                <button class="btn" style="width:100%; background:#440044;" onclick="MenuAchievements.claimAll()">報酬を一括で受け取る</button>
+            </div>
+            <div class="scroll-area" style="padding:10px; background:#111;">
+                ${list.map(a => {
+                    const state = App.data.achievements[a.id] || { completed: false, claimed: false };
+                    const canClaim = state.completed && !state.claimed;
+                    const isClaimed = state.claimed;
+
+                    // エラー④対策：報酬テキストをマスタから生成
+                    const rewardText = a.rewards.map(r => {
+                        if (r.type === 'GEM') return `${r.val}GEM`;
+                        if (r.type === 'GOLD') return `${r.val}G`;
+                        if (r.type === 'ITEM') {
+                            const item = (window.ITEMS_DATA || []).find(i => i.id === r.id);
+                            return (item ? item.name : '不明') + `x${r.val}`;
+                        }
+                        if (r.type === 'EQUIP') {
+                            const eq = (window.EQUIP_MASTER || []).find(e => e.eid === r.eid);
+                            return (eq ? eq.name : '不明') + `+${r.plus || 3}`;
+                        }
+                        return r.type;
+                    }).join(', ');
+
+                    return `
+                        <div class="list-item" style="opacity:${isClaimed ? 0.5 : 1}; padding:12px; margin-bottom:8px; border-left:4px solid ${state.completed ? '#ffd700' : '#444'}; display:flex; align-items:center;">
+                            <div style="flex:1;">
+                                <div style="font-size:13px; font-weight:bold; color:${state.completed ? '#fff' : '#888'};">
+                                    ${state.completed ? '✅ ' : ''}${a.title}
+                                </div>
+                                <div style="font-size:10px; color:#666;">${a.desc}</div>
+                                <div style="font-size:11px; color:#00cccc; margin-top:4px;">
+                                    報酬: ${rewardText}
+                                </div>
+                            </div>
+                            <button class="btn" style="width:80px; font-size:11px; background:${canClaim ? '#d00' : '#333'};" 
+                                onclick="MenuAchievements.claim(${a.id})" ${canClaim ? '' : 'disabled'}>
+                                ${isClaimed ? '受取済' : (state.completed ? '受取' : '未達成')}
+                            </button>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+        
+        MenuAchievements._renderInternal();
+    },
+
+    claim: (id) => {
+        const ach = ACHIEVEMENTS_DATA.find(a => a.id === id);
+        const state = App.data.achievements[id];
+        if (!state || !state.completed || state.claimed) return;
+
+        const rewardText = MenuAchievements.processRewards(ach.rewards);
+        state.claimed = true;
+        
+        App.save();
+        App.updateHUD();
+        if (typeof Menu.renderPartyBar === 'function') Menu.renderPartyBar();
+        
+        Menu.msg(`実績達成報酬を獲得しました！\n${rewardText}`);
+        MenuAchievements.render();
+    },
+
+    claimAll: () => {
+        let count = 0;
+        ACHIEVEMENTS_DATA.forEach(ach => {
+            const state = App.data.achievements[ach.id];
+            if (state && state.completed && !state.claimed) {
+                MenuAchievements.processRewards(ach.rewards);
+                state.claimed = true;
+                count++;
+            }
+        });
+
+        if (count === 0) {
+            Menu.msg("受け取れる報酬はありません。");
+            return;
+        }
+
+        App.save();
+        App.updateHUD();
+        if (typeof Menu.renderPartyBar === 'function') Menu.renderPartyBar();
+        
+        Menu.msg(`${count}件の実績報酬を一括で受け取りました。`);
+        MenuAchievements.render();
     }
 };

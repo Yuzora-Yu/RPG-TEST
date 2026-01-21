@@ -762,7 +762,7 @@ if ('serviceWorker' in navigator) {
 
     <div id="sub-screen-gacha" class="sub-screen">
         <div class="header-bar"><span>ガチャ</span> <span style="font-size:12px;">GEM:<span id="gacha-gem">0</span></span> <button class="btn" onclick="Menu.closeSubScreen('gacha')">戻る</button></div>
-        <div id="gacha-menu-view" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px;">
+		<div id="gacha-menu-view" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px;">
             <div style="font-size:24px; color:#ffd700;">プレミアムガチャ</div>
             <div style="text-align:center; font-size:12px; color:#ccc;">強力な仲間を召喚しよう！<br>UR, EXは超強力！</div>
             <button class="menu-btn" style="width:200px;" onclick="Gacha.pull(1)">単発 (300 GEM)</button>
@@ -776,7 +776,9 @@ if ('serviceWorker' in navigator) {
         </div>
     </div>
 
-    <div id="inn-scene" class="scene-layer"><div class="header-bar"><span>宿屋</span></div><div id="inn-content" style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center;"></div></div>
+    <div id="sub-screen-exchange" class="sub-screen"></div>
+    <div id="sub-screen-achievements" class="sub-screen"></div>
+    <div id="inn-scene" class="scene-layer"><div class="header-bar"><span>宿屋</span></div></div>
     <div id="medal-scene" class="scene-layer"><div class="header-bar"><span>メダル王の館</span> <span style="font-size:12px;">所持: <span id="medal-count">0</span>枚</span> <button class="btn" onclick="App.changeScene('field')">出る</button></div><div style="padding:10px; text-align:center; font-size:12px;">ちいさなメダルと景品を交換します</div><div id="medal-list" class="scroll-area"></div></div>
     
     <div id="casino-scene" class="scene-layer">
@@ -839,6 +841,8 @@ if ('serviceWorker' in navigator) {
 <script src="blacksmith.js"></script>
 <script src="main.js"></script>
 <script src="battle.js"></script>
+<script src="news.js"></script>
+<script src="achievements.js"></script>
 <script src="menus.js"></script>
 
 <script>

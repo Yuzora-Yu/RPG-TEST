@@ -365,7 +365,7 @@ const StoryManager = {
 	"game_start_retry": {
         "actions": [
             { "type": "CONV", "value": "BATTLE_RETRY_TALK" }, // 神秘的な声
-            { "type": "STEP", "value": 99 },     // 力を授ける (StoryStep=99でステータス激増)
+            { "type": "STEP", "value": 100 },     // 力を授ける (StoryStep=100でステータス激増)
             { "type": "HEAL" },                  // 全回復
             { "type": "BOSS", "value": [1, 1] }  // 再戦
         ],
