@@ -1602,15 +1602,19 @@ load: () => {
     },
 
 
-	// main.js Appオブジェクト内に追加
-	createEquipById: (eid, plus = 0) => {
+	/**
+	 * 指定したEIDの装備を生成する（報酬・固定配布用）
+	 * @param {number} eid - 装備ID
+	 * @param {number} plus - プラス値（ステータス倍率に影響）
+	 * @param {Array} fixedOpts - [任意] 指定するオプション配列
+	 * @param {Array} fixedTraits - [任意] 指定する特性配列
+	 */
+	createEquipById: (eid, plus = 0, fixedOpts = null, fixedTraits = null) => {
 		const base = window.EQUIP_MASTER.find(e => e.eid === eid);
 		if (!base) return null;
-		
-		// ★修正点：レアリティ計算に使用する targetFloor を定義
+
 		const targetFloor = App.getVirtualFloor();
 
-		// createEquipByFloor の「4. ベース作成」以降のロジックを流用
 		const eq = { 
 			id: Date.now() + Math.random().toString(36).substring(2), 
 			rank: base.rank, 
@@ -1626,6 +1630,7 @@ load: () => {
 			grantSkills: (base.grantSkills ? JSON.parse(JSON.stringify(base.grantSkills)) : [])
 		};
 
+		// 基礎ステータス倍率の適用
 		const plusMults = { 0: 1.0, 1: 1.1, 2: 1.3, 3: 1.5 };
 		const mult = plusMults[plus] || 1.0;
 		const BASE_SCALE_KEYS = new Set(['atk', 'def', 'mag', 'mdef', 'spd', 'hp', 'mp']);
@@ -1636,65 +1641,73 @@ load: () => {
 			}
 		}
 
-			if (plus > 0) {
-				const BASE_OPTS_MAP = {
-					'剣': ['atk', 'hit', 'cri', 'finDmg', 'elmAtk'],
-					'斧': ['atk', 'cri', 'finDmg', 'elmAtk', 'attack_Fear'],
-					'槍': ['atk', 'hit', 'cri', 'finDmg', 'elmAtk'],
-					'短剣': ['atk', 'mag', 'eva', 'cri', 'finDmg', 'elmAtk', 'attack_Poison'],
-					'弓': ['atk', 'mag', 'cri', 'finDmg', 'elmAtk'],
-					'杖': ['mag', 'eva', 'finDmg', 'elmAtk'],
-					'盾': ['def', 'mdef', 'eva', 'finRed', 'elmRes', 'resists_Debuff'],
-					'腕輪': ['atk', 'mag', 'spd', 'def', 'mdef', 'hit', 'eva', 'cri', 'elmAtk', 'finDmg'],
-					'兜': ['hp', 'mp', 'def', 'mdef', 'elmRes', 'resists_Fear', 'resists_SkillSeal'],
-					'帽子': ['hp', 'mp', 'def', 'mag', 'mdef', 'elmRes', 'resists_HealSeal'],
-					'鎧': ['hp', 'mp', 'def', 'mdef', 'finRed', 'elmRes', 'resists_Poison'],
-					'ローブ': ['hp', 'mp', 'mdef', 'mag', 'elmAtk', 'elmRes', 'resists_SpellSeal'],
-					'ブーツ': ['spd', 'def', 'mdef', 'finRed', 'elmAtk', 'elmRes', 'resists_Shock'],
-					'くつ': ['spd', 'hit', 'eva', 'finDmg', 'elmAtk', 'elmRes', 'resists_Shock']
+		// オプション設定
+		if (fixedOpts && Array.isArray(fixedOpts)) {
+			// ★修正点：指定された key を元に DB.OPT_RULES から情報を自動補完する
+			eq.opts = fixedOpts.map(o => {
+				const rule = DB.OPT_RULES.find(r => r.key === o.key && (!o.elm || r.elm === o.elm));
+				return {
+					key: o.key,
+					elm: o.elm || (rule ? rule.elm : undefined),
+					label: rule ? rule.name : o.key, // マスターにあればその名前、なければkeyをそのまま使う
+					val: o.val,
+					unit: rule ? rule.unit : '',    // マスターから単位（%やval）を取得
+					rarity: o.rarity || 'N'
 				};
-				let baseDefaults = BASE_OPTS_MAP[eq.baseName] || [];
-				let masterOpts = base.possibleOpts || [];
-				let allowedKeys = [...new Set([...baseDefaults, ...masterOpts])];
-
-				for(let i=0; i<plus; i++) {
-					let optCandidates = DB.OPT_RULES.filter(rule => allowedKeys.includes(rule.key));
-					if (optCandidates.length === 0) optCandidates = DB.OPT_RULES;
-					const rule = optCandidates[Math.floor(Math.random() * optCandidates.length)];
-					let rarity = 'N';
-					const tierRatio = Math.min(1, targetFloor / 200);
-					const rarRnd = Math.random() + (tierRatio * 0.15);
-					if(rarRnd > 0.98 && rule.allowed.includes('EX')) rarity='EX';
-					else if(rarRnd > 0.90 && rule.allowed.includes('UR')) rarity='UR';
-					else if(rarRnd > 0.75 && rule.allowed.includes('SSR')) rarity='SSR';
-					else if(rarRnd > 0.55 && rule.allowed.includes('SR')) rarity='SR';
-					else if(rarRnd > 0.30 && rule.allowed.includes('R')) rarity='R';
-					else rarity = rule.allowed[0];
-					const min = rule.min[rarity]||1, max = rule.max[rarity]||10;
-					eq.opts.push({
-						key: rule.key, elm: rule.elm, label: rule.name, 
-						val: Math.floor(Math.random()*(max-min+1))+min, unit: rule.unit, rarity: rarity
-					});
-				}
-				eq.name += `+${plus}`;
+			});
+			eq.name += `+${plus}`;
+		} else if (plus > 0) {
+			// 指定がない場合は従来通りのランダム生成
+			const BASE_OPTS_MAP = {
+				'剣': ['atk', 'hit', 'cri', 'finDmg', 'elmAtk'], '斧': ['atk', 'cri', 'finDmg', 'elmAtk', 'attack_Fear'],
+				'槍': ['atk', 'hit', 'cri', 'finDmg', 'elmAtk'], '短剣': ['atk', 'mag', 'eva', 'cri', 'finDmg', 'elmAtk', 'attack_Poison'],
+				'弓': ['atk', 'mag', 'cri', 'finDmg', 'elmAtk'], '杖': ['mag', 'eva', 'finDmg', 'elmAtk'],
+				'盾': ['def', 'mdef', 'eva', 'finRed', 'elmRes', 'resists_Debuff'], '腕輪': ['atk', 'mag', 'spd', 'def', 'mdef', 'hit', 'eva', 'cri', 'elmAtk', 'finDmg'],
+				'兜': ['hp', 'mp', 'def', 'mdef', 'elmRes', 'resists_Fear', 'resists_SkillSeal'], '帽子': ['hp', 'mp', 'def', 'mag', 'mdef', 'elmRes', 'resists_HealSeal'],
+				'鎧': ['hp', 'mp', 'def', 'mdef', 'finRed', 'elmRes', 'resists_Poison'], 'ローブ': ['hp', 'mp', 'mdef', 'mag', 'elmAtk', 'elmRes', 'resists_SpellSeal'],
+				'ブーツ': ['spd', 'def', 'mdef', 'finRed', 'elmAtk', 'elmRes', 'resists_Shock'], 'くつ': ['spd', 'hit', 'eva', 'finDmg', 'elmAtk', 'elmRes', 'resists_Shock']
+			};
+			let allowedKeys = [...new Set([...(BASE_OPTS_MAP[eq.baseName] || []), ...(base.possibleOpts || [])])];
+			for(let i=0; i<plus; i++) {
+				let optCandidates = DB.OPT_RULES.filter(rule => allowedKeys.includes(rule.key));
+				if (optCandidates.length === 0) optCandidates = DB.OPT_RULES;
+				const rule = optCandidates[Math.floor(Math.random() * optCandidates.length)];
+				let rarity = 'N';
+				const tierRatio = Math.min(1, targetFloor / 200);
+				const rarRnd = Math.random() + (tierRatio * 0.15);
+				if(rarRnd > 0.98 && rule.allowed.includes('EX')) rarity='EX';
+				else if(rarRnd > 0.90 && rule.allowed.includes('UR')) rarity='UR';
+				else if(rarRnd > 0.75 && rule.allowed.includes('SSR')) rarity='SSR';
+				else if(rarRnd > 0.55 && rule.allowed.includes('SR')) rarity='SR';
+				else if(rarRnd > 0.30 && rule.allowed.includes('R')) rarity='R';
+				else rarity = rule.allowed[0];
+				const min = rule.min[rarity]||1, max = rule.max[rarity]||10;
+				eq.opts.push({ key: rule.key, elm: rule.elm, label: rule.name, val: Math.floor(Math.random()*(max-min+1))+min, unit: rule.unit, rarity: rarity });
 			}
+			eq.name += `+${plus}`;
+		}
 
-			// 7. 特性およびシナジーの判定
-			if (plus >= 3) {
-			  if (typeof PassiveSkill !== 'undefined' && PassiveSkill.generateEquipmentTraits) {
+		// 特性設定
+		if (fixedTraits && Array.isArray(fixedTraits)) {
+			// 固定特性が指定されている場合（ベースの特性に上書き/追加）
+			eq.traits = JSON.parse(JSON.stringify(fixedTraits));
+		} else if (plus >= 3) {
+			// 指定がなくプラス3以上の場合は従来通りランダム付与
+			if (typeof PassiveSkill !== 'undefined' && PassiveSkill.generateEquipmentTraits) {
 				const randTraits = PassiveSkill.generateEquipmentTraits();
-				// 固定 + ランダムを結合（同IDが被ったら加算するか、どちらか優先するかは好み）
 				eq.traits = [...(eq.traits || []), ...(randTraits || [])];
-			  }
-
-				const syns = App.checkSynergy(eq);
-				if (syns && syns.length > 0) {
-					eq.isSynergy = true;
-					eq.effects = syns.map(s => s.effect);
-					eq.synergies = syns;
-				}
 			}
-			return eq;
+		}
+
+		// シナジーの再判定（固定指定の場合でもシナジー条件を満たせば発動させる）
+		const syns = App.checkSynergy(eq);
+		if (syns && syns.length > 0) {
+			eq.isSynergy = true;
+			eq.effects = syns.map(s => s.effect);
+			eq.synergies = syns;
+		}
+
+		return eq;
 	},
 
 	// --- シナジー判定：複合条件・属性条件に完全対応 ---

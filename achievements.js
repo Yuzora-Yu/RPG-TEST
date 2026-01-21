@@ -1,7 +1,13 @@
 const ACHIEVEMENTS_DATA = [
     // --- 1. 主人公レベル (Type: LV) ---
     { id: 101, type: "LV", goal: 5, title: "駆け出し冒険者", desc: "主人公のレベルが5に到達", rewards: [
-			{ type: 'EQUIP', eid: 21, plus: 3 } // 武器ID:1 を+3で付与
+			{ type: 'EQUIP', eid: 21, plus: 3, // 武器ID:1 を+3で付与
+            opts: [
+                { key: 'atk',  val: 10, rarity: 'UR' },
+                { key: 'atk',  val: 10, rarity: 'UR' },
+                { key: 'elmAtk', elm: '雷', val: 10, rarity: 'UR' }],
+			traits: [{ id: 1, level: 3 },{ id: 11, level: 3 }] 
+			}
         ] },
     { id: 102, type: "LV", goal: 20, title: "熟練の剣筋", desc: "主人公のレベルが20に到達", rewards: [
             { type: 'GEM', val: 500 },

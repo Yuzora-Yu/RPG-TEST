@@ -3381,8 +3381,8 @@ const MenuAchievements = {
                     }
                     break;
                 case 'EQUIP':
-                    // new-main.js に存在する createEquipById を使用
-                    const newEq = App.createEquipById(r.eid, r.plus || 3);
+                    // ★修正点：第3引数(r.opts)と第4引数(r.traits)を渡すように変更
+                    const newEq = App.createEquipById(r.eid, r.plus || 0, r.opts, r.traits);
                     if (newEq) {
                         App.data.inventory.push(newEq);
                         msgParts.push(`${newEq.name}`);
