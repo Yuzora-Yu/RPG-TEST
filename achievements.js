@@ -1,14 +1,16 @@
 const ACHIEVEMENTS_DATA = [
     // --- 1. 主人公レベル (Type: LV) ---
-    { id: 100, type: "LV", goal: 1, title: "テスト装備配布用実績", desc: "主人公のレベルが1に到達", rewards: [
-			{ type: 'EQUIP', eid: 701, plus: 3, // 武器ID:701 を+3で付与
-            opts: [
-                { key: 'elmAtk', elm: '雷', val: 25, rarity: 'EX' },
-                { key: 'elmAtk', elm: '雷', val: 25, rarity: 'EX' },
-                { key: 'elmAtk', elm: '雷', val: 25, rarity: 'EX' }],
-			traits: [{ id: 1, level: 10 },{ id: 10, level: 10 },{ id: 26, level: 10 },{ id: 58, level: 20 },{ id: 59, level: 20 },{ id: 60, level: 20 }] 
-			}
-        ] }, //テストデータ
+
+	//テストデータ
+    //{ id: 100, type: "LV", goal: 1, title: "テスト装備配布用実績", desc: "主人公のレベルが1に到達", rewards: [
+	//		{ type: 'EQUIP', eid: 701, plus: 3, // 武器ID:701 を+3で付与
+    //        opts: [
+    //            { key: 'elmAtk', elm: '雷', val: 25, rarity: 'EX' },
+    //            { key: 'elmAtk', elm: '雷', val: 25, rarity: 'EX' },
+    //            { key: 'elmAtk', elm: '雷', val: 25, rarity: 'EX' }],
+	//		traits: [{ id: 1, level: 10 },{ id: 10, level: 10 },{ id: 26, level: 10 },{ id: 58, level: 20 },{ id: 59, level: 20 },{ id: 60, level: 20 }] 
+	//		}
+    //    ] },
 		
     { id: 101, type: "LV", goal: 5, title: "駆け出し冒険者", desc: "主人公のレベルが5に到達", rewards: [
 			{ type: 'EQUIP', eid: 21, plus: 3, // 武器ID:1 を+3で付与
