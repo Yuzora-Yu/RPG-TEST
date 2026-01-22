@@ -680,7 +680,19 @@ const MenuStatus = {
         const bookRate = totalMonsters > 0 ? Math.floor((bookCount / totalMonsters) * 100) : 0;
         
         // 最高ダメージデータの取得
-        const maxDmg = stats.maxDamage || { val: 0, actor: '未記録', skill: '-' };
+        const maxDmg = stats.maxDamage || { 
+		  val: 0, 
+		  actor: '未記録', 
+		  actorLv: null,
+		  skill: '-', 
+		  time: null 
+		};
+
+		// ★追加：表示用文字列をここで生成
+		const dmgLvStr   = (maxDmg.actorLv != null) ? `Lv.${maxDmg.actorLv}` : 'Lv.-';
+		const dmgTimeStr = maxDmg.time 
+		  ? new Date(maxDmg.time).toLocaleString('ja-JP') 
+		  : '-';
 
         const row = (label, val, color='#fff', fontSize='14px') => `
             <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #333; align-items:center;">
@@ -703,8 +715,9 @@ const MenuStatus = {
                 <div style="font-size:10px; color:#44ff44; margin-bottom:8px; display:flex; align-items:center; gap:5px;">
                     <span style="background:#44ff44; width:3px; height:12px; display:inline-block;"></span> 資産の記録
                 </div>
-                ${row('累計最高所持Gold', `${(stats.maxGold || 0).toLocaleString()} G`)}
-                ${row('累計最高所持GEM', `${(stats.maxGems || 0).toLocaleString()} GEM`)}
+                ${row('累計獲得Gold', `${(stats.totalGoldEarned || 0).toLocaleString()} gold`)}
+                ${row('累計獲得GEM',  `${(stats.totalGemsEarned || 0).toLocaleString()} GEM`)}
+                ${row('累計獲得メダル', `${(stats.totalMedals || 0).toLocaleString()} 枚`)}
             </div>
 
             <div style="background:rgba(255,255,255,0.05); border:1px solid #f44; border-radius:8px; padding:12px; margin-bottom:15px;">
@@ -712,23 +725,40 @@ const MenuStatus = {
                     <span style="background:#ff4444; width:3px; height:12px; display:inline-block;"></span> 戦闘の極み
                 </div>
                 <div style="padding:5px 0;">
-                    <div style="font-size:10px; color:#aaa; margin-bottom:5px;">歴代最高ダメージ</div>
-                    <div style="display:flex; justify-content:space-between; align-items:flex-end; border:1px dashed #555; padding:8px; border-radius:4px; background:rgba(0,0,0,0.3);">
-                        <div style="flex:1; min-width:0;">
-                            <div style="font-size:12px; color:#fff; font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-                                ${maxDmg.actor}
-                            </div>
-                            <div style="font-size:10px; color:#888; margin-top:2px;">
-                                使用技: ${maxDmg.skill}
-                            </div>
-                        </div>
-                        <div style="text-align:right;">
-                            <span style="font-size:24px; color:#ff4444; font-weight:bold; font-family:'Courier New', monospace; text-shadow:0 0 10px rgba(255,0,0,0.4);">
-                                ${(maxDmg.val || 0).toLocaleString()}
-                            </span>
-                        </div>
-                    </div>
-                </div>
+					<div style="display:flex; align-items:stretch; gap:12px;">
+
+					  <!-- 左：詳細情報 -->
+					  <div style="flex:1; min-width:0;">
+						<div style="font-size:12px; color:#fff; font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+						  ${maxDmg.actor} <span style="font-size:10px; color:#aaa; font-weight:normal;">(${dmgLvStr})</span>
+						</div>
+
+						<div style="font-size:10px; color:#888; margin-top:4px;">
+						  使用技: ${maxDmg.skill}
+						</div>
+
+						<div style="font-size:9px; color:#666; margin-top:2px;">
+						  記録日時: ${dmgTimeStr}
+						</div>
+					  </div>
+
+					  <!-- 右：ダメージ数値 -->
+					  <div style="
+						flex:0 0 auto;
+						min-width:90px;
+						display:flex;
+						align-items:center;
+						justify-content:flex-end;
+						font-size:22px;
+						color:#ffd700;
+						font-weight:bold;
+						font-family:monospace;
+						text-align:right;
+					  ">
+						${(maxDmg.val || 0).toLocaleString()}
+					  </div>
+					</div>
+				</div>
             </div>
 
             <button class="btn" style="width:100%; height:45px; background:#333; border:1px solid #666; margin-top:10px; font-weight:bold; letter-spacing:2px;" onclick="Menu.closeSubScreen('status')">メニューへ戻る</button>
@@ -3350,7 +3380,40 @@ const MenuAchievements = {
                     case "STORY": val = progress.storyStep || 0; break;
                     case "SMITH": val = smith.level || 0; break;
                     case "BOOK": val = book.length; break;
-                    case "GOLD": val = stats.maxGold || 0; break;
+                    case "GOLD": val = stats.totalGoldEarned || 0; break;
+					
+					// --- 追加分（今回の実績案） ---
+					case "REBIRTH":
+						// 主人公の転生回数（reincarnationCount は既にキャラデータに存在） :contentReference[oaicite:1]{index=1}
+						val = hero.reincarnationCount || 0;
+						break;
+
+					case "BOSS":
+						// Estark討伐回数（図鑑killCountsを参照する既存ロジックがある） :contentReference[oaicite:2]{index=2}
+						val = (App.data.book && App.data.book.killCounts) ? (App.data.book.killCounts[2000] || 0) : 0;
+						break;
+
+					case "ALLY":
+						// 仲間数：主人公を含める/含めないは好み
+						// 例：主人公を除外（p1を除く）
+						val = (App.data.characters || []).filter(c => c.uid !== 'p1').length;
+						break;
+
+					case "RUN":
+						// ダンジョン挑戦回数（saveにもtryCountがある） :contentReference[oaicite:3]{index=3}
+						val = dungeon.tryCount || 0;
+						break;
+
+					case "MEDAL":
+						// 「累計獲得メダル」(消費しても減らない値)
+						val = stats.totalMedals || 0;
+						break;
+
+					case "EQUIP":
+						// 例：シナジー装備所持数（inventory内の isSynergy を数える）
+						val = (App.data.inventory || []).filter(eq => eq && eq.isSynergy).length;
+						break;
+					
                 }
                 if (val >= ach.goal) {
                     if (!App.data.achievements[ach.id]) App.data.achievements[ach.id] = { claimed: false };

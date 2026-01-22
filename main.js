@@ -363,7 +363,12 @@ const App = {
             App.data.stats = JSON.parse(JSON.stringify(initial.stats));
         } else {
             if (App.data.stats.wipeoutCount === undefined) App.data.stats.wipeoutCount = 0;
-            if (!App.data.stats.maxDamage) App.data.stats.maxDamage = { val: 0, actor: '未記録', skill: '-' };
+            if (!App.data.stats.maxDamage) {
+			  App.data.stats.maxDamage = { val: 0, actor: '未記録', actorLv: null, skill: '-', time: null };
+			} else {
+			  if (App.data.stats.maxDamage.actorLv === undefined) App.data.stats.maxDamage.actorLv = null;
+			  if (App.data.stats.maxDamage.time === undefined) App.data.stats.maxDamage.time = null;
+			}
         }
 
         // 4. book の補完
@@ -386,9 +391,47 @@ const App = {
         if (!App.data.blacksmith) {
             App.data.blacksmith = { level: 1, exp: 0 };
         }
-
+		
+		if (App.data) {
+			if (!App.data.stats) App.data.stats = {};
+			if (App.data.stats.totalMedals == null) App.data.stats.totalMedals = 0;
+		}
+		
         // 修正結果を一度保存
         App.save();
+    },
+	
+	totalGoldGem: () => {
+	// --- DataFix: stats項目の補完 ---
+	if (!App.data.stats) App.data.stats = {};
+	if (App.data.stats.totalGoldEarned == null) App.data.stats.totalGoldEarned = 0;
+	if (App.data.stats.totalGemsEarned == null) App.data.stats.totalGemsEarned = 0;
+
+	// --- gold/gems を "増分だけ累計に加算する" アクセサにする ---
+	const hookCurrency = (key, statKey) => {
+	  const internalKey = "_" + key;
+
+	  // ★すでにフック済みなら何もしない
+	  if (Object.getOwnPropertyDescriptor(App.data, key)?.get) return;
+
+	  if (App.data[internalKey] == null) App.data[internalKey] = App.data[key] || 0;
+
+	  Object.defineProperty(App.data, key, {
+		enumerable: true,
+		configurable: true,
+		get() { return App.data[internalKey] || 0; },
+		set(v) {
+		  const prev = App.data[internalKey] || 0;
+		  const next = Math.max(0, Math.floor(Number(v) || 0));
+		  const diff = next - prev;
+		  if (diff > 0) App.data.stats[statKey] = (App.data.stats[statKey] || 0) + diff;
+		  App.data[internalKey] = next;
+		}
+	  });
+	};
+
+	hookCurrency("gold", "totalGoldEarned");
+	hookCurrency("gems", "totalGemsEarned");
     },
 
     initGameHub: () => {
@@ -414,6 +457,10 @@ const App = {
             }
             return; 
         }
+		
+		// ★追加：累計獲得Gold/GEM フックを起動時に1回だけ有効化
+		if (typeof App.totalGoldGem === 'function') App.totalGoldGem();
+
 		
 		// ★追加: 既存セーブデータの拡張（コンフィグ初期化）
         if (App.data.characters) {
@@ -777,7 +824,7 @@ load: () => {
                 App.data.stats = {
                     maxGold: 0, maxGems: 0, wipeoutCount: 0,
                     totalSteps: 0, totalBattles: 0,
-                    maxDamage: { val: 0, actor: '', skill: '' },
+                    maxDamage: { val: 0, actor: '', actorLv: null, skill: '', time: null },
                     startTime: Date.now()
                 };
             }

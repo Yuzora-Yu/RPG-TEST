@@ -1852,7 +1852,13 @@ findNextActor: () => {
                         targetToHit.hp -= dmg;
 
                         if (!cmd.isEnemy && dmg > (App.data.stats.maxDamage?.val || 0)) {
-                            App.data.stats.maxDamage = { val: dmg, actor: actor.name, skill: data ? data.name : "通常攻撃" };
+                            App.data.stats.maxDamage = {
+							  val: dmg,
+							  actor: actor.name,
+							  actorLv: actor.level || null,
+							  skill: data ? data.name : "通常攻撃",
+							  time: Date.now()
+							};
                         }
 
                         if (dmg > 0) {
@@ -2322,7 +2328,13 @@ findNextActor: () => {
                     actor.revengeStack = 0;
 
                     if (!cmd.isEnemy && dmg > (App.data.stats.maxDamage?.val || 0)) {
-                        App.data.stats.maxDamage = { val: dmg, actor: actor.name, skill: data ? data.name : "通常攻撃" };
+                        App.data.stats.maxDamage = {
+						  val: dmg,
+						  actor: actor.name,
+						  actorLv: actor.level || null,
+						  skill: data ? data.name : "通常攻撃",
+						  time: Date.now()
+						};
                     }
                     
                     let dColor = element ? ({火:'#f88',水:'#88f',雷:'#ff0',風:'#8f8',光:'#ffc',闇:'#a8f',混沌:'#d4d'}[element] || '#fff') : '#fff';

@@ -89,16 +89,17 @@
     // 表示・出力キーの定義
     const mainKeys = ['eid', 'noRandom', 'rank', 'name', 'type', 'baseName'];
     const statKeys = ['atk', 'def', 'mag', 'mdef', 'spd', 'hp', 'mp', 'cri', 'hit', 'eva', 'finRed', 'finDmg'];
+    // ★ elmAtk, elmRes をオブジェクト型として独立定義
+    const objectKeys = ['elmAtk', 'elmRes'];
     const attackKeys = ['attack_Fear', 'attack_Poison', 'attack_InstantDeath'];
-    // resists_ToxicPoison, resists_Seal を削除
     const resistKeys = ['resists_Poison', 'resists_Shock', 'resists_Fear', 'resists_InstantDeath', 'resists_Debuff', 'resists_SkillSeal', 'resists_SpellSeal', 'resists_HealSeal'];
     
-    // possibleOpts の選択肢
-    const optCandidates = [...statKeys, ...attackKeys, ...resistKeys, 'elmAtk', 'elmRes'];
+    // 全データキーの統合順序
+    const allDataKeys = [...statKeys, ...objectKeys, ...attackKeys, ...resistKeys];
+    const optCandidates = [...allDataKeys];
 
     window.onload = function() {
         createHeaders();
-        // マスタ読込チェック
         const master = window.EQUIP_MASTER || (typeof EQUIP_MASTER !== 'undefined' ? EQUIP_MASTER : null);
         if (master) {
             masterData = JSON.parse(JSON.stringify(master));
@@ -106,12 +107,12 @@
             document.getElementById('status').innerText = `equips.js (${masterData.length}件) ロード完了`;
         }
     };
-
+	
     function createHeaders() {
         const tr = document.getElementById('header-row');
         let html = '';
         mainKeys.forEach((k, i) => html += `<th class="h-main sticky-${i+1}">${k}</th>`);
-        [...statKeys, ...attackKeys, ...resistKeys].forEach(k => html += `<th class="h-stat">data.${k}</th>`);
+        allDataKeys.forEach(k => html += `<th class="h-stat">data.${k}</th>`);
         html += `<th class="h-spec">possibleOpts</th><th class="h-spec">grantSkills</th><th class="h-spec">traits</th>`;
         tr.innerHTML = html;
     }
@@ -122,17 +123,23 @@
         masterData.forEach((item, idx) => {
             const tr = document.createElement('tr');
             
-            // 1. 基本項目 (Sticky)
+            // 1. 基本項目
             mainKeys.forEach((k, i) => {
                 const td = createCell(idx, k, item[k], "text", false);
                 td.className = `sticky-${i+1}`;
                 tr.appendChild(td);
             });
             
-            // 2. data数値
-            [...statKeys, ...attackKeys, ...resistKeys].forEach(k => {
-                const val = (item.data && item.data[k] !== undefined) ? item.data[k] : '';
-                tr.appendChild(createCell(idx, k, val, "number", true));
+            // 2. data数値 & オブジェクト
+            allDataKeys.forEach(k => {
+                let val = (item.data && item.data[k] !== undefined) ? item.data[k] : '';
+                // オブジェクト型（elmAtk等）は表示用にセミコロン形式の文字列に変換
+                if (objectKeys.includes(k) && typeof val === 'object') {
+                    val = JSON.stringify(val).replace(/,/g, ';');
+                    tr.appendChild(createCell(idx, k, val, "text", true));
+                } else {
+                    tr.appendChild(createCell(idx, k, val, "number", true));
+                }
             });
 
             // 3. possibleOpts
@@ -152,8 +159,12 @@
     function createCell(idx, key, value, type, isData = false) {
         const td = document.createElement('td');
         const inp = document.createElement('input');
-        inp.type = type; inp.value = value || ''; inp.dataset.idx = idx;
+        inp.type = type; 
+        inp.value = value || ''; 
+        inp.dataset.idx = idx;
         if (isData) inp.dataset.dkey = key; else inp.dataset.key = key;
+        // オブジェクト型の場合は入力を少し広めにする
+        if (objectKeys.includes(key)) inp.style.minWidth = "120px";
         td.appendChild(inp); return td;
     }
 
@@ -259,21 +270,34 @@
                 else if (k === 'noRandom') masterData[idx][k] = (String(val).toLowerCase() === 'true');
                 else masterData[idx][k] = val;
             } else if (input.dataset.dkey) {
+                const dk = input.dataset.dkey;
                 if (!masterData[idx].data) masterData[idx].data = {};
-                if (val === '') delete masterData[idx].data[input.dataset.dkey];
-                else masterData[idx].data[input.dataset.dkey] = Number(val);
+                if (val === '') {
+                    delete masterData[idx].data[dk];
+                } else if (objectKeys.includes(dk)) {
+                    // セミコロンをカンマに戻してオブジェクトとして保存
+                    try {
+                        masterData[idx].data[dk] = JSON.parse(val.replace(/;/g, ','));
+                    } catch(e) { /* 不正な形式の場合は文字列として扱うか無視 */ }
+                } else {
+                    masterData[idx].data[dk] = Number(val);
+                }
             }
         });
     }
 
     function exportCSV() {
         syncAll();
-        const headers = [...mainKeys, ...statKeys.map(k=>'data.'+k), ...attackKeys.map(k=>'data.'+k), ...resistKeys.map(k=>'data.'+k), 'possibleOpts', 'grantSkills', 'traits'];
+        const headers = [...mainKeys, ...allDataKeys.map(k=>'data.'+k), 'possibleOpts', 'grantSkills', 'traits'];
         let csv = headers.join(',') + '\n';
         masterData.forEach(item => {
             let row = [];
             mainKeys.forEach(k => row.push(item[k] ?? ''));
-            [...statKeys, ...attackKeys, ...resistKeys].forEach(k => row.push(item.data?.[k] ?? ''));
+            allDataKeys.forEach(k => {
+                let v = item.data?.[k] ?? '';
+                if (typeof v === 'object') v = JSON.stringify(v).replace(/,/g, ';');
+                row.push(v);
+            });
             row.push((item.possibleOpts || []).join('|'));
             row.push((item.grantSkills || []).join('|'));
             row.push(JSON.stringify(item.traits || (item.data && item.data.traits) || []).replace(/,/g, ';'));
@@ -288,42 +312,25 @@
         syncAll();
         const rows = masterData.map(item => {
             let parts = [];
-            parts.push(`eid:${item.eid}`);
-            parts.push(`noRandom: ${item.noRandom}`);
-            parts.push(`rank: ${item.rank}`);
-            parts.push(`name: "${item.name}"`);
-            parts.push(`type: "${item.type}"`);
-            parts.push(`baseName: "${item.baseName}"`);
-
+            parts.push(`eid:${item.eid}, noRandom:${item.noRandom}, rank:${item.rank}, name:"${item.name}", type:"${item.type}", baseName:"${item.baseName}"`);
+            
             let d = item.data || {};
             let dParts = Object.entries(d).map(([dk, dv]) => `${dk}: ${typeof dv === 'object' ? JSON.stringify(dv) : dv}`);
             parts.push(`data: { ${dParts.join(", ")} }`);
 
             parts.push(`possibleOpts: [${(item.possibleOpts || []).map(o => `'${o}'`).join(", ")}]`);
-            if (item.grantSkills && item.grantSkills.length > 0) parts.push(`grantSkills: [${item.grantSkills.join(", ")}]`);
-            
-            const trs = item.traits || (item.data && item.data.traits);
-            parts.push(`traits: ${JSON.stringify(trs || [])}`);
+            if (item.grantSkills?.length) parts.push(`grantSkills: [${item.grantSkills.join(", ")}]`);
+            parts.push(`traits: ${JSON.stringify(item.traits || item.data?.traits || [])}`);
 
             return "    { " + parts.join(", ") + " }";
         }).join(",\n");
         
-        const finalContent = `/* ==========================================================================\n   equips.js - 装備品マスタデータベース (旧システム互換体裁)\n   ========================================================================== */\n\nconst EQUIP_MASTER = [\n${rows}\n];\n\nwindow.EQUIP_MASTER = EQUIP_MASTER;`;
+        const finalContent = `const EQUIP_MASTER = [\n${rows}\n];\nwindow.EQUIP_MASTER = EQUIP_MASTER;`;
         const blob = new Blob([finalContent], { type: "text/javascript" });
         const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "equips.js"; a.click();
     }
 
-    function parseCsvLine(line) {
-        const result = []; let cur = '', inQuote = false;
-        for (let i = 0; i < line.length; i++) {
-            const char = line[i]; const next = line[i+1];
-            if (char === '"') { if (inQuote && next === '"') { cur += '"'; i++; } else inQuote = !inQuote; }
-            else if (char === ',' && !inQuote) { result.push(cur); cur = ''; }
-            else cur += char;
-        }
-        result.push(cur); return result.map(v => v.trim());
-    }
-
+    // --- 取込処理 ---
     document.getElementById('file-csv').addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (!file) return;
@@ -337,18 +344,39 @@
                 const cols = parseCsvLine(lines[i]);
                 let obj = { data: {}, possibleOpts: [], grantSkills: [], traits: [] };
                 let ci = 0;
-                mainKeys.forEach(k => { let v = cols[ci++]; if(v!==undefined){ obj[k] = (k==='eid'||k==='rank') ? Number(v) : (k==='noRandom' ? String(v).toLowerCase()==='true' : v); } });
-                [...statKeys, ...attackKeys, ...resistKeys].forEach(k => { let v = cols[ci++]; if(v!==undefined && v!==''){ obj.data[k] = Number(v); } });
+                mainKeys.forEach(k => { let v = cols[ci++]; if(v!==undefined) obj[k] = (k==='eid'||k==='rank') ? Number(v) : (k==='noRandom' ? String(v).toLowerCase()==='true' : v); });
+                allDataKeys.forEach(k => { 
+                    let v = cols[ci++]; 
+                    if(v!==undefined && v!=='') {
+                        if (objectKeys.includes(k)) {
+                            try { obj.data[k] = JSON.parse(v.replace(/;/g, ',')); } catch(e){ obj.data[k] = {}; }
+                        } else {
+                            obj.data[k] = Number(v);
+                        }
+                    }
+                });
                 let po = cols[ci++]; if(po) obj.possibleOpts = po.split('|');
                 let gs = cols[ci++]; if(gs) obj.grantSkills = gs.split('|').map(Number);
                 let tr = cols[ci++]; if(tr) try { obj.traits = JSON.parse(tr.replace(/;/g, ',')); } catch(e){}
                 newMaster.push(obj);
             }
             masterData = newMaster; renderTable();
-            document.getElementById('status').innerText = "CSVを反映しました";
+            document.getElementById('status').innerText = "CSV（属性オブジェクト対応版）を取込ました";
         };
         reader.readAsText(file);
     });
+
+    function parseCsvLine(line) {
+        const result = []; let cur = '', inQuote = false;
+        for (let i = 0; i < line.length; i++) {
+            const char = line[i]; const next = line[i+1];
+            if (char === '"') { if (inQuote && next === '"') { cur += '"'; i++; } else inQuote = !inQuote; }
+            else if (char === ',' && !inQuote) { result.push(cur); cur = ''; }
+            else cur += char;
+        }
+        result.push(cur); return result.map(v => v.trim());
+    }
+
 </script>
 </body>
 </html>

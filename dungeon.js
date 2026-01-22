@@ -430,12 +430,17 @@ const Dungeon = {
                 App.data.inventory.push(eq); 
                 msg = `${eq.name}`;
             } 
-            // --- 【優先度3】ID99（ジェム）の判定（出たら終了） ---
+            // --- 【優先度3】ID99（メダル）の判定（出たら終了） ---
             // bonusNormal をここで使用
             else if (Math.random() * 100 < (15 + bonusNormal)) {
                 const item = DB.ITEMS.find(i => i.id === 99);
                 if(item) { 
                     App.data.items[item.id] = (App.data.items[item.id]||0)+1; 
+					
+					// ★累計獲得メダル（消費しても減らない）
+					if (!App.data.stats) App.data.stats = {};
+					App.data.stats.totalMedals = (App.data.stats.totalMedals || 0) + 1;
+					
                     msg = `<span style="color:#ffd700;">${item.name}</span>`; 
                 }
             }
