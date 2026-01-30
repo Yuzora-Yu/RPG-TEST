@@ -1,5 +1,83 @@
 /* menus.js (メインメニュー改修・プレイ状況追加・装備画面統合版) */
 
+/* --- AdMob 広告管理（修正版） --- */
+const AdManager = {
+    ids: {
+        banner: (navigator.userAgent.includes('Android')) 
+            ? 'ca-app-pub-3940256099942544/6300978111' 
+            : 'ca-app-pub-3940256099942544/2934735716',
+        reward: (navigator.userAgent.includes('Android')) 
+            ? 'ca-app-pub-3940256099942544/5224354917' 
+            : 'ca-app-pub-3940256099942544/1712485313'
+    },
+
+    showBanner: () => {
+        const adContainer = document.getElementById('ad-ui-container');
+        if (adContainer) adContainer.style.display = 'flex';
+
+        if (typeof admob !== 'undefined') {
+            admob.banner.show({
+                id: AdManager.ids.banner,
+                position: 'bottom-center', 
+            });
+        } else {
+            AdManager.showBrowserInlineDummy();
+        }
+    },
+
+    hideBanner: () => {
+        const adContainer = document.getElementById('ad-ui-container');
+        if (adContainer) adContainer.style.display = 'none';
+        if (typeof admob !== 'undefined') admob.banner.hide();
+    },
+
+    /* menus.js 内の該当箇所を書き換え */
+	showBrowserInlineDummy: () => {
+		const adContainer = document.getElementById('ad-ui-container');
+		if (!adContainer) return;
+
+		// 内容を書き込み（2行表示用にスタイルを調整）
+		adContainer.innerHTML = `
+			<div style="
+				font-size: 9px; 
+				color: #ffd700; 
+				text-align: center; 
+				width: 320px; 
+				min-height: 50px; 
+				display: flex; 
+				flex-direction: column; 
+				justify-content: center; 
+				align-items: center; 
+				line-height: 1.4; 
+				box-sizing: border-box;
+			">
+				【 SAMPLE AD AREA 】<br>
+				©Yuzora-Games CONTACT:@yuu_mintia
+			</div>
+		`;
+	},
+
+    prepareRewardAd: async (onSuccess) => {
+        if (typeof admob === 'undefined') {
+            Menu.confirm("（広告再生のテスト）動画を最後まで視聴したことにしますか？", onSuccess);
+            return;
+        }
+
+        try {
+            await admob.rewarded.load({ id: AdManager.ids.reward });
+            // ★重要：これがないと広告が表示されません！
+            await admob.rewarded.show(); 
+
+            // 報酬獲得イベント（一度だけ実行されるように登録）
+            document.addEventListener('admob.rewarded.reward', () => {
+                onSuccess();
+            }, { once: true });
+        } catch (e) {
+            Menu.msg("広告の読み込みに失敗しました。");
+        }
+    }
+};
+
 const Menu = {
     // --- メインメニュー制御 ---
     openMainMenu: () => {
@@ -10,8 +88,13 @@ const Menu = {
 
         document.getElementById('menu-overlay').style.display = 'flex';
         Menu.renderPartyBar();
-        
-        const grid = document.querySelector('#menu-overlay .menu-grid');
+		
+		// バナー表示の呼び出し
+		AdManager.showBanner();
+
+		// 広告と被らないように grid の下に余白を作るためのスタイル調整
+		const grid = document.querySelector('#menu-overlay .menu-grid');
+
         if(grid) {
             // 通知バッジ（赤丸）の判定
             // 1. 実績: 「達成済み」かつ「未受取」のものが1つでもあるか
@@ -48,6 +131,8 @@ const Menu = {
     
     closeMainMenu: () => {
         document.getElementById('menu-overlay').style.display = 'none';
+		// hideBanner に統一（ダミーの処理も含まれるため）
+		AdManager.hideBanner();
     },
     
     isMenuOpen: () => {
@@ -3223,20 +3308,38 @@ const MenuExchange = {
         const label = type === 'GEM' ? 'GEM' : 'GOLD';
 
         // 既存の Menu.confirm を使用
-        Menu.confirm(`${label}を ${amount.toLocaleString()} 獲得しますか？`, () => {
+//        Menu.confirm(`${label}を ${amount.toLocaleString()} 獲得しますか？`, () => {
             // 「はい」の場合の処理
-            if (type === 'GEM') App.data.gems += amount;
-            else App.data.gold += amount;
+//            if (type === 'GEM') App.data.gems += amount;
+//            else App.data.gold += amount;
             
-            App.data.flags[flagKey] = today;
-            App.save(); // main.js の既存 save (updateHUD呼び出しを含む) を実行
+//            App.data.flags[flagKey] = today;
+//            App.save(); // main.js の既存 save (updateHUD呼び出しを含む) を実行
 			
-            if (typeof Menu.renderPartyBar === 'function') Menu.renderPartyBar();
-        
-            Menu.msg(`${label}を ${amount.toLocaleString()} 獲得しました！`);
-            MenuExchange.render();
-        });
-    },
+//            if (typeof Menu.renderPartyBar === 'function') Menu.renderPartyBar();
+//        
+//            Menu.msg(`${label}を ${amount.toLocaleString()} 獲得しました！`);
+//            MenuExchange.render();
+//        });
+		// 報酬獲得の最終処理
+		const grantReward = () => {
+			if (type === 'GEM') App.data.gems += amount;
+			else App.data.gold += amount;
+			
+			App.data.flags[flagKey] = today;
+			App.save();
+			
+			if (typeof Menu.renderPartyBar === 'function') Menu.renderPartyBar();
+			Menu.msg(`${label}を ${amount.toLocaleString()} 獲得しました！`);
+			MenuExchange.render();
+		};
+
+		// 動画視聴の確認
+		Menu.confirm(`動画広告を視聴して、デイリー報酬の ${amount.toLocaleString()} ${label} を受け取りますか？`, () => {
+			// リワード広告の再生を実行
+			AdManager.prepareRewardAd(grantReward);
+		});
+},
     
     render: () => {
         const container = document.getElementById('sub-screen-exchange');

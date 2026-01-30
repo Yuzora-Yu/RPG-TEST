@@ -2157,8 +2157,15 @@ const Field = {
         Field.ready = true;
         Field.render();
         
-        if(document.getElementById('disp-gold')) document.getElementById('disp-gold').innerText = App.data.gold;
-        if(document.getElementById('disp-gem')) document.getElementById('disp-gem').innerText = App.data.gems;
+        // ★修正：直接代入を App.updateHUD() の呼び出しに変更
+        if (typeof App.updateHUD === 'function') {
+            App.updateHUD();
+        } else {
+            // updateHUDがない場合のフォールバック（カンマ付き）
+            if(document.getElementById('disp-gold')) document.getElementById('disp-gold').innerText = (App.data.gold || 0).toLocaleString();
+            if(document.getElementById('disp-gem')) document.getElementById('disp-gem').innerText = (App.data.gems || 0).toLocaleString();
+        }
+
         if(typeof Menu !== 'undefined') Menu.renderPartyBar();
     },
 
@@ -2410,42 +2417,76 @@ const Field = {
         const mapW = Field.currentMapData ? Field.currentMapData.width : (typeof MAP_DATA !== 'undefined' ? MAP_DATA[0].length : 50);
         const mapH = Field.currentMapData ? Field.currentMapData.height : (typeof MAP_DATA !== 'undefined' ? MAP_DATA.length : 32);
         const g = (typeof GRAPHICS !== 'undefined' && GRAPHICS.images) ? GRAPHICS.images : {};
-		
-		// ★修正点: エラー回避のため、現在のエリアキーを取得しておく
+        
         const areaKey = Field.getCurrentAreaKey();
+
+        // --- 内部ヘルパー: スプライトシート対応の描画関数 ---
+        const drawGraphic = (imgName, dx, dy, targetSize) => {
+            if (!imgName) return false;
+            
+            // 1. GRAPHICS.spriteDefs に定義があるか確認
+            const sprite = GRAPHICS.spriteDefs ? GRAPHICS.spriteDefs[imgName] : null;
+            
+            if (sprite && g[sprite.sheet]) {
+                // スプライトシートから指定範囲を切り出して描画 (9引数版)
+                ctx.drawImage(
+                    g[sprite.sheet], 
+                    sprite.x, sprite.y, sprite.w, sprite.h, 
+                    dx, dy, targetSize, targetSize
+                );
+                return true;
+            } else if (g[imgName]) {
+                // 従来通りの単体画像 (Base64等) として描画
+                ctx.drawImage(g[imgName], dx, dy, targetSize, targetSize);
+                return true;
+            }
+            return false;
+        };
 
         for (let dy = -rangeY; dy <= rangeY; dy++) {
             for (let dx = -rangeX; dx <= rangeX; dx++) {
                 const drawX = Math.floor(cx + (dx * ts) - (ts / 2)), drawY = Math.floor(cy + (dy * ts) - (ts / 2));
                 let tx = Field.x + dx, ty = Field.y + dy, tile = 'W';
+                
                 if (Field.currentMapData) { 
                     if (tx >= 0 && tx < mapW && ty >= 0 && ty < mapH) {
-						// ★修正点: エラーが出た行。定義した areaKey を使用し、動的なマップ変更を反映
                         const posKey = `${tx},${ty}`;
-                        const changedTile = App.data.progress.mapChanges?.[areaKey]?.[posKey];
-						
-                        // ★修正: mapChanges を参照
-						tile = App.data.progress.mapChanges?.[areaKey]?.[`${tx},${ty}`] || Field.currentMapData.tiles[ty][tx];
+                        tile = App.data.progress.mapChanges?.[areaKey]?.[posKey] || Field.currentMapData.tiles[ty][tx];
                         const ak = Field.getCurrentAreaKey(); const pk = `${tx},${ty}`;
                         if (Field.currentMapData.isFixed) {
                             if ((tile === 'C' || tile === 'R') && App.data.progress.openedChests?.[ak]?.includes(pk)) tile = 'G';
                             if (tile === 'B' && App.data.progress.defeatedBosses?.[ak]?.includes(pk)) tile = 'G';
                         }
                     }
+                } else { 
+                    tile = MAP_DATA[((ty % mapH) + mapH) % mapH][((tx % mapW) + mapW) % mapW]; 
                 }
-                else { tile = MAP_DATA[((ty % mapH) + mapH) % mapH][((tx % mapW) + mapW) % mapW]; }
+
                 const config = Field.getTileConfig(tile), upper = tile.toUpperCase(), floorConfig = Field.getTileConfig('T');
-                if (g[floorConfig.img]) ctx.drawImage(g[floorConfig.img], drawX, drawY, ts, ts);
-                else { ctx.fillStyle = floorConfig.color; ctx.fillRect(drawX, drawY, ts, ts); }
+
+                // 1. 地面の描画 (floorConfig.img がスプライト名でもOK)
+                if (!drawGraphic(floorConfig.img, drawX, drawY, ts)) {
+                    ctx.fillStyle = floorConfig.color;
+                    ctx.fillRect(drawX, drawY, ts, ts);
+                }
+
+                // 2. 重ねるオブジェクトの描画
                 if (upper !== 'T' && upper !== 'G') {
-                    if (config.img && g[config.img]) ctx.drawImage(g[config.img], drawX, drawY, ts, ts);
-                    else if (config.color && config.color !== floorConfig.color) { ctx.fillStyle = config.color; ctx.fillRect(drawX, drawY, ts, ts); }
+                    if (!drawGraphic(config.img, drawX, drawY, ts)) {
+                        if (config.color && config.color !== floorConfig.color) {
+                            ctx.fillStyle = config.color;
+                            ctx.fillRect(drawX, drawY, ts, ts);
+                        }
+                    }
                 }
             }
         }
+
+        // 3. プレイヤーの描画 (hero_... の画像もスプライトシート化していれば対応可能)
         const pKey = `hero_${['down','left','right','up'][Field.dir]}_${Field.step}`; 
-        if (g[pKey]) ctx.drawImage(g[pKey], cx-ts/2, cy-ts/2, ts, ts);
-        else { ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(cx, cy, 10, 0, Math.PI*2); ctx.fill(); }
+        if (!drawGraphic(pKey, cx-ts/2, cy-ts/2, ts)) {
+            ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(cx, cy, 10, 0, Math.PI*2); ctx.fill();
+        }
 
         let locName = Field.currentMapData ? Field.currentMapData.name : `世界地図 (${Field.x}, ${Field.y})`;
         if (Field.currentMapData && Field.currentMapData.isDungeon) locName += ` ${Dungeon.floor}階`;
@@ -2453,11 +2494,7 @@ const Field = {
 
         const mmSize = 80, mmX = w-mmSize-10, mmY = 10, range = 10; 
         ctx.save(); ctx.globalAlpha = 0.6; ctx.fillStyle = '#000'; ctx.fillRect(mmX, mmY, mmSize, mmSize);
-        
-        // ★追加: ミニマップの白い極細枠線
-        ctx.strokeStyle = '#fff';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(mmX, mmY, mmSize, mmSize);
+        ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.strokeRect(mmX, mmY, mmSize, mmSize);
 
         const dms = mmSize / (range*2); 
         for(let mdy = -range; mdy < range; mdy++) {
@@ -2465,14 +2502,9 @@ const Field = {
                 let mtx = Field.x + mdx; let mty = Field.y + mdy; let mtile = 'W';
                 if (Field.currentMapData) { 
                     if(mtx>=0 && mtx<mapW && mty>=0 && mty<mapH) {
-                        //mtile = Field.currentMapData.tiles[mty][mtx]; 
-                        const ak = Field.getCurrentAreaKey(); 
-						const pk = `${mtx},${mty}`;
-                        
-						// ★修正: ミニマップでも書き換え後のタイル(mapChanges)を最優先で参照する
+                        const ak = Field.getCurrentAreaKey(); const pk = `${mtx},${mty}`;
                         mtile = App.data.progress.mapChanges?.[areaKey]?.[pk] || Field.currentMapData.tiles[mty][mtx];
-						
-						if (App.data.progress.openedChests?.[ak]?.includes(pk)) mtile = 'G';
+                        if (App.data.progress.openedChests?.[ak]?.includes(pk)) mtile = 'G';
                         if (App.data.progress.defeatedBosses?.[ak]?.includes(pk)) mtile = 'G';
                     }
                 } else { mtile = MAP_DATA[((mty%mapH)+mapH)%mapH][((mtx%mapW)+mapW)%mapW]; }

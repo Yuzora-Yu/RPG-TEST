@@ -32,8 +32,59 @@ const TILE_THEMES = {
         "B": {
             "img": "boss",
             "color": "#d00"
+        },
+        "D": {
+            "img": "hall",
+            "color": "#333"
+        },
+    },
+    "DEFAULT": {
+        "W": {
+            "img": "wall",
+            "color": "#333"
+        },
+        "T": {
+            "img": "dungeon_floor",
+            "color": "#666"
+        },
+        "S": {
+            "img": "stairs",
+            "color": "#dd0"
+        },
+        "C": {
+            "img": "chest",
+            "color": "#0dd"
+        },
+        "R": {
+            "img": "chest_rare",
+            "color": "#f00"
+        },
+        "B": {
+            "img": "boss",
+            "color": "#d00"
+        },
+        "I": {
+            "img": "inn",
+            "color": "#ff0"
+        },
+        "K": {
+            "img": "casino",
+            "color": "#aaf"
+        },
+        "E": {
+            "img": "medal",
+            "color": "#87ceeb"
+        },
+        "H": {
+            "img": "house-1",
+            "color": "#deb887"
+        },
+        "V": {
+            "img": "house-2",
+            "color": "#d00"
         }
     },
+	
     "START_VILLAGE": {
         "W": {
             "img": "forest",
@@ -46,6 +97,18 @@ const TILE_THEMES = {
         "G": {
             "img": "floor",
             "color": "#282"
+        },
+        "H": {
+            "img": "house-1",
+            "color": "#deb887"
+        },
+        "V": {
+            "img": "house-2",
+            "color": "#d00"
+        },
+        "D": {
+            "img": "cave",
+            "color": "#333"
         },
         "S": {
             "img": "floor",
@@ -117,52 +180,6 @@ const TILE_THEMES = {
     "RUINED_SHRINE": {
         "W": "ancient-brick",
         "T": "moss-stone"
-    },
-    "DEFAULT": {
-        "W": {
-            "img": "wall",
-            "color": "#333"
-        },
-        "T": {
-            "img": "dungeon_floor",
-            "color": "#666"
-        },
-        "S": {
-            "img": "stairs",
-            "color": "#dd0"
-        },
-        "C": {
-            "img": "chest",
-            "color": "#0dd"
-        },
-        "R": {
-            "img": "chest_rare",
-            "color": "#f00"
-        },
-        "B": {
-            "img": "boss",
-            "color": "#d00"
-        },
-        "I": {
-            "img": "inn",
-            "color": "#ff0"
-        },
-        "K": {
-            "img": "casino",
-            "color": "#aaf"
-        },
-        "E": {
-            "img": "medal",
-            "color": "#87ceeb"
-        },
-        "H": {
-            "img": "inn",
-            "color": "#deb887"
-        },
-        "V": {
-            "img": "inn",
-            "color": "#d00"
-        }
     }
 };
 

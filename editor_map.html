@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>QoE Professional Dev Studio - Ultimate Alpha v4</title>
+    <script src="assets.js"></script>
+    <script src="characters.js"></script>
+    <script src="monsters.js"></script>
+    <script src="items.js"></script>
+    <script src="map.js"></script>
+    <script src="story.js"></script>
+    <style>
+        :root { --bg: #0f0f0f; --panel: #1a1a1a; --accent: #ffd700; --border: #333; --text: #e0e0e0; --blue: #2196f3; --green: #4caf50; --red: #f44336; }
+        body { font-family: 'Segoe UI', Meiryo, sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        
+        #sidebar { width: 280px; background: #000; border-right: 2px solid var(--border); display: flex; flex-direction: column; padding: 20px; box-shadow: 2px 0 10px rgba(0,0,0,0.5); z-index: 100; }
+        .tab-btn { padding: 14px; background: transparent; border: 1px solid var(--border); color: #888; cursor: pointer; text-align: left; border-radius: 8px; margin-bottom: 10px; font-weight: bold; transition: 0.3s; }
+        .tab-btn:hover { background: #222; color: #fff; }
+        .tab-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
+        .export-area { margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border); }
+        
+        #main { flex: 1; overflow-y: auto; padding: 40px; position: relative; }
+        .section { display: none; animation: fadeIn 0.3s ease; }
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        h2 { border-left: 6px solid var(--accent); padding-left: 15px; margin-bottom: 30px; font-size: 24px; }
+
+        .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 25px; margin-bottom: 25px; }
+        .sub-header { color: var(--accent); font-size: 14px; text-transform: uppercase; margin-bottom: 15px; display: block; font-weight: bold; }
+        input, select, textarea { background: #000; color: #fff; border: 1px solid #444; padding: 10px; border-radius: 6px; font-size: 14px; width: 100%; box-sizing: border-box; }
+        input[type="color"] { padding: 0; height: 40px; cursor: pointer; }
+        .row { display: flex; gap: 15px; margin-bottom: 10px; align-items: flex-end; }
+        .col { flex: 1; display: flex; flex-direction: column; gap: 5px; }
+
+        .btn { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn:hover { opacity: 0.8; }
+        .btn-add { background: var(--green); color: #fff; }
+        .btn-del { background: var(--red); color: #fff; padding: 8px 12px; font-size: 12px; }
+        .btn-exp { background: #ef6c00; color: #fff; width: 100%; margin-bottom: 10px; }
+
+        .map-layout { display: flex; gap: 20px; align-items: flex-start; }
+        .palette-wrap { width: 160px; position: sticky; top: 0; }
+        .p-btn { padding: 10px; cursor: pointer; border-radius: 4px; display: flex; align-items: center; gap: 10px; border: 2px solid transparent; margin-bottom: 5px; font-size: 11px; }
+        .p-btn.selected { border-color: #fff; box-shadow: 0 0 10px var(--accent); }
+        #grid-container { background: #000; padding: 10px; border: 2px solid #555; overflow: auto; max-width: 1000px; max-height: 600px; }
+        #grid { display: grid; gap: 1px; background: #333; }
+        .tile { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 9px; cursor: crosshair; user-select: none; }
+        .theme-row { display: grid; grid-template-columns: 40px 1.2fr 1.2fr 100px auto; gap: 10px; align-items: center; margin-bottom: 8px; background: #111; padding: 8px; border-radius: 6px; }
+        
+        .line-item { display: flex; gap: 15px; background: #111; padding: 15px; border-radius: 8px; margin-bottom: 10px; align-items: center; }
+        .portrait { width: 50px; height: 50px; background: #000; border-radius: 6px; object-fit: cover; border: 1px solid #444; }
+        .action-box { background: #111; border: 1px solid #444; border-radius: 8px; padding: 10px; margin-bottom: 8px; border-left: 4px solid var(--blue); }
+    </style>
+</head>
+<body>
+
+<div id="sidebar">
+    <h1 style="color: var(--accent); font-size: 20px; margin-bottom: 30px; text-align: center;">QoE Studio Dev</h1>
+    <button class="tab-btn active" id="tab-story" onclick="switchTab('story')">📜 会話スクリプト</button>
+    <button class="tab-btn" id="tab-logic" onclick="switchTab('logic')">⚡ イベントロジック</button>
+    <button class="tab-btn" id="tab-map" onclick="switchTab('map')">🗺️ マップ統合編集</button>
+    
+    <div class="export-area">
+        <button class="btn btn-exp" onclick="exportStory()">story.js ダウンロード</button>
+        <button class="btn btn-exp" onclick="exportMap()">map.js ダウンロード</button>
+    </div>
+</div>
+
+<div id="main">
+    <div id="sec-story" class="section active">
+        <h2>会話スクリプト編集</h2>
+        <div id="script-list"></div>
+        <button class="btn btn-add" style="width:100%;" onclick="addScriptGroup()">+ 新規会話グループ作成</button>
+    </div>
+
+    <div id="sec-logic" class="section">
+        <h2>イベントロジック編集</h2>
+        <div id="logic-list"></div>
+        <button class="btn btn-add" style="width:100%; margin-bottom:30px;" onclick="addLogicGroup()">+ 新規ロジック作成</button>
+        <div class="card" style="border-top: 4px solid var(--accent);">
+            <h3 style="color:var(--accent);">📍 マップイベントトリガー設定</h3>
+            <div id="trigger-list"></div>
+            <button class="btn btn-add" style="margin-top:15px;" onclick="addTrigger()">+ 新しいトリガー地点を追加</button>
+        </div>
+    </div>
+
+    <div id="sec-map" class="section">
+        <h2>マップ統合編集</h2>
+        <div class="card">
+            <div class="row">
+                <div class="col">
+                    <span>マップ種別選択</span>
+                    <select id="map-category-select" onchange="updateMapList()">
+                        <option value="WORLD">ワールドマップ (MAP_DATA)</option>
+                        <option value="FIXED">街・村・施設 (FIXED_MAPS)</option>
+                        <option value="DUNGEON">固定ダンジョン (FIXED_DUNGEON_MAPS)</option>
+                    </select>
+                </div>
+                <div class="col">
+                    <span>ターゲット選択</span>
+                    <select id="map-target-select" onchange="loadIntegratedMap()"></select>
+                </div>
+            </div>
+        </div>
+
+        <div class="map-layout">
+            <div class="palette-wrap">
+				<span class="sub-header">パレット</span>
+				<button class="btn btn-add" style="width:100%; font-size:12px; margin-bottom:10px;"
+						onclick="addTileDefAndTheme()">
+					+ タイル種類追加（コード/名称/色）
+				</button>
+				<div id="map-palette"></div>
+			</div>
+
+            <div style="flex: 1;">
+                <div id="area-meta-editor" class="card" style="display: none;">
+                    <span class="sub-header">エリア・初期地点設定</span>
+                    <div id="area-story-meta" style="margin-bottom: 15px;">
+                        <div class="row">
+                            <div class="col"><span>表示名</span><input type="text" id="area-name-input"></div>
+                            <div class="col"><span>敵ランク</span><input type="number" id="area-rank-input"></div>
+                            <div class="col"><span>世界座標X</span><input type="number" id="area-cx-input"></div>
+                            <div class="col"><span>世界座標Y</span><input type="number" id="area-cy-input"></div>
+                        </div>
+                    </div>
+                    <div class="row" style="border-top: 1px solid #333; padding-top: 15px;">
+                        <div class="col"><span>進入位置 X (entryPoint)</span><input type="number" id="area-ex-input"></div>
+                        <div class="col"><span>進入位置 Y (entryPoint)</span><input type="number" id="area-ey-input"></div>
+                        <div class="col" style="flex:2"></div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                        <span class="sub-header" style="margin-bottom:0;">タイルテーマ (TILE_THEMES)</span>
+                        <button class="btn btn-add" style="padding:4px 10px; font-size:11px;" onclick="addTileToTheme()">+ コード追加</button>
+                    </div>
+                    <div id="theme-list-sub"></div>
+                </div>
+
+                <div class="card">
+                    <span class="sub-header">タイル配置</span>
+                    <div id="grid-container"><div id="grid"></div></div>
+                </div>
+
+                <div id="obj-meta-editor" class="card" style="display: none;">
+                    <span class="sub-header">固定オブジェクト & ダンジョン設定</span>
+                    <div id="obj-list"></div>
+                    
+                    <div id="dungeon-settings" style="margin-top:20px; border-top:1px solid #444; padding-top:20px;">
+                        <span class="sub-header">戦闘画面背景設定 (battleBg)</span>
+                        <div class="row">
+                            <div class="col" style="flex:1">
+                                <select id="dungeon-battlebg-select-dropdown" onchange="syncInput('dungeon-battlebg-input', this.value); updateDungeonBattleBg(this.value);"></select>
+                            </div>
+                            <div class="col" style="flex:1">
+                                <input type="text" id="dungeon-battlebg-input" placeholder="直接入力" onchange="updateDungeonBattleBg(this.value)">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="encounter-list-editor" style="margin-top:20px; border-top:1px solid #444; padding-top:20px;">
+                        <span class="sub-header">出現モンスターリスト (monsters 配列)</span>
+                        <div id="monsters-pool"></div>
+                        <button class="btn btn-add" style="font-size:12px; margin-top:10px;" onclick="addMonsterToPool()">+ リストに追加</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- Utils ---
+    function toFullHex(c) {
+        if (!c || c[0] !== '#') return '#000000';
+        if (c.length === 4) return '#' + c[1] + c[1] + c[2] + c[2] + c[3] + c[3];
+        return c;
+    }
+
+    function syncInput(targetId, val) {
+        document.getElementById(targetId).value = val;
+    }
+
+    // --- Data Management ---
+    const TILE_DEFS = {
+        'G': { name: '床', color: '#282' }, 'W': { name: '壁/海', color: '#444' },
+        'S': { name: '階段/出口', color: '#0dd' }, 'B': { name: 'ボス', color: '#d00' },
+        'C': { name: '通常宝箱', color: '#f80' }, 'R': { name: 'レア宝箱', color: '#f0f' },
+        'I': { name: '施設', color: '#ff0' }, 'V': { name: 'イベント', color: '#00f' },
+        'D': { name: 'ダンジョン', color: '#111' }, 'K': { name: 'カジノ', color: '#aaf' },
+        'E': { name: 'メダル王', color: '#87ceeb' }, 'H': { name: '民家', color: '#deb887' },
+        'M': { name: '山', color: '#555' }, 'F': { name: '森', color: '#040' },
+        'L': { name: '岩場', color: '#642' }, 'T': { name: '予備', color: '#282' }
+    };
+
+    let Master = {
+		chars: window.CHARACTERS_DATA || [],
+		monsters: window.MONSTERS_DATA || [],
+		items: window.ITEMS_DATA || [],
+		// GRAPHICS.data(単体画像) + GRAPHICS.sprites(スプライト名) を候補に含める
+		assets: (function() {
+			if (typeof GRAPHICS === 'undefined') return [];
+			const a = [
+				...Object.keys(GRAPHICS.data || {}),
+				...Object.keys(GRAPHICS.sprites || {})
+			];
+			return Array.from(new Set(a)).sort();
+		})()
+	};
+
+    let Data = {
+        scripts: StoryManager.scripts || {},
+        triggers: StoryManager.triggers || [],
+        events: StoryManager.events || {},
+        themes: TILE_THEMES || {},
+        storyData: STORY_DATA || { areas: {} },
+        mapData: MAP_DATA || [],
+        fixed: FIXED_MAPS || {},
+        dungeon: FIXED_DUNGEON_MAPS || {}
+    };
+
+    let State = { activeTab: 'story', selectedTile: 'G', currentMapKey: 'WORLD', currentCategory: 'WORLD' };
+
+    // --- Conversation & Logic UI ---
+    function renderStory() {
+        const root = document.getElementById('script-list'); root.innerHTML = '';
+        for (let id in Data.scripts) {
+            const card = document.createElement('div'); card.className = 'card';
+            card.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;"><strong style="color:var(--accent); font-size:18px;">${id}</strong><button class="btn btn-del" onclick="delete Data.scripts['${id}']; renderStory();">削除</button></div><div id="lines-${id}"></div><button class="btn btn-add" style="font-size:12px;" onclick="addLine('${id}')">+ セリフ追加</button>`;
+            Data.scripts[id].forEach((line, idx) => {
+                const char = Master.chars.find(c => c.id === line.charId);
+                const item = document.createElement('div'); item.className = 'line-item';
+                item.innerHTML = `<img src="${char?.img||''}" class="portrait" onerror="this.style.background='#333'"><div class="line-controls" style="flex:1;"><div class="row"><div class="col" style="flex:2"><span>キャラ</span><select onchange="Data.scripts['${id}'][${idx}].charId=Number(this.value); renderStory();"><option value="1000" ${line.charId==1000?'selected':''}>システム</option>${Master.chars.map(c => `<option value="${c.id}" ${line.charId==c.id?'selected':''}>${c.id}: ${c.name}</option>`).join('')}</select></div><div class="col"><span>名前</span><input type="text" value="${line.name}" onchange="Data.scripts['${id}'][${idx}].name=this.value"></div></div><textarea onchange="Data.scripts['${id}'][${idx}].text=this.value">${line.text}</textarea></div><button class="btn btn-del" style="margin-left:10px;" onclick="Data.scripts['${id}'].splice(${idx},1); renderStory();">×</button>`;
+                card.querySelector(`#lines-${id}`).appendChild(item);
+            });
+            root.appendChild(card);
+        }
+    }
+
+    function renderLogic() {
+        const root = document.getElementById('logic-list'); root.innerHTML = '';
+        
+        // 全マップキーのリストを作成 (TILEプルダウン用)
+        const allMapKeys = Array.from(new Set([
+            ...Object.keys(Data.fixed), 
+            ...Object.keys(Data.dungeon), 
+            ...Object.keys(Data.storyData.areas)
+        ])).sort();
+
+        Object.keys(Data.events).forEach(id => {
+            const card = document.createElement('div'); card.className = 'card';
+            card.innerHTML = `<div style="display:flex; justify-content:space-between; margin-bottom:15px;"><strong style="color:var(--accent);">ロジックID: ${id}</strong><button class="btn btn-del" onclick="delete Data.events['${id}']; renderLogic();">削除</button></div><div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;"><div><span class="sub-header">実行</span><div id="actions-${id}"></div><select onchange="addAction('${id}', this.value, 'actions'); this.value='';"><option value=\"\">+ アクション追加</option><option value=\"CONV\">会話</option><option value=\"ALLY\">加入</option><option value=\"STEP\">Step</option><option value=\"SUB\">Sub (サブステップ変)</option><option value=\"TILE\">Tile (タイル変)</option><option value=\"LOG\">ログ</option><option value=\"BOSS\">ボス</option></select></div><div><span class="sub-header">勝利後</span><div id="winActions-${id}"></div><select onchange="addAction('${id}', this.value, 'winActions'); this.value='';"><option value=\"\">+ アクション追加</option><option value=\"CONV\">会話</option><option value=\"STEP\">Step</option><option value=\"SUB\">Sub (サブステップ変)</option><option value=\"TILE\">Tile (タイル変)</option><option value=\"LOG\">ログ</option></select></div></div>`;
+            ['actions', 'winActions'].forEach(k => {
+                const container = card.querySelector(`#${k}-${id}`);
+                Data.events[id][k].forEach((a, i) => {
+                    const box = document.createElement('div'); box.className = 'action-box';
+                    let input = '';
+                    if(a.type === 'CONV') input = `<select onchange="Data.events['${id}']['${k}'][${i}].value=this.value">${Object.keys(Data.scripts).map(s=>`<option value=\"${s}\" ${a.value==s?'selected':''}>${s}</option>`).join('')}</select>`;
+                    else if(a.type === 'ALLY') input = `<select onchange="Data.events['${id}']['${k}'][${i}].value=Number(this.value)">${Master.chars.map(c=>`<option value=\"${c.id}\" ${a.value==c.id?'selected':''}>${c.name}</option>`).join('')}</select>`;
+                    else if(a.type === 'BOSS') input = `<select onchange="Data.events['${id}']['${k}'][${i}].value=Number(this.value)">${Master.monsters.filter(m=>m.id>=1000).map(mo=>`<option value=\"${mo.id}\" ${a.value==mo.id?'selected':''}>${mo.id}: ${mo.name}</option>`).join('')}</select>`;
+                    else if(a.type === 'STEP' || a.type === 'SUB') input = `<input type="number" value="${a.value || 0}" onchange="Data.events['${id}']['${k}'][${i}].value=Number(this.value)">`;
+                    else if(a.type === 'TILE') {
+                        const areaOptions = allMapKeys.map(ak => `<option value="${ak}" ${a.area==ak?'selected':''}>${ak}</option>`).join('');
+                        input = `<div style="display:grid; grid-template-columns:1fr 0.8fr; gap:5px; margin-bottom:5px;">
+                            <select onchange="Data.events['${id}']['${k}'][${i}].area=this.value"><option value="">-- エリア選択 --</option>${areaOptions}</select>
+                            <input type="text" placeholder="Tile" value="${a.tile || ''}" onchange="Data.events['${id}']['${k}'][${i}].tile=this.value">
+                        </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px;">
+                            <input type="number" placeholder="X" value="${a.x || 0}" onchange="Data.events['${id}']['${k}'][${i}].x=Number(this.value)">
+                            <input type="number" placeholder="Y" value="${a.y || 0}" onchange="Data.events['${id}']['${k}'][${i}].y=Number(this.value)">
+                        </div>`;
+                    }
+                    else input = `<input type="text" value="${a.value}" onchange="Data.events['${id}']['${k}'][${i}].value=this.value">`;
+                    box.innerHTML = `<div style="display:flex; justify-content:space-between; font-size:10px; margin-bottom:5px;"><strong>${a.type}</strong><button class="btn-del" style=\"padding:2px 5px; font-size:9px;\" onclick=\"Data.events['${id}']['${k}'].splice(${i},1); renderLogic();\">×</button></div>${input}`;
+                    container.appendChild(box);
+                });
+            });
+            root.appendChild(card);
+        });
+        renderTriggers();
+    }
+
+    function renderTriggers() {
+        const trgRoot = document.getElementById('trigger-list'); trgRoot.innerHTML = '';
+        Data.triggers.forEach((t, i) => {
+            const div = document.createElement('div'); div.className = 'line-item';
+            div.innerHTML = `<div style=\"display:grid; grid-template-columns: 1.2fr 1fr 0.8fr 0.8fr 1.2fr; gap:10px; flex:1;\">
+                <select onchange=\"Data.triggers[${i}].area=this.value\">${Object.keys(Data.storyData.areas).map(a=>`<option value=\"${a}\" ${t.area==a?'selected':''}>${a}</option>`).join('')}</select>
+                <div style=\"display:flex;gap:2px\"><input type=\"number\" value=\"${t.x}\" onchange=\"Data.triggers[${i}].x=parseInt(this.value)\"><input type=\"number\" value=\"${t.y}\" onchange=\"Data.triggers[${i}].y=parseInt(this.value)\"></div>
+                <input type=\"number\" title=\"Step\" placeholder=\"Step\" value=\"${t.step}\" onchange=\"Data.triggers[${i}].step=parseInt(this.value)\">
+                <input type=\"number\" title=\"SubStep\" placeholder=\"Sub\" value=\"${t.sub || 0}\" onchange=\"Data.triggers[${i}].sub=parseInt(this.value)\">
+                <select onchange=\"Data.triggers[${i}].eventId=this.value\"><option value=\"\">-- ロジック --</option>${Object.keys(Data.events).map(s=>`<option value=\"${s}\" ${t.eventId==s?'selected':''}>${s}</option>`).join('')}</select>
+            </div><button class=\"btn btn-del\" onclick=\"Data.triggers.splice(${i},1); renderLogic();\">×</button>`;
+            trgRoot.appendChild(div);
+        });
+    }
+
+    // --- Integrated Map Editor ---
+    function updateMapList() {
+        const cat = document.getElementById('map-category-select').value;
+        const targetSel = document.getElementById('map-target-select');
+        targetSel.innerHTML = '';
+        if (cat === 'WORLD') targetSel.innerHTML = `<option value=\"WORLD\">全体マップ</option>`;
+        else if (cat === 'FIXED') Object.keys(Data.fixed).forEach(k => targetSel.innerHTML += `<option value=\"${k}\">${k}</option>`);
+        else if (cat === 'DUNGEON') Object.keys(Data.dungeon).forEach(k => targetSel.innerHTML += `<option value=\"${k}\">${k}</option>`);
+        loadIntegratedMap();
+    }
+
+    function loadIntegratedMap() {
+        State.currentCategory = document.getElementById('map-category-select').value;
+        State.currentMapKey = document.getElementById('map-target-select').value;
+        const key = State.currentMapKey;
+        
+        const metaDiv = document.getElementById('area-meta-editor');
+        const storyMeta = document.getElementById('area-story-meta');
+        
+        if (State.currentCategory === 'WORLD') {
+            metaDiv.style.display = 'none';
+        } else {
+            metaDiv.style.display = 'block';
+            const m = Data.fixed[key] || Data.dungeon[key];
+            
+            // STORY_DATAが存在する場合（メタデータ編集）
+            if (Data.storyData.areas[key]) {
+                storyMeta.style.display = 'block';
+                const a = Data.storyData.areas[key];
+                document.getElementById('area-name-input').value = a.name || "";
+                document.getElementById('area-rank-input').value = a.rank || 0;
+                document.getElementById('area-cx-input').value = a.centerX || 0;
+                document.getElementById('area-cy-input').value = a.centerY || 0;
+                
+                ['name','rank','centerX','centerY'].forEach(f => {
+                    const elId = `area-${f==='centerX'?'cx':(f==='centerY'?'cy':f)}-input`;
+                    document.getElementById(elId).onchange = (e) => {
+                        Data.storyData.areas[key][f] = (f==='name'?e.target.value:Number(e.target.value));
+                    };
+                });
+            } else {
+                storyMeta.style.display = 'none';
+            }
+
+            // EntryPointの読み込みと編集 (Data.fixed または Data.dungeon の直下を編集)
+            const exInput = document.getElementById('area-ex-input');
+            const eyInput = document.getElementById('area-ey-input');
+            
+            if (m) {
+                // entryPointが存在しない場合は初期化
+                if (!m.entryPoint) m.entryPoint = { x: 0, y: 0 };
+                
+                exInput.value = m.entryPoint.x;
+                eyInput.value = m.entryPoint.y;
+
+                exInput.onchange = (e) => {
+                    m.entryPoint.x = Number(e.target.value);
+                    renderGrid(); // 表示を更新
+                };
+                eyInput.onchange = (e) => {
+                    m.entryPoint.y = Number(e.target.value);
+                    renderGrid(); // 表示を更新
+                };
+            }
+        }
+
+        renderThemeSub();
+        renderGrid();
+        renderObjMeta();
+    }
+
+    function renderThemeSub() {
+        const root = document.getElementById('theme-list-sub'); root.innerHTML = '';
+        const tKey = (State.currentMapKey==='WORLD' || !Data.themes[State.currentMapKey]) ? 'WORLD' : State.currentMapKey;
+        const theme = Data.themes[tKey] || Data.themes['DEFAULT'];
+        
+        for (let tile in theme) {
+            const config = theme[tile];
+            const div = document.createElement('div'); div.className = 'theme-row';
+            const curCol = toFullHex(config.color);
+            div.innerHTML = `
+                <strong style="color:var(--accent); text-align:center;">${tile}</strong>
+                <select onchange="syncInput('theme-img-${tile}', this.value); Data.themes['${tKey}']['${tile}'].img=this.value;">
+                    <option value="">-- アセット --</option>
+                    ${Master.assets.map(a => `<option value="${a}" ${config.img===a?'selected':''}>${a}</option>`).join('')}
+                </select>
+                <input type="text" id="theme-img-${tile}" value="${config.img||''}" placeholder="手入力" onchange="Data.themes['${tKey}']['${tile}'].img=this.value">
+                <input type="color" value="${curCol}" onchange="Data.themes['${tKey}']['${tile}'].color=this.value; renderGrid();">
+                <button class="btn btn-del" style="padding:2px 5px;" onclick="delete Data.themes['${tKey}']['${tile}']; renderThemeSub();">×</button>`;
+            root.appendChild(div);
+        }
+    }
+
+    function renderGrid() {
+        const grid = document.getElementById('grid');
+        let m = (State.currentCategory==='WORLD') ? {tiles:Data.mapData, width:Data.mapData[0].length, height:Data.mapData.length} : (Data.fixed[State.currentMapKey] || Data.dungeon[State.currentMapKey]);
+        const theme = Data.themes[State.currentMapKey] || Data.themes['WORLD'] || Data.themes['DEFAULT'];
+        
+        grid.style.gridTemplateColumns = `repeat(${m.width}, 24px)`; grid.innerHTML = '';
+        m.tiles.forEach((row, y) => { row.split('').forEach((tile, x) => {
+            const el = document.createElement('div'); el.className = 'tile';
+            const upper = tile.toUpperCase();
+            el.style.background = (theme[upper] && theme[upper].color) ? toFullHex(theme[upper].color) : (TILE_DEFS[upper]?.color || '#000');
+            
+            // EntryPointのハイライト表示
+            if (m.entryPoint && m.entryPoint.x === x && m.entryPoint.y === y) {
+                el.style.boxShadow = "inset 0 0 8px #0ff";
+                el.style.border = "1px solid #0ff";
+                el.title = "ENTRY POINT";
+            }
+
+            el.innerText = tile;
+            el.onmousedown = () => paintTile(x, y, m);
+            el.onmouseover = (e) => { if(e.buttons===1) paintTile(x, y, m); };
+            grid.appendChild(el);
+        }); });
+    }
+
+    function paintTile(x, y, mapObj) {
+        const oldTile = mapObj.tiles[y][x].toUpperCase();
+        const newTile = State.selectedTile.toUpperCase();
+        if (oldTile === newTile) return;
+
+        let rowArr = mapObj.tiles[y].split('');
+        rowArr[x] = State.selectedTile;
+        mapObj.tiles[y] = rowArr.join('');
+
+        if (State.currentCategory !== 'WORLD') {
+            if (oldTile === 'C') removeMapObject('chests', x, y);
+            if (newTile === 'C') addMapObject('chests', x, y);
+            if (oldTile === 'B') removeMapObject('bosses', x, y);
+            if (newTile === 'B') addMapObject('bosses', x, y);
+        }
+        renderGrid();
+        renderObjMeta();
+    }
+
+    function addMapObject(type, x, y) {
+        const m = (Data.fixed[State.currentMapKey] || Data.dungeon[State.currentMapKey]);
+        if (!m[type]) m[type] = [];
+        if (!m[type].find(o => o.x === x && o.y === y)) {
+            m[type].push({ x, y, itemId: 1, monsterId: 1000 });
+        }
+    }
+
+    function removeMapObject(type, x, y) {
+        const m = (Data.fixed[State.currentMapKey] || Data.dungeon[State.currentMapKey]);
+        if (m[type]) m[type] = m[type].filter(o => !(o.x === x && o.y === y));
+    }
+
+    function renderObjMeta() {
+        const root = document.getElementById('obj-meta-editor');
+        const m = (Data.fixed[State.currentMapKey] || Data.dungeon[State.currentMapKey]);
+        if(!m || State.currentCategory==='WORLD') { root.style.display='none'; return; }
+        root.style.display='block';
+        
+        const list = document.getElementById('obj-list'); list.innerHTML = '';
+        if(m.chests) m.chests.forEach((c, i) => {
+            const div = document.createElement('div'); div.className = 'action-box';
+            div.innerHTML = `宝箱 ${i} (${c.x}, ${c.y}) アイテム: <select onchange="updateObjValue('chests', ${i}, 'itemId', this.value)">${Master.items.map(it=>`<option value="${it.id}" ${c.itemId==it.id?'selected':''}>ID:${it.id} ${it.name}</option>`).join('')}</select>`;
+            list.appendChild(div);
+        });
+        if(m.bosses) m.bosses.forEach((b, i) => {
+            const div = document.createElement('div'); div.className = 'action-box'; div.style.borderLeftColor='var(--red)';
+            div.innerHTML = `ボス ${i} (${b.x}, ${b.y}) 魔物: <select onchange="updateObjValue('bosses', ${i}, 'monsterId', this.value)">${Master.monsters.filter(mo=>mo.id>=1000).map(mo=>`<option value="${mo.id}" ${b.monsterId==mo.id?'selected':''}>ID:${mo.id} ${mo.name}</option>`).join('')}</select>`;
+            list.appendChild(div);
+        });
+        
+        if (State.currentCategory === 'DUNGEON') {
+            document.getElementById('dungeon-settings').style.display = 'block';
+            const bgSel = document.getElementById('dungeon-battlebg-select-dropdown');
+            const bgInp = document.getElementById('dungeon-battlebg-input');
+            bgSel.innerHTML = `<option value="">-- アセット選択 --</option>` + Master.assets.map(a => `<option value="${a}" ${m.battleBg===a?'selected':''}>${a}</option>`).join('');
+            bgInp.value = m.battleBg || '';
+        } else {
+            document.getElementById('dungeon-settings').style.display = 'none';
+        }
+
+        const pool = document.getElementById('monsters-pool'); pool.innerHTML = '';
+        if(m.monsters) m.monsters.forEach((mid, idx) => {
+            const div = document.createElement('div'); div.className = 'theme-row'; div.style.gridTemplateColumns='1fr 40px';
+            div.innerHTML = `<select onchange="updateMonsterPoolValue(${idx}, this.value)">${Master.monsters.filter(mo=>mo.id<1000).map(mo=>`<option value="${mo.id}" ${mid==mo.id?'selected':''}>ID:${mo.id} ${mo.name}</option>`).join('')}</select><button class="btn btn-del" onclick="removeMonsterFromPool(${idx})">×</button>`;
+            pool.appendChild(div);
+        });
+    }
+
+    function updateObjValue(type, idx, key, val) {
+        const m = (Data.fixed[State.currentMapKey] || Data.dungeon[State.currentMapKey]);
+        if (m && m[type] && m[type][idx]) {
+            m[type][idx][key] = Number(val);
+        }
+    }
+    
+    function updateMonsterPoolValue(idx, val) {
+        const m = (Data.fixed[State.currentMapKey] || Data.dungeon[State.currentMapKey]);
+        if (m && m.monsters) {
+            m.monsters[idx] = Number(val);
+        }
+    }
+
+    function removeMonsterFromPool(idx) {
+        const m = (Data.fixed[State.currentMapKey] || Data.dungeon[State.currentMapKey]);
+        if (m && m.monsters) {
+            m.monsters.splice(idx, 1);
+            renderObjMeta();
+        }
+    }
+
+    function addMonsterToPool() {
+        const m = (Data.fixed[State.currentMapKey] || Data.dungeon[State.currentMapKey]);
+        if(!m.monsters) m.monsters = [];
+        m.monsters.push(1);
+        renderObjMeta();
+    }
+
+    function updateDungeonBattleBg(val) {
+        const m = Data.dungeon[State.currentMapKey];
+        if (m) m.battleBg = val;
+    }
+
+    function addTileToTheme() {
+		const tKey = (State.currentMapKey === 'WORLD' || !Data.themes[State.currentMapKey])
+			? 'WORLD'
+			: State.currentMapKey;
+
+		const code = prompt("タイルコード（1文字）:");
+		const c = ensureTileDef(code); // 未登録なら名称/色も聞いてパレット登録
+		if (!c) return;
+
+		if (!Data.themes[tKey]) Data.themes[tKey] = JSON.parse(JSON.stringify(Data.themes['DEFAULT'] || {}));
+		Data.themes[tKey][c] = { img: '', color: TILE_DEFS[c].color || '#333333' };
+
+		renderPalette();
+		renderThemeSub();
+		renderGrid();
+	}
+
+	
+	function ensureTileDef(code, nameOpt, colorOpt) {
+		const c = (code || '').toUpperCase();
+		if (!c || c.length !== 1) return null;
+
+		if (!TILE_DEFS[c]) {
+			const name = nameOpt ?? prompt(`タイル名称（${c}）:`, `${c}タイル`);
+			if (name === null) return null; // キャンセル
+			const color = toFullHex(colorOpt ?? prompt(`表示色（${c}）(#RRGGBB):`, '#333333'));
+			TILE_DEFS[c] = { name: name || `${c}タイル`, color: color || '#333333' };
+		}
+		return c;
+	}
+
+	// パレット（TILE_DEFS）とテーマ（TILE_THEMES）をまとめて新規追加
+	function addTileDefAndTheme() {
+		const code = prompt("タイルコード（1文字。例: W / D / X）:");
+		const c = ensureTileDef(code);
+		if (!c) return;
+
+		// 現在のテーマキー（WORLD or 個別マップ）
+		const tKey = (State.currentMapKey === 'WORLD' || !Data.themes[State.currentMapKey])
+			? 'WORLD'
+			: State.currentMapKey;
+
+		if (!Data.themes[tKey]) Data.themes[tKey] = JSON.parse(JSON.stringify(Data.themes['DEFAULT'] || {}));
+
+		// テーマに未登録なら追加
+		if (!Data.themes[tKey][c]) {
+			Data.themes[tKey][c] = { img: '', color: TILE_DEFS[c].color || '#333333' };
+		}
+
+		// 反映
+		State.selectedTile = c;
+		renderPalette();
+		renderThemeSub();
+		renderGrid();
+	}
+
+    function renderPalette() {
+        const p = document.getElementById('map-palette'); p.innerHTML = '';
+        Object.entries(TILE_DEFS).forEach(([k,v]) => {
+            const b = document.createElement('div'); b.className = `p-btn ${State.selectedTile===k?'selected':''}`; b.style.background=v.color;
+            b.innerHTML = `<span style=\"color:#fff; text-shadow:1px 1px 2px #000;\">${k}: ${v.name}</span>`;
+            b.onclick = () => { State.selectedTile=k; renderPalette(); }; p.appendChild(b);
+        });
+    }
+
+    // --- System ---
+    function switchTab(t) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.getElementById('tab-'+t).classList.add('active');
+        document.getElementById('sec-'+t).classList.add('active');
+        if(t==='story') renderStory(); else if(t==='logic') renderLogic(); else if(t==='map') { updateMapList(); renderPalette(); }
+    }
+    function addScriptGroup() { const id = prompt("会話グループID:"); if(id) { Data.scripts[id] = []; renderStory(); } }
+    function addLine(id) { Data.scripts[id].push({charId:1000, name:'', text:''}); renderStory(); }
+    function addLogicGroup() { const id = prompt("ロジックID:"); if(id) { Data.events[id] = {actions:[], winActions:[]}; renderLogic(); } }
+    function addAction(id, type, key) { 
+        let obj = {type: type};
+        if(type === 'TILE') { obj.area = ""; obj.tile = ""; obj.x = 0; obj.y = 0; }
+        else { obj.value = (type==='STEP'||type==='SUB'||type==='ALLY'||type==='BOSS' ? 0 : ''); }
+        Data.events[id][key].push(obj); 
+        renderLogic(); 
+    }
+    function addTrigger() { Data.triggers.push({area:'START_VILLAGE', x:0, y:0, step:0, sub:0, eventId:''}); renderLogic(); }
+    function download(n, t) { const b = new Blob([t], {type:'text/javascript'}); const a = document.createElement('a'); a.href=URL.createObjectURL(b); a.download=n; a.click(); }
+
+    function exportStory() {
+        const genFunc = (type) => `        const data = App.data.progress; const event = this.events[eventId]; if (!event || !event.${type}) return; for (const action of event.${type}) { if (action.type === 'CONV') await this.showConversation(action.value); if (action.type === 'ALLY') App.addStoryAlly(action.value); if (action.type === 'STEP') { data.storyStep = action.value; this.syncHeroLimitBreak(); } if (action.type === 'SUB') data.subStep = action.value; if (action.type === 'TILE') { const targetArea = action.area || App.data.location.area; if (!data.mapChanges) data.mapChanges = {}; if (!data.mapChanges[targetArea]) data.mapChanges[targetArea] = {}; data.mapChanges[targetArea][\`\${action.x},\${action.y}\`] = action.tile; if (typeof Field !== 'undefined' && Field.ready) Field.render(); } if (action.type === 'LOG') App.log(action.value); if (action.type === 'BOSS') { App.data.battle = { active: false, isBossBattle: true, fixedBossId: action.value || 1010, eventId: eventId }; App.save(); App.changeScene('battle'); return; } }`;
+        const content = `/* story.js */\nconst StoryManager = {\n    scripts: ${JSON.stringify(Data.scripts, null, 4)},\n    triggers: ${JSON.stringify(Data.triggers, null, 4)},\n    events: ${JSON.stringify(Data.events, null, 4)},\n    syncHeroLimitBreak: ${StoryManager.syncHeroLimitBreak ? StoryManager.syncHeroLimitBreak.toString() : 'function() {}'},\n    executeEvent: async function(eventId) {\n${genFunc('actions')}\n        App.save();\n    },\n    onBattleWin: async function(eventId) {\n${genFunc('winActions')}\n        App.save();\n    },\n    showConversation: ${StoryManager.showConversation.toString()},\n    createStoryDOM: ${StoryManager.createStoryDOM.toString()}\n};`;
+        download('story.js', content);
+    }
+
+    function exportMap() {
+        const stringifyWithComments = (obj) => {
+            let json = JSON.stringify(obj, null, 4);
+            json = json.replace(/"itemId": ([0-9.]+)/g, (m, id) => `"itemId": ${id} /* ${Master.items.find(i=>i.id == id)?.name||'不明'} */`);
+            json = json.replace(/"monsterId": ([0-9.]+)/g, (m, id) => `"monsterId": ${id} /* ${Master.monsters.find(m=>m.id == id)?.name||'不明'} */`);
+            json = json.replace(/"monsters": \[\s+([\s\S]*?)\s+\]/g, (m, ids) => {
+                const idList = ids.split(',').map(s=>s.trim()).filter(s=>s);
+                const list = idList.map(id => {
+                    const numId = Number(id);
+                    const mo = Master.monsters.find(m => m.id == numId);
+                    return `            ${numId} /* ${mo ? mo.name : '?'} */`;
+                }).join(',\n');
+                return `"monsters": [\n${list}\n        ]`;
+            });
+            return json;
+        };
+        const c = `/* map.js */\nconst TILE_THEMES = ${JSON.stringify(Data.themes, null, 4)};\n\nconst STORY_DATA = ${JSON.stringify(Data.storyData, null, 4)};\n\nconst MAP_DATA = ${JSON.stringify(Data.mapData, null, 0).replace(/,/g, ',\n')};\n\nconst FIXED_MAPS = ${stringifyWithComments(Data.fixed)};\n\nconst FIXED_DUNGEON_MAPS = ${stringifyWithComments(Data.dungeon)};`;
+        download('map.js', c);
+    }
+
+    window.onload = () => { renderStory(); };
+</script>
+</body>
+</html>

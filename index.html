@@ -84,8 +84,8 @@
 
         /* メニュー共通 */
         #menu-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 100; display: none; flex-direction: column; justify-content: center; align-items: center; }
-        .menu-window { width: 90%; max-width: 400px; height: 80%; background: #222; border: 2px solid #fff; display: flex; flex-direction: column; }
-        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 20px; overflow-y: auto; flex: 1; }
+        .menu-window { width: 95%; max-width: 400px; height: 97%; margin-bottom: 0px; background: #222; border: 2px solid #fff; display: flex; flex-direction: column; }
+        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; overflow-y: auto; flex: 1; }
         .menu-btn { background: #333; border: 1px solid #fff; color: #fff; padding: 15px; font-family: inherit; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.1s; }
         .menu-btn:active { transform: translateY(2px); background: #444; }
         
@@ -180,7 +180,7 @@
 			background: #000;
 			display: flex;
 			flex-direction: column;
-			border-top: 2px solid #fff;
+			border-top: 1px solid #fff;
 			
 			/* flex-shrink: 0; ← これを削除 (縮めるようにするため) */
 		}
@@ -678,30 +678,21 @@ if ('serviceWorker' in navigator) {
 		
     </div>
 
-    <div id="menu-overlay">
-        <div class="menu-window">
-            <div class="header-bar"><span>MENU</span> <button class="btn" onclick="Menu.closeMainMenu()">閉じる</button></div>
-            <div class="party-bar" id="menu-party-bar"></div>
-            <div class="menu-grid">
-                <button class="menu-btn" onclick="Menu.openSubScreen('party')">仲間編成</button>
-                <button class="menu-btn" onclick="Menu.openSubScreen('equip')">装備変更</button>
-                <button class="menu-btn" onclick="Menu.openSubScreen('inventory')">所持装備</button>
-                <button class="menu-btn" onclick="Menu.openSubScreen('items')">道具</button>
-                <button class="menu-btn" onclick="Menu.openSubScreen('allies')">仲間一覧</button>
-                <button class="menu-btn" onclick="Menu.openSubScreen('skills')">スキル</button>
-                <button class="menu-btn" onclick="Menu.openSubScreen('book')">魔物図鑑</button>
-                <button class="menu-btn" onclick="Menu.openSubScreen('blacksmith')">鍛冶屋</button>
-                <button class="menu-btn" style="background:#400040;" onclick="Dungeon.enter()">ダンジョン</button>
-                <button class="menu-btn" style="background:#664400;" onclick="Menu.openSubScreen('gacha')">ガチャ</button>
-                <button class="menu-btn" style="background:#333;" onclick="App.save(); Menu.msg('保存しました');">セーブ</button>
-                
-                <button class="menu-btn" style="background:#004444;" onclick="App.downloadSave()">データ出力</button>
-                <button class="menu-btn" style="background:#004444;" onclick="App.importSave()">データ読込</button>
-                
-                <button class="menu-btn" style="background:#500; grid-column:span 2;" onclick="App.returnToTitle()">タイトルへ</button>
-            </div>
+<div id="menu-overlay">
+    <div class="menu-window">
+        <div class="header-bar">
+            <span>MENU</span> 
+            <button class="btn" onclick="Menu.closeMainMenu()">閉じる</button>
+        </div>
+
+        <div class="party-bar" id="menu-party-bar"></div>
+        
+        <div class="menu-grid"></div>
+
+        <div id="ad-ui-container" style="width: 100%; min-height: 50px; background: #222; border-top: 1px solid #444; display: none; align-items: center; justify-content: center; flex-shrink: 0; padding-top: 5px; padding-bottom: 2px;">
         </div>
     </div>
+</div>
 
     <div id="sub-screen-party" class="sub-screen">
         <div class="header-bar"><span>パーティ編成</span> <button class="btn" onclick="Menu.closeSubScreen('party')">戻る</button></div>

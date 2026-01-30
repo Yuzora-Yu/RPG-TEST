@@ -1,4 +1,4 @@
-const CACHE_NAME = "prisma-abyss-v2.42";
+const CACHE_NAME = "prisma-abyss-v2.45";
 const FILES_TO_CACHE = [
   "./", // ルート
   "main.html",
