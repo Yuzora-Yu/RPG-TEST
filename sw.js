@@ -1,9 +1,11 @@
-const CACHE_NAME = "prisma-abyss-v2.45";
+const CACHE_NAME = "prisma-abyss-v2.48-solid-assets";
 const FILES_TO_CACHE = [
   "./", // ルート
   "main.html",
   "index.html",
   "manifest.json",
+  "modern-polish.css",
+  "polish.js",
   "main.js",
   "menus.js",
   "database.js",
@@ -47,7 +49,7 @@ self.addEventListener("activate", (e) => {
 // フェッチ（通信）発生時の処理
 self.addEventListener("fetch", (e) => {
   e.respondWith(
-    caches.match(e.target ? e.target : e.request).then((res) => {
+    caches.match(e.request).then((res) => {
       // キャッシュがあれば返し、なければネットワークへ（オフライン時はここでエラーになる）
       return res || fetch(e.request);
     })

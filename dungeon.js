@@ -155,7 +155,11 @@ const Dungeon = {
 					// フォールバック用
 					const ss = (App.data.progress && App.data.progress.storyStep) || 0;
 					const maxF = App.data.dungeon.maxFloor;
-					hero.limitBreak = Math.max(0, ss - 1) + Math.floor(Math.max(0, maxF - 1) / 10) * 5;
+					const hero = App.data.characters?.find(c => c.charId === 301 || c.uid === 'p1');
+					if (hero) {
+						hero.limitBreak = Math.max(0, ss - 1) + Math.floor(Math.max(0, maxF - 1) / 10) * 5;
+						if (typeof App.calcStats === 'function') App.calcStats(hero);
+					}
 				}
 			}
             Dungeon.generateFloor();
