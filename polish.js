@@ -513,15 +513,15 @@
     };
 
     const aiAssets = {
-      floor: "assets/generated/tile-floor-field-ai.png",
-      sea: "assets/generated/tile-sea-solid-ai.png",
+      floor: "assets/generated/tile-floor-field-ai-v2.png",
+      sea: "assets/generated/tile-sea-ai-v2.png",
       forest: "assets/generated/tile-forest-solid-ai.png",
       mountain: "assets/generated/tile-mountain-solid-ai.png",
       Low_mountain: "assets/generated/tile-Low_mountain-solid-ai.png",
-      wall: "assets/generated/tile-wall-solid-ai.png",
-      dungeon_floor: "assets/generated/tile-floor-dungeon-ai.png",
+      wall: "assets/generated/tile-wall-dungeon-ai-v2.png",
+      dungeon_floor: "assets/generated/tile-floor-dungeon-ai-v2.png",
       stairs: "assets/generated/tile-stairs_field-solid-ai.png",
-      stairs_dungeon: "assets/generated/tile-stairs_dungeon-solid-ai.png",
+      stairs_dungeon: "assets/generated/tile-stairs-dungeon-ai-v2.png",
       cave: "assets/generated/tile-cave-solid-ai.png",
       cave_dungeon: "assets/generated/tile-cave_dungeon-solid-ai.png",
       hall: "assets/generated/tile-hall-solid-ai.png",
@@ -553,8 +553,11 @@
       smith: "assets/generated/tile-smith-solid-ai.png",
       fire_village: "assets/generated/tile-fire_village-solid-ai.png",
       dummy_grass: "assets/generated/tile-dummy-grass-ai.png",
-      boss: "assets/generated/tile-boss_field-solid-ai.png",
-      boss_dungeon: "assets/generated/tile-boss_dungeon-solid-ai.png",
+      boss: "assets/generated/tile-boss-field-ai-v2.png",
+      boss_dungeon: "assets/generated/tile-boss-dungeon-ai-v2.png",
+      event_field: "assets/generated/tile-event-field-ai-v2.png",
+      event_dungeon: "assets/generated/tile-event-dungeon-ai-v2.png",
+      portal_dungeon: "assets/generated/tile-portal-dungeon-ai-v2.png",
       battle_bg_field: "assets/generated/battle-field-ai.png",
       battle_bg_forest: "assets/generated/battle-forest-ai.png",
       battle_bg_mountain: "assets/generated/battle-mountain-ai.png",
@@ -626,6 +629,7 @@
         T: entry("floor", "#2c7a4e"),
         I: entry("inn", "#d7b45a"),
         B: entry("boss", "#db3b4d"),
+        E: entry("event_field", "#8f7dff"),
         D: entry("hall", "#303541")
       },
       DEFAULT: {
@@ -639,8 +643,8 @@
         I: entry("inn", "#356ab8"),
         K: entry("casino", "#7e3fa1"),
         E: entry("medal", "#f6ca62"),
-        H: entry("house-1", "#d9bd84"),
-        V: entry("house-2", "#7e3fa1")
+        H: entry("event_dungeon", "#8f7dff"),
+        V: entry("portal_dungeon", "#4ab9d8")
       },
       START_VILLAGE: {
         W: entry("forest", "#1f6a3f"),
@@ -659,7 +663,7 @@
         T: entry("dungeon_floor", "#3c4151"),
         G: entry("dungeon_floor", "#3c4151"),
         S: entry("stairs_dungeon", "#d7b45a"),
-        V: entry("cave_dungeon", "#303541"),
+        V: entry("portal_dungeon", "#4ab9d8"),
         C: entry("chest_dungeon", "#9c6332"),
         R: entry("chest_rare_dungeon", "#b6324b"),
         B: entry("boss_dungeon", "#db3b4d")
@@ -850,6 +854,8 @@
     lastAt: 0,
     current: null,
     totalHitEvents: 0,
+    pendingNeutralPhysicalKind: null,
+    pendingNeutralPhysicalTimer: 0,
     assets: {
       slash: "assets/generated/fx-slash-ai.png",
       claw: "assets/generated/fx-claw-ai.png",
@@ -874,7 +880,25 @@
       "holy-burst": "assets/generated/fx-holy-burst-ai.png",
       poison: "assets/generated/fx-poison-ai.png",
       "ultimate-chaos": "assets/generated/fx-ultimate-chaos-ai.png",
-      "heal-blossom": "assets/generated/fx-heal-blossom-ai.png"
+      "heal-blossom": "assets/generated/fx-heal-blossom-ai.png",
+      "neutral-slash": "assets/generated/fx-neutral-slash-ai.png",
+      "neutral-smash": "assets/generated/fx-neutral-smash-ai.png",
+      "neutral-pierce": "assets/generated/fx-neutral-pierce-ai.png",
+      "neutral-combo": "assets/generated/fx-neutral-combo-ai.png",
+      "neutral-chain": "assets/generated/fx-neutral-chain-ai.png",
+      "neutral-heavy": "assets/generated/fx-neutral-heavy-ai.png",
+      "phys-sword": "assets/generated/fx-neutral-slash-ai.png",
+      "phys-spear": "assets/generated/fx-neutral-pierce-ai.png",
+      "phys-axe": "assets/generated/fx-neutral-smash-ai.png",
+      "phys-combo": "assets/generated/fx-neutral-combo-ai.png",
+      "spell-fire": "assets/generated/fx-spell-fire-ai.png",
+      "spell-ice": "assets/generated/fx-spell-ice-ai.png",
+      "spell-thunder": "assets/generated/fx-spell-thunder-ai.png",
+      "spell-wind": "assets/generated/fx-spell-wind-ai.png",
+      "spell-light": "assets/generated/fx-spell-light-ai.png",
+      "spell-dark": "assets/generated/fx-spell-dark-ai.png",
+      "spell-chaos": "assets/generated/fx-spell-chaos-ai.png",
+      breath: "assets/generated/fx-breath-ai.png"
     },
     stripHtml(value) {
       const div = document.createElement("div");
