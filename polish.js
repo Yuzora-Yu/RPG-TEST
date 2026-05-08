@@ -513,51 +513,51 @@
     };
 
     const aiAssets = {
-      floor: "assets/generated/tile-floor-field-ai-v2.png",
-      sea: "assets/generated/tile-sea-ai-v2.png",
-      forest: "assets/generated/tile-forest-solid-ai.png",
-      mountain: "assets/generated/tile-mountain-solid-ai.png",
-      Low_mountain: "assets/generated/tile-Low_mountain-solid-ai.png",
-      wall: "assets/generated/tile-wall-dungeon-ai-v2.png",
-      dungeon_floor: "assets/generated/tile-floor-dungeon-ai-v2.png",
-      stairs: "assets/generated/tile-stairs_field-solid-ai.png",
-      stairs_dungeon: "assets/generated/tile-stairs-dungeon-ai-v2.png",
-      cave: "assets/generated/tile-cave-solid-ai.png",
+      floor: "assets/managed/current/map/terrain/terrain_grass_field_v001.png",
+      sea: "assets/managed/current/map/terrain/terrain_sea_v001.png",
+      forest: "assets/managed/current/map/objects/object_field_forest_v001.png",
+      mountain: "assets/managed/current/map/objects/object_field_mountain_v001.png",
+      Low_mountain: "assets/managed/current/map/objects/object_field_low_mountain_v001.png",
+      wall: "assets/managed/current/map/terrain/terrain_dungeon_wall_v001.png",
+      dungeon_floor: "assets/managed/current/map/terrain/terrain_dungeon_floor_v001.png",
+      stairs: "assets/managed/current/map/objects/object_field_stairs_v001.png",
+      stairs_dungeon: "assets/managed/current/map/objects/object_dungeon_stairs_v001.png",
+      cave: "assets/managed/current/map/objects/object_field_cave_v001.png",
       cave_dungeon: "assets/generated/tile-cave_dungeon-solid-ai.png",
-      hall: "assets/generated/tile-hall-solid-ai.png",
-      "house-1": "assets/generated/tile-house-1-solid-ai.png",
-      "house-2": "assets/generated/tile-house-2-solid-ai.png",
-      village: "assets/generated/tile-village-solid-ai.png",
-      inn: "assets/generated/tile-inn-solid-ai.png",
-      casino: "assets/generated/tile-casino-solid-ai.png",
-      weapon: "assets/generated/tile-weapon-solid-ai.png",
-      shop: "assets/generated/tile-shop-solid-ai.png",
-      medal: "assets/generated/tile-medal-solid-ai.png",
-      town: "assets/generated/tile-town-solid-ai.png",
-      settlement: "assets/generated/tile-settlement-solid-ai.png",
-      castle: "assets/generated/tile-castle-solid-ai.png",
-      temple: "assets/generated/tile-temple-solid-ai.png",
-      fortress: "assets/generated/tile-fortress-solid-ai.png",
-      ruins: "assets/generated/tile-ruins-solid-ai.png",
-      lost: "assets/generated/tile-lost-solid-ai.png",
-      darkcastle: "assets/generated/tile-darkcastle-solid-ai.png",
-      lighthouse: "assets/generated/tile-lighthouse-solid-ai.png",
-      tower: "assets/generated/tile-tower-solid-ai.png",
-      farm: "assets/generated/tile-farm-solid-ai.png",
-      pot_grass: "assets/generated/tile-pot_grass-solid-ai.png",
-      barrel_grass: "assets/generated/tile-barrel_grass-solid-ai.png",
-      chest: "assets/generated/tile-chest_grass-solid-ai.png",
-      chest_rare: "assets/generated/tile-chest_rare_grass-solid-ai.png",
-      chest_dungeon: "assets/generated/tile-chest_dungeon-solid-ai.png",
-      chest_rare_dungeon: "assets/generated/tile-chest_rare_dungeon-solid-ai.png",
-      smith: "assets/generated/tile-smith-solid-ai.png",
-      fire_village: "assets/generated/tile-fire_village-solid-ai.png",
+      hall: "assets/managed/current/map/objects/object_field_hall_v001.png",
+      "house-1": "assets/managed/current/map/objects/object_field_house_1_v001.png",
+      "house-2": "assets/managed/current/map/objects/object_field_house_2_v001.png",
+      village: "assets/managed/current/map/objects/object_field_village_v001.png",
+      inn: "assets/managed/current/map/objects/object_field_inn_v001.png",
+      casino: "assets/managed/current/map/objects/object_field_casino_v001.png",
+      weapon: "assets/managed/current/map/objects/object_field_weapon_v001.png",
+      shop: "assets/managed/current/map/objects/object_field_shop_v001.png",
+      medal: "assets/managed/current/map/objects/object_field_medal_v001.png",
+      town: "assets/managed/current/map/objects/object_field_town_v001.png",
+      settlement: "assets/managed/current/map/objects/object_field_settlement_v001.png",
+      castle: "assets/managed/current/map/objects/object_field_castle_v001.png",
+      temple: "assets/managed/current/map/objects/object_field_temple_v001.png",
+      fortress: "assets/managed/current/map/objects/object_field_fortress_v001.png",
+      ruins: "assets/managed/current/map/objects/object_field_ruins_v001.png",
+      lost: "assets/managed/current/map/objects/object_field_lost_v001.png",
+      darkcastle: "assets/managed/current/map/objects/object_field_darkcastle_v001.png",
+      lighthouse: "assets/managed/current/map/objects/object_field_lighthouse_v001.png",
+      tower: "assets/managed/current/map/objects/object_field_tower_v001.png",
+      farm: "assets/managed/current/map/objects/object_field_farm_v001.png",
+      pot_grass: "assets/managed/current/map/objects/object_field_pot_v001.png",
+      barrel_grass: "assets/managed/current/map/objects/object_field_barrel_v001.png",
+      chest: "assets/managed/current/map/objects/object_field_chest_v001.png",
+      chest_rare: "assets/managed/current/map/objects/object_field_chest_rare_v001.png",
+      chest_dungeon: "assets/managed/current/map/objects/object_dungeon_chest_v001.png",
+      chest_rare_dungeon: "assets/managed/current/map/objects/object_dungeon_chest_rare_v001.png",
+      smith: "assets/managed/current/map/objects/object_field_smith_v001.png",
+      fire_village: "assets/managed/current/map/objects/object_field_fire_village_v001.png",
       dummy_grass: "assets/generated/tile-dummy-grass-ai.png",
-      boss: "assets/generated/tile-boss-field-ai-v2.png",
-      boss_dungeon: "assets/generated/tile-boss-dungeon-ai-v2.png",
-      event_field: "assets/generated/tile-event-field-ai-v2.png",
-      event_dungeon: "assets/generated/tile-event-dungeon-ai-v2.png",
-      portal_dungeon: "assets/generated/tile-portal-dungeon-ai-v2.png",
+      boss: "assets/managed/current/map/objects/object_field_boss_v001.png",
+      boss_dungeon: "assets/managed/current/map/objects/object_dungeon_boss_v001.png",
+      event_field: "assets/managed/current/map/objects/object_field_event_v001.png",
+      event_dungeon: "assets/managed/current/map/objects/object_dungeon_event_v001.png",
+      portal_dungeon: "assets/managed/current/map/objects/object_dungeon_portal_v001.png",
       battle_bg_field: "assets/generated/battle-field-ai.png",
       battle_bg_forest: "assets/generated/battle-forest-ai.png",
       battle_bg_mountain: "assets/generated/battle-mountain-ai.png",
@@ -643,8 +643,8 @@
         I: entry("inn", "#356ab8"),
         K: entry("casino", "#7e3fa1"),
         E: entry("medal", "#f6ca62"),
-        H: entry("event_dungeon", "#8f7dff"),
-        V: entry("portal_dungeon", "#4ab9d8")
+        H: entry("dungeon_floor", "#8f7dff"),
+        V: entry("dungeon_floor", "#4ab9d8")
       },
       START_VILLAGE: {
         W: entry("forest", "#1f6a3f"),
@@ -653,7 +653,7 @@
         H: entry("house-1", "#d9bd84"),
         V: entry("house-2", "#7e3fa1"),
         D: entry("cave", "#303541"),
-        S: entry("stairs", "#d7b45a"),
+        S: entry("floor", "#d7b45a"),
         C: entry("chest", "#9c6332"),
         R: entry("chest_rare", "#b6324b"),
         B: entry("boss", "#db3b4d")
@@ -662,8 +662,8 @@
         W: entry("wall", "#303541"),
         T: entry("dungeon_floor", "#3c4151"),
         G: entry("dungeon_floor", "#3c4151"),
-        S: entry("stairs_dungeon", "#d7b45a"),
-        V: entry("portal_dungeon", "#4ab9d8"),
+        S: entry("dungeon_floor", "#d7b45a"),
+        V: entry("dungeon_floor", "#4ab9d8"),
         C: entry("chest_dungeon", "#9c6332"),
         R: entry("chest_rare_dungeon", "#b6324b"),
         B: entry("boss_dungeon", "#db3b4d")
@@ -751,7 +751,7 @@
     const loc = byId("loc-name");
     if (loc && shouldReplace(loc.textContent)) loc.textContent = "フィールド";
     const msg = byId("msg-text");
-    if (msg && shouldReplace(msg.textContent)) msg.textContent = "PRISMA ABYSS";
+    if (msg && garbledRe.test(msg.textContent || "")) msg.textContent = "";
     const action = byId("action-indicator");
     if (action && shouldReplace(action.textContent)) action.textContent = "決定";
     setText("btn-up", "▲");
@@ -856,6 +856,8 @@
     totalHitEvents: 0,
     pendingNeutralPhysicalKind: null,
     pendingNeutralPhysicalTimer: 0,
+    pendingCriticalKind: null,
+    pendingCriticalTimer: 0,
     assets: {
       slash: "assets/generated/fx-slash-ai.png",
       claw: "assets/generated/fx-claw-ai.png",
@@ -867,8 +869,8 @@
       dark: "assets/generated/fx-dark-ai.png",
       chaos: "assets/generated/fx-chaos-ai.png",
       heal: "assets/generated/fx-heal-ai.png",
-      buff: "assets/generated/fx-buff-ai.png",
-      debuff: "assets/generated/fx-debuff-ai.png",
+      buff: "assets/managed/current/battle/fx/fx_support_buff_v001.png",
+      debuff: "assets/managed/current/battle/fx/fx_support_debuff_v001.png",
       combo: "assets/generated/fx-combo-ai.png",
       "all-slash": "assets/generated/fx-all-slash-ai.png",
       "enemy-claw": "assets/generated/fx-enemy-claw-ai.png",
@@ -880,25 +882,27 @@
       "holy-burst": "assets/generated/fx-holy-burst-ai.png",
       poison: "assets/generated/fx-poison-ai.png",
       "ultimate-chaos": "assets/generated/fx-ultimate-chaos-ai.png",
-      "heal-blossom": "assets/generated/fx-heal-blossom-ai.png",
-      "neutral-slash": "assets/generated/fx-neutral-slash-ai.png",
-      "neutral-smash": "assets/generated/fx-neutral-smash-ai.png",
-      "neutral-pierce": "assets/generated/fx-neutral-pierce-ai.png",
-      "neutral-combo": "assets/generated/fx-neutral-combo-ai.png",
-      "neutral-chain": "assets/generated/fx-neutral-chain-ai.png",
-      "neutral-heavy": "assets/generated/fx-neutral-heavy-ai.png",
-      "phys-sword": "assets/generated/fx-neutral-slash-ai.png",
-      "phys-spear": "assets/generated/fx-neutral-pierce-ai.png",
-      "phys-axe": "assets/generated/fx-neutral-smash-ai.png",
-      "phys-combo": "assets/generated/fx-neutral-combo-ai.png",
-      "spell-fire": "assets/generated/fx-spell-fire-ai.png",
-      "spell-ice": "assets/generated/fx-spell-ice-ai.png",
-      "spell-thunder": "assets/generated/fx-spell-thunder-ai.png",
-      "spell-wind": "assets/generated/fx-spell-wind-ai.png",
-      "spell-light": "assets/generated/fx-spell-light-ai.png",
-      "spell-dark": "assets/generated/fx-spell-dark-ai.png",
-      "spell-chaos": "assets/generated/fx-spell-chaos-ai.png",
-      breath: "assets/generated/fx-breath-ai.png"
+      "heal-blossom": "assets/managed/current/battle/fx/fx_support_heal_v001.png",
+      "neutral-slash": "assets/managed/current/battle/fx/fx_phys_neutral_slash_v001.png",
+      "neutral-smash": "assets/managed/current/battle/fx/fx_phys_neutral_smash_v001.png",
+      "neutral-pierce": "assets/managed/current/battle/fx/fx_phys_neutral_pierce_v001.png",
+      "neutral-combo": "assets/managed/current/battle/fx/fx_phys_neutral_combo_v001.png",
+      "neutral-chain": "assets/managed/current/battle/fx/fx_phys_neutral_chain_v001.png",
+      "neutral-heavy": "assets/managed/current/battle/fx/fx_phys_neutral_heavy_v001.png",
+      "phys-sword": "assets/managed/current/battle/fx/fx_phys_neutral_slash_v001.png",
+      "phys-spear": "assets/managed/current/battle/fx/fx_phys_neutral_pierce_v001.png",
+      "phys-axe": "assets/managed/current/battle/fx/fx_phys_neutral_smash_v001.png",
+      "phys-combo": "assets/managed/current/battle/fx/fx_phys_neutral_combo_v001.png",
+      "spell-fire": "assets/managed/current/battle/fx/fx_spell_fire_v001.png",
+      "spell-ice": "assets/managed/current/battle/fx/fx_spell_ice_v001.png",
+      "spell-thunder": "assets/managed/current/battle/fx/fx_spell_thunder_v001.png",
+      "spell-wind": "assets/managed/current/battle/fx/fx_spell_wind_v001.png",
+      "spell-light": "assets/managed/current/battle/fx/fx_spell_light_v001.png",
+      "spell-dark": "assets/managed/current/battle/fx/fx_spell_dark_v001.png",
+      "spell-chaos": "assets/managed/current/battle/fx/fx_spell_chaos_v001.png",
+      breath: "assets/managed/current/battle/fx/fx_breath_dragon_v001.png",
+      "special-rupture": "assets/managed/current/battle/fx/fx_special_rupture_v001.png",
+      "critical-spark": "assets/managed/current/battle/fx/fx_critical_spark_v001.png"
     },
     stripHtml(value) {
       const div = document.createElement("div");
@@ -974,6 +978,26 @@
     },
     isParty(unit) {
       return typeof Battle !== "undefined" && Battle.party && Battle.party.includes(unit);
+    },
+    nodeForUnit(containerId, unit, units) {
+      const container = byId(containerId);
+      if (!container || !unit || !units) return null;
+      const index = units.indexOf(unit);
+      const nodes = Array.from(container.children || []);
+      const uid = unit.uid !== undefined && unit.uid !== null ? String(unit.uid) : null;
+      if (uid) {
+        const foundByUid = nodes.find((node) => node.dataset?.battleUid === uid);
+        if (foundByUid) return foundByUid;
+      }
+      const foundByIndex = nodes.find((node) => node.dataset?.battleIndex === String(index));
+      return foundByIndex || nodes[index] || null;
+    },
+    isBossTarget(unit) {
+      return !!(
+        this.isEnemy(unit) &&
+        (unit?.isBoss || unit?.id >= 1000 || unit?.baseId >= 1000 || byId("battle-scene")?.dataset?.bossBattle === "true" ||
+          (typeof App !== "undefined" && App.data?.battle?.isBossBattle))
+      );
     },
     elementKind(data, cmd) {
       const raw = [data?.elm, data?.type, data?.name, data?.desc].filter(Boolean).join(" ");
@@ -1069,6 +1093,42 @@
       const raw = this.rawData(data);
       return this.hasAny(raw, ["ブレス", "息", "breath", "繝悶Ξ繧ｹ", "諱ｯ", "郢晄じ"]);
     },
+    isDebuffOnlyData(data) {
+      if (!data) return false;
+      const raw = this.rawData(data);
+      if (data.PercentDamage) return false;
+      if (String(data.type || "") === "弱体" || this.hasAny(raw, ["弱体", "デバフ", "debuff"])) return true;
+      const hasDebuff = !!(data.debuff || data.Poison || data.ToxicPoison || data.Shock || data.Fear || data.SpellSeal || data.SkillSeal || data.HealSeal || data.Debuff);
+      return hasDebuff && Number(data.rate || 0) <= 0 && Number(data.base || 0) <= 0;
+    },
+    isSpecialAttackData(data, cmd) {
+      const raw = this.rawData(data);
+      return !!(
+        data &&
+        !this.isSupport(data) &&
+        !this.isBreathData(data) &&
+        this.hasAny(raw, ["特殊", "special", "迚ｹ谿", "奥義", "秘技"])
+      );
+    },
+    supportKind(data, cmd) {
+      const type = String(data?.type || "");
+      if (type.includes("強化") || data?.buff || data?.elmResUp || data?.HPRegen || data?.MPRegen) return "buff";
+      if (type.includes("回復") || type.includes("蘇生") || type.includes("MP回復") || data?.CureAilments || data?.debuff_reset) return "heal-blossom";
+      const base = this.elementKind(data, cmd);
+      if (base === "buff") return "buff";
+      if (base === "debuff") return "debuff";
+      if (base === "heal") return "heal-blossom";
+      return this.specialKind(data, cmd) || "heal-blossom";
+    },
+    ultimateSkillKind(data, cmd) {
+      const id = Number(data?.id || 0);
+      if ([500, 901, 906, 999].includes(id)) return "ultimate-chaos";
+      if (id === 501) return "holy-burst";
+      if ([502, 902, 924].includes(id)) return "abyss-vortex";
+      if (id === 925) return "meteor";
+      if ((id >= 500 && id <= 502) || id >= 900) return this.specialKind(data, cmd) || "special-rupture";
+      return null;
+    },
     spellKind(data, cmd) {
       const base = this.elementKind(data, cmd);
       return ({
@@ -1092,11 +1152,23 @@
     },
     visualKind(cmd, perHit = false) {
       if (!cmd) return "neutral-slash";
-      if (this.isSupport(cmd?.data)) return this.specialKind(cmd?.data, cmd) || "heal-blossom";
+      if (this.isDebuffOnlyData(cmd?.data)) {
+        if (cmd?.data?.Poison || cmd?.data?.ToxicPoison) return "poison";
+        const base = this.elementKind(cmd?.data, cmd);
+        return base === "poison" ? "poison" : "debuff";
+      }
+      if (this.isSupport(cmd?.data)) return this.supportKind(cmd?.data, cmd);
       if (this.isBreathData(cmd?.data)) return "breath";
       if (cmd?.isReaction) return this.physicalKind(cmd, perHit);
+      const ultimate = this.ultimateSkillKind(cmd?.data, cmd);
+      if (ultimate) return ultimate;
       const special = this.specialKind(cmd?.data, cmd);
       if (special) return special;
+      if (this.isSpecialAttackData(cmd?.data, cmd)) {
+        const base = this.elementKind(cmd?.data, cmd);
+        if (["fire", "ice", "thunder", "wind", "light", "dark", "chaos"].includes(base)) return this.spellKind(cmd?.data, cmd);
+        return "special-rupture";
+      }
       if (this.isSpellData(cmd?.data, cmd)) return this.spellKind(cmd?.data, cmd);
       if (cmd?.isEnemy || cmd?.type === "enemy_attack") return perHit ? "party-hit" : "enemy-claw";
       if (this.isPhysicalData(cmd?.data, cmd)) return this.isArea(cmd) ? "all-slash" : this.physicalKind(cmd, perHit);
@@ -1123,6 +1195,27 @@
       if (kind) {
         this.pendingNeutralPhysicalKind = null;
         if (this.pendingNeutralPhysicalTimer) clearTimeout(this.pendingNeutralPhysicalTimer);
+      }
+      return kind;
+    },
+    criticalKindFromLog(text) {
+      if (this.hasAny(text, ["かいしん", "会心", "痛恨", "魔力が暴走", "暴走", "荳謦", "垓襍ｰ"])) return "critical-spark";
+      return null;
+    },
+    queueCriticalKind(kind) {
+      if (!kind) return;
+      this.pendingCriticalKind = kind;
+      if (this.pendingCriticalTimer) clearTimeout(this.pendingCriticalTimer);
+      this.pendingCriticalTimer = setTimeout(() => {
+        if (this.pendingCriticalKind === kind) this.pendingCriticalKind = null;
+      }, 1400);
+      document.documentElement.dataset.polishLastFxCue = kind;
+    },
+    consumeCriticalKind() {
+      const kind = this.pendingCriticalKind;
+      if (kind) {
+        this.pendingCriticalKind = null;
+        if (this.pendingCriticalTimer) clearTimeout(this.pendingCriticalTimer);
       }
       return kind;
     },
@@ -1163,11 +1256,9 @@
       if (!layer || !scene) return null;
       let el = null;
       if (this.isEnemy(unit)) {
-        const index = Battle.enemies.indexOf(unit);
-        el = byId("enemy-container")?.children?.[index] || null;
+        el = this.nodeForUnit("enemy-container", unit, Battle.enemies);
       } else if (this.isParty(unit)) {
-        const index = Battle.party.indexOf(unit);
-        el = byId("battle-party-bar")?.children?.[index] || null;
+        el = this.nodeForUnit("battle-party-bar", unit, Battle.party);
       }
       const base = scene.getBoundingClientRect();
       const rect = el ? el.getBoundingClientRect() : base;
@@ -1184,7 +1275,7 @@
       node.style.left = `${pos.x}px`;
       node.style.top = `${pos.y}px`;
       const imageAsset = this.assetFor(kind);
-      const isWide = /all-|ultimate|meteor|pillar|vortex|burst|combo/.test(kind);
+      const isWide = /all-|ultimate|meteor|pillar|vortex|burst|combo|breath|special|critical/.test(kind);
       const size = Math.max(72, Math.min(isWide ? 190 : 148, Math.max(pos.w, pos.h) * (options.big || isWide ? 1.08 : 0.76)));
       node.style.width = `${size}px`;
       node.style.height = `${size}px`;
@@ -1227,6 +1318,8 @@
         poison: "#c36bff",
         "ultimate-chaos": "#67d7c4",
         "heal-blossom": "#8fffad",
+        "special-rupture": "#c36bff",
+        "critical-spark": "#fff2a8",
         "neutral-slash": "#d6d1c2",
         "neutral-smash": "#aeb4b8",
         "neutral-pierce": "#e8edf0",
@@ -1267,6 +1360,7 @@
       if (!pos) return;
       const node = document.createElement("div");
       node.className = "battle-fx-float";
+      if (options.critical) node.classList.add("battle-fx-critical-float");
       node.textContent = text;
       const jitter = options.hitIndex ? ((options.hitIndex - 1) % 5 - 2) * 10 : 0;
       node.style.left = `${pos.x + jitter}px`;
@@ -1299,6 +1393,8 @@
       if (!this.current) return;
       const text = this.stripHtml(message);
       if (!text || text === "--- ターン開始 ---") return;
+      const criticalKind = this.criticalKindFromLog(text);
+      if (criticalKind) this.queueCriticalKind(criticalKind);
       this.queueNeutralPhysicalKind(this.logNeutralPhysicalKind(text));
       const unit = this.unitFromText(text);
       if (!unit) return;
@@ -1321,10 +1417,17 @@
         if (damageMatch) {
           const amount = damageMatch[1].replace(/,/g, "");
           const kind = cmd?.isReaction ? (this.consumeNeutralPhysicalKind() || this.visualKind(cmd, true)) : this.visualKind(cmd, true);
+          const criticalKind = this.consumeCriticalKind();
           this.mark(unit, "battle-hit-shake");
+          if (this.isBossTarget(unit)) this.mark(unit, "battle-boss-flash");
           if (this.isParty(unit)) this.mark(unit, "battle-party-damaged");
           this.effect(unit, kind, { hitIndex, big: area });
-          this.float(unit, `-${amount}`, this.hitColorFromLog(message), { hitIndex });
+          if (criticalKind) {
+            this.effect(unit, criticalKind, { hitIndex, big: true });
+            this.float(unit, `-${amount}`, "#fff2a8", { hitIndex, critical: true });
+          } else {
+            this.float(unit, `-${amount}`, this.hitColorFromLog(message), { hitIndex });
+          }
           return;
         }
         if (healMatch) {
@@ -1346,9 +1449,8 @@
       if (targets.length === 0) return;
       const support = this.isSupport(cmd.data);
       const kind = this.visualKind(cmd, false);
-      const limit = targets.length > 3 ? 3 : targets.length;
-      targets.slice(0, limit).forEach((target, index) => {
-        setTimeout(() => this.effect(target, kind, { big: targets.length > 1 }), index * 55);
+      targets.forEach((target, index) => {
+        setTimeout(() => this.effect(target, kind, { big: targets.length > 1 }), Math.min(index * 55, 260));
       });
       this.lastAt = now;
       await new Promise((resolve) => setTimeout(resolve, targets.length > 1 ? 310 : 240));
@@ -1368,6 +1470,7 @@
       if (options.skipNumbers) {
         damaged.forEach(({ unit }) => {
           this.mark(unit, "battle-hit-shake");
+          if (this.isBossTarget(unit)) this.mark(unit, "battle-boss-flash");
           if (this.isParty(unit)) this.mark(unit, "battle-party-damaged");
         });
         healed.forEach(({ unit }) => this.mark(unit, "battle-heal-pulse"));
@@ -1377,6 +1480,7 @@
       damaged.forEach(({ unit, hpDelta }, index) => {
         setTimeout(() => {
           this.mark(unit, "battle-hit-shake");
+          if (this.isBossTarget(unit)) this.mark(unit, "battle-boss-flash");
           if (this.isParty(unit)) this.mark(unit, "battle-party-damaged");
           this.effect(unit, this.visualKind(cmd, true));
           this.float(unit, `${hpDelta}`, "#ff7777");

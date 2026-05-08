@@ -15,7 +15,7 @@ const PassiveSkill = {
         5:  { id: 5,  name: '弓', type: '武器', weaponType: '弓', params: { atk_pct: 2, cri_pct: 1, hit_pct: 1 }, effect: '弓装備時にステータスが上昇する', desc: '弓装備時の攻撃力が×2スキル%上昇、クリティカル率がスキル%上昇、命中率がスキル%上昇' },
         6:  { id: 6,  name: '鷹の目', type: '戦闘', weaponType: '弓', params: { dmg_pct: 1, hit_pct: 1 }, effect: '弓装備時にステータスが上昇する', desc: '弓装備時、与ダメージがスキル%上昇、命中率がスキル%上昇' },
         7:  { id: 7,  name: '杖', type: '武器', weaponType: '杖', params: { mag_pct: 3 }, effect: '杖装備時にステータスが上昇する', desc: '杖装備時の魔力がスキル×3%上昇' },
-        8:  { id: 8,  name: 'ニ刀流', type: '戦闘', params: { dual_dmg_mult: 5, dual_dmg_base: 50, dual_hit_mult: 2, dual_hit_base: 50 }, effect: '盾装備不可になり、二刀流が可能になる', desc: '盾装備不可で武器を2本装備できるようになり、二刀流時は全ての攻撃スキルが2回発動する。2回目のダメージは(スキル×5)+50%、命中率は(スキル×2)+50%' },
+        8:  { id: 8,  name: 'ニ刀流', type: '戦闘', params: { dual_dmg_mult: 5, dual_dmg_base: 50, dual_hit_mult: 2, dual_hit_base: 50 }, effect: '盾装備不可になり、二刀流が可能になる', desc: '盾装備不可で武器を2本装備できるようになり、二刀流時は全てのスキルが2回発動する。2回目のダメージは(スキル×5)+50%、命中率は(スキル×2)+50%' },
         9:  { id: 9,  name: '両手持ち', type: '武器', params: { physical_dmg_pct: 5, hit_pct: 5, cri_pct: 5, two_handed: 1 }, effect: '盾装備が不可になり、両手持ちボーナスを得る', desc: '盾装備不可となり、与ダメージがスキル×5％上昇、命中率がスキル×5%上昇、クリティカル率がスキル×5%上昇' },
         10: { id: 10, name: '武術', type: '戦闘', params: { physical_dmg_pct: 3 }, effect: '物理攻撃が強くなる', desc: '物理攻撃時の与ダメージがスキル×3%上昇' },
         11: { id: 11, name: '呪文', type: '戦闘', params: { magic_dmg_pct: 3 }, effect: '呪文攻撃が強くなる', desc: '呪文攻撃時の与ダメージがスキル×3%上昇' },

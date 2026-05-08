@@ -514,6 +514,17 @@ canvas {
   animation: fx-float 760ms ease-out forwards;
 }
 
+.battle-fx-float.battle-fx-critical-float {
+  min-width: 46px;
+  padding: 3px 10px;
+  border: 1px solid rgba(255, 242, 168, 0.76);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.26), rgba(72, 30, 8, 0.86));
+  color: #fff2a8 !important;
+  font-size: 18px;
+  box-shadow: 0 0 18px rgba(255, 242, 168, 0.58), 0 0 28px rgba(219, 59, 77, 0.3);
+  animation: fx-critical-float 920ms cubic-bezier(.18, .9, .25, 1) forwards;
+}
+
 .battle-fx-particle {
   position: absolute;
   left: 50%;
@@ -531,6 +542,10 @@ canvas {
 .p-box.battle-hit-shake {
   animation: fx-shake 320ms cubic-bezier(.25, .8, .25, 1);
   filter: brightness(1.35) saturate(1.22);
+}
+
+.enemy-sprite.battle-boss-flash {
+  animation: boss-white-flash 260ms steps(2, end);
 }
 
 .p-box.battle-party-damaged {
@@ -565,10 +580,22 @@ canvas {
   100% { transform: rotate(190deg) scale(1.18); opacity: 0; }
 }
 
+@keyframes boss-white-flash {
+  0%, 100% { filter: none; }
+  42% { filter: brightness(3.2) saturate(0) drop-shadow(0 0 18px rgba(255, 255, 255, 0.88)); }
+}
+
 @keyframes fx-float {
   0% { opacity: 0; transform: translate(-50%, -35%) scale(0.9); }
   16% { opacity: 1; }
   100% { opacity: 0; transform: translate(-50%, -135%) scale(1.04); }
+}
+
+@keyframes fx-critical-float {
+  0% { opacity: 0; transform: translate(-50%, -20%) scale(0.78); }
+  14% { opacity: 1; transform: translate(-50%, -54%) scale(1.22); }
+  42% { opacity: 1; transform: translate(-50%, -92%) scale(1.06); }
+  100% { opacity: 0; transform: translate(-50%, -174%) scale(0.96); }
 }
 
 @keyframes fx-particle {
