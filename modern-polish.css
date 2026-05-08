@@ -386,6 +386,41 @@ canvas {
   display: none;
 }
 
+.battle-fx-image.battle-fx-phys-fire,
+.battle-fx-image.battle-fx-breath-fire {
+  filter: sepia(0.45) saturate(1.9) hue-rotate(-18deg) drop-shadow(0 0 12px rgba(255, 120, 48, 0.62));
+}
+
+.battle-fx-image.battle-fx-phys-ice,
+.battle-fx-image.battle-fx-breath-ice {
+  filter: saturate(1.45) hue-rotate(168deg) brightness(1.18) drop-shadow(0 0 12px rgba(185, 240, 255, 0.62));
+}
+
+.battle-fx-image.battle-fx-phys-thunder,
+.battle-fx-image.battle-fx-breath-thunder {
+  filter: sepia(0.42) saturate(2.1) hue-rotate(10deg) brightness(1.18) drop-shadow(0 0 14px rgba(255, 242, 138, 0.72));
+}
+
+.battle-fx-image.battle-fx-phys-wind,
+.battle-fx-image.battle-fx-breath-wind {
+  filter: saturate(1.7) hue-rotate(82deg) brightness(1.08) drop-shadow(0 0 12px rgba(129, 229, 171, 0.58));
+}
+
+.battle-fx-image.battle-fx-phys-light,
+.battle-fx-image.battle-fx-breath-light {
+  filter: sepia(0.18) saturate(1.5) brightness(1.32) drop-shadow(0 0 14px rgba(255, 242, 168, 0.7));
+}
+
+.battle-fx-image.battle-fx-phys-dark,
+.battle-fx-image.battle-fx-breath-dark {
+  filter: saturate(1.75) hue-rotate(238deg) brightness(0.92) drop-shadow(0 0 14px rgba(177, 86, 255, 0.66));
+}
+
+.battle-fx-image.battle-fx-phys-chaos,
+.battle-fx-image.battle-fx-breath-chaos {
+  filter: saturate(1.85) hue-rotate(126deg) brightness(1.08) drop-shadow(0 0 14px rgba(103, 215, 196, 0.66));
+}
+
 .battle-fx::before,
 .battle-fx::after {
   content: "";

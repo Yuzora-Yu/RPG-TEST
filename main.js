@@ -605,8 +605,7 @@ const App = {
                 if(['ArrowLeft', 'a'].includes(e.key)) Field.move(-1, 0);
                 if(['ArrowRight', 'd'].includes(e.key)) Field.move(1, 0);
                 if(e.key === 'Enter' || e.key === ' ') {
-                    if(App.pendingAction) App.executeAction();
-                    else if(typeof Menu !== 'undefined') Menu.openMainMenu();
+                    App.inspectCurrentTile();
                 }
             }
         });
@@ -637,7 +636,7 @@ const App = {
 
         const bindClick = (id, fn) => { const el = document.getElementById(id); if(el) el.onclick = fn; };
         bindClick('btn-menu', () => { if(typeof Menu !== 'undefined') Menu.openMainMenu(); });
-        bindClick('btn-ok', () => { if(App.pendingAction) App.executeAction(); else if(typeof Menu !== 'undefined') Menu.openMainMenu(); });
+        bindClick('btn-ok', () => App.inspectCurrentTile());
 		
 		
     },
@@ -783,6 +782,13 @@ const App = {
             App.clearAction();
             act();
         }
+    },
+    inspectCurrentTile: () => {
+        if(App.pendingAction) {
+            App.executeAction();
+            return;
+        }
+        App.log("足元を調べた。しかし、何も見つからなかった");
     },
 
     initTitleScreen: () => { 

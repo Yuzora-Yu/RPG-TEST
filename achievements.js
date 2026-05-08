@@ -100,9 +100,9 @@ const ACHIEVEMENTS_DATA = [
 	//追加案（判定ロジック未作成）
 	
 	//転生回数
-	{ id: 701, type: "REBIRTH", goal: 1, title: "新たなる始まり", desc: "転生を1回行う", rewards:[{type:'GEM', val:1000}] },
-	{ id: 702, type: "REBIRTH", goal: 5, title: "輪廻の探究者", desc: "転生を5回行う", rewards:[{type:'GEM', val:2000}] },
-	{ id: 703, type: "REBIRTH", goal: 20, title: "永劫回帰", desc: "転生を20回行う", rewards:[{type:'GEM', val:3000},{type:'ITEM', id:107, val:1}] },
+	{ id:1301, type: "REBIRTH", goal: 1, title: "新たなる始まり", desc: "転生を1回行う", rewards:[{type:'GEM', val:1000}] },
+	{ id:1302, type: "REBIRTH", goal: 5, title: "輪廻の探究者", desc: "転生を5回行う", rewards:[{type:'GEM', val:2000}] },
+	{ id:1303, type: "REBIRTH", goal: 20, title: "永劫回帰", desc: "転生を20回行う", rewards:[{type:'GEM', val:3000},{type:'ITEM', id:107, val:1}] },
 	
 	//Estark討伐回数（BOSS）
 	{ id: 801, type: "BOSS", goal: 1, title: "災厄への挑戦", desc: "災厄の王を1体討伐", rewards:[{type:'GEM', val:3000}] },
@@ -121,7 +121,7 @@ const ACHIEVEMENTS_DATA = [
 	//小さなメダル（MEDAL）
 	{ id: 1101, type: "MEDAL", goal: 10, title: "収集癖", desc: "小さなメダルを10枚集める", rewards:[{type:'GEM', val:500},{type:'ITEM', id:5, val:5}] },
 	{ id: 1102, type: "MEDAL", goal: 50, title: "蒐集家", desc: "小さなメダルを50枚集める", rewards:[{type:'GEM', val:500},{type:'ITEM', id:14, val:5}] },
-	{ id: 1103, type: "MEDAL", goal: 100, title: "伝説の蒐集家", desc: "小さなメダルを10枚集める00枚集める", rewards:[{type:'GEM', val:1000},{type:'ITEM', id:100, val:5}] },
+	{ id: 1103, type: "MEDAL", goal: 100, title: "伝説の蒐集家", desc: "小さなメダルを100枚集める", rewards:[{type:'GEM', val:1000},{type:'ITEM', id:100, val:5}] },
 
 	//装備厳選系（HACK）
 	{ id: 1201, type: "EQUIP", goal: 1, title: "極意の発現", desc: "EXオプション付き装備を入手", rewards:[{type:'GEM', val:500}] },

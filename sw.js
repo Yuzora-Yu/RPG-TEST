@@ -1,4 +1,4 @@
-const CACHE_NAME = "prisma-abyss-v2.51-critical-fx-targets";
+const CACHE_NAME = "prisma-abyss-v2.52-ok-attribute-fx";
 const FILES_TO_CACHE = [
   "./", // ルート
   "main.html",
@@ -23,7 +23,9 @@ const FILES_TO_CACHE = [
   "job_data.js",
   "map.js",
   "story.js",
-  "passiveSkill.js"
+  "passiveSkill.js",
+  "achievements.js",
+  "news.js"
 ];
 
 // インストール時にキャッシュ

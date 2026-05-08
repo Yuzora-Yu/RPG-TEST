@@ -910,7 +910,11 @@
       return (div.textContent || div.innerText || "").replace(/\s+/g, " ").trim();
     },
     assetFor(kind) {
-      return this.assets[kind] || this.assets[String(kind || "").replace(/^battle-fx-/, "")] || null;
+      const key = String(kind || "").replace(/^battle-fx-/, "");
+      if (this.assets[key]) return this.assets[key];
+      if (/^breath-/.test(key)) return this.assets.breath;
+      if (/^phys-(fire|ice|thunder|wind|light|dark|chaos)$/.test(key)) return this.assets["neutral-slash"];
+      return null;
     },
     isArea(cmd) {
       const scope = [cmd?.targetScope, cmd?.target, cmd?.data?.target].filter(Boolean).join(" ");
@@ -1141,10 +1145,20 @@
         chaos: "spell-chaos"
       })[base] || "spell-dark";
     },
+    elementFxKind(prefix, data, cmd) {
+      const base = this.elementKind(data, cmd);
+      return ["fire", "ice", "thunder", "wind", "light", "dark", "chaos"].includes(base) ? `${prefix}-${base}` : null;
+    },
+    breathKind(data, cmd) {
+      return this.elementFxKind("breath", data, cmd) || "breath";
+    },
+    physicalElementKind(cmd) {
+      return this.elementFxKind("phys", cmd?.data, cmd);
+    },
     physicalKind(cmd, perHit = false) {
       const raw = this.rawData(cmd?.data);
       if (cmd?.isReaction) return this.pendingNeutralPhysicalKind || "neutral-chain";
-      if (this.hitCount(cmd) > 1) return "neutral-combo";
+      if (this.hitCount(cmd) > 1) return perHit ? "neutral-slash" : "phys-sword";
       if (this.hasAny(raw, ["槍", "突", "pierce", "spear"])) return "neutral-pierce";
       if (this.hasAny(raw, ["斧", "打", "砕", "粉砕", "smash", "axe"])) return "neutral-smash";
       if (this.hasAny(raw, ["奥義", "渾身", "heavy", "finisher"])) return "neutral-heavy";
@@ -1158,7 +1172,7 @@
         return base === "poison" ? "poison" : "debuff";
       }
       if (this.isSupport(cmd?.data)) return this.supportKind(cmd?.data, cmd);
-      if (this.isBreathData(cmd?.data)) return "breath";
+      if (this.isBreathData(cmd?.data)) return this.breathKind(cmd?.data, cmd);
       if (cmd?.isReaction) return this.physicalKind(cmd, perHit);
       const ultimate = this.ultimateSkillKind(cmd?.data, cmd);
       if (ultimate) return ultimate;
@@ -1171,7 +1185,7 @@
       }
       if (this.isSpellData(cmd?.data, cmd)) return this.spellKind(cmd?.data, cmd);
       if (cmd?.isEnemy || cmd?.type === "enemy_attack") return perHit ? "party-hit" : "enemy-claw";
-      if (this.isPhysicalData(cmd?.data, cmd)) return this.isArea(cmd) ? "all-slash" : this.physicalKind(cmd, perHit);
+      if (this.isPhysicalData(cmd?.data, cmd)) return this.physicalElementKind(cmd) || (this.isArea(cmd) ? "all-slash" : this.physicalKind(cmd, perHit));
       return "neutral-slash";
     },
     logNeutralPhysicalKind(text) {
@@ -1199,7 +1213,7 @@
       return kind;
     },
     criticalKindFromLog(text) {
-      if (this.hasAny(text, ["かいしん", "会心", "痛恨", "魔力が暴走", "暴走", "荳謦", "垓襍ｰ"])) return "critical-spark";
+      if (this.hasAny(text, ["かいしん", "会心", "痛恨", "魔力が暴走", "暴走", "防御を貫通", "貫通", "魔法ダメージ2倍", "魔法ダメージ２倍", "呪文ダメージ2倍", "呪文ダメージ２倍", "荳謦", "垓襍ｰ"])) return "critical-spark";
       return null;
     },
     queueCriticalKind(kind) {
@@ -1218,6 +1232,13 @@
         if (this.pendingCriticalTimer) clearTimeout(this.pendingCriticalTimer);
       }
       return kind;
+    },
+    enhancedDamageKind(cmd) {
+      if (!cmd || cmd?.isReaction) return null;
+      if (cmd?.data?.IgnoreDefense) return "critical-spark";
+      const magBuff = Number(cmd?.actor?.battleStatus?.buffs?.mag?.val || 0);
+      if (this.isSpellData(cmd?.data, cmd) && (cmd?.actor?.passive?.magDouble || magBuff >= 2)) return "critical-spark";
+      return null;
     },
     snapshot() {
       if (typeof Battle === "undefined") return new Map();
@@ -1330,6 +1351,13 @@
         "phys-spear": "#e8edf0",
         "phys-axe": "#aeb4b8",
         "phys-combo": "#cfd3d6",
+        "phys-fire": "#ff9b45",
+        "phys-ice": "#dff",
+        "phys-thunder": "#fff28a",
+        "phys-wind": "#81e5ab",
+        "phys-light": "#fff2a8",
+        "phys-dark": "#b156ff",
+        "phys-chaos": "#67d7c4",
         "spell-fire": "#ffb15e",
         "spell-ice": "#dff",
         "spell-thunder": "#fff28a",
@@ -1337,7 +1365,14 @@
         "spell-light": "#fff2a8",
         "spell-dark": "#b156ff",
         "spell-chaos": "#67d7c4",
-        breath: "#ff7777"
+        breath: "#ff7777",
+        "breath-fire": "#ff8a3d",
+        "breath-ice": "#dff",
+        "breath-thunder": "#fff28a",
+        "breath-wind": "#81e5ab",
+        "breath-light": "#fff2a8",
+        "breath-dark": "#b156ff",
+        "breath-chaos": "#67d7c4"
       };
       if (options.quiet) return;
       const count = options.big ? 10 : 6;
@@ -1417,7 +1452,7 @@
         if (damageMatch) {
           const amount = damageMatch[1].replace(/,/g, "");
           const kind = cmd?.isReaction ? (this.consumeNeutralPhysicalKind() || this.visualKind(cmd, true)) : this.visualKind(cmd, true);
-          const criticalKind = this.consumeCriticalKind();
+          const criticalKind = this.consumeCriticalKind() || this.enhancedDamageKind(cmd);
           this.mark(unit, "battle-hit-shake");
           if (this.isBossTarget(unit)) this.mark(unit, "battle-boss-flash");
           if (this.isParty(unit)) this.mark(unit, "battle-party-damaged");
