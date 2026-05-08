@@ -1,4 +1,4 @@
-const CACHE_NAME = "prisma-abyss-v2.48-solid-assets";
+const CACHE_NAME = "prisma-abyss-v2.49-terrain-fx";
 const FILES_TO_CACHE = [
   "./", // ルート
   "main.html",

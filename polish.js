@@ -1018,6 +1018,114 @@
       const raw = [data.type, data.name, data.desc].filter(Boolean).join(" ");
       return /回復|蘇生|治療|癒|ヒール|強化|防御|耐性|アップ|蝗槫ｾｩ|陂・函|蠑ｷ蛹|豐ｻ|陟托ｽｷ/.test(raw);
     },
+    rawData(data) {
+      return [data?.elm, data?.type, data?.name, data?.desc].filter(Boolean).join(" ");
+    },
+    hasAny(raw, words) {
+      return words.some((word) => word && String(raw || "").includes(word));
+    },
+    elementKind(data, cmd) {
+      const raw = this.rawData(data);
+      if (this.hasAny(raw, ["火", "メラ", "ギラ", "fire", "轣ｫ", "轤", "繝｡繝ｩ", "繧ｮ繝ｩ", "辯", "霓"])) return "fire";
+      if (this.hasAny(raw, ["水", "氷", "ヒャ", "ice", "豌ｴ", "豌ｷ", "繝偵Ε", "雎", "蜃"])) return "ice";
+      if (this.hasAny(raw, ["雷", "電", "ライ", "サンダ", "thunder", "髮ｷ", "髮ｻ", "繝ｩ繧､", "繧ｵ繝ｳ繝", "鬮ｮ"])) return "thunder";
+      if (this.hasAny(raw, ["風", "バギ", "wind", "鬚ｨ", "繝舌ぐ", "鬯"])) return "wind";
+      if (this.hasAny(raw, ["光", "聖", "ホーリ", "light", "蜈", "閨", "陷"])) return "light";
+      if (this.hasAny(raw, ["闇", "影", "ドル", "dark", "髣", "繝峨Ν", "蠖ｱ", "證"])) return "dark";
+      if (this.hasAny(raw, ["混沌", "カオス", "chaos", "豺ｷ豐", "繧ｫ繧ｪ繧ｹ", "雎ｺ", "髮趣"])) return "chaos";
+      if (this.hasAny(raw, ["回復", "治療", "heal", "蝗槫ｾｩ", "豐ｻ", "陂"])) return "heal";
+      if (this.hasAny(raw, ["強化", "防御", "buff", "蠑ｷ蛹", "髦ｲ", "閠"])) return "buff";
+      if (this.hasAny(raw, ["弱体", "眠", "毒", "debuff", "蠑ｱ菴", "逵", "豈"])) return "debuff";
+      if (cmd?.type === "enemy_attack") return "claw";
+      return "neutral";
+    },
+    specialKind(data, cmd) {
+      const raw = this.rawData(data);
+      if (this.hasAny(raw, ["カラミティ", "終焉", "混沌災厄", "繧ｫ繝ｩ繝溘ユ繧｣", "邨らч", "螂郁誠"])) return "ultimate-chaos";
+      if (this.hasAny(raw, ["メテオ", "隕石", "流星", "繝｡繝・が", "髫慕浹", "豬∵弌"])) return "meteor";
+      if (this.hasAny(raw, ["ブリザード", "吹雪", "氷槍", "繝悶Μ繧ｶ", "蜷ｹ髮ｪ"])) return "ice-spear";
+      if (this.isSpellData(data, cmd) && this.hasAny(raw, ["サンダー", "ライトニング", "雷柱", "繧ｵ繝ｳ繝", "繝ｩ繧､繝医ル"])) return "thunder-pillar";
+      if (this.hasAny(raw, ["ポイズン", "毒", "豈", "迪帶ｯ"])) return "poison";
+      if (this.hasAny(raw, ["ホーリー", "天罰", "聖光", "繝帙・繝ｪ", "螟ｩ鄂ｰ"])) return "holy-burst";
+      if (this.hasAny(raw, ["アビス", "深淵", "闇影", "繧｢繝薙せ", "豺ｱ豺ｵ"])) return "abyss-vortex";
+      return null;
+    },
+    isSpellData(data, cmd) {
+      const raw = this.rawData(data);
+      if (cmd?.isReaction) return false;
+      if (this.hasAny(raw, ["魔法", "呪文", "spell", "鬲疲ｳ", "繝｡繝ｩ", "繝偵Ε", "繝舌ぐ", "繧､繧ｪ", "繝峨Ν"])) return true;
+      if (this.isPhysicalData(data, cmd) || this.isSupport(data)) return false;
+      return !!data?.elm && !cmd?.isEnemy;
+    },
+    isPhysicalData(data, cmd) {
+      const raw = this.rawData(data);
+      return !!(
+        cmd?.type === "attack" ||
+        cmd?.isReaction ||
+        this.hasAny(raw, ["物理", "通常攻撃", "特技", "攻撃", "斬", "剣", "槍", "斧", "爪", "拳", "打撃", "迚ｩ逅", "騾壼ｸｸ謾ｻ", "迚ｹ谿", "謾ｻ謦"])
+      );
+    },
+    isBreathData(data) {
+      const raw = this.rawData(data);
+      return this.hasAny(raw, ["ブレス", "息", "breath", "繝悶Ξ繧ｹ", "諱ｯ", "郢晄じ"]);
+    },
+    spellKind(data, cmd) {
+      const base = this.elementKind(data, cmd);
+      return ({
+        fire: "spell-fire",
+        ice: "spell-ice",
+        thunder: "spell-thunder",
+        wind: "spell-wind",
+        light: "spell-light",
+        dark: "spell-dark",
+        chaos: "spell-chaos"
+      })[base] || "spell-dark";
+    },
+    physicalKind(cmd, perHit = false) {
+      const raw = this.rawData(cmd?.data);
+      if (cmd?.isReaction) return this.pendingNeutralPhysicalKind || "neutral-chain";
+      if (this.hitCount(cmd) > 1) return "neutral-combo";
+      if (this.hasAny(raw, ["槍", "突", "pierce", "spear"])) return "neutral-pierce";
+      if (this.hasAny(raw, ["斧", "打", "砕", "粉砕", "smash", "axe"])) return "neutral-smash";
+      if (this.hasAny(raw, ["奥義", "渾身", "heavy", "finisher"])) return "neutral-heavy";
+      return perHit ? "neutral-slash" : "phys-sword";
+    },
+    visualKind(cmd, perHit = false) {
+      if (!cmd) return "neutral-slash";
+      if (this.isSupport(cmd?.data)) return this.specialKind(cmd?.data, cmd) || "heal-blossom";
+      if (this.isBreathData(cmd?.data)) return "breath";
+      if (cmd?.isReaction) return this.physicalKind(cmd, perHit);
+      const special = this.specialKind(cmd?.data, cmd);
+      if (special) return special;
+      if (this.isSpellData(cmd?.data, cmd)) return this.spellKind(cmd?.data, cmd);
+      if (cmd?.isEnemy || cmd?.type === "enemy_attack") return perHit ? "party-hit" : "enemy-claw";
+      if (this.isPhysicalData(cmd?.data, cmd)) return this.isArea(cmd) ? "all-slash" : this.physicalKind(cmd, perHit);
+      return "neutral-slash";
+    },
+    logNeutralPhysicalKind(text) {
+      if (this.hasAny(text, ["連携", "騾｣謳ｺ"])) return "neutral-chain";
+      if (this.hasAny(text, ["追撃", "追い討ち", "霑ｽ", "霑ｽ縺・ｨ弱■"])) return "neutral-slash";
+      if (this.hasAny(text, ["反撃", "蜿肴茶"])) return "neutral-smash";
+      if (this.hasAny(text, ["先制", "蜈亥宛"])) return "neutral-pierce";
+      return null;
+    },
+    queueNeutralPhysicalKind(kind) {
+      if (!kind) return;
+      this.pendingNeutralPhysicalKind = kind;
+      if (this.pendingNeutralPhysicalTimer) clearTimeout(this.pendingNeutralPhysicalTimer);
+      this.pendingNeutralPhysicalTimer = setTimeout(() => {
+        if (this.pendingNeutralPhysicalKind === kind) this.pendingNeutralPhysicalKind = null;
+      }, 1600);
+      document.documentElement.dataset.polishLastFxCue = kind;
+    },
+    consumeNeutralPhysicalKind() {
+      const kind = this.pendingNeutralPhysicalKind;
+      if (kind) {
+        this.pendingNeutralPhysicalKind = null;
+        if (this.pendingNeutralPhysicalTimer) clearTimeout(this.pendingNeutralPhysicalTimer);
+      }
+      return kind;
+    },
     snapshot() {
       if (typeof Battle === "undefined") return new Map();
       return new Map([...(Battle.party || []), ...(Battle.enemies || [])].filter(Boolean).map((unit) => [unit, {
@@ -1070,6 +1178,7 @@
     effect(unit, kind, options = {}) {
       const pos = this.anchor(unit);
       if (!pos) return;
+      document.documentElement.dataset.polishLastFxKind = String(kind || "");
       const node = document.createElement("div");
       node.className = `battle-fx battle-fx-${kind}`;
       node.style.left = `${pos.x}px`;
@@ -1117,7 +1226,25 @@
         "holy-burst": "#fff2a8",
         poison: "#c36bff",
         "ultimate-chaos": "#67d7c4",
-        "heal-blossom": "#8fffad"
+        "heal-blossom": "#8fffad",
+        "neutral-slash": "#d6d1c2",
+        "neutral-smash": "#aeb4b8",
+        "neutral-pierce": "#e8edf0",
+        "neutral-combo": "#cfd3d6",
+        "neutral-chain": "#d9dde0",
+        "neutral-heavy": "#9ea4a8",
+        "phys-sword": "#d6d1c2",
+        "phys-spear": "#e8edf0",
+        "phys-axe": "#aeb4b8",
+        "phys-combo": "#cfd3d6",
+        "spell-fire": "#ffb15e",
+        "spell-ice": "#dff",
+        "spell-thunder": "#fff28a",
+        "spell-wind": "#81e5ab",
+        "spell-light": "#fff2a8",
+        "spell-dark": "#b156ff",
+        "spell-chaos": "#67d7c4",
+        breath: "#ff7777"
       };
       if (options.quiet) return;
       const count = options.big ? 10 : 6;
@@ -1172,6 +1299,7 @@
       if (!this.current) return;
       const text = this.stripHtml(message);
       if (!text || text === "--- ターン開始 ---") return;
+      this.queueNeutralPhysicalKind(this.logNeutralPhysicalKind(text));
       const unit = this.unitFromText(text);
       if (!unit) return;
 
@@ -1192,7 +1320,7 @@
       setTimeout(() => {
         if (damageMatch) {
           const amount = damageMatch[1].replace(/,/g, "");
-          const kind = this.visualKind(cmd, true);
+          const kind = cmd?.isReaction ? (this.consumeNeutralPhysicalKind() || this.visualKind(cmd, true)) : this.visualKind(cmd, true);
           this.mark(unit, "battle-hit-shake");
           if (this.isParty(unit)) this.mark(unit, "battle-party-damaged");
           this.effect(unit, kind, { hitIndex, big: area });
@@ -1206,7 +1334,8 @@
           this.float(unit, `+${amount}`, "#8fffad", { hitIndex });
           return;
         }
-        this.effect(unit, this.isParty(unit) ? "party-hit" : "slash", { hitIndex });
+        const missKind = cmd?.isReaction ? (this.consumeNeutralPhysicalKind() || "neutral-slash") : (this.isParty(unit) ? "party-hit" : "neutral-slash");
+        this.effect(unit, missKind, { hitIndex });
         this.float(unit, "MISS", "#d6d1c2", { hitIndex });
       }, delay);
     },
