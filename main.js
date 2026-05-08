@@ -2202,6 +2202,29 @@ const Field = {
         return config;
     },
 
+    getRenderedTileForDraw: (tileX, tileY, mapW, mapH, areaKey) => {
+        let nextTile = 'W';
+        if (Field.currentMapData) {
+            if (tileX >= 0 && tileX < mapW && tileY >= 0 && tileY < mapH) {
+                const posKey = `${tileX},${tileY}`;
+                nextTile = App.data.progress.mapChanges?.[areaKey]?.[posKey] || Field.currentMapData.tiles[tileY][tileX];
+                if (Field.currentMapData.isFixed) {
+                    if ((nextTile === 'C' || nextTile === 'R') && App.data.progress.openedChests?.[areaKey]?.includes(posKey)) nextTile = 'G';
+                    if (nextTile === 'B' && App.data.progress.defeatedBosses?.[areaKey]?.includes(posKey)) nextTile = 'G';
+                }
+            }
+        } else {
+            nextTile = MAP_DATA[((tileY % mapH) + mapH) % mapH][((tileX % mapW) + mapW) % mapW];
+        }
+        return String(nextTile || 'W').toUpperCase();
+    },
+
+    getDungeonWallGraphicForDraw: (tileX, tileY, upper, mapW, mapH, areaKey) => {
+        if (!Field.currentMapData?.isDungeon || upper !== 'W') return null;
+        if (Field.getRenderedTileForDraw(tileX, tileY + 1, mapW, mapH, areaKey) === 'W') return null;
+        return (((tileX % 5) + 5) % 5) === 0 ? 'wall_face_torch' : 'wall_face';
+    },
+    
     getBattleBg: () => {
         if (App.data.battle && App.data.battle.isEstark) return 'battle_bg_lastboss';
         if (Field.currentMapData) {
@@ -2452,23 +2475,9 @@ const Field = {
         for (let dy = -rangeY; dy <= rangeY; dy++) {
             for (let dx = -rangeX; dx <= rangeX; dx++) {
                 const drawX = Math.floor(cx + (dx * ts) - (ts / 2)), drawY = Math.floor(cy + (dy * ts) - (ts / 2));
-                let tx = Field.x + dx, ty = Field.y + dy, tile = 'W';
-                
-                if (Field.currentMapData) { 
-                    if (tx >= 0 && tx < mapW && ty >= 0 && ty < mapH) {
-                        const posKey = `${tx},${ty}`;
-                        tile = App.data.progress.mapChanges?.[areaKey]?.[posKey] || Field.currentMapData.tiles[ty][tx];
-                        const ak = Field.getCurrentAreaKey(); const pk = `${tx},${ty}`;
-                        if (Field.currentMapData.isFixed) {
-                            if ((tile === 'C' || tile === 'R') && App.data.progress.openedChests?.[ak]?.includes(pk)) tile = 'G';
-                            if (tile === 'B' && App.data.progress.defeatedBosses?.[ak]?.includes(pk)) tile = 'G';
-                        }
-                    }
-                } else { 
-                    tile = MAP_DATA[((ty % mapH) + mapH) % mapH][((tx % mapW) + mapW) % mapW]; 
-                }
-
+                let tx = Field.x + dx, ty = Field.y + dy, tile = Field.getRenderedTileForDraw(tx, ty, mapW, mapH, areaKey);
                 const config = Field.getTileConfig(tile), upper = tile.toUpperCase(), floorConfig = Field.getTileConfig('T');
+                const wallGraphic = Field.getDungeonWallGraphicForDraw(tx, ty, upper, mapW, mapH, areaKey);
 
                 // 1. 地面の描画 (floorConfig.img がスプライト名でもOK)
                 if (!drawGraphic(floorConfig.img, drawX, drawY, ts)) {
@@ -2478,7 +2487,7 @@ const Field = {
 
                 // 2. 重ねるオブジェクトの描画
                 if (upper !== 'T' && upper !== 'G') {
-                    if (!drawGraphic(config.img, drawX, drawY, ts)) {
+                    if (!drawGraphic(wallGraphic || config.img, drawX, drawY, ts)) {
                         if (config.color && config.color !== floorConfig.color) {
                             ctx.fillStyle = config.color;
                             ctx.fillRect(drawX, drawY, ts, ts);

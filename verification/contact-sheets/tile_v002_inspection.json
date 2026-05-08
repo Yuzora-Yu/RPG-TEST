@@ -1,0 +1,506 @@
+{
+  "field_source_size": [
+    1774,
+    887
+  ],
+  "field_cell_size": [
+    221,
+    221
+  ],
+  "dungeon_source_size": [
+    2172,
+    724
+  ],
+  "dungeon_cell_width": 543,
+  "field_tiles": 32,
+  "dungeon_tiles": 6,
+  "issues": [
+    {
+      "file": "overlay_field_barrel_v002.png",
+      "type": "magenta_left",
+      "pixels": 15
+    },
+    {
+      "file": "overlay_field_boss_v002.png",
+      "type": "magenta_left",
+      "pixels": 41
+    },
+    {
+      "file": "overlay_field_casino_v002.png",
+      "type": "magenta_left",
+      "pixels": 52
+    },
+    {
+      "file": "overlay_field_castle_v002.png",
+      "type": "magenta_left",
+      "pixels": 25
+    },
+    {
+      "file": "overlay_field_cave_v002.png",
+      "type": "magenta_left",
+      "pixels": 60
+    },
+    {
+      "file": "overlay_field_chest_rare_v002.png",
+      "type": "magenta_left",
+      "pixels": 3
+    },
+    {
+      "file": "overlay_field_chest_v002.png",
+      "type": "magenta_left",
+      "pixels": 2
+    },
+    {
+      "file": "overlay_field_darkcastle_v002.png",
+      "type": "magenta_left",
+      "pixels": 41
+    },
+    {
+      "file": "overlay_field_farm_v002.png",
+      "type": "magenta_left",
+      "pixels": 12
+    },
+    {
+      "file": "overlay_field_fire_village_v002.png",
+      "type": "magenta_left",
+      "pixels": 49
+    },
+    {
+      "file": "overlay_field_forest_v002.png",
+      "type": "magenta_left",
+      "pixels": 77
+    },
+    {
+      "file": "overlay_field_fortress_v002.png",
+      "type": "magenta_left",
+      "pixels": 36
+    },
+    {
+      "file": "overlay_field_hall_v002.png",
+      "type": "magenta_left",
+      "pixels": 41
+    },
+    {
+      "file": "overlay_field_house_1_v002.png",
+      "type": "magenta_left",
+      "pixels": 10
+    },
+    {
+      "file": "overlay_field_house_2_v002.png",
+      "type": "magenta_left",
+      "pixels": 2
+    },
+    {
+      "file": "overlay_field_inn_v002.png",
+      "type": "magenta_left",
+      "pixels": 26
+    },
+    {
+      "file": "overlay_field_lighthouse_v002.png",
+      "type": "magenta_left",
+      "pixels": 32
+    },
+    {
+      "file": "overlay_field_lost_v002.png",
+      "type": "magenta_left",
+      "pixels": 82
+    },
+    {
+      "file": "overlay_field_low_mountain_v002.png",
+      "type": "magenta_left",
+      "pixels": 32
+    },
+    {
+      "file": "overlay_field_medal_v002.png",
+      "type": "magenta_left",
+      "pixels": 11
+    },
+    {
+      "file": "overlay_field_mountain_v002.png",
+      "type": "magenta_left",
+      "pixels": 38
+    },
+    {
+      "file": "overlay_field_pot_v002.png",
+      "type": "magenta_left",
+      "pixels": 10
+    },
+    {
+      "file": "overlay_field_ruins_v002.png",
+      "type": "magenta_left",
+      "pixels": 32
+    },
+    {
+      "file": "overlay_field_settlement_v002.png",
+      "type": "magenta_left",
+      "pixels": 81
+    },
+    {
+      "file": "overlay_field_shop_v002.png",
+      "type": "magenta_left",
+      "pixels": 21
+    },
+    {
+      "file": "overlay_field_smith_v002.png",
+      "type": "magenta_left",
+      "pixels": 25
+    },
+    {
+      "file": "overlay_field_temple_v002.png",
+      "type": "magenta_left",
+      "pixels": 27
+    },
+    {
+      "file": "overlay_field_tower_v002.png",
+      "type": "magenta_left",
+      "pixels": 8
+    },
+    {
+      "file": "overlay_field_town_v002.png",
+      "type": "magenta_left",
+      "pixels": 9
+    },
+    {
+      "file": "overlay_field_village_v002.png",
+      "type": "magenta_left",
+      "pixels": 59
+    },
+    {
+      "file": "overlay_field_weapon_v002.png",
+      "type": "magenta_left",
+      "pixels": 17
+    },
+    {
+      "file": "overlay_dungeon_boss_v002.png",
+      "type": "magenta_left",
+      "pixels": 83
+    },
+    {
+      "file": "overlay_dungeon_chest_rare_v002.png",
+      "type": "magenta_left",
+      "pixels": 1
+    },
+    {
+      "file": "overlay_dungeon_chest_v002.png",
+      "type": "magenta_left",
+      "pixels": 4
+    },
+    {
+      "file": "overlay_dungeon_stairs_v002.png",
+      "type": "magenta_left",
+      "pixels": 34
+    }
+  ],
+  "field_records": [
+    {
+      "name": "grass",
+      "bbox": null,
+      "alpha_ratio": 0.0
+    },
+    {
+      "name": "low_mountain",
+      "bbox": [
+        18,
+        51,
+        238,
+        221
+      ],
+      "alpha_ratio": 0.4339
+    },
+    {
+      "name": "mountain",
+      "bbox": [
+        25,
+        32,
+        231,
+        232
+      ],
+      "alpha_ratio": 0.4412
+    },
+    {
+      "name": "forest",
+      "bbox": [
+        33,
+        33,
+        223,
+        215
+      ],
+      "alpha_ratio": 0.1851
+    },
+    {
+      "name": "house_1",
+      "bbox": [
+        52,
+        37,
+        203,
+        218
+      ],
+      "alpha_ratio": 0.3967
+    },
+    {
+      "name": "house_2",
+      "bbox": [
+        56,
+        40,
+        199,
+        216
+      ],
+      "alpha_ratio": 0.3654
+    },
+    {
+      "name": "village",
+      "bbox": [
+        13,
+        19,
+        243,
+        237
+      ],
+      "alpha_ratio": 0.5664
+    },
+    {
+      "name": "inn",
+      "bbox": [
+        35,
+        25,
+        221,
+        230
+      ],
+      "alpha_ratio": 0.4269
+    },
+    {
+      "name": "casino",
+      "bbox": [
+        13,
+        18,
+        243,
+        238
+      ],
+      "alpha_ratio": 0.618
+    },
+    {
+      "name": "weapon",
+      "bbox": [
+        18,
+        49,
+        238,
+        206
+      ],
+      "alpha_ratio": 0.3116
+    },
+    {
+      "name": "shop",
+      "bbox": [
+        31,
+        27,
+        225,
+        228
+      ],
+      "alpha_ratio": 0.4831
+    },
+    {
+      "name": "medal",
+      "bbox": [
+        36,
+        37,
+        220,
+        219
+      ],
+      "alpha_ratio": 0.4657
+    },
+    {
+      "name": "town",
+      "bbox": [
+        31,
+        12,
+        225,
+        244
+      ],
+      "alpha_ratio": 0.5933
+    },
+    {
+      "name": "settlement",
+      "bbox": [
+        13,
+        12,
+        242,
+        244
+      ],
+      "alpha_ratio": 0.657
+    },
+    {
+      "name": "castle",
+      "bbox": [
+        24,
+        15,
+        232,
+        241
+      ],
+      "alpha_ratio": 0.6186
+    },
+    {
+      "name": "temple",
+      "bbox": [
+        35,
+        15,
+        220,
+        241
+      ],
+      "alpha_ratio": 0.5026
+    },
+    {
+      "name": "fortress",
+      "bbox": [
+        21,
+        15,
+        234,
+        241
+      ],
+      "alpha_ratio": 0.6414
+    },
+    {
+      "name": "cave",
+      "bbox": [
+        18,
+        41,
+        238,
+        235
+      ],
+      "alpha_ratio": 0.4934
+    },
+    {
+      "name": "hall",
+      "bbox": [
+        16,
+        35,
+        240,
+        237
+      ],
+      "alpha_ratio": 0.5304
+    },
+    {
+      "name": "ruins",
+      "bbox": [
+        37,
+        27,
+        219,
+        229
+      ],
+      "alpha_ratio": 0.4007
+    },
+    {
+      "name": "lost",
+      "bbox": [
+        25,
+        19,
+        231,
+        237
+      ],
+      "alpha_ratio": 0.54
+    },
+    {
+      "name": "darkcastle",
+      "bbox": [
+        38,
+        13,
+        218,
+        243
+      ],
+      "alpha_ratio": 0.4892
+    },
+    {
+      "name": "lighthouse",
+      "bbox": [
+        81,
+        20,
+        175,
+        252
+      ],
+      "alpha_ratio": 0.2416
+    },
+    {
+      "name": "tower",
+      "bbox": [
+        78,
+        20,
+        178,
+        252
+      ],
+      "alpha_ratio": 0.3397
+    },
+    {
+      "name": "farm",
+      "bbox": [
+        25,
+        26,
+        230,
+        242
+      ],
+      "alpha_ratio": 0.6654
+    },
+    {
+      "name": "pot",
+      "bbox": [
+        80,
+        78,
+        176,
+        206
+      ],
+      "alpha_ratio": 0.1541
+    },
+    {
+      "name": "barrel",
+      "bbox": [
+        76,
+        70,
+        180,
+        214
+      ],
+      "alpha_ratio": 0.1954
+    },
+    {
+      "name": "chest",
+      "bbox": [
+        65,
+        88,
+        191,
+        204
+      ],
+      "alpha_ratio": 0.2196
+    },
+    {
+      "name": "chest_rare",
+      "bbox": [
+        69,
+        88,
+        187,
+        204
+      ],
+      "alpha_ratio": 0.2027
+    },
+    {
+      "name": "smith",
+      "bbox": [
+        34,
+        26,
+        222,
+        230
+      ],
+      "alpha_ratio": 0.489
+    },
+    {
+      "name": "fire_village",
+      "bbox": [
+        12,
+        21,
+        244,
+        235
+      ],
+      "alpha_ratio": 0.568
+    },
+    {
+      "name": "empty",
+      "bbox": null,
+      "alpha_ratio": 0.0
+    }
+  ]
+}

@@ -515,49 +515,51 @@
     const aiAssets = {
       floor: "assets/managed/current/map/terrain/terrain_grass_field_v001.png",
       sea: "assets/managed/current/map/terrain/terrain_sea_v001.png",
-      forest: "assets/managed/current/map/objects/object_field_forest_v001.png",
-      mountain: "assets/managed/current/map/objects/object_field_mountain_v001.png",
-      Low_mountain: "assets/managed/current/map/objects/object_field_low_mountain_v001.png",
+      forest: "assets/managed/current/map/objects/object_field_forest_v003.png",
+      mountain: "assets/managed/current/map/objects/object_field_mountain_v002.png",
+      Low_mountain: "assets/managed/current/map/objects/object_field_low_mountain_v002.png",
       wall: "assets/managed/current/map/terrain/terrain_dungeon_wall_v001.png",
+      wall_face: "assets/managed/current/map/terrain/terrain_dungeon_wall_face_v002.png",
+      wall_face_torch: "assets/managed/current/map/terrain/terrain_dungeon_wall_face_torch_v002.png",
       dungeon_floor: "assets/managed/current/map/terrain/terrain_dungeon_floor_v001.png",
-      stairs: "assets/managed/current/map/objects/object_field_stairs_v001.png",
-      stairs_dungeon: "assets/managed/current/map/objects/object_dungeon_stairs_v001.png",
-      cave: "assets/managed/current/map/objects/object_field_cave_v001.png",
-      cave_dungeon: "assets/generated/tile-cave_dungeon-solid-ai.png",
-      hall: "assets/managed/current/map/objects/object_field_hall_v001.png",
-      "house-1": "assets/managed/current/map/objects/object_field_house_1_v001.png",
-      "house-2": "assets/managed/current/map/objects/object_field_house_2_v001.png",
-      village: "assets/managed/current/map/objects/object_field_village_v001.png",
-      inn: "assets/managed/current/map/objects/object_field_inn_v001.png",
-      casino: "assets/managed/current/map/objects/object_field_casino_v001.png",
-      weapon: "assets/managed/current/map/objects/object_field_weapon_v001.png",
-      shop: "assets/managed/current/map/objects/object_field_shop_v001.png",
-      medal: "assets/managed/current/map/objects/object_field_medal_v001.png",
-      town: "assets/managed/current/map/objects/object_field_town_v001.png",
-      settlement: "assets/managed/current/map/objects/object_field_settlement_v001.png",
-      castle: "assets/managed/current/map/objects/object_field_castle_v001.png",
-      temple: "assets/managed/current/map/objects/object_field_temple_v001.png",
-      fortress: "assets/managed/current/map/objects/object_field_fortress_v001.png",
-      ruins: "assets/managed/current/map/objects/object_field_ruins_v001.png",
-      lost: "assets/managed/current/map/objects/object_field_lost_v001.png",
-      darkcastle: "assets/managed/current/map/objects/object_field_darkcastle_v001.png",
-      lighthouse: "assets/managed/current/map/objects/object_field_lighthouse_v001.png",
-      tower: "assets/managed/current/map/objects/object_field_tower_v001.png",
-      farm: "assets/managed/current/map/objects/object_field_farm_v001.png",
-      pot_grass: "assets/managed/current/map/objects/object_field_pot_v001.png",
-      barrel_grass: "assets/managed/current/map/objects/object_field_barrel_v001.png",
-      chest: "assets/managed/current/map/objects/object_field_chest_v001.png",
-      chest_rare: "assets/managed/current/map/objects/object_field_chest_rare_v001.png",
-      chest_dungeon: "assets/managed/current/map/objects/object_dungeon_chest_v001.png",
-      chest_rare_dungeon: "assets/managed/current/map/objects/object_dungeon_chest_rare_v001.png",
-      smith: "assets/managed/current/map/objects/object_field_smith_v001.png",
-      fire_village: "assets/managed/current/map/objects/object_field_fire_village_v001.png",
-      dummy_grass: "assets/generated/tile-dummy-grass-ai.png",
-      boss: "assets/managed/current/map/objects/object_field_boss_v001.png",
-      boss_dungeon: "assets/managed/current/map/objects/object_dungeon_boss_v001.png",
-      event_field: "assets/managed/current/map/objects/object_field_event_v001.png",
-      event_dungeon: "assets/managed/current/map/objects/object_dungeon_event_v001.png",
-      portal_dungeon: "assets/managed/current/map/objects/object_dungeon_portal_v001.png",
+      stairs: "assets/managed/current/map/objects/object_field_stairs_v002.png",
+      stairs_dungeon: "assets/managed/current/map/objects/object_dungeon_stairs_v002.png",
+      cave: "assets/managed/current/map/objects/object_field_cave_v002.png",
+      cave_dungeon: "assets/managed/current/map/terrain/terrain_dungeon_floor_v001.png",
+      hall: "assets/managed/current/map/objects/object_field_hall_v002.png",
+      "house-1": "assets/managed/current/map/objects/object_field_house_1_v002.png",
+      "house-2": "assets/managed/current/map/objects/object_field_house_2_v002.png",
+      village: "assets/managed/current/map/objects/object_field_village_v002.png",
+      inn: "assets/managed/current/map/objects/object_field_inn_v002.png",
+      casino: "assets/managed/current/map/objects/object_field_casino_v002.png",
+      weapon: "assets/managed/current/map/objects/object_field_weapon_v002.png",
+      shop: "assets/managed/current/map/objects/object_field_shop_v002.png",
+      medal: "assets/managed/current/map/objects/object_field_medal_v002.png",
+      town: "assets/managed/current/map/objects/object_field_town_v002.png",
+      settlement: "assets/managed/current/map/objects/object_field_settlement_v002.png",
+      castle: "assets/managed/current/map/objects/object_field_castle_v002.png",
+      temple: "assets/managed/current/map/objects/object_field_temple_v002.png",
+      fortress: "assets/managed/current/map/objects/object_field_fortress_v002.png",
+      ruins: "assets/managed/current/map/objects/object_field_ruins_v002.png",
+      lost: "assets/managed/current/map/objects/object_field_lost_v002.png",
+      darkcastle: "assets/managed/current/map/objects/object_field_darkcastle_v002.png",
+      lighthouse: "assets/managed/current/map/objects/object_field_lighthouse_v002.png",
+      tower: "assets/managed/current/map/objects/object_field_tower_v002.png",
+      farm: "assets/managed/current/map/objects/object_field_farm_v002.png",
+      pot_grass: "assets/managed/current/map/objects/object_field_pot_v002.png",
+      barrel_grass: "assets/managed/current/map/objects/object_field_barrel_v002.png",
+      chest: "assets/managed/current/map/objects/object_field_chest_v002.png",
+      chest_rare: "assets/managed/current/map/objects/object_field_chest_rare_v002.png",
+      chest_dungeon: "assets/managed/current/map/objects/object_dungeon_chest_v002.png",
+      chest_rare_dungeon: "assets/managed/current/map/objects/object_dungeon_chest_rare_v002.png",
+      smith: "assets/managed/current/map/objects/object_field_smith_v002.png",
+      fire_village: "assets/managed/current/map/objects/object_field_fire_village_v002.png",
+      dummy_grass: "assets/managed/current/map/objects/object_field_grass_v002.png",
+      boss: "assets/managed/current/map/objects/object_field_boss_v002.png",
+      boss_dungeon: "assets/managed/current/map/objects/object_dungeon_boss_v002.png",
+      event_field: "assets/managed/current/map/objects/object_field_event_v002.png",
+      event_dungeon: "assets/managed/current/map/objects/object_dungeon_event_v002.png",
+      portal_dungeon: "assets/managed/current/map/objects/object_dungeon_portal_v002.png",
       battle_bg_field: "assets/generated/battle-field-ai.png",
       battle_bg_forest: "assets/generated/battle-forest-ai.png",
       battle_bg_mountain: "assets/generated/battle-mountain-ai.png",
@@ -1105,6 +1107,15 @@
       const hasDebuff = !!(data.debuff || data.Poison || data.ToxicPoison || data.Shock || data.Fear || data.SpellSeal || data.SkillSeal || data.HealSeal || data.Debuff);
       return hasDebuff && Number(data.rate || 0) <= 0 && Number(data.base || 0) <= 0;
     },
+    statusOnlyKind(data, cmd) {
+      if (!data) return null;
+      const noDirectDamage = Number(data.rate || 0) <= 0 && Number(data.base || 0) <= 0 && !data.fix && !data.ratio;
+      if (!noDirectDamage) return null;
+      if (data.Poison || data.ToxicPoison) return "poison";
+      if (data.PercentDamage || data.InstantDeath) return "abyss-vortex";
+      if (data.debuff || data.Debuff || data.Shock || data.Fear || data.SpellSeal || data.SkillSeal || data.HealSeal) return "debuff";
+      return null;
+    },
     isSpecialAttackData(data, cmd) {
       const raw = this.rawData(data);
       return !!(
@@ -1166,6 +1177,8 @@
     },
     visualKind(cmd, perHit = false) {
       if (!cmd) return "neutral-slash";
+      const statusOnly = this.statusOnlyKind(cmd?.data, cmd);
+      if (statusOnly) return statusOnly;
       if (this.isDebuffOnlyData(cmd?.data)) {
         if (cmd?.data?.Poison || cmd?.data?.ToxicPoison) return "poison";
         const base = this.elementKind(cmd?.data, cmd);
@@ -1424,13 +1437,54 @@
       const match = String(message || "").match(/color:\s*([^;"']+)/i);
       return match ? match[1].trim() : fallback;
     },
+    isDualWieldCommand(cmd) {
+      return !!(
+        cmd &&
+        !cmd.isReaction &&
+        cmd.type !== "item" &&
+        typeof PassiveSkill !== "undefined" &&
+        typeof PassiveSkill.getSumValue === "function" &&
+        PassiveSkill.getSumValue(cmd.actor, "dual_dmg_mult") > 0
+      );
+    },
+    isDualWieldFollowUpLog(text) {
+      const cmd = this.current?.cmd;
+      const actorName = this.stripHtml(cmd?.actor?.name || "");
+      const normalized = String(text || "").replace(/\s+/g, " ").trim();
+      return !!(
+        this.isDualWieldCommand(cmd) &&
+        actorName &&
+        (normalized === `${actorName}の 追撃！` ||
+          normalized === `${actorName}の 追撃!` ||
+          normalized === `${actorName}の 追撃`)
+      );
+    },
+    playIntentEffects(cmd, options = {}) {
+      if (!cmd || cmd.type === "defend" || cmd.type === "skip" || cmd.type === "flee") return 0;
+      const targets = this.getTargets(cmd).filter(Boolean);
+      if (targets.length === 0) return 0;
+      const kind = options.kind || this.visualKind(cmd, false);
+      targets.forEach((target, index) => {
+        setTimeout(() => this.effect(target, kind, { big: targets.length > 1 }), Math.min(index * 55, 260));
+      });
+      this.lastAt = performance.now();
+      return targets.length;
+    },
     reactToLog(message) {
       if (!this.current) return;
       const text = this.stripHtml(message);
+      if (this.isDualWieldFollowUpLog(text)) {
+        this.current.dualWieldFollowUp = true;
+        this.current.dualWieldKind = this.visualKind(this.current.cmd, false);
+        this.playIntentEffects(this.current.cmd, { kind: this.current.dualWieldKind });
+        return;
+      }
       if (!text || text === "--- ターン開始 ---") return;
       const criticalKind = this.criticalKindFromLog(text);
       if (criticalKind) this.queueCriticalKind(criticalKind);
-      this.queueNeutralPhysicalKind(this.logNeutralPhysicalKind(text));
+      if (this.current?.cmd?.isReaction) {
+        this.queueNeutralPhysicalKind(this.logNeutralPhysicalKind(text));
+      }
       const unit = this.unitFromText(text);
       if (!unit) return;
 
@@ -1451,14 +1505,14 @@
       setTimeout(() => {
         if (damageMatch) {
           const amount = damageMatch[1].replace(/,/g, "");
-          const kind = cmd?.isReaction ? (this.consumeNeutralPhysicalKind() || this.visualKind(cmd, true)) : this.visualKind(cmd, true);
+          const kind = cmd?.isReaction ? (this.consumeNeutralPhysicalKind() || this.visualKind(cmd, true)) : (this.current?.dualWieldKind || this.visualKind(cmd, true));
           const criticalKind = this.consumeCriticalKind() || this.enhancedDamageKind(cmd);
           this.mark(unit, "battle-hit-shake");
           if (this.isBossTarget(unit)) this.mark(unit, "battle-boss-flash");
           if (this.isParty(unit)) this.mark(unit, "battle-party-damaged");
-          this.effect(unit, kind, { hitIndex, big: area });
+          if (!area) this.effect(unit, kind, { hitIndex });
           if (criticalKind) {
-            this.effect(unit, criticalKind, { hitIndex, big: true });
+            if (!area) this.effect(unit, criticalKind, { hitIndex, big: true });
             this.float(unit, `-${amount}`, "#fff2a8", { hitIndex, critical: true });
           } else {
             this.float(unit, `-${amount}`, this.hitColorFromLog(message), { hitIndex });
@@ -1468,27 +1522,19 @@
         if (healMatch) {
           const amount = healMatch[1].replace(/,/g, "");
           this.mark(unit, "battle-heal-pulse");
-          this.effect(unit, this.visualKind(cmd, true) || "heal-blossom", { hitIndex, big: area });
+          if (!area) this.effect(unit, this.visualKind(cmd, true) || "heal-blossom", { hitIndex });
           this.float(unit, `+${amount}`, "#8fffad", { hitIndex });
           return;
         }
-        const missKind = cmd?.isReaction ? (this.consumeNeutralPhysicalKind() || "neutral-slash") : (this.isParty(unit) ? "party-hit" : "neutral-slash");
-        this.effect(unit, missKind, { hitIndex });
+        const missKind = cmd?.isReaction ? (this.consumeNeutralPhysicalKind() || "neutral-slash") : (this.current?.dualWieldKind || this.visualKind(cmd, true) || (this.isParty(unit) ? "party-hit" : "neutral-slash"));
+        if (!area) this.effect(unit, missKind, { hitIndex });
         this.float(unit, "MISS", "#d6d1c2", { hitIndex });
       }, delay);
     },
     async playIntent(cmd) {
-      if (!cmd || cmd.type === "defend" || cmd.type === "skip" || cmd.type === "flee") return;
-      const now = performance.now();
-      const targets = this.getTargets(cmd).filter(Boolean);
-      if (targets.length === 0) return;
-      const support = this.isSupport(cmd.data);
-      const kind = this.visualKind(cmd, false);
-      targets.forEach((target, index) => {
-        setTimeout(() => this.effect(target, kind, { big: targets.length > 1 }), Math.min(index * 55, 260));
-      });
-      this.lastAt = now;
-      await new Promise((resolve) => setTimeout(resolve, targets.length > 1 ? 310 : 240));
+      const targetCount = this.playIntentEffects(cmd);
+      if (targetCount === 0) return;
+      await new Promise((resolve) => setTimeout(resolve, targetCount > 1 ? 310 : 240));
     },
     async playResults(cmd, before, options = {}) {
       if (!before || typeof Battle === "undefined") return;
@@ -1501,6 +1547,7 @@
 
       const damaged = changes.filter((change) => change.hpDelta < 0).slice(0, 6);
       const healed = changes.filter((change) => change.hpDelta > 0).slice(0, 6);
+      const area = this.isArea(cmd);
 
       if (options.skipNumbers) {
         damaged.forEach(({ unit }) => {
@@ -1517,7 +1564,7 @@
           this.mark(unit, "battle-hit-shake");
           if (this.isBossTarget(unit)) this.mark(unit, "battle-boss-flash");
           if (this.isParty(unit)) this.mark(unit, "battle-party-damaged");
-          this.effect(unit, this.visualKind(cmd, true));
+          if (!area) this.effect(unit, this.visualKind(cmd, true));
           this.float(unit, `${hpDelta}`, "#ff7777");
         }, index * 45);
       });
@@ -1525,7 +1572,7 @@
       healed.forEach(({ unit, hpDelta }, index) => {
         setTimeout(() => {
           this.mark(unit, "battle-heal-pulse");
-          this.effect(unit, "heal");
+          if (!area) this.effect(unit, "heal");
           this.float(unit, `+${hpDelta}`, "#8fffad");
         }, index * 45);
       });

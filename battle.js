@@ -1944,15 +1944,31 @@ findNextActor: () => {
                     return true; 
                 };
 
+                const ailmentMessages = {
+                    Poison: "どくにかかった",
+                    ToxicPoison: "もうどくにかかった",
+                    Shock: "感電した",
+                    Debuff: "ステータスが低下した",
+                    Fear: "おびえている",
+                    SpellSeal: "呪文を封じられた",
+                    SkillSeal: "特技を封じられた",
+                    HealSeal: "回復を封じられた"
+                };
                 const addA = (k, msg, chance=null) => {
-                    if (!t.battleStatus.ailments[k]) {
-                        if (checkResist(k)) { 
-                            Battle.log(`${t.name}には ${Battle.statNames[k]||k} は きかなかった！`); 
-                            return; 
-                        }
-                        t.battleStatus.ailments[k] = { turns: d.turn || 3, chance: chance }; 
-                        Battle.log(msg);
+                    const text = ailmentMessages[k] || msg || `${Battle.statNames[k]||k}にかかった`;
+                    if (t.battleStatus.ailments[k]) {
+                        const current = t.battleStatus.ailments[k];
+                        current.turns = Math.max(Number(current.turns || 0), d.turn || 3);
+                        if (chance !== null) current.chance = chance;
+                        Battle.log(`${t.name}は ${text}！`);
+                        return;
                     }
+                    if (checkResist(k)) { 
+                        Battle.log(`${t.name}には ${Battle.statNames[k]||k} は きかなかった！`); 
+                        return; 
+                    }
+                    t.battleStatus.ailments[k] = { turns: d.turn || 3, chance: chance }; 
+                    Battle.log(`${t.name}は ${text}！`);
                 };
 
                 if (d.buff) {

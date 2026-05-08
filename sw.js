@@ -1,4 +1,4 @@
-const CACHE_NAME = "prisma-abyss-v2.52-ok-attribute-fx";
+const CACHE_NAME = "prisma-abyss-v2.54-dungeon-wall-face";
 const FILES_TO_CACHE = [
   "./", // ルート
   "main.html",

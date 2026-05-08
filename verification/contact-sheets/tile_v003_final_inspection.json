@@ -1,0 +1,433 @@
+{
+  "overlayCount": 41,
+  "objectCount": 41,
+  "issues": [],
+  "stats": [
+    {
+      "file": "overlay_dungeon_boss_v002.png",
+      "bbox": [
+        16,
+        6,
+        239,
+        250
+      ],
+      "margin": 6,
+      "coverage": 0.5428
+    },
+    {
+      "file": "overlay_dungeon_chest_rare_v002.png",
+      "bbox": [
+        78,
+        95,
+        178,
+        197
+      ],
+      "margin": 59,
+      "coverage": 0.0506
+    },
+    {
+      "file": "overlay_dungeon_chest_v002.png",
+      "bbox": [
+        75,
+        95,
+        180,
+        197
+      ],
+      "margin": 59,
+      "coverage": 0.1611
+    },
+    {
+      "file": "overlay_dungeon_event_v002.png",
+      "bbox": null,
+      "margin": null,
+      "coverage": 0.0
+    },
+    {
+      "file": "overlay_dungeon_portal_v002.png",
+      "bbox": null,
+      "margin": null,
+      "coverage": 0.0
+    },
+    {
+      "file": "overlay_dungeon_stairs_v002.png",
+      "bbox": [
+        10,
+        28,
+        246,
+        237
+      ],
+      "margin": 10,
+      "coverage": 0.5815
+    },
+    {
+      "file": "overlay_field_barrel_v002.png",
+      "bbox": [
+        76,
+        70,
+        180,
+        214
+      ],
+      "margin": 42,
+      "coverage": 0.1941
+    },
+    {
+      "file": "overlay_field_boss_v002.png",
+      "bbox": [
+        39,
+        31,
+        216,
+        225
+      ],
+      "margin": 31,
+      "coverage": 0.3319
+    },
+    {
+      "file": "overlay_field_casino_v002.png",
+      "bbox": [
+        13,
+        18,
+        243,
+        238
+      ],
+      "margin": 13,
+      "coverage": 0.6139
+    },
+    {
+      "file": "overlay_field_castle_v002.png",
+      "bbox": [
+        24,
+        15,
+        232,
+        241
+      ],
+      "margin": 15,
+      "coverage": 0.6149
+    },
+    {
+      "file": "overlay_field_cave_v002.png",
+      "bbox": [
+        18,
+        41,
+        238,
+        235
+      ],
+      "margin": 18,
+      "coverage": 0.4895
+    },
+    {
+      "file": "overlay_field_chest_rare_v002.png",
+      "bbox": [
+        69,
+        88,
+        187,
+        204
+      ],
+      "margin": 52,
+      "coverage": 0.2023
+    },
+    {
+      "file": "overlay_field_chest_v002.png",
+      "bbox": [
+        65,
+        88,
+        191,
+        204
+      ],
+      "margin": 52,
+      "coverage": 0.2193
+    },
+    {
+      "file": "overlay_field_darkcastle_v002.png",
+      "bbox": [
+        38,
+        13,
+        218,
+        243
+      ],
+      "margin": 13,
+      "coverage": 0.4839
+    },
+    {
+      "file": "overlay_field_empty_v002.png",
+      "bbox": null,
+      "margin": null,
+      "coverage": 0.0
+    },
+    {
+      "file": "overlay_field_event_v002.png",
+      "bbox": [
+        55,
+        49,
+        200,
+        207
+      ],
+      "margin": 49,
+      "coverage": 0.2184
+    },
+    {
+      "file": "overlay_field_farm_v002.png",
+      "bbox": [
+        25,
+        26,
+        230,
+        242
+      ],
+      "margin": 14,
+      "coverage": 0.662
+    },
+    {
+      "file": "overlay_field_fire_village_v002.png",
+      "bbox": [
+        12,
+        21,
+        244,
+        235
+      ],
+      "margin": 12,
+      "coverage": 0.5626
+    },
+    {
+      "file": "overlay_field_forest_v003.png",
+      "bbox": [
+        47,
+        24,
+        212,
+        191
+      ],
+      "margin": 24,
+      "coverage": 0.2417
+    },
+    {
+      "file": "overlay_field_fortress_v002.png",
+      "bbox": [
+        21,
+        15,
+        234,
+        241
+      ],
+      "margin": 15,
+      "coverage": 0.6381
+    },
+    {
+      "file": "overlay_field_grass_v002.png",
+      "bbox": null,
+      "margin": null,
+      "coverage": 0.0
+    },
+    {
+      "file": "overlay_field_hall_v002.png",
+      "bbox": [
+        16,
+        35,
+        240,
+        237
+      ],
+      "margin": 16,
+      "coverage": 0.5266
+    },
+    {
+      "file": "overlay_field_house_1_v002.png",
+      "bbox": [
+        52,
+        37,
+        203,
+        218
+      ],
+      "margin": 37,
+      "coverage": 0.3943
+    },
+    {
+      "file": "overlay_field_house_2_v002.png",
+      "bbox": [
+        56,
+        40,
+        199,
+        216
+      ],
+      "margin": 40,
+      "coverage": 0.3641
+    },
+    {
+      "file": "overlay_field_inn_v002.png",
+      "bbox": [
+        35,
+        25,
+        221,
+        230
+      ],
+      "margin": 25,
+      "coverage": 0.4244
+    },
+    {
+      "file": "overlay_field_lighthouse_v002.png",
+      "bbox": [
+        81,
+        20,
+        175,
+        252
+      ],
+      "margin": 4,
+      "coverage": 0.2385
+    },
+    {
+      "file": "overlay_field_lost_v002.png",
+      "bbox": [
+        25,
+        19,
+        231,
+        237
+      ],
+      "margin": 19,
+      "coverage": 0.5325
+    },
+    {
+      "file": "overlay_field_low_mountain_v002.png",
+      "bbox": [
+        18,
+        51,
+        238,
+        221
+      ],
+      "margin": 18,
+      "coverage": 0.4303
+    },
+    {
+      "file": "overlay_field_medal_v002.png",
+      "bbox": [
+        36,
+        37,
+        220,
+        219
+      ],
+      "margin": 36,
+      "coverage": 0.4634
+    },
+    {
+      "file": "overlay_field_mountain_v002.png",
+      "bbox": [
+        25,
+        32,
+        231,
+        232
+      ],
+      "margin": 24,
+      "coverage": 0.4376
+    },
+    {
+      "file": "overlay_field_pot_v002.png",
+      "bbox": [
+        80,
+        78,
+        176,
+        206
+      ],
+      "margin": 50,
+      "coverage": 0.1524
+    },
+    {
+      "file": "overlay_field_ruins_v002.png",
+      "bbox": [
+        37,
+        27,
+        219,
+        229
+      ],
+      "margin": 27,
+      "coverage": 0.3961
+    },
+    {
+      "file": "overlay_field_settlement_v002.png",
+      "bbox": [
+        13,
+        12,
+        242,
+        244
+      ],
+      "margin": 12,
+      "coverage": 0.6516
+    },
+    {
+      "file": "overlay_field_shop_v002.png",
+      "bbox": [
+        31,
+        27,
+        225,
+        228
+      ],
+      "margin": 27,
+      "coverage": 0.4805
+    },
+    {
+      "file": "overlay_field_smith_v002.png",
+      "bbox": [
+        34,
+        26,
+        222,
+        230
+      ],
+      "margin": 26,
+      "coverage": 0.4854
+    },
+    {
+      "file": "overlay_field_stairs_v002.png",
+      "bbox": null,
+      "margin": null,
+      "coverage": 0.0
+    },
+    {
+      "file": "overlay_field_temple_v002.png",
+      "bbox": [
+        35,
+        15,
+        220,
+        241
+      ],
+      "margin": 15,
+      "coverage": 0.5003
+    },
+    {
+      "file": "overlay_field_tower_v002.png",
+      "bbox": [
+        78,
+        20,
+        178,
+        252
+      ],
+      "margin": 4,
+      "coverage": 0.3375
+    },
+    {
+      "file": "overlay_field_town_v002.png",
+      "bbox": [
+        31,
+        12,
+        225,
+        244
+      ],
+      "margin": 12,
+      "coverage": 0.5907
+    },
+    {
+      "file": "overlay_field_village_v002.png",
+      "bbox": [
+        13,
+        19,
+        243,
+        237
+      ],
+      "margin": 13,
+      "coverage": 0.5572
+    },
+    {
+      "file": "overlay_field_weapon_v002.png",
+      "bbox": [
+        18,
+        49,
+        238,
+        206
+      ],
+      "margin": 18,
+      "coverage": 0.3098
+    }
+  ]
+}
