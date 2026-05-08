@@ -3492,8 +3492,8 @@ const MenuAchievements = {
 						break;
 
 					case "BOSS":
-						// Estark討伐回数（図鑑killCountsを参照する既存ロジックがある） :contentReference[oaicite:2]{index=2}
-						val = (App.data.book && App.data.book.killCounts) ? (App.data.book.killCounts[2000] || 0) : 0;
+						// ギルガメッシュ討伐回数（旧ID 2000 は互換用に合算）
+						val = (App.data.book && App.data.book.killCounts) ? ((App.data.book.killCounts[902000] || 0) + (App.data.book.killCounts[2000] || 0)) : 0;
 						break;
 
 					case "ALLY":

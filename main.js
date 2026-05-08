@@ -33,6 +33,8 @@ class Entity {
         this.formation = data.formation || 'front';
         this.isBoss = data.isBoss || false;
         this.isEstark = data.isEstark || false;
+        this.isSpecialBoss = data.isSpecialBoss || false;
+        this.isRare = data.isRare || false;
 
         this.job = data.job || '冒険者';
         this.rarity = data.rarity || 'N';
@@ -42,7 +44,8 @@ class Entity {
         // data.img（セーブデータ/個別データ）があればそれを、
         // なければマスタデータ（characters.js）からIDを元に探す
         const master = DB.CHARACTERS.find(c => c.id === (data.charId || data.id));
-        this.img = data.img || (master ? master.img : null);
+        this.img = data.img || data.image || (master ? master.img : null);
+        this.image = data.image || this.img || null;
 		
         this.limitBreak = data.limitBreak || 0;
         this.reincarnationCount = data.reincarnationCount || 0;
@@ -219,12 +222,11 @@ class Monster extends Entity {
         this.id = data.id;
         this.data = data;
         
-        // ★修正: 30階以下の敵調整ロジック (確認済)
+        // Legacy monster tables used to need an early-floor tune. New MonsterData is already balanced.
         let hpMod = 1.0;
         let statMod = 1.0;
         
-        // data.rank が存在する場合のみ適用 (ボス等は対象外にしたい場合は条件追加)
-        if (data.rank && data.rank <= 30) {
+        if (data.legacyLowFloorTune && data.rank && data.rank <= 30) {
             hpMod = 0.8; // HP 20%ダウン
             statMod = 1.1; // 攻撃・魔力 10%アップ
         }
@@ -241,6 +243,11 @@ class Monster extends Entity {
         this.acts = data.acts || [1];
         this.baseId = data.id;
         this.actCount = data.actCount || 1;
+        this.isBoss = data.isBoss || false;
+        this.isRare = data.isRare || false;
+        this.isEstark = data.isEstark || false;
+        this.isSpecialBoss = data.isSpecialBoss || data.isEstark || false;
+        this.image = data.image || data.img || null;
         
         // ★追加: ブレス耐性などの初期化（あれば）
         this.resists = data.resists || {};
@@ -2226,7 +2233,7 @@ const Field = {
     },
     
     getBattleBg: () => {
-        if (App.data.battle && App.data.battle.isEstark) return 'battle_bg_lastboss';
+        if (App.data.battle && (App.data.battle.isSpecialBoss || App.data.battle.isEstark)) return 'battle_bg_lastboss';
         if (Field.currentMapData) {
             if (Field.currentMapData.battleBg) return Field.currentMapData.battleBg;
             if (Field.currentMapData.isDungeon) {

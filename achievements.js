@@ -104,7 +104,7 @@ const ACHIEVEMENTS_DATA = [
 	{ id:1302, type: "REBIRTH", goal: 5, title: "輪廻の探究者", desc: "転生を5回行う", rewards:[{type:'GEM', val:2000}] },
 	{ id:1303, type: "REBIRTH", goal: 20, title: "永劫回帰", desc: "転生を20回行う", rewards:[{type:'GEM', val:3000},{type:'ITEM', id:107, val:1}] },
 	
-	//Estark討伐回数（BOSS）
+	// ギルガメッシュ討伐回数（BOSS）
 	{ id: 801, type: "BOSS", goal: 1, title: "災厄への挑戦", desc: "災厄の王を1体討伐", rewards:[{type:'GEM', val:3000}] },
 	{ id: 802, type: "BOSS", goal: 10, title: "災厄を撃ち払う者", desc: "災厄の王を10体討伐", rewards:[{type:'GEM', val:3000}] },
 	{ id: 803, type: "BOSS", goal: 50, title: "災厄の征服者", desc: "災厄の王を50体討伐", rewards:[{type:'EQUIP', eid:801 , plus: 3}] },

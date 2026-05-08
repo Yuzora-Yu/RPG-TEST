@@ -143,7 +143,7 @@ const Facilities = {
         // コマンドボタンの構成
         const cmds = `
             <button class="menu-btn" style="background:#000; border:1px solid #fff; height:40px; color:#fff; ${hasWedge ? '' : 'grid-column: span 2;'}" onclick="Facilities.openMedalMenu()">▶ メダルを交換する</button>
-            ${hasWedge ? `<button class="menu-btn" style="background:#000; border:1px solid #f44; height:40px; color:#f44;" onclick="Facilities.challengeEstark()">▶ 災厄に挑む</button>` : ''}
+            ${hasWedge ? `<button class="menu-btn" style="background:#000; border:1px solid #f44; height:40px; color:#f44;" onclick="Facilities.challengeSpecialBoss()">▶ 災厄に挑む</button>` : ''}
         `;
         Facilities.setupBaseLayout('medal-scene', 'メダル交換所', 'facility_bg_medal', cmds, exitFn);
         const medals = App.data.items[99] || 0;
@@ -153,13 +153,15 @@ const Facilities = {
         `;
     },
 
-// ★追加: エスターク戦開始ロジック
-    challengeEstark: () => {
-        Menu.confirm("「災厄の楔」が<br>不気味に脈動している……<br>地獄の帝王を呼び覚ましますか？<br><span style='color:#f44; font-size:11px;'>※この戦いからは逃げられません</span>", () => {
+// 特殊ボス戦開始ロジック
+    challengeSpecialBoss: () => {
+        Menu.confirm("「災厄の楔」が<br>不気味に脈動している……<br>ギルガメッシュを呼び覚ましますか？<br><span style='color:#f44; font-size:11px;'>※この戦いからは逃げられません</span>", () => {
             App.data.battle = {
                 active: true,
                 isBossBattle: true,
-                isEstark: true, // エスターク戦専用フラグ
+                isSpecialBoss: true,
+                isEstark: true,
+                fixedBossId: 902000,
                 enemies: []     // Battle.init で生成
             };
             App.save();

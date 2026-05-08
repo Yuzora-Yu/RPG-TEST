@@ -251,12 +251,15 @@ const DB = {
 
 // ユーティリティ関数
 window.generateEnemy = function(floor) {
-    const candidates = DB.MONSTERS.filter(m => Math.floor(m.rank) === floor && m.id < 1000);
-    if (candidates.length > 0) {
-        const base = candidates[Math.floor(Math.random() * candidates.length)];
-        return JSON.parse(JSON.stringify(base));
+    if (window.MonsterData && typeof window.MonsterData.generateEnemyForFloor === 'function') {
+        const monster = window.MonsterData.generateEnemyForFloor(floor);
+        if (monster) return monster;
     }
-    return { name:'エラースライム', hp:50, atk:10, def:10, spd:10, mag:10, exp:1, gold:1, acts:[1] };
+    if (window.MonsterData && typeof window.MonsterData.generateBandMonster === 'function') {
+        const monster = window.MonsterData.generateBandMonster(floor);
+        if (monster) return monster;
+    }
+    return { id: 0, name:'\u30a8\u30e9\u30fc\u30b9\u30e9\u30a4\u30e0', race:'\u7c98\u4f53', hp:50, atk:10, def:10, spd:10, mag:10, mdef:10, exp:1, gold:1, acts:[{ id:1, rate:100, condition:0 }] };
 };
 
 // 初期データテンプレート

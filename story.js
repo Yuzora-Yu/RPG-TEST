@@ -644,7 +644,13 @@ const StoryManager = {
             delete data.activeEvent;
             delete data.activeConversation;
             this.endConversation();
-            App.data.battle = { active: false, isBossBattle: true, fixedBossId: action.value || 1, eventId: eventId };
+            const fixedBossId = action.value !== undefined ? action.value : null;
+            const ids = Array.isArray(fixedBossId) ? fixedBossId : [fixedBossId].filter(id => id !== null);
+            const isSpecialBoss = ids.some(id => {
+                const base = window.MonsterData?.getMonsterById?.(Number(id));
+                return base?.isSpecialBoss || base?.isEstark || Number(id) === 902000;
+            });
+            App.data.battle = { active: false, isBossBattle: true, fixedBossId: fixedBossId, isSpecialBoss: isSpecialBoss, isEstark: isSpecialBoss, eventId: eventId };
             App.save(); 
             App.changeScene('battle');
             return 'BREAK'; 

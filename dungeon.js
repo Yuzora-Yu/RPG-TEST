@@ -180,7 +180,11 @@ const Dungeon = {
 
         App.changeScene('field');
         
-        if (App.data.battle) App.data.battle.isBossBattle = false;
+        if (App.data.battle) {
+            App.data.battle.isBossBattle = false;
+            App.data.battle.isSpecialBoss = false;
+            App.data.battle.isEstark = false;
+        }
         App.clearAction();
     },
 
@@ -309,7 +313,12 @@ const Dungeon = {
 
             App.log("ボスの気配が…");
             App.setAction("ボスと戦う", () => {
-                if (App.data.battle) App.data.battle.isBossBattle = true;
+                if (App.data.battle) {
+                    App.data.battle.isBossBattle = true;
+                    App.data.battle.isSpecialBoss = Dungeon.floor >= 300;
+                    App.data.battle.isEstark = Dungeon.floor >= 300;
+                    App.data.battle.fixedBossId = Dungeon.floor >= 300 ? 902000 : null;
+                }
                 App.changeScene('battle');
             });
         } 
@@ -789,6 +798,8 @@ const Dungeon = {
 		// 戦闘データのクリーンアップ
 		if (App.data.battle) {
 			App.data.battle.isBossBattle = false;
+			App.data.battle.isSpecialBoss = false;
+			App.data.battle.isEstark = false;
 			App.data.battle.fixedBossId = null; 
 		}
 	}
