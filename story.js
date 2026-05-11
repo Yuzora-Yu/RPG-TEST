@@ -354,7 +354,7 @@ const StoryManager = {
 		{ "type": "CONV", "value": "GAME_START_1" },
 
 		// 戦闘呼び出し（ID1を2体）
-		{ "type": "BOSS", "value": [1, 1] }
+		{ "type": "BOSS", "value": [100001, 100001] }
         ],
         "winActions": [
 		// 戦闘終了後、次の会話
@@ -373,7 +373,7 @@ const StoryManager = {
             { "type": "CONV", "value": "BATTLE_RETRY_TALK" }, // 神秘的な声
             { "type": "STEP", "value": 100 },     // 力を授ける (StoryStep=100でステータス激増)
             { "type": "HEAL" },                  // 全回復
-            { "type": "BOSS", "value": [1, 1] }  // 再戦
+            { "type": "BOSS", "value": [100001, 100001] }  // 再戦
         ],
         "winActions": [
             { "type": "STEP", "value": 0 },      // 力を返還 (StoryStep=0)
@@ -499,7 +499,7 @@ const StoryManager = {
             },
             {
                 "type": "BOSS",
-                "value": 1000
+                "value": 301000
             }
         ],
         "winActions": [

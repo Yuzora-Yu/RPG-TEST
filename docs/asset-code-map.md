@@ -9,6 +9,7 @@ Accepted assets live under `assets/managed/current/`.
 - `map/overlays/`: transparent cutout sources for the current map objects. Use these when rebuilding composites on a new base floor.
 - `assets/managed/source/map/sheets/`: generated source sheets kept for traceability before cutout and compositing.
 - `battle/fx/`: battle effects. Physical, spell, heal, buff, debuff, breath, special, and critical overlays are separated by name.
+- `monsters/`: accepted monster sprites keyed as `monster_<monsterId>.png`.
 - `battle/bg/`, `hero/`, `ui/`: reserved for accepted battle backgrounds, walking sprites, and UI materials.
 
 When replacing an accepted asset, move the previous file to `assets/managed/old/YYYYMMDD-HHMMSS/` with the same relative path, then place the new file in `current/`.
@@ -18,6 +19,7 @@ When replacing an accepted asset, move the previous file to `assets/managed/old/
 - Terrain: `terrain_<area>_<kind>_vNNN.png`
 - Map objects: `object_<area>_<kind>_vNNN.png`
 - Battle effects: `fx_<category>_<kind>_vNNN.png`
+- Monster sprites: `monster_<monsterId>.png`
 
 Examples:
 
@@ -25,6 +27,7 @@ Examples:
 - `object_dungeon_chest_rare_v002.png`
 - `fx_phys_neutral_chain_v001.png`
 - `fx_spell_thunder_v001.png`
+- `monster_902000.png`
 - `fx_critical_spark_v001.png`
 
 ## Current Code Hooks
@@ -35,6 +38,14 @@ Examples:
 - `polish.js` `PolishBattleFX`: selects battle effects by skill type, element, target scope, hit count, boss state, and critical log cues.
 - `modern-polish.css`: owns modern UI styling and battle effect animations, including critical damage number emphasis.
 - `battle.js`: owns battle rules and damage/heal/passive resolution. Dual-wield behavior is intentionally left unchanged.
+- `monster-images.js`: maps accepted monster IDs to `assets/managed/current/monsters/monster_<id>.png`.
+- `menus.js` `MenuBook.getMonsterImgSrc()`: uses `window.MonsterImageMap` before legacy embedded graphics.
+
+Current accepted boss and rare candidate monster sprites are stored in `assets/managed/current/monsters/`.
+Raw user-provided sources are stored in `assets/managed/source/monsters/boss-candidates/raw/`.
+Verification previews are stored in `verification/monster-alpha-final/`.
+The current alpha pass uses conservative outer-edge removal for the silver metal monsters `200201`, `200202`, and `200203`, and inner-hole removal for the other first-pass boss candidate images. User-provided transparent boss sprites for `401030`, `401040`, `401050`, `401060`, `401100`, `401150`, `401151`, `401152`, `401153`, and `401200` were cropped to their alpha bounds and added directly.
+Regenerated sprites currently installed: `200204` was regenerated on green chroma key to avoid magenta-key interference, `401010` was regenerated with a shorter katana grip, and `401130` / `401140` were regenerated then reprocessed with inner green removal. Older accepted files were moved under `assets/managed/old/<timestamp>/monsters/` before replacement.
 
 Current map tile set: field/dungeon objects are `v002`, except the forest tile which is `object_field_forest_v003.png` because it was rebuilt as a two-tree tile.
 

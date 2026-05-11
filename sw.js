@@ -1,4 +1,17 @@
-const CACHE_NAME = "prisma-abyss-v2.55-monsterdata";
+const CACHE_NAME = "prisma-abyss-v2.62-monster-img";
+const NORMAL_MONSTER_IMAGE_IDS = Array.from({ length: 90 }, (_, i) => 100001 + i);
+const BOSS_MONSTER_IMAGE_IDS = [
+  200201, 200202, 200203, 200204,
+  301000,
+  401010, 401020, 401030, 401040, 401050, 401060, 401070,
+  401080, 401081, 401082, 401090, 401100,
+  401110, 401120, 401130, 401140, 401150, 401151, 401152, 401153,
+  401160, 401161, 401162, 401170, 401180, 401190, 401200,
+  902000,
+];
+const MONSTER_IMAGE_FILES = NORMAL_MONSTER_IMAGE_IDS
+  .concat(BOSS_MONSTER_IMAGE_IDS)
+  .map((id) => `monster/img/monster_${id}.png`);
 const FILES_TO_CACHE = [
   "./", // ルート
   "main.html",
@@ -11,6 +24,7 @@ const FILES_TO_CACHE = [
   "database.js",
   "gacha.js",
   "monsters.js",
+  "monster-images.js",
   "skills.js",
   "characters.js",
   "battle.js",
@@ -25,7 +39,8 @@ const FILES_TO_CACHE = [
   "story.js",
   "passiveSkill.js",
   "achievements.js",
-  "news.js"
+  "news.js",
+  ...MONSTER_IMAGE_FILES,
 ];
 
 // インストール時にキャッシュ

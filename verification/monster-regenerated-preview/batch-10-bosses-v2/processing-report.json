@@ -1,0 +1,162 @@
+[
+  {
+    "id": 401030,
+    "file": "monster_401030_candidate.png",
+    "size": [
+      849,
+      900
+    ],
+    "nonzeroAlpha": 333983,
+    "cornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "greenishKept": 400
+  },
+  {
+    "id": 401040,
+    "file": "monster_401040_candidate.png",
+    "size": [
+      827,
+      900
+    ],
+    "nonzeroAlpha": 383829,
+    "cornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "greenishKept": 162
+  },
+  {
+    "id": 401050,
+    "file": "monster_401050_candidate.png",
+    "size": [
+      824,
+      900
+    ],
+    "nonzeroAlpha": 445946,
+    "cornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "greenishKept": 939
+  },
+  {
+    "id": 401060,
+    "file": "monster_401060_candidate.png",
+    "size": [
+      894,
+      900
+    ],
+    "nonzeroAlpha": 420051,
+    "cornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "greenishKept": 1012
+  },
+  {
+    "id": 401100,
+    "file": "monster_401100_candidate.png",
+    "size": [
+      900,
+      886
+    ],
+    "nonzeroAlpha": 378234,
+    "cornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "greenishKept": 179
+  },
+  {
+    "id": 401150,
+    "file": "monster_401150_candidate.png",
+    "size": [
+      752,
+      900
+    ],
+    "nonzeroAlpha": 361201,
+    "cornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "greenishKept": 1014
+  },
+  {
+    "id": 401151,
+    "file": "monster_401151_candidate.png",
+    "size": [
+      807,
+      900
+    ],
+    "nonzeroAlpha": 399738,
+    "cornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "greenishKept": 621
+  },
+  {
+    "id": 401152,
+    "file": "monster_401152_candidate.png",
+    "size": [
+      831,
+      900
+    ],
+    "nonzeroAlpha": 453033,
+    "cornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "greenishKept": 544
+  },
+  {
+    "id": 401153,
+    "file": "monster_401153_candidate.png",
+    "size": [
+      891,
+      900
+    ],
+    "nonzeroAlpha": 388877,
+    "cornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "greenishKept": 358
+  },
+  {
+    "id": 401200,
+    "file": "monster_401200_candidate.png",
+    "size": [
+      900,
+      886
+    ],
+    "nonzeroAlpha": 535308,
+    "cornerAlpha": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "greenishKept": 817
+  }
+]

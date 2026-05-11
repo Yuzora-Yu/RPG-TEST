@@ -22,33 +22,25 @@ const Dungeon = {
 
         const maxF = App.data.dungeon.maxFloor || 0;
         const choices = [{ label: "1階から", callback: () => Dungeon.start(1) }];
+        const latestCheckpoint = Math.floor((maxF - 1) / 10) * 10 + 1;
 
-        // 特定のチェックポイント (51, 101, 151)
-        [51, 101, 151,201,251,301].forEach(checkpoint => {
+        // 到達済みの主要チェックポイント (50n+1) を自動で並べる
+        for (let checkpoint = 51; checkpoint <= maxF; checkpoint += 50) {
             if (maxF >= checkpoint) {
                 choices.push({ 
-                    label: `${checkpoint}階から`, 
+                    label: checkpoint === latestCheckpoint ? `${checkpoint}階から (最新)` : `${checkpoint}階から`, 
                     callback: () => Dungeon.start(checkpoint) 
                 });
             }
-        });
+        }
 
         // 10階ごとの最新チェックポイント（既にリストにある場合は除外）
-        const latestCheckpoint = Math.floor((maxF - 1) / 10) * 10 + 1;
         if (latestCheckpoint > 1 && !choices.some(c => c.label.includes(`${latestCheckpoint}階`))) {
             choices.push({ 
                 label: `${latestCheckpoint}階から (最新)`, 
                 callback: () => Dungeon.start(latestCheckpoint) 
             });
         }
-
-	// ★追加: 3. 最高到達階から直接開始する選択肢 (これで110階などが表示されます)
-		if (maxF > 1 && !choices.some(c => c.label.includes(`${maxF}階`))) {
-			choices.push({ 
-				label: `${maxF}階から (最高到達)`, 
-				callback: () => Dungeon.start(maxF) 
-			});
-		}
 
         // 選択肢が2つ以上ある場合はリストを表示、1つなら即開始
         if (choices.length > 1) {
@@ -315,9 +307,9 @@ const Dungeon = {
             App.setAction("ボスと戦う", () => {
                 if (App.data.battle) {
                     App.data.battle.isBossBattle = true;
-                    App.data.battle.isSpecialBoss = Dungeon.floor >= 300;
-                    App.data.battle.isEstark = Dungeon.floor >= 300;
-                    App.data.battle.fixedBossId = Dungeon.floor >= 300 ? 902000 : null;
+                    //App.data.battle.isSpecialBoss = Dungeon.floor >= 300;
+                    //App.data.battle.isEstark = Dungeon.floor >= 300;
+                    //App.data.battle.fixedBossId = Dungeon.floor >= 300 ? 902000 : null;
                 }
                 App.changeScene('battle');
             });
@@ -529,6 +521,7 @@ const Dungeon = {
             if (Math.random() < 0.02) {
                 Dungeon.generateTreasureRoom();
             } else {
+				Dungeon.lastGenVariant = null;
 				const r = Math.random();
 				let type;
 				if (r < 0.05) type = 2; // 迷路
@@ -541,6 +534,7 @@ const Dungeon = {
 				
 				Dungeon.setPlayerRandomSpawn();
 				App.data.dungeon.genType = type;
+				App.data.dungeon.genVariant = Dungeon.lastGenVariant || null;
 			}
 		}
         
@@ -591,6 +585,184 @@ const Dungeon = {
         App.data.dungeon.genType = 0; 
     },
 
+    randInt: (min, max) => Math.floor(Math.random() * (max - min + 1)) + min,
+
+    chance: (rate) => Math.random() < rate,
+
+    makeMap: (w, h, tile = 'W') => Array.from({ length: h }, () => Array(w).fill(tile)),
+
+    shuffle: (items) => {
+        const arr = items.slice();
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    },
+
+    inBounds: (map, x, y, margin = 1) => {
+        const h = map.length;
+        const w = h ? map[0].length : 0;
+        return x >= margin && x < w - margin && y >= margin && y < h - margin;
+    },
+
+    carveBrush: (map, cx, cy, rx = 1, ry = rx) => {
+        let carved = 0;
+        for (let y = Math.floor(cy - ry); y <= Math.ceil(cy + ry); y++) {
+            for (let x = Math.floor(cx - rx); x <= Math.ceil(cx + rx); x++) {
+                if (!Dungeon.inBounds(map, x, y, 1)) continue;
+                const nx = (x - cx) / Math.max(1, rx);
+                const ny = (y - cy) / Math.max(1, ry);
+                if ((nx * nx) + (ny * ny) <= 1.15) {
+                    if (map[y][x] === 'W') carved++;
+                    map[y][x] = 'T';
+                }
+            }
+        }
+        return carved;
+    },
+
+    carveLine: (map, from, to, width = 1, wiggle = 0.18) => {
+        let x = from.x;
+        let y = from.y;
+        Dungeon.carveBrush(map, x, y, width);
+        let guard = map.length * map[0].length;
+        while ((x !== to.x || y !== to.y) && guard-- > 0) {
+            const horizontal = x !== to.x && (y === to.y || Math.random() < 0.5);
+            if (horizontal) x += x < to.x ? 1 : -1;
+            else if (y !== to.y) y += y < to.y ? 1 : -1;
+
+            if (Math.random() < wiggle) {
+                const dirs = Dungeon.shuffle([[1,0],[-1,0],[0,1],[0,-1]]);
+                const d = dirs.find(([dx, dy]) => Dungeon.inBounds(map, x + dx, y + dy, 1));
+                if (d) { x += d[0]; y += d[1]; }
+            }
+            Dungeon.carveBrush(map, x, y, width);
+        }
+    },
+
+    collectTiles: (map, accepted = ['T']) => {
+        const set = new Set(accepted);
+        const cells = [];
+        for (let y = 0; y < map.length; y++) {
+            for (let x = 0; x < map[y].length; x++) {
+                if (set.has(map[y][x])) cells.push({ x, y });
+            }
+        }
+        return cells;
+    },
+
+    floorNeighbors: (map, x, y, diagonal = false) => {
+        const dirs = diagonal
+            ? [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]]
+            : [[1,0],[-1,0],[0,1],[0,-1]];
+        let count = 0;
+        dirs.forEach(([dx, dy]) => {
+            const nx = x + dx, ny = y + dy;
+            if (ny >= 0 && ny < map.length && nx >= 0 && nx < map[0].length && map[ny][nx] !== 'W') count++;
+        });
+        return count;
+    },
+
+    findRegions: (map) => {
+        const h = map.length, w = map[0].length;
+        const seen = Array.from({ length: h }, () => Array(w).fill(false));
+        const regions = [];
+        for (let y = 1; y < h - 1; y++) {
+            for (let x = 1; x < w - 1; x++) {
+                if (seen[y][x] || map[y][x] === 'W') continue;
+                const region = [];
+                const queue = [{ x, y }];
+                seen[y][x] = true;
+                for (let qi = 0; qi < queue.length; qi++) {
+                    const p = queue[qi];
+                    region.push(p);
+                    [[1,0],[-1,0],[0,1],[0,-1]].forEach(([dx, dy]) => {
+                        const nx = p.x + dx, ny = p.y + dy;
+                        if (nx <= 0 || nx >= w - 1 || ny <= 0 || ny >= h - 1) return;
+                        if (seen[ny][nx] || map[ny][nx] === 'W') return;
+                        seen[ny][nx] = true;
+                        queue.push({ x: nx, y: ny });
+                    });
+                }
+                regions.push(region);
+            }
+        }
+        return regions;
+    },
+
+    keepLargestRegion: (map) => {
+        const regions = Dungeon.findRegions(map);
+        if (!regions.length) return 0;
+        regions.sort((a, b) => b.length - a.length);
+        const keep = new Set(regions[0].map(p => `${p.x},${p.y}`));
+        for (let y = 1; y < map.length - 1; y++) {
+            for (let x = 1; x < map[0].length - 1; x++) {
+                if (map[y][x] !== 'W' && !keep.has(`${x},${y}`)) map[y][x] = 'W';
+            }
+        }
+        return regions[0].length;
+    },
+
+    distanceMap: (map, start) => {
+        const h = map.length, w = map[0].length;
+        const dist = Array.from({ length: h }, () => Array(w).fill(-1));
+        if (!start || map[start.y]?.[start.x] === 'W') return dist;
+        const queue = [start];
+        dist[start.y][start.x] = 0;
+        for (let qi = 0; qi < queue.length; qi++) {
+            const p = queue[qi];
+            [[1,0],[-1,0],[0,1],[0,-1]].forEach(([dx, dy]) => {
+                const nx = p.x + dx, ny = p.y + dy;
+                if (nx < 0 || nx >= w || ny < 0 || ny >= h) return;
+                if (dist[ny][nx] >= 0 || map[ny][nx] === 'W') return;
+                dist[ny][nx] = dist[p.y][p.x] + 1;
+                queue.push({ x: nx, y: ny });
+            });
+        }
+        return dist;
+    },
+
+    weightedPick: (items, weightFn) => {
+        if (!items.length) return null;
+        const weights = items.map((item) => Math.max(0.01, weightFn(item)));
+        const total = weights.reduce((sum, val) => sum + val, 0);
+        let roll = Math.random() * total;
+        for (let i = 0; i < items.length; i++) {
+            roll -= weights[i];
+            if (roll <= 0) return items[i];
+        }
+        return items[items.length - 1];
+    },
+
+    isAwayFromFeatures: (map, cell, minDist = 3) => {
+        for (let y = Math.max(0, cell.y - minDist); y <= Math.min(map.length - 1, cell.y + minDist); y++) {
+            for (let x = Math.max(0, cell.x - minDist); x <= Math.min(map[0].length - 1, cell.x + minDist); x++) {
+                if (Math.abs(x - cell.x) + Math.abs(y - cell.y) > minDist) continue;
+                if (map[y][x] === 'S' || map[y][x] === 'C' || map[y][x] === 'R') return false;
+            }
+        }
+        return true;
+    },
+
+    finishCaveMap: (map) => {
+        const h = map.length, w = map[0].length;
+        for (let i = 0; i < 2; i++) {
+            const next = map.map(row => row.slice());
+            for (let y = 1; y < h - 1; y++) {
+                for (let x = 1; x < w - 1; x++) {
+                    const floors = Dungeon.floorNeighbors(map, x, y, true);
+                    if (map[y][x] === 'W' && floors >= 6) next[y][x] = 'T';
+                    if (map[y][x] !== 'W' && floors <= 1) next[y][x] = 'W';
+                }
+            }
+            map = next;
+        }
+        const largest = Dungeon.keepLargestRegion(map);
+        if (largest < 120) return null;
+        return map;
+    },
+
     generateRoomMap: () => {
         Dungeon.width = 30; Dungeon.height = 30;
         const w = Dungeon.width, h = Dungeon.height;
@@ -623,36 +795,157 @@ const Dungeon = {
         Dungeon.placeStairsAndChests();
     },
 
-    generateCaveMap: () => {
-        Dungeon.width = 30; Dungeon.height = 30;
-        const w = Dungeon.width, h = Dungeon.height;
-        let map = Array(h).fill(0).map(() => Array(w).fill('W'));
-        
-        let floorCount = 0; 
-        const targetFloors = 250 + Math.random() * 100;
-        let miners = [{x:Math.floor(w/2), y:Math.floor(h/2)}];
-        map[Math.floor(h/2)][Math.floor(w/2)] = 'T';
+    generateAdvancedCaveMap: () => {
+        const variants = ['worms', 'cellular', 'chambers', 'ravine'];
+        const variant = variants[Dungeon.randInt(0, variants.length - 1)];
+        Dungeon.lastGenVariant = `cave-${variant}`;
 
-        while(floorCount < targetFloors && miners.length > 0) {
-            const mIdx = Math.floor(Math.random() * miners.length);
-            const miner = miners[mIdx];
-            
-            const dir = Math.floor(Math.random() * 4);
-            let dx=0, dy=0; 
-            if(dir===0)dy=-1; if(dir===1)dy=1; if(dir===2)dx=-1; if(dir===3)dx=1;
-            const nx = miner.x + dx, ny = miner.y + dy;
-            
-            if(nx>1 && nx<w-2 && ny>1 && ny<h-2) {
-                miner.x = nx; miner.y = ny;
-                if(map[ny][nx] === 'W') {
-                    map[ny][nx] = 'T';
-                    floorCount++;
-                }
-                if(Math.random() < 0.02) miners.push({x:nx, y:ny});
-            }
-        }
+        let map = null;
+        if (variant === 'cellular') map = Dungeon.generateCellularCave();
+        else if (variant === 'chambers') map = Dungeon.generateChamberCave();
+        else if (variant === 'ravine') map = Dungeon.generateRavineCave();
+        else map = Dungeon.generateWormCave();
+
+        map = Dungeon.finishCaveMap(map) || Dungeon.generateChamberCave();
+        Dungeon.width = map[0].length;
+        Dungeon.height = map.length;
         Dungeon.map = map;
         Dungeon.placeStairsAndChests();
+    },
+
+    generateWormCave: () => {
+        const w = Dungeon.randInt(30, 36), h = Dungeon.randInt(30, 36);
+        const map = Dungeon.makeMap(w, h, 'W');
+        const start = { x: Math.floor(w / 2), y: Math.floor(h / 2) };
+        let carved = Dungeon.carveBrush(map, start.x, start.y, 2);
+        const target = Dungeon.randInt(280, 430);
+        const miners = [{ x: start.x, y: start.y, dx: 1, dy: 0, life: target }];
+        let guard = target * 12;
+
+        while (carved < target && guard-- > 0 && miners.length) {
+            const idx = Dungeon.randInt(0, miners.length - 1);
+            const m = miners[idx];
+            if (Math.random() > 0.62 || (m.dx === 0 && m.dy === 0)) {
+                const d = Dungeon.shuffle([[1,0],[-1,0],[0,1],[0,-1]])[0];
+                m.dx = d[0]; m.dy = d[1];
+            }
+
+            const steps = Dungeon.randInt(1, 3);
+            for (let i = 0; i < steps; i++) {
+                const nx = m.x + m.dx, ny = m.y + m.dy;
+                if (!Dungeon.inBounds(map, nx, ny, 2)) {
+                    m.dx *= -1; m.dy *= -1;
+                    break;
+                }
+
+                m.x = nx; m.y = ny; m.life--;
+                carved += Dungeon.carveBrush(map, m.x, m.y, Math.random() < 0.16 ? 2 : 1);
+                if (Math.random() < 0.035 && miners.length < 10) {
+                    miners.push({ x: m.x, y: m.y, dx: -m.dy, dy: m.dx, life: Dungeon.randInt(40, 120) });
+                }
+            }
+            if (m.life <= 0 && miners.length > 1) miners.splice(idx, 1);
+        }
+
+        for (let i = 0; i < 10; i++) {
+            const floors = Dungeon.collectTiles(map);
+            if (!floors.length) break;
+            const p = floors[Dungeon.randInt(0, floors.length - 1)];
+            Dungeon.carveBrush(map, p.x, p.y, Dungeon.randInt(2, 4), Dungeon.randInt(2, 4));
+        }
+        return map;
+    },
+
+    generateCellularCave: () => {
+        const w = Dungeon.randInt(32, 38), h = Dungeon.randInt(32, 38);
+        let map = Dungeon.makeMap(w, h, 'W');
+        const openRate = 0.46 + Math.random() * 0.08;
+        for (let y = 1; y < h - 1; y++) {
+            for (let x = 1; x < w - 1; x++) {
+                map[y][x] = Math.random() < openRate ? 'T' : 'W';
+            }
+        }
+
+        const passes = Dungeon.randInt(4, 6);
+        for (let i = 0; i < passes; i++) {
+            const next = Dungeon.makeMap(w, h, 'W');
+            for (let y = 1; y < h - 1; y++) {
+                for (let x = 1; x < w - 1; x++) {
+                    const floors = Dungeon.floorNeighbors(map, x, y, true);
+                    next[y][x] = floors >= 5 ? 'T' : 'W';
+                }
+            }
+            map = next;
+        }
+
+        Dungeon.keepLargestRegion(map);
+        const floors = Dungeon.collectTiles(map);
+        for (let i = 0; i < 6 && floors.length; i++) {
+            const p = floors[Dungeon.randInt(0, floors.length - 1)];
+            Dungeon.carveBrush(map, p.x, p.y, Dungeon.randInt(1, 3));
+        }
+        return map;
+    },
+
+    generateChamberCave: () => {
+        const w = Dungeon.randInt(30, 36), h = Dungeon.randInt(30, 36);
+        const map = Dungeon.makeMap(w, h, 'W');
+        const centers = [{ x: Math.floor(w / 2), y: Math.floor(h / 2) }];
+        const chamberCount = Dungeon.randInt(9, 16);
+        for (let i = 1; i < chamberCount; i++) {
+            centers.push({ x: Dungeon.randInt(4, w - 5), y: Dungeon.randInt(4, h - 5) });
+        }
+
+        centers.forEach((c) => {
+            Dungeon.carveBrush(map, c.x, c.y, Dungeon.randInt(2, 5), Dungeon.randInt(2, 4));
+        });
+
+        for (let i = 1; i < centers.length; i++) {
+            const current = centers[i];
+            const previous = centers.slice(0, i).sort((a, b) =>
+                Math.abs(a.x - current.x) + Math.abs(a.y - current.y) -
+                (Math.abs(b.x - current.x) + Math.abs(b.y - current.y))
+            )[0];
+            Dungeon.carveLine(map, previous, current, Math.random() < 0.25 ? 2 : 1, 0.10);
+        }
+        return map;
+    },
+
+    generateRavineCave: () => {
+        const w = Dungeon.randInt(30, 36), h = Dungeon.randInt(30, 36);
+        const map = Dungeon.makeMap(w, h, 'W');
+        const horizontal = Math.random() < 0.5;
+        let x = horizontal ? 2 : Dungeon.randInt(5, w - 6);
+        let y = horizontal ? Dungeon.randInt(5, h - 6) : 2;
+        const end = horizontal ? w - 3 : h - 3;
+        let guard = w * h;
+
+        while ((horizontal ? x < end : y < end) && guard-- > 0) {
+            Dungeon.carveBrush(map, x, y, Dungeon.randInt(1, 3), Dungeon.randInt(1, 3));
+            if (Math.random() < 0.18) {
+                const branchEnd = {
+                    x: Math.max(2, Math.min(w - 3, x + Dungeon.randInt(-8, 8))),
+                    y: Math.max(2, Math.min(h - 3, y + Dungeon.randInt(-8, 8)))
+                };
+                Dungeon.carveLine(map, { x, y }, branchEnd, 1, 0.28);
+                if (Math.random() < 0.45) Dungeon.carveBrush(map, branchEnd.x, branchEnd.y, Dungeon.randInt(2, 4), Dungeon.randInt(2, 4));
+            }
+
+            if (horizontal) {
+                x++;
+                y += Dungeon.randInt(-1, 1);
+                y = Math.max(3, Math.min(h - 4, y));
+            } else {
+                y++;
+                x += Dungeon.randInt(-1, 1);
+                x = Math.max(3, Math.min(w - 4, x));
+            }
+        }
+        return map;
+    },
+
+    generateCaveMap: () => {
+        Dungeon.generateAdvancedCaveMap();
     },
 
     generateMazeMap: () => {
@@ -710,7 +1003,51 @@ const Dungeon = {
         map[y][x] = 'T';
     },
 
+    placeAdvancedFeatures: () => {
+        Dungeon.keepLargestRegion(Dungeon.map);
+        let floors = Dungeon.collectTiles(Dungeon.map, ['T']);
+        if (!floors.length) return;
+
+        const center = floors.reduce((best, cell) => {
+            const score = Math.abs(cell.x - Dungeon.width / 2) + Math.abs(cell.y - Dungeon.height / 2);
+            return !best || score < best.score ? { ...cell, score } : best;
+        }, null);
+        const centerDist = Dungeon.distanceMap(Dungeon.map, center);
+        const maxCenterDist = Math.max(...floors.map(p => centerDist[p.y][p.x]));
+        const stairPool = floors.filter(p => centerDist[p.y][p.x] >= maxCenterDist * 0.55);
+        const sPos = Dungeon.weightedPick(stairPool.length ? stairPool : floors, (p) => {
+            const deadEnd = Dungeon.floorNeighbors(Dungeon.map, p.x, p.y, false) <= 1 ? 8 : 1;
+            return (centerDist[p.y][p.x] + 1) * deadEnd;
+        });
+        Dungeon.map[sPos.y][sPos.x] = 'S';
+        floors = floors.filter(p => p.x !== sPos.x || p.y !== sPos.y);
+
+        let chests = Dungeon.randInt(3, 7) + Math.min(3, Math.floor(Dungeon.floor / 60));
+        const stairDist = Dungeon.distanceMap(Dungeon.map, sPos);
+
+        for(let i=0; i<chests; i++) {
+            if(!floors.length) break;
+            const candidates = floors.filter(p => Dungeon.isAwayFromFeatures(Dungeon.map, p, 3) && stairDist[p.y][p.x] >= 4);
+            const pool = candidates.length ? candidates : floors;
+            const cPos = Dungeon.weightedPick(pool, (p) => {
+                const deadEnd = Dungeon.floorNeighbors(Dungeon.map, p.x, p.y, false) <= 1 ? 6 : 1;
+                return (stairDist[p.y][p.x] + 2) * deadEnd;
+            });
+            Dungeon.map[cPos.y][cPos.x] = 'C';
+            floors = floors.filter(p => p.x !== cPos.x || p.y !== cPos.y);
+        }
+
+        if (Math.random() < 0.01 && floors.length > 0) {
+            const candidates = floors.filter(p => Dungeon.isAwayFromFeatures(Dungeon.map, p, 4));
+            const pool = candidates.length ? candidates : floors;
+            const rPos = Dungeon.weightedPick(pool, (p) => stairDist[p.y][p.x] + 1);
+            Dungeon.map[rPos.y][rPos.x] = 'R';
+        }
+    },
+
     placeStairsAndChests: () => {
+        Dungeon.placeAdvancedFeatures();
+        return;
         let floors = [];
         for(let y=0; y<Dungeon.height; y++) {
             for(let x=0; x<Dungeon.width; x++) {
@@ -747,6 +1084,24 @@ const Dungeon = {
     },
     
     setPlayerRandomSpawn: () => {
+        const floors = Dungeon.collectTiles(Dungeon.map, ['T']);
+        if (!floors.length) return;
+        const stairs = Dungeon.collectTiles(Dungeon.map, ['S'])[0];
+        let spawn = null;
+        if (stairs) {
+            const dist = Dungeon.distanceMap(Dungeon.map, stairs);
+            const reachable = floors.filter(p => dist[p.y][p.x] >= 0);
+            const poolBase = reachable.length ? reachable : floors;
+            const maxDist = Math.max(...poolBase.map(p => dist[p.y][p.x]));
+            const candidates = poolBase.filter(p => dist[p.y][p.x] >= maxDist * 0.65);
+            spawn = Dungeon.weightedPick(candidates.length ? candidates : poolBase, (p) => dist[p.y][p.x] + 1);
+        } else {
+            spawn = floors[Math.floor(Math.random() * floors.length)];
+        }
+        Field.x = spawn.x; Field.y = spawn.y;
+        App.data.location.x = spawn.x; App.data.location.y = spawn.y;
+        return;
+
         for(let i=0; i<1000; i++) { 
             const rx = Math.floor(Math.random() * Dungeon.width);
             const ry = Math.floor(Math.random() * Dungeon.height);

@@ -420,7 +420,7 @@ const Battle = {
         }
         const battleData = App.data.battle || {};
         const targetId = fixedBossId !== null && fixedBossId !== undefined ? fixedBossId : battleData.fixedBossId;
-        const isSpecialBossBattle = !!(battleData.isSpecialBoss || battleData.isEstark || (isBoss && floor >= 300));
+        const isSpecialBossBattle = !!(battleData.isSpecialBoss || battleData.isEstark);
         const normalCount = 1 + Math.floor(Math.random() * 4);
         const deepBossCount = 1 + Math.floor(Math.random() * 3);
         const suffix = (index, total) => total > 1 ? String.fromCharCode(65 + index) : '';
@@ -2650,7 +2650,7 @@ findNextActor: () => {
         .replace(/[A-Z]$/, '')
         .trim(),
 
-    monsterImagePath: (name) => `monster/${encodeURIComponent(name)}.png`,
+    monsterImagePath: (name) => `monster/img/${encodeURIComponent(name)}.png`,
 
     monsterImageSourceByName: (name, graphicsImages = {}) => {
         const key = 'monster_' + name;
@@ -2709,14 +2709,19 @@ findNextActor: () => {
 		const isBoss = App.data.battle ? App.data.battle.isBossBattle : false;
 
 		// Special boss layout: ギルガメッシュ is drawn as the large solo enemy.
-		const hasSpecialBoss = Battle.enemies.some(enemy => enemy.isSpecialBoss || enemy.isEstark || Number(enemy.id) === 902000 || Number(enemy.baseId) === 902000);
+		const hasShowcaseBoss = Battle.enemies.some(enemy => {
+            const id = Number(enemy.id);
+            const baseId = Number(enemy.baseId);
+            return enemy.isSpecialBoss || enemy.isEstark || id === 902000 || baseId === 902000 || id === 401200 || baseId === 401200 || id === 401100 || baseId === 401100;
+        });
+        const hasSpecialBoss = hasShowcaseBoss && totalCount === 1;
 
 		// デフォルトのレイアウト変数（ここを以下のif文で上書きしていく）
 		let widthPerEnemy = 20; 
 		let scaleFactor = 1.0; 
 		let maxPixelWidth = 100;
-		let paddingBottomVal = "10px"; 
-		let marginTopVal = "10px";
+		let paddingBottomVal = "30px"; 
+		let marginTopVal = "5px";
 
 		/* --- レイアウト決定の優先順位ロジック --- */
 
@@ -2725,7 +2730,7 @@ findNextActor: () => {
 			widthPerEnemy = 65;   // 1体あたりの占有幅を大きく
 			maxPixelWidth = 450;  // 画像自体の最大サイズを大幅に引き上げ
 			paddingBottomVal = "15px";
-			marginTopVal = "-50px"; // 巨大なので少し上にずらしてメッセージ欄との重なりを回避
+			marginTopVal = "-30px"; // 巨大なので少し上にずらしてメッセージ欄との重なりを回避
 			scaleFactor = 1.2;    // 全体スケールも拡大
 		} 
 		// 2位：ボスが1体だけの場合
@@ -2744,9 +2749,9 @@ findNextActor: () => {
 		}
 		// 4位：ボスが3体の場合
 		else if (isBoss && totalCount === 3) { 
-			widthPerEnemy = 33;
-			scaleFactor = 1.0; 
-			maxPixelWidth = 170;  // 通常のボスサイズ
+			widthPerEnemy = 29;
+			scaleFactor = 0.95; 
+			maxPixelWidth = 155;  // 通常のボスサイズ
 			paddingBottomVal = "5px";
 			marginTopVal = "-10px";
 		}
@@ -2776,10 +2781,21 @@ findNextActor: () => {
             div.dataset.battleIndex = String(index);
             if (e.id !== undefined) div.dataset.enemyId = String(e.id);
             
+            let perEnemyWidth = widthPerEnemy;
+            let perEnemyMaxPixelWidth = maxPixelWidth;
+            let perEnemyScaleFactor = scaleFactor;
+            let perEnemyMarginTopVal = marginTopVal;
+            if (isBoss && totalCount === 3 && index === 1) {
+                perEnemyWidth = 36;
+                perEnemyMaxPixelWidth = 215;
+                perEnemyScaleFactor = 1.05;
+                perEnemyMarginTopVal = "-18px";
+            }
+
             div.style.cssText = `
                 position: relative; 
-                width: ${widthPerEnemy}%; 
-                max-width: ${maxPixelWidth}px;
+                width: ${perEnemyWidth}%; 
+                max-width: ${perEnemyMaxPixelWidth}px;
                 margin: 0 1% -0px 1%;
                 overflow: visible;
                 display: flex;
@@ -2818,13 +2834,13 @@ findNextActor: () => {
                 ${imgHtml}
                 <div style="
                     width: 140%;
-                    margin-top: ${marginTopVal};
+                    margin-top: ${perEnemyMarginTopVal};
                     display: flex; 
                     flex-direction: column; 
                     align-items: center; 
                     z-index: 10; 
                     pointer-events: none; 
-                    transform: scale(${scaleFactor}); 
+                    transform: scale(${perEnemyScaleFactor}); 
                     transform-origin: top center;
                     text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;">
                     <div style="font-size: 10px; color: ${nameColor}; font-weight:bold; white-space: nowrap; margin-bottom: 2px;">${e.name}</div>
@@ -3148,7 +3164,7 @@ findNextActor: () => {
 			if (specialEnemy) {
 				const specialId = specialEnemy.baseId || specialEnemy.id || 902000;
 				const killCount = (App.data.book.killCounts && App.data.book.killCounts[specialId]) ? App.data.book.killCounts[specialId] : 1;
-				const baseRank = specialEnemy.rank || 300; 
+				const baseRank = specialEnemy.rank || 999; 
 				const rewardFloor = baseRank + (killCount * 5);
 				const eq = createEquipWithMinRarity(rewardFloor, 3, ['UR', 'EX']);
 				eq.val *= 3;

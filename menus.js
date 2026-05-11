@@ -474,35 +474,83 @@ const Menu = {
         if (!area) return;
 
         textEl.innerHTML = text.replace(/\n/g, '<br>');
-        btnEl.innerHTML = '';
         // 縦並びに変更
         btnEl.style.flexDirection = 'column'; 
         btnEl.style.gap = '8px';
+        btnEl.style.width = '100%';
 
-        choices.forEach(c => {
+        const pageSize = 6;
+        const totalPages = Math.max(1, Math.ceil(choices.length / pageSize));
+        let page = 0;
+
+        const resetDialogButtons = () => {
+            btnEl.style.flexDirection = 'row';
+            btnEl.style.gap = '10px';
+            btnEl.style.width = '';
+        };
+
+        const makeButton = (label, onClick, options = {}) => {
             const btn = document.createElement('button');
             btn.className = 'btn';
-            btn.style.width = '100%';
-            btn.style.padding = '10px';
-            btn.innerText = c.label;
-            btn.onclick = () => { 
-                btnEl.style.flexDirection = 'row'; // 他のダイアログのために横並びに戻す
-                Menu.closeDialog(); 
-                if (c.callback) c.callback(); 
-            };
-            btnEl.appendChild(btn);
-        });
-
-        const btnCancel = document.createElement('button');
-        btnCancel.className = 'btn';
-        btnCancel.style.width = '100%';
-        btnCancel.style.background = '#444';
-        btnCancel.innerText = 'やめる';
-        btnCancel.onclick = () => { 
-            btnEl.style.flexDirection = 'row'; 
-            Menu.closeDialog(); 
+            btn.style.width = options.width || '100%';
+            btn.style.padding = options.padding || '10px';
+            if (options.background) btn.style.background = options.background;
+            if (options.disabled) {
+                btn.disabled = true;
+                btn.style.opacity = '0.45';
+            }
+            btn.innerText = label;
+            btn.onclick = onClick;
+            return btn;
         };
-        btnEl.appendChild(btnCancel);
+
+        const renderPage = () => {
+            btnEl.innerHTML = '';
+            const start = page * pageSize;
+
+            choices.slice(start, start + pageSize).forEach(c => {
+                btnEl.appendChild(makeButton(c.label, () => { 
+                    resetDialogButtons();
+                    Menu.closeDialog(); 
+                    if (c.callback) c.callback(); 
+                }));
+            });
+
+            if (totalPages > 1) {
+                const nav = document.createElement('div');
+                nav.style.display = 'grid';
+                nav.style.gridTemplateColumns = '48px 1fr 48px';
+                nav.style.gap = '8px';
+                nav.style.alignItems = 'center';
+                nav.style.width = '100%';
+
+                nav.appendChild(makeButton('◀', () => {
+                    page = Math.max(0, page - 1);
+                    renderPage();
+                }, { width: '48px', padding: '8px', disabled: page === 0 }));
+
+                const indicator = document.createElement('div');
+                indicator.style.fontSize = '12px';
+                indicator.style.color = '#ccc';
+                indicator.style.textAlign = 'center';
+                indicator.innerText = `${page + 1}/${totalPages}`;
+                nav.appendChild(indicator);
+
+                nav.appendChild(makeButton('▶', () => {
+                    page = Math.min(totalPages - 1, page + 1);
+                    renderPage();
+                }, { width: '48px', padding: '8px', disabled: page >= totalPages - 1 }));
+
+                btnEl.appendChild(nav);
+            }
+
+            btnEl.appendChild(makeButton('やめる', () => { 
+                resetDialogButtons();
+                Menu.closeDialog(); 
+            }, { background: '#444' }));
+        };
+
+        renderPage();
         
         area.style.display = 'flex';
     },
@@ -2442,6 +2490,9 @@ const MenuBook = {
 
     getMonsterImgSrc: (m) => {
         if (m.img) return m.img;
+        const imageMap = window.MonsterImageMap || {};
+        const mappedById = imageMap[m.id] || imageMap[m.baseId];
+        if (mappedById) return mappedById;
         if (typeof GRAPHICS === 'undefined' || !GRAPHICS.images) return null;
         let baseName = m.name.replace(/^(強・|真・|極・|神・)+/, '').replace(/ Lv\d+[A-Z]?$/, '').replace(/[A-Z]$/, '').trim();
         const imgKey = 'monster_' + baseName;
