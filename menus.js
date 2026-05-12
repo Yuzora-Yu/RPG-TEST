@@ -142,7 +142,7 @@ const Menu = {
                 <button class="menu-btn" onclick="Menu.openSubScreen('status')">プレイ状況</button>
 				<button class="menu-btn" onclick="Menu.openSubScreen('exchange')">取引所${hasUnclaimedDaily ? badge : ''}</button>
 				<button class="menu-btn" onclick="Menu.openSubScreen('achievements')">実績${hasUnclaimedAchievement ? badge : ''}</button>
-                <button class="menu-btn" style="background:#400040;" onclick="Dungeon.enter()">ダンジョン</button>
+                <button class="menu-btn" style="background:#400040;" onclick="Menu.openSubScreen('dungeon')">ダンジョン</button>
                 <button class="menu-btn" style="background:#664400;" onclick="Menu.openSubScreen('gacha')">ガチャ</button>
 				
                 <button class="menu-btn" style="background:#004444;" onclick="App.downloadSave()">データ出力</button>
@@ -252,11 +252,12 @@ const Menu = {
 		if(id === 'exchange') MenuExchange.init();
 		if(id === 'achievements') MenuAchievements.init();
         if(id === 'gacha' && typeof Gacha !== 'undefined') Gacha.init();
+		if(id === 'dungeon' && typeof Dungeon !== 'undefined') Dungeon.initMenu();
     },
 
     closeSubScreen: (id) => {
         document.getElementById('sub-screen-' + id).style.display = 'none';
-        // 単に表示するのではなく、バッジ判定を含む openMainMenu を呼び出して戻る
+        // 単に表示するのではなく、バッジ判定を含む openMainMenu を呼び出してもどる
         Menu.openMainMenu();
     },
 
@@ -773,7 +774,7 @@ const MenuParty = {
 
         const backBtnDiv = document.createElement('div');
         backBtnDiv.style.marginTop = '20px';
-        backBtnDiv.innerHTML = `<button class="btn" style="width:100%; background:#444;" onclick="document.getElementById('party-screen-chars').style.display='none'; document.getElementById('party-screen-slots').style.display='flex';">スロット選択に戻る</button>`;
+        backBtnDiv.innerHTML = `<button class="btn" style="width:100%; background:#444;" onclick="document.getElementById('party-screen-chars').style.display='none'; document.getElementById('party-screen-slots').style.display='flex';">スロット選択にもどる</button>`;
         list.appendChild(backBtnDiv);
     },
     
@@ -812,7 +813,7 @@ const MenuStatus = {
         div.innerHTML = `
             <div class="header-bar">
                 <span style="color:#ffd700; font-weight:bold;">⚔️ 冒険の記録</span>
-                <button class="btn" onclick="Menu.closeSubScreen('status')">戻る</button>
+                <button class="btn" onclick="Menu.closeSubScreen('status')">もどる</button>
             </div>
             <div id="status-content" class="scroll-area" style="padding:15px; background:linear-gradient(180deg, #101010 0%, #1a1a1a 100%);"></div>
         `;
@@ -918,8 +919,10 @@ const MenuStatus = {
 				</div>
             </div>
 
-            <button class="btn" style="width:100%; height:45px; background:#333; border:1px solid #666; margin-top:10px; font-weight:bold; letter-spacing:2px;" onclick="Menu.closeSubScreen('status')">メニューへ戻る</button>
-        `;
+			<div class="sub-screen-bottom-panel">
+				<button class="btn sub-screen-back-btn" onclick="Menu.closeSubScreen('status')">もどる</button>
+			</div>
+		`;
     }
 };
 
@@ -1060,7 +1063,7 @@ const MenuItems = {
                 
                 App.save();
                 Menu.msg(msg, () => {
-                    // ★修正: 使い切った(個数がなくなった)場合はリスト画面に戻る
+                    // ★修正: 使い切った(個数がなくなった)場合はリスト画面にもどる
                     if(!App.data.items[item.id] || App.data.items[item.id] <= 0) {
                         MenuItems.changeScreen('list');
                     } else {
@@ -1834,7 +1837,7 @@ const MenuAllies = {
 				MenuAllies._tempCandidates = candidates;
 
 				// 6) HTML（ここはあなたの既存のままでOK）
-					contentHtml = `<div style="margin-bottom:8px; display:flex; flex-direction:column; gap:4px;"><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:bold; color:#ffd700;">${p} の変更</span><button class="btn" style="background:#555; font-size:10px; padding:2px 8px;" onclick="MenuAllies.targetPart=null; MenuAllies.renderDetail()">戻る</button></div>
+					contentHtml = `<div style="margin-bottom:8px; display:flex; flex-direction:column; gap:4px;"><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:bold; color:#ffd700;">${p} の変更</span><button class="btn" style="background:#555; font-size:10px; padding:2px 8px;" onclick="MenuAllies.targetPart=null; MenuAllies.renderDetail()">もどる</button></div>
 						<div style="display:flex; gap:4px; align-items:center;"><select style="background:#333; color:#fff; font-size:10px; flex:1; height:20px; touch-action:auto; user-select:auto; -webkit-user-select:auto;" ${Menu.selectTouchAttrs()} onchange="MenuAllies.candidateFilter=this.value; MenuAllies.renderDetail()"><option value="ALL">全ての効果</option>${rules.map(opt => `<option value="${opt.key}${opt.elm?'_'+opt.elm:''}" ${MenuAllies.candidateFilter===(opt.key+(opt.elm?'_'+opt.elm:''))?'selected':''}>${opt.name}</option>`).join('')}</select>
 						<select style="background:#333; color:#fff; font-size:10px; flex:1; height:20px; touch-action:auto; user-select:auto; -webkit-user-select:auto;" ${Menu.selectTouchAttrs()} onchange="MenuAllies.candidateSortMode=this.value; MenuAllies.renderDetail()"><option value="RANK" ${MenuAllies.candidateSortMode==='RANK'?'selected':''}>Rank順</option><option value="NEWEST" ${MenuAllies.candidateSortMode==='NEWEST'?'selected':''}>取得順</option></select></div></div>
 						<div style="display:flex; flex-direction:column; gap:2px;">${candidates.map((item, idx) => `<div class="list-item" style="flex-direction:column; align-items:flex-start;" onclick="MenuAllies.selectCandidate(${idx}, ${item.isRemove?'true':'false'})"><div style="font-weight:bold; color:${item.isRemove ? '#aaa' : Menu.getRarityColor(item.rarity)};">${item.name} ${item.owner ? `<span style="color:#f88; font-size:9px;">[${item.owner}装備中]</span>` : ''}</div>${!item.isRemove ? MenuAllies.getEquipFullDetailHTML(item) : ''}</div>`).join('')}</div>`;
@@ -1999,7 +2002,7 @@ const MenuAllies = {
 		
         const view = document.getElementById('allies-detail-view');
         view.innerHTML = `
-            <div style="padding:10px 10px 0 10px; background:#222;"><button class="btn" style="width:100%; background:#444;" onclick="MenuAllies.renderList()">一覧に戻る</button></div>
+            <div style="padding:10px 10px 0 10px; background:#222;"><button class="btn" style="width:100%; background:#444;" onclick="MenuAllies.renderList()">一覧にもどる</button></div>
             <div style="padding:10px; background:#222; border-bottom:1px solid #444;"><div style="display:flex; justify-content:space-between; align-items:center; background:#333; padding:5px; border-radius:4px;"><button class="btn" style="padding:2px 10px; font-size:12px;" onclick="MenuAllies.switchChar(-1)">＜ 前</button><span style="font-size:12px; color:#aaa;">仲間詳細</span><button class="btn" style="padding:2px 10px; font-size:12px;" onclick="MenuAllies.switchChar(1)">次 ＞</button></div></div>
             <div class="scroll-container-inner" style="flex:1; overflow-y:auto; padding:10px; font-family:sans-serif; color:#ddd;">
                 <div style="display:flex; gap:10px; margin-bottom:10px;">
@@ -2028,7 +2031,7 @@ const MenuAllies = {
                 </div>
                 <div style="display:flex; margin-bottom:10px;">${tabBtns}</div>
                 <div>${contentHtml}</div>
-                <div style="margin-top:20px; display:flex; gap:10px; padding-bottom:10px;"><button class="btn" style="flex:1; background:#444;" onclick="MenuAllies.renderList()">一覧に戻る</button><button class="btn" style="flex:1; background:#444;" onclick="Menu.closeSubScreen('allies')">メニューを閉じる</button></div>
+                <div style="margin-top:20px; display:flex; gap:10px; padding-bottom:10px;"><button class="btn" style="flex:1; background:#444;" onclick="MenuAllies.renderList()">一覧にもどる</button><button class="btn" style="flex:1; background:#444;" onclick="Menu.closeSubScreen('allies')">メニューを閉じる</button></div>
             </div>
         `;
     },
@@ -2211,7 +2214,7 @@ const MenuAllies = {
         div.className = 'flex-col-container';
         div.style.display = 'none';
         div.style.background = '#1a1a1a';
-        div.innerHTML = `<div class="header-bar" id="tree-header"></div><div id="tree-content" class="scroll-area" style="padding:10px;"></div><button class="btn" style="margin:10px;" onclick="MenuAllies.renderDetail()">戻る</button>`;
+        div.innerHTML = `<div class="header-bar" id="tree-header"></div><div id="tree-content" class="scroll-area" style="padding:10px;"></div><button class="btn" style="margin:10px;" onclick="MenuAllies.renderDetail()">もどる</button>`;
         document.getElementById('sub-screen-allies').appendChild(div);
     },
 
@@ -2533,7 +2536,7 @@ const MenuBook = {
         document.getElementById('book-detail-view').style.display = 'none';
         const headerBtn = document.querySelector('#sub-screen-book .header-bar button');
         if(headerBtn) {
-            headerBtn.innerText = '戻る';
+            headerBtn.innerText = 'もどる';
             headerBtn.onclick = () => Menu.closeSubScreen('book');
         }
         MenuBook.renderList();
@@ -2811,7 +2814,7 @@ const MenuBook = {
                 ${tabBtns}
                 <div id="book-tab-content">${MenuBook.detailTab === 1 ? tab1Content : tab2Content}</div>
                 <div style="margin-top:20px; display:flex; gap:10px; padding-bottom:10px;">
-                    <button class="btn" style="flex:1; background:#444;" onclick="MenuBook.showList()">一覧に戻る</button>
+                    <button class="btn" style="flex:1; background:#444;" onclick="MenuBook.showList()">一覧にもどる</button>
                     <button class="btn" style="flex:1; background:#444;" onclick="MenuBook.closeTraitDetail(); Menu.closeSubScreen('book')">閉じる</button>
                 </div>
             </div>`;
@@ -2850,7 +2853,7 @@ const MenuAllyDetail = {
         view.style.flexDirection = 'column';
         view.innerHTML = `
             <div class="header-bar" style="background:linear-gradient(#222, #000); border-bottom:1px solid #ffd700; flex-shrink:0;">
-                <button class="btn" onclick="MenuAllies.renderDetail()">戻る</button>
+                <button class="btn" onclick="MenuAllies.renderDetail()">もどる</button>
                 <span style="color:#ffd700; font-weight:bold; letter-spacing:2px;">UNIT ARCHIVE</span>
                 <div style="width:50px;"></div>
             </div>
@@ -2972,7 +2975,7 @@ const MenuAllyDetail = {
                 <div style="display:flex; border-bottom:1px solid #444;">${archiveBtns}</div>
                 <div id="flavor-text-area" style="padding:15px; min-height:120px; font-size:13px; line-height:1.8; color:#bbb; white-space:pre-wrap;">${flavorText}</div>
             </div>
-            <button class="btn" style="width:100%; margin-top:20px; background:#222; color:#888;" onclick="MenuAllies.renderDetail()">基本画面に戻る</button>
+            <button class="btn" style="width:100%; margin-top:20px; background:#222; color:#888;" onclick="MenuAllies.renderDetail()">基本画面にもどる</button>
         `;
     },
 
@@ -3020,11 +3023,11 @@ const MenuAllyDetail = {
                 </div>`;
         });
         
-        html += `<button class="btn" style="width:100%; margin-top:20px; background:#333; color:#888;" onclick="MenuAllies.renderDetail()">基本画面に戻る</button>`;
+        html += `<button class="btn" style="width:100%; margin-top:20px; background:#333; color:#888;" onclick="MenuAllies.renderDetail()">基本画面にもどる</button>`;
         return html;
     },
 
-    // キャラ切り替え：MenuAllies.selectedChar も同期して「戻る」時のズレを解消
+    // キャラ切り替え：MenuAllies.selectedChar も同期して「もどる」時のズレを解消
     switchChar: (dir) => {
         const rarityVal = { N:1, R:2, SR:3, SSR:4, UR:5, EX:6 };
         const chars = [...App.data.characters].sort((a, b) => {
@@ -3398,7 +3401,7 @@ const MenuTraitDetail = {
 
                 <div style="display:flex; flex-direction:column; gap:8px;">
                     <button class="btn" style="padding:12px; background:#3a3; font-weight:bold; color:white; border:none; border-radius:4px; cursor:pointer;" onclick="MenuTraitDetail.finalizeReroll(true)">この特性に変更する</button>
-                    <button class="btn" style="padding:10px; background:#444; color:white; border:none; border-radius:4px; cursor:pointer;" onclick="MenuTraitDetail.finalizeReroll(false)">既存を維持して戻る</button>
+                    <button class="btn" style="padding:10px; background:#444; color:white; border:none; border-radius:4px; cursor:pointer;" onclick="MenuTraitDetail.finalizeReroll(false)">既存を維持してもどる</button>
                     <button class="btn" style="padding:10px; background:#a22; color:white; border:none; border-radius:4px; cursor:pointer; margin-top:5px; font-size:11px;" onclick="MenuTraitDetail.rerollAgain()">
                         もう一度抽選する (2000 GEM)
                     </button>
@@ -3551,7 +3554,7 @@ const MenuExchange = {
         container.innerHTML = `
             <div class="header-bar">
                 <span>💎 取引所</span>
-                <button class="btn" onclick="Menu.closeSubScreen('exchange')">戻る</button>
+                <button class="btn" onclick="Menu.closeSubScreen('exchange')">もどる</button>
             </div>
             <div class="scroll-area" style="padding:15px; background:#111;">
                 <div style="margin-bottom:20px;">
@@ -3585,6 +3588,10 @@ const MenuExchange = {
                         <button class="btn" style="padding:5px 15px;" ${start + MenuExchange.itemsPerPage >= MenuExchange._news.length ? 'disabled' : ''} onclick="MenuExchange.changePage(1)">次へ</button>
                     </div>
                 </div>
+            </div>
+
+            <div class="sub-screen-bottom-panel">
+                <button class="btn sub-screen-back-btn" onclick="Menu.closeSubScreen('exchange')">もどる</button>
             </div>
         `;
     },
@@ -3776,7 +3783,7 @@ const MenuAchievements = {
         container.innerHTML = `
             <div class="header-bar">
                 <span>🏆 実績</span>
-                <button class="btn" onclick="Menu.closeSubScreen('achievements')">戻る</button>
+                <button class="btn" onclick="Menu.closeSubScreen('achievements')">もどる</button>
             </div>
             <div style="padding:8px; background:#222; display:flex; gap:5px;">
                 ${['ALL', 'INCOMPLETE', 'COMPLETED'].map(f => `
@@ -3826,6 +3833,10 @@ const MenuAchievements = {
                         </div>
                     `;
                 }).join('')}
+            </div>
+
+            <div class="sub-screen-bottom-panel">
+                <button class="btn sub-screen-back-btn" onclick="Menu.closeSubScreen('achievements')">もどる</button>
             </div>
         `;
         

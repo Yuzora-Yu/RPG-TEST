@@ -3,55 +3,152 @@
 const Dungeon = {
     floor: 0, width: 30, height: 30, map: [], pendingAction: null,
     
+	getEntryChoices: () => {
+		const maxF = App.data.dungeon.maxFloor || 0;
 
-    // --- ダンジョン突入・進行 ---
+		const choices = [];
+		const usedFloors = new Set();
+
+		const addChoice = (floor, label, latest = false) => {
+			if (!floor || usedFloors.has(floor)) return;
+			choices.push({
+				label,
+				floor,
+				latest
+			});
+			usedFloors.add(floor);
+		};
+
+		const latestCheckpoint = maxF > 1
+			? Math.floor((maxF - 1) / 10) * 10 + 1
+			: 1;
+
+		// 1. 最新階層だけ最上部に表示
+		if (latestCheckpoint > 1) {
+			addChoice(
+				latestCheckpoint,
+				`${latestCheckpoint}階から (最新)`,
+				true
+			);
+		}
+
+		// 2. その下に1階から
+		addChoice(1, "1階から", false);
+
+		// 3. さらに下に主要チェックポイント
+		for (let checkpoint = 51; checkpoint <= maxF; checkpoint += 50) {
+			addChoice(
+				checkpoint,
+				`${checkpoint}階から`,
+				false
+			);
+		}
+
+		return choices;
+	},
+
+	initMenu: () => {
+		const sub = document.getElementById('sub-screen-dungeon');
+		if (!sub) return;
+
+		sub.style.display = 'flex';
+		sub.style.flexDirection = 'column';
+
+		Dungeon.renderMenu();
+	},
+
+	renderMenu: () => {
+		const content = document.getElementById('dungeon-menu-content');
+		if (!content) return;
+
+		const maxF = App.data.dungeon?.maxFloor || 0;
+		const tryCount = App.data.dungeon?.tryCount || 0;
+		const isInDungeon = Field.currentMapData && Field.currentMapData.isDungeon;
+		const isBossFloor = isInDungeon && Dungeon.floor > 0 && Dungeon.floor % 10 === 0;
+		const isOnBossTile = isInDungeon && Dungeon.map?.[Field.y]?.[Field.x] === 'B';
+		const cannotExit = isBossFloor && isOnBossTile;
+
+		if (isInDungeon) {
+			content.innerHTML = `
+				<div style="max-width:420px; margin:0 auto; display:flex; flex-direction:column; gap:14px;">
+					<div style="font-size:22px; color:#ffd700; text-align:center; margin-bottom:4px;">探索中のダンジョン</div>
+
+					<div style="border:1px solid rgba(244,201,93,0.48); border-radius:8px; padding:14px; background:rgba(255,255,255,0.04); line-height:1.6;">
+						<div style="font-size:12px; color:#aaa;">現在地</div>
+						<div style="font-size:20px; color:#fff; font-weight:bold;">地下 ${Dungeon.floor || App.data.progress.floor || 1} 階</div>
+						<div style="font-size:11px; color:#aaa; margin-top:8px;">
+							ダンジョン探索中です。脱出すると地上へ戻ります。
+						</div>
+					</div>
+
+					<button class="menu-btn"
+						style="width:100%; min-height:52px; ${cannotExit ? 'opacity:0.45;' : ''}"
+						${cannotExit ? 'disabled' : ''}
+						onclick="Dungeon.exitFromMenu()">
+						${cannotExit ? '今は脱出できない' : 'ダンジョンから脱出する'}
+					</button>
+
+					${cannotExit ? `<div style="font-size:11px; color:#f88; text-align:center;">ボスを倒すまで脱出できません。</div>` : ''}
+				</div>
+			`;
+			return;
+		}
+
+		const choices = Dungeon.getEntryChoices();
+
+		const choiceHtml = choices.map(c => `
+			<button class="menu-btn dungeon-entry-card"
+				style="width:100%; min-height:58px; display:flex; flex-direction:column; align-items:flex-start; text-align:left;"
+				onclick="Dungeon.startFromMenu(${c.floor})">
+				<div style="font-size:16px; font-weight:bold; color:#fff;">${c.label}</div>
+				<div style="font-size:10px; color:#aaa; margin-top:3px;">
+					${c.floor === 1 ? '最初から挑戦します' : `地下 ${c.floor} 階から再開します`}
+				</div>
+			</button>
+		`).join('');
+
+		content.innerHTML = `
+			<div style="max-width:420px; margin:0 auto; display:flex; flex-direction:column; gap:14px;">
+				<div style="font-size:22px; color:#ffd700; text-align:center; margin-bottom:4px;">ダンジョンへ挑む</div>
+
+				<div style="border:1px solid rgba(244,201,93,0.48); border-radius:8px; padding:14px; background:rgba(255,255,255,0.04);">
+					<div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.1);">
+						<span style="font-size:12px; color:#aaa;">最高到達階層</span>
+						<span style="font-size:16px; color:#ffd700; font-weight:bold;">${maxF} 階</span>
+					</div>
+					<div style="display:flex; justify-content:space-between; padding:6px 0;">
+						<span style="font-size:12px; color:#aaa;">挑戦回数</span>
+						<span style="font-size:14px; color:#fff;">${tryCount} 回</span>
+					</div>
+				</div>
+
+				<div style="display:flex; flex-direction:column; gap:10px;">
+					${choiceHtml}
+				</div>
+			</div>
+		`;
+	},
+
+	startFromMenu: (startFloor) => {
+		if (typeof Menu !== 'undefined') Menu.closeAll();
+		Dungeon.start(startFloor);
+	},
+
+	exitFromMenu: () => {
+		Menu.confirm("ダンジョンから脱出しますか？", () => {
+			if (typeof Menu !== 'undefined') Menu.closeAll();
+			Dungeon.exit(false);
+		});
+	},
+	
 	enter: () => {
-        if (typeof Menu !== 'undefined') Menu.closeAll();
-        
-        // ダンジョン内での脱出判定
-        if (Field.currentMapData && Field.currentMapData.isDungeon) {
-            const isBossFloor = Dungeon.floor > 0 && Dungeon.floor % 10 === 0;
-            if (isBossFloor && Dungeon.map[Field.y][Field.x] === 'B') {
-                App.log("今は逃げられない！ボスを倒すしかない！");
-                return;
-            }
-            App.log("ダンジョンから脱出しますか？");
-            App.setAction("脱出する", Dungeon.exit);
-            return;
-        }
+		if (typeof Menu !== 'undefined' && typeof Menu.openSubScreen === 'function') {
+			Menu.openSubScreen('dungeon');
+			return;
+		}
 
-        const maxF = App.data.dungeon.maxFloor || 0;
-        const choices = [{ label: "1階から", callback: () => Dungeon.start(1) }];
-        const latestCheckpoint = Math.floor((maxF - 1) / 10) * 10 + 1;
-
-        // 到達済みの主要チェックポイント (50n+1) を自動で並べる
-        for (let checkpoint = 51; checkpoint <= maxF; checkpoint += 50) {
-            if (maxF >= checkpoint) {
-                choices.push({ 
-                    label: checkpoint === latestCheckpoint ? `${checkpoint}階から (最新)` : `${checkpoint}階から`, 
-                    callback: () => Dungeon.start(checkpoint) 
-                });
-            }
-        }
-
-        // 10階ごとの最新チェックポイント（既にリストにある場合は除外）
-        if (latestCheckpoint > 1 && !choices.some(c => c.label.includes(`${latestCheckpoint}階`))) {
-            choices.push({ 
-                label: `${latestCheckpoint}階から (最新)`, 
-                callback: () => Dungeon.start(latestCheckpoint) 
-            });
-        }
-
-        // 選択肢が2つ以上ある場合はリストを表示、1つなら即開始
-        if (choices.length > 1) {
-            Menu.listChoice(
-                `ダンジョンに入ります。\n(最高到達階層: ${maxF}階)`,
-                choices
-            );
-        } else {
-            Dungeon.start(1);
-        }
-    },
+		Dungeon.start(1);
+	},
 	
     // --- ダンジョン突入・進行 ---
     start: (startFloor) => {

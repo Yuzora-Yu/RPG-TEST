@@ -763,3 +763,183 @@ textarea {
 #battle-list-window > .header-bar {
     display: none !important;
 }
+
+/* =========================================================
+   Sub screen bottom action panel
+========================================================= */
+
+.sub-screen-bottom-panel {
+  flex: 0 0 auto;
+  padding: 10px;
+  background: linear-gradient(180deg, #111722, #07090d);
+  border-top: 1px solid rgba(244, 201, 93, 0.38);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 5;
+  pointer-events: auto;
+  box-shadow: 0 -10px 24px rgba(0, 0, 0, 0.28);
+}
+
+.sub-screen-back-btn {
+  width: 100%;
+  height: 42px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.sub-screen .flex-col-container {
+  min-height: 0;
+}
+
+.sub-screen .scroll-area {
+  min-height: 0;
+}
+
+/* =========================================================
+   Bottom panel width fix
+   - align-items:center の画面でも下部ボタンを横幅いっぱいにする
+========================================================= */
+
+.sub-screen-bottom-panel {
+  width: 100% !important;
+  max-width: none !important;
+  align-self: stretch !important;
+  box-sizing: border-box !important;
+}
+
+.sub-screen-bottom-panel > .sub-screen-back-btn {
+  display: block !important;
+  width: 100% !important;
+  max-width: none !important;
+  flex: 1 1 auto !important;
+}
+
+/* =========================================================
+   Gacha bottom panel fix
+========================================================= */
+
+#sub-screen-gacha {
+    display: none;
+    flex-direction: column !important;
+}
+
+#sub-screen-gacha > #gacha-menu-view,
+#sub-screen-gacha > #gacha-detail-view,
+#sub-screen-gacha > #gacha-confirm-view {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+}
+
+#sub-screen-gacha > #gacha-bottom-panel {
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    max-width: none !important;
+    align-self: stretch !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+}
+
+#sub-screen-gacha > #gacha-bottom-panel > #gacha-bottom-back-btn {
+    display: block !important;
+    width: 100% !important;
+    max-width: none !important;
+}
+
+/* =========================================================
+   Dungeon menu
+========================================================= */
+
+#sub-screen-dungeon {
+  display: none;
+  flex-direction: column !important;
+}
+
+#dungeon-menu-content {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+}
+
+#sub-screen-dungeon .sub-screen-bottom-panel {
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  max-width: none !important;
+  align-self: stretch !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+}
+
+#sub-screen-dungeon .sub-screen-back-btn {
+  display: block !important;
+  width: 100% !important;
+  max-width: none !important;
+}
+
+.dungeon-entry-card {
+  border-color: rgba(244, 201, 93, 0.52) !important;
+}
+
+/* =========================================================
+   Initial loading overlay
+========================================================= */
+
+#initial-loading-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 999999;
+    background:
+        radial-gradient(circle at 50% 38%, rgba(244, 201, 93, 0.12), transparent 34%),
+        rgba(0, 0, 0, 0.96);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: auto;
+}
+
+#initial-loading-overlay.is-hidden {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s ease;
+}
+
+.initial-loading-box {
+    width: min(82%, 300px);
+    padding: 24px 18px;
+    border: 2px solid rgba(244, 201, 93, 0.75);
+    border-radius: 12px;
+    background: linear-gradient(180deg, #111722, #07090d);
+    box-shadow:
+        0 18px 48px rgba(0, 0, 0, 0.7),
+        0 0 28px rgba(244, 201, 93, 0.18);
+    text-align: center;
+}
+
+.initial-loading-monster {
+    width: 120px;
+    height: 120px;
+    object-fit: contain;
+    image-rendering: auto;
+    margin-bottom: 14px;
+    filter:
+        drop-shadow(0 8px 12px rgba(0, 0, 0, 0.7))
+        drop-shadow(0 0 10px rgba(244, 201, 93, 0.25));
+}
+
+.initial-loading-text {
+    color: #ffd700;
+    font-size: 18px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    animation: loading-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes loading-pulse {
+    0%, 100% {
+        opacity: 0.55;
+    }
+    50% {
+        opacity: 1;
+    }
+}

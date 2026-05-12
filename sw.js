@@ -1,4 +1,4 @@
-const CACHE_NAME = "prisma-abyss-v2.64-gacha-card-banners";
+const CACHE_NAME = "prisma-abyss-v2.65-gacha-card-banners";
 const NORMAL_MONSTER_IMAGE_IDS = Array.from({ length: 90 }, (_, i) => 100001 + i);
 const BOSS_MONSTER_IMAGE_IDS = [
   200201, 200202, 200203, 200204,

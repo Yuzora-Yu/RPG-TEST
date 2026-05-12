@@ -136,20 +136,23 @@ const Gacha = {
             Gacha.currentBannerId = 'platinum';
         }
         Gacha.renderBannerList();
-        Gacha.switchView('menu');
+		Gacha.switchView('menu');
     },
 
-    switchView: (view) => {
-        const map = {
-            menu: 'gacha-menu-view',
-            detail: 'gacha-detail-view',
-            confirm: 'gacha-confirm-view'
-        };
-        Object.entries(map).forEach(([key, id]) => {
-            const el = document.getElementById(id);
-            if (el) el.style.display = (view === key ? 'flex' : 'none');
-        });
-    },
+	switchView: (view) => {
+		const map = {
+			menu: 'gacha-menu-view',
+			detail: 'gacha-detail-view',
+			confirm: 'gacha-confirm-view'
+		};
+
+		Object.entries(map).forEach(([key, id]) => {
+			const el = document.getElementById(id);
+			if (el) el.style.display = (view === key ? 'flex' : 'none');
+		});
+
+		Gacha.updateBottomButton(view);
+	},
 
     renderBannerList: () => {
         const list = document.getElementById('gacha-banner-list');
@@ -733,5 +736,22 @@ const Gacha = {
     getRarityTextColor: (r) => {
         const meta = Gacha.rarityMeta[r];
         return meta ? meta.text : '#fff';
-    }
+    },
+	
+	updateBottomButton: (view) => {
+		const panel = document.getElementById('gacha-bottom-panel');
+		const btn = document.getElementById('gacha-bottom-back-btn');
+		if (!panel || !btn) return;
+
+		panel.style.display = (view === 'none') ? 'none' : 'flex';
+		btn.innerText = 'もどる';
+
+		if (view === 'detail') {
+			btn.onclick = () => Gacha.switchView('menu');
+		} else if (view === 'confirm') {
+			btn.onclick = () => Gacha.cancelPull();
+		} else {
+			btn.onclick = () => Menu.closeSubScreen('gacha');
+		}
+	}
 };

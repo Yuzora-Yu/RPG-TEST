@@ -47,7 +47,7 @@ const MenuBlacksmith = {
         selectScreen.innerHTML = `
             <div style="padding:8px; background:#222; display:flex; gap:8px; border-bottom:1px solid #333; flex-shrink:0;">
                 <button class="btn" style="flex:1; font-size:11px; background:linear-gradient(#555, #333);" onclick="MenuBlacksmith.changeScreen('main')">鍛冶メニュー</button>
-                <button class="btn" style="flex:1; font-size:11px; background:linear-gradient(#444, #222);" onclick="Menu.closeSubScreen('blacksmith')">閉じる</button>
+                <button class="btn" style="flex:1; font-size:11px; background:linear-gradient(#444, #222);" onclick="Menu.closeSubScreen('blacksmith')">もどる</button>
             </div>
             <div id="smith-list" class="scroll-area" style="flex:1;"></div>
             <div id="smith-footer" style="padding:10px; background:rgba(0,0,0,0.4); border-top:1px solid #444; flex-shrink:0; min-height:40px;"></div>
@@ -57,7 +57,7 @@ const MenuBlacksmith = {
         optScreen.innerHTML = `
             <div style="padding:8px; background:#222; display:flex; gap:8px; border-bottom:1px solid #333; flex-shrink:0;">
                 <button class="btn" style="flex:1; font-size:11px; background:linear-gradient(#555, #333);" onclick="MenuBlacksmith.changeScreen('main')">鍛冶メニュー</button>
-                <button class="btn" style="flex:1; font-size:11px; background:linear-gradient(#444, #222);" onclick="MenuBlacksmith.goBackStep()">戻る</button>
+                <button class="btn" style="flex:1; font-size:11px; background:linear-gradient(#444, #222);" onclick="MenuBlacksmith.goBackStep()">もどる</button>
             </div>
             <div id="smith-option-header" style="padding:10px; text-align:center; color:#ffd700; font-size:12px; background:rgba(255,215,0,0.1); border-bottom:1px solid #444; flex-shrink:0;"></div>
             <div id="smith-option-list" class="scroll-area" style="flex:1;"></div>
@@ -129,9 +129,9 @@ const MenuBlacksmith = {
                     ${MenuBlacksmith.renderMenuBtn('enhance', '装備強化', 'オプションの数値を素材を使って上昇させます', 'linear-gradient(135deg, #131, #020)', '#4f4')}
                 </div>
             </div>
-            <div style="flex-shrink:0; padding:15px 20px; background:rgba(0,0,0,0.4); border-top:1px solid #333;">
-                <button class="btn" style="width:100%; height:45px; background:linear-gradient(#444, #222); border:1px solid #555; border-radius:4px; color:#fff; font-weight:bold; letter-spacing:2px;" onclick="Menu.closeSubScreen('blacksmith')">メニューを閉じる</button>
-            </div>
+			<div class="sub-screen-bottom-panel">
+				<button class="btn sub-screen-back-btn" onclick="Menu.closeSubScreen('blacksmith')">もどる</button>
+			</div>
         `;
     },
 

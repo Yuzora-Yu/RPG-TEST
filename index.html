@@ -2262,6 +2262,40 @@
     visibility: visible !important;
 }
 
+/* =========================================================
+   Sub screen bottom action panel
+   - 各サブ画面下部の独立ボタンエリア
+========================================================= */
+
+.sub-screen-bottom-panel {
+    flex: 0 0 auto;
+    padding: 10px;
+    background: linear-gradient(180deg, #111722, #07090d);
+    border-top: 1px solid rgba(244, 201, 93, 0.38);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 5;
+    pointer-events: auto;
+    box-shadow: 0 -10px 24px rgba(0, 0, 0, 0.28);
+}
+
+.sub-screen-back-btn {
+    width: 100%;
+    height: 42px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* flex画面内でリスト部分だけスクロールさせる */
+.sub-screen .flex-col-container {
+    min-height: 0;
+}
+
+.sub-screen .scroll-area {
+    min-height: 0;
+}
+
 </style>
     <link rel="stylesheet" href="modern-polish.css">
 
@@ -2276,6 +2310,33 @@ if ('serviceWorker' in navigator) {
 <body>
 
 <div id="game-container">
+
+	<div id="initial-loading-overlay">
+		<div class="initial-loading-box">
+			<img
+				id="initial-loading-monster-img"
+				class="initial-loading-monster"
+				src="monster/img/monster_100001.png"
+				alt="loading"
+				onerror="this.onerror=null; this.src='monster/img/monster_100001.png';"
+			>
+			<div class="initial-loading-text">Now loading...</div>
+		</div>
+	</div>
+
+	<script>
+	(function () {
+		const min = 100001;
+		const max = 100090;
+		const id = min + Math.floor(Math.random() * (max - min + 1));
+		const img = document.getElementById('initial-loading-monster-img');
+
+		if (img) {
+			img.src = `monster/img/monster_${id}.png`;
+		}
+	})();
+	</script>
+
     <div id="white-out-overlay"></div>
     <div id="drop-flash" class="flash-effect"></div>
 	<div id="drop-flash-ultra" class="flash-ultra"></div>
@@ -2327,8 +2388,8 @@ if ('serviceWorker' in navigator) {
                 <button id="btn-run" class="cmd-btn" style="grid-column:span 2;" onclick="Battle.run()">にげる</button>
             </div>
         </div>
-        <div id="battle-target-window"><div style="text-align:center; color:#fff; margin-bottom:5px;">対象を選択</div><div id="battle-target-list" style="display:grid; grid-template-columns:1fr 1fr; gap:5px;"></div><button class="btn" style="width:100%; margin-top:5px;" onclick="Battle.cancelSubMenu()">戻る</button></div>
-        <div id="battle-list-window"><div class="header-bar"><span id="battle-list-title">選択</span></div><div id="battle-list-content" class="scroll-area" style="padding:5px;"></div><button class="btn" style="margin:10px;" onclick="Battle.cancelSubMenu()">戻る</button></div>
+        <div id="battle-target-window"><div style="text-align:center; color:#fff; margin-bottom:5px;">対象を選択</div><div id="battle-target-list" style="display:grid; grid-template-columns:1fr 1fr; gap:5px;"></div><button class="btn" style="width:100%; margin-top:5px;" onclick="Battle.cancelSubMenu()">もどる</button></div>
+        <div id="battle-list-window"><div class="header-bar"><span id="battle-list-title">選択</span></div><div id="battle-list-content" class="scroll-area" style="padding:5px;"></div><button class="btn" style="margin:10px;" onclick="Battle.cancelSubMenu()">もどる</button></div>
 		
 		<div id="battle-status-modal" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; z-index:2000; justify-content:center; align-items:center;">
         <div style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7);" onclick="Battle.closeStatusModal()"></div>
@@ -2370,50 +2431,127 @@ if ('serviceWorker' in navigator) {
 </div>
 
     <div id="sub-screen-party" class="sub-screen">
-        <div class="header-bar"><span>パーティ編成</span> <button class="btn" onclick="Menu.closeSubScreen('party')">戻る</button></div>
+        <div class="header-bar"><span>パーティ編成</span> <button class="btn" onclick="Menu.closeSubScreen('party')">もどる</button></div>
         <div id="party-screen-slots" class="flex-col-container"><div style="padding:5px; text-align:center; font-size:12px; color:#aaa;">スロットを選択</div><div id="party-slot-list" class="scroll-area"></div></div>
         <div id="party-screen-chars" class="flex-col-container" style="display:none;"><div style="padding:5px; background:#333; text-align:center; font-size:12px;">メンバーを選択</div><div id="party-char-list" class="scroll-area"></div></div>
     </div>
 
     <div id="sub-screen-equip" class="sub-screen">
-        <div class="header-bar"><span>装備変更</span> <button class="btn" onclick="Menu.closeSubScreen('equip')">戻る</button></div>
+        <div class="header-bar"><span>装備変更</span> <button class="btn" onclick="Menu.closeSubScreen('equip')">もどる</button></div>
         <div id="equip-screen-char" class="flex-col-container"><div style="padding:5px; text-align:center; font-size:12px;">キャラを選択</div><div id="equip-char-list" class="scroll-area"></div></div>
-        <div id="equip-screen-part" class="flex-col-container" style="display:none;"><div id="char-status" style="padding:10px; border-bottom:1px solid #444; font-size:12px;"></div><div style="padding:5px; text-align:center; font-size:12px; background:#333;">部位を選択</div><div id="equip-slot-list" class="scroll-area"></div><button class="btn" style="margin:10px;" onclick="MenuEquip.changeScreen('char')">戻る</button></div>
-        <div id="equip-screen-item" class="flex-col-container" style="display:none;"><div style="padding:5px; background:#333; text-align:center; font-size:12px;" id="equip-item-header"></div><div id="equip-list" class="scroll-area"></div><div id="equip-footer" class="footer-info"></div><button class="btn" style="margin:10px;" onclick="MenuEquip.changeScreen('part')">戻る</button></div>
+        <div id="equip-screen-part" class="flex-col-container" style="display:none;"><div id="char-status" style="padding:10px; border-bottom:1px solid #444; font-size:12px;"></div><div style="padding:5px; text-align:center; font-size:12px; background:#333;">部位を選択</div><div id="equip-slot-list" class="scroll-area"></div><button class="btn" style="margin:10px;" onclick="MenuEquip.changeScreen('char')">もどる</button></div>
+        <div id="equip-screen-item" class="flex-col-container" style="display:none;"><div style="padding:5px; background:#333; text-align:center; font-size:12px;" id="equip-item-header"></div><div id="equip-list" class="scroll-area"></div><div id="equip-footer" class="footer-info"></div><button class="btn" style="margin:10px;" onclick="MenuEquip.changeScreen('part')">もどる</button></div>
     </div>
 
-    <div id="sub-screen-inventory" class="sub-screen">
-        <div class="header-bar"><span>所持装備</span> <span style="font-size:12px;">G:<span id="inventory-gold">0</span></span> <button class="btn" onclick="Menu.closeSubScreen('inventory')">戻る</button></div>
-        <div id="inventory-list" class="scroll-area"></div>
-        <div id="inventory-footer" class="footer-info"></div>
+
+<div id="sub-screen-inventory" class="sub-screen">
+    <div class="header-bar">
+        <span>所持装備</span>
+        <span style="font-size:12px;">G:<span id="inventory-gold">0</span></span>
+        <button class="btn" onclick="Menu.closeSubScreen('inventory')">もどる</button>
     </div>
 
-    <div id="sub-screen-items" class="sub-screen">
-        <div class="header-bar"><span>道具</span> <button class="btn" onclick="Menu.closeSubScreen('items')">戻る</button></div>
-        <div id="item-screen-list" class="flex-col-container"><div id="list-items" class="scroll-area"></div><div id="item-footer" class="footer-info"></div></div>
-        <div id="item-screen-target" class="flex-col-container" style="display:none;"><div style="padding:5px; background:#333; text-align:center; font-size:12px;">使用対象を選択</div><div id="list-item-targets" class="scroll-area"></div><button class="btn" style="margin:10px;" onclick="MenuItems.changeScreen('list')">戻る</button></div>
+    <div id="inventory-list" class="scroll-area"></div>
+
+    <div class="sub-screen-bottom-panel">
+        <button class="btn sub-screen-back-btn" onclick="Menu.closeSubScreen('inventory')">もどる</button>
+    </div>
+</div>
+
+<div id="sub-screen-items" class="sub-screen">
+    <div class="header-bar">
+        <span>道具</span>
+        <button class="btn" onclick="Menu.closeSubScreen('items')">もどる</button>
     </div>
 
-    <div id="sub-screen-allies" class="sub-screen">
-        <div class="header-bar"><span>仲間一覧</span> <button class="btn" onclick="Menu.closeSubScreen('allies')">戻る</button></div>
-        <div id="allies-list-view" class="flex-col-container"><div id="allies-list" class="scroll-area"></div></div>
-        <div id="allies-detail-view" class="flex-col-container" style="display:none; background:#1a1a1a;"><div class="tab-bar" id="allies-tabs"></div><div id="allies-detail-content" class="scroll-area"></div><button class="btn" style="margin:10px;" onclick="document.getElementById('allies-detail-view').style.display='none'; document.getElementById('allies-list-view').style.display='flex';">一覧へ戻る</button></div>
+    <div id="item-screen-list" class="flex-col-container">
+        <div id="list-items" class="scroll-area"></div>
+
+        <div class="sub-screen-bottom-panel">
+            <button class="btn sub-screen-back-btn" onclick="Menu.closeSubScreen('items')">もどる</button>
+        </div>
     </div>
 
-    <div id="sub-screen-skills" class="sub-screen">
-        <div class="header-bar"><span>スキル</span> <button class="btn" onclick="Menu.closeSubScreen('skills')">戻る</button></div>
-        <div id="skill-screen-char" class="flex-col-container"><div style="padding:5px; text-align:center; font-size:12px;">使用者を選択</div><div id="skill-char-list" class="scroll-area"></div></div>
-        <div id="skill-screen-skill" class="flex-col-container" style="display:none;"><div style="padding:5px; text-align:center; font-size:12px;">スキルを選択</div><div id="skill-list" class="scroll-area"></div><button class="btn" style="margin:10px;" onclick="MenuSkills.changeScreen('char')">戻る</button></div>
-        <div id="skill-screen-target" class="flex-col-container" style="display:none;"><div style="padding:5px; text-align:center; font-size:12px;">対象を選択</div><div id="skill-target-list" class="scroll-area"></div><button class="btn" style="margin:10px;" onclick="MenuSkills.changeScreen('skill')">戻る</button></div>
+    <div id="item-screen-target" class="flex-col-container" style="display:none;">
+        <div style="padding:5px; background:#333; text-align:center; font-size:12px;">使用対象を選択</div>
+        <div id="list-item-targets" class="scroll-area"></div>
+
+        <div class="sub-screen-bottom-panel">
+            <button class="btn sub-screen-back-btn" onclick="MenuItems.changeScreen('list')">もどる</button>
+        </div>
+    </div>
+</div>
+
+<div id="sub-screen-allies" class="sub-screen">
+    <div class="header-bar">
+        <span>仲間一覧</span>
+        <button class="btn" onclick="Menu.closeSubScreen('allies')">もどる</button>
     </div>
 
-    <div id="sub-screen-book" class="sub-screen">
-        <div class="header-bar"><span>魔物図鑑</span> <button class="btn" onclick="Menu.closeSubScreen('book')">戻る</button></div>
-        <div id="book-list" class="scroll-area"></div>
+    <div id="allies-list-view" class="flex-col-container">
+        <div id="allies-list" class="scroll-area"></div>
     </div>
+
+    <div id="allies-detail-view" class="flex-col-container" style="display:none; background:#1a1a1a;">
+        <div class="tab-bar" id="allies-tabs"></div>
+        <div id="allies-detail-content" class="scroll-area"></div>
+        <button class="btn" style="margin:10px;" onclick="document.getElementById('allies-detail-view').style.display='none'; document.getElementById('allies-list-view').style.display='flex';">一覧へもどる</button>
+    </div>
+
+    <div class="sub-screen-bottom-panel">
+        <button class="btn sub-screen-back-btn" onclick="Menu.closeSubScreen('allies')">もどる</button>
+    </div>
+</div>
+
+<div id="sub-screen-skills" class="sub-screen">
+    <div class="header-bar">
+        <span>スキル</span>
+        <button class="btn" onclick="Menu.closeSubScreen('skills')">もどる</button>
+    </div>
+
+    <div id="skill-screen-char" class="flex-col-container">
+        <div style="padding:5px; text-align:center; font-size:12px;">使用者を選択</div>
+        <div id="skill-char-list" class="scroll-area"></div>
+
+        <div class="sub-screen-bottom-panel">
+            <button class="btn sub-screen-back-btn" onclick="Menu.closeSubScreen('skills')">もどる</button>
+        </div>
+    </div>
+
+    <div id="skill-screen-skill" class="flex-col-container" style="display:none;">
+        <div style="padding:5px; text-align:center; font-size:12px;">スキルを選択</div>
+        <div id="skill-list" class="scroll-area"></div>
+
+        <div class="sub-screen-bottom-panel">
+            <button class="btn sub-screen-back-btn" onclick="MenuSkills.changeScreen('char')">もどる</button>
+        </div>
+    </div>
+
+    <div id="skill-screen-target" class="flex-col-container" style="display:none;">
+        <div style="padding:5px; background:#333; text-align:center; font-size:12px;">対象を選択</div>
+        <div id="skill-target-list" class="scroll-area"></div>
+
+        <div class="sub-screen-bottom-panel">
+            <button class="btn sub-screen-back-btn" onclick="MenuSkills.changeScreen('skill')">もどる</button>
+        </div>
+    </div>
+</div>
+
+<div id="sub-screen-book" class="sub-screen">
+    <div class="header-bar">
+        <span>魔物図鑑</span>
+        <button class="btn" onclick="Menu.closeSubScreen('book')">もどる</button>
+    </div>
+
+    <div id="book-list" class="scroll-area"></div>
+
+    <div class="sub-screen-bottom-panel">
+        <button class="btn sub-screen-back-btn" onclick="Menu.closeSubScreen('book')">もどる</button>
+    </div>
+</div>
 
     <div id="sub-screen-blacksmith" class="sub-screen">
-        <div class="header-bar"><span>鍛冶屋</span> <button class="btn" onclick="Menu.closeSubScreen('blacksmith')">戻る</button></div>
+        <div class="header-bar"><span>鍛冶屋</span> <button class="btn" onclick="Menu.closeSubScreen('blacksmith')">もどる</button></div>
         <div id="smith-screen-main" class="flex-col-container" style="align-items:center; justify-content:center; gap:20px;">
             <div id="smith-info" style="color:#ffd770;"></div>
             <button class="menu-btn" style="width:200px;" onclick="MenuBlacksmith.selectMode('enhance')">装備強化</button>
@@ -2422,34 +2560,80 @@ if ('serviceWorker' in navigator) {
         <div id="smith-screen-select" class="flex-col-container" style="display:none;">
             <div id="smith-list" class="scroll-area"></div>
             <div id="smith-footer" class="footer-info"></div>
-            <button class="btn" style="margin:10px;" onclick="MenuBlacksmith.changeScreen('main')">戻る</button>
+            <button class="btn" style="margin:10px;" onclick="MenuBlacksmith.changeScreen('main')">もどる</button>
         </div>
     </div>
 
-    <div id="sub-screen-gacha" class="sub-screen">
-        <div class="header-bar"><span>ガチャ</span> <span style="font-size:12px;">GEM:<span id="gacha-gem">0</span></span> <button class="btn" onclick="Menu.closeSubScreen('gacha')">戻る</button></div>
+	<div id="sub-screen-gacha" class="sub-screen">
+		<div class="header-bar">
+			<span>ガチャ</span>
+			<span style="font-size:12px;">GEM:<span id="gacha-gem">0</span></span>
+			<button class="btn" onclick="Menu.closeSubScreen('gacha')">もどる</button>
+		</div>
+
 		<div id="gacha-menu-view" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; gap:16px; padding:18px; padding-top:22px;">
-            <div style="font-size:22px; color:#ffd700;">召喚するガチャを選択</div>
-            <div id="gacha-banner-list" class="gacha-banner-list"></div>
-        </div>
-        <div id="gacha-detail-view" style="flex:1; display:none; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:18px;">
-            <div id="gacha-detail-badge" class="gacha-detail-badge"></div>
-            <div id="gacha-detail-title" style="font-size:24px; color:#ffd700; text-align:center;"></div>
-            <div id="gacha-detail-desc" style="text-align:center; font-size:12px; color:#ccc; line-height:1.6; max-width:310px;"></div>
-            <button id="gacha-single-cost" class="menu-btn" style="width:220px;" onclick="Gacha.pull(1)">単発 (300 GEM)</button>
-            <button id="gacha-ten-cost" class="menu-btn" style="width:220px;" onclick="Gacha.pull(10)">10連 (3000 GEM)</button>
-            <button class="btn" style="margin-top:6px;" onclick="Gacha.showRates()">提供割合</button>
-            <button class="btn" onclick="Gacha.switchView('menu')">ガチャ選択へ</button>
-        </div>
-        <div id="gacha-confirm-view" style="flex:1; display:none; flex-direction:column; align-items:center; justify-content:center; gap:20px;">
-            <div id="gacha-confirm-msg" style="font-size:16px; color:#fff; text-align:center;"></div>
-            <button class="menu-btn" style="width:200px; background:#d00;" onclick="Gacha.executePull()">召喚する</button>
-            <button class="menu-btn" style="width:200px;" onclick="Gacha.cancelPull()">やめる</button>
-        </div>
+			<div style="font-size:22px; color:#ffd700;">召喚するガチャを選択</div>
+			<div id="gacha-banner-list" class="gacha-banner-list"></div>
+		</div>
+
+		<div id="gacha-detail-view" style="flex:1; display:none; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:18px;">
+			<div id="gacha-detail-badge" class="gacha-detail-badge"></div>
+			<div id="gacha-detail-title" style="font-size:24px; color:#ffd700; text-align:center;"></div>
+			<div id="gacha-detail-desc" style="text-align:center; font-size:12px; color:#ccc; line-height:1.6; max-width:310px;"></div>
+			<button id="gacha-single-cost" class="menu-btn" style="width:220px;" onclick="Gacha.pull(1)">単発 (300 GEM)</button>
+			<button id="gacha-ten-cost" class="menu-btn" style="width:220px;" onclick="Gacha.pull(10)">10連 (3000 GEM)</button>
+			<button class="btn" style="margin-top:6px;" onclick="Gacha.showRates()">提供割合</button>
+		</div>
+
+		<div id="gacha-confirm-view" style="flex:1; display:none; flex-direction:column; align-items:center; justify-content:center; gap:20px;">
+			<div id="gacha-confirm-msg" style="font-size:16px; color:#fff; text-align:center;"></div>
+			<button class="menu-btn" style="width:200px; background:#d00;" onclick="Gacha.executePull()">召喚する</button>
+		</div>
+
+		<div id="gacha-bottom-panel" class="sub-screen-bottom-panel">
+			<button id="gacha-bottom-back-btn" class="btn sub-screen-back-btn" onclick="Menu.closeSubScreen('gacha')">もどる</button>
+		</div>
+	</div>
+
+<div id="sub-screen-exchange" class="sub-screen">
+    <div class="header-bar">
+        <span>取引所</span>
+        <button class="btn" onclick="Menu.closeSubScreen('exchange')">もどる</button>
     </div>
 
-    <div id="sub-screen-exchange" class="sub-screen"></div>
-    <div id="sub-screen-achievements" class="sub-screen"></div>
+    <div id="exchange-content" class="scroll-area"></div>
+
+    <div class="sub-screen-bottom-panel">
+        <button class="btn sub-screen-back-btn" onclick="Menu.closeSubScreen('exchange')">もどる</button>
+    </div>
+</div>
+
+<div id="sub-screen-achievements" class="sub-screen">
+    <div class="header-bar">
+        <span>実績</span>
+        <button class="btn" onclick="Menu.closeSubScreen('achievements')">もどる</button>
+    </div>
+
+    <div id="achievements-content" class="scroll-area"></div>
+
+    <div class="sub-screen-bottom-panel">
+        <button class="btn sub-screen-back-btn" onclick="Menu.closeSubScreen('achievements')">もどる</button>
+    </div>
+</div>
+
+<div id="sub-screen-dungeon" class="sub-screen">
+    <div class="header-bar">
+        <span>ダンジョン</span>
+        <button class="btn" onclick="Menu.closeSubScreen('dungeon')">もどる</button>
+    </div>
+
+    <div id="dungeon-menu-content" class="scroll-area" style="padding:18px;"></div>
+
+    <div class="sub-screen-bottom-panel">
+        <button class="btn sub-screen-back-btn" onclick="Menu.closeSubScreen('dungeon')">もどる</button>
+    </div>
+</div>
+
     <div id="inn-scene" class="scene-layer"><div class="header-bar"><span>宿屋</span></div></div>
     <div id="medal-scene" class="scene-layer"><div class="header-bar"><span>メダル王の館</span> <span style="font-size:12px;">所持: <span id="medal-count">0</span>枚</span> <button class="btn" onclick="App.changeScene('field')">出る</button></div><div style="padding:10px; text-align:center; font-size:12px;">ちいさなメダルと景品を交換します</div><div id="medal-list" class="scroll-area"></div></div>
     
@@ -2477,7 +2661,7 @@ if ('serviceWorker' in navigator) {
         <div style="padding:10px; background:#222; border-top:1px solid #fff; display:flex; flex-direction:column; gap:10px; align-items:center;">
             <div style="color:#ffd700;">所持GEM: <span id="result-gem-display">0</span></div>
             <div style="display:flex; gap:20px;">
-                <button class="btn" style="width:100px;" onclick="Gacha.closeResult()">戻る</button>
+                <button class="btn" style="width:100px;" onclick="Gacha.closeResult()">もどる</button>
                 <button class="menu-btn" style="width:150px;" id="btn-gacha-retry" onclick="Gacha.retryPull()">もう一度引く</button>
             </div>
         </div>
@@ -2521,14 +2705,44 @@ if ('serviceWorker' in navigator) {
 
 <script>
     // 起動処理
-    window.onload = () => { 
-        if(typeof App !== 'undefined' && App.initGameHub) {
-            App.initGameHub();
-        } else {
-            console.error("App module not found.");
-            alert("エラー: データベースまたはスクリプトの読み込みに失敗しました。");
-        }
-    };
+    function hideInitialLoading() {
+		const overlay = document.getElementById('initial-loading-overlay');
+		if (!overlay) return;
+
+		overlay.classList.add('is-hidden');
+
+		setTimeout(() => {
+			if (overlay && overlay.parentNode) {
+				overlay.parentNode.removeChild(overlay);
+			}
+		}, 400);
+	}
+
+	window.onload = async () => { 
+		try {
+			if (typeof App !== 'undefined' && App.initGameHub) {
+				const result = App.initGameHub();
+
+				if (result && typeof result.then === 'function') {
+					await result;
+				}
+
+				requestAnimationFrame(() => {
+					requestAnimationFrame(() => {
+						hideInitialLoading();
+					});
+				});
+			} else {
+				console.error("App module not found.");
+				alert("エラー: データベースまたはスクリプトの読み込みに失敗しました。");
+				hideInitialLoading();
+			}
+		} catch (e) {
+			console.error(e);
+			alert("エラー: 初期化に失敗しました。");
+			hideInitialLoading();
+		}
+	};
     
     // 実際の高さを計算してCSS変数 --vh にセットする関数
     function setAppHeight() {
