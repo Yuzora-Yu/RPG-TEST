@@ -2747,6 +2747,14 @@ const MenuAllyDetail = {
                 ${MenuAllyDetail.currentMainTab === 'archive' ? MenuAllyDetail.renderArchive() : MenuAllyDetail.renderProgress()}
             </div>
         `;
+
+        // ガチャカード側のCSS枠線除去処理を、仲間詳細の静的カードにも適用する。
+        // 既存のガチャ演出/位置調整CSSはそのまま利用し、ここでは表示後の保険だけ行う。
+        requestAnimationFrame(() => {
+            if (typeof Gacha !== 'undefined' && typeof Gacha.removePremiumCssFrame === 'function') {
+                Gacha.removePremiumCssFrame(view);
+            }
+        });
     },
 
     renderArchive: () => {
@@ -2761,44 +2769,66 @@ const MenuAllyDetail = {
         else if (rarity === "UR") frontRareClass = "style-aurora";
         else if (rarity === "EX") frontRareClass = "style-majestic";
 
-        // カードレイアウト：★ → レアリティ → 画像(枠なし) → 名前 → 職業
-		const cardHtml = `
-					<div style="display:flex; align-items:center; justify-content:center; gap:15px; margin-bottom:20px; user-select:none;">
-						<div onclick="MenuAllyDetail.switchChar(-1)" style="color:#ffd700; font-size:28px; cursor:pointer; text-shadow:2px 2px 4px #000; padding:10px; transition:0.2s; filter:drop-shadow(0 0 5px rgba(255,215,0,0.3));">◀</div>
-						
-						<div style="width:220px; height:320px; position:relative; perspective: 1000px; flex-shrink:0;">
-							<div class="card-face card-front ${frontRareClass}" style="transform:none; width:100%; height:100%; position:relative; border-radius:15px; overflow:hidden; display:flex; flex-direction:column; align-items:center; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 10px 20px rgba(0,0,0,0.5), inset 0 0 20px rgba(0,0,0,0.4); background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0.2) 100%);">
-								
-								<div style="position:absolute; top:10px; left:10px; z-index:2; background:rgba(0,0,0,0.6); padding:2px 8px; border-radius:5px; border:1px solid rgba(255,215,0,0.5); font-weight:bold; font-size:18px; color:#ffd700; text-shadow:0 0 5px #000;">
-									${rarity}
-								</div>
+        // カードレイアウト：ガチャ演出と同じ premium-card-front を使用する。
+        // 位置・サイズ・色・オーラは index.html 側の最新ガチャCSSをそのまま反映。
+        const rarityClass = (typeof Gacha !== 'undefined' && typeof Gacha.getRarityClass === 'function')
+            ? Gacha.getRarityClass(rarity)
+            : `rarity-${String(rarity).toLowerCase()}`;
+        const cardData = {
+            ...master,
+            ...c,
+            id: c.charId || master.id,
+            charId: c.charId || master.id,
+            name: c.name || master.name,
+            job: c.job || master.job || '',
+            rarity,
+            img: imgUrl || '',
+            isNew: false,
+            limitBreak: Number(c.limitBreak || 0)
+        };
 
-								<div style="position:absolute; top:12px; right:10px; z-index:2; color:#ffd700; font-size:11px; text-shadow:1px 1px 2px #000;">
-									${'★'.repeat(stars)}
-								</div>
+        let premiumFrontHtml = (typeof Gacha !== 'undefined' && typeof Gacha.buildPremiumFrontFace === 'function')
+            ? Gacha.buildPremiumFrontFace(cardData)
+            : `
+                <div class="card-face card-front premium-card-front ${rarityClass}" style="transform:none;">
+                    <div class="gacha-card-backdrop"></div>
+                    <div class="gacha-card-rarity-aura"></div>
+                    <div class="gacha-character-window">
+                        ${imgUrl ? `<img class="gacha-card-character" src="${imgUrl}" alt="">` : '<div class="gacha-card-silhouette">?</div>'}
+                    </div>
+                    <img class="gacha-card-template" src="assets/gacha/front_card.png" alt="">
+                    <div class="gacha-card-rarity">${rarity}</div>
+                    <div class="gacha-card-stars">${'★'.repeat(stars)}</div>
+                    <div class="gacha-card-name"><span class="gacha-card-name-text">${c.name || ''}</span>${Number(c.limitBreak || 0) > 0 ? `<span class="gacha-lb-plus"> +${c.limitBreak}</span>` : ''}</div>
+                    <div class="gacha-card-job">${c.job || ''}</div>
+                    <div class="gacha-card-foil"></div>
+                </div>`;
 
-								<div style="width:165px; height:165px; margin-top:40px; margin-bottom:10px; display:flex; align-items:center; justify-content:center; position:relative;">
-									<div style="position:absolute; width:140px; height:140px; background:radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%); border-radius:50%;"></div>
-									<img src="${imgUrl || ''}" style="max-width:100%; max-height:100%; object-fit:contain; position:relative; z-index:1; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.8));">
-								</div>
+        // MenuAllyDetail の静的カードでは、ガチャ演出用のキャラ登場アニメーションを止めて
+        // 初期描画時点からキャラクター画像を表示する。
+		premiumFrontHtml = premiumFrontHtml
+			.replace(
+				'class="gacha-card-character"',
+				'class="gacha-card-character ally-detail-card-character" style="animation:none !important; -webkit-animation:none !important; opacity:1 !important;"'
+			)
+			.replace(
+				'class="card-face card-front premium-card-front',
+				'class="card-face card-front premium-card-front ally-detail-card-front'
+			);
 
-								<div style="width:90%; background:rgba(0,0,0,0.5); border-radius:8px; padding:8px 5px; border-top:1px solid rgba(255,255,255,0.2); backdrop-filter:blur(2px); margin-top:auto; margin-bottom:15px; text-align:center;">
-									<div class="card-name" style="font-size:17px; font-weight:bold; color:#fff; letter-spacing:1px; text-shadow:1px 1px 2px #000; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-bottom:2px;">
-										${c.name}
-									</div>
-									<div class="card-job" style="font-size:11px; color:#ccc; letter-spacing:0.5px; text-transform:uppercase;">
-										— ${c.job} —
-									</div>
-								</div>
-								
-								<div style="position:absolute; inset:5px; border:1px solid rgba(255,255,255,0.1); border-radius:12px; pointer-events:none;"></div>
-							</div>
-						</div>
 
-						<div onclick="MenuAllyDetail.switchChar(1)" style="color:#ffd700; font-size:28px; cursor:pointer; text-shadow:2px 2px 4px #000; padding:10px; transition:0.2s; filter:drop-shadow(0 0 5px rgba(255,215,0,0.3));">▶</div>
-					</div>
-				`;
-		
+        const cardHtml = `
+            <div style="display:flex; align-items:center; justify-content:center; gap:15px; margin-bottom:20px; user-select:none;">
+                <div onclick="MenuAllyDetail.switchChar(-1)" style="color:#ffd700; font-size:28px; cursor:pointer; text-shadow:2px 2px 4px #000; padding:10px; transition:0.2s; filter:drop-shadow(0 0 5px rgba(255,215,0,0.3));">◀</div>
+
+                <div class="gacha-card-scene premium-card premium-card-static ally-detail-premium-card ${rarityClass}" style="width:clamp(205px, min(66vw, 36svh), 265px) !important; height:auto !important; aspect-ratio:2/3 !important; flex-shrink:0; animation:none !important;">
+                    ${premiumFrontHtml}
+                </div>
+
+                <div onclick="MenuAllyDetail.switchChar(1)" style="color:#ffd700; font-size:28px; cursor:pointer; text-shadow:2px 2px 4px #000; padding:10px; transition:0.2s; filter:drop-shadow(0 0 5px rgba(255,215,0,0.3));">▶</div>
+            </div>
+        `;
+
         const milestones = [
             { id: 'base',  label: '初期', cond: () => true },
             { id: 'lv50',  label: 'Lv50', cond: () => c.level >= 50 },

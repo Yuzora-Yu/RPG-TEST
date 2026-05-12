@@ -103,7 +103,7 @@ const MONSTER_BANDS_1_200 = [
   ]},
 
   { bandStart: 16, bandEnd: 20, monsters: [
-    m({id:100014,name:'いたずらデビル',race:'魔族',rank:16,minF:16,hp:1900,mp:260,atk:360,def:120,spd:280,mag:520,mdef:180,gold:148,exp:136,actCount:1,acts:[act(1,65),act(14,20),act(60,15)],elmRes:{光:-30,雷:-10}}),
+    m({id:100014,name:'いたずらバット',race:'魔族',rank:16,minF:16,hp:1900,mp:260,atk:360,def:120,spd:280,mag:520,mdef:180,gold:148,exp:136,actCount:1,acts:[act(1,65),act(14,20),act(60,15)],elmRes:{光:-30,雷:-10}}),
     m({id:100015,name:'ブロンズナイト',race:'無生物',rank:16,minF:16,hp:2100,mp:0,atk:510,def:270,spd:90,mag:55,mdef:200,gold:148,exp:136,actCount:1,acts:[act(1,65),act(40,15),act(44,15),act(2,5)],elmRes:{雷:-30,水:-20},resists:{Poison:40}}),
     m({id:100016,name:'ゴースト',race:'死霊',rank:16,minF:16,hp:1400,mp:260,atk:80,def:70,spd:280,mag:520,mdef:240,gold:148,exp:136,actCount:1,acts:[act(1,60),act(10,15),act(14,20),act(61,5)],elmRes:{光:-40,火:-10},resists:{Poison:30}}),
     m({id:100017,name:'いやしの芽',race:'植物',rank:16,minF:16,hp:1800,mp:340,atk:80,def:130,spd:90,mag:500,mdef:200,gold:148,exp:136,actCount:1,acts:[act(1,55),act(20,25),act(51,10),act(701,10)],elmRes:{火:-40,闇:-20},resists:{Poison:30}}),
@@ -158,7 +158,7 @@ const MONSTER_BANDS_1_200 = [
     { bandStart: 51, bandEnd: 55, monsters: [
     m({id:100046,name:'機械兵士',race:'機械',rank:51,minF:51,hp:11000,mp:0,atk:2100,def:2300,spd:700,mag:80,mdef:1200,gold:950,exp:1000,actCount:1,acts:[act(1,45),act(44,15),act(102,25),act(153,15)],elmRes:{闇:20,雷:-30,水:-10},resists:{Poison:60,Shock:20}}),
     m({id:100047,name:'ブラッドウルフ',race:'獣',rank:51,minF:51,hp:8500,mp:0,atk:2500,def:950,spd:1600,mag:80,mdef:250,gold:950,exp:1000,actCount:1,acts:[act(1,45),act(41,15),act(108,20),act(47,20)],elmRes:{風:10,火:-20,光:-20}}),
-    m({id:100048,name:'小悪魔メイジ',race:'魔族',rank:51,minF:51,hp:8000,mp:2200,atk:650,def:850,spd:1350,mag:3000,mdef:1500,gold:950,exp:1000,actCount:1,acts:[act(1,45),act(301,15),act(302,20),act(312,20)],elmRes:{闇:20,光:-30},resists:{Seal:20}}),
+    m({id:100048,name:'リトルメイジ',race:'魔族',rank:51,minF:51,hp:8000,mp:2200,atk:650,def:850,spd:1350,mag:3000,mdef:1500,gold:950,exp:1000,actCount:1,acts:[act(1,45),act(301,15),act(302,20),act(312,20)],elmRes:{闇:20,光:-30},resists:{Seal:20}}),
     m({id:100049,name:'ストーンジェリー',race:'粘体',rank:51,minF:51,hp:12000,mp:500,atk:1800,def:1800,spd:430,mag:600,mdef:900,gold:950,exp:1000,actCount:1,acts:[act(1,45),act(44,15),act(150,20),act(60,20)],elmRes:{火:10,雷:-30},resists:{Poison:50}}),
   ]},
 
@@ -186,10 +186,10 @@ const MONSTER_BANDS_1_200 = [
   ]},
 
   { bandStart: 71, bandEnd: 75, monsters: [
-    m({id:100064,name:'小悪魔アクア',race:'魔族',rank:71,minF:71,hp:15500,mp:3200,atk:1200,def:1300,spd:2300,mag:3900,mdef:2500,gold:1950,exp:2100,actCount:1,acts:[act(1,40),act(303,20),act(311,20),act(60,20)],elmRes:{水:30,雷:-40,光:-20},resists:{Seal:30}}),
-    m({id:100065,name:'小悪魔ライト',race:'魔族',rank:71,minF:71,hp:15500,mp:3200,atk:1200,def:1300,spd:2300,mag:3900,mdef:2500,gold:1950,exp:2100,actCount:1,acts:[act(1,40),act(16,15),act(308,20),act(306,25)],elmRes:{光:30,闇:-40},resists:{Seal:30}}),
+    m({id:100064,name:'アクアリリィ',race:'魔族',rank:71,minF:71,hp:15500,mp:3200,atk:1200,def:1300,spd:2300,mag:3900,mdef:2500,gold:1950,exp:2100,actCount:1,acts:[act(1,40),act(303,20),act(311,20),act(60,20)],elmRes:{水:30,雷:-40,光:-20},resists:{Seal:30}}),
+    m({id:100065,name:'ライトリリィ',race:'魔族',rank:71,minF:71,hp:15500,mp:3200,atk:1200,def:1300,spd:2300,mag:3900,mdef:2500,gold:1950,exp:2100,actCount:1,acts:[act(1,40),act(16,15),act(308,20),act(306,25)],elmRes:{光:30,闇:-40},resists:{Seal:30}}),
     m({id:100066,name:'ジェリーキング',race:'粘体',rank:71,minF:71,hp:18500,mp:2500,atk:2700,def:3000,spd:700,mag:3000,mdef:2000,gold:1950,exp:2100,actCount:1,acts:[act(1,40),act(21,15),act(150,20),act(153,25)],elmRes:{火:20,雷:-30},resists:{Poison:60}}),
-    m({id:100067,name:'バトルリザード改',race:'竜',rank:71,minF:71,hp:17500,mp:600,atk:4200,def:2300,spd:2300,mag:120,mdef:2000,gold:1950,exp:2100,actCount:1,acts:[act(1,40),act(102,20),act(154,20),act(603,20)],elmRes:{火:20,水:-30},resists:{Poison:50}}),
+    m({id:100067,name:'バトルリザード',race:'竜',rank:71,minF:71,hp:17500,mp:600,atk:4200,def:2300,spd:2300,mag:120,mdef:2000,gold:1950,exp:2100,actCount:1,acts:[act(1,40),act(102,20),act(154,20),act(603,20)],elmRes:{火:20,水:-30},resists:{Poison:50}}),
   ]},
 
   { bandStart: 76, bandEnd: 80, monsters: [
@@ -249,7 +249,7 @@ const MONSTER_BANDS_1_200 = [
     m({id:100100,name:'アビスバトラー',race:'魔族',rank:111,minF:111,hp:60000,mp:5200,atk:7600,def:5800,spd:3600,mag:3600,mdef:5200,gold:8500,exp:9000,actCount:1,acts:[act(1,25),act(104,15),act(106,20),act(119,20),act(116,20)],elmRes:{闇:40,光:-30},resists:{Poison:70,Seal:50}}),
     m({id:100101,name:'カオスアーマー',race:'無生物',rank:111,minF:111,hp:76000,mp:1000,atk:7200,def:7600,spd:2300,mag:1800,mdef:5600,gold:8500,exp:9000,actCount:1,acts:[act(1,25),act(153,15),act(401,20),act(117,20),act(51,20)],elmRes:{闇:30,光:20,雷:-30},resists:{Poison:100,Shock:50}}),
     m({id:100102,name:'エビルゴースト',race:'死霊',rank:111,minF:111,hp:44000,mp:7600,atk:150,def:1600,spd:5200,mag:8500,mdef:7000,gold:8500,exp:9000,actCount:1,acts:[act(1,25),act(307,15),act(423,20),act(704,20),act(801,20)],elmRes:{闇:50,光:-50},resists:{Poison:90,InstantDeath:80,Seal:50}}),
-    m({id:100103,name:'影縫いバット',race:'死霊',rank:111,minF:111,hp:40000,mp:5600,atk:4200,def:1600,spd:5600,mag:6200,mdef:5600,gold:8500,exp:9000,actCount:1,acts:[act(1,25),act(47,15),act(705,20),act(251,20),act(204,20)],elmRes:{闇:40,光:-40,雷:-20},resists:{Poison:80,Seal:60}}),
+    m({id:100103,name:'シャドウシーカー',race:'死霊',rank:111,minF:111,hp:40000,mp:5600,atk:4200,def:1600,spd:5600,mag:6200,mdef:5600,gold:8500,exp:9000,actCount:1,acts:[act(1,25),act(47,15),act(705,20),act(251,20),act(204,20)],elmRes:{闇:40,光:-40,雷:-20},resists:{Poison:80,Seal:60}}),
   ]},
 
   { bandStart: 116, bandEnd: 120, monsters: [

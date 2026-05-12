@@ -575,42 +575,8 @@
       hero_left_2: "assets/generated/hero-left-2.gif",
       hero_right_1: "assets/generated/hero-right-1.gif",
       hero_right_2: "assets/generated/hero-right-2.gif",
-      "monster_スライム": "assets/generated/monster-jelly-ai.png",
-      "monster_ジェリー": "assets/generated/monster-jelly-ai.png",
-      "monster_ヒールジェリー": "assets/generated/monster-heal-jelly-ai.png",
-      "monster_リペアジェリー": "assets/generated/monster-heal-jelly-ai.png",
-      "monster_ポイズンジェリー": "assets/generated/monster-heal-jelly-ai.png",
-      "monster_メタルジェリー": "assets/generated/monster-metal-jelly-ai.png",
-      "monster_シルバージェリー": "assets/generated/monster-metal-jelly-ai.png",
-      "monster_ゴールドジェリー": "assets/generated/monster-metal-jelly-ai.png",
-      "monster_ゴースト": "assets/generated/monster-ghost-ai.png",
-      "monster_エビルゴースト": "assets/generated/monster-ghost-ai.png",
-      "monster_やみこうもり": "assets/generated/monster-bat-ai.png",
-      "monster_カースバット": "assets/generated/monster-bat-ai.png",
-      "monster_キラーバット": "assets/generated/monster-bat-ai.png",
-      "monster_ホーンラビット": "assets/generated/monster-horn-rabbit-ai.png",
-      "monster_キラーラビット": "assets/generated/monster-horn-rabbit-ai.png",
-      "monster_アーマーナイト": "assets/generated/monster-armor-knight-ai.png",
-      "monster_カオスアーマー": "assets/generated/monster-armor-knight-ai.png",
-      "monster_アーミーウルフ": "assets/generated/monster-army-wolf-ai.png",
-      "monster_ダークウルフ": "assets/generated/monster-army-wolf-ai.png",
-      "monster_アルリザード": "assets/generated/monster-lizard-warrior-ai.png",
-      "monster_バトルリザード": "assets/generated/monster-lizard-warrior-ai.png",
-      "monster_カオスリザード": "assets/generated/monster-lizard-warrior-ai.png",
-      "monster_ベビーデビル": "assets/generated/monster-baby-devil-ai.png",
-      "monster_小悪魔デビル": "assets/generated/monster-baby-devil-ai.png",
-      "monster_ファイアウィスプ": "assets/generated/monster-fire-wisp-ai.png",
-      "monster_サンダーウィスプ": "assets/generated/monster-thunder-wisp-ai.png",
-      "monster_バンパイア": "assets/generated/monster-vampire-ai.png",
-      "monster_機械兵士": "assets/generated/monster-machine-soldier-ai.png",
-      "monster_デスマシーン": "assets/generated/monster-machine-soldier-ai.png",
-      "monster_アビスドラゴン": "assets/generated/monster-abyss-dragon-ai.png",
-      "monster_混沌竜アビス": "assets/generated/monster-abyss-dragon-ai.png"
     };
 
-    Object.keys(aiAssets).forEach((key) => {
-      if (key.startsWith("monster_")) delete aiAssets[key];
-    });
 
     Object.assign(GRAPHICS.data, generated, aiAssets);
     if (GRAPHICS.spriteDefs) {
