@@ -701,3 +701,65 @@ textarea {
     border-radius: 12px;
   }
 }
+
+/* =========================================================
+   Battle window position fix
+   - target/list window をどちらも画面下部に表示
+   - 高さ固定しない
+   - 中身を不自然に引き伸ばさない
+========================================================= */
+
+#battle-target-window,
+#battle-list-window {
+    position: absolute !important;
+
+    top: auto !important;
+    left: 10px !important;
+    right: 10px !important;
+    bottom: 10px !important;
+
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: 46% !important;
+
+    padding: 10px !important;
+    background: rgba(0,0,0,0.95) !important;
+    border: 2px solid #fff !important;
+    z-index: 20 !important;
+
+    display: none;
+    flex-direction: column !important;
+    overflow: hidden !important;
+}
+
+/* 対象選択側：ボタンを自然な大きさに戻す */
+#battle-target-list {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 5px !important;
+
+    flex: none !important;
+    height: auto !important;
+    max-height: 220px !important;
+    overflow-y: auto !important;
+}
+
+/* 特技・道具リスト側：一覧部分だけスクロール */
+#battle-list-content {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    max-height: 150px !important;
+    overflow-y: auto !important;
+}
+
+/* target window のボタンが縦に巨大化しないように固定 */
+.battle-target-btn {
+    height: auto !important;
+    min-height: 42px !important;
+    padding: 10px 12px !important;
+    width: 99% !important;
+}
+
+#battle-list-window > .header-bar {
+    display: none !important;
+}

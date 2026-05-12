@@ -79,6 +79,30 @@ const AdManager = {
 };
 
 const Menu = {
+    // ネイティブ<select>のタップを親要素のクリック処理に奪われないようにする共通処理
+    stopEventBubble: (e) => {
+        if (e && e.stopPropagation) e.stopPropagation();
+        return true;
+    },
+
+    makeSelectTouchSafe: (root) => {
+        if (!root) return;
+        const selects = root.querySelectorAll ? root.querySelectorAll('select') : [];
+        selects.forEach(sel => {
+            sel.style.touchAction = 'auto';
+            sel.style.userSelect = 'auto';
+            sel.style.webkitUserSelect = 'auto';
+            sel.style.pointerEvents = 'auto';
+            if (sel.__menuSelectTouchSafe) return;
+            ['touchstart', 'pointerdown', 'mousedown', 'click'].forEach(type => {
+                sel.addEventListener(type, ev => ev.stopPropagation(), { passive: true });
+            });
+            sel.__menuSelectTouchSafe = true;
+        });
+    },
+
+    selectTouchAttrs: () => 'ontouchstart="Menu.stopEventBubble(event)" onpointerdown="Menu.stopEventBubble(event)" onmousedown="Menu.stopEventBubble(event)" onclick="Menu.stopEventBubble(event)"',
+
     // --- メインメニュー制御 ---
     openMainMenu: () => {
         // 開く直前に実績の達成判定を最新にする
@@ -1120,7 +1144,7 @@ const MenuInventory = {
             <div style="padding:5px; background:#1a1a1a; display:flex; align-items:center; gap:8px; border-bottom:1px solid #333;">
                 <div style="flex:1; display:flex; align-items:center; gap:4px;">
                     <span style="font-size:9px; color:#aaa;">効果:</span>
-                    <select style="background:#333; color:#fff; font-size:10px; border:1px solid #555; flex:1; height:22px;" 
+                    <select style="background:#333; color:#fff; font-size:10px; border:1px solid #555; flex:1; height:22px; touch-action:auto; user-select:auto; -webkit-user-select:auto;" ${Menu.selectTouchAttrs()} 
                         onchange="MenuInventory.updateState('option', this.value)">
                         <option value="ALL">全て</option>
                         ${rules.map(opt => {
@@ -1131,7 +1155,7 @@ const MenuInventory = {
                 </div>
                 <div style="flex:1; display:flex; align-items:center; gap:4px;">
                     <span style="font-size:9px; color:#aaa;">並替:</span>
-                    <select style="background:#333; color:#fff; font-size:10px; border:1px solid #555; flex:1; height:22px;" 
+                    <select style="background:#333; color:#fff; font-size:10px; border:1px solid #555; flex:1; height:22px; touch-action:auto; user-select:auto; -webkit-user-select:auto;" ${Menu.selectTouchAttrs()} 
                         onchange="MenuInventory.updateState('sortMode', this.value)">
                         <option value="NEWEST" ${MenuInventory.sortMode === 'NEWEST' ? 'selected' : ''}>取得順</option>
                         <option value="RANK" ${MenuInventory.sortMode === 'RANK' ? 'selected' : ''}>Rank順</option>
@@ -1145,6 +1169,7 @@ const MenuInventory = {
                     onclick="MenuInventory.sellSelected()">選択した装備を売却</button>
             </div>
         `;
+        Menu.makeSelectTouchSafe(ctrlDiv);
 
         const list = document.getElementById('inventory-list');
         list.innerHTML = '';
@@ -1810,8 +1835,8 @@ const MenuAllies = {
 
 				// 6) HTML（ここはあなたの既存のままでOK）
 					contentHtml = `<div style="margin-bottom:8px; display:flex; flex-direction:column; gap:4px;"><div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-weight:bold; color:#ffd700;">${p} の変更</span><button class="btn" style="background:#555; font-size:10px; padding:2px 8px;" onclick="MenuAllies.targetPart=null; MenuAllies.renderDetail()">戻る</button></div>
-						<div style="display:flex; gap:4px; align-items:center;"><select style="background:#333; color:#fff; font-size:10px; flex:1; height:20px;" onchange="MenuAllies.candidateFilter=this.value; MenuAllies.renderDetail()"><option value="ALL">全ての効果</option>${rules.map(opt => `<option value="${opt.key}${opt.elm?'_'+opt.elm:''}" ${MenuAllies.candidateFilter===(opt.key+(opt.elm?'_'+opt.elm:''))?'selected':''}>${opt.name}</option>`).join('')}</select>
-						<select style="background:#333; color:#fff; font-size:10px; flex:1; height:20px;" onchange="MenuAllies.candidateSortMode=this.value; MenuAllies.renderDetail()"><option value="RANK" ${MenuAllies.candidateSortMode==='RANK'?'selected':''}>Rank順</option><option value="NEWEST" ${MenuAllies.candidateSortMode==='NEWEST'?'selected':''}>取得順</option></select></div></div>
+						<div style="display:flex; gap:4px; align-items:center;"><select style="background:#333; color:#fff; font-size:10px; flex:1; height:20px; touch-action:auto; user-select:auto; -webkit-user-select:auto;" ${Menu.selectTouchAttrs()} onchange="MenuAllies.candidateFilter=this.value; MenuAllies.renderDetail()"><option value="ALL">全ての効果</option>${rules.map(opt => `<option value="${opt.key}${opt.elm?'_'+opt.elm:''}" ${MenuAllies.candidateFilter===(opt.key+(opt.elm?'_'+opt.elm:''))?'selected':''}>${opt.name}</option>`).join('')}</select>
+						<select style="background:#333; color:#fff; font-size:10px; flex:1; height:20px; touch-action:auto; user-select:auto; -webkit-user-select:auto;" ${Menu.selectTouchAttrs()} onchange="MenuAllies.candidateSortMode=this.value; MenuAllies.renderDetail()"><option value="RANK" ${MenuAllies.candidateSortMode==='RANK'?'selected':''}>Rank順</option><option value="NEWEST" ${MenuAllies.candidateSortMode==='NEWEST'?'selected':''}>取得順</option></select></div></div>
 						<div style="display:flex; flex-direction:column; gap:2px;">${candidates.map((item, idx) => `<div class="list-item" style="flex-direction:column; align-items:flex-start;" onclick="MenuAllies.selectCandidate(${idx}, ${item.isRemove?'true':'false'})"><div style="font-weight:bold; color:${item.isRemove ? '#aaa' : Menu.getRarityColor(item.rarity)};">${item.name} ${item.owner ? `<span style="color:#f88; font-size:9px;">[${item.owner}装備中]</span>` : ''}</div>${!item.isRemove ? MenuAllies.getEquipFullDetailHTML(item) : ''}</div>`).join('')}</div>`;
 				}
 			} else {
@@ -2473,6 +2498,8 @@ const MenuBook = {
     currentMode: 'list',
     selectedMonster: null,
     detailTab: 1, // 詳細画面のタブ状態
+    traitDetailList: [], // 図鑑用：特性詳細モーダルの表示対象
+    currentTraitIndex: -1,
 
     init: () => {
         const container = document.getElementById('sub-screen-book');
@@ -2501,6 +2528,7 @@ const MenuBook = {
     },
 
     showList: () => {
+        MenuBook.closeTraitDetail();
         document.getElementById('book-list').style.display = 'block';
         document.getElementById('book-detail-view').style.display = 'none';
         const headerBtn = document.querySelector('#sub-screen-book .header-bar button');
@@ -2571,7 +2599,90 @@ const MenuBook = {
         if (validMonsters.length === 0) return;
         let currentIndex = MenuBook.selectedMonster ? validMonsters.findIndex(m => m.id === MenuBook.selectedMonster.id) : -1;
         let newIndex = (currentIndex + dir + validMonsters.length) % validMonsters.length;
+        MenuBook.closeTraitDetail();
         MenuBook.showDetail(validMonsters[newIndex]);
+    },
+
+    buildTraitDetailList: (monster) => {
+        const PS = (typeof PassiveSkill !== 'undefined') ? PassiveSkill : null;
+        if (!PS || !PS.MASTER || !monster || !Array.isArray(monster.traits)) return [];
+        return monster.traits.map((trait, index) => {
+            const master = PS.MASTER[trait.id];
+            if (!master) return null;
+            return {
+                ...master,
+                id: trait.id,
+                lv: trait.level || trait.lv || 1,
+                slotIndex: index,
+                isEquip: false,
+                isBook: true,
+                sourceLabel: '魔物図鑑'
+            };
+        }).filter(Boolean);
+    },
+
+    openTraitDetail: (index) => {
+        if (!MenuBook.traitDetailList || MenuBook.traitDetailList.length === 0) {
+            MenuBook.traitDetailList = MenuBook.buildTraitDetailList(MenuBook.selectedMonster);
+        }
+        if (!MenuBook.traitDetailList[index]) return;
+        MenuBook.currentTraitIndex = index;
+        MenuBook.renderTraitDetail();
+    },
+
+    moveTraitDetail: (dir) => {
+        const list = MenuBook.traitDetailList || [];
+        if (list.length <= 1) return;
+        MenuBook.currentTraitIndex = (MenuBook.currentTraitIndex + dir + list.length) % list.length;
+        MenuBook.renderTraitDetail();
+    },
+
+    closeTraitDetail: () => {
+        const modal = document.getElementById('book-trait-detail-modal');
+        if (modal) modal.remove();
+    },
+
+    renderTraitDetail: () => {
+        const list = MenuBook.traitDetailList || [];
+        const t = list[MenuBook.currentTraitIndex];
+        if (!t) return;
+
+        let modal = document.getElementById('book-trait-detail-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'book-trait-detail-modal';
+            document.body.appendChild(modal);
+        }
+
+        modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:5000; display:flex; align-items:center; justify-content:center; padding:12px; box-sizing:border-box;';
+        modal.innerHTML = `
+            <div onclick="event.stopPropagation()" style="width:310px; max-width:calc(100vw - 24px); background:#111; border:1px solid #00ffff; border-radius:8px; padding:20px; color:#eee; box-shadow:0 10px 40px #000; font-family:sans-serif;">
+                <div style="border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:15px; display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                    <span style="color:#00ffff; font-size:18px; font-weight:bold; line-height:1.2;">${t.name}</span>
+                    <span style="font-size:10px; background:#333; padding:2px 8px; border-radius:4px; color:#aaa; flex-shrink:0;">${t.sourceLabel || '魔物特性'}</span>
+                </div>
+
+                <div style="background:#222; padding:10px; border-radius:4px; font-size:12px; margin-bottom:15px; display:flex; justify-content:space-between; gap:8px;">
+                    <span>Lv: <b style="color:#fff;">${t.lv}</b></span>
+                    <span style="color:#888;">分類: ${t.type || '不明'}</span>
+                </div>
+
+                ${t.effect ? `<div style="font-size:12px; color:#00ffff; line-height:1.5; background:rgba(0,255,255,0.06); border:1px solid rgba(0,255,255,0.2); border-radius:4px; padding:8px; margin-bottom:10px;">${t.effect}</div>` : ''}
+
+                <div style="font-size:13px; line-height:1.6; color:#ccc; min-height:60px; margin-bottom:20px; padding:0 5px;">
+                    ${t.desc || '効果なし'}
+                </div>
+
+                <div style="display:flex; justify-content:space-between; gap:10px;">
+                    <div style="display:flex; gap:5px;">
+                        <button class="btn" style="width:45px; height:35px; background:#333; color:white; border:1px solid #555; cursor:pointer;" onclick="MenuBook.moveTraitDetail(-1)">▲</button>
+                        <button class="btn" style="width:45px; height:35px; background:#333; color:white; border:1px solid #555; cursor:pointer;" onclick="MenuBook.moveTraitDetail(1)">▼</button>
+                    </div>
+                    <button class="btn" style="flex:1; background:#444; color:white; border:1px solid #555; cursor:pointer;" onclick="MenuBook.closeTraitDetail()">閉じる</button>
+                </div>
+            </div>
+        `;
+        modal.onclick = () => MenuBook.closeTraitDetail();
     },
 
     // --- 詳細画面 ---
@@ -2606,12 +2717,15 @@ const MenuBook = {
             return drop ? `${drop.name} (${monster.drops[type].rate}%)` : 'なし';
         };
 
-        // 共通パーツ：特性リスト (新設)
-        const PS = (typeof PassiveSkill !== 'undefined') ? PassiveSkill : null;
-        const traitListHtml = (monster.traits || []).map(t => {
-            const m = PS ? PS.MASTER[t.id] : null;
-            return m ? `<span style="background:#111; border:1px solid #00ffff; color:#00ffff; padding:2px 6px; border-radius:3px; font-size:10px; margin-right:4px; margin-bottom:4px; display:inline-block;">${m.name} Lv.${t.level}</span>` : '';
-        }).join('') || '<span style="color:#555; font-size:11px;">特性なし</span>';
+        // 共通パーツ：特性リスト（タップで詳細確認）
+        MenuBook.traitDetailList = MenuBook.buildTraitDetailList(monster);
+        const traitListHtml = MenuBook.traitDetailList.map((t, index) => `
+            <button type="button"
+                onclick="event.stopPropagation(); MenuBook.openTraitDetail(${index}); return false;"
+                style="background:#111; border:1px solid #00ffff; color:#00ffff; padding:3px 7px; border-radius:4px; font-size:10px; margin-right:4px; margin-bottom:4px; display:inline-block; cursor:pointer; touch-action:manipulation; font-family:inherit;">
+                ${t.name} Lv.${t.lv}
+            </button>
+        `).join('') || '<span style="color:#555; font-size:11px;">特性なし</span>';
 
         // タブ切り替えボタン
         const tabBtns = `
@@ -2698,7 +2812,7 @@ const MenuBook = {
                 <div id="book-tab-content">${MenuBook.detailTab === 1 ? tab1Content : tab2Content}</div>
                 <div style="margin-top:20px; display:flex; gap:10px; padding-bottom:10px;">
                     <button class="btn" style="flex:1; background:#444;" onclick="MenuBook.showList()">一覧に戻る</button>
-                    <button class="btn" style="flex:1; background:#444;" onclick="Menu.closeSubScreen('book')">閉じる</button>
+                    <button class="btn" style="flex:1; background:#444;" onclick="MenuBook.closeTraitDetail(); Menu.closeSubScreen('book')">閉じる</button>
                 </div>
             </div>`;
     }

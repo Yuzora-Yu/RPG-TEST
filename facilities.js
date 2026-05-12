@@ -25,7 +25,7 @@ const Facilities = {
             <div style="position:absolute; top:10px; right:10px; z-index:1000;">
                 <button class="btn" style="padding:6px 15px; font-size:11px; border:2px solid #fff; background:${isLocked?'#333':'#000'}; color:${isLocked?'#666':'#fff'};" 
                     onclick="${isLocked ? '' : exitFn}" ${isLocked ? 'disabled' : ''}>
-                    ${isLocked ? '勝負中' : '▶ 外へ出る'}
+                    ${isLocked ? '勝負中' : '外へ出る'}
                 </button>
             </div>
 
@@ -43,7 +43,7 @@ const Facilities = {
                 <div id="${sceneId}-cmd-row" style="display:grid; grid-template-columns:1fr 1fr; gap:8px; max-width:400px; margin:0 auto;">
                     ${commandsHtml}
                     <button class="menu-btn" style="background:#000; border:1px solid #777; height:40px; font-size:13px; color:#aaa;" 
-                        onclick="${isLocked ? '' : exitFn}" ${isLocked ? 'disabled' : ''}>▶ 出る</button>
+                        onclick="${isLocked ? '' : exitFn}" ${isLocked ? 'disabled' : ''}>出る</button>
                 </div>
             </div>
 
@@ -78,8 +78,8 @@ const Facilities = {
     initInn: () => {
         const exitFn = "App.changeScene('field')";
         const cmds = `
-            <button class="menu-btn" style="background:#000; border:1px solid #fff; height:40px; color:#fff;" onclick="Facilities.stayInn(50)">▶ 泊まる (50Gold)</button>
-            <button class="menu-btn" style="background:#000; border:1px solid #fff; height:40px; color:#fff;" onclick="Facilities.openTeleport()">▶ 転送の扉</button>
+            <button class="menu-btn" style="background:#000; border:1px solid #fff; height:40px; color:#fff;" onclick="Facilities.stayInn(50)">泊まる (50Gold)</button>
+            <button class="menu-btn" style="background:#000; border:1px solid #fff; height:40px; color:#fff;" onclick="Facilities.openTeleport()">転送の扉</button>
         `;
         Facilities.setupBaseLayout('inn-scene', '宿屋', 'facility_bg_inn', cmds, exitFn);
         
@@ -142,8 +142,8 @@ const Facilities = {
 		const hasWedge = App.data.items && App.data.items[98] > 0;
         // コマンドボタンの構成
         const cmds = `
-            <button class="menu-btn" style="background:#000; border:1px solid #fff; height:40px; color:#fff; ${hasWedge ? '' : 'grid-column: span 2;'}" onclick="Facilities.openMedalMenu()">▶ メダルを交換する</button>
-            ${hasWedge ? `<button class="menu-btn" style="background:#000; border:1px solid #f44; height:40px; color:#f44;" onclick="Facilities.challengeSpecialBoss()">▶ 災厄に挑む</button>` : ''}
+            <button class="menu-btn" style="background:#000; border:1px solid #fff; height:40px; color:#fff; ${hasWedge ? '' : 'grid-column: span 2;'}" onclick="Facilities.openMedalMenu()">メダルを交換する</button>
+            ${hasWedge ? `<button class="menu-btn" style="background:#000; border:1px solid #f44; height:40px; color:#f44;" onclick="Facilities.challengeSpecialBoss()">災厄に挑む</button>` : ''}
         `;
         Facilities.setupBaseLayout('medal-scene', 'メダル交換所', 'facility_bg_medal', cmds, exitFn);
         const medals = App.data.items[99] || 0;
@@ -269,7 +269,7 @@ const Facilities = {
              Casino.isPlaying = true;
              Casino.currentGame = App.data.casinoState.currentGame;
              Casino.betGold = App.data.casinoState.betGold;
-             Casino.targetCurrency = App.data.casinoState.targetCurrency;
+             Casino.targetCurrency = App.data.casinoState.betCurrency || App.data.casinoState.targetCurrency || 'gold';
              Casino.hand = App.data.casinoState.hand || [];
              Casino.dealer = App.data.casinoState.dealer || [];
              Casino.deck = App.data.casinoState.deck || [];
@@ -281,14 +281,15 @@ const Facilities = {
 
         const exitFn = "App.changeScene('field')";
         const cmds = `
-            <button class="menu-btn" style="background:#000; border:1px solid #fff; height:40px; color:#fff;" onclick="Casino.startGame('poker')">▶ ポーカー</button>
-            <button class="menu-btn" style="background:#000; border:1px solid #fff; height:40px; color:#fff;" onclick="Casino.startGame('bj')">▶ ブラックジャック</button>
-            <button class="menu-btn" style="background:#000; border:1px solid #fff; height:40px; grid-column: span 2; color:#fff;" onclick="Facilities.openCasinoShop()">▶ 道具を買う</button>
+            <button class="menu-btn" style="background:#000; border:1px solid #4af; height:40px; color:#fff;" onclick="Casino.openGameSelect('gem')">GEMを賭ける</button>
+            <button class="menu-btn" style="background:#000; border:1px solid #ffd700; height:40px; color:#fff;" onclick="Casino.openGameSelect('gold')">GOLDを賭ける</button>
+            <button class="menu-btn" style="background:#000; border:1px solid #fff; height:40px; color:#fff;" onclick="Facilities.openCasinoShop()">道具を買う</button>
         `;
         Facilities.setupBaseLayout('casino-scene', 'カジノ', 'facility_bg_casino', cmds, exitFn);
         document.getElementById('casino-scene-msg-content').innerHTML = `
             「夢の宮殿へようこそ！」<br><br>
-            <span style="color:#ffd700;">Gold: ${App.data.gold.toLocaleString()} / GEM: ${App.data.gems.toLocaleString()}</span>
+            まずは賭ける通貨をお選びください。<br><br>
+            <span style="color:#ffd700;">Gold: ${(App.data.gold || 0).toLocaleString()} / GEM: ${(App.data.gems || 0).toLocaleString()}</span>
         `;
     },
 
@@ -320,37 +321,78 @@ const Facilities = {
  * カジノコアロジック
  */
 const Casino = {
-    betGold: 0, currentPayout: 0, isPlaying: false, targetCurrency: 'gem', currentGame: null,
+    betGold: 0, currentPayout: 0, isPlaying: false, targetCurrency: 'gold', currentGame: null,
+    betOptions: [1000, 10000, 100000, 1000000, 10000000],
     deck: [], duDeck: [], hand: [], dealer: [],
 
     init: () => { Facilities.initCasino(); },
 
-    startGame: (type) => {
-        Casino.currentGame = type;
+    getCurrencyLabel: (currency = Casino.targetCurrency) => currency === 'gem' ? 'GEM' : 'Gold',
+
+    getCurrencyAmount: (currency = Casino.targetCurrency) => currency === 'gem' ? (App.data.gems || 0) : (App.data.gold || 0),
+
+    spendCurrency: (currency, amount) => {
+        if (currency === 'gem') App.data.gems = (App.data.gems || 0) - amount;
+        else App.data.gold = (App.data.gold || 0) - amount;
+    },
+
+    addCurrency: (currency, amount) => {
+        if (currency === 'gem') App.data.gems = (App.data.gems || 0) + amount;
+        else App.data.gold = (App.data.gold || 0) + amount;
+    },
+
+    openGameSelect: (currency) => {
+        Casino.targetCurrency = currency === 'gem' ? 'gem' : 'gold';
+        Casino.currentGame = null;
+        const unit = Casino.getCurrencyLabel();
         const html = `
             <div style="text-align:center;">
-                <div style="color:#aaa; font-size:11px; margin-bottom:15px;">受取通貨と賭け金を設定</div>
-                <div style="display:flex; gap:10px; margin-bottom:20px;">
-                    <button class="btn" id="cas-tg-gem-btn" style="flex:1; height:40px; border:2px solid #fff; background:#000;" onclick="Casino.setTarget('gem')">GEM</button>
-                    <button class="btn" id="cas-tg-gold-btn" style="flex:1; height:40px; border:1px solid #444; background:#000;" onclick="Casino.setTarget('gold')">Gold</button>
-                </div>
-                <button class="menu-btn" style="width:100%; height:45px; margin-bottom:10px; border:1px solid #fff; background:#000; color:#fff;" onclick="Casino.begin(100000)">100,000 Gold</button>
-                <button class="menu-btn" style="width:100%; height:45px; border:1px solid #fff; background:#000; color:#fff;" onclick="Casino.begin(1000000)">1,000,000 Gold</button>
+                <div style="color:#aaa; font-size:11px; margin-bottom:8px;">${unit} を賭けて遊びます</div>
+                <div style="color:#ffd700; font-size:12px; margin-bottom:18px;">所持 ${unit}: ${Casino.getCurrencyAmount().toLocaleString()}</div>
+                <button class="menu-btn" style="width:100%; height:45px; margin-bottom:10px; border:1px solid #fff; background:#000; color:#fff;" onclick="Casino.startGame('bj')">ブラックジャック</button>
+                <button class="menu-btn" style="width:100%; height:45px; margin-bottom:0; border:1px solid #fff; background:#000; color:#fff;" onclick="Casino.startGame('poker')">ポーカー</button>
             </div>
         `;
-        Facilities.showModal('casino-scene', "勝負の設定", html);
-        Casino.targetCurrency = 'gem';
+        Facilities.showModal('casino-scene', `${unit}を賭ける`, html);
+    },
+
+    startGame: (type) => {
+        Casino.currentGame = type;
+        Casino.openBetSelect();
+    },
+
+    openBetSelect: () => {
+        const unit = Casino.getCurrencyLabel();
+        const gameName = Casino.currentGame === 'bj' ? 'ブラックジャック' : 'ポーカー';
+        const current = Casino.getCurrencyAmount();
+        const betButtons = Casino.betOptions.map(bet => {
+            const can = current >= bet;
+            return `<button class="menu-btn" style="width:100%; height:42px; margin-bottom:8px; border:1px solid ${can ? '#fff' : '#555'}; background:#000; color:${can ? '#fff' : '#666'};" ${can ? '' : 'disabled'} onclick="Casino.begin(${bet})">${bet.toLocaleString()} ${unit}</button>`;
+        }).join('');
+        const html = `
+            <div style="text-align:center;">
+                <div style="color:#aaa; font-size:11px; margin-bottom:6px;">${gameName} の掛け金を選択</div>
+                <div style="color:#ffd700; font-size:12px; margin-bottom:15px;">所持 ${unit}: ${current.toLocaleString()}</div>
+                ${betButtons}
+                <button class="btn" style="width:100%; height:36px; margin-top:5px; background:#222; border:1px solid #777; color:#aaa;" onclick="Casino.openGameSelect('${Casino.targetCurrency}')">ゲーム選択へ戻る</button>
+            </div>
+        `;
+        Facilities.showModal('casino-scene', "掛け金を選択", html);
     },
 
     setTarget: (t) => {
-        Casino.targetCurrency = t;
-        document.getElementById('cas-tg-gem-btn').style.border = t==='gem' ? '2px solid #fff' : '1px solid #444';
-        document.getElementById('cas-tg-gold-btn').style.border = t==='gold' ? '2px solid #fff' : '1px solid #444';
+        Casino.targetCurrency = t === 'gem' ? 'gem' : 'gold';
     },
 
     begin: (bet) => {
-        if(App.data.gold < bet) return Menu.msg("ゴールドが足りません！");
-        App.data.gold -= bet; Casino.betGold = bet; Casino.isPlaying = true;
+        const currency = Casino.targetCurrency === 'gem' ? 'gem' : 'gold';
+        const unit = Casino.getCurrencyLabel(currency);
+        if(Casino.getCurrencyAmount(currency) < bet) return Menu.msg(`${unit}が 足りません！`);
+        Casino.spendCurrency(currency, bet);
+        Casino.targetCurrency = currency;
+        Casino.betGold = bet;
+        Casino.currentPayout = 0;
+        Casino.isPlaying = true;
         
         // 4デッキ管理 (208枚)
         Casino.deck = Casino.createDeck();
@@ -358,6 +400,7 @@ const Casino = {
 
         if (Casino.currentGame === 'poker') {
             Casino.hand = []; for(let i=0; i<5; i++) Casino.hand.push({...Casino.getCard(), hold:false});
+            Casino.dealer = [];
         } else {
             Casino.hand = [Casino.getCard(), Casino.getCard()];
             Casino.dealer = [Casino.getCard(), Casino.getCard()];
@@ -374,6 +417,7 @@ const Casino = {
             currentGame: Casino.currentGame,
             betGold: Casino.betGold,
             targetCurrency: Casino.targetCurrency,
+            betCurrency: Casino.targetCurrency,
             hand: Casino.hand,
             dealer: Casino.dealer,
             deck: Casino.deck,
@@ -450,14 +494,14 @@ const Casino = {
             </div>
         `;
 
-        msg.innerHTML = `BET: ${Casino.betGold.toLocaleString()} Gold / 残すカードを選択`;
+        msg.innerHTML = `BET: ${Casino.betGold.toLocaleString()} ${Casino.getCurrencyLabel()} / 残すカードを選択`;
         let h = '<div style="display:flex; margin-top:15px;">';
         Casino.hand.forEach((c, i) => {
             const up = c.hold ? 'transform:translateY(-15px);' : '';
             h += `<div onclick="Casino.toggleHold(${i})" style="transition:0.1s; ${up}">${Casino.getCardStr(c)}<div style="font-size:10px; text-align:center; color:${c.hold?'#0ff':'#444'}; font-weight:bold;">${c.hold?'HOLD':'－'}</div></div>`;
         });
         board.innerHTML = payTable + h + '</div>';
-        if(canEx) actions.innerHTML = `<button class="btn" style="width:220px; height:50px; background:#000; border:2px solid #fff; color:#fff;" onclick="Casino.finishPoker()">▶ カード交換 / 勝負！</button>`;
+        if(canEx) actions.innerHTML = `<button class="btn" style="width:220px; height:50px; background:#000; border:2px solid #fff; color:#fff;" onclick="Casino.finishPoker()">カード交換 / 勝負！</button>`;
     },
 
     toggleHold: (i) => { if(Casino.hand[i]) { Casino.hand[i].hold = !Casino.hand[i].hold; Casino.saveState(); Casino.drawUI_Poker(true); } },
@@ -465,14 +509,14 @@ const Casino = {
     finishPoker: () => {
         Casino.hand.forEach(c => { if(!c.hold) { const n = Casino.getCard(); c.suit=n.suit; c.rank=n.rank; } c.done = true; });
         const res = Casino.checkPoker(Casino.hand);
-        let payout = (Casino.targetCurrency==='gem') ? Math.floor((Casino.betGold/1000)*res.rate) : Math.floor(Casino.betGold*res.rate);
+        let payout = Math.floor(Casino.betGold * res.rate);
         Casino.currentPayout = payout;
         Casino.saveState();
         
         Casino.drawUI_Poker(false);
         const msg = document.getElementById('casino-msg-actual'), actions = document.getElementById('casino-actions-actual');
         if(res.rate > 0) {
-            msg.innerHTML = `<span style="color:#f44; text-shadow: 0 0 5px #f00;">${res.name}!</span> 獲得: ${payout.toLocaleString()} ${Casino.targetCurrency.toUpperCase()}`;
+            msg.innerHTML = `<span style="color:#f44; text-shadow: 0 0 5px #f00;">${res.name}!</span> 獲得: ${payout.toLocaleString()} ${Casino.getCurrencyLabel()}`;
             actions.innerHTML = `<button class="btn" style="width:130px; height:50px; background:#000; border:2px solid #fff; color:#fff;" onclick="Casino.startDU()">ダブルアップ</button><button class="btn" style="width:130px; height:50px; border:1px solid #fff; background:#000; color:#fff;" onclick="Casino.collect()">受け取る</button>`;
         } else {
             Casino.isPlaying = false; Casino.saveState();
@@ -523,7 +567,7 @@ const Casino = {
         if(ps>=21) Casino.finishBJ();
         else {
             msg.innerHTML = `HIT か STAND かを選択してください`;
-            actions.innerHTML = `<button class="btn" style="width:140px; height:50px; background:#000; border:2px solid #fff; color:#fff;" onclick="Casino.hitBJ()">▶ HIT</button><button class="btn" style="width:140px; height:50px; background:#000; border:2px solid #fff; color:#fff;" onclick="Casino.finishBJ()">▶ STAND</button>`;
+            actions.innerHTML = `<button class="btn" style="width:140px; height:50px; background:#000; border:2px solid #fff; color:#fff;" onclick="Casino.hitBJ()">HIT</button><button class="btn" style="width:140px; height:50px; background:#000; border:2px solid #fff; color:#fff;" onclick="Casino.finishBJ()">STAND</button>`;
         }
     },
 
@@ -546,9 +590,9 @@ const Casino = {
         else msg.innerHTML = "あなたの負けです...";
 
         if(rate > 0) {
-            let p = (Casino.targetCurrency==='gem') ? Math.floor((Casino.betGold/1000)*rate) : Math.floor(Casino.betGold*rate);
+            let p = Math.floor(Casino.betGold * rate);
             Casino.currentPayout = p; Casino.saveState();
-            msg.innerHTML += ` / 獲得: ${p.toLocaleString()} ${Casino.targetCurrency.toUpperCase()}`;
+            msg.innerHTML += ` / 獲得: ${p.toLocaleString()} ${Casino.getCurrencyLabel()}`;
             actions.innerHTML = `<button class="btn" style="width:130px; height:50px; background:#000; border:2px solid #fff; color:#fff;" onclick="Casino.startDU()">ダブルアップ</button><button class="btn" style="width:130px; height:50px; border:1px solid #fff; background:#000; color:#fff;" onclick="Casino.collect()">受け取る</button>`;
         } else {
             Casino.isPlaying = false; Casino.saveState();
@@ -561,7 +605,7 @@ const Casino = {
     drawUI_DU: () => {
         const board = document.getElementById('casino-board-actual'), msg = document.getElementById('casino-msg-actual'), actions = document.getElementById('casino-actions-actual');
         if(!board || !msg || !actions) return;
-        msg.innerHTML = `<span style="color:#0ff;">現在の配当: ${Casino.currentPayout.toLocaleString()} ${Casino.targetCurrency.toUpperCase()}</span><br>次は High か Low か？`;
+        msg.innerHTML = `<span style="color:#0ff;">現在の配当: ${Casino.currentPayout.toLocaleString()} ${Casino.getCurrencyLabel()}</span><br>次は High か Low か？`;
         board.innerHTML = `<div style="display:flex; align-items:center; gap:25px;">${Casino.getCardStr(Casino.duCard)}<div style="font-size:24px; font-weight:bold; color:#ffd700;">VS</div><div style="width:48px; height:68px; background:#000; border:2px solid #ffd700; border-radius:4px; font-size:28px; color:#ffd700; text-align:center; line-height:68px;">?</div></div>`;
         actions.innerHTML = `<button class="btn" style="width:110px; height:50px; background:#000; border:1px solid #fff; color:#fff;" onclick="Casino.checkDU('high')">HIGH ↑</button><button class="btn" style="width:110px; height:50px; background:#000; border:1px solid #fff; color:#fff;" onclick="Casino.checkDU('low')">LOW ↓</button><button class="btn" style="width:80px; height:50px; background:#444;" onclick="Casino.collect()">降りる</button>`;
     },
@@ -572,7 +616,7 @@ const Casino = {
         document.getElementById('casino-board-actual').innerHTML = `<div style="display:flex; justify-content:center; align-items:center; gap:25px;">${Casino.getCardStr(Casino.duCard)}<div style="font-size:24px; font-weight:bold; color:#ffd700;">VS</div>${Casino.getCardStr(next)}</div>`;
         if (win || draw) {
             if(win) Casino.currentPayout *= 2; Casino.duCard = next; Casino.saveState();
-            document.getElementById('casino-msg-actual').innerHTML = win ? `<span style='color:#f44; font-size:18px;'>WIN!! 配当が ${Casino.currentPayout.toLocaleString()} に倍増！</span>` : "引き分け！ 継続します";
+            document.getElementById('casino-msg-actual').innerHTML = win ? `<span style='color:#f44; font-size:18px;'>WIN!! 配当が ${Casino.currentPayout.toLocaleString()} ${Casino.getCurrencyLabel()} に倍増！</span>` : "引き分け！ 継続します";
             document.getElementById('casino-actions-actual').innerHTML = `<button class="btn" style="width:160px; height:50px; background:#000; border:1px solid #fff; color:#fff;" onclick="Casino.drawUI_DU()">さらに勝負！</button><button class="btn" style="width:130px; height:50px; border:1px solid #fff; background:#000; color:#fff;" onclick="Casino.collect()">受け取る</button>`;
         } else {
             Casino.currentPayout = 0; Casino.isPlaying = false; App.data.casinoState.isPlaying = false; App.save();
@@ -582,8 +626,8 @@ const Casino = {
     },
 
     collect: () => {
-        const unit = Casino.targetCurrency.toUpperCase();
-        if(Casino.targetCurrency==='gem') App.data.gems += Casino.currentPayout; else App.data.gold += Casino.currentPayout;
+        const unit = Casino.getCurrencyLabel();
+        Casino.addCurrency(Casino.targetCurrency, Casino.currentPayout);
         Casino.isPlaying = false; App.data.casinoState = { isPlaying: false }; App.save();
         Menu.msg(`${Casino.currentPayout.toLocaleString()} ${unit} を手に入れた！`, () => Facilities.initCasino());
     }

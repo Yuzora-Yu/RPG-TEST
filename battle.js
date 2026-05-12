@@ -1028,10 +1028,19 @@ findNextActor: () => {
 
             div.onclick = (e) => {
                 e.stopPropagation();
-                if (isDisabled) { Battle.log("封印されていて使えない！"); return; }
+                if (isDisabled) { 
+                    Battle.showNoticeOverlay('', '封印されていて使えない！', 'ＯＫ');
+					//Battle.log("封印されていて使えない！");
+					return;
+				}
+					
                 // ★修正：マダンテ系(500-505)はMP1以上あれば選択可能、それ以外は消費MPチェック
                 const requiredMp = (sk.id >= 500 && sk.id <= 505) ? 1 : sk.mp;
-                if (actor.mp < requiredMp) { Battle.log("MPが足りません"); return; }
+                if (actor.mp < requiredMp) {
+                    Battle.showNoticeOverlay('', 'この特技を使うにはMPが足りない！', 'ＯＫ');
+                    //Battle.log("MPが足りません");
+                    return;
+                }
                 
                 Battle.selectedItemOrSkill = sk;
                 Battle.openTargetWindow(sk.target, sk);
@@ -1058,49 +1067,84 @@ findNextActor: () => {
 
 
     openItemList: () => {
-        const win = Battle.getEl('battle-list-window');
-        const title = Battle.getEl('battle-list-title');
-        const content = Battle.getEl('battle-list-content');
-        const targetWin = Battle.getEl('battle-target-window');
-        if (!win || !title || !content) return;
-        if (targetWin) targetWin.style.display = 'none';
-        
-        win.style.display = 'flex';
-        title.innerText = "道具";
-        content.innerHTML = '';
-        Battle.phase = 'item_select';
+		const win = Battle.getEl('battle-list-window');
+		const title = Battle.getEl('battle-list-title');
+		const content = Battle.getEl('battle-list-content');
+		const targetWin = Battle.getEl('battle-target-window');
+		if (!win || !title || !content) return;
+		if (targetWin) targetWin.style.display = 'none';
+		
+		win.style.display = 'flex';
+		title.innerText = "道具";
+		content.innerHTML = '';
+		Battle.phase = 'item_select';
 
-        const items = [];
-        if (App.data.items) {
-            Object.keys(App.data.items).forEach(id => {
-                const it = DB.ITEMS.find(i=>i.id==id);
-                if(it && (it.type.includes('回復') || it.type.includes('蘇生') || it.type.includes('MP回復') || it.type === '状態異常回復') && App.data.items[id] > 0) { 
-                    items.push({def:it, count:App.data.items[id]});
-                }
-            });
-        }
+		const items = [];
+		if (App.data.items) {
+			Object.keys(App.data.items).forEach(id => {
+				const it = DB.ITEMS.find(i => i.id == id);
+				if (
+					it &&
+					(
+						it.type.includes('回復') ||
+						it.type.includes('蘇生') ||
+						it.type.includes('MP回復') ||
+						it.type === '状態異常回復'
+					) &&
+					App.data.items[id] > 0
+				) { 
+					items.push({ def: it, count: App.data.items[id] });
+				}
+			});
+		}
 
-        if (items.length === 0) {
-            content.innerHTML = '<div style="padding:10px">使える道具がありません</div>';
-            return;
-        }
+		if (items.length === 0) {
+			content.innerHTML = '<div style="padding:10px; font-size:12px;">使える道具がありません</div>';
+			return;
+		}
 
-        items.forEach(obj => {
-            const div = document.createElement('div');
-            div.className = 'list-item';
-            div.innerHTML = `<div>${obj.def.name}</div><div>x${obj.count}</div>`;
-            div.onclick = (e) => {
-                e.stopPropagation();
-                Battle.selectedItemOrSkill = obj.def;
-                let tType = 'ally';
-                if(obj.def.type === '蘇生') tType = 'ally_dead';
-                else if(obj.def.target === '全体') tType = 'all_ally';
-                Battle.openTargetWindow(tType, obj.def);
-            };
-            content.appendChild(div);
-        });
-    },
+		items.forEach(obj => {
+			const it = obj.def;
 
+			const div = document.createElement('div');
+			div.className = 'list-item';
+
+			const desc = it.desc || '説明なし';
+			const targetLabel = it.target || it.type || '';
+
+			div.innerHTML = `
+				<div style="flex:1; min-width:0;">
+					<div style="display:flex; align-items:center;">
+						<span style="font-size:12px; font-weight:bold; margin-right:5px;">${it.name}</span>
+						<span style="font-size:9px; color:#aaa; margin-left:auto; margin-right:5px;">(${targetLabel})</span>
+					</div>
+					<div style="font-size:9px; color:#ccc; margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+						${desc}
+					</div>
+				</div>
+				<div style="font-size:11px; color:#ffd700; text-align:right; min-width:40px;">x${obj.count}</div>
+			`;
+
+			div.onclick = (e) => {
+				e.stopPropagation();
+
+				Battle.selectedItemOrSkill = it;
+
+				let tType = 'ally';
+
+				if (it.type === '蘇生') {
+					tType = 'ally_dead';
+				} else if (it.target === '全体') {
+					tType = 'all_ally';
+				}
+
+				Battle.openTargetWindow(tType, it);
+			};
+
+			content.appendChild(div);
+		});
+	},
+	
     cancelSubMenu: () => {
         Battle.closeSubMenu();
         Battle.phase = 'input';
@@ -1114,6 +1158,51 @@ findNextActor: () => {
         const winL = Battle.getEl('battle-list-window');
         if(winT) winT.style.display = 'none';
         if(winL) winL.style.display = 'none';
+        Battle.closeNoticeOverlay();
+    },
+
+    showNoticeOverlay: (title, message, buttonText = 'ＯＫ') => {
+        Battle.closeNoticeOverlay();
+
+        const scene = Battle.getEl('battle-scene') || document.body;
+        const layer = document.createElement('div');
+        layer.id = 'battle-notice-overlay';
+        layer.style.cssText = `
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.45);
+            padding: 16px;
+            box-sizing: border-box;
+            font-family: 'DotGothic16', sans-serif;
+        `;
+
+        layer.innerHTML = `
+            <div style="
+                width: min(320px, 92vw);
+                background: #000;
+                color: #fff;
+                border: 3px double #fff;
+                box-sizing: border-box;
+                padding: 16px;
+                text-align: center;
+                box-shadow: 0 0 18px rgba(0,0,0,0.8);
+            ">
+                <div style="color:#ffd700; font-size:14px; font-weight:bold; margin-bottom:10px;">${title}</div>
+                <div style="font-size:13px; line-height:1.6; margin-bottom:14px;">${message}</div>
+                <button class="btn" style="width:30%; height:30px; background:#000; color:#fff; border:2px solid #fff;" onclick="Battle.closeNoticeOverlay()">${buttonText}</button>
+            </div>
+        `;
+
+        scene.appendChild(layer);
+    },
+
+    closeNoticeOverlay: () => {
+        const layer = document.getElementById('battle-notice-overlay');
+        if (layer && layer.parentNode) layer.parentNode.removeChild(layer);
     },
 
     registerAction: (actionObj) => {
