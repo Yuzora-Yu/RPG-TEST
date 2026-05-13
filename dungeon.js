@@ -2,6 +2,14 @@
 
 const Dungeon = {
     floor: 0, width: 30, height: 30, map: [], pendingAction: null,
+
+    // ランダム生成ダンジョン内に出現する冒険者NPC設定。
+    // 検証中は100%出現。挙動確認後は 0.10 に戻す想定。
+    // タイル文字を増やすと既存の宝箱/階段/エンカウント処理に影響しやすいため、
+    // NPC位置は App.data.dungeon.adventurer で別管理する。
+    adventurerSpawnRate: 1.0, // TODO: 検証完了後に 0.10 へ変更
+    adventurerImagePath: 'monster/img/monster_100009.png',
+    adventurerPromptOpen: false,
     
 	getEntryChoices: () => {
 		const maxF = App.data.dungeon.maxFloor || 0;
@@ -165,6 +173,7 @@ const Dungeon = {
         App.data.progress.floor = startFloor;
         App.data.dungeon.tryCount++;
         App.data.dungeon.map = null;
+        App.data.dungeon.adventurer = null;
         Dungeon.loadFloor();
     },
 	
@@ -187,6 +196,7 @@ const Dungeon = {
         App.data.progress.floor = 1; 
         Dungeon.floor = 1;
         App.data.location.area = mapKey;
+        App.data.dungeon.adventurer = null;
 
         // Fieldのマップデータを更新
         Field.currentMapData = { 
@@ -209,6 +219,7 @@ const Dungeon = {
     nextFloor: () => {
         App.data.progress.floor++;
         App.data.dungeon.map = null; 
+        App.data.dungeon.adventurer = null;
         Dungeon.loadFloor();
     },
 
@@ -232,6 +243,9 @@ const Dungeon = {
             Dungeon.map = App.data.dungeon.map;
             Dungeon.width = App.data.dungeon.width;
             Dungeon.height = App.data.dungeon.height;
+            if (App.data.dungeon.adventurer && Number(App.data.dungeon.adventurer.floor) !== Number(Dungeon.floor)) {
+                App.data.dungeon.adventurer = null;
+            }
             App.log(`地下 ${Dungeon.floor} 階の冒険を再開します。`);
         } else {
             if(Dungeon.floor > App.data.dungeon.maxFloor) {
@@ -293,6 +307,7 @@ const Dungeon = {
         App.data.dungeon.map = null;
         App.data.dungeon.width = 30;
         App.data.dungeon.height = 30;
+        App.data.dungeon.adventurer = null;
         App.data.progress.floor = 0;
         
         // 保存していた帰還ポイントを一度抽出してからクリア
@@ -366,6 +381,13 @@ const Dungeon = {
 		let tile = (App.data.progress.mapChanges?.[areaKey]?.[posKey] || tiles[y][x] || 'W').toUpperCase();
         
 		//App.clearAction();
+
+        // ランダム生成ダンジョン内の冒険者NPC。
+        // 接触時はその場で会話選択を出す。移動・エンカウント・宝箱処理とは独立管理。
+        if (Dungeon.isAdventurerAt(x, y)) {
+            Dungeon.encounterAdventurer({ auto: true });
+            return;
+        }
 
         // 宝箱判定
         if(tile === 'C') { 
@@ -585,6 +607,122 @@ const Dungeon = {
         App.save();
     },
 	
+
+    isAdventurerAt: (x, y) => {
+        const adv = App.data?.dungeon?.adventurer;
+        if (!adv || !adv.active) return false;
+        if (Number(adv.floor) !== Number(Dungeon.floor)) return false;
+        return Number(adv.x) === Number(x) && Number(adv.y) === Number(y);
+    },
+
+    getAdventurerSpawnCandidates: () => {
+        const candidates = [];
+        if (!Array.isArray(Dungeon.map) || !Dungeon.map.length) return candidates;
+        for (let y = 1; y < Dungeon.height - 1; y++) {
+            for (let x = 1; x < Dungeon.width - 1; x++) {
+                const tile = String(Dungeon.map[y]?.[x] || 'W').toUpperCase();
+                if (tile !== 'T' && tile !== 'G') continue;
+                if (Number(x) === Number(Field.x) && Number(y) === Number(Field.y)) continue;
+                const distance = Math.abs(Number(x) - Number(Field.x)) + Math.abs(Number(y) - Number(Field.y));
+                if (distance < 3) continue;
+                candidates.push({ x, y });
+            }
+        }
+        return candidates;
+    },
+
+    rollAdventurerSpawn: () => {
+        if (!App.data?.dungeon) return;
+        App.data.dungeon.adventurer = null;
+
+        // 固定ダンジョンやボス階では出さない。通常のランダム生成フロア用。
+        if (App.data.location.area !== 'ABYSS') return;
+        if (Dungeon.floor > 0 && Dungeon.floor % 10 === 0) return;
+
+        if (Math.random() >= Dungeon.adventurerSpawnRate) return;
+
+        const candidates = Dungeon.getAdventurerSpawnCandidates();
+        if (!candidates.length) return;
+
+        const pos = candidates[Math.floor(Math.random() * candidates.length)];
+        App.data.dungeon.adventurer = {
+            active: true,
+            floor: Dungeon.floor,
+            x: pos.x,
+            y: pos.y,
+            image: Dungeon.adventurerImagePath
+        };
+    },
+
+    encounterAdventurer: async (options = {}) => {
+        const adv = App.data?.dungeon?.adventurer;
+        if (!adv || !adv.active) return;
+        if (Dungeon.adventurerPromptOpen) return;
+        Dungeon.adventurerPromptOpen = true;
+        App.clearAction();
+
+        try {
+            let accepted = true;
+
+            if (typeof StoryManager !== 'undefined' && typeof StoryManager.showChoice === 'function') {
+                StoryManager.active = true;
+                accepted = await StoryManager.showChoice('なんと、冒険者と遭遇した！\n話しかけてみますか？');
+            } else {
+                accepted = window.confirm('なんと、冒険者と遭遇した！\n話しかけてみますか？');
+            }
+
+            if (!accepted) {
+                if (typeof StoryManager !== 'undefined' && typeof StoryManager.endConversation === 'function') {
+                    StoryManager.endConversation();
+                }
+                Dungeon.adventurerPromptOpen = false;
+                if (typeof Field !== 'undefined' && typeof Field.refreshCurrentAction === 'function') {
+                    Field.refreshCurrentAction({ silent: true });
+                }
+                return;
+            }
+
+            const rewardFloor = Math.max(1, Number(Dungeon.floor || App.data.progress.floor || 1) + 5);
+            const eq = App.createEquipByFloor('adventurer', rewardFloor, 3);
+            App.data.inventory.push(eq);
+
+            // 受け取り後は冒険者を消す。同じ階で再取得できないよう必ず保存する。
+            App.data.dungeon.adventurer = null;
+            App.save();
+            if (typeof Field !== 'undefined') Field.render();
+
+            const rewardText = `${eq.name}を手に入れた！`;
+            App.log(`<span style="color:#ffd700;">${rewardText}</span>`);
+
+            if (typeof StoryManager !== 'undefined' && typeof StoryManager.showConversation === 'function') {
+                const key = '__DUNGEON_ADVENTURER_REWARD__';
+                StoryManager.scripts[key] = [
+                    {
+                        charId: 9998,
+                        name: '冒険者',
+                        text: 'こんなところで会うなんて、これも何かの縁だ。\nさっき手に入れた装備だが俺には使えないみたいだから、あんたにやるよ'
+                    },
+                    {
+                        charId: 1000,
+                        name: 'システム',
+                        text: rewardText
+                    }
+                ];
+                StoryManager.active = true;
+                await StoryManager.showConversation(key, 0);
+                StoryManager.endConversation();
+                delete StoryManager.scripts[key];
+            } else {
+                alert(`こんなところで会うなんて、これも何かの縁だ。\n${rewardText}`);
+            }
+        } finally {
+            Dungeon.adventurerPromptOpen = false;
+            if (typeof Field !== 'undefined' && typeof Field.refreshCurrentAction === 'function') {
+                Field.refreshCurrentAction({ silent: true });
+            }
+        }
+    },
+
     createEquipWithMinRarity: (floor, plus, minRarityList, forcePart = null) => {
         let eq = App.createEquipByFloor('drop', floor, plus);
         
@@ -641,6 +779,11 @@ const Dungeon = {
 				App.data.dungeon.genVariant = Dungeon.lastGenVariant || null;
 			}
 		}
+
+        
+        // フロア生成完了後に冒険者NPCを配置する。
+        // 生成そのものとは別管理にしておくことで、既存のタイル文字・宝箱・階段処理を壊さない。
+        Dungeon.rollAdventurerSpawn();
         
         Field.currentMapData = { 
 			name: STORY_DATA.areas['ABYSS'].name,

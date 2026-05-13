@@ -15,8 +15,8 @@
 //   直接復活させないこと。画像管理の正本は assets.js。
 // ============================================================================
 
-const CACHE_NAME = "prisma-abyss-v2.82-idle-step";
-const RUNTIME_CACHE_NAME = "prisma-abyss-v2.82-runtime-assets";
+const CACHE_NAME = "prisma-abyss-v2.83-dungeon-adventurer";
+const RUNTIME_CACHE_NAME = "prisma-abyss-v2.83-runtime-assets";
 const WARM_CACHE_META_KEY = "__prisma_abyss_warm_cache_complete__";
 
 // 起動に必要な最小セットだけを事前キャッシュする。

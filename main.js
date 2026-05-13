@@ -2413,6 +2413,24 @@ const Field = {
     // requestAnimationFrameで常時描画すると負荷が増えるため、低頻度のsetIntervalでstepだけ切り替える。
     idleTimer: null,
     idleStepIntervalMs: 520,
+
+    // ランダム生成ダンジョン内の冒険者NPC画像キャッシュ。
+    // GRAPHICS管理へ入れるほど汎用ではないため、今回のNPC表示はField側で直接読む。
+    // 今後NPC種類が増えたら、Dungeon.adventurerImagePath を正本にしてここで描画だけ担当する。
+    directImageCache: {},
+
+    getDirectImage: (src) => {
+        if (!src) return null;
+        if (!Field.directImageCache[src]) {
+            const img = new Image();
+            img.onload = () => {
+                if (typeof Field !== 'undefined' && Field.ready) Field.render();
+            };
+            img.src = src;
+            Field.directImageCache[src] = img;
+        }
+        return Field.directImageCache[src];
+    },
 	
 	// ★追加：移動を強制停止するメソッド
     stopMove: () => {
@@ -2636,6 +2654,15 @@ const Field = {
 
         if (Field.currentMapData) {
             if (tile === 'W') return false;
+
+            // ランダム生成ダンジョン内の冒険者NPC。
+            // 通常タイルとは別管理なので、タイル文字を増やさず現在地座標で判定する。
+            // 接触後に「いいえ」を選んでも同じ場所で話しかけ直せるよう、
+            // アクションボタンの再評価対象にも含める。
+            if (typeof Dungeon !== 'undefined' && typeof Dungeon.isAdventurerAt === 'function' && Dungeon.isAdventurerAt(x, y)) {
+                App.setAction('話す', () => Dungeon.encounterAdventurer({ auto: false }));
+                return true;
+            }
 
             if (!Field.currentMapData.isDungeon) {
                 if (tile === 'I') {
@@ -2910,7 +2937,33 @@ const Field = {
             }
         }
 
-        // 3. プレイヤーの描画 (hero_... の画像もスプライトシート化していれば対応可能)
+        // 3. ランダム生成ダンジョン内の冒険者NPC描画。
+        // タイル文字を増やさず App.data.dungeon.adventurer で管理するため、
+        // 地形・宝箱・階段などの既存生成ロジックを壊さない。
+        const adventurer = App.data?.dungeon?.adventurer;
+        if (Field.currentMapData?.isDungeon && adventurer && adventurer.active && Number(adventurer.floor) === Number(Dungeon.floor)) {
+            const adx = Number(adventurer.x) - Number(Field.x);
+            const ady = Number(adventurer.y) - Number(Field.y);
+            if (Math.abs(adx) <= rangeX && Math.abs(ady) <= rangeY) {
+                const ax = Math.floor(cx + (adx * ts) - (ts / 2));
+                const ay = Math.floor(cy + (ady * ts) - (ts / 2));
+                const img = Field.getDirectImage(adventurer.image || 'monster/img/monster_100009.png');
+                if (img && img.complete && img.naturalWidth > 0) {
+                    ctx.save();
+                    ctx.drawImage(img, ax, ay, ts, ts);
+                    ctx.restore();
+                } else {
+                    ctx.save();
+                    ctx.fillStyle = '#5bd6ff';
+                    ctx.beginPath();
+                    ctx.arc(ax + ts / 2, ay + ts / 2, ts * 0.34, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+        }
+
+        // 4. プレイヤーの描画 (hero_... の画像もスプライトシート化していれば対応可能)
         const pKey = `hero_${['down','left','right','up'][Field.dir]}_${Field.step}`; 
         if (!drawGraphic(pKey, cx-ts/2, cy-ts/2, ts)) {
             ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(cx, cy, 10, 0, Math.PI*2); ctx.fill();
