@@ -752,10 +752,21 @@ const App = {
 			App.inspectCurrentTile();
 		});
 
-		window.addEventListener('blur', () => Field.stopMove());
+		window.addEventListener('blur', () => {
+            Field.stopMove();
+            if (typeof Field.stopIdleStep === 'function') Field.stopIdleStep();
+        });
 		document.addEventListener('visibilitychange', () => {
-			if (document.hidden) Field.stopMove();
+			if (document.hidden) {
+                Field.stopMove();
+                if (typeof Field.stopIdleStep === 'function') Field.stopIdleStep();
+            } else if (typeof Field.startIdleStep === 'function') {
+                Field.startIdleStep();
+            }
 		});
+        window.addEventListener('focus', () => {
+            if (typeof Field.startIdleStep === 'function') Field.startIdleStep();
+        });
 
 		if (!App._objectiveHudResizeBound) {
 			App._objectiveHudResizeBound = true;
@@ -2329,6 +2340,12 @@ load: () => {
 	},
 		
     changeScene: (sceneId) => {
+        // フィールド以外の画面へ移る時は、待機中の足踏みタイマーを止める。
+        // 足踏みは描画だけの軽量演出だが、戦闘/施設/メニュー裏で動かし続ける必要はない。
+        if (sceneId !== 'field' && typeof Field !== 'undefined' && typeof Field.stopIdleStep === 'function') {
+            Field.stopIdleStep();
+        }
+
         document.querySelectorAll('.scene-layer').forEach(e => e.style.display = 'none');
         const target = document.getElementById(sceneId + '-scene');
         if(target) target.style.display = 'flex';
@@ -2390,12 +2407,54 @@ const Field = {
     step: 1, // 歩行アニメ用 (1 または 2)
     ready: false, currentMapData: null,
 	moveTimer: null, // ★追加：タイマー保持用
+
+    // 待機中の足踏みアニメ用タイマー。
+    // 重要: これは演出専用。Field.move() は呼ばず、座標/歩数/エンカウント/セーブには一切触れない。
+    // requestAnimationFrameで常時描画すると負荷が増えるため、低頻度のsetIntervalでstepだけ切り替える。
+    idleTimer: null,
+    idleStepIntervalMs: 520,
 	
 	// ★追加：移動を強制停止するメソッド
     stopMove: () => {
         if (Field.moveTimer) {
             clearInterval(Field.moveTimer);
             Field.moveTimer = null;
+        }
+        // 長押し移動を離した後、フィールド上なら足踏みを再開する。
+        if (typeof Field.startIdleStep === 'function') Field.startIdleStep();
+    },
+
+    shouldIdleStep: () => {
+        const fieldScene = document.getElementById('field-scene');
+        if (!fieldScene || fieldScene.style.display === 'none') return false;
+        if (!Field.ready || !App.data) return false;
+        if (Field.moveTimer) return false;
+        if (document.hidden) return false;
+        if (typeof Menu !== 'undefined' && typeof Menu.isMenuOpen === 'function' && Menu.isMenuOpen()) return false;
+        if (typeof StoryManager !== 'undefined') {
+            if (StoryManager.active || StoryManager.isTyping) return false;
+        }
+        const storyOverlay = document.getElementById('story-ui-overlay');
+        if (storyOverlay && storyOverlay.style.display !== 'none') return false;
+        if (App.encounterTransitioning) return false;
+        return true;
+    },
+
+    startIdleStep: () => {
+        if (Field.idleTimer) return;
+        if (typeof Field.shouldIdleStep === 'function' && !Field.shouldIdleStep()) return;
+
+        Field.idleTimer = setInterval(() => {
+            if (!Field.shouldIdleStep()) return;
+            Field.step = (Field.step === 1) ? 2 : 1;
+            Field.render();
+        }, Field.idleStepIntervalMs);
+    },
+
+    stopIdleStep: () => {
+        if (Field.idleTimer) {
+            clearInterval(Field.idleTimer);
+            Field.idleTimer = null;
         }
     },
     
@@ -2461,6 +2520,10 @@ const Field = {
 
         if (typeof Field.refreshCurrentAction === 'function') {
             Field.refreshCurrentAction({ silent: true });
+        }
+
+        if (typeof Field.startIdleStep === 'function') {
+            Field.startIdleStep();
         }
     },
 
@@ -2693,6 +2756,10 @@ const Field = {
     },
 	
 	move: (dx, dy) => {
+        // 待機中の足踏みは、実移動入力が入ったら一旦止める。
+        // ここでField.move()を疑似的に呼ぶ実装にはしないこと。足踏みはstep切替のみ。
+        if (typeof Field.stopIdleStep === 'function') Field.stopIdleStep();
+
 		// ★追加: 一歩歩くごとにログを空欄にする処理
         const logEl = document.getElementById('msg-text');
         if (logEl) logEl.innerHTML = '';
@@ -2710,6 +2777,7 @@ const Field = {
             if (typeof Field.refreshCurrentAction === 'function') {
                 Field.refreshCurrentAction({ silent: true });
             }
+            if (typeof Field.startIdleStep === 'function') Field.startIdleStep();
         };
 		
 		// ★修正点: エラー回避のため、現在のエリアキーを取得しておく
@@ -2747,7 +2815,9 @@ const Field = {
                     App.data.location.x = exit.x; App.data.location.y = exit.y;
                     Field.currentMapData = null; 
                     App.log("フィールドへ出た");
-                    App.save(); Field.render(); return;
+                    App.save(); Field.render();
+                    if (typeof Field.startIdleStep === 'function') Field.startIdleStep();
+                    return;
                 }
             }
 
@@ -2760,6 +2830,7 @@ const Field = {
 
             if (Field.currentMapData.isDungeon) Dungeon.handleMove(nx, ny);
             App.save(); Field.render();
+            if (typeof Field.startIdleStep === 'function') Field.startIdleStep();
 			
         } else {
             const mapW = MAP_DATA[0].length, mapH = MAP_DATA.length;
@@ -2776,6 +2847,7 @@ const Field = {
 			
             if(App.data.walkCount === undefined) App.data.walkCount = 0;
             App.data.walkCount++; App.save(); Field.render();
+            if (typeof Field.startIdleStep === 'function') Field.startIdleStep();
         }
     },
 
