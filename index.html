@@ -2538,8 +2538,8 @@ if ('serviceWorker' in navigator) {
 
 <div id="sub-screen-allies" class="sub-screen">
     <div class="header-bar">
-        <span>🧑‍🤝‍🧑 仲間一覧</span>
-        <button class="btn" onclick="Menu.closeSubScreen('allies')">もどる</button>
+        <span>‍🧑‍🤝‍🧑 仲間一覧</span>
+        <button id="allies-header-back-btn" class="btn" onclick="Menu.closeSubScreen('allies')">もどる</button>
     </div>
 
     <div id="allies-list-view" class="flex-col-container">
@@ -2547,15 +2547,14 @@ if ('serviceWorker' in navigator) {
     </div>
 
     <div id="allies-detail-view" class="flex-col-container" style="display:none; background:#1a1a1a;">
-        <div class="tab-bar" id="allies-tabs"></div>
-        <div id="allies-detail-content" class="scroll-area"></div>
-        <button class="btn" style="margin:10px;" onclick="document.getElementById('allies-detail-view').style.display='none'; document.getElementById('allies-list-view').style.display='flex';">一覧へもどる</button>
+        <div id="allies-detail-content" class="scroll-area" style="display:flex; flex-direction:column; min-height:0;"></div>
     </div>
 
-    <div class="sub-screen-bottom-panel">
-        <button class="btn sub-screen-back-btn" onclick="Menu.closeSubScreen('allies')">もどる</button>
+    <div id="allies-bottom-panel" class="sub-screen-bottom-panel">
+        <button id="allies-bottom-back-btn" class="btn sub-screen-back-btn" onclick="Menu.closeSubScreen('allies')">もどる</button>
     </div>
 </div>
+
 
 <div id="sub-screen-skills" class="sub-screen">
     <div class="header-bar">
@@ -2591,18 +2590,19 @@ if ('serviceWorker' in navigator) {
     </div>
 </div>
 
-<div id="sub-screen-book" class="sub-screen">
-    <div class="header-bar">
-        <span>📖 魔物図鑑</span>
-        <button class="btn" onclick="Menu.closeSubScreen('book')">もどる</button>
-    </div>
+	<div id="sub-screen-book" class="sub-screen">
+		<div class="header-bar">
+			<span>📖 魔物図鑑</span>
+			<button class="btn" onclick="Menu.closeSubScreen('book')">もどる</button>
+		</div>
 
-    <div id="book-list" class="scroll-area"></div>
+		<div id="book-list" class="scroll-area"></div>
+		<div id="book-detail" class="scroll-area" style="display:none;"></div>
 
-    <div class="sub-screen-bottom-panel">
-        <button class="btn sub-screen-back-btn" onclick="Menu.closeSubScreen('book')">もどる</button>
-    </div>
-</div>
+		<div id="book-bottom-panel" class="sub-screen-bottom-panel">
+			<button id="book-bottom-back-btn" class="btn sub-screen-back-btn" onclick="Menu.closeSubScreen('book')">もどる</button>
+		</div>
+	</div>
 
     <div id="sub-screen-blacksmith" class="sub-screen">
         <div class="header-bar"><span>⚒️ 鍛冶屋</span> <button class="btn" onclick="Menu.closeSubScreen('blacksmith')">もどる</button></div>

@@ -1231,3 +1231,64 @@ button:disabled.is-pressing,
   filter: none !important;
   box-shadow: none !important;
 }
+
+#sub-screen-book {
+    display: none;
+    flex-direction: column !important;
+}
+
+#sub-screen-book > #book-list,
+#sub-screen-book > #book-detail {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+}
+
+#sub-screen-book > .sub-screen-bottom-panel {
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    max-width: none !important;
+    align-self: stretch !important;
+    box-sizing: border-box !important;
+}
+
+#sub-screen-book > .sub-screen-bottom-panel > .sub-screen-back-btn {
+    width: 100% !important;
+    max-width: none !important;
+}
+
+/* =========================================================
+   Allies screen bottom panel layout fix
+========================================================= */
+
+#sub-screen-allies {
+    display: none;
+    flex-direction: column !important;
+}
+
+#sub-screen-allies > #allies-list-view,
+#sub-screen-allies > #allies-detail-view {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+}
+
+#sub-screen-allies #allies-list,
+#sub-screen-allies #allies-detail-content {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+}
+
+#sub-screen-allies > .sub-screen-bottom-panel {
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    max-width: none !important;
+    align-self: stretch !important;
+    box-sizing: border-box !important;
+}
+
+#sub-screen-allies > .sub-screen-bottom-panel > .sub-screen-back-btn {
+    width: 100% !important;
+    max-width: none !important;
+}

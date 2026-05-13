@@ -1357,7 +1357,103 @@ const MenuAllies = {
 		}
 		return MenuAllies.selectedChar || null;
 	},
+	
+    setHeaderButton: (label, handler) => {
+        const btn = document.getElementById('allies-header-back-btn')
+            || document.querySelector('#sub-screen-allies .header-bar button');
+        if (!btn) return;
 
+        btn.innerText = label;
+        btn.onclick = handler;
+    },
+
+    setBottomButton: (label, handler) => {
+        const btn = document.getElementById('allies-bottom-back-btn')
+            || document.querySelector('#sub-screen-allies .sub-screen-bottom-panel .sub-screen-back-btn');
+        if (!btn) return;
+
+        btn.innerText = label;
+        btn.onclick = handler;
+    },
+
+	ensureDetailContent: () => {
+		const detailView = document.getElementById('allies-detail-view');
+		if (!detailView) return null;
+
+		let detailContent = document.getElementById('allies-detail-content');
+
+		if (!detailContent) {
+			detailView.innerHTML = `
+				<div id="allies-detail-content" class="scroll-area" style="display:flex; flex-direction:column; min-height:0;"></div>
+			`;
+			detailContent = document.getElementById('allies-detail-content');
+		}
+
+		return detailContent;
+	},
+
+    showListView: () => {
+        const listView = document.getElementById('allies-list-view');
+        const detailView = document.getElementById('allies-detail-view');
+        const treeView = document.getElementById('allies-tree-view');
+
+        if (listView) listView.style.display = 'flex';
+        if (detailView) detailView.style.display = 'none';
+        if (treeView) treeView.style.display = 'none';
+
+        MenuAllies.setHeaderButton('もどる', () => Menu.closeSubScreen('allies'));
+        MenuAllies.setBottomButton('もどる', () => Menu.closeSubScreen('allies'));
+    },
+
+    showDetailView: () => {
+        const listView = document.getElementById('allies-list-view');
+        const detailView = document.getElementById('allies-detail-view');
+        const treeView = document.getElementById('allies-tree-view');
+
+        if (listView) listView.style.display = 'none';
+        if (detailView) detailView.style.display = 'flex';
+        if (treeView) treeView.style.display = 'none';
+
+        MenuAllies.setHeaderButton('もどる', () => MenuAllies.renderList());
+        MenuAllies.setBottomButton('もどる', () => MenuAllies.renderList());
+    },
+
+	showArchiveView: () => {
+		const listView = document.getElementById('allies-list-view');
+		const detailView = document.getElementById('allies-detail-view');
+
+		if (listView) listView.style.display = 'none';
+		if (detailView) detailView.style.display = 'flex';
+
+		MenuAllies.setHeaderButton('もどる', () => {
+			MenuAllies.returnFromArchiveToDetail();
+		});
+
+		MenuAllies.setBottomButton('もどる', () => {
+			MenuAllies.returnFromArchiveToDetail();
+		});
+	},
+
+	returnFromArchiveToDetail: () => {
+		const c =
+			(typeof MenuAllyDetail !== 'undefined' ? MenuAllyDetail.selectedChar : null) ||
+			MenuAllies.getSelectedChar() ||
+			MenuAllies.selectedChar;
+
+		if (!c) {
+			MenuAllies.renderList();
+			return;
+		}
+
+		MenuAllies.selectedChar = c;
+		MenuAllies.selectedUid = c.uid;
+		MenuAllies.targetPart = null;
+		MenuAllies.selectedEquip = null;
+
+		MenuAllies.ensureDetailContent();
+		MenuAllies.renderDetail();
+	},
+	
     init: () => {
         let container = document.getElementById('sub-screen-allies');
         if (!container) {
@@ -1390,7 +1486,7 @@ const MenuAllies = {
              listDiv.className = 'flex-col-container';
              listDiv.innerHTML = `
                 <div class="header-bar">
-                    <span>仲間一覧</span>
+                    <span>🧑‍🤝‍🧑 仲間一覧</span>
                     <button class="btn" style="padding:4px 10px;" onclick="Menu.closeSubScreen('allies')">閉じる</button>
                 </div>
                 <div id="allies-list" class="scroll-area"></div>
@@ -1411,11 +1507,11 @@ const MenuAllies = {
         MenuAllies.candidateSortMode = 'NEWEST';
         
         MenuAllies.renderList();
+		MenuAllies.showListView();
     },
 
     renderList: () => {
-        document.getElementById('allies-list-view').style.display = 'flex';
-        document.getElementById('allies-detail-view').style.display = 'none';
+        MenuAllies.showListView();
 
         const list = document.getElementById('allies-list');
         if(!list) return;
@@ -1484,10 +1580,6 @@ const MenuAllies = {
             };
             list.appendChild(div);
         });
-        const closeBtnDiv = document.createElement('div');
-        closeBtnDiv.style.marginTop = '20px';
-        closeBtnDiv.innerHTML = `<button class="btn" style="width:100%; background:#444;" onclick="Menu.closeSubScreen('allies')">閉じる</button>`;
-        list.appendChild(closeBtnDiv);
     },
 
     switchChar: (dir) => {
@@ -1620,12 +1712,17 @@ const MenuAllies = {
 	},
 	
     renderDetail: () => {
-        document.getElementById('allies-list-view').style.display = 'none'; 
-        const treeView = document.getElementById('allies-tree-view');
-        if (treeView) treeView.style.display = 'none';
-        document.getElementById('allies-detail-view').style.display = 'flex';
-        
-        const c = MenuAllies.selectedChar;
+        const c = MenuAllies.getSelectedChar();
+        if (!c) {
+            MenuAllies.renderList();
+            return;
+        }
+
+        MenuAllies.selectedChar = c;
+        MenuAllies.selectedUid = c.uid;
+
+        MenuAllies.showDetailView();
+
         const s = App.calcStats(c);
         const PS = (typeof PassiveSkill !== 'undefined') ? PassiveSkill : null;
 
@@ -1690,8 +1787,8 @@ const MenuAllies = {
 
             let synergiesHtml = '';
             if (activeSynergies.length > 0) {
-                synergiesHtml = `<div style="margin-top:10px; background:rgba(255,255,255,0.05); border:1px solid #444; border-radius:4px; padding:5px;">
-                    <div style="font-size:10px; color:#ffd700; margin-bottom:3px; text-align:center;">発動中のシナジー</div>
+                synergiesHtml = `<div style="margin-top:5px; background:rgba(255,255,255,0.05); border:1px solid #444; border-radius:4px; padding:5px;">
+                    <div style="font-size:10px; color:#ffd700; margin-bottom:3px; text-align:center;">発動中のシナジー効果</div>
                     ${activeSynergies.map(syn => `<div style="font-size:10px; color:${syn.color||'#fff'}; margin-bottom:2px;">${syn.name}: ${syn.desc} </div>`).join('')}
                 </div>`;
             }
@@ -1702,7 +1799,7 @@ const MenuAllies = {
 
             const allocBtn = (c.uid === 'p1') ? `<button class="btn" style="width:100%; margin-top:5px; background:#444400; font-size:11px;" onclick="MenuAllies.openAllocModal()">ボーナスPt振分 (残:${freeAllocPt})</button>` : '';
             const treeBtn = `<button class="btn" style="width:100%; margin-top:5px; background:#004444; font-size:11px;" onclick="MenuAllies.openTreeView()">スキル習得画面へ (SP:${c.sp||0})</button>`;
-            const archiveBtn = `<button class="btn" style="width:100%; margin-top:5px; background:#602060; font-size:11px;" onclick="MenuAllyDetail.init(MenuAllies.selectedChar)">キャラクター詳細・アーカイブを見る</button>`;
+            const archiveBtn = `<button class="btn" style="width:100%; margin-top:5px; background:#602060; font-size:11px;" onclick="MenuAllyDetail.init(MenuAllies.getSelectedChar())">キャラクター詳細を見る</button>`;
             
             const ailmentLabels = { Poison:'毒', ToxicPoison:'猛毒', Shock:'感電', Fear:'怯え', Debuff:'弱体', InstantDeath:'即死', SkillSeal:'技封', SpellSeal:'魔封', HealSeal:'癒封' };
 
@@ -1735,10 +1832,12 @@ const MenuAllies = {
                         </div>
                     </div>
                 </div>
-                <div style="display:flex; flex-direction:column; margin-top:10px;">
+                <div style="display:flex; flex-direction:column; margin-top:0px;">
+                    ${synergiesHtml}
+                </div>
+                <div style="display:flex; flex-direction:column; margin-top:5px;">
                     ${treeBtn}
                     ${allocBtn}
-                    ${synergiesHtml}
                     ${archiveBtn}
                 </div>`;
         } else if (MenuAllies.currentTab === 2) {
@@ -2055,28 +2154,65 @@ const MenuAllies = {
 			contentHtml = `<div style="display:flex; flex-direction:column;">${traitListHtml || '<div style="text-align:center; color:#555; padding:20px;">有効な特性がありません</div>'}</div>`;
 		}
 		
-        const view = document.getElementById('allies-detail-view');
-        view.innerHTML = `
-            <div style="padding:10px 10px 0 10px; background:#222;"><button class="btn" style="width:100%; background:#444;" onclick="MenuAllies.renderList()">一覧にもどる</button></div>
-            <div style="padding:10px; background:#222; border-bottom:1px solid #444;"><div style="display:flex; justify-content:space-between; align-items:center; background:#333; padding:5px; border-radius:4px;"><button class="btn" style="padding:2px 10px; font-size:12px;" onclick="MenuAllies.switchChar(-1)">＜ 前</button><span style="font-size:12px; color:#aaa;">仲間詳細</span><button class="btn" style="padding:2px 10px; font-size:12px;" onclick="MenuAllies.switchChar(1)">次 ＞</button></div></div>
-            <div class="scroll-container-inner" style="flex:1; overflow-y:auto; padding:10px; font-family:sans-serif; color:#ddd;">
+        const detailContent = MenuAllies.ensureDetailContent();
+        if (!detailContent) return;
+
+        detailContent.innerHTML = `
+            <div class="scroll-container-inner" style="height:100%; overflow-y:auto; padding:10px; font-family:sans-serif; color:#ddd; box-sizing:border-box;">
+                <div style="background:#222; border-bottom:1px solid #444; margin:-10px -10px 10px -10px; padding:10px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; background:#333; padding:5px; border-radius:4px;">
+                        <button class="btn" style="padding:2px 10px; font-size:12px;" onclick="MenuAllies.switchChar(-1)">＜ 前</button>
+                        <span style="font-size:12px; color:#aaa;">仲間詳細</span>
+                        <button class="btn" style="padding:2px 10px; font-size:12px;" onclick="MenuAllies.switchChar(1)">次 ＞</button>
+                    </div>
+                </div>
+
                 <div style="display:flex; gap:10px; margin-bottom:10px;">
                     <div style="position:relative; width:80px; height:80px; background:#000; border:1px solid #555; display:flex; align-items:center; justify-content:center; flex-shrink:0; border-radius:4px;">
-                        <div style="width:100%; height:100%; cursor:pointer;" onclick="document.getElementById('file-upload-${c.uid}').click()">${imgHtml}<div style="position:absolute; bottom:0; width:100%; background:rgba(0,0,0,0.6); color:#fff; font-size:8px; text-align:center; padding:2px 0;">画像変更</div></div>
+                        <div style="width:100%; height:100%; cursor:pointer;" onclick="document.getElementById('file-upload-${c.uid}').click()">
+                            ${imgHtml}
+                            <div style="position:absolute; bottom:0; width:100%; background:rgba(0,0,0,0.6); color:#fff; font-size:8px; text-align:center; padding:2px 0;">画像変更</div>
+                        </div>
                         ${c.img ? `<div onclick="event.stopPropagation(); MenuAllies.resetImage('${c.uid}')" style="position:absolute; top:-5px; right:-5px; width:20px; height:20px; background:#d00; color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; border:1px solid #fff; cursor:pointer; z-index:10;">×</div>` : ''}
                     </div>
+
                     <input type="file" id="file-upload-${c.uid}" style="display:none" accept="image/*" onchange="MenuAllies.uploadImage(this, '${c.uid}')">
+
                     <div style="flex:1;">
-                        <div id="char-name-display" style="display:flex; align-items:center; margin-bottom:2px;"><div style="font-size:16px; font-weight:bold; color:#fff; margin-right:5px;">${c.name}</div><div style="font-size:12px; color:#f0f; font-weight:bold;">+${lb}</div><button class="btn" style="margin-left:auto; padding:0 6px; font-size:10px;" onclick="window.toggleNameEdit()">✎</button></div>
-                        <div id="char-name-edit" style="display:none; align-items:center; margin-bottom:2px;"><input type="text" id="char-name-input" value="${c.name}" maxlength="10" style="width:100px; background:#333; color:#fff; border:1px solid #888; padding:2px; font-size:12px;"><button class="btn" style="margin-left:5px; padding:2px 6px; font-size:10px;" onclick="window.saveName()">OK</button></div>
+                        <div id="char-name-display" style="display:flex; align-items:center; margin-bottom:2px;">
+                            <div style="font-size:16px; font-weight:bold; color:#fff; margin-right:5px;">${c.name}</div>
+                            <div style="font-size:12px; color:#f0f; font-weight:bold;">+${lb}</div>
+                            <button class="btn" style="margin-left:auto; padding:0 6px; font-size:10px;" onclick="window.toggleNameEdit()">✎</button>
+                        </div>
+
+                        <div id="char-name-edit" style="display:none; align-items:center; margin-bottom:2px;">
+                            <input type="text" id="char-name-input" value="${c.name}" maxlength="10" style="width:100px; background:#333; color:#fff; border:1px solid #888; padding:2px; font-size:12px;">
+                            <button class="btn" style="margin-left:5px; padding:2px 6px; font-size:10px;" onclick="window.saveName()">OK</button>
+                        </div>
+
                         <div style="font-size:11px; color:#aaa; margin-bottom:4px;">${c.job} Lv.${c.level} / ${c.rarity} Rank${c.reincarnationCount > 0 ? `  ★${c.reincarnationCount}` : ''}</div>
+
                         <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:4px;">
-                            <div style="background:#333; padding:2px 4px; border-radius:3px; line-height:1.1;"><div style="font-size:8px; color:#aaa;">HP</div><div style="color:#8f8; text-align:center; line-height:1"><span style="font-weight:bold; font-size:12px;">${hp}</span></div><div style="text-align:right; margin-top:-4px;"><span style="font-size:9px; color:#aaa; opacity:0.8;">/ ${s.maxHp}</span></div></div>
-                            <div style="background:#333; padding:2px 4px; border-radius:3px; line-height:1.1;"><div style="font-size:8px; color:#aaa;">MP</div><div style="color:#88f; text-align:center; line-height:1;"><span style="font-weight:bold; font-size:12px;">${mp}</span></div><div style="text-align:right; margin-top:-4px;"><span style="font-size:9px; color:#aaa; opacity:0.8;">/ ${s.maxMp}</span></div></div>
-                            <div style="background:#333; padding:2px 4px; border-radius:3px; line-height:1.1;"><div style="font-size:8px; color:#aaa;">NextExp</div><div style="text-align:center; padding-top:2px;"><span style="font-weight:bold; font-size:12px;">${displayExp}</span></div></div>
+                            <div style="background:#333; padding:2px 4px; border-radius:3px; line-height:1.1;">
+                                <div style="font-size:8px; color:#aaa;">HP</div>
+                                <div style="color:#8f8; text-align:center; line-height:1"><span style="font-weight:bold; font-size:12px;">${hp}</span></div>
+                                <div style="text-align:right; margin-top:-4px;"><span style="font-size:9px; color:#aaa; opacity:0.8;">/ ${s.maxHp}</span></div>
+                            </div>
+
+                            <div style="background:#333; padding:2px 4px; border-radius:3px; line-height:1.1;">
+                                <div style="font-size:8px; color:#aaa;">MP</div>
+                                <div style="color:#88f; text-align:center; line-height:1;"><span style="font-weight:bold; font-size:12px;">${mp}</span></div>
+                                <div style="text-align:right; margin-top:-4px;"><span style="font-size:9px; color:#aaa; opacity:0.8;">/ ${s.maxMp}</span></div>
+                            </div>
+
+                            <div style="background:#333; padding:2px 4px; border-radius:3px; line-height:1.1;">
+                                <div style="font-size:8px; color:#aaa;">NextExp</div>
+                                <div style="text-align:center; padding-top:2px;"><span style="font-weight:bold; font-size:12px;">${displayExp}</span></div>
+                            </div>
                         </div>
                     </div>
                 </div>
+
                 <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:3px; margin-top:5px; margin-bottom:12px;">
                     <div style="background:#333; padding:5px 0; text-align:center; line-height:1;"><span style="font-size:9px; color:#aaa; display:block; margin-bottom:2px;">攻撃力</span><span style="font-weight:bold; font-size:11px; display:block;">${s.atk}</span></div>
                     <div style="background:#333; padding:5px 0; text-align:center; line-height:1;"><span style="font-size:9px; color:#aaa; display:block; margin-bottom:2px;">防御力</span><span style="font-weight:bold; font-size:11px; display:block;">${s.def}</span></div>
@@ -2084,11 +2220,13 @@ const MenuAllies = {
                     <div style="background:#333; padding:5px 0; text-align:center; line-height:1;"><span style="font-size:9px; color:#aaa; display:block; margin-bottom:2px;">魔防</span><span style="font-weight:bold; font-size:11px; display:block;">${s.mdef}</span></div>
                     <div style="background:#333; padding:5px 0; text-align:center; line-height:1;"><span style="font-size:9px; color:#aaa; display:block; margin-bottom:2px;">素早さ</span><span style="font-weight:bold; font-size:11px; display:block;">${s.spd}</span></div>
                 </div>
+
                 <div style="display:flex; margin-bottom:10px;">${tabBtns}</div>
                 <div>${contentHtml}</div>
-                <div style="margin-top:20px; display:flex; gap:10px; padding-bottom:10px;"><button class="btn" style="flex:1; background:#444;" onclick="MenuAllies.renderList()">一覧にもどる</button><button class="btn" style="flex:1; background:#444;" onclick="Menu.closeSubScreen('allies')">メニューを閉じる</button></div>
             </div>
         `;
+
+        Menu.makeSelectTouchSafe(detailContent);
     },
 	
     toggleTrait: (traitId) => {
@@ -2558,21 +2696,20 @@ const MenuBook = {
     detailTab: 1, // 詳細画面のタブ状態
     traitDetailList: [], // 図鑑用：特性詳細モーダルの表示対象
     currentTraitIndex: -1,
+	
+    setBottomButton: (label, handler) => {
+        const btn = document.querySelector('#sub-screen-book .sub-screen-bottom-panel .sub-screen-back-btn');
+        if (!btn) return;
 
-    init: () => {
-        const container = document.getElementById('sub-screen-book');
-        if (!document.getElementById('book-detail-view')) {
-            const detailDiv = document.createElement('div');
-            detailDiv.id = 'book-detail-view';
-            detailDiv.className = 'flex-col-container';
-            detailDiv.style.display = 'none';
-            detailDiv.style.background = '#222'; 
-            detailDiv.style.height = '100%';
-            container.appendChild(detailDiv);
-        }
-        MenuBook.showList();
+        btn.innerText = label;
+        btn.onclick = handler;
     },
 
+	init: () => {
+		MenuBook.ensureBottomPanel();
+		MenuBook.showList();
+	},
+	
     getMonsterImgSrc: (m) => {
         if (m.img) return m.img;
         const imageMap = window.MonsterImageMap || {};
@@ -2585,18 +2722,29 @@ const MenuBook = {
         return null;
     },
 
-    showList: () => {
-        MenuBook.closeTraitDetail();
-        document.getElementById('book-list').style.display = 'block';
-        document.getElementById('book-detail-view').style.display = 'none';
-        const headerBtn = document.querySelector('#sub-screen-book .header-bar button');
-        if(headerBtn) {
-            headerBtn.innerText = 'もどる';
-            headerBtn.onclick = () => Menu.closeSubScreen('book');
-        }
-        MenuBook.renderList();
-    },
+	showList: () => {
+		MenuBook.currentMode = 'list';
+		MenuBook.closeTraitDetail();
 
+		const list = document.getElementById('book-list');
+		const detail = document.getElementById('book-detail');
+
+		if (list) list.style.display = 'block';
+		if (detail) detail.style.display = 'none';
+
+		const headerBtn = document.querySelector('#sub-screen-book .header-bar button');
+		if (headerBtn) {
+			headerBtn.innerText = 'もどる';
+			headerBtn.onclick = () => Menu.closeSubScreen('book');
+		}
+
+		MenuBook.setBottomButton('もどる', () => {
+			Menu.closeSubScreen('book');
+		});
+
+		MenuBook.renderList();
+	},
+	
     renderList: () => {
         const list = document.getElementById('book-list');
         list.innerHTML = '';
@@ -2679,6 +2827,55 @@ const MenuBook = {
         }).filter(Boolean);
     },
 
+	ensureBottomPanel: () => {
+		const screen = document.getElementById('sub-screen-book');
+		if (!screen) return;
+
+		let panel = document.getElementById('book-bottom-panel');
+		if (panel) return;
+
+		panel = document.createElement('div');
+		panel.id = 'book-bottom-panel';
+		panel.className = 'sub-screen-bottom-panel';
+		panel.innerHTML = `
+			<button id="book-bottom-back-btn" class="btn sub-screen-back-btn">もどる</button>
+		`;
+
+		screen.appendChild(panel);
+	},
+
+	setBottomButton: (label, handler) => {
+		const btn = document.getElementById('book-bottom-back-btn');
+		if (!btn) return;
+
+		btn.innerText = label;
+		btn.onclick = handler;
+	},
+
+	showListView: () => {
+		const list = document.getElementById('book-list');
+		const detail = document.getElementById('book-detail');
+
+		if (list) list.style.display = 'block';
+		if (detail) detail.style.display = 'none';
+
+		MenuBook.setBottomButton('もどる', () => {
+			Menu.closeSubScreen('book');
+		});
+	},
+
+	showDetailView: () => {
+		const list = document.getElementById('book-list');
+		const detail = document.getElementById('book-detail');
+
+		if (list) list.style.display = 'none';
+		if (detail) detail.style.display = 'block';
+
+		MenuBook.setBottomButton('もどる', () => {
+			MenuBook.showListView();
+		});
+	},
+
     openTraitDetail: (index) => {
         if (!MenuBook.traitDetailList || MenuBook.traitDetailList.length === 0) {
             MenuBook.traitDetailList = MenuBook.buildTraitDetailList(MenuBook.selectedMonster);
@@ -2747,13 +2944,32 @@ const MenuBook = {
     showDetail: (monster) => {
         MenuBook.selectedMonster = monster;
         const killCount = (App.data.book.killCounts && App.data.book.killCounts[monster.id]) || 0;
-        const view = document.getElementById('book-detail-view');
-        document.getElementById('book-list').style.display = 'none';
-        view.style.display = 'flex';
-        view.style.flexDirection = 'column';
+		const monsterExp = Number(monster.exp || 0);
+		const monsterGold = Number(monster.gold || 0);
 
-        const headerBtn = document.querySelector('#sub-screen-book .header-bar button');
-        if(headerBtn) { headerBtn.innerText = '一覧へ'; headerBtn.onclick = () => MenuBook.showList(); }
+		MenuBook.currentMode = 'detail';
+
+		const view = document.getElementById('book-detail');
+		const list = document.getElementById('book-list');
+
+		if (list) list.style.display = 'none';
+
+		if (view) {
+			view.style.display = 'block';
+			view.style.flex = '1 1 auto';
+			view.style.minHeight = '0';
+			view.style.overflowY = 'auto';
+		}
+
+		const headerBtn = document.querySelector('#sub-screen-book .header-bar button');
+		if (headerBtn) {
+			headerBtn.innerText = 'もどる';
+			headerBtn.onclick = () => Menu.closeSubScreen('book');
+		}
+
+		MenuBook.setBottomButton('もどる', () => {
+			MenuBook.showList();
+		});
 
         const imgHtml = MenuBook.getMonsterImgSrc(monster) ? `<img src="${MenuBook.getMonsterImgSrc(monster)}" style="max-height:100%; max-width:100%; object-fit:contain;">` : `<div style="color:#555;">NO IMAGE</div>`;
         const elements = ['火','水','風','雷','光','闇','混沌'];
@@ -2844,34 +3060,78 @@ const MenuBook = {
                     <div><div style="font-size:10px; color:#aaa;">ID:${monster.id} / 種族:${monster.race||'不明'}</div><div style="font-size:18px; font-weight:bold; color:#ffd700;">${monster.isBoss?'<span style="color:#f44; border:1px solid #f44; font-size:10px; padding:0 4px; border-radius:3px; margin-right:5px; vertical-align:middle;">BOSS</span>':''}${monster.name}</div></div>
                     <div style="font-size:12px; background:#444; padding:2px 8px; border-radius:4px;">Rank: ${monster.rank}</div>
                 </div>
-                <div style="display:flex; gap:10px; margin-bottom:15px;">
-                    <div style="width:100px; height:120px; background:#000; border:1px solid #555; display:flex; align-items:center; justify-content:center; flex-shrink:0; border-radius:4px;">${imgHtml}</div>
-                    <div style="flex:1;">
-                        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:5px; margin-bottom:8px;">
-                            <div style="background:#333; padding:4px; border-radius:3px; border:1px solid #444;"><div style="font-size:9px; color:#aaa;">HP</div><div style="font-weight:bold; color:#8f8;">${monster.hp.toLocaleString()}</div></div>
-                            <div style="background:#333; padding:4px; border-radius:3px; border:1px solid #444;"><div style="font-size:9px; color:#aaa;">MP</div><div style="font-weight:bold; color:#88f;">${monster.mp.toLocaleString()}</div></div>
-                            <div style="background:#333; padding:4px; border-radius:3px; border:1px solid #444;"><div style="font-size:9px; color:#aaa;">討伐数</div><div style="font-weight:bold; color:#ffd700;">${killCount}</div></div>
-                        </div>
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:2px; font-size:11px;">
-                            <div style="display:flex; justify-content:space-between; background:#2a2a2a; padding:2px 6px;"><span>攻撃</span><span>${monster.atk}</span></div>
-                            <div style="display:flex; justify-content:space-between; background:#2a2a2a; padding:2px 6px;"><span>防御</span><span>${monster.def}</span></div>
-                            <div style="display:flex; justify-content:space-between; background:#2a2a2a; padding:2px 6px;"><span>魔力</span><span>${monster.mag}</span></div>
-                            <div style="display:flex; justify-content:space-between; background:#2a2a2a; padding:2px 6px;"><span>魔防</span><span>${monster.mdef||0}</span></div>
-                            <div style="display:flex; justify-content:space-between; background:#2a2a2a; padding:2px 6px;"><span>素早</span><span>${monster.spd}</span></div>
-                        </div>
-                        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:3px; margin-top:5px; text-align:center;">
-                            <div style="background:#111; padding:2px; border:1px solid #444; border-radius:3px;"><div style="font-size:8px; color:#aaa;">命中</div><div style="font-size:10px;">${monster.hit||100}%</div></div>
-                            <div style="background:#111; padding:2px; border:1px solid #444; border-radius:3px;"><div style="font-size:8px; color:#aaa;">会心</div><div style="font-size:10px;">${monster.cri||0}%</div></div>
-                            <div style="background:#111; padding:2px; border:1px solid #444; border-radius:3px;"><div style="font-size:8px; color:#aaa;">回避</div><div style="font-size:10px;">${monster.eva||0}%</div></div>
-                        </div>
-                    </div>
-                </div>
+				<div style="display:flex; gap:9px; margin-bottom:14px; align-items:stretch;">
+					<div style="
+						flex:0 0 48%;
+						max-width:50%;
+						min-height:145px;
+						max-height:190px;
+						aspect-ratio:1 / 1;
+						background:#000;
+						border:1px solid #555;
+						display:flex;
+						align-items:center;
+						justify-content:center;
+						border-radius:4px;
+						overflow:hidden;
+					">
+						${imgHtml}
+					</div>
+
+					<div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:5px;">
+						<div style="display:grid; grid-template-columns:1fr 1fr; gap:4px;">
+							<div style="background:#333; padding:3px 5px; border-radius:3px; border:1px solid #444;">
+								<div style="font-size:8px; color:#aaa; line-height:1;">HP</div>
+								<div style="font-weight:bold; color:#8f8; font-size:11px; line-height:1.2; text-align:right;">${monster.hp.toLocaleString()}</div>
+							</div>
+
+							<div style="background:#333; padding:3px 5px; border-radius:3px; border:1px solid #444;">
+								<div style="font-size:8px; color:#aaa; line-height:1;">MP</div>
+								<div style="font-weight:bold; color:#88f; font-size:11px; line-height:1.2; text-align:right;">${monster.mp.toLocaleString()}</div>
+							</div>
+
+							<div style="background:#333; padding:3px 5px; border-radius:3px; border:1px solid #444;">
+								<div style="font-size:8px; color:#aaa; line-height:1;">EXP</div>
+								<div style="font-weight:bold; color:#ffd700; font-size:11px; line-height:1.2; text-align:right;">${monsterExp.toLocaleString()}</div>
+							</div>
+
+							<div style="background:#333; padding:3px 5px; border-radius:3px; border:1px solid #444;">
+								<div style="font-size:8px; color:#aaa; line-height:1;">GOLD</div>
+								<div style="font-weight:bold; color:#ffd700; font-size:11px; line-height:1.2; text-align:right;">${monsterGold.toLocaleString()}</div>
+							</div>
+
+							<div style="grid-column:span 2; background:#333; padding:3px 5px; border-radius:3px; border:1px solid #444;">
+								<div style="font-size:8px; color:#aaa; line-height:1;">討伐数</div>
+								<div style="font-weight:bold; color:#ffd700; font-size:11px; line-height:1.2; text-align:right;">${killCount.toLocaleString()}</div>
+							</div>
+						</div>
+
+						<div style="display:grid; grid-template-columns:1fr 1fr; gap:2px; font-size:10px;">
+							<div style="display:flex; justify-content:space-between; background:#2a2a2a; padding:2px 5px;"><span>攻撃</span><span>${monster.atk}</span></div>
+							<div style="display:flex; justify-content:space-between; background:#2a2a2a; padding:2px 5px;"><span>防御</span><span>${monster.def}</span></div>
+							<div style="display:flex; justify-content:space-between; background:#2a2a2a; padding:2px 5px;"><span>魔力</span><span>${monster.mag}</span></div>
+							<div style="display:flex; justify-content:space-between; background:#2a2a2a; padding:2px 5px;"><span>魔防</span><span>${monster.mdef || 0}</span></div>
+							<div style="display:flex; justify-content:space-between; background:#2a2a2a; padding:2px 5px;"><span>素早</span><span>${monster.spd}</span></div>
+						</div>
+
+						<div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:2px; text-align:center;">
+							<div style="background:#111; padding:2px; border:1px solid #444; border-radius:3px;">
+								<div style="font-size:7px; color:#aaa; line-height:1;">命中</div>
+								<div style="font-size:9px; line-height:1.2;">${monster.hit || 100}%</div>
+							</div>
+							<div style="background:#111; padding:2px; border:1px solid #444; border-radius:3px;">
+								<div style="font-size:7px; color:#aaa; line-height:1;">会心</div>
+								<div style="font-size:9px; line-height:1.2;">${monster.cri || 0}%</div>
+							</div>
+							<div style="background:#111; padding:2px; border:1px solid #444; border-radius:3px;">
+								<div style="font-size:7px; color:#aaa; line-height:1;">回避</div>
+								<div style="font-size:9px; line-height:1.2;">${monster.eva || 0}%</div>
+							</div>
+						</div>
+					</div>
+				</div>
                 ${tabBtns}
                 <div id="book-tab-content">${MenuBook.detailTab === 1 ? tab1Content : tab2Content}</div>
-                <div style="margin-top:20px; display:flex; gap:10px; padding-bottom:10px;">
-                    <button class="btn" style="flex:1; background:#444;" onclick="MenuBook.showList()">一覧にもどる</button>
-                    <button class="btn" style="flex:1; background:#444;" onclick="MenuBook.closeTraitDetail(); Menu.closeSubScreen('book')">閉じる</button>
-                </div>
             </div>`;
     }
 };
@@ -2884,16 +3144,34 @@ const MenuAllyDetail = {
     currentMainTab: 'archive', 
     currentArchive: 'base',
 
-    init: (char) => {
-        MenuAllyDetail.selectedChar = char;
-        MenuAllyDetail.currentMainTab = 'archive';
-        MenuAllyDetail.currentArchive = 'base';
-        MenuAllyDetail.render();
-    },
+	init: (char) => {
+		if (!char) return;
 
-    render: () => {
-        const c = MenuAllyDetail.selectedChar;
-        const view = document.getElementById('allies-detail-view');
+		MenuAllyDetail.selectedChar = char;
+		MenuAllies.selectedChar = char;
+		MenuAllies.selectedUid = char.uid;
+
+		MenuAllyDetail.currentMainTab = 'archive';
+		MenuAllyDetail.currentArchive = 'base';
+
+		MenuAllies.showArchiveView();
+		MenuAllyDetail.render();
+	},
+	
+	render: () => {
+		const c = MenuAllyDetail.selectedChar;
+		if (!c) {
+			MenuAllies.returnFromArchiveToDetail();
+			return;
+		}
+
+		MenuAllies.selectedChar = c;
+		MenuAllies.selectedUid = c.uid;
+		MenuAllies.showArchiveView();
+
+		const view = document.getElementById('allies-detail-view');
+		const detailContent = MenuAllies.ensureDetailContent();
+		if (!view || !detailContent) return;
         
         // メインタブ (固定エリア: flex-shrink: 0)
         const tabs = `
@@ -2903,28 +3181,27 @@ const MenuAllyDetail = {
             </div>
         `;
 
-        // 全体をflex-columnにし、ヘッダー・タブは固定。リスト部分だけをスクロール。
-        view.style.display = 'flex';
-        view.style.flexDirection = 'column';
-        view.innerHTML = `
-            <div class="header-bar" style="background:linear-gradient(#222, #000); border-bottom:1px solid #ffd700; flex-shrink:0;">
-                <button class="btn" onclick="MenuAllies.renderDetail()">もどる</button>
-                <span style="color:#ffd700; font-weight:bold; letter-spacing:2px;">UNIT ARCHIVE</span>
-                <div style="width:50px;"></div>
-            </div>
-            <div style="padding:15px 15px 0 15px; background:#050505; flex-shrink:0;">
-                ${tabs}
-            </div>
-            <div id="ally-detail-body" class="scroll-area" style="padding:0 15px 15px 15px; background:#050505; flex:1; overflow-y:auto;">
-                ${MenuAllyDetail.currentMainTab === 'archive' ? MenuAllyDetail.renderArchive() : MenuAllyDetail.renderProgress()}
-            </div>
-        `;
+		view.style.display = 'flex';
+		view.style.flexDirection = 'column';
+
+		detailContent.style.display = 'flex';
+		detailContent.style.flexDirection = 'column';
+		detailContent.style.minHeight = '0';
+
+		detailContent.innerHTML = `
+			<div style="padding:15px 15px 0 15px; background:#050505; flex-shrink:0;">
+				${tabs}
+			</div>
+			<div id="ally-detail-body" class="scroll-area" style="padding:0 15px 15px 15px; background:#050505; flex:1; overflow-y:auto;">
+				${MenuAllyDetail.currentMainTab === 'archive' ? MenuAllyDetail.renderArchive() : MenuAllyDetail.renderProgress()}
+			</div>
+		`;
 
         // ガチャカード側のCSS枠線除去処理を、仲間詳細の静的カードにも適用する。
         // 既存のガチャ演出/位置調整CSSはそのまま利用し、ここでは表示後の保険だけ行う。
         requestAnimationFrame(() => {
             if (typeof Gacha !== 'undefined' && typeof Gacha.removePremiumCssFrame === 'function') {
-                Gacha.removePremiumCssFrame(view);
+                Gacha.removePremiumCssFrame(detailContent);
             }
         });
     },
@@ -3030,7 +3307,6 @@ const MenuAllyDetail = {
                 <div style="display:flex; border-bottom:1px solid #444;">${archiveBtns}</div>
                 <div id="flavor-text-area" style="padding:15px; min-height:120px; font-size:13px; line-height:1.8; color:#bbb; white-space:pre-wrap;">${flavorText}</div>
             </div>
-            <button class="btn" style="width:100%; margin-top:20px; background:#222; color:#888;" onclick="MenuAllies.renderDetail()">基本画面にもどる</button>
         `;
     },
 
@@ -3078,7 +3354,6 @@ const MenuAllyDetail = {
                 </div>`;
         });
         
-        html += `<button class="btn" style="width:100%; margin-top:20px; background:#333; color:#888;" onclick="MenuAllies.renderDetail()">基本画面にもどる</button>`;
         return html;
     },
 
@@ -3269,6 +3544,7 @@ const MenuSkillDetail = {
             </div>
         `;
     }
+
 };
 
 
