@@ -10,6 +10,88 @@ const StoryManager = {
     currentScript: null,
     index: 0,
     onComplete: null,
+
+    // ==========================================
+    // 目的表示の正本
+    // ==========================================
+    // 今後の「現在の目的」テキストは storyStep / subStep を基準にここで管理する。
+    // UI側や main.js 側に目的文の switch 文を増やさないこと。
+    // 体験版などで現在のメインストーリー上限に到達した場合は、
+    // 下の dungeonObjectiveMilestones に従ってダンジョン目標へ自動で切り替える。
+    maxMainStoryProgress: { storyStep: 2, subStep: 1 },
+
+    storyObjectives: {
+        "0-0": "村に不穏な気配が漂っている…",
+        "0-1": "まもののむれを討伐した！",
+        "0-2": "村の奥の長老に話を聞こう！",
+        "1-0": "村の奥の長老に話を聞こう！",
+        "1-1": "北東の洞窟へ向かおう！",
+        "1-2": "洞窟の奥へ進もう！",
+        "2-0": "長老に報告しよう！！",
+        "2-1": "東の果て「炎の里」へ向かおう！！"
+    },
+
+    dungeonObjectiveMilestones: [
+        { floor: 10, text: "10階を目指そう！" },
+        { floor: 50, text: "50階を目指そう！" },
+        { floor: 100, text: "100階を目指そう！" },
+        { floor: 150, text: "150階を目指そう！" },
+        { floor: 200, text: "200階を目指そう！" }
+    ],
+
+    getProgressKey: function(progress) {
+        const step = Number(progress?.storyStep || 0);
+        const sub = Number(progress?.subStep || 0);
+        return `${step}-${sub}`;
+    },
+
+    isMainStoryComplete: function(progress) {
+        const step = Number(progress?.storyStep || 0);
+        const sub = Number(progress?.subStep || 0);
+        const max = this.maxMainStoryProgress;
+        if (step > max.storyStep) return true;
+        if (step < max.storyStep) return false;
+        return sub >= max.subStep;
+    },
+
+    getDungeonObjectiveText: function(data) {
+        const dungeon = data?.dungeon || {};
+        const progress = data?.progress || {};
+        const maxFloor = Number(dungeon.maxFloor || progress.maxFloor || 0);
+        const tryCount = Number(dungeon.tryCount || 0);
+
+        if (maxFloor <= 0 && tryCount <= 0) {
+            return "ﾒﾆｭｰからﾀﾞﾝｼﾞｮﾝに挑戦しよう";
+        }
+
+        for (const milestone of this.dungeonObjectiveMilestones) {
+            if (maxFloor < milestone.floor) return milestone.text;
+        }
+
+        const killCounts = data?.book?.killCounts || {};
+        const calamityKills = Number(killCounts[902000] || 0) + Number(killCounts[2000] || 0);
+        if (calamityKills <= 0) {
+            return "メダルを集めて災厄に挑もう";
+        }
+
+        return "ﾀﾞﾝｼﾞｮﾝで最強装備をそろえよう";
+    },
+
+    getObjectiveText: function(data = null) {
+        if (!data && typeof App !== 'undefined') data = App.data;
+        const progress = data?.progress || {};
+
+        if (this.isMainStoryComplete(progress)) {
+            return this.getDungeonObjectiveText(data);
+        }
+
+        const key = this.getProgressKey(progress);
+        if (this.storyObjectives[key]) return this.storyObjectives[key];
+
+        // 未定義の進行度でも画面が空にならないようにする。
+        // 新しい storyStep/subStep を追加したら、まず storyObjectives に目的文を足す。
+        return "冒険を進めよう！";
+    },
 	
 
     /**
@@ -335,7 +417,7 @@ const StoryManager = {
         "x": 6,
         "y": 3,
         "stepMin": 2, "stepMax": 2,
-        "subMin": 0, "subMax": 0,
+        "subMin": 0, "subMax": 1,
         "eventId": "start_adventure3"
     },
     {
@@ -359,11 +441,10 @@ const StoryManager = {
         "winActions": [
 		// 戦闘終了後、次の会話
 		{ "type": "STEP", "value": 0 },
+        { "type": "SUB", "value": 1 },
 		{ "type": "HEAL" },
 		{ "type": "CONV", "value": "GAME_START_2" },
-
-		// ログに目的表示
-		{ "type": "LOG", "value": "村の奥の長老の家へ向かおう！" }
+        { "type": "SUB", "value": 2 }
 
 		// ※イベント終了（winActionsが終われば endConversation() される）
         ]
@@ -377,9 +458,14 @@ const StoryManager = {
         ],
         "winActions": [
             { "type": "STEP", "value": 0 },      // 力を返還 (StoryStep=0)
+            { "type": "SUB", "value": 1 },
             { "type": "HEAL" },                  // 全回復
             { "type": "CONV", "value": "GAME_START_2" },
-            { "type": "LOG", "value": "村の奥の長老の家へ向かおう！" }
+            { "type": "SUB", "value": 2 },
+            {
+                "type": "LOG",
+                "value": ""
+            }
         ]
     },
 	
@@ -407,20 +493,17 @@ const StoryManager = {
             },
             {
                 "type": "LOG",
-                "value": "北東の洞窟に潜む魔物を討伐しましょう！"
+                "value": ""
             }
         ],
         "winActions": []
     },
+	
     "start_adventure2": {
         "actions": [
             {
                 "type": "CONV",
                 "value": "PROLOGUE2"
-            },
-            {
-                "type": "LOG",
-                "value": "北東の洞窟に潜む魔物を討伐しましょう！"
             }
         ],
         "winActions": []
@@ -431,10 +514,10 @@ const StoryManager = {
                 "type": "CONV",
                 "value": "PROLOGUE3"
             },
-            {
-                "type": "LOG",
-                "value": "東の果て「炎の里」へ向かおう！"
-            }
+			{
+				"type": "SUB",
+				"value": 1
+			}
         ],
         "winActions": []
     },
@@ -476,10 +559,6 @@ const StoryManager = {
 					"tile": "G"
 				},
 				{
-					"type": "LOG",
-					"value": "洞窟の奥へ進もう！"
-				},
-				{
 					"type": "SUB",
 					"value": 2
 				}
@@ -514,11 +593,7 @@ const StoryManager = {
             {
                 "type": "SUB",
                 "value": 0
-            },
-            {
-                "type": "LOG",
-                "value": "村を脅かす脅威を打ち払った！長老に報告しよう。"
-			}
+            }
         ]
     }
 },
@@ -558,6 +633,13 @@ const StoryManager = {
             this.endConversation();
         }
         App.save();
+
+        // イベント完了後も同じタイル上にいる場合は、現在地アクションを再評価する。
+        // main.js 側の Field.refreshCurrentAction() が正本。
+        // ここで呼ぶことで、会話・選択肢・ストーリー進行後にボタンが消えっぱなしになるのを防ぐ。
+        if (!isSubEvent && typeof Field !== 'undefined' && typeof Field.refreshCurrentAction === 'function') {
+            Field.refreshCurrentAction({ silent: true });
+        }
     },
 
     /**
@@ -583,6 +665,11 @@ const StoryManager = {
         this.active = false;
         this.endConversation();
         App.save();
+
+        // 戦闘勝利後イベントが終わってフィールドへ戻った際、現在地タイルのボタンを復元する。
+        if (typeof Field !== 'undefined' && typeof Field.refreshCurrentAction === 'function') {
+            Field.refreshCurrentAction({ silent: true });
+        }
     },
 
     /**

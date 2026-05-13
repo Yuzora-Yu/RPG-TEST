@@ -837,7 +837,11 @@ const MenuParty = {
 };
 
 /* ==========================================================================
-   2.: プレイ状況画面 (クールな2列表示・文字サイズ調整版)
+   2.: プレイ状況画面 / 冒険の記録
+   --------------------------------------------------------------------------
+   この画面だけ独自フォント・太字指定が残ると、他メニューと見た目がズレる。
+   ヘッダーは .header-bar の共通CSSに任せ、数値表示も monospace にしない。
+   Codex等で修正する場合も、ここだけ font-family や header の bold を再追加しないこと。
    ========================================================================== */
 
 const MenuStatus = {
@@ -851,7 +855,7 @@ const MenuStatus = {
         div.style.background = '#101010';
 		div.innerHTML = `
 			<div class="header-bar">
-				<span style="color:#ffd700; font-weight:bold;">⚔️ 冒険の記録</span>
+				<span>⚔️ 冒険の記録</span>
 				<button class="btn" onclick="Menu.closeSubScreen('status')">もどる</button>
 			</div>
 
@@ -864,6 +868,7 @@ const MenuStatus = {
 					padding:15px;
 					background:linear-gradient(180deg, #101010 0%, #1a1a1a 100%);
 					overflow-y:auto;
+					font-family:inherit;
 				"
 			></div>
 
@@ -885,6 +890,8 @@ const MenuStatus = {
         
         const stats = App.data.stats || {};
         const dungeon = App.data.dungeon || { maxFloor: 0, tryCount: 0 };
+        const progress = App.data.progress || {};
+        const storyProgress = `${progress.storyStep || 0}-${progress.subStep || 0}`;
         
         // モンスター図鑑の計算
         const bookCount = App.data.book ? App.data.book.monsters.length : 0;
@@ -907,9 +914,9 @@ const MenuStatus = {
 		  : '-';
 
         const row = (label, val, color='#fff', fontSize='14px') => `
-            <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #333; align-items:center;">
-                <span style="color:#aaa; font-size:11px;">${label}</span>
-                <span style="color:${color}; font-weight:bold; font-size:${fontSize}; font-family:monospace;">${val}</span>
+            <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #333; align-items:center; font-family:inherit;">
+                <span style="color:#aaa; font-size:11px; font-family:inherit;">${label}</span>
+                <span style="color:${color}; font-weight:bold; font-size:${fontSize}; font-family:inherit;">${val}</span>
             </div>`;
 
         content.innerHTML = `
@@ -917,6 +924,7 @@ const MenuStatus = {
                 <div style="font-size:10px; color:#ffd700; margin-bottom:8px; display:flex; align-items:center; gap:5px;">
                     <span style="background:#ffd700; width:3px; height:12px; display:inline-block;"></span> 冒険の足跡
                 </div>
+                ${row('ストーリー進行度', storyProgress, '#fff', '16px')}
                 ${row('ダンジョン最高到達', `${dungeon.maxFloor || 0} 階`, '#ffd700', '16px')}
                 ${row('ダンジョン挑戦回数', `${dungeon.tryCount || 0} 回`)}
                 ${row('モンスター図鑑進捗', `${bookCount} / ${totalMonsters} 種 (${bookRate}%)`, '#44ff44')}
@@ -964,7 +972,7 @@ const MenuStatus = {
 						font-size:22px;
 						color:#ffd700;
 						font-weight:bold;
-						font-family:monospace;
+						font-family:inherit;
 						text-align:right;
 					  ">
 						${(maxDmg.val || 0).toLocaleString()}
@@ -3977,240 +3985,250 @@ const MenuNewsDetail = {
 };
 
 /* ==========================================================================
-   9. 実績 (MenuAchievements) - 自動達成判定・管理
+   9. 実績 (MenuAchievements) - 表示専用
    ========================================================================== */
 const MenuAchievements = {
     filter: 'ALL',
+    categoryFilter: 'ALL',
 
+    /*
+     * 実績の達成判定・報酬付与は achievements.js の AchievementManager に統一。
+     * ここは「画面表示」「ボタン操作」だけを担当する。
+     * Codex等で実績タイプを増やす場合も、この menus.js に判定switchを戻さないこと。
+     */
     init: () => {
-        document.getElementById('sub-screen-achievements').style.display = 'flex';
+        const screen = document.getElementById('sub-screen-achievements');
+        if (screen) screen.style.display = 'flex';
         MenuAchievements.checkProgress();
         MenuAchievements.render();
     },
 
-    // エラー③対策：内部メソッドの定義
     _renderInternal: () => {
         const container = document.getElementById('sub-screen-achievements');
-        if (container) {
-            const scrollArea = container.querySelector('.scroll-area');
-            if (scrollArea) scrollArea.scrollTop = 0;
-        }
+        if (!container) return;
+        const scrollArea = container.querySelector('.scroll-area');
+        if (scrollArea) scrollArea.scrollTop = 0;
     },
 
+    escapeHtml: (value) => String(value ?? '').replace(/[&<>'"]/g, (ch) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+    }[ch])),
+
+    formatNum: (n) => Number(n || 0).toLocaleString('ja-JP'),
+
     checkProgress: () => {
-        if (!App.data.achievements) App.data.achievements = {};
-        const stats = App.data.stats || {};
-        const dungeon = App.data.dungeon || {};
-        const progress = App.data.progress || {};
-        const smith = App.data.blacksmith || {};
-        const book = App.data.book?.monsters || [];
-        const hero = (App.data.characters || []).find(c => c.uid === 'p1') || {};
-
-        ACHIEVEMENTS_DATA.forEach(ach => {
-            if (!App.data.achievements[ach.id] || !App.data.achievements[ach.id].completed) {
-                let val = 0;
-                switch(ach.type) {
-                    case "LV": val = hero.level || 0; break;
-                    case "DMG": val = stats.maxDamage?.val || 0; break;
-                    case "FLOOR": val = dungeon.maxFloor || 0; break;
-                    case "STORY": val = progress.storyStep || 0; break;
-                    case "SMITH": val = smith.level || 0; break;
-                    case "BOOK": val = book.length; break;
-                    case "GOLD": val = stats.totalGoldEarned || 0; break;
-					
-					// --- 追加分（今回の実績案） ---
-					case "REBIRTH":
-						// 主人公の転生回数（reincarnationCount は既にキャラデータに存在） :contentReference[oaicite:1]{index=1}
-						val = hero.reincarnationCount || 0;
-						break;
-
-					case "BOSS":
-						// ギルガメッシュ討伐回数（旧ID 2000 は互換用に合算）
-						val = (App.data.book && App.data.book.killCounts) ? ((App.data.book.killCounts[902000] || 0) + (App.data.book.killCounts[2000] || 0)) : 0;
-						break;
-
-					case "ALLY":
-						// 仲間数：主人公を含める/含めないは好み
-						// 例：主人公を除外（p1を除く）
-						val = (App.data.characters || []).filter(c => c.uid !== 'p1').length;
-						break;
-
-					case "RUN":
-						// ダンジョン挑戦回数（saveにもtryCountがある） :contentReference[oaicite:3]{index=3}
-						val = dungeon.tryCount || 0;
-						break;
-
-					case "MEDAL":
-						// 「累計獲得メダル」(消費しても減らない値)
-						val = stats.totalMedals || 0;
-						break;
-
-					case "EQUIP":
-						// 例：シナジー装備所持数（inventory内の isSynergy を数える）
-						val = (App.data.inventory || []).filter(eq => eq && eq.isSynergy).length;
-						break;
-					
-                }
-                if (val >= ach.goal) {
-                    if (!App.data.achievements[ach.id]) App.data.achievements[ach.id] = { claimed: false };
-                    App.data.achievements[ach.id].completed = true;
-                }
-            }
-        });
-        App.save();
+        if (typeof AchievementManager !== 'undefined' && AchievementManager.checkProgress) {
+            return AchievementManager.checkProgress();
+        }
+        return 0;
     },
 
     processRewards: (rewards) => {
-        let msgParts = [];
-        rewards.forEach(r => {
-            switch(r.type) {
-                case 'GEM':
-                    App.data.gems += r.val;
-                    msgParts.push(`${r.val} GEM`);
-                    break;
-                case 'GOLD':
-                    App.data.gold += r.val;
-                    msgParts.push(`${r.val} GOLD`);
-                    break;
-                case 'ITEM':
-                    const itemDef = (window.ITEMS_DATA || []).find(i => i.id === r.id);
-                    if (itemDef) {
-                        App.data.items[r.id] = (App.data.items[r.id] || 0) + r.val;
-                        msgParts.push(`${itemDef.name} x${r.val}`);
-                    }
-                    break;
-                case 'EQUIP':
-                    // ★修正点：第3引数(r.opts)と第4引数(r.traits)を渡すように変更
-                    const newEq = App.createEquipById(r.eid, r.plus || 0, r.opts, r.traits);
-                    if (newEq) {
-                        App.data.inventory.push(newEq);
-                        msgParts.push(`${newEq.name}`);
-                    }
-                    break;
-            }
-        });
-        return msgParts.join('、');
+        if (typeof AchievementManager !== 'undefined' && AchievementManager.processRewards) {
+            return AchievementManager.processRewards(rewards);
+        }
+        return '';
     },
 
     render: () => {
         const container = document.getElementById('sub-screen-achievements');
+        if (!container) return;
+
+        if (typeof AchievementManager === 'undefined') {
+            container.innerHTML = `
+                <div class="header-bar">
+                    <span>🏆 実績</span>
+                    <button class="btn" onclick="Menu.closeSubScreen('achievements')">もどる</button>
+                </div>
+                <div class="scroll-area" style="padding:16px; background:#111; color:#ccc;">
+                    実績管理ロジックが読み込まれていません。achievements.js の読み込み順を確認してください。
+                </div>
+            `;
+            return;
+        }
+
+        AchievementManager.checkProgress({ save: true });
+
         const data = (typeof ACHIEVEMENTS_DATA !== 'undefined') ? ACHIEVEMENTS_DATA : [];
         if (!App.data.achievements) App.data.achievements = {};
 
+        const categories = ['ALL', ...Array.from(new Set(data.map(a => a.category || 'その他')))].filter(Boolean);
+
         let list = data.filter(a => {
-            const state = App.data.achievements[a.id] || { completed: false, claimed: false };
-            if (MenuAchievements.filter === 'COMPLETED') return state.completed;
-            if (MenuAchievements.filter === 'INCOMPLETE') return !state.completed;
+            const state = AchievementManager.getState(a.id);
+            if (MenuAchievements.filter === 'COMPLETED' && !state.completed) return false;
+            if (MenuAchievements.filter === 'INCOMPLETE' && state.completed) return false;
+            if (MenuAchievements.categoryFilter !== 'ALL' && (a.category || 'その他') !== MenuAchievements.categoryFilter) return false;
             return true;
         });
 
         list.sort((a, b) => {
-            const sA = App.data.achievements[a.id] || { completed: false, claimed: false };
-            const sB = App.data.achievements[b.id] || { completed: false, claimed: false };
+            const sA = AchievementManager.getState(a.id);
+            const sB = AchievementManager.getState(b.id);
             const score = (s) => (s.completed && !s.claimed) ? 0 : (!s.completed ? 1 : 2);
-            return score(sA) - score(sB);
+            const scoreDiff = score(sA) - score(sB);
+            if (scoreDiff !== 0) return scoreDiff;
+            return (a.id || 0) - (b.id || 0);
         });
+
+        const completedCount = data.filter(a => AchievementManager.getState(a.id).completed).length;
+        const claimedCount = data.filter(a => AchievementManager.getState(a.id).claimed).length;
+        const unclaimedCount = data.filter(a => {
+            const s = AchievementManager.getState(a.id);
+            return s.completed && !s.claimed;
+        }).length;
+        const incompleteCount = Math.max(0, data.length - completedCount);
+        const completedPercent = data.length ? Math.floor((completedCount / data.length) * 100) : 0;
+        const filteredCount = list.length;
+
+        const filterLabels = {
+            ALL: '全て',
+            INCOMPLETE: '未達成',
+            COMPLETED: '達成済み'
+        };
+
+        const categoryOptions = categories.map(cat => `
+            <option value="${MenuAchievements.escapeHtml(cat)}" ${MenuAchievements.categoryFilter === cat ? 'selected' : ''}>
+                ${cat === 'ALL' ? 'カテゴリ全て' : MenuAchievements.escapeHtml(cat)}
+            </option>
+        `).join('');
 
         container.innerHTML = `
             <div class="header-bar">
                 <span>🏆 実績</span>
                 <button class="btn" onclick="Menu.closeSubScreen('achievements')">もどる</button>
             </div>
-            <div style="padding:8px; background:#222; display:flex; gap:5px;">
-                ${['ALL', 'INCOMPLETE', 'COMPLETED'].map(f => `
-                    <button class="btn" style="flex:1; font-size:10px; background:${MenuAchievements.filter === f ? '#006666' : '#444'};" 
-                        onclick="MenuAchievements.filter='${f}'; MenuAchievements.render();">${f === 'ALL' ? '全て' : f === 'INCOMPLETE' ? '未達成' : '達成済み'}</button>
-                `).join('')}
+
+            <div style="background:linear-gradient(180deg,#202020,#131313); border-bottom:1px solid #333; padding:10px;">
+                <div style="display:flex; gap:10px; align-items:stretch; margin-bottom:10px;">
+                    <div style="width:92px; flex-shrink:0; border:1px solid #3f3f3f; border-radius:10px; background:#0f0f0f; padding:9px; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+                        <div style="font-size:22px; color:#ffd35a; line-height:1;">${completedPercent}%</div>
+                        <div style="font-size:10px; color:#999; margin-top:4px;">達成率</div>
+                    </div>
+                    <div style="flex:1; min-width:0; display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+                        <div style="background:#181818; border:1px solid #333; border-radius:8px; padding:7px;">
+                            <div style="font-size:10px; color:#888;">達成</div>
+                            <div style="font-size:14px; color:#fff;">${completedCount}/${data.length}</div>
+                        </div>
+                        <div style="background:${unclaimedCount > 0 ? '#281018' : '#181818'}; border:1px solid ${unclaimedCount > 0 ? '#8a1930' : '#333'}; border-radius:8px; padding:7px;">
+                            <div style="font-size:10px; color:#888;">未受取</div>
+                            <div style="font-size:14px; color:${unclaimedCount > 0 ? '#ff9aa8' : '#aaa'};">${unclaimedCount}</div>
+                        </div>
+                        <div style="background:#181818; border:1px solid #333; border-radius:8px; padding:7px;">
+                            <div style="font-size:10px; color:#888;">未達成</div>
+                            <div style="font-size:14px; color:#ccc;">${incompleteCount}</div>
+                        </div>
+                        <div style="background:#181818; border:1px solid #333; border-radius:8px; padding:7px;">
+                            <div style="font-size:10px; color:#888;">表示中</div>
+                            <div style="font-size:14px; color:#ccc;">${filteredCount}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="height:8px; background:#2a2a2a; border-radius:999px; overflow:hidden; margin-bottom:10px;">
+                    <div style="height:100%; width:${completedPercent}%; background:linear-gradient(90deg,#8a6b18,#ffd35a);"></div>
+                </div>
+
+                <button class="btn" style="width:100%; padding:9px; background:${unclaimedCount > 0 ? '#8a1930' : '#333'}; border-color:${unclaimedCount > 0 ? '#d65a70' : '#555'};" onclick="MenuAchievements.claimAll()" ${unclaimedCount > 0 ? '' : 'disabled'}>
+                    ${unclaimedCount > 0 ? `🎁 未受取 ${unclaimedCount} 件を一括受取` : '受け取れる報酬はありません'}
+                </button>
             </div>
-            <div style="padding:10px; background:#1a1a1a; border-bottom:1px solid #333;">
-                <button class="btn" style="width:100%; background:#440044;" onclick="MenuAchievements.claimAll()">報酬を一括で受け取る</button>
+
+            <div style="padding:8px; background:#1b1b1b; border-bottom:1px solid #303030; display:flex; flex-direction:column; gap:8px;">
+                <div style="display:flex; gap:5px; background:#111; border:1px solid #333; border-radius:9px; padding:4px;">
+                    ${['ALL', 'INCOMPLETE', 'COMPLETED'].map(f => `
+                        <button class="btn" style="flex:1; font-size:11px; padding:7px 4px; border-color:${MenuAchievements.filter === f ? '#27b4b4' : '#333'}; background:${MenuAchievements.filter === f ? '#006666' : 'transparent'};"
+                            onclick="MenuAchievements.filter='${f}'; MenuAchievements.render();">
+                            ${filterLabels[f]}
+                        </button>
+                    `).join('')}
+                </div>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <label style="font-size:11px; color:#999; flex-shrink:0;">カテゴリ</label>
+                    <select style="flex:1; min-width:0; background:#111; color:#fff; border:1px solid #444; border-radius:7px; padding:7px; font-family:inherit; font-size:12px;"
+                        onchange="MenuAchievements.categoryFilter=this.value; MenuAchievements.render();">
+                        ${categoryOptions}
+                    </select>
+                </div>
             </div>
+
             <div class="scroll-area" style="padding:10px; background:#111;">
                 ${list.map(a => {
-                    const state = App.data.achievements[a.id] || { completed: false, claimed: false };
+                    const state = AchievementManager.getState(a.id);
+                    const progress = AchievementManager.getProgress(a);
                     const canClaim = state.completed && !state.claimed;
                     const isClaimed = state.claimed;
-
-                    // エラー④対策：報酬テキストをマスタから生成
-                    const rewardText = a.rewards.map(r => {
-                        if (r.type === 'GEM') return `${r.val}GEM`;
-                        if (r.type === 'GOLD') return `${r.val}G`;
-                        if (r.type === 'ITEM') {
-                            const item = (window.ITEMS_DATA || []).find(i => i.id === r.id);
-                            return (item ? item.name : '不明') + `x${r.val}`;
-                        }
-                        if (r.type === 'EQUIP') {
-                            const eq = (window.EQUIP_MASTER || []).find(e => e.eid === r.eid);
-                            return (eq ? eq.name : '不明') + `+${r.plus || 3}`;
-                        }
-                        return r.type;
-                    }).join(', ');
+                    const rewardText = AchievementManager.getRewardText(a.rewards || []);
+                    const progressLabel = `${MenuAchievements.formatNum(Math.min(progress.value, progress.goal))}/${MenuAchievements.formatNum(progress.goal)}`;
 
                     return `
-                        <div class="list-item" style="opacity:${isClaimed ? 0.5 : 1}; padding:12px; margin-bottom:8px; border-left:4px solid ${state.completed ? '#ffd700' : '#444'}; display:flex; align-items:center;">
-                            <div style="flex:1;">
-                                <div style="font-size:13px; font-weight:bold; color:${state.completed ? '#fff' : '#888'};">
-                                    ${state.completed ? '✅ ' : ''}${a.title}
+                        <div class="list-item" style="opacity:${isClaimed ? 0.55 : 1}; padding:12px; margin-bottom:8px; border-left:4px solid ${state.completed ? '#ffd700' : '#444'}; display:flex; align-items:center; gap:10px;">
+                            <div style="flex:1; min-width:0;">
+                                <div style="display:flex; justify-content:space-between; gap:8px; align-items:center;">
+                                    <div style="font-size:13px; font-weight:bold; color:${state.completed ? '#fff' : '#aaa'};">
+                                        ${state.completed ? '✅ ' : ''}${MenuAchievements.escapeHtml(a.title)}
+                                    </div>
+                                    <div style="font-size:9px; color:#999; border:1px solid #444; border-radius:999px; padding:2px 6px; flex-shrink:0;">
+                                        ${MenuAchievements.escapeHtml(a.category || 'その他')}
+                                    </div>
                                 </div>
-                                <div style="font-size:10px; color:#666;">${a.desc}</div>
-                                <div style="font-size:11px; color:#00cccc; margin-top:4px;">
-                                    報酬: ${rewardText}
+                                <div style="font-size:10px; color:#777; margin-top:3px;">${MenuAchievements.escapeHtml(a.desc)}</div>
+                                <div style="height:6px; background:#2a2a2a; border-radius:99px; overflow:hidden; margin-top:8px;">
+                                    <div style="height:100%; width:${progress.percent}%; background:${state.completed ? '#d6b22e' : '#008888'};"></div>
+                                </div>
+                                <div style="display:flex; justify-content:space-between; font-size:10px; color:#888; margin-top:3px;">
+                                    <span>進捗: ${progressLabel}</span>
+                                    <span>${progress.percent}%</span>
+                                </div>
+                                <div style="font-size:11px; color:#00cccc; margin-top:5px;">
+                                    報酬: ${MenuAchievements.escapeHtml(rewardText)}
                                 </div>
                             </div>
-                            <button class="btn" style="width:80px; font-size:11px; background:${canClaim ? '#d00' : '#333'};" 
+                            <button class="btn" style="width:82px; font-size:11px; background:${canClaim ? '#d00' : '#333'}; flex-shrink:0;"
                                 onclick="MenuAchievements.claim(${a.id})" ${canClaim ? '' : 'disabled'}>
                                 ${isClaimed ? '受取済' : (state.completed ? '受取' : '未達成')}
                             </button>
                         </div>
                     `;
-                }).join('')}
+                }).join('') || '<div style="color:#777; text-align:center; padding:20px;">該当する実績はありません。</div>'}
             </div>
 
             <div class="sub-screen-bottom-panel">
                 <button class="btn sub-screen-back-btn" onclick="Menu.closeSubScreen('achievements')">もどる</button>
             </div>
         `;
-        
+
         MenuAchievements._renderInternal();
     },
 
     claim: (id) => {
-        const ach = ACHIEVEMENTS_DATA.find(a => a.id === id);
-        const state = App.data.achievements[id];
-        if (!state || !state.completed || state.claimed) return;
+        if (typeof AchievementManager === 'undefined') return;
+        const result = AchievementManager.claim(id);
+        if (!result.ok) {
+            Menu.msg(result.message || '受け取れません。');
+            return;
+        }
 
-        const rewardText = MenuAchievements.processRewards(ach.rewards);
-        state.claimed = true;
-        
-        App.save();
         App.updateHUD();
         if (typeof Menu.renderPartyBar === 'function') Menu.renderPartyBar();
-        
-        Menu.msg(`実績達成報酬を獲得しました！\n${rewardText}`);
+
+        Menu.msg(`実績達成報酬を獲得しました！\n${result.rewardText}`);
         MenuAchievements.render();
     },
 
     claimAll: () => {
-        let count = 0;
-        ACHIEVEMENTS_DATA.forEach(ach => {
-            const state = App.data.achievements[ach.id];
-            if (state && state.completed && !state.claimed) {
-                MenuAchievements.processRewards(ach.rewards);
-                state.claimed = true;
-                count++;
-            }
-        });
+        if (typeof AchievementManager === 'undefined') return;
+        const result = AchievementManager.claimAll();
 
-        if (count === 0) {
+        if (!result.ok) {
             Menu.msg("受け取れる報酬はありません。");
             return;
         }
 
-        App.save();
         App.updateHUD();
         if (typeof Menu.renderPartyBar === 'function') Menu.renderPartyBar();
-        
-        Menu.msg(`${count}件の実績報酬を一括で受け取りました。`);
+
+        Menu.msg(`${result.count}件の実績報酬を一括で受け取りました。`);
         MenuAchievements.render();
     }
 };

@@ -18,6 +18,38 @@
  * ============================================================================
  */
 
+
+// ---------------------------------------------------------------------------
+// 起動体験を損なわないための画像キャッシュ定義
+// ---------------------------------------------------------------------------
+// 今後の画像管理はこの assets.js に統一します。
+// Service Worker はこの一覧を main.js から受け取り、初回起動後に裏側で順次キャッシュします。
+// sw.js 側にモンスター画像やエフェクト画像の全量リストを直接復活させないこと。
+//
+// 目的:
+// - 起動時に全画像を待たない。
+// - ただし、初戦闘やロード画面で画像読み込み待ちが目立たないようにする。
+// - 画像は「軽い初期表示用」→「戦闘で使いやすい素材」→「残り素材」の順で温める。
+const PRISMA_NORMAL_MONSTER_IMAGE_IDS = Array.from({ length: 90 }, (_, i) => 100001 + i);
+const PRISMA_BOSS_MONSTER_IMAGE_IDS = [
+  200201, 200202, 200203, 200204,
+  301000,
+  401010, 401020, 401030, 401040, 401050, 401060, 401070,
+  401080, 401081, 401082, 401090, 401100,
+  401110, 401120, 401130, 401140, 401150, 401151, 401152, 401153,
+  401160, 401161, 401162, 401170, 401180, 401190, 401200,
+  902000,
+];
+const PRISMA_MONSTER_IMAGE_FILES = PRISMA_NORMAL_MONSTER_IMAGE_IDS
+  .concat(PRISMA_BOSS_MONSTER_IMAGE_IDS)
+  .map((id) => `monster/img/monster_${id}.png`);
+
+// ロード画面に使う候補。ここは sw.js の INITIAL_IMAGE_PRECACHE と同じ考え方の少数精鋭。
+// 全モンスターをここへ入れないこと。残りは warmCache.backgroundImages で裏側キャッシュする。
+const PRISMA_LOADING_MONSTER_IMAGE_FILES = PRISMA_NORMAL_MONSTER_IMAGE_IDS
+  .slice(0, 12)
+  .map((id) => `monster/img/monster_${id}.png`);
+
 const PRISMA_ASSETS = {
   // Field.render / Battle 背景 / 主人公歩行画像で使う GRAPHICS 用画像。
   graphics: {
@@ -133,9 +165,44 @@ const PRISMA_ASSETS = {
     "special-rupture": "assets/effect/fx_special_rupture_v001.png",
     "critical-spark": "assets/effect/fx_critical_spark_v001.png",
   },
+
+
+  // Service Worker へ渡す「裏側キャッシュ」用リスト。
+  // criticalImages: ロード画面と初戦闘の体感を守る少数の画像。
+  // backgroundImages: 起動後に順次温める画像。ここは多少多くてもよいが、起動処理では待たない。
+  cacheWarmup: {
+    version: "2026-05-13-cache-warmup-v1",
+    criticalImages: [
+      ...PRISMA_LOADING_MONSTER_IMAGE_FILES,
+      "assets/generated/battle-field-ai.png",
+      "assets/generated/battle-forest-ai.png",
+      "assets/generated/battle-dungeon-ai.png",
+      "assets/generated/battle-boss-ai.png",
+    ],
+    backgroundImages: [],
+  },
 };
 
+
 window.PRISMA_ASSETS = PRISMA_ASSETS;
+
+// backgroundImages は graphics / battleFx / monster画像から自動構築する。
+// 画像を追加した場合は PRISMA_ASSETS.graphics または battleFx に足せば、裏側キャッシュにも反映される。
+(() => {
+  const unique = (items) => Array.from(new Set(items.filter(Boolean)));
+  const critical = PRISMA_ASSETS.cacheWarmup.criticalImages || [];
+  PRISMA_ASSETS.cacheWarmup.backgroundImages = unique([
+    ...Object.values(PRISMA_ASSETS.graphics || {}),
+    ...Object.values(PRISMA_ASSETS.battleFx || {}),
+    "assets/gacha/back_card.png",
+    "assets/gacha/front_card.png",
+    "assets/background/PRISMA ABYSS.png",
+    "assets/background/宿屋.jpg",
+    "assets/background/メダル交換所.png",
+    "assets/background/カジノ.png",
+    ...PRISMA_MONSTER_IMAGE_FILES,
+  ]).filter((src) => !critical.includes(src));
+})();
 
 const GRAPHICS = {
   images: {},

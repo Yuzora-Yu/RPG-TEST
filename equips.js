@@ -295,6 +295,6 @@ const EQUIP_MASTER = [
     { eid:414, noRandom:false, rank:200, name:"悠久の歩み", type:"足", baseName:"くつ", data: { spd: 2750, eva: 20, resists_Shock: 50 }, possibleOpts: [], traits: [{"id":14,"level":5},{"id":44,"level":5}] },
 	
     { eid:701, noRandom:true, rank:700, name:"エクスカリバーⅡ", type:"武器", baseName:"剣", data: { atk: 5000, mag: 2000, cri: 20, hit: 10 }, possibleOpts: [], grantSkills: [433], traits: [{"id":26,"level":10}] },
-	{ eid:801, noRandom:true, rank:700, name:"滅魔の大剣", type:"武器", baseName:"剣", data: { atk: 5000, cri: 20, hit: 20 }, possibleOpts: [], grantSkills: [920], traits: [{"id":9,"level":10},{"id":10,"level":10}] }
+	{ eid:801, noRandom:true, rank:700, name:"滅魔の大剣", type:"武器", baseName:"剣", data: { atk: 10000, cri: 20, hit: 20 }, possibleOpts: [], grantSkills: [920], traits: [{"id":9,"level":10},{"id":10,"level":10}] }
 ];
 window.EQUIP_MASTER = EQUIP_MASTER;

@@ -3261,7 +3261,39 @@ findNextActor: () => {
 				App.data.gems = (App.data.gems || 0) + 10000;
 				App.data.inventory.push(eq);
 				drops.push({ name: eq.name, isRare: true, isUltra: true, isSpecialBoss: true, isEstark: true });
-				hasUltraRareDrop = true; 
+				hasUltraRareDrop = true;
+
+				// 特殊ボス（ギルガメッシュ等）専用報酬だけで終わらせず、
+				// monsters.js 側に個別設定された drops も同じ勝利で判定する。
+				// 以前は isEstark 分岐に入ると通常ボス用の drops 処理へ進まなかったため、
+				// ギルガメッシュの drops.normal / drops.rare が実質無視されていた。
+				// 今後、特殊ボスを追加する場合も固有ドロップは monsters.js の drops に統一すること。
+				const specialBase = Battle.getMonsterBaseById(specialId) || specialEnemy;
+				const monsterDrops = specialBase.drops || specialEnemy.drops;
+
+				if (monsterDrops && monsterDrops.rare && monsterDrops.rare.id != null) {
+					const rareRate = (monsterDrops.rare.rate || 0) + bonusRare;
+					if (Math.random() * 100 < rareRate) {
+						const itemDef = DB.ITEMS.find(i => i.id === monsterDrops.rare.id);
+						if (itemDef) {
+							App.data.items[itemDef.id] = (App.data.items[itemDef.id] || 0) + 1;
+							hasRareDrop = true;
+							const type = (itemDef.id === 107) ? 'kai' : 'boss';
+							drops.push({ name: itemDef.name, isRare: true, type: type });
+						}
+					}
+				}
+
+				if (monsterDrops && monsterDrops.normal && monsterDrops.normal.id != null) {
+					const normRate = (monsterDrops.normal.rate || 0) + bonusNormal;
+					if (Math.random() * 100 < normRate) {
+						const itemDef = DB.ITEMS.find(i => i.id === monsterDrops.normal.id);
+						if (itemDef) {
+							App.data.items[itemDef.id] = (App.data.items[itemDef.id] || 0) + 1;
+							drops.push({ name: itemDef.name, isRare: false, type: 'item' });
+						}
+					}
+				}
 			}
 		} else {
 			Battle.enemies.forEach(e => {
