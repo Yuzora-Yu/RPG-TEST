@@ -7,7 +7,7 @@ const Dungeon = {
     // 検証中は100%出現。挙動確認後は 0.10 に戻す想定。
     // タイル文字を増やすと既存の宝箱/階段/エンカウント処理に影響しやすいため、
     // NPC位置は App.data.dungeon.adventurer で別管理する。
-    adventurerSpawnRate: 1.0, // TODO: 検証完了後に 0.10 へ変更
+    adventurerSpawnRate: 0.2, // TODO: 検証完了後に 0.10 へ変更
     adventurerImagePath: 'monster/img/monster_100009.png',
     adventurerPromptOpen: false,
     
