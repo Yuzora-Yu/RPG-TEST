@@ -81,24 +81,24 @@ const STANDARD_FLOOR_OFFSETS = [
 
 const MONSTER_BANDS_1_200 = [
   { bandStart: 1, bandEnd: 5, offsetType: 'low_1_5', monsters: [
-    m({id:100001,name:'ジェリー',race:'粘体',rank:1,minF:1,hp:140,mp:0,atk:70,def:45,spd:55,mag:18,mdef:5,gold:14,exp:14,actCount:1,acts:[act(1,70),act(10,15),act(2,15)],elmRes:{火:-30,雷:-20}}),
-    m({id:100002,name:'やみこうもり',race:'獣',rank:1,minF:1,hp:120,mp:30,atk:65,def:38,spd:70,mag:30,mdef:5,gold:18,exp:16,actCount:1,acts:[act(1,70),act(14,20),act(61,10)],elmRes:{光:-30,雷:-20}}),
-    m({id:100003,name:'ウィスプ',race:'精霊',rank:1,minF:1,hp:95,mp:45,atk:25,def:32,spd:62,mag:42,mdef:12,gold:18,exp:16,actCount:1,acts:[act(1,65),act(12,20),act(60,15)],elmRes:{火:-20,闇:-20}}),
-    m({id:100004,name:'ヒールジェリー',race:'粘体',rank:1,minF:1,hp:170,mp:80,atk:25,def:55,spd:25,mag:40,mdef:12,gold:28,exp:24,actCount:1,acts:[act(1,60),act(20,25),act(2,15)],elmRes:{雷:-30,火:-20}}),
+    m({id:100001,name:'ジェリー',race:'粘体',rank:1,minF:1,hp:140,mp:0,atk:170,def:95,spd:55,mag:70,mdef:50,gold:14,exp:14,actCount:1,acts:[act(1,70),act(10,15),act(2,15)],elmRes:{火:-30,雷:-20}}),
+    m({id:100002,name:'やみこうもり',race:'獣',rank:1,minF:1,hp:120,mp:30,atk:195,def:108,spd:70,mag:150,mdef:45,gold:18,exp:16,actCount:1,acts:[act(1,70),act(14,20),act(61,10)],elmRes:{光:-30,雷:-20}}),
+    m({id:100003,name:'ウィスプ',race:'精霊',rank:1,minF:1,hp:95,mp:45,atk:125,def:132,spd:62,mag:182,mdef:112,gold:18,exp:16,actCount:1,acts:[act(1,65),act(12,20),act(60,15)],elmRes:{火:-20,闇:-20}}),
+    m({id:100004,name:'ヒールジェリー',race:'粘体',rank:1,minF:1,hp:170,mp:80,atk:125,def:155,spd:25,mag:177,mdef:135,gold:28,exp:24,actCount:1,acts:[act(1,60),act(20,25),act(2,15)],elmRes:{雷:-30,火:-20}}),
   ]},
 
   { bandStart: 6, bandEnd: 10, offsetType: 'low_6_10', monsters: [
-    m({id:100005,name:'ホーンラビット',race:'獣',rank:6,minF:6,hp:900,mp:40,atk:230,def:120,spd:330,mag:12,mdef:60,gold:34,exp:38,actCount:1,acts:[act(1,70),act(41,15),act(49,15)],elmRes:{火:-20,闇:-10}}),
-    m({id:100006,name:'ポイズンジェリー',race:'粘体',rank:6,minF:6,hp:1100,mp:120,atk:200,def:160,spd:160,mag:25,mdef:90,gold:40,exp:45,actCount:1,acts:[act(1,65),act(250,20),act(701,15)],elmRes:{火:-30,雷:-20},resists:{Poison:30}}),
-    m({id:100007,name:'火の小精',race:'精霊',rank:6,minF:6,hp:650,mp:250,atk:45,def:95,spd:260,mag:80,mdef:90,gold:40,exp:45,actCount:1,acts:[act(1,65),act(10,20),act(15,15)],elmRes:{水:-40,闇:-20}}),
-    m({id:100008,name:'さまよう鎧',race:'無生物',rank:6,minF:6,hp:1200,mp:0,atk:280,def:260,spd:70,mag:12,mdef:100,gold:55,exp:55,actCount:1,acts:[act(1,70),act(44,20),act(2,10)],elmRes:{雷:-30,水:-10},resists:{Poison:30}}),
-    m({id:100009,name:'錆びた鎧兵',race:'無生物',rank:6,minF:6,hp:1800,mp:0,atk:180,def:300,spd:90,mag:8,mdef:130,gold:90,exp:85,actCount:2,isElite:true,acts:[act(1,60),act(44,25),act(51,15)],drops:{normal:{id:2,rate:5},rare:{id:105,rate:1}},elmRes:{雷:-30,水:-20},resists:{Poison:40}}),
+    m({id:100005,name:'ホーンラビット',race:'獣',rank:6,minF:6,hp:900,mp:40,atk:280,def:120,spd:330,mag:37,mdef:80,gold:34,exp:38,actCount:1,acts:[act(1,70),act(41,15),act(49,15)],elmRes:{火:-20,闇:-10}}),
+    m({id:100006,name:'ポイズンジェリー',race:'粘体',rank:6,minF:6,hp:1100,mp:120,atk:250,def:160,spd:160,mag:95,mdef:90,gold:40,exp:45,actCount:1,acts:[act(1,65),act(250,20),act(701,15)],elmRes:{火:-30,雷:-20},resists:{Poison:30}}),
+    m({id:100007,name:'火の小精',race:'精霊',rank:6,minF:6,hp:650,mp:250,atk:145,def:95,spd:260,mag:280,mdef:190,gold:40,exp:45,actCount:1,acts:[act(1,65),act(10,20),act(15,15)],elmRes:{水:-40,闇:-20}}),
+    m({id:100008,name:'さまよう鎧',race:'無生物',rank:6,minF:6,hp:1200,mp:0,atk:320,def:260,spd:70,mag:112,mdef:150,gold:55,exp:55,actCount:1,acts:[act(1,70),act(44,20),act(2,10)],elmRes:{雷:-30,水:-10},resists:{Poison:30}}),
+    m({id:100009,name:'錆びた鎧兵',race:'無生物',rank:6,minF:6,hp:1800,mp:0,atk:250,def:300,spd:90,mag:58,mdef:170,gold:90,exp:85,actCount:2,isElite:true,acts:[act(1,60),act(44,25),act(51,15)],drops:{normal:{id:2,rate:5},rare:{id:105,rate:1}},elmRes:{雷:-30,水:-20},resists:{Poison:40}}),
   ]},
 
   { bandStart: 11, bandEnd: 15, monsters: [
     m({id:100010,name:'マッドゴーレム',race:'無生物',rank:11,minF:11,hp:1800,mp:0,atk:430,def:260,spd:60,mag:40,mdef:100,gold:117,exp:102,actCount:1,acts:[act(1,70),act(101,15),act(60,15)],elmRes:{水:-20,雷:-30},resists:{Poison:30}}),
-    m({id:100011,name:'ブラックバット',race:'獣',rank:11,minF:11,hp:1000,mp:120,atk:240,def:75,spd:350,mag:330,mdef:50,gold:117,exp:102,actCount:1,acts:[act(1,70),act(14,20),act(703,10)],elmRes:{光:-30,雷:-20}}),
-    m({id:100012,name:'アクアスライム',race:'粘体',rank:11,minF:11,hp:1500,mp:180,atk:240,def:150,spd:170,mag:360,mdef:150,gold:117,exp:102,actCount:1,acts:[act(1,65),act(11,20),act(12,15)],elmRes:{雷:-30,火:-10}}),
+    m({id:100011,name:'ブラックバット',race:'獣',rank:11,minF:11,hp:1000,mp:120,atk:340,def:75,spd:350,mag:330,mdef:50,gold:117,exp:102,actCount:1,acts:[act(1,70),act(14,20),act(703,10)],elmRes:{光:-30,雷:-20}}),
+    m({id:100012,name:'アクアスライム',race:'粘体',rank:11,minF:11,hp:1500,mp:180,atk:340,def:150,spd:170,mag:360,mdef:150,gold:117,exp:102,actCount:1,acts:[act(1,65),act(11,20),act(12,15)],elmRes:{雷:-30,火:-10}}),
     m({id:100013,name:'グラスウルフ',race:'獣',rank:11,minF:11,hp:1600,mp:0,atk:500,def:110,spd:350,mag:40,mdef:50,gold:117,exp:102,actCount:1,acts:[act(1,70),act(41,20),act(60,10)],elmRes:{火:-20,光:-10}}),
   ]},
 

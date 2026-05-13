@@ -5,6 +5,20 @@
 const Facilities = {
     teleportFloor: 1,
 
+    // 施設背景は assets.js / GRAPHICS を使わず、このファイルから直接参照する
+    backgroundPaths: {
+        facility_bg_inn: 'assets/background/宿屋.jpg',
+        facility_bg_medal: 'assets/background/メダル交換所.png',
+        facility_bg_casino: 'assets/background/カジノ.png'
+    },
+
+    escapeAttr: (value) => String(value).replace(/[&<>"]/g, (ch) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;'
+    }[ch])),
+
     /**
      * DQ風ベースレイアウト構築
      * IDの重複によるバグを防ぐため、モーダルやメッセージエリアにシーン固有の接尾辞を付与します。
@@ -13,10 +27,12 @@ const Facilities = {
         const container = document.getElementById(sceneId);
         if (!container) return;
 
-        // 背景画像取得 (assets.jsのGRAPHICS参照)
-        const g = (typeof GRAPHICS !== 'undefined' && GRAPHICS.images) ? GRAPHICS.images : {};
-        let bgUrl = "";
-        if (g[bgKey] && g[bgKey].src) bgUrl = g[bgKey].src;
+        const bgUrl = Facilities.backgroundPaths[bgKey] || '';
+        const bgImageHtml = bgUrl ? `
+                <img src="${Facilities.escapeAttr(bgUrl)}" alt="" aria-hidden="true"
+                    style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center; display:block;"
+                    onerror="this.remove();">
+            ` : '';
 
         // レイアウトのリセットと構築
         container.style.cssText = "display:flex; flex-direction:column; background:#000; height:100%; overflow:hidden; position:relative; font-family: 'DotGothic16', sans-serif;";
@@ -29,8 +45,9 @@ const Facilities = {
                 </button>
             </div>
 
-            <div style="width:100%; height:56.25vw; max-height:220px; background:#000 url('${bgUrl}') no-repeat center/cover; position:relative; flex-shrink:0; border-bottom:4px double #fff;">
-                <div style="position:absolute; bottom:10px; left:10px; background:rgba(0,0,0,0.85); border:2px solid #fff; padding:3px 12px; color:#fff; font-size:14px;">
+            <div style="width:100%; height:56.25vw; max-height:220px; background:#000; position:relative; flex-shrink:0; border-bottom:4px double #fff; overflow:hidden;">
+                ${bgImageHtml}
+                <div style="position:absolute; bottom:10px; left:10px; background:rgba(0,0,0,0.85); border:2px solid #fff; padding:3px 12px; color:#fff; font-size:14px; z-index:1;">
                     ${title}
                 </div>
             </div>
