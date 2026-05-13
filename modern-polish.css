@@ -943,3 +943,291 @@ textarea {
         opacity: 1;
     }
 }
+
+/* =========================================================
+   Initial loading overlay
+========================================================= */
+
+#initial-loading-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 999999;
+    background:
+        radial-gradient(circle at 50% 38%, rgba(244, 201, 93, 0.12), transparent 34%),
+        rgba(0, 0, 0, 0.96);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: auto;
+}
+
+#initial-loading-overlay.is-hidden {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s ease;
+}
+
+.initial-loading-box {
+    width: min(82%, 300px);
+    padding: 24px 18px;
+    border: 2px solid rgba(244, 201, 93, 0.75);
+    border-radius: 12px;
+    background: linear-gradient(180deg, #111722, #07090d);
+    box-shadow:
+        0 18px 48px rgba(0, 0, 0, 0.7),
+        0 0 28px rgba(244, 201, 93, 0.18);
+    text-align: center;
+}
+
+.initial-loading-monster {
+    width: 120px;
+    height: 120px;
+    object-fit: contain;
+    image-rendering: auto;
+    margin-bottom: 14px;
+    filter:
+        drop-shadow(0 8px 12px rgba(0, 0, 0, 0.7))
+        drop-shadow(0 0 10px rgba(244, 201, 93, 0.25));
+}
+
+.initial-loading-text {
+    color: #ffd700;
+    font-size: 18px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    animation: loading-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes loading-pulse {
+    0%, 100% {
+        opacity: 0.55;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+
+/* =========================================================
+   Encounter transition
+========================================================= */
+
+#encounter-transition {
+    position: absolute;
+    inset: 0;
+    z-index: 99990;
+    pointer-events: none;
+    opacity: 0;
+    overflow: hidden;
+    background: transparent;
+}
+
+#encounter-transition.is-active {
+    animation: encounter-screen-dark 720ms ease-in-out forwards;
+}
+
+#encounter-transition::before {
+    content: "";
+    position: absolute;
+    inset: -10%;
+    background:
+        radial-gradient(circle at 50% 50%, rgba(255,255,255,0.28), transparent 18%),
+        radial-gradient(circle at 50% 50%, rgba(244,201,93,0.18), transparent 36%),
+        rgba(0,0,0,0.0);
+    opacity: 0;
+}
+
+#encounter-transition.is-active::before {
+    animation: encounter-flash-pulse 720ms ease-in-out forwards;
+}
+
+#encounter-transition::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(90deg, transparent 0 48%, rgba(255,255,255,0.7) 49%, transparent 51%),
+        linear-gradient(25deg, transparent 0 46%, rgba(255,255,255,0.45) 47%, transparent 49%),
+        linear-gradient(145deg, transparent 0 50%, rgba(255,255,255,0.4) 51%, transparent 53%);
+    opacity: 0;
+    transform: scale(0.82);
+    filter: drop-shadow(0 0 8px rgba(255,255,255,0.55));
+}
+
+#encounter-transition.is-active::after {
+    animation: encounter-crack-burst 720ms cubic-bezier(.2,.9,.25,1) forwards;
+}
+
+.encounter-crack {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 2px;
+    height: 160px;
+    background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.95), transparent);
+    opacity: 0;
+    transform-origin: center top;
+    filter: drop-shadow(0 0 6px rgba(255,255,255,0.8));
+}
+
+#encounter-transition.is-active .encounter-crack {
+    animation: encounter-crack-line 620ms ease-out forwards;
+}
+
+.crack-1 { transform: translate(-50%, -50%) rotate(18deg); }
+.crack-2 { transform: translate(-50%, -50%) rotate(82deg); }
+.crack-3 { transform: translate(-50%, -50%) rotate(136deg); }
+.crack-4 { transform: translate(-50%, -50%) rotate(228deg); }
+
+.encounter-flash-core {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #fff;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.2);
+    box-shadow: 0 0 30px rgba(255,255,255,0.95);
+}
+
+#encounter-transition.is-active .encounter-flash-core {
+    animation: encounter-core-pop 560ms ease-out forwards;
+}
+
+@keyframes encounter-screen-dark {
+    0% { opacity: 0; background: rgba(0,0,0,0); }
+    18% { opacity: 1; background: rgba(0,0,0,0.15); }
+    48% { opacity: 1; background: rgba(0,0,0,0.86); }
+    100% { opacity: 1; background: rgba(0,0,0,1); }
+}
+
+@keyframes encounter-flash-pulse {
+    0% { opacity: 0; transform: scale(0.8); }
+    20% { opacity: 1; transform: scale(1.0); }
+    42% { opacity: 0.25; transform: scale(1.25); }
+    100% { opacity: 0; transform: scale(1.5); }
+}
+
+@keyframes encounter-crack-burst {
+    0% { opacity: 0; transform: scale(0.6) rotate(0deg); }
+    22% { opacity: 1; transform: scale(1.05) rotate(1deg); }
+    58% { opacity: 0.85; transform: scale(1.18) rotate(-1deg); }
+    100% { opacity: 0; transform: scale(1.35) rotate(0deg); }
+}
+
+@keyframes encounter-crack-line {
+    0% { opacity: 0; height: 20px; }
+    18% { opacity: 1; height: 180px; }
+    100% { opacity: 0; height: 260px; }
+}
+
+@keyframes encounter-core-pop {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.2); }
+    18% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(12); }
+}
+
+/* 十字ボタンの長押し安定化 */
+.btn-d {
+    touch-action: none !important;
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    -webkit-touch-callout: none !important;
+}
+
+/* =========================================================
+   Button tap feedback patch
+   - 全ボタンのタップ感を少し強める
+========================================================= */
+
+.btn,
+.menu-btn,
+.btn-d,
+.btn-act,
+.cmd-btn,
+.battle-target-btn,
+button {
+  transition:
+    transform 70ms ease,
+    filter 70ms ease,
+    box-shadow 70ms ease,
+    border-color 70ms ease,
+    background 70ms ease !important;
+}
+
+/* 通常ボタン */
+.btn:active,
+.menu-btn:active,
+.btn-act:active,
+.cmd-btn:active,
+.battle-target-btn:active,
+button:active {
+  transform: translateY(3px) scale(0.965) !important;
+  filter: brightness(1.35) saturate(1.15) !important;
+  border-color: var(--accent) !important;
+  box-shadow:
+    0 0 0 2px rgba(244, 201, 93, 0.28) inset,
+    0 0 18px rgba(244, 201, 93, 0.34),
+    0 4px 8px rgba(0, 0, 0, 0.42) !important;
+}
+
+/* 十字キーは大きめなので、沈み込みを少し強調 */
+.btn-d:active {
+  transform: translateY(4px) scale(0.94) !important;
+  filter: brightness(1.38) saturate(1.18) !important;
+  border-color: var(--accent) !important;
+  background: linear-gradient(180deg, #52627e, #202838) !important;
+  box-shadow:
+    0 0 0 2px rgba(244, 201, 93, 0.30) inset,
+    0 0 18px rgba(244, 201, 93, 0.32) !important;
+}
+
+/* 無効ボタンは光らせない */
+.btn:disabled:active,
+.menu-btn:disabled:active,
+.btn-act:disabled:active,
+.cmd-btn:disabled:active,
+.battle-target-btn:disabled:active,
+button:disabled:active {
+  transform: none !important;
+  filter: none !important;
+  box-shadow: none !important;
+}
+
+/* =========================================================
+   Immediate tap feedback
+   - :active が遅れる端末向けに JS クラスでも押下表現
+========================================================= */
+
+.btn.is-pressing,
+.menu-btn.is-pressing,
+.btn-d.is-pressing,
+.btn-act.is-pressing,
+.cmd-btn.is-pressing,
+.battle-target-btn.is-pressing,
+button.is-pressing {
+  transform: translateY(3px) scale(0.965) !important;
+  filter: brightness(1.35) saturate(1.15) !important;
+  border-color: var(--accent) !important;
+  box-shadow:
+    0 0 0 2px rgba(244, 201, 93, 0.28) inset,
+    0 0 18px rgba(244, 201, 93, 0.34),
+    0 4px 8px rgba(0, 0, 0, 0.42) !important;
+}
+
+.btn-d.is-pressing {
+  transform: translateY(4px) scale(0.94) !important;
+  background: linear-gradient(180deg, #52627e, #202838) !important;
+}
+
+button:disabled.is-pressing,
+.btn:disabled.is-pressing,
+.menu-btn:disabled.is-pressing,
+.btn-act:disabled.is-pressing,
+.cmd-btn:disabled.is-pressing,
+.battle-target-btn:disabled.is-pressing {
+  transform: none !important;
+  filter: none !important;
+  box-shadow: none !important;
+}

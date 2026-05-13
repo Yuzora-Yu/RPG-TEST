@@ -262,6 +262,7 @@ class Monster extends Entity {
 const App = {
     data: null,
     pendingAction: null, 
+	encounterTransitioning: false,
 
     // --- 初期データ構造の定義 ---
     // セーブデータが全くない場合や、マイグレーション時のデフォルト参照用
@@ -441,18 +442,44 @@ const App = {
 	hookCurrency("gems", "totalGemsEarned");
     },
 
-    initGameHub: () => {
-        // ★修正: 画像読み込み待機処理を追加
-        // assets.js があり、GRAPHICSが定義されていればロードしてからゲーム開始
-        if(typeof GRAPHICS !== 'undefined') {
-            GRAPHICS.load(() => {
-                App.startGameLogic();
-            });
-        } else {
-            // なければ即開始 (フォールバック)
-            App.startGameLogic();
-        }
-    },
+	initGameHub: () => {
+		const start = () => {
+			try {
+				const result = App.startGameLogic();
+
+				// startGameLogic が Promise を返す場合にも対応
+				if (result && typeof result.then === 'function') {
+					result.finally(() => {
+						if (window.InitialLoading) {
+							window.InitialLoading.finish();
+						}
+					});
+				} else {
+					if (window.InitialLoading) {
+						window.InitialLoading.finish();
+					}
+				}
+			} catch (e) {
+				console.error(e);
+
+				if (window.InitialLoading) {
+					window.InitialLoading.hide();
+				}
+
+				alert("エラー: ゲーム開始処理に失敗しました。");
+			}
+		};
+
+		// assets.js があり、GRAPHICSが定義されていればロードしてからゲーム開始
+		if (typeof GRAPHICS !== 'undefined' && typeof GRAPHICS.load === 'function') {
+			GRAPHICS.load(() => {
+				start();
+			});
+		} else {
+			// なければ即開始
+			start();
+		}
+	},
 
     startGameLogic: () => {
         // ★App.load() の代わりに、補完ロジックを含む App.init() を実行
@@ -617,34 +644,81 @@ const App = {
             }
         });
 
-        /* main.js の bindPad 部分を以下のロジックに差し替えてください */
 		const bindPad = (id, dx, dy) => {
 			const el = document.getElementById(id);
-			if(!el) return;
+			if (!el) return;
 
-			// マウス操作
-			el.onmousedown = (e) => { e.preventDefault(); startMove(dx, dy); };
-			el.onmouseup = stopMove;
-			el.onmouseleave = stopMove;
+			el.style.touchAction = 'none';
 
-			// タッチ操作（エラー対策版）
-			el.ontouchstart = (e) => { 
-				// ブラウザ側で「キャンセル可能(cancelable)」な場合のみ preventDefault を呼ぶ
-				// これにより Intervention エラーを回避し、かつボタンの誤作動（意図しないスクロール）を防ぎます
-				if (e.cancelable) e.preventDefault(); 
-				startMove(dx, dy); 
+			const start = (e) => {
+				if (e && e.cancelable) e.preventDefault();
+
+				if (e && e.pointerId !== undefined && el.setPointerCapture) {
+					try {
+						el.setPointerCapture(e.pointerId);
+					} catch (err) {}
+				}
+
+				startMove(dx, dy);
 			};
-			el.ontouchend = stopMove;
-		};
-        bindPad('btn-up', 0, -1);
-        bindPad('btn-down', 0, 1);
-        bindPad('btn-left', -1, 0);
-        bindPad('btn-right', 1, 0);
 
-        const bindClick = (id, fn) => { const el = document.getElementById(id); if(el) el.onclick = fn; };
-        bindClick('btn-menu', () => { if(typeof Menu !== 'undefined') Menu.openMainMenu(); });
-        bindClick('btn-ok', () => App.inspectCurrentTile());
-		
+			const stop = (e) => {
+				if (e && e.cancelable) e.preventDefault();
+				Field.stopMove();
+			};
+
+			if (window.PointerEvent) {
+				el.onpointerdown = start;
+				el.onpointerup = stop;
+				el.onpointercancel = stop;
+				el.onlostpointercapture = stop;
+
+				// 指が少しボタン外へズレても pointer capture が効くので、
+				// onpointerleave では止めない
+				el.onpointerleave = null;
+			} else {
+				// 古いブラウザ向けフォールバック
+				el.onmousedown = start;
+				el.onmouseup = stop;
+				el.onmouseleave = stop;
+
+				el.ontouchstart = start;
+				el.ontouchend = stop;
+				el.ontouchcancel = stop;
+			}
+		};
+
+		bindPad('btn-up', 0, -1);
+		bindPad('btn-down', 0, 1);
+		bindPad('btn-left', -1, 0);
+		bindPad('btn-right', 1, 0);
+
+		const bindClick = (id, fn) => {
+			const el = document.getElementById(id);
+			if (!el) return;
+
+			el.onclick = (e) => {
+				if (e && e.cancelable) e.preventDefault();
+				fn(e);
+			};
+		};
+
+		bindClick('btn-menu', () => {
+			Field.stopMove();
+			if (typeof Menu !== 'undefined' && typeof Menu.openMainMenu === 'function') {
+				Menu.openMainMenu();
+			}
+		});
+
+		bindClick('btn-ok', () => {
+			Field.stopMove();
+			App.inspectCurrentTile();
+		});
+
+		window.addEventListener('blur', () => Field.stopMove());
+		document.addEventListener('visibilitychange', () => {
+			if (document.hidden) Field.stopMove();
+		});
 		
     },
 
@@ -2061,7 +2135,103 @@ load: () => {
         };
         input.click(); 
     },
+	
+	getEncounterFlags: () => {
+		let ambushPrevention = 0; // ID 41: 警戒
+		let preemptiveBonus = 0;  // ID 42: 忍び足
 
+		if (typeof PassiveSkill !== 'undefined' && App.data && App.data.party) {
+			App.data.party.forEach(uid => {
+				if (!uid) return;
+				const c = App.data.characters.find(char => char.uid === uid);
+				if (!c) return;
+
+				ambushPrevention += PassiveSkill.getSumValue(c, 'ambush_prevent_pct');
+				preemptiveBonus += PassiveSkill.getSumValue(c, 'ambush_chance_pct');
+			});
+		}
+
+		let isAmbushed = Math.random() < 0.10;
+		let isPreemptive = Math.random() < 0.10;
+
+		if (isAmbushed && Math.random() * 100 < ambushPrevention) {
+			isAmbushed = false;
+			App.log("<span style='color:#88f;'>「警戒」により不意打ちを防いだ！</span>");
+		}
+
+		if (!isAmbushed && !isPreemptive && Math.random() * 100 < preemptiveBonus) {
+			isPreemptive = true;
+			App.log("<span style='color:#8f8;'>「忍び足」により先制攻撃のチャンス！</span>");
+		}
+
+		if (isAmbushed) isPreemptive = false;
+
+		return { isAmbushed, isPreemptive };
+	},
+
+	playEncounterTransition: (callback) => {
+		const layer = document.getElementById('encounter-transition');
+
+		if (!layer) {
+			setTimeout(callback, 500);
+			return;
+		}
+
+		layer.classList.remove('is-active');
+		void layer.offsetWidth;
+		layer.classList.add('is-active');
+
+		setTimeout(() => {
+			callback();
+
+			setTimeout(() => {
+				layer.classList.remove('is-active');
+			}, 300);
+		}, 680);
+	},
+
+	tryRandomEncounter: (rate = null) => {
+		if (!App.data) return false;
+		if (App.encounterTransitioning) return true;
+		if (App.data.battle && App.data.battle.active) return true;
+
+		const encounterRate = rate !== null
+			? rate
+			: ((App.data.walkCount || 0) > 15 ? 0.06 : 0.03);
+
+		if (Math.random() >= encounterRate) {
+			return false;
+		}
+
+		App.encounterTransitioning = true;
+		Field.stopMove();
+
+		App.data.walkCount = 0;
+		App.log("敵だ！");
+
+		const flags = App.getEncounterFlags();
+
+		App.data.battle = {
+			active: false,
+			isBossBattle: false,
+			isSpecialBoss: false,
+			isEstark: false,
+			fixedBossId: null,
+			enemies: [],
+			isAmbushed: flags.isAmbushed,
+			isPreemptive: flags.isPreemptive
+		};
+
+		App.save();
+
+		App.playEncounterTransition(() => {
+			App.changeScene('battle');
+			App.encounterTransitioning = false;
+		});
+
+		return true;
+	},
+		
     changeScene: (sceneId) => {
         document.querySelectorAll('.scene-layer').forEach(e => e.style.display = 'none');
         const target = document.getElementById(sceneId + '-scene');
@@ -2386,58 +2556,7 @@ const Field = {
             }
             else {
                 // --- エンカウント判定ロジック ---
-                let rate = 0.03; if (App.data.walkCount > 15) rate = 0.06;
-                
-                let ambushPrevention = 0; // ID 41: 警戒 (敵の不意打ちを防ぐ)
-                let preemptiveBonus = 0;  // ID 42: 忍び足 (こちらの先制率を上げる)
-                
-                if (typeof PassiveSkill !== 'undefined') {
-                    // ★修正: 集計対象を編成メンバーのみに限定
-                    App.data.party.forEach(uid => {
-                        const c = App.data.characters.find(char => char.uid === uid);
-                        if (c) {
-                            // 習得済み特性(ON/OFF考慮)および装備品の特性を合算
-                            ambushPrevention += PassiveSkill.getSumValue(c, 'ambush_prevent_pct');
-                            preemptiveBonus += PassiveSkill.getSumValue(c, 'ambush_chance_pct');
-                        }
-                    });
-                }
-                
-                // ★修正: 「忍び足」がエンカウント率（rate）を下げていた処理を削除
-                // エンカウント率自体は 0.03 / 0.06 のまま進行します
-
-                if(Math.random() < rate) { 
-					Field.stopMove(); // ★ここでタイマーを確実に殺す
-                    App.data.walkCount = 0; 
-                    App.log("敵だ！"); 
-                    
-                    let isAmbushed = (Math.random() < 0.10); // 基礎10%で敵の不意打ち
-                    let isPreemptive = (Math.random() < 0.10); // 基礎10%でこちらの先制攻撃
-
-                    // 1) 警戒特性 (ID 41) による不意打ち防止判定
-                    if (isAmbushed && Math.random() * 100 < ambushPrevention) {
-                        isAmbushed = false;
-                        App.log("<span style='color:#88f;'>「警戒」により不意打ちを防いだ！</span>");
-                    }
-
-                    // 2) 忍び足特性 (ID 42) による先制確率上昇判定
-                    // まだ先制になっていない場合、特性の合計値(%)の確率で先制に書き換える
-                    if (!isAmbushed && !isPreemptive && Math.random() * 100 < preemptiveBonus) {
-                        isPreemptive = true;
-                        App.log("<span style='color:#8f8;'>「忍び足」により先制攻撃のチャンス！</span>");
-                    }
-                    
-                    // 両方同時に起きないように最終調整
-                    if (isAmbushed) isPreemptive = false;
-
-                    // バトルデータにフラグをセット
-                    App.data.battle = { 
-                        isAmbushed: isAmbushed, 
-                        isPreemptive: isPreemptive 
-                    };
-                    
-                    setTimeout(() => App.changeScene('battle'), 500); 
-                }
+                App.tryRandomEncounter();
             }
 			
             if(App.data.walkCount === undefined) App.data.walkCount = 0;

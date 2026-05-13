@@ -360,8 +360,10 @@ const Dungeon = {
 	
     // --- 移動・イベント処理 (全文) ---
     handleMove: (x, y) => {
-        const tiles = (Field.currentMapData && Field.currentMapData.tiles) ? Field.currentMapData.tiles : Dungeon.map;
-        const tile = tiles[y][x];
+		const tiles = (Field.currentMapData && Field.currentMapData.tiles) ? Field.currentMapData.tiles : Dungeon.map;
+		const areaKey = (typeof Field !== 'undefined' && typeof Field.getCurrentAreaKey === 'function') ? Field.getCurrentAreaKey() : 'ABYSS';
+		const posKey = `${x},${y}`;
+		let tile = (App.data.progress.mapChanges?.[areaKey]?.[posKey] || tiles[y][x] || 'W').toUpperCase();
         
 		//App.clearAction();
 
@@ -411,14 +413,19 @@ const Dungeon = {
                 App.changeScene('battle');
             });
         } 
+		
+		// 通常床ではランダムエンカウントを発生させる
+		// 宝箱・階段・出口・ボス・イベントアクション中は除外
+		if ((tile === 'T' || tile === 'G') && !App.pendingAction) {
+			const occurred = App.tryRandomEncounter();
 
-        // ランダムエンカウント (床タイルの場合のみ)
-        if(tile === 'G' || tile === 'T') {
-            if(Math.random() < 0.08) { 
-                App.log("魔物が襲いかかってきた！"); 
-                setTimeout(() => App.changeScene('battle'), 300); 
-            }
-        }
+			if (!occurred) {
+				if (App.data.walkCount === undefined) App.data.walkCount = 0;
+				App.data.walkCount++;
+			}
+
+			return;
+		}
     },
 	
     /* dungeon.js: Dungeon.openChest 関数 */

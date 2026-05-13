@@ -591,11 +591,41 @@ const Menu = {
    ========================================================================== */
 const MenuParty = {
     targetSlot: 0,
-    init: () => { 
-        document.getElementById('party-screen-slots').style.display = 'flex';
-        document.getElementById('party-screen-chars').style.display = 'none';
-        MenuParty.renderSlots(); 
-    },
+	init: () => { 
+		MenuParty.ensureBottomPanel();
+
+		document.getElementById('party-screen-slots').style.display = 'flex';
+		document.getElementById('party-screen-chars').style.display = 'none';
+
+		MenuParty.setBottomButton('もどる', () => Menu.closeSubScreen('party'));
+
+		MenuParty.renderSlots(); 
+	},
+	
+	ensureBottomPanel: () => {
+		const screen = document.getElementById('sub-screen-party');
+		if (!screen) return;
+
+		let panel = document.getElementById('party-bottom-panel');
+		if (panel) return;
+
+		panel = document.createElement('div');
+		panel.id = 'party-bottom-panel';
+		panel.className = 'sub-screen-bottom-panel';
+		panel.innerHTML = `
+			<button id="party-bottom-back-btn" class="btn sub-screen-back-btn">もどる</button>
+		`;
+
+		screen.appendChild(panel);
+	},
+
+	setBottomButton: (label, handler) => {
+		const btn = document.getElementById('party-bottom-back-btn');
+		if (!btn) return;
+
+		btn.innerText = label;
+		btn.onclick = handler;
+	},
     
     // ★新規追加: 隊列（前衛・後衛）の切り替え処理
     toggleFormation: (uid) => {
@@ -631,7 +661,7 @@ const MenuParty = {
                 // 画像取得ロジック（マスタデータ参照）
                 const master = DB.CHARACTERS.find(m => m.id === c.charId);
                 const imgUrl = c.img || (master ? master.img : null);
-                const imgHtml = imgUrl ? `<img src="${imgUrl}" style="width:40px; height:40px; object-fit:cover; border-radius:4px; border:1px solid #555;">` : `<div style="width:40px; height:40px; background:#333; display:flex; align-items:center; justify-content:center; color:#555; font-size:9px; border-radius:4px; border:1px solid #555;">IMG</div>`;
+                const imgHtml = imgUrl ? `<img src="${imgUrl}" style="width:50px; height:50px; object-fit:cover; border-radius:4px; border:1px solid #555;">` : `<div style="width:40px; height:40px; background:#333; display:flex; align-items:center; justify-content:center; color:#555; font-size:9px; border-radius:4px; border:1px solid #555;">IMG</div>`;
 
                 // ★隊列表示用の設定
                 const formationLabel = (c.formation === 'back') ? '後衛' : '前衛';
@@ -641,7 +671,7 @@ const MenuParty = {
 					<div style="display:flex; align-items:center; width:100%; padding:6px 0;">
 						<div style="display:flex; align-items:center; flex-shrink:0; margin-right:10px;">
 							<div style="font-size:14px; font-weight:bold; color:#aaa; width:15px;">${i+1}.</div>
-							<div style="width:40px;">${imgHtml}</div>
+							<div style="width:50px;">${imgHtml}</div>
 						</div>
 
 						<div style="flex:1; min-width:0; margin-right:8px;">
@@ -651,9 +681,15 @@ const MenuParty = {
 								</div>
 							</div>
 
-							<div style="display:grid; grid-template-columns: 40px 1fr 1fr; gap:4px; font-size:11px; color:#ddd; align-items:baseline; margin-bottom:3px;">
+							<div style="display:grid; grid-template-columns: 40px 1fr 1fr; gap:4px; font-size:11px; color:#ddd; align-items:baseline; margin-bottom:1px;">
 								<span style="color:#ffd700; font-weight:bold;">Lv.${c.level}</span>
-								<span style="white-space:nowrap;">HP:<span style="color:#8f8;">${curHp}/${s.maxHp}</span></span>
+							</div>
+							
+							<div style="display:grid; grid-template-columns: 40px 1fr 1fr; gap:4px; font-size:11px; color:#ddd; align-items:baseline; margin-bottom:0px;">
+								<span style="white-space:nowrap;">HP:<span style="color:#8f8;">${curHp}/${s.maxHp}</span>
+							</div>
+							
+							<div style="display:grid; grid-template-columns: 40px 1fr 1fr; gap:4px; font-size:11px; color:#ddd; align-items:baseline; margin-bottom:3px;">
 								<span style="white-space:nowrap;"> MP:<span style="color:#88f;">${curMp}/${s.maxMp}</span></span>
 							</div>
 
@@ -700,20 +736,22 @@ const MenuParty = {
             list.appendChild(div);
         }
         
-        // 画面下部の閉じるボタン
-        const closeBtnDiv = document.createElement('div');
-        closeBtnDiv.style.marginTop = '20px';
-        closeBtnDiv.innerHTML = `<button class="btn" style="width:100%; background:#444;" onclick="Menu.closeSubScreen('party')">閉じる</button>`;
-        list.appendChild(closeBtnDiv);
     },
 
     // キャラクタ変更画面を開くためのヘルパー
     openChangeMember: (slotIndex) => {
-        MenuParty.targetSlot = slotIndex;
-        document.getElementById('party-screen-slots').style.display = 'none';
-        document.getElementById('party-screen-chars').style.display = 'flex';
-        MenuParty.renderCharList();
-    },
+		MenuParty.targetSlot = slotIndex;
+		document.getElementById('party-screen-slots').style.display = 'none';
+		document.getElementById('party-screen-chars').style.display = 'flex';
+
+		MenuParty.setBottomButton('スロット選択にもどる', () => {
+			document.getElementById('party-screen-chars').style.display = 'none';
+			document.getElementById('party-screen-slots').style.display = 'flex';
+			MenuParty.setBottomButton('もどる', () => Menu.closeSubScreen('party'));
+		});
+
+		MenuParty.renderCharList();
+	},
     
     renderCharList: () => {
         const list = document.getElementById('party-char-list');
@@ -772,29 +810,30 @@ const MenuParty = {
             list.appendChild(div);
         });
 
-        const backBtnDiv = document.createElement('div');
-        backBtnDiv.style.marginTop = '20px';
-        backBtnDiv.innerHTML = `<button class="btn" style="width:100%; background:#444;" onclick="document.getElementById('party-screen-chars').style.display='none'; document.getElementById('party-screen-slots').style.display='flex';">スロット選択にもどる</button>`;
-        list.appendChild(backBtnDiv);
     },
     
-    setMember: (uid) => {
-        if (uid === null) {
-            const currentCount = App.data.party.filter(id => id !== null).length;
-            if (App.data.party[MenuParty.targetSlot] !== null && currentCount <= 1) {
-                Menu.msg("パーティメンバーを0人にはできません。");
-                return;
-            }
-        }
-        const oldIdx = App.data.party.indexOf(uid);
-        if(oldIdx > -1 && uid !== null) App.data.party[oldIdx] = App.data.party[MenuParty.targetSlot];
-        
-        App.data.party[MenuParty.targetSlot] = uid;
-        App.save();
-        document.getElementById('party-screen-chars').style.display = 'none';
-        document.getElementById('party-screen-slots').style.display = 'flex';
-        MenuParty.renderSlots();
-    }
+	setMember: (uid) => {
+		if (uid === null) {
+			const currentCount = App.data.party.filter(id => id !== null).length;
+			if (App.data.party[MenuParty.targetSlot] !== null && currentCount <= 1) {
+				Menu.msg("パーティメンバーを0人にはできません。");
+				return;
+			}
+		}
+
+		const oldIdx = App.data.party.indexOf(uid);
+		if(oldIdx > -1 && uid !== null) App.data.party[oldIdx] = App.data.party[MenuParty.targetSlot];
+		
+		App.data.party[MenuParty.targetSlot] = uid;
+		App.save();
+
+		document.getElementById('party-screen-chars').style.display = 'none';
+		document.getElementById('party-screen-slots').style.display = 'flex';
+
+		MenuParty.setBottomButton('もどる', () => Menu.closeSubScreen('party'));
+
+		MenuParty.renderSlots();
+	}
 };
 
 /* ==========================================================================
@@ -810,13 +849,28 @@ const MenuStatus = {
         div.style.display = 'none';
         div.style.flexDirection = 'column';
         div.style.background = '#101010';
-        div.innerHTML = `
-            <div class="header-bar">
-                <span style="color:#ffd700; font-weight:bold;">⚔️ 冒険の記録</span>
-                <button class="btn" onclick="Menu.closeSubScreen('status')">もどる</button>
-            </div>
-            <div id="status-content" class="scroll-area" style="padding:15px; background:linear-gradient(180deg, #101010 0%, #1a1a1a 100%);"></div>
-        `;
+		div.innerHTML = `
+			<div class="header-bar">
+				<span style="color:#ffd700; font-weight:bold;">⚔️ 冒険の記録</span>
+				<button class="btn" onclick="Menu.closeSubScreen('status')">もどる</button>
+			</div>
+
+			<div
+				id="status-content"
+				class="scroll-area"
+				style="
+					flex:1 1 auto;
+					min-height:0;
+					padding:15px;
+					background:linear-gradient(180deg, #101010 0%, #1a1a1a 100%);
+					overflow-y:auto;
+				"
+			></div>
+
+			<div class="sub-screen-bottom-panel">
+				<button class="btn sub-screen-back-btn" onclick="Menu.closeSubScreen('status')">もどる</button>
+			</div>
+		`;
         document.getElementById('game-container').appendChild(div);
     },
 
@@ -918,10 +972,6 @@ const MenuStatus = {
 					</div>
 				</div>
             </div>
-
-			<div class="sub-screen-bottom-panel">
-				<button class="btn sub-screen-back-btn" onclick="Menu.closeSubScreen('status')">もどる</button>
-			</div>
 		`;
     }
 };
@@ -1405,17 +1455,22 @@ const MenuAllies = {
                 <div style="display:flex; align-items:center; width:100%;">
                     <div style="margin-right:10px;">${imgHtml}</div>
                     <div style="flex:1;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1px;">
                             <div style="font-size:13px; font-weight:bold; color:#fff;">${inParty}${c.name} ${lbText} <span style="font-size:10px; color:#aaa; font-weight:normal;">(${c.job})</span></div>
                             <div style="font-size:11px; font-weight:bold; color:${rarityColor};">${rarityLabel}</div>
                         </div>
-                        <div style="font-size:11px; color:#ddd; display:flex; align-items:baseline; margin-bottom:1px;">
+                        <div style="font-size:11px; color:#ddd; display:flex; align-items:baseline; margin-bottom:0px;">
                             <span style="color:#ffd700; font-weight:bold; margin-right:8px;">Lv.${c.level}</span>
+                        </div>
+                        <div style="font-size:11px; color:#ddd; display:flex; align-items:baseline; margin-bottom:1px;">
                             <span style="margin-right:8px;">HP <span style="color:#8f8;">${curHp}/${s.maxHp}</span></span>
                             <span>MP <span style="color:#88f;">${curMp}/${s.maxMp}</span></span>
                         </div>
                         <div style="font-size:10px; color:#aaa; display:flex; gap:8px;">
-                            <span>攻:${s.atk}</span> <span>防:${s.def}</span> <span>魔:${s.mag}</span> <span>魔防:${s.mdef}</span> <span>速:${s.spd}</span>
+                            <span>攻:${s.atk}</span> <span>魔:${s.mag}</span> <span>速:${s.spd}</span>
+                        </div>
+                        <div style="font-size:10px; color:#aaa; display:flex; gap:8px;">
+                            <span>防:${s.def}</span><span>魔防:${s.mdef}</span>
                         </div>
                     </div>
                 </div>`;

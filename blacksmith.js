@@ -43,25 +43,27 @@ const MenuBlacksmith = {
             }
         });
 
-        const selectScreen = document.getElementById('smith-screen-select');
-        selectScreen.innerHTML = `
-            <div style="padding:8px; background:#222; display:flex; gap:8px; border-bottom:1px solid #333; flex-shrink:0;">
-                <button class="btn" style="flex:1; font-size:11px; background:linear-gradient(#555, #333);" onclick="MenuBlacksmith.changeScreen('main')">鍛冶メニュー</button>
-                <button class="btn" style="flex:1; font-size:11px; background:linear-gradient(#444, #222);" onclick="Menu.closeSubScreen('blacksmith')">もどる</button>
-            </div>
-            <div id="smith-list" class="scroll-area" style="flex:1;"></div>
-            <div id="smith-footer" style="padding:10px; background:rgba(0,0,0,0.4); border-top:1px solid #444; flex-shrink:0; min-height:40px;"></div>
-        `;
+	const selectScreen = document.getElementById('smith-screen-select');
+	selectScreen.innerHTML = `
+		<div id="smith-list" class="scroll-area" style="flex:1; min-height:0;"></div>
 
-        const optScreen = document.getElementById('smith-screen-option');
-        optScreen.innerHTML = `
-            <div style="padding:8px; background:#222; display:flex; gap:8px; border-bottom:1px solid #333; flex-shrink:0;">
-                <button class="btn" style="flex:1; font-size:11px; background:linear-gradient(#555, #333);" onclick="MenuBlacksmith.changeScreen('main')">鍛冶メニュー</button>
-                <button class="btn" style="flex:1; font-size:11px; background:linear-gradient(#444, #222);" onclick="MenuBlacksmith.goBackStep()">もどる</button>
-            </div>
-            <div id="smith-option-header" style="padding:10px; text-align:center; color:#ffd700; font-size:12px; background:rgba(255,215,0,0.1); border-bottom:1px solid #444; flex-shrink:0;"></div>
-            <div id="smith-option-list" class="scroll-area" style="flex:1;"></div>
-        `;
+		<div id="smith-footer" style="padding:10px; background:rgba(0,0,0,0.4); border-top:1px solid #444; flex-shrink:0; min-height:40px;"></div>
+
+		<div class="sub-screen-bottom-panel">
+			<button class="btn sub-screen-back-btn" onclick="MenuBlacksmith.handleBottomBack()">もどる</button>
+		</div>
+	`;
+
+	const optScreen = document.getElementById('smith-screen-option');
+	optScreen.innerHTML = `
+		<div id="smith-option-header" style="padding:10px; text-align:center; color:#ffd700; font-size:12px; background:rgba(255,215,0,0.1); border-bottom:1px solid #444; flex-shrink:0;"></div>
+
+		<div id="smith-option-list" class="scroll-area" style="flex:1; min-height:0;"></div>
+
+		<div class="sub-screen-bottom-panel">
+			<button class="btn sub-screen-back-btn" onclick="MenuBlacksmith.handleBottomBack()">もどる</button>
+		</div>
+	`;
     },
 
     resetState: () => {
@@ -81,9 +83,33 @@ const MenuBlacksmith = {
         if(ctrl) ctrl.style.display = (screenId === 'select') ? 'block' : 'none';
         if (screenId === 'main') {
             MenuBlacksmith.renderMain();
-            MenuBlacksmith.updateTitle("鍛冶屋");
+            MenuBlacksmith.updateTitle("⚒️ 鍛冶屋");
         }
     },
+	
+	handleBottomBack: () => {
+		const mainScreen = document.getElementById('smith-screen-main');
+		const selectScreen = document.getElementById('smith-screen-select');
+		const optionScreen = document.getElementById('smith-screen-option');
+
+		if (mainScreen && mainScreen.style.display === 'flex') {
+			Menu.closeSubScreen('blacksmith');
+			return;
+		}
+
+		if (optionScreen && optionScreen.style.display === 'flex') {
+			MenuBlacksmith.goBackStep();
+			return;
+		}
+
+		if (selectScreen && selectScreen.style.display === 'flex') {
+			if (MenuBlacksmith.step === 'material') {
+				MenuBlacksmith.goBackStep();
+			} else {
+				MenuBlacksmith.changeScreen('main');
+			}
+		}
+	},
 
     goBackStep: () => {
         if (MenuBlacksmith.step === 'material') {
