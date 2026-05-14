@@ -699,17 +699,20 @@ const App = {
         //let moveTimer = null;
         const startMove = (dx, dy) => {
             Field.stopMove(); // 二重起動防止
+            if (typeof App.isFieldControlBlocked === 'function' && App.isFieldControlBlocked()) return;
             if(typeof Menu !== 'undefined' && Menu.isMenuOpen()) return;
-            Field.move(dx, dy); 
+            Field.move(dx, dy);
+            if (typeof App.isFieldControlBlocked === 'function' && App.isFieldControlBlocked()) return;
             Field.moveTimer = setInterval(() => {
-                // メニューが開いたか、フィールド画面以外になったら停止
-                if((typeof Menu !== 'undefined' && Menu.isMenuOpen()) || 
-                   document.getElementById('field-scene').style.display === 'none') { 
-                    Field.stopMove(); 
-                    return; 
+                // メニュー/会話/エンカウント演出/フィールド以外では長押し移動を残さない
+                if((typeof Menu !== 'undefined' && Menu.isMenuOpen()) ||
+                   (typeof App.isFieldControlBlocked === 'function' && App.isFieldControlBlocked()) ||
+                   document.getElementById('field-scene').style.display === 'none') {
+                    Field.stopMove();
+                    return;
                 }
                 Field.move(dx, dy);
-            }, 150); 
+            }, 150);
         };
         const stopMove = (e) => {
             if(e) e.preventDefault(); 
@@ -718,6 +721,12 @@ const App = {
 
         window.addEventListener('keydown', e => {
             if(document.getElementById('field-scene') && document.getElementById('field-scene').style.display === 'flex') {
+                if (typeof App.isFieldControlBlocked === 'function' && App.isFieldControlBlocked()) {
+                    if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','a','s','d','Enter',' '].includes(e.key)) {
+                        e.preventDefault();
+                    }
+                    return;
+                }
                 if(typeof Menu !== 'undefined' && Menu.isMenuOpen()) return;
                 if(['ArrowUp', 'w'].includes(e.key)) Field.move(0, -1);
                 if(['ArrowDown', 's'].includes(e.key)) Field.move(0, 1);
@@ -790,6 +799,7 @@ const App = {
 
 		bindClick('btn-menu', () => {
 			Field.stopMove();
+			if (typeof App.isFieldControlBlocked === 'function' && App.isFieldControlBlocked()) return;
 			if (typeof Menu !== 'undefined' && typeof Menu.openMainMenu === 'function') {
 				Menu.openMainMenu();
 			}
@@ -797,6 +807,7 @@ const App = {
 
 		bindClick('btn-ok', () => {
 			Field.stopMove();
+			if (typeof App.isFieldControlBlocked === 'function' && App.isFieldControlBlocked()) return;
 			App.inspectCurrentTile();
 		});
 
@@ -969,8 +980,39 @@ const App = {
     },
     isFieldInputLocked: () => Date.now() < Number(App.fieldInputLockedUntil || 0),
 
+    /**
+     * フィールド操作を止めるべき状態を一元判定する。
+     *
+     * 重要:
+     * - エンカウント演出中に十字キー入力が残ると、戦闘へ移るまでの間にさらに移動できてしまう。
+     * - Story会話/選択肢/会話ログ中に移動・メニュー操作ができると、戦闘画面上に会話UIが残るなどの事故が起きる。
+     * - 今後、十字キー/OK/メニュー/長押し移動を追加・修正する場合は、この関数を必ず通す。
+     */
+    isFieldControlBlocked: () => {
+        if (typeof App.isFieldInputLocked === 'function' && App.isFieldInputLocked()) return true;
+        if (App.encounterTransitioning) return true;
+        if (App.data?.battle?.active) return true;
+        if (document.hidden) return true;
+
+        if (typeof StoryManager !== 'undefined') {
+            if (StoryManager.active || StoryManager.isTyping) return true;
+        }
+
+        const storyOverlay = document.getElementById('story-ui-overlay');
+        if (storyOverlay && storyOverlay.style.display !== 'none') return true;
+
+        const backlogOverlay = document.getElementById('backlog-overlay');
+        if (backlogOverlay) return true;
+
+        if (typeof Dungeon !== 'undefined') {
+            if (Dungeon.adventurerPromptOpen || Dungeon.abyssRiftPromptOpen) return true;
+        }
+
+        return false;
+    },
+
     executeAction: () => {
-        if (typeof App.isFieldInputLocked === 'function' && App.isFieldInputLocked()) return;
+        if (typeof App.isFieldControlBlocked === 'function' && App.isFieldControlBlocked()) return;
         if(App.pendingAction) {
             const act = App.pendingAction;
             App.clearAction();
@@ -978,6 +1020,7 @@ const App = {
         }
     },
     inspectCurrentTile: () => {
+        if (typeof App.isFieldControlBlocked === 'function' && App.isFieldControlBlocked()) return;
         if(App.pendingAction) {
             App.executeAction();
             return;
@@ -2370,6 +2413,10 @@ load: () => {
 
 		App.encounterTransitioning = true;
 		Field.stopMove();
+		if (typeof Field.stopIdleStep === 'function') Field.stopIdleStep();
+		App.clearAction();
+		// エンカウント演出中にキー/長押し入力が残っても、戦闘画面へ移るまで一切進ませない。
+		if (typeof App.lockFieldInput === 'function') App.lockFieldInput(1500);
 
 		App.data.walkCount = 0;
 		App.log("敵だ！");
@@ -2504,6 +2551,8 @@ const Field = {
             Field.moveTimer = null;
         }
         // 長押し移動を離した後、フィールド上なら足踏みを再開する。
+        // ただし会話/エンカウント遷移/報酬演出中は再開しない。
+        if (typeof App.isFieldControlBlocked === 'function' && App.isFieldControlBlocked()) return;
         if (typeof Field.startIdleStep === 'function') Field.startIdleStep();
     },
 
@@ -2519,7 +2568,7 @@ const Field = {
         }
         const storyOverlay = document.getElementById('story-ui-overlay');
         if (storyOverlay && storyOverlay.style.display !== 'none') return false;
-        if (App.encounterTransitioning) return false;
+        if (typeof App.isFieldControlBlocked === 'function' && App.isFieldControlBlocked()) return false;
         return true;
     },
 
@@ -2935,9 +2984,12 @@ const Field = {
     },
 
 	move: (dx, dy) => {
-        // レア報酬などの短い演出中は移動入力を無視する。
-        // ログ表示前に歩いてメッセージが消える問題を防ぐため、ここで最初に判定する。
-        if (typeof App.isFieldInputLocked === 'function' && App.isFieldInputLocked()) return;
+        // レア報酬演出・エンカウント遷移・会話/選択肢/会話ログ中は移動入力を無視する。
+        // ここで止めないと、戦闘開始待ちの間にさらに進んでNPC/裂け目会話が戦闘画面へ重なる。
+        if (typeof App.isFieldControlBlocked === 'function' && App.isFieldControlBlocked()) {
+            Field.stopMove();
+            return;
+        }
 
         // 待機中の足踏みは、実移動入力が入ったら一旦止める。
         // ここでField.move()を疑似的に呼ぶ実装にはしないこと。足踏みはstep切替のみ。
@@ -3025,7 +3077,12 @@ const Field = {
             const hasTileAction = Field.refreshCurrentAction({ silent: false });
             if (!hasTileAction) {
                 // --- エンカウント判定ロジック ---
-                App.tryRandomEncounter();
+                const occurred = App.tryRandomEncounter();
+                if (occurred) {
+                    App.save();
+                    Field.render();
+                    return;
+                }
             }
 			
             if(App.data.walkCount === undefined) App.data.walkCount = 0;
@@ -3121,7 +3178,7 @@ const Field = {
 
         drawOverlayImage(App.data?.dungeon?.healSpring, 'assets/effect/fx-buff-ai.png', '#80ffb0');
         drawOverlayImage(App.data?.dungeon?.abyssRift, 'assets/effect/fx-abyss-vortex-ai.png', '#a34cff');
-        drawOverlayImage(App.data?.dungeon?.adventurer, 'monster/img/monster_100009.png', '#5bd6ff');
+        drawOverlayImage(App.data?.dungeon?.adventurer, 'assets/monsters/monster_100009.png', '#5bd6ff');
 
         // 4. プレイヤーの描画 (hero_... の画像もスプライトシート化していれば対応可能)
         const pKey = `hero_${['down','left','right','up'][Field.dir]}_${Field.step}`; 

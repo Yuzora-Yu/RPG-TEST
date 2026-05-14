@@ -291,7 +291,7 @@ const INITIAL_DATA_TEMPLATE = {
             disabledTraits: [], // 特性ON/OFF管理用
         }		
     ],
-    party: ['p1'],
+    party: ['p1', null, null, null],
     book: { monsters: [], killCounts: {} },
     stats: { totalSteps: 0, startTime: Date.now() }
 };

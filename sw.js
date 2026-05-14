@@ -22,8 +22,8 @@ try {
   console.warn("[SW] assets.js の読み込みに失敗しました。画像初回キャッシュは最小限で続行します。", error);
 }
 
-const CACHE_NAME = "prisma-abyss-v2.83-maze-vignette-lava-bg";
-const RUNTIME_CACHE_NAME = "prisma-abyss-v2.89-runtime-assets";
+const CACHE_NAME = "prisma-abyss-v2.92-background-rename";
+const RUNTIME_CACHE_NAME = "prisma-abyss-v2.92-runtime-assets";
 const WARM_CACHE_META_KEY = "__prisma_abyss_warm_cache_complete__";
 
 // 起動に必要な App Shell。
@@ -39,6 +39,19 @@ const PRECACHE_FILES = [
   "polish.js",
   "main.js",
   "menus.js",
+  "menus_party.js",
+  "menus_status.js",
+  "menus_items.js",
+  "menus_inventory.js",
+  "menus_allies.js",
+  "menus_skills.js",
+  "menus_book.js",
+  "menus_ally_detail.js",
+  "menus_skill_detail.js",
+  "menus_trait_detail.js",
+  "menus_exchange.js",
+  "menus_news_detail.js",
+  "menus_achievements.js",
   "database.js",
   "gacha.js",
   "monsters.js",
@@ -63,15 +76,15 @@ const ASSET_WARMUP = (self.PRISMA_ASSETS && self.PRISMA_ASSETS.cacheWarmup) || {
 
 // 初回表示で特に遅延が目立つ画像。assets.js から取得する。
 const INITIAL_IMAGE_PRECACHE = ASSET_WARMUP.criticalImages || [
-  ...Array.from({ length: 24 }, (_, i) => `monster/img/monster_${100001 + i}.png`),
+  ...Array.from({ length: 24 }, (_, i) => `assets/monsters/monster_${100001 + i}.png`),
   "assets/generated/battle-field-ai.png",
   "assets/generated/battle-dungeon-ai.png",
   "assets/generated/battle-fire.png",
   "assets/map/objects/magma.png",
   "assets/gacha/back_card.png",
   "assets/gacha/front_card.png",
-  "assets/background/宿屋.jpg",
-  "assets/background/カジノ.png",
+  "assets/background/bg_inn.jpg",
+  "assets/background/bg_casino.png",
 ];
 
 // 初回install時にキャッシュする画像全体。

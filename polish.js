@@ -279,49 +279,6 @@
     hitCount(cmd) {
       return Math.max(1, Number(cmd?.data?.count || cmd?.hitCount || 1) || 1);
     },
-    specialKind(data, cmd) {
-      const raw = [data?.elm, data?.type, data?.name, data?.desc].filter(Boolean).join(" ");
-      if (/火|炎|メラ|ギラ|燃|轣ｫ|轤|辟/.test(raw)) return "fire";
-      if (/水|氷|ヒャ|凍|豌ｴ|豌ｷ/.test(raw)) return "ice";
-      if (/雷|電|ライ|稲妻|髮ｷ|髮ｻ/.test(raw)) return "thunder";
-      if (/風|バギ|嵐|鬚ｨ/.test(raw)) return "wind";
-      if (/光|聖|閃|蜈/.test(raw)) return "light";
-      if (/闇|ドル|影|暗黒|髣/.test(raw)) return "dark";
-      if (/混沌|深淵|カオス|豺ｷ|雎ｺ/.test(raw)) return "chaos";
-      if (/回復|蘇生|治|癒|ヒール|蝗槫ｾｩ|豐ｻ/.test(raw)) return "heal";
-      if (/強化|防御|耐性|アップ|蠑ｷ蛹|陟托ｽｷ/.test(raw)) return "buff";
-      if (/弱体|毒|封印|眠|恐怖|ダウン|蠑ｱ菴|陟托ｽｱ/.test(raw)) return "debuff";
-      if (/カラミティ|深淵|混沌|災厄|終焉|奈落|豺ｷ|雎ｺ/.test(raw)) return "ultimate-chaos";
-      if (/メテオ|隕石|流星|彗星/.test(raw)) return "meteor";
-      if (/氷|吹雪|ブリザード|凍|豌ｷ/.test(raw)) return "ice-spear";
-      if (/雷|稲妻|サンダー|ライトニング|髮ｷ|髮ｻ/.test(raw)) return "thunder-pillar";
-      if (/毒|ポイズン|猛毒|蠍|蝮/.test(raw)) return "poison";
-      if (/聖|光|ホーリー|天罰|蜈榎/.test(raw)) return "holy-burst";
-      if (/闇|暗黒|影|アビス|髣/.test(raw)) return "abyss-vortex";
-      return null;
-    },
-    specialKind(data, cmd) {
-      const raw = [data?.elm, data?.type, data?.name, data?.desc].filter(Boolean).join(" ");
-      if (/カラミティ|深淵|混沌|災厄|終焉|奈落|豺ｷ|雎ｺ/.test(raw)) return "ultimate-chaos";
-      if (/メテオ|隕石|流星|彗星/.test(raw)) return "meteor";
-      if (/氷|吹雪|ブリザード|凍|豌ｷ/.test(raw)) return "ice-spear";
-      if (/雷|稲妻|サンダー|ライトニング|髮ｷ|髮ｻ/.test(raw)) return "thunder-pillar";
-      if (/毒|ポイズン|猛毒|蠍|蝮/.test(raw)) return "poison";
-      if (/聖|光|ホーリー|天罰|蜈榎/.test(raw)) return "holy-burst";
-      if (/闇|暗黒|影|アビス|髣/.test(raw)) return "abyss-vortex";
-      return null;
-    },
-    visualKind(cmd, perHit = false) {
-      const support = this.isSupport(cmd?.data);
-      if (support) return this.specialKind(cmd?.data, cmd) || "heal-blossom";
-      const special = this.specialKind(cmd?.data, cmd);
-      if (special) return special;
-      const base = this.elementKind(cmd?.data, cmd);
-      if (cmd?.isEnemy || cmd?.type === "enemy_attack") return perHit ? "party-hit" : "enemy-claw";
-      if (this.isArea(cmd) && (base === "slash" || base === "claw")) return "all-slash";
-      if (perHit && this.hitCount(cmd) > 1 && (base === "slash" || base === "claw")) return "combo";
-      return base;
-    },
     ensureLayer() {
       const scene = byId("battle-scene");
       if (!scene) return null;
@@ -358,43 +315,6 @@
         (unit?.isBoss || unit?.id >= 1000 || unit?.baseId >= 1000 || byId("battle-scene")?.dataset?.bossBattle === "true" ||
           (typeof App !== "undefined" && App.data?.battle?.isBossBattle))
       );
-    },
-    elementKind(data, cmd) {
-      const raw = [data?.elm, data?.type, data?.name, data?.desc].filter(Boolean).join(" ");
-      if (/火|炎|メラ|ギラ|轣|焔/.test(raw)) return "fire";
-      if (/水|氷|ヒャ|豌/.test(raw)) return "ice";
-      if (/雷|電|ライ|髮/.test(raw)) return "thunder";
-      if (/風|バギ|鬚/.test(raw)) return "wind";
-      if (/光|聖|蜈/.test(raw)) return "light";
-      if (/闇|ドル|影|髣/.test(raw)) return "dark";
-      if (/混沌|深淵|豺/.test(raw)) return "chaos";
-      if (/回復|蘇生|治|蝗|陂/.test(raw)) return "heal";
-      if (/強化|防御|耐性|蠑ｷ/.test(raw)) return "buff";
-      if (/弱体|毒|封|恐|感電|蠑ｱ|豈|諢|蟆|諤/.test(raw)) return "debuff";
-      if (/ブレス|息|繝悶Ξ/.test(raw)) return cmd?.isEnemy ? "dark" : "wind";
-      if (cmd?.type === "enemy_attack") return "claw";
-      return "slash";
-    },
-    elementKind(data, cmd) {
-      const raw = [data?.elm, data?.type, data?.name, data?.desc].filter(Boolean).join(" ");
-      if (/火|炎|メラ|ギラ|燃|轣ｫ|轤|辟/.test(raw)) return "fire";
-      if (/水|氷|ヒャ|凍|豌ｴ|豌ｷ/.test(raw)) return "ice";
-      if (/雷|電|ライ|稲妻|髮ｷ|髮ｻ/.test(raw)) return "thunder";
-      if (/風|バギ|嵐|鬚ｨ/.test(raw)) return "wind";
-      if (/光|聖|閃|蜈/.test(raw)) return "light";
-      if (/闇|ドル|影|暗黒|髣/.test(raw)) return "dark";
-      if (/混沌|深淵|カオス|豺ｷ|雎ｺ/.test(raw)) return "chaos";
-      if (/回復|蘇生|治|癒|ヒール|蝗槫ｾｩ|豐ｻ/.test(raw)) return "heal";
-      if (/強化|防御|耐性|アップ|蠑ｷ蛹|陟托ｽｷ/.test(raw)) return "buff";
-      if (/弱体|毒|封印|眠|恐怖|ダウン|蠑ｱ菴|陟托ｽｱ/.test(raw)) return "debuff";
-      if (cmd?.type === "enemy_attack") return "claw";
-      return "slash";
-    },
-    isSupport(data) {
-      if (!data) return false;
-      if (typeof Battle !== "undefined" && typeof Battle.isSupportSkill === "function" && Battle.isSupportSkill(data)) return true;
-      const raw = [data.type, data.name, data.desc].filter(Boolean).join(" ");
-      return /回復|蘇生|強化|治|蝗|陂|蠑ｷ/.test(raw);
     },
     isSupport(data) {
       if (!data) return false;

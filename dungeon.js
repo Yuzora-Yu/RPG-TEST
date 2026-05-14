@@ -8,7 +8,7 @@ const Dungeon = {
     // 冒険者・回復の泉・深淵の裂け目は App.data.dungeon.* で別管理する。
     // 迷路マップ(genType === 2)だけは検証・メリハリ用に全特殊オブジェクトを100%出現させる。
     adventurerSpawnRate: 0.10,
-    adventurerImagePath: 'monster/img/monster_100009.png',
+    adventurerImagePath: 'assets/monsters/monster_100009.png',
     adventurerPromptOpen: false,
 
     // 回復の泉: 通常フロアでは5%、迷路では100%。
@@ -1052,7 +1052,6 @@ const Dungeon = {
             if (typeof Field !== 'undefined') Field.render();
 
             const rewardText = `${eq.name}を手に入れた！`;
-            App.log(`<span style="color:#ffd700;">${rewardText}</span>`);
 
             if (typeof StoryManager !== 'undefined' && typeof StoryManager.showConversation === 'function') {
                 const key = '__DUNGEON_ADVENTURER_REWARD__';
@@ -1075,6 +1074,8 @@ const Dungeon = {
             } else {
                 alert(`こんなところで会うなんて、これも何かの縁だ。\n${rewardText}`);
             }
+            App.log(`<span style="color:#ffd700;">${rewardText}</span>`);
+			
         } finally {
             Dungeon.adventurerPromptOpen = false;
             if (typeof Field !== 'undefined' && typeof Field.refreshCurrentAction === 'function') {
@@ -1196,8 +1197,6 @@ const Dungeon = {
             { charId: 1000, name: 'システム', text: `${itemName}を手に入れた！` }
         ];
 
-        App.log(`<span style="color:#ffd700;">${itemName}を手に入れた！</span>`);
-
         if (typeof StoryManager !== 'undefined' && typeof StoryManager.showConversation === 'function') {
             const key = '__DUNGEON_ABYSS_RIFT_REWARD__';
             StoryManager.scripts[key] = lines;
@@ -1208,6 +1207,8 @@ const Dungeon = {
         } else {
             alert(`亀裂の根源を打ち破った！\n根源が消滅し、その跡から輝く装備を見つけた！！\n${itemName}を手に入れた！`);
         }
+
+        App.log(`<span style="color:#ffd700;">${itemName}を手に入れた！</span>`);
 
         if (typeof Field !== 'undefined') {
             if (typeof Field.refreshCurrentAction === 'function') Field.refreshCurrentAction({ silent: true });

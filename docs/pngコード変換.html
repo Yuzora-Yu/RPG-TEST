@@ -26,7 +26,7 @@
     </div>
 
     <label for="output">assets.js 用の定義コード:</label>
-    <textarea id="output" readonly placeholder="'monster_スライム': 'monster/スライム.png', ..."></textarea>
+        <textarea id="output" readonly placeholder="'monster_100001': 'assets/monsters/monster_100001.png', ..."></textarea>
     
     <button class="copy-btn" onclick="copyToClipboard()">結果をコピー</button>
 </div>
@@ -64,7 +64,7 @@
         const lines = sortedFiles.map(file => {
             const fileName = file.name;
             const baseName = fileName.replace(/\.[^/.]+$/, ""); // 拡張子を除去
-            return `        'monster_${baseName}': 'monster/${fileName}',`;
+            return `        'monster_${baseName}': 'assets/monsters/${fileName}',`;
         });
 
         output.value = lines.join('\n');

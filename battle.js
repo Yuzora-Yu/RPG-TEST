@@ -2787,7 +2787,7 @@ findNextActor: () => {
         .replace(/[A-Z]$/, '')
         .trim(),
 
-    monsterImagePath: (name) => `monster/img/${encodeURIComponent(name)}.png`,
+    monsterImagePath: (name) => `assets/monsters/${encodeURIComponent(name)}.png`,
 
     monsterImageSourceByName: (name, graphicsImages = {}) => {
         const key = 'monster_' + name;

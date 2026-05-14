@@ -7,9 +7,9 @@ const Facilities = {
 
     // 施設背景は assets.js / GRAPHICS を使わず、このファイルから直接参照する
     backgroundPaths: {
-        facility_bg_inn: 'assets/background/宿屋.jpg',
-        facility_bg_medal: 'assets/background/メダル交換所.png',
-        facility_bg_casino: 'assets/background/カジノ.png'
+        facility_bg_inn: 'assets/background/bg_inn.jpg',
+        facility_bg_medal: 'assets/background/bg_medal.png',
+        facility_bg_casino: 'assets/background/bg_casino.png'
     },
 
     escapeAttr: (value) => String(value).replace(/[&<>"]/g, (ch) => ({

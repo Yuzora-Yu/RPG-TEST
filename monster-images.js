@@ -1,5 +1,5 @@
 (function () {
-  const base = "monster/img/";
+  const base = "assets/monsters/";
   const normalIds = Array.from({ length: 90 }, (_, i) => 100001 + i);
   const bossIds = [
     200201, 200202, 200203, 200204,

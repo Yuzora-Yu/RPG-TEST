@@ -44,14 +44,14 @@ const PRISMA_BOSS_MONSTER_IMAGE_IDS = [
 ];
 const PRISMA_MONSTER_IMAGE_FILES = PRISMA_NORMAL_MONSTER_IMAGE_IDS
   .concat(PRISMA_BOSS_MONSTER_IMAGE_IDS)
-  .map((id) => `monster/img/monster_${id}.png`);
+  .map((id) => `assets/monsters/monster_${id}.png`);
 
 // ロード画面・序盤戦闘で使う候補。
 // 初回起動時の見栄えを優先し、やや多めに先読み/初回キャッシュする。
 // 画像軽量化後はここを増減してよいが、参照リストは sw.js 側へ複製しないこと。
 const PRISMA_LOADING_MONSTER_IMAGE_FILES = PRISMA_NORMAL_MONSTER_IMAGE_IDS
   .slice(0, 24)
-  .map((id) => `monster/img/monster_${id}.png`);
+  .map((id) => `assets/monsters/monster_${id}.png`);
 
 const PRISMA_ASSETS = {
   // Field.render / Battle 背景 / 主人公歩行画像で使う GRAPHICS 用画像。
@@ -179,11 +179,11 @@ const PRISMA_ASSETS = {
   // installImages: Service Worker の初回install時にキャッシュする画像全体。
   // backgroundImages: install後の再試行/補助ウォームキャッシュ用。
   cacheWarmup: {
-    version: "2026-05-14-floor-atmosphere-v1",
+    version: "2026-05-14-background-rename-v1",
     criticalImages: [
       ...PRISMA_LOADING_MONSTER_IMAGE_FILES,
-      "monster/img/monster_301000.png",
-      "monster/img/monster_902000.png",
+      "assets/monsters/monster_301000.png",
+      "assets/monsters/monster_902000.png",
       "assets/generated/battle-field-ai.png",
       "assets/generated/battle-forest-ai.png",
       "assets/generated/battle-dungeon-ai.png",
@@ -194,9 +194,9 @@ const PRISMA_ASSETS = {
       "assets/map/objects/magma.png",
       "assets/gacha/back_card.png",
       "assets/gacha/front_card.png",
-      "assets/background/宿屋.jpg",
-      "assets/background/メダル交換所.png",
-      "assets/background/カジノ.png",
+      "assets/background/bg_inn.jpg",
+      "assets/background/bg_medal.png",
+      "assets/background/bg_casino.png",
     ],
     startupImages: [],
     installImages: [],
@@ -220,9 +220,9 @@ globalThis.PRISMA_ASSETS = PRISMA_ASSETS;
     "assets/gacha/back_card.png",
     "assets/gacha/front_card.png",
     "assets/background/PRISMA ABYSS.png",
-    "assets/background/宿屋.jpg",
-    "assets/background/メダル交換所.png",
-    "assets/background/カジノ.png",
+    "assets/background/bg_inn.jpg",
+    "assets/background/bg_medal.png",
+    "assets/background/bg_casino.png",
     ...PRISMA_MONSTER_IMAGE_FILES,
   ]);
 
