@@ -334,6 +334,8 @@ const Dungeon = {
         App.data.location.x = Field.x;
         App.data.location.y = Field.y;
 
+        if (typeof App.discoverFixedMap === 'function') App.discoverFixedMap(mapKey, { save: false });
+
         App.save();
         App.changeScene('field');
         App.log(`${areaDef.displayName || areaDef.name}に入った。`);

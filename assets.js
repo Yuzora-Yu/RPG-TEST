@@ -253,7 +253,7 @@ const PRISMA_ASSETS = {
   // installImages: Service Worker の初回install時にキャッシュする画像全体。
   // backgroundImages: install後の再試行/補助ウォームキャッシュ用。
   cacheWarmup: {
-    version: "2026-05-14-background-rename-v1",
+    version: "2026-05-14-map-travel-v1",
     criticalImages: [
       ...PRISMA_LOADING_MONSTER_IMAGE_FILES,
       "assets/monsters/monster_301000.png",

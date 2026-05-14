@@ -4,54 +4,137 @@
    ========================================================================== */
 const MenuItems = {
     selectedItem: null,
+    activeTab: 'tools',
+
     init: () => {
         document.getElementById('sub-screen-items').style.display = 'flex';
+        MenuItems.activeTab = 'tools';
         MenuItems.changeScreen('list');
     },
+
     changeScreen: (mode) => {
         document.getElementById('item-screen-list').style.display = (mode==='list'?'flex':'none');
         document.getElementById('item-screen-target').style.display = (mode==='target'?'flex':'none');
         if(mode==='list') MenuItems.renderList();
     },
+
+    setTab: (tab) => {
+        MenuItems.activeTab = (tab === 'valuables') ? 'valuables' : 'tools';
+        MenuItems.renderList();
+    },
+
+    isValuable: (def) => {
+        return !!def && def.type === '貴重品';
+    },
+
+    getOwnedItems: () => {
+        const items = [];
+        Object.keys(App.data.items || {}).forEach(id => {
+            const def = DB.ITEMS.find(i => i.id == id);
+            const count = Number(App.data.items[id] || 0);
+            if(def && count > 0) items.push({ def, count });
+        });
+        return items;
+    },
+
+    getToolSortRank: (def) => {
+        if (!def) return 99;
+        if (def.type === '乗り物') return 0;
+        if (def.type === '移動' || def.id === 110 || def.name === 'スカイプリズム') return 1;
+        return 2;
+    },
+
+    sortItemsForCurrentTab: (items) => {
+        return items.slice().sort((a, b) => {
+            if (MenuItems.activeTab === 'tools') {
+                const rankDiff = MenuItems.getToolSortRank(a.def) - MenuItems.getToolSortRank(b.def);
+                if (rankDiff !== 0) return rankDiff;
+            }
+            const itemRankDiff = Number(a.def.rank || 9999) - Number(b.def.rank || 9999);
+            if (itemRankDiff !== 0) return itemRankDiff;
+            return String(a.def.name || '').localeCompare(String(b.def.name || ''), 'ja');
+        });
+    },
+
+    renderTabs: (list, counts) => {
+        const tabWrap = document.createElement('div');
+        tabWrap.style.cssText = 'display:grid; grid-template-columns:1fr 1fr; gap:6px; padding:8px; background:#111; border-bottom:1px solid #444; position:sticky; top:0; z-index:5;';
+
+        const makeTab = (key, label, count) => {
+            const btn = document.createElement('button');
+            btn.className = 'btn';
+            const active = MenuItems.activeTab === key;
+            btn.style.cssText = `height:34px; font-size:12px; border:1px solid ${active ? '#ffd700' : '#666'}; background:${active ? '#443800' : '#222'}; color:${active ? '#ffd700' : '#ddd'};`;
+            btn.innerText = `${label} (${count})`;
+            btn.onclick = () => MenuItems.setTab(key);
+            return btn;
+        };
+
+        tabWrap.appendChild(makeTab('tools', '道具', counts.tools));
+        tabWrap.appendChild(makeTab('valuables', '貴重品', counts.valuables));
+        list.appendChild(tabWrap);
+    },
+
     renderList: () => {
         const list = document.getElementById('list-items');
         list.innerHTML = '';
-        const items = [];
-        Object.keys(App.data.items).forEach(id => {
-            const def = DB.ITEMS.find(i=>i.id == id);
-            if(def && App.data.items[id] > 0) items.push({def:def, count:App.data.items[id]});
-        });
 
-        if (items.length === 0) {
-            list.innerHTML = '<div style="padding:20px; text-align:center; color:#555;">道具を持っていません</div>';
+        const allItems = MenuItems.getOwnedItems();
+        const tools = allItems.filter(it => !MenuItems.isValuable(it.def));
+        const valuables = allItems.filter(it => MenuItems.isValuable(it.def));
+        const counts = { tools: tools.length, valuables: valuables.length };
+
+        MenuItems.renderTabs(list, counts);
+
+        const currentItems = MenuItems.sortItemsForCurrentTab(MenuItems.activeTab === 'valuables' ? valuables : tools);
+        if (currentItems.length === 0) {
+            const empty = document.createElement('div');
+            empty.style.cssText = 'padding:24px 20px; text-align:center; color:#555;';
+            empty.innerText = MenuItems.activeTab === 'valuables' ? '貴重品を持っていません' : '道具を持っていません';
+            list.appendChild(empty);
+            return;
         }
 
-        items.forEach(it => {
+        currentItems.forEach(it => {
             const div = document.createElement('div');
             div.className = 'list-item';
+
+            const typeLabel = it.def.type ? `<span style="font-size:9px; color:#aaa; border:1px solid #444; padding:1px 4px; margin-left:5px;">${it.def.type}</span>` : '';
             div.innerHTML = `
-                <div style="flex:1;">
-                    <div style="font-weight:bold;">${it.def.name}</div>
-                    <div style="font-size:10px; color:#aaa;">${it.def.desc}</div>
+                <div style="flex:1; min-width:0;">
+                    <div style="font-weight:bold; display:flex; align-items:center; gap:2px; flex-wrap:wrap;">${it.def.name}${typeLabel}</div>
+                    <div style="font-size:10px; color:#aaa; line-height:1.4;">${it.def.desc || ''}</div>
                 </div>
-                <div style="font-weight:bold; color:#ffd700;">x${it.count}</div>
+                <div style="font-weight:bold; color:#ffd700; margin-left:8px;">x${it.count}</div>
             `;
-            div.onclick = () => {
-                // 回復・蘇生に加えて「育成」タイプもターゲット選択へ進む
-                if(it.def.type === '乗り物') {
-                    MenuItems.selectedItem = it.def;
-                    MenuItems.useVehicleItem(it.def);
-                } else if(it.def.type.includes('回復') || it.def.type.includes('蘇生') || it.def.type.includes('育成')) {
-                    MenuItems.selectedItem = it.def;
-                    MenuItems.renderTargetList();
-                } else {
-                    const footer = document.getElementById('item-footer');
-                    if(footer) footer.innerText = "使用できないアイテムです";
-                }
-            };
+            div.onclick = () => MenuItems.handleItemClick(it.def);
             list.appendChild(div);
         });
     },
+
+    handleItemClick: (item) => {
+        if (!item) return;
+
+        if (MenuItems.activeTab === 'valuables') {
+            Menu.msg("貴重品は使用できません。");
+            return;
+        }
+
+        // 回復・蘇生に加えて「育成」タイプもターゲット選択へ進む
+        if(item.type === '乗り物') {
+            MenuItems.selectedItem = item;
+            MenuItems.useVehicleItem(item);
+        } else if(item.type === '移動' || item.id === 110 || item.name === 'スカイプリズム') {
+            MenuItems.selectedItem = item;
+            MenuItems.useSkyPrismItem(item);
+        } else if(item.type && (item.type.includes('回復') || item.type.includes('蘇生') || item.type.includes('育成'))) {
+            MenuItems.selectedItem = item;
+            MenuItems.renderTargetList();
+        } else {
+            Menu.msg("使用できないアイテムです。");
+        }
+    },
+
     useVehicleItem: (item) => {
         if (!item) return;
         if (!App.data.items[item.id] || App.data.items[item.id] <= 0) {
@@ -72,6 +155,65 @@ const MenuItems = {
 
         Menu.msg("この乗り物はまだ使用できません。");
     },
+
+    useSkyPrismItem: (item) => {
+        if (!item) return;
+        if (!App.data.items[item.id] || App.data.items[item.id] <= 0) {
+            Menu.msg("アイテムを持っていません。");
+            MenuItems.changeScreen('list');
+            return;
+        }
+        if (typeof App.isInDungeonForSkyPrism === 'function' && App.isInDungeonForSkyPrism()) {
+            Menu.msg("ダンジョン内ではスカイプリズムを使えない。");
+            return;
+        }
+        if (typeof App.getAllFixedMapDiscoveryEntries !== 'function') {
+            Menu.msg("移動先リストを作成できませんでした。");
+            return;
+        }
+
+        const entries = App.getAllFixedMapDiscoveryEntries();
+        if (!entries.length) {
+            Menu.msg("移動できる固有MAPがありません。");
+            return;
+        }
+
+        const discoveredCount = entries.filter(e => e.discovered).length;
+        const choices = entries.map((entry) => {
+            if (!entry.discovered) {
+                return { label: '？？？', disabled: true, background: '#333' };
+            }
+
+            const kindLabel = entry.kind === 'dungeon' ? 'ダンジョン' : '固有MAP';
+            const parentNote = entry.destination?.parentAreaKey ? ' 付近' : '';
+            const label = `${entry.name}${parentNote} [${kindLabel}]`;
+            return {
+                label,
+                callback: () => {
+                    Menu.confirm(`${entry.name}${parentNote}へ移動しますか？
+スカイプリズムを1個消費します。`, () => {
+                        const result = (typeof App.useSkyPrismTo === 'function')
+                            ? App.useSkyPrismTo(entry.areaKey)
+                            : { ok: false, message: 'スカイプリズムを使用できませんでした。' };
+
+                        if (result.ok) {
+                            if (typeof Menu !== 'undefined' && typeof Menu.closeAll === 'function') Menu.closeAll();
+                            if (typeof Field !== 'undefined' && typeof Field.render === 'function') Field.render();
+                            if (typeof Menu !== 'undefined' && typeof Menu.renderPartyBar === 'function') Menu.renderPartyBar();
+                            // 成功時は App.useSkyPrismTo() 側の App.log のみ表示する。
+                            // 追加の「〇〇へ移動した！」モーダルは出さない。
+                        } else {
+                            Menu.msg(result.message || '移動できません。');
+                        }
+                    });
+                }
+            };
+        });
+
+        Menu.listChoice(`スカイプリズム：移動先を選択
+発見済み ${discoveredCount}/${entries.length}`, choices);
+    },
+
     renderTargetList: () => {
         MenuItems.changeScreen('target');
         const list = document.getElementById('list-item-targets');

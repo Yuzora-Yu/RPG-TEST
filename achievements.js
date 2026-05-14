@@ -143,7 +143,13 @@ const ACHIEVEMENTS_DATA = [
     { id: 1401, type: "KILL_TOTAL", goal: 100, category: "戦闘", title: "百戦錬磨", desc: "モンスターを累計100体討伐", rewards: [{ type: 'GEM', val: 500 }] },
     { id: 1402, type: "KILL_TOTAL", goal: 1000, category: "戦闘", title: "千の屍を越えて", desc: "モンスターを累計1,000体討伐", rewards: [{ type: 'GEM', val: 1500 }] },
     { id: 1403, type: "WIPEOUT", goal: 1, category: "戦闘", title: "敗北からの再起", desc: "全滅を1回経験する", rewards: [{ type: 'ITEM', id: 5, val: 3 }] },
-    { id: 1404, type: "WIPEOUT", goal: 10, category: "戦闘", title: "不屈の冒険者", desc: "全滅を10回経験する", rewards: [{ type: 'GEM', val: 1000 }] }
+    { id: 1404, type: "WIPEOUT", goal: 10, category: "戦闘", title: "不屈の冒険者", desc: "全滅を10回経験する", rewards: [{ type: 'GEM', val: 1000 }] },
+
+    // --- 14. 固有MAP発見 ---
+    { id: 1501, type: "MAP_DISCOVER", goal: 2, category: "探索", title: "旅の道標", desc: "固有MAPを2か所発見する", rewards: [{ type: 'ITEM', id: 110, val: 1 }] },
+    { id: 1502, type: "MAP_DISCOVER", goal: 4, category: "探索", title: "空路の開拓者", desc: "固有MAPを4か所発見する", rewards: [{ type: 'ITEM', id: 110, val: 2 }] },
+    { id: 1503, type: "MAP_DISCOVER", goal: 7, category: "探索", title: "世界を巡る者", desc: "固有MAPを7か所発見する", rewards: [{ type: 'ITEM', id: 110, val: 3 }] },
+    { id: 1504, type: "MAP_DISCOVER", goal: 10, category: "探索", title: "地平の記録者", desc: "固有MAPを10か所発見する", rewards: [{ type: 'ITEM', id: 110, val: 5 }] }
 ];
 
 const AchievementManager = {
@@ -248,6 +254,9 @@ const AchievementManager = {
             case "RARITY_ALLY": return chars.filter(c => c && String(c.rarity || '').toUpperCase() === String(ach.rarity || '').toUpperCase()).length;
             case "RUN": return Number(dungeon.tryCount) || 0;
             case "CHEST": return AchievementManager.countOpenedChests();
+            case "MAP_DISCOVER": return (typeof App.getVisitedFixedMapCount === 'function')
+                ? App.getVisitedFixedMapCount()
+                : Object.keys(progress.visitedFixedMaps || {}).length;
             case "MEDAL": return Number(stats.totalMedals) || Number((App.data.items || {})[99]) || 0;
             case "KILL_TOTAL": return AchievementManager.sumKillCounts();
             case "WIPEOUT": return Number(stats.wipeoutCount) || 0;

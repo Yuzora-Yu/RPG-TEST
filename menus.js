@@ -541,6 +541,11 @@ const Menu = {
                     resetDialogButtons();
                     Menu.closeDialog(); 
                     if (c.callback) c.callback(); 
+                }, {
+                    disabled: !!c.disabled,
+                    background: c.background,
+                    width: c.width,
+                    padding: c.padding
                 }));
             });
 

@@ -321,7 +321,7 @@ const Facilities = {
 
     openCasinoShop: () => {
         const floor = (App.data.dungeon && App.data.dungeon.maxFloor) ? App.data.dungeon.maxFloor : 0;
-        const items = DB.ITEMS.filter(i => i.rank <= floor && i.type !== '貴重品');
+        const items = DB.ITEMS.filter(i => i.rank <= floor && i.type !== '貴重品' && i.type !== '乗り物');
         let html = "";
         items.forEach(it => {
             const cost = it.price || 0;

@@ -276,7 +276,8 @@ const App = {
                 unlocked: { smith: false, gacha: false },
                 clearedDungeons: [],
                 openedChests: {},  
-                defeatedBosses: {} 
+                defeatedBosses: {},
+                visitedFixedMaps: {} 
             },
             inventory: [],
             items: { "1": 3 }, 
@@ -370,6 +371,15 @@ const App = {
             if (!App.data.progress.clearedDungeons) App.data.progress.clearedDungeons = [];
             if (!App.data.progress.openedChests) App.data.progress.openedChests = {};
             if (!App.data.progress.defeatedBosses) App.data.progress.defeatedBosses = {};
+            if (!App.data.progress.visitedFixedMaps || typeof App.data.progress.visitedFixedMaps !== 'object' || Array.isArray(App.data.progress.visitedFixedMaps)) App.data.progress.visitedFixedMaps = {};
+        }
+
+        // 既存セーブ救済: 固有MAP内で再開した場合は、そのMAPを発見済みにする。
+        if (App.data.location && App.data.progress && typeof App.discoverFixedMap === 'function') {
+            const currentArea = App.data.location.area;
+            const isCurrentFixedMap = (typeof FIXED_MAPS !== 'undefined' && FIXED_MAPS[currentArea]) ||
+                (typeof FIXED_DUNGEON_MAPS !== 'undefined' && FIXED_DUNGEON_MAPS[currentArea]);
+            if (isCurrentFixedMap) App.discoverFixedMap(currentArea, { save: false, silent: true });
         }
 
         // 3. stats の補完
@@ -884,6 +894,203 @@ const App = {
 
     isFlying: () => App.data?.transportMode === 'flying',
     isBoating: () => App.data?.transportMode === 'boat',
+
+    ensureFixedMapDiscoveryStore: () => {
+        if (!App.data) return {};
+        if (!App.data.progress) App.data.progress = {};
+        if (!App.data.progress.visitedFixedMaps || typeof App.data.progress.visitedFixedMaps !== 'object' || Array.isArray(App.data.progress.visitedFixedMaps)) {
+            App.data.progress.visitedFixedMaps = {};
+        }
+        return App.data.progress.visitedFixedMaps;
+    },
+
+    getFixedMapDef: (areaKey) => {
+        if (!areaKey) return null;
+        if (typeof FIXED_MAPS !== 'undefined' && FIXED_MAPS[areaKey]) {
+            return { key: areaKey, def: FIXED_MAPS[areaKey], kind: 'field' };
+        }
+        if (typeof FIXED_DUNGEON_MAPS !== 'undefined' && FIXED_DUNGEON_MAPS[areaKey]) {
+            return { key: areaKey, def: FIXED_DUNGEON_MAPS[areaKey], kind: 'dungeon' };
+        }
+        return null;
+    },
+
+    getFixedMapWorldDestination: (areaKey) => {
+        if (!areaKey || typeof STORY_DATA === 'undefined' || !STORY_DATA.areas) return null;
+
+        // 基本: 固有MAPキーと同名のワールドマップ座標へ移動する。
+        const area = STORY_DATA.areas[areaKey];
+        if (area && Number.isFinite(Number(area.centerX)) && Number.isFinite(Number(area.centerY))) {
+            return {
+                areaKey,
+                x: Number(area.centerX),
+                y: Number(area.centerY),
+                sourceAreaKey: areaKey
+            };
+        }
+
+        // 例外: START_CAVE のように固定街の中に入口がある固定ダンジョン。
+        // その場合は、親となる固定街のワールド座標へ移動する。
+        if (typeof FIXED_MAPS !== 'undefined') {
+            for (const [parentKey, parentDef] of Object.entries(FIXED_MAPS)) {
+                const actions = Array.isArray(parentDef.mapActions) ? parentDef.mapActions : [];
+                const found = actions.some(a => a && (a.target === areaKey || a.targetAreaKey === areaKey));
+                const parentArea = STORY_DATA.areas[parentKey];
+                if (found && parentArea && Number.isFinite(Number(parentArea.centerX)) && Number.isFinite(Number(parentArea.centerY))) {
+                    return {
+                        areaKey,
+                        x: Number(parentArea.centerX),
+                        y: Number(parentArea.centerY),
+                        sourceAreaKey: parentKey,
+                        parentAreaKey: parentKey
+                    };
+                }
+            }
+        }
+
+        return null;
+    },
+
+    getAllFixedMapDiscoveryEntries: () => {
+        const entries = [];
+        const seen = new Set();
+        const visited = App.ensureFixedMapDiscoveryStore ? App.ensureFixedMapDiscoveryStore() : (App.data?.progress?.visitedFixedMaps || {});
+
+        const push = (areaKey) => {
+            if (!areaKey || seen.has(areaKey)) return;
+            const info = App.getFixedMapDef(areaKey);
+            if (!info) return;
+            seen.add(areaKey);
+
+            const storyArea = (typeof STORY_DATA !== 'undefined' && STORY_DATA.areas) ? STORY_DATA.areas[areaKey] : null;
+            const dest = App.getFixedMapWorldDestination(areaKey);
+            const record = visited[areaKey] || null;
+            const discovered = !!record;
+            const rank = Number(storyArea?.rank ?? info.def.rank ?? info.def.encounterRank ?? 9999);
+
+            entries.push({
+                areaKey,
+                name: info.def.name || storyArea?.name || areaKey,
+                kind: info.kind,
+                rank,
+                discovered,
+                destination: dest,
+                record
+            });
+        };
+
+        if (typeof STORY_DATA !== 'undefined' && STORY_DATA.areas) {
+            Object.keys(STORY_DATA.areas).forEach(push);
+        }
+        if (typeof FIXED_MAPS !== 'undefined') Object.keys(FIXED_MAPS).forEach(push);
+        if (typeof FIXED_DUNGEON_MAPS !== 'undefined') Object.keys(FIXED_DUNGEON_MAPS).forEach(push);
+
+        return entries.sort((a, b) => (a.rank - b.rank) || a.name.localeCompare(b.name, 'ja'));
+    },
+
+    discoverFixedMap: (areaKey, options = {}) => {
+        const info = App.getFixedMapDef ? App.getFixedMapDef(areaKey) : null;
+        if (!info || !App.data) return false;
+
+        const visited = App.ensureFixedMapDiscoveryStore();
+        const dest = App.getFixedMapWorldDestination ? App.getFixedMapWorldDestination(areaKey) : null;
+        const current = visited[areaKey] || null;
+        const entry = {
+            areaKey,
+            name: info.def.name || areaKey,
+            kind: info.kind,
+            worldX: dest ? dest.x : null,
+            worldY: dest ? dest.y : null,
+            parentAreaKey: dest?.parentAreaKey || null,
+            foundAt: current?.foundAt || Date.now()
+        };
+
+        const changed = !current ||
+            current.name !== entry.name ||
+            current.kind !== entry.kind ||
+            Number(current.worldX) !== Number(entry.worldX) ||
+            Number(current.worldY) !== Number(entry.worldY) ||
+            (current.parentAreaKey || null) !== entry.parentAreaKey;
+
+        if (!changed) return false;
+        visited[areaKey] = entry;
+
+        if (!options.silent && typeof App.log === 'function') {
+            App.log(`${entry.name}を発見した！`);
+        }
+        if (typeof AchievementManager !== 'undefined' && AchievementManager.checkProgress) {
+            AchievementManager.checkProgress({ save: false });
+        }
+        if (options.save === true && typeof App.save === 'function') App.save();
+        return true;
+    },
+
+    getVisitedFixedMapCount: () => {
+        const visited = App.data?.progress?.visitedFixedMaps || {};
+        if (!visited || typeof visited !== 'object') return 0;
+        return Object.keys(visited).length;
+    },
+
+    isInDungeonForSkyPrism: () => {
+        const area = App.data?.location?.area;
+        if (area === 'ABYSS') return true;
+        if (Field.currentMapData && Field.currentMapData.isDungeon) return true;
+        if (typeof FIXED_DUNGEON_MAPS !== 'undefined' && FIXED_DUNGEON_MAPS[area]) return true;
+        return false;
+    },
+
+    useSkyPrismTo: (areaKey) => {
+        if (!App.hasItem(110)) return { ok: false, message: 'スカイプリズムを持っていません。' };
+        if (App.isInDungeonForSkyPrism()) return { ok: false, message: 'ダンジョン内ではスカイプリズムを使えない。' };
+
+        const visited = App.ensureFixedMapDiscoveryStore();
+        if (!visited[areaKey]) return { ok: false, message: 'まだ発見していない場所には移動できない。' };
+
+        const info = App.getFixedMapDef(areaKey);
+        const dest = App.getFixedMapWorldDestination(areaKey);
+        if (!info || !dest) return { ok: false, message: 'この場所のフィールド座標が見つかりません。' };
+
+        App.data.items[110] = (Number(App.data.items[110]) || 0) - 1;
+        if (App.data.items[110] <= 0) delete App.data.items[110];
+
+        if (typeof Field !== 'undefined' && typeof Field.stopMove === 'function') Field.stopMove();
+        if (typeof App.clearAction === 'function') App.clearAction();
+
+        App.data.transportMode = null;
+        App.data.mapReturnPoint = null;
+        App.data.location.area = 'WORLD';
+        App.data.location.x = dest.x;
+        App.data.location.y = dest.y;
+        if (App.data.dungeon) {
+            App.data.dungeon.returnPoint = null;
+            App.data.dungeon.map = null;
+            App.data.dungeon.adventurer = null;
+            App.data.dungeon.healSpring = null;
+            App.data.dungeon.abyssRift = null;
+            App.data.dungeon.pendingRiftReward = null;
+            App.data.dungeon.visitedMap = null;
+        }
+        if (App.data.progress) App.data.progress.floor = 0;
+
+        Field.currentMapData = null;
+        Field.x = dest.x;
+        Field.y = dest.y;
+
+        App.save();
+        App.changeScene('field');
+        if (typeof Field.render === 'function') Field.render();
+        if (typeof Field.refreshCurrentAction === 'function') Field.refreshCurrentAction({ silent: true });
+        if (typeof Field.startIdleStep === 'function') Field.startIdleStep();
+
+        const targetName = info.def.name || areaKey;
+        const suffix = dest.parentAreaKey && dest.parentAreaKey !== areaKey ? 'の入口付近' : 'の入口';
+        const message = `${targetName}${suffix}へ移動した！`;
+        if (typeof App.log === 'function') App.log(message);
+
+        // スカイプリズム成功時はログ表示のみ。
+        // 使用確認の後に追加のOKモーダルを出さないため、呼び出し側へ通知する。
+        return { ok: true, message, silentSuccess: true };
+    },
 
     getWorldTileAt: (x, y) => {
         if (typeof MAP_DATA === 'undefined' || !MAP_DATA[0]) return 'W';
@@ -2743,6 +2950,7 @@ const Field = {
         Field.y = areaDef.entryPoint ? areaDef.entryPoint.y : areaDef.height - 3;
         App.data.location.x = Field.x;
         App.data.location.y = Field.y;
+        if (typeof App.discoverFixedMap === 'function') App.discoverFixedMap(targetAreaKey, { save: false });
         App.log(`${areaDef.name}に入った`);
         App.save();
         App.changeScene('field');
