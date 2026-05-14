@@ -16,105 +16,12 @@
   const installGraphics = () => {};
 
   const entry = (img, color) => ({ img, color });
-  const installThemes = () => {
-    if (typeof TILE_THEMES === "undefined") return;
-    const themes = {
-      WORLD: {
-        W: entry("sea", "#155d7a"),
-        M: entry("mountain", "#64636a"),
-        F: entry("forest", "#1f6a3f"),
-        L: entry("Low_mountain", "#6c6847"),
-        G: entry("floor", "#2c7a4e"),
-        T: entry("floor", "#2c7a4e"),
-        I: entry("inn", "#d7b45a"),
-        B: entry("boss", "#db3b4d"),
-        E: entry("event_field", "#8f7dff"),
-        D: entry("hall", "#303541")
-      },
-      DEFAULT: {
-        W: entry("wall", "#303541"),
-        T: entry("dungeon_floor", "#3c4151"),
-        G: entry("dungeon_floor", "#3c4151"),
-        S: entry("stairs_dungeon", "#d7b45a"),
-        C: entry("chest_dungeon", "#9c6332"),
-        R: entry("chest_rare_dungeon", "#b6324b"),
-        B: entry("boss_dungeon", "#db3b4d"),
-        I: entry("inn", "#356ab8"),
-        K: entry("casino", "#7e3fa1"),
-        E: entry("medal", "#f6ca62"),
-        H: entry("dungeon_floor", "#8f7dff"),
-        V: entry("dungeon_floor", "#4ab9d8")
-      },
-      START_VILLAGE: {
-        W: entry("forest", "#1f6a3f"),
-        T: entry("floor", "#2c7a4e"),
-        G: entry("floor", "#2c7a4e"),
-        H: entry("house-1", "#d9bd84"),
-        V: entry("house-2", "#7e3fa1"),
-        D: entry("cave", "#303541"),
-        S: entry("floor", "#d7b45a"),
-        C: entry("chest", "#9c6332"),
-        R: entry("chest_rare", "#b6324b"),
-        B: entry("boss", "#db3b4d")
-      },
-      START_CAVE: {
-        W: entry("wall", "#303541"),
-        T: entry("dungeon_floor", "#3c4151"),
-        G: entry("dungeon_floor", "#3c4151"),
-        S: entry("dungeon_floor", "#d7b45a"),
-        V: entry("dungeon_floor", "#4ab9d8"),
-        C: entry("chest_dungeon", "#9c6332"),
-        R: entry("chest_rare_dungeon", "#b6324b"),
-        B: entry("boss_dungeon", "#db3b4d")
-      },
-      FIRE_VILLAGE: { W: entry("magma-rock", "#4b2524"), T: entry("ash-floor", "#5b514d"), G: entry("ash-floor", "#5b514d") },
-      WIND_VILLAGE: { W: entry("cliff", "#64636a"), T: entry("highland", "#5b7b51"), G: entry("highland", "#5b7b51") },
-      WATER_CITY: { W: entry("canal", "#155d7a"), T: entry("stone-pave", "#3c4151"), G: entry("stone-pave", "#3c4151") },
-      BIG_TOWER: { W: entry("brick-wall", "#6a3e4a"), T: entry("carpet", "#65314c"), G: entry("carpet", "#65314c") },
-      THUNDER_FORT: { W: entry("metal-wall", "#52616c"), T: entry("iron-plate", "#52616c"), G: entry("iron-plate", "#52616c") },
-      LIGHT_PALACE: { W: entry("marble-wall", "#d9ded4"), T: entry("white-tile", "#eef0e8"), G: entry("white-tile", "#eef0e8") },
-      DARK_CASTLE: { W: entry("wall", "#242a32"), T: entry("dungeon_floor", "#252b36"), G: entry("dungeon_floor", "#252b36"), S: entry("stairs_dungeon", "#d7b45a"), B: entry("boss_dungeon", "#db3b4d") },
-      ABYSS: { W: entry("wall", "#141720"), T: entry("dungeon_floor", "#252b36"), G: entry("dungeon_floor", "#252b36"), S: entry("stairs_dungeon", "#d7b45a"), B: entry("boss_dungeon", "#db3b4d") },
-      RUINED_SHRINE: { W: entry("ancient-brick", "#4b5b48"), T: entry("moss-stone", "#3c5145"), G: entry("moss-stone", "#3c5145") }
-    };
+  // マップ名・タイルテーマの正本は map.js に集約。
+  // 以前は polish.js でも TILE_THEMES / STORY_DATA 名称を上書きしていたが、
+  // 地域別マップチップ管理と座標正規化の妨げになるためここでは触らない。
+  const installThemes = () => {};
 
-    Object.entries(themes).forEach(([key, value]) => {
-      TILE_THEMES[key] = { ...(TILE_THEMES[key] || {}), ...value };
-    });
-  };
-
-  const installNames = () => {
-    const names = {
-      START_VILLAGE: "はじまりの村",
-      START_CAVE: "試練の洞窟",
-      FIRE_VILLAGE: "火の里",
-      WIND_VILLAGE: "風の集落",
-      WATER_CITY: "水上都市",
-      BIG_TOWER: "大灯台",
-      THUNDER_FORT: "雷の要塞",
-      LIGHT_PALACE: "光の神殿",
-      DARK_CASTLE: "常闇城",
-      ABYSS: "深淵の魔窟",
-      RUINED_SHRINE: "朽ちた神殿",
-      MEDAL: "メダル王の館",
-      CASINO: "カジノ"
-    };
-    if (typeof STORY_DATA !== "undefined" && STORY_DATA.areas) {
-      Object.entries(names).forEach(([key, name]) => {
-        if (STORY_DATA.areas[key]) STORY_DATA.areas[key].name = name;
-      });
-    }
-    if (typeof FIXED_MAPS !== "undefined") {
-      Object.entries(names).forEach(([key, name]) => {
-        if (FIXED_MAPS[key]) FIXED_MAPS[key].name = name;
-      });
-    }
-    if (typeof FIXED_DUNGEON_MAPS !== "undefined") {
-      Object.entries(names).forEach(([key, name]) => {
-        if (FIXED_DUNGEON_MAPS[key]) FIXED_DUNGEON_MAPS[key].name = name;
-      });
-    }
-  };
+  const installNames = () => {};
 
   const shouldReplace = (text) => !text || garbledRe.test(text);
   const fixTitleText = () => {

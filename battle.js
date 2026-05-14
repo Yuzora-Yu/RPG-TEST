@@ -415,8 +415,12 @@ const Battle = {
     generateNewEnemies: (isBoss, fixedBossId = null) => {
         const newEnemies = [];
         let floor = Math.max(1, Number(App.data.progress.floor) || 1);
-        if (!isBoss && typeof Field !== 'undefined' && Field.currentMapData?.isFixed && Field.currentMapData.rank) {
-            floor = Math.max(1, Number(Field.currentMapData.rank) || floor);
+        if (!isBoss && typeof Field !== 'undefined' && Field.currentMapData?.isFixed) {
+            // 固定ダンジョンは progress.floor（1F/2F...）では弱すぎるため、
+            // map.js の encounterRank を優先して「何階相当の敵を出すか」を指定する。
+            // encounterRank未指定の場合はrankを使う。
+            const fixedRank = Field.currentMapData.encounterRank || Field.currentMapData.rank;
+            if (fixedRank) floor = Math.max(1, Number(fixedRank) || floor);
         }
         const battleData = App.data.battle || {};
         const targetId = fixedBossId !== null && fixedBossId !== undefined ? fixedBossId : battleData.fixedBossId;
@@ -555,7 +559,9 @@ const Battle = {
         for (let i = 0; i < normalCount; i++) {
             let monsterData = null;
             const isFixedMap = typeof Field !== 'undefined' && Field.currentMapData && Field.currentMapData.isFixed;
-            const fixedMonsterIds = isFixedMap && Array.isArray(Field.currentMapData.monsters) ? Field.currentMapData.monsters : null;
+            const battleMonsterIds = Array.isArray(battleData.monsters) ? battleData.monsters : null;
+            const seaMonsterIds = battleData.encounterType === 'sea' && Array.isArray(window.SEA_ENCOUNTER_MONSTERS) ? window.SEA_ENCOUNTER_MONSTERS : null;
+            const fixedMonsterIds = battleMonsterIds || seaMonsterIds || (isFixedMap && Array.isArray(Field.currentMapData.monsters) ? Field.currentMapData.monsters : null);
 
             if (fixedMonsterIds && fixedMonsterIds.length > 0) {
                 const mid = fixedMonsterIds[Math.floor(Math.random() * fixedMonsterIds.length)];

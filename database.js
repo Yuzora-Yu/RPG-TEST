@@ -236,6 +236,8 @@ const DB = {
     ],
 
     MEDAL_REWARDS: [
+        { medals: 1, name: '魔法の小舟', type: 'item', id: 108, count: 1, unique: true },
+        { medals: 1, name: '光の翼', type: 'item', id: 109, count: 1, unique: true },
         { medals: 5, name: '上やくそう x3', type: 'item', id: 2, count: 3 },
         { medals: 10, name: '魔法の小瓶 x5', type: 'item', id: 3, count: 5 },
         { medals: 15, name: '世界樹の葉 x1', type: 'item', id: 5, count: 1 },
@@ -272,6 +274,8 @@ const INITIAL_DATA_TEMPLATE = {
         area: 'START_VILLAGE', 
         x: 7, y: 8 // 村の広場の真ん中あたり
     },
+    transportMode: null, // null / "boat" / "flying"
+    mapReturnPoint: null,
     progress: { 
         floor: 0,
         storyStep: 0,        // ストーリー進行フラグ

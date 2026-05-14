@@ -201,9 +201,110 @@ const Dungeon = {
         Dungeon.loadFloor();
     },
 	
+    getFixedFloorDef: (mapKey = App.data?.location?.area, floorNo = App.data?.progress?.floor || 1) => {
+        if (typeof MapRegistry !== 'undefined' && MapRegistry.getFixedDungeonFloor) {
+            return MapRegistry.getFixedDungeonFloor(mapKey, floorNo);
+        }
+        const base = (typeof FIXED_DUNGEON_MAPS !== 'undefined') ? FIXED_DUNGEON_MAPS[mapKey] : null;
+        return base ? { ...base, isDungeon: true, isFixed: true, floor: floorNo } : null;
+    },
+
+    getFixedProgressKey: (areaKey = Field.getCurrentAreaKey ? Field.getCurrentAreaKey() : App.data?.location?.area) => {
+        if (typeof Field !== 'undefined' && Field.getCurrentProgressMapKey) return Field.getCurrentProgressMapKey();
+        if (typeof MapRegistry !== 'undefined' && MapRegistry.getFixedDungeonProgressKey) {
+            return MapRegistry.getFixedDungeonProgressKey(areaKey, App.data?.progress?.floor || 1);
+        }
+        return areaKey;
+    },
+
+    changeFixedFloor: (toFloor, targetX = null, targetY = null) => {
+        const areaKey = App.data.location.area;
+        const nextDef = Dungeon.getFixedFloorDef(areaKey, toFloor);
+        if (!nextDef) return;
+
+        App.data.progress.floor = nextDef.floor || Number(toFloor) || 1;
+        Dungeon.floor = App.data.progress.floor;
+        App.data.dungeon.map = null;
+        App.data.dungeon.adventurer = null;
+        App.data.dungeon.healSpring = null;
+        App.data.dungeon.abyssRift = null;
+        App.data.dungeon.pendingRiftReward = null;
+        App.data.dungeon.visitedMap = null;
+
+        Field.currentMapData = nextDef;
+        Field.x = targetX !== null && targetX !== undefined ? Number(targetX) : (nextDef.entryPoint?.x || 1);
+        Field.y = targetY !== null && targetY !== undefined ? Number(targetY) : (nextDef.entryPoint?.y || 1);
+        App.data.location.x = Field.x;
+        App.data.location.y = Field.y;
+
+        App.save();
+        App.changeScene('field');
+        App.log(`${nextDef.displayName || nextDef.name}へ移動した。`);
+    },
+
+    prepareFixedTileAction: (tile, x, y, options = {}) => {
+        if (!Field.currentMapData?.isFixed) return false;
+        const silent = options.silent !== false;
+        const logIfNeeded = (message) => { if (!silent && message) App.log(message); };
+        const mapDef = Field.currentMapData;
+
+        if (tile === 'S' || tile === 'D' || tile === 'U') {
+            const link = (typeof MapRegistry !== 'undefined' && MapRegistry.findFloorLink)
+                ? MapRegistry.findFloorLink(mapDef, x, y)
+                : null;
+
+            if (link) {
+                const label = (typeof MapRegistry !== 'undefined' && MapRegistry.getFixedFloorActionLabel)
+                    ? MapRegistry.getFixedFloorActionLabel(mapDef, link, App.data?.progress?.floor || mapDef.floor || 1, Field.getCurrentAreaKey())
+                    : (link.to === 'EXIT' ? '外に出る' : (link.label || '階段を使う'));
+                logIfNeeded(link.log || (link.to === 'EXIT' ? '外への出口がある。' : '階段がある。'));
+                App.setAction(label, () => {
+                    if (link.to === 'EXIT') {
+                        Dungeon.exit(false);
+                    } else {
+                        Dungeon.changeFixedFloor(link.toFloor, link.targetX, link.targetY);
+                    }
+                });
+                return true;
+            }
+
+            if (tile === 'S') {
+                logIfNeeded('外への出口がある。');
+                App.setAction('外に出る', () => Dungeon.exit(false));
+                return true;
+            }
+        }
+
+        return false;
+    },
+
+    startFixedBoss: (x, y) => {
+        const mapDef = Field.currentMapData;
+        const bossDef = (typeof MapRegistry !== 'undefined' && MapRegistry.findFixedBoss)
+            ? MapRegistry.findFixedBoss(mapDef, x, y)
+            : null;
+        const fixedBossId = bossDef?.monsterId || null;
+        let isSpecialBoss = false;
+        if (fixedBossId !== null) {
+            const base = window.MonsterData?.getMonsterById?.(Number(fixedBossId));
+            isSpecialBoss = !!(base?.isSpecialBoss || base?.isEstark || Number(fixedBossId) === 902000);
+        }
+        App.data.battle = {
+            active: false,
+            isBossBattle: true,
+            isSpecialBoss,
+            isEstark: isSpecialBoss,
+            fixedBossId,
+            enemies: []
+        };
+        App.save();
+        App.changeScene('battle');
+    },
+
+	
     // --- 固定ダンジョン（試練の洞窟など）への進入 ---
     startFixed: (mapKey) => {
-        const areaDef = FIXED_DUNGEON_MAPS[mapKey];
+        const areaDef = Dungeon.getFixedFloorDef(mapKey, 1);
         if (!areaDef) return;
 
         // 帰還地点の保存 (まだ保存されていない場合のみ)
@@ -216,24 +317,18 @@ const Dungeon = {
             };
         }
 
-        // 固定ダンジョンは1階として設定
-        App.data.progress.floor = 1; 
-        Dungeon.floor = 1;
+        App.data.progress.floor = areaDef.floor || 1;
+        Dungeon.floor = App.data.progress.floor;
         App.data.location.area = mapKey;
+        App.data.dungeon.map = null;
         App.data.dungeon.adventurer = null;
         App.data.dungeon.healSpring = null;
         App.data.dungeon.abyssRift = null;
         App.data.dungeon.pendingRiftReward = null;
         App.data.dungeon.visitedMap = null;
 
-        // Fieldのマップデータを更新
-        Field.currentMapData = { 
-            ...areaDef,
-            isDungeon: true,
-            isFixed: true // 固定マップフラグ
-        };
+        Field.currentMapData = areaDef;
 
-        // 初期座標のセット
         Field.x = areaDef.entryPoint ? areaDef.entryPoint.x : 1;
         Field.y = areaDef.entryPoint ? areaDef.entryPoint.y : 1;
         App.data.location.x = Field.x;
@@ -241,10 +336,14 @@ const Dungeon = {
 
         App.save();
         App.changeScene('field');
-        App.log(`${areaDef.name}に入った。`);
+        App.log(`${areaDef.displayName || areaDef.name}に入った。`);
     },
 
     nextFloor: () => {
+        if (Field.currentMapData?.isFixed) {
+            Dungeon.changeFixedFloor((App.data.progress.floor || 1) + 1);
+            return;
+        }
         App.data.progress.floor++;
         App.data.dungeon.map = null; 
         App.data.dungeon.adventurer = null;
@@ -260,11 +359,7 @@ const Dungeon = {
         // ★追加：固定ダンジョンの復元チェック
         if (typeof FIXED_DUNGEON_MAPS !== 'undefined' && FIXED_DUNGEON_MAPS[areaKey]) {
             Dungeon.floor = App.data.progress.floor || 1;
-            Field.currentMapData = { 
-                ...FIXED_DUNGEON_MAPS[areaKey],
-                isDungeon: true,
-                isFixed: true 
-            };
+            Field.currentMapData = Dungeon.getFixedFloorDef(areaKey, Dungeon.floor);
             App.changeScene('field');
             return;
         }
@@ -476,11 +571,10 @@ const Dungeon = {
         }
 
         // 階段・出口判定
-        if(tile === 'S') {
+        if(tile === 'S' || tile === 'D' || tile === 'U') {
             if (Field.currentMapData.isFixed) {
-                App.log("外への出口がある。");
-                App.setAction("外に出る", () => Dungeon.exit(false));
-            } else {
+                if (Dungeon.prepareFixedTileAction(tile, x, y, { silent: false })) return;
+            } else if (tile === 'S') {
                 App.log("階段がある。");
                 App.setAction("次の階へ", Dungeon.nextFloor);
             }
@@ -493,7 +587,7 @@ const Dungeon = {
         if(tile === 'B') {
             // ★修正: 固定ダンジョンの場合、既にボスを撃破済みなら判定をスキップする (不具合②対応)
             if (Field.currentMapData.isFixed) {
-                const ak = Field.getCurrentAreaKey();
+                const ak = Dungeon.getFixedProgressKey();
                 const pk = `${x},${y}`;
                 if (App.data.progress.defeatedBosses && App.data.progress.defeatedBosses[ak]?.includes(pk)) {
                     return; 
@@ -502,6 +596,10 @@ const Dungeon = {
 
             App.log("ボスの気配が…");
             App.setAction("ボスと戦う", () => {
+                if (Field.currentMapData.isFixed) {
+                    Dungeon.startFixedBoss(x, y);
+                    return;
+                }
                 if (App.data.battle) {
                     App.data.battle.isBossBattle = true;
                     //App.data.battle.isSpecialBoss = Dungeon.floor >= 300;
@@ -540,16 +638,19 @@ const Dungeon = {
         // --- 1. 固定マップ（試練の洞窟など）の処理 ---
         if (isFixed) {
             const posKey = `${x},${y}`;
+            const progressKey = Dungeon.getFixedProgressKey(areaKey);
             if (!App.data.progress.openedChests) App.data.progress.openedChests = {};
-            if (!App.data.progress.openedChests[areaKey]) App.data.progress.openedChests[areaKey] = [];
+            if (!App.data.progress.openedChests[progressKey]) App.data.progress.openedChests[progressKey] = [];
             
-            if (App.data.progress.openedChests[areaKey].includes(posKey)) return;
+            if (App.data.progress.openedChests[progressKey].includes(posKey)) return;
 
-            const mapDef = FIXED_DUNGEON_MAPS[areaKey];
-            const chestDef = mapDef.chests ? mapDef.chests.find(c => c.x === x && c.y === y) : null;
+            const mapDef = Dungeon.getFixedFloorDef(areaKey, App.data.progress.floor || 1) || FIXED_DUNGEON_MAPS[areaKey];
+            const chestDef = (typeof MapRegistry !== 'undefined' && MapRegistry.findFixedChest)
+                ? MapRegistry.findFixedChest(mapDef, x, y)
+                : (mapDef.chests ? mapDef.chests.find(c => c.x === x && c.y === y) : null);
 
             if (chestDef) {
-                App.data.progress.openedChests[areaKey].push(posKey);
+                App.data.progress.openedChests[progressKey].push(posKey);
                 const item = DB.ITEMS.find(i => i.id === chestDef.itemId);
                 if (item) {
                     App.data.items[item.id] = (App.data.items[item.id] || 0) + 1;
@@ -559,6 +660,7 @@ const Dungeon = {
                     App.log("宝箱は空だった…");
                 }
             } else {
+                App.data.progress.openedChests[progressKey].push(posKey);
                 App.log("宝箱は空だった…");
             }
             App.save();
@@ -1969,13 +2071,14 @@ const Dungeon = {
 		// 1. 固定マップ（試練の洞窟など）の場合
 		if (isFixed) {
 			const areaKey = Field.getCurrentAreaKey();
+			const progressKey = Dungeon.getFixedProgressKey(areaKey);
 			const posKey = `${Field.x},${Field.y}`;
 			
 			if (!App.data.progress.defeatedBosses) App.data.progress.defeatedBosses = {};
-			if (!App.data.progress.defeatedBosses[areaKey]) App.data.progress.defeatedBosses[areaKey] = [];
+			if (!App.data.progress.defeatedBosses[progressKey]) App.data.progress.defeatedBosses[progressKey] = [];
 			
-			if (!App.data.progress.defeatedBosses[areaKey].includes(posKey)) {
-				App.data.progress.defeatedBosses[areaKey].push(posKey);
+			if (!App.data.progress.defeatedBosses[progressKey].includes(posKey)) {
+				App.data.progress.defeatedBosses[progressKey].push(posKey);
 			}
 			App.clearAction();
 		} 

@@ -190,12 +190,13 @@ const Facilities = {
         const current = App.data.items[99] || 0;
         let html = "";
         DB.MEDAL_REWARDS.forEach(r => {
-            const can = current >= r.medals;
+            const owned = !!(r.unique && r.type === 'item' && App.data.items && App.data.items[r.id] > 0);
+            const can = current >= r.medals && !owned;
             let detail = (r.type === 'item') ? (DB.ITEMS.find(it => it.id === r.id)?.desc || "不思議な道具") : `Rank.${r.base.rank} 指定部位の＋３確定装備`;
             html += `<div style="border: 1px solid #444; margin-bottom: 8px; padding: 10px; opacity:${can?1:0.5}; background:rgba(255,255,255,0.05);">
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:5px;">
                     <div style="font-weight:bold; font-size:14px; color:#fff;">${r.name}</div>
-                    <button class="btn" style="min-width:75px; height:30px;" ${can?'':'disabled'} onclick="Facilities.execMedal(${JSON.stringify(r).replace(/"/g, '&quot;')})">${r.medals}枚</button>
+                    <button class="btn" style="min-width:75px; height:30px;" ${can?'':'disabled'} onclick="Facilities.execMedal(${JSON.stringify(r).replace(/"/g, '&quot;')})">${owned ? '入手済み' : `${r.medals}枚`}</button>
                 </div>
                 <div style="font-size:10px; color:#aaa; line-height:1.4;">${detail}</div>
             </div>`;
@@ -205,6 +206,14 @@ const Facilities = {
 
 // --- メダル交換の実行処理 (特殊装備・レプリカ対応版) ---
     execMedal: (r) => {
+        if (r.unique && r.type === 'item' && App.data.items && App.data.items[r.id] > 0) {
+            Menu.msg("すでに持っています。");
+            return;
+        }
+        if ((App.data.items[99] || 0) < r.medals) {
+            Menu.msg("メダルが足りません。");
+            return;
+        }
         // メダルを消費
         App.data.items[99] -= r.medals;
         

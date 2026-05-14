@@ -340,9 +340,15 @@ const App = {
                 console.warn(`[Recovery] 非存在エリア '${area}' を検知。初期位置へ復旧します。`);
                 App.data.location = JSON.parse(JSON.stringify(initial.location));
             } else if (isFixed || isDungeonMap) {
-                // 固定マップの場合、座標が現在のマップの範囲内か判定
-                const mapDef = isFixed ? FIXED_MAPS[area] : FIXED_DUNGEON_MAPS[area];
-                if (mapDef && (loc.x < 0 || loc.x >= mapDef.width || loc.y < 0 || loc.y >= mapDef.height)) {
+                // 固定マップの場合、座標が現在のマップの範囲内か判定。
+                // 複数階固定ダンジョンは MapRegistry から現在階の実体を取得する。
+                const mapDef = isFixed
+                    ? FIXED_MAPS[area]
+                    : (typeof MapRegistry !== 'undefined' && MapRegistry.getFixedDungeonFloor
+                        ? MapRegistry.getFixedDungeonFloor(area, App.data.progress?.floor || 1)
+                        : FIXED_DUNGEON_MAPS[area]);
+                if (mapDef && mapDef.width !== undefined && mapDef.height !== undefined &&
+                    (loc.x < 0 || loc.x >= mapDef.width || loc.y < 0 || loc.y >= mapDef.height)) {
                     console.warn(`[Recovery] マップ外座標 (${loc.x}, ${loc.y}) を検知。初期位置へ復旧します。`);
                     App.data.location = JSON.parse(JSON.stringify(initial.location));
                 }
@@ -384,6 +390,8 @@ const App = {
 
         // 5. dungeon の補完
         if (!App.data.dungeon) App.data.dungeon = JSON.parse(JSON.stringify(initial.dungeon));
+        if (App.data.transportMode === undefined) App.data.transportMode = null;
+        if (App.data.mapReturnPoint === undefined) App.data.mapReturnPoint = null;
 
         // 6. キャラクターの個別補完
         if (App.data.characters) {
@@ -866,6 +874,61 @@ const App = {
         return 1;
     },
 
+    hasItem: (itemId) => {
+        return !!(App.data && App.data.items && Number(App.data.items[itemId] || 0) > 0);
+    },
+
+    hasMagicBoat: () => {
+        return App.hasItem(108) || !!App.data?.progress?.flags?.hasShip;
+    },
+
+    isFlying: () => App.data?.transportMode === 'flying',
+    isBoating: () => App.data?.transportMode === 'boat',
+
+    getWorldTileAt: (x, y) => {
+        if (typeof MAP_DATA === 'undefined' || !MAP_DATA[0]) return 'W';
+        const mapW = MAP_DATA[0].length;
+        const mapH = MAP_DATA.length;
+        const tx = ((Number(x) % mapW) + mapW) % mapW;
+        const ty = ((Number(y) % mapH) + mapH) % mapH;
+        return String(MAP_DATA[ty][tx] || 'W').toUpperCase();
+    },
+
+    isWorldLandingTile: (tile) => {
+        const upper = String(tile || 'W').toUpperCase();
+        return upper !== 'W' && upper !== 'M';
+    },
+
+    useLightWing: () => {
+        if (!App.hasItem(109)) {
+            Menu.msg("光の翼を持っていません。");
+            return false;
+        }
+        if (Field.currentMapData || App.data.location.area !== 'WORLD') {
+            Menu.msg("光の翼はフィールドで使おう。");
+            return false;
+        }
+        App.data.transportMode = 'flying';
+        App.save();
+        App.log("光の翼で空へ舞い上がった！");
+        return true;
+    },
+
+    tryLandFromFlight: () => {
+        if (!App.isFlying()) return false;
+        const tile = App.getWorldTileAt(Field.x, Field.y);
+        if (!App.isWorldLandingTile(tile)) {
+            App.log("そこには降りることができない！");
+            return true;
+        }
+        App.data.transportMode = null;
+        App.save();
+        App.log("地面に降り立った。");
+        if (typeof Field.refreshCurrentAction === 'function') Field.refreshCurrentAction({ silent: true });
+        if (typeof Field.render === 'function') Field.render();
+        return true;
+    },
+
     /**
      * 機能を解放する (鍛冶屋・ガチャ等)
      */
@@ -1021,6 +1084,7 @@ const App = {
     },
     inspectCurrentTile: () => {
         if (typeof App.isFieldControlBlocked === 'function' && App.isFieldControlBlocked()) return;
+        if (typeof App.tryLandFromFlight === 'function' && App.tryLandFromFlight()) return;
         if(App.pendingAction) {
             App.executeAction();
             return;
@@ -2422,6 +2486,10 @@ load: () => {
 		App.log("敵だ！");
 
 		const flags = App.getEncounterFlags();
+		const isSeaEncounter = !Field.currentMapData && (
+			(typeof App.isBoating === 'function' && App.isBoating()) ||
+			(typeof App.getWorldTileAt === 'function' && App.getWorldTileAt(Field.x, Field.y) === 'W')
+		);
 
 		App.data.battle = {
 			active: false,
@@ -2430,6 +2498,8 @@ load: () => {
 			isEstark: false,
 			fixedBossId: null,
 			enemies: [],
+			encounterType: isSeaEncounter ? 'sea' : null,
+			monsters: isSeaEncounter && Array.isArray(window.SEA_ENCOUNTER_MONSTERS) ? [...window.SEA_ENCOUNTER_MONSTERS] : null,
 			isAmbushed: flags.isAmbushed,
 			isPreemptive: flags.isPreemptive
 		};
@@ -2596,12 +2666,11 @@ const Field = {
             
             // --- マップデータの復元ロジック ---
             if (typeof FIXED_DUNGEON_MAPS !== 'undefined' && FIXED_DUNGEON_MAPS[areaKey]) {
-                Field.currentMapData = { 
-                    ...FIXED_DUNGEON_MAPS[areaKey],
-                    isDungeon: true,
-                    isFixed: true 
-                };
-                if(typeof Dungeon !== 'undefined') Dungeon.floor = App.data.progress.floor || 1;
+                const fixedFloor = (typeof MapRegistry !== 'undefined' && MapRegistry.getFixedDungeonFloor)
+                    ? MapRegistry.getFixedDungeonFloor(areaKey, App.data.progress.floor || 1)
+                    : { ...FIXED_DUNGEON_MAPS[areaKey], isDungeon: true, isFixed: true };
+                Field.currentMapData = fixedFloor;
+                if(typeof Dungeon !== 'undefined') Dungeon.floor = App.data.progress.floor || fixedFloor.floor || 1;
             }
             else if (typeof FIXED_MAPS !== 'undefined' && FIXED_MAPS[areaKey]) {
                 Field.currentMapData = FIXED_MAPS[areaKey];
@@ -2659,25 +2728,72 @@ const Field = {
         }
     },
 
+    enterFixedMap: (targetAreaKey) => {
+        if (!targetAreaKey || typeof FIXED_MAPS === 'undefined' || !FIXED_MAPS[targetAreaKey]) return;
+        const areaDef = FIXED_MAPS[targetAreaKey];
+        App.data.mapReturnPoint = {
+            areaKey: App.data.location.area || 'WORLD',
+            x: Field.x,
+            y: Field.y
+        };
+        App.data.transportMode = null;
+        App.data.location.area = targetAreaKey;
+        Field.currentMapData = areaDef;
+        Field.x = areaDef.entryPoint ? areaDef.entryPoint.x : Math.floor(areaDef.width / 2);
+        Field.y = areaDef.entryPoint ? areaDef.entryPoint.y : areaDef.height - 3;
+        App.data.location.x = Field.x;
+        App.data.location.y = Field.y;
+        App.log(`${areaDef.name}に入った`);
+        App.save();
+        App.changeScene('field');
+    },
+
     getCurrentAreaKey: () => {
         if (!Field.currentMapData) return 'WORLD';
         const locArea = App.data.location.area;
-        if (locArea && (STORY_DATA.areas[locArea] || (typeof FIXED_DUNGEON_MAPS !== 'undefined' && FIXED_DUNGEON_MAPS[locArea]))) {
+        if (locArea && (
+            STORY_DATA.areas[locArea] ||
+            (typeof FIXED_MAPS !== 'undefined' && FIXED_MAPS[locArea]) ||
+            (typeof FIXED_DUNGEON_MAPS !== 'undefined' && FIXED_DUNGEON_MAPS[locArea])
+        )) {
             return locArea;
         }
         const entry = Object.entries(STORY_DATA.areas).find(([key, area]) => area.name === Field.currentMapData.name);
         if (entry) return entry[0];
         if (typeof FIXED_DUNGEON_MAPS !== 'undefined') {
-            const dungeonEntry = Object.entries(FIXED_DUNGEON_MAPS).find(([key, area]) => area.name === Field.currentMapData.name);
+            const dungeonEntry = Object.entries(FIXED_DUNGEON_MAPS).find(([key, area]) => area.name === Field.currentMapData.baseName || area.name === Field.currentMapData.name);
             if (dungeonEntry) return dungeonEntry[0];
         }
         return Field.currentMapData.isDungeon ? 'DEFAULT' : 'WORLD';
     },
 
-    getTileConfig: (tileSign) => {
-        const upper = tileSign.toUpperCase();
+    getCurrentProgressMapKey: () => {
         const areaKey = Field.getCurrentAreaKey();
-        const theme = TILE_THEMES[areaKey] || TILE_THEMES['DEFAULT'];
+        if (Field.currentMapData?.isFixed && Field.currentMapData?.isDungeon && typeof MapRegistry !== 'undefined' && MapRegistry.getFixedDungeonProgressKey) {
+            return MapRegistry.getFixedDungeonProgressKey(areaKey, App.data?.progress?.floor || Field.currentMapData.floor || 1);
+        }
+        return areaKey;
+    },
+
+    getCurrentTileTheme: (areaKey = null) => {
+        const key = areaKey || Field.getCurrentAreaKey();
+        const mapDef = Field.currentMapData || null;
+        const themeKey = mapDef?.themeKey || key;
+
+        // 優先順位:
+        // 1. DEFAULT: 足りない記号の保険
+        // 2. TILE_THEMES[themeKey]: MAPごとの基本見た目
+        // 3. mapDef.tileOverrides: そのMAPだけの個別上書き
+        return {
+            ...(TILE_THEMES['DEFAULT'] || {}),
+            ...(TILE_THEMES[themeKey] || TILE_THEMES[key] || {}),
+            ...(mapDef?.tileOverrides || {})
+        };
+    },
+
+    getTileConfig: (tileSign) => {
+        const upper = String(tileSign || 'W').toUpperCase();
+        const theme = Field.getCurrentTileTheme();
         
         let config = theme[upper] || TILE_THEMES['DEFAULT'][upper] || { img: null, color: '#000' };
 
@@ -2693,6 +2809,63 @@ const Field = {
         return config;
     },
 
+    getTileConfigForDraw: (tileSign, tileX = null, tileY = null) => {
+        const base = Field.getTileConfig(tileSign);
+        if (!Field.currentMapData && tileX !== null && tileY !== null && typeof MapRegistry !== 'undefined' && MapRegistry.getWorldTileConfig) {
+            const special = MapRegistry.getWorldTileConfig(tileX, tileY);
+            if (special) return { ...base, ...special };
+        }
+        return base;
+    },
+
+    isFixedDungeonOverlayTile: (tileSign) => {
+        return !!Field.getFixedTileOverlayConfig(tileSign);
+    },
+
+    getFixedTileOverlayConfig: (tileSign, x = null, y = null) => {
+        if (!Field.currentMapData?.isFixed) return null;
+        const upper = String(tileSign || '').toUpperCase();
+
+        // 固定ダンジョンのSは「外へ出る床タイル」として扱う。
+        // 階段アイコンはD/Uだけに出す。将来Sにoverlayを誤設定しても出口なら床のままにする。
+        let link = null;
+        if (Field.currentMapData.isDungeon && ['S', 'D', 'U'].includes(upper)) {
+            link = (typeof MapRegistry !== 'undefined' && MapRegistry.findFloorLink && x !== null && y !== null)
+                ? MapRegistry.findFloorLink(Field.currentMapData, x, y)
+                : null;
+            if (upper === 'S' && (!link || link.to === 'EXIT')) return null;
+        }
+
+        let config = (typeof MapRegistry !== 'undefined' && MapRegistry.getFixedOverlayConfig)
+            ? MapRegistry.getFixedOverlayConfig(Field.currentMapData, upper, x, y)
+            : null;
+        if (!config) return null;
+
+        // 固定ダンジョンのD/Uは、リンク先に合わせて上り/下りアイコンを自動切替。
+        // 塔は「階数が大きい＝上り」、地下MAPは「地下が深い＝下り」として扱う。
+        if (Field.currentMapData.isDungeon && ['D', 'U'].includes(upper)) {
+            const currentFloor = Number(App.data?.progress?.floor || Field.currentMapData.floor || 1);
+            const direction = (typeof MapRegistry !== 'undefined' && MapRegistry.getFixedFloorDirection)
+                ? MapRegistry.getFixedFloorDirection(Field.currentMapData, link, currentFloor, Field.getCurrentAreaKey())
+                : null;
+            let stairImg = config.img;
+            if (direction === 'down') stairImg = 'overlay_named_dungeon_stairs_down';
+            else if (direction === 'up') stairImg = 'overlay_named_dungeon_stairs_up';
+            else if (upper === 'D') stairImg = 'overlay_named_dungeon_stairs_down';
+            else if (upper === 'U') stairImg = 'overlay_named_dungeon_stairs_up';
+            config = { img: stairImg, color: config.color || '#d7b45a' };
+        }
+        return config;
+    },
+
+    getFixedTileOverlayBaseTile: (tileSign) => {
+        if (!Field.currentMapData?.isFixed) return 'T';
+        if (typeof MapRegistry !== 'undefined' && MapRegistry.getFixedOverlayBaseTile) {
+            return MapRegistry.getFixedOverlayBaseTile(Field.currentMapData, tileSign);
+        }
+        return 'T';
+    },
+
     getRenderedTileForDraw: (tileX, tileY, mapW, mapH, areaKey) => {
         let nextTile = 'W';
         if (Field.currentMapData) {
@@ -2700,8 +2873,9 @@ const Field = {
                 const posKey = `${tileX},${tileY}`;
                 nextTile = App.data.progress.mapChanges?.[areaKey]?.[posKey] || Field.currentMapData.tiles[tileY][tileX];
                 if (Field.currentMapData.isFixed) {
-                    if ((nextTile === 'C' || nextTile === 'R') && App.data.progress.openedChests?.[areaKey]?.includes(posKey)) nextTile = 'G';
-                    if (nextTile === 'B' && App.data.progress.defeatedBosses?.[areaKey]?.includes(posKey)) nextTile = 'G';
+                    const progressKey = Field.getCurrentProgressMapKey();
+                    if ((nextTile === 'C' || nextTile === 'R') && App.data.progress.openedChests?.[progressKey]?.includes(posKey)) nextTile = 'G';
+                    if (nextTile === 'B' && App.data.progress.defeatedBosses?.[progressKey]?.includes(posKey)) nextTile = 'G';
                 }
             }
         } else {
@@ -2732,8 +2906,9 @@ const Field = {
             tile = String(tile || 'W').toUpperCase();
 
             if (Field.currentMapData.isFixed) {
-                if ((tile === 'C' || tile === 'R') && App.data.progress.openedChests?.[areaKey]?.includes(posKey)) tile = 'G';
-                if (tile === 'B' && App.data.progress.defeatedBosses?.[areaKey]?.includes(posKey)) tile = 'G';
+                const progressKey = Field.getCurrentProgressMapKey();
+                if ((tile === 'C' || tile === 'R') && App.data.progress.openedChests?.[progressKey]?.includes(posKey)) tile = 'G';
+                if (tile === 'B' && App.data.progress.defeatedBosses?.[progressKey]?.includes(posKey)) tile = 'G';
             }
 
             return { tile, x, y, areaKey, isWorld: false };
@@ -2747,6 +2922,54 @@ const Field = {
         const tile = String(MAP_DATA[y][x] || 'W').toUpperCase();
 
         return { tile, x, y, areaKey: 'WORLD', isWorld: true };
+    },
+
+    executeMapAction: (action) => {
+        if (!action) return;
+
+        // map.js の mapActions で requiredItemId を指定すると、所持時のみ実行する。
+        // 例: 朽ちた祠の石碑は「災厄の楔」所持時だけ隠しボス戦へ進む。
+        if (action.requiredItemId !== undefined && typeof App.hasItem === 'function' && !App.hasItem(action.requiredItemId)) {
+            const msg = action.requiredItemMissingText || '今は何も起こらないようだ。';
+            App.log(msg);
+            return;
+        }
+
+        if (action.log) App.log(action.log);
+
+        if (action.type === 'fixedDungeon' && action.target && typeof Dungeon !== 'undefined' && Dungeon.startFixed) {
+            Dungeon.startFixed(action.target);
+            return;
+        }
+
+        if (action.type === 'abyssDungeon' && typeof Dungeon !== 'undefined') {
+            Dungeon.enter();
+            return;
+        }
+
+        if (action.type === 'storyEvent' && action.eventId && typeof StoryManager !== 'undefined') {
+            StoryManager.executeEvent(action.eventId);
+            return;
+        }
+
+        if (action.type === 'boss') {
+            const fixedBossId = action.monsterId !== undefined ? action.monsterId : null;
+            let isSpecialBoss = !!action.special;
+            if (!isSpecialBoss && fixedBossId !== null) {
+                const base = window.MonsterData?.getMonsterById?.(Number(fixedBossId));
+                isSpecialBoss = !!(base?.isSpecialBoss || base?.isEstark || Number(fixedBossId) === 902000);
+            }
+            App.data.battle = {
+                active: false,
+                isBossBattle: true,
+                fixedBossId,
+                isSpecialBoss,
+                isEstark: isSpecialBoss
+            };
+            App.save();
+            App.changeScene('battle');
+            return;
+        }
     },
 
     /**
@@ -2802,6 +3025,15 @@ const Field = {
             }
 
             if (!Field.currentMapData.isDungeon) {
+                const mapAction = (typeof MapRegistry !== 'undefined' && MapRegistry.findMapAction)
+                    ? MapRegistry.findMapAction(Field.currentMapData, x, y)
+                    : null;
+                if (mapAction) {
+                    if (mapAction.log) logIfNeeded(mapAction.log);
+                    App.setAction(mapAction.label || '調べる', () => Field.executeMapAction(mapAction));
+                    return true;
+                }
+
                 if (tile === 'I') {
                     logIfNeeded('宿屋のようだ。');
                     App.setAction('泊まる', () => App.changeScene('inn'));
@@ -2811,10 +3043,9 @@ const Field = {
                 } else if (tile === 'E') {
                     logIfNeeded('交換所のようだ。');
                     App.setAction('メダル交換', () => App.changeScene('medal'));
-                } else if (tile === 'D' && App.data.location.area === 'START_VILLAGE') {
-                    logIfNeeded('洞窟の入口だ');
-                    App.setAction('洞窟に入る', () => Dungeon.startFixed('START_CAVE'));
                 }
+            } else if (Field.currentMapData.isFixed && typeof Dungeon !== 'undefined' && typeof Dungeon.prepareFixedTileAction === 'function') {
+                if (Dungeon.prepareFixedTileAction(tile, x, y, { silent })) return true;
             }
 
             if (tile === 'V' || tile === 'H' || tile === 'B') {
@@ -2848,8 +3079,14 @@ const Field = {
                 }
             }
 
+            if (tile === 'B' && Field.currentMapData.isFixed && Field.currentMapData.isDungeon && !App.pendingAction && typeof Dungeon !== 'undefined' && typeof Dungeon.startFixedBoss === 'function') {
+                App.setAction('ボスと戦う', () => Dungeon.startFixedBoss(x, y));
+            }
+
             return !!App.pendingAction;
         }
+
+        if (typeof App.isFlying === 'function' && App.isFlying()) return false;
 
         if (tile === 'I' || tile === 'B') {
             let targetAreaKey = null;
@@ -2862,17 +3099,10 @@ const Field = {
 
             if (targetAreaKey && typeof FIXED_MAPS !== 'undefined' && FIXED_MAPS[targetAreaKey]) {
                 const areaDef = FIXED_MAPS[targetAreaKey];
-                App.setAction(`${areaDef.name}に入る`, () => {
-                    App.data.location.area = targetAreaKey;
-                    Field.currentMapData = areaDef;
-                    Field.x = areaDef.entryPoint ? areaDef.entryPoint.x : Math.floor(areaDef.width / 2);
-                    Field.y = areaDef.entryPoint ? areaDef.entryPoint.y : areaDef.height - 3;
-                    App.data.location.x = Field.x;
-                    App.data.location.y = Field.y;
-                    App.log(`${areaDef.name}に入った`);
-                    App.save();
-                    App.changeScene('field');
-                });
+                App.setAction(`${areaDef.name}に入る`, () => Field.enterFixedMap(targetAreaKey));
+            } else if (targetAreaKey && typeof FIXED_DUNGEON_MAPS !== 'undefined' && FIXED_DUNGEON_MAPS[targetAreaKey]) {
+                const areaDef = FIXED_DUNGEON_MAPS[targetAreaKey];
+                App.setAction(`${areaDef.name}に入る`, () => Dungeon.startFixed(targetAreaKey));
             } else {
                 logIfNeeded('小さな休憩所がある。');
                 App.setAction('休む', () => App.changeScene('inn'));
@@ -2883,10 +3113,16 @@ const Field = {
             App.setAction('カジノに入る', () => App.changeScene('casino'));
         } else if (tile === 'D') {
             logIfNeeded('不気味な穴が開いている…「深淵の魔窟」だ');
-            App.setAction('魔窟に入る', () => {
-                App.data.location.area = 'ABYSS';
-                Dungeon.enter();
-            });
+            if (typeof FIXED_MAPS !== 'undefined' && FIXED_MAPS.ABYSS_FIELD) {
+                App.setAction('魔窟の外縁へ', () => {
+                    Field.enterFixedMap('ABYSS_FIELD');
+                });
+            } else {
+                App.setAction('魔窟に入る', () => {
+                    App.data.location.area = 'ABYSS';
+                    Dungeon.enter();
+                });
+            }
         }
 
         return !!App.pendingAction;
@@ -2894,12 +3130,19 @@ const Field = {
 
     getDungeonWallGraphicForDraw: (tileX, tileY, upper, mapW, mapH, areaKey) => {
         if (!Field.currentMapData?.isDungeon || upper !== 'W') return null;
+
+        // 固定ダンジョンはMAPごとのW画像を優先する。
+        // 汎用の wall_face に差し替えると、大灯台/雷の要塞/光の宮殿/魔王城が同じ壁に見えるため。
+        // 例外的に汎用壁面を使いたいMAPだけ、map.js側で useDungeonWallFace: true を設定する。
+        if (Field.currentMapData.isFixed && !Field.currentMapData.useDungeonWallFace) return null;
+
         if (Field.getRenderedTileForDraw(tileX, tileY + 1, mapW, mapH, areaKey) === 'W') return null;
         return (((tileX % 5) + 5) % 5) === 0 ? 'wall_face_torch' : 'wall_face';
     },
     
     getBattleBg: () => {
         if (App.data.battle && (App.data.battle.isSpecialBoss || App.data.battle.isEstark)) return 'battle_bg_lastboss';
+        if (App.data.battle?.encounterType === 'sea') return 'battle_bg_sea';
         if (Field.currentMapData) {
             if (Field.currentMapData.battleBg) return Field.currentMapData.battleBg;
             if (Field.currentMapData.isDungeon) {
@@ -2925,6 +3168,7 @@ const Field = {
         const mapW = MAP_DATA[0].length, mapH = MAP_DATA.length;
         const tx = ((Field.x % mapW) + mapW) % mapW, ty = ((Field.y % mapH) + mapH) % mapH;
         const tile = MAP_DATA[ty][tx].toUpperCase();
+        if (tile === 'W') return 'battle_bg_sea';
         if (tile === 'F') return 'battle_bg_forest';
         if (tile === 'L') return 'battle_bg_mountain';
         return 'battle_bg_field';
@@ -3027,7 +3271,7 @@ const Field = {
 
             // ★追加: 固定宝箱/ボスの判定を移動前に行う (撃破・取得済みなら通り抜け可能にする)
             if (Field.currentMapData.isFixed) {
-                const ak = Field.getCurrentAreaKey();
+                const ak = Field.getCurrentProgressMapKey();
                 const posStr = `${nx},${ny}`;
                 // 宝箱チェック
                 if ((tile === 'C' || tile === 'R') && App.data.progress.openedChests && App.data.progress.openedChests[ak]?.includes(posStr)) {
@@ -3043,9 +3287,18 @@ const Field = {
 
             if (tile === 'S' && !Field.currentMapData.isDungeon) {
                 const areaKey = App.data.location.area;
-                if (typeof FIXED_MAPS !== 'undefined' && FIXED_MAPS[areaKey]?.exitPoint) {
-                    const exit = FIXED_MAPS[areaKey].exitPoint;
+                if (typeof FIXED_MAPS !== 'undefined' && FIXED_MAPS[areaKey]) {
+                    const saved = App.data.mapReturnPoint;
+                    const areaDef = (typeof STORY_DATA !== 'undefined' && STORY_DATA.areas) ? STORY_DATA.areas[areaKey] : null;
+                    const fallback = areaDef
+                        ? { area: 'WORLD', x: areaDef.centerX, y: areaDef.centerY }
+                        : (FIXED_MAPS[areaKey].exitPoint || { area: 'WORLD', x: Field.x, y: Field.y });
+                    const exit = (saved && saved.areaKey === 'WORLD')
+                        ? { area: 'WORLD', x: saved.x, y: saved.y }
+                        : fallback;
+                    App.data.mapReturnPoint = null;
                     App.data.location.area = 'WORLD';
+                    App.data.transportMode = null;
                     Field.x = exit.x; Field.y = exit.y;
                     App.data.location.x = exit.x; App.data.location.y = exit.y;
                     Field.currentMapData = null; 
@@ -3071,13 +3324,22 @@ const Field = {
             const mapW = MAP_DATA[0].length, mapH = MAP_DATA.length;
             nx = (nx + mapW) % mapW; ny = (ny + mapH) % mapH;
             const tile = MAP_DATA[ny][nx].toUpperCase();
-            if (tile === 'M') { App.log("険しい岩山だ"); keepCurrentTileAction(); return; }
-            if (tile === 'W') { if (!App.data.progress?.flags?.hasShip) { App.log("海は船がないと渡れない…"); keepCurrentTileAction(); return; } }
+            const isFlying = typeof App.isFlying === 'function' && App.isFlying();
+            if (!isFlying && tile === 'M') { App.log("険しい岩山だ"); keepCurrentTileAction(); return; }
+            if (!isFlying && tile === 'W') {
+                if (!App.hasMagicBoat || !App.hasMagicBoat()) { App.log("海は船がないと渡れない…"); keepCurrentTileAction(); return; }
+                if (App.data.transportMode !== 'boat') App.log("魔法の小舟で海へ漕ぎ出した。");
+                App.data.transportMode = 'boat';
+            }
+            if (!isFlying && tile !== 'W' && App.data.transportMode === 'boat') {
+                App.data.transportMode = null;
+                App.log("小舟を降りた。");
+            }
             Field.x = nx; Field.y = ny; App.data.location.x = nx; App.data.location.y = ny; 
-            const hasTileAction = Field.refreshCurrentAction({ silent: false });
-            if (!hasTileAction) {
+            const hasTileAction = isFlying ? false : Field.refreshCurrentAction({ silent: false });
+            if (!isFlying && !hasTileAction) {
                 // --- エンカウント判定ロジック ---
-                const occurred = App.tryRandomEncounter();
+                const occurred = App.tryRandomEncounter(tile === 'W' ? 0.04 : null);
                 if (occurred) {
                     App.save();
                     Field.render();
@@ -3129,22 +3391,42 @@ const Field = {
             for (let dx = -rangeX; dx <= rangeX; dx++) {
                 const drawX = Math.floor(cx + (dx * ts) - (ts / 2)), drawY = Math.floor(cy + (dy * ts) - (ts / 2));
                 let tx = Field.x + dx, ty = Field.y + dy, tile = Field.getRenderedTileForDraw(tx, ty, mapW, mapH, areaKey);
-                const config = Field.getTileConfig(tile), upper = tile.toUpperCase(), floorConfig = Field.getTileConfig('T');
+                const config = Field.getTileConfigForDraw ? Field.getTileConfigForDraw(tile, tx, ty) : Field.getTileConfig(tile);
+                const upper = tile.toUpperCase();
                 const wallGraphic = Field.getDungeonWallGraphicForDraw(tx, ty, upper, mapW, mapH, areaKey);
+                const overlayConfig = Field.getFixedTileOverlayConfig ? Field.getFixedTileOverlayConfig(upper, tx, ty) : null;
+                const overlayBaseTile = overlayConfig && Field.getFixedTileOverlayBaseTile ? Field.getFixedTileOverlayBaseTile(upper) : null;
+                const groundTile = overlayBaseTile || (upper === 'G' ? 'G' : 'T');
+                // 地面は座標依存のフィールド施設オーバーレイを混ぜず、純粋な床タイルとして描く。
+                // これにより透過素材の下が黒くならず、G/Tなどの地面の上に施設画像が重なる。
+                const floorConfig = Field.getTileConfig(groundTile);
 
-                // 1. 地面の描画 (floorConfig.img がスプライト名でもOK)
+                // 1. 地面の描画。
+                // 固定MAP/固定ダンジョンの施設・宝箱・階段・ボス等は、ここで床を描いてからオーバーレイを重ねる。
                 if (!drawGraphic(floorConfig.img, drawX, drawY, ts)) {
                     ctx.fillStyle = floorConfig.color;
                     ctx.fillRect(drawX, drawY, ts, ts);
                 }
 
-                // 2. 重ねるオブジェクトの描画
-                if (upper !== 'T' && upper !== 'G') {
+                // 2. 通常オブジェクトの描画。overlayConfig があるタイルはここでは描かない。
+                if (upper !== 'T' && upper !== 'G' && !overlayConfig) {
                     if (!drawGraphic(wallGraphic || config.img, drawX, drawY, ts)) {
                         if (config.color && config.color !== floorConfig.color) {
                             ctx.fillStyle = config.color;
                             ctx.fillRect(drawX, drawY, ts, ts);
                         }
+                    }
+                }
+
+                // 3. 固定MAP/固定ダンジョン専用オーバーレイ。
+                if (overlayConfig) {
+                    if (!drawGraphic(overlayConfig.img, drawX, drawY, ts)) {
+                        ctx.save();
+                        ctx.fillStyle = overlayConfig.color || config.color || '#fff';
+                        ctx.beginPath();
+                        ctx.arc(drawX + ts / 2, drawY + ts / 2, ts * 0.34, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.restore();
                     }
                 }
             }
@@ -3191,7 +3473,17 @@ const Field = {
         if (typeof Field.drawDungeonAtmosphere === 'function') Field.drawDungeonAtmosphere(ctx, w, h);
 
         let locName = Field.currentMapData ? Field.currentMapData.name : `世界地図 (${Field.x}, ${Field.y})`;
-        if (Field.currentMapData && Field.currentMapData.isDungeon) locName += ` ${Dungeon.floor}階`;
+        if (!Field.currentMapData && App.data?.transportMode === 'flying') locName += ' - 飛行中';
+        if (!Field.currentMapData && App.data?.transportMode === 'boat') locName += ' - 小舟';
+        if (Field.currentMapData && Field.currentMapData.isDungeon) {
+            if (Field.currentMapData.isFixed) {
+                const baseName = Field.currentMapData.baseName || Field.currentMapData.name;
+                const floorLabel = Field.currentMapData.floorLabel || `${Dungeon.floor}階`;
+                locName = Field.currentMapData.displayName || `${baseName} ${floorLabel}`;
+            } else {
+                locName = `${locName} ${Dungeon.floor}階`;
+            }
+        }
         document.getElementById('loc-name').innerText = locName;
         if (typeof App.updateObjectiveHUD === 'function') App.updateObjectiveHUD();
 
@@ -3220,14 +3512,17 @@ const Field = {
                         }
 
                         mtile = App.data.progress.mapChanges?.[areaKey]?.[pk] || Field.currentMapData.tiles[mty][mtx];
-                        if (App.data.progress.openedChests?.[ak]?.includes(pk)) mtile = 'G';
-                        if (App.data.progress.defeatedBosses?.[ak]?.includes(pk)) mtile = 'G';
+                        const progressKey = Field.currentMapData?.isFixed && Field.getCurrentProgressMapKey
+                            ? Field.getCurrentProgressMapKey()
+                            : ak;
+                        if (App.data.progress.openedChests?.[progressKey]?.includes(pk)) mtile = 'G';
+                        if (App.data.progress.defeatedBosses?.[progressKey]?.includes(pk)) mtile = 'G';
                     } else {
                         minimapVisible = false;
                     }
                 } else { mtile = MAP_DATA[((mty%mapH)+mapH)%mapH][((mtx%mapW)+mapW)%mapW]; }
                 if (!minimapVisible) continue;
-                if (mdx===0 && mdy===0) ctx.fillStyle = '#fff'; else ctx.fillStyle = Field.getTileConfig(mtile).color;
+                if (mdx===0 && mdy===0) ctx.fillStyle = '#fff'; else ctx.fillStyle = (Field.getTileConfigForDraw ? Field.getTileConfigForDraw(mtile, mtx, mty) : Field.getTileConfig(mtile)).color;
                 if (ctx.fillStyle !== '#000') ctx.fillRect(mmX + (mdx + range) * dms, mmY + (mdy + range) * dms, dms, dms);
             }
         }

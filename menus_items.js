@@ -38,7 +38,10 @@ const MenuItems = {
             `;
             div.onclick = () => {
                 // 回復・蘇生に加えて「育成」タイプもターゲット選択へ進む
-                if(it.def.type.includes('回復') || it.def.type.includes('蘇生') || it.def.type.includes('育成')) {
+                if(it.def.type === '乗り物') {
+                    MenuItems.selectedItem = it.def;
+                    MenuItems.useVehicleItem(it.def);
+                } else if(it.def.type.includes('回復') || it.def.type.includes('蘇生') || it.def.type.includes('育成')) {
                     MenuItems.selectedItem = it.def;
                     MenuItems.renderTargetList();
                 } else {
@@ -48,6 +51,26 @@ const MenuItems = {
             };
             list.appendChild(div);
         });
+    },
+    useVehicleItem: (item) => {
+        if (!item) return;
+        if (!App.data.items[item.id] || App.data.items[item.id] <= 0) {
+            Menu.msg("アイテムを持っていません。");
+            MenuItems.changeScreen('list');
+            return;
+        }
+
+        // 乗り物タイプは使用しても消費しない。
+        if (item.id === 109 || item.name === '光の翼') {
+            const used = (typeof App.useLightWing === 'function') ? App.useLightWing() : false;
+            if (used) {
+                if (typeof Menu !== 'undefined' && typeof Menu.closeAll === 'function') Menu.closeAll();
+                if (typeof Field !== 'undefined' && typeof Field.render === 'function') Field.render();
+            }
+            return;
+        }
+
+        Menu.msg("この乗り物はまだ使用できません。");
     },
     renderTargetList: () => {
         MenuItems.changeScreen('target');
