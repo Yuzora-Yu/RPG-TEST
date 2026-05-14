@@ -13,8 +13,9 @@
  * - Base64画像の大量埋め込みは避け、原則として assets/ 配下の画像ファイルを参照すること。
  *
  * Service Worker 側の注意:
- * - sw.js では画像を全量事前キャッシュしない。
- * - 画像は使われた時点で runtime cache に保存する。
+ * - 2026-05-14時点では、初回表示品質を優先し、初回起動時に画像もまとめてキャッシュする。
+ * - ただし画像リストの正本はこの assets.js。sw.js 側に巨大な画像配列を再作成しないこと。
+ * - 将来、画像軽量化・分割ロード方針に戻す場合も、まずこの cacheWarmup 定義を変更する。
  * ============================================================================
  */
 
@@ -23,13 +24,14 @@
 // 起動体験を損なわないための画像キャッシュ定義
 // ---------------------------------------------------------------------------
 // 今後の画像管理はこの assets.js に統一します。
-// Service Worker はこの一覧を main.js から受け取り、初回起動後に裏側で順次キャッシュします。
+// Service Worker はこの一覧を main.js / sw.js から参照する。
 // sw.js 側にモンスター画像やエフェクト画像の全量リストを直接復活させないこと。
 //
-// 目的:
-// - 起動時に全画像を待たない。
-// - ただし、初戦闘やロード画面で画像読み込み待ちが目立たないようにする。
-// - 画像は「軽い初期表示用」→「戦闘で使いやすい素材」→「残り素材」の順で温める。
+// 現在の方針:
+// - 初回起動時に画像をまとめてキャッシュし、ロード画面・初戦闘・ガチャ・施設背景の
+//   「初回だけ画像が出ない/遅れる」体験を避ける。
+// - ただし、正本はこの assets.js。Android化や画像軽量化時もここを編集する。
+// - main.js は startupImages をローディング中に先読みし、sw.js は installImages を初回キャッシュする。
 const PRISMA_NORMAL_MONSTER_IMAGE_IDS = Array.from({ length: 90 }, (_, i) => 100001 + i);
 const PRISMA_BOSS_MONSTER_IMAGE_IDS = [
   200201, 200202, 200203, 200204,
@@ -44,10 +46,11 @@ const PRISMA_MONSTER_IMAGE_FILES = PRISMA_NORMAL_MONSTER_IMAGE_IDS
   .concat(PRISMA_BOSS_MONSTER_IMAGE_IDS)
   .map((id) => `monster/img/monster_${id}.png`);
 
-// ロード画面に使う候補。ここは sw.js の INITIAL_IMAGE_PRECACHE と同じ考え方の少数精鋭。
-// 全モンスターをここへ入れないこと。残りは warmCache.backgroundImages で裏側キャッシュする。
+// ロード画面・序盤戦闘で使う候補。
+// 初回起動時の見栄えを優先し、やや多めに先読み/初回キャッシュする。
+// 画像軽量化後はここを増減してよいが、参照リストは sw.js 側へ複製しないこと。
 const PRISMA_LOADING_MONSTER_IMAGE_FILES = PRISMA_NORMAL_MONSTER_IMAGE_IDS
-  .slice(0, 12)
+  .slice(0, 24)
   .map((id) => `monster/img/monster_${id}.png`);
 
 const PRISMA_ASSETS = {
@@ -61,6 +64,7 @@ const PRISMA_ASSETS = {
     wall: "assets/map/terrain/terrain_dungeon_wall_v001.png",
     wall_face: "assets/map/terrain/terrain_dungeon_wall_face_v002.png",
     wall_face_torch: "assets/map/terrain/terrain_dungeon_wall_face_torch_v002.png",
+    magma: "assets/map/objects/magma.png",
     dungeon_floor: "assets/map/terrain/terrain_dungeon_floor_v001.png",
     stairs: "assets/map/objects/object_field_stairs_v002.png",
     stairs_dungeon: "assets/map/objects/object_dungeon_stairs_v002.png",
@@ -106,6 +110,7 @@ const PRISMA_ASSETS = {
     battle_bg_dungeon: "assets/generated/battle-dungeon-ai.png",
     battle_bg_boss: "assets/generated/battle-boss-ai.png",
     battle_bg_maze: "assets/generated/battle-maze-ai.png",
+    battle_bg_fire: "assets/generated/battle-fire.png",
     battle_bg_lastboss: "assets/generated/battle-abyss-ai.png",
     hero_down_1: "assets/generated/hero-down-1.gif",
     hero_down_2: "assets/generated/hero-down-2.gif",
@@ -131,6 +136,7 @@ const PRISMA_ASSETS = {
     chaos: "assets/effect/fx-chaos-ai.png",
     heal: "assets/effect/fx-heal-ai.png",
     buff: "assets/effect/fx_support_buff_v001.png",
+    "buff-ai": "assets/effect/fx-buff-ai.png",
     debuff: "assets/effect/fx_support_debuff_v001.png",
     combo: "assets/effect/fx-combo-ai.png",
     "all-slash": "assets/effect/fx-all-slash-ai.png",
@@ -167,31 +173,48 @@ const PRISMA_ASSETS = {
   },
 
 
-  // Service Worker へ渡す「裏側キャッシュ」用リスト。
-  // criticalImages: ロード画面と初戦闘の体感を守る少数の画像。
-  // backgroundImages: 起動後に順次温める画像。ここは多少多くてもよいが、起動処理では待たない。
+  // Service Worker / 起動時先読みへ渡す画像キャッシュ用リスト。
+  // criticalImages: 初回表示で特に遅延が目立つ画像。
+  // startupImages: ローディング中にブラウザ側でも先読みする画像。
+  // installImages: Service Worker の初回install時にキャッシュする画像全体。
+  // backgroundImages: install後の再試行/補助ウォームキャッシュ用。
   cacheWarmup: {
-    version: "2026-05-13-cache-warmup-v1",
+    version: "2026-05-14-floor-atmosphere-v1",
     criticalImages: [
       ...PRISMA_LOADING_MONSTER_IMAGE_FILES,
+      "monster/img/monster_301000.png",
+      "monster/img/monster_902000.png",
       "assets/generated/battle-field-ai.png",
       "assets/generated/battle-forest-ai.png",
       "assets/generated/battle-dungeon-ai.png",
       "assets/generated/battle-boss-ai.png",
+      "assets/generated/battle-maze-ai.png",
+      "assets/generated/battle-fire.png",
+      "assets/generated/battle-abyss-ai.png",
+      "assets/map/objects/magma.png",
+      "assets/gacha/back_card.png",
+      "assets/gacha/front_card.png",
+      "assets/background/宿屋.jpg",
+      "assets/background/メダル交換所.png",
+      "assets/background/カジノ.png",
     ],
+    startupImages: [],
+    installImages: [],
     backgroundImages: [],
   },
 };
 
 
-window.PRISMA_ASSETS = PRISMA_ASSETS;
+// ブラウザでもService Worker(importScripts)でも参照できるよう globalThis に出す。
+// sw.js はこの PRISMA_ASSETS.cacheWarmup を読み、画像初回キャッシュ対象を決める。
+globalThis.PRISMA_ASSETS = PRISMA_ASSETS;
 
 // backgroundImages は graphics / battleFx / monster画像から自動構築する。
 // 画像を追加した場合は PRISMA_ASSETS.graphics または battleFx に足せば、裏側キャッシュにも反映される。
 (() => {
   const unique = (items) => Array.from(new Set(items.filter(Boolean)));
-  const critical = PRISMA_ASSETS.cacheWarmup.criticalImages || [];
-  PRISMA_ASSETS.cacheWarmup.backgroundImages = unique([
+  const critical = unique(PRISMA_ASSETS.cacheWarmup.criticalImages || []);
+  const allImages = unique([
     ...Object.values(PRISMA_ASSETS.graphics || {}),
     ...Object.values(PRISMA_ASSETS.battleFx || {}),
     "assets/gacha/back_card.png",
@@ -201,7 +224,22 @@ window.PRISMA_ASSETS = PRISMA_ASSETS;
     "assets/background/メダル交換所.png",
     "assets/background/カジノ.png",
     ...PRISMA_MONSTER_IMAGE_FILES,
-  ]).filter((src) => !critical.includes(src));
+  ]);
+
+  // ローディング画面中にブラウザ側でも先読みする対象。
+  // ここを増やしすぎると起動待ちが長くなるため、初回表示で目立つ素材に絞る。
+  PRISMA_ASSETS.cacheWarmup.startupImages = unique([
+    ...critical,
+    "assets/generated/battle-mountain-ai.png",
+    "assets/generated/battle-maze-ai.png",
+  ]);
+
+  // Service Worker install時に一度だけキャッシュする対象。
+  // 画像リストの正本はここ。sw.js 側へ手書きで複製しないこと。
+  PRISMA_ASSETS.cacheWarmup.installImages = allImages;
+
+  // install後の補助ウォームキャッシュ用。installに失敗/未完了だった画像もここで再試行される。
+  PRISMA_ASSETS.cacheWarmup.backgroundImages = allImages.filter((src) => !critical.includes(src));
 })();
 
 const GRAPHICS = {

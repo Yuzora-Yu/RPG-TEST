@@ -32,11 +32,11 @@ const StoryManager = {
     },
 
     dungeonObjectiveMilestones: [
-        { floor: 10, text: "10階を目指そう！" },
-        { floor: 50, text: "50階を目指そう！" },
-        { floor: 100, text: "100階を目指そう！" },
-        { floor: 150, text: "150階を目指そう！" },
-        { floor: 200, text: "200階を目指そう！" }
+        { floor: 11, text: "ﾀﾞﾝｼﾞｮﾝ10階を目指そう！" },
+        { floor: 51, text: "ﾀﾞﾝｼﾞｮﾝ50階を目指そう！" },
+        { floor: 101, text: "ﾀﾞﾝｼﾞｮﾝ100階を目指そう！" },
+        { floor: 151, text: "ﾀﾞﾝｼﾞｮﾝ150階を目指そう！" },
+        { floor: 201, text: "ﾀﾞﾝｼﾞｮﾝ200階を目指そう！" }
     ],
 
     getProgressKey: function(progress) {

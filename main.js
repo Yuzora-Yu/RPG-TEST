@@ -443,6 +443,48 @@ const App = {
     },
 
 	/*
+	 * ローディング中の重要画像先読み。
+	 * 目的: Service Worker が初回install中でも、現在のページ側でガチャカード/施設背景/
+	 *       序盤モンスター/戦闘背景を先に取りに行き、初回描画の空白を減らす。
+	 *
+	 * 注意:
+	 * - ここでは座標・セーブ・ゲーム進行は一切触らない。
+	 * - 画像リストの正本は assets.js の PRISMA_ASSETS.cacheWarmup.startupImages。
+	 * - 長時間待ちすぎると起動体験が悪くなるため、短いタイムアウト付きで実行する。
+	 */
+	preloadStartupImages: async () => {
+		if (typeof window === 'undefined' || !window.PRISMA_ASSETS || !window.PRISMA_ASSETS.cacheWarmup) return;
+
+		const urls = Array.from(new Set((window.PRISMA_ASSETS.cacheWarmup.startupImages || []).filter(Boolean)));
+		if (!urls.length) return;
+
+		const timeoutMs = 2400;
+		const concurrency = 6;
+		let index = 0;
+
+		const loadOne = (src) => new Promise((resolve) => {
+			const img = new Image();
+			img.onload = () => resolve(true);
+			img.onerror = () => resolve(false);
+			img.src = src;
+		});
+
+		const worker = async () => {
+			while (index < urls.length) {
+				const src = urls[index++];
+				await loadOne(src);
+			}
+		};
+
+		const preloadTask = Promise.allSettled(
+			Array.from({ length: Math.min(concurrency, urls.length) }, worker)
+		);
+
+		const timeoutTask = new Promise((resolve) => setTimeout(resolve, timeoutMs));
+		await Promise.race([preloadTask, timeoutTask]);
+	},
+
+	/*
 	 * 起動後の画像ウォームキャッシュ。
 	 * 画像パス一覧は assets.js の PRISMA_ASSETS.cacheWarmup に統一する。
 	 * main.js / sw.js 側にモンスター画像や戦闘背景の全量リストを増やさないこと。
@@ -466,19 +508,25 @@ const App = {
 			});
 		};
 
-		// ローディング終了や初期描画の直後に大量通信を始めないよう、少し遅らせる。
+		// 初回installで取りこぼした画像を早めに再試行する。
 		// 実際のキャッシュ速度制御は sw.js の batchSize / delayMs で行う。
 		navigator.serviceWorker.ready
 			.then((registration) => {
-				setTimeout(() => send(registration), 800);
+				setTimeout(() => send(registration), 100);
 			})
 			.catch(() => {});
 	},
 
 	initGameHub: () => {
-		const finishLoadingAndWarmCache = () => {
+		const finishLoadingAndWarmCache = async () => {
+			// 初回描画で目立つ画像だけは、ローディング中に短時間先読みする。
+			// 画像全体の初回キャッシュは sw.js、リストの正本は assets.js。
+			if (typeof App.preloadStartupImages === 'function') {
+				await App.preloadStartupImages();
+			}
+
 			if (window.InitialLoading) {
-				window.InitialLoading.finish();
+				await window.InitialLoading.finish();
 			}
 			if (typeof App.warmImageCache === 'function') {
 				App.warmImageCache();
@@ -912,7 +960,17 @@ const App = {
         if(btn) btn.style.display = 'none';
         App.pendingAction = null;
     },
+
+    // 報酬フラッシュなど、短い演出中だけフィールド入力を止める。
+    // 長時間止めるとテンポが悪くなるため、通常レアは0.6秒前後、超レアは1秒未満を目安にする。
+    fieldInputLockedUntil: 0,
+    lockFieldInput: (ms = 500) => {
+        App.fieldInputLockedUntil = Math.max(App.fieldInputLockedUntil || 0, Date.now() + Number(ms || 0));
+    },
+    isFieldInputLocked: () => Date.now() < Number(App.fieldInputLockedUntil || 0),
+
     executeAction: () => {
+        if (typeof App.isFieldInputLocked === 'function' && App.isFieldInputLocked()) return;
         if(App.pendingAction) {
             const act = App.pendingAction;
             App.clearAction();
@@ -2376,6 +2434,13 @@ load: () => {
                         resumed = StoryManager.resumePendingBattleWinEvent();
                     }
 
+                    // 深淵の裂け目戦の勝利後報酬。
+                    // Battle.win() 中に報酬付与だけ確定し、フィールド復帰後に会話表示する。
+                    if (!resumed && App.data?.dungeon?.pendingRiftReward?.active &&
+                        typeof Dungeon !== 'undefined' && typeof Dungeon.resumePendingRiftReward === 'function') {
+                        resumed = Dungeon.resumePendingRiftReward();
+                    }
+
                     // 現在地タイルのアクション再評価。
                     // 以前は「移動した瞬間」だけアクションボタンを出していたため、
                     // 戦闘・宿屋・メニューなどを挟んでフィールドへ戻ると、同じタイル上でも
@@ -2414,9 +2479,9 @@ const Field = {
     idleTimer: null,
     idleStepIntervalMs: 520,
 
-    // ランダム生成ダンジョン内の冒険者NPC画像キャッシュ。
-    // GRAPHICS管理へ入れるほど汎用ではないため、今回のNPC表示はField側で直接読む。
-    // 今後NPC種類が増えたら、Dungeon.adventurerImagePath を正本にしてここで描画だけ担当する。
+    // ランダム生成ダンジョン内の特殊オブジェクト画像キャッシュ。
+    // 冒険者NPC・全回復の泉・深淵の裂け目はタイル文字ではなく別データで管理し、
+    // Field側で床の上に重ねる。既存の宝箱/階段/壁判定に影響させないため。
     directImageCache: {},
 
     getDirectImage: (src) => {
@@ -2566,6 +2631,13 @@ const Field = {
         const theme = TILE_THEMES[areaKey] || TILE_THEMES['DEFAULT'];
         
         let config = theme[upper] || TILE_THEMES['DEFAULT'][upper] || { img: null, color: '#000' };
+
+        // ランダム生成ダンジョン専用: 溶岩マス(M)。
+        // WORLDのM(山)とは意味が違うため、map.jsではなくここでダンジョン時だけ上書きする。
+        if (Field.currentMapData && Field.currentMapData.isDungeon && upper === 'M') {
+            return { img: 'magma', color: '#e4511e' };
+        }
+
         if (upper === 'T' && Field.currentMapData && !Field.currentMapData.isDungeon && !config.img) {
             return { img: 'inn', color: '#444' };
         }
@@ -2655,12 +2727,28 @@ const Field = {
         if (Field.currentMapData) {
             if (tile === 'W') return false;
 
+            // 回復の泉。触れただけでは回復せず、ボタン押下で初めて回復する。
+            // 床の上に重ねて表示しているため、通常タイルとは別に現在地座標で判定する。
+            if (typeof Dungeon !== 'undefined' && typeof Dungeon.isHealSpringAt === 'function' && Dungeon.isHealSpringAt(x, y)) {
+                logIfNeeded('清らかな泉が湧いている。');
+                App.setAction('泉で回復', () => Dungeon.useHealSpring());
+                return true;
+            }
+
             // ランダム生成ダンジョン内の冒険者NPC。
             // 通常タイルとは別管理なので、タイル文字を増やさず現在地座標で判定する。
             // 接触後に「いいえ」を選んでも同じ場所で話しかけ直せるよう、
             // アクションボタンの再評価対象にも含める。
             if (typeof Dungeon !== 'undefined' && typeof Dungeon.isAdventurerAt === 'function' && Dungeon.isAdventurerAt(x, y)) {
                 App.setAction('話す', () => Dungeon.encounterAdventurer({ auto: false }));
+                return true;
+            }
+
+            // 深淵の裂け目。いいえを選んだ後も同じ場所で再調査できるよう、
+            // アクションボタンの再評価対象に含める。
+            if (typeof Dungeon !== 'undefined' && typeof Dungeon.isAbyssRiftAt === 'function' && Dungeon.isAbyssRiftAt(x, y)) {
+                logIfNeeded('闇がどこまでも続いているような亀裂がある。');
+                App.setAction('亀裂を調べる', () => Dungeon.encounterAbyssRift({ auto: false }));
                 return true;
             }
 
@@ -2766,6 +2854,17 @@ const Field = {
         if (Field.currentMapData) {
             if (Field.currentMapData.battleBg) return Field.currentMapData.battleBg;
             if (Field.currentMapData.isDungeon) {
+                const mapW = Field.currentMapData.width || 1;
+                const mapH = Field.currentMapData.height || 1;
+                const areaKey = Field.getCurrentAreaKey ? Field.getCurrentAreaKey() : 'ABYSS';
+                const currentTile = Field.getRenderedTileForDraw
+                    ? Field.getRenderedTileForDraw(Field.x, Field.y, mapW, mapH, areaKey)
+                    : String(Field.currentMapData.tiles?.[Field.y]?.[Field.x] || '').toUpperCase();
+
+                // 溶岩フロアでは、溶岩マス上に限らず階層全体を炎背景にする。
+                // 「溶岩地帯に入った」というフロア体験を優先するため、現在地タイル判定には戻さないこと。
+                if (App.data?.dungeon?.isLavaFloor) return 'battle_bg_fire';
+
                 const floor = App.data.progress.floor || 0;
                 const genType = App.data.dungeon.genType;
                 if (floor % 10 === 0) return 'battle_bg_boss'; 
@@ -2782,7 +2881,64 @@ const Field = {
         return 'battle_bg_field';
     },
 	
+    drawDungeonAtmosphere: (ctx, w, h) => {
+        if (!Field.currentMapData?.isDungeon || typeof Dungeon === 'undefined') return;
+        const dungeon = App.data?.dungeon || {};
+
+        ctx.save();
+
+        // 溶岩フロア: 画面全体にごく薄いオレンジの熱気をかける。
+        // 濃くしすぎると操作性が落ちるため、視認できる程度に抑える。
+        if (dungeon.isLavaFloor) {
+            // 以前の濃度では端末や背景によってほぼ見えなかったため、
+            // 操作性を損なわない範囲で明確に「熱気」と分かる濃度へ引き上げる。
+            const pulse = 0.075 + (Math.sin(Date.now() / 700) + 1) * 0.025;
+            const grad = ctx.createRadialGradient(w * 0.5, h * 0.58, 12, w * 0.5, h * 0.55, Math.max(w, h) * 0.78);
+            grad.addColorStop(0, `rgba(255, 176, 48, ${pulse})`);
+            grad.addColorStop(0.52, 'rgba(255, 102, 20, 0.125)');
+            grad.addColorStop(1, 'rgba(255, 48, 0, 0.22)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            ctx.fillStyle = 'rgba(255, 120, 24, 0.055)';
+            for (let y = 0; y < h; y += 34) {
+                const offset = Math.sin((Date.now() / 520) + y * 0.03) * 12;
+                ctx.fillRect(offset - 18, y, w + 36, 3);
+            }
+        }
+
+        // 迷路フロア: 揺らぎなしの静的ビネット。
+        // 前回の黒い縦もやは画面全体にかかって見えたため廃止。
+        // 中央は完全に透明に近く保ち、画面端だけを暗くする。
+        if (typeof Dungeon.isMazeFloor === 'function' && Dungeon.isMazeFloor()) {
+            const vignette = ctx.createRadialGradient(
+                w * 0.5, h * 0.52, Math.min(w, h) * 0.34,
+                w * 0.5, h * 0.52, Math.max(w, h) * 0.76
+            );
+            vignette.addColorStop(0.00, 'rgba(0, 0, 0, 0.00)');
+            vignette.addColorStop(0.52, 'rgba(0, 0, 0, 0.00)');
+            vignette.addColorStop(0.78, 'rgba(0, 0, 0, 0.28)');
+            vignette.addColorStop(1.00, 'rgba(0, 0, 0, 0.68)');
+            ctx.fillStyle = vignette;
+            ctx.fillRect(0, 0, w, h);
+
+            // 端だけを少し締める。中央視界や操作ボタン側へ濃いもやを出さない。
+            const edge = Math.max(20, Math.floor(Math.min(w, h) * 0.055));
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.18)';
+            ctx.fillRect(0, 0, w, edge);
+            ctx.fillRect(0, h - edge, w, edge);
+            ctx.fillRect(0, 0, edge, h);
+            ctx.fillRect(w - edge, 0, edge, h);
+        }
+
+        ctx.restore();
+    },
+
 	move: (dx, dy) => {
+        // レア報酬などの短い演出中は移動入力を無視する。
+        // ログ表示前に歩いてメッセージが消える問題を防ぐため、ここで最初に判定する。
+        if (typeof App.isFieldInputLocked === 'function' && App.isFieldInputLocked()) return;
+
         // 待機中の足踏みは、実移動入力が入ったら一旦止める。
         // ここでField.move()を疑似的に呼ぶ実装にはしないこと。足踏みはstep切替のみ。
         if (typeof Field.stopIdleStep === 'function') Field.stopIdleStep();
@@ -2937,37 +3093,45 @@ const Field = {
             }
         }
 
-        // 3. ランダム生成ダンジョン内の冒険者NPC描画。
-        // タイル文字を増やさず App.data.dungeon.adventurer で管理するため、
+        // 3. ランダム生成ダンジョン内の特殊オブジェクト描画。
+        // タイル文字を増やさず App.data.dungeon.* で管理するため、
         // 地形・宝箱・階段などの既存生成ロジックを壊さない。
-        const adventurer = App.data?.dungeon?.adventurer;
-        if (Field.currentMapData?.isDungeon && adventurer && adventurer.active && Number(adventurer.floor) === Number(Dungeon.floor)) {
-            const adx = Number(adventurer.x) - Number(Field.x);
-            const ady = Number(adventurer.y) - Number(Field.y);
-            if (Math.abs(adx) <= rangeX && Math.abs(ady) <= rangeY) {
-                const ax = Math.floor(cx + (adx * ts) - (ts / 2));
-                const ay = Math.floor(cy + (ady * ts) - (ts / 2));
-                const img = Field.getDirectImage(adventurer.image || 'monster/img/monster_100009.png');
-                if (img && img.complete && img.naturalWidth > 0) {
-                    ctx.save();
-                    ctx.drawImage(img, ax, ay, ts, ts);
-                    ctx.restore();
-                } else {
-                    ctx.save();
-                    ctx.fillStyle = '#5bd6ff';
-                    ctx.beginPath();
-                    ctx.arc(ax + ts / 2, ay + ts / 2, ts * 0.34, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.restore();
-                }
+        const drawOverlayImage = (obj, fallbackSrc, fallbackColor) => {
+            if (!Field.currentMapData?.isDungeon || !obj || !obj.active || Number(obj.floor) !== Number(Dungeon.floor)) return;
+            const ox = Number(obj.x) - Number(Field.x);
+            const oy = Number(obj.y) - Number(Field.y);
+            if (Math.abs(ox) > rangeX || Math.abs(oy) > rangeY) return;
+
+            const px = Math.floor(cx + (ox * ts) - (ts / 2));
+            const py = Math.floor(cy + (oy * ts) - (ts / 2));
+            const img = Field.getDirectImage(obj.image || fallbackSrc);
+            if (img && img.complete && img.naturalWidth > 0) {
+                ctx.save();
+                ctx.drawImage(img, px, py, ts, ts);
+                ctx.restore();
+            } else {
+                ctx.save();
+                ctx.fillStyle = fallbackColor;
+                ctx.beginPath();
+                ctx.arc(px + ts / 2, py + ts / 2, ts * 0.34, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
             }
-        }
+        };
+
+        drawOverlayImage(App.data?.dungeon?.healSpring, 'assets/effect/fx-buff-ai.png', '#80ffb0');
+        drawOverlayImage(App.data?.dungeon?.abyssRift, 'assets/effect/fx-abyss-vortex-ai.png', '#a34cff');
+        drawOverlayImage(App.data?.dungeon?.adventurer, 'monster/img/monster_100009.png', '#5bd6ff');
 
         // 4. プレイヤーの描画 (hero_... の画像もスプライトシート化していれば対応可能)
         const pKey = `hero_${['down','left','right','up'][Field.dir]}_${Field.step}`; 
         if (!drawGraphic(pKey, cx-ts/2, cy-ts/2, ts)) {
             ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(cx, cy, 10, 0, Math.PI*2); ctx.fill();
         }
+
+        // 特殊フロアの空気感をキャンバス上に重ねる。
+        // ミニマップはこの後に描くため、もやでミニマップが読めなくなることはない。
+        if (typeof Field.drawDungeonAtmosphere === 'function') Field.drawDungeonAtmosphere(ctx, w, h);
 
         let locName = Field.currentMapData ? Field.currentMapData.name : `世界地図 (${Field.x}, ${Field.y})`;
         if (Field.currentMapData && Field.currentMapData.isDungeon) locName += ` ${Dungeon.floor}階`;
@@ -2982,18 +3146,54 @@ const Field = {
         for(let mdy = -range; mdy < range; mdy++) {
             for(let mdx = -range; mdx < range; mdx++) {
                 let mtx = Field.x + mdx; let mty = Field.y + mdy; let mtile = 'W';
+                let minimapVisible = true;
                 if (Field.currentMapData) { 
                     if(mtx>=0 && mtx<mapW && mty>=0 && mty<mapH) {
                         const ak = Field.getCurrentAreaKey(); const pk = `${mtx},${mty}`;
+
+                        // 迷路フロアでは、未踏破マスをミニマップに表示しない。
+                        // 現在地だけは常に表示し、歩くたび Dungeon.markVisited() で記録される。
+                        if (typeof Dungeon !== 'undefined' && typeof Dungeon.isMazeFloor === 'function' && Dungeon.isMazeFloor()) {
+                            // 迷路フロアは「踏破済み」に加えて、現在地を中心とした周囲4マスを表示する。
+                            // 完全な踏破表示だけだと視界が狭すぎるため、現在の探索視界として9x9相当を保証する。
+                            const inCurrentSight = Math.abs(mdx) <= 4 && Math.abs(mdy) <= 4;
+                            if (!inCurrentSight && typeof Dungeon.isVisited === 'function' && !Dungeon.isVisited(mtx, mty)) {
+                                minimapVisible = false;
+                            }
+                        }
+
                         mtile = App.data.progress.mapChanges?.[areaKey]?.[pk] || Field.currentMapData.tiles[mty][mtx];
                         if (App.data.progress.openedChests?.[ak]?.includes(pk)) mtile = 'G';
                         if (App.data.progress.defeatedBosses?.[ak]?.includes(pk)) mtile = 'G';
+                    } else {
+                        minimapVisible = false;
                     }
                 } else { mtile = MAP_DATA[((mty%mapH)+mapH)%mapH][((mtx%mapW)+mapW)%mapW]; }
+                if (!minimapVisible) continue;
                 if (mdx===0 && mdy===0) ctx.fillStyle = '#fff'; else ctx.fillStyle = Field.getTileConfig(mtile).color;
                 if (ctx.fillStyle !== '#000') ctx.fillRect(mmX + (mdx + range) * dms, mmY + (mdy + range) * dms, dms, dms);
             }
         }
+
+        // ミニマップ上にも、タイル文字で管理していない特殊オブジェクトを表示する。
+        // プレイヤーと同じマスにいる場合は、現在地の白マーカーを優先する。
+        const drawMiniObject = (obj, color) => {
+            if (!Field.currentMapData?.isDungeon || !obj || !obj.active || Number(obj.floor) !== Number(Dungeon.floor)) return;
+            const relX = Number(obj.x) - Number(Field.x);
+            const relY = Number(obj.y) - Number(Field.y);
+            if (relX === 0 && relY === 0) return;
+            if (relX < -range || relX >= range || relY < -range || relY >= range) return;
+            if (typeof Dungeon !== 'undefined' && typeof Dungeon.isMazeFloor === 'function' && Dungeon.isMazeFloor()) {
+                const inCurrentSight = Math.abs(relX) <= 4 && Math.abs(relY) <= 4;
+                if (!inCurrentSight && typeof Dungeon.isVisited === 'function' && !Dungeon.isVisited(Number(obj.x), Number(obj.y))) return;
+            }
+            ctx.fillStyle = color;
+            ctx.fillRect(mmX + (relX + range) * dms, mmY + (relY + range) * dms, Math.max(2, dms), Math.max(2, dms));
+        };
+        drawMiniObject(App.data?.dungeon?.healSpring, '#80ffb0');
+        drawMiniObject(App.data?.dungeon?.abyssRift, '#a34cff');
+        drawMiniObject(App.data?.dungeon?.adventurer, '#5bd6ff');
+
         ctx.restore();
     }
 };

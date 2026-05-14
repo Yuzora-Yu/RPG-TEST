@@ -6,6 +6,23 @@
     <title>PRISMA ABYSS</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22>
     <text y=%22.9em%22 font-size=%2290%22>⚔️</text></svg>">
+
+    <!--
+      初回表示の体感改善用プリロード。
+      画像キャッシュ対象の正本は assets.js。ここはロード画面/初戦闘/ガチャ/施設背景で
+      初回だけ空白になりやすいものを先に取りに行くための補助。
+      大量追加する場合は、まず assets.js の PRISMA_ASSETS.cacheWarmup を更新すること。
+    -->
+    <link rel="preload" as="image" href="monster/img/monster_100001.png">
+    <link rel="preload" as="image" href="monster/img/monster_100002.png">
+    <link rel="preload" as="image" href="monster/img/monster_100003.png">
+    <link rel="preload" as="image" href="monster/img/monster_100004.png">
+    <link rel="preload" as="image" href="assets/generated/battle-field-ai.png">
+    <link rel="preload" as="image" href="assets/generated/battle-dungeon-ai.png">
+    <link rel="preload" as="image" href="assets/gacha/back_card.png">
+    <link rel="preload" as="image" href="assets/gacha/front_card.png">
+    <link rel="preload" as="image" href="assets/background/宿屋.jpg">
+    <link rel="preload" as="image" href="assets/background/カジノ.png">
     
 	    <style>
         @import url('https://fonts.googleapis.com/css2?family=DotGothic16&display=swap');
@@ -2391,12 +2408,11 @@ if ('serviceWorker' in navigator) {
 
 		const SAVE_KEY = 'QoE_SaveData_v38_BalanceFix';
 
-		// ロード画面は Service Worker が少数事前キャッシュする 100001〜100012 から選ぶ。
-		// 以前のように100001〜100090から完全ランダムにすると、未キャッシュ画像を引いた時に
-		// ロード画面自体が画像待ちになりやすい。
-		// 全モンスター画像は assets.js -> main.js -> sw.js の裏側ウォームキャッシュで順次保存する。
+		// ロード画面は初回キャッシュ/プリロード対象の 100001〜100024 から選ぶ。
+		// 全モンスター画像は assets.js を正本に、sw.js の初回installキャッシュで保存する。
+		// ここを100001〜100090の完全ランダムへ戻すと、初回だけロード画面が画像待ちになりやすい。
 		const fallbackIds = Array.from(
-			{ length: 12 },
+			{ length: 24 },
 			(_, i) => 100001 + i
 		);
 

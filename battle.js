@@ -430,6 +430,54 @@ const Battle = {
             if (m) newEnemies.push(m);
         };
 
+        // 深淵の裂け目戦は「10フロア先相当の通常強敵3体」を出す。
+        // fixedBossId にIDを詰める方式だと、201階以降で generateEnemyForFloor() が null になり、
+        // allowRare:true 経由でメタル系などのレアモンスターだけが選ばれる事故が起きる。
+        // そのため、ここで battleData.riftFloor を正として、201階以降は通常深層敵生成ロジックを使う。
+        const riftEventId = (typeof Dungeon !== 'undefined' && Dungeon.riftBattleEventId) ? Dungeon.riftBattleEventId : '__DUNGEON_ABYSS_RIFT__';
+        const isRiftBattle = !!(battleData.isRiftBattle || battleData.eventId === riftEventId);
+        if (isRiftBattle) {
+            const riftFloor = Math.max(1, Number(battleData.riftFloor) || (floor + 10));
+            Battle.log('<span style="color:#c78cff; font-weight:bold;">亀裂の根源から強敵が現れた！</span>');
+            const total = 3;
+
+            if (riftFloor >= 201) {
+                let candidates = [];
+                if (window.MonsterData && typeof window.MonsterData.getDeepFloorNormalBaseCandidates === 'function') {
+                    candidates = window.MonsterData.getDeepFloorNormalBaseCandidates() || [];
+                }
+                if (candidates.length === 0 && window.MonsterData && typeof window.MonsterData.generateBandMonster === 'function') {
+                    const fallback = window.MonsterData.generateBandMonster(200);
+                    if (fallback) candidates = [fallback];
+                }
+
+                for (let i = 0; i < total; i++) {
+                    const base = candidates[Math.floor(Math.random() * candidates.length)];
+                    if (!base) continue;
+                    const m = Battle.createDeepFloorMonster(Battle.cloneMonsterBase(base), riftFloor, false);
+                    if (m && total > 1) m.name += String.fromCharCode(65 + i);
+                    if (m) newEnemies.push(m);
+                }
+                return newEnemies;
+            }
+
+            for (let i = 0; i < total; i++) {
+                let base = null;
+                if (window.MonsterData && typeof window.MonsterData.generateEnemyForFloor === 'function') {
+                    base = window.MonsterData.generateEnemyForFloor(riftFloor, { allowRare: false });
+                }
+                if (!base && window.MonsterData && typeof window.MonsterData.generateBandMonster === 'function') {
+                    base = window.MonsterData.generateBandMonster(Math.min(200, riftFloor));
+                }
+                if (!base && Array.isArray(DB.MONSTERS) && DB.MONSTERS.length) {
+                    const candidates = DB.MONSTERS.filter(m => !m.isBoss && !m.isRare && !Battle.isSpecialBossBase(m));
+                    base = candidates[Math.floor(Math.random() * candidates.length)] || null;
+                }
+                if (base) pushBase(base, i, total, { isBossBattle: false });
+            }
+            return newEnemies;
+        }
+
         if (isBoss && targetId) {
             const bases = Battle.getMonsterBasesByIds(targetId);
             if (bases.length > 0) {

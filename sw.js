@@ -1,27 +1,34 @@
 // sw.js: Prisma Abyss Service Worker
 // ============================================================================
-// 2026-05-13 方針変更 + 起動後ウォームキャッシュ
+// 2026-05-14 方針変更: 初回表示品質優先の画像初回キャッシュ
 // ----------------------------------------------------------------------------
-// 以前はモンスター画像・マップ画像・エフェクト画像をすべて install 時に
-// 事前キャッシュしていましたが、ファイル数/容量が大きく、初回起動や更新時の
-// 読み込み遅延の主因になっていました。
+// 前回は起動速度を優先して画像を裏側ウォームキャッシュに寄せましたが、
+// ロード画面・初戦闘・ガチャ・宿屋/カジノ背景などで「初回だけ画像が遅れる」
+// 体験が目立つため、いったん初回install時に画像もまとめてキャッシュします。
 //
 // 今後の方針:
-// - install 時の事前キャッシュは「起動に最低限必要な App Shell」と
-//   「ロード画面/初戦闘の体感に効く少数の画像」だけにする。
-// - モンスター/戦闘背景/エフェクトなどの全量リストは assets.js に統一する。
-// - main.js から受け取った assets.js の一覧を、起動後に裏側で順次キャッシュする。
-// - Codex等で編集する際も、ここに全モンスター・全エフェクトの巨大配列を
-//   直接復活させないこと。画像管理の正本は assets.js。
+// - App Shell と画像を初回install時にキャッシュする。
+// - 画像リストの正本は assets.js の PRISMA_ASSETS.cacheWarmup.installImages。
+// - sw.js 側にモンスター/エフェクト/背景の巨大配列を手書きで復活させないこと。
+// - 画像軽量化後に分割キャッシュへ戻す場合も、まず assets.js の定義を変更する。
+// - installで取りこぼした画像は、main.js からの PRISMA_WARM_CACHE で再試行する。
 // ============================================================================
 
-const CACHE_NAME = "prisma-abyss-v2.83-dungeon-adventurer";
-const RUNTIME_CACHE_NAME = "prisma-abyss-v2.83-runtime-assets";
+try {
+  // 画像キャッシュ対象の正本を assets.js に統一する。
+  // Service Worker内では DOM/Image は使わず、PRISMA_ASSETS.cacheWarmup の配列だけ参照する。
+  importScripts("assets.js");
+} catch (error) {
+  console.warn("[SW] assets.js の読み込みに失敗しました。画像初回キャッシュは最小限で続行します。", error);
+}
+
+const CACHE_NAME = "prisma-abyss-v2.83-maze-vignette-lava-bg";
+const RUNTIME_CACHE_NAME = "prisma-abyss-v2.89-runtime-assets";
 const WARM_CACHE_META_KEY = "__prisma_abyss_warm_cache_complete__";
 
-// 起動に必要な最小セットだけを事前キャッシュする。
-// 画像や演出素材の全量はここに列挙せず、assets.js -> main.js -> postMessage で
-// runtime cache へ順次入れる。
+// 起動に必要な App Shell。
+// 画像は下の INSTALL_IMAGE_PRECACHE で assets.js からまとめて取得する。
+// ここへ画像ファイルを手書きで増やさないこと。
 const PRECACHE_FILES = [
   "./",
   "main.html",
@@ -52,17 +59,24 @@ const PRECACHE_FILES = [
   "news.js",
 ];
 
-// ロード画面と初戦闘の体感を守るための少数キャッシュ。
-// ここに全モンスター画像を戻すと、以前と同じく起動が重くなるので増やしすぎないこと。
-// 残りのモンスター/戦闘背景/エフェクトは assets.js の cacheWarmup.backgroundImages を使い、
-// 起動後に裏側で温める。
-const INITIAL_IMAGE_PRECACHE = [
-  ...Array.from({ length: 12 }, (_, i) => `monster/img/monster_${100001 + i}.png`),
+const ASSET_WARMUP = (self.PRISMA_ASSETS && self.PRISMA_ASSETS.cacheWarmup) || {};
+
+// 初回表示で特に遅延が目立つ画像。assets.js から取得する。
+const INITIAL_IMAGE_PRECACHE = ASSET_WARMUP.criticalImages || [
+  ...Array.from({ length: 24 }, (_, i) => `monster/img/monster_${100001 + i}.png`),
   "assets/generated/battle-field-ai.png",
-  "assets/generated/battle-forest-ai.png",
   "assets/generated/battle-dungeon-ai.png",
-  "assets/generated/battle-boss-ai.png",
+  "assets/generated/battle-fire.png",
+  "assets/map/objects/magma.png",
+  "assets/gacha/back_card.png",
+  "assets/gacha/front_card.png",
+  "assets/background/宿屋.jpg",
+  "assets/background/カジノ.png",
 ];
+
+// 初回install時にキャッシュする画像全体。
+// 重要: この一覧は assets.js から受け取る。ここに巨大配列を直接書かないこと。
+const INSTALL_IMAGE_PRECACHE = ASSET_WARMUP.installImages || INITIAL_IMAGE_PRECACHE;
 
 const isSameOrigin = (request) => {
   try {
@@ -186,10 +200,10 @@ const warmCacheInBackground = async (payload = {}) => {
   const backgroundImages = payload.backgroundImages || [];
 
   // 先にロード画面/初戦闘向けを少数キャッシュ。
-  await warmCacheList(criticalImages, { batchSize: 6, delayMs: 80 });
+  await warmCacheList(criticalImages, { batchSize: 10, delayMs: 40 });
 
-  // 残りはゆっくり温める。起動処理では待たない。
-  await warmCacheList(backgroundImages, { batchSize: 4, delayMs: 180 });
+  // install時に取りこぼした画像の再試行。起動処理では待たないが、以前より速めに温める。
+  await warmCacheList(backgroundImages, { batchSize: 8, delayMs: 80 });
 
   await markWarmCacheComplete(version);
 };
@@ -200,7 +214,7 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) =>
       Promise.allSettled(
-        [...PRECACHE_FILES, ...INITIAL_IMAGE_PRECACHE].map((file) =>
+        Array.from(new Set([...PRECACHE_FILES, ...INSTALL_IMAGE_PRECACHE])).map((file) =>
           cache.add(new Request(file, { cache: "reload" }))
         )
       )
