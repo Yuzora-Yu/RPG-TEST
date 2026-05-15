@@ -87,6 +87,10 @@ const Battle = {
         Battle.runAttemptCount = 0; 
         Battle.skillScrollPositions = {};
         Battle.updateAutoButton();
+        Battle.resultProcessing = false;
+        Battle.resultReadyToEnd = false;
+        Battle.resultSkipRequested = false;
+        Battle.resultWaiters = [];
         
         const logEl = Battle.getEl('battle-log');
         if(logEl) logEl.innerHTML = '';
@@ -233,7 +237,7 @@ const Battle = {
 
         Battle.renderEnemies(); Battle.renderPartyStatus();
         const scene = document.getElementById('battle-scene');
-        if(scene) scene.onclick = () => { if (Battle.phase === 'result') Battle.endBattle(false); };
+        if(scene) scene.onclick = () => { if (Battle.phase === 'result') Battle.handleResultTap(); };
 
         // ★修正: 不意打ちの場合は入力フェーズを飛ばして即ターン実行へ
         // それ以外（通常・先制攻撃）は入力を受け付ける
@@ -1616,9 +1620,9 @@ findNextActor: () => {
 
             Battle.renderEnemies(); Battle.renderPartyStatus();
             if (Battle.checkFinish()) return;
-            await Battle.wait(500);
+            await Battle.resultWait(500);
 			Battle.log("<br>"); 
-            await Battle.wait(50);
+            await Battle.resultWait(50);
         }
         
         // 全行動終了後に一括で持続時間および再生特性を更新
@@ -2071,11 +2075,11 @@ findNextActor: () => {
 							}
 						}
                         Battle.renderEnemies(); Battle.renderPartyStatus();
-                        if (hitCount > 1) await Battle.wait(150);
+                        if (hitCount > 1) await Battle.resultWait(150);
                     }
                 }
                 if (loop === 0 && totalActionLoops > 1) continue; 
-                await Battle.wait(500);
+                await Battle.resultWait(500);
                 return;
             }
 
@@ -2360,7 +2364,7 @@ findNextActor: () => {
                         
                         if (Math.random() * 100 > finalHitChance) {
                             Battle.log(`ミス！ ${targetToHit.name}は身をかわした！`);
-                            await Battle.wait(200); continue; 
+                            await Battle.resultWait(200); continue; 
                         }
                     }
 
@@ -2710,10 +2714,10 @@ findNextActor: () => {
                     }
                     targetToHit.isCovering = false; 
                     Battle.renderEnemies(); Battle.renderPartyStatus();
-                    if (hitCount > 1) await Battle.wait(150);
+                    if (hitCount > 1) await Battle.resultWait(150);
                 }
             }
-            await Battle.wait(100);
+            await Battle.resultWait(100);
         }
     },
 	
@@ -3208,6 +3212,10 @@ findNextActor: () => {
 		// これにより、演出中のリロード時に戦闘シーンに戻る（＝再度報酬が貰える）のを防ぎます
 		Battle.phase = 'result'; 
 		Battle.active = false;
+		Battle.resultProcessing = true;
+		Battle.resultReadyToEnd = false;
+		Battle.resultSkipRequested = false;
+		Battle.resultWaiters = [];
 		if (App.data.battle) App.data.battle.active = false; 
 
 		const isEstark = App.data.battle && (App.data.battle.isSpecialBoss || App.data.battle.isEstark);
@@ -3317,7 +3325,7 @@ findNextActor: () => {
 				eq.name = "【EX】" + eq.name;
 				App.data.gems = (App.data.gems || 0) + 10000;
 				App.data.inventory.push(eq);
-				drops.push({ name: eq.name, isRare: true, isUltra: true, isSpecialBoss: true, isEstark: true });
+				drops.push({ name: eq.name, isRare: true, isUltra: true, isSpecialBoss: true, isEstark: true, kind: 'equip' });
 				hasUltraRareDrop = true;
 
 				// 特殊ボス（ギルガメッシュ等）専用報酬だけで終わらせず、
@@ -3336,7 +3344,7 @@ findNextActor: () => {
 							App.data.items[itemDef.id] = (App.data.items[itemDef.id] || 0) + 1;
 							hasRareDrop = true;
 							const type = (itemDef.id === 107) ? 'kai' : 'boss';
-							drops.push({ name: itemDef.name, isRare: true, type: type });
+							drops.push({ name: itemDef.name, isRare: true, type: type, kind: 'item' });
 						}
 					}
 				}
@@ -3347,7 +3355,7 @@ findNextActor: () => {
 						const itemDef = DB.ITEMS.find(i => i.id === monsterDrops.normal.id);
 						if (itemDef) {
 							App.data.items[itemDef.id] = (App.data.items[itemDef.id] || 0) + 1;
-							drops.push({ name: itemDef.name, isRare: false, type: 'item' });
+							drops.push({ name: itemDef.name, isRare: false, type: 'item', kind: 'item' });
 						}
 					}
 				}
@@ -3367,7 +3375,7 @@ findNextActor: () => {
 							App.data.items[itemDef.id] = (App.data.items[itemDef.id] || 0) + 1;
 							hasRareDrop = true;
 							const type = (itemDef.id === 107) ? 'kai' : 'boss';
-							drops.push({ name: itemDef.name, isRare: true, type: type });
+							drops.push({ name: itemDef.name, isRare: true, type: type, kind: 'item' });
 						}
 					}
 				} else if (floor >= 100) {
@@ -3380,7 +3388,7 @@ findNextActor: () => {
 							App.data.items[sid] = (App.data.items[sid] || 0) + 1;
 							const isRare = (sid === 107);
 							if (isRare) hasRareDrop = true;
-							drops.push({ name: itemDef.name, isRare: isRare, type: isRare ? 'kai' : 'item' });
+							drops.push({ name: itemDef.name, isRare: isRare, type: isRare ? 'kai' : 'item', kind: 'item' });
 						}
 					}
 				}
@@ -3407,13 +3415,13 @@ findNextActor: () => {
 						eq.val *= 4;
 						hasUltraRareDrop = true;
 						// 超レア演出用の type: 'kai'
-						drops.push({ name: eq.name, isRare: true, type: 'kai' });
+						drops.push({ name: eq.name, isRare: true, type: 'kai', kind: 'equip' });
 					} else {
 						let fixedPlus = isBoss ? 3 : (Math.random() * 100 < (10 + bonusPlus3) ? 3 : null);
 						eq = App.createEquipByFloor('drop', floor, fixedPlus);
 						const isPlus3 = (eq.plus === 3);
 						if (isPlus3 || isBoss) hasRareDrop = true;
-						drops.push({ name: eq.name, isRare: (isPlus3 || isBoss), type: isBoss ? 'boss' : 'normal' });
+						drops.push({ name: eq.name, isRare: (isPlus3 || isBoss), type: isBoss ? 'boss' : 'normal', kind: 'equip' });
 					}
 					App.data.inventory.push(eq);
 				}
@@ -3425,7 +3433,7 @@ findNextActor: () => {
 						const itemDef = DB.ITEMS.find(i => i.id === monsterDrops.normal.id);
 						if (itemDef) {
 							App.data.items[itemDef.id] = (App.data.items[itemDef.id] || 0) + 1;
-							drops.push({ name: itemDef.name, isRare: false, type: 'item' });
+							drops.push({ name: itemDef.name, isRare: false, type: 'item', kind: 'item' });
 						}
 					}
 				} else {
@@ -3434,7 +3442,7 @@ findNextActor: () => {
 						if (candidates.length > 0) {
 							const item = candidates[Math.floor(Math.random() * candidates.length)];
 							App.data.items[item.id] = (App.data.items[item.id] || 0) + 1;
-							drops.push({ name: item.name, isRare: false, type: 'item' });
+							drops.push({ name: item.name, isRare: false, type: 'item', kind: 'item' });
 						}
 					}
 				}
@@ -3458,12 +3466,10 @@ findNextActor: () => {
 		Battle.log(`<br><span style="color:#ffff00; font-size:1em; font-weight:bold;">戦闘に勝利した！</span>`);
 		Battle.log(`${totalGold} Goldを獲得！`);
 		Battle.log(`${totalExp} ポイントの経験値を 獲得した！`);
-		for (const msg of lbGrowthLogs) {
-			if (msg) {
-				Battle.log(msg);
-				await Battle.wait(350);
-			}
-		}
+
+		const resultLevelLogs = [];
+		const resultTraitAcquireLogs = [];
+		const resultTraitGrowthLogs = [];
 
 		const partyHpRegen = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getPartySumValue('post_battle_hp_regen_pct') : 0;
 		const partyMpRegen = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getPartySumValue('post_battle_mp_regen_pct') : 0;
@@ -3481,10 +3487,12 @@ findNextActor: () => {
 			// App.gainExp が [Lv通知, ステ上昇, スキル習得, 特性習得] の順で配列を返す
 			const lvLogs = App.gainExp(charData, totalExp);
 
-			// 1項目ずつウェイトを挟んでログに流す
+			// レベルアップ/スキル・特性習得ログはいったん集約し、
+			// リザルト全体で見やすい順序に並べて表示する。
 			for (const msg of lvLogs) {
-				Battle.log(msg);
-				await Battle.wait(500); // 1行ごとの余韻
+				if (!msg) continue;
+				if (String(msg).includes('新たな特性')) resultTraitAcquireLogs.push(msg);
+				else resultLevelLogs.push(msg);
 			}
 
 			// 特性の成長判定
@@ -3493,15 +3501,10 @@ findNextActor: () => {
 				traitGrowthLog = PassiveSkill.checkTraitGrowth(charData);
 			}
 
-			// 特性レベルアップの溜め演出
 			if (traitGrowthLog) {
-				await Battle.wait(600);
 				const logs = traitGrowthLog.split('<br>');
 				for (const log of logs) {
-					if (log) {
-						Battle.log(log);
-						await Battle.wait(200);
-					}
+					if (log) resultTraitGrowthLogs.push(log);
 				}
 			}
 
@@ -3531,6 +3534,33 @@ findNextActor: () => {
 			}
 		}
 
+		for (const msg of resultLevelLogs) {
+			Battle.log(msg);
+			await Battle.resultWait(500);
+		}
+
+		for (const msg of resultTraitAcquireLogs) {
+			Battle.log(msg);
+			await Battle.resultWait(350);
+		}
+
+		for (const msg of resultTraitGrowthLogs) {
+			Battle.log(msg);
+			await Battle.resultWait(250);
+		}
+
+		const uniqueLbGrowthLogs = [];
+		const seenLbGrowthLogs = new Set();
+		for (const msg of lbGrowthLogs) {
+			if (!msg || seenLbGrowthLogs.has(msg)) continue;
+			seenLbGrowthLogs.add(msg);
+			uniqueLbGrowthLogs.push(msg);
+		}
+		for (const msg of uniqueLbGrowthLogs) {
+			Battle.log(msg);
+			await Battle.resultWait(350);
+		}
+
 		if (hpRecovered) {
 			Battle.log(`<span style="color:#8f8;">特性：応急手当でパーティのHPが回復した！</span>`);
 		}
@@ -3538,12 +3568,27 @@ findNextActor: () => {
 			Battle.log(`<span style="color:#88f;">特性：魔力充填でパーティのMPが回復した！</span>`);
 		}
 		
-		// ドロップ演出
+		// ドロップ演出（アイテム → 装備の順に表示）
+		const itemDrops = drops.filter(d => (d.kind || (d.type === 'item' ? 'item' : 'equip')) === 'item');
+		const equipDrops = drops.filter(d => (d.kind || (d.type === 'item' ? 'item' : 'equip')) !== 'item');
+		const showDropLog = (d) => {
+			if (d.isSpecialBoss || d.isEstark) {
+				Battle.log(`<span style="color:#ffd700; font-weight:bold;">10,000 GEM</span> を獲得！`);
+				Battle.log(`なんと <span style="color:#ffd700; font-weight:bold;">${d.name}</span> を手に入れた！`);
+			} else if (d.type === 'kai') {
+				Battle.log(`なんと <span style="color:#ff00ff; font-weight:bold;">${d.name}</span> を手に入れた！`);
+			} else if (d.isRare) {
+				Battle.log(`なんと <span class="log-rare-drop">${d.name}</span> を手に入れた！`);
+			} else {
+				Battle.log(`${d.name} を手に入れた！`);
+			}
+		};
+
 		if (drops.length > 0) {
 			Battle.log("<br>");
-			await Battle.wait(800);
+			await Battle.resultWait(500);
 			
-			if (hasUltraRareDrop || hasRareDrop) {
+			if ((hasUltraRareDrop || hasRareDrop) && !Battle.resultSkipRequested) {
 				const ultraFlash = document.getElementById('drop-flash-ultra');
 				const rareFlash = document.getElementById('drop-flash');
 				let targetEl = null;
@@ -3570,21 +3615,19 @@ findNextActor: () => {
 				}
 			}
 
-			drops.forEach(d => {
-				if (d.isSpecialBoss || d.isEstark) {
-					Battle.log(`<span style="color:#ffd700; font-weight:bold;">10,000 GEM</span> を獲得！`);
-					Battle.log(`なんと <span style="color:#ffd700; font-weight:bold;">${d.name}</span> を手に入れた！`);
-				} else if (d.type === 'kai') {
-					Battle.log(`なんと <span style="color:#ff00ff; font-weight:bold;">${d.name}</span> を手に入れた！`);
-				} else if (d.isRare) {
-					Battle.log(`なんと <span class="log-rare-drop">${d.name}</span> を手に入れた！`);
-				} else {
-					Battle.log(`${d.name} を手に入れた！`);
-				}
-			});
+			for (const d of itemDrops) {
+				showDropLog(d);
+				await Battle.resultWait(150);
+			}
+			for (const d of equipDrops) {
+				showDropLog(d);
+				await Battle.resultWait(150);
+			}
 		}
-		
+
 		App.save(); 
+		Battle.resultProcessing = false;
+		Battle.resultReadyToEnd = true;
 		Battle.log("\n▼ 画面タップで終了 ▼");
 
 		// ★削除：戦闘画面中にストーリーを実行しない
@@ -3636,6 +3679,25 @@ findNextActor: () => {
 	},
 	
     endBattle: (isGameOver = false) => {
+        if (Battle.phase === 'result' && Battle.resultProcessing && !Battle.resultReadyToEnd && !isGameOver) {
+            Battle.handleResultTap();
+            return;
+        }
+        Battle.resultProcessing = false;
+        Battle.resultReadyToEnd = false;
+        Battle.resultSkipRequested = false;
+        if (Array.isArray(Battle.resultWaiters)) {
+            const waiters = Battle.resultWaiters.splice(0);
+            waiters.forEach(fn => { try { fn(); } catch(e) {} });
+        }
+        ['drop-flash-ultra', 'drop-flash'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.style.display = 'none';
+                el.classList.remove('flash-active', 'flash-ultra-active');
+                el.onanimationend = null;
+            }
+        });
         const isDungeon = (typeof Dungeon !== 'undefined' && Field.currentMapData && Field.currentMapData.isDungeon);
         
 		// ★追加：戦闘データを消去する前に、必要な情報を退避
@@ -3691,5 +3753,38 @@ findNextActor: () => {
     },
     toggleAuto: () => { Battle.auto = !Battle.auto; Battle.updateAutoButton(); if(Battle.phase === 'input') Battle.findNextActor(); },
     updateAutoButton: () => { const btn = Battle.getEl('btn-auto'); if(btn) { btn.innerText = `AUTO: ${Battle.auto?'ON':'OFF'}`; btn.style.background = Battle.auto ? '#d00' : '#333'; } },
+
+    handleResultTap: () => {
+        if (Battle.phase !== 'result') return;
+        if (Battle.resultReadyToEnd) {
+            Battle.endBattle(false);
+            return;
+        }
+        Battle.resultSkipRequested = true;
+        if (Array.isArray(Battle.resultWaiters)) {
+            const waiters = Battle.resultWaiters.splice(0);
+            waiters.forEach(fn => { try { fn(); } catch(e) {} });
+        }
+    },
+
+    resultWait: (ms) => {
+        if (Battle.phase !== 'result') return Battle.wait(ms);
+        if (Battle.resultSkipRequested) return Promise.resolve();
+        return new Promise(resolve => {
+            let done = false;
+            const finish = () => {
+                if (done) return;
+                done = true;
+                resolve();
+            };
+            const timer = setTimeout(finish, ms);
+            if (!Array.isArray(Battle.resultWaiters)) Battle.resultWaiters = [];
+            Battle.resultWaiters.push(() => {
+                clearTimeout(timer);
+                finish();
+            });
+        });
+    },
+
     wait: (ms) => new Promise(resolve => setTimeout(resolve, ms))
 };
