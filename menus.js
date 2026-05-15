@@ -106,6 +106,30 @@ const Menu = {
 
     selectTouchAttrs: () => 'ontouchstart="Menu.stopEventBubble(event)" onpointerdown="Menu.stopEventBubble(event)" onmousedown="Menu.stopEventBubble(event)" onclick="Menu.stopEventBubble(event)"',
 
+    subScreenFeatureMap: {
+        blacksmith: 'smith',
+        dungeon: 'abyss',
+        gacha: 'gacha'
+    },
+
+    featureButton: (id, label, featureKey, style = '') => {
+        const locked = typeof App !== 'undefined' && typeof App.isFeatureUnlocked === 'function' && !App.isFeatureUnlocked(featureKey);
+        const click = locked ? `Menu.showLockedFeature('${featureKey}')` : `Menu.openSubScreen('${id}')`;
+        const lockedStyle = locked ? 'background:#202020; border-color:#666; color:#888; flex-direction:column;' : '';
+        const finalStyle = [style, lockedStyle].filter(Boolean).join('; ');
+        const styleAttr = finalStyle ? ` style="${finalStyle}"` : '';
+        const body = locked
+            ? `???<span style="display:block; font-size:9px; color:#777; margin-top:2px;">未解放</span>`
+            : label;
+        return `<button class="menu-btn" onclick="${click}"${styleAttr}>${body}</button>`;
+    },
+
+    showLockedFeature: (featureKey) => {
+        if (typeof App !== 'undefined' && typeof App.requireFeatureUnlocked === 'function') {
+            App.requireFeatureUnlocked(featureKey);
+        }
+    },
+
     // --- メインメニュー制御 ---
     openMainMenu: () => {
         // 開く直前に実績の達成判定を最新にする
@@ -139,14 +163,14 @@ const Menu = {
                 <button class="menu-btn" onclick="Menu.openSubScreen('allies')">仲間一覧</button>
                 <button class="menu-btn" onclick="Menu.openSubScreen('inventory')">所持装備</button>
                 <button class="menu-btn" onclick="Menu.openSubScreen('items')">道具</button>
-                <button class="menu-btn" onclick="Menu.openSubScreen('blacksmith')">鍛冶屋</button>
+                ${Menu.featureButton('blacksmith', '鍛冶屋', 'smith')}
                 <button class="menu-btn" onclick="Menu.openSubScreen('skills')">スキル</button>
                 <button class="menu-btn" onclick="Menu.openSubScreen('book')">魔物図鑑</button>
                 <button class="menu-btn" onclick="Menu.openSubScreen('status')">プレイ状況</button>
 				<button class="menu-btn" onclick="Menu.openSubScreen('exchange')">取引所${hasUnclaimedDaily ? badge : ''}</button>
 				<button class="menu-btn" onclick="Menu.openSubScreen('achievements')">実績${hasUnclaimedAchievement ? badge : ''}</button>
-                <button class="menu-btn" style="background:#400040;" onclick="Menu.openSubScreen('dungeon')">ダンジョン</button>
-                <button class="menu-btn" style="background:#664400;" onclick="Menu.openSubScreen('gacha')">ガチャ</button>
+                ${Menu.featureButton('dungeon', 'ダンジョン', 'abyss', 'background:#400040;')}
+                ${Menu.featureButton('gacha', 'ガチャ', 'gacha', 'background:#664400;')}
 				
                 <button class="menu-btn" style="background:#004444;" onclick="App.downloadSave()">データ出力</button>
                 <button class="menu-btn" style="background:#004444;" onclick="App.importSave()">データ読込</button>
@@ -234,6 +258,11 @@ const Menu = {
     },
 
     openSubScreen: (id) => {
+        const requiredFeature = Menu.subScreenFeatureMap[id];
+        if (requiredFeature && typeof App !== 'undefined' && typeof App.requireFeatureUnlocked === 'function' && !App.requireFeatureUnlocked(requiredFeature)) {
+            return;
+        }
+
         document.getElementById('menu-overlay').style.display = 'none';
         document.querySelectorAll('.sub-screen').forEach(e => e.style.display = 'none');
         

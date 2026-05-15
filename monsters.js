@@ -265,7 +265,7 @@ const MONSTER_BANDS_1_200 = [
     m({id:100109,name:'オネイロス',race:'魔族',rank:121,minF:121,hp:1241,mp:218,atk:169,def:157,spd:138,mag:183,mdef:169,gold:12000,exp:12500,actCount:1,acts:[act(1,20),act(407,20),act(423,20),act(405,20),act(905,20)],elmRes:{火:30,闇:50,光:-30},resists:{Poison:80,Seal:80}}),
     m({id:100110,name:'ニーズヘッグ',race:'竜',rank:121,minF:121,hp:1273,mp:180,atk:183,def:165,spd:138,mag:151,mdef:165,gold:12000,exp:12500,actCount:1,acts:[act(1,20),act(604,20),act(605,20),act(609,20),act(107,20)],elmRes:{火:40,水:40,闇:20,光:-20,雷:-20},resists:{Poison:90,Fear:60}}),
     m({id:100111,name:'レムレスキラー',race:'死霊',rank:121,minF:121,hp:1006,mp:226,atk:8,def:89,spd:151,mag:194,mdef:176,gold:12000,exp:12500,actCount:1,acts:[act(1,20),act(423,25),act(801,10),act(704,20),act(922,25)],elmRes:{闇:60,光:-50},resists:{Poison:100,InstantDeath:90,Seal:70}}),
-    m({id:100112,name:'ヘルバルバトス',race:'魔族',rank:121,minF:121,hp:1191,mp:158,atk:190,def:163,spd:126,mag:115,mdef:151,gold:12000,exp:12500,actCount:1,acts:[act(1,20),act(106,20),act(119,25),act(117,20),act(50,15)],elmRes:{闇:40,光:-30},resists:{Poison:80,Seal:60}}),
+    m({id:100112,name:'エビルレオン',race:'魔族',rank:121,minF:121,hp:1191,mp:158,atk:190,def:163,spd:126,mag:115,mdef:151,gold:12000,exp:12500,actCount:1,acts:[act(1,20),act(106,20),act(119,25),act(117,20),act(50,15)],elmRes:{闇:40,光:-30},resists:{Poison:80,Seal:60}}),
   ]},
 
   { bandStart: 126, bandEnd: 130, monsters: [

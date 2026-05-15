@@ -264,6 +264,50 @@ const App = {
     pendingAction: null, 
 	encounterTransitioning: false,
 
+    unlockDefaults: {
+        smith: false,
+        gacha: false,
+        abyss: false,
+        teleport: false,
+        casino: false,
+        medalKing: false,
+        boat: false,
+        wing: false,
+        fixedDungeonEndless: false
+    },
+
+    unlockLabels: {
+        smith: '鍛冶屋',
+        gacha: 'ガチャ',
+        abyss: '深淵の魔窟',
+        teleport: '宿屋の転送',
+        casino: 'カジノ',
+        medalKing: 'メダル交換',
+        boat: '魔法の小舟',
+        wing: '光の翼',
+        fixedDungeonEndless: '固定ダンジョンの探索'
+    },
+
+    getDefaultUnlockState: () => {
+        return { ...App.unlockDefaults };
+    },
+
+    ensureUnlockState: () => {
+        if (!App.data) return {};
+        if (!App.data.progress) App.data.progress = {};
+        if (!App.data.progress.unlocked || typeof App.data.progress.unlocked !== 'object' || Array.isArray(App.data.progress.unlocked)) {
+            App.data.progress.unlocked = {};
+        }
+
+        Object.keys(App.unlockDefaults).forEach(key => {
+            if (App.data.progress.unlocked[key] === undefined) {
+                App.data.progress.unlocked[key] = App.unlockDefaults[key];
+            }
+        });
+
+        return App.data.progress.unlocked;
+    },
+
     // --- 初期データ構造の定義 ---
     // セーブデータが全くない場合や、マイグレーション時のデフォルト参照用
     getInitialData: () => {
@@ -273,7 +317,7 @@ const App = {
                 floor: 0, 
                 storyStep: 0, 
                 flags: {}, 
-                unlocked: { smith: false, gacha: false },
+                unlocked: App.getDefaultUnlockState(),
                 clearedDungeons: [],
                 openedChests: {},  
                 defeatedBosses: {},
@@ -367,12 +411,14 @@ const App = {
 			if (!App.data.progress.mapChanges) App.data.progress.mapChanges = {};
 			
             if (!App.data.progress.flags) App.data.progress.flags = {};
-            if (!App.data.progress.unlocked) App.data.progress.unlocked = { smith: false, gacha: false };
+            if (!App.data.progress.unlocked || typeof App.data.progress.unlocked !== 'object' || Array.isArray(App.data.progress.unlocked)) App.data.progress.unlocked = {};
             if (!App.data.progress.clearedDungeons) App.data.progress.clearedDungeons = [];
             if (!App.data.progress.openedChests) App.data.progress.openedChests = {};
             if (!App.data.progress.defeatedBosses) App.data.progress.defeatedBosses = {};
             if (!App.data.progress.visitedFixedMaps || typeof App.data.progress.visitedFixedMaps !== 'object' || Array.isArray(App.data.progress.visitedFixedMaps)) App.data.progress.visitedFixedMaps = {};
         }
+
+        App.ensureUnlockState();
 
         // 既存セーブ救済: 固有MAP内で再開した場合は、そのMAPを発見済みにする。
         if (App.data.location && App.data.progress && typeof App.discoverFixedMap === 'function') {
@@ -888,8 +934,35 @@ const App = {
         return !!(App.data && App.data.items && Number(App.data.items[itemId] || 0) > 0);
     },
 
+    getFeatureUnlockLabel: (key) => {
+        return App.unlockLabels[key] || key || 'この機能';
+    },
+
+    getFeatureLockedMessage: (key) => {
+        return `${App.getFeatureUnlockLabel(key)}はまだ解放されていません。\nストーリーを進めると利用できるようになります。`;
+    },
+
+    isFeatureUnlocked: (key) => {
+        if (!key) return true;
+        const unlocked = App.ensureUnlockState();
+        if (key === 'boat') return !!unlocked.boat || App.hasItem(108) || !!App.data?.progress?.flags?.hasShip;
+        if (key === 'wing') return !!unlocked.wing || App.hasItem(109);
+        return !!unlocked[key];
+    },
+
+    requireFeatureUnlocked: (key) => {
+        if (App.isFeatureUnlocked(key)) return true;
+        const message = App.getFeatureLockedMessage(key);
+        if (typeof Menu !== 'undefined' && typeof Menu.msg === 'function') {
+            Menu.msg(message);
+        } else if (typeof App.log === 'function') {
+            App.log(message);
+        }
+        return false;
+    },
+
     hasMagicBoat: () => {
-        return App.hasItem(108) || !!App.data?.progress?.flags?.hasShip;
+        return App.isFeatureUnlocked('boat') || App.hasItem(108) || !!App.data?.progress?.flags?.hasShip;
     },
 
     isFlying: () => App.data?.transportMode === 'flying',
@@ -1107,7 +1180,7 @@ const App = {
     },
 
     useLightWing: () => {
-        if (!App.hasItem(109)) {
+        if (!App.isFeatureUnlocked('wing') && !App.hasItem(109)) {
             Menu.msg("光の翼を持っていません。");
             return false;
         }
@@ -1140,10 +1213,11 @@ const App = {
      * 機能を解放する (鍛冶屋・ガチャ等)
      */
     unlockFeature: (key) => {
-        if (!App.data.progress.unlocked) App.data.progress.unlocked = {};
-        App.data.progress.unlocked[key] = true;
+        const unlocked = App.ensureUnlockState();
+        const already = !!unlocked[key];
+        unlocked[key] = true;
         App.save();
-        App.log(`【システム解放】${key === 'smith' ? '鍛冶屋' : 'ガチャ'}が利用可能になった！`);
+        if (!already) App.log(`【システム解放】${App.getFeatureUnlockLabel(key)}が利用可能になった！`);
     },
 
     /**
@@ -1584,6 +1658,15 @@ const App = {
         btn.style.display = 'block';
         App.pendingAction = callback;
     },
+
+    setFeatureAction: (label, featureKey, callback, lockedLabel = '???') => {
+        if (App.isFeatureUnlocked(featureKey)) {
+            App.setAction(label, callback);
+        } else {
+            App.setAction(lockedLabel, () => App.requireFeatureUnlocked(featureKey));
+        }
+    },
+
     showMessage: (text, callback) => {
         if (typeof Menu !== 'undefined' && typeof Menu.msg === 'function') {
             Menu.msg(text, callback);
@@ -3110,6 +3193,13 @@ load: () => {
 	},
 		
     changeScene: (sceneId) => {
+        const sceneFeatureMap = {
+            medal: 'medalKing',
+            casino: 'casino'
+        };
+        const requiredFeature = sceneFeatureMap[sceneId];
+        if (requiredFeature && !App.requireFeatureUnlocked(requiredFeature)) return;
+
         // フィールド以外の画面へ移る時は、待機中の足踏みタイマーを止める。
         // 足踏みは描画だけの軽量演出だが、戦闘/施設/メニュー裏で動かし続ける必要はない。
         if (sceneId !== 'field' && typeof Field !== 'undefined' && typeof Field.stopIdleStep === 'function') {
@@ -3539,6 +3629,7 @@ const Field = {
         }
 
         if (action.type === 'abyssDungeon' && typeof Dungeon !== 'undefined') {
+            if (!App.requireFeatureUnlocked('abyss')) return;
             Dungeon.enter();
             return;
         }
@@ -3631,7 +3722,11 @@ const Field = {
                     : null;
                 if (mapAction) {
                     if (mapAction.log) logIfNeeded(mapAction.log);
-                    App.setAction(mapAction.label || '調べる', () => Field.executeMapAction(mapAction));
+                    if (mapAction.type === 'abyssDungeon') {
+                        App.setFeatureAction(mapAction.label || '魔窟に入る', 'abyss', () => Field.executeMapAction(mapAction));
+                    } else {
+                        App.setAction(mapAction.label || '調べる', () => Field.executeMapAction(mapAction));
+                    }
                     return true;
                 }
 
@@ -3640,10 +3735,10 @@ const Field = {
                     App.setAction('泊まる', () => App.changeScene('inn'));
                 } else if (tile === 'K') {
                     logIfNeeded('カジノの看板だ。');
-                    App.setAction('カジノに入る', () => App.changeScene('casino'));
+                    App.setFeatureAction('カジノに入る', 'casino', () => App.changeScene('casino'));
                 } else if (tile === 'E') {
                     logIfNeeded('交換所のようだ。');
-                    App.setAction('メダル交換', () => App.changeScene('medal'));
+                    App.setFeatureAction('メダル交換', 'medalKing', () => App.changeScene('medal'));
                 }
             } else if (Field.currentMapData.isFixed && typeof Dungeon !== 'undefined' && typeof Dungeon.prepareFixedTileAction === 'function') {
                 if (Dungeon.prepareFixedTileAction(tile, x, y, { silent })) return true;
@@ -3712,17 +3807,17 @@ const Field = {
                 logIfNeeded('小さな休憩所がある。');
                 App.setAction('休む', () => App.changeScene('inn'));
         } else if (tile === 'E') {
-            App.setAction('メダル交換', () => App.changeScene('medal'));
+            App.setFeatureAction('メダル交換', 'medalKing', () => App.changeScene('medal'));
         } else if (tile === 'K') {
-            App.setAction('カジノに入る', () => App.changeScene('casino'));
+            App.setFeatureAction('カジノに入る', 'casino', () => App.changeScene('casino'));
         } else if (tile === 'D') {
             logIfNeeded('不気味な穴が開いている…「深淵の魔窟」だ');
             if (typeof FIXED_MAPS !== 'undefined' && FIXED_MAPS.ABYSS_FIELD) {
-                App.setAction('魔窟の外縁へ', () => {
+                App.setFeatureAction('魔窟の外縁へ', 'abyss', () => {
                     Field.enterFixedMap('ABYSS_FIELD');
                 });
             } else {
-                App.setAction('魔窟に入る', () => {
+                App.setFeatureAction('魔窟に入る', 'abyss', () => {
                     App.data.location.area = 'ABYSS';
                     Dungeon.enter();
                 });

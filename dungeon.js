@@ -158,6 +158,7 @@ const Dungeon = {
 	},
 
 	startFromMenu: (startFloor) => {
+		if (typeof App !== 'undefined' && typeof App.requireFeatureUnlocked === 'function' && !App.requireFeatureUnlocked('abyss')) return;
 		if (typeof Menu !== 'undefined') Menu.closeAll();
 		Dungeon.start(startFloor);
 	},
@@ -170,6 +171,7 @@ const Dungeon = {
 	},
 	
 	enter: () => {
+		if (typeof App !== 'undefined' && typeof App.requireFeatureUnlocked === 'function' && !App.requireFeatureUnlocked('abyss')) return;
 		if (typeof Menu !== 'undefined' && typeof Menu.openSubScreen === 'function') {
 			Menu.openSubScreen('dungeon');
 			return;
@@ -180,6 +182,7 @@ const Dungeon = {
 	
     // --- ダンジョン突入・進行 ---
     start: (startFloor) => {
+		if (typeof App !== 'undefined' && typeof App.requireFeatureUnlocked === 'function' && !App.requireFeatureUnlocked('abyss')) return;
 		if (!App.data.dungeon.returnPoint) {
 			App.data.dungeon.returnPoint = {
 				x: App.data.location.x,

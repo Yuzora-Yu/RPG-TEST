@@ -94,9 +94,13 @@ const Facilities = {
     // --- 1. 宿屋 ---
     initInn: () => {
         const exitFn = "App.changeScene('field')";
+        const teleportOpen = typeof App === 'undefined' || typeof App.isFeatureUnlocked !== 'function' || App.isFeatureUnlocked('teleport');
+        const teleportButton = teleportOpen
+            ? `<button class="menu-btn" style="background:#000; border:1px solid #fff; height:40px; color:#fff;" onclick="Facilities.openTeleport()">転送の扉</button>`
+            : `<button class="menu-btn" style="background:#111; border:1px solid #555; height:40px; color:#777;" onclick="App.requireFeatureUnlocked('teleport')">???</button>`;
         const cmds = `
             <button class="menu-btn" style="background:#000; border:1px solid #fff; height:40px; color:#fff;" onclick="Facilities.stayInn(50)">泊まる (50Gold)</button>
-            <button class="menu-btn" style="background:#000; border:1px solid #fff; height:40px; color:#fff;" onclick="Facilities.openTeleport()">転送の扉</button>
+            ${teleportButton}
         `;
         Facilities.setupBaseLayout('inn-scene', '宿屋', 'facility_bg_inn', cmds, exitFn);
         
@@ -118,6 +122,7 @@ const Facilities = {
     },
 
     openTeleport: () => {
+        if (typeof App !== 'undefined' && typeof App.requireFeatureUnlocked === 'function' && !App.requireFeatureUnlocked('teleport')) return;
         const maxF = (App.data.dungeon && App.data.dungeon.maxFloor) ? App.data.dungeon.maxFloor : 0;
         if(maxF === 0) return Menu.msg("まだ 行ける階層が ないようです。");
         
@@ -144,6 +149,7 @@ const Facilities = {
     },
 
     execTele: () => {
+        if (typeof App !== 'undefined' && typeof App.requireFeatureUnlocked === 'function' && !App.requireFeatureUnlocked('teleport')) return;
         const cost = Facilities.teleportFloor * 10000;
         if(App.data.gold < cost) return Menu.msg("ゴールドが 足りません。");
         Menu.confirm(`${cost.toLocaleString()} Gold 必要ですが よろしいですか？`, () => {
@@ -155,6 +161,7 @@ const Facilities = {
 
     // --- 2. メダル交換所 ---
     initMedal: () => {
+        if (typeof App !== 'undefined' && typeof App.requireFeatureUnlocked === 'function' && !App.requireFeatureUnlocked('medalKing')) return;
         const exitFn = "App.changeScene('field')";
 		const hasWedge = App.data.items && App.data.items[98] > 0;
         // コマンドボタンの構成
@@ -288,6 +295,7 @@ const Facilities = {
 
     // --- 3. カジノ ---
     initCasino: () => {
+        if (typeof App !== 'undefined' && typeof App.requireFeatureUnlocked === 'function' && !App.requireFeatureUnlocked('casino')) return;
         if (!App.data.casinoState) App.data.casinoState = { isPlaying: false, currentGame: null };
         
         // 勝負中であればUIを復元
