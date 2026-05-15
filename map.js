@@ -695,7 +695,7 @@ const FIXED_MAPS = {
 
 const FIXED_DUNGEON_MAPS = {
     START_CAVE: {
-        name: "試練の洞窟",
+        name: "北東の洞穴",
         themeKey: "START_CAVE",
         rank: 5,
         encounterRank: 5, // monsters未指定時はこの階層相当で自動抽選
