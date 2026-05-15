@@ -95,14 +95,214 @@ const StoryManager = {
 	
 
     /**
+     * ストーリー演出用の一時強化APIを、story.js側で安全に補完する。
+     *
+     * もともと TEMP_LB_START / TEMP_LB_CLEAR は App.activateTemporaryStoryPower /
+     * App.clearTemporaryStoryPower の存在を前提にしていたが、実装が無い環境では
+     * 命令が無視され、開幕全滅後のLB99救済が発動しなかった。
+     *
+     * この補完は「現在の戦闘パーティだけ」を一時的にLB99扱いにし、
+     * 戦闘終了または明示解除時に元のLBへ戻す。lbProgress は触らないため、
+     * 通常の限界突破進行には影響しない。
+     */
+    installTemporaryStoryPowerApi: function() {
+        if (typeof App === 'undefined' || !App) return false;
+
+        const getPartyTargets = () => {
+            if (!App.data || !Array.isArray(App.data.characters)) return [];
+            const partyUids = Array.isArray(App.data.party)
+                ? App.data.party.filter(uid => !!uid)
+                : [];
+
+            let targets = App.data.characters.filter(c => c && partyUids.includes(c.uid));
+
+            // パーティ情報が壊れていても、開幕救済だけは主人公へ届くようにする。
+            if (targets.length === 0) {
+                const hero = App.data.characters.find(c => c && (c.charId === 301 || c.uid === 'p1' || c.isHero));
+                if (hero) targets = [hero];
+            }
+
+            return targets;
+        };
+
+        const clampLb = (value) => {
+            return Math.max(0, Math.min(99, Math.floor(Number(value) || 0)));
+        };
+
+        const recalcAndClampVitals = (char) => {
+            if (!char || typeof App.calcStats !== 'function') return;
+            const stats = App.calcStats(char);
+            if (Number.isFinite(Number(stats?.maxHp)) && char.currentHp !== undefined) {
+                char.currentHp = Math.max(0, Math.min(Number(char.currentHp) || 0, stats.maxHp));
+            }
+            if (Number.isFinite(Number(stats?.maxMp)) && char.currentMp !== undefined) {
+                char.currentMp = Math.max(0, Math.min(Number(char.currentMp) || 0, stats.maxMp));
+            }
+        };
+
+        const findCharByUid = (uid) => {
+            if (!App.data || !Array.isArray(App.data.characters)) return null;
+            return App.getChar
+                ? App.getChar(uid)
+                : App.data.characters.find(c => c && c.uid === uid);
+        };
+
+        // 重要：一時LB99のまま App.syncDerivedLimitBreaks() が走ると、
+        // backfillLimitBreakLegacy が「正規のLB99」と誤認して恒久化してしまう。
+        // そのため、同期時だけ元LBへ戻し、同期後に再び一時LBを適用する。
+        if (typeof App.syncDerivedLimitBreaks === 'function' && !App.__storyTempPowerSyncWrapped) {
+            const originalSyncDerivedLimitBreaks = App.syncDerivedLimitBreaks.bind(App);
+            App.syncDerivedLimitBreaks = function(options = {}) {
+                const temp = App.data?.progress?.tempStoryPower;
+                if (!temp || !Array.isArray(temp.targets)) {
+                    return originalSyncDerivedLimitBreaks(options);
+                }
+
+                temp.targets.forEach(snapshot => {
+                    const char = findCharByUid(snapshot.uid);
+                    if (char) char.limitBreak = clampLb(snapshot.limitBreak);
+                });
+
+                const result = originalSyncDerivedLimitBreaks(options);
+
+                // 同期によって得た正規LBを、解除時の復元先として更新する。
+                temp.targets.forEach(snapshot => {
+                    const char = findCharByUid(snapshot.uid);
+                    if (char) snapshot.limitBreak = clampLb(char.limitBreak);
+                });
+
+                const targetLb = clampLb(temp.limitBreak ?? 99);
+                temp.targets.forEach(snapshot => {
+                    const char = findCharByUid(snapshot.uid);
+                    if (!char) return;
+                    char.limitBreak = targetLb;
+                    if (typeof App.calcStats === 'function') App.calcStats(char);
+                });
+
+                return result;
+            };
+            App.__storyTempPowerSyncWrapped = true;
+        }
+
+        if (typeof App.applyTemporaryStoryPower !== 'function') {
+            App.applyTemporaryStoryPower = function() {
+                const temp = App.data?.progress?.tempStoryPower;
+                if (!temp || !Array.isArray(temp.targets)) return false;
+
+                const targetLb = clampLb(temp.limitBreak ?? 99);
+                temp.targets.forEach(snapshot => {
+                    const char = App.getChar
+                        ? App.getChar(snapshot.uid)
+                        : App.data.characters.find(c => c && c.uid === snapshot.uid);
+                    if (!char) return;
+                    char.limitBreak = targetLb;
+                    if (typeof App.calcStats === 'function') App.calcStats(char);
+                });
+                return true;
+            };
+        }
+
+        if (typeof App.activateTemporaryStoryPower !== 'function') {
+            App.activateTemporaryStoryPower = function(options = {}) {
+                if (!App.data) return false;
+                if (!App.data.progress) App.data.progress = {};
+
+                const id = options.id || 'story_temp_power';
+                const targetLb = clampLb(options.limitBreak ?? options.value ?? 99);
+
+                // 別IDの一時強化が残っている場合は、先に元へ戻してから開始する。
+                const current = App.data.progress.tempStoryPower;
+                if (current && current.id && current.id !== id && typeof App.clearTemporaryStoryPower === 'function') {
+                    App.clearTemporaryStoryPower({ id: current.id, force: true, skipSave: true });
+                }
+
+                const existing = App.data.progress.tempStoryPower;
+                if (existing && existing.id === id && Array.isArray(existing.targets)) {
+                    existing.limitBreak = targetLb;
+                    existing.reason = options.reason || existing.reason || 'story_event';
+                    App.applyTemporaryStoryPower();
+                    if (typeof App.save === 'function') App.save();
+                    return true;
+                }
+
+                const targets = getPartyTargets();
+                if (targets.length === 0) return false;
+
+                App.data.progress.tempStoryPower = {
+                    id,
+                    limitBreak: targetLb,
+                    reason: options.reason || 'story_event',
+                    startedAt: Date.now(),
+                    targets: targets.map(c => ({
+                        uid: c.uid,
+                        limitBreak: clampLb(c.limitBreak)
+                    }))
+                };
+
+                App.applyTemporaryStoryPower();
+                if (typeof App.save === 'function') App.save();
+                if (typeof Menu !== 'undefined' && typeof Menu.renderPartyBar === 'function') Menu.renderPartyBar();
+                return true;
+            };
+        }
+
+        if (typeof App.clearTemporaryStoryPower !== 'function') {
+            App.clearTemporaryStoryPower = function(options = {}) {
+                const temp = App.data?.progress?.tempStoryPower;
+                if (!temp) return false;
+
+                const requestedId = options.id || null;
+                if (requestedId && temp.id !== requestedId && !options.force) return false;
+
+                if (Array.isArray(temp.targets)) {
+                    temp.targets.forEach(snapshot => {
+                        const char = App.getChar
+                            ? App.getChar(snapshot.uid)
+                            : App.data.characters.find(c => c && c.uid === snapshot.uid);
+                        if (!char) return;
+                        char.limitBreak = clampLb(snapshot.limitBreak);
+                        recalcAndClampVitals(char);
+                    });
+                }
+
+                delete App.data.progress.tempStoryPower;
+
+                // 戦闘勝利などで恒久的なLB進行が増えていた場合は、解除後に正規値へ再同期する。
+                if (typeof App.syncDerivedLimitBreaks === 'function') {
+                    App.syncDerivedLimitBreaks();
+                    if (Array.isArray(temp.targets)) {
+                        temp.targets.forEach(snapshot => {
+                            const char = App.getChar
+                                ? App.getChar(snapshot.uid)
+                                : App.data.characters.find(c => c && c.uid === snapshot.uid);
+                            recalcAndClampVitals(char);
+                        });
+                    }
+                }
+
+                if (!options.skipSave && typeof App.save === 'function') App.save();
+                if (typeof Menu !== 'undefined' && typeof Menu.renderPartyBar === 'function') Menu.renderPartyBar();
+                return true;
+            };
+        }
+
+        return true;
+    },
+
+    /**
      * 主人公のリミットブレイクを同期
      */
     syncHeroLimitBreak: function() {
 		if (!App.data || !App.data.characters) return;
+		this.installTemporaryStoryPowerApi();
 		const hero = App.data.characters.find(c => c.charId === 301 || c.uid === 'p1');
 		if (hero && App.data.progress && App.data.dungeon) {
 			if (typeof App.syncDerivedLimitBreaks === 'function') {
 				App.syncDerivedLimitBreaks({ heroOnly: true });
+			}
+			// 一時強化中のロード復帰・STEP同期でLB99が消えないように再適用する。
+			if (App.data.progress.tempStoryPower && typeof App.applyTemporaryStoryPower === 'function') {
+				App.applyTemporaryStoryPower();
 			}
 			if (typeof App.calcStats === 'function') App.calcStats(hero);
 		}
@@ -690,6 +890,7 @@ const StoryManager = {
         }
 
         if (action.type === 'TEMP_LB_START') {
+            this.installTemporaryStoryPowerApi();
             if (typeof App.activateTemporaryStoryPower === 'function') {
                 App.activateTemporaryStoryPower({
                     id: action.id || 'story_temp_power',
@@ -700,6 +901,7 @@ const StoryManager = {
         }
 
         if (action.type === 'TEMP_LB_CLEAR') {
+            this.installTemporaryStoryPowerApi();
             if (typeof App.clearTemporaryStoryPower === 'function') {
                 App.clearTemporaryStoryPower({ id: action.id || null });
             }
