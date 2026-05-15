@@ -3,6 +3,7 @@
 const Battle = {
     active: false,
     auto: false,
+    autoConserve: false,
     phase: 'init',
     party: [],
     enemies: [],
@@ -84,9 +85,11 @@ const Battle = {
         Battle.commandQueue = [];
         Battle.currentActorIndex = 0;
         Battle.auto = false;
+        Battle.autoConserve = !!(App.data && App.data.settings && App.data.settings.autoConserve);
         Battle.runAttemptCount = 0; 
         Battle.skillScrollPositions = {};
         Battle.updateAutoButton();
+        Battle.updateAutoConserveButton();
         Battle.resultProcessing = false;
         Battle.resultReadyToEnd = false;
         Battle.resultSkipRequested = false;
@@ -432,6 +435,33 @@ const Battle = {
         return m;
     },
 
+    applyRiftEnemyBoost: (enemy) => {
+        if (!enemy) return enemy;
+        const scaleNumber = (value, rate, min = 0) => {
+            const n = Number(value || 0);
+            if (!Number.isFinite(n)) return value;
+            const scaled = Math.floor(n * rate);
+            return Math.max(min, scaled);
+        };
+
+        enemy.isRiftEnemy = true;
+        enemy.hp = scaleNumber(enemy.hp, 1.5, 1);
+        enemy.baseMaxHp = scaleNumber(enemy.baseMaxHp || enemy.hp, 1.5, enemy.hp);
+        enemy.mp = scaleNumber(enemy.mp, 1.1, 0);
+        enemy.baseMaxMp = scaleNumber(enemy.baseMaxMp || enemy.mp, 1.1, enemy.mp);
+
+        if (enemy.baseStats) {
+            ['atk', 'def', 'spd', 'mag'].forEach(key => {
+                enemy.baseStats[key] = scaleNumber(enemy.baseStats[key], 1.1, 0);
+            });
+        }
+        ['atk', 'def', 'spd', 'mag', 'mdef'].forEach(key => {
+            if (enemy[key] !== undefined) enemy[key] = scaleNumber(enemy[key], 1.1, 0);
+        });
+
+        return enemy;
+    },
+
     generateNewEnemies: (isBoss, fixedBossId = null) => {
         const newEnemies = [];
         let floor = Math.max(1, Number(App.data.progress.floor) || 1);
@@ -463,7 +493,7 @@ const Battle = {
         if (isRiftBattle) {
             const riftFloor = Math.max(1, Number(battleData.riftFloor) || (floor + 10));
             Battle.log('<span style="color:#c78cff; font-weight:bold;">亀裂の根源から強敵が現れた！</span>');
-            const total = 3;
+            const total = 5;
 
             if (riftFloor >= 201) {
                 let candidates = [];
@@ -478,7 +508,7 @@ const Battle = {
                 for (let i = 0; i < total; i++) {
                     const base = candidates[Math.floor(Math.random() * candidates.length)];
                     if (!base) continue;
-                    const m = Battle.createDeepFloorMonster(Battle.cloneMonsterBase(base), riftFloor, false);
+                    const m = Battle.applyRiftEnemyBoost(Battle.createDeepFloorMonster(Battle.cloneMonsterBase(base), riftFloor, false));
                     if (m && total > 1) m.name += String.fromCharCode(65 + i);
                     if (m) newEnemies.push(m);
                 }
@@ -497,7 +527,11 @@ const Battle = {
                     const candidates = DB.MONSTERS.filter(m => !m.isBoss && !m.isRare && !Battle.isSpecialBossBase(m));
                     base = candidates[Math.floor(Math.random() * candidates.length)] || null;
                 }
-                if (base) pushBase(base, i, total, { isBossBattle: false });
+                if (base) {
+                    const name = (base.name || '\u4e0d\u660e\u306a\u9b54\u7269') + suffix(i, total);
+                    const m = Battle.applyRiftEnemyBoost(Battle.createMonsterFromBase(base, { isBossBattle: false, name }));
+                    if (m) newEnemies.push(m);
+                }
             }
             return newEnemies;
         }
@@ -527,6 +561,26 @@ const Battle = {
             const scale = 1.0 + (kills * 0.05);
             bases.forEach((base, i) => pushBase(base, i, bases.length, { isBossBattle: true, forceSpecialBoss: true, scale }));
             return newEnemies;
+        }
+
+        // イベント用の明示編成。通常エンカウントは最大4体だが、イベント/亀裂では5体まで許可する。
+        // 使い方例: App.data.battle.fixedEnemyIds = [100001,100002,100003,100004,100005]
+        // または App.data.battle.exactMonsters = true; App.data.battle.monsters = [...]
+        const exactEventMonsterIds = Array.isArray(battleData.fixedEnemyIds)
+            ? battleData.fixedEnemyIds
+            : (battleData.exactMonsters && Array.isArray(battleData.monsters) ? battleData.monsters : null);
+        if (!isBoss && exactEventMonsterIds && exactEventMonsterIds.length > 0) {
+            const ids = exactEventMonsterIds.slice(0, 5);
+            ids.forEach((mid, i) => {
+                const base = Battle.getMonsterBaseById(mid);
+                if (!base || Battle.isSpecialBossBase(base)) return;
+                const m = Battle.createMonsterFromBase(base, {
+                    name: (base.name || '\u4e0d\u660e\u306a\u9b54\u7269') + suffix(i, ids.length),
+                    isBossBattle: !!base.isBoss,
+                });
+                if (m) newEnemies.push(m);
+            });
+            if (newEnemies.length > 0) return newEnemies;
         }
 
         if (floor >= 201) {
@@ -785,124 +839,271 @@ findNextActor: () => {
         Battle.log(`${actor.name}はどうする？`);
     },
 
-    // ★オート戦闘の思考ルーチン (優先順位と条件判定のコアロジック)
+    // ★オート戦闘の思考ルーチン (グローバルAUTO + 封印 + 節約モード対応)
     decideAutoAction: (actor) => {
-        const config = actor.config || { fullAuto: false, hiddenSkills: [] };
-        const hiddenIds = config.hiddenSkills.map(id => Number(id));
+        const config = actor.config || {};
+        const hiddenIds = Array.isArray(config.hiddenSkills) ? config.hiddenSkills.map(id => Number(id)) : [];
 
-        if (config.fullAuto) {
-            // 1. 使用可能なスキルの抽出 (マダンテ禁止・封印設定・MP不足・状態異常制限をすべてチェック)
-            const validSkills = (actor.skills || []).filter(s => {
-                const sId = Number(s.id);
-                if (sId === 1) return false; // 通常攻撃は除外
-                if (sId >= 500 && sId <= 505) return false; // ★マダンテ系使用不可
-                if (hiddenIds.includes(sId)) return false; // 封印設定スキルは除外
-                if (actor.mp < s.mp) return false; // MP不足
+        // 1. 使用可能なスキルの抽出 (マダンテ禁止・封印設定・MP不足・状態異常制限をすべてチェック)
+        const validSkills = (actor.skills || []).filter(s => {
+            const sId = Number(s.id);
+            if (sId === 1) return false; // 通常攻撃は除外
+            if (sId >= 500 && sId <= 505) return false; // マダンテ系は通常オートでは使用不可
+            if (hiddenIds.includes(sId)) return false; // キャラ詳細の「封印」設定
+            if (actor.mp < (s.mp || 0)) return false; // MP不足
 
-                // 状態異常による封印デバフのチェック
-                const ailments = actor.battleStatus.ailments;
-                if (ailments['SpellSeal'] && ['魔法','強化','弱体'].includes(s.type)) return false;
-                if (ailments['SkillSeal'] && ['物理','特殊'].includes(s.type)) return false;
-                if (ailments['HealSeal'] && ['回復','蘇生'].includes(s.type)) return false;
-                return true;
-            });
+            // 状態異常による封印デバフのチェック
+            const ailments = actor.battleStatus?.ailments || {};
+            if (ailments['SpellSeal'] && ['魔法','強化','弱体'].includes(s.type)) return false;
+            if (ailments['SkillSeal'] && ['物理','特殊'].includes(s.type)) return false;
+            if (ailments['HealSeal'] && ['回復','蘇生'].includes(s.type)) return false;
+            return true;
+        });
 
-            const aliveAllies = Battle.party.filter(p => p && !p.isDead);
-            const deadAllies = Battle.party.filter(p => p && p.isDead);
-            const aliveEnemies = Battle.enemies.filter(e => !e.isDead && !e.isFled);
-            
-            // 戦況の判定フラグ
-            const lowHPAlly = aliveAllies.find(p => (p.hp / p.baseMaxHp) <= 0.50); // HP50%以下
-            const ailedAlly = aliveAllies.find(p => Object.keys(p.battleStatus.ailments).length > 0); // 状態異常中
-            const buffedEnemy = aliveEnemies.find(e => Object.keys(e.battleStatus.buffs).length > 0); // 敵にバフあり
+        const aliveAllies = Battle.party.filter(p => p && !p.isDead);
+        const deadAllies = Battle.party.filter(p => p && p.isDead);
+        const aliveEnemies = Battle.enemies.filter(e => !e.isDead && !e.isFled);
 
-            let selectedSkill = null;
-            let target = null;
+        // 戦況の判定フラグ
+        const lowHPAlly = aliveAllies.find(p => (p.hp / p.baseMaxHp) <= 0.50); // HP50%以下
+        const ailedAlly = aliveAllies.find(p => Object.keys(p.battleStatus?.ailments || {}).length > 0); // 状態異常中
+        const buffedEnemy = aliveEnemies.find(e => Object.keys(e.battleStatus?.buffs || {}).length > 0); // 敵にバフあり
 
-            // 【優先度1: 蘇生】
-            if (deadAllies.length > 0) {
-                selectedSkill = validSkills.find(s => s.type === '蘇生');
-                if (selectedSkill) target = deadAllies[0];
+        let selectedSkill = null;
+        let target = null;
+
+        const canAutoTargetAlly = (skill, ally) => {
+            if (!skill || !ally) return false;
+            if (skill.target === '自分') return ally === actor;
+            return true;
+        };
+        const autoAllyTarget = (skill, ally) => {
+            if (!skill) return null;
+            if (skill.target === '全体') return 'all_ally';
+            if (skill.target === '自分') return actor;
+            return ally || actor;
+        };
+        const chooseAllySkill = (predicate, preferredAlly) => {
+            const skill = validSkills.find(s => predicate(s) && canAutoTargetAlly(s, preferredAlly));
+            if (!skill) return false;
+            selectedSkill = skill;
+            target = autoAllyTarget(skill, preferredAlly);
+            return true;
+        };
+
+        // 【優先度1: 蘇生】節約ONでも既存方針維持。対象「自分」専用スキルは他者へ飛ばさない。
+        if (deadAllies.length > 0) {
+            chooseAllySkill(s => s.type === '蘇生', deadAllies[0]);
+        }
+
+        // 【優先度2: 回復】節約ONでも既存方針維持。自己回復は本人が低HPの時だけ使用。
+        if (!selectedSkill && lowHPAlly) {
+            chooseAllySkill(s => String(s.type || '').includes('回復'), lowHPAlly);
+        }
+
+        // 【優先度3: 状態異常治療】節約ONでも既存方針維持。自己専用治療は本人だけ。
+        if (!selectedSkill && ailedAlly) {
+            chooseAllySkill(s => s.type === '状態異常回復' || s.CureAilments || (s.cures && s.cures.length > 0), ailedAlly);
+        }
+
+        // 【優先度3.5: デバフ治療】
+        const debuffedAlly = aliveAllies.find(p => Object.keys(p.battleStatus?.debuffs || {}).length > 0);
+        if (!selectedSkill && debuffedAlly) {
+            chooseAllySkill(s => s.debuff_reset === true, debuffedAlly);
+        }
+
+        // 【優先度4: 相手のバフ解除】
+        if (!selectedSkill && buffedEnemy) {
+            selectedSkill = validSkills.find(s => s.buff_reset === true);
+            if (selectedSkill) target = buffedEnemy;
+        }
+
+        // 【優先度5: 攻撃 / バフ・デバフ】
+        if (!selectedSkill) {
+            let pool = [];
+            // 10%の確率でバフ・デバフを選択肢に入れる。節約ONでも補助行動は既存ロジック維持。
+            if (Math.random() < 0.1) {
+                pool = validSkills.filter(s => ['強化', '弱体'].includes(s.type));
             }
 
-            // 【優先度2: 回復】 (HP50%以下がいる時)
-            if (!selectedSkill && lowHPAlly) {
-                selectedSkill = validSkills.find(s => s.type.includes('回復'));
-                if (selectedSkill) target = lowHPAlly;
+            // 抽選に漏れた、または補助スキルがない場合は攻撃スキル
+            if (pool.length === 0) {
+                pool = validSkills.filter(s => Battle.isAutoOffensiveSkill(s));
             }
 
-            // 【優先度3: 状態異常治療】 (異常者がいる時のみ)
-            if (!selectedSkill && ailedAlly) {
-                selectedSkill = validSkills.find(s => s.type === '状態異常回復' || s.CureAilments || (s.cures && s.cures.length > 0));
-                if (selectedSkill) target = ailedAlly;
-            }
-			
-			// ★追加 【優先度3.5: デバフ（弱体）治療】 
-            // 状態異常はないが、能力低下（elmResDown含む）がある味方をチェック
-            const debuffedAlly = aliveAllies.find(p => Object.keys(p.battleStatus.debuffs).length > 0);
-            if (!selectedSkill && debuffedAlly) {
-                selectedSkill = validSkills.find(s => s.debuff_reset === true);
-                if (selectedSkill) target = debuffedAlly;
-            }
+            if (pool.length > 0) {
+                // 敵の数に応じて攻撃範囲を最適化
+                const isSingleEnemy = (aliveEnemies.length === 1);
+                let filteredPool = pool.filter(s => {
+                    if (!Battle.isAutoOffensiveSkill(s)) return true;
+                    if (isSingleEnemy) return s.target === '単体' || s.target === 'ランダム';
+                    return s.target === '全体' || s.target === 'ランダム';
+                });
+                if (filteredPool.length === 0) filteredPool = pool;
 
-            // 【優先度4: 相手のバフ解除】 (敵にバフがある時のみ)
-            if (!selectedSkill && buffedEnemy) {
-                selectedSkill = validSkills.find(s => s.buff_reset === true);
-                if (selectedSkill) target = buffedEnemy;
-            }
-
-            // 【優先度5: 攻撃 / バフ・デバフ】
-            if (!selectedSkill) {
-                let pool = [];
-                // 10%の確率でバフ・デバフを選択肢に入れる
-                if (Math.random() < 0.1) {
-                    pool = validSkills.filter(s => ['強化', '弱体'].includes(s.type));
-                }
-                
-                // 抽選に漏れた、または補助スキルがない場合は攻撃スキル (回復・蘇生・治療系は完全に除外)
-                if (pool.length === 0) {
-                    pool = validSkills.filter(s => 
-                        ['物理', '魔法', 'ブレス', '特殊'].includes(s.type) && 
-                        !s.type.includes('回復') && s.type !== '蘇生' && !s.CureAilments
-                    );
-                }
-
-                if (pool.length > 0) {
-                    // ★敵の数に応じて攻撃範囲を最適化
-                    const isSingleEnemy = (aliveEnemies.length === 1);
-                    let filteredPool = pool.filter(s => {
-                        if (isSingleEnemy) return s.target === '単体' || s.target === 'ランダム';
-                        return s.target === '全体' || s.target === 'ランダム';
-                    });
-                    
-                    // 条件に合う範囲がなければプール全体からランダム
-                    if (filteredPool.length === 0) filteredPool = pool;
+                if (Battle.autoConserve) {
+                    const choice = Battle.pickConservativeAutoAction(actor, filteredPool, aliveEnemies);
+                    if (choice && choice.type === 'attack') {
+                        return { type: 'attack', actor: actor, target: choice.target || Battle.getRandomAliveEnemy(), isAuto: true };
+                    }
+                    if (choice && choice.skill) {
+                        selectedSkill = choice.skill;
+                        target = choice.target || null;
+                    }
+                } else {
                     selectedSkill = filteredPool[Math.floor(Math.random() * filteredPool.length)];
                 }
             }
-
-            // スキル使用を登録
-            if (selectedSkill) {
-                if (!target) {
-                    if (selectedSkill.target === '全体') {
-                        target = (['回復', '蘇生', '強化'].includes(selectedSkill.type) || selectedSkill.CureAilments) ? 'all_ally' : 'all_enemy';
-                    } else if (selectedSkill.target === 'ランダム') {
-                        target = 'random';
-                    } else if (selectedSkill.target === '自分') {
-                        target = actor;
-                    } else {
-                        // 単体スキルのデフォルトターゲット
-                        target = (['回復', '蘇生', '強化'].includes(selectedSkill.type) || selectedSkill.CureAilments) ? aliveAllies[0] : Battle.getRandomAliveEnemy();
-                    }
-                }
-                return { type: 'skill', actor: actor, target: target, data: selectedSkill, targetScope: selectedSkill.target, isAuto: true };
-            }
         }
-        
-        // オート設定OFF、または出すスキルがない場合は通常攻撃
+
+        // スキル使用を登録
+        if (selectedSkill) {
+            if (!target) {
+                if (selectedSkill.target === '全体') {
+                    target = (['回復', '蘇生', '強化'].includes(selectedSkill.type) || selectedSkill.CureAilments) ? 'all_ally' : 'all_enemy';
+                } else if (selectedSkill.target === 'ランダム') {
+                    target = 'random';
+                } else if (selectedSkill.target === '自分') {
+                    target = actor;
+                } else {
+                    // 単体スキルのデフォルトターゲット
+                    target = (['回復', '蘇生', '強化'].includes(selectedSkill.type) || selectedSkill.CureAilments) ? aliveAllies[0] : Battle.getRandomAliveEnemy();
+                }
+            }
+            return { type: 'skill', actor: actor, target: target, data: selectedSkill, targetScope: selectedSkill.target, isAuto: true };
+        }
+
+        // 出すスキルがない場合は通常攻撃
         const enemyTarget = Battle.getRandomAliveEnemy();
         if (enemyTarget) return { type: 'attack', actor: actor, target: enemyTarget, isAuto: true };
         return { type: 'defend', actor: actor, isAuto: true };
+    },
+
+    isAutoOffensiveSkill: (s) => {
+        if (!s || s.id === 1) return false;
+        return ['物理', '魔法', 'ブレス', '特殊'].includes(s.type) && 
+            !String(s.type || '').includes('回復') && s.type !== '蘇生' && !s.CureAilments;
+    },
+
+    estimateAutoDamage: (actor, skill, target) => {
+        if (!actor || !target) return 0;
+        const data = skill || null;
+        const effectType = data ? data.type : '通常攻撃';
+        const isPhysical = (!data || effectType === '物理' || effectType === '通常攻撃');
+        const baseDmg = data ? (data.base || 0) : 0;
+        let baseDmgCalc = 0;
+
+        if (data && data.fix) {
+            baseDmgCalc = baseDmg;
+        } else if (effectType === 'ブレス') {
+            baseDmgCalc = Math.floor(((Battle.getBattleStat(actor, 'atk') + Battle.getBattleStat(actor, 'mag')) / 6) + baseDmg);
+        } else {
+            const atkVal = isPhysical ? Battle.getBattleStat(actor, 'atk') : Battle.getBattleStat(actor, 'mag');
+            const defVal = isPhysical ? Battle.getBattleStat(target, 'def') : Battle.getBattleStat(target, 'mdef');
+            const ignoreDefense = !!(data && data.IgnoreDefense);
+            baseDmgCalc = Math.floor((atkVal / 2 + baseDmg) - (ignoreDefense ? 0 : defVal / 4));
+        }
+
+        if (baseDmgCalc < 1) baseDmgCalc = 1;
+
+        let rate = data && data.rate !== undefined ? data.rate : 1.0;
+        let count = data && typeof data.count === 'number' ? data.count : 1;
+        let cutRate = 0;
+        let bonusRate = 0;
+
+        if (data && data.elm) {
+            bonusRate += (Battle.getBattleStat(actor, 'elmAtk') || {})[data.elm] || 0;
+            const res = (target.getStat ? target.getStat('elmRes') : (target.elmRes || {})) || {};
+            cutRate += res[data.elm] || 0;
+        }
+
+        bonusRate += Battle.getBattleStat(actor, 'finDmg') || 0;
+        cutRate += Battle.getBattleStat(target, 'finRed') || 0;
+        if (cutRate > 80) cutRate = 80;
+
+        let dmg = Math.floor(baseDmgCalc * rate * count * (1 + bonusRate / 100) * (1 - cutRate / 100));
+        if (dmg < 1) dmg = 1;
+        return dmg;
+    },
+
+    pickConservativeAutoAction: (actor, pool, aliveEnemies) => {
+        if (!aliveEnemies || aliveEnemies.length === 0) return null;
+
+        const attackTargets = [...aliveEnemies].sort((a, b) => a.hp - b.hp);
+        const normalAttack = Math.max(1, Battle.estimateAutoDamage(actor, null, attackTargets[0]));
+        const weakEnemy = attackTargets.find(e => e.hp <= Math.ceil(normalAttack * 1.15));
+        const mpMax = Math.max(1, actor.baseMaxMp || 1);
+        const mpRatio = (actor.mp || 0) / mpMax;
+
+        // 通常攻撃でほぼ落とせる敵がいる場合はMPを使わない
+        if (weakEnemy) {
+            return { type: 'attack', target: weakEnemy };
+        }
+
+        const offensive = pool.filter(s => Battle.isAutoOffensiveSkill(s));
+        const support = pool.filter(s => !Battle.isAutoOffensiveSkill(s));
+        if (offensive.length === 0) {
+            const s = support[Math.floor(Math.random() * support.length)];
+            return s ? { type: 'skill', skill: s } : { type: 'attack', target: Battle.getRandomAliveEnemy() };
+        }
+
+        const totalEnemyHp = aliveEnemies.reduce((sum, e) => sum + Math.max(0, e.hp || 0), 0);
+        const hasBossLike = aliveEnemies.some(e => e.isBoss || (e.baseMaxHp && e.baseMaxHp >= normalAttack * 8) || (e.hp && e.hp >= normalAttack * 5));
+
+        const candidates = offensive.map(skill => {
+            const cost = Math.max(0, skill.mp || 0);
+            let target = null;
+            let value = 0;
+
+            if (skill.target === '全体') {
+                aliveEnemies.forEach(e => {
+                    value += Math.min(e.hp, Battle.estimateAutoDamage(actor, skill, e));
+                });
+            } else {
+                target = [...aliveEnemies].sort((a, b) => {
+                    const da = Math.min(a.hp, Battle.estimateAutoDamage(actor, skill, a));
+                    const db = Math.min(b.hp, Battle.estimateAutoDamage(actor, skill, b));
+                    return db - da;
+                })[0];
+                value = Math.min(target.hp, Battle.estimateAutoDamage(actor, skill, target));
+            }
+
+            const efficiency = value / Math.max(1, cost || 1);
+            const overkill = target ? Math.max(0, Battle.estimateAutoDamage(actor, skill, target) - target.hp) : Math.max(0, value - totalEnemyHp);
+            return { skill, target, cost, value, efficiency, overkill };
+        }).filter(c => c.cost <= (actor.mp || 0));
+
+        if (candidates.length === 0) return { type: 'attack', target: Battle.getRandomAliveEnemy() };
+
+        candidates.sort((a, b) => {
+            if (b.efficiency !== a.efficiency) return b.efficiency - a.efficiency;
+            return b.value - a.value;
+        });
+
+        let best = candidates[0];
+
+        // MPが少ないときは、ボス級/高HPでない限り攻撃スキルを温存
+        if (mpRatio <= 0.25 && !hasBossLike) {
+            return { type: 'attack', target: Battle.getRandomAliveEnemy() };
+        }
+
+        // 節約ONでは、通常攻撃と大差ない攻撃スキルは使わない
+        const normalValue = aliveEnemies.length >= 2 ? normalAttack * Math.min(2, aliveEnemies.length) : normalAttack;
+        if (best.value <= normalValue * 1.35 && !hasBossLike) {
+            return { type: 'attack', target: Battle.getRandomAliveEnemy() };
+        }
+
+        // 残MPに対して重すぎる技は、明確に強い場面以外では温存
+        if (best.cost > mpMax * 0.30 && best.value < normalValue * 2.2 && !hasBossLike) {
+            return { type: 'attack', target: Battle.getRandomAliveEnemy() };
+        }
+
+        // 過剰オーバーキル気味なら通常攻撃へ寄せる
+        if (best.overkill > normalAttack * 2 && best.value < normalValue * 2.0 && !hasBossLike) {
+            return { type: 'attack', target: Battle.getRandomAliveEnemy() };
+        }
+
+        return { type: 'skill', skill: best.skill, target: best.skill.target === '単体' ? best.target : null };
     },
 
     goBack: () => {
@@ -2854,8 +3055,18 @@ findNextActor: () => {
 		// 【判定準備】敵の総数とボスバトルフラグを取得
 		const totalCount = Battle.enemies.length;
 		const isBoss = App.data.battle ? App.data.battle.isBossBattle : false;
+        // 1〜4体は既存の横並びを維持。
+        // 5体だけ、亀裂・イベント・一部ボス用の特別隊形にする。
+        const useFiveEnemyFormation = totalCount === 5;
 
-		// Special boss layout: ギルガメッシュ is drawn as the large solo enemy.
+        container.classList.toggle('enemy-five-formation', useFiveEnemyFormation);
+        container.classList.toggle('enemy-two-row-layout', false);
+        container.style.position = 'relative';
+        container.style.justifyContent = 'center';
+        container.style.alignItems = 'flex-end';
+        container.style.display = useFiveEnemyFormation ? 'block' : 'flex';
+
+		// Special boss layout: ギルガメッシュは単体の巨大表示を維持。
 		const hasShowcaseBoss = Battle.enemies.some(enemy => {
             const id = Number(enemy.id);
             const baseId = Number(enemy.baseId);
@@ -2874,31 +3085,31 @@ findNextActor: () => {
 
 		// 1位：特殊ボスがいる場合（最優先・巨大表示）
 		if (hasSpecialBoss) {
-			widthPerEnemy = 65;   // 1体あたりの占有幅を大きく
-			maxPixelWidth = 450;  // 画像自体の最大サイズを大幅に引き上げ
+			widthPerEnemy = 65;
+			maxPixelWidth = 450;
 			paddingBottomVal = "15px";
-			marginTopVal = "-30px"; // 巨大なので少し上にずらしてメッセージ欄との重なりを回避
-			scaleFactor = 1.2;    // 全体スケールも拡大
+			marginTopVal = "-30px";
+			scaleFactor = 1.2;
 		} 
 		// 2位：ボスが1体だけの場合
 		else if (isBoss && totalCount === 1) {
 			widthPerEnemy = 40;  
 			scaleFactor = 1.0;   
-			maxPixelWidth = 200;  // 通常のボスサイズ
+			maxPixelWidth = 200;
 			paddingBottomVal = "5px";
 			marginTopVal = "-10px";
 		} 
-		// 3位：ボスが4体並ぶ場合（少し縮小して詰め込む）
+		// 3位：ボスが4体並ぶ場合（現行維持）
 		else if (isBoss && totalCount === 4) { 
 			widthPerEnemy = 22;
-			scaleFactor = 0.8;    // 4体だと窮屈なので少し小さく
+			scaleFactor = 0.8;
 			paddingBottomVal = "0px";
 		}
 		// 4位：ボスが3体の場合
 		else if (isBoss && totalCount === 3) { 
 			widthPerEnemy = 29;
 			scaleFactor = 0.95; 
-			maxPixelWidth = 155;  // 通常のボスサイズ
+			maxPixelWidth = 155;
 			paddingBottomVal = "5px";
 			marginTopVal = "-10px";
 		}
@@ -2906,20 +3117,34 @@ findNextActor: () => {
 		else if (isBoss && totalCount === 2) { 
 			widthPerEnemy = 37;
 			scaleFactor = 1.0; 
-			maxPixelWidth = 200;  // 通常のボスサイズ
+			maxPixelWidth = 200;
 			paddingBottomVal = "5px";
 			marginTopVal = "10px";
 		}
-		// 6位：通常の雑魚敵（4体以上）の場合
-		else if (totalCount >= 4) { 
-			widthPerEnemy = 22;
-			scaleFactor = 0.8; 
+		// 5体編成だけ、前3＋後2の特別隊形。1〜4体は既存と同じ。
+		else if (useFiveEnemyFormation) { 
+			widthPerEnemy = 24;
+			scaleFactor = 0.86;
+            maxPixelWidth = 118;
+            paddingBottomVal = "0px";
+            marginTopVal = "-4px";
 		}
-		// 例外：敵がいない（または全滅直後）などのデフォルト
 		else { 
 			widthPerEnemy = 30;
 			scaleFactor = 1.0; 
 		}
+
+        const fiveEnemyPosition = (index) => {
+            // 5体編成: 前列中央を主役として少し大きく、左右と後列はやや小さくする。
+            const positions = [
+                { left: 24, bottom: 4,  z: 42, width: 22, maxWidth: 108, scale: 0.80, labelTop: '-7px', imgY: '8px' },
+                { left: 50, bottom: 0,  z: 52, width: 28, maxWidth: 138, scale: 0.94, labelTop: '-5px', imgY: '9px' },
+                { left: 76, bottom: 4,  z: 42, width: 22, maxWidth: 108, scale: 0.80, labelTop: '-7px', imgY: '8px' },
+                { left: 39, bottom: 90, z: 18, width: 20, maxWidth: 98,  scale: 0.72, labelTop: '-9px', imgY: '6px' },
+                { left: 61, bottom: 90, z: 18, width: 20, maxWidth: 98,  scale: 0.72, labelTop: '-9px', imgY: '6px' },
+            ];
+            return positions[index] || positions[1];
+        };
 
         // 実際の描画ループ
         Battle.enemies.forEach((e, index) => {
@@ -2932,6 +3157,8 @@ findNextActor: () => {
             let perEnemyMaxPixelWidth = maxPixelWidth;
             let perEnemyScaleFactor = scaleFactor;
             let perEnemyMarginTopVal = marginTopVal;
+            let imgTranslateY = '10px';
+
             if (isBoss && totalCount === 3 && index === 1) {
                 perEnemyWidth = 36;
                 perEnemyMaxPixelWidth = 215;
@@ -2939,18 +3166,43 @@ findNextActor: () => {
                 perEnemyMarginTopVal = "-18px";
             }
 
-            div.style.cssText = `
-                position: relative; 
-                width: ${perEnemyWidth}%; 
-                max-width: ${perEnemyMaxPixelWidth}px;
-                margin: 0 1% -0px 1%;
-                overflow: visible;
-                display: flex;
-                flex-direction: column;
-                justify-content: flex-end;
-                align-items: center;
-                padding-bottom: ${paddingBottomVal};
-            `;
+            if (useFiveEnemyFormation) {
+                const pos = fiveEnemyPosition(index);
+                perEnemyWidth = pos.width;
+                perEnemyMaxPixelWidth = pos.maxWidth;
+                perEnemyScaleFactor = pos.scale;
+                perEnemyMarginTopVal = pos.labelTop;
+                imgTranslateY = pos.imgY;
+                div.style.cssText = `
+                    position: absolute;
+                    left: ${pos.left}%;
+                    bottom: ${pos.bottom}px;
+                    width: ${perEnemyWidth}%;
+                    max-width: ${perEnemyMaxPixelWidth}px;
+                    margin: 0;
+                    overflow: visible;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: flex-end;
+                    align-items: center;
+                    padding-bottom: ${paddingBottomVal};
+                    transform: translateX(-50%);
+                    z-index: ${pos.z};
+                `;
+            } else {
+                div.style.cssText = `
+                    position: relative; 
+                    width: ${perEnemyWidth}%; 
+                    max-width: ${perEnemyMaxPixelWidth}px;
+                    margin: 0 1% -0px 1%;
+                    overflow: visible;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: flex-end;
+                    align-items: center;
+                    padding-bottom: ${paddingBottomVal};
+                `;
+            }
 
             // 死んでいる、または逃げた場合は表示を隠す
             if (e.isFled || e.hp <= 0) {
@@ -2971,10 +3223,10 @@ findNextActor: () => {
                 object-position: center bottom;
                 filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5)); 
                 display: block;
-                transform: translateY(10px);
+                transform: translateY(${imgTranslateY});
             ">`;
-                        const hpPer = (e.hp / e.baseMaxHp) * 100;
-            const hpRatio = e.hp / e.baseMaxHp;
+            const hpPer = (e.baseMaxHp > 0) ? Math.max(0, Math.min(100, (e.hp / e.baseMaxHp) * 100)) : 0;
+            const hpRatio = e.baseMaxHp > 0 ? e.hp / e.baseMaxHp : 0;
             const nameColor = hpRatio < 0.5 ? '#ff4' : '#fff';
             
             div.innerHTML = `
@@ -3753,6 +4005,24 @@ findNextActor: () => {
     },
     toggleAuto: () => { Battle.auto = !Battle.auto; Battle.updateAutoButton(); if(Battle.phase === 'input') Battle.findNextActor(); },
     updateAutoButton: () => { const btn = Battle.getEl('btn-auto'); if(btn) { btn.innerText = `AUTO: ${Battle.auto?'ON':'OFF'}`; btn.style.background = Battle.auto ? '#d00' : '#333'; } },
+    toggleAutoConserve: () => {
+        Battle.autoConserve = !Battle.autoConserve;
+        if (App.data) {
+            App.data.settings = App.data.settings || {};
+            App.data.settings.autoConserve = Battle.autoConserve;
+            if (typeof App.save === 'function') App.save();
+        }
+        Battle.updateAutoConserveButton();
+        if(Battle.phase === 'input' && Battle.auto) Battle.findNextActor();
+    },
+    updateAutoConserveButton: () => {
+        const btn = Battle.getEl('btn-auto-conserve');
+        if(btn) {
+            btn.innerText = `節約: ${Battle.autoConserve?'ON':'OFF'}`;
+            btn.style.background = Battle.autoConserve ? '#0a5' : '#333';
+            btn.style.borderColor = Battle.autoConserve ? '#2f8' : '#666';
+        }
+    },
 
     handleResultTap: () => {
         if (Battle.phase !== 'result') return;

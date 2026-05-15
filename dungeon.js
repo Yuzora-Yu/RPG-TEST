@@ -834,12 +834,25 @@ const Dungeon = {
     },
 
     useHealSpring: () => {
+        const spring = App.data?.dungeon?.healSpring;
+        if (!spring || !spring.active) {
+            if (typeof App.clearAction === 'function') App.clearAction();
+            return;
+        }
         if (!App.data || !Array.isArray(App.data.characters)) return;
         App.data.characters.forEach(c => {
             const stats = (typeof App.calcStats === 'function') ? App.calcStats(c) : { maxHp: c.hp || 1, maxMp: c.mp || 0 };
             c.currentHp = stats.maxHp;
             c.currentMp = stats.maxMp;
         });
+
+        // 回復の泉は通常フロア・迷路フロア・ボスフロア共通で1回使い切り。
+        // active=falseにしてからnull化することで、即座にマップ上から消え、
+        // 同じ座標で再度アクションが出続ける事故も防ぐ。
+        spring.active = false;
+        App.data.dungeon.healSpring = null;
+        if (typeof App.clearAction === 'function') App.clearAction();
+
         App.log('<span style="color:#80ffb0;">清らかな泉の力で、HPとMPが全回復した！</span>');
         App.save();
         if (typeof Menu !== 'undefined' && typeof Menu.renderPartyBar === 'function') Menu.renderPartyBar();

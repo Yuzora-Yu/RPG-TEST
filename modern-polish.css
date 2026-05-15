@@ -4109,3 +4109,15 @@ body.title-page hr {
         width: min(82%, 360px);
     }
 }
+
+
+/* 2026-05-15: 5体編成専用。通常雑魚は最大4体、亀裂/イベント/一部ボスでのみ前3＋後2を使う。 */
+body.game-page #enemy-container.enemy-five-formation {
+  display: block !important;
+  position: relative !important;
+  align-items: initial !important;
+  justify-content: initial !important;
+}
+body.game-page #enemy-container.enemy-five-formation .enemy-sprite {
+  margin: 0 !important;
+}

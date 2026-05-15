@@ -693,7 +693,6 @@ const MenuAllies = {
             }
         } else if (MenuAllies.currentTab === 3) {
             const playerObj = new Player(c);
-            const autoStatus = c.config.fullAuto;
             let skillHtml = (!playerObj.skills || playerObj.skills.length === 0) 
                 ? '<div style="padding:20px; text-align:center; color:#555;">習得スキルなし</div>'
                 : playerObj.skills.map(sk => {
@@ -712,7 +711,7 @@ const MenuAllies = {
                             </div>
                         </div>`;
                 }).join('');
-            contentHtml = `<div style="margin-bottom:10px; padding:8px; background:#333; border-radius:4px; border:1px solid #444;"><button class="btn" style="width:100%; background:${autoStatus ? '#d00' : '#444'}; font-weight:bold; font-size:11px;" onclick="MenuAllies.toggleFullAuto()">フルオート(スキル使用): ${autoStatus ? 'ON' : 'OFF'}</button></div><div id="skill-list-container" style="display:flex; flex-direction:column;">${skillHtml}</div>`;
+            contentHtml = `<div id="skill-list-container" style="display:flex; flex-direction:column;">${skillHtml}</div>`;
         } else if (MenuAllies.currentTab === 4) {
 			// --- 特性タブ (取得順 -> 装備品の順) ---
 			const PS = (typeof PassiveSkill !== 'undefined') ? PassiveSkill : null;
@@ -1069,7 +1068,7 @@ const MenuAllies = {
         div.className = 'flex-col-container';
         div.style.display = 'none';
         div.style.background = '#1a1a1a';
-        div.innerHTML = `<div class="header-bar" id="tree-header"></div><div id="tree-content" class="scroll-area" style="padding:10px;"></div><button class="btn" style="margin:10px;" onclick="MenuAllies.renderDetail()">もどる</button>`;
+        div.innerHTML = `<div class="header-bar" id="tree-header"></div><div id="tree-content" class="scroll-area" style="padding:10px;"></div><button id="tree-bottom-back-btn" class="btn" style="margin:10px;" onclick="MenuAllies.returnFromTreeToDetail()">もどる</button>`;
         document.getElementById('sub-screen-allies').appendChild(div);
     },
 
@@ -1079,11 +1078,63 @@ const MenuAllies = {
         MenuAllies.renderTreeView();
     },
 
+    returnFromTreeToDetail: () => {
+        const c = MenuAllies.getSelectedChar ? MenuAllies.getSelectedChar() : MenuAllies.selectedChar;
+        if (!c) {
+            MenuAllies.renderList();
+            return;
+        }
+
+        MenuAllies.selectedChar = c;
+        MenuAllies.selectedUid = c.uid;
+
+        const treeView = document.getElementById('allies-tree-view');
+        const detailView = document.getElementById('allies-detail-view');
+        const listView = document.getElementById('allies-list-view');
+
+        if (treeView) treeView.style.display = 'none';
+        if (listView) listView.style.display = 'none';
+        if (detailView) detailView.style.display = 'flex';
+
+        MenuAllies.renderDetail();
+    },
+
+    switchTreeChar: (dir) => {
+        const current = MenuAllies.getSelectedChar ? MenuAllies.getSelectedChar() : MenuAllies.selectedChar;
+        if (!current || !Array.isArray(App.data.characters) || App.data.characters.length === 0) return;
+
+        const rarityVal = { N:1, R:2, SR:3, SSR:4, UR:5, EX:6 };
+        const chars = [...App.data.characters].sort((a, b) => {
+            const aInParty = App.data.party.includes(a.uid);
+            const bInParty = App.data.party.includes(b.uid);
+            if (aInParty !== bInParty) return bInParty - aInParty;
+            if (a.uid === 'p1') return -1;
+            if (b.uid === 'p1') return 1;
+            const rA = rarityVal[a.rarity] || 0;
+            const rB = rarityVal[b.rarity] || 0;
+            if (rA !== rB) return rB - rA;
+            if (b.level !== a.level) return b.level - a.level;
+            return a.charId - b.charId;
+        });
+
+        let idx = chars.findIndex(c => c.uid === current.uid);
+        if (idx === -1) idx = 0;
+        const nextChar = chars[(idx + dir + chars.length) % chars.length];
+
+        MenuAllies.selectedChar = nextChar;
+        MenuAllies.selectedUid = nextChar.uid;
+        MenuAllies.targetPart = null;
+        MenuAllies.selectedEquip = null;
+
+        // スキル習得画面内の移動では、アーカイブ詳細の描画処理を呼ばない。
+        MenuAllies.renderTreeView();
+    },
+
     renderTreeView: () => {
         const c = MenuAllies.selectedChar;
         const sp = c.sp || 0;
         const header = document.getElementById('tree-header');
-        header.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;"><div style="display:flex; align-items:center;"><button class="btn" style="padding:2px 10px;" onclick="MenuAllies.switchChar(-1)">＜</button><span style="margin:0 10px;">${c.name} (SP:${sp})</span><button class="btn" style="padding:2px 10px;" onclick="MenuAllies.switchChar(1)">＞</button></div><button class="btn" style="background:#500; font-size:10px; padding:2px 5px;" onclick="MenuAllies.resetTree()">RESET</button></div>`;
+        header.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;"><div style="display:flex; align-items:center;"><button class="btn" style="padding:2px 10px;" onclick="MenuAllies.switchTreeChar(-1)">＜</button><span style="margin:0 10px;">${c.name} (SP:${sp})</span><button class="btn" style="padding:2px 10px;" onclick="MenuAllies.switchTreeChar(1)">＞</button></div><button class="btn" style="background:#500; font-size:10px; padding:2px 5px;" onclick="MenuAllies.resetTree()">RESET</button></div>`;
         const list = document.getElementById('tree-content');
         list.innerHTML = '';
         if (!c.tree) c.tree = { ATK:0, MAG:0, SPD:0, HP:0, MP:0 };

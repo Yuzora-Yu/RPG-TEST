@@ -183,6 +183,13 @@
       const scope = [cmd?.targetScope, cmd?.target, cmd?.data?.target].filter(Boolean).join(" ");
       return /全体|全敵|all|蜈ｨ菴|陷茨ｽｨ/i.test(scope);
     },
+    shouldPlayIntentEffects(cmd) {
+      // 発動時エフェクトは全体対象だけに限定する。
+      // 単体攻撃・複数ランダム攻撃はHP増減ログ側で命中エフェクト＋振動＋数値を出す。
+      // これにより「発動時」と「HP増減時」の二重エフェクトを避ける。
+      if (!cmd || cmd.type === "defend" || cmd.type === "skip" || cmd.type === "flee") return false;
+      return this.isArea(cmd);
+    },
     hitCount(cmd) {
       return Math.max(1, Number(cmd?.data?.count || cmd?.hitCount || 1) || 1);
     },
@@ -641,7 +648,7 @@
       );
     },
     playIntentEffects(cmd, options = {}) {
-      if (!cmd || cmd.type === "defend" || cmd.type === "skip" || cmd.type === "flee") return 0;
+      if (!this.shouldPlayIntentEffects(cmd)) return 0;
       const targets = this.getTargets(cmd).filter(Boolean);
       if (targets.length === 0) return 0;
       const kind = options.kind || this.visualKind(cmd, false);
@@ -708,7 +715,9 @@
           return;
         }
         const missKind = cmd?.isReaction ? (this.consumeNeutralPhysicalKind() || "neutral-slash") : (this.current?.dualWieldKind || this.visualKind(cmd, true) || (this.isParty(unit) ? "party-hit" : "neutral-slash"));
-        if (!area) this.effect(unit, missKind, { hitIndex });
+        // ミス時も「MISS」表示のタイミングで着弾エフェクトを出す。
+        // 全体技は発動時演出を残すが、回避/無効が分かりにくいためMISS側にも小さく出す。
+        this.effect(unit, missKind, { hitIndex, big: false });
         this.float(unit, "MISS", "#d6d1c2", { hitIndex });
       }, delay);
     },

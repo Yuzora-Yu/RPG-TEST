@@ -165,6 +165,7 @@ if ('serviceWorker' in navigator) {
     </div>
 
     <div id="battle-scene" class="scene-layer">
+        <button id="btn-auto-conserve" class="btn" style="position:absolute; top:10px; right:98px; z-index:10; width:88px; font-size:11px;" onclick="Battle.toggleAutoConserve()">節約: OFF</button>
         <button id="btn-auto" class="btn" style="position:absolute; top:10px; right:10px; z-index:10; width:80px;" onclick="Battle.toggleAuto()">AUTO: OFF</button>
         <div id="enemy-container"></div>
         <div class="party-bar" id="battle-party-bar"></div>

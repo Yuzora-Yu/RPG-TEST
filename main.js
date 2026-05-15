@@ -1207,7 +1207,6 @@ const App = {
         heroStoryMax: 20,
         heroBattleMax: 20,
         allyBattleMax: 20,
-        battlesPerStep: 5,
         randomBattleChance: 0.002,
         midTrialBossId: 401120,
         finalTrialBossId: 401130
@@ -1215,6 +1214,31 @@ const App = {
 
     clampLimitBreakPart: (value, max) => {
         return Math.max(0, Math.min(Number(max) || 0, Math.floor(Number(value) || 0)));
+    },
+
+    getBattleLimitBreakSteps: (battleWins) => {
+        const wins = Math.max(0, Math.floor(Number(battleWins) || 0));
+        const max = App.limitBreakConfig.heroBattleMax || 20;
+        if (wins < 20) return 0;
+
+        let steps = 1;
+        let remaining = wins - 20;
+        const tiers = [
+            { count: 4, interval: 50 },   // +2〜+5
+            { count: 5, interval: 100 },  // +6〜+10
+            { count: 10, interval: 200 }, // +11〜+20
+        ];
+
+        for (const tier of tiers) {
+            for (let i = 0; i < tier.count; i++) {
+                if (remaining < tier.interval) return Math.min(max, steps);
+                remaining -= tier.interval;
+                steps += 1;
+                if (steps >= max) return max;
+            }
+        }
+
+        return Math.min(max, steps);
     },
 
     ensureLimitBreakProgress: (char) => {
@@ -1315,7 +1339,7 @@ const App = {
             if (!char) return;
             const p = App.ensureLimitBreakProgress(char);
             const isHero = char.charId === 301 || char.isHero || char.uid === 'p1';
-            const battleSteps = Math.floor((Number(p.counters.battleWins) || 0) / cfg.battlesPerStep);
+            const battleSteps = App.getBattleLimitBreakSteps(Number(p.counters.battleWins) || 0);
 
             if (isHero) {
                 const storyStep = App.data.progress ? Number(App.data.progress.storyStep || 0) : 0;
@@ -1863,6 +1887,13 @@ load: () => {
 	
     getChar: (uid) => App.data ? App.data.characters.find(c => c.uid === uid) : null,
 
+    getLimitBreakStatRate: (limitBreak) => {
+        const lb = Math.max(0, Math.min(99, Math.floor(Number(limitBreak) || 0)));
+        if (lb >= 99) return 0.20;
+        if (lb >= 50) return 0.15;
+        return 0.10;
+    },
+
     /* ==========================================================================
     main.js - App.calcStats (オーラ系特性反映版)
     ========================================================================== */
@@ -1935,9 +1966,9 @@ load: () => {
     if (typeof App.ensureLimitBreakProgress === 'function') App.ensureLimitBreakProgress(char);
     let lb = Math.max(0, Math.min(99, Math.floor(Number(char.limitBreak) || 0)));
 
-    // レアリティ別加算率
-    const LB_RATES = { 'N': 0.10, 'R': 0.10, 'SR': 0.10, 'SSR': 0.10, 'UR': 0.10, 'EX': 0.10 };
-    const lbRate = (LB_RATES[base.rarity] !== undefined) ? LB_RATES[base.rarity] : 0.10;
+    // 限界突破による基礎値換算率
+    // LB49: 基礎値x490%、LB50: 基礎値x750%、LB98: 基礎値x1470%、LB99: 基礎値x1980%
+    const lbRate = App.getLimitBreakStatRate ? App.getLimitBreakStatRate(lb) : 0.10;
     const lbBase = base.lbBase || base;
 
     // ステータス初期化
@@ -2765,10 +2796,10 @@ load: () => {
 	 *
 	 * 設計方針：
 	 * - Lv1〜10   ：超軽い（チュートリアル帯）
-	 * - Lv11〜49  ：ゆるやかに重くなる（50スキル前の育成）
-	 * - Lv50      ：壁（強スキル解放）
-	 * - Lv51〜99  ：じわじわ重い（転生前のやり込み）
-	 * - Lv100     ：大きな壁（転生条件）
+	 * - Lv11〜48  ：ゆるやかに重くなる（50スキル前の育成）
+	 * - Lv49→50  ：壁（強スキル解放）
+	 * - Lv50〜98  ：じわじわ重い（転生前のやり込み）
+	 * - Lv99→100 ：大きな壁（転生条件）
 	 * - Lv101〜   ：転生帯（後で調整前提）
 	 *
 	 * ※ 転生時は「表示Lv1に戻る」が、
@@ -2808,7 +2839,7 @@ load: () => {
 		// 小さいほど序盤がさらに軽くなる（1.00〜1.15くらいが調整しやすい）
 		const P_EARLY = 0.8;
 
-		// --- 11〜49：49直前をどう重くするか（ターゲット） ---
+		// --- 11〜48：49直前をどう重くするか（ターゲット） ---
 		// eL=49 の必要経験値（49→50の直前）
 		const TARGET_49 = 30000;
 
@@ -2819,7 +2850,7 @@ load: () => {
 		// 99→100 の壁倍率（転生条件の壁）
 		const WALL_100 = 5;
 
-		// --- 50〜99：転生前の成長（ターゲット） ---
+		// --- 50〜98：転生前の成長（ターゲット） ---
 		// eL=99 の必要経験値（99→100の直前）
 		const TARGET_99 = 150000;
 
@@ -2834,8 +2865,8 @@ load: () => {
 
 		// ------------------------------------------------------------
 		// 注意：このツールは「壁スパイク方式」です。
-		// Lv50 と Lv100 だけ ×WALL を適用し、次レベルで壁を剥がした基準に戻ります。
-		// （49→50はキツい / 50→51は一度下がってまた上昇）
+		// 49→50 と 99→100 だけ ×WALL を適用し、次レベルで壁を剥がした基準に戻ります。
+		// （50→51 / 100→101 は一度下がってまた上昇）
 		// ------------------------------------------------------------
 
 
@@ -2846,22 +2877,22 @@ load: () => {
 		// --- eL=10 ---
 		const xp10 = BASE_EXP * Math.pow(10, P_EARLY);
 
-		// --- eL=11〜49（二次） ---
+		// --- eL=11〜48（二次） ---
 		const B = (TARGET_49 - xp10) / Math.pow(49 - 10, 2);
 		const xp49 = xp10 + B * Math.pow(49 - 10, 2); // ≒ TARGET_49
 
 		// ★壁は「そのレベルだけ」適用した表示用
-		const xp50_wall = xp49 * WALL_50; // 50だけスパイク
+		const xp49_wall = xp49 * WALL_50; // 49→50だけスパイク
 
 		// ★50以降の基準（壁を剥がした起点）は xp49 のまま
 		const base50 = xp49;
 
-		// --- eL=51〜99（べき乗：基準base50からTARGET_99へ） ---
+		// --- eL=50〜98（べき乗：基準base50からTARGET_99へ） ---
 		const S = (TARGET_99 - base50) / Math.pow(99 - 50, P_AFTER_50);
 		const xp99 = base50 + S * Math.pow(99 - 50, P_AFTER_50); // ≒ TARGET_99
 
-		// ★100も「そのレベルだけ」壁
-		const xp100_wall = xp99 * WALL_100;
+		// ★99→100も「そのレベルだけ」壁
+		const xp99_wall = xp99 * WALL_100;
 
 		// ★100以降の基準（壁剥がし）は xp99
 		const base100 = xp99;
@@ -2875,20 +2906,20 @@ load: () => {
 		if (eL <= 10) {
 		  needExp = BASE_EXP * Math.pow(eL, P_EARLY);
 
-		} else if (eL <= 49) {
+		} else if (eL <= 48) {
 		  needExp = xp10 + B * Math.pow(eL - 10, 2);
 
-		} else if (eL === 50) {
-		  // ★50はスパイクだけ
-		  needExp = xp50_wall;
+		} else if (eL === 49) {
+		  // ★49→50はスパイクだけ
+		  needExp = xp49_wall;
 
-		} else if (eL <= 99) {
-		  // ★51〜99は壁なし基準（base50）から上がっていく
+		} else if (eL <= 98) {
+		  // ★50〜98は壁なし基準（base50）から上がっていく
 		  needExp = base50 + S * Math.pow(eL - 50, P_AFTER_50);
 
-		} else if (eL === 100) {
-		  // ★100もスパイクだけ
-		  needExp = xp100_wall;
+		} else if (eL === 99) {
+		  // ★99→100もスパイクだけ
+		  needExp = xp99_wall;
 
 		} else {
 		  // ★101+ は壁を剥がした基準（base100）から成長
