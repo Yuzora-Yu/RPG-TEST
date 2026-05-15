@@ -62,6 +62,22 @@ const Battle = {
         return false;
     },
 
+    // 最大ダメージ記録の共通処理。
+    // ストーリー演出用の一時LB99中も、裏技的な達成として記録対象にする。
+    recordMaxDamage: (actor, skillData, dmg, cmd = {}) => {
+        if (cmd && cmd.isEnemy) return;
+        if (!Number.isFinite(Number(dmg)) || Number(dmg) <= 0) return;
+        if (Number(dmg) > (App.data.stats.maxDamage?.val || 0)) {
+            App.data.stats.maxDamage = {
+                val: Number(dmg),
+                actor: actor?.name || '不明',
+                actorLv: actor?.level || null,
+                skill: skillData ? skillData.name : '通常攻撃',
+                time: Date.now()
+            };
+        }
+    },
+
     init: () => {
         Battle.active = true;
         Battle.phase = 'init';
@@ -2025,15 +2041,7 @@ findNextActor: () => {
                         if (isImmune) dmg = 0;
                         targetToHit.hp -= dmg;
 
-                        if (!cmd.isEnemy && dmg > (App.data.stats.maxDamage?.val || 0)) {
-                            App.data.stats.maxDamage = {
-							  val: dmg,
-							  actor: actor.name,
-							  actorLv: actor.level || null,
-							  skill: data ? data.name : "通常攻撃",
-							  time: Date.now()
-							};
-                        }
+                        Battle.recordMaxDamage(actor, data, dmg, cmd);
 
                         if (dmg > 0) {
                             let dRate = (data && data.drain) ? 0.5 : (actor.passive?.drain ? 0.2 : 0);
@@ -2517,15 +2525,7 @@ findNextActor: () => {
                     targetToHit.revengeStack = (targetToHit.revengeStack || 0) + 1;
                     actor.revengeStack = 0;
 
-                    if (!cmd.isEnemy && dmg > (App.data.stats.maxDamage?.val || 0)) {
-                        App.data.stats.maxDamage = {
-						  val: dmg,
-						  actor: actor.name,
-						  actorLv: actor.level || null,
-						  skill: data ? data.name : "通常攻撃",
-						  time: Date.now()
-						};
-                    }
+                    Battle.recordMaxDamage(actor, data, dmg, cmd);
                     
                     let dColor = element ? ({火:'#f88',水:'#88f',雷:'#ff0',風:'#8f8',光:'#ffc',闇:'#a8f',混沌:'#d4d'}[element] || '#fff') : '#fff';
                     if (dmg === 0) Battle.log(`ミス！ ${targetToHit.name}は ダメージを うけない！`);
@@ -3613,17 +3613,22 @@ findNextActor: () => {
 		// ★追加: 全滅回数のカウントアップ
 		if(App.data.stats) App.data.stats.wipeoutCount = (App.data.stats.wipeoutCount || 0) + 1;
 		
-		// ★追加: 最初のボス戦(game_start)での特別救済判定
+		// ★追加: 最初の戦闘での特別救済判定
         const eventId = (App.data.battle && App.data.battle.eventId) ? App.data.battle.eventId : null;
-        if (eventId === 'game_start') {
+        if (eventId === 'game_start' || eventId === 'game_start_retry') {
+            // 一時LBが残っていた場合はいったん必ず解除し、再試行イベント側で再付与する。
+            if (typeof App.clearTemporaryStoryPower === 'function') {
+                App.clearTemporaryStoryPower({ id: 'game_start_retry_lb99' });
+            }
+
             // フィールドに戻った後に「game_start_retry」イベントが走るように予約
             App.data.progress.pendingEventId = 'game_start_retry';
+
+			// 最初の救済敗北は通常の全滅回数に含めない
+			if(App.data.stats) App.data.stats.wipeoutCount = Math.max(0, (App.data.stats.wipeoutCount || 1) - 1);
+
             App.save();
-            Battle.endBattle(false); // 全滅扱い(タイトル戻り)にせず、フィールドに戻す
-			
-			// ★追加: 全滅回数のカウントアップ
-			if(App.data.stats) App.data.stats.wipeoutCount = (App.data.stats.wipeoutCount || 1) - 1;
-			
+            Battle.endBattle(false); // 全滅扱いにせず、フィールドに戻す
             return;
         }
 		
@@ -3650,6 +3655,12 @@ findNextActor: () => {
                 delete d.battleStatus; // 状態異常はリセット
             } 
         });
+
+        // ストーリー専用の一時強化は戦闘終了時点で必ず解除する。
+        // これにより、勝利後イベントが中断・リロードされてもLB99がフィールドへ漏れない。
+        if (App.data?.progress?.tempStoryPower && typeof App.clearTemporaryStoryPower === 'function') {
+            App.clearTemporaryStoryPower({ id: App.data.progress.tempStoryPower.id });
+        }
 
         App.save();
 		

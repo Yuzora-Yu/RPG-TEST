@@ -447,15 +447,16 @@ const StoryManager = {
 	},
 	"game_start_retry": {
         "actions": [
-            { "type": "CONV", "value": "BATTLE_RETRY_TALK" }, // 神秘的な声
-            { "type": "STEP", "value": 100 },     // 力を授ける (StoryStep=100でステータス激増)
-            { "type": "HEAL" },                  // 全回復
-            { "type": "BOSS", "value": [100001, 100001] }  // 再戦
+            { "type": "CONV", "value": "BATTLE_RETRY_TALK" },
+            { "type": "TEMP_LB_START", "value": 99, "id": "game_start_retry_lb99" },
+            { "type": "HEAL" },
+            { "type": "BOSS", "value": [100001, 100001] }
         ],
         "winActions": [
-            { "type": "STEP", "value": 0 },      // 力を返還 (StoryStep=0)
+            { "type": "TEMP_LB_CLEAR", "id": "game_start_retry_lb99" },
+            { "type": "STEP", "value": 0 },
             { "type": "SUB", "value": 1 },
-            { "type": "HEAL" },                  // 全回復
+            { "type": "HEAL" },
             { "type": "CONV", "value": "GAME_START_2" },
             { "type": "SUB", "value": 2 },
             {
@@ -685,6 +686,24 @@ const StoryManager = {
         if (action.type === 'STEP') { 
             data.storyStep = action.value; 
             this.syncHeroLimitBreak(); 
+            if (typeof Menu !== 'undefined') Menu.renderPartyBar();
+        }
+
+        if (action.type === 'TEMP_LB_START') {
+            if (typeof App.activateTemporaryStoryPower === 'function') {
+                App.activateTemporaryStoryPower({
+                    id: action.id || 'story_temp_power',
+                    limitBreak: action.value ?? 99,
+                    reason: eventId || 'story_event'
+                });
+            }
+        }
+
+        if (action.type === 'TEMP_LB_CLEAR') {
+            if (typeof App.clearTemporaryStoryPower === 'function') {
+                App.clearTemporaryStoryPower({ id: action.id || null });
+            }
+            this.syncHeroLimitBreak();
             if (typeof Menu !== 'undefined') Menu.renderPartyBar();
         }
         

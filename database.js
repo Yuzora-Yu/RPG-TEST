@@ -1,13 +1,13 @@
 /* database.js (装備システム独立化・クリーンアップ版) */
 
 const CONST = {
-    SAVE_KEY: 'QoE_SaveData_v38_BalanceFix', 
+    SAVE_KEY: 'QoE_SaveData_v39_DQScale_LB99', 
     PARTS: ['武器', '盾', '頭', '体', '足'],
     ELEMENTS: ['火', '水', '風', '雷', '光', '闇', '混沌'],
     RARITY: ['N', 'R', 'SR', 'SSR', 'UR', 'EX'],
 	
-    //GACHA_RATES: { N:0, R:2.5, SR:20, SSR:10, UR:40, EX:27.5 },　//ガチャ演出検証用
-    GACHA_RATES: { N:0, R:52.5, SR:35, SSR:10, UR:2, EX:0.5 },
+    //GACHA_RATES: { N:0, R:0, SR:0, SSR:97.5, UR:2, EX:0.5 },　//ガチャ演出検証用
+    GACHA_RATES: { N:0, R:0, SR:0, SSR:97.5, UR:2, EX:0.5 },
     SMITH_RATES: { 1: { R:80, SR:15, SSR:5 }, 10: { R:10, SR:30, SSR:40, UR:15, EX:5 } },
     POKER_ODDS: { ROYAL_FLUSH: 500, STRAIGHT_FLUSH: 100, FOUR_CARD: 30, FULL_HOUSE: 10, FLUSH: 8, STRAIGHT: 5, THREE_CARD: 3, TWO_PAIR: 2, JACKS_OR_BETTER: 1 },
     PLUS_RATES: { 3: 0.10, 2: 0.30, 1: 0.60 }, 
@@ -15,7 +15,7 @@ const CONST = {
     MAX_LEVEL: 100,
     EXP_BASE: 100,
     EXP_GROWTH: 1.08,
-    RARITY_EXP_MULT: { N:1.0, R:1.1, SR:1.2, SSR:1.3, UR:1.5, EX:2.0 },
+    RARITY_EXP_MULT: { N:1.0, R:1.0, SR:1.0, SSR:1.0, UR:1.15, EX:1.25 },
 	
 	SKILL_TREES : {
 		// --- 転生回数 0 から表示される基本ツリー ---
@@ -285,9 +285,9 @@ const INITIAL_DATA_TEMPLATE = {
     },
     characters: [
         {
-            uid:'p1', isHero:true, charId:301, name:'アルス', job:'勇者', rarity:'N', 
-            level:1, hp:700, mp:300, atk:150, def:120, spd:120, mag:130, 
-            mdef: 120, hit: 100, eva: 0, cri: 0, // ★新規ステータス追加 
+            uid:'p1', isHero:true, charId:301, name:'アルス', job:'勇者', rarity:'SSR', 
+            level:1, hp:32, mp:10, atk:10, def:8, spd:8, mag:8, 
+            mdef: 8, hit: 100, eva: 0, cri: 0, // ★新規ステータス追加 
 			limitBreak:0, sp:1,
             lbProgress: {
                 counters: { battleWins: 0 },

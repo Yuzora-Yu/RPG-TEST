@@ -4,6 +4,8 @@ Last updated: 2026-05-14
 
 This document records the current long-term development direction. Treat it as a product/design policy, not just an implementation TODO.
 
+Story, character relationship, and hidden-setting references are archived under `docs/story-bible/`.
+
 ## Core Intent
 
 The game has become feature-rich, but the next direction is to reorganize it as an RPG where features open naturally through story progression.

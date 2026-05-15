@@ -41,11 +41,14 @@ const ACHIEVEMENTS_DATA = [
     ] },
 
     // --- 2. 最大ダメージ ---
-    { id: 201, type: "DMG", goal: 100, category: "戦闘", title: "重い一撃", desc: "最大ダメージ 100突破", rewards: [{ type: 'GEM', val: 100 }] },
-    { id: 202, type: "DMG", goal: 1000, category: "戦闘", title: "必殺の極意", desc: "最大ダメージ 1,000突破", rewards: [{ type: 'GEM', val: 500 }] },
-    { id: 203, type: "DMG", goal: 10000, category: "戦闘", title: "神殺しの権能", desc: "最大ダメージ 10,000突破", rewards: [{ type: 'GEM', val: 1000 }] },
-    { id: 204, type: "DMG", goal: 100000, category: "戦闘", title: "魔神の一撃", desc: "最大ダメージ 100,000突破", rewards: [{ type: 'GEM', val: 1000 }] },
-    { id: 205, type: "DMG", goal: 1000000, category: "戦闘", title: "天を砕く一撃", desc: "最大ダメージ 1,000,000突破", rewards: [{ type: 'GEM', val: 3000 }] },
+    // DQスケール化後の「単発最大ダメージ」実績。
+    // battle.jsの記録は多段攻撃の合計ではなく1ヒットごとの最大値なので、
+    // 序盤〜終盤〜やり込みの単発火力に合わせた段階にする。
+    { id: 201, type: "DMG", goal: 30, category: "戦闘", title: "重い一撃", desc: "最大ダメージ 30突破", rewards: [{ type: 'GEM', val: 100 }] },
+    { id: 202, type: "DMG", goal: 100, category: "戦闘", title: "必殺の手応え", desc: "最大ダメージ 100突破", rewards: [{ type: 'GEM', val: 300 }] },
+    { id: 203, type: "DMG", goal: 300, category: "戦闘", title: "必殺の極意", desc: "最大ダメージ 300突破", rewards: [{ type: 'GEM', val: 700 }] },
+    { id: 204, type: "DMG", goal: 1000, category: "戦闘", title: "魔神の一撃", desc: "最大ダメージ 1,000突破", rewards: [{ type: 'GEM', val: 1500 }] },
+    { id: 205, type: "DMG", goal: 3000, category: "戦闘", title: "天を砕く一撃", desc: "最大ダメージ 3,000突破", rewards: [{ type: 'GEM', val: 3000 }] },
 
     // --- 3. 到達階層 ---
     { id: 301, type: "FLOOR", goal: 11, category: "探索", title: "深淵の入り口", desc: "ダンジョン 11階に到達", rewards: [{ type: 'GEM', val: 100 }] },

@@ -47,7 +47,9 @@ class Entity {
         this.img = data.img || data.image || (master ? master.img : null);
         this.image = data.image || this.img || null;
 		
-        this.limitBreak = data.limitBreak || 0;
+        this.limitBreak = (typeof App !== 'undefined' && typeof App.getEffectiveLimitBreak === 'function')
+            ? App.getEffectiveLimitBreak(data)
+            : (data.limitBreak || 0);
         this.reincarnationCount = data.reincarnationCount || 0;
 		
         this.exp = data.exp || 0;
@@ -1213,6 +1215,119 @@ const App = {
         finalTrialBossId: 401130
     },
 
+    getHeroCharacter: () => {
+        if (!App.data || !Array.isArray(App.data.characters)) return null;
+        return App.data.characters.find(c => c && (c.charId === 301 || c.isHero || c.uid === 'p1')) || null;
+    },
+
+    getActiveTemporaryStoryPower: () => {
+        const power = App.data?.progress?.tempStoryPower;
+        if (!power || !power.active) return null;
+        return power;
+    },
+
+    getEffectiveLimitBreak: (char) => {
+        const normalLb = Math.max(0, Math.min(App.limitBreakConfig?.max || 99, Math.floor(Number(char?.limitBreak) || 0)));
+        if (!char) return normalLb;
+
+        const power = App.getActiveTemporaryStoryPower ? App.getActiveTemporaryStoryPower() : null;
+        if (!power) return normalLb;
+
+        const targetUid = power.targetUid || power.heroUid || null;
+        const targetCharId = Number(power.targetCharId || power.charId || 301);
+        const isTarget = (targetUid && char.uid === targetUid) || Number(char.charId || char.id || 0) === targetCharId || char.isHero || char.uid === 'p1';
+        if (!isTarget) return normalLb;
+
+        return Math.max(0, Math.min(App.limitBreakConfig?.max || 99, Math.floor(Number(power.limitBreak ?? power.forcedLimitBreak ?? normalLb) || 0)));
+    },
+
+    activateTemporaryStoryPower: (options = {}) => {
+        if (!App.data) return null;
+        if (!App.data.progress) App.data.progress = {};
+
+        const hero = App.getHeroCharacter ? App.getHeroCharacter() : null;
+        if (!hero) return null;
+
+        const forcedLb = Math.max(0, Math.min(App.limitBreakConfig?.max || 99, Math.floor(Number(options.limitBreak ?? options.forcedLimitBreak ?? 99) || 99)));
+        const id = options.id || 'story_temp_power';
+
+        App.data.progress.tempStoryPower = {
+            id,
+            active: true,
+            targetUid: hero.uid,
+            targetCharId: hero.charId || 301,
+            limitBreak: forcedLb,
+            ignoreLimitBreakGates: true,
+            reason: options.reason || 'story_event',
+            startedAt: Date.now()
+        };
+
+        const stats = App.calcStats(hero);
+        hero.currentHp = stats.maxHp;
+        hero.currentMp = stats.maxMp;
+
+        App.save();
+        if (typeof Menu !== 'undefined' && typeof Menu.renderPartyBar === 'function') Menu.renderPartyBar();
+        return App.data.progress.tempStoryPower;
+    },
+
+    clearTemporaryStoryPower: (options = {}) => {
+        if (!App.data || !App.data.progress) return false;
+        const power = App.data.progress.tempStoryPower;
+        if (!power) return false;
+        if (options.id && power.id && options.id !== power.id) return false;
+
+        const targetUid = power.targetUid || power.heroUid || null;
+        const targetCharId = Number(power.targetCharId || power.charId || 301);
+        delete App.data.progress.tempStoryPower;
+
+        // storyStep を一時的な強化に使っていた旧実装の副作用を掃除する。
+        // ここで legacy へ退避させないことが重要。そうしないと +20 が恒久化する。
+        if (typeof App.syncDerivedLimitBreaks === 'function') {
+            App.syncDerivedLimitBreaks({ heroOnly: true, suppressLegacyBackfill: true, cleanupIntroRetryResidue: true });
+        }
+
+        const hero = (targetUid && App.getChar) ? App.getChar(targetUid) : App.getHeroCharacter?.();
+        if (hero && (Number(hero.charId || 0) === targetCharId || hero.uid === targetUid || hero.isHero || hero.uid === 'p1')) {
+            if (typeof App.cleanupIntroRetryLimitBreakResidue === 'function') App.cleanupIntroRetryLimitBreakResidue(hero);
+            const stats = App.calcStats(hero);
+            hero.currentHp = Math.min(Number(hero.currentHp || stats.maxHp), stats.maxHp);
+            hero.currentMp = Math.min(Number(hero.currentMp || stats.maxMp), stats.maxMp);
+        }
+
+        App.save();
+        if (typeof Menu !== 'undefined' && typeof Menu.renderPartyBar === 'function') Menu.renderPartyBar();
+        return true;
+    },
+
+    cleanupIntroRetryLimitBreakResidue: (char) => {
+        if (!char || !App.data || !App.data.progress) return false;
+        const isHero = char.charId === 301 || char.isHero || char.uid === 'p1';
+        if (!isHero) return false;
+
+        const progress = App.data.progress;
+        const storyStep = Number(progress.storyStep || 0);
+        const subStep = Number(progress.subStep || 0);
+        if (storyStep > 0 || subStep > 2) return false;
+
+        const p = App.ensureLimitBreakProgress(char);
+        const legacy = Math.max(0, Math.floor(Number(p.sources.legacy) || 0));
+        const story = Math.max(0, Math.floor(Number(p.sources.story) || 0));
+        const current = Math.max(0, Math.floor(Number(char.limitBreak) || 0));
+
+        // 旧game_start_retryの storyStep=100 由来で、序盤に +20 が残ったケースだけ狙って消す。
+        // legacy化済み/未legacy化のどちらでも、ここで backfill を止めて正規の派生値へ戻す。
+        if (story !== 0 || current <= 0 || current > App.limitBreakConfig.heroStoryMax) return false;
+
+        if (legacy > 0) {
+            const remove = Math.min(legacy, App.limitBreakConfig.heroStoryMax);
+            p.sources.legacy = Math.max(0, legacy - remove);
+        }
+        p.legacyBackfilled = true;
+        App.applyLimitBreakCap(char);
+        return true;
+    },
+
     clampLimitBreakPart: (value, max) => {
         return Math.max(0, Math.min(Number(max) || 0, Math.floor(Number(value) || 0)));
     },
@@ -1259,14 +1374,18 @@ const App = {
         return Object.values(p.sources).reduce((sum, value) => sum + (Number(value) || 0), 0);
     },
 
-    backfillLimitBreakLegacy: (char) => {
+    backfillLimitBreakLegacy: (char, options = {}) => {
         if (!char) return;
         const p = App.ensureLimitBreakProgress(char);
+        if (options && options.suppressLegacyBackfill) return;
+        if (p.legacyBackfilled) return;
+
         const current = Math.max(0, Math.min(App.limitBreakConfig.max, Math.floor(Number(char.limitBreak) || 0)));
         const recorded = Math.min(App.limitBreakConfig.max, App.getLimitBreakSourceTotal(char));
         if (current > recorded) {
             p.sources.legacy += current - recorded;
         }
+        p.legacyBackfilled = true;
     },
 
     applyLimitBreakCap: (char) => {
@@ -1323,11 +1442,14 @@ const App = {
                 p.sources.story = App.clampLimitBreakPart(storyStep, cfg.heroStoryMax);
                 p.sources.battle = App.clampLimitBreakPart(battleSteps, cfg.heroBattleMax);
                 p.sources.dungeon = Math.max(0, Math.floor(Math.max(0, maxFloor - 1) / 10) * 5);
+                if (options.cleanupIntroRetryResidue && typeof App.cleanupIntroRetryLimitBreakResidue === 'function') {
+                    App.cleanupIntroRetryLimitBreakResidue(char);
+                }
             } else {
                 p.sources.battle = App.clampLimitBreakPart(battleSteps, cfg.allyBattleMax);
             }
 
-            App.backfillLimitBreakLegacy(char);
+            App.backfillLimitBreakLegacy(char, options);
             const result = App.applyLimitBreakCap(char);
 
             if (result.diff > 0) {
@@ -1704,7 +1826,7 @@ load: () => {
                 };
             }
             if (typeof App.syncDerivedLimitBreaks === 'function') {
-                App.syncDerivedLimitBreaks();
+                App.syncDerivedLimitBreaks({ cleanupIntroRetryResidue: true });
             }
         } 
     } catch(e) { console.error(e); } 
@@ -1811,8 +1933,12 @@ load: () => {
         App.data = JSON.parse(JSON.stringify(INITIAL_DATA_TEMPLATE));
         App.data.characters[0].name = name;
         const heroMaster = (window.CHARACTERS_DATA || []).find(c => c.id === 301);
-        App.data.characters[0].img = imgSrc || heroMaster?.img || null; 
-        
+        App.data.characters[0].img = imgSrc || heroMaster?.img || null;
+        if (heroMaster) {
+            ['job','rarity','hp','mp','atk','def','spd','mag','mdef','hit','eva','cri','sp'].forEach(k => {
+                if (heroMaster[k] !== undefined) App.data.characters[0][k] = heroMaster[k];
+            });
+        }
         // スキルツリー初期化
         App.data.characters[0].tree = { ATK:0, MAG:0, SPD:0, HP:0, MP:0 };
 
@@ -1930,23 +2056,27 @@ load: () => {
 
 
     // --- 限界突破回数の計算 ---
-    // 現在値は App.syncDerivedLimitBreaks / App.addLimitBreak が管理する。
+    // 通常時は App.syncDerivedLimitBreaks / App.addLimitBreak が管理する。
+    // ストーリー演出中だけは tempStoryPower による一時LBを参照し、セーブ上の limitBreak は汚さない。
     if (typeof App.ensureLimitBreakProgress === 'function') App.ensureLimitBreakProgress(char);
-    let lb = Math.max(0, Math.min(99, Math.floor(Number(char.limitBreak) || 0)));
+    let lb = (typeof App.getEffectiveLimitBreak === 'function')
+        ? App.getEffectiveLimitBreak(char)
+        : Math.max(0, Math.min(99, Math.floor(Number(char.limitBreak) || 0)));
 
     // レアリティ別加算率
-    const LB_RATES = { 'N': 0.40, 'R': 0.30, 'SR': 0.28, 'SSR': 0.25, 'UR': 0.20, 'EX': 0.10 };
+    const LB_RATES = { 'N': 0.10, 'R': 0.10, 'SR': 0.10, 'SSR': 0.10, 'UR': 0.10, 'EX': 0.10 };
     const lbRate = (LB_RATES[base.rarity] !== undefined) ? LB_RATES[base.rarity] : 0.10;
+    const lbBase = base.lbBase || base;
 
     // ステータス初期化
     let s = {
-        maxHp: char.hp + Math.floor((base.hp || 100) * lbRate * lb * 1.5),
-        maxMp: char.mp + Math.floor((base.mp || 50) * lbRate * lb),
-        atk:   char.atk + Math.floor((base.atk || 10) * lbRate * lb),
-        def:   char.def + Math.floor((base.def || 10) * lbRate * lb),
-        mdef:  char.mdef + Math.floor((base.mdef || 10) * lbRate * lb),
-        spd:   char.spd + Math.floor((base.spd || 10) * lbRate * lb),
-        mag:   char.mag + Math.floor((base.mag || 10) * lbRate * lb),
+        maxHp: char.hp + Math.floor((lbBase.hp || base.hp || 30) * lbRate * lb),
+        maxMp: char.mp + Math.floor((lbBase.mp || base.mp || 8) * lbRate * lb),
+        atk:   char.atk + Math.floor((lbBase.atk || base.atk || 8) * lbRate * lb),
+        def:   char.def + Math.floor((lbBase.def || base.def || 6) * lbRate * lb),
+        mdef:  char.mdef + Math.floor((lbBase.mdef || base.mdef || 6) * lbRate * lb),
+        spd:   char.spd + Math.floor((lbBase.spd || base.spd || 6) * lbRate * lb),
+        mag:   char.mag + Math.floor((lbBase.mag || base.mag || 6) * lbRate * lb),
 
         // 命中・回避・会心（最終は加算方針）
         hit: char.hit || base.hit || 100,
@@ -2322,6 +2452,7 @@ load: () => {
 				
                 // DBの基礎値を取得
                 const master = (window.CHARACTERS_DATA || []).find(c => c.id === charData.charId) || charData;
+                const growthRef = master.growthBase || master;
 
                 // 成長率: 4% 〜 8%
                 const minRate = 0.04;
@@ -2358,13 +2489,13 @@ load: () => {
                 const spdMult  = 1.0 + statBonus;
 
                 // 各ステータス上昇量の計算
-                const incHp   = Math.max(1, Math.floor(((master.hp || 100) * reincMult) * r() * hpMult));
-                const incMp   = Math.max(1, Math.floor(((master.mp || 50)  * reincMult) * r() * mpMult));
-                const incAtk  = Math.max(1, Math.floor(((master.atk || 10) * reincMult) * r() * atkMult));
-                const incDef  = Math.max(1, Math.floor(((master.def || 10) * reincMult) * r() * defMult));
-                const incMdef = Math.max(1, Math.floor(((master.mdef || 10)* reincMult) * r() * mdefMult));
-                const incSpd  = Math.max(1, Math.floor(((master.spd || 10) * reincMult) * r() * spdMult));
-                const incMag  = Math.max(1, Math.floor(((master.mag || 10) * reincMult) * r() * magMult));
+                const incHp   = Math.max(1, Math.floor(((growthRef.hp || master.hp || 100) * reincMult) * r() * hpMult));
+                const incMp   = Math.max(1, Math.floor(((growthRef.mp || master.mp || 50) * reincMult) * r() * mpMult));
+                const incAtk  = Math.max(1, Math.floor(((growthRef.atk || master.atk || 10) * reincMult) * r() * atkMult));
+                const incDef  = Math.max(1, Math.floor(((growthRef.def || master.def || 10) * reincMult) * r() * defMult));
+                const incMdef = Math.max(1, Math.floor(((growthRef.mdef || master.mdef || 10)* reincMult) * r() * mdefMult));
+                const incSpd  = Math.max(1, Math.floor(((growthRef.spd || master.spd || 10) * reincMult) * r() * spdMult));
+                const incMag  = Math.max(1, Math.floor(((growthRef.mag || master.mag || 10) * reincMult) * r() * magMult));
 
                 // ステータス加算
                 charData.hp += incHp;

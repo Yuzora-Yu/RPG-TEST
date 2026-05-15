@@ -271,12 +271,12 @@ const MenuItems = {
             else if (item.id >= 100 && item.id <= 107) {
                 success = true;
                 switch(item.id) {
-                    case 100: target.hp += Math.floor(master.hp * 2.0); msg = `${target.name}の最大HPが上がった！`; break;
-                    case 101: target.mp += Math.floor(master.mp * 2.0); msg = `${target.name}の最大MPが上がった！`; break;
-                    case 102: target.atk += Math.floor(master.atk * 1.0); msg = `${target.name}の攻撃力が上がった！`; break;
-                    case 103: target.mag += Math.floor(master.mag * 1.0); msg = `${target.name}の魔力が上がった！`; break;
-                    case 104: target.spd += Math.floor(master.spd * 1.0); msg = `${target.name}の素早さが上がった！`; break;
-                    case 105: target.def += Math.floor(master.def * 1.0); msg = `${target.name}の防御力が上がった！`; break;
+                    case 100: target.hp += 3; msg = `${target.name}の最大HPが上がった！`; break;
+                    case 101: target.mp += 2; msg = `${target.name}の最大MPが上がった！`; break;
+                    case 102: target.atk += 1; msg = `${target.name}の攻撃力が上がった！`; break;
+                    case 103: target.mag += 1; msg = `${target.name}の魔力が上がった！`; break;
+                    case 104: target.spd += 1; msg = `${target.name}の素早さが上がった！`; break;
+                    case 105: target.def += 1; msg = `${target.name}の防御力が上がった！`; break;
                     case 106: target.sp = (target.sp || 0) + 1; msg = `${target.name}のSPが 1 増えた！`; break;
                     case 107: 
                         // ★修正: ターゲットのレベルが100の時だけ使用可能にする
