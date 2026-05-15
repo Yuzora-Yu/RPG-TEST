@@ -37,12 +37,7 @@ const MenuAllyDetail = {
 		if (!view || !detailContent) return;
         
         // メインタブ (固定エリア: flex-shrink: 0)
-        const tabs = `
-            <div style="display:flex; background:#222; margin-bottom:12px; border-radius:6px; overflow:hidden; border:1px solid #444; flex-shrink:0;">
-                <button onclick="MenuAllyDetail.changeMainTab('archive')" style="flex:1; padding:10px; border:none; background:${MenuAllyDetail.currentMainTab==='archive'?'#ffd700':'#111'}; color:${MenuAllyDetail.currentMainTab==='archive'?'#000':'#666'}; font-weight:bold; font-size:12px;">アーカイブ</button>
-                <button onclick="MenuAllyDetail.changeMainTab('progress')" style="flex:1; padding:10px; border:none; background:${MenuAllyDetail.currentMainTab==='progress'?'#ffd700':'#111'}; color:${MenuAllyDetail.currentMainTab==='progress'?'#000':'#666'}; font-weight:bold; font-size:12px;">成長の記録</button>
-            </div>
-        `;
+        const tabs = MenuAllyDetail.renderMainTabs();
 
 		view.style.display = 'flex';
 		view.style.flexDirection = 'column';
@@ -56,7 +51,7 @@ const MenuAllyDetail = {
 				${tabs}
 			</div>
 			<div id="ally-detail-body" class="scroll-area" style="padding:0 15px 15px 15px; background:#050505; flex:1; overflow-y:auto;">
-				${MenuAllyDetail.currentMainTab === 'archive' ? MenuAllyDetail.renderArchive() : MenuAllyDetail.renderProgress()}
+				${MenuAllyDetail.renderCurrentMainTab()}
 			</div>
 		`;
 
@@ -67,6 +62,29 @@ const MenuAllyDetail = {
                 Gacha.removePremiumCssFrame(detailContent);
             }
         });
+    },
+
+    renderMainTabs: () => {
+        const items = [
+            { id: 'archive', label: 'アーカイブ' },
+            { id: 'progress', label: '成長の記録' },
+            { id: 'limitBreak', label: '限界突破' }
+        ];
+
+        return `
+            <div style="display:flex; background:#222; margin-bottom:12px; border-radius:6px; overflow:hidden; border:1px solid #444; flex-shrink:0;">
+                ${items.map(item => {
+                    const active = MenuAllyDetail.currentMainTab === item.id;
+                    return `<button onclick="MenuAllyDetail.changeMainTab('${item.id}')" style="flex:1; min-width:0; padding:10px 4px; border:none; background:${active ? '#ffd700' : '#111'}; color:${active ? '#000' : '#777'}; font-weight:bold; font-size:11px; white-space:nowrap;">${item.label}</button>`;
+                }).join('')}
+            </div>
+        `;
+    },
+
+    renderCurrentMainTab: () => {
+        if (MenuAllyDetail.currentMainTab === 'archive') return MenuAllyDetail.renderArchive();
+        if (MenuAllyDetail.currentMainTab === 'progress') return MenuAllyDetail.renderProgress();
+        return MenuAllyDetail.renderLimitBreak();
     },
 
     renderArchive: () => {
@@ -218,6 +236,114 @@ const MenuAllyDetail = {
         });
         
         return html;
+    },
+
+    renderLimitBreak: () => {
+        const c = MenuAllyDetail.selectedChar;
+        if (!c) return '';
+        if (typeof App !== 'undefined' && typeof App.ensureLimitBreakProgress === 'function') {
+            App.ensureLimitBreakProgress(c);
+        }
+        if (typeof App !== 'undefined' && typeof App.syncDerivedLimitBreaks === 'function') {
+            App.syncDerivedLimitBreaks();
+        }
+
+        const cfg = (typeof App !== 'undefined' && App.limitBreakConfig) ? App.limitBreakConfig : {};
+        const progress = c.lbProgress || {};
+        const sources = progress.sources || {};
+        const trials = progress.trials || {};
+        const counters = progress.counters || {};
+        const max = Number(cfg.max || 99);
+        const current = Math.max(0, Math.min(max, Math.floor(Number(c.limitBreak) || 0)));
+        const earnedRaw = Object.values(sources).reduce((sum, val) => sum + Math.max(0, Math.floor(Number(val) || 0)), 0);
+        const earned = Math.max(0, Math.min(max, earnedRaw));
+        const cap = typeof App !== 'undefined' && typeof App.getLimitBreakTrialCap === 'function'
+            ? App.getLimitBreakTrialCap(c)
+            : max;
+        const isHero = c.charId === 301 || c.isHero || c.uid === 'p1';
+        const battleWins = Math.max(0, Math.floor(Number(counters.battleWins) || 0));
+        const battleStep = Math.max(1, Math.floor(Number(cfg.battlesPerStep) || 25));
+
+        const sourceVal = (key) => Math.max(0, Math.floor(Number(sources[key]) || 0));
+        const pct = (val, limit) => {
+            if (!limit || limit <= 0) return 0;
+            return Math.max(0, Math.min(100, Math.floor((val / limit) * 100)));
+        };
+        const statusColor = (done, ready) => done ? '#52d273' : (ready ? '#ffd700' : '#777');
+        const statusText = (done, ready) => done ? '突破済み' : (ready ? '挑戦可能' : '未到達');
+        const row = (label, value, limit, note = '') => {
+            const clamped = limit ? Math.min(value, limit) : value;
+            const width = limit ? pct(clamped, limit) : (value > 0 ? 100 : 0);
+            const valueText = limit ? `+${clamped} / +${limit}` : `+${value}`;
+            const overflow = limit && value > limit ? `<span style="color:#ffdf7a;"> 内部 +${value}</span>` : '';
+            return `
+                <div style="background:rgba(255,255,255,0.025); border:1px solid #333; border-radius:8px; padding:10px; margin-bottom:8px;">
+                    <div style="display:flex; justify-content:space-between; gap:8px; align-items:center; font-size:12px;">
+                        <span style="color:#ddd;">${label}</span>
+                        <span style="color:#ffd700; white-space:nowrap;">${valueText}${overflow}</span>
+                    </div>
+                    <div style="height:5px; background:#111; border:1px solid #2c2c2c; border-radius:999px; overflow:hidden; margin-top:8px;">
+                        <div style="height:100%; width:${width}%; background:linear-gradient(90deg,#53dfe7,#ffd700);"></div>
+                    </div>
+                    ${note ? `<div style="font-size:10px; color:#888; margin-top:6px; line-height:1.5;">${note}</div>` : ''}
+                </div>
+            `;
+        };
+
+        const sourceRows = [];
+        if (isHero) {
+            sourceRows.push(row('ストーリー進行', sourceVal('story'), Number(cfg.heroStoryMax || 20)));
+            sourceRows.push(row('戦闘回数', sourceVal('battle'), Number(cfg.heroBattleMax || 20), `${battleWins}戦 / ${battleStep}戦ごとに進行`));
+            sourceRows.push(row('探索深度', sourceVal('dungeon'), null, '深い階層の到達分。試練上限により反映待ちになることがあります。'));
+        } else {
+            sourceRows.push(row('パーティ戦闘', sourceVal('battle'), Number(cfg.allyBattleMax || 20), `${battleWins}戦 / ${battleStep}戦ごとに進行`));
+        }
+
+        sourceRows.push(row('クエスト', sourceVal('quest'), null, '今後追加予定'));
+        sourceRows.push(row('ボス討伐', sourceVal('boss'), null, '今後追加予定'));
+        sourceRows.push(row('グロウプリズム', sourceVal('prism'), null, '貴重な秘石を用いた成長'));
+        sourceRows.push(row('死闘の経験', sourceVal('random'), null, '戦闘勝利時に稀に成長'));
+        sourceRows.push(row('ガチャ重複', sourceVal('gacha') + sourceVal('legacy'), null, '既存ガチャ由来。内部値として保持'));
+        if (sourceVal('trial') > 0) sourceRows.push(row('試練補正', sourceVal('trial'), null));
+
+        const midReady = current >= Number(cfg.midGate || 49) && !trials.mid;
+        const finalReady = current >= Number(cfg.finalGate || 98) && !trials.final;
+        const gate = (label, done, ready, note) => `
+            <div style="flex:1; min-width:0; border:1px solid #333; border-radius:8px; padding:10px; background:rgba(255,255,255,0.025);">
+                <div style="font-size:12px; color:#ddd; margin-bottom:6px;">${label}</div>
+                <div style="font-size:13px; color:${statusColor(done, ready)}; font-weight:bold;">${statusText(done, ready)}</div>
+                <div style="font-size:10px; color:#888; margin-top:6px; line-height:1.5;">${note}</div>
+            </div>
+        `;
+
+        return `
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                <div style="border:1px solid #444; border-radius:10px; padding:12px; background:rgba(255,255,255,0.03);">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:10px; margin-bottom:10px;">
+                        <div>
+                            <div style="font-size:11px; color:#888;">現在値</div>
+                            <div style="font-size:26px; color:#ffd700; line-height:1;">+${current}</div>
+                        </div>
+                        <div style="text-align:right; font-size:11px; color:#aaa; line-height:1.6;">
+                            内部獲得 +${earned}<br>
+                            現在の上限 +${cap}
+                        </div>
+                    </div>
+                    <div style="height:7px; background:#111; border:1px solid #333; border-radius:999px; overflow:hidden;">
+                        <div style="height:100%; width:${pct(current, max)}%; background:linear-gradient(90deg,#53dfe7,#ffd700,#ec529c);"></div>
+                    </div>
+                    ${earned > current ? `<div style="font-size:10px; color:#ffdf7a; margin-top:8px;">反映待ち +${earned - current}：試練突破後に上限まで反映されます。</div>` : ''}
+                </div>
+
+                <div style="display:flex; gap:8px;">
+                    ${gate('中間試練 +49→+50', !!trials.mid, midReady, '最果ての祠で挑戦')}
+                    ${gate('最終試練 +98→+99', !!trials.final, finalReady, '頂の神殿で挑戦')}
+                </div>
+
+                <div style="font-size:11px; color:#aaa; text-align:center;">獲得状況</div>
+                <div>${sourceRows.join('')}</div>
+            </div>
+        `;
     },
 
     // キャラ切り替え：MenuAllies.selectedChar も同期して「もどる」時のズレを解消

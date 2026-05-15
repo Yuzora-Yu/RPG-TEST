@@ -228,7 +228,9 @@ const STORY_DATA = {
         ABYSS_FIELD: { name: "深淵の魔窟 外縁", rank: 70, centerX: 51, centerY: 55, fieldTile: tileEntry("overlay_field_lost", "#303541") },
         RUINED_SHRINE: { name: "朽ちた祠", rank: 300, centerX: 58, centerY: 56, fieldTile: tileEntry("overlay_field_ruins", "#8f7dff") },
         MEDAL: { name: "メダル王", rank: 1, centerX: 32, centerY: 18, fieldTile: tileEntry("overlay_field_medal", "#f6ca62") },
-        CASINO: { name: "カジノ", rank: 1, centerX: 37, centerY: 47, fieldTile: tileEntry("overlay_field_casino", "#7e3fa1") }
+        CASINO: { name: "カジノ", rank: 1, centerX: 37, centerY: 47, fieldTile: tileEntry("overlay_field_casino", "#7e3fa1") },
+        TRIAL_ISLAND: { name: "最果ての祠", rank: 120, centerX: 2, centerY: 2, fieldTile: tileEntry("overlay_field_temple", "#eef0e8") },
+        SUMMIT_TEMPLE: { name: "頂の神殿", rank: 150, centerX: 89, centerY: 77, fieldTile: tileEntry("overlay_field_temple", "#eef0e8") }
     }
 };
 
@@ -311,9 +313,9 @@ const MAP_DATA = ["WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
 "WWWWWWWWWWWWWWWWWWWWGGGGGGGGGGGGGGGFFFFFFFFFFFGGGGGGGWGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
 "WWWWWWWWWWWWWWWWWWWGGGGGGGGGGGGGGFFFFFFGGGFFFFFGGGGGGWGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
 "WWWWWWWWWWWWWWWWWWWGGGGGGGGGGGGGFFFFFFGGGGGGFFGGGGGGGWGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-"WWWWWWWWWWWWWWWWWWGGGGGGGGGGGGGFFFFGGGGGWWGGGGGGGGGGWWGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-"WWWWWWWWWWWWWWWWWWGGGGGGGGGGGFFFFGGGGGWWWWWGGGGGGGGGWGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-"WWWWWWWWWWWWWWWWWGGGGGGGGGGGGFFGGGGWWWWWWWWWWGGGGGGGWGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWGGGGGGGGGGGGGFFFFGGGGGWWGGGGGGGGGGWWGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWMMMWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWGGGGGGGGGGGFFFFGGGGGWWWWWGGGGGGGGGWGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWMDMWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWGGGGGGGGGGGGFFGGGGWWWWWWWWWWGGGGGGGWGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWMMMWWWWWWWWWWWWWWWWWWW",
 "WWWWWWWWWWWWWWWWGGGGGIGGGGGGGGGGWWWWWWWWWWWWWWWWGGGGWGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
 "WWWWWWWWWWWWWWWWGGGGGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
 "WWWWWWWWWWWWWWWWGGGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
@@ -620,6 +622,74 @@ const FIXED_MAPS = {
             { x: 8, y: 7, label: "石碑に触れる", requiredItemId: 98, requiredItemMissingText: "不思議な気配を感じる…", log: "石碑からただならぬ気配があふれ出した……", type: "boss", monsterId: 902000, special: true }
         ],
         exitPoint: { area: "WORLD", x: 58, y: 57 }
+    },
+    TRIAL_ISLAND: {
+        name: "最果ての祠",
+        themeKey: "RUINED_SHRINE",
+        tileOverrides: {
+            W: tileEntry("tile_shrine_wall", "#4b5b48"),
+            T: tileEntry("tile_shrine_floor", "#3c5145"),
+            G: tileEntry("tile_shrine_floor", "#34493c"),
+            P: tileEntry("tile_stone_tablet", "#8f7dff"),
+            S: tileEntry("tile_shrine_floor", "#d7b45a")
+        },
+        width: 13,
+        height: 13,
+        entryPoint: { x: 6, y: 11 },
+        battleBg: "battle_bg_field",
+        tiles: [
+            "WWWWWWWWWWWWW",
+            "WWWWWWGWWWWWW",
+            "WWWWGGGGGWWWW",
+            "WWWGGTTTGGWWW",
+            "WWGGTTTTTGGWW",
+            "WWGTTTPTTTGWW",
+            "WGGTTTPPPTGGW",
+            "WWGTTTPTTTGWW",
+            "WWGGTTTTTGGWW",
+            "WWWGGTTTGGWWW",
+            "WWWWGGGGGWWWW",
+            "WWWWWWTWWWWWW",
+            "WWWWWWSWWWWWW"
+        ],
+        mapActions: [
+            { x: 6, y: 6, label: "中間試練に挑む", log: "石碑が、限界に触れた者の名を静かに問うている。", type: "limitBreakTrial", trialType: "mid" }
+        ],
+        exitPoint: { area: "WORLD", x: 2, y: 3 }
+    },
+    SUMMIT_TEMPLE: {
+        name: "頂の神殿",
+        themeKey: "LIGHT_PALACE",
+        tileOverrides: {
+            W: tileEntry("tile_light_wall", "#d9ded4"),
+            T: tileEntry("tile_light_floor", "#eef0e8"),
+            G: tileEntry("tile_light_floor", "#d7dfd4"),
+            P: tileEntry("tile_stone_tablet", "#f4d84a"),
+            S: tileEntry("tile_light_floor", "#d7b45a")
+        },
+        width: 13,
+        height: 13,
+        entryPoint: { x: 6, y: 11 },
+        battleBg: "battle_bg_field",
+        tiles: [
+            "WWWWWWWWWWWWW",
+            "WWWWWWGWWWWWW",
+            "WWWWGGGGGWWWW",
+            "WWWGGTTTGGWWW",
+            "WWGGTTTTTGGWW",
+            "WWGTTTPTTTGWW",
+            "WGGTTTPPPTGGW",
+            "WWGTTTPTTTGWW",
+            "WWGGTTTTTGGWW",
+            "WWWGGTTTGGWWW",
+            "WWWWGGGGGWWWW",
+            "WWWWWWTWWWWWW",
+            "WWWWWWSWWWWWW"
+        ],
+        mapActions: [
+            { x: 6, y: 6, label: "最終試練に挑む", log: "祭壇が、極限に迫る者の名を静かに問うている。", type: "limitBreakTrial", trialType: "final" }
+        ],
+        exitPoint: { area: "WORLD", x: 89, y: 77 }
     }
 };
 

@@ -384,7 +384,13 @@ const Menu = {
         const textEl = Menu.getDialogEl('menu-dialog-text');
         const btnEl = Menu.getDialogEl('menu-dialog-buttons');
         
-        if (!area) { alert(text); if (callback) callback(); return; }
+        if (!area) {
+            if (typeof App !== 'undefined' && typeof App.log === 'function') {
+                App.log(String(text).replace(/\n/g, '<br>'));
+            }
+            if (callback) callback();
+            return;
+        }
         
         textEl.innerHTML = text.replace(/\n/g, '<br>');
         btnEl.innerHTML = '';
@@ -409,8 +415,10 @@ const Menu = {
 
   // ★復旧ポイント：無いなら何もしない、ではなくフォールバック
   if (!area || !textEl || !btnEl) {
-    if (window.confirm(text)) { if (yesCallback) yesCallback(); }
-    else { if (noCallback) noCallback(); }
+    if (typeof App !== 'undefined' && typeof App.log === 'function') {
+      App.log(String(text).replace(/\n/g, '<br>'));
+    }
+    if (noCallback) noCallback();
     return;
   }
 
@@ -450,11 +458,10 @@ const Menu = {
         
         // ダイアログ要素がない場合の安全策
         if (!area) { 
-            if(confirm(text + "\n\n" + label1 + " -> OK\n" + label2 + " -> キャンセル")) {
-                if(callback1) callback1(); 
-            } else {
-                if(callback2) callback2(); 
+            if (typeof App !== 'undefined' && typeof App.log === 'function') {
+                App.log(String(text).replace(/\n/g, '<br>'));
             }
+            if(callback2) callback2();
             return; 
         }
 

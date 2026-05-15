@@ -4,161 +4,277 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PRISMA ABYSS - Title</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚔️</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✦</text></svg>">
     <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="modern-polish.css">
 
     <script>
-    // main.html の既存の <script> ブロック内を以下のように更新
-	if ('serviceWorker' in navigator) {
-		navigator.serviceWorker.register('sw.js').then(reg => {
-			// 更新が見つかった場合のリスナー
-			reg.onupdatefound = () => {
-				const installingWorker = reg.installing;
-				installingWorker.onstatechange = () => {
-					// 新しいSWがインストール完了（待機状態）になり、かつ既に制御しているSWがある場合
-					if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
-						showUpdatePrompt();
-					}
-				};
-			};
-		});
-	}
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').then(reg => {
+            reg.onupdatefound = () => {
+                const installingWorker = reg.installing;
+                installingWorker.onstatechange = () => {
+                    if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        showUpdatePrompt();
+                    }
+                };
+            };
+        });
+    }
 
-	/**
-	 * 更新通知ポップアップを表示する
-	 */
-	function showUpdatePrompt() {
-		const updateDate = "2026/05/11"; // 配信日を手動で更新する箇所
-		const changeLog = "主な変更点：実績機能の追加およびバグ修正"; // 任意文章
-		
-		const message = `${updateDate}付で最新バージョンが配信されています。\n` +
-						`アプリケーションを最新状態に更新してよろしいですか？\n\n` +
-						`${changeLog}`;
+    function showPageDialog(message, options = {}) {
+        const run = () => {
+            const old = document.getElementById('page-dialog-overlay');
+            if (old) old.remove();
 
-		if (confirm(message)) {
-			// 「はい」の場合、既存の更新処理を実行
-			forceUpdateApp();
-		}
-		// 「いいえ」の場合はそのまま（何もしない）
-	}
+            const overlay = document.createElement('div');
+            overlay.id = 'page-dialog-overlay';
+            overlay.className = 'title-dialog-overlay';
 
-	/**
-	 * 既存のupdateAppをベースにした強制更新処理
-	 */
-	function forceUpdateApp() {
-		if ('serviceWorker' in navigator) {
-			navigator.serviceWorker.getRegistrations().then(regs => {
-				regs.forEach(reg => reg.unregister());
-				caches.keys().then(keys => {
-					keys.forEach(key => caches.delete(key));
-				});
-			}).then(() => {
-				location.reload(true);
-			});
-		} else {
-			location.reload(true);
-		}
-	}
+            const box = document.createElement('div');
+            box.className = 'title-dialog-box';
+
+            const text = document.createElement('div');
+            text.className = 'title-dialog-text';
+            text.textContent = String(message || '');
+
+            const buttons = document.createElement('div');
+            buttons.className = 'title-dialog-buttons';
+
+            const close = (result) => {
+                overlay.remove();
+                if (result && typeof options.onYes === 'function') options.onYes();
+                if (!result && typeof options.onNo === 'function') options.onNo();
+            };
+
+            const yes = document.createElement('button');
+            yes.className = 'btn';
+            yes.textContent = options.messageOnly ? 'OK' : 'はい';
+            yes.onclick = () => close(true);
+            buttons.appendChild(yes);
+
+            if (!options.messageOnly) {
+                const no = document.createElement('button');
+                no.className = 'btn btn-muted';
+                no.textContent = 'いいえ';
+                no.onclick = () => close(false);
+                buttons.appendChild(no);
+            }
+
+            box.appendChild(text);
+            box.appendChild(buttons);
+            overlay.appendChild(box);
+            document.body.appendChild(overlay);
+        };
+
+        if (document.body) run();
+        else window.addEventListener('DOMContentLoaded', run, { once: true });
+    }
+
+    function showPageConfirm(message, onYes, onNo) {
+        showPageDialog(message, { onYes, onNo });
+    }
+
+    function showPageMessage(message, onOk) {
+        showPageDialog(message, { messageOnly: true, onYes: onOk });
+    }
+
+    function showUpdatePrompt() {
+        const updateDate = "2026/05/11";
+        const changeLog = "主な変更点：実績機能の追加およびバグ修正";
+        const message = `${updateDate}付で最新バージョンが配信されています。\nアプリケーションを最新状態に更新してよろしいですか？\n\n${changeLog}`;
+        showPageConfirm(message, forceUpdateApp);
+    }
+
+    function forceUpdateApp() {
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(regs => {
+                regs.forEach(reg => reg.unregister());
+                caches.keys().then(keys => {
+                    keys.forEach(key => caches.delete(key));
+                });
+            }).then(() => {
+                location.reload(true);
+            });
+        } else {
+            location.reload(true);
+        }
+    }
     </script>
-    
-<link rel="stylesheet" href="modern-polish.css">
 </head>
+
 <body class="title-page">
-
-    <div class="title-logo">
-        <img src="assets/background/PRISMA ABYSS.png" alt="PRISMA ABYSS">
-    </div>
-
-    <div class="input-group">
-        <input type="text" id="player-name" placeholder="名前を入力" value="アルス" maxlength="8">
-        <div class="file-input-wrapper">
-            <label>主人公アイコン (任意)</label>
-            <input type="file" id="player-icon" accept="image/*">
+    <div class="title-bg" aria-hidden="true">
+        <div class="title-prism-field">
+            <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
         </div>
     </div>
 
-    <div class="btn-container">
-        <button class="btn btn-new" onclick="startGameConfirm()">はじめから</button>
-        <button class="btn btn-load" id="btn-continue" onclick="App.continueGame()" disabled>つづきから</button>
-        <hr>
-        <button class="btn" onclick="toggleModal(true)">データ管理</button>
+    <main class="title-shell">
+        <section class="title-hero">
+            <div class="title-logo">
+                <img src="assets/background/PRISMA ABYSS.png" alt="PRISMA ABYSS">
+            </div>
+            <div class="title-mark">PRISMA ABYSS</div>
+        </section>
+
+        <section class="title-actions">
+            <button class="btn btn-new" onclick="openNewGameSetup()">はじめから</button>
+            <button class="btn btn-load" id="btn-continue" onclick="App.continueGame()" disabled>つづきから</button>
+            <button class="btn btn-data" onclick="toggleModal(true)">データ管理</button>
+        </section>
+    </main>
+
+    <div id="new-game-overlay" class="title-modal-overlay" onclick="if(event.target === this) closeNewGameSetup()">
+        <div class="title-modal-content title-setup-modal">
+            <div class="modal-title">主人公設定</div>
+            <div class="setup-grid">
+                <label class="setup-label" for="player-name">名前</label>
+                <input type="text" id="player-name" placeholder="名前を入力" value="アルス" maxlength="8" autocomplete="off">
+
+                <div class="setup-label">アイコン</div>
+                <div class="hero-icon-row">
+                    <div class="hero-icon-preview" id="hero-icon-preview"><img src="assets/characters/char_face_301.gif" alt=""></div>
+                    <label class="hero-file-picker" for="player-icon">画像を選ぶ</label>
+                    <input type="file" id="player-icon" accept="image/*" onchange="handleHeroIconChange(event)">
+                </div>
+            </div>
+            <div class="title-modal-actions">
+                <button class="btn btn-new" onclick="submitNewGame()">冒険を始める</button>
+                <button class="btn btn-muted" onclick="closeNewGameSetup()">もどる</button>
+            </div>
+        </div>
     </div>
 
-    <div id="modal-overlay" onclick="if(event.target === this) toggleModal(false)">
-        <div id="modal-content">
+    <div id="modal-overlay" class="title-modal-overlay" onclick="if(event.target === this) toggleModal(false)">
+        <div id="modal-content" class="title-modal-content">
             <div class="modal-title">データ管理</div>
-            
             <button class="btn btn-modal" onclick="App.importSave()">バックアップから復元</button>
             <hr>
             <button id="installBtn" class="btn btn-modal" style="display:none;">アプリをインストール</button>
             <button id="updateBtn" class="btn btn-modal" onclick="updateApp()">アプリを更新</button>
             <hr>
             <button id="deleteBtn" class="btn btn-modal btn-danger" onclick="deleteSaveData()">セーブデータを削除</button>
-            
-            <button class="btn btn-close" onclick="toggleModal(false)">戻る</button>
+            <button class="btn btn-close" onclick="toggleModal(false)">もどる</button>
         </div>
     </div>
-    <!-- タイトル画面で必要な最小限の読み込み -->
+
     <script src="equips.js"></script>
     <script src="database.js"></script>
     <script src="main.js"></script>
     <script>
-        // 起動時処理（既存維持 + 内部ロジック通り）
+        const DEFAULT_HERO_ICON = 'assets/characters/char_face_301.gif';
+
         window.onload = () => {
-            if(typeof App !== 'undefined' && App.initTitleScreen) {
+            if (typeof App !== 'undefined' && App.initTitleScreen) {
                 App.initTitleScreen();
-                if(App.data) {
-                    const btn = document.getElementById('btn-continue');
-                    btn.disabled = false;
-                    let name = '勇者';
-                    let lv = 1;
-                    if(App.data.party && App.data.party[0]) {
-                        const char = App.data.characters.find(c => c.uid === App.data.party[0]);
-                        if(char) {
-                            name = char.name;
-                            lv = char.level;
-                        }
-                    }
-                    btn.innerHTML = `続きから<br><span style="font-size:12px">(${name} Lv.${lv})</span>`;
-                }
+                refreshContinueButton();
             } else {
                 console.error('App module failed to load.');
             }
         };
 
-        // 「はじめから」の警告処理
-        function startGameConfirm() {
-            if (typeof App !== 'undefined' && App.data) {
-                if (!confirm('プレイ済みのデータがある場合はデータが消えてしまいますが、よろしいですか？')) {
-                    return;
-                }
-            }
-            App.startNewGame();
-        }
+        function refreshContinueButton() {
+            const btn = document.getElementById('btn-continue');
+            if (!btn || typeof App === 'undefined') return;
 
-        // モーダル開閉
-        function toggleModal(show) {
-            document.getElementById('modal-overlay').style.display = show ? 'flex' : 'none';
-        }
-
-        // データ削除（既存維持）
-        function deleteSaveData() {
-            if(typeof CONST === 'undefined' || !CONST.SAVE_KEY) {
-                alert('データベースエラー: CONSTが読み込まれていません');
+            if (!App.data) {
+                btn.disabled = true;
+                btn.textContent = 'つづきから';
                 return;
             }
-            if(confirm('本当にセーブデータを削除しますか？\n失われたデータは復元できません。')) {
+
+            btn.disabled = false;
+            let name = '冒険者';
+            let lv = 1;
+            if (App.data.party && App.data.party[0]) {
+                const char = App.data.characters.find(c => c.uid === App.data.party[0]);
+                if (char) {
+                    name = char.name;
+                    lv = char.level;
+                }
+            }
+            btn.innerHTML = `つづきから<br><span>(${name} Lv.${lv})</span>`;
+        }
+
+        function openNewGameSetup() {
+            const overlay = document.getElementById('new-game-overlay');
+            if (!overlay) return;
+            const fileInput = document.getElementById('player-icon');
+            if (fileInput && !fileInput.files.length) resetHeroIconPreview();
+            overlay.style.display = 'flex';
+            setTimeout(() => {
+                const nameInput = document.getElementById('player-name');
+                if (nameInput) nameInput.focus();
+            }, 0);
+        }
+
+        function closeNewGameSetup() {
+            const overlay = document.getElementById('new-game-overlay');
+            if (overlay) overlay.style.display = 'none';
+        }
+
+        function resetHeroIconPreview() {
+            const preview = document.getElementById('hero-icon-preview');
+            if (preview) preview.innerHTML = `<img src="${DEFAULT_HERO_ICON}" alt="">`;
+        }
+
+        function handleHeroIconChange(event) {
+            const file = event.target.files && event.target.files[0];
+            const preview = document.getElementById('hero-icon-preview');
+            if (!preview) return;
+
+            resetHeroIconPreview();
+            if (!file) return;
+
+            if (file.size > 500 * 1024) {
+                event.target.value = '';
+                resetHeroIconPreview();
+                showPageMessage('画像サイズが大きすぎます(500KB以下)');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                preview.innerHTML = `<img src="${e.target.result}" alt="">`;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function submitNewGame() {
+            if (typeof App === 'undefined') return;
+            const start = () => App.startNewGame();
+
+            if (App.data) {
+                showPageConfirm('プレイ済みのデータがある場合はデータが消えてしまいますが、よろしいですか？', start);
+                return;
+            }
+
+            start();
+        }
+
+        function toggleModal(show) {
+            const overlay = document.getElementById('modal-overlay');
+            if (overlay) overlay.style.display = show ? 'flex' : 'none';
+        }
+
+        function deleteSaveData() {
+            if (typeof CONST === 'undefined' || !CONST.SAVE_KEY) {
+                showPageMessage('データベースエラー: CONSTが読み込まれていません');
+                return;
+            }
+            showPageConfirm('本当にセーブデータを削除しますか？\n失われたデータは復元できません。', () => {
                 localStorage.removeItem(CONST.SAVE_KEY);
                 location.reload();
-            }
+            });
         }
-        
-        // PWAインストール機能（既存維持）
+
         let deferredPrompt;
         window.addEventListener("beforeinstallprompt", (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            document.getElementById("installBtn").style.display = "block";
+            const installBtn = document.getElementById("installBtn");
+            if (installBtn) installBtn.style.display = "block";
         });
 
         document.getElementById("installBtn").addEventListener("click", async () => {
@@ -171,9 +287,8 @@
             deferredPrompt = null;
         });
 
-        // アプリ更新（既存維持）
         function updateApp() {
-            if (confirm('アプリのキャッシュをクリアして最新版に更新しますか？')) {
+            showPageConfirm('アプリのキャッシュをクリアして最新版に更新しますか？', () => {
                 if ('serviceWorker' in navigator) {
                     navigator.serviceWorker.getRegistrations().then(regs => {
                         regs.forEach(reg => reg.unregister());
@@ -186,7 +301,7 @@
                 } else {
                     location.reload(true);
                 }
-            }
+            });
         }
     </script>
 </body>

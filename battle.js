@@ -3259,6 +3259,9 @@ findNextActor: () => {
 		App.data.gold += totalGold;
 
 		const surviveMembers = Battle.party.filter(p => !p.isDead);
+		const lbGrowthLogs = (typeof App.noteBattleVictory === 'function')
+			? App.noteBattleVictory(Battle.party.filter(p => p))
+			: [];
 		
 		// 特性「56:解体」のパーティ合計値算出
 		let bonusNormal = 0, bonusRare = 0, bonusPlus3 = 0;
@@ -3455,6 +3458,12 @@ findNextActor: () => {
 		Battle.log(`<br><span style="color:#ffff00; font-size:1em; font-weight:bold;">戦闘に勝利した！</span>`);
 		Battle.log(`${totalGold} Goldを獲得！`);
 		Battle.log(`${totalExp} ポイントの経験値を 獲得した！`);
+		for (const msg of lbGrowthLogs) {
+			if (msg) {
+				Battle.log(msg);
+				await Battle.wait(350);
+			}
+		}
 
 		const partyHpRegen = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getPartySumValue('post_battle_hp_regen_pct') : 0;
 		const partyMpRegen = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getPartySumValue('post_battle_mp_regen_pct') : 0;
@@ -3600,6 +3609,7 @@ findNextActor: () => {
     lose: () => { 
 		Battle.active = false; 
 		Battle.log("全滅した..."); 
+		if (typeof App.clearPendingLimitBreakTrial === 'function') App.clearPendingLimitBreakTrial();
 		// ★追加: 全滅回数のカウントアップ
 		if(App.data.stats) App.data.stats.wipeoutCount = (App.data.stats.wipeoutCount || 0) + 1;
 		

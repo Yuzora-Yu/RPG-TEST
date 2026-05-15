@@ -305,7 +305,11 @@ const Gacha = {
 
             const owned = App.data.characters.find(c => c.charId === result.id);
             if (owned) {
-                owned.limitBreak = Math.min(99, (owned.limitBreak || 0) + 1);
+                if (typeof App.addLimitBreak === 'function') {
+                    App.addLimitBreak(owned, 1, 'gacha');
+                } else {
+                    owned.limitBreak = Math.min(99, (owned.limitBreak || 0) + 1);
+                }
                 result.isNew = false;
                 result.limitBreak = owned.limitBreak;
             } else {
@@ -324,6 +328,11 @@ const Gacha = {
                     mdef: result.mdef,
                     level: 1,
                     limitBreak: 0,
+                    lbProgress: {
+                        counters: { battleWins: 0 },
+                        sources: { story: 0, battle: 0, dungeon: 0, quest: 0, boss: 0, prism: 0, random: 0, gacha: 0, trial: 0, legacy: 0 },
+                        trials: { mid: false, final: false, midClearedAt: null, finalClearedAt: null }
+                    },
                     equips: {},
                     traits: [],
                     disabledTraits: [],

@@ -101,13 +101,9 @@ const StoryManager = {
 		if (!App.data || !App.data.characters) return;
 		const hero = App.data.characters.find(c => c.charId === 301 || c.uid === 'p1');
 		if (hero && App.data.progress && App.data.dungeon) {
-
-			const storyLB = Math.max(0, (App.data.progress.storyStep || 0) - 1); // 基礎: StoryStep-1
-			const maxF = App.data.dungeon.maxFloor || 0;
-			const floorBonus = Math.floor(Math.max(0, maxF - 1) / 10) * 5; // 加算: 11階から10階ごとに+5
-
-			hero.limitBreak = storyLB + floorBonus; // 合計値を反映
-			
+			if (typeof App.syncDerivedLimitBreaks === 'function') {
+				App.syncDerivedLimitBreaks({ heroOnly: true });
+			}
 			if (typeof App.calcStats === 'function') App.calcStats(hero);
 		}
 	},

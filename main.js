@@ -568,7 +568,7 @@ const App = {
 					window.InitialLoading.hide();
 				}
 
-				alert("エラー: ゲーム開始処理に失敗しました。");
+				App.showMessage("エラー: ゲーム開始処理に失敗しました。");
 			}
 		};
 
@@ -1179,6 +1179,11 @@ const App = {
             tree: { ATK: 0, MAG: 0, SPD: 0, HP: 0, MP: 0, WARRIOR: 0, MAGE: 0, PRIEST: 0, M_KNIGHT: 0 },
             config: { fullAuto: false, hiddenSkills: [] },
             limitBreak: 0,
+            lbProgress: {
+                counters: { battleWins: 0 },
+                sources: { story: 0, battle: 0, dungeon: 0, quest: 0, boss: 0, prism: 0, random: 0, gacha: 0, trial: 0, legacy: 0 },
+                trials: { mid: false, final: false, midClearedAt: null, finalClearedAt: null }
+            },
             reincarnationCount: 0
             // ★ img, archives, lbSkills, resists 等の静的データはここには含めない
         };
@@ -1193,6 +1198,328 @@ const App = {
         App.data.characters.push(saveAlly);
         App.save();
         App.log(`【仲間加入】${saveAlly.name}がパーティに加わった！`);
+    },
+
+    limitBreakConfig: {
+        max: 99,
+        midGate: 49,
+        finalGate: 98,
+        heroStoryMax: 20,
+        heroBattleMax: 20,
+        allyBattleMax: 20,
+        battlesPerStep: 5,
+        randomBattleChance: 0.002,
+        midTrialBossId: 401120,
+        finalTrialBossId: 401130
+    },
+
+    clampLimitBreakPart: (value, max) => {
+        return Math.max(0, Math.min(Number(max) || 0, Math.floor(Number(value) || 0)));
+    },
+
+    ensureLimitBreakProgress: (char) => {
+        if (!char) return null;
+        if (!char.lbProgress || typeof char.lbProgress !== 'object' || Array.isArray(char.lbProgress)) {
+            char.lbProgress = {};
+        }
+        const p = char.lbProgress;
+        if (!p.counters || typeof p.counters !== 'object' || Array.isArray(p.counters)) p.counters = {};
+        if (!p.sources || typeof p.sources !== 'object' || Array.isArray(p.sources)) p.sources = {};
+        if (!p.trials || typeof p.trials !== 'object' || Array.isArray(p.trials)) p.trials = {};
+
+        const sourceKeys = ['story', 'battle', 'dungeon', 'quest', 'boss', 'prism', 'random', 'gacha', 'trial', 'legacy'];
+        sourceKeys.forEach(key => {
+            p.sources[key] = Math.max(0, Math.floor(Number(p.sources[key]) || 0));
+        });
+        p.counters.battleWins = Math.max(0, Math.floor(Number(p.counters.battleWins) || 0));
+        const midClearedAt = Math.max(0, Math.floor(Number(p.trials.midClearedAt) || 0));
+        const finalClearedAt = Math.max(0, Math.floor(Number(p.trials.finalClearedAt) || 0));
+        p.trials.midClearedAt = midClearedAt || null;
+        p.trials.finalClearedAt = finalClearedAt || null;
+        p.trials.mid = !!midClearedAt;
+        p.trials.final = !!finalClearedAt;
+        if (p.trials.final) {
+            p.trials.mid = true;
+            if (!p.trials.midClearedAt) p.trials.midClearedAt = finalClearedAt;
+        }
+        return p;
+    },
+
+    getLimitBreakTrialCap: (char) => {
+        const p = App.ensureLimitBreakProgress(char);
+        if (!p) return 0;
+        if (p.trials.final) return App.limitBreakConfig.max;
+        if (p.trials.mid) return App.limitBreakConfig.finalGate;
+        return App.limitBreakConfig.midGate;
+    },
+
+    getLimitBreakSourceTotal: (char) => {
+        const p = App.ensureLimitBreakProgress(char);
+        if (!p) return 0;
+        return Object.values(p.sources).reduce((sum, value) => sum + (Number(value) || 0), 0);
+    },
+
+    backfillLimitBreakLegacy: (char) => {
+        if (!char) return;
+        const p = App.ensureLimitBreakProgress(char);
+        const current = Math.max(0, Math.min(App.limitBreakConfig.max, Math.floor(Number(char.limitBreak) || 0)));
+        const recorded = Math.min(App.limitBreakConfig.max, App.getLimitBreakSourceTotal(char));
+        if (current > recorded) {
+            p.sources.legacy += current - recorded;
+        }
+    },
+
+    applyLimitBreakCap: (char) => {
+        if (!char) return { changed: false, blocked: false, before: 0, after: 0 };
+        App.ensureLimitBreakProgress(char);
+        const current = Math.max(0, Math.min(App.limitBreakConfig.max, Math.floor(Number(char.limitBreak) || 0)));
+        const earned = Math.min(App.limitBreakConfig.max, App.getLimitBreakSourceTotal(char));
+        const cap = App.getLimitBreakTrialCap(char);
+        const next = Math.min(earned, cap);
+        const diff = next - current;
+
+        if (diff !== 0) {
+            char.limitBreak = next;
+        }
+
+        return { changed: diff !== 0, blocked: earned > next, before: current, after: next, diff };
+    },
+
+    addLimitBreak: (char, amount = 1, source = 'quest') => {
+        if (!char) return { changed: false, blocked: false, before: 0, after: 0, internalChanged: false };
+        const p = App.ensureLimitBreakProgress(char);
+        App.backfillLimitBreakLegacy(char);
+        const key = p.sources[source] !== undefined ? source : 'quest';
+        const currentSourceValue = Math.max(0, Math.floor(Number(p.sources[key]) || 0));
+        const sourceRoom = Math.max(0, App.limitBreakConfig.max - currentSourceValue);
+        const internalDiff = Math.min(sourceRoom, Math.max(0, Math.floor(Number(amount) || 0)));
+
+        if (internalDiff > 0) {
+            p.sources[key] = (Number(p.sources[key]) || 0) + internalDiff;
+        }
+
+        const result = App.applyLimitBreakCap(char);
+        result.internalChanged = internalDiff > 0;
+        return result;
+    },
+
+    syncDerivedLimitBreaks: (options = {}) => {
+        if (!App.data || !Array.isArray(App.data.characters)) return [];
+        const logs = [];
+        const cfg = App.limitBreakConfig;
+        const chars = options.heroOnly
+            ? App.data.characters.filter(c => c && (c.charId === 301 || c.isHero || c.uid === 'p1'))
+            : App.data.characters;
+
+        chars.forEach(char => {
+            if (!char) return;
+            const p = App.ensureLimitBreakProgress(char);
+            const isHero = char.charId === 301 || char.isHero || char.uid === 'p1';
+            const battleSteps = Math.floor((Number(p.counters.battleWins) || 0) / cfg.battlesPerStep);
+
+            if (isHero) {
+                const storyStep = App.data.progress ? Number(App.data.progress.storyStep || 0) : 0;
+                const maxFloor = App.data.dungeon ? Number(App.data.dungeon.maxFloor || 0) : 0;
+                p.sources.story = App.clampLimitBreakPart(storyStep, cfg.heroStoryMax);
+                p.sources.battle = App.clampLimitBreakPart(battleSteps, cfg.heroBattleMax);
+                p.sources.dungeon = Math.max(0, Math.floor(Math.max(0, maxFloor - 1) / 10) * 5);
+            } else {
+                p.sources.battle = App.clampLimitBreakPart(battleSteps, cfg.allyBattleMax);
+            }
+
+            App.backfillLimitBreakLegacy(char);
+            const result = App.applyLimitBreakCap(char);
+
+            if (result.diff > 0) {
+                logs.push(`<span style="color:#ffd700;">${char.name}のリミットブレイクが +${result.after} に到達した！</span>`);
+            }
+        });
+
+        return logs;
+    },
+
+    noteBattleVictory: (participants = []) => {
+        if (!App.data || !Array.isArray(App.data.characters)) return [];
+        if (!App.data.stats) App.data.stats = {};
+        App.data.stats.totalBattles = (Number(App.data.stats.totalBattles) || 0) + 1;
+
+        const logs = [];
+        const seen = new Set();
+        const partyUids = Array.isArray(participants) && participants.length > 0
+            ? participants.map(p => p && p.uid).filter(Boolean)
+            : (App.data.party || []).filter(Boolean);
+
+        partyUids.forEach(uid => {
+            if (seen.has(uid)) return;
+            seen.add(uid);
+            const char = App.getChar ? App.getChar(uid) : App.data.characters.find(c => c.uid === uid);
+            if (!char) return;
+            const p = App.ensureLimitBreakProgress(char);
+            p.counters.battleWins += 1;
+        });
+
+        logs.push(...App.syncDerivedLimitBreaks());
+
+        seen.forEach(uid => {
+            const char = App.getChar ? App.getChar(uid) : App.data.characters.find(c => c.uid === uid);
+            if (!char) return;
+            if (Math.random() >= App.limitBreakConfig.randomBattleChance) return;
+            const result = App.addLimitBreak(char, 1, 'random');
+            if (result.changed) {
+                logs.push(`<span style="color:#ffdf7a;">${char.name}は戦いの中で限界を一歩越えた！ LB +${result.after}</span>`);
+            }
+        });
+
+        logs.push(...App.completeLimitBreakTrialIfNeeded());
+        return logs;
+    },
+
+    getLimitBreakTrialCandidates: () => {
+        if (!App.data || !Array.isArray(App.data.party)) return { mid: [], final: [] };
+        const members = App.data.party
+            .map(uid => uid ? (App.getChar ? App.getChar(uid) : App.data.characters.find(c => c.uid === uid)) : null)
+            .filter(Boolean);
+
+        const mid = [];
+        const final = [];
+        members.forEach(char => {
+            const p = App.ensureLimitBreakProgress(char);
+            const lb = Math.floor(Number(char.limitBreak) || 0);
+            if (lb >= App.limitBreakConfig.finalGate && lb < App.limitBreakConfig.max && !p.trials.final) {
+                final.push(char);
+            } else if (lb >= App.limitBreakConfig.midGate && lb < 50 && !p.trials.mid) {
+                mid.push(char);
+            }
+        });
+        return { mid, final };
+    },
+
+    limitBreakTrialPromptOpen: false,
+
+    showLimitBreakTrialChoice: async (text) => {
+        if (typeof StoryManager !== 'undefined' && typeof StoryManager.showChoice === 'function') {
+            StoryManager.active = true;
+            try {
+                return !!(await StoryManager.showChoice(text));
+            } finally {
+                if (typeof StoryManager.endConversation === 'function') {
+                    StoryManager.endConversation();
+                }
+            }
+        }
+
+        if (typeof Menu !== 'undefined' && typeof Menu.confirm === 'function') {
+            return await new Promise(resolve => {
+                Menu.confirm(text, () => resolve(true), () => resolve(false));
+            });
+        }
+
+        App.log(String(text).replace(/\n/g, '<br>'));
+        return false;
+    },
+
+    startLimitBreakTrial: async (options = {}) => {
+        if (!App.data || App.limitBreakTrialPromptOpen) return;
+        App.limitBreakTrialPromptOpen = true;
+
+        try {
+            App.syncDerivedLimitBreaks();
+            const candidates = App.getLimitBreakTrialCandidates();
+            const requestedType = options && (options.trialType === 'mid' || options.trialType === 'final') ? options.trialType : null;
+            const isFinal = requestedType ? requestedType === 'final' : candidates.final.length > 0;
+            const targetCandidates = isFinal ? candidates.final : candidates.mid;
+
+            if (targetCandidates.length === 0) {
+                const requiredText = requestedType === 'mid' ? '+49' : (requestedType === 'final' ? '+98' : '+49、または+98');
+                App.log(`試練の気配は静まっている。${requiredText}に到達した仲間をパーティに入れる必要がありそうだ。`);
+                return;
+            }
+
+            const trialType = isFinal ? 'final' : 'mid';
+            const trialName = isFinal ? '最終試練' : '中間試練';
+            const bossId = isFinal ? App.limitBreakConfig.finalTrialBossId : App.limitBreakConfig.midTrialBossId;
+            const names = targetCandidates.map(c => c.name).join('、');
+            const ok = await App.showLimitBreakTrialChoice(`${names}が${trialName}に挑める。\n試練を開始しますか？`);
+            if (!ok) {
+                App.log('試練への挑戦を見送った。');
+                if (typeof Field !== 'undefined' && typeof Field.refreshCurrentAction === 'function') {
+                    Field.refreshCurrentAction({ silent: true });
+                }
+                return;
+            }
+
+            App.log(`${names}の前に、${trialName}の門が開いた！`);
+            if (!App.data.progress) App.data.progress = {};
+            App.data.progress.pendingLimitBreakTrial = {
+                type: trialType,
+                monsterId: bossId,
+                candidateUids: targetCandidates.map(c => c.uid),
+                startedAt: Date.now()
+            };
+            App.data.battle = {
+                active: false,
+                isBossBattle: true,
+                isSpecialBoss: false,
+                isEstark: false,
+                fixedBossId: bossId,
+                enemies: []
+            };
+            App.save();
+            App.changeScene('battle');
+        } finally {
+            App.limitBreakTrialPromptOpen = false;
+        }
+    },
+
+    completeLimitBreakTrialIfNeeded: () => {
+        const trial = App.data?.progress?.pendingLimitBreakTrial;
+        if (!trial) return [];
+        const battleBossId = Number(App.data?.battle?.fixedBossId || 0);
+        const trialBossId = Number(trial.monsterId || 0);
+        if (!trialBossId || battleBossId !== trialBossId) return [];
+
+        const isFinal = trial.type === 'final';
+        const targetLb = isFinal ? App.limitBreakConfig.max : 50;
+        const requiredLb = isFinal ? App.limitBreakConfig.finalGate : App.limitBreakConfig.midGate;
+        const trialKey = isFinal ? 'final' : 'mid';
+        const partySet = new Set((App.data.party || []).filter(Boolean));
+        const logs = [];
+
+        (trial.candidateUids || []).forEach(uid => {
+            if (!partySet.has(uid)) return;
+            const char = App.getChar ? App.getChar(uid) : App.data.characters.find(c => c.uid === uid);
+            if (!char) return;
+            const p = App.ensureLimitBreakProgress(char);
+            const current = Math.floor(Number(char.limitBreak) || 0);
+            if (current < requiredLb) return;
+
+            p.trials[trialKey] = true;
+            if (isFinal) p.trials.mid = true;
+            const clearedAt = Date.now();
+            p.trials[`${trialKey}ClearedAt`] = clearedAt;
+            if (isFinal && !p.trials.midClearedAt) p.trials.midClearedAt = clearedAt;
+            const earnedBeforeTrialBonus = Math.min(App.limitBreakConfig.max, App.getLimitBreakSourceTotal(char));
+            if (earnedBeforeTrialBonus < targetLb) {
+                p.sources.trial += targetLb - earnedBeforeTrialBonus;
+            }
+
+            const result = App.applyLimitBreakCap(char);
+            const displayLb = result.after;
+            if (displayLb > current) {
+                logs.push(`<span style="color:#ffd700;">${char.name}が${isFinal ? '最終' : '中間'}試練を越え、LB +${displayLb} に到達した！</span>`);
+            } else {
+                logs.push(`<span style="color:#ffd700;">${char.name}が${isFinal ? '最終' : '中間'}試練を突破した！</span>`);
+            }
+        });
+
+        delete App.data.progress.pendingLimitBreakTrial;
+        return logs;
+    },
+
+    clearPendingLimitBreakTrial: () => {
+        if (App.data?.progress?.pendingLimitBreakTrial) {
+            delete App.data.progress.pendingLimitBreakTrial;
+        }
     },
 	
     
@@ -1236,6 +1563,36 @@ const App = {
         btn.style.display = 'block';
         App.pendingAction = callback;
     },
+    showMessage: (text, callback) => {
+        if (typeof Menu !== 'undefined' && typeof Menu.msg === 'function') {
+            Menu.msg(text, callback);
+            return;
+        }
+        if (typeof window !== 'undefined' && typeof window.showPageMessage === 'function') {
+            window.showPageMessage(text, callback);
+            return;
+        }
+        if (typeof App.log === 'function') {
+            App.log(String(text).replace(/\n/g, '<br>'));
+        }
+        if (callback) callback();
+    },
+    showConfirm: async (text) => {
+        if (typeof Menu !== 'undefined' && typeof Menu.confirm === 'function') {
+            return await new Promise(resolve => {
+                Menu.confirm(text, () => resolve(true), () => resolve(false));
+            });
+        }
+        if (typeof window !== 'undefined' && typeof window.showPageConfirm === 'function') {
+            return await new Promise(resolve => {
+                window.showPageConfirm(text, () => resolve(true), () => resolve(false));
+            });
+        }
+        if (typeof App.log === 'function') {
+            App.log(String(text).replace(/\n/g, '<br>'));
+        }
+        return false;
+    },
     clearAction: () => {
         const btn = document.getElementById('action-indicator');
         if(btn) btn.style.display = 'none';
@@ -1261,6 +1618,7 @@ const App = {
     isFieldControlBlocked: () => {
         if (typeof App.isFieldInputLocked === 'function' && App.isFieldInputLocked()) return true;
         if (App.encounterTransitioning) return true;
+        if (App.limitBreakTrialPromptOpen) return true;
         if (App.data?.battle?.active) return true;
         if (document.hidden) return true;
 
@@ -1326,6 +1684,9 @@ load: () => {
                     if (char.mdef === undefined || char.mdef === null) {
                         char.mdef = Math.floor((char.mag || 0) * 0.8);
                     }
+                    if (typeof App.ensureLimitBreakProgress === 'function') {
+                        App.ensureLimitBreakProgress(char);
+                    }
                 });
             }
             // ----------------------------------
@@ -1341,6 +1702,9 @@ load: () => {
                     maxDamage: { val: 0, actor: '', actorLv: null, skill: '', time: null },
                     startTime: Date.now()
                 };
+            }
+            if (typeof App.syncDerivedLimitBreaks === 'function') {
+                App.syncDerivedLimitBreaks();
             }
         } 
     } catch(e) { console.error(e); } 
@@ -1431,7 +1795,7 @@ load: () => {
         if(fileInput && fileInput.files && fileInput.files[0]) {
             const file = fileInput.files[0];
             if(file.size > 500 * 1024) {
-                alert("画像サイズが大きすぎます(500KB以下)");
+                App.showMessage("画像サイズが大きすぎます(500KB以下)");
                 return;
             }
             const reader = new FileReader();
@@ -1446,7 +1810,8 @@ load: () => {
         const name = document.getElementById('player-name').value || 'アルス';
         App.data = JSON.parse(JSON.stringify(INITIAL_DATA_TEMPLATE));
         App.data.characters[0].name = name;
-        App.data.characters[0].img = imgSrc; 
+        const heroMaster = (window.CHARACTERS_DATA || []).find(c => c.id === 301);
+        App.data.characters[0].img = imgSrc || heroMaster?.img || null; 
         
         // スキルツリー初期化
         App.data.characters[0].tree = { ATK:0, MAG:0, SPD:0, HP:0, MP:0 };
@@ -1487,7 +1852,7 @@ load: () => {
 			localStorage.setItem(CONST.SAVE_KEY, JSON.stringify(App.data));
 			window.location.href = 'index.html';
 		} catch(e) {
-			alert("データ作成失敗");
+			App.showMessage("データ作成失敗");
 		}
     },
     
@@ -1564,14 +1929,10 @@ load: () => {
 	char.weaponType = char.weaponTypes[0] || '素手';
 
 
-    // --- 限界突破回数の計算 (主人公 ID301 は独自ロジックで算出) ---
-    let lb = char.limitBreak || 0;
-	if (char.charId === 301 && App.data && App.data.progress) {
-		const ss = (App.data.progress.storyStep || 0);
-		const mf = (App.data.dungeon && App.data.dungeon.maxFloor) || 0;
-		// ロジック統合
-		lb = Math.max(0, ss - 1) + Math.floor(Math.max(0, mf - 1) / 10) * 5;
-	}
+    // --- 限界突破回数の計算 ---
+    // 現在値は App.syncDerivedLimitBreaks / App.addLimitBreak が管理する。
+    if (typeof App.ensureLimitBreakProgress === 'function') App.ensureLimitBreakProgress(char);
+    let lb = Math.max(0, Math.min(99, Math.floor(Number(char.limitBreak) || 0)));
 
     // レアリティ別加算率
     const LB_RATES = { 'N': 0.40, 'R': 0.30, 'SR': 0.28, 'SSR': 0.25, 'UR': 0.20, 'EX': 0.10 };
@@ -2379,14 +2740,7 @@ load: () => {
 		// ★追加：転生マークの生成
         const reincarnated = c.reincarnationCount ? `<span style="color:#00ff00; margin-left:4px;">★${c.reincarnationCount}</span>` : '';
 		
-		// ★修正: 主人公(ID 301)の表示用限界突破値の算出を統一
-        let lbVal = c.limitBreak || 0;
-		if (c.charId === 301 && App.data && App.data.progress) {
-			const ss = (App.data.progress.storyStep || 0);
-			const mf = (App.data.dungeon && App.data.dungeon.maxFloor) || 0;
-			// 表示用も新ロジックに統一
-			lbVal = Math.max(0, ss - 1) + Math.floor(Math.max(0, mf - 1) / 10) * 5;
-		}
+        const lbVal = Math.max(0, Math.min(99, Math.floor(Number(c.limitBreak) || 0)));
 		
         return `
             <div class="char-row">
@@ -2568,7 +2922,7 @@ load: () => {
     downloadSave: () => {
         if (!App.data) {
             if(typeof Menu !== 'undefined') Menu.msg("セーブデータがありません");
-            else alert("セーブデータがありません");
+            else App.showMessage("セーブデータがありません");
             return;
         }
         const json = JSON.stringify(App.data);
@@ -2594,19 +2948,19 @@ load: () => {
             if (!file) return;
 
             const reader = new FileReader();
-            reader.onload = (event) => {
+            reader.onload = async (event) => {
                 try {
                     const loadedData = JSON.parse(event.target.result);
                     if (loadedData.gold !== undefined && loadedData.party && loadedData.characters) {
-                        if (confirm("現在のデータを上書きして復元しますか？\n(ページがリロードされます)")) {
+                        if (await App.showConfirm("現在のデータを上書きして復元しますか？\n(ページがリロードされます)")) {
                             localStorage.setItem(CONST.SAVE_KEY, JSON.stringify(loadedData));
                             location.reload(); 
                         }
                     } else {
-                        alert("不正なセーブデータ形式です");
+                        App.showMessage("不正なセーブデータ形式です");
                     }
                 } catch (err) {
-                    alert("ファイルの読み込みに失敗しました");
+                    App.showMessage("ファイルの読み込みに失敗しました");
                     console.error(err);
                 }
             };
@@ -3160,6 +3514,11 @@ const Field = {
             return;
         }
 
+        if (action.type === 'limitBreakTrial' && typeof App.startLimitBreakTrial === 'function') {
+            App.startLimitBreakTrial(action);
+            return;
+        }
+
         if (action.type === 'boss') {
             const fixedBossId = action.monsterId !== undefined ? action.monsterId : null;
             let isSpecialBoss = !!action.special;
@@ -3296,25 +3655,28 @@ const Field = {
 
         if (typeof App.isFlying === 'function' && App.isFlying()) return false;
 
-        if (tile === 'I' || tile === 'B') {
-            let targetAreaKey = null;
+        let targetAreaKey = null;
+        if (typeof MapRegistry !== 'undefined' && typeof MapRegistry.getWorldAreaAt === 'function') {
+            const entry = MapRegistry.getWorldAreaAt(x, y);
+            targetAreaKey = entry ? entry[0] : null;
+        } else {
             for (let key in STORY_DATA.areas) {
                 if (STORY_DATA.areas[key].centerX === x && STORY_DATA.areas[key].centerY === y) {
                     targetAreaKey = key;
                     break;
                 }
             }
+        }
 
-            if (targetAreaKey && typeof FIXED_MAPS !== 'undefined' && FIXED_MAPS[targetAreaKey]) {
-                const areaDef = FIXED_MAPS[targetAreaKey];
-                App.setAction(`${areaDef.name}に入る`, () => Field.enterFixedMap(targetAreaKey));
-            } else if (targetAreaKey && typeof FIXED_DUNGEON_MAPS !== 'undefined' && FIXED_DUNGEON_MAPS[targetAreaKey]) {
-                const areaDef = FIXED_DUNGEON_MAPS[targetAreaKey];
-                App.setAction(`${areaDef.name}に入る`, () => Dungeon.startFixed(targetAreaKey));
-            } else {
+        if (targetAreaKey && typeof FIXED_MAPS !== 'undefined' && FIXED_MAPS[targetAreaKey]) {
+            const areaDef = FIXED_MAPS[targetAreaKey];
+            App.setAction(`${areaDef.name}に入る`, () => Field.enterFixedMap(targetAreaKey));
+        } else if (targetAreaKey && typeof FIXED_DUNGEON_MAPS !== 'undefined' && FIXED_DUNGEON_MAPS[targetAreaKey]) {
+            const areaDef = FIXED_DUNGEON_MAPS[targetAreaKey];
+            App.setAction(`${areaDef.name}に入る`, () => Dungeon.startFixed(targetAreaKey));
+        } else if (tile === 'I' || tile === 'B') {
                 logIfNeeded('小さな休憩所がある。');
                 App.setAction('休む', () => App.changeScene('inn'));
-            }
         } else if (tile === 'E') {
             App.setAction('メダル交換', () => App.changeScene('medal'));
         } else if (tile === 'K') {

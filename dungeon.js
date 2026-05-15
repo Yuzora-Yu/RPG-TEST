@@ -394,11 +394,9 @@ const Dungeon = {
 					StoryManager.syncHeroLimitBreak(); // story.jsの新ロジックを呼び出し
 				} else {
 					// フォールバック用
-					const ss = (App.data.progress && App.data.progress.storyStep) || 0;
-					const maxF = App.data.dungeon.maxFloor;
 					const hero = App.data.characters?.find(c => c.charId === 301 || c.uid === 'p1');
 					if (hero) {
-						hero.limitBreak = Math.max(0, ss - 1) + Math.floor(Math.max(0, maxF - 1) / 10) * 5;
+						if (typeof App.syncDerivedLimitBreaks === 'function') App.syncDerivedLimitBreaks({ heroOnly: true });
 						if (typeof App.calcStats === 'function') App.calcStats(hero);
 					}
 				}
@@ -1131,8 +1129,12 @@ const Dungeon = {
             if (typeof StoryManager !== 'undefined' && typeof StoryManager.showChoice === 'function') {
                 StoryManager.active = true;
                 accepted = await StoryManager.showChoice('なんと、冒険者と遭遇した！\n話しかけてみますか？');
+            } else if (typeof Menu !== 'undefined' && typeof Menu.confirm === 'function') {
+                accepted = await new Promise(resolve => {
+                    Menu.confirm('なんと、冒険者と遭遇した！\n話しかけてみますか？', () => resolve(true), () => resolve(false));
+                });
             } else {
-                accepted = window.confirm('なんと、冒険者と遭遇した！\n話しかけてみますか？');
+                accepted = false;
             }
 
             if (!accepted) {
@@ -1176,7 +1178,7 @@ const Dungeon = {
                 StoryManager.endConversation();
                 delete StoryManager.scripts[key];
             } else {
-                alert(`こんなところで会うなんて、これも何かの縁だ。\n${rewardText}`);
+                App.log(`こんなところで会うなんて、これも何かの縁だ。<br>${rewardText}`);
             }
             App.log(`<span style="color:#ffd700;">${rewardText}</span>`);
 			
@@ -1211,8 +1213,12 @@ const Dungeon = {
             if (typeof StoryManager !== 'undefined' && typeof StoryManager.showChoice === 'function') {
                 StoryManager.active = true;
                 accepted = await StoryManager.showChoice('このままだと危険かもしれない。\n亀裂の根源を断ちますか？\n（強敵との戦闘になります）');
+            } else if (typeof Menu !== 'undefined' && typeof Menu.confirm === 'function') {
+                accepted = await new Promise(resolve => {
+                    Menu.confirm('闇がどこまでも続いているような亀裂を見つけた・・・\n亀裂の根源を断ちますか？\n（強敵との戦闘になります）', () => resolve(true), () => resolve(false));
+                });
             } else {
-                accepted = window.confirm('闇がどこまでも続いているような亀裂を見つけた・・・\n亀裂の根源を断ちますか？\n（強敵との戦闘になります）');
+                accepted = false;
             }
 
             if (!accepted) {
@@ -1309,7 +1315,7 @@ const Dungeon = {
             StoryManager.endConversation();
             delete StoryManager.scripts[key];
         } else {
-            alert(`亀裂の根源を打ち破った！\n根源が消滅し、その跡から輝く装備を見つけた！！\n${itemName}を手に入れた！`);
+            App.log(`亀裂の根源を打ち破った！<br>根源が消滅し、その跡から輝く装備を見つけた！！<br>${itemName}を手に入れた！`);
         }
 
         App.log(`<span style="color:#ffd700;">${itemName}を手に入れた！</span>`);
