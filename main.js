@@ -265,15 +265,15 @@ const App = {
 	encounterTransitioning: false,
 
     unlockDefaults: {
-        smith: false,
-        gacha: false,
-        abyss: false,
-        teleport: false,
-        casino: false,
-        medalKing: false,
-        boat: false,
-        wing: false,
-        fixedDungeonEndless: false
+        smith: true,
+        gacha: true,
+        abyss: true,
+        teleport: true,
+        casino: true,
+        medalKing: true,
+        boat: true,
+        wing: true,
+        fixedDungeonEndless: true
     },
 
     unlockLabels: {
@@ -300,7 +300,7 @@ const App = {
         }
 
         Object.keys(App.unlockDefaults).forEach(key => {
-            if (App.data.progress.unlocked[key] === undefined) {
+            if (App.data.progress.unlocked[key] === undefined || App.unlockDefaults[key] === true) {
                 App.data.progress.unlocked[key] = App.unlockDefaults[key];
             }
         });
