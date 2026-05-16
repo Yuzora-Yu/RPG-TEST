@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PRISMA ABYSS - Monster Editor BAND ONLY v3</title>
+  <script src="skills.js"></script>
+  <script src="items.js"></script>
+  <script src="passiveSkill.js"></script>
+  <script src="monster-images.js"></script>
+  <script src="monsters.js"></script>
+  <style>
+    :root{
+      --bg:#0b1020;--panel:#121a2f;--panel2:#18233c;--panel3:#0f1729;--line:#2b3854;
+      --muted:#9aa7bd;--text:#eef4ff;--accent:#f2b84b;--accent2:#61d3ff;--danger:#ff5d73;
+      --ok:#43d18a;--warn:#ffcf5a;--input:#0d1528;--shadow:0 18px 60px rgba(0,0,0,.35)
+    }
+    *{box-sizing:border-box}html,body{height:100%;margin:0}body{background:radial-gradient(circle at 18% 0%,rgba(90,112,255,.16),transparent 30%),var(--bg);color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP",sans-serif;overflow:hidden}button,input,select,textarea{font:inherit}button{cursor:pointer}input,select,textarea{width:100%;color:var(--text);background:var(--input);border:1px solid var(--line);border-radius:10px;padding:9px 10px;outline:none}textarea{resize:vertical;min-height:160px;line-height:1.55;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;font-size:12px}input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(242,184,75,.12)}label{display:block;color:var(--muted);font-size:12px;font-weight:800;margin:0 0 6px}.app{height:100%;display:grid;grid-template-rows:64px 1fr}.topbar{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 18px;border-bottom:1px solid var(--line);background:rgba(12,18,34,.92);backdrop-filter:blur(14px);position:relative;z-index:10}.brand{display:flex;align-items:baseline;gap:10px;white-space:nowrap}.brand strong{color:var(--accent);letter-spacing:.03em;font-size:18px}.brand span{color:var(--muted);font-size:12px}.statsline{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px;flex-wrap:wrap;justify-content:flex-end}.pill{border:1px solid var(--line);background:rgba(255,255,255,.04);border-radius:99px;padding:5px 9px}.layout{min-height:0;display:grid;grid-template-columns:380px 1fr}.sidebar{min-height:0;display:grid;grid-template-rows:auto 1fr auto;border-right:1px solid var(--line);background:rgba(9,14,28,.72)}.searchbox{padding:14px;border-bottom:1px solid var(--line);display:grid;gap:10px}.filters{display:grid;grid-template-columns:1fr 1fr;gap:8px}.list{overflow:auto;padding:8px}.monster-row{display:grid;grid-template-columns:58px 1fr;gap:10px;align-items:center;padding:10px;border:1px solid transparent;border-radius:14px;margin-bottom:8px;background:rgba(255,255,255,.025);width:100%;text-align:left;color:inherit}.monster-row:hover{background:rgba(255,255,255,.06);border-color:var(--line)}.monster-row.active{border-color:rgba(242,184,75,.75);background:rgba(242,184,75,.10)}.thumb{width:58px;height:58px;border-radius:12px;border:1px solid var(--line);background:var(--panel3);display:flex;align-items:center;justify-content:center;overflow:hidden;color:#5f6b82;font-size:20px}.thumb img{max-width:100%;max-height:100%;object-fit:contain}.row-title{display:flex;justify-content:space-between;gap:8px;align-items:center}.row-title b{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.row-meta{color:var(--muted);font-size:11px;display:flex;flex-wrap:wrap;gap:7px;margin-top:5px}.tag{display:inline-flex;align-items:center;border-radius:7px;padding:2px 6px;font-size:10px;font-weight:900;border:1px solid var(--line);color:var(--muted);margin-left:3px}.tag.boss{color:#ffd1d8;border-color:rgba(255,93,115,.45);background:rgba(255,93,115,.12)}.tag.rare{color:#ffe7a5;border-color:rgba(255,207,90,.45);background:rgba(255,207,90,.12)}.tag.band{color:#cdeaff;border-color:rgba(97,211,255,.45);background:rgba(97,211,255,.10)}.sidebar-actions{padding:12px;border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 1fr;gap:8px}.main{min-width:0;min-height:0;overflow:auto;padding:20px}.empty{height:100%;display:grid;place-items:center;color:var(--muted)}.hero{display:grid;grid-template-columns:180px 1fr auto;gap:18px;align-items:center;background:linear-gradient(135deg,rgba(97,211,255,.10),rgba(242,184,75,.08));border:1px solid var(--line);border-radius:20px;padding:16px;box-shadow:var(--shadow);margin-bottom:16px}.image-card{height:150px;border-radius:16px;background:var(--panel3);border:1px solid var(--line);display:grid;place-items:center;overflow:hidden}.image-card img{max-width:100%;max-height:100%;object-fit:contain}.image-card .missing{color:#536176;font-size:13px;text-align:center;padding:10px}.hero h1{margin:0 0 8px;font-size:28px}.hero .id{color:var(--accent);font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:900}.hero-meta{display:flex;gap:8px;flex-wrap:wrap}.hero-actions{display:grid;gap:8px;min-width:160px}.tabs{display:flex;gap:6px;overflow-x:auto;border-bottom:1px solid var(--line);margin-bottom:16px}.tab{flex:0 0 auto;border:1px solid transparent;border-bottom:0;color:var(--muted);background:transparent;padding:10px 13px;border-radius:12px 12px 0 0;font-weight:900;font-size:12px}.tab.active{color:var(--accent);background:rgba(242,184,75,.10);border-color:var(--line)}.grid{display:grid;gap:14px}.cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}.cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}.cols-5{grid-template-columns:repeat(5,minmax(0,1fr))}.cols-6{grid-template-columns:repeat(6,minmax(0,1fr))}.cols-7{grid-template-columns:repeat(7,minmax(0,1fr))}.card{background:rgba(18,26,47,.92);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 12px 30px rgba(0,0,0,.18);margin-bottom:14px}.card h2{margin:0 0 14px;font-size:15px;color:var(--accent2);display:flex;justify-content:space-between;align-items:center;gap:10px}.btn{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:10px;padding:9px 12px;font-weight:900;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none}.btn:hover{filter:brightness(1.08)}.btn.primary{background:#255ec8;border-color:#397bff}.btn.gold{background:#8a5b16;border-color:#d59a2b}.btn.green{background:#12683f;border-color:#23a96b}.btn.red{background:#862235;border-color:#c64b60}.btn.ghost{background:transparent}.btn.small{padding:6px 8px;font-size:12px;border-radius:8px}.checkgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.check{display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.035);color:var(--text);font-weight:800;font-size:13px}.check input{width:auto}.table{width:100%;border-collapse:separate;border-spacing:0 8px}.table th{color:var(--muted);font-size:11px;text-align:left;padding:0 8px}.table td{background:rgba(255,255,255,.035);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:8px;vertical-align:top}.table td:first-child{border-left:1px solid var(--line);border-radius:12px 0 0 12px}.table td:last-child{border-right:1px solid var(--line);border-radius:0 12px 12px 0}.hint{color:var(--muted);font-size:12px;line-height:1.6}.lookup-line{color:var(--muted);font-size:11px;margin-top:5px;line-height:1.45}.lookup-name{color:var(--accent2);font-weight:900}.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.muted{color:var(--muted);font-size:12px}.kv{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end}.archive-row{display:grid;grid-template-columns:1fr auto;gap:10px;margin-bottom:10px}.exportbox{min-height:520px;color:#b7fff0;background:#030711;white-space:pre;overflow:auto}.warnbox{border:1px solid rgba(255,207,90,.35);background:rgba(255,207,90,.08);border-radius:12px;padding:10px;color:#ffe7a5;font-size:12px;line-height:1.6;margin-bottom:10px}@media(max-width:1100px){.layout{grid-template-columns:320px 1fr}.hero{grid-template-columns:120px 1fr}.hero-actions{grid-column:1/-1;grid-template-columns:repeat(3,1fr)}.cols-5,.cols-6,.cols-7{grid-template-columns:repeat(3,1fr)}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand"><strong>PRISMA ABYSS</strong><span>Monster Editor / BAND ONLY v2 / 現行 monsters.js 完全出力固定</span></div>
+    <div class="toolbar"><button class="btn green" data-action="csvTab">CSV</button><button class="btn gold" data-action="exportTab">JS出力へ</button><button class="btn" data-action="reloadPage">再読込</button></div>
+    <div class="statsline" id="topStats"></div>
+  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="searchbox">
+        <input id="q" placeholder="ID / 名前 / 種族 / スキル名で検索" />
+        <div class="filters">
+          <select id="flagFilter"><option value="all">すべて</option><option value="normal">通常band</option><option value="boss">ボス</option><option value="rare">レア</option><option value="special">特殊ボス</option></select>
+          <select id="sortMode"><option value="id">ID順</option><option value="minF">階層順</option><option value="rank">ランク順</option><option value="name">名前順</option></select>
+        </div>
+      </div>
+      <div class="list" id="monsterList"></div>
+      <div class="sidebar-actions"><button class="btn primary" data-action="addMonster">+ 新規追加</button><button class="btn green" data-action="sortById">ID整列</button></div>
+    </aside>
+    <main class="main" id="main"></main>
+  </div>
+</div>
+<script>
+(function(){
+  "use strict";
+
+  const tabs = [["basic","基本"],["acts","AI行動"],["drops","ドロップ"],["resist","耐性"],["traits","パッシブ/メモ"],["json","詳細JSON"],["csv","CSV"],["export","JS出力"]];
+  const flagFields = ["isBoss","isRare","isEstark","isSpecialBoss","isElite"];
+  const numericFields = new Set(["id","rank","minF","maxF","hp","mp","atk","def","spd","mag","mdef","hit","eva","cri","gold","exp","actCount","_bandStart","_bandEnd"]);
+  const elements = ["火","水","風","雷","光","闇","混沌"];
+  const ailmentLabels = {Poison:"毒",ToxicPoison:"猛毒",Shock:"感電",Fear:"怯え",SpellSeal:"呪文封印",SkillSeal:"特技封印",HealSeal:"回復封印",Seal:"封印",Debuff:"弱体",InstantDeath:"即死",PercentDamage:"割合ダメージ",Sleep:"眠り",Confusion:"混乱",Charm:"魅了",Curse:"呪い"};
+
+  const EDITOR_VERSION = "2026-05-16-band-only-v3-csv";
+  const DEFAULT_MONSTER_RACES = {"antiDemon": ["死霊", "魔族"], "antiBeast": ["獣", "獣人"], "antiMachine": ["機械", "無生物"], "antiDragon": ["竜", "竜人"], "noKillerCurrently": ["粘体", "精霊", "植物", "人"]};
+  const DEFAULT_BALANCE_RULE = {"singleBossFloor": {"baseHp": "boss.hp", "basePower": "Math.max(boss.atk, boss.mag)"}, "multiBossFloor": {"baseHp": "sum(boss.hp) / (bossCount / 1.5)", "basePower": "sum(Math.max(boss.atk, boss.mag)) / (bossCount / 1.5)"}, "normalMonster": {"hpLimit": "baseHp * 0.20", "powerLimit": "basePower * 0.70"}, "eliteMonster": {"hpLimit": "baseHp * 0.30", "powerLimit": "basePower * 0.90", "note": "actCount: 2 の場合は、ATK/MAG * 2回行動込みで powerLimit 内に収める"}};
+  const DEFAULT_LOW_FLOOR_OFFSETS = {"1": [{"hpMp": 1, "other": 1, "reward": 1}, {"hpMp": 1.8, "other": 1.2, "reward": 1.25}, {"hpMp": 2.9, "other": 1.4, "reward": 1.45}, {"hpMp": 4.3, "other": 1.65, "reward": 1.7}, {"hpMp": 6.3, "other": 2, "reward": 2}], "6": [{"hpMp": 1, "other": 1, "reward": 1}, {"hpMp": 1.15, "other": 1.06, "reward": 1.08}, {"hpMp": 1.3, "other": 1.12, "reward": 1.14}, {"hpMp": 1.45, "other": 1.18, "reward": 1.2}, {"hpMp": 1.6, "other": 1.24, "reward": 1.26}]};
+  const DEFAULT_STANDARD_FLOOR_OFFSETS = [{"hpMp": 1, "other": 1, "reward": 1}, {"hpMp": 1.08, "other": 1.06, "reward": 1.05}, {"hpMp": 1.16, "other": 1.12, "reward": 1.1}, {"hpMp": 1.24, "other": 1.18, "reward": 1.15}, {"hpMp": 1.32, "other": 1.24, "reward": 1.2}];
+
+  const state = {
+    monsters: [], skills: [], items: [], passives: [], skillMap: new Map(), itemMap: new Map(), passiveMap: new Map(),
+    selectedUid: null, tab: "basic", q: "", flagFilter: "all", sortMode: "id", rawJsonText: "", exportText: "", exportMode: "full", lastMessage: "",
+    source: { races: {}, balanceRule: {}, lowFloorOffsets: {}, standardFloorOffsets: [] }
+  };
+
+  const $ = (id) => document.getElementById(id);
+  const uid = () => `${Date.now().toString(36)}_${Math.random().toString(36).slice(2,9)}`;
+  const clone = (v) => JSON.parse(JSON.stringify(v ?? null));
+  const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+  const toNumberOrNull = (v) => v === "" || v === null || v === undefined ? null : Number(v);
+  const selected = () => state.monsters.find((m) => m._uid === state.selectedUid) || null;
+
+  function getPassiveMaster(){
+    try { if (typeof PassiveSkill !== "undefined" && PassiveSkill && PassiveSkill.MASTER) return PassiveSkill.MASTER; } catch(e) {}
+    return (window.PassiveSkill && window.PassiveSkill.MASTER) || {};
+  }
+
+  function normalizeAct(a){
+    if (typeof a === "number") return { id: a, rate: 10, condition: 0 };
+    if (!a || typeof a !== "object") return { id: 1, rate: 10, condition: 0 };
+    return { ...clone(a), id: toNumberOrNull(a.id), rate: Number(a.rate ?? 10), condition: Number(a.condition ?? 0) };
+  }
+
+  function normalizeDrops(drops, oldDrop){
+    const d = clone(drops || {});
+    if (!d.normal) d.normal = oldDrop ? { id: oldDrop.id ?? null, rate: oldDrop.rate ?? 0 } : { id: null, rate: 0 };
+    if (!d.rare) d.rare = { id: null, rate: 0 };
+    d.normal.id = d.normal.id === undefined ? null : d.normal.id;
+    d.normal.rate = Number(d.normal.rate ?? 0);
+    d.rare.id = d.rare.id === undefined ? null : d.rare.id;
+    d.rare.rate = Number(d.rare.rate ?? 0);
+    return d;
+  }
+
+  function normalizeTraits(list){
+    if (!Array.isArray(list)) return [];
+    return list.map((t) => {
+      if (typeof t === "number") return { id: t, level: 1 };
+      if (typeof t === "string") return { id: null, level: 1, custom: t };
+      if (t && typeof t === "object") return { ...clone(t), id: t.id === undefined ? null : toNumberOrNull(t.id), level: Number(t.level ?? 1) };
+      return { id: null, level: 1, custom: "" };
+    });
+  }
+
+  function inferBand(minF){
+    const f = Math.max(1, Number(minF) || 1);
+    if (f <= 5) return { start: 1, end: 5, offsetType: "low_1_5" };
+    if (f <= 10) return { start: 6, end: 10, offsetType: "low_6_10" };
+    const start = Math.floor((f - 1) / 5) * 5 + 1;
+    return { start, end: start + 4, offsetType: "" };
+  }
+
+  function normalizeMonster(source, meta = {}){
+    const m = clone(source || {});
+    m._uid = uid();
+    m._sourceGroup = meta.group || m._sourceGroup || "band";
+    m._bandStart = Number(meta.bandStart ?? m._bandStart ?? inferBand(m.minF).start);
+    m._bandEnd = Number(meta.bandEnd ?? m._bandEnd ?? inferBand(m.minF).end);
+    m._offsetType = meta.offsetType ?? m._offsetType ?? inferBand(m.minF).offsetType;
+    m.id = Number(m.id ?? 0);
+    m.name = m.name ?? "";
+    m.race = m.race ?? "";
+    m.rank = Number(m.rank ?? 1);
+    m.minF = Number(m.minF ?? 1);
+    for (const k of ["hp","mp","atk","def","spd","mag","mdef","hit","eva","cri","gold","exp","actCount"]) m[k] = Number(m[k] ?? (k === "actCount" ? 1 : 0));
+    for (const k of flagFields) m[k] = Boolean(m[k]);
+    m.acts = Array.isArray(m.acts) ? m.acts.map(normalizeAct) : [];
+    m.drops = normalizeDrops(m.drops, m.drop);
+    delete m.drop;
+    m.elmRes = m.elmRes && typeof m.elmRes === "object" ? clone(m.elmRes) : {};
+    m.resists = m.resists && typeof m.resists === "object" ? clone(m.resists) : {};
+    m.traits = normalizeTraits(m.traits);
+    m.archives = Array.isArray(m.archives) ? clone(m.archives) : [];
+    return m;
+  }
+
+  function cleanMonster(m){
+    const out = clone(m);
+    delete out._uid; delete out._sourceGroup; delete out._bandStart; delete out._bandEnd; delete out._offsetType;
+    out.acts = (out.acts || []).map((a) => ({ ...clone(a), id: a.id === null ? null : Number(a.id), rate: Number(a.rate ?? 0), condition: Number(a.condition ?? 0) }));
+    out.drops = normalizeDrops(out.drops);
+    out.traits = (out.traits || []).map((t) => {
+      if (t.id === null || t.id === undefined || t.id === "") return t.custom ? String(t.custom) : { id: null, level: Number(t.level ?? 1) };
+      const copy = clone(t); copy.id = Number(copy.id); copy.level = Number(copy.level ?? 1); delete copy.custom; return copy;
+    }).filter((t) => !(typeof t === "object" && t.id === null && !t.custom));
+    for (const key of Object.keys(out.elmRes || {})) {
+      const n = Number(out.elmRes[key]);
+      if (out.elmRes[key] === "" || out.elmRes[key] === null || Number.isNaN(n)) delete out.elmRes[key]; else out.elmRes[key] = n;
+    }
+    for (const key of Object.keys(out.resists || {})) {
+      const n = Number(out.resists[key]);
+      if (out.resists[key] === "" || out.resists[key] === null || Number.isNaN(n)) delete out.resists[key]; else out.resists[key] = n;
+    }
+    return out;
+  }
+
+  function initData(){
+    const md = window.MonsterData || {};
+    state.source.races = clone(md.races || DEFAULT_MONSTER_RACES);
+    state.source.balanceRule = clone(md.balanceRule || DEFAULT_BALANCE_RULE);
+    state.source.lowFloorOffsets = clone(md.lowFloorOffsets || DEFAULT_LOW_FLOOR_OFFSETS);
+    state.source.standardFloorOffsets = clone(md.standardFloorOffsets || DEFAULT_STANDARD_FLOOR_OFFSETS);
+
+    const monsters = [];
+    if (Array.isArray(md.bands) && md.bands.length) {
+      md.bands.forEach((band) => (band.monsters || []).forEach((mon) => monsters.push(normalizeMonster(mon, { group: "band", bandStart: band.bandStart, bandEnd: band.bandEnd, offsetType: band.offsetType || "" }))));
+      (md.rareMonsters || []).forEach((mon) => monsters.push(normalizeMonster(mon, { group: "rare" })));
+      (md.bossMonsters || []).forEach((mon) => monsters.push(normalizeMonster(mon, { group: "boss" })));
+      (md.specialBosses || []).forEach((mon) => monsters.push(normalizeMonster(mon, { group: "special" })));
+    } else {
+      const raw = Array.isArray(window.MONSTERS_DATA) ? window.MONSTERS_DATA : [];
+      raw.forEach((mon) => monsters.push(normalizeMonster(mon, { group: mon.isSpecialBoss || mon.isEstark ? "special" : mon.isBoss ? "boss" : mon.isRare ? "rare" : "band" })));
+    }
+
+    const seen = new Set();
+    state.monsters = monsters.filter((m) => { const key = `${m.id}:${m._sourceGroup}:${m._bandStart}`; if (seen.has(key)) return false; seen.add(key); return true; }).sort((a,b) => Number(a.id) - Number(b.id));
+    state.skills = Array.isArray(window.SKILLS_DATA) ? clone(window.SKILLS_DATA).sort((a,b) => Number(a.id)-Number(b.id)) : [];
+    state.items = Array.isArray(window.ITEMS_DATA) ? clone(window.ITEMS_DATA).sort((a,b) => Number(a.id)-Number(b.id)) : [];
+    state.passives = Object.values(getPassiveMaster()).map(clone).sort((a,b) => Number(a.id)-Number(b.id));
+    state.skillMap = new Map(state.skills.map((s) => [Number(s.id), s]));
+    state.itemMap = new Map(state.items.map((i) => [Number(i.id), i]));
+    state.passiveMap = new Map(state.passives.map((p) => [Number(p.id), p]));
+    state.selectedUid = state.monsters[0]?._uid || null;
+    refreshRawJson();
+  }
+
+  function imageSrc(m){
+    if (!m) return "";
+    if (m.img) return m.img;
+    const map = window.MonsterImageMap || {};
+    return map[m.id] || `assets/monsters/monster_${m.id}.png`;
+  }
+
+  function skillLabel(id){ const s = state.skillMap.get(Number(id)); return s ? `[${s.id}] ${s.name}` : `[${id ?? "?"}] 未登録スキル`; }
+  function itemLabel(id){ if (id === null || id === undefined || id === "") return "なし"; const i = state.itemMap.get(Number(id)); return i ? `[${i.id}] ${i.name}` : `[${id}] 未登録アイテム`; }
+  function passiveLabel(id){ if (id === null || id === undefined || id === "") return "未指定"; const p = state.passiveMap.get(Number(id)); return p ? `[${p.id}] ${p.name}` : `[${id}] 未登録パッシブ`; }
+
+  function skillOptions(value){
+    const current = value === null || value === undefined ? "" : String(value);
+    return `<option value="">-- スキル未指定 --</option>` + state.skills.map((s) => {
+      const selected = String(s.id) === current ? " selected" : "";
+      const detail = [s.type, s.target, s.elm ? `${s.elm}属性` : "", s.mp !== undefined ? `MP${s.mp}` : ""].filter(Boolean).join(" / ");
+      return `<option value="${esc(s.id)}"${selected}>[${esc(s.id)}] ${esc(s.name)}${detail ? ` - ${esc(detail)}` : ""}</option>`;
+    }).join("");
+  }
+  function itemOptions(value){
+    const current = value === null || value === undefined ? "" : String(value);
+    return `<option value="">なし</option>` + state.items.map((i) => {
+      const selected = String(i.id) === current ? " selected" : "";
+      const detail = [i.type, i.rank !== undefined ? `Rank${i.rank}` : "", i.price !== undefined ? `${i.price}G` : ""].filter(Boolean).join(" / ");
+      return `<option value="${esc(i.id)}"${selected}>[${esc(i.id)}] ${esc(i.name)}${detail ? ` - ${esc(detail)}` : ""}</option>`;
+    }).join("");
+  }
+  function passiveOptions(value){
+    const current = value === null || value === undefined ? "" : String(value);
+    return `<option value="">-- パッシブ未指定 --</option>` + state.passives.map((p) => {
+      const selected = String(p.id) === current ? " selected" : "";
+      const detail = [p.type, p.weaponType || (Array.isArray(p.weaponTypes) ? p.weaponTypes.join("/") : "")].filter(Boolean).join(" / ");
+      return `<option value="${esc(p.id)}"${selected}>[${esc(p.id)}] ${esc(p.name)}${detail ? ` - ${esc(detail)}` : ""}</option>`;
+    }).join("");
+  }
+
+  function uniqueRaces(){
+    const base = ["粘体","獣","獣人","精霊","無生物","機械","竜","竜人","魔族","死霊","植物","人","鳥","海","？？？？"];
+    return Array.from(new Set([...base, ...state.monsters.map((m) => m.race).filter(Boolean)])).sort((a,b) => String(a).localeCompare(String(b), "ja"));
+  }
+
+  function effectiveGroup(m){
+    if (m.isSpecialBoss || m.isEstark || m._sourceGroup === "special") return "special";
+    if (m.isBoss || m._sourceGroup === "boss") return "boss";
+    if (m.isRare || m._sourceGroup === "rare") return "rare";
+    return "band";
+  }
+
+  function filteredMonsters(){
+    const q = state.q.trim().toLowerCase();
+    let list = state.monsters.filter((m) => {
+      const group = effectiveGroup(m);
+      if (state.flagFilter === "normal" && group !== "band") return false;
+      if (state.flagFilter === "boss" && group !== "boss") return false;
+      if (state.flagFilter === "rare" && group !== "rare") return false;
+      if (state.flagFilter === "special" && group !== "special") return false;
+      if (!q) return true;
+      const actNames = (m.acts || []).map((a) => skillLabel(a.id)).join(" ").toLowerCase();
+      return String(m.id).includes(q) || String(m.name || "").toLowerCase().includes(q) || String(m.race || "").toLowerCase().includes(q) || actNames.includes(q);
+    });
+    list = list.slice().sort((a,b) => {
+      if (state.sortMode === "name") return String(a.name).localeCompare(String(b.name), "ja");
+      if (state.sortMode === "rank") return Number(a.rank)-Number(b.rank) || Number(a.id)-Number(b.id);
+      if (state.sortMode === "minF") return Number(a.minF)-Number(b.minF) || Number(a.id)-Number(b.id);
+      return Number(a.id)-Number(b.id);
+    });
+    return list;
+  }
+
+  function renderTopStats(){
+    const normal = state.monsters.filter((m) => effectiveGroup(m) === "band").length;
+    const boss = state.monsters.filter((m) => effectiveGroup(m) === "boss").length;
+    const rare = state.monsters.filter((m) => effectiveGroup(m) === "rare").length;
+    const special = state.monsters.filter((m) => effectiveGroup(m) === "special").length;
+    $("topStats").innerHTML = `<span class="pill">Monsters: ${state.monsters.length}</span><span class="pill">Band: ${normal}</span><span class="pill">Boss: ${boss}</span><span class="pill">Rare: ${rare}</span><span class="pill">Special: ${special}</span><span class="pill">Skills: ${state.skills.length}</span><span class="pill">Items: ${state.items.length}</span><span class="pill">Passives: ${state.passives.length}</span>`;
+  }
+
+  function groupTag(m){
+    const group = effectiveGroup(m);
+    if (group === "special") return `<span class="tag boss">SPECIAL</span>`;
+    if (group === "boss") return `<span class="tag boss">BOSS</span>`;
+    if (group === "rare") return `<span class="tag rare">RARE</span>`;
+    return `<span class="tag band">BAND ${esc(m._bandStart)}-${esc(m._bandEnd)}</span>`;
+  }
+
+  function renderSidebar(){
+    const list = filteredMonsters();
+    $("monsterList").innerHTML = list.map((m) => `
+      <button class="monster-row ${m._uid === state.selectedUid ? "active" : ""}" data-select="${esc(m._uid)}">
+        <span class="thumb"><img src="${esc(imageSrc(m))}" alt="" onerror="this.replaceWith(document.createTextNode('👹'))"></span>
+        <span>
+          <span class="row-title"><b>${esc(m.name || "(名称未設定)")}</b><span>${groupTag(m)}${m.isElite ? '<span class="tag">ELITE</span>' : ''}</span></span>
+          <span class="row-meta"><span>#${esc(m.id)}</span><span>F${esc(m.minF)}</span><span>R${esc(m.rank)}</span><span>${esc(m.race || "-")}</span><span>HP${esc(m.hp)}</span></span>
+        </span>
+      </button>`).join("") || `<div class="hint" style="padding:16px;">該当するモンスターがありません。</div>`;
+  }
+
+  function renderMain(){
+    const m = selected();
+    if (!m) { $("main").innerHTML = `<div class="empty"><div><div style="font-size:56px;text-align:center;opacity:.35;">👹</div><p>左からモンスターを選択してください。</p></div></div>`; return; }
+    $("main").innerHTML = `
+      <section class="hero">
+        <div class="image-card"><img src="${esc(imageSrc(m))}" alt="${esc(m.name)}" onerror="this.outerHTML='<div class=&quot;missing&quot;>画像なし<br>${esc(imageSrc(m))}</div>'"></div>
+        <div><div class="id">MONSTER #${esc(m.id)}</div><h1>${esc(m.name || "UNNAMED")}</h1><div class="hero-meta"><span class="pill">種族: ${esc(m.race || "-")}</span><span class="pill">Rank ${esc(m.rank)}</span><span class="pill">minF ${esc(m.minF)}</span><span class="pill">行動 ${esc(m.actCount)}回</span>${groupTag(m)}${m.isElite ? '<span class="tag">ELITE</span>' : ''}</div></div>
+        <div class="hero-actions"><button class="btn" data-action="duplicateMonster">複製</button><button class="btn red" data-action="deleteMonster">削除</button><button class="btn green" data-action="sortById">ID順に整列</button></div>
+      </section>
+      <nav class="tabs">${tabs.map(([id,name]) => `<button class="tab ${state.tab === id ? "active" : ""}" data-tab="${id}">${name}</button>`).join("")}</nav>
+      <section>${renderTab(m)}</section>`;
+  }
+
+  function renderTab(m){
+    if (state.tab === "acts") return renderActs(m);
+    if (state.tab === "drops") return renderDrops(m);
+    if (state.tab === "resist") return renderResists(m);
+    if (state.tab === "traits") return renderTraits(m);
+    if (state.tab === "json") return renderJson(m);
+    if (state.tab === "csv") return renderCsv();
+    if (state.tab === "export") return renderExport();
+    return renderBasic(m);
+  }
+
+  function renderBasic(m){
+    return `<div class="grid cols-2">
+      <div class="card"><h2>基本情報</h2><div class="grid cols-3">
+        <div><label>ID</label><input data-field="id" type="number" step="0.001" value="${esc(m.id)}"></div>
+        <div><label>名前</label><input data-field="name" value="${esc(m.name)}"></div>
+        <div><label>種族</label><select data-field="race">${uniqueRaces().map((r) => `<option value="${esc(r)}"${r === m.race ? " selected" : ""}>${esc(r)}</option>`).join("")}</select></div>
+        <div><label>ランク</label><input data-field="rank" type="number" value="${esc(m.rank)}"></div>
+        <div><label>開始階層 minF</label><input data-field="minF" type="number" value="${esc(m.minF)}"></div>
+        <div><label>行動回数 actCount</label><input data-field="actCount" type="number" value="${esc(m.actCount)}"></div>
+        <div><label>経験値 exp</label><input data-field="exp" type="number" value="${esc(m.exp)}"></div>
+        <div><label>ゴールド gold</label><input data-field="gold" type="number" value="${esc(m.gold)}"></div>
+        <div><label>画像パス img 任意</label><input data-field="img" value="${esc(m.img || "")}" placeholder="空なら assets/monsters/monster_ID.png"></div>
+      </div></div>
+      <div class="card"><h2>出力区分 / band情報</h2><div class="warnbox">通常雑魚は <b>MONSTER_BANDS_1_200</b> に、レア/ボス/特殊ボスは固定配列に出力します。フラグを変えると出力先も変わります。</div>
+        <div class="checkgrid">${flagFields.map((f) => `<label class="check"><input data-flag="${f}" type="checkbox" ${m[f] ? "checked" : ""}>${f}</label>`).join("")}</div>
+        <div class="grid cols-3" style="margin-top:14px;">
+          <div><label>bandStart</label><input data-field="_bandStart" type="number" value="${esc(m._bandStart)}"></div>
+          <div><label>bandEnd</label><input data-field="_bandEnd" type="number" value="${esc(m._bandEnd)}"></div>
+          <div><label>offsetType</label><select data-field="_offsetType"><option value=""${!m._offsetType ? " selected" : ""}>通常</option><option value="low_1_5"${m._offsetType === "low_1_5" ? " selected" : ""}>low_1_5</option><option value="low_6_10"${m._offsetType === "low_6_10" ? " selected" : ""}>low_6_10</option></select></div>
+        </div>
+      </div>
+      <div class="card" style="grid-column:1/-1"><h2>ステータス</h2><div class="grid cols-6">${["hp","mp","atk","def","spd","mag","mdef","hit","eva","cri"].map((k) => `<div><label>${k}</label><input data-field="${k}" type="number" value="${esc(m[k])}"></div>`).join("")}</div></div>
+    </div>`;
+  }
+
+  function renderActs(m){
+    const total = (m.acts || []).reduce((sum,a) => sum + Number(a.rate || 0), 0);
+    return `<div class="card"><h2>AI行動 acts <span class="muted">合計率: ${Math.round(total * 10) / 10}</span></h2><div class="toolbar" style="margin-bottom:12px;"><button class="btn primary" data-action="addAct">+ 行動追加</button><button class="btn" data-action="normalizeActRates">確率を均等化</button><button class="btn" data-action="sortActsByRate">確率順</button></div>
+      <table class="table"><thead><tr><th style="width:46%">スキルID / 名称</th><th>確率</th><th>条件</th><th>表示</th><th>操作</th></tr></thead><tbody>${(m.acts || []).map((a,idx) => `<tr><td><select data-act-index="${idx}" data-act-field="id">${skillOptions(a.id)}</select></td><td><input data-act-index="${idx}" data-act-field="rate" type="number" step="0.1" value="${esc(a.rate)}"></td><td><input data-act-index="${idx}" data-act-field="condition" type="number" value="${esc(a.condition)}"></td><td><div class="lookup-line"><span class="lookup-name">${esc(skillLabel(a.id))}</span></div></td><td><button class="btn red small" data-action="removeAct" data-index="${idx}">削除</button></td></tr>`).join("") || `<tr><td colspan="5"><div class="hint">acts は空です。</div></td></tr>`}</tbody></table></div>`;
+  }
+
+  function renderDrops(m){
+    return `<div class="grid cols-2"><div class="card"><h2>通常ドロップ</h2><label>アイテム</label><select data-drop-kind="normal" data-drop-field="id">${itemOptions(m.drops?.normal?.id)}</select><div class="lookup-line">表示: <span class="lookup-name">${esc(itemLabel(m.drops?.normal?.id))}</span></div><div style="margin-top:12px"><label>ドロップ率 %</label><input data-drop-kind="normal" data-drop-field="rate" type="number" step="0.1" value="${esc(m.drops?.normal?.rate ?? 0)}"></div></div><div class="card"><h2>レアドロップ</h2><label>アイテム</label><select data-drop-kind="rare" data-drop-field="id">${itemOptions(m.drops?.rare?.id)}</select><div class="lookup-line">表示: <span class="lookup-name">${esc(itemLabel(m.drops?.rare?.id))}</span></div><div style="margin-top:12px"><label>ドロップ率 %</label><input data-drop-kind="rare" data-drop-field="rate" type="number" step="0.1" value="${esc(m.drops?.rare?.rate ?? 0)}"></div></div></div>`;
+  }
+
+  function renderResists(m){
+    const extraElm = Object.keys(m.elmRes || {}).filter((k) => !elements.includes(k));
+    const ailmentKeys = Array.from(new Set([...Object.keys(ailmentLabels), ...Object.keys(m.resists || {})]));
+    return `<div class="grid"><div class="card"><h2>属性耐性 elmRes <span class="muted">0=標準 / 負値=弱点 / 高値=耐性</span></h2><div class="grid cols-7">${[...elements,...extraElm].map((elm) => `<div><label>${esc(elm)}</label><input data-elm="${esc(elm)}" type="number" value="${esc((m.elmRes || {})[elm] ?? 0)}"></div>`).join("")}</div><div class="kv" style="margin-top:14px"><div><label>属性キー追加</label><input id="newElmKey" placeholder="例: 土"></div><div><label>値</label><input id="newElmVal" type="number" value="0"></div><button class="btn" data-action="addElm">追加</button></div></div><div class="card"><h2>状態異常耐性 resists</h2><div class="grid cols-6">${ailmentKeys.map((key) => `<div><label>${esc(ailmentLabels[key] || key)} <span class="muted">${esc(key)}</span></label><input data-resist="${esc(key)}" type="number" value="${esc((m.resists || {})[key] ?? 0)}"></div>`).join("")}</div><div class="kv" style="margin-top:14px"><div><label>耐性キー追加</label><input id="newResistKey" placeholder="例: Stun"></div><div><label>値</label><input id="newResistVal" type="number" value="0"></div><button class="btn" data-action="addResist">追加</button></div></div></div>`;
+  }
+
+  function renderTraits(m){
+    return `<div class="grid"><div class="card"><h2>パッシブスキル traits</h2><div class="toolbar" style="margin-bottom:12px"><button class="btn primary" data-action="addTrait">+ パッシブ追加</button></div><table class="table"><thead><tr><th>パッシブID / 名称</th><th>Lv</th><th>任意メモ/文字列</th><th>表示</th><th>操作</th></tr></thead><tbody>${(m.traits || []).map((t,idx) => `<tr><td><select data-trait-index="${idx}" data-trait-field="id">${passiveOptions(t.id)}</select></td><td><input data-trait-index="${idx}" data-trait-field="level" type="number" value="${esc(t.level ?? 1)}"></td><td><input data-trait-index="${idx}" data-trait-field="custom" value="${esc(t.custom || "")}" placeholder="ID未指定時は文字列として出力"></td><td><div class="lookup-line"><span class="lookup-name">${esc(passiveLabel(t.id))}</span></div></td><td><button class="btn red small" data-action="removeTrait" data-index="${idx}">削除</button></td></tr>`).join("") || `<tr><td colspan="5"><div class="hint">traits は空です。</div></td></tr>`}</tbody></table></div><div class="card"><h2>アーカイブ / メモ archives</h2><div class="toolbar" style="margin-bottom:12px"><button class="btn primary" data-action="addArchive">+ メモ追加</button></div>${(m.archives || []).map((text,idx) => `<div class="archive-row"><textarea data-archive-index="${idx}">${esc(text)}</textarea><button class="btn red small" data-action="removeArchive" data-index="${idx}">削除</button></div>`).join("") || `<div class="hint">archives は空です。</div>`}</div></div>`;
+  }
+
+  function refreshRawJson(){ const m = selected(); state.rawJsonText = m ? JSON.stringify(cleanMonster(m), null, 2) : ""; }
+  function renderJson(m){
+    if (!state.rawJsonText) refreshRawJson();
+    return `<div class="card"><h2>詳細JSON直接編集</h2><div class="hint" style="margin-bottom:10px">画面にない独自キーもここで編集できます。適用すると現在選択中のモンスターに反映します。</div><textarea id="rawJson" style="min-height:520px">${esc(state.rawJsonText)}</textarea><div class="toolbar" style="margin-top:10px"><button class="btn green" data-action="applyRawJson">JSONを適用</button><button class="btn" data-action="refreshRawJson">現在値で再生成</button></div></div>`;
+  }
+
+  function renderCsv(){
+    const actSlots = Math.max(8, ...state.monsters.map((m) => (m.acts || []).length));
+    const traitSlots = Math.max(6, ...state.monsters.map((m) => (m.traits || []).length));
+    return `<div class="card"><h2>CSV入出力 <span class="muted">${esc(EDITOR_VERSION)}</span></h2><div class="warnbox"><b>CSVは1行=1モンスターです。</b><br>Excelで編集しやすいように、AI行動は <b>act1_id / act1_name / act1_rate / act1_condition</b> 形式、パッシブは <b>trait1_id / trait1_name / trait1_level</b> 形式でも出します。<br>取り込み時、名称列（act*_name / drop*_name / trait*_name）は参照用として無視し、ID列を正として読み込みます。bandStart / bandEnd / offsetType / sourceGroup もCSVから復元します。</div><div class="toolbar" style="margin-bottom:12px"><button class="btn green" data-action="downloadCsv">CSV出力</button><button class="btn primary" data-action="importCsv">CSV取り込み</button><button class="btn gold" data-action="generateExport">取り込み後にJS生成</button><span class="muted">${esc(state.lastMessage || `acts列 ${actSlots}枠 / traits列 ${traitSlots}枠で出力`)}</span></div><div class="hint">推奨手順: CSV出力 → Excel/スプレッドシートで編集 → CSV保存 → CSV取り込み → JS出力タブで monsters.js を生成。複雑な項目もJSON列を残しているため、列を削らなければ往復しやすくなっています。</div></div>`;
+  }
+
+  function renderExport(){
+    state.exportMode = "full";
+    return `<div class="card"><h2>JS出力 <span class="muted">${esc(EDITOR_VERSION)}</span></h2><div class="warnbox"><b>この版は出力形式を1つに固定しています。</b><br>必ず現行形式の <b>MONSTER_BANDS_1_200</b> / <b>FIXED_RARE_MONSTERS</b> / <b>FIXED_BOSS_MONSTERS</b> / <b>FIXED_SPECIAL_BOSSES</b> を再構築した、置き換え用の完全な monsters.js を出力します。<br><b>const monsters = [...] から始まる旧式出力は出ません。</b></div><div class="toolbar" style="margin-bottom:12px"><button class="btn gold" data-action="generateExport">完全版 monsters.js を生成</button><button class="btn primary" data-action="copyExport">コピー</button><button class="btn green" data-action="downloadExport">monsters.jsを保存</button><button class="btn" data-action="csvTab">CSVへ</button><span class="muted">${esc(state.lastMessage)}</span></div><textarea id="exportText" class="exportbox" spellcheck="false">${esc(state.exportText)}</textarea></div>`;
+  }
+
+  function render(){ renderTopStats(); renderSidebar(); renderMain(); }
+  function updateMainHeaderOnly(){ renderTopStats(); renderSidebar(); }
+
+  function addMonster(){
+    const maxId = Math.max(0, ...state.monsters.map((m) => Number(m.id) || 0));
+    const band = inferBand(1);
+    const m = normalizeMonster({ id: Math.floor(maxId) + 1, name: "新規モンスター", race: "粘体", rank: 1, minF: 1, hp: 10, mp: 0, atk: 8, def: 4, spd: 5, mag: 4, mdef: 4, hit: 0, eva: 0, cri: 0, gold: 10, exp: 10, actCount: 1, acts: [{ id: 1, rate: 100, condition: 0 }], drops: { normal: { id: null, rate: 0 }, rare: { id: null, rate: 0 } }, elmRes: {}, resists: {}, traits: [], archives: [] }, { group: "band", bandStart: band.start, bandEnd: band.end, offsetType: band.offsetType });
+    state.monsters.push(m); state.selectedUid = m._uid; state.tab = "basic"; refreshRawJson(); render();
+  }
+
+  function jsValue(v, indent = 0){
+    if (Array.isArray(v)) return `[${v.map((x) => jsValue(x, indent)).join(",")}]`;
+    if (v && typeof v === "object") {
+      const entries = Object.entries(v).filter(([,val]) => val !== undefined);
+      if (!entries.length) return "{}";
+      return `{${entries.map(([k,val]) => `${JSON.stringify(k)}:${jsValue(val, indent)}`).join(",")}}`;
+    }
+    return JSON.stringify(v);
+  }
+
+  function monsterToCode(mon){
+    const m = cleanMonster(mon);
+    const acts = m.acts || [];
+    delete m.acts;
+    const body = Object.entries(m).filter(([,v]) => v !== undefined).map(([k,v]) => {
+      if (k === "drops") {
+        const normalEmpty = !v.normal || (v.normal.id == null && Number(v.normal.rate || 0) === 0);
+        const rareEmpty = !v.rare || (v.rare.id == null && Number(v.rare.rate || 0) === 0);
+        if (normalEmpty && rareEmpty) return null;
+      }
+      if ((k === "elmRes" || k === "resists") && (!v || Object.keys(v).length === 0)) return null;
+      if ((k === "traits" || k === "archives") && (!Array.isArray(v) || v.length === 0)) return null;
+      if (flagFields.includes(k) && v === false) return null;
+      return `${k}:${jsValue(v)}`;
+    }).filter(Boolean);
+    body.push(`acts:[${acts.map((a) => {
+      const id = a.id == null ? "null" : Number(a.id);
+      const rate = Number(a.rate ?? 0);
+      const condition = Number(a.condition ?? 0);
+      return condition ? `act(${id},${rate},${condition})` : `act(${id},${rate})`;
+    }).join(",")}]`);
+    return `m({${body.join(",")}})`;
+  }
+
+  function buildModel(){
+    const bandsMap = new Map();
+    const rare = [], boss = [], special = [];
+    for (const m of state.monsters) {
+      const group = effectiveGroup(m);
+      if (group === "special") special.push(m);
+      else if (group === "boss") boss.push(m);
+      else if (group === "rare") rare.push(m);
+      else {
+        const inferred = inferBand(m.minF);
+        const start = Number(m._bandStart || inferred.start);
+        const end = Number(m._bandEnd || inferred.end);
+        const offsetType = m._offsetType || inferred.offsetType || "";
+        const key = `${start}:${end}:${offsetType}`;
+        if (!bandsMap.has(key)) bandsMap.set(key, { bandStart: start, bandEnd: end, offsetType, monsters: [] });
+        bandsMap.get(key).monsters.push(m);
+      }
+    }
+    const bands = Array.from(bandsMap.values()).sort((a,b) => a.bandStart - b.bandStart || a.bandEnd - b.bandEnd);
+    bands.forEach((b) => b.monsters.sort((a,c) => Number(a.id)-Number(c.id)));
+    rare.sort((a,b) => Number(a.id)-Number(b.id)); boss.sort((a,b) => Number(a.id)-Number(b.id)); special.sort((a,b) => Number(a.id)-Number(b.id));
+    const flat = bands.flatMap((b) => b.monsters).concat(rare, boss, special).map(cleanMonster);
+    return { bands, rare, boss, special, flat };
+  }
+
+  function bandsCode(model){
+    const low = Object.keys(state.source.lowFloorOffsets || {}).length ? state.source.lowFloorOffsets : {1:[{hpMp:1,other:1,reward:1}],6:[{hpMp:1,other:1,reward:1}]};
+    const standard = Array.isArray(state.source.standardFloorOffsets) && state.source.standardFloorOffsets.length ? state.source.standardFloorOffsets : [{hpMp:1,other:1,reward:1}];
+    return `const MONSTER_RACES = ${JSON.stringify(state.source.races || {}, null, 2)};\n\n` +
+`const emptyDrops = () => ({\n  normal: { id: null, rate: 0 },\n  rare: { id: null, rate: 0 },\n});\n\n` +
+`const act = (id, rate, condition = 0) => ({ id, rate, condition });\n\n` +
+`const m = (d) => ({\n  hit: 0,\n  eva: 0,\n  cri: 0,\n  isBoss: false,\n  isRare: false,\n  isEstark: false,\n  isSpecialBoss: false,\n  drops: emptyDrops(),\n  elmRes: {},\n  resists: {},\n  traits: [],\n  archives: [],\n  ...d,\n});\n\n` +
+`const BALANCE_RULE = ${JSON.stringify(state.source.balanceRule || {}, null, 2)};\n\n` +
+`const LOW_FLOOR_OFFSETS = ${JSON.stringify(low, null, 2)};\n\n` +
+`const STANDARD_FLOOR_OFFSETS = ${JSON.stringify(standard, null, 2)};\n\n` +
+`const MONSTER_BANDS_1_200 = [\n${model.bands.map((band) => {
+      const head = `  { bandStart: ${band.bandStart}, bandEnd: ${band.bandEnd}${band.offsetType ? `, offsetType: ${JSON.stringify(band.offsetType)}` : ""}, monsters: [`;
+      const rows = band.monsters.map((m) => `    ${monsterToCode(m)},`).join("\n");
+      return `${head}\n${rows}\n  ]}`;
+    }).join(",\n\n")}\n];\n\n` +
+`const FIXED_RARE_MONSTERS = [\n${model.rare.map((m) => `  ${monsterToCode(m)},`).join("\n")}\n];\n\n` +
+`const FIXED_BOSS_MONSTERS = [\n${model.boss.map((m) => `  ${monsterToCode(m)},`).join("\n")}\n];\n\n` +
+`const FIXED_SPECIAL_BOSSES = [\n${model.special.map((m) => `  ${monsterToCode(m)},`).join("\n")}\n];\n`;
+  }
+
+  function fullRuntimeCode(){
+    return `\nconst FIXED_MONSTERS = [\n  ...FIXED_RARE_MONSTERS,\n  ...FIXED_BOSS_MONSTERS,\n  ...FIXED_SPECIAL_BOSSES,\n];\n\n` +
+`const NORMAL_MONSTER_BASES = MONSTER_BANDS_1_200.flatMap((band) => band.monsters);\n\n` +
+`const ALL_MONSTER_BASES = [\n  ...NORMAL_MONSTER_BASES,\n  ...FIXED_MONSTERS,\n];\n\n` +
+`const monsters = ALL_MONSTER_BASES;\n\n` +
+`function cloneMonsterData(monster) {\n  return monster ? JSON.parse(JSON.stringify(monster)) : null;\n}\n\n` +
+`function getFloorOffset(floor, band) {\n  const index = Math.max(0, Math.min(4, floor - band.bandStart));\n\n  if (band.offsetType === 'low_1_5') {\n    return LOW_FLOOR_OFFSETS[1][index];\n  }\n\n  if (band.offsetType === 'low_6_10') {\n    return LOW_FLOOR_OFFSETS[6][index];\n  }\n\n  return STANDARD_FLOOR_OFFSETS[index];\n}\n\n` +
+`function applyFloorOffset(baseMonster, floor, band) {\n  const offset = getFloorOffset(floor, band);\n  const monster = cloneMonsterData(baseMonster);\n\n  monster.hp = Math.floor(monster.hp * offset.hpMp);\n  monster.mp = Math.floor(monster.mp * offset.hpMp);\n  monster.atk = Math.floor(monster.atk * offset.other);\n  monster.def = Math.floor(monster.def * offset.other);\n  monster.spd = Math.floor(monster.spd * offset.other);\n  monster.mag = Math.floor(monster.mag * offset.other);\n  monster.mdef = Math.floor(monster.mdef * offset.other);\n  monster.gold = Math.floor(monster.gold * offset.reward);\n  monster.exp = Math.floor(monster.exp * offset.reward);\n\n  monster.baseId = baseMonster.id;\n  monster.generatedFloor = floor;\n  monster.isBandMonster = true;\n\n  return monster;\n}\n\n` +
+`function getMonsterBandForFloor(floor) {\n  return MONSTER_BANDS_1_200.find((band) => floor >= band.bandStart && floor <= band.bandEnd) || null;\n}\n\n` +
+`function generateBandMonster(floor) {\n  const band = getMonsterBandForFloor(floor);\n\n  if (!band || !band.monsters || band.monsters.length === 0) {\n    return null;\n  }\n\n  const base = band.monsters[Math.floor(Math.random() * band.monsters.length)];\n  return applyFloorOffset(base, floor, band);\n}\n\n` +
+`function getBossesForFloor(floor) {\n  return FIXED_BOSS_MONSTERS\n    .filter((monster) => monster.isBoss && !monster.isRare && !monster.isEstark && !monster.isSpecialBoss && monster.minF === floor)\n    .map(cloneMonsterData);\n}\n\n` +
+`function getSpecialBossesForFloor(floor) {\n  return FIXED_SPECIAL_BOSSES\n    .filter((monster) => monster.isBoss && (monster.isSpecialBoss || monster.isEstark) && monster.minF === floor)\n    .map(cloneMonsterData);\n}\n\n` +
+`function getBossesByIds(ids) {\n  const idList = Array.isArray(ids) ? ids : [ids];\n\n  return idList\n    .map((id) => ALL_MONSTER_BASES.find((monster) => monster.id === id))\n    .filter(Boolean)\n    .map(cloneMonsterData);\n}\n\n` +
+`function getRareCandidatesForFloor(floor) {\n  const unlocked = FIXED_RARE_MONSTERS\n    .filter((monster) => monster.isRare && !monster.isBoss && !monster.isEstark && !monster.isSpecialBoss && floor >= monster.minF)\n    .sort((a, b) => b.minF - a.minF);\n\n  return unlocked.length > 0 ? [unlocked[0]] : [];\n}\n\n` +
+`function getRareEncounterRate(floor) {\n  if (floor >= 101) return 0.03;\n  if (floor >= 50) return 0.025;\n  if (floor >= 20) return 0.02;\n  if (floor >= 5) return 0.015;\n  return 0;\n}\n\n` +
+`function tryGenerateRareMonster(floor) {\n  const candidates = getRareCandidatesForFloor(floor);\n\n  if (candidates.length === 0) {\n    return null;\n  }\n\n  if (Math.random() >= getRareEncounterRate(floor)) {\n    return null;\n  }\n\n  return cloneMonsterData(candidates[Math.floor(Math.random() * candidates.length)]);\n}\n\n` +
+`function getMonsterById(id) {\n  return ALL_MONSTER_BASES.find((monster) => monster.id === id) || null;\n}\n\n` +
+`function getDeepFloorNormalBaseCandidates() {\n  return NORMAL_MONSTER_BASES.filter((monster) => !monster.isBoss && !monster.isRare && !monster.isEstark && !monster.isSpecialBoss);\n}\n\n` +
+`function generateEnemyForFloor(floor, options = {}) {\n  const { allowRare = true } = options;\n\n  if (allowRare) {\n    const rare = tryGenerateRareMonster(floor);\n    if (rare) return rare;\n  }\n\n  if (floor >= 1 && floor <= 200) {\n    return generateBandMonster(floor);\n  }\n\n  return null;\n}\n\n` +
+`window.MONSTERS_DATA = monsters;\n\n` +
+`window.MonsterData = {\n  races: MONSTER_RACES,\n  balanceRule: BALANCE_RULE,\n  lowFloorOffsets: LOW_FLOOR_OFFSETS,\n  standardFloorOffsets: STANDARD_FLOOR_OFFSETS,\n\n  bands: MONSTER_BANDS_1_200,\n  normalBases: NORMAL_MONSTER_BASES,\n  rareMonsters: FIXED_RARE_MONSTERS,\n  bossMonsters: FIXED_BOSS_MONSTERS,\n  specialBosses: FIXED_SPECIAL_BOSSES,\n  fixedMonsters: FIXED_MONSTERS,\n  allBases: ALL_MONSTER_BASES,\n\n  cloneMonsterData,\n  getFloorOffset,\n  applyFloorOffset,\n  getMonsterBandForFloor,\n  generateBandMonster,\n  getBossesForFloor,\n  getSpecialBossesForFloor,\n  getBossesByIds,\n  getRareCandidatesForFloor,\n  getRareEncounterRate,\n  tryGenerateRareMonster,\n  getMonsterById,\n  getDeepFloorNormalBaseCandidates,\n  generateEnemyForFloor,\n};\n`;
+  }
+
+  function buildExport(){
+    state.exportMode = "full";
+    const model = buildModel();
+    const header = `/* monsters.js - generated by PRISMA ABYSS Monster Editor ${EDITOR_VERSION} */
+`;
+    const dataPart = bandsCode(model);
+    return header + dataPart + fullRuntimeCode();
+  }
+
+  function generateExport(){
+    state.exportMode = "full";
+    const model = buildModel();
+    state.exportText = buildExport();
+    const ok = state.exportText.trim().startsWith("/* monsters.js") && state.exportText.includes("const MONSTER_BANDS_1_200");
+    state.lastMessage = `${model.flat.length}件 / band ${model.bands.length}枠で完全版生成${ok ? " OK" : " NG"}`;
+    renderMain();
+  }
+
+  function csvEscape(value){
+    const s = value === null || value === undefined ? "" : String(value);
+    return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  }
+
+  function parseCsv(text){
+    const rows = [];
+    let row = [], cur = "", inQuote = false;
+    const src = String(text || "").replace(/^\uFEFF/, "");
+    for (let i = 0; i < src.length; i++) {
+      const c = src[i];
+      if (inQuote) {
+        if (c === '"' && src[i + 1] === '"') { cur += '"'; i++; }
+        else if (c === '"') inQuote = false;
+        else cur += c;
+      } else {
+        if (c === '"') inQuote = true;
+        else if (c === ',') { row.push(cur); cur = ""; }
+        else if (c === '\n' || c === '\r') {
+          row.push(cur); cur = "";
+          if (row.some((v) => v !== "")) rows.push(row);
+          row = [];
+          if (c === '\r' && src[i + 1] === '\n') i++;
+        } else cur += c;
+      }
+    }
+    row.push(cur);
+    if (row.some((v) => v !== "")) rows.push(row);
+    return rows;
+  }
+
+  function boolCell(v){
+    const s = String(v ?? "").trim().toLowerCase();
+    return s === "true" || s === "1" || s === "yes" || s === "y" || s === "on" || s === "〇" || s === "○";
+  }
+
+  function numCell(v, fallback = 0){
+    if (v === null || v === undefined || String(v).trim() === "") return fallback;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : fallback;
+  }
+
+  function nullableNumCell(v){
+    if (v === null || v === undefined || String(v).trim() === "") return null;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  function jsonCell(value){
+    return JSON.stringify(value ?? null);
+  }
+
+  function sortedForCsv(){
+    const order = { band: 0, rare: 1, boss: 2, special: 3 };
+    return state.monsters.slice().sort((a,b) => {
+      const ga = effectiveGroup(a), gb = effectiveGroup(b);
+      return (order[ga] ?? 9) - (order[gb] ?? 9)
+        || Number(a._bandStart || 0) - Number(b._bandStart || 0)
+        || Number(a.minF || 0) - Number(b.minF || 0)
+        || Number(a.id || 0) - Number(b.id || 0);
+    });
+  }
+
+  function buildCsv(){
+    const monsters = sortedForCsv();
+    const actSlots = Math.max(8, ...monsters.map((m) => (m.acts || []).length));
+    const traitSlots = Math.max(6, ...monsters.map((m) => (m.traits || []).length));
+    const elmKeys = Array.from(new Set(["火","水","風","雷","光","闇","混沌", ...monsters.flatMap((m) => Object.keys(m.elmRes || {}))]));
+    const resistKeys = Array.from(new Set(["Poison","ToxicPoison","Shock","Fear","SpellSeal","SkillSeal","HealSeal","InstantDeath","Debuff","Seal", ...monsters.flatMap((m) => Object.keys(m.resists || {}))]));
+    const baseHeaders = ["sourceGroup","bandStart","bandEnd","offsetType","id","name","race","rank","minF","hp","mp","atk","def","spd","mag","mdef","hit","eva","cri","gold","exp","actCount","isBoss","isRare","isEstark","isSpecialBoss","isElite","img"];
+    const actHeaders = [];
+    for (let i = 1; i <= actSlots; i++) actHeaders.push(`act${i}_id`, `act${i}_name`, `act${i}_rate`, `act${i}_condition`);
+    const dropHeaders = ["dropNormalId","dropNormalName","dropNormalRate","dropRareId","dropRareName","dropRareRate"];
+    const elmHeaders = elmKeys.map((k) => `elmRes_${k}`);
+    const resistHeaders = resistKeys.map((k) => `resist_${k}`);
+    const traitHeaders = [];
+    for (let i = 1; i <= traitSlots; i++) traitHeaders.push(`trait${i}_id`, `trait${i}_name`, `trait${i}_level`, `trait${i}_custom`);
+    const jsonHeaders = ["archives_json","acts_json","drops_json","elmRes_json","resists_json","traits_json"];
+    const headers = [...baseHeaders, ...actHeaders, ...dropHeaders, ...elmHeaders, ...resistHeaders, ...traitHeaders, ...jsonHeaders];
+
+    const rows = monsters.map((m) => {
+      const out = {};
+      const group = effectiveGroup(m);
+      Object.assign(out, {
+        sourceGroup: group,
+        bandStart: group === "band" ? m._bandStart : "",
+        bandEnd: group === "band" ? m._bandEnd : "",
+        offsetType: group === "band" ? (m._offsetType || "") : "",
+        id: m.id, name: m.name, race: m.race, rank: m.rank, minF: m.minF,
+        hp: m.hp, mp: m.mp, atk: m.atk, def: m.def, spd: m.spd, mag: m.mag, mdef: m.mdef,
+        hit: m.hit, eva: m.eva, cri: m.cri, gold: m.gold, exp: m.exp, actCount: m.actCount,
+        isBoss: !!m.isBoss, isRare: !!m.isRare, isEstark: !!m.isEstark, isSpecialBoss: !!m.isSpecialBoss, isElite: !!m.isElite,
+        img: m.img || "",
+      });
+      for (let i = 1; i <= actSlots; i++) {
+        const a = (m.acts || [])[i - 1] || {};
+        out[`act${i}_id`] = a.id ?? "";
+        out[`act${i}_name`] = a.id === undefined || a.id === null || a.id === "" ? "" : (state.skillMap.get(Number(a.id))?.name || "未登録スキル");
+        out[`act${i}_rate`] = a.rate ?? "";
+        out[`act${i}_condition`] = a.condition ?? "";
+      }
+      out.dropNormalId = m.drops?.normal?.id ?? "";
+      out.dropNormalName = m.drops?.normal?.id == null ? "" : (state.itemMap.get(Number(m.drops.normal.id))?.name || "未登録アイテム");
+      out.dropNormalRate = m.drops?.normal?.rate ?? 0;
+      out.dropRareId = m.drops?.rare?.id ?? "";
+      out.dropRareName = m.drops?.rare?.id == null ? "" : (state.itemMap.get(Number(m.drops.rare.id))?.name || "未登録アイテム");
+      out.dropRareRate = m.drops?.rare?.rate ?? 0;
+      elmKeys.forEach((k) => out[`elmRes_${k}`] = (m.elmRes && m.elmRes[k] !== undefined) ? m.elmRes[k] : "");
+      resistKeys.forEach((k) => out[`resist_${k}`] = (m.resists && m.resists[k] !== undefined) ? m.resists[k] : "");
+      for (let i = 1; i <= traitSlots; i++) {
+        const tr = (m.traits || [])[i - 1] || {};
+        out[`trait${i}_id`] = tr.id ?? "";
+        out[`trait${i}_name`] = tr.id === undefined || tr.id === null || tr.id === "" ? "" : (state.passiveMap.get(Number(tr.id))?.name || "未登録パッシブ");
+        out[`trait${i}_level`] = tr.level ?? "";
+        out[`trait${i}_custom`] = tr.custom ?? "";
+      }
+      out.archives_json = jsonCell(m.archives || []);
+      out.acts_json = jsonCell(m.acts || []);
+      out.drops_json = jsonCell(m.drops || normalizeDrops());
+      out.elmRes_json = jsonCell(m.elmRes || {});
+      out.resists_json = jsonCell(m.resists || {});
+      out.traits_json = jsonCell(m.traits || []);
+      return headers.map((h) => csvEscape(out[h]));
+    });
+    return "\uFEFF" + [headers.map(csvEscape).join(","), ...rows.map((r) => r.join(","))].join("\n");
+  }
+
+  function importCsvText(text){
+    const rows = parseCsv(text);
+    if (rows.length < 2) throw new Error("CSVにデータ行がありません。");
+    const headers = rows[0].map((h) => String(h || "").trim());
+    const hidx = new Map(headers.map((h, i) => [h, i]));
+    const cell = (row, name) => hidx.has(name) ? (row[hidx.get(name)] ?? "") : "";
+    const hasAny = (row, names) => names.some((name) => String(cell(row, name)).trim() !== "");
+    const maxAct = headers.reduce((max, h) => Math.max(max, Number((h.match(/^act(\d+)_id$/) || [])[1] || 0)), 0);
+    const maxTrait = headers.reduce((max, h) => Math.max(max, Number((h.match(/^trait(\d+)_id$/) || [])[1] || 0)), 0);
+    const elmKeys = headers.filter((h) => h.startsWith("elmRes_")).map((h) => h.slice("elmRes_".length));
+    const resistKeys = headers.filter((h) => h.startsWith("resist_")).map((h) => h.slice("resist_".length));
+
+    const imported = rows.slice(1).filter((row) => row.some((v) => String(v || "").trim() !== "")).map((row) => {
+      let acts = [];
+      for (let i = 1; i <= maxAct; i++) {
+        const names = [`act${i}_id`, `act${i}_rate`, `act${i}_condition`];
+        if (!hasAny(row, names)) continue;
+        acts.push({ id: nullableNumCell(cell(row, `act${i}_id`)), rate: numCell(cell(row, `act${i}_rate`), 0), condition: numCell(cell(row, `act${i}_condition`), 0) });
+      }
+      if (!acts.length && String(cell(row, "acts_json")).trim()) {
+        try { acts = JSON.parse(cell(row, "acts_json")); } catch(e) { acts = []; }
+      }
+
+      let traits = [];
+      for (let i = 1; i <= maxTrait; i++) {
+        const names = [`trait${i}_id`, `trait${i}_level`, `trait${i}_custom`];
+        if (!hasAny(row, names)) continue;
+        traits.push({ id: nullableNumCell(cell(row, `trait${i}_id`)), level: numCell(cell(row, `trait${i}_level`), 1), custom: cell(row, `trait${i}_custom`) || undefined });
+      }
+      if (!traits.length && String(cell(row, "traits_json")).trim()) {
+        try { traits = JSON.parse(cell(row, "traits_json")); } catch(e) { traits = []; }
+      }
+
+      let elmRes = {};
+      elmKeys.forEach((k) => { const v = cell(row, `elmRes_${k}`); if (String(v).trim() !== "") elmRes[k] = numCell(v, 0); });
+      if (!Object.keys(elmRes).length && String(cell(row, "elmRes_json")).trim()) {
+        try { elmRes = JSON.parse(cell(row, "elmRes_json")) || {}; } catch(e) { elmRes = {}; }
+      }
+
+      let resists = {};
+      resistKeys.forEach((k) => { const v = cell(row, `resist_${k}`); if (String(v).trim() !== "") resists[k] = numCell(v, 0); });
+      if (!Object.keys(resists).length && String(cell(row, "resists_json")).trim()) {
+        try { resists = JSON.parse(cell(row, "resists_json")) || {}; } catch(e) { resists = {}; }
+      }
+
+      let archives = [];
+      if (String(cell(row, "archives_json")).trim()) {
+        try { archives = JSON.parse(cell(row, "archives_json")) || []; } catch(e) { archives = []; }
+      }
+
+      let drops = {
+        normal: { id: nullableNumCell(cell(row, "dropNormalId")), rate: numCell(cell(row, "dropNormalRate"), 0) },
+        rare: { id: nullableNumCell(cell(row, "dropRareId")), rate: numCell(cell(row, "dropRareRate"), 0) },
+      };
+      if (!hasAny(row, ["dropNormalId","dropNormalRate","dropRareId","dropRareRate"]) && String(cell(row, "drops_json")).trim()) {
+        try { drops = JSON.parse(cell(row, "drops_json")) || drops; } catch(e) {}
+      }
+
+      const raw = {
+        id: numCell(cell(row, "id"), 0), name: cell(row, "name"), race: cell(row, "race"), rank: numCell(cell(row, "rank"), 1), minF: numCell(cell(row, "minF"), 1),
+        hp: numCell(cell(row, "hp"), 0), mp: numCell(cell(row, "mp"), 0), atk: numCell(cell(row, "atk"), 0), def: numCell(cell(row, "def"), 0), spd: numCell(cell(row, "spd"), 0), mag: numCell(cell(row, "mag"), 0), mdef: numCell(cell(row, "mdef"), 0),
+        hit: numCell(cell(row, "hit"), 0), eva: numCell(cell(row, "eva"), 0), cri: numCell(cell(row, "cri"), 0), gold: numCell(cell(row, "gold"), 0), exp: numCell(cell(row, "exp"), 0), actCount: numCell(cell(row, "actCount"), 1),
+        isBoss: boolCell(cell(row, "isBoss")), isRare: boolCell(cell(row, "isRare")), isEstark: boolCell(cell(row, "isEstark")), isSpecialBoss: boolCell(cell(row, "isSpecialBoss")), isElite: boolCell(cell(row, "isElite")),
+        img: cell(row, "img") || undefined, acts, drops, elmRes, resists, traits, archives,
+      };
+      const group = cell(row, "sourceGroup") || (raw.isSpecialBoss || raw.isEstark ? "special" : raw.isBoss ? "boss" : raw.isRare ? "rare" : "band");
+      const inferred = inferBand(raw.minF);
+      return normalizeMonster(raw, {
+        group,
+        bandStart: cell(row, "bandStart") === "" ? inferred.start : numCell(cell(row, "bandStart"), inferred.start),
+        bandEnd: cell(row, "bandEnd") === "" ? inferred.end : numCell(cell(row, "bandEnd"), inferred.end),
+        offsetType: cell(row, "offsetType") || inferred.offsetType || "",
+      });
+    });
+    if (!imported.length) throw new Error("取り込めるモンスター行がありません。");
+    state.monsters = imported.sort((a,b) => Number(a.id)-Number(b.id));
+    state.selectedUid = state.monsters[0]?._uid || null;
+    state.exportText = "";
+    refreshRawJson();
+    state.lastMessage = `CSVから${state.monsters.length}件を取り込みました`;
+    render();
+  }
+
+  function triggerCsvImport(){
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".csv,text/csv";
+    input.onchange = () => {
+      const file = input.files && input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try { importCsvText(reader.result); }
+        catch(err) { alert(`CSV取り込みに失敗しました: ${err.message}`); }
+      };
+      reader.readAsText(file, "utf-8");
+    };
+    input.click();
+  }
+
+  function downloadBlob(filename, text, type){
+    const blob = new Blob([text], { type });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  function downloadText(filename, text){
+    downloadBlob(filename, text, "text/javascript;charset=utf-8");
+  }
+
+  document.addEventListener("input", (e) => {
+    const t = e.target; const m = selected();
+    if (t.id === "q") { state.q = t.value; renderSidebar(); return; }
+    if (!m) return;
+    if (t.dataset.field) { const f = t.dataset.field; m[f] = numericFields.has(f) ? Number(t.value) : t.value; if (["id","name","race","rank","minF","hp","_bandStart","_bandEnd","_offsetType"].includes(f)) updateMainHeaderOnly(); return; }
+    if (t.dataset.actIndex !== undefined) { const a = m.acts[Number(t.dataset.actIndex)]; if (!a) return; const f = t.dataset.actField; a[f] = f === "id" ? toNumberOrNull(t.value) : Number(t.value); return; }
+    if (t.dataset.dropKind) { const d = m.drops[t.dataset.dropKind]; const f = t.dataset.dropField; d[f] = f === "id" ? toNumberOrNull(t.value) : Number(t.value); return; }
+    if (t.dataset.elm) { m.elmRes[t.dataset.elm] = Number(t.value); return; }
+    if (t.dataset.resist) { m.resists[t.dataset.resist] = Number(t.value); return; }
+    if (t.dataset.traitIndex !== undefined) { const tr = m.traits[Number(t.dataset.traitIndex)]; if (!tr) return; const f = t.dataset.traitField; tr[f] = f === "id" ? toNumberOrNull(t.value) : (f === "level" ? Number(t.value) : t.value); return; }
+    if (t.dataset.archiveIndex !== undefined) { m.archives[Number(t.dataset.archiveIndex)] = t.value; return; }
+    if (t.id === "rawJson") { state.rawJsonText = t.value; return; }
+    if (t.id === "exportText") { state.exportText = t.value; return; }
+  });
+
+  document.addEventListener("change", (e) => {
+    const t = e.target; const m = selected();
+    if (t.id === "flagFilter") { state.flagFilter = t.value; renderSidebar(); return; }
+    if (t.id === "sortMode") { state.sortMode = t.value; renderSidebar(); return; }
+    if (t.id === "exportMode") { state.exportMode = "full"; return; }
+    if (!m) return;
+    if (t.dataset.flag) { m[t.dataset.flag] = t.checked; render(); return; }
+    if (t.dataset.actIndex !== undefined || t.dataset.dropKind || t.dataset.traitIndex !== undefined || t.dataset.field === "race" || t.dataset.field === "_offsetType") renderMain();
+  });
+
+  document.addEventListener("click", async (e) => {
+    const button = e.target.closest("button"); if (!button) return;
+    const m = selected();
+    if (button.dataset.select) { state.selectedUid = button.dataset.select; state.tab = "basic"; refreshRawJson(); render(); return; }
+    if (button.dataset.tab) { state.tab = button.dataset.tab; if (state.tab === "json") refreshRawJson(); renderMain(); return; }
+    const action = button.dataset.action; if (!action) return;
+    if (action === "reloadPage") { location.reload(); return; }
+    if (action === "addMonster") return addMonster();
+    if (action === "exportTab") { state.tab = "export"; renderMain(); return; }
+    if (action === "csvTab") { state.tab = "csv"; renderMain(); return; }
+    if (!m && !["generateExport","copyExport","downloadExport","downloadCsv","importCsv"].includes(action)) return;
+    if (action === "duplicateMonster") { const copy = normalizeMonster(cleanMonster(m), { group: effectiveGroup(m), bandStart: m._bandStart, bandEnd: m._bandEnd, offsetType: m._offsetType }); copy.id = Number(copy.id) + 0.001; copy.name = `${copy.name || "MONSTER"} 複製`; state.monsters.push(copy); state.selectedUid = copy._uid; render(); return; }
+    if (action === "deleteMonster") { if (!confirm(`${m.name || m.id} を削除しますか？`)) return; state.monsters = state.monsters.filter((x) => x._uid !== m._uid); state.selectedUid = state.monsters[0]?._uid || null; render(); return; }
+    if (action === "sortById") { state.monsters.sort((a,b) => Number(a.id)-Number(b.id)); render(); return; }
+    if (action === "addAct") { m.acts.push({ id: 1, rate: 10, condition: 0 }); renderMain(); return; }
+    if (action === "removeAct") { m.acts.splice(Number(button.dataset.index), 1); renderMain(); return; }
+    if (action === "normalizeActRates") { const n = m.acts.length; if (n) { const base = Math.floor((100 / n) * 10) / 10; m.acts.forEach((a) => a.rate = base); m.acts[n - 1].rate = Math.round((100 - base * (n - 1)) * 10) / 10; } renderMain(); return; }
+    if (action === "sortActsByRate") { m.acts.sort((a,b) => Number(b.rate)-Number(a.rate)); renderMain(); return; }
+    if (action === "addElm") { const key = $("newElmKey")?.value.trim(); if (key) m.elmRes[key] = Number($("newElmVal")?.value || 0); renderMain(); return; }
+    if (action === "addResist") { const key = $("newResistKey")?.value.trim(); if (key) m.resists[key] = Number($("newResistVal")?.value || 0); renderMain(); return; }
+    if (action === "addTrait") { m.traits.push({ id: state.passives[0]?.id ?? null, level: 1 }); renderMain(); return; }
+    if (action === "removeTrait") { m.traits.splice(Number(button.dataset.index), 1); renderMain(); return; }
+    if (action === "addArchive") { m.archives.push(""); renderMain(); return; }
+    if (action === "removeArchive") { m.archives.splice(Number(button.dataset.index), 1); renderMain(); return; }
+    if (action === "refreshRawJson") { refreshRawJson(); renderMain(); return; }
+    if (action === "applyRawJson") { try { const parsed = JSON.parse($("rawJson").value); const normalized = normalizeMonster(parsed, { group: effectiveGroup(m), bandStart: m._bandStart, bandEnd: m._bandEnd, offsetType: m._offsetType }); const idx = state.monsters.findIndex((x) => x._uid === m._uid); normalized._uid = m._uid; state.monsters[idx] = normalized; state.lastMessage = "JSONを適用しました"; refreshRawJson(); render(); } catch(err) { alert(`JSONの解析に失敗しました: ${err.message}`); } return; }
+    if (action === "generateExport") { generateExport(); return; }
+    if (action === "copyExport") { const boxText = $("exportText")?.value || ""; const text = boxText.includes("const MONSTER_BANDS_1_200") ? boxText : buildExport(); state.exportText = text; try { await navigator.clipboard.writeText(text); state.lastMessage = "完全版をコピーしました"; } catch(err) { state.lastMessage = "コピーに失敗しました。手動で選択してください。"; } renderMain(); return; }
+    if (action === "downloadExport") { const boxText = $("exportText")?.value || ""; const text = boxText.includes("const MONSTER_BANDS_1_200") ? boxText : buildExport(); downloadText("monsters.js", text); state.lastMessage = "完全版 monsters.js のダウンロードを開始しました"; renderMain(); return; }
+    if (action === "downloadCsv") { const csv = buildCsv(); downloadBlob("monsters_editor.csv", csv, "text/csv;charset=utf-8"); state.lastMessage = `CSVを出力しました（${state.monsters.length}件）`; renderMain(); return; }
+    if (action === "importCsv") { triggerCsvImport(); return; }
+  });
+
+  initData(); render();
+})();
+</script>
+</body>
+</html>
