@@ -3,7 +3,15 @@
 const Battle = {
     active: false,
     auto: false,
-    autoConserve: false,
+    balanceTuning: {
+        normalPowerMult: 1.55,
+        bossPowerMult: 1.35,
+        bossHpMult: 5.0,
+        normalMpMult: 1.2,
+        bossMpMult: 1.35,
+        normalHitBonus: 8,
+        bossHitBonus: 12
+    },
     phase: 'init',
     party: [],
     enemies: [],
@@ -85,11 +93,9 @@ const Battle = {
         Battle.commandQueue = [];
         Battle.currentActorIndex = 0;
         Battle.auto = false;
-        Battle.autoConserve = !!(App.data && App.data.settings && App.data.settings.autoConserve);
         Battle.runAttemptCount = 0; 
         Battle.skillScrollPositions = {};
         Battle.updateAutoButton();
-        Battle.updateAutoConserveButton();
         Battle.resultProcessing = false;
         Battle.resultReadyToEnd = false;
         Battle.resultSkipRequested = false;
@@ -196,16 +202,20 @@ const Battle = {
                 const m = new Monster(base, 1.0);
                 m.hp = e.hp; m.baseMaxHp = e.maxHp; m.name = e.name; m.id = e.baseId; m.isDead = m.hp <= 0;
                 m.baseId = e.baseId;
+                m.rank = e.rank || e.generatedFloor || base.generatedFloor || base.rank || base.minF || 1;
+                m.generatedFloor = e.generatedFloor || base.generatedFloor || null;
                 m.isBoss = e.isBoss || base.isBoss || false;
                 m.isRare = e.isRare || base.isRare || false;
                 m.isEstark = e.isEstark || base.isEstark || false;
                 m.isSpecialBoss = e.isSpecialBoss || base.isSpecialBoss || base.isEstark || Number(e.baseId) === 902000;
+                m.isStoryBoss = Battle.isStoryBossBase(base);
                 // ステータス適用の安全策
                 m.atk = m.baseStats?.atk || base.atk; m.def = m.baseStats?.def || base.def; 
                 m.spd = m.baseStats?.spd || base.spd; m.mag = m.baseStats?.mag || base.mag;
                 m.elmAtk = JSON.parse(JSON.stringify(base.elmAtk || {})); m.elmRes = JSON.parse(JSON.stringify(base.elmRes || {}));
                 m.passive = base.passive || {};
                 m.battleStatus = e.battleStatus || { buffs:{}, debuffs:{}, ailments:{} };
+                Battle.applyEnemyBalanceTuning(m, base, { isBossBattle: m.isBoss, scaleHp: false });
                 return m;
             }).filter(enemy => enemy !== null);
         } else {
@@ -226,7 +236,7 @@ const Battle = {
                 eventId: eventId, 
                 isAmbushed: Battle.isAmbushed, // フラグ維持用
                 isPreemptive: Battle.isPreemptive,
-                enemies: Battle.enemies.map(e => ({ baseId: e.baseId || e.id, hp: e.hp, maxHp: e.baseMaxHp, name: e.name, isBoss: e.isBoss, isRare: e.isRare, isSpecialBoss: e.isSpecialBoss, isEstark: e.isEstark, battleStatus: e.battleStatus })) 
+                enemies: Battle.enemies.map(e => ({ baseId: e.baseId || e.id, hp: e.hp, maxHp: e.baseMaxHp, name: e.name, rank: e.rank, generatedFloor: e.generatedFloor, isBoss: e.isBoss, isRare: e.isRare, isSpecialBoss: e.isSpecialBoss, isEstark: e.isEstark, battleStatus: e.battleStatus })) 
             };
             App.save();
         }
@@ -372,6 +382,57 @@ const Battle = {
 
     isSpecialBossBase: (base) => !!(base && (base.isSpecialBoss || base.isEstark || Number(base.id) === 902000)),
     isNormalEncounterBase: (base) => !!(base && !base.isBoss && !base.isRare && !Battle.isSpecialBossBase(base)),
+    isStoryBossBase: (base) => {
+        if (!base) return false;
+        const id = Number(base.id ?? base.baseId);
+        return !!(base.isStoryBoss || base.storyOnly || (id >= 301000 && id < 400000));
+    },
+
+    scaleNumber: (value, rate, min = 0) => {
+        const n = Number(value || 0);
+        if (!Number.isFinite(n)) return value;
+        return Math.max(min, Math.floor(n * rate));
+    },
+
+    scaleEnemyBattleStat: (enemy, key, rate) => {
+        if (!enemy || !Number.isFinite(Number(rate)) || rate === 1) return;
+        if (enemy.baseStats && enemy.baseStats[key] !== undefined) {
+            enemy.baseStats[key] = Battle.scaleNumber(enemy.baseStats[key], rate, 0);
+        }
+        if (enemy[key] !== undefined) {
+            enemy[key] = Battle.scaleNumber(enemy[key], rate, 0);
+        }
+    },
+
+    applyEnemyBalanceTuning: (enemy, base, options = {}) => {
+        if (!enemy || enemy.__balanceTuned) return enemy;
+        const tune = Battle.balanceTuning || {};
+        const isBoss = !!(options.isBossBattle || enemy.isBoss || base?.isBoss);
+        const allowHp = options.scaleHp !== false;
+        const powerMult = isBoss ? tune.bossPowerMult : tune.normalPowerMult;
+        const mpMult = isBoss ? tune.bossMpMult : tune.normalMpMult;
+
+        if (allowHp && isBoss) {
+            enemy.hp = Battle.scaleNumber(enemy.hp, tune.bossHpMult || 1, 1);
+            enemy.baseMaxHp = Battle.scaleNumber(enemy.baseMaxHp || enemy.hp, tune.bossHpMult || 1, enemy.hp);
+        }
+
+        enemy.mp = Battle.scaleNumber(enemy.mp, mpMult || 1, 0);
+        enemy.baseMaxMp = Battle.scaleNumber(enemy.baseMaxMp || enemy.mp, mpMult || 1, enemy.mp);
+        Battle.scaleEnemyBattleStat(enemy, 'atk', powerMult || 1);
+        Battle.scaleEnemyBattleStat(enemy, 'mag', powerMult || 1);
+        if (enemy.mdef === undefined && base?.mdef !== undefined) enemy.mdef = base.mdef;
+
+        enemy.hit = (enemy.hit || base?.hit || 100) + (isBoss ? (tune.bossHitBonus || 0) : (tune.normalHitBonus || 0));
+        enemy.__balanceTuned = true;
+        return enemy;
+    },
+
+    getEquipmentRewardFloor: (enemy, fallbackFloor = 1) => {
+        const base = Battle.getMonsterBaseById(enemy?.baseId || enemy?.id) || {};
+        const raw = enemy?.generatedFloor ?? enemy?.rewardRank ?? enemy?.rank ?? base.generatedFloor ?? base.rewardRank ?? base.rank ?? base.minF ?? fallbackFloor;
+        return Math.max(1, Math.floor(Number(raw) || Number(fallbackFloor) || 1));
+    },
 
     setupEnemyStats: (m, base, isBossBattle = false) => {
         if (!m || !base) return m;
@@ -385,10 +446,14 @@ const Battle = {
         m.cri = base.cri || 0;
         m.id = base.id;
         m.baseId = base.id;
+        m.rank = base.rank || base.generatedFloor || base.minF || m.rank || 1;
+        m.minF = base.minF || m.minF || m.rank;
+        m.generatedFloor = base.generatedFloor || m.generatedFloor || null;
         m.isBoss = base.isBoss || isBossBattle || false;
         m.isRare = base.isRare || false;
         m.isEstark = base.isEstark || false;
         m.isSpecialBoss = base.isSpecialBoss || base.isEstark || Number(base.id) === 902000;
+        m.isStoryBoss = Battle.isStoryBossBase(base);
         m.race = base.race || '\u4e0d\u660e';
         m.drops = JSON.parse(JSON.stringify(base.drops || null));
         m.traits = JSON.parse(JSON.stringify(base.traits || []));
@@ -416,6 +481,7 @@ const Battle = {
             m.cri += PassiveSkill.getSumValue(m, 'cri_pct');
         }
 
+        Battle.applyEnemyBalanceTuning(m, base, { isBossBattle });
         return m;
     },
 
@@ -587,7 +653,7 @@ const Battle = {
             if (isBoss) {
                 Battle.log('<span style="color:#ff0000; font-size:1em; font-weight:bold;">\u6df1\u6df5\u306e\u5b88\u8b77\u8005\u304c\u73fe\u308c\u305f\uff01</span>');
                 const candidates = (window.MonsterData?.bossMonsters || DB.MONSTERS || [])
-                    .filter(base => base.isBoss && !base.isRare && !Battle.isSpecialBossBase(base));
+                    .filter(base => base.isBoss && !base.isRare && !Battle.isSpecialBossBase(base) && !Battle.isStoryBossBase(base));
                 for (let i = 0; i < deepBossCount; i++) {
                     const base = candidates[Math.floor(Math.random() * candidates.length)];
                     if (!base) continue;
@@ -689,6 +755,8 @@ const Battle = {
         // 各種フラグ・データの継承
         m.id = base.id;
         m.baseId = base.id;
+        m.rank = base.rank || rank;
+        m.generatedFloor = floor;
         m.race = base.race || '不明';
         m.isBoss = base.isBoss || isBoss || false;
         m.isEstark = base.isEstark || false;
@@ -775,6 +843,7 @@ const Battle = {
         }
 
         m.passive = base.passive || {};
+        Battle.applyEnemyBalanceTuning(m, base, { isBossBattle: isBoss });
         Battle.initBattleStatus(m);
         
         return m;
@@ -839,146 +908,171 @@ findNextActor: () => {
         Battle.log(`${actor.name}はどうする？`);
     },
 
-    // ★オート戦闘の思考ルーチン (グローバルAUTO + 封印 + 節約モード対応)
-    decideAutoAction: (actor) => {
-        const config = actor.config || {};
+    getAutoStrategyKey: (actor) => {
+        const source = (typeof App !== 'undefined' && App.getChar && actor?.uid) ? App.getChar(actor.uid) : null;
+        if (source && App.ensureCharacterBattleConfig) App.ensureCharacterBattleConfig(source);
+        const key = source?.config?.strategy || actor?.config?.strategy || 'balanced';
+        return (App.battleStrategies && App.battleStrategies[key]) ? key : 'balanced';
+    },
+
+    getValidAutoSkills: (actor, allowSkills = true) => {
+        if (!allowSkills) return [];
+        const source = (typeof App !== 'undefined' && App.getChar && actor?.uid) ? App.getChar(actor.uid) : null;
+        const config = source?.config || actor?.config || {};
         const hiddenIds = Array.isArray(config.hiddenSkills) ? config.hiddenSkills.map(id => Number(id)) : [];
-
-        // 1. 使用可能なスキルの抽出 (マダンテ禁止・封印設定・MP不足・状態異常制限をすべてチェック)
-        const validSkills = (actor.skills || []).filter(s => {
+        return (actor.skills || []).filter(s => {
             const sId = Number(s.id);
-            if (sId === 1) return false; // 通常攻撃は除外
-            if (sId >= 500 && sId <= 505) return false; // マダンテ系は通常オートでは使用不可
-            if (hiddenIds.includes(sId)) return false; // キャラ詳細の「封印」設定
-            if (actor.mp < (s.mp || 0)) return false; // MP不足
+            if (sId === 1) return false;
+            if (sId >= 500 && sId <= 505) return false;
+            if (hiddenIds.includes(sId)) return false;
+            if (actor.mp < (s.mp || 0)) return false;
 
-            // 状態異常による封印デバフのチェック
             const ailments = actor.battleStatus?.ailments || {};
             if (ailments['SpellSeal'] && ['魔法','強化','弱体'].includes(s.type)) return false;
             if (ailments['SkillSeal'] && ['物理','特殊'].includes(s.type)) return false;
             if (ailments['HealSeal'] && ['回復','蘇生'].includes(s.type)) return false;
             return true;
         });
+    },
 
+    makeAutoAttackAction: (actor, target = null) => {
+        const enemyTarget = target || Battle.getRandomAliveEnemy();
+        if (enemyTarget) return { type: 'attack', actor, target: enemyTarget, isAuto: true };
+        return { type: 'defend', actor, isAuto: true };
+    },
+
+    autoSkillCanTargetAlly: (skill, actor, ally) => {
+        if (!skill || !ally) return false;
+        if (skill.target === '自分') return ally === actor;
+        return true;
+    },
+
+    isAllySupportSkill: (skill) => {
+        if (!skill) return false;
+        const type = String(skill.type || '');
+        return type.includes('回復') || type === '蘇生' || type === '強化' || skill.CureAilments ||
+            skill.debuff_reset || skill.HPRegen || skill.MPRegen;
+    },
+
+    getAutoSkillTarget: (actor, skill, preferredTarget = null) => {
+        if (!skill) return null;
+        const support = Battle.isAllySupportSkill(skill);
+        if (skill.target === '全体') return support ? 'all_ally' : 'all_enemy';
+        if (skill.target === 'ランダム') return 'random';
+        if (skill.target === '自分') return actor;
+        if (support) return preferredTarget || actor;
+        return preferredTarget || Battle.getRandomAliveEnemy();
+    },
+
+    makeAutoSkillAction: (actor, skill, target = null) => {
+        if (!skill) return null;
+        const chosenTarget = Battle.getAutoSkillTarget(actor, skill, target);
+        if (!chosenTarget) return null;
+        return { type: 'skill', actor, target: chosenTarget, data: skill, targetScope: skill.target, isAuto: true };
+    },
+
+    findLowHpAlly: (allies, threshold) => {
+        return allies
+            .filter(p => p && !p.isDead && p.baseMaxHp > 0 && (p.hp / p.baseMaxHp) <= threshold)
+            .sort((a, b) => (a.hp / a.baseMaxHp) - (b.hp / b.baseMaxHp))[0] || null;
+    },
+
+    chooseAutoAllyAction: (actor, skills, predicate, preferredAlly = null) => {
+        const skill = skills.find(s => predicate(s) && Battle.autoSkillCanTargetAlly(s, actor, preferredAlly || actor));
+        if (!skill) return null;
+        return Battle.makeAutoSkillAction(actor, skill, preferredAlly || actor);
+    },
+
+    chooseAutoBuffAction: (actor, skills) => {
+        const aliveAllies = Battle.party.filter(p => p && !p.isDead);
+        const skill = skills.find(s => s.type === '強化' || s.buff || s.HPRegen || s.MPRegen);
+        if (!skill) return null;
+        const target = skill.target === '自分' ? actor : (aliveAllies[0] || actor);
+        return Battle.makeAutoSkillAction(actor, skill, target);
+    },
+
+    chooseAutoOffensiveAction: (actor, skills, aliveEnemies, mode = 'balanced') => {
+        if (!aliveEnemies || aliveEnemies.length === 0) return { type: 'defend', actor, isAuto: true };
+        const offensive = skills.filter(s => Battle.isAutoOffensiveSkill(s));
+        if (mode === 'conserve') {
+            const choice = Battle.pickConservativeAutoAction(actor, offensive, aliveEnemies);
+            if (choice && choice.type === 'attack') return Battle.makeAutoAttackAction(actor, choice.target);
+            if (choice && choice.skill) return Battle.makeAutoSkillAction(actor, choice.skill, choice.target || null);
+            return Battle.makeAutoAttackAction(actor);
+        }
+        if (offensive.length === 0) return Battle.makeAutoAttackAction(actor);
+
+        const target = aliveEnemies.slice().sort((a, b) => a.hp - b.hp)[0];
+        const scored = offensive.map(skill => {
+            let score = Battle.estimateAutoDamage(actor, skill, target);
+            if (skill.target === '全体') score *= Math.min(3, aliveEnemies.length);
+            if (mode === 'balanced') score -= (skill.mp || 0) * 0.35;
+            if (mode === 'tricky' && (skill.type === '弱体' || skill.debuff)) score *= 1.35;
+            return { skill, score };
+        }).sort((a, b) => b.score - a.score);
+
+        const top = scored.slice(0, mode === 'allout' ? 3 : 5).filter(x => x.score > 0);
+        const picked = (top.length ? top : scored)[Math.floor(Math.random() * Math.max(1, (top.length || scored.length)))];
+        return Battle.makeAutoSkillAction(actor, picked?.skill, null) || Battle.makeAutoAttackAction(actor);
+    },
+
+    decideTacticalAutoAction: (actor) => {
+        const tactic = Battle.getAutoStrategyKey(actor);
+        const validSkills = Battle.getValidAutoSkills(actor, tactic !== 'no_mp');
         const aliveAllies = Battle.party.filter(p => p && !p.isDead);
         const deadAllies = Battle.party.filter(p => p && p.isDead);
         const aliveEnemies = Battle.enemies.filter(e => !e.isDead && !e.isFled);
-
-        // 戦況の判定フラグ
-        const lowHPAlly = aliveAllies.find(p => (p.hp / p.baseMaxHp) <= 0.50); // HP50%以下
-        const ailedAlly = aliveAllies.find(p => Object.keys(p.battleStatus?.ailments || {}).length > 0); // 状態異常中
-        const buffedEnemy = aliveEnemies.find(e => Object.keys(e.battleStatus?.buffs || {}).length > 0); // 敵にバフあり
-
-        let selectedSkill = null;
-        let target = null;
-
-        const canAutoTargetAlly = (skill, ally) => {
-            if (!skill || !ally) return false;
-            if (skill.target === '自分') return ally === actor;
-            return true;
-        };
-        const autoAllyTarget = (skill, ally) => {
-            if (!skill) return null;
-            if (skill.target === '全体') return 'all_ally';
-            if (skill.target === '自分') return actor;
-            return ally || actor;
-        };
-        const chooseAllySkill = (predicate, preferredAlly) => {
-            const skill = validSkills.find(s => predicate(s) && canAutoTargetAlly(s, preferredAlly));
-            if (!skill) return false;
-            selectedSkill = skill;
-            target = autoAllyTarget(skill, preferredAlly);
-            return true;
-        };
-
-        // 【優先度1: 蘇生】節約ONでも既存方針維持。対象「自分」専用スキルは他者へ飛ばさない。
-        if (deadAllies.length > 0) {
-            chooseAllySkill(s => s.type === '蘇生', deadAllies[0]);
-        }
-
-        // 【優先度2: 回復】節約ONでも既存方針維持。自己回復は本人が低HPの時だけ使用。
-        if (!selectedSkill && lowHPAlly) {
-            chooseAllySkill(s => String(s.type || '').includes('回復'), lowHPAlly);
-        }
-
-        // 【優先度3: 状態異常治療】節約ONでも既存方針維持。自己専用治療は本人だけ。
-        if (!selectedSkill && ailedAlly) {
-            chooseAllySkill(s => s.type === '状態異常回復' || s.CureAilments || (s.cures && s.cures.length > 0), ailedAlly);
-        }
-
-        // 【優先度3.5: デバフ治療】
+        const ailedAlly = aliveAllies.find(p => Object.keys(p.battleStatus?.ailments || {}).length > 0);
         const debuffedAlly = aliveAllies.find(p => Object.keys(p.battleStatus?.debuffs || {}).length > 0);
-        if (!selectedSkill && debuffedAlly) {
-            chooseAllySkill(s => s.debuff_reset === true, debuffedAlly);
+        const buffedEnemy = aliveEnemies.find(e => Object.keys(e.battleStatus?.buffs || {}).length > 0);
+
+        if (tactic === 'no_mp') return Battle.makeAutoAttackAction(actor);
+
+        const revive = () => deadAllies.length
+            ? Battle.chooseAutoAllyAction(actor, validSkills, s => s.type === '蘇生', deadAllies[0])
+            : null;
+        const heal = (threshold) => {
+            const target = Battle.findLowHpAlly(aliveAllies, threshold);
+            return target ? Battle.chooseAutoAllyAction(actor, validSkills, s => String(s.type || '').includes('回復'), target) : null;
+        };
+        const cure = () => ailedAlly
+            ? Battle.chooseAutoAllyAction(actor, validSkills, s => s.type === '状態異常回復' || s.CureAilments || (s.cures && s.cures.length > 0), ailedAlly)
+            : null;
+        const resetDebuff = () => debuffedAlly
+            ? Battle.chooseAutoAllyAction(actor, validSkills, s => s.debuff_reset === true, debuffedAlly)
+            : null;
+        const resetEnemyBuff = () => {
+            const skill = buffedEnemy ? validSkills.find(s => s.buff_reset === true) : null;
+            return skill ? Battle.makeAutoSkillAction(actor, skill, buffedEnemy) : null;
+        };
+
+        let action = null;
+        if (tactic === 'allout') {
+            action = (deadAllies.length >= 2 ? revive() : null) || heal(0.25) || Battle.chooseAutoOffensiveAction(actor, validSkills, aliveEnemies, 'allout');
+        } else if (tactic === 'conserve') {
+            action = revive() || heal(0.35) || cure() || Battle.chooseAutoOffensiveAction(actor, validSkills, aliveEnemies, 'conserve');
+        } else if (tactic === 'tricky') {
+            const debuffPool = validSkills.filter(s => s.type === '弱体' || s.debuff || (Battle.isAutoOffensiveSkill(s) && s.debuff));
+            if (Math.random() < 0.65 && debuffPool.length) {
+                action = Battle.makeAutoSkillAction(actor, debuffPool[Math.floor(Math.random() * debuffPool.length)], null);
+            }
+            action = action || (Math.random() < 0.25 ? Battle.chooseAutoBuffAction(actor, validSkills) : null) ||
+                Battle.chooseAutoOffensiveAction(actor, validSkills, aliveEnemies, 'tricky');
+        } else if (tactic === 'defensive') {
+            action = revive() || heal(0.70) || cure() || resetDebuff() || Battle.chooseAutoBuffAction(actor, validSkills) ||
+                Battle.chooseAutoOffensiveAction(actor, validSkills, aliveEnemies, 'balanced');
+        } else {
+            action = revive() || heal(0.45) || cure() || resetDebuff() || resetEnemyBuff() ||
+                Battle.chooseAutoOffensiveAction(actor, validSkills, aliveEnemies, 'balanced');
         }
 
-        // 【優先度4: 相手のバフ解除】
-        if (!selectedSkill && buffedEnemy) {
-            selectedSkill = validSkills.find(s => s.buff_reset === true);
-            if (selectedSkill) target = buffedEnemy;
-        }
-
-        // 【優先度5: 攻撃 / バフ・デバフ】
-        if (!selectedSkill) {
-            let pool = [];
-            // 10%の確率でバフ・デバフを選択肢に入れる。節約ONでも補助行動は既存ロジック維持。
-            if (Math.random() < 0.1) {
-                pool = validSkills.filter(s => ['強化', '弱体'].includes(s.type));
-            }
-
-            // 抽選に漏れた、または補助スキルがない場合は攻撃スキル
-            if (pool.length === 0) {
-                pool = validSkills.filter(s => Battle.isAutoOffensiveSkill(s));
-            }
-
-            if (pool.length > 0) {
-                // 敵の数に応じて攻撃範囲を最適化
-                const isSingleEnemy = (aliveEnemies.length === 1);
-                let filteredPool = pool.filter(s => {
-                    if (!Battle.isAutoOffensiveSkill(s)) return true;
-                    if (isSingleEnemy) return s.target === '単体' || s.target === 'ランダム';
-                    return s.target === '全体' || s.target === 'ランダム';
-                });
-                if (filteredPool.length === 0) filteredPool = pool;
-
-                if (Battle.autoConserve) {
-                    const choice = Battle.pickConservativeAutoAction(actor, filteredPool, aliveEnemies);
-                    if (choice && choice.type === 'attack') {
-                        return { type: 'attack', actor: actor, target: choice.target || Battle.getRandomAliveEnemy(), isAuto: true };
-                    }
-                    if (choice && choice.skill) {
-                        selectedSkill = choice.skill;
-                        target = choice.target || null;
-                    }
-                } else {
-                    selectedSkill = filteredPool[Math.floor(Math.random() * filteredPool.length)];
-                }
-            }
-        }
-
-        // スキル使用を登録
-        if (selectedSkill) {
-            if (!target) {
-                if (selectedSkill.target === '全体') {
-                    target = (['回復', '蘇生', '強化'].includes(selectedSkill.type) || selectedSkill.CureAilments) ? 'all_ally' : 'all_enemy';
-                } else if (selectedSkill.target === 'ランダム') {
-                    target = 'random';
-                } else if (selectedSkill.target === '自分') {
-                    target = actor;
-                } else {
-                    // 単体スキルのデフォルトターゲット
-                    target = (['回復', '蘇生', '強化'].includes(selectedSkill.type) || selectedSkill.CureAilments) ? aliveAllies[0] : Battle.getRandomAliveEnemy();
-                }
-            }
-            return { type: 'skill', actor: actor, target: target, data: selectedSkill, targetScope: selectedSkill.target, isAuto: true };
-        }
-
-        // 出すスキルがない場合は通常攻撃
-        const enemyTarget = Battle.getRandomAliveEnemy();
-        if (enemyTarget) return { type: 'attack', actor: actor, target: enemyTarget, isAuto: true };
-        return { type: 'defend', actor: actor, isAuto: true };
+        return action || Battle.makeAutoAttackAction(actor);
     },
 
+    // Auto battle strategy dispatcher
+    decideAutoAction: (actor) => {
+        return Battle.decideTacticalAutoAction(actor);
+    },
     isAutoOffensiveSkill: (s) => {
         if (!s || s.id === 1) return false;
         return ['物理', '魔法', 'ブレス', '特殊'].includes(s.type) && 
@@ -1121,21 +1215,111 @@ findNextActor: () => {
     },
 
     updateCommandButtons: () => {
-        const cmdRoot = Battle.getEl('command-root');
-        if(cmdRoot && cmdRoot.children.length >= 5) {
-            const btn = cmdRoot.children[4];
+        const btn = Battle.getEl('btn-run');
+        const strategyBtn = Battle.getEl('btn-strategy');
+        if(btn) {
             const firstAlive = Battle.party.findIndex(p => p && !p.isDead);
-            const newBtn = btn.cloneNode(true);
             if (Battle.currentActorIndex === firstAlive) {
-                newBtn.innerText = "にげる";
-                newBtn.onclick = Battle.run;
-                newBtn.disabled = !!App.data.battle.isBossBattle;
+                if (strategyBtn) strategyBtn.style.display = '';
+                btn.innerText = "にげる";
+                btn.onclick = Battle.run;
+                btn.disabled = !!App.data.battle.isBossBattle;
+                btn.style.gridColumn = '';
             } else {
-                newBtn.innerText = "もどる";
-                newBtn.onclick = Battle.goBack;
-                newBtn.disabled = false;
+                if (strategyBtn) strategyBtn.style.display = 'none';
+                btn.innerText = "もどる";
+                btn.onclick = Battle.goBack;
+                btn.disabled = false;
+                btn.style.gridColumn = 'span 2';
             }
-            btn.parentNode.replaceChild(newBtn, btn);
+        }
+    },
+
+    escapeHtml: (value) => String(value ?? '').replace(/[&<>"']/g, ch => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    }[ch])),
+
+    openStrategyWindow: () => {
+        if (Battle.phase !== 'input' || Battle.auto) return;
+        Battle.closeSubMenu();
+        const win = Battle.getEl('battle-list-window');
+        const title = Battle.getEl('battle-list-title');
+        const content = Battle.getEl('battle-list-content');
+        if (!win || !content) return;
+        if (title) title.innerText = 'さくせん';
+        content.innerHTML = '';
+        Battle.renderStrategyList(content);
+        win.style.display = 'flex';
+    },
+
+    renderStrategyList: (content) => {
+        const strategies = (typeof App !== 'undefined' && App.battleStrategies) ? App.battleStrategies : {};
+        Battle.party.forEach((actor) => {
+            if (!actor) return;
+            const charData = App.getChar ? App.getChar(actor.uid) : null;
+            if (charData && App.ensureCharacterBattleConfig) App.ensureCharacterBattleConfig(charData);
+            const current = charData?.config?.strategy || actor.config?.strategy || 'balanced';
+            const row = document.createElement('div');
+            row.className = 'list-item';
+            row.style.cssText = 'display:flex; align-items:center; justify-content:space-between; gap:8px; padding:10px;';
+            row.innerHTML = `
+                <div style="min-width:0;">
+                    <div style="font-weight:bold; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${Battle.escapeHtml(actor.name)}</div>
+                    <div style="font-size:11px; color:#ffd; margin-top:3px;">${Battle.escapeHtml(App.getBattleStrategyLabel ? App.getBattleStrategyLabel(current) : (strategies[current]?.label || current))}</div>
+                </div>
+                <div style="font-size:18px; color:#888; flex:0 0 auto;">›</div>
+            `;
+            row.onclick = () => Battle.openStrategyModal(actor.uid);
+            content.appendChild(row);
+        });
+    },
+
+    openStrategyModal: (uid) => {
+        const charData = App.getChar ? App.getChar(uid) : null;
+        if (!charData) return;
+        if (App.ensureCharacterBattleConfig) App.ensureCharacterBattleConfig(charData);
+        Battle.closeStrategyModal();
+
+        const strategies = (typeof App !== 'undefined' && App.battleStrategies) ? App.battleStrategies : {};
+        const current = charData.config?.strategy || 'balanced';
+        const currentLabel = App.getBattleStrategyLabel ? App.getBattleStrategyLabel(current) : (strategies[current]?.label || current);
+        const modal = document.createElement('div');
+        modal.id = 'battle-strategy-modal';
+        modal.style.cssText = 'position:fixed; inset:0; z-index:3300; background:rgba(0,0,0,0.74); display:flex; align-items:center; justify-content:center; padding:16px;';
+        modal.onclick = () => Battle.closeStrategyModal();
+        modal.innerHTML = `
+            <div onclick="event.stopPropagation()" style="width:min(360px, 100%); max-height:86vh; overflow:auto; background:#151515; border:1px solid #777; border-radius:8px; box-shadow:0 18px 48px rgba(0,0,0,0.7);">
+                <div style="padding:12px; border-bottom:1px solid #333;">
+                    <div style="font-size:15px; font-weight:bold; color:#fff;">${Battle.escapeHtml(charData.name)}</div>
+                    <div style="font-size:11px; color:#aaa; margin-top:2px;">現在: ${Battle.escapeHtml(currentLabel)}</div>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:6px; padding:12px;">
+                    ${Object.keys(strategies).map(key => `<button class="btn" style="width:100%; text-align:left; padding:10px 12px; background:${key === current ? '#064' : '#333'};" onclick="Battle.setPartyStrategy('${uid}', '${key}')">${Battle.escapeHtml(strategies[key].label || key)}</button>`).join('')}
+                </div>
+                <div style="padding:0 12px 12px;">
+                    <button class="btn" style="width:100%; background:#555;" onclick="Battle.closeStrategyModal()">閉じる</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    },
+
+    closeStrategyModal: () => {
+        const modal = document.getElementById('battle-strategy-modal');
+        if (modal && modal.parentNode) modal.parentNode.removeChild(modal);
+    },
+
+    setPartyStrategy: (uid, strategy) => {
+        if (App.setBattleStrategy) App.setBattleStrategy(uid, strategy);
+        Battle.closeStrategyModal();
+        const content = Battle.getEl('battle-list-content');
+        if (content) {
+            content.innerHTML = '';
+            Battle.renderStrategyList(content);
         }
     },
 
@@ -1579,7 +1763,16 @@ findNextActor: () => {
             const getWeight = (a) => {
                 let w = (typeof a === 'object') ? (a.rate || 10) : 10;
                 const s = DB.SKILLS.find(k => k.id === (a.id || a));
-                return (hasDeadAlly && s && s.type === '蘇生') ? w + 30 : w;
+                if (!s) return w;
+                if (Number(s.id) === 1) {
+                    w *= 1.45;
+                } else if (Battle.isAutoOffensiveSkill(s)) {
+                    w *= 1.25;
+                } else if (s.type === '強化' || s.type === '弱体' || s.buff || s.debuff || s.buff_reset || s.debuff_reset) {
+                    w *= 0.45;
+                }
+                if (hasDeadAlly && s.type === '蘇生') w += 30;
+                return Math.max(1, Math.floor(w));
             };
 			
             // ★修正: totalWeight の計算とループ内の減算に getWeight を使用
@@ -2974,7 +3167,7 @@ findNextActor: () => {
         const eId = App.data.battle.eventId; // ★eventIdを退避
         
         App.data.battle.enemies = Battle.enemies.filter(e => !e.isFled).map(e => ({ 
-            baseId: e.baseId || e.id, hp: e.hp, maxHp: e.baseMaxHp, name: e.name, isBoss: e.isBoss, isRare: e.isRare, isSpecialBoss: e.isSpecialBoss, isEstark: e.isEstark, battleStatus: e.battleStatus 
+            baseId: e.baseId || e.id, hp: e.hp, maxHp: e.baseMaxHp, name: e.name, rank: e.rank, generatedFloor: e.generatedFloor, isBoss: e.isBoss, isRare: e.isRare, isSpecialBoss: e.isSpecialBoss, isEstark: e.isEstark, battleStatus: e.battleStatus 
         })); 
         
         App.data.battle.isBossBattle = isB; 
@@ -3617,6 +3810,7 @@ findNextActor: () => {
 				if (e.isFled) return;
 				const base = Battle.getMonsterBaseById(e.baseId || e.id) || e;
 				const monsterDrops = base.drops;
+				const rewardFloor = Battle.getEquipmentRewardFloor(e, floor);
 
 				// 1. レアドロップ判定 (独立)
 				if (monsterDrops && monsterDrops.rare) {
@@ -3652,7 +3846,7 @@ findNextActor: () => {
 					let eq;
 					if (isBoss && Math.random() < 0.02) {
 						// 2%の確率で発生する超強力な「改」装備
-						eq = createEquipWithMinRarity(floor, 3, ['SSR', 'UR', 'EX'], '武器');
+						eq = createEquipWithMinRarity(rewardFloor, 3, ['SSR', 'UR', 'EX'], '武器');
 						eq.name = eq.name.replace(/\+3$/, "") + "・改+3";
 						
 						// ★追加修正：能力増加は基礎値（主要7ステータス）のみとする
@@ -3670,7 +3864,7 @@ findNextActor: () => {
 						drops.push({ name: eq.name, isRare: true, type: 'kai', kind: 'equip' });
 					} else {
 						let fixedPlus = isBoss ? 3 : (Math.random() * 100 < (10 + bonusPlus3) ? 3 : null);
-						eq = App.createEquipByFloor('drop', floor, fixedPlus);
+						eq = App.createEquipByFloor('drop', rewardFloor, fixedPlus);
 						const isPlus3 = (eq.plus === 3);
 						if (isPlus3 || isBoss) hasRareDrop = true;
 						drops.push({ name: eq.name, isRare: (isPlus3 || isBoss), type: isBoss ? 'boss' : 'normal', kind: 'equip' });
@@ -4003,25 +4197,31 @@ findNextActor: () => {
             }, 500);
         }
     },
-    toggleAuto: () => { Battle.auto = !Battle.auto; Battle.updateAutoButton(); if(Battle.phase === 'input') Battle.findNextActor(); },
-    updateAutoButton: () => { const btn = Battle.getEl('btn-auto'); if(btn) { btn.innerText = `AUTO: ${Battle.auto?'ON':'OFF'}`; btn.style.background = Battle.auto ? '#d00' : '#333'; } },
-    toggleAutoConserve: () => {
-        Battle.autoConserve = !Battle.autoConserve;
-        if (App.data) {
-            App.data.settings = App.data.settings || {};
-            App.data.settings.autoConserve = Battle.autoConserve;
-            if (typeof App.save === 'function') App.save();
+    toggleAuto: () => {
+        const shouldStartAuto = !Battle.auto;
+        Battle.auto = shouldStartAuto;
+        Battle.updateAutoButton();
+
+        if (shouldStartAuto) {
+            const canResumeInput = ['input', 'skill_select', 'item_select', 'target_select'].includes(Battle.phase);
+            if (canResumeInput) {
+                Battle.closeSubMenu();
+                Battle.closeStrategyModal();
+                Battle.selectingAction = null;
+                Battle.selectedItemOrSkill = null;
+                Battle.phase = 'input';
+                Battle.findNextActor();
+            }
         }
-        Battle.updateAutoConserveButton();
-        if(Battle.phase === 'input' && Battle.auto) Battle.findNextActor();
     },
-    updateAutoConserveButton: () => {
-        const btn = Battle.getEl('btn-auto-conserve');
-        if(btn) {
-            btn.innerText = `節約: ${Battle.autoConserve?'ON':'OFF'}`;
-            btn.style.background = Battle.autoConserve ? '#0a5' : '#333';
-            btn.style.borderColor = Battle.autoConserve ? '#2f8' : '#666';
-        }
+    updateAutoButton: () => {
+        ['btn-auto', 'btn-auto-bottom'].forEach(id => {
+            const btn = Battle.getEl(id);
+            if(btn) {
+                btn.innerText = `AUTO: ${Battle.auto?'ON':'OFF'}`;
+                btn.style.background = Battle.auto ? '#d00' : '#333';
+            }
+        });
     },
 
     handleResultTap: () => {

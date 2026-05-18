@@ -256,6 +256,8 @@
         body.game-page #battle-actor-name { background: linear-gradient(90deg, #003, #005, #003); color: var(--accent); padding: 6px 10px; font-size: 16px; font-weight: bold; border-bottom: 1px solid #555; text-align: center; display: none; }
         
         body.game-page .cmd-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; padding: 8px; height: 110px; }
+        body.game-page #battle-auto-panel { flex: 0 0 auto; display: flex; padding: 0 8px 8px; }
+        body.game-page #btn-auto-bottom { width: 100%; min-height: 38px; font-size: 14px; font-weight: bold; }
         body.game-page .cmd-btn { 
             background: #444; color: #fff; border: 2px solid #888; 
             cursor: pointer; font-size: 16px; font-weight: bold; 
@@ -2725,7 +2727,8 @@ body.game-page .enemy-sprite:active {
   transform: translateY(2px) scale(0.98) !important;
 }
 
-body.game-page #btn-auto {
+body.game-page #btn-auto,
+body.game-page #btn-auto-bottom {
   width: auto !important;
   min-width: 82px;
   border-color: rgba(78, 210, 190, 0.55) !important;
@@ -2753,6 +2756,15 @@ body.game-page #battle-actor-name {
 body.game-page .cmd-grid {
   height: 104px !important;
   gap: 7px !important;
+}
+
+body.game-page #battle-auto-panel {
+  padding: 0 8px 8px !important;
+}
+
+body.game-page #btn-auto-bottom {
+  width: 100% !important;
+  min-height: 38px !important;
 }
 
 body.game-page .cmd-btn {

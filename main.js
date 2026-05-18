@@ -136,7 +136,7 @@ class Player extends Entity {
         
         // ★最重要修正: コンフィグの参照をインスタンスに引き継ぐ
         // これにより、MenuAlliesで書き換えた内容が戦闘中のactorからも見えるようになります
-        this.config = data.config || { fullAuto: false, hiddenSkills: [] };
+        this.config = data.config || { fullAuto: false, hiddenSkills: [], strategy: 'balanced' };
         
         // 万が一データ側にconfigがなければ、初期値をデータ側にもセットして参照を同期させる
         if (!data.config) data.config = this.config;
@@ -264,6 +264,16 @@ const App = {
     pendingAction: null, 
 	encounterTransitioning: false,
 
+    defaultBattleStrategy: 'balanced',
+    battleStrategies: {
+        allout: { label: 'ガンガンいこうぜ' },
+        balanced: { label: 'バッチリがんばれ' },
+        conserve: { label: 'せつやくしようぜ' },
+        tricky: { label: 'いろいろやろうぜ' },
+        defensive: { label: 'いのちだいじに' },
+        no_mp: { label: 'ＭＰつかうな' }
+    },
+
     unlockDefaults: {
         smith: true,
         gacha: true,
@@ -308,6 +318,38 @@ const App = {
         return App.data.progress.unlocked;
     },
 
+    ensureCharacterBattleConfig: (char) => {
+        if (!char) return null;
+        if (!char.config || typeof char.config !== 'object' || Array.isArray(char.config)) {
+            char.config = {};
+        }
+        if (!Array.isArray(char.config.hiddenSkills)) char.config.hiddenSkills = [];
+        if (typeof char.config.fullAuto !== 'boolean') char.config.fullAuto = false;
+        if (!App.battleStrategies[char.config.strategy]) {
+            char.config.strategy = App.defaultBattleStrategy;
+        }
+        return char.config;
+    },
+
+    getBattleStrategy: (char) => {
+        const config = App.ensureCharacterBattleConfig(char);
+        return config ? config.strategy : App.defaultBattleStrategy;
+    },
+
+    getBattleStrategyLabel: (key) => {
+        return App.battleStrategies[key]?.label || App.battleStrategies[App.defaultBattleStrategy].label;
+    },
+
+    setBattleStrategy: (uid, strategy) => {
+        if (!App.battleStrategies[strategy]) strategy = App.defaultBattleStrategy;
+        const char = App.getChar ? App.getChar(uid) : null;
+        if (!char) return false;
+        App.ensureCharacterBattleConfig(char);
+        char.config.strategy = strategy;
+        if (typeof App.save === 'function') App.save();
+        return true;
+    },
+
     // --- 初期データ構造の定義 ---
     // セーブデータが全くない場合や、マイグレーション時のデフォルト参照用
     getInitialData: () => {
@@ -326,7 +368,7 @@ const App = {
             inventory: [],
             items: { "1": 3 }, 
             characters: [
-                { uid: 'p1', charId: 301, name: 'アルス', job: '勇者', level: 1, exp: 0, hp: 50, mp: 20, atk: 15, def: 10, mag: 10, spd: 10, equips: { '武器':null, '盾':null, '頭':null, '体':null, '足':null }, sp: 0, tree: {}, config: { fullAuto: false, hiddenSkills: [] } }
+                { uid: 'p1', charId: 301, name: 'アルス', job: '勇者', level: 1, exp: 0, hp: 50, mp: 20, atk: 15, def: 10, mag: 10, spd: 10, equips: { '武器':null, '盾':null, '頭':null, '体':null, '足':null }, sp: 0, tree: {}, config: { fullAuto: false, hiddenSkills: [], strategy: 'balanced' } }
             ],
             party: ['p1', null, null, null],
             gold: 500,
@@ -452,7 +494,7 @@ const App = {
         // 6. キャラクターの個別補完
         if (App.data.characters) {
             App.data.characters.forEach(c => {
-                if (!c.config) c.config = { fullAuto: false, hiddenSkills: [] };
+                App.ensureCharacterBattleConfig(c);
                 if (c.sp === undefined) c.sp = 0;
 				if (c.exp === undefined) c.exp = 0; // ★この行を追加
                 if (!c.tree) c.tree = {};
@@ -648,7 +690,7 @@ const App = {
 		// ★追加: 既存セーブデータの拡張（コンフィグ初期化）
         if (App.data.characters) {
             App.data.characters.forEach(c => {
-                if (!c.config) c.config = { fullAuto: false, hiddenSkills: [] };
+                App.ensureCharacterBattleConfig(c);
                 
                 // charId修正ロジック（既存）
                 if (c.charId) {
@@ -1251,7 +1293,7 @@ const App = {
             traits: [], 
             disabledTraits: [],
             tree: { ATK: 0, MAG: 0, SPD: 0, HP: 0, MP: 0, WARRIOR: 0, MAGE: 0, PRIEST: 0, M_KNIGHT: 0 },
-            config: { fullAuto: false, hiddenSkills: [] },
+            config: { fullAuto: false, hiddenSkills: [], strategy: 'balanced' },
             limitBreak: 0,
             lbProgress: {
                 counters: { battleWins: 0 },

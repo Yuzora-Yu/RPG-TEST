@@ -4,15 +4,14 @@
    ========================================================================== */
 const MenuParty = {
     targetSlot: 0,
+    currentTab: 'members',
 	init: () => { 
 		MenuParty.ensureBottomPanel();
-
-		document.getElementById('party-screen-slots').style.display = 'flex';
-		document.getElementById('party-screen-chars').style.display = 'none';
+		MenuParty.ensureTabs();
+		MenuParty.ensureStrategyPanel();
 
 		MenuParty.setBottomButton('もどる', () => Menu.closeSubScreen('party'));
-
-		MenuParty.renderSlots(); 
+		MenuParty.switchTab('members');
 	},
 	
 	ensureBottomPanel: () => {
@@ -38,6 +37,162 @@ const MenuParty = {
 
 		btn.innerText = label;
 		btn.onclick = handler;
+	},
+
+	escapeHtml: (value) => String(value ?? '').replace(/[&<>"']/g, ch => ({
+		'&': '&amp;',
+		'<': '&lt;',
+		'>': '&gt;',
+		'"': '&quot;',
+		"'": '&#39;'
+	}[ch])),
+
+	ensureTabs: () => {
+		const screen = document.getElementById('sub-screen-party');
+		const slots = document.getElementById('party-screen-slots');
+		if (!screen || !slots || document.getElementById('party-screen-tabs')) return;
+		const tabs = document.createElement('div');
+		tabs.id = 'party-screen-tabs';
+		tabs.style.cssText = 'display:grid; grid-template-columns:1fr 1fr; gap:6px; padding:8px 8px 0;';
+		tabs.innerHTML = `
+			<button id="party-tab-members" class="btn" onclick="MenuParty.switchTab('members')">仲間</button>
+			<button id="party-tab-strategy" class="btn" onclick="MenuParty.switchTab('strategy')">さくせん</button>
+		`;
+		screen.insertBefore(tabs, slots);
+	},
+
+	ensureStrategyPanel: () => {
+		const screen = document.getElementById('sub-screen-party');
+		if (!screen || document.getElementById('party-screen-strategy')) return;
+		const panel = document.createElement('div');
+		panel.id = 'party-screen-strategy';
+		panel.className = 'flex-col-container';
+		panel.style.display = 'none';
+		panel.innerHTML = `
+			<div style="padding:5px; text-align:center; font-size:12px; color:#aaa;">作戦を選択</div>
+			<div id="party-strategy-list" class="scroll-area"></div>
+		`;
+		const bottom = document.getElementById('party-bottom-panel');
+		screen.insertBefore(panel, bottom || null);
+	},
+
+	switchTab: (tab) => {
+		MenuParty.currentTab = tab;
+		const tabs = document.getElementById('party-screen-tabs');
+		const slots = document.getElementById('party-screen-slots');
+		const chars = document.getElementById('party-screen-chars');
+		const strategy = document.getElementById('party-screen-strategy');
+		if (tabs) tabs.style.display = 'grid';
+		if (chars) chars.style.display = 'none';
+		if (slots) slots.style.display = tab === 'members' ? 'flex' : 'none';
+		if (strategy) strategy.style.display = tab === 'strategy' ? 'flex' : 'none';
+
+		const memberTab = document.getElementById('party-tab-members');
+		const strategyTab = document.getElementById('party-tab-strategy');
+		if (memberTab) memberTab.style.background = tab === 'members' ? '#064' : '#333';
+		if (strategyTab) strategyTab.style.background = tab === 'strategy' ? '#064' : '#333';
+
+		MenuParty.setBottomButton('もどる', () => Menu.closeSubScreen('party'));
+		if (tab === 'members') MenuParty.renderSlots();
+		else MenuParty.renderStrategies();
+	},
+
+	renderStrategies: () => {
+		const list = document.getElementById('party-strategy-list');
+		if (!list) return;
+		list.innerHTML = '';
+		const strategies = App.battleStrategies || {};
+
+		for (let i = 0; i < 4; i++) {
+			const uid = App.data.party[i];
+			const div = document.createElement('div');
+			div.className = 'list-item';
+			div.style.cssText = 'display:flex; align-items:center; gap:10px; padding:10px; min-height:74px;';
+
+			if (!uid) {
+				div.innerHTML = `<div style="color:#777;">${i + 1}. 空き</div>`;
+				list.appendChild(div);
+				continue;
+			}
+
+			const c = App.getChar(uid);
+			if (!c) continue;
+			if (App.ensureCharacterBattleConfig) App.ensureCharacterBattleConfig(c);
+			const current = c.config?.strategy || 'balanced';
+			const currentLabel = App.getBattleStrategyLabel ? App.getBattleStrategyLabel(current) : (strategies[current]?.label || current);
+			const master = DB.CHARACTERS.find(m => m.id === c.charId) || {};
+			const imgUrl = c.img || master.img || '';
+			div.innerHTML = `
+				<div style="width:46px; height:46px; flex:0 0 auto; border:1px solid #555; border-radius:6px; overflow:hidden; background:#222; display:flex; align-items:center; justify-content:center;">
+					${imgUrl ? `<img src="${imgUrl}" style="width:100%; height:100%; object-fit:cover;">` : '<span style="font-size:10px; color:#555;">IMG</span>'}
+				</div>
+				<div style="flex:1; min-width:0;">
+					<div style="display:flex; align-items:baseline; gap:6px; margin-bottom:3px;">
+						<span style="font-size:13px; font-weight:bold; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${i + 1}. ${MenuParty.escapeHtml(c.name)}</span>
+						<span style="font-size:10px; color:#aaa; white-space:nowrap;">${MenuParty.escapeHtml(c.job || '')}</span>
+					</div>
+					<div style="font-size:11px; color:#ccc; margin-bottom:4px;">Lv.${c.level || 1}</div>
+					<div style="display:inline-flex; max-width:100%; padding:3px 8px; border:1px solid #68602f; border-radius:999px; background:#2a2410; color:#ffd; font-size:11px; white-space:nowrap;">${MenuParty.escapeHtml(currentLabel)}</div>
+				</div>
+				<div style="font-size:18px; color:#888; flex:0 0 auto;">›</div>
+			`;
+			div.onclick = () => MenuParty.openStrategyModal(uid);
+			list.appendChild(div);
+		}
+	},
+
+	openStrategyModal: (uid) => {
+		const c = App.getChar(uid);
+		if (!c) return;
+		if (App.ensureCharacterBattleConfig) App.ensureCharacterBattleConfig(c);
+		MenuParty.closeStrategyModal();
+
+		const strategies = App.battleStrategies || {};
+		const current = c.config?.strategy || 'balanced';
+		const currentLabel = App.getBattleStrategyLabel ? App.getBattleStrategyLabel(current) : (strategies[current]?.label || current);
+		const master = DB.CHARACTERS.find(m => m.id === c.charId) || {};
+		const imgUrl = c.img || master.img || '';
+
+		const modal = document.createElement('div');
+		modal.id = 'party-strategy-modal';
+		modal.style.cssText = 'position:fixed; inset:0; z-index:3000; background:rgba(0,0,0,0.72); display:flex; align-items:center; justify-content:center; padding:18px;';
+		modal.onclick = () => MenuParty.closeStrategyModal();
+		modal.innerHTML = `
+			<div onclick="event.stopPropagation()" style="width:min(360px, 100%); max-height:86vh; overflow:auto; background:#151515; border:1px solid #777; border-radius:8px; box-shadow:0 18px 48px rgba(0,0,0,0.65);">
+				<div style="display:flex; align-items:center; gap:10px; padding:12px; border-bottom:1px solid #333;">
+					<div style="width:52px; height:52px; flex:0 0 auto; border:1px solid #555; border-radius:6px; overflow:hidden; background:#222; display:flex; align-items:center; justify-content:center;">
+						${imgUrl ? `<img src="${imgUrl}" style="width:100%; height:100%; object-fit:cover;">` : '<span style="font-size:10px; color:#555;">IMG</span>'}
+					</div>
+					<div style="flex:1; min-width:0;">
+						<div style="font-size:15px; font-weight:bold; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${MenuParty.escapeHtml(c.name)}</div>
+						<div style="font-size:11px; color:#aaa;">${MenuParty.escapeHtml(c.job || '')} / Lv.${c.level || 1}</div>
+						<div style="font-size:11px; color:#ffd; margin-top:4px;">現在: ${MenuParty.escapeHtml(currentLabel)}</div>
+					</div>
+				</div>
+				<div style="display:flex; flex-direction:column; gap:6px; padding:12px;">
+					${Object.keys(strategies).map(key => `
+						<button class="btn" style="width:100%; text-align:left; padding:10px 12px; background:${key === current ? '#064' : '#333'};" onclick="MenuParty.setStrategy('${uid}', '${key}')">
+							${MenuParty.escapeHtml(strategies[key].label || key)}
+						</button>
+					`).join('')}
+				</div>
+				<div style="padding:0 12px 12px;">
+					<button class="btn" style="width:100%; background:#555;" onclick="MenuParty.closeStrategyModal()">閉じる</button>
+				</div>
+			</div>
+		`;
+		document.body.appendChild(modal);
+	},
+
+	closeStrategyModal: () => {
+		const modal = document.getElementById('party-strategy-modal');
+		if (modal && modal.parentNode) modal.parentNode.removeChild(modal);
+	},
+
+	setStrategy: (uid, strategy) => {
+		if (App.setBattleStrategy) App.setBattleStrategy(uid, strategy);
+		MenuParty.closeStrategyModal();
+		MenuParty.renderStrategies();
 	},
     
     // ★新規追加: 隊列（前衛・後衛）の切り替え処理
@@ -154,13 +309,17 @@ const MenuParty = {
     // キャラクタ変更画面を開くためのヘルパー
     openChangeMember: (slotIndex) => {
 		MenuParty.targetSlot = slotIndex;
+		const tabs = document.getElementById('party-screen-tabs');
+		if (tabs) tabs.style.display = 'none';
 		document.getElementById('party-screen-slots').style.display = 'none';
+		const strategy = document.getElementById('party-screen-strategy');
+		if (strategy) strategy.style.display = 'none';
 		document.getElementById('party-screen-chars').style.display = 'flex';
 
 		MenuParty.setBottomButton('スロット選択にもどる', () => {
 			document.getElementById('party-screen-chars').style.display = 'none';
-			document.getElementById('party-screen-slots').style.display = 'flex';
-			MenuParty.setBottomButton('もどる', () => Menu.closeSubScreen('party'));
+			if (tabs) tabs.style.display = 'grid';
+			MenuParty.switchTab('members');
 		});
 
 		MenuParty.renderCharList();
@@ -241,11 +400,9 @@ const MenuParty = {
 		App.save();
 
 		document.getElementById('party-screen-chars').style.display = 'none';
-		document.getElementById('party-screen-slots').style.display = 'flex';
-
-		MenuParty.setBottomButton('もどる', () => Menu.closeSubScreen('party'));
-
-		MenuParty.renderSlots();
+		const tabs = document.getElementById('party-screen-tabs');
+		if (tabs) tabs.style.display = 'grid';
+		MenuParty.switchTab('members');
 	}
 };
 

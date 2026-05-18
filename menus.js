@@ -175,7 +175,8 @@ const Menu = {
                 <button class="menu-btn" style="background:#004444;" onclick="App.downloadSave()">データ出力</button>
                 <button class="menu-btn" style="background:#004444;" onclick="App.importSave()">データ読込</button>
                 
-                <button class="menu-btn" style="background:#500; grid-column:span 2;" onclick="App.returnToTitle()">タイトルへ</button>
+                <button class="menu-btn" style="background:#500;" onclick="App.returnToTitle()">タイトルへ</button>
+                <button class="menu-btn" style="background:#333;" onclick="Menu.closeMainMenu()">閉じる</button>
             `;
         }
     },

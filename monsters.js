@@ -514,6 +514,11 @@ function cloneMonsterData(monster) {
   return clone;
 }
 
+function isStoryOnlyBoss(monster) {
+  const id = Number(monster?.id);
+  return !!(monster?.isStoryBoss || monster?.storyOnly || (id >= 301000 && id < 400000));
+}
+
 function getFloorOffset(floor, band) {
   const index = Math.max(0, Math.min(4, floor - band.bandStart));
 
@@ -566,7 +571,7 @@ function generateBandMonster(floor) {
 
 function getBossesForFloor(floor) {
   return FIXED_BOSS_MONSTERS
-    .filter((monster) => monster.isBoss && !monster.isRare && !monster.isEstark && !monster.isSpecialBoss && monster.minF === floor)
+    .filter((monster) => monster.isBoss && !monster.isRare && !monster.isEstark && !monster.isSpecialBoss && !isStoryOnlyBoss(monster) && monster.minF === floor)
     .map(cloneMonsterData);
 }
 
@@ -659,6 +664,7 @@ window.MonsterData = {
 
   cloneMonsterData,
   getFloorOffset,
+  isStoryOnlyBoss,
   applyFloorOffset,
   getMonsterBandForFloor,
   generateBandMonster,

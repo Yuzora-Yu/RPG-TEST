@@ -165,7 +165,6 @@ if ('serviceWorker' in navigator) {
     </div>
 
     <div id="battle-scene" class="scene-layer">
-        <button id="btn-auto-conserve" class="btn" style="position:absolute; top:10px; right:98px; z-index:10; width:88px; font-size:11px;" onclick="Battle.toggleAutoConserve()">節約: OFF</button>
         <button id="btn-auto" class="btn" style="position:absolute; top:10px; right:10px; z-index:10; width:80px;" onclick="Battle.toggleAuto()">AUTO: OFF</button>
         <div id="enemy-container"></div>
         <div class="party-bar" id="battle-party-bar"></div>
@@ -178,7 +177,11 @@ if ('serviceWorker' in navigator) {
                 <button class="cmd-btn" onclick="Battle.selectCommand('skill')">とくぎ</button>
                 <button class="cmd-btn" onclick="Battle.selectCommand('item')">どうぐ</button>
                 <button class="cmd-btn" onclick="Battle.selectCommand('defend')">ぼうぎょ</button>
-                <button id="btn-run" class="cmd-btn" style="grid-column:span 2;" onclick="Battle.run()">にげる</button>
+                <button id="btn-strategy" class="cmd-btn" onclick="Battle.openStrategyWindow()">さくせん</button>
+                <button id="btn-run" class="cmd-btn" onclick="Battle.run()">にげる</button>
+            </div>
+            <div id="battle-auto-panel">
+                <button id="btn-auto-bottom" class="btn" onclick="Battle.toggleAuto()">AUTO: OFF</button>
             </div>
         </div>
         <div id="battle-target-window"><div style="text-align:center; color:#fff; margin-bottom:5px;">対象を選択</div><div id="battle-target-list" style="display:grid; grid-template-columns:1fr 1fr; gap:5px;"></div><button class="btn" style="width:100%; margin-top:5px;" onclick="Battle.cancelSubMenu()">もどる</button></div>
