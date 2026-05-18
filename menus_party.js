@@ -53,12 +53,17 @@ const MenuParty = {
 		if (!screen || !slots || document.getElementById('party-screen-tabs')) return;
 		const tabs = document.createElement('div');
 		tabs.id = 'party-screen-tabs';
-		tabs.style.cssText = 'display:grid; grid-template-columns:1fr 1fr; gap:6px; padding:8px 8px 0;';
+		tabs.style.cssText = 'display:flex; background:#222; margin:8px 8px 0; border-radius:6px; overflow:hidden; border:1px solid #444; flex-shrink:0;';
 		tabs.innerHTML = `
-			<button id="party-tab-members" class="btn" onclick="MenuParty.switchTab('members')">仲間</button>
-			<button id="party-tab-strategy" class="btn" onclick="MenuParty.switchTab('strategy')">さくせん</button>
+			<button id="party-tab-members" onclick="MenuParty.switchTab('members')">仲間</button>
+			<button id="party-tab-strategy" onclick="MenuParty.switchTab('strategy')">さくせん</button>
 		`;
 		screen.insertBefore(tabs, slots);
+	},
+
+	applyTabButtonStyle: (button, active) => {
+		if (!button) return;
+		button.style.cssText = `flex:1; min-width:0; padding:10px 4px; border:none; background:${active ? '#ffd700' : '#111'}; color:${active ? '#000' : '#777'}; font-weight:bold; font-size:11px; white-space:nowrap; font-family:inherit;`;
 	},
 
 	ensureStrategyPanel: () => {
@@ -82,15 +87,15 @@ const MenuParty = {
 		const slots = document.getElementById('party-screen-slots');
 		const chars = document.getElementById('party-screen-chars');
 		const strategy = document.getElementById('party-screen-strategy');
-		if (tabs) tabs.style.display = 'grid';
+		if (tabs) tabs.style.display = 'flex';
 		if (chars) chars.style.display = 'none';
 		if (slots) slots.style.display = tab === 'members' ? 'flex' : 'none';
 		if (strategy) strategy.style.display = tab === 'strategy' ? 'flex' : 'none';
 
 		const memberTab = document.getElementById('party-tab-members');
 		const strategyTab = document.getElementById('party-tab-strategy');
-		if (memberTab) memberTab.style.background = tab === 'members' ? '#064' : '#333';
-		if (strategyTab) strategyTab.style.background = tab === 'strategy' ? '#064' : '#333';
+		MenuParty.applyTabButtonStyle(memberTab, tab === 'members');
+		MenuParty.applyTabButtonStyle(strategyTab, tab === 'strategy');
 
 		MenuParty.setBottomButton('もどる', () => Menu.closeSubScreen('party'));
 		if (tab === 'members') MenuParty.renderSlots();
@@ -318,7 +323,7 @@ const MenuParty = {
 
 		MenuParty.setBottomButton('スロット選択にもどる', () => {
 			document.getElementById('party-screen-chars').style.display = 'none';
-			if (tabs) tabs.style.display = 'grid';
+			if (tabs) tabs.style.display = 'flex';
 			MenuParty.switchTab('members');
 		});
 
@@ -401,7 +406,7 @@ const MenuParty = {
 
 		document.getElementById('party-screen-chars').style.display = 'none';
 		const tabs = document.getElementById('party-screen-tabs');
-		if (tabs) tabs.style.display = 'grid';
+		if (tabs) tabs.style.display = 'flex';
 		MenuParty.switchTab('members');
 	}
 };

@@ -204,12 +204,80 @@ const Menu = {
         const assignModal = document.getElementById('assign-modal');
         if(assignModal) assignModal.style.display = 'none';
         Menu.closeDialog();
+	},
+
+    escapeHtml: (value) => String(value ?? '').replace(/[&<>"']/g, ch => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    }[ch])),
+
+    renderMainMenuPartyPanel: (bar) => {
+        bar.classList.add('menu-party-compact');
+        App.data.party.forEach(uid => {
+            const div = document.createElement('div');
+            div.className = 'menu-party-member';
+
+            if (!uid) {
+                div.innerHTML = '<div style="margin:auto; color:#555;">-</div>';
+                bar.appendChild(div);
+                return;
+            }
+
+            const p = App.getChar(uid);
+            if (!p) {
+                div.innerHTML = '<div style="margin:auto; color:#555;">-</div>';
+                bar.appendChild(div);
+                return;
+            }
+
+            const stats = App.calcStats(p);
+            const curHp = p.currentHp !== undefined ? p.currentHp : stats.maxHp;
+            const curMp = p.currentMp !== undefined ? p.currentMp : stats.maxMp;
+            const hpRate = Math.max(0, Math.min(100, (curHp / Math.max(1, stats.maxHp)) * 100));
+            const mpRate = Math.max(0, Math.min(100, (curMp / Math.max(1, stats.maxMp)) * 100));
+            const lbText = p.limitBreak > 0 ? `<span class="menu-party-lb">+${p.limitBreak}</span>` : '';
+            const master = DB.CHARACTERS.find(m => m.id === p.charId);
+            const imgUrl = p.img || (master ? master.img : null);
+            const imgHtml = imgUrl
+                ? `<img src="${imgUrl}" class="menu-party-img">`
+                : `<div class="menu-party-img menu-party-img-empty">IMG</div>`;
+            const isBack = p.formation === 'back';
+            const formationClass = isBack ? 'back' : 'front';
+            const formationMark = isBack ? '▼' : '▲';
+            const formationLabel = isBack ? '後衛' : '前衛';
+
+            div.innerHTML = `
+                <div class="menu-party-head">
+                    <div class="menu-party-name">${Menu.escapeHtml(p.name)}${lbText}</div>
+                    <div class="menu-party-level">Lv ${p.level || 1}</div>
+                    <div class="menu-party-position ${formationClass}" title="${formationLabel}">${formationMark}</div>
+                </div>
+                <div class="menu-party-body">
+                    <div class="menu-party-face">${imgHtml}</div>
+                    <div class="menu-party-main">
+                        <div class="menu-party-stat"><span class="hp-label">HP</span><span>${curHp}/${stats.maxHp}</span></div>
+                        <div class="menu-party-barline"><div class="menu-party-hp" style="width:${hpRate}%"></div></div>
+                        <div class="menu-party-stat"><span class="mp-label">MP</span><span>${curMp}/${stats.maxMp}</span></div>
+                        <div class="menu-party-barline"><div class="menu-party-mp" style="width:${mpRate}%"></div></div>
+                    </div>
+                </div>
+            `;
+            bar.appendChild(div);
+        });
     },
 
     renderPartyBar: () => {
         const bars = document.querySelectorAll('.party-bar'); 
         bars.forEach(bar => {
             bar.innerHTML = '';
+            if (bar.id === 'menu-party-bar') {
+                Menu.renderMainMenuPartyPanel(bar);
+                return;
+            }
+            bar.classList.remove('menu-party-compact');
             App.data.party.forEach(uid => {
                 const div = document.createElement('div');
                 div.className = 'p-box';

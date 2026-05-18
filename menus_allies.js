@@ -1031,6 +1031,9 @@ const MenuAllies = {
             <div onclick="event.stopPropagation()" style="width:min(430px, 100%); max-height:88vh; display:flex; flex-direction:column; background:#111; border:1px solid #777; border-radius:8px; box-shadow:0 18px 48px rgba(0,0,0,0.7); overflow:hidden;">
                 <div id="ally-equip-modal-header" style="flex:0 0 auto; display:flex; justify-content:space-between; align-items:center; gap:8px; padding:10px 12px; border-bottom:1px solid #333; background:#1b1b1b;"></div>
                 <div id="ally-equip-modal-content" style="flex:1 1 auto; min-height:0; overflow:auto; padding:10px;"></div>
+                <div id="ally-equip-modal-footer" style="flex:0 0 auto; padding:10px 12px; border-top:1px solid #333; background:#161616;">
+                    <button class="btn" style="width:100%; background:#555;" onclick="MenuAllies.closeEquipModal()">閉じる</button>
+                </div>
             </div>
         `;
         document.body.appendChild(modal);
