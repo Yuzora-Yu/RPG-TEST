@@ -274,6 +274,56 @@ const App = {
         no_mp: { label: 'ＭＰつかうな' }
     },
 
+    getCharacterMaster: (charOrId) => {
+        const id = (charOrId && typeof charOrId === 'object')
+            ? (charOrId.charId || charOrId.id)
+            : charOrId;
+        if (!id) return null;
+        const list = (typeof DB !== 'undefined' && DB.CHARACTERS) ? DB.CHARACTERS : (window.CHARACTERS_DATA || []);
+        return list.find(c => c.id === id) || null;
+    },
+
+    getDefaultFaceIconPath: (charOrId) => {
+        const id = (charOrId && typeof charOrId === 'object')
+            ? (charOrId.charId || charOrId.id)
+            : charOrId;
+        return id ? `assets/characters/face/${id}.png` : null;
+    },
+
+    isDefaultCharacterImagePath: (src) => {
+        if (!src || typeof src !== 'string') return false;
+        return /(^|\/)assets\/characters\/(char_face_[^/]+\.gif|face\/[^/]+\.png)$/i.test(src);
+    },
+
+    hasCustomCharacterImage: (char) => {
+        if (!char || !char.img) return false;
+        if (char.customImage === true || char.hasCustomImage === true) return true;
+        const master = App.getCharacterMaster(char);
+        if (master && char.img === master.img) return false;
+        if (App.isDefaultCharacterImagePath(char.img)) return false;
+        return /^data:image\//i.test(char.img) || !/^assets\/characters\//i.test(char.img);
+    },
+
+    getCharacterDisplayImage: (charOrId) => {
+        const char = (charOrId && typeof charOrId === 'object') ? charOrId : null;
+        if (char && App.hasCustomCharacterImage(char)) return char.img;
+        return App.getDefaultFaceIconPath(charOrId) || App.getCharacterImageFallback(charOrId);
+    },
+
+    getCharacterImageFallback: (charOrId) => {
+        const char = (charOrId && typeof charOrId === 'object') ? charOrId : null;
+        const master = App.getCharacterMaster(charOrId);
+        return (master && master.img) || (char && char.img) || '';
+    },
+
+    getCharacterImageOnErrorAttr: (charOrId) => {
+        const fallback = App.getCharacterImageFallback(charOrId);
+        const current = App.getCharacterDisplayImage(charOrId);
+        if (!fallback || fallback === current) return '';
+        const safeFallback = String(fallback).replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+        return ` onerror="this.onerror=null;this.src='${safeFallback}';"`;
+    },
+
     unlockDefaults: {
         smith: true,
         gacha: true,
@@ -1957,7 +2007,13 @@ load: () => {
         App.data = JSON.parse(JSON.stringify(INITIAL_DATA_TEMPLATE));
         App.data.characters[0].name = name;
         const heroMaster = (window.CHARACTERS_DATA || []).find(c => c.id === 301);
-        App.data.characters[0].img = imgSrc || heroMaster?.img || null;
+        if (imgSrc) {
+            App.data.characters[0].img = imgSrc;
+            App.data.characters[0].customImage = true;
+        } else {
+            App.data.characters[0].img = heroMaster?.img || null;
+            delete App.data.characters[0].customImage;
+        }
         if (heroMaster) {
             ['job','rarity','hp','mp','atk','def','spd','mag','mdef','hit','eva','cri','sp'].forEach(k => {
                 if (heroMaster[k] !== undefined) App.data.characters[0][k] = heroMaster[k];
@@ -2517,13 +2573,34 @@ load: () => {
                 const spdMult  = 1.0 + statBonus;
 
                 // 各ステータス上昇量の計算
-                const incHp   = Math.max(1, Math.floor(((growthRef.hp || master.hp || 100) * reincMult) * r() * hpMult));
-                const incMp   = Math.max(1, Math.floor(((growthRef.mp || master.mp || 50) * reincMult) * r() * mpMult));
-                const incAtk  = Math.max(1, Math.floor(((growthRef.atk || master.atk || 10) * reincMult) * r() * atkMult));
-                const incDef  = Math.max(1, Math.floor(((growthRef.def || master.def || 10) * reincMult) * r() * defMult));
-                const incMdef = Math.max(1, Math.floor(((growthRef.mdef || master.mdef || 10)* reincMult) * r() * mdefMult));
-                const incSpd  = Math.max(1, Math.floor(((growthRef.spd || master.spd || 10) * reincMult) * r() * spdMult));
-                const incMag  = Math.max(1, Math.floor(((growthRef.mag || master.mag || 10) * reincMult) * r() * magMult));
+                let incHp   = Math.max(1, Math.floor(((growthRef.hp || master.hp || 100) * reincMult) * r() * hpMult));
+                let incMp   = Math.max(1, Math.floor(((growthRef.mp || master.mp || 50) * reincMult) * r() * mpMult));
+                let incAtk  = Math.max(1, Math.floor(((growthRef.atk || master.atk || 10) * reincMult) * r() * atkMult));
+                let incDef  = Math.max(1, Math.floor(((growthRef.def || master.def || 10) * reincMult) * r() * defMult));
+                let incMdef = Math.max(1, Math.floor(((growthRef.mdef || master.mdef || 10)* reincMult) * r() * mdefMult));
+                let incSpd  = Math.max(1, Math.floor(((growthRef.spd || master.spd || 10) * reincMult) * r() * spdMult));
+                let incMag  = Math.max(1, Math.floor(((growthRef.mag || master.mag || 10) * reincMult) * r() * magMult));
+
+                const growthBonusLogs = [];
+                const applyGrowthBonus = (keys, mult, label) => {
+                    keys.forEach(key => {
+                        if (key === 'hp') incHp = Math.max(1, Math.floor(incHp * mult));
+                        if (key === 'mp') incMp = Math.max(1, Math.floor(incMp * mult));
+                        if (key === 'atk') incAtk = Math.max(1, Math.floor(incAtk * mult));
+                        if (key === 'def') incDef = Math.max(1, Math.floor(incDef * mult));
+                        if (key === 'mdef') incMdef = Math.max(1, Math.floor(incMdef * mult));
+                        if (key === 'spd') incSpd = Math.max(1, Math.floor(incSpd * mult));
+                        if (key === 'mag') incMag = Math.max(1, Math.floor(incMag * mult));
+                    });
+                    growthBonusLogs.push(`${label} x${mult.toFixed(1)} (${keys.join(', ')})`);
+                };
+
+                if (charData.level === 50 || charData.level === 100) {
+                    applyGrowthBonus(['hp', 'mp', 'atk', 'def', 'mdef', 'spd', 'mag'], 2 + Math.random(), `Lv${charData.level}成長ボーナス`);
+                } else if (Math.random() < 0.12) {
+                    const keys = ['hp', 'mp', 'atk', 'def', 'mdef', 'spd', 'mag'].sort(() => Math.random() - 0.5).slice(0, Math.random() < 0.25 ? 2 : 1);
+                    applyGrowthBonus(keys, 2 + Math.random(), 'ひらめき成長');
+                }
 
                 // ステータス加算
                 charData.hp += incHp;
@@ -2549,6 +2626,9 @@ load: () => {
 				
 				// 2. ステータス上昇値（全項目）
 				logs.push(`<span style="font-size:0.9em;">最大HP+${incHp} 最大MP+${incMp} <br>攻撃+${incAtk} 防御+${incDef} 魔力+${incMag} 魔防+${incMdef} 速さ+${incSpd} </span>`);
+				if (growthBonusLogs.length > 0) {
+					logs.push(`<span style="color:#ffdd66;">${growthBonusLogs.join(' / ')}</span>`);
+				}
 
 				// 3. スキル習得ログ
 				const newSkill = App.checkNewSkill(charData);
@@ -2890,11 +2970,10 @@ load: () => {
         const hp = c.currentHp !== undefined ? c.currentHp : s.maxHp;
         const mp = c.currentMp !== undefined ? c.currentMp : s.maxMp;
 		
-		// ★ここを修正：c.imgが空ならマスタから取得
-        const master = DB.CHARACTERS.find(m => m.id === c.charId);
-        const displayImg = c.img || (master ? master.img : null);
+        const displayImg = App.getCharacterDisplayImage ? App.getCharacterDisplayImage(c) : c.img;
+        const imageFallbackAttr = App.getCharacterImageOnErrorAttr ? App.getCharacterImageOnErrorAttr(c) : '';
         
-        const imgTag = displayImg ? `<img src="${displayImg}" style="width:100%; height:100%; object-fit:cover;">` : 'IMG';
+        const imgTag = displayImg ? `<img src="${displayImg}"${imageFallbackAttr} style="width:100%; height:100%; object-fit:cover;">` : 'IMG';
         
 		// ★追加：転生マークの生成
         const reincarnated = c.reincarnationCount ? `<span style="color:#00ff00; margin-left:4px;">★${c.reincarnationCount}</span>` : '';

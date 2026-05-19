@@ -214,13 +214,13 @@ const MenuAllies = {
             const rarityLabel = (c.uid === 'p1') ? 'Player' : `${c.rarity}`;
             const rarityColor = (c.uid === 'p1') ? '#ffd700' : Menu.getRarityColor(c.rarity);
             
-            const master = DB.CHARACTERS.find(m => m.id === c.charId);
-            const imgUrl = c.img || (master ? master.img : null);
-            const imgHtml = imgUrl ? `<img src="${imgUrl}" style="width:40px; height:40px; object-fit:cover; border-radius:4px; border:1px solid #555;">` : `<div style="width:40px; height:40px; background:#333; display:flex; align-items:center; justify-content:center; color:#555; font-size:9px; border-radius:4px; border:1px solid #555;">IMG</div>`;
+            const imgUrl = App.getCharacterDisplayImage ? App.getCharacterDisplayImage(c) : c.img;
+            const imageFallbackAttr = App.getCharacterImageOnErrorAttr ? App.getCharacterImageOnErrorAttr(c) : '';
+            const imgHtml = imgUrl ? `<img src="${imgUrl}"${imageFallbackAttr} style="width:60px; height:60px; object-fit:cover; border-radius:4px; border:1px solid #555;">` : `<div style="width:60px; height:60px; background:#333; display:flex; align-items:center; justify-content:center; color:#555; font-size:9px; border-radius:4px; border:1px solid #555;">IMG</div>`;
 
             div.innerHTML = `
                 <div style="display:flex; align-items:center; width:100%;">
-                    <div style="margin-right:10px;">${imgHtml}</div>
+                    <div style="margin-right:12px; flex:0 0 62px;">${imgHtml}</div>
                     <div style="flex:1;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1px;">
                             <div style="font-size:13px; font-weight:bold; color:#fff;">${inParty}${c.name} ${lbText} <span style="font-size:10px; color:#aaa; font-weight:normal;">(${c.job})</span></div>
@@ -402,8 +402,8 @@ const MenuAllies = {
         else if (!c.config) c.config = { fullAuto: false, hiddenSkills: [], strategy: 'balanced' };
         if (!c.disabledTraits) c.disabledTraits = [];
 
-        const master = DB.CHARACTERS.find(m => m.id === c.charId);
-        const imgUrl = c.img || (master ? master.img : null);
+        const imgUrl = App.getCharacterDisplayImage ? App.getCharacterDisplayImage(c) : c.img;
+        const imageFallbackAttr = App.getCharacterImageOnErrorAttr ? App.getCharacterImageOnErrorAttr(c) : '';
         
         const hp = c.currentHp !== undefined ? c.currentHp : s.maxHp;
         const mp = c.currentMp !== undefined ? c.currentMp : s.maxMp;
@@ -430,7 +430,7 @@ const MenuAllies = {
             }
         };
 
-        const imgHtml = imgUrl ? `<img src="${imgUrl}" style="width:100%; height:100%; object-fit:cover;">` : `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#888;">IMG</div>`;
+        const imgHtml = imgUrl ? `<img src="${imgUrl}"${imageFallbackAttr} style="width:100%; height:100%; object-fit:cover;">` : `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#888;">IMG</div>`;
         
         const tabs = ['基本', '装備', 'スキル', '特性'];
         const tabBtns = tabs.map((t, i) => {
@@ -844,7 +844,7 @@ const MenuAllies = {
                             ${imgHtml}
                             <div style="position:absolute; bottom:0; width:100%; background:rgba(0,0,0,0.6); color:#fff; font-size:8px; text-align:center; padding:2px 0;">画像変更</div>
                         </div>
-                        ${c.img ? `<div onclick="event.stopPropagation(); MenuAllies.resetImage('${c.uid}')" style="position:absolute; top:-5px; right:-5px; width:20px; height:20px; background:#d00; color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; border:1px solid #fff; cursor:pointer; z-index:10;">×</div>` : ''}
+                        ${(App.hasCustomCharacterImage ? App.hasCustomCharacterImage(c) : !!c.img) ? `<div onclick="event.stopPropagation(); MenuAllies.resetImage('${c.uid}')" style="position:absolute; top:-5px; right:-5px; width:20px; height:20px; background:#d00; color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; border:1px solid #fff; cursor:pointer; z-index:10;">×</div>` : ''}
                     </div>
 
                     <input type="file" id="file-upload-${c.uid}" style="display:none" accept="image/*" onchange="MenuAllies.uploadImage(this, '${c.uid}')">
@@ -1267,7 +1267,7 @@ const MenuAllies = {
             const reader = new FileReader();
             reader.onload = (e) => {
                 const char = App.getChar(uid);
-                if (char) { char.img = e.target.result; App.save(); Menu.renderPartyBar(); MenuAllies.renderDetail(); }
+                if (char) { char.img = e.target.result; char.customImage = true; App.save(); Menu.renderPartyBar(); MenuAllies.renderDetail(); }
             };
             reader.readAsDataURL(file);
         }
@@ -1275,9 +1275,11 @@ const MenuAllies = {
 
     resetImage: (uid) => {
         const char = App.getChar(uid);
-        if (char && char.img) {
+        if (char && (App.hasCustomCharacterImage ? App.hasCustomCharacterImage(char) : char.img)) {
             Menu.confirm("画像を初期状態に戻しますか？", () => {
                 delete char.img;
+                delete char.customImage;
+                delete char.hasCustomImage;
                 App.save();
                 Menu.renderPartyBar();
                 MenuAllies.renderDetail();

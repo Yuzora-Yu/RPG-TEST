@@ -92,7 +92,8 @@ const MenuAllyDetail = {
         const master = DB.CHARACTERS.find(m => m.id === c.charId) || {};
         const rarity = c.rarity || 'N';
         const stars = { 'N': 1, 'R': 2, 'SR': 3, 'SSR': 4, 'UR': 5, 'EX': 6 }[rarity] || 1;
-        const imgUrl = c.img || master.img;
+        const imgUrl = App.getCharacterDisplayImage ? App.getCharacterDisplayImage(c) : (c.img || master.img);
+        const imageFallbackAttr = App.getCharacterImageOnErrorAttr ? App.getCharacterImageOnErrorAttr(c) : '';
 
         let frontRareClass = "";
         if (rarity === "SSR") frontRareClass = "style-gold";
@@ -124,7 +125,7 @@ const MenuAllyDetail = {
                     <div class="gacha-card-backdrop"></div>
                     <div class="gacha-card-rarity-aura"></div>
                     <div class="gacha-character-window">
-                        ${imgUrl ? `<img class="gacha-card-character" src="${imgUrl}" alt="">` : '<div class="gacha-card-silhouette">?</div>'}
+                        ${imgUrl ? `<img class="gacha-card-character" src="${imgUrl}"${imageFallbackAttr} alt="">` : '<div class="gacha-card-silhouette">?</div>'}
                     </div>
                     <img class="gacha-card-template" src="assets/gacha/front_card.png" alt="">
                     <div class="gacha-card-rarity">${rarity}</div>

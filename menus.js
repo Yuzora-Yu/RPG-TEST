@@ -239,10 +239,10 @@ const Menu = {
             const hpRate = Math.max(0, Math.min(100, (curHp / Math.max(1, stats.maxHp)) * 100));
             const mpRate = Math.max(0, Math.min(100, (curMp / Math.max(1, stats.maxMp)) * 100));
             const lbText = p.limitBreak > 0 ? `<span class="menu-party-lb">+${p.limitBreak}</span>` : '';
-            const master = DB.CHARACTERS.find(m => m.id === p.charId);
-            const imgUrl = p.img || (master ? master.img : null);
+            const imgUrl = App.getCharacterDisplayImage ? App.getCharacterDisplayImage(p) : p.img;
+            const imageFallbackAttr = App.getCharacterImageOnErrorAttr ? App.getCharacterImageOnErrorAttr(p) : '';
             const imgHtml = imgUrl
-                ? `<img src="${imgUrl}" class="menu-party-img">`
+                ? `<img src="${imgUrl}"${imageFallbackAttr} class="menu-party-img">`
                 : `<div class="menu-party-img menu-party-img-empty">IMG</div>`;
             const isBack = p.formation === 'back';
             const formationClass = isBack ? 'back' : 'front';
@@ -292,12 +292,11 @@ const Menu = {
                     const curMp = p.currentMp!==undefined ? p.currentMp : stats.maxMp;
                     const lbText = p.limitBreak > 0 ? `<span style="color:#ffd700; font-size:9px; margin-left:2px;">+${p.limitBreak}</span>` : '';
 
-                    // ★修正箇所: マスタデータから画像を取得
-                    const master = DB.CHARACTERS.find(m => m.id === p.charId);
-                    const imgUrl = p.img || (master ? master.img : null);
+                    const imgUrl = App.getCharacterDisplayImage ? App.getCharacterDisplayImage(p) : p.img;
+                    const imageFallbackAttr = App.getCharacterImageOnErrorAttr ? App.getCharacterImageOnErrorAttr(p) : '';
 
                     const imgHtml = imgUrl 
-                        ? `<img src="${imgUrl}" style="width:32px; height:32px; object-fit:cover; border-radius:4px; border:1px solid #666; margin-bottom:2px;">`
+                        ? `<img src="${imgUrl}"${imageFallbackAttr} style="width:32px; height:32px; object-fit:cover; border-radius:4px; border:1px solid #666; margin-bottom:2px;">`
                         : `<div style="width:32px; height:32px; background:#333; border-radius:4px; border:1px solid #666; display:flex; align-items:center; justify-content:center; color:#555; font-size:8px; margin-bottom:2px;">IMG</div>`;
 
                     div.innerHTML = `

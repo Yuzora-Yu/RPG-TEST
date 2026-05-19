@@ -6,6 +6,7 @@ const MenuParty = {
     targetSlot: 0,
     currentTab: 'members',
 	init: () => { 
+		MenuParty.ensureWindow();
 		MenuParty.ensureBottomPanel();
 		MenuParty.ensureTabs();
 		MenuParty.ensureStrategyPanel();
@@ -13,10 +14,26 @@ const MenuParty = {
 		MenuParty.setBottomButton('もどる', () => Menu.closeSubScreen('party'));
 		MenuParty.switchTab('members');
 	},
+
+	getRoot: () => document.getElementById('party-screen-window') || document.getElementById('sub-screen-party'),
+
+	ensureWindow: () => {
+		const screen = document.getElementById('sub-screen-party');
+		if (!screen || document.getElementById('party-screen-window')) return;
+
+		const windowEl = document.createElement('div');
+		windowEl.id = 'party-screen-window';
+		windowEl.className = 'sub-screen-window';
+		while (screen.firstChild) {
+			windowEl.appendChild(screen.firstChild);
+		}
+		screen.appendChild(windowEl);
+	},
 	
 	ensureBottomPanel: () => {
 		const screen = document.getElementById('sub-screen-party');
 		if (!screen) return;
+		const root = MenuParty.getRoot();
 
 		let panel = document.getElementById('party-bottom-panel');
 		if (panel) return;
@@ -28,7 +45,7 @@ const MenuParty = {
 			<button id="party-bottom-back-btn" class="btn sub-screen-back-btn">もどる</button>
 		`;
 
-		screen.appendChild(panel);
+		root.appendChild(panel);
 	},
 
 	setBottomButton: (label, handler) => {
@@ -51,6 +68,7 @@ const MenuParty = {
 		const screen = document.getElementById('sub-screen-party');
 		const slots = document.getElementById('party-screen-slots');
 		if (!screen || !slots || document.getElementById('party-screen-tabs')) return;
+		const root = slots.parentNode || MenuParty.getRoot();
 		const tabs = document.createElement('div');
 		tabs.id = 'party-screen-tabs';
 		tabs.style.cssText = 'display:flex; background:#222; margin:8px 8px 0; border-radius:6px; overflow:hidden; border:1px solid #444; flex-shrink:0;';
@@ -58,7 +76,7 @@ const MenuParty = {
 			<button id="party-tab-members" onclick="MenuParty.switchTab('members')">仲間</button>
 			<button id="party-tab-strategy" onclick="MenuParty.switchTab('strategy')">さくせん</button>
 		`;
-		screen.insertBefore(tabs, slots);
+		root.insertBefore(tabs, slots);
 	},
 
 	applyTabButtonStyle: (button, active) => {
@@ -69,6 +87,7 @@ const MenuParty = {
 	ensureStrategyPanel: () => {
 		const screen = document.getElementById('sub-screen-party');
 		if (!screen || document.getElementById('party-screen-strategy')) return;
+		const root = MenuParty.getRoot();
 		const panel = document.createElement('div');
 		panel.id = 'party-screen-strategy';
 		panel.className = 'flex-col-container';
@@ -78,7 +97,7 @@ const MenuParty = {
 			<div id="party-strategy-list" class="scroll-area"></div>
 		`;
 		const bottom = document.getElementById('party-bottom-panel');
-		screen.insertBefore(panel, bottom || null);
+		root.insertBefore(panel, bottom || null);
 	},
 
 	switchTab: (tab) => {
@@ -115,7 +134,7 @@ const MenuParty = {
 			div.style.cssText = 'display:flex; align-items:center; gap:10px; padding:10px; min-height:74px;';
 
 			if (!uid) {
-				div.innerHTML = `<div style="color:#777;">${i + 1}. 空き</div>`;
+				div.innerHTML = `<div style="color:#777;">空き</div>`;
 				list.appendChild(div);
 				continue;
 			}
@@ -125,15 +144,15 @@ const MenuParty = {
 			if (App.ensureCharacterBattleConfig) App.ensureCharacterBattleConfig(c);
 			const current = c.config?.strategy || 'balanced';
 			const currentLabel = App.getBattleStrategyLabel ? App.getBattleStrategyLabel(current) : (strategies[current]?.label || current);
-			const master = DB.CHARACTERS.find(m => m.id === c.charId) || {};
-			const imgUrl = c.img || master.img || '';
+			const imgUrl = App.getCharacterDisplayImage ? App.getCharacterDisplayImage(c) : c.img || '';
+			const imageFallbackAttr = App.getCharacterImageOnErrorAttr ? App.getCharacterImageOnErrorAttr(c) : '';
 			div.innerHTML = `
 				<div style="width:46px; height:46px; flex:0 0 auto; border:1px solid #555; border-radius:6px; overflow:hidden; background:#222; display:flex; align-items:center; justify-content:center;">
-					${imgUrl ? `<img src="${imgUrl}" style="width:100%; height:100%; object-fit:cover;">` : '<span style="font-size:10px; color:#555;">IMG</span>'}
+					${imgUrl ? `<img src="${imgUrl}"${imageFallbackAttr} style="width:100%; height:100%; object-fit:cover;">` : '<span style="font-size:10px; color:#555;">IMG</span>'}
 				</div>
 				<div style="flex:1; min-width:0;">
 					<div style="display:flex; align-items:baseline; gap:6px; margin-bottom:3px;">
-						<span style="font-size:13px; font-weight:bold; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${i + 1}. ${MenuParty.escapeHtml(c.name)}</span>
+						<span style="font-size:13px; font-weight:bold; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${MenuParty.escapeHtml(c.name)}</span>
 						<span style="font-size:10px; color:#aaa; white-space:nowrap;">${MenuParty.escapeHtml(c.job || '')}</span>
 					</div>
 					<div style="font-size:11px; color:#ccc; margin-bottom:4px;">Lv.${c.level || 1}</div>
@@ -155,8 +174,8 @@ const MenuParty = {
 		const strategies = App.battleStrategies || {};
 		const current = c.config?.strategy || 'balanced';
 		const currentLabel = App.getBattleStrategyLabel ? App.getBattleStrategyLabel(current) : (strategies[current]?.label || current);
-		const master = DB.CHARACTERS.find(m => m.id === c.charId) || {};
-		const imgUrl = c.img || master.img || '';
+		const imgUrl = App.getCharacterDisplayImage ? App.getCharacterDisplayImage(c) : c.img || '';
+		const imageFallbackAttr = App.getCharacterImageOnErrorAttr ? App.getCharacterImageOnErrorAttr(c) : '';
 
 		const modal = document.createElement('div');
 		modal.id = 'party-strategy-modal';
@@ -166,7 +185,7 @@ const MenuParty = {
 			<div onclick="event.stopPropagation()" style="width:min(360px, 100%); max-height:86vh; overflow:auto; background:#151515; border:1px solid #777; border-radius:8px; box-shadow:0 18px 48px rgba(0,0,0,0.65);">
 				<div style="display:flex; align-items:center; gap:10px; padding:12px; border-bottom:1px solid #333;">
 					<div style="width:52px; height:52px; flex:0 0 auto; border:1px solid #555; border-radius:6px; overflow:hidden; background:#222; display:flex; align-items:center; justify-content:center;">
-						${imgUrl ? `<img src="${imgUrl}" style="width:100%; height:100%; object-fit:cover;">` : '<span style="font-size:10px; color:#555;">IMG</span>'}
+						${imgUrl ? `<img src="${imgUrl}"${imageFallbackAttr} style="width:100%; height:100%; object-fit:cover;">` : '<span style="font-size:10px; color:#555;">IMG</span>'}
 					</div>
 					<div style="flex:1; min-width:0;">
 						<div style="font-size:15px; font-weight:bold; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${MenuParty.escapeHtml(c.name)}</div>
@@ -231,65 +250,52 @@ const MenuParty = {
                 const rarityLabel = (c.uid === 'p1') ? 'Player' : `[${c.rarity}]`;
                 const rarityColor = (c.uid === 'p1') ? '#ffd700' : Menu.getRarityColor(c.rarity);
                 
-                // 画像取得ロジック（マスタデータ参照）
-                const master = DB.CHARACTERS.find(m => m.id === c.charId);
-                const imgUrl = c.img || (master ? master.img : null);
-                const imgHtml = imgUrl ? `<img src="${imgUrl}" style="width:50px; height:50px; object-fit:cover; border-radius:4px; border:1px solid #555;">` : `<div style="width:40px; height:40px; background:#333; display:flex; align-items:center; justify-content:center; color:#555; font-size:9px; border-radius:4px; border:1px solid #555;">IMG</div>`;
+                const imgUrl = App.getCharacterDisplayImage ? App.getCharacterDisplayImage(c) : c.img;
+                const imageFallbackAttr = App.getCharacterImageOnErrorAttr ? App.getCharacterImageOnErrorAttr(c) : '';
+                const imgHtml = imgUrl ? `<img src="${imgUrl}"${imageFallbackAttr} style="width:58px; height:58px; object-fit:cover; border-radius:5px; border:1px solid rgba(232,184,94,0.38);">` : `<div style="width:58px; height:58px; background:#2b1a0e; display:flex; align-items:center; justify-content:center; color:#8d7456; font-size:9px; border-radius:5px; border:1px solid rgba(232,184,94,0.38);">IMG</div>`;
 
                 // ★隊列表示用の設定
                 const formationLabel = (c.formation === 'back') ? '後衛' : '前衛';
                 const formationColor = (c.formation === 'back') ? '#44aaff' : '#ff4444';
 
 				div.innerHTML = `
-					<div style="display:flex; align-items:center; width:100%; padding:6px 0;">
-						<div style="display:flex; align-items:center; flex-shrink:0; margin-right:10px;">
-							<div style="font-size:14px; font-weight:bold; color:#aaa; width:15px;">${i+1}.</div>
-							<div style="width:50px;">${imgHtml}</div>
+					<div style="display:flex; align-items:center; width:100%; gap:10px; min-height:92px;">
+						<div style="width:68px; flex:0 0 68px; display:flex; flex-direction:column; align-items:center; align-self:stretch; justify-content:flex-start; gap:5px; padding-top:1px;">
+							${imgHtml}
+							<div style="background:#21130a; border-radius:4px; padding:2px; display:flex; border:1px solid rgba(232,184,94,0.26); cursor:pointer;" onclick="event.stopPropagation(); MenuParty.toggleFormation('${c.uid}')">
+								<div style="font-size:9px; padding:2px 5px; border-radius:2px; background:${c.formation !== 'back' ? formationColor : 'transparent'}; color:${c.formation !== 'back' ? '#fff' : '#666'};">前衛</div>
+								<div style="font-size:9px; padding:2px 5px; border-radius:2px; background:${c.formation === 'back' ? formationColor : 'transparent'}; color:${c.formation === 'back' ? '#fff' : '#666'};">後衛</div>
+							</div>
 						</div>
 
-						<div style="flex:1; min-width:0; margin-right:8px;">
-							<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
-								<div style="font-size:13px; font-weight:bold; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-									${c.name} ${lbText} <span style="font-size:10px; color:#aaa; font-weight:normal;">(${c.job})</span>
+						<div style="flex:1 1 auto; min-width:0;">
+							<div style="display:flex; align-items:baseline; gap:5px; margin-bottom:2px; min-width:0;">
+								<div style="font-size:14px; font-weight:bold; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0;">
+									${MenuParty.escapeHtml(c.name)}
 								</div>
+								${lbText}
 							</div>
-
-							<div style="display:grid; grid-template-columns: 40px 1fr 1fr; gap:4px; font-size:11px; color:#ddd; align-items:baseline; margin-bottom:1px;">
+							
+							<div style="display:flex; align-items:center; gap:7px; font-size:11px; color:#f7e2b7; margin-bottom:2px; line-height:1.15;">
 								<span style="color:#ffd700; font-weight:bold;">Lv.${c.level}</span>
-							</div>
-							
-							<div style="display:grid; grid-template-columns: 40px 1fr 1fr; gap:4px; font-size:11px; color:#ddd; align-items:baseline; margin-bottom:0px;">
-								<span style="white-space:nowrap;">HP:<span style="color:#8f8;">${curHp}/${s.maxHp}</span>
-							</div>
-							
-							<div style="display:grid; grid-template-columns: 40px 1fr 1fr; gap:4px; font-size:11px; color:#ddd; align-items:baseline; margin-bottom:3px;">
-								<span style="white-space:nowrap;"> MP:<span style="color:#88f;">${curMp}/${s.maxMp}</span></span>
+								<span style="font-size:10px; color:#b9a58a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${MenuParty.escapeHtml(c.job || '')}</span>
 							</div>
 
-							<div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:2px 6px; font-size:9px; color:#aaa; line-height:1.2;">
+							<div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:12px; color:#f7e2b7; margin-bottom:4px; line-height:1.15;">
+								<span style="white-space:nowrap;">HP:<span style="color:#7dff8c;">${curHp}/${s.maxHp}</span></span>
+								<span style="white-space:nowrap;">MP:<span style="color:#9da7ff;">${curMp}/${s.maxMp}</span></span>
+							</div>
+							<div style="display:grid; grid-template-columns: repeat(3, max-content); gap:2px 11px; font-size:9px; color:#b9a58a; line-height:1.18;">
 								<span>攻:${s.atk}</span>
-								<span>防:${s.def}</span>
-								<span>速:${s.spd}</span>
 								<span>魔:${s.mag}</span>
+								<span>速:${s.spd}</span>
+								<span>防:${s.def}</span>
 								<span>魔防:${s.mdef}</span>
 							</div>
 						</div>
 
-						<div style="display:flex; flex-direction:column; align-items:flex-end; flex-shrink:0; align-self:stretch; margin-left:10px;">
-							
-							<div style="flex:1;"></div>
-
-							<div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px; position:relative; bottom:-6px;">
-								
-								<div style="font-size:10px; color:#888; cursor:pointer;" onclick="event.stopPropagation(); MenuParty.openChangeMember(${i})">
-									変更 &gt;
-								</div>
-
-								<div style="background:#222; border-radius:4px; padding:2px; display:flex; border:1px solid #444; cursor:pointer;" onclick="event.stopPropagation(); MenuParty.toggleFormation('${c.uid}')">
-									<div style="font-size:9px; padding:2px 6px; border-radius:2px; background:${c.formation !== 'back' ? formationColor : 'transparent'}; color:${c.formation !== 'back' ? '#fff' : '#666'};">前衛</div>
-									<div style="font-size:9px; padding:2px 6px; border-radius:2px; background:${c.formation === 'back' ? formationColor : 'transparent'}; color:${c.formation === 'back' ? '#fff' : '#666'};">後衛</div>
-								</div>
-							</div>
+						<div style="display:flex; align-items:center; justify-content:center; flex:0 0 18px; align-self:stretch;">
+							<div style="font-size:18px; color:#b9a58a; cursor:pointer; line-height:1;" onclick="event.stopPropagation(); MenuParty.openChangeMember(${i})">›</div>
 						</div>
 					</div>
 				`;
@@ -298,10 +304,9 @@ const MenuParty = {
                 div.onclick = () => MenuParty.openChangeMember(i);
             } else {
                 div.innerHTML = `
-                    <div style="display:flex; align-items:center; width:100%; height:45px;">
-                        <div style="margin-right:10px; font-size:14px; font-weight:bold; color:#aaa; width:15px;">${i+1}.</div>
-                        <div style="flex:1; color:#555;">(空き)</div>
-                        <div style="font-size:10px; color:#888;">設定 &gt;</div>
+                    <div style="display:flex; align-items:center; width:100%; min-height:48px;">
+                        <div style="flex:1; color:#806b50;">(空き)</div>
+                        <div style="font-size:10px; color:#b9a58a;">設定 &gt;</div>
                     </div>
                 `;
                 div.onclick = () => MenuParty.openChangeMember(i);
@@ -360,9 +365,9 @@ const MenuParty = {
             const rarityLabel = (c.uid === 'p1') ? 'Player' : `${c.rarity}`;
             const rarityColor = (c.uid === 'p1') ? '#ffd700' : Menu.getRarityColor(c.rarity);
             
-            const master = DB.CHARACTERS.find(m => m.id === c.charId);
-            const imgUrl = c.img || (master ? master.img : null);
-            const imgHtml = imgUrl ? `<img src="${imgUrl}" style="width:40px; height:40px; object-fit:cover; border-radius:4px; border:1px solid #555;">` : `<div style="width:40px; height:40px; background:#333; display:flex; align-items:center; justify-content:center; color:#555; font-size:9px; border-radius:4px; border:1px solid #555;">IMG</div>`;
+            const imgUrl = App.getCharacterDisplayImage ? App.getCharacterDisplayImage(c) : c.img;
+            const imageFallbackAttr = App.getCharacterImageOnErrorAttr ? App.getCharacterImageOnErrorAttr(c) : '';
+            const imgHtml = imgUrl ? `<img src="${imgUrl}"${imageFallbackAttr} style="width:40px; height:40px; object-fit:cover; border-radius:4px; border:1px solid #555;">` : `<div style="width:40px; height:40px; background:#333; display:flex; align-items:center; justify-content:center; color:#555; font-size:9px; border-radius:4px; border:1px solid #555;">IMG</div>`;
 
             div.innerHTML = `
                 <div style="display:flex; align-items:center; width:100%;">

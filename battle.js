@@ -3,15 +3,6 @@
 const Battle = {
     active: false,
     auto: false,
-    balanceTuning: {
-        normalPowerMult: 1.55,
-        bossPowerMult: 1.35,
-        bossHpMult: 5.0,
-        normalMpMult: 1.2,
-        bossMpMult: 1.35,
-        normalHitBonus: 8,
-        bossHitBonus: 12
-    },
     phase: 'init',
     party: [],
     enemies: [],
@@ -215,7 +206,6 @@ const Battle = {
                 m.elmAtk = JSON.parse(JSON.stringify(base.elmAtk || {})); m.elmRes = JSON.parse(JSON.stringify(base.elmRes || {}));
                 m.passive = base.passive || {};
                 m.battleStatus = e.battleStatus || { buffs:{}, debuffs:{}, ailments:{} };
-                Battle.applyEnemyBalanceTuning(m, base, { isBossBattle: m.isBoss, scaleHp: false });
                 return m;
             }).filter(enemy => enemy !== null);
         } else {
@@ -388,46 +378,6 @@ const Battle = {
         return !!(base.isStoryBoss || base.storyOnly || (id >= 301000 && id < 400000));
     },
 
-    scaleNumber: (value, rate, min = 0) => {
-        const n = Number(value || 0);
-        if (!Number.isFinite(n)) return value;
-        return Math.max(min, Math.floor(n * rate));
-    },
-
-    scaleEnemyBattleStat: (enemy, key, rate) => {
-        if (!enemy || !Number.isFinite(Number(rate)) || rate === 1) return;
-        if (enemy.baseStats && enemy.baseStats[key] !== undefined) {
-            enemy.baseStats[key] = Battle.scaleNumber(enemy.baseStats[key], rate, 0);
-        }
-        if (enemy[key] !== undefined) {
-            enemy[key] = Battle.scaleNumber(enemy[key], rate, 0);
-        }
-    },
-
-    applyEnemyBalanceTuning: (enemy, base, options = {}) => {
-        if (!enemy || enemy.__balanceTuned) return enemy;
-        const tune = Battle.balanceTuning || {};
-        const isBoss = !!(options.isBossBattle || enemy.isBoss || base?.isBoss);
-        const allowHp = options.scaleHp !== false;
-        const powerMult = isBoss ? tune.bossPowerMult : tune.normalPowerMult;
-        const mpMult = isBoss ? tune.bossMpMult : tune.normalMpMult;
-
-        if (allowHp && isBoss) {
-            enemy.hp = Battle.scaleNumber(enemy.hp, tune.bossHpMult || 1, 1);
-            enemy.baseMaxHp = Battle.scaleNumber(enemy.baseMaxHp || enemy.hp, tune.bossHpMult || 1, enemy.hp);
-        }
-
-        enemy.mp = Battle.scaleNumber(enemy.mp, mpMult || 1, 0);
-        enemy.baseMaxMp = Battle.scaleNumber(enemy.baseMaxMp || enemy.mp, mpMult || 1, enemy.mp);
-        Battle.scaleEnemyBattleStat(enemy, 'atk', powerMult || 1);
-        Battle.scaleEnemyBattleStat(enemy, 'mag', powerMult || 1);
-        if (enemy.mdef === undefined && base?.mdef !== undefined) enemy.mdef = base.mdef;
-
-        enemy.hit = (enemy.hit || base?.hit || 100) + (isBoss ? (tune.bossHitBonus || 0) : (tune.normalHitBonus || 0));
-        enemy.__balanceTuned = true;
-        return enemy;
-    },
-
     getEquipmentRewardFloor: (enemy, fallbackFloor = 1) => {
         const base = Battle.getMonsterBaseById(enemy?.baseId || enemy?.id) || {};
         const raw = enemy?.generatedFloor ?? enemy?.rewardRank ?? enemy?.rank ?? base.generatedFloor ?? base.rewardRank ?? base.rank ?? base.minF ?? fallbackFloor;
@@ -481,7 +431,6 @@ const Battle = {
             m.cri += PassiveSkill.getSumValue(m, 'cri_pct');
         }
 
-        Battle.applyEnemyBalanceTuning(m, base, { isBossBattle });
         return m;
     },
 
@@ -843,7 +792,6 @@ const Battle = {
         }
 
         m.passive = base.passive || {};
-        Battle.applyEnemyBalanceTuning(m, base, { isBossBattle: isBoss });
         Battle.initBattleStatus(m);
         
         return m;
@@ -3463,10 +3411,9 @@ findNextActor: () => {
             if(isActor) { div.style.border = "2px solid #ffd700"; div.style.background = "#333"; }
             let nameStyle = p.isDead ? 'color:red; text-decoration:line-through;' : 'color:white;';
 			
-			// ★修正箇所: マスタデータから画像を取得して統合
-            const master = DB.CHARACTERS.find(m => m.id === p.charId);
-            const imgUrl = p.img || (master ? master.img : null);
-            const imgHtml = imgUrl ? `<img src="${imgUrl}" style="width:32px; height:32px; object-fit:cover; border-radius:4px; border:1px solid #666; margin-bottom:1px;">` : `<div style="width:32px; height:32px; background:#222; border-radius:4px; border:1px solid #444; display:flex; align-items:center; justify-content:center; color:#555; font-size:8px; margin-bottom:1px;">IMG</div>`;
+            const imgUrl = App.getCharacterDisplayImage ? App.getCharacterDisplayImage(p) : p.img;
+            const imageFallbackAttr = App.getCharacterImageOnErrorAttr ? App.getCharacterImageOnErrorAttr(p) : '';
+            const imgHtml = imgUrl ? `<img src="${imgUrl}"${imageFallbackAttr} style="width:32px; height:32px; object-fit:cover; border-radius:4px; border:1px solid #666; margin-bottom:1px;">` : `<div style="width:32px; height:32px; background:#222; border-radius:4px; border:1px solid #444; display:flex; align-items:center; justify-content:center; color:#555; font-size:8px; margin-bottom:1px;">IMG</div>`;
             
             // --- 消えていた部分を復活 ---
             div.innerHTML = `
@@ -3538,15 +3485,14 @@ findNextActor: () => {
         const hpPer = Math.floor((char.hp / maxHp) * 100);
         const mpPer = Math.floor((char.mp / maxMp) * 100);
 		
-		// ★修正箇所: マスタデータから画像を取得
-        const master = DB.CHARACTERS.find(m => m.id === char.charId);
-        const imgUrl = char.img || (master ? master.img : null);
+        const imgUrl = App.getCharacterDisplayImage ? App.getCharacterDisplayImage(char) : char.img;
+        const imageFallbackAttr = App.getCharacterImageOnErrorAttr ? App.getCharacterImageOnErrorAttr(char) : '';
 
         // ★修正箇所: char.img ではなく imgUrl を使用
         let html = `
             <div style="display:flex; align-items:center; margin-bottom:10px;">
                 <div style="width:48px; height:48px; border:1px solid #555; margin-right:10px; border-radius:4px; overflow:hidden; display:flex; justify-content:center; align-items:center; background:#333;">
-                    ${imgUrl ? `<img src="${imgUrl}" style="width:100%; height:100%; object-fit:cover;">` : '<span style="font-size:10px; color:#888;">IMG</span>'}
+                    ${imgUrl ? `<img src="${imgUrl}"${imageFallbackAttr} style="width:100%; height:100%; object-fit:cover;">` : '<span style="font-size:10px; color:#888;">IMG</span>'}
                 </div>
                 <div style="flex:1;">
                     <div style="font-size:12px; color:#aaa; margin-bottom:2px;">${char.job} Lv.${char.level}</div>
