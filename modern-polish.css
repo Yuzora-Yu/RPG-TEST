@@ -4489,13 +4489,93 @@ body.game-page .sub-screen:not(#sub-screen-party) {
   width: var(--menu-window-w) !important;
   height: var(--menu-window-h) !important;
   transform: translate(-50%, -50%) !important;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(232, 184, 94, 0.10), transparent 42%),
+    linear-gradient(180deg, #201208, #0f0804) !important;
   border: 1px solid rgba(232, 184, 94, 0.46) !important;
   border-radius: 10px !important;
   overflow: hidden !important;
   box-shadow:
-    0 0 0 9999px #160b05,
+    0 0 0 9999px #201208,
     0 18px 56px rgba(0, 0, 0, 0.58),
     0 0 0 1px rgba(255, 240, 190, 0.06) inset !important;
+}
+
+body.game-page .sub-screen:not(#sub-screen-party) > .scroll-area,
+body.game-page .sub-screen:not(#sub-screen-party) > .flex-col-container,
+body.game-page .sub-screen:not(#sub-screen-party) .flex-col-container > .scroll-area {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(232, 184, 94, 0.08), transparent 42%),
+    linear-gradient(180deg, #21130a, #120904) !important;
+}
+
+body.game-page .sub-screen:not(#sub-screen-party) > .sub-screen-bottom-panel {
+  background: linear-gradient(180deg, #3a2415, #1d1008) !important;
+  border-top-color: rgba(232, 184, 94, 0.42) !important;
+}
+
+/* Menu background reset: keep sizing/layout changes, but restore non-transparent dark surfaces. */
+body.game-page #menu-overlay {
+  background: rgba(0, 0, 0, 0.95) !important;
+  backdrop-filter: none !important;
+}
+
+body.game-page #menu-overlay .menu-window {
+  background: #222 !important;
+}
+
+body.game-page #menu-overlay .menu-grid {
+  background: transparent !important;
+}
+
+body.game-page #menu-party-bar.menu-party-compact {
+  background: #111 !important;
+}
+
+body.game-page #sub-screen-party {
+  background: #101010 !important;
+  backdrop-filter: none !important;
+}
+
+body.game-page #party-screen-window {
+  background: #101010 !important;
+}
+
+body.game-page #sub-screen-party .flex-col-container,
+body.game-page #sub-screen-party .scroll-area {
+  background: transparent !important;
+}
+
+body.game-page #sub-screen-party #party-screen-slots > div:first-child,
+body.game-page #sub-screen-party #party-screen-chars > div:first-child,
+body.game-page #sub-screen-party #party-screen-strategy > div:first-child {
+  background: #222 !important;
+}
+
+body.game-page #sub-screen-party .list-item {
+  background: rgba(255, 255, 255, 0.02) !important;
+}
+
+body.game-page #sub-screen-party .sub-screen-bottom-panel {
+  background: #111 !important;
+}
+
+body.game-page .sub-screen:not(#sub-screen-party) {
+  background: #101010 !important;
+  box-shadow:
+    0 0 0 9999px rgba(0, 0, 0, 0.95),
+    0 18px 56px rgba(0, 0, 0, 0.58),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset !important;
+}
+
+body.game-page .sub-screen:not(#sub-screen-party) > .scroll-area,
+body.game-page .sub-screen:not(#sub-screen-party) > .flex-col-container,
+body.game-page .sub-screen:not(#sub-screen-party) .flex-col-container > .scroll-area {
+  background: transparent !important;
+}
+
+body.game-page .sub-screen:not(#sub-screen-party) > .sub-screen-bottom-panel {
+  background: #111 !important;
 }
 
 @media (min-width: 760px) {
@@ -4504,4 +4584,84 @@ body.game-page .sub-screen:not(#sub-screen-party) {
     height: min(calc(var(--vh, 1vh) * 100 - 36px), calc((100vw - 36px) * 16 / 9), 900px) !important;
     aspect-ratio: 9 / 16;
   }
+}
+
+/* Cohesive menu theme final pass */
+body.game-page #menu-overlay,
+body.game-page #sub-screen-party {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(232, 184, 94, 0.13), transparent 42%),
+    linear-gradient(180deg, #241409 0%, #130904 100%) !important;
+  backdrop-filter: none !important;
+}
+
+body.game-page #menu-overlay .menu-window,
+body.game-page #party-screen-window {
+  background:
+    linear-gradient(180deg, #5b371f 0%, #2a170c 58%, #160b05 100%) !important;
+  border: 1px solid rgba(232, 184, 94, 0.64) !important;
+  box-shadow:
+    0 18px 56px rgba(0, 0, 0, 0.62),
+    0 0 0 1px rgba(255, 240, 190, 0.08) inset !important;
+}
+
+body.game-page #menu-overlay .header-bar,
+body.game-page #party-screen-window > .header-bar {
+  background: linear-gradient(180deg, #72502c, #382111) !important;
+  border-bottom-color: rgba(232, 184, 94, 0.54) !important;
+  color: #f7e2b7 !important;
+}
+
+body.game-page #menu-overlay .header-bar .btn,
+body.game-page #party-screen-window > .header-bar .btn,
+body.game-page #sub-screen-party .sub-screen-back-btn {
+  background: linear-gradient(180deg, #6b4a2a, #2d1b0f) !important;
+  border-color: rgba(244, 216, 153, 0.62) !important;
+  color: #f7e2b7 !important;
+}
+
+body.game-page #menu-overlay .menu-grid,
+body.game-page #sub-screen-party .scroll-area {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(232, 184, 94, 0.08), transparent 38%),
+    linear-gradient(180deg, #2c1a0f, #160b05) !important;
+}
+
+body.game-page #menu-party-bar.menu-party-compact,
+body.game-page #sub-screen-party .sub-screen-bottom-panel {
+  background: linear-gradient(180deg, #3a2415, #1d1008) !important;
+  border-color: rgba(232, 184, 94, 0.36) !important;
+}
+
+body.game-page #menu-overlay .menu-btn {
+  background: linear-gradient(180deg, #5a3b20, #2b1a0e) !important;
+  border-color: rgba(232, 184, 94, 0.48) !important;
+  color: #f3dfb8 !important;
+}
+
+body.game-page #sub-screen-party #party-screen-tabs {
+  background: #21130a !important;
+  border-color: rgba(232, 184, 94, 0.48) !important;
+}
+
+body.game-page #sub-screen-party #party-screen-slots > div:first-child,
+body.game-page #sub-screen-party #party-screen-chars > div:first-child,
+body.game-page #sub-screen-party #party-screen-strategy > div:first-child {
+  background: #2a170c !important;
+  color: #e8c68d !important;
+  border-bottom-color: rgba(232, 184, 94, 0.24) !important;
+}
+
+body.game-page #sub-screen-party .list-item {
+  background: linear-gradient(180deg, rgba(75, 45, 25, 0.88), rgba(36, 20, 10, 0.92)) !important;
+  border-color: rgba(232, 184, 94, 0.28) !important;
+  color: #f1dfbd !important;
+}
+
+body.game-page .sub-screen:not(#sub-screen-party) {
+  box-shadow:
+    0 0 0 9999px #241409,
+    0 18px 56px rgba(0, 0, 0, 0.58),
+    0 0 0 1px rgba(255, 240, 190, 0.06) inset !important;
+  border-color: rgba(232, 184, 94, 0.46) !important;
 }
