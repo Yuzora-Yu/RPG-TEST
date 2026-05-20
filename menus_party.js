@@ -357,6 +357,11 @@ const MenuParty = {
             const s = App.calcStats(c);
             const div = document.createElement('div');
             div.className = 'list-item';
+            if (Menu.getCharacterCardHTML) {
+                const rarityLabel = (c.uid === 'p1') ? 'Player' : `${c.rarity}`;
+                const badge = `${App.data.party.includes(c.uid) ? 'PT ' : ''}${rarityLabel}`;
+                div.innerHTML = Menu.getCharacterCardHTML(c, { badge });
+            } else {
             
             const curHp = c.currentHp !== undefined ? c.currentHp : s.maxHp;
             const curMp = c.currentMp !== undefined ? c.currentMp : s.maxMp;
@@ -388,6 +393,7 @@ const MenuParty = {
                     </div>
                 </div>
             `;
+            }
             div.onclick = () => MenuParty.setMember(c.uid);
             list.appendChild(div);
         });

@@ -3321,6 +3321,14 @@ load: () => {
         const requiredFeature = sceneFeatureMap[sceneId];
         if (requiredFeature && !App.requireFeatureUnlocked(requiredFeature)) return;
 
+        if (sceneId === 'battle' && typeof Field !== 'undefined') {
+            if (Field.minimapTapTimer) {
+                clearTimeout(Field.minimapTapTimer);
+                Field.minimapTapTimer = null;
+            }
+            if (typeof Field.closeMapModal === 'function') Field.closeMapModal();
+        }
+
         // フィールド以外の画面へ移る時は、待機中の足踏みタイマーを止める。
         // 足踏みは描画だけの軽量演出だが、戦闘/施設/メニュー裏で動かし続ける必要はない。
         if (sceneId !== 'field' && typeof Field !== 'undefined' && typeof Field.stopIdleStep === 'function') {
@@ -3394,6 +3402,9 @@ const Field = {
     dir: 3, // 向き (0:下, 1:左, 2:右, 3:上)
     step: 1, // 歩行アニメ用 (1 または 2)
     ready: false, currentMapData: null,
+    infoCollapsed: false,
+    minimapMode: 'normal',
+    minimapTapTimer: null,
 	moveTimer: null, // ★追加：タイマー保持用
 
     // 待機中の足踏みアニメ用タイマー。
@@ -3580,6 +3591,108 @@ const Field = {
             return MapRegistry.getFixedDungeonProgressKey(areaKey, App.data?.progress?.floor || Field.currentMapData.floor || 1);
         }
         return areaKey;
+    },
+
+    toggleInfoPanel: (event = null) => {
+        if (event && event.stopPropagation) event.stopPropagation();
+        Field.infoCollapsed = !Field.infoCollapsed;
+        Field.updateFieldHudState();
+    },
+
+    handleMinimapTap: (event = null) => {
+        if (event && event.stopPropagation) event.stopPropagation();
+        if (Field.minimapMode === 'minimized') return;
+
+        if (Field.minimapTapTimer) {
+            clearTimeout(Field.minimapTapTimer);
+            Field.minimapTapTimer = null;
+            Field.minimizeMap();
+            return;
+        }
+
+        Field.minimapTapTimer = setTimeout(() => {
+            Field.minimapTapTimer = null;
+            Field.openMapModal();
+        }, 260);
+    },
+
+    minimizeMap: () => {
+        Field.minimapMode = 'minimized';
+        Field.updateFieldHudState();
+        Field.render();
+    },
+
+    restoreMinimap: (event = null) => {
+        if (event && event.stopPropagation) event.stopPropagation();
+        Field.minimapMode = 'normal';
+        Field.updateFieldHudState();
+        Field.render();
+    },
+
+    updateFieldHudState: () => {
+        const info = document.getElementById('field-info-box');
+        if (info) info.classList.toggle('is-collapsed', !!Field.infoCollapsed);
+        const wrapper = document.getElementById('canvas-wrapper');
+        if (wrapper) wrapper.classList.toggle('is-minimap-minimized', Field.minimapMode === 'minimized');
+    },
+
+    openMapModal: () => {
+        Field.closeMapModal();
+        const overlay = document.createElement('div');
+        overlay.id = 'field-map-modal';
+        overlay.className = 'field-map-modal';
+        overlay.onclick = () => Field.closeMapModal();
+        overlay.innerHTML = `
+            <div class="field-map-modal-window" onclick="event.stopPropagation()">
+                <div class="field-map-modal-header">
+                    <span>MAP</span>
+                    <button class="btn" onclick="Field.closeMapModal()">閉じる</button>
+                </div>
+                <canvas id="field-map-modal-canvas" width="360" height="360"></canvas>
+            </div>
+        `;
+        const container = document.getElementById('game-container') || document.body;
+        container.appendChild(overlay);
+        Field.drawFullMap(document.getElementById('field-map-modal-canvas'));
+    },
+
+    closeMapModal: () => {
+        const overlay = document.getElementById('field-map-modal');
+        if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    },
+
+    drawFullMap: (canvas) => {
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const mapW = Field.currentMapData ? Field.currentMapData.width : (typeof MAP_DATA !== 'undefined' ? MAP_DATA[0].length : 1);
+        const mapH = Field.currentMapData ? Field.currentMapData.height : (typeof MAP_DATA !== 'undefined' ? MAP_DATA.length : 1);
+        const size = Math.min(canvas.width / Math.max(1, mapW), canvas.height / Math.max(1, mapH));
+        const offsetX = Math.floor((canvas.width - mapW * size) / 2);
+        const offsetY = Math.floor((canvas.height - mapH * size) / 2);
+        const areaKey = Field.getCurrentAreaKey();
+
+        ctx.fillStyle = '#090502';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        for (let y = 0; y < mapH; y++) {
+            for (let x = 0; x < mapW; x++) {
+                let tile = Field.getRenderedTileForDraw(x, y, mapW, mapH, areaKey);
+                if (Field.currentMapData && typeof Dungeon !== 'undefined' && typeof Dungeon.isMazeFloor === 'function' && Dungeon.isMazeFloor()) {
+                    if (typeof Dungeon.isVisited === 'function' && !Dungeon.isVisited(x, y) && !(Math.abs(x - Field.x) <= 4 && Math.abs(y - Field.y) <= 4)) {
+                        tile = 'W';
+                    }
+                }
+                const cfg = Field.getTileConfigForDraw ? Field.getTileConfigForDraw(tile, x, y) : Field.getTileConfig(tile);
+                ctx.fillStyle = cfg.color || '#000';
+                ctx.fillRect(offsetX + x * size, offsetY + y * size, Math.ceil(size), Math.ceil(size));
+            }
+        }
+
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(offsetX + Field.x * size, offsetY + Field.y * size, Math.max(3, size), Math.max(3, size));
+        ctx.strokeStyle = 'rgba(255,255,255,0.72)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(Math.floor(offsetX) + 0.5, Math.floor(offsetY) + 0.5, Math.floor(mapW * size) - 1, Math.floor(mapH * size) - 1);
     },
 
     getCurrentTileTheme: (areaKey = null) => {
@@ -4306,10 +4419,15 @@ const Field = {
         }
         document.getElementById('loc-name').innerText = locName;
         if (typeof App.updateObjectiveHUD === 'function') App.updateObjectiveHUD();
+        if (typeof Field.updateFieldHudState === 'function') Field.updateFieldHudState();
+        const fullMapCanvas = document.getElementById('field-map-modal-canvas');
+        if (fullMapCanvas && typeof Field.drawFullMap === 'function') Field.drawFullMap(fullMapCanvas);
+
+        if (Field.minimapMode === 'minimized') return;
 
         const mmSize = 80, mmX = w-mmSize-10, mmY = 10, range = 10; 
         ctx.save(); ctx.globalAlpha = 0.6; ctx.fillStyle = '#000'; ctx.fillRect(mmX, mmY, mmSize, mmSize);
-        ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.strokeRect(mmX, mmY, mmSize, mmSize);
+        ctx.strokeStyle = 'rgba(255,255,255,0.72)'; ctx.lineWidth = 1; ctx.strokeRect(mmX + 0.5, mmY + 0.5, mmSize - 1, mmSize - 1);
 
         const dms = mmSize / (range*2); 
         for(let mdy = -range; mdy < range; mdy++) {

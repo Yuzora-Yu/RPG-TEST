@@ -207,6 +207,11 @@ const MenuAllies = {
             const s = App.calcStats(c);
             const div = document.createElement('div');
             div.className = 'list-item';
+            if (Menu.getCharacterCardHTML) {
+                const rarityLabel = (c.uid === 'p1') ? 'Player' : `${c.rarity}`;
+                const badge = `${App.data.party.includes(c.uid) ? 'PT ' : ''}${rarityLabel}`;
+                div.innerHTML = Menu.getCharacterCardHTML(c, { badge });
+            } else {
             const curHp = c.currentHp !== undefined ? c.currentHp : s.maxHp;
             const curMp = c.currentMp !== undefined ? c.currentMp : s.maxMp;
             const inParty = App.data.party.includes(c.uid) ? '<span style="color:#4ff; font-weight:bold; font-size:10px; margin-right:4px;">[PT]</span>' : '';
@@ -241,6 +246,7 @@ const MenuAllies = {
                         </div>
                     </div>
                 </div>`;
+            }
             div.onclick = () => {
                 MenuAllies.selectedChar = c;
 				MenuAllies.selectedUid = c.uid; // 追加
@@ -830,8 +836,8 @@ const MenuAllies = {
 
         detailContent.innerHTML = `
             <div class="scroll-container-inner" style="height:100%; overflow-y:auto; padding:10px; font-family:sans-serif; color:#ddd; box-sizing:border-box;">
-                <div style="background:#222; border-bottom:1px solid #444; margin:-10px -10px 10px -10px; padding:10px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; background:#333; padding:5px; border-radius:4px;">
+                <div class="ally-detail-nav-wrap" style="background:#222; border-bottom:1px solid #444; margin:-10px -10px 10px -10px; padding:10px;">
+                    <div class="ally-detail-nav-row" style="display:flex; justify-content:space-between; align-items:center; background:#333; padding:5px; border-radius:4px;">
                         <button class="btn" style="padding:2px 10px; font-size:12px;" onclick="MenuAllies.switchChar(-1)">＜ 前</button>
                         <span style="font-size:12px; color:#aaa;">仲間詳細</span>
                         <button class="btn" style="padding:2px 10px; font-size:12px;" onclick="MenuAllies.switchChar(1)">次 ＞</button>
@@ -1291,16 +1297,25 @@ const MenuAllies = {
         if(document.getElementById('allies-tree-view')) return;
         const div = document.createElement('div');
         div.id = 'allies-tree-view';
-        div.className = 'flex-col-container';
+        div.className = 'allies-tree-modal';
         div.style.display = 'none';
-        div.style.background = '#1a1a1a';
-        div.innerHTML = `<div class="header-bar" id="tree-header"></div><div id="tree-content" class="scroll-area" style="padding:10px;"></div><button id="tree-bottom-back-btn" class="btn" style="margin:10px;" onclick="MenuAllies.returnFromTreeToDetail()">もどる</button>`;
+        div.innerHTML = `
+            <div class="allies-tree-modal-window" onclick="event.stopPropagation()">
+                <div class="header-bar" id="tree-header"></div>
+                <div id="tree-content" class="scroll-area"></div>
+                <div class="sub-screen-bottom-panel">
+                    <button id="tree-bottom-back-btn" class="btn sub-screen-back-btn" onclick="MenuAllies.returnFromTreeToDetail()">もどる</button>
+                </div>
+            </div>
+        `;
+        div.onclick = () => MenuAllies.returnFromTreeToDetail();
         document.getElementById('sub-screen-allies').appendChild(div);
     },
 
     openTreeView: () => {
-        document.getElementById('allies-detail-view').style.display = 'none';
-        document.getElementById('allies-tree-view').style.display = 'flex';
+        const treeView = document.getElementById('allies-tree-view');
+        if (!treeView) return;
+        treeView.style.display = 'flex';
         MenuAllies.renderTreeView();
     },
 
@@ -1315,13 +1330,7 @@ const MenuAllies = {
         MenuAllies.selectedUid = c.uid;
 
         const treeView = document.getElementById('allies-tree-view');
-        const detailView = document.getElementById('allies-detail-view');
-        const listView = document.getElementById('allies-list-view');
-
         if (treeView) treeView.style.display = 'none';
-        if (listView) listView.style.display = 'none';
-        if (detailView) detailView.style.display = 'flex';
-
         MenuAllies.renderDetail();
     },
 
@@ -1360,7 +1369,7 @@ const MenuAllies = {
         const c = MenuAllies.selectedChar;
         const sp = c.sp || 0;
         const header = document.getElementById('tree-header');
-        header.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;"><div style="display:flex; align-items:center;"><button class="btn" style="padding:2px 10px;" onclick="MenuAllies.switchTreeChar(-1)">＜</button><span style="margin:0 10px;">${c.name} (SP:${sp})</span><button class="btn" style="padding:2px 10px;" onclick="MenuAllies.switchTreeChar(1)">＞</button></div><button class="btn" style="background:#500; font-size:10px; padding:2px 5px;" onclick="MenuAllies.resetTree()">RESET</button></div>`;
+        header.innerHTML = `<div class="allies-tree-header-main"><span>${c.name} (SP:${sp})</span><button class="btn" onclick="MenuAllies.resetTree()">RESET</button></div>`;
         const list = document.getElementById('tree-content');
         list.innerHTML = '';
         if (!c.tree) c.tree = { ATK:0, MAG:0, SPD:0, HP:0, MP:0 };

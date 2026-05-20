@@ -149,14 +149,14 @@ const MenuAllyDetail = {
 
 
         const cardHtml = `
-            <div style="display:flex; align-items:center; justify-content:center; gap:15px; margin-bottom:20px; user-select:none;">
-                <div onclick="MenuAllyDetail.switchChar(-1)" style="color:#ffd700; font-size:28px; cursor:pointer; text-shadow:2px 2px 4px #000; padding:10px; transition:0.2s; filter:drop-shadow(0 0 5px rgba(255,215,0,0.3));">◀</div>
+            <div class="ally-archive-card-stage">
+                <button type="button" class="ally-archive-nav prev" onclick="MenuAllyDetail.switchChar(-1)">◀</button>
 
                 <div class="gacha-card-scene premium-card premium-card-static ally-detail-premium-card ${rarityClass}" style="width:clamp(205px, min(66vw, 36svh), 265px) !important; height:auto !important; aspect-ratio:2/3 !important; flex-shrink:0; animation:none !important;">
                     ${premiumFrontHtml}
                 </div>
 
-                <div onclick="MenuAllyDetail.switchChar(1)" style="color:#ffd700; font-size:28px; cursor:pointer; text-shadow:2px 2px 4px #000; padding:10px; transition:0.2s; filter:drop-shadow(0 0 5px rgba(255,215,0,0.3));">▶</div>
+                <button type="button" class="ally-archive-nav next" onclick="MenuAllyDetail.switchChar(1)">▶</button>
             </div>
         `;
 

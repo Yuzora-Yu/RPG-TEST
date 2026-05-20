@@ -141,10 +141,12 @@ if ('serviceWorker' in navigator) {
     <div id="field-scene" class="scene-layer">
         <div id="canvas-wrapper">
             <canvas id="field-canvas" width="320" height="320"></canvas>
+            <button id="field-minimap-hotspot" type="button" aria-label="MAP" onclick="Field.handleMinimapTap(event)"></button>
+            <button id="field-minimap-restore" type="button" onclick="Field.restoreMinimap(event)">MAP</button>
             <div class="ui-layer">
-                <div class="info-box">
-                    <span id="loc-name">フィールド</span><br>
-                    G: <span id="disp-gold">0</span> | GEM: <span id="disp-gem">0</span>
+                <div class="info-box" id="field-info-box" onclick="Field.toggleInfoPanel(event)">
+                    <div class="field-info-main"><span id="loc-name">フィールド</span></div>
+                    <div class="field-info-sub">G: <span id="disp-gold">0</span> | GEM: <span id="disp-gem">0</span></div>
                     <div id="objective-box" class="objective-box"><span class="objective-label">目的</span><span class="objective-text-clip"><span id="objective-text">冒険を開始しよう</span></span></div>
                 </div>
                 <div class="msg-area"><div class="msg-box" id="msg-text"></div><div id="action-indicator" onclick="App.executeAction()">アクション</div></div>

@@ -96,15 +96,17 @@ const MenuItems = {
 
         currentItems.forEach(it => {
             const div = document.createElement('div');
-            div.className = 'list-item';
+            div.className = 'list-item menu-pick-card';
 
-            const typeLabel = it.def.type ? `<span style="font-size:9px; color:#aaa; border:1px solid #444; padding:1px 4px; margin-left:5px;">${it.def.type}</span>` : '';
+            const fallbackPath = Menu.getItemIconPath ? Menu.getItemIconPath(it.def) : 'assets/ui/menu-icons/item-item.svg';
             div.innerHTML = `
-                <div style="flex:1; min-width:0;">
-                    <div style="font-weight:bold; display:flex; align-items:center; gap:2px; flex-wrap:wrap;">${it.def.name}${typeLabel}</div>
-                    <div style="font-size:10px; color:#aaa; line-height:1.4;">${it.def.desc || ''}</div>
+                <div class="menu-pick-icon" data-icon-id="item-${it.def.id}"><img src="${fallbackPath}" alt=""></div>
+                <div class="menu-pick-main">
+                    <div class="menu-pick-title">${Menu.escapeHtml(it.def.name)}</div>
+                    <div class="menu-pick-meta">${Menu.escapeHtml(it.def.type || '')}</div>
+                    <div class="menu-pick-desc">${Menu.escapeHtml(it.def.desc || '')}</div>
                 </div>
-                <div style="font-weight:bold; color:#ffd700; margin-left:8px;">x${it.count}</div>
+                <div class="menu-pick-count">x${it.count}</div>
             `;
             div.onclick = () => MenuItems.handleItemClick(it.def);
             list.appendChild(div);

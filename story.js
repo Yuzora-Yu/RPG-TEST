@@ -1160,14 +1160,14 @@ const StoryManager = {
 				box-shadow: 0 2px 10px rgba(0,0,0,0.5);
 			">LOG</button>
 
-			<div style="
+			<div class="story-ui-stage" style="
 				position: relative;
 				width: 100%;
 				height: 100%;
 				box-sizing: border-box;
 			">
 				
-				<div style="
+				<div class="story-portrait-frame" style="
 					position: absolute;
 					top: 45%;         /* 画面の中央（50%）を起点とする */
 					left: 40px;       /* 画面左端からの距離 */
@@ -1186,7 +1186,7 @@ const StoryManager = {
 					">
 				</div>
 				
-				<div style="
+				<div class="story-text-window" style="
 					position: absolute;
 					top: 45%;                  /* 吹き出しの上端を画面の50%位置に設定 */
 					left: 20px;
@@ -1229,7 +1229,7 @@ const StoryManager = {
 			</div>
 `;
 
-		document.body.appendChild(div);
+		(document.getElementById('game-container') || document.body).appendChild(div);
 		return div;
 	}
 };

@@ -26,7 +26,9 @@ const MenuSkills = {
             const c = App.getChar(uid);
             const div = document.createElement('div');
             div.className = 'list-item';
-            div.innerHTML = App.createCharHTML(c);
+            div.innerHTML = Menu.getCharacterCardHTML
+                ? Menu.getCharacterCardHTML(c)
+                : App.createCharHTML(c);
             div.onclick = () => {
                 MenuSkills.selectedCharUid = uid;
                 MenuSkills.renderSkillList();
@@ -50,13 +52,16 @@ const MenuSkills = {
 
         skills.forEach(sk => {
             const div = document.createElement('div');
-            div.className = 'list-item';
+            div.className = 'list-item menu-pick-card';
+            const fallbackPath = Menu.getSkillIconPath ? Menu.getSkillIconPath(sk) : 'assets/ui/menu-icons/skill-skill.svg';
             div.innerHTML = `
-                <div style="flex:1;">
-                    <div style="font-weight:bold;">${sk.name}</div>
-                    <div style="font-size:10px; color:#aaa;">${sk.desc || ''}</div>
+                <div class="menu-pick-icon" data-icon-id="skill-${sk.id}"><img src="${fallbackPath}" alt=""></div>
+                <div class="menu-pick-main">
+                    <div class="menu-pick-title">${Menu.escapeHtml(sk.name)}</div>
+                    <div class="menu-pick-meta">${Menu.escapeHtml(sk.type || '')}</div>
+                    <div class="menu-pick-desc">${Menu.escapeHtml(sk.desc || '')}</div>
                 </div>
-                <div style="font-size:12px; color:#88f;">MP:${sk.mp}</div>
+                <div class="menu-pick-cost">MP:${sk.mp}</div>
             `;
             div.onclick = () => {
                 if (c.currentMp < sk.mp) { Menu.msg("MPが足りません"); return; }
@@ -82,7 +87,9 @@ const MenuSkills = {
             const c = App.getChar(uid);
             const div = document.createElement('div');
             div.className = 'list-item';
-            div.innerHTML = App.createCharHTML(c);
+            div.innerHTML = Menu.getCharacterCardHTML
+                ? Menu.getCharacterCardHTML(c)
+                : App.createCharHTML(c);
             div.onclick = () => MenuSkills.useSkill(c);
             list.appendChild(div);
         });

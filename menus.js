@@ -106,6 +106,80 @@ const Menu = {
 
     selectTouchAttrs: () => 'ontouchstart="Menu.stopEventBubble(event)" onpointerdown="Menu.stopEventBubble(event)" onmousedown="Menu.stopEventBubble(event)" onclick="Menu.stopEventBubble(event)"',
 
+    getCharacterCardHTML: (c, options = {}) => {
+        if (!c) return '';
+        const stats = App.calcStats(c);
+        const curHp = c.currentHp !== undefined ? c.currentHp : stats.maxHp;
+        const curMp = c.currentMp !== undefined ? c.currentMp : stats.maxMp;
+        const imgUrl = App.getCharacterDisplayImage ? App.getCharacterDisplayImage(c) : c.img;
+        const imageFallbackAttr = App.getCharacterImageOnErrorAttr ? App.getCharacterImageOnErrorAttr(c) : '';
+        const imgHtml = imgUrl
+            ? `<img src="${imgUrl}"${imageFallbackAttr} class="menu-select-card-img">`
+            : `<div class="menu-select-card-img menu-select-card-img-empty">IMG</div>`;
+        const lbText = Number(c.limitBreak || 0) > 0 ? `<span class="menu-select-card-lb">+${c.limitBreak}</span>` : '';
+        const jobText = options.showJob === false ? '' : `<span class="menu-select-card-job">${Menu.escapeHtml(c.job || '')}</span>`;
+        const badge = options.badge ? `<span class="menu-select-card-badge">${Menu.escapeHtml(options.badge)}</span>` : '';
+        const trailing = options.trailing || '<span class="menu-select-card-arrow">›</span>';
+
+        return `
+            <div class="menu-select-card">
+                <div class="menu-select-card-face">${imgHtml}</div>
+                <div class="menu-select-card-main">
+                    <div class="menu-select-card-name-row">
+                        <span class="menu-select-card-name">${Menu.escapeHtml(c.name || '')}</span>
+                        ${lbText}
+                        ${badge}
+                    </div>
+                    <div class="menu-select-card-level">Lv.${c.level || 1}${jobText}</div>
+                    <div class="menu-select-card-vitals">
+                        <span>HP:<b class="hp">${curHp}/${stats.maxHp}</b></span>
+                        <span>MP:<b class="mp">${curMp}/${stats.maxMp}</b></span>
+                    </div>
+                    <div class="menu-select-card-stats">
+                        <span>攻:${stats.atk}</span>
+                        <span>魔:${stats.mag}</span>
+                        <span>速:${stats.spd}</span>
+                        <span>防:${stats.def}</span>
+                        <span>魔防:${stats.mdef}</span>
+                    </div>
+                </div>
+                ${trailing}
+            </div>
+        `;
+    },
+
+    getMenuIconPath: (kind, value) => {
+        const key = String(value || '').toLowerCase();
+        return `assets/ui/menu-icons/${kind}-${key}.svg`;
+    },
+
+    getSkillIconPath: (skill) => {
+        const type = String(skill?.type || '');
+        let key = 'skill';
+        if (type.includes('回復')) key = 'heal';
+        else if (type.includes('蘇生')) key = 'revive';
+        else if (type.includes('補助') || type.includes('強化')) key = 'support';
+        else if (type.includes('弱体') || type.includes('妨害')) key = 'debuff';
+        else if (type.includes('魔法')) key = 'magic';
+        else if (type.includes('物理') || type.includes('攻撃')) key = 'attack';
+        return Menu.getMenuIconPath('skill', key);
+    },
+
+    getItemIconPath: (item) => {
+        const type = String(item?.type || '');
+        let key = 'item';
+        if (type.includes('HP') || type.includes('回復')) key = 'heal';
+        else if (type.includes('MP')) key = 'mp';
+        else if (type.includes('蘇生')) key = 'revive';
+        else if (type.includes('移動')) key = 'travel';
+        else if (type.includes('乗り物')) key = 'vehicle';
+        else if (type.includes('育成')) key = 'growth';
+        else if (type.includes('貴重')) key = 'key';
+        return Menu.getMenuIconPath('item', key);
+    },
+
+    getIconFallbackAttr: (fallbackPath) => ` onerror="this.onerror=null;this.src='${fallbackPath}'"`,
+
     subScreenFeatureMap: {
         blacksmith: 'smith',
         dungeon: 'abyss',
