@@ -3634,6 +3634,45 @@ const Field = {
         if (info) info.classList.toggle('is-collapsed', !!Field.infoCollapsed);
         const wrapper = document.getElementById('canvas-wrapper');
         if (wrapper) wrapper.classList.toggle('is-minimap-minimized', Field.minimapMode === 'minimized');
+        if (typeof Field.updateMinimapHotspotBounds === 'function') Field.updateMinimapHotspotBounds();
+    },
+
+    updateMinimapHotspotBounds: () => {
+        const canvas = document.getElementById('field-canvas');
+        const wrapper = document.getElementById('canvas-wrapper');
+        const hotspot = document.getElementById('field-minimap-hotspot');
+        const restore = document.getElementById('field-minimap-restore');
+        if (!canvas || !wrapper || !hotspot) return;
+
+        const canvasRect = canvas.getBoundingClientRect();
+        const wrapperRect = wrapper.getBoundingClientRect();
+        if (!canvasRect.width || !canvasRect.height || !canvas.width || !canvas.height) return;
+
+        const mmSize = 80;
+        const mmX = canvas.width - mmSize - 10;
+        const mmY = 10;
+        const scaleX = canvasRect.width / canvas.width;
+        const scaleY = canvasRect.height / canvas.height;
+        const left = (canvasRect.left - wrapperRect.left) + (mmX * scaleX);
+        const top = (canvasRect.top - wrapperRect.top) + (mmY * scaleY);
+        const width = mmSize * scaleX;
+        const height = mmSize * scaleY;
+
+        Object.assign(hotspot.style, {
+            left: `${left}px`,
+            top: `${top}px`,
+            right: 'auto',
+            width: `${width}px`,
+            height: `${height}px`
+        });
+
+        if (restore) {
+            Object.assign(restore.style, {
+                left: `${left}px`,
+                top: `${top}px`,
+                right: 'auto'
+            });
+        }
     },
 
     openMapModal: () => {
@@ -3651,7 +3690,7 @@ const Field = {
                 <canvas id="field-map-modal-canvas" width="360" height="360"></canvas>
             </div>
         `;
-        const container = document.getElementById('game-container') || document.body;
+        const container = document.getElementById('canvas-wrapper') || document.getElementById('game-container') || document.body;
         container.appendChild(overlay);
         Field.drawFullMap(document.getElementById('field-map-modal-canvas'));
     },
@@ -4487,3 +4526,13 @@ const Field = {
         ctx.restore();
     }
 };
+
+if (typeof window !== 'undefined') {
+    window.addEventListener('resize', () => {
+        window.requestAnimationFrame(() => {
+            if (typeof Field.updateMinimapHotspotBounds === 'function') {
+                Field.updateMinimapHotspotBounds();
+            }
+        });
+    });
+}

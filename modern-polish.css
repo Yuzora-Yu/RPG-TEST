@@ -5155,15 +5155,15 @@ body.game-page #field-info-box #objective-box {
 }
 
 body.game-page #field-minimap-hotspot {
-  top: 2.083333%;
-  right: 3.125%;
-  width: 25%;
-  height: 16.666667%;
+  top: 10px;
+  right: 10px;
+  width: 80px;
+  height: 80px;
 }
 
 body.game-page #field-minimap-restore {
-  top: 2.083333%;
-  right: 3.125%;
+  top: 10px;
+  right: 10px;
   border: 1px solid rgba(255, 255, 255, 0.46);
   box-shadow: none;
 }
@@ -5198,6 +5198,8 @@ body.game-page #allies-detail-content > div:first-child button:last-child {
 
 body.game-page .sub-screen:not(#sub-screen-gacha) .tab-btn.active,
 body.game-page .sub-screen:not(#sub-screen-gacha) [id$="-tabs"] button.active,
+body.game-page #sub-screen-party #party-screen-tabs button[style*="background:#ffd700"],
+body.game-page #sub-screen-party #party-screen-tabs button[style*="background: #ffd700"],
 body.game-page #allies-detail-content > div:first-child button[style*="background:#ffd700"],
 body.game-page #allies-detail-content > div:first-child button[style*="background: #ffd700"],
 body.game-page .sub-screen:not(#sub-screen-gacha) button[style*="background:#ffd700"],
@@ -5209,6 +5211,8 @@ body.game-page .sub-screen:not(#sub-screen-gacha) button[style*="background: #ff
 
 body.game-page #allies-detail-content > div:first-child button[style*="background:#111"],
 body.game-page #allies-detail-content > div:first-child button[style*="background: #111"],
+body.game-page #sub-screen-party #party-screen-tabs button[style*="background:#111"],
+body.game-page #sub-screen-party #party-screen-tabs button[style*="background: #111"],
 body.game-page .sub-screen:not(#sub-screen-gacha) button[style*="background:#111"],
 body.game-page .sub-screen:not(#sub-screen-gacha) button[style*="background: #111"] {
   background: linear-gradient(180deg, #1a120c 0%, #090503 100%) !important;
@@ -5406,4 +5410,18 @@ body.game-page #sub-screen-achievements select {
   background: linear-gradient(180deg, #1b2430 0%, #0b1016 100%) !important;
   border-color: rgba(216, 176, 108, 0.56) !important;
   color: #fff4d2 !important;
+}
+
+body.game-page #sub-screen-party #party-screen-tabs button.active,
+body.game-page #sub-screen-party #party-screen-tabs button.is-active {
+  background: linear-gradient(180deg, #ffe56a 0%, #ffd217 55%, #c78e18 100%) !important;
+  border-color: rgba(255, 232, 112, 0.72) !important;
+  color: #160c04 !important;
+  font-weight: 800 !important;
+  text-shadow: none !important;
+}
+
+body.game-page #sub-screen-party #party-screen-tabs button:not(.active):not(.is-active) {
+  background: linear-gradient(180deg, #1a120c 0%, #090503 100%) !important;
+  color: #cbb99d !important;
 }

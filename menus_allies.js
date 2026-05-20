@@ -441,8 +441,11 @@ const MenuAllies = {
         const tabs = ['基本', '装備', 'スキル', '特性'];
         const tabBtns = tabs.map((t, i) => {
             const idx = i + 1;
-            const active = MenuAllies.currentTab === idx ? 'border-bottom:2px solid #ffd700; color:#ffd700;' : 'color:#888;';
-            return `<button onclick="MenuAllies.currentTab=${idx}; MenuAllies.targetPart=null; MenuAllies.selectedEquip=null; MenuAllies.renderDetail()" style="flex:1; background:#333; border:none; padding:8px; font-size:12px; ${active}">${t}</button>`;
+            const active = MenuAllies.currentTab === idx;
+            const style = active
+                ? 'background:#ffd700; color:#000; font-weight:bold;'
+                : 'background:#111; color:#888;';
+            return `<button onclick="MenuAllies.currentTab=${idx}; MenuAllies.targetPart=null; MenuAllies.selectedEquip=null; MenuAllies.renderDetail()" style="flex:1; border:none; padding:8px; font-size:12px; ${style}">${t}</button>`;
         }).join('');
 
         let contentHtml = '';

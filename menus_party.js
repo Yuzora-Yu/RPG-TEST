@@ -81,6 +81,8 @@ const MenuParty = {
 
 	applyTabButtonStyle: (button, active) => {
 		if (!button) return;
+		button.classList.toggle('active', !!active);
+		button.classList.toggle('is-active', !!active);
 		button.style.cssText = `flex:1; min-width:0; padding:10px 4px; border:none; background:${active ? '#ffd700' : '#111'}; color:${active ? '#000' : '#777'}; font-weight:bold; font-size:11px; white-space:nowrap; font-family:inherit;`;
 	},
 
