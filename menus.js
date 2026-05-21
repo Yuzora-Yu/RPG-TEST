@@ -106,6 +106,162 @@ const Menu = {
 
     selectTouchAttrs: () => 'ontouchstart="Menu.stopEventBubble(event)" onpointerdown="Menu.stopEventBubble(event)" onmousedown="Menu.stopEventBubble(event)" onclick="Menu.stopEventBubble(event)"',
 
+    keyboardItemSelector: '.list-item',
+    backGuardActive: false,
+
+    refreshKeyboardNavigation: (root = document) => {
+        if (!root || !root.querySelectorAll) return;
+        const items = [];
+        if (root.matches && root.matches(Menu.keyboardItemSelector)) items.push(root);
+        root.querySelectorAll(Menu.keyboardItemSelector).forEach(el => items.push(el));
+        items.forEach(el => {
+            const clickable = typeof el.onclick === 'function' || el.hasAttribute('onclick') || el.dataset.keyboardSelectable === 'true';
+            if (!clickable) return;
+            if (el.dataset.keyboardDisabled === 'true' || el.getAttribute('aria-disabled') === 'true') return;
+            if (el.tabIndex < 0) el.tabIndex = 0;
+            if (!el.hasAttribute('role')) el.setAttribute('role', 'button');
+        });
+    },
+
+    getKeyboardScope: (el) => {
+        return el?.closest?.('.scroll-area, .menu-grid, #menu-dialog-buttons, .flex-col-container') || document;
+    },
+
+    getKeyboardItems: (scope) => {
+        const root = scope || document;
+        return Array.from(root.querySelectorAll(Menu.keyboardItemSelector))
+            .filter(el =>
+                el.tabIndex >= 0 &&
+                (typeof el.onclick === 'function' || el.hasAttribute('onclick') || el.dataset.keyboardSelectable === 'true') &&
+                !el.disabled &&
+                el.dataset.keyboardDisabled !== 'true' &&
+                el.getAttribute('aria-disabled') !== 'true' &&
+                el.getClientRects().length > 0
+            );
+    },
+
+    focusKeyboardItem: (current, delta) => {
+        const scope = Menu.getKeyboardScope(current);
+        const items = Menu.getKeyboardItems(scope);
+        if (!items.length) return false;
+        const index = Math.max(0, items.indexOf(current));
+        const next = items[(index + delta + items.length) % items.length];
+        if (!next) return false;
+        next.focus({ preventScroll: true });
+        next.scrollIntoView({ block: 'nearest' });
+        return true;
+    },
+
+    handleKeyboardNavigation: (e) => {
+        const item = e.target?.closest?.(Menu.keyboardItemSelector);
+        if (!item) return;
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            item.click();
+        } else if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            Menu.focusKeyboardItem(item, 1);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            Menu.focusKeyboardItem(item, -1);
+        } else if (e.key === 'Home' || e.key === 'End') {
+            const items = Menu.getKeyboardItems(Menu.getKeyboardScope(item));
+            const next = e.key === 'Home' ? items[0] : items[items.length - 1];
+            if (next) {
+                e.preventDefault();
+                next.focus({ preventScroll: true });
+                next.scrollIntoView({ block: 'nearest' });
+            }
+        }
+    },
+
+    installKeyboardNavigation: () => {
+        if (Menu.keyboardNavigationInstalled) return;
+        document.addEventListener('keydown', Menu.handleKeyboardNavigation, true);
+        const observer = new MutationObserver(mutations => {
+            mutations.forEach(m => {
+                m.addedNodes.forEach(node => {
+                    if (node.nodeType === 1) Menu.refreshKeyboardNavigation(node);
+                });
+            });
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+        Menu.keyboardNavigationInstalled = true;
+        Menu.keyboardObserver = observer;
+        Menu.refreshKeyboardNavigation(document);
+    },
+
+    ensureBackGuard: () => {
+        if (!window.history || Menu.backGuardActive) return;
+        try {
+            history.pushState({ qoeMenuBackGuard: true }, '', location.href);
+            Menu.backGuardActive = true;
+        } catch (e) {}
+    },
+
+    isShown: (el) => !!el && window.getComputedStyle(el).display !== 'none',
+
+    clickFirstVisible: (selectors) => {
+        for (const selector of selectors) {
+            const nodes = Array.from(document.querySelectorAll(selector));
+            const node = nodes.find(el => Menu.isShown(el) && el.getClientRects().length > 0 && !el.disabled);
+            if (node) {
+                node.click();
+                return true;
+            }
+        }
+        return false;
+    },
+
+    handleBackAction: () => {
+        const dialog = document.getElementById('menu-dialog-area');
+        if (Menu.isShown(dialog)) {
+            Menu.closeDialog();
+            return true;
+        }
+
+        if (Menu.clickFirstVisible([
+            '#ally-equip-modal button[onclick*="closeEquipModal"]',
+            '#party-equipment-modal button[onclick*="closeEquipmentModal"]',
+            '#party-strategy-modal button[onclick*="closeStrategyModal"]',
+            '#alloc-modal button[onclick*="closeAllocModal"]',
+            '#allies-tree-view .sub-screen-back-btn',
+            '#field-map-modal button[onclick*="closeMapModal"]'
+        ])) return true;
+
+        const visibleSubs = Array.from(document.querySelectorAll('.sub-screen'))
+            .filter(el => Menu.isShown(el) && el.getClientRects().length > 0);
+        if (visibleSubs.length) {
+            const top = visibleSubs[visibleSubs.length - 1];
+            const back = top.querySelector('.sub-screen-bottom-panel .sub-screen-back-btn, .header-bar .btn');
+            if (back && !back.disabled) {
+                back.click();
+                return true;
+            }
+        }
+
+        const overlay = document.getElementById('menu-overlay');
+        if (Menu.isShown(overlay)) {
+            Menu.closeMainMenu();
+            return true;
+        }
+
+        return false;
+    },
+
+    installBackGuard: () => {
+        if (Menu.backGuardInstalled) return;
+        window.addEventListener('popstate', () => {
+            Menu.backGuardActive = false;
+            if (Menu.handleBackAction()) {
+                setTimeout(() => {
+                    if (Menu.isMenuOpen()) Menu.ensureBackGuard();
+                }, 0);
+            }
+        });
+        Menu.backGuardInstalled = true;
+    },
+
     getCharacterCardHTML: (c, options = {}) => {
         if (!c) return '';
         const stats = App.calcStats(c);
@@ -206,6 +362,9 @@ const Menu = {
 
     // --- メインメニュー制御 ---
     openMainMenu: () => {
+        Menu.installKeyboardNavigation();
+        Menu.installBackGuard();
+        Menu.ensureBackGuard();
         // 開く直前に実績の達成判定を最新にする
         if (typeof MenuAchievements !== 'undefined' && MenuAchievements.checkProgress) {
             MenuAchievements.checkProgress();
@@ -252,11 +411,13 @@ const Menu = {
                 <button class="menu-btn" style="background:#500;" onclick="App.returnToTitle()">タイトルへ</button>
                 <button class="menu-btn" style="background:#333;" onclick="Menu.closeMainMenu()">閉じる</button>
             `;
+            Menu.refreshKeyboardNavigation(grid);
         }
     },
     
     closeMainMenu: () => {
         document.getElementById('menu-overlay').style.display = 'none';
+        Menu.backGuardActive = false;
 		// hideBanner に統一（ダミーの処理も含まれるため）
 		AdManager.hideBanner();
     },
@@ -278,6 +439,7 @@ const Menu = {
         const assignModal = document.getElementById('assign-modal');
         if(assignModal) assignModal.style.display = 'none';
         Menu.closeDialog();
+        Menu.backGuardActive = false;
 	},
 
     escapeHtml: (value) => String(value ?? '').replace(/[&<>"']/g, ch => ({
@@ -400,6 +562,9 @@ const Menu = {
     },
 
     openSubScreen: (id) => {
+        Menu.installKeyboardNavigation();
+        Menu.installBackGuard();
+        Menu.ensureBackGuard();
         const requiredFeature = Menu.subScreenFeatureMap[id];
         if (requiredFeature && typeof App !== 'undefined' && typeof App.requireFeatureUnlocked === 'function' && !App.requireFeatureUnlocked(requiredFeature)) {
             return;
@@ -427,6 +592,8 @@ const Menu = {
 		if(id === 'achievements') MenuAchievements.init();
         if(id === 'gacha' && typeof Gacha !== 'undefined') Gacha.init();
 		if(id === 'dungeon' && typeof Dungeon !== 'undefined') Dungeon.initMenu();
+        const targetRoot = document.getElementById('sub-screen-' + id);
+        if (targetRoot) Menu.refreshKeyboardNavigation(targetRoot);
     },
 
     closeSubScreen: (id) => {
@@ -551,6 +718,8 @@ const Menu = {
     },
 	
     msg: (text, callback) => {
+        Menu.installBackGuard();
+        Menu.ensureBackGuard();
         const area = Menu.getDialogEl('menu-dialog-area');
         const textEl = Menu.getDialogEl('menu-dialog-text');
         const btnEl = Menu.getDialogEl('menu-dialog-buttons');
@@ -575,6 +744,8 @@ const Menu = {
     },
 
     confirm: (text, yesCallback, noCallback) => {
+  Menu.installBackGuard();
+  Menu.ensureBackGuard();
   const area  = Menu.getDialogEl('menu-dialog-area');
 
   // 暫定の処置で、既存のダイアログDOMを必ず body 直下へ移動（スタッキングコンテキストを回避）
@@ -673,6 +844,8 @@ const Menu = {
 	
 	// 複数の選択肢をリスト表示するダイアログ
     listChoice: (text, choices) => {
+        Menu.installBackGuard();
+        Menu.ensureBackGuard();
         const area = Menu.getDialogEl('menu-dialog-area');
         const textEl = Menu.getDialogEl('menu-dialog-text');
         const btnEl = Menu.getDialogEl('menu-dialog-buttons');
@@ -775,4 +948,15 @@ const Menu = {
 if (typeof window !== 'undefined') {
     window.AdManager = AdManager;
     window.Menu = Menu;
+    const installMenuInputHandlers = () => {
+        if (window.Menu) {
+            Menu.installKeyboardNavigation();
+            Menu.installBackGuard();
+        }
+    };
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', installMenuInputHandlers, { once: true });
+    } else {
+        installMenuInputHandlers();
+    }
 }

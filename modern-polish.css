@@ -5430,3 +5430,44 @@ body.game-page #action-indicator {
   animation: none !important;
   transform: none !important;
 }
+
+/* Shared menu navigation controls */
+body.game-page .sub-screen > .header-bar .btn,
+body.game-page .sub-screen .sub-screen-back-btn,
+body.game-page .sub-screen .btn[onclick*="closeSubScreen"],
+body.game-page .sub-screen .btn[onclick*="changeScreen"],
+body.game-page .sub-screen .btn[onclick*="renderList"],
+body.game-page .sub-screen .btn[onclick*="returnFrom"],
+body.game-page .sub-screen .btn[onclick*="closeEquipModal"],
+body.game-page .sub-screen .btn[onclick*="closeEquipmentModal"],
+body.game-page .sub-screen .btn[onclick*="closeStrategyModal"] {
+  background:
+    linear-gradient(180deg, rgba(255, 235, 174, 0.12), transparent 42%),
+    linear-gradient(180deg, #72502c 0%, #2d190b 100%) !important;
+  border-color: rgba(247, 210, 137, 0.66) !important;
+  color: #fff0cc !important;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.62) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 239, 188, 0.16),
+    0 6px 14px rgba(0, 0, 0, 0.24) !important;
+}
+
+body.game-page .sub-screen > .header-bar .btn:active,
+body.game-page .sub-screen .sub-screen-back-btn:active,
+body.game-page .sub-screen .btn[onclick*="closeSubScreen"]:active,
+body.game-page .sub-screen .btn[onclick*="changeScreen"]:active,
+body.game-page .sub-screen .btn[onclick*="renderList"]:active,
+body.game-page .sub-screen .btn[onclick*="returnFrom"]:active {
+  background:
+    linear-gradient(180deg, rgba(255, 235, 174, 0.16), transparent 42%),
+    linear-gradient(180deg, #815a32 0%, #3a210f 100%) !important;
+}
+
+body.game-page .list-item:focus-visible,
+body.game-page .menu-pick-card:focus-visible {
+  outline: 2px solid #ffd217 !important;
+  outline-offset: -3px !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 232, 112, 0.55),
+    0 0 18px rgba(255, 210, 23, 0.22) !important;
+}
