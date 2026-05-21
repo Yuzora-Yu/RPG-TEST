@@ -227,10 +227,11 @@ const MenuParty = {
 
 		const modal = document.createElement('div');
 		modal.id = 'party-strategy-modal';
-		modal.style.cssText = 'position:fixed; inset:0; z-index:3000; background:rgba(0,0,0,0.72); display:flex; align-items:center; justify-content:center; padding:18px;';
+		const frameModal = MenuParty.getFrameModalStyle(3000, 18);
+		modal.style.cssText = frameModal.style;
 		modal.onclick = () => MenuParty.closeStrategyModal();
 		modal.innerHTML = `
-			<div onclick="event.stopPropagation()" style="width:min(360px, 100%); max-height:86vh; overflow:auto; background:#151515; border:1px solid #777; border-radius:8px; box-shadow:0 18px 48px rgba(0,0,0,0.65);">
+			<div onclick="event.stopPropagation()" style="width:min(360px, 100%); max-height:100%; overflow:auto; background:#151515; border:1px solid #777; border-radius:8px; box-shadow:0 18px 48px rgba(0,0,0,0.65); box-sizing:border-box;">
 				<div style="display:flex; align-items:center; gap:10px; padding:12px; border-bottom:1px solid #333;">
 					<div style="width:52px; height:52px; flex:0 0 auto; border:1px solid #555; border-radius:6px; overflow:hidden; background:#222; display:flex; align-items:center; justify-content:center;">
 						${imgUrl ? `<img src="${imgUrl}"${imageFallbackAttr} style="width:100%; height:100%; object-fit:cover;">` : '<span style="font-size:10px; color:#555;">IMG</span>'}
@@ -253,7 +254,7 @@ const MenuParty = {
 				</div>
 			</div>
 		`;
-		document.body.appendChild(modal);
+		frameModal.host.appendChild(modal);
 	},
 
 	closeStrategyModal: () => {
@@ -314,10 +315,11 @@ const MenuParty = {
 		MenuAllies.partyEquipContext = { uid: c.uid };
 		const modal = document.createElement('div');
 		modal.id = 'party-equipment-modal';
-		modal.style.cssText = 'position:fixed; inset:0; z-index:3180; background:rgba(0,0,0,0.72); display:flex; align-items:center; justify-content:center; padding:14px;';
+		const frameModal = MenuParty.getFrameModalStyle(3180, 14);
+		modal.style.cssText = frameModal.style;
 		modal.onclick = () => MenuParty.closeEquipmentModal();
 		modal.innerHTML = `
-			<div onclick="event.stopPropagation()" style="width:min(430px, 100%); max-height:88vh; display:flex; flex-direction:column; background:#111; border:1px solid #777; border-radius:8px; box-shadow:0 18px 48px rgba(0,0,0,0.7); overflow:hidden;">
+			<div onclick="event.stopPropagation()" style="width:min(430px, 100%); max-height:100%; display:flex; flex-direction:column; background:#111; border:1px solid #777; border-radius:8px; box-shadow:0 18px 48px rgba(0,0,0,0.7); overflow:hidden; box-sizing:border-box;">
 				<div id="party-equipment-modal-header" style="flex:0 0 auto; display:flex; justify-content:space-between; align-items:center; gap:8px; padding:10px 12px; border-bottom:1px solid #333; background:#1b1b1b;"></div>
 				<div id="party-equipment-modal-content" style="flex:1 1 auto; min-height:0; overflow:auto; padding:10px;"></div>
 				<div style="flex:0 0 auto; padding:10px 12px; border-top:1px solid #333; background:#161616;">
@@ -325,7 +327,7 @@ const MenuParty = {
 				</div>
 			</div>
 		`;
-		document.body.appendChild(modal);
+		frameModal.host.appendChild(modal);
 		MenuParty.renderEquipmentModal();
 	},
 
