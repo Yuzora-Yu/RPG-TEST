@@ -5425,3 +5425,8 @@ body.game-page #sub-screen-party #party-screen-tabs button:not(.active):not(.is-
   background: linear-gradient(180deg, #1a120c 0%, #090503 100%) !important;
   color: #cbb99d !important;
 }
+
+body.game-page #action-indicator {
+  animation: none !important;
+  transform: none !important;
+}

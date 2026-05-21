@@ -1062,6 +1062,11 @@ const MenuAllies = {
         MenuAllies.equipModalOpen = false;
         MenuAllies.targetPart = null;
         MenuAllies.selectedEquip = null;
+        if (rerender && MenuAllies.partyEquipContext && typeof MenuParty !== 'undefined') {
+            MenuParty.renderEquipmentModal();
+            MenuParty.renderEquipmentList();
+            return;
+        }
         if (rerender) MenuAllies.renderDetail();
     },
 
@@ -1228,6 +1233,12 @@ const MenuAllies = {
         } else {
             MenuAllies.selectedEquip = null;
             MenuAllies.targetPart = null;
+        }
+        if (MenuAllies.partyEquipContext && typeof MenuParty !== 'undefined') {
+            MenuParty.renderEquipmentModal();
+            MenuParty.renderEquipmentList();
+            Menu.renderPartyBar();
+            return;
         }
         MenuAllies.renderDetail();
         Menu.renderPartyBar();

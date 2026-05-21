@@ -459,6 +459,9 @@ const App = {
         if (!App.data) return;
 
         const initial = App.getInitialData();
+        if (typeof App.purgeInitialInventoryEquipment === 'function') {
+            App.purgeInitialInventoryEquipment();
+        }
 
         // --- 修正点2: エリアや座標の整合性チェック（安全な復帰） ---
         // 1. location の補完
@@ -877,6 +880,14 @@ const App = {
 
         window.addEventListener('keydown', e => {
             if(document.getElementById('field-scene') && document.getElementById('field-scene').style.display === 'flex') {
+                if ((e.key === 'Enter' || e.key === ' ') && typeof StoryManager !== 'undefined') {
+                    const storyOverlay = document.getElementById('story-ui-overlay');
+                    if ((StoryManager.active || StoryManager.isTyping) && storyOverlay && storyOverlay.style.display !== 'none') {
+                        e.preventDefault();
+                        storyOverlay.click();
+                        return;
+                    }
+                }
                 if (typeof App.isFieldControlBlocked === 'function' && App.isFieldControlBlocked()) {
                     if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','a','s','d','Enter',' '].includes(e.key)) {
                         e.preventDefault();
@@ -1020,6 +1031,26 @@ const App = {
         }
 
         return 1;
+    },
+
+    purgeInitialInventoryEquipment: () => {
+        if (!App.data || !Array.isArray(App.data.inventory)) return false;
+        if (!App.data.progress) App.data.progress = {};
+        if (App.data.progress.initialInventoryEquipmentPurged) return false;
+
+        const isLegacyInitialEquip = (item) => {
+            if (!item || item.locked) return false;
+            if (item.source === 'init' || item.isInitialEquipment) return true;
+            const hasOptions = Array.isArray(item.opts) && item.opts.length > 0;
+            const hasTraits = Array.isArray(item.traits) && item.traits.length > 0;
+            return Number(item.rank || 0) <= 1 && Number(item.plus || 0) === 0 && !hasOptions && !hasTraits;
+        };
+
+        const before = App.data.inventory.length;
+        App.data.inventory = App.data.inventory.filter(item => !isLegacyInitialEquip(item));
+        App.data.progress.initialInventoryEquipmentPurged = true;
+        if (App.data.inventory.length !== before && typeof App.save === 'function') App.save();
+        return App.data.inventory.length !== before;
     },
 
     hasItem: (itemId) => {
@@ -2042,11 +2073,6 @@ load: () => {
         // 主人公の武器スロットに装備
         App.data.characters[0].equips['武器'] = startWeapon;
 
-        // 初期インベントリ（残りの5枠は通常通り Rank 1 / +0 で配布）
-        for(let i=0; i<5; i++) {
-            App.data.inventory.push(App.createEquipByFloor('init', 1)); 
-        }
-
         try {
 			// ★追加: 新規開始時の開幕イベントを予約（イベント全体を actions から実行する）
 			if (!App.data.progress) App.data.progress = {};
@@ -2692,6 +2718,7 @@ load: () => {
 		// 4. ベース作成
 		const eq = { 
 			id: Date.now() + Math.random().toString(36).substring(2), 
+            source: source || 'drop',
 			rank: base.rank, 
 			name: base.name, 
 			type: base.type, 
@@ -2963,6 +2990,11 @@ load: () => {
         const e = document.getElementById('msg-text');
         if(e) e.innerHTML = msg; 
         console.log(`[App] ${msg}`);
+    },
+
+    resetFieldLog: () => {
+        const e = document.getElementById('msg-text');
+        if (e) e.innerHTML = '';
     },
     
     createCharHTML: (c) => {

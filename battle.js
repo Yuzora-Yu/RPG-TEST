@@ -4135,11 +4135,13 @@ findNextActor: () => {
 					Dungeon.exit(true); 
                     App.changeScene('field');
                 }
+                if (typeof App.resetFieldLog === 'function') App.resetFieldLog();
             }, 2000);
         } else {
             // ★修正：setTimeoutをasync化し、画面切り替え後にmain.jsのinit処理でストーリーを実行（復帰と同対応）
             setTimeout(async () => {
                 App.changeScene('field');
+                if (typeof App.resetFieldLog === 'function') App.resetFieldLog();
             }, 500);
         }
     },

@@ -10,12 +10,30 @@ const MenuParty = {
 		MenuParty.ensureBottomPanel();
 		MenuParty.ensureTabs();
 		MenuParty.ensureStrategyPanel();
+		MenuParty.ensureEquipmentPanel();
 
 		MenuParty.setBottomButton('もどる', () => Menu.closeSubScreen('party'));
 		MenuParty.switchTab('members');
 	},
 
 	getRoot: () => document.getElementById('party-screen-window') || document.getElementById('sub-screen-party'),
+
+	getModalHost: () => {
+		const host = MenuParty.getRoot();
+		if (!host) return document.body;
+		const position = window.getComputedStyle ? window.getComputedStyle(host).position : host.style.position;
+		if (!position || position === 'static') host.style.position = 'relative';
+		return host;
+	},
+
+	getFrameModalStyle: (zIndex, paddingPx) => {
+		const host = MenuParty.getModalHost();
+		const position = host === document.body ? 'fixed' : 'absolute';
+		return {
+			host,
+			style: `position:${position}; inset:0; z-index:${zIndex}; background:rgba(0,0,0,0.72); display:flex; align-items:center; justify-content:center; padding:${paddingPx}px; box-sizing:border-box;`
+		};
+	},
 
 	ensureWindow: () => {
 		const screen = document.getElementById('sub-screen-party');
@@ -67,7 +85,14 @@ const MenuParty = {
 	ensureTabs: () => {
 		const screen = document.getElementById('sub-screen-party');
 		const slots = document.getElementById('party-screen-slots');
-		if (!screen || !slots || document.getElementById('party-screen-tabs')) return;
+		if (!screen || !slots) return;
+		const existingTabs = document.getElementById('party-screen-tabs');
+		if (existingTabs) {
+			if (!document.getElementById('party-tab-equipment')) {
+				existingTabs.insertAdjacentHTML('beforeend', `<button id="party-tab-equipment" onclick="MenuParty.switchTab('equipment')">そうび</button>`);
+			}
+			return;
+		}
 		const root = slots.parentNode || MenuParty.getRoot();
 		const tabs = document.createElement('div');
 		tabs.id = 'party-screen-tabs';
@@ -77,6 +102,9 @@ const MenuParty = {
 			<button id="party-tab-strategy" onclick="MenuParty.switchTab('strategy')">さくせん</button>
 		`;
 		root.insertBefore(tabs, slots);
+		if (!document.getElementById('party-tab-equipment')) {
+			tabs.insertAdjacentHTML('beforeend', `<button id="party-tab-equipment" onclick="MenuParty.switchTab('equipment')">そうび</button>`);
+		}
 	},
 
 	applyTabButtonStyle: (button, active) => {
@@ -102,25 +130,43 @@ const MenuParty = {
 		root.insertBefore(panel, bottom || null);
 	},
 
+	ensureEquipmentPanel: () => {
+		const screen = document.getElementById('sub-screen-party');
+		if (!screen || document.getElementById('party-screen-equipment')) return;
+		const root = MenuParty.getRoot();
+		const panel = document.createElement('div');
+		panel.id = 'party-screen-equipment';
+		panel.className = 'flex-col-container';
+		panel.style.display = 'none';
+		panel.innerHTML = `<div id="party-equipment-list" class="scroll-area"></div>`;
+		const bottom = document.getElementById('party-bottom-panel');
+		root.insertBefore(panel, bottom || null);
+	},
+
 	switchTab: (tab) => {
 		MenuParty.currentTab = tab;
 		const tabs = document.getElementById('party-screen-tabs');
 		const slots = document.getElementById('party-screen-slots');
 		const chars = document.getElementById('party-screen-chars');
 		const strategy = document.getElementById('party-screen-strategy');
+		const equipment = document.getElementById('party-screen-equipment');
 		if (tabs) tabs.style.display = 'flex';
 		if (chars) chars.style.display = 'none';
 		if (slots) slots.style.display = tab === 'members' ? 'flex' : 'none';
 		if (strategy) strategy.style.display = tab === 'strategy' ? 'flex' : 'none';
+		if (equipment) equipment.style.display = tab === 'equipment' ? 'flex' : 'none';
 
 		const memberTab = document.getElementById('party-tab-members');
 		const strategyTab = document.getElementById('party-tab-strategy');
+		const equipmentTab = document.getElementById('party-tab-equipment');
 		MenuParty.applyTabButtonStyle(memberTab, tab === 'members');
 		MenuParty.applyTabButtonStyle(strategyTab, tab === 'strategy');
+		MenuParty.applyTabButtonStyle(equipmentTab, tab === 'equipment');
 
 		MenuParty.setBottomButton('もどる', () => Menu.closeSubScreen('party'));
 		if (tab === 'members') MenuParty.renderSlots();
-		else MenuParty.renderStrategies();
+		else if (tab === 'strategy') MenuParty.renderStrategies();
+		else MenuParty.renderEquipmentList();
 	},
 
 	renderStrategies: () => {
@@ -219,6 +265,134 @@ const MenuParty = {
 		if (App.setBattleStrategy) App.setBattleStrategy(uid, strategy);
 		MenuParty.closeStrategyModal();
 		MenuParty.renderStrategies();
+	},
+
+	renderEquipmentList: () => {
+		const list = document.getElementById('party-equipment-list');
+		if (!list) return;
+		list.innerHTML = '';
+		for (let i = 0; i < 4; i++) {
+			const uid = App.data.party[i];
+			const div = document.createElement('div');
+			div.className = 'list-item';
+			div.style.cssText = 'display:flex; align-items:center; gap:10px; padding:10px; min-height:76px;';
+			if (!uid) {
+				div.innerHTML = `<div style="color:#777;">空きスロット</div>`;
+				list.appendChild(div);
+				continue;
+			}
+			const c = App.getChar(uid);
+			if (!c) continue;
+			const imgUrl = App.getCharacterDisplayImage ? App.getCharacterDisplayImage(c) : c.img || '';
+			const imageFallbackAttr = App.getCharacterImageOnErrorAttr ? App.getCharacterImageOnErrorAttr(c) : '';
+			const equips = c.equips || {};
+			const summary = ['武器', '盾', '頭', '体', '足'].map(part => equips[part] ? `${part}:${equips[part].name}` : `${part}:なし`).join(' / ');
+			div.innerHTML = `
+				<div style="width:46px; height:46px; flex:0 0 auto; border:1px solid #555; border-radius:6px; overflow:hidden; background:#222; display:flex; align-items:center; justify-content:center;">
+					${imgUrl ? `<img src="${imgUrl}"${imageFallbackAttr} style="width:100%; height:100%; object-fit:cover;">` : '<span style="font-size:10px; color:#555;">IMG</span>'}
+				</div>
+				<div style="flex:1; min-width:0;">
+					<div style="display:flex; align-items:baseline; gap:6px; margin-bottom:4px;">
+						<span style="font-size:13px; font-weight:bold; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${MenuParty.escapeHtml(c.name)}</span>
+						<span style="font-size:10px; color:#aaa; white-space:nowrap;">Lv.${c.level || 1}</span>
+					</div>
+					<div style="font-size:10px; color:#cbb99d; line-height:1.35; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${MenuParty.escapeHtml(summary)}</div>
+				</div>
+				<div style="font-size:18px; color:#b9a58a; flex:0 0 auto;">›</div>
+			`;
+			div.onclick = () => MenuParty.openEquipmentModal(uid);
+			list.appendChild(div);
+		}
+	},
+
+	openEquipmentModal: (uid) => {
+		const c = App.getChar(uid);
+		if (!c || typeof MenuAllies === 'undefined') return;
+		MenuParty.closeEquipmentModal(false);
+		MenuAllies.selectedChar = c;
+		MenuAllies.selectedUid = c.uid;
+		MenuAllies.partyEquipContext = { uid: c.uid };
+		const modal = document.createElement('div');
+		modal.id = 'party-equipment-modal';
+		modal.style.cssText = 'position:fixed; inset:0; z-index:3180; background:rgba(0,0,0,0.72); display:flex; align-items:center; justify-content:center; padding:14px;';
+		modal.onclick = () => MenuParty.closeEquipmentModal();
+		modal.innerHTML = `
+			<div onclick="event.stopPropagation()" style="width:min(430px, 100%); max-height:88vh; display:flex; flex-direction:column; background:#111; border:1px solid #777; border-radius:8px; box-shadow:0 18px 48px rgba(0,0,0,0.7); overflow:hidden;">
+				<div id="party-equipment-modal-header" style="flex:0 0 auto; display:flex; justify-content:space-between; align-items:center; gap:8px; padding:10px 12px; border-bottom:1px solid #333; background:#1b1b1b;"></div>
+				<div id="party-equipment-modal-content" style="flex:1 1 auto; min-height:0; overflow:auto; padding:10px;"></div>
+				<div style="flex:0 0 auto; padding:10px 12px; border-top:1px solid #333; background:#161616;">
+					<button class="btn" style="width:100%; background:#555;" onclick="MenuParty.closeEquipmentModal()">閉じる</button>
+				</div>
+			</div>
+		`;
+		document.body.appendChild(modal);
+		MenuParty.renderEquipmentModal();
+	},
+
+	closeEquipmentModal: (clearContext = true) => {
+		const modal = document.getElementById('party-equipment-modal');
+		if (modal && modal.parentNode) modal.parentNode.removeChild(modal);
+		if (clearContext && typeof MenuAllies !== 'undefined') MenuAllies.partyEquipContext = null;
+	},
+
+	renderEquipmentModal: () => {
+		const context = (typeof MenuAllies !== 'undefined') ? MenuAllies.partyEquipContext : null;
+		const c = context ? App.getChar(context.uid) : null;
+		const modal = document.getElementById('party-equipment-modal');
+		if (!c || !modal) return;
+		if (!c.equips) c.equips = { '武器': null, '盾': null, '頭': null, '体': null, '足': null };
+		MenuAllies.selectedChar = c;
+		MenuAllies.selectedUid = c.uid;
+		const header = modal.querySelector('#party-equipment-modal-header');
+		const content = modal.querySelector('#party-equipment-modal-content');
+		const PS = (typeof PassiveSkill !== 'undefined') ? PassiveSkill : null;
+		const hasDualWield = PS ? PS.getSumValue(c, 'dual_dmg_base') > 0 : false;
+		const hasTwoHanded = PS ? PS.getSumValue(c, 'two_handed') > 0 : false;
+		const imgUrl = App.getCharacterDisplayImage ? App.getCharacterDisplayImage(c) : c.img || '';
+		const imageFallbackAttr = App.getCharacterImageOnErrorAttr ? App.getCharacterImageOnErrorAttr(c) : '';
+		header.innerHTML = `
+			<div style="display:flex; align-items:center; gap:9px; min-width:0;">
+				<div style="width:42px; height:42px; flex:0 0 auto; border:1px solid #555; border-radius:6px; overflow:hidden; background:#222;">
+					${imgUrl ? `<img src="${imgUrl}"${imageFallbackAttr} style="width:100%; height:100%; object-fit:cover;">` : ''}
+				</div>
+				<div style="min-width:0;">
+					<div style="font-weight:bold; color:#ffd700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${MenuParty.escapeHtml(c.name)} の装備</div>
+					<div style="font-size:11px; color:#aaa; margin-top:2px;">Lv.${c.level || 1} ${MenuParty.escapeHtml(c.job || '')}</div>
+				</div>
+			</div>
+			<button class="btn" style="flex:0 0 auto; padding:4px 10px; background:#555;" onclick="MenuParty.closeEquipmentModal()">閉じる</button>
+		`;
+		const parts = ['武器', '盾', '頭', '体', '足'];
+		content.innerHTML = `<div style="display:flex; flex-direction:column; gap:5px;">
+			${parts.map(part => {
+				let label = part;
+				let isLocked = false;
+				if (part === '盾') {
+					if (hasTwoHanded) { label = '盾(不可)'; isLocked = true; }
+					else if (hasDualWield) { label = '武器2'; }
+				}
+				const eq = c.equips[part];
+				const rarityColor = eq ? Menu.getRarityColor(eq.rarity) : '#888';
+				return `<div class="list-item" style="align-items:center; opacity:${isLocked ? 0.5 : 1}; padding:9px;" ${isLocked ? '' : `onclick="MenuParty.openEquipmentSlot('${label}')"`}>
+					<div style="width:48px; flex:0 0 auto; font-size:11px; color:#ffd700; font-weight:bold;">${MenuParty.escapeHtml(label)}</div>
+					<div style="flex:1; min-width:0;">
+						<div style="font-size:12px; font-weight:bold; color:${rarityColor}; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${eq ? MenuParty.escapeHtml(eq.name) : (isLocked ? '両手持ち中' : 'なし')}</div>
+						${eq ? MenuAllies.getEquipFullDetailHTML(eq) : ''}
+					</div>
+					<div style="font-size:16px; color:#b9a58a; margin-left:5px;">${isLocked ? '' : '›'}</div>
+				</div>`;
+			}).join('')}
+		</div>`;
+	},
+
+	openEquipmentSlot: (partLabel) => {
+		if (typeof MenuAllies === 'undefined') return;
+		const context = MenuAllies.partyEquipContext;
+		const c = context ? App.getChar(context.uid) : null;
+		if (!c) return;
+		MenuAllies.selectedChar = c;
+		MenuAllies.selectedUid = c.uid;
+		MenuAllies.openEquipModal(partLabel);
 	},
     
     // ★新規追加: 隊列（前衛・後衛）の切り替え処理
@@ -326,6 +500,8 @@ const MenuParty = {
 		document.getElementById('party-screen-slots').style.display = 'none';
 		const strategy = document.getElementById('party-screen-strategy');
 		if (strategy) strategy.style.display = 'none';
+		const equipment = document.getElementById('party-screen-equipment');
+		if (equipment) equipment.style.display = 'none';
 		document.getElementById('party-screen-chars').style.display = 'flex';
 
 		MenuParty.setBottomButton('スロット選択にもどる', () => {

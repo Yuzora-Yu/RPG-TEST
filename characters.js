@@ -1714,7 +1714,7 @@ window.CHARACTERS_DATA = [
     },
     {
         "id": 1000,
-        "name": "システム",
+        "name": "", //"システム"
         "race": "魔族",
         "job": "冒険者",
         "rarity": "N",
