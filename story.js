@@ -18,7 +18,7 @@ const StoryManager = {
     // UI側や main.js 側に目的文の switch 文を増やさないこと。
     // 体験版などで現在のメインストーリー上限に到達した場合は、
     // 下の dungeonObjectiveMilestones に従ってダンジョン目標へ自動で切り替える。
-    maxMainStoryProgress: { storyStep: 2, subStep: 1 },
+    maxMainStoryProgress: { storyStep: 10, subStep: 0 },
 
     storyObjectives: {
         "0-0": "村に不穏な気配が漂っている…",
@@ -28,7 +28,15 @@ const StoryManager = {
         "1-1": "北東の洞窟へ向かおう！",
         "1-2": "洞窟の奥へ進もう！",
         "2-0": "長老に報告しよう！！",
-        "2-1": "東の果て「炎の里」へ向かおう！！"
+        "2-1": "東の果て「炎の里」へ向かおう！！",
+        "3-0": "風の集落へ向かい、封鎖された祈りの場を調べよう。",
+        "4-0": "水上都市へ向かい、海を渡る手段を探そう。",
+        "5-0": "深淵の入口を調べ、探索機能を解放しよう。",
+        "6-0": "大塔の頂を目指し、空を塞ぐ結界を破ろう。",
+        "7-0": "雷の要塞を攻略し、メダル王への道を開こう。",
+        "8-0": "光の宮殿を攻略し、魔王城へ向かう準備を整えよう。",
+        "9-0": "魔王城の最奥へ進み、シャニーを救い出そう。",
+        "10-0": "メインストーリークリア。深淵や育成をさらに進めよう。"
     },
 
     dungeonObjectiveMilestones: [
@@ -561,6 +569,47 @@ const StoryManager = {
             "name": "里の門番",
             "text": "火の宝玉が奪われ、里の活気が失われてしまったのだ…"
         }
+    ],
+    "STORY_FIRE_CLEAR": [
+        { "charId": 105, "name": "シャオ", "text": "炎の里は、強さだけを信じて空回りしていた。けれど、あなたの戦い方は違った。守るために進む拳だった。" },
+        { "charId": 105, "name": "シャオ", "text": "私も行く。奪われた熱を取り戻すために。そして、妹の影を追うために。" },
+        { "charId": 1000, "name": "", "text": "シャオが仲間に加わった。炎の里の鍛冶場が再び火を入れ、鍛冶屋が利用可能になった。" }
+    ],
+    "STORY_WIND_CLEAR": [
+        { "charId": 106, "name": "エリーゼ", "text": "この集落に残っていたのは、風の音ではなく、罪悪感でした。私はそれを歌でごまかしていたのかもしれません。" },
+        { "charId": 106, "name": "エリーゼ", "text": "でも、もう逃げません。あなたが進むなら、私は風を道に変えます。" },
+        { "charId": 1000, "name": "", "text": "エリーゼが仲間に加わった。風の集落の封鎖が解け、次の海路へ向かう手がかりを得た。" }
+    ],
+    "STORY_WATER_CLEAR": [
+        { "charId": 104, "name": "ケイト", "text": "水上都市の潮は、ずっと迷っていました。生きるために閉じるのか、未来のために漕ぎ出すのか。" },
+        { "charId": 104, "name": "ケイト", "text": "答えは出ました。小舟を用意します。私も同行します。海を渡り、雷の要塞へ。" },
+        { "charId": 1000, "name": "", "text": "ケイトが仲間に加わった。魔法の小舟を入手し、カジノが利用可能になった。" }
+    ],
+    "STORY_ABYSS_UNSEALED": [
+        { "charId": 110, "name": "サラ", "text": "深淵の入口から、祈りを拒むような冷たい気配が流れています。ここから先は、ただの冒険ではありません。" },
+        { "charId": 109, "name": "ガイル", "text": "それでも行くんだろ。だったら俺たちも腹を決める。深淵の底に何があっても、背中は任せろ。" },
+        { "charId": 1000, "name": "", "text": "深淵探索機能が解放された。固定ダンジョン攻略と並行して、深淵の調査を進められるようになった。" }
+    ],
+    "STORY_BIG_TOWER_CLEAR": [
+        { "charId": 1000, "name": "", "text": "大塔の頂で、空を塞いでいた結界が砕けた。遠く雷鳴が響き、次の脅威が姿を見せる。" },
+        { "charId": 106, "name": "エリーゼ", "text": "風が雷の要塞を指しています。怖いほどまっすぐに。" },
+        { "charId": 1000, "name": "", "text": "雷の要塞への進行フラグが立った。" }
+    ],
+    "STORY_THUNDER_CLEAR": [
+        { "charId": 101, "name": "ジョセフ", "text": "勝てば誇れると思っていた。だが、雷の檻に閉じこもっていたのは俺の方だったらしい。" },
+        { "charId": 101, "name": "ジョセフ", "text": "借りは返す。メダル王の門は開けておく。俺も、この先を見届けさせてもらう。" },
+        { "charId": 1000, "name": "", "text": "ジョセフが仲間に加わった。メダル王が利用可能になった。" }
+    ],
+    "STORY_LIGHT_CLEAR": [
+        { "charId": 204, "name": "レイラ", "text": "光は、正しさを証明するためだけのものではありません。迷う人を見失わないための灯でもあります。" },
+        { "charId": 204, "name": "レイラ", "text": "魔王城へ向かうなら、私も参ります。あなたの剣が、裁きではなく救いに届くように。" },
+        { "charId": 1000, "name": "", "text": "レイラが仲間に加わった。魔王城への決戦準備が整った。" }
+    ],
+    "STORY_DARK_CLEAR": [
+        { "charId": 306, "name": "シャニー", "text": "私は命令で立っていた。けれど、あなたたちは私を敵としてではなく、人として呼び戻した。" },
+        { "charId": 105, "name": "シャオ", "text": "帰ろう、シャニー。今度は私たちの足で。" },
+        { "charId": 306, "name": "シャニー", "text": "はい。罪は消えません。それでも、守るために歩くことを選びます。" },
+        { "charId": 1000, "name": "", "text": "シャニーが仲間に加わった。魔王城攻略によりガチャ機能が解放され、メインストーリーは一つの区切りを迎えた。" }
     ]
 	},
 
@@ -623,6 +672,38 @@ const StoryManager = {
         "stepMin": 1, "stepMax": 1,
         "subMin": 0, "subMax": 99,
         "eventId": "start_boss_battle"
+    },
+    {
+        "area": "FIRE_VILLAGE",
+        "x": 14,
+        "y": 17,
+        "stepMin": 2, "stepMax": 2,
+        "subMin": 0, "subMax": 99,
+        "eventId": "fire_village_clear"
+    },
+    {
+        "area": "WIND_VILLAGE",
+        "x": 14,
+        "y": 15,
+        "stepMin": 3, "stepMax": 3,
+        "subMin": 0, "subMax": 99,
+        "eventId": "wind_village_clear"
+    },
+    {
+        "area": "WATER_CITY",
+        "x": 19,
+        "y": 13,
+        "stepMin": 4, "stepMax": 4,
+        "subMin": 0, "subMax": 99,
+        "eventId": "water_city_clear"
+    },
+    {
+        "area": "ABYSS_FIELD",
+        "x": 8,
+        "y": 7,
+        "stepMin": 5, "stepMax": 5,
+        "subMin": 0, "subMax": 99,
+        "eventId": "abyss_unsealed"
     }
 ],
 
@@ -796,6 +877,100 @@ const StoryManager = {
                 "value": "巨大な化け物を打ち倒した…！"
             }
         ]
+    },
+    "fire_village_clear": {
+        "actions": [
+            { "type": "CONV", "value": "STORY_FIRE_CLEAR" },
+            { "type": "ALLY", "value": 105 },
+            { "type": "UNLOCK", "value": "smith" },
+            { "type": "FLAG", "key": "fireVillageCleared" },
+            { "type": "STEP", "value": 3 },
+            { "type": "SUB", "value": 0 },
+            { "type": "LOG", "value": "炎の里を解放した。" }
+        ],
+        "winActions": []
+    },
+    "wind_village_clear": {
+        "actions": [
+            { "type": "CONV", "value": "STORY_WIND_CLEAR" },
+            { "type": "ALLY", "value": 106 },
+            { "type": "FLAG", "key": "windVillageCleared" },
+            { "type": "STEP", "value": 4 },
+            { "type": "SUB", "value": 0 },
+            { "type": "LOG", "value": "風の集落を解放した。" }
+        ],
+        "winActions": []
+    },
+    "water_city_clear": {
+        "actions": [
+            { "type": "CONV", "value": "STORY_WATER_CLEAR" },
+            { "type": "ALLY", "value": 104 },
+            { "type": "ITEM", "id": 108, "count": 1 },
+            { "type": "UNLOCK", "value": ["boat", "casino"] },
+            { "type": "FLAG", "key": "hasShip" },
+            { "type": "FLAG", "key": "waterCityCleared" },
+            { "type": "STEP", "value": 5 },
+            { "type": "SUB", "value": 0 },
+            { "type": "LOG", "value": "魔法の小舟とカジノ利用権を得た。" }
+        ],
+        "winActions": []
+    },
+    "abyss_unsealed": {
+        "actions": [
+            { "type": "CONV", "value": "STORY_ABYSS_UNSEALED" },
+            { "type": "UNLOCK", "value": "abyss" },
+            { "type": "FLAG", "key": "abyssOuterReached" },
+            { "type": "STEP", "value": 6 },
+            { "type": "SUB", "value": 0 },
+            { "type": "LOG", "value": "深淵探索が解放された。" }
+        ],
+        "winActions": []
+    },
+    "big_tower_clear": {
+        "actions": [
+            { "type": "CONV", "value": "STORY_BIG_TOWER_CLEAR" },
+            { "type": "FLAG", "key": "bigTowerCleared" },
+            { "type": "STEP", "value": 7 },
+            { "type": "SUB", "value": 0 },
+            { "type": "LOG", "value": "大塔の結界を破った。" }
+        ],
+        "winActions": []
+    },
+    "thunder_fort_clear": {
+        "actions": [
+            { "type": "CONV", "value": "STORY_THUNDER_CLEAR" },
+            { "type": "ALLY", "value": 101 },
+            { "type": "UNLOCK", "value": "medalKing" },
+            { "type": "FLAG", "key": "thunderFortCleared" },
+            { "type": "STEP", "value": 8 },
+            { "type": "SUB", "value": 0 },
+            { "type": "LOG", "value": "雷の要塞を攻略し、メダル王が解放された。" }
+        ],
+        "winActions": []
+    },
+    "light_palace_clear": {
+        "actions": [
+            { "type": "CONV", "value": "STORY_LIGHT_CLEAR" },
+            { "type": "ALLY", "value": 204 },
+            { "type": "FLAG", "key": "lightPalaceCleared" },
+            { "type": "STEP", "value": 9 },
+            { "type": "SUB", "value": 0 },
+            { "type": "LOG", "value": "光の宮殿を攻略した。" }
+        ],
+        "winActions": []
+    },
+    "dark_castle_clear": {
+        "actions": [
+            { "type": "CONV", "value": "STORY_DARK_CLEAR" },
+            { "type": "ALLY", "value": 306 },
+            { "type": "UNLOCK", "value": "gacha" },
+            { "type": "FLAG", "key": "darkCastleCleared" },
+            { "type": "FLAG", "key": "mainStoryCleared" },
+            { "type": "STEP", "value": 10 },
+            { "type": "SUB", "value": 0 },
+            { "type": "LOG", "value": "メインストーリーをクリアした。" }
+        ],
+        "winActions": []
     }
 },
 
@@ -926,6 +1101,37 @@ const StoryManager = {
         
         if (action.type === 'SUB')  { data.subStep = action.value; }
         if (action.type === 'LOG')   App.log(action.value);
+
+        if (action.type === 'FLAG') {
+            if (!data.flags) data.flags = {};
+            const key = action.key || action.value;
+            if (key) data.flags[key] = action.state !== undefined ? !!action.state : true;
+            App.save();
+        }
+
+        if (action.type === 'UNLOCK') {
+            const keys = Array.isArray(action.value) ? action.value : [action.value];
+            keys.filter(Boolean).forEach(key => {
+                if (typeof App.unlockFeature === 'function') App.unlockFeature(key);
+                else {
+                    if (!data.unlocked || typeof data.unlocked !== 'object' || Array.isArray(data.unlocked)) data.unlocked = {};
+                    data.unlocked[key] = true;
+                }
+            });
+            App.save();
+        }
+
+        if (action.type === 'ITEM') {
+            const itemId = Number(action.id ?? action.value);
+            const count = Math.max(1, Math.floor(Number(action.count) || 1));
+            if (Number.isFinite(itemId)) {
+                if (!App.data.items) App.data.items = {};
+                App.data.items[itemId] = Number(App.data.items[itemId] || 0) + count;
+                const item = (DB.ITEMS || []).find(i => Number(i.id) === itemId);
+                App.log(`${item?.name || `アイテム${itemId}`}を手に入れた！`);
+                App.save();
+            }
+        }
         
         if (action.type === 'EVENT') await this.executeEvent(action.value, true);
 

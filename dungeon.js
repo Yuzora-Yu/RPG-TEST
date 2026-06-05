@@ -30,6 +30,13 @@ const Dungeon = {
     lavaFloorSpawnRate: 0.30,
     lavaTileImagePath: 'assets/map/objects/magma.png',
     lavaBattleBgKey: 'battle_bg_fire',
+
+    keyDoorTiles: { X: 'red', Y: 'blue', Z: 'gold' },
+    keyDoorSymbols: { red: 'X', blue: 'Y', gold: 'Z' },
+    keyItemTiles: { Q: 'red', N: 'blue', O: 'gold' },
+    keyItemSymbols: { red: 'Q', blue: 'N', gold: 'O' },
+    keyColorLabels: { red: '赤', blue: '青', gold: '金' },
+    keyGuardianImagePath: 'assets/monsters/monster_100010.png',
     
 	getEntryChoices: () => {
 		const maxF = App.data.dungeon.maxFloor || 0;
@@ -199,6 +206,10 @@ const Dungeon = {
         App.data.dungeon.adventurer = null;
         App.data.dungeon.healSpring = null;
         App.data.dungeon.abyssRift = null;
+        App.data.dungeon.keyChests = null;
+        App.data.dungeon.floorKeys = null;
+        Dungeon.clearRandomKeyState();
+        App.data.dungeon.keyGuardian = null;
         App.data.dungeon.pendingRiftReward = null;
         App.data.dungeon.visitedMap = null;
         Dungeon.loadFloor();
@@ -220,6 +231,198 @@ const Dungeon = {
         return areaKey;
     },
 
+    getMapChangeKey: (areaKey = null) => {
+        if (typeof Field !== 'undefined' && Field.currentMapData?.isFixed && Field.getCurrentProgressMapKey) {
+            return Field.getCurrentProgressMapKey();
+        }
+        return areaKey || (typeof Field !== 'undefined' && Field.getCurrentAreaKey ? Field.getCurrentAreaKey() : App.data?.location?.area || 'ABYSS');
+    },
+
+    getKeyScopeKey: (areaKey = null) => {
+        if (typeof Field !== 'undefined' && Field.currentMapData?.isFixed && Field.getCurrentProgressMapKey) {
+            return Field.getCurrentProgressMapKey();
+        }
+        const key = areaKey || (typeof Field !== 'undefined' && Field.getCurrentAreaKey ? Field.getCurrentAreaKey() : App.data?.location?.area || 'ABYSS');
+        if (key === 'ABYSS') return `ABYSS:F${Number(Dungeon.floor || App.data?.progress?.floor || 1)}`;
+        return key;
+    },
+
+    isRandomKeyScope: (scopeKey = null) => {
+        const key = scopeKey || Dungeon.getKeyScopeKey();
+        const areaKey = typeof Field !== 'undefined' && Field.getCurrentAreaKey ? Field.getCurrentAreaKey() : App.data?.location?.area || 'ABYSS';
+        return !Field.currentMapData?.isFixed && (areaKey === 'ABYSS' || String(key).startsWith('ABYSS:'));
+    },
+
+    initKeyState: (state) => {
+        if (!state || typeof state !== 'object') return {};
+        if (!Array.isArray(state._order)) {
+            state._order = ['red', 'blue', 'gold'].filter(color => !!state[color]);
+        }
+        return state;
+    },
+
+    ensureKeyState: (scopeKey = null) => {
+        if (!App.data.progress) App.data.progress = {};
+        const key = scopeKey || Dungeon.getKeyScopeKey();
+        if (Dungeon.isRandomKeyScope(key)) {
+            if (!App.data.dungeon) App.data.dungeon = {};
+            if (!App.data.dungeon.randomKeys) App.data.dungeon.randomKeys = {};
+            if (!App.data.dungeon.randomKeys[key]) App.data.dungeon.randomKeys[key] = {};
+            return Dungeon.initKeyState(App.data.dungeon.randomKeys[key]);
+        }
+        if (!App.data.progress.fixedDungeonKeys) App.data.progress.fixedDungeonKeys = {};
+        if (!App.data.progress.fixedDungeonKeys[key]) App.data.progress.fixedDungeonKeys[key] = {};
+        return Dungeon.initKeyState(App.data.progress.fixedDungeonKeys[key]);
+    },
+
+    getHeldKeyOrder: (scopeKey = null) => {
+        const state = Dungeon.ensureKeyState(scopeKey);
+        const order = Array.isArray(state._order) ? state._order : [];
+        const ordered = order.filter(color => !!state[color]);
+        ['red', 'blue', 'gold'].forEach(color => {
+            if (state[color] && !ordered.includes(color)) ordered.push(color);
+        });
+        return ordered;
+    },
+
+    clearRandomKeyState: () => {
+        if (!App.data?.dungeon) return;
+        App.data.dungeon.randomKeys = null;
+    },
+
+    hasDungeonKey: (color, scopeKey = null) => {
+        const state = Dungeon.ensureKeyState(scopeKey);
+        return !!state[color];
+    },
+
+    consumeDungeonKey: (color, scopeKey = null) => {
+        if (!color) return false;
+        const state = Dungeon.ensureKeyState(scopeKey);
+        if (!state[color]) return false;
+        delete state[color];
+        if (Array.isArray(state._order)) {
+            state._order = state._order.filter(heldColor => heldColor !== color);
+        }
+        App.save();
+        return true;
+    },
+
+    grantDungeonKey: (color, source = 'key') => {
+        const label = Dungeon.keyColorLabels[color] || color;
+        const state = Dungeon.ensureKeyState();
+        if (state[color]) {
+            App.log(`<span style="color:#ffd78a;">${label}の鍵は既に持っている。</span>`);
+            return false;
+        }
+        state[color] = true;
+        if (!Array.isArray(state._order)) state._order = [];
+        if (!state._order.includes(color)) state._order.push(color);
+        App.log(`<span style="color:#ffd78a;">${label}の鍵を手に入れた！</span>`);
+        App.save();
+        return true;
+    },
+
+    isLockedDoorTile: (tile) => {
+        return !!Dungeon.keyDoorTiles[String(tile || '').toUpperCase()];
+    },
+
+    getDoorColor: (tile) => {
+        return Dungeon.keyDoorTiles[String(tile || '').toUpperCase()] || null;
+    },
+
+    isKeyItemTile: (tile) => {
+        return !!Dungeon.keyItemTiles[String(tile || '').toUpperCase()];
+    },
+
+    getKeyItemColor: (tile) => {
+        return Dungeon.keyItemTiles[String(tile || '').toUpperCase()] || null;
+    },
+
+    findRandomFloorKey: (x, y) => {
+        const list = App.data?.dungeon?.floorKeys;
+        if (!Array.isArray(list)) return null;
+        return list.find(key => key && key.active && Number(key.floor) === Number(Dungeon.floor) && Number(key.x) === Number(x) && Number(key.y) === Number(y)) || null;
+    },
+
+    pickupFloorKeyAt: (x, y, tile = null) => {
+        const floorKey = Dungeon.findRandomFloorKey(x, y);
+        const color = floorKey?.color || Dungeon.getKeyItemColor(tile);
+        if (!color) return false;
+        if (floorKey) floorKey.active = false;
+        if (Dungeon.map?.[y]?.[x]) Dungeon.map[y][x] = 'T';
+        Dungeon.grantDungeonKey(color, 'floor');
+        Dungeon.saveMapData();
+        if (typeof Field !== 'undefined' && typeof Field.render === 'function') Field.render();
+        return true;
+    },
+
+    unlockDoorAt: (x, y, tile) => {
+        const color = Dungeon.getDoorColor(tile);
+        const label = Dungeon.keyColorLabels[color] || color;
+        if (!color) return false;
+        if (!Dungeon.hasDungeonKey(color)) {
+            App.log(`<span style="color:#ff9a9a;">${label}の扉だ。同じ色の鍵が必要だ。</span>`);
+            return false;
+        }
+        const areaKey = typeof Field !== 'undefined' && Field.getCurrentAreaKey ? Field.getCurrentAreaKey() : App.data?.location?.area || 'ABYSS';
+        Dungeon.consumeDungeonKey(color);
+        const changeKey = Dungeon.getMapChangeKey(areaKey);
+        if (!App.data.progress.mapChanges) App.data.progress.mapChanges = {};
+        if (!App.data.progress.mapChanges[changeKey]) App.data.progress.mapChanges[changeKey] = {};
+        App.data.progress.mapChanges[changeKey][`${x},${y}`] = 'T';
+        if (Field.currentMapData && !Field.currentMapData.isFixed && Dungeon.map?.[y]?.[x]) {
+            Dungeon.map[y][x] = 'T';
+            Dungeon.saveMapData();
+        }
+        App.log(`<span style="color:#ffd78a;">${label}の鍵で扉を開けた。</span>`);
+        App.save();
+        return true;
+    },
+
+    findRandomKeyChest: (x, y) => {
+        const list = App.data?.dungeon?.keyChests;
+        if (!Array.isArray(list)) return null;
+        return list.find(chest => chest && chest.active && Number(chest.floor) === Number(Dungeon.floor) && Number(chest.x) === Number(x) && Number(chest.y) === Number(y)) || null;
+    },
+
+    isKeyGuardianAt: (x, y) => {
+        const g = App.data?.dungeon?.keyGuardian;
+        return !!(g && g.active && Number(g.floor) === Number(Dungeon.floor) && Number(g.x) === Number(x) && Number(g.y) === Number(y));
+    },
+
+    startKeyGuardianBattle: () => {
+        const guardian = App.data?.dungeon?.keyGuardian;
+        if (!guardian || !guardian.active) return false;
+        const label = Dungeon.keyColorLabels[guardian.color] || guardian.color;
+        App.log(`<span style="color:#ffd78a;">${label}の鍵を守る魔物が立ちはだかった！</span>`);
+        App.data.battle = {
+            active: false,
+            isBossBattle: false,
+            fixedBossId: null,
+            fixedEnemyIds: [Number(guardian.monsterId || 100010)],
+            keyReward: {
+                color: guardian.color,
+                x: guardian.x,
+                y: guardian.y,
+                floor: guardian.floor
+            }
+        };
+        App.save();
+        App.changeScene('battle');
+        return true;
+    },
+
+    completeKeyGuardianReward: (reward) => {
+        if (!reward || !reward.color) return;
+        Dungeon.grantDungeonKey(reward.color, 'guardian');
+        const guardian = App.data?.dungeon?.keyGuardian;
+        if (guardian && Number(guardian.floor) === Number(reward.floor) && Number(guardian.x) === Number(reward.x) && Number(guardian.y) === Number(reward.y)) {
+            guardian.active = false;
+        }
+        if (Dungeon.map?.[reward.y]?.[reward.x]) Dungeon.map[reward.y][reward.x] = 'T';
+        Dungeon.saveMapData();
+    },
+
     changeFixedFloor: (toFloor, targetX = null, targetY = null) => {
         const areaKey = App.data.location.area;
         const nextDef = Dungeon.getFixedFloorDef(areaKey, toFloor);
@@ -231,6 +434,10 @@ const Dungeon = {
         App.data.dungeon.adventurer = null;
         App.data.dungeon.healSpring = null;
         App.data.dungeon.abyssRift = null;
+        App.data.dungeon.keyChests = null;
+        App.data.dungeon.floorKeys = null;
+        Dungeon.clearRandomKeyState();
+        App.data.dungeon.keyGuardian = null;
         App.data.dungeon.pendingRiftReward = null;
         App.data.dungeon.visitedMap = null;
 
@@ -298,6 +505,13 @@ const Dungeon = {
             isSpecialBoss,
             isEstark: isSpecialBoss,
             fixedBossId,
+            fixedKeyReward: (bossDef?.keyRewardColor || bossDef?.keyColor) ? {
+                color: bossDef.keyRewardColor || bossDef.keyColor,
+                x,
+                y,
+                scopeKey: Dungeon.getKeyScopeKey()
+            } : null,
+            fixedStoryEventId: bossDef?.storyEventId || null,
             enemies: []
         };
         App.save();
@@ -327,6 +541,10 @@ const Dungeon = {
         App.data.dungeon.adventurer = null;
         App.data.dungeon.healSpring = null;
         App.data.dungeon.abyssRift = null;
+        App.data.dungeon.keyChests = null;
+        App.data.dungeon.floorKeys = null;
+        Dungeon.clearRandomKeyState();
+        App.data.dungeon.keyGuardian = null;
         App.data.dungeon.pendingRiftReward = null;
         App.data.dungeon.visitedMap = null;
 
@@ -354,6 +572,10 @@ const Dungeon = {
         App.data.dungeon.adventurer = null;
         App.data.dungeon.healSpring = null;
         App.data.dungeon.abyssRift = null;
+        App.data.dungeon.keyChests = null;
+        App.data.dungeon.floorKeys = null;
+        Dungeon.clearRandomKeyState();
+        App.data.dungeon.keyGuardian = null;
         App.data.dungeon.pendingRiftReward = null;
         App.data.dungeon.visitedMap = null;
         Dungeon.loadFloor();
@@ -383,6 +605,17 @@ const Dungeon = {
             }
             if (App.data.dungeon.abyssRift && Number(App.data.dungeon.abyssRift.floor) !== Number(Dungeon.floor)) {
                 App.data.dungeon.abyssRift = null;
+            }
+            if (Array.isArray(App.data.dungeon.keyChests)) {
+                App.data.dungeon.keyChests = App.data.dungeon.keyChests.filter(chest => Number(chest.floor) === Number(Dungeon.floor));
+                if (!App.data.dungeon.keyChests.length) App.data.dungeon.keyChests = null;
+            }
+            if (Array.isArray(App.data.dungeon.floorKeys)) {
+                App.data.dungeon.floorKeys = App.data.dungeon.floorKeys.filter(key => Number(key.floor) === Number(Dungeon.floor));
+                if (!App.data.dungeon.floorKeys.length) App.data.dungeon.floorKeys = null;
+            }
+            if (App.data.dungeon.keyGuardian && Number(App.data.dungeon.keyGuardian.floor) !== Number(Dungeon.floor)) {
+                App.data.dungeon.keyGuardian = null;
             }
             if (App.data.dungeon.visitedMap && Number(App.data.dungeon.visitedMap.floor) !== Number(Dungeon.floor)) {
                 App.data.dungeon.visitedMap = null;
@@ -453,6 +686,10 @@ const Dungeon = {
         App.data.dungeon.adventurer = null;
         App.data.dungeon.healSpring = null;
         App.data.dungeon.abyssRift = null;
+        App.data.dungeon.keyChests = null;
+        App.data.dungeon.floorKeys = null;
+        Dungeon.clearRandomKeyState();
+        App.data.dungeon.keyGuardian = null;
         App.data.dungeon.pendingRiftReward = null;
         App.data.dungeon.visitedMap = null;
         App.data.progress.floor = 0;
@@ -524,13 +761,19 @@ const Dungeon = {
     handleMove: (x, y) => {
 		const tiles = (Field.currentMapData && Field.currentMapData.tiles) ? Field.currentMapData.tiles : Dungeon.map;
 		const areaKey = (typeof Field !== 'undefined' && typeof Field.getCurrentAreaKey === 'function') ? Field.getCurrentAreaKey() : 'ABYSS';
+        const changeKey = (typeof Field !== 'undefined' && typeof Field.getCurrentMapChangeKey === 'function') ? Field.getCurrentMapChangeKey(areaKey) : areaKey;
 		const posKey = `${x},${y}`;
-		let tile = (App.data.progress.mapChanges?.[areaKey]?.[posKey] || tiles[y][x] || 'W').toUpperCase();
+		let tile = (App.data.progress.mapChanges?.[changeKey]?.[posKey] || App.data.progress.mapChanges?.[areaKey]?.[posKey] || tiles[y][x] || 'W').toUpperCase();
 
         // 迷路フロアのミニマップは、歩いたマスだけ表示する。
         Dungeon.markVisited(x, y);
         
 		//App.clearAction();
+
+        if (Dungeon.isKeyGuardianAt(x, y)) {
+            Dungeon.startKeyGuardianBattle();
+            return;
+        }
 
         // ランダム生成ダンジョン内の冒険者NPC。
         // 接触時はその場で会話選択を出す。移動・エンカウント・宝箱処理とは独立管理。
@@ -564,6 +807,11 @@ const Dungeon = {
         }
 
         // 宝箱判定
+        if (Dungeon.isKeyItemTile(tile) || Dungeon.findRandomFloorKey(x, y)) {
+            Dungeon.pickupFloorKeyAt(x, y, tile);
+            return;
+        }
+
         if(tile === 'C') { 
             Dungeon.openChest(x, y, 'normal'); 
             return; 
@@ -654,6 +902,12 @@ const Dungeon = {
 
             if (chestDef) {
                 App.data.progress.openedChests[progressKey].push(posKey);
+                if (chestDef.keyColor) {
+                    Dungeon.grantDungeonKey(chestDef.keyColor, 'chest');
+                    App.save();
+                    Field.render();
+                    return;
+                }
                 const item = DB.ITEMS.find(i => i.id === chestDef.itemId);
                 if (item) {
                     App.data.items[item.id] = (App.data.items[item.id] || 0) + 1;
@@ -672,6 +926,16 @@ const Dungeon = {
         }
 
         // --- 2. ランダム生成ダンジョン（深淵の魔窟）の処理 ---
+        const keyChest = Dungeon.findRandomKeyChest(x, y);
+        if (keyChest) {
+            keyChest.active = false;
+            Dungeon.map[y][x] = 'T';
+            Dungeon.grantDungeonKey(keyChest.color, 'chest');
+            Dungeon.saveMapData();
+            Field.render();
+            return;
+        }
+
         Dungeon.map[y][x] = 'T'; 
         Field.render();
         
@@ -1473,6 +1737,7 @@ const Dungeon = {
 				Dungeon.setPlayerRandomSpawn();
 				App.data.dungeon.genType = type;
 				App.data.dungeon.genVariant = Dungeon.lastGenVariant || null;
+                Dungeon.pruneUnreachableFromPlayer();
 			}
 		}
 
@@ -1481,6 +1746,8 @@ const Dungeon = {
         // 通常宝箱を消し、床の25%を溶岩にしてレア宝箱2個だけを配置する。
         // 迷路フロアでも通常どおり判定する。
         Dungeon.applyLavaFloorIfNeeded();
+
+        Dungeon.applyKeyDoorPuzzleIfNeeded();
 
         // フロア生成完了後に特殊オブジェクトを配置する。
         // 冒険者・泉・裂け目はいずれも別管理にして、既存タイル文字を壊さない。
@@ -1658,6 +1925,22 @@ const Dungeon = {
         return regions[0].length;
     },
 
+    pruneUnreachableFromPlayer: () => {
+        if (!Array.isArray(Dungeon.map) || !Dungeon.map.length) return 0;
+        const start = { x: Number(Field.x), y: Number(Field.y) };
+        const dist = Dungeon.distanceMap(Dungeon.map, start);
+        let removed = 0;
+        for (let y = 1; y < Dungeon.map.length - 1; y++) {
+            for (let x = 1; x < Dungeon.map[0].length - 1; x++) {
+                if (Dungeon.map[y][x] !== 'W' && dist[y][x] < 0) {
+                    Dungeon.map[y][x] = 'W';
+                    removed++;
+                }
+            }
+        }
+        return removed;
+    },
+
     distanceMap: (map, start) => {
         const h = map.length, w = map[0].length;
         const dist = Array.from({ length: h }, () => Array(w).fill(-1));
@@ -1675,6 +1958,57 @@ const Dungeon = {
             });
         }
         return dist;
+    },
+
+    distanceMapWithBlocked: (map, start, blocked = new Set()) => {
+        const h = map.length, w = map[0].length;
+        const dist = Array.from({ length: h }, () => Array(w).fill(-1));
+        const isBlocked = (x, y) => blocked.has(`${x},${y}`) || map[y]?.[x] === 'W';
+        if (!start || isBlocked(start.x, start.y)) return dist;
+        const queue = [start];
+        dist[start.y][start.x] = 0;
+        for (let qi = 0; qi < queue.length; qi++) {
+            const p = queue[qi];
+            [[1,0],[-1,0],[0,1],[0,-1]].forEach(([dx, dy]) => {
+                const nx = p.x + dx, ny = p.y + dy;
+                if (nx < 0 || nx >= w || ny < 0 || ny >= h) return;
+                if (dist[ny][nx] >= 0 || isBlocked(nx, ny)) return;
+                dist[ny][nx] = dist[p.y][p.x] + 1;
+                queue.push({ x: nx, y: ny });
+            });
+        }
+        return dist;
+    },
+
+    findPathWithBlocked: (map, start, goal, blocked = new Set()) => {
+        const h = map.length, w = map[0].length;
+        const seen = Array.from({ length: h }, () => Array(w).fill(false));
+        const prev = Array.from({ length: h }, () => Array(w).fill(null));
+        const isBlocked = (x, y) => blocked.has(`${x},${y}`) || map[y]?.[x] === 'W';
+        if (!start || !goal || isBlocked(start.x, start.y) || isBlocked(goal.x, goal.y)) return [];
+        const queue = [start];
+        seen[start.y][start.x] = true;
+        for (let qi = 0; qi < queue.length; qi++) {
+            const p = queue[qi];
+            if (p.x === goal.x && p.y === goal.y) break;
+            [[1,0],[-1,0],[0,1],[0,-1]].forEach(([dx, dy]) => {
+                const nx = p.x + dx, ny = p.y + dy;
+                if (nx < 0 || nx >= w || ny < 0 || ny >= h) return;
+                if (seen[ny][nx] || isBlocked(nx, ny)) return;
+                seen[ny][nx] = true;
+                prev[ny][nx] = p;
+                queue.push({ x: nx, y: ny });
+            });
+        }
+        if (!seen[goal.y]?.[goal.x]) return [];
+        const path = [];
+        let cur = goal;
+        while (cur) {
+            path.push(cur);
+            if (cur.x === start.x && cur.y === start.y) break;
+            cur = prev[cur.y][cur.x];
+        }
+        return path.reverse();
     },
 
     weightedPick: (items, weightFn) => {
@@ -1718,15 +2052,15 @@ const Dungeon = {
     },
 
     generateRoomMap: () => {
-        Dungeon.width = 30; Dungeon.height = 30;
+        Dungeon.width = 34; Dungeon.height = 34;
         const w = Dungeon.width, h = Dungeon.height;
         let map = Array(h).fill(0).map(() => Array(w).fill('W'));
         const rooms = [];
-        const roomCount = 5 + Math.min(5, Math.floor(Dungeon.floor/5));
+        const roomCount = 7 + Math.min(6, Math.floor(Dungeon.floor/8));
         
         for (let i = 0; i < roomCount; i++) {
-            const rw = Math.floor(Math.random() * 6) + 4;
-            const rh = Math.floor(Math.random() * 6) + 4;
+            const rw = Math.floor(Math.random() * 7) + 4;
+            const rh = Math.floor(Math.random() * 7) + 4;
             const rx = Math.floor(Math.random() * (w - rw - 2)) + 1;
             const ry = Math.floor(Math.random() * (h - rh - 2)) + 1;
             
@@ -1741,10 +2075,28 @@ const Dungeon = {
             for (let y = ry; y < ry + rh; y++) {
                 for (let x = rx; x < rx + rw; x++) { map[y][x] = 'T'; }
             }
-            rooms.push({x:rx, y:ry, w:rw, h:rh, cx:Math.floor(rx+rw/2), cy:Math.floor(ry+rh/2)});
+            const cx = Math.floor(rx + rw / 2);
+            const cy = Math.floor(ry + rh / 2);
+            if (Math.random() < 0.55) {
+                const bulges = Dungeon.randInt(1, 3);
+                for (let b = 0; b < bulges; b++) {
+                    const bx = Dungeon.randInt(rx + 1, rx + rw - 2);
+                    const by = Dungeon.randInt(ry + 1, ry + rh - 2);
+                    Dungeon.carveBrush(map, bx + Dungeon.randInt(-2, 2), by + Dungeon.randInt(-2, 2), Dungeon.randInt(1, 3), Dungeon.randInt(1, 2));
+                }
+                if (Math.random() < 0.35) {
+                    const notchX = Math.random() < 0.5 ? rx : rx + rw - 1;
+                    const notchY = Dungeon.randInt(ry + 1, ry + rh - 2);
+                    if (Dungeon.inBounds(map, notchX, notchY, 1)) map[notchY][notchX] = 'W';
+                }
+            }
+            rooms.push({x:rx, y:ry, w:rw, h:rh, cx, cy});
         }
         
-        for(let i=0; i<rooms.length-1; i++) { Dungeon.connectRooms(map, rooms[i], rooms[i+1]); }
+        for(let i=0; i<rooms.length-1; i++) {
+            if (Math.random() < 0.18) Dungeon.carveLine(map, rooms[i], rooms[i+1], 1, 0.08);
+            else Dungeon.connectRooms(map, rooms[i], rooms[i+1]);
+        }
         Dungeon.map = map;
         Dungeon.placeStairsAndChests();
     },
@@ -1903,7 +2255,7 @@ const Dungeon = {
     },
 
     generateMazeMap: () => {
-        Dungeon.width = 25; Dungeon.height = 25;
+        Dungeon.width = 31; Dungeon.height = 31;
         const w = Dungeon.width, h = Dungeon.height;
         let map = Array(h).fill(0).map(() => Array(w).fill('W'));
 
@@ -1934,7 +2286,7 @@ const Dungeon = {
             if(!dug) stack.pop();
         }
         
-        for(let i=0; i<60; i++) { 
+        for(let i=0; i<18; i++) { 
             const rx = Math.floor(Math.random()*(w-2))+1;
             const ry = Math.floor(Math.random()*(h-2))+1;
             if(map[ry][rx] === 'W') map[ry][rx] = 'T';
@@ -1997,6 +2349,142 @@ const Dungeon = {
             const rPos = Dungeon.weightedPick(pool, (p) => stairDist[p.y][p.x] + 1);
             Dungeon.map[rPos.y][rPos.x] = 'R';
         }
+    },
+
+    canPlaceKeyFeatureAt: (cell, protectedKeys = new Set()) => {
+        if (!cell) return false;
+        if (protectedKeys.has(`${cell.x},${cell.y}`)) return false;
+        const tile = String(Dungeon.map[cell.y]?.[cell.x] || 'W').toUpperCase();
+        if (tile !== 'T' && tile !== 'G') return false;
+        return Dungeon.isAwayFromFeatures(Dungeon.map, cell, 2);
+    },
+
+    applyKeyDoorPuzzleIfNeeded: () => {
+        if (!App.data?.dungeon || !Array.isArray(Dungeon.map) || !Dungeon.map.length) return false;
+        App.data.dungeon.keyChests = null;
+        App.data.dungeon.floorKeys = null;
+        App.data.dungeon.keyGuardian = null;
+
+        if (App.data.dungeon.isTreasureRoom || Dungeon.isBossFloor()) return false;
+        if (Dungeon.floor < 3) return false;
+        const genType = Number(App.data.dungeon.genType);
+        if (genType !== 0 && genType !== 2) return false;
+        const roll = Math.random();
+        const doorCount = Dungeon.floor >= 80
+            ? (roll < 0.18 ? 3 : (roll < 0.62 ? 2 : 1))
+            : (Dungeon.floor >= 25 ? (roll < 0.40 ? 2 : 1) : 1);
+        if (doorCount <= 0) return false;
+
+        const start = { x: Number(Field.x), y: Number(Field.y) };
+        const stairs = Dungeon.collectTiles(Dungeon.map, ['S'])[0];
+        if (!stairs) return false;
+
+        const colors = Dungeon.shuffle(['red', 'blue', 'gold']).slice(0, Math.min(3, doorCount));
+        const protectedKeys = new Set([`${start.x},${start.y}`, `${stairs.x},${stairs.y}`]);
+        const floorKeys = [];
+        let placed = 0;
+
+        for (const color of colors) {
+            const path = Dungeon.findPathWithBlocked(Dungeon.map, start, stairs);
+            if (path.length < 10) break;
+
+            const from = Math.max(3, Math.floor(path.length * 0.32));
+            const to = Math.min(path.length - 4, Math.floor(path.length * 0.78));
+            const candidates = [];
+            for (let i = from; i <= to; i++) {
+                const p = path[i];
+                if (!p || protectedKeys.has(`${p.x},${p.y}`)) continue;
+                const tile = String(Dungeon.map[p.y]?.[p.x] || 'W').toUpperCase();
+                if (tile !== 'T' && tile !== 'G') continue;
+                const blocked = new Set([`${p.x},${p.y}`]);
+                const blockedDist = Dungeon.distanceMapWithBlocked(Dungeon.map, start, blocked);
+                if (blockedDist[stairs.y][stairs.x] >= 0) continue;
+                candidates.push(p);
+            }
+            if (!candidates.length) break;
+
+            const door = Dungeon.weightedPick(candidates, (p) => {
+                const idx = path.findIndex(q => q.x === p.x && q.y === p.y);
+                return Math.max(1, idx);
+            });
+            if (!door) break;
+
+            const blocked = new Set([`${door.x},${door.y}`]);
+            const beforeDist = Dungeon.distanceMapWithBlocked(Dungeon.map, start, blocked);
+            if (beforeDist[stairs.y][stairs.x] >= 0) break;
+            const beforeCells = Dungeon.collectTiles(Dungeon.map, ['T', 'G'])
+                .filter(p => beforeDist[p.y][p.x] >= 4 && Dungeon.canPlaceKeyFeatureAt(p, protectedKeys));
+            if (!beforeCells.length) break;
+
+            const keyPos = Dungeon.weightedPick(beforeCells, (p) => {
+                const deadEnd = Dungeon.floorNeighbors(Dungeon.map, p.x, p.y, false) <= 1 ? 7 : 1;
+                return (beforeDist[p.y][p.x] + 1) * deadEnd;
+            });
+            if (!keyPos) break;
+
+            const symbol = Dungeon.keyDoorSymbols[color];
+            Dungeon.map[door.y][door.x] = symbol;
+            protectedKeys.add(`${door.x},${door.y}`);
+            protectedKeys.add(`${keyPos.x},${keyPos.y}`);
+
+            Dungeon.map[keyPos.y][keyPos.x] = Dungeon.keyItemSymbols[color] || 'Q';
+            floorKeys.push({ active: true, floor: Dungeon.floor, x: keyPos.x, y: keyPos.y, color });
+            placed++;
+        }
+
+        if (floorKeys.length) App.data.dungeon.floorKeys = floorKeys;
+        if (!placed || !Dungeon.validateKeyDoorPuzzle()) {
+            Dungeon.map = Dungeon.map.map(row => row.map(tile => (Dungeon.isLockedDoorTile(tile) || Dungeon.isKeyItemTile(tile)) ? 'T' : tile));
+            App.data.dungeon.keyChests = null;
+            App.data.dungeon.floorKeys = null;
+            App.data.dungeon.keyGuardian = null;
+            return false;
+        }
+        return true;
+    },
+
+    validateKeyDoorPuzzle: () => {
+        const start = { x: Number(Field.x), y: Number(Field.y) };
+        const stairs = Dungeon.collectTiles(Dungeon.map, ['S'])[0];
+        if (!stairs) return true;
+
+        const keyAt = new Map();
+        (App.data.dungeon.keyChests || []).forEach(k => {
+            if (k && k.active) keyAt.set(`${k.x},${k.y}`, k.color);
+        });
+        (App.data.dungeon.floorKeys || []).forEach(k => {
+            if (k && k.active) keyAt.set(`${k.x},${k.y}`, k.color);
+        });
+        const guardian = App.data.dungeon.keyGuardian;
+        if (guardian && guardian.active) keyAt.set(`${guardian.x},${guardian.y}`, guardian.color);
+
+        const colors = ['red', 'blue', 'gold'];
+        const colorBit = { red: 1, blue: 2, gold: 4 };
+        const queue = [{ x: start.x, y: start.y, mask: 0 }];
+        const seen = new Set([`${start.x},${start.y},0`]);
+
+        for (let qi = 0; qi < queue.length; qi++) {
+            const p = queue[qi];
+            if (p.x === stairs.x && p.y === stairs.y) return true;
+            for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+                const nx = p.x + dx, ny = p.y + dy;
+                if (nx < 0 || nx >= Dungeon.width || ny < 0 || ny >= Dungeon.height) continue;
+                const tile = String(Dungeon.map[ny]?.[nx] || 'W').toUpperCase();
+                if (tile === 'W') continue;
+                const doorColor = Dungeon.getDoorColor(tile);
+                if (doorColor && !(p.mask & colorBit[doorColor])) continue;
+                let nextMask = p.mask;
+                const tilePickup = Dungeon.getKeyItemColor(tile);
+                if (tilePickup && colors.includes(tilePickup)) nextMask |= colorBit[tilePickup];
+                const pickup = keyAt.get(`${nx},${ny}`);
+                if (pickup && colors.includes(pickup)) nextMask |= colorBit[pickup];
+                const key = `${nx},${ny},${nextMask}`;
+                if (seen.has(key)) continue;
+                seen.add(key);
+                queue.push({ x: nx, y: ny, mask: nextMask });
+            }
+        }
+        return false;
     },
 
     placeStairsAndChests: () => {
@@ -2104,6 +2592,15 @@ const Dungeon = {
 			if (!App.data.progress.defeatedBosses[progressKey].includes(posKey)) {
 				App.data.progress.defeatedBosses[progressKey].push(posKey);
 			}
+            const fixedKeyReward = App.data.battle?.fixedKeyReward;
+            if (fixedKeyReward?.color) {
+                Dungeon.grantDungeonKey(fixedKeyReward.color, 'fixedBoss');
+            }
+            const fixedStoryEventId = App.data.battle?.fixedStoryEventId;
+            if (fixedStoryEventId) {
+                if (!App.data.progress) App.data.progress = {};
+                App.data.progress.pendingEventId = fixedStoryEventId;
+            }
 			App.clearAction();
 		} 
 		// 2. ランダムダンジョン（ABYSS）の場合

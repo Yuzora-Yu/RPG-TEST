@@ -351,7 +351,7 @@ const MenuAllies = {
 		const baseNameHTML = eq.baseName ? `[${eq.baseName}] ` : '';
 
 		// ステータスとスキルを同じ div に配置
-		let baseHtml = `<div style="font-size:10px; color:#ccc;">${baseNameHTML}${stats.join(' ')}${skillHTML}</div>`;
+		let baseHtml = `<div style="font-size:10px; color:#ccc; line-height:1.35;">${baseNameHTML}${stats.join(' ')}${skillHTML}</div>`;
 		
 		// オプション表示 (ここも fV を適用して符号重複を防止)
 		let optsHtml = '';
@@ -359,9 +359,9 @@ const MenuAllies = {
 			const optsList = eq.opts.map(o => {
 				const color = Menu.getRarityColor(o.rarity || 'N');
 				const unit = o.unit === 'val' ? '' : o.unit;
-				return `<div style="color:${color}; font-size:10px;">[${o.rarity}] ${o.label} ${fV(o.val)}${unit}</div>`;
+				return `<span style="color:${color}; font-size:10px; line-height:1.05; white-space:normal;">${o.label} ${fV(o.val)}${unit}</span>`;
 			}).join('');
-			optsHtml = `<div style="margin-top:2px;">${optsList}</div>`;
+			optsHtml = `<div style="display:flex; flex-wrap:wrap; align-items:flex-start; gap:1px 8px; margin-top:3px; line-height:1.05;">${optsList}</div>`;
 		}
 
 		// 特性表示 (既存の青文字表示を維持)
@@ -369,9 +369,9 @@ const MenuAllies = {
 		if (eq.traits && eq.traits.length > 0) {
 			const traitList = eq.traits.map(t => {
 				const m = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.MASTER[t.id] : null;
-				return m ? `<div style="color:#00ffff; font-size:10px;">${m.name} Lv${t.level}</div>` : '';
+				return m ? `<span style="display:inline-flex; align-items:center; color:#d9c4a1; background:rgba(24,14,8,0.72); border:1px solid rgba(232,178,91,0.30); border-radius:4px; padding:2px 6px; font-size:10px; line-height:1.2; white-space:nowrap;">${m.name} Lv${t.level}</span>` : '';
 			}).join('');
-			traitHtml = `<div style="margin-top:2px; border-top:1px solid rgba(0,255,255,0.2); padding-top:2px;">${traitList}</div>`;
+			traitHtml = `<div style="display:flex; flex-wrap:wrap; gap:4px 6px; width:100%; box-sizing:border-box; margin-top:4px;">${traitList}</div>`;
 		}
 
 		// シナジー表示 (既存維持)
@@ -379,14 +379,49 @@ const MenuAllies = {
 		if (typeof App !== 'undefined' && typeof App.checkSynergy === 'function') {
 			const syns = App.checkSynergy(eq);
 			if (syns && syns.length > 0) {
-				synHtml = syns.map(syn => 
-					`<div style="margin-top:2px; font-size:10px; color:${syn.color||'#f88'};">${syn.name}: ${syn.desc}</div>`
-				).join('');
+				synHtml = `<div style="display:flex; flex-wrap:wrap; gap:4px 6px; width:100%; box-sizing:border-box; margin-top:4px;">${syns.map(syn => 
+					`<span style="display:inline-flex; align-items:center; color:${syn.color||'#f88'}; background:rgba(24,14,8,0.72); border:1px solid rgba(232,178,91,0.30); border-radius:4px; padding:2px 6px; font-size:10px; line-height:1.2; white-space:normal;">${syn.name}: ${syn.desc}</span>`
+				).join('')}</div>`;
 			}
 		}
 		
 		return `<div>${baseHtml}${optsHtml}${traitHtml}${synHtml}</div>`;
 	},
+
+    buildEquipPreviewStats: (c, partLabel, item) => {
+        if (!c || !partLabel || !item) return null;
+        const dummy = JSON.parse(JSON.stringify(c));
+        if (!dummy.equips) dummy.equips = {};
+        const internalPart = MenuAllies.getEquipInternalPart(partLabel);
+        dummy.equips[internalPart] = item.isRemove ? null : item;
+        return {
+            before: App.calcStats(c),
+            after: App.calcStats(dummy)
+        };
+    },
+
+    getEquipPreviewStatsHTML: (c, partLabel, item) => {
+        const preview = MenuAllies.buildEquipPreviewStats(c, partLabel, item);
+        if (!preview) return '';
+        const rows = [
+            [['攻', 'atk'], ['魔', 'mag'], ['防', 'def'], ['魔防', 'mdef'], ['速', 'spd']],
+            [['会心', 'cri', '%'], ['命中', 'hit', '%'], ['回避', 'eva', '%'], ['与ダメ', 'finDmg', '%'], ['被ダメ', 'finRed', '%']]
+        ];
+        const chip = ([label, key, unit]) => {
+            const before = Number(preview.before[key] || 0);
+            const after = Number(preview.after[key] || 0);
+            const diff = after - before;
+            const color = diff > 0 ? '#62ff82' : (diff < 0 ? '#ff6464' : '#9a8a76');
+            const sign = diff > 0 ? '+' : '';
+            const value = Math.abs(diff) % 1 ? diff.toFixed(1) : String(diff);
+            return `<span style="color:${color}; white-space:nowrap;">${label}${sign}${value}${unit || ''}</span>`;
+        };
+        return `
+            <div style="display:flex; flex-direction:column; gap:2px; width:100%; box-sizing:border-box; margin-top:5px; padding-top:5px; border-top:1px dashed rgba(232,178,91,0.30); font-size:10px; line-height:1.35;">
+                ${rows.map(row => `<div style="display:flex; flex-wrap:wrap; gap:4px 8px;">${row.map(chip).join('')}</div>`).join('')}
+            </div>
+        `;
+    },
 	
     renderDetail: () => {
         const c = MenuAllies.getSelectedChar();
@@ -585,7 +620,7 @@ const MenuAllies = {
 					statRows += gridStart + statRow('魔力', 'mag') + statRow('素早さ', 'spd') + gridEnd;
 					statRows += gridStart + statRow('魔法防御', 'mdef') + statRow('命中率', 'hit', true) + gridEnd;
 					statRows += gridStart + statRow('回避率', 'eva', true) + statRow('会心率', 'cri', true) + gridEnd;
-					statRows += gridStart + statRow('与ダメージ', 'finDmg', true, false) + statRow('被ダメ軽減', 'finRed', true, true) + gridEnd;
+					statRows += gridStart + statRow('与ダメージ', 'finDmg', true, false) + statRow('被ダメ軽減', 'finRed', true, false) + gridEnd;
 
 					if (typeof CONST !== 'undefined' && CONST.ELEMENTS) {
 						CONST.ELEMENTS.forEach(e => {
@@ -1036,12 +1071,16 @@ const MenuAllies = {
         modal.id = 'ally-equip-modal';
         const partyHost = MenuAllies.partyEquipContext && typeof MenuParty !== 'undefined' && MenuParty.getModalHost
             ? MenuParty.getModalHost()
-            : document.body;
+            : (document.getElementById('sub-screen-allies') || document.body);
+        if (partyHost !== document.body) {
+            const position = window.getComputedStyle ? window.getComputedStyle(partyHost).position : partyHost.style.position;
+            if (!position || position === 'static') partyHost.style.position = 'relative';
+        }
         const modalPosition = partyHost === document.body ? 'fixed' : 'absolute';
-        modal.style.cssText = `position:${modalPosition}; inset:0; z-index:3200; background:rgba(0,0,0,0.76); display:flex; align-items:center; justify-content:center; padding:14px; box-sizing:border-box;`;
+        modal.style.cssText = `position:${modalPosition}; inset:0; z-index:3200; background:rgba(0,0,0,0.76); display:flex; align-items:stretch; justify-content:stretch; padding:0; box-sizing:border-box;`;
         modal.onclick = () => MenuAllies.closeEquipModal();
         modal.innerHTML = `
-            <div onclick="event.stopPropagation()" style="width:min(430px, 100%); max-height:100%; display:flex; flex-direction:column; background:#111; border:1px solid #777; border-radius:8px; box-shadow:0 18px 48px rgba(0,0,0,0.7); overflow:hidden; box-sizing:border-box;">
+            <div onclick="event.stopPropagation()" style="width:100%; height:100%; max-height:100%; display:flex; flex-direction:column; background:#111; border:1px solid #777; border-radius:8px; box-shadow:0 18px 48px rgba(0,0,0,0.7); overflow:hidden; box-sizing:border-box;">
                 <div id="ally-equip-modal-header" style="flex:0 0 auto; display:flex; justify-content:space-between; align-items:center; gap:8px; padding:10px 12px; border-bottom:1px solid #333; background:#1b1b1b;"></div>
                 <div id="ally-equip-modal-content" style="flex:1 1 auto; min-height:0; overflow:auto; padding:10px;"></div>
                 <div id="ally-equip-modal-footer" style="flex:0 0 auto; padding:10px 12px; border-top:1px solid #333; background:#161616;">
@@ -1082,7 +1121,9 @@ const MenuAllies = {
         const modal = MenuAllies.ensureEquipModal();
         const header = modal.querySelector('#ally-equip-modal-header');
         const content = modal.querySelector('#ally-equip-modal-content');
+        const footer = modal.querySelector('#ally-equip-modal-footer');
         const { candidates, rules } = MenuAllies.buildEquipCandidates(partLabel);
+        content.dataset.mode = 'list';
 
         header.innerHTML = `
             <div style="min-width:0;">
@@ -1111,10 +1152,14 @@ const MenuAllies = {
                             ${item.owner ? `<span style="color:#f88; font-size:9px;">[${MenuAllies.escapeHtml(item.owner)}装備中]</span>` : ''}
                         </div>
                         ${!item.isRemove ? MenuAllies.getEquipFullDetailHTML(item) : ''}
+                        ${MenuAllies.getEquipPreviewStatsHTML(c, partLabel, item)}
                     </div>
                 `).join('')}
             </div>
         `;
+        if (footer) {
+            footer.innerHTML = `<button class="btn" style="width:100%; background:#555;" onclick="MenuAllies.closeEquipModal()">閉じる</button>`;
+        }
         if (typeof Menu.makeSelectTouchSafe === 'function') Menu.makeSelectTouchSafe(content);
     },
 
@@ -1127,6 +1172,8 @@ const MenuAllies = {
         const modal = MenuAllies.ensureEquipModal();
         const header = modal.querySelector('#ally-equip-modal-header');
         const content = modal.querySelector('#ally-equip-modal-content');
+        const footer = modal.querySelector('#ally-equip-modal-footer');
+        content.dataset.mode = 'confirm';
         const isRemove = !!newItem.isRemove;
         const dummy = JSON.parse(JSON.stringify(c));
         if (!dummy.equips) dummy.equips = { '武器':null, '盾':null, '頭':null, '体':null, '足':null };
@@ -1151,8 +1198,29 @@ const MenuAllies = {
         const stats = [
             ['HP', 'maxHp'], ['MP', 'maxMp'], ['攻撃', 'atk'], ['防御', 'def'],
             ['魔力', 'mag'], ['魔防', 'mdef'], ['速さ', 'spd'], ['命中', 'hit', true],
-            ['回避', 'eva', true], ['会心', 'cri', true], ['与ダメ', 'finDmg', true], ['被ダメ軽減', 'finRed', true, true]
+            ['回避', 'eva', true], ['会心', 'cri', true], ['与ダメ', 'finDmg', true], ['被ダメ軽減', 'finRed', true]
         ].map(args => statRow(...args)).join('');
+        const compareChip = (label, before, after, unit = '%') => {
+            const v1 = Number(before || 0);
+            const v2 = Number(after || 0);
+            const diff = v2 - v1;
+            const color = diff > 0 ? '#4f4' : (diff < 0 ? '#f44' : '#888');
+            const fmt = val => Math.abs(val) % 1 ? val.toFixed(1) : String(val);
+            return `<span style="display:inline-flex; gap:3px; white-space:nowrap; color:${color};"><b style="color:#d9c4a1;">${label}</b>${fmt(v1)}${unit}→${fmt(v2)}${unit}<em style="font-style:normal;">(${diff > 0 ? '+' : ''}${fmt(diff)}${unit})</em></span>`;
+        };
+        const compareSection = (title, chips) => `
+            <div style="background:#1d1712; border:1px solid #3a2a1e; border-radius:5px; padding:6px; margin-bottom:6px;">
+                <div style="font-size:10px; color:#ffd700; margin-bottom:4px;">${title}</div>
+                <div style="display:flex; flex-wrap:wrap; gap:4px 9px; font-size:10px; line-height:1.4;">${chips.join('')}</div>
+            </div>
+        `;
+        const elementNames = (typeof CONST !== 'undefined' && Array.isArray(CONST.ELEMENTS)) ? CONST.ELEMENTS : [];
+        const ailmentLabels = { Poison:'毒', ToxicPoison:'猛毒', Shock:'感電', Fear:'怯え', Debuff:'弱体', InstantDeath:'即死', SkillSeal:'技封', SpellSeal:'魔封', HealSeal:'回復封' };
+        const extraStats = [
+            compareSection('属性攻撃', elementNames.map(e => compareChip(e, sCur.elmAtk?.[e], sNew.elmAtk?.[e]))),
+            compareSection('属性耐性', elementNames.map(e => compareChip(e, sCur.elmRes?.[e], sNew.elmRes?.[e]))),
+            compareSection('状態異常耐性', Object.keys(ailmentLabels).map(key => compareChip(ailmentLabels[key], sCur.resists?.[key], sNew.resists?.[key])))
+        ].join('');
 
         header.innerHTML = `
             <div style="min-width:0;">
@@ -1167,11 +1235,16 @@ const MenuAllies = {
             </div>
             ${!isRemove ? `<div style="margin-bottom:10px;">${MenuAllies.getEquipFullDetailHTML(newItem)}</div>` : ''}
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-bottom:10px;">${stats}</div>
-            <div style="display:flex; gap:8px;">
-                <button class="btn" style="flex:1; background:#555;" onclick="MenuAllies.selectedEquip=null; MenuAllies.renderEquipModalList()">やめる</button>
-                <button class="btn" style="flex:1; background:#d00;" onclick="MenuAllies.doEquip()">変更する</button>
-            </div>
+            ${extraStats}
         `;
+        if (footer) {
+            footer.innerHTML = `
+                <div style="display:flex; gap:8px;">
+                    <button class="btn" style="flex:1; background:#555;" onclick="MenuAllies.selectedEquip=null; MenuAllies.renderEquipModalList()">やめる</button>
+                    <button class="btn" style="flex:1; background:#d00;" onclick="MenuAllies.doEquip()">変更する</button>
+                </div>
+            `;
+        }
     },
 	
     selectCandidate: (idx, isRemove) => {

@@ -74,6 +74,12 @@ const TILE_THEMES = {
         R: tileEntry("chest_rare_dungeon", "#b6324b"),
         B: tileEntry("boss_dungeon", "#db3b4d"),
         P: tileEntry("event_dungeon", "#8f7dff"),
+        X: tileEntry("door_key_red", "#8f2f2f"),
+        Y: tileEntry("door_key_blue", "#2f6f9f"),
+        Z: tileEntry("door_key_gold", "#b8892f"),
+        Q: tileEntry("item_key_red", "#d94a4a"),
+        N: tileEntry("item_key_blue", "#4aa0e6"),
+        O: tileEntry("item_key_gold", "#e0b84a"),
         I: tileEntry("inn", "#356ab8"),
         K: tileEntry("casino", "#7e3fa1"),
         E: tileEntry("medal", "#f6ca62"),
@@ -352,7 +358,13 @@ const FIXED_TILE_OVERLAYS = {
         U: tileEntry("overlay_named_dungeon_stairs_up", "#d7b45a"),
         S: tileEntry("overlay_named_dungeon_stairs_up", "#d7b45a"),
         P: tileEntry("overlay_dungeon_event", "#8f7dff"),
-        V: tileEntry("overlay_dungeon_event", "#4ab9d8")
+        V: tileEntry("overlay_dungeon_event", "#4ab9d8"),
+        X: tileEntry("door_key_red", "#8f2f2f"),
+        Y: tileEntry("door_key_blue", "#2f6f9f"),
+        Z: tileEntry("door_key_gold", "#b8892f"),
+        Q: tileEntry("item_key_red", "#d94a4a"),
+        N: tileEntry("item_key_blue", "#4aa0e6"),
+        O: tileEntry("item_key_gold", "#e0b84a")
     },
     START_VILLAGE: {
         H: tileEntry("overlay_field_house_1", "#d9bd84"),
@@ -386,7 +398,7 @@ const FIXED_TILE_OVERLAYS = {
 const FIXED_OVERLAY_BASE_TILES = {
     // オーバーレイの下に敷く床。未指定は T。
     DEFAULT_FIELD: { H: "G", V: "T", I: "T", K: "T", E: "T", D: "T", C: "T", R: "T", B: "T", P: "T", S: "S" },
-    DEFAULT_DUNGEON: { C: "T", R: "T", B: "T", D: "T", U: "T", S: "T", P: "T", V: "T" },
+    DEFAULT_DUNGEON: { C: "T", R: "T", B: "T", D: "T", U: "T", S: "T", P: "T", V: "T", X: "T", Y: "T", Z: "T", Q: "T", N: "T", O: "T" },
     WATER_CITY: { H: "T", V: "T", I: "T", K: "T", E: "T", P: "G" },
     ABYSS_FIELD: { D: "T" },
     RUINED_SHRINE: { P: "T" }
@@ -1298,7 +1310,8 @@ const FIXED_DUNGEON_MAPS = {
                 {
                     "x": 10,
                     "y": 4,
-                    "monsterId": 401050
+                    "monsterId": 401050,
+                    "storyEventId": "big_tower_clear"
                 }
             ],
         }
@@ -1522,7 +1535,8 @@ const FIXED_DUNGEON_MAPS = {
                 {
                     "x": 8,
                     "y": 4,
-                    "monsterId": 401030
+                    "monsterId": 401030,
+                    "storyEventId": "thunder_fort_clear"
                 }
             ],
         }
@@ -1762,7 +1776,8 @@ const FIXED_DUNGEON_MAPS = {
                 {
                     "x": 12,
                     "y": 5,
-                    "monsterId": 401130
+                    "monsterId": 401130,
+                    "storyEventId": "light_palace_clear"
                 }
             ],
         }
@@ -1952,7 +1967,8 @@ const FIXED_DUNGEON_MAPS = {
                 {
                     "x": 13,
                     "y": 4,
-                    "monsterId": 401100
+                    "monsterId": 401100,
+                    "storyEventId": "dark_castle_clear"
                 }
             ],
         }

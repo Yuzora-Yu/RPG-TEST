@@ -151,6 +151,12 @@ const PRISMA_ASSETS = {
     overlay_dungeon_event: "assets/map/overlays/overlay_dungeon_event_v002.png",
     overlay_dungeon_portal: "assets/map/overlays/overlay_dungeon_portal_v002.png",
     overlay_dungeon_stairs: "assets/map/overlays/overlay_dungeon_stairs_v002.png",
+    door_key_red: "assets/map/objects/door_key_red_v001.png",
+    door_key_blue: "assets/map/objects/door_key_blue_v001.png",
+    door_key_gold: "assets/map/objects/door_key_gold_v001.png",
+    item_key_red: "assets/map/objects/item_key_red_v001.png",
+    item_key_blue: "assets/map/objects/item_key_blue_v001.png",
+    item_key_gold: "assets/map/objects/item_key_gold_v001.png",
 
     // 地域別マップチップ（map.js の TILE_THEMES から参照）
     tile_fire_wall: "assets/map/terrain/tile_fire_wall.png",
@@ -253,7 +259,7 @@ const PRISMA_ASSETS = {
   // installImages: Service Worker の初回install時にキャッシュする画像全体。
   // backgroundImages: install後の再試行/補助ウォームキャッシュ用。
   cacheWarmup: {
-    version: "2026-05-14-map-travel-v1",
+    version: "2026-06-05-floor-key-icons-v1",
     criticalImages: [
       ...PRISMA_LOADING_MONSTER_IMAGE_FILES,
       "assets/monsters/monster_301000.png",

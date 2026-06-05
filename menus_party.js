@@ -315,11 +315,11 @@ const MenuParty = {
 		MenuAllies.partyEquipContext = { uid: c.uid };
 		const modal = document.createElement('div');
 		modal.id = 'party-equipment-modal';
-		const frameModal = MenuParty.getFrameModalStyle(3180, 14);
+		const frameModal = MenuParty.getFrameModalStyle(3180, 0);
 		modal.style.cssText = frameModal.style;
 		modal.onclick = () => MenuParty.closeEquipmentModal();
 		modal.innerHTML = `
-			<div onclick="event.stopPropagation()" style="width:min(430px, 100%); max-height:100%; display:flex; flex-direction:column; background:#111; border:1px solid #777; border-radius:8px; box-shadow:0 18px 48px rgba(0,0,0,0.7); overflow:hidden; box-sizing:border-box;">
+			<div onclick="event.stopPropagation()" style="width:100%; height:100%; max-height:100%; display:flex; flex-direction:column; background:#111; border:1px solid #777; border-radius:8px; box-shadow:0 18px 48px rgba(0,0,0,0.7); overflow:hidden; box-sizing:border-box;">
 				<div id="party-equipment-modal-header" style="flex:0 0 auto; display:flex; justify-content:space-between; align-items:center; gap:8px; padding:10px 12px; border-bottom:1px solid #333; background:#1b1b1b;"></div>
 				<div id="party-equipment-modal-content" style="flex:1 1 auto; min-height:0; overflow:auto; padding:10px;"></div>
 				<div style="flex:0 0 auto; padding:10px 12px; border-top:1px solid #333; background:#161616;">

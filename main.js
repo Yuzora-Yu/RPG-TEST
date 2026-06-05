@@ -3625,6 +3625,12 @@ const Field = {
         return areaKey;
     },
 
+    getCurrentMapChangeKey: (areaKey = null) => {
+        const key = areaKey || Field.getCurrentAreaKey();
+        if (Field.currentMapData?.isFixed && Field.getCurrentProgressMapKey) return Field.getCurrentProgressMapKey();
+        return key;
+    },
+
     toggleInfoPanel: (event = null) => {
         if (event && event.stopPropagation) event.stopPropagation();
         Field.infoCollapsed = !Field.infoCollapsed;
@@ -3862,7 +3868,8 @@ const Field = {
         if (Field.currentMapData) {
             if (tileX >= 0 && tileX < mapW && tileY >= 0 && tileY < mapH) {
                 const posKey = `${tileX},${tileY}`;
-                nextTile = App.data.progress.mapChanges?.[areaKey]?.[posKey] || Field.currentMapData.tiles[tileY][tileX];
+                const changeKey = Field.getCurrentMapChangeKey ? Field.getCurrentMapChangeKey(areaKey) : areaKey;
+                nextTile = App.data.progress.mapChanges?.[changeKey]?.[posKey] || App.data.progress.mapChanges?.[areaKey]?.[posKey] || Field.currentMapData.tiles[tileY][tileX];
                 if (Field.currentMapData.isFixed) {
                     const progressKey = Field.getCurrentProgressMapKey();
                     if ((nextTile === 'C' || nextTile === 'R') && App.data.progress.openedChests?.[progressKey]?.includes(posKey)) nextTile = 'G';
@@ -3893,7 +3900,8 @@ const Field = {
             if (x < 0 || y < 0 || x >= Field.currentMapData.width || y >= Field.currentMapData.height) return null;
 
             const posKey = `${x},${y}`;
-            let tile = App.data.progress.mapChanges?.[areaKey]?.[posKey] || Field.currentMapData.tiles[y][x];
+            const changeKey = Field.getCurrentMapChangeKey ? Field.getCurrentMapChangeKey(areaKey) : areaKey;
+            let tile = App.data.progress.mapChanges?.[changeKey]?.[posKey] || App.data.progress.mapChanges?.[areaKey]?.[posKey] || Field.currentMapData.tiles[y][x];
             tile = String(tile || 'W').toUpperCase();
 
             if (Field.currentMapData.isFixed) {
@@ -4271,7 +4279,8 @@ const Field = {
             
 			//let tile = Field.currentMapData.tiles[ny][nx].toUpperCase();
 			// ★修正: 書き換えられたタイルがあればそれを優先、なければ元のタイルを参照
-			let tile = (App.data.progress.mapChanges?.[areaKey]?.[`${nx},${ny}`] || Field.currentMapData.tiles[ny][nx]).toUpperCase();
+            const changeKey = Field.getCurrentMapChangeKey ? Field.getCurrentMapChangeKey(areaKey) : areaKey;
+			let tile = (App.data.progress.mapChanges?.[changeKey]?.[`${nx},${ny}`] || App.data.progress.mapChanges?.[areaKey]?.[`${nx},${ny}`] || Field.currentMapData.tiles[ny][nx]).toUpperCase();
 
             // ★追加: 固定宝箱/ボスの判定を移動前に行う (撃破・取得済みなら通り抜け可能にする)
             if (Field.currentMapData.isFixed) {
@@ -4288,6 +4297,14 @@ const Field = {
             }
 
             if (tile === 'W') { keepCurrentTileAction(); return; } 
+
+            if (typeof Dungeon !== 'undefined' && Dungeon.isLockedDoorTile && Dungeon.isLockedDoorTile(tile)) {
+                if (!Dungeon.unlockDoorAt(nx, ny, tile)) {
+                    keepCurrentTileAction();
+                    return;
+                }
+                tile = 'T';
+            }
 
             if (tile === 'S' && !Field.currentMapData.isDungeon) {
                 const areaKey = App.data.location.area;
@@ -4360,16 +4377,32 @@ const Field = {
     render: () => {
         const canvas = document.getElementById('field-canvas'); if(!canvas) return;
         const ctx = canvas.getContext('2d'), ts = 32, w = canvas.width, h = canvas.height;
-        ctx.fillStyle='#000'; ctx.fillRect(0,0,w,h);
         const cx = w/2, cy = h/2, rangeX = Math.ceil(w/(2*ts))+1, rangeY = Math.ceil(h/(2*ts))+1;
         const mapW = Field.currentMapData ? Field.currentMapData.width : (typeof MAP_DATA !== 'undefined' ? MAP_DATA[0].length : 50);
         const mapH = Field.currentMapData ? Field.currentMapData.height : (typeof MAP_DATA !== 'undefined' ? MAP_DATA.length : 32);
         const g = (typeof GRAPHICS !== 'undefined' && GRAPHICS.images) ? GRAPHICS.images : {};
         
         const areaKey = Field.getCurrentAreaKey();
+        const useDepthRendering = false;
+        const isDungeonView = !!Field.currentMapData?.isDungeon;
+        const ambient = isDungeonView
+            ? { top: '#10131d', bottom: '#24202c', fog: 'rgba(121, 102, 170, 0.18)' }
+            : (App.data?.transportMode === 'boat')
+                ? { top: '#153c55', bottom: '#284f5c', fog: 'rgba(141, 215, 255, 0.14)' }
+                : { top: '#20364d', bottom: '#446049', fog: 'rgba(255, 234, 184, 0.12)' };
+        if (useDepthRendering) {
+            const bg = ctx.createLinearGradient(0, 0, 0, h);
+            bg.addColorStop(0, ambient.top);
+            bg.addColorStop(1, ambient.bottom);
+            ctx.fillStyle = bg;
+            ctx.fillRect(0, 0, w, h);
+        } else {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, w, h);
+        }
 
         // --- 内部ヘルパー: スプライトシート対応の描画関数 ---
-        const drawGraphic = (imgName, dx, dy, targetSize) => {
+        const drawGraphic = (imgName, dx, dy, targetSize, drawHeight = targetSize) => {
             if (!imgName) return false;
             
             // 1. GRAPHICS.spriteDefs に定義があるか確認
@@ -4380,15 +4413,77 @@ const Field = {
                 ctx.drawImage(
                     g[sprite.sheet], 
                     sprite.x, sprite.y, sprite.w, sprite.h, 
-                    dx, dy, targetSize, targetSize
+                    dx, dy, targetSize, drawHeight
                 );
                 return true;
             } else if (g[imgName]) {
                 // 従来通りの単体画像 (Base64等) として描画
-                ctx.drawImage(g[imgName], dx, dy, targetSize, targetSize);
+                ctx.drawImage(g[imgName], dx, dy, targetSize, drawHeight);
                 return true;
             }
             return false;
+        };
+
+        const tileTone = (tileSign) => {
+            const upper = String(tileSign || '').toUpperCase();
+            if (upper === 'W') return 'water';
+            if (upper === 'M' || upper === 'L') return 'ridge';
+            if (upper === 'F') return 'forest';
+            if (upper === 'B' || upper === 'H' || upper === 'V' || upper === 'I' || upper === 'K' || upper === 'E' || upper === 'D') return 'object';
+            if (upper === 'C' || upper === 'R' || upper === 'P' || upper === 'S' || upper === 'U') return 'marker';
+            return isDungeonView ? 'stone' : 'ground';
+        };
+
+        const tileLift = (tileSign, hasOverlay, wallGraphic) => {
+            const tone = tileTone(tileSign);
+            if (hasOverlay) return 4;
+            if (wallGraphic) return 8;
+            if (tone === 'ridge') return 7;
+            if (tone === 'forest' || tone === 'object') return 5;
+            return 0;
+        };
+
+        const stableNoise = (x, y) => {
+            const n = Math.sin((x * 127.1) + (y * 311.7)) * 43758.5453;
+            return n - Math.floor(n);
+        };
+
+        const drawTileBase = (x, y, color, tone, noise) => {
+            const inset = 1;
+            ctx.fillStyle = color || '#2c7a4e';
+            ctx.fillRect(x, y, ts, ts);
+
+            const previousAlpha = ctx.globalAlpha;
+            ctx.globalAlpha = tone === 'water' ? 0.16 : 0.10 + (noise * 0.06);
+            ctx.fillStyle = tone === 'stone' ? '#ffffff' : (tone === 'water' ? '#9de7ff' : '#fff7cc');
+            ctx.fillRect(x + inset, y + inset, ts - inset * 2, Math.max(3, ts * 0.18));
+            ctx.globalAlpha = tone === 'water' ? 0.22 : 0.16;
+            ctx.fillStyle = tone === 'water' ? '#08314d' : '#000';
+            ctx.fillRect(x + inset, y + ts - 6, ts - inset * 2, 5);
+            if (tone === 'water') {
+                ctx.globalAlpha = 0.25;
+                ctx.strokeStyle = '#8fdcff';
+                ctx.beginPath();
+                ctx.moveTo(x + 5 + noise * 8, y + 12);
+                ctx.lineTo(x + 18 + noise * 8, y + 12);
+                ctx.moveTo(x + 12 - noise * 7, y + 22);
+                ctx.lineTo(x + 27 - noise * 7, y + 22);
+                ctx.stroke();
+            }
+            ctx.globalAlpha = previousAlpha;
+
+            ctx.strokeStyle = tone === 'water' ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.10)';
+            ctx.strokeRect(x + 0.5, y + 0.5, ts - 1, ts - 1);
+        };
+
+        const drawFootShadow = (x, y, lift = 0, alpha = 0.22) => {
+            const previousAlpha = ctx.globalAlpha;
+            ctx.globalAlpha = alpha;
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.ellipse(x + ts / 2 + Math.min(5, lift), y + ts - 5, ts * 0.34, ts * 0.13, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = previousAlpha;
         };
 
         for (let dy = -rangeY; dy <= rangeY; dy++) {
@@ -4404,36 +4499,71 @@ const Field = {
                 // 地面は座標依存のフィールド施設オーバーレイを混ぜず、純粋な床タイルとして描く。
                 // これにより透過素材の下が黒くならず、G/Tなどの地面の上に施設画像が重なる。
                 const floorConfig = Field.getTileConfig(groundTile);
+                const tone = tileTone(upper);
+                const noise = stableNoise(tx, ty);
+                const lift = useDepthRendering ? tileLift(upper, !!overlayConfig, wallGraphic) : 0;
 
                 // 1. 地面の描画。
                 // 固定MAP/固定ダンジョンの施設・宝箱・階段・ボス等は、ここで床を描いてからオーバーレイを重ねる。
-                if (!drawGraphic(floorConfig.img, drawX, drawY, ts)) {
+                if (useDepthRendering) {
+                    drawTileBase(drawX, drawY, floorConfig.color, tone, noise);
+                } else if (!drawGraphic(floorConfig.img, drawX, drawY, ts)) {
                     ctx.fillStyle = floorConfig.color;
                     ctx.fillRect(drawX, drawY, ts, ts);
+                }
+                if (useDepthRendering && drawGraphic(floorConfig.img, drawX, drawY, ts)) {
+                    ctx.save();
+                    ctx.globalAlpha = 0.08 + (noise * 0.08);
+                    ctx.fillStyle = tone === 'stone' ? '#dfe7ff' : '#ffe8a5';
+                    ctx.fillRect(drawX, drawY, ts, ts);
+                    ctx.restore();
                 }
 
                 // 2. 通常オブジェクトの描画。overlayConfig があるタイルはここでは描かない。
                 if (upper !== 'T' && upper !== 'G' && !overlayConfig) {
-                    if (!drawGraphic(wallGraphic || config.img, drawX, drawY, ts)) {
+                    if (lift > 0) drawFootShadow(drawX, drawY, lift, tone === 'ridge' ? 0.30 : 0.24);
+                    const imageY = drawY - lift;
+                    if (!drawGraphic(wallGraphic || config.img, drawX, imageY, ts, ts + lift)) {
                         if (config.color && config.color !== floorConfig.color) {
                             ctx.fillStyle = config.color;
-                            ctx.fillRect(drawX, drawY, ts, ts);
+                            ctx.fillRect(drawX, imageY, ts, ts + lift);
                         }
+                    }
+                    if (lift > 0) {
+                        ctx.save();
+                        ctx.globalAlpha = 0.18;
+                        ctx.fillStyle = '#000';
+                        ctx.fillRect(drawX, drawY + ts - Math.min(6, lift), ts, Math.min(6, lift));
+                        ctx.restore();
                     }
                 }
 
                 // 3. 固定MAP/固定ダンジョン専用オーバーレイ。
                 if (overlayConfig) {
-                    if (!drawGraphic(overlayConfig.img, drawX, drawY, ts)) {
+                    if (useDepthRendering) drawFootShadow(drawX, drawY, lift, 0.24);
+                    if (!drawGraphic(overlayConfig.img, drawX, drawY - lift, ts, ts + lift)) {
                         ctx.save();
                         ctx.fillStyle = overlayConfig.color || config.color || '#fff';
                         ctx.beginPath();
-                        ctx.arc(drawX + ts / 2, drawY + ts / 2, ts * 0.34, 0, Math.PI * 2);
+                        ctx.arc(drawX + ts / 2, drawY + ts / 2 - lift, ts * 0.34, 0, Math.PI * 2);
                         ctx.fill();
                         ctx.restore();
                     }
                 }
             }
+        }
+
+        if (useDepthRendering) {
+            ctx.save();
+            const bloom = ctx.createRadialGradient(cx, cy, ts * 1.5, cx, cy, Math.max(w, h) * 0.72);
+            bloom.addColorStop(0, 'rgba(255,255,255,0)');
+            bloom.addColorStop(1, 'rgba(0,0,0,0.34)');
+            ctx.fillStyle = bloom;
+            ctx.fillRect(0, 0, w, h);
+            ctx.globalAlpha = 1;
+            ctx.fillStyle = ambient.fog;
+            ctx.fillRect(0, 0, w, h);
+            ctx.restore();
         }
 
         // 3. ランダム生成ダンジョン内の特殊オブジェクト描画。
@@ -4456,7 +4586,7 @@ const Field = {
                 ctx.save();
                 ctx.fillStyle = fallbackColor;
                 ctx.beginPath();
-                ctx.arc(px + ts / 2, py + ts / 2, ts * 0.34, 0, Math.PI * 2);
+                ctx.arc(px + ts / 2, py + ts / 2 - 4, ts * 0.34, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.restore();
             }
@@ -4465,9 +4595,11 @@ const Field = {
         drawOverlayImage(App.data?.dungeon?.healSpring, 'assets/effect/fx-buff-ai.png', '#80ffb0');
         drawOverlayImage(App.data?.dungeon?.abyssRift, 'assets/effect/fx-abyss-vortex-ai.png', '#a34cff');
         drawOverlayImage(App.data?.dungeon?.adventurer, 'assets/monsters/monster_100009.png', '#5bd6ff');
+        drawOverlayImage(App.data?.dungeon?.keyGuardian, 'assets/monsters/monster_100010.png', '#ffd78a');
 
         // 4. プレイヤーの描画 (hero_... の画像もスプライトシート化していれば対応可能)
         const pKey = `hero_${['down','left','right','up'][Field.dir]}_${Field.step}`; 
+        drawFootShadow(cx - ts / 2, cy - ts / 2, 0, 0.26);
         if (!drawGraphic(pKey, cx-ts/2, cy-ts/2, ts)) {
             ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(cx, cy, 10, 0, Math.PI*2); ctx.fill();
         }
@@ -4520,10 +4652,10 @@ const Field = {
                             }
                         }
 
-                        mtile = App.data.progress.mapChanges?.[areaKey]?.[pk] || Field.currentMapData.tiles[mty][mtx];
                         const progressKey = Field.currentMapData?.isFixed && Field.getCurrentProgressMapKey
                             ? Field.getCurrentProgressMapKey()
                             : ak;
+                        mtile = App.data.progress.mapChanges?.[progressKey]?.[pk] || App.data.progress.mapChanges?.[ak]?.[pk] || Field.currentMapData.tiles[mty][mtx];
                         if (App.data.progress.openedChests?.[progressKey]?.includes(pk)) mtile = 'G';
                         if (App.data.progress.defeatedBosses?.[progressKey]?.includes(pk)) mtile = 'G';
                     } else {
@@ -4554,6 +4686,44 @@ const Field = {
         drawMiniObject(App.data?.dungeon?.healSpring, '#80ffb0');
         drawMiniObject(App.data?.dungeon?.abyssRift, '#a34cff');
         drawMiniObject(App.data?.dungeon?.adventurer, '#5bd6ff');
+        drawMiniObject(App.data?.dungeon?.keyGuardian, '#ffd78a');
+
+        if (Field.currentMapData?.isDungeon && typeof Dungeon !== 'undefined' && typeof Dungeon.getHeldKeyOrder === 'function') {
+            const keyDefs = [
+                { color: 'red', img: 'item_key_red', tint: '#d94a4a' },
+                { color: 'blue', img: 'item_key_blue', tint: '#4aa0e6' },
+                { color: 'gold', img: 'item_key_gold', tint: '#e0b84a' }
+            ];
+            const heldOrder = Dungeon.getHeldKeyOrder();
+            const heldKeys = heldOrder
+                .map(color => keyDefs.find(def => def.color === color))
+                .filter(Boolean);
+            if (heldKeys.length) {
+            const size = 18;
+            const gap = 4;
+            const hudW = heldKeys.length * size + (heldKeys.length - 1) * gap;
+            const hudX = Math.max(6, mmX + mmSize - hudW);
+            const hudY = mmY + mmSize + 6;
+            ctx.save();
+            heldKeys.forEach((def, i) => {
+                const x = hudX + i * (size + gap);
+                const y = hudY;
+                const img = g[def.img];
+                ctx.save();
+                ctx.globalAlpha = 1;
+                if (img && img.complete && img.naturalWidth > 0) {
+                    ctx.drawImage(img, x, y, size, size);
+                } else {
+                    ctx.fillStyle = def.tint;
+                    ctx.beginPath();
+                    ctx.arc(x + size / 2, y + size / 2, size * 0.32, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
+            });
+            ctx.restore();
+            }
+        }
 
         ctx.restore();
     }

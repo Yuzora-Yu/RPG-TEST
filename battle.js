@@ -184,6 +184,7 @@ const Battle = {
         const fixedId = (App.data.battle && App.data.battle.fixedBossId) ? App.data.battle.fixedBossId : null;
         // ★追加: StoryManager由来のeventIdを保持
         const eventId = (App.data.battle && App.data.battle.eventId) ? App.data.battle.eventId : null;
+        const keyReward = App.data.battle?.keyReward || null;
 
         if (App.data.battle && App.data.battle.active && App.data.battle.enemies?.length > 0) {
             //Battle.log("戦闘に復帰した！");
@@ -224,6 +225,7 @@ const Battle = {
                 isEstark: isEstark || isSpecialBoss, 
                 fixedBossId: fixedId, 
                 eventId: eventId, 
+                keyReward: keyReward,
                 isAmbushed: Battle.isAmbushed, // フラグ維持用
                 isPreemptive: Battle.isPreemptive,
                 enemies: Battle.enemies.map(e => ({ baseId: e.baseId || e.id, hp: e.hp, maxHp: e.baseMaxHp, name: e.name, rank: e.rank, generatedFloor: e.generatedFloor, isBoss: e.isBoss, isRare: e.isRare, isSpecialBoss: e.isSpecialBoss, isEstark: e.isEstark, battleStatus: e.battleStatus })) 
@@ -3113,6 +3115,7 @@ findNextActor: () => {
         const isS = App.data.battle.isSpecialBoss; 
         const fId = App.data.battle.fixedBossId; 
         const eId = App.data.battle.eventId; // ★eventIdを退避
+        const keyReward = App.data.battle.keyReward || null;
         
         App.data.battle.enemies = Battle.enemies.filter(e => !e.isFled).map(e => ({ 
             baseId: e.baseId || e.id, hp: e.hp, maxHp: e.baseMaxHp, name: e.name, rank: e.rank, generatedFloor: e.generatedFloor, isBoss: e.isBoss, isRare: e.isRare, isSpecialBoss: e.isSpecialBoss, isEstark: e.isEstark, battleStatus: e.battleStatus 
@@ -3123,6 +3126,7 @@ findNextActor: () => {
         App.data.battle.isSpecialBoss = isS; 
         App.data.battle.fixedBossId = fId; 
         App.data.battle.eventId = eId; // ★eventIdを復元
+        App.data.battle.keyReward = keyReward;
         
         Battle.party.forEach(p => { 
             const d = App.getChar(p.uid); 
@@ -3609,9 +3613,10 @@ findNextActor: () => {
 		Battle.resultWaiters = [];
 		if (App.data.battle) App.data.battle.active = false; 
 
-		const isEstark = App.data.battle && (App.data.battle.isSpecialBoss || App.data.battle.isEstark);
-		const isBossBattle = App.data.battle && App.data.battle.isBossBattle;
-		const eventId = (App.data.battle && App.data.battle.eventId) ? App.data.battle.eventId : null;
+        const isEstark = App.data.battle && (App.data.battle.isSpecialBoss || App.data.battle.isEstark);
+        const isBossBattle = App.data.battle && App.data.battle.isBossBattle;
+        const eventId = (App.data.battle && App.data.battle.eventId) ? App.data.battle.eventId : null;
+        const keyReward = App.data.battle?.keyReward || null;
 		
 		// --- [追加] 演出前にイベントを予約し、セーブデータに含める ---
 		if (isBossBattle && eventId) {
@@ -3850,6 +3855,10 @@ findNextActor: () => {
 			// 注：StoryManager.onBattleWin は会話を伴うため演出の最後に行いますが、
 			// 討伐フラグ自体はこの上の App.save() で確実に永続化されます。
 		}
+        if (keyReward && typeof Dungeon !== 'undefined' && typeof Dungeon.completeKeyGuardianReward === 'function') {
+            Dungeon.completeKeyGuardianReward(keyReward);
+            if (App.data.battle) App.data.battle.keyReward = null;
+        }
 
 		// --- [4] セーブの実行（ここで報酬と世界状態を確定・永続化） ---
 		App.save(); 
