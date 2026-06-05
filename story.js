@@ -16,7 +16,7 @@ const StoryManager = {
     // ==========================================
     // 今後の「現在の目的」テキストは storyStep / subStep を基準にここで管理する。
     // UI側や main.js 側に目的文の switch 文を増やさないこと。
-    // 体験版などで現在のメインストーリー上限に到達した場合は、
+    // 現在のメインストーリー上限に到達した場合は、
     // 下の dungeonObjectiveMilestones に従ってダンジョン目標へ自動で切り替える。
     maxMainStoryProgress: { storyStep: 10, subStep: 0 },
 
@@ -28,7 +28,7 @@ const StoryManager = {
         "1-1": "北東の洞窟へ向かおう！",
         "1-2": "洞窟の奥へ進もう！",
         "2-0": "長老に報告しよう！！",
-        "2-1": "東の果て「炎の里」へ向かおう！！",
+        "2-1": "東の果て「炎の里」へ向かい、火口を調べよう！！",
         "3-0": "風の集落へ向かい、封鎖された祈りの場を調べよう。",
         "4-0": "水上都市へ向かい、海を渡る手段を探そう。",
         "5-0": "深淵の入口を調べ、探索機能を解放しよう。",
@@ -543,7 +543,7 @@ const StoryManager = {
         {
             "charId": 1000,
             "name": "",
-            "text": "※体験版のストーリーはここまでです。\nここからは、メニューの「ダンジョン」から挑戦できる自動生成ダンジョンをお楽しみください。"
+            "text": "こうして、始まりの村を救った一行は、東の果てにある炎の里へ向かうことになった。"
 		}
     ],
     "START_DUNGEON_CLEAR": [
@@ -662,7 +662,7 @@ const StoryManager = {
         "x": 6,
         "y": 3,
         "stepMin": 2, "stepMax": 2,
-        "subMin": 0, "subMax": 1,
+        "subMin": 0, "subMax": 0,
         "eventId": "start_adventure3"
     },
     {
@@ -678,7 +678,7 @@ const StoryManager = {
         "x": 14,
         "y": 17,
         "stepMin": 2, "stepMax": 2,
-        "subMin": 0, "subMax": 99,
+        "subMin": 1, "subMax": 99,
         "eventId": "fire_village_clear"
     },
     {
@@ -880,6 +880,7 @@ const StoryManager = {
     },
     "fire_village_clear": {
         "actions": [
+            { "type": "CONV", "value": "FIRE_VILLAGE_ARRIVAL" },
             { "type": "CONV", "value": "STORY_FIRE_CLEAR" },
             { "type": "ALLY", "value": 105 },
             { "type": "UNLOCK", "value": "smith" },

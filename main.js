@@ -4000,6 +4000,34 @@ const Field = {
         const logIfNeeded = (message) => {
             if (!silent && message) App.log(message);
         };
+        const findStoryTriggerAt = () => {
+            if (typeof StoryManager === 'undefined' || !Array.isArray(StoryManager.triggers)) return null;
+            const currentStep = Number(App.data.progress.storyStep);
+            const currentSub = Number(App.data.progress.subStep || 0);
+            return StoryManager.triggers.find(t => {
+                const areaMatch = t.area === App.data.location.area;
+                const posMatch = Number(t.x) === Number(x) && Number(t.y) === Number(y);
+
+                const stepMatch = (t.step !== undefined)
+                    ? (Number(t.step) === currentStep)
+                    : (currentStep >= (t.stepMin !== undefined ? t.stepMin : 0) &&
+                       currentStep <= (t.stepMax !== undefined ? t.stepMax : 999));
+
+                const subMatch = (t.sub !== undefined)
+                    ? (Number(t.sub) === currentSub)
+                    : (currentSub >= (t.subMin !== undefined ? t.subMin : 0) &&
+                       currentSub <= (t.subMax !== undefined ? t.subMax : 999));
+
+                return areaMatch && posMatch && stepMatch && subMatch;
+            }) || null;
+        };
+        const setStoryActionIfNeeded = (fallbackLabel = null) => {
+            const trigger = findStoryTriggerAt();
+            if (!trigger) return false;
+            const actionLabel = trigger.label || fallbackLabel || (tile === 'B' ? '戦う' : (tile === 'V' || tile === 'H' ? '話す' : '調べる'));
+            App.setAction(actionLabel, () => StoryManager.executeEvent(trigger.eventId));
+            return true;
+        };
 
         if (Field.currentMapData) {
             if (tile === 'W') return false;
@@ -4033,6 +4061,7 @@ const Field = {
                 const mapAction = (typeof MapRegistry !== 'undefined' && MapRegistry.findMapAction)
                     ? MapRegistry.findMapAction(Field.currentMapData, x, y)
                     : null;
+                if (setStoryActionIfNeeded(mapAction?.label || null)) return true;
                 if (mapAction) {
                     if (mapAction.log) logIfNeeded(mapAction.log);
                     if (mapAction.type === 'abyssDungeon') {
@@ -4054,37 +4083,13 @@ const Field = {
                     App.setFeatureAction('メダル交換', 'medalKing', () => App.changeScene('medal'));
                 }
             } else if (Field.currentMapData.isFixed && typeof Dungeon !== 'undefined' && typeof Dungeon.prepareFixedTileAction === 'function') {
+                if (setStoryActionIfNeeded()) return true;
                 if (Dungeon.prepareFixedTileAction(tile, x, y, { silent })) return true;
             }
 
             if (tile === 'V' || tile === 'H' || tile === 'B') {
                 if (typeof StoryManager !== 'undefined' && Array.isArray(StoryManager.triggers)) {
-                    const currentStep = Number(App.data.progress.storyStep);
-                    const currentSub = Number(App.data.progress.subStep || 0);
-
-                    const trigger = StoryManager.triggers.find(t => {
-                        const areaMatch = t.area === App.data.location.area;
-                        const posMatch = Number(t.x) === Number(x) && Number(t.y) === Number(y);
-
-                        const stepMatch = (t.step !== undefined)
-                            ? (Number(t.step) === currentStep)
-                            : (currentStep >= (t.stepMin !== undefined ? t.stepMin : 0) &&
-                               currentStep <= (t.stepMax !== undefined ? t.stepMax : 999));
-
-                        const subMatch = (t.sub !== undefined)
-                            ? (Number(t.sub) === currentSub)
-                            : (currentSub >= (t.subMin !== undefined ? t.subMin : 0) &&
-                               currentSub <= (t.subMax !== undefined ? t.subMax : 999));
-
-                        return areaMatch && posMatch && stepMatch && subMatch;
-                    });
-
-                    if (trigger) {
-                        const actionLabel = (tile === 'B') ? '戦う' : '話す';
-                        App.setAction(actionLabel, () => StoryManager.executeEvent(trigger.eventId));
-                    } else {
-                        logIfNeeded('誰かいるようだ。');
-                    }
+                    logIfNeeded('誰かいるようだ。');
                 }
             }
 

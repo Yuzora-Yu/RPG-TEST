@@ -473,7 +473,7 @@ const FIXED_MAPS = {
             "WWWWWWWWWWWWWWSSWWWWWWWWWWWWW"
         ],
         mapActions: [
-            { x: 14, y: 17, label: "火口を調べる", log: "火の力が渦巻いている。ここは後でストーリー接続予定。", type: "log" }
+            { x: 14, y: 17, label: "火口を調べる", log: "火の力が渦巻いている。奪われた宝玉の余熱だけが残っている。", type: "log" }
         ],
         exitPoint: { area: "WORLD", x: 97, y: 50 }
     },
