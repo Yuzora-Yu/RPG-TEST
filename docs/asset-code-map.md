@@ -56,6 +56,7 @@ Examples:
 - `menus_book.js` `MenuBook.getMonsterImgSrc()`: uses `window.MonsterImageMap` before legacy embedded graphics.
 
 Current accepted boss and rare candidate monster sprites are stored in `assets/monsters/`.
+High-floor normal monster sprites `monster_100091.png` through `monster_100180.png` were processed from `assets/raw/green/` and `assets/raw/red/` on 2026-05-15 and added to `assets/monsters/`. `monster_100096.png`, `monster_100122.png`, `monster_100133.png`, `monster_100147.png`, `monster_100157.png`, and `monster_100161.png` were carefully reprocessed on 2026-05-15, and the previously missing `monster_100112.png` was added from `assets/raw/red/`. Verification previews are stored in `verification/monster-alpha-20260515/previews/` and `verification/monster-alpha-redo-20260515/`.
 Current accepted character face images are stored in `assets/characters/`.
 Raw user-provided sources are stored in `assets/managed/source/monsters/boss-candidates/raw/`.
 Verification previews are stored in `verification/monster-alpha-final/`.

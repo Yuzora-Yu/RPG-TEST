@@ -13340,1561 +13340,1475 @@ const FIXED_BOSS_MONSTERS = [
     "isRare": false,
     "isEstark": false,
     "acts": [
-      {
-        "id": 1,
-        "rate": 65,
-        "condition": 0
-      },
-      {
-        "id": 40,
-        "rate": 17,
-        "condition": 0
-      },
-      {
-        "id": 44,
-        "rate": 17,
-        "condition": 0
-      },
-      {
-        "id": 601,
-        "rate": 17,
-        "condition": 0
-      },
-      {
-        "id": 41,
-        "rate": 16,
-        "condition": 0
-      }
+        {
+            "id": 1,
+            "rate": 65,
+            "condition": 0
+        },
+        {
+            "id": 40,
+            "rate": 17,
+            "condition": 0
+        },
+        {
+            "id": 44,
+            "rate": 17,
+            "condition": 0
+        },
+        {
+            "id": 601,
+            "rate": 17,
+            "condition": 0
+        },
+        {
+            "id": 41,
+            "rate": 16,
+            "condition": 0
+        }
     ],
     "drops": {
-      "normal": {
-        "id": null,
-        "rate": 0
-      },
-      "rare": {
-        "id": null,
-        "rate": 0
-      }
+        "normal": {
+            "id": null,
+            "rate": 0
+        },
+        "rare": {
+            "id": null,
+            "rate": 0
+        }
     },
     "elmRes": {},
     "resists": {
-      "InstantDeath": 99
+        "InstantDeath": 99
     },
     "traits": [],
-    "archives": []
-  },
+    "archives": [],
+    "image": "assets/monsters/monster_301000.png",
+    "img": "assets/monsters/monster_301000.png"
+},
   {
     "id": 301001,
     "name": "ブロンズナイト",
     "race": "人",
-    "rank": 10,
+    "rank": 12,
     "minF": 1,
-    "hp": 936,
-    "mp": 39,
-    "atk": 26,
-    "def": 19,
-    "spd": 9,
-    "mag": 7,
-    "mdef": 8,
+    "hp": 980,
+    "mp": 50,
+    "atk": 38,
+    "def": 28,
+    "spd": 18,
+    "mag": 10,
+    "mdef": 22,
     "hit": 150,
     "eva": 5,
     "cri": 15,
-    "gold": 500,
-    "exp": 1000,
+    "gold": 320,
+    "exp": 380,
     "actCount": 1,
     "isBoss": true,
     "isRare": false,
     "isEstark": false,
     "acts": [
-      {
-        "id": 1,
-        "rate": 65,
-        "condition": 0
-      },
-      {
-        "id": 40,
-        "rate": 17,
-        "condition": 0
-      },
-      {
-        "id": 44,
-        "rate": 17,
-        "condition": 0
-      },
-      {
-        "id": 601,
-        "rate": 17,
-        "condition": 0
-      },
-      {
-        "id": 41,
-        "rate": 16,
-        "condition": 0
-      }
+        {
+            "id": 1,
+            "rate": 65,
+            "condition": 0
+        },
+        {
+            "id": 40,
+            "rate": 17,
+            "condition": 0
+        },
+        {
+            "id": 44,
+            "rate": 17,
+            "condition": 0
+        },
+        {
+            "id": 601,
+            "rate": 17,
+            "condition": 0
+        },
+        {
+            "id": 41,
+            "rate": 16,
+            "condition": 0
+        }
     ],
     "drops": {
-      "normal": {
-        "id": null,
-        "rate": 0
-      },
-      "rare": {
-        "id": null,
-        "rate": 0
-      }
+        "normal": {
+            "id": null,
+            "rate": 0
+        },
+        "rare": {
+            "id": null,
+            "rate": 0
+        }
     },
     "elmRes": {},
     "resists": {
-      "InstantDeath": 99
+        "InstantDeath": 99
     },
     "traits": [],
-    "archives": []
-  },
+    "archives": [],
+    "image": "assets/monsters/monster_301001.png",
+    "img": "assets/monsters/monster_301001.png"
+},
   {
     "id": 301002,
     "name": "ブロンズリーダー",
     "race": "人",
-    "rank": 10,
+    "rank": 14,
     "minF": 1,
-    "hp": 936,
-    "mp": 39,
-    "atk": 26,
-    "def": 19,
-    "spd": 9,
-    "mag": 7,
-    "mdef": 8,
+    "hp": 1450,
+    "mp": 80,
+    "atk": 48,
+    "def": 36,
+    "spd": 22,
+    "mag": 18,
+    "mdef": 28,
     "hit": 150,
     "eva": 5,
     "cri": 15,
     "gold": 500,
-    "exp": 1000,
+    "exp": 620,
     "actCount": 1,
     "isBoss": true,
     "isRare": false,
     "isEstark": false,
     "acts": [
-      {
-        "id": 1,
-        "rate": 65,
-        "condition": 0
-      },
-      {
-        "id": 40,
-        "rate": 17,
-        "condition": 0
-      },
-      {
-        "id": 44,
-        "rate": 17,
-        "condition": 0
-      },
-      {
-        "id": 601,
-        "rate": 17,
-        "condition": 0
-      },
-      {
-        "id": 41,
-        "rate": 16,
-        "condition": 0
-      }
+        {
+            "id": 1,
+            "rate": 65,
+            "condition": 0
+        },
+        {
+            "id": 40,
+            "rate": 17,
+            "condition": 0
+        },
+        {
+            "id": 44,
+            "rate": 17,
+            "condition": 0
+        },
+        {
+            "id": 601,
+            "rate": 17,
+            "condition": 0
+        },
+        {
+            "id": 41,
+            "rate": 16,
+            "condition": 0
+        }
     ],
     "drops": {
-      "normal": {
-        "id": null,
-        "rate": 0
-      },
-      "rare": {
-        "id": null,
-        "rate": 0
-      }
+        "normal": {
+            "id": null,
+            "rate": 0
+        },
+        "rare": {
+            "id": null,
+            "rate": 0
+        }
     },
     "elmRes": {},
     "resists": {
-      "InstantDeath": 99
+        "InstantDeath": 99
     },
     "traits": [],
-    "archives": []
-  },
+    "archives": [],
+    "image": "assets/monsters/monster_301002.png",
+    "img": "assets/monsters/monster_301002.png"
+},
   {
     "id": 301010,
     "name": "炎楔のグラド",
     "race": "人",
-    "rank": 20,
+    "rank": 16,
     "minF": 1,
-    "hp": 7638,
-    "mp": 243,
-    "atk": 139,
-    "def": 200,
-    "spd": 145,
-    "mag": 193,
-    "mdef": 204,
+    "hp": 7200,
+    "mp": 220,
+    "atk": 118,
+    "def": 84,
+    "spd": 62,
+    "mag": 120,
+    "mdef": 82,
     "hit": 150,
     "eva": 5,
     "cri": 15,
-    "gold": 8000,
-    "exp": 15000,
+    "gold": 2500,
+    "exp": 4200,
     "actCount": 2,
     "isBoss": true,
     "isRare": false,
     "isEstark": false,
     "acts": [
-      {
-        "id": 1,
-        "rate": 55,
-        "condition": 0
-      },
-      {
-        "id": 407,
-        "rate": 13,
-        "condition": 0
-      },
-      {
-        "id": 306,
-        "rate": 13,
-        "condition": 0
-      },
-      {
-        "id": 307,
-        "rate": 13,
-        "condition": 0
-      },
-      {
-        "id": 605,
-        "rate": 13,
-        "condition": 0
-      },
-      {
-        "id": 606,
-        "rate": 12,
-        "condition": 0
-      },
-      {
-        "id": 905,
-        "rate": 12,
-        "condition": 0
-      },
-      {
-        "id": 57,
-        "rate": 5,
-        "condition": 0
-      },
-      {
-        "id": 3,
-        "rate": 12,
-        "condition": 0
-      }
+        {
+            "id": 1,
+            "rate": 55,
+            "condition": 0
+        },
+        {
+            "id": 407,
+            "rate": 13,
+            "condition": 0
+        },
+        {
+            "id": 306,
+            "rate": 13,
+            "condition": 0
+        },
+        {
+            "id": 307,
+            "rate": 13,
+            "condition": 0
+        },
+        {
+            "id": 605,
+            "rate": 13,
+            "condition": 0
+        },
+        {
+            "id": 606,
+            "rate": 12,
+            "condition": 0
+        },
+        {
+            "id": 905,
+            "rate": 12,
+            "condition": 0
+        },
+        {
+            "id": 57,
+            "rate": 5,
+            "condition": 0
+        },
+        {
+            "id": 3,
+            "rate": 12,
+            "condition": 0
+        }
     ],
     "drops": {
-      "normal": {
-        "id": 4,
-        "rate": 20
-      },
-      "rare": {
-        "id": 103,
-        "rate": 1
-      }
+        "normal": {
+            "id": 4,
+            "rate": 20
+        },
+        "rare": {
+            "id": 103,
+            "rate": 1
+        }
     },
     "elmRes": {},
     "resists": {
-      "InstantDeath": 99
+        "InstantDeath": 99
     },
     "traits": [
-      {
-        "id": 52,
-        "level": 5
-      },
-      {
-        "id": 53,
-        "level": 5
-      },
-      {
-        "id": 50,
-        "level": 2
-      }
+        {
+            "id": 52,
+            "level": 5
+        },
+        {
+            "id": 53,
+            "level": 5
+        },
+        {
+            "id": 50,
+            "level": 2
+        }
     ],
-    "archives": []
-  },
+    "archives": [],
+    "image": "assets/monsters/monster_301010.png",
+    "img": "assets/monsters/monster_301010.png"
+},
   {
     "id": 301011,
     "name": "シルフウルフ",
     "race": "獣",
-    "rank": 30,
+    "rank": 23,
     "minF": 1,
-    "hp": 4992,
-    "mp": 170,
-    "atk": 120,
-    "def": 146,
-    "spd": 90,
-    "mag": 115,
-    "mdef": 130,
+    "hp": 3600,
+    "mp": 90,
+    "atk": 92,
+    "def": 56,
+    "spd": 118,
+    "mag": 54,
+    "mdef": 62,
     "hit": 150,
     "eva": 5,
     "cri": 15,
-    "gold": 3000,
-    "exp": 6000,
+    "gold": 1200,
+    "exp": 2100,
     "actCount": 2,
     "isBoss": true,
     "isRare": false,
     "isEstark": false,
     "acts": [
-      {
-        "id": 1,
-        "rate": 65,
-        "condition": 0
-      },
-      {
-        "id": 304,
-        "rate": 17,
-        "condition": 0
-      },
-      {
-        "id": 309,
-        "rate": 17,
-        "condition": 0
-      },
-      {
-        "id": 305,
-        "rate": 17,
-        "condition": 0
-      },
-      {
-        "id": 603,
-        "rate": 16,
-        "condition": 0
-      },
-      {
-        "id": 605,
-        "rate": 16,
-        "condition": 0
-      }
+        {
+            "id": 1,
+            "rate": 65,
+            "condition": 0
+        },
+        {
+            "id": 304,
+            "rate": 17,
+            "condition": 0
+        },
+        {
+            "id": 309,
+            "rate": 17,
+            "condition": 0
+        },
+        {
+            "id": 305,
+            "rate": 17,
+            "condition": 0
+        },
+        {
+            "id": 603,
+            "rate": 16,
+            "condition": 0
+        },
+        {
+            "id": 605,
+            "rate": 16,
+            "condition": 0
+        }
     ],
     "drops": {
-      "normal": {
-        "id": 4,
-        "rate": 20
-      },
-      "rare": {
-        "id": 104,
-        "rate": 1
-      }
+        "normal": {
+            "id": 4,
+            "rate": 20
+        },
+        "rare": {
+            "id": 104,
+            "rate": 1
+        }
     },
     "elmRes": {},
     "resists": {
-      "InstantDeath": 99
+        "InstantDeath": 99
     },
     "traits": [
-      {
-        "id": 52,
-        "level": 5
-      },
-      {
-        "id": 53,
-        "level": 5
-      },
-      {
-        "id": 48,
-        "level": 2
-      }
+        {
+            "id": 52,
+            "level": 5
+        },
+        {
+            "id": 53,
+            "level": 5
+        },
+        {
+            "id": 48,
+            "level": 2
+        }
     ],
-    "archives": []
-  },
+    "archives": [],
+    "image": "assets/monsters/monster_301011.png",
+    "img": "assets/monsters/monster_301011.png"
+},
   {
     "id": 301012,
     "name": "ヒールフェアリー",
     "race": "精霊",
-    "rank": 30,
+    "rank": 23,
     "minF": 1,
-    "hp": 4992,
-    "mp": 170,
-    "atk": 120,
-    "def": 146,
-    "spd": 90,
-    "mag": 115,
-    "mdef": 130,
+    "hp": 3200,
+    "mp": 260,
+    "atk": 48,
+    "def": 50,
+    "spd": 92,
+    "mag": 108,
+    "mdef": 104,
     "hit": 150,
     "eva": 5,
     "cri": 15,
-    "gold": 3000,
-    "exp": 6000,
+    "gold": 1200,
+    "exp": 2100,
     "actCount": 2,
     "isBoss": true,
     "isRare": false,
     "isEstark": false,
     "acts": [
-      {
-        "id": 1,
-        "rate": 65,
-        "condition": 0
-      },
-      {
-        "id": 304,
-        "rate": 17,
-        "condition": 0
-      },
-      {
-        "id": 309,
-        "rate": 17,
-        "condition": 0
-      },
-      {
-        "id": 305,
-        "rate": 17,
-        "condition": 0
-      },
-      {
-        "id": 603,
-        "rate": 16,
-        "condition": 0
-      },
-      {
-        "id": 605,
-        "rate": 16,
-        "condition": 0
-      }
+        {
+            "id": 1,
+            "rate": 65,
+            "condition": 0
+        },
+        {
+            "id": 304,
+            "rate": 17,
+            "condition": 0
+        },
+        {
+            "id": 309,
+            "rate": 17,
+            "condition": 0
+        },
+        {
+            "id": 305,
+            "rate": 17,
+            "condition": 0
+        },
+        {
+            "id": 603,
+            "rate": 16,
+            "condition": 0
+        },
+        {
+            "id": 605,
+            "rate": 16,
+            "condition": 0
+        }
     ],
     "drops": {
-      "normal": {
-        "id": 4,
-        "rate": 20
-      },
-      "rare": {
-        "id": 104,
-        "rate": 1
-      }
+        "normal": {
+            "id": 4,
+            "rate": 20
+        },
+        "rare": {
+            "id": 104,
+            "rate": 1
+        }
     },
     "elmRes": {},
     "resists": {
-      "InstantDeath": 99
+        "InstantDeath": 99
     },
     "traits": [
-      {
-        "id": 52,
-        "level": 5
-      },
-      {
-        "id": 53,
-        "level": 5
-      },
-      {
-        "id": 48,
-        "level": 2
-      }
+        {
+            "id": 52,
+            "level": 5
+        },
+        {
+            "id": 53,
+            "level": 5
+        },
+        {
+            "id": 48,
+            "level": 2
+        }
     ],
-    "archives": []
-  },
+    "archives": [],
+    "image": "assets/monsters/monster_301012.png",
+    "img": "assets/monsters/monster_301012.png"
+},
   {
     "id": 301020,
     "name": "風楔のエリシア",
     "race": "人",
     "rank": 30,
     "minF": 1,
-    "hp": 4992,
-    "mp": 170,
-    "atk": 120,
-    "def": 146,
-    "spd": 90,
-    "mag": 115,
-    "mdef": 130,
+    "hp": 6900,
+    "mp": 320,
+    "atk": 95,
+    "def": 76,
+    "spd": 128,
+    "mag": 132,
+    "mdef": 118,
     "hit": 150,
     "eva": 5,
     "cri": 15,
     "gold": 3000,
-    "exp": 6000,
+    "exp": 5200,
     "actCount": 2,
     "isBoss": true,
     "isRare": false,
     "isEstark": false,
     "acts": [
-      {
-        "id": 1,
-        "rate": 65,
-        "condition": 0
-      },
-      {
-        "id": 304,
-        "rate": 17,
-        "condition": 0
-      },
-      {
-        "id": 309,
-        "rate": 17,
-        "condition": 0
-      },
-      {
-        "id": 305,
-        "rate": 17,
-        "condition": 0
-      },
-      {
-        "id": 603,
-        "rate": 16,
-        "condition": 0
-      },
-      {
-        "id": 605,
-        "rate": 16,
-        "condition": 0
-      }
+        {
+            "id": 1,
+            "rate": 65,
+            "condition": 0
+        },
+        {
+            "id": 304,
+            "rate": 17,
+            "condition": 0
+        },
+        {
+            "id": 309,
+            "rate": 17,
+            "condition": 0
+        },
+        {
+            "id": 305,
+            "rate": 17,
+            "condition": 0
+        },
+        {
+            "id": 603,
+            "rate": 16,
+            "condition": 0
+        },
+        {
+            "id": 605,
+            "rate": 16,
+            "condition": 0
+        }
     ],
     "drops": {
-      "normal": {
-        "id": 4,
-        "rate": 20
-      },
-      "rare": {
-        "id": 104,
-        "rate": 1
-      }
+        "normal": {
+            "id": 4,
+            "rate": 20
+        },
+        "rare": {
+            "id": 104,
+            "rate": 1
+        }
     },
     "elmRes": {},
     "resists": {
-      "InstantDeath": 99
+        "InstantDeath": 99
     },
     "traits": [
-      {
-        "id": 52,
-        "level": 5
-      },
-      {
-        "id": 53,
-        "level": 5
-      },
-      {
-        "id": 48,
-        "level": 2
-      }
+        {
+            "id": 52,
+            "level": 5
+        },
+        {
+            "id": 53,
+            "level": 5
+        },
+        {
+            "id": 48,
+            "level": 2
+        }
     ],
-    "archives": []
-  },
+    "archives": [],
+    "image": "assets/monsters/monster_301020.png",
+    "img": "assets/monsters/monster_301020.png"
+},
   {
     "id": 301021,
     "name": "ダークソルジャー",
     "race": "人",
-    "rank": 10,
+    "rank": 32,
     "minF": 1,
-    "hp": 936,
-    "mp": 39,
-    "atk": 26,
-    "def": 19,
-    "spd": 9,
-    "mag": 7,
-    "mdef": 8,
+    "hp": 1250,
+    "mp": 70,
+    "atk": 74,
+    "def": 52,
+    "spd": 38,
+    "mag": 20,
+    "mdef": 40,
     "hit": 150,
     "eva": 5,
     "cri": 15,
-    "gold": 500,
-    "exp": 1000,
+    "gold": 520,
+    "exp": 760,
     "actCount": 1,
     "isBoss": true,
     "isRare": false,
     "isEstark": false,
     "acts": [
-      {
-        "id": 1,
-        "rate": 65,
-        "condition": 0
-      },
-      {
-        "id": 40,
-        "rate": 17,
-        "condition": 0
-      },
-      {
-        "id": 44,
-        "rate": 17,
-        "condition": 0
-      },
-      {
-        "id": 601,
-        "rate": 17,
-        "condition": 0
-      },
-      {
-        "id": 41,
-        "rate": 16,
-        "condition": 0
-      }
+        {
+            "id": 1,
+            "rate": 65,
+            "condition": 0
+        },
+        {
+            "id": 40,
+            "rate": 17,
+            "condition": 0
+        },
+        {
+            "id": 44,
+            "rate": 17,
+            "condition": 0
+        },
+        {
+            "id": 601,
+            "rate": 17,
+            "condition": 0
+        },
+        {
+            "id": 41,
+            "rate": 16,
+            "condition": 0
+        }
     ],
     "drops": {
-      "normal": {
-        "id": null,
-        "rate": 0
-      },
-      "rare": {
-        "id": null,
-        "rate": 0
-      }
+        "normal": {
+            "id": null,
+            "rate": 0
+        },
+        "rare": {
+            "id": null,
+            "rate": 0
+        }
     },
     "elmRes": {},
     "resists": {
-      "InstantDeath": 99
+        "InstantDeath": 99
     },
     "traits": [],
-    "archives": []
-  },
+    "archives": [],
+    "image": "assets/monsters/monster_301021.png",
+    "img": "assets/monsters/monster_301021.png"
+},
   {
     "id": 301022,
     "name": "ダークナイト",
     "race": "人",
-    "rank": 10,
+    "rank": 36,
     "minF": 1,
-    "hp": 936,
-    "mp": 39,
-    "atk": 26,
-    "def": 19,
-    "spd": 9,
-    "mag": 7,
-    "mdef": 8,
+    "hp": 2300,
+    "mp": 120,
+    "atk": 102,
+    "def": 86,
+    "spd": 48,
+    "mag": 36,
+    "mdef": 66,
     "hit": 150,
     "eva": 5,
     "cri": 15,
-    "gold": 500,
-    "exp": 1000,
+    "gold": 900,
+    "exp": 1300,
     "actCount": 1,
     "isBoss": true,
     "isRare": false,
     "isEstark": false,
     "acts": [
-      {
-        "id": 1,
-        "rate": 65,
-        "condition": 0
-      },
-      {
-        "id": 40,
-        "rate": 17,
-        "condition": 0
-      },
-      {
-        "id": 44,
-        "rate": 17,
-        "condition": 0
-      },
-      {
-        "id": 601,
-        "rate": 17,
-        "condition": 0
-      },
-      {
-        "id": 41,
-        "rate": 16,
-        "condition": 0
-      }
+        {
+            "id": 1,
+            "rate": 65,
+            "condition": 0
+        },
+        {
+            "id": 40,
+            "rate": 17,
+            "condition": 0
+        },
+        {
+            "id": 44,
+            "rate": 17,
+            "condition": 0
+        },
+        {
+            "id": 601,
+            "rate": 17,
+            "condition": 0
+        },
+        {
+            "id": 41,
+            "rate": 16,
+            "condition": 0
+        }
     ],
     "drops": {
-      "normal": {
-        "id": null,
-        "rate": 0
-      },
-      "rare": {
-        "id": null,
-        "rate": 0
-      }
+        "normal": {
+            "id": null,
+            "rate": 0
+        },
+        "rare": {
+            "id": null,
+            "rate": 0
+        }
     },
     "elmRes": {},
     "resists": {
-      "InstantDeath": 99
+        "InstantDeath": 99
     },
     "traits": [],
-    "archives": []
-  },
+    "archives": [],
+    "image": "assets/monsters/monster_301022.png",
+    "img": "assets/monsters/monster_301022.png"
+},
   {
     "id": 301030,
     "name": "氷楔のシーリス ",
     "race": "人",
     "rank": 40,
     "minF": 1,
-    "hp": 5916,
-    "mp": 191,
-    "atk": 138,
-    "def": 190,
-    "spd": 107,
-    "mag": 133,
-    "mdef": 159,
+    "hp": 8900,
+    "mp": 360,
+    "atk": 128,
+    "def": 92,
+    "spd": 78,
+    "mag": 146,
+    "mdef": 128,
     "hit": 150,
     "eva": 5,
     "cri": 15,
-    "gold": 5000,
-    "exp": 10000,
+    "gold": 4200,
+    "exp": 6800,
     "actCount": 2,
     "isBoss": true,
     "isRare": false,
     "isEstark": false,
     "acts": [
-      {
-        "id": 1,
-        "rate": 65,
-        "condition": 0
-      },
-      {
-        "id": 42,
-        "rate": 15,
-        "condition": 0
-      },
-      {
-        "id": 303,
-        "rate": 14,
-        "condition": 0
-      },
-      {
-        "id": 604,
-        "rate": 14,
-        "condition": 0
-      },
-      {
-        "id": 44,
-        "rate": 14,
-        "condition": 0
-      },
-      {
-        "id": 41,
-        "rate": 14,
-        "condition": 0
-      },
-      {
-        "id": 203,
-        "rate": 14,
-        "condition": 0
-      }
+        {
+            "id": 1,
+            "rate": 65,
+            "condition": 0
+        },
+        {
+            "id": 42,
+            "rate": 15,
+            "condition": 0
+        },
+        {
+            "id": 303,
+            "rate": 14,
+            "condition": 0
+        },
+        {
+            "id": 604,
+            "rate": 14,
+            "condition": 0
+        },
+        {
+            "id": 44,
+            "rate": 14,
+            "condition": 0
+        },
+        {
+            "id": 41,
+            "rate": 14,
+            "condition": 0
+        },
+        {
+            "id": 203,
+            "rate": 14,
+            "condition": 0
+        }
     ],
     "drops": {
-      "normal": {
-        "id": 4,
-        "rate": 20
-      },
-      "rare": {
-        "id": 105,
-        "rate": 1
-      }
+        "normal": {
+            "id": 4,
+            "rate": 20
+        },
+        "rare": {
+            "id": 105,
+            "rate": 1
+        }
     },
     "elmRes": {},
     "resists": {
-      "InstantDeath": 99
+        "InstantDeath": 99
     },
     "traits": [
-      {
-        "id": 52,
-        "level": 5
-      },
-      {
-        "id": 53,
-        "level": 5
-      },
-      {
-        "id": 49,
-        "level": 2
-      }
+        {
+            "id": 52,
+            "level": 5
+        },
+        {
+            "id": 53,
+            "level": 5
+        },
+        {
+            "id": 49,
+            "level": 2
+        }
     ],
-    "archives": []
-  },
+    "archives": [],
+    "image": "assets/monsters/monster_301030.png",
+    "img": "assets/monsters/monster_301030.png"
+},
   {
     "id": 301031,
     "name": "バトルマシーン",
     "race": "機械",
-    "rank": 10,
+    "rank": 42,
     "minF": 1,
-    "hp": 936,
-    "mp": 39,
-    "atk": 26,
-    "def": 19,
-    "spd": 9,
-    "mag": 7,
-    "mdef": 8,
+    "hp": 2600,
+    "mp": 80,
+    "atk": 128,
+    "def": 112,
+    "spd": 42,
+    "mag": 30,
+    "mdef": 70,
     "hit": 150,
     "eva": 5,
     "cri": 15,
-    "gold": 500,
-    "exp": 1000,
+    "gold": 980,
+    "exp": 1500,
     "actCount": 1,
     "isBoss": true,
     "isRare": false,
     "isEstark": false,
     "acts": [
-      {
-        "id": 1,
-        "rate": 65,
-        "condition": 0
-      },
-      {
-        "id": 40,
-        "rate": 17,
-        "condition": 0
-      },
-      {
-        "id": 44,
-        "rate": 17,
-        "condition": 0
-      },
-      {
-        "id": 601,
-        "rate": 17,
-        "condition": 0
-      },
-      {
-        "id": 41,
-        "rate": 16,
-        "condition": 0
-      }
+        {
+            "id": 1,
+            "rate": 65,
+            "condition": 0
+        },
+        {
+            "id": 40,
+            "rate": 17,
+            "condition": 0
+        },
+        {
+            "id": 44,
+            "rate": 17,
+            "condition": 0
+        },
+        {
+            "id": 601,
+            "rate": 17,
+            "condition": 0
+        },
+        {
+            "id": 41,
+            "rate": 16,
+            "condition": 0
+        }
     ],
     "drops": {
-      "normal": {
-        "id": null,
-        "rate": 0
-      },
-      "rare": {
-        "id": null,
-        "rate": 0
-      }
+        "normal": {
+            "id": null,
+            "rate": 0
+        },
+        "rare": {
+            "id": null,
+            "rate": 0
+        }
     },
     "elmRes": {},
     "resists": {
-      "InstantDeath": 99
+        "InstantDeath": 99
     },
     "traits": [],
-    "archives": []
-  },
+    "archives": [],
+    "image": "assets/monsters/monster_301031.png",
+    "img": "assets/monsters/monster_301031.png"
+},
   {
     "id": 301032,
     "name": "サンダーアーマー",
     "race": "人",
-    "rank": 10,
+    "rank": 44,
     "minF": 1,
-    "hp": 936,
-    "mp": 39,
-    "atk": 26,
-    "def": 19,
-    "spd": 9,
-    "mag": 7,
-    "mdef": 8,
+    "hp": 2800,
+    "mp": 130,
+    "atk": 122,
+    "def": 126,
+    "spd": 58,
+    "mag": 78,
+    "mdef": 92,
     "hit": 150,
     "eva": 5,
     "cri": 15,
-    "gold": 500,
-    "exp": 1000,
+    "gold": 1050,
+    "exp": 1650,
     "actCount": 1,
     "isBoss": true,
     "isRare": false,
     "isEstark": false,
     "acts": [
-      {
-        "id": 1,
-        "rate": 65,
-        "condition": 0
-      },
-      {
-        "id": 40,
-        "rate": 17,
-        "condition": 0
-      },
-      {
-        "id": 44,
-        "rate": 17,
-        "condition": 0
-      },
-      {
-        "id": 601,
-        "rate": 17,
-        "condition": 0
-      },
-      {
-        "id": 41,
-        "rate": 16,
-        "condition": 0
-      }
+        {
+            "id": 1,
+            "rate": 65,
+            "condition": 0
+        },
+        {
+            "id": 40,
+            "rate": 17,
+            "condition": 0
+        },
+        {
+            "id": 44,
+            "rate": 17,
+            "condition": 0
+        },
+        {
+            "id": 601,
+            "rate": 17,
+            "condition": 0
+        },
+        {
+            "id": 41,
+            "rate": 16,
+            "condition": 0
+        }
     ],
     "drops": {
-      "normal": {
-        "id": null,
-        "rate": 0
-      },
-      "rare": {
-        "id": null,
-        "rate": 0
-      }
+        "normal": {
+            "id": null,
+            "rate": 0
+        },
+        "rare": {
+            "id": null,
+            "rate": 0
+        }
     },
     "elmRes": {},
     "resists": {
-      "InstantDeath": 99
+        "InstantDeath": 99
     },
     "traits": [],
-    "archives": []
-  },
+    "archives": [],
+    "image": "assets/monsters/monster_301032.png",
+    "img": "assets/monsters/monster_301032.png"
+},
   {
     "id": 301040,
     "name": "雷楔のレナード",
     "race": "人",
-    "rank": 50,
+    "rank": 48,
     "minF": 1,
-    "hp": 4002,
-    "mp": 145,
-    "atk": 96,
-    "def": 69,
-    "spd": 62,
-    "mag": 50,
-    "mdef": 54,
+    "hp": 10400,
+    "mp": 320,
+    "atk": 158,
+    "def": 112,
+    "spd": 116,
+    "mag": 116,
+    "mdef": 110,
     "hit": 150,
     "eva": 5,
     "cri": 15,
-    "gold": 2000,
-    "exp": 4000,
+    "gold": 5200,
+    "exp": 8200,
     "actCount": 2,
     "isBoss": true,
     "isRare": false,
     "isEstark": false,
     "acts": [
-      {
-        "id": 1,
-        "rate": 65,
-        "condition": 0
-      },
-      {
-        "id": 41,
-        "rate": 13,
-        "condition": 0
-      },
-      {
-        "id": 44,
-        "rate": 13,
-        "condition": 0
-      },
-      {
-        "id": 101,
-        "rate": 13,
-        "condition": 0
-      },
-      {
-        "id": 102,
-        "rate": 12,
-        "condition": 0
-      },
-      {
-        "id": 104,
-        "rate": 12,
-        "condition": 0
-      },
-      {
-        "id": 105,
-        "rate": 12,
-        "condition": 0
-      },
-      {
-        "id": 49,
-        "rate": 12,
-        "condition": 0
-      }
+        {
+            "id": 1,
+            "rate": 65,
+            "condition": 0
+        },
+        {
+            "id": 41,
+            "rate": 13,
+            "condition": 0
+        },
+        {
+            "id": 44,
+            "rate": 13,
+            "condition": 0
+        },
+        {
+            "id": 101,
+            "rate": 13,
+            "condition": 0
+        },
+        {
+            "id": 102,
+            "rate": 12,
+            "condition": 0
+        },
+        {
+            "id": 104,
+            "rate": 12,
+            "condition": 0
+        },
+        {
+            "id": 105,
+            "rate": 12,
+            "condition": 0
+        },
+        {
+            "id": 49,
+            "rate": 12,
+            "condition": 0
+        }
     ],
     "drops": {
-      "normal": {
-        "id": 4,
-        "rate": 20
-      },
-      "rare": {
-        "id": 102,
-        "rate": 1
-      }
+        "normal": {
+            "id": 4,
+            "rate": 20
+        },
+        "rare": {
+            "id": 102,
+            "rate": 1
+        }
     },
     "elmRes": {},
     "resists": {
-      "InstantDeath": 99
+        "InstantDeath": 99
     },
     "traits": [
-      {
-        "id": 52,
-        "level": 5
-      },
-      {
-        "id": 53,
-        "level": 5
-      },
-      {
-        "id": 49,
-        "level": 2
-      }
+        {
+            "id": 52,
+            "level": 5
+        },
+        {
+            "id": 53,
+            "level": 5
+        },
+        {
+            "id": 49,
+            "level": 2
+        }
     ],
-    "archives": []
-  },
+    "archives": [],
+    "image": "assets/monsters/monster_301040.png",
+    "img": "assets/monsters/monster_301040.png"
+},
   {
     "id": 301050,
     "name": "聖騎士ヴェルド",
     "race": "人",
-    "rank": 60,
+    "rank": 55,
     "minF": 1,
-    "hp": 8712,
-    "mp": 264,
-    "atk": 195,
-    "def": 213,
-    "spd": 150,
-    "mag": 209,
-    "mdef": 243,
+    "hp": 21800,
+    "mp": 980,
+    "atk": 372,
+    "def": 228,
+    "spd": 208,
+    "mag": 288,
+    "mdef": 226,
     "hit": 150,
-    "eva": 5,
-    "cri": 15,
-    "gold": 10000,
-    "exp": 20000,
+    "eva": 30,
+    "cri": 50,
+    "gold": 6000,
+    "exp": 9200,
     "actCount": 2,
     "isBoss": true,
     "isRare": false,
     "isEstark": false,
     "acts": [
-      {
-        "id": 1,
-        "rate": 65,
-        "condition": 0
-      },
-      {
-        "id": 306,
-        "rate": 25,
-        "condition": 1
-      },
-      {
-        "id": 405,
-        "rate": 20,
-        "condition": 2
-      },
-      {
-        "id": 406,
-        "rate": 20,
-        "condition": 0
-      },
-      {
-        "id": 407,
-        "rate": 20,
-        "condition": 0
-      },
-      {
-        "id": 57,
-        "rate": 3,
-        "condition": 0
-      }
+        {
+            "id": 1,
+            "rate": 65,
+            "condition": 0
+        },
+        {
+            "id": 306,
+            "rate": 25,
+            "condition": 1
+        },
+        {
+            "id": 405,
+            "rate": 20,
+            "condition": 2
+        },
+        {
+            "id": 406,
+            "rate": 20,
+            "condition": 0
+        },
+        {
+            "id": 407,
+            "rate": 20,
+            "condition": 0
+        },
+        {
+            "id": 57,
+            "rate": 3,
+            "condition": 0
+        }
     ],
     "drops": {
-      "normal": {
-        "id": 4,
-        "rate": 20
-      },
-      "rare": {
-        "id": 101,
-        "rate": 1
-      }
+        "normal": {
+            "id": 4,
+            "rate": 20
+        },
+        "rare": {
+            "id": 101,
+            "rate": 1
+        }
     },
     "elmRes": {},
     "resists": {
-      "InstantDeath": 99
+        "InstantDeath": 99
     },
     "traits": [
-      {
-        "id": 52,
-        "level": 5
-      },
-      {
-        "id": 53,
-        "level": 5
-      },
-      {
-        "id": 12,
-        "level": 2
-      },
-      {
-        "id": 19,
-        "level": 5
-      }
+        {
+            "id": 52,
+            "level": 5
+        },
+        {
+            "id": 53,
+            "level": 5
+        },
+        {
+            "id": 12,
+            "level": 2
+        },
+        {
+            "id": 19,
+            "level": 5
+        }
     ],
-    "archives": []
-  },
+    "archives": [],
+    "image": "assets/monsters/monster_301050.png",
+    "img": "assets/monsters/monster_301050.png"
+},
   {
     "id": 301060,
     "name": "ヘルクラッシャー",
     "race": "機械",
-    "rank": 70,
+    "rank": 58,
     "minF": 1,
-    "hp": 8712,
-    "mp": 229,
-    "atk": 214,
-    "def": 130,
-    "spd": 94,
-    "mag": 91,
-    "mdef": 130,
+    "hp": 6200,
+    "mp": 160,
+    "atk": 184,
+    "def": 120,
+    "spd": 76,
+    "mag": 80,
+    "mdef": 88,
     "hit": 112,
     "eva": 0,
     "cri": 50,
-    "gold": 4500,
-    "exp": 10000,
-    "actCount": 1,
+    "gold": 2600,
+    "exp": 3600,
+    "actCount": 2,
     "isBoss": true,
     "isRare": false,
     "isEstark": false,
     "acts": [
-      {
-        "id": 113,
-        "rate": 50,
-        "condition": 0
-      },
-      {
-        "id": 101,
-        "rate": 20,
-        "condition": 0
-      },
-      {
-        "id": 102,
-        "rate": 20,
-        "condition": 0
-      },
-      {
-        "id": 44,
-        "rate": 9,
-        "condition": 0
-      },
-      {
-        "id": 1,
-        "rate": 65,
-        "condition": 0
-      }
+        {
+            "id": 113,
+            "rate": 50,
+            "condition": 0
+        },
+        {
+            "id": 101,
+            "rate": 20,
+            "condition": 0
+        },
+        {
+            "id": 102,
+            "rate": 20,
+            "condition": 0
+        },
+        {
+            "id": 44,
+            "rate": 9,
+            "condition": 0
+        },
+        {
+            "id": 1,
+            "rate": 65,
+            "condition": 0
+        }
     ],
     "drops": {
-      "normal": {
-        "id": 4,
-        "rate": 20
-      },
-      "rare": {
-        "id": 102,
-        "rate": 1
-      }
+        "normal": {
+            "id": 4,
+            "rate": 20
+        },
+        "rare": {
+            "id": 102,
+            "rate": 1
+        }
     },
     "elmRes": {},
     "resists": {
-      "InstantDeath": 50
+        "InstantDeath": 50
     },
     "traits": [
-      {
-        "id": 52,
-        "level": 5
-      },
-      {
-        "id": 53,
-        "level": 5
-      },
-      {
-        "id": 19,
-        "level": 5
-      }
+        {
+            "id": 52,
+            "level": 5
+        },
+        {
+            "id": 53,
+            "level": 5
+        },
+        {
+            "id": 19,
+            "level": 5
+        }
     ],
-    "archives": []
-  },
+    "archives": [],
+    "image": "assets/monsters/monster_301060.png",
+    "img": "assets/monsters/monster_301060.png"
+},
   {
     "id": 301061,
     "name": "常闇のリリス",
     "race": "魔族",
-    "rank": 70,
+    "rank": 60,
     "minF": 1,
-    "hp": 7350,
-    "mp": 236,
-    "atk": 192,
-    "def": 211,
-    "spd": 164,
-    "mag": 196,
-    "mdef": 225,
+    "hp": 9800,
+    "mp": 480,
+    "atk": 122,
+    "def": 108,
+    "spd": 142,
+    "mag": 176,
+    "mdef": 152,
     "hit": 150,
     "eva": 10,
     "cri": 15,
-    "gold": 4500,
-    "exp": 10000,
-    "actCount": 1,
+    "gold": 5600,
+    "exp": 9000,
+    "actCount": 2,
     "isBoss": true,
     "isRare": false,
     "isEstark": false,
     "acts": [
-      {
-        "id": 1,
-        "rate": 55,
-        "condition": 0
-      },
-      {
-        "id": 412,
-        "rate": 15,
-        "condition": 0
-      },
-      {
-        "id": 500,
-        "rate": 10,
-        "condition": 2
-      },
-      {
-        "id": 309,
-        "rate": 20,
-        "condition": 0
-      },
-      {
-        "id": 202,
-        "rate": 20,
-        "condition": 0
-      },
-      {
-        "id": 46,
-        "rate": 25,
-        "condition": 0
-      },
-      {
-        "id": 81,
-        "rate": 3,
-        "condition": 2
-      },
-      {
-        "id": 57,
-        "rate": 3,
-        "condition": 0
-      }
+        {
+            "id": 1,
+            "rate": 55,
+            "condition": 0
+        },
+        {
+            "id": 412,
+            "rate": 15,
+            "condition": 0
+        },
+        {
+            "id": 500,
+            "rate": 10,
+            "condition": 2
+        },
+        {
+            "id": 309,
+            "rate": 20,
+            "condition": 0
+        },
+        {
+            "id": 202,
+            "rate": 20,
+            "condition": 0
+        },
+        {
+            "id": 46,
+            "rate": 25,
+            "condition": 0
+        },
+        {
+            "id": 81,
+            "rate": 3,
+            "condition": 2
+        },
+        {
+            "id": 57,
+            "rate": 3,
+            "condition": 0
+        }
     ],
     "drops": {
-      "normal": {
-        "id": 4,
-        "rate": 20
-      },
-      "rare": {
-        "id": 104,
-        "rate": 1
-      }
+        "normal": {
+            "id": 4,
+            "rate": 20
+        },
+        "rare": {
+            "id": 104,
+            "rate": 1
+        }
     },
     "elmRes": {},
     "resists": {
-      "InstantDeath": 90
+        "InstantDeath": 90
     },
     "traits": [
-      {
-        "id": 52,
-        "level": 5
-      },
-      {
-        "id": 53,
-        "level": 5
-      },
-      {
-        "id": 19,
-        "level": 5
-      }
+        {
+            "id": 52,
+            "level": 5
+        },
+        {
+            "id": 53,
+            "level": 5
+        },
+        {
+            "id": 19,
+            "level": 5
+        }
     ],
-    "archives": []
-  },
+    "archives": [],
+    "image": "assets/monsters/monster_301061.png",
+    "img": "assets/monsters/monster_301061.png"
+},
   {
     "id": 301062,
     "name": "デモンキャット",
     "race": "獣人",
-    "rank": 70,
+    "rank": 58,
     "minF": 1,
-    "hp": 7638,
-    "mp": 270,
-    "atk": 201,
-    "def": 225,
-    "spd": 137,
-    "mag": 193,
-    "mdef": 204,
+    "hp": 4400,
+    "mp": 180,
+    "atk": 168,
+    "def": 82,
+    "spd": 164,
+    "mag": 92,
+    "mdef": 90,
     "hit": 150,
     "eva": 10,
     "cri": 15,
-    "gold": 5000,
-    "exp": 10000,
-    "actCount": 1,
+    "gold": 2200,
+    "exp": 3300,
+    "actCount": 2,
     "isBoss": true,
     "isRare": false,
     "isEstark": false,
     "acts": [
-      {
-        "id": 1,
-        "rate": 65,
-        "condition": 0
-      },
-      {
-        "id": 305,
-        "rate": 15,
-        "condition": 1
-      },
-      {
-        "id": 306,
-        "rate": 15,
-        "condition": 1
-      },
-      {
-        "id": 24,
-        "rate": 10,
-        "condition": 2
-      },
-      {
-        "id": 50,
-        "rate": 10,
-        "condition": 0
-      },
-      {
-        "id": 412,
-        "rate": 17,
-        "condition": 2
-      },
-      {
-        "id": 609,
-        "rate": 17,
-        "condition": 2
-      },
-      {
-        "id": 405,
-        "rate": 15,
-        "condition": 2
-      }
+        {
+            "id": 1,
+            "rate": 65,
+            "condition": 0
+        },
+        {
+            "id": 305,
+            "rate": 15,
+            "condition": 1
+        },
+        {
+            "id": 306,
+            "rate": 15,
+            "condition": 1
+        },
+        {
+            "id": 24,
+            "rate": 10,
+            "condition": 2
+        },
+        {
+            "id": 50,
+            "rate": 10,
+            "condition": 0
+        },
+        {
+            "id": 412,
+            "rate": 17,
+            "condition": 2
+        },
+        {
+            "id": 609,
+            "rate": 17,
+            "condition": 2
+        },
+        {
+            "id": 405,
+            "rate": 15,
+            "condition": 2
+        }
     ],
     "drops": {
-      "normal": {
-        "id": 4,
-        "rate": 20
-      },
-      "rare": {
-        "id": 105,
-        "rate": 1
-      }
+        "normal": {
+            "id": 4,
+            "rate": 20
+        },
+        "rare": {
+            "id": 105,
+            "rate": 1
+        }
     },
     "elmRes": {},
     "resists": {
-      "InstantDeath": 50
+        "InstantDeath": 50
     },
     "traits": [
-      {
-        "id": 52,
-        "level": 5
-      },
-      {
-        "id": 53,
-        "level": 5
-      },
-      {
-        "id": 19,
-        "level": 5
-      }
+        {
+            "id": 52,
+            "level": 5
+        },
+        {
+            "id": 53,
+            "level": 5
+        },
+        {
+            "id": 19,
+            "level": 5
+        }
     ],
-    "archives": []
-  },
+    "archives": [],
+    "image": "assets/monsters/monster_301062.png",
+    "img": "assets/monsters/monster_301062.png"
+},
   {
     "id": 301070,
     "name": "魔道神官ジャスパー",
     "race": "人",
-    "rank": 80,
+    "rank": 65,
     "minF": 1,
-    "hp": 11454,
-    "mp": 264,
-    "atk": 179,
-    "def": 237,
-    "spd": 164,
-    "mag": 225,
-    "mdef": 243,
+    "hp": 13200,
+    "mp": 560,
+    "atk": 132,
+    "def": 118,
+    "spd": 104,
+    "mag": 205,
+    "mdef": 176,
     "hit": 150,
     "eva": 10,
     "cri": 15,
-    "gold": 20000,
-    "exp": 41600,
+    "gold": 6800,
+    "exp": 11000,
     "actCount": 2,
     "isBoss": true,
     "isRare": false,
     "isEstark": false,
     "acts": [
-      {
-        "id": 1,
-        "rate": 55,
-        "condition": 0
-      },
-      {
-        "id": 404,
-        "rate": 20,
-        "condition": 0
-      },
-      {
-        "id": 405,
-        "rate": 15,
-        "condition": 2
-      },
-      {
-        "id": 406,
-        "rate": 15,
-        "condition": 0
-      },
-      {
-        "id": 407,
-        "rate": 15,
-        "condition": 0
-      },
-      {
-        "id": 412,
-        "rate": 10,
-        "condition": 0
-      },
-      {
-        "id": 500,
-        "rate": 10,
-        "condition": 2
-      },
-      {
-        "id": 57,
-        "rate": 3,
-        "condition": 0
-      },
-      {
-        "id": 81,
-        "rate": 5,
-        "condition": 2
-      }
+        {
+            "id": 1,
+            "rate": 55,
+            "condition": 0
+        },
+        {
+            "id": 404,
+            "rate": 20,
+            "condition": 0
+        },
+        {
+            "id": 405,
+            "rate": 15,
+            "condition": 2
+        },
+        {
+            "id": 406,
+            "rate": 15,
+            "condition": 0
+        },
+        {
+            "id": 407,
+            "rate": 15,
+            "condition": 0
+        },
+        {
+            "id": 412,
+            "rate": 10,
+            "condition": 0
+        },
+        {
+            "id": 500,
+            "rate": 10,
+            "condition": 2
+        },
+        {
+            "id": 57,
+            "rate": 3,
+            "condition": 0
+        },
+        {
+            "id": 81,
+            "rate": 5,
+            "condition": 2
+        }
     ],
     "drops": {
-      "normal": {
-        "id": 5,
-        "rate": 20
-      },
-      "rare": {
-        "id": 106,
-        "rate": 1
-      }
+        "normal": {
+            "id": 5,
+            "rate": 20
+        },
+        "rare": {
+            "id": 106,
+            "rate": 1
+        }
     },
     "elmRes": {},
     "resists": {
-      "InstantDeath": 100
+        "InstantDeath": 100
     },
     "traits": [
-      {
-        "id": 52,
-        "level": 5
-      },
-      {
-        "id": 53,
-        "level": 5
-      },
-      {
-        "id": 19,
-        "level": 5
-      },
-      {
-        "id": 30,
-        "level": 5
-      }
+        {
+            "id": 52,
+            "level": 5
+        },
+        {
+            "id": 53,
+            "level": 5
+        },
+        {
+            "id": 19,
+            "level": 5
+        },
+        {
+            "id": 30,
+            "level": 5
+        }
     ],
-    "archives": []
-  },
+    "archives": [],
+    "image": "assets/monsters/monster_301070.png",
+    "img": "assets/monsters/monster_301070.png"
+},
   {
-    "id": 401071,
-    "name": "聖騎士ヴェルド",
-    "race": "人",
-    "rank": 80,
-    "minF": 1,
-    "hp": 23844,
-    "mp": 350,
-    "atk": 339,
-    "def": 410,
-    "spd": 195,
-    "mag": 378,
-    "mdef": 458,
-    "hit": 112,
-    "eva": 0,
-    "cri": 50,
-    "gold": 140000,
-    "exp": 180000,
-    "actCount": 2,
-    "isBoss": true,
-    "isRare": false,
-    "isEstark": false,
-    "acts": [
-      {
-        "id": 1,
-        "rate": 55,
-        "condition": 0
-      },
-      {
-        "id": 500,
-        "rate": 5,
-        "condition": 2
-      },
-      {
-        "id": 612,
-        "rate": 15,
-        "condition": 0
-      },
-      {
-        "id": 613,
-        "rate": 15,
-        "condition": 0
-      },
-      {
-        "id": 610,
-        "rate": 15,
-        "condition": 0
-      },
-      {
-        "id": 611,
-        "rate": 15,
-        "condition": 0
-      },
-      {
-        "id": 908,
-        "rate": 10,
-        "condition": 2
-      },
-      {
-        "id": 907,
-        "rate": 5,
-        "condition": 2
-      },
-      {
-        "id": 81,
-        "rate": 5,
-        "condition": 2
-      },
-      {
-        "id": 57,
-        "rate": 3,
-        "condition": 0
-      },
-      {
-        "id": 90,
-        "rate": 5,
-        "condition": 2
-      }
-    ],
-    "drops": {
-      "normal": {
-        "id": 106,
-        "rate": 5
-      },
-      "rare": {
-        "id": 107,
-        "rate": 1
-      }
-    },
-    "elmRes": {
-      "火": 20,
-      "水": 20,
-      "風": 20,
-      "雷": 20,
-      "光": 20,
-      "闇": 20,
-      "混沌": 20
-    },
-    "resists": {
-      "Poison": 80,
-      "Shock": 80,
-      "Fear": 100,
-      "Seal": 100,
-      "Debuff": 50,
-      "InstantDeath": 100
-    },
-    "traits": [
-      {
-        "id": 52,
-        "level": 5
-      },
-      {
-        "id": 53,
-        "level": 5
-      },
-      {
-        "id": 19,
-        "level": 5
-      }
-    ],
-    "archives": []
-  },
-  {
-    "id": 401160,
+    "id": 301080,
     "name": "常闇のゼルドラス",
     "race": "魔族",
     "rank": 160,
@@ -14916,77 +14830,79 @@ const FIXED_BOSS_MONSTERS = [
     "isRare": false,
     "isEstark": false,
     "acts": [
-      {
-        "id": 1,
-        "rate": 55,
-        "condition": 0
-      },
-      {
-        "id": 119,
-        "rate": 15,
-        "condition": 0
-      },
-      {
-        "id": 113,
-        "rate": 25,
-        "condition": 1
-      },
-      {
-        "id": 411,
-        "rate": 20,
-        "condition": 2
-      },
-      {
-        "id": 55,
-        "rate": 10,
-        "condition": 2
-      },
-      {
-        "id": 31,
-        "rate": 10,
-        "condition": 0
-      },
-      {
-        "id": 202,
-        "rate": 20,
-        "condition": 0
-      }
+        {
+            "id": 1,
+            "rate": 55,
+            "condition": 0
+        },
+        {
+            "id": 119,
+            "rate": 15,
+            "condition": 0
+        },
+        {
+            "id": 113,
+            "rate": 25,
+            "condition": 1
+        },
+        {
+            "id": 411,
+            "rate": 20,
+            "condition": 2
+        },
+        {
+            "id": 55,
+            "rate": 10,
+            "condition": 2
+        },
+        {
+            "id": 31,
+            "rate": 10,
+            "condition": 0
+        },
+        {
+            "id": 202,
+            "rate": 20,
+            "condition": 0
+        }
     ],
     "drops": {
-      "normal": {
-        "id": null,
-        "rate": 0
-      },
-      "rare": {
-        "id": null,
-        "rate": 0
-      }
+        "normal": {
+            "id": null,
+            "rate": 0
+        },
+        "rare": {
+            "id": null,
+            "rate": 0
+        }
     },
     "elmRes": {},
     "resists": {
-      "Poison": 70,
-      "Shock": 70,
-      "InstantDeath": 95,
-      "Fear": 100
+        "Poison": 70,
+        "Shock": 70,
+        "InstantDeath": 95,
+        "Fear": 100
     },
     "traits": [
-      {
-        "id": 52,
-        "level": 5
-      },
-      {
-        "id": 53,
-        "level": 5
-      },
-      {
-        "id": 19,
-        "level": 5
-      }
+        {
+            "id": 52,
+            "level": 5
+        },
+        {
+            "id": 53,
+            "level": 5
+        },
+        {
+            "id": 19,
+            "level": 5
+        }
     ],
-    "archives": []
-  },
+    "archives": [],
+    "image": "assets/monsters/monster_301080.png",
+    "img": "assets/monsters/monster_301080.png"
+},
   {
-    "id": 401161,
+    "id": 301081,
     "name": "冥騎士ベレト",
     "race": "魔族",
     "rank": 160,
@@ -15008,107 +14924,109 @@ const FIXED_BOSS_MONSTERS = [
     "isRare": false,
     "isEstark": false,
     "acts": [
-      {
-        "id": 1,
-        "rate": 55,
-        "condition": 0
-      },
-      {
-        "id": 500,
-        "rate": 5,
-        "condition": 2
-      },
-      {
-        "id": 612,
-        "rate": 15,
-        "condition": 0
-      },
-      {
-        "id": 613,
-        "rate": 15,
-        "condition": 0
-      },
-      {
-        "id": 610,
-        "rate": 15,
-        "condition": 0
-      },
-      {
-        "id": 611,
-        "rate": 15,
-        "condition": 0
-      },
-      {
-        "id": 908,
-        "rate": 10,
-        "condition": 2
-      },
-      {
-        "id": 907,
-        "rate": 5,
-        "condition": 2
-      },
-      {
-        "id": 81,
-        "rate": 5,
-        "condition": 2
-      },
-      {
-        "id": 57,
-        "rate": 3,
-        "condition": 0
-      },
-      {
-        "id": 90,
-        "rate": 5,
-        "condition": 2
-      }
+        {
+            "id": 1,
+            "rate": 55,
+            "condition": 0
+        },
+        {
+            "id": 500,
+            "rate": 5,
+            "condition": 2
+        },
+        {
+            "id": 612,
+            "rate": 15,
+            "condition": 0
+        },
+        {
+            "id": 613,
+            "rate": 15,
+            "condition": 0
+        },
+        {
+            "id": 610,
+            "rate": 15,
+            "condition": 0
+        },
+        {
+            "id": 611,
+            "rate": 15,
+            "condition": 0
+        },
+        {
+            "id": 908,
+            "rate": 10,
+            "condition": 2
+        },
+        {
+            "id": 907,
+            "rate": 5,
+            "condition": 2
+        },
+        {
+            "id": 81,
+            "rate": 5,
+            "condition": 2
+        },
+        {
+            "id": 57,
+            "rate": 3,
+            "condition": 0
+        },
+        {
+            "id": 90,
+            "rate": 5,
+            "condition": 2
+        }
     ],
     "drops": {
-      "normal": {
-        "id": 106,
-        "rate": 5
-      },
-      "rare": {
-        "id": 107,
-        "rate": 1
-      }
+        "normal": {
+            "id": 106,
+            "rate": 5
+        },
+        "rare": {
+            "id": 107,
+            "rate": 1
+        }
     },
     "elmRes": {
-      "火": 20,
-      "水": 20,
-      "風": 20,
-      "雷": 20,
-      "光": 20,
-      "闇": 20,
-      "混沌": 20
+        "火": 20,
+        "水": 20,
+        "風": 20,
+        "雷": 20,
+        "光": 20,
+        "闇": 20,
+        "混沌": 20
     },
     "resists": {
-      "Poison": 80,
-      "Shock": 80,
-      "Fear": 100,
-      "Seal": 100,
-      "Debuff": 50,
-      "InstantDeath": 100
+        "Poison": 80,
+        "Shock": 80,
+        "Fear": 100,
+        "Seal": 100,
+        "Debuff": 50,
+        "InstantDeath": 100
     },
     "traits": [
-      {
-        "id": 52,
-        "level": 5
-      },
-      {
-        "id": 53,
-        "level": 5
-      },
-      {
-        "id": 19,
-        "level": 5
-      }
+        {
+            "id": 52,
+            "level": 5
+        },
+        {
+            "id": 53,
+            "level": 5
+        },
+        {
+            "id": 19,
+            "level": 5
+        }
     ],
-    "archives": []
-  },
+    "archives": [],
+    "image": "assets/monsters/monster_301081.png",
+    "img": "assets/monsters/monster_301081.png"
+},
   {
-    "id": 401162,
+    "id": 301082,
     "name": "風詠のエルメナス",
     "race": "魔族",
     "rank": 160,
@@ -15130,196 +15048,200 @@ const FIXED_BOSS_MONSTERS = [
     "isRare": false,
     "isEstark": false,
     "acts": [
-      {
-        "id": 1,
-        "rate": 55,
-        "condition": 0
-      },
-      {
-        "id": 407,
-        "rate": 13,
-        "condition": 1
-      },
-      {
-        "id": 406,
-        "rate": 13,
-        "condition": 0
-      },
-      {
-        "id": 412,
-        "rate": 14,
-        "condition": 0
-      },
-      {
-        "id": 922,
-        "rate": 15,
-        "condition": 2
-      },
-      {
-        "id": 24,
-        "rate": 15,
-        "condition": 2
-      },
-      {
-        "id": 403,
-        "rate": 10,
-        "condition": 2
-      },
-      {
-        "id": 56,
-        "rate": 8,
-        "condition": 3
-      }
+        {
+            "id": 1,
+            "rate": 55,
+            "condition": 0
+        },
+        {
+            "id": 407,
+            "rate": 13,
+            "condition": 1
+        },
+        {
+            "id": 406,
+            "rate": 13,
+            "condition": 0
+        },
+        {
+            "id": 412,
+            "rate": 14,
+            "condition": 0
+        },
+        {
+            "id": 922,
+            "rate": 15,
+            "condition": 2
+        },
+        {
+            "id": 24,
+            "rate": 15,
+            "condition": 2
+        },
+        {
+            "id": 403,
+            "rate": 10,
+            "condition": 2
+        },
+        {
+            "id": 56,
+            "rate": 8,
+            "condition": 3
+        }
     ],
     "drops": {
-      "normal": {
-        "id": null,
-        "rate": 0
-      },
-      "rare": {
-        "id": null,
-        "rate": 0
-      }
+        "normal": {
+            "id": null,
+            "rate": 0
+        },
+        "rare": {
+            "id": null,
+            "rate": 0
+        }
     },
     "elmRes": {},
     "resists": {
-      "Poison": 70,
-      "Shock": 70,
-      "InstantDeath": 95,
-      "Seal": 100
+        "Poison": 70,
+        "Shock": 70,
+        "InstantDeath": 95,
+        "Seal": 100
     },
     "traits": [
-      {
-        "id": 52,
-        "level": 5
-      },
-      {
-        "id": 53,
-        "level": 5
-      },
-      {
-        "id": 19,
-        "level": 5
-      }
+        {
+            "id": 52,
+            "level": 5
+        },
+        {
+            "id": 53,
+            "level": 5
+        },
+        {
+            "id": 19,
+            "level": 5
+        }
     ],
-    "archives": []
-  },
+    "archives": [],
+    "image": "assets/monsters/monster_301082.png",
+    "img": "assets/monsters/monster_301082.png"
+},
   {
     "id": 301100,
     "name": "魔王ゼノン",
     "race": "魔族",
-    "rank": 100,
+    "rank": 75,
     "minF": 1,
-    "hp": 13272,
-    "mp": 295,
-    "atk": 239,
-    "def": 290,
-    "spd": 170,
-    "mag": 239,
-    "mdef": 290,
+    "hp": 19800,
+    "mp": 720,
+    "atk": 218,
+    "def": 176,
+    "spd": 142,
+    "mag": 208,
+    "mdef": 176,
     "hit": 150,
     "eva": 10,
     "cri": 15,
-    "gold": 41600,
-    "exp": 90000,
+    "gold": 12000,
+    "exp": 18000,
     "actCount": 3,
     "isBoss": true,
     "isRare": false,
     "isEstark": false,
     "acts": [
-      {
-        "id": 1,
-        "rate": 55,
-        "condition": 0
-      },
-      {
-        "id": 119,
-        "rate": 15,
-        "condition": 0
-      },
-      {
-        "id": 202,
-        "rate": 20,
-        "condition": 0
-      },
-      {
-        "id": 412,
-        "rate": 15,
-        "condition": 0
-      },
-      {
-        "id": 406,
-        "rate": 20,
-        "condition": 0
-      },
-      {
-        "id": 403,
-        "rate": 10,
-        "condition": 2
-      },
-      {
-        "id": 411,
-        "rate": 15,
-        "condition": 2
-      },
-      {
-        "id": 57,
-        "rate": 3,
-        "condition": 0
-      },
-      {
-        "id": 617,
-        "rate": 10,
-        "condition": 0
-      }
+        {
+            "id": 1,
+            "rate": 55,
+            "condition": 0
+        },
+        {
+            "id": 119,
+            "rate": 15,
+            "condition": 0
+        },
+        {
+            "id": 202,
+            "rate": 20,
+            "condition": 0
+        },
+        {
+            "id": 412,
+            "rate": 15,
+            "condition": 0
+        },
+        {
+            "id": 406,
+            "rate": 20,
+            "condition": 0
+        },
+        {
+            "id": 403,
+            "rate": 10,
+            "condition": 2
+        },
+        {
+            "id": 411,
+            "rate": 15,
+            "condition": 2
+        },
+        {
+            "id": 57,
+            "rate": 3,
+            "condition": 0
+        },
+        {
+            "id": 617,
+            "rate": 10,
+            "condition": 0
+        }
     ],
     "drops": {
-      "normal": {
-        "id": 106,
-        "rate": 5
-      },
-      "rare": {
-        "id": 107,
-        "rate": 1
-      }
+        "normal": {
+            "id": 106,
+            "rate": 5
+        },
+        "rare": {
+            "id": 107,
+            "rate": 1
+        }
     },
     "elmRes": {
-      "火": 20,
-      "水": 20,
-      "風": 20,
-      "雷": 20,
-      "光": 20,
-      "闇": 20,
-      "混沌": 20
+        "火": 20,
+        "水": 20,
+        "風": 20,
+        "雷": 20,
+        "光": 20,
+        "闇": 20,
+        "混沌": 20
     },
     "resists": {
-      "Poison": 70,
-      "Shock": 70,
-      "Fear": 100,
-      "Seal": 100,
-      "Debuff": 0,
-      "InstantDeath": 100
+        "Poison": 70,
+        "Shock": 70,
+        "Fear": 100,
+        "Seal": 100,
+        "Debuff": 0,
+        "InstantDeath": 100
     },
     "traits": [
-      {
-        "id": 52,
-        "level": 5
-      },
-      {
-        "id": 53,
-        "level": 5
-      },
-      {
-        "id": 18,
-        "level": 5
-      },
-      {
-        "id": 19,
-        "level": 5
-      }
+        {
+            "id": 52,
+            "level": 5
+        },
+        {
+            "id": 53,
+            "level": 5
+        },
+        {
+            "id": 18,
+            "level": 5
+        },
+        {
+            "id": 19,
+            "level": 5
+        }
     ],
-    "archives": []
-  },
+    "archives": [],
+    "image": "assets/monsters/monster_301100.png",
+    "img": "assets/monsters/monster_301100.png"
+},
   {
     "id": 502049,
     "name": "魔神シヴァ",

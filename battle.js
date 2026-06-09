@@ -184,7 +184,7 @@ const Battle = {
         const fixedId = (App.data.battle && App.data.battle.fixedBossId) ? App.data.battle.fixedBossId : null;
         // ★追加: StoryManager由来のeventIdを保持
         const eventId = (App.data.battle && App.data.battle.eventId) ? App.data.battle.eventId : null;
-        const keyReward = App.data.battle?.keyReward || null;
+        const keyReward = App.data.battle?.keyReward || App.data.battle?.fixedKeyReward || null;
 
         if (App.data.battle && App.data.battle.active && App.data.battle.enemies?.length > 0) {
             //Battle.log("戦闘に復帰した！");
@@ -219,6 +219,9 @@ const Battle = {
             Battle.isPreemptive = App.data.battle?.isPreemptive || false;
 
             App.data.battle = { 
+                // StoryManager / Dungeon が戦闘開始前に積んだ勝敗後イベント情報を落とさない
+                ...(App.data.battle || {}),
+
                 active: true, 
                 isBossBattle: isBoss || isSpecialBoss, 
                 isSpecialBoss: isSpecialBoss, 
@@ -495,9 +498,26 @@ const Battle = {
         const normalCount = 1 + Math.floor(Math.random() * 4);
         const deepBossCount = 1 + Math.floor(Math.random() * 3);
         const suffix = (index, total) => total > 1 ? String.fromCharCode(65 + index) : '';
+        const bossStatMultiplier = Math.max(1, Number(battleData.bossStatMultiplier || battleData.bossScale || 1) || 1);
         const pushBase = (base, index, total, options = {}) => {
             const name = (base.name || '\u4e0d\u660e\u306a\u9b54\u7269') + suffix(index, total);
             const m = Battle.createMonsterFromBase(base, { ...options, name });
+            if (m && Number(options.storyBossStatMultiplier || 1) > 1) {
+                const mult = Number(options.storyBossStatMultiplier || 1);
+                m.hp = Math.max(1, Math.floor(Number(m.hp || 1) * mult));
+                m.baseMaxHp = Math.max(1, Math.floor(Number(m.baseMaxHp || m.hp || 1) * mult));
+                m.mp = Math.max(0, Math.floor(Number(m.mp || 0) * mult));
+                m.baseMaxMp = Math.max(0, Math.floor(Number(m.baseMaxMp || m.mp || 0) * mult));
+                if (m.baseStats) {
+                    ['atk', 'def', 'spd', 'mag', 'mdef'].forEach(key => {
+                        if (m.baseStats[key] !== undefined) m.baseStats[key] = Math.max(0, Math.floor(Number(m.baseStats[key] || 0) * mult));
+                    });
+                }
+                ['atk', 'def', 'spd', 'mag', 'mdef'].forEach(key => {
+                    if (m[key] !== undefined) m[key] = Math.max(0, Math.floor(Number(m[key] || 0) * mult));
+                });
+                m.storyBossStatMultiplier = mult;
+            }
             if (m) newEnemies.push(m);
         };
 
@@ -559,6 +579,7 @@ const Battle = {
                 bases.forEach((base, i) => pushBase(base, i, bases.length, {
                     isBossBattle: true,
                     forceSpecialBoss: Battle.isSpecialBossBase(base),
+                    storyBossStatMultiplier: bossStatMultiplier,
                 }));
                 return newEnemies;
             }
@@ -769,7 +790,7 @@ const Battle = {
 
         // スキルの追加
         const skillCount = isBoss ? 4 : 2;
-        const candidates = DB.SKILLS.filter(s => s.mp >= 500 && ['物理', '魔法', '特殊'].includes(s.type));
+        const candidates = DB.SKILLS.filter(s => s.mp >= 150 && ['物理', '魔法', '特殊'].includes(s.type));
         
         m.acts = JSON.parse(JSON.stringify(base.acts || [{id:1, rate:100}]));
         for(let i=0; i<skillCount; i++) {
@@ -3115,7 +3136,11 @@ findNextActor: () => {
         const isS = App.data.battle.isSpecialBoss; 
         const fId = App.data.battle.fixedBossId; 
         const eId = App.data.battle.eventId; // ★eventIdを退避
-        const keyReward = App.data.battle.keyReward || null;
+        const storyWinEventId = App.data.battle.storyWinEventId || null;
+        const storyLossEventId = App.data.battle.storyLossEventId || null;
+        const fixedStoryEventId = App.data.battle.fixedStoryEventId || null;
+        const keyReward = App.data.battle.keyReward || App.data.battle.fixedKeyReward || null;
+        const bossStatMultiplier = App.data.battle.bossStatMultiplier || App.data.battle.bossScale || null;
         
         App.data.battle.enemies = Battle.enemies.filter(e => !e.isFled).map(e => ({ 
             baseId: e.baseId || e.id, hp: e.hp, maxHp: e.baseMaxHp, name: e.name, rank: e.rank, generatedFloor: e.generatedFloor, isBoss: e.isBoss, isRare: e.isRare, isSpecialBoss: e.isSpecialBoss, isEstark: e.isEstark, battleStatus: e.battleStatus 
@@ -3127,6 +3152,11 @@ findNextActor: () => {
         App.data.battle.fixedBossId = fId; 
         App.data.battle.eventId = eId; // ★eventIdを復元
         App.data.battle.keyReward = keyReward;
+        if (keyReward) App.data.battle.fixedKeyReward = keyReward;
+        if (storyWinEventId) App.data.battle.storyWinEventId = storyWinEventId;
+        if (storyLossEventId) App.data.battle.storyLossEventId = storyLossEventId;
+        if (fixedStoryEventId) App.data.battle.fixedStoryEventId = fixedStoryEventId;
+        if (bossStatMultiplier) App.data.battle.bossStatMultiplier = bossStatMultiplier;
         
         Battle.party.forEach(p => { 
             const d = App.getChar(p.uid); 
@@ -3616,12 +3646,17 @@ findNextActor: () => {
         const isEstark = App.data.battle && (App.data.battle.isSpecialBoss || App.data.battle.isEstark);
         const isBossBattle = App.data.battle && App.data.battle.isBossBattle;
         const eventId = (App.data.battle && App.data.battle.eventId) ? App.data.battle.eventId : null;
-        const keyReward = App.data.battle?.keyReward || null;
+        const storyWinEventId = App.data.battle?.storyWinEventId || null;
+        const keyReward = App.data.battle?.keyReward || App.data.battle?.fixedKeyReward || null;
 		
 		// --- [追加] 演出前にイベントを予約し、セーブデータに含める ---
 		if (isBossBattle && eventId) {
 			if (!App.data.progress) App.data.progress = {};
-			App.data.progress.pendingBattleWinEventId = eventId;
+			if (storyWinEventId) {
+				App.data.progress.pendingEventId = storyWinEventId;
+			} else {
+				App.data.progress.pendingBattleWinEventId = eventId;
+			}
 		}
 		
 		// ★ドロップ品質を決定する基準階層(floor)の計算
@@ -3855,10 +3890,25 @@ findNextActor: () => {
 			// 注：StoryManager.onBattleWin は会話を伴うため演出の最後に行いますが、
 			// 討伐フラグ自体はこの上の App.save() で確実に永続化されます。
 		}
-        if (keyReward && typeof Dungeon !== 'undefined' && typeof Dungeon.completeKeyGuardianReward === 'function') {
-            Dungeon.completeKeyGuardianReward(keyReward);
-            if (App.data.battle) App.data.battle.keyReward = null;
-        }
+		const keyRewards = keyReward
+			? (Array.isArray(keyReward.colors)
+				? keyReward.colors.filter(Boolean).map(color => ({
+					...keyReward,
+					color: color
+				}))
+				: [keyReward])
+			: [];
+
+		if (keyRewards.length > 0 && typeof Dungeon !== 'undefined' && typeof Dungeon.completeKeyGuardianReward === 'function') {
+			keyRewards.forEach(reward => {
+				Dungeon.completeKeyGuardianReward(reward);
+			});
+
+			if (App.data.battle) {
+				App.data.battle.keyReward = null;
+				App.data.battle.fixedKeyReward = null;
+			}
+		}
 
 		// --- [4] セーブの実行（ここで報酬と世界状態を確定・永続化） ---
 		App.save(); 
@@ -4059,6 +4109,7 @@ findNextActor: () => {
 		
 		// ★追加: 最初の戦闘での特別救済判定
         const eventId = (App.data.battle && App.data.battle.eventId) ? App.data.battle.eventId : null;
+        const storyLossEventId = App.data.battle?.storyLossEventId || null;
         if (eventId === 'game_start' || eventId === 'game_start_retry') {
             // 一時LBが残っていた場合はいったん必ず解除し、再試行イベント側で再付与する。
             if (typeof App.clearTemporaryStoryPower === 'function') {
@@ -4073,6 +4124,14 @@ findNextActor: () => {
 
             App.save();
             Battle.endBattle(false); // 全滅扱いにせず、フィールドに戻す
+            return;
+        }
+
+        if (storyLossEventId) {
+            if (!App.data.progress) App.data.progress = {};
+            App.data.progress.pendingEventId = storyLossEventId;
+            App.save();
+            Battle.endBattle(false);
             return;
         }
 		

@@ -1350,7 +1350,18 @@ const App = {
     addStoryAlly: (charId) => {
         const master = window.CHARACTERS_DATA.find(c => c.id === charId);
         if (!master) return;
-        if (App.data.characters.some(c => c.charId === charId)) return;
+        const existing = App.data.characters.find(c => c.charId === charId);
+        if (existing) {
+            if (Array.isArray(App.data.party) && !App.data.party.includes(existing.uid)) {
+                const emptyIndex = App.data.party.findIndex(uid => !uid);
+                if (emptyIndex >= 0) {
+                    App.data.party[emptyIndex] = existing.uid;
+                    App.save();
+                    App.log(`【仲間加入】${existing.name}がパーティに加わった！`);
+                }
+            }
+            return;
+        }
 
         // 1. 必要な情報だけを抽出した保存用オブジェクトを作成
         const saveAlly = {
@@ -1393,8 +1404,18 @@ const App = {
         }
 
         App.data.characters.push(saveAlly);
+        let joinedParty = false;
+        if (Array.isArray(App.data.party)) {
+            const emptyIndex = App.data.party.findIndex(uid => !uid);
+            if (emptyIndex >= 0) {
+                App.data.party[emptyIndex] = saveAlly.uid;
+                joinedParty = true;
+            }
+        }
         App.save();
-        App.log(`【仲間加入】${saveAlly.name}がパーティに加わった！`);
+        App.log(joinedParty
+            ? `【仲間加入】${saveAlly.name}がパーティに加わった！`
+            : `【仲間加入】${saveAlly.name}が控えに加わった！`);
     },
 
     limitBreakConfig: {
@@ -1782,7 +1803,7 @@ const App = {
         App.pendingAction = callback;
     },
 
-    setFeatureAction: (label, featureKey, callback, lockedLabel = '???') => {
+    setFeatureAction: (label, featureKey, callback, lockedLabel = '封印中') => {
         if (App.isFeatureUnlocked(featureKey)) {
             App.setAction(label, callback);
         } else {
@@ -3272,12 +3293,44 @@ load: () => {
 		return { isAmbushed, isPreemptive };
 	},
 
-	playEncounterTransition: (callback) => {
-		const layer = document.getElementById('encounter-transition');
+	playEncounterTransition: (callback, options = {}) => {
+		let layer = document.getElementById('encounter-transition');
+		const isEventBattle = !!options.eventBattle;
 
 		if (!layer) {
-			setTimeout(callback, 500);
-			return;
+			layer = document.createElement('div');
+			layer.id = 'encounter-transition';
+			layer.setAttribute('aria-hidden', 'true');
+			layer.innerHTML = `
+				<div class="encounter-crack crack-1"></div>
+				<div class="encounter-crack crack-2"></div>
+				<div class="encounter-crack crack-3"></div>
+				<div class="encounter-crack crack-4"></div>
+				<div class="encounter-flash-core"></div>
+			`;
+			(document.getElementById('game-container') || document.body).appendChild(layer);
+		}
+
+		const clearEventExtras = () => {
+			layer.classList.remove('is-event-battle');
+			layer.style.filter = '';
+			layer.querySelectorAll('.encounter-event-extra').forEach(el => el.remove());
+		};
+
+		clearEventExtras();
+
+		if (isEventBattle) {
+			layer.classList.add('is-event-battle');
+			layer.style.filter = 'contrast(1.35) brightness(1.15) saturate(1.2)';
+			const angles = [-34, 48, 104, 168, 236, 296];
+			angles.forEach((angle, i) => {
+				const crack = document.createElement('div');
+				crack.className = 'encounter-crack encounter-event-extra';
+				crack.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
+				crack.style.height = `${190 + (i % 3) * 28}px`;
+				crack.style.width = i % 2 === 0 ? '3px' : '2px';
+				layer.appendChild(crack);
+			});
 		}
 
 		layer.classList.remove('is-active');
@@ -3289,8 +3342,9 @@ load: () => {
 
 			setTimeout(() => {
 				layer.classList.remove('is-active');
-			}, 300);
-		}, 680);
+				clearEventExtras();
+			}, isEventBattle ? 420 : 300);
+		}, isEventBattle ? 820 : 680);
 	},
 
 	tryRandomEncounter: (rate = null) => {
@@ -3522,7 +3576,12 @@ const Field = {
                 if(typeof Dungeon !== 'undefined') Dungeon.floor = App.data.progress.floor || fixedFloor.floor || 1;
             }
             else if (typeof FIXED_MAPS !== 'undefined' && FIXED_MAPS[areaKey]) {
-                Field.currentMapData = FIXED_MAPS[areaKey];
+                Field.currentMapData = {
+                    ...FIXED_MAPS[areaKey],
+                    isFixed: true,
+                    isDungeon: false,
+                    areaKey
+                };
             }
             else if (areaKey === 'ABYSS') {
                 if (App.data.dungeon && App.data.dungeon.map) {
@@ -3587,7 +3646,12 @@ const Field = {
         };
         App.data.transportMode = null;
         App.data.location.area = targetAreaKey;
-        Field.currentMapData = areaDef;
+        Field.currentMapData = {
+            ...areaDef,
+            isFixed: true,
+            isDungeon: false,
+            areaKey: targetAreaKey
+        };
         Field.x = areaDef.entryPoint ? areaDef.entryPoint.x : Math.floor(areaDef.width / 2);
         Field.y = areaDef.entryPoint ? areaDef.entryPoint.y : areaDef.height - 3;
         App.data.location.x = Field.x;
@@ -3750,19 +3814,39 @@ const Field = {
 
         ctx.fillStyle = '#090502';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
+        const revealLimitedRandomMap = !!(Field.currentMapData?.isDungeon && !Field.currentMapData?.isFixed
+            && typeof Dungeon !== 'undefined'
+            && typeof Dungeon.isMazeFloor === 'function'
+            && Dungeon.isMazeFloor());
 
         for (let y = 0; y < mapH; y++) {
             for (let x = 0; x < mapW; x++) {
                 let tile = Field.getRenderedTileForDraw(x, y, mapW, mapH, areaKey);
-                if (Field.currentMapData && typeof Dungeon !== 'undefined' && typeof Dungeon.isMazeFloor === 'function' && Dungeon.isMazeFloor()) {
+                if (revealLimitedRandomMap) {
                     if (typeof Dungeon.isVisited === 'function' && !Dungeon.isVisited(x, y) && !(Math.abs(x - Field.x) <= 4 && Math.abs(y - Field.y) <= 4)) {
                         tile = 'W';
                     }
                 }
-                const cfg = Field.getTileConfigForDraw ? Field.getTileConfigForDraw(tile, x, y) : Field.getTileConfig(tile);
+                const parts = Field.getMapDrawParts ? Field.getMapDrawParts(tile, x, y) : { baseTile: tile, overlayConfig: null };
+                const cfg = Field.getTileConfigForDraw ? Field.getTileConfigForDraw(parts.baseTile, x, y) : Field.getTileConfig(parts.baseTile);
+                const drawX = offsetX + x * size;
+                const drawY = offsetY + y * size;
                 ctx.fillStyle = cfg.color || '#000';
-                ctx.fillRect(offsetX + x * size, offsetY + y * size, Math.ceil(size), Math.ceil(size));
+                ctx.fillRect(drawX, drawY, Math.ceil(size), Math.ceil(size));
+                if (parts.overlayConfig && Field.drawMapOverlayMarker) {
+                    Field.drawMapOverlayMarker(ctx, parts.overlayConfig, drawX, drawY, size);
+                }
+                const markerColor = Field.getMiniMapMarkerColor ? Field.getMiniMapMarkerColor(tile, x, y) : null;
+                if (markerColor && Field.drawMiniMapTileMarker) {
+                    Field.drawMiniMapTileMarker(ctx, markerColor, drawX, drawY, size);
+                }
             }
+        }
+
+        if (Field.currentMapData?.isFixed && Field.getFixedHealSpringsForCurrentFloor && Field.drawMiniMapTileMarker) {
+            Field.getFixedHealSpringsForCurrentFloor().forEach(s => {
+                Field.drawMiniMapTileMarker(ctx, '#80ffb0', offsetX + Number(s.x) * size, offsetY + Number(s.y) * size, size);
+            });
         }
 
         ctx.fillStyle = '#fff';
@@ -3863,6 +3947,101 @@ const Field = {
         return 'T';
     },
 
+    getMapDrawParts: (tileSign, tileX = null, tileY = null) => {
+        const upper = String(tileSign || 'W').toUpperCase();
+        const fixedOverlayConfig = Field.getFixedTileOverlayConfig ? Field.getFixedTileOverlayConfig(upper, tileX, tileY) : null;
+
+        // ワールドマップ上の施設画像は、タイル記号が W でも G でも同じように上へ重ねる。
+        // これにより、海底神殿の座標タイルを G にしても神殿チップを表示できる。
+        const worldOverlayConfig = (!Field.currentMapData && tileX !== null && tileY !== null && typeof MapRegistry !== 'undefined' && MapRegistry.getWorldTileConfig)
+            ? MapRegistry.getWorldTileConfig(tileX, tileY)
+            : null;
+
+        const overlayConfig = fixedOverlayConfig || worldOverlayConfig;
+        const baseTile = fixedOverlayConfig && Field.getFixedTileOverlayBaseTile
+            ? Field.getFixedTileOverlayBaseTile(upper)
+            : upper;
+        return {
+            upper,
+            baseTile: baseTile || upper,
+            overlayConfig
+        };
+    },
+
+
+    getMiniMapMarkerColor: (tileSign, tileX = null, tileY = null) => {
+        const upper = String(tileSign || '').toUpperCase();
+        if (!upper || upper === 'W' || upper === 'T' || upper === 'G' || upper === 'L' || upper === 'M') return null;
+
+        if (Field.currentMapData?.isFixed && upper === 'B' && tileX !== null && tileY !== null && typeof MapRegistry !== 'undefined' && MapRegistry.findFixedBoss) {
+            const bossDef = MapRegistry.findFixedBoss(Field.currentMapData, tileX, tileY);
+            const flags = App.data?.progress?.flags || {};
+            if (bossDef?.requiredFlag && !flags[bossDef.requiredFlag]) return null;
+        }
+
+        const colors = {
+            C: '#d99a55',
+            R: '#ff4fa3',
+            S: '#f6d46a',
+            D: '#f6d46a',
+            U: '#f6d46a',
+            B: '#ff4d4d',
+            X: '#d94a4a',
+            Y: '#4aa0e6',
+            Z: '#e0b84a',
+            Q: '#d94a4a',
+            N: '#4aa0e6',
+            O: '#e0b84a'
+        };
+        return colors[upper] || null;
+    },
+
+    drawMiniMapTileMarker: (ctx, color, x, y, size) => {
+        if (!ctx || !color || size <= 0) return;
+        const marker = Math.max(2, Math.ceil(size * 0.72));
+        const markerX = Math.floor(x + (size - marker) / 2);
+        const markerY = Math.floor(y + (size - marker) / 2);
+        ctx.save();
+        ctx.globalAlpha = 0.95;
+        ctx.fillStyle = color;
+        if (size <= 4) {
+            ctx.fillRect(markerX, markerY, marker, marker);
+        } else {
+            ctx.beginPath();
+            ctx.arc(x + size / 2, y + size / 2, Math.max(1.5, marker / 2), 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = 0.45;
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(markerX, markerY, Math.max(1, Math.floor(marker * 0.34)), Math.max(1, Math.floor(marker * 0.28)));
+        }
+        ctx.restore();
+    },
+
+    getFixedHealSpringsForCurrentFloor: () => {
+        if (!Field.currentMapData?.isFixed || !Array.isArray(Field.currentMapData.healSprings)) return [];
+        return Field.currentMapData.healSprings.filter(s => s && Number.isFinite(Number(s.x)) && Number.isFinite(Number(s.y)));
+    },
+
+    drawMapOverlayMarker: (ctx, overlayConfig, x, y, size) => {
+        if (!ctx || !overlayConfig || size <= 0) return;
+        const marker = Math.max(1, Math.floor(size * 0.62));
+        const markerX = Math.floor(x + (size - marker) / 2);
+        const markerY = Math.floor(y + (size - marker) / 2);
+        ctx.save();
+        ctx.fillStyle = overlayConfig.color || '#fff';
+        if (size < 5) {
+            ctx.fillRect(markerX, markerY, Math.max(1, marker), Math.max(1, marker));
+        } else {
+            ctx.beginPath();
+            ctx.arc(x + size / 2, y + size / 2, Math.max(1, marker / 2), 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = 0.35;
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(markerX, markerY, Math.max(1, Math.floor(marker * 0.35)), Math.max(1, Math.floor(marker * 0.28)));
+        }
+        ctx.restore();
+    },
+
     getRenderedTileForDraw: (tileX, tileY, mapW, mapH, areaKey) => {
         let nextTile = 'W';
         if (Field.currentMapData) {
@@ -3874,6 +4053,11 @@ const Field = {
                     const progressKey = Field.getCurrentProgressMapKey();
                     if ((nextTile === 'C' || nextTile === 'R') && App.data.progress.openedChests?.[progressKey]?.includes(posKey)) nextTile = 'G';
                     if (nextTile === 'B' && App.data.progress.defeatedBosses?.[progressKey]?.includes(posKey)) nextTile = 'G';
+                    if (nextTile === 'B' && typeof MapRegistry !== 'undefined' && MapRegistry.findFixedBoss) {
+                        const bossDef = MapRegistry.findFixedBoss(Field.currentMapData, tileX, tileY);
+                        const flags = App.data?.progress?.flags || {};
+                        if (bossDef?.requiredFlag && !flags[bossDef.requiredFlag]) nextTile = bossDef.inactiveTile || 'G';
+                    }
                 }
             }
         } else {
@@ -3908,6 +4092,11 @@ const Field = {
                 const progressKey = Field.getCurrentProgressMapKey();
                 if ((tile === 'C' || tile === 'R') && App.data.progress.openedChests?.[progressKey]?.includes(posKey)) tile = 'G';
                 if (tile === 'B' && App.data.progress.defeatedBosses?.[progressKey]?.includes(posKey)) tile = 'G';
+                if (tile === 'B' && typeof MapRegistry !== 'undefined' && MapRegistry.findFixedBoss) {
+                    const bossDef = MapRegistry.findFixedBoss(Field.currentMapData, x, y);
+                    const flags = App.data?.progress?.flags || {};
+                    if (bossDef?.requiredFlag && !flags[bossDef.requiredFlag]) tile = bossDef.inactiveTile || 'G';
+                }
             }
 
             return { tile, x, y, areaKey, isWorld: false };
@@ -3926,6 +4115,21 @@ const Field = {
     executeMapAction: (action) => {
         if (!action) return;
 
+        const resolveProgressEvent = (entries = []) => {
+            if (!Array.isArray(entries) || typeof StoryManager === 'undefined') return null;
+            const step = Number(App.data?.progress?.storyStep || 0);
+            const sub = Number(App.data?.progress?.subStep || 0);
+            const match = entries.find(entry => {
+                if (!entry || !entry.eventId) return false;
+                const stepMin = entry.stepMin !== undefined ? Number(entry.stepMin) : -Infinity;
+                const stepMax = entry.stepMax !== undefined ? Number(entry.stepMax) : Infinity;
+                const subMin = entry.subMin !== undefined ? Number(entry.subMin) : -Infinity;
+                const subMax = entry.subMax !== undefined ? Number(entry.subMax) : Infinity;
+                return step >= stepMin && step <= stepMax && sub >= subMin && sub <= subMax;
+            }) || entries.find(entry => entry?.default && entry.eventId) || null;
+            return match?.eventId || null;
+        };
+
         // map.js の mapActions で requiredItemId を指定すると、所持時のみ実行する。
         // 例: 朽ちた祠の石碑は「災厄の楔」所持時だけ隠しボス戦へ進む。
         if (action.requiredItemId !== undefined && typeof App.hasItem === 'function' && !App.hasItem(action.requiredItemId)) {
@@ -3934,7 +4138,25 @@ const Field = {
             return;
         }
 
+        if (action.requiredStoryStep !== undefined) {
+            const step = Number(App.data?.progress?.storyStep || 0);
+            const sub = Number(App.data?.progress?.subStep || 0);
+            const requiredStep = Number(action.requiredStoryStep);
+            const requiredSub = Number(action.requiredSubStep || 0);
+            const reached = step > requiredStep || (step === requiredStep && sub >= requiredSub);
+            if (!reached) {
+                App.log(action.requiredStoryMissingText || '今はまだ先へ進む理由が見つからない。');
+                return;
+            }
+        }
+
         if (action.log) App.log(action.log);
+
+        const progressEventId = resolveProgressEvent(action.events);
+        if (progressEventId && typeof StoryManager !== 'undefined') {
+            StoryManager.executeEvent(progressEventId);
+            return;
+        }
 
         if (action.type === 'fixedDungeon' && action.target && typeof Dungeon !== 'undefined' && Dungeon.startFixed) {
             Dungeon.startFixed(action.target);
@@ -4024,7 +4246,7 @@ const Field = {
         const setStoryActionIfNeeded = (fallbackLabel = null) => {
             const trigger = findStoryTriggerAt();
             if (!trigger) return false;
-            const actionLabel = trigger.label || fallbackLabel || (tile === 'B' ? '戦う' : (tile === 'V' || tile === 'H' ? '話す' : '調べる'));
+            const actionLabel = trigger.label || fallbackLabel || (tile === 'B' ? '戦う' : (['V', 'H', 'A', 'J', 'R'].includes(tile) ? '話す' : '調べる'));
             App.setAction(actionLabel, () => StoryManager.executeEvent(trigger.eventId));
             return true;
         };
@@ -4087,14 +4309,14 @@ const Field = {
                 if (Dungeon.prepareFixedTileAction(tile, x, y, { silent })) return true;
             }
 
-            if (tile === 'V' || tile === 'H' || tile === 'B') {
+            if (tile === 'V' || tile === 'H' || tile === 'A' || tile === 'J' || tile === 'R' || tile === 'B') {
                 if (typeof StoryManager !== 'undefined' && Array.isArray(StoryManager.triggers)) {
                     logIfNeeded('誰かいるようだ。');
                 }
             }
 
-            if (tile === 'B' && Field.currentMapData.isFixed && Field.currentMapData.isDungeon && !App.pendingAction && typeof Dungeon !== 'undefined' && typeof Dungeon.startFixedBoss === 'function') {
-                App.setAction('ボスと戦う', () => Dungeon.startFixedBoss(x, y));
+            if (tile === 'B' && Field.currentMapData.isFixed && Field.currentMapData.isDungeon && !App.pendingAction && typeof Dungeon !== 'undefined' && typeof Dungeon.prepareFixedTileAction === 'function') {
+                Dungeon.prepareFixedTileAction(tile, x, y, { silent });
             }
 
             return !!App.pendingAction;
@@ -4103,9 +4325,13 @@ const Field = {
         if (typeof App.isFlying === 'function' && App.isFlying()) return false;
 
         let targetAreaKey = null;
+        let targetEntryKey = null;
+        let targetEntryLabel = null;
         if (typeof MapRegistry !== 'undefined' && typeof MapRegistry.getWorldAreaAt === 'function') {
             const entry = MapRegistry.getWorldAreaAt(x, y);
             targetAreaKey = entry ? entry[0] : null;
+            targetEntryKey = entry?.[1]?._entryKey || null;
+            targetEntryLabel = entry?.[1]?._entryLabel || null;
         } else {
             for (let key in STORY_DATA.areas) {
                 if (STORY_DATA.areas[key].centerX === x && STORY_DATA.areas[key].centerY === y) {
@@ -4120,7 +4346,15 @@ const Field = {
             App.setAction(`${areaDef.name}に入る`, () => Field.enterFixedMap(targetAreaKey));
         } else if (targetAreaKey && typeof FIXED_DUNGEON_MAPS !== 'undefined' && FIXED_DUNGEON_MAPS[targetAreaKey]) {
             const areaDef = FIXED_DUNGEON_MAPS[targetAreaKey];
-            App.setAction(`${areaDef.name}に入る`, () => Dungeon.startFixed(targetAreaKey));
+            const labelPrefix = targetEntryLabel ? `${areaDef.name}・${targetEntryLabel}` : areaDef.name;
+            App.setAction(`${labelPrefix}に入る`, () => {
+                const flags = App.data?.progress?.flags || {};
+                if (targetAreaKey === 'THUNDER_FORT' && targetEntryKey === 'east' && !flags.thunderFortCleared) {
+                    App.log('雷の要塞の東門は、内側から雷の結界で閉ざされている。西門側から制御炉を止めれば開きそうだ。');
+                    return;
+                }
+                Dungeon.startFixed(targetAreaKey, { entryKey: targetEntryKey || null });
+            });
         } else if (tile === 'I' || tile === 'B') {
                 logIfNeeded('小さな休憩所がある。');
                 App.setAction('休む', () => App.changeScene('inn'));
@@ -4338,6 +4572,10 @@ const Field = {
             Field.x = nx; Field.y = ny;
             App.data.location.x = nx; App.data.location.y = ny;
 
+            if (tile === 'M' && Field.currentMapData.isFixed && !Field.currentMapData.isDungeon && typeof Dungeon !== 'undefined' && typeof Dungeon.stepOnLava === 'function') {
+                Dungeon.stepOnLava();
+            }
+
             // 現在地タイルのアクション判定は refreshCurrentAction に統一。
             // move() 内だけに判定を書くと、戦闘/施設/イベント復帰時にボタンが復元されないため。
             Field.refreshCurrentAction({ silent: false });
@@ -4491,16 +4729,80 @@ const Field = {
             ctx.globalAlpha = previousAlpha;
         };
 
+        const isDungeonShadowTarget = (tileSign) => {
+            if (!isDungeonView) return false;
+            const upper = String(tileSign || '').toUpperCase();
+            // 固定・ランダム双方のダンジョンで、壁以外の通行可能/床上オブジェクト全般に影を重ねる。
+            // 溶岩、宝箱、階段、鍵、扉、ボス/イベント表示なども最終的な見た目の上から影をかける。
+            return upper !== 'W';
+        };
+
+        const drawDungeonWallContactShadow = (drawX, drawY, tileX, tileY, tileSign) => {
+            if (!isDungeonShadowTarget(tileSign)) return;
+            const leftTile = Field.getRenderedTileForDraw(tileX - 1, tileY, mapW, mapH, areaKey);
+            const belowTile = Field.getRenderedTileForDraw(tileX, tileY + 1, mapW, mapH, areaKey);
+            const lowerLeftTile = Field.getRenderedTileForDraw(tileX - 1, tileY + 1, mapW, mapH, areaKey);
+            const leftIsWall = String(leftTile || '').toUpperCase() === 'W';
+            const belowIsWall = String(belowTile || '').toUpperCase() === 'W';
+            const lowerLeftIsWall = String(lowerLeftTile || '').toUpperCase() === 'W';
+            if (!leftIsWall && !belowIsWall && !lowerLeftIsWall) return;
+
+            // 壁接触影の規定:
+            // - 壁の右のタイル   : 左側 1/3 を影にする
+            // - 壁の上のタイル   : 下側 1/3 を影にする
+            // - 壁の右上のタイル : 左側 1/3 かつ下側 1/3、つまり左下だけを影にする
+            // 1つのパスとしてまとめて塗ることで、条件が重なっても同じ場所が二重に濃くならないようにする。
+            const shadowW = Math.ceil(ts / 3);
+            const shadowH = Math.ceil(ts / 3);
+            const bottomY = drawY + ts - shadowH;
+
+            ctx.save();
+            ctx.fillStyle = 'rgba(0,0,0,0.34)';
+            ctx.beginPath();
+
+            if (leftIsWall) {
+                // このタイルは壁の右側にある。左 1/3 を縦方向に影にする。
+                ctx.rect(drawX, drawY, shadowW, ts);
+            }
+
+            if (belowIsWall) {
+                // このタイルは壁の上側にある。下 1/3 を横方向に影にする。
+                ctx.rect(drawX, bottomY, ts, shadowH);
+            }
+
+            if (lowerLeftIsWall) {
+                // このタイルは壁の右上にある。左下 1/3 x 1/3 だけを影にする。
+                ctx.rect(drawX, bottomY, shadowW, shadowH);
+            }
+
+            ctx.fill();
+            ctx.restore();
+        };
+
+        const drawVisibleDungeonWallContactShadows = () => {
+            if (!isDungeonView) return;
+            for (let dy = -rangeY; dy <= rangeY; dy++) {
+                for (let dx = -rangeX; dx <= rangeX; dx++) {
+                    const tileX = Field.x + dx;
+                    const tileY = Field.y + dy;
+                    const tileSign = Field.getRenderedTileForDraw(tileX, tileY, mapW, mapH, areaKey);
+                    const drawX = Math.floor(cx + (dx * ts) - (ts / 2));
+                    const drawY = Math.floor(cy + (dy * ts) - (ts / 2));
+                    drawDungeonWallContactShadow(drawX, drawY, tileX, tileY, tileSign);
+                }
+            }
+        };
+
         for (let dy = -rangeY; dy <= rangeY; dy++) {
             for (let dx = -rangeX; dx <= rangeX; dx++) {
                 const drawX = Math.floor(cx + (dx * ts) - (ts / 2)), drawY = Math.floor(cy + (dy * ts) - (ts / 2));
                 let tx = Field.x + dx, ty = Field.y + dy, tile = Field.getRenderedTileForDraw(tx, ty, mapW, mapH, areaKey);
-                const config = Field.getTileConfigForDraw ? Field.getTileConfigForDraw(tile, tx, ty) : Field.getTileConfig(tile);
-                const upper = tile.toUpperCase();
+                const parts = Field.getMapDrawParts ? Field.getMapDrawParts(tile, tx, ty) : { upper: tile.toUpperCase(), baseTile: tile, overlayConfig: null };
+                const upper = parts.upper;
+                const config = Field.getTileConfigForDraw ? Field.getTileConfigForDraw(upper, tx, ty) : Field.getTileConfig(upper);
                 const wallGraphic = Field.getDungeonWallGraphicForDraw(tx, ty, upper, mapW, mapH, areaKey);
-                const overlayConfig = Field.getFixedTileOverlayConfig ? Field.getFixedTileOverlayConfig(upper, tx, ty) : null;
-                const overlayBaseTile = overlayConfig && Field.getFixedTileOverlayBaseTile ? Field.getFixedTileOverlayBaseTile(upper) : null;
-                const groundTile = overlayBaseTile || (upper === 'G' ? 'G' : 'T');
+                const overlayConfig = parts.overlayConfig;
+                const groundTile = overlayConfig ? parts.baseTile : (upper === 'G' ? 'G' : 'T');
                 // 地面は座標依存のフィールド施設オーバーレイを混ぜず、純粋な床タイルとして描く。
                 // これにより透過素材の下が黒くならず、G/Tなどの地面の上に施設画像が重なる。
                 const floorConfig = Field.getTileConfig(groundTile);
@@ -4598,11 +4900,20 @@ const Field = {
         };
 
         drawOverlayImage(App.data?.dungeon?.healSpring, 'assets/effect/fx-buff-ai.png', '#80ffb0');
+        if (Field.currentMapData?.isFixed && Field.getFixedHealSpringsForCurrentFloor) {
+            Field.getFixedHealSpringsForCurrentFloor().forEach(s => {
+                drawOverlayImage({ active: true, floor: Dungeon.floor, x: Number(s.x), y: Number(s.y), image: Dungeon.healSpringImagePath || 'assets/effect/fx-buff-ai.png' }, 'assets/effect/fx-buff-ai.png', '#80ffb0');
+            });
+        }
         drawOverlayImage(App.data?.dungeon?.abyssRift, 'assets/effect/fx-abyss-vortex-ai.png', '#a34cff');
         drawOverlayImage(App.data?.dungeon?.adventurer, 'assets/monsters/monster_100009.png', '#5bd6ff');
         drawOverlayImage(App.data?.dungeon?.keyGuardian, 'assets/monsters/monster_100010.png', '#ffd78a');
 
-        // 4. プレイヤーの描画 (hero_... の画像もスプライトシート化していれば対応可能)
+        // 4. 壁際の影は、溶岩・宝箱・階段・常設泉などの上から最後に重ねる。
+        // プレイヤーまで暗くしないよう、プレイヤー描画の直前で止める。
+        drawVisibleDungeonWallContactShadows();
+
+        // 5. プレイヤーの描画 (hero_... の画像もスプライトシート化していれば対応可能)
         const pKey = `hero_${['down','left','right','up'][Field.dir]}_${Field.step}`; 
         drawFootShadow(cx - ts / 2, cy - ts / 2, 0, 0.26);
         if (!drawGraphic(pKey, cx-ts/2, cy-ts/2, ts)) {
@@ -4633,26 +4944,83 @@ const Field = {
 
         if (Field.minimapMode === 'minimized') return;
 
-        const mmSize = 80, mmX = w-mmSize-10, mmY = 10, range = 10; 
-        ctx.save(); ctx.globalAlpha = 0.6; ctx.fillStyle = '#000'; ctx.fillRect(mmX, mmY, mmSize, mmSize);
-        ctx.strokeStyle = 'rgba(255,255,255,0.72)'; ctx.lineWidth = 1; ctx.strokeRect(mmX + 0.5, mmY + 0.5, mmSize - 1, mmSize - 1);
+        const mmSize = 80, mmX = w-mmSize-10, mmY = 10, range = 7;
+        const miniCells = range * 2 + 1;
+        const dms = mmSize / miniCells;
+        ctx.save();
+        ctx.globalAlpha = 0.68;
+        ctx.fillStyle = '#000';
+        ctx.fillRect(mmX, mmY, mmSize, mmSize);
+        ctx.strokeStyle = 'rgba(255,255,255,0.72)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(mmX + 0.5, mmY + 0.5, mmSize - 1, mmSize - 1);
 
-        const dms = mmSize / (range*2); 
-        for(let mdy = -range; mdy < range; mdy++) {
-            for(let mdx = -range; mdx < range; mdx++) {
-                let mtx = Field.x + mdx; let mty = Field.y + mdy; let mtile = 'W';
+        const drawHeldKeyHud = () => {
+            if (!Field.currentMapData?.isDungeon || typeof Dungeon === 'undefined' || typeof Dungeon.getHeldKeyOrder !== 'function') return;
+            const keyDefs = [
+                { color: 'red', img: 'item_key_red', tint: '#d94a4a' },
+                { color: 'blue', img: 'item_key_blue', tint: '#4aa0e6' },
+                { color: 'gold', img: 'item_key_gold', tint: '#e0b84a' }
+            ];
+            const heldKeys = Dungeon.getHeldKeyOrder()
+                .map(color => keyDefs.find(def => def.color === color))
+                .filter(Boolean);
+            if (!heldKeys.length) return;
+
+            const size = 18;
+            const gap = 4;
+            const hudW = heldKeys.length * size + (heldKeys.length - 1) * gap;
+            const hudX = Math.max(6, mmX + mmSize - hudW);
+            const hudY = mmY + mmSize + 6;
+            ctx.save();
+            ctx.globalAlpha = 1;
+            heldKeys.forEach((def, i) => {
+                const x = hudX + i * (size + gap);
+                const y = hudY;
+                const img = g[def.img];
+                if (img && img.complete && img.naturalWidth > 0) {
+                    ctx.drawImage(img, x, y, size, size);
+                } else {
+                    ctx.fillStyle = def.tint;
+                    ctx.beginPath();
+                    ctx.arc(x + size / 2, y + size / 2, size * 0.32, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            });
+            ctx.restore();
+        };
+
+        const miniTileColor = (tile, tx, ty) => {
+            const upper = String(tile || '').toUpperCase();
+            const cfg = Field.getTileConfigForDraw ? Field.getTileConfigForDraw(tile, tx, ty) : Field.getTileConfig(tile);
+            let color = cfg?.color || '#000';
+            // ミニマップでは壁は黒で統一する。
+            if (upper === 'W') return '#000';
+            if (upper === 'M' && (!color || color === '#000' || color === '#000000')) color = '#54515b';
+            return color;
+        };
+
+        const drawMiniMarkerAt = (relX, relY, color) => {
+            if (!color) return;
+            if (relX < -range || relX > range || relY < -range || relY > range) return;
+            Field.drawMiniMapTileMarker(ctx, color, mmX + (relX + range) * dms, mmY + (relY + range) * dms, dms);
+        };
+
+        for (let mdy = -range; mdy <= range; mdy++) {
+            for (let mdx = -range; mdx <= range; mdx++) {
+                let mtx = Field.x + mdx;
+                let mty = Field.y + mdy;
+                let mtile = 'W';
                 let minimapVisible = true;
-                if (Field.currentMapData) { 
-                    if(mtx>=0 && mtx<mapW && mty>=0 && mty<mapH) {
-                        const ak = Field.getCurrentAreaKey(); const pk = `${mtx},${mty}`;
 
-                        // 迷路フロアでは、未踏破マスをミニマップに表示しない。
-                        // 現在地だけは常に表示し、歩くたび Dungeon.markVisited() で記録される。
-                        if (typeof Dungeon !== 'undefined' && typeof Dungeon.isMazeFloor === 'function' && Dungeon.isMazeFloor()) {
-                            // 迷路フロアは「踏破済み」に加えて、現在地を中心とした周囲4マスを表示する。
-                            // 完全な踏破表示だけだと視界が狭すぎるため、現在の探索視界として9x9相当を保証する。
+                if (Field.currentMapData) {
+                    if (mtx >= 0 && mtx < mapW && mty >= 0 && mty < mapH) {
+                        const ak = Field.getCurrentAreaKey();
+                        const pk = `${mtx},${mty}`;
+
+                        if (Field.currentMapData?.isDungeon && !Field.currentMapData?.isFixed && typeof Dungeon !== 'undefined' && typeof Dungeon.isVisited === 'function') {
                             const inCurrentSight = Math.abs(mdx) <= 4 && Math.abs(mdy) <= 4;
-                            if (!inCurrentSight && typeof Dungeon.isVisited === 'function' && !Dungeon.isVisited(mtx, mty)) {
+                            if (!inCurrentSight && !Dungeon.isVisited(mtx, mty)) {
                                 minimapVisible = false;
                             }
                         }
@@ -4660,17 +5028,41 @@ const Field = {
                         const progressKey = Field.currentMapData?.isFixed && Field.getCurrentProgressMapKey
                             ? Field.getCurrentProgressMapKey()
                             : ak;
-                        mtile = App.data.progress.mapChanges?.[progressKey]?.[pk] || App.data.progress.mapChanges?.[ak]?.[pk] || Field.currentMapData.tiles[mty][mtx];
+                        mtile = App.data.progress.mapChanges?.[progressKey]?.[pk]
+                            || App.data.progress.mapChanges?.[ak]?.[pk]
+                            || Field.currentMapData.tiles[mty][mtx];
                         if (App.data.progress.openedChests?.[progressKey]?.includes(pk)) mtile = 'G';
                         if (App.data.progress.defeatedBosses?.[progressKey]?.includes(pk)) mtile = 'G';
                     } else {
                         minimapVisible = false;
                     }
-                } else { mtile = MAP_DATA[((mty%mapH)+mapH)%mapH][((mtx%mapW)+mapW)%mapW]; }
+                } else {
+                    mtile = MAP_DATA[((mty % mapH) + mapH) % mapH][((mtx % mapW) + mapW) % mapW];
+                }
+
                 if (!minimapVisible) continue;
-                if (mdx===0 && mdy===0) ctx.fillStyle = '#fff'; else ctx.fillStyle = (Field.getTileConfigForDraw ? Field.getTileConfigForDraw(mtile, mtx, mty) : Field.getTileConfig(mtile)).color;
-                if (ctx.fillStyle !== '#000') ctx.fillRect(mmX + (mdx + range) * dms, mmY + (mdy + range) * dms, dms, dms);
+                const miniX = mmX + (mdx + range) * dms;
+                const miniY = mmY + (mdy + range) * dms;
+                ctx.fillStyle = (mdx === 0 && mdy === 0) ? '#fff' : miniTileColor(mtile, mtx, mty);
+                ctx.fillRect(miniX, miniY, Math.ceil(dms), Math.ceil(dms));
+
+                if (!(mdx === 0 && mdy === 0)) {
+                    const markerColor = Field.getMiniMapMarkerColor ? Field.getMiniMapMarkerColor(mtile, mtx, mty) : null;
+                    if (markerColor && Field.drawMiniMapTileMarker) {
+                        Field.drawMiniMapTileMarker(ctx, markerColor, miniX, miniY, dms);
+                    }
+                }
             }
+        }
+
+        // 固定ダンジョンの常設回復の泉も、通常ミニマップでは現在地周辺だけ表示する。
+        if (Field.currentMapData?.isFixed && Field.getFixedHealSpringsForCurrentFloor && Field.drawMiniMapTileMarker) {
+            Field.getFixedHealSpringsForCurrentFloor().forEach(s => {
+                const relX = Number(s.x) - Number(Field.x);
+                const relY = Number(s.y) - Number(Field.y);
+                if (relX === 0 && relY === 0) return;
+                drawMiniMarkerAt(relX, relY, '#80ffb0');
+            });
         }
 
         // ミニマップ上にも、タイル文字で管理していない特殊オブジェクトを表示する。
@@ -4680,10 +5072,10 @@ const Field = {
             const relX = Number(obj.x) - Number(Field.x);
             const relY = Number(obj.y) - Number(Field.y);
             if (relX === 0 && relY === 0) return;
-            if (relX < -range || relX >= range || relY < -range || relY >= range) return;
-            if (typeof Dungeon !== 'undefined' && typeof Dungeon.isMazeFloor === 'function' && Dungeon.isMazeFloor()) {
+            if (relX < -range || relX > range || relY < -range || relY > range) return;
+            if (Field.currentMapData?.isDungeon && !Field.currentMapData?.isFixed && typeof Dungeon !== 'undefined' && typeof Dungeon.isVisited === 'function') {
                 const inCurrentSight = Math.abs(relX) <= 4 && Math.abs(relY) <= 4;
-                if (!inCurrentSight && typeof Dungeon.isVisited === 'function' && !Dungeon.isVisited(Number(obj.x), Number(obj.y))) return;
+                if (!inCurrentSight && !Dungeon.isVisited(Number(obj.x), Number(obj.y))) return;
             }
             ctx.fillStyle = color;
             ctx.fillRect(mmX + (relX + range) * dms, mmY + (relY + range) * dms, Math.max(2, dms), Math.max(2, dms));
@@ -4693,42 +5085,7 @@ const Field = {
         drawMiniObject(App.data?.dungeon?.adventurer, '#5bd6ff');
         drawMiniObject(App.data?.dungeon?.keyGuardian, '#ffd78a');
 
-        if (Field.currentMapData?.isDungeon && typeof Dungeon !== 'undefined' && typeof Dungeon.getHeldKeyOrder === 'function') {
-            const keyDefs = [
-                { color: 'red', img: 'item_key_red', tint: '#d94a4a' },
-                { color: 'blue', img: 'item_key_blue', tint: '#4aa0e6' },
-                { color: 'gold', img: 'item_key_gold', tint: '#e0b84a' }
-            ];
-            const heldOrder = Dungeon.getHeldKeyOrder();
-            const heldKeys = heldOrder
-                .map(color => keyDefs.find(def => def.color === color))
-                .filter(Boolean);
-            if (heldKeys.length) {
-            const size = 18;
-            const gap = 4;
-            const hudW = heldKeys.length * size + (heldKeys.length - 1) * gap;
-            const hudX = Math.max(6, mmX + mmSize - hudW);
-            const hudY = mmY + mmSize + 6;
-            ctx.save();
-            heldKeys.forEach((def, i) => {
-                const x = hudX + i * (size + gap);
-                const y = hudY;
-                const img = g[def.img];
-                ctx.save();
-                ctx.globalAlpha = 1;
-                if (img && img.complete && img.naturalWidth > 0) {
-                    ctx.drawImage(img, x, y, size, size);
-                } else {
-                    ctx.fillStyle = def.tint;
-                    ctx.beginPath();
-                    ctx.arc(x + size / 2, y + size / 2, size * 0.32, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-                ctx.restore();
-            });
-            ctx.restore();
-            }
-        }
+        drawHeldKeyHud();
 
         ctx.restore();
     }

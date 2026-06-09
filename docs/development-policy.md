@@ -1,6 +1,6 @@
 # PRISMA ABYSS Development Policy
 
-Last updated: 2026-05-14
+Last updated: 2026-05-15
 
 This document records the current long-term development direction. Treat it as a product/design policy, not just an implementation TODO.
 
@@ -544,6 +544,13 @@ The player should learn naturally through the story rather than feel forced to r
 - Control item usage.
 
 Priority: build the foundation for "when systems can be used" before adding more systems.
+
+Current status on 2026-05-15:
+
+- `progress.unlocked` now migrates toward the full planned key set.
+- Main menu access for blacksmith, Abyss/dungeon, and gacha is routed through shared unlock checks.
+- Casino, Medal King, Abyss entry, inn teleport, Magic Boat, and Light Wing access now use the same unlock foundation or legacy key-item compatibility.
+- Future story events should call `App.unlockFeature(key)` at the planned unlock moments instead of directly opening systems.
 
 ### Phase 2: Story Progress And Ally Joins
 

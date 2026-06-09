@@ -239,8 +239,9 @@ const Dungeon = {
     },
 
     getKeyScopeKey: (areaKey = null) => {
-        if (typeof Field !== 'undefined' && Field.currentMapData?.isFixed && Field.getCurrentProgressMapKey) {
-            return Field.getCurrentProgressMapKey();
+        if (typeof Field !== 'undefined' && Field.currentMapData?.isFixed) {
+            const fixedAreaKey = areaKey || (Field.getCurrentAreaKey ? Field.getCurrentAreaKey() : App.data?.location?.area);
+            return `FIXED:${fixedAreaKey || Field.currentMapData?.areaKey || 'UNKNOWN'}`;
         }
         const key = areaKey || (typeof Field !== 'undefined' && Field.getCurrentAreaKey ? Field.getCurrentAreaKey() : App.data?.location?.area || 'ABYSS');
         if (key === 'ABYSS') return `ABYSS:F${Number(Dungeon.floor || App.data?.progress?.floor || 1)}`;
@@ -307,9 +308,9 @@ const Dungeon = {
         return true;
     },
 
-    grantDungeonKey: (color, source = 'key') => {
+    grantDungeonKey: (color, source = 'key', scopeKey = null) => {
         const label = Dungeon.keyColorLabels[color] || color;
-        const state = Dungeon.ensureKeyState();
+        const state = Dungeon.ensureKeyState(scopeKey);
         if (state[color]) {
             App.log(`<span style="color:#ffd78a;">${label}の鍵は既に持っている。</span>`);
             return false;
@@ -360,12 +361,13 @@ const Dungeon = {
         const color = Dungeon.getDoorColor(tile);
         const label = Dungeon.keyColorLabels[color] || color;
         if (!color) return false;
-        if (!Dungeon.hasDungeonKey(color)) {
+        const areaKey = typeof Field !== 'undefined' && Field.getCurrentAreaKey ? Field.getCurrentAreaKey() : App.data?.location?.area || 'ABYSS';
+        const scopeKey = Dungeon.getKeyScopeKey(areaKey);
+        if (!Dungeon.hasDungeonKey(color, scopeKey)) {
             App.log(`<span style="color:#ff9a9a;">${label}の扉だ。同じ色の鍵が必要だ。</span>`);
             return false;
         }
-        const areaKey = typeof Field !== 'undefined' && Field.getCurrentAreaKey ? Field.getCurrentAreaKey() : App.data?.location?.area || 'ABYSS';
-        Dungeon.consumeDungeonKey(color);
+        Dungeon.consumeDungeonKey(color, scopeKey);
         const changeKey = Dungeon.getMapChangeKey(areaKey);
         if (!App.data.progress.mapChanges) App.data.progress.mapChanges = {};
         if (!App.data.progress.mapChanges[changeKey]) App.data.progress.mapChanges[changeKey] = {};
@@ -464,13 +466,34 @@ const Dungeon = {
                 : null;
 
             if (link) {
+                const flags = App.data?.progress?.flags || {};
+                if (link.requiredFlag && !flags[link.requiredFlag]) {
+                    logIfNeeded(link.lockedLog || '封印されていて、今は通れない。');
+                    App.setAction(link.lockedLabel || '調べる', () => {
+                        if (link.lockedEventId && typeof StoryManager !== 'undefined' && typeof StoryManager.executeEvent === 'function') {
+                            StoryManager.executeEvent(link.lockedEventId);
+                        } else {
+                            App.log(link.lockedLog || '封印されていて、今は通れない。');
+                        }
+                    });
+                    return true;
+                }
+
                 const label = (typeof MapRegistry !== 'undefined' && MapRegistry.getFixedFloorActionLabel)
                     ? MapRegistry.getFixedFloorActionLabel(mapDef, link, App.data?.progress?.floor || mapDef.floor || 1, Field.getCurrentAreaKey())
-                    : (link.to === 'EXIT' ? '外に出る' : (link.label || '階段を使う'));
-                logIfNeeded(link.log || (link.to === 'EXIT' ? '外への出口がある。' : '階段がある。'));
+                    : (link.to === 'EXIT' ? (link.label || '外に出る') : (link.label || '進む'));
+                logIfNeeded(link.openLog || link.log || (link.to === 'EXIT' ? '外への出口がある。' : (link.toDungeon ? '奥へ続く入口がある。' : '階段がある。')));
                 App.setAction(label, () => {
                     if (link.to === 'EXIT') {
-                        Dungeon.exit(false);
+                        const forced = link.exitPoint ? {
+                            x: Number(link.exitPoint.x),
+                            y: Number(link.exitPoint.y),
+                            areaKey: link.exitPoint.areaKey || link.exitPoint.area || 'WORLD',
+                            mapData: link.exitPoint.mapData || null
+                        } : null;
+                        Dungeon.exit(false, forced);
+                    } else if (link.toDungeon) {
+                        Dungeon.startFixed(link.toDungeon, { entryKey: link.entryKey || null, nestedReturn: true });
                     } else {
                         Dungeon.changeFixedFloor(link.toFloor, link.targetX, link.targetY);
                     }
@@ -483,6 +506,39 @@ const Dungeon = {
                 App.setAction('外に出る', () => Dungeon.exit(false));
                 return true;
             }
+        }
+
+        if (tile === 'B') {
+            const bossDef = (typeof MapRegistry !== 'undefined' && MapRegistry.findFixedBoss)
+                ? MapRegistry.findFixedBoss(mapDef, x, y)
+                : null;
+            const areaKey = Field.getCurrentAreaKey ? Field.getCurrentAreaKey() : (mapDef.areaKey || App.data.location.area);
+            const progressKey = Dungeon.getFixedProgressKey(areaKey);
+            const posKey = `${x},${y}`;
+            const defeated = App.data.progress.defeatedBosses?.[progressKey]?.includes(posKey);
+
+            if (defeated) {
+                App.clearAction();
+                return true;
+            }
+
+            const flags = App.data?.progress?.flags || {};
+            if (bossDef?.requiredFlag && !flags[bossDef.requiredFlag]) {
+                // ストーリー進行前の固定ボスは、存在しない床として扱う。
+                // 例: 大灯台は入れるが、雷の要塞クリア前は結界炉・頂上ボスが出現しない。
+                App.clearAction();
+                return false;
+            }
+
+            logIfNeeded(bossDef?.inspectLog || 'ただならぬ気配が立ちはだかっている。');
+
+            if (bossDef?.startEventId && typeof StoryManager !== 'undefined' && typeof StoryManager.executeEvent === 'function') {
+                App.setAction(bossDef.actionLabel || '対峙する', () => StoryManager.executeEvent(bossDef.startEventId));
+                return true;
+            }
+
+            App.setAction(bossDef?.actionLabel || 'ボスと戦う', () => Dungeon.startFixedBoss(x, y));
+            return true;
         }
 
         return false;
@@ -499,14 +555,22 @@ const Dungeon = {
             const base = window.MonsterData?.getMonsterById?.(Number(fixedBossId));
             isSpecialBoss = !!(base?.isSpecialBoss || base?.isEstark || Number(fixedBossId) === 902000);
         }
+        const rawKeyRewardColors = Array.isArray(bossDef?.keyRewardColors)
+            ? bossDef.keyRewardColors
+            : (bossDef?.keyRewardColor || bossDef?.keyColor)
+                ? [bossDef.keyRewardColor || bossDef.keyColor]
+                : [];
+        const keyRewardColors = rawKeyRewardColors.filter(Boolean);
+
         App.data.battle = {
             active: false,
             isBossBattle: true,
             isSpecialBoss,
             isEstark: isSpecialBoss,
             fixedBossId,
-            fixedKeyReward: (bossDef?.keyRewardColor || bossDef?.keyColor) ? {
-                color: bossDef.keyRewardColor || bossDef.keyColor,
+            fixedKeyReward: keyRewardColors.length ? {
+                colors: keyRewardColors,
+                color: keyRewardColors[0],
                 x,
                 y,
                 scopeKey: Dungeon.getKeyScopeKey()
@@ -515,23 +579,91 @@ const Dungeon = {
             enemies: []
         };
         App.save();
-        App.changeScene('battle');
+        const startBattleScene = () => App.changeScene('battle');
+        if (typeof App !== 'undefined' && typeof App.playEncounterTransition === 'function') {
+            if (typeof App.lockFieldInput === 'function') App.lockFieldInput(1800);
+            App.playEncounterTransition(startBattleScene, { eventBattle: true });
+        } else {
+            startBattleScene();
+        }
     },
 
 	
     // --- 固定ダンジョン（試練の洞窟など）への進入 ---
-    startFixed: (mapKey) => {
-        const areaDef = Dungeon.getFixedFloorDef(mapKey, 1);
-        if (!areaDef) return;
+    canEnterFixedDungeon: (mapKey) => {
+        const progress = App.data?.progress || {};
+        const flags = progress.flags || {};
+        const step = Number(progress.storyStep || 0);
+        const sub = Number(progress.subStep || 0);
+        const atLeast = (targetStep, targetSub = 0) => step > targetStep || (step === targetStep && sub >= targetSub);
+        const ok = () => ({ ok: true });
+        const block = (message, eventId = null) => ({ ok: false, message, eventId });
 
-        // 帰還地点の保存 (まだ保存されていない場合のみ)
-        if (!App.data.dungeon.returnPoint) {
-            App.data.dungeon.returnPoint = {
-                x: App.data.location.x,
-                y: App.data.location.y,
-                areaKey: App.data.location.area || 'WORLD',
-                mapData: Field.currentMapData ? JSON.parse(JSON.stringify(Field.currentMapData)) : null
-            };
+        switch (mapKey) {
+            case 'IGNIS_VOLCANO':
+            case 'FORBIDDEN_FOREST':
+                return ok();
+            case 'WIND_TEMPLE':
+                return (flags.windForestCleansed || atLeast(3, 2))
+                    ? ok()
+                    : block('森の奥の風が荒れ、神殿への道が閉ざされている。', 'locked_wind_temple');
+            case 'SEABED_TEMPLE':
+                return (flags.kateJoinedAtWaterCity || atLeast(4, 1))
+                    ? ok()
+                    : block('海の底に沈む神殿が見えるが、このままでは入ることができない。', 'locked_seabed_temple');
+            case 'THUNDER_FORT':
+                if (!(flags.waterCityCleared || flags.hasShip || atLeast(5, 0))) {
+                    return block('川の流れが速く、岸からでは雷の要塞へ近づけない。', 'locked_thunder_fort');
+                }
+                if (!flags.josephJoinedAtThunderFort && typeof StoryManager !== 'undefined' && StoryManager.events?.thunder_fort_entry) {
+                    return { ok: false, eventId: 'thunder_fort_entry' };
+                }
+                return ok();
+            case 'BIG_TOWER':
+                // 大灯台はいつでも入場可能。
+                // ただし map.js のボス定義側で thunderFortCleared を要求するため、
+                // 雷の要塞イベント前はボスが出現せず、金鍵も得られない。
+                return ok();
+            case 'LIGHT_PALACE':
+                return flags.lighthouseCleared
+                    ? ok()
+                    : block('光の神殿は、触れる前から肌を刺すような結界に包まれている。', 'locked_light_palace');
+            case 'DARK_CASTLE':
+                return (flags.lightPalaceCleared || atLeast(8, 0))
+                    ? ok()
+                    : block('黒い城の気配は重い。今踏み込むには、まだ確かめるべきことが残っている。', 'locked_dark_castle');
+            default:
+                return ok();
+        }
+    },
+
+    startFixed: (mapKey, options = {}) => {
+        const gate = Dungeon.canEnterFixedDungeon(mapKey);
+        if (!gate.ok) {
+            if (gate.eventId && typeof StoryManager !== 'undefined' && typeof StoryManager.executeEvent === 'function') {
+                StoryManager.executeEvent(gate.eventId);
+                return false;
+            }
+            if (gate.message) App.log(gate.message);
+            return false;
+        }
+        const areaDef = Dungeon.getFixedFloorDef(mapKey, 1);
+        if (!areaDef) return false;
+
+        // 帰還地点の保存。
+        // 固定ダンジョン内から別の固定ダンジョンへ入る場合は、元の帰還地点をスタックへ退避する。
+        const makeReturnPoint = () => ({
+            x: App.data.location.x,
+            y: App.data.location.y,
+            areaKey: App.data.location.area || 'WORLD',
+            mapData: Field.currentMapData ? JSON.parse(JSON.stringify(Field.currentMapData)) : null
+        });
+        if (options.nestedReturn) {
+            if (!Array.isArray(App.data.dungeon.returnStack)) App.data.dungeon.returnStack = [];
+            if (App.data.dungeon.returnPoint) App.data.dungeon.returnStack.push(App.data.dungeon.returnPoint);
+            App.data.dungeon.returnPoint = makeReturnPoint();
+        } else if (!App.data.dungeon.returnPoint) {
+            App.data.dungeon.returnPoint = makeReturnPoint();
         }
 
         App.data.progress.floor = areaDef.floor || 1;
@@ -550,8 +682,11 @@ const Dungeon = {
 
         Field.currentMapData = areaDef;
 
-        Field.x = areaDef.entryPoint ? areaDef.entryPoint.x : 1;
-        Field.y = areaDef.entryPoint ? areaDef.entryPoint.y : 1;
+        const selectedEntry = (options.entryKey && areaDef.entryPoints && areaDef.entryPoints[options.entryKey])
+            ? areaDef.entryPoints[options.entryKey]
+            : areaDef.entryPoint;
+        Field.x = selectedEntry ? selectedEntry.x : 1;
+        Field.y = selectedEntry ? selectedEntry.y : 1;
         App.data.location.x = Field.x;
         App.data.location.y = Field.y;
 
@@ -560,6 +695,7 @@ const Dungeon = {
         App.save();
         App.changeScene('field');
         App.log(`${areaDef.displayName || areaDef.name}に入った。`);
+        return true;
     },
 
     nextFloor: () => {
@@ -676,8 +812,10 @@ const Dungeon = {
 
     // --- 脱出処理 (安全装置付き) ---
     // 引数 isWipedOut が true の場合は強制的にデフォルトへ
-    exit: (isWipedOut = false) => {
-        const returnPoint = App.data.dungeon.returnPoint;
+    exit: (isWipedOut = false, forcedReturnPoint = null) => {
+        const returnPoint = forcedReturnPoint || App.data.dungeon.returnPoint;
+        const returnStack = Array.isArray(App.data.dungeon.returnStack) ? App.data.dungeon.returnStack : [];
+        const nestedReturnPoint = (!isWipedOut && !forcedReturnPoint && returnStack.length > 0) ? returnStack.pop() : null;
 
         // ダンジョン一時情報のクリア
         App.data.dungeon.map = null;
@@ -696,6 +834,7 @@ const Dungeon = {
         
         // 保存していた帰還ポイントを一度抽出してからクリア
         App.data.dungeon.returnPoint = null;
+        if (forcedReturnPoint || isWipedOut) App.data.dungeon.returnStack = null;
 
         // デフォルトの帰還先 (ワールドマップの安全圏)
         let targetX = 58;
@@ -744,6 +883,19 @@ const Dungeon = {
             Field.x = targetX;
             Field.y = targetY;
             Field.currentMapData = targetMapData;
+        }
+
+        if (!isWipedOut && !forcedReturnPoint && nestedReturnPoint) {
+            App.data.dungeon.returnPoint = nestedReturnPoint;
+            App.data.dungeon.returnStack = returnStack;
+        }
+
+        if (targetMapData?.isDungeon) {
+            App.data.progress.floor = targetMapData.floor || 1;
+            Dungeon.floor = App.data.progress.floor;
+        } else {
+            App.data.progress.floor = 0;
+            Dungeon.floor = 0;
         }
         
         App.save();
@@ -836,13 +988,8 @@ const Dungeon = {
 		
 		// ボス判定
         if(tile === 'B') {
-            // ★修正: 固定ダンジョンの場合、既にボスを撃破済みなら判定をスキップする (不具合②対応)
             if (Field.currentMapData.isFixed) {
-                const ak = Dungeon.getFixedProgressKey();
-                const pk = `${x},${y}`;
-                if (App.data.progress.defeatedBosses && App.data.progress.defeatedBosses[ak]?.includes(pk)) {
-                    return; 
-                }
+                if (Dungeon.prepareFixedTileAction(tile, x, y, { silent: false })) return;
             }
 
             App.log("ボスの気配が…");
@@ -1086,7 +1233,15 @@ const Dungeon = {
         return Number(adv.x) === Number(x) && Number(adv.y) === Number(y);
     },
 
+    getFixedHealSpringAt: (x, y) => {
+        const springs = Field.currentMapData?.isFixed && Array.isArray(Field.currentMapData.healSprings)
+            ? Field.currentMapData.healSprings
+            : [];
+        return springs.find(s => s && Number(s.x) === Number(x) && Number(s.y) === Number(y)) || null;
+    },
+
     isHealSpringAt: (x, y) => {
+        if (Dungeon.getFixedHealSpringAt(x, y)) return true;
         const spring = App.data?.dungeon?.healSpring;
         if (!spring || !spring.active) return false;
         if (Number(spring.floor) !== Number(Dungeon.floor)) return false;
@@ -1101,8 +1256,9 @@ const Dungeon = {
     },
 
     useHealSpring: () => {
+        const fixedSpring = Dungeon.getFixedHealSpringAt(Field.x, Field.y);
         const spring = App.data?.dungeon?.healSpring;
-        if (!spring || !spring.active) {
+        if (!fixedSpring && (!spring || !spring.active)) {
             if (typeof App.clearAction === 'function') App.clearAction();
             return;
         }
@@ -1113,12 +1269,12 @@ const Dungeon = {
             c.currentMp = stats.maxMp;
         });
 
-        // 回復の泉は通常フロア・迷路フロア・ボスフロア共通で1回使い切り。
-        // active=falseにしてからnull化することで、即座にマップ上から消え、
-        // 同じ座標で再度アクションが出続ける事故も防ぐ。
-        spring.active = false;
-        App.data.dungeon.healSpring = null;
-        if (typeof App.clearAction === 'function') App.clearAction();
+        // ランダムダンジョンの泉は使い切り。固定ダンジョンの常設泉は消さない。
+        if (!fixedSpring && spring) {
+            spring.active = false;
+            App.data.dungeon.healSpring = null;
+            if (typeof App.clearAction === 'function') App.clearAction();
+        }
 
         App.log('<span style="color:#80ffb0;">清らかな泉の力で、HPとMPが全回復した！</span>');
         App.save();
@@ -1726,13 +1882,15 @@ const Dungeon = {
 				Dungeon.lastGenVariant = null;
 				const r = Math.random();
 				let type;
-				if (r < 0.1) type = 2; // 迷路
-				else if (r < 0.50) type = 0; // 部屋
-				else type = 1; // 洞窟
+				if (r < 0.14) type = 2; // 迷路
+				else if (r < 0.40) type = 0; // 部屋
+				else if (r < 0.82) type = 1; // 洞窟
+				else type = 3; // 遺跡回廊
 				
 				if (type === 0) Dungeon.generateRoomMap(); 
 				else if (type === 1) Dungeon.generateCaveMap(); 
-				else Dungeon.generateMazeMap(); 
+				else if (type === 2) Dungeon.generateMazeMap();
+				else Dungeon.generateRuinsMap(); 
 				
 				Dungeon.setPlayerRandomSpawn();
 				App.data.dungeon.genType = type;
@@ -2051,8 +2209,57 @@ const Dungeon = {
         return map;
     },
 
+
+    generateRuinsMap: () => {
+        Dungeon.lastGenVariant = 'ruins-crossroads';
+        Dungeon.width = Dungeon.randInt(38, 44);
+        Dungeon.height = Dungeon.randInt(38, 44);
+        const w = Dungeon.width, h = Dungeon.height;
+        const map = Dungeon.makeMap(w, h, 'W');
+
+        const centers = [];
+        const count = Dungeon.randInt(7, 11);
+        for (let i = 0; i < count; i++) {
+            const t = count === 1 ? 0 : i / (count - 1);
+            centers.push({
+                x: Math.max(4, Math.min(w - 5, Math.floor(4 + t * (w - 9) + Dungeon.randInt(-4, 4)))),
+                y: Math.max(4, Math.min(h - 5, Math.floor(h - 5 - t * (h - 9) + Dungeon.randInt(-4, 4))))
+            });
+        }
+
+        centers.forEach((c, i) => {
+            const rx = Dungeon.randInt(2, i % 3 === 0 ? 5 : 4);
+            const ry = Dungeon.randInt(2, i % 2 === 0 ? 4 : 5);
+            Dungeon.carveBrush(map, c.x, c.y, rx, ry);
+            if (Math.random() < 0.55) {
+                Dungeon.carveLine(map, c, { x: Dungeon.randInt(3, w - 4), y: c.y }, 1, 0.05);
+            }
+            if (Math.random() < 0.45) {
+                Dungeon.carveLine(map, c, { x: c.x, y: Dungeon.randInt(3, h - 4) }, 1, 0.05);
+            }
+        });
+
+        for (let i = 0; i < centers.length - 1; i++) {
+            Dungeon.carveLine(map, centers[i], centers[i + 1], Math.random() < 0.35 ? 2 : 1, 0.06);
+        }
+
+        // 柱や崩落壁を置き、単なる小部屋連結にならないようにする。
+        for (let i = 0; i < Dungeon.randInt(18, 30); i++) {
+            const floors = Dungeon.collectTiles(map, ['T']);
+            if (!floors.length) break;
+            const p = floors[Dungeon.randInt(0, floors.length - 1)];
+            if (Dungeon.floorNeighbors(map, p.x, p.y, false) >= 3 && Dungeon.inBounds(map, p.x, p.y, 2)) {
+                map[p.y][p.x] = Math.random() < 0.5 ? 'G' : 'W';
+            }
+        }
+
+        Dungeon.keepLargestRegion(map);
+        Dungeon.map = map;
+        Dungeon.placeStairsAndChests();
+    },
+
     generateRoomMap: () => {
-        Dungeon.width = 34; Dungeon.height = 34;
+        Dungeon.width = 38; Dungeon.height = 38;
         const w = Dungeon.width, h = Dungeon.height;
         let map = Array(h).fill(0).map(() => Array(w).fill('W'));
         const rooms = [];
@@ -2120,7 +2327,7 @@ const Dungeon = {
     },
 
     generateWormCave: () => {
-        const w = Dungeon.randInt(30, 36), h = Dungeon.randInt(30, 36);
+        const w = Dungeon.randInt(34, 42), h = Dungeon.randInt(34, 42);
         const map = Dungeon.makeMap(w, h, 'W');
         const start = { x: Math.floor(w / 2), y: Math.floor(h / 2) };
         let carved = Dungeon.carveBrush(map, start.x, start.y, 2);
@@ -2163,7 +2370,7 @@ const Dungeon = {
     },
 
     generateCellularCave: () => {
-        const w = Dungeon.randInt(32, 38), h = Dungeon.randInt(32, 38);
+        const w = Dungeon.randInt(36, 44), h = Dungeon.randInt(36, 44);
         let map = Dungeon.makeMap(w, h, 'W');
         const openRate = 0.46 + Math.random() * 0.08;
         for (let y = 1; y < h - 1; y++) {
@@ -2194,7 +2401,7 @@ const Dungeon = {
     },
 
     generateChamberCave: () => {
-        const w = Dungeon.randInt(30, 36), h = Dungeon.randInt(30, 36);
+        const w = Dungeon.randInt(34, 42), h = Dungeon.randInt(34, 42);
         const map = Dungeon.makeMap(w, h, 'W');
         const centers = [{ x: Math.floor(w / 2), y: Math.floor(h / 2) }];
         const chamberCount = Dungeon.randInt(9, 16);
@@ -2218,7 +2425,7 @@ const Dungeon = {
     },
 
     generateRavineCave: () => {
-        const w = Dungeon.randInt(30, 36), h = Dungeon.randInt(30, 36);
+        const w = Dungeon.randInt(34, 42), h = Dungeon.randInt(34, 42);
         const map = Dungeon.makeMap(w, h, 'W');
         const horizontal = Math.random() < 0.5;
         let x = horizontal ? 2 : Dungeon.randInt(5, w - 6);
@@ -2255,7 +2462,7 @@ const Dungeon = {
     },
 
     generateMazeMap: () => {
-        Dungeon.width = 31; Dungeon.height = 31;
+        Dungeon.width = 35; Dungeon.height = 35;
         const w = Dungeon.width, h = Dungeon.height;
         let map = Array(h).fill(0).map(() => Array(w).fill('W'));
 
@@ -2593,9 +2800,12 @@ const Dungeon = {
 				App.data.progress.defeatedBosses[progressKey].push(posKey);
 			}
             const fixedKeyReward = App.data.battle?.fixedKeyReward;
-            if (fixedKeyReward?.color) {
-                Dungeon.grantDungeonKey(fixedKeyReward.color, 'fixedBoss');
-            }
+            const fixedKeyRewardColors = Array.isArray(fixedKeyReward?.colors)
+                ? fixedKeyReward.colors
+                : (fixedKeyReward?.color ? [fixedKeyReward.color] : []);
+            fixedKeyRewardColors.filter(Boolean).forEach(color => {
+                Dungeon.grantDungeonKey(color, 'fixedBoss', fixedKeyReward.scopeKey);
+            });
             const fixedStoryEventId = App.data.battle?.fixedStoryEventId;
             if (fixedStoryEventId) {
                 if (!App.data.progress) App.data.progress = {};

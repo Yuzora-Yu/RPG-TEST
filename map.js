@@ -85,7 +85,7 @@ const TILE_THEMES = {
         E: tileEntry("medal", "#f6ca62"),
         H: tileEntry("house-1", "#d9bd84"),
         V: tileEntry("house-2", "#7e3fa1"),
-        M: tileEntry("magma", "#e4511e")
+        M: tileEntry("tile_magma", "#e4511e")
     },
     START_VILLAGE: {
         W: tileEntry("forest", "#1f6a3f"),
@@ -116,7 +116,7 @@ const TILE_THEMES = {
         W: tileEntry("tile_fire_wall", "#4b2524"),
         T: tileEntry("tile_fire_floor", "#5b514d"),
         G: tileEntry("tile_fire_floor", "#6b5144"),
-        M: tileEntry("magma", "#e4511e"),
+        M: tileEntry("tile_magma", "#e4511e"),
         H: tileEntry("house-1", "#d9bd84"),
         V: tileEntry("fire_village", "#d95b3a"),
         I: tileEntry("inn", "#d7b45a"),
@@ -200,7 +200,7 @@ const TILE_THEMES = {
         B: tileEntry("boss_dungeon", "#db3b4d"),
         C: tileEntry("chest_dungeon", "#9c6332"),
         R: tileEntry("chest_rare_dungeon", "#b6324b"),
-        M: tileEntry("magma", "#e4511e")
+        M: tileEntry("tile_magma", "#e4511e")
     },
     ABYSS_FIELD: {
         W: tileEntry("forest", "#141720"),
@@ -226,8 +226,12 @@ const STORY_DATA = {
         FIRE_VILLAGE: { name: "炎の里", rank: 10, centerX: 97, centerY: 49, fieldTile: tileEntry("overlay_field_fire_village", "#d95b3a") },
         WIND_VILLAGE: { name: "風の集落", rank: 20, centerX: 98, centerY: 37, fieldTile: tileEntry("overlay_field_settlement", "#b8d889") },
         WATER_CITY: { name: "水上都市", rank: 30, centerX: 68, centerY: 21, fieldTile: tileEntry("overlay_field_town", "#5bd6ff") },
+        SEABED_TEMPLE: { name: "海底神殿", rank: 35, centerX: 68, centerY: 15, fieldTile: tileEntry("overlay_field_temple", "#5bd6ff") },
         BIG_TOWER: { name: "大灯台", rank: 30, centerX: 21, centerY: 79, fieldTile: tileEntry("overlay_field_lighthouse", "#f2e7aa") },
-        THUNDER_FORT: { name: "雷の要塞", rank: 40, centerX: 45, centerY: 36, fieldTile: tileEntry("overlay_field_fortress", "#f4d84a") },
+        THUNDER_FORT: { name: "雷の要塞", rank: 40, centerX: 45, centerY: 36, fieldTile: tileEntry("overlay_field_fortress", "#f4d84a"), entrances: [
+            { x: 45, y: 36, entryKey: "west", label: "西門" },
+            { x: 47, y: 36, entryKey: "east", label: "東門" }
+        ] },
         LIGHT_PALACE: { name: "光の宮殿", rank: 50, centerX: 67, centerY: 48, fieldTile: tileEntry("overlay_field_temple", "#eef0e8") },
         DARK_CASTLE: { name: "魔王城", rank: 60, centerX: 8, centerY: 50, fieldTile: tileEntry("overlay_field_darkcastle", "#db3b4d") },
         ABYSS: { name: "深淵の魔窟", rank: 70, centerX: 51, centerY: 55, fieldTile: tileEntry("overlay_field_lost", "#303541") },
@@ -256,13 +260,13 @@ const MAP_DATA = ["WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
 "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
 "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
 "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
 "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
 "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGGGGGGGWWWWWWWGGGGFFFFFFWWWWWWWWWWWWWWWWWWWWWWWWWW",
-"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGWWWWWWWWWGGGGGGGGGGGGGGGGGGWWWWWWWWWWGGGGFFFFFFWWWWWWWWWWWWWWWWWWWWWWWWW",
-"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGEGGGGGGGGGGGGGGGGGGGGGGGGGGGGGWWWWWWWWWWWWWWGGGGGGFFFFGWWWWWWWWWWWWWWWWWWWWWWW",
-"WWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGWWWWWWWWWWWWWWWWWWWWGGGGGGGGWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGWWWWWWWWWWGGGGGGGGGGGGGGGGGGWWWWWWWWWWGGGGFFFFFFWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGEGGGWWWGGGGGGGGGGGGGGGGGGGGGGGWWWWWWWWWWWWWWGGGGGGFFFFGWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGWWGGGGGGGGGGGGGGGGGGGGGGGWWWWWWWWWWWWWWWWWWWWGGGGGGGGWWWWWWWWWWWWWWWWWWWWWW",
 "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGGGGGGWWWWWWWGGGWWWWWWWWWWWWGGGGGGGWWWWWWWWWWWWWWWWWWWWW",
 "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGGGGWWWWGGGGIGWWWWWWWWWWWWGGGGGGGWWWWWWWWWWWWWWWWWWWWW",
 "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWFGGGGGGGGGGGGGGGGGWWWWWWWWWWWWWWGGGGGGWWWWWWWWWWWWWWWWWWWWWW",
@@ -274,14 +278,14 @@ const MAP_DATA = ["WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
 "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWMMMMMWWWWWWMMMMMFFFFFGGGGGGGGGGGGGGGGGGWWWWWGGGGGGGGFFFFFFWWWWWWWWWWW",
 "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWMMMMMMMMWWWWWMMMMMMFFFFFGGGGGGGGGGGGGGWWWWWGGGGGGGGGFFFFFFFFFWWWWWWWWW",
 "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWMMMMMMMMGWWWWWWWMMMMMFFFFFFFFGGGGGMMMGWWWWWGGGGGGGGFFFFFFFFFFFFWWWWWWWW",
-"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWMMMMMMMGGGGGWWWWWWMMMMMMFFFFFFFFFMMMMGWWWWWGGGGGGFFFFFFFFFFFFFFFFWWWWWWW",
-"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWMMMMMMllGGMMMMWWWWWWMMMMMMFFFFFFFMMMMWWWWWWGGGGGGFFFFFFFFFFFFMMMFFWWWWWWW",
-"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWMMMMMMlllGGMMMMMMMWWWWWWMMMMMMMFFMMMMMWWWWWWGGGGGGFFFFFFFFFFFMMMMFFFWWWWWWW",
-"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWMMMMMlllllGGGGGGMMMMMWWWWWWWMMMMMMMMMMWWWWWWGGGGGGGFFFFFFFFFFFMMMMFFFFFWWWWWW",
-"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWMMMMMllllllGGGGGGGGMMMMMMWWWWWWWMMMMMMWWWWWWWGGGGGGFFFFFFFFFFFFMMMMMGFFFWWWWWWW",
-"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWMMMMMlllllllGGGGIGGGGGFMMMMMWWWWWWWWMMMWWWWWWGGGGGGGFFFFFFFFFFFFMMMMGGGGGWWWWWWWW",
-"WWWWWWWWWWWWWWWWWWWWWWWWWWWMMMMMMllllllllGGGGGGGGGFFFFMMMMMWWWWWWWWWWWWWMGGGGGGFFFFFFFFFFFFFMMMMGGIGGWWWWWWWWW",
-"WWWWWWWWWWWWWWWWWWWWWWWWWMMMMMllllllllllllGGGGGGFFFFFFFFMMMMWWWWWWWWWWWMMMGGGFFFFFFFFFFFFFFMMMMGGGGGWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWMMMMMMMllGGGWWWWWWMMMMMMFFFFFFFFFMMMMGWWWWWGGGGGGFFFFFFFFFFFFFFFFWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWMMMMMMlllGGMMMWWWWWWMMMMMMFFFFFFFMMMMWWWWWWGGGGGGFFFFFFFFFFFFMMMFFWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWMMMMMMllllGGMMMMMMWWWWWWMMMMMMMFFMMMMMWWWWWWGGGGGGFFFFFFFFFFFMMMMFFFWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWMMMMMllllllGGMMMMMMMMWWWWWWWMMMMMMMMMMWWWWWWGGGGGGGFFFFFFFFFFFMMMMFFFFFWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWMMMMMlllllllGGMMMMMMMMMMMWWWWWWWMMMMMMWWWWWWWGGGGGGFFFFFFFFFFFFMMMMMGFFFWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWMMMMMllllllllGGGIMIGGMMMMMMMWWWWWWWWMMMWWWWWWGGGGGGGFFFFFFFFFFFFMMMMGGGGGWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWWWMMMMMMllllllllllllMMGGGFFFFMMMMMWWWWWWWWWWWWWMGGGGGGFFFFFFFFFFFFFMMMMGGIGGWWWWWWWWW",
+"WWWWWWWWWWWWWWWWWWWWWWWWWMMMMMllllllllllllllMMGGFFFFFFFFMMMMWWWWWWWWWWWMMMGGGFFFFFFFFFFFFFFMMMMGGGGGWWWWWWWWWW",
 "WWWWWWWWWWWWWWWWWWWWWWWWMMMMllllllllllllllMMMMGFFFFFFFFFFMMMMMWWWWWWWWMMMMMMGGFFFMMMMFFFFFMMMMMGGGGWWWWWWWWWWW",
 "WWWWWWWWWWWWWWWWWWWWWWMMMMMlllllllllllllMMMMMFFFFFFFFFFFFFFMMMMWWWWWWWWMMMMMMMMMMMMFFFFFFMMMMGGGGWWWWWWWWWWWWW",
 "WWWWWWWWWWWWWWWWWWWWMMMMMllllllllllllllMMMMMFFFFFFFFFFFFFFFFMMMMWWWWWWWMMMMMMMMMMMFFFFFMMMMMGGWWWWWWWWWWWWWWWW",
@@ -322,7 +326,7 @@ const MAP_DATA = ["WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
 "WWWWWWWWWWWWWWWWWWGGGGGGGGGGGGGFFFFGGGGGWWGGGGGGGGGGWWGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWMMMWWWWWWWWWWWWWWWWWWW",
 "WWWWWWWWWWWWWWWWWWGGGGGGGGGGGFFFFGGGGGWWWWWGGGGGGGGGWGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWMDMWWWWWWWWWWWWWWWWWWW",
 "WWWWWWWWWWWWWWWWWGGGGGGGGGGGGFFGGGGWWWWWWWWWWGGGGGGGWGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWMMMWWWWWWWWWWWWWWWWWWW",
-"WWWWWWWWWWWWWWWWGGGGGIGGGGGGGGGGWWWWWWWWWWWWWWWWGGGGWGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+"WWWWWWWWWWWWWWWWGGGGGGGGGGGGGGGGWWWWWWWWWWWWWWWWGGGGWGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
 "WWWWWWWWWWWWWWWWGGGGGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
 "WWWWWWWWWWWWWWWWGGGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
 "WWWWWWWWWWWWWWWGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
@@ -347,13 +351,17 @@ const FIXED_TILE_OVERLAYS = {
         C: tileEntry("overlay_field_chest", "#9c6332"),
         R: tileEntry("overlay_field_chest_rare", "#b6324b"),
         B: tileEntry("overlay_field_boss", "#db3b4d"),
+        A: tileEntry("overlay_npc_elder", "#d8c89a"),
+        J: tileEntry("overlay_npc_villager", "#8fb066"),
         P: tileEntry("overlay_field_event", "#8f7dff"),
         S: null // 出口は原則、床表示だけ。目印が欲しいMAPだけ overlay_field_stairs などを指定。
     },
     DEFAULT_DUNGEON: {
         C: tileEntry("overlay_named_dungeon_chest", "#9c6332"),
         R: tileEntry("overlay_named_dungeon_chest_rare", "#b6324b"),
-        B: tileEntry("overlay_named_dungeon_boss", "#db3b4d"),
+        B: tileEntry("overlay_monster_guardian", "#db3b4d"),
+        A: tileEntry("overlay_npc_bronze_knight", "#b8843a"),
+        J: tileEntry("overlay_monster_guardian", "#7f68a5"),
         D: tileEntry("overlay_named_dungeon_stairs_down", "#d7b45a"),
         U: tileEntry("overlay_named_dungeon_stairs_up", "#d7b45a"),
         S: tileEntry("overlay_named_dungeon_stairs_up", "#d7b45a"),
@@ -372,19 +380,26 @@ const FIXED_TILE_OVERLAYS = {
         D: tileEntry("overlay_field_cave", "#303541")
     },
     FIRE_VILLAGE: {
-        H: tileEntry("overlay_field_house_1", "#d9bd84"),
-        V: tileEntry("overlay_field_fire_village", "#d95b3a"),
+        H: tileEntry("overlay_building_fire_forge", "#d9bd84"),
+        V: tileEntry("overlay_building_fire_forge", "#d95b3a"),
+        A: tileEntry("overlay_npc_elder", "#d8c89a"),
+        J: tileEntry("overlay_npc_villager", "#8fb066"),
         P: tileEntry("overlay_field_event", "#ff8a3d"),
         D: tileEntry("overlay_field_cave", "#303541")
     },
     WIND_VILLAGE: {
-        H: tileEntry("overlay_field_house_1", "#cbb77e"),
-        V: tileEntry("overlay_field_settlement", "#d9bd84"),
+        H: tileEntry("overlay_building_wind_hut", "#cbb77e"),
+        V: tileEntry("overlay_building_wind_hut", "#d9bd84"),
+        A: tileEntry("overlay_npc_child", "#d9d28c"),
+        J: tileEntry("overlay_npc_child", "#b7d8a6"),
         P: tileEntry("overlay_field_event", "#8f7dff")
     },
     WATER_CITY: {
-        H: tileEntry("overlay_field_town", "#d9bd84"),
-        V: tileEntry("overlay_field_shop", "#7e3fa1"),
+        H: tileEntry("overlay_building_water_shop", "#d9bd84"),
+        V: tileEntry("overlay_building_water_shop", "#7e3fa1"),
+        A: tileEntry("overlay_npc_villager", "#8fb066"),
+        J: tileEntry("overlay_npc_villager", "#8fb066"),
+        R: tileEntry("overlay_npc_dark_soldier", "#333946"),
         P: tileEntry("overlay_field_event", "#8f7dff")
     },
     ABYSS_FIELD: {
@@ -397,9 +412,11 @@ const FIXED_TILE_OVERLAYS = {
 
 const FIXED_OVERLAY_BASE_TILES = {
     // オーバーレイの下に敷く床。未指定は T。
-    DEFAULT_FIELD: { H: "G", V: "T", I: "T", K: "T", E: "T", D: "T", C: "T", R: "T", B: "T", P: "T", S: "S" },
-    DEFAULT_DUNGEON: { C: "T", R: "T", B: "T", D: "T", U: "T", S: "T", P: "T", V: "T", X: "T", Y: "T", Z: "T", Q: "T", N: "T", O: "T" },
-    WATER_CITY: { H: "T", V: "T", I: "T", K: "T", E: "T", P: "G" },
+    DEFAULT_FIELD: { H: "T", V: "T", I: "T", K: "T", E: "T", D: "T", C: "T", R: "T", B: "T", A: "T", J: "T", P: "T", S: "S" },
+    DEFAULT_DUNGEON: { C: "T", R: "T", B: "T", A: "T", J: "T", D: "T", U: "T", S: "T", P: "T", V: "T", X: "T", Y: "T", Z: "T", Q: "T", N: "T", O: "T" },
+    FIRE_VILLAGE: { H: "T", V: "T", A: "T", J: "T", P: "T", D: "T" },
+    WIND_VILLAGE: { H: "T", V: "T", A: "T", J: "T", P: "T" },
+    WATER_CITY: { H: "T", V: "T", I: "T", K: "T", E: "T", A: "T", J: "T", R: "T", P: "G" },
     ABYSS_FIELD: { D: "T" },
     RUINED_SHRINE: { P: "T" }
 };
@@ -451,29 +468,55 @@ const FIXED_MAPS = {
         battleBg: "battle_bg_fire",
         tiles: [
             "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-            "WTTTTTTTTTTTTTTTTTTTTTTTTTTTW",
-            "WTTMMTTTTTTTTTTTTTTTTTTTTTTTW",
-            "WTTMMTTTTTTTTTTTTTTTTTTTTTTTW",
-            "WTTMMTHTVTTTTTTTTTTTHTVTTTTTW",
-            "WTTMMTTTTTTTTTTTTTTTTTTTTTTTW",
-            "WTTMMTTTTTTTTTTTTTTTTTTTTTTTW",
-            "WTTMMTTTTGGGGGTGGGGGTTTTTTTTW",
-            "WTTMMTTTTGGGGGTGGGGGTTTTTTTTW",
-            "WTTMMTTTTGGTTTTTTTGGTTTTTTTTW",
-            "WTTTTTTTTTTTTTTTTTTTTTTTTTTTW",
-            "WTTTTTTTTGGTTTTTTTGGTTTTMMTTW",
-            "WTTTTTTTTGGGGGTGGGGGTTTTMMTTW",
-            "WTTTTTTTTGGGGGTGGGGGTTTTMMTTW",
-            "WTTTTTTTTTTTTTTTTTTTTTTTMMTTW",
-            "WTTTTTVTHTTTTTTTTTTTVTHTMMTTW",
-            "WTTTTTTTTTTTTTTTTTTTTTTTMMTTW",
-            "WTTTTTTTTTTTTTTTTTTTTTTTMMTTW",
-            "WTTTTTTTTTTTTTTTTTTTTTTTTTTTW",
-            "WTTTTTTTTTTTTTTTTTTTTTTTTTTTW",
+            "WMMMMTTTTTTTTTDTTTTTTTTTMMMMW",
+            "WMMMMTTTTTTTTTTTTTTTTTTTMMMMW",
+            "WMMMMTTHTTTTTTTTTTHTTTTTMMMMW",
+            "WMMMMTVJTTTTTTTTTTTJVTTTMMMMW",
+            "WMMMMTTTTTTTTTTTTTTTTTTTMMMMW",
+            "WMMMMTTGGGGGMMMMMGGGGGTTMMMMW",
+            "WMMMMTTGGGGGMMMMMGGGGGTTMMMMW",
+            "WMMMMTTGGGGGGGGGGGGGGGTTMMMMW",
+            "WMMMMTTTTTTTTTTTTTTTTTTTMMMMW",
+            "WMMMMTTTGGGGGGPGGGGGGTTTMMMMW",
+            "WMMMMTTTGGGGGGGGGGGGGTTTMMMMW",
+            "WMMMMTTTGGGGGGGGGGGGGTTTMMMMW",
+            "WMMMMHTTTTTTTTTTTTTTTTHTMMMMW",
+            "WMMMMTTVJTTTTGGGTTTTJVTTMMMMW",
+            "WMMMMTTTTTTGGGGGGGTTTTTTMMMMW",
+            "WMMMMTTTTTTGGGGGGGTTTTTTMMMMW",
+            "WMMMMTTTTTTGGGAGGGTTTTTTMMMMW",
+            "WMMMMTTTTTTGGGGGGGTTTTTTMMMMW",
+            "WMMMMTTTTTTTTTTTTTTTTTTTTTTTW",
             "WWWWWWWWWWWWWWSSWWWWWWWWWWWWW"
         ],
         mapActions: [
-            { x: 14, y: 17, label: "火口を調べる", log: "火の力が渦巻いている。奪われた宝玉の余熱だけが残っている。", type: "log" }
+            {
+                x: 14,
+                y: 17,
+                label: "里の長に話す",
+                log: "里の長が弱まった炎を見つめている。",
+                type: "log",
+                events: [
+                    { stepMin: 0, stepMax: 1, eventId: "fire_village_elder_before_story" },
+                    { stepMin: 2, stepMax: 2, subMin: 2, subMax: 3, eventId: "fire_village_elder_during_volcano" },
+                    { stepMin: 3, stepMax: 99, eventId: "fire_village_elder_after_clear" },
+                    { default: true, eventId: "fire_village_elder_idle" }
+                ]
+            },
+            {
+                x: 14,
+                y: 1,
+                label: "イグナ火山へ入る",
+                log: "北の火山道から、熱と魔物の気配が流れてくる。",
+                type: "fixedDungeon",
+                target: "IGNIS_VOLCANO",
+                requiredStoryStep: 2,
+                requiredSubStep: 2,
+                requiredStoryMissingText: "火山道から熱気が吹き下ろしてくる。今はまだ、里の事情を聞かずに踏み込むべきではなさそうだ。",
+                events: [
+                    { stepMin: 2, stepMax: 2, subMin: 2, subMax: 2, eventId: "fire_volcano_entrance" }
+                ]
+            }
         ],
         exitPoint: { area: "WORLD", x: 97, y: 50 }
     },
@@ -493,28 +536,54 @@ const FIXED_MAPS = {
         tiles: [
             "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
             "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-            "WWWWWWWGGGGGGGGGGGGGGGWWWWWWW",
-            "WWWWWWWGGGGGGGLGGGGGGGWWWWWWW",
-            "WWGGGGGGGGGGGGLGGGGGGGWWWWWWW",
-            "WWGGGTTTTTVTTTITTTHTTTTTGGGWW",
-            "WWGGGTTHTTTTTTLTTTTTTTTTGGGWW",
-            "WWGGGTTTTTTTTTLTTTTTTVTTGGGWW",
-            "WWGGGTTTTTTTTTLTTTTTTTTTGGGWW",
-            "WWGGGTTTTTTTTTLTTTTTTTTTGGGWW",
-            "WWGGGTTLLLLLLLLLLLLLLLTTGGGWW",
-            "WWGGGTTTTTTTTTLTTTTTTTTTGGGWW",
-            "WWGGGTTTTTTTTTLTTTTTTTTTGGGWW",
-            "WWGGGTTTTTTTTTLTTTTTTTTTGGGWW",
-            "WWGGGTTHTTTTTTLTTTTTTVTTGGGWW",
-            "WWGGGTTTTTTTTTPTTTTTTTTTGGGWW",
-            "WWWWWWWWGGGGGGLGGGGGGGWWWWWWW",
-            "WWWWWWWWGGGGGGLGGGGGGGWWWWWWW",
-            "WWWWWWWWGGGGGGGGGGGGGGWWWWWWW",
-            "WWWWWWWWWWWWWWGGWWWWWWWWWWWWW",
+            "WGGGGGGGGGGGGGGGGGGGGGGGGGGGW",
+            "WGGGGGGGGGGGGLLLGGGGGGGGGGGGW",
+            "WGGTTTTTTTTTTLLLTTTTTTTTTTGGW",
+            "WGGTTTHTTTTTTLLLTTTTTVTTTTGGW",
+            "WGGTTTTJTTTTTLLLTTTTJTTTTTGGW",
+            "WGGTTTTTTTTTTLLLTTTTTTTTTTGGW",
+            "WLLLLLLLLLLLLLLLTTTTTTTTTTGGW",
+            "WLLLLLLLLLLLLLLLTTTTTTTTTTGGW",
+            "WLPLLLLLLLLLLLLLTTTTTTTTTTGGW",
+            "WGGTTTTTTTTTTLLLTTTTTTTTTTGGW",
+            "WGGTTTTTTJTTTLLLTTTTTTJTTTGGW",
+            "WGGTTTTTHTTTTLLLTTTTTVTTTTGGW",
+            "WGGTTTTTTTTTTLLLTTTTTTTTTTGGW",
+            "WGGTTTTTTTTTTLALTTTTTTTTTTGGW",
+            "WGGGGGGGGGGGGLLLGGGGGGGGGGGGW",
+            "WGGGGGGGGGGGGLLLGGGGGGGGGGGGW",
+            "WGGGGGGGGGGGGLLLGGGGGGGGGGGGW",
+            "WWWWWWWWWWWWWWGWWWWWWWWWWWWWW",
             "WWWWWWWWWWWWWWSSWWWWWWWWWWWWW"
         ],
         mapActions: [
-            { x: 14, y: 15, label: "風見台を調べる", log: "高台から世界を渡る風が吹き抜けている。", type: "log" }
+            {
+                x: 14,
+                y: 15,
+                label: "エリーゼに話す",
+                log: "子どもたちが不安そうに身を寄せ合っている。",
+                type: "log",
+                events: [
+                    { stepMin: 0, stepMax: 2, eventId: "wind_village_before_story" },
+                    { stepMin: 3, stepMax: 3, subMin: 1, subMax: 2, eventId: "wind_village_elise_during" },
+                    { stepMin: 4, stepMax: 99, eventId: "wind_village_after_clear" },
+                    { default: true, eventId: "wind_village_before_story" }
+                ]
+            },
+            {
+                x: 2,
+                y: 10,
+                label: "禁忌の森へ入る",
+                log: "西の森から、淀んだ風が吹き込んでくる。",
+                type: "fixedDungeon",
+                target: "FORBIDDEN_FOREST",
+                requiredStoryStep: 3,
+                requiredSubStep: 1,
+                requiredStoryMissingText: "森の奥から、呼吸をひそめるような風が流れてくる。案内もなく進めば、すぐに道を失いそうだ。",
+                events: [
+                    { stepMin: 3, stepMax: 3, subMin: 1, subMax: 1, eventId: "wind_forest_entry" }
+                ]
+            }
         ],
         exitPoint: { area: "WORLD", x: 98, y: 38 }
     },
@@ -534,34 +603,46 @@ const FIXED_MAPS = {
         tiles: [
             "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
             "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-            "WWTTTTTTTTTTTWTTTTTTTTTTTWTTTTTTTTTTTWW",
-            "WWTTTTTTTTTTTWTTTTTTTTTTTWTTTTTTTTTTTWW",
-            "WWTTTTHTTTTTTWTTTTITTTTTTWTTTTVTTTTTTWW",
-            "WWTTTTTTTTTTLLLTTTTTTTTTLLLTTTTTTTTTTWW",
-            "WWTTTTTTTTTTTWTTTTTTTTTTTWTTTTTTTTTTTWW",
-            "WWTTTTTTTVTTTWTTTTTTTTHTTWTTTTTTTHTTTWW",
-            "WWTTTTTTTTTTTWTTTTTTTTTTTWTTTTTTTTTTTWW",
-            "WWTTTTTTTTTTTWTTTTTLTTTTTWTTTTTTTTTTTWW",
-            "WWWWWWWWWWWWWWWGGGGLGGGGWWWWWWWWWWWWWWW",
-            "WWWWLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLWWWW",
-            "WWTTTTTTTTTTTWTGGGGLGGGGTWTTTTTTTTTTTWW",
-            "WWTTTTTTTTTTTWTGGGGPGGGGTWTTTTTTTTTTTWW",
-            "WWTTTTTTTTTTTWTGGGGGGGGGTWTTTTTTTTTTTWW",
-            "WWTTTTTTTTTTTWTGGGGGGGGGTWTTTTTTTTTTTWW",
-            "WWTTTTHTTTTTTWTGGGGLGGGGTWTTTTHTTTTTTWW",
-            "WWTTTTTTTTTTLLLTTTTLTTTTLLLTTTTTTTTTTWW",
-            "WWTTTTTTTTTTTWTTTTKLTTTTTWTTTTTTTTTTTWW",
-            "WWTTTTTTTTTTTWTTTTTLTTTTTWTTTTTTTTTTTWW",
-            "WWTTTTTTTVTTTWTTTTTLTTETTWTTTTTTTVTTTWW",
-            "WWTTTTTTTTTTTWTTTTTLTTTTTWTTTTTTTTTTTWW",
-            "WWTTTTTTTTTTTWTTTTTLTTTTTWTTTTTTTTTTTWW",
+            "WTTTTTTTTTTTTWTTTTTTTTTTTWTTTTTTTTTTTTW",
+            "WTTTTHTTTTTTTWTTTTTTTTTTTWTTTTTHTTTTTTW",
+            "WTTTTTVTTTTTTWTTTTTITTTTTWTTTTTTJTTTTTW",
+            "WTTTTTTTTTTTLLLTTTTTTTTTLLLTTTTTTTTTTTW",
+            "WTTTTTTTTTTTTWTTTTTTTTTTTWTTTTTTTTTTTTW",
+            "WTTTTTTTTTTTTWTTTTTTTTTTTWTTTTTTTTTTTTW",
+            "WTTTTTTTTTTTTWTTTTTTTTTTTWTTTTTTTTTTTTW",
+            "WTTTTTTTTTTTTWTTTTLLLTTTTWTTTTTTTTTTTTW",
+            "WLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLW",
+            "WLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLW",
+            "WTTTTTTTATTTTWTTTGLLLGTTTWTTTTTTTTTTTTW",
+            "WTTTTTTTTTTTTWTTTGLRLGTTTWTTTTTTTTTTTTW",
+            "WTTTTTTTTTTTTWTTTGLJLGTTTWTTTTTTTTTTTTW",
+            "WTTTTTTTTTTTLLLTTGLLLGTTLLLTTTTTTTTTTTW",
+            "WTTTTTHTTTTTTWTTTGLLLGTTTWTTTTTHTTTTTTW",
+            "WTTTTTTTTTTTTWTTTTLLLTTTTWTTTTTTTTJTTTW",
+            "WTTTTTTTVTTTTWTTTTKLLETTTWTTTTTTTTTTTTW",
+            "WTTTTTTTTTTTTWTTTTLLLTTTTWTTTTTTTTTTTTW",
+            "WTTTTTTTRTTTTWTTTTLLLTTTTWTTTTTRTTTTTTW",
+            "WTTTTTTTTTTTTWTTTTLLLTTTTWTTTTTTTTTTTTW",
+            "WTTTTTTTTTTTTWTTTTTTTTTTTWTTTTTTTTTTTTW",
             "WWWWWWWWWWWWWWWWWWWLWWWWWWWWWWWWWWWWWWW",
             "WWWWWWWWWWWWWWWWWWWLWWWWWWWWWWWWWWWWWWW",
             "WWWWWWWWWWWWWWWWWWWLWWWWWWWWWWWWWWWWWWW",
             "WWWWWWWWWWWWWWWWWWWSWWWWWWWWWWWWWWWWWWW"
         ],
         mapActions: [
-            { x: 19, y: 13, label: "噴水を調べる", log: "澄んだ水が静かに湧き続けている。", type: "log" }
+            {
+                x: 19,
+                y: 13,
+                label: "広場を調べる",
+                log: "濁った水路の音が、街の沈黙に混じっている。",
+                type: "log",
+                events: [
+                    { stepMin: 0, stepMax: 3, eventId: "water_city_before_story" },
+                    { stepMin: 4, stepMax: 4, subMin: 1, subMax: 99, eventId: "water_city_sophia_after_meeting" },
+                    { stepMin: 5, stepMax: 99, eventId: "water_city_after_clear" },
+                    { default: true, eventId: "water_city_before_story" }
+                ]
+            }
         ],
         exitPoint: { area: "WORLD", x: 68, y: 22 }
     },
@@ -746,1233 +827,2203 @@ const FIXED_DUNGEON_MAPS = {
         monsters: [100001, 100002, 100003, 100004],
         bosses: [{ x: 1, y: 1, monsterId: 301000 }]
     },
-    BIG_TOWER: {
-        name: "大灯台",
-        themeKey: "BIG_TOWER",
-        rank: 30,
-        encounterRank: 30, // monsters未指定時は30階相当で自動抽選
-        // monsters: [100026, 100027, 100028], // 指定するとこのIDだけが通常出現
-        tileOverrides: {
-            // T: tileEntry("tile_tower_floor", "#65314c"), // 塔の床
-            // W: tileEntry("tile_tower_wall", "#6a3e4a"), // 塔の壁
-        },
-        battleBg: "battle_bg_dungeon",
-        entryPoint: { x: 10, y: 19 },
+    IGNIS_VOLCANO: {
+        name: "イグナ火山",
+        themeKey: "FIRE_VILLAGE",
+        rank: 12,
+        encounterRank: 12,
+        battleBg: "battle_bg_fire",
+        overlayOverrides: { B: tileEntry("overlay_npc_bronze_knight", "#b8843a") },
+        entryPoint: { x: 10, y: 18 },
         floors: [
-        {
-            label: "1階",
-            encounterRank: 30,
-            monsters: [100026, 100027, 100028],
-            width: 21,
-            height: 21,
-            tiles: [
-                "WWWWWWWWWWWWWWWWWWWWW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTCTTTTTTTTTTTTTTTDTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTTTTTTTTTTTTTTTTCTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WWWWWWWWWWSWWWWWWWWWW"
-        ],
-            floorLinks: [
-                {
+            {
+                label: "火山道",
+                encounterRank: 12,
+                monsters: [100010,100011,100012],
+                width: 21,
+                height: 21,
+                tiles: [
+                    "WWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWTTTCTW",
+                    "WWWMMWWWWWWWWWWTTTTTW",
+                    "WWWMWWWWWWWWWWTTTTTTW",
+                    "WWWWWWWWWWWWWWTTGTTTW",
+                    "WWWWWWWWWWWWWWTTTTDTW",
+                    "WWWWWWWWWWWWWWTTTGTTW",
+                    "WWWWWWWWWWWWWWTTTTTTW",
+                    "WWTTTTTWWWWWWWWTWWWWW",
+                    "WWTTGTTWWWWWWWWTWWWWW",
+                    "WWTTTGTWWWWWWWWTWWWWW",
+                    "WWTTTTTWWWWWWWWTWWWWW",
+                    "WWTTTTTTTTTTTTTTWWWWW",
+                    "WWWWWWWWWWTWWWWWWWWWW",
+                    "WWWWWMWWWWTWWWWWWWWWW",
+                    "WWWWWWWWWWTWWWWWMMMWW",
+                    "WWWWWWWTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTGTTWWWWWWW",
+                    "WWWWWWWTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTWWWWWWW",
+                    "WWWWWWWWWWSWWWWWWWWWW"
+                ],
+                floorLinks: [
+                    {
+                        "x": 10,
+                        "y": 20,
+                        "to": "EXIT",
+                        "label": "里へ戻る"
+                    },
+                    {
+                        "x": 18,
+                        "y": 5,
+                        "toFloor": 2,
+                        "targetX": 2,
+                        "targetY": 17,
+                        "label": "溶岩回廊へ"
+                    }
+                ],
+                chests: [
+                    {
+                        "x": 18,
+                        "y": 1,
+                        "itemId": 1,
+                        "type": "item"
+                    }
+                ],
+                entryPoint: {
                     "x": 10,
-                    "y": 20,
-                    "to": "EXIT",
-                    "label": "外に出る"
-                },
-                {
-                    "x": 18,
-                    "y": 2,
-                    "toFloor": 2,
-                    "targetX": 18,
-                    "targetY": 18,
-                    "label": "下の階へ"
+                    "y": 18
                 }
-            ],
-            chests: [
-                {
+            },
+            {
+                label: "溶岩回廊",
+                encounterRank: 14,
+                monsters: [100012,100013,100014],
+                width: 21,
+                height: 21,
+                tiles: [
+                    "WWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWTTTTTDW",
+                    "WWWWWWWWWWWWWWTTTTGTW",
+                    "WWWWWWWWWWTTTTTTTTTTW",
+                    "WWWWWWWWWWTWWWTTTTTTW",
+                    "WWWMMMWWWWTWWWTTTTTTW",
+                    "WWWWWWWWWWTWWWWWWWWWW",
+                    "WWWWWWWWWWTWWWWWWWWWW",
+                    "WWWWWWWTTTTTTTWWWWWWW",
+                    "WWWWWWWTTGTGTTWMMWWWW",
+                    "WWWWWTTTTTTTTTWMMWWWW",
+                    "WWWWWTWTTGTGTTWWWWWWW",
+                    "WWWWWTWTTTTTTTWWWWWWW",
+                    "WWWWWTWWWWWWWWWWWWWWW",
+                    "WTTTTTWWWWWWWWWWWWWWW",
+                    "WCTTTTWWWWWWMMWWWWWWW",
+                    "WTTTTTWWWWWWWWWWWWWWW",
+                    "WTUTTTWWWWWWWWWWWWWWW",
+                    "WTTTTTWWWWWWWWWWWWWWW",
+                    "WTTTTTWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWW"
+                ],
+                floorLinks: [
+                    {
+                        "x": 2,
+                        "y": 17,
+                        "toFloor": 1,
+                        "targetX": 18,
+                        "targetY": 5,
+                        "label": "火山道へ戻る"
+                    },
+                    {
+                        "x": 19,
+                        "y": 1,
+                        "toFloor": 3,
+                        "targetX": 10,
+                        "targetY": 17,
+                        "label": "火の祭壇へ"
+                    }
+                ],
+                chests: [
+                    {
+                        "x": 1,
+                        "y": 15,
+                        "itemId": 99,
+                        "type": "item"
+                    }
+                ],
+                entryPoint: {
                     "x": 2,
-                    "y": 2,
-                    "itemId": 1,
-                    "type": "item"
-                },
-                {
-                    "x": 18,
-                    "y": 18,
-                    "itemId": 3,
-                    "type": "item"
+                    "y": 17
                 }
-            ],
-        },
-        {
-            label: "2階",
-            encounterRank: 31,
-            monsters: [100027, 100028, 100029],
-            width: 21,
-            height: 21,
-            tiles: [
-                "WWWWWWWWWWWWWWWWWWWWW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTDTTTTTTTTTTTTTTTTTW",
-                "WTTWWTWWWWTTWWWWWWTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTWWTWWWWTTWWWWWWTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTWWTWWWWTTWWWWWWTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTWWTWWWWTTWWWWWWTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTUTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WWWWWWWWWWWWWWWWWWWWW"
-        ],
-            floorLinks: [
-                {
-                    "x": 18,
-                    "y": 18,
-                    "toFloor": 1,
-                    "targetX": 18,
-                    "targetY": 2,
-                    "label": "上の階へ"
-                },
-                {
-                    "x": 2,
-                    "y": 2,
-                    "toFloor": 3,
-                    "targetX": 2,
-                    "targetY": 18,
-                    "label": "下の階へ"
-                }
-            ],
-        },
-        {
-            label: "3階",
-            encounterRank: 32,
-            monsters: [100028, 100029, 100030],
-            width: 21,
-            height: 21,
-            tiles: [
-                "WWWWWWWWWWWWWWWWWWWWW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTCTTTTTTTTTTTTTTTDTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTWTTTTTTTTTTTWTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTWTTTTTTTWTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTWTTTTTTTWTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTWTTTTTTTTTTTWTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTUTTTTTTTTTTTTTTTCTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WWWWWWWWWWWWWWWWWWWWW"
-        ],
-            floorLinks: [
-                {
-                    "x": 2,
-                    "y": 18,
-                    "toFloor": 2,
-                    "targetX": 2,
-                    "targetY": 2,
-                    "label": "上の階へ"
-                },
-                {
-                    "x": 18,
-                    "y": 2,
-                    "toFloor": 4,
-                    "targetX": 18,
-                    "targetY": 18,
-                    "label": "下の階へ"
-                }
-            ],
-            chests: [
-                {
-                    "x": 2,
-                    "y": 2,
-                    "itemId": 1,
-                    "type": "item"
-                },
-                {
-                    "x": 18,
-                    "y": 18,
-                    "itemId": 3,
-                    "type": "item"
-                }
-            ],
-        },
-        {
-            label: "4階",
-            encounterRank: 33,
-            monsters: [100029, 100030, 100031],
-            width: 21,
-            height: 21,
-            tiles: [
-                "WWWWWWWWWWWWWWWWWWWWW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTDTTTTTTTTTTTTTTTTTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTTTTTTTTTTTTTTTTUTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WWWWWWWWWWWWWWWWWWWWW"
-        ],
-            floorLinks: [
-                {
-                    "x": 18,
-                    "y": 18,
-                    "toFloor": 3,
-                    "targetX": 18,
-                    "targetY": 2,
-                    "label": "上の階へ"
-                },
-                {
-                    "x": 2,
-                    "y": 2,
-                    "toFloor": 5,
-                    "targetX": 2,
-                    "targetY": 18,
-                    "label": "下の階へ"
-                }
-            ],
-        },
-        {
-            label: "5階",
-            encounterRank: 34,
-            monsters: [100030, 100031, 100032],
-            width: 21,
-            height: 21,
-            tiles: [
-                "WWWWWWWWWWWWWWWWWWWWW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTCTTTTTTTTTTTTTTTDTW",
-                "WTTWWTWWWWTTWWWWWWTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTWWTWWWWTTWWWWWWTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTWWTWWWWTTWWWWWWTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTWWTWWWWTTWWWWWWTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTUTTTTTTTTTTTTTTTCTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WWWWWWWWWWWWWWWWWWWWW"
-        ],
-            floorLinks: [
-                {
-                    "x": 2,
-                    "y": 18,
-                    "toFloor": 4,
-                    "targetX": 2,
-                    "targetY": 2,
-                    "label": "上の階へ"
-                },
-                {
-                    "x": 18,
-                    "y": 2,
-                    "toFloor": 6,
-                    "targetX": 18,
-                    "targetY": 18,
-                    "label": "下の階へ"
-                }
-            ],
-            chests: [
-                {
-                    "x": 2,
-                    "y": 2,
-                    "itemId": 1,
-                    "type": "item"
-                },
-                {
-                    "x": 18,
-                    "y": 18,
-                    "itemId": 3,
-                    "type": "item"
-                }
-            ],
-        },
-        {
-            label: "6階",
-            encounterRank: 35,
-            monsters: [100031, 100032, 100033],
-            width: 21,
-            height: 21,
-            tiles: [
-                "WWWWWWWWWWWWWWWWWWWWW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTDTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTWTTTTTTTTTTTWTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTWTTTTTTTWTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTWTTTTTTTWTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTWTTTTTTTTTTTWTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTUTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WWWWWWWWWWWWWWWWWWWWW"
-        ],
-            floorLinks: [
-                {
-                    "x": 18,
-                    "y": 18,
-                    "toFloor": 5,
-                    "targetX": 18,
-                    "targetY": 2,
-                    "label": "上の階へ"
-                },
-                {
-                    "x": 2,
-                    "y": 2,
-                    "toFloor": 7,
-                    "targetX": 2,
-                    "targetY": 18,
-                    "label": "下の階へ"
-                }
-            ],
-        },
-        {
-            label: "7階",
-            encounterRank: 36,
-            monsters: [100032, 100033, 100034],
-            width: 21,
-            height: 21,
-            tiles: [
-                "WWWWWWWWWWWWWWWWWWWWW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTCTTTTTTTTTTTTTTTDTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTUTTTTTTTTTTTTTTTCTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WWWWWWWWWWWWWWWWWWWWW"
-        ],
-            floorLinks: [
-                {
-                    "x": 2,
-                    "y": 18,
-                    "toFloor": 6,
-                    "targetX": 2,
-                    "targetY": 2,
-                    "label": "上の階へ"
-                },
-                {
-                    "x": 18,
-                    "y": 2,
-                    "toFloor": 8,
-                    "targetX": 18,
-                    "targetY": 18,
-                    "label": "下の階へ"
-                }
-            ],
-            chests: [
-                {
-                    "x": 2,
-                    "y": 2,
-                    "itemId": 1,
-                    "type": "item"
-                },
-                {
-                    "x": 18,
-                    "y": 18,
-                    "itemId": 3,
-                    "type": "item"
-                }
-            ],
-        },
-        {
-            label: "8階",
-            encounterRank: 37,
-            monsters: [100033, 100034, 100035],
-            width: 21,
-            height: 21,
-            tiles: [
-                "WWWWWWWWWWWWWWWWWWWWW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTDTTTTTTTTTTTTTTTTTW",
-                "WTTWWTWWWWTTWWWWWWTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTWWTWWWWTTWWWWWWTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTWWTWWWWTTWWWWWWTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTWWTWWWWTTWWWWWWTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTUTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WWWWWWWWWWWWWWWWWWWWW"
-        ],
-            floorLinks: [
-                {
-                    "x": 18,
-                    "y": 18,
-                    "toFloor": 7,
-                    "targetX": 18,
-                    "targetY": 2,
-                    "label": "上の階へ"
-                },
-                {
-                    "x": 2,
-                    "y": 2,
-                    "toFloor": 9,
-                    "targetX": 2,
-                    "targetY": 18,
-                    "label": "下の階へ"
-                }
-            ],
-        },
-        {
-            label: "9階",
-            encounterRank: 38,
-            monsters: [100034, 100035, 100036],
-            width: 21,
-            height: 21,
-            tiles: [
-                "WWWWWWWWWWWWWWWWWWWWW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTCTTTTTTTTTTTTTTTDTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTWTTTTTTTTTTTWTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTWTTTTTTTWTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTWTTTTTTTWTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTWTTTTTTTTTTTWTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTUTTTTTTTTTTTTTTTCTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WWWWWWWWWWWWWWWWWWWWW"
-        ],
-            floorLinks: [
-                {
-                    "x": 2,
-                    "y": 18,
-                    "toFloor": 8,
-                    "targetX": 2,
-                    "targetY": 2,
-                    "label": "上の階へ"
-                },
-                {
-                    "x": 18,
-                    "y": 2,
-                    "toFloor": 10,
-                    "targetX": 18,
-                    "targetY": 18,
-                    "label": "下の階へ"
-                }
-            ],
-            chests: [
-                {
-                    "x": 2,
-                    "y": 2,
-                    "itemId": 1,
-                    "type": "item"
-                },
-                {
-                    "x": 18,
-                    "y": 18,
-                    "itemId": 3,
-                    "type": "item"
-                }
-            ],
-        },
-        {
-            label: "10階",
-            encounterRank: 40,
-            monsters: [100036, 100037, 100038],
-            width: 21,
-            height: 21,
-            tiles: [
-                "WWWWWWWWWWWWWWWWWWWWW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTCTTTTTTTTTTTTTTTTTW",
-                "WTTWTTTTTTTTTTTWTTTTW",
-                "WTTWTTTTTTBTTTTWTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTWTTTTTTTTTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTTW",
-                "WTTTTTTTTTTTTTTTTTUTW",
-                "WTTTTTTTTTTTTTTTTTTTW",
-                "WWWWWWWWWWWWWWWWWWWWW"
-        ],
-            floorLinks: [
-                {
-                    "x": 18,
-                    "y": 18,
-                    "toFloor": 9,
-                    "targetX": 18,
-                    "targetY": 2,
-                    "label": "上の階へ"
-                }
-            ],
-            chests: [
-                {
-                    "x": 2,
-                    "y": 2,
-                    "itemId": 1,
-                    "type": "item"
-                }
-            ],
-            bosses: [
-                {
+            },
+            {
+                label: "火の祭壇",
+                encounterRank: 16,
+                monsters: [100014,100015,100016],
+                width: 21,
+                height: 21,
+                tiles: [
+                    "WWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWTTTTTTTTTTTTTWWWW",
+                    "WWWWTMTTTTTTTTTMTWWWW",
+                    "WWWWTTTGGGBGGGTTTWWWW",
+                    "WWWWTTTGMGTGMGTTTWWWW",
+                    "WWWWTTTGGGTGGGTTTWWWW",
+                    "WWWWTTTGGGTGGGTTTWWWW",
+                    "WWWWTTTTTTTTTTTTTWWWW",
+                    "WWWWTMTTTTTTTTTMTWWWW",
+                    "WWWWTTTTTTTTTTTTTWWWW",
+                    "WWWWWWWWWWTWWWWWWWWWW",
+                    "WWWWWTTTTTTTTTTTWWWWW",
+                    "WWWWWTTTTTTTTTTTWWWWW",
+                    "WWWWWTTTTTTTTTTTWWWWW",
+                    "WWWWWTTTTTUTTTTTWWWWW",
+                    "WWWWWTTTTTTTTTTTWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWW"
+                ],
+                floorLinks: [
+                    {
+                        "x": 10,
+                        "y": 17,
+                        "toFloor": 2,
+                        "targetX": 19,
+                        "targetY": 1,
+                        "label": "溶岩回廊へ戻る"
+                    }
+                ],
+                bosses: [
+                    {
+                        "x": 10,
+                        "y": 6,
+                        "monsterId": [
+                            301002,
+                            301001,
+                            301001,
+                            301001
+                        ],
+                        "startEventId": "fire_volcano_soldiers_encounter",
+                        "storyEventId": "fire_volcano_soldiers_clear",
+                        "actionLabel": "兵士に声をかける"
+                    }
+                ],
+                entryPoint: {
                     "x": 10,
-                    "y": 4,
-                    "monsterId": 401050,
-                    "storyEventId": "big_tower_clear"
+                    "y": 17
                 }
-            ],
-        }
-    ]
+            }
+        ]
     },
-    THUNDER_FORT: {
-        name: "雷の要塞",
-        themeKey: "THUNDER_FORT",
-        rank: 40,
-        encounterRank: 40, // monsters未指定時は40階相当で自動抽選
-        // monsters: [100036, 100037, 100038],
+    FORBIDDEN_FOREST: {
+        name: "禁忌の森",
+        themeKey: "WIND_VILLAGE",
         tileOverrides: {
-            // T: tileEntry("tile_thunder_floor", "#52616c"), // 要塞の床
-            // W: tileEntry("tile_thunder_wall", "#52616c"), // 要塞の壁
+            W: tileEntry("forest", "#1f6a3f"),
+            T: tileEntry("floor", "#2c7a4e"),
+            G: tileEntry("floor", "#3f8b54"),
+            S: tileEntry("floor", "#d7b45a")
         },
-        battleBg: "battle_bg_dungeon",
-        entryPoint: { x: 8, y: 15 },
+        rank: 22,
+        encounterRank: 22,
+        battleBg: "battle_bg_forest",
+        entryPoint: { x: 2, y: 15 },
         floors: [
-        {
-            label: "1階",
-            encounterRank: 40,
-            monsters: [100036, 100037, 100038],
-            width: 17,
-            height: 17,
-            tiles: [
-                "WWWWWWWWWWWWWWWWW",
-                "WTTTTTTTTTTTTTTTW",
-                "WTCTTTTTTTTTTTDTW",
-                "WTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTTW",
-                "WTTTTTTTTTTTTTTTW",
-                "WTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTTW",
-                "WTTTTTTTTTTTTTTTW",
-                "WTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTTW",
-                "WTTTTTTTTTTTTTTTW",
-                "WTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTTW",
-                "WTTTTTTTTTTTTTCTW",
-                "WTTTTTTTTTTTTTTTW",
-                "WWWWWWWWSWWWWWWWW"
-        ],
-            floorLinks: [
-                {
-                    "x": 8,
-                    "y": 16,
-                    "to": "EXIT",
-                    "label": "外に出る"
-                },
-                {
-                    "x": 14,
-                    "y": 2,
-                    "toFloor": 2,
-                    "targetX": 14,
-                    "targetY": 14,
-                    "label": "下の階へ"
-                }
-            ],
-            chests: [
-                {
-                    "x": 2,
-                    "y": 2,
-                    "itemId": 1,
-                    "type": "item"
-                },
-                {
-                    "x": 14,
-                    "y": 14,
-                    "itemId": 3,
-                    "type": "item"
-                }
-            ],
-        },
-        {
-            label: "地下1階",
-            encounterRank: 42,
-            monsters: [100038, 100039, 100040],
-            width: 17,
-            height: 17,
-            tiles: [
-                "WWWWWWWWWWWWWWWWW",
-                "WTTTTTTTTTTTTTTTW",
-                "WTDTTTTTTTTTTTTTW",
-                "WTTWWTWWTWWTWWTTW",
-                "WTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTW",
-                "WTTWWTWWTWWTWWTTW",
-                "WTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTW",
-                "WTTWWTWWTWWTWWTTW",
-                "WTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTUTW",
-                "WTTTTTTTTTTTTTTTW",
-                "WWWWWWWWWWWWWWWWW"
-        ],
-            floorLinks: [
-                {
-                    "x": 14,
-                    "y": 14,
-                    "toFloor": 1,
-                    "targetX": 14,
-                    "targetY": 2,
-                    "label": "上の階へ"
-                },
-                {
-                    "x": 2,
-                    "y": 2,
-                    "toFloor": 3,
-                    "targetX": 2,
-                    "targetY": 14,
-                    "label": "下の階へ"
-                }
-            ],
-        },
-        {
-            label: "地下2階",
-            encounterRank: 44,
-            monsters: [100040, 100041, 100042],
-            width: 17,
-            height: 17,
-            tiles: [
-                "WWWWWWWWWWWWWWWWW",
-                "WTTTTTTTTTTTTTTTW",
-                "WTCTTTTTTTTTTTDTW",
-                "WTTTTTTTTTTTTTTTW",
-                "WTTTWTTTTTTTWTTTW",
-                "WTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTW",
-                "WTTTWTTTTTTTWTTTW",
-                "WTTTTTTTTTTTTTTTW",
-                "WTUTTTTTTTTTTTCTW",
-                "WTTTTTTTTTTTTTTTW",
-                "WWWWWWWWWWWWWWWWW"
-        ],
-            floorLinks: [
-                {
-                    "x": 2,
-                    "y": 14,
-                    "toFloor": 2,
-                    "targetX": 2,
-                    "targetY": 2,
-                    "label": "上の階へ"
-                },
-                {
-                    "x": 14,
-                    "y": 2,
-                    "toFloor": 4,
-                    "targetX": 14,
-                    "targetY": 14,
-                    "label": "下の階へ"
-                }
-            ],
-            chests: [
-                {
-                    "x": 2,
-                    "y": 2,
-                    "itemId": 1,
-                    "type": "item"
-                },
-                {
-                    "x": 14,
-                    "y": 14,
-                    "itemId": 3,
-                    "type": "item"
-                }
-            ],
-        },
-        {
-            label: "地下3階",
-            encounterRank: 46,
-            monsters: [100042, 100043, 100044],
-            width: 17,
-            height: 17,
-            tiles: [
-                "WWWWWWWWWWWWWWWWW",
-                "WTTTTTTTTTTTTTTTW",
-                "WTCTTTTTTTTTTTTTW",
-                "WTTWTTTTTTTTTTTTW",
-                "WTTWTTTTBTTTTTTTW",
-                "WTTTTTTTTTTTTTTTW",
-                "WTTWTTTTTTTTTTTTW",
-                "WTTWTTTWTTTWTTTTW",
-                "WTTTTTTTTTTTTTTTW",
-                "WTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTTW",
-                "WTTTTTTTTTTTTTTTW",
-                "WTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTTW",
-                "WTTTTTTTTTTTTTUTW",
-                "WTTTTTTTTTTTTTTTW",
-                "WWWWWWWWWWWWWWWWW"
-        ],
-            floorLinks: [
-                {
-                    "x": 14,
-                    "y": 14,
-                    "toFloor": 3,
-                    "targetX": 14,
-                    "targetY": 2,
-                    "label": "上の階へ"
-                }
-            ],
-            chests: [
-                {
-                    "x": 2,
-                    "y": 2,
-                    "itemId": 1,
-                    "type": "item"
-                }
-            ],
-            bosses: [
-                {
-                    "x": 8,
-                    "y": 4,
-                    "monsterId": 401030,
-                    "storyEventId": "thunder_fort_clear"
-                }
-            ],
-        }
-    ]
+            {
+                label: "封じられた森・深部",
+                encounterRank: 22,
+                monsters: [100020, 100021, 100022, 100023, 100024],
+                width: 53,
+                height: 31,
+                tiles: [
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWTTTTTGGGGGGGGGWWWWWWWWWWWWWWWTTTTTTGGG",
+                    "WWWWWWWWWWWWWWTTTTTTGGGGGGGGGWWWWWWWWWWWWWWTTTTTTTGSG",
+                    "WWWWWWWWWWWWWWTTTTTTGGGGGGGGGWWWWWWWWWWGGGGGGGGGGGGGG",
+                    "WWWWWWWWWWWGGGGGGGGGGGGGGWGGGWWWWWWWWWWGGGGGGGGGGGWWW",
+                    "WWWWWWWWWWWGGGGGGGGGWWWTTTWWWWWWWWWWTTTGWWGGGGGGGGWWW",
+                    "WWWWWWWWTTTGGGGGGGGGWWWTTTTTTTTTTTWTTTTGGGGGGGGGGGWWW",
+                    "WWWWWWWTTTTGGGGGGGGGWWWTTTTTTTTTTTWTTTTGGGGGGGGGGGWWW",
+                    "WWWWWWWTTTTGGGGGGGGGWWTTTTGGGGGGGGGTTTWGGGGGGGGGGGWWW",
+                    "WWWWGGGGGGGGGGGGGGGGWTTTTTGGGGGGGWGGGGGGGGGGGGGGGGWWW",
+                    "WWWWGGGGGGGGGGGGGGGGWTTTTTGGGGGGGGGGGGGGGWWWWWWWWWWWW",
+                    "WTTTGGGGGGGGWWTTTWWGGGGGGGCGBGGGGGGGGGGGGTTTTWWWWWWWW",
+                    "WSTTGGGGGGGGGWTTTWWGGGGGGGGGGGGGGGGZGGGGGTTTTTWWWWWWW",
+                    "WTTTGGGGGGGGGWTTTWWGGGGGGGGGGGGGGGGGGGGGGTTTTTWWWWWWW",
+                    "WWWWGGGGGGGGGWTTTTTGWGGGGGGGGGGGGGGGGGWGGGGGGGGGGWWWW",
+                    "WWWWGGGGGGGGGWTTTTTGWGGGGGGGGGWWGGGGGGGGGGGGGWGGGWWWW",
+                    "WWWWWWWTTTWWWWWTTTTGGGGGGGGGGGWWWWWWWWTTGGGGGGGGGTWWW",
+                    "WWWWWTTTTTWWWWWWWWWGGGGGGGGWGGTTTTTTTTTTGGGGGGRGGTWWW",
+                    "WWWWWTTTTTTTTTTTTTTGGGGGGGGGGGTTTTTTTTTTGGGGGGGGGTWWW",
+                    "WWWWWTTTTTTTTTTTTTTGGGGGGGGGGGTTTTTTTTTTGGGGGGGGGWWWW",
+                    "WWWWWTTTTTTCTTTTTTTTWWWWWWWWWTTTWWWWWWWWGGGGGGGGGWWWW",
+                    "WWWWWTWTWWWTTGGGGGGGGGGGWWWWWTTTWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWTTTTTTTTGGGGGGGGGGGTTTTTTTTWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWTTTTTTTTGGGGGGGGGGGTTTTTTTTWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWTTTTTTTGGGGGGGGGGGTTTTTTTWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWGGGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                floorLinks: [
+                    {
+                        x: 1,
+                        y: 15,
+                        to: "EXIT",
+                        label: "風の集落へ戻る",
+                        log: "集落へ続く森の出口だ。"
+                    },
+                    {
+                        x: 51,
+                        y: 5,
+                        toDungeon: "WIND_TEMPLE",
+                        label: "風の神殿へ入る",
+                        log: "森の奥に、風の神殿へ続く古い石門がある。",
+                        requiredFlag: "windForestCleansed",
+                        lockedLabel: "石門を調べる",
+                        lockedLog: "黒い風が石門を塞いでいる。祈りの広場の守護者を鎮めなければ進めなさそうだ。"
+                    }
+                ],
+                chests: [
+                    { x: 26, y: 14, itemId: 1, type: "item" },
+                    { x: 11, y: 23, itemId: 2, type: "item" },
+                    { x: 46, y: 20, itemId: 3, type: "item", rare: true }
+                ],
+                bosses: [
+                    {
+                        x: 28,
+                        y: 14,
+                        monsterId: [301011, 301012],
+                        keyRewardColor: "gold",
+                        startEventId: "wind_forest_guardians_encounter",
+                        storyEventId: "wind_forest_guardians_clear",
+                        actionLabel: "守護者に祈る",
+                        inspectLog: "森の中心で、黒い風に包まれた守護者がうずくまっている。"
+                    }
+                ],
+                entryPoint: { x: 2, y: 15 }
+            }
+        ]
     },
-    LIGHT_PALACE: {
-        name: "光の宮殿",
-        themeKey: "LIGHT_PALACE",
-        rank: 50,
-        encounterRank: 50, // monsters未指定時は50階相当で自動抽選
-        // monsters: [100046, 100047, 100048],
-        tileOverrides: {
-            // T: tileEntry("tile_light_floor", "#eef0e8"), // 宮殿の床
-            // W: tileEntry("tile_light_wall", "#d9ded4"), // 宮殿の壁
-        },
+    WIND_TEMPLE: {
+        name: "風の神殿",
+        themeKey: "WIND_VILLAGE",
+        rank: 26,
+        encounterRank: 26,
         battleBg: "battle_bg_dungeon",
-        entryPoint: { x: 12, y: 19 },
+        entryPoint: { x: 11, y: 18 },
         floors: [
-        {
-            label: "1階",
-            encounterRank: 50,
-            monsters: [100046, 100047, 100048],
-            width: 25,
-            height: 21,
-            tiles: [
-                "WWWWWWWWWWWWWWWWWWWWWWWWW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTCTTTTTTTTTTTTTTTTTTTDTW",
-                "WTTWTTTWTTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTTTTTTTTTWTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTWTTTWTTTTTTTTTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTWTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTWTTTWTTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTTTTTTTTTWTTTTW",
-                "WTTWTTTWTTTTTTTTTTTWTTTTW",
-                "WTTWTTTWTTTTTTTTTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTWTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTCTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WWWWWWWWWWWWSWWWWWWWWWWWW"
-        ],
-            floorLinks: [
-                {
-                    "x": 12,
-                    "y": 20,
-                    "to": "EXIT",
-                    "label": "外に出る"
-                },
-                {
-                    "x": 22,
-                    "y": 2,
-                    "toFloor": 2,
-                    "targetX": 22,
-                    "targetY": 18,
-                    "label": "下の階へ"
+            {
+                label: "風廊",
+                encounterRank: 26,
+                monsters: [100024,100025,100026],
+                width: 23,
+                height: 21,
+                tiles: [
+                    "WWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWTTTTTWWWWWWWWWWWWWWWW",
+                    "WWTCTTTWWWWWWWWWWWWWWWW",
+                    "WWTGTTTWWWWWWWWWWWWWWWW",
+                    "WWTTTTTWWWWWWWWWWWWWWWW",
+                    "WWWWTWWWWWWWWWWWWTTTTTW",
+                    "WWWWTWWWWWWWWWWWWTTTTTW",
+                    "WWWWTWWWWWWWWWWWWTGTTTW",
+                    "WWWWTWWWWWWWWWWWWTTTDTW",
+                    "WWWWTWWWWWWWWWWWWTTGTTW",
+                    "WWWWTWWWWWWWWWWWWTTTTTW",
+                    "WWWWTWWWWWWWWWWWWTTTTTW",
+                    "WWWWTTTTTTTTTTTTTTTWWWW",
+                    "WWWWWWWWWWWTWWWWWWWWWWW",
+                    "WWWWWWWWWWWTWWWWWWWWWWW",
+                    "WWWWWWWWTTTTTTTWWWWWWWW",
+                    "WWWWWWWWTTGTGTTWWWWWWWW",
+                    "WWWWWWWWTTTTTTTWWWWWWWW",
+                    "WWWWWWWWTTTTTTTWWWWWWWW",
+                    "WWWWWWWWWWWSWWWWWWWWWWW"
+                ],
+                floorLinks: [
+                    {
+                        "x": 11,
+                        "y": 20,
+                        "to": "EXIT",
+                        "label": "森へ戻る"
+                    },
+                    {
+                        "x": 20,
+                        "y": 9,
+                        "toFloor": 2,
+                        "targetX": 2,
+                        "targetY": 9,
+                        "label": "旋風の回廊へ"
+                    }
+                ],
+                chests: [
+                    {
+                        "x": 3,
+                        "y": 3,
+                        "itemId": 1,
+                        "type": "item"
+                    }
+                ],
+                entryPoint: {
+                    "x": 11,
+                    "y": 19
                 }
-            ],
-            chests: [
-                {
+            },
+            {
+                label: "旋風の回廊",
+                encounterRank: 28,
+                monsters: [100026,100027,100028],
+                width: 23,
+                height: 21,
+                tiles: [
+                    "WWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWTTTTTTTTWWWWWWW",
+                    "WWWWWWWWTGTTTTTTWWWWWWW",
+                    "WWWWWWWWTTTTTTTTWWWWWWW",
+                    "WTTTTTTWTTTTTTGTWWWWWWW",
+                    "WTTTTTTWTTTTTTTTWWWWWWW",
+                    "WTUTTTGTTTTWWWWTWWWWWWW",
+                    "WTTTTTTWWWTWWWWTWWWWWWW",
+                    "WTTTTTTWWWTWWWWTWWWWWWW",
+                    "WWWWWWWWWWTWWWWTWWWWWWW",
+                    "WWWWWWWWWWTWWWWTWWWWWWW",
+                    "WWWWWWWWWWTTTTTTTWWWWWW",
+                    "WWWWWWWWWWWWWWTTTTTTTTW",
+                    "WWWWWWWWWWWWWWTTTGTTTTW",
+                    "WWWWWWWWWWWWWWTTTTTTTTW",
+                    "WWWWWWWWWWWWWWTTTTTDGTW",
+                    "WWWWWWWWWWWWWWTTTTTTTTW",
+                    "WWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                floorLinks: [
+                    {
+                        "x": 2,
+                        "y": 9,
+                        "toFloor": 1,
+                        "targetX": 20,
+                        "targetY": 9,
+                        "label": "風廊へ戻る"
+                    },
+                    {
+                        "x": 19,
+                        "y": 18,
+                        "toFloor": 3,
+                        "targetX": 11,
+                        "targetY": 17,
+                        "label": "風の祭壇へ"
+                    }
+                ],
+                entryPoint: {
                     "x": 2,
-                    "y": 2,
-                    "itemId": 1,
-                    "type": "item"
-                },
-                {
-                    "x": 22,
-                    "y": 18,
-                    "itemId": 3,
-                    "type": "item"
+                    "y": 9
                 }
-            ],
+            },
+            {
+                label: "風の祭壇",
+                encounterRank: 30,
+                monsters: [100028,100029,100030],
+                width: 23,
+                height: 21,
+                tiles: [
+                    "WWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWTTTTTTTTTTTTTWWWWW",
+                    "WWWWWTTTTTTTTTTTTTWWWWW",
+                    "WWWWWTTTGGGGGGGTTTWWWWW",
+                    "WWWWWTTTGTGBGTGTTTWWWWW",
+                    "WWWWWTTTGGGTGGGTTTWWWWW",
+                    "WWWWWTTTGGGTGGGTTTWWWWW",
+                    "WWWWWTTTTTTTTTTTTTWWWWW",
+                    "WWWWWTTTTTTTTTTTTTWWWWW",
+                    "WWWWWWWWWWWTWWWWWWWWWWW",
+                    "WWWWWWWWWWWTWWWWWWWWWWW",
+                    "WWWWWWWTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTUTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                floorLinks: [
+                    {
+                        "x": 11,
+                        "y": 17,
+                        "toFloor": 2,
+                        "targetX": 19,
+                        "targetY": 18,
+                        "label": "旋風の回廊へ戻る"
+                    }
+                ],
+                bosses: [
+                    {
+                        "x": 11,
+                        "y": 8,
+                        "monsterId": 301020,
+                        "startEventId": "wind_temple_elicia_encounter",
+                        "storyEventId": "wind_temple_clear",
+                        "actionLabel": "祭壇へ進む"
+                    }
+                ],
+                entryPoint: {
+                    "x": 11,
+                    "y": 17
+                }
+            }
+        ]
+    },
+    SEABED_TEMPLE: {
+        name: "海底神殿",
+        themeKey: "WATER_CITY",
+        rank: 35,
+        encounterRank: 35,
+        battleBg: "battle_bg_dungeon",
+        overlayOverrides: { B: tileEntry("overlay_npc_dark_soldier", "#333946"), A: tileEntry("overlay_npc_dark_soldier", "#333946") },
+        entryPoint: { x: 11, y: 20 },
+        floors: [
+            {
+                label: "沈水回廊",
+                encounterRank: 35,
+                monsters: [100033,100034,301021],
+                width: 23,
+                height: 23,
+                tiles: [
+                    "WWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTDTTTTWWWWWWW",
+                    "WWWTTTTTTGTTTGTTTTTTWWW",
+                    "WWWTWWWTTTTTTTTTWWWTWWW",
+                    "WWWTWWWWWWWTWWWWWWWTWWW",
+                    "WWWTWWWWWWWTWWWWWWWTWWW",
+                    "WWWTWWWWWWWTWWWWWWWTWWW",
+                    "WWWTWWWWWWWTWWWWWWWTWWW",
+                    "WWWTWWTTTTTTTTTTTWWTWWW",
+                    "WWWTWWTTGTTTTTGTTWWTWWW",
+                    "WWWTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWWWTTTTTTTTTTTWWWWWW",
+                    "WWWWWWTTTTTTTTTTTWWWWWW",
+                    "WWWWWWWWWWWYWWWWWWWWWWW",
+                    "WWWWWWWTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTBTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTWWWWWWW",
+                    "WWWWWWWWWWWSWWWWWWWWWWW"
+                ],
+                floorLinks: [
+                    {
+                        "x": 11,
+                        "y": 22,
+                        "to": "EXIT",
+                        "label": "外へ出る"
+                    },
+                    {
+                        "x": 11,
+                        "y": 5,
+                        "toFloor": 2,
+                        "targetX": 11,
+                        "targetY": 19,
+                        "label": "水門へ"
+                    }
+                ],
+                bosses: [
+                    {
+                        "x": 11,
+                        "y": 19,
+                        "monsterId": [
+                            301022,
+                            301021,
+                            301021
+                        ],
+                        "keyRewardColors": ["red", "blue"],
+                        "startEventId": "sea_temple_gate_encounter",
+                        "storyEventId": "sea_temple_gate_clear",
+                        "actionLabel": "兵士に話しかける"
+                    }
+                ],
+                entryPoint: {
+                    "x": 11,
+                    "y": 20
+                }
+            },
+            {
+                label: "水門",
+                encounterRank: 37,
+                monsters: [100034,100035,301022],
+                width: 23,
+                height: 23,
+                tiles: [
+                    "WWWWWWWWWWWWWWWWWWWWWWW",
+                    "WTTTTTWWWWWWWWWWWWWWWWW",
+                    "WTDGTTWWWWWWWWWWWWWWWWW",
+                    "WTTTTTTTTTTTWWWWWWWWWWW",
+                    "WTTTTTWWWWWTWWWWWWWWWWW",
+                    "WTTTTTWWWWWTWWWWWWWWWWW",
+                    "WWWWWWWWWWWTWWWWWWWWWWW",
+                    "WWWWWWWWWWWTWWWWWWWWWWW",
+                    "WWWWWWWWWWWXWWWWWWWWWWW",
+                    "WWWWWWWWTTTTTTTWWWWWWWW",
+                    "WWWWWWWWTTTTTTTWWWWWWWW",
+                    "WWWWWWWWTTTTTTTWWWWWWWW",
+                    "WWWWWWWWTGTTTGTWWWWWWWW",
+                    "WWWWWWWWTTTTTTTWWWWWWWW",
+                    "WWWWWWWWWWWTWWWWWWWWWWW",
+                    "WWWWWWWWWWWTWWWWWWWWWWW",
+                    "WWWWWWWWWWWTWWWWWWWWWWW",
+                    "WWWWWWWWTTTTTTTWWWWWWWW",
+                    "WWWWWWWWTGTTTGTWWWWWWWW",
+                    "WWWWWWWWTTTUTTTWWWWWWWW",
+                    "WWWWWWWWTTTTTTTWWWWWWWW",
+                    "WWWWWWWWTTTTTTTWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                floorLinks: [
+                    {
+                        "x": 11,
+                        "y": 19,
+                        "toFloor": 1,
+                        "targetX": 11,
+                        "targetY": 5,
+                        "label": "沈水回廊へ戻る"
+                    },
+                    {
+                        "x": 2,
+                        "y": 2,
+                        "toFloor": 3,
+                        "targetX": 11,
+                        "targetY": 19,
+                        "label": "祈祷の間へ"
+                    }
+                ],
+                entryPoint: {
+                    "x": 11,
+                    "y": 19
+                }
+            },
+            {
+                label: "祈祷の間",
+                encounterRank: 39,
+                monsters: [100036,100037,301022],
+                width: 23,
+                height: 23,
+                tiles: [
+                    "WWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWTTTTTTTTTTTTTWWWWW",
+                    "WWWWWTTTTTTTTTTTTTWWWWW",
+                    "WWWWWTTGGGGGGGGGTTWWWWW",
+                    "WWWWWTTGGTGBGTGGTTWWWWW",
+                    "WWWWWTTGGGGTGGGGTTWWWWW",
+                    "WWWWWTTGGGGTGGGGTTWWWWW",
+                    "WWWWWTTTTTTTTTTTTTWWWWW",
+                    "WWWWWTTTTTTTTTTTTTWWWWW",
+                    "WWWWWTTTTTTTTTTTTTWWWWW",
+                    "WWWWWWWWWWWTWWWWWWWWWWW",
+                    "WWWWWWWWWWWTWWWWWWWWWWW",
+                    "WWWWWWWWWWWTWWWWWWWWWWW",
+                    "WWWWWWWTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTUTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                floorLinks: [
+                    {
+                        "x": 11,
+                        "y": 19,
+                        "toFloor": 2,
+                        "targetX": 2,
+                        "targetY": 2,
+                        "label": "赤水門へ戻る"
+                    }
+                ],
+                bosses: [
+                    {
+                        "x": 11,
+                        "y": 8,
+                        "monsterId": [
+                            301030,
+                            301022,
+                            301022
+                        ],
+                        "startEventId": "water_temple_syris_encounter",
+                        "storyEventId": "water_temple_clear",
+                        "actionLabel": "氷の祭壇へ進む"
+                    }
+                ],
+                entryPoint: {
+                    "x": 11,
+                    "y": 19
+                }
+            }
+        ]
+    },
+    "BIG_TOWER": {
+        "name": "大灯台",
+        "themeKey": "BIG_TOWER",
+        "rank": 30,
+        "encounterRank": 30,
+        "battleBg": "battle_bg_dungeon",
+        "entryPoint": {
+            "x": 10,
+            "y": 19
         },
-        {
-            label: "地下1階",
-            encounterRank: 52,
-            monsters: [100048, 100049, 100050],
-            width: 25,
-            height: 21,
-            tiles: [
-                "WWWWWWWWWWWWWWWWWWWWWWWWW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTDTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTWWTWWWWWTTWWWWTWWWWTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTWWTWWWWWTTWWWWTWWWWTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTWWTWWWWWTTWWWWTWWWWTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTWWTWWTTTTTTTTTTWWWWTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTUTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WWWWWWWWWWWWWWWWWWWWWWWWW"
-        ],
-            floorLinks: [
-                {
-                    "x": 22,
-                    "y": 18,
-                    "toFloor": 1,
-                    "targetX": 22,
-                    "targetY": 2,
-                    "label": "上の階へ"
-                },
-                {
-                    "x": 2,
-                    "y": 2,
-                    "toFloor": 3,
-                    "targetX": 2,
-                    "targetY": 18,
-                    "label": "下の階へ"
+        "floors": [
+            {
+                "label": "1階・潮風の塔道",
+                "encounterRank": 30,
+                "monsters": [
+                    100026,
+                    100027,
+                    100028
+                ],
+                "width": 21,
+                "height": 21,
+                "tiles": [
+                    "WWWWWWWWWWWWWWWWWWWWW",
+                    "WTTTTTTWWWWWWWTTTTTTW",
+                    "WTCTTTTWWWWWWWTTTTDTW",
+                    "WTTTTTTTTTGTTTTTTTTTW",
+                    "WTTTTTTWWWWWWWTTTTTTW",
+                    "WTTTTTTWWWWWWWTTTTTTW",
+                    "WWWWWWWWWWWWWWWWWWTWW",
+                    "WWWWWWWWWWGWWWWWWWTWW",
+                    "WWTTTTTTTTTTTTTTTTTWW",
+                    "WWTTTTTTTTTTTTTTTTTWW",
+                    "WWTTGTTTGTTTGTTTGTTWW",
+                    "WWTTTTTTTTGTTTTTTTTWW",
+                    "WWTTTTTTTTTTTTTTTTTWW",
+                    "WWTTTTTTTWTWTTTTTTTWW",
+                    "WWWWWWWWWWTWWWWWWWWWW",
+                    "WWWWWWWWWWGWWWWWWWWWW",
+                    "WTTTTTTTWWTWWTTTTTTTW",
+                    "WTTTTTTTWWTWWTTTTTTTW",
+                    "WTTTTTTTTTTTTTTTTTCTW",
+                    "WTTTTTTTWWTWWTTTTTTTW",
+                    "WWWWWWWWWWSWWWWWWWWWW"
+                ],
+                "floorLinks": [
+                    {
+                        "x": 10,
+                        "y": 20,
+                        "to": "EXIT",
+                        "label": "外に出る"
+                    },
+                    {
+                        "x": 18,
+                        "y": 2,
+                        "toFloor": 2,
+                        "targetX": 18,
+                        "targetY": 18,
+                        "label": "2階へ"
+                    }
+                ],
+                "chests": [
+                    {
+                        "x": 2,
+                        "y": 2,
+                        "itemId": 1,
+                        "type": "item"
+                    },
+                    {
+                        "x": 18,
+                        "y": 18,
+                        "itemId": 3,
+                        "type": "item"
+                    }
+                ],
+                "entryPoint": {
+                    "x": 10,
+                    "y": 19
                 }
-            ],
+            },
+            {
+                "label": "2階・螺旋階段",
+                "encounterRank": 31,
+                "monsters": [
+                    100027,
+                    100028,
+                    100029
+                ],
+                "width": 21,
+                "height": 21,
+                "tiles": [
+                    "WWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWW",
+                    "WWUTTTTTTTTTTTTTTTTWW",
+                    "WWTTTTGTTTTTTTTTTTTWW",
+                    "WWTTTTTTTTTTTTTTTTTWW",
+                    "WWTTTWWWWWWWWWWWTTTWW",
+                    "WWTTTWWWWWWWWWWWTTTWW",
+                    "WWTTTWGTTTTTTTWWTTTWW",
+                    "WWTTTWWTTTTTTTWWTTTWW",
+                    "WWTTTWWTTWWWTTWWTTTWW",
+                    "WWTTGTTTGTTWGTWWGTTWW",
+                    "WWTTTWGTTWTWTTWWTTTWW",
+                    "WWTTTWWTTTTTTTWWTTTWW",
+                    "WWTTTWWTTTTTTTWWTTTWW",
+                    "WWTTTWWWWWTWWWWWTTTWW",
+                    "WWTTTWGWWWTWWWWWTTTWW",
+                    "WWTTTTTTTTTTTTTTTTTWW",
+                    "WWTTTTTTTTTTTTTTTTTWW",
+                    "WWTTTTTTTTTTTTTTTTDWW",
+                    "WWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWW"
+                ],
+                "floorLinks": [
+                    {
+                        "x": 18,
+                        "y": 18,
+                        "toFloor": 1,
+                        "targetX": 18,
+                        "targetY": 2,
+                        "label": "1階へ戻る"
+                    },
+                    {
+                        "x": 2,
+                        "y": 2,
+                        "toFloor": 3,
+                        "targetX": 2,
+                        "targetY": 18,
+                        "label": "3階へ"
+                    }
+                ],
+                "entryPoint": {
+                    "x": 18,
+                    "y": 18
+                }
+            },
+            {
+                "label": "3階・灯火回廊",
+                "encounterRank": 32,
+                "monsters": [
+                    100028,
+                    100029,
+                    100030
+                ],
+                "width": 21,
+                "height": 21,
+                "tiles": [
+                    "WWWWWWWWWWWWWWWWWWWWW",
+                    "WTTTTTTTTWWWTTTTTTTTW",
+                    "WTCTTTTTTWWWTTTTTTDTW",
+                    "WTTTTTTTTTGTTTTTTTTTW",
+                    "WTTTTTTTTWWWTTTTTTTTW",
+                    "WTTTTTTTTWWWTTTTTTTTW",
+                    "WTTTTTTTTWWWTTTTTTTTW",
+                    "WWWWWWWWWWGWTTTTTTTTW",
+                    "WWWWWWWWTTTTTTTTTTTTW",
+                    "WWWWWWWWTTTTTWWWWWTWW",
+                    "WWWWGWWWGTTTGTTTGTTWW",
+                    "WWWWWWWWTTGTTWWWWWWWW",
+                    "WTTTTTTTTTTTTWWWWWWWW",
+                    "WTTTTTTTTTTWWTTTTTTTW",
+                    "WTTTTTTTTTTWWTTTTTTTW",
+                    "WTTTTTTTTTGWWTTTTTTTW",
+                    "WTTTTTTTTTTWWTTTTTTTW",
+                    "WTTTTTTTTTTWWTTTTTTTW",
+                    "WTUTTTTTTTTTTTTTTTCTW",
+                    "WTTTTTTTTTWWWTTTTTTTW",
+                    "WWWWWWWWWWWWWWWWWWWWW"
+                ],
+                "floorLinks": [
+                    {
+                        "x": 2,
+                        "y": 18,
+                        "toFloor": 2,
+                        "targetX": 2,
+                        "targetY": 2,
+                        "label": "2階へ戻る"
+                    },
+                    {
+                        "x": 18,
+                        "y": 2,
+                        "toFloor": 4,
+                        "targetX": 2,
+                        "targetY": 18,
+                        "label": "4階へ"
+                    }
+                ],
+                "chests": [
+                    {
+                        "x": 2,
+                        "y": 2,
+                        "itemId": 1,
+                        "type": "item"
+                    },
+                    {
+                        "x": 18,
+                        "y": 18,
+                        "itemId": 3,
+                        "type": "item"
+                    }
+                ],
+                "entryPoint": {
+                    "x": 2,
+                    "y": 18
+                }
+            },
+            {
+                "label": "4階・結界炉",
+                "encounterRank": 34,
+                "monsters": [
+                    100030,
+                    100031,
+                    100032
+                ],
+                "width": 21,
+                "height": 21,
+                "tiles": [
+                    "WWWWWWWWWWWWWWWWWWWWW",
+                    "WWTTTTTTTTTTTTTTTTTWW",
+                    "WWCTTTTTTTTTTTTTTTDWW",
+                    "WWTTTTTTTTGTTTTTTTTWW",
+                    "WWTTTTTTTTTTTTTTTTTWW",
+                    "WWTTTTTTTTTTTTTTTTTWW",
+                    "WWWWWWWWWWWWWWWWWWTWW",
+                    "WWWWTTTTTTGTTTTTTWTWW",
+                    "WWWWTTTTTTTTTTTTTWTWW",
+                    "WWWWTTTTTTTTTTTTTWTWW",
+                    "WWWWGWWWGTBTGTTTGTTWW",
+                    "WTTTTTTTWTGTWTTTTTTTW",
+                    "WTTTTTTTWTTTWTTTTTTTW",
+                    "WTTTTTTTWTTTWTTTTTTTW",
+                    "WTTTTTTTWTTTWTTTTTTTW",
+                    "WTTTTTTTWTGTWTTTTTTTW",
+                    "WWWWWWWWWTTTWWWWWWWWW",
+                    "WWWTTTTTTTTTTTTTTTWWW",
+                    "WWUTTTTTTTTTTTTTTTCWW",
+                    "WWWTTTTTTTTTTTTTTTWWW",
+                    "WWWWWWWWWWWWWWWWWWWWW"
+                ],
+                "floorLinks": [
+                    {
+                        "x": 2,
+                        "y": 18,
+                        "toFloor": 3,
+                        "targetX": 18,
+                        "targetY": 2,
+                        "label": "3階へ戻る"
+                    },
+                    {
+                        "x": 18,
+                        "y": 2,
+                        "toFloor": 5,
+                        "targetX": 18,
+                        "targetY": 18,
+                        "label": "5階へ"
+                    }
+                ],
+                "chests": [
+                    {
+                        "x": 2,
+                        "y": 2,
+                        "itemId": 1,
+                        "type": "item"
+                    },
+                    {
+                        "x": 18,
+                        "y": 18,
+                        "itemId": 3,
+                        "type": "item"
+                    }
+                ],
+                "bosses": [
+                    {
+                        "x": 10,
+                        "y": 10,
+                        "monsterId": [
+                            301060,
+                            301062
+                        ],
+                        "requiredFlag": "thunderFortCleared",
+                        "inactiveTile": "G",
+                        "keyRewardColor": "gold",
+                        "startEventId": "big_tower_midboss_encounter",
+                        "storyEventId": "big_tower_midboss_clear",
+                        "actionLabel": "結界炉へ踏み込む"
+                    }
+                ],
+                "entryPoint": {
+                    "x": 2,
+                    "y": 18
+                },
+                "healSprings": [
+                    {
+                        "x": 10,
+                        "y": 12
+                    }
+                ]
+            },
+            {
+                "label": "5階・風鳴りの壁",
+                "encounterRank": 35,
+                "monsters": [
+                    100031,
+                    100032,
+                    100033
+                ],
+                "width": 21,
+                "height": 21,
+                "tiles": [
+                    "WWWWWWWWWWWWWWWWWWWWW",
+                    "WTTTTTTWWWWWWWTTTTTTW",
+                    "WTUTTTTWWWWWWWTTTTTTW",
+                    "WTTTTTTTTTGTTTTTTTTTW",
+                    "WTTTTTTWWWWWWWTTTTTTW",
+                    "WTTTTTTWWWWWWWTTTTTTW",
+                    "WWTWWWWWWWWWWWWWWWWWW",
+                    "WWTWWWWWWWGWWWWWWWWWW",
+                    "WWTTTTTTTTTTTTTTTTTWW",
+                    "WWTTTTTTTTTTTTTTTTTWW",
+                    "WWTTGTTTGTZTGTTTGTTWW",
+                    "WWTTTTTTTTGTTTTTTTTWW",
+                    "WWTTTTTTTTTTTTTTTTTWW",
+                    "WWTTTTTTTWTWTTTTTTTWW",
+                    "WWWWWWWWWWZWWWWWWWWWW",
+                    "WWWWWWWWWWGWWWWWWWWWW",
+                    "WTTTTTTTWWTWWTTTTTTTW",
+                    "WTTTTTTTWWTWWTTTTTTTW",
+                    "WTTTTTTTTTTTTTTTTTDTW",
+                    "WTTTTTTTWWWWWTTTTTTTW",
+                    "WWWWWWWWWWWWWWWWWWWWW"
+                ],
+                "floorLinks": [
+                    {
+                        "x": 18,
+                        "y": 18,
+                        "toFloor": 4,
+                        "targetX": 18,
+                        "targetY": 2,
+                        "label": "4階へ戻る"
+                    },
+                    {
+                        "x": 2,
+                        "y": 2,
+                        "toFloor": 6,
+                        "targetX": 2,
+                        "targetY": 18,
+                        "label": "6階へ"
+                    }
+                ],
+                "entryPoint": {
+                    "x": 18,
+                    "y": 18
+                }
+            },
+            {
+                "label": "6階・古い守衛室",
+                "encounterRank": 36,
+                "monsters": [
+                    100032,
+                    100033,
+                    100034
+                ],
+                "width": 21,
+                "height": 21,
+                "tiles": [
+                    "WWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWW",
+                    "WWCTTTTTTTTTTTTTTTDWW",
+                    "WWTTTTGTTTTTTTTTTTTWW",
+                    "WWTTTTTTTTTTTTTTTTTWW",
+                    "WWTTTWWWWWWWWWWWTTTWW",
+                    "WWTTTWWWWWWWWWWWTTTWW",
+                    "WWTTTWGTTTTTTTWWTTTWW",
+                    "WWTTTWWTTTTTTTWWTTTWW",
+                    "WWTTTWWTTWWWTTWWTTTWW",
+                    "WWTTGWWTGWTTGTTTGTTWW",
+                    "WWTTTWGTTWTWTTWWTTTWW",
+                    "WWTTTWWTTTTTTTWWTTTWW",
+                    "WWTTTWWTTTTTTTWWTTTWW",
+                    "WWTTTWWWWWTWWWWWTTTWW",
+                    "WWTTTWGWWWTWWWWWTTTWW",
+                    "WWTTTTTTTTTTTTTTTTTWW",
+                    "WWTTTTTTTTTTTTTTTTTWW",
+                    "WWUTTTTTTTTTTTTTTTCWW",
+                    "WWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWW"
+                ],
+                "floorLinks": [
+                    {
+                        "x": 2,
+                        "y": 18,
+                        "toFloor": 5,
+                        "targetX": 2,
+                        "targetY": 2,
+                        "label": "5階へ戻る"
+                    },
+                    {
+                        "x": 18,
+                        "y": 2,
+                        "toFloor": 7,
+                        "targetX": 18,
+                        "targetY": 18,
+                        "label": "7階へ"
+                    }
+                ],
+                "chests": [
+                    {
+                        "x": 2,
+                        "y": 2,
+                        "itemId": 1,
+                        "type": "item"
+                    },
+                    {
+                        "x": 18,
+                        "y": 18,
+                        "itemId": 3,
+                        "type": "item"
+                    }
+                ],
+                "entryPoint": {
+                    "x": 2,
+                    "y": 18
+                }
+            },
+            {
+                "label": "7階・灯台頂上",
+                "encounterRank": 40,
+                "monsters": [
+                    100035,
+                    100036,
+                    100037
+                ],
+                "width": 21,
+                "height": 21,
+                "tiles": [
+                    "WWWWWWWWWWWWWWWWWWWWW",
+                    "WWTTTTTTTTTTTTTTTTTWW",
+                    "WWCTTTTTTTTTTTTTTTTWW",
+                    "WWTTTTTTTTGTTTTTTTTWW",
+                    "WWTTTTTTTTBTTTTTTTTWW",
+                    "WWTTTTTTTTTTTTTTTTTWW",
+                    "WWWWWWWWWWTWWWWWWWWWW",
+                    "WWWWTTTTTTGTTTTTTWWWW",
+                    "WWWWTTTTTTTTTTTTTWWWW",
+                    "WWWWTTTTTTTTTTTTTWWWW",
+                    "WWWWGWWWGTTTGWWWGWWWW",
+                    "WTTTTTTTWTGTWTTTTTTTW",
+                    "WTTTTTTTWTTTWTTTTTTTW",
+                    "WTTTTTTTWTTTWTTTTTTTW",
+                    "WTTTTTTTWTTTWTTTTTTTW",
+                    "WTTTTTTTWTGTWTTTTTTTW",
+                    "WWWWWWWWWTTTWWWWWWWWW",
+                    "WWWTTTTTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTTTTTDWW",
+                    "WWWTTTTTTTTTTTTTTTWWW",
+                    "WWWWWWWWWWWWWWWWWWWWW"
+                ],
+                "floorLinks": [
+                    {
+                        "x": 18,
+                        "y": 18,
+                        "toFloor": 6,
+                        "targetX": 18,
+                        "targetY": 2,
+                        "label": "6階へ戻る"
+                    }
+                ],
+                "chests": [
+                    {
+                        "x": 2,
+                        "y": 2,
+                        "itemId": 1,
+                        "type": "item"
+                    }
+                ],
+                "bosses": [
+                    {
+                        "x": 10,
+                        "y": 4,
+                        "monsterId": 301061,
+                        "requiredFlag": "thunderFortCleared",
+                        "inactiveTile": "G",
+                        "startEventId": "big_tower_lilith_encounter",
+                        "storyEventId": "big_tower_clear",
+                        "actionLabel": "リリスと対峙する"
+                    }
+                ],
+                "entryPoint": {
+                    "x": 18,
+                    "y": 18
+                }
+            }
+        ]
+    },
+    "THUNDER_FORT": {
+        "name": "雷の要塞",
+        "themeKey": "THUNDER_FORT",
+        "rank": 40,
+        "encounterRank": 40,
+        "battleBg": "battle_bg_dungeon",
+        "entryPoint": {
+            "x": 1,
+            "y": 12
         },
-        {
-            label: "地下2階",
-            encounterRank: 54,
-            monsters: [100050, 100051, 100052],
-            width: 25,
-            height: 21,
-            tiles: [
-                "WWWWWWWWWWWWWWWWWWWWWWWWW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTCTTTTTTTTTTTTTTTTTTTDTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTTWTTTTTTTTTTTTTTTWTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTWTTTTTTTTTTTWTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTWTTTTTTTWTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTUTTTTTTTTTTTTTTTTTTTCTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WWWWWWWWWWWWWWWWWWWWWWWWW"
-        ],
-            floorLinks: [
-                {
-                    "x": 2,
-                    "y": 18,
-                    "toFloor": 2,
-                    "targetX": 2,
-                    "targetY": 2,
-                    "label": "上の階へ"
-                },
-                {
-                    "x": 22,
-                    "y": 2,
-                    "toFloor": 4,
-                    "targetX": 22,
-                    "targetY": 18,
-                    "label": "下の階へ"
-                }
-            ],
-            chests: [
-                {
-                    "x": 2,
-                    "y": 2,
-                    "itemId": 1,
-                    "type": "item"
-                },
-                {
-                    "x": 22,
-                    "y": 18,
-                    "itemId": 3,
-                    "type": "item"
-                }
-            ],
+        "entryPoints": {
+            "west": {
+                "x": 1,
+                "y": 12
+            },
+            "east": {
+                "x": 29,
+                "y": 12
+            }
         },
-        {
-            label: "地下3階",
-            encounterRank: 56,
-            monsters: [100052, 100053, 100054],
-            width: 25,
-            height: 21,
-            tiles: [
-                "WWWWWWWWWWWWWWWWWWWWWWWWW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTCTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTWTTTWTTTTTTTTTTTWTTTTW",
-                "WTTWTTTWTTTTTTTTTTTWTTTTW",
-                "WTTTTTTTTTTTBTTTTTTTTTTTW",
-                "WTTWTTTWTTTTTTTTTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTWTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTWTTTWTTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTWTTTTW",
-                "WTTWTTTWTTTTTTTTTTTWTTTTW",
-                "WTTWTTTWTTTTTTTTTTTWTTTTW",
-                "WTTWTTTWTTTTTTTTTTTWTTTTW",
-                "WTTWTTTWTTTWTTTWTTTWTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTUTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WWWWWWWWWWWWWWWWWWWWWWWWW"
-        ],
-            floorLinks: [
-                {
-                    "x": 22,
-                    "y": 18,
-                    "toFloor": 3,
-                    "targetX": 22,
-                    "targetY": 2,
-                    "label": "上の階へ"
+        "floors": [
+            {
+                "label": "1階・双門外郭",
+                "encounterRank": 42,
+                "monsters": [
+                    100040,
+                    100041,
+                    100042
+                ],
+                "width": 31,
+                "height": 25,
+                "tiles": [
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWTTTTTTTWWWWWWWWWWWTTTTTTTWWW",
+                    "WWWTTTCTTTTTTTTTTTTTTTTTGDTTWWW",
+                    "WWWTTTTTTTWWWWTGTWWWWTTTTTTTWWW",
+                    "WWWTTTTTTTWWWWTTTWWWWTTTTTTTWWW",
+                    "WWWWWWWWWWWWWWWTWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWTTTTTTTTTTTWWWWWWWWWW",
+                    "WWWWWWWWWWTTTTTTTTTTTWWWWWWWWWW",
+                    "WTTTTTTTWWTTTTTTTTTTTWWTTTTTTTW",
+                    "WTTTTTTTWWTTTTTTTTTTTWWTTTTTTTW",
+                    "STTTGTTTTTTTTTTBTTTTTTTTTTGTTTS",
+                    "WTTTTTTTWWTTTTTTTTTTTWWTTTTTTTW",
+                    "WTTTTTTTWWTTTTTTTTTTTWWTTTTTTTW",
+                    "WWWWWWWWWWTTTTTTTTTTTWWWWWWWWWW",
+                    "WWWWWWWWWWTTTTTTTTTTTWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWZWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWTWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWTTTTTTTWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWTTTTTTTWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWTCTTTTTWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWTTTTTTTWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                "floorLinks": [
+                    {
+                        "x": 0,
+                        "y": 12,
+                        "to": "EXIT",
+                        "label": "西門から外に出る",
+                        "log": "西門の向こうに、川沿いの岸辺が見える。",
+                        "exitPoint": {
+                            "areaKey": "WORLD",
+                            "x": 45,
+                            "y": 36
+                        }
+                    },
+                    {
+                        "x": 30,
+                        "y": 12,
+                        "to": "EXIT",
+                        "label": "東門から外に出る",
+                        "log": "門の向こうに、うっすらと光の神殿が見える。",
+                        "requiredFlag": "thunderFortCleared",
+                        "lockedLabel": "東門を調べる",
+                        "lockedLog": "東門は雷の結界で閉ざされている…",
+                        "exitPoint": {
+                            "areaKey": "WORLD",
+                            "x": 47,
+                            "y": 36
+                        }
+                    },
+                    {
+                        "x": 25,
+                        "y": 4,
+                        "toFloor": 2,
+                        "targetX": 4,
+                        "targetY": 21,
+                        "label": "地下1階へ"
+                    }
+                ],
+                "chests": [
+                    {
+                        "x": 13,
+                        "y": 21,
+                        "itemId": 3,
+                        "type": "item"
+                    },
+                    {
+                        "x": 6,
+                        "y": 4,
+                        "itemId": 1,
+                        "type": "item"
+                    }
+                ],
+                "entryPoint": {
+                    "x": 1,
+                    "y": 12
+                },
+                "bosses": [
+                    {
+                        "x": 15,
+                        "y": 12,
+                        "monsterId": 100081,
+                        "keyRewardColor": "gold",
+                        "actionLabel": "機械兵士と戦う",
+                        "inspectLog": "一際危険なオーラを纏う機械兵士が佇んでいる…"
+                    }
+                ],
+                "healSprings": [
+                    {
+                        "x": 17,
+                        "y": 21
+                    }
+                ]
+            },
+            {
+                "label": "地下1階・暴走機関室",
+                "encounterRank": 44,
+                "monsters": [
+                    100042,
+                    100043,
+                    100044
+                ],
+                "width": 31,
+                "height": 25,
+                "tiles": [
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWTTTTTTTWWWTTTTTWWWWTTWTTTTWW",
+                    "WWWTTTTTTTTTTTTTTTTTTTTTXTTRTWW",
+                    "WWWTTTTTTTWWWTTTTTWWWWTTWTTDTWW",
+                    "WWWTTTTTTTWWWTTTTTWWWWTTWTTTTWW",
+                    "WWWWWWWWWWWWWWWTWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWTWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWTWWWWWWWWWWWWWWW",
+                    "WWTTTTTTTWWWWWWTWWWWWWWWWWWWWWW",
+                    "WWTTTTTTTWWTTTTTTTTTWWWWWWWWWWW",
+                    "WWTTTCTTTWWTTTTTTTTTWWTTTTTTTWW",
+                    "WWTTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
+                    "WWTTTTTTTWWTTTTBTTTTWWTTTTTTTWW",
+                    "WWWWWWWWWWWTTTTTTTTTWWTTTTTTTWW",
+                    "WWWWWWWWWWWTTTTTTTTTWWTTTTTTTWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWTWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWTWWWWW",
+                    "WWWWWWWWWWTTTTTTTTTTTWTTTTTTTWW",
+                    "WWTTTTTTTWTTTTTTTTTTTWTTTTTTTWW",
+                    "WWTTTTTTTWTTTTTTTTTTTTTTTTTTTWW",
+                    "WWTTUTTTTTTTTTTTTTTTTWTTTTTTTWW",
+                    "WWTTTTTTTWTTTTTTTTTTTWTTTTTTTWW",
+                    "WWTTTTTTTWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                "floorLinks": [
+                    {
+                        "x": 4,
+                        "y": 21,
+                        "toFloor": 1,
+                        "targetX": 25,
+                        "targetY": 4,
+                        "label": "1階へ戻る"
+                    },
+                    {
+                        "x": 27,
+                        "y": 4,
+                        "toFloor": 3,
+                        "targetX": 4,
+                        "targetY": 21,
+                        "label": "地下2階へ"
+                    }
+                ],
+                "chests": [
+                    {
+                        "x": 27,
+                        "y": 3,
+                        "itemId": 102,
+                        "type": "item",
+                        "rare": true
+                    },
+                    {
+                        "x": 5,
+                        "y": 11,
+                        "itemId": 1,
+                        "type": "item"
+                    }
+                ],
+                "entryPoint": {
+                    "x": 4,
+                    "y": 21
+                },
+                "bosses": [
+                    {
+                        "x": 15,
+                        "y": 13,
+                        "monsterId": 301031,
+                        "keyRewardColor": "red",
+                        "startEventId": "thunder_machine_gate_encounter",
+                        "storyEventId": "thunder_machine_gate_clear",
+                        "actionLabel": "制御盤に近づく"
+                    }
+                ]
+            },
+            {
+                "label": "地下2階・雷鎧の防衛線",
+                "encounterRank": 46,
+                "monsters": [
+                    100044,
+                    100045,
+                    100046
+                ],
+                "width": 31,
+                "height": 25,
+                "tiles": [
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWTTTTTTTWWWTTTTTWWWWTTTTTTTWW",
+                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
+                    "WWWTTTCTTTWWWTTTTTWWWWTTTDTTTWW",
+                    "WWWTTTTTTTWWWTTTTTWWWWTTTTTTTWW",
+                    "WWWWWTWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWTWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWTTTTTTTWWWWWWWWWWWWWWWWWWWWW",
+                    "WWTTTTTTTWTTTTTTTTTTTWWWWWWWWWW",
+                    "WWTTTTTTTWTTTTTTTTTTTWTTTTTTTWW",
+                    "WWTTTTTTTYTTTTTTTTTTTWTTTTTTTWW",
+                    "WWTTTTTTTWTTTTTBTTTTTTTTTTTTTWW",
+                    "WWTTTTTTTWTTTTTTTTTTTWTTTTTTTWW",
+                    "WWWWWWWWWWTTTTTTTTTTTWTTTTTTTWW",
+                    "WWWWWWWWWWTTTTTTTTTTTWTTTTTTTWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWTWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWTWWWWW",
+                    "WWWWWWWWWWWTTTTTTTTTWWTTTTTTTWW",
+                    "WWTTTTTTTWWTTTTTTTTTWWTTTTTTTWW",
+                    "WWTTTTTTTWWTTTTTTTTTTTTCTTTTTWW",
+                    "WWTTUTTTTTTTTTTTTTTTWWTTTTTTTWW",
+                    "WWTTTTTTTWWTTTTTTTTTWWTTTTTTTWW",
+                    "WWTTTTTTTWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                "floorLinks": [
+                    {
+                        "x": 4,
+                        "y": 21,
+                        "toFloor": 2,
+                        "targetX": 25,
+                        "targetY": 4,
+                        "label": "地下1階へ戻る"
+                    },
+                    {
+                        "x": 25,
+                        "y": 4,
+                        "toFloor": 4,
+                        "targetX": 15,
+                        "targetY": 21,
+                        "label": "地下3階へ"
+                    }
+                ],
+                "chests": [
+                    {
+                        "x": 23,
+                        "y": 20,
+                        "itemId": 3,
+                        "type": "item"
+                    },
+                    {
+                        "x": 6,
+                        "y": 4,
+                        "itemId": 100,
+                        "type": "item"
+                    }
+                ],
+                "entryPoint": {
+                    "x": 4,
+                    "y": 21
+                },
+                "bosses": [
+                    {
+                        "x": 15,
+                        "y": 12,
+                        "monsterId": 301032,
+                        "keyRewardColor": "blue",
+                        "startEventId": "thunder_armor_gate_encounter",
+                        "storyEventId": "thunder_armor_gate_clear",
+                        "actionLabel": "雷鎧を停止する"
+                    }
+                ]
+            },
+            {
+                "label": "地下3階・雷の中枢",
+                "encounterRank": 48,
+                "monsters": [
+                    100046,
+                    100047,
+                    100048
+                ],
+                "width": 31,
+                "height": 25,
+                "tiles": [
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWTTTTTTTTTTTWWWWWWWWWW",
+                    "WWWWWWWWWWTTTTTBTTTTTWWWWWWWWWW",
+                    "WWWWWWWWWWTTTTTTTTTTTWWWWWWWWWW",
+                    "WWWWWWWWWWTTTTTTTTTTTWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWTTTWWWWWWWWWWWWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTWWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTWWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTWWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTWWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTWWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTWWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTWWWW",
+                    "WWWWWTTTTTTTTTTTTTTTTTTTTTWWWWW",
+                    "WTTTWTTTTTTTTTTTTTTTTTTTTTWTTTW",
+                    "WTCTTTTTTTTTTTTTTTTTTTTTTTTTRTW",
+                    "WTTTWTTTTTTTTTTTTTTTTTTTTTWTTTW",
+                    "WTTTWTTTTTTTTTTTTTTTTTTTTTWTTTW",
+                    "WWWWWWWWWWWWWWTTTWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWTTTTTTTWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWTTTUTTTWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWTTTTTTTWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWTTTTTTTWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                "floorLinks": [
+                    {
+                        "x": 15,
+                        "y": 21,
+                        "toFloor": 3,
+                        "targetX": 25,
+                        "targetY": 4,
+                        "label": "地下2階へ戻る"
+                    }
+                ],
+                "chests": [
+                    {
+                        "x": 2,
+                        "y": 16,
+                        "itemId": 3,
+                        "type": "item"
+                    },
+                    {
+                        "x": 28,
+                        "y": 16,
+                        "itemId": 106,
+                        "type": "item",
+                        "rare": true
+                    }
+                ],
+                "entryPoint": {
+                    "x": 15,
+                    "y": 21
+                },
+                "bosses": [
+                    {
+                        "x": 15,
+                        "y": 3,
+                        "monsterId": 301040,
+                        "startEventId": "thunder_leonard_encounter",
+                        "storyEventId": "thunder_fort_clear",
+                        "actionLabel": "レナードと対峙する"
+                    }
+                ]
+            }
+        ]
+    },
+    "LIGHT_PALACE": {
+        "name": "光の宮殿",
+        "themeKey": "LIGHT_PALACE",
+        "rank": 50,
+        "encounterRank": 50,
+        "battleBg": "battle_bg_dungeon",
+        "entryPoint": {
+            "x": 16,
+            "y": 24
+        },
+        "floors": [
+            {
+                "label": "1階・白光の回廊",
+                "encounterRank": 62,
+                "monsters": [
+                    100060,
+                    100061,
+                    100062
+                ],
+                "width": 33,
+                "height": 27,
+                "tiles": [
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWW",
+                    "WWWWTTTTTTTWWTTTDTTTWWWTTTTTTTWWW",
+                    "WWWWTTTCTTTTTTTTTTTTTTTTTTBTTTWWW",
+                    "WWWWTTTTTTTWWTTTTTTTWWWTTTTTTTWWW",
+                    "WWWWTTTTTTTWWTTTTTTTWWWTTTTTTTWWW",
+                    "WWWWWWWTWWWWWWWWWWWWWWWWWWTWWWWWW",
+                    "WWWWWWWTWWWWWWWWWWWWWWWWWWTWWWWWW",
+                    "WWWWWWWTWWWWTTTTTTTTTWWWWWTWWWWWW",
+                    "WWWTTTTTTTWWTTTTTTTTTWWTTTTTTTWWW",
+                    "WWWTTTTTTTWWTTTTTTTTTWWTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTWWTTTTTTTTTWWTTTTTTTWWW",
+                    "WWWTTTTTTTWWTTTTTTTTTWWTTTTTTTWWW",
+                    "WWWTTTTTTTWWTTTTTTTTTWWTTTTTTTWWW",
+                    "WWWWWWWWWWWWWWWTTTWWWWWWWWWWWWWWW",
+                    "WWWWWTTTTTTTTTTTTTTTTTTTTTTTWWWWW",
+                    "WWWWWTTTTTTTTTTTTTTTTTTTTTTTWWWWW",
+                    "WWWWWTTTTTTTTTTTTTTTTTTTTTTTWWWWW",
+                    "WWWWWTTTTTTTTTTTCTTTTTTTTTTTWWWWW",
+                    "WWWWWTTTTTTTTTTTTTTTTTTTTTTTWWWWW",
+                    "WWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWTTTSTTTWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                "floorLinks": [
+                    {
+                        "x": 16,
+                        "y": 25,
+                        "to": "EXIT",
+                        "label": "外に出る"
+                    },
+                    {
+                        "x": 16,
+                        "y": 3,
+                        "toFloor": 2,
+                        "targetX": 4,
+                        "targetY": 23,
+                        "label": "地下1階へ"
+                    }
+                ],
+                "chests": [
+                    {
+                        "x": 16,
+                        "y": 20,
+                        "itemId": 1,
+                        "type": "item"
+                    },
+                    {
+                        "x": 7,
+                        "y": 4,
+                        "itemId": 3,
+                        "type": "item"
+                    }
+                ],
+                "entryPoint": {
+                    "x": 16,
+                    "y": 24
+                },
+                "bosses": [
+                    {
+                        "x": 26,
+                        "y": 4,
+                        "monsterId": 100089,
+                        "keyRewardColor": "gold",
+                        "actionLabel": "白光の番兵と戦う",
+                        "inspectLog": "金の鍵を携えた番兵が白い回廊を守っている。"
+                    }
+                ],
+                "healSprings": [
+                    {
+                        "x": 16,
+                        "y": 16
+                    }
+                ]
+            },
+            {
+                "label": "地下1階・祝福の水盤",
+                "encounterRank": 64,
+                "monsters": [
+                    100062,
+                    100063,
+                    100064
+                ],
+                "width": 33,
+                "height": 27,
+                "tiles": [
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWW",
+                    "WWWTTTTTTTTWWTTTTTTTWWWTTTTTTTTWW",
+                    "WWWTTTTTTTTTTTTTGTTTTTTTTTTTTTTWW",
+                    "WWWTTTGTTTTWWTTTTTTTWWWTTTGDTTTWW",
+                    "WWWTTTTTTTTWWTTTTTTTWWWTTTTTTTTWW",
+                    "WWWTTTTTTTTWWWWWTWWWWWWTTTTTTTTWW",
+                    "WWWWWWTWWWWWWWWWTWWWWWWWWWWWWWWWW",
+                    "WWWWWWTWWWWWWWWWTWWWWWWWWWWWWWWWW",
+                    "WWTTTTWTTWWWWWWWTWWWWWWWWWWWWWWWW",
+                    "WWTTTTWTTWWWTTTTTTTTTWWWWWWWWWWWW",
+                    "WWTTTTWTTWWWTTTTTTTTTWWWTTTTTTTWW",
+                    "WWTTRCZTTTTTTTTTTTTTTWWWTTTTTTTWW",
+                    "WWTTTTWTTWWWTTTTGTTTTTTTTTTGTTTWW",
+                    "WWTTTTWTTWWWTTTTTTTTTWWWTTTTTTTWW",
+                    "WWWWWWWWWWWWTTTTTTTTTWWWTTTTTTTWW",
+                    "WWWWWWWWWWWWTTTTTTTTTWWWTTTTTTTWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWTWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWTWWWWW",
+                    "WWWWWWWWWWWTTTTTTTTTTTWWTTTTTTTWW",
+                    "WWTTTTTTTWWTTTTTTTTTTTWWTTTTTTTWW",
+                    "WWTTTTTTTWWTTTTTGTTTTTTTTTTGTTTWW",
+                    "WWTTUGTTTTTTTTTTTTTTTTWWTTTTTTTWW",
+                    "WWTTTTTTTWWTTTTTTTTTTTWWTTTTTTTWW",
+                    "WWTTTTTTTWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                "floorLinks": [
+                    {
+                        "x": 4,
+                        "y": 23,
+                        "toFloor": 1,
+                        "targetX": 26,
+                        "targetY": 4,
+                        "label": "1階へ戻る"
+                    },
+                    {
+                        "x": 27,
+                        "y": 5,
+                        "toFloor": 3,
+                        "targetX": 4,
+                        "targetY": 23,
+                        "label": "地下2階へ"
+                    }
+                ],
+                "chests": [
+                    {
+                        "x": 4,
+                        "y": 13,
+                        "itemId": 103,
+                        "type": "item",
+                        "rare": true
+                    },
+                    {
+                        "x": 5,
+                        "y": 13,
+                        "itemId": 1,
+                        "type": "item"
+                    }
+                ],
+                "entryPoint": {
+                    "x": 4,
+                    "y": 23
                 }
-            ],
-            chests: [
-                {
-                    "x": 2,
-                    "y": 2,
-                    "itemId": 1,
-                    "type": "item"
+            },
+            {
+                "label": "地下2階・結界の聖廊",
+                "encounterRank": 66,
+                "monsters": [
+                    100064,
+                    100065,
+                    100066
+                ],
+                "width": 33,
+                "height": 27,
+                "tiles": [
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWTTTTTTTTWWTTTTTTTWWWTTTTTTTTWW",
+                    "WWWTTTTTTTTWWTTTTTTTWWWTTTTTTTTWW",
+                    "WWWTTTCTTTTTTTTTGTTTTTTTTTGDTTTWW",
+                    "WWWTTTTTTTTWWTTTTTTTWWWTTTTTTTTWW",
+                    "WWWTTTTTTTTWWTTTTTTTWWWTTTTTTTTWW",
+                    "WWWWWWTWWWWWWWWWTWWWWWWWWWWWWWWWW",
+                    "WWWWWWTWWWWWWWWWTWWWWWWWWWWWWWWWW",
+                    "WWTTTTTTTWWWWWWWTWWWWWWWWWWWWWWWW",
+                    "WWTTTTTTTWWWTTTTTTTTTWWWWWWWWWWWW",
+                    "WWTTTTTTTWWWTTTTTTTTTWWWWWWWWWWWW",
+                    "WWTTTGTTTTTTTTTTCTTTTWWWTTTTTTTWW",
+                    "WWTTTTTTTWWWTTTTTTTTTWWWTTTTTTTWW",
+                    "WWTTTTTTTWWWTTTTGTTTTTTTTTTGTTTWW",
+                    "WWTTTTTTTWWWTTTTTTTTTWWWTTTTTTTWW",
+                    "WWWWWWWWWWWWTTTTTTTTTWWWTTTTTTTWW",
+                    "WWWWWWWWWWWWTTTTTTTTTWWWTTTTTTTWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWTWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWTWWWWW",
+                    "WWWWWWWWWWWTTTTTTTTTTTWWTTTTTTTWW",
+                    "WWTTTTTTTWWTTTTTTTTTTTWWTTTTTTTWW",
+                    "WWTTTTTTTWWTTTTTGTTTTTTTTTTGTTTWW",
+                    "WWTTUGTTTTTTTTTTTTTTTTWWTTTTTTTWW",
+                    "WWTTTTTTTWWTTTTTTTTTTTWWTTTTTTTWW",
+                    "WWTTTTTTTWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                "floorLinks": [
+                    {
+                        "x": 4,
+                        "y": 23,
+                        "toFloor": 2,
+                        "targetX": 27,
+                        "targetY": 5,
+                        "label": "地下1階へ戻る"
+                    },
+                    {
+                        "x": 27,
+                        "y": 4,
+                        "toFloor": 4,
+                        "targetX": 16,
+                        "targetY": 23,
+                        "label": "地下3階へ"
+                    }
+                ],
+                "chests": [
+                    {
+                        "x": 6,
+                        "y": 4,
+                        "itemId": 2,
+                        "type": "item"
+                    },
+                    {
+                        "x": 16,
+                        "y": 12,
+                        "itemId": 105,
+                        "type": "item"
+                    }
+                ],
+                "entryPoint": {
+                    "x": 4,
+                    "y": 23
                 }
-            ],
-            bosses: [
-                {
-                    "x": 12,
-                    "y": 5,
-                    "monsterId": 401130,
-                    "storyEventId": "light_palace_clear"
-                }
-            ],
-        }
-    ]
+            },
+            {
+                "label": "地下3階・光の祭壇",
+                "encounterRank": 68,
+                "monsters": [
+                    100066,
+                    100067,
+                    100068
+                ],
+                "width": 33,
+                "height": 27,
+                "tiles": [
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWTTTTTTTTTTTWWWWWWWWWWW",
+                    "WWWWWWWWWWWTTTTTTTTTTTWWWWWWWWWWW",
+                    "WWWWWWWWWWWTTGTTTTTGTTWWWWWWWWWWW",
+                    "WWWWWWWWWWWTTTTTTTTTTTWWWWWWWWWWW",
+                    "WWWWWWWWWWWTTTTTTTTTTTWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWTWWWWWWWWWWWWWWWW",
+                    "WWWWWTTTTTTTTTTTTTTTTTTTTTTTWWWWW",
+                    "WWWWWTTTTTTTTTTTBTTTTTTTTTTTWWWWW",
+                    "WWWWWTTTTTTTTTTTTTTTTTTTTTTTWWWWW",
+                    "WWWWWTTTTGTTTTTTGTTTTTTGTTTTWWWWW",
+                    "WWWWWTTTTTTTTTTTTTTTTTTTTTTTWWWWW",
+                    "WWWWWTTTTTTTTTTTTTTTTTTTTTTTWWWWW",
+                    "WWWWWTTTTTTTTTTTTTTTTTTTTTTTWWWWW",
+                    "WWWWWTTTTTTTTTTTTTTTTTTTTTTTWWWWW",
+                    "WWWWWWTTTTTTTTTTTTTTTTTTTTTWWWWWW",
+                    "WWTTTWTTTTTTTTTTTTTTTTTTTTTWTTTWW",
+                    "WWTCTTTTTTTTTTTTGTTTTTTTTTTTTRTWW",
+                    "WWTTTWTTTTTTTTTTTTTTTTTTTTTWTTTWW",
+                    "WWTTTWTTTTTTTTTTTTTTTTTTTTTWTTTWW",
+                    "WWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWTTTUTTTWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                "floorLinks": [
+                    {
+                        "x": 16,
+                        "y": 23,
+                        "toFloor": 3,
+                        "targetX": 27,
+                        "targetY": 4,
+                        "label": "地下2階へ戻る"
+                    }
+                ],
+                "chests": [
+                    {
+                        "x": 3,
+                        "y": 18,
+                        "itemId": 2,
+                        "type": "item"
+                    },
+                    {
+                        "x": 29,
+                        "y": 18,
+                        "itemId": 106,
+                        "type": "item",
+                        "rare": true
+                    }
+                ],
+                "entryPoint": {
+                    "x": 16,
+                    "y": 23
+                },
+                "bosses": [
+                    {
+                        "x": 16,
+                        "y": 9,
+                        "monsterId": [
+                            301070,
+                            301050
+                        ],
+                        "startEventId": "light_palace_final_encounter",
+                        "storyEventId": "light_palace_clear",
+                        "actionLabel": "祭壇へ進む"
+                    }
+                ]
+            }
+        ]
     },
     DARK_CASTLE: {
         name: "魔王城",
         themeKey: "DARK_CASTLE",
         rank: 60,
-        encounterRank: 60, // monsters未指定時は60階相当で自動抽選
-        // monsters: [100056, 100057, 100058],
-        tileOverrides: {
-            // T: tileEntry("tile_dark_floor", "#252b36"), // 城の床
-            // W: tileEntry("tile_dark_wall", "#242a32"), // 城の壁
-        },
+        encounterRank: 60,
         battleBg: "battle_bg_lastboss",
-        entryPoint: { x: 13, y: 21 },
+        entryPoint: { x: 15, y: 25 },
         floors: [
-        {
-            label: "地下1階",
-            encounterRank: 60,
-            monsters: [100056, 100057, 100058],
-            width: 27,
-            height: 23,
-            tiles: [
-                "WWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTCTTTTTTTTTTTTTTTTTTTTTDTW",
-                "WTTWTTTWTTTWTTTWTTTWTTTWTTW",
-                "WTTWTTTWTTTWTTTWTTTWTTTWTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTWTTTWTTTWTTTWTTTWTTTWTTW",
-                "WTTWTTTWTTTWTTTWTTTWTTTWTTW",
-                "WTTWTTTWTTTWTTTWTTTWTTTWTTW",
-                "WTTWTTTWTTTWTTTWTTTWTTTWTTW",
-                "WTTWTTTWTTTWTTTWTTTWTTTWTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTWTTTWTTTWTTTWTTTWTTTWTTW",
-                "WTTWTTTWTTTWTTTWTTTWTTTWTTW",
-                "WTTWTTTWTTTWTTTWTTTWTTTWTTW",
-                "WTTWTTTWTTTWTTTWTTTWTTTWTTW",
-                "WTTWTTTWTTTWTTTWTTTWTTTWTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTWTTTWTTTWTTTWTTTWTTTWTTW",
-                "WTTWTTTWTTTWTTTWTTTWTTTWTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTCTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WWWWWWWWWWWWWSWWWWWWWWWWWWW"
-        ],
-            floorLinks: [
-                {
-                    "x": 13,
-                    "y": 22,
-                    "to": "EXIT",
-                    "label": "外に出る"
-                },
-                {
-                    "x": 24,
-                    "y": 2,
-                    "toFloor": 2,
-                    "targetX": 24,
-                    "targetY": 20,
-                    "label": "下の階へ"
-                }
-            ],
-            chests: [
-                {
-                    "x": 2,
-                    "y": 2,
-                    "itemId": 1,
-                    "type": "item"
-                },
-                {
-                    "x": 24,
-                    "y": 20,
-                    "itemId": 3,
-                    "type": "item"
-                }
-            ],
-        },
-        {
-            label: "地下2階",
-            encounterRank: 65,
-            monsters: [100061, 100062, 100063],
-            width: 27,
-            height: 23,
-            tiles: [
-                "WWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTDTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTWWTWWWWWTWTWWWTWWWWWWTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTWWTWWWWWTWTWWWTWWWWWWTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTWWTWWWWWTWTWWWTWWWWWWTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTWWTWWWWWTWTWWWTWWWWWWTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTUTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WWWWWWWWWWWWWWWWWWWWWWWWWWW"
-        ],
-            floorLinks: [
-                {
-                    "x": 24,
-                    "y": 20,
-                    "toFloor": 1,
-                    "targetX": 24,
-                    "targetY": 2,
-                    "label": "上の階へ"
-                },
-                {
-                    "x": 2,
-                    "y": 2,
-                    "toFloor": 3,
-                    "targetX": 2,
-                    "targetY": 20,
-                    "label": "下の階へ"
-                }
-            ],
-        },
-        {
-            label: "地下3階",
-            encounterRank: 70,
-            monsters: [100066, 100067, 100068],
-            width: 27,
-            height: 23,
-            tiles: [
-                "WWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTCTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTTWTTTTTTTTBTTTTTTTTWTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTWTTTTTTTTTTTTTWTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTWTTTTTTTTTWTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTWTTTTTWTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTTTWTWTTTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTTTWTTTTTWTTTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTTTTTTTWTTTTTTTTTWTTTTTTTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WTUTTTTTTTTTTTTTTTTTTTTTCTW",
-                "WTTTTTTTTTTTTTTTTTTTTTTTTTW",
-                "WWWWWWWWWWWWWWWWWWWWWWWWWWW"
-        ],
-            floorLinks: [
-                {
-                    "x": 2,
-                    "y": 20,
-                    "toFloor": 2,
-                    "targetX": 2,
-                    "targetY": 2,
-                    "label": "上の階へ"
-                }
-            ],
-            chests: [
-                {
-                    "x": 2,
-                    "y": 2,
-                    "itemId": 1,
-                    "type": "item"
-                },
-                {
-                    "x": 24,
-                    "y": 20,
-                    "itemId": 3,
-                    "type": "item"
-                }
-            ],
-            bosses: [
-                {
-                    "x": 13,
-                    "y": 4,
-                    "monsterId": 401100,
-                    "storyEventId": "dark_castle_clear"
-                }
-            ],
-        }
-    ]
+            {
+                label: "本館1階・中央広間",
+                encounterRank: 60,
+                monsters: [100056, 100057, 100058],
+                width: 31,
+                height: 27,
+                tiles: [
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWTTTTTTTWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWTTTDTTTWWWWWWWWWWWW",
+                    "WWWWWWWWTTTTTTTTTTTTTTTWWWWWWWW",
+                    "WWWWWWWWTTTTTTTTTTTTTTTWWWWWWWW",
+                    "WWWWWWWWTTCTTTTTTTTTTTTWWWWWWWW",
+                    "WWWWWWWWTTTTTTTTTTTTTTTWWWWWWWW",
+                    "WWWWWWWWTTTTTTTTTTTTTTTWWWWWWWW",
+                    "WWWWWWWWTTTTTTTTTTTTTTTWWWWWWWW",
+                    "WWWWWWWWTTTTTTTTTTTTTTTWWWWWWWW",
+                    "WWTTTTWWTTTTTTTTTTTTTTTWWTTTTWW",
+                    "WWTTTTWWTTTTTTTTTTTTTTTWWTTTTWW",
+                    "WWTDTTTTTTTTTTTTTTTTTTTTTTTDTWW",
+                    "WWTTTTWWTTTTTTTTTTTTTTTWWTTTTWW",
+                    "WWTTTTWWTTTTTTTTTTTTTTTWWTTTTWW",
+                    "WWWWWWWWTTTTTTTTTTTTTTTWWWWWWWW",
+                    "WWWWWWWWTTTTTTTTTTTTTTTWWWWWWWW",
+                    "WWWWWWWWTTTTTTTTTTTTTTTWWWWWWWW",
+                    "WWWWWWWWTTTTTTTTTTTTTTTWWWWWWWW",
+                    "WWWWWWWWTTTTTTTGTTTTCTTWWWWWWWW",
+                    "WWWWWWWWTTTTTTTTTTTTTTTWWWWWWWW",
+                    "WWWWWWWWTTTTTTTTTTTTTTTWWWWWWWW",
+                    "WWWWWWWWWWWWWTTTTTWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWTTTTTWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWTTTTTWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWSWWWWWWWWWWWWWWW"
+                ],
+                floorLinks: [
+                    { "x": 15, "y": 26, "to": "EXIT", "label": "外に出る" },
+                    { "x": 3, "y": 13, "toFloor": 2, "targetX": 27, "targetY": 13, "label": "西館へ" },
+                    { "x": 27, "y": 13, "toFloor": 4, "targetX": 3, "targetY": 13, "label": "東館へ" },
+                    { "x": 15, "y": 3, "toFloor": 6, "targetX": 15, "targetY": 24, "label": "本館2階へ" }
+                ],
+                chests: [
+                    { "x": 10, "y": 6, "itemId": 1, "type": "item" },
+                    { "x": 20, "y": 20, "itemId": 3, "type": "item" }
+                ],
+                bosses: [],
+                healSprings: [{ "x": 15, "y": 20 }],
+                entryPoint: { "x": 15, "y": 25 }
+            },
+            {
+                label: "西館1階・黒影廊",
+                encounterRank: 62,
+                monsters: [100058, 100059, 100060],
+                width: 31,
+                height: 27,
+                tiles: [
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWTTTTTTTWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWTTTDTTTWWWWWWWWWWWW",
+                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWTTTCTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTUWWW",
+                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWTTTRTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                floorLinks: [
+                    { "x": 27, "y": 13, "toFloor": 1, "targetX": 3, "targetY": 13, "label": "本館1階へ戻る" },
+                    { "x": 15, "y": 3, "toFloor": 3, "targetX": 15, "targetY": 24, "label": "西館2階へ" }
+                ],
+                chests: [
+                    { "x": 6, "y": 6, "itemId": 2, "type": "item" },
+                    { "x": 6, "y": 20, "itemId": 105, "type": "item", "rare": true }
+                ],
+                bosses: [],
+                entryPoint: { "x": 27, "y": 13 }
+            },
+            {
+                label: "西館2階・結界の間",
+                encounterRank: 64,
+                monsters: [100059, 100060, 100061],
+                width: 31,
+                height: 27,
+                tiles: [
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWTTTTTTTTBTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTCTTTTTTTTTTTCTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWWWWWTTTTTTTTTWWWWWWWWWWW",
+                    "WWWWWWWWWWWTTTTTTTTTWWWWWWWWWWW",
+                    "WWWWWWWWWWWTTTTUTTTTWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                floorLinks: [
+                    { "x": 15, "y": 24, "toFloor": 2, "targetX": 15, "targetY": 3, "label": "西館1階へ戻る" }
+                ],
+                chests: [
+                    { "x": 9, "y": 13, "itemId": 4, "type": "item" },
+                    { "x": 21, "y": 13, "itemId": 102, "type": "item", "rare": true }
+                ],
+                bosses: [
+                    { "x": 15, "y": 5, "monsterId": 301080, "keyRewardColor": "blue", "startEventId": "dark_castle_zeldras_encounter", "storyEventId": "dark_castle_zeldras_clear", "actionLabel": "西の結界へ進む" }
+                ],
+                entryPoint: { "x": 15, "y": 24 }
+            },
+            {
+                label: "東館1階・風哭廊",
+                encounterRank: 62,
+                monsters: [100058, 100061, 100062],
+                width: 31,
+                height: 27,
+                tiles: [
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWTTTTTTTWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWTTTDTTTWWWWWWWWWWWW",
+                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTTTTTTTTTTTCTTTWWW",
+                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
+                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
+                    "WWWUTTTTTTTTTTTTTTTTTTTTTTTTTWW",
+                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
+                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
+                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTTTTTTTTTTTRTTTWWW",
+                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                floorLinks: [
+                    { "x": 3, "y": 13, "toFloor": 1, "targetX": 27, "targetY": 13, "label": "本館1階へ戻る" },
+                    { "x": 15, "y": 3, "toFloor": 5, "targetX": 15, "targetY": 24, "label": "東館2階へ" }
+                ],
+                chests: [
+                    { "x": 24, "y": 6, "itemId": 2, "type": "item" },
+                    { "x": 24, "y": 20, "itemId": 105, "type": "item", "rare": true }
+                ],
+                bosses: [],
+                entryPoint: { "x": 3, "y": 13 }
+            },
+            {
+                label: "東館2階・結界の間",
+                encounterRank: 64,
+                monsters: [100061, 100062, 100063],
+                width: 31,
+                height: 27,
+                tiles: [
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWTTTTTTTTBTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTCTTTTTTTTTTTCTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWWWWWTTTTTTTTTWWWWWWWWWWW",
+                    "WWWWWWWWWWWTTTTTTTTTWWWWWWWWWWW",
+                    "WWWWWWWWWWWTTTTUTTTTWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                floorLinks: [
+                    { "x": 15, "y": 24, "toFloor": 4, "targetX": 15, "targetY": 3, "label": "東館1階へ戻る" }
+                ],
+                chests: [
+                    { "x": 9, "y": 13, "itemId": 5, "type": "item" },
+                    { "x": 21, "y": 13, "itemId": 103, "type": "item", "rare": true }
+                ],
+                bosses: [
+                    { "x": 15, "y": 5, "monsterId": 301082, "keyRewardColor": "red", "startEventId": "dark_castle_elmenas_encounter", "storyEventId": "dark_castle_elmenas_clear", "actionLabel": "東の結界へ進む" }
+                ],
+                entryPoint: { "x": 15, "y": 24 }
+            },
+            {
+                label: "本館2階・夢幻回廊",
+                encounterRank: 68,
+                monsters: [100063, 100064, 100065],
+                width: 31,
+                height: 27,
+                tiles: [
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWTTTTTTTWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWTTTDTTTWWWWWWWWWWWW",
+                    "WWWWWTTTTTTTTTTTTTTTTTTTTTWWWWW",
+                    "WWWWWTTTTTTTTTTTTTTTTTTTTTWWWWW",
+                    "WWWWWTTTTTTTTTTTTTTTTTTTTTWWWWW",
+                    "WWWWWTTTTTTTTTTTTTTTTTTTTTWWWWW",
+                    "WWWWWTTTTTTTTTTTTTTTTTTTTTWWWWW",
+                    "WWWWWTTTTTTTTTTTTTTTTTTTTTWWWWW",
+                    "WWWWWTTTTTTTTTTTTTTTTTTTTTWWWWW",
+                    "WWWWWTTTTTTTTTTBTTTTTTTTTTWWWWW",
+                    "WWWWWTTTTTTTTTTTTTTTTTTTTTWWWWW",
+                    "WWWWWTTTTTTTTTTTTTTTTTTTTTWWWWW",
+                    "WWWWWTTTTTTTTTTTTTTTTTTTTTWWWWW",
+                    "WWWWWTTTTTTTTTTTTTTTTTTTTTWWWWW",
+                    "WWWWWTTTTTTTTTTTTTTTTTTTTTWWWWW",
+                    "WWWWWTCTTTTTTTTTTTTTTTTTRTWWWWW",
+                    "WWWWWTTTTTTTTTTTTTTTTTTTTTWWWWW",
+                    "WWWWWTTTTTTTTTTTTTTTTTTTTTWWWWW",
+                    "WWWWWTTTTTTTTTTTTTTTTTTTTTWWWWW",
+                    "WWWWWTTTTTTTTTTTTTTTTTTTTTWWWWW",
+                    "WWWWWTTTTTTTTTTTTTTTTTTTTTWWWWW",
+                    "WWWWWWWWWWWTTTTTTTTTWWWWWWWWWWW",
+                    "WWWWWWWWWWWTTTTUTTTTWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                floorLinks: [
+                    { "x": 15, "y": 24, "toFloor": 1, "targetX": 15, "targetY": 3, "label": "本館1階へ戻る" },
+                    { "x": 15, "y": 3, "toFloor": 7, "targetX": 15, "targetY": 24, "label": "本館3階へ" }
+                ],
+                chests: [
+                    { "x": 6, "y": 17, "itemId": 6, "type": "item" },
+                    { "x": 24, "y": 17, "itemId": 104, "type": "item", "rare": true }
+                ],
+                bosses: [
+                    { "x": 15, "y": 11, "monsterId": 301081, "keyRewardColor": "gold", "startEventId": "dark_castle_belet_elm_encounter", "storyEventId": "dark_castle_belet_elm_clear", "actionLabel": "夢幻回廊の奥へ進む" }
+                ],
+                entryPoint: { "x": 15, "y": 24 }
+            },
+            {
+                label: "本館3階・謁見の間",
+                encounterRank: 72,
+                monsters: [100066, 100067, 100068],
+                width: 31,
+                height: 27,
+                tiles: [
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWTTTTTTTTTWWWWWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTBTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTZTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTXTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTYTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTCTTTTTTTTTTTRTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWTTTTTTTTTTTTTTTTTWWWWWWW",
+                    "WWWWWWWWWWWWWWWUWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                floorLinks: [
+                    { "x": 15, "y": 24, "toFloor": 6, "targetX": 15, "targetY": 3, "label": "本館2階へ戻る" }
+                ],
+                chests: [
+                    { "x": 9, "y": 20, "itemId": 7, "type": "item" },
+                    { "x": 21, "y": 20, "itemId": 105, "type": "item", "rare": true }
+                ],
+                bosses: [
+                    { "x": 15, "y": 5, "monsterId": 301100, "startEventId": "dark_castle_zenon_encounter", "storyEventId": "dark_castle_clear", "actionLabel": "謁見の間へ進む" }
+                ],
+                entryPoint: { "x": 15, "y": 24 }
+            }
+        ]
     }
 };
 
@@ -2056,7 +3107,18 @@ const MapRegistry = {
 
     getWorldAreaAt(x, y) {
         if (typeof STORY_DATA === "undefined" || !STORY_DATA.areas) return null;
-        return Object.entries(STORY_DATA.areas).find(([key, area]) => Number(area.centerX) === Number(x) && Number(area.centerY) === Number(y)) || null;
+        const wx = Number(x);
+        const wy = Number(y);
+        for (const [key, area] of Object.entries(STORY_DATA.areas)) {
+            if (Array.isArray(area.entrances)) {
+                const entrance = area.entrances.find(pos => Number(pos.x) === wx && Number(pos.y) === wy);
+                if (entrance) return [key, { ...area, centerX: wx, centerY: wy, _entryKey: entrance.entryKey || null, _entryLabel: entrance.label || null }];
+            }
+            if (Number(area.centerX) === wx && Number(area.centerY) === wy) {
+                return [key, { ...area, _entryKey: area.defaultEntryKey || null }];
+            }
+        }
+        return null;
     },
 
     getWorldTileConfig(x, y) {
@@ -2107,7 +3169,7 @@ const MapRegistry = {
     },
 
     getFixedFloorActionLabel(mapDef, link, currentFloorNo = null, areaKey = null) {
-        if (link?.to === 'EXIT') return '外に出る';
+        if (link?.to === 'EXIT') return link?.label || '外に出る';
         const direction = MapRegistry.getFixedFloorDirection(mapDef, link, currentFloorNo, areaKey);
         if (direction === 'up') return '上の階へ';
         if (direction === 'down') return '下の階へ';
