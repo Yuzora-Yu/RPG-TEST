@@ -467,12 +467,11 @@ const Facilities = {
                 box-shadow: 0 20px 40px rgba(0,0,0,0.78);
             }
             body.game-page .shop-lineup-titlebar {
-                height: 40px;
+                height: 34px;
                 flex-shrink: 0;
-                display: grid;
-                grid-template-columns: auto minmax(0, 1fr) auto;
+                display: flex;
                 align-items: center;
-                gap: 10px;
+                justify-content: flex-end;
                 padding: 0 10px;
                 border-bottom: 1px solid #555;
                 background: #000;
@@ -525,6 +524,9 @@ const Facilities = {
                 border-bottom: 2px solid #fff;
             }
             body.game-page .shop-table-head {
+                position: sticky;
+                top: 0;
+                z-index: 3;
                 flex-shrink: 0;
                 display: grid;
                 gap: 6px;
@@ -582,12 +584,17 @@ const Facilities = {
                 padding: 0 4px;
                 border: 1px solid #777;
                 background: #000;
-                color: inherit;
+                color: #f5ffff;
                 font-size: 10px;
                 line-height: 1.1;
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
+            }
+            body.game-page .shop-row.is-selected .shop-type-pill {
+                background: transparent;
+                border-color: #101010;
+                color: #101010;
             }
             body.game-page .shop-row-name {
                 display: block;
@@ -808,8 +815,8 @@ const Facilities = {
                 body.game-page .shop-bg-stage { min-height: 132px; }
                 body.game-page .shop-lineup-layer { padding: 6px; }
                 body.game-page .shop-lineup-window { height: calc(100% - 12px); }
-                body.game-page .shop-lineup-titlebar { grid-template-columns: auto minmax(0, 1fr); height: auto; min-height: 42px; padding: 6px 8px; }
-                body.game-page .shop-gold-card { grid-column: 1 / -1; justify-content: space-between; width: 100%; }
+                body.game-page .shop-lineup-titlebar { height: 32px; min-height: 32px; padding: 0 8px; }
+                body.game-page .shop-gold-card { justify-content: flex-end; width: 100%; }
                 body.game-page .shop-lineup-body { grid-template-rows: minmax(0, 1fr) 120px; }
                 body.game-page .shop-table-head.equip,
                 body.game-page .shop-row.equip,
@@ -852,8 +859,6 @@ const Facilities = {
             <div id="shop-lineup-layer" class="shop-lineup-layer">
                 <div class="shop-lineup-window" role="dialog" aria-modal="true">
                     <div class="shop-lineup-titlebar">
-                        <div id="shop-lineup-mode" class="shop-lineup-mode">買いにきた</div>
-                        <div id="shop-lineup-title" class="shop-lineup-title">${Facilities.escapeAttr(title)}</div>
                         <div class="shop-gold-card"><span class="shop-gold-label">所持金</span><span id="shop-gold-display" class="shop-gold-value">${(App.data.gold || 0).toLocaleString()} G</span></div>
                     </div>
                     <div class="shop-lineup-body">
@@ -873,12 +878,7 @@ const Facilities = {
     },
 
     openShopLineup: (mode) => {
-        const cfg = App?.data?.currentShop || { type: 'item', title: '道具屋' };
         const layer = document.getElementById('shop-lineup-layer');
-        const modeEl = document.getElementById('shop-lineup-mode');
-        const titleEl = document.getElementById('shop-lineup-title');
-        if (modeEl) modeEl.textContent = Facilities.getShopModeLabel(mode);
-        if (titleEl) titleEl.textContent = cfg.title || Facilities.shopTypeLabels[cfg.type] || '店';
         Facilities.updateShopGoldDisplay();
         if (layer) layer.style.display = 'flex';
     },
@@ -941,6 +941,34 @@ const Facilities = {
         if (mode === 'buy') return '買いにきた';
         if (mode === 'sell') return '売りにきた';
         return '用件を選ぶ';
+    },
+
+    getEquipShopCategory: (base) => {
+        if (!base) return '装備';
+        return base.baseName || base.subType || base.category || base.kind || base.type || '装備';
+    },
+
+    getEquipShopCategoryOrder: (category, shopType = 'weapon') => {
+        const weaponOrder = ['剣', '槍', '斧', '短剣', '弓', '杖'];
+        const armorOrder = ['盾', '鎧', '兜', '帽子', 'ローブ', '腕輪', 'ブーツ', 'くつ', '頭', '体', '足'];
+        const order = shopType === 'weapon' ? weaponOrder : armorOrder;
+        const index = order.indexOf(category);
+        return index >= 0 ? index : 999;
+    },
+
+    compareShopEquipLineup: (shopType) => (a, b) => {
+        const ac = Facilities.getEquipShopCategory(a);
+        const bc = Facilities.getEquipShopCategory(b);
+        const ai = Facilities.getEquipShopCategoryOrder(ac, shopType);
+        const bi = Facilities.getEquipShopCategoryOrder(bc, shopType);
+        if (ai !== bi) return ai - bi;
+        const catDiff = String(ac || '').localeCompare(String(bc || ''), 'ja');
+        if (catDiff !== 0) return catDiff;
+        const priceDiff = Facilities.getEquipShopPrice(a) - Facilities.getEquipShopPrice(b);
+        if (priceDiff !== 0) return priceDiff;
+        const rankDiff = Number(a.rank || 0) - Number(b.rank || 0);
+        if (rankDiff !== 0) return rankDiff;
+        return Number(a.eid || 0) - Number(b.eid || 0);
     },
 
     renderShopFrame: () => {
@@ -1049,7 +1077,7 @@ const Facilities = {
                 <div class="shop-detail-name">${Facilities.escapeAttr(base.name)}</div>
                 <div class="shop-detail-price">${price.toLocaleString()} G</div>
             </div>
-            <div class="shop-detail-meta">${Facilities.escapeAttr(base.type)}</div>
+            <div class="shop-detail-meta">${Facilities.escapeAttr(Facilities.getEquipShopCategory(base))}</div>
             <div class="shop-detail-box">${Facilities.escapeAttr(Facilities.getEquipBaseSummary(base, 0))}</div>
         `, true);
     },
@@ -1072,8 +1100,8 @@ const Facilities = {
             const ai = typeOrder.includes(a.type) ? typeOrder.indexOf(a.type) : 99;
             const bi = typeOrder.includes(b.type) ? typeOrder.indexOf(b.type) : 99;
             if (ai !== bi) return ai - bi;
-            const rankDiff = Number(a.rank || 0) - Number(b.rank || 0);
-            if (rankDiff !== 0) return rankDiff;
+            const priceDiff = Number(a.price || 0) - Number(b.price || 0);
+            if (priceDiff !== 0) return priceDiff;
             return String(a.name || '').localeCompare(String(b.name || ''), 'ja') || Number(a.id || 0) - Number(b.id || 0);
         });
     },
@@ -1206,13 +1234,13 @@ const Facilities = {
         let pool = (window.EQUIP_MASTER || [])
             .filter(base => base && !base.noRandom && isTarget(base))
             .filter(base => Number(base.rank || 1) >= band.lower && Number(base.rank || 1) <= band.upper)
-            .sort((a, b) => (Number(a.rank || 0) - Number(b.rank || 0)) || String(a.type).localeCompare(String(b.type), 'ja') || Number(a.eid || 0) - Number(b.eid || 0));
+            .sort(Facilities.compareShopEquipLineup(type));
 
         if (pool.length === 0) {
             pool = (window.EQUIP_MASTER || [])
                 .filter(base => base && !base.noRandom && isTarget(base))
                 .filter(base => Number(base.rank || 1) <= band.upper)
-                .sort((a, b) => (Number(a.rank || 0) - Number(b.rank || 0)) || Number(a.eid || 0) - Number(b.eid || 0));
+                .sort(Facilities.compareShopEquipLineup(type));
         }
         return pool;
     },
@@ -1253,7 +1281,7 @@ const Facilities = {
             const cost = Facilities.getEquipShopPrice(base);
             const key = `buy-equip-${Number(base.eid)}`;
             return `<button class="shop-row equip" data-shop-key="${Facilities.escapeAttr(key)}" onclick="Facilities.selectShopBuyEquip(${Number(base.eid)})" onmouseenter="Facilities.showShopEquipHelp(${Number(base.eid)})" onfocus="Facilities.showShopEquipHelp(${Number(base.eid)})">
-                <span class="shop-type-pill">${Facilities.escapeAttr(base.type)}</span>
+                <span class="shop-type-pill">${Facilities.escapeAttr(Facilities.getEquipShopCategory(base))}</span>
                 <span class="shop-row-name">${Facilities.escapeAttr(base.name)}</span>
                 <span class="shop-price">${cost.toLocaleString()} G</span>
             </button>`;
@@ -1284,7 +1312,7 @@ const Facilities = {
         Facilities.showModal('shop-scene', '購入確認', `
             <div class="shop-confirm-card">
                 <div class="shop-confirm-title">${Facilities.escapeAttr(base.name)}</div>
-                <div class="shop-confirm-meta">${Facilities.escapeAttr(base.type)}</div>
+                <div class="shop-confirm-meta">${Facilities.escapeAttr(Facilities.getEquipShopCategory(base))}</div>
                 <div class="shop-confirm-box">${Facilities.escapeAttr(Facilities.getEquipBaseSummary(base, 0))}</div>
                 <div class="shop-total-line">${price.toLocaleString()} G</div>
                 <button class="shop-primary-btn" onclick="Facilities.confirmBuyShopEquip(${Number(base.eid)})">はい</button>
@@ -1486,6 +1514,8 @@ const Facilities = {
             const ai = itemTypeOrder.includes(a.type) ? itemTypeOrder.indexOf(a.type) : 99;
             const bi = itemTypeOrder.includes(b.type) ? itemTypeOrder.indexOf(b.type) : 99;
             if (ai !== bi) return ai - bi;
+            const priceDiff = Number(a.price || 0) - Number(b.price || 0);
+            if (priceDiff !== 0) return priceDiff;
             return String(a.name || '').localeCompare(String(b.name || ''), 'ja') || Number(a.item?.id || 0) - Number(b.item?.id || 0);
         });
     },
