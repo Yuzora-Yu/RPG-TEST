@@ -295,9 +295,6 @@ const Facilities = {
 
 
     // --- 3. 店舗共通（道具屋・武器屋・防具屋） ---
-    shopStock: [],
-    shopStockKey: null,
-
     shopTypeLabels: {
         item: '道具屋',
         weapon: '武器屋',
@@ -305,15 +302,605 @@ const Facilities = {
     },
 
     armorTypes: ['盾', '頭', '体', '足'],
+    shopSelectedKey: null,
+    shopPendingTrade: null,
+
+    jsArg: (value) => JSON.stringify(String(value)).replace(/</g, '\\u003c'),
+
+    ensureShopStyles: () => {
+        if (document.getElementById('shop-ui-redesign-style')) return;
+        const style = document.createElement('style');
+        style.id = 'shop-ui-redesign-style';
+        style.textContent = `
+            body.game-page #shop-scene.shop-scene-eo {
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+                overflow: hidden;
+                position: relative;
+                background: #000;
+                color: #eefcff;
+                font-family: 'DotGothic16', sans-serif;
+            }
+            body.game-page #shop-scene.shop-scene-eo * { box-sizing: border-box; }
+            body.game-page .shop-bg-stage {
+                width: 100%;
+                height: 56.25vw;
+                max-height: 220px;
+                min-height: 150px;
+                background: #000;
+                position: relative;
+                flex-shrink: 0;
+                border-bottom: 4px double #fff;
+                overflow: hidden;
+            }
+            body.game-page .shop-bg-stage img {
+                position: absolute;
+                inset: 0;
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                object-position: center;
+                display: block;
+            }
+            body.game-page .shop-bg-stage:after {
+                content: '';
+                position: absolute;
+                inset: 0;
+                background: linear-gradient(180deg, rgba(0,0,0,0.08), rgba(0,0,0,0.34));
+                pointer-events: none;
+            }
+            body.game-page .shop-facility-name {
+                position: absolute;
+                left: 10px;
+                bottom: 10px;
+                z-index: 1;
+                background: rgba(0,0,0,0.86);
+                border: 2px solid #fff;
+                padding: 3px 12px;
+                color: #fff;
+                font-size: 14px;
+                letter-spacing: 0.08em;
+            }
+            body.game-page .shop-exit-top {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                z-index: 1000;
+                padding: 6px 15px;
+                min-height: 32px;
+                border: 2px solid #fff;
+                background: rgba(0,0,0,0.82);
+                color: #fff;
+                font-family: inherit;
+                font-size: 11px;
+                cursor: pointer;
+            }
+            body.game-page .shop-main-display {
+                flex: 1;
+                min-height: 0;
+                background: #000;
+                padding: 10px;
+                color: #fff;
+                font-size: 14px;
+                line-height: 1.6;
+                overflow-y: auto;
+                position: relative;
+                display: flex;
+                flex-direction: column;
+            }
+            body.game-page .shop-main-inner {
+                max-width: 400px;
+                margin: 0 auto;
+                width: 100%;
+            }
+            body.game-page .shop-main-message {
+                background: rgba(0,0,0,0.68);
+                border: 2px solid rgba(232,254,255,0.86);
+                padding: 12px;
+                min-height: 76px;
+                color: #fff;
+            }
+            body.game-page .shop-main-gold {
+                margin-top: 10px;
+                color: #ffd86a;
+                font-weight: bold;
+                text-align: right;
+                letter-spacing: 0.03em;
+            }
+            body.game-page .shop-command-area {
+                background: #000;
+                border-top: 4px double #fff;
+                padding: 12px;
+                flex-shrink: 0;
+                z-index: 100;
+            }
+            body.game-page .shop-command-row {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+                max-width: 400px;
+                margin: 0 auto;
+            }
+            body.game-page .shop-cmd-btn,
+            body.game-page .shop-primary-btn,
+            body.game-page .shop-secondary-btn,
+            body.game-page .shop-qty-btn,
+            body.game-page .shop-lineup-close,
+            body.game-page .shop-modal-close {
+                font-family: inherit;
+                cursor: pointer;
+                -webkit-tap-highlight-color: transparent;
+            }
+            body.game-page .shop-cmd-btn {
+                height: 40px;
+                border: 1px solid #fff;
+                background: #000;
+                color: #fff;
+                font-size: 13px;
+            }
+            body.game-page .shop-cmd-btn.is-active {
+                background: #e7d656 !important;
+                border-color: #fff59c;
+                color: #111 !important;
+                font-weight: bold;
+            }
+            body.game-page .shop-lineup-layer {
+                display: none;
+                position: absolute;
+                inset: 0;
+                z-index: 1500;
+                justify-content: center;
+                align-items: center;
+                padding: 10px;
+                background: rgba(0, 7, 12, 0.64);
+            }
+            body.game-page .shop-lineup-window {
+                width: min(720px, 100%);
+                height: min(88vh, 650px);
+                max-height: calc(100% - 20px);
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+                border: 3px double #fff;
+                background: #000;
+                box-shadow: 0 20px 40px rgba(0,0,0,0.78);
+            }
+            body.game-page .shop-lineup-titlebar {
+                height: 40px;
+                flex-shrink: 0;
+                display: grid;
+                grid-template-columns: auto minmax(0, 1fr) auto;
+                align-items: center;
+                gap: 10px;
+                padding: 0 10px;
+                border-bottom: 1px solid #555;
+                background: #000;
+            }
+            body.game-page .shop-lineup-mode {
+                display: inline-flex;
+                align-items: center;
+                height: 24px;
+                padding: 0 10px;
+                border: 1px solid #fff;
+                background: #000;
+                color: #fff;
+                font-size: 13px;
+                font-weight: bold;
+                letter-spacing: 0.08em;
+                white-space: nowrap;
+            }
+            body.game-page .shop-lineup-title {
+                min-width: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                color: #eaffff;
+                font-size: 13px;
+            }
+            body.game-page .shop-gold-card {
+                display: inline-flex;
+                align-items: baseline;
+                gap: 8px;
+                justify-content: flex-end;
+                min-width: 126px;
+                color: #ffd86a;
+                font-weight: bold;
+                white-space: nowrap;
+            }
+            body.game-page .shop-gold-label { font-size: 10px; color: #ffe9a6; font-weight: normal; }
+            body.game-page .shop-gold-value { font-size: 14px; color: #ffe27a; }
+            body.game-page .shop-lineup-body {
+                flex: 1;
+                min-height: 0;
+                display: grid;
+                grid-template-rows: minmax(0, 1fr) 126px;
+                background: #000;
+            }
+            body.game-page .shop-list-panel {
+                min-height: 0;
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+                border-bottom: 2px solid #fff;
+            }
+            body.game-page .shop-table-head {
+                flex-shrink: 0;
+                display: grid;
+                gap: 6px;
+                align-items: center;
+                min-height: 28px;
+                padding: 5px 10px;
+                border-bottom: 1px solid #555;
+                background: #111;
+                color: #cfffff;
+                font-size: 11px;
+                letter-spacing: 0.08em;
+            }
+            body.game-page .shop-table-head.equip,
+            body.game-page .shop-row.equip,
+            body.game-page .shop-table-head.sell,
+            body.game-page .shop-row.sell { grid-template-columns: 48px minmax(0, 1fr) 94px; }
+            body.game-page .shop-table-head.item,
+            body.game-page .shop-row.item { grid-template-columns: minmax(0, 1fr) 58px 94px; }
+            body.game-page .shop-table-head span:last-child { text-align: right; }
+            body.game-page .shop-list {
+                flex: 1;
+                min-height: 0;
+                overflow-y: auto;
+                scrollbar-width: thin;
+                padding: 0;
+            }
+            body.game-page .shop-row {
+                width: 100%;
+                min-height: 42px;
+                border: 0;
+                border-bottom: 1px solid #333;
+                background: #050505;
+                color: #f5ffff;
+                padding: 0 10px;
+                display: grid;
+                gap: 6px;
+                align-items: center;
+                text-align: left;
+                font-family: inherit;
+                cursor: pointer;
+            }
+            body.game-page .shop-row:nth-child(even) { background: #101010; }
+            body.game-page .shop-row:hover,
+            body.game-page .shop-row:focus { outline: none; background: #1d1d1d; }
+            body.game-page .shop-row.is-selected {
+                background: linear-gradient(180deg, #fff38f, #d6c744) !important;
+                color: #101010;
+                font-weight: bold;
+            }
+            body.game-page .shop-type-pill {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 22px;
+                padding: 0 4px;
+                border: 1px solid #777;
+                background: #000;
+                color: inherit;
+                font-size: 10px;
+                line-height: 1.1;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            body.game-page .shop-row-name {
+                display: block;
+                min-width: 0;
+                white-space: normal;
+                overflow: visible;
+                text-overflow: clip;
+                overflow-wrap: anywhere;
+                word-break: keep-all;
+                line-height: 1.25;
+                font-size: 13px;
+            }
+            body.game-page .shop-owned,
+            body.game-page .shop-price {
+                font-size: 12px;
+                white-space: nowrap;
+                color: inherit;
+            }
+            body.game-page .shop-price { text-align: right; }
+            body.game-page .shop-detail-panel {
+                min-height: 0;
+                overflow: hidden;
+                background: #000;
+                padding: 9px 10px;
+                color: #eefcff;
+            }
+            body.game-page .shop-detail-empty {
+                height: 100%;
+                display: flex;
+                align-items: center;
+                color: #bdeaf2;
+                font-size: 13px;
+            }
+            body.game-page .shop-detail-titlebar {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto;
+                gap: 10px;
+                align-items: start;
+                margin-bottom: 5px;
+            }
+            body.game-page .shop-detail-name {
+                color: #fff;
+                font-size: 14px;
+                font-weight: bold;
+                line-height: 1.25;
+                overflow-wrap: anywhere;
+                word-break: keep-all;
+            }
+            body.game-page .shop-detail-price {
+                color: #ffe27a;
+                font-size: 13px;
+                font-weight: bold;
+                white-space: nowrap;
+            }
+            body.game-page .shop-detail-meta {
+                color: #aef6ff;
+                font-size: 11px;
+                margin-bottom: 4px;
+            }
+            body.game-page .shop-detail-box {
+                color: #ffffff;
+                font-size: 12px;
+                line-height: 1.45;
+                max-height: 56px;
+                overflow-y: auto;
+            }
+            body.game-page .shop-empty-list {
+                padding: 44px 10px;
+                text-align: center;
+                color: #d8fbff;
+                font-size: 13px;
+            }
+            body.game-page .shop-lineup-footer {
+                height: 44px;
+                flex-shrink: 0;
+                display: flex;
+                justify-content: flex-end;
+                align-items: center;
+                padding: 6px 10px;
+                border-top: 1px solid #555;
+                background: #000;
+            }
+            body.game-page .shop-lineup-close {
+                min-width: 110px;
+                height: 30px;
+                border: 1px solid #fff;
+                background: #000;
+                color: #fff;
+                font-size: 12px;
+            }
+            body.game-page .shop-modal-layer {
+                display: none;
+                position: absolute;
+                inset: 0;
+                z-index: 2000;
+                justify-content: center;
+                align-items: center;
+                padding: 10px;
+                background: rgba(0,0,0,0.78);
+            }
+            body.game-page .shop-modal-window {
+                width: min(420px, 100%);
+                max-height: calc(100% - 20px);
+                display: flex;
+                flex-direction: column;
+                padding: 12px;
+                border: 3px double #e8feff;
+                background: #000;
+                color: #fff;
+                box-shadow: 0 18px 38px rgba(0,0,0,0.85);
+            }
+            body.game-page .shop-modal-title {
+                color: #ffd86a;
+                font-size: 14px;
+                margin-bottom: 10px;
+                border-bottom: 1px solid #444;
+                padding-bottom: 5px;
+                font-weight: bold;
+            }
+            body.game-page .shop-modal-body {
+                min-height: 0;
+                max-height: 58vh;
+                overflow-y: auto;
+                color: #fff;
+            }
+            body.game-page .shop-modal-close {
+                width: 100%;
+                margin-top: 12px;
+                background: #333;
+                border: 1px solid #fff;
+                min-height: 38px;
+                color: #fff;
+                font-size: 12px;
+            }
+            body.game-page .shop-confirm-card,
+            body.game-page .shop-result-card { color: #fff; }
+            body.game-page .shop-confirm-title {
+                font-size: 15px;
+                line-height: 1.35;
+                font-weight: bold;
+                color: #fff;
+                margin-bottom: 5px;
+                overflow-wrap: anywhere;
+                word-break: keep-all;
+            }
+            body.game-page .shop-confirm-meta {
+                color: #aef6ff;
+                font-size: 11px;
+                line-height: 1.45;
+                margin-bottom: 8px;
+            }
+            body.game-page .shop-confirm-box {
+                border: 1px solid #555;
+                background: #050505;
+                padding: 8px;
+                margin-bottom: 10px;
+                font-size: 12px;
+                line-height: 1.5;
+            }
+            body.game-page .shop-qty-grid {
+                display: grid;
+                grid-template-columns: 48px 44px 1fr 44px 48px;
+                gap: 6px;
+                align-items: center;
+                margin: 8px 0;
+            }
+            body.game-page .shop-qty-btn {
+                min-height: 34px;
+                border: 1px solid #fff;
+                background: #000;
+                color: #fff;
+                font-size: 12px;
+            }
+            body.game-page .shop-qty-value {
+                min-height: 34px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border: 1px solid #fff;
+                color: #fff;
+                background: #000;
+                font-weight: bold;
+            }
+            body.game-page .shop-total-line {
+                color: #ffd86a;
+                font-size: 12px;
+                text-align: right;
+                margin: 8px 0 10px;
+                font-weight: bold;
+            }
+            body.game-page .shop-primary-btn,
+            body.game-page .shop-secondary-btn {
+                width: 100%;
+                min-height: 40px;
+                border: 1px solid #fff59c;
+                background: #d6c744;
+                color: #111;
+                font-size: 13px;
+                font-weight: bold;
+            }
+            body.game-page .shop-secondary-btn {
+                border-color: #fff;
+                background: #111;
+                color: #fff;
+            }
+            body.game-page .shop-result-banner {
+                display: flex;
+                justify-content: space-between;
+                gap: 8px;
+                padding: 6px 8px;
+                margin-bottom: 8px;
+                border: 1px solid #fff59c;
+                background: #1b1600;
+                color: #ffe27a;
+                font-weight: bold;
+            }
+            @media (max-width: 430px) {
+                body.game-page .shop-bg-stage { min-height: 132px; }
+                body.game-page .shop-lineup-layer { padding: 6px; }
+                body.game-page .shop-lineup-window { height: calc(100% - 12px); }
+                body.game-page .shop-lineup-titlebar { grid-template-columns: auto minmax(0, 1fr); height: auto; min-height: 42px; padding: 6px 8px; }
+                body.game-page .shop-gold-card { grid-column: 1 / -1; justify-content: space-between; width: 100%; }
+                body.game-page .shop-lineup-body { grid-template-rows: minmax(0, 1fr) 120px; }
+                body.game-page .shop-table-head.equip,
+                body.game-page .shop-row.equip,
+                body.game-page .shop-table-head.sell,
+                body.game-page .shop-row.sell { grid-template-columns: 42px minmax(0, 1fr) 74px; }
+                body.game-page .shop-table-head.item,
+                body.game-page .shop-row.item { grid-template-columns: minmax(0, 1fr) 46px 74px; }
+                body.game-page .shop-table-head { padding: 5px 7px; }
+                body.game-page .shop-row { min-height: 42px; padding: 0 7px; }
+                body.game-page .shop-row-name { font-size: 12px; }
+                body.game-page .shop-owned, body.game-page .shop-price { font-size: 11px; }
+                body.game-page .shop-qty-grid { grid-template-columns: 42px 38px 1fr 38px 42px; gap: 5px; }
+            }
+        `;
+        document.head.appendChild(style);
+    },
+
+    getShopIcon: (type) => {
+        if (type === 'weapon') return '⚔';
+        if (type === 'armor') return '🛡';
+        return '✦';
+    },
+
+    setupShopLayout: (cfg = {}) => {
+        Facilities.ensureShopStyles();
+        const title = cfg.title || Facilities.shopTypeLabels[cfg.type] || '店';
+        const exitFn = "App.changeScene('field')";
+        const cmds = `
+            <button class="menu-btn shop-cmd-btn" style="background:#000; border:1px solid #fff; height:40px; color:#fff;" onclick="Facilities.openShopBuy()">買いにきた</button>
+            <button class="menu-btn shop-cmd-btn" style="background:#000; border:1px solid #fff; height:40px; color:#fff;" onclick="Facilities.openShopSell()">売りにきた</button>
+        `;
+
+        // 宿屋・カジノと同じベースレイアウトを使い、入店直後の枠線・余白・背景比率を完全に揃える。
+        Facilities.setupBaseLayout('shop-scene', title, 'facility_bg_inn', cmds, exitFn);
+
+        const container = document.getElementById('shop-scene');
+        if (!container) return;
+        container.classList.add('shop-scene-eo');
+        container.insertAdjacentHTML('beforeend', `
+            <div id="shop-lineup-layer" class="shop-lineup-layer">
+                <div class="shop-lineup-window" role="dialog" aria-modal="true">
+                    <div class="shop-lineup-titlebar">
+                        <div id="shop-lineup-mode" class="shop-lineup-mode">買いにきた</div>
+                        <div id="shop-lineup-title" class="shop-lineup-title">${Facilities.escapeAttr(title)}</div>
+                        <div class="shop-gold-card"><span class="shop-gold-label">所持金</span><span id="shop-gold-display" class="shop-gold-value">${(App.data.gold || 0).toLocaleString()} G</span></div>
+                    </div>
+                    <div class="shop-lineup-body">
+                        <section class="shop-list-panel">
+                            <div id="shop-list" class="shop-list"></div>
+                        </section>
+                        <aside id="shop-help" class="shop-detail-panel">
+                            <div class="shop-detail-empty">品物を選んでください。</div>
+                        </aside>
+                    </div>
+                    <div class="shop-lineup-footer">
+                        <button class="shop-lineup-close" onclick="Facilities.closeShopLineup()">もどる</button>
+                    </div>
+                </div>
+            </div>
+        `);
+    },
+
+    openShopLineup: (mode) => {
+        const cfg = App?.data?.currentShop || { type: 'item', title: '道具屋' };
+        const layer = document.getElementById('shop-lineup-layer');
+        const modeEl = document.getElementById('shop-lineup-mode');
+        const titleEl = document.getElementById('shop-lineup-title');
+        if (modeEl) modeEl.textContent = Facilities.getShopModeLabel(mode);
+        if (titleEl) titleEl.textContent = cfg.title || Facilities.shopTypeLabels[cfg.type] || '店';
+        Facilities.updateShopGoldDisplay();
+        if (layer) layer.style.display = 'flex';
+    },
+
+    closeShopLineup: () => {
+        const layer = document.getElementById('shop-lineup-layer');
+        if (layer) layer.style.display = 'none';
+        if (App?.data?.currentShop) App.data.currentShop.mode = 'home';
+        Facilities.shopSelectedKey = null;
+        Facilities.shopPendingTrade = null;
+        Facilities.closeModal('shop-scene');
+        Facilities.renderShopFrame();
+    },
 
     openShopFromField: (config = {}) => {
         const type = config.shopType || config.type || 'item';
         const title = config.title || Facilities.shopTypeLabels[type] || '店';
         const rank = Math.max(1, Number(config.shopRank || config.rank || Facilities.getCurrentAreaShopRank()) || 1);
         const area = App?.data?.location?.area || 'WORLD';
-        App.data.currentShop = { type, title, rank, area, openedAt: Date.now() };
-        Facilities.shopStock = [];
-        Facilities.shopStockKey = null;
+        App.data.currentShop = { type, title, rank, area, mode: 'home', openedAt: Date.now() };
+        Facilities.shopSelectedKey = null;
+        Facilities.shopPendingTrade = null;
         App.changeScene('shop');
     },
 
@@ -326,47 +913,169 @@ const Facilities = {
     },
 
     initShop: () => {
-        const cfg = App?.data?.currentShop || { type: 'item', title: '道具屋', rank: Facilities.getCurrentAreaShopRank() };
+        const cfg = App?.data?.currentShop || { type: 'item', title: '道具屋', rank: Facilities.getCurrentAreaShopRank(), mode: 'home' };
         cfg.type = cfg.type || 'item';
         cfg.title = cfg.title || Facilities.shopTypeLabels[cfg.type] || '店';
         cfg.rank = Math.max(1, Number(cfg.rank || Facilities.getCurrentAreaShopRank()) || 1);
+        cfg.mode = cfg.mode || 'home';
+        App.data.currentShop = cfg;
 
-        const exitFn = "App.changeScene('field')";
-        const isItemShop = cfg.type === 'item';
-        const cmds = isItemShop
-            ? `<button class="menu-btn" style="background:#000; border:1px solid #fff; height:40px; color:#fff; grid-column:span 2;" onclick="Facilities.renderShopItems()">品物を見る</button>`
-            : `<button class="menu-btn" style="background:#000; border:1px solid #fff; height:40px; color:#fff; grid-column:span 2;" onclick="Facilities.refreshShopEquipStock(true)">品揃えを見直す</button>`;
+        Facilities.setupShopLayout(cfg);
+        Facilities.renderShopFrame();
+        if (cfg.mode === 'buy') {
+            Facilities.openShopLineup('buy');
+            Facilities.renderShopBuyList();
+        } else if (cfg.mode === 'sell') {
+            Facilities.openShopLineup('sell');
+            Facilities.renderShopSellList();
+        } else Facilities.renderShopHome();
+    },
 
-        Facilities.setupBaseLayout('shop-scene', cfg.title, '', cmds, exitFn);
+    getShopTalk: (type) => {
+        if (type === 'weapon') return '「武器を見ていくかい？」';
+        if (type === 'armor') return '「防具ならこちらです。」';
+        return '「いらっしゃいませ。」';
+    },
+
+    getShopModeLabel: (mode) => {
+        if (mode === 'buy') return '買いにきた';
+        if (mode === 'sell') return '売りにきた';
+        return '用件を選ぶ';
+    },
+
+    renderShopFrame: () => {
+        const cfg = App?.data?.currentShop || { type: 'item', title: '道具屋', mode: 'home' };
         const msg = document.getElementById('shop-scene-msg-content');
         if (msg) {
             msg.innerHTML = `
-                「いらっしゃいませ。近くの魔物に合わせた品を揃えています」<br><br>
-                <span style="color:#ffd700; font-weight:bold;">所持金: ${(App.data.gold || 0).toLocaleString()} Gold</span><br>
-                <span style="color:#aaa; font-size:11px;">取扱目安: Rank ${cfg.rank}</span>
-                <div id="shop-list" style="margin-top:12px;"></div>
+                ${Facilities.getShopTalk(cfg.type)}<br><br>
+                <span id="shop-main-gold" style="color:#ffd700; font-weight:bold;">所持金: ${(App.data.gold || 0).toLocaleString()} Gold</span>
             `;
         }
+        const cmd = document.getElementById('shop-scene-cmd-row');
+        if (cmd) {
+            cmd.innerHTML = `
+                <button class="menu-btn shop-cmd-btn ${cfg.mode === 'buy' ? 'is-active' : ''}" style="background:#000; border:1px solid #fff; height:40px; color:#fff;" onclick="Facilities.openShopBuy()">買いにきた</button>
+                <button class="menu-btn shop-cmd-btn ${cfg.mode === 'sell' ? 'is-active' : ''}" style="background:#000; border:1px solid #fff; height:40px; color:#fff;" onclick="Facilities.openShopSell()">売りにきた</button>
+                <button class="menu-btn" style="background:#000; border:1px solid #777; height:40px; font-size:13px; color:#aaa;" onclick="App.changeScene('field')">出る</button>
+            `;
+        }
+        Facilities.updateShopGoldDisplay();
+    },
 
-        if (isItemShop) Facilities.renderShopItems();
+    updateShopGoldDisplay: () => {
+        const text = `${(App.data.gold || 0).toLocaleString()} G`;
+        const gold = document.getElementById('shop-gold-display');
+        if (gold) gold.textContent = text;
+        const mainGold = document.getElementById('shop-main-gold');
+        if (mainGold) mainGold.textContent = `所持金: ${(App.data.gold || 0).toLocaleString()} Gold`;
+    },
+
+    setShopHelp: (htmlOrText, asHtml = false) => {
+        const help = document.getElementById('shop-help');
+        if (!help) return;
+        help.innerHTML = asHtml ? (htmlOrText || '') : `<div class="shop-detail-empty">${Facilities.escapeAttr(htmlOrText || '')}</div>`;
+    },
+
+    openShopBuy: () => {
+        const cfg = App?.data?.currentShop;
+        if (!cfg) return;
+        cfg.mode = 'buy';
+        Facilities.shopSelectedKey = null;
+        Facilities.shopPendingTrade = null;
+        Facilities.renderShopFrame();
+        Facilities.openShopLineup('buy');
+        Facilities.renderShopBuyList();
+    },
+
+    openShopSell: () => {
+        const cfg = App?.data?.currentShop;
+        if (!cfg) return;
+        cfg.mode = 'sell';
+        Facilities.shopSelectedKey = null;
+        Facilities.shopPendingTrade = null;
+        Facilities.renderShopFrame();
+        Facilities.openShopLineup('sell');
+        Facilities.renderShopSellList();
+    },
+
+    renderShopHome: () => {
+        const layer = document.getElementById('shop-lineup-layer');
+        if (layer) layer.style.display = 'none';
+        Facilities.renderShopFrame();
+    },
+
+    renderShopBuyList: () => {
+        const cfg = App?.data?.currentShop || { type: 'item', rank: Facilities.getCurrentAreaShopRank() };
+        if (cfg.type === 'item') Facilities.renderShopItems();
         else Facilities.renderShopEquip();
+    },
+
+    markShopSelectedRow: (selectedKey) => {
+        document.querySelectorAll('#shop-list [data-shop-key]').forEach(row => {
+            row.classList.toggle('is-selected', row.getAttribute('data-shop-key') === selectedKey);
+        });
+    },
+
+    renderShopColumnHeader: (left = '種別', center = '名前', right = '金額', variant = 'equip') => {
+        if (variant === 'item') {
+            return `<div class="shop-table-head item" aria-hidden="true"><span>${Facilities.escapeAttr(center)}</span><span>所持</span><span>${Facilities.escapeAttr(right)}</span></div>`;
+        }
+        return `<div class="shop-table-head ${Facilities.escapeAttr(variant)}" aria-hidden="true"><span>${Facilities.escapeAttr(left)}</span><span>${Facilities.escapeAttr(center)}</span><span>${Facilities.escapeAttr(right)}</span></div>`;
+    },
+
+    showShopItemHelp: (itemId) => {
+        const item = (DB.ITEMS || []).find(i => Number(i.id) === Number(itemId));
+        if (!item) return;
+        const cost = Number(item.price || 0);
+        const owned = Number(App.data.items?.[item.id] || 0);
+        Facilities.setShopHelp(`
+            <div class="shop-detail-titlebar">
+                <div class="shop-detail-name">${Facilities.escapeAttr(item.name)}</div>
+                <div class="shop-detail-price">${cost.toLocaleString()} G</div>
+            </div>
+            <div class="shop-detail-meta">所持 ${owned.toLocaleString()}</div>
+            <div class="shop-detail-box">${Facilities.escapeAttr(item.desc || '')}</div>
+        `, true);
+    },
+
+    showShopEquipHelp: (eid) => {
+        const cfg = App?.data?.currentShop || { type: 'weapon', rank: Facilities.getCurrentAreaShopRank() };
+        const base = Facilities.getEquipShopLineup(cfg.type, cfg.rank).find(eq => Number(eq.eid) === Number(eid));
+        if (!base) return;
+        const price = Facilities.getEquipShopPrice(base);
+        Facilities.setShopHelp(`
+            <div class="shop-detail-titlebar">
+                <div class="shop-detail-name">${Facilities.escapeAttr(base.name)}</div>
+                <div class="shop-detail-price">${price.toLocaleString()} G</div>
+            </div>
+            <div class="shop-detail-meta">${Facilities.escapeAttr(base.type)}</div>
+            <div class="shop-detail-box">${Facilities.escapeAttr(Facilities.getEquipBaseSummary(base, 0))}</div>
+        `, true);
     },
 
     getItemShopLineup: (rank = 1) => {
         const allowedTypes = new Set(['HP回復', 'MP回復', '状態異常回復', '蘇生', '移動']);
+        const typeOrder = ['HP回復', 'MP回復', '状態異常回復', '蘇生', '移動', '換金'];
         const maxRank = Math.max(1, Number(rank) || 1);
         const items = (DB.ITEMS || [])
             .filter(item => allowedTypes.has(item.type))
             .filter(item => Number(item.price || 0) > 0)
-            .filter(item => Number(item.rank || 1) <= maxRank)
-            .sort((a, b) => (Number(a.rank || 0) - Number(b.rank || 0)) || (Number(a.id) - Number(b.id)));
+            .filter(item => Number(item.rank || 1) <= maxRank);
 
-        // 移動アイテムは「道具屋」の明確な役割なので、低ランク店でも必ず扱えるようにする。
         const travelItems = (DB.ITEMS || []).filter(item => item.type === '移動' && Number(item.price || 0) > 0);
         travelItems.forEach(item => {
             if (!items.some(existing => Number(existing.id) === Number(item.id))) items.push(item);
         });
-        return items;
+
+        return items.sort((a, b) => {
+            const ai = typeOrder.includes(a.type) ? typeOrder.indexOf(a.type) : 99;
+            const bi = typeOrder.includes(b.type) ? typeOrder.indexOf(b.type) : 99;
+            if (ai !== bi) return ai - bi;
+            const rankDiff = Number(a.rank || 0) - Number(b.rank || 0);
+            if (rankDiff !== 0) return rankDiff;
+            return String(a.name || '').localeCompare(String(b.name || ''), 'ja') || Number(a.id || 0) - Number(b.id || 0);
+        });
     },
 
     renderShopItems: () => {
@@ -375,136 +1084,586 @@ const Facilities = {
         if (!list) return;
         const items = Facilities.getItemShopLineup(cfg.rank);
         if (items.length === 0) {
-            list.innerHTML = `<div style="padding:20px; color:#888; text-align:center;">今は売れる品がありません。</div>`;
+            list.innerHTML = `<div class="shop-empty-list">品切れです。</div>`;
+            Facilities.setShopHelp('品物がありません。');
             return;
         }
-        list.innerHTML = items.map(item => {
+        list.innerHTML = Facilities.renderShopColumnHeader('', '名前', '買値', 'item') + items.map(item => {
             const cost = Number(item.price || 0);
-            return `<div style="border-bottom:1px solid #333; padding:10px 0;">
-                <div style="display:flex; justify-content:space-between; gap:8px; align-items:center;">
-                    <div>
-                        <div style="font-weight:bold; color:#fff;">${Facilities.escapeAttr(item.name)}</div>
-                        <div style="font-size:10px; color:#aaa;">${Facilities.escapeAttr(item.type)} / Rank ${Number(item.rank || 1)}</div>
-                    </div>
-                    <button class="btn" style="min-width:92px; height:32px; background:#000; border:1px solid #fff; color:#fff;" onclick="Facilities.buyShopItem(${Number(item.id)}, ${cost})">${cost.toLocaleString()}G</button>
-                </div>
-                <div style="font-size:11px; color:#888; margin-top:4px;">${Facilities.escapeAttr(item.desc || '')}</div>
-            </div>`;
+            const owned = Number(App.data.items?.[item.id] || 0);
+            const key = `buy-item-${Number(item.id)}`;
+            return `<button class="shop-row item" data-shop-key="${Facilities.escapeAttr(key)}" onclick="Facilities.selectShopBuyItem(${Number(item.id)})" onmouseenter="Facilities.showShopItemHelp(${Number(item.id)})" onfocus="Facilities.showShopItemHelp(${Number(item.id)})">
+                <span class="shop-row-name">${Facilities.escapeAttr(item.name)}</span>
+                <span class="shop-owned">${owned.toLocaleString()}</span>
+                <span class="shop-price">${cost.toLocaleString()} G</span>
+            </button>`;
         }).join('');
+        Facilities.setShopHelp('品物を選んでください。');
     },
 
-    buyShopItem: (itemId, cost) => {
+    selectShopBuyItem: (itemId) => {
         const item = (DB.ITEMS || []).find(i => Number(i.id) === Number(itemId));
         if (!item) return Menu.msg('その品物は見つかりません。');
-        const price = Math.max(0, Number(cost || item.price || 0));
-        if ((App.data.gold || 0) < price) return Menu.msg('ゴールドが 足りません。');
-        App.data.gold -= price;
-        App.data.items[item.id] = (App.data.items[item.id] || 0) + 1;
+        const key = `buy-item-${Number(item.id)}`;
+        if (Facilities.shopSelectedKey === key) {
+            Facilities.openShopItemBuyModal(item.id);
+            return;
+        }
+        Facilities.shopSelectedKey = key;
+        Facilities.markShopSelectedRow(key);
+        Facilities.showShopItemHelp(item.id);
+    },
+
+    openShopItemBuyModal: (itemId) => {
+        const item = (DB.ITEMS || []).find(i => Number(i.id) === Number(itemId));
+        if (!item) return Menu.msg('その品物は見つかりません。');
+        const price = Math.max(0, Number(item.price || 0));
+        if (price <= 0) return Menu.msg('その品物は購入できません。');
+        const affordable = Math.floor((App.data.gold || 0) / price);
+        if (affordable <= 0) return Menu.msg('ゴールドが 足りません。');
+        Facilities.shopPendingTrade = { kind: 'buyItem', itemId: Number(item.id), qty: 1, max: Math.max(1, affordable), price };
+        Facilities.showModal('shop-scene', '購入確認', Facilities.renderShopItemBuyModalHtml(item));
+        Facilities.updateShopItemBuyQtyDisplay();
+    },
+
+    renderShopItemBuyModalHtml: (item) => {
+        const price = Math.max(0, Number(item.price || 0));
+        return `
+            <div class="shop-confirm-card">
+                <div class="shop-confirm-title">${Facilities.escapeAttr(item.name)}</div>
+                <div class="shop-confirm-meta">${Facilities.escapeAttr(item.desc || '')}</div>
+                <div class="shop-confirm-box">単価 ${price.toLocaleString()} G</div>
+                <div class="shop-qty-grid">
+                    <button class="shop-qty-btn" onclick="Facilities.changeShopItemBuyQty(-10)">-10</button>
+                    <button class="shop-qty-btn" onclick="Facilities.changeShopItemBuyQty(-1)">-</button>
+                    <div id="shop-item-qty-display" class="shop-qty-value">1</div>
+                    <button class="shop-qty-btn" onclick="Facilities.changeShopItemBuyQty(1)">+</button>
+                    <button class="shop-qty-btn" onclick="Facilities.changeShopItemBuyQty(10)">+10</button>
+                </div>
+                <div id="shop-item-total-display" class="shop-total-line"></div>
+                <button class="shop-primary-btn" onclick="Facilities.confirmBuyShopItem()">はい</button>
+            </div>
+        `;
+    },
+
+    changeShopItemBuyQty: (delta) => {
+        const trade = Facilities.shopPendingTrade;
+        if (!trade || trade.kind !== 'buyItem') return;
+        trade.qty = Math.max(1, Math.min(Number(trade.max || 1), Number(trade.qty || 1) + Number(delta || 0)));
+        Facilities.updateShopItemBuyQtyDisplay();
+    },
+
+    updateShopItemBuyQtyDisplay: () => {
+        const trade = Facilities.shopPendingTrade;
+        if (!trade || trade.kind !== 'buyItem') return;
+        const qtyEl = document.getElementById('shop-item-qty-display');
+        const totalEl = document.getElementById('shop-item-total-display');
+        const total = Number(trade.qty || 1) * Number(trade.price || 0);
+        if (qtyEl) qtyEl.textContent = `${Number(trade.qty || 1).toLocaleString()} 個`;
+        if (totalEl) totalEl.textContent = `合計 ${total.toLocaleString()} G / 所持金 ${(App.data.gold || 0).toLocaleString()} G`;
+    },
+
+    confirmBuyShopItem: () => {
+        const trade = Facilities.shopPendingTrade;
+        if (!trade || trade.kind !== 'buyItem') return;
+        const item = (DB.ITEMS || []).find(i => Number(i.id) === Number(trade.itemId));
+        if (!item) return Menu.msg('その品物は見つかりません。');
+        const qty = Math.max(1, Number(trade.qty || 1));
+        const total = qty * Math.max(0, Number(trade.price || item.price || 0));
+        if ((App.data.gold || 0) < total) return Menu.msg('ゴールドが 足りません。');
+        if (!App.data.items) App.data.items = {};
+        App.data.gold -= total;
+        App.data.items[item.id] = Number(App.data.items[item.id] || 0) + qty;
         App.save();
-        Facilities.initShop();
-        Menu.msg(`${item.name}を 購入しました！`);
+        Facilities.shopPendingTrade = null;
+        Facilities.closeModal('shop-scene');
+        Facilities.updateShopGoldDisplay();
+        Facilities.renderShopItems();
+        const key = `buy-item-${Number(item.id)}`;
+        Facilities.shopSelectedKey = key;
+        Facilities.markShopSelectedRow(key);
+        Facilities.showShopItemHelp(item.id);
+        Menu.msg(`${item.name}を ${qty.toLocaleString()}個 購入しました。`);
     },
 
-    getEquipShopPrice: (eq) => {
-        // 装備売却額は inventory 側で val/2。販売額はその2倍なので val をそのまま採用する。
-        return Math.max(1, Math.floor(Number(eq?.val || 0)));
+    getEquipShopPrice: (eqOrBase) => {
+        const rank = Math.max(1, Number(eqOrBase?.rank || 1));
+        const plus = 2;
+        // 売却額は装備価値の半額。販売額は売却額の2倍相当なので、装備価値そのものを採用する。
+        return Math.max(1, Math.floor(rank * 150 * (1 + plus * 0.5)));
     },
 
-    getEquipSummary: (eq) => {
-        if (!eq) return '';
-        const labels = { hp: 'HP', mp: 'MP', atk: '攻', def: '守', mag: '魔', mdef: '魔防', spd: '速', hit: '命中', eva: '回避', cri: '会心' };
-        const base = Object.entries(eq.data || {})
-            .filter(([, v]) => typeof v === 'number' && Number(v) !== 0)
-            .map(([k, v]) => `${labels[k] || k}${v > 0 ? '+' : ''}${v}`)
-            .slice(0, 7);
-        const opts = (eq.opts || []).map(o => `${o.label || o.key}${o.val > 0 ? '+' : ''}${o.val}${o.unit || ''}${o.rarity ? `(${o.rarity})` : ''}`);
-        const traits = (eq.traits || []).length > 0 ? [`特性${eq.traits.length}個`] : [];
-        return [...base, ...opts, ...traits].join(' / ');
+    getEquipRankBand: (rank = 1) => {
+        const upper = Math.max(1, Number(rank) || 1);
+        const lower = Math.max(1, upper - 15);
+        return { lower, upper };
     },
 
-    refreshShopEquipStock: (force = false) => {
-        Facilities.shopStock = [];
-        Facilities.shopStockKey = null;
-        Facilities.renderShopEquip(force);
-    },
-
-    generateShopEquipmentStock: (type, rank, count = 6) => {
-        const stock = [];
+    getEquipShopLineup: (type, rank = 1) => {
         const targetType = type === 'weapon' ? '武器' : 'armor';
-        const isTarget = (eq) => targetType === '武器' ? eq?.type === '武器' : Facilities.armorTypes.includes(eq?.type);
-        let attempts = 0;
-        while (stock.length < count && attempts < count * 80) {
-            attempts++;
-            const eq = App.createEquipByFloor('shop', rank, 2);
-            if (!isTarget(eq)) continue;
-            eq.shopPrice = Facilities.getEquipShopPrice(eq);
-            stock.push(eq);
+        const band = Facilities.getEquipRankBand(rank);
+        const isTarget = (base) => targetType === '武器' ? base?.type === '武器' : Facilities.armorTypes.includes(base?.type);
+        let pool = (window.EQUIP_MASTER || [])
+            .filter(base => base && !base.noRandom && isTarget(base))
+            .filter(base => Number(base.rank || 1) >= band.lower && Number(base.rank || 1) <= band.upper)
+            .sort((a, b) => (Number(a.rank || 0) - Number(b.rank || 0)) || String(a.type).localeCompare(String(b.type), 'ja') || Number(a.eid || 0) - Number(b.eid || 0));
+
+        if (pool.length === 0) {
+            pool = (window.EQUIP_MASTER || [])
+                .filter(base => base && !base.noRandom && isTarget(base))
+                .filter(base => Number(base.rank || 1) <= band.upper)
+                .sort((a, b) => (Number(a.rank || 0) - Number(b.rank || 0)) || Number(a.eid || 0) - Number(b.eid || 0));
         }
-        // ランダム抽選の偏りで埋まらなかった場合の保険。
-        while (stock.length < count) {
-            const pool = (window.EQUIP_MASTER || []).filter(base => !base.noRandom)
-                .filter(base => targetType === '武器' ? base.type === '武器' : Facilities.armorTypes.includes(base.type))
-                .filter(base => Number(base.rank || 1) <= Math.max(1, Number(rank) || 1));
-            const base = pool[Math.floor(Math.random() * pool.length)] || (window.EQUIP_MASTER || [])[0];
-            const eq = base ? App.createEquipById(base.eid, 2) : App.createEquipByFloor('shop', rank, 2);
-            if (eq) {
-                eq.source = 'shop';
-                eq.shopPrice = Facilities.getEquipShopPrice(eq);
-                stock.push(eq);
-            } else break;
+        return pool;
+    },
+
+    getBaseEquipDataForPlus: (base, plus = 2) => {
+        const data = JSON.parse(JSON.stringify(base?.data || {}));
+        const plusMults = { 0: 1.0, 1: 1.1, 2: 1.3, 3: 1.5 };
+        const mult = plusMults[plus] || 1.0;
+        const scaleKeys = new Set(['atk', 'def', 'mag', 'mdef', 'spd', 'hp', 'mp']);
+        if (mult > 1.0) {
+            for (const key of Object.keys(data)) {
+                if (scaleKeys.has(key) && typeof data[key] === 'number') data[key] = Math.floor(data[key] * mult);
+            }
         }
-        return stock;
+        return data;
+    },
+
+    getEquipBaseSummary: (base, plus = 2) => {
+        const labels = { hp: 'HP', mp: 'MP', atk: '攻', def: '守', mag: '魔', mdef: '魔防', spd: '速', hit: '命中', eva: '回避', cri: '会心' };
+        const data = Facilities.getBaseEquipDataForPlus(base, plus);
+        const parts = Object.entries(data || {})
+            .filter(([, v]) => typeof v === 'number' && Number(v) !== 0)
+            .map(([k, v]) => `${labels[k] || k}${v > 0 ? '+' : ''}${v}`);
+        return parts.length ? parts.join('　') : '特殊効果なし';
     },
 
     renderShopEquip: () => {
         const cfg = App?.data?.currentShop || { type: 'weapon', rank: Facilities.getCurrentAreaShopRank() };
         const list = document.getElementById('shop-list') || document.getElementById('shop-scene-msg-content');
         if (!list) return;
-        const stockKey = `${cfg.type}:${cfg.rank}:${cfg.openedAt || 0}`;
-        if (Facilities.shopStockKey !== stockKey || !Array.isArray(Facilities.shopStock)) {
-            Facilities.shopStock = Facilities.generateShopEquipmentStock(cfg.type, cfg.rank, 6);
-            Facilities.shopStockKey = stockKey;
-        }
-        if (Facilities.shopStock.length === 0) {
-            list.innerHTML = `<div style="padding:20px; color:#888; text-align:center;">今は売れる装備がありません。</div>`;
+        const lineup = Facilities.getEquipShopLineup(cfg.type, cfg.rank);
+        if (lineup.length === 0) {
+            list.innerHTML = `<div class="shop-empty-list">品切れです。</div>`;
+            Facilities.setShopHelp('装備がありません。');
             return;
         }
-        list.innerHTML = `
-            <div style="font-size:11px; color:#aaa; margin-bottom:8px; line-height:1.5;">
-                すべて +2 / 効果ランダム。販売額は売却額の2倍相当です。<br>
-                品揃えは入店ごとに変わります。
-            </div>
-            ${Facilities.shopStock.map((eq, index) => {
-                const cost = Facilities.getEquipShopPrice(eq);
-                return `<div style="border-bottom:1px solid #333; padding:10px 0;">
-                    <div style="display:flex; justify-content:space-between; gap:8px; align-items:center;">
-                        <div>
-                            <div style="font-weight:bold; color:#fff;">${Facilities.escapeAttr(eq.name)}</div>
-                            <div style="font-size:10px; color:#aaa;">${Facilities.escapeAttr(eq.type)} / Rank ${Number(eq.rank || 1)} / 売却目安 ${Math.floor(cost / 2).toLocaleString()}G</div>
-                        </div>
-                        <button class="btn" style="min-width:92px; height:32px; background:#000; border:1px solid #fff; color:#fff;" onclick="Facilities.buyShopEquip(${index})">${cost.toLocaleString()}G</button>
-                    </div>
-                    <div style="font-size:11px; color:#888; margin-top:4px;">${Facilities.escapeAttr(Facilities.getEquipSummary(eq))}</div>
-                </div>`;
-            }).join('')}
-        `;
+        list.innerHTML = Facilities.renderShopColumnHeader('種別', '名前', '買値', 'equip') + lineup.map((base) => {
+            const cost = Facilities.getEquipShopPrice(base);
+            const key = `buy-equip-${Number(base.eid)}`;
+            return `<button class="shop-row equip" data-shop-key="${Facilities.escapeAttr(key)}" onclick="Facilities.selectShopBuyEquip(${Number(base.eid)})" onmouseenter="Facilities.showShopEquipHelp(${Number(base.eid)})" onfocus="Facilities.showShopEquipHelp(${Number(base.eid)})">
+                <span class="shop-type-pill">${Facilities.escapeAttr(base.type)}</span>
+                <span class="shop-row-name">${Facilities.escapeAttr(base.name)}</span>
+                <span class="shop-price">${cost.toLocaleString()} G</span>
+            </button>`;
+        }).join('');
+        Facilities.setShopHelp('装備を選んでください。');
     },
 
-    buyShopEquip: (index) => {
-        const eq = Facilities.shopStock && Facilities.shopStock[index];
-        if (!eq) return Menu.msg('その装備は見つかりません。');
-        const price = Facilities.getEquipShopPrice(eq);
+    selectShopBuyEquip: (eid) => {
+        const cfg = App?.data?.currentShop || { type: 'weapon', rank: Facilities.getCurrentAreaShopRank() };
+        const base = Facilities.getEquipShopLineup(cfg.type, cfg.rank).find(eq => Number(eq.eid) === Number(eid));
+        if (!base) return Menu.msg('その装備は見つかりません。');
+        const key = `buy-equip-${Number(base.eid)}`;
+        if (Facilities.shopSelectedKey === key) {
+            Facilities.openShopEquipBuyConfirm(base.eid);
+            return;
+        }
+        Facilities.shopSelectedKey = key;
+        Facilities.markShopSelectedRow(key);
+        Facilities.showShopEquipHelp(base.eid);
+    },
+
+    openShopEquipBuyConfirm: (eid) => {
+        const cfg = App?.data?.currentShop || { type: 'weapon', rank: Facilities.getCurrentAreaShopRank() };
+        const base = Facilities.getEquipShopLineup(cfg.type, cfg.rank).find(eq => Number(eq.eid) === Number(eid));
+        if (!base) return Menu.msg('その装備は見つかりません。');
+        const price = Facilities.getEquipShopPrice(base);
         if ((App.data.gold || 0) < price) return Menu.msg('ゴールドが 足りません。');
+        Facilities.showModal('shop-scene', '購入確認', `
+            <div class="shop-confirm-card">
+                <div class="shop-confirm-title">${Facilities.escapeAttr(base.name)}</div>
+                <div class="shop-confirm-meta">${Facilities.escapeAttr(base.type)}</div>
+                <div class="shop-confirm-box">${Facilities.escapeAttr(Facilities.getEquipBaseSummary(base, 0))}</div>
+                <div class="shop-total-line">${price.toLocaleString()} G</div>
+                <button class="shop-primary-btn" onclick="Facilities.confirmBuyShopEquip(${Number(base.eid)})">はい</button>
+            </div>
+        `);
+    },
+
+    rollShopEquipPlus: () => (Math.random() < 0.05 ? 3 : 2),
+
+    createShopEquipFromBase: (base, shopRank, plus) => {
+        if (!base) return null;
+        const targetFloor = Math.max(1, Number(shopRank || base.rank || 1));
+        const eq = {
+            id: Date.now() + Math.random().toString(36).substring(2),
+            source: 'shop',
+            rank: base.rank,
+            name: base.name,
+            type: base.type,
+            baseName: base.baseName,
+            val: base.rank * 150 * (1 + plus * 0.5),
+            data: JSON.parse(JSON.stringify(base.data || {})),
+            opts: [],
+            plus,
+            possibleOpts: base.possibleOpts || [],
+            traits: (base.traits ? JSON.parse(JSON.stringify(base.traits)) : []),
+            grantSkills: (base.grantSkills ? JSON.parse(JSON.stringify(base.grantSkills)) : [])
+        };
+
+        const plusMults = { 0: 1.0, 1: 1.1, 2: 1.3, 3: 1.5 };
+        const mult = plusMults[plus] || 1.0;
+        const scaleKeys = new Set(['atk', 'def', 'mag', 'mdef', 'spd', 'hp', 'mp']);
+        if (mult > 1.0) {
+            for (const key of scaleKeys) {
+                if (typeof eq.data[key] === 'number') eq.data[key] = Math.floor(eq.data[key] * mult);
+            }
+        }
+
+        if (plus > 0) {
+            const baseOptsMap = {
+                '剣': ['atk', 'hit', 'cri', 'finDmg', 'elmAtk'],
+                '斧': ['atk', 'cri', 'finDmg', 'elmAtk', 'attack_Fear'],
+                '槍': ['atk', 'hit', 'cri', 'finDmg', 'elmAtk'],
+                '短剣': ['atk', 'mag', 'eva', 'cri', 'finDmg', 'elmAtk', 'attack_Poison'],
+                '弓': ['atk', 'mag', 'cri', 'finDmg', 'elmAtk'],
+                '杖': ['mag', 'eva', 'finDmg', 'elmAtk'],
+                '盾': ['def', 'mdef', 'eva', 'finRed', 'elmRes', 'resists_Debuff'],
+                '腕輪': ['atk', 'mag', 'spd', 'def', 'mdef', 'hit', 'eva', 'cri', 'elmAtk', 'finDmg'],
+                '兜': ['hp', 'mp', 'def', 'mdef', 'elmRes', 'resists_Fear', 'resists_SkillSeal'],
+                '帽子': ['hp', 'mp', 'def', 'mag', 'mdef', 'elmRes', 'resists_HealSeal'],
+                '鎧': ['hp', 'mp', 'def', 'mdef', 'finRed', 'elmRes', 'resists_Poison'],
+                'ローブ': ['hp', 'mp', 'mdef', 'mag', 'elmAtk', 'elmRes', 'resists_SpellSeal'],
+                'ブーツ': ['spd', 'def', 'mdef', 'finRed', 'elmAtk', 'elmRes', 'resists_Shock'],
+                'くつ': ['spd', 'hit', 'eva', 'finDmg', 'elmAtk', 'elmRes', 'resists_Shock']
+            };
+            const allowedKeys = [...new Set([...(baseOptsMap[eq.baseName] || []), ...(base.possibleOpts || [])])];
+            for (let i = 0; i < plus; i++) {
+                let optCandidates = (DB.OPT_RULES || []).filter(rule => allowedKeys.includes(rule.key));
+                if (optCandidates.length === 0) optCandidates = DB.OPT_RULES || [];
+                if (optCandidates.length === 0) break;
+                const rule = optCandidates[Math.floor(Math.random() * optCandidates.length)];
+                let rarity = 'N';
+                const tierRatio = Math.min(1, targetFloor / 200);
+                const rarRnd = Math.random() + (tierRatio * 0.15);
+                if (rarRnd > 0.98 && rule.allowed.includes('EX')) rarity = 'EX';
+                else if (rarRnd > 0.90 && rule.allowed.includes('UR')) rarity = 'UR';
+                else if (rarRnd > 0.75 && rule.allowed.includes('SSR')) rarity = 'SSR';
+                else if (rarRnd > 0.55 && rule.allowed.includes('SR')) rarity = 'SR';
+                else if (rarRnd > 0.30 && rule.allowed.includes('R')) rarity = 'R';
+                else rarity = rule.allowed[0];
+                const min = rule.min[rarity] || 1;
+                const max = rule.max[rarity] || 10;
+                eq.opts.push({
+                    key: rule.key,
+                    elm: rule.elm,
+                    label: rule.name,
+                    val: Math.floor(Math.random() * (max - min + 1)) + min,
+                    unit: rule.unit,
+                    rarity
+                });
+            }
+            eq.name += `+${plus}`;
+        }
+
+        if (plus >= 3 && typeof PassiveSkill !== 'undefined' && PassiveSkill.generateEquipmentTraits) {
+            const randTraits = PassiveSkill.generateEquipmentTraits();
+            eq.traits = [...(eq.traits || []), ...(randTraits || [])];
+        }
+
+        if (typeof App !== 'undefined' && typeof App.checkSynergy === 'function') {
+            const syns = App.checkSynergy(eq);
+            if (syns && syns.length > 0) {
+                eq.isSynergy = true;
+                eq.effects = syns.map(s => s.effect);
+                eq.synergies = syns;
+            }
+        }
+        return eq;
+    },
+
+    confirmBuyShopEquip: (eid) => {
+        const cfg = App?.data?.currentShop || { type: 'weapon', rank: Facilities.getCurrentAreaShopRank() };
+        const base = Facilities.getEquipShopLineup(cfg.type, cfg.rank).find(eq => Number(eq.eid) === Number(eid));
+        if (!base) return Menu.msg('その装備は見つかりません。');
+        const price = Facilities.getEquipShopPrice(base);
+        if ((App.data.gold || 0) < price) return Menu.msg('ゴールドが 足りません。');
+
+        const plus = Facilities.rollShopEquipPlus();
+        const purchased = Facilities.createShopEquipFromBase(base, cfg.rank, plus);
+        if (!purchased) return Menu.msg('その装備は準備できませんでした。');
+
+        if (!App.data.inventory) App.data.inventory = [];
         App.data.gold -= price;
-        const purchased = JSON.parse(JSON.stringify(eq));
-        purchased.id = Date.now() + Math.random().toString(36).substring(2);
-        purchased.source = 'shop';
-        delete purchased.shopPrice;
         App.data.inventory.push(purchased);
-        Facilities.shopStock.splice(index, 1);
         App.save();
-        Facilities.initShop();
-        Menu.msg(`${purchased.name}を 購入しました！`);
+        Facilities.updateShopGoldDisplay();
+        Facilities.renderShopEquip();
+        const key = `buy-equip-${Number(base.eid)}`;
+        Facilities.shopSelectedKey = key;
+        Facilities.markShopSelectedRow(key);
+        Facilities.showShopEquipHelp(base.eid);
+
+        const detailHtml = (typeof Menu !== 'undefined' && typeof Menu.getEquipDetailHTML === 'function')
+            ? Menu.getEquipDetailHTML(purchased, true)
+            : Facilities.escapeAttr(purchased.name);
+        Facilities.showModal('shop-scene', '購入結果', `
+            <div class="shop-result-card">
+                <div class="shop-result-banner">
+                    <span>購入品</span><span>+${plus}</span>
+                </div>
+                <div class="shop-confirm-box">${detailHtml}</div>
+                <div class="shop-total-line">支払い ${price.toLocaleString()} G / 残金 ${(App.data.gold || 0).toLocaleString()} G</div>
+            </div>
+        `);
+    },
+
+    buyShopEquip: (eid) => {
+        // 旧onclick互換。既存セーブや古いHTML断片から呼ばれても、即購入せず確認へ進ませる。
+        Facilities.selectShopBuyEquip(eid);
+    },
+
+    buyShopItem: (itemId) => {
+        // 旧onclick互換。既存セーブや古いHTML断片から呼ばれても、即購入せず数量確認へ進ませる。
+        Facilities.selectShopBuyItem(itemId);
+    },
+
+    getEquippedIdSet: () => {
+        const ids = new Set();
+        (App.data.characters || []).forEach(char => {
+            if (!char || !char.equips) return;
+            Object.values(char.equips).forEach(eq => {
+                const id = eq && (typeof eq === 'object' ? eq.id : eq);
+                if (id !== undefined && id !== null) ids.add(String(id));
+            });
+        });
+        return ids;
+    },
+
+    isSellableItemDef: (item) => {
+        if (!item) return false;
+        if (item.noSell || item.unsellable) return false;
+        if (item.type === '貴重品' || item.type === '乗り物') return false;
+        return Facilities.getItemSellPrice(item) > 0;
+    },
+
+    getItemSellPrice: (item) => {
+        if (!item) return 0;
+        if (Number(item.sellPrice || 0) > 0) return Math.floor(Number(item.sellPrice));
+        if (Number(item.sell || 0) > 0) return Math.floor(Number(item.sell));
+        if (Number(item.sellGold || 0) > 0) return Math.floor(Number(item.sellGold));
+        if (Number(item.gold || 0) > 0) return Math.floor(Number(item.gold));
+        if (Number(item.value || 0) > 0) return Math.floor(Number(item.value));
+        if (item.type === '換金' && Number(item.val || 0) > 0) return Math.floor(Number(item.val));
+        if (Number(item.price || 0) > 0) return Math.max(1, Math.floor(Number(item.price) / 2));
+        return 0;
+    },
+
+    getEquipSellPrice: (equip) => Math.max(1, Math.floor(Number(equip?.val || 0) / 2)),
+
+    getShopSellEntries: () => {
+        const entries = [];
+        Object.keys(App.data.items || {}).forEach(id => {
+            const count = Number(App.data.items[id] || 0);
+            if (count <= 0) return;
+            const item = (DB.ITEMS || []).find(i => Number(i.id) === Number(id));
+            if (!Facilities.isSellableItemDef(item)) return;
+            entries.push({
+                kind: 'item',
+                key: `sell-item-${Number(item.id)}`,
+                type: item.type || '道具',
+                name: item.name,
+                price: Facilities.getItemSellPrice(item),
+                count,
+                item
+            });
+        });
+
+        const itemTypeOrder = ['HP回復', 'MP回復', '状態異常回復', '蘇生', '移動', '換金'];
+        return entries.sort((a, b) => {
+            const ai = itemTypeOrder.includes(a.type) ? itemTypeOrder.indexOf(a.type) : 99;
+            const bi = itemTypeOrder.includes(b.type) ? itemTypeOrder.indexOf(b.type) : 99;
+            if (ai !== bi) return ai - bi;
+            return String(a.name || '').localeCompare(String(b.name || ''), 'ja') || Number(a.item?.id || 0) - Number(b.item?.id || 0);
+        });
+    },
+
+    renderShopSellList: () => {
+        const list = document.getElementById('shop-list') || document.getElementById('shop-scene-msg-content');
+        if (!list) return;
+        const entries = Facilities.getShopSellEntries();
+        if (entries.length === 0) {
+            list.innerHTML = `<div class="shop-empty-list">売れる道具がありません。</div>`;
+            Facilities.setShopHelp('売れる道具がありません。');
+            return;
+        }
+        list.innerHTML = Facilities.renderShopColumnHeader('', '名前', '売値', 'item') + entries.map(entry => {
+            return `<button class="shop-row item" data-shop-key="${Facilities.escapeAttr(entry.key)}" onclick="Facilities.selectShopSellItem(${Number(entry.item.id)})" onmouseenter="Facilities.showShopSellItemHelp(${Number(entry.item.id)})" onfocus="Facilities.showShopSellItemHelp(${Number(entry.item.id)})">
+                <span class="shop-row-name">${Facilities.escapeAttr(entry.name)}</span>
+                <span class="shop-owned">${Number(entry.count || 0).toLocaleString()}</span>
+                <span class="shop-price">${entry.price.toLocaleString()} G</span>
+            </button>`;
+        }).join('');
+        Facilities.setShopHelp('売る道具を選んでください。');
+    },
+
+    selectShopSellItem: (itemId) => {
+        const item = (DB.ITEMS || []).find(i => Number(i.id) === Number(itemId));
+        const count = Number(App.data.items?.[itemId] || 0);
+        if (!item || count <= 0 || !Facilities.isSellableItemDef(item)) return Menu.msg('その品物は売却できません。');
+        const key = `sell-item-${Number(item.id)}`;
+        if (Facilities.shopSelectedKey === key) {
+            Facilities.openShopItemSellModal(item.id);
+            return;
+        }
+        Facilities.shopSelectedKey = key;
+        Facilities.markShopSelectedRow(key);
+        Facilities.showShopSellItemHelp(item.id);
+    },
+
+    showShopSellItemHelp: (itemId) => {
+        const item = (DB.ITEMS || []).find(i => Number(i.id) === Number(itemId));
+        if (!item) return;
+        const count = Number(App.data.items?.[item.id] || 0);
+        const price = Facilities.getItemSellPrice(item);
+        Facilities.setShopHelp(`
+            <div class="shop-detail-titlebar">
+                <div class="shop-detail-name">${Facilities.escapeAttr(item.name)}</div>
+                <div class="shop-detail-price">${price.toLocaleString()} G</div>
+            </div>
+            <div class="shop-detail-meta">所持 ${count.toLocaleString()}</div>
+            <div class="shop-detail-box">${Facilities.escapeAttr(item.desc || '')}</div>
+        `, true);
+    },
+
+    openShopItemSellModal: (itemId) => {
+        const item = (DB.ITEMS || []).find(i => Number(i.id) === Number(itemId));
+        const count = Number(App.data.items?.[itemId] || 0);
+        if (!item || count <= 0 || !Facilities.isSellableItemDef(item)) return Menu.msg('その品物は売却できません。');
+        Facilities.shopPendingTrade = { kind: 'sellItem', itemId: Number(item.id), qty: 1, max: count, price: Facilities.getItemSellPrice(item) };
+        Facilities.showModal('shop-scene', '売却確認', Facilities.renderShopItemSellModalHtml(item));
+        Facilities.updateShopItemSellQtyDisplay();
+    },
+
+    renderShopItemSellModalHtml: (item) => `
+        <div class="shop-confirm-card">
+            <div class="shop-confirm-title">${Facilities.escapeAttr(item.name)}</div>
+            <div class="shop-confirm-meta">${Facilities.escapeAttr(item.desc || '')}</div>
+            <div class="shop-confirm-box">単価 ${Facilities.getItemSellPrice(item).toLocaleString()} G</div>
+            <div class="shop-qty-grid">
+                <button class="shop-qty-btn" onclick="Facilities.changeShopItemSellQty(-10)">-10</button>
+                <button class="shop-qty-btn" onclick="Facilities.changeShopItemSellQty(-1)">-</button>
+                <div id="shop-sell-qty-display" class="shop-qty-value">1</div>
+                <button class="shop-qty-btn" onclick="Facilities.changeShopItemSellQty(1)">+</button>
+                <button class="shop-qty-btn" onclick="Facilities.changeShopItemSellQty(10)">+10</button>
+            </div>
+            <div id="shop-sell-total-display" class="shop-total-line"></div>
+            <button class="shop-secondary-btn" onclick="Facilities.confirmSellShopItem()">はい</button>
+        </div>
+    `,
+
+    changeShopItemSellQty: (delta) => {
+        const trade = Facilities.shopPendingTrade;
+        if (!trade || trade.kind !== 'sellItem') return;
+        trade.qty = Math.max(1, Math.min(Number(trade.max || 1), Number(trade.qty || 1) + Number(delta || 0)));
+        Facilities.updateShopItemSellQtyDisplay();
+    },
+
+    updateShopItemSellQtyDisplay: () => {
+        const trade = Facilities.shopPendingTrade;
+        if (!trade || trade.kind !== 'sellItem') return;
+        const qtyEl = document.getElementById('shop-sell-qty-display');
+        const totalEl = document.getElementById('shop-sell-total-display');
+        const total = Number(trade.qty || 1) * Number(trade.price || 0);
+        if (qtyEl) qtyEl.textContent = `${Number(trade.qty || 1).toLocaleString()} 個`;
+        if (totalEl) totalEl.textContent = `合計 ${total.toLocaleString()} G`;
+    },
+
+    confirmSellShopItem: () => {
+        const trade = Facilities.shopPendingTrade;
+        if (!trade || trade.kind !== 'sellItem') return;
+        const item = (DB.ITEMS || []).find(i => Number(i.id) === Number(trade.itemId));
+        const owned = Number(App.data.items?.[trade.itemId] || 0);
+        if (!item || owned <= 0 || !Facilities.isSellableItemDef(item)) return Menu.msg('その品物は売却できません。');
+        const qty = Math.max(1, Math.min(owned, Number(trade.qty || 1)));
+        const total = qty * Facilities.getItemSellPrice(item);
+        App.data.items[item.id] = owned - qty;
+        if (App.data.items[item.id] <= 0) delete App.data.items[item.id];
+        App.data.gold = Number(App.data.gold || 0) + total;
+        App.save();
+        Facilities.shopPendingTrade = null;
+        Facilities.closeModal('shop-scene');
+        Facilities.updateShopGoldDisplay();
+        Facilities.renderShopSellList();
+        Facilities.setShopHelp('売却しました。');
+        Menu.msg(`${total.toLocaleString()}G 獲得しました。`);
+    },
+
+    selectShopSellEquip: (equipId) => {
+        const equip = (App.data.inventory || []).find(eq => String(eq.id) === String(equipId));
+        if (!equip || equip.locked || Facilities.getEquippedIdSet().has(String(equip.id))) return Menu.msg('その装備は売却できません。');
+        const key = `sell-equip-${String(equip.id)}`;
+        if (Facilities.shopSelectedKey === key) {
+            Facilities.openShopEquipSellModal(equip.id);
+            return;
+        }
+        Facilities.shopSelectedKey = key;
+        Facilities.markShopSelectedRow(key);
+        Facilities.showShopSellEquipHelp(equip.id);
+    },
+
+    showShopSellEquipHelp: (equipId) => {
+        const equip = (App.data.inventory || []).find(eq => String(eq.id) === String(equipId));
+        if (!equip) return;
+        const price = Facilities.getEquipSellPrice(equip);
+        const detailHtml = (typeof Menu !== 'undefined' && typeof Menu.getEquipDetailHTML === 'function')
+            ? Menu.getEquipDetailHTML(equip, true)
+            : Facilities.escapeAttr(equip.name || '装備');
+        Facilities.setShopHelp(`
+            <div class="shop-detail-titlebar">
+                <div class="shop-detail-name">${Facilities.escapeAttr(equip.name || '装備')}</div>
+                <div class="shop-detail-price">${price.toLocaleString()} G</div>
+            </div>
+            <div class="shop-detail-meta">${Facilities.escapeAttr(equip.type || '装備')}</div>
+            <div class="shop-detail-box">${detailHtml}</div>
+        `, true);
+    },
+
+    openShopEquipSellModal: (equipId) => {
+        const equip = (App.data.inventory || []).find(eq => String(eq.id) === String(equipId));
+        if (!equip || equip.locked || Facilities.getEquippedIdSet().has(String(equip.id))) return Menu.msg('その装備は売却できません。');
+        const price = Facilities.getEquipSellPrice(equip);
+        const detailHtml = (typeof Menu !== 'undefined' && typeof Menu.getEquipDetailHTML === 'function')
+            ? Menu.getEquipDetailHTML(equip, true)
+            : Facilities.escapeAttr(equip.name || '装備');
+        Facilities.showModal('shop-scene', '売却確認', `
+            <div class="shop-confirm-card">
+                <div class="shop-confirm-title">${Facilities.escapeAttr(equip.name || '装備')}</div>
+                <div class="shop-confirm-meta">${Facilities.escapeAttr(equip.type || '装備')}</div>
+                <div class="shop-confirm-box">${detailHtml}</div>
+                <div class="shop-total-line">${price.toLocaleString()} G</div>
+                <button class="shop-secondary-btn" onclick='Facilities.confirmSellShopEquip(${Facilities.jsArg(equip.id)})'>はい</button>
+            </div>
+        `);
+    },
+
+    confirmSellShopEquip: (equipId) => {
+        const equippedIds = Facilities.getEquippedIdSet();
+        const index = (App.data.inventory || []).findIndex(eq => String(eq.id) === String(equipId));
+        if (index < 0) return Menu.msg('その装備は見つかりません。');
+        const equip = App.data.inventory[index];
+        if (!equip || equip.locked || equippedIds.has(String(equip.id))) return Menu.msg('その装備は売却できません。');
+        const price = Facilities.getEquipSellPrice(equip);
+        App.data.inventory.splice(index, 1);
+        App.data.gold = Number(App.data.gold || 0) + price;
+        App.save();
+        Facilities.closeModal('shop-scene');
+        Facilities.updateShopGoldDisplay();
+        Facilities.renderShopSellList();
+        Facilities.setShopHelp('売却しました。');
+        Menu.msg(`${price.toLocaleString()}G 獲得しました。`);
     },
 
     // --- 3. カジノ ---
