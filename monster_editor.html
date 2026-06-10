@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PRISMA ABYSS - Monster Editor BAND ONLY v3</title>
+  <title>PRISMA ABYSS - Monster Editor ID順CSV/1行出力版</title>
   <script src="skills.js"></script>
   <script src="items.js"></script>
   <script src="passiveSkill.js"></script>
@@ -21,7 +21,7 @@
 <body>
 <div class="app">
   <header class="topbar">
-    <div class="brand"><strong>PRISMA ABYSS</strong><span>Monster Editor / BAND ONLY v2 / 現行 monsters.js 完全出力固定</span></div>
+    <div class="brand"><strong>PRISMA ABYSS</strong><span>Monster Editor / ID順CSV / 1モンスター1行JS出力</span></div>
     <div class="toolbar"><button class="btn green" data-action="csvTab">CSV</button><button class="btn gold" data-action="exportTab">JS出力へ</button><button class="btn" data-action="reloadPage">再読込</button></div>
     <div class="statsline" id="topStats"></div>
   </header>
@@ -50,7 +50,7 @@
   const elements = ["火","水","風","雷","光","闇","混沌"];
   const ailmentLabels = {Poison:"毒",ToxicPoison:"猛毒",Shock:"感電",Fear:"怯え",SpellSeal:"呪文封印",SkillSeal:"特技封印",HealSeal:"回復封印",Seal:"封印",Debuff:"弱体",InstantDeath:"即死",PercentDamage:"割合ダメージ",Sleep:"眠り",Confusion:"混乱",Charm:"魅了",Curse:"呪い"};
 
-  const EDITOR_VERSION = "2026-05-16-band-only-v3-csv";
+  const EDITOR_VERSION = "2026-06-10-id-order-one-line-csv";
   const DEFAULT_MONSTER_RACES = {"antiDemon": ["死霊", "魔族"], "antiBeast": ["獣", "獣人"], "antiMachine": ["機械", "無生物"], "antiDragon": ["竜", "竜人"], "noKillerCurrently": ["粘体", "精霊", "植物", "人"]};
   const DEFAULT_BALANCE_RULE = {"singleBossFloor": {"baseHp": "boss.hp", "basePower": "Math.max(boss.atk, boss.mag)"}, "multiBossFloor": {"baseHp": "sum(boss.hp) / (bossCount / 1.5)", "basePower": "sum(Math.max(boss.atk, boss.mag)) / (bossCount / 1.5)"}, "normalMonster": {"hpLimit": "baseHp * 0.20", "powerLimit": "basePower * 0.70"}, "eliteMonster": {"hpLimit": "baseHp * 0.30", "powerLimit": "basePower * 0.90", "note": "actCount: 2 の場合は、ATK/MAG * 2回行動込みで powerLimit 内に収める"}};
   const DEFAULT_LOW_FLOOR_OFFSETS = {"1": [{"hpMp": 1, "other": 1, "reward": 1}, {"hpMp": 1.8, "other": 1.2, "reward": 1.25}, {"hpMp": 2.9, "other": 1.4, "reward": 1.45}, {"hpMp": 4.3, "other": 1.65, "reward": 1.7}, {"hpMp": 6.3, "other": 2, "reward": 2}], "6": [{"hpMp": 1, "other": 1, "reward": 1}, {"hpMp": 1.15, "other": 1.06, "reward": 1.08}, {"hpMp": 1.3, "other": 1.12, "reward": 1.14}, {"hpMp": 1.45, "other": 1.18, "reward": 1.2}, {"hpMp": 1.6, "other": 1.24, "reward": 1.26}]};
@@ -358,12 +358,12 @@
   function renderCsv(){
     const actSlots = Math.max(8, ...state.monsters.map((m) => (m.acts || []).length));
     const traitSlots = Math.max(6, ...state.monsters.map((m) => (m.traits || []).length));
-    return `<div class="card"><h2>CSV入出力 <span class="muted">${esc(EDITOR_VERSION)}</span></h2><div class="warnbox"><b>CSVは1行=1モンスターです。</b><br>Excelで編集しやすいように、AI行動は <b>act1_id / act1_name / act1_rate / act1_condition</b> 形式、パッシブは <b>trait1_id / trait1_name / trait1_level</b> 形式でも出します。<br>取り込み時、名称列（act*_name / drop*_name / trait*_name）は参照用として無視し、ID列を正として読み込みます。bandStart / bandEnd / offsetType / sourceGroup もCSVから復元します。</div><div class="toolbar" style="margin-bottom:12px"><button class="btn green" data-action="downloadCsv">CSV出力</button><button class="btn primary" data-action="importCsv">CSV取り込み</button><button class="btn gold" data-action="generateExport">取り込み後にJS生成</button><span class="muted">${esc(state.lastMessage || `acts列 ${actSlots}枠 / traits列 ${traitSlots}枠で出力`)}</span></div><div class="hint">推奨手順: CSV出力 → Excel/スプレッドシートで編集 → CSV保存 → CSV取り込み → JS出力タブで monsters.js を生成。複雑な項目もJSON列を残しているため、列を削らなければ往復しやすくなっています。</div></div>`;
+    return `<div class="card"><h2>CSV入出力 <span class="muted">${esc(EDITOR_VERSION)}</span></h2><div class="warnbox"><b>CSVはID順・1行=1モンスターで出力します。</b><br>対象はモンスター本体データです。Excelで編集しやすいように、AI行動は <b>act1_id / act1_name / act1_rate / act1_condition</b> 形式、パッシブは <b>trait1_id / trait1_name / trait1_level</b> 形式でも出します。<br>取り込み時、名称列（act*_name / drop*_name / trait*_name）は参照用として無視し、ID列を正として読み込みます。bandStart / bandEnd / offsetType / sourceGroup もCSVから復元します。</div><div class="toolbar" style="margin-bottom:12px"><button class="btn green" data-action="downloadCsv">モンスターデータCSV出力</button><button class="btn primary" data-action="importCsv">モンスターデータCSV取り込み</button><button class="btn gold" data-action="generateExport">取り込み後にJS生成</button><span class="muted">${esc(state.lastMessage || `acts列 ${actSlots}枠 / traits列 ${traitSlots}枠で出力`)}</span></div><div class="hint">推奨手順: CSV出力 → Excel/スプレッドシートで編集 → CSV保存 → CSV取り込み → JS出力タブで monsters.js を生成。複雑な項目もJSON列を残しているため、列を削らなければ往復しやすくなっています。</div></div>`;
   }
 
   function renderExport(){
     state.exportMode = "full";
-    return `<div class="card"><h2>JS出力 <span class="muted">${esc(EDITOR_VERSION)}</span></h2><div class="warnbox"><b>この版は出力形式を1つに固定しています。</b><br>必ず現行形式の <b>MONSTER_BANDS_1_200</b> / <b>FIXED_RARE_MONSTERS</b> / <b>FIXED_BOSS_MONSTERS</b> / <b>FIXED_SPECIAL_BOSSES</b> を再構築した、置き換え用の完全な monsters.js を出力します。<br><b>const monsters = [...] から始まる旧式出力は出ません。</b></div><div class="toolbar" style="margin-bottom:12px"><button class="btn gold" data-action="generateExport">完全版 monsters.js を生成</button><button class="btn primary" data-action="copyExport">コピー</button><button class="btn green" data-action="downloadExport">monsters.jsを保存</button><button class="btn" data-action="csvTab">CSVへ</button><span class="muted">${esc(state.lastMessage)}</span></div><textarea id="exportText" class="exportbox" spellcheck="false">${esc(state.exportText)}</textarea></div>`;
+    return `<div class="card"><h2>JS出力 <span class="muted">${esc(EDITOR_VERSION)}</span></h2><div class="warnbox"><b>この版は出力形式を1つに固定しています。</b><br>必ず現行形式の <b>MONSTER_BANDS_1_200</b> / <b>FIXED_RARE_MONSTERS</b> / <b>FIXED_BOSS_MONSTERS</b> / <b>FIXED_SPECIAL_BOSSES</b> を再構築した、置き換え用の完全な monsters.js を出力します。<br><b>モンスター本体はID順で、helper関数を使わない直接オブジェクト形式・1モンスターにつき1行で出力します。</b><br><b>const monsters = [...] から始まる旧式出力は出ません。</b></div><div class="toolbar" style="margin-bottom:12px"><button class="btn gold" data-action="generateExport">完全版 monsters.js を生成</button><button class="btn primary" data-action="copyExport">コピー</button><button class="btn green" data-action="downloadExport">monsters.jsを保存</button><button class="btn" data-action="csvTab">CSVへ</button><span class="muted">${esc(state.lastMessage)}</span></div><textarea id="exportText" class="exportbox" spellcheck="false">${esc(state.exportText)}</textarea></div>`;
   }
 
   function render(){ renderTopStats(); renderSidebar(); renderMain(); }
@@ -376,44 +376,42 @@
     state.monsters.push(m); state.selectedUid = m._uid; state.tab = "basic"; refreshRawJson(); render();
   }
 
-  function jsValue(v, indent = 0){
-    if (Array.isArray(v)) return `[${v.map((x) => jsValue(x, indent)).join(",")}]`;
-    if (v && typeof v === "object") {
-      const entries = Object.entries(v).filter(([,val]) => val !== undefined);
-      if (!entries.length) return "{}";
-      return `{${entries.map(([k,val]) => `${JSON.stringify(k)}:${jsValue(val, indent)}`).join(",")}}`;
-    }
-    return JSON.stringify(v);
+  const monsterOutputOrder = [
+    "hit","eva","cri","isBoss","isRare","isEstark","isSpecialBoss","drops","elmRes","resists","traits","archives",
+    "id","name","race","rank","minF","maxF","hp","mp","atk","def","spd","mag","mdef","gold","exp","actCount","isElite","acts","img"
+  ];
+
+  function orderMonsterForOutput(mon){
+    const raw = cleanMonster(mon);
+    if (raw.isElite === false) delete raw.isElite;
+    if (raw.img === "") delete raw.img;
+    const out = {};
+    const used = new Set();
+    monsterOutputOrder.forEach((key) => {
+      if (Object.prototype.hasOwnProperty.call(raw, key) && raw[key] !== undefined) {
+        out[key] = raw[key];
+        used.add(key);
+      }
+    });
+    Object.keys(raw).forEach((key) => {
+      if (!used.has(key) && raw[key] !== undefined) out[key] = raw[key];
+    });
+    return out;
   }
 
   function monsterToCode(mon){
-    const m = cleanMonster(mon);
-    const acts = m.acts || [];
-    delete m.acts;
-    const body = Object.entries(m).filter(([,v]) => v !== undefined).map(([k,v]) => {
-      if (k === "drops") {
-        const normalEmpty = !v.normal || (v.normal.id == null && Number(v.normal.rate || 0) === 0);
-        const rareEmpty = !v.rare || (v.rare.id == null && Number(v.rare.rate || 0) === 0);
-        if (normalEmpty && rareEmpty) return null;
-      }
-      if ((k === "elmRes" || k === "resists") && (!v || Object.keys(v).length === 0)) return null;
-      if ((k === "traits" || k === "archives") && (!Array.isArray(v) || v.length === 0)) return null;
-      if (flagFields.includes(k) && v === false) return null;
-      return `${k}:${jsValue(v)}`;
-    }).filter(Boolean);
-    body.push(`acts:[${acts.map((a) => {
-      const id = a.id == null ? "null" : Number(a.id);
-      const rate = Number(a.rate ?? 0);
-      const condition = Number(a.condition ?? 0);
-      return condition ? `act(${id},${rate},${condition})` : `act(${id},${rate})`;
-    }).join(",")}]`);
-    return `m({${body.join(",")}})`;
+    return JSON.stringify(orderMonsterForOutput(mon));
+  }
+
+  function monsterListCode(monsters, indent = "      "){
+    return (monsters || []).map((mon, index, list) => `${indent}${monsterToCode(mon)}${index < list.length - 1 ? "," : ""}`).join("\n");
   }
 
   function buildModel(){
     const bandsMap = new Map();
     const rare = [], boss = [], special = [];
-    for (const m of state.monsters) {
+    const sourceMonsters = state.monsters.slice().sort((a,b) => Number(a.id)-Number(b.id));
+    for (const m of sourceMonsters) {
       const group = effectiveGroup(m);
       if (group === "special") special.push(m);
       else if (group === "boss") boss.push(m);
@@ -431,28 +429,29 @@
     const bands = Array.from(bandsMap.values()).sort((a,b) => a.bandStart - b.bandStart || a.bandEnd - b.bandEnd);
     bands.forEach((b) => b.monsters.sort((a,c) => Number(a.id)-Number(c.id)));
     rare.sort((a,b) => Number(a.id)-Number(b.id)); boss.sort((a,b) => Number(a.id)-Number(b.id)); special.sort((a,b) => Number(a.id)-Number(b.id));
-    const flat = bands.flatMap((b) => b.monsters).concat(rare, boss, special).map(cleanMonster);
+    const flat = sourceMonsters.map(cleanMonster);
     return { bands, rare, boss, special, flat };
   }
 
   function bandsCode(model){
     const low = Object.keys(state.source.lowFloorOffsets || {}).length ? state.source.lowFloorOffsets : {1:[{hpMp:1,other:1,reward:1}],6:[{hpMp:1,other:1,reward:1}]};
     const standard = Array.isArray(state.source.standardFloorOffsets) && state.source.standardFloorOffsets.length ? state.source.standardFloorOffsets : [{hpMp:1,other:1,reward:1}];
+    const bandBlocks = model.bands.map((band) => {
+      const rows = monsterListCode(band.monsters, "      ");
+      const offsetLine = band.offsetType ? `    "offsetType": ${JSON.stringify(band.offsetType)},\n` : "";
+      return `  {\n    "bandStart": ${JSON.stringify(band.bandStart)},\n    "bandEnd": ${JSON.stringify(band.bandEnd)},\n${offsetLine}    "monsters": [\n${rows}\n    ]\n  }`;
+    }).join(",\n");
+    const rareRows = monsterListCode(model.rare, "  ");
+    const bossRows = monsterListCode(model.boss, "  ");
+    const specialRows = monsterListCode(model.special, "  ");
     return `const MONSTER_RACES = ${JSON.stringify(state.source.races || {}, null, 2)};\n\n` +
-`const emptyDrops = () => ({\n  normal: { id: null, rate: 0 },\n  rare: { id: null, rate: 0 },\n});\n\n` +
-`const act = (id, rate, condition = 0) => ({ id, rate, condition });\n\n` +
-`const m = (d) => ({\n  hit: 0,\n  eva: 0,\n  cri: 0,\n  isBoss: false,\n  isRare: false,\n  isEstark: false,\n  isSpecialBoss: false,\n  drops: emptyDrops(),\n  elmRes: {},\n  resists: {},\n  traits: [],\n  archives: [],\n  ...d,\n});\n\n` +
 `const BALANCE_RULE = ${JSON.stringify(state.source.balanceRule || {}, null, 2)};\n\n` +
 `const LOW_FLOOR_OFFSETS = ${JSON.stringify(low, null, 2)};\n\n` +
 `const STANDARD_FLOOR_OFFSETS = ${JSON.stringify(standard, null, 2)};\n\n` +
-`const MONSTER_BANDS_1_200 = [\n${model.bands.map((band) => {
-      const head = `  { bandStart: ${band.bandStart}, bandEnd: ${band.bandEnd}${band.offsetType ? `, offsetType: ${JSON.stringify(band.offsetType)}` : ""}, monsters: [`;
-      const rows = band.monsters.map((m) => `    ${monsterToCode(m)},`).join("\n");
-      return `${head}\n${rows}\n  ]}`;
-    }).join(",\n\n")}\n];\n\n` +
-`const FIXED_RARE_MONSTERS = [\n${model.rare.map((m) => `  ${monsterToCode(m)},`).join("\n")}\n];\n\n` +
-`const FIXED_BOSS_MONSTERS = [\n${model.boss.map((m) => `  ${monsterToCode(m)},`).join("\n")}\n];\n\n` +
-`const FIXED_SPECIAL_BOSSES = [\n${model.special.map((m) => `  ${monsterToCode(m)},`).join("\n")}\n];\n`;
+`const MONSTER_BANDS_1_200 = [\n${bandBlocks}\n];\n\n` +
+`const FIXED_RARE_MONSTERS = [\n${rareRows}\n];\n\n` +
+`const FIXED_BOSS_MONSTERS = [\n${bossRows}\n];\n\n` +
+`const FIXED_SPECIAL_BOSSES = [\n${specialRows}\n];\n`;
   }
 
   function fullRuntimeCode(){
@@ -482,7 +481,7 @@
   function buildExport(){
     state.exportMode = "full";
     const model = buildModel();
-    const header = `/* monsters.js - generated by PRISMA ABYSS Monster Editor ${EDITOR_VERSION} */
+    const header = `/* monsters.js - generated by PRISMA ABYSS Monster Editor ${EDITOR_VERSION} / ID order / one monster per line */
 `;
     const dataPart = bandsCode(model);
     return header + dataPart + fullRuntimeCode();
@@ -493,7 +492,7 @@
     const model = buildModel();
     state.exportText = buildExport();
     const ok = state.exportText.trim().startsWith("/* monsters.js") && state.exportText.includes("const MONSTER_BANDS_1_200");
-    state.lastMessage = `${model.flat.length}件 / band ${model.bands.length}枠で完全版生成${ok ? " OK" : " NG"}`;
+    state.lastMessage = `${model.flat.length}件 / band ${model.bands.length}枠で1モンスター1行の完全版生成${ok ? " OK" : " NG"}`;
     renderMain();
   }
 
@@ -551,13 +550,12 @@
 
   function sortedForCsv(){
     const order = { band: 0, rare: 1, boss: 2, special: 3 };
-    return state.monsters.slice().sort((a,b) => {
-      const ga = effectiveGroup(a), gb = effectiveGroup(b);
-      return (order[ga] ?? 9) - (order[gb] ?? 9)
-        || Number(a._bandStart || 0) - Number(b._bandStart || 0)
-        || Number(a.minF || 0) - Number(b.minF || 0)
-        || Number(a.id || 0) - Number(b.id || 0);
-    });
+    return state.monsters.slice().sort((a,b) =>
+      Number(a.id || 0) - Number(b.id || 0)
+      || Number(a.minF || 0) - Number(b.minF || 0)
+      || (order[effectiveGroup(a)] ?? 9) - (order[effectiveGroup(b)] ?? 9)
+      || Number(a._bandStart || 0) - Number(b._bandStart || 0)
+    );
   }
 
   function buildCsv(){
@@ -790,7 +788,7 @@
     if (action === "generateExport") { generateExport(); return; }
     if (action === "copyExport") { const boxText = $("exportText")?.value || ""; const text = boxText.includes("const MONSTER_BANDS_1_200") ? boxText : buildExport(); state.exportText = text; try { await navigator.clipboard.writeText(text); state.lastMessage = "完全版をコピーしました"; } catch(err) { state.lastMessage = "コピーに失敗しました。手動で選択してください。"; } renderMain(); return; }
     if (action === "downloadExport") { const boxText = $("exportText")?.value || ""; const text = boxText.includes("const MONSTER_BANDS_1_200") ? boxText : buildExport(); downloadText("monsters.js", text); state.lastMessage = "完全版 monsters.js のダウンロードを開始しました"; renderMain(); return; }
-    if (action === "downloadCsv") { const csv = buildCsv(); downloadBlob("monsters_editor.csv", csv, "text/csv;charset=utf-8"); state.lastMessage = `CSVを出力しました（${state.monsters.length}件）`; renderMain(); return; }
+    if (action === "downloadCsv") { const csv = buildCsv(); downloadBlob("monsters_editor_id_order.csv", csv, "text/csv;charset=utf-8"); state.lastMessage = `ID順CSVを出力しました（${state.monsters.length}件）`; renderMain(); return; }
     if (action === "importCsv") { triggerCsvImport(); return; }
   });
 
