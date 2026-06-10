@@ -348,6 +348,26 @@ const App = {
         fixedDungeonEndless: '固定ダンジョンの探索'
     },
 
+    // ストーリー加入キャラの初期レベル設定。
+    // ここを変更すれば、加入時に指定Lvまで通常レベルアップ相当の成長を内部適用する。
+    storyAllyInitialLevels: {
+        110: 1,  // サラ
+        109: 1,  // ガイル
+        105: 5,  // シャオ
+        106: 10, // エリーゼ
+        104: 14, // ケイト
+        101: 20, // ジョセフ
+        204: 32, // レイラ
+        306: 40  // シャニー
+    },
+
+    getStoryAllyInitialLevel: (charId) => {
+        const raw = App.storyAllyInitialLevels ? App.storyAllyInitialLevels[Number(charId)] : undefined;
+        const level = Math.floor(Number(raw));
+        if (!Number.isFinite(level)) return 1;
+        return Math.max(1, Math.min(100, level));
+    },
+
     getDefaultUnlockState: () => {
         return { ...App.unlockDefaults };
     },
@@ -1350,20 +1370,29 @@ const App = {
     addStoryAlly: (charId) => {
         const master = window.CHARACTERS_DATA.find(c => c.id === charId);
         if (!master) return;
+        const initialLevel = App.getStoryAllyInitialLevel(charId);
         const existing = App.data.characters.find(c => c.charId === charId);
         if (existing) {
+            let changed = false;
+            while ((existing.level || 1) < initialLevel) {
+                App.applyLevelUpGrowth(existing, { silent: true });
+                changed = true;
+            }
             if (Array.isArray(App.data.party) && !App.data.party.includes(existing.uid)) {
                 const emptyIndex = App.data.party.findIndex(uid => !uid);
                 if (emptyIndex >= 0) {
                     App.data.party[emptyIndex] = existing.uid;
-                    App.save();
+                    changed = true;
                     App.log(`【仲間加入】${existing.name}がパーティに加わった！`);
                 }
             }
+            if (changed) App.save();
             return;
         }
 
+
         // 1. 必要な情報だけを抽出した保存用オブジェクトを作成
+        //    ステータスはLv1基準で作成し、下で共通レベルアップ処理を回して初期Lvまで成長させる。
         const saveAlly = {
             uid: 'u' + Date.now() + Math.floor(Math.random() * 1000),
             charId: charId,
@@ -1402,6 +1431,13 @@ const App = {
         if (typeof PassiveSkill !== 'undefined' && PassiveSkill.applyLevelUpTraits) {
             PassiveSkill.applyLevelUpTraits(saveAlly);
         }
+
+        // 3. ストーリー加入時の初期レベルを反映する。
+        //    経験値だけを入れるのではなく、通常レベルアップと同じ成長・SP・スキル・特性処理を内部適用する。
+        for (let lv = 1; lv < initialLevel; lv++) {
+            App.applyLevelUpGrowth(saveAlly, { silent: true });
+        }
+        saveAlly.exp = 0;
 
         App.data.characters.push(saveAlly);
         let joinedParty = false;
@@ -2571,153 +2607,172 @@ load: () => {
 },
 
     /**
+     * 1レベル分の成長を適用する共通処理。
+     * 通常の経験値レベルアップと、ストーリー加入時の内部レベルアップで同じ成長式を使う。
+     */
+    applyLevelUpGrowth: (charData, options = {}) => {
+        if (!charData) return [];
+        if (!charData.level) charData.level = 1;
+        if (charData.level >= 100) return [];
+
+        const silent = options.silent === true;
+        const logs = [];
+
+        // 転生回数による補正倍率の計算
+        const reincMult = 1 + (charData.reincarnationCount || 0);
+
+        charData.level++;
+
+        // DBの基礎値を取得
+        const master = (window.CHARACTERS_DATA || []).find(c => c.id === charData.charId) || charData;
+        const growthRef = master.growthBase || master;
+
+        // 成長率: 4% 〜 8%
+        const minRate = 0.04;
+        const maxRate = 0.08;
+        const r = () => minRate + Math.random() * (maxRate - minRate);
+
+        // --- 特性による成長補正値の取得 ---
+        let statBonus = 0; // 全ステータス用 (大器晩成)
+        let atkBonus = 0;  // 攻撃力用 (武の極み)
+        let defBonus = 0;  // 防御力用 (武の極み)
+        let magBonus = 0;  // 魔力用 (魔の極み)
+        let mdefBonus = 0; // 魔法防御用 (魔の極み)
+
+        if (typeof PassiveSkill !== 'undefined' && PassiveSkill.getSumValue) {
+            // ID 58 大器晩成: stat_bonus_mult は 0.1(10%) 単位
+            statBonus = PassiveSkill.getSumValue(charData, 'stat_bonus_mult');
+
+            // ID 59 武の極み: 1(1%) 単位
+            atkBonus = PassiveSkill.getSumValue(charData, 'atk_growth_bonus') / 100;
+            defBonus = PassiveSkill.getSumValue(charData, 'def_growth_bonus') / 100;
+
+            // ID 60 魔の極み: 1(1%) 単位
+            magBonus = PassiveSkill.getSumValue(charData, 'mag_growth_bonus') / 100;
+            mdefBonus = PassiveSkill.getSumValue(charData, 'mdef_growth_bonus') / 100;
+        }
+
+        // 各倍率の決定 (1.0 + 全体ボーナス + 個別ボーナス)
+        const hpMult   = 2.0 + statBonus;
+        const mpMult   = 2.0 + statBonus;
+        const atkMult  = 1.0 + statBonus + atkBonus;
+        const defMult  = 1.0 + statBonus + defBonus;
+        const magMult  = 1.0 + statBonus + magBonus;
+        const mdefMult = 1.0 + statBonus + mdefBonus;
+        const spdMult  = 1.0 + statBonus;
+
+        // 各ステータス上昇量の計算
+        let incHp   = Math.max(1, Math.floor(((growthRef.hp || master.hp || 100) * reincMult) * r() * hpMult));
+        let incMp   = Math.max(1, Math.floor(((growthRef.mp || master.mp || 50) * reincMult) * r() * mpMult));
+        let incAtk  = Math.max(1, Math.floor(((growthRef.atk || master.atk || 10) * reincMult) * r() * atkMult));
+        let incDef  = Math.max(1, Math.floor(((growthRef.def || master.def || 10) * reincMult) * r() * defMult));
+        let incMdef = Math.max(1, Math.floor(((growthRef.mdef || master.mdef || 10)* reincMult) * r() * mdefMult));
+        let incSpd  = Math.max(1, Math.floor(((growthRef.spd || master.spd || 10) * reincMult) * r() * spdMult));
+        let incMag  = Math.max(1, Math.floor(((growthRef.mag || master.mag || 10) * reincMult) * r() * magMult));
+
+        const growthBonusLogs = [];
+        const applyGrowthBonus = (keys, mult, label, bonusOptions = {}) => {
+            keys.forEach(key => {
+                if (key === 'hp') incHp = Math.max(1, Math.floor(incHp * mult));
+                if (key === 'mp') incMp = Math.max(1, Math.floor(incMp * mult));
+                if (key === 'atk') incAtk = Math.max(1, Math.floor(incAtk * mult));
+                if (key === 'def') incDef = Math.max(1, Math.floor(incDef * mult));
+                if (key === 'mdef') incMdef = Math.max(1, Math.floor(incMdef * mult));
+                if (key === 'spd') incSpd = Math.max(1, Math.floor(incSpd * mult));
+                if (key === 'mag') incMag = Math.max(1, Math.floor(incMag * mult));
+            });
+            if (!silent && bonusOptions.log !== false) {
+                growthBonusLogs.push(`${label} x${mult.toFixed(1)} (${keys.join(', ')})`);
+            }
+        };
+
+        if (charData.level === 50 || charData.level === 100) {
+            applyGrowthBonus(['hp', 'mp', 'atk', 'def', 'mdef', 'spd', 'mag'], 2 + Math.random(), `Lv${charData.level}成長ボーナス`);
+        } else if (Math.random() < 0.12) {
+            const keys = ['hp', 'mp', 'atk', 'def', 'mdef', 'spd', 'mag'].sort(() => Math.random() - 0.5).slice(0, Math.random() < 0.25 ? 2 : 1);
+            applyGrowthBonus(keys, 2 + Math.random(), 'ひらめき成長', { log: false });
+        }
+
+        const bonusRand = (min, max) => min + Math.floor(Math.random() * (max - min + 1));
+        incHp += bonusRand(2, 4);
+        incMp += bonusRand(2, 4);
+        incAtk += bonusRand(0, 2);
+        incDef += bonusRand(0, 2);
+        incMdef += bonusRand(0, 2);
+        incSpd += bonusRand(0, 2);
+        incMag += bonusRand(0, 2);
+
+        // ステータス加算
+        charData.hp = (charData.hp || 0) + incHp;
+        charData.mp = (charData.mp || 0) + incMp;
+        charData.atk = (charData.atk || 0) + incAtk;
+        charData.def = (charData.def || 0) + incDef;
+        charData.mdef = (charData.mdef || 0) + incMdef;
+        charData.spd = (charData.spd || 0) + incSpd;
+        charData.mag = (charData.mag || 0) + incMag;
+
+        // SP加算
+        if (charData.sp === undefined) charData.sp = 0;
+        charData.sp++;
+
+        // HP/MP全回復
+        const stats = App.calcStats(charData);
+        charData.currentHp = stats.maxHp;
+        charData.currentMp = stats.maxMp;
+
+        // --- ログの追加（順序を制御） ---
+        if (!silent) {
+            // 1. レベルアップ通知
+            logs.push(`<span style="color:#00ff00; font-weight:bold;"><br>${charData.name}は レベル ${charData.level} に上がった！</span>`);
+
+            // 2. ステータス上昇値（全項目）
+            logs.push(`<span style="font-size:0.9em;">最大HP+${incHp} 最大MP+${incMp} <br>攻撃+${incAtk} 防御+${incDef} 魔力+${incMag} 魔防+${incMdef} 速さ+${incSpd} </span>`);
+            if (growthBonusLogs.length > 0) {
+                logs.push(`<span style="color:#ffdd66;">${growthBonusLogs.join(' / ')}</span>`);
+            }
+        }
+
+        // 3. スキル習得
+        const newSkill = App.checkNewSkill(charData);
+        if (newSkill) {
+            if(!charData.skills) charData.skills = [];
+            if(!charData.skills.includes(newSkill.id)) {
+                charData.skills.push(newSkill.id);
+                if (!silent) logs.push(`<span style="color:#ffff00;">${newSkill.name} を覚えた！</span>`);
+            }
+        }
+
+        // 4. 特性習得
+        if (typeof PassiveSkill !== 'undefined' && PassiveSkill.applyLevelUpTraits) {
+            const traitLog = PassiveSkill.applyLevelUpTraits(charData);
+            if (traitLog && !silent) {
+                logs.push(traitLog);
+            }
+        }
+
+        return logs;
+    },
+
+    /**
      * レベルアップ処理
      */
     gainExp: (charData, expGain) => {
         if (!charData.exp) charData.exp = 0;
         charData.exp += expGain;
         let logs = [];
-        
-        // 転生回数による補正倍率の計算
-        const reincMult = 1 + (charData.reincarnationCount || 0);
-        
+
         // レベル上限100
         while (charData.level < 100) {
             // App.getNextExp 内で「大器晩成」の exp_need_mult が計算されている前提
             const nextExp = App.getNextExp(charData);
             if (charData.exp >= nextExp) {
                 charData.exp -= nextExp;
-                charData.level++;
-				
-                // DBの基礎値を取得
-                const master = (window.CHARACTERS_DATA || []).find(c => c.id === charData.charId) || charData;
-                const growthRef = master.growthBase || master;
-
-                // 成長率: 4% 〜 8%
-                const minRate = 0.04;
-                const maxRate = 0.08;
-                const r = () => minRate + Math.random() * (maxRate - minRate);
-
-                // --- 特性による成長補正値の取得 ---
-                let statBonus = 0; // 全ステータス用 (大器晩成)
-                let atkBonus = 0;  // 攻撃力用 (武の極み)
-                let defBonus = 0;  // 防御力用 (武の極み)
-                let magBonus = 0;  // 魔力用 (魔の極み)
-                let mdefBonus = 0; // 魔法防御用 (魔の極み)
-
-                if (typeof PassiveSkill !== 'undefined' && PassiveSkill.getSumValue) {
-                    // ID 58 大器晩成: stat_bonus_mult は 0.1(10%) 単位
-                    statBonus = PassiveSkill.getSumValue(charData, 'stat_bonus_mult');
-                    
-                    // ID 59 武の極み: 1(1%) 単位
-                    atkBonus = PassiveSkill.getSumValue(charData, 'atk_growth_bonus') / 100;
-                    defBonus = PassiveSkill.getSumValue(charData, 'def_growth_bonus') / 100;
-                    
-                    // ID 60 魔の極み: 1(1%) 単位
-                    magBonus = PassiveSkill.getSumValue(charData, 'mag_growth_bonus') / 100;
-                    mdefBonus = PassiveSkill.getSumValue(charData, 'mdef_growth_bonus') / 100;
-                }
-
-                // 各倍率の決定 (1.0 + 全体ボーナス + 個別ボーナス)
-                const hpMult   = 2.0 + statBonus;
-                const mpMult   = 2.0 + statBonus;
-                const atkMult  = 1.0 + statBonus + atkBonus;
-                const defMult  = 1.0 + statBonus + defBonus;
-                const magMult  = 1.0 + statBonus + magBonus;
-                const mdefMult = 1.0 + statBonus + mdefBonus;
-                const spdMult  = 1.0 + statBonus;
-
-                // 各ステータス上昇量の計算
-                let incHp   = Math.max(1, Math.floor(((growthRef.hp || master.hp || 100) * reincMult) * r() * hpMult));
-                let incMp   = Math.max(1, Math.floor(((growthRef.mp || master.mp || 50) * reincMult) * r() * mpMult));
-                let incAtk  = Math.max(1, Math.floor(((growthRef.atk || master.atk || 10) * reincMult) * r() * atkMult));
-                let incDef  = Math.max(1, Math.floor(((growthRef.def || master.def || 10) * reincMult) * r() * defMult));
-                let incMdef = Math.max(1, Math.floor(((growthRef.mdef || master.mdef || 10)* reincMult) * r() * mdefMult));
-                let incSpd  = Math.max(1, Math.floor(((growthRef.spd || master.spd || 10) * reincMult) * r() * spdMult));
-                let incMag  = Math.max(1, Math.floor(((growthRef.mag || master.mag || 10) * reincMult) * r() * magMult));
-
-                const growthBonusLogs = [];
-                const applyGrowthBonus = (keys, mult, label, options = {}) => {
-                    keys.forEach(key => {
-                        if (key === 'hp') incHp = Math.max(1, Math.floor(incHp * mult));
-                        if (key === 'mp') incMp = Math.max(1, Math.floor(incMp * mult));
-                        if (key === 'atk') incAtk = Math.max(1, Math.floor(incAtk * mult));
-                        if (key === 'def') incDef = Math.max(1, Math.floor(incDef * mult));
-                        if (key === 'mdef') incMdef = Math.max(1, Math.floor(incMdef * mult));
-                        if (key === 'spd') incSpd = Math.max(1, Math.floor(incSpd * mult));
-                        if (key === 'mag') incMag = Math.max(1, Math.floor(incMag * mult));
-                    });
-                    if (options.log !== false) {
-                        growthBonusLogs.push(`${label} x${mult.toFixed(1)} (${keys.join(', ')})`);
-                    }
-                };
-
-                if (charData.level === 50 || charData.level === 100) {
-                    applyGrowthBonus(['hp', 'mp', 'atk', 'def', 'mdef', 'spd', 'mag'], 2 + Math.random(), `Lv${charData.level}成長ボーナス`);
-                } else if (Math.random() < 0.12) {
-                    const keys = ['hp', 'mp', 'atk', 'def', 'mdef', 'spd', 'mag'].sort(() => Math.random() - 0.5).slice(0, Math.random() < 0.25 ? 2 : 1);
-                    applyGrowthBonus(keys, 2 + Math.random(), 'ひらめき成長', { log: false });
-                }
-
-                const bonusRand = (min, max) => min + Math.floor(Math.random() * (max - min + 1));
-                incHp += bonusRand(2, 4);
-                incMp += bonusRand(2, 4);
-                incAtk += bonusRand(0, 2);
-                incDef += bonusRand(0, 2);
-                incMdef += bonusRand(0, 2);
-                incSpd += bonusRand(0, 2);
-                incMag += bonusRand(0, 2);
-
-                // ステータス加算
-                charData.hp += incHp;
-                charData.mp += incMp;
-                charData.atk += incAtk;
-                charData.def += incDef;
-                charData.mdef += incMdef;
-                charData.spd += incSpd;
-                charData.mag += incMag;
-                
-                // SP加算
-                if (charData.sp === undefined) charData.sp = 0;
-                charData.sp++; 
-                
-                // HP/MP全回復
-                const stats = App.calcStats(charData);
-                charData.currentHp = stats.maxHp;
-                charData.currentMp = stats.maxMp;
-
-                // --- ログの追加（順序を制御） ---
-				// 1. レベルアップ通知
-				logs.push(`<span style="color:#00ff00; font-weight:bold;"><br>${charData.name}は レベル ${charData.level} に上がった！</span>`);
-				
-				// 2. ステータス上昇値（全項目）
-				logs.push(`<span style="font-size:0.9em;">最大HP+${incHp} 最大MP+${incMp} <br>攻撃+${incAtk} 防御+${incDef} 魔力+${incMag} 魔防+${incMdef} 速さ+${incSpd} </span>`);
-				if (growthBonusLogs.length > 0) {
-					logs.push(`<span style="color:#ffdd66;">${growthBonusLogs.join(' / ')}</span>`);
-				}
-
-				// 3. スキル習得ログ
-				const newSkill = App.checkNewSkill(charData);
-				if (newSkill) {
-					if(!charData.skills) charData.skills = [];
-					if(!charData.skills.includes(newSkill.id)) {
-						charData.skills.push(newSkill.id);
-						logs.push(`<span style="color:#ffff00;">${newSkill.name} を覚えた！</span>`);
-					}
-				}
-				
-				// 4. 特性習得ログ
-				if (typeof PassiveSkill !== 'undefined' && PassiveSkill.applyLevelUpTraits) {
-					const traitLog = PassiveSkill.applyLevelUpTraits(charData);
-					if (traitLog) {
-						logs.push(traitLog);
-					}
-				}
-			} else { break; }
-		}
-		App.save();
-		return logs;
-	},
+                logs.push(...App.applyLevelUpGrowth(charData));
+            } else { break; }
+        }
+        App.save();
+        return logs;
+    },
 
 	/* main.js: App.createEquipByFloor 関数 */
 	createEquipByFloor: (source, floor = null, fixedPlus = null) => {
