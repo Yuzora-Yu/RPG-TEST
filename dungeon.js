@@ -454,6 +454,45 @@ const Dungeon = {
         App.log(`${nextDef.displayName || nextDef.name}へ移動した。`);
     },
 
+    followFixedFloorLink: (link, mapDef = null) => {
+        if (!link || !Field.currentMapData?.isFixed) return false;
+        if (link.to === 'EXIT') {
+            const forced = link.exitPoint ? {
+                x: Number(link.exitPoint.x),
+                y: Number(link.exitPoint.y),
+                areaKey: link.exitPoint.areaKey || link.exitPoint.area || 'WORLD',
+                mapData: link.exitPoint.mapData || null
+            } : null;
+            Dungeon.exit(false, forced);
+            return true;
+        }
+        if (link.toDungeon) {
+            Dungeon.startFixed(link.toDungeon, { entryKey: link.entryKey || null, nestedReturn: true });
+            return true;
+        }
+        if (link.toFloor !== undefined && link.toFloor !== null) {
+            Dungeon.changeFixedFloor(link.toFloor, link.targetX, link.targetY);
+            return true;
+        }
+        return false;
+    },
+
+    tryFixedAutoFloorLink: (tile, x, y) => {
+        if (!Field.currentMapData?.isFixed || !Field.currentMapData?.isDungeon) return false;
+        const upper = String(tile || '').toUpperCase();
+        if (!['S', 'D', 'U'].includes(upper)) return false;
+        const link = (typeof MapRegistry !== 'undefined' && MapRegistry.findFloorLink)
+            ? MapRegistry.findFloorLink(Field.currentMapData, x, y)
+            : null;
+        if (!link || !link.auto) return false;
+        const flags = App.data?.progress?.flags || {};
+        if (link.requiredFlag && !flags[link.requiredFlag]) {
+            return false;
+        }
+        if (link.openLog || link.log) App.log(link.openLog || link.log);
+        return Dungeon.followFixedFloorLink(link, Field.currentMapData);
+    },
+
     prepareFixedTileAction: (tile, x, y, options = {}) => {
         if (!Field.currentMapData?.isFixed) return false;
         const silent = options.silent !== false;
@@ -467,6 +506,9 @@ const Dungeon = {
 
             if (link) {
                 const flags = App.data?.progress?.flags || {};
+                if (link.auto && !(link.requiredFlag && !flags[link.requiredFlag])) {
+                    return false;
+                }
                 if (link.requiredFlag && !flags[link.requiredFlag]) {
                     logIfNeeded(link.lockedLog || '封印されていて、今は通れない。');
                     App.setAction(link.lockedLabel || '調べる', () => {
@@ -483,21 +525,7 @@ const Dungeon = {
                     ? MapRegistry.getFixedFloorActionLabel(mapDef, link, App.data?.progress?.floor || mapDef.floor || 1, Field.getCurrentAreaKey())
                     : (link.to === 'EXIT' ? (link.label || '外に出る') : (link.label || '進む'));
                 logIfNeeded(link.openLog || link.log || (link.to === 'EXIT' ? '外への出口がある。' : (link.toDungeon ? '奥へ続く入口がある。' : '階段がある。')));
-                App.setAction(label, () => {
-                    if (link.to === 'EXIT') {
-                        const forced = link.exitPoint ? {
-                            x: Number(link.exitPoint.x),
-                            y: Number(link.exitPoint.y),
-                            areaKey: link.exitPoint.areaKey || link.exitPoint.area || 'WORLD',
-                            mapData: link.exitPoint.mapData || null
-                        } : null;
-                        Dungeon.exit(false, forced);
-                    } else if (link.toDungeon) {
-                        Dungeon.startFixed(link.toDungeon, { entryKey: link.entryKey || null, nestedReturn: true });
-                    } else {
-                        Dungeon.changeFixedFloor(link.toFloor, link.targetX, link.targetY);
-                    }
-                });
+                App.setAction(label, () => Dungeon.followFixedFloorLink(link, mapDef));
                 return true;
             }
 
@@ -990,9 +1018,10 @@ const Dungeon = {
             return; 
         }
 
-        // 階段・出口判定
+        // 地続き遷移・階段・出口判定
         if(tile === 'S' || tile === 'D' || tile === 'U') {
             if (Field.currentMapData.isFixed) {
+                if (Dungeon.tryFixedAutoFloorLink(tile, x, y)) return;
                 if (Dungeon.prepareFixedTileAction(tile, x, y, { silent: false })) return;
             } else if (tile === 'S') {
                 App.log("階段がある。");

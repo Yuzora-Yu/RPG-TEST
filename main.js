@@ -3421,6 +3421,48 @@ load: () => {
 		}, isEventBattle ? 820 : 680);
 	},
 
+
+    getWorldEncounterProfile: () => {
+        if (typeof Field === 'undefined' || Field.currentMapData) return null;
+        if (typeof App.isFlying === 'function' && App.isFlying()) return null;
+        if (typeof App.isBoating === 'function' && App.isBoating()) return null;
+        const zones = (typeof window !== 'undefined' && Array.isArray(window.FIELD_ENCOUNTER_ZONES))
+            ? window.FIELD_ENCOUNTER_ZONES
+            : [];
+        if (zones.length === 0) return null;
+        const x = Number(Field.x || 0);
+        const y = Number(Field.y || 0);
+        const matches = zones.filter(zone => {
+            if (zone.rect) {
+                return x >= Number(zone.rect.x1) && x <= Number(zone.rect.x2) && y >= Number(zone.rect.y1) && y <= Number(zone.rect.y2);
+            }
+            const dx = x - Number(zone.centerX || 0);
+            const dy = y - Number(zone.centerY || 0);
+            const radius = Number(zone.radius || 0);
+            return radius > 0 && Math.sqrt(dx * dx + dy * dy) <= radius;
+        });
+        const candidates = matches.length > 0 ? matches : zones;
+        let best = null;
+        let bestScore = Infinity;
+        candidates.forEach(zone => {
+            const dx = x - Number(zone.centerX || 0);
+            const dy = y - Number(zone.centerY || 0);
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const score = distance - (Number(zone.priority || 0) * 8);
+            if (score < bestScore) {
+                best = zone;
+                bestScore = score;
+            }
+        });
+        if (!best || !Array.isArray(best.monsters) || best.monsters.length === 0) return null;
+        return {
+            id: best.id || null,
+            name: best.name || 'フィールド',
+            rank: Math.max(1, Number(best.rank || best.encounterRank || 1) || 1),
+            monsters: best.monsters.slice()
+        };
+    },
+
 	tryRandomEncounter: (rate = null) => {
 		if (!App.data) return false;
 		if (App.encounterTransitioning) return true;
@@ -3449,6 +3491,7 @@ load: () => {
 			(typeof App.isBoating === 'function' && App.isBoating()) ||
 			(typeof App.getWorldTileAt === 'function' && App.getWorldTileAt(Field.x, Field.y) === 'W')
 		);
+        const worldEncounter = isSeaEncounter ? null : App.getWorldEncounterProfile();
 
 		App.data.battle = {
 			active: false,
@@ -3457,8 +3500,11 @@ load: () => {
 			isEstark: false,
 			fixedBossId: null,
 			enemies: [],
-			encounterType: isSeaEncounter ? 'sea' : null,
-			monsters: isSeaEncounter && Array.isArray(window.SEA_ENCOUNTER_MONSTERS) ? [...window.SEA_ENCOUNTER_MONSTERS] : null,
+			encounterType: isSeaEncounter ? 'sea' : (worldEncounter ? 'field' : null),
+            encounterZoneId: worldEncounter ? worldEncounter.id : null,
+            encounterZoneName: worldEncounter ? worldEncounter.name : null,
+            encounterRank: worldEncounter ? worldEncounter.rank : null,
+			monsters: isSeaEncounter && Array.isArray(window.SEA_ENCOUNTER_MONSTERS) ? [...window.SEA_ENCOUNTER_MONSTERS] : (worldEncounter ? worldEncounter.monsters : null),
 			isAmbushed: flags.isAmbushed,
 			isPreemptive: flags.isPreemptive
 		};
@@ -3552,6 +3598,7 @@ load: () => {
         if(sceneId === 'inn') Facilities.initInn();
         if(sceneId === 'medal') Facilities.initMedal();
         if(sceneId === 'casino') Casino.init();
+        if(sceneId === 'shop') Facilities.initShop();
     }
 };
 
@@ -4199,7 +4246,15 @@ const Field = {
                 const stepMax = entry.stepMax !== undefined ? Number(entry.stepMax) : Infinity;
                 const subMin = entry.subMin !== undefined ? Number(entry.subMin) : -Infinity;
                 const subMax = entry.subMax !== undefined ? Number(entry.subMax) : Infinity;
-                return step >= stepMin && step <= stepMax && sub >= subMin && sub <= subMax;
+                const flags = App.data?.progress?.flags || {};
+                const requiredFlags = Array.isArray(entry.requiredFlags)
+                    ? entry.requiredFlags
+                    : (entry.requiredFlag ? [entry.requiredFlag] : []);
+                const missingFlags = Array.isArray(entry.missingFlags)
+                    ? entry.missingFlags
+                    : (entry.missingFlag ? [entry.missingFlag] : []);
+                const flagsOk = requiredFlags.every(flag => !!flags[flag]) && missingFlags.every(flag => !flags[flag]);
+                return flagsOk && step >= stepMin && step <= stepMax && sub >= subMin && sub <= subMax;
             }) || entries.find(entry => entry?.default && entry.eventId) || null;
             return match?.eventId || null;
         };
@@ -4245,6 +4300,16 @@ const Field = {
 
         if (action.type === 'storyEvent' && action.eventId && typeof StoryManager !== 'undefined') {
             StoryManager.executeEvent(action.eventId);
+            return;
+        }
+
+        if (action.type === 'shop' && typeof Facilities !== 'undefined' && typeof Facilities.openShopFromField === 'function') {
+            Facilities.openShopFromField(action);
+            return;
+        }
+
+        if (action.type === 'inn') {
+            App.changeScene('inn');
             return;
         }
 
@@ -4314,7 +4379,16 @@ const Field = {
                     : (currentSub >= (t.subMin !== undefined ? t.subMin : 0) &&
                        currentSub <= (t.subMax !== undefined ? t.subMax : 999));
 
-                return areaMatch && posMatch && stepMatch && subMatch;
+                const flags = App.data?.progress?.flags || {};
+                const requiredFlags = Array.isArray(t.requiredFlags)
+                    ? t.requiredFlags
+                    : (t.requiredFlag ? [t.requiredFlag] : []);
+                const missingFlags = Array.isArray(t.missingFlags)
+                    ? t.missingFlags
+                    : (t.missingFlag ? [t.missingFlag] : []);
+                const flagsMatch = requiredFlags.every(flag => !!flags[flag]) && missingFlags.every(flag => !flags[flag]);
+
+                return areaMatch && posMatch && stepMatch && subMatch && flagsMatch;
             }) || null;
         };
         const setStoryActionIfNeeded = (fallbackLabel = null) => {

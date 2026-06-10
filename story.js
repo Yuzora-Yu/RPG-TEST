@@ -992,7 +992,7 @@ const StoryManager = {
                 },
                 {
                         "name": "エリーゼ",
-                        "text": "中央の祈りの広場に石碑があります。まずはそこへ。森がまだ私たちの言葉を聞いてくれるなら、道を開いてくれるはずです。",
+                        "text": "この森は東から入ると道が大きく曲がります。北西の奥へ抜ければ、祈りの広場へ続くはずです。",
                         "charId": 106
                 }
         ],
@@ -2090,6 +2090,7 @@ const StoryManager = {
                 "stepMax": 3,
                 "subMin": 1,
                 "subMax": 1,
+                "missingFlag": "windForestEntryIntroduced",
                 "eventId": "wind_forest_entry"
         },
         {
@@ -3161,6 +3162,10 @@ const StoryManager = {
                         {
                                 "type": "CONV",
                                 "value": "WIND_FOREST_ENTRY"
+                        },
+                        {
+                                "type": "FLAG",
+                                "key": "windForestEntryIntroduced"
                         },
                         {
                                 "type": "START_FIXED_DUNGEON",

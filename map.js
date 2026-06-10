@@ -247,6 +247,19 @@ const STORY_DATA = {
 // 海上エンカウント。魔法の小舟で海を移動している時は、このリストから通常敵を抽選します。
 const SEA_ENCOUNTER_MONSTERS = [100033, 100037, 100044, 100057, 100059, 100064];
 
+// ワールドマップ通常エンカウント。近隣ダンジョン1〜2階相当の敵を地域別に出す。
+const FIELD_ENCOUNTER_ZONES = [
+    { id: "START_PLAINS", name: "始まりの村周辺", rank: 5, centerX: 58, centerY: 64, radius: 34, monsters: [100001, 100002, 100003, 100004, 100005, 100006] },
+    { id: "FIRE_FOOTHILLS", name: "イグナ火山山麓", rank: 12, centerX: 97, centerY: 49, radius: 24, monsters: [100010, 100011, 100012, 100013, 100014] },
+    { id: "WIND_HIGHLANDS", name: "禁忌の森外縁", rank: 22, centerX: 98, centerY: 37, radius: 20, monsters: [100020, 100021, 100022, 100023, 100024] },
+    { id: "WATER_COAST", name: "水上都市近海", rank: 35, centerX: 68, centerY: 21, radius: 28, monsters: [100033, 100034, 100035, 100036] },
+    { id: "BIG_TOWER_SHORE", name: "大灯台沿岸", rank: 30, centerX: 21, centerY: 79, radius: 30, monsters: [100026, 100027, 100028, 100029] },
+    { id: "THUNDER_FRONTIER", name: "雷鳴の荒野", rank: 42, centerX: 45, centerY: 36, radius: 24, monsters: [100040, 100041, 100042, 100043] },
+    { id: "LIGHT_PALACE_GROVE", name: "光の宮殿周辺", rank: 62, centerX: 67, centerY: 48, radius: 18, monsters: [100060, 100061, 100062, 100063] },
+    { id: "DARK_WASTES", name: "魔王城外郭", rank: 60, centerX: 8, centerY: 50, radius: 30, monsters: [100056, 100057, 100058, 100059] },
+    { id: "ABYSS_EDGE", name: "深淵外縁", rank: 70, centerX: 51, centerY: 55, radius: 20, priority: 1, monsters: [100064, 100065, 100066, 100067] }
+];
+
 const MAP_DATA = ["WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
 "WMMMLWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
 "WMGGTWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
@@ -448,6 +461,9 @@ const FIXED_MAPS = {
             "WWWWWWWWWWWWWWW"
         ],
         mapActions: [
+            { x: 6, y: 3, label: "道具を買う", log: "道具屋の看板が出ている。", type: "shop", shopType: "item", title: "始まりの村 道具屋", shopRank: 5 },
+            { x: 1, y: 8, label: "武器を見る", log: "簡素な武器が並んでいる。", type: "shop", shopType: "weapon", title: "始まりの村 武器屋", shopRank: 5 },
+            { x: 1, y: 9, label: "防具を見る", log: "旅支度用の防具が並んでいる。", type: "shop", shopType: "armor", title: "始まりの村 防具屋", shopRank: 5 },
             { x: 11, y: 1, label: "洞窟に入る", log: "洞窟の入口だ。", type: "fixedDungeon", target: "START_CAVE" }
         ],
         exitPoint: { area: "WORLD", x: 58, y: 65 }
@@ -480,7 +496,7 @@ const FIXED_MAPS = {
             "WMMMMTTTGGGGGGPGGGGGGTTTMMMMW",
             "WMMMMTTTGGGGGGGGGGGGGTTTMMMMW",
             "WMMMMTTTGGGGGGGGGGGGGTTTMMMMW",
-            "WMMMMHTTTTTTTTTTTTTTTTHTMMMMW",
+            "WMMMMITTTTTTTTTTTTTTTTHTMMMMW",
             "WMMMMTTVJTTTTGGGTTTTJVTTMMMMW",
             "WMMMMTTTTTTGGGGGGGTTTTTTMMMMW",
             "WMMMMTTTTTTGGGGGGGTTTTTTMMMMW",
@@ -490,6 +506,10 @@ const FIXED_MAPS = {
             "WWWWWWWWWWWWWWSSWWWWWWWWWWWWW"
         ],
         mapActions: [
+            { x: 5, y: 13, label: "泊まる", log: "熱気をしのげる宿屋がある。", type: "inn" },
+            { x: 6, y: 4, label: "道具を買う", log: "火山探索向けの道具屋だ。", type: "shop", shopType: "item", title: "炎の里 道具屋", shopRank: 12 },
+            { x: 20, y: 4, label: "武器を見る", log: "鍛冶火が赤く揺れる武器屋だ。", type: "shop", shopType: "weapon", title: "炎の里 武器屋", shopRank: 12 },
+            { x: 22, y: 13, label: "防具を見る", log: "火山の熱に耐える防具を扱っている。", type: "shop", shopType: "armor", title: "炎の里 防具屋", shopRank: 12 },
             {
                 x: 14,
                 y: 17,
@@ -547,7 +567,7 @@ const FIXED_MAPS = {
             "WLPLLLLLLLLLLLLLTTTTTTTTTTGGW",
             "WGGTTTTTTTTTTLLLTTTTTTTTTTGGW",
             "WGGTTTTTTJTTTLLLTTTTTTJTTTGGW",
-            "WGGTTTTTHTTTTLLLTTTTTVTTTTGGW",
+            "WGGTTTTTITTTTLLLTTTTTVTTTTGGW",
             "WGGTTTTTTTTTTLLLTTTTTTTTTTGGW",
             "WGGTTTTTTTTTTLALTTTTTTTTTTGGW",
             "WGGGGGGGGGGGGLLLGGGGGGGGGGGGW",
@@ -557,6 +577,10 @@ const FIXED_MAPS = {
             "WWWWWWWWWWWWWWSSWWWWWWWWWWWWW"
         ],
         mapActions: [
+            { x: 8, y: 13, label: "泊まる", log: "風よけの宿屋がある。", type: "inn" },
+            { x: 21, y: 5, label: "道具を買う", log: "森歩きに備えた道具屋だ。", type: "shop", shopType: "item", title: "風の集落 道具屋", shopRank: 22 },
+            { x: 6, y: 5, label: "武器を見る", log: "軽く扱いやすい武器が並んでいる。", type: "shop", shopType: "weapon", title: "風の集落 武器屋", shopRank: 22 },
+            { x: 21, y: 13, label: "防具を見る", log: "森の魔物に備えた防具屋だ。", type: "shop", shopType: "armor", title: "風の集落 防具屋", shopRank: 22 },
             {
                 x: 14,
                 y: 15,
@@ -581,7 +605,7 @@ const FIXED_MAPS = {
                 requiredSubStep: 1,
                 requiredStoryMissingText: "森の奥から、呼吸をひそめるような風が流れてくる。案内もなく進めば、すぐに道を失いそうだ。",
                 events: [
-                    { stepMin: 3, stepMax: 3, subMin: 1, subMax: 1, eventId: "wind_forest_entry" }
+                    { stepMin: 3, stepMax: 3, subMin: 1, subMax: 1, missingFlag: "windForestEntryIntroduced", eventId: "wind_forest_entry" }
                 ]
             }
         ],
@@ -630,6 +654,9 @@ const FIXED_MAPS = {
             "WWWWWWWWWWWWWWWWWWWSWWWWWWWWWWWWWWWWWWW"
         ],
         mapActions: [
+            { x: 6, y: 4, label: "道具を買う", log: "水路沿いの道具屋だ。", type: "shop", shopType: "item", title: "水上都市 道具屋", shopRank: 35 },
+            { x: 5, y: 3, label: "武器を見る", log: "海底神殿に備えた武器を扱っている。", type: "shop", shopType: "weapon", title: "水上都市 武器屋", shopRank: 35 },
+            { x: 31, y: 3, label: "防具を見る", log: "水と闇に強い防具を扱っている。", type: "shop", shopType: "armor", title: "水上都市 防具屋", shopRank: 35 },
             {
                 x: 19,
                 y: 13,
@@ -1022,89 +1049,165 @@ const FIXED_DUNGEON_MAPS = {
             W: tileEntry("forest", "#1f6a3f"),
             T: tileEntry("floor", "#2c7a4e"),
             G: tileEntry("floor", "#3f8b54"),
-            S: tileEntry("floor", "#d7b45a")
+            S: tileEntry("floor", "#4e9c61")
         },
+        // 森内の地続き遷移点は階段表示にしない。
+        fixedTileOverlays: { S: null },
         rank: 22,
         encounterRank: 22,
         battleBg: "battle_bg_forest",
-        entryPoint: { x: 2, y: 15 },
+        entryPoint: { x: 51, y: 16 },
         floors: [
             {
-                label: "封じられた森・深部",
+                label: "封じられた森・東の迷い路",
                 encounterRank: 22,
                 monsters: [100020, 100021, 100022, 100023, 100024],
-                width: 53,
-                height: 31,
+                width: 55,
+                height: 33,
                 tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWTTTTTGGGGGGGGGWWWWWWWWWWWWWWWTTTTTTGGG",
-                    "WWWWWWWWWWWWWWTTTTTTGGGGGGGGGWWWWWWWWWWWWWWTTTTTTTGSG",
-                    "WWWWWWWWWWWWWWTTTTTTGGGGGGGGGWWWWWWWWWWGGGGGGGGGGGGGG",
-                    "WWWWWWWWWWWGGGGGGGGGGGGGGWGGGWWWWWWWWWWGGGGGGGGGGGWWW",
-                    "WWWWWWWWWWWGGGGGGGGGWWWTTTWWWWWWWWWWTTTGWWGGGGGGGGWWW",
-                    "WWWWWWWWTTTGGGGGGGGGWWWTTTTTTTTTTTWTTTTGGGGGGGGGGGWWW",
-                    "WWWWWWWTTTTGGGGGGGGGWWWTTTTTTTTTTTWTTTTGGGGGGGGGGGWWW",
-                    "WWWWWWWTTTTGGGGGGGGGWWTTTTGGGGGGGGGTTTWGGGGGGGGGGGWWW",
-                    "WWWWGGGGGGGGGGGGGGGGWTTTTTGGGGGGGWGGGGGGGGGGGGGGGGWWW",
-                    "WWWWGGGGGGGGGGGGGGGGWTTTTTGGGGGGGGGGGGGGGWWWWWWWWWWWW",
-                    "WTTTGGGGGGGGWWTTTWWGGGGGGGCGBGGGGGGGGGGGGTTTTWWWWWWWW",
-                    "WSTTGGGGGGGGGWTTTWWGGGGGGGGGGGGGGGGZGGGGGTTTTTWWWWWWW",
-                    "WTTTGGGGGGGGGWTTTWWGGGGGGGGGGGGGGGGGGGGGGTTTTTWWWWWWW",
-                    "WWWWGGGGGGGGGWTTTTTGWGGGGGGGGGGGGGGGGGWGGGGGGGGGGWWWW",
-                    "WWWWGGGGGGGGGWTTTTTGWGGGGGGGGGWWGGGGGGGGGGGGGWGGGWWWW",
-                    "WWWWWWWTTTWWWWWTTTTGGGGGGGGGGGWWWWWWWWTTGGGGGGGGGTWWW",
-                    "WWWWWTTTTTWWWWWWWWWGGGGGGGGWGGTTTTTTTTTTGGGGGGRGGTWWW",
-                    "WWWWWTTTTTTTTTTTTTTGGGGGGGGGGGTTTTTTTTTTGGGGGGGGGTWWW",
-                    "WWWWWTTTTTTTTTTTTTTGGGGGGGGGGGTTTTTTTTTTGGGGGGGGGWWWW",
-                    "WWWWWTTTTTTCTTTTTTTTWWWWWWWWWTTTWWWWWWWWGGGGGGGGGWWWW",
-                    "WWWWWTWTWWWTTGGGGGGGGGGGWWWWWTTTWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWTTTTTTTTGGGGGGGGGGGTTTTTTTTWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWTTTTTTTTGGGGGGGGGGGTTTTTTTTWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWTTTTTTTGGGGGGGGGGGTTTTTTTWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWGGGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWGGGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWGTTTTTTTTGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWGSTTTTTTTGGWWWWGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWGTTTTTTTTGGWWWWGTTTTGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWGTTTTTTTTGGWWWWGTTRTGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWGTTTTTTTTGGWWWWGTTTTGWWWWWWWWGGGGGGGGGGGGGGGGGGGGGGWW",
+                    "WWGGGGGGGGTGGWWWWGTGGGGWWWWWWWWGGGGWWWGGGGGGGGGGGGGGGWW",
+                    "WWWWGGGTTTTGGGTTTTTWWWWWWGGGGGGGGGGGGGGGGGGGGGGGWWGGGWW",
+                    "WWWWGGTTTTTTTTGWWWWWWWWWWGGGGGGGGGTTTTTTTTTTTTTTTTTGGWW",
+                    "WWWWGGTTTTTTTTGWWWWWWWWWWGGTTTTTTGTTTTTTTWTTTTTTTTTGGWW",
+                    "WWWWGGTTTTTTTTGWWWWWWWWWWGGTTTTTTGTTGGGGGGGGGGGGTTTGGWW",
+                    "WWWWGGTTTTTTTTGTTTTTTTTTXGGTTTTTTGTTGGGGGGGGGGGGTTTGGWW",
+                    "WWWWGGTTTTTTTTGWWWWWWWWWWGGTTTTTTTTTTTTGGGGGGGGGTTWGGWW",
+                    "WWWWGGTTTTTTTTGWWWWWWWWWWGGTTTTTTGTTGGGGGGGGGGGGTTTGGWW",
+                    "WWWWGGTTTTTTTTGWWWWWWWWWWGGTTTTTTGTTGGTTTTTTTGGGTTTTTSW",
+                    "WWWWGGGGGGGGGGGWWWWWWWWWWGGGGGGGGGTTGGGGGGGGTGGGTTTGGWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWGGGGWGGGGTTGGGGGGGGTGGGTTTGGWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGTTTGGGGGGGGTGGGTTTGGWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGTWWTTTWWTTTTTTTTTTGGWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGTTTTTTTTTTTTTTTTTTGGWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGTTTTTTTGGGGTTGGGGTGGWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGGGTTTTTTGGGGGWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGTTTTTTGGGGGWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGGGTTTQTTGGGGGWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGTTTTTTGGWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGGWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
                 ],
                 floorLinks: [
                     {
-                        x: 1,
-                        y: 15,
+                        x: 53,
+                        y: 16,
                         to: "EXIT",
                         label: "風の集落へ戻る",
                         log: "集落へ続く森の出口だ。"
                     },
                     {
-                        x: 51,
-                        y: 5,
+                        x: 3,
+                        y: 4,
+                        toFloor: 2,
+                        targetX: 35,
+                        targetY: 32,
+                        auto: true,
+                        label: "森の奥へ進む",
+                        log: "木々の切れ目から、さらに深い森へ道が続いている。"
+                    }
+                ],
+                chests: [
+                    { x: 20, y: 6, itemId: 100, type: "item", rare: true }
+                ],
+                entryPoint: { x: 51, y: 16 }
+            },
+            {
+                label: "封じられた森・祈りの広場",
+                encounterRank: 24,
+                monsters: [100021, 100022, 100023, 100024, 100025],
+                width: 41,
+                height: 37,
+                tiles: [
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWSWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWGGGGGGGGGGGGGWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWGWTTTTTTTTTWGWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWGGTTTTTTTTTGGWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWGGTTTTTTTTTGGWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWGGTTTTTTTTTGGWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWGGGGGGGGGGGWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWTWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWZWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWTWWWWWWWWWWWWWWWWWWWW",
+                    "WWWGGGGGGGWWWWWWWWWWTWWWWWWWWWWWWWWWWWWWW",
+                    "WWWGTTTTTGWWWWWWWWWWTWWWWWWWWWWWWWWWWWWWW",
+                    "WWWGTTTTTGWWWWWWWWWWTWWWWWWWWWWWWWWWWWWWW",
+                    "WWWGTRTTTGWWWWGGGGGGTGGGGGGWWWWWWWWWWWWWW",
+                    "WWWGTTTTTGTTTTTTTTTTTTTTTGGWWWWWWWWWWWWWW",
+                    "WWWGTTTTTGWWWWGGTTTTTTTTTGGWWWGGGGGGGWWWW",
+                    "WWWGGGGGGGWWWWGGTTTTBTTTTGGWWWGTTTTTGWWWW",
+                    "WWWWWWWWWWWWWWGGTTTTTTTTTGGWWWGTTTTTGWWWW",
+                    "WWWWWWWWWWWWWWGGTTTTTTTTTTTTTTGTTTCTGWWWW",
+                    "WWWWWWWWWWWWWWGGTTTTTTTTTGGWWWGTTTTTGWWWW",
+                    "WWWWWWWWWWWWWWGGTTTTTTTTTGGWWWGTTTTTGWWWW",
+                    "WWWWWWWWWWWWWWWGGGGGGGGGGGWWWWGGGGGGGWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWYWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWTWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWTWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWGGGGGWGWWWWWWWWWTWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWGTTTTTGWWWWWWWWWTWWWWWWWWGGGGGGGGGGWW",
+                    "WWWWGTTTTTGWWWWWWWWWTWWWWWWWWGWGGGGGGGGWW",
+                    "WWWWGTNTTTGTTTTTTTTTTTTTTTTTTTTTTTTTTTGWW",
+                    "WWWWGTTTTTGWWWWWWWWWWWWWWWWWWGGTTTTTTTGWW",
+                    "WWWWGTTTTTGWWWWWWWWWWWWWWWWWWGGTTTTTTTGWW",
+                    "WWWWGGGGGGGWWWWWWWWWWWWWWWWWWGGTTTTTTTSWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGWGGWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                floorLinks: [
+                    {
+                        x: 38,
+                        y: 33,
+                        toFloor: 1,
+                        targetX: 4,
+                        targetY: 4,
+                        auto: true,
+                        label: "東の森へ戻る",
+                        log: "木々の切れ目から、来た道へ戻れそうだ。"
+                    },
+                    {
+                        x: 20,
+                        y: 2,
                         toDungeon: "WIND_TEMPLE",
+                        auto: true,
                         label: "風の神殿へ入る",
-                        log: "森の奥に、風の神殿へ続く古い石門がある。",
+                        log: "森の北端に、風の神殿へ続く古い石門が開いている。",
                         requiredFlag: "windForestCleansed",
                         lockedLabel: "石門を調べる",
                         lockedLog: "黒い風が石門を塞いでいる。祈りの広場の守護者を鎮めなければ進めなさそうだ。"
                     }
                 ],
                 chests: [
-                    { x: 26, y: 14, itemId: 1, type: "item" },
-                    { x: 11, y: 23, itemId: 2, type: "item" },
-                    { x: 46, y: 20, itemId: 3, type: "item", rare: true }
+                    { x: 5, y: 15, itemId: 106, type: "item", rare: true },
+                    { x: 34, y: 20, itemId: 4, type: "item" }
                 ],
                 bosses: [
                     {
-                        x: 28,
-                        y: 14,
+                        x: 20,
+                        y: 18,
                         monsterId: [301011, 301012],
                         keyRewardColor: "gold",
                         startEventId: "wind_forest_guardians_encounter",
                         storyEventId: "wind_forest_guardians_clear",
                         actionLabel: "守護者に祈る",
-                        inspectLog: "森の中心で、黒い風に包まれた守護者がうずくまっている。"
+                        inspectLog: "祈りの広場の中央で、黒い風に包まれた守護者がうずくまっている。"
                     }
                 ],
-                entryPoint: { x: 2, y: 15 }
+                entryPoint: { x: 35, y: 32 }
             }
         ]
     },
@@ -3207,4 +3310,5 @@ if (typeof window !== "undefined") {
     window.FIXED_TILE_OVERLAYS = FIXED_TILE_OVERLAYS;
     window.FIXED_OVERLAY_BASE_TILES = FIXED_OVERLAY_BASE_TILES;
     window.SEA_ENCOUNTER_MONSTERS = SEA_ENCOUNTER_MONSTERS;
+    window.FIELD_ENCOUNTER_ZONES = FIELD_ENCOUNTER_ZONES;
 }

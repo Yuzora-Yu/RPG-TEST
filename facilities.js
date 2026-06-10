@@ -293,6 +293,220 @@ const Facilities = {
     },
 
 
+
+    // --- 3. 店舗共通（道具屋・武器屋・防具屋） ---
+    shopStock: [],
+    shopStockKey: null,
+
+    shopTypeLabels: {
+        item: '道具屋',
+        weapon: '武器屋',
+        armor: '防具屋'
+    },
+
+    armorTypes: ['盾', '頭', '体', '足'],
+
+    openShopFromField: (config = {}) => {
+        const type = config.shopType || config.type || 'item';
+        const title = config.title || Facilities.shopTypeLabels[type] || '店';
+        const rank = Math.max(1, Number(config.shopRank || config.rank || Facilities.getCurrentAreaShopRank()) || 1);
+        const area = App?.data?.location?.area || 'WORLD';
+        App.data.currentShop = { type, title, rank, area, openedAt: Date.now() };
+        Facilities.shopStock = [];
+        Facilities.shopStockKey = null;
+        App.changeScene('shop');
+    },
+
+    getCurrentAreaShopRank: () => {
+        const areaKey = App?.data?.location?.area;
+        const fixed = (typeof FIXED_MAPS !== 'undefined' && areaKey && FIXED_MAPS[areaKey]) ? FIXED_MAPS[areaKey] : null;
+        const storyArea = (typeof STORY_DATA !== 'undefined' && areaKey && STORY_DATA.areas) ? STORY_DATA.areas[areaKey] : null;
+        const mapRank = Number(fixed?.shopRank || fixed?.encounterRank || fixed?.rank || storyArea?.rank || 1);
+        return Math.max(1, mapRank || 1);
+    },
+
+    initShop: () => {
+        const cfg = App?.data?.currentShop || { type: 'item', title: '道具屋', rank: Facilities.getCurrentAreaShopRank() };
+        cfg.type = cfg.type || 'item';
+        cfg.title = cfg.title || Facilities.shopTypeLabels[cfg.type] || '店';
+        cfg.rank = Math.max(1, Number(cfg.rank || Facilities.getCurrentAreaShopRank()) || 1);
+
+        const exitFn = "App.changeScene('field')";
+        const isItemShop = cfg.type === 'item';
+        const cmds = isItemShop
+            ? `<button class="menu-btn" style="background:#000; border:1px solid #fff; height:40px; color:#fff; grid-column:span 2;" onclick="Facilities.renderShopItems()">品物を見る</button>`
+            : `<button class="menu-btn" style="background:#000; border:1px solid #fff; height:40px; color:#fff; grid-column:span 2;" onclick="Facilities.refreshShopEquipStock(true)">品揃えを見直す</button>`;
+
+        Facilities.setupBaseLayout('shop-scene', cfg.title, '', cmds, exitFn);
+        const msg = document.getElementById('shop-scene-msg-content');
+        if (msg) {
+            msg.innerHTML = `
+                「いらっしゃいませ。近くの魔物に合わせた品を揃えています」<br><br>
+                <span style="color:#ffd700; font-weight:bold;">所持金: ${(App.data.gold || 0).toLocaleString()} Gold</span><br>
+                <span style="color:#aaa; font-size:11px;">取扱目安: Rank ${cfg.rank}</span>
+                <div id="shop-list" style="margin-top:12px;"></div>
+            `;
+        }
+
+        if (isItemShop) Facilities.renderShopItems();
+        else Facilities.renderShopEquip();
+    },
+
+    getItemShopLineup: (rank = 1) => {
+        const allowedTypes = new Set(['HP回復', 'MP回復', '状態異常回復', '蘇生', '移動']);
+        const maxRank = Math.max(1, Number(rank) || 1);
+        const items = (DB.ITEMS || [])
+            .filter(item => allowedTypes.has(item.type))
+            .filter(item => Number(item.price || 0) > 0)
+            .filter(item => Number(item.rank || 1) <= maxRank)
+            .sort((a, b) => (Number(a.rank || 0) - Number(b.rank || 0)) || (Number(a.id) - Number(b.id)));
+
+        // 移動アイテムは「道具屋」の明確な役割なので、低ランク店でも必ず扱えるようにする。
+        const travelItems = (DB.ITEMS || []).filter(item => item.type === '移動' && Number(item.price || 0) > 0);
+        travelItems.forEach(item => {
+            if (!items.some(existing => Number(existing.id) === Number(item.id))) items.push(item);
+        });
+        return items;
+    },
+
+    renderShopItems: () => {
+        const cfg = App?.data?.currentShop || { rank: Facilities.getCurrentAreaShopRank() };
+        const list = document.getElementById('shop-list') || document.getElementById('shop-scene-msg-content');
+        if (!list) return;
+        const items = Facilities.getItemShopLineup(cfg.rank);
+        if (items.length === 0) {
+            list.innerHTML = `<div style="padding:20px; color:#888; text-align:center;">今は売れる品がありません。</div>`;
+            return;
+        }
+        list.innerHTML = items.map(item => {
+            const cost = Number(item.price || 0);
+            return `<div style="border-bottom:1px solid #333; padding:10px 0;">
+                <div style="display:flex; justify-content:space-between; gap:8px; align-items:center;">
+                    <div>
+                        <div style="font-weight:bold; color:#fff;">${Facilities.escapeAttr(item.name)}</div>
+                        <div style="font-size:10px; color:#aaa;">${Facilities.escapeAttr(item.type)} / Rank ${Number(item.rank || 1)}</div>
+                    </div>
+                    <button class="btn" style="min-width:92px; height:32px; background:#000; border:1px solid #fff; color:#fff;" onclick="Facilities.buyShopItem(${Number(item.id)}, ${cost})">${cost.toLocaleString()}G</button>
+                </div>
+                <div style="font-size:11px; color:#888; margin-top:4px;">${Facilities.escapeAttr(item.desc || '')}</div>
+            </div>`;
+        }).join('');
+    },
+
+    buyShopItem: (itemId, cost) => {
+        const item = (DB.ITEMS || []).find(i => Number(i.id) === Number(itemId));
+        if (!item) return Menu.msg('その品物は見つかりません。');
+        const price = Math.max(0, Number(cost || item.price || 0));
+        if ((App.data.gold || 0) < price) return Menu.msg('ゴールドが 足りません。');
+        App.data.gold -= price;
+        App.data.items[item.id] = (App.data.items[item.id] || 0) + 1;
+        App.save();
+        Facilities.initShop();
+        Menu.msg(`${item.name}を 購入しました！`);
+    },
+
+    getEquipShopPrice: (eq) => {
+        // 装備売却額は inventory 側で val/2。販売額はその2倍なので val をそのまま採用する。
+        return Math.max(1, Math.floor(Number(eq?.val || 0)));
+    },
+
+    getEquipSummary: (eq) => {
+        if (!eq) return '';
+        const labels = { hp: 'HP', mp: 'MP', atk: '攻', def: '守', mag: '魔', mdef: '魔防', spd: '速', hit: '命中', eva: '回避', cri: '会心' };
+        const base = Object.entries(eq.data || {})
+            .filter(([, v]) => typeof v === 'number' && Number(v) !== 0)
+            .map(([k, v]) => `${labels[k] || k}${v > 0 ? '+' : ''}${v}`)
+            .slice(0, 7);
+        const opts = (eq.opts || []).map(o => `${o.label || o.key}${o.val > 0 ? '+' : ''}${o.val}${o.unit || ''}${o.rarity ? `(${o.rarity})` : ''}`);
+        const traits = (eq.traits || []).length > 0 ? [`特性${eq.traits.length}個`] : [];
+        return [...base, ...opts, ...traits].join(' / ');
+    },
+
+    refreshShopEquipStock: (force = false) => {
+        Facilities.shopStock = [];
+        Facilities.shopStockKey = null;
+        Facilities.renderShopEquip(force);
+    },
+
+    generateShopEquipmentStock: (type, rank, count = 6) => {
+        const stock = [];
+        const targetType = type === 'weapon' ? '武器' : 'armor';
+        const isTarget = (eq) => targetType === '武器' ? eq?.type === '武器' : Facilities.armorTypes.includes(eq?.type);
+        let attempts = 0;
+        while (stock.length < count && attempts < count * 80) {
+            attempts++;
+            const eq = App.createEquipByFloor('shop', rank, 2);
+            if (!isTarget(eq)) continue;
+            eq.shopPrice = Facilities.getEquipShopPrice(eq);
+            stock.push(eq);
+        }
+        // ランダム抽選の偏りで埋まらなかった場合の保険。
+        while (stock.length < count) {
+            const pool = (window.EQUIP_MASTER || []).filter(base => !base.noRandom)
+                .filter(base => targetType === '武器' ? base.type === '武器' : Facilities.armorTypes.includes(base.type))
+                .filter(base => Number(base.rank || 1) <= Math.max(1, Number(rank) || 1));
+            const base = pool[Math.floor(Math.random() * pool.length)] || (window.EQUIP_MASTER || [])[0];
+            const eq = base ? App.createEquipById(base.eid, 2) : App.createEquipByFloor('shop', rank, 2);
+            if (eq) {
+                eq.source = 'shop';
+                eq.shopPrice = Facilities.getEquipShopPrice(eq);
+                stock.push(eq);
+            } else break;
+        }
+        return stock;
+    },
+
+    renderShopEquip: () => {
+        const cfg = App?.data?.currentShop || { type: 'weapon', rank: Facilities.getCurrentAreaShopRank() };
+        const list = document.getElementById('shop-list') || document.getElementById('shop-scene-msg-content');
+        if (!list) return;
+        const stockKey = `${cfg.type}:${cfg.rank}:${cfg.openedAt || 0}`;
+        if (Facilities.shopStockKey !== stockKey || !Array.isArray(Facilities.shopStock)) {
+            Facilities.shopStock = Facilities.generateShopEquipmentStock(cfg.type, cfg.rank, 6);
+            Facilities.shopStockKey = stockKey;
+        }
+        if (Facilities.shopStock.length === 0) {
+            list.innerHTML = `<div style="padding:20px; color:#888; text-align:center;">今は売れる装備がありません。</div>`;
+            return;
+        }
+        list.innerHTML = `
+            <div style="font-size:11px; color:#aaa; margin-bottom:8px; line-height:1.5;">
+                すべて +2 / 効果ランダム。販売額は売却額の2倍相当です。<br>
+                品揃えは入店ごとに変わります。
+            </div>
+            ${Facilities.shopStock.map((eq, index) => {
+                const cost = Facilities.getEquipShopPrice(eq);
+                return `<div style="border-bottom:1px solid #333; padding:10px 0;">
+                    <div style="display:flex; justify-content:space-between; gap:8px; align-items:center;">
+                        <div>
+                            <div style="font-weight:bold; color:#fff;">${Facilities.escapeAttr(eq.name)}</div>
+                            <div style="font-size:10px; color:#aaa;">${Facilities.escapeAttr(eq.type)} / Rank ${Number(eq.rank || 1)} / 売却目安 ${Math.floor(cost / 2).toLocaleString()}G</div>
+                        </div>
+                        <button class="btn" style="min-width:92px; height:32px; background:#000; border:1px solid #fff; color:#fff;" onclick="Facilities.buyShopEquip(${index})">${cost.toLocaleString()}G</button>
+                    </div>
+                    <div style="font-size:11px; color:#888; margin-top:4px;">${Facilities.escapeAttr(Facilities.getEquipSummary(eq))}</div>
+                </div>`;
+            }).join('')}
+        `;
+    },
+
+    buyShopEquip: (index) => {
+        const eq = Facilities.shopStock && Facilities.shopStock[index];
+        if (!eq) return Menu.msg('その装備は見つかりません。');
+        const price = Facilities.getEquipShopPrice(eq);
+        if ((App.data.gold || 0) < price) return Menu.msg('ゴールドが 足りません。');
+        App.data.gold -= price;
+        const purchased = JSON.parse(JSON.stringify(eq));
+        purchased.id = Date.now() + Math.random().toString(36).substring(2);
+        purchased.source = 'shop';
+        delete purchased.shopPrice;
+        App.data.inventory.push(purchased);
+        Facilities.shopStock.splice(index, 1);
+        App.save();
+        Facilities.initShop();
+        Menu.msg(`${purchased.name}を 購入しました！`);
+    },
+
     // --- 3. カジノ ---
     initCasino: () => {
         if (typeof App !== 'undefined' && typeof App.requireFeatureUnlocked === 'function' && !App.requireFeatureUnlocked('casino')) return;
@@ -317,7 +531,7 @@ const Facilities = {
         const cmds = `
             <button class="menu-btn" style="background:#000; border:1px solid #4af; height:40px; color:#fff;" onclick="Casino.openGameSelect('gem')">GEMを賭ける</button>
             <button class="menu-btn" style="background:#000; border:1px solid #ffd700; height:40px; color:#fff;" onclick="Casino.openGameSelect('gold')">GOLDを賭ける</button>
-            <button class="menu-btn" style="background:#000; border:1px solid #fff; height:40px; color:#fff;" onclick="Facilities.openCasinoShop()">道具を買う</button>
+            <button class="menu-btn" style="background:#000; border:1px solid #fff; height:40px; color:#fff;" onclick="Facilities.openCasinoExchange()">ジェム交換所</button>
         `;
         Facilities.setupBaseLayout('casino-scene', 'カジノ', 'facility_bg_casino', cmds, exitFn);
         document.getElementById('casino-scene-msg-content').innerHTML = `
@@ -327,27 +541,87 @@ const Facilities = {
         `;
     },
 
-    openCasinoShop: () => {
-        const floor = (App.data.dungeon && App.data.dungeon.maxFloor) ? App.data.dungeon.maxFloor : 0;
-        const items = DB.ITEMS.filter(i => i.rank <= floor && i.type !== '貴重品' && i.type !== '乗り物');
-        let html = "";
-        items.forEach(it => {
-            const cost = it.price || 0;
-            html += `<div style="border-bottom: 1px solid #333; padding: 10px 0;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;">
-                    <div style="font-weight:bold; font-size:13px; color:#fff;">${it.name}</div>
-                    <button class="btn" style="min-width:85px; height:30px; border:1px solid #fff; background:#000;" onclick="Facilities.buyCasItem(${it.id}, ${cost})">${cost.toLocaleString()} Gold</button>
-                </div>
-                <div style="font-size:10px; color:#888;">${it.desc}</div>
-            </div>`;
-        });
-        Facilities.showModal('casino-scene', "道具屋", html);
+    casinoExchangeLineup: [
+        { kind: 'item', itemId: 106, qty: 1, cost: 500, label: 'スキルのたね', desc: 'SPを1増やす希少な種' },
+        { kind: 'item', itemId: 107, qty: 1, cost: 5000, label: '転生の実', desc: '能力を維持してLv1に戻る禁断の実' },
+        { kind: 'item', itemId: 6, qty: 1, cost: 2500, label: '世界樹の雫', desc: '味方全員のHPを全回復する高級回復品' },
+        { kind: 'item', itemId: 7, qty: 1, cost: 1500, label: 'エルフの飲み薬', desc: 'MPを全回復する高級回復品' },
+        { kind: 'equip', category: 'weapon', rank: 70, plus: 3, cost: 8000, label: '希少武器+3', desc: 'Rank70相当のランダム武器+3' },
+        { kind: 'equip', category: 'armor', rank: 70, plus: 3, cost: 8000, label: '希少防具+3', desc: 'Rank70相当のランダム防具+3' },
+        { kind: 'equip', category: 'weapon', rank: 100, plus: 3, cost: 20000, label: '英雄武器+3', desc: 'Rank100相当のランダム武器+3' },
+        { kind: 'equip', category: 'armor', rank: 100, plus: 3, cost: 20000, label: '英雄防具+3', desc: 'Rank100相当のランダム防具+3' }
+    ],
+
+    openCasinoExchange: () => {
+        const gems = App.data.gems || 0;
+        const html = `
+            <div style="font-size:11px; color:#aaa; margin-bottom:10px; line-height:1.5;">
+                カジノで得たGEMを、希少品と交換できます。<br>
+                <span style="color:#4af; font-weight:bold;">所持GEM: ${gems.toLocaleString()}</span>
+            </div>
+            ${Facilities.casinoExchangeLineup.map((reward, index) => {
+                const disabled = gems < reward.cost ? 'disabled' : '';
+                const color = gems < reward.cost ? '#666' : '#fff';
+                return `<div style="border-bottom:1px solid #333; padding:10px 0;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                        <div>
+                            <div style="font-weight:bold; color:#fff;">${Facilities.escapeAttr(reward.label)}</div>
+                            <div style="font-size:10px; color:#aaa;">${Facilities.escapeAttr(reward.desc || '')}</div>
+                        </div>
+                        <button class="btn" style="min-width:92px; height:32px; border:1px solid #4af; background:#000; color:${color};" ${disabled} onclick="Facilities.exchangeCasinoReward(${index})">${reward.cost.toLocaleString()}GEM</button>
+                    </div>
+                </div>`;
+            }).join('')}
+        `;
+        Facilities.showModal('casino-scene', 'ジェム交換所', html);
     },
 
-    buyCasItem: (id, cost) => {
-        if(App.data.gold < cost) return Menu.msg("ゴールドが 足りません。");
-        App.data.gold -= cost; App.data.items[id] = (App.data.items[id] || 0) + 1;
-        App.save(); Menu.msg("購入しました！");
+    createCasinoExchangeEquip: (reward) => {
+        const category = reward.category === 'weapon' ? 'weapon' : 'armor';
+        const targetType = category === 'weapon' ? '武器' : 'armor';
+        const isTarget = (eq) => targetType === '武器' ? eq?.type === '武器' : Facilities.armorTypes.includes(eq?.type);
+        let eq = null;
+        let attempts = 0;
+        while ((!eq || !isTarget(eq)) && attempts < 80) {
+            eq = App.createEquipByFloor('casinoExchange', reward.rank || 70, reward.plus || 3);
+            attempts++;
+        }
+        if (!eq || !isTarget(eq)) {
+            const pool = (window.EQUIP_MASTER || []).filter(base => !base.noRandom)
+                .filter(base => targetType === '武器' ? base.type === '武器' : Facilities.armorTypes.includes(base.type))
+                .filter(base => Number(base.rank || 1) <= Math.max(1, Number(reward.rank || 70)));
+            const base = pool[Math.floor(Math.random() * pool.length)] || null;
+            eq = base ? App.createEquipById(base.eid, reward.plus || 3) : null;
+        }
+        if (eq) eq.source = 'casinoExchange';
+        return eq;
+    },
+
+    exchangeCasinoReward: (index) => {
+        const reward = Facilities.casinoExchangeLineup[index];
+        if (!reward) return Menu.msg('その景品は見つかりません。');
+        if ((App.data.gems || 0) < reward.cost) return Menu.msg('GEMが 足りません。');
+
+        let name = reward.label;
+        let itemToAdd = null;
+        let equipToAdd = null;
+        if (reward.kind === 'item') {
+            itemToAdd = (DB.ITEMS || []).find(i => Number(i.id) === Number(reward.itemId));
+            if (!itemToAdd) return Menu.msg('その景品は準備できませんでした。');
+            name = itemToAdd.name;
+        } else if (reward.kind === 'equip') {
+            equipToAdd = Facilities.createCasinoExchangeEquip(reward);
+            if (!equipToAdd) return Menu.msg('その景品は準備できませんでした。');
+            name = equipToAdd.name;
+        }
+
+        App.data.gems -= reward.cost;
+        if (itemToAdd) App.data.items[itemToAdd.id] = (App.data.items[itemToAdd.id] || 0) + (reward.qty || 1);
+        if (equipToAdd) App.data.inventory.push(equipToAdd);
+
+        App.save();
+        Facilities.openCasinoExchange();
+        Menu.msg(`${name}を 交換しました！`);
     }
 };
 

@@ -493,6 +493,9 @@ const Battle = {
             if (fixedRank) floor = Math.max(1, Number(fixedRank) || floor);
         }
         const battleData = App.data.battle || {};
+        if (!isBoss && battleData.encounterRank) {
+            floor = Math.max(1, Number(battleData.encounterRank) || floor);
+        }
         const targetId = fixedBossId !== null && fixedBossId !== undefined ? fixedBossId : battleData.fixedBossId;
         const isSpecialBossBattle = !!(battleData.isSpecialBoss || battleData.isEstark);
         const normalCount = 1 + Math.floor(Math.random() * 4);
@@ -3852,7 +3855,7 @@ findNextActor: () => {
 				
 				// 2. 装備ドロップ判定 (独立)
 				const isBoss = !!(base.isBoss || e.isBoss);
-				const equipChance = isBoss ? 100 : 30; 
+				const equipChance = isBoss ? 100 : 8; 
 				if (Math.random() * 100 < equipChance) {
 					let eq;
 					if (isBoss && Math.random() < 0.02) {
@@ -3874,7 +3877,7 @@ findNextActor: () => {
 						// 超レア演出用の type: 'kai'
 						drops.push({ name: eq.name, isRare: true, type: 'kai', kind: 'equip' });
 					} else {
-						let fixedPlus = isBoss ? 3 : (Math.random() * 100 < (10 + bonusPlus3) ? 3 : null);
+						let fixedPlus = isBoss ? 3 : (Math.random() * 100 < (10 + bonusPlus3) ? 3 : 2);
 						eq = App.createEquipByFloor('drop', rewardFloor, fixedPlus);
 						const isPlus3 = (eq.plus === 3);
 						if (isPlus3 || isBoss) hasRareDrop = true;
