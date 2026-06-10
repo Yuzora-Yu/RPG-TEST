@@ -839,7 +839,7 @@ const StoryManager = {
                 },
                 {
                         "name": "システム",
-                        "text": "火のプリズムの残光が、かろうじて仲間たちの傷を癒やした。"
+                        "text": "火のプリズムの間に、再び黒ずんだ炎が渦巻いている。"
                 }
         ],
         "FIRE_VOLCANO_CLEAR": [
@@ -2940,18 +2940,36 @@ const StoryManager = {
         "fire_volcano_soldiers_encounter": {
                 "actions": [
                         {
-                                "type": "CONV",
-                                "value": "FIRE_VOLCANO_SOLDIERS"
-                        },
-                        {
-                                "type": "BOSS",
-                                "value": [
-                                        301002,
-                                        301001,
-                                        301001,
-                                        301001
+                                "type": "IF_FLAG",
+                                "key": "fireVolcanoSoldiersCleared",
+                                "then": [
+                                        {
+                                                "type": "CONV",
+                                                "value": "FIRE_VOLCANO_GLAD_RETRY"
+                                        },
+                                        {
+                                                "type": "BOSS",
+                                                "value": 301010,
+                                                "winEventId": "fire_volcano_glad_clear"
+                                        }
                                 ],
-                                "winEventId": "fire_volcano_soldiers_clear"
+                                "else": [
+                                        {
+                                                "type": "CONV",
+                                                "value": "FIRE_VOLCANO_SOLDIERS"
+                                        },
+                                        {
+                                                "type": "BOSS",
+                                                "value": [
+                                                        301002,
+                                                        301001,
+                                                        301001,
+                                                        301001
+                                                ],
+                                                "winEventId": "fire_volcano_soldiers_clear",
+                                                "deferFixedBossDefeat": true
+                                        }
+                                ]
                         }
                 ],
                 "winActions": []
@@ -2963,10 +2981,13 @@ const StoryManager = {
                                 "value": "FIRE_VOLCANO_GLAD"
                         },
                         {
+                                "type": "FLAG",
+                                "key": "fireVolcanoSoldiersCleared"
+                        },
+                        {
                                 "type": "BOSS",
                                 "value": 301010,
-                                "winEventId": "fire_volcano_glad_clear",
-                                "lossEventId": "fire_volcano_glad_retry"
+                                "winEventId": "fire_volcano_glad_clear"
                         }
                 ],
                 "winActions": []
@@ -2978,11 +2999,9 @@ const StoryManager = {
                                 "value": "FIRE_VOLCANO_GLAD_RETRY"
                         },
                         {
-                                "type": "HEAL"
-                        },
-                        {
-                                "type": "LOG",
-                                "value": "火のプリズムの前で体勢を立て直した。"
+                                "type": "BOSS",
+                                "value": 301010,
+                                "winEventId": "fire_volcano_glad_clear"
                         }
                 ],
                 "winActions": []
@@ -3871,6 +3890,19 @@ const StoryManager = {
             }
         }
 
+        if (action.type === 'IF_FLAG' || action.type === 'IF') {
+            const key = action.key || action.flag || action.value;
+            const expected = action.state !== undefined ? !!action.state : true;
+            const actual = key ? !!(data.flags && data.flags[key]) : false;
+            const branch = (actual === expected) ? action.then : (action.else || action.otherwise);
+            if (Array.isArray(branch)) {
+                for (const sub of branch) {
+                    const res = await this.processAction(sub, eventId);
+                    if (res === 'BREAK') return 'BREAK';
+                }
+            }
+        }
+
         if (action.type === 'CHOICE') {
             const isYes = await this.showChoice(action.text);
             const branch = isYes ? action.yes : action.no;
@@ -3920,6 +3952,7 @@ const StoryManager = {
 			bossStatMultiplier: action.bossStatMultiplier || action.bossScale || null,
 			isSpecialBoss: isSpecialBoss,
 			isEstark: isSpecialBoss,
+			suppressFixedBossDefeat: !!(action.suppressFixedBossDefeat || action.deferFixedBossDefeat || action.markFixedBossDefeated === false),
 			eventId: eventId,
 			fixedKeyReward: keyRewardColors.length > 0 ? {
 				colors: keyRewardColors,

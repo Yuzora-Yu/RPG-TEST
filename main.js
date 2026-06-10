@@ -331,7 +331,7 @@ const App = {
         teleport: true,
         casino: true,
         medalKing: true,
-        boat: true,
+        boat: false,
         wing: true,
         fixedDungeonEndless: true
     },
@@ -408,8 +408,8 @@ const App = {
             progress: { 
                 floor: 0, 
                 storyStep: 0, 
-                flags: {}, 
-                unlocked: App.getDefaultUnlockState(),
+                flags: { hasShip: false }, 
+                unlocked: { ...App.getDefaultUnlockState(), boat: false },
                 clearedDungeons: [],
                 openedChests: {},  
                 defeatedBosses: {},
@@ -2057,6 +2057,12 @@ load: () => {
 	createGameData: (imgSrc) => {
         const name = document.getElementById('player-name').value || 'アルス';
         App.data = JSON.parse(JSON.stringify(INITIAL_DATA_TEMPLATE));
+        if (!App.data.progress) App.data.progress = {};
+        if (!App.data.progress.flags || typeof App.data.progress.flags !== 'object' || Array.isArray(App.data.progress.flags)) App.data.progress.flags = {};
+        App.data.progress.flags.hasShip = false;
+        if (!App.data.progress.unlocked || typeof App.data.progress.unlocked !== 'object' || Array.isArray(App.data.progress.unlocked)) App.data.progress.unlocked = {};
+        App.data.progress.unlocked.boat = false;
+        App.data.transportMode = null;
         App.data.characters[0].name = name;
         const heroMaster = (window.CHARACTERS_DATA || []).find(c => c.id === 301);
         if (imgSrc) {
@@ -2291,6 +2297,8 @@ load: () => {
 	// --- ここから：装備加算本体（旧CONST.PARTSループの代わり） ---
 	for (const eq of allEquips) {
 		// 固定値・マスタ定義の加算
+		if (eq.data.hp)   s.maxHp += eq.data.hp;
+		if (eq.data.mp)   s.maxMp += eq.data.mp;
 		if (eq.data.atk)  s.atk  += eq.data.atk;
 		if (eq.data.def)  s.def  += eq.data.def;
 		if (eq.data.mdef) s.mdef += eq.data.mdef;
@@ -2629,7 +2637,7 @@ load: () => {
                 let incMag  = Math.max(1, Math.floor(((growthRef.mag || master.mag || 10) * reincMult) * r() * magMult));
 
                 const growthBonusLogs = [];
-                const applyGrowthBonus = (keys, mult, label) => {
+                const applyGrowthBonus = (keys, mult, label, options = {}) => {
                     keys.forEach(key => {
                         if (key === 'hp') incHp = Math.max(1, Math.floor(incHp * mult));
                         if (key === 'mp') incMp = Math.max(1, Math.floor(incMp * mult));
@@ -2639,15 +2647,26 @@ load: () => {
                         if (key === 'spd') incSpd = Math.max(1, Math.floor(incSpd * mult));
                         if (key === 'mag') incMag = Math.max(1, Math.floor(incMag * mult));
                     });
-                    growthBonusLogs.push(`${label} x${mult.toFixed(1)} (${keys.join(', ')})`);
+                    if (options.log !== false) {
+                        growthBonusLogs.push(`${label} x${mult.toFixed(1)} (${keys.join(', ')})`);
+                    }
                 };
 
                 if (charData.level === 50 || charData.level === 100) {
                     applyGrowthBonus(['hp', 'mp', 'atk', 'def', 'mdef', 'spd', 'mag'], 2 + Math.random(), `Lv${charData.level}成長ボーナス`);
                 } else if (Math.random() < 0.12) {
                     const keys = ['hp', 'mp', 'atk', 'def', 'mdef', 'spd', 'mag'].sort(() => Math.random() - 0.5).slice(0, Math.random() < 0.25 ? 2 : 1);
-                    applyGrowthBonus(keys, 2 + Math.random(), 'ひらめき成長');
+                    applyGrowthBonus(keys, 2 + Math.random(), 'ひらめき成長', { log: false });
                 }
+
+                const bonusRand = (min, max) => min + Math.floor(Math.random() * (max - min + 1));
+                incHp += bonusRand(2, 4);
+                incMp += bonusRand(2, 4);
+                incAtk += bonusRand(0, 2);
+                incDef += bonusRand(0, 2);
+                incMdef += bonusRand(0, 2);
+                incSpd += bonusRand(0, 2);
+                incMag += bonusRand(0, 2);
 
                 // ステータス加算
                 charData.hp += incHp;

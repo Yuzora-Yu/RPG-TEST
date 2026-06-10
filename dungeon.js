@@ -515,14 +515,27 @@ const Dungeon = {
             const areaKey = Field.getCurrentAreaKey ? Field.getCurrentAreaKey() : (mapDef.areaKey || App.data.location.area);
             const progressKey = Dungeon.getFixedProgressKey(areaKey);
             const posKey = `${x},${y}`;
-            const defeated = App.data.progress.defeatedBosses?.[progressKey]?.includes(posKey);
+            let defeated = App.data.progress.defeatedBosses?.[progressKey]?.includes(posKey);
+            const flags = App.data?.progress?.flags || {};
+
+            // イグナ火山の兵士戦→グラド戦は同一ボスタイル上の連戦。
+            // 旧データで兵士戦勝利時にタイルだけ討伐済みになっていた場合も、
+            // 火のプリズム未復旧ならグラド再戦用タイルとして復旧する。
+            const isIgnisGladRetryTile = bossDef?.startEventId === 'fire_volcano_soldiers_encounter' &&
+                !flags.firePrismRestored &&
+                Number(App.data.progress?.storyStep || 0) === 2 &&
+                Number(App.data.progress?.subStep || 0) >= 3;
+            if (defeated && isIgnisGladRetryTile) {
+                App.data.progress.defeatedBosses[progressKey] = (App.data.progress.defeatedBosses[progressKey] || []).filter(key => key !== posKey);
+                flags.fireVolcanoSoldiersCleared = true;
+                defeated = false;
+                if (typeof App.save === 'function') App.save();
+            }
 
             if (defeated) {
                 App.clearAction();
                 return true;
             }
-
-            const flags = App.data?.progress?.flags || {};
             if (bossDef?.requiredFlag && !flags[bossDef.requiredFlag]) {
                 // ストーリー進行前の固定ボスは、存在しない床として扱う。
                 // 例: 大灯台は入れるが、雷の要塞クリア前は結界炉・頂上ボスが出現しない。
@@ -532,12 +545,16 @@ const Dungeon = {
 
             logIfNeeded(bossDef?.inspectLog || 'ただならぬ気配が立ちはだかっている。');
 
+            const actionLabel = (isIgnisGladRetryTile && flags.fireVolcanoSoldiersCleared)
+                ? 'グラドに挑む'
+                : (bossDef?.actionLabel || null);
+
             if (bossDef?.startEventId && typeof StoryManager !== 'undefined' && typeof StoryManager.executeEvent === 'function') {
-                App.setAction(bossDef.actionLabel || '対峙する', () => StoryManager.executeEvent(bossDef.startEventId));
+                App.setAction(actionLabel || '対峙する', () => StoryManager.executeEvent(bossDef.startEventId));
                 return true;
             }
 
-            App.setAction(bossDef?.actionLabel || 'ボスと戦う', () => Dungeon.startFixedBoss(x, y));
+            App.setAction(actionLabel || 'ボスと戦う', () => Dungeon.startFixedBoss(x, y));
             return true;
         }
 
@@ -1320,6 +1337,14 @@ const Dungeon = {
             const maxHp = Math.max(1, Number(stats.maxHp || c.hp || c.currentHp || 1));
             const damage = Math.max(1, Math.floor(maxHp * 0.03));
             const current = Number(c.currentHp ?? c.hp ?? maxHp);
+
+            // HP0の仲間は戦闘不能のまま維持する。
+            // 「溶岩で死なない」処理は、生存者だけをHP1で踏みとどまらせる。
+            if (current <= 0) {
+                c.currentHp = 0;
+                return;
+            }
+
             c.currentHp = Math.max(1, current - damage);
             damaged = true;
         });
@@ -2789,6 +2814,9 @@ const Dungeon = {
 
 		// 1. 固定マップ（試練の洞窟など）の場合
 		if (isFixed) {
+            if (App.data.battle?.suppressFixedBossDefeat) {
+                return;
+            }
 			const areaKey = Field.getCurrentAreaKey();
 			const progressKey = Dungeon.getFixedProgressKey(areaKey);
 			const posKey = `${Field.x},${Field.y}`;

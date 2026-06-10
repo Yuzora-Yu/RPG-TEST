@@ -280,8 +280,8 @@ const INITIAL_DATA_TEMPLATE = {
     progress: { 
         floor: 0,
         storyStep: 0,        // ストーリー進行フラグ
-        flags: {},           // イベント個別フラグ (hasShip 等)
-        unlocked: { smith: false, gacha: false }, // 機能解放
+        flags: { hasShip: false },           // イベント個別フラグ (hasShip 等)
+        unlocked: { smith: false, gacha: false, boat: false }, // 機能解放
         clearedDungeons: []  // 攻略済みエリア
     },
     characters: [

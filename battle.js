@@ -907,7 +907,7 @@ findNextActor: () => {
     },
 
     makeAutoAttackAction: (actor, target = null) => {
-        const enemyTarget = target || Battle.getRandomAliveEnemy();
+        const enemyTarget = target || Battle.getWeakWeightedAliveEnemy();
         if (enemyTarget) return { type: 'attack', actor, target: enemyTarget, isAuto: true };
         return { type: 'defend', actor, isAuto: true };
     },
@@ -932,7 +932,7 @@ findNextActor: () => {
         if (skill.target === 'ランダム') return 'random';
         if (skill.target === '自分') return actor;
         if (support) return preferredTarget || actor;
-        return preferredTarget || Battle.getRandomAliveEnemy();
+        return preferredTarget || Battle.getWeakWeightedAliveEnemy();
     },
 
     makeAutoSkillAction: (actor, skill, target = null) => {
@@ -1109,7 +1109,7 @@ findNextActor: () => {
         const support = pool.filter(s => !Battle.isAutoOffensiveSkill(s));
         if (offensive.length === 0) {
             const s = support[Math.floor(Math.random() * support.length)];
-            return s ? { type: 'skill', skill: s } : { type: 'attack', target: Battle.getRandomAliveEnemy() };
+            return s ? { type: 'skill', skill: s } : { type: 'attack', target: Battle.getWeakWeightedAliveEnemy() };
         }
 
         const totalEnemyHp = aliveEnemies.reduce((sum, e) => sum + Math.max(0, e.hp || 0), 0);
@@ -1138,7 +1138,7 @@ findNextActor: () => {
             return { skill, target, cost, value, efficiency, overkill };
         }).filter(c => c.cost <= (actor.mp || 0));
 
-        if (candidates.length === 0) return { type: 'attack', target: Battle.getRandomAliveEnemy() };
+        if (candidates.length === 0) return { type: 'attack', target: Battle.getWeakWeightedAliveEnemy() };
 
         candidates.sort((a, b) => {
             if (b.efficiency !== a.efficiency) return b.efficiency - a.efficiency;
@@ -1149,23 +1149,23 @@ findNextActor: () => {
 
         // MPが少ないときは、ボス級/高HPでない限り攻撃スキルを温存
         if (mpRatio <= 0.25 && !hasBossLike) {
-            return { type: 'attack', target: Battle.getRandomAliveEnemy() };
+            return { type: 'attack', target: Battle.getWeakWeightedAliveEnemy() };
         }
 
         // 節約ONでは、通常攻撃と大差ない攻撃スキルは使わない
         const normalValue = aliveEnemies.length >= 2 ? normalAttack * Math.min(2, aliveEnemies.length) : normalAttack;
         if (best.value <= normalValue * 1.35 && !hasBossLike) {
-            return { type: 'attack', target: Battle.getRandomAliveEnemy() };
+            return { type: 'attack', target: Battle.getWeakWeightedAliveEnemy() };
         }
 
         // 残MPに対して重すぎる技は、明確に強い場面以外では温存
         if (best.cost > mpMax * 0.30 && best.value < normalValue * 2.2 && !hasBossLike) {
-            return { type: 'attack', target: Battle.getRandomAliveEnemy() };
+            return { type: 'attack', target: Battle.getWeakWeightedAliveEnemy() };
         }
 
         // 過剰オーバーキル気味なら通常攻撃へ寄せる
         if (best.overkill > normalAttack * 2 && best.value < normalValue * 2.0 && !hasBossLike) {
-            return { type: 'attack', target: Battle.getRandomAliveEnemy() };
+            return { type: 'attack', target: Battle.getWeakWeightedAliveEnemy() };
         }
 
         return { type: 'skill', skill: best.skill, target: best.skill.target === '単体' ? best.target : null };
@@ -3129,6 +3129,29 @@ findNextActor: () => {
         if (alive.length === 0) return null;
         return alive[Math.floor(Math.random() * alive.length)];
     },
+
+    getWeakWeightedAliveEnemy: () => {
+        const alive = Battle.enemies.filter(e => !e.isDead && !e.isFled);
+        if (alive.length === 0) return null;
+        if (alive.length === 1) return alive[0];
+
+        // 味方オート用。HP割合が低い敵ほど重くしつつ、完全固定にはしない。
+        const weighted = alive.map(e => {
+            const maxHp = Math.max(1, Number(e.baseMaxHp || e.maxHp || e.hp || 1));
+            const ratio = Math.max(0.01, Math.min(1, Number(e.hp || 0) / maxHp));
+            const hpRankBias = Math.max(0, maxHp - Number(e.hp || 0)) / maxHp;
+            const weight = 1 + Math.pow(1 - ratio, 2) * 8 + hpRankBias * 3;
+            return { enemy: e, weight };
+        });
+
+        const total = weighted.reduce((sum, item) => sum + item.weight, 0);
+        let roll = Math.random() * total;
+        for (const item of weighted) {
+            roll -= item.weight;
+            if (roll <= 0) return item.enemy;
+        }
+        return weighted[weighted.length - 1].enemy;
+    },
 	
 	saveBattleState: () => { 
         const isB = App.data.battle.isBossBattle; 
@@ -3141,6 +3164,7 @@ findNextActor: () => {
         const fixedStoryEventId = App.data.battle.fixedStoryEventId || null;
         const keyReward = App.data.battle.keyReward || App.data.battle.fixedKeyReward || null;
         const bossStatMultiplier = App.data.battle.bossStatMultiplier || App.data.battle.bossScale || null;
+        const suppressFixedBossDefeat = !!App.data.battle.suppressFixedBossDefeat;
         
         App.data.battle.enemies = Battle.enemies.filter(e => !e.isFled).map(e => ({ 
             baseId: e.baseId || e.id, hp: e.hp, maxHp: e.baseMaxHp, name: e.name, rank: e.rank, generatedFloor: e.generatedFloor, isBoss: e.isBoss, isRare: e.isRare, isSpecialBoss: e.isSpecialBoss, isEstark: e.isEstark, battleStatus: e.battleStatus 
@@ -3157,6 +3181,7 @@ findNextActor: () => {
         if (storyLossEventId) App.data.battle.storyLossEventId = storyLossEventId;
         if (fixedStoryEventId) App.data.battle.fixedStoryEventId = fixedStoryEventId;
         if (bossStatMultiplier) App.data.battle.bossStatMultiplier = bossStatMultiplier;
+        if (suppressFixedBossDefeat) App.data.battle.suppressFixedBossDefeat = true;
         
         Battle.party.forEach(p => { 
             const d = App.getChar(p.uid); 
