@@ -391,8 +391,7 @@ const StoryManager = {
 	scripts: {
         "GAME_START_1": [
                 {
-                        "charId": 1000,
-                        "name": "",
+                        "name": "システム",
                         "text": "……夜明け前。\n村には、不吉な気配が満ちていた。"
                 },
                 {
@@ -406,8 +405,7 @@ const StoryManager = {
                         "text": "きゃあああっ！！"
                 },
                 {
-                        "charId": 1000,
-                        "name": "",
+                        "name": "システム",
                         "text": "子供が魔物に襲われている！"
                 }
         ],
@@ -418,8 +416,7 @@ const StoryManager = {
                         "text": "[N:301]よ、まだ倒れてはなりません。\n私に残された最後の権能をもって、今一度、深淵を打ち倒す力を授けます…"
                 },
                 {
-                        "charId": 1000,
-                        "name": "",
+                        "name": "システム",
                         "text": "不思議なちからで体力が全回復し、秘められた力が開放された！！"
                 }
         ],
@@ -435,8 +432,7 @@ const StoryManager = {
                         "text": "……その腕前、ただ者ではありますまい。\nお願いがあるのです。村の奥の家まで来てくだされ。"
                 },
                 {
-                        "charId": 1000,
-                        "name": "",
+                        "name": "システム",
                         "text": "こうして、深淵との長い戦いが始まった——。"
                 }
         ],
@@ -472,9 +468,8 @@ const StoryManager = {
                         "text": "化け物は村北東の大穴の奥に…\nよろしくお願い申し上げる。"
                 },
                 {
-                        "charId": 1000,
                         "name": "システム",
-                        "text": "村のガイルとサラが仲間に加わった！"
+                        "text": "村の[N:109]と[N:110]が仲間に加わった！"
                 }
         ],
         "PROLOGUE2": [
@@ -629,7 +624,7 @@ const StoryManager = {
                 {
                         "name": "主人公",
                         "text": "この国で何かが進んでいます。次の手がかりを追います。",
-                "charId": 301
+                        "charId": 301
                 },
                 {
                         "name": "里の長",
@@ -756,6 +751,155 @@ const StoryManager = {
                 {
                         "name": "システム",
                         "text": "[N:306]が仲間に加わった！"
+                }
+        ],
+        "TOWN_START_VILLAGER_1": [
+                {
+                        "name": "村人",
+                        "text": "北東の穴は、昨日まで\nただの草地だったんだ。",
+                        "charId": 1003
+                },
+                {
+                        "name": "村人",
+                        "text": "世界が裂ける音なんて、\n本当にあるんだな……。",
+                        "charId": 1003
+                }
+        ],
+        "TOWN_START_VILLAGER_2": [
+                {
+                        "name": "村の若者",
+                        "text": "俺も戦えたらと思った。\nでも足が震えちまってさ。",
+                        "charId": 1002
+                },
+                {
+                        "name": "村の若者",
+                        "text": "あんた達が進むなら、\nせめて道具は運ばせてくれ。",
+                        "charId": 1002
+                }
+        ],
+        "TOWN_FIRE_VILLAGER_1": [
+                {
+                        "name": "鍛冶師",
+                        "text": "炉の火は戻った。\nだが火山の息は荒いままだ。",
+                        "charId": 1002
+                },
+                {
+                        "name": "鍛冶師",
+                        "text": "奥へ行くなら、\n風を味方につけるんだな。",
+                        "charId": 1002
+                }
+        ],
+        "TOWN_FIRE_VILLAGER_2": [
+                {
+                        "name": "里人",
+                        "text": "昔は森の風穴の聖水で、\n火山の怒りを鎮めたそうだ。",
+                        "charId": 1003
+                },
+                {
+                        "name": "里人",
+                        "text": "妖精の泉は迷い道の奥。\n風を恐れた者は辿り着けん。",
+                        "charId": 1003
+                }
+        ],
+        "TOWN_WIND_VILLAGER_1": [
+                {
+                        "name": "見張り",
+                        "text": "森の上に黒い風が残る。\nあれは自然の風じゃない。",
+                        "charId": 1002
+                },
+                {
+                        "name": "見張り",
+                        "text": "奥へ行くなら気をつけろ。\n歩く影が混じっている。",
+                        "charId": 1002
+                }
+        ],
+        "TOWN_WIND_VILLAGER_2": [
+                {
+                        "name": "集落の子",
+                        "text": "風鈴が鳴らない日は、\n森が怒ってる日なんだって。",
+                        "charId": 1003
+                },
+                {
+                        "name": "集落の子",
+                        "text": "でも今日は少し鳴ったよ。\nきっと、良くなるよね。",
+                        "charId": 1003
+                }
+        ],
+        "TOWN_WATER_VILLAGER_1": [
+                {
+                        "name": "老人",
+                        "text": "雷の要塞には、かつて\n二人の大騎士がいた。",
+                        "charId": 1003
+                },
+                {
+                        "name": "老人",
+                        "text": "最強の刃レナード。\n最強の盾ジョセフ。",
+                        "charId": 1003
+                },
+                {
+                        "name": "老人",
+                        "text": "二人が並ぶ時、\n要塞は落ちぬと言われたよ。",
+                        "charId": 1003
+                }
+        ],
+        "TOWN_WATER_VILLAGER_2": [
+                {
+                        "name": "船大工",
+                        "text": "水路は嘘をつかねえ。\n濁りは必ず上流から来る。",
+                        "charId": 1002
+                },
+                {
+                        "name": "船大工",
+                        "text": "海底神殿の奥には、\nまだ変な流れが残ってるぜ。",
+                        "charId": 1002
+                }
+        ],
+        "TOWN_WATER_VILLAGER_3": [
+                {
+                        "name": "元兵士",
+                        "text": "ジョセフ様の盾は、\n退くための盾じゃなかった。",
+                        "charId": 1002
+                },
+                {
+                        "name": "元兵士",
+                        "text": "誰かが一歩進むために、\n全てを受け止める盾だった。",
+                        "charId": 1002
+                }
+        ],
+        "POST_THUNDER_FORT_BASE_1": [
+                {
+                        "name": "解放兵",
+                        "text": "要塞に人の声が戻った。\nまだ信じられないよ。",
+                        "charId": 1002
+                },
+                {
+                        "name": "解放兵",
+                        "text": "レナード様の刃も、\nジョセフ様の盾も本物だった。",
+                        "charId": 1002
+                }
+        ],
+        "POST_LIGHT_PALACE_BASE_1": [
+                {
+                        "name": "巡礼者",
+                        "text": "割れた光を拾っているの。\nまた祈れる場所にしたくて。",
+                        "charId": 1003
+                },
+                {
+                        "name": "巡礼者",
+                        "text": "闇を見た人ほど、\n光を雑には扱えないから。",
+                        "charId": 1003
+                }
+        ],
+        "POST_DARK_CASTLE_BASE_1": [
+                {
+                        "name": "魔族兵",
+                        "text": "城を開く日が来るとはな。\nゼノン様も無茶をなさる。",
+                        "charId": 1002
+                },
+                {
+                        "name": "魔族兵",
+                        "text": "だが混沌を止めるなら、\n人も魔族も関係あるまい。",
+                        "charId": 1002
                 }
         ],
         "FIRE_VILLAGE_CONSULT": [
@@ -2844,6 +2988,89 @@ const StoryManager = {
                 ],
                 "winActions": []
         },
+        "quest_fire_holy_water_clear": {
+                "actions": [
+                        { "type": "LOG", "value": "妖精は小さく頭を下げ、泉の聖水を分けてくれた。" },
+                        { "type": "QUEST_COMPLETE", "value": "fire_holy_water" }
+                ],
+                "winActions": []
+        },
+        "quest_water_blue_crystal_clear": {
+                "actions": [
+                        { "type": "LOG", "value": "青の結晶が静かに輝き、海底神殿へ続く道を示した。" },
+                        { "type": "QUEST_COMPLETE", "value": "water_blue_crystal" }
+                ],
+                "winActions": []
+        },
+        "quest_claude_leon_clear": {
+                "actions": [
+                        { "type": "LOG", "value": "クロードとレオンは剣を収め、闇の残滓を追う旅に同行すると告げた。" },
+                        { "type": "QUEST_COMPLETE", "value": "claude_leon_dark_shrine" }
+                ],
+                "winActions": []
+        },
+        "quest_luna_hidden_clear": {
+                "actions": [
+                        { "type": "LOG", "value": "月影を縛っていた闇がほどけ、ルーナは静かに一行へ歩み寄った。" },
+                        { "type": "QUEST_COMPLETE", "value": "luna_hidden_dark_shrine" }
+                ],
+                "winActions": []
+        },
+        "quest_ryu_minerva_clear": {
+                "actions": [
+                        { "type": "LOG", "value": "禁則の術式が消え、リュウとミネルバは互いに頷いて仲間に加わった。" },
+                        { "type": "QUEST_COMPLETE", "value": "ryu_minerva_grezelia" }
+                ],
+                "winActions": []
+        },
+        "quest_zenon_hidden_clear": {
+                "actions": [
+                        { "type": "LOG", "value": "禁則の核が砕け、ゼノンはその力を見届けた者として一行に手を貸すと告げた。" },
+                        { "type": "QUEST_COMPLETE", "value": "zenon_hidden_grezelia" }
+                ],
+                "winActions": []
+        },
+        "quest_karin_volcano_clear": {
+                "actions": [
+                        { "type": "LOG", "value": "カリンは刃を収めた。" },
+                        { "type": "LOG", "value": "守る剣を、旅に預けると。" },
+                        { "type": "QUEST_COMPLETE", "value": "karin_volcano_depths" }
+                ],
+                "winActions": []
+        },
+        "quest_arisa_haine_clear": {
+                "actions": [
+                        { "type": "LOG", "value": "アリサは息を整えた。" },
+                        { "type": "LOG", "value": "ハイネは静かに頷いた。" },
+                        { "type": "QUEST_COMPLETE", "value": "arisa_haine_forest_depths" }
+                ],
+                "winActions": []
+        },
+        "quest_sophia_alan_clear": {
+                "actions": [
+                        { "type": "LOG", "value": "ソフィアは微笑んだ。" },
+                        { "type": "LOG", "value": "未知は、まだ尽きないと。" },
+                        { "type": "LOG", "value": "アランは剣を握り直した。" },
+                        { "type": "QUEST_COMPLETE", "value": "sophia_alan_seabed_depths" }
+                ],
+                "winActions": []
+        },
+        "quest_frieda_baron_clear": {
+                "actions": [
+                        { "type": "LOG", "value": "フリーダは空を仰いだ。" },
+                        { "type": "LOG", "value": "バロンは戦場を見据えた。" },
+                        { "type": "QUEST_COMPLETE", "value": "frieda_baron_thunder_depths" }
+                ],
+                "winActions": []
+        },
+        "quest_licia_clear": {
+                "actions": [
+                        { "type": "LOG", "value": "リーシアの瞳が開いた。" },
+                        { "type": "LOG", "value": "真理の道は、まだ続く。" },
+                        { "type": "QUEST_COMPLETE", "value": "licia_crena_depths" }
+                ],
+                "winActions": []
+        },
         "fire_village_consult": {
                 "actions": [
                         {
@@ -2877,7 +3104,7 @@ const StoryManager = {
                         },
                         {
                                 "type": "CHOICE",
-                                "text": "[N:105]の同行を許可しますか？",
+                                "text": "同行を許可しますか？",
                                 "yes": [
                                         {
                                                 "type": "ALLY",
@@ -3288,6 +3515,54 @@ const StoryManager = {
                                 "value": "WATER_CITY_AFTER_CLEAR"
                         }
                 ],
+                "winActions": []
+        },
+        "town_start_villager_1": {
+                "actions": [{ "type": "CONV", "value": "TOWN_START_VILLAGER_1" }],
+                "winActions": []
+        },
+        "town_start_villager_2": {
+                "actions": [{ "type": "CONV", "value": "TOWN_START_VILLAGER_2" }],
+                "winActions": []
+        },
+        "town_fire_villager_1": {
+                "actions": [{ "type": "CONV", "value": "TOWN_FIRE_VILLAGER_1" }],
+                "winActions": []
+        },
+        "town_fire_villager_2": {
+                "actions": [{ "type": "CONV", "value": "TOWN_FIRE_VILLAGER_2" }],
+                "winActions": []
+        },
+        "town_wind_villager_1": {
+                "actions": [{ "type": "CONV", "value": "TOWN_WIND_VILLAGER_1" }],
+                "winActions": []
+        },
+        "town_wind_villager_2": {
+                "actions": [{ "type": "CONV", "value": "TOWN_WIND_VILLAGER_2" }],
+                "winActions": []
+        },
+        "town_water_villager_1": {
+                "actions": [{ "type": "CONV", "value": "TOWN_WATER_VILLAGER_1" }],
+                "winActions": []
+        },
+        "town_water_villager_2": {
+                "actions": [{ "type": "CONV", "value": "TOWN_WATER_VILLAGER_2" }],
+                "winActions": []
+        },
+        "town_water_villager_3": {
+                "actions": [{ "type": "CONV", "value": "TOWN_WATER_VILLAGER_3" }],
+                "winActions": []
+        },
+        "post_thunder_fort_base_1": {
+                "actions": [{ "type": "CONV", "value": "POST_THUNDER_FORT_BASE_1" }],
+                "winActions": []
+        },
+        "post_light_palace_base_1": {
+                "actions": [{ "type": "CONV", "value": "POST_LIGHT_PALACE_BASE_1" }],
+                "winActions": []
+        },
+        "post_dark_castle_base_1": {
+                "actions": [{ "type": "CONV", "value": "POST_DARK_CASTLE_BASE_1" }],
                 "winActions": []
         },
         "water_city_intro": {
@@ -3841,6 +4116,14 @@ const StoryManager = {
         
         if (action.type === 'SUB')  { data.subStep = action.value; }
         if (action.type === 'LOG')   App.log(action.value);
+
+        if (action.type === 'QUEST_ACCEPT' && typeof App.acceptQuest === 'function') {
+            App.acceptQuest(action.value || action.questId);
+        }
+
+        if (action.type === 'QUEST_COMPLETE' && typeof App.completeQuest === 'function') {
+            App.completeQuest(action.value || action.questId);
+        }
 
         if (action.type === 'STORY_DEFEAT') {
             await this.playStoryDefeatEffect(action);

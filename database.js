@@ -281,6 +281,7 @@ const INITIAL_DATA_TEMPLATE = {
         floor: 0,
         storyStep: 0,        // ストーリー進行フラグ
         flags: { hasShip: false },           // イベント個別フラグ (hasShip 等)
+        quests: {},
         unlocked: { smith: false, gacha: false, boat: false }, // 機能解放
         clearedDungeons: []  // 攻略済みエリア
     },

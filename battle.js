@@ -482,6 +482,51 @@ const Battle = {
         return enemy;
     },
 
+    applyMapEnemyBoost: (enemy, boost) => {
+        if (!enemy || !boost || enemy.isRare) return enemy;
+        const scale = Math.max(0.1, Number(boost.statMultiplier || boost.scale || 1) || 1);
+        const scaleNumber = (value, rate, min = 0) => {
+            const n = Number(value || 0);
+            if (!Number.isFinite(n)) return value;
+            return Math.max(min, Math.floor(n * rate));
+        };
+
+        if (boost.nameSuffix && !String(enemy.name || '').endsWith(boost.nameSuffix)) {
+            enemy.name = `${enemy.name || '魔物'}${boost.nameSuffix}`;
+        }
+        enemy.hp = scaleNumber(enemy.hp, scale, 1);
+        enemy.baseMaxHp = scaleNumber(enemy.baseMaxHp || enemy.hp, scale, enemy.hp);
+        enemy.mp = scaleNumber(enemy.mp, scale, 0);
+        enemy.baseMaxMp = scaleNumber(enemy.baseMaxMp || enemy.mp, scale, enemy.mp);
+
+        if (enemy.baseStats) {
+            ['atk', 'def', 'spd', 'mag', 'mdef'].forEach(key => {
+                if (enemy.baseStats[key] !== undefined) enemy.baseStats[key] = scaleNumber(enemy.baseStats[key], scale, 0);
+            });
+        }
+        ['atk', 'def', 'spd', 'mag', 'mdef'].forEach(key => {
+            if (enemy[key] !== undefined) enemy[key] = scaleNumber(enemy[key], scale, 0);
+        });
+
+        enemy.elmRes = JSON.parse(JSON.stringify(enemy.elmRes || {}));
+        Object.entries(boost.elmRes || {}).forEach(([elm, value]) => {
+            enemy.elmRes[elm] = Number(enemy.elmRes[elm] || 0) + Number(value || 0);
+        });
+
+        enemy.elmAtk = JSON.parse(JSON.stringify(enemy.elmAtk || {}));
+        Object.entries(boost.elmAtk || {}).forEach(([elm, value]) => {
+            enemy.elmAtk[elm] = Number(enemy.elmAtk[elm] || 0) + Number(value || 0);
+        });
+
+        enemy.resists = JSON.parse(JSON.stringify(enemy.resists || {}));
+        Object.entries(boost.resists || {}).forEach(([key, value]) => {
+            enemy.resists[key] = Number(enemy.resists[key] || 0) + Number(value || 0);
+        });
+
+        enemy.mapEnemyBoost = JSON.parse(JSON.stringify(boost));
+        return enemy;
+    },
+
     generateNewEnemies: (isBoss, fixedBossId = null) => {
         const newEnemies = [];
         let floor = Math.max(1, Number(App.data.progress.floor) || 1);
@@ -520,6 +565,9 @@ const Battle = {
                     if (m[key] !== undefined) m[key] = Math.max(0, Math.floor(Number(m[key] || 0) * mult));
                 });
                 m.storyBossStatMultiplier = mult;
+            }
+            if (m && options.trialEnemyBoost) {
+                Battle.applyMapEnemyBoost(m, options.trialEnemyBoost);
             }
             if (m) newEnemies.push(m);
         };
@@ -583,6 +631,7 @@ const Battle = {
                     isBossBattle: true,
                     forceSpecialBoss: Battle.isSpecialBossBase(base),
                     storyBossStatMultiplier: bossStatMultiplier,
+                    trialEnemyBoost: battleData.trialEnemyBoost || null,
                 }));
                 return newEnemies;
             }
@@ -671,21 +720,40 @@ const Battle = {
         }
 
         Battle.log('\u9b54\u7269\u304c\u73fe\u308c\u305f\uff01');
+        const pickRareEncounterMonster = () => {
+            const rareDefs = Array.isArray(battleData.rareMonsters)
+                ? battleData.rareMonsters
+                : (typeof Field !== 'undefined' && Field.currentMapData && Array.isArray(Field.currentMapData.rareMonsters) ? Field.currentMapData.rareMonsters : null);
+            if (!rareDefs || rareDefs.length === 0) return null;
+
+            for (const def of rareDefs) {
+                const rate = Math.max(0, Math.min(1, Number(def.rate ?? def.chance ?? 0)));
+                if (rate <= 0 || Math.random() >= rate) continue;
+                const base = Battle.getMonsterBaseById(def.id || def.monsterId);
+                if (Battle.isNormalEncounterBase(base)) return base;
+            }
+            return null;
+        };
+
         for (let i = 0; i < normalCount; i++) {
             let monsterData = null;
             const isFixedMap = typeof Field !== 'undefined' && Field.currentMapData && Field.currentMapData.isFixed;
             const battleMonsterIds = Array.isArray(battleData.monsters) ? battleData.monsters : null;
             const seaMonsterIds = battleData.encounterType === 'sea' && Array.isArray(window.SEA_ENCOUNTER_MONSTERS) ? window.SEA_ENCOUNTER_MONSTERS : null;
             const fixedMonsterIds = battleMonsterIds || seaMonsterIds || (isFixedMap && Array.isArray(Field.currentMapData.monsters) ? Field.currentMapData.monsters : null);
+            const hasRareMonsterPool = Array.isArray(battleData.rareMonsters)
+                || (isFixedMap && Array.isArray(Field.currentMapData.rareMonsters));
 
-            if (fixedMonsterIds && fixedMonsterIds.length > 0) {
+            monsterData = pickRareEncounterMonster();
+
+            if (!monsterData && fixedMonsterIds && fixedMonsterIds.length > 0) {
                 const mid = fixedMonsterIds[Math.floor(Math.random() * fixedMonsterIds.length)];
                 const fixedBase = Battle.getMonsterBaseById(mid);
                 if (Battle.isNormalEncounterBase(fixedBase)) monsterData = fixedBase;
             }
 
             if (!monsterData && window.MonsterData && typeof window.MonsterData.generateEnemyForFloor === 'function') {
-                monsterData = window.MonsterData.generateEnemyForFloor(floor, { allowRare: !fixedMonsterIds });
+                monsterData = window.MonsterData.generateEnemyForFloor(floor, { allowRare: !fixedMonsterIds && !hasRareMonsterPool });
             }
 
             if (!monsterData && typeof window.generateEnemy === 'function') {
@@ -694,7 +762,8 @@ const Battle = {
 
             if (monsterData && !Battle.isSpecialBossBase(monsterData) && (!monsterData.isBoss || monsterData.isRare)) {
                 const m = Battle.createMonsterFromBase(monsterData, { name: (monsterData.name || '\u4e0d\u660e\u306a\u9b54\u7269') + suffix(i, normalCount) });
-                if (m) newEnemies.push(m);
+                const boost = (typeof Field !== 'undefined' && Field.currentMapData?.enemyBoost) ? Field.currentMapData.enemyBoost : null;
+                if (m) newEnemies.push(Battle.applyMapEnemyBoost(m, boost));
             }
         }
         return newEnemies;
@@ -3168,6 +3237,9 @@ findNextActor: () => {
         const keyReward = App.data.battle.keyReward || App.data.battle.fixedKeyReward || null;
         const bossStatMultiplier = App.data.battle.bossStatMultiplier || App.data.battle.bossScale || null;
         const suppressFixedBossDefeat = !!App.data.battle.suppressFixedBossDefeat;
+        const trialEnemyBoost = App.data.battle.trialEnemyBoost || null;
+        const angelTrial = App.data.battle.angelTrial || null;
+        const fixedHunter = App.data.battle.fixedHunter || null;
         
         App.data.battle.enemies = Battle.enemies.filter(e => !e.isFled).map(e => ({ 
             baseId: e.baseId || e.id, hp: e.hp, maxHp: e.baseMaxHp, name: e.name, rank: e.rank, generatedFloor: e.generatedFloor, isBoss: e.isBoss, isRare: e.isRare, isSpecialBoss: e.isSpecialBoss, isEstark: e.isEstark, battleStatus: e.battleStatus 
@@ -3185,6 +3257,9 @@ findNextActor: () => {
         if (fixedStoryEventId) App.data.battle.fixedStoryEventId = fixedStoryEventId;
         if (bossStatMultiplier) App.data.battle.bossStatMultiplier = bossStatMultiplier;
         if (suppressFixedBossDefeat) App.data.battle.suppressFixedBossDefeat = true;
+        if (trialEnemyBoost) App.data.battle.trialEnemyBoost = trialEnemyBoost;
+        if (angelTrial) App.data.battle.angelTrial = angelTrial;
+        if (fixedHunter) App.data.battle.fixedHunter = fixedHunter;
         
         Battle.party.forEach(p => { 
             const d = App.getChar(p.uid); 
@@ -3676,6 +3751,7 @@ findNextActor: () => {
         const eventId = (App.data.battle && App.data.battle.eventId) ? App.data.battle.eventId : null;
         const storyWinEventId = App.data.battle?.storyWinEventId || null;
         const keyReward = App.data.battle?.keyReward || App.data.battle?.fixedKeyReward || null;
+        const fixedHunter = App.data.battle?.fixedHunter || null;
 		
 		// --- [追加] 演出前にイベントを予約し、セーブデータに含める ---
 		if (isBossBattle && eventId) {
@@ -3729,6 +3805,9 @@ findNextActor: () => {
 		const lbGrowthLogs = (typeof App.noteBattleVictory === 'function')
 			? App.noteBattleVictory(Battle.party.filter(p => p))
 			: [];
+        if (typeof Dungeon !== 'undefined' && typeof Dungeon.completeAngelTrialIfNeeded === 'function') {
+            lbGrowthLogs.push(...Dungeon.completeAngelTrialIfNeeded());
+        }
 		
 		// 特性「56:解体」のパーティ合計値算出
 		let bonusNormal = 0, bonusRare = 0, bonusPlus3 = 0;
@@ -3911,7 +3990,7 @@ findNextActor: () => {
 
 		// --- [3] 世界状態・フラグの先行確定 ---
 		// 演出中のリロード対策として、ボスマスを階段にする等の処理をログ表示前に完結させます
-		if (isBossBattle && !isEstark) {
+		if ((isBossBattle && !isEstark) || fixedHunter) {
 			if (typeof Dungeon !== 'undefined' && typeof Dungeon.onBossDefeated === 'function') {
 				Dungeon.onBossDefeated(); // ここで mapChanges 等が更新される
 			}

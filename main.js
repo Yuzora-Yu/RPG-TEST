@@ -526,6 +526,7 @@ const App = {
 			if (!App.data.progress.mapChanges) App.data.progress.mapChanges = {};
 			
             if (!App.data.progress.flags) App.data.progress.flags = {};
+            if (!App.data.progress.quests || typeof App.data.progress.quests !== 'object' || Array.isArray(App.data.progress.quests)) App.data.progress.quests = {};
             if (!App.data.progress.unlocked || typeof App.data.progress.unlocked !== 'object' || Array.isArray(App.data.progress.unlocked)) App.data.progress.unlocked = {};
             if (!App.data.progress.clearedDungeons) App.data.progress.clearedDungeons = [];
             if (!App.data.progress.openedChests) App.data.progress.openedChests = {};
@@ -1452,6 +1453,149 @@ const App = {
         App.log(joinedParty
             ? `【仲間加入】${saveAlly.name}がパーティに加わった！`
             : `【仲間加入】${saveAlly.name}が控えに加わった！`);
+    },
+
+    ensureQuestState: () => {
+        if (!App.data.progress) App.data.progress = {};
+        if (!App.data.progress.quests || typeof App.data.progress.quests !== 'object' || Array.isArray(App.data.progress.quests)) {
+            App.data.progress.quests = {};
+        }
+        return App.data.progress.quests;
+    },
+
+    getQuestDefinitions: () => {
+        return (typeof window !== 'undefined' && window.QUEST_DATA) ? window.QUEST_DATA : {};
+    },
+
+    getQuestDefinition: (questId) => {
+        const defs = App.getQuestDefinitions();
+        return defs ? defs[questId] : null;
+    },
+
+    getQuestState: (questId) => {
+        const quests = App.ensureQuestState();
+        return quests[questId] || { state: 'available' };
+    },
+
+    isQuestCompleted: (questId) => {
+        return App.getQuestState(questId).state === 'completed';
+    },
+
+    hasStoryAlly: (charId) => {
+        const id = Number(charId);
+        return Array.isArray(App.data.characters) && App.data.characters.some(c => Number(c.charId) === id);
+    },
+
+    isQuestUnlocked: (questId) => {
+        const quest = App.getQuestDefinition(questId);
+        if (!quest) return false;
+        const flags = App.data?.progress?.flags || {};
+        const unlockFlags = Array.isArray(quest.unlockFlags) ? quest.unlockFlags : [];
+        const missingFlags = Array.isArray(quest.missingFlags) ? quest.missingFlags : [];
+        const requiredAllies = Array.isArray(quest.requiredAllies) ? quest.requiredAllies : [];
+        const requiredQuests = Array.isArray(quest.requiredQuests) ? quest.requiredQuests : [];
+        return unlockFlags.every(flag => !!flags[flag])
+            && missingFlags.every(flag => !flags[flag])
+            && requiredAllies.every(charId => App.hasStoryAlly(charId))
+            && requiredQuests.every(id => App.isQuestCompleted(id));
+    },
+
+    acceptQuest: (questId, options = {}) => {
+        const quest = App.getQuestDefinition(questId);
+        if (!quest) return false;
+        const quests = App.ensureQuestState();
+        const current = quests[questId];
+        if (current && current.state === 'completed') {
+            if (!options.silent) App.log(`【クエスト完了済】${quest.name}`);
+            return true;
+        }
+        if (current && current.state === 'accepted') {
+            if (!options.silent) App.log(`【クエスト進行中】${quest.progressText || quest.objective || quest.name}`);
+            return true;
+        }
+        quests[questId] = {
+            state: 'accepted',
+            startedAt: Date.now(),
+            completedAt: null
+        };
+        App.save();
+        if (!options.silent) {
+            App.log(`【クエスト受注】${quest.name}`);
+            if (quest.startText) App.log(quest.startText);
+        }
+        return true;
+    },
+
+    completeQuest: (questId, options = {}) => {
+        const quest = App.getQuestDefinition(questId);
+        if (!quest) return false;
+        const quests = App.ensureQuestState();
+        const current = quests[questId];
+        if (current && current.state === 'completed') {
+            if (!options.silent) App.log(`【クエスト完了済】${quest.name}`);
+            return true;
+        }
+
+        quests[questId] = {
+            state: 'completed',
+            startedAt: current?.startedAt || Date.now(),
+            completedAt: Date.now()
+        };
+
+        if (Array.isArray(quest.rewardFlags)) {
+            if (!App.data.progress.flags) App.data.progress.flags = {};
+            quest.rewardFlags.forEach(flag => { if (flag) App.data.progress.flags[flag] = true; });
+        }
+        if (Array.isArray(quest.rewardItems)) {
+            if (!App.data.items) App.data.items = {};
+            quest.rewardItems.forEach(reward => {
+                const itemId = Number(reward.id || reward.itemId);
+                const count = Math.max(1, Number(reward.count || 1));
+                if (!Number.isFinite(itemId)) return;
+                App.data.items[itemId] = Number(App.data.items[itemId] || 0) + count;
+                const item = (DB.ITEMS || []).find(i => Number(i.id) === itemId);
+                if (!options.silent) App.log(`${item?.name || `アイテム${itemId}`}を手に入れた！`);
+            });
+        }
+        if (Array.isArray(quest.rewardAllies)) {
+            quest.rewardAllies.forEach(charId => App.addStoryAlly(charId));
+        }
+
+        App.save();
+        if (!options.silent) {
+            App.log(`【クエスト完了】${quest.name}`);
+            if (quest.completeText) App.log(quest.completeText);
+        }
+        if (typeof MenuStatus !== 'undefined' && typeof MenuStatus.render === 'function') MenuStatus.render();
+        return true;
+    },
+
+    runQuestAction: (questId, options = {}) => {
+        const quest = App.getQuestDefinition(questId);
+        if (!quest) {
+            App.log('今は何も起こらないようだ。');
+            return false;
+        }
+        if (!App.isQuestUnlocked(questId)) {
+            App.log(options.lockedText || '今はまだ、この依頼を進める時ではないようだ。');
+            return false;
+        }
+        const state = App.getQuestState(questId).state;
+        if (state === 'completed') {
+            App.log(`【クエスト完了済】${quest.name}`);
+            return true;
+        }
+        if (state !== 'accepted') {
+            App.acceptQuest(questId);
+            if (options.complete || quest.initialComplete || quest.kind === 'conversation') App.completeQuest(questId);
+            return true;
+        }
+        if (options.complete || quest.initialComplete || quest.kind === 'conversation') {
+            App.completeQuest(questId);
+            return true;
+        }
+        App.log(`【クエスト進行中】${quest.progressText || quest.objective || quest.name}`);
+        return true;
     },
 
     limitBreakConfig: {
@@ -2687,10 +2831,10 @@ load: () => {
         };
 
         if (charData.level === 50 || charData.level === 100) {
-            applyGrowthBonus(['hp', 'mp', 'atk', 'def', 'mdef', 'spd', 'mag'], 2 + Math.random(), `Lv${charData.level}成長ボーナス`);
+            applyGrowthBonus(['hp', 'mp', 'atk', 'def', 'mdef', 'spd', 'mag'], 5 + Math.random(), ''); //50レベル・100レベル成長ボーナス
         } else if (Math.random() < 0.12) {
             const keys = ['hp', 'mp', 'atk', 'def', 'mdef', 'spd', 'mag'].sort(() => Math.random() - 0.5).slice(0, Math.random() < 0.25 ? 2 : 1);
-            applyGrowthBonus(keys, 2 + Math.random(), 'ひらめき成長', { log: false });
+            applyGrowthBonus(keys, 2 + Math.random(), '', { log: false }); //ひらめき成長
         }
 
         const bonusRand = (min, max) => min + Math.floor(Math.random() * (max - min + 1));
@@ -3422,6 +3566,43 @@ load: () => {
 	},
 
 
+    isWorldEncounterLandTile: (tile) => {
+        const upper = String(tile || '').toUpperCase();
+        return upper && upper !== 'W' && upper !== 'M';
+    },
+
+    isWorldEncounterConnected: (fromX, fromY, toX, toY, maxSteps = 80) => {
+        if (typeof MAP_DATA === 'undefined' || !Array.isArray(MAP_DATA) || !MAP_DATA[0]) return true;
+        const mapH = MAP_DATA.length;
+        const mapW = MAP_DATA[0].length;
+        const sx = ((Number(fromX) % mapW) + mapW) % mapW;
+        const sy = ((Number(fromY) % mapH) + mapH) % mapH;
+        const tx = ((Number(toX) % mapW) + mapW) % mapW;
+        const ty = ((Number(toY) % mapH) + mapH) % mapH;
+        if (sx === tx && sy === ty) return true;
+        if (!App.isWorldEncounterLandTile(MAP_DATA[sy]?.[sx])) return false;
+        if (!App.isWorldEncounterLandTile(MAP_DATA[ty]?.[tx])) return false;
+
+        const limit = Math.max(1, Number(maxSteps || 80));
+        const queue = [{ x: sx, y: sy, d: 0 }];
+        const seen = new Set([`${sx},${sy}`]);
+        for (let qi = 0; qi < queue.length; qi++) {
+            const p = queue[qi];
+            if (p.d >= limit) continue;
+            for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+                const nx = ((p.x + dx) % mapW + mapW) % mapW;
+                const ny = ((p.y + dy) % mapH + mapH) % mapH;
+                const key = `${nx},${ny}`;
+                if (seen.has(key)) continue;
+                if (!App.isWorldEncounterLandTile(MAP_DATA[ny]?.[nx])) continue;
+                if (nx === tx && ny === ty) return true;
+                seen.add(key);
+                queue.push({ x: nx, y: ny, d: p.d + 1 });
+            }
+        }
+        return false;
+    },
+
     getWorldEncounterProfile: () => {
         if (typeof Field === 'undefined' || Field.currentMapData) return null;
         if (typeof App.isFlying === 'function' && App.isFlying()) return null;
@@ -3439,9 +3620,12 @@ load: () => {
             const dx = x - Number(zone.centerX || 0);
             const dy = y - Number(zone.centerY || 0);
             const radius = Number(zone.radius || 0);
-            return radius > 0 && Math.sqrt(dx * dx + dy * dy) <= radius;
+            if (!(radius > 0 && Math.sqrt(dx * dx + dy * dy) <= radius)) return false;
+            return App.isWorldEncounterConnected(x, y, zone.centerX, zone.centerY, Math.ceil(radius * 4) + 20);
         });
-        const candidates = matches.length > 0 ? matches : zones;
+        const candidates = matches.length > 0
+            ? matches
+            : zones.filter(zone => App.isWorldEncounterConnected(x, y, zone.centerX, zone.centerY, Math.ceil(Number(zone.radius || 0) * 4) + 20));
         let best = null;
         let bestScore = Infinity;
         candidates.forEach(zone => {
@@ -3454,12 +3638,13 @@ load: () => {
                 bestScore = score;
             }
         });
-        if (!best || !Array.isArray(best.monsters) || best.monsters.length === 0) return null;
+        if (!best) return null;
         return {
             id: best.id || null,
             name: best.name || 'フィールド',
             rank: Math.max(1, Number(best.rank || best.encounterRank || 1) || 1),
-            monsters: best.monsters.slice()
+            monsters: Array.isArray(best.monsters) ? best.monsters.slice() : null,
+            rareMonsters: Array.isArray(best.rareMonsters) ? best.rareMonsters.map(entry => ({ ...entry })) : null
         };
     },
 
@@ -3505,6 +3690,7 @@ load: () => {
             encounterZoneName: worldEncounter ? worldEncounter.name : null,
             encounterRank: worldEncounter ? worldEncounter.rank : null,
 			monsters: isSeaEncounter && Array.isArray(window.SEA_ENCOUNTER_MONSTERS) ? [...window.SEA_ENCOUNTER_MONSTERS] : (worldEncounter ? worldEncounter.monsters : null),
+            rareMonsters: worldEncounter ? worldEncounter.rareMonsters : null,
 			isAmbushed: flags.isAmbushed,
 			isPreemptive: flags.isPreemptive
 		};
@@ -3957,6 +4143,10 @@ const Field = {
                 if (parts.overlayConfig && Field.drawMapOverlayMarker) {
                     Field.drawMapOverlayMarker(ctx, parts.overlayConfig, drawX, drawY, size);
                 }
+                const effectColor = Field.getTileEffectMarkerColor ? Field.getTileEffectMarkerColor(x, y) : null;
+                if (effectColor && Field.drawMiniMapTileMarker) {
+                    Field.drawMiniMapTileMarker(ctx, effectColor, drawX, drawY, size);
+                }
                 const markerColor = Field.getMiniMapMarkerColor ? Field.getMiniMapMarkerColor(tile, x, y) : null;
                 if (markerColor && Field.drawMiniMapTileMarker) {
                     Field.drawMiniMapTileMarker(ctx, markerColor, drawX, drawY, size);
@@ -4018,6 +4208,26 @@ const Field = {
             if (special) return { ...base, ...special };
         }
         return base;
+    },
+
+    getTileEffectMarkerColor: (tileX = null, tileY = null) => {
+        if (!Field.currentMapData?.isFixed || tileX === null || tileY === null) return null;
+        if (typeof Dungeon !== 'undefined' && typeof Dungeon.getFixedHunterAt === 'function' && Dungeon.getFixedHunterAt(tileX, tileY)) {
+            return '#ff4d4d';
+        }
+        const effect = (typeof MapRegistry !== 'undefined' && MapRegistry.findTileEffect)
+            ? MapRegistry.findTileEffect(Field.currentMapData, tileX, tileY)
+            : null;
+        if (!effect) return null;
+        if (effect.type === 'hunter') return null;
+        const colors = {
+            poison: '#7bd14a',
+            ice: '#93e7ff',
+            warp: '#b68cff',
+            hunter: '#ff4d4d',
+            angel: '#fff3a6'
+        };
+        return colors[effect.type] || '#ffffff';
     },
 
     isFixedDungeonOverlayTile: (tileSign) => {
@@ -4279,6 +4489,21 @@ const Field = {
             }
         }
 
+        const requiredFlags = Array.isArray(action.requiredFlags)
+            ? action.requiredFlags
+            : (action.requiredFlag ? [action.requiredFlag] : []);
+        const missingFlags = Array.isArray(action.missingFlags)
+            ? action.missingFlags
+            : (action.missingFlag ? [action.missingFlag] : []);
+        if (requiredFlags.length || missingFlags.length) {
+            const flags = App.data?.progress?.flags || {};
+            const flagsOk = requiredFlags.every(flag => !!flags[flag]) && missingFlags.every(flag => !flags[flag]);
+            if (!flagsOk) {
+                App.log(action.lockedText || action.lockedLog || '今はまだ使えないようだ。');
+                return;
+            }
+        }
+
         if (action.log) App.log(action.log);
 
         const progressEventId = resolveProgressEvent(action.events);
@@ -4300,6 +4525,11 @@ const Field = {
 
         if (action.type === 'storyEvent' && action.eventId && typeof StoryManager !== 'undefined') {
             StoryManager.executeEvent(action.eventId);
+            return;
+        }
+
+        if (action.type === 'quest' && action.questId && typeof App.runQuestAction === 'function') {
+            App.runQuestAction(action.questId, { complete: !!action.complete, lockedText: action.lockedText });
             return;
         }
 
@@ -4454,6 +4684,22 @@ const Field = {
                 }
             } else if (Field.currentMapData.isFixed && typeof Dungeon !== 'undefined' && typeof Dungeon.prepareFixedTileAction === 'function') {
                 if (setStoryActionIfNeeded()) return true;
+                const fixedMapAction = (typeof MapRegistry !== 'undefined' && MapRegistry.findMapAction)
+                    ? MapRegistry.findMapAction(Field.currentMapData, x, y)
+                    : null;
+                if (fixedMapAction) {
+                    if (fixedMapAction.log) logIfNeeded(fixedMapAction.log);
+                    App.setAction(fixedMapAction.label || '調べる', () => Field.executeMapAction(fixedMapAction));
+                    return true;
+                }
+                const effect = (typeof MapRegistry !== 'undefined' && MapRegistry.findTileEffect)
+                    ? MapRegistry.findTileEffect(Field.currentMapData, x, y)
+                    : null;
+                if (effect && effect.type === 'angel' && typeof Dungeon !== 'undefined' && typeof Dungeon.startAngelTrial === 'function') {
+                    logIfNeeded(effect.log || '淡い光をまとった天使がいる。');
+                    App.setAction(effect.label || '試練に挑む', () => Dungeon.startAngelTrial(effect));
+                    return true;
+                }
                 if (Dungeon.prepareFixedTileAction(tile, x, y, { silent })) return true;
             }
 
@@ -4722,6 +4968,28 @@ const Field = {
 
             if (tile === 'M' && Field.currentMapData.isFixed && !Field.currentMapData.isDungeon && typeof Dungeon !== 'undefined' && typeof Dungeon.stepOnLava === 'function') {
                 Dungeon.stepOnLava();
+            }
+
+            if (Field.currentMapData.isFixed && typeof Dungeon !== 'undefined' && typeof Dungeon.handleFixedTileEffect === 'function' && typeof MapRegistry !== 'undefined' && MapRegistry.findTileEffect) {
+                const effect = MapRegistry.findTileEffect(Field.currentMapData, nx, ny);
+                const activeHunter = typeof Dungeon.getFixedHunterAt === 'function' ? Dungeon.getFixedHunterAt(nx, ny) : null;
+                const activeEffect = activeHunter || (effect?.type === 'hunter' ? null : effect);
+                if (activeEffect && activeEffect.type !== 'angel') {
+                    const handled = Dungeon.handleFixedTileEffect(activeEffect, dx, dy);
+                    if (handled) {
+                        App.save();
+                        Field.render();
+                        if (typeof Field.startIdleStep === 'function') Field.startIdleStep();
+                        return;
+                    }
+                }
+                if (typeof Dungeon.stepFixedHunters === 'function') {
+                    const caught = Dungeon.stepFixedHunters();
+                    if (caught) {
+                        Field.render();
+                        return;
+                    }
+                }
             }
 
             // 現在地タイルのアクション判定は refreshCurrentAction に統一。
@@ -5004,6 +5272,19 @@ const Field = {
                         ctx.fill();
                         ctx.restore();
                     }
+                }
+
+                const effectColor = Field.getTileEffectMarkerColor ? Field.getTileEffectMarkerColor(tx, ty) : null;
+                if (effectColor) {
+                    ctx.save();
+                    ctx.globalAlpha = 0.78;
+                    ctx.fillStyle = effectColor;
+                    ctx.beginPath();
+                    ctx.arc(drawX + ts / 2, drawY + ts / 2, ts * 0.18, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.globalAlpha = 0.25;
+                    ctx.fillRect(drawX + 6, drawY + ts - 8, ts - 12, 3);
+                    ctx.restore();
                 }
             }
         }
