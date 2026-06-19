@@ -24,6 +24,10 @@ const Dungeon = {
     riftBattleEventId: '__DUNGEON_ABYSS_RIFT__',
     mazeFloorSpawnRate: 0.05,
     mazeMemorySightRadius: 4,
+    trialAngelSpawnRate: 0.05,
+    trialAngelMinFloor: 50,
+    trialAngelMinEncounterRank: 50,
+    trialAngelImagePath: 'assets/map/overlays/overlay_dungeon_trial_angel_v001.png',
 
     // 溶岩フロア: 50階以降の通常マップで30%発生。
     // 発生時は通常宝箱を消し、床の25%を溶岩(M)にしてレア宝箱を2つだけ配置する。
@@ -208,6 +212,7 @@ const Dungeon = {
         App.data.dungeon.adventurer = null;
         App.data.dungeon.healSpring = null;
         App.data.dungeon.abyssRift = null;
+        App.data.dungeon.trialAngel = null;
         App.data.dungeon.keyChests = null;
         App.data.dungeon.floorKeys = null;
         Dungeon.clearRandomKeyState();
@@ -438,6 +443,7 @@ const Dungeon = {
         App.data.dungeon.adventurer = null;
         App.data.dungeon.healSpring = null;
         App.data.dungeon.abyssRift = null;
+        App.data.dungeon.trialAngel = null;
         App.data.dungeon.keyChests = null;
         App.data.dungeon.floorKeys = null;
         Dungeon.clearRandomKeyState();
@@ -451,6 +457,7 @@ const Dungeon = {
         Field.y = targetY !== null && targetY !== undefined ? Number(targetY) : (nextDef.entryPoint?.y || 1);
         App.data.location.x = Field.x;
         App.data.location.y = Field.y;
+        Dungeon.rollTrialAngelSpawn({ fixed: true });
 
         App.save();
         App.changeScene('field');
@@ -721,6 +728,7 @@ const Dungeon = {
         App.data.dungeon.adventurer = null;
         App.data.dungeon.healSpring = null;
         App.data.dungeon.abyssRift = null;
+        App.data.dungeon.trialAngel = null;
         App.data.dungeon.keyChests = null;
         App.data.dungeon.floorKeys = null;
         Dungeon.clearRandomKeyState();
@@ -738,6 +746,7 @@ const Dungeon = {
         Field.y = selectedEntry ? selectedEntry.y : 1;
         App.data.location.x = Field.x;
         App.data.location.y = Field.y;
+        Dungeon.rollTrialAngelSpawn({ fixed: true });
 
         if (typeof App.discoverFixedMap === 'function') App.discoverFixedMap(mapKey, { save: false });
 
@@ -757,6 +766,7 @@ const Dungeon = {
         App.data.dungeon.adventurer = null;
         App.data.dungeon.healSpring = null;
         App.data.dungeon.abyssRift = null;
+        App.data.dungeon.trialAngel = null;
         App.data.dungeon.keyChests = null;
         App.data.dungeon.floorKeys = null;
         Dungeon.clearRandomKeyState();
@@ -873,6 +883,7 @@ const Dungeon = {
         App.data.dungeon.adventurer = null;
         App.data.dungeon.healSpring = null;
         App.data.dungeon.abyssRift = null;
+        App.data.dungeon.trialAngel = null;
         App.data.dungeon.keyChests = null;
         App.data.dungeon.floorKeys = null;
         Dungeon.clearRandomKeyState();
@@ -1598,6 +1609,9 @@ const Dungeon = {
             App.log('天使は静かに目を伏せた。');
             return false;
         }
+        if (App.data?.dungeon?.trialAngel && App.data.dungeon.trialAngel.id === effect.id) {
+            App.data.dungeon.trialAngel.active = false;
+        }
         const rank = Number(effect.rank || Field.currentMapData?.encounterRank || 80);
         const ids = Array.isArray(effect.monsterIds) && effect.monsterIds.length
             ? effect.monsterIds
@@ -1813,6 +1827,7 @@ const Dungeon = {
             adventurer: dungeon.adventurer,
             healSpring: dungeon.healSpring,
             abyssRift: dungeon.abyssRift,
+            trialAngel: dungeon.trialAngel,
         };
         return Object.entries(objects).some(([key, obj]) => {
             if (key === exceptKey) return false;
@@ -1847,6 +1862,91 @@ const Dungeon = {
         const candidates = Dungeon.getSpecialSpawnCandidates();
         if (!candidates.length) return null;
         return candidates[Math.floor(Math.random() * candidates.length)];
+    },
+
+    getTrialAngelMonsterIds: (fixed = !!Field.currentMapData?.isFixed) => {
+        if (fixed) {
+            const ids = Array.isArray(Field.currentMapData.monsters) ? Field.currentMapData.monsters.map(Number).filter(Boolean) : [];
+            if (ids.length) return Array.from({ length: 3 }, (_, i) => ids[i % ids.length]);
+        }
+        const floor = Math.max(1, Number(Dungeon.floor || App.data?.progress?.floor || 1));
+        const band = window.MonsterData?.getMonsterBandForFloor?.(floor);
+        const ids = Array.isArray(band?.monsters) ? band.monsters.map(m => Number(m?.id)).filter(Boolean) : [];
+        if (ids.length) {
+            return Array.from({ length: 3 }, () => ids[Math.floor(Math.random() * ids.length)]);
+        }
+        return [100064, 100065, 100066];
+    },
+
+    getFixedTrialAngelSpawnCandidates: () => {
+        const mapDef = Field.currentMapData;
+        const candidates = [];
+        if (!mapDef?.isFixed || !Array.isArray(mapDef.tiles)) return candidates;
+        for (let y = 1; y < mapDef.height - 1; y++) {
+            for (let x = 1; x < mapDef.width - 1; x++) {
+                const tile = String(mapDef.tiles[y]?.[x] || 'W').toUpperCase();
+                if (tile !== 'T' && tile !== 'G') continue;
+                if (Number(x) === Number(Field.x) && Number(y) === Number(Field.y)) continue;
+                if (Dungeon.isSpecialObjectAt(x, y, 'trialAngel')) continue;
+                if (MapRegistry.findFloorLink?.(mapDef, x, y)) continue;
+                if (MapRegistry.findMapAction?.(mapDef, x, y)) continue;
+                if (MapRegistry.findTileEffect?.(mapDef, x, y)) continue;
+                if ((mapDef.bosses || []).some(b => Number(b.x) === x && Number(b.y) === y)) continue;
+                if ((mapDef.chests || []).some(c => Number(c.x) === x && Number(c.y) === y)) continue;
+                const distance = Math.abs(x - Number(Field.x)) + Math.abs(y - Number(Field.y));
+                if (distance < 4) continue;
+                candidates.push({ x, y });
+            }
+        }
+        return candidates;
+    },
+
+    rollTrialAngelSpawn: (options = {}) => {
+        if (!App.data?.dungeon) return null;
+        App.data.dungeon.trialAngel = null;
+
+        const fixed = options.fixed ?? !!Field.currentMapData?.isFixed;
+        if (Dungeon.isBossFloor() || App.data.dungeon.isTreasureRoom) return null;
+        if (fixed) {
+            const rank = Number(Field.currentMapData?.encounterRank || Field.currentMapData?.rank || 0);
+            if (rank < Dungeon.trialAngelMinEncounterRank) return null;
+        } else {
+            if (App.data.location.area !== 'ABYSS') return null;
+            if (Number(Dungeon.floor || 0) < Dungeon.trialAngelMinFloor) return null;
+        }
+        if (Math.random() >= Dungeon.trialAngelSpawnRate) return null;
+
+        const candidates = fixed ? Dungeon.getFixedTrialAngelSpawnCandidates() : Dungeon.getSpecialSpawnCandidates();
+        if (!candidates.length) return null;
+        const pos = candidates[Math.floor(Math.random() * candidates.length)];
+        const rank = fixed
+            ? Number(Field.currentMapData?.encounterRank || Field.currentMapData?.rank || 80)
+            : Number(Dungeon.floor || 80);
+        const angel = {
+            active: true,
+            floor: Number(Dungeon.floor || App.data.progress?.floor || 1),
+            x: pos.x,
+            y: pos.y,
+            type: 'angel',
+            id: `trial-angel:${App.data.location.area}:F${Number(Dungeon.floor || 1)}:${Date.now()}`,
+            rank,
+            monsterIds: Dungeon.getTrialAngelMonsterIds(fixed),
+            statMultiplier: rank >= 100 ? 2.5 : 2.2,
+            rewardCount: rank >= 100 ? 2 : 1,
+            image: Dungeon.trialAngelImagePath,
+            label: '試練の天使と話す',
+            log: '試練の天使が静かに待っている。'
+        };
+        App.data.dungeon.trialAngel = angel;
+        return angel;
+    },
+
+    isTrialAngelAt: (x, y) => {
+        const angel = App.data?.dungeon?.trialAngel;
+        return !!(angel && angel.active
+            && Number(angel.floor) === Number(Dungeon.floor)
+            && Number(angel.x) === Number(x)
+            && Number(angel.y) === Number(y));
     },
 
     rollAdventurerSpawn: () => {
@@ -1920,6 +2020,7 @@ const Dungeon = {
         App.data.dungeon.adventurer = null;
         App.data.dungeon.healSpring = null;
         App.data.dungeon.abyssRift = null;
+        App.data.dungeon.trialAngel = null;
 
         // 宝物庫フロアは報酬部屋として独立させる。
         // 冒険者/泉/裂け目まで重なると、宝物庫の見せ場が散るため出さない。
@@ -1930,6 +2031,7 @@ const Dungeon = {
         Dungeon.rollAdventurerSpawn();
         Dungeon.rollHealSpringSpawn();
         Dungeon.rollAbyssRiftSpawn();
+        Dungeon.rollTrialAngelSpawn({ fixed: false });
     },
 
     encounterAdventurer: async (options = {}) => {

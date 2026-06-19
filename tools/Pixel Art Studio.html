@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <title>Pixel Art Studio | 背景透過・トリミングエディタ</title>
+    <meta name="description" content="AI画像やイラストの背景透過・トリミングに特化したブラウザエディタ。スマホ・PC両対応。">
+    <meta property="og:title" content="Pixel Art Studio">
+    <meta property="og:description" content="色の滲みがある画像でも、複数色指定と許容誤差の調整で綺麗に背景を透過できます。">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="Pixel Art Studio.png">
+    <meta name="twitter:card" content="summary_large_image">
+    
+    <style>
+        :root { 
+            --primary: #0078d4; --primary-hover: #0086f0; --accent: #444; 
+            --bg-dark: #1e1e1e; --panel-bg: #2d2d2d; --border: #444; --text: #cccccc;
+        }
+        
+        body { 
+            background: var(--bg-dark); color: var(--text); font-family: 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif; 
+            margin: 0; padding: 0; display: flex; justify-content: center;
+        }
+
+        .container { display: flex; width: 100%; max-width: 1600px; flex-direction: column; }
+        @media (min-width: 900px) { .container { flex-direction: row; height: 100vh; overflow: hidden; } }
+
+        /* --- ワークスペース（画像表示エリア：スマホで上部に固定） --- */
+        .workspace { 
+            flex-grow: 1; display: flex; justify-content: center; align-items: center;
+            background-color: var(--bg-dark); position: -webkit-sticky; position: sticky;
+            top: 0; z-index: 100; border-bottom: 2px solid var(--border); padding: 15px;
+            box-sizing: border-box; touch-action: none;
+        }
+        @media (min-width: 900px) { .workspace { border-bottom: none; height: 100vh; position: relative; top: 0; order: 2; } }
+
+        .canvas-wrapper { box-shadow: 0 15px 40px rgba(0,0,0,0.8); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; line-height: 0; background: #000; }
+        .canvas-container { 
+            background-image: linear-gradient(45deg, #252525 25%, transparent 25%), linear-gradient(-45deg, #252525 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #252525 75%), linear-gradient(-45deg, transparent 75%, #252525 75%);
+            background-size: 16px 16px; background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+        }
+        canvas { image-rendering: pixelated; display: block; cursor: move; max-width: 100%; height: auto; }
+
+        /* --- 操作パネル --- */
+        .controls { background: var(--panel-bg); padding: 20px; display: flex; flex-direction: column; gap: 16px; box-sizing: border-box; z-index: 10; }
+        @media (min-width: 900px) { .controls { width: 360px; height: 100%; flex-shrink: 0; border-right: 1px solid var(--border); overflow-y: auto; order: 1; } }
+
+        .section { border-top: 1px solid var(--border); padding-top: 14px; display: flex; flex-direction: column; gap: 8px; }
+        .section-title { font-size: 11px; font-weight: bold; color: #888; letter-spacing: 1px; }
+
+        .mode-switch { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+        .m-btn { background: #3c3c3c; border: 1px solid #555; padding: 12px 5px; font-size: 12px; color: #aaa; cursor: pointer; border-radius: 4px; font-weight: bold; }
+        .m-btn.active { background: var(--primary); color: white; border-color: #0091ff; box-shadow: 0 0 10px rgba(0,120,204,0.4); }
+
+        .input-group { display: flex; align-items: center; gap: 10px; justify-content: space-between; }
+        .input-group label { flex-grow: 1; }
+        
+        .num-input { 
+            background: #111; color: #00ff41; border: 1px solid #555; border-radius: 4px; 
+            padding: 4px; width: 65px; font-family: 'Consolas', monospace; font-size: 13px; font-weight: bold; text-align: right;
+        }
+
+        button { cursor: pointer; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 4px; font-weight: bold; font-size: 13px; }
+        button:disabled { opacity: 0.3; cursor: not-allowed; }
+        
+        input[type="range"] { width: 100%; cursor: pointer; accent-color: var(--primary); height: 25px; margin: 0; }
+        input[type="file"] { font-size: 12px; color: #888; }
+
+        #colorList { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px; border: 1px solid var(--border); min-height: 40px; background: #1a1a1a; border-radius: 4px; }
+        .color-chip { width: 30px; height: 30px; border-radius: 3px; border: 1px solid #fff; cursor: pointer; position: relative; }
+        .color-chip:hover::after { content: "×"; position: absolute; inset: 0; background: rgba(255,0,0,0.8); color: white; display: flex; align-items: center; justify-content: center; font-size: 16px; border-radius: 2px; }
+        
+        .download-btn { background: #e65c00; font-size: 15px; padding: 18px; margin-top: 10px; box-shadow: 0 4px 15px rgba(230,92,0,0.3); }
+        .download-btn:hover { background: #ff751a; }
+        .footer-info { font-size: 10px; color: #666; text-align: center; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="workspace">
+        <div class="canvas-wrapper">
+            <div class="canvas-container" id="canvasContainer">
+                <canvas id="mainCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <div style="margin-bottom: 5px;">
+            <label class="section-title">ソース読み込み</label>
+            <input type="file" id="upload" accept="image/*">
+        </div>
+
+        <div class="section">
+            <label class="section-title">操作モード</label>
+            <div class="mode-switch">
+                <button class="m-btn active" id="mMove">移動</button>
+                <button class="m-btn" id="mCrop">切り取り</button>
+                <button class="m-btn" id="mPick">色取得</button>
+            </div>
+            <div class="row" style="display:flex; gap:6px; margin-top:6px;">
+                <button id="applyCropBtn" disabled style="flex:1; background:#2d7d32;">切り取り確定</button>
+                <button id="resetCropBtn" disabled style="background:#555;">初期化</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="input-group">
+                <label class="section-title">背景透過（許容誤差）</label>
+                <input type="number" id="toleranceNum" class="num-input" value="30" min="0" max="500">
+            </div>
+            <input type="range" id="tolerance" min="0" max="500" value="30">
+            <div id="colorList"></div>
+            <p class="footer-info">※Alt+クリックでキャンバスから色を取得</p>
+        </div>
+
+        <div class="section">
+            <div class="input-group">
+                <label class="section-title">画像の拡大率</label>
+                <input type="number" id="scaleNum" class="num-input" value="1.00" min="0.1" max="5" step="0.01">
+            </div>
+            <input type="range" id="scale" min="0.1" max="5" step="0.01" value="1.0">
+
+            <div class="input-group" style="margin-top: 8px;">
+                <label class="section-title">キャンバス幅 (px)</label>
+                <input type="number" id="canvasWNum" class="num-input" value="512" min="128" max="2048">
+            </div>
+            <input type="range" id="canvasW" min="128" max="2048" step="1" value="512">
+
+            <div class="input-group" style="margin-top: 8px;">
+                <label class="section-title">キャンバス高 (px)</label>
+                <input type="number" id="canvasHNum" class="num-input" value="512" min="128" max="2048">
+            </div>
+            <input type="range" id="canvasH" min="128" max="2048" step="1" value="512">
+        </div>
+
+        <div class="section">
+            <label style="color:#888;">
+                <span style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="showGrid" checked> グリッド表示</span>
+                <input type="number" id="gridSize" value="32" step="8" style="width: 55px; background:#111; color:#eee; border:1px solid #555; padding:4px;"> px
+            </label>
+        </div>
+
+        <button id="download" class="download-btn">透過PNGとして保存</button>
+        <div style="height: 50px;"></div>
+    </div>
+</div>
+
+<script>
+// --- ロジック部分は前回の高精度版を完全維持 ---
+const upload = document.getElementById('upload'), canvas = document.getElementById('mainCanvas'), ctx = canvas.getContext('2d'), colorListEl = document.getElementById('colorList');
+let originalImage = null, sourceCanvas = null, processedCanvas = null, targetColors = [];
+
+let state = {
+    mode: 'MOVE', isDragging: false, 
+    canvasW: 512, canvasH: 512, scale: 1.0, imgX: 0, imgY: 0, tolerance: 30,
+    cropStart: {x:0, y:0}, cropEnd: {x:0, y:0}, lastMouse: {x:0, y:0}
+};
+
+window.onload = () => { renderBlank(); };
+
+function renderBlank() {
+    canvas.width = state.canvasW; canvas.height = state.canvasH;
+    ctx.clearRect(0, 0, state.canvasW, state.canvasH);
+    if (document.getElementById('showGrid').checked) drawGrid();
+}
+
+function resetPosition() {
+    if (!sourceCanvas) return;
+    state.imgX = (state.canvasW - sourceCanvas.width * state.scale) / 2;
+    state.imgY = (state.canvasH - sourceCanvas.height * state.scale) / 2;
+}
+
+upload.addEventListener('change', (e) => {
+    const file = e.target.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+        originalImage = new Image();
+        originalImage.onload = () => {
+            initSource(originalImage);
+            if (targetColors.length === 0) addTargetColor(0, 255, 0);
+            update();
+        };
+        originalImage.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+});
+
+function initSource(img) {
+    sourceCanvas = document.createElement('canvas');
+    sourceCanvas.width = img.width; sourceCanvas.height = img.height;
+    sourceCanvas.getContext('2d').drawImage(img, 0, 0);
+    resetPosition();
+    document.getElementById('resetCropBtn').disabled = false;
+}
+
+function update() { if (!sourceCanvas) return; processImage(); render(); }
+
+function processImage() {
+    const temp = document.createElement('canvas');
+    temp.width = sourceCanvas.width; temp.height = sourceCanvas.height;
+    const tCtx = temp.getContext('2d'); tCtx.drawImage(sourceCanvas, 0, 0);
+    const imgData = tCtx.getImageData(0, 0, temp.width, temp.height);
+    const data = imgData.data;
+    for (let i = 0; i < data.length; i += 4) {
+        if (data[i+3] === 0) continue;
+        for (let c of targetColors) {
+            if (Math.abs(data[i]-c.r) + Math.abs(data[i+1]-c.g) + Math.abs(data[i+2]-c.b) < state.tolerance) { data[i+3] = 0; break; }
+        }
+    }
+    tCtx.putImageData(imgData, 0, 0); processedCanvas = temp;
+}
+
+function render(isExport = false) {
+    canvas.width = state.canvasW; canvas.height = state.canvasH;
+    ctx.clearRect(0, 0, state.canvasW, state.canvasH);
+    ctx.imageSmoothingEnabled = false;
+    if (processedCanvas) {
+        ctx.drawImage(processedCanvas, state.imgX, state.imgY, processedCanvas.width * state.scale, processedCanvas.height * state.scale);
+    }
+    if (isExport) return;
+    if (document.getElementById('showGrid').checked) drawGrid();
+    if (state.mode === 'CROP' && state.isDragging) drawCropUI();
+}
+
+function drawGrid() {
+    const step = parseInt(document.getElementById('gridSize').value) || 32;
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.1)"; ctx.lineWidth = 1; ctx.beginPath();
+    for (let i = 0; i <= state.canvasW; i += step) { ctx.moveTo(i, 0); ctx.lineTo(i, state.canvasH); }
+    for (let j = 0; j <= state.canvasH; j += step) { ctx.moveTo(0, j); ctx.lineTo(state.canvasW, j); }
+    ctx.stroke();
+    ctx.strokeStyle = "rgba(0, 255, 255, 0.25)"; ctx.beginPath();
+    ctx.moveTo(state.canvasW/2, 0); ctx.lineTo(state.canvasW/2, state.canvasH);
+    ctx.moveTo(0, state.canvasH/2); ctx.lineTo(state.canvasW, state.canvasH/2); ctx.stroke();
+}
+
+function drawCropUI() {
+    const x = Math.min(state.cropStart.x, state.cropEnd.x), y = Math.min(state.cropStart.y, state.cropEnd.y), w = Math.abs(state.cropEnd.x - state.cropStart.x), h = Math.abs(state.cropEnd.y - state.cropStart.y);
+    ctx.fillStyle = "rgba(0, 0, 0, 0.7)"; ctx.beginPath(); ctx.rect(0, 0, state.canvasW, state.canvasH); ctx.rect(x, y, w, h); ctx.fill("evenodd");
+    ctx.strokeStyle = "#00f3ff"; ctx.lineWidth = 2; ctx.setLineDash([6, 3]); ctx.strokeRect(x, y, w, h); ctx.setLineDash([]);
+}
+
+function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const cx = e.touches ? e.touches[0].clientX : e.clientX, cy = e.touches ? e.touches[0].clientY : e.clientY;
+    return { x: (cx - rect.left) * (canvas.width / rect.width), y: (cy - rect.top) * (canvas.height / rect.height), rawX: cx, rawY: cy };
+}
+
+const onStart = (e) => {
+    if (!sourceCanvas && state.mode !== 'PICK') return;
+    const p = getPos(e);
+    if (e.altKey || state.mode === 'PICK' || e.button === 2) {
+        const pix = ctx.getImageData(p.x, p.y, 1, 1).data; addTargetColor(pix[0], pix[1], pix[2]); return;
+    }
+    state.isDragging = true; state.lastMouse = {x: p.rawX, y: p.rawY}; state.cropStart = state.cropEnd = {x: p.x, y: p.y};
+};
+
+const onMove = (e) => {
+    if (!state.isDragging) return;
+    const p = getPos(e);
+    if (state.mode === 'CROP') {
+        state.cropEnd = {x: p.x, y: p.y}; document.getElementById('applyCropBtn').disabled = false; render();
+    } else {
+        state.imgX += (p.rawX - state.lastMouse.x); state.imgY += (p.rawY - state.lastMouse.y);
+        state.lastMouse = {x: p.rawX, y: p.rawY}; render();
+    }
+    if (e.cancelable) e.preventDefault();
+};
+
+canvas.addEventListener('mousedown', onStart);
+canvas.addEventListener('touchstart', onStart, {passive: false});
+window.addEventListener('mousemove', onMove);
+window.addEventListener('touchmove', onMove, {passive: false});
+window.addEventListener('mouseup', () => state.isDragging = false);
+window.addEventListener('touchend', () => state.isDragging = false);
+
+function setMode(m) {
+    state.mode = m; document.querySelectorAll('.m-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('m' + m.charAt(0) + m.slice(1).toLowerCase()).classList.add('active');
+    canvas.style.cursor = m === 'CROP' ? 'crosshair' : (m === 'PICK' ? 'copy' : 'move');
+}
+document.getElementById('mMove').onclick = () => setMode('MOVE');
+document.getElementById('mCrop').onclick = () => setMode('CROP');
+document.getElementById('mPick').onclick = () => setMode('PICK');
+
+document.getElementById('applyCropBtn').onclick = () => {
+    const x = Math.min(state.cropStart.x, state.cropEnd.x), y = Math.min(state.cropStart.y, state.cropEnd.y), w = Math.abs(state.cropEnd.x - state.cropStart.x), h = Math.abs(state.cropEnd.y - state.cropStart.y);
+    const ix = (x - state.imgX) / state.scale, iy = (y - state.imgY) / state.scale, iw = w / state.scale, ih = h / state.scale;
+    if (iw < 1 || ih < 1) return;
+    const nc = document.createElement('canvas'); nc.width = iw; nc.height = ih;
+    nc.getContext('2d').drawImage(sourceCanvas, ix, iy, iw, ih, 0, 0, iw, ih);
+    sourceCanvas = nc; document.getElementById('applyCropBtn').disabled = true; setMode('MOVE'); resetPosition(); update();
+};
+
+document.getElementById('resetCropBtn').onclick = () => { if(!originalImage) return; initSource(originalImage); update(); };
+
+function addTargetColor(r, g, b) {
+    if (targetColors.some(c => c.r===r && c.g===g && c.b===b)) return;
+    targetColors.push({r, g, b});
+    const chip = document.createElement('div'); chip.className = 'color-chip'; chip.style.backgroundColor = `rgb(${r},${g},${b})`;
+    chip.onclick = () => { targetColors = targetColors.filter(c => c.r!==r || c.g!==g || c.b!==b); chip.remove(); update(); };
+    colorListEl.appendChild(chip); update();
+}
+
+function syncScale(newScale) {
+    if (!sourceCanvas) return;
+    const centerX = state.imgX + (sourceCanvas.width * state.scale) / 2;
+    const centerY = state.imgY + (sourceCanvas.height * state.scale) / 2;
+    state.scale = newScale;
+    state.imgX = centerX - (sourceCanvas.width * newScale) / 2;
+    state.imgY = centerY - (sourceCanvas.height * newScale) / 2;
+    document.getElementById('scale').value = newScale; document.getElementById('scaleNum').value = newScale.toFixed(2);
+    render();
+}
+
+document.getElementById('tolerance').oninput = (e) => { state.tolerance = parseInt(e.target.value); document.getElementById('toleranceNum').value = e.target.value; update(); };
+document.getElementById('toleranceNum').oninput = (e) => { state.tolerance = parseInt(e.target.value || 0); document.getElementById('tolerance').value = state.tolerance; update(); };
+document.getElementById('scale').oninput = (e) => syncScale(parseFloat(e.target.value));
+document.getElementById('scaleNum').oninput = (e) => syncScale(parseFloat(e.target.value || 0.1));
+
+document.getElementById('canvasW').oninput = (e) => { state.canvasW = parseInt(e.target.value); document.getElementById('canvasWNum').value = e.target.value; render(); };
+document.getElementById('canvasWNum').oninput = (e) => { state.canvasW = parseInt(e.target.value || 128); document.getElementById('canvasW').value = state.canvasW; render(); };
+document.getElementById('canvasH').oninput = (e) => { state.canvasH = parseInt(e.target.value); document.getElementById('canvasHNum').value = e.target.value; render(); };
+document.getElementById('canvasHNum').oninput = (e) => { state.canvasH = parseInt(e.target.value || 128); document.getElementById('canvasH').value = state.canvasH; render(); };
+
+document.getElementById('showGrid').onchange = () => render();
+document.getElementById('gridSize').oninput = () => render();
+canvas.addEventListener('contextmenu', e => e.preventDefault());
+document.getElementById('download').onclick = () => { render(true); const link = document.createElement('a'); link.download = 'sprite.png'; link.href = canvas.toDataURL(); link.click(); render(); };
+</script>
+</body>
+</html>

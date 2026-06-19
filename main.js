@@ -4230,6 +4230,19 @@ const Field = {
         return colors[effect.type] || '#ffffff';
     },
 
+    getTileEffectGraphicKey: (tileX = null, tileY = null) => {
+        if (!Field.currentMapData?.isFixed || tileX === null || tileY === null) return null;
+        const effect = (typeof MapRegistry !== 'undefined' && MapRegistry.findTileEffect)
+            ? MapRegistry.findTileEffect(Field.currentMapData, tileX, tileY)
+            : null;
+        if (!effect) return null;
+        return {
+            poison: 'tile_poison_bog',
+            ice: 'tile_ice_slide',
+            warp: 'overlay_dungeon_warp'
+        }[effect.type] || null;
+    },
+
     isFixedDungeonOverlayTile: (tileSign) => {
         return !!Field.getFixedTileOverlayConfig(tileSign);
     },
@@ -4654,6 +4667,13 @@ const Field = {
             if (typeof Dungeon !== 'undefined' && typeof Dungeon.isAbyssRiftAt === 'function' && Dungeon.isAbyssRiftAt(x, y)) {
                 logIfNeeded('闇がどこまでも続いているような亀裂がある。');
                 App.setAction('亀裂を調べる', () => Dungeon.encounterAbyssRift({ auto: false }));
+                return true;
+            }
+
+            if (typeof Dungeon !== 'undefined' && typeof Dungeon.isTrialAngelAt === 'function' && Dungeon.isTrialAngelAt(x, y)) {
+                const angel = App.data?.dungeon?.trialAngel;
+                logIfNeeded(angel?.log || '試練の天使が静かに待っている。');
+                App.setAction(angel?.label || '試練に挑む', () => Dungeon.startAngelTrial(angel));
                 return true;
             }
 
@@ -5274,8 +5294,10 @@ const Field = {
                     }
                 }
 
+                const effectGraphicKey = Field.getTileEffectGraphicKey ? Field.getTileEffectGraphicKey(tx, ty) : null;
+                const drewEffectGraphic = effectGraphicKey ? drawGraphic(effectGraphicKey, drawX, drawY, ts) : false;
                 const effectColor = Field.getTileEffectMarkerColor ? Field.getTileEffectMarkerColor(tx, ty) : null;
-                if (effectColor) {
+                if (effectColor && !drewEffectGraphic) {
                     ctx.save();
                     ctx.globalAlpha = 0.78;
                     ctx.fillStyle = effectColor;
@@ -5337,6 +5359,7 @@ const Field = {
         drawOverlayImage(App.data?.dungeon?.abyssRift, 'assets/effect/fx-abyss-vortex-ai.png', '#a34cff');
         drawOverlayImage(App.data?.dungeon?.adventurer, 'assets/monsters/monster_100009.png', '#5bd6ff');
         drawOverlayImage(App.data?.dungeon?.keyGuardian, 'assets/monsters/monster_100010.png', '#ffd78a');
+        drawOverlayImage(App.data?.dungeon?.trialAngel, 'assets/map/overlays/overlay_dungeon_trial_angel_v001.png', '#fff3a6');
 
         // 4. 壁際の影は、溶岩・宝箱・階段・常設泉などの上から最後に重ねる。
         // プレイヤーまで暗くしないよう、プレイヤー描画の直前で止める。
@@ -5512,6 +5535,7 @@ const Field = {
         drawMiniObject(App.data?.dungeon?.healSpring, '#80ffb0');
         drawMiniObject(App.data?.dungeon?.abyssRift, '#a34cff');
         drawMiniObject(App.data?.dungeon?.adventurer, '#5bd6ff');
+        drawMiniObject(App.data?.dungeon?.trialAngel, '#fff3a6');
         drawMiniObject(App.data?.dungeon?.keyGuardian, '#ffd78a');
 
         drawHeldKeyHud();
