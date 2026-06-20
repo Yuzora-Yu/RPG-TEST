@@ -59,7 +59,9 @@
 | `big_tower_clear` | `flags.bigTowerCleared` |
 | `thunder_fort_clear` | `unlocked.medalKing`, `flags.thunderFortCleared` |
 | `light_palace_clear` | `flags.lightPalaceCleared` |
-| `dark_castle_clear` | `unlocked.gacha`, `flags.darkCastleCleared`, `flags.mainStoryCleared` |
+| `dark_castle_clear` | `flags.darkCastleCleared`, `flags.mainStoryCleared` |
+
+ガチャは当面開放条件を設定せず、メニュー上では未開放として扱う。
 
 ## 鍵HUD修正
 

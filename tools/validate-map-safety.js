@@ -199,6 +199,10 @@ for (let sample = 0; sample < randomSamples; sample++) {
     randomFloorsChecked++;
     const generatedCheck = Dungeon.validateGeneratedFloor();
     assert(generatedCheck.ok, `ABYSS sample ${sample + 1} F${floor}: generated floor invalid (${generatedCheck.reason})`);
+    assert(
+      typeof Dungeon.countIsolatedWallTiles === 'function' && Dungeon.countIsolatedWallTiles() === 0,
+      `ABYSS sample ${sample + 1} F${floor}: isolated one-tile wall remains`
+    );
     const doors = [];
     Dungeon.map.forEach((row, y) => row.forEach((tile, x) => {
       if (doorColors[String(tile || '').toUpperCase()]) doors.push({ x, y });

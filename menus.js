@@ -338,20 +338,29 @@ const Menu = {
 
     subScreenFeatureMap: {
         blacksmith: 'smith',
-        dungeon: 'abyss',
+        dungeon: 'dungeonMenu',
         gacha: 'gacha'
     },
 
+    isDungeonEscapeContext: () => {
+        const mapData = (typeof Field !== 'undefined') ? Field.currentMapData : null;
+        const areaKey = (typeof App !== 'undefined') ? App.data?.location?.area : null;
+        const isFixedDungeonArea = !!(areaKey && typeof FIXED_DUNGEON_MAPS !== 'undefined' && FIXED_DUNGEON_MAPS[areaKey]);
+        return !!(mapData?.isDungeon || areaKey === 'ABYSS' || isFixedDungeonArea);
+    },
+
     featureButton: (id, label, featureKey, style = '') => {
-        const locked = typeof App !== 'undefined' && typeof App.isFeatureUnlocked === 'function' && !App.isFeatureUnlocked(featureKey);
+        const isDungeonEscape = id === 'dungeon' && Menu.isDungeonEscapeContext();
+        const locked = !isDungeonEscape && typeof App !== 'undefined' && typeof App.isFeatureUnlocked === 'function' && !App.isFeatureUnlocked(featureKey);
         const click = locked ? `Menu.showLockedFeature('${featureKey}')` : `Menu.openSubScreen('${id}')`;
-        const lockedStyle = locked ? 'background:#202020; border-color:#666; color:#888; flex-direction:column;' : '';
+        const lockedStyle = locked ? 'flex-direction:column;' : '';
         const finalStyle = [style, lockedStyle].filter(Boolean).join('; ');
         const styleAttr = finalStyle ? ` style="${finalStyle}"` : '';
+        const className = locked ? 'menu-btn is-feature-locked' : 'menu-btn';
         const body = locked
-            ? `???<span style="display:block; font-size:9px; color:#777; margin-top:2px;">未解放</span>`
-            : label;
-        return `<button class="menu-btn" onclick="${click}"${styleAttr}>${body}</button>`;
+            ? `？？？？<span style="display:block; font-size:9px; color:#444; margin-top:2px;">未開放</span>`
+            : (isDungeonEscape ? 'エスケープ' : label);
+        return `<button class="${className}" onclick="${click}"${styleAttr}>${body}</button>`;
     },
 
     showLockedFeature: (featureKey) => {
@@ -392,19 +401,24 @@ const Menu = {
             const badge = '<span style="display:inline-block; width:10px; height:10px; background:#ff4444; border-radius:50%; margin-left:5px; vertical-align:middle; box-shadow:0 0 5px #f00; border:1px solid #fff;"></span>';
 
             grid.innerHTML = `
-                <button class="menu-btn" onclick="Menu.openSubScreen('party')">仲間編成</button>
-                <button class="menu-btn" onclick="Menu.openSubScreen('allies')">仲間一覧</button>
+                <button class="menu-btn" onclick="Menu.openSubScreen('party')">パーティ編成</button>
+                <button class="menu-btn" onclick="Menu.openSubScreen('allies')">ステータス</button>
+
                 <button class="menu-btn" onclick="Menu.openSubScreen('inventory')">所持装備</button>
-                <button class="menu-btn" onclick="Menu.openSubScreen('items')">道具</button>
-                ${Menu.featureButton('blacksmith', '鍛冶屋', 'smith')}
+                <button class="menu-btn" onclick="Menu.openSubScreen('items')">所持道具</button>
+
+                <button class="menu-btn" onclick="Menu.openSubScreen('exchange')">お知らせ${hasUnclaimedDaily ? badge : ''}</button>
                 <button class="menu-btn" onclick="Menu.openSubScreen('skills')">スキル</button>
+
+                <button class="menu-btn" onclick="Menu.openSubScreen('achievements')">実績${hasUnclaimedAchievement ? badge : ''}</button>
+                ${Menu.featureButton('blacksmith', '鍛冶屋', 'smith')}
+
+                <button class="menu-btn" onclick="Menu.openSubScreen('status')">戦歴</button>
+                ${Menu.featureButton('dungeon', 'ダンジョン', 'dungeonMenu', 'background:#400040;')}
+
                 <button class="menu-btn" onclick="Menu.openSubScreen('book')">魔物図鑑</button>
-                <button class="menu-btn" onclick="Menu.openSubScreen('status')">プレイ状況</button>
-				<button class="menu-btn" onclick="Menu.openSubScreen('exchange')">取引所${hasUnclaimedDaily ? badge : ''}</button>
-				<button class="menu-btn" onclick="Menu.openSubScreen('achievements')">実績${hasUnclaimedAchievement ? badge : ''}</button>
-                ${Menu.featureButton('dungeon', 'ダンジョン', 'abyss', 'background:#400040;')}
                 ${Menu.featureButton('gacha', 'ガチャ', 'gacha', 'background:#664400;')}
-				
+                
                 <button class="menu-btn" style="background:#004444;" onclick="App.downloadSave()">データ出力</button>
                 <button class="menu-btn" style="background:#004444;" onclick="App.importSave()">データ読込</button>
                 
@@ -414,6 +428,9 @@ const Menu = {
             Menu.refreshKeyboardNavigation(grid);
         }
     },
+    
+    //ガチャメニューは、のちに「設定」メニューに変更し、データ出力や読込もそちらに格納を予定。ガチャページは残すが、ガチャメニューボタンは削除。
+    //戦歴メニューには、チュートリアル閲覧タブを新設予定。
     
     closeMainMenu: () => {
         document.getElementById('menu-overlay').style.display = 'none';
@@ -566,7 +583,8 @@ const Menu = {
         Menu.installBackGuard();
         Menu.ensureBackGuard();
         const requiredFeature = Menu.subScreenFeatureMap[id];
-        if (requiredFeature && typeof App !== 'undefined' && typeof App.requireFeatureUnlocked === 'function' && !App.requireFeatureUnlocked(requiredFeature)) {
+        const bypassFeatureLock = id === 'dungeon' && Menu.isDungeonEscapeContext();
+        if (!bypassFeatureLock && requiredFeature && typeof App !== 'undefined' && typeof App.requireFeatureUnlocked === 'function' && !App.requireFeatureUnlocked(requiredFeature)) {
             return;
         }
 

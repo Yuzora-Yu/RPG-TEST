@@ -8,7 +8,7 @@ const Dungeon = {
     // 冒険者・回復の泉・深淵の裂け目は App.data.dungeon.* で別管理する。
     // 迷路マップ(genType === 2)だけは検証・メリハリ用に全特殊オブジェクトを100%出現させる。
     adventurerSpawnRate: 0.10,
-    adventurerImagePath: 'assets/monsters/monster_100009.png',
+    adventurerImagePath: 'assets/map/overlays/overlay_dungeon_adventurer_v001.png',
     adventurerPromptOpen: false,
 
     // 回復の泉: 通常フロアでは5%、迷路では100%。
@@ -42,7 +42,18 @@ const Dungeon = {
     keyItemTiles: { Q: 'red', N: 'blue', O: 'gold' },
     keyItemSymbols: { red: 'Q', blue: 'N', gold: 'O' },
     keyColorLabels: { red: '赤', blue: '青', gold: '金' },
-    keyGuardianImagePath: 'assets/monsters/monster_100010.png',
+    keyGuardianImagePath: 'assets/map/overlays/overlay_monster_guardian_v001.png',
+    randomVisualThemes: [
+        { id: 'forest', themeKey: 'WIND_VILLAGE', battleBg: 'battle_bg_forest' },
+        { id: 'tower', themeKey: 'BIG_TOWER', battleBg: 'battle_bg_big_tower' },
+        { id: 'thunder', themeKey: 'THUNDER_FORT', battleBg: 'battle_bg_thunder_fort' },
+        { id: 'light', themeKey: 'LIGHT_PALACE', battleBg: 'battle_bg_light_palace' },
+        { id: 'dark', themeKey: 'DARK_CASTLE', battleBg: 'battle_bg_dark_castle' },
+        { id: 'crena', themeKey: 'CRENA_CAVE', battleBg: 'battle_bg_crena' },
+        { id: 'seabed', themeKey: 'SEABED_TEMPLE', battleBg: 'battle_bg_seabed' },
+        { id: 'darkShrine', themeKey: 'DARK_SHRINE_RUINS', battleBg: 'battle_bg_dark_shrine' },
+        { id: 'grezelia', themeKey: 'GREZELIA_CAVE', battleBg: 'battle_bg_grezelia' }
+    ],
     
 	getEntryChoices: () => {
 		const maxF = App.data.dungeon.maxFloor || 0;
@@ -104,7 +115,9 @@ const Dungeon = {
 
 		const maxF = App.data.dungeon?.maxFloor || 0;
 		const tryCount = App.data.dungeon?.tryCount || 0;
-		const isInDungeon = Field.currentMapData && Field.currentMapData.isDungeon;
+		const areaKey = App.data?.location?.area;
+		const isFixedDungeonArea = !!(areaKey && typeof FIXED_DUNGEON_MAPS !== 'undefined' && FIXED_DUNGEON_MAPS[areaKey]);
+		const isInDungeon = !!(Field.currentMapData?.isDungeon || areaKey === 'ABYSS' || isFixedDungeonArea);
 		const isBossFloor = isInDungeon && Dungeon.floor > 0 && Dungeon.floor % 10 === 0;
 		const isOnBossTile = isInDungeon && Dungeon.map?.[Field.y]?.[Field.x] === 'B';
 		const cannotExit = isBossFloor && isOnBossTile;
@@ -185,6 +198,7 @@ const Dungeon = {
 	
 	enter: () => {
 		if (typeof App !== 'undefined' && typeof App.requireFeatureUnlocked === 'function' && !App.requireFeatureUnlocked('abyss')) return;
+		if (typeof App !== 'undefined' && typeof App.unlockFeature === 'function') App.unlockFeature('dungeonMenu');
 		if (typeof Menu !== 'undefined' && typeof Menu.openSubScreen === 'function') {
 			Menu.openSubScreen('dungeon');
 			return;
@@ -196,6 +210,7 @@ const Dungeon = {
     // --- ダンジョン突入・進行 ---
     start: (startFloor) => {
 		if (typeof App !== 'undefined' && typeof App.requireFeatureUnlocked === 'function' && !App.requireFeatureUnlocked('abyss')) return;
+		if (typeof App !== 'undefined' && typeof App.unlockFeature === 'function') App.unlockFeature('dungeonMenu');
 		if (!App.data.dungeon.returnPoint) {
 			App.data.dungeon.returnPoint = {
 				x: App.data.location.x,
@@ -793,6 +808,14 @@ const Dungeon = {
             Dungeon.map = App.data.dungeon.map;
             Dungeon.width = App.data.dungeon.width;
             Dungeon.height = App.data.dungeon.height;
+            if (!App.data.dungeon.visualThemeKey) Dungeon.rollRandomVisualTheme();
+            // v3.18以前に保存された階層にも、孤立した1マス壁が残っている場合がある。
+            // 復元時に地形だけ整形し、階段・鍵・宝箱など既存の進行状態は維持する。
+            const removedIsolatedWalls = Dungeon.removeIsolatedWallTiles(Dungeon.map);
+            if (removedIsolatedWalls > 0) {
+                App.data.dungeon.map = Dungeon.map;
+                App.save();
+            }
             if (App.data.dungeon.adventurer && Number(App.data.dungeon.adventurer.floor) !== Number(Dungeon.floor)) {
                 App.data.dungeon.adventurer = null;
             }
@@ -843,7 +866,9 @@ const Dungeon = {
 			width: Dungeon.width, 
 			height: Dungeon.height, 
 			tiles: Dungeon.map, 
-			isDungeon: true
+			isDungeon: true,
+            themeKey: App.data.dungeon.visualThemeKey || 'DEFAULT',
+            battleBg: App.data.dungeon.visualBattleBg || 'battle_bg_dungeon'
         };
 
         App.data.location.x = Field.x;
@@ -2360,7 +2385,19 @@ const Dungeon = {
             if (!keepVisited) App.data.dungeon.visitedMap = null;
             App.data.dungeon.genType = null;
             App.data.dungeon.genVariant = null;
+            App.data.dungeon.visualThemeId = null;
+            App.data.dungeon.visualThemeKey = null;
+            App.data.dungeon.visualBattleBg = null;
         }
+    },
+
+    rollRandomVisualTheme: () => {
+        if (!App.data?.dungeon || !Array.isArray(Dungeon.randomVisualThemes) || !Dungeon.randomVisualThemes.length) return null;
+        const theme = Dungeon.randomVisualThemes[Dungeon.randInt(0, Dungeon.randomVisualThemes.length - 1)];
+        App.data.dungeon.visualThemeId = theme.id;
+        App.data.dungeon.visualThemeKey = theme.themeKey;
+        App.data.dungeon.visualBattleBg = theme.battleBg;
+        return theme;
     },
 
     pickRandomFloorType: () => {
@@ -2371,7 +2408,60 @@ const Dungeon = {
         return 3; // 遺跡回廊
     },
 
+    removeIsolatedWallTiles: (map = Dungeon.map) => {
+        if (!Array.isArray(map) || map.length < 3 || !Array.isArray(map[0])) return 0;
+        const height = map.length;
+        const width = map[0].length;
+        const isolated = [];
+
+        for (let y = 1; y < height - 1; y++) {
+            for (let x = 1; x < width - 1; x++) {
+                if (String(map[y]?.[x] || '').toUpperCase() !== 'W') continue;
+
+                let connectedWall = false;
+                for (let dy = -1; dy <= 1 && !connectedWall; dy++) {
+                    for (let dx = -1; dx <= 1; dx++) {
+                        if (dx === 0 && dy === 0) continue;
+                        if (String(map[y + dy]?.[x + dx] || '').toUpperCase() === 'W') {
+                            connectedWall = true;
+                            break;
+                        }
+                    }
+                }
+                if (!connectedWall) isolated.push({ x, y });
+            }
+        }
+
+        isolated.forEach(({ x, y }) => {
+            map[y][x] = 'T';
+        });
+        return isolated.length;
+    },
+
+    countIsolatedWallTiles: (map = Dungeon.map) => {
+        if (!Array.isArray(map) || map.length < 3 || !Array.isArray(map[0])) return 0;
+        let count = 0;
+        for (let y = 1; y < map.length - 1; y++) {
+            for (let x = 1; x < map[0].length - 1; x++) {
+                if (String(map[y]?.[x] || '').toUpperCase() !== 'W') continue;
+                let connectedWall = false;
+                for (let dy = -1; dy <= 1 && !connectedWall; dy++) {
+                    for (let dx = -1; dx <= 1; dx++) {
+                        if (dx === 0 && dy === 0) continue;
+                        if (String(map[y + dy]?.[x + dx] || '').toUpperCase() === 'W') {
+                            connectedWall = true;
+                            break;
+                        }
+                    }
+                }
+                if (!connectedWall) count++;
+            }
+        }
+        return count;
+    },
+
     buildRandomFloorLayout: () => {
+        Dungeon.rollRandomVisualTheme();
         if (Math.random() < 0.02) {
             Dungeon.generateTreasureRoom();
             if (App.data?.dungeon) App.data.dungeon.isTreasureRoom = true;
@@ -2386,6 +2476,9 @@ const Dungeon = {
         else if (type === 2) Dungeon.generateMazeMap();
         else Dungeon.generateRuinsMap();
 
+        // 柱として意図された壁でも、1マスだけ孤立すると描画上は不自然な壁片に見える。
+        // 周囲8方向の壁と一切つながっていないWだけを床へ戻す。
+        Dungeon.removeIsolatedWallTiles();
         Dungeon.setPlayerRandomSpawn();
         App.data.dungeon.genType = type;
         App.data.dungeon.genVariant = Dungeon.lastGenVariant || null;
@@ -2473,6 +2566,9 @@ const Dungeon = {
             if (missing) return { ok: false, reason: `${missing.color} key missing for door ${missing.x},${missing.y}` };
         }
 
+        const isolatedWalls = Dungeon.countIsolatedWallTiles();
+        if (isolatedWalls > 0) return { ok: false, reason: `${isolatedWalls} isolated wall tiles remain` };
+
         if (!Dungeon.validateKeyDoorPuzzle()) return { ok: false, reason: 'key-door route invalid' };
         return { ok: true };
     },
@@ -2481,6 +2577,7 @@ const Dungeon = {
         Dungeon.resetRandomFloorAttemptState(false);
         
         if (Dungeon.floor > 0 && Dungeon.floor % 10 === 0) {
+            Dungeon.rollRandomVisualTheme();
             Dungeon.generateBossRoom();
         } else {
             let valid = false;
@@ -2513,7 +2610,9 @@ const Dungeon = {
             width: Dungeon.width, 
             height: Dungeon.height, 
             tiles: Dungeon.map, 
-            isDungeon: true 
+            isDungeon: true,
+            themeKey: App.data.dungeon.visualThemeKey || 'DEFAULT',
+            battleBg: App.data.dungeon.visualBattleBg || 'battle_bg_dungeon'
         };
         App.data.location.x = Field.x;
         App.data.location.y = Field.y;

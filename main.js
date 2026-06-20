@@ -325,9 +325,10 @@ const App = {
     },
 
     unlockDefaults: {
-        smith: true,
-        gacha: true,
+        smith: false,
+        gacha: false,
         abyss: true,
+        dungeonMenu: false,
         teleport: true,
         casino: true,
         medalKing: true,
@@ -340,6 +341,7 @@ const App = {
         smith: '鍛冶屋',
         gacha: 'ガチャ',
         abyss: '深淵の魔窟',
+        dungeonMenu: 'ダンジョン',
         teleport: '宿屋の転送',
         casino: 'カジノ',
         medalKing: 'メダル交換',
@@ -375,6 +377,9 @@ const App = {
     ensureUnlockState: () => {
         if (!App.data) return {};
         if (!App.data.progress) App.data.progress = {};
+        if (!App.data.progress.flags || typeof App.data.progress.flags !== 'object' || Array.isArray(App.data.progress.flags)) {
+            App.data.progress.flags = {};
+        }
         if (!App.data.progress.unlocked || typeof App.data.progress.unlocked !== 'object' || Array.isArray(App.data.progress.unlocked)) {
             App.data.progress.unlocked = {};
         }
@@ -384,6 +389,22 @@ const App = {
                 App.data.progress.unlocked[key] = App.unlockDefaults[key];
             }
         });
+
+        // 段階開放導入前はsmith/abyssが常時trueだったため、一度だけ実進行から再構築する。
+        if (!App.data.progress.flags.menuUnlockMigrationV1) {
+            App.data.progress.unlocked.smith = !!App.data.progress.flags.fireVillageCleared;
+            App.data.progress.unlocked.dungeonMenu = Number(App.data.dungeon?.tryCount || 0) > 0 ||
+                Number(App.data.dungeon?.maxFloor || 0) > 0 ||
+                App.data.location?.area === 'ABYSS';
+            App.data.progress.flags.menuUnlockMigrationV1 = true;
+        }
+
+        // v3.23ではガチャを常時開放していたため、既存セーブも一度だけ未開放へ戻す。
+        // 将来開放条件を追加した場合は、この移行完了後にunlockFeature('gacha')を呼べばよい。
+        if (!App.data.progress.flags.menuUnlockMigrationV2) {
+            App.data.progress.unlocked.gacha = false;
+            App.data.progress.flags.menuUnlockMigrationV2 = true;
+        }
 
         return App.data.progress.unlocked;
     },
@@ -1083,7 +1104,7 @@ const App = {
     },
 
     getFeatureLockedMessage: (key) => {
-        return `${App.getFeatureUnlockLabel(key)}はまだ解放されていません。\nストーリーを進めると利用できるようになります。`;
+        return `まだ解放されていません！\nストーリーを進めると利用できるようになります。`;
     },
 
     isFeatureUnlocked: (key) => {
@@ -3730,6 +3751,10 @@ load: () => {
         document.querySelectorAll('.scene-layer').forEach(e => e.style.display = 'none');
         const target = document.getElementById(sceneId + '-scene');
         if(target) target.style.display = 'flex';
+
+        if (typeof PhaserFieldRenderer !== 'undefined' && typeof PhaserFieldRenderer.setActive === 'function') {
+            PhaserFieldRenderer.setActive(sceneId === 'field');
+        }
         
         if(typeof Menu !== 'undefined') Menu.closeAll();
         App.clearAction();
@@ -4048,24 +4073,42 @@ const Field = {
 
     updateMinimapHotspotBounds: () => {
         const canvas = document.getElementById('field-canvas');
+        const phaserRoot = document.getElementById('phaser-field-root');
         const wrapper = document.getElementById('canvas-wrapper');
         const hotspot = document.getElementById('field-minimap-hotspot');
         const restore = document.getElementById('field-minimap-restore');
         if (!canvas || !wrapper || !hotspot) return;
 
-        const canvasRect = canvas.getBoundingClientRect();
         const wrapperRect = wrapper.getBoundingClientRect();
-        if (!canvasRect.width || !canvasRect.height || !canvas.width || !canvas.height) return;
-
         const mmSize = 80;
-        const mmX = canvas.width - mmSize - 10;
-        const mmY = 10;
-        const scaleX = canvasRect.width / canvas.width;
-        const scaleY = canvasRect.height / canvas.height;
-        const left = (canvasRect.left - wrapperRect.left) + (mmX * scaleX);
-        const top = (canvasRect.top - wrapperRect.top) + (mmY * scaleY);
-        const width = mmSize * scaleX;
-        const height = mmSize * scaleY;
+        const margin = 10;
+        const rootRect = phaserRoot?.getBoundingClientRect();
+        const phaserActive = wrapper.classList.contains('phaser-field-active')
+            && rootRect
+            && rootRect.width > 0
+            && rootRect.height > 0;
+
+        let left;
+        let top;
+        let width;
+        let height;
+
+        if (phaserActive) {
+            left = (rootRect.left - wrapperRect.left) + rootRect.width - mmSize - margin;
+            top = (rootRect.top - wrapperRect.top) + margin;
+            width = mmSize;
+            height = mmSize;
+        } else {
+            const canvasRect = canvas.getBoundingClientRect();
+            if (!canvasRect.width || !canvasRect.height || !canvas.width || !canvas.height) return;
+            const mmX = canvas.width - mmSize - margin;
+            const scaleX = canvasRect.width / canvas.width;
+            const scaleY = canvasRect.height / canvas.height;
+            left = (canvasRect.left - wrapperRect.left) + (mmX * scaleX);
+            top = (canvasRect.top - wrapperRect.top) + (margin * scaleY);
+            width = mmSize * scaleX;
+            height = mmSize * scaleY;
+        }
 
         Object.assign(hotspot.style, {
             left: `${left}px`,
@@ -4232,6 +4275,10 @@ const Field = {
 
     getTileEffectGraphicKey: (tileX = null, tileY = null) => {
         if (!Field.currentMapData?.isFixed || tileX === null || tileY === null) return null;
+        if (typeof Dungeon !== 'undefined' && typeof Dungeon.getFixedHunterAt === 'function') {
+            const hunter = Dungeon.getFixedHunterAt(tileX, tileY);
+            if (hunter) return hunter.imageKey || 'overlay_dungeon_hunter';
+        }
         const effect = (typeof MapRegistry !== 'undefined' && MapRegistry.findTileEffect)
             ? MapRegistry.findTileEffect(Field.currentMapData, tileX, tileY)
             : null;
@@ -4310,6 +4357,62 @@ const Field = {
             baseTile: baseTile || upper,
             overlayConfig
         };
+    },
+
+    isBuildingOverlayConfig: (config) => {
+        const key = String(config?.img || '');
+        if (!key) return false;
+        return [
+            'overlay_building_',
+            'overlay_field_castle',
+            'overlay_field_fortress',
+            'overlay_field_hall',
+            'overlay_field_house',
+            'overlay_field_inn',
+            'overlay_field_lighthouse',
+            'overlay_field_medal',
+            'overlay_field_ruins',
+            'overlay_field_settlement',
+            'overlay_field_shop',
+            'overlay_field_smith',
+            'overlay_field_temple',
+            'overlay_field_tower',
+            'overlay_field_town',
+            'overlay_field_village',
+            'overlay_field_weapon'
+        ].some(prefix => key.startsWith(prefix));
+    },
+
+    getBuildingAnchorsNear: (centerX, centerY, radiusX = 2, radiusY = 2) => {
+        if (!Field.currentMapData?.isFixed || Field.currentMapData?.isDungeon) return [];
+        const anchors = [];
+        const width = Number(Field.currentMapData.width || 0);
+        const height = Number(Field.currentMapData.height || 0);
+        const areaKey = Field.getCurrentAreaKey();
+
+        for (let y = Math.max(0, centerY - radiusY); y <= Math.min(height - 1, centerY + radiusY); y++) {
+            for (let x = Math.max(0, centerX - radiusX); x <= Math.min(width - 1, centerX + radiusX); x++) {
+                const tile = Field.getRenderedTileForDraw(x, y, width, height, areaKey);
+                const overlay = Field.getFixedTileOverlayConfig(tile, x, y);
+                if (Field.isBuildingOverlayConfig(overlay)) anchors.push({ x, y, overlay });
+            }
+        }
+        return anchors;
+    },
+
+    isBuildingMovementBlocked: (fromX, fromY, toX, toY) => {
+        if (!Field.currentMapData?.isFixed || Field.currentMapData?.isDungeon) return false;
+        const anchors = Field.getBuildingAnchorsNear(toX, toY, 2, 2);
+
+        return anchors.some(building => {
+            // 左後・右後から前へ抜ける移動は許可する。
+            // 屋根の中央を貫通して見える、建物中央と真後ろの間だけを双方向で禁止する。
+            const fromBuilding = fromX === building.x && fromY === building.y;
+            const toBuilding = toX === building.x && toY === building.y;
+            const fromDirectlyBehind = fromX === building.x && fromY === building.y - 1;
+            const toDirectlyBehind = toX === building.x && toY === building.y - 1;
+            return (fromDirectlyBehind && toBuilding) || (fromBuilding && toDirectlyBehind);
+        });
     },
 
 
@@ -4951,6 +5054,13 @@ const Field = {
 
             if (tile === 'W') { keepCurrentTileAction(); return; } 
 
+            if (Field.isBuildingMovementBlocked(Field.x, Field.y, nx, ny)) {
+                App.log('建物に遮られて進めない。');
+                keepCurrentTileAction();
+                Field.render();
+                return;
+            }
+
             if (typeof Dungeon !== 'undefined' && Dungeon.isLockedDoorTile && Dungeon.isLockedDoorTile(tile)) {
                 if (!Dungeon.unlockDoorAt(nx, ny, tile)) {
                     keepCurrentTileAction();
@@ -5055,6 +5165,27 @@ const Field = {
 
     render: () => {
         const canvas = document.getElementById('field-canvas'); if(!canvas) return;
+        if (typeof PhaserFieldRenderer !== 'undefined' && PhaserFieldRenderer.render(Field)) {
+            let locName = Field.currentMapData ? Field.currentMapData.name : `世界地図 (${Field.x}, ${Field.y})`;
+            if (!Field.currentMapData && App.data?.transportMode === 'flying') locName += ' - 飛行中';
+            if (!Field.currentMapData && App.data?.transportMode === 'boat') locName += ' - 小舟';
+            if (Field.currentMapData?.isDungeon) {
+                if (Field.currentMapData.isFixed) {
+                    const baseName = Field.currentMapData.baseName || Field.currentMapData.name;
+                    const floorLabel = Field.currentMapData.floorLabel || `${Dungeon.floor}階`;
+                    locName = Field.currentMapData.displayName || `${baseName} ${floorLabel}`;
+                } else {
+                    locName = `${locName} ${Dungeon.floor}階`;
+                }
+            }
+            const locNameElement = document.getElementById('loc-name');
+            if (locNameElement) locNameElement.innerText = locName;
+            if (typeof App.updateObjectiveHUD === 'function') App.updateObjectiveHUD();
+            if (typeof Field.updateFieldHudState === 'function') Field.updateFieldHudState();
+            const fullMapCanvas = document.getElementById('field-map-modal-canvas');
+            if (fullMapCanvas && typeof Field.drawFullMap === 'function') Field.drawFullMap(fullMapCanvas);
+            return;
+        }
         const ctx = canvas.getContext('2d'), ts = 32, w = canvas.width, h = canvas.height;
         const cx = w/2, cy = h/2, rangeX = Math.ceil(w/(2*ts))+1, rangeY = Math.ceil(h/(2*ts))+1;
         const mapW = Field.currentMapData ? Field.currentMapData.width : (typeof MAP_DATA !== 'undefined' ? MAP_DATA[0].length : 50);
@@ -5547,6 +5678,9 @@ const Field = {
 if (typeof window !== 'undefined') {
     window.addEventListener('resize', () => {
         window.requestAnimationFrame(() => {
+            if (typeof PhaserFieldRenderer !== 'undefined' && typeof PhaserFieldRenderer.resize === 'function') {
+                PhaserFieldRenderer.resize();
+            }
             if (typeof Field.updateMinimapHotspotBounds === 'function') {
                 Field.updateMinimapHotspotBounds();
             }

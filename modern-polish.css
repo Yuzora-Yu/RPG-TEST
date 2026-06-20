@@ -59,7 +59,47 @@
         body.game-page #field-scene { display: flex; flex-direction: column; height: 100%; }
         body.game-page #canvas-wrapper { flex: 1; position: relative; overflow: hidden; border-bottom: 2px solid #fff; background: #333; }
         body.game-page canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; margin: 0 auto;}
-        body.game-page .ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; }
+        body.game-page #phaser-field-root {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+            background: #07090b;
+        }
+        body.game-page #phaser-field-root canvas {
+            width: 100% !important;
+            height: 100% !important;
+            image-rendering: pixelated;
+        }
+        body.game-page #field-canvas {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+        }
+        body.game-page #canvas-wrapper.phaser-field-active #field-canvas {
+            opacity: 0;
+        }
+        body.game-page .ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        body.game-page #field-info-box {
+            position: relative;
+            z-index: 12;
+        }
+        body.game-page #field-minimap-hotspot,
+        body.game-page #field-minimap-restore {
+            z-index: 14;
+        }
         body.game-page .info-box {
             background: var(--win-bg);
             border: 2px solid var(--win-border);
@@ -4398,6 +4438,19 @@ body.game-page #menu-overlay .menu-btn.is-pressing {
   background:
     linear-gradient(180deg, rgba(255, 235, 174, 0.10), transparent 42%),
     linear-gradient(180deg, #6a4324 0%, #341c0c 100%) !important;
+}
+
+body.game-page #menu-overlay .menu-btn.is-feature-locked,
+body.game-page #menu-overlay .menu-btn.is-feature-locked:active,
+body.game-page #menu-overlay .menu-btn.is-feature-locked.is-pressing {
+  background: linear-gradient(180deg, #111 0%, #020202 100%) !important;
+  border-color: #292929 !important;
+  color: #555 !important;
+  filter: grayscale(1) brightness(0.72) !important;
+  text-shadow: none !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.025) inset,
+    0 5px 12px rgba(0, 0, 0, 0.32) !important;
 }
 
 body.game-page #menu-overlay #ad-ui-container {
