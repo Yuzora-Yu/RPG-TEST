@@ -353,6 +353,7 @@ const App = {
     // ストーリー加入キャラの初期レベル設定。
     // ここを変更すれば、加入時に指定Lvまで通常レベルアップ相当の成長を内部適用する。
     storyAllyInitialLevels: {
+        //メインクエスト加入キャラクター
         110: 1,  // サラ
         109: 1,  // ガイル
         105: 6,  // シャオ
@@ -361,22 +362,23 @@ const App = {
         101: 28, // ジョセフ
         204: 40, // レイラ（光の宮殿クリア後）
         306: 49,  // シャニー（魔王城クリア後）
-
-        210: 20,  // カリン（禁忌の森クリア後⇒炎の里）
-
+        
+        //サブクエスト加入キャラクター
+        210: 20,  // カリン（禁忌の森クリア後⇒火山深部）
+        
         102: 27,  // マリー（海底神殿クリア後）
-        209: 28,  // シルビア（海底神殿クリア後）
-        108: 20,  // アリサ（海底神殿クリア後⇒風の集落）
-        207: 35,  // ハイネ（海底神殿クリア後⇒風の集落）
-
-        201: 38,  // アラン（雷の要塞クリア後）
-        202: 35,  // ソフィア（雷の要塞クリア後）
-        203: 40,  // ハヤテ（アラン加入後）
-
+        108: 20,  // アリサ（海底神殿クリア後⇒禁忌の森深部）
+        207: 35,  // ハイネ（海底神殿クリア後⇒禁忌の森深部）
+        209: 28,  // シルビア（ジョセフ加入後⇒水上都市）
+        
+        201: 38,  // アラン（雷の要塞クリア後⇒海底神殿深部）
+        202: 35,  // ソフィア（雷の要塞クリア後⇒海底神殿深部）
+        203: 40,  // ハヤテ（アラン加入後⇒水上都市）
+        
         103: 35,  // ゼリード（大灯台クリア後）
-
-        205: 43,  // バロン（光の宮殿クリア後）
-        302: 43,  // フリーダ（光の宮殿クリア後）
+        
+        205: 43,  // バロン（光の宮殿クリア後⇒雷の要塞深部）
+        302: 43,  // フリーダ（光の宮殿クリア後⇒雷の要塞深部）
         306: 47,  // クロード（光の宮殿クリア後⇒闇の神殿跡地）
         306: 46,  // レオン（光の宮殿クリア後⇒闇の神殿跡地）
 
@@ -4704,6 +4706,10 @@ const Field = {
             ? bossDef.requiredFlags
             : (bossDef.requiredFlag ? [bossDef.requiredFlag] : []);
         if (!requiredFlags.every(flag => !!flags[flag])) return false;
+        const clearedFlags = Array.isArray(bossDef.clearedFlags)
+            ? bossDef.clearedFlags
+            : (bossDef.clearedFlag ? [bossDef.clearedFlag] : []);
+        if (clearedFlags.some(flag => !!flags[flag])) return false;
         if (!bossDef.questId) return true;
         if (!App.isQuestUnlocked(bossDef.questId)) return false;
         if (options.requireAccepted === false) return true;

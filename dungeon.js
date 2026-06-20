@@ -54,6 +54,45 @@ const Dungeon = {
         { id: 'darkShrine', themeKey: 'DARK_SHRINE_RUINS', battleBg: 'battle_bg_dark_shrine' },
         { id: 'grezelia', themeKey: 'GREZELIA_CAVE', battleBg: 'battle_bg_grezelia' }
     ],
+
+    buildFixedBossBattleContext: (bossDef, x, y, mapDef = null) => {
+        if (!bossDef) return null;
+        const fx = Number(x);
+        const fy = Number(y);
+        if (!Number.isFinite(fx) || !Number.isFinite(fy)) return null;
+
+        const currentMapDef = mapDef || (typeof Field !== 'undefined' ? Field.currentMapData : null);
+        const areaKey = (typeof Field !== 'undefined' && typeof Field.getCurrentAreaKey === 'function')
+            ? Field.getCurrentAreaKey()
+            : (currentMapDef?.areaKey || App.data?.location?.area || null);
+        const progressKey = areaKey && typeof Dungeon.getFixedProgressKey === 'function'
+            ? Dungeon.getFixedProgressKey(areaKey)
+            : areaKey;
+        const rawKeyRewardColors = Array.isArray(bossDef?.keyRewardColors)
+            ? bossDef.keyRewardColors
+            : (bossDef?.keyRewardColor || bossDef?.keyColor)
+                ? [bossDef.keyRewardColor || bossDef.keyColor]
+                : [];
+        const keyRewardColors = rawKeyRewardColors.filter(Boolean);
+
+        return {
+            type: 'fixedBoss',
+            startEventId: bossDef.startEventId || null,
+            areaKey,
+            progressKey,
+            mapId: currentMapDef?.id || currentMapDef?.key || currentMapDef?.areaKey || areaKey || null,
+            fixedBossPosition: { x: fx, y: fy },
+            fixedQuestId: bossDef?.questId || null,
+            bossStatMultiplier: Math.max(1, Number(bossDef?.bossStatMultiplier || 1) || 1),
+            fixedKeyReward: keyRewardColors.length ? {
+                colors: keyRewardColors,
+                color: keyRewardColors[0],
+                x: fx,
+                y: fy,
+                scopeKey: (typeof Dungeon.getKeyScopeKey === 'function') ? Dungeon.getKeyScopeKey() : null
+            } : null
+        };
+    },
     
 	getEntryChoices: () => {
 		const maxF = App.data.dungeon.maxFloor || 0;
@@ -595,6 +634,10 @@ const Dungeon = {
                 App.clearAction();
                 return true;
             }
+            if (typeof Field !== 'undefined' && typeof Field.isFixedBossAvailable === 'function' && !Field.isFixedBossAvailable(bossDef)) {
+                App.clearAction();
+                return false;
+            }
             if (bossDef?.requiredFlag && !flags[bossDef.requiredFlag]) {
                 // ストーリー進行前の固定ボスは、存在しない床として扱う。
                 // 例: 大灯台は入れるが、雷の要塞クリア前は結界炉・頂上ボスが出現しない。
@@ -619,7 +662,15 @@ const Dungeon = {
                 : (bossDef?.actionLabel || null);
 
             if (bossDef?.startEventId && typeof StoryManager !== 'undefined' && typeof StoryManager.executeEvent === 'function') {
-                App.setAction(actionLabel || '対峙する', () => StoryManager.executeEvent(bossDef.startEventId));
+                App.setAction(actionLabel || '対峙する', () => {
+                    const fixedBossContext = Dungeon.buildFixedBossBattleContext(bossDef, x, y, mapDef);
+                    if (fixedBossContext) {
+                        if (!App.data.progress) App.data.progress = {};
+                        App.data.progress.activeFixedBossContext = fixedBossContext;
+                        if (typeof App.save === 'function') App.save();
+                    }
+                    StoryManager.executeEvent(bossDef.startEventId);
+                });
                 return true;
             }
 
@@ -676,12 +727,7 @@ const Dungeon = {
             const base = window.MonsterData?.getMonsterById?.(numericId);
             return !!(base?.isSpecialBoss || base?.isEstark || numericId === 902000);
         });
-        const rawKeyRewardColors = Array.isArray(bossDef?.keyRewardColors)
-            ? bossDef.keyRewardColors
-            : (bossDef?.keyRewardColor || bossDef?.keyColor)
-                ? [bossDef.keyRewardColor || bossDef.keyColor]
-                : [];
-        const keyRewardColors = rawKeyRewardColors.filter(Boolean);
+        const fixedBossContext = Dungeon.buildFixedBossBattleContext(bossDef, x, y, mapDef);
 
         App.data.battle = {
             active: false,
@@ -689,16 +735,11 @@ const Dungeon = {
             isSpecialBoss,
             isEstark: isSpecialBoss,
             fixedBossId,
-            fixedBossPosition: { x: Number(x), y: Number(y) },
-            fixedQuestId: bossDef?.questId || null,
-            bossStatMultiplier: Math.max(1, Number(bossDef?.bossStatMultiplier || 1) || 1),
-            fixedKeyReward: keyRewardColors.length ? {
-                colors: keyRewardColors,
-                color: keyRewardColors[0],
-                x,
-                y,
-                scopeKey: Dungeon.getKeyScopeKey()
-            } : null,
+            fixedBossPosition: fixedBossContext?.fixedBossPosition || { x: Number(x), y: Number(y) },
+            fixedBossProgressKey: fixedBossContext?.progressKey || null,
+            fixedQuestId: fixedBossContext?.fixedQuestId || bossDef?.questId || null,
+            bossStatMultiplier: fixedBossContext?.bossStatMultiplier || Math.max(1, Number(bossDef?.bossStatMultiplier || 1) || 1),
+            fixedKeyReward: fixedBossContext?.fixedKeyReward || null,
             fixedStoryEventId: bossDef?.storyEventId || null,
             enemies: []
         };
@@ -3566,12 +3607,13 @@ const Dungeon = {
             if (App.data.battle?.suppressFixedBossDefeat) {
                 return;
             }
-			const areaKey = Field.getCurrentAreaKey();
-			const progressKey = Dungeon.getFixedProgressKey(areaKey);
-            const fixedBossPosition = App.data.battle?.fixedBossPosition;
-            const bossX = Number.isFinite(Number(fixedBossPosition?.x)) ? Number(fixedBossPosition.x) : Field.x;
-            const bossY = Number.isFinite(Number(fixedBossPosition?.y)) ? Number(fixedBossPosition.y) : Field.y;
-			const posKey = `${bossX},${bossY}`;
+                const areaKey = Field.getCurrentAreaKey();
+                const activeFixedBossContext = App.data.progress?.activeFixedBossContext || null;
+                const progressKey = App.data.battle?.fixedBossProgressKey || activeFixedBossContext?.progressKey || Dungeon.getFixedProgressKey(areaKey);
+                const fixedBossPosition = App.data.battle?.fixedBossPosition || activeFixedBossContext?.fixedBossPosition;
+                const bossX = Number.isFinite(Number(fixedBossPosition?.x)) ? Number(fixedBossPosition.x) : Field.x;
+                const bossY = Number.isFinite(Number(fixedBossPosition?.y)) ? Number(fixedBossPosition.y) : Field.y;
+                const posKey = `${bossX},${bossY}`;
 			
 			if (!App.data.progress.defeatedBosses) App.data.progress.defeatedBosses = {};
 			if (!App.data.progress.defeatedBosses[progressKey]) App.data.progress.defeatedBosses[progressKey] = [];
@@ -3594,6 +3636,9 @@ const Dungeon = {
             const fixedQuestId = App.data.battle?.fixedQuestId;
             if (fixedQuestId && typeof App.markQuestBossDefeated === 'function') {
                 App.markQuestBossDefeated(fixedQuestId);
+            }
+            if (App.data.progress?.activeFixedBossContext) {
+                delete App.data.progress.activeFixedBossContext;
             }
 			App.clearAction();
 		} 

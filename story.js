@@ -4588,6 +4588,16 @@ const StoryManager = {
                 return base?.isSpecialBoss || base?.isEstark || Number(id) === 902000;
             });
 
+		const activeFixedBossContext = (App.data.progress?.activeFixedBossContext?.type === 'fixedBoss' &&
+			typeof Field !== 'undefined' && Field.currentMapData?.isFixed)
+			? App.data.progress.activeFixedBossContext
+			: null;
+		const actionFixedBossPosition = action.fixedBossPosition || action.position || null;
+		const contextFixedBossPosition = activeFixedBossContext?.fixedBossPosition || null;
+		const sourceFixedBossPosition = actionFixedBossPosition || contextFixedBossPosition;
+		const fixedBossPosition = Number.isFinite(Number(sourceFixedBossPosition?.x)) && Number.isFinite(Number(sourceFixedBossPosition?.y))
+			? { x: Number(sourceFixedBossPosition.x), y: Number(sourceFixedBossPosition.y) }
+			: null;
 		const rawKeyRewardColors = Array.isArray(action.keyRewardColors)
 			? action.keyRewardColors
 			: action.keyRewardColor
@@ -4597,25 +4607,30 @@ const StoryManager = {
 					: [];
 
 		const keyRewardColors = rawKeyRewardColors.filter(Boolean);
+		const contextKeyReward = activeFixedBossContext?.fixedKeyReward || null;
+		const fixedKeyReward = keyRewardColors.length > 0 ? {
+			colors: keyRewardColors,
+			color: keyRewardColors[0], // 既存処理互換用
+			x: fixedBossPosition?.x ?? ((typeof Field !== 'undefined') ? Field.x : null),
+			y: fixedBossPosition?.y ?? ((typeof Field !== 'undefined') ? Field.y : null),
+			scopeKey: (typeof Dungeon !== 'undefined' && typeof Dungeon.getKeyScopeKey === 'function')
+				? Dungeon.getKeyScopeKey()
+				: null
+		} : (contextKeyReward ? { ...contextKeyReward } : null);
 
 		App.data.battle = {
 			active: false,
 			isBossBattle: true,
 			fixedBossId: fixedBossId,
-			bossStatMultiplier: action.bossStatMultiplier || action.bossScale || null,
+			fixedBossPosition: fixedBossPosition,
+			fixedBossProgressKey: action.fixedBossProgressKey || action.progressKey || activeFixedBossContext?.progressKey || null,
+			fixedQuestId: action.fixedQuestId || activeFixedBossContext?.fixedQuestId || null,
+			bossStatMultiplier: action.bossStatMultiplier || action.bossScale || activeFixedBossContext?.bossStatMultiplier || null,
 			isSpecialBoss: isSpecialBoss,
 			isEstark: isSpecialBoss,
 			suppressFixedBossDefeat: !!(action.suppressFixedBossDefeat || action.deferFixedBossDefeat || action.markFixedBossDefeated === false),
 			eventId: eventId,
-			fixedKeyReward: keyRewardColors.length > 0 ? {
-				colors: keyRewardColors,
-				color: keyRewardColors[0], // 既存処理互換用
-				x: (typeof Field !== 'undefined') ? Field.x : null,
-				y: (typeof Field !== 'undefined') ? Field.y : null,
-				scopeKey: (typeof Dungeon !== 'undefined' && typeof Dungeon.getKeyScopeKey === 'function')
-					? Dungeon.getKeyScopeKey()
-					: null
-			} : null,
+			fixedKeyReward: fixedKeyReward,
 			isAmbushed: !!action.ambush,
 			storyWinEventId: action.winEventId || null,
 			storyLossEventId: action.lossEventId || null

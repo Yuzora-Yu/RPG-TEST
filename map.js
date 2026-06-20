@@ -1257,8 +1257,8 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWMMTTTTDTTTTMMWWWW",
+                    "WWWWWWWWWWDWWWWWWWWWW",
+                    "WWWWMMTTTTTTTTTMMWWWW",
                     "WWWWMMTTMMMMMTTMMWWWW",
                     "WWWWTTTMMMBMMMTTTWWWW",
                     "WWWWTTTMMMTMMMTTTWWWW",
@@ -1287,7 +1287,7 @@ const FIXED_DUNGEON_MAPS = {
                     },
                     {
                         "x": 10,
-                        "y": 4,
+                        "y": 3,
                         "toFloor": 4,
                         "targetX": 8,
                         "targetY": 12,
@@ -1309,6 +1309,7 @@ const FIXED_DUNGEON_MAPS = {
                         ],
                         "startEventId": "fire_volcano_soldiers_encounter",
                         "storyEventId": "fire_volcano_soldiers_clear",
+                        "clearedFlag": "firePrismRestored",
                         "actionLabel": "兵士に声をかける"
                     }
                 ],
@@ -1887,10 +1888,10 @@ const FIXED_DUNGEON_MAPS = {
                 tiles: [
                     "WWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWTTTTTTDTTTTTTWWWWW",
+                    "WWWWWWWWWWWDWWWWWWWWWWW",
+                    "WWWWWWWWWWWTWWWWWWWWWWW",
+                    "WWWWWWWWWWWTWWWWWWWWWWW",
+                    "WWWWWTTTTTTTTTTTTTWWWWW",
                     "WWWWWTTTTTTTTTTTTTWWWWW",
                     "WWWWWTTTTTTTTTTTTTWWWWW",
                     "WWWWWTTTTTTBTTTTTTWWWWW",
@@ -1920,7 +1921,7 @@ const FIXED_DUNGEON_MAPS = {
                     },
                     {
                         "x": 11,
-                        "y": 5,
+                        "y": 2,
                         "toFloor": 4,
                         "targetX": 8,
                         "targetY": 12,
@@ -2831,12 +2832,12 @@ const FIXED_DUNGEON_MAPS = {
                 "height": 25,
                 "tiles": [
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWTTTTTTTTTTTWWWWWWWWWW",
-                    "WWWWWWWWWWTTTTTBTTTTTWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWDWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWTTTTTTTTTTTWWWWWWWWWW",
                     "WWWWWWWWWWTTTTTTTTTTTWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWTDTWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWTTTTTTTTTTTWWWWWWWWWW",
+                    "WWWWWWWWWWTTTTTTTTTTTWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWTBTWWWWWWWWWWWWWW",
                     "WWWWTTTTTTTTTTTTTTTTTTTTTTTWWWW",
                     "WWWWTTTTTTTTTTTTTTTTTTTTTTTWWWW",
                     "WWWWTTTTTTTTTTTTTTTTTTTTTTTWWWW",
@@ -2867,7 +2868,7 @@ const FIXED_DUNGEON_MAPS = {
                     },
                     {
                         "x": 15,
-                        "y": 6,
+                        "y": 1,
                         "toFloor": 5,
                         "targetX": 8,
                         "targetY": 12,
@@ -2899,7 +2900,7 @@ const FIXED_DUNGEON_MAPS = {
                 "bosses": [
                     {
                         "x": 15,
-                        "y": 3,
+                        "y": 6,
                         "monsterId": 301040,
                         "startEventId": "thunder_leonard_encounter",
                         "storyEventId": "thunder_fort_clear",
@@ -3225,7 +3226,7 @@ const FIXED_DUNGEON_MAPS = {
                 "tiles": [
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWTTTTTTTTTTTWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWTTTTTTTTTTTWWWWWWWWWWW",
                     "WWWWWWWWWWWTTTTTTTTTTTWWWWWWWWWWW",
                     "WWWWWWWWWWWTTTTTTTTTTTWWWWWWWWWWW",
