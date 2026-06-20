@@ -6,6 +6,19 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const assetsSource = read('assets.js');
 const mapSource = read('map.js');
 const dungeonSource = read('dungeon.js');
+const phaserFieldSource = read('phaser-field.js');
+
+if (/water\.y\s*=|waterBaseY/.test(phaserFieldSource)) {
+    throw new Error('Water animation must not move the tile image or expose the terrain below it.');
+}
+for (const marker of ['isAnimatedWaterTile', 'waveA.x', 'water.image.setAlpha(1)']) {
+    if (!phaserFieldSource.includes(marker)) {
+        throw new Error(`Fixed-tile water ripple marker is missing: ${marker}`);
+    }
+}
+if (!phaserFieldSource.includes("!field.currentMapData?.isDungeon || characterOverlay")) {
+    throw new Error('Dungeon prop overlays must not receive artificial ellipse shadows.');
+}
 
 const graphicsStart = assetsSource.indexOf('  graphics: {');
 const graphicsEnd = assetsSource.indexOf('\n  },\n\n  // polish.js', graphicsStart);
@@ -83,8 +96,20 @@ const requiredBackgrounds = [
     'battle_bg_dark_shrine',
     'battle_bg_grezelia'
 ];
+for (const key of ['overlay_dungeon_chest_empty', 'overlay_dungeon_chest_rare_empty']) {
+    if (!graphics.has(key)) throw new Error(`Opened fixed chest graphic is missing: ${key}`);
+}
 for (const key of requiredBackgrounds) {
     if (!graphics.has(key)) throw new Error(`Required battle background is missing: ${key}`);
+}
+
+const fixedBossIds = collectValues(mapSource, /\bmonsterId"?\s*:\s*(?:\[\s*)?(\d+)/g);
+const missingBossSprites = [...fixedBossIds]
+    .map(Number)
+    .filter(id => id >= 100000)
+    .filter(id => !graphics.has(`overlay_boss_${id}`));
+if (missingBossSprites.length) {
+    throw new Error(`Fixed bosses missing map sprites:\n${missingBossSprites.join('\n')}`);
 }
 
 if (!/FORBIDDEN_FOREST:\s*\{[\s\S]*?tileOverrides:\s*\{[\s\S]*?W:\s*tileEntry\("tile_forest_wall"/.test(mapSource)) {
@@ -104,3 +129,4 @@ for (const key of requiredBackgrounds) {
 console.log(`Visual asset validation passed. Graphics checked: ${graphics.size}.`);
 console.log(`Dungeon hunter variants assigned: ${hunterKeys.size}.`);
 console.log(`Random dungeon battle themes checked: ${randomThemeBackgrounds.size}.`);
+console.log(`Fixed boss map sprites checked: ${fixedBossIds.size}.`);

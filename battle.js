@@ -3776,8 +3776,9 @@ findNextActor: () => {
 		}
 		// 3. それ以外（アビス等のランダムダンジョン）: そのまま progress.floor を使用
 
-		let totalExp = 0, totalGold = 0;
-		const drops = []; 
+			let totalExp = 0, totalGold = 0;
+			const drops = []; 
+			const defeatedMonsterIds = [];
 		let hasRareDrop = false;      // 白フラッシュ用
 		let hasUltraRareDrop = false; // 赤黒フラッシュ用
 
@@ -3785,8 +3786,9 @@ findNextActor: () => {
 		Battle.enemies.forEach(e => {
 			if (e.isDead && !e.isFled) {
 				const id = e.baseId || e.id;
-				if (id) {
-					if (!App.data.book.killCounts) App.data.book.killCounts = {};
+					if (id) {
+						defeatedMonsterIds.push(Number(id));
+						if (!App.data.book.killCounts) App.data.book.killCounts = {};
 					App.data.book.killCounts[id] = (App.data.book.killCounts[id] || 0) + 1;
 					if (!App.data.book.monsters.includes(id)) App.data.book.monsters.push(id);
 				}
@@ -3847,6 +3849,7 @@ findNextActor: () => {
 				const min = rule.min[r]||1, max = rule.max[r]||10;
 				return { ...opt, rarity: r, val: Math.floor(Math.random()*(max-min+1))+min };
 			});
+			if (typeof App.noteQuestKills === 'function') App.noteQuestKills(defeatedMonsterIds);
 			return eq;
 		};
 

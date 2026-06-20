@@ -70,7 +70,14 @@ function svgFor(def) {
   return `<svg viewBox="0 0 ${width * tile} ${height * tile}" width="${width * tile}" height="${height * tile}" role="img">${rects.join('')}</svg>`;
 }
 
-const sections = Object.entries(FIXED_DUNGEON_MAPS).map(([key, base]) => {
+const requestedKeys = String(process.env.MAP_KEYS || '')
+  .split(',')
+  .map(key => key.trim())
+  .filter(Boolean);
+const dungeonEntries = Object.entries(FIXED_DUNGEON_MAPS)
+  .filter(([key]) => requestedKeys.length === 0 || requestedKeys.includes(key));
+
+const sections = dungeonEntries.map(([key, base]) => {
   const floors = Array.isArray(base.floors) && base.floors.length
     ? base.floors.map((_, i) => MapRegistry.getFixedDungeonFloor(key, i + 1))
     : [MapRegistry.getFixedDungeonFloor(key, 1)];
@@ -109,5 +116,6 @@ ${sections}
 
 const outDir = path.join(root, 'docs', 'generated');
 fs.mkdirSync(outDir, { recursive: true });
-fs.writeFileSync(path.join(outDir, 'fixed-dungeon-preview.html'), html, 'utf8');
-console.log(path.join(outDir, 'fixed-dungeon-preview.html'));
+const outputName = requestedKeys.length ? 'fixed-dungeon-preview-focused.html' : 'fixed-dungeon-preview.html';
+fs.writeFileSync(path.join(outDir, outputName), html, 'utf8');
+console.log(path.join(outDir, outputName));

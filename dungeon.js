@@ -409,6 +409,12 @@ const Dungeon = {
         return list.find(chest => chest && chest.active && Number(chest.floor) === Number(Dungeon.floor) && Number(chest.x) === Number(x) && Number(chest.y) === Number(y)) || null;
     },
 
+    isFixedChestOpenedAt: (x, y) => {
+        if (!Field.currentMapData?.isFixed) return false;
+        const progressKey = Dungeon.getFixedProgressKey(Field.getCurrentAreaKey());
+        return !!App.data.progress.openedChests?.[progressKey]?.includes(`${Number(x)},${Number(y)}`);
+    },
+
     isKeyGuardianAt: (x, y) => {
         const g = App.data?.dungeon?.keyGuardian;
         return !!(g && g.active && Number(g.floor) === Number(Dungeon.floor) && Number(g.x) === Number(x) && Number(g.y) === Number(y));
@@ -595,6 +601,16 @@ const Dungeon = {
                 App.clearAction();
                 return false;
             }
+            if (bossDef?.questId) {
+                if (!App.isQuestUnlocked(bossDef.questId)) {
+                    App.clearAction();
+                    return false;
+                }
+                if (App.getQuestState(bossDef.questId).state !== 'accepted') {
+                    App.clearAction();
+                    return false;
+                }
+            }
 
             logIfNeeded(bossDef?.inspectLog || 'ただならぬ気配が立ちはだかっている。');
 
@@ -607,24 +623,59 @@ const Dungeon = {
                 return true;
             }
 
-            App.setAction(actionLabel || 'ボスと戦う', () => Dungeon.startFixedBoss(x, y));
+            App.setAction(actionLabel || '対峙する', () => Dungeon.confirmFixedBossChallenge(x, y));
             return true;
         }
 
         return false;
     },
 
+    confirmFixedBossChallenge: async (x, y) => {
+        const mapDef = Field.currentMapData;
+        const bossDef = (typeof MapRegistry !== 'undefined' && MapRegistry.findFixedBoss)
+            ? MapRegistry.findFixedBoss(mapDef, x, y)
+            : null;
+        if (!Field.isFixedBossAvailable?.(bossDef)) return false;
+        const rawId = Array.isArray(bossDef?.monsterId) ? bossDef.monsterId[0] : bossDef?.monsterId;
+        const monster = window.MonsterData?.getMonsterById?.(Number(rawId));
+        const name = monster?.name || '強敵';
+        const prompt = bossDef?.challengeText || `${name}が行く手を塞いでいる。\n覚悟を決めて挑みますか？`;
+        let accepted = true;
+        if (typeof StoryManager !== 'undefined' && typeof StoryManager.showChoice === 'function') {
+            accepted = !!(await StoryManager.showChoice(prompt));
+        } else if (typeof Menu !== 'undefined' && typeof Menu.confirm === 'function') {
+            accepted = await new Promise(resolve => Menu.confirm(prompt, () => resolve(true), () => resolve(false)));
+        }
+        if (!accepted) {
+            if (typeof StoryManager !== 'undefined' && typeof StoryManager.dismissChoiceUI === 'function') {
+                StoryManager.dismissChoiceUI({ hideOverlay: true });
+            }
+            App.log(`${name}は、こちらの出方を窺っている。`);
+            Field.refreshCurrentAction?.({ silent: true });
+            return false;
+        }
+        if (typeof StoryManager !== 'undefined' && typeof StoryManager.prepareBattleTransitionUI === 'function') {
+            StoryManager.prepareBattleTransitionUI();
+        }
+        Dungeon.startFixedBoss(x, y);
+        return true;
+    },
+
     startFixedBoss: (x, y) => {
+        if (typeof StoryManager !== 'undefined' && typeof StoryManager.prepareBattleTransitionUI === 'function') {
+            StoryManager.prepareBattleTransitionUI();
+        }
         const mapDef = Field.currentMapData;
         const bossDef = (typeof MapRegistry !== 'undefined' && MapRegistry.findFixedBoss)
             ? MapRegistry.findFixedBoss(mapDef, x, y)
             : null;
         const fixedBossId = bossDef?.monsterId || null;
-        let isSpecialBoss = false;
-        if (fixedBossId !== null) {
-            const base = window.MonsterData?.getMonsterById?.(Number(fixedBossId));
-            isSpecialBoss = !!(base?.isSpecialBoss || base?.isEstark || Number(fixedBossId) === 902000);
-        }
+        const fixedBossIds = Array.isArray(fixedBossId) ? fixedBossId : [fixedBossId].filter(id => id !== null);
+        const isSpecialBoss = fixedBossIds.some(id => {
+            const numericId = Number(id);
+            const base = window.MonsterData?.getMonsterById?.(numericId);
+            return !!(base?.isSpecialBoss || base?.isEstark || numericId === 902000);
+        });
         const rawKeyRewardColors = Array.isArray(bossDef?.keyRewardColors)
             ? bossDef.keyRewardColors
             : (bossDef?.keyRewardColor || bossDef?.keyColor)
@@ -638,6 +689,9 @@ const Dungeon = {
             isSpecialBoss,
             isEstark: isSpecialBoss,
             fixedBossId,
+            fixedBossPosition: { x: Number(x), y: Number(y) },
+            fixedQuestId: bossDef?.questId || null,
+            bossStatMultiplier: Math.max(1, Number(bossDef?.bossStatMultiplier || 1) || 1),
             fixedKeyReward: keyRewardColors.length ? {
                 colors: keyRewardColors,
                 color: keyRewardColors[0],
@@ -1043,18 +1097,21 @@ const Dungeon = {
             Dungeon.stepOnLava();
         }
 
-        // 宝箱判定
+        // 宝箱は移動先ではなく、隣接状態から「調べる」で開ける。
+        // 旧セーブで宝箱上に立っている場合のみ、ここから調査アクションを復元する。
         if (Dungeon.isKeyItemTile(tile) || Dungeon.findRandomFloorKey(x, y)) {
             Dungeon.pickupFloorKeyAt(x, y, tile);
             return;
         }
 
         if(tile === 'C') { 
-            Dungeon.openChest(x, y, 'normal'); 
+            App.log(Dungeon.isFixedChestOpenedAt(x, y) ? '開いたままの空箱がある。' : '宝箱がある。');
+            App.setAction('調べる', () => Dungeon.openChest(x, y, 'normal'));
             return; 
         }
         if(tile === 'R') { 
-            Dungeon.openChest(x, y, 'rare'); 
+            App.log(Dungeon.isFixedChestOpenedAt(x, y) ? '開いたままの空箱がある。' : '赤い宝箱がある。');
+            App.setAction('調べる', () => Dungeon.openChest(x, y, 'rare'));
             return; 
         }
 
@@ -1126,7 +1183,10 @@ const Dungeon = {
             if (!App.data.progress.openedChests) App.data.progress.openedChests = {};
             if (!App.data.progress.openedChests[progressKey]) App.data.progress.openedChests[progressKey] = [];
             
-            if (App.data.progress.openedChests[progressKey].includes(posKey)) return;
+            if (App.data.progress.openedChests[progressKey].includes(posKey)) {
+                App.log('空箱だ。中には何も残っていない。');
+                return;
+            }
 
             const mapDef = Dungeon.getFixedFloorDef(areaKey, App.data.progress.floor || 1) || FIXED_DUNGEON_MAPS[areaKey];
             const chestDef = (typeof MapRegistry !== 'undefined' && MapRegistry.findFixedChest)
@@ -1459,9 +1519,8 @@ const Dungeon = {
         const areaKey = Field.getCurrentAreaKey ? Field.getCurrentAreaKey() : App.data.location.area;
         const changeKey = Field.getCurrentMapChangeKey ? Field.getCurrentMapChangeKey(areaKey) : areaKey;
         let tile = (App.data.progress.mapChanges?.[changeKey]?.[`${x},${y}`] || App.data.progress.mapChanges?.[areaKey]?.[`${x},${y}`] || Field.currentMapData.tiles[y][x]).toUpperCase();
-        if ((tile === 'C' || tile === 'R') && App.data.progress.openedChests?.[Field.getCurrentProgressMapKey()]?.includes(`${x},${y}`)) tile = 'G';
         if (tile === 'B' && App.data.progress.defeatedBosses?.[Field.getCurrentProgressMapKey()]?.includes(`${x},${y}`)) tile = 'G';
-        return tile !== 'W' && !Dungeon.isLockedDoorTile(tile);
+        return tile !== 'W' && tile !== 'C' && tile !== 'R' && !Dungeon.isLockedDoorTile(tile);
     },
 
     triggerFixedEffectBattle: (effect, options = {}) => {
@@ -2569,6 +2628,10 @@ const Dungeon = {
         const isolatedWalls = Dungeon.countIsolatedWallTiles();
         if (isolatedWalls > 0) return { ok: false, reason: `${isolatedWalls} isolated wall tiles remain` };
 
+        const chestBlocked = new Set(Dungeon.collectTiles(Dungeon.map, ['C', 'R']).map(p => `${p.x},${p.y}`));
+        const chestBlockedDist = Dungeon.distanceMapWithBlocked(Dungeon.map, start, chestBlocked);
+        if (chestBlockedDist[stairs.y]?.[stairs.x] < 0) return { ok: false, reason: 'chests block the route to stairs' };
+
         if (!Dungeon.validateKeyDoorPuzzle()) return { ok: false, reason: 'key-door route invalid' };
         return { ok: true };
     },
@@ -3505,7 +3568,10 @@ const Dungeon = {
             }
 			const areaKey = Field.getCurrentAreaKey();
 			const progressKey = Dungeon.getFixedProgressKey(areaKey);
-			const posKey = `${Field.x},${Field.y}`;
+            const fixedBossPosition = App.data.battle?.fixedBossPosition;
+            const bossX = Number.isFinite(Number(fixedBossPosition?.x)) ? Number(fixedBossPosition.x) : Field.x;
+            const bossY = Number.isFinite(Number(fixedBossPosition?.y)) ? Number(fixedBossPosition.y) : Field.y;
+			const posKey = `${bossX},${bossY}`;
 			
 			if (!App.data.progress.defeatedBosses) App.data.progress.defeatedBosses = {};
 			if (!App.data.progress.defeatedBosses[progressKey]) App.data.progress.defeatedBosses[progressKey] = [];
@@ -3524,6 +3590,10 @@ const Dungeon = {
             if (fixedStoryEventId) {
                 if (!App.data.progress) App.data.progress = {};
                 App.data.progress.pendingEventId = fixedStoryEventId;
+            }
+            const fixedQuestId = App.data.battle?.fixedQuestId;
+            if (fixedQuestId && typeof App.markQuestBossDefeated === 'function') {
+                App.markQuestBossDefeated(fixedQuestId);
             }
 			App.clearAction();
 		} 

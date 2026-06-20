@@ -169,25 +169,39 @@
         const isWorldMap = !field.currentMapData;
         // Wの意味はマップごとに異なる。水路画像を割り当てたWだけを低い水面として扱う。
         // これにより水上都市・海底神殿・クレナ鍾乳洞へ適用し、通常の石壁には影響しない。
+        const isAnimatedWaterTile = upper === 'W' && objectConfig.animatedWater === true;
         const isLowerWaterTile = upper === 'W' && objectConfig.lowerLayer === true;
         // ワールドマップは海・山・森・草地をすべて同一の地形層として描く。
         // Y深度を与えると下段の海が上段の山へ乗り、地形が欠けて見える。
         const groundDepth = isWorldMap ? -100000 : baseDepth;
         const terrainDepth = isWorldMap ? -99950 : baseDepth + 42;
 
-        if (isLowerWaterTile) {
-            // 水上都市と海底神殿のWは壁ではなく、床より低い水路・水面。
-            // 床を下敷きせず、全床タイルより背面の専用層へ32pxで描く。
+        if (isAnimatedWaterTile) {
+            // 海・水路は画像そのものを1マス内へ固定する。
+            // 草地などを下敷きにすると波アニメの隙間から別地形が見えるため、
+            // 水面画像を地形の正本として直接描く。
+            const waterDepth = isLowerWaterTile ? -50000 : groundDepth;
             const water = addImage(scene, objectConfig.img, px + TILE_SIZE / 2, py + TILE_SIZE, {
-                depth: -50000,
+                depth: waterDepth,
                 width: TILE_SIZE,
                 height: TILE_SIZE
             });
             if (water) {
-                water.setData('waterBaseY', py + TILE_SIZE);
-                state.waterObjects.push(water);
+                const waveA = scene.add.rectangle(px + 9, py + 11, 11, 1, 0xa8e8ff, 0.18);
+                const waveB = scene.add.rectangle(px + 21, py + 22, 13, 1, 0x061f35, 0.16);
+                waveA.setDepth(waterDepth + 1);
+                waveB.setDepth(waterDepth + 1);
+                state.worldObjects.push(waveA, waveB);
+                state.waterObjects.push({
+                    image: water,
+                    waveA,
+                    waveB,
+                    baseAX: px + 9,
+                    baseBX: px + 21,
+                    phase: (tileX + tileY) & 1
+                });
             } else {
-                addTileFallback(scene, px, py, objectConfig.color, -50000);
+                addTileFallback(scene, px, py, objectConfig.color, waterDepth);
             }
         } else {
             if (!addImage(scene, floorConfig.img, px + TILE_SIZE / 2, py + TILE_SIZE, {
@@ -208,10 +222,6 @@
                 height,
                 depth: isWorldMap ? terrainDepth : baseDepth + (isWall ? 48 : 42)
             });
-            if (objectImage && objectConfig.animatedWater) {
-                objectImage.setData('waterBaseY', py + TILE_SIZE);
-                state.waterObjects.push(objectImage);
-            }
             if (!objectImage && objectConfig.color && objectConfig.color !== floorConfig.color) {
                 addTileFallback(scene, px, py, objectConfig.color, isWorldMap ? terrainDepth : baseDepth + 40);
             }
@@ -220,12 +230,15 @@
         if (overlay) {
             const key = overlay.img;
             const building = isBuildingTexture(key);
+            const characterOverlay = String(key || '').startsWith('overlay_npc_');
             // ワールドマップ上の町・神殿等は地図記号として1マス表示にする。
             // 固定マップの建物は高さを残すが、手前の楕円影は不自然なので描かない。
             const raisedBuilding = building && !isWorldMap;
             const width = raisedBuilding ? TILE_SIZE * 2.4 : TILE_SIZE;
             const height = raisedBuilding ? TILE_SIZE * 2.4 : TILE_SIZE;
-            if (!building) {
+            // ダンジョンの宝箱・階段・扉・ボスマーカー等は床へ直接置かれたチップとして扱い、
+            // 楕円の接地影を付けない。人物だけは位置を読みやすくするため影を残す。
+            if (!building && (!field.currentMapData?.isDungeon || characterOverlay)) {
                 addShadow(scene, px + TILE_SIZE / 2 + 4, py + TILE_SIZE - 2, 24, 0.22, baseDepth + 50);
             }
             if (!addImage(scene, key, px + TILE_SIZE / 2, py + TILE_SIZE, {
@@ -452,11 +465,14 @@
         }
         scene.cameras.main.centerOn(px, py - TILE_SIZE / 2);
         scene.cameras.main.setRoundPixels(true);
-        const waveOffset = field.step === 2 ? 1 : 0;
-        state.waterObjects.forEach((water, index) => {
-            const baseY = Number(water.getData('waterBaseY') ?? water.y);
-            water.y = baseY + ((index + field.step) % 2 === 0 ? waveOffset : -waveOffset);
-            water.setAlpha(field.step === 2 ? 0.96 : 1);
+        state.waterObjects.forEach((water) => {
+            const shifted = ((field.step + water.phase) & 1) === 0;
+            // タイル画像と描画矩形は動かさず、1マス内の波紋だけを左右へ揺らす。
+            water.waveA.x = water.baseAX + (shifted ? 2 : -1);
+            water.waveB.x = water.baseBX + (shifted ? -2 : 1);
+            water.waveA.setAlpha(shifted ? 0.24 : 0.12);
+            water.waveB.setAlpha(shifted ? 0.11 : 0.20);
+            water.image.setAlpha(1);
         });
     };
 

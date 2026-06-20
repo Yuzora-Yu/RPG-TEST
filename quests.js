@@ -106,9 +106,12 @@
             objective: "水上都市周辺に現れた魔物を討伐する。",
             startText: "マリーは、水上都市の避難民を守るため、周辺の魔物討伐を依頼した。",
             progressText: "水上都市周辺の魔物を討伐し、マリーへ報告しよう。",
+            startEventId: "quest_marie_start",
+            reportEventId: "quest_marie_report",
+            targetMonsterIds: [100030, 100033],
+            targetCount: 5,
             completeText: "マリーは祈りだけでなく、杖を手にして旅に同行することを決めた。",
-            rewardAllies: [102],
-            initialComplete: true
+            rewardAllies: [102]
         },
         zelied_big_tower: {
             name: "大灯台のゼリード",
@@ -118,6 +121,9 @@
             objective: "大灯台1階でゼリードと話し、再び頂上のボスを倒す。",
             startText: "ゼリードは、大灯台の頂に残る歪みを確かめたいと申し出た。",
             progressText: "大灯台の頂上へ向かい、再出現した強敵を倒そう。",
+            reportText: "頂を覆っていた歪みは消えた。大灯台1階のゼリードへ知らせよう。",
+            startEventId: "quest_zelied_start",
+            reportEventId: "quest_zelied_report",
             completeText: "頂の歪みは消え、ゼリードが仲間に加わった。",
             rewardAllies: [103]
         },
@@ -129,9 +135,12 @@
             objective: "アラン加入後、水上都市でハヤテの討伐依頼を受ける。",
             startText: "ハヤテは、アランの名を聞くと風のように現れ、腕試しの討伐を持ちかけた。",
             progressText: "指定された魔物を討伐し、ハヤテへ報告しよう。",
+            startEventId: "quest_hayate_start",
+            reportEventId: "quest_hayate_report",
+            targetMonsterIds: [100027, 100030],
+            targetCount: 6,
             completeText: "ハヤテは速度だけでなく覚悟も認め、仲間に加わった。",
-            rewardAllies: [203],
-            initialComplete: true
+            rewardAllies: [203]
         },
         sylvia_water_city: {
             name: "シルビアの護衛依頼",
@@ -141,9 +150,12 @@
             objective: "ジョセフ加入後、水上都市でシルビアの討伐依頼を受ける。",
             startText: "シルビアはジョセフの無骨な誠実さを見込み、護衛を兼ねた討伐を依頼した。",
             progressText: "水上都市外縁の魔物を討伐し、シルビアへ報告しよう。",
+            startEventId: "quest_sylvia_start",
+            reportEventId: "quest_sylvia_report",
+            targetMonsterIds: [100036, 100037],
+            targetCount: 5,
             completeText: "シルビアは旅の危うさを承知で、支援役として仲間に加わった。",
-            rewardAllies: [209],
-            initialComplete: true
+            rewardAllies: [209]
         },
         rin_thunder_fort: {
             name: "リンの雷鳴討伐",
@@ -153,9 +165,12 @@
             objective: "レイラ加入後、雷の要塞でリンの討伐依頼を受ける。",
             startText: "リンはレイラの光を見て、雷の要塞に残る魔物の討伐を願い出た。",
             progressText: "雷の要塞に残る魔物を討伐し、リンへ報告しよう。",
+            startEventId: "quest_rin_start",
+            reportEventId: "quest_rin_report",
+            targetMonsterIds: [100040, 100043],
+            targetCount: 6,
             completeText: "リンは雷鳴に臆さぬ一行を認め、仲間に加わった。",
-            rewardAllies: [208],
-            initialComplete: true
+            rewardAllies: [208]
         },
         claude_leon_dark_shrine: {
             name: "闇の神殿跡地の双剣",
@@ -173,6 +188,7 @@
             area: "闇の神殿跡地",
             kind: boss,
             unlockFlags: ["lightPalaceCleared"],
+            requiredQuests: ["claude_leon_dark_shrine"],
             objective: "闇の神殿跡地の隠し超強ボスを討伐する。",
             startText: "ルーナは、月光すら飲み込む影を討てる者だけを待っている。",
             progressText: "闇の神殿跡地の隠し祭壇で超強ボスに挑もう。",
@@ -195,6 +211,7 @@
             area: "禁則地グレゼリア",
             kind: boss,
             unlockFlags: ["darkCastleCleared"],
+            requiredQuests: ["ryu_minerva_grezelia"],
             objective: "禁則地グレゼリアの隠し超強ボスを討伐する。",
             startText: "ゼノンは、禁則の底に残る最悪の魔力を封じられる者を探している。",
             progressText: "禁則地グレゼリアの最深部で超強ボスに挑もう。",

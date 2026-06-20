@@ -7,6 +7,66 @@
 
 const tileEntry = (img, color, options = {}) => ({ img, color, ...options });
 
+// ストーリーによる地形変更の座標もmap.jsを正本とする。
+// story.jsはこのキーだけを参照し、個別座標を保持しない。
+const STORY_MAP_MUTATIONS = {
+    START_CAVE_GATE_OPEN: {
+        area: "START_CAVE",
+        changes: [
+            { x: 15, y: 17, tile: "G" },
+            { x: 15, y: 16, tile: "G" }
+        ]
+    }
+};
+
+// 追加ダンジョン用の決定論的な手描きレイアウト補助。
+// roomsで広間、pathsで折れ曲がる通路を構成し、最後に階段やボス記号を配置する。
+const buildAuthoredLayout = (width, height, { rooms = [], paths = [], marks = [] } = {}) => {
+    const grid = Array.from({ length: height }, () => Array(width).fill("W"));
+    const carve = (x, y, radius = 0) => {
+        for (let dy = -radius; dy <= radius; dy++) {
+            for (let dx = -radius; dx <= radius; dx++) {
+                const tx = Number(x) + dx;
+                const ty = Number(y) + dy;
+                if (tx > 0 && ty > 0 && tx < width - 1 && ty < height - 1) grid[ty][tx] = "T";
+            }
+        }
+    };
+    rooms.forEach(([x, y, roomWidth, roomHeight]) => {
+        for (let ty = y; ty < y + roomHeight; ty++) {
+            for (let tx = x; tx < x + roomWidth; tx++) carve(tx, ty);
+        }
+    });
+    paths.forEach(path => {
+        const points = Array.isArray(path.points) ? path.points : path;
+        const radius = Math.max(0, Math.floor(Number(path.width || 1) / 2));
+        for (let i = 1; i < points.length; i++) {
+            let [x, y] = points[i - 1].map(Number);
+            const [targetX, targetY] = points[i].map(Number);
+            const horizontalFirst = path.horizontalFirst !== false;
+            const walkAxis = (axis, target) => {
+                while ((axis === "x" ? x : y) !== target) {
+                    if (axis === "x") x += Math.sign(target - x);
+                    else y += Math.sign(target - y);
+                    carve(x, y, radius);
+                }
+            };
+            carve(x, y, radius);
+            if (horizontalFirst) {
+                walkAxis("x", targetX);
+                walkAxis("y", targetY);
+            } else {
+                walkAxis("y", targetY);
+                walkAxis("x", targetX);
+            }
+        }
+    });
+    marks.forEach(([x, y, symbol]) => {
+        if (x >= 0 && y >= 0 && x < width && y < height) grid[y][x] = symbol;
+    });
+    return grid.map(row => row.join(""));
+};
+
 // ==========================================
 // 固定MAPのタイル画像指定ガイド
 // ==========================================
@@ -493,8 +553,19 @@ const FIXED_MAPS = {
             { x: 2, y: 8, label: "道具を買う", log: "道具屋の看板が出ている。", type: "shop", shopType: "item", title: "始まりの村 道具屋", shopRank: 5 },
             { x: 8, y: 4, label: "武器を見る", log: "簡素な武器が並んでいる。", type: "shop", shopType: "weapon", title: "始まりの村 武器屋", shopRank: 5 },
             { x: 10, y: 4, label: "防具を見る", log: "旅支度用の防具が並んでいる。", type: "shop", shopType: "armor", title: "始まりの村 防具屋", shopRank: 5 },
-            { x: 12, y: 8, label: "村人と話す", log: "村人が、北東の穴を見つめている。", type: "storyEvent", eventId: "town_start_villager_1" },
-            { x: 1, y: 1, label: "村の若者と話す", log: "若者が木剣を握りしめている。", type: "storyEvent", eventId: "town_start_villager_2" },
+            { x: 11, y: 8, label: "村人と話す", log: "村人が、北東の穴を見つめている。", type: "storyEvent", eventId: "town_start_villager_1", imageKey: "overlay_npc_villager", baseTile: "G" },
+            { x: 2, y: 2, label: "村の若者と話す", log: "若者が木剣を握りしめている。", type: "storyEvent", eventId: "town_start_villager_2", imageKey: "overlay_npc_bronze_knight", baseTile: "G" },
+            { x: 5, y: 8, label: "薬草摘みと話す", log: "籠を抱えた女性が、葉についた泥を払っている。", type: "storyEvent", eventId: "town_start_villager_3", imageKey: "overlay_npc_villager", baseTile: "G" },
+            {
+                x: 6, y: 3, label: "長老と話す", log: "長老が旅人を待っている。",
+                type: "log", imageKey: "overlay_npc_elder",
+                events: [
+                    { stepMin: 0, stepMax: 0, eventId: "start_adventure" },
+                    { stepMin: 1, stepMax: 1, eventId: "start_adventure2" },
+                    { stepMin: 2, stepMax: 2, subMin: 0, subMax: 0, eventId: "start_adventure3" },
+                    { default: true, eventId: "start_village_elder_after" }
+                ]
+            },
             { x: 11, y: 1, label: "洞窟に入る", log: "洞窟の入口だ。", type: "fixedDungeon", target: "START_CAVE" }
         ],
         exitPoint: { area: "WORLD", x: 58, y: 65 }
@@ -541,18 +612,36 @@ const FIXED_MAPS = {
             { x: 21, y: 17, label: "道具を買う", log: "火山探索向けの道具屋だ。", type: "shop", shopType: "item", title: "炎の里 道具屋", shopRank: 12 },
             { x: 7, y: 14, label: "武器を見る", log: "鍛冶火が赤く揺れる武器屋だ。", type: "shop", shopType: "weapon", title: "炎の里 武器屋", shopRank: 12 },
             { x: 7, y: 17, label: "防具を見る", log: "火山の熱に耐える防具を扱っている。", type: "shop", shopType: "armor", title: "炎の里 防具屋", shopRank: 12 },
-            { x: 7, y: 4, label: "鍛冶師と話す", log: "鍛冶師が冷えた炉を撫でている。", type: "storyEvent", eventId: "town_fire_villager_1" },
-            { x: 18, y: 9, label: "里の人と話す", log: "里の西を気にしているようだ。", type: "storyEvent", eventId: "town_fire_villager_2" },
-            { x: 19, y: 4, label: "カリンと話す", log: "女侍が佇んでいる", type: "quest", questId: "karin_volcano_depths", complete: true, lockedText: "カリンはまだ、火山ガスが晴れる時を待っている。" },
+            {
+                x: 8, y: 4, label: "鍛冶師と話す", log: "鍛冶師が炉の縁に手を置いている。",
+                type: "log", imageKey: "overlay_npc_dark_soldier",
+                events: [
+                    { requiredFlag: "fireVillageCleared", eventId: "town_fire_villager_1" },
+                    { default: true, eventId: "town_fire_villager_1_before" }
+                ]
+            },
+            { x: 18, y: 9, label: "里の人と話す", log: "里の西を気にしているようだ。", type: "storyEvent", eventId: "town_fire_villager_2", imageKey: "overlay_npc_villager" },
+            {
+                x: 10, y: 13, label: "炭運びと話す", log: "煤だらけの男が、背負い籠を下ろした。",
+                type: "log", imageKey: "overlay_npc_dark_soldier",
+                events: [
+                    { requiredFlag: "fireVillageCleared", eventId: "town_fire_villager_3_after" },
+                    { default: true, eventId: "town_fire_villager_3" }
+                ]
+            },
+            { x: 19, y: 4, label: "カリンと話す", log: "女侍が佇んでいる", type: "quest", questId: "karin_volcano_depths", imageKey: "overlay_npc_bronze_knight", lockedText: "カリンはまだ、火山ガスが晴れる時を待っている。" },
             {
                 x: 14,
                 y: 15,
                 label: "里の長に話す",
                 log: "里の長が弱まった炎を見つめている。",
                 type: "log",
+                imageKey: "overlay_npc_elder",
                 events: [
+                    { stepMin: 2, stepMax: 2, subMin: 1, subMax: 1, eventId: "fire_village_consult" },
                     { stepMin: 0, stepMax: 1, eventId: "fire_village_elder_before_story" },
                     { stepMin: 2, stepMax: 2, subMin: 2, subMax: 3, eventId: "fire_village_elder_during_volcano" },
+                    { stepMin: 2, stepMax: 2, subMin: 4, subMax: 4, eventId: "fire_village_report" },
                     { stepMin: 3, stepMax: 99, eventId: "fire_village_elder_after_clear" },
                     { default: true, eventId: "fire_village_elder_idle" }
                 ]
@@ -615,16 +704,33 @@ const FIXED_MAPS = {
             { x: 19, y: 7, label: "道具を買う", log: "森歩きに備えた道具屋だ。", type: "shop", shopType: "item", title: "風の集落 道具屋", shopRank: 22 },
             { x: 6, y: 7, label: "武器を見る", log: "軽く扱いやすい武器が並んでいる。", type: "shop", shopType: "weapon", title: "風の集落 武器屋", shopRank: 22 },
             { x: 9, y: 7, label: "防具を見る", log: "森の魔物に備えた防具屋だ。", type: "shop", shopType: "armor", title: "風の集落 防具屋", shopRank: 22 },
-            { x: 3, y: 7, label: "見張りと話す", log: "見張りが森の上空を見ている。", type: "storyEvent", eventId: "town_wind_villager_1" },
-            { x: 22, y: 12, label: "集落の子と話す", log: "子どもが小さな風鈴を握っている。", type: "storyEvent", eventId: "town_wind_villager_2" },
-            { x: 5, y: 12, label: "アリサ達と話す", log: "アリサとハイネが、森の奥に残る呪いの気配を調べている。", type: "quest", questId: "arisa_haine_forest_depths", complete: true, lockedText: "今はまだ、禁忌の森の毒と呪いが濃すぎて奥へ進めない。" },
+            {
+                x: 3, y: 7, label: "見張りと話す", log: "見張りが枝の揺れを追っている。",
+                type: "log", imageKey: "overlay_npc_bronze_knight",
+                events: [
+                    { requiredFlag: "windVillageCleared", eventId: "town_wind_villager_1" },
+                    { default: true, eventId: "town_wind_villager_1_before" }
+                ]
+            },
+            {
+                x: 22, y: 12, label: "集落の子と話す", log: "子どもが小さな風鈴を握っている。",
+                type: "log", imageKey: "overlay_npc_child",
+                events: [
+                    { requiredFlag: "windVillageCleared", eventId: "town_wind_villager_2_after" },
+                    { default: true, eventId: "town_wind_villager_2" }
+                ]
+            },
+            { x: 10, y: 12, label: "風織り職人と話す", log: "職人が、風を含んだ薄布を指で弾いている。", type: "storyEvent", eventId: "town_wind_villager_3", imageKey: "overlay_npc_villager" },
+            { x: 5, y: 12, label: "アリサ達と話す", log: "アリサとハイネが、森の奥に残る呪いの気配を調べている。", type: "quest", questId: "arisa_haine_forest_depths", imageKey: "overlay_npc_villager", lockedText: "今はまだ、禁忌の森の毒と呪いが濃すぎて奥へ進めない。" },
             {
                 x: 19,
                 y: 15,
                 label: "エリーゼに話す",
                 log: "子どもたちが不安そうに身を寄せ合っている。",
                 type: "log",
+                imageKey: "overlay_npc_child",
                 events: [
+                    { stepMin: 3, stepMax: 3, subMin: 0, subMax: 0, eventId: "wind_village_intro" },
                     { stepMin: 0, stepMax: 2, eventId: "wind_village_before_story" },
                     { stepMin: 3, stepMax: 3, subMin: 1, subMax: 2, eventId: "wind_village_elise_during" },
                     { stepMin: 4, stepMax: 99, eventId: "wind_village_after_clear" },
@@ -722,9 +828,41 @@ const FIXED_MAPS = {
             { x: 4, y:10, label: "道具を買う", log: "水路沿いの道具屋だ。", type: "shop", shopType: "item", title: "水上都市 道具屋", shopRank: 35 },
             { x: 7, y: 10, label: "武器を見る", log: "海底神殿に備えた武器を扱っている。", type: "shop", shopType: "weapon", title: "水上都市 武器屋", shopRank: 35 },
             { x: 10, y: 10, label: "防具を見る", log: "水と闇に強い防具を扱っている。", type: "shop", shopType: "armor", title: "水上都市 防具屋", shopRank: 35 },
-            { x: 17, y: 8, label: "老人と話す", log: "老人が要塞の方角を眺めている。", type: "storyEvent", eventId: "town_water_villager_1" },
-            { x: 32, y: 13, label: "船大工と話す", log: "船大工が水路の流れを測っている。", type: "storyEvent", eventId: "town_water_villager_2" },
-            { x: 13, y: 14, label: "元兵士と話す", log: "元兵士が古い盾の傷を磨いている。", type: "storyEvent", eventId: "town_water_villager_3" },
+            {
+                x: 12, y: 5, label: "封鎖兵と話す", log: "黒鎧の兵士が北西の橋を塞いでいる。",
+                type: "storyEvent", eventId: "water_city_blockade_guard", imageKey: "overlay_npc_dark_soldier",
+                missingFlag: "waterCityCleared", baseTile: "T"
+            },
+            {
+                x: 25, y: 5, label: "封鎖兵と話す", log: "黒鎧の兵士が北東の橋を塞いでいる。",
+                type: "storyEvent", eventId: "water_city_blockade_guard", imageKey: "overlay_npc_dark_soldier",
+                missingFlag: "waterCityCleared", baseTile: "T"
+            },
+            {
+                x: 17, y: 8, label: "老人と話す", log: "老人が雷の要塞の方角を眺めている。",
+                type: "log", imageKey: "overlay_npc_elder",
+                events: [
+                    { requiredFlag: "thunderFortCleared", eventId: "town_water_villager_1" },
+                    { default: true, eventId: "town_water_villager_1_before" }
+                ]
+            },
+            {
+                x: 32, y: 13, label: "船大工と話す", log: "船大工が水路の流れを測っている。",
+                type: "log", imageKey: "overlay_npc_villager",
+                events: [
+                    { requiredFlag: "waterCityCleared", eventId: "town_water_villager_2_after" },
+                    { default: true, eventId: "town_water_villager_2" }
+                ]
+            },
+            { x: 13, y: 14, label: "元兵士と話す", log: "元兵士が古い盾の傷を磨いている。", type: "storyEvent", eventId: "town_water_villager_3", imageKey: "overlay_npc_bronze_knight" },
+            {
+                x: 24, y: 20, label: "渡し守と話す", log: "渡し守が、濡れた綱の結び目を確かめている。",
+                type: "log", imageKey: "overlay_npc_villager",
+                events: [
+                    { requiredFlag: "waterCityCleared", eventId: "town_water_villager_4_after" },
+                    { default: true, eventId: "town_water_villager_4" }
+                ]
+            },
             {
                 x: 19,
                 y: 13,
@@ -732,16 +870,17 @@ const FIXED_MAPS = {
                 log: "濁った水路の音が、街の沈黙に混じっている。",
                 type: "log",
                 events: [
+                    { stepMin: 4, stepMax: 4, subMin: 0, subMax: 0, eventId: "water_city_intro" },
                     { stepMin: 0, stepMax: 3, eventId: "water_city_before_story" },
                     { stepMin: 4, stepMax: 4, subMin: 1, subMax: 99, eventId: "water_city_sophia_after_meeting" },
                     { stepMin: 5, stepMax: 99, eventId: "water_city_after_clear" },
                     { default: true, eventId: "water_city_before_story" }
                 ]
             },
-            { x: 8, y: 20, label: "マリーと話す", log: "白いローブの女性が、避難民の無事を祈っている。", type: "quest", questId: "marie_water_city", complete: true, lockedText: "マリーはまだ街の混乱を鎮めることで手一杯のようだ。" },
-            { x: 29, y: 21, label: "ハヤテと話す", log: "水路のそばに、落ち着きなく周囲を見渡す若者がいる。", type: "quest", questId: "hayate_water_city", complete: true, lockedText: "ハヤテはまだ、信頼できる案内人を待っているようだ。" },
-            { x: 35, y: 18, label: "シルビアと話す", log: "優雅な身なりの貴人が、護衛を探している。", type: "quest", questId: "sylvia_water_city", complete: true, lockedText: "シルビアはまだ、声をかける相手を見定めている。" },
-            { x: 31, y: 16, label: "ソフィア達と話す", log: "ソフィアとアランが、神殿奥の水流について話し込んでいる。", type: "quest", questId: "sophia_alan_seabed_depths", complete: true, lockedText: "今はまだ、海底神殿の奥へ進む手段がない。" }
+            { x: 8, y: 20, label: "マリーと話す", log: "白いローブの女性が、避難民の無事を祈っている。", type: "quest", questId: "marie_water_city", imageKey: "overlay_npc_villager", lockedText: "マリーはまだ街の混乱を鎮めることで手一杯のようだ。" },
+            { x: 29, y: 21, label: "ハヤテと話す", log: "水路のそばに、落ち着きなく周囲を見渡す若者がいる。", type: "quest", questId: "hayate_water_city", imageKey: "overlay_npc_bronze_knight", lockedText: "ハヤテはまだ、信頼できる案内人を待っているようだ。" },
+            { x: 35, y: 18, label: "シルビアと話す", log: "優雅な身なりの貴人が、護衛を探している。", type: "quest", questId: "sylvia_water_city", imageKey: "overlay_npc_villager", lockedText: "シルビアはまだ、声をかける相手を見定めている。" },
+            { x: 31, y: 16, label: "ソフィア達と話す", log: "ソフィアとアランが、神殿奥の水流について話し込んでいる。", type: "quest", questId: "sophia_alan_seabed_depths", imageKey: "overlay_npc_bronze_knight", lockedText: "今はまだ、海底神殿の奥へ進む手段がない。" }
         ],
         exitPoint: { area: "WORLD", x: 68, y: 22 }
     },
@@ -776,7 +915,13 @@ const FIXED_MAPS = {
             "WWWWWWWWSWWWWWWWW"
         ],
         mapActions: [
-            { x: 8, y: 7, label: "魔窟に入る", log: "闇がどこまでも続いているような穴がある。", type: "abyssDungeon" }
+            {
+                x: 8, y: 7, label: "魔窟に入る", log: "闇がどこまでも続いているような穴がある。",
+                type: "abyssDungeon",
+                events: [
+                    { stepMin: 9, stepMax: 9, missingFlag: "abyssOuterReached", eventId: "abyss_unsealed" }
+                ]
+            }
         ],
         exitPoint: { area: "WORLD", x: 51, y: 56 }
     },
@@ -885,6 +1030,27 @@ const FIXED_MAPS = {
     }
 };
 
+const normalizeCoordinateActorTiles = (mapDefs) => {
+    Object.values(mapDefs || {}).forEach(mapDef => {
+        const targets = Array.isArray(mapDef.floors) ? mapDef.floors : [mapDef];
+        targets.forEach(target => {
+            if (!Array.isArray(target?.tiles) || !Array.isArray(target?.mapActions)) return;
+            const rows = target.tiles.map(row => String(row).split(""));
+            target.mapActions.forEach(action => {
+                if (!action?.imageKey) return;
+                const x = Number(action.x);
+                const y = Number(action.y);
+                if (!Number.isInteger(x) || !Number.isInteger(y) || !rows[y]?.[x]) return;
+                rows[y][x] = action.baseTile || (rows[y][x] === "G" ? "G" : "T");
+            });
+            target.tiles = rows.map(row => row.join(""));
+        });
+    });
+};
+
+// 住人やクエスト人物はmapActionsの座標・画像を正本とし、地形文字へNPC記号を残さない。
+normalizeCoordinateActorTiles(FIXED_MAPS);
+
 const FIXED_DUNGEON_MAPS = {
     START_CAVE: {
         name: "北東の洞穴",
@@ -933,7 +1099,26 @@ const FIXED_DUNGEON_MAPS = {
             { x: 8, y: 8, itemId: 99, type: "item" }
         ],
         monsters: [100001, 100002, 100003, 100004],
-        bosses: [{ x: 5, y: 2, monsterId: 301000 }]
+        mapActions: [
+            {
+                x: 15, y: 17, label: "見張りと話す", log: "見張りが洞穴の封鎖を守っている。",
+                type: "log", imageKey: "overlay_npc_bronze_knight", hideWhenNoEvent: true,
+                events: [
+                    { stepMin: 0, stepMax: 0, eventId: "start_cave1" },
+                    { stepMin: 1, stepMax: 1, subMin: 1, subMax: 1, eventId: "start_cave2" }
+                ]
+            }
+        ],
+        bosses: [{
+            x: 5,
+            y: 2,
+            monsterId: 301000,
+            storyStepMin: 1,
+            storyStepMax: 1,
+            storyEventId: "start_boss_clear",
+            actionLabel: "巨大な化け物に挑む",
+            challengeText: "巨大な化け物が洞穴の奥を塞いでいる。\n覚悟を決めて挑みますか？"
+        }]
     },
     IGNIS_VOLCANO: {
         name: "イグナ火山",
@@ -1165,7 +1350,7 @@ const FIXED_DUNGEON_MAPS = {
                     { x: 12, y: 10, type: "hunter", id: "volcano_deep_flame", imageKey: "overlay_dungeon_hunter_fire", monsterIds: [301010, 100013, 100014], speed: 0.5, range: 15, statMultiplier: 1.9, message: "炎を纏う強敵が迫る！" },
                 ],
                 bosses: [
-                    { x: 8, y: 7, monsterId: 301010, storyEventId: "quest_karin_volcano_clear", actionLabel: "火山深部の試練に挑む", inspectLog: "守る剣を試す炎が揺れている。" }
+                    { x: 8, y: 7, monsterId: 301010, questId: "karin_volcano_depths", storyEventId: "quest_karin_volcano_clear", actionLabel: "火山深部の試練に挑む", inspectLog: "守る剣を試す炎が揺れている。" }
                 ],
                 entryPoint: { x: 8, y: 12 }
             }
@@ -1382,7 +1567,7 @@ const FIXED_DUNGEON_MAPS = {
                     { x: 12, y: 10, type: "hunter", id: "forest_deep_curse", imageKey: "overlay_dungeon_hunter_forest", monsterIds: [301012, 100023, 100024], speed: 0.5, range: 15, statMultiplier: 1.9, message: "呪風の魔物が迫る！" },
                 ],
                 bosses: [
-                    { x: 8, y: 7, monsterId: [301011, 301012], storyEventId: "quest_arisa_haine_clear", actionLabel: "呪いの根を断つ", inspectLog: "アリサとハイネが呪いの根を追い詰めている。" }
+                    { x: 8, y: 7, monsterId: [301011, 301012], questId: "arisa_haine_forest_depths", storyEventId: "quest_arisa_haine_clear", actionLabel: "呪いの根を断つ", inspectLog: "アリサとハイネが呪いの根を追い詰めている。" }
                 ],
                 entryPoint: { x: 8, y: 12 }
             }
@@ -1798,7 +1983,7 @@ const FIXED_DUNGEON_MAPS = {
                     { x: 12, y: 10, type: "hunter", id: "seabed_current", imageKey: "overlay_dungeon_hunter_sea", monsterIds: [301021, 301022, 100034], speed: 0.5, range: 15, statMultiplier: 1.8, message: "逆潮の番人が迫る！" },
                 ],
                 bosses: [
-                    { x: 8, y: 7, monsterId: [301022, 301021], storyEventId: "quest_sophia_alan_clear", actionLabel: "神殿深部を鎮める", inspectLog: "ソフィアとアランが逆潮の核を睨んでいる。" }
+                    { x: 8, y: 7, monsterId: [301022, 301021], questId: "sophia_alan_seabed_depths", storyEventId: "quest_sophia_alan_clear", actionLabel: "神殿深部を鎮める", inspectLog: "ソフィアとアランが逆潮の核を睨んでいる。" }
                 ],
                 entryPoint: { x: 8, y: 12 }
             }
@@ -1880,7 +2065,7 @@ const FIXED_DUNGEON_MAPS = {
                     }
                 ],
                 "mapActions": [
-                    { "x": 4, "y": 18, "label": "ゼリードと話す", "log": "ゼリードが、頂上に残る歪みを見上げている。", "type": "quest", "questId": "zelied_big_tower", "complete": true, "lockedText": "ゼリードはまだ、灯台の異変を見極めているようだ。" }
+                    { "x": 4, "y": 18, "label": "ゼリードと話す", "log": "ゼリードが、頂上に残る歪みを見上げている。", "type": "quest", "questId": "zelied_big_tower", "imageKey": "npc_mage", "lockedText": "ゼリードはまだ、灯台の異変を見極めているようだ。" }
                 ],
                 "entryPoint": {
                     "x": 10,
@@ -2256,7 +2441,7 @@ const FIXED_DUNGEON_MAPS = {
                     "WWTTTTTTTTTTTTTTTTTWW",
                     "WWWWWWWWWWTWWWWWWWWWW",
                     "WWWWTTTTTTTTTTTTTWWWW",
-                    "WWWWTTTTTTTTTTTTTWWWW",
+                    "WWWWTTTTTTBTTTTTTWWWW",
                     "WWWWTTTTTTTTTTTTTWWWW",
                     "WWWWTWWWTTTTTWWWTWWWW",
                     "WTTTTTTTWTTTWTTTTTTTW",
@@ -2298,6 +2483,19 @@ const FIXED_DUNGEON_MAPS = {
                         "startEventId": "big_tower_lilith_encounter",
                         "storyEventId": "big_tower_clear",
                         "actionLabel": "リリスと対峙する"
+                    },
+                    {
+                        "x": 10,
+                        "y": 8,
+                        "monsterId": [
+                            301060,
+                            301062
+                        ],
+                        "questId": "zelied_big_tower",
+                        "inactiveTile": "G",
+                        "bossStatMultiplier": 1.25,
+                        "actionLabel": "灯火の残響に挑む",
+                        "challengeText": "砕けた結界から、二つの影が滲み出す。\n灯火の残響に挑みますか？"
                     }
                 ],
                 "entryPoint": {
@@ -2419,7 +2617,7 @@ const FIXED_DUNGEON_MAPS = {
                 ],
                 "mapActions": [
                     { "x": 14, "y": 21, "label": "リンと話す", "log": "リンが、雷鳴の奥に残る魔物の気配を追っている。", "type": "quest", "questId": "rin_thunder_fort", "complete": true, "lockedText": "リンはまだ、光を導く者の到着を待っている。" },
-                    { "x": 18, "y": 21, "label": "フリーダ達と話す", "log": "フリーダとバロンが、高圧電流の先を見据えている。", "type": "quest", "questId": "frieda_baron_thunder_depths", "complete": true, "lockedText": "今はまだ、要塞深部の電流を越える加護が足りない。" },
+                    { "x": 18, "y": 21, "label": "フリーダ達と話す", "log": "フリーダとバロンが、高圧電流の先を見据えている。", "type": "quest", "questId": "frieda_baron_thunder_depths", "lockedText": "今はまだ、要塞深部の電流を越える加護が足りない。" },
                     { "x": 12, "y": 21, "label": "補給品を買う", "log": "解放された要塞に補給隊が入っている。", "type": "shop", "shopType": "item", "title": "雷の要塞 補給所", "shopRank": 45, "requiredFlag": "thunderFortCleared", "lockedText": "まだ補給隊は入れないようだ。" },
                     { "x": 16, "y": 21, "label": "武器を見る", "log": "押収された武器が整備されている。", "type": "shop", "shopType": "weapon", "title": "雷の要塞 武器庫", "shopRank": 45, "requiredFlag": "thunderFortCleared", "lockedText": "武器庫は封鎖されている。" },
                     { "x": 17, "y": 21, "label": "防具を見る", "log": "雷対策の防具が並び始めている。", "type": "shop", "shopType": "armor", "title": "雷の要塞 防具庫", "shopRank": 45, "requiredFlag": "thunderFortCleared", "lockedText": "防具庫は封鎖されている。" },
@@ -2743,7 +2941,7 @@ const FIXED_DUNGEON_MAPS = {
                     { "x": 12, "y": 5, "type": "hunter", "id": "thunder_deep_guard", "imageKey": "overlay_dungeon_hunter_thunder", "monsterIds": [100081, 100043, 100043], "speed": 2, "range": 15, "statMultiplier": 1.9, "message": "雷鎧の強敵が迫る！" },
                 ],
                 "bosses": [
-                    { "x": 8, "y": 7, "monsterId": [100081, 100082], "storyEventId": "quest_frieda_baron_clear", "actionLabel": "制御核を止める", "inspectLog": "フリーダとバロンが雷の核へ迫っている。" }
+                    { "x": 8, "y": 7, "monsterId": [100081, 100082], "questId": "frieda_baron_thunder_depths", "storyEventId": "quest_frieda_baron_clear", "actionLabel": "制御核を止める", "inspectLog": "フリーダとバロンが雷の核へ迫っている。" }
                 ],
                 "entryPoint": { "x": 8, "y": 12 }
             }
@@ -3454,76 +3652,73 @@ const FIXED_DUNGEON_MAPS = {
         rank: 8,
         encounterRank: 8,
         battleBg: "battle_bg_dungeon",
-        entryPoint: { x: 8, y: 13 },
+        entryPoint: { x: 12, y: 19 },
         floors: [
             {
                 label: "風鳴りの洞",
                 encounterRank: 8,
                 monsters: [100006, 100007, 100008, 100009],
-                width: 17,
-                height: 15,
-                tiles: [
-                    "WWWWWWWWWWWWWWWWW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTTTTTDTTTTTTTW",
-                    "WTTTWWTTTTTWWTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTTWWTTTWWTTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTWWTTTTTTTWWTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTWWTTTTTWWTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WWWWWWWWSWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWW"
-                ],
+                width: 25,
+                height: 21,
+                tiles: buildAuthoredLayout(25, 21, {
+                    rooms: [[10, 16, 5, 4], [2, 14, 7, 5], [3, 8, 8, 4], [13, 11, 9, 5], [16, 2, 7, 6], [2, 2, 7, 4]],
+                    paths: [
+                        [[12, 18], [6, 18], [6, 15]],
+                        [[6, 15], [6, 10], [16, 13]],
+                        [[6, 10], [5, 4], [19, 4]],
+                        [[17, 13], [19, 5]]
+                    ],
+                    marks: [[12, 19, "S"], [19, 3, "D"], [3, 3, "C"], [21, 6, "C"]]
+                }),
                 floorLinks: [
-                    { x: 8, y: 13, to: "EXIT", label: "外へ出る" },
-                    { x: 8, y: 2, toFloor: 2, targetX: 8, targetY: 12, label: "泉の奥へ" }
+                    { x: 12, y: 19, to: "EXIT", label: "外へ出る" },
+                    { x: 19, y: 3, toFloor: 2, targetX: 12, targetY: 18, label: "泉の奥へ" }
                 ],
                 tileEffects: [
-                    { x: 4, y: 5, type: "warp", toX: 12, toY: 8, message: "風穴の渦に運ばれた。" },
-                    { x: 12, y: 8, type: "warp", toX: 4, toY: 5, message: "風穴の渦が巻き戻った。" },
-                    { x: 3, y: 3, type: "hunter", id: "wind_hole_stalker", imageKey: "overlay_dungeon_hunter_forest", monsterIds: [100010, 100013, 100010], speed: 0.5, range: 12, statMultiplier: 1.7, message: "黒風の魔物が迫る！" }
+                    { x: 5, y: 9, type: "warp", toX: 18, toY: 14, message: "風穴の渦に運ばれた。" },
+                    { x: 18, y: 14, type: "warp", toX: 5, toY: 9, message: "風穴の渦が巻き戻った。" },
+                    { x: 4, y: 4, type: "hunter", id: "wind_hole_stalker", imageKey: "overlay_dungeon_hunter_forest", monsterIds: [100010, 100013, 100010], speed: 0.5, range: 18, statMultiplier: 1.7, message: "黒風の魔物が迫る！" }
                 ],
-                entryPoint: { x: 8, y: 13 }
+                chests: [
+                    { x: 3, y: 3, itemId: 4, type: "item" },
+                    { x: 21, y: 6, itemId: 100, type: "item", rare: true }
+                ],
+                entryPoint: { x: 12, y: 18 }
             },
             {
                 label: "妖精の泉",
                 encounterRank: 10,
                 monsters: [100008, 100009, 100010],
-                width: 17,
-                height: 15,
-                tiles: [
-                    "WWWWWWWWWWWWWWWWW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTWWTTTTTWWTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTTWWTTTWWTTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTTTTTBTTTTTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTWWTTTTTWWTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WWWWWWWWUWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWW"
-                ],
+                width: 25,
+                height: 21,
+                tiles: buildAuthoredLayout(25, 21, {
+                    rooms: [[8, 2, 9, 6], [9, 15, 7, 5], [2, 10, 6, 6], [17, 10, 6, 6], [2, 2, 5, 5], [18, 2, 5, 5]],
+                    paths: [
+                        [[12, 18], [12, 12], [5, 12], [4, 4]],
+                        [[12, 12], [20, 12], [20, 4]],
+                        [[5, 12], [12, 5]],
+                        [[20, 12], [12, 5]]
+                    ],
+                    marks: [[12, 18, "U"], [12, 5, "B"], [3, 4, "C"], [21, 4, "C"]]
+                }),
                 floorLinks: [
-                    { x: 8, y: 13, toFloor: 1, targetX: 8, targetY: 2, label: "入口へ戻る" }
+                    { x: 12, y: 18, toFloor: 1, targetX: 19, targetY: 4, label: "入口へ戻る" }
                 ],
                 tileEffects: [
-                    { x: 4, y: 4, type: "poison", damageRate: 0.05, message: "瘴気を吸い込んだ！" },
-                    { x: 12, y: 4, type: "poison", damageRate: 0.05, message: "瘴気が肌を焼く！" },
+                    { x: 5, y: 12, type: "poison", damageRate: 0.05, message: "瘴気を吸い込んだ！" },
+                    { x: 20, y: 12, type: "poison", damageRate: 0.05, message: "瘴気が肌を焼く！" },
+                    { x: 4, y: 4, type: "warp", toX: 20, toY: 4, message: "妖精風が泉の反対岸へ運んだ。" },
+                    { x: 20, y: 4, type: "warp", toX: 4, toY: 4, message: "妖精風が泉を巡った。" }
                 ],
                 bosses: [
-                    { x: 8, y: 7, monsterId: 301011, storyEventId: "quest_fire_holy_water_clear", actionLabel: "妖精を守る", inspectLog: "妖精の泉で、闇をまとった魔物が小さな光を追い詰めている。" }
+                    { x: 12, y: 5, monsterId: 301011, storyEventId: "quest_fire_holy_water_clear", actionLabel: "妖精を守る", inspectLog: "妖精の泉で、闇をまとった魔物が小さな光を追い詰めている。" }
                 ],
-                entryPoint: { x: 8, y: 12 }
+                chests: [
+                    { x: 3, y: 4, itemId: 4, type: "item" },
+                    { x: 21, y: 4, itemId: 101, type: "item", rare: true }
+                ],
+                healSprings: [{ x: 12, y: 8 }],
+                entryPoint: { x: 12, y: 18 }
             }
         ]
     },
@@ -3533,117 +3728,107 @@ const FIXED_DUNGEON_MAPS = {
         rank: 23,
         encounterRank: 23,
         battleBg: "battle_bg_crena",
-        entryPoint: { x: 8, y: 13 },
+        entryPoint: { x: 13, y: 21 },
         floors: [
             {
                 label: "蒼滴の道",
                 encounterRank: 23,
                 monsters: [100020, 100021, 100022, 100023],
-                width: 17,
-                height: 15,
-                tiles: [
-                    "WWWWWWWWWWWWWWWWW",
-                    "WTTTTTTTTTTTDTTTW",
-                    "WTTTTTTTDTTTTTTTW",
-                    "WTTTWWTTTTTWWTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTTWWTTTWWTTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTWWTTTTTTTWWTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTWWTTTTTWWTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WWWWWWWWSWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWW"
-                ],
+                width: 27,
+                height: 23,
+                tiles: buildAuthoredLayout(27, 23, {
+                    rooms: [[11, 18, 5, 4], [2, 15, 7, 5], [18, 14, 7, 6], [5, 8, 7, 5], [15, 7, 8, 5], [2, 2, 7, 5], [19, 2, 6, 5]],
+                    paths: [
+                        [[13, 20], [6, 18], [8, 10]],
+                        [[13, 20], [21, 17], [19, 9]],
+                        [[8, 10], [5, 4], [21, 4]],
+                        [[19, 9], [22, 4]]
+                    ],
+                    marks: [[13, 21, "S"], [22, 3, "D"], [3, 4, "C"], [23, 16, "C"]]
+                }),
                 floorLinks: [
-                    { x: 8, y: 13, to: "EXIT", label: "外へ出る" },
-                    { x: 8, y: 2, toFloor: 2, targetX: 8, targetY: 12, label: "結晶の間へ" }
+                    { x: 13, y: 21, to: "EXIT", label: "外へ出る" },
+                    { x: 22, y: 3, toFloor: 2, targetX: 4, targetY: 20, label: "結晶の間へ" }
                 ],
                 tileEffects: [
-                    { x: 5, y: 6, type: "ice", maxSlide: 12, message: "濡れた石床を滑った。" },
-                    { x: 11, y: 6, type: "ice", maxSlide: 12, message: "氷の膜に足を取られた。" },
-                    { x: 6, y: 10, type: "hunter", id: "crena_claw", imageKey: "overlay_dungeon_hunter_sea", monsterIds: [100024, 100030, 100024], speed: 0.5, range: 14, statMultiplier: 1.8, message: "爪痕の主が襲いかかる！" }
+                    { x: 8, y: 10, type: "ice", maxSlide: 18, message: "濡れた石床を滑った。" },
+                    { x: 19, y: 9, type: "ice", maxSlide: 18, message: "氷の膜に足を取られた。" },
+                    { x: 6, y: 18, type: "hunter", id: "crena_claw", imageKey: "overlay_dungeon_hunter_sea", monsterIds: [100024, 100030, 100024], speed: 0.5, range: 22, statMultiplier: 1.8, message: "爪痕の主が襲いかかる！" }
                 ],
-                entryPoint: { x: 8, y: 13 }
+                chests: [
+                    { x: 3, y: 4, itemId: 4, type: "item" },
+                    { x: 23, y: 16, itemId: 101, type: "item", rare: true }
+                ],
+                entryPoint: { x: 13, y: 20 }
             },
             {
                 label: "青の結晶の間",
                 encounterRank: 25,
                 monsters: [100022, 100023, 100024, 100025],
-                width: 17,
-                height: 15,
-                tiles: [
-                    "WWWWWWWWWWWWWWWWW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTWWTTTTTWWTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTTWWTTTWWTTTTW",
-                    "WTTTTTTTTTTTDTTTW",
-                    "WTTTTTTTBTTTTTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTWWTTTTTWWTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WWWWWWWWUWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWW"
-                ],
+                width: 27,
+                height: 23,
+                tiles: buildAuthoredLayout(27, 23, {
+                    rooms: [[9, 2, 9, 7], [2, 8, 7, 7], [18, 8, 7, 7], [2, 18, 6, 4], [10, 16, 7, 5], [20, 17, 5, 4]],
+                    paths: [
+                        [[4, 20], [5, 11], [13, 6]],
+                        [[5, 11], [13, 18], [22, 18]],
+                        [[13, 6], [21, 11], [23, 10]]
+                    ],
+                    marks: [[4, 20, "U"], [13, 5, "B"], [23, 10, "D"], [3, 10, "C"], [22, 18, "C"]]
+                }),
                 floorLinks: [
-                    { x: 8, y: 13, toFloor: 1, targetX: 8, targetY: 2, label: "入口へ戻る" },
-                    { x: 12, y: 6, toFloor: 3, targetX: 8, targetY: 12, label: "結界の奥へ", requiredFlag: "darkCastleCleared", lockedLabel: "結界を調べる", lockedLog: "巧妙な結界に阻まれている。" }
+                    { x: 4, y: 20, toFloor: 1, targetX: 22, targetY: 4, label: "入口へ戻る" },
+                    { x: 23, y: 10, toFloor: 3, targetX: 2, targetY: 22, label: "結界の奥へ", requiredFlag: "darkCastleCleared", lockedLabel: "結界を調べる", lockedLog: "巧妙な結界に阻まれている。" }
                 ],
                 tileEffects: [
-                    { x: 4, y: 7, type: "warp", toX: 12, toY: 7, message: "結晶光が空間を曲げた。" },
-                    { x: 12, y: 7, type: "warp", toX: 4, toY: 7, message: "結晶光が戻り道を開いた。" },
+                    { x: 5, y: 11, type: "warp", toX: 21, toY: 11, message: "結晶光が空間を曲げた。" },
+                    { x: 21, y: 11, type: "warp", toX: 5, toY: 11, message: "結晶光が戻り道を開いた。" },
                 ],
                 mapActions: [
-                    { x: 4, y: 7, label: "リーシアの気配を追う", log: "結晶の影に、結界の奥へ続くかすかな気配が残っている。", type: "quest", questId: "licia_crena_depths", complete: true, lockedText: "闇の加護がなければ、この結界の奥は見えない。" }
+                    { x: 21, y: 11, label: "リーシアの気配を追う", log: "結晶の影に、結界の奥へ続くかすかな気配が残っている。", type: "quest", questId: "licia_crena_depths", lockedText: "闇の加護がなければ、この結界の奥は見えない。" }
                 ],
                 bosses: [
-                    { x: 8, y: 7, monsterId: 301021, storyEventId: "quest_water_blue_crystal_clear", actionLabel: "結晶を守る魔物に挑む", inspectLog: "青い結晶の前に、鋭い爪痕を残した魔物が佇んでいる。" }
+                    { x: 13, y: 5, monsterId: 301021, storyEventId: "quest_water_blue_crystal_clear", actionLabel: "結晶を守る魔物に挑む", inspectLog: "青い結晶の前に、鋭い爪痕を残した魔物が佇んでいる。" }
                 ],
-                entryPoint: { x: 8, y: 12 }
+                chests: [
+                    { x: 3, y: 10, itemId: 4, type: "item" },
+                    { x: 22, y: 18, itemId: 102, type: "item", rare: true }
+                ],
+                healSprings: [{ x: 13, y: 10 }],
+                entryPoint: { x: 4, y: 20 }
             },
             {
                 label: "クレナ鍾乳洞深部・結界裏層",
                 encounterRank: 90,
                 monsters: [100056, 100057, 100058, 100059],
                 enemyBoost: { nameSuffix: "強", statMultiplier: 1.3, elmRes: { "火": 30, "水": 30, "風": 30, "雷": 30, "光": 30, "闇": 30 }, resists: { Poison: 50, Shock: 50, Fear: 50, InstantDeath: 50, Debuff: 50, Seal: 50 } },
-                width: 17,
-                height: 15,
-                tiles: [
-                    "WWWWWWWWWWWWWWWWW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTWWTTTTTWWTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTTWWTTTWWTTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTTTTTBTTTTTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTWWTTTTTWWTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WWWWWWWWUWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWW"
-                ],
+                width: 29,
+                height: 25,
+                tiles: buildAuthoredLayout(29, 25, {
+                    rooms: [[10, 2, 9, 6], [2, 9, 7, 7], [20, 8, 7, 7], [2, 20, 6, 4], [10, 17, 9, 6], [21, 19, 6, 4]],
+                    paths: [
+                        [[2, 22], [5, 12], [14, 5]],
+                        [[5, 12], [14, 20], [24, 21]],
+                        [[14, 5], [23, 11], [24, 21]]
+                    ],
+                    marks: [[2, 22, "U"], [14, 4, "B"], [4, 11, "C"], [24, 21, "C"]]
+                }),
                 floorLinks: [
-                    { x: 8, y: 13, toFloor: 2, targetX: 12, targetY: 7, label: "結晶の間へ戻る" }
+                    { x: 2, y: 22, toFloor: 2, targetX: 23, targetY: 11, label: "結晶の間へ戻る" }
                 ],
                 tileEffects: [
-                    { x: 4, y: 5, type: "poison", damageRate: 0.09, message: "結界毒が体を蝕む！" },
-                    { x: 12, y: 5, type: "ice", maxSlide: 18, message: "結界の膜を滑った。" },
-                    { x: 12, y: 10, type: "hunter", id: "crena_barrier_guard", imageKey: "overlay_dungeon_hunter_shadow", monsterIds: [100057, 100058, 100059], speed: 0.5, range: 15, statMultiplier: 2.1, message: "結界守が迫る！" },
+                    { x: 5, y: 12, type: "poison", damageRate: 0.09, message: "結界毒が体を蝕む！" },
+                    { x: 23, y: 11, type: "ice", maxSlide: 24, message: "結界の膜を滑った。" },
+                    { x: 24, y: 21, type: "hunter", id: "crena_barrier_guard", imageKey: "overlay_dungeon_hunter_shadow", monsterIds: [100057, 100058, 100059], speed: 0.5, range: 26, statMultiplier: 2.1, message: "結界守が迫る！" },
                 ],
                 bosses: [
-                    { x: 8, y: 7, monsterId: [100078, 100082, 100078], storyEventId: "quest_licia_clear", actionLabel: "結界核を砕く", inspectLog: "リーシアの魔力が結界核の奥で揺れている。" }
+                    { x: 14, y: 4, monsterId: [100078, 100082, 100078], questId: "licia_crena_depths", storyEventId: "quest_licia_clear", actionLabel: "結界核を砕く", inspectLog: "リーシアの魔力が結界核の奥で揺れている。" }
                 ],
-                entryPoint: { x: 8, y: 12 }
+                chests: [
+                    { x: 4, y: 11, itemId: 103, type: "item", rare: true },
+                    { x: 24, y: 21, itemId: 105, type: "item", rare: true }
+                ],
+                entryPoint: { x: 2, y: 22 }
             }
         ]
     },
@@ -3653,80 +3838,81 @@ const FIXED_DUNGEON_MAPS = {
         rank: 75,
         encounterRank: 75,
         battleBg: "battle_bg_dark_shrine",
-        entryPoint: { x: 8, y: 13 },
+        entryPoint: { x: 14, y: 21 },
         floors: [
             {
                 label: "影残る拝廊",
                 encounterRank: 75,
                 monsters: [100064, 100065, 100066, 100067],
-                width: 17,
-                height: 15,
-                tiles: [
-                    "WWWWWWWWWWWWWWWWW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTTTTTDTTTTTTTW",
-                    "WTTTWWTTTTTWWTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTTWWTTTWWTTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTTTTTBTTTTTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTWWTTTTTWWTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WWWWWWWWSWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWW"
-                ],
+                width: 29,
+                height: 23,
+                tiles: buildAuthoredLayout(29, 23, {
+                    rooms: [[11, 2, 7, 7], [2, 3, 6, 6], [21, 3, 6, 6], [3, 11, 8, 7], [18, 11, 8, 7], [11, 18, 7, 4]],
+                    paths: [
+                        [[14, 21], [14, 14], [6, 14], [5, 6]],
+                        [[14, 14], [22, 14], [24, 6]],
+                        [[5, 6], [14, 5], [24, 6]]
+                    ],
+                    marks: [[14, 21, "S"], [14, 19, "P"], [14, 5, "B"], [24, 4, "D"], [4, 5, "C"], [24, 16, "C"]]
+                }),
                 floorLinks: [
-                    { x: 8, y: 13, to: "EXIT", label: "外へ出る" },
-                    { x: 8, y: 2, toFloor: 2, targetX: 8, targetY: 12, label: "隠し祭壇へ" }
+                    { x: 14, y: 21, to: "EXIT", label: "外へ出る" },
+                    { x: 24, y: 4, toFloor: 2, targetX: 2, targetY: 22, label: "隠し祭壇へ" }
                 ],
                 tileEffects: [
-                    { x: 4, y: 5, type: "poison", damageRate: 0.08, message: "闇の霧が命を削る！" },
-                    { x: 12, y: 5, type: "warp", toX: 4, toY: 8, message: "影の門に呑まれた。" },
-                    { x: 4, y: 8, type: "warp", toX: 12, toY: 5, message: "影の門が開いた。" },
-                    { x: 12, y: 10, type: "hunter", id: "shrine_shadow", imageKey: "overlay_dungeon_hunter_shadow", monsterIds: [301080, 100066, 100067], speed: 0.5, range: 16, statMultiplier: 2.0, message: "神殿の影が追ってくる！" }
+                    { x: 6, y: 14, type: "poison", damageRate: 0.08, message: "闇の霧が命を削る！" },
+                    { x: 5, y: 6, type: "warp", toX: 24, toY: 6, message: "影の門に呑まれた。" },
+                    { x: 24, y: 6, type: "warp", toX: 5, toY: 6, message: "影の門が開いた。" },
+                    { x: 22, y: 14, type: "hunter", id: "shrine_shadow", imageKey: "overlay_dungeon_hunter_shadow", monsterIds: [301080, 100066, 100067], speed: 0.5, range: 26, statMultiplier: 2.0, message: "神殿の影が追ってくる！" }
+                ],
+                mapActions: [
+                    { x: 14, y: 19, label: "二人に声をかける", log: "二人の剣士が、奥から漏れる闇を警戒している。", type: "quest", questId: "claude_leon_dark_shrine", imageKey: "overlay_npc_bronze_knight" }
                 ],
                 bosses: [
-                    { x: 8, y: 7, monsterId: 301080, storyEventId: "quest_claude_leon_clear", requiredFlag: "lightPalaceCleared", actionLabel: "クロードとレオンに加勢する", inspectLog: "二つの剣閃が、闇の残滓を食い止めている。" }
+                    { x: 14, y: 5, monsterId: 301080, questId: "claude_leon_dark_shrine", storyEventId: "quest_claude_leon_clear", requiredFlag: "lightPalaceCleared", actionLabel: "クロードとレオンに加勢する", inspectLog: "二つの剣閃が、闇の残滓を食い止めている。" }
                 ],
-                entryPoint: { x: 8, y: 13 }
+                chests: [
+                    { x: 4, y: 5, itemId: 103, type: "item", rare: true },
+                    { x: 24, y: 16, itemId: 105, type: "item", rare: true }
+                ],
+                entryPoint: { x: 14, y: 21 }
             },
             {
                 label: "月影の祭壇",
                 encounterRank: 95,
                 monsters: [100066, 100067, 100068],
-                width: 17,
-                height: 15,
-                tiles: [
-                    "WWWWWWWWWWWWWWWWW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTWWTTTTTWWTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTTWWTTTWWTTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTTTTTBTTTTTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTWWTTTTTWWTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WWWWWWWWUWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWW"
-                ],
+                width: 31,
+                height: 25,
+                tiles: buildAuthoredLayout(31, 25, {
+                    rooms: [[11, 2, 9, 6], [2, 5, 7, 7], [22, 5, 7, 7], [3, 15, 8, 7], [20, 15, 8, 7], [12, 17, 7, 6]],
+                    paths: [
+                        [[2, 22], [6, 18], [6, 8], [15, 5]],
+                        [[6, 18], [15, 20], [24, 18], [25, 8]],
+                        [[25, 8], [15, 5]]
+                    ],
+                    marks: [[2, 22, "U"], [15, 19, "P"], [15, 4, "B"], [4, 8, "C"], [26, 18, "C"]]
+                }),
                 floorLinks: [
-                    { x: 8, y: 13, toFloor: 1, targetX: 8, targetY: 2, label: "拝廊へ戻る" }
+                    { x: 2, y: 22, toFloor: 1, targetX: 24, targetY: 5, label: "拝廊へ戻る" }
                 ],
                 tileEffects: [
-                    { x: 4, y: 4, type: "ice", maxSlide: 16, message: "月光の床を滑った。" },
-                    { x: 12, y: 4, type: "poison", damageRate: 0.08, message: "月影の闇が染み込む！" },
+                    { x: 6, y: 8, type: "ice", maxSlide: 26, message: "月光の床を滑った。" },
+                    { x: 25, y: 8, type: "poison", damageRate: 0.08, message: "月影の闇が染み込む！" },
+                    { x: 6, y: 18, type: "warp", toX: 24, toY: 18, message: "月影が左右を反転させた。" },
+                    { x: 24, y: 18, type: "warp", toX: 6, toY: 18, message: "月影が元の祭廊へ返した。" }
+                ],
+                mapActions: [
+                    { x: 15, y: 19, label: "月影の声を聞く", log: "月光の向こうから、静かな呼び声が届く。", type: "quest", questId: "luna_hidden_dark_shrine", imageKey: "overlay_npc_villager" }
                 ],
                 bosses: [
-                    { x: 8, y: 7, monsterId: 902000, storyEventId: "quest_luna_hidden_clear", requiredFlag: "lightPalaceCleared", actionLabel: "月影の試練に挑む", inspectLog: "月光を飲む影が、祭壇の中央で脈打っている。" }
+                    { x: 15, y: 4, monsterId: 902000, questId: "luna_hidden_dark_shrine", storyEventId: "quest_luna_hidden_clear", requiredFlag: "lightPalaceCleared", actionLabel: "月影の試練に挑む", inspectLog: "月光を飲む影が、祭壇の中央で脈打っている。" }
                 ],
-                entryPoint: { x: 8, y: 12 }
+                chests: [
+                    { x: 4, y: 8, itemId: 106, type: "item", rare: true },
+                    { x: 26, y: 18, itemId: 107, type: "item", rare: true }
+                ],
+                healSprings: [{ x: 15, y: 20 }],
+                entryPoint: { x: 2, y: 22 }
             }
         ]
     },
@@ -3736,86 +3922,106 @@ const FIXED_DUNGEON_MAPS = {
         rank: 85,
         encounterRank: 85,
         battleBg: "battle_bg_grezelia",
-        entryPoint: { x: 8, y: 13 },
+        entryPoint: { x: 15, y: 23 },
         floors: [
             {
                 label: "禁則回廊",
                 encounterRank: 85,
                 monsters: [100064, 100065, 100066, 100067],
-                width: 17,
-                height: 15,
-                tiles: [
-                    "WWWWWWWWWWWWWWWWW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTTTTTDTTTTTTTW",
-                    "WTTTWWTTTTTWWTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTTWWTTTWWTTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTTTTTBTTTTTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTWWTTTTTWWTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WWWWWWWWSWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWW"
-                ],
+                width: 31,
+                height: 25,
+                tiles: buildAuthoredLayout(31, 25, {
+                    rooms: [[12, 2, 7, 7], [2, 3, 7, 6], [22, 3, 7, 6], [3, 11, 7, 7], [21, 11, 7, 7], [3, 19, 7, 4], [12, 19, 7, 5], [21, 19, 7, 4]],
+                    paths: [
+                        [[15, 23], [15, 15], [6, 15], [6, 6], [15, 5]],
+                        [[15, 15], [24, 15], [25, 6], [15, 5]],
+                        [[6, 21], [15, 21], [24, 21]],
+                        [[6, 15], [6, 21]],
+                        [[24, 15], [24, 21]]
+                    ],
+                    marks: [[15, 23, "S"], [15, 21, "P"], [15, 5, "B"], [27, 3, "D"], [4, 5, "C"], [26, 20, "C"]]
+                }),
                 floorLinks: [
-                    { x: 8, y: 13, to: "EXIT", label: "外へ出る" },
-                    { x: 8, y: 2, toFloor: 2, targetX: 8, targetY: 12, label: "禁奥へ" }
+                    { x: 15, y: 23, to: "EXIT", label: "外へ出る" },
+                    { x: 27, y: 3, toFloor: 2, targetX: 2, targetY: 24, label: "禁奥へ" }
                 ],
                 tileEffects: [
-                    { x: 4, y: 4, type: "poison", damageRate: 0.09, message: "禁則の毒が体を蝕む！" },
-                    { x: 12, y: 4, type: "warp", toX: 4, toY: 10, message: "禁則式が座標を奪った。" },
-                    { x: 4, y: 10, type: "warp", toX: 12, toY: 4, message: "禁則式が反転した。" },
-                    { x: 12, y: 10, type: "hunter", id: "grezelia_rule", imageKey: "overlay_dungeon_hunter_shadow", monsterIds: [301100, 100067, 100068], speed: 0.5, range: 16, statMultiplier: 2.2, message: "禁則の番人が迫る！" }
+                    { x: 6, y: 15, type: "poison", damageRate: 0.09, message: "禁則の毒が体を蝕む！" },
+                    { x: 6, y: 6, type: "warp", toX: 25, toY: 6, message: "禁則式が座標を奪った。" },
+                    { x: 25, y: 6, type: "warp", toX: 6, toY: 6, message: "禁則式が反転した。" },
+                    { x: 24, y: 21, type: "hunter", id: "grezelia_rule", imageKey: "overlay_dungeon_hunter_shadow", monsterIds: [301100, 100067, 100068], speed: 0.5, range: 28, statMultiplier: 2.2, message: "禁則の番人が迫る！" }
+                ],
+                mapActions: [
+                    { x: 15, y: 21, label: "二人の作戦を聞く", log: "リュウとミネルバが、禁則術式の崩し方を探っている。", type: "quest", questId: "ryu_minerva_grezelia", imageKey: "overlay_npc_dark_soldier" }
                 ],
                 bosses: [
-                    { x: 8, y: 7, monsterId: 301100, storyEventId: "quest_ryu_minerva_clear", requiredFlag: "darkCastleCleared", actionLabel: "禁則術式を破る", inspectLog: "禁則の術式を前に、リュウとミネルバが戦っている。" }
+                    { x: 15, y: 5, monsterId: 301100, questId: "ryu_minerva_grezelia", storyEventId: "quest_ryu_minerva_clear", requiredFlag: "darkCastleCleared", actionLabel: "禁則術式を破る", inspectLog: "禁則の術式を前に、リュウとミネルバが戦っている。" }
                 ],
-                entryPoint: { x: 8, y: 13 }
+                chests: [
+                    { x: 4, y: 5, itemId: 105, type: "item", rare: true },
+                    { x: 26, y: 20, itemId: 106, type: "item", rare: true }
+                ],
+                entryPoint: { x: 15, y: 23 }
             },
             {
                 label: "禁奥の核",
                 encounterRank: 110,
                 monsters: [100066, 100067, 100068],
-                width: 17,
-                height: 15,
-                tiles: [
-                    "WWWWWWWWWWWWWWWWW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTWWTTTTTWWTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTTWWTTTWWTTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTTTTTBTTTTTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTWWTTTTTWWTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WTTTTTTTTTTTTTTTW",
-                    "WWWWWWWWUWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWW"
-                ],
+                width: 33,
+                height: 27,
+                tiles: buildAuthoredLayout(33, 27, {
+                    rooms: [[12, 2, 9, 6], [2, 4, 7, 7], [24, 4, 7, 7], [3, 14, 8, 7], [22, 14, 8, 7], [2, 23, 6, 3], [13, 20, 7, 6], [25, 22, 6, 4]],
+                    paths: [
+                        [[2, 24], [6, 17], [6, 7], [16, 4]],
+                        [[6, 17], [16, 23], [27, 24]],
+                        [[27, 24], [26, 17], [27, 7], [16, 4]],
+                        [[6, 17], [26, 17]]
+                    ],
+                    marks: [[2, 24, "U"], [16, 21, "P"], [16, 4, "B"], [4, 7, "C"], [28, 24, "C"]]
+                }),
                 floorLinks: [
-                    { x: 8, y: 13, toFloor: 1, targetX: 8, targetY: 2, label: "回廊へ戻る" }
+                    { x: 2, y: 24, toFloor: 1, targetX: 27, targetY: 4, label: "回廊へ戻る" }
                 ],
                 tileEffects: [
-                    { x: 4, y: 5, type: "ice", maxSlide: 18, message: "術式の床を滑った。" },
-                    { x: 12, y: 5, type: "poison", damageRate: 0.1, message: "禁則の残響が響く！" },
+                    { x: 6, y: 7, type: "ice", maxSlide: 28, message: "術式の床を滑った。" },
+                    { x: 27, y: 7, type: "poison", damageRate: 0.1, message: "禁則の残響が響く！" },
+                    { x: 6, y: 17, type: "warp", toX: 26, toY: 17, message: "術式が進行方向を反転した。" },
+                    { x: 26, y: 17, type: "warp", toX: 6, toY: 17, message: "術式が再び反転した。" },
+                    { x: 16, y: 23, type: "hunter", id: "grezelia_core_guard", imageKey: "overlay_dungeon_hunter_shadow", monsterIds: [301100, 100067, 100068], speed: 1, range: 30, statMultiplier: 2.4, message: "禁奥の執行者が迫る！" }
+                ],
+                mapActions: [
+                    { x: 16, y: 21, label: "禁則の声に応える", log: "核の奥から、ゼノンの声が低く響いている。", type: "quest", questId: "zenon_hidden_grezelia", imageKey: "overlay_npc_dark_soldier" }
                 ],
                 bosses: [
-                    { x: 8, y: 7, monsterId: 902000, storyEventId: "quest_zenon_hidden_clear", requiredFlag: "darkCastleCleared", actionLabel: "禁則試練に挑む", inspectLog: "禁則の核が、意志ある闇として立ちはだかっている。" }
+                    { x: 16, y: 4, monsterId: 902000, questId: "zenon_hidden_grezelia", storyEventId: "quest_zenon_hidden_clear", requiredFlag: "darkCastleCleared", actionLabel: "禁則試練に挑む", inspectLog: "禁則の核が、意志ある闇として立ちはだかっている。" }
                 ],
-                entryPoint: { x: 8, y: 12 }
+                chests: [
+                    { x: 4, y: 7, itemId: 106, type: "item", rare: true },
+                    { x: 28, y: 24, itemId: 107, type: "item", rare: true }
+                ],
+                healSprings: [{ x: 16, y: 23 }],
+                entryPoint: { x: 2, y: 24 }
             }
         ]
     }
 };
 
+normalizeCoordinateActorTiles(FIXED_DUNGEON_MAPS);
+
 const MapRegistry = {
+    applyStoryMapMutation(mutationKey) {
+        const mutation = STORY_MAP_MUTATIONS[mutationKey];
+        if (!mutation || typeof App === "undefined" || !App.data?.progress) return false;
+        if (!App.data.progress.mapChanges) App.data.progress.mapChanges = {};
+        if (!App.data.progress.mapChanges[mutation.area]) App.data.progress.mapChanges[mutation.area] = {};
+        mutation.changes.forEach(change => {
+            App.data.progress.mapChanges[mutation.area][`${change.x},${change.y}`] = change.tile;
+        });
+        if (typeof App.save === "function") App.save();
+        if (typeof Field !== "undefined" && Field.ready) Field.render();
+        return true;
+    },
+
     getFixedDungeonBase(areaKey) {
         return (typeof FIXED_DUNGEON_MAPS !== "undefined") ? FIXED_DUNGEON_MAPS[areaKey] : null;
     },

@@ -170,24 +170,19 @@ const MenuStatus = {
 
     renderQuests: (content) => {
         const defs = (typeof App !== 'undefined' && App.getQuestDefinitions) ? App.getQuestDefinitions() : {};
-        const questIds = Object.keys(defs || {});
-        const stateLabel = { available: '未受注', accepted: '進行中', completed: '完了' };
-        const stateColor = { available: '#aaa', accepted: '#ffd700', completed: '#44ff44', locked: '#666' };
+        const questIds = Object.keys(defs || {}).filter(id => {
+            const state = App.getQuestState ? App.getQuestState(id).state : 'available';
+            return state === 'accepted' || state === 'completed';
+        });
+        const stateLabel = { accepted: '進行中', completed: '完了' };
+        const stateColor = { accepted: '#ffd700', completed: '#44ff44' };
 
         const cards = questIds.map(id => {
             const quest = defs[id];
-            const rawState = (App.getQuestState ? App.getQuestState(id).state : 'available') || 'available';
-            const unlocked = App.isQuestUnlocked ? App.isQuestUnlocked(id) : true;
-            const state = unlocked ? rawState : 'locked';
-            const label = state === 'locked' ? '未開放' : (stateLabel[state] || state);
+            const state = (App.getQuestState ? App.getQuestState(id).state : 'accepted') || 'accepted';
+            const label = stateLabel[state] || state;
             const color = stateColor[state] || '#aaa';
-            const objective = quest.objective || quest.progressText || '';
-            const rewardNames = Array.isArray(quest.rewardAllies)
-                ? quest.rewardAllies.map(charId => {
-                    const master = window.CHARACTERS_DATA?.find(c => Number(c.id) === Number(charId));
-                    return master?.name || `仲間${charId}`;
-                }).join(' / ')
-                : '';
+            const objective = App.getQuestProgressText ? App.getQuestProgressText(id) : (quest.progressText || quest.objective || '');
 
             return `
                 <div style="background:rgba(255,255,255,0.05); border:1px solid #444; border-radius:8px; padding:12px; margin-bottom:10px;">
@@ -199,15 +194,14 @@ const MenuStatus = {
                         <div style="flex:0 0 auto; color:${color}; font-size:11px; font-weight:bold;">${label}</div>
                     </div>
                     <div style="font-size:11px; color:#ccc; margin-top:8px; line-height:1.6;">${objective}</div>
-                    ${rewardNames ? `<div style="font-size:10px; color:#9fd6ff; margin-top:6px;">加入: ${rewardNames}</div>` : ''}
                 </div>`;
         }).join('');
 
         content.innerHTML = `
             <div style="font-size:11px; color:#aaa; margin-bottom:10px; line-height:1.6;">
-                受注中・完了済みの仲間加入クエストと、今後開放される依頼を確認できます。
+                受注した依頼と、これまでに完了した依頼を確認できます。
             </div>
-            ${cards || '<div style="color:#888; font-size:12px;">クエスト情報はまだありません。</div>'}
+            ${cards || '<div style="color:#888; font-size:12px;">受注中のクエストはありません。</div>'}
         `;
     }
 };

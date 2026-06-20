@@ -502,6 +502,18 @@ const StoryManager = {
                         "text": "化け物は村北東の大穴の奥に…\nよろしくお願い申し上げる。"
                 }
         ],
+        "START_VILLAGE_ELDER_AFTER": [
+                {
+                        "charId": 1001,
+                        "name": "長老",
+                        "text": "旅支度は整いましたかな。\n東の街道は火山へ続いております。"
+                },
+                {
+                        "charId": 1001,
+                        "name": "長老",
+                        "text": "戻る場所なら、ここにあります。\nどうか命まで急がせぬように。"
+                }
+        ],
         "START_CAVE1": [
                 {
                         "charId": 1002,
@@ -807,15 +819,44 @@ const StoryManager = {
                         "charId": 1002
                 }
         ],
+        "TOWN_START_VILLAGER_3": [
+                {
+                        "name": "薬草摘み",
+                        "text": "今朝の薬草、苦い匂いがする。\n土が怯えてる時の匂いだよ。",
+                        "charId": 1003
+                },
+                {
+                        "name": "薬草摘み",
+                        "text": "傷薬にはできる。\nでも、飲む時は鼻をつまみな。",
+                        "charId": 1003
+                }
+        ],
         "TOWN_FIRE_VILLAGER_1": [
                 {
                         "name": "鍛冶師",
-                        "text": "炉の火は戻った。\nだが火山の息は荒いままだ。",
+                        "text": "火は戻った。\nけど、前の火じゃねえ。",
                         "charId": 1002
                 },
                 {
                         "name": "鍛冶師",
-                        "text": "奥へ行くなら、\n風を味方につけるんだな。",
+                        "text": "鉄が、槌を嫌がるんだ。\n火山で何かが暴れてる。",
+                        "charId": 1002
+                },
+                {
+                        "name": "鍛冶師",
+                        "text": "行くなら水を持て。\n根性じゃ、火傷は冷めねえぞ。",
+                        "charId": 1002
+                }
+        ],
+        "TOWN_FIRE_VILLAGER_1_BEFORE": [
+                {
+                        "name": "鍛冶師",
+                        "text": "聞こえるか。\n槌の音が、ひとつもねえ。",
+                        "charId": 1002
+                },
+                {
+                        "name": "鍛冶師",
+                        "text": "火のない炉は墓と同じだ。\n触ると、ぞっとするほど冷たい。",
                         "charId": 1002
                 }
         ],
@@ -831,15 +872,51 @@ const StoryManager = {
                         "charId": 1003
                 }
         ],
+        "TOWN_FIRE_VILLAGER_3": [
+                {
+                        "name": "炭運び",
+                        "text": "火が死んでから、\n籠だけが軽くなっちまった。",
+                        "charId": 1002
+                },
+                {
+                        "name": "炭運び",
+                        "text": "楽になったはずなのにな。\n背中の方が、ずっと重い。",
+                        "charId": 1002
+                }
+        ],
+        "TOWN_FIRE_VILLAGER_3_AFTER": [
+                {
+                        "name": "炭運び",
+                        "text": "今日は籠が重い。\nやっと、いつもの重さだ。",
+                        "charId": 1002
+                },
+                {
+                        "name": "炭運び",
+                        "text": "炉の連中が待ってる。\n今夜は肩が抜けても運ぶさ。",
+                        "charId": 1002
+                }
+        ],
         "TOWN_WIND_VILLAGER_1": [
                 {
                         "name": "見張り",
-                        "text": "森の上に黒い風が残る。\nあれは自然の風じゃない。",
+                        "text": "黒い風は消えた。\n鳥は、まだ戻ってこない。",
                         "charId": 1002
                 },
                 {
                         "name": "見張り",
-                        "text": "奥へ行くなら気をつけろ。\n歩く影が混じっている。",
+                        "text": "森は助かった。\n怯えた森が、元に戻るのは先だ。",
+                        "charId": 1002
+                }
+        ],
+        "TOWN_WIND_VILLAGER_1_BEFORE": [
+                {
+                        "name": "見張り",
+                        "text": "枝が揺れてるのに、\n頬には何も当たらない。",
+                        "charId": 1002
+                },
+                {
+                        "name": "見張り",
+                        "text": "あれは風じゃない。\n森の中を、何かが歩いてる。",
                         "charId": 1002
                 }
         ],
@@ -855,20 +932,56 @@ const StoryManager = {
                         "charId": 1003
                 }
         ],
+        "TOWN_WIND_VILLAGER_2_AFTER": [
+                {
+                        "name": "集落の子",
+                        "text": "聞いて。風鈴が三つとも\n違う声で鳴るんだよ。",
+                        "charId": 1003
+                },
+                {
+                        "name": "集落の子",
+                        "text": "森が歌を思い出したって、\nお母さんが泣いてた。",
+                        "charId": 1003
+                }
+        ],
+        "TOWN_WIND_VILLAGER_3": [
+                {
+                        "name": "風織り職人",
+                        "text": "いい布は、風を閉じ込めない。\n通り道だけ覚えさせるんだ。",
+                        "charId": 1003
+                },
+                {
+                        "name": "風織り職人",
+                        "text": "今の森風は糸を噛む。\nこんな機嫌、初めてだよ。",
+                        "charId": 1003
+                }
+        ],
         "TOWN_WATER_VILLAGER_1": [
                 {
                         "name": "老人",
-                        "text": "雷の要塞には、かつて\n二人の大騎士がいた。",
+                        "text": "要塞から雷が消えた夜、\n久しぶりに眠れたよ。",
                         "charId": 1003
                 },
                 {
                         "name": "老人",
-                        "text": "最強の刃レナード。\n最強の盾ジョセフ。",
+                        "text": "あの二人も、少しは\n昔みたいに話せたかね。",
+                        "charId": 1003
+                }
+        ],
+        "TOWN_WATER_VILLAGER_1_BEFORE": [
+                {
+                        "name": "老人",
+                        "text": "昔の要塞にはな、\n喧嘩ばかりの騎士が二人いた。",
                         "charId": 1003
                 },
                 {
                         "name": "老人",
-                        "text": "二人が並ぶ時、\n要塞は落ちぬと言われたよ。",
+                        "text": "レナードは先に斬る。\nジョセフは最後まで立つ。",
+                        "charId": 1003
+                },
+                {
+                        "name": "老人",
+                        "text": "刃と盾が並んだ日だけ、\n負ける気がしなかったよ。",
                         "charId": 1003
                 }
         ],
@@ -884,16 +997,300 @@ const StoryManager = {
                         "charId": 1002
                 }
         ],
+        "TOWN_WATER_VILLAGER_2_AFTER": [
+                {
+                        "name": "船大工",
+                        "text": "澄んだ水は厄介だ。\n船底の傷まで丸見えになる。",
+                        "charId": 1002
+                },
+                {
+                        "name": "船大工",
+                        "text": "だが、直す場所が見えるのはいい。\n街も船も同じだな。",
+                        "charId": 1002
+                }
+        ],
         "TOWN_WATER_VILLAGER_3": [
                 {
                         "name": "元兵士",
-                        "text": "ジョセフ様の盾は、\n退くための盾じゃなかった。",
+                        "text": "ジョセフ様は、よく怒鳴った。\n下がれ。俺の後ろにいろ、って。",
                         "charId": 1002
                 },
                 {
                         "name": "元兵士",
-                        "text": "誰かが一歩進むために、\n全てを受け止める盾だった。",
+                        "text": "あの背中があったから、\n俺たちは前を向けたんだ。",
                         "charId": 1002
+                }
+        ],
+        "TOWN_WATER_VILLAGER_4": [
+                {
+                        "name": "渡し守",
+                        "text": "水は戻ったが、流れが若い。\n昔の川筋を忘れてやがる。",
+                        "charId": 1002
+                },
+                {
+                        "name": "渡し守",
+                        "text": "急ぐ客ほど船を揺らす。\nあんたは、足を静かに置けるな。",
+                        "charId": 1002
+                }
+        ],
+        "TOWN_WATER_VILLAGER_4_AFTER": [
+                {
+                        "name": "渡し守",
+                        "text": "川が昔の道を思い出した。\n櫂を入れる音でわかる。",
+                        "charId": 1002
+                },
+                {
+                        "name": "渡し守",
+                        "text": "次に戻る時は客で来な。\n戦支度の顔は、もう十分だ。",
+                        "charId": 1002
+                }
+        ],
+        "QUEST_MARIE_START": [
+                {
+                        "name": "マリー",
+                        "text": "祈るだけでは、あの子たちの\n眠る場所まで守れません。"
+                },
+                {
+                        "name": "マリー",
+                        "text": "街道の魔物を減らしてほしい。\n私は、逃げ道を照らします。"
+                },
+                {
+                        "name": "主人公",
+                        "text": "道を空けたら、ここへ戻る。",
+                        "charId": 301
+                },
+                {
+                        "name": "マリー",
+                        "text": "はい。あなたの足音を、\n祈りの中で待っています。"
+                }
+        ],
+        "QUEST_MARIE_REPORT": [
+                {
+                        "name": "マリー",
+                        "text": "子どもたちが、久しぶりに\n外の風を嗅いで笑いました。"
+                },
+                {
+                        "name": "マリー",
+                        "text": "次は私が、あなたの道を\n照らす番ですね。"
+                }
+        ],
+        "QUEST_ZELIED_START": [
+                {
+                        "name": "ゼリード",
+                        "text": "灯台の火は戻った。\nだが、影が二つ残っている。"
+                },
+                {
+                        "name": "ゼリード",
+                        "text": "上で待つのは魔物じゃない。\n砕けた結界の執念だ。"
+                },
+                {
+                        "name": "ゼリード",
+                        "text": "俺は一階を守る。\nお前は頂で、息の根を止めろ。"
+                }
+        ],
+        "QUEST_ZELIED_REPORT": [
+                {
+                        "name": "ゼリード",
+                        "text": "……潮の匂いが戻ったな。\n頂の影は消えたようだ。"
+                },
+                {
+                        "name": "ゼリード",
+                        "text": "借りは背中で返す。\n次の戦いには、俺も行く。"
+                }
+        ],
+        "QUEST_HAYATE_START": [
+                {
+                        "name": "ハヤテ",
+                        "text": "アランが認めた旅人ってのは、\nあんたか。"
+                },
+                {
+                        "name": "ハヤテ",
+                        "text": "速さは逃げるためじゃない。\n誰かより先に着くためだ。"
+                },
+                {
+                        "name": "ハヤテ",
+                        "text": "北の街道を荒らす奴ら、\nどちらが先に片づける？"
+                }
+        ],
+        "QUEST_HAYATE_REPORT": [
+                {
+                        "name": "ハヤテ",
+                        "text": "俺が着いた時には、\n最後の一匹が倒れてた。"
+                },
+                {
+                        "name": "ハヤテ",
+                        "text": "負けたままじゃ眠れない。\n旅の先で、もう一度勝負だ。"
+                }
+        ],
+        "QUEST_SYLVIA_START": [
+                {
+                        "name": "シルビア",
+                        "text": "ジョセフ様の盾は、\n退く者まで守ったと聞きます。"
+                },
+                {
+                        "name": "シルビア",
+                        "text": "けれど街道には今も、\n帰れない荷車が残っている。"
+                },
+                {
+                        "name": "シルビア",
+                        "text": "護衛を手伝ってください。\n私も槍を置く気はありません。"
+                }
+        ],
+        "QUEST_SYLVIA_REPORT": [
+                {
+                        "name": "シルビア",
+                        "text": "荷車が三台、門を越えました。\n泣いていた御者まで笑って。"
+                },
+                {
+                        "name": "シルビア",
+                        "text": "守るだけでは届かない場所へ、\n今度は私も進みます。"
+                }
+        ],
+        "QUEST_RIN_START": [
+                {
+                        "name": "リン",
+                        "text": "レイラの雷は、迷わない。\nだから私は追いつけなかった。"
+                },
+                {
+                        "name": "リン",
+                        "text": "要塞の残党を狩る。\n私の刃が鈍いか、見てほしい。"
+                }
+        ],
+        "QUEST_RIN_REPORT": [
+                {
+                        "name": "リン",
+                        "text": "刃は鈍っていなかった。\n迷っていたのは、私の方だ。"
+                },
+                {
+                        "name": "リン",
+                        "text": "次は同じ敵を斬る。\nそれなら背中を預けられる。"
+                }
+        ],
+        "QUEST_KARIN_CLEAR": [
+                {
+                        "name": "カリン",
+                        "text": "斬らずに止める。\nその誓いを、甘さと笑われた。"
+                },
+                {
+                        "name": "カリン",
+                        "text": "だが君は、守るために\n刃を抜く者の目をしている。"
+                },
+                {
+                        "name": "カリン",
+                        "text": "この剣を預けよう。\n次は、君の隣で道を守る。"
+                }
+        ],
+        "QUEST_ARISA_HAINE_CLEAR": [
+                {
+                        "name": "アリサ",
+                        "text": "盗んで逃げる方が、\nずっと簡単だったんだけどね。"
+                },
+                {
+                        "name": "ハイネ",
+                        "text": "逃げ足を、誰かを救う足にした。\nそれでよい。"
+                },
+                {
+                        "name": "アリサ",
+                        "text": "師匠が褒めるなんて珍しい。\nこの先も聞かせてもらおうか。"
+                }
+        ],
+        "QUEST_SOPHIA_ALAN_CLEAR": [
+                {
+                        "name": "ソフィア",
+                        "text": "禁じられた水路ほど、\n先を覗きたくなるものさ。"
+                },
+                {
+                        "name": "アラン",
+                        "text": "あなたは覗くだけでは済まない。\n私が止め役になります。"
+                },
+                {
+                        "name": "ソフィア",
+                        "text": "決まりだね。\n未知の続きは、この一行で見る。"
+                }
+        ],
+        "QUEST_FRIEDA_BARON_CLEAR": [
+                {
+                        "name": "フリーダ",
+                        "text": "雷雲が割れた。\n久しぶりに、星が見えるね。"
+                },
+                {
+                        "name": "バロン",
+                        "text": "眺めるのは後だ。\n戦場は、この先にも続く。"
+                },
+                {
+                        "name": "フリーダ",
+                        "text": "相変わらず固いなあ。\nじゃあ二人とも、連れていって。"
+                }
+        ],
+        "QUEST_LICIA_CLEAR": [
+                {
+                        "name": "リーシア",
+                        "text": "結界の式は解けた。\nだが、答えは一つ減っただけ。"
+                },
+                {
+                        "name": "リーシア",
+                        "text": "君の旅には、まだ\n観測できない揺らぎがある。"
+                },
+                {
+                        "name": "リーシア",
+                        "text": "同行する。\n真理が逃げる前に追わなくては。"
+                }
+        ],
+        "QUEST_CLAUDE_LEON_CLEAR": [
+                {
+                        "name": "クロード",
+                        "text": "また救えなかったらと思うと、\n拳が動かなかった。"
+                },
+                {
+                        "name": "レオン",
+                        "text": "恐れたまま立てたなら十分だ。\n私も隣で盾を持つ。"
+                },
+                {
+                        "name": "クロード",
+                        "text": "借りが増えたな。\n旅の中で、二人分返させてくれ。"
+                }
+        ],
+        "QUEST_LUNA_CLEAR": [
+                {
+                        "name": "ルーナ",
+                        "text": "誰かの祈りに守られるだけでは、\nまた同じ場所で震えてしまう。"
+                },
+                {
+                        "name": "ルーナ",
+                        "text": "今度は私が立ちます。\nこの光は、私が選んだものです。"
+                }
+        ],
+        "QUEST_RYU_MINERVA_CLEAR": [
+                {
+                        "name": "ミネルバ",
+                        "text": "禁則は消えた。でも術式の癖が、\n王国の古い工房と同じなの。"
+                },
+                {
+                        "name": "リュウ",
+                        "text": "ならば追う。\n言葉が要る時は、お前に任せる。"
+                },
+                {
+                        "name": "ミネルバ",
+                        "text": "交渉成立ね。\n拳が要る時は、あなたに任せるわ。"
+                }
+        ],
+        "QUEST_ZENON_CLEAR": [
+                {
+                        "name": "ゼノン",
+                        "text": "恐怖で魔を縛れば、\n人は私を魔王と呼ぶ。"
+                },
+                {
+                        "name": "ゼノン",
+                        "text": "それで世界が保つなら、\n名など好きに呼ばせてきた。"
+                },
+                {
+                        "name": "主人公",
+                        "text": "名ではなく、何を守るかを見る。",
+                        "charId": 301
+                },
+                {
+                        "name": "ゼノン",
+                        "text": "ならば見届けよう。\nお前の剣が選ぶ、世界の続きを。"
                 }
         ],
         "POST_THUNDER_FORT_BASE_1": [
@@ -1316,6 +1713,16 @@ const StoryManager = {
                 {
                         "name": "町人",
                         "text": "昔は、橋の上で歌が聞こえる街だったんだ。今は兵士の足音ばかりさ。よそ者は目立たない方がいい。"
+                }
+        ],
+        "WATER_CITY_BLOCKADE_GUARD": [
+                {
+                        "name": "ダークソルジャー",
+                        "text": "この橋は封鎖した。\n荷車も巡礼者も通さん。"
+                },
+                {
+                        "name": "ダークソルジャー",
+                        "text": "水底の命令が解かれるまで、\nここから先は王国軍の区画だ。"
                 }
         ],
         "WATER_CITY_SOPHIA_AFTER_MEETING": [
@@ -2142,153 +2549,6 @@ const StoryManager = {
         ]
 },
 
-	// ==========================================
-    // 2. 出現条件 (triggers) - 範囲指定対応
-    // ==========================================
-    triggers: [
-        {
-                "area": "START_VILLAGE",
-                "x": 6,
-                "y": 3,
-                "stepMin": 0,
-                "stepMax": 0,
-                "subMin": 0,
-                "subMax": 99,
-                "eventId": "start_adventure"
-        },
-        {
-                "area": "START_VILLAGE",
-                "x": 6,
-                "y": 3,
-                "stepMin": 1,
-                "stepMax": 1,
-                "subMin": 0,
-                "subMax": 0,
-                "eventId": "start_adventure2"
-        },
-        {
-                "area": "START_VILLAGE",
-                "x": 6,
-                "y": 3,
-                "stepMin": 1,
-                "stepMax": 1,
-                "subMin": 1,
-                "subMax": 99,
-                "eventId": "start_adventure2"
-        },
-        {
-                "area": "START_CAVE",
-                "x": 15,
-                "y": 17,
-                "stepMin": 0,
-                "stepMax": 0,
-                "subMin": 0,
-                "subMax": 99,
-                "eventId": "start_cave1"
-        },
-        {
-                "area": "START_CAVE",
-                "x": 15,
-                "y": 17,
-                "stepMin": 1,
-                "stepMax": 1,
-                "subMin": 1,
-                "subMax": 1,
-                "eventId": "start_cave2"
-        },
-        {
-                "area": "START_VILLAGE",
-                "x": 6,
-                "y": 3,
-                "stepMin": 2,
-                "stepMax": 2,
-                "subMin": 0,
-                "subMax": 0,
-                "eventId": "start_adventure3"
-        },
-        {
-                "area": "START_CAVE",
-                "x": 5,
-                "y": 2,
-                "stepMin": 1,
-                "stepMax": 1,
-                "subMin": 0,
-                "subMax": 99,
-                "eventId": "start_boss_battle"
-        },
-        {
-                "area": "FIRE_VILLAGE",
-                "x": 14,
-                "y": 17,
-                "stepMin": 2,
-                "stepMax": 2,
-                "subMin": 1,
-                "subMax": 1,
-                "eventId": "fire_village_consult"
-        },
-        {
-                "area": "FIRE_VILLAGE",
-                "x": 14,
-                "y": 1,
-                "stepMin": 2,
-                "stepMax": 2,
-                "subMin": 2,
-                "subMax": 2,
-                "eventId": "fire_volcano_entrance"
-        },
-        {
-                "area": "FIRE_VILLAGE",
-                "x": 14,
-                "y": 17,
-                "stepMin": 2,
-                "stepMax": 2,
-                "subMin": 4,
-                "subMax": 4,
-                "eventId": "fire_village_report"
-        },
-        {
-                "area": "WIND_VILLAGE",
-                "x": 14,
-                "y": 15,
-                "stepMin": 3,
-                "stepMax": 3,
-                "subMin": 0,
-                "subMax": 0,
-                "eventId": "wind_village_intro"
-        },
-        {
-                "area": "WIND_VILLAGE",
-                "x": 2,
-                "y": 10,
-                "stepMin": 3,
-                "stepMax": 3,
-                "subMin": 1,
-                "subMax": 1,
-                "missingFlag": "windForestEntryIntroduced",
-                "eventId": "wind_forest_entry"
-        },
-        {
-                "area": "WATER_CITY",
-                "x": 19,
-                "y": 13,
-                "stepMin": 4,
-                "stepMax": 4,
-                "subMin": 0,
-                "subMax": 0,
-                "eventId": "water_city_intro"
-        },
-        {
-                "area": "ABYSS_FIELD",
-                "x": 8,
-                "y": 7,
-                "stepMin": 9,
-                "stepMax": 9,
-                "subMin": 0,
-                "subMax": 99,
-                "eventId": "abyss_unsealed"
-        }
-],
-
     events: {
         "game_start": {
                 "actions": [
@@ -2437,6 +2697,15 @@ const StoryManager = {
                 ],
                 "winActions": []
         },
+        "start_village_elder_after": {
+                "actions": [
+                        {
+                                "type": "CONV",
+                                "value": "START_VILLAGE_ELDER_AFTER"
+                        }
+                ],
+                "winActions": []
+        },
         "start_cave1": {
                 "actions": [
                         {
@@ -2461,18 +2730,8 @@ const StoryManager = {
                                                 "value": "START_CAVE3"
                                         },
                                         {
-                                                "type": "TILE",
-                                                "area": "START_CAVE",
-                                                "x": 15,
-                                                "y": 17,
-                                                "tile": "G"
-                                        },
-                                        {
-                                                "type": "TILE",
-                                                "area": "START_CAVE",
-                                                "x": 15,
-                                                "y": 16,
-                                                "tile": "G"
+                                                "type": "MAP_CHANGE",
+                                                "value": "START_CAVE_GATE_OPEN"
                                         },
                                         {
                                                 "type": "SUB",
@@ -2489,18 +2748,8 @@ const StoryManager = {
                 ],
                 "winActions": []
         },
-        "start_boss_battle": {
+        "start_boss_clear": {
                 "actions": [
-                        {
-                                "type": "LOG",
-                                "value": "巨大な化け物が立ちはだかる…！"
-                        },
-                        {
-                                "type": "BOSS",
-                                "value": 301000
-                        }
-                ],
-                "winActions": [
                         {
                                 "type": "CONV",
                                 "value": "START_DUNGEON_CLEAR"
@@ -2517,7 +2766,8 @@ const StoryManager = {
                                 "type": "LOG",
                                 "value": "巨大な化け物を打ち倒した…！"
                         }
-                ]
+                ],
+                "winActions": []
         },
         "fire_village_clear": {
                 "actions": [
@@ -3034,69 +3284,63 @@ const StoryManager = {
         },
         "quest_claude_leon_clear": {
                 "actions": [
-                        { "type": "LOG", "value": "クロードとレオンは剣を収め、闇の残滓を追う旅に同行すると告げた。" },
+                        { "type": "CONV", "value": "QUEST_CLAUDE_LEON_CLEAR" },
                         { "type": "QUEST_COMPLETE", "value": "claude_leon_dark_shrine" }
                 ],
                 "winActions": []
         },
         "quest_luna_hidden_clear": {
                 "actions": [
-                        { "type": "LOG", "value": "月影を縛っていた闇がほどけ、ルーナは静かに一行へ歩み寄った。" },
+                        { "type": "CONV", "value": "QUEST_LUNA_CLEAR" },
                         { "type": "QUEST_COMPLETE", "value": "luna_hidden_dark_shrine" }
                 ],
                 "winActions": []
         },
         "quest_ryu_minerva_clear": {
                 "actions": [
-                        { "type": "LOG", "value": "禁則の術式が消え、リュウとミネルバは互いに頷いて仲間に加わった。" },
+                        { "type": "CONV", "value": "QUEST_RYU_MINERVA_CLEAR" },
                         { "type": "QUEST_COMPLETE", "value": "ryu_minerva_grezelia" }
                 ],
                 "winActions": []
         },
         "quest_zenon_hidden_clear": {
                 "actions": [
-                        { "type": "LOG", "value": "禁則の核が砕け、ゼノンはその力を見届けた者として一行に手を貸すと告げた。" },
+                        { "type": "CONV", "value": "QUEST_ZENON_CLEAR" },
                         { "type": "QUEST_COMPLETE", "value": "zenon_hidden_grezelia" }
                 ],
                 "winActions": []
         },
         "quest_karin_volcano_clear": {
                 "actions": [
-                        { "type": "LOG", "value": "カリンは刃を収めた。" },
-                        { "type": "LOG", "value": "守る剣を、旅に預けると。" },
+                        { "type": "CONV", "value": "QUEST_KARIN_CLEAR" },
                         { "type": "QUEST_COMPLETE", "value": "karin_volcano_depths" }
                 ],
                 "winActions": []
         },
         "quest_arisa_haine_clear": {
                 "actions": [
-                        { "type": "LOG", "value": "アリサは息を整えた。" },
-                        { "type": "LOG", "value": "ハイネは静かに頷いた。" },
+                        { "type": "CONV", "value": "QUEST_ARISA_HAINE_CLEAR" },
                         { "type": "QUEST_COMPLETE", "value": "arisa_haine_forest_depths" }
                 ],
                 "winActions": []
         },
         "quest_sophia_alan_clear": {
                 "actions": [
-                        { "type": "LOG", "value": "ソフィアは微笑んだ。" },
-                        { "type": "LOG", "value": "未知は、まだ尽きないと。" },
-                        { "type": "LOG", "value": "アランは剣を握り直した。" },
+                        { "type": "CONV", "value": "QUEST_SOPHIA_ALAN_CLEAR" },
                         { "type": "QUEST_COMPLETE", "value": "sophia_alan_seabed_depths" }
                 ],
                 "winActions": []
         },
         "quest_frieda_baron_clear": {
                 "actions": [
-                        { "type": "LOG", "value": "フリーダは空を仰いだ。" },
-                        { "type": "LOG", "value": "バロンは戦場を見据えた。" },
+                        { "type": "CONV", "value": "QUEST_FRIEDA_BARON_CLEAR" },
                         { "type": "QUEST_COMPLETE", "value": "frieda_baron_thunder_depths" }
                 ],
                 "winActions": []
         },
         "quest_licia_clear": {
                 "actions": [
-                        { "type": "LOG", "value": "リーシアの瞳が開いた。" },
-                        { "type": "LOG", "value": "真理の道は、まだ続く。" },
+                        { "type": "CONV", "value": "QUEST_LICIA_CLEAR" },
                         { "type": "QUEST_COMPLETE", "value": "licia_crena_depths" }
                 ],
                 "winActions": []
@@ -3529,6 +3773,15 @@ const StoryManager = {
                 ],
                 "winActions": []
         },
+        "water_city_blockade_guard": {
+                "actions": [
+                        {
+                                "type": "CONV",
+                                "value": "WATER_CITY_BLOCKADE_GUARD"
+                        }
+                ],
+                "winActions": []
+        },
         "water_city_sophia_after_meeting": {
                 "actions": [
                         {
@@ -3555,32 +3808,116 @@ const StoryManager = {
                 "actions": [{ "type": "CONV", "value": "TOWN_START_VILLAGER_2" }],
                 "winActions": []
         },
+        "town_start_villager_3": {
+                "actions": [{ "type": "CONV", "value": "TOWN_START_VILLAGER_3" }],
+                "winActions": []
+        },
         "town_fire_villager_1": {
                 "actions": [{ "type": "CONV", "value": "TOWN_FIRE_VILLAGER_1" }],
+                "winActions": []
+        },
+        "town_fire_villager_1_before": {
+                "actions": [{ "type": "CONV", "value": "TOWN_FIRE_VILLAGER_1_BEFORE" }],
                 "winActions": []
         },
         "town_fire_villager_2": {
                 "actions": [{ "type": "CONV", "value": "TOWN_FIRE_VILLAGER_2" }],
                 "winActions": []
         },
+        "town_fire_villager_3": {
+                "actions": [{ "type": "CONV", "value": "TOWN_FIRE_VILLAGER_3" }],
+                "winActions": []
+        },
+        "town_fire_villager_3_after": {
+                "actions": [{ "type": "CONV", "value": "TOWN_FIRE_VILLAGER_3_AFTER" }],
+                "winActions": []
+        },
         "town_wind_villager_1": {
                 "actions": [{ "type": "CONV", "value": "TOWN_WIND_VILLAGER_1" }],
+                "winActions": []
+        },
+        "town_wind_villager_1_before": {
+                "actions": [{ "type": "CONV", "value": "TOWN_WIND_VILLAGER_1_BEFORE" }],
                 "winActions": []
         },
         "town_wind_villager_2": {
                 "actions": [{ "type": "CONV", "value": "TOWN_WIND_VILLAGER_2" }],
                 "winActions": []
         },
+        "town_wind_villager_2_after": {
+                "actions": [{ "type": "CONV", "value": "TOWN_WIND_VILLAGER_2_AFTER" }],
+                "winActions": []
+        },
+        "town_wind_villager_3": {
+                "actions": [{ "type": "CONV", "value": "TOWN_WIND_VILLAGER_3" }],
+                "winActions": []
+        },
         "town_water_villager_1": {
                 "actions": [{ "type": "CONV", "value": "TOWN_WATER_VILLAGER_1" }],
+                "winActions": []
+        },
+        "town_water_villager_1_before": {
+                "actions": [{ "type": "CONV", "value": "TOWN_WATER_VILLAGER_1_BEFORE" }],
                 "winActions": []
         },
         "town_water_villager_2": {
                 "actions": [{ "type": "CONV", "value": "TOWN_WATER_VILLAGER_2" }],
                 "winActions": []
         },
+        "town_water_villager_2_after": {
+                "actions": [{ "type": "CONV", "value": "TOWN_WATER_VILLAGER_2_AFTER" }],
+                "winActions": []
+        },
         "town_water_villager_3": {
                 "actions": [{ "type": "CONV", "value": "TOWN_WATER_VILLAGER_3" }],
+                "winActions": []
+        },
+        "town_water_villager_4": {
+                "actions": [{ "type": "CONV", "value": "TOWN_WATER_VILLAGER_4" }],
+                "winActions": []
+        },
+        "town_water_villager_4_after": {
+                "actions": [{ "type": "CONV", "value": "TOWN_WATER_VILLAGER_4_AFTER" }],
+                "winActions": []
+        },
+        "quest_marie_start": {
+                "actions": [{ "type": "CONV", "value": "QUEST_MARIE_START" }],
+                "winActions": []
+        },
+        "quest_marie_report": {
+                "actions": [{ "type": "CONV", "value": "QUEST_MARIE_REPORT" }],
+                "winActions": []
+        },
+        "quest_zelied_start": {
+                "actions": [{ "type": "CONV", "value": "QUEST_ZELIED_START" }],
+                "winActions": []
+        },
+        "quest_zelied_report": {
+                "actions": [{ "type": "CONV", "value": "QUEST_ZELIED_REPORT" }],
+                "winActions": []
+        },
+        "quest_hayate_start": {
+                "actions": [{ "type": "CONV", "value": "QUEST_HAYATE_START" }],
+                "winActions": []
+        },
+        "quest_hayate_report": {
+                "actions": [{ "type": "CONV", "value": "QUEST_HAYATE_REPORT" }],
+                "winActions": []
+        },
+        "quest_sylvia_start": {
+                "actions": [{ "type": "CONV", "value": "QUEST_SYLVIA_START" }],
+                "winActions": []
+        },
+        "quest_sylvia_report": {
+                "actions": [{ "type": "CONV", "value": "QUEST_SYLVIA_REPORT" }],
+                "winActions": []
+        },
+        "quest_rin_start": {
+                "actions": [{ "type": "CONV", "value": "QUEST_RIN_START" }],
+                "winActions": []
+        },
+        "quest_rin_report": {
+                "actions": [{ "type": "CONV", "value": "QUEST_RIN_REPORT" }],
                 "winActions": []
         },
         "post_thunder_fort_base_1": {
@@ -4232,12 +4569,10 @@ const StoryManager = {
             }
         }
         
-        if (action.type === 'TILE') {
-            const targetArea = action.area || App.data.location.area;
-            if (!data.mapChanges) data.mapChanges = {};
-            if (!data.mapChanges[targetArea]) data.mapChanges[targetArea] = {};
-            data.mapChanges[targetArea][`${action.x},${action.y}`] = action.tile;
-            if (typeof Field !== 'undefined' && Field.ready) Field.render();
+        if (action.type === 'MAP_CHANGE') {
+            if (typeof MapRegistry !== 'undefined' && typeof MapRegistry.applyStoryMapMutation === 'function') {
+                MapRegistry.applyStoryMapMutation(action.value || action.key);
+            }
         }
 
         if (action.type === 'BOSS') {
@@ -4304,8 +4639,27 @@ const StoryManager = {
     /**
      * はい/いいえの選択肢を表示します
      */
+    dismissChoiceUI: function(options = {}) {
+        const menu = document.getElementById('story-choice-area');
+        if (menu) menu.remove();
+        const indicator = document.getElementById('story-next-indicator');
+        if (indicator) indicator.style.visibility = 'visible';
+        if (options.hideOverlay !== false) {
+            const overlay = document.getElementById('story-ui-overlay');
+            if (overlay) overlay.style.display = 'none';
+        }
+    },
+
+    prepareBattleTransitionUI: function() {
+        this.dismissChoiceUI({ hideOverlay: true });
+        const backlog = document.getElementById('backlog-overlay');
+        if (backlog) backlog.remove();
+        this.isTyping = false;
+    },
+
     showChoice: function(text) {
         return new Promise((resolve) => {
+            this.dismissChoiceUI({ hideOverlay: false });
             const overlay = document.getElementById('story-ui-overlay') || this.createStoryDOM();
             overlay.style.display = 'flex';
             const choiceName = document.getElementById('story-name');
@@ -4327,8 +4681,16 @@ const StoryManager = {
             const btnStyle = "padding:10px 30px; background:#000044; border:1px solid #ffd700; color:#ffd700; cursor:pointer; font-weight:bold; border-radius:4px;";
             menu.innerHTML = `<button style="${btnStyle}" class="no-skip">はい</button><button style="${btnStyle}" class="no-skip">いいえ</button>`;
             
-            menu.children[0].onclick = (e) => { e.stopPropagation(); menu.remove(); resolve(true); };
-            menu.children[1].onclick = (e) => { e.stopPropagation(); menu.remove(); resolve(false); };
+            menu.children[0].onclick = (e) => {
+                e.stopPropagation();
+                this.dismissChoiceUI({ hideOverlay: true });
+                resolve(true);
+            };
+            menu.children[1].onclick = (e) => {
+                e.stopPropagation();
+                this.dismissChoiceUI({ hideOverlay: true });
+                resolve(false);
+            };
             box.appendChild(menu);
         });
     },
@@ -4434,6 +4796,7 @@ const StoryManager = {
      * 会話UIを終了して隠す
      */
     endConversation: function() {
+        this.dismissChoiceUI({ hideOverlay: false });
         const overlay = document.getElementById('story-ui-overlay');
         if (overlay) overlay.style.display = 'none';
         this.active = false;

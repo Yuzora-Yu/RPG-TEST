@@ -2,6 +2,8 @@ const fs = require('fs');
 const vm = require('vm');
 
 const root = process.cwd();
+const mapSource = fs.readFileSync(`${root}/map.js`, 'utf8');
+const storySource = fs.readFileSync(`${root}/story.js`, 'utf8');
 
 const context = {
   console,
@@ -171,14 +173,33 @@ Object.entries(FIXED_DUNGEON_MAPS).forEach(([key, base]) => {
   }
 });
 
-(StoryManager.triggers || []).forEach((trigger) => {
-  const area = trigger.area;
-  const x = Number(trigger.x);
-  const y = Number(trigger.y);
-  const def = FIXED_MAPS[area] || MapRegistry.getFixedDungeonFloor(area, 1);
-  assert(def, `story trigger ${trigger.eventId}: missing area ${area}`);
-  const tile = String(def.tiles[y]?.[x] || 'W').toUpperCase();
-  assert(tile !== 'W', `story trigger ${trigger.eventId}: blocked coordinate ${area} ${x},${y}`);
+assert(!Object.prototype.hasOwnProperty.call(StoryManager, 'triggers'), 'story.js must not own map coordinates through triggers.');
+assert(!/"type"\s*:\s*"TILE"/.test(storySource), 'story.js must use named map.js mutations instead of coordinate TILE actions.');
+assert(mapSource.includes('START_CAVE_GATE_OPEN') && mapSource.includes('applyStoryMapMutation'), 'Named story map mutations must be owned by map.js.');
+let storyMapActionsChecked = 0;
+const validateStoryMapActions = (area, def) => {
+  (def.mapActions || []).forEach(action => {
+    const eventIds = [
+      action.eventId,
+      ...(action.events || []).map(entry => entry?.eventId)
+    ].filter(Boolean);
+    if (!eventIds.length) return;
+    const x = Number(action.x);
+    const y = Number(action.y);
+    const tile = String(def.tiles[y]?.[x] || 'W').toUpperCase();
+    assert(tile !== 'W', `story map action ${area} ${x},${y}: blocked coordinate`);
+    eventIds.forEach(eventId => {
+      assert(StoryManager.events[eventId], `story map action ${area} ${x},${y}: missing event ${eventId}`);
+      storyMapActionsChecked++;
+    });
+  });
+};
+Object.entries(FIXED_MAPS).forEach(([area, def]) => validateStoryMapActions(area, def));
+Object.entries(FIXED_DUNGEON_MAPS).forEach(([area, base]) => {
+  const floors = Array.isArray(base.floors) && base.floors.length
+    ? base.floors.map((_, index) => MapRegistry.getFixedDungeonFloor(area, index + 1))
+    : [MapRegistry.getFixedDungeonFloor(area, 1)];
+  floors.forEach(def => validateStoryMapActions(area, def));
 });
 
 const randomSamples = Math.max(1, Number(process.env.RANDOM_FLOOR_SAMPLES || 4));
@@ -225,4 +246,4 @@ for (let sample = 0; sample < randomSamples; sample++) {
   }
 }
 
-console.log(`Map safety validation passed. Random floors checked: ${randomFloorsChecked}. Maze floors: ${randomMazeFloors}. Locked-door floors: ${randomLockedDoorFloors}. Floor keys: ${randomFloorKeys}. Story triggers checked: ${(StoryManager.triggers || []).length}.`);
+console.log(`Map safety validation passed. Random floors checked: ${randomFloorsChecked}. Maze floors: ${randomMazeFloors}. Locked-door floors: ${randomLockedDoorFloors}. Floor keys: ${randomFloorKeys}. Story map actions checked: ${storyMapActionsChecked}.`);

@@ -355,12 +355,42 @@ const App = {
     storyAllyInitialLevels: {
         110: 1,  // サラ
         109: 1,  // ガイル
-        105: 5,  // シャオ
-        106: 10, // エリーゼ
-        104: 14, // ケイト
-        101: 20, // ジョセフ
-        204: 32, // レイラ
-        306: 40  // シャニー
+        105: 6,  // シャオ
+        106: 15, // エリーゼ
+        104: 21, // ケイト
+        101: 28, // ジョセフ
+        204: 40, // レイラ（光の宮殿クリア後）
+        306: 49,  // シャニー（魔王城クリア後）
+
+        210: 20,  // カリン（禁忌の森クリア後⇒炎の里）
+
+        102: 27,  // マリー（海底神殿クリア後）
+        209: 28,  // シルビア（海底神殿クリア後）
+        108: 20,  // アリサ（海底神殿クリア後⇒風の集落）
+        207: 35,  // ハイネ（海底神殿クリア後⇒風の集落）
+
+        201: 38,  // アラン（雷の要塞クリア後）
+        202: 35,  // ソフィア（雷の要塞クリア後）
+        203: 40,  // ハヤテ（アラン加入後）
+
+        103: 35,  // ゼリード（大灯台クリア後）
+
+        205: 43,  // バロン（光の宮殿クリア後）
+        302: 43,  // フリーダ（光の宮殿クリア後）
+        306: 47,  // クロード（光の宮殿クリア後⇒闇の神殿跡地）
+        306: 46,  // レオン（光の宮殿クリア後⇒闇の神殿跡地）
+
+        208: 45,  // リン（レイラ加入後⇒雷の要塞）
+
+        107: 49,  // リュウ（魔王城クリア後⇒禁則地グレゼリア）
+        206: 49,  // ミネルバ（魔王城クリア後⇒禁則地グレゼリア）
+
+        303: 55,  // リーシア（魔王城クリア後⇒クレナ鍾乳洞深部）
+
+        401: 70,  // ルーナ（隠し高難度クエスト）
+        402: 70,  // ゼノン（隠し高難度クエスト）
+
+        501: 99  // リュシオン（隠し高難度クエスト）
     },
 
     getStoryAllyInitialLevel: (charId) => {
@@ -1515,10 +1545,13 @@ const App = {
         const missingFlags = Array.isArray(quest.missingFlags) ? quest.missingFlags : [];
         const requiredAllies = Array.isArray(quest.requiredAllies) ? quest.requiredAllies : [];
         const requiredQuests = Array.isArray(quest.requiredQuests) ? quest.requiredQuests : [];
+        const rewardAllies = Array.isArray(quest.rewardAllies) ? quest.rewardAllies : [];
+        const alreadyRewarded = rewardAllies.length > 0 && rewardAllies.every(charId => App.hasStoryAlly(charId));
         return unlockFlags.every(flag => !!flags[flag])
             && missingFlags.every(flag => !flags[flag])
             && requiredAllies.every(charId => App.hasStoryAlly(charId))
-            && requiredQuests.every(id => App.isQuestCompleted(id));
+            && requiredQuests.every(id => App.isQuestCompleted(id))
+            && !alreadyRewarded;
     },
 
     acceptQuest: (questId, options = {}) => {
@@ -1534,10 +1567,15 @@ const App = {
             if (!options.silent) App.log(`【クエスト進行中】${quest.progressText || quest.objective || quest.name}`);
             return true;
         }
+        if (!App.isQuestUnlocked(questId)) {
+            if (!options.silent) App.log(options.lockedText || '今はまだ、この依頼を受ける時ではないようだ。');
+            return false;
+        }
         quests[questId] = {
             state: 'accepted',
             startedAt: Date.now(),
-            completedAt: null
+            completedAt: null,
+            progress: {}
         };
         App.save();
         if (!options.silent) {
@@ -1555,6 +1593,10 @@ const App = {
         if (current && current.state === 'completed') {
             if (!options.silent) App.log(`【クエスト完了済】${quest.name}`);
             return true;
+        }
+        if (!App.isQuestUnlocked(questId)) {
+            if (!options.silent) App.log(options.lockedText || 'この依頼を完了するための条件が整っていない。');
+            return false;
         }
 
         quests[questId] = {
@@ -1591,7 +1633,63 @@ const App = {
         return true;
     },
 
-    runQuestAction: (questId, options = {}) => {
+    noteQuestKills: (monsterIds = []) => {
+        if (!Array.isArray(monsterIds) || monsterIds.length === 0) return [];
+        const quests = App.ensureQuestState();
+        const updated = [];
+        Object.entries(quests).forEach(([questId, state]) => {
+            if (state?.state !== 'accepted') return;
+            const quest = App.getQuestDefinition(questId);
+            const targets = Array.isArray(quest?.targetMonsterIds) ? quest.targetMonsterIds.map(Number) : [];
+            if (quest?.kind !== 'hunt' || targets.length === 0) return;
+            const gained = monsterIds.filter(id => targets.includes(Number(id))).length;
+            if (gained <= 0) return;
+            if (!state.progress || typeof state.progress !== 'object') state.progress = {};
+            state.progress.kills = Math.min(Number(quest.targetCount || 1), Number(state.progress.kills || 0) + gained);
+            updated.push(questId);
+        });
+        if (updated.length) App.save();
+        return updated;
+    },
+
+    markQuestBossDefeated: (questId) => {
+        const quest = App.getQuestDefinition(questId);
+        const state = App.getQuestState(questId);
+        if (!quest || quest.kind !== 'boss' || state.state !== 'accepted') return false;
+        if (!state.progress || typeof state.progress !== 'object') state.progress = {};
+        state.progress.bossDefeated = true;
+        state.progress.bossDefeatedAt = Date.now();
+        App.save();
+        if (quest.reportText) App.log(quest.reportText);
+        return true;
+    },
+
+    isQuestObjectiveComplete: (questId) => {
+        const quest = App.getQuestDefinition(questId);
+        const state = App.getQuestState(questId);
+        if (!quest || state.state !== 'accepted') return false;
+        if (quest.kind === 'hunt') {
+            return Number(state.progress?.kills || 0) >= Math.max(1, Number(quest.targetCount || 1));
+        }
+        if (quest.kind === 'boss') return !!state.progress?.bossDefeated;
+        return false;
+    },
+
+    getQuestProgressText: (questId) => {
+        const quest = App.getQuestDefinition(questId);
+        const state = App.getQuestState(questId);
+        if (!quest) return '';
+        if (quest.kind === 'hunt' && state.state === 'accepted') {
+            const current = Math.min(Number(quest.targetCount || 1), Number(state.progress?.kills || 0));
+            return `${quest.progressText || quest.objective || quest.name}\n討伐数 ${current}/${Math.max(1, Number(quest.targetCount || 1))}`;
+        }
+        if (quest.kind === 'boss' && state.state === 'accepted' && state.progress?.bossDefeated) {
+            return quest.reportText || '依頼人のもとへ戻り、勝利を伝えよう。';
+        }
+        return quest.progressText || quest.objective || quest.name;
+    },
+
+    runQuestAction: async (questId, options = {}) => {
         const quest = App.getQuestDefinition(questId);
         if (!quest) {
             App.log('今は何も起こらないようだ。');
@@ -1607,15 +1705,25 @@ const App = {
             return true;
         }
         if (state !== 'accepted') {
+            if (quest.startEventId && typeof StoryManager !== 'undefined' && typeof StoryManager.executeEvent === 'function') {
+                await StoryManager.executeEvent(quest.startEventId);
+            }
             App.acceptQuest(questId);
             if (options.complete || quest.initialComplete || quest.kind === 'conversation') App.completeQuest(questId);
+            return true;
+        }
+        if (App.isQuestObjectiveComplete(questId)) {
+            if (quest.reportEventId && typeof StoryManager !== 'undefined' && typeof StoryManager.executeEvent === 'function') {
+                await StoryManager.executeEvent(quest.reportEventId);
+            }
+            App.completeQuest(questId);
             return true;
         }
         if (options.complete || quest.initialComplete || quest.kind === 'conversation') {
             App.completeQuest(questId);
             return true;
         }
-        App.log(`【クエスト進行中】${quest.progressText || quest.objective || quest.name}`);
+        App.log(`【クエスト進行中】${App.getQuestProgressText(questId)}`);
         return true;
     },
 
@@ -3741,6 +3849,10 @@ load: () => {
             }
             if (typeof Field.closeMapModal === 'function') Field.closeMapModal();
         }
+        if (sceneId === 'battle' && typeof StoryManager !== 'undefined' &&
+            typeof StoryManager.prepareBattleTransitionUI === 'function') {
+            StoryManager.prepareBattleTransitionUI();
+        }
 
         // フィールド以外の画面へ移る時は、待機中の足踏みタイマーを止める。
         // 足踏みは描画だけの軽量演出だが、戦闘/施設/メニュー裏で動かし続ける必要はない。
@@ -4313,6 +4425,27 @@ const Field = {
             : null;
         if (!config) return null;
 
+        if ((upper === 'C' || upper === 'R') && x !== null && y !== null &&
+            typeof Dungeon !== 'undefined' && Dungeon.isFixedChestOpenedAt(x, y)) {
+            config = {
+                ...config,
+                img: upper === 'R' ? 'overlay_dungeon_chest_rare_empty' : 'overlay_dungeon_chest_empty',
+                color: '#665b52'
+            };
+        }
+
+        // ボスマスは固定の汎用記号ではなく、配置されたモンスター原画由来のチップを使う。
+        if (upper === 'B' && x !== null && y !== null && typeof MapRegistry !== 'undefined' && MapRegistry.findFixedBoss) {
+            const bossDef = MapRegistry.findFixedBoss(Field.currentMapData, x, y);
+            if (!Field.isFixedBossAvailable(bossDef)) return null;
+            const rawMonsterId = Array.isArray(bossDef?.monsterId) ? bossDef.monsterId[0] : bossDef?.monsterId;
+            const monsterId = Number(bossDef?.mapSpriteMonsterId || rawMonsterId);
+            const graphicKey = Number.isFinite(monsterId) ? `overlay_boss_${monsterId}` : '';
+            if (graphicKey && typeof GRAPHICS !== 'undefined' && GRAPHICS.data?.[graphicKey]) {
+                config = { img: graphicKey, color: config.color || '#db3b4d' };
+            }
+        }
+
         // 固定ダンジョンのD/Uは、リンク先に合わせて上り/下りアイコンを自動切替。
         // 塔は「階数が大きい＝上り」、地下MAPは「地下が深い＝下り」として扱う。
         if (Field.currentMapData.isDungeon && ['D', 'U'].includes(upper)) {
@@ -4341,6 +4474,7 @@ const Field = {
     getMapDrawParts: (tileSign, tileX = null, tileY = null) => {
         const upper = String(tileSign || 'W').toUpperCase();
         const fixedOverlayConfig = Field.getFixedTileOverlayConfig ? Field.getFixedTileOverlayConfig(upper, tileX, tileY) : null;
+        const actionOverlayConfig = Field.getMapActionOverlayConfig ? Field.getMapActionOverlayConfig(tileX, tileY) : null;
 
         // ワールドマップ上の施設画像は、タイル記号が W でも G でも同じように上へ重ねる。
         // これにより、海底神殿の座標タイルを G にしても神殿チップを表示できる。
@@ -4348,10 +4482,12 @@ const Field = {
             ? MapRegistry.getWorldTileConfig(tileX, tileY)
             : null;
 
-        const overlayConfig = fixedOverlayConfig || worldOverlayConfig;
-        const baseTile = fixedOverlayConfig && Field.getFixedTileOverlayBaseTile
-            ? Field.getFixedTileOverlayBaseTile(upper)
-            : upper;
+        const overlayConfig = actionOverlayConfig || fixedOverlayConfig || worldOverlayConfig;
+        const baseTile = actionOverlayConfig
+            ? actionOverlayConfig.baseTile
+            : (fixedOverlayConfig && Field.getFixedTileOverlayBaseTile
+                ? Field.getFixedTileOverlayBaseTile(upper)
+                : upper);
         return {
             upper,
             baseTile: baseTile || upper,
@@ -4422,8 +4558,7 @@ const Field = {
 
         if (Field.currentMapData?.isFixed && upper === 'B' && tileX !== null && tileY !== null && typeof MapRegistry !== 'undefined' && MapRegistry.findFixedBoss) {
             const bossDef = MapRegistry.findFixedBoss(Field.currentMapData, tileX, tileY);
-            const flags = App.data?.progress?.flags || {};
-            if (bossDef?.requiredFlag && !flags[bossDef.requiredFlag]) return null;
+            if (!Field.isFixedBossAvailable(bossDef)) return null;
         }
 
         const colors = {
@@ -4498,12 +4633,10 @@ const Field = {
                 nextTile = App.data.progress.mapChanges?.[changeKey]?.[posKey] || App.data.progress.mapChanges?.[areaKey]?.[posKey] || Field.currentMapData.tiles[tileY][tileX];
                 if (Field.currentMapData.isFixed) {
                     const progressKey = Field.getCurrentProgressMapKey();
-                    if ((nextTile === 'C' || nextTile === 'R') && App.data.progress.openedChests?.[progressKey]?.includes(posKey)) nextTile = 'G';
                     if (nextTile === 'B' && App.data.progress.defeatedBosses?.[progressKey]?.includes(posKey)) nextTile = 'G';
                     if (nextTile === 'B' && typeof MapRegistry !== 'undefined' && MapRegistry.findFixedBoss) {
                         const bossDef = MapRegistry.findFixedBoss(Field.currentMapData, tileX, tileY);
-                        const flags = App.data?.progress?.flags || {};
-                        if (bossDef?.requiredFlag && !flags[bossDef.requiredFlag]) nextTile = bossDef.inactiveTile || 'G';
+                        if (!Field.isFixedBossAvailable(bossDef)) nextTile = bossDef?.inactiveTile || 'G';
                     }
                 }
             }
@@ -4537,12 +4670,10 @@ const Field = {
 
             if (Field.currentMapData.isFixed) {
                 const progressKey = Field.getCurrentProgressMapKey();
-                if ((tile === 'C' || tile === 'R') && App.data.progress.openedChests?.[progressKey]?.includes(posKey)) tile = 'G';
                 if (tile === 'B' && App.data.progress.defeatedBosses?.[progressKey]?.includes(posKey)) tile = 'G';
                 if (tile === 'B' && typeof MapRegistry !== 'undefined' && MapRegistry.findFixedBoss) {
                     const bossDef = MapRegistry.findFixedBoss(Field.currentMapData, x, y);
-                    const flags = App.data?.progress?.flags || {};
-                    if (bossDef?.requiredFlag && !flags[bossDef.requiredFlag]) tile = bossDef.inactiveTile || 'G';
+                    if (!Field.isFixedBossAvailable(bossDef)) tile = bossDef?.inactiveTile || 'G';
                 }
             }
 
@@ -4559,31 +4690,199 @@ const Field = {
         return { tile, x, y, areaKey: 'WORLD', isWorld: true };
     },
 
-    executeMapAction: (action) => {
-        if (!action) return;
+    isFixedBossAvailable: (bossDef, options = {}) => {
+        if (!bossDef) return false;
+        const step = Number(App.data?.progress?.storyStep || 0);
+        const sub = Number(App.data?.progress?.subStep || 0);
+        const stepMin = bossDef.storyStepMin !== undefined ? Number(bossDef.storyStepMin) : -Infinity;
+        const stepMax = bossDef.storyStepMax !== undefined ? Number(bossDef.storyStepMax) : Infinity;
+        const subMin = bossDef.storySubMin !== undefined ? Number(bossDef.storySubMin) : -Infinity;
+        const subMax = bossDef.storySubMax !== undefined ? Number(bossDef.storySubMax) : Infinity;
+        if (step < stepMin || step > stepMax || sub < subMin || sub > subMax) return false;
+        const flags = App.data?.progress?.flags || {};
+        const requiredFlags = Array.isArray(bossDef.requiredFlags)
+            ? bossDef.requiredFlags
+            : (bossDef.requiredFlag ? [bossDef.requiredFlag] : []);
+        if (!requiredFlags.every(flag => !!flags[flag])) return false;
+        if (!bossDef.questId) return true;
+        if (!App.isQuestUnlocked(bossDef.questId)) return false;
+        if (options.requireAccepted === false) return true;
+        return App.getQuestState(bossDef.questId).state === 'accepted';
+    },
 
-        const resolveProgressEvent = (entries = []) => {
-            if (!Array.isArray(entries) || typeof StoryManager === 'undefined') return null;
+    resolveMapActionEventId: (action) => {
+        const entries = action?.events;
+        if (!Array.isArray(entries) || typeof StoryManager === 'undefined') return null;
+        const step = Number(App.data?.progress?.storyStep || 0);
+        const sub = Number(App.data?.progress?.subStep || 0);
+        const flags = App.data?.progress?.flags || {};
+        const match = entries.find(entry => {
+            if (!entry || !entry.eventId || entry.default) return false;
+            const stepMin = entry.stepMin !== undefined ? Number(entry.stepMin) : -Infinity;
+            const stepMax = entry.stepMax !== undefined ? Number(entry.stepMax) : Infinity;
+            const subMin = entry.subMin !== undefined ? Number(entry.subMin) : -Infinity;
+            const subMax = entry.subMax !== undefined ? Number(entry.subMax) : Infinity;
+            const requiredFlags = Array.isArray(entry.requiredFlags)
+                ? entry.requiredFlags
+                : (entry.requiredFlag ? [entry.requiredFlag] : []);
+            const missingFlags = Array.isArray(entry.missingFlags)
+                ? entry.missingFlags
+                : (entry.missingFlag ? [entry.missingFlag] : []);
+            return step >= stepMin && step <= stepMax &&
+                sub >= subMin && sub <= subMax &&
+                requiredFlags.every(flag => !!flags[flag]) &&
+                missingFlags.every(flag => !flags[flag]);
+        }) || entries.find(entry => entry?.default && entry.eventId) || null;
+        return match?.eventId || null;
+    },
+
+    isMapActionAvailable: (action) => {
+        if (!action) return false;
+        const flags = App.data?.progress?.flags || {};
+        const requiredFlags = Array.isArray(action.requiredFlags)
+            ? action.requiredFlags
+            : (action.requiredFlag ? [action.requiredFlag] : []);
+        const missingFlags = Array.isArray(action.missingFlags)
+            ? action.missingFlags
+            : (action.missingFlag ? [action.missingFlag] : []);
+        if (!requiredFlags.every(flag => !!flags[flag]) || !missingFlags.every(flag => !flags[flag])) return false;
+        if (action.requiredStoryStep !== undefined) {
             const step = Number(App.data?.progress?.storyStep || 0);
             const sub = Number(App.data?.progress?.subStep || 0);
-            const match = entries.find(entry => {
-                if (!entry || !entry.eventId) return false;
-                const stepMin = entry.stepMin !== undefined ? Number(entry.stepMin) : -Infinity;
-                const stepMax = entry.stepMax !== undefined ? Number(entry.stepMax) : Infinity;
-                const subMin = entry.subMin !== undefined ? Number(entry.subMin) : -Infinity;
-                const subMax = entry.subMax !== undefined ? Number(entry.subMax) : Infinity;
-                const flags = App.data?.progress?.flags || {};
-                const requiredFlags = Array.isArray(entry.requiredFlags)
-                    ? entry.requiredFlags
-                    : (entry.requiredFlag ? [entry.requiredFlag] : []);
-                const missingFlags = Array.isArray(entry.missingFlags)
-                    ? entry.missingFlags
-                    : (entry.missingFlag ? [entry.missingFlag] : []);
-                const flagsOk = requiredFlags.every(flag => !!flags[flag]) && missingFlags.every(flag => !flags[flag]);
-                return flagsOk && step >= stepMin && step <= stepMax && sub >= subMin && sub <= subMax;
-            }) || entries.find(entry => entry?.default && entry.eventId) || null;
-            return match?.eventId || null;
+            const requiredStep = Number(action.requiredStoryStep);
+            const requiredSub = Number(action.requiredSubStep || 0);
+            if (!(step > requiredStep || (step === requiredStep && sub >= requiredSub))) return false;
+        }
+        if (action.hideWhenNoEvent && !Field.resolveMapActionEventId(action)) return false;
+        if (action.type === 'quest' && action.questId) {
+            if (App.getQuestState(action.questId).state === 'completed') return false;
+            return App.isQuestUnlocked(action.questId);
+        }
+        return true;
+    },
+
+    getMapActionOverlayConfig: (tileX = null, tileY = null) => {
+        if (!Field.currentMapData || tileX === null || tileY === null || typeof MapRegistry === 'undefined') return null;
+        const action = MapRegistry.findMapAction?.(Field.currentMapData, tileX, tileY);
+        if (!action?.imageKey || !Field.isMapActionAvailable(action)) return null;
+        return {
+            img: action.imageKey,
+            color: action.imageColor || '#d6c8a7',
+            baseTile: action.baseTile || 'T'
         };
+    },
+
+    isBlockingMapActor: (action) => {
+        if (!action?.imageKey || action.blocksMovement === false) return false;
+        return Field.isMapActionAvailable(action);
+    },
+
+    getAdjacentMapActor: () => {
+        if (!Field.currentMapData || typeof MapRegistry === 'undefined') return null;
+        const directions = {
+            0: [0, 1],
+            1: [-1, 0],
+            2: [1, 0],
+            3: [0, -1]
+        };
+        const facing = directions[Number(Field.dir)] || [0, 1];
+        const candidates = [facing, [0, -1], [1, 0], [0, 1], [-1, 0]];
+        const seen = new Set();
+        for (const [dx, dy] of candidates) {
+            const x = Number(Field.x) + dx;
+            const y = Number(Field.y) + dy;
+            const posKey = `${x},${y}`;
+            if (seen.has(posKey)) continue;
+            seen.add(posKey);
+            if (x < 0 || y < 0 || x >= Field.currentMapData.width || y >= Field.currentMapData.height) continue;
+            const action = MapRegistry.findMapAction?.(Field.currentMapData, x, y);
+            if (!Field.isBlockingMapActor(action)) continue;
+            return { x, y, action };
+        }
+        return null;
+    },
+
+    prepareAdjacentMapActorAction: (options = {}) => {
+        const actor = Field.getAdjacentMapActor();
+        if (!actor) return false;
+        const silent = options.silent !== false;
+        if (!silent && actor.action.log) App.log(actor.action.log);
+        App.setAction(actor.action.label || '話す', () => Field.executeMapAction(actor.action));
+        return true;
+    },
+
+    getAdjacentChest: () => {
+        if (!Field.currentMapData) return null;
+        const directions = { 0: [0, 1], 1: [-1, 0], 2: [1, 0], 3: [0, -1] };
+        const facing = directions[Number(Field.dir)] || [0, 1];
+        const candidates = [facing, [0, -1], [1, 0], [0, 1], [-1, 0]];
+        const seen = new Set();
+        const mapW = Number(Field.currentMapData.width || 0);
+        const mapH = Number(Field.currentMapData.height || 0);
+        const areaKey = Field.getCurrentAreaKey();
+        for (const [dx, dy] of candidates) {
+            const x = Number(Field.x) + dx;
+            const y = Number(Field.y) + dy;
+            const posKey = `${x},${y}`;
+            if (seen.has(posKey)) continue;
+            seen.add(posKey);
+            if (x < 0 || y < 0 || x >= mapW || y >= mapH) continue;
+            const tile = Field.getRenderedTileForDraw(x, y, mapW, mapH, areaKey);
+            if (tile === 'C' || tile === 'R') return { x, y, tile };
+        }
+        return null;
+    },
+
+    prepareAdjacentChestAction: (options = {}) => {
+        const chest = Field.getAdjacentChest();
+        if (!chest || typeof Dungeon === 'undefined') return false;
+        const opened = Field.currentMapData?.isFixed && Dungeon.isFixedChestOpenedAt(chest.x, chest.y);
+        if (options.silent === false) {
+            App.log(opened
+                ? '開いたままの空箱がある。'
+                : (chest.tile === 'R' ? '赤い宝箱がある。' : '宝箱がある。'));
+        }
+        App.setAction('調べる', () => Dungeon.openChest(chest.x, chest.y, chest.tile === 'R' ? 'rare' : 'normal'));
+        return true;
+    },
+
+    getAdjacentFixedBoss: () => {
+        if (!Field.currentMapData?.isFixed || !Field.currentMapData?.isDungeon || typeof MapRegistry === 'undefined') return null;
+        const directions = {
+            0: [0, 1],
+            1: [-1, 0],
+            2: [1, 0],
+            3: [0, -1]
+        };
+        const facing = directions[Number(Field.dir)] || [0, 1];
+        const candidates = [
+            facing,
+            [0, -1],
+            [1, 0],
+            [0, 1],
+            [-1, 0]
+        ];
+        const seen = new Set();
+        const progressKey = Field.getCurrentProgressMapKey();
+        for (const [dx, dy] of candidates) {
+            const x = Number(Field.x) + dx;
+            const y = Number(Field.y) + dy;
+            const posKey = `${x},${y}`;
+            if (seen.has(posKey)) continue;
+            seen.add(posKey);
+            if (x < 0 || y < 0 || x >= Field.currentMapData.width || y >= Field.currentMapData.height) continue;
+            const tile = String(Field.currentMapData.tiles[y]?.[x] || '').toUpperCase();
+            if (tile !== 'B') continue;
+            if (App.data.progress.defeatedBosses?.[progressKey]?.includes(posKey)) continue;
+            const bossDef = MapRegistry.findFixedBoss?.(Field.currentMapData, x, y);
+            if (!Field.isFixedBossAvailable(bossDef)) continue;
+            return { x, y, bossDef };
+        }
+        return null;
+    },
+
+    executeMapAction: (action) => {
+        if (!action) return;
 
         // map.js の mapActions で requiredItemId を指定すると、所持時のみ実行する。
         // 例: 朽ちた祠の石碑は「災厄の楔」所持時だけ隠しボス戦へ進む。
@@ -4622,7 +4921,7 @@ const Field = {
 
         if (action.log) App.log(action.log);
 
-        const progressEventId = resolveProgressEvent(action.events);
+        const progressEventId = Field.resolveMapActionEventId(action);
         if (progressEventId && typeof StoryManager !== 'undefined') {
             StoryManager.executeEvent(progressEventId);
             return;
@@ -4707,46 +5006,15 @@ const Field = {
         const logIfNeeded = (message) => {
             if (!silent && message) App.log(message);
         };
-        const findStoryTriggerAt = () => {
-            if (typeof StoryManager === 'undefined' || !Array.isArray(StoryManager.triggers)) return null;
-            const currentStep = Number(App.data.progress.storyStep);
-            const currentSub = Number(App.data.progress.subStep || 0);
-            return StoryManager.triggers.find(t => {
-                const areaMatch = t.area === App.data.location.area;
-                const posMatch = Number(t.x) === Number(x) && Number(t.y) === Number(y);
-
-                const stepMatch = (t.step !== undefined)
-                    ? (Number(t.step) === currentStep)
-                    : (currentStep >= (t.stepMin !== undefined ? t.stepMin : 0) &&
-                       currentStep <= (t.stepMax !== undefined ? t.stepMax : 999));
-
-                const subMatch = (t.sub !== undefined)
-                    ? (Number(t.sub) === currentSub)
-                    : (currentSub >= (t.subMin !== undefined ? t.subMin : 0) &&
-                       currentSub <= (t.subMax !== undefined ? t.subMax : 999));
-
-                const flags = App.data?.progress?.flags || {};
-                const requiredFlags = Array.isArray(t.requiredFlags)
-                    ? t.requiredFlags
-                    : (t.requiredFlag ? [t.requiredFlag] : []);
-                const missingFlags = Array.isArray(t.missingFlags)
-                    ? t.missingFlags
-                    : (t.missingFlag ? [t.missingFlag] : []);
-                const flagsMatch = requiredFlags.every(flag => !!flags[flag]) && missingFlags.every(flag => !flags[flag]);
-
-                return areaMatch && posMatch && stepMatch && subMatch && flagsMatch;
-            }) || null;
-        };
-        const setStoryActionIfNeeded = (fallbackLabel = null) => {
-            const trigger = findStoryTriggerAt();
-            if (!trigger) return false;
-            const actionLabel = trigger.label || fallbackLabel || (tile === 'B' ? '戦う' : (['V', 'H', 'A', 'J', 'R'].includes(tile) ? '話す' : '調べる'));
-            App.setAction(actionLabel, () => StoryManager.executeEvent(trigger.eventId));
-            return true;
-        };
-
         if (Field.currentMapData) {
             if (tile === 'W') return false;
+
+            const adjacentBoss = Field.getAdjacentFixedBoss();
+            if (adjacentBoss && typeof Dungeon !== 'undefined' && typeof Dungeon.prepareFixedTileAction === 'function') {
+                return Dungeon.prepareFixedTileAction('B', adjacentBoss.x, adjacentBoss.y, { silent });
+            }
+            if (Field.prepareAdjacentMapActorAction({ silent })) return true;
+            if (Field.prepareAdjacentChestAction({ silent })) return true;
 
             // 回復の泉。触れただけでは回復せず、ボタン押下で初めて回復する。
             // 床の上に重ねて表示しているため、通常タイルとは別に現在地座標で判定する。
@@ -4784,8 +5052,8 @@ const Field = {
                 const mapAction = (typeof MapRegistry !== 'undefined' && MapRegistry.findMapAction)
                     ? MapRegistry.findMapAction(Field.currentMapData, x, y)
                     : null;
-                if (setStoryActionIfNeeded(mapAction?.label || null)) return true;
                 if (mapAction) {
+                    if (!Field.isMapActionAvailable(mapAction)) return false;
                     if (mapAction.log) logIfNeeded(mapAction.log);
                     if (mapAction.type === 'abyssDungeon') {
                         App.setFeatureAction(mapAction.label || '魔窟に入る', 'abyss', () => Field.executeMapAction(mapAction));
@@ -4806,11 +5074,11 @@ const Field = {
                     App.setFeatureAction('メダル交換', 'medalKing', () => App.changeScene('medal'));
                 }
             } else if (Field.currentMapData.isFixed && typeof Dungeon !== 'undefined' && typeof Dungeon.prepareFixedTileAction === 'function') {
-                if (setStoryActionIfNeeded()) return true;
                 const fixedMapAction = (typeof MapRegistry !== 'undefined' && MapRegistry.findMapAction)
                     ? MapRegistry.findMapAction(Field.currentMapData, x, y)
                     : null;
                 if (fixedMapAction) {
+                    if (!Field.isMapActionAvailable(fixedMapAction)) return false;
                     if (fixedMapAction.log) logIfNeeded(fixedMapAction.log);
                     App.setAction(fixedMapAction.label || '調べる', () => Field.executeMapAction(fixedMapAction));
                     return true;
@@ -4827,9 +5095,7 @@ const Field = {
             }
 
             if (tile === 'V' || tile === 'H' || tile === 'A' || tile === 'J' || tile === 'R' || tile === 'B') {
-                if (typeof StoryManager !== 'undefined' && Array.isArray(StoryManager.triggers)) {
-                    logIfNeeded('誰かいるようだ。');
-                }
+                logIfNeeded('何か気になるものがある。');
             }
 
             if (tile === 'B' && Field.currentMapData.isFixed && Field.currentMapData.isDungeon && !App.pendingAction && typeof Dungeon !== 'undefined' && typeof Dungeon.prepareFixedTileAction === 'function') {
@@ -5042,14 +5308,43 @@ const Field = {
             if (Field.currentMapData.isFixed) {
                 const ak = Field.getCurrentProgressMapKey();
                 const posStr = `${nx},${ny}`;
-                // 宝箱チェック
-                if ((tile === 'C' || tile === 'R') && App.data.progress.openedChests && App.data.progress.openedChests[ak]?.includes(posStr)) {
-                    tile = 'G';
-                }
                 // ボスチェック
                 if (tile === 'B' && App.data.progress.defeatedBosses && App.data.progress.defeatedBosses[ak]?.includes(posStr)) {
                     tile = 'G';
                 }
+                if (tile === 'B') {
+                    const bossDef = typeof MapRegistry !== 'undefined' && MapRegistry.findFixedBoss
+                        ? MapRegistry.findFixedBoss(Field.currentMapData, nx, ny)
+                        : null;
+                    if (!Field.isFixedBossAvailable(bossDef)) {
+                        tile = bossDef?.inactiveTile || 'G';
+                    } else {
+                        App.log(bossDef?.inspectLog || '強敵が行く手を塞いでいる。');
+                        keepCurrentTileAction();
+                        Field.render();
+                        return;
+                    }
+                }
+            }
+
+            const targetMapAction = typeof MapRegistry !== 'undefined' && MapRegistry.findMapAction
+                ? MapRegistry.findMapAction(Field.currentMapData, nx, ny)
+                : null;
+            if (Field.isBlockingMapActor(targetMapAction)) {
+                App.log(targetMapAction.log || '人が立っている。');
+                keepCurrentTileAction();
+                Field.render();
+                return;
+            }
+            if (tile === 'C' || tile === 'R') {
+                const opened = Field.currentMapData.isFixed && typeof Dungeon !== 'undefined' &&
+                    Dungeon.isFixedChestOpenedAt(nx, ny);
+                App.log(opened
+                    ? '空箱が置かれている。'
+                    : (tile === 'R' ? '赤い宝箱が道を塞いでいる。' : '宝箱が道を塞いでいる。'));
+                keepCurrentTileAction();
+                Field.render();
+                return;
             }
 
             if (tile === 'W') { keepCurrentTileAction(); return; } 
@@ -5414,7 +5709,10 @@ const Field = {
 
                 // 3. 固定MAP/固定ダンジョン専用オーバーレイ。
                 if (overlayConfig) {
-                    if (useDepthRendering) drawFootShadow(drawX, drawY, lift, 0.24);
+                    const characterOverlay = String(overlayConfig.img || '').startsWith('overlay_npc_');
+                    if (useDepthRendering && (!isDungeonView || characterOverlay)) {
+                        drawFootShadow(drawX, drawY, lift, 0.24);
+                    }
                     if (!drawGraphic(overlayConfig.img, drawX, drawY - lift, ts, ts + lift)) {
                         ctx.save();
                         ctx.fillStyle = overlayConfig.color || config.color || '#fff';
@@ -5614,7 +5912,6 @@ const Field = {
                         mtile = App.data.progress.mapChanges?.[progressKey]?.[pk]
                             || App.data.progress.mapChanges?.[ak]?.[pk]
                             || Field.currentMapData.tiles[mty][mtx];
-                        if (App.data.progress.openedChests?.[progressKey]?.includes(pk)) mtile = 'G';
                         if (App.data.progress.defeatedBosses?.[progressKey]?.includes(pk)) mtile = 'G';
                     } else {
                         minimapVisible = false;
