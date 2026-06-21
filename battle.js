@@ -2778,7 +2778,10 @@ findNextActor: () => {
 					};
 
 					// スキル本来の命中率を取得（未定義なら100）
-					const baseHitRate = (data && data.hitRate !== undefined) ? data.hitRate : 100;
+					const baseHitRate =
+					  (data && data.hitRate !== undefined) ? data.hitRate :
+					  (data && data.HitRate !== undefined) ? data.HitRate :
+					  100;
 
 					// 1回目も2回目も「まずスキル命中 + hit_pct」を作る（共通）
 					const hitBonus = PassiveSkill.getSumValue(actor, 'hit_pct');
