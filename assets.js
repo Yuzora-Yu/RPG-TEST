@@ -334,7 +334,7 @@ const PRISMA_ASSETS = {
   // installImages: Service Worker の初回install時にキャッシュする画像全体。
   // backgroundImages: install後の再試行/補助ウォームキャッシュ用。
   cacheWarmup: {
-    version: "2026-06-20-jrpg-experience-v22",
+    version: "2026-06-21-water-city-tile-fix-v23",
     criticalImages: [
       ...PRISMA_LOADING_MONSTER_IMAGE_FILES,
       "assets/monsters/monster_301000.png",

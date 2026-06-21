@@ -501,7 +501,6 @@ const FIXED_TILE_OVERLAYS = {
         V: tileEntry("overlay_building_water_shop", "#7e3fa1"),
         A: tileEntry("overlay_npc_villager", "#8fb066"),
         J: tileEntry("overlay_npc_villager", "#8fb066"),
-        R: tileEntry("overlay_npc_dark_soldier", "#333946"),
         P: tileEntry("overlay_field_event", "#8f7dff")
     },
     ABYSS_FIELD: {
@@ -518,7 +517,7 @@ const FIXED_OVERLAY_BASE_TILES = {
     DEFAULT_DUNGEON: { C: "T", R: "T", B: "T", A: "T", J: "T", D: "T", U: "T", S: "T", P: "T", V: "T", X: "T", Y: "T", Z: "T", Q: "T", N: "T", O: "T" },
     FIRE_VILLAGE: { H: "T", V: "T", A: "T", J: "T", P: "T", D: "T" },
     WIND_VILLAGE: { H: "T", V: "T", A: "T", J: "T", P: "T" },
-    WATER_CITY: { H: "T", V: "T", I: "T", K: "T", E: "T", A: "T", J: "T", R: "T", P: "G" },
+    WATER_CITY: { H: "T", V: "T", I: "T", K: "T", E: "T", A: "T", J: "T", P: "G" },
     ABYSS_FIELD: { D: "T" },
     RUINED_SHRINE: { P: "T" }
 };
@@ -801,7 +800,7 @@ const FIXED_MAPS = {
             "WWWWTTTTTTTTWWWTTTTTTTTTWWWTTTTTTTWWWWW",
             "WWWTTTTHHTTTWWTTTTTHTTTTTWWTTTTHTTTTWWW",
             "WWWTTTTTTTTTWWTTTTTTTTTTTWWTTTTTTTTTWWW",
-            "WWWTTTTTTTTTLLRTTTTTTTTTRLLTTTTTTTTTWWW",
+            "WWWTTTTTTTTTLLTTTTTTTTTTTLLTTTTTTTTTWWW",
             "WWWTTJTTTTTTWWTTTTTTTTTTTWWTTTTTTTTTWWW",
             "WWWTTTTTTTTWWWTTTTTTTTTTTWWTTTTTTTTTWWW",
             "WWWWWWWWWWWWWWTTTJTTTTTTTWWWTTTTTTTTWWW",
@@ -809,9 +808,9 @@ const FIXED_MAPS = {
             "WWWTHTTHTTHTTITTTWWWWWTTTTTWWWTTTTTTWWW",
             "WWWTTTTTTTTTTTTTTWWWWWTTTTTWWWWWWWWWWWW",
             "WWWTTTTTTTTTTTTTTTWWWTTTTTTWWWWWWWWWWWW",
-            "WWWTRTTTTTTTTTTTTTTRTTTTTTTWWTTTJTTTWWW",
+            "WWWTTTTTTTTTTTTTTTTTTTTTTTTWWTTTJTTTWWW",
             "SLLTTTTTTTTTTJTTTTTTTTTTTTTWWTTTTTTTWWW",
-            "SLLTTTTTTTTTTTTTTTTTTTTTTTRLLTTTTTTTWWW",
+            "SLLTTTTTTTTTTTTTTTTTTTTTTTTLLTTTTTTTWWW",
             "WWWTTTTTTTTTTTTTTTTTTTTTTTWWTTHTTTTTWWW",
             "WWWTTTTTTTTTTTTTTTTTTTTTTTTWWTTTTTTTWWW",
             "WWWWWWWWWWWWWWWWWWLLLWWWWWWWWTTTTTTJWWW",
@@ -829,12 +828,17 @@ const FIXED_MAPS = {
             { x: 7, y: 10, label: "武器を見る", log: "海底神殿に備えた武器を扱っている。", type: "shop", shopType: "weapon", title: "水上都市 武器屋", shopRank: 35 },
             { x: 10, y: 10, label: "防具を見る", log: "水と闇に強い防具を扱っている。", type: "shop", shopType: "armor", title: "水上都市 防具屋", shopRank: 35 },
             {
-                x: 12, y: 5, label: "封鎖兵と話す", log: "黒鎧の兵士が北西の橋を塞いでいる。",
+                x: 14, y: 5, label: "兵士と話す", log: "黒鎧の兵士が橋を塞いでいる。",
                 type: "storyEvent", eventId: "water_city_blockade_guard", imageKey: "overlay_npc_dark_soldier",
                 missingFlag: "waterCityCleared", baseTile: "T"
             },
             {
-                x: 25, y: 5, label: "封鎖兵と話す", log: "黒鎧の兵士が北東の橋を塞いでいる。",
+                x: 23, y: 5, label: "兵士と話す", log: "黒鎧の兵士が橋を塞いでいる。",
+                type: "storyEvent", eventId: "water_city_blockade_guard", imageKey: "overlay_npc_dark_soldier",
+                missingFlag: "waterCityCleared", baseTile: "T"
+            },
+            {
+                x: 25, y: 15, label: "兵士と話す", log: "黒鎧の兵士が橋を塞いでいる。",
                 type: "storyEvent", eventId: "water_city_blockade_guard", imageKey: "overlay_npc_dark_soldier",
                 missingFlag: "waterCityCleared", baseTile: "T"
             },
