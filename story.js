@@ -27,7 +27,7 @@ const StoryManager = {
         "1-0": "始まりの村の奥で話を聞こう",
         "1-1": "洞窟の奥で魔物の気配を追おう",
         "1-2": "洞窟のボスを倒そう",
-        "2-0": "炎の里へ向かおう",
+        "2-0": "始まりの村の長老へ討伐を報告しよう",
         "2-1": "炎の里の長に相談を聞こう",
         "2-2": "火山入口でシャオと合流しよう",
         "2-3": "炎の里の長に異常な炎を報告しよう",
@@ -1185,18 +1185,97 @@ const StoryManager = {
                         "text": "この剣を預けよう。\n次は、君の隣で道を守る。"
                 }
         ],
-        "QUEST_ARISA_HAINE_CLEAR": [
+        "QUEST_ARISA_HAINE_START": [
+                {
+                        "name": "風の集落の村人",
+                        "text": "旅の方、頼む。\n禁忌の森へ行ってくれないか。"
+                },
+                {
+                        "name": "風の集落の村人",
+                        "text": "アリサが森の奥へ入ったきり、戻らない。\nハイネ殿が後を追ったが……あの森は、まだ危ない。"
+                },
+                {
+                        "name": "風の集落の村人",
+                        "text": "二人だけでは手に負えないかもしれない。\nどうか、力を貸してくれ。"
+                },
+                {
+                        "name": "エリーゼ",
+                        "charId": 106,
+                        "text": "森の奥から、乱れた風が届いています。\n急ぎましょう。"
+                },
+                {
+                        "name": "システム",
+                        "text": "[N:301]は静かに頷いた。"
+                }
+        ],
+        "QUEST_ARISA_HAINE_ENCOUNTER": [
+                {
+                        "name": "システム",
+                        "text": "禁忌の森深部。\n折れた枝の向こうで、刀の音が響いた。"
+                },
                 {
                         "name": "アリサ",
-                        "text": "盗んで逃げる方が、\nずっと簡単だったんだけどね。"
+                        "charId": 108,
+                        "text": "くっ……まだ、やれるっての……！\nこのくらいで倒れるアタシじゃないわよ！"
                 },
                 {
                         "name": "ハイネ",
-                        "text": "逃げ足を、誰かを救う足にした。\nそれでよい。"
+                        "charId": 207,
+                        "text": "アリサ、下がれ。\n息を整えろ。"
+                },
+                {
+                        "name": "システム",
+                        "text": "ハイネはアリサを背にかばい、迫る魔物へ刃を向ける。"
+                },
+                {
+                        "name": "ハイネ",
+                        "charId": 207,
+                        "text": "旅の者か。助太刀、願えるか。\nこのままでは、アリサを守り切れぬ。"
                 },
                 {
                         "name": "アリサ",
-                        "text": "師匠が褒めるなんて珍しい。\nこの先も聞かせてもらおうか。"
+                        "charId": 108,
+                        "text": "な、何よ……助けに来るなら、もっと早く来なさいよ！\n……来てくれて、少しは助かったけど。"
+                }
+        ],
+        "QUEST_ARISA_HAINE_CLEAR": [
+                {
+                        "name": "システム",
+                        "text": "魔物が崩れ、森を満たしていた黒い風が薄れていく。"
+                },
+                {
+                        "name": "アリサ",
+                        "charId": 108,
+                        "text": "……助かったわ。\nちょっとだけね。"
+                },
+                {
+                        "name": "ハイネ",
+                        "charId": 207,
+                        "text": "強がるな、アリサ。\n命が残ったことを、まず喜べ。"
+                },
+                {
+                        "name": "アリサ",
+                        "charId": 108,
+                        "text": "うっさい、師匠。\n……わかってるわよ。ありがとう。"
+                },
+                {
+                        "name": "ハイネ",
+                        "charId": 207,
+                        "text": "俺からも礼を言う。\n見事な助太刀だった。"
+                },
+                {
+                        "name": "アリサ",
+                        "charId": 108,
+                        "text": "アタシも行く。\n借りを作ったままなんて、気持ち悪いし。"
+                },
+                {
+                        "name": "ハイネ",
+                        "charId": 207,
+                        "text": "ならば、俺も同行しよう。\nこの恩、刃で返す。"
+                },
+                {
+                        "name": "システム",
+                        "text": "[N:108]と[N:207]が仲間に加わった！"
                 }
         ],
         "QUEST_SOPHIA_ALAN_CLEAR": [
@@ -2933,6 +3012,7 @@ const StoryManager = {
                 ],
                 "winActions": []
         },
+        // legacy compatibility only: current route uses prism-specific clear events.
         "fire_village_clear": {
                 "actions": [
                         {
@@ -2966,6 +3046,7 @@ const StoryManager = {
                 ],
                 "winActions": []
         },
+        // legacy compatibility only: current route uses prism-specific clear events.
         "wind_village_clear": {
                 "actions": [
                         {
@@ -2995,6 +3076,7 @@ const StoryManager = {
                 ],
                 "winActions": []
         },
+        // legacy compatibility only: current route uses prism-specific clear events.
         "water_city_clear": {
                 "actions": [
                         {
@@ -3012,10 +3094,7 @@ const StoryManager = {
                         },
                         {
                                 "type": "UNLOCK",
-                                "value": [
-                                        "boat",
-                                        "casino"
-                                ]
+                                "value": "boat"
                         },
                         {
                                 "type": "FLAG",
@@ -3482,6 +3561,19 @@ const StoryManager = {
                 "actions": [
                         { "type": "CONV", "value": "QUEST_KARIN_CLEAR" },
                         { "type": "QUEST_COMPLETE", "value": "karin_volcano_depths" }
+                ],
+                "winActions": []
+        },
+        "quest_arisa_haine_start": {
+                "actions": [
+                        { "type": "CONV", "value": "QUEST_ARISA_HAINE_START" }
+                ],
+                "winActions": []
+        },
+        "quest_arisa_haine_encounter": {
+                "actions": [
+                        { "type": "CONV", "value": "QUEST_ARISA_HAINE_ENCOUNTER" },
+                        { "type": "BOSS", "value": [301011, 301012], "winEventId": "quest_arisa_haine_clear" }
                 ],
                 "winActions": []
         },
@@ -4282,10 +4374,7 @@ const StoryManager = {
                         },
                         {
                                 "type": "UNLOCK",
-                                "value": [
-                                        "boat",
-                                        "medalKing"
-                                ]
+                                "value": "boat"
                         },
                         {
                                 "type": "FLAG",
@@ -4330,10 +4419,6 @@ const StoryManager = {
                                 "value": 101
                         },
                         {
-                                "type": "UNLOCK",
-                                "value": "casino"
-                        },
-                        {
                                 "type": "FLAG",
                                 "key": "thunderFortCleared"
                         },
@@ -4370,10 +4455,6 @@ const StoryManager = {
                         {
                                 "type": "ALLY",
                                 "value": 101
-                        },
-                        {
-                                "type": "UNLOCK",
-                                "value": "medalKing"
                         },
                         {
                                 "type": "FLAG",

@@ -25,8 +25,8 @@ window.CHARACTERS_DATA = [
             null
         ],
         "lbSkills": {
-            "50": 83,
-            "99": 160
+            "50": 507,
+            "99": 140
         },
         "sp": 1,
         "img": "assets/characters/char_face_101.gif",
@@ -84,8 +84,8 @@ window.CHARACTERS_DATA = [
             null
         ],
         "lbSkills": {
-            "50": 56,
-            "99": 405
+            "50": 408,
+            "99": 220
         },
         "sp": 1,
         "img": "assets/characters/char_face_102.gif",
@@ -143,8 +143,8 @@ window.CHARACTERS_DATA = [
             null
         ],
         "lbSkills": {
-            "50": 701,
-            "99": 611
+            "50": 700,
+            "99": 313
         },
         "sp": 1,
         "img": "assets/characters/char_face_103.gif",
@@ -203,8 +203,8 @@ window.CHARACTERS_DATA = [
             null
         ],
         "lbSkills": {
-            "50": 921,
-            "99": 55
+            "50": 240,
+            "99": 115
         },
         "sp": 1,
         "img": "assets/characters/char_face_104.gif",
@@ -262,8 +262,8 @@ window.CHARACTERS_DATA = [
             null
         ],
         "lbSkills": {
-            "50": 155,
-            "99": 119
+            "50": 145,
+            "99": 149
         },
         "sp": 1,
         "img": "assets/characters/char_face_105.gif",
@@ -321,8 +321,8 @@ window.CHARACTERS_DATA = [
             null
         ],
         "lbSkills": {
-            "50": 109,
-            "99": 614
+            "50": 133,
+            "99": 311
         },
         "sp": 1,
         "img": "assets/characters/char_face_106.gif",
@@ -380,8 +380,8 @@ window.CHARACTERS_DATA = [
             null
         ],
         "lbSkills": {
-            "50": 605,
-            "99": 920
+            "50": 306,
+            "99": 167
         },
         "sp": 1,
         "img": "assets/characters/char_face_107.gif",
@@ -439,8 +439,8 @@ window.CHARACTERS_DATA = [
             null
         ],
         "lbSkills": {
-            "50": 105,
-            "99": 118
+            "50": 127,
+            "99": 144
         },
         "sp": 1,
         "img": "assets/characters/char_face_108.gif",
@@ -498,8 +498,8 @@ window.CHARACTERS_DATA = [
             null
         ],
         "lbSkills": {
-            "50": 156,
-            "99": 59
+            "50": 141,
+            "99": 509
         },
         "sp": 1,
         "img": "assets/characters/char_face_109.gif",
@@ -557,8 +557,8 @@ window.CHARACTERS_DATA = [
             null
         ],
         "lbSkills": {
-            "50": 50,
-            "99": 453
+            "50": 500,
+            "99": 411
         },
         "sp": 1,
         "img": "assets/characters/char_face_110.gif",
@@ -616,8 +616,8 @@ window.CHARACTERS_DATA = [
             null
         ],
         "lbSkills": {
-            "50": 408,
-            "99": 421
+            "50": 226,
+            "99": 162
         },
         "sp": 1,
         "img": "assets/characters/char_face_201.gif",
@@ -675,8 +675,8 @@ window.CHARACTERS_DATA = [
             null
         ],
         "lbSkills": {
-            "50": 57,
-            "99": 903
+            "50": 705,
+            "99": 419
         },
         "sp": 1,
         "img": "assets/characters/char_face_202.gif",
@@ -734,8 +734,8 @@ window.CHARACTERS_DATA = [
             null
         ],
         "lbSkills": {
-            "50": 905,
-            "99": 413
+            "50": 604,
+            "99": 230
         },
         "sp": 1,
         "img": "assets/characters/char_face_203.gif",
@@ -793,8 +793,8 @@ window.CHARACTERS_DATA = [
             null
         ],
         "lbSkills": {
-            "50": 24,
-            "99": 401
+            "50": 413,
+            "99": 155
         },
         "sp": 1,
         "img": "assets/characters/char_face_204.gif",
@@ -852,8 +852,8 @@ window.CHARACTERS_DATA = [
             null
         ],
         "lbSkills": {
-            "50": 119,
-            "99": 613
+            "50": 149,
+            "99": 310
         },
         "sp": 1,
         "img": "assets/characters/char_face_205.gif",
@@ -911,8 +911,8 @@ window.CHARACTERS_DATA = [
             null
         ],
         "lbSkills": {
-            "50": 415,
-            "99": 63
+            "50": 229,
+            "99": 416
         },
         "sp": 1,
         "img": "assets/characters/char_face_206.gif",
@@ -970,8 +970,8 @@ window.CHARACTERS_DATA = [
             null
         ],
         "lbSkills": {
-            "50": 117,
-            "99": 420
+            "50": 143,
+            "99": 161
         },
         "sp": 1,
         "img": "assets/characters/char_face_207.gif",
@@ -1029,8 +1029,8 @@ window.CHARACTERS_DATA = [
             null
         ],
         "lbSkills": {
-            "50": 22,
-            "99": 111
+            "50": 404,
+            "99": 150
         },
         "sp": 1,
         "img": "assets/characters/char_face_208.gif",
@@ -1088,8 +1088,8 @@ window.CHARACTERS_DATA = [
             null
         ],
         "lbSkills": {
-            "50": 609,
-            "99": 450
+            "50": 308,
+            "99": 418
         },
         "sp": 1,
         "img": "assets/characters/char_face_209.gif",
@@ -1147,8 +1147,8 @@ window.CHARACTERS_DATA = [
             null
         ],
         "lbSkills": {
-            "50": 118,
-            "99": 421
+            "50": 144,
+            "99": 162
         },
         "sp": 1,
         "img": "assets/characters/char_face_210.gif",
@@ -1206,8 +1206,8 @@ window.CHARACTERS_DATA = [
             null
         ],
         "lbSkills": {
-            "50": 103,
-            "99": 427
+            "50": 126,
+            "99": 237
         },
         "sp": 1,
         "level": 1,
@@ -1265,8 +1265,8 @@ window.CHARACTERS_DATA = [
             null
         ],
         "lbSkills": {
-            "50": 909,
-            "99": 107
+            "50": 711,
+            "99": 152
         },
         "sp": 1,
         "img": "assets/characters/char_face_302.gif",
@@ -1324,8 +1324,8 @@ window.CHARACTERS_DATA = [
             null
         ],
         "lbSkills": {
-            "50": 616,
-            "99": 906
+            "50": 314,
+            "99": 244
         },
         "sp": 1,
         "img": "assets/characters/char_face_303.gif",
@@ -1383,8 +1383,8 @@ window.CHARACTERS_DATA = [
             null
         ],
         "lbSkills": {
-            "50": 56,
-            "99": 902
+            "50": 408,
+            "99": 166
         },
         "sp": 1,
         "img": "assets/characters/char_face_304.gif",
@@ -1442,8 +1442,8 @@ window.CHARACTERS_DATA = [
             null
         ],
         "lbSkills": {
-            "50": 24,
-            "99": 926
+            "50": 413,
+            "99": 715
         },
         "sp": 1,
         "img": "assets/characters/char_face_305.gif",
@@ -1501,8 +1501,8 @@ window.CHARACTERS_DATA = [
             null
         ],
         "lbSkills": {
-            "50": 110,
-            "99": 908
+            "50": 134,
+            "99": 315
         },
         "sp": 1,
         "img": "assets/characters/char_face_306.gif",
@@ -1560,8 +1560,8 @@ window.CHARACTERS_DATA = [
             null
         ],
         "lbSkills": {
-            "50": 922,
-            "99": 413
+            "50": 241,
+            "99": 230
         },
         "sp": 1,
         "img": "assets/characters/char_face_401.gif",
@@ -1619,8 +1619,8 @@ window.CHARACTERS_DATA = [
             null
         ],
         "lbSkills": {
-            "50": 901,
-            "99": 902
+            "50": 238,
+            "99": 166
         },
         "sp": 1,
         "img": "assets/characters/char_face_402.gif",
@@ -1678,8 +1678,8 @@ window.CHARACTERS_DATA = [
             null
         ],
         "lbSkills": {
-            "50": 90,
-            "99": 502
+            "50": 510,
+            "99": 247
         },
         "sp": 1,
         "img": "assets/characters/char_face_501.gif",

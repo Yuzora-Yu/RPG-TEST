@@ -330,8 +330,6 @@ const App = {
         abyss: true,
         dungeonMenu: false,
         teleport: true,
-        casino: true,
-        medalKing: true,
         boat: false,
         wing: true,
         fixedDungeonEndless: true
@@ -343,8 +341,6 @@ const App = {
         abyss: '深淵の魔窟',
         dungeonMenu: 'ダンジョン',
         teleport: '宿屋の転送',
-        casino: 'カジノ',
-        medalKing: 'メダル交換',
         boat: '魔法の小舟',
         wing: '光の翼',
         fixedDungeonEndless: '固定ダンジョンの探索'
@@ -3837,13 +3833,6 @@ load: () => {
 	},
 		
     changeScene: (sceneId) => {
-        const sceneFeatureMap = {
-            medal: 'medalKing',
-            casino: 'casino'
-        };
-        const requiredFeature = sceneFeatureMap[sceneId];
-        if (requiredFeature && !App.requireFeatureUnlocked(requiredFeature)) return;
-
         if (sceneId === 'battle' && typeof Field !== 'undefined') {
             if (Field.minimapTapTimer) {
                 clearTimeout(Field.minimapTapTimer);
@@ -5106,10 +5095,10 @@ const Field = {
                     App.setAction('泊まる', () => App.changeScene('inn'));
                 } else if (tile === 'K') {
                     logIfNeeded('カジノの看板だ。');
-                    App.setFeatureAction('カジノに入る', 'casino', () => App.changeScene('casino'));
+                    App.setAction('カジノに入る', () => App.changeScene('casino'));
                 } else if (tile === 'E') {
                     logIfNeeded('交換所のようだ。');
-                    App.setFeatureAction('メダル交換', 'medalKing', () => App.changeScene('medal'));
+                    App.setAction('メダル交換', () => App.changeScene('medal'));
                 }
             } else if (Field.currentMapData.isFixed && typeof Dungeon !== 'undefined' && typeof Dungeon.prepareFixedTileAction === 'function') {
                 const fixedMapAction = (typeof MapRegistry !== 'undefined' && MapRegistry.findMapAction)
@@ -5200,9 +5189,9 @@ const Field = {
                 logIfNeeded('小さな休憩所がある。');
                 App.setAction('休む', () => App.changeScene('inn'));
         } else if (tile === 'E') {
-            App.setFeatureAction('メダル交換', 'medalKing', () => App.changeScene('medal'));
+            App.setAction('メダル交換', () => App.changeScene('medal'));
         } else if (tile === 'K') {
-            App.setFeatureAction('カジノに入る', 'casino', () => App.changeScene('casino'));
+            App.setAction('カジノに入る', () => App.changeScene('casino'));
         } else if (tile === 'D') {
             logIfNeeded('不気味な穴が開いている…「深淵の魔窟」だ');
             if (typeof FIXED_MAPS !== 'undefined' && FIXED_MAPS.ABYSS_FIELD) {

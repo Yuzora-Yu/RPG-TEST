@@ -161,7 +161,6 @@ const Facilities = {
 
     // --- 2. メダル交換所 ---
     initMedal: () => {
-        if (typeof App !== 'undefined' && typeof App.requireFeatureUnlocked === 'function' && !App.requireFeatureUnlocked('medalKing')) return;
         const exitFn = "App.changeScene('field')";
 		const hasWedge = App.data.items && App.data.items[98] > 0;
         // コマンドボタンの構成
@@ -1698,7 +1697,6 @@ const Facilities = {
 
     // --- 3. カジノ ---
     initCasino: () => {
-        if (typeof App !== 'undefined' && typeof App.requireFeatureUnlocked === 'function' && !App.requireFeatureUnlocked('casino')) return;
         if (!App.data.casinoState) App.data.casinoState = { isPlaying: false, currentGame: null };
         
         // 勝負中であればUIを復元

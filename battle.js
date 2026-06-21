@@ -43,6 +43,12 @@ const Battle = {
         elmResDown: 'Debuff'          // 全属性耐性低下も弱体耐性を参照
     },
 
+
+    // マダンテ系はID再編後も専用MP処理が必要。範囲判定ではなく明示IDで扱う。
+    MADANTE_SKILL_IDS: new Set([245, 246, 247]),
+    isMadanteSkillId: (id) => Battle.MADANTE_SKILL_IDS.has(Number(id)),
+    isMadanteSkill: (data) => data && Battle.isMadanteSkillId(data.id),
+
     getEl: (id) => document.getElementById(id),
     
 	// ★追加: モンスター名を赤字にするヘルパー関数
@@ -966,7 +972,7 @@ findNextActor: () => {
         return (actor.skills || []).filter(s => {
             const sId = Number(s.id);
             if (sId === 1) return false;
-            if (sId >= 500 && sId <= 505) return false;
+            if (Battle.isMadanteSkillId(sId)) return false;
             if (hiddenIds.includes(sId)) return false;
             if (actor.mp < (s.mp || 0)) return false;
 
@@ -1536,8 +1542,8 @@ findNextActor: () => {
 					return;
 				}
 					
-                // ★修正：マダンテ系(500-505)はMP1以上あれば選択可能、それ以外は消費MPチェック
-                const requiredMp = (sk.id >= 500 && sk.id <= 505) ? 1 : sk.mp;
+                // マダンテ系はMP1以上あれば選択可能、それ以外は消費MPチェック
+                const requiredMp = Battle.isMadanteSkill(sk) ? 1 : sk.mp;
                 if (actor.mp < requiredMp) {
                     Battle.showNoticeOverlay('', 'この特技を使うにはMPが足りない！', 'ＯＫ');
                     //Battle.log("MPが足りません");
@@ -1784,7 +1790,7 @@ findNextActor: () => {
             if (!s) return false;
 
             // MP Check
-            if (s.id >= 500 && s.id <= 505) { if (e.mp <= 0) return false; } // ★500-505を対象に
+            if (Battle.isMadanteSkill(s)) { if (e.mp <= 0) return false; } // マダンテ系を対象に
             else if (e.mp < s.mp) return false;
 
             // Seal Check (現在の状態を参照)
@@ -2363,8 +2369,8 @@ findNextActor: () => {
                 mpCost = Math.floor(mpCost * 1.5);
             }
 
-            if (data.id >= 500 && data.id <= 505) { mpCost = actor.mp; }
-            if (actor.mp < mpCost && (data.id < 500 || data.id > 505)) {
+            if (Battle.isMadanteSkill(data)) { mpCost = actor.mp; }
+            if (actor.mp < mpCost && !Battle.isMadanteSkill(data)) {
                 Battle.log(`${actor.name}は${skillName}を唱えたがMPが足りない！`);
                 return;
             }
@@ -2426,7 +2432,7 @@ findNextActor: () => {
             if (successRate <= 1 && successRate > 0) successRate *= 100;
 
             // --- [5] マダンテ系特殊処理 ---
-            if (data && data.id >= 500 && data.id <= 505) {
+            if (Battle.isMadanteSkill(data)) {
                 let baseBaseDmg = mpCost * skillRate;
                 const pool = cmd.isEnemy ? Battle.party.filter(p=>p && !p.isDead) : Battle.enemies.filter(e=>!e.isDead && !e.isFled);
                 let loopTargets = [];

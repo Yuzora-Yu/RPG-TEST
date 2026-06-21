@@ -43,13 +43,14 @@
         },
         arisa_haine_forest_depths: {
             name: "禁忌の森の双影",
-            area: "禁忌の森 深部",
+            area: "風の集落 / 禁忌の森 深部",
             kind: boss,
             unlockFlags: ["waterCityCleared"],
-            objective: "水の加護で浄化された森の奥を進み、アリサとハイネを救う。",
-            startText: "アリサとハイネは、森の奥で毒と呪いを操る魔物を追っている。",
-            progressText: "禁忌の森深部へ入り、汚染の源を断とう。",
-            completeText: "森の呪いは薄れ、アリサとハイネが仲間に加わった。",
+            objective: "風の集落で、禁忌の森の奥へ消えたアリサとハイネの救援依頼を受ける。",
+            startText: "風の集落の村人から、アリサとハイネの救援を頼まれた。",
+            progressText: "禁忌の森深部へ向かい、アリサとハイネを救出しよう。",
+            completeText: "アリサとハイネを救出し、二人が仲間に加わった。",
+            startEventId: "quest_arisa_haine_start",
             rewardAllies: [108, 207]
         },
         sophia_alan_seabed_depths: {

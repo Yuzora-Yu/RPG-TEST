@@ -5145,7 +5145,7 @@ const EQUIP_MASTER = [
         },
         "possibleOpts": [],
         "grantSkills": [
-            433
+            164
         ],
         "traits": [
             {
@@ -5168,7 +5168,7 @@ const EQUIP_MASTER = [
         },
         "possibleOpts": [],
         "grantSkills": [
-            920
+            167
         ],
         "traits": [
             {

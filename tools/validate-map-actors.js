@@ -18,6 +18,24 @@ vm.runInContext(
 let actors = 0;
 const errors = [];
 
+const waterCity = context.MAPS.FIXED_MAPS.WATER_CITY;
+if (!waterCity) {
+    errors.push('WATER_CITY map is unavailable');
+} else {
+    waterCity.tiles.forEach((row, y) => {
+        [...row].forEach((tile, x) => {
+            if (tile === 'C' || tile === 'R') {
+                errors.push(`WATER_CITY: legacy chest/soldier tile remains at ${x},${y}: ${tile}`);
+            }
+        });
+    });
+    for (const guard of (waterCity.mapActions || []).filter(action => action.eventId === 'water_city_blockade_guard')) {
+        if (waterCity.tiles?.[guard.y]?.[guard.x] !== 'T') {
+            errors.push(`WATER_CITY: blockade guard must stand on a normal T tile at ${guard.x},${guard.y}`);
+        }
+    }
+}
+
 for (const marker of [
     'isBlockingMapActor',
     'getAdjacentMapActor',
@@ -71,8 +89,8 @@ for (const [key, dungeon] of Object.entries(context.MAPS.FIXED_DUNGEON_MAPS)) {
 if (errors.length) throw new Error(`Map actor validation failed:\n${errors.join('\n')}`);
 const waterGuards = (context.MAPS.FIXED_MAPS.WATER_CITY?.mapActions || [])
     .filter(action => action.eventId === 'water_city_blockade_guard');
-if (waterGuards.length !== 2 || waterGuards.some(action => action.missingFlag !== 'waterCityCleared')) {
-    throw new Error('Water City bridge guards must both disappear after the Seabed Temple clear flag.');
+if (waterGuards.length !== 3 || waterGuards.some(action => action.missingFlag !== 'waterCityCleared')) {
+    throw new Error('All three Water City blockade guards must disappear after the Seabed Temple clear flag.');
 }
 console.log(`Map actor validation passed. Coordinate-based actors checked: ${actors}.`);
 console.log('Actor positions are walkable, unique, blocking, adjacent-interactable, and linked to existing story events.');

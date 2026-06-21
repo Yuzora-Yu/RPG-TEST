@@ -445,7 +445,10 @@ function validateSourceHooks() {
   assert(/App\.data\.battle\.keyReward\s*=\s*null[\s\S]{0,120}App\.data\.battle\.fixedKeyReward\s*=\s*null/.test(battle), 'Battle victory does not clear consumed key reward state');
   assert(/Array\.isArray\(action\.keyRewardColors\)/.test(story), 'Story BOSS action does not read keyRewardColors');
   assert(/const\s+keyRewardColors\s*=\s*rawKeyRewardColors\.filter\(Boolean\)/.test(story), 'Story BOSS action does not normalize key reward colors');
-  assert(/fixedKeyReward:\s*keyRewardColors\.length\s*>\s*0\s*\?/.test(story) && /colors:\s*keyRewardColors/.test(story), 'Story BOSS action is not wired to multi-color fixedKeyReward');
+  assert(/const\s+fixedKeyReward\s*=\s*keyRewardColors\.length\s*>\s*0\s*\?/.test(story) &&
+    /colors:\s*keyRewardColors/.test(story) &&
+    /fixedKeyReward:\s*fixedKeyReward/.test(story),
+  'Story BOSS action is not wired to multi-color fixedKeyReward');
 }
 
 validateSourceHooks();

@@ -7,6 +7,7 @@ const assetsSource = read('assets.js');
 const mapSource = read('map.js');
 const dungeonSource = read('dungeon.js');
 const phaserFieldSource = read('phaser-field.js');
+const mainSource = read('main.js');
 
 if (/water\.y\s*=|waterBaseY/.test(phaserFieldSource)) {
     throw new Error('Water animation must not move the tile image or expose the terrain below it.');
@@ -112,8 +113,35 @@ if (missingBossSprites.length) {
     throw new Error(`Fixed bosses missing map sprites:\n${missingBossSprites.join('\n')}`);
 }
 
-if (!/FORBIDDEN_FOREST:\s*\{[\s\S]*?tileOverrides:\s*\{[\s\S]*?W:\s*tileEntry\("tile_forest_wall"/.test(mapSource)) {
-    throw new Error('Forbidden Forest wall must use the generated dense forest wall tile.');
+if (!/FORBIDDEN_FOREST:\s*\{[\s\S]*?W:\s*tileEntry\("tile_forbidden_forest_wall"/.test(mapSource) ||
+    graphics.get('tile_forbidden_forest_wall') !== 'assets/map/terrain/tile_forbidden_forest_wall_v001.png' ||
+    graphics.get('tile_forbidden_forest_floor') !== 'assets/map/terrain/tile_forbidden_forest_floor_v001.png') {
+    throw new Error('Forbidden Forest must use its generated floor and dense forest wall tiles.');
+}
+if (!/WIND_HOLE:\s*\{[\s\S]*?W:\s*tileEntry\("tile_wind_hole_wall"/.test(mapSource) ||
+    graphics.get('tile_wind_hole_wall') !== 'assets/map/terrain/tile_wind_hole_wall_v001.png' ||
+    graphics.get('tile_wind_hole_floor') !== 'assets/map/terrain/tile_wind_hole_floor_v001.png') {
+    throw new Error('Forest Wind Hole must use its generated floor and wall tiles.');
+}
+for (const stem of [
+    'tile_wind_hole_wall', 'tile_wind_hole_floor',
+    'tile_forbidden_forest_wall', 'tile_forbidden_forest_floor',
+    'tile_thunder_wall', 'tile_thunder_floor',
+    'tile_dark_wall', 'tile_dark_floor',
+    'tile_seabed_floor',
+    'tile_dark_shrine_wall', 'tile_dark_shrine_floor',
+    'tile_grezelia_wall', 'tile_grezelia_floor'
+]) {
+    for (let index = 2; index <= 4; index++) {
+        if (!graphics.has(`${stem}_${index}`)) throw new Error(`Terrain variation is missing: ${stem}_${index}`);
+    }
+}
+if (!mainSource.includes('base?.variants') || !mainSource.includes('Math.imul(x, 374761393)')) {
+    throw new Error('Coordinate-stable terrain variation selection is missing.');
+}
+if (graphics.get('battle_bg_wind_hole') !== 'assets/generated/battle-forest-wind-hole-v001.png' ||
+    !/FOREST_WIND_HOLE:\s*\{[\s\S]*?battleBg:\s*"battle_bg_wind_hole"/.test(mapSource)) {
+    throw new Error('Forest Wind Hole must use its generated battle background.');
 }
 if (graphics.get('battle_bg_forest') !== 'assets/generated/battle-forbidden-forest-v001.png') {
     throw new Error('Forbidden Forest must use its generated battle background.');

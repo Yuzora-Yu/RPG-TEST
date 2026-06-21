@@ -736,7 +736,7 @@ const FIXED_MAPS = {
                 ]
             },
             { x: 10, y: 12, label: "風織り職人と話す", log: "職人が、風を含んだ薄布を指で弾いている。", type: "storyEvent", eventId: "town_wind_villager_3", imageKey: "overlay_npc_villager" },
-            { x: 5, y: 12, label: "アリサ達と話す", log: "アリサとハイネが、森の奥に残る呪いの気配を調べている。", type: "quest", questId: "arisa_haine_forest_depths", imageKey: "overlay_npc_villager", lockedText: "今はまだ、禁忌の森の毒と呪いが濃すぎて奥へ進めない。" },
+            { x: 5, y: 12, label: "村人から話を聞く", log: "村人が禁忌の森の方を見つめている。", type: "quest", questId: "arisa_haine_forest_depths", imageKey: "overlay_npc_villager", lockedText: "今はまだ、禁忌の森の奥へ進むには危険が大きい。" },
             {
                 x: 19,
                 y: 15,
@@ -1351,19 +1351,22 @@ const FIXED_DUNGEON_MAPS = {
                 width: 29,
                 height: 25,
                 tiles: buildAuthoredLayout(29, 25, {
-                    rooms: [[11, 20, 7, 4], [2, 16, 7, 6], [20, 16, 7, 6], [3, 8, 8, 6], [18, 8, 8, 6], [10, 2, 9, 7]],
+                    rooms: [[11, 20, 7, 4], [2, 16, 7, 6], [20, 16, 7, 6], [3, 8, 8, 6], [18, 8, 8, 6], [10, 2, 9, 7], [12, 10, 5, 4], [2, 2, 6, 5], [21, 2, 6, 5]],
                     paths: [
                         [[14, 22], [6, 19], [6, 11], [14, 5]],
                         [[14, 22], [23, 19], [22, 11], [14, 5]],
-                        [[6, 11], [14, 12], [22, 11]]
+                        [[6, 11], [14, 12], [22, 11]],
+                        [[6, 11], [5, 4], [14, 5]],
+                        [[22, 11], [24, 4], [14, 5]]
                     ],
-                    marks: [[14, 22, "U"], [14, 4, "B"], [4, 18, "C"], [24, 18, "R"]]
+                    marks: [[14, 22, "U"], [14, 4, "B"], [5, 4, "C"], [24, 4, "R"], [4, 18, "C"], [24, 18, "R"], [14, 12, "P"]]
                 }),
                 floorLinks: [
                     { x: 14, y: 22, toFloor: 3, targetX: 10, targetY: 4, label: "火の祭壇へ戻る" }
                 ],
                 tileEffects: [
                     { x: 6, y: 11, type: "poison", damageRate: 0.08, message: "濃い火山ガスを吸った！" },
+                    { x: 22, y: 11, type: "poison", damageRate: 0.06, message: "黒曜石の裂け目から熱風が噴いた！" },
                     { x: 22, y: 11, type: "warp", toX: 6, toY: 19, message: "熱脈の噴気で下層へ飛ばされた。" },
                     { x: 6, y: 19, type: "warp", toX: 22, toY: 11, message: "上昇気流が岩棚へ運んだ。" },
                     { x: 23, y: 19, type: "hunter", id: "volcano_deep_flame", imageKey: "overlay_dungeon_hunter_fire", monsterIds: [301010, 100013, 100014], speed: 0.5, range: 24, statMultiplier: 1.9, message: "炎を纏う強敵が迫る！" }
@@ -1372,8 +1375,13 @@ const FIXED_DUNGEON_MAPS = {
                     { x: 14, y: 4, monsterId: 301010, questId: "karin_volcano_depths", storyEventId: "quest_karin_volcano_clear", actionLabel: "火山深部の試練に挑む", inspectLog: "守る剣を試す炎が揺れている。" }
                 ],
                 chests: [
+                    { x: 5, y: 4, itemId: 3, type: "item" },
+                    { x: 24, y: 4, itemId: 105, type: "item", rare: true },
                     { x: 4, y: 18, itemId: 5, type: "item" },
                     { x: 24, y: 18, itemId: 106, type: "item", rare: true }
+                ],
+                mapActions: [
+                    { x: 14, y: 12, label: "熱脈を確かめる", log: "足元の黒曜石に、鍛冶場の炉より深い赤が脈打っている。", type: "log", imageKey: "overlay_dungeon_event" }
                 ],
                 healSprings: [{ x: 14, y: 12 }],
                 entryPoint: { x: 14, y: 22 }
@@ -1452,6 +1460,13 @@ const FIXED_DUNGEON_MAPS = {
                 ],
                 chests: [
                     { x: 20, y: 6, itemId: 100, type: "item", rare: true }
+                ],
+                tileEffects: [
+                    { x: 36, y: 20, type: "poison", damageRate: 0.04, message: "毒霧が足元を這った。" },
+                    { x: 5, y: 9, type: "warp", toX: 45, toY: 21, message: "黒い風に道を逸らされた。" }
+                ],
+                mapActions: [
+                    { x: 42, y: 16, label: "古い結界跡を見る", log: "苔むした杭に、風除けの古い印が残っている。", type: "log", imageKey: "overlay_dungeon_event" }
                 ],
                 entryPoint: { x: 51, y: 16 }
             },
@@ -1538,6 +1553,12 @@ const FIXED_DUNGEON_MAPS = {
                     { x: 5, y: 15, itemId: 106, type: "item", rare: true },
                     { x: 34, y: 20, itemId: 4, type: "item" }
                 ],
+                tileEffects: [
+                    { x: 20, y: 10, type: "poison", damageRate: 0.05, message: "祈りの広場に残る瘴気が肌を刺す。" }
+                ],
+                mapActions: [
+                    { x: 23, y: 6, label: "朽ちた石碑を読む", log: "石碑には、森の風を鎮めた名もなき守人の印が刻まれている。", type: "log", imageKey: "overlay_dungeon_event" }
+                ],
                 bosses: [
                     {
                         x: 20,
@@ -1560,13 +1581,15 @@ const FIXED_DUNGEON_MAPS = {
                 width: 31,
                 height: 25,
                 tiles: buildAuthoredLayout(31, 25, {
-                    rooms: [[12, 20, 7, 4], [2, 16, 8, 6], [21, 16, 8, 6], [3, 8, 8, 6], [20, 7, 8, 7], [11, 2, 9, 7]],
+                    rooms: [[12, 20, 7, 4], [2, 16, 8, 6], [21, 16, 8, 6], [3, 8, 8, 6], [20, 7, 8, 7], [11, 2, 9, 7], [12, 11, 7, 4], [2, 2, 6, 5], [23, 2, 6, 5]],
                     paths: [
                         [[15, 22], [6, 19], [6, 11], [15, 5]],
                         [[15, 22], [25, 19], [24, 10], [15, 5]],
-                        [[6, 11], [15, 13], [24, 10]]
+                        [[6, 11], [15, 13], [24, 10]],
+                        [[6, 11], [5, 4], [15, 5]],
+                        [[24, 10], [26, 4], [15, 5]]
                     ],
-                    marks: [[15, 22, "U"], [15, 4, "B"], [4, 18, "C"], [26, 18, "R"]]
+                    marks: [[15, 22, "U"], [15, 4, "B"], [5, 4, "C"], [26, 4, "R"], [4, 18, "C"], [26, 18, "R"], [15, 13, "P"]]
                 }),
                 floorLinks: [
                     { x: 15, y: 22, toFloor: 2, targetX: 20, targetY: 9, label: "祈りの広場へ戻る" }
@@ -1574,15 +1597,21 @@ const FIXED_DUNGEON_MAPS = {
                 tileEffects: [
                     { x: 6, y: 11, type: "poison", damageRate: 0.07, message: "呪毒の霧に触れた！" },
                     { x: 24, y: 10, type: "ice", maxSlide: 24, message: "濡れた根を滑った。" },
+                    { x: 5, y: 4, type: "poison", damageRate: 0.05, message: "古い結界跡から黒い風が漏れた。" },
                     { x: 6, y: 19, type: "warp", toX: 25, toY: 19, message: "絡み合う根が道を反転させた。" },
                     { x: 25, y: 19, type: "hunter", id: "forest_deep_curse", imageKey: "overlay_dungeon_hunter_forest", monsterIds: [301012, 100023, 100024], speed: 0.5, range: 26, statMultiplier: 1.9, message: "呪風の魔物が迫る！" }
                 ],
                 bosses: [
-                    { x: 15, y: 4, monsterId: [301011, 301012], questId: "arisa_haine_forest_depths", storyEventId: "quest_arisa_haine_clear", actionLabel: "呪いの根を断つ", inspectLog: "アリサとハイネが呪いの根を追い詰めている。" }
+                    { x: 15, y: 4, monsterId: [301011, 301012], questId: "arisa_haine_forest_depths", startEventId: "quest_arisa_haine_encounter", storyEventId: "quest_arisa_haine_clear", actionLabel: "アリサとハイネに加勢する", inspectLog: "森の奥で、刀の音と叫び声が聞こえる。" }
                 ],
                 chests: [
+                    { x: 5, y: 4, itemId: 4, type: "item" },
+                    { x: 26, y: 4, itemId: 105, type: "item", rare: true },
                     { x: 4, y: 18, itemId: 4, type: "item" },
                     { x: 26, y: 18, itemId: 106, type: "item", rare: true }
+                ],
+                mapActions: [
+                    { x: 15, y: 13, label: "風の途切れを調べる", log: "巨大樹の根元だけ、風の音が不自然に途切れている。", type: "log", imageKey: "overlay_dungeon_event" }
                 ],
                 healSprings: [{ x: 15, y: 13 }],
                 entryPoint: { x: 15, y: 22 }
@@ -1974,13 +2003,15 @@ const FIXED_DUNGEON_MAPS = {
                 width: 29,
                 height: 25,
                 tiles: buildAuthoredLayout(29, 25, {
-                    rooms: [[11, 20, 7, 4], [2, 16, 7, 6], [20, 16, 7, 6], [2, 8, 8, 6], [19, 8, 8, 6], [10, 2, 9, 7]],
+                    rooms: [[11, 20, 7, 4], [2, 16, 7, 6], [20, 16, 7, 6], [2, 8, 8, 6], [19, 8, 8, 6], [10, 2, 9, 7], [11, 11, 7, 4], [2, 2, 6, 5], [21, 2, 6, 5]],
                     paths: [
                         [[14, 22], [6, 19], [6, 11], [14, 5]],
                         [[14, 22], [23, 19], [23, 11], [14, 5]],
-                        [[6, 11], [14, 13], [23, 11]]
+                        [[6, 11], [14, 13], [23, 11]],
+                        [[6, 11], [5, 4], [14, 5]],
+                        [[23, 11], [24, 4], [14, 5]]
                     ],
-                    marks: [[14, 22, "U"], [14, 4, "B"], [4, 18, "C"], [24, 18, "R"]]
+                    marks: [[14, 22, "U"], [14, 4, "B"], [5, 4, "C"], [24, 4, "R"], [4, 18, "C"], [24, 18, "R"], [14, 13, "P"]]
                 }),
                 floorLinks: [
                     { x: 14, y: 22, toFloor: 3, targetX: 11, targetY: 5, label: "祈祷の間へ戻る" }
@@ -1995,8 +2026,13 @@ const FIXED_DUNGEON_MAPS = {
                     { x: 14, y: 4, monsterId: [301022, 301021], questId: "sophia_alan_seabed_depths", storyEventId: "quest_sophia_alan_clear", actionLabel: "神殿深部を鎮める", inspectLog: "ソフィアとアランが逆潮の核を睨んでいる。" }
                 ],
                 chests: [
+                    { x: 5, y: 4, itemId: 4, type: "item" },
+                    { x: 24, y: 4, itemId: 105, type: "item", rare: true },
                     { x: 4, y: 18, itemId: 5, type: "item" },
                     { x: 24, y: 18, itemId: 106, type: "item", rare: true }
+                ],
+                mapActions: [
+                    { x: 14, y: 13, label: "水圧の揺らぎを見る", log: "青い泡が柱の影をゆっくり歪ませている。", type: "log", imageKey: "overlay_dungeon_event" }
                 ],
                 healSprings: [{ x: 14, y: 13 }],
                 entryPoint: { x: 14, y: 22 }
@@ -2930,13 +2966,15 @@ const FIXED_DUNGEON_MAPS = {
                 "width": 31,
                 "height": 25,
                 "tiles": buildAuthoredLayout(31, 25, {
-                    rooms: [[12, 20, 7, 4], [2, 16, 8, 6], [21, 16, 8, 6], [3, 8, 8, 6], [20, 8, 8, 6], [11, 2, 9, 7]],
+                    rooms: [[12, 20, 7, 4], [2, 16, 8, 6], [21, 16, 8, 6], [3, 8, 8, 6], [20, 8, 8, 6], [11, 2, 9, 7], [12, 11, 7, 4], [2, 2, 6, 5], [23, 2, 6, 5]],
                     paths: [
                         [[15, 22], [6, 19], [6, 11], [15, 5]],
                         [[15, 22], [25, 19], [24, 11], [15, 5]],
-                        [[6, 11], [15, 13], [24, 11]]
+                        [[6, 11], [15, 13], [24, 11]],
+                        [[6, 11], [5, 4], [15, 5]],
+                        [[24, 11], [26, 4], [15, 5]]
                     ],
-                    marks: [[15, 22, "U"], [15, 4, "B"], [4, 18, "C"], [26, 18, "R"]]
+                    marks: [[15, 22, "U"], [15, 4, "B"], [5, 4, "C"], [26, 4, "R"], [4, 18, "C"], [26, 18, "R"], [15, 13, "P"]]
                 }),
                 "floorLinks": [
                     { "x": 15, "y": 22, "toFloor": 4, "targetX": 15, "targetY": 5, "label": "雷の中枢へ戻る" }
@@ -2944,6 +2982,7 @@ const FIXED_DUNGEON_MAPS = {
                 "tileEffects": [
                     { "x": 6, "y": 11, "type": "warp", "toX": 24, "toY": 11, "message": "雷流に弾かれた。" },
                     { "x": 24, "y": 11, "type": "warp", "toX": 6, "toY": 11, "message": "雷流が反転した。" },
+                    { "x": 5, "y": 4, "type": "ice", "maxSlide": 26, "message": "導電床が火花を散らした。" },
                     { "x": 6, "y": 19, "type": "ice", "maxSlide": 26, "message": "帯電した床を滑った。" },
                     { "x": 25, "y": 19, "type": "hunter", "id": "thunder_deep_guard", "imageKey": "overlay_dungeon_hunter_thunder", "monsterIds": [100081, 100043, 100043], "speed": 2, "range": 28, "statMultiplier": 1.9, "message": "雷鎧の強敵が迫る！" }
                 ],
@@ -2951,8 +2990,13 @@ const FIXED_DUNGEON_MAPS = {
                     { "x": 15, "y": 4, "monsterId": [100081, 100082], "questId": "frieda_baron_thunder_depths", "storyEventId": "quest_frieda_baron_clear", "actionLabel": "制御核を止める", "inspectLog": "フリーダとバロンが雷の核へ迫っている。" }
                 ],
                 "chests": [
+                    { "x": 5, "y": 4, "itemId": 4, "type": "item" },
+                    { "x": 26, "y": 4, "itemId": 105, "type": "item", "rare": true },
                     { "x": 4, "y": 18, "itemId": 6, "type": "item" },
                     { "x": 26, "y": 18, "itemId": 107, "type": "item", "rare": true }
+                ],
+                "mapActions": [
+                    { "x": 15, "y": 13, "label": "制御装置を調べる", "log": "壊れた導電装置が、まだ淡い雷光を吐いている。", "type": "log", "imageKey": "overlay_dungeon_event" }
                 ],
                 "healSprings": [{ "x": 15, "y": 13 }],
                 "entryPoint": { "x": 15, "y": 22 }
@@ -3669,6 +3713,9 @@ const FIXED_DUNGEON_MAPS = {
                 bosses: [
                     { "x": 15, "y": 5, "monsterId": 301100, "startEventId": "dark_castle_zenon_encounter", "storyEventId": "dark_castle_clear", "actionLabel": "謁見の間へ進む" }
                 ],
+                mapActions: [
+                    { "x": 20, "y": 12, "label": "玉座の間を見渡す", "log": "滅びた玉座の前で、赤い空だけが静かに揺れている。", "type": "log", "imageKey": "overlay_dungeon_event" }
+                ],
                 healSprings: [{ "x": 20, "y": 12 }],
                 entryPoint: { "x": 15, "y": 24 }
             }
@@ -3711,6 +3758,9 @@ const FIXED_DUNGEON_MAPS = {
                     { x: 3, y: 3, itemId: 4, type: "item" },
                     { x: 21, y: 6, itemId: 100, type: "item", rare: true }
                 ],
+                mapActions: [
+                    { x: 12, y: 9, label: "風の通り道を聞く", log: "洞の奥へ、低く澄んだ風の音が吸い込まれていく。", type: "log", imageKey: "overlay_dungeon_event" }
+                ],
                 entryPoint: { x: 12, y: 18 }
             },
             {
@@ -3744,6 +3794,9 @@ const FIXED_DUNGEON_MAPS = {
                 chests: [
                     { x: 3, y: 4, itemId: 4, type: "item" },
                     { x: 21, y: 4, itemId: 101, type: "item", rare: true }
+                ],
+                mapActions: [
+                    { x: 12, y: 8, label: "泉の風をすくう", log: "泉の水面を、青白い風が細い輪になって渡っていく。", type: "log", imageKey: "overlay_dungeon_event" }
                 ],
                 healSprings: [{ x: 12, y: 8 }],
                 entryPoint: { x: 12, y: 18 }
@@ -3939,6 +3992,9 @@ const FIXED_DUNGEON_MAPS = {
                     { x: 4, y: 8, itemId: 106, type: "item", rare: true },
                     { x: 26, y: 18, itemId: 107, type: "item", rare: true }
                 ],
+                mapActions: [
+                    { x: 15, y: 20, label: "祭壇の残光に触れる", log: "崩れた祭壇に、月明かりのような冷たい闇が残っている。", type: "log", imageKey: "overlay_dungeon_event" }
+                ],
                 healSprings: [{ x: 15, y: 20 }],
                 entryPoint: { x: 2, y: 22 }
             }
@@ -4022,6 +4078,9 @@ const FIXED_DUNGEON_MAPS = {
                 chests: [
                     { x: 4, y: 7, itemId: 106, type: "item", rare: true },
                     { x: 28, y: 24, itemId: 107, type: "item", rare: true }
+                ],
+                mapActions: [
+                    { x: 16, y: 23, label: "禁奥の脈動を読む", log: "床下で、研究棟の心臓のような魔力が脈打っている。", type: "log", imageKey: "overlay_dungeon_event" }
                 ],
                 healSprings: [{ x: 16, y: 23 }],
                 entryPoint: { x: 2, y: 24 }

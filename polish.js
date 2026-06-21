@@ -325,11 +325,11 @@
     },
     ultimateSkillKind(data, cmd) {
       const id = Number(data?.id || 0);
-      if ([500, 901, 906, 999].includes(id)) return "ultimate-chaos";
-      if (id === 501) return "holy-burst";
-      if ([502, 902, 924].includes(id)) return "abyss-vortex";
-      if (id === 925) return "meteor";
-      if ((id >= 500 && id <= 502) || id >= 900) return this.specialKind(data, cmd) || "special-rupture";
+      if ([245, 238, 244, 248].includes(id)) return "ultimate-chaos";
+      if (id === 246) return "holy-burst";
+      if ([247, 166, 242].includes(id)) return "abyss-vortex";
+      if (id === 243) return "meteor";
+      if ([245, 246, 247, 238, 166, 244, 168, 242, 243, 248].includes(id)) return this.specialKind(data, cmd) || "special-rupture";
       return null;
     },
     spellKind(data, cmd) {
