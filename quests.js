@@ -204,6 +204,7 @@
             startText: "リュウとミネルバは、魔王城の奥に残った禁則の術式を追っている。",
             progressText: "禁則地グレゼリアの深部へ進もう。",
             completeText: "禁則の術式は破られ、リュウとミネルバが仲間に加わった。",
+            rewardFlags: ["grezeliaOuterSealBroken"],
             rewardAllies: [107, 206]
         },
         zenon_hidden_grezelia: {

@@ -22,8 +22,8 @@ try {
   console.warn("[SW] assets.js の読み込みに失敗しました。画像初回キャッシュは最小限で続行します。", error);
 }
 
-const CACHE_NAME = "prisma-abyss-v3.40-water-city-tile-fix";
-const RUNTIME_CACHE_NAME = "prisma-abyss-v3.40-water-city-tile-fix-runtime-assets";
+const CACHE_NAME = "prisma-abyss-v3.42-story-route-dungeon-polish";
+const RUNTIME_CACHE_NAME = "prisma-abyss-v3.42-story-route-dungeon-polish-runtime-assets";
 const WARM_CACHE_META_KEY = "__prisma_abyss_warm_cache_complete__";
 
 // 起動に必要な App Shell。

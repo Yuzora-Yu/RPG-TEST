@@ -4360,6 +4360,14 @@ const Field = {
 
     getTileConfigForDraw: (tileSign, tileX = null, tileY = null) => {
         const base = Field.getTileConfig(tileSign);
+        if (Array.isArray(base?.variants) && base.variants.length && tileX !== null && tileY !== null) {
+            const x = Number(tileX) || 0;
+            const y = Number(tileY) || 0;
+            let hash = (Math.imul(x, 374761393) + Math.imul(y, 668265263)) | 0;
+            hash = Math.imul(hash ^ (hash >>> 13), 1274126177);
+            const index = ((hash ^ (hash >>> 16)) >>> 0) % base.variants.length;
+            return { ...base, img: base.variants[index] || base.img };
+        }
         if (!Field.currentMapData && tileX !== null && tileY !== null && typeof MapRegistry !== 'undefined' && MapRegistry.getWorldTileConfig) {
             const special = MapRegistry.getWorldTileConfig(tileX, tileY);
             if (special) return { ...base, ...special };
@@ -5138,9 +5146,29 @@ const Field = {
             const labelPrefix = targetEntryLabel ? `${areaDef.name}・${targetEntryLabel}` : areaDef.name;
             App.setAction(`${labelPrefix}に入る`, () => {
                 const flags = App.data?.progress?.flags || {};
+                const bypassFlags = Array.isArray(areaDef.entryBypassFlags) ? areaDef.entryBypassFlags : [];
+                const bypassedEntryLock = bypassFlags.some(flag => !!flags[flag]);
+                if (areaDef.entryRequiredFlag && !flags[areaDef.entryRequiredFlag] && !bypassedEntryLock) {
+                    App.log(areaDef.entryLockedText || '今はまだ、この場所へ入る理由がない。');
+                    return;
+                }
                 if (targetAreaKey === 'THUNDER_FORT' && targetEntryKey === 'east' && !flags.thunderFortCleared) {
                     App.log('雷の要塞の東門は、内側から雷の結界で閉ざされている。西門側から制御炉を止めれば開きそうだ。');
                     return;
+                }
+                if (areaDef.entryEventId && typeof StoryManager !== 'undefined') {
+                    const currentStoryStep = Number(App.data?.progress?.storyStep || 0);
+                    const entryEventStageMatches = areaDef.entryEventStoryStep === undefined ||
+                        currentStoryStep === Number(areaDef.entryEventStoryStep);
+                    const enteredFlag = targetAreaKey === 'FOREST_WIND_HOLE'
+                        ? 'forestWindHoleEntered'
+                        : targetAreaKey === 'CRENA_LIMESTONE_CAVE'
+                            ? 'crenaCaveEntered'
+                            : null;
+                    if (entryEventStageMatches && (!enteredFlag || !flags[enteredFlag])) {
+                        StoryManager.executeEvent(areaDef.entryEventId);
+                        return;
+                    }
                 }
                 Dungeon.startFixed(targetAreaKey, { entryKey: targetEntryKey || null });
             });
@@ -5673,7 +5701,9 @@ const Field = {
                 const groundTile = overlayConfig ? parts.baseTile : (upper === 'G' ? 'G' : 'T');
                 // 地面は座標依存のフィールド施設オーバーレイを混ぜず、純粋な床タイルとして描く。
                 // これにより透過素材の下が黒くならず、G/Tなどの地面の上に施設画像が重なる。
-                const floorConfig = Field.getTileConfig(groundTile);
+                const floorConfig = Field.getTileConfigForDraw
+                    ? Field.getTileConfigForDraw(groundTile, tx, ty)
+                    : Field.getTileConfig(groundTile);
                 const tone = tileTone(upper);
                 const noise = stableNoise(tx, ty);
                 const lift = useDepthRendering ? tileLift(upper, !!overlayConfig, wallGraphic) : 0;

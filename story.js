@@ -29,14 +29,19 @@ const StoryManager = {
         "1-2": "洞窟のボスを倒そう",
         "2-0": "炎の里へ向かおう",
         "2-1": "炎の里の長に相談を聞こう",
-        "2-2": "北の入口からイグナ火山へ向かおう",
-        "2-3": "イグナ火山の奥で火のプリズムを確かめよう",
-        "2-4": "炎の里の長へ火山の異変を報告しよう",
+        "2-2": "火山入口でシャオと合流しよう",
+        "2-3": "炎の里の長に異常な炎を報告しよう",
+        "2-4": "森の風穴で妖精の泉を探そう",
+        "2-5": "妖精の聖水を火山入口で使おう",
+        "2-6": "イグナ火山の奥で火のプリズムを救おう",
+        "2-7": "炎の里の長へ火山の異変を報告しよう",
         "3-0": "北の風の集落で消えた大人たちの手がかりを探そう",
         "3-1": "集落の西から禁忌の森へ向かおう",
         "3-2": "風の神殿で風のプリズムを救おう",
         "4-0": "西の水上都市で船の手がかりを探そう",
-        "4-1": "海底神殿へ向かい、水のプリズムを救おう",
+        "4-1": "クレナ鍾乳洞で青の結晶を探そう",
+        "4-2": "水上都市のソフィアへ青の結晶を届けよう",
+        "4-3": "海底神殿へ向かい、水のプリズムを救おう",
         "5-0": "船で川を進み、雷の要塞へ向かおう",
         "6-0": "大灯台へ向かい、光の神殿の結界を壊そう",
         "7-0": "光の神殿へ入り、儀式の真相を追おう",
@@ -1332,35 +1337,35 @@ const StoryManager = {
         "FIRE_VILLAGE_CONSULT": [
                 {
                         "name": "里の長",
-                        "text": "……来てくれたか、旅の者よ。見ての通り、炉の火が痩せ細っておる。"
+                        "text": "……来てくれたか。\n炉の火が、日に日に痩せておる。"
                 },
                 {
                         "name": "里の長",
-                        "text": "炎の里が鍛冶の里でいられるのは、イグナ火山に納められた火のプリズムの恵みがあってこそだ。だが数日前から、火山道に魔物が出るようになった。"
+                        "text": "里の火は、火山のプリズムから届く。\nその脈が、数日前から細い。"
                 },
                 {
                         "name": "里の長",
-                        "text": "若い者を何人も送ったが、戻った者は少ない。戻った者も、奥で王国軍の影を見たとうわ言のように繰り返しておる。"
+                        "text": "若者を火山へ送った。\n戻った者は、王国兵を見たと言う。"
                 },
                 {
                         "name": "里の長",
-                        "text": "頼む。プリズムに何が起きているのか確かめてくれ。武器を打てぬ里は、守る力を失った里だ。"
+                        "text": "プリズムを確かめてくれ。\n火を失えば、この里は誰も守れぬ。"
                 }
         ],
         "FIRE_VOLCANO_SHAO_JOIN": [
                 {
                         "name": "シャオ",
-                        "text": "待って。火山へ行くなら、私も連れていって。",
+                        "text": "待って。\n火山へ行くなら、私も連れていって。",
                         "charId": 105
                 },
                 {
                         "name": "シャオ",
-                        "text": "一度は一人で奥へ進もうとした。でも、魔物の群れと兵士の気配に押し返された。悔しいけど、今の私だけでは届かない。",
+                        "text": "一人で入って、押し返された。\n魔物だけじゃない。兵士もいた。",
                         "charId": 105
                 },
                 {
                         "name": "シャオ",
-                        "text": "この里は、私が生まれて、何度も転んで、それでも立ち上がることを覚えた場所だ。守りたい。だからお願い。足手まといにはならない。",
+                        "text": "ここは、私が立ち方を覚えた里。\n今度は私が守りたい。",
                         "charId": 105
                 },
                 {
@@ -1372,6 +1377,89 @@ const StoryManager = {
                 {
                         "name": "システム",
                         "text": "[N:105]が仲間に加わった！"
+                }
+        ],
+        "FIRE_VOLCANO_CURSED_FLAMES": [
+                {
+                        "name": "システム",
+                        "text": "火山道へ踏み込んだ瞬間、\n黒ずんだ炎が道を塞いだ。"
+                },
+                {
+                        "name": "シャオ",
+                        "text": "前に来た時よりひどい。\n火が、生き物みたいに怒ってる。",
+                        "charId": 105
+                },
+                {
+                        "name": "シャオ",
+                        "text": "このままじゃ鎧ごと焼かれる。\n長なら昔の鎮め方を知ってるかも。",
+                        "charId": 105
+                }
+        ],
+        "FIRE_VILLAGE_HOLY_WATER_BRIEFING": [
+                {
+                        "name": "里の長",
+                        "text": "黒い炎が道を選んだ、か。\n火山そのものの熱ではないな。"
+                },
+                {
+                        "name": "里の長",
+                        "text": "森の風穴に妖精の泉がある。\nあの聖水だけが火の穢れを洗える。"
+                },
+                {
+                        "name": "シャオ",
+                        "text": "風穴なら東の森です。\n子どもの頃、入口だけ見ました。",
+                        "charId": 105
+                },
+                {
+                        "name": "里の長",
+                        "text": "泉の主に礼を尽くせ。\n水は奪わず、分けてもらうのだ。"
+                }
+        ],
+        "FOREST_WIND_HOLE_ENTRY": [
+                {
+                        "name": "シャオ",
+                        "text": "風が奥へ吸い込まれてる。\n泉は、この風の帰る場所にある。",
+                        "charId": 105
+                },
+                {
+                        "name": "システム",
+                        "text": "岩肌の隙間から、\n小さな泣き声が聞こえた。"
+                }
+        ],
+        "FOREST_HOLY_WATER_CLEAR": [
+                {
+                        "name": "システム",
+                        "text": "魔物が崩れると、\n泉を覆う黒い膜がほどけた。"
+                },
+                {
+                        "name": "泉の妖精",
+                        "text": "熱い心のひと。\nあなたの火は、誰かを守る火なのね。"
+                },
+                {
+                        "name": "シャオ",
+                        "text": "里を助けたいんです。\n泉の水を少し分けてください。",
+                        "charId": 105
+                },
+                {
+                        "name": "泉の妖精",
+                        "text": "なら、この雫を。\n怒る炎へ、名を呼ぶように注いで。"
+                }
+        ],
+        "FIRE_VOLCANO_HOLY_WATER_USED": [
+                {
+                        "name": "システム",
+                        "text": "聖水を振りまくと、\n黒い炎が白い蒸気へ変わった。"
+                },
+                {
+                        "name": "シャオ",
+                        "text": "道が見える……。\n今なら、火山の心臓まで行ける。",
+                        "charId": 105
+                }
+        ],
+        "FIRE_VOLCANO_WAITING_FOR_HOLY_WATER": [
+                {
+                        "name": "シャオ",
+                        "text": "黒い炎は消えてない。\n先に、風穴の妖精の泉へ行こう。",
+                        "charId": 105
                 }
         ],
         "FIRE_VOLCANO_SOLDIERS": [
@@ -1444,11 +1532,11 @@ const StoryManager = {
                 },
                 {
                         "name": "里の長",
-                        "text": "王国がそこまで歪んでおるとは……。あの日、世界の理がズレて以来、船がなければ王都へは向かえぬ。まずは北の風の集落へ行くがよい。"
+                        "text": "王国が、そこまで歪んでおるとは。\n目を背ければ、次の里も焼かれる。"
                 },
                 {
                         "name": "シャオ",
-                        "text": "王国軍が闇の力を使ったこと、見過ごせない。このまま同行させて。私にも確かめたいことができた。",
+                        "text": "王国軍が闇を使った。\n私も、この目で理由を確かめたい。",
                         "charId": 105
                 },
                 {
@@ -1654,7 +1742,7 @@ const StoryManager = {
         "WATER_CITY_INTRO": [
                 {
                         "name": "システム",
-                        "text": "水上都市は、噂に聞いた輝きを失っていた。濁った水路のそばを、黒い鎧の兵士たちが我が物顔で歩いている。"
+                        "text": "水路は濁り、橋に歌はない。\n黒鎧の兵士だけが街を歩いていた。"
                 },
                 {
                         "name": "ダークソルジャー",
@@ -1673,16 +1761,16 @@ const StoryManager = {
         "WATER_CITY_SOPHIA": [
                 {
                         "name": "少女",
-                        "text": "助けてくれてありがとうございます。こちらへ、宿の酒場なら兵士の目も少しは避けられます。"
+                        "text": "助けてくれて、ありがとう。\n酒場へ。あそこなら兵士の目が届かない。"
                 },
                 {
                         "name": "ソフィア",
-                        "text": "いい腕だね。私は[N:202]。海底神殿の調査に来ていたんだけど、王国兵に嗅ぎつけられて足止めさ。",
+                        "text": "いい腕だね。私は[N:202]。\n神殿を調べに来て、足止めされた。",
                 "charId": 202
                 },
                 {
                         "name": "ソフィア",
-                        "text": "水は濁り、街は兵士の休息地に落ちた。火と風の話を聞く限り、水のプリズムも狙われていると見て間違いない。",
+                        "text": "火と風の話が本当なら、\n次に狙われるのは水のプリズムだ。",
                 "charId": 202
                 },
                 {
@@ -1697,12 +1785,83 @@ const StoryManager = {
                 },
                 {
                         "name": "ソフィア",
-                        "text": "こんなナリだけど、実力は確かだよ。自信がないからひよこのままだけどね。海底神殿は都市の北、入口は兵士に封鎖されているはずだ。",
+                        "text": "神殿の入口は水圧で閉じている。\n力任せじゃ、街まで壊しかねない。",
                 "charId": 202
+                },
+                {
+                        "name": "ソフィア",
+                        "text": "北東のクレナ鍾乳洞へ行きな。\n奥の青い結晶なら、水の道を開ける。",
+                        "charId": 202
+                },
+                {
+                        "name": "シャオ",
+                        "text": "兵士より先に結晶を取らないと。\nあの連中も、神殿を狙ってる。",
+                        "charId": 105
                 },
                 {
                         "name": "システム",
                         "text": "[N:104]が同行することになった！"
+                }
+        ],
+        "WATER_CITY_CAVE_REMINDER": [
+                {
+                        "name": "ソフィア",
+                        "text": "クレナ鍾乳洞は街の北東。\n青い鉱脈が夜でも道を照らす。",
+                        "charId": 202
+                },
+                {
+                        "name": "ケイト",
+                        "text": "先に向かった兵士もいるそうです。\n入口から気を抜けませんね。",
+                        "charId": 104
+                }
+        ],
+        "CRENA_CAVE_ENTRY": [
+                {
+                        "name": "システム",
+                        "text": "洞口の岩陰に、\n王国兵が何人も倒れていた。"
+                },
+                {
+                        "name": "ケイト",
+                        "text": "息がありません……。\n鎧に、大きな爪痕が残っています。",
+                        "charId": 104
+                },
+                {
+                        "name": "シャオ",
+                        "text": "魔物の匂いに闇が混じってる。\n偶然ここへ来た魔物じゃない。",
+                        "charId": 105
+                }
+        ],
+        "CRENA_BLUE_CRYSTAL_CLEAR": [
+                {
+                        "name": "システム",
+                        "text": "魔物の影が砕け、\n青の結晶が静かな光を取り戻した。"
+                },
+                {
+                        "name": "シャオ",
+                        "text": "やっぱり魔王軍の闇です。\n結晶を奪うため、魔物を放ったんだ。",
+                        "charId": 105
+                },
+                {
+                        "name": "ケイト",
+                        "text": "結晶は無事です。\nソフィアさんへ届けましょう。",
+                        "charId": 104
+                }
+        ],
+        "WATER_CITY_BLUE_CRYSTAL_REPORT": [
+                {
+                        "name": "ソフィア",
+                        "text": "よく持ち帰った。\n傷ひとつない、見事な青だ。",
+                        "charId": 202
+                },
+                {
+                        "name": "ソフィア",
+                        "text": "これを水門へ掲げれば、\n海が君たちを神殿まで運んでくれる。",
+                        "charId": 202
+                },
+                {
+                        "name": "ケイト",
+                        "text": "今度こそ、水のプリズムへ。\n街の水を取り戻しましょう。",
+                        "charId": 104
                 }
         ],
         "WATER_CITY_BEFORE_STORY": [
@@ -1712,7 +1871,7 @@ const StoryManager = {
                 },
                 {
                         "name": "町人",
-                        "text": "昔は、橋の上で歌が聞こえる街だったんだ。今は兵士の足音ばかりさ。よそ者は目立たない方がいい。"
+                        "text": "昔は橋に歌が流れていた。\n今は兵士の靴音ばかりだ。"
                 }
         ],
         "WATER_CITY_BLOCKADE_GUARD": [
@@ -1728,12 +1887,12 @@ const StoryManager = {
         "WATER_CITY_SOPHIA_AFTER_MEETING": [
                 {
                         "name": "ソフィア",
-                        "text": "海底神殿は都市の北だ。入口を押さえている兵士をどうにかしないと、水のプリズムには近づけないよ。",
+                        "text": "青の結晶が水路を開いた。\n海底神殿は、この街の北だ。",
                 "charId": 202
                 },
                 {
                         "name": "ケイト",
-                        "text": "私も行きます。怖いですけど……水が濁っていくのを、もう見ているだけにはしたくありません。",
+                        "text": "私も行きます。\n怖くても、見ているだけには戻りません。",
                         "charId": 104
                 }
         ],
@@ -1744,7 +1903,7 @@ const StoryManager = {
                 },
                 {
                         "name": "ソフィア",
-                        "text": "船は君たちに預けた。川を進めば雷の要塞へ行ける。王国軍の奥へ踏み込むなら、そこが次の関門だ。",
+                        "text": "船は君たちに預ける。\n川の先、雷の要塞が次の関門だ。",
                 "charId": 202
                 }
         ],
@@ -1828,12 +1987,17 @@ const StoryManager = {
                 },
                 {
                         "name": "ソフィア",
-                        "text": "[N:104]、少しはいい顔になったわね。[N:301]くん、悪いけどこのまま連れていって鍛えてくれない？この子に足りなかったのは、実戦だからね。",
+                        "text": "[N:104]、いい顔になったね。\nもう私の後ろへ隠れる目じゃない。",
+                        "charId": 202
+                },
+                {
+                        "name": "ソフィア",
+                        "text": "[N:301]、この子を連れていって。\n旅の中でしか学べないことがある。",
                         "charId": 202
                 },
                 {
                         "name": "ケイト",
-                        "text": "僕、もっと役に立てるようになります。だから、正式に同行させてください。",
+                        "text": "もっと役に立てるようになります。\n正式に、同行させてください。",
                         "charId": 104
                 },
                 {
@@ -3270,15 +3434,19 @@ const StoryManager = {
         },
         "quest_fire_holy_water_clear": {
                 "actions": [
-                        { "type": "LOG", "value": "妖精は小さく頭を下げ、泉の聖水を分けてくれた。" },
-                        { "type": "QUEST_COMPLETE", "value": "fire_holy_water" }
+                        { "type": "CONV", "value": "FOREST_HOLY_WATER_CLEAR" },
+                        { "type": "QUEST_COMPLETE", "value": "fire_holy_water" },
+                        { "type": "SUB", "value": 5 },
+                        { "type": "LOG", "value": "妖精の聖水を得た。イグナ火山へ戻ろう。" }
                 ],
                 "winActions": []
         },
         "quest_water_blue_crystal_clear": {
                 "actions": [
-                        { "type": "LOG", "value": "青の結晶が静かに輝き、海底神殿へ続く道を示した。" },
-                        { "type": "QUEST_COMPLETE", "value": "water_blue_crystal" }
+                        { "type": "CONV", "value": "CRENA_BLUE_CRYSTAL_CLEAR" },
+                        { "type": "QUEST_COMPLETE", "value": "water_blue_crystal" },
+                        { "type": "SUB", "value": 2 },
+                        { "type": "LOG", "value": "青の結晶を得た。水上都市のソフィアへ届けよう。" }
                 ],
                 "winActions": []
         },
@@ -3401,8 +3569,8 @@ const StoryManager = {
                                                 "value": 3
                                         },
                                         {
-                                                "type": "START_FIXED_DUNGEON",
-                                                "value": "IGNIS_VOLCANO"
+                                                "type": "CONV",
+                                                "value": "FIRE_VOLCANO_CURSED_FLAMES"
                                         }
                                 ],
                                 "no": [
@@ -3431,11 +3599,44 @@ const StoryManager = {
                                                 "value": 3
                                         },
                                         {
-                                                "type": "START_FIXED_DUNGEON",
-                                                "value": "IGNIS_VOLCANO"
+                                                "type": "CONV",
+                                                "value": "FIRE_VOLCANO_CURSED_FLAMES"
                                         }
                                 ]
                         }
+                ],
+                "winActions": []
+        },
+        "fire_village_holy_water_briefing": {
+                "actions": [
+                        { "type": "CONV", "value": "FIRE_VILLAGE_HOLY_WATER_BRIEFING" },
+                        { "type": "QUEST_ACCEPT", "value": "fire_holy_water" },
+                        { "type": "FLAG", "key": "windHoleRouteKnown" },
+                        { "type": "SUB", "value": 4 },
+                        { "type": "LOG", "value": "森の風穴で、妖精の泉を探そう。" }
+                ],
+                "winActions": []
+        },
+        "forest_wind_hole_entry": {
+                "actions": [
+                        { "type": "CONV", "value": "FOREST_WIND_HOLE_ENTRY" },
+                        { "type": "FLAG", "key": "forestWindHoleEntered" },
+                        { "type": "START_FIXED_DUNGEON", "value": "FOREST_WIND_HOLE" }
+                ],
+                "winActions": []
+        },
+        "fire_volcano_holy_water_used": {
+                "actions": [
+                        { "type": "CONV", "value": "FIRE_VOLCANO_HOLY_WATER_USED" },
+                        { "type": "FLAG", "key": "volcanoCursedFlamesPurified" },
+                        { "type": "SUB", "value": 6 },
+                        { "type": "START_FIXED_DUNGEON", "value": "IGNIS_VOLCANO" }
+                ],
+                "winActions": []
+        },
+        "fire_volcano_waiting_for_holy_water": {
+                "actions": [
+                        { "type": "CONV", "value": "FIRE_VOLCANO_WAITING_FOR_HOLY_WATER" }
                 ],
                 "winActions": []
         },
@@ -3524,7 +3725,7 @@ const StoryManager = {
                         },
                         {
                                 "type": "SUB",
-                                "value": 4
+                                "value": 7
                         },
                         {
                                 "type": "LOG",
@@ -3972,9 +4173,40 @@ const StoryManager = {
                                 "value": 1
                         },
                         {
-                                "type": "START_FIXED_DUNGEON",
-                                "value": "SEABED_TEMPLE"
+                                "type": "QUEST_ACCEPT",
+                                "value": "water_blue_crystal"
+                        },
+                        {
+                                "type": "FLAG",
+                                "key": "crenaRouteKnown"
+                        },
+                        {
+                                "type": "LOG",
+                                "value": "クレナ鍾乳洞で青の結晶を探そう。"
                         }
+                ],
+                "winActions": []
+        },
+        "water_city_cave_reminder": {
+                "actions": [
+                        { "type": "CONV", "value": "WATER_CITY_CAVE_REMINDER" }
+                ],
+                "winActions": []
+        },
+        "crena_cave_entry": {
+                "actions": [
+                        { "type": "CONV", "value": "CRENA_CAVE_ENTRY" },
+                        { "type": "FLAG", "key": "crenaCaveEntered" },
+                        { "type": "START_FIXED_DUNGEON", "value": "CRENA_LIMESTONE_CAVE" }
+                ],
+                "winActions": []
+        },
+        "water_city_blue_crystal_report": {
+                "actions": [
+                        { "type": "CONV", "value": "WATER_CITY_BLUE_CRYSTAL_REPORT" },
+                        { "type": "FLAG", "key": "seabedTempleRouteOpened" },
+                        { "type": "SUB", "value": 3 },
+                        { "type": "LOG", "value": "青の結晶が水の道を開いた。海底神殿へ向かおう。" }
                 ],
                 "winActions": []
         },

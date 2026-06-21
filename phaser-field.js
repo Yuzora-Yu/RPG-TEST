@@ -156,7 +156,9 @@
         const upper = parts.upper;
         const overlay = parts.overlayConfig;
         const groundTile = overlay ? parts.baseTile : (upper === 'G' ? 'G' : 'T');
-        const floorConfig = field.getTileConfig(groundTile);
+        const floorConfig = field.getTileConfigForDraw
+            ? field.getTileConfigForDraw(groundTile, tileX, tileY)
+            : field.getTileConfig(groundTile);
         const objectConfig = field.getTileConfigForDraw
             ? field.getTileConfigForDraw(upper, tileX, tileY)
             : field.getTileConfig(upper);
@@ -227,30 +229,50 @@
             }
         }
 
-        if (overlay) {
-            const key = overlay.img;
-            const building = isBuildingTexture(key);
-            const characterOverlay = String(key || '').startsWith('overlay_npc_');
-            // ワールドマップ上の町・神殿等は地図記号として1マス表示にする。
-            // 固定マップの建物は高さを残すが、手前の楕円影は不自然なので描かない。
-            const raisedBuilding = building && !isWorldMap;
-            const width = raisedBuilding ? TILE_SIZE * 2.4 : TILE_SIZE;
-            const height = raisedBuilding ? TILE_SIZE * 2.4 : TILE_SIZE;
-            // ダンジョンの宝箱・階段・扉・ボスマーカー等は床へ直接置かれたチップとして扱い、
-            // 楕円の接地影を付けない。人物だけは位置を読みやすくするため影を残す。
-            if (!building && (!field.currentMapData?.isDungeon || characterOverlay)) {
-                addShadow(scene, px + TILE_SIZE / 2 + 4, py + TILE_SIZE - 2, 24, 0.22, baseDepth + 50);
-            }
-            if (!addImage(scene, key, px + TILE_SIZE / 2, py + TILE_SIZE, {
-                width,
-                height,
-                depth: isWorldMap ? -99880 : baseDepth + 72
-            })) {
-                const marker = scene.add.circle(px + TILE_SIZE / 2, py + TILE_SIZE / 2, 10, colorToInt(overlay.color, 0xffffff));
-                marker.setDepth(isWorldMap ? -99880 : baseDepth + 72);
-                state.worldObjects.push(marker);
-            }
-        }
+		if (overlay) {
+			const key = overlay.img;
+			const building = isBuildingTexture(key);
+			const characterOverlay = String(key || '').startsWith('overlay_npc_');
+			const bossOverlay = String(key || '').startsWith('overlay_boss_');
+
+			// ワールドマップ上の町・神殿等は地図記号として1マス表示にする。
+			// 固定マップの建物は高さを残すが、手前の楕円影は不自然なので描かない。
+			const raisedBuilding = building && !isWorldMap;
+
+			// ボスマス画像だけ一括で2倍表示する。
+			// addImage() は originY=1 なので、足元は元マス下端に揃ったまま拡大される。
+			const overlayScale = bossOverlay ? 2 : 1;
+			const width = raisedBuilding ? TILE_SIZE * 2.4 : TILE_SIZE * overlayScale;
+			const height = raisedBuilding ? TILE_SIZE * 2.4 : TILE_SIZE * overlayScale;
+
+			// ダンジョンの宝箱・階段・扉は影なし。
+			// NPCとボスは位置を読みやすくするため影を残す。
+			if (!building && (!field.currentMapData?.isDungeon || characterOverlay || bossOverlay)) {
+				addShadow(
+					scene,
+					px + TILE_SIZE / 2 + 4,
+					py + TILE_SIZE - 2,
+					bossOverlay ? 34 : 24,
+					bossOverlay ? 0.28 : 0.22,
+					baseDepth + 50
+				);
+			}
+
+			if (!addImage(scene, key, px + TILE_SIZE / 2, py + TILE_SIZE, {
+				width,
+				height,
+				depth: isWorldMap ? -99880 : baseDepth + (bossOverlay ? 84 : 72)
+			})) {
+				const marker = scene.add.circle(
+					px + TILE_SIZE / 2,
+					py + TILE_SIZE / 2,
+					bossOverlay ? 14 : 10,
+					colorToInt(overlay.color, 0xffffff)
+				);
+				marker.setDepth(isWorldMap ? -99880 : baseDepth + (bossOverlay ? 84 : 72));
+				state.worldObjects.push(marker);
+			}
+		}
 
         const effectKey = field.getTileEffectGraphicKey ? field.getTileEffectGraphicKey(tileX, tileY) : null;
         if (effectKey) {
@@ -427,6 +449,15 @@
             dungeon.keyGuardian,
             dungeon.trialAngel
         ].map(object => object ? `${object.active}:${object.floor}:${object.x}:${object.y}` : '-').join('|');
+		const randomDungeonMapSignature = (
+			field.currentMapData?.isDungeon &&
+			!field.currentMapData?.isFixed &&
+			Array.isArray(getDungeon()?.map)
+		)
+			? getDungeon().map
+				.map(row => Array.isArray(row) ? row.join('') : String(row || ''))
+				.join('/')
+			: '';
         return [
             field.getCurrentAreaKey(),
             getDungeon()?.floor || 0,
@@ -435,6 +466,7 @@
             field.minimapMode,
             field.currentMapData?.name || 'WORLD',
             special,
+            randomDungeonMapSignature,
             JSON.stringify(progress.mapChanges?.[progressKey] || {}),
             JSON.stringify(progress.openedChests?.[progressKey] || []),
             JSON.stringify(progress.defeatedBosses?.[progressKey] || []),
