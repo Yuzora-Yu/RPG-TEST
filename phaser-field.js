@@ -156,9 +156,11 @@
         const upper = parts.upper;
         const overlay = parts.overlayConfig;
         const groundTile = overlay ? parts.baseTile : (upper === 'G' ? 'G' : 'T');
-        const floorConfig = field.getTileConfigForDraw
-            ? field.getTileConfigForDraw(groundTile, tileX, tileY)
-            : field.getTileConfig(groundTile);
+        const floorConfig = parts.worldOverlay
+            ? field.getTileConfig(groundTile)
+            : (field.getTileConfigForDraw
+                ? field.getTileConfigForDraw(groundTile, tileX, tileY)
+                : field.getTileConfig(groundTile));
         const objectConfig = field.getTileConfigForDraw
             ? field.getTileConfigForDraw(upper, tileX, tileY)
             : field.getTileConfig(upper);
@@ -465,6 +467,9 @@
             field.y,
             field.minimapMode,
             field.currentMapData?.name || 'WORLD',
+            progress.storyStep || 0,
+            progress.subStep || 0,
+            JSON.stringify(progress.flags || {}),
             special,
             randomDungeonMapSignature,
             JSON.stringify(progress.mapChanges?.[progressKey] || {}),

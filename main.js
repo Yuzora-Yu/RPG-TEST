@@ -4292,7 +4292,9 @@ const Field = {
                     }
                 }
                 const parts = Field.getMapDrawParts ? Field.getMapDrawParts(tile, x, y) : { baseTile: tile, overlayConfig: null };
-                const cfg = Field.getTileConfigForDraw ? Field.getTileConfigForDraw(parts.baseTile, x, y) : Field.getTileConfig(parts.baseTile);
+                const cfg = parts.worldOverlay
+                    ? Field.getTileConfig(parts.baseTile)
+                    : (Field.getTileConfigForDraw ? Field.getTileConfigForDraw(parts.baseTile, x, y) : Field.getTileConfig(parts.baseTile));
                 const drawX = offsetX + x * size;
                 const drawY = offsetY + y * size;
                 ctx.fillStyle = cfg.color || '#000';
@@ -4501,7 +4503,10 @@ const Field = {
         return {
             upper,
             baseTile: baseTile || upper,
-            overlayConfig
+            overlayConfig,
+            // ワールドマップ上の町・ダンジョン画像は透明素材のため、
+            // 下地を fieldTile で再上書きせず、実際の地形タイルを描く。
+            worldOverlay: !!worldOverlayConfig
         };
     },
 
@@ -4564,6 +4569,12 @@ const Field = {
 
     getMiniMapMarkerColor: (tileSign, tileX = null, tileY = null) => {
         const upper = String(tileSign || '').toUpperCase();
+        const actionOverlay = Field.getMapActionOverlayConfig ? Field.getMapActionOverlayConfig(tileX, tileY) : null;
+        if (actionOverlay) {
+            const imageKey = String(actionOverlay.img || '');
+            if (imageKey.startsWith('overlay_npc_')) return actionOverlay.minimapColor || '#5bd6ff';
+            return actionOverlay.minimapColor || actionOverlay.color || '#8f7dff';
+        }
         if (!upper || upper === 'W' || upper === 'T' || upper === 'G' || upper === 'L' || upper === 'M') return null;
 
         if (Field.currentMapData?.isFixed && upper === 'B' && tileX !== null && tileY !== null && typeof MapRegistry !== 'undefined' && MapRegistry.findFixedBoss) {
@@ -4775,20 +4786,33 @@ const Field = {
         return true;
     },
 
+    isMapActionImageAvailable: (action) => {
+        if (!action?.imageKey || !Field.isMapActionAvailable(action)) return false;
+        const flags = App.data?.progress?.flags || {};
+        const requiredFlags = Array.isArray(action.imageRequiredFlags)
+            ? action.imageRequiredFlags
+            : (action.imageRequiredFlag ? [action.imageRequiredFlag] : []);
+        const missingFlags = Array.isArray(action.imageMissingFlags)
+            ? action.imageMissingFlags
+            : (action.imageMissingFlag ? [action.imageMissingFlag] : []);
+        return requiredFlags.every(flag => !!flags[flag]) && missingFlags.every(flag => !flags[flag]);
+    },
+
     getMapActionOverlayConfig: (tileX = null, tileY = null) => {
         if (!Field.currentMapData || tileX === null || tileY === null || typeof MapRegistry === 'undefined') return null;
         const action = MapRegistry.findMapAction?.(Field.currentMapData, tileX, tileY);
-        if (!action?.imageKey || !Field.isMapActionAvailable(action)) return null;
+        if (!Field.isMapActionImageAvailable(action)) return null;
         return {
             img: action.imageKey,
             color: action.imageColor || '#d6c8a7',
+            minimapColor: action.minimapColor || null,
             baseTile: action.baseTile || 'T'
         };
     },
 
     isBlockingMapActor: (action) => {
         if (!action?.imageKey || action.blocksMovement === false) return false;
-        return Field.isMapActionAvailable(action);
+        return Field.isMapActionImageAvailable(action);
     },
 
     getAdjacentMapActor: () => {
@@ -5701,9 +5725,11 @@ const Field = {
                 const groundTile = overlayConfig ? parts.baseTile : (upper === 'G' ? 'G' : 'T');
                 // 地面は座標依存のフィールド施設オーバーレイを混ぜず、純粋な床タイルとして描く。
                 // これにより透過素材の下が黒くならず、G/Tなどの地面の上に施設画像が重なる。
-                const floorConfig = Field.getTileConfigForDraw
-                    ? Field.getTileConfigForDraw(groundTile, tx, ty)
-                    : Field.getTileConfig(groundTile);
+                const floorConfig = parts.worldOverlay
+                    ? Field.getTileConfig(groundTile)
+                    : (Field.getTileConfigForDraw
+                        ? Field.getTileConfigForDraw(groundTile, tx, ty)
+                        : Field.getTileConfig(groundTile));
                 const tone = tileTone(upper);
                 const noise = stableNoise(tx, ty);
                 const lift = useDepthRendering ? tileLift(upper, !!overlayConfig, wallGraphic) : 0;
