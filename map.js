@@ -826,7 +826,7 @@ const FIXED_MAPS = {
             "WWWTTTTTTTTTTTTTTTWWWTTTTTTWWWWWWWWWWWW",
             "WWWTTTTTTTTTTTTTTTTTTTTTTTTWWTTTTTTTWWW",
             "SLLTTTTTTTTTTJTTTTTTTTTTTTTWWTTTTTTTWWW",
-            "SLLTTTTTTTTTTTTTTTTTTTTTTTTLLTTTHTTTWWW",
+            "SLLTTTTTTTTTTTTTTTTTTTTTTTTLLTTTJTTTWWW",
             "WWWTTTTTTTTTTTTTTTTTTTTTTTTWWTTTTTTTWWW",
             "WWWTTTTTTTTTTTTTTTTTTTTTTTTWWTTTTTTTWWW",
             "WWWWWWWWWWWWWWWWWWLLLWWWWWWWWTTTTTTTWWW",
@@ -903,7 +903,7 @@ const FIXED_MAPS = {
                 ]
             },
             { x: 8, y: 20, label: "マリーと話す", log: "白いローブの女性が、避難民の無事を祈っている。", type: "quest", questId: "marie_water_city", imageKey: "overlay_npc_villager", lockedText: "マリーはまだ街の混乱を鎮めることで手一杯のようだ。" },
-            { x: 30, y: 21, label: "ハヤテと話す", log: "水路のそばに、落ち着きなく周囲を見渡す若者がいる。", type: "quest", questId: "hayate_water_city", imageKey: "overlay_npc_bronze_knight", lockedText: "ハヤテはまだ、信頼できる案内人を待っているようだ。" },
+            { x: 29, y: 21, label: "ハヤテと話す", log: "水路のそばに、落ち着きなく周囲を見渡す若者がいる。", type: "quest", questId: "hayate_water_city", imageKey: "overlay_npc_bronze_knight", lockedText: "ハヤテはまだ、信頼できる案内人を待っているようだ。" },
             { x: 31, y: 10, label: "シルビアと話す", log: "優雅な身なりの貴人が、護衛を探している。", type: "quest", questId: "sylvia_water_city", imageKey: "overlay_npc_villager", lockedText: "シルビアはまだ、声をかける相手を見定めている。" },
             { x: 32, y: 15, label: "ソフィア達と話す", log: "ソフィアとアランが、神殿奥の水流について話し込んでいる。", type: "quest", questId: "sophia_alan_seabed_depths", imageKey: "overlay_npc_bronze_knight", lockedText: "今はまだ、海底神殿の奥へ進む手段がない。" }
         ],
