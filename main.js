@@ -4069,30 +4069,104 @@ load: () => {
         return null;
     },
 
-    downloadSave: () => {
+    migrateImportedSaveData: (loadedData) => {
+        if (!loadedData || typeof loadedData !== 'object' || Array.isArray(loadedData)) return loadedData;
+
+        const data = loadedData;
+
+        if (data.characters && Array.isArray(data.characters)) {
+            data.characters.forEach(char => {
+                if (!char || typeof char !== 'object') return;
+                if (char.mdef === undefined || char.mdef === null) {
+                    char.mdef = Math.floor((char.mag || 0) * 0.8);
+                }
+                if (typeof App.ensureLimitBreakProgress === 'function') {
+                    App.ensureLimitBreakProgress(char);
+                }
+            });
+        }
+
+        if (!data.book || typeof data.book !== 'object' || Array.isArray(data.book)) data.book = { monsters: [] };
+        if (!Array.isArray(data.book.monsters)) data.book.monsters = [];
+        if (!data.book.killCounts || typeof data.book.killCounts !== 'object' || Array.isArray(data.book.killCounts)) data.book.killCounts = {};
+
+        if (!data.battle || typeof data.battle !== 'object' || Array.isArray(data.battle)) data.battle = { active: false };
+
+        if (!data.stats || typeof data.stats !== 'object' || Array.isArray(data.stats)) {
+            data.stats = {
+                maxGold: data.gold || 0,
+                maxGems: data.gems || 0,
+                wipeoutCount: 0,
+                totalSteps: 0,
+                totalBattles: 0,
+                maxDamage: { val: 0, actor: '', actorLv: null, skill: '', time: null },
+                startTime: Date.now()
+            };
+        }
+        if (!data.stats.maxDamage || typeof data.stats.maxDamage !== 'object') {
+            data.stats.maxDamage = { val: 0, actor: '', actorLv: null, skill: '', time: null };
+        }
+        if (typeof data.stats.maxGold !== 'number') data.stats.maxGold = data.gold || 0;
+        if (typeof data.stats.maxGems !== 'number') data.stats.maxGems = data.gems || 0;
+        if (typeof data.stats.wipeoutCount !== 'number') data.stats.wipeoutCount = 0;
+        if (typeof data.stats.totalSteps !== 'number') data.stats.totalSteps = 0;
+        if (typeof data.stats.totalBattles !== 'number') data.stats.totalBattles = 0;
+        if (typeof data.stats.startTime !== 'number') data.stats.startTime = Date.now();
+
+        if (!data.settings || typeof data.settings !== 'object' || Array.isArray(data.settings)) data.settings = {};
+        if (!['normal', 'fast', 'fastest'].includes(data.settings.battleSpeed)) data.settings.battleSpeed = 'normal';
+        data.settings.battleAutoStart = data.settings.battleAutoStart === true;
+
+        return data;
+    },
+
+    isImportableSaveData: (loadedData) => {
+        return !!(
+            loadedData &&
+            typeof loadedData === 'object' &&
+            !Array.isArray(loadedData) &&
+            loadedData.gold !== undefined &&
+            Array.isArray(loadedData.party) &&
+            Array.isArray(loadedData.characters)
+        );
+    },
+
+    downloadSave: async () => {
         if (!App.data) {
             if(typeof Menu !== 'undefined') Menu.msg("セーブデータがありません");
             else App.showMessage("セーブデータがありません");
             return;
         }
-        const json = JSON.stringify(App.data);
-        const blob = new Blob([json], {type: "application/json"});
-        const url = URL.createObjectURL(blob);
-        
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `QoE_SaveData_${Date.now()}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        if (typeof SaveCrypto === 'undefined' || typeof SaveCrypto.encodeSaveData !== 'function') {
+            App.showMessage("暗号化セーブ機能を読み込めませんでした");
+            return;
+        }
+
+        try {
+            const encryptedText = await SaveCrypto.encodeSaveData(App.data);
+            const blob = new Blob([encryptedText], {type: "application/octet-stream"});
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = (typeof SaveCrypto.buildFileName === 'function')
+                ? SaveCrypto.buildFileName()
+                : `rpg_save_${Date.now()}.rpgsave`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error(err);
+            App.showMessage(err && err.message ? err.message : "セーブデータの出力に失敗しました");
+        }
     },
 
     importSave: () => {
         const input = document.createElement('input');
         input.type = 'file';
-        input.accept = '.json';
-        
+        input.accept = '.rpgsave,.json,application/json,application/octet-stream';
+
         input.onchange = (e) => {
             const file = e.target.files[0];
             if (!file) return;
@@ -4100,11 +4174,25 @@ load: () => {
             const reader = new FileReader();
             reader.onload = async (event) => {
                 try {
-                    const loadedData = JSON.parse(event.target.result);
-                    if (loadedData.gold !== undefined && loadedData.party && loadedData.characters) {
-                        if (await App.showConfirm("現在のデータを上書きして復元しますか？\n(ページがリロードされます)")) {
-                            localStorage.setItem(CONST.SAVE_KEY, JSON.stringify(loadedData));
-                            location.reload(); 
+                    let loadedData;
+                    let isLegacy = false;
+
+                    if (typeof SaveCrypto !== 'undefined' && typeof SaveCrypto.decodeSaveText === 'function') {
+                        const decoded = await SaveCrypto.decodeSaveText(event.target.result);
+                        loadedData = decoded.data;
+                        isLegacy = decoded.legacy === true;
+                    } else {
+                        // save_crypto.js が読めない場合でも、過去のJSONバックアップだけは復元できるようにする。
+                        loadedData = JSON.parse(String(event.target.result || '').replace(/^\uFEFF/, '').trim());
+                        isLegacy = true;
+                    }
+
+                    if (App.isImportableSaveData(loadedData)) {
+                        const migratedData = App.migrateImportedSaveData(JSON.parse(JSON.stringify(loadedData)));
+                        const suffix = isLegacy ? "\n\n旧形式のバックアップは、読み込み時に現在の形式へ補正されます。" : "";
+                        if (await App.showConfirm(`現在のデータを上書きして復元しますか？\n(ページがリロードされます)${suffix}`)) {
+                            localStorage.setItem(CONST.SAVE_KEY, JSON.stringify(migratedData));
+                            location.reload();
                         }
                     } else {
                         App.showMessage("不正なセーブデータ形式です");
@@ -4118,7 +4206,6 @@ load: () => {
         };
         input.click(); 
     },
-	
 	getEncounterFlags: () => {
 		let ambushPrevention = 0; // ID 41: 警戒
 		let preemptiveBonus = 0;  // ID 42: 忍び足

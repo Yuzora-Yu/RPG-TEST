@@ -40,6 +40,7 @@ const PRECACHE_FILES = [
   "phaser-field.js",
   "polish.js",
   "main.js",
+  "save_crypto.js",
   "menus.js",
   "menus_config.js",
   "menus_party.js",
