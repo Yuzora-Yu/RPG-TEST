@@ -3881,6 +3881,11 @@ findNextActor: () => {
 			}
 		});
 
+		// 仲間加入クエスト等の討伐数を更新
+		// 以前は装備再抽選用ヘルパー内で呼ばれていたため、
+		// 装備ドロップ生成が発生しない通常戦闘では討伐系クエストが進まなかった。
+		if (typeof App.noteQuestKills === 'function') App.noteQuestKills(defeatedMonsterIds);
+
 		// 報酬の内部加算処理（ログを出す前に実行）
 		App.data.gold += totalGold;
 
@@ -3930,7 +3935,6 @@ findNextActor: () => {
 				const min = rule.min[r]||1, max = rule.max[r]||10;
 				return { ...opt, rarity: r, val: Math.floor(Math.random()*(max-min+1))+min };
 			});
-			if (typeof App.noteQuestKills === 'function') App.noteQuestKills(defeatedMonsterIds);
 			return eq;
 		};
 
