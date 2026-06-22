@@ -167,13 +167,128 @@
     // 戦闘エフェクト画像のパスは assets.js の PRISMA_ASSETS.battleFx に統一。
     // ここへ画像パス一覧を再追加しないこと。
     assets: (window.PRISMA_ASSETS && window.PRISMA_ASSETS.battleFx) || {},
+    // 全体対象エフェクトの切替。
+    // "screen" = 新方式: 命中先エリア(enemy-container / battle-party-bar)に面エフェクト → 左から順に揺れ/ダメージ表示
+    // "legacy" = 従前方式: 対象ごとに既存エフェクトを出す
+    // HTML側で先に window.PRISMA_BATTLE_FX_AREA_MODE = "legacy"; を置いても上書き可能。
+    areaEffectMode: "screen",
+    // screen方式: 面エフェクト発生後、最初の個別ダメージ演出まで待つ時間。
+    areaHitInitialDelayMs: 400,
+    // screen方式: 左から順に出す個別ダメージ演出の間隔。
+    areaHitIntervalMs: 300,
+    // HP0の敵が解放漏れで残り続けないようにする保険時間。通常の消失タイミングは各ダメージ表示直後に決める。
+    defeatHoldExtraMs: 800,
+    // 単体/ランダム/追撃などの着弾エフェクト後、数値表示まで待つ時間。
+    hitEffectLeadMs: 200,
+    // 個別ヒット同士の演出間隔。全体screen方式以外にも適用して、追撃や反撃と順序が崩れないようにする。
+    hitSequenceIntervalMs: 300,
+    visualReadyAt: 0,
+    visualTail: Promise.resolve(),
+    pendingDefeatHolds: new WeakMap(),
+    defeatHoldTimers: new WeakMap(),
+    releasedDefeatedUnits: new WeakSet(),
+    lastDamageEventByUnit: new WeakMap(),
+    enemyHpDisplayHolds: new WeakMap(),
+    enemyHpHoldTimers: new WeakMap(),
+    beforeSnapshot: null,
+    now() {
+      return (typeof performance !== "undefined" && performance.now) ? performance.now() : Date.now();
+    },
+    wait(ms) {
+      return new Promise((resolve) => setTimeout(resolve, Math.max(0, Number(ms) || 0)));
+    },
+    queueVisual(run, options = {}) {
+      const beforeMs = Math.max(0, Number(options.beforeMs) || 0);
+      const durationMs = Math.max(0, Number(options.durationMs) || 0);
+      const estimatedRunMs = Math.max(0, Number(options.estimatedRunMs) || 0);
+      const afterMs = Math.max(0, Number(options.afterMs) || 0);
+      const now = this.now();
+      const startAt = Math.max(now, this.visualReadyAt || 0) + beforeMs;
+      const endAt = startAt + estimatedRunMs + durationMs + afterMs;
+      this.visualReadyAt = endAt;
+
+      const previous = this.visualTail || Promise.resolve();
+      this.visualTail = previous
+        .catch(() => {})
+        .then(async () => {
+          if (beforeMs > 0) await this.wait(beforeMs);
+          await run();
+          if (durationMs > 0) await this.wait(durationMs);
+          if (afterMs > 0) await this.wait(afterMs);
+        })
+        .catch((error) => console.warn("[PolishFX] visual queue failed", error));
+
+      return {
+        startDelayMs: Math.max(0, startAt - now),
+        endDelayMs: Math.max(0, endAt - now),
+        promise: this.visualTail
+      };
+    },
+    async waitForVisuals(extraMs = 0) {
+      const tail = this.visualTail || Promise.resolve();
+      await tail.catch(() => {});
+      const remain = Math.max(0, (this.visualReadyAt || 0) - this.now(), Number(extraMs) || 0);
+      if (remain > 0) await this.wait(remain);
+    },
     stripHtml(value) {
       const div = document.createElement("div");
       div.innerHTML = String(value || "");
       return (div.textContent || div.innerText || "").replace(/\s+/g, " ").trim();
     },
+    fxConfig(data) {
+      // skills.js の各スキルへ battleFx / battleEffect / effectFx / fx / effect を書くと、
+      // 既存の自動判定より優先して戦闘エフェクトを指定できる。
+      // 例: "battleFx": "meteor"
+      // 例: "battleFx": { "screen": "meteor", "hit": "spell-fire" }
+      // 例: "battleFx": "assets/effect/fx-meteor-ai.png"
+      const raw = data && (data.battleFx ?? data.battleEffect ?? data.effectFx ?? data.fx ?? data.effect);
+      if (!raw) return null;
+      if (typeof raw === "string") return { kind: raw };
+      if (typeof raw === "object") return raw;
+      return null;
+    },
+    isAssetPath(value) {
+      const text = String(value || "").trim();
+      return /\.(?:png|jpe?g|gif|webp|svg)(?:[?#].*)?$/i.test(text) || /^(?:assets\/|\.\/|\/)/.test(text);
+    },
+    cssKind(kind) {
+      return String(kind || "custom")
+        .replace(/^battle-fx-/, "")
+        .replace(/[^a-z0-9_-]+/gi, "-")
+        .replace(/^-+|-+$/g, "") || "custom";
+    },
+    fxValue(config, keys) {
+      if (!config) return null;
+      for (const key of keys) {
+        if (config[key] !== undefined && config[key] !== null && config[key] !== "") return config[key];
+      }
+      return null;
+    },
+    normalizeFxKind(value) {
+      if (!value) return null;
+      if (typeof value === "string") return value.replace(/^battle-fx-/, "").trim();
+      if (typeof value === "object") {
+        return this.normalizeFxKind(value.kind ?? value.type ?? value.id ?? value.name ?? value.image ?? value.path ?? value.src);
+      }
+      return null;
+    },
+    customFxKind(cmd, perHit = false, slot = null) {
+      const config = this.fxConfig(cmd?.data);
+      if (!config) return null;
+      const area = this.isArea(cmd);
+      const keys = slot
+        ? [slot]
+        : perHit
+          ? ["hit", "impact", "perHit", "kind", "type", "id", "name", "image", "path", "src"]
+          : area
+            ? ["screen", "fullScreen", "area", "cast", "kind", "type", "id", "name", "image", "path", "src"]
+            : ["cast", "kind", "hit", "impact", "type", "id", "name", "image", "path", "src"];
+      return this.normalizeFxKind(this.fxValue(config, keys));
+    },
     assetFor(kind) {
-      const key = String(kind || "").replace(/^battle-fx-/, "");
+      const raw = String(kind || "").trim();
+      if (this.isAssetPath(raw)) return raw;
+      const key = raw.replace(/^battle-fx-/, "");
       if (this.assets[key]) return this.assets[key];
       if (/^breath-/.test(key)) return this.assets.breath;
       if (/^phys-(fire|ice|thunder|wind|light|dark|chaos)$/.test(key)) return this.assets["neutral-slash"];
@@ -182,6 +297,162 @@
     isArea(cmd) {
       const scope = [cmd?.targetScope, cmd?.target, cmd?.data?.target].filter(Boolean).join(" ");
       return /全体|全敵|all|蜈ｨ菴|陷茨ｽｨ/i.test(scope);
+    },
+    areaEffectModeFor(cmd) {
+      const config = this.fxConfig(cmd?.data);
+      const skillMode = this.fxValue(config, ["areaMode", "allMode", "areaEffectMode", "allTargetEffectMode"]);
+      const globalConfig = window.PRISMA_BATTLE_FX || window.PRISMA_BATTLE_EFFECTS || {};
+      const globalMode = window.PRISMA_BATTLE_FX_AREA_MODE ||
+        window.PRISMA_ALL_TARGET_FX_MODE ||
+        globalConfig.areaEffectMode ||
+        globalConfig.allTargetEffectMode ||
+        globalConfig.areaMode ||
+        this.areaEffectMode;
+      const mode = String(skillMode || globalMode || "screen").toLowerCase();
+      return /legacy|old|default|target|unit|per-target|perhit|hit|従前|旧/.test(mode) ? "legacy" : "screen";
+    },
+    useScreenAreaEffect(cmd) {
+      return this.isArea(cmd) && this.areaEffectModeFor(cmd) === "screen";
+    },
+    isDefeatedEnemy(unit) {
+      return !!(unit && this.isEnemy(unit) && !unit.isFled && Number(unit.hp || 0) <= 0);
+    },
+    previousSnapshotFor(unit) {
+      return (unit && this.beforeSnapshot && typeof this.beforeSnapshot.get === "function") ? this.beforeSnapshot.get(unit) : null;
+    },
+    hpDisplayForEnemy(unit, actualHp = null) {
+      if (!unit || !this.isEnemy(unit)) return actualHp;
+      const hold = this.enemyHpDisplayHolds.get(unit);
+      if (!hold) return actualHp;
+      const until = Number(hold.until || 0);
+      if (until && until <= this.now()) {
+        this.enemyHpDisplayHolds.delete(unit);
+        const timer = this.enemyHpHoldTimers.get(unit);
+        if (timer) clearTimeout(timer);
+        this.enemyHpHoldTimers.delete(unit);
+        return actualHp;
+      }
+      return Number.isFinite(Number(hold.hp)) ? Number(hold.hp) : actualHp;
+    },
+    startEnemyHpDisplayHold(unit, fallbackDelayMs = 0, displayHp = null) {
+      if (!unit || !this.isEnemy(unit) || unit.isFled) return;
+      const prev = this.previousSnapshotFor(unit);
+      const hp = displayHp !== null && displayHp !== undefined ? Number(displayHp) : Number(prev?.hp);
+      if (!Number.isFinite(hp)) return;
+      const actual = Number(unit.hp || 0);
+      if (hp === actual) return;
+      const fallbackMs = Math.max(360, Math.max(0, Number(fallbackDelayMs) || 0) + Math.max(0, Number(this.defeatHoldExtraMs) || 0));
+      const until = this.now() + fallbackMs;
+      const current = this.enemyHpDisplayHolds.get(unit);
+      if (current && current.until >= until && current.hp === hp) return;
+      this.enemyHpDisplayHolds.set(unit, { hp, until });
+
+      const oldTimer = this.enemyHpHoldTimers.get(unit);
+      if (oldTimer) clearTimeout(oldTimer);
+      const timer = setTimeout(() => {
+        const latest = this.enemyHpDisplayHolds.get(unit);
+        if (!latest) return;
+        if ((latest.until || 0) <= this.now() + 16) {
+          this.enemyHpDisplayHolds.delete(unit);
+          this.enemyHpHoldTimers.delete(unit);
+          this.updateEnemyHpBar(unit);
+        }
+      }, fallbackMs + 24);
+      this.enemyHpHoldTimers.set(unit, timer);
+    },
+    releaseEnemyHpDisplayHold(unit) {
+      if (!unit || !this.isEnemy(unit)) return;
+      this.enemyHpDisplayHolds.delete(unit);
+      const timer = this.enemyHpHoldTimers.get(unit);
+      if (timer) clearTimeout(timer);
+      this.enemyHpHoldTimers.delete(unit);
+      this.updateEnemyHpBar(unit);
+    },
+    updateEnemyHpBar(unit) {
+      if (!unit || !this.isEnemy(unit) || typeof Battle === "undefined") return;
+      const enemies = Battle.enemies || [];
+      const index = enemies.indexOf(unit);
+      if (index < 0) return;
+      const el = this.nodeForUnit("enemy-container", unit, enemies);
+      if (!el) return;
+      const hp = Math.max(0, Number(unit.hp || 0));
+      const maxHp = Math.max(1, Number(unit.baseMaxHp || unit.maxHp || hp || 1));
+      const hpPer = Math.max(0, Math.min(100, (hp / maxHp) * 100));
+      const hpRatio = maxHp > 0 ? hp / maxHp : 0;
+      const bar = el.querySelector(".enemy-hp-val");
+      if (bar) bar.style.width = `${hpPer}%`;
+      const name = el.querySelector(".enemy-name");
+      if (name) name.style.color = hpRatio < 0.5 ? "#ff4" : "#fff";
+    },
+    releaseHpAfterHit(unit, event) {
+      if (event?.damageMatch || event?.healMatch) this.releaseEnemyHpDisplayHold(unit);
+    },
+    startDefeatedHold(unit, fallbackDelayMs = 0) {
+      if (!this.isDefeatedEnemy(unit)) {
+        if (unit) this.releasedDefeatedUnits.delete(unit);
+        return;
+      }
+      // 一度ダメージ表示起点で消した敵は、後続の重複ログ・追撃ログで再表示しない。
+      if (this.releasedDefeatedUnits.has(unit)) return;
+      const now = this.now();
+      const fallbackMs = Math.max(
+        320,
+        Math.max(0, Number(fallbackDelayMs) || 0) + Math.max(0, Number(this.defeatHoldExtraMs) || 0)
+      );
+      const until = now + fallbackMs;
+      const current = this.pendingDefeatHolds.get(unit);
+      if (current && current.until >= until) return;
+      this.pendingDefeatHolds.set(unit, { until });
+
+      const oldTimer = this.defeatHoldTimers.get(unit);
+      if (oldTimer) clearTimeout(oldTimer);
+      const timer = setTimeout(() => {
+        const latest = this.pendingDefeatHolds.get(unit);
+        if (!latest) return;
+        if ((latest.until || 0) <= this.now() + 16) {
+          this.pendingDefeatHolds.delete(unit);
+          this.defeatHoldTimers.delete(unit);
+          if (typeof Battle !== "undefined" && typeof Battle.renderEnemies === "function") Battle.renderEnemies();
+        }
+      }, fallbackMs + 24);
+      this.defeatHoldTimers.set(unit, timer);
+    },
+    holdDefeatedVisible(unit, delayMs = 0) {
+      // 旧呼び出し名との互換用。通常はダメージ表示直後に releaseDefeatedAfterHit() で解放する。
+      this.startDefeatedHold(unit, delayMs);
+    },
+    releaseDefeatedHold(unit) {
+      if (!unit || !this.isEnemy(unit)) return;
+      const hadHold = this.pendingDefeatHolds.has(unit);
+      if (this.isDefeatedEnemy(unit)) this.releasedDefeatedUnits.add(unit);
+      this.pendingDefeatHolds.delete(unit);
+      const timer = this.defeatHoldTimers.get(unit);
+      if (timer) clearTimeout(timer);
+      this.defeatHoldTimers.delete(unit);
+      if (hadHold && typeof Battle !== "undefined" && typeof Battle.renderEnemies === "function") {
+        Battle.renderEnemies();
+      }
+    },
+    releaseDefeatedAfterHit(unit, event) {
+      if (!event?.defeatAtLog || !this.isDefeatedEnemy(unit)) return;
+      this.releaseDefeatedHold(unit);
+    },
+    shouldKeepDefeatedVisible(unit) {
+      if (!this.isDefeatedEnemy(unit)) {
+        if (unit) this.releasedDefeatedUnits.delete(unit);
+        return false;
+      }
+      const hold = this.pendingDefeatHolds.get(unit);
+      if (!hold) return false;
+      const until = typeof hold === "number" ? hold : hold.until;
+      if (!until || until <= this.now()) {
+        this.pendingDefeatHolds.delete(unit);
+        const timer = this.defeatHoldTimers.get(unit);
+        if (timer) clearTimeout(timer);
+        this.defeatHoldTimers.delete(unit);
+        return false;
+      }
+      return true;
     },
     shouldPlayIntentEffects(cmd) {
       // 発動時エフェクトは全体対象だけに限定する。
@@ -365,6 +636,8 @@
     },
     visualKind(cmd, perHit = false) {
       if (!cmd) return "neutral-slash";
+      const custom = this.customFxKind(cmd, perHit);
+      if (custom) return custom;
       const statusOnly = this.statusOnlyKind(cmd?.data, cmd);
       if (statusOnly) return statusOnly;
       if (this.isDebuffOnlyData(cmd?.data)) {
@@ -491,13 +764,16 @@
     effect(unit, kind, options = {}) {
       const pos = this.anchor(unit);
       if (!pos) return;
-      document.documentElement.dataset.polishLastFxKind = String(kind || "");
+      const fxKind = this.normalizeFxKind(kind) || "neutral-slash";
+      const classKind = this.cssKind(fxKind);
+      document.documentElement.dataset.polishLastFxKind = String(fxKind || "");
       const node = document.createElement("div");
-      node.className = `battle-fx battle-fx-${kind}`;
+      node.className = `battle-fx battle-fx-${classKind}`;
+      node.dataset.fxKind = fxKind;
       node.style.left = `${pos.x}px`;
       node.style.top = `${pos.y}px`;
-      const imageAsset = this.assetFor(kind);
-      const isWide = /all-|ultimate|meteor|pillar|vortex|burst|combo|breath|special|critical/.test(kind);
+      const imageAsset = options.image || this.assetFor(fxKind);
+      const isWide = /all-|ultimate|meteor|pillar|vortex|burst|combo|breath|special|critical/.test(classKind);
       const size = Math.max(72, Math.min(isWide ? 190 : 148, Math.max(pos.w, pos.h) * (options.big || isWide ? 1.08 : 0.76)));
       node.style.width = `${size}px`;
       node.style.height = `${size}px`;
@@ -511,8 +787,66 @@
         node.style.setProperty("--fx-rotate", `${spread * 0.7}deg`);
       }
       pos.layer.appendChild(node);
-      this.particles(pos, kind, { ...options, quiet: !!imageAsset && !options.big });
+      this.particles(pos, fxKind, { ...options, quiet: !!imageAsset && !options.big });
       setTimeout(() => node.remove(), 760);
+    },
+    areaRegionForTargets(targets = []) {
+      const layer = this.ensureLayer();
+      const scene = byId("battle-scene");
+      if (!layer || !scene) return null;
+
+      const target = (targets || []).find(Boolean);
+      const regionId = target && this.isParty(target) ? "battle-party-bar" : "enemy-container";
+      const regionEl = byId(regionId) || scene;
+      const base = scene.getBoundingClientRect();
+      const rect = regionEl.getBoundingClientRect();
+      const width = Math.max(180, rect.width || scene.clientWidth);
+      const height = Math.max(86, rect.height || scene.clientHeight);
+      return {
+        layer,
+        scene,
+        regionId,
+        left: rect.left - base.left,
+        top: rect.top - base.top,
+        width,
+        height
+      };
+    },
+    screenEffect(kind, options = {}) {
+      const region = this.areaRegionForTargets(options.targets || []);
+      if (!region) return;
+      const fxKind = this.normalizeFxKind(kind) || "all-slash";
+      const classKind = this.cssKind(fxKind);
+      document.documentElement.dataset.polishLastFxKind = String(fxKind || "");
+
+      const clip = document.createElement("div");
+      clip.className = `battle-fx-area-clip battle-fx-area-${region.regionId}`;
+      clip.style.left = `${region.left}px`;
+      clip.style.top = `${region.top}px`;
+      clip.style.width = `${region.width}px`;
+      clip.style.height = `${region.height}px`;
+
+      const node = document.createElement("div");
+      node.className = `battle-fx battle-fx-${classKind} battle-fx-screen`;
+      node.dataset.fxKind = fxKind;
+      node.style.left = "50%";
+      node.style.top = "50%";
+      const width = Math.max(220, region.width * 1.04);
+      const height = Math.max(96, region.height * 1.02);
+      node.style.width = `${width}px`;
+      node.style.height = `${height}px`;
+      const imageAsset = options.image || this.assetFor(fxKind);
+      if (imageAsset) {
+        node.classList.add("battle-fx-image");
+        node.style.backgroundImage = `url("${imageAsset}")`;
+      }
+      clip.appendChild(node);
+      region.layer.appendChild(clip);
+      this.particles({ layer: clip, x: region.width / 2, y: region.height / 2, w: width, h: height }, fxKind, {
+        big: true,
+        quiet: !!imageAsset && !options.particles
+      });
+      setTimeout(() => clip.remove(), 920);
     },
     particles(pos, kind, options = {}) {
       const colors = {
@@ -621,6 +955,23 @@
         .sort((a, b) => String(b.name || "").length - String(a.name || "").length)
         .find((unit) => unit?.name && text.includes(this.stripHtml(unit.name))) || null;
     },
+    unitLeftOrderIndex(unit) {
+      if (typeof Battle === "undefined" || !unit) return 0;
+      const units = this.isParty(unit) ? (Battle.party || []) : (Battle.enemies || []);
+      const withPos = units
+        .filter(Boolean)
+        .map((entry, index) => {
+          const pos = this.anchor(entry);
+          return { unit: entry, index, x: pos ? pos.x : index * 100 };
+        })
+        .sort((a, b) => (a.x - b.x) || (a.index - b.index));
+      const orderIndex = withPos.findIndex((entry) => entry.unit === unit);
+      return Math.max(0, orderIndex);
+    },
+    areaHitDelay(cmd, unit, hitIndex = 1) {
+      if (!this.useScreenAreaEffect(cmd)) return Math.min(120, (hitIndex - 1) * 24);
+      return this.areaHitInitialDelayMs + this.unitLeftOrderIndex(unit) * this.areaHitIntervalMs;
+    },
     hitColorFromLog(message, fallback = "#ff7777") {
       const match = String(message || "").match(/color:\s*([^;"']+)/i);
       return match ? match[1].trim() : fallback;
@@ -647,15 +998,83 @@
           normalized === `${actorName}の 追撃`)
       );
     },
+    enqueueHitEvent(event) {
+      if (!event?.unit) return null;
+      const { unit, cmd, hitIndex, area, screenArea, damageMatch, healMatch, kind, criticalKind, amount, hitColor } = event;
+      const sequenceAfterMs = screenArea ? this.areaHitIntervalMs : this.hitSequenceIntervalMs;
+      const shouldShowPointEffect = !area || !screenArea;
+      const leadMs = shouldShowPointEffect ? this.hitEffectLeadMs : 0;
+      const queued = this.queueVisual(async () => {
+        if (damageMatch) {
+          if (shouldShowPointEffect) {
+            this.effect(unit, kind, { hitIndex });
+            if (criticalKind) this.effect(unit, criticalKind, { hitIndex, big: true });
+            await this.wait(leadMs);
+          }
+          this.mark(unit, "battle-hit-shake");
+          if (this.isBossTarget(unit)) this.mark(unit, "battle-boss-flash");
+          if (this.isParty(unit)) this.mark(unit, "battle-party-damaged");
+          if (criticalKind) {
+            this.float(unit, `-${amount}`, "#fff2a8", { hitIndex, critical: true });
+          } else {
+            this.float(unit, `-${amount}`, hitColor, { hitIndex });
+          }
+          this.releaseHpAfterHit(unit, event);
+          this.releaseDefeatedAfterHit(unit, event);
+          return;
+        }
+        if (healMatch) {
+          if (shouldShowPointEffect) {
+            this.effect(unit, kind, { hitIndex });
+            await this.wait(leadMs);
+          }
+          this.mark(unit, "battle-heal-pulse");
+          this.float(unit, `+${amount}`, "#8fffad", { hitIndex });
+          this.releaseHpAfterHit(unit, event);
+          return;
+        }
+        if (shouldShowPointEffect) {
+          this.effect(unit, kind, { hitIndex, big: false });
+          await this.wait(leadMs);
+        }
+        this.float(unit, "MISS", "#d6d1c2", { hitIndex });
+      }, { estimatedRunMs: leadMs, afterMs: sequenceAfterMs });
+
+      if ((damageMatch || healMatch) && this.isEnemy(unit)) this.startEnemyHpDisplayHold(unit, queued.endDelayMs);
+      if (damageMatch && event.defeatAtLog) this.startDefeatedHold(unit, queued.endDelayMs);
+      return queued;
+    },
+    flushAreaHits(context) {
+      if (!context || !Array.isArray(context.areaHitEvents) || context.areaHitEvents.length === 0) return;
+      const events = context.areaHitEvents.splice(0);
+      events
+        .sort((a, b) => {
+          const order = this.unitLeftOrderIndex(a.unit) - this.unitLeftOrderIndex(b.unit);
+          return order || ((a.hitIndex || 0) - (b.hitIndex || 0));
+        })
+        .forEach((event) => {
+          const queued = this.enqueueHitEvent(event);
+          if (context) context.maxHitDelay = Math.max(context.maxHitDelay || 0, queued?.endDelayMs || 0);
+        });
+    },
     playIntentEffects(cmd, options = {}) {
       if (!this.shouldPlayIntentEffects(cmd)) return 0;
       const targets = this.getTargets(cmd).filter(Boolean);
       if (targets.length === 0) return 0;
-      const kind = options.kind || this.visualKind(cmd, false);
-      targets.forEach((target, index) => {
-        setTimeout(() => this.effect(target, kind, { big: targets.length > 1 }), Math.min(index * 55, 260));
+      const kind = options.kind || this.customFxKind(cmd, false, this.useScreenAreaEffect(cmd) ? "screen" : null) || this.visualKind(cmd, false);
+      if (this.useScreenAreaEffect(cmd)) {
+        this.queueVisual(() => {
+          this.screenEffect(kind, { big: true, targets });
+        }, { afterMs: this.areaHitInitialDelayMs });
+        this.lastAt = this.now();
+        return targets.length;
+      }
+      targets.forEach((target) => {
+        this.queueVisual(() => {
+          this.effect(target, kind, { big: targets.length > 1 });
+        }, { afterMs: Math.min(90, this.hitSequenceIntervalMs) });
       });
-      this.lastAt = performance.now();
+      this.lastAt = this.now();
       return targets.length;
     },
     reactToLog(message) {
@@ -668,8 +1087,8 @@
         return;
       }
       if (!text || text === "--- ターン開始 ---") return;
-      const criticalKind = this.criticalKindFromLog(text);
-      if (criticalKind) this.queueCriticalKind(criticalKind);
+      const logCriticalKind = this.criticalKindFromLog(text);
+      if (logCriticalKind) this.queueCriticalKind(logCriticalKind);
       if (this.current?.cmd?.isReaction) {
         this.queueNeutralPhysicalKind(this.logNeutralPhysicalKind(text));
       }
@@ -679,8 +1098,17 @@
       const damageMatch = text.match(/に\s*([0-9,]+)\s*のダメージ/) || text.match(/ダメージを\s*([0-9,]+)\s*受けた/) || text.match(/に\s*([0-9,]+)\s*の?ダメージ/);
       const healMatch = text.match(/HP[をが]\s*([0-9,]+)\s*回復/) || text.match(/([0-9,]+)\s*回復/);
       const missMatch = /ミス|身をかわした|うけない|効かなかった|きかなかった/.test(text);
+      const defeatMatch = /倒れた|息絶えた|戦闘不能/.test(text);
 
-      if (!damageMatch && !healMatch && !missMatch) return;
+      if (!damageMatch && !healMatch && !missMatch) {
+        if (defeatMatch) {
+          const lastEvent = this.lastDamageEventByUnit.get(unit);
+          if (lastEvent) lastEvent.defeatAtLog = true;
+          const pending = Math.max(0, (this.visualReadyAt || 0) - this.now());
+          this.startDefeatedHold(unit, pending);
+        }
+        return;
+      }
 
       this.current.hits += 1;
       this.totalHitEvents += 1;
@@ -688,43 +1116,77 @@
 
       const hitIndex = this.current.hits;
       const cmd = this.current.cmd;
-      const delay = Math.min(120, (hitIndex - 1) * 24);
       const area = this.isArea(cmd);
-      setTimeout(() => {
-        if (damageMatch) {
-          const amount = damageMatch[1].replace(/,/g, "");
-          const kind = cmd?.isReaction ? (this.consumeNeutralPhysicalKind() || this.visualKind(cmd, true)) : (this.current?.dualWieldKind || this.visualKind(cmd, true));
-          const criticalKind = this.consumeCriticalKind() || this.enhancedDamageKind(cmd);
-          this.mark(unit, "battle-hit-shake");
-          if (this.isBossTarget(unit)) this.mark(unit, "battle-boss-flash");
-          if (this.isParty(unit)) this.mark(unit, "battle-party-damaged");
-          if (!area) this.effect(unit, kind, { hitIndex });
-          if (criticalKind) {
-            if (!area) this.effect(unit, criticalKind, { hitIndex, big: true });
-            this.float(unit, `-${amount}`, "#fff2a8", { hitIndex, critical: true });
-          } else {
-            this.float(unit, `-${amount}`, this.hitColorFromLog(message), { hitIndex });
-          }
-          return;
-        }
-        if (healMatch) {
-          const amount = healMatch[1].replace(/,/g, "");
-          this.mark(unit, "battle-heal-pulse");
-          if (!area) this.effect(unit, this.visualKind(cmd, true) || "heal-blossom", { hitIndex });
-          this.float(unit, `+${amount}`, "#8fffad", { hitIndex });
-          return;
-        }
-        const missKind = cmd?.isReaction ? (this.consumeNeutralPhysicalKind() || "neutral-slash") : (this.current?.dualWieldKind || this.visualKind(cmd, true) || (this.isParty(unit) ? "party-hit" : "neutral-slash"));
-        // ミス時も「MISS」表示のタイミングで着弾エフェクトを出す。
-        // 全体技は発動時演出を残すが、回避/無効が分かりにくいためMISS側にも小さく出す。
-        this.effect(unit, missKind, { hitIndex, big: false });
-        this.float(unit, "MISS", "#d6d1c2", { hitIndex });
-      }, delay);
+      const screenArea = this.useScreenAreaEffect(cmd);
+
+      let kind = null;
+      let criticalKind = null;
+      if (damageMatch) {
+        kind = cmd?.isReaction
+          ? (this.consumeNeutralPhysicalKind() || this.visualKind(cmd, true))
+          : (this.current?.dualWieldKind || this.visualKind(cmd, true));
+        criticalKind = this.consumeCriticalKind() || this.enhancedDamageKind(cmd);
+      } else if (healMatch) {
+        kind = this.visualKind(cmd, true) || "heal-blossom";
+      } else {
+        kind = cmd?.isReaction
+          ? (this.consumeNeutralPhysicalKind() || "neutral-slash")
+          : (this.current?.dualWieldKind || this.visualKind(cmd, true) || (this.isParty(unit) ? "party-hit" : "neutral-slash"));
+      }
+
+      const event = {
+        unit,
+        cmd,
+        hitIndex,
+        area,
+        screenArea,
+        damageMatch: !!damageMatch,
+        healMatch: !!healMatch,
+        missMatch: !!missMatch,
+        kind,
+        criticalKind,
+        amount: (damageMatch || healMatch)?.[1]?.replace(/,/g, "") || "",
+        hitColor: this.hitColorFromLog(message),
+        defeatAtLog: !!damageMatch && this.isDefeatedEnemy(unit)
+      };
+
+      if (damageMatch) {
+        this.lastDamageEventByUnit.set(unit, event);
+        if (this.isEnemy(unit)) this.startEnemyHpDisplayHold(unit);
+        if (event.defeatAtLog) this.startDefeatedHold(unit);
+      } else if (healMatch && this.isEnemy(unit)) {
+        this.startEnemyHpDisplayHold(unit);
+      }
+
+      if (screenArea) {
+        if (!Array.isArray(this.current.areaHitEvents)) this.current.areaHitEvents = [];
+        this.current.areaHitEvents.push(event);
+        const pending = Math.max(0, (this.visualReadyAt || 0) - this.now());
+        const estimatedOrderDelay = this.unitLeftOrderIndex(unit) * this.areaHitIntervalMs + this.areaHitIntervalMs;
+        if (damageMatch && event.defeatAtLog) this.startDefeatedHold(unit, pending + estimatedOrderDelay);
+        this.current.maxHitDelay = Math.max(this.current.maxHitDelay || 0, pending + estimatedOrderDelay);
+        return;
+      }
+
+      const queued = this.enqueueHitEvent(event);
+      if (this.current) {
+        this.current.maxHitDelay = Math.max(this.current.maxHitDelay || 0, queued?.endDelayMs || 0);
+      }
+    },
+    markEnemyIntent(cmd) {
+      if (!cmd?.isEnemy || !cmd.actor) return false;
+      this.mark(cmd.actor, "battle-enemy-action");
+      return true;
     },
     async playIntent(cmd) {
+      const movedEnemy = this.markEnemyIntent(cmd);
       const targetCount = this.playIntentEffects(cmd);
-      if (targetCount === 0) return;
-      await new Promise((resolve) => setTimeout(resolve, targetCount > 1 ? 310 : 240));
+      if (targetCount === 0) {
+        if (movedEnemy) await new Promise((resolve) => setTimeout(resolve, 110));
+        return;
+      }
+      const waitMs = this.useScreenAreaEffect(cmd) ? 0 : (targetCount > 1 ? 310 : 240);
+      if (waitMs > 0) await new Promise((resolve) => setTimeout(resolve, waitMs));
     },
     async playResults(cmd, before, options = {}) {
       if (!before || typeof Battle === "undefined") return;
@@ -740,35 +1202,56 @@
       const area = this.isArea(cmd);
 
       if (options.skipNumbers) {
-        damaged.forEach(({ unit }) => {
-          this.mark(unit, "battle-hit-shake");
-          if (this.isBossTarget(unit)) this.mark(unit, "battle-boss-flash");
-          if (this.isParty(unit)) this.mark(unit, "battle-party-damaged");
-        });
-        healed.forEach(({ unit }) => this.mark(unit, "battle-heal-pulse"));
+        // ログ側で演出をキュー化しているため、全体/単体/ランダム/追撃のいずれも
+        // ここでは重ね描きせず、キューが消化されるまで待つ。
+        this.flushAreaHits(options.actionContext);
+        await this.waitForVisuals(120);
         return;
       }
 
-      damaged.forEach(({ unit, hpDelta }, index) => {
-        setTimeout(() => {
+      const sortByLeft = (items) => items
+        .slice()
+        .sort((a, b) => this.unitLeftOrderIndex(a.unit) - this.unitLeftOrderIndex(b.unit));
+      const damagedOrdered = this.useScreenAreaEffect(cmd) ? sortByLeft(damaged) : damaged;
+      const healedOrdered = this.useScreenAreaEffect(cmd) ? sortByLeft(healed) : healed;
+      const resultInterval = this.useScreenAreaEffect(cmd) ? this.areaHitIntervalMs : 45;
+      const resultStartDelay = this.useScreenAreaEffect(cmd) ? this.areaHitInitialDelayMs : 0;
+
+      damagedOrdered.forEach(({ unit, hpDelta }, index) => {
+        const beforeMs = index === 0 ? resultStartDelay : 0;
+        const unitDefeated = this.isDefeatedEnemy(unit);
+        const queued = this.queueVisual(async () => {
+          if (!area) {
+            this.effect(unit, this.visualKind(cmd, true));
+            await this.wait(this.hitEffectLeadMs);
+          }
           this.mark(unit, "battle-hit-shake");
           if (this.isBossTarget(unit)) this.mark(unit, "battle-boss-flash");
           if (this.isParty(unit)) this.mark(unit, "battle-party-damaged");
-          if (!area) this.effect(unit, this.visualKind(cmd, true));
           this.float(unit, `${hpDelta}`, "#ff7777");
-        }, index * 45);
+          this.releaseEnemyHpDisplayHold(unit);
+          if (unitDefeated) this.releaseDefeatedHold(unit);
+        }, { beforeMs, estimatedRunMs: area ? 0 : this.hitEffectLeadMs, afterMs: resultInterval });
+        if (this.isEnemy(unit)) this.startEnemyHpDisplayHold(unit, queued.endDelayMs, before.get(unit)?.hp);
+        if (unitDefeated) this.startDefeatedHold(unit, queued.endDelayMs);
       });
 
-      healed.forEach(({ unit, hpDelta }, index) => {
-        setTimeout(() => {
+      healedOrdered.forEach(({ unit, hpDelta }, index) => {
+        const beforeMs = damagedOrdered.length === 0 && index === 0 ? resultStartDelay : 0;
+        this.queueVisual(async () => {
+          if (!area) {
+            this.effect(unit, "heal");
+            await this.wait(this.hitEffectLeadMs);
+          }
           this.mark(unit, "battle-heal-pulse");
-          if (!area) this.effect(unit, "heal");
           this.float(unit, `+${hpDelta}`, "#8fffad");
-        }, index * 45);
+          this.releaseEnemyHpDisplayHold(unit);
+        }, { beforeMs, estimatedRunMs: area ? 0 : this.hitEffectLeadMs, afterMs: resultInterval });
+        if (this.isEnemy(unit)) this.startEnemyHpDisplayHold(unit, resultStartDelay + (index + 1) * resultInterval, before.get(unit)?.hp);
       });
 
       if (damaged.length || healed.length) {
-        await new Promise((resolve) => setTimeout(resolve, 220 + Math.max(damaged.length, healed.length) * 40));
+        await this.waitForVisuals(120);
       }
     }
   };
@@ -793,7 +1276,11 @@
     Battle.processAction = async (cmd) => {
       const before = BattleFX.snapshot();
       const previous = BattleFX.current;
-      BattleFX.current = { cmd, hits: 0 };
+      const previousSnapshot = BattleFX.beforeSnapshot;
+      if (previous) BattleFX.flushAreaHits(previous);
+      BattleFX.beforeSnapshot = before;
+      BattleFX.current = { cmd, hits: 0, maxHitDelay: 0, areaHitEvents: [] };
+      const actionContext = BattleFX.current;
       let loggedHits = 0;
       try {
         await BattleFX.playIntent(cmd);
@@ -801,16 +1288,20 @@
         console.warn("[PolishFX] intent failed", error);
       }
       let result;
+      let visualWaitMs = 0;
       try {
         result = await originalProcessAction(cmd);
-        loggedHits = BattleFX.current?.hits || 0;
+        loggedHits = actionContext?.hits || 0;
+        visualWaitMs = actionContext?.maxHitDelay || 0;
       } finally {
         BattleFX.current = previous;
       }
       try {
-        await BattleFX.playResults(cmd, before, { skipNumbers: loggedHits > 0 });
+        await BattleFX.playResults(cmd, before, { skipNumbers: loggedHits > 0, visualWaitMs, actionContext });
       } catch (error) {
         console.warn("[PolishFX] result failed", error);
+      } finally {
+        BattleFX.beforeSnapshot = previousSnapshot;
       }
       return result;
     };

@@ -19,6 +19,54 @@ const STORY_MAP_MUTATIONS = {
     }
 };
 
+// 追加ダンジョン用の決定論的な手描きレイアウト補助。
+// roomsで広間、pathsで折れ曲がる通路を構成し、最後に階段やボス記号を配置する。
+const buildAuthoredLayout = (width, height, { rooms = [], paths = [], marks = [] } = {}) => {
+    const grid = Array.from({ length: height }, () => Array(width).fill("W"));
+    const carve = (x, y, radius = 0) => {
+        for (let dy = -radius; dy <= radius; dy++) {
+            for (let dx = -radius; dx <= radius; dx++) {
+                const tx = Number(x) + dx;
+                const ty = Number(y) + dy;
+                if (tx > 0 && ty > 0 && tx < width - 1 && ty < height - 1) grid[ty][tx] = "T";
+            }
+        }
+    };
+    rooms.forEach(([x, y, roomWidth, roomHeight]) => {
+        for (let ty = y; ty < y + roomHeight; ty++) {
+            for (let tx = x; tx < x + roomWidth; tx++) carve(tx, ty);
+        }
+    });
+    paths.forEach(path => {
+        const points = Array.isArray(path.points) ? path.points : path;
+        const radius = Math.max(0, Math.floor(Number(path.width || 1) / 2));
+        for (let i = 1; i < points.length; i++) {
+            let [x, y] = points[i - 1].map(Number);
+            const [targetX, targetY] = points[i].map(Number);
+            const horizontalFirst = path.horizontalFirst !== false;
+            const walkAxis = (axis, target) => {
+                while ((axis === "x" ? x : y) !== target) {
+                    if (axis === "x") x += Math.sign(target - x);
+                    else y += Math.sign(target - y);
+                    carve(x, y, radius);
+                }
+            };
+            carve(x, y, radius);
+            if (horizontalFirst) {
+                walkAxis("x", targetX);
+                walkAxis("y", targetY);
+            } else {
+                walkAxis("y", targetY);
+                walkAxis("x", targetX);
+            }
+        }
+    });
+    marks.forEach(([x, y, symbol]) => {
+        if (x >= 0 && y >= 0 && x < width && y < height) grid[y][x] = symbol;
+    });
+    return grid.map(row => row.join(""));
+};
+
 // ==========================================
 // 固定MAPのタイル画像指定ガイド
 // ==========================================
@@ -1302,33 +1350,17 @@ const FIXED_DUNGEON_MAPS = {
                 enemyBoost: { nameSuffix: "強", statMultiplier: 1.5, elmRes: { "火": 100, "風": 50, "水": -50 }, elmAtk: { "火": 20 } },
                 width: 29,
                 height: 25,
-                tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWTTTTTTWWTTTTTTTTTWWTTTTTTWW",
-                    "WWTTTTTTWWTTTTTTTTTWWTTTTTTWW",
-                    "WWTTTCTTTTTTTTBTTTTTTTTTRTTWW",
-                    "WWTTTTTTWWTTTTTTTTTWWTTTTTTWW",
-                    "WWTTTTTTWWTTTTTTTTTWWTTTTTTWW",
-                    "WWWWWTWWWWTTTTTTTTTWWWWWTWWWW",
-                    "WWWTTTTTTTTTTTTTTTTTTTTTTTWWW",
-                    "WWWTTTTTTTTWWWTWWWTTTTTTTTWWW",
-                    "WWWTTTTTTTTWTTTTTWTTTTTTTTWWW",
-                    "WWWTTTTTTTTTTTTTTTTTTTTTTTWWW",
-                    "WWWTTTTTTTTWTTPTTTTTTTTTTTWWW",
-                    "WWWTTTTTTTTWTTTTTWTTTTTTTTWWW",
-                    "WWWWWWTWWWWWWWWWWWWWWWTWWWWWW",
-                    "WWWWWWTWWWWWWWWWWWWWWWTWWWWWW",
-                    "WWTTTTTTTWWWWWWWWWWWTTTTTTTWW",
-                    "WWTTTTTTTWWWWWWWWWWWTTTTTTTWW",
-                    "WWTTCTTTTWWWWWWWWWWWTTTTRTTWW",
-                    "WWTTTTTTTWWWWWWWWWWWTTTTTTTWW",
-                    "WWTTTTTTTWWTTTTTTTWWTTTTTTTWW",
-                    "WWTTTTTTTWWTTTTTTTWWTTTTTTTWW",
-                    "WWWWWWTTTTTTTTUTTTTTTTTTWWWWW",
-                    "WWWWWWWWWWWTTTTTTTWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
-                ],
+                tiles: buildAuthoredLayout(29, 25, {
+                    rooms: [[11, 20, 7, 4], [2, 16, 7, 6], [20, 16, 7, 6], [3, 8, 8, 6], [18, 8, 8, 6], [10, 2, 9, 7], [12, 10, 5, 4], [2, 2, 6, 5], [21, 2, 6, 5]],
+                    paths: [
+                        [[14, 22], [6, 19], [6, 11], [14, 5]],
+                        [[14, 22], [23, 19], [22, 11], [14, 5]],
+                        [[6, 11], [14, 12], [22, 11]],
+                        [[6, 11], [5, 4], [14, 5]],
+                        [[22, 11], [24, 4], [14, 5]]
+                    ],
+                    marks: [[14, 22, "U"], [14, 4, "B"], [5, 4, "C"], [24, 4, "R"], [4, 18, "C"], [24, 18, "R"], [14, 12, "P"]]
+                }),
                 floorLinks: [
                     { x: 14, y: 22, toFloor: 3, targetX: 10, targetY: 4, label: "火の祭壇へ戻る" }
                 ],
@@ -1548,33 +1580,17 @@ const FIXED_DUNGEON_MAPS = {
                 enemyBoost: { nameSuffix: "強", statMultiplier: 1.5, elmRes: { "風": 100, "雷": 50, "火": -50 }, elmAtk: { "風": 20 } },
                 width: 31,
                 height: 25,
-                tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWTTTTTTWWWTTTTTTTTTWWWTTTTTTWW",
-                    "WWTTTTTTWWWTTTTTTTTTWWWTTTTTTWW",
-                    "WWTTTCTTTTTTTTTBTTTTTTTTTTRTTWW",
-                    "WWTTTTTTWWWTTTTTTTTTWWWTTTTTTWW",
-                    "WWTTTTTTWWWTTTTTTTTTWWWTTTTTTWW",
-                    "WWWWWTWWWWWTTTTTTTTTTTTTTTTTWWW",
-                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
-                    "WWWTTTTTTTTWWWWTWWWWTTTTTTTTWWW",
-                    "WWWTTTTTTTTWWWWTTTTTTTTTTTTTWWW",
-                    "WWWTTTTTTTTTTTTTTTTWTTTTTTTTWWW",
-                    "WWWTTTTTTTTWTTTTTTTWTTTTTTTTWWW",
-                    "WWWTTTTTTTTWTTTPTTTTTTTTTTTTWWW",
-                    "WWWWWWTWWWWWTTTTTTTWWWWWTWWWWWW",
-                    "WWWWWWTWWWWWWWWWWWWWWWWWTWWWWWW",
-                    "WWTTTTTTTTWWWWWWWWWWWTTTTTTTTWW",
-                    "WWTTTTTTTTWWWWWWWWWWWTTTTTTTTWW",
-                    "WWTTCTTTTTWWWWWWWWWWWTTTTTRTTWW",
-                    "WWTTTTTTTTWWWWWWWWWWWTTTTTTTTWW",
-                    "WWTTTTTTTTWWTTTTTTTWWTTTTTTTTWW",
-                    "WWTTTTTTTTWWTTTTTTTWWTTTTTTTTWW",
-                    "WWWWWWTTTTTTTTTUTTTTTTTTTTWWWWW",
-                    "WWWWWWWWWWWWTTTTTTTWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
-                ],
+                tiles: buildAuthoredLayout(31, 25, {
+                    rooms: [[12, 20, 7, 4], [2, 16, 8, 6], [21, 16, 8, 6], [3, 8, 8, 6], [20, 7, 8, 7], [11, 2, 9, 7], [12, 11, 7, 4], [2, 2, 6, 5], [23, 2, 6, 5]],
+                    paths: [
+                        [[15, 22], [6, 19], [6, 11], [15, 5]],
+                        [[15, 22], [25, 19], [24, 10], [15, 5]],
+                        [[6, 11], [15, 13], [24, 10]],
+                        [[6, 11], [5, 4], [15, 5]],
+                        [[24, 10], [26, 4], [15, 5]]
+                    ],
+                    marks: [[15, 22, "U"], [15, 4, "B"], [5, 4, "C"], [26, 4, "R"], [4, 18, "C"], [26, 18, "R"], [15, 13, "P"]]
+                }),
                 floorLinks: [
                     { x: 15, y: 22, toFloor: 2, targetX: 20, targetY: 9, label: "祈りの広場へ戻る" }
                 ],
@@ -1986,33 +2002,17 @@ const FIXED_DUNGEON_MAPS = {
                 rareMonsters: [{ id: 200201, rate: 0.05 }],
                 width: 29,
                 height: 25,
-                tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWTTTTTTWWTTTTTTTTTWWTTTTTTWW",
-                    "WWTTTTTTWWTTTTTTTTTWWTTTTTTWW",
-                    "WWTTTCTTTTTTTTBTTTTTTTTTRTTWW",
-                    "WWTTTTTTWWTTTTTTTTTWWTTTTTTWW",
-                    "WWTTTTTTWWTTTTTTTTTWWTTTTTTWW",
-                    "WWWWWTWWWWTTTTTTTTTWWWWWTWWWW",
-                    "WWTTTTTTTTTTTTTTTTTTTTTTTTTWW",
-                    "WWTTTTTTTTWWWWTWWWWTTTTTTTTWW",
-                    "WWTTTTTTTTWWWWTWWWWTTTTTTTTWW",
-                    "WWTTTTTTTTTTTTTTTTTTTTTTTTTWW",
-                    "WWTTTTTTTTWTTTTTTTWTTTTTTTTWW",
-                    "WWTTTTTTTTWTTTPTTTTTTTTTTTTWW",
-                    "WWWWWWTWWWWTTTTTTTWWWWWTWWWWW",
-                    "WWWWWWTWWWWWWWWWWWWWWWWTWWWWW",
-                    "WWTTTTTTTWWWWWWWWWWWTTTTTTTWW",
-                    "WWTTTTTTTWWWWWWWWWWWTTTTTTTWW",
-                    "WWTTCTTTTWWWWWWWWWWWTTTTRTTWW",
-                    "WWTTTTTTTWWWWWWWWWWWTTTTTTTWW",
-                    "WWTTTTTTTWWTTTTTTTWWTTTTTTTWW",
-                    "WWTTTTTTTWWTTTTTTTWWTTTTTTTWW",
-                    "WWWWWWTTTTTTTTUTTTTTTTTTWWWWW",
-                    "WWWWWWWWWWWTTTTTTTWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
-                ],
+                tiles: buildAuthoredLayout(29, 25, {
+                    rooms: [[11, 20, 7, 4], [2, 16, 7, 6], [20, 16, 7, 6], [2, 8, 8, 6], [19, 8, 8, 6], [10, 2, 9, 7], [11, 11, 7, 4], [2, 2, 6, 5], [21, 2, 6, 5]],
+                    paths: [
+                        [[14, 22], [6, 19], [6, 11], [14, 5]],
+                        [[14, 22], [23, 19], [23, 11], [14, 5]],
+                        [[6, 11], [14, 13], [23, 11]],
+                        [[6, 11], [5, 4], [14, 5]],
+                        [[23, 11], [24, 4], [14, 5]]
+                    ],
+                    marks: [[14, 22, "U"], [14, 4, "B"], [5, 4, "C"], [24, 4, "R"], [4, 18, "C"], [24, 18, "R"], [14, 13, "P"]]
+                }),
                 floorLinks: [
                     { x: 14, y: 22, toFloor: 3, targetX: 11, targetY: 5, label: "祈祷の間へ戻る" }
                 ],
@@ -2965,33 +2965,17 @@ const FIXED_DUNGEON_MAPS = {
                 "rareMonsters": [{ "id": 200201, "rate": 0.05 }],
                 "width": 31,
                 "height": 25,
-                "tiles": [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWTTTTTTWWWTTTTTTTTTWWWTTTTTTWW",
-                    "WWTTTTTTWWWTTTTTTTTTWWWTTTTTTWW",
-                    "WWTTTCTTTTTTTTTBTTTTTTTTTTRTTWW",
-                    "WWTTTTTTWWWTTTTTTTTTWWWTTTTTTWW",
-                    "WWTTTTTTWWWTTTTTTTTTWWWTTTTTTWW",
-                    "WWWWWTWWWWWTTTTTTTTTWWWWWWTWWWW",
-                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
-                    "WWWTTTTTTTTWWWWTWWWWTTTTTTTTWWW",
-                    "WWWTTTTTTTTWWWWTWWWWTTTTTTTTWWW",
-                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
-                    "WWWTTTTTTTTWTTTTTTTWTTTTTTTTWWW",
-                    "WWWTTTTTTTTWTTTPTTTTTTTTTTTTWWW",
-                    "WWWWWWTWWWWWTTTTTTTWWWWWTWWWWWW",
-                    "WWWWWWTWWWWWWWWWWWWWWWWWTWWWWWW",
-                    "WWTTTTTTTTWWWWWWWWWWWTTTTTTTTWW",
-                    "WWTTTTTTTTWWWWWWWWWWWTTTTTTTTWW",
-                    "WWTTCTTTTTWWWWWWWWWWWTTTTTRTTWW",
-                    "WWTTTTTTTTWWWWWWWWWWWTTTTTTTTWW",
-                    "WWTTTTTTTTWWTTTTTTTWWTTTTTTTTWW",
-                    "WWTTTTTTTTWWTTTTTTTWWTTTTTTTTWW",
-                    "WWWWWWTTTTTTTTTUTTTTTTTTTTWWWWW",
-                    "WWWWWWWWWWWWTTTTTTTWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
-                ],
+                "tiles": buildAuthoredLayout(31, 25, {
+                    rooms: [[12, 20, 7, 4], [2, 16, 8, 6], [21, 16, 8, 6], [3, 8, 8, 6], [20, 8, 8, 6], [11, 2, 9, 7], [12, 11, 7, 4], [2, 2, 6, 5], [23, 2, 6, 5]],
+                    paths: [
+                        [[15, 22], [6, 19], [6, 11], [15, 5]],
+                        [[15, 22], [25, 19], [24, 11], [15, 5]],
+                        [[6, 11], [15, 13], [24, 11]],
+                        [[6, 11], [5, 4], [15, 5]],
+                        [[24, 11], [26, 4], [15, 5]]
+                    ],
+                    marks: [[15, 22, "U"], [15, 4, "B"], [5, 4, "C"], [26, 4, "R"], [4, 18, "C"], [26, 18, "R"], [15, 13, "P"]]
+                }),
                 "floorLinks": [
                     { "x": 15, "y": 22, "toFloor": 4, "targetX": 15, "targetY": 5, "label": "雷の中枢へ戻る" }
                 ],
@@ -3751,29 +3735,16 @@ const FIXED_DUNGEON_MAPS = {
                 monsters: [100006, 100007, 100008, 100009],
                 width: 25,
                 height: 21,
-                tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWTTTTTTTWWWWWWWTTTTTTTWW",
-                    "WWTCTTTTTWWWWWWWTTTDTTTWW",
-                    "WWTTTTTTTTTTTTTTTTTTTTTWW",
-                    "WWTTTTTTTWWWWWWWTTTTTTTWW",
-                    "WWWWWTWWWWWWWWWWTTTTTCTWW",
-                    "WWWWWTWWWWWWWWWWTTTTTTTWW",
-                    "WWWTTTTTTTTWWWWWWWWTWWWWW",
-                    "WWWTTTTTTTTWWWWWWWWTWWWWW",
-                    "WWWTTTTTTTTTTTTTTWWTWWWWW",
-                    "WWWTTTTTTTTWWTTTTTTTTTWWW",
-                    "WWWWWWTWWWWWWTTTTTTTTTWWW",
-                    "WWWWWWTWWWWWWTTTTTTTTTWWW",
-                    "WWTTTTTTTWWWWTTTTTTTTTWWW",
-                    "WWTTTTTTTWWWWTTTTTTTTTWWW",
-                    "WWTTTTTTTWTTTTTWWWWWWWWWW",
-                    "WWTTTTTTTWTTTTTWWWWWWWWWW",
-                    "WWTTTTTTTTTTTTTWWWWWWWWWW",
-                    "WWWWWWWWWWTTSTTWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWW"
-                ],
+                tiles: buildAuthoredLayout(25, 21, {
+                    rooms: [[10, 16, 5, 4], [2, 14, 7, 5], [3, 8, 8, 4], [13, 11, 9, 5], [16, 2, 7, 6], [2, 2, 7, 4]],
+                    paths: [
+                        [[12, 18], [6, 18], [6, 15]],
+                        [[6, 15], [6, 10], [16, 13]],
+                        [[6, 10], [5, 4], [19, 4]],
+                        [[17, 13], [19, 5]]
+                    ],
+                    marks: [[12, 19, "S"], [19, 3, "D"], [3, 3, "C"], [21, 6, "C"]]
+                }),
                 floorLinks: [
                     { x: 12, y: 19, to: "EXIT", label: "外へ出る" },
                     { x: 19, y: 3, toFloor: 2, targetX: 12, targetY: 18, label: "泉の奥へ" }
@@ -3798,29 +3769,16 @@ const FIXED_DUNGEON_MAPS = {
                 monsters: [100008, 100009, 100010],
                 width: 25,
                 height: 21,
-                tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWTTTTTWTTTTTTTTTWTTTTTWW",
-                    "WWTTTTTWTTTTTTTTTWTTTTTWW",
-                    "WWTCTTTWTTTTTTTTTWTTTCTWW",
-                    "WWTTTTTWTTTTBTTTTWTTTTTWW",
-                    "WWTTTTTWTTTTTTTTTWTTTTTWW",
-                    "WWWWTWWWTTTTTTTTTWWWTWWWW",
-                    "WWWWTWWWWWWWTWWWWWWWTWWWW",
-                    "WWWWTWWWWWWWTWWWWWWWTWWWW",
-                    "WWTTTTTTWWWWTWWWWTTTTTTWW",
-                    "WWTTTTTTWWWWTWWWWTTTTTTWW",
-                    "WWTTTTTTTTTTTTTTTTTTTTTWW",
-                    "WWTTTTTTWWWWTWWWWTTTTTTWW",
-                    "WWTTTTTTWWWWTWWWWTTTTTTWW",
-                    "WWTTTTTTWTTTTTTTWTTTTTTWW",
-                    "WWWWWWWWWTTTTTTTWWWWWWWWW",
-                    "WWWWWWWWWTTTTTTTWWWWWWWWW",
-                    "WWWWWWWWWTTTUTTTWWWWWWWWW",
-                    "WWWWWWWWWTTTTTTTWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWW"
-                ],
+                tiles: buildAuthoredLayout(25, 21, {
+                    rooms: [[8, 2, 9, 6], [9, 15, 7, 5], [2, 10, 6, 6], [17, 10, 6, 6], [2, 2, 5, 5], [18, 2, 5, 5]],
+                    paths: [
+                        [[12, 18], [12, 12], [5, 12], [4, 4]],
+                        [[12, 12], [20, 12], [20, 4]],
+                        [[5, 12], [12, 5]],
+                        [[20, 12], [12, 5]]
+                    ],
+                    marks: [[12, 18, "U"], [12, 5, "B"], [3, 4, "C"], [21, 4, "C"]]
+                }),
                 floorLinks: [
                     { x: 12, y: 18, toFloor: 1, targetX: 19, targetY: 4, label: "入口へ戻る" }
                 ],
@@ -3856,31 +3814,16 @@ const FIXED_DUNGEON_MAPS = {
                 monsters: [100020, 100021, 100022, 100023],
                 width: 27,
                 height: 23,
-                tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWTTTTTTTWWWWWWWWWWTTTTTTWW",
-                    "WWTTTTTTTWWWWWWWWWWTTTDTTWW",
-                    "WWTCTTTTTTTTTTTTTTTTTTTTTWW",
-                    "WWTTTTTTTWWWWWWWWWWTTTTTTWW",
-                    "WWTTTTTTTWWWWWWWWWWTTTTTTWW",
-                    "WWWWWTWWWWWWWWWTTTTTTTTWWWW",
-                    "WWWWWTTTTTTTWWWTTTTTTTTWWWW",
-                    "WWWWWTTTTTTTWWWTTTTTTTTWWWW",
-                    "WWWWWTTTTTTTWWWTTTTTTTTWWWW",
-                    "WWWWWTTTTTTTWWWTTTTTTTTWWWW",
-                    "WWWWWTTTTTTTWWWWWWWTWWWWWWW",
-                    "WWWWWWWWTWWWWWWWWWWTWWWWWWW",
-                    "WWWWWWWWTWWWWWWWWWTTTTTTTWW",
-                    "WWTTTTTTTWWWWWWWWWTTTTTTTWW",
-                    "WWTTTTTTTWWWWWWWWWTTTTTCTWW",
-                    "WWTTTTTTTWWWWWWWWWTTTTTTTWW",
-                    "WWTTTTTTTWWTTTTTWWTTTTTTTWW",
-                    "WWTTTTTTTWWTTTTTWWTTTTTTTWW",
-                    "WWWWWWTTTTTTTTTTTTTTTTWWWWW",
-                    "WWWWWWWWWWWTTSTTWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWW"
-                ],
+                tiles: buildAuthoredLayout(27, 23, {
+                    rooms: [[11, 18, 5, 4], [2, 15, 7, 5], [18, 14, 7, 6], [5, 8, 7, 5], [15, 7, 8, 5], [2, 2, 7, 5], [19, 2, 6, 5]],
+                    paths: [
+                        [[13, 20], [6, 18], [8, 10]],
+                        [[13, 20], [21, 17], [19, 9]],
+                        [[8, 10], [5, 4], [21, 4]],
+                        [[19, 9], [22, 4]]
+                    ],
+                    marks: [[13, 21, "S"], [22, 3, "D"], [3, 4, "C"], [23, 16, "C"]]
+                }),
                 floorLinks: [
                     { x: 13, y: 21, to: "EXIT", label: "外へ出る" },
                     { x: 22, y: 3, toFloor: 2, targetX: 4, targetY: 20, label: "結晶の間へ" }
@@ -3902,31 +3845,15 @@ const FIXED_DUNGEON_MAPS = {
                 monsters: [100022, 100023, 100024, 100025],
                 width: 27,
                 height: 23,
-                tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWTTTTTTTTTWWWWWWWWW",
-                    "WWWWWWWWWTTTTTTTTTWWWWWWWWW",
-                    "WWWWWWWWWTTTTTTTTTWWWWWWWWW",
-                    "WWWWWWWWWTTTTBTTTTWWWWWWWWW",
-                    "WWWWWWWWWTTTTTTTTTTTTTWWWWW",
-                    "WWWWWWWWWTTTTTTTTTWWWTWWWWW",
-                    "WWTTTTTTTTTTTTTTTTTTTTTTTWW",
-                    "WWTTTTTTTWWWWTWWWWTTTTTTTWW",
-                    "WWTCTTTTTWWWWTWWWWTTTTTDTWW",
-                    "WWTTTTTTTTTTTTWWWWTTTTTTTWW",
-                    "WWTTTTTTTWWWWTWWWWTTTTTTTWW",
-                    "WWTTTTTTTWWWWTWWWWTTTTTTTWW",
-                    "WWTTTTTTTWWWWTWWWWTTTTTTTWW",
-                    "WWWWWTWWWWWWWTWWWWWWWWWWWWW",
-                    "WWWWWTWWWWTTTTTTTWWWWWWWWWW",
-                    "WWWWWTWWWWTTTTTTTWWWTTTTTWW",
-                    "WWTTTTTTWWTTTTTTTTTTTTCTTWW",
-                    "WWTTTTTTWWTTTTTTTWWWTTTTTWW",
-                    "WWTTUTTTWWTTTTTTTWWWTTTTTWW",
-                    "WWTTTTTTWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWW"
-                ],
+                tiles: buildAuthoredLayout(27, 23, {
+                    rooms: [[9, 2, 9, 7], [2, 8, 7, 7], [18, 8, 7, 7], [2, 18, 6, 4], [10, 16, 7, 5], [20, 17, 5, 4]],
+                    paths: [
+                        [[4, 20], [5, 11], [13, 6]],
+                        [[5, 11], [13, 18], [22, 18]],
+                        [[13, 6], [21, 11], [23, 10]]
+                    ],
+                    marks: [[4, 20, "U"], [13, 5, "B"], [23, 10, "D"], [3, 10, "C"], [22, 18, "C"]]
+                }),
                 floorLinks: [
                     { x: 4, y: 20, toFloor: 1, targetX: 22, targetY: 4, label: "入口へ戻る" },
                     { x: 23, y: 10, toFloor: 3, targetX: 2, targetY: 22, label: "結界の奥へ", requiredFlag: "darkCastleCleared", lockedLabel: "結界を調べる", lockedLog: "巧妙な結界に阻まれている。" }
@@ -3955,33 +3882,15 @@ const FIXED_DUNGEON_MAPS = {
                 enemyBoost: { nameSuffix: "強", statMultiplier: 1.3, elmRes: { "火": 30, "水": 30, "風": 30, "雷": 30, "光": 30, "闇": 30 }, resists: { Poison: 50, Shock: 50, Fear: 50, InstantDeath: 50, Debuff: 50, Seal: 50 } },
                 width: 29,
                 height: 25,
-                tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWTTTTTTTTTWWWWWWWWWW",
-                    "WWWWWWWWWWTTTTTTTTTWWWWWWWWWW",
-                    "WWWWWWWWWWTTTTBTTTTWWWWWWWWWW",
-                    "WWWWWWWWWWTTTTTTTTTTTTTTWWWWW",
-                    "WWWWWWWWWWTTTTTTTTTWWWWTWWWWW",
-                    "WWWWWWWWWWTTTTTTTTTWWWWTWWWWW",
-                    "WWWWWWWWWWWWWWTWWWWWTTTTTTTWW",
-                    "WWTTTTTTTWWWWWTWWWWWTTTTTTTWW",
-                    "WWTTTTTTTWWWWWTWWWWWTTTTTTTWW",
-                    "WWTTCTTTTWWWWWTWWWWWTTTTTTTWW",
-                    "WWTTTTTTTTTTTTTWWWWWTTTTTTTWW",
-                    "WWTTTTTTTWWWWWTWWWWWTTTTTTTWW",
-                    "WWTTTTTTTWWWWWTWWWWWTTTTTTTWW",
-                    "WWTTTTTTTWWWWWTWWWWWWWWWTWWWW",
-                    "WWWWWTWWWWWWWWTWWWWWWWWWTWWWW",
-                    "WWWWWTWWWWTTTTTTTTTWWWWWTWWWW",
-                    "WWWWWTWWWWTTTTTTTTTWWWWWTWWWW",
-                    "WWWWWTWWWWTTTTTTTTTWWTTTTTTWW",
-                    "WWTTTTTTWWTTTTTTTTTTTTTTTTTWW",
-                    "WWTTTTTTWWTTTTTTTTTWWTTTCTTWW",
-                    "WWUTTTTTWWTTTTTTTTTWWTTTTTTWW",
-                    "WWTTTTTTWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
-                ],
+                tiles: buildAuthoredLayout(29, 25, {
+                    rooms: [[10, 2, 9, 6], [2, 9, 7, 7], [20, 8, 7, 7], [2, 20, 6, 4], [10, 17, 9, 6], [21, 19, 6, 4]],
+                    paths: [
+                        [[2, 22], [5, 12], [14, 5]],
+                        [[5, 12], [14, 20], [24, 21]],
+                        [[14, 5], [23, 11], [24, 21]]
+                    ],
+                    marks: [[2, 22, "U"], [14, 4, "B"], [4, 11, "C"], [24, 21, "C"]]
+                }),
                 floorLinks: [
                     { x: 2, y: 22, toFloor: 2, targetX: 23, targetY: 11, label: "結晶の間へ戻る" }
                 ],
@@ -4015,31 +3924,15 @@ const FIXED_DUNGEON_MAPS = {
                 monsters: [100064, 100065, 100066, 100067],
                 width: 29,
                 height: 23,
-                tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWTTTTTTTWWWWWWWWWWW",
-                    "WWTTTTTTWWWTTTTTTTWWWTTTTTTWW",
-                    "WWTTTTTTWWWTTTTTTTWWWTTTDTTWW",
-                    "WWTTCTTTWWWTTTBTTTTTTTTTTTTWW",
-                    "WWTTTTTTTTTTTTTTTTWWWTTTTTTWW",
-                    "WWTTTTTTWWWTTTTTTTWWWTTTTTTWW",
-                    "WWTTTTTTWWWTTTTTTTWWWTTTTTTWW",
-                    "WWWWWTWWWWWWWWWWWWWWWWWWTWWWW",
-                    "WWWWWTWWWWWWWWWWWWWWWWWWTWWWW",
-                    "WWWTTTTTTTTWWWWWWWTTTTTTTTWWW",
-                    "WWWTTTTTTTTWWWWWWWTTTTTTTTWWW",
-                    "WWWTTTTTTTTWWWWWWWTTTTTTTTWWW",
-                    "WWWTTTTTTTTTTTTTTTTTTTTTTTWWW",
-                    "WWWTTTTTTTTWWWTWWWTTTTTTTTWWW",
-                    "WWWTTTTTTTTWWWTWWWTTTTTTCTWWW",
-                    "WWWTTTTTTTTWWWTWWWTTTTTTTTWWW",
-                    "WWWWWWWWWWWTTTTTTTWWWWWWWWWWW",
-                    "WWWWWWWWWWWTTTPTTTWWWWWWWWWWW",
-                    "WWWWWWWWWWWTTTTTTTWWWWWWWWWWW",
-                    "WWWWWWWWWWWTTTSTTTWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
-                ],
+                tiles: buildAuthoredLayout(29, 23, {
+                    rooms: [[11, 2, 7, 7], [2, 3, 6, 6], [21, 3, 6, 6], [3, 11, 8, 7], [18, 11, 8, 7], [11, 18, 7, 4]],
+                    paths: [
+                        [[14, 21], [14, 14], [6, 14], [5, 6]],
+                        [[14, 14], [22, 14], [24, 6]],
+                        [[5, 6], [14, 5], [24, 6]]
+                    ],
+                    marks: [[14, 21, "S"], [14, 19, "P"], [14, 5, "B"], [24, 4, "D"], [4, 5, "C"], [24, 16, "C"]]
+                }),
                 floorLinks: [
                     { x: 14, y: 21, to: "EXIT", label: "外へ出る" },
                     { x: 24, y: 4, toFloor: 2, targetX: 2, targetY: 22, label: "隠し祭壇へ" }
@@ -4068,33 +3961,15 @@ const FIXED_DUNGEON_MAPS = {
                 monsters: [100066, 100067, 100068],
                 width: 31,
                 height: 25,
-                tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWTTTTTTTTTWWWWWWWWWWW",
-                    "WWWWWWWWWWWTTTTTTTTTWWWWWWWWWWW",
-                    "WWWWWWWWWWWTTTTBTTTTWWWWWWWWWWW",
-                    "WWTTTTTTTWWTTTTTTTTTWWTTTTTTTWW",
-                    "WWTTTTTTTWWTTTTTTTTTWWTTTTTTTWW",
-                    "WWTTTTTTTWWTTTTTTTTTWWTTTTTTTWW",
-                    "WWTTCTTTTTTTTTTTTTTTTTTTTTTTTWW",
-                    "WWTTTTTTTWWWWWWWWWWWWWTTTTTTTWW",
-                    "WWTTTTTTTWWWWWWWWWWWWWTTTTTTTWW",
-                    "WWTTTTTTTWWWWWWWWWWWWWTTTTTTTWW",
-                    "WWWWWWTWWWWWWWWWWWWWWWWWWTWWWWW",
-                    "WWWWWWTWWWWWWWWWWWWWWWWWWTWWWWW",
-                    "WWWWWWTWWWWWWWWWWWWWWWWWWTWWWWW",
-                    "WWWTTTTTTTTWWWWWWWWWTTTTTTTTWWW",
-                    "WWWTTTTTTTTWWWWWWWWWTTTTTTTTWWW",
-                    "WWWTTTTTTTTWTTTTTTTWTTTTTTTTWWW",
-                    "WWWTTTTTTTTTTTTTTTTWTTTTTTCTWWW",
-                    "WWWTTTTTTTTWTTTPTTTWTTTTTTTTWWW",
-                    "WWWTTTTTTTTWTTTTTTTTTTTTTTTTWWW",
-                    "WWWTTTTTTTTWTTTTTTTWTTTTTTTTWWW",
-                    "WWUTTTTWWWWWTTTTTTTWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
-                ],
+                tiles: buildAuthoredLayout(31, 25, {
+                    rooms: [[11, 2, 9, 6], [2, 5, 7, 7], [22, 5, 7, 7], [3, 15, 8, 7], [20, 15, 8, 7], [12, 17, 7, 6]],
+                    paths: [
+                        [[2, 22], [6, 18], [6, 8], [15, 5]],
+                        [[6, 18], [15, 20], [24, 18], [25, 8]],
+                        [[25, 8], [15, 5]]
+                    ],
+                    marks: [[2, 22, "U"], [15, 19, "P"], [15, 4, "B"], [4, 8, "C"], [26, 18, "C"]]
+                }),
                 floorLinks: [
                     { x: 2, y: 22, toFloor: 1, targetX: 24, targetY: 5, label: "拝廊へ戻る" }
                 ],
@@ -4136,33 +4011,17 @@ const FIXED_DUNGEON_MAPS = {
                 monsters: [100064, 100065, 100066, 100067],
                 width: 31,
                 height: 25,
-                tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWTTTTTTTWWWWWWWWWWWW",
-                    "WWTTTTTTTWWWTTTTTTTWWWTTTTTDTWW",
-                    "WWTTTTTTTWWWTTTTTTTWWWTTTTTTTWW",
-                    "WWTTCTTTTWWWTTTTTTTWWWTTTTTTTWW",
-                    "WWTTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
-                    "WWTTTTTTTWWWTTTTTTTWWWTTTTTTTWW",
-                    "WWTTTTTTTWWWTTTTTTTWWWTTTTTTTWW",
-                    "WWWWWWTWWWWWWWWWWWWWWWWWWTWWWWW",
-                    "WWWWWWTWWWWWWWWWWWWWWWWWWTWWWWW",
-                    "WWWTTTTTTTWWWWWWWWWWWTTTTTTTWWW",
-                    "WWWTTTTTTTWWWWWWWWWWWTTTTTTTWWW",
-                    "WWWTTTTTTTWWWWWWWWWWWTTTTTTTWWW",
-                    "WWWTTTTTTTWWWWWWWWWWWTTTTTTTWWW",
-                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
-                    "WWWTTTTTTTWWWWWTWWWWWTTTTTTTWWW",
-                    "WWWTTTTTTTWWWWWTWWWWWTTTTTTTWWW",
-                    "WWWWWWTWWWWWWWWTWWWWWWWWTWWWWWW",
-                    "WWWTTTTTTTWWTTTTTTTWWTTTTTTTWWW",
-                    "WWWTTTTTTTWWTTTTTTTWWTTTTTCTWWW",
-                    "WWWTTTTTTTTTTTTPTTTTTTTTTTTTWWW",
-                    "WWWTTTTTTTWWTTTTTTTWWTTTTTTTWWW",
-                    "WWWWWWWWWWWWTTTSTTTWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
-                ],
+                tiles: buildAuthoredLayout(31, 25, {
+                    rooms: [[12, 2, 7, 7], [2, 3, 7, 6], [22, 3, 7, 6], [3, 11, 7, 7], [21, 11, 7, 7], [3, 19, 7, 4], [12, 19, 7, 5], [21, 19, 7, 4]],
+                    paths: [
+                        [[15, 23], [15, 15], [6, 15], [6, 6], [15, 5]],
+                        [[15, 15], [24, 15], [25, 6], [15, 5]],
+                        [[6, 21], [15, 21], [24, 21]],
+                        [[6, 15], [6, 21]],
+                        [[24, 15], [24, 21]]
+                    ],
+                    marks: [[15, 23, "S"], [15, 21, "P"], [27, 3, "D"], [4, 5, "C"], [26, 20, "C"]]
+                }),
                 floorLinks: [
                     { x: 15, y: 23, to: "EXIT", label: "外へ出る" },
                     { x: 27, y: 3, toFloor: 2, targetX: 2, targetY: 24, label: "禁奥へ" }
@@ -4189,35 +4048,16 @@ const FIXED_DUNGEON_MAPS = {
                 monsters: [100066, 100067, 100068],
                 width: 33,
                 height: 27,
-                tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWTTTTTTTTTWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWTTTTTTTTTWWWWWWWWWWWW",
-                    "WWTTTTTTTWWWTTTTBTTTTWWWTTTTTTTWW",
-                    "WWTTTTTTTWWWTTTTTTTTTWWWTTTTTTTWW",
-                    "WWTTTTTTTWWWTTTTTTTTTWWWTTTTTTTWW",
-                    "WWTTCTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
-                    "WWTTTTTTTWWWWWWWWWWWWWWWTTTTTTTWW",
-                    "WWTTTTTTTWWWWWWWWWWWWWWWTTTTTTTWW",
-                    "WWTTTTTTTWWWWWWWWWWWWWWWTTTTTTTWW",
-                    "WWWWWWTWWWWWWWWWWWWWWWWWWWWTWWWWW",
-                    "WWWWWWTWWWWWWWWWWWWWWWWWWWWTWWWWW",
-                    "WWWWWWTWWWWWWWWWWWWWWWWWWWWTWWWWW",
-                    "WWWTTTTTTTTWWWWWWWWWWWTTTTTTTTWWW",
-                    "WWWTTTTTTTTWWWWWWWWWWWTTTTTTTTWWW",
-                    "WWWTTTTTTTTWWWWWWWWWWWTTTTTTTTWWW",
-                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
-                    "WWWTTTTTTTTWWWWWTWWWWWTTTTTTTTWWW",
-                    "WWWTTTTTTTTWWWWWTWWWWWTTTTTTTTWWW",
-                    "WWWTTTTTTTTWWTTTTTTTWWTTTTTTTTWWW",
-                    "WWWWWWTWWWWWWTTTTTTTWWWWWWTWWWWWW",
-                    "WWWWWWTWWWWWWTTTTTTTWWWWWTTTTTTWW",
-                    "WWTTTTTTWWWWWTTTTTTTTTTTTTTTDTTWW",
-                    "WWUTTTTTWWWWWTTTTTTTWWWWWTTTCTTWW",
-                    "WWTTTTTTWWWWWTTTTTTTWWWWWTTTTTTWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
-                ],
+                tiles: buildAuthoredLayout(33, 27, {
+                    rooms: [[12, 2, 9, 6], [2, 4, 7, 7], [24, 4, 7, 7], [3, 14, 8, 7], [22, 14, 8, 7], [2, 23, 6, 3], [13, 20, 7, 6], [25, 22, 6, 4]],
+                    paths: [
+                        [[2, 24], [6, 17], [6, 7], [16, 4]],
+                        [[6, 17], [16, 23], [27, 24]],
+                        [[27, 24], [26, 17], [27, 7], [16, 4]],
+                        [[6, 17], [26, 17]]
+                    ],
+                    marks: [[2, 24, "U"], [16, 4, "B"], [28, 23, "D"], [4, 7, "C"], [28, 24, "C"]]
+                }),
                 floorLinks: [
                     { x: 2, y: 24, toFloor: 1, targetX: 27, targetY: 4, label: "回廊へ戻る" },
                     { x: 28, y: 23, toFloor: 3, targetX: 17, targetY: 26, label: "零式禁則層へ", requiredFlag: "grezeliaOuterSealBroken", lockedLabel: "封印式を調べる", lockedLog: "二重の禁則封印が道を閉ざしている。" }
@@ -4248,37 +4088,16 @@ const FIXED_DUNGEON_MAPS = {
                 monsters: [100066, 100067, 100068],
                 width: 35,
                 height: 29,
-                tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWTTTTTTTTTWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWTTTTTTTTTWWWWWWWWWWWWW",
-                    "WWTTTTTTTTWWWTTTTBTTTTWWWTTTTTTTTWW",
-                    "WWTTTTTTTTWWWTTTTTTTTTWWWTTTTTTTTWW",
-                    "WWTTTTTTTTWWWTTTTTTTTTWWWTTTTTTTTWW",
-                    "WWTTTTTTTTWWWTTTTTTTTTWWWTTTTTTTTWW",
-                    "WWTTCTTTTTTTTTTTTTTTTTTTTTTTTTRTTWW",
-                    "WWTTTTTTTTWWWWWWWTWWWWWWWTTTTTTTTWW",
-                    "WWTTTTTTTTWWWWWWWTWWWWWWWTTTTTTTTWW",
-                    "WWTTTTTTTTWWWWWWWTWWWWWWWTTTTTTTTWW",
-                    "WWWWWWTWWWWWWWWWWTWWWWWWWWWWWTWWWWW",
-                    "WWWWWWTWWWWWWWWWWTWWWWWWWWWWWTWWWWW",
-                    "WWWWWWTWWWWWWWWWWTWWWWWWWWWWWTWWWWW",
-                    "WWWWWWTWWWWWWWWWWTTTTTTTTTTTTTWWWWW",
-                    "WWWTTTTTTTTTWWWWWTWWWWWTTTTTTTTTWWW",
-                    "WWWTTTTTTTTTWWWWWTWWWWWTTTTTTTTTWWW",
-                    "WWWTTTTTTTTTWWWWWTWWWWWTTTTTTTTTWWW",
-                    "WWWTTTTTTTTTWWWWWTWWWWWTTTTTTTTTWWW",
-                    "WWWTTTTTTTTTTTTTTTWWWWWTTTTTTTTTWWW",
-                    "WWWTTTTTTTTTWWWWWWWWWWWTTTTTTTTTWWW",
-                    "WWWTTTTTTTTTWTTTTTTTTTWTTTTTTTTTWWW",
-                    "WWWTTTTTTTTTWTTTTTTTTTWTTTTTTTTTWWW",
-                    "WWWWWWWTWWWWWTTTTPTTTTWWWWWWTWWWWWW",
-                    "WWWWWWWTWWWWWTTTTTTTTTWWWWWWTWWWWWW",
-                    "WWWWWWWTTTTTTTTTTUTTTTTTTTTTTWWWWWW",
-                    "WWWWWWWWWWWWWTTTTTTTTTWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
-                ],
+                tiles: buildAuthoredLayout(35, 29, {
+                    rooms: [[13, 2, 9, 7], [2, 4, 8, 8], [25, 4, 8, 8], [3, 16, 9, 8], [23, 16, 9, 8], [13, 22, 9, 6]],
+                    paths: [
+                        [[17, 26], [7, 20], [6, 8], [17, 5]],
+                        [[17, 26], [28, 20], [29, 8], [17, 5]],
+                        [[7, 20], [17, 15], [28, 20]],
+                        [[6, 8], [17, 15], [29, 8]]
+                    ],
+                    marks: [[17, 26, "U"], [17, 24, "P"], [17, 4, "B"], [4, 8, "C"], [30, 8, "R"]]
+                }),
                 floorLinks: [
                     { x: 17, y: 26, toFloor: 2, targetX: 28, targetY: 22, label: "禁奥の核へ戻る" }
                 ],

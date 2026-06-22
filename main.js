@@ -4195,23 +4195,39 @@ const Field = {
         let top;
         let width;
         let height;
+        let hudLeft;
 
         if (phaserActive) {
-            left = (rootRect.left - wrapperRect.left) + rootRect.width - mmSize - margin;
-            top = (rootRect.top - wrapperRect.top) + margin;
+            const rootLeft = rootRect.left - wrapperRect.left;
+            const rootTop = rootRect.top - wrapperRect.top;
+            left = rootLeft + rootRect.width - mmSize - margin;
+            top = rootTop + margin;
             width = mmSize;
             height = mmSize;
+            hudLeft = rootLeft + margin;
         } else {
             const canvasRect = canvas.getBoundingClientRect();
             if (!canvasRect.width || !canvasRect.height || !canvas.width || !canvas.height) return;
             const mmX = canvas.width - mmSize - margin;
             const scaleX = canvasRect.width / canvas.width;
             const scaleY = canvasRect.height / canvas.height;
-            left = (canvasRect.left - wrapperRect.left) + (mmX * scaleX);
-            top = (canvasRect.top - wrapperRect.top) + (margin * scaleY);
+            const canvasLeft = canvasRect.left - wrapperRect.left;
+            const canvasTop = canvasRect.top - wrapperRect.top;
+            left = canvasLeft + (mmX * scaleX);
+            top = canvasTop + (margin * scaleY);
             width = mmSize * scaleX;
             height = mmSize * scaleY;
+            hudLeft = canvasLeft + (margin * scaleX);
         }
+
+        const hudGap = 8;
+        const infoMaxWidth = Math.max(120, left - hudLeft - hudGap);
+        wrapper.style.setProperty('--field-hud-top', `${top}px`);
+        wrapper.style.setProperty('--field-hud-left', `${hudLeft}px`);
+        wrapper.style.setProperty('--field-hud-gap', `${hudGap}px`);
+        wrapper.style.setProperty('--field-minimap-left', `${left}px`);
+        wrapper.style.setProperty('--field-minimap-width', `${width}px`);
+        wrapper.style.setProperty('--field-info-max-width', `${infoMaxWidth}px`);
 
         Object.assign(hotspot.style, {
             left: `${left}px`,

@@ -1,4 +1,11 @@
 /* skills.js - skill IDs reorganized by category; generated 2026-06-21 */
+/*
+ * 任意: 各スキルへ battleFx を追加すると、polish.js の自動判定より優先して戦闘エフェクトを指定できます。
+ *   "battleFx": "meteor"
+ *   "battleFx": { "screen": "meteor", "hit": "spell-fire" }
+ *   "battleFx": "assets/effect/fx-meteor-ai.png"
+ * 未指定の場合は従来通り、type / elm / name / desc などから自動判定します。
+ */
 window.SKILLS_DATA = [
     { "id": 1, "name": "こうげき",
       "type": "通常攻撃", "target": "単体", "mp": 0, "rate": 1, "hitRate": 100, "critRate": 0, "count": 1, "base": 0, "desc": "通常攻撃" },

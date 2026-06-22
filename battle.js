@@ -1033,7 +1033,7 @@ findNextActor: () => {
     },
 
     chooseAutoBuffAction: (actor, skills) => {
-        const aliveAllies = Battle.party.filter(p => p && !p.isDead);
+        const aliveAllies = Battle.party.filter(p => Battle.isBattleAlive(p));
         const skill = skills.find(s => s.type === '強化' || s.buff || s.HPRegen || s.MPRegen);
         if (!skill) return null;
         const target = skill.target === '自分' ? actor : (aliveAllies[0] || actor);
@@ -1068,9 +1068,9 @@ findNextActor: () => {
     decideTacticalAutoAction: (actor) => {
         const tactic = Battle.getAutoStrategyKey(actor);
         const validSkills = Battle.getValidAutoSkills(actor, tactic !== 'no_mp');
-        const aliveAllies = Battle.party.filter(p => p && !p.isDead);
+        const aliveAllies = Battle.party.filter(p => Battle.isBattleAlive(p));
         const deadAllies = Battle.party.filter(p => p && p.isDead);
-        const aliveEnemies = Battle.enemies.filter(e => !e.isDead && !e.isFled);
+        const aliveEnemies = Battle.enemies.filter(e => Battle.isBattleAlive(e));
         const ailedAlly = aliveAllies.find(p => Object.keys(p.battleStatus?.ailments || {}).length > 0);
         const debuffedAlly = aliveAllies.find(p => Object.keys(p.battleStatus?.debuffs || {}).length > 0);
         const buffedEnemy = aliveEnemies.find(e => Object.keys(e.battleStatus?.buffs || {}).length > 0);
@@ -1441,8 +1441,8 @@ findNextActor: () => {
             return;
         }
 
-        if (actualTargetType === 'enemy') targets = Battle.enemies.filter(e => !e.isDead && !e.isFled);
-        else if (actualTargetType === 'ally') targets = Battle.party.filter(p => p && !p.isDead);
+        if (actualTargetType === 'enemy') targets = Battle.enemies.filter(e => Battle.isBattleAlive(e));
+        else if (actualTargetType === 'ally') targets = Battle.party.filter(p => Battle.isBattleAlive(p));
         else if (actualTargetType === 'ally_dead') targets = Battle.party.filter(p => p && p.isDead);
 
         if (targets.length === 0) {
@@ -1979,12 +1979,12 @@ findNextActor: () => {
                         if (cmd.data && cmd.data.type === '蘇生') {
                             pool = Battle.enemies.filter(e => e.isDead && !e.isFled);
                         } else {
-                            pool = Battle.enemies.filter(e => !e.isDead && !e.isFled);
+                            pool = Battle.enemies.filter(e => Battle.isBattleAlive(e));
                         }
                         cmd.target = pool.length > 0 ? pool[Math.floor(Math.random() * pool.length)] : actor;
                     } else {
                         // 攻撃スキルの場合はプレイヤー側（パーティ陣営）を狙う
-                        const aliveParty = Battle.party.filter(p => p && !p.isDead);
+                        const aliveParty = Battle.party.filter(p => Battle.isBattleAlive(p));
                         if (aliveParty.length > 0) {
                             // --- ヘイト（狙われやすさ）計算 ---
                             const weights = aliveParty.map(p => {
@@ -2047,7 +2047,7 @@ findNextActor: () => {
                 if (Battle.enemies.includes(cmd.target)) {
                     cmd.target = Battle.getRandomAliveEnemy();
                 } else if (Battle.party.includes(cmd.target) && cmd.data?.type !== '蘇生') {
-                    const aliveParty = Battle.party.filter(p => p && !p.isDead);
+                    const aliveParty = Battle.party.filter(p => Battle.isBattleAlive(p));
                     cmd.target = aliveParty.length > 0 ? aliveParty[Math.floor(Math.random() * aliveParty.length)] : null;
                 }
             }
@@ -2185,8 +2185,7 @@ findNextActor: () => {
             actor.hp -= dmg;
             Battle.log(`${actor.name}は ${msgType}のダメージを ${dmg} 受けた！`);
             if (actor.hp <= 0) { 
-                actor.hp = 0; actor.isDead = true; 
-                Battle.log(`${actor.name}は倒れた！`); 
+                Battle.markDefeated(actor); 
                 return;
             }
         }
@@ -2209,6 +2208,20 @@ findNextActor: () => {
     },
 	
 	// ターン経過（持続時間減少）を処理する共通関数
+    isBattleAlive: (unit) => {
+        return !!(unit && !unit.isFled && !unit.isDead && Number(unit.hp || 0) > 0);
+    },
+
+    markDefeated: (unit, message) => {
+        if (!unit || unit.isFled || Number(unit.hp || 0) > 0) return false;
+        const alreadyDead = !!unit.isDead;
+        unit.hp = 0;
+        unit.isDead = true;
+        unit.hasDiedThisTurn = true;
+        if (!alreadyDead && message !== false) Battle.log(message || `${unit.name}は倒れた！`);
+        return !alreadyDead;
+    },
+
     advanceActorTurn: (actor) => {
         const b = actor.battleStatus;
         if (!b) return;
@@ -2237,6 +2250,7 @@ findNextActor: () => {
 	processAction: async (cmd) => {
         const actor = cmd.actor;
         const data = cmd.data;
+        if (!actor || (cmd.type !== 'item' && !Battle.isBattleAlive(actor))) return;
         const actorName = Battle.getColoredName(actor);
 
         // --- [1] 実行時の封印チェック ---
@@ -2409,11 +2423,11 @@ findNextActor: () => {
                 let hasValidTarget = false;
                 // 全体・ランダム攻撃・範囲指定文字の場合
                 if (cmd.targetScope === '全体' || cmd.targetScope === 'ランダム' || ['all_enemy', 'all_ally'].includes(cmd.target)) {
-                    const pool = cmd.isEnemy ? Battle.party.filter(p => p && !p.isDead) : Battle.enemies.filter(e => !e.isDead && !e.isFled);
+                    const pool = cmd.isEnemy ? Battle.party.filter(p => Battle.isBattleAlive(p)) : Battle.enemies.filter(e => Battle.isBattleAlive(e));
                     if (pool.length > 0) hasValidTarget = true;
                 } 
                 // 単体攻撃の場合
-                else if (cmd.target && !cmd.target.isDead && !cmd.target.isFled) {
+                else if (cmd.target && Battle.isBattleAlive(cmd.target)) {
                     hasValidTarget = true;
                 }
 
@@ -2434,20 +2448,22 @@ findNextActor: () => {
             // --- [5] マダンテ系特殊処理 ---
             if (Battle.isMadanteSkill(data)) {
                 let baseBaseDmg = mpCost * skillRate;
-                const pool = cmd.isEnemy ? Battle.party.filter(p=>p && !p.isDead) : Battle.enemies.filter(e=>!e.isDead && !e.isFled);
+                const pool = cmd.isEnemy ? Battle.party.filter(p => Battle.isBattleAlive(p)) : Battle.enemies.filter(e => Battle.isBattleAlive(e));
                 let loopTargets = [];
                 if (cmd.targetScope === 'ランダム') {
                     if (pool.length > 0) loopTargets = [pool[0]];
                 } else if (cmd.targetScope === '単体' && cmd.target) {
-                    if (!cmd.target.isDead) loopTargets = [cmd.target];
+                    if (Battle.isBattleAlive(cmd.target)) loopTargets = [cmd.target];
                 } else {
                     loopTargets = pool;
                 }
                 for (let t of loopTargets) {
+                    if (!Battle.isBattleAlive(actor)) break;
                     if (!t) continue;
                     for (let i = 0; i < hitCount; i++) {
+                        if (!Battle.isBattleAlive(actor)) break;
                         let targetToHit = (cmd.targetScope === 'ランダム') ? pool[Math.floor(Math.random() * pool.length)] : t;
-                        if (!targetToHit || targetToHit.isDead) continue;
+                        if (!Battle.isBattleAlive(targetToHit)) continue;
                         
                         let bonusRate = 0, cutRate = 0, isImmune = false; 
                         
@@ -2513,8 +2529,7 @@ findNextActor: () => {
 								targetToHit.hp = 1;
 								Battle.log(`${targetToHit.name}は 根性で 踏みとどまった！`);
 							} else {
-								targetToHit.hp = 0; targetToHit.isDead = true; 
-								Battle.log(`${targetToHit.name}は倒れた！`);
+								Battle.markDefeated(targetToHit);
 							}
 						}
                         Battle.renderEnemies(); Battle.renderPartyStatus();
@@ -2537,12 +2552,12 @@ findNextActor: () => {
 
             if (skillScope === '全体') {
                  if (cmd.isEnemy) {
-                     targets = isSupport ? Battle.enemies.filter(e => !e.isFled) : Battle.party.filter(p => p && !p.isDead);
+                     targets = isSupport ? Battle.enemies.filter(e => !e.isFled) : Battle.party.filter(p => Battle.isBattleAlive(p));
                  } else {
-                     targets = isSupport ? Battle.party.filter(p => p) : Battle.enemies.filter(e => !e.isDead && !e.isFled);
+                     targets = isSupport ? Battle.party.filter(p => p) : Battle.enemies.filter(e => Battle.isBattleAlive(e));
                  }
             } else if (skillScope === 'ランダム') {
-                 let pool = cmd.isEnemy ? (isSupport ? Battle.enemies.filter(e => !e.isDead && !e.isFled) : Battle.party.filter(p => p && !p.isDead)) : (isSupport ? Battle.party.filter(p => p && !p.isDead) : Battle.enemies.filter(e => !e.isDead && !e.isFled));
+                 let pool = cmd.isEnemy ? (isSupport ? Battle.enemies.filter(e => Battle.isBattleAlive(e)) : Battle.party.filter(p => Battle.isBattleAlive(p))) : (isSupport ? Battle.party.filter(p => Battle.isBattleAlive(p)) : Battle.enemies.filter(e => Battle.isBattleAlive(e)));
                  if(pool.length > 0) targets = [pool[Math.floor(Math.random() * pool.length)]];
             } else {
                 targets = [cmd.target];
@@ -2550,6 +2565,8 @@ findNextActor: () => {
 
             // --- [7] 内部関数：効果適用ロジック (★特性ID31, 32の組み込み) ---
             const applyEffects = (t, d, ailmentMult = 1.0) => {
+                // HP0・戦闘不能の対象には、追加状態異常・弱体・割合ダメージなどを発生させない。
+                if (!t || t.isFled || !Battle.isBattleAlive(t)) return;
                 // 特性による成功率ボーナスの算出
 				const assaBonus = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(actor, 'proc_instantdeath_bonus') : 0;
                 const bodyBonus = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(actor, 'proc_body_bonus') : 0;
@@ -2675,8 +2692,7 @@ findNextActor: () => {
 								t.hp = 1;
 								Battle.log(`${t.name}は 根性で 踏みとどまった！`);
 							} else {
-								t.hp = 0; t.isDead = true; 
-								Battle.log(`${t.name}は倒れた！`);
+									Battle.markDefeated(t);
 							}
 						}
 					} else {
@@ -2687,6 +2703,7 @@ findNextActor: () => {
 
             // --- [8] メイン実行ループ ---
             for (let t of targets) {
+                if (!Battle.isBattleAlive(actor)) break;
                 if (!t) continue;
                 if (effectType && ['回復','蘇生','強化','弱体','特殊','MP回復'].includes(effectType)) {
                     if (successRate < 100 && Math.random() * 100 > successRate) {
@@ -2703,7 +2720,7 @@ findNextActor: () => {
                             continue; 
                         }
                     }
-                    if (effectType === '回復' && !t.isDead) {
+                    if (effectType === '回復' && Battle.isBattleAlive(t)) {
 						const healBonus = 1 + (PassiveSkill.getSumValue(actor, 'heal_pct') / 100);
 						let rec;
 						if (data.ratio) {
@@ -2715,24 +2732,25 @@ findNextActor: () => {
 						t.hp = Math.min(t.baseMaxHp, t.hp + Math.floor(rec));
 						Battle.log(`${t.name}のHPが${Math.floor(rec)}回復！`);
 					}
-                    if (effectType === 'MP回復' && !t.isDead) {
+                    if (effectType === 'MP回復' && Battle.isBattleAlive(t)) {
                         let rec = data.ratio ? Math.floor(t.baseMaxMp * data.ratio) : baseDmg;
                         t.mp = Math.min(t.baseMaxMp, t.mp + Math.floor(rec));
                         Battle.log(`${t.name}のMPが${Math.floor(rec)}回復！`);
                     }
-                    if (!t.isDead) applyEffects(t, data);
-                    Battle.renderPartyStatus(); 
+                    if (Battle.isBattleAlive(t)) applyEffects(t, data);
+                    Battle.renderEnemies(); Battle.renderPartyStatus(); 
                     continue;
                 }
 
                 for (let i = 0; i < hitCount; i++) {
+                    if (!Battle.isBattleAlive(actor)) break;
                     let targetToHit = t;
                     if (skillScope === 'ランダム') {
-                        const pool = cmd.isEnemy ? Battle.party.filter(p => p && !p.isDead) : Battle.enemies.filter(e => !e.isDead && !e.isFled);
+                        const pool = cmd.isEnemy ? Battle.party.filter(p => Battle.isBattleAlive(p)) : Battle.enemies.filter(e => Battle.isBattleAlive(e));
                         if (pool.length === 0) break;
                         targetToHit = pool[Math.floor(Math.random() * pool.length)];
                     }
-                    if (targetToHit.isDead || targetToHit.isFled) { if (skillScope !== 'ランダム') break; continue; }
+                    if (!Battle.isBattleAlive(targetToHit)) { if (skillScope !== 'ランダム') break; continue; }
 
                     // --- 特性 19:献身 (かばう) ---
                     if (!isSupport) {
@@ -2742,7 +2760,7 @@ findNextActor: () => {
 
                         // 同じ陣営の中から、瀕死(50%以下)の仲間を助けに来る者を探す
                         const coverTarget = friends.find(p => 
-                            p && p !== targetToHit && !p.isDead && !p.isFled &&
+                            p && p !== targetToHit && Battle.isBattleAlive(p) &&
                             targetToHit.hp <= targetToHit.baseMaxHp * 0.5
                         );
 
@@ -2825,6 +2843,10 @@ findNextActor: () => {
 						if (preemptRate > 0 && Math.random() * 100 < preemptRate) {
 							Battle.log(`${targetToHit.name}の 先制攻撃！`);
 							await Battle.executeReactionAttack(targetToHit, actor);
+							if (!Battle.isBattleAlive(actor)) {
+							    Battle.renderEnemies(); Battle.renderPartyStatus();
+							    break;
+							}
 						}
 					}
 					
@@ -2984,11 +3006,16 @@ findNextActor: () => {
                     if (targetToHit.hp <= 0) {
                         // MASTERの定義に合わせ guts_mult を呼び出すことで (スキル*3 + 20) を取得
 						const gutsChance = PassiveSkill.getSumValue(targetToHit, 'guts_mult');
-						if (gutsChance > 0 && Math.random() * 100 < gutsChance) { targetToHit.hp = 1; Battle.log(`${targetToHit.name}は 根性で 踏みとどまった！`); }
+						if (gutsChance > 0 && Math.random() * 100 < gutsChance) {
+                            targetToHit.hp = 1;
+                            Battle.log(`${targetToHit.name}は 根性で 踏みとどまった！`);
+                        } else {
+                            Battle.markDefeated(targetToHit);
+                        }
                     }
                     
                     // --- 反射（理力の壁）判定箇所 ---
-					if (dmg > 0) {
+					if (dmg > 0 && Battle.isBattleAlive(targetToHit)) {
 						const reflectRate = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(targetToHit, 'reflect_dmg_mult') : 0;
 						const reflectTrigger = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(targetToHit, 'reflect_trigger_mult') : 0;
 
@@ -3014,8 +3041,7 @@ findNextActor: () => {
 									actor.hp = 1;
 									Battle.log(`${actor.name}は 根性で 踏みとどまった！`);
 								} else {
-									actor.hp = 0; actor.isDead = true; 
-									Battle.log(`${actor.name}は倒れた！`);
+									Battle.markDefeated(actor);
 								}
 							}
 						}
@@ -3028,7 +3054,7 @@ findNextActor: () => {
 
 
                     // --- 通常攻撃時の追加状態異常判定 (★特性ID31, 32の組み込み) ---
-                    if (dmg > 0 && isPhysical) {
+                    if (dmg > 0 && isPhysical && Battle.isBattleAlive(targetToHit)) {
 						const curseBonus = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(actor, 'proc_curse_bonus') : 0;
 						const assaBonus  = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(actor, 'proc_instantdeath_bonus') : 0;
 						const bodyBonus = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(actor, 'proc_body_bonus') : 0;
@@ -3062,24 +3088,23 @@ findNextActor: () => {
 							const rv = (Battle.getBattleStat(targetToHit, 'resists') || {}).InstantDeath || 0;
 							if (Math.random() * 100 < (100 - rv)) { 
 								targetToHit.hp = 0; 
-								targetToHit.isDead = true; 
-								Battle.log(`<span style="color:#ff00ff; font-weight:bold;">急所を貫いた！ ${targetToHit.name}は 息絶えた！</span>`); 
+								Battle.markDefeated(targetToHit, `<span style="color:#ff00ff; font-weight:bold;">急所を貫いた！ ${targetToHit.name}は 息絶えた！</span>`); 
 							}
 						}
                     }
 
-                    if (actor instanceof Player) {
+                    if (actor instanceof Player && Battle.isBattleAlive(targetToHit)) {
                         Object.values(actor.equips).forEach(eq => {
                             if (eq && eq.isSynergy && eq.effects) {
                                 eq.effects.forEach(effect => {
                                     if (Math.random() < 0.2) {
-                                        if (effect === 'allResDown20' && !targetToHit.isDead) {
+                                        if (effect === 'allResDown20' && Battle.isBattleAlive(targetToHit)) {
                                             const dRes = (Battle.getBattleStat(targetToHit, 'resists') || {}).Debuff || 0;
                                             if (Math.random() * 100 < (100 - dRes)) { targetToHit.battleStatus.debuffs['elmResDown'] = { val: 50, turns: 5 }; Battle.log(`${targetToHit.name}の 全属性耐性が 少しさがった！`); }
                                         }
-                                        if (effect === 'instantDeath20' && !targetToHit.isDead) {
+                                        if (effect === 'instantDeath20' && Battle.isBattleAlive(targetToHit)) {
                                             const res = (targetToHit.resists?.InstantDeath) || 0;
-                                            if (Math.random() * 100 < (100 - res)) { targetToHit.hp = 0; targetToHit.isDead = true; Battle.log(`<span style="color:#ff00ff; font-weight:bold;">急所を貫いた！ ${targetToHit.name}は 息絶えた！</span>`); }
+                                            if (Math.random() * 100 < (100 - res)) { targetToHit.hp = 0; Battle.markDefeated(targetToHit, `<span style="color:#ff00ff; font-weight:bold;">急所を貫いた！ ${targetToHit.name}は 息絶えた！</span>`); }
                                         }
                                     }
                                 });
@@ -3088,7 +3113,7 @@ findNextActor: () => {
                     }
 
                     // [修正] モンスターなら武器制限を無視、プレイヤーなら制限ありで反撃率を取得
-					if (isPhysical && dmg > 0 && !targetToHit.isDead && !cmd.isReaction) {
+					if (isPhysical && dmg > 0 && Battle.isBattleAlive(targetToHit) && !cmd.isReaction) {
 						const isMonster = (targetToHit instanceof Monster);
 						const counterRate = (typeof PassiveSkill !== 'undefined') 
 							? PassiveSkill.getSumValue(targetToHit, 'counter_rate_base', isMonster) 
@@ -3097,10 +3122,14 @@ findNextActor: () => {
 						if (counterRate > 0 && Math.random() * 100 < counterRate) {
 							Battle.log(`${targetToHit.name}の 反撃！`);
 							await Battle.executeReactionAttack(targetToHit, actor);
+							if (!Battle.isBattleAlive(actor)) {
+							    Battle.renderEnemies(); Battle.renderPartyStatus();
+							    break;
+							}
 						}
 					}
 
-                    if (cmd.type === 'skill') applyEffects(targetToHit, data, ailmentChanceMult);
+                    if (cmd.type === 'skill' && Battle.isBattleAlive(targetToHit)) applyEffects(targetToHit, data, ailmentChanceMult);
 
 					const isOpposingTarget = cmd.isEnemy
 						? Battle.party.includes(targetToHit)
@@ -3108,7 +3137,8 @@ findNextActor: () => {
 					const canTriggerAttackFollowups = () => (
 						dmg > 0 &&
 						!cmd.isReaction &&
-						!targetToHit.isDead &&
+						Battle.isBattleAlive(actor) &&
+						Battle.isBattleAlive(targetToHit) &&
 						!isSupport &&
 						isOpposingTarget
 					);
@@ -3117,18 +3147,18 @@ findNextActor: () => {
 					// 回復・補助では発火させず、敵対対象へ実ダメージが出た攻撃だけ判定する。
 					if (canTriggerAttackFollowups()) {
 						const allies = cmd.isEnemy ? Battle.enemies : Battle.party;
-						const partners = allies.filter(p => p && p !== actor && !p.isDead && !p.isFled);
+						const partners = allies.filter(p => p && p !== actor && Battle.isBattleAlive(p));
 
 						for (const p of partners) {
 							// 仲間の攻撃によってターゲットが死亡した場合は、即座に連携ループを中断
-							if (targetToHit.isDead) break;
+							if (!Battle.isBattleAlive(targetToHit)) break;
 
 							const isMonsterPartner = (p instanceof Monster);
 							const chainChance = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(p, 'chain_rate_base', isMonsterPartner) : 0;
 							
 							if (chainChance > 0 && Math.random() * 100 < chainChance) {
 								// 実行直前にも生存確認を行う
-								if (!targetToHit.isDead) {
+								if (Battle.isBattleAlive(targetToHit)) {
 									Battle.log(`${p.name}が 連携した！`);
 									await Battle.executeReactionAttack(p, targetToHit);
 								}
@@ -3145,7 +3175,7 @@ findNextActor: () => {
 							
 							if (chaseChance > 0 && Math.random() * 100 < chaseChance) {
 								// 最終的な生存確認
-								if (!targetToHit.isDead) {
+								if (Battle.isBattleAlive(targetToHit)) {
 									Battle.log(`${actor.name}の 追い討ち！`);
 									await Battle.executeReactionAttack(actor, targetToHit);
 								}
@@ -3153,8 +3183,9 @@ findNextActor: () => {
 						}
 					}
 
-                    if (targetToHit.hp <= 0) {
-                        targetToHit.hp = 0; targetToHit.isDead = true; Battle.log(`${targetToHit.name}は倒れた！`);
+                    if (!Battle.isBattleAlive(targetToHit)) {
+                        Battle.markDefeated(targetToHit, false);
+                        targetToHit.isCovering = false;
                         Battle.renderEnemies(); Battle.renderPartyStatus();
                         break;
                     }
@@ -3173,7 +3204,7 @@ findNextActor: () => {
     executeReactionAttack: async (actor, target) => {
         // 通常攻撃 (ID: 1) のデータを取得
         const attackSkill = DB.SKILLS.find(s => s.id === 1);
-        if (!attackSkill || target.isDead) return;
+        if (!attackSkill || !Battle.isBattleAlive(target) || !Battle.isBattleAlive(actor)) return;
 
         // 再帰呼び出しを防ぐため、isReaction フラグを立てて processAction を実行
         await Battle.processAction({
@@ -3206,13 +3237,13 @@ findNextActor: () => {
     },
 
     getRandomAliveEnemy: () => {
-        const alive = Battle.enemies.filter(e => !e.isDead && !e.isFled);
+        const alive = Battle.enemies.filter(e => Battle.isBattleAlive(e));
         if (alive.length === 0) return null;
         return alive[Math.floor(Math.random() * alive.length)];
     },
 
     getWeakWeightedAliveEnemy: () => {
-        const alive = Battle.enemies.filter(e => !e.isDead && !e.isFled);
+        const alive = Battle.enemies.filter(e => Battle.isBattleAlive(e));
         if (alive.length === 0) return null;
         if (alive.length === 1) return alive[0];
 
@@ -3497,12 +3528,18 @@ findNextActor: () => {
                 `;
             }
 
-            // 死んでいる、または逃げた場合は表示を隠す
-            if (e.isFled || e.hp <= 0) {
+            // 死んでいる、または逃げた場合は表示を隠す。
+            // ただし、screen方式の全体エフェクトで遅延ダメージ演出を待っている敵は、
+            // 演出より先に消えないよう一時的に表示を保持する。
+            const keepDefeatedVisible = !e.isFled && window.PolishBattleFX &&
+                typeof window.PolishBattleFX.shouldKeepDefeatedVisible === 'function' &&
+                window.PolishBattleFX.shouldKeepDefeatedVisible(e);
+            if (e.isFled || (e.hp <= 0 && !keepDefeatedVisible)) {
                 div.style.visibility = 'hidden';
                 container.appendChild(div);
                 return;
             }
+            if (keepDefeatedVisible) div.classList.add('enemy-defeat-hold');
             
             const imageInfo = Battle.resolveMonsterImage(e, g);
             const src = Battle.escapeAttr(imageInfo.src);
@@ -3516,10 +3553,14 @@ findNextActor: () => {
                 object-position: center bottom;
                 filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5)); 
                 display: block;
-                transform: translateY(${imgTranslateY});
+                --enemy-img-y: ${imgTranslateY};
+                transform: translateY(var(--enemy-img-y));
             ">`;
-            const hpPer = (e.baseMaxHp > 0) ? Math.max(0, Math.min(100, (e.hp / e.baseMaxHp) * 100)) : 0;
-            const hpRatio = e.baseMaxHp > 0 ? e.hp / e.baseMaxHp : 0;
+            const displayHp = (window.PolishBattleFX && typeof window.PolishBattleFX.hpDisplayForEnemy === 'function')
+                ? window.PolishBattleFX.hpDisplayForEnemy(e, e.hp)
+                : e.hp;
+            const hpPer = (e.baseMaxHp > 0) ? Math.max(0, Math.min(100, (displayHp / e.baseMaxHp) * 100)) : 0;
+            const hpRatio = e.baseMaxHp > 0 ? displayHp / e.baseMaxHp : 0;
             const nameColor = hpRatio < 0.5 ? '#ff4' : '#fff';
             
             div.innerHTML = `
@@ -3535,7 +3576,7 @@ findNextActor: () => {
                     transform: scale(${perEnemyScaleFactor}); 
                     transform-origin: top center;
                     text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;">
-                    <div style="font-size: 10px; color: ${nameColor}; font-weight:bold; white-space: nowrap; margin-bottom: 2px;">${e.name}</div>
+                    <div class="enemy-name" style="font-size: 10px; color: ${nameColor}; font-weight:bold; white-space: nowrap; margin-bottom: 2px;">${e.name}</div>
                     <div class="enemy-hp-bar" style="width: 60%; height: 4px; border: 1px solid #000; background: #333; border-radius: 2px;">
                         <div class="enemy-hp-val" style="width:${hpPer}%; height:100%; background:#ff4444; transition:width 0.2s; border-radius: 1px;"></div>
                     </div>
