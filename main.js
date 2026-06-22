@@ -734,6 +734,116 @@ const App = {
 	// sw.js の RUNTIME_CACHE_NAME と揃えること。
 	fullDataCacheName: 'prisma-abyss-v3.44-full-data-runtime-assets',
 
+
+	// 初回の「全データをダウンロードしますか？」で「いいえ」を選んだ記録。
+	// アプリ更新時に main.html 側からこの接頭辞の localStorage を削除する。
+	fullDataPromptDeclineKeyPrefix: 'prisma_abyss_full_data_prompt_declined_',
+
+	getFullDataPromptDeclineKey: () => `${App.fullDataPromptDeclineKeyPrefix}${App.fullDataCacheName}`,
+
+	hasDeclinedInitialFullDataPrompt: () => {
+		try {
+			return localStorage.getItem(App.getFullDataPromptDeclineKey()) === '1';
+		} catch (e) {
+			return false;
+		}
+	},
+
+	setDeclinedInitialFullDataPrompt: (declined) => {
+		try {
+			const key = App.getFullDataPromptDeclineKey();
+			if (declined) localStorage.setItem(key, '1');
+			else localStorage.removeItem(key);
+		} catch (e) {}
+	},
+
+	clearFullDataPromptDeclineFlags: () => {
+		try {
+			const prefix = App.fullDataPromptDeclineKeyPrefix;
+			Object.keys(localStorage)
+				.filter(key => key.indexOf(prefix) === 0)
+				.forEach(key => localStorage.removeItem(key));
+		} catch (e) {}
+	},
+
+	formatFullDataBytes: (bytes) => {
+		const value = Number(bytes);
+		if (!Number.isFinite(value) || value < 0) return '';
+		if (value < 1024) return `${Math.ceil(value).toLocaleString()} B`;
+		if (value < 1024 * 1024) return `${Math.ceil(value / 1024).toLocaleString()} KB`;
+		const mb = value / 1024 / 1024;
+		return `${mb >= 10 ? Math.round(mb).toLocaleString() : mb.toFixed(1)} MB`;
+	},
+
+	formatFullDataSizeInfo: (sizeInfo) => {
+		// Content-Length が対象すべてで取れた場合だけ表示する。
+		// 一部でも取れないサーバーでは、容量欄自体を非表示にする。
+		if (!sizeInfo || !sizeInfo.allKnown) return '';
+		const formatted = App.formatFullDataBytes(sizeInfo.totalBytes);
+		return formatted ? `容量: 約 ${formatted}` : '';
+	},
+
+	getFullDataSizeInfo: async (urls = [], options = {}) => {
+		if (!App.isFullDataCacheSupported()) return null;
+
+		const targets = Array.from(new Set((urls || []).filter(Boolean)));
+		if (!targets.length) return null;
+
+		const concurrency = Math.max(1, Math.min(12, Number(options.concurrency) || 8));
+		const perRequestTimeoutMs = Math.max(1000, Number(options.perRequestTimeoutMs) || 3000);
+		let index = 0;
+		let knownCount = 0;
+		let unknownCount = 0;
+		let totalBytes = 0;
+
+		const readOne = async (url) => {
+			let timeoutId = null;
+			let controller = null;
+			try {
+				const absolute = new URL(url, window.location.href);
+				if (absolute.origin !== window.location.origin) throw new Error('cross-origin');
+
+				const fetchOptions = { method: 'HEAD', cache: 'no-store' };
+				if (typeof AbortController !== 'undefined') {
+					controller = new AbortController();
+					fetchOptions.signal = controller.signal;
+					timeoutId = setTimeout(() => controller.abort(), perRequestTimeoutMs);
+				}
+
+				const response = await fetch(absolute.href, fetchOptions);
+				if (!response || !response.ok) throw new Error(`HTTP ${response ? response.status : 'ERR'}`);
+
+				const contentLength = response.headers.get('content-length');
+				const bytes = Number(contentLength);
+				if (!Number.isFinite(bytes) || bytes < 0) throw new Error('content-length-missing');
+
+				totalBytes += bytes;
+				knownCount++;
+			} catch (e) {
+				unknownCount++;
+			} finally {
+				if (timeoutId) clearTimeout(timeoutId);
+			}
+		};
+
+		const worker = async () => {
+			while (index < targets.length) {
+				const url = targets[index++];
+				await readOne(url);
+			}
+		};
+
+		await Promise.all(Array.from({ length: Math.min(concurrency, targets.length) }, worker));
+
+		return {
+			totalBytes,
+			knownCount,
+			unknownCount,
+			totalCount: targets.length,
+			allKnown: knownCount === targets.length && unknownCount === 0
+		};
+	},
+
 	// Cache API での全データ取得は http/https 配信時だけ実行する。
 	// file:// 直開きでは fetch(file://...) がブラウザのCORS制限で必ず失敗するため、
 	// 起動時モーダルや失敗ダイアログを出さずに通常起動へ進める。
@@ -931,13 +1041,18 @@ const App = {
 		let completed = 0;
 		let failed = 0;
 		const failedUrls = [];
+		const sizeInfo = options.sizeInfo || await App.getFullDataSizeInfo(targets);
+		const sizeLine = App.formatFullDataSizeInfo(sizeInfo);
 
 		const dialog = await App.showFullDataDialog('全データをダウンロード中です。', { progressOnly: true });
 		const updateProgress = () => {
 			if (dialog && dialog.update) {
+				const lines = [`完了: ${completed}/${total}`];
+				if (sizeLine) lines.push(sizeLine);
+				if (failed) lines.push(`失敗: ${failed}`);
 				dialog.update(
 					'全データをダウンロード中です。',
-					`完了: ${completed}/${total}${failed ? `\n失敗: ${failed}` : ''}`
+					lines.join('\n')
 				);
 			}
 		};
@@ -989,12 +1104,20 @@ const App = {
 		const missing = await App.getMissingFullDataCacheUrls(urls);
 		if (!missing.length) return;
 
+		if (App.hasDeclinedInitialFullDataPrompt()) return;
+
+		const sizeInfo = await App.getFullDataSizeInfo(missing);
+		const sizeLine = App.formatFullDataSizeInfo(sizeInfo);
+		const detailLines = [`未ダウンロード: ${missing.length}/${urls.length}`];
+		if (sizeLine) detailLines.push(sizeLine);
+
 		const yes = await App.showFullDataDialog(
-			`一部キャッシュ未ダウンロードのデータがあります。\n全データをダウンロードしますか？\n\n未ダウンロード: ${missing.length}/${urls.length}`
+			`一部キャッシュ未ダウンロードのデータがあります。\n全データをダウンロードしますか？\n\n${detailLines.join('\n')}`
 		);
 
 		if (yes) {
-			const result = await App.downloadFullDataCache({ urls: missing });
+			App.setDeclinedInitialFullDataPrompt(false);
+			const result = await App.downloadFullDataCache({ urls: missing, sizeInfo });
 			if (result.failed > 0) {
 				await App.showFullDataDialog(
 					`一部データのダウンロードに失敗しました。\n通信環境を確認して、設定メニューから再実行してください。\n\n失敗: ${result.failed}/${result.total}`,
@@ -1003,6 +1126,8 @@ const App = {
 			}
 		} else {
 			// 起動前の全量ダウンロードを待たないだけで、起動後のウォームキャッシュは継続する。
+			// 次回以降は同じ確認を出さない。アプリ更新時にこのフラグは消す。
+			App.setDeclinedInitialFullDataPrompt(true);
 			await App.showFullDataDialog('（設定メニューからいつでも全データダウンロードが可能です）', { messageOnly: true });
 		}
 	},
@@ -1022,13 +1147,15 @@ const App = {
 				return;
 			}
 
-			const result = await App.downloadFullDataCache({ urls: missing });
+			const sizeInfo = await App.getFullDataSizeInfo(missing);
+			const result = await App.downloadFullDataCache({ urls: missing, sizeInfo });
 			if (result.failed > 0) {
 				await App.showFullDataDialog(
 					`一部データのダウンロードに失敗しました。\n通信環境を確認してから再実行してください。\n\n失敗: ${result.failed}/${result.total}`,
 					{ messageOnly: true }
 				);
 			} else {
+				App.setDeclinedInitialFullDataPrompt(false);
 				await App.showFullDataDialog('全データのダウンロードが完了しました。', { messageOnly: true });
 			}
 		} catch (e) {

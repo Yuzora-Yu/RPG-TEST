@@ -79,6 +79,38 @@
         showPageDialog(message, { messageOnly: true, onYes: onOk });
     }
 
+
+    const FULL_DATA_PROMPT_DECLINE_KEY_PREFIX = 'prisma_abyss_full_data_prompt_declined_';
+
+    function clearFullDataPromptDeclineFlags() {
+        try {
+            if (typeof App !== 'undefined' && typeof App.clearFullDataPromptDeclineFlags === 'function') {
+                App.clearFullDataPromptDeclineFlags();
+                return;
+            }
+            Object.keys(localStorage)
+                .filter(key => key.indexOf(FULL_DATA_PROMPT_DECLINE_KEY_PREFIX) === 0)
+                .forEach(key => localStorage.removeItem(key));
+        } catch (e) {}
+    }
+
+    function clearAppCacheAndReload() {
+        clearFullDataPromptDeclineFlags();
+
+        const unregisterTask = ('serviceWorker' in navigator)
+            ? navigator.serviceWorker.getRegistrations()
+                .then(regs => Promise.all(regs.map(reg => reg.unregister())))
+            : Promise.resolve();
+
+        const cacheTask = ('caches' in window)
+            ? caches.keys().then(keys => Promise.all(keys.map(key => caches.delete(key))))
+            : Promise.resolve();
+
+        Promise.all([unregisterTask, cacheTask]).finally(() => {
+            location.reload(true);
+        });
+    }
+
     function showUpdatePrompt() {
         const updateDate = "2026/05/11";
         const changeLog = "主な変更点：実績機能の追加およびバグ修正";
@@ -87,18 +119,7 @@
     }
 
     function forceUpdateApp() {
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(regs => {
-                regs.forEach(reg => reg.unregister());
-                caches.keys().then(keys => {
-                    keys.forEach(key => caches.delete(key));
-                });
-            }).then(() => {
-                location.reload(true);
-            });
-        } else {
-            location.reload(true);
-        }
+        clearAppCacheAndReload();
     }
     </script>
 </head>
@@ -289,18 +310,7 @@
 
         function updateApp() {
             showPageConfirm('アプリのキャッシュをクリアして最新版に更新しますか？', () => {
-                if ('serviceWorker' in navigator) {
-                    navigator.serviceWorker.getRegistrations().then(regs => {
-                        regs.forEach(reg => reg.unregister());
-                        caches.keys().then(keys => {
-                            keys.forEach(key => caches.delete(key));
-                        });
-                    }).then(() => {
-                        location.reload(true);
-                    });
-                } else {
-                    location.reload(true);
-                }
+                clearAppCacheAndReload();
             });
         }
     </script>
