@@ -60,6 +60,14 @@ const MenuConfig = {
         MenuConfig.render();
     },
 
+    downloadAllData: async () => {
+        if (typeof App !== 'undefined' && typeof App.downloadFullDataFromConfig === 'function') {
+            await App.downloadFullDataFromConfig();
+            return;
+        }
+        alert('全データダウンロード機能を利用できません。');
+    },
+
     radioRow: (group, value, label, desc, checked, onChange) => `
         <label class="list-item" style="display:flex; align-items:center; gap:10px; padding:10px; margin-bottom:8px; cursor:pointer; background:${checked ? '#203040' : '#181818'}; border:1px solid ${checked ? '#ffd700' : '#333'}; border-radius:6px;">
             <input type="radio" name="${group}" value="${value}" ${checked ? 'checked' : ''} onchange="${onChange}" style="width:18px; height:18px; flex:0 0 auto;">
@@ -104,6 +112,7 @@ const MenuConfig = {
 
             <div style="border:1px solid #333; border-radius:8px; padding:12px; background:#151515;">
                 <div style="color:#ffd700; font-weight:bold; margin-bottom:10px;">データ管理</div>
+                <button class="btn" style="width:100%; height:42px; margin-bottom:10px; background:#004444;" onclick="MenuConfig.downloadAllData()">全データダウンロード</button>
                 <button class="btn" style="width:100%; height:42px; margin-bottom:10px; background:#004444;" onclick="App.downloadSave()">データ出力</button>
                 <button class="btn" style="width:100%; height:42px; background:#004444;" onclick="App.importSave()">データ読込</button>
             </div>

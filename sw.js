@@ -1,17 +1,17 @@
 // sw.js: Prisma Abyss Service Worker
 // ============================================================================
-// 2026-05-14 方針変更: 初回表示品質優先の画像初回キャッシュ
+// 2026-06-22 方針変更: 全画像データは main.js の起動時確認/設定メニューでキャッシュ
 // ----------------------------------------------------------------------------
-// 前回は起動速度を優先して画像を裏側ウォームキャッシュに寄せましたが、
-// ロード画面・初戦闘・ガチャ・宿屋/カジノ背景などで「初回だけ画像が遅れる」
-// 体験が目立つため、いったん初回install時に画像もまとめてキャッシュします。
+// 初回起動時/キャッシュ削除後に未ダウンロード画像がある場合、main.js 側で
+// 「全データをダウンロードしますか」を表示する。
+// 「はい」は起動前に全画像を保存し、「いいえ」は起動後に裏側ウォームキャッシュを進める。
 //
 // 今後の方針:
-// - App Shell と画像を初回install時にキャッシュする。
-// - 画像リストの正本は assets.js の PRISMA_ASSETS.cacheWarmup.installImages。
+// - App Shell と最低限の重要画像だけを初回install時にキャッシュする。
+// - 全画像リストの正本は assets.js の PRISMA_ASSETS.cacheWarmup.installImages。
 // - sw.js 側にモンスター/エフェクト/背景の巨大配列を手書きで復活させないこと。
-// - 画像軽量化後に分割キャッシュへ戻す場合も、まず assets.js の定義を変更する。
-// - installで取りこぼした画像は、main.js からの PRISMA_WARM_CACHE で再試行する。
+// - 設定メニューの「全データダウンロード」も main.js の同じロジックを使う。
+// - 起動後/設定実行後の補助再試行は main.js からの PRISMA_WARM_CACHE で行う。
 // ============================================================================
 
 try {
@@ -22,12 +22,12 @@ try {
   console.warn("[SW] assets.js の読み込みに失敗しました。画像初回キャッシュは最小限で続行します。", error);
 }
 
-const CACHE_NAME = "prisma-abyss-v3.43-config-menu";
-const RUNTIME_CACHE_NAME = "prisma-abyss-v3.43-config-menu-runtime-assets";
+const CACHE_NAME = "prisma-abyss-v3.44-full-data";
+const RUNTIME_CACHE_NAME = "prisma-abyss-v3.44-full-data-runtime-assets";
 const WARM_CACHE_META_KEY = "__prisma_abyss_warm_cache_complete__";
 
 // 起動に必要な App Shell。
-// 画像は下の INSTALL_IMAGE_PRECACHE で assets.js からまとめて取得する。
+// 画像は下の INSTALL_IMAGE_PRECACHE で最低限の重要画像だけ取得する。
 // ここへ画像ファイルを手書きで増やさないこと。
 const PRECACHE_FILES = [
   "./",
@@ -90,9 +90,9 @@ const INITIAL_IMAGE_PRECACHE = ASSET_WARMUP.criticalImages || [
   "assets/background/bg_casino.png",
 ];
 
-// 初回install時にキャッシュする画像全体。
-// 重要: この一覧は assets.js から受け取る。ここに巨大配列を直接書かないこと。
-const INSTALL_IMAGE_PRECACHE = ASSET_WARMUP.installImages || INITIAL_IMAGE_PRECACHE;
+// 初回install時は最低限の重要画像だけをキャッシュする。
+// 全画像データは main.js の起動時モーダル、または設定メニューの「全データダウンロード」から実行する。
+const INSTALL_IMAGE_PRECACHE = ASSET_WARMUP.criticalImages || INITIAL_IMAGE_PRECACHE;
 
 const isSameOrigin = (request) => {
   try {

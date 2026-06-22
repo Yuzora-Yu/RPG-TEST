@@ -270,23 +270,23 @@ const STORY_DATA = {
     areas: {
         // fieldTile はワールドマップ上の表示専用画像。未指定なら TILE_THEMES.WORLD のタイル画像を使います。
         // 例: fieldTile: tileEntry("overlay_field_fire_village", "#d95b3a")
-        START_VILLAGE: { name: "始まりの村", rank: 1, centerX: 58, centerY: 64, fieldTile: tileEntry("overlay_field_village", "#d7b45a") },
-        FIRE_VILLAGE: { name: "炎の里", rank: 10, centerX: 97, centerY: 49, fieldTile: tileEntry("overlay_field_fire_village", "#d95b3a") },
-        WIND_VILLAGE: { name: "風の集落", rank: 20, centerX: 98, centerY: 37, fieldTile: tileEntry("overlay_field_settlement", "#b8d889") },
-        WATER_CITY: { name: "水上都市", rank: 30, centerX: 68, centerY: 21, fieldTile: tileEntry("overlay_field_town", "#5bd6ff") },
+        START_VILLAGE: { name: "リュミナ村", rank: 1, centerX: 58, centerY: 64, fieldTile: tileEntry("overlay_field_village", "#d7b45a") },
+        FIRE_VILLAGE: { name: "炎の里イグニシア", rank: 10, centerX: 97, centerY: 49, fieldTile: tileEntry("overlay_field_fire_village", "#d95b3a") },
+        WIND_VILLAGE: { name: "風の集落カザリア", rank: 20, centerX: 98, centerY: 37, fieldTile: tileEntry("overlay_field_settlement", "#b8d889") },
+        WATER_CITY: { name: "水上都市リヴァリア", rank: 30, centerX: 68, centerY: 21, fieldTile: tileEntry("overlay_field_town", "#5bd6ff") },
         SEABED_TEMPLE: { name: "海底神殿", rank: 35, centerX: 68, centerY: 15, fieldTile: tileEntry("overlay_field_temple", "#5bd6ff"), entryRequiredFlag: "seabedTempleRouteOpened", entryBypassFlags: ["waterCityCleared"], entryLockedText: "海底神殿へ続く水路は、重い水圧に閉ざされている。青の結晶が必要だ。" },
         BIG_TOWER: { name: "大灯台", rank: 30, centerX: 21, centerY: 79, fieldTile: tileEntry("overlay_field_lighthouse", "#f2e7aa") },
-        THUNDER_FORT: { name: "雷の要塞", rank: 40, centerX: 45, centerY: 36, fieldTile: tileEntry("overlay_field_fortress", "#f4d84a"), entrances: [
+        THUNDER_FORT: { name: "ライザーク要塞", rank: 40, centerX: 45, centerY: 36, fieldTile: tileEntry("overlay_field_fortress", "#f4d84a"), entrances: [
             { x: 45, y: 36, entryKey: "west", label: "西門" },
             { x: 47, y: 36, entryKey: "east", label: "東門" }
         ] },
-        LIGHT_PALACE: { name: "光の宮殿", rank: 50, centerX: 67, centerY: 48, fieldTile: tileEntry("overlay_field_temple", "#eef0e8") },
-        DARK_CASTLE: { name: "魔王城", rank: 60, centerX: 8, centerY: 50, fieldTile: tileEntry("overlay_field_darkcastle", "#db3b4d") },
+        LIGHT_PALACE: { name: "光の宮殿グランプリズマ", rank: 50, centerX: 67, centerY: 48, fieldTile: tileEntry("overlay_field_temple", "#eef0e8") },
+        DARK_CASTLE: { name: "魔王城ガルヴァニア", rank: 60, centerX: 8, centerY: 50, fieldTile: tileEntry("overlay_field_darkcastle", "#db3b4d") },
         ABYSS: { name: "深淵の魔窟", rank: 70, centerX: 51, centerY: 55, fieldTile: tileEntry("overlay_field_lost", "#303541") },
         ABYSS_FIELD: { name: "深淵の魔窟 外縁", rank: 70, centerX: 51, centerY: 55, fieldTile: tileEntry("overlay_field_lost", "#303541") },
         FOREST_WIND_HOLE: { name: "森の風穴", rank: 8, centerX: 79, centerY: 44, fieldTile: tileEntry("overlay_field_cave", "#7fbf7a"), entryRequiredFlag: "windHoleRouteKnown", entryBypassFlags: ["firePrismRestored", "fireVillageCleared"], entryEventId: "forest_wind_hole_entry", entryEventStoryStep: 2, entryLockedText: "森の奥から冷たい風が流れてくる。だが、今は風穴へ向かう理由がない。" },
         CRENA_LIMESTONE_CAVE: { name: "クレナ鍾乳洞", rank: 23, centerX: 74, centerY: 16, fieldTile: tileEntry("overlay_field_cave", "#72c7dd"), entryRequiredFlag: "crenaRouteKnown", entryBypassFlags: ["blueCrystalObtained", "waterCityCleared"], entryEventId: "crena_cave_entry", entryEventStoryStep: 4, entryLockedText: "青い光が洞口の奥で揺れている。今はまだ、鍾乳洞へ入る理由がない。" },
-        DARK_SHRINE_RUINS: { name: "闇の神殿跡地", rank: 75, centerX: 37, centerY: 47, fieldTile: tileEntry("overlay_field_ruins", "#6a4e9f") },
+        DARK_SHRINE_RUINS: { name: "闇の神殿エクリプス跡", rank: 75, centerX: 37, centerY: 47, fieldTile: tileEntry("overlay_field_ruins", "#6a4e9f") },
         GREZELIA_FORBIDDEN: { name: "禁則地グレゼリア", rank: 85, centerX: 38, centerY: 59, fieldTile: tileEntry("overlay_field_darkcastle", "#6d2534") },
         RUINED_SHRINE: { name: "朽ちた祠", rank: 300, centerX: 58, centerY: 56, fieldTile: tileEntry("overlay_field_ruins", "#8f7dff") },
         MEDAL: { name: "メダル王", rank: 1, centerX: 32, centerY: 18, fieldTile: tileEntry("overlay_field_medal", "#f6ca62") },
@@ -300,14 +300,14 @@ const SEA_ENCOUNTER_MONSTERS = [100033, 100037, 100044, 100057, 100059, 100064];
 
 // ワールドマップ通常エンカウント。近隣ダンジョン1〜2階相当の敵を地域別に出す。
 const FIELD_ENCOUNTER_ZONES = [
-    { id: "START_PLAINS", name: "始まりの村周辺", rank: 5, centerX: 58, centerY: 64, radius: 34, monsters: [100001, 100002, 100003, 100004, 100005, 100006] },
+    { id: "START_PLAINS", name: "リュミナ村周辺", rank: 5, centerX: 58, centerY: 64, radius: 34, monsters: [100001, 100002, 100003, 100004, 100005, 100006] },
     { id: "FIRE_FOOTHILLS", name: "イグナ火山山麓", rank: 12, centerX: 97, centerY: 49, radius: 24, monsters: [100010, 100011, 100012, 100013, 100014] },
     { id: "WIND_HIGHLANDS", name: "禁忌の森外縁", rank: 22, centerX: 98, centerY: 37, radius: 20, monsters: [100020, 100021, 100022, 100023, 100024] },
-    { id: "WATER_COAST", name: "水上都市近海", rank: 35, centerX: 68, centerY: 21, radius: 28, monsters: [100033, 100034, 100035, 100036] },
+    { id: "WATER_COAST", name: "水上都市リヴァリア近海", rank: 35, centerX: 68, centerY: 21, radius: 28, monsters: [100033, 100034, 100035, 100036] },
     { id: "BIG_TOWER_SHORE", name: "大灯台沿岸", rank: 30, centerX: 21, centerY: 79, radius: 30, monsters: [100026, 100027, 100028, 100029] },
     { id: "THUNDER_FRONTIER", name: "雷鳴の荒野", rank: 42, centerX: 45, centerY: 36, radius: 24, monsters: [100040, 100041, 100042, 100043] },
-    { id: "LIGHT_PALACE_GROVE", name: "光の宮殿周辺", rank: 62, centerX: 67, centerY: 48, radius: 18, monsters: [100060, 100061, 100062, 100063] },
-    { id: "DARK_WASTES", name: "魔王城外郭", rank: 60, centerX: 8, centerY: 50, radius: 30, monsters: [100056, 100057, 100058, 100059] },
+    { id: "LIGHT_PALACE_GROVE", name: "光の宮殿グランプリズマ周辺", rank: 62, centerX: 67, centerY: 48, radius: 18, monsters: [100060, 100061, 100062, 100063] },
+    { id: "DARK_WASTES", name: "魔王城ガルヴァニア外郭", rank: 60, centerX: 8, centerY: 50, radius: 30, monsters: [100056, 100057, 100058, 100059] },
     { id: "ABYSS_EDGE", name: "深淵外縁", rank: 70, centerX: 51, centerY: 55, radius: 20, priority: 1, monsters: [100064, 100065, 100066, 100067] },
     { id: "TRIAL_ISLAND_FIELD", name: "最果ての祠周辺", rank: 100, centerX: 2, centerY: 2, radius: 10, priority: 2, rareMonsters: [{ id: 200203, rate: 0.05 }] },
     { id: "SUMMIT_TEMPLE_FIELD", name: "頂の神殿周辺", rank: 150, centerX: 89, centerY: 77, radius: 12, priority: 2, rareMonsters: [{ id: 200203, rate: 0.05 }] }
@@ -488,7 +488,7 @@ const FIXED_OVERLAY_BASE_TILES = {
 
 const FIXED_MAPS = {
     START_VILLAGE: {
-        name: "始まりの村",
+        name: "リュミナ村",
         themeKey: "START_VILLAGE",
         tileOverrides: {
             // このMAPだけ見た目を変えたい場合はここに追記。
@@ -513,9 +513,9 @@ const FIXED_MAPS = {
             "WWWWWWWWWWWWWWW"
         ],
         mapActions: [
-            { x: 2, y: 8, label: "道具を買う", log: "道具屋の看板が出ている。", type: "shop", shopType: "item", title: "始まりの村 道具屋", shopRank: 5 },
-            { x: 8, y: 4, label: "武器を見る", log: "簡素な武器が並んでいる。", type: "shop", shopType: "weapon", title: "始まりの村 武器屋", shopRank: 5 },
-            { x: 10, y: 4, label: "防具を見る", log: "旅支度用の防具が並んでいる。", type: "shop", shopType: "armor", title: "始まりの村 防具屋", shopRank: 5 },
+            { x: 2, y: 8, label: "道具を買う", log: "道具屋の看板が出ている。", type: "shop", shopType: "item", title: "リュミナ村 道具屋", shopRank: 5 },
+            { x: 8, y: 4, label: "武器を見る", log: "簡素な武器が並んでいる。", type: "shop", shopType: "weapon", title: "リュミナ村 武器屋", shopRank: 5 },
+            { x: 10, y: 4, label: "防具を見る", log: "旅支度用の防具が並んでいる。", type: "shop", shopType: "armor", title: "リュミナ村 防具屋", shopRank: 5 },
             { x: 11, y: 8, label: "村人と話す", log: "村人が、北東の穴を見つめている。", type: "storyEvent", eventId: "town_start_villager_1", imageKey: "overlay_npc_villager", baseTile: "G" },
             { x: 13, y: 2, label: "村の若者と話す", log: "若者が木剣を握りしめている。", type: "storyEvent", eventId: "town_start_villager_2", imageKey: "overlay_npc_bronze_knight", baseTile: "G" },
             { x: 2, y: 1, label: "薬草摘みと話す", log: "籠を抱えた女性が、葉についた泥を払っている。", type: "storyEvent", eventId: "town_start_villager_3", imageKey: "overlay_npc_villager", baseTile: "G" },
@@ -534,10 +534,10 @@ const FIXED_MAPS = {
         exitPoint: { area: "WORLD", x: 58, y: 65 }
     },
     FIRE_VILLAGE: {
-        name: "炎の里",
+        name: "炎の里イグニシア",
         themeKey: "FIRE_VILLAGE",
         tileOverrides: {
-            // 炎の里専用チップ。必要なものだけ上書きできます。
+            // 炎の里イグニシア専用チップ。必要なものだけ上書きできます。
             // W: tileEntry("tile_fire_wall", "#4b2524"), // 外周・岩壁
             // T: tileEntry("tile_fire_floor", "#5b514d"), // 通路
             // G: tileEntry("tile_fire_floor", "#6b5144"), // 広場
@@ -572,9 +572,9 @@ const FIXED_MAPS = {
         ],
         mapActions: [
             { x: 21, y: 14, label: "泊まる", log: "熱気をしのげる宿屋がある。", type: "inn" },
-            { x: 21, y: 17, label: "道具を買う", log: "火山探索向けの道具屋だ。", type: "shop", shopType: "item", title: "炎の里 道具屋", shopRank: 12 },
-            { x: 7, y: 14, label: "武器を見る", log: "鍛冶火が赤く揺れる武器屋だ。", type: "shop", shopType: "weapon", title: "炎の里 武器屋", shopRank: 12 },
-            { x: 7, y: 17, label: "防具を見る", log: "火山の熱に耐える防具を扱っている。", type: "shop", shopType: "armor", title: "炎の里 防具屋", shopRank: 12 },
+            { x: 21, y: 17, label: "道具を買う", log: "火山探索向けの道具屋だ。", type: "shop", shopType: "item", title: "炎の里イグニシア 道具屋", shopRank: 12 },
+            { x: 7, y: 14, label: "武器を見る", log: "鍛冶火が赤く揺れる武器屋だ。", type: "shop", shopType: "weapon", title: "炎の里イグニシア 武器屋", shopRank: 12 },
+            { x: 7, y: 17, label: "防具を見る", log: "火山の熱に耐える防具を扱っている。", type: "shop", shopType: "armor", title: "炎の里イグニシア 防具屋", shopRank: 12 },
             {
                 x: 8, y: 4, label: "鍛冶師と話す", log: "鍛冶師が炉の縁に手を置いている。",
                 type: "log", imageKey: "overlay_npc_dark_soldier",
@@ -631,10 +631,10 @@ const FIXED_MAPS = {
         exitPoint: { area: "WORLD", x: 97, y: 50 }
     },
     WIND_VILLAGE: {
-        name: "風の集落",
+        name: "風の集落カザリア",
         themeKey: "WIND_VILLAGE",
         tileOverrides: {
-            // 風の集落専用チップ。
+            // 風の集落カザリア専用チップ。
             // W: tileEntry("tile_wind_wall", "#64636a"), // 外周・崖
             // T: tileEntry("tile_wind_floor", "#5b7b51"), // 草道
             // L: tileEntry("tile_wind_bridge", "#9f8a5a"), // 木橋
@@ -668,9 +668,9 @@ const FIXED_MAPS = {
         ],
         mapActions: [
             { x: 22, y: 7, label: "泊まる", log: "風よけの宿屋がある。", type: "inn" },
-            { x: 19, y: 7, label: "道具を買う", log: "森歩きに備えた道具屋だ。", type: "shop", shopType: "item", title: "風の集落 道具屋", shopRank: 22 },
-            { x: 6, y: 7, label: "武器を見る", log: "軽く扱いやすい武器が並んでいる。", type: "shop", shopType: "weapon", title: "風の集落 武器屋", shopRank: 22 },
-            { x: 9, y: 7, label: "防具を見る", log: "森の魔物に備えた防具屋だ。", type: "shop", shopType: "armor", title: "風の集落 防具屋", shopRank: 22 },
+            { x: 19, y: 7, label: "道具を買う", log: "森歩きに備えた道具屋だ。", type: "shop", shopType: "item", title: "風の集落カザリア 道具屋", shopRank: 22 },
+            { x: 6, y: 7, label: "武器を見る", log: "軽く扱いやすい武器が並んでいる。", type: "shop", shopType: "weapon", title: "風の集落カザリア 武器屋", shopRank: 22 },
+            { x: 9, y: 7, label: "防具を見る", log: "森の魔物に備えた防具屋だ。", type: "shop", shopType: "armor", title: "風の集落カザリア 防具屋", shopRank: 22 },
             {
                 x: 3, y: 7, label: "見張りと話す", log: "見張りが枝の揺れを追っている。",
                 type: "log", imageKey: "overlay_npc_bronze_knight",
@@ -750,10 +750,10 @@ const FIXED_MAPS = {
         exitPoint: { area: "WORLD", x: 98, y: 38 }
     },
     WATER_CITY: {
-        name: "水上都市",
+        name: "水上都市リヴァリア",
         themeKey: "WATER_CITY",
         tileOverrides: {
-            // 水上都市専用チップ。
+            // 水上都市リヴァリア専用チップ。
             // W: tileEntry("tile_water_canal", "#155d7a"), // 水路
             // T: tileEntry("tile_water_pave", "#3c4151"), // 石畳
             // L: tileEntry("tile_water_bridge", "#a99361"), // 橋
@@ -792,9 +792,9 @@ const FIXED_MAPS = {
             "WWWWWWWWWWWWWWWWWWWSWWWWWWWWWWWWWWWWWWW"
         ],
         mapActions: [
-            { x: 4, y:10, label: "道具を買う", log: "水路沿いの道具屋だ。", type: "shop", shopType: "item", title: "水上都市 道具屋", shopRank: 35 },
-            { x: 7, y: 10, label: "武器を見る", log: "海底神殿に備えた武器を扱っている。", type: "shop", shopType: "weapon", title: "水上都市 武器屋", shopRank: 35 },
-            { x: 10, y: 10, label: "防具を見る", log: "水と闇に強い防具を扱っている。", type: "shop", shopType: "armor", title: "水上都市 防具屋", shopRank: 35 },
+            { x: 4, y:10, label: "道具を買う", log: "水路沿いの道具屋だ。", type: "shop", shopType: "item", title: "水上都市リヴァリア 道具屋", shopRank: 35 },
+            { x: 7, y: 10, label: "武器を見る", log: "海底神殿に備えた武器を扱っている。", type: "shop", shopType: "weapon", title: "水上都市リヴァリア 武器屋", shopRank: 35 },
+            { x: 10, y: 10, label: "防具を見る", log: "水と闇に強い防具を扱っている。", type: "shop", shopType: "armor", title: "水上都市リヴァリア 防具屋", shopRank: 35 },
             {
                 x: 14, y: 5, label: "兵士と話す", log: "黒鎧の兵士が橋を塞いでいる。",
                 type: "storyEvent", eventId: "water_city_blockade_guard", imageKey: "overlay_npc_dark_soldier",
@@ -811,7 +811,7 @@ const FIXED_MAPS = {
                 missingFlag: "waterCityCleared", baseTile: "T"
             },
             {
-                x: 17, y: 8, label: "老人と話す", log: "老人が雷の要塞の方角を眺めている。",
+                x: 17, y: 8, label: "老人と話す", log: "老人がライザーク要塞の方角を眺めている。",
                 type: "log", imageKey: "overlay_npc_elder",
                 events: [
                     { requiredFlag: "thunderFortCleared", eventId: "town_water_villager_1" },
@@ -1412,7 +1412,7 @@ const FIXED_DUNGEON_MAPS = {
                         x: 53,
                         y: 16,
                         to: "EXIT",
-                        label: "風の集落へ戻る",
+                        label: "風の集落カザリアへ戻る",
                         log: "集落へ続く森の出口だ。"
                     },
                     {
@@ -2556,7 +2556,7 @@ const FIXED_DUNGEON_MAPS = {
         ]
     },
     "THUNDER_FORT": {
-        "name": "雷の要塞",
+        "name": "ライザーク要塞",
         "themeKey": "THUNDER_FORT",
         "rank": 40,
         "encounterRank": 40,
@@ -2668,9 +2668,9 @@ const FIXED_DUNGEON_MAPS = {
                 "mapActions": [
                     { "x": 14, "y": 21, "label": "リンと話す", "log": "リンが、雷鳴の奥に残る魔物の気配を追っている。", "type": "quest", "questId": "rin_thunder_fort", "complete": true, "lockedText": "リンはまだ、光を導く者の到着を待っている。" },
                     { "x": 18, "y": 21, "label": "フリーダ達と話す", "log": "フリーダとバロンが、高圧電流の先を見据えている。", "type": "quest", "questId": "frieda_baron_thunder_depths", "lockedText": "今はまだ、要塞深部の電流を越える加護が足りない。" },
-                    { "x": 12, "y": 21, "label": "補給品を買う", "log": "解放された要塞に補給隊が入っている。", "type": "shop", "shopType": "item", "title": "雷の要塞 補給所", "shopRank": 45, "requiredFlag": "thunderFortCleared", "lockedText": "まだ補給隊は入れないようだ。" },
-                    { "x": 16, "y": 21, "label": "武器を見る", "log": "押収された武器が整備されている。", "type": "shop", "shopType": "weapon", "title": "雷の要塞 武器庫", "shopRank": 45, "requiredFlag": "thunderFortCleared", "lockedText": "武器庫は封鎖されている。" },
-                    { "x": 17, "y": 21, "label": "防具を見る", "log": "雷対策の防具が並び始めている。", "type": "shop", "shopType": "armor", "title": "雷の要塞 防具庫", "shopRank": 45, "requiredFlag": "thunderFortCleared", "lockedText": "防具庫は封鎖されている。" },
+                    { "x": 12, "y": 21, "label": "補給品を買う", "log": "解放された要塞に補給隊が入っている。", "type": "shop", "shopType": "item", "title": "ライザーク要塞 補給所", "shopRank": 45, "requiredFlag": "thunderFortCleared", "lockedText": "まだ補給隊は入れないようだ。" },
+                    { "x": 16, "y": 21, "label": "武器を見る", "log": "押収された武器が整備されている。", "type": "shop", "shopType": "weapon", "title": "ライザーク要塞 武器庫", "shopRank": 45, "requiredFlag": "thunderFortCleared", "lockedText": "武器庫は封鎖されている。" },
+                    { "x": 17, "y": 21, "label": "防具を見る", "log": "雷対策の防具が並び始めている。", "type": "shop", "shopType": "armor", "title": "ライザーク要塞 防具庫", "shopRank": 45, "requiredFlag": "thunderFortCleared", "lockedText": "防具庫は封鎖されている。" },
                     { "x": 15, "y": 20, "label": "休む", "log": "兵舎の一角が休憩所になっている。", "type": "inn", "requiredFlag": "thunderFortCleared", "lockedText": "まだ休める状況ではない。" },
                     { "x": 15, "y": 18, "label": "解放兵と話す", "log": "解放された兵が深く息を吐いている。", "type": "storyEvent", "eventId": "post_thunder_fort_base_1", "requiredFlag": "thunderFortCleared", "lockedText": "雷の轟きで声が届かない。" }
                 ],
@@ -2958,7 +2958,7 @@ const FIXED_DUNGEON_MAPS = {
                 ]
             },
             {
-                "label": "雷の要塞深部・高圧区画",
+                "label": "ライザーク要塞深部・高圧区画",
                 "encounterRank": 70,
                 "monsters": [100040, 100041, 100042, 100043],
                 "enemyBoost": { "nameSuffix": "強", "statMultiplier": 1.3, "elmRes": { "雷": 100, "水": 50, "風": -50 }, "elmAtk": { "雷": 20 } },
@@ -3020,7 +3020,7 @@ const FIXED_DUNGEON_MAPS = {
         ]
     },
     "LIGHT_PALACE": {
-        "name": "光の宮殿",
+        "name": "光の宮殿グランプリズマ",
         "themeKey": "LIGHT_PALACE",
         "rank": 50,
         "encounterRank": 50,
@@ -3121,11 +3121,11 @@ const FIXED_DUNGEON_MAPS = {
                     }
                 ],
                 "mapActions": [
-                    { "x": 13, "y": 21, "label": "聖薬を買う", "log": "巡礼者の補給所が開かれている。", "type": "shop", "shopType": "item", "title": "光の宮殿 聖薬所", "shopRank": 55, "requiredFlag": "lightPalaceCleared", "lockedText": "まだ巡礼者は戻っていない。" },
-                    { "x": 16, "y": 21, "label": "武器を見る", "log": "白光を帯びた武器が整えられている。", "type": "shop", "shopType": "weapon", "title": "光の宮殿 武器庫", "shopRank": 55, "requiredFlag": "lightPalaceCleared", "lockedText": "武器庫は沈黙している。" },
-                    { "x": 19, "y": 21, "label": "防具を見る", "log": "浄化された防具が並んでいる。", "type": "shop", "shopType": "armor", "title": "光の宮殿 防具庫", "shopRank": 55, "requiredFlag": "lightPalaceCleared", "lockedText": "防具庫は閉ざされている。" },
+                    { "x": 13, "y": 21, "label": "聖薬を買う", "log": "巡礼者の補給所が開かれている。", "type": "shop", "shopType": "item", "title": "光の宮殿グランプリズマ 聖薬所", "shopRank": 55, "requiredFlag": "lightPalaceCleared", "lockedText": "まだ巡礼者は戻っていない。" },
+                    { "x": 16, "y": 21, "label": "武器を見る", "log": "白光を帯びた武器が整えられている。", "type": "shop", "shopType": "weapon", "title": "光の宮殿グランプリズマ 武器庫", "shopRank": 55, "requiredFlag": "lightPalaceCleared", "lockedText": "武器庫は沈黙している。" },
+                    { "x": 19, "y": 21, "label": "防具を見る", "log": "浄化された防具が並んでいる。", "type": "shop", "shopType": "armor", "title": "光の宮殿グランプリズマ 防具庫", "shopRank": 55, "requiredFlag": "lightPalaceCleared", "lockedText": "防具庫は閉ざされている。" },
                     { "x": 16, "y": 18, "label": "休む", "log": "白光の回廊に休息所が設けられた。", "type": "inn", "requiredFlag": "lightPalaceCleared", "lockedText": "まだ安全に休める場所ではない。" },
-                    { "x": 15, "y": 20, "label": "巡礼者と話す", "log": "巡礼者が割れたステンドグラスを集めている。", "type": "storyEvent", "eventId": "post_light_palace_base_1", "requiredFlag": "lightPalaceCleared", "lockedText": "光の宮殿はまだ緊張に包まれている。" }
+                    { "x": 15, "y": 20, "label": "巡礼者と話す", "log": "巡礼者が割れたステンドグラスを集めている。", "type": "storyEvent", "eventId": "post_light_palace_base_1", "requiredFlag": "lightPalaceCleared", "lockedText": "光の宮殿グランプリズマはまだ緊張に包まれている。" }
                 ]
             },
             {
@@ -3369,7 +3369,7 @@ const FIXED_DUNGEON_MAPS = {
         ]
     },
     DARK_CASTLE: {
-        name: "魔王城",
+        name: "魔王城ガルヴァニア",
         themeKey: "DARK_CASTLE",
         rank: 60,
         encounterRank: 60,
@@ -3425,9 +3425,9 @@ const FIXED_DUNGEON_MAPS = {
                 bosses: [],
                 healSprings: [{ "x": 15, "y": 20 }],
                 mapActions: [
-                    { x: 9, y: 20, label: "闇市を見る", log: "魔族の商人が静かに品を広げている。", type: "shop", shopType: "item", title: "魔王城 闇市", shopRank: 65, requiredFlag: "darkCastleCleared", lockedText: "城内はまだ戦闘態勢だ。" },
-                    { x: 12, y: 20, label: "武器を見る", log: "魔族の鍛冶場から低い槌音が響く。", type: "shop", shopType: "weapon", title: "魔王城 武器庫", shopRank: 65, requiredFlag: "darkCastleCleared", lockedText: "武器庫には近づけない。" },
-                    { x: 18, y: 20, label: "防具を見る", log: "闇に耐える防具が並んでいる。", type: "shop", shopType: "armor", title: "魔王城 防具庫", shopRank: 65, requiredFlag: "darkCastleCleared", lockedText: "防具庫には近づけない。" },
+                    { x: 9, y: 20, label: "闇市を見る", log: "魔族の商人が静かに品を広げている。", type: "shop", shopType: "item", title: "魔王城ガルヴァニア 闇市", shopRank: 65, requiredFlag: "darkCastleCleared", lockedText: "城内はまだ戦闘態勢だ。" },
+                    { x: 12, y: 20, label: "武器を見る", log: "魔族の鍛冶場から低い槌音が響く。", type: "shop", shopType: "weapon", title: "魔王城ガルヴァニア 武器庫", shopRank: 65, requiredFlag: "darkCastleCleared", lockedText: "武器庫には近づけない。" },
+                    { x: 18, y: 20, label: "防具を見る", log: "闇に耐える防具が並んでいる。", type: "shop", shopType: "armor", title: "魔王城ガルヴァニア 防具庫", shopRank: 65, requiredFlag: "darkCastleCleared", lockedText: "防具庫には近づけない。" },
                     { x: 15, y: 21, label: "休む", log: "中央広間の一角が仮眠所になっている。", type: "inn", requiredFlag: "darkCastleCleared", lockedText: "まだ休む余裕はない。" },
                     { x: 15, y: 18, label: "魔族兵と話す", log: "魔族兵が城門の修復計画を見ている。", type: "storyEvent", eventId: "post_dark_castle_base_1", requiredFlag: "darkCastleCleared", lockedText: "魔族兵は警戒している。" }
                 ],
@@ -4002,7 +4002,7 @@ const FIXED_DUNGEON_MAPS = {
         ]
     },
     DARK_SHRINE_RUINS: {
-        name: "闇の神殿跡地",
+        name: "闇の神殿エクリプス跡",
         themeKey: "DARK_SHRINE_RUINS",
         rank: 75,
         encounterRank: 75,

@@ -729,6 +729,314 @@ const App = {
 	hookCurrency("gems", "totalGemsEarned");
     },
 
+
+	// 全画像データの手動/初回ダウンロード用キャッシュ名。
+	// sw.js の RUNTIME_CACHE_NAME と揃えること。
+	fullDataCacheName: 'prisma-abyss-v3.44-full-data-runtime-assets',
+
+	// Cache API での全データ取得は http/https 配信時だけ実行する。
+	// file:// 直開きでは fetch(file://...) がブラウザのCORS制限で必ず失敗するため、
+	// 起動時モーダルや失敗ダイアログを出さずに通常起動へ進める。
+	isFullDataCacheSupported: () => {
+		if (typeof window === 'undefined' || typeof caches === 'undefined' || typeof Request === 'undefined') return false;
+		return window.location.protocol === 'http:' || window.location.protocol === 'https:';
+	},
+
+	getFullDataCacheUnsupportedMessage: () => '全データダウンロードは http://localhost または https:// で起動した場合に利用できます。\nローカルファイルを直接開いている場合は、画像は通常読み込みのまま起動します。',
+
+	getFullDataCacheUrls: () => {
+		const urls = new Set();
+		const add = (src) => {
+			if (typeof src !== 'string') return;
+			const value = src.trim();
+			if (!value || /^data:/i.test(value)) return;
+
+			try {
+				const absolute = new URL(value, window.location.href);
+				if (absolute.origin !== window.location.origin) return;
+				if (!/\.(png|jpe?g|gif|webp|svg|avif)$/i.test(absolute.pathname)) return;
+				urls.add(value);
+			} catch (e) {}
+		};
+		const addList = (list) => {
+			if (!Array.isArray(list)) return;
+			list.forEach(add);
+		};
+		const addObjectValues = (obj) => {
+			if (!obj || typeof obj !== 'object') return;
+			Object.values(obj).forEach(add);
+		};
+
+		const warmup = (typeof window !== 'undefined' && window.PRISMA_ASSETS && window.PRISMA_ASSETS.cacheWarmup)
+			? window.PRISMA_ASSETS.cacheWarmup
+			: null;
+		const assets = (typeof window !== 'undefined' && window.PRISMA_ASSETS) ? window.PRISMA_ASSETS : null;
+
+		if (warmup) {
+			addList(warmup.installImages);
+			addList(warmup.backgroundImages);
+			addList(warmup.criticalImages);
+			addList(warmup.startupImages);
+		}
+		if (assets) {
+			addObjectValues(assets.graphics);
+			addObjectValues(assets.battleFx);
+		}
+
+		// キャラクター顔画像は assets.js ではなく characters.js 側の定義を正本にしているため、
+		// 起動後にDBが読める状態で追加する。
+		const characterLists = [];
+		if (typeof DB !== 'undefined' && Array.isArray(DB.CHARACTERS)) characterLists.push(DB.CHARACTERS);
+		if (typeof window !== 'undefined' && Array.isArray(window.CHARACTERS_DATA)) characterLists.push(window.CHARACTERS_DATA);
+		characterLists.forEach(list => {
+			list.forEach(c => {
+				if (!c) return;
+				add(c.img);
+				add(c.image);
+			});
+		});
+
+		add('assets/background/PRISMA ABYSS.png');
+		return Array.from(urls);
+	},
+
+	toFullDataCacheRequest: (url) => {
+		try {
+			const absolute = new URL(url, window.location.href);
+			if (absolute.origin !== window.location.origin) return null;
+			return new Request(absolute.href, { cache: 'reload' });
+		} catch (e) {
+			return null;
+		}
+	},
+
+	getMissingFullDataCacheUrls: async (urls = null) => {
+		if (!App.isFullDataCacheSupported()) return [];
+		const targets = urls || App.getFullDataCacheUrls();
+		const missing = [];
+
+		for (const url of targets) {
+			const request = App.toFullDataCacheRequest(url);
+			if (!request) continue;
+			const cached = await caches.match(request);
+			if (!cached) missing.push(url);
+		}
+		return missing;
+	},
+
+	showFullDataDialog: (message, options = {}) => new Promise((resolve) => {
+		const old = document.getElementById('full-data-cache-modal');
+		if (old) old.remove();
+
+		const overlay = document.createElement('div');
+		overlay.id = 'full-data-cache-modal';
+		overlay.style.cssText = [
+			'position:fixed',
+			'inset:0',
+			'z-index:1000002',
+			'background:rgba(0,0,0,0.82)',
+			'display:flex',
+			'align-items:center',
+			'justify-content:center',
+			'padding:18px',
+			'box-sizing:border-box'
+		].join(';');
+
+		const box = document.createElement('div');
+		box.style.cssText = [
+			'width:min(360px, 100%)',
+			'background:#111722',
+			'border:2px solid #ffd700',
+			'border-radius:12px',
+			'box-shadow:0 18px 48px rgba(0,0,0,0.75)',
+			'padding:18px',
+			'color:#fff',
+			'font-family:inherit',
+			'text-align:left'
+		].join(';');
+
+		const text = document.createElement('div');
+		text.style.cssText = 'white-space:pre-wrap; line-height:1.7; font-size:14px; margin-bottom:16px;';
+		text.textContent = String(message || '');
+		box.appendChild(text);
+
+		const progress = document.createElement('div');
+		progress.style.cssText = 'display:none; color:#ffd700; font-size:12px; line-height:1.6; margin-top:-6px; margin-bottom:12px; white-space:pre-wrap;';
+		box.appendChild(progress);
+
+		const buttons = document.createElement('div');
+		buttons.style.cssText = 'display:flex; gap:10px; justify-content:flex-end;';
+
+		const close = (value) => {
+			const current = document.getElementById('full-data-cache-modal');
+			if (current) current.remove();
+			resolve(value);
+		};
+
+		if (options.progressOnly) {
+			buttons.style.display = 'none';
+		} else if (options.messageOnly) {
+			const ok = document.createElement('button');
+			ok.className = 'btn';
+			ok.textContent = 'OK';
+			ok.onclick = () => close(true);
+			buttons.appendChild(ok);
+		} else {
+			const yes = document.createElement('button');
+			yes.className = 'btn';
+			yes.textContent = 'はい';
+			yes.onclick = () => close(true);
+			buttons.appendChild(yes);
+
+			const no = document.createElement('button');
+			no.className = 'btn';
+			no.textContent = 'いいえ';
+			no.onclick = () => close(false);
+			buttons.appendChild(no);
+		}
+
+		box.appendChild(buttons);
+		overlay.appendChild(box);
+		document.body.appendChild(overlay);
+
+		if (options.progressOnly) {
+			resolve({
+				update: (nextMessage, progressMessage = '') => {
+					text.textContent = String(nextMessage || '');
+					if (progressMessage) {
+						progress.style.display = 'block';
+						progress.textContent = String(progressMessage);
+					} else {
+						progress.style.display = 'none';
+						progress.textContent = '';
+					}
+				},
+				close: () => {
+					const current = document.getElementById('full-data-cache-modal');
+					if (current) current.remove();
+				}
+			});
+		}
+	}),
+
+	downloadFullDataCache: async (options = {}) => {
+		if (!App.isFullDataCacheSupported()) {
+			throw new Error(App.getFullDataCacheUnsupportedMessage());
+		}
+
+		const allUrls = App.getFullDataCacheUrls();
+		const urls = options.urls || allUrls;
+		const targets = options.skipExisting === false ? urls : await App.getMissingFullDataCacheUrls(urls);
+		const total = targets.length;
+		let completed = 0;
+		let failed = 0;
+		const failedUrls = [];
+
+		const dialog = await App.showFullDataDialog('全データをダウンロード中です。', { progressOnly: true });
+		const updateProgress = () => {
+			if (dialog && dialog.update) {
+				dialog.update(
+					'全データをダウンロード中です。',
+					`完了: ${completed}/${total}${failed ? `\n失敗: ${failed}` : ''}`
+				);
+			}
+		};
+		updateProgress();
+
+		try {
+			if (!total) return { total: 0, completed: 0, failed: 0, failedUrls: [] };
+
+			const cache = await caches.open(App.fullDataCacheName);
+			const concurrency = 6;
+			let index = 0;
+
+			const worker = async () => {
+				while (index < targets.length) {
+					const url = targets[index++];
+					const request = App.toFullDataCacheRequest(url);
+					if (!request) {
+						completed++;
+						updateProgress();
+						continue;
+					}
+
+					try {
+						const response = await fetch(request);
+						if (!response || !response.ok) throw new Error(`HTTP ${response ? response.status : 'ERR'}`);
+						await cache.put(request, response.clone());
+					} catch (e) {
+						failed++;
+						failedUrls.push(url);
+					}
+					completed++;
+					updateProgress();
+				}
+			};
+
+			await Promise.all(Array.from({ length: Math.min(concurrency, targets.length) }, worker));
+			return { total, completed, failed, failedUrls };
+		} finally {
+			if (dialog && dialog.close) dialog.close();
+		}
+	},
+
+	handleInitialFullDataDownload: async () => {
+		if (!App.isFullDataCacheSupported()) return;
+
+		const urls = App.getFullDataCacheUrls();
+		if (!urls.length) return;
+
+		const missing = await App.getMissingFullDataCacheUrls(urls);
+		if (!missing.length) return;
+
+		const yes = await App.showFullDataDialog(
+			`一部キャッシュ未ダウンロードのデータがあります。\n全データをダウンロードしますか？\n\n未ダウンロード: ${missing.length}/${urls.length}`
+		);
+
+		if (yes) {
+			const result = await App.downloadFullDataCache({ urls: missing });
+			if (result.failed > 0) {
+				await App.showFullDataDialog(
+					`一部データのダウンロードに失敗しました。\n通信環境を確認して、設定メニューから再実行してください。\n\n失敗: ${result.failed}/${result.total}`,
+					{ messageOnly: true }
+				);
+			}
+		} else {
+			// 起動前の全量ダウンロードを待たないだけで、起動後のウォームキャッシュは継続する。
+			await App.showFullDataDialog('（設定メニューからいつでも全データダウンロードが可能です）', { messageOnly: true });
+		}
+	},
+
+	downloadFullDataFromConfig: async () => {
+		try {
+			if (!App.isFullDataCacheSupported()) {
+				await App.showFullDataDialog(App.getFullDataCacheUnsupportedMessage(), { messageOnly: true });
+				return;
+			}
+
+			const urls = App.getFullDataCacheUrls();
+			const missing = await App.getMissingFullDataCacheUrls(urls);
+
+			if (!missing.length) {
+				await App.showFullDataDialog('全データはすでにダウンロード済みです。', { messageOnly: true });
+				return;
+			}
+
+			const result = await App.downloadFullDataCache({ urls: missing });
+			if (result.failed > 0) {
+				await App.showFullDataDialog(
+					`一部データのダウンロードに失敗しました。\n通信環境を確認してから再実行してください。\n\n失敗: ${result.failed}/${result.total}`,
+					{ messageOnly: true }
+				);
+			} else {
+				await App.showFullDataDialog('全データのダウンロードが完了しました。', { messageOnly: true });
+			}
+		} catch (e) {
+			console.error(e);
+			await App.showFullDataDialog(`全データダウンロードに失敗しました。\n${e.message || e}`, { messageOnly: true });
+		}
+	},
+
 	/*
 	 * ローディング中の重要画像先読み。
 	 * 目的: Service Worker が初回install中でも、現在のページ側でガチャカード/施設背景/
@@ -807,7 +1115,7 @@ const App = {
 	initGameHub: () => {
 		const finishLoadingAndWarmCache = async () => {
 			// 初回描画で目立つ画像だけは、ローディング中に短時間先読みする。
-			// 画像全体の初回キャッシュは sw.js、リストの正本は assets.js。
+			// 画像全体の初回キャッシュは sw.js / 起動時モーダル / 設定メニューから実行する。
 			if (typeof App.preloadStartupImages === 'function') {
 				await App.preloadStartupImages();
 			}
@@ -815,6 +1123,7 @@ const App = {
 			if (window.InitialLoading) {
 				await window.InitialLoading.finish();
 			}
+			// 「いいえ」を選んだ場合も、敵画像などの未表示リスクを下げるため裏側のウォームキャッシュは進める。
 			if (typeof App.warmImageCache === 'function') {
 				App.warmImageCache();
 			}
@@ -841,16 +1150,34 @@ const App = {
 			}
 		};
 
-		// assets.js があり、GRAPHICSが定義されていればロードしてからゲーム開始
-		// GRAPHICS.data は assets.js に統一済み。polish.js から画像一覧を注入しない。
-		if (typeof GRAPHICS !== 'undefined' && typeof GRAPHICS.load === 'function') {
-			GRAPHICS.load(() => {
+		const loadGraphicsAndStart = () => {
+			// assets.js があり、GRAPHICSが定義されていればロードしてからゲーム開始
+			// GRAPHICS.data は assets.js に統一済み。polish.js から画像一覧を注入しない。
+			if (typeof GRAPHICS !== 'undefined' && typeof GRAPHICS.load === 'function') {
+				GRAPHICS.load(() => {
+					start();
+				});
+			} else {
+				// なければ即開始
 				start();
-			});
-		} else {
-			// なければ即開始
-			start();
-		}
+			}
+		};
+
+		(async () => {
+			try {
+				if (typeof App.handleInitialFullDataDownload === 'function') {
+					await App.handleInitialFullDataDownload();
+				}
+			} catch (e) {
+				console.error(e);
+				await App.showFullDataDialog(
+					`全データダウンロード確認中にエラーが発生しました。\n設定メニューから再実行できます。\n\n${e.message || e}`,
+					{ messageOnly: true }
+				);
+			} finally {
+				loadGraphicsAndStart();
+			}
+		})();
 	},
 
     startGameLogic: () => {
