@@ -221,7 +221,9 @@ const MenuAllies = {
             
             const imgUrl = App.getCharacterDisplayImage ? App.getCharacterDisplayImage(c) : c.img;
             const imageFallbackAttr = App.getCharacterImageOnErrorAttr ? App.getCharacterImageOnErrorAttr(c) : '';
-            const imgHtml = imgUrl ? `<img src="${imgUrl}"${imageFallbackAttr} style="width:60px; height:60px; object-fit:cover; border-radius:4px; border:1px solid #555;">` : `<div style="width:60px; height:60px; background:#333; display:flex; align-items:center; justify-content:center; color:#555; font-size:9px; border-radius:4px; border:1px solid #555;">IMG</div>`;
+            const imgHtml = MenuAllies.getCharacterSquareImageHtml
+                ? MenuAllies.getCharacterSquareImageHtml(c, imgUrl, imageFallbackAttr, 'width:60px; height:60px;')
+                : (imgUrl ? `<img src="${imgUrl}"${imageFallbackAttr} style="width:60px; height:60px; object-fit:cover; border-radius:4px; border:1px solid #555;">` : `<div style="width:60px; height:60px; background:#333; display:flex; align-items:center; justify-content:center; color:#555; font-size:9px; border-radius:4px; border:1px solid #555;">IMG</div>`);
 
             div.innerHTML = `
                 <div style="display:flex; align-items:center; width:100%;">
@@ -471,7 +473,9 @@ const MenuAllies = {
             }
         };
 
-        const imgHtml = imgUrl ? `<img src="${imgUrl}"${imageFallbackAttr} style="width:100%; height:100%; object-fit:cover;">` : `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#888;">IMG</div>`;
+        const imgHtml = MenuAllies.getCharacterSquareImageHtml
+            ? MenuAllies.getCharacterSquareImageHtml(c, imgUrl, imageFallbackAttr, 'width:100%; height:100%;', 'border:0; border-radius:0;')
+            : (imgUrl ? `<img src="${imgUrl}"${imageFallbackAttr} style="width:100%; height:100%; object-fit:cover;">` : `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#888;">IMG</div>`);
         
         const tabs = ['基本', '装備', 'スキル', '特性'];
         const tabBtns = tabs.map((t, i) => {
@@ -884,11 +888,11 @@ const MenuAllies = {
 
                 <div style="display:flex; gap:10px; margin-bottom:10px;">
                     <div style="position:relative; width:80px; height:80px; background:#000; border:1px solid #555; display:flex; align-items:center; justify-content:center; flex-shrink:0; border-radius:4px;">
-                        <div style="width:100%; height:100%; cursor:pointer;" onclick="document.getElementById('file-upload-${c.uid}').click()">
+                        <div style="width:100%; height:100%; cursor:pointer;" onclick="MenuAllies.openImageActionModal('${c.uid}')">
                             ${imgHtml}
-                            <div style="position:absolute; bottom:0; width:100%; background:rgba(0,0,0,0.6); color:#fff; font-size:8px; text-align:center; padding:2px 0;">画像変更</div>
+                            <div style="position:absolute; bottom:0; width:100%; background:rgba(0,0,0,0.6); color:#fff; font-size:8px; text-align:center; padding:2px 0;">画像操作</div>
                         </div>
-                        ${(App.hasCustomCharacterImage ? App.hasCustomCharacterImage(c) : !!c.img) ? `<div onclick="event.stopPropagation(); MenuAllies.resetImage('${c.uid}')" style="position:absolute; top:-5px; right:-5px; width:20px; height:20px; background:#d00; color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; border:1px solid #fff; cursor:pointer; z-index:10;">×</div>` : ''}
+                        ${(MenuAllies.hasResettableImage ? MenuAllies.hasResettableImage(c) : (App.hasCustomCharacterImage ? App.hasCustomCharacterImage(c) : !!c.img)) ? `<div onclick="event.stopPropagation(); MenuAllies.resetImage('${c.uid}')" style="position:absolute; top:-5px; right:-5px; width:20px; height:20px; background:#d00; color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; border:1px solid #fff; cursor:pointer; z-index:10;">×</div>` : ''}
                     </div>
 
                     <input type="file" id="file-upload-${c.uid}" style="display:none" accept="image/*" onchange="MenuAllies.uploadImage(this, '${c.uid}')">
@@ -1357,6 +1361,282 @@ const MenuAllies = {
         if (newContainer) newContainer.scrollTop = scrollPos;
     },
 
+    escapeAttr: (value) => String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;'),
+
+    getImageEditCss: (char) => {
+        const edit = char && char.imageEdit;
+        if (!edit) return '';
+        const scale = Math.max(0.1, Math.min(4, Number(edit.scale || 1)));
+        const x = Math.max(-100, Math.min(100, Number(edit.x || 0)));
+        const y = Math.max(-100, Math.min(100, Number(edit.y || 0)));
+        // canvas保存が使えない file:// 初期画像では、表示用の拡大・位置調整情報として保存する。
+        // CSS側はobject-fit:coverを基準にし、スライダー値に応じて見た目を近似する。
+        return `transform:translate(${x / 2}%, ${y / 2}%) scale(${scale}); transform-origin:center center;`;
+    },
+
+    getCharacterSquareImageHtml: (char, imgUrl, imageFallbackAttr, sizeCss = 'width:60px; height:60px;', extraImgCss = '') => {
+        if (!imgUrl) {
+            return `<div style="${sizeCss} background:#333; display:flex; align-items:center; justify-content:center; color:#555; font-size:9px; border-radius:4px; border:1px solid #555;">IMG</div>`;
+        }
+        const safeSrc = MenuAllies.escapeAttr ? MenuAllies.escapeAttr(imgUrl) : String(imgUrl).replace(/"/g, '&quot;');
+        const editCss = MenuAllies.getImageEditCss(char);
+        const wrapperBorder = extraImgCss.includes('border:') ? '' : 'border:1px solid #555;';
+        const borderRadius = extraImgCss.includes('border-radius') ? '' : 'border-radius:4px;';
+        return `<div style="${sizeCss} overflow:hidden; background:#000; ${wrapperBorder} ${borderRadius}"><img src="${safeSrc}"${imageFallbackAttr || ''} style="width:100%; height:100%; object-fit:cover; display:block; ${editCss} ${extraImgCss}"></div>`;
+    },
+
+    openImageActionModal: (uid) => {
+        const char = App.getChar(uid);
+        if (!char) return;
+        MenuAllies.closeImageActionModal();
+        const root = document.createElement('div');
+        root.id = 'ally-image-action-modal';
+        root.style.cssText = 'position:absolute; inset:0; background:rgba(0,0,0,0.72); z-index:1300; display:flex; align-items:center; justify-content:center; padding:18px; box-sizing:border-box;';
+        root.onclick = () => MenuAllies.closeImageActionModal();
+        root.innerHTML = `
+            <div onclick="event.stopPropagation()" style="width:100%; max-width:310px; background:#18120d; border:2px solid #d8aa43; border-radius:12px; padding:14px; box-shadow:0 8px 24px rgba(0,0,0,0.65); color:#f5e8c8; box-sizing:border-box;">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+                    <div style="font-weight:bold; font-size:15px; color:#ffd700;">画像操作</div>
+                    <button class="btn" style="padding:3px 10px; font-size:12px;" onclick="MenuAllies.closeImageActionModal()">閉じる</button>
+                </div>
+                <div style="font-size:12px; color:#d8c49a; line-height:1.5; margin-bottom:12px;">
+                    ${MenuAllies.escapeHtml(char.name || '仲間')}の画像を変更・加工できます。
+                </div>
+                <button class="btn" style="width:100%; height:42px; margin-bottom:10px; background:#004444;" onclick="MenuAllies.startImageChange('${uid}')">画像変更</button>
+                <button class="btn" style="width:100%; height:42px; background:#4a2d05;" onclick="MenuAllies.openImageEditor('${uid}')">画像加工</button>
+            </div>
+        `;
+        const parent = document.getElementById('sub-screen-allies') || document.getElementById('game-container') || document.body;
+        parent.appendChild(root);
+    },
+
+    closeImageActionModal: () => {
+        const modal = document.getElementById('ally-image-action-modal');
+        if (modal) modal.remove();
+    },
+
+    startImageChange: (uid) => {
+        MenuAllies.closeImageActionModal();
+        const input = document.getElementById(`file-upload-${uid}`);
+        if (input) input.click();
+    },
+
+    getImageEditorSource: (char) => {
+        if (!char) return null;
+        if (typeof App !== 'undefined' && typeof App.getCharacterDisplayImage === 'function') {
+            return App.getCharacterDisplayImage(char);
+        }
+        return char.img || char.image || null;
+    },
+
+    openImageEditor: (uid) => {
+        MenuAllies.closeImageActionModal();
+        const char = App.getChar(uid);
+        if (!char) return;
+        const src = MenuAllies.getImageEditorSource(char);
+        if (!src) { Menu.msg('加工できる画像がありません'); return; }
+
+        MenuAllies.closeImageEditor();
+        const root = document.createElement('div');
+        root.id = 'ally-image-editor-modal';
+        root.style.cssText = 'position:absolute; inset:0; background:rgba(0,0,0,0.82); z-index:1400; display:flex; align-items:center; justify-content:center; padding:12px; box-sizing:border-box;';
+        root.onclick = () => MenuAllies.closeImageEditor();
+        root.innerHTML = `
+            <div onclick="event.stopPropagation()" style="width:100%; max-width:360px; max-height:96%; background:#15100b; border:2px solid #d8aa43; border-radius:12px; padding:12px; color:#f5e8c8; box-sizing:border-box; display:flex; flex-direction:column; gap:10px;">
+                <div style="display:flex; align-items:center; justify-content:space-between;">
+                    <div style="font-weight:bold; font-size:15px; color:#ffd700;">画像加工</div>
+                    <button class="btn" style="padding:3px 10px; font-size:12px;" onclick="MenuAllies.closeImageEditor()">閉じる</button>
+                </div>
+                <div style="font-size:11px; color:#d8c49a; line-height:1.45;">正方形の範囲に合わせて、拡大率と位置を調整してください。</div>
+                <div style="display:flex; justify-content:center;">
+                    <canvas id="ally-image-editor-canvas" width="240" height="240" style="width:240px; height:240px; background:#000; border:1px solid #806020; border-radius:6px;"></canvas>
+                </div>
+                <div style="display:grid; gap:8px; font-size:12px;">
+                    <label>拡大率 <input id="ally-image-editor-scale" type="range" min="60" max="300" value="100" style="width:100%;" oninput="MenuAllies.updateImageEditorPreview()"></label>
+                    <label>横位置 <input id="ally-image-editor-x" type="range" min="-100" max="100" value="0" style="width:100%;" oninput="MenuAllies.updateImageEditorPreview()"></label>
+                    <label>縦位置 <input id="ally-image-editor-y" type="range" min="-100" max="100" value="0" style="width:100%;" oninput="MenuAllies.updateImageEditorPreview()"></label>
+                </div>
+                <div style="display:flex; gap:8px; margin-top:2px;">
+                    <button class="btn" style="flex:1; height:40px; background:#064;" onclick="MenuAllies.saveEditedImage('${uid}')">保存</button>
+                    <button class="btn" style="flex:1; height:40px;" onclick="MenuAllies.closeImageEditor()">キャンセル</button>
+                </div>
+            </div>
+        `;
+        const parent = document.getElementById('sub-screen-allies') || document.getElementById('game-container') || document.body;
+        parent.appendChild(root);
+
+        MenuAllies.prepareImageEditorImage(src).then(({ img, safeSrc, exportable }) => {
+            const edit = char.imageEdit || {};
+            MenuAllies.imageEditorState = { uid, src, safeSrc, img, outputSize: 512, exportable };
+            const scaleEl = document.getElementById('ally-image-editor-scale');
+            const xEl = document.getElementById('ally-image-editor-x');
+            const yEl = document.getElementById('ally-image-editor-y');
+            if (scaleEl && edit.scale) scaleEl.value = Math.max(60, Math.min(300, Math.round(Number(edit.scale) * 100)));
+            if (xEl && edit.x !== undefined) xEl.value = Math.max(-100, Math.min(100, Math.round(Number(edit.x))));
+            if (yEl && edit.y !== undefined) yEl.value = Math.max(-100, Math.min(100, Math.round(Number(edit.y))));
+            MenuAllies.updateImageEditorPreview();
+        }).catch(() => {
+            MenuAllies.closeImageEditor();
+            Menu.msg('画像を読み込めませんでした');
+        });
+    },
+
+    imageBlobToDataUrl: (blob) => new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+    }),
+
+    loadImageElement: (src, useAnonymous = false) => new Promise((resolve, reject) => {
+        const img = new Image();
+        if (useAnonymous) img.crossOrigin = 'anonymous';
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = src;
+    }),
+
+    prepareImageEditorImage: async (src) => {
+        if (!src) throw new Error('no image src');
+        const isData = /^data:image\//i.test(src);
+        if (isData) {
+            const img = await MenuAllies.loadImageElement(src, false);
+            return { img, safeSrc: src, exportable: true };
+        }
+
+        // http/httpsでは、同一オリジン画像をBlob化してdataURLに変換してからcanvasへ描く。
+        // これにより初期設定画像でもtoDataURL時のtainted canvasを避ける。
+        if (location.protocol === 'http:' || location.protocol === 'https:') {
+            try {
+                const res = await fetch(src, { cache: 'force-cache' });
+                if (res && res.ok) {
+                    const blob = await res.blob();
+                    if (blob && /^image\//i.test(blob.type || 'image/png')) {
+                        const dataUrl = await MenuAllies.imageBlobToDataUrl(blob);
+                        const img = await MenuAllies.loadImageElement(dataUrl, false);
+                        return { img, safeSrc: dataUrl, exportable: true };
+                    }
+                }
+            } catch (e) {
+                console.warn('[ImageEditor] Blob conversion failed. Fallback to direct image.', e);
+            }
+        }
+
+        // file://ではブラウザ制限でローカル初期画像をcanvas exportできないことがある。
+        // プレビューできても保存時のBase64化が禁止される場合があるため、その場合は保存せず案内する。
+        const img = await MenuAllies.loadImageElement(src, false);
+        return { img, safeSrc: src, exportable: false };
+    },
+
+    closeImageEditor: () => {
+        const modal = document.getElementById('ally-image-editor-modal');
+        if (modal) modal.remove();
+        MenuAllies.imageEditorState = null;
+    },
+
+    drawImageEditorCanvas: (canvas, outputSize) => {
+        const state = MenuAllies.imageEditorState;
+        if (!state || !state.img || !canvas) return false;
+        const ctx = canvas.getContext('2d');
+        const size = outputSize || canvas.width || 240;
+        canvas.width = size;
+        canvas.height = size;
+        ctx.clearRect(0, 0, size, size);
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, size, size);
+
+        const scaleEl = document.getElementById('ally-image-editor-scale');
+        const xEl = document.getElementById('ally-image-editor-x');
+        const yEl = document.getElementById('ally-image-editor-y');
+        const zoom = Math.max(0.1, Number(scaleEl?.value || 100) / 100);
+        const offsetXRate = Number(xEl?.value || 0) / 100;
+        const offsetYRate = Number(yEl?.value || 0) / 100;
+        const iw = state.img.naturalWidth || state.img.width;
+        const ih = state.img.naturalHeight || state.img.height;
+        if (!iw || !ih) return false;
+        const baseScale = Math.max(size / iw, size / ih);
+        const drawScale = baseScale * zoom;
+        const dw = iw * drawScale;
+        const dh = ih * drawScale;
+        const movableX = Math.max(0, (dw - size) / 2);
+        const movableY = Math.max(0, (dh - size) / 2);
+        const dx = (size - dw) / 2 + offsetXRate * movableX;
+        const dy = (size - dh) / 2 + offsetYRate * movableY;
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(state.img, dx, dy, dw, dh);
+        return true;
+    },
+
+    updateImageEditorPreview: () => {
+        const canvas = document.getElementById('ally-image-editor-canvas');
+        if (!canvas) return;
+        MenuAllies.drawImageEditorCanvas(canvas, 240);
+        canvas.style.width = '240px';
+        canvas.style.height = '240px';
+    },
+
+    getCurrentImageEditorTransform: () => {
+        const scaleEl = document.getElementById('ally-image-editor-scale');
+        const xEl = document.getElementById('ally-image-editor-x');
+        const yEl = document.getElementById('ally-image-editor-y');
+        return {
+            scale: Math.max(0.1, Number(scaleEl?.value || 100) / 100),
+            x: Math.max(-100, Math.min(100, Number(xEl?.value || 0))),
+            y: Math.max(-100, Math.min(100, Number(yEl?.value || 0)))
+        };
+    },
+
+    saveImageEditorTransformFallback: (char, state) => {
+        const transform = MenuAllies.getCurrentImageEditorTransform();
+        char.imageEdit = {
+            src: state.src,
+            scale: transform.scale,
+            x: transform.x,
+            y: transform.y,
+            updatedAt: Date.now()
+        };
+        char.hasCustomImage = true;
+        App.save();
+        MenuAllies.closeImageEditor();
+        Menu.renderPartyBar();
+        MenuAllies.renderDetail();
+        Menu.msg('画像の表示位置を保存しました');
+    },
+
+    saveEditedImage: (uid) => {
+        const char = App.getChar(uid);
+        const state = MenuAllies.imageEditorState;
+        if (!char || !state) return;
+        const canvas = document.createElement('canvas');
+        const outputSize = state.outputSize || 512;
+        if (!MenuAllies.drawImageEditorCanvas(canvas, outputSize)) {
+            Menu.msg('画像加工に失敗しました');
+            return;
+        }
+        try {
+            let dataUrl = canvas.toDataURL('image/webp', 0.9);
+            if (!/^data:image\/webp/i.test(dataUrl)) dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+            char.img = dataUrl;
+            char.image = dataUrl;
+            delete char.imageEdit;
+            char.customImage = true;
+            char.hasCustomImage = true;
+            App.save();
+            MenuAllies.closeImageEditor();
+            Menu.renderPartyBar();
+            MenuAllies.renderDetail();
+            Menu.msg('画像を加工して保存しました');
+        } catch (e) {
+            console.warn('[ImageEditor] Canvas export failed.', e);
+            Menu.msg('この画像はブラウザ制限により加工保存できません。画像変更から一度画像ファイルを選択してから加工してください');
+        }
+    },
+
     uploadImage: (input, uid) => {
         if (input.files && input.files[0]) {
             const file = input.files[0];
@@ -1364,19 +1644,71 @@ const MenuAllies = {
             const reader = new FileReader();
             reader.onload = (e) => {
                 const char = App.getChar(uid);
-                if (char) { char.img = e.target.result; char.customImage = true; App.save(); Menu.renderPartyBar(); MenuAllies.renderDetail(); }
+                if (char) {
+                    char.img = e.target.result;
+                    char.image = e.target.result;
+                    delete char.imageEdit;
+                    char.customImage = true;
+                    char.hasCustomImage = true;
+                    App.save();
+                    Menu.renderPartyBar();
+                    MenuAllies.renderDetail();
+                }
             };
             reader.readAsDataURL(file);
         }
     },
 
+    getMonsterDefaultImageByJob: (jobName) => {
+        const name = String(jobName || '').trim();
+        if (!name) return null;
+        const monsters = (typeof DB !== 'undefined' && Array.isArray(DB.MONSTERS))
+            ? DB.MONSTERS
+            : ((typeof window !== 'undefined' && Array.isArray(window.MONSTERS_DATA)) ? window.MONSTERS_DATA : []);
+        const monster = monsters.find(m => String(m?.name || '').trim() === name);
+        if (!monster) return null;
+        const map = (typeof window !== 'undefined' && window.MonsterImageMap) ? window.MonsterImageMap : {};
+        return monster.image || monster.img || map[Number(monster.id)] || null;
+    },
+
+    getCharacterDefaultImageForReset: (char) => {
+        if (!char) return null;
+        if (App.isMonsterAlly && App.isMonsterAlly(char)) {
+            // 仲間モンスターはユーザーが変更できる名前ではなく、職業欄のモンスター名だけを参照して戻す。
+            return MenuAllies.getMonsterDefaultImageByJob(char.job);
+        }
+        if (typeof App !== 'undefined' && typeof App.getCharacterImageFallback === 'function') {
+            return App.getCharacterImageFallback(char);
+        }
+        const master = (typeof App !== 'undefined' && typeof App.getCharacterMaster === 'function') ? App.getCharacterMaster(char) : null;
+        return master?.img || null;
+    },
+
+    hasResettableImage: (char) => {
+        if (!char) return false;
+        if (char.imageEdit && char.imageEdit.src) return true;
+        if (char.customImage === true || char.hasCustomImage === true) return true;
+        if (!char.img) return false;
+        const defaultImg = MenuAllies.getCharacterDefaultImageForReset(char);
+        if (defaultImg && char.img === defaultImg) return false;
+        return App.hasCustomCharacterImage ? App.hasCustomCharacterImage(char) : true;
+    },
+
     resetImage: (uid) => {
         const char = App.getChar(uid);
-        if (char && (App.hasCustomCharacterImage ? App.hasCustomCharacterImage(char) : char.img)) {
+        if (char && (MenuAllies.hasResettableImage ? MenuAllies.hasResettableImage(char) : (App.hasCustomCharacterImage ? App.hasCustomCharacterImage(char) : char.img))) {
             Menu.confirm("画像を初期状態に戻しますか？", () => {
-                delete char.img;
+                const defaultImg = MenuAllies.getCharacterDefaultImageForReset(char);
+                delete char.imageEdit;
                 delete char.customImage;
                 delete char.hasCustomImage;
+                if (defaultImg) {
+                    char.img = defaultImg;
+                    char.image = defaultImg;
+                } else {
+                    delete char.img;
+                    delete char.image;
+                }
                 App.save();
                 Menu.renderPartyBar();
                 MenuAllies.renderDetail();

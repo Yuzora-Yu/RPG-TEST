@@ -589,6 +589,21 @@ const MenuParty = {
 			}
 		}
 
+		if (uid !== null && typeof App !== 'undefined' && typeof App.isMonsterAlly === 'function') {
+			const futureParty = Array.isArray(App.data.party) ? [...App.data.party] : [];
+			const oldIdxForCheck = futureParty.indexOf(uid);
+			if (oldIdxForCheck > -1) futureParty[oldIdxForCheck] = futureParty[MenuParty.targetSlot];
+			futureParty[MenuParty.targetSlot] = uid;
+			const monsterCount = futureParty.filter(id => {
+				const c = App.getChar ? App.getChar(id) : null;
+				return App.isMonsterAlly(c);
+			}).length;
+			if (monsterCount > 1) {
+				Menu.msg("パーティに編成できる仲間モンスターは1体だけです。");
+				return;
+			}
+		}
+
 		const oldIdx = App.data.party.indexOf(uid);
 		if(oldIdx > -1 && uid !== null) App.data.party[oldIdx] = App.data.party[MenuParty.targetSlot];
 		

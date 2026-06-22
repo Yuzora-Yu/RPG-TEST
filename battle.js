@@ -4076,7 +4076,12 @@ findNextActor: () => {
 			});
 		}
 
-		// --- [3] 世界状態・フラグの先行確定 ---
+		// --- [3] 深淵の魔窟限定：勝利時1%の仲間モンスター加入判定 ---
+		const monsterRecruitResult = (typeof App.tryRecruitMonsterAfterBattle === 'function')
+			? App.tryRecruitMonsterAfterBattle(Battle.enemies)
+			: null;
+
+		// --- [4] 世界状態・フラグの先行確定 ---
 		// 演出中のリロード対策として、ボスマスを階段にする等の処理をログ表示前に完結させます
 		if ((isBossBattle && !isEstark) || fixedHunter) {
 			if (typeof Dungeon !== 'undefined' && typeof Dungeon.onBossDefeated === 'function') {
@@ -4105,13 +4110,16 @@ findNextActor: () => {
 			}
 		}
 
-		// --- [4] セーブの実行（ここで報酬と世界状態を確定・永続化） ---
+		// --- [5] セーブの実行（ここで報酬と世界状態を確定・永続化） ---
 		App.save(); 
 
-		// --- [5] ここから勝利演出（ログ表示、レベルアップ、待機など） ---
+		// --- [6] ここから勝利演出（ログ表示、レベルアップ、待機など） ---
 		Battle.log(`<br><span style="color:#ffff00; font-size:1em; font-weight:bold;">戦闘に勝利した！</span>`);
 		Battle.log(`${totalGold} Goldを獲得！`);
 		Battle.log(`${totalExp} ポイントの経験値を 獲得した！`);
+		if (monsterRecruitResult && monsterRecruitResult.message) {
+			Battle.log(`<span style="color:#7fffd4; font-weight:bold;">${monsterRecruitResult.message}</span>`);
+		}
 
 		const resultLevelLogs = [];
 		const resultTraitAcquireLogs = [];

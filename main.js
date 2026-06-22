@@ -146,7 +146,16 @@ class Player extends Entity {
             WARRIOR: 0, MAGE: 0, PRIEST: 0, M_KNIGHT: 0
         };
 		
-        this.skills = [DB.SKILLS.find(s => s.id === 1)];
+        this.skills = [DB.SKILLS.find(s => s.id === 1)].filter(Boolean);
+
+        // モンスター仲間など、セーブデータ側に直接保持されたスキルを先に読み込む。
+        // 通常行動(ID:1〜99)は保存時点で除外するが、念のためここでも不正値を無視する。
+        if (Array.isArray(data.skills)) {
+            data.skills.forEach(sid => {
+                const id = Math.floor(Number(sid));
+                if (Number.isFinite(id) && id > 0) this.learnSkill(id);
+            });
+        }
 
         // ★修正: 転生回数を考慮した「実効レベル」を計算してスキル習得判定に使用
         const effectiveLevel = data.level + (100 * (data.reincarnationCount || 0));
@@ -295,20 +304,23 @@ const App = {
         return /(^|\/)assets\/characters\/(char_face_[^/]+\.gif|face\/[^/]+\.png)$/i.test(src);
     },
 
-    hasCustomCharacterImage: (char) => {
-        if (!char || !char.img) return false;
-        if (char.customImage === true || char.hasCustomImage === true) return true;
-        const master = App.getCharacterMaster(char);
-        if (master && char.img === master.img) return false;
-        if (App.isDefaultCharacterImagePath(char.img)) return false;
-        return /^data:image\//i.test(char.img) || !/^assets\/characters\//i.test(char.img);
-    },
+	hasCustomCharacterImage: (char) => {
+		if (!char) return false;
+		if (char.imageEdit && char.imageEdit.src) return true;
+		if (!char.img) return false;
+		if (char.customImage === true || char.hasCustomImage === true) return true;
+		const master = App.getCharacterMaster(char);
+		if (master && char.img === master.img) return false;
+		if (App.isDefaultCharacterImagePath(char.img)) return false;
+		return /^data:image\//i.test(char.img) || !/^assets\/characters\//i.test(char.img);
+	},
 
-    getCharacterDisplayImage: (charOrId) => {
-        const char = (charOrId && typeof charOrId === 'object') ? charOrId : null;
-        if (char && App.hasCustomCharacterImage(char)) return char.img;
-        return App.getDefaultFaceIconPath(charOrId) || App.getCharacterImageFallback(charOrId);
-    },
+	getCharacterDisplayImage: (charOrId) => {
+		const char = (charOrId && typeof charOrId === 'object') ? charOrId : null;
+		if (char && char.imageEdit && char.imageEdit.src) return char.imageEdit.src;
+		if (char && App.hasCustomCharacterImage(char)) return char.img;
+		return App.getDefaultFaceIconPath(charOrId) || App.getCharacterImageFallback(charOrId);
+	},
 
     getCharacterImageFallback: (charOrId) => {
         const char = (charOrId && typeof charOrId === 'object') ? charOrId : null;
@@ -1323,20 +1335,27 @@ const App = {
 
 		
 		// ★追加: 既存セーブデータの拡張（コンフィグ初期化）
-        if (App.data.characters) {
-            App.data.characters.forEach(c => {
-                App.ensureCharacterBattleConfig(c);
-                
-                // charId修正ロジック（既存）
-                if (c.charId) {
-                    const master = DB.CHARACTERS.find(m => m.id === c.charId);
-                    if (master && master.job && c.job !== master.job) {
-                        c.job = master.job;
-                    }
-                }
-            });
-            App.save();
-        }
+		if (App.data.characters) {
+			App.data.characters.forEach(c => {
+				App.ensureCharacterBattleConfig(c);
+
+				// charId修正ロジック（既存）
+				if (c.charId) {
+					const master = DB.CHARACTERS.find(m => m.id === c.charId);
+					if (master && master.job && c.job !== master.job) {
+						c.job = master.job;
+					}
+				}
+
+				// 仲間モンスターの職業欄は、固定の「魔物」ではなくモンスター名を表示する。
+				// 既に加入済みの旧データも、起動時に最低限補正する。
+				if (App.isMonsterAlly && App.isMonsterAlly(c)) {
+					const monsterJobName = c.monsterAllyMeta?.originalName || c.name || c.job || '仲間モンスター';
+					if (!c.job || c.job === '魔物') c.job = monsterJobName;
+				}
+			});
+			App.save();
+		}
 		
 		// ★追加: 既存セーブデータの職業情報をDBマスタに合わせて強制上書き
         if (App.data.characters) {
@@ -2012,8 +2031,421 @@ const App = {
         }
         App.save();
         App.log(joinedParty
-            ? `【仲間加入】${saveAlly.name}がパーティに加わった！`
-            : `【仲間加入】${saveAlly.name}が控えに加わった！`);
+            ? `なんと ${saveAlly.name}が仲間に加わった！`
+            : `なんと ${saveAlly.name}が仲間に加わった！`);
+    },
+
+    monsterRecruitConfig: {
+        chance: 0.01,
+        minRate: 0.8,
+        maxRate: 1.2
+    },
+
+    isMonsterAlly: (char) => !!(char && char.isMonsterAlly === true),
+
+    getHeroCharacter: () => {
+        if (!App.data || !Array.isArray(App.data.characters)) return null;
+        return App.data.characters.find(c => c && (c.uid === 'p1' || c.isHero || Number(c.charId) === 301)) || App.data.characters[0] || null;
+    },
+
+    getMonsterAllyInPartyCount: (excludeUid = null) => {
+        if (!App.data || !Array.isArray(App.data.party) || !Array.isArray(App.data.characters)) return 0;
+        return App.data.party.filter(uid => {
+            if (!uid || uid === excludeUid) return false;
+            const c = App.getChar(uid);
+            return App.isMonsterAlly(c);
+        }).length;
+    },
+
+    canAddMonsterAllyToParty: (uid = null) => {
+        const target = uid ? App.getChar(uid) : null;
+        if (target && !App.isMonsterAlly(target)) return true;
+        return App.getMonsterAllyInPartyCount(uid) <= 0;
+    },
+
+    getMonsterRecruitCurrentFloor: (enemy = null, baseMonster = null) => {
+        const candidates = [
+            enemy?.generatedFloor,
+            baseMonster?.generatedFloor,
+            App.data?.progress?.floor,
+            (typeof Dungeon !== 'undefined' ? Dungeon.floor : null),
+            (typeof Field !== 'undefined' ? Field.currentMapData?.floor : null)
+        ];
+        for (const raw of candidates) {
+            const floor = Math.floor(Number(raw));
+            if (Number.isFinite(floor) && floor > 0) return Math.min(100, floor);
+        }
+        return 1;
+    },
+
+    getMonsterRecruitJoinLevel: (enemy = null, baseMonster = null) => {
+        const hero = App.getHeroCharacter();
+        const reincarnationCount = Math.max(0, Math.floor(Number(hero?.reincarnationCount) || 0));
+        if (reincarnationCount > 0) return 100;
+
+        const heroLevel = Math.max(1, Math.min(100, Math.floor(Number(hero?.level) || 1)));
+        const floor = App.getMonsterRecruitCurrentFloor(enemy, baseMonster);
+        return Math.max(1, Math.min(100, heroLevel, floor));
+    },
+
+    createHeroReferenceDataAtLevel: (level) => {
+        const hero = App.getHeroCharacter();
+        const master = (window.CHARACTERS_DATA || []).find(c => c && c.id === (hero?.charId || 301))
+            || (window.CHARACTERS_DATA || []).find(c => c && c.id === 301)
+            || hero
+            || { id: 301, name: '主人公', job: '勇者', hp: 50, mp: 20, atk: 15, def: 10, mag: 10, mdef: 10, spd: 10 };
+        const ref = {
+            uid: '__monster_recruit_hero_ref__',
+            charId: master.id || hero?.charId || 301,
+            name: master.name || hero?.name || '主人公',
+            job: master.job || hero?.job || '勇者',
+            rarity: master.rarity || hero?.rarity || 'SSR',
+            level: 1,
+            exp: 0,
+            sp: 0,
+            hp: Math.max(1, Math.floor(Number(master.hp ?? hero?.hp ?? 50) || 50)),
+            mp: Math.max(0, Math.floor(Number(master.mp ?? hero?.mp ?? 20) || 20)),
+            atk: Math.max(1, Math.floor(Number(master.atk ?? hero?.atk ?? 15) || 15)),
+            def: Math.max(1, Math.floor(Number(master.def ?? hero?.def ?? 10) || 10)),
+            mag: Math.max(1, Math.floor(Number(master.mag ?? hero?.mag ?? 10) || 10)),
+            mdef: Math.max(1, Math.floor(Number(master.mdef ?? hero?.mdef ?? 10) || 10)),
+            spd: Math.max(1, Math.floor(Number(master.spd ?? hero?.spd ?? 10) || 10)),
+            hit: 100,
+            cri: 0,
+            eva: 0,
+            equips: { '武器': null, '盾': null, '頭': null, '体': null, '足': null },
+            traits: [],
+            disabledTraits: [],
+            tree: {},
+            alloc: {},
+            config: { fullAuto: false, hiddenSkills: [], strategy: 'balanced' },
+            limitBreak: 0,
+            reincarnationCount: 0,
+            skills: []
+        };
+
+        // レベル1主人公を、加入モンスターのレベル相当まで内部成長させて基準値にする。
+        // 実データには追加せず、この一時オブジェクトだけを成長させる。
+        if (typeof PassiveSkill !== 'undefined' && typeof PassiveSkill.applyLevelUpTraits === 'function') {
+            PassiveSkill.applyLevelUpTraits(ref);
+        }
+        const targetLevel = Math.max(1, Math.min(100, Math.floor(Number(level) || 1)));
+        for (let lv = 1; lv < targetLevel; lv++) {
+            if (typeof App.applyLevelUpGrowth === 'function') {
+                App.applyLevelUpGrowth(ref, { silent: true });
+            } else {
+                ref.level++;
+            }
+        }
+        ref.exp = 0;
+        return ref;
+    },
+
+    getHeroReferenceStatsAtLevel: (level) => {
+        const ref = App.createHeroReferenceDataAtLevel(level);
+        if (typeof App.calcStats === 'function') return App.calcStats(ref);
+        return {
+            maxHp: ref.hp || 1, maxMp: ref.mp || 0, atk: ref.atk || 1, def: ref.def || 1,
+            mdef: ref.mdef || 1, mag: ref.mag || 1, spd: ref.spd || 1
+        };
+    },
+
+    adjustMonsterAllyPairToHeroIfHigher: (values, heroValues, options = {}) => {
+        const minRate = Number(options.minRate || App.monsterRecruitConfig.minRate || 0.8);
+        const maxRate = Number(options.maxRate || App.monsterRecruitConfig.maxRate || 1.2);
+        const keys = Object.keys(values || {});
+        if (keys.length === 0) return {};
+
+        const original = {};
+        keys.forEach(key => { original[key] = Math.max(0, Math.floor(Number(values[key]) || 0)); });
+        const currentTotal = keys.reduce((sum, key) => sum + original[key], 0);
+        const heroTotal = Object.keys(heroValues || {}).reduce((sum, key) => sum + Math.max(0, Number(heroValues[key]) || 0), 0);
+
+        // 元々、同レベル相当の主人公基準値以下なら補正しない。
+        if (currentTotal <= Math.max(0, heroTotal)) return original;
+
+        const safeHeroTotal = Math.max(1, heroTotal);
+        const rate = minRate + Math.random() * (maxRate - minRate);
+        const randomCapTotal = Math.max(keys.length, Math.floor(safeHeroTotal * rate));
+        const targetTotal = Math.min(currentTotal, randomCapTotal);
+
+        if (targetTotal >= currentTotal) return original;
+        if (currentTotal <= 0) {
+            const base = Math.max(1, Math.floor(targetTotal / keys.length));
+            const result = {};
+            keys.forEach(key => { result[key] = base; });
+            return result;
+        }
+
+        const result = {};
+        let allocated = 0;
+        keys.forEach((key, index) => {
+            const current = Math.max(0, Number(original[key]) || 0);
+            const val = (index === keys.length - 1)
+                ? Math.max(0, targetTotal - allocated)
+                : Math.max(0, Math.floor(targetTotal * (current / currentTotal)));
+            result[key] = val;
+            allocated += val;
+        });
+        return result;
+    },
+
+    adjustMonsterAllySingleToHeroIfHigher: (value, heroValue, options = {}) => {
+        const current = Math.max(1, Math.floor(Number(value) || 1));
+        const heroBase = Math.max(1, Math.floor(Number(heroValue) || 1));
+        if (current <= heroBase) return current;
+        const minRate = Number(options.minRate || App.monsterRecruitConfig.minRate || 0.8);
+        const maxRate = Number(options.maxRate || App.monsterRecruitConfig.maxRate || 1.2);
+        const rate = minRate + Math.random() * (maxRate - minRate);
+        return Math.max(1, Math.min(current, Math.floor(heroBase * rate)));
+    },
+
+    adjustMonsterAllyHpMpToHeroIfHigher: (values, heroValues, options = {}) => {
+        const hp = Math.max(1, Math.floor(Number(values?.hp) || 1));
+        const mp = Math.max(0, Math.floor(Number(values?.mp) || 0));
+        const heroHp = Math.max(1, Math.floor(Number(heroValues?.hp) || 1));
+        const heroMp = Math.max(0, Math.floor(Number(heroValues?.mp) || 0));
+
+        // HPが極端に大きいボスは、HP+MP合計で比例圧縮するとMPまで巻き込まれて低くなりすぎる。
+        // そのためHP/MPだけは個別に「主人公基準より高い場合のみ」補正する。
+        return {
+            hp: hp > heroHp ? App.adjustMonsterAllySingleToHeroIfHigher(hp, heroHp, options) : hp,
+            mp: (heroMp > 0 && mp > heroMp) ? App.adjustMonsterAllySingleToHeroIfHigher(mp, heroMp, options) : mp
+        };
+    },
+
+    getMonsterRecruitImagePath: (baseMonster = null, enemy = null) => {
+        const monsterId = Number(baseMonster?.id ?? enemy?.baseId ?? enemy?.id);
+        const map = (typeof window !== 'undefined' && window.MonsterImageMap) ? window.MonsterImageMap : {};
+        return baseMonster?.image || baseMonster?.img || enemy?.image || enemy?.img || map[monsterId] || null;
+    },
+
+    getMonsterRecruitRarity: (baseMonster = null, enemy = null) => {
+        return (baseMonster?.isBoss || enemy?.isBoss || baseMonster?.isRare || enemy?.isRare ||
+            baseMonster?.isSpecialBoss || enemy?.isSpecialBoss || baseMonster?.isEstark || enemy?.isEstark) ? 'UR' : 'SR';
+    },
+
+    getMonsterRecruitTraitCountForLevel: (level) => {
+        const lv = Math.max(1, Math.min(100, Math.floor(Number(level) || 1)));
+        if (lv >= 80) return 6;
+        if (lv >= 40) return 5;
+        if (lv >= 20) return 4;
+        if (lv >= 10) return 3;
+        if (lv >= 5) return 2;
+        return 1;
+    },
+
+    generateMonsterRecruitTraitsForLevel: (level, baseMonster = null, enemy = null) => {
+        const traits = [];
+        const count = App.getMonsterRecruitTraitCountForLevel(level);
+        const used = new Set();
+
+        const addTrait = (raw) => {
+            if (traits.length >= count) return;
+            const id = Math.floor(Number(raw?.id ?? raw));
+            if (!Number.isFinite(id) || id <= 0 || used.has(id)) return;
+            if (typeof PassiveSkill !== 'undefined' && PassiveSkill.MASTER && !PassiveSkill.MASTER[id]) return;
+            used.add(id);
+            // モンスター側の特性Lvはそのまま持ち込むとボスで強くなりすぎるため、加入時はLv1で習得扱いにする。
+            traits.push({ id, level: 1, battleCount: 0 });
+        };
+
+        // モンスター固有特性がある場合は、まずそれを優先して取得する。
+        if (Array.isArray(baseMonster?.traits)) baseMonster.traits.forEach(addTrait);
+        if (Array.isArray(enemy?.traits)) enemy.traits.forEach(addTrait);
+
+        if (typeof PassiveSkill === 'undefined' || typeof PassiveSkill.getRandomTraitId !== 'function') return traits;
+
+        while (traits.length < count) {
+            let traitId = null;
+            for (let attempt = 0; attempt < 40; attempt++) {
+                const candidate = PassiveSkill.getRandomTraitId();
+                if (candidate && !used.has(Number(candidate))) {
+                    traitId = Number(candidate);
+                    break;
+                }
+            }
+            if (!traitId) break;
+            addTrait(traitId);
+        }
+        return traits;
+    },
+
+    // 後方互換用：旧名で呼ばれても、新しい「高い時だけ補正」ロジックに委譲する。
+    clampMonsterAllyPairToHero: (values, heroValues, options = {}) => App.adjustMonsterAllyPairToHeroIfHigher(values, heroValues, options),
+
+    extractMonsterSkillIds: (monsterLike) => {
+        const ids = new Set();
+        const add = (raw) => {
+            const id = Math.floor(Number(raw));
+            if (!Number.isFinite(id) || id <= 99) return;
+            if (typeof DB !== 'undefined' && Array.isArray(DB.SKILLS) && !DB.SKILLS.some(s => Number(s.id) === id)) return;
+            ids.add(id);
+        };
+        const sources = [];
+        if (Array.isArray(monsterLike?.acts)) sources.push(...monsterLike.acts);
+        if (Array.isArray(monsterLike?.skills)) sources.push(...monsterLike.skills);
+        sources.forEach(entry => {
+            if (entry && typeof entry === 'object') add(entry.id ?? entry.skillId);
+            else add(entry);
+        });
+        return Array.from(ids);
+    },
+
+    createMonsterAllyData: (enemy, baseMonster = null) => {
+        if (!App.data || !enemy) return null;
+        const base = baseMonster || (typeof Battle !== 'undefined' && Battle.getMonsterBaseById ? Battle.getMonsterBaseById(enemy.baseId || enemy.id) : null) || enemy;
+        const cfg = App.monsterRecruitConfig;
+        const joinLevel = App.getMonsterRecruitJoinLevel(enemy, base);
+
+        // 補正基準は「現在の主人公」ではなく、レベル1主人公を加入レベルまで内部成長させた基礎値。
+        // 主人公が転生済みの場合、加入レベルはLv100扱いなので、基準値もLv100時点で計算する。
+        const heroStats = App.getHeroReferenceStatsAtLevel(joinLevel);
+
+        const rawAtkMag = { atk: enemy.atk ?? enemy.baseStats?.atk ?? base.atk ?? 1, mag: enemy.mag ?? enemy.baseStats?.mag ?? base.mag ?? 1 };
+        const rawDefMdef = { def: enemy.def ?? enemy.baseStats?.def ?? base.def ?? 1, mdef: enemy.mdef ?? enemy.baseStats?.mdef ?? base.mdef ?? 1 };
+        const rawHpMp = { hp: enemy.baseMaxHp ?? enemy.maxHp ?? base.hp ?? 1, mp: enemy.baseMaxMp ?? enemy.maxMp ?? base.mp ?? 0 };
+
+        const atkMag = App.adjustMonsterAllyPairToHeroIfHigher(rawAtkMag, { atk: heroStats.atk, mag: heroStats.mag }, cfg);
+        const defMdef = App.adjustMonsterAllyPairToHeroIfHigher(rawDefMdef, { def: heroStats.def, mdef: heroStats.mdef }, cfg);
+        const hpMp = App.adjustMonsterAllyHpMpToHeroIfHigher(rawHpMp, { hp: heroStats.maxHp, mp: heroStats.maxMp }, cfg);
+        const spd = App.adjustMonsterAllySingleToHeroIfHigher(enemy.spd ?? enemy.baseStats?.spd ?? base.spd ?? 1, heroStats.spd, cfg);
+
+        const monsterId = Number(base.id ?? enemy.baseId ?? enemy.id);
+        const uid = `m${monsterId}_${Date.now()}_${Math.floor(Math.random() * 100000)}`;
+        const skillIds = App.extractMonsterSkillIds(base).concat(App.extractMonsterSkillIds(enemy))
+            .filter((id, index, arr) => arr.indexOf(id) === index);
+
+        const traits = App.generateMonsterRecruitTraitsForLevel(joinLevel, base, enemy);
+        const monsterImage = App.getMonsterRecruitImagePath(base, enemy);
+
+        const saveAlly = {
+            uid,
+            charId: 900000000 + monsterId,
+            isMonsterAlly: true,
+            monsterId,
+            sourceMonsterId: monsterId,
+            name: base.name || enemy.name || '仲間モンスター',
+            job: base.name || enemy.name || '仲間モンスター',
+            rarity: App.getMonsterRecruitRarity(base, enemy),
+            level: joinLevel,
+            exp: 0,
+            sp: 0,
+            hp: hpMp.hp,
+            mp: hpMp.mp,
+            atk: atkMag.atk,
+            def: defMdef.def,
+            mag: atkMag.mag,
+            mdef: defMdef.mdef,
+            spd,
+            hit: 100,
+            cri: 0,
+            eva: 0,
+            actCount: 1,
+            resists: {},
+            elmRes: {},
+            skills: skillIds,
+            equips: { '武器': null, '盾': null, '頭': null, '体': null, '足': null },
+            traits,
+            disabledTraits: [],
+            tree: { ATK: 0, MAG: 0, SPD: 0, HP: 0, MP: 0, WARRIOR: 0, MAGE: 0, PRIEST: 0, M_KNIGHT: 0 },
+            config: { fullAuto: false, hiddenSkills: [], strategy: 'balanced' },
+            limitBreak: 0,
+            lbProgress: {
+                counters: { battleWins: 0 },
+                sources: { story: 0, battle: 0, dungeon: 0, quest: 0, boss: 0, prism: 0, random: 0, gacha: 0, monster: 0, trial: 0, legacy: 0 },
+                trials: { mid: false, final: false, midClearedAt: null, finalClearedAt: null }
+            },
+            reincarnationCount: 0,
+            formation: 'front',
+            img: monsterImage,
+            image: monsterImage,
+            race: base.race || enemy.race || '魔物',
+            growthBase: {
+                hp: hpMp.hp, mp: hpMp.mp, atk: atkMag.atk, def: defMdef.def,
+                mag: atkMag.mag, mdef: defMdef.mdef, spd
+            },
+            monsterAllyMeta: {
+                joinedAt: Date.now(),
+                originalName: base.name || enemy.name || '',
+                originalRank: base.rank || base.generatedFloor || base.minF || enemy.rank || null,
+                originalIsBoss: !!(base.isBoss || enemy.isBoss),
+                originalIsSpecialBoss: !!(base.isSpecialBoss || base.isEstark || enemy.isSpecialBoss || enemy.isEstark)
+            }
+        };
+
+        saveAlly.currentHp = saveAlly.hp;
+        saveAlly.currentMp = saveAlly.mp;
+        return saveAlly;
+    },
+
+    addOrLimitBreakMonsterAlly: (enemy, baseMonster = null) => {
+        if (!App.data || !enemy) return { ok: false, message: '' };
+        if (!Array.isArray(App.data.characters)) App.data.characters = [];
+        const base = baseMonster || (typeof Battle !== 'undefined' && Battle.getMonsterBaseById ? Battle.getMonsterBaseById(enemy.baseId || enemy.id) : null) || enemy;
+        const monsterId = Number(base.id ?? enemy.baseId ?? enemy.id);
+        if (!Number.isFinite(monsterId)) return { ok: false, message: '' };
+
+        const existing = App.data.characters.find(c => App.isMonsterAlly(c) && Number(c.monsterId || c.sourceMonsterId) === monsterId);
+        if (existing) {
+            let before = Math.floor(Number(existing.limitBreak) || 0);
+            if (typeof App.addLimitBreak === 'function') {
+                App.addLimitBreak(existing, 1, 'monster');
+            } else {
+                existing.limitBreak = Math.min(99, before + 1);
+            }
+            if (Math.floor(Number(existing.limitBreak) || 0) <= before) {
+                existing.limitBreak = Math.min(99, before + 1);
+            }
+            App.ensureCharacterBattleConfig(existing);
+            return { ok: true, existing: true, char: existing, message: `【仲間モンスター】${existing.name}のLBが上がった！` };
+        }
+
+        const saveAlly = App.createMonsterAllyData(enemy, base);
+        if (!saveAlly) return { ok: false, message: '' };
+        App.data.characters.push(saveAlly);
+
+        let joinedParty = false;
+        if (Array.isArray(App.data.party) && App.getMonsterAllyInPartyCount() === 0) {
+            const emptyIndex = App.data.party.findIndex(uid => !uid);
+            if (emptyIndex >= 0) {
+                App.data.party[emptyIndex] = saveAlly.uid;
+                joinedParty = true;
+            }
+        }
+
+        return {
+            ok: true,
+            existing: false,
+            joinedParty,
+            char: saveAlly,
+            message: joinedParty
+                ? `なんと ${saveAlly.name}が改心し \n仲間に加わった！`
+                : `なんと ${saveAlly.name}が改心し \n仲間に加わった！`
+        };
+    },
+
+    isMonsterRecruitBattleAllowed: () => {
+        if (!App.data) return false;
+        const area = App.data.location?.area;
+        return area === 'ABYSS';
+    },
+
+    tryRecruitMonsterAfterBattle: (enemies) => {
+        if (!App.isMonsterRecruitBattleAllowed()) return null;
+        if (!Array.isArray(enemies) || enemies.length === 0) return null;
+        const candidates = enemies.filter(e => e && e.isDead && !e.isFled && (e.baseId || e.id));
+        if (candidates.length === 0) return null;
+        if (Math.random() >= App.monsterRecruitConfig.chance) return null;
+
+        const enemy = candidates[Math.floor(Math.random() * candidates.length)];
+        const base = (typeof Battle !== 'undefined' && Battle.getMonsterBaseById) ? Battle.getMonsterBaseById(enemy.baseId || enemy.id) : null;
+        const result = App.addOrLimitBreakMonsterAlly(enemy, base);
+        if (result && result.ok) {
+            if (typeof App.save === 'function') App.save();
+            return result;
+        }
+        return null;
     },
 
     ensureQuestState: () => {
@@ -2288,7 +2720,7 @@ const App = {
         if (!p.sources || typeof p.sources !== 'object' || Array.isArray(p.sources)) p.sources = {};
         if (!p.trials || typeof p.trials !== 'object' || Array.isArray(p.trials)) p.trials = {};
 
-        const sourceKeys = ['story', 'battle', 'dungeon', 'quest', 'boss', 'prism', 'random', 'gacha', 'trial', 'legacy'];
+        const sourceKeys = ['story', 'battle', 'dungeon', 'quest', 'boss', 'prism', 'random', 'gacha', 'monster', 'trial', 'legacy'];
         sourceKeys.forEach(key => {
             p.sources[key] = Math.max(0, Math.floor(Number(p.sources[key]) || 0));
         });
