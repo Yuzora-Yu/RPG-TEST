@@ -2484,25 +2484,25 @@ const FIXED_DUNGEON_MAPS = {
                 "height": 21,
                 "tiles": [
                     "WWWWWWWWWWWWWWWWWWWWW",
-                    "WWTTTTTTTTTTTTTTTTTWW",
+                    "WWWTTTTTTTTTTTTTTTWWW",
                     "WWCTTTTTTTTTTTTTTTTWW",
                     "WWTTTTTTTTTTTTTTTTTWW",
                     "WWTTTTTTTTBTTTTTTTTWW",
-                    "WWTTTTTTTTTTTTTTTTTWW",
+                    "WWWTTTTTTTTTTTTTTTWWW",
                     "WWWWWWWWWWTWWWWWWWWWW",
+                    "WWWWWTTTTTTTTTTTWWWWW",
                     "WWWWTTTTTTTTTTTTTWWWW",
-                    "WWWWTTTTTTBTTTTTTWWWW",
                     "WWWWTTTTTTTTTTTTTWWWW",
-                    "WWWWTWWWTTTTTWWWTWWWW",
+                    "WWWWTWWWWTTTWWWWTWWWW",
+                    "WWTTTTTWWTTTWWTTTTTWW",
                     "WTTTTTTTWTTTWTTTTTTTW",
                     "WTTTTTTTWTTTWTTTTTTTW",
                     "WTTTTTTTWTTTWTTTTTTTW",
-                    "WTTTTTTTWTTTWTTTTTTTW",
-                    "WTTTTTTTWTTTWTTTTTTTW",
+                    "WWTTTTTWWTTTWWTTTTTWW",
                     "WWWWWWWWWTTTWWWWWWWWW",
-                    "WWWTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTTTTWWW",
                     "WWWTTTTTTTTTTTTTTTDWW",
-                    "WWWTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTTTTWWW",
                     "WWWWWWWWWWWWWWWWWWWWW"
                 ],
                 "floorLinks": [
@@ -3807,8 +3807,8 @@ const FIXED_DUNGEON_MAPS = {
                     "WWTTTTTWWTTTTTTTWWTTTTTWW",
                     "WWTTTTTWTTTTTTTTTWTTTTTWW",
                     "WWWWTWWWWTTTTTTTWWWWTWWWW",
-                    "WWWWTWWWWWWWTWWWWWWWTWWWW",
-                    "WWWWTWWWWWWWTWWWWWWWTWWWW",
+                    "WWWWTWWWWWTTTTTWWWWWTWWWW",
+                    "WWWWTWWWWWWTTTWWWWWWTWWWW",
                     "WWTTTTTTWWWWTWWWWTTTTTTWW",
                     "WWTTTTTTWWWWTWWWWTTTTTTWW",
                     "WWTTTTTTTTTTTTTTTTTTTTTWW",
@@ -3837,7 +3837,7 @@ const FIXED_DUNGEON_MAPS = {
                     { x: 3, y: 4, itemId: 4, type: "item" },
                     { x: 21, y: 4, itemId: 101, type: "item", rare: true }
                 ],
-                healSprings: [{ x: 12, y: 2 }],
+                healSprings: [{ x: 12, y: 1 }],
                 entryPoint: { x: 12, y: 18 }
             }
         ]
