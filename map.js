@@ -3756,7 +3756,7 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWTTTTTTTWWWWWWWTTTTTTTWW",
                     "WWTCTTTTTWWWWWWWTTTDTTTWW",
-                    "WWTTTTTTTTTTTTTTTTTTTTTWW",
+                    "WWTTTTTTTWWWWWWWTTTTTTTWW",
                     "WWTTTTTTTWWWWWWWTTTTTTTWW",
                     "WWWWWTWWWWWWWWWWTTTTTCTWW",
                     "WWWWWTWWWWWWWWWWTTTTTTTWW",
@@ -3769,9 +3769,9 @@ const FIXED_DUNGEON_MAPS = {
                     "WWTTTTTTTWWWWTTTTTTTTTWWW",
                     "WWTTTTTTTWWWWTTTTTTTTTWWW",
                     "WWTTTTTTTWTTTTTWWWWWWWWWW",
-                    "WWTTTTTTTWTTTTTWWWWWWWWWW",
                     "WWTTTTTTTTTTTTTWWWWWWWWWW",
-                    "WWWWWWWWWWTTSTTWWWWWWWWWW",
+                    "WWTTTTTTTWTTTTTWWWWWWWWWW",
+                    "WWWWWWWWWWWWSWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWW"
                 ],
                 floorLinks: [
@@ -3800,13 +3800,13 @@ const FIXED_DUNGEON_MAPS = {
                 height: 21,
                 tiles: [
                     "WWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWTTTWWWWWWWWWWW",
+                    "WWTTTTTWWWTTTTTWWWTTTTTWW",
+                    "WWTTTTTWWWWTTTWWWWTTTTTWW",
+                    "WWTCTTTWWWWWBWWWWWTTTCTWW",
+                    "WWTTTTTWWTTTTTTTWWTTTTTWW",
                     "WWTTTTTWTTTTTTTTTWTTTTTWW",
-                    "WWTTTTTWTTTTTTTTTWTTTTTWW",
-                    "WWTCTTTWTTTTTTTTTWTTTCTWW",
-                    "WWTTTTTWTTTTBTTTTWTTTTTWW",
-                    "WWTTTTTWTTTTTTTTTWTTTTTWW",
-                    "WWWWTWWWTTTTTTTTTWWWTWWWW",
+                    "WWWWTWWWWTTTTTTTWWWWTWWWW",
                     "WWWWTWWWWWWWTWWWWWWWTWWWW",
                     "WWWWTWWWWWWWTWWWWWWWTWWWW",
                     "WWTTTTTTWWWWTWWWWTTTTTTWW",
@@ -3831,7 +3831,7 @@ const FIXED_DUNGEON_MAPS = {
                     { x: 20, y: 4, type: "warp", toX: 4, toY: 4, message: "妖精風が泉を巡った。" }
                 ],
                 bosses: [
-                    { x: 12, y: 5, monsterId: 301011, storyEventId: "quest_fire_holy_water_clear", actionLabel: "妖精を守る", inspectLog: "妖精の泉で、闇をまとった魔物が小さな光を追い詰めている。" }
+                    { x: 12, y: 4, monsterId: 301011, storyEventId: "quest_fire_holy_water_clear", actionLabel: "妖精を守る", inspectLog: "妖精の泉で、闇をまとった魔物が小さな光を追い詰めている。" }
                 ],
                 chests: [
                     { x: 3, y: 4, itemId: 4, type: "item" },
