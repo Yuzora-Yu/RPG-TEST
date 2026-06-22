@@ -84,12 +84,37 @@ const Battle = {
         }
     },
 
+    getBattleSpeedSetting: () => {
+        if (typeof App !== 'undefined' && typeof App.getBattleSpeedSetting === 'function') {
+            return App.getBattleSpeedSetting();
+        }
+        const speed = App?.data?.settings?.battleSpeed || 'normal';
+        return ['normal', 'fast', 'fastest'].includes(speed) ? speed : 'normal';
+    },
+
+    getBattleWaitMs: (ms) => {
+        const base = Math.max(0, Math.floor(Number(ms) || 0));
+        const speed = Battle.getBattleSpeedSetting();
+        if (speed === 'fastest') return 0;
+        if (speed === 'fast') return Math.floor(base * 0.35);
+        return base;
+    },
+
+    schedule: (fn, ms) => setTimeout(fn, Battle.getBattleWaitMs(ms)),
+
+    getAutoStartSetting: () => {
+        if (typeof App !== 'undefined' && typeof App.getBattleAutoStartSetting === 'function') {
+            return App.getBattleAutoStartSetting();
+        }
+        return App?.data?.settings?.battleAutoStart === true;
+    },
+
     init: () => {
         Battle.active = true;
         Battle.phase = 'init';
         Battle.commandQueue = [];
         Battle.currentActorIndex = 0;
-        Battle.auto = false;
+        Battle.auto = Battle.getAutoStartSetting();
         Battle.runAttemptCount = 0; 
         Battle.skillScrollPositions = {};
         Battle.updateAutoButton();
@@ -256,7 +281,7 @@ const Battle = {
         // ★修正: 不意打ちの場合は入力フェーズを飛ばして即ターン実行へ
         // それ以外（通常・先制攻撃）は入力を受け付ける
         if (Battle.isAmbushed) {
-            setTimeout(() => {
+            Battle.schedule(() => {
                 if (Battle.active) Battle.executeTurn();
             }, 1000);
         } else {
@@ -1447,7 +1472,7 @@ findNextActor: () => {
 
         if (targets.length === 0) {
             Battle.log("対象がいません");
-            setTimeout(Battle.cancelSubMenu, 800);
+            Battle.schedule(Battle.cancelSubMenu, 800);
             return;
         }
 
@@ -3231,8 +3256,8 @@ findNextActor: () => {
     },
 
     checkFinish: () => {
-		if (Battle.party.every(p => p.isDead)) { setTimeout(Battle.lose, 800); return true; }
-        if (Battle.enemies.every(e => e.isDead || e.isFled)) { setTimeout(Battle.win, 800); return true; }
+		if (Battle.party.every(p => p.isDead)) { Battle.schedule(Battle.lose, 800); return true; }
+        if (Battle.enemies.every(e => e.isDead || e.isFled)) { Battle.schedule(Battle.win, 800); return true; }
         return false;
     },
 
@@ -4360,7 +4385,7 @@ findNextActor: () => {
             App.save();
 
             // Battle.log("\n意識が遠のいていく……");
-            setTimeout(() => {
+            Battle.schedule(() => {
                 // ダンジョン内の全滅なら引数 true を渡して脱出
                 if (isDungeon) {
                     Dungeon.exit(true); 
@@ -4373,7 +4398,7 @@ findNextActor: () => {
             }, 2000);
         } else {
             // ★修正：setTimeoutをasync化し、画面切り替え後にmain.jsのinit処理でストーリーを実行（復帰と同対応）
-            setTimeout(async () => {
+            Battle.schedule(async () => {
                 App.changeScene('field');
                 if (typeof App.resetFieldLog === 'function') App.resetFieldLog();
             }, 500);
@@ -4420,8 +4445,9 @@ findNextActor: () => {
     },
 
     resultWait: (ms) => {
+        const waitMs = Battle.getBattleWaitMs(ms);
+        if (waitMs <= 0 || Battle.resultSkipRequested) return Promise.resolve();
         if (Battle.phase !== 'result') return Battle.wait(ms);
-        if (Battle.resultSkipRequested) return Promise.resolve();
         return new Promise(resolve => {
             let done = false;
             const finish = () => {
@@ -4429,7 +4455,7 @@ findNextActor: () => {
                 done = true;
                 resolve();
             };
-            const timer = setTimeout(finish, ms);
+            const timer = setTimeout(finish, waitMs);
             if (!Array.isArray(Battle.resultWaiters)) Battle.resultWaiters = [];
             Battle.resultWaiters.push(() => {
                 clearTimeout(timer);
@@ -4438,5 +4464,8 @@ findNextActor: () => {
         });
     },
 
-    wait: (ms) => new Promise(resolve => setTimeout(resolve, ms))
+    wait: (ms) => {
+        const waitMs = Battle.getBattleWaitMs(ms);
+        return waitMs <= 0 ? Promise.resolve() : new Promise(resolve => setTimeout(resolve, waitMs));
+    }
 };

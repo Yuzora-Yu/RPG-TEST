@@ -437,6 +437,60 @@ const App = {
         return App.data.progress.unlocked;
     },
 
+    defaultSettings: {
+        battleSpeed: 'normal',
+        battleAutoStart: false
+    },
+
+    battleSpeedLabels: {
+        normal: '普通',
+        fast: '早い',
+        fastest: '最速'
+    },
+
+    getDefaultSettings: () => ({ ...App.defaultSettings }),
+
+    ensureSettings: () => {
+        if (!App.data) return App.getDefaultSettings();
+        if (!App.data.settings || typeof App.data.settings !== 'object' || Array.isArray(App.data.settings)) {
+            App.data.settings = {};
+        }
+        const defaults = App.getDefaultSettings();
+        Object.keys(defaults).forEach(key => {
+            if (App.data.settings[key] === undefined) App.data.settings[key] = defaults[key];
+        });
+        if (!Object.prototype.hasOwnProperty.call(App.battleSpeedLabels, App.data.settings.battleSpeed)) {
+            App.data.settings.battleSpeed = defaults.battleSpeed;
+        }
+        App.data.settings.battleAutoStart = App.data.settings.battleAutoStart === true;
+        return App.data.settings;
+    },
+
+    getBattleSpeedSetting: () => {
+        const settings = App.ensureSettings ? App.ensureSettings() : (App.data?.settings || {});
+        const speed = settings.battleSpeed || 'normal';
+        return Object.prototype.hasOwnProperty.call(App.battleSpeedLabels, speed) ? speed : 'normal';
+    },
+
+    setBattleSpeedSetting: (speed) => {
+        const settings = App.ensureSettings();
+        settings.battleSpeed = Object.prototype.hasOwnProperty.call(App.battleSpeedLabels, speed) ? speed : 'normal';
+        if (typeof App.save === 'function') App.save();
+        return settings.battleSpeed;
+    },
+
+    getBattleAutoStartSetting: () => {
+        const settings = App.ensureSettings ? App.ensureSettings() : (App.data?.settings || {});
+        return settings.battleAutoStart === true;
+    },
+
+    setBattleAutoStartSetting: (enabled) => {
+        const settings = App.ensureSettings();
+        settings.battleAutoStart = enabled === true;
+        if (typeof App.save === 'function') App.save();
+        return settings.battleAutoStart;
+    },
+
     ensureCharacterBattleConfig: (char) => {
         if (!char) return null;
         if (!char.config || typeof char.config !== 'object' || Array.isArray(char.config)) {
@@ -474,6 +528,7 @@ const App = {
     getInitialData: () => {
         return {
             location: { area: 'START_VILLAGE', x: 6, y: 4 },
+            settings: App.getDefaultSettings(),
             progress: { 
                 floor: 0, 
                 storyStep: 0, 
@@ -613,6 +668,9 @@ const App = {
         if (!App.data.dungeon) App.data.dungeon = JSON.parse(JSON.stringify(initial.dungeon));
         if (App.data.transportMode === undefined) App.data.transportMode = null;
         if (App.data.mapReturnPoint === undefined) App.data.mapReturnPoint = null;
+
+        // 5.5. 設定の補完
+        App.ensureSettings();
 
         // 6. キャラクターの個別補完
         if (App.data.characters) {
@@ -2249,6 +2307,7 @@ load: () => {
             if(!App.data.book) App.data.book = { monsters: [] }; 
             if(!App.data.book.killCounts) App.data.book.killCounts = {}; 
             if(!App.data.battle) App.data.battle = { active: false }; 
+            if (typeof App.ensureSettings === 'function') App.ensureSettings();
             
             if(!App.data.stats) {
                 App.data.stats = {
@@ -2364,6 +2423,7 @@ load: () => {
 	createGameData: (imgSrc) => {
         const name = document.getElementById('player-name').value || 'アルス';
         App.data = JSON.parse(JSON.stringify(INITIAL_DATA_TEMPLATE));
+        App.ensureSettings();
         if (!App.data.progress) App.data.progress = {};
         if (!App.data.progress.flags || typeof App.data.progress.flags !== 'object' || Array.isArray(App.data.progress.flags)) App.data.progress.flags = {};
         App.data.progress.flags.hasShip = false;

@@ -417,10 +417,7 @@ const Menu = {
                 ${Menu.featureButton('dungeon', 'ダンジョン', 'dungeonMenu', 'background:#400040;')}
 
                 <button class="menu-btn" onclick="Menu.openSubScreen('book')">魔物図鑑</button>
-                ${Menu.featureButton('gacha', 'ガチャ', 'gacha', 'background:#664400;')}
-                
-                <button class="menu-btn" style="background:#004444;" onclick="App.downloadSave()">データ出力</button>
-                <button class="menu-btn" style="background:#004444;" onclick="App.importSave()">データ読込</button>
+                <button class="menu-btn" style="background:#004444;" onclick="Menu.openSubScreen('config')">設定</button>
                 
                 <button class="menu-btn" style="background:#500;" onclick="App.returnToTitle()">タイトルへ</button>
                 <button class="menu-btn" style="background:#333;" onclick="Menu.closeMainMenu()">閉じる</button>
@@ -594,6 +591,9 @@ const Menu = {
         if (id === 'status' && !document.getElementById('sub-screen-status')) {
             MenuStatus.createDOM();
         }
+        if (id === 'config' && typeof MenuConfig !== 'undefined' && !document.getElementById('sub-screen-config')) {
+            MenuConfig.createDOM();
+        }
 
         const target = document.getElementById('sub-screen-' + id);
         if(target) target.style.display = 'flex';
@@ -606,7 +606,8 @@ const Menu = {
         if(id === 'book') MenuBook.init();
         if(id === 'blacksmith') MenuBlacksmith.init();
         if(id === 'status') MenuStatus.init();
-		if(id === 'exchange') MenuExchange.init();
+        if(id === 'config' && typeof MenuConfig !== 'undefined') MenuConfig.init();
+			if(id === 'exchange') MenuExchange.init();
 		if(id === 'achievements') MenuAchievements.init();
         if(id === 'gacha' && typeof Gacha !== 'undefined') Gacha.init();
 		if(id === 'dungeon' && typeof Dungeon !== 'undefined') Dungeon.initMenu();

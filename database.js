@@ -268,7 +268,7 @@ window.generateEnemy = function(floor) {
 // 初期データテンプレート
 const INITIAL_DATA_TEMPLATE = {
     gold: 0, gems: 9000,
-    settings: {},
+    settings: { battleSpeed: 'normal', battleAutoStart: false },
     items: { 1: 5 }, 
     inventory: [], 
     location: { 
