@@ -235,7 +235,9 @@
 			const key = overlay.img;
 			const building = isBuildingTexture(key);
 			const characterOverlay = String(key || '').startsWith('overlay_npc_');
-			const bossOverlay = String(key || '').startsWith('overlay_boss_');
+			const bossOverlay =
+				String(key || '').startsWith('overlay_boss_') ||
+				String(key || '').startsWith('monster_');
 
 			// ワールドマップ上の町・神殿等は地図記号として1マス表示にする。
 			// 固定マップの建物は高さを残すが、手前の楕円影は不自然なので描かない。
@@ -315,7 +317,11 @@
     };
 
     const drawMinimap = (scene, field, mapSize, areaKey) => {
-        const size = 80;
+        const size = Math.max(80, Math.round(
+            typeof field.getFieldMinimapDisplaySize === 'function'
+                ? field.getFieldMinimapDisplaySize()
+                : 80
+        ));
         const margin = 10;
         const range = 7;
         const cells = range * 2 + 1;
@@ -327,8 +333,6 @@
         graphics.setDepth(1000000);
         graphics.fillStyle(0x000000, 0.72);
         graphics.fillRect(left, top, size, size);
-        graphics.lineStyle(1, 0xffffff, 0.72);
-        graphics.strokeRect(left + 0.5, top + 0.5, size - 1, size - 1);
 
         for (let dy = -range; dy <= range; dy++) {
             for (let dx = -range; dx <= range; dx++) {
@@ -393,6 +397,10 @@
                 }, 0x80ffb0);
             });
         }
+
+        // タイル描画で枠線が上書きされないよう、ミニマップの枠は最後に描く。
+        graphics.lineStyle(2, 0xffffff, 0.78);
+        graphics.strokeRect(Math.round(left) + 1, Math.round(top) + 1, Math.round(size) - 2, Math.round(size) - 2);
 
         state.uiObjects.push(graphics);
 
@@ -466,6 +474,7 @@
             field.x,
             field.y,
             field.minimapMode,
+            typeof field.getFieldMinimapDisplaySize === 'function' ? field.getFieldMinimapDisplaySize() : 80,
             field.currentMapData?.name || 'WORLD',
             progress.storyStep || 0,
             progress.subStep || 0,
@@ -662,6 +671,11 @@
             state.game.scale.resize(parent.clientWidth || 320, parent.clientHeight || 320);
             state.lastStaticSignature = null;
             if (state.pendingField) sync(state.pendingField);
+        },
+        refresh() {
+            if (!state.ready || !state.pendingField) return;
+            state.lastStaticSignature = null;
+            sync(state.pendingField);
         },
         setActive(active) {
             if (state.failed) return;

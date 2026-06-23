@@ -376,30 +376,3 @@ PassiveSkill.getPartySumValue = function(key) {
 
     return total;
 };
-
-/**
- * 表示用の全特性リストを取得 (習得済み -> 装備品の順)
- */
-PassiveSkill.getFullTraitList = function(char) {
-    PassiveSkill.normalizeDisabledTraits(char);
-    let list = [];
-
-    // 1. 本人が習得している特性 (習得順)
-    if (char.traits) {
-        char.traits.forEach(t => {
-            list.push({ ...t, source: 'learned' });
-        });
-    }
-
-    // 2. 装備品についている特性
-    if (char.equips) {
-        Object.values(char.equips).forEach(eq => {
-            if (eq && eq.traits) {
-                eq.traits.forEach(t => {
-                    list.push({ ...t, source: 'equipment', fromName: eq.name });
-                });
-            }
-        });
-    }
-    return list;
-};

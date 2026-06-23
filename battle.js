@@ -2320,31 +2320,6 @@ findNextActor: () => {
         return !alreadyDead;
     },
 
-    advanceActorTurn: (actor) => {
-        const b = actor.battleStatus;
-        if (!b) return;
-        ['buffs', 'debuffs', 'ailments'].forEach(cat => {
-            for (let key in b[cat]) {
-                const eff = b[cat][key];
-                if (eff.turns !== undefined && eff.turns !== null) {
-                    eff.turns--;
-                    if (eff.turns <= 0) {
-                        const getDisplayName = (k) => {
-                            if (k.startsWith('resists_')) return (Battle.statNames[k.replace('resists_', '')] || k) + "耐性";
-                            return Battle.statNames[k] || k;
-                        };
-                        const dispName = getDisplayName(key);
-                        if (cat === 'buffs') Battle.log(`${actor.name}の ${dispName} アップの効果が切れた！`);
-                        if (cat === 'debuffs') Battle.log(`${actor.name}の ${dispName} ダウンの効果が切れた！`);
-                        if (cat === 'ailments') Battle.log(`${actor.name}の ${dispName} が解けた！`);
-                        delete b[cat][key];
-                    }
-                }
-            }
-        });
-        actor.turnProcessed = true; // 処理済みフラグを立てる
-    },
-	
 	processAction: async (cmd) => {
         const actor = cmd.actor;
         const data = cmd.data;

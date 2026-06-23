@@ -1347,19 +1347,6 @@ const MenuAllies = {
         Menu.renderPartyBar();
     },
 
-    toggleFullAuto: () => {
-        const c = MenuAllies.selectedChar;
-        if (!c) return;
-        const container = document.querySelector('#allies-detail-view .scroll-container-inner');
-        const scrollPos = container ? container.scrollTop : 0;
-        if (typeof App !== 'undefined' && App.ensureCharacterBattleConfig) App.ensureCharacterBattleConfig(c);
-        else if (!c.config) c.config = { fullAuto: false, hiddenSkills: [], strategy: 'balanced' };
-        c.config.fullAuto = !c.config.fullAuto;
-        MenuAllies.renderDetail();
-        const newContainer = document.querySelector('#allies-detail-view .scroll-container-inner');
-        if (newContainer) newContainer.scrollTop = scrollPos;
-    },
-
     toggleSkillVisibility: (skillId) => {
         const c = MenuAllies.selectedChar;
         if (!c) return;
@@ -1370,14 +1357,6 @@ const MenuAllies = {
         const idx = c.config.hiddenSkills.indexOf(Number(skillId));
         if (idx >= 0) c.config.hiddenSkills.splice(idx, 1);
         else c.config.hiddenSkills.push(Number(skillId));
-        MenuAllies.renderDetail();
-        const newContainer = document.querySelector('#allies-detail-view .scroll-container-inner');
-        if (newContainer) newContainer.scrollTop = scrollPos;
-    },
-
-    refreshDetailScroll: () => {
-        const container = document.querySelector('#allies-detail-view .scroll-container-inner');
-        const scrollPos = container ? container.scrollTop : 0;
         MenuAllies.renderDetail();
         const newContainer = document.querySelector('#allies-detail-view .scroll-container-inner');
         if (newContainer) newContainer.scrollTop = scrollPos;
@@ -1777,37 +1756,6 @@ const MenuAllies = {
         const treeView = document.getElementById('allies-tree-view');
         if (treeView) treeView.style.display = 'none';
         MenuAllies.renderDetail();
-    },
-
-    switchTreeChar: (dir) => {
-        const current = MenuAllies.getSelectedChar ? MenuAllies.getSelectedChar() : MenuAllies.selectedChar;
-        if (!current || !Array.isArray(App.data.characters) || App.data.characters.length === 0) return;
-
-        const rarityVal = { N:1, R:2, SR:3, SSR:4, UR:5, EX:6 };
-        const chars = [...App.data.characters].sort((a, b) => {
-            const aInParty = App.data.party.includes(a.uid);
-            const bInParty = App.data.party.includes(b.uid);
-            if (aInParty !== bInParty) return bInParty - aInParty;
-            if (a.uid === 'p1') return -1;
-            if (b.uid === 'p1') return 1;
-            const rA = rarityVal[a.rarity] || 0;
-            const rB = rarityVal[b.rarity] || 0;
-            if (rA !== rB) return rB - rA;
-            if (b.level !== a.level) return b.level - a.level;
-            return a.charId - b.charId;
-        });
-
-        let idx = chars.findIndex(c => c.uid === current.uid);
-        if (idx === -1) idx = 0;
-        const nextChar = chars[(idx + dir + chars.length) % chars.length];
-
-        MenuAllies.selectedChar = nextChar;
-        MenuAllies.selectedUid = nextChar.uid;
-        MenuAllies.targetPart = null;
-        MenuAllies.selectedEquip = null;
-
-        // スキル習得画面内の移動では、アーカイブ詳細の描画処理を呼ばない。
-        MenuAllies.renderTreeView();
     },
 
     renderTreeView: () => {

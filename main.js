@@ -5107,6 +5107,15 @@ const Field = {
 
     enterFixedMap: (targetAreaKey) => {
         if (!targetAreaKey || typeof FIXED_MAPS === 'undefined' || !FIXED_MAPS[targetAreaKey]) return;
+        if (targetAreaKey === 'ABYSS_FIELD' && !App.data?.progress?.flags?.darkCastleCleared) {
+            App.log('属性が不均質に混ざり合っている…');
+            if (typeof StoryManager !== 'undefined' && typeof StoryManager.executeEvent === 'function') {
+                StoryManager.executeEvent('locked_abyss_field');
+            } else if (typeof App.showMessage === 'function') {
+                App.showMessage('ケイト「魔力汚染がひどすぎます…入ったら、正気ではいられない。\n入る方法を探すしかなさそうです」');
+            }
+            return;
+        }
         const areaDef = FIXED_MAPS[targetAreaKey];
         App.data.mapReturnPoint = {
             areaKey: App.data.location.area || 'WORLD',
@@ -6397,7 +6406,11 @@ const Field = {
                 const bypassFlags = Array.isArray(areaDef.entryBypassFlags) ? areaDef.entryBypassFlags : [];
                 const bypassedEntryLock = bypassFlags.some(flag => !!flags[flag]);
                 if (areaDef.entryRequiredFlag && !flags[areaDef.entryRequiredFlag] && !bypassedEntryLock) {
-                    App.log(areaDef.entryLockedText || '今はまだ、この場所へ入る理由がない。');
+                    if (areaDef.entryLockedEventId && typeof StoryManager !== 'undefined' && typeof StoryManager.executeEvent === 'function') {
+                        StoryManager.executeEvent(areaDef.entryLockedEventId);
+                    } else {
+                        App.log(areaDef.entryLockedText || '今はまだ、この場所へ入る理由がない。');
+                    }
                     return;
                 }
                 if (targetAreaKey === 'THUNDER_FORT' && targetEntryKey === 'east' && !flags.thunderFortCleared) {

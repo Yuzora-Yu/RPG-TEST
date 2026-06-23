@@ -1181,6 +1181,18 @@ const StoryManager = {
                         "charId": 204
                 }
         ],
+        "LOCKED_ABYSS_FIELD": [
+                {
+                        "name": "ケイト",
+                        "text": "魔力汚染がひどすぎます…入ったら、正気ではいられない。",
+                        "charId": 104
+                },
+                {
+                        "name": "ケイト",
+                        "text": "入る方法を探すしかなさそうです",
+                        "charId": 104
+                }
+        ],
         "STORY_DARK_CLEAR": [
                 {
                         "name": "魔王ゼノン",
@@ -1938,6 +1950,16 @@ const StoryManager = {
                 {
                         "name": "システム",
                         "text": "岩肌の隙間から、\n小さな泣き声が聞こえた。"
+                }
+        ],
+        "GALVANIA_CAVE_NORTH_BLOCKED": [
+                {
+                        "name": "兵士",
+                        "text": "魔王軍の活動が活発で危険すぎる。"
+                },
+                {
+                        "name": "兵士",
+                        "text": "洞窟内の闇の力も日に日に強くなっており、光の加護すらない者を通すことはできない"
                 }
         ],
         "FOREST_HOLY_WATER_CLEAR": [
@@ -3654,6 +3676,15 @@ const StoryManager = {
                 ],
                 "winActions": []
         },
+        "locked_abyss_field": {
+                "actions": [
+                        {
+                                "type": "CONV",
+                                "value": "LOCKED_ABYSS_FIELD"
+                        }
+                ],
+                "winActions": []
+        },
         "abyss_unsealed": {
                 "actions": [
                         {
@@ -4767,6 +4798,10 @@ const StoryManager = {
         },
         "post_light_palace_base_1": {
                 "actions": [{ "type": "CONV", "value": "POST_LIGHT_PALACE_BASE_1" }],
+                "winActions": []
+        },
+        "galvania_cave_north_blocked": {
+                "actions": [{ "type": "CONV", "value": "GALVANIA_CAVE_NORTH_BLOCKED" }],
                 "winActions": []
         },
         "post_dark_castle_base_1": {
