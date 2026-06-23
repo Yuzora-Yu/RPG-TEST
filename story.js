@@ -327,6 +327,413 @@ const StoryManager = {
 		}
 	},
 	
+
+
+    /**
+     * フィールド演出は story.js の会話スクリプト内に直接書く。
+     * main.js には「画像を指定タイルに置く」などの描画補助だけを残し、
+     * シナリオ固有の座標・移動・暗転・エフェクトは各イベント本文の commands で管理する。
+     * 旧来のプリセット参照は廃止し、ストーリーを書きながら座標や演出タイミングを調整できる構成に統一する。
+     */
+
+    cloneFieldVisualCommand: function(cmd) {
+        if (!cmd || typeof cmd !== 'object') return cmd;
+        const copy = { ...cmd };
+        if (cmd.fallback && typeof cmd.fallback === 'object') copy.fallback = { ...cmd.fallback };
+        return copy;
+    },
+
+    isInlineStoryCommand: function(line) {
+        if (!line || typeof line !== 'object') return false;
+        return line.type === 'FIELD_CUTSCENE'
+            || line.type === 'MAP_VISUAL'
+            || line.type === 'WAIT'
+            || line.type === 'STORY_UI'
+            || line.op !== undefined;
+    },
+
+    getInlineStoryCommandCommands: function(line) {
+        if (!line || typeof line !== 'object') return null;
+        if (Array.isArray(line.commands)) return line.commands.map(cmd => this.cloneFieldVisualCommand(cmd));
+        if (Array.isArray(line.visual)) return line.visual.map(cmd => this.cloneFieldVisualCommand(cmd));
+        if (line.op !== undefined) return [this.cloneFieldVisualCommand(line)];
+        if (line.type === 'FIELD_CUTSCENE' || line.type === 'MAP_VISUAL') {
+            // 演出内容はイベント本文の commands / visual に直接書く。
+            // 旧来の value プリセット参照は廃止し、空指定なら実行しない。
+            return null;
+        }
+        return null;
+    },
+
+    getFieldVisualAnchor: function(options = {}) {
+        if (options.anchor && Number.isFinite(Number(options.anchor.x)) && Number.isFinite(Number(options.anchor.y))) {
+            return { x: Number(options.anchor.x), y: Number(options.anchor.y) };
+        }
+        if (Number.isFinite(Number(options.x)) && Number.isFinite(Number(options.y))) {
+            return { x: Number(options.x), y: Number(options.y) };
+        }
+        if (typeof Field !== 'undefined' && typeof Field.getLastFixedBossEventPosition === 'function') {
+            return Field.getLastFixedBossEventPosition();
+        }
+        if (typeof Field !== 'undefined') return { x: Number(Field.x || 0), y: Number(Field.y || 0) };
+        return { x: 0, y: 0 };
+    },
+
+    resolveStoryFieldVisualTile: function(cmd, anchor) {
+        if (typeof Field !== 'undefined' && typeof Field.resolveFieldCutsceneTile === 'function') {
+            return Field.resolveFieldCutsceneTile(cmd, anchor);
+        }
+        const base = cmd?.base === 'player' && typeof Field !== 'undefined'
+            ? { x: Number(Field.x || 0), y: Number(Field.y || 0) }
+            : (anchor || { x: 0, y: 0 });
+        return {
+            x: Number(cmd?.x ?? base.x) + Number(cmd?.dx || 0),
+            y: Number(cmd?.y ?? base.y) + Number(cmd?.dy || 0)
+        };
+    },
+
+    resolveStoryFieldVisualSrc: function(cmd) {
+        if (!cmd) return '';
+        if (cmd.src) return cmd.src;
+        if (cmd.monsterId !== undefined && typeof Field !== 'undefined' && typeof Field.getMonsterMapSpriteSrc === 'function') {
+            return Field.getMonsterMapSpriteSrc(cmd.monsterId);
+        }
+        if (cmd.monsterId !== undefined) return `assets/monsters/monster_${Number(cmd.monsterId)}.png`;
+        if (cmd.effect === 'slash') return 'assets/effect/fx_phys_neutral_slash_v001.png';
+        return '';
+    },
+
+    putStoryFieldVisualSprite: function(cmd, anchor) {
+        if (typeof Field === 'undefined' || typeof Field.putFieldVisualSprite !== 'function') return null;
+        const src = this.resolveStoryFieldVisualSrc(cmd);
+        if (!src) return null;
+        const tile = this.resolveStoryFieldVisualTile(cmd, anchor);
+        const css = `z-index:${Number(cmd.z || 4)}; opacity:${cmd.opacity !== undefined ? Number(cmd.opacity) : 1};` + (cmd.css || '');
+        return Field.putFieldVisualSprite(cmd.id || `field-visual-story-${Date.now()}`, src, tile, cmd.size || 2, css);
+    },
+
+    setStoryUiCutsceneHidden: function(hidden) {
+        if (typeof Field !== 'undefined' && typeof Field.setStoryUiCutsceneHidden === 'function') {
+            Field.setStoryUiCutsceneHidden(!!hidden);
+            return;
+        }
+        const overlay = document.getElementById('story-ui-overlay');
+        if (!overlay) return;
+        overlay.style.display = hidden ? 'none' : 'flex';
+    },
+
+    fadeStoryFieldBlackout: async function(holdMs = 160) {
+        if (typeof Field !== 'undefined' && typeof Field.fadeFieldVisualBlackout === 'function') {
+            await Field.fadeFieldVisualBlackout(holdMs);
+            return;
+        }
+        await new Promise(resolve => setTimeout(resolve, Math.max(0, Number(holdMs) || 0)));
+    },
+
+    runStoryFieldVisualCommands: async function(commands, options = {}) {
+        if (!Array.isArray(commands) || commands.length === 0 || typeof Field === 'undefined') return false;
+        const wait = (ms) => new Promise(resolve => setTimeout(resolve, Math.max(0, Number(ms) || 0)));
+        const anchor = this.getFieldVisualAnchor(options);
+        const layer = typeof Field.ensureFieldVisualLayer === 'function' ? Field.ensureFieldVisualLayer() : null;
+
+        // 操作不可にするのは、台詞と台詞の間でこの関数が実行中の間だけ。
+        // SHOW したスプライトを会話中に残しても、レイヤーはタップを奪わない。
+        if (layer) layer.style.pointerEvents = 'auto';
+        Field._visualCutsceneActive = true;
+        if (typeof App !== 'undefined' && typeof App.lockFieldInput === 'function') App.lockFieldInput(Number(options.lockMs || 900));
+
+        try {
+            for (const raw of commands) {
+                const cmd = this.cloneFieldVisualCommand(raw);
+                if (!cmd || !cmd.op) continue;
+                switch (cmd.op) {
+                    case 'CLEAR_LAYER': {
+                        const currentLayer = typeof Field.ensureFieldVisualLayer === 'function' ? Field.ensureFieldVisualLayer() : layer;
+                        if (currentLayer) currentLayer.innerHTML = '';
+                        break;
+                    }
+                    case 'BLACKOUT':
+                        await this.fadeStoryFieldBlackout(cmd.holdMs || 160);
+                        break;
+                    case 'WAIT':
+                        await wait(cmd.ms || 0);
+                        break;
+                    case 'HIDE_STORY_UI':
+                        this.setStoryUiCutsceneHidden(!!cmd.hidden);
+                        break;
+                    case 'SHOW_SPRITE':
+                        this.putStoryFieldVisualSprite(cmd, anchor);
+                        break;
+                    case 'MOVE_SPRITE': {
+                        let img = cmd.id ? document.getElementById(cmd.id) : null;
+                        if (!img && (cmd.monsterId !== undefined || cmd.src)) {
+                            img = this.putStoryFieldVisualSprite({ ...cmd, dx: cmd.fromDx ?? cmd.dx ?? 0, dy: cmd.fromDy ?? cmd.dy ?? 0 }, anchor);
+                        }
+                        if (!img || typeof Field.getFieldVisualTileStyle !== 'function') break;
+                        const tile = this.resolveStoryFieldVisualTile(cmd, anchor);
+                        const size = cmd.size || Number(img.dataset.sizeTiles || 2);
+                        const duration = Math.max(0, Number(cmd.duration || 160));
+                        img.style.cssText = Field.getFieldVisualTileStyle(tile, size) + `z-index:${Number(cmd.z || 4)}; transition:left ${duration}ms linear, top ${duration}ms linear;` + (cmd.css || '');
+                        img.dataset.tileX = String(tile.x);
+                        img.dataset.tileY = String(tile.y);
+                        img.dataset.sizeTiles = String(size);
+                        await wait(duration);
+                        break;
+                    }
+                    case 'PLAY_EFFECT': {
+                        const effect = this.putStoryFieldVisualSprite(cmd, anchor);
+                        await wait(cmd.ms || 300);
+                        if (effect && cmd.remove !== false) effect.remove();
+                        break;
+                    }
+                    case 'BLINK_REMOVE': {
+                        let img = cmd.id ? document.getElementById(cmd.id) : null;
+                        if (!img && cmd.fallback) img = this.putStoryFieldVisualSprite({ id: cmd.id, ...cmd.fallback }, anchor);
+                        if (!img) break;
+                        const count = Math.max(1, Number(cmd.count || 3));
+                        for (let i = 0; i < count; i++) {
+                            img.style.opacity = String(cmd.offOpacity ?? 0.25);
+                            await wait(cmd.offMs || 80);
+                            img.style.opacity = String(cmd.onOpacity ?? 1);
+                            await wait(cmd.onMs || 80);
+                        }
+                        if (cmd.remove !== false) img.remove();
+                        break;
+                    }
+                    case 'REMOVE_SPRITE': {
+                        const img = cmd.id ? document.getElementById(cmd.id) : null;
+                        if (img) img.remove();
+                        break;
+                    }
+                    case 'CLEANUP': {
+                        this.setStoryUiCutsceneHidden(false);
+                        const currentLayer = document.getElementById('field-visual-cutscene-layer');
+                        if (currentLayer) currentLayer.remove();
+                        Field._visualCutsceneActive = false;
+                        break;
+                    }
+                    default:
+                        break;
+                }
+            }
+            return true;
+        } finally {
+            Field._visualCutsceneActive = false;
+            const currentLayer = document.getElementById('field-visual-cutscene-layer');
+            if (currentLayer) currentLayer.style.pointerEvents = 'none';
+            this.setStoryUiCutsceneHidden(false);
+        }
+    },
+
+    runStoryFieldVisual: async function(name, options = {}) {
+        const commands = Array.isArray(options.commands)
+            ? options.commands
+            : (Array.isArray(options.visual) ? options.visual : null);
+        if (!commands) return false;
+        return this.runStoryFieldVisualCommands(commands, options);
+    },
+
+    runInlineStoryCommand: async function(line) {
+        if (!line || typeof line !== 'object') return false;
+        const wait = (ms) => new Promise(resolve => setTimeout(resolve, Math.max(0, Number(ms) || 0)));
+
+        if (line.type === 'WAIT') {
+            await wait(line.ms ?? line.value ?? 0);
+            return true;
+        }
+
+        if (line.type === 'STORY_UI') {
+            this.setStoryUiCutsceneHidden(!!line.hidden);
+            return true;
+        }
+
+        if (line.type === 'FIELD_CUTSCENE' || line.type === 'MAP_VISUAL' || line.op !== undefined) {
+            await this.runStoryFieldVisual(line.value || line.name || 'INLINE_STORY_VISUAL', line);
+            return true;
+        }
+
+        return false;
+    },
+
+    getInlineFieldVisualReplayCommands: function(scriptKey, untilIndex) {
+        const lines = this.scripts ? this.scripts[scriptKey] : null;
+        if (!Array.isArray(lines)) return [];
+
+        const end = Math.max(0, Math.min(Number(untilIndex) || 0, lines.length));
+        const replay = [];
+
+        for (let i = 0; i < end; i++) {
+            const line = lines[i];
+            if (!this.isInlineStoryCommand(line)) continue;
+            const commands = this.getInlineStoryCommandCommands(line);
+            if (!Array.isArray(commands)) continue;
+
+            for (const raw of commands) {
+                if (!raw || !raw.op) continue;
+                const cmd = this.cloneFieldVisualCommand(raw);
+                switch (cmd.op) {
+                    case 'CLEAR_LAYER':
+                    case 'SHOW_SPRITE':
+                    case 'REMOVE_SPRITE':
+                    case 'CLEANUP':
+                        replay.push(cmd);
+                        break;
+                    case 'MOVE_SPRITE':
+                        cmd.duration = 0;
+                        replay.push(cmd);
+                        break;
+                    case 'BLINK_REMOVE':
+                        if (cmd.remove !== false && cmd.id) replay.push({ op: 'REMOVE_SPRITE', id: cmd.id });
+                        break;
+                    case 'PLAY_EFFECT':
+                        if (cmd.remove === false) replay.push({ ...cmd, op: 'SHOW_SPRITE' });
+                        break;
+                    case 'HIDE_STORY_UI':
+                    case 'BLACKOUT':
+                    case 'WAIT':
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+        return replay;
+    },
+
+    applyInlineFieldVisualReplayCommands: function(commands, options = {}) {
+        if (!Array.isArray(commands) || commands.length === 0 || typeof Field === 'undefined') return false;
+        const anchor = this.getFieldVisualAnchor(options);
+        let layer = typeof Field.ensureFieldVisualLayer === 'function' ? Field.ensureFieldVisualLayer() : null;
+
+        for (const raw of commands) {
+            const cmd = this.cloneFieldVisualCommand(raw);
+            if (!cmd || !cmd.op) continue;
+            switch (cmd.op) {
+                case 'CLEAR_LAYER':
+                    layer = typeof Field.ensureFieldVisualLayer === 'function' ? Field.ensureFieldVisualLayer() : layer;
+                    if (layer) layer.innerHTML = '';
+                    break;
+                case 'SHOW_SPRITE':
+                    this.putStoryFieldVisualSprite(cmd, anchor);
+                    break;
+                case 'MOVE_SPRITE': {
+                    let img = cmd.id ? document.getElementById(cmd.id) : null;
+                    if (!img) img = this.putStoryFieldVisualSprite(cmd, anchor);
+                    if (!img || typeof Field.getFieldVisualTileStyle !== 'function') break;
+                    const tile = this.resolveStoryFieldVisualTile(cmd, anchor);
+                    const size = cmd.size || Number(img.dataset.sizeTiles || 2);
+                    img.style.cssText = Field.getFieldVisualTileStyle(tile, size) + `z-index:${Number(cmd.z || 4)};` + (cmd.css || '');
+                    img.dataset.tileX = String(tile.x);
+                    img.dataset.tileY = String(tile.y);
+                    img.dataset.sizeTiles = String(size);
+                    break;
+                }
+                case 'REMOVE_SPRITE': {
+                    const img = cmd.id ? document.getElementById(cmd.id) : null;
+                    if (img) img.remove();
+                    break;
+                }
+                case 'CLEANUP': {
+                    this.setStoryUiCutsceneHidden(false);
+                    const currentLayer = document.getElementById('field-visual-cutscene-layer');
+                    if (currentLayer) currentLayer.remove();
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
+
+        const currentLayer = document.getElementById('field-visual-cutscene-layer');
+        if (currentLayer) currentLayer.style.pointerEvents = 'none';
+        this.setStoryUiCutsceneHidden(false);
+        if (typeof Field !== 'undefined') Field._visualCutsceneActive = false;
+        return true;
+    },
+
+    restoreInlineFieldVisualState: async function(scriptKey, untilIndex) {
+        const replay = this.getInlineFieldVisualReplayCommands(scriptKey, untilIndex);
+        if (replay.length === 0) return false;
+        return this.applyInlineFieldVisualReplayCommands(replay);
+    },
+
+    scriptHasInlineFieldVisual: function(scriptKey) {
+        const lines = this.scripts ? this.scripts[scriptKey] : null;
+        if (!Array.isArray(lines)) return false;
+        return lines.some(line => this.isInlineStoryCommand(line));
+    },
+
+    eventHasFieldVisualFlow: function(eventId, phase = 'actions') {
+        const event = this.events ? this.events[eventId] : null;
+        if (!event) return false;
+        const actions = phase === 'win' ? event.winActions : event.actions;
+        if (!Array.isArray(actions)) return false;
+        return actions.some(action => {
+            if (!action) return false;
+            if (action.type === 'FIELD_CUTSCENE' || action.type === 'MAP_VISUAL') return true;
+            if (action.type === 'CONV' && this.scriptHasInlineFieldVisual(action.value)) return true;
+            return false;
+        });
+    },
+
+    shouldRestartEventFromStartOnResume: function(eventId, phase = 'actions') {
+        // イベント再実行はフラグ・加入・アイテム付与の重複リスクがあるため行わない。
+        // 会話番号までの常駐スプライトだけを復元し、一過性エフェクトは再生しない。
+        return false;
+    },
+
+    refreshFieldAfterStoryStateChange: function() {
+        if (typeof Field === 'undefined') return;
+        if (typeof Field.render === 'function') Field.render();
+        if (typeof Field.refreshCurrentAction === 'function') Field.refreshCurrentAction({ silent: true });
+    },
+
+    getPostBattleBossVisualContext: function(eventId) {
+        const battle = App?.data?.battle || null;
+        if (!battle || !battle.isBossBattle) return null;
+        const related = battle.eventId === eventId || battle.storyWinEventId === eventId || App?.data?.progress?.pendingBattleWinEventId === eventId;
+        if (!related) return null;
+
+        const rawId = Array.isArray(battle.fixedBossId) ? battle.fixedBossId[0] : battle.fixedBossId;
+        const monsterId = Number(rawId || 0);
+        if (!monsterId || !Number.isFinite(monsterId)) return null;
+
+        const pos = battle.fixedBossPosition
+            || App?.data?.progress?.activeFixedBossContext?.fixedBossPosition
+            || (typeof Field !== 'undefined' && typeof Field.getLastFixedBossEventPosition === 'function' ? Field.getLastFixedBossEventPosition() : null)
+            || (typeof Field !== 'undefined' ? { x: Field.x, y: Field.y } : null);
+        if (!pos) return null;
+
+        return { monsterId, x: Number(pos.x), y: Number(pos.y) };
+    },
+
+    eventHasConversationAction: function(event, phase = 'actions') {
+        const actions = phase === 'win' ? event?.winActions : event?.actions;
+        return Array.isArray(actions) && actions.some(action => action && action.type === 'CONV');
+    },
+
+    showPostBattleBossSpriteForEvent: function(eventId, event, phase = 'actions') {
+        if (!event || event.skipAutoPostBattleBossSprite || event.keepPostBattleBossSprite === false) return false;
+        if (!this.eventHasConversationAction(event, phase)) return false;
+        // 明示的なフィールド演出を持つイベントは、そのスクリプト側の SHOW/CLEANUP に任せる。
+        if (this.eventHasFieldVisualFlow(eventId, phase)) return false;
+        if (typeof Field === 'undefined' || typeof Field.putFieldVisualSprite !== 'function') return false;
+
+        const ctx = this.getPostBattleBossVisualContext(eventId);
+        if (!ctx) return false;
+        const src = (typeof Field.getMonsterMapSpriteSrc === 'function')
+            ? Field.getMonsterMapSpriteSrc(ctx.monsterId)
+            : `assets/monsters/monster_${ctx.monsterId}.png`;
+        Field.putFieldVisualSprite('field-visual-post-battle-boss', src, { x: ctx.x, y: ctx.y }, 2, 'z-index:4;');
+        return true;
+    },
+
+    cleanupPostBattleBossSprite: function() {
+        const img = document.getElementById('field-visual-post-battle-boss');
+        if (img) img.remove();
+        const layer = document.getElementById('field-visual-cutscene-layer');
+        if (layer && layer.children.length === 0) layer.remove();
+    },
 	/**
      * 中断されたイベントまたは会話があれば再開する
      */
@@ -336,16 +743,21 @@ const StoryManager = {
 
         // 実行責任を引き受けたことを即座に返し、main.js側の重複動作を止める
         (async () => {
-            const { eventId, actionIndex, phase } = data.activeEvent || {};
-            // セリフの途中ならそのインデックスを取得
-            const lineIndex = data.activeConversation ? data.activeConversation.index : 0;
+            let { eventId, actionIndex, phase } = data.activeEvent || {};
+            actionIndex = Number(actionIndex || 0);
+            let lineIndex = data.activeConversation ? Number(data.activeConversation.index || 0) : 0;
+
+            // フィールド演出を会話と会話の間に挟むイベントでも、イベント自体は
+            // 冒頭から再実行しない。会話再開時に、その会話番号までの表示状態だけを
+            // story.js 側で復元することで、他イベントにも流用できる形にする。
 
             if (phase === 'win') {
                 await this.onBattleWin(eventId, actionIndex, lineIndex);
             } else if (eventId) {
                 await this.executeEvent(eventId, false, actionIndex, lineIndex);
             } else if (data.activeConversation) {
-                await this.showConversation(data.activeConversation.key, lineIndex);
+                const key = data.activeConversation.key;
+                await this.showConversation(key, lineIndex);
                 this.endConversation();
             }
         })();
@@ -2318,6 +2730,14 @@ const StoryManager = {
         ],
         "THUNDER_LEONARD_CLEAR": [
                 {
+                        "type": "FIELD_CUTSCENE",
+                        "name": "レナード戦後・本人表示",
+                        "commands": [
+                                { "op": "CLEAR_LAYER" },
+                                { "op": "SHOW_SPRITE", "id": "field-visual-leonard", "monsterId": 301040, "size": 2, "z": 4 }
+                        ]
+                },
+                {
                         "name": "雷楔のレナード",
                         "text": "…[N:101]、まだ旧い理想にしがみつくのか。国を存続させるには、痛みを引き受ける者が必要だ。"
                 },
@@ -2339,8 +2759,31 @@ const StoryManager = {
                         "text": "それから……"
                 },
                 {
+                        "type": "FIELD_CUTSCENE",
+                        "name": "レナード戦後・騎士登場",
+                        "commands": [
+                                { "op": "HIDE_STORY_UI", "hidden": true },
+                                { "op": "BLACKOUT", "holdMs": 140 },
+                                { "op": "SHOW_SPRITE", "id": "field-visual-leonard", "monsterId": 301040, "size": 2, "z": 4 },
+                                { "op": "SHOW_SPRITE", "id": "field-visual-knight", "monsterId": 301050, "dx": 0, "dy": -1, "size": 2, "z": 5 },
+                                { "op": "HIDE_STORY_UI", "hidden": false }
+                        ]
+                },
+                {
                         "name": "？？？？",
                         "text": "…喋りすぎ…だ。"
+                },
+                {
+                        "type": "FIELD_CUTSCENE",
+                        "name": "レナード戦後・斬撃と消滅",
+                        "lockMs": 1200,
+                        "commands": [
+                                { "op": "HIDE_STORY_UI", "hidden": true },
+                                { "op": "SHOW_SPRITE", "id": "field-visual-slash", "effect": "slash", "size": 2.25, "z": 8, "opacity": 0.96 },
+                                { "op": "BLINK_REMOVE", "id": "field-visual-leonard", "fallback": { "monsterId": 301040, "size": 2, "z": 4 }, "count": 4, "offMs": 80, "onMs": 80 },
+                                { "op": "REMOVE_SPRITE", "id": "field-visual-slash" },
+                                { "op": "HIDE_STORY_UI", "hidden": false }
+                        ]
                 },
                 {
                         "name": "ジョセフ",
@@ -2348,11 +2791,38 @@ const StoryManager = {
                         "charId": 101
                 },
                 {
+                        "type": "FIELD_CUTSCENE",
+                        "name": "レナード戦後・騎士前進",
+                        "lockMs": 1200,
+                        "commands": [
+                                { "op": "HIDE_STORY_UI", "hidden": true },
+                                { "op": "WAIT", "ms": 200 },
+                                { "op": "MOVE_SPRITE", "id": "field-visual-knight", "monsterId": 301050, "dx": 0, "dy": 0, "size": 2, "z": 5, "duration": 160 },
+                                { "op": "WAIT", "ms": 200 },
+                                { "op": "HIDE_STORY_UI", "hidden": false }
+                        ]
+                },
+                {
                         "name": "？？？？",
                         "text": "お前達が例の反逆者か。騎士崩れと世間知らずの子供達。救世主ごっこは、ここまでだ。"
+                },
+                {
+                        "type": "FIELD_CUTSCENE",
+                        "name": "レナード戦後・演出終了",
+                        "commands": [
+                                { "op": "CLEANUP" }
+                        ]
                 }
         ],
         "THUNDER_VELD_OVERPOWER": [
+                {
+                        "type": "FIELD_CUTSCENE",
+                        "value": "VELD_OVERPOWER_SETUP",
+                        "commands": [
+                                { "op": "CLEAR_LAYER" },
+                                { "op": "SHOW_SPRITE", "id": "field-visual-veld-overpower", "monsterId": 301050, "size": 2, "z": 5 }
+                        ]
+                },
                 {
                         "name": "聖騎士ヴェルド",
                         "text": "お前達は救世の障害だ。大いなる祝福には犠牲が伴い、犠牲無しに世界を変えることなどできない。"
@@ -2372,6 +2842,13 @@ const StoryManager = {
                 {
                         "name": "システム",
                         "text": "圧倒的な光の奔流につつまれ、意識が途切れた…"
+                },
+                {
+                        "type": "FIELD_CUTSCENE",
+                        "value": "VELD_OVERPOWER_CLEANUP",
+                        "commands": [
+                                { "op": "CLEANUP" }
+                        ]
                 }
         ],
         "THUNDER_VELD_LOSS": [
@@ -3235,16 +3712,13 @@ const StoryManager = {
                 "winActions": []
         },
         "thunder_fort_clear": {
+                "restartOnResume": true,
+                "skipAutoPostBattleBossSprite": true,
                 "actions": [
-                        { "type": "FIELD_CUTSCENE", "value": "LEONARD_CLEAR_SETUP" },
-                        { "type": "CONV", "value": "THUNDER_LEONARD_CLEAR_OPENING" },
-                        { "type": "FIELD_CUTSCENE", "value": "LEONARD_CLEAR_KNIGHT_APPEAR" },
-                        { "type": "CONV", "value": "THUNDER_LEONARD_CLEAR_KNIGHT" },
-                        { "type": "FIELD_CUTSCENE", "value": "LEONARD_CLEAR_SLASH", "lockMs": 1200 },
-                        { "type": "CONV", "value": "THUNDER_LEONARD_CLEAR_JOSEPH" },
-                        { "type": "FIELD_CUTSCENE", "value": "LEONARD_CLEAR_KNIGHT_ADVANCE", "lockMs": 1200 },
-                        { "type": "CONV", "value": "THUNDER_LEONARD_CLEAR_END" },
-                        { "type": "FIELD_CUTSCENE", "value": "LEONARD_CLEAR_CLEANUP" },
+                        {
+                                "type": "CONV",
+                                "value": "THUNDER_LEONARD_CLEAR"
+                        },
                         {
                                 "type": "BOSS",
                                 "value": 301050,
@@ -4474,6 +4948,8 @@ const StoryManager = {
                 "winActions": []
         },
         "thunder_veld_forced_loss": {
+                "restartOnResume": true,
+                "skipAutoPostBattleBossSprite": true,
                 "actions": [
                         {
                                 "type": "CONV",
@@ -4512,6 +4988,8 @@ const StoryManager = {
                 "winActions": []
         },
         "thunder_veld_loss": {
+                "restartOnResume": true,
+                "skipAutoPostBattleBossSprite": true,
                 "actions": [
                         {
                                 "type": "CONV",
@@ -4644,29 +5122,37 @@ const StoryManager = {
         if (!isSubEvent && this.active) return;
         if (!isSubEvent) this.active = true;
 
-        for (let i = startActionIndex; i < event.actions.length; i++) {
-            if (!isSubEvent) {
-                data.activeEvent = { eventId: eventId, actionIndex: i, phase: 'actions' };
-                App.save();
-            }
-            // 初回ループ時のみ引数の startLineIndex を適用
-            const lineIdx = (i === startActionIndex) ? startLineIndex : 0;
-            const result = await this.processAction(event.actions[i], eventId, lineIdx);
-            if (result === 'BREAK') return; 
-        }
-        
-        if (!isSubEvent) {
-            delete data.activeEvent;
-            this.active = false;
-            this.endConversation();
-        }
-        App.save();
+        const autoPostBattleBossSprite = !isSubEvent
+            ? this.showPostBattleBossSpriteForEvent(eventId, event, 'actions')
+            : false;
 
-        // イベント完了後も同じタイル上にいる場合は、現在地アクションを再評価する。
-        // main.js 側の Field.refreshCurrentAction() が正本。
-        // ここで呼ぶことで、会話・選択肢・ストーリー進行後にボタンが消えっぱなしになるのを防ぐ。
-        if (!isSubEvent && typeof Field !== 'undefined' && typeof Field.refreshCurrentAction === 'function') {
-            Field.refreshCurrentAction({ silent: true });
+        try {
+            for (let i = startActionIndex; i < event.actions.length; i++) {
+                if (!isSubEvent) {
+                    data.activeEvent = { eventId: eventId, actionIndex: i, phase: 'actions' };
+                    App.save();
+                }
+                // 初回ループ時のみ引数の startLineIndex を適用
+                const lineIdx = (i === startActionIndex) ? startLineIndex : 0;
+                const result = await this.processAction(event.actions[i], eventId, lineIdx);
+                if (result === 'BREAK') return;
+            }
+            
+            if (!isSubEvent) {
+                delete data.activeEvent;
+                this.active = false;
+                this.endConversation();
+            }
+            App.save();
+
+            // イベント完了後も同じタイル上にいる場合は、現在地アクションを再評価する。
+            // main.js 側の Field.refreshCurrentAction() が正本。
+            // ここで呼ぶことで、会話・選択肢・ストーリー進行後にボタンが消えっぱなしになるのを防ぐ。
+            if (!isSubEvent && typeof Field !== 'undefined' && typeof Field.refreshCurrentAction === 'function') {
+                Field.refreshCurrentAction({ silent: true });
+            }
+        } finally {
+            if (autoPostBattleBossSprite) this.cleanupPostBattleBossSprite();
         }
     },
 
@@ -4679,24 +5165,29 @@ const StoryManager = {
         if (!event || !event.winActions) return;
 
         this.active = true;
+        const autoPostBattleBossSprite = this.showPostBattleBossSpriteForEvent(eventId, event, 'win');
 
-        for (let i = startActionIndex; i < event.winActions.length; i++) {
-            data.activeEvent = { eventId: eventId, actionIndex: i, phase: 'win' };
+        try {
+            for (let i = startActionIndex; i < event.winActions.length; i++) {
+                data.activeEvent = { eventId: eventId, actionIndex: i, phase: 'win' };
+                App.save();
+
+                const lineIdx = (i === startActionIndex) ? startLineIndex : 0;
+                const result = await this.processAction(event.winActions[i], eventId, lineIdx);
+                if (result === 'BREAK') return;
+            }
+
+            delete data.activeEvent;
+            this.active = false;
+            this.endConversation();
             App.save();
 
-            const lineIdx = (i === startActionIndex) ? startLineIndex : 0;
-            const result = await this.processAction(event.winActions[i], eventId, lineIdx);
-            if (result === 'BREAK') return;
-        }
-
-        delete data.activeEvent;
-        this.active = false;
-        this.endConversation();
-        App.save();
-
-        // 戦闘勝利後イベントが終わってフィールドへ戻った際、現在地タイルのボタンを復元する。
-        if (typeof Field !== 'undefined' && typeof Field.refreshCurrentAction === 'function') {
-            Field.refreshCurrentAction({ silent: true });
+            // 戦闘勝利後イベントが終わってフィールドへ戻った際、現在地タイルのボタンを復元する。
+            if (typeof Field !== 'undefined' && typeof Field.refreshCurrentAction === 'function') {
+                Field.refreshCurrentAction({ silent: true });
+            }
+        } finally {
+            if (autoPostBattleBossSprite) this.cleanupPostBattleBossSprite();
         }
     },
 
@@ -4829,7 +5320,10 @@ const StoryManager = {
         // CONV命令時に lineIndex を渡す
         if (action.type === 'CONV') await this.showConversation(action.value, lineIndex);
         
-        if (action.type === 'ALLY') App.addStoryAlly(action.value);
+        if (action.type === 'ALLY') {
+            App.addStoryAlly(action.value);
+            this.refreshFieldAfterStoryStateChange();
+        }
         
         if (action.type === 'STEP') { 
             data.storyStep = action.value; 
@@ -4877,14 +5371,15 @@ const StoryManager = {
 
         if (action.type === 'QUEST_COMPLETE' && typeof App.completeQuest === 'function') {
             App.completeQuest(action.value || action.questId);
+            this.refreshFieldAfterStoryStateChange();
         }
 
         if (action.type === 'STORY_DEFEAT') {
             await this.playStoryDefeatEffect(action);
         }
 
-        if ((action.type === 'FIELD_CUTSCENE' || action.type === 'MAP_VISUAL') && typeof Field !== 'undefined' && typeof Field.runEventVisual === 'function') {
-            await Field.runEventVisual(action.value || action.name, action);
+        if (action.type === 'FIELD_CUTSCENE' || action.type === 'MAP_VISUAL') {
+            await this.runStoryFieldVisual(action.value || action.name || 'ACTION_STORY_VISUAL', action);
         }
 
         if (action.type === 'FLAG') {
@@ -5112,6 +5607,15 @@ const StoryManager = {
         if (this.isTyping) return;
         this.isTyping = true;
 
+        startFromIndex = Math.max(0, Math.floor(Number(startFromIndex) || 0));
+        if (startFromIndex > 0 && this.scriptHasInlineFieldVisual(scriptKey)) {
+            try {
+                await this.restoreInlineFieldVisualState(scriptKey, startFromIndex);
+            } catch (e) {
+                console.warn('[StoryManager] inline field visual resume failed:', e);
+            }
+        }
+
         let overlay = document.getElementById('story-ui-overlay') || this.createStoryDOM();
         overlay.style.display = 'flex';
         
@@ -5132,6 +5636,12 @@ const StoryManager = {
                 App.data.progress.activeConversation = { key: scriptKey, index: i };
                 App.save();
             }
+
+            if (this.isInlineStoryCommand(line)) {
+                await this.runInlineStoryCommand(line);
+                continue;
+            }
+            if (!line || typeof line.text !== 'string') continue;
 
             const hasExplicitCharId = line.charId !== undefined && line.charId !== null;
             const isSystemLine = line.name === 'システム' && !hasExplicitCharId;

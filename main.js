@@ -6048,7 +6048,7 @@ const Field = {
             // 重要：レナード等の演出用スプライトは会話中も画面に残すが、
             // レイヤー自体がタップを奪うと会話送りができなくなる。
             // そのため通常時は pointer-events:none とし、実際に演出コマンドを
-            // 実行している短時間だけ runFieldCutsceneCommands 側で auto に切り替える。
+            // 実行している短時間だけ story.js 側の演出実行処理で auto に切り替える。
             layer.style.cssText = 'position:absolute; inset:0; pointer-events:none; z-index:2500; overflow:hidden; display:block;';
             if (wrapper && wrapper.style && getComputedStyle(wrapper).position === 'static') wrapper.style.position = 'relative';
             wrapper.appendChild(layer);
@@ -6135,150 +6135,8 @@ const Field = {
         return '';
     },
 
-    getFieldCutscenePreset: (name) => {
-        const pos = Field.getLastFixedBossEventPosition();
-        const id = (suffix) => `field-visual-${suffix}`;
-        const presets = {
-            LEONARD_CLEAR_SETUP: [
-                { op: 'CLEAR_LAYER' },
-                { op: 'SHOW_SPRITE', id: id('leonard'), monsterId: 301040, size: 2, z: 4 }
-            ],
-            LEONARD_CLEAR_KNIGHT_APPEAR: [
-                { op: 'HIDE_STORY_UI', hidden: true },
-                { op: 'BLACKOUT', holdMs: 140 },
-                { op: 'SHOW_SPRITE', id: id('leonard'), monsterId: 301040, size: 2, z: 4 },
-                { op: 'SHOW_SPRITE', id: id('knight'), monsterId: 301050, dx: 0, dy: -2, size: 2, z: 5 },
-                { op: 'HIDE_STORY_UI', hidden: false }
-            ],
-            LEONARD_CLEAR_SLASH: [
-                { op: 'HIDE_STORY_UI', hidden: true },
-                { op: 'SHOW_SPRITE', id: id('slash'), effect: 'slash', size: 2.25, z: 8, opacity: 0.96 },
-                { op: 'BLINK_REMOVE', id: id('leonard'), fallback: { monsterId: 301040, x: pos.x, y: pos.y, size: 2, z: 4 }, count: 4, offMs: 80, onMs: 80 },
-                { op: 'REMOVE_SPRITE', id: id('slash') },
-                { op: 'HIDE_STORY_UI', hidden: false }
-            ],
-            LEONARD_CLEAR_KNIGHT_ADVANCE: [
-                { op: 'HIDE_STORY_UI', hidden: true },
-                { op: 'WAIT', ms: 200 },
-                { op: 'MOVE_SPRITE', id: id('knight'), monsterId: 301050, dx: 0, dy: -1, size: 2, z: 5, duration: 160 },
-                { op: 'WAIT', ms: 200 },
-                { op: 'MOVE_SPRITE', id: id('knight'), monsterId: 301050, dx: 0, dy: 0, size: 2, z: 5, duration: 160 },
-                { op: 'WAIT', ms: 200 },
-                { op: 'HIDE_STORY_UI', hidden: false }
-            ],
-            LEONARD_CLEAR_CLEANUP: [
-                { op: 'CLEANUP' }
-            ]
-        };
-        return presets[name] || null;
-    },
-
-    runFieldCutsceneCommands: async (commands, options = {}) => {
-        if (!Array.isArray(commands) || commands.length === 0) return false;
-        const wait = (ms) => new Promise(resolve => setTimeout(resolve, Math.max(0, Number(ms) || 0)));
-        const anchor = options.anchor || Field.getLastFixedBossEventPosition();
-        const layer = Field.ensureFieldVisualLayer();
-        // _visualCutsceneActive は「演出スプライトが残っているか」ではなく、
-        // 「いま暗転・移動・エフェクト等の演出処理中か」を表す。
-        // ここが true のまま残ると、会話送りやフィールド操作が不要に塞がる。
-        Field._visualCutsceneActive = true;
-        layer.style.pointerEvents = 'auto';
-        if (typeof App.lockFieldInput === 'function') App.lockFieldInput(Number(options.lockMs || 900));
-        try {
-            for (const cmd of commands) {
-                if (!cmd || !cmd.op) continue;
-                switch (cmd.op) {
-                    case 'CLEAR_LAYER':
-                        layer.innerHTML = '';
-                        break;
-                    case 'BLACKOUT':
-                        await Field.fadeFieldVisualBlackout(cmd.holdMs || 160);
-                        break;
-                    case 'WAIT':
-                        await wait(cmd.ms || 0);
-                        break;
-                    case 'HIDE_STORY_UI':
-                        Field.setStoryUiCutsceneHidden(!!cmd.hidden);
-                        break;
-                    case 'SHOW_SPRITE': {
-                        const src = Field.resolveFieldCutsceneSrc(cmd);
-                        if (!src) break;
-                        const tile = Field.resolveFieldCutsceneTile(cmd, anchor);
-                        const css = `z-index:${Number(cmd.z || 4)}; opacity:${cmd.opacity !== undefined ? Number(cmd.opacity) : 1};` + (cmd.css || '');
-                        Field.putFieldVisualSprite(cmd.id || `field-visual-sprite-${Date.now()}`, src, tile, cmd.size || 2, css);
-                        break;
-                    }
-                    case 'MOVE_SPRITE': {
-                        let img = document.getElementById(cmd.id);
-                        if (!img && (cmd.monsterId !== undefined || cmd.src)) {
-                            img = Field.putFieldVisualSprite(cmd.id, Field.resolveFieldCutsceneSrc(cmd), Field.resolveFieldCutsceneTile({ ...cmd, dx: cmd.fromDx ?? cmd.dx ?? 0, dy: cmd.fromDy ?? cmd.dy ?? 0 }, anchor), cmd.size || 2, `z-index:${Number(cmd.z || 4)};`);
-                        }
-                        if (!img) break;
-                        const tile = Field.resolveFieldCutsceneTile(cmd, anchor);
-                        const duration = Math.max(0, Number(cmd.duration || 160));
-                        img.style.cssText = Field.getFieldVisualTileStyle(tile, cmd.size || Number(img.dataset.sizeTiles || 2)) + `z-index:${Number(cmd.z || 4)}; transition:left ${duration}ms linear, top ${duration}ms linear;` + (cmd.css || '');
-                        img.dataset.tileX = String(tile.x);
-                        img.dataset.tileY = String(tile.y);
-                        await wait(duration);
-                        break;
-                    }
-                    case 'PLAY_EFFECT': {
-                        const src = Field.resolveFieldCutsceneSrc(cmd);
-                        if (!src) break;
-                        const tile = Field.resolveFieldCutsceneTile(cmd, anchor);
-                        const id = cmd.id || `field-visual-effect-${Date.now()}`;
-                        const effect = Field.putFieldVisualSprite(id, src, tile, cmd.size || 2, `z-index:${Number(cmd.z || 8)}; opacity:${cmd.opacity !== undefined ? Number(cmd.opacity) : 1};` + (cmd.css || ''));
-                        await wait(cmd.ms || 300);
-                        if (cmd.remove !== false) effect.remove();
-                        break;
-                    }
-                    case 'BLINK_REMOVE': {
-                        let img = document.getElementById(cmd.id);
-                        if (!img && cmd.fallback) {
-                            const fb = cmd.fallback;
-                            const src = Field.resolveFieldCutsceneSrc(fb);
-                            img = Field.putFieldVisualSprite(cmd.id, src, Field.resolveFieldCutsceneTile(fb, anchor), fb.size || 2, `z-index:${Number(fb.z || 4)};`);
-                        }
-                        if (!img) break;
-                        const count = Math.max(1, Number(cmd.count || 3));
-                        for (let i = 0; i < count; i++) {
-                            img.style.opacity = String(cmd.offOpacity ?? 0.25);
-                            await wait(cmd.offMs || 80);
-                            img.style.opacity = String(cmd.onOpacity ?? 1);
-                            await wait(cmd.onMs || 80);
-                        }
-                        if (cmd.remove !== false) img.remove();
-                        break;
-                    }
-                    case 'REMOVE_SPRITE': {
-                        const img = document.getElementById(cmd.id);
-                        if (img) img.remove();
-                        break;
-                    }
-                    case 'CLEANUP':
-                        Field.setStoryUiCutsceneHidden(false);
-                        layer.remove();
-                        Field._visualCutsceneActive = false;
-                        break;
-                }
-            }
-            return true;
-        } finally {
-            // 会話と会話の間の演出が終わったら、表示レイヤーを残す場合でも
-            // 操作ロックとタップ捕捉は必ず解除する。
-            // スプライトを残す必要がある場合は DOM だけ維持し、会話UIへのタップは通す。
-            Field._visualCutsceneActive = false;
-            const currentLayer = document.getElementById('field-visual-cutscene-layer');
-            if (currentLayer) currentLayer.style.pointerEvents = 'none';
-        }
-    },
-
-    runEventVisual: async (name, options = {}) => {
-        const commands = Array.isArray(options.commands) ? options.commands : Field.getFieldCutscenePreset(name);
-        if (!commands) return false;
-        return Field.runFieldCutsceneCommands(commands, options);
-    },
-
+    // フィールド演出の「何を表示し、どう動かすか」は story.js 側で管理する。
+    // main.js には、表示レイヤー・画像配置・座標変換などの低レベル描画補助だけを残す。
 
     executeMapAction: (action) => {
         if (!action) return;

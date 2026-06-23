@@ -38,7 +38,7 @@ const Battle = {
     
     // 状態異常と耐性IDの対応表 (拡張)
     RESIST_MAP: {
-        Poison: 'Poison', ToxicPoison: 'Poison',
+        Poison: 'Poison', ToxicPoison: 'ToxicPoison',
         Shock: 'Shock',
         Fear: 'Fear',
         SpellSeal: 'SpellSeal', 
@@ -47,6 +47,11 @@ const Battle = {
         PercentDamage: 'InstantDeath', // 指示通り即死ガードで割合ダメも防ぐ
         InstantDeath: 'InstantDeath',
         Debuff: 'Debuff',
+        atk: 'Debuff',
+        def: 'Debuff',
+        mag: 'Debuff',
+        mdef: 'Debuff',
+        spd: 'Debuff',
         elmResDown: 'Debuff'          // 全属性耐性低下も弱体耐性を参照
     },
 
@@ -55,6 +60,66 @@ const Battle = {
     MADANTE_SKILL_IDS: new Set([245, 246, 247]),
     isMadanteSkillId: (id) => Battle.MADANTE_SKILL_IDS.has(Number(id)),
     isMadanteSkill: (data) => data && Battle.isMadanteSkillId(data.id),
+
+    getTraitLevel: (entity, traitId) => {
+        if (!entity) return 0;
+        const id = Number(traitId);
+        let lv = 0;
+        const disabled = Array.isArray(entity.disabledTraits) ? entity.disabledTraits.map(Number) : [];
+        if (Array.isArray(entity.traits)) {
+            entity.traits.forEach(t => {
+                if (!t || Number(t.id) !== id) return;
+                if (disabled.includes(id)) return;
+                lv += Number(t.level || 0);
+            });
+        }
+        if (entity.equips) {
+            Object.values(entity.equips).forEach(eq => {
+                if (!eq || !Array.isArray(eq.traits)) return;
+                eq.traits.forEach(t => {
+                    if (t && Number(t.id) === id) lv += Number(t.level || 0);
+                });
+            });
+        }
+        return lv;
+    },
+
+    getDualWieldLevel: (actor) => Battle.getTraitLevel(actor, 8),
+    isDualWieldActive: (actor) => Battle.getDualWieldLevel(actor) > 0,
+
+    getSkillMpCost: (actor, skill, mode = 'required') => {
+        if (!skill) return 0;
+        const dualLv = Battle.getDualWieldLevel(actor);
+        if (Battle.isMadanteSkill(skill)) {
+            if (dualLv > 0) return Number(actor?.mp || 0) + 1;
+            return mode === 'spend' ? Number(actor?.mp || 0) : 1;
+        }
+
+        let cost = Math.max(0, Number(skill.mp || 0));
+        if (typeof PassiveSkill !== 'undefined' && PassiveSkill.getSumValue(actor, 'mag_amp_cost_mult') > 0) {
+            cost = Math.floor(cost * 1.5);
+        }
+        if (dualLv > 0 && cost > 0) {
+            cost = Math.ceil(cost * (1 + (dualLv * 0.1)));
+        }
+        return cost;
+    },
+
+    getEffectTurn: (data) => {
+        const turn = Number(data?.turn);
+        return Number.isFinite(turn) && turn > 0 ? turn : 3;
+    },
+
+    tryGutsSurvive: (unit, hpBeforeDamage) => {
+        if (!unit || Number(hpBeforeDamage) < 2) return false;
+        const gutsChance = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(unit, 'guts_mult') : 0;
+        if (gutsChance > 0 && Math.random() * 100 < gutsChance) {
+            unit.hp = 1;
+            Battle.log(`${unit.name}は 根性で 踏みとどまった！`);
+            return true;
+        }
+        return false;
+    },
 
     getEl: (id) => document.getElementById(id),
     
@@ -1006,7 +1071,7 @@ findNextActor: () => {
             if (sId === 1) return false;
             if (Battle.isMadanteSkillId(sId)) return false;
             if (hiddenIds.includes(sId)) return false;
-            if (actor.mp < (s.mp || 0)) return false;
+            if (actor.mp < Battle.getSkillMpCost(actor, s)) return false;
 
             const ailments = actor.battleStatus?.ailments || {};
             if (ailments['SpellSeal'] && ['魔法','強化','弱体'].includes(s.type)) return false;
@@ -1087,7 +1152,7 @@ findNextActor: () => {
         const scored = offensive.map(skill => {
             let score = Battle.estimateAutoDamage(actor, skill, target);
             if (skill.target === '全体') score *= Math.min(3, aliveEnemies.length);
-            if (mode === 'balanced') score -= (skill.mp || 0) * 0.35;
+            if (mode === 'balanced') score -= Battle.getSkillMpCost(actor, skill) * 0.35;
             if (mode === 'tricky' && (skill.type === '弱体' || skill.debuff)) score *= 1.35;
             return { skill, score };
         }).sort((a, b) => b.score - a.score);
@@ -1226,7 +1291,7 @@ findNextActor: () => {
         const hasBossLike = aliveEnemies.some(e => e.isBoss || (e.baseMaxHp && e.baseMaxHp >= normalAttack * 8) || (e.hp && e.hp >= normalAttack * 5));
 
         const candidates = offensive.map(skill => {
-            const cost = Math.max(0, skill.mp || 0);
+            const cost = Battle.getSkillMpCost(actor, skill);
             let target = null;
             let value = 0;
 
@@ -1539,10 +1604,13 @@ findNextActor: () => {
             let note = "";
             const ailments = actor.battleStatus.ailments;
             
+            const requiredMp = Battle.getSkillMpCost(actor, sk);
+
             // 状態異常による封印判定
             if (ailments['SpellSeal'] && ['魔法','強化','弱体'].includes(sk.type)) { isDisabled = true; note = "(封印)"; }
             if (ailments['SkillSeal'] && ['物理','特殊'].includes(sk.type)) { isDisabled = true; note = "(封印)"; }
             if (ailments['HealSeal'] && ['回復','蘇生'].includes(sk.type)) { isDisabled = true; note = "(封印)"; }
+            if (!isDisabled && actor.mp < requiredMp) { isDisabled = true; note = "(MP不足)"; }
 
             let elmHtml = '';
             if (sk.elm) {
@@ -1563,19 +1631,18 @@ findNextActor: () => {
                         ${elmHtml}${sk.desc || ''}
                     </div>
                 </div>
-                <div style="font-size:11px; color:#88f; text-align:right; min-width:40px;">MP:${sk.mp}</div>
+                <div style="font-size:11px; color:#88f; text-align:right; min-width:40px;">MP:${requiredMp}</div>
             `;
 
             div.onclick = (e) => {
                 e.stopPropagation();
                 if (isDisabled) { 
-                    Battle.showNoticeOverlay('', '封印されていて使えない！', 'ＯＫ');
-					//Battle.log("封印されていて使えない！");
+                    const message = note === "(MP不足)" ? 'この特技を使うにはMPが足りない！' : '封印されていて使えない！';
+                    Battle.showNoticeOverlay('', message, 'ＯＫ');
+					//Battle.log(message);
 					return;
 				}
 					
-                // マダンテ系はMP1以上あれば選択可能、それ以外は消費MPチェック
-                const requiredMp = Battle.isMadanteSkill(sk) ? 1 : sk.mp;
                 if (actor.mp < requiredMp) {
                     Battle.showNoticeOverlay('', 'この特技を使うにはMPが足りない！', 'ＯＫ');
                     //Battle.log("MPが足りません");
@@ -1822,8 +1889,7 @@ findNextActor: () => {
             if (!s) return false;
 
             // MP Check
-            if (Battle.isMadanteSkill(s)) { if (e.mp <= 0) return false; } // マダンテ系を対象に
-            else if (e.mp < s.mp) return false;
+            if (e.mp < Battle.getSkillMpCost(e, s)) return false;
 
             // Seal Check (現在の状態を参照)
             if (e.battleStatus.ailments['SpellSeal'] && (['魔法','強化','弱体'].includes(s.type))) return false;
@@ -2410,13 +2476,8 @@ findNextActor: () => {
             hitCount = (typeof data.count === 'number') ? data.count : 1;
             if (data.SuccessRate !== undefined) rawSuccessRate = data.SuccessRate;
 
-            // 特性 17: 魔力増幅 (消費MP 1.5倍)
-            if (typeof PassiveSkill !== 'undefined' && PassiveSkill.getSumValue(actor, 'mag_amp_cost_mult') > 0) {
-                mpCost = Math.floor(mpCost * 1.5);
-            }
-
-            if (Battle.isMadanteSkill(data)) { mpCost = actor.mp; }
-            if (actor.mp < mpCost && !Battle.isMadanteSkill(data)) {
+            mpCost = Battle.getSkillMpCost(actor, data, 'spend');
+            if (actor.mp < mpCost) {
                 Battle.log(`${actor.name}は${skillName}を唱えたがMPが足りない！`);
                 return;
             }
@@ -2429,10 +2490,8 @@ findNextActor: () => {
         
         // アイテム使用以外で、かつ actor が「二刀流」の特性を持っている場合を判定
         const canDualWield =
-		  cmd.type !== 'item' &&
-		  typeof PassiveSkill !== 'undefined' &&
-		  typeof PassiveSkill.getSumValue === 'function' &&
-		  PassiveSkill.getSumValue(actor, 'dual_dmg_mult') > 0;
+			  cmd.type !== 'item' &&
+			  Battle.isDualWieldActive(actor);
 
         if (canDualWield) {
             // 対象となるタイプを網羅 (物理・通常・魔法・ブレス・特殊・強化・弱体・回復)
@@ -2534,6 +2593,7 @@ findNextActor: () => {
                             if (!isImmune && dmg < 1) dmg = 1; 
                         }
                         if (isImmune) dmg = 0;
+                        const hpBeforeDamage = targetToHit.hp;
                         targetToHit.hp -= dmg;
 
                         Battle.recordMaxDamage(actor, data, dmg, cmd);
@@ -2555,15 +2615,11 @@ findNextActor: () => {
                         if (dmg === 0) Battle.log(`ミス！ ${targetToHit.name}は ダメージを うけない！`);
                         else Battle.log(`${targetToHit.name}に<span style="color:${dmgColor}">${dmg}</span>のダメージ！`);
                         // [修正] マダンテ系ダメージでも根性判定を行う
-						if (targetToHit.hp <= 0) {
-							const gutsChance = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(targetToHit, 'guts_mult') : 0;
-							if (gutsChance > 0 && Math.random() * 100 < gutsChance) {
-								targetToHit.hp = 1;
-								Battle.log(`${targetToHit.name}は 根性で 踏みとどまった！`);
-							} else {
-								Battle.markDefeated(targetToHit);
-							}
-						}
+                        if (targetToHit.hp <= 0) {
+                            if (!Battle.tryGutsSurvive(targetToHit, hpBeforeDamage)) {
+                                Battle.markDefeated(targetToHit);
+                            }
+                        }
                         Battle.renderEnemies(); Battle.renderPartyStatus();
                         if (hitCount > 1) await Battle.resultWait(150);
                     }
@@ -2651,7 +2707,7 @@ findNextActor: () => {
 
                 if (d.buff) {
                     for (let key in d.buff) {
-                        const turn = d.turn || null; 
+                        const turn = Battle.getEffectTurn(d); 
                         if (key === 'elmResUp') {
                             t.battleStatus.buffs[key] = { val: d.buff[key], turns: turn };
                             Battle.log(`${t.name}の 全属性耐性 が あがった！`);
@@ -2662,8 +2718,8 @@ findNextActor: () => {
                         }
                     }
                 }
-                if (d.HPRegen) { t.battleStatus.buffs['HPRegen'] = { val: d.HPRegen, turns: d.turn }; Battle.log(`${t.name}の HPが徐々に回復する！`); }
-                if (d.MPRegen) { t.battleStatus.buffs['MPRegen'] = { val: d.MPRegen, turns: d.turn }; Battle.log(`${t.name}の MPが徐々に回復する！`); }
+                if (d.HPRegen) { t.battleStatus.buffs['HPRegen'] = { val: d.HPRegen, turns: Battle.getEffectTurn(d) }; Battle.log(`${t.name}の HPが徐々に回復する！`); }
+                if (d.MPRegen) { t.battleStatus.buffs['MPRegen'] = { val: d.MPRegen, turns: Battle.getEffectTurn(d) }; Battle.log(`${t.name}の MPが徐々に回復する！`); }
                 if (d.CureAilments) { t.battleStatus.ailments = {}; Battle.log(`${t.name}の状態異常が 全て治った！`); }
                 if (d.debuff_reset) { t.battleStatus.debuffs = {}; Battle.log(`${t.name}の 能力低下が 元に戻った！`); }
                 
@@ -2676,7 +2732,7 @@ findNextActor: () => {
                             Battle.log(`${t.name}には ${Battle.statNames[key] || key}低下 は きかなかった！`);
                             continue;
                         }
-                        const turn = d.turn || null;
+                        const turn = Battle.getEffectTurn(d);
                         if (key === 'elmResDown') {
                             t.battleStatus.debuffs[key] = { val: d.debuff[key], turns: turn };
                             Battle.log(`${t.name}の 全属性耐性 が さがった！`);
@@ -2714,19 +2770,15 @@ findNextActor: () => {
 					const resV = (Battle.getBattleStat(t, 'resists') || {}).InstantDeath || 0; // 割合ダメ耐性は即死耐性を参照
 					
 					if (Math.random() * 100 < finalCheckRate && Math.random() * 100 < (100 - resV)) {
+						const hpBeforeDamage = t.hp;
 						let pdmg = Math.max(1, Math.floor(t.hp * d.PercentDamage));
 						t.hp -= pdmg; 
 						Battle.log(`${t.name}に ${pdmg} のダメージ！`);
-						
-						if (t.hp <= 0) {
-							const gutsChance = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(t, 'guts_mult') : 0;
-							if (gutsChance > 0 && Math.random() * 100 < gutsChance) {
-								t.hp = 1;
-								Battle.log(`${t.name}は 根性で 踏みとどまった！`);
-							} else {
-									Battle.markDefeated(t);
-							}
-						}
+                        if (t.hp <= 0) {
+                            if (!Battle.tryGutsSurvive(t, hpBeforeDamage)) {
+                                Battle.markDefeated(t);
+                            }
+                        }
 					} else {
 						Battle.log(`${t.name}にはきかなかった！`);
 					}
@@ -2810,24 +2862,8 @@ findNextActor: () => {
                     // 1. dataが未定義（通常攻撃等）でもエラーが出ないよう data?.isPerfect を使用
                     if (!data || !data.isPerfect) {
                         let baseHit;
-						
-					// 二刀流(特性ID=8)の合計Lvを拾う（本人traits + 装備traits）
-					const getTraitTotalLv = (entity, traitId) => {
-						let lv = 0;
 
-						if (entity.traits) {
-							entity.traits.forEach(t => { if (t && t.id === traitId) lv += (t.level || 0); });
-						}
-						if (entity.equips) {
-							Object.values(entity.equips).forEach(eq => {
-								if (!eq || !eq.traits) return;
-								eq.traits.forEach(t => { if (t && t.id === traitId) lv += (t.level || 0); });
-							});
-						}
-						return lv;
-					};
-
-					// スキル本来の命中率を取得（未定義なら100）
+						// スキル本来の命中率を取得（未定義なら100）
 					const baseHitRate =
 					  (data && data.hitRate !== undefined) ? data.hitRate :
 					  (data && data.HitRate !== undefined) ? data.HitRate :
@@ -2839,7 +2875,7 @@ findNextActor: () => {
 
 					if (loop === 1) {
 						// --- 2回目：半減(=dual_hit_base%) + 二刀流Lv×dual_hit_mult ---
-						const dualLv = getTraitTotalLv(actor, 8);
+						const dualLv = Battle.getDualWieldLevel(actor);
 
 						// パッシブ(特性8)から調整可能にする
 						const dualParams = (PassiveSkill.MASTER && PassiveSkill.MASTER[8] && PassiveSkill.MASTER[8].params) ? PassiveSkill.MASTER[8].params : {};
@@ -3025,6 +3061,8 @@ findNextActor: () => {
 					if (targetToHit.status?.defend) dmg = Math.floor(dmg * 0.5);
                     if (isImmune) dmg = 0; else if (dmg < 1 && baseDmgCalc > 0) dmg = 1;
 
+                    const hpBeforeDamage = targetToHit.hp;
+
                     targetToHit.hp -= dmg;
                     targetToHit.revengeStack = (targetToHit.revengeStack || 0) + 1;
                     actor.revengeStack = 0;
@@ -3034,14 +3072,8 @@ findNextActor: () => {
                     let dColor = element ? ({火:'#f88',水:'#88f',雷:'#ff0',風:'#8f8',光:'#ffc',闇:'#a8f',混沌:'#d4d'}[element] || '#fff') : '#fff';
                     if (dmg === 0) Battle.log(`ミス！ ${targetToHit.name}は ダメージを うけない！`);
                     else Battle.log(`${targetToHit.name}に<span style="color:${dColor}">${dmg}</span>のダメージ！`);
-
                     if (targetToHit.hp <= 0) {
-                        // MASTERの定義に合わせ guts_mult を呼び出すことで (スキル*3 + 20) を取得
-						const gutsChance = PassiveSkill.getSumValue(targetToHit, 'guts_mult');
-						if (gutsChance > 0 && Math.random() * 100 < gutsChance) {
-                            targetToHit.hp = 1;
-                            Battle.log(`${targetToHit.name}は 根性で 踏みとどまった！`);
-                        } else {
+                        if (!Battle.tryGutsSurvive(targetToHit, hpBeforeDamage)) {
                             Battle.markDefeated(targetToHit);
                         }
                     }
@@ -3063,19 +3095,16 @@ findNextActor: () => {
 
 						if (canReflect && Math.random() * 100 < (reflectTrigger > 0 ? reflectTrigger : 10)) { 
 							const refDmg = Math.floor(dmg * (reflectRate / 100 + 0.1)); 
+							const actorHpBeforeDamage = actor.hp;
 							actor.hp -= refDmg; 
 							Battle.log(`${targetToHit.name}の理力の壁が 反射！ ${actor.name}に ${refDmg} のダメージ！`);
 
 							// 反射による自爆死の判定と根性処理
-							if (actor.hp <= 0) {
-								const gutsChance = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(actor, 'guts_mult') : 0;
-								if (gutsChance > 0 && Math.random() * 100 < gutsChance) {
-									actor.hp = 1;
-									Battle.log(`${actor.name}は 根性で 踏みとどまった！`);
-								} else {
-									Battle.markDefeated(actor);
-								}
-							}
+                            if (actor.hp <= 0) {
+                                if (!Battle.tryGutsSurvive(actor, actorHpBeforeDamage)) {
+                                    Battle.markDefeated(actor);
+                                }
+                            }
 						}
 					}
 					

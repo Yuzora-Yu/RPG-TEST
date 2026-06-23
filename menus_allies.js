@@ -452,6 +452,7 @@ const MenuAllies = {
         if (typeof App !== 'undefined' && App.ensureCharacterBattleConfig) App.ensureCharacterBattleConfig(c);
         else if (!c.config) c.config = { fullAuto: false, hiddenSkills: [], strategy: 'balanced' };
         if (!c.disabledTraits) c.disabledTraits = [];
+        if (PS && typeof PS.normalizeDisabledTraits === 'function') PS.normalizeDisabledTraits(c);
 
         const imgUrl = App.getCharacterDisplayImage ? App.getCharacterDisplayImage(c) : c.img;
         const imageFallbackAttr = App.getCharacterImageOnErrorAttr ? App.getCharacterImageOnErrorAttr(c) : '';
@@ -844,8 +845,9 @@ const MenuAllies = {
 			MenuAllies.currentTraitListData = listData;
 
 			const traitListHtml = listData.map((t, index) => {
-				// 自力習得分のみ無効化判定
-				const isDisabled = !t.isEquip && c.disabledTraits.includes(t.id);
+				// 自力習得分のみ無効化判定（キャラ固有の大器晩成は固定ON）
+				const isLocked = !t.isEquip && PS && typeof PS.isTraitToggleLocked === 'function' && PS.isTraitToggleLocked(c, t.id);
+				const isDisabled = !t.isEquip && !isLocked && c.disabledTraits.includes(t.id);
 				
 				// 装備由来は常にON（固定）扱い。合算されている場合はシアン色
 				const statusColor = t.isEquip ? '#00ffff' : (isDisabled ? '#666' : '#ffd700');
@@ -855,6 +857,9 @@ const MenuAllies = {
 				if (t.isEquip) {
 					// 装備由来は「装備固定」として表示し、クリック不可
 					buttonHtml = `<div style="padding:2px 10px; font-size:10px; background:#222; border:1px solid #00ffff; color:#00ffff; border-radius:3px; opacity:0.8;">装備固定</div>`;
+				} else if (isLocked) {
+					// キャラ固有の大器晩成は無効化不可
+					buttonHtml = `<div style="padding:2px 10px; font-size:10px; background:#222; border:1px solid #ffd700; color:#ffd700; border-radius:3px; opacity:0.8;">固定ON</div>`;
 				} else {
 					// 自力習得はトグル可能
 					buttonHtml = `
@@ -962,6 +967,13 @@ const MenuAllies = {
     toggleTrait: (traitId) => {
         const c = MenuAllies.selectedChar;
         if (!c) return;
+        const PS = (typeof PassiveSkill !== 'undefined') ? PassiveSkill : null;
+        if (PS && typeof PS.isTraitToggleLocked === 'function' && PS.isTraitToggleLocked(c, traitId)) {
+            if (typeof PS.normalizeDisabledTraits === 'function') PS.normalizeDisabledTraits(c);
+            if (typeof App !== 'undefined' && App.save) App.save();
+            MenuAllies.renderDetail();
+            return;
+        }
 
         // ★保存：スキルの実装と同じセレクタを使用
         const selector = '#allies-detail-view .scroll-container-inner';
@@ -975,7 +987,6 @@ const MenuAllies = {
         else c.disabledTraits.push(traitId);
 
         // 特性変更に伴う装備の強制解除ロジック（最新の状態を反映）
-        const PS = (typeof PassiveSkill !== 'undefined') ? PassiveSkill : null;
         if (PS) {
             const hasDualWield = PS.getSumValue(c, 'dual_dmg_base') > 0;
             const hasTwoHanded = PS.getSumValue(c, 'two_handed') > 0;

@@ -84,6 +84,23 @@ const PassiveSkill = {
     }
 };
 
+PassiveSkill.LATE_BLOOMER_TRAIT_ID = 58;
+
+PassiveSkill.hasLearnedLateBloomer = function(char) {
+    return !!(char && Array.isArray(char.traits) && char.traits.some(t => Number(t?.id) === PassiveSkill.LATE_BLOOMER_TRAIT_ID));
+};
+
+PassiveSkill.normalizeDisabledTraits = function(char) {
+    if (!char || !Array.isArray(char.disabledTraits)) return;
+    if (PassiveSkill.hasLearnedLateBloomer(char)) {
+        char.disabledTraits = char.disabledTraits.filter(id => Number(id) !== PassiveSkill.LATE_BLOOMER_TRAIT_ID);
+    }
+};
+
+PassiveSkill.isTraitToggleLocked = function(char, traitId) {
+    return Number(traitId) === PassiveSkill.LATE_BLOOMER_TRAIT_ID && PassiveSkill.hasLearnedLateBloomer(char);
+};
+
 /**
  * キャラクターが新しい特性を習得できるかチェックし、習得させる
  * @param {Object} char - App.data.characters内のキャラデータ
@@ -229,7 +246,8 @@ PassiveSkill.generateEquipmentTraits = function(opt = null) {
  * @returns {number} 合算された補正値
  */
 PassiveSkill.getSumValue = function(entity, key, ignoreWeapon) {
-	// 【簡単修正のポイント】
+    PassiveSkill.normalizeDisabledTraits(entity);
+    // 【簡単修正のポイント】
     // ignoreWeapon（第3引数）が渡されていない場合、
     // entity が Monster クラスのインスタンスであれば自動的に ignoreWeapon を true にする
     if (ignoreWeapon === undefined) {
@@ -310,39 +328,6 @@ PassiveSkill.getSumValue = function(entity, key, ignoreWeapon) {
 };
 
 
-PassiveSkill.getPartySumValue = function(key) {
-    let total = 0;
-    if (!App.data || !App.data.party) return 0;
-    const partyMembers = App.data.party.map(uid => App.data.characters.find(c => c.uid === uid)).filter(c => c);
-
-    partyMembers.forEach(c => {
-        const traitLvlMap = {};
-        if (c.traits) {
-            c.traits.forEach(t => {
-                if (c.disabledTraits && c.disabledTraits.includes(t.id)) return;
-                traitLvlMap[t.id] = (traitLvlMap[t.id] || 0) + (t.level || 0);
-            });
-        }
-        if (c.equips) {
-            Object.values(c.equips).forEach(eq => {
-                if (eq && eq.traits) {
-                    eq.traits.forEach(t => {
-                        traitLvlMap[t.id] = (traitLvlMap[t.id] || 0) + (t.level || 0);
-                    });
-                }
-            });
-        }
-        for (let id in traitLvlMap) {
-            const lv = traitLvlMap[id];
-            const master = PassiveSkill.MASTER[id];
-            if (master && master.params && master.params[key] !== undefined) {
-                total += master.params[key] * lv;
-            }
-        }
-    });
-    return total;
-};
-
 /**
  * 編成中のパーティメンバーから、特定の特性キーの合計値を算出する
  * 集計対象は現在パーティに編成されている（App.data.partyに含まれる）キャラのみです。
@@ -359,6 +344,7 @@ PassiveSkill.getPartySumValue = function(key) {
         .filter(c => c); // 存在するキャラのみ
 
     partyMembers.forEach(c => {
+        PassiveSkill.normalizeDisabledTraits(c);
         // --- 習得済みの特性 ---
         if (c.traits) {
             c.traits.forEach(t => {
@@ -395,6 +381,7 @@ PassiveSkill.getPartySumValue = function(key) {
  * 表示用の全特性リストを取得 (習得済み -> 装備品の順)
  */
 PassiveSkill.getFullTraitList = function(char) {
+    PassiveSkill.normalizeDisabledTraits(char);
     let list = [];
 
     // 1. 本人が習得している特性 (習得順)
