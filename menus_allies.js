@@ -405,22 +405,30 @@ const MenuAllies = {
     getEquipPreviewStatsHTML: (c, partLabel, item) => {
         const preview = MenuAllies.buildEquipPreviewStats(c, partLabel, item);
         if (!preview) return '';
-        const rows = [
-            [['攻', 'atk'], ['魔', 'mag'], ['防', 'def'], ['魔防', 'mdef'], ['速', 'spd']],
-            [['会心', 'cri', '%'], ['命中', 'hit', '%'], ['回避', 'eva', '%'], ['与ダメ', 'finDmg', '%'], ['被ダメ', 'finRed', '%']]
+        const stats = [
+            ['HP', 'maxHp'], ['MP', 'maxMp'],
+            ['攻', 'atk'], ['魔', 'mag'], ['防', 'def'], ['魔防', 'mdef'], ['速', 'spd'],
+            ['会心', 'cri', '%'], ['命中', 'hit', '%'], ['回避', 'eva', '%'], ['与ダメ', 'finDmg', '%'], ['被ダメ', 'finRed', '%']
         ];
         const chip = ([label, key, unit]) => {
             const before = Number(preview.before[key] || 0);
             const after = Number(preview.after[key] || 0);
             const diff = after - before;
-            const color = diff > 0 ? '#62ff82' : (diff < 0 ? '#ff6464' : '#9a8a76');
+            if (diff === 0) return null;
+            const color = diff > 0 ? '#62ff82' : '#ff6464';
             const sign = diff > 0 ? '+' : '';
             const value = Math.abs(diff) % 1 ? diff.toFixed(1) : String(diff);
-            return `<span style="color:${color}; white-space:nowrap;">${label}${sign}${value}${unit || ''}</span>`;
+            return { diff, html: `<span style="color:${color}; white-space:nowrap;">${label}${sign}${value}${unit || ''}</span>` };
         };
+        const chips = stats.map(chip).filter(Boolean);
+        if (chips.length === 0) return '';
+        const incHtml = chips.filter(chip => chip.diff > 0).map(chip => chip.html).join('');
+        const decHtml = chips.filter(chip => chip.diff < 0).map(chip => chip.html).join('');
+        const row = html => html ? `<div style="display:flex; flex-wrap:wrap; gap:4px 8px;">${html}</div>` : '';
         return `
             <div style="display:flex; flex-direction:column; gap:2px; width:100%; box-sizing:border-box; margin-top:5px; padding-top:5px; border-top:1px dashed rgba(232,178,91,0.30); font-size:10px; line-height:1.35;">
-                ${rows.map(row => `<div style="display:flex; flex-wrap:wrap; gap:4px 8px;">${row.map(chip).join('')}</div>`).join('')}
+                ${row(incHtml)}
+                ${row(decHtml)}
             </div>
         `;
     },

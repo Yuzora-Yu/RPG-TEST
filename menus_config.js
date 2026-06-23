@@ -105,7 +105,7 @@ const MenuConfig = {
             </div>
 
             <div style="border:1px solid #333; border-radius:8px; padding:12px; margin-bottom:14px; background:#151515;">
-                <div style="color:#ffd700; font-weight:bold; margin-bottom:10px;">② オート戦闘</div>
+                <div style="color:#ffd700; font-weight:bold; margin-bottom:10px;">オート戦闘</div>
                 ${MenuConfig.radioRow('battle-auto-start', 'on', 'ON', '戦闘開始時にAUTOを有効化', autoStart, 'MenuConfig.setBattleAutoStart(true)')}
                 ${MenuConfig.radioRow('battle-auto-start', 'off', 'OFF', '戦闘開始時は手動入力', !autoStart, 'MenuConfig.setBattleAutoStart(false)')}
             </div>
