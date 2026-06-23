@@ -403,12 +403,32 @@ const StoryManager = {
         return '';
     },
 
+    getStoryFieldVisualZIndex: function(cmd, tile, fallbackZ = 4) {
+        const rawZ = Number(cmd?.z ?? fallbackZ);
+        const localZ = Number.isFinite(rawZ) ? rawZ : fallbackZ;
+
+        // キャラ・敵などの通常スプライトは、画面下側（Y座標が大きい）ほど前面に出す。
+        // 既存の z は同じY座標内の微調整値として扱い、Y差がある場合はY順を優先する。
+        // 斬撃などのエフェクトや明示指定したものは従来通り固定 z にできる。
+        if (cmd?.autoDepth === false || cmd?.fixedZ === true || cmd?.effect) return localZ;
+
+        const y = Number(tile?.y ?? 0);
+        const depthY = Number.isFinite(y) ? y : 0;
+        return Math.round(1000 + (depthY * 20) + localZ);
+    },
+
+    getStoryFieldVisualSpriteCss: function(cmd, tile, fallbackZ = 4) {
+        const z = this.getStoryFieldVisualZIndex(cmd, tile, fallbackZ);
+        const opacity = cmd?.opacity !== undefined ? Number(cmd.opacity) : 1;
+        return `z-index:${z}; opacity:${Number.isFinite(opacity) ? opacity : 1};` + (cmd?.css || '');
+    },
+
     putStoryFieldVisualSprite: function(cmd, anchor) {
         if (typeof Field === 'undefined' || typeof Field.putFieldVisualSprite !== 'function') return null;
         const src = this.resolveStoryFieldVisualSrc(cmd);
         if (!src) return null;
         const tile = this.resolveStoryFieldVisualTile(cmd, anchor);
-        const css = `z-index:${Number(cmd.z || 4)}; opacity:${cmd.opacity !== undefined ? Number(cmd.opacity) : 1};` + (cmd.css || '');
+        const css = this.getStoryFieldVisualSpriteCss(cmd, tile, 4);
         return Field.putFieldVisualSprite(cmd.id || `field-visual-story-${Date.now()}`, src, tile, cmd.size || 2, css);
     },
 
@@ -473,7 +493,7 @@ const StoryManager = {
                         const tile = this.resolveStoryFieldVisualTile(cmd, anchor);
                         const size = cmd.size || Number(img.dataset.sizeTiles || 2);
                         const duration = Math.max(0, Number(cmd.duration || 160));
-                        img.style.cssText = Field.getFieldVisualTileStyle(tile, size) + `z-index:${Number(cmd.z || 4)}; transition:left ${duration}ms linear, top ${duration}ms linear;` + (cmd.css || '');
+                        img.style.cssText = Field.getFieldVisualTileStyle(tile, size) + this.getStoryFieldVisualSpriteCss(cmd, tile, 4) + `transition:left ${duration}ms linear, top ${duration}ms linear;`;
                         img.dataset.tileX = String(tile.x);
                         img.dataset.tileY = String(tile.y);
                         img.dataset.sizeTiles = String(size);
@@ -622,7 +642,7 @@ const StoryManager = {
                     if (!img || typeof Field.getFieldVisualTileStyle !== 'function') break;
                     const tile = this.resolveStoryFieldVisualTile(cmd, anchor);
                     const size = cmd.size || Number(img.dataset.sizeTiles || 2);
-                    img.style.cssText = Field.getFieldVisualTileStyle(tile, size) + `z-index:${Number(cmd.z || 4)};` + (cmd.css || '');
+                    img.style.cssText = Field.getFieldVisualTileStyle(tile, size) + this.getStoryFieldVisualSpriteCss(cmd, tile, 4);
                     img.dataset.tileX = String(tile.x);
                     img.dataset.tileY = String(tile.y);
                     img.dataset.sizeTiles = String(size);
@@ -2706,48 +2726,6 @@ const StoryManager = {
                 {
                         "name": "雷楔のレナード",
                         "text": "それでも国を守るためならば、私は剣を抜く。友であったお前にもだ。"
-                }
-        ],
-        "THUNDER_LEONARD_CLEAR_OPENING": [
-                {
-                        "name": "雷楔のレナード",
-                        "text": "…[N:101]、まだ旧い理想にしがみつくのか。国を存続させるには、痛みを引き受ける者が必要だ。"
-                },
-                {
-                        "name": "ジョセフ",
-                        "text": "痛みを引き受けるのと、誰かから奪うのは違うだろうが！プリズムは国王の財布じゃねえ！",
-                        "charId": 101
-                },
-                {
-                        "name": "雷楔のレナード",
-                        "text": "プリズムの力は必要な分、すでに光の神殿に集まっている。儀式の日は近い。"
-                },
-                {
-                        "name": "雷楔のレナード",
-                        "text": "……止めたいのなら、まずは大灯台で発動している魔術結界を壊すことだ。"
-                },
-                {
-                        "name": "雷楔のレナード",
-                        "text": "それから……"
-                }
-        ],
-        "THUNDER_LEONARD_CLEAR_KNIGHT": [
-                {
-                        "name": "？？？？",
-                        "text": "…喋りすぎ…だ。"
-                }
-        ],
-        "THUNDER_LEONARD_CLEAR_JOSEPH": [
-                {
-                        "name": "ジョセフ",
-                        "text": "レナード！！！",
-                        "charId": 101
-                }
-        ],
-        "THUNDER_LEONARD_CLEAR_END": [
-                {
-                        "name": "？？？？",
-                        "text": "お前達が例の反逆者か。騎士崩れと世間知らずの子供達。救世主ごっこは、ここまでだ。"
                 }
         ],
         "THUNDER_LEONARD_CLEAR": [
