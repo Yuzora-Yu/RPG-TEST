@@ -3614,6 +3614,14 @@ const Dungeon = {
                 const bossX = Number.isFinite(Number(fixedBossPosition?.x)) ? Number(fixedBossPosition.x) : Field.x;
                 const bossY = Number.isFinite(Number(fixedBossPosition?.y)) ? Number(fixedBossPosition.y) : Field.y;
                 const posKey = `${bossX},${bossY}`;
+                if (!App.data.progress) App.data.progress = {};
+                App.data.progress.lastFixedBossEvent = {
+                    areaKey,
+                    progressKey,
+                    position: { x: bossX, y: bossY },
+                    monsterId: App.data.battle?.fixedBossId || null,
+                    storyEventId: App.data.battle?.fixedStoryEventId || null
+                };
 			
 			if (!App.data.progress.defeatedBosses) App.data.progress.defeatedBosses = {};
 			if (!App.data.progress.defeatedBosses[progressKey]) App.data.progress.defeatedBosses[progressKey] = [];

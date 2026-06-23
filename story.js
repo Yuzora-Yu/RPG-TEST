@@ -1103,6 +1103,30 @@ const StoryManager = {
                         "text": "借りは背中で返す。\n次の戦いには、俺も行く。"
                 }
         ],
+        "QUEST_ZELIED_TOWER_ECHO_ENCOUNTER": [
+                {
+                        "name": "ゼリード",
+                        "text": "頂の空気がひどく歪んでいる。灯台を壊した残響が、魔物の形を取ったらしい。"
+                },
+                {
+                        "name": "ゼリード",
+                        "text": "俺の追っていた相手は、こいつの影に紛れていたのかもしれない。まずはこの残響を断つぞ。"
+                },
+                {
+                        "name": "システム",
+                        "text": "砕けた結界の残響が、風の刃となって襲いかかってきた！"
+                }
+        ],
+        "QUEST_ZELIED_TOWER_ECHO_CLEAR": [
+                {
+                        "name": "ゼリード",
+                        "text": "……消えたか。これで灯台は本当に静かになる。"
+                },
+                {
+                        "name": "ゼリード",
+                        "text": "一階へ戻ろう。俺の答えも、そこで渡す。"
+                }
+        ],
         "QUEST_HAYATE_START": [
                 {
                         "name": "ハヤテ",
@@ -2250,6 +2274,48 @@ const StoryManager = {
                         "text": "それでも国を守るためならば、私は剣を抜く。友であったお前にもだ。"
                 }
         ],
+        "THUNDER_LEONARD_CLEAR_OPENING": [
+                {
+                        "name": "雷楔のレナード",
+                        "text": "…[N:101]、まだ旧い理想にしがみつくのか。国を存続させるには、痛みを引き受ける者が必要だ。"
+                },
+                {
+                        "name": "ジョセフ",
+                        "text": "痛みを引き受けるのと、誰かから奪うのは違うだろうが！プリズムは国王の財布じゃねえ！",
+                        "charId": 101
+                },
+                {
+                        "name": "雷楔のレナード",
+                        "text": "プリズムの力は必要な分、すでに光の神殿に集まっている。儀式の日は近い。"
+                },
+                {
+                        "name": "雷楔のレナード",
+                        "text": "……止めたいのなら、まずは大灯台で発動している魔術結界を壊すことだ。"
+                },
+                {
+                        "name": "雷楔のレナード",
+                        "text": "それから……"
+                }
+        ],
+        "THUNDER_LEONARD_CLEAR_KNIGHT": [
+                {
+                        "name": "？？？？",
+                        "text": "…喋りすぎ…だ。"
+                }
+        ],
+        "THUNDER_LEONARD_CLEAR_JOSEPH": [
+                {
+                        "name": "ジョセフ",
+                        "text": "レナード！！！",
+                        "charId": 101
+                }
+        ],
+        "THUNDER_LEONARD_CLEAR_END": [
+                {
+                        "name": "？？？？",
+                        "text": "お前達が例の反逆者か。騎士崩れと世間知らずの子供達。救世主ごっこは、ここまでだ。"
+                }
+        ],
         "THUNDER_LEONARD_CLEAR": [
                 {
                         "name": "雷楔のレナード",
@@ -2273,16 +2339,8 @@ const StoryManager = {
                         "text": "それから……"
                 },
                 {
-                        "name": "システム",
-                        "text": "突然、闇の裂け目から、白銀の鎧をまとった騎士が現れた。"
-                },
-                {
                         "name": "？？？？",
                         "text": "…喋りすぎ…だ。"
-                },
-                {
-                        "name": "システム",
-                        "text": "騎士の剣が閃き、レナードは闇の中へ倒れ込んだ…"
                 },
                 {
                         "name": "ジョセフ",
@@ -3178,10 +3236,15 @@ const StoryManager = {
         },
         "thunder_fort_clear": {
                 "actions": [
-                        {
-                                "type": "CONV",
-                                "value": "THUNDER_LEONARD_CLEAR"
-                        },
+                        { "type": "FIELD_CUTSCENE", "value": "LEONARD_CLEAR_SETUP" },
+                        { "type": "CONV", "value": "THUNDER_LEONARD_CLEAR_OPENING" },
+                        { "type": "FIELD_CUTSCENE", "value": "LEONARD_CLEAR_KNIGHT_APPEAR" },
+                        { "type": "CONV", "value": "THUNDER_LEONARD_CLEAR_KNIGHT" },
+                        { "type": "FIELD_CUTSCENE", "value": "LEONARD_CLEAR_SLASH", "lockMs": 1200 },
+                        { "type": "CONV", "value": "THUNDER_LEONARD_CLEAR_JOSEPH" },
+                        { "type": "FIELD_CUTSCENE", "value": "LEONARD_CLEAR_KNIGHT_ADVANCE", "lockMs": 1200 },
+                        { "type": "CONV", "value": "THUNDER_LEONARD_CLEAR_END" },
+                        { "type": "FIELD_CUTSCENE", "value": "LEONARD_CLEAR_CLEANUP" },
                         {
                                 "type": "BOSS",
                                 "value": 301050,
@@ -4189,6 +4252,17 @@ const StoryManager = {
                 "actions": [{ "type": "CONV", "value": "QUEST_ZELIED_REPORT" }],
                 "winActions": []
         },
+        "quest_zelied_tower_echo_encounter": {
+                "actions": [
+                        { "type": "CONV", "value": "QUEST_ZELIED_TOWER_ECHO_ENCOUNTER" },
+                        { "type": "BOSS", "value": [301060, 301062], "bossStatMultiplier": 1.25, "winEventId": "quest_zelied_tower_echo_clear" }
+                ],
+                "winActions": []
+        },
+        "quest_zelied_tower_echo_clear": {
+                "actions": [{ "type": "CONV", "value": "QUEST_ZELIED_TOWER_ECHO_CLEAR" }],
+                "winActions": []
+        },
         "quest_hayate_start": {
                 "actions": [{ "type": "CONV", "value": "QUEST_HAYATE_START" }],
                 "winActions": []
@@ -4809,6 +4883,10 @@ const StoryManager = {
             await this.playStoryDefeatEffect(action);
         }
 
+        if ((action.type === 'FIELD_CUTSCENE' || action.type === 'MAP_VISUAL') && typeof Field !== 'undefined' && typeof Field.runEventVisual === 'function') {
+            await Field.runEventVisual(action.value || action.name, action);
+        }
+
         if (action.type === 'FLAG') {
             if (!data.flags) data.flags = {};
             const key = action.key || action.value;
@@ -5055,9 +5133,10 @@ const StoryManager = {
                 App.save();
             }
 
-            const isSystemLine = line.name === 'システム' && !line.charId;
-            const masterChar = DB.CHARACTERS.find(c => c.id === line.charId);
-            const savedChar = App.data.characters.find(c => c.charId === line.charId);
+            const hasExplicitCharId = line.charId !== undefined && line.charId !== null;
+            const isSystemLine = line.name === 'システム' && !hasExplicitCharId;
+            const masterChar = hasExplicitCharId ? DB.CHARACTERS.find(c => c.id === line.charId) : null;
+            const savedChar = hasExplicitCharId ? App.data.characters.find(c => c.charId === line.charId) : null;
             let displayName = isSystemLine ? '' : (savedChar ? savedChar.name : (masterChar ? masterChar.name : line.name));
             let displayImg = isSystemLine ? '' : (savedChar?.img || masterChar?.img);
 

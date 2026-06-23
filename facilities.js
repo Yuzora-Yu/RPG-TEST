@@ -1257,12 +1257,56 @@ const Facilities = {
         return data;
     },
 
+    getEquipDataLabel: (key) => {
+        const labels = { hp: 'HP', mp: 'MP', atk: '攻', def: '守', mag: '魔', mdef: '魔防', spd: '速', hit: '命中', eva: '回避', cri: '会心', finDmg: '与ダメ', finRed: '被ダメ' };
+        if (labels[key]) return labels[key];
+        const rule = (typeof DB !== 'undefined' && Array.isArray(DB.OPT_RULES)) ? DB.OPT_RULES.find(r => r.key === key) : null;
+        if (rule?.name) return rule.name;
+        if (key.startsWith('attack_')) {
+            const ailment = key.replace('attack_', '');
+            const label = (typeof Battle !== 'undefined' && Battle.statNames) ? (Battle.statNames[ailment] || ailment) : ailment;
+            return `攻撃時${label}`;
+        }
+        if (key.startsWith('resists_')) {
+            const ailment = key.replace('resists_', '');
+            const label = (typeof Battle !== 'undefined' && Battle.statNames) ? (Battle.statNames[ailment] || ailment) : ailment;
+            return `${label}耐性`;
+        }
+        return key;
+    },
+
+    getEquipTraitsSummary: (traits = []) => {
+        if (!Array.isArray(traits) || traits.length === 0) return '';
+        const parts = traits.map(t => {
+            const traitId = Number(t?.id ?? t);
+            const lv = Number(t?.level || t?.lv || 1);
+            const master = (typeof PassiveSkill !== 'undefined' && PassiveSkill.MASTER) ? PassiveSkill.MASTER[traitId] : null;
+            return `${master?.name || `特性${traitId}`}Lv${Number.isFinite(lv) ? lv : 1}`;
+        }).filter(Boolean);
+        return parts.length ? `特性:${parts.join('・')}` : '';
+    },
+
     getEquipBaseSummary: (base, plus = 2) => {
-        const labels = { hp: 'HP', mp: 'MP', atk: '攻', def: '守', mag: '魔', mdef: '魔防', spd: '速', hit: '命中', eva: '回避', cri: '会心' };
         const data = Facilities.getBaseEquipDataForPlus(base, plus);
-        const parts = Object.entries(data || {})
-            .filter(([, v]) => typeof v === 'number' && Number(v) !== 0)
-            .map(([k, v]) => `${labels[k] || k}${v > 0 ? '+' : ''}${v}`);
+        const signed = v => `${v > 0 ? '+' : ''}${v}`;
+        const parts = [];
+        for (const [k, v] of Object.entries(data || {})) {
+            if (typeof v !== 'number' || Number(v) === 0) continue;
+            if (k.startsWith('attack_')) {
+                const ailment = k.replace('attack_', '');
+                const label = (typeof Battle !== 'undefined' && Battle.statNames) ? (Battle.statNames[ailment] || ailment) : ailment;
+                parts.push(`攻撃時${Math.abs(v)}%で${label}`);
+            } else if (k.startsWith('resists_')) {
+                const ailment = k.replace('resists_', '');
+                const label = (typeof Battle !== 'undefined' && Battle.statNames) ? (Battle.statNames[ailment] || ailment) : ailment;
+                parts.push(`${label}耐${signed(v)}%`);
+            } else {
+                const unit = ['hit', 'eva', 'cri', 'finDmg', 'finRed'].includes(k) ? '%' : '';
+                parts.push(`${Facilities.getEquipDataLabel(k)}${signed(v)}${unit}`);
+            }
+        }
+        const traitSummary = Facilities.getEquipTraitsSummary(base?.traits || []);
+        if (traitSummary) parts.push(traitSummary);
         return parts.length ? parts.join('　') : '特殊効果なし';
     },
 

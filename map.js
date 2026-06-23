@@ -1333,11 +1333,10 @@ const FIXED_DUNGEON_MAPS = {
                     { x: 14, y: 22, toFloor: 3, targetX: 10, targetY: 4, label: "火の祭壇へ戻る" }
                 ],
                 tileEffects: [
-                    { x: 6, y: 11, type: "poison", damageRate: 0.08, message: "濃い火山ガスを吸った！" },
-                    { x: 22, y: 11, type: "poison", damageRate: 0.06, message: "黒曜石の裂け目から熱風が噴いた！" },
+                    { type: "poison", rects: [{ x1: 5, y1: 10, x2: 9, y2: 13 }, { x1: 20, y1: 10, x2: 24, y2: 13 }], damageRate: 0.08, message: "濃い火山ガスを吸った！" },
                     { x: 22, y: 11, type: "warp", toX: 6, toY: 19, message: "熱脈の噴気で下層へ飛ばされた。" },
                     { x: 6, y: 19, type: "warp", toX: 22, toY: 11, message: "上昇気流が岩棚へ運んだ。" },
-                    { x: 23, y: 19, type: "hunter", id: "volcano_deep_flame", imageKey: "overlay_dungeon_hunter_fire", monsterIds: [301010, 100013, 100014], speed: 0.5, range: 24, statMultiplier: 1.9, message: "炎を纏う強敵が迫る！" }
+                    { x: 23, y: 19, type: "hunter", id: "volcano_deep_flame", imageKey: "overlay_dungeon_hunter_fire", monsterIds: [301010, 100013, 100014], speed: 0.5, range: 24, statMultiplier: 2.1, message: "炎を纏う強敵が迫る！" }
                 ],
                 bosses: [
                     { x: 14, y: 4, monsterId: 301010, questId: "karin_volcano_depths", storyEventId: "quest_karin_volcano_clear", actionLabel: "火山深部の試練に挑む", inspectLog: "守る剣を試す炎が揺れている。" }
@@ -1349,9 +1348,8 @@ const FIXED_DUNGEON_MAPS = {
                     { x: 24, y: 18, itemId: 106, type: "item", rare: true }
                 ],
                 mapActions: [
-                    { x: 14, y: 12, label: "熱脈を確かめる", log: "足元の黒曜石に、鍛冶場の炉より深い赤が脈打っている。", type: "log", imageKey: "overlay_dungeon_event" }
+                    { x: 14, y: 1, label: "熱脈を確かめる", log: "足元の黒曜石に、鍛冶場の炉より深い赤が脈打っている。", type: "log", imageKey: "overlay_dungeon_event" }
                 ],
-                healSprings: [{ x: 14, y: 12 }],
                 entryPoint: { x: 14, y: 22 }
             }
         ]
@@ -1579,11 +1577,10 @@ const FIXED_DUNGEON_MAPS = {
                     { x: 15, y: 22, toFloor: 2, targetX: 20, targetY: 9, label: "祈りの広場へ戻る" }
                 ],
                 tileEffects: [
-                    { x: 6, y: 11, type: "poison", damageRate: 0.07, message: "呪毒の霧に触れた！" },
-                    { x: 24, y: 10, type: "ice", maxSlide: 24, message: "濡れた根を滑った。" },
-                    { x: 5, y: 4, type: "poison", damageRate: 0.05, message: "古い結界跡から黒い風が漏れた。" },
+                    { type: "poison", rects: [{ x1: 4, y1: 4, x2: 7, y2: 6 }, { x1: 5, y1: 10, x2: 9, y2: 13 }], damageRate: 0.07, message: "呪毒の霧に触れた！" },
+                    { type: "ice", rect: { x1: 21, y1: 9, x2: 26, y2: 12 }, maxSlide: 24, message: "濡れた根を滑った。" },
                     { x: 6, y: 19, type: "warp", toX: 25, toY: 19, message: "絡み合う根が道を反転させた。" },
-                    { x: 25, y: 19, type: "hunter", id: "forest_deep_curse", imageKey: "overlay_dungeon_hunter_forest", monsterIds: [301012, 100023, 100024], speed: 0.5, range: 26, statMultiplier: 1.9, message: "呪風の魔物が迫る！" }
+                    { x: 25, y: 19, type: "hunter", id: "forest_deep_curse", imageKey: "overlay_dungeon_hunter_forest", monsterIds: [301012, 100023, 100024], speed: 0.5, range: 26, statMultiplier: 2.1, message: "呪風の魔物が迫る！" }
                 ],
                 bosses: [
                     { x: 15, y: 4, monsterId: [301011, 301012], questId: "arisa_haine_forest_depths", startEventId: "quest_arisa_haine_encounter", storyEventId: "quest_arisa_haine_clear", actionLabel: "アリサとハイネに加勢する", inspectLog: "森の奥で、刀の音と叫び声が聞こえる。" }
@@ -1595,9 +1592,8 @@ const FIXED_DUNGEON_MAPS = {
                     { x: 26, y: 18, itemId: 106, type: "item", rare: true }
                 ],
                 mapActions: [
-                    { x: 15, y: 13, label: "風の途切れを調べる", log: "巨大樹の根元だけ、風の音が不自然に途切れている。", type: "log", imageKey: "overlay_dungeon_event" }
+                    { x: 15, y: 1, label: "風の途切れを調べる", log: "巨大樹の根元だけ、風の音が不自然に途切れている。", type: "log", imageKey: "overlay_dungeon_event" }
                 ],
-                healSprings: [{ x: 15, y: 13 }],
                 entryPoint: { x: 15, y: 22 }
             }
         ]
@@ -1982,7 +1978,7 @@ const FIXED_DUNGEON_MAPS = {
                 label: "海底神殿深部・逆潮路",
                 encounterRank: 65,
                 monsters: [100033, 100034, 301021],
-                enemyBoost: { nameSuffix: "強", statMultiplier: 1.3, elmRes: { "水": 100, "火": 50, "雷": -50 }, elmAtk: { "水": 20 } },
+                enemyBoost: { nameSuffix: "深層", statMultiplier: 1.45, elmRes: { "水": 100, "火": 50, "雷": -50 }, elmAtk: { "水": 25 }, resists: { Poison: 40, Shock: 40, Debuff: 40 } },
                 rareMonsters: [{ id: 200201, rate: 0.05 }],
                 width: 29,
                 height: 25,
@@ -2017,10 +2013,10 @@ const FIXED_DUNGEON_MAPS = {
                     { x: 14, y: 22, toFloor: 3, targetX: 11, targetY: 5, label: "祈祷の間へ戻る" }
                 ],
                 tileEffects: [
-                    { x: 6, y: 11, type: "ice", maxSlide: 24, message: "逆潮に押し流された。" },
+                    { type: "ice", rects: [{ x1: 4, y1: 10, x2: 9, y2: 13 }, { x1: 19, y1: 10, x2: 24, y2: 13 }], maxSlide: 24, message: "逆潮に押し流された。" },
                     { x: 23, y: 11, type: "warp", toX: 6, toY: 19, message: "渦潮に巻かれた。" },
                     { x: 6, y: 19, type: "warp", toX: 23, toY: 11, message: "水鏡が反対岸へつながった。" },
-                    { x: 23, y: 19, type: "hunter", id: "seabed_current", imageKey: "overlay_dungeon_hunter_sea", monsterIds: [301021, 301022, 100034], speed: 0.5, range: 24, statMultiplier: 1.8, message: "逆潮の番人が迫る！" }
+                    { x: 23, y: 19, type: "hunter", id: "seabed_current", imageKey: "overlay_dungeon_hunter_sea", monsterIds: [301021, 301022, 100034], speed: 0.5, range: 24, statMultiplier: 2.0, message: "逆潮の番人が迫る！" }
                 ],
                 bosses: [
                     { x: 14, y: 4, monsterId: [301022, 301021], questId: "sophia_alan_seabed_depths", storyEventId: "quest_sophia_alan_clear", actionLabel: "神殿深部を鎮める", inspectLog: "ソフィアとアランが逆潮の核を睨んでいる。" }
@@ -2032,9 +2028,8 @@ const FIXED_DUNGEON_MAPS = {
                     { x: 24, y: 18, itemId: 106, type: "item", rare: true }
                 ],
                 mapActions: [
-                    { x: 14, y: 13, label: "水圧の揺らぎを見る", log: "青い泡が柱の影をゆっくり歪ませている。", type: "log", imageKey: "overlay_dungeon_event" }
+                    { x: 14, y: 1, label: "水圧の揺らぎを見る", log: "青い泡が柱の影をゆっくり歪ませている。", type: "log", imageKey: "overlay_dungeon_event" }
                 ],
-                healSprings: [{ x: 14, y: 13 }],
                 entryPoint: { x: 14, y: 22 }
             }
         ]
@@ -2115,7 +2110,7 @@ const FIXED_DUNGEON_MAPS = {
                     }
                 ],
                 "mapActions": [
-                    { "x": 4, "y": 18, "label": "ゼリードと話す", "log": "ゼリードが、頂上に残る歪みを見上げている。", "type": "quest", "questId": "zelied_big_tower", "imageKey": "npc_mage", "lockedText": "ゼリードはまだ、灯台の異変を見極めているようだ。" }
+                    { "x": 4, "y": 18, "label": "ゼリードと話す", "log": "ゼリードが、頂上に残る歪みを見上げている。", "type": "quest", "questId": "zelied_big_tower", "imageKey": "overlay_npc_villager", "lockedText": "ゼリードはまだ、灯台の異変を見極めているようだ。" }
                 ],
                 "entryPoint": {
                     "x": 10,
@@ -2491,7 +2486,7 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWTTTTTTTTTTTTTTTWWW",
                     "WWWWWWWWWWTWWWWWWWWWW",
                     "WWWWWTTTTTTTTTTTWWWWW",
-                    "WWWWTTTTTTTTTTTTTWWWW",
+                    "WWWWTTTTTTBTTTTTTWWWW",
                     "WWWWTTTTTTTTTTTTTWWWW",
                     "WWWWTWWWWTTTWWWWTWWWW",
                     "WWTTTTTWWTTTWWTTTTTWW",
@@ -2543,6 +2538,9 @@ const FIXED_DUNGEON_MAPS = {
                         ],
                         "questId": "zelied_big_tower",
                         "inactiveTile": "G",
+                        "mapSpriteMonsterId": 301060,
+                        "startEventId": "quest_zelied_tower_echo_encounter",
+                        "storyEventId": "quest_zelied_tower_echo_clear",
                         "bossStatMultiplier": 1.25,
                         "actionLabel": "灯火の残響に挑む",
                         "challengeText": "砕けた結界から、二つの影が滲み出す。\n灯火の残響に挑みますか？"
@@ -2596,7 +2594,7 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWTTTTTTTWWWWTTTWWWWTTTTTTTWWW",
                     "WWWTTTTTTTWWWWTTTWWWWTTTTTTTWWW",
                     "WWWWWWWWWWWWWWWTWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWTTTTTDTTTTTWWWWWWWWWW",
+                    "WWWWWWWWWWTTTTTTTTTTTWWWWWWWWWW",
                     "WWWWWWWWWWTTTTTTTTTTTWWWWWWWWWW",
                     "WTTTTTTTWWTTTTTTTTTTTWWTTTTTTTW",
                     "WTTTTTTTWWTTTTTTTTTTTWWTTTTTTTW",
@@ -2671,7 +2669,6 @@ const FIXED_DUNGEON_MAPS = {
                     { "x": 12, "y": 21, "label": "補給品を買う", "log": "解放された要塞に補給隊が入っている。", "type": "shop", "shopType": "item", "title": "ライザーク要塞 補給所", "shopRank": 45, "requiredFlag": "thunderFortCleared", "lockedText": "まだ補給隊は入れないようだ。" },
                     { "x": 16, "y": 21, "label": "武器を見る", "log": "押収された武器が整備されている。", "type": "shop", "shopType": "weapon", "title": "ライザーク要塞 武器庫", "shopRank": 45, "requiredFlag": "thunderFortCleared", "lockedText": "武器庫は封鎖されている。" },
                     { "x": 17, "y": 21, "label": "防具を見る", "log": "雷対策の防具が並び始めている。", "type": "shop", "shopType": "armor", "title": "ライザーク要塞 防具庫", "shopRank": 45, "requiredFlag": "thunderFortCleared", "lockedText": "防具庫は封鎖されている。" },
-                    { "x": 15, "y": 20, "label": "休む", "log": "兵舎の一角が休憩所になっている。", "type": "inn", "requiredFlag": "thunderFortCleared", "lockedText": "まだ休める状況ではない。" },
                     { "x": 15, "y": 18, "label": "解放兵と話す", "log": "解放された兵が深く息を吐いている。", "type": "storyEvent", "eventId": "post_thunder_fort_base_1", "requiredFlag": "thunderFortCleared", "lockedText": "雷の轟きで声が届かない。" }
                 ],
                 "entryPoint": {
@@ -2961,7 +2958,7 @@ const FIXED_DUNGEON_MAPS = {
                 "label": "ライザーク要塞深部・高圧区画",
                 "encounterRank": 70,
                 "monsters": [100040, 100041, 100042, 100043],
-                "enemyBoost": { "nameSuffix": "強", "statMultiplier": 1.3, "elmRes": { "雷": 100, "水": 50, "風": -50 }, "elmAtk": { "雷": 20 } },
+                "enemyBoost": { "nameSuffix": "深層", "statMultiplier": 1.5, "elmRes": { "雷": 100, "水": 50, "風": -50 }, "elmAtk": { "雷": 25 }, "resists": { "Poison": 50, "Shock": 80, "Debuff": 50 } },
                 "rareMonsters": [{ "id": 200201, "rate": 0.05 }],
                 "width": 31,
                 "height": 25,
@@ -2980,7 +2977,7 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
                     "WWWTTTTTTTTWTTTTTTTWTTTTTTTTWWW",
                     "WWWTTTTTTTTWTTTPTTTTTTTTTTTTWWW",
-                    "WWWWWWTWWWWWTTTTTTTWWWWWTWWWWWW",
+                    "WWWWWWTWWWWWTTWWWTTWWWWWTWWWWWW",
                     "WWWWWWTWWWWWWWWWWWWWWWWWTWWWWWW",
                     "WWTTTTTTTTWWWWWWWWWWWTTTTTTTTWW",
                     "WWTTTTTTTTWWWWWWWWWWWTTTTTTTTWW",
@@ -2998,9 +2995,8 @@ const FIXED_DUNGEON_MAPS = {
                 "tileEffects": [
                     { "x": 6, "y": 11, "type": "warp", "toX": 24, "toY": 11, "message": "雷流に弾かれた。" },
                     { "x": 24, "y": 11, "type": "warp", "toX": 6, "toY": 11, "message": "雷流が反転した。" },
-                    { "x": 5, "y": 4, "type": "ice", "maxSlide": 26, "message": "導電床が火花を散らした。" },
-                    { "x": 6, "y": 19, "type": "ice", "maxSlide": 26, "message": "帯電した床を滑った。" },
-                    { "x": 25, "y": 19, "type": "hunter", "id": "thunder_deep_guard", "imageKey": "overlay_dungeon_hunter_thunder", "monsterIds": [100081, 100043, 100043], "speed": 2, "range": 28, "statMultiplier": 1.9, "message": "雷鎧の強敵が迫る！" }
+                    { "type": "ice", "rects": [{ "x1": 4, "y1": 4, "x2": 9, "y2": 6 }, { "x1": 4, "y1": 18, "x2": 9, "y2": 20 }], "maxSlide": 26, "message": "帯電した床を滑った。" },
+                    { "x": 25, "y": 19, "type": "hunter", "id": "thunder_deep_guard", "imageKey": "overlay_dungeon_hunter_thunder", "monsterIds": [100081, 100043, 100043], "speed": 2, "range": 28, "statMultiplier": 2.2, "message": "雷鎧の強敵が迫る！" }
                 ],
                 "bosses": [
                     { "x": 15, "y": 4, "monsterId": [100081, 100082], "questId": "frieda_baron_thunder_depths", "storyEventId": "quest_frieda_baron_clear", "actionLabel": "制御核を止める", "inspectLog": "フリーダとバロンが雷の核へ迫っている。" }
@@ -3012,9 +3008,10 @@ const FIXED_DUNGEON_MAPS = {
                     { "x": 26, "y": 18, "itemId": 107, "type": "item", "rare": true }
                 ],
                 "mapActions": [
-                    { "x": 15, "y": 13, "label": "制御装置を調べる", "log": "壊れた導電装置が、まだ淡い雷光を吐いている。", "type": "log", "imageKey": "overlay_dungeon_event" }
+                    { "x": 15, "y": 1, "label": "制御装置を調べる", "log": "壊れた導電装置が、まだ淡い雷光を吐いている。", "type": "log", "imageKey": "overlay_dungeon_event" },
+                    { "x": 8, "y": 13, "label": "左の雷導スイッチを押す", "type": "switchGate", "gateId": "thunder_deep_core_gate", "switchId": "left", "requiredSwitches": ["left", "right"], "imageKey": "overlay_dungeon_event", "blocksMovement": false, "opens": [{ "x": 14, "y": 14, "tile": "T" }, { "x": 15, "y": 14, "tile": "T" }, { "x": 16, "y": 14, "tile": "T" }], "log": "左の雷導スイッチに手を置いた。", "openMessage": "二つの雷導スイッチが同期し、中央奥の隔壁が消えた。", "partialMessage": "遠くで雷導装置が唸った。もう片方のスイッチも必要だ。" },
+                    { "x": 22, "y": 13, "label": "右の雷導スイッチを押す", "type": "switchGate", "gateId": "thunder_deep_core_gate", "switchId": "right", "requiredSwitches": ["left", "right"], "imageKey": "overlay_dungeon_event", "blocksMovement": false, "opens": [{ "x": 14, "y": 14, "tile": "T" }, { "x": 15, "y": 14, "tile": "T" }, { "x": 16, "y": 14, "tile": "T" }], "log": "右の雷導スイッチに手を置いた。", "openMessage": "二つの雷導スイッチが同期し、中央奥の隔壁が消えた。", "partialMessage": "遠くで雷導装置が唸った。もう片方のスイッチも必要だ。" }
                 ],
-                "healSprings": [{ "x": 15, "y": 13 }],
                 "entryPoint": { "x": 15, "y": 22 }
             }
         ]
@@ -4105,7 +4102,8 @@ const FIXED_DUNGEON_MAPS = {
                     { x: 24, y: 18, type: "warp", toX: 6, toY: 18, message: "月影が元の祭廊へ返した。" }
                 ],
                 mapActions: [
-                    { x: 15, y: 19, label: "月影の声を聞く", log: "月光の向こうから、静かな呼び声が届く。", type: "quest", questId: "luna_hidden_dark_shrine", imageKey: "overlay_npc_villager" }
+                    { x: 15, y: 19, label: "月影の声を聞く", log: "月光の向こうから、静かな呼び声が届く。", type: "quest", questId: "luna_hidden_dark_shrine", imageKey: "overlay_npc_villager" },
+                    { x: 15, y: 20, label: "祭壇の残光に触れる", log: "崩れた祭壇に、月明かりのような冷たい闇が残っている。", type: "log", imageKey: "overlay_dungeon_event" }
                 ],
                 bosses: [
                     { x: 15, y: 4, monsterId: 902000, questId: "luna_hidden_dark_shrine", storyEventId: "quest_luna_hidden_clear", requiredFlag: "lightPalaceCleared", actionLabel: "月影の試練に挑む", inspectLog: "月光を飲む影が、祭壇の中央で脈打っている。" }
@@ -4113,9 +4111,6 @@ const FIXED_DUNGEON_MAPS = {
                 chests: [
                     { x: 4, y: 8, itemId: 106, type: "item", rare: true },
                     { x: 26, y: 18, itemId: 107, type: "item", rare: true }
-                ],
-                mapActions: [
-                    { x: 15, y: 20, label: "祭壇の残光に触れる", log: "崩れた祭壇に、月明かりのような冷たい闇が残っている。", type: "log", imageKey: "overlay_dungeon_event" }
                 ],
                 healSprings: [{ x: 15, y: 20 }],
                 entryPoint: { x: 2, y: 22 }
@@ -4239,7 +4234,6 @@ const FIXED_DUNGEON_MAPS = {
                 mapActions: [
                     { x: 16, y: 23, label: "禁奥の脈動を読む", log: "床下で、研究棟の心臓のような魔力が脈打っている。", type: "log", imageKey: "overlay_dungeon_event" }
                 ],
-                healSprings: [{ x: 16, y: 23 }],
                 entryPoint: { x: 2, y: 24 }
             },
             {
@@ -4299,7 +4293,6 @@ const FIXED_DUNGEON_MAPS = {
                     { x: 4, y: 8, itemId: 107, type: "item", rare: true },
                     { x: 30, y: 8, itemId: 108, type: "item", rare: true }
                 ],
-                healSprings: [{ x: 17, y: 25 }],
                 entryPoint: { x: 17, y: 26 }
             }
         ]
@@ -4388,9 +4381,29 @@ const MapRegistry = {
         return mapDef.mapActions.find(action => Number(action.x) === Number(x) && Number(action.y) === Number(y)) || null;
     },
 
+    isPointInEffect(effect, x, y) {
+        if (!effect) return false;
+        const tx = Number(x);
+        const ty = Number(y);
+        if (Number.isFinite(Number(effect.x)) && Number.isFinite(Number(effect.y)) && Number(effect.x) === tx && Number(effect.y) === ty) return true;
+        const inRect = (rect) => {
+            if (!rect) return false;
+            const x1 = Math.min(Number(rect.x1 ?? rect.x ?? 0), Number(rect.x2 ?? rect.x ?? 0));
+            const x2 = Math.max(Number(rect.x1 ?? rect.x ?? 0), Number(rect.x2 ?? rect.x ?? 0));
+            const y1 = Math.min(Number(rect.y1 ?? rect.y ?? 0), Number(rect.y2 ?? rect.y ?? 0));
+            const y2 = Math.max(Number(rect.y1 ?? rect.y ?? 0), Number(rect.y2 ?? rect.y ?? 0));
+            return tx >= x1 && tx <= x2 && ty >= y1 && ty <= y2;
+        };
+        if (inRect(effect.rect)) return true;
+        if (Array.isArray(effect.rects) && effect.rects.some(inRect)) return true;
+        if (Array.isArray(effect.points) && effect.points.some(p => Number(p?.x) === tx && Number(p?.y) === ty)) return true;
+        return false;
+    },
+
     findTileEffect(mapDef, x, y) {
         if (!mapDef || !Array.isArray(mapDef.tileEffects)) return null;
-        return mapDef.tileEffects.find(effect => Number(effect.x) === Number(x) && Number(effect.y) === Number(y)) || null;
+        const effect = mapDef.tileEffects.find(effect => MapRegistry.isPointInEffect(effect, x, y)) || null;
+        return effect ? { ...effect, x: Number(x), y: Number(y) } : null;
     },
 
     findFloorLink(mapDef, x, y) {

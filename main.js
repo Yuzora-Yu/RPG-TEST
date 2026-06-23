@@ -3116,6 +3116,7 @@ const App = {
      */
     isFieldControlBlocked: () => {
         if (typeof App.isFieldInputLocked === 'function' && App.isFieldInputLocked()) return true;
+        if (typeof Field !== 'undefined' && Field._visualCutsceneActive) return true;
         if (App.encounterTransitioning) return true;
         if (App.limitBreakTrialPromptOpen) return true;
         if (App.data?.battle?.active) return true;
@@ -5957,6 +5958,199 @@ const Field = {
         return null;
     },
 
+    activateSwitchGate: (action) => {
+        if (!action || !Field.currentMapData?.isFixed) return false;
+        const progress = App.data.progress || (App.data.progress = {});
+        const mapKey = Field.getCurrentProgressMapKey ? Field.getCurrentProgressMapKey() : Field.getCurrentAreaKey();
+        const gateId = action.gateId || 'gate';
+        const switchId = action.switchId || `${Number(action.x)},${Number(action.y)}`;
+        if (!progress.mapSwitches) progress.mapSwitches = {};
+        if (!progress.mapSwitches[mapKey]) progress.mapSwitches[mapKey] = {};
+        const gateState = progress.mapSwitches[mapKey][gateId] || (progress.mapSwitches[mapKey][gateId] = { pressed: {}, completed: false });
+        if (gateState.completed) {
+            App.log(action.completedMessage || 'すでに仕掛けは作動している。');
+            return true;
+        }
+        if (gateState.pressed[switchId]) {
+            App.log(action.pressedMessage || 'このスイッチはすでに入っている。');
+            return true;
+        }
+
+        gateState.pressed[switchId] = true;
+        const required = Array.isArray(action.requiredSwitches) && action.requiredSwitches.length
+            ? action.requiredSwitches.map(String)
+            : (Field.currentMapData.mapActions || [])
+                .filter(a => a && a.type === 'switchGate' && (a.gateId || 'gate') === gateId)
+                .map(a => String(a.switchId || `${Number(a.x)},${Number(a.y)}`));
+        const allPressed = required.length === 0 || required.every(id => !!gateState.pressed[id]);
+        if (!allPressed) {
+            App.log(action.partialMessage || 'どこかで仕掛けが動く音がした。');
+            App.save();
+            Field.render?.();
+            return true;
+        }
+
+        const changeKey = Field.getCurrentMapChangeKey ? Field.getCurrentMapChangeKey(Field.getCurrentAreaKey()) : mapKey;
+        if (!progress.mapChanges) progress.mapChanges = {};
+        if (!progress.mapChanges[changeKey]) progress.mapChanges[changeKey] = {};
+        const actions = (Field.currentMapData.mapActions || []).filter(a => a && a.type === 'switchGate' && (a.gateId || 'gate') === gateId);
+        const openDefs = actions.flatMap(a => Array.isArray(a.opens) ? a.opens : []).concat(Array.isArray(action.opens) ? action.opens : []);
+        const seen = new Set();
+        openDefs.forEach(open => {
+            if (!open) return;
+            const ox = Number(open.x);
+            const oy = Number(open.y);
+            if (!Number.isFinite(ox) || !Number.isFinite(oy)) return;
+            const key = `${ox},${oy}`;
+            if (seen.has(key)) return;
+            seen.add(key);
+            progress.mapChanges[changeKey][key] = open.tile || 'T';
+        });
+        gateState.completed = true;
+        App.log(action.openMessage || '仕掛けが作動し、道が開いた。');
+        App.save();
+        Field.render?.();
+        Field.refreshCurrentAction?.({ silent: true });
+        return true;
+    },
+
+    getLastFixedBossEventPosition: () => {
+        const last = App.data?.progress?.lastFixedBossEvent || null;
+        const p = last?.position || null;
+        if (Number.isFinite(Number(p?.x)) && Number.isFinite(Number(p?.y))) return { x: Number(p.x), y: Number(p.y) };
+        return { x: Number(Field.x), y: Number(Field.y) - 1 };
+    },
+
+    ensureFieldVisualLayer: () => {
+        let layer = document.getElementById('field-visual-cutscene-layer');
+        const wrapper = document.getElementById('canvas-wrapper') || document.getElementById('field-scene') || document.getElementById('game-container') || document.body;
+        if (!layer) {
+            layer = document.createElement('div');
+            layer.id = 'field-visual-cutscene-layer';
+            layer.style.cssText = 'position:absolute; inset:0; pointer-events:auto; z-index:2500; overflow:hidden; display:block;';
+            if (wrapper && wrapper.style && getComputedStyle(wrapper).position === 'static') wrapper.style.position = 'relative';
+            wrapper.appendChild(layer);
+        }
+        return layer;
+    },
+
+    getFieldVisualTileStyle: (tile, sizeTiles = 2) => {
+        const wrapper = document.getElementById('canvas-wrapper') || document.getElementById('field-scene') || document.body;
+        const canvas = document.getElementById('field-canvas');
+        const wrapperRect = wrapper.getBoundingClientRect ? wrapper.getBoundingClientRect() : { left: 0, top: 0, width: 320, height: 320 };
+        const canvasRect = canvas?.getBoundingClientRect ? canvas.getBoundingClientRect() : wrapperRect;
+        const scaleX = canvas ? (canvasRect.width / Math.max(1, canvas.width || 320)) : 1;
+        const scaleY = canvas ? (canvasRect.height / Math.max(1, canvas.height || 320)) : 1;
+        const dx = (Number(tile.x) - Number(Field.x)) * 32 * scaleX;
+        const dy = (Number(tile.y) - Number(Field.y)) * 32 * scaleY;
+        const left = (canvasRect.left - wrapperRect.left) + (canvasRect.width / 2) + dx;
+        const top = (canvasRect.top - wrapperRect.top) + (canvasRect.height / 2) + dy;
+        const w = Math.max(32, 32 * Number(sizeTiles || 2) * scaleX);
+        const h = Math.max(32, 32 * Number(sizeTiles || 2) * scaleY);
+        return `position:absolute; left:${left}px; top:${top}px; width:${w}px; height:${h}px; transform:translate(-50%, -50%); image-rendering:pixelated; object-fit:contain;`;
+    },
+
+    putFieldVisualSprite: (id, src, tile, sizeTiles = 2, extraCss = '') => {
+        const layer = Field.ensureFieldVisualLayer();
+        let img = document.getElementById(id);
+        if (!img) {
+            img = document.createElement('img');
+            img.id = id;
+            img.draggable = false;
+            layer.appendChild(img);
+        }
+        img.src = src;
+        img.style.cssText = Field.getFieldVisualTileStyle(tile, sizeTiles) + (extraCss || '');
+        return img;
+    },
+
+    setStoryUiCutsceneHidden: (hidden) => {
+        const overlay = document.getElementById('story-ui-overlay');
+        if (!overlay) return;
+        if (hidden) {
+            overlay.dataset.cutsceneDisplay = overlay.style.display || '';
+            overlay.style.display = 'none';
+        } else if (overlay.dataset.cutsceneDisplay !== undefined) {
+            overlay.style.display = overlay.dataset.cutsceneDisplay || 'flex';
+            delete overlay.dataset.cutsceneDisplay;
+        }
+    },
+
+    fadeFieldVisualBlackout: async (holdMs = 160) => {
+        const layer = Field.ensureFieldVisualLayer();
+        const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+        let blackout = document.getElementById('field-visual-blackout');
+        if (!blackout) {
+            blackout = document.createElement('div');
+            blackout.id = 'field-visual-blackout';
+            blackout.style.cssText = 'position:absolute; inset:0; background:#000; opacity:0; transition:opacity 90ms ease; pointer-events:none; z-index:1;';
+            layer.appendChild(blackout);
+        }
+        blackout.style.opacity = '1';
+        await wait(holdMs);
+        blackout.style.opacity = '0';
+        await wait(110);
+        blackout.remove();
+    },
+
+    runEventVisual: async (name, options = {}) => {
+        const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+        const pos = Field.getLastFixedBossEventPosition();
+        const leonardSrc = (typeof GRAPHICS !== 'undefined' && GRAPHICS.data?.overlay_boss_301040) || 'assets/monsters/monster_301040.png';
+        const knightSrc = (typeof GRAPHICS !== 'undefined' && GRAPHICS.data?.overlay_boss_301050) || 'assets/monsters/monster_301050.png';
+        const slashSrc = 'assets/effect/fx_phys_neutral_slash_v001.png';
+        Field._visualCutsceneActive = true;
+        if (typeof App.lockFieldInput === 'function') App.lockFieldInput(Number(options.lockMs || 900));
+        try {
+            const layer = Field.ensureFieldVisualLayer();
+            if (name === 'LEONARD_CLEAR_SETUP') {
+                layer.innerHTML = '';
+                Field.putFieldVisualSprite('field-visual-leonard', leonardSrc, pos, 2, 'z-index:4;');
+                return true;
+            }
+            if (name === 'LEONARD_CLEAR_KNIGHT_APPEAR') {
+                await Field.fadeFieldVisualBlackout(140);
+                Field.putFieldVisualSprite('field-visual-leonard', leonardSrc, pos, 2, 'z-index:4;');
+                Field.putFieldVisualSprite('field-visual-knight', knightSrc, { x: pos.x, y: pos.y - 2 }, 2, 'z-index:5;');
+                return true;
+            }
+            if (name === 'LEONARD_CLEAR_SLASH') {
+                Field.setStoryUiCutsceneHidden(true);
+                const slash = Field.putFieldVisualSprite('field-visual-slash', slashSrc, pos, 2.25, 'z-index:8; opacity:0.96;');
+                const leonard = document.getElementById('field-visual-leonard') || Field.putFieldVisualSprite('field-visual-leonard', leonardSrc, pos, 2, 'z-index:4;');
+                for (let i = 0; i < 4; i++) {
+                    leonard.style.opacity = '0.25';
+                    await wait(80);
+                    leonard.style.opacity = '1';
+                    await wait(80);
+                }
+                slash.remove();
+                leonard.remove();
+                Field.setStoryUiCutsceneHidden(false);
+                return true;
+            }
+            if (name === 'LEONARD_CLEAR_KNIGHT_ADVANCE') {
+                Field.setStoryUiCutsceneHidden(true);
+                let knight = document.getElementById('field-visual-knight') || Field.putFieldVisualSprite('field-visual-knight', knightSrc, { x: pos.x, y: pos.y - 2 }, 2, 'z-index:5;');
+                await wait(200);
+                knight.style.cssText = Field.getFieldVisualTileStyle({ x: pos.x, y: pos.y - 1 }, 2) + 'z-index:5; transition:left 160ms linear, top 160ms linear;';
+                await wait(200);
+                knight.style.cssText = Field.getFieldVisualTileStyle(pos, 2) + 'z-index:5; transition:left 160ms linear, top 160ms linear;';
+                await wait(200);
+                Field.setStoryUiCutsceneHidden(false);
+                return true;
+            }
+            if (name === 'LEONARD_CLEAR_CLEANUP') {
+                layer.remove();
+                return true;
+            }
+        } finally {
+            if (name === 'LEONARD_CLEAR_CLEANUP') Field._visualCutsceneActive = false;
+            else setTimeout(() => { if (!document.getElementById('field-visual-cutscene-layer')) Field._visualCutsceneActive = false; }, 50);
+        }
+        return false;
+    },
+
     executeMapAction: (action) => {
         if (!action) return;
 
@@ -5993,6 +6187,11 @@ const Field = {
                 App.log(action.lockedText || action.lockedLog || '今はまだ使えないようだ。');
                 return;
             }
+        }
+
+        if (action.type === 'switchGate') {
+            Field.activateSwitchGate(action);
+            return;
         }
 
         if (action.log) App.log(action.log);

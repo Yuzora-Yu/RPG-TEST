@@ -706,6 +706,18 @@ const Menu = {
             optsHTML = `<div style="font-size:10px; color:#aaa; margin-top:2px;">${optsList}</div>`;
         }
 
+        // 装備に最初から付与されている特性を表示
+        let traitsHTML = '';
+        if (equip.traits && Array.isArray(equip.traits) && equip.traits.length > 0) {
+            const traitList = equip.traits.map(t => {
+                const traitId = Number(t?.id ?? t);
+                const lv = Number(t?.level || t?.lv || 1);
+                const master = (typeof PassiveSkill !== 'undefined' && PassiveSkill.MASTER) ? PassiveSkill.MASTER[traitId] : null;
+                return `${master?.name || `特性${traitId}`}Lv${Number.isFinite(lv) ? lv : 1}`;
+            }).filter(Boolean);
+            if (traitList.length > 0) traitsHTML = `<div style="font-size:10px; color:#ffd27a; margin-top:2px;">特性: ${traitList.join('・')}</div>`;
+        }
+
         // シナジー表示 (既存維持)
         let synergyHTML = '';
         if (typeof App !== 'undefined' && typeof App.checkSynergy === 'function') {
@@ -731,6 +743,7 @@ const Menu = {
                 ${baseNameHTML}${baseEffect}${skillHTML}
             </div>
             ${optsHTML}
+            ${traitsHTML}
             ${synergyHTML}
         `;
         return html;

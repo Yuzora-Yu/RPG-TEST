@@ -26,7 +26,14 @@ const Battle = {
 		resists_Fear: '怯え耐性',
 		resists_Seal: '封印耐性',
 		resists_InstantDeath: '即死耐性',
-		resists_Debuff: '弱体耐性'
+		resists_Debuff: '弱体耐性',
+            resists_ToxicPoison: '猛毒耐性',
+            resists_SkillSeal: '特技封印耐性',
+            resists_SpellSeal: '呪文封印耐性',
+            resists_HealSeal: '回復封印耐性',
+            attack_Poison: '攻撃時毒',
+            attack_Fear: '攻撃時怯え',
+            attack_InstantDeath: '攻撃時即死'
     },
     
     // 状態異常と耐性IDの対応表 (拡張)

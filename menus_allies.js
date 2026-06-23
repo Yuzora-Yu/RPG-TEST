@@ -751,15 +751,18 @@ const MenuAllies = {
             }
         } else if (MenuAllies.currentTab === 3) {
             const playerObj = new Player(c);
-            let skillHtml = (!playerObj.skills || playerObj.skills.length === 0) 
+            const orderedSkills = [...(playerObj.skills || [])]
+                .filter(sk => sk && Number(sk.id) !== 1)
+                .sort((a, b) => Number(a.id || 0) - Number(b.id || 0));
+            const skillPayload = JSON.stringify(orderedSkills).replace(/"/g, '&quot;');
+            let skillHtml = orderedSkills.length === 0
                 ? '<div style="padding:20px; text-align:center; color:#555;">習得スキルなし</div>'
-                : playerObj.skills.map(sk => {
-                    if (sk.id === 1) return '';
-                    const isHidden = c.config.hiddenSkills.includes(Number(sk.id));
+                : orderedSkills.map(sk => {
+                    const isHidden = (c.config?.hiddenSkills || []).includes(Number(sk.id));
                     let elmHtml = sk.elm ? `<span style="color:${{'火':'#f88','水':'#88f','雷':'#ff0','風':'#8f8','光':'#ffc','闇':'#a8f','混沌':'#d4d'}[sk.elm]||'#ccc'}; margin-right:3px;">[${sk.elm}]</span>` : '';
                     return `
                         <div style="background:${isHidden ? 'rgba(0,0,0,0.2)' : '#252525'}; border:1px solid #444; border-radius:4px; padding:6px; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center;">
-                            <div style="flex:1; cursor:pointer;" onclick="MenuSkillDetail.open(${sk.id}, ${JSON.stringify(playerObj.skills).replace(/"/g, '&quot;')})">
+                            <div style="flex:1; cursor:pointer;" onclick="MenuSkillDetail.open(${sk.id}, ${skillPayload})">
                                 <div style="font-size:12px; font-weight:bold; color:${isHidden ? '#666' : '#ddd'};">${sk.name} <span style="font-size:10px; color:#888;">(${sk.type})</span></div>
                                 <div style="font-size:10px; color:#aaa;">${elmHtml}${sk.desc || ''}</div>
                             </div>
