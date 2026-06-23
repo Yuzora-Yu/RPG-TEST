@@ -1480,6 +1480,14 @@ const App = {
         };
 
         window.addEventListener('keydown', e => {
+            if ((e.key === 'Enter' || e.key === ' ') && typeof Battle !== 'undefined') {
+                const battleScene = document.getElementById('battle-scene');
+                if (battleScene && battleScene.style.display === 'flex' && Battle.phase === 'result' && typeof Battle.handleResultTap === 'function') {
+                    e.preventDefault();
+                    Battle.handleResultTap();
+                    return;
+                }
+            }
             if(document.getElementById('field-scene') && document.getElementById('field-scene').style.display === 'flex') {
                 if ((e.key === 'Enter' || e.key === ' ') && typeof StoryManager !== 'undefined') {
                     const storyOverlay = document.getElementById('story-ui-overlay');
@@ -4672,6 +4680,17 @@ load: () => {
 		return { isAmbushed, isPreemptive };
 	},
 
+	runAfterScenePaint: (callback) => {
+		const run = () => {
+			try { callback(); } catch (e) { console.error(e); }
+		};
+		if (typeof requestAnimationFrame === 'function') {
+			requestAnimationFrame(() => requestAnimationFrame(run));
+		} else {
+			setTimeout(run, 0);
+		}
+	},
+
 	playEncounterTransition: (callback, options = {}) => {
 		let layer = document.getElementById('encounter-transition');
 		const isEventBattle = !!options.eventBattle;
@@ -4942,7 +4961,19 @@ load: () => {
         }
 
 		
-        if(sceneId === 'battle') Battle.init();
+        if(sceneId === 'battle' && typeof Battle !== 'undefined') {
+            const sceneToken = (App.sceneChangeToken = (App.sceneChangeToken || 0) + 1);
+            const startBattleAfterPaint = () => {
+                const battleScene = document.getElementById('battle-scene');
+                if (App.sceneChangeToken !== sceneToken) return;
+                if (!battleScene || battleScene.style.display === 'none') return;
+                Battle.init();
+            };
+            if (typeof App.runAfterScenePaint === 'function') App.runAfterScenePaint(startBattleAfterPaint);
+            else setTimeout(startBattleAfterPaint, 0);
+        } else {
+            App.sceneChangeToken = (App.sceneChangeToken || 0) + 1;
+        }
         if(sceneId === 'inn') Facilities.initInn();
         if(sceneId === 'medal') Facilities.initMedal();
         if(sceneId === 'casino') Casino.init();

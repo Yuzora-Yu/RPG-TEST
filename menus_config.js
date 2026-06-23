@@ -2,8 +2,8 @@
 const MenuConfig = {
     speedOptions: [
         { value: 'normal', label: '普通', desc: 'じっくり戦闘を見る' },
-        { value: 'fast', label: '早い', desc: '戦闘中のウェイトを短縮' },
-        { value: 'fastest', label: '最速', desc: '戦闘中のウェイトなし' }
+        { value: 'fast', label: '早い', desc: '戦闘中のウェイトを約50%に短縮' },
+        { value: 'fastest', label: '最速', desc: '戦闘中のウェイトを約30%に短縮' }
     ],
 
     ensureSettings: () => {

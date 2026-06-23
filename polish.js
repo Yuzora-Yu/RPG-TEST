@@ -215,8 +215,8 @@
         return Battle.getBattleWaitMs(base);
       }
       const speed = this.battleSpeed();
-      if (speed === "fastest") return 0;
-      if (speed === "fast") return Math.floor(base * 0.35);
+      if (speed === "fastest") return Math.max(1, Math.floor(base * 0.30));
+      if (speed === "fast") return Math.max(1, Math.floor(base * 0.50));
       return base;
     },
     wait(ms) {

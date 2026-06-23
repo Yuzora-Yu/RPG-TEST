@@ -166,9 +166,10 @@ const Battle = {
 
     getBattleWaitMs: (ms) => {
         const base = Math.max(0, Math.floor(Number(ms) || 0));
+        if (base <= 0) return 0;
         const speed = Battle.getBattleSpeedSetting();
-        if (speed === 'fastest') return 0;
-        if (speed === 'fast') return Math.floor(base * 0.35);
+        if (speed === 'fastest') return Math.max(1, Math.floor(base * 0.30));
+        if (speed === 'fast') return Math.max(1, Math.floor(base * 0.50));
         return base;
     },
 
@@ -4126,6 +4127,9 @@ findNextActor: () => {
 
 		// --- [6] ここから勝利演出（ログ表示、レベルアップ、待機など） ---
 		Battle.log(`<br><span style="color:#ffff00; font-size:1em; font-weight:bold;">戦闘に勝利した！</span>`);
+		// 勝利メッセージと報酬ログの区切りを作るため、ここだけ固定テンポで少し待つ。
+		// resultWait はリザルト中は戦闘速度で短縮されないため、ログ表示速度は維持される。
+		await Battle.resultWait(600);
 		Battle.log(`${totalGold} Goldを獲得！`);
 		Battle.log(`${totalExp} ポイントの経験値を 獲得した！`);
 		if (monsterRecruitResult && monsterRecruitResult.message) {
@@ -4293,7 +4297,7 @@ findNextActor: () => {
 		App.save(); 
 		Battle.resultProcessing = false;
 		Battle.resultReadyToEnd = true;
-		Battle.log("\n▼ 画面タップで終了 ▼");
+		Battle.log("\n▼ 画面タップ / Enterキーで終了 ▼");
 
 		// ★削除：戦闘画面中にストーリーを実行しない
 		
