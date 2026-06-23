@@ -450,6 +450,74 @@ const StoryManager = {
         await new Promise(resolve => setTimeout(resolve, Math.max(0, Number(holdMs) || 0)));
     },
 
+    removeStoryFieldVisualTargets: function(cmd = {}) {
+        if (typeof document === 'undefined') {
+            if (cmd.cleanupLayer && typeof Field !== 'undefined') Field._visualCutsceneActive = false;
+            return;
+        }
+        const removeIds = [];
+        if (cmd.id) removeIds.push(cmd.id);
+        if (cmd.removeId) removeIds.push(cmd.removeId);
+        if (Array.isArray(cmd.removeIds)) removeIds.push(...cmd.removeIds.filter(Boolean));
+
+        removeIds.forEach(id => {
+            const img = document.getElementById(id);
+            if (img) img.remove();
+        });
+
+        if (cmd.cleanupLayer) {
+            const currentLayer = document.getElementById('field-visual-cutscene-layer');
+            if (currentLayer) currentLayer.remove();
+            if (typeof Field !== 'undefined') Field._visualCutsceneActive = false;
+        }
+    },
+
+    fadeStoryFieldBlackoutWithAction: async function(action, options = {}) {
+        const holdMs = Math.max(0, Number(options.holdMs ?? 160) || 0);
+        const fadeInMs = Math.max(0, Number(options.fadeInMs ?? options.fadeMs ?? 220) || 0);
+        const fadeOutMs = Math.max(0, Number(options.fadeOutMs ?? options.fadeMs ?? 220) || 0);
+        const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+        if (typeof document === 'undefined') {
+            if (typeof action === 'function') await action();
+            await wait(holdMs);
+            return;
+        }
+
+        let overlay = document.getElementById('story-field-blackout-overlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'story-field-blackout-overlay';
+            document.body.appendChild(overlay);
+        }
+
+        overlay.style.cssText = [
+            'position:fixed',
+            'left:0',
+            'top:0',
+            'width:100vw',
+            'height:100vh',
+            'background:#000',
+            'opacity:0',
+            'pointer-events:none',
+            'z-index:999999',
+            `transition:opacity ${fadeInMs}ms ease`
+        ].join(';') + ';';
+
+        // style反映後にフェードを開始し、完全に黒くなってから対象を消す。
+        overlay.offsetHeight;
+        overlay.style.opacity = '1';
+        await wait(fadeInMs);
+
+        if (typeof action === 'function') await action();
+        await wait(holdMs);
+
+        overlay.style.transition = `opacity ${fadeOutMs}ms ease`;
+        overlay.style.opacity = '0';
+        await wait(fadeOutMs);
+        if (overlay.parentNode) overlay.remove();
+    },
+
     runStoryFieldVisualCommands: async function(commands, options = {}) {
         if (!Array.isArray(commands) || commands.length === 0 || typeof Field === 'undefined') return false;
         const wait = (ms) => new Promise(resolve => setTimeout(resolve, Math.max(0, Number(ms) || 0)));
@@ -473,7 +541,11 @@ const StoryManager = {
                         break;
                     }
                     case 'BLACKOUT':
-                        await this.fadeStoryFieldBlackout(cmd.holdMs || 160);
+                        if (cmd.removeId || cmd.id || Array.isArray(cmd.removeIds) || cmd.cleanupLayer) {
+                            await this.fadeStoryFieldBlackoutWithAction(() => this.removeStoryFieldVisualTargets(cmd), cmd);
+                        } else {
+                            await this.fadeStoryFieldBlackout(cmd.holdMs || 160);
+                        }
                         break;
                     case 'WAIT':
                         await wait(cmd.ms || 0);
@@ -609,8 +681,18 @@ const StoryManager = {
                         if (cmd.remove === false) replay.push({ ...cmd, op: 'SHOW_SPRITE' });
                         break;
                     case 'HIDE_STORY_UI':
-                    case 'BLACKOUT':
                     case 'WAIT':
+                        break;
+                    case 'BLACKOUT':
+                        if (cmd.cleanupLayer) {
+                            replay.push({ op: 'CLEANUP' });
+                        } else {
+                            if (cmd.id) replay.push({ op: 'REMOVE_SPRITE', id: cmd.id });
+                            if (cmd.removeId) replay.push({ op: 'REMOVE_SPRITE', id: cmd.removeId });
+                            if (Array.isArray(cmd.removeIds)) {
+                                cmd.removeIds.filter(Boolean).forEach(id => replay.push({ op: 'REMOVE_SPRITE', id }));
+                            }
+                        }
                         break;
                     default:
                         break;
@@ -2847,7 +2929,7 @@ const StoryManager = {
                         "type": "FIELD_CUTSCENE",
                         "value": "VELD_OVERPOWER_CLEANUP",
                         "commands": [
-                                { "op": "CLEANUP" }
+                                { "op": "WAIT", "ms": 80 }
                         ]
                 }
         ],
@@ -4971,7 +5053,9 @@ const StoryManager = {
                         {
                                 "type": "STORY_DEFEAT",
                                 "log": "圧倒的な光の奔流に呑まれ、パーティは全滅した……。",
-                                "normalWipeout": true
+                                "normalWipeout": true,
+                                "cleanupFieldVisualOnBlackout": true,
+                                "removeFieldVisualIds": ["field-visual-veld-overpower"]
                         },
                         {
                                 "type": "CONV",
@@ -5011,7 +5095,9 @@ const StoryManager = {
                         {
                                 "type": "STORY_DEFEAT",
                                 "log": "圧倒的な光の奔流に呑まれ、パーティは全滅した……。",
-                                "normalWipeout": true
+                                "normalWipeout": true,
+                                "cleanupFieldVisualOnBlackout": true,
+                                "removeFieldVisualIds": ["field-visual-veld-overpower"]
                         },
                         {
                                 "type": "CONV",
@@ -5252,6 +5338,16 @@ const StoryManager = {
         await wait(30);
         fade.style.opacity = '1';
         await wait(480);
+
+        if (action.cleanupFieldVisualOnBlackout || action.removeFieldVisualId || Array.isArray(action.removeFieldVisualIds)) {
+            const removeIds = [];
+            if (action.removeFieldVisualId) removeIds.push(action.removeFieldVisualId);
+            if (Array.isArray(action.removeFieldVisualIds)) removeIds.push(...action.removeFieldVisualIds.filter(Boolean));
+            this.removeStoryFieldVisualTargets({
+                removeIds,
+                cleanupLayer: !!action.cleanupFieldVisualOnBlackout
+            });
+        }
 
         if (action.log) App.log(action.log);
         else App.log('パーティは全滅した……。');

@@ -4468,9 +4468,11 @@ findNextActor: () => {
     },
 
     resultWait: (ms) => {
-        const waitMs = Battle.getBattleWaitMs(ms);
-        if (waitMs <= 0 || Battle.resultSkipRequested) return Promise.resolve();
+        // 勝利リザルト中のログ表示は、戦闘速度「最速」でも通常テンポで見せる。
+        // ただし戦闘中に resultWait() を使っている箇所は従来通り battleSpeed の影響を受ける。
         if (Battle.phase !== 'result') return Battle.wait(ms);
+        const waitMs = Math.max(0, Math.floor(Number(ms) || 0));
+        if (waitMs <= 0 || Battle.resultSkipRequested) return Promise.resolve();
         return new Promise(resolve => {
             let done = false;
             const finish = () => {
