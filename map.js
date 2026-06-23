@@ -2805,12 +2805,12 @@ const FIXED_DUNGEON_MAPS = {
                     }
                 ],
                 "mapActions": [
-                    { "x": 14, "y": 21, "label": "リンと話す", "log": "リンが、雷鳴の奥に残る魔物の気配を追っている。", "type": "quest", "questId": "rin_thunder_fort", "complete": true, "lockedText": "リンはまだ、光を導く者の到着を待っている。" },
-                    { "x": 18, "y": 21, "label": "フリーダ達と話す", "log": "フリーダとバロンが、高圧電流の先を見据えている。", "type": "quest", "questId": "frieda_baron_thunder_depths", "lockedText": "今はまだ、要塞深部の電流を越える加護が足りない。" },
-                    { "x": 12, "y": 21, "label": "補給品を買う", "log": "解放された要塞に補給隊が入っている。", "type": "shop", "shopType": "item", "title": "ライザーク要塞 補給所", "shopRank": 45, "requiredFlag": "thunderFortCleared", "lockedText": "まだ補給隊は入れないようだ。" },
-                    { "x": 16, "y": 21, "label": "武器を見る", "log": "押収された武器が整備されている。", "type": "shop", "shopType": "weapon", "title": "ライザーク要塞 武器庫", "shopRank": 45, "requiredFlag": "thunderFortCleared", "lockedText": "武器庫は封鎖されている。" },
-                    { "x": 17, "y": 21, "label": "防具を見る", "log": "雷対策の防具が並び始めている。", "type": "shop", "shopType": "armor", "title": "ライザーク要塞 防具庫", "shopRank": 45, "requiredFlag": "thunderFortCleared", "lockedText": "防具庫は封鎖されている。" },
-                    { "x": 15, "y": 18, "label": "解放兵と話す", "log": "解放された兵が深く息を吐いている。", "type": "storyEvent", "eventId": "post_thunder_fort_base_1", "requiredFlag": "thunderFortCleared", "lockedText": "雷の轟きで声が届かない。" }
+                    { "x": 14, "y": 21, "label": "リンと話す", "log": "リンが、雷鳴の奥に残る魔物の気配を追っている。", "type": "quest", "questId": "rin_thunder_fort", "complete": true, "imageKey": "overlay_npc_villager", "lockedText": "リンはまだ、光を導く者の到着を待っている。" },
+                    { "x": 18, "y": 21, "label": "フリーダ達と話す", "log": "フリーダとバロンが、高圧電流の先を見据えている。", "type": "quest", "questId": "frieda_baron_thunder_depths", "imageKey": "overlay_npc_villager", "lockedText": "今はまだ、要塞深部の電流を越える加護が足りない。" },
+                    { "x": 12, "y": 21, "label": "補給品を買う", "log": "解放された要塞に補給隊が入っている。", "type": "shop", "shopType": "item", "title": "ライザーク要塞 補給所", "shopRank": 45, "requiredFlag": "thunderFortCleared", "imageKey": "overlay_npc_villager", "lockedText": "まだ補給隊は入れないようだ。" },
+                    { "x": 16, "y": 21, "label": "武器を見る", "log": "押収された武器が整備されている。", "type": "shop", "shopType": "weapon", "title": "ライザーク要塞 武器庫", "shopRank": 45, "requiredFlag": "thunderFortCleared", "imageKey": "overlay_npc_villager", "lockedText": "武器庫は封鎖されている。" },
+                    { "x": 17, "y": 21, "label": "防具を見る", "log": "雷対策の防具が並び始めている。", "type": "shop", "shopType": "armor", "title": "ライザーク要塞 防具庫", "shopRank": 45, "requiredFlag": "thunderFortCleared", "imageKey": "overlay_npc_villager", "lockedText": "防具庫は封鎖されている。" },
+                    { "x": 15, "y": 18, "label": "解放兵と話す", "log": "解放された兵が深く息を吐いている。", "type": "storyEvent", "eventId": "post_thunder_fort_base_1", "requiredFlag": "thunderFortCleared", "imageKey": "overlay_npc_villager", "lockedText": "雷の轟きで声が届かない。" }
                 ],
                 "entryPoint": {
                     "x": 1,
@@ -3305,11 +3305,11 @@ const FIXED_DUNGEON_MAPS = {
                     }
                 ],
                 "mapActions": [
-                    { "x": 13, "y": 21, "label": "聖薬を買う", "log": "巡礼者の補給所が開かれている。", "type": "shop", "shopType": "item", "title": "光の宮殿グランプリズマ 聖薬所", "shopRank": 55, "requiredFlag": "lightPalaceCleared", "lockedText": "まだ巡礼者は戻っていない。" },
-                    { "x": 16, "y": 21, "label": "武器を見る", "log": "白光を帯びた武器が整えられている。", "type": "shop", "shopType": "weapon", "title": "光の宮殿グランプリズマ 武器庫", "shopRank": 55, "requiredFlag": "lightPalaceCleared", "lockedText": "武器庫は沈黙している。" },
-                    { "x": 19, "y": 21, "label": "防具を見る", "log": "浄化された防具が並んでいる。", "type": "shop", "shopType": "armor", "title": "光の宮殿グランプリズマ 防具庫", "shopRank": 55, "requiredFlag": "lightPalaceCleared", "lockedText": "防具庫は閉ざされている。" },
-                    { "x": 16, "y": 18, "label": "休む", "log": "白光の回廊に休息所が設けられた。", "type": "inn", "requiredFlag": "lightPalaceCleared", "lockedText": "まだ安全に休める場所ではない。" },
-                    { "x": 15, "y": 20, "label": "巡礼者と話す", "log": "巡礼者が割れたステンドグラスを集めている。", "type": "storyEvent", "eventId": "post_light_palace_base_1", "requiredFlag": "lightPalaceCleared", "lockedText": "光の宮殿グランプリズマはまだ緊張に包まれている。" }
+                    { "x": 13, "y": 21, "label": "聖薬を買う", "log": "巡礼者の補給所が開かれている。", "type": "shop", "shopType": "item", "title": "光の宮殿グランプリズマ 聖薬所", "shopRank": 55, "requiredFlag": "lightPalaceCleared", "imageKey": "overlay_npc_villager", "lockedText": "まだ巡礼者は戻っていない。" },
+                    { "x": 16, "y": 21, "label": "武器を見る", "log": "白光を帯びた武器が整えられている。", "type": "shop", "shopType": "weapon", "title": "光の宮殿グランプリズマ 武器庫", "shopRank": 55, "requiredFlag": "lightPalaceCleared", "imageKey": "overlay_npc_villager", "lockedText": "武器庫は沈黙している。" },
+                    { "x": 19, "y": 21, "label": "防具を見る", "log": "浄化された防具が並んでいる。", "type": "shop", "shopType": "armor", "title": "光の宮殿グランプリズマ 防具庫", "shopRank": 55, "requiredFlag": "lightPalaceCleared", "imageKey": "overlay_npc_villager", "lockedText": "防具庫は閉ざされている。" },
+                    { "x": 16, "y": 18, "label": "休む", "log": "白光の回廊に休息所が設けられた。", "type": "inn", "requiredFlag": "lightPalaceCleared", "imageKey": "overlay_npc_villager", "lockedText": "まだ安全に休める場所ではない。" },
+                    { "x": 15, "y": 20, "label": "巡礼者と話す", "log": "巡礼者が割れたステンドグラスを集めている。", "type": "storyEvent", "eventId": "post_light_palace_base_1", "requiredFlag": "lightPalaceCleared", "imageKey": "overlay_npc_villager", "lockedText": "光の宮殿グランプリズマはまだ緊張に包まれている。" }
                 ]
             },
             {
@@ -3609,11 +3609,11 @@ const FIXED_DUNGEON_MAPS = {
                 bosses: [],
                 healSprings: [{ "x": 15, "y": 20 }],
                 mapActions: [
-                    { x: 9, y: 20, label: "闇市を見る", log: "魔族の商人が静かに品を広げている。", type: "shop", shopType: "item", title: "魔王城ガルヴァニア 闇市", shopRank: 65, requiredFlag: "darkCastleCleared", lockedText: "城内はまだ戦闘態勢だ。" },
-                    { x: 12, y: 20, label: "武器を見る", log: "魔族の鍛冶場から低い槌音が響く。", type: "shop", shopType: "weapon", title: "魔王城ガルヴァニア 武器庫", shopRank: 65, requiredFlag: "darkCastleCleared", lockedText: "武器庫には近づけない。" },
-                    { x: 18, y: 20, label: "防具を見る", log: "闇に耐える防具が並んでいる。", type: "shop", shopType: "armor", title: "魔王城ガルヴァニア 防具庫", shopRank: 65, requiredFlag: "darkCastleCleared", lockedText: "防具庫には近づけない。" },
-                    { x: 15, y: 21, label: "休む", log: "中央広間の一角が仮眠所になっている。", type: "inn", requiredFlag: "darkCastleCleared", lockedText: "まだ休む余裕はない。" },
-                    { x: 15, y: 18, label: "魔族兵と話す", log: "魔族兵が城門の修復計画を見ている。", type: "storyEvent", eventId: "post_dark_castle_base_1", requiredFlag: "darkCastleCleared", lockedText: "魔族兵は警戒している。" }
+                    { x: 9, y: 20, label: "闇市を見る", log: "魔族の商人が静かに品を広げている。", type: "shop", shopType: "item", title: "魔王城ガルヴァニア 闇市", shopRank: 65, requiredFlag: "darkCastleCleared", imageKey: "overlay_npc_villager", lockedText: "城内はまだ戦闘態勢だ。" },
+                    { x: 12, y: 20, label: "武器を見る", log: "魔族の鍛冶場から低い槌音が響く。", type: "shop", shopType: "weapon", title: "魔王城ガルヴァニア 武器庫", shopRank: 65, requiredFlag: "darkCastleCleared", imageKey: "overlay_npc_villager", lockedText: "武器庫には近づけない。" },
+                    { x: 18, y: 20, label: "防具を見る", log: "闇に耐える防具が並んでいる。", type: "shop", shopType: "armor", title: "魔王城ガルヴァニア 防具庫", shopRank: 65, requiredFlag: "darkCastleCleared", imageKey: "overlay_npc_villager", lockedText: "防具庫には近づけない。" },
+                    { x: 15, y: 21, label: "休む", log: "中央広間の一角が仮眠所になっている。", type: "inn", requiredFlag: "darkCastleCleared", imageKey: "overlay_npc_villager", lockedText: "まだ休む余裕はない。" },
+                    { x: 15, y: 18, label: "魔族兵と話す", log: "魔族兵が城門の修復計画を見ている。", type: "storyEvent", eventId: "post_dark_castle_base_1", requiredFlag: "darkCastleCleared", imageKey: "overlay_npc_villager", lockedText: "魔族兵は警戒している。" }
                 ],
                 entryPoint: { "x": 15, "y": 25 }
             },

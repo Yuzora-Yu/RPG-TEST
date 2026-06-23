@@ -387,8 +387,8 @@ const App = {
         
         205: 43,  // バロン（光の宮殿クリア後⇒雷の要塞深部）
         302: 43,  // フリーダ（光の宮殿クリア後⇒雷の要塞深部）
-        304: 47,  // クロード（光の宮殿クリア後⇒闇の神殿跡地）
-        305: 46,  // レオン（光の宮殿クリア後⇒闇の神殿跡地）
+        306: 47,  // クロード（光の宮殿クリア後⇒闇の神殿跡地）
+        306: 46,  // レオン（光の宮殿クリア後⇒闇の神殿跡地）
 
         208: 45,  // リン（レイラ加入後⇒雷の要塞）
 
@@ -6044,9 +6044,16 @@ const Field = {
         if (!layer) {
             layer = document.createElement('div');
             layer.id = 'field-visual-cutscene-layer';
-            layer.style.cssText = 'position:absolute; inset:0; pointer-events:auto; z-index:2500; overflow:hidden; display:block;';
+            // フィールド演出用の表示レイヤー。
+            // 重要：レナード等の演出用スプライトは会話中も画面に残すが、
+            // レイヤー自体がタップを奪うと会話送りができなくなる。
+            // そのため通常時は pointer-events:none とし、実際に演出コマンドを
+            // 実行している短時間だけ runFieldCutsceneCommands 側で auto に切り替える。
+            layer.style.cssText = 'position:absolute; inset:0; pointer-events:none; z-index:2500; overflow:hidden; display:block;';
             if (wrapper && wrapper.style && getComputedStyle(wrapper).position === 'static') wrapper.style.position = 'relative';
             wrapper.appendChild(layer);
+        } else {
+            layer.style.pointerEvents = 'none';
         }
         return layer;
     },
@@ -6137,9 +6144,11 @@ const Field = {
                 { op: 'SHOW_SPRITE', id: id('leonard'), monsterId: 301040, size: 2, z: 4 }
             ],
             LEONARD_CLEAR_KNIGHT_APPEAR: [
+                { op: 'HIDE_STORY_UI', hidden: true },
                 { op: 'BLACKOUT', holdMs: 140 },
                 { op: 'SHOW_SPRITE', id: id('leonard'), monsterId: 301040, size: 2, z: 4 },
-                { op: 'SHOW_SPRITE', id: id('knight'), monsterId: 301050, dx: 0, dy: -2, size: 2, z: 5 }
+                { op: 'SHOW_SPRITE', id: id('knight'), monsterId: 301050, dx: 0, dy: -2, size: 2, z: 5 },
+                { op: 'HIDE_STORY_UI', hidden: false }
             ],
             LEONARD_CLEAR_SLASH: [
                 { op: 'HIDE_STORY_UI', hidden: true },
@@ -6169,7 +6178,11 @@ const Field = {
         const wait = (ms) => new Promise(resolve => setTimeout(resolve, Math.max(0, Number(ms) || 0)));
         const anchor = options.anchor || Field.getLastFixedBossEventPosition();
         const layer = Field.ensureFieldVisualLayer();
+        // _visualCutsceneActive は「演出スプライトが残っているか」ではなく、
+        // 「いま暗転・移動・エフェクト等の演出処理中か」を表す。
+        // ここが true のまま残ると、会話送りやフィールド操作が不要に塞がる。
         Field._visualCutsceneActive = true;
+        layer.style.pointerEvents = 'auto';
         if (typeof App.lockFieldInput === 'function') App.lockFieldInput(Number(options.lockMs || 900));
         try {
             for (const cmd of commands) {
@@ -6251,9 +6264,12 @@ const Field = {
             }
             return true;
         } finally {
-            const cleanup = commands.some(cmd => cmd?.op === 'CLEANUP');
-            if (cleanup) Field._visualCutsceneActive = false;
-            else setTimeout(() => { if (!document.getElementById('field-visual-cutscene-layer')) Field._visualCutsceneActive = false; }, 50);
+            // 会話と会話の間の演出が終わったら、表示レイヤーを残す場合でも
+            // 操作ロックとタップ捕捉は必ず解除する。
+            // スプライトを残す必要がある場合は DOM だけ維持し、会話UIへのタップは通す。
+            Field._visualCutsceneActive = false;
+            const currentLayer = document.getElementById('field-visual-cutscene-layer');
+            if (currentLayer) currentLayer.style.pointerEvents = 'none';
         }
     },
 
