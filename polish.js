@@ -194,14 +194,39 @@
     now() {
       return (typeof performance !== "undefined" && performance.now) ? performance.now() : Date.now();
     },
+    rawWait(ms) {
+      const waitMs = Math.max(0, Math.floor(Number(ms) || 0));
+      return waitMs <= 0 ? Promise.resolve() : new Promise((resolve) => setTimeout(resolve, waitMs));
+    },
+    battleSpeed() {
+      if (typeof Battle !== "undefined" && typeof Battle.getBattleSpeedSetting === "function") {
+        return Battle.getBattleSpeedSetting();
+      }
+      if (typeof App !== "undefined" && typeof App.getBattleSpeedSetting === "function") {
+        return App.getBattleSpeedSetting();
+      }
+      const speed = App?.data?.settings?.battleSpeed || "normal";
+      return ["normal", "fast", "fastest"].includes(speed) ? speed : "normal";
+    },
+    battleWaitMs(ms) {
+      const base = Math.max(0, Math.floor(Number(ms) || 0));
+      if (base <= 0) return 0;
+      if (typeof Battle !== "undefined" && typeof Battle.getBattleWaitMs === "function") {
+        return Battle.getBattleWaitMs(base);
+      }
+      const speed = this.battleSpeed();
+      if (speed === "fastest") return 0;
+      if (speed === "fast") return Math.floor(base * 0.35);
+      return base;
+    },
     wait(ms) {
-      return new Promise((resolve) => setTimeout(resolve, Math.max(0, Number(ms) || 0)));
+      return this.rawWait(this.battleWaitMs(ms));
     },
     queueVisual(run, options = {}) {
-      const beforeMs = Math.max(0, Number(options.beforeMs) || 0);
-      const durationMs = Math.max(0, Number(options.durationMs) || 0);
-      const estimatedRunMs = Math.max(0, Number(options.estimatedRunMs) || 0);
-      const afterMs = Math.max(0, Number(options.afterMs) || 0);
+      const beforeMs = this.battleWaitMs(options.beforeMs);
+      const durationMs = this.battleWaitMs(options.durationMs);
+      const estimatedRunMs = this.battleWaitMs(options.estimatedRunMs);
+      const afterMs = this.battleWaitMs(options.afterMs);
       const now = this.now();
       const startAt = Math.max(now, this.visualReadyAt || 0) + beforeMs;
       const endAt = startAt + estimatedRunMs + durationMs + afterMs;
@@ -211,10 +236,10 @@
       this.visualTail = previous
         .catch(() => {})
         .then(async () => {
-          if (beforeMs > 0) await this.wait(beforeMs);
+          if (beforeMs > 0) await this.rawWait(beforeMs);
           await run();
-          if (durationMs > 0) await this.wait(durationMs);
-          if (afterMs > 0) await this.wait(afterMs);
+          if (durationMs > 0) await this.rawWait(durationMs);
+          if (afterMs > 0) await this.rawWait(afterMs);
         })
         .catch((error) => console.warn("[PolishFX] visual queue failed", error));
 
@@ -227,8 +252,8 @@
     async waitForVisuals(extraMs = 0) {
       const tail = this.visualTail || Promise.resolve();
       await tail.catch(() => {});
-      const remain = Math.max(0, (this.visualReadyAt || 0) - this.now(), Number(extraMs) || 0);
-      if (remain > 0) await this.wait(remain);
+      const remain = Math.max(0, (this.visualReadyAt || 0) - this.now(), this.battleWaitMs(extraMs));
+      if (remain > 0) await this.rawWait(remain);
     },
     stripHtml(value) {
       const div = document.createElement("div");
@@ -1182,11 +1207,11 @@
       const movedEnemy = this.markEnemyIntent(cmd);
       const targetCount = this.playIntentEffects(cmd);
       if (targetCount === 0) {
-        if (movedEnemy) await new Promise((resolve) => setTimeout(resolve, 110));
+        if (movedEnemy) await this.wait(110);
         return;
       }
       const waitMs = this.useScreenAreaEffect(cmd) ? 0 : (targetCount > 1 ? 310 : 240);
-      if (waitMs > 0) await new Promise((resolve) => setTimeout(resolve, waitMs));
+      if (waitMs > 0) await this.wait(waitMs);
     },
     async playResults(cmd, before, options = {}) {
       if (!before || typeof Battle === "undefined") return;
