@@ -606,6 +606,16 @@ const Facilities = {
                 line-height: 1.25;
                 font-size: 13px;
             }
+            body.game-page .shop-row-name .shop-row-effect {
+                display: block;
+                margin-top: 2px;
+                font-size: 9px;
+                line-height: 1.15;
+                color: #bfb28a;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
             body.game-page .shop-owned,
             body.game-page .shop-price {
                 font-size: 12px;
@@ -1257,6 +1267,15 @@ const Facilities = {
         return data;
     },
 
+    getStatusEffectLabel: (key) => {
+        const labels = {
+            Poison: '毒', ToxicPoison: '猛毒', Shock: '感電', Fear: '怯え',
+            Debuff: '弱体', InstantDeath: '即死', Seal: '封印',
+            SkillSeal: '特技封印', SpellSeal: '呪文封印', HealSeal: '回復封印'
+        };
+        return (typeof Battle !== 'undefined' && Battle.statNames && Battle.statNames[key]) || labels[key] || key;
+    },
+
     getEquipDataLabel: (key) => {
         const labels = { hp: 'HP', mp: 'MP', atk: '攻', def: '守', mag: '魔', mdef: '魔防', spd: '速', hit: '命中', eva: '回避', cri: '会心', finDmg: '与ダメ', finRed: '被ダメ' };
         if (labels[key]) return labels[key];
@@ -1264,12 +1283,12 @@ const Facilities = {
         if (rule?.name) return rule.name;
         if (key.startsWith('attack_')) {
             const ailment = key.replace('attack_', '');
-            const label = (typeof Battle !== 'undefined' && Battle.statNames) ? (Battle.statNames[ailment] || ailment) : ailment;
+            const label = Facilities.getStatusEffectLabel(ailment);
             return `攻撃時${label}`;
         }
         if (key.startsWith('resists_')) {
             const ailment = key.replace('resists_', '');
-            const label = (typeof Battle !== 'undefined' && Battle.statNames) ? (Battle.statNames[ailment] || ailment) : ailment;
+            const label = Facilities.getStatusEffectLabel(ailment);
             return `${label}耐性`;
         }
         return key;
@@ -1294,11 +1313,11 @@ const Facilities = {
             if (typeof v !== 'number' || Number(v) === 0) continue;
             if (k.startsWith('attack_')) {
                 const ailment = k.replace('attack_', '');
-                const label = (typeof Battle !== 'undefined' && Battle.statNames) ? (Battle.statNames[ailment] || ailment) : ailment;
+                const label = Facilities.getStatusEffectLabel(ailment);
                 parts.push(`攻撃時${Math.abs(v)}%で${label}`);
             } else if (k.startsWith('resists_')) {
                 const ailment = k.replace('resists_', '');
-                const label = (typeof Battle !== 'undefined' && Battle.statNames) ? (Battle.statNames[ailment] || ailment) : ailment;
+                const label = Facilities.getStatusEffectLabel(ailment);
                 parts.push(`${label}耐${signed(v)}%`);
             } else {
                 const unit = ['hit', 'eva', 'cri', 'finDmg', 'finRed'].includes(k) ? '%' : '';
@@ -1323,9 +1342,10 @@ const Facilities = {
         list.innerHTML = Facilities.renderShopColumnHeader('種別', '名前', '買値', 'equip') + lineup.map((base) => {
             const cost = Facilities.getEquipShopPrice(base);
             const key = `buy-equip-${Number(base.eid)}`;
+            const effectSummary = Facilities.getEquipBaseSummary(base, 0);
             return `<button class="shop-row equip" data-shop-key="${Facilities.escapeAttr(key)}" onclick="Facilities.selectShopBuyEquip(${Number(base.eid)})" onmouseenter="Facilities.showShopEquipHelp(${Number(base.eid)})" onfocus="Facilities.showShopEquipHelp(${Number(base.eid)})">
                 <span class="shop-type-pill">${Facilities.escapeAttr(Facilities.getEquipShopCategory(base))}</span>
-                <span class="shop-row-name">${Facilities.escapeAttr(base.name)}</span>
+                <span class="shop-row-name">${Facilities.escapeAttr(base.name)}<span class="shop-row-effect">${Facilities.escapeAttr(effectSummary)}</span></span>
                 <span class="shop-price">${cost.toLocaleString()} G</span>
             </button>`;
         }).join('');

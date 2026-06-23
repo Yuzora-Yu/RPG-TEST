@@ -443,6 +443,22 @@ globalThis.PRISMA_ASSETS = PRISMA_ASSETS;
   PRISMA_ASSETS.cacheWarmup.backgroundImages = allImages.filter((src) => !critical.includes(src));
 })();
 
+// マップ上のボスチップは低解像度の overlay_boss_* ではなく、
+// 戦闘用モンスター原画 assets/monsters/monster_*.png を直接参照できるキーも用意する。
+// overlay_boss_* は既存参照互換のため残すが、新規コードは monster_* を優先する。
+PRISMA_BOSS_MONSTER_IMAGE_IDS.forEach((id) => {
+  const key = `monster_${id}`;
+  if (!PRISMA_ASSETS.graphics[key]) {
+    PRISMA_ASSETS.graphics[key] = `assets/monsters/monster_${id}.png`;
+  }
+});
+[100078, 100081, 100082, 100089].forEach((id) => {
+  const key = `monster_${id}`;
+  if (!PRISMA_ASSETS.graphics[key]) {
+    PRISMA_ASSETS.graphics[key] = `assets/monsters/monster_${id}.png`;
+  }
+});
+
 const GRAPHICS = {
   images: {},
   spriteDefs: {},

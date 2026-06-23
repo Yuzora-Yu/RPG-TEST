@@ -633,6 +633,15 @@ const Menu = {
         return '#fff';
     },
 
+	getStatusEffectLabel: (key) => {
+        const labels = {
+            Poison: '毒', ToxicPoison: '猛毒', Shock: '感電', Fear: '怯え',
+            Debuff: '弱体', InstantDeath: '即死', Seal: '封印',
+            SkillSeal: '特技封印', SpellSeal: '呪文封印', HealSeal: '回復封印'
+        };
+        return (typeof Battle !== 'undefined' && Battle.statNames && Battle.statNames[key]) || labels[key] || key;
+    },
+
 	getEquipDetailHTML: (equip, showName = true) => {
         let html = '';
         const rarity = equip.rarity || 'N';
@@ -662,10 +671,10 @@ const Menu = {
             // 耐性・状態異常付与 (Battle.statNames がある前提)
             for (let key in equip.data) {
                 if (key.startsWith('resists_')) {
-                    const label = (typeof Battle !== 'undefined' && Battle.statNames) ? (Battle.statNames[key.replace('resists_', '')] || key) : key;
+                    const label = Menu.getStatusEffectLabel ? Menu.getStatusEffectLabel(key.replace('resists_', '')) : key.replace('resists_', '');
                     baseStats.push(`${label}耐${fV(equip.data[key])}%`);
                 } else if (key.startsWith('attack_')) {
-                    const label = (typeof Battle !== 'undefined' && Battle.statNames) ? (Battle.statNames[key.replace('attack_', '')] || key) : key;
+                    const label = Menu.getStatusEffectLabel ? Menu.getStatusEffectLabel(key.replace('attack_', '')) : key.replace('attack_', '');
                     baseStats.push(`攻撃時${equip.data[key]}%で${label}`);
                 }
             }

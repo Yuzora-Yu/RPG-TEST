@@ -387,8 +387,8 @@ const App = {
         
         205: 43,  // バロン（光の宮殿クリア後⇒雷の要塞深部）
         302: 43,  // フリーダ（光の宮殿クリア後⇒雷の要塞深部）
-        306: 47,  // クロード（光の宮殿クリア後⇒闇の神殿跡地）
-        306: 46,  // レオン（光の宮殿クリア後⇒闇の神殿跡地）
+        304: 47,  // クロード（光の宮殿クリア後⇒闇の神殿跡地）
+        305: 46,  // レオン（光の宮殿クリア後⇒闇の神殿跡地）
 
         208: 45,  // リン（レイラ加入後⇒雷の要塞）
 
@@ -5491,7 +5491,9 @@ const Field = {
             if (!Field.isFixedBossAvailable(bossDef)) return null;
             const rawMonsterId = Array.isArray(bossDef?.monsterId) ? bossDef.monsterId[0] : bossDef?.monsterId;
             const monsterId = Number(bossDef?.mapSpriteMonsterId || rawMonsterId);
-            const graphicKey = Number.isFinite(monsterId) ? `overlay_boss_${monsterId}` : '';
+            const graphicKey = Number.isFinite(monsterId) && Field.getMonsterMapSpriteKey
+                ? Field.getMonsterMapSpriteKey(monsterId)
+                : (Number.isFinite(monsterId) ? `monster_${monsterId}` : '');
             if (graphicKey && typeof GRAPHICS !== 'undefined' && GRAPHICS.data?.[graphicKey]) {
                 config = { img: graphicKey, color: config.color || '#db3b4d' };
             }
@@ -6021,6 +6023,21 @@ const Field = {
         return { x: Number(Field.x), y: Number(Field.y) - 1 };
     },
 
+    getMonsterMapSpriteKey: (monsterId) => {
+        const id = Number(monsterId);
+        if (!Number.isFinite(id)) return null;
+        const directKey = `monster_${id}`;
+        if (typeof GRAPHICS !== 'undefined' && GRAPHICS.data?.[directKey]) return directKey;
+        const compatKey = `overlay_boss_${id}`;
+        if (typeof GRAPHICS !== 'undefined' && GRAPHICS.data?.[compatKey]) return compatKey;
+        return directKey;
+    },
+
+    getMonsterMapSpriteSrc: (monsterId) => {
+        const key = Field.getMonsterMapSpriteKey ? Field.getMonsterMapSpriteKey(monsterId) : null;
+        return (key && typeof GRAPHICS !== 'undefined' && GRAPHICS.data?.[key]) || `assets/monsters/monster_${Number(monsterId)}.png`;
+    },
+
     ensureFieldVisualLayer: () => {
         let layer = document.getElementById('field-visual-cutscene-layer');
         const wrapper = document.getElementById('canvas-wrapper') || document.getElementById('field-scene') || document.getElementById('game-container') || document.body;
@@ -6060,6 +6077,9 @@ const Field = {
             layer.appendChild(img);
         }
         img.src = src;
+        img.dataset.tileX = String(Number(tile.x));
+        img.dataset.tileY = String(Number(tile.y));
+        img.dataset.sizeTiles = String(Number(sizeTiles || 2));
         img.style.cssText = Field.getFieldVisualTileStyle(tile, sizeTiles) + (extraCss || '');
         return img;
     },
@@ -6093,63 +6113,156 @@ const Field = {
         blackout.remove();
     },
 
-    runEventVisual: async (name, options = {}) => {
-        const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+    resolveFieldCutsceneTile: (cmd, anchor) => {
+        const base = cmd?.base === 'player' ? { x: Field.x, y: Field.y } : (anchor || Field.getLastFixedBossEventPosition());
+        return {
+            x: Number(cmd?.x ?? base.x) + Number(cmd?.dx || 0),
+            y: Number(cmd?.y ?? base.y) + Number(cmd?.dy || 0)
+        };
+    },
+
+    resolveFieldCutsceneSrc: (cmd) => {
+        if (cmd?.src) return cmd.src;
+        if (cmd?.monsterId !== undefined) return Field.getMonsterMapSpriteSrc(cmd.monsterId);
+        if (cmd?.effect === 'slash') return 'assets/effect/fx_phys_neutral_slash_v001.png';
+        return '';
+    },
+
+    getFieldCutscenePreset: (name) => {
         const pos = Field.getLastFixedBossEventPosition();
-        const leonardSrc = (typeof GRAPHICS !== 'undefined' && GRAPHICS.data?.overlay_boss_301040) || 'assets/monsters/monster_301040.png';
-        const knightSrc = (typeof GRAPHICS !== 'undefined' && GRAPHICS.data?.overlay_boss_301050) || 'assets/monsters/monster_301050.png';
-        const slashSrc = 'assets/effect/fx_phys_neutral_slash_v001.png';
+        const id = (suffix) => `field-visual-${suffix}`;
+        const presets = {
+            LEONARD_CLEAR_SETUP: [
+                { op: 'CLEAR_LAYER' },
+                { op: 'SHOW_SPRITE', id: id('leonard'), monsterId: 301040, size: 2, z: 4 }
+            ],
+            LEONARD_CLEAR_KNIGHT_APPEAR: [
+                { op: 'BLACKOUT', holdMs: 140 },
+                { op: 'SHOW_SPRITE', id: id('leonard'), monsterId: 301040, size: 2, z: 4 },
+                { op: 'SHOW_SPRITE', id: id('knight'), monsterId: 301050, dx: 0, dy: -2, size: 2, z: 5 }
+            ],
+            LEONARD_CLEAR_SLASH: [
+                { op: 'HIDE_STORY_UI', hidden: true },
+                { op: 'SHOW_SPRITE', id: id('slash'), effect: 'slash', size: 2.25, z: 8, opacity: 0.96 },
+                { op: 'BLINK_REMOVE', id: id('leonard'), fallback: { monsterId: 301040, x: pos.x, y: pos.y, size: 2, z: 4 }, count: 4, offMs: 80, onMs: 80 },
+                { op: 'REMOVE_SPRITE', id: id('slash') },
+                { op: 'HIDE_STORY_UI', hidden: false }
+            ],
+            LEONARD_CLEAR_KNIGHT_ADVANCE: [
+                { op: 'HIDE_STORY_UI', hidden: true },
+                { op: 'WAIT', ms: 200 },
+                { op: 'MOVE_SPRITE', id: id('knight'), monsterId: 301050, dx: 0, dy: -1, size: 2, z: 5, duration: 160 },
+                { op: 'WAIT', ms: 200 },
+                { op: 'MOVE_SPRITE', id: id('knight'), monsterId: 301050, dx: 0, dy: 0, size: 2, z: 5, duration: 160 },
+                { op: 'WAIT', ms: 200 },
+                { op: 'HIDE_STORY_UI', hidden: false }
+            ],
+            LEONARD_CLEAR_CLEANUP: [
+                { op: 'CLEANUP' }
+            ]
+        };
+        return presets[name] || null;
+    },
+
+    runFieldCutsceneCommands: async (commands, options = {}) => {
+        if (!Array.isArray(commands) || commands.length === 0) return false;
+        const wait = (ms) => new Promise(resolve => setTimeout(resolve, Math.max(0, Number(ms) || 0)));
+        const anchor = options.anchor || Field.getLastFixedBossEventPosition();
+        const layer = Field.ensureFieldVisualLayer();
         Field._visualCutsceneActive = true;
         if (typeof App.lockFieldInput === 'function') App.lockFieldInput(Number(options.lockMs || 900));
         try {
-            const layer = Field.ensureFieldVisualLayer();
-            if (name === 'LEONARD_CLEAR_SETUP') {
-                layer.innerHTML = '';
-                Field.putFieldVisualSprite('field-visual-leonard', leonardSrc, pos, 2, 'z-index:4;');
-                return true;
-            }
-            if (name === 'LEONARD_CLEAR_KNIGHT_APPEAR') {
-                await Field.fadeFieldVisualBlackout(140);
-                Field.putFieldVisualSprite('field-visual-leonard', leonardSrc, pos, 2, 'z-index:4;');
-                Field.putFieldVisualSprite('field-visual-knight', knightSrc, { x: pos.x, y: pos.y - 2 }, 2, 'z-index:5;');
-                return true;
-            }
-            if (name === 'LEONARD_CLEAR_SLASH') {
-                Field.setStoryUiCutsceneHidden(true);
-                const slash = Field.putFieldVisualSprite('field-visual-slash', slashSrc, pos, 2.25, 'z-index:8; opacity:0.96;');
-                const leonard = document.getElementById('field-visual-leonard') || Field.putFieldVisualSprite('field-visual-leonard', leonardSrc, pos, 2, 'z-index:4;');
-                for (let i = 0; i < 4; i++) {
-                    leonard.style.opacity = '0.25';
-                    await wait(80);
-                    leonard.style.opacity = '1';
-                    await wait(80);
+            for (const cmd of commands) {
+                if (!cmd || !cmd.op) continue;
+                switch (cmd.op) {
+                    case 'CLEAR_LAYER':
+                        layer.innerHTML = '';
+                        break;
+                    case 'BLACKOUT':
+                        await Field.fadeFieldVisualBlackout(cmd.holdMs || 160);
+                        break;
+                    case 'WAIT':
+                        await wait(cmd.ms || 0);
+                        break;
+                    case 'HIDE_STORY_UI':
+                        Field.setStoryUiCutsceneHidden(!!cmd.hidden);
+                        break;
+                    case 'SHOW_SPRITE': {
+                        const src = Field.resolveFieldCutsceneSrc(cmd);
+                        if (!src) break;
+                        const tile = Field.resolveFieldCutsceneTile(cmd, anchor);
+                        const css = `z-index:${Number(cmd.z || 4)}; opacity:${cmd.opacity !== undefined ? Number(cmd.opacity) : 1};` + (cmd.css || '');
+                        Field.putFieldVisualSprite(cmd.id || `field-visual-sprite-${Date.now()}`, src, tile, cmd.size || 2, css);
+                        break;
+                    }
+                    case 'MOVE_SPRITE': {
+                        let img = document.getElementById(cmd.id);
+                        if (!img && (cmd.monsterId !== undefined || cmd.src)) {
+                            img = Field.putFieldVisualSprite(cmd.id, Field.resolveFieldCutsceneSrc(cmd), Field.resolveFieldCutsceneTile({ ...cmd, dx: cmd.fromDx ?? cmd.dx ?? 0, dy: cmd.fromDy ?? cmd.dy ?? 0 }, anchor), cmd.size || 2, `z-index:${Number(cmd.z || 4)};`);
+                        }
+                        if (!img) break;
+                        const tile = Field.resolveFieldCutsceneTile(cmd, anchor);
+                        const duration = Math.max(0, Number(cmd.duration || 160));
+                        img.style.cssText = Field.getFieldVisualTileStyle(tile, cmd.size || Number(img.dataset.sizeTiles || 2)) + `z-index:${Number(cmd.z || 4)}; transition:left ${duration}ms linear, top ${duration}ms linear;` + (cmd.css || '');
+                        img.dataset.tileX = String(tile.x);
+                        img.dataset.tileY = String(tile.y);
+                        await wait(duration);
+                        break;
+                    }
+                    case 'PLAY_EFFECT': {
+                        const src = Field.resolveFieldCutsceneSrc(cmd);
+                        if (!src) break;
+                        const tile = Field.resolveFieldCutsceneTile(cmd, anchor);
+                        const id = cmd.id || `field-visual-effect-${Date.now()}`;
+                        const effect = Field.putFieldVisualSprite(id, src, tile, cmd.size || 2, `z-index:${Number(cmd.z || 8)}; opacity:${cmd.opacity !== undefined ? Number(cmd.opacity) : 1};` + (cmd.css || ''));
+                        await wait(cmd.ms || 300);
+                        if (cmd.remove !== false) effect.remove();
+                        break;
+                    }
+                    case 'BLINK_REMOVE': {
+                        let img = document.getElementById(cmd.id);
+                        if (!img && cmd.fallback) {
+                            const fb = cmd.fallback;
+                            const src = Field.resolveFieldCutsceneSrc(fb);
+                            img = Field.putFieldVisualSprite(cmd.id, src, Field.resolveFieldCutsceneTile(fb, anchor), fb.size || 2, `z-index:${Number(fb.z || 4)};`);
+                        }
+                        if (!img) break;
+                        const count = Math.max(1, Number(cmd.count || 3));
+                        for (let i = 0; i < count; i++) {
+                            img.style.opacity = String(cmd.offOpacity ?? 0.25);
+                            await wait(cmd.offMs || 80);
+                            img.style.opacity = String(cmd.onOpacity ?? 1);
+                            await wait(cmd.onMs || 80);
+                        }
+                        if (cmd.remove !== false) img.remove();
+                        break;
+                    }
+                    case 'REMOVE_SPRITE': {
+                        const img = document.getElementById(cmd.id);
+                        if (img) img.remove();
+                        break;
+                    }
+                    case 'CLEANUP':
+                        Field.setStoryUiCutsceneHidden(false);
+                        layer.remove();
+                        Field._visualCutsceneActive = false;
+                        break;
                 }
-                slash.remove();
-                leonard.remove();
-                Field.setStoryUiCutsceneHidden(false);
-                return true;
             }
-            if (name === 'LEONARD_CLEAR_KNIGHT_ADVANCE') {
-                Field.setStoryUiCutsceneHidden(true);
-                let knight = document.getElementById('field-visual-knight') || Field.putFieldVisualSprite('field-visual-knight', knightSrc, { x: pos.x, y: pos.y - 2 }, 2, 'z-index:5;');
-                await wait(200);
-                knight.style.cssText = Field.getFieldVisualTileStyle({ x: pos.x, y: pos.y - 1 }, 2) + 'z-index:5; transition:left 160ms linear, top 160ms linear;';
-                await wait(200);
-                knight.style.cssText = Field.getFieldVisualTileStyle(pos, 2) + 'z-index:5; transition:left 160ms linear, top 160ms linear;';
-                await wait(200);
-                Field.setStoryUiCutsceneHidden(false);
-                return true;
-            }
-            if (name === 'LEONARD_CLEAR_CLEANUP') {
-                layer.remove();
-                return true;
-            }
+            return true;
         } finally {
-            if (name === 'LEONARD_CLEAR_CLEANUP') Field._visualCutsceneActive = false;
+            const cleanup = commands.some(cmd => cmd?.op === 'CLEANUP');
+            if (cleanup) Field._visualCutsceneActive = false;
             else setTimeout(() => { if (!document.getElementById('field-visual-cutscene-layer')) Field._visualCutsceneActive = false; }, 50);
         }
-        return false;
     },
+
+    runEventVisual: async (name, options = {}) => {
+        const commands = Array.isArray(options.commands) ? options.commands : Field.getFieldCutscenePreset(name);
+        if (!commands) return false;
+        return Field.runFieldCutsceneCommands(commands, options);
+    },
+
 
     executeMapAction: (action) => {
         if (!action) return;

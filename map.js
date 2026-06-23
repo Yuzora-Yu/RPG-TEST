@@ -1296,59 +1296,108 @@ const FIXED_DUNGEON_MAPS = {
                 }
             },
             {
-                label: "火山深部・風穴熱脈",
-                encounterRank: 40,
-                monsters: [100010, 100011, 100012, 100013],
-                enemyBoost: { nameSuffix: "強", statMultiplier: 1.5, elmRes: { "火": 100, "風": 50, "水": -50 }, elmAtk: { "火": 20 } },
+                label: "火山深部・煤風洞",
+                encounterRank: 44,
+                monsters: [100010, 100011, 100012, 100013, 100014],
+                enemyBoost: { nameSuffix: "深層", statMultiplier: 1.62, elmRes: { "火": 100, "風": 50, "水": -50 }, elmAtk: { "火": 25 }, resists: { Poison: 60, Shock: 30, Debuff: 40 } },
+                rareMonsters: [{ id: 200201, rate: 0.06 }],
                 width: 29,
                 height: 25,
                 tiles: [
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWTTTTTTWWTTTTTTTTTWWTTTTTTWW",
-                    "WWTTTTTTWWTTTTTTTTTWWTTTTTTWW",
-                    "WWTTTCTTTTTTTTBTTTTTTTTTRTTWW",
-                    "WWTTTTTTWWTTTTTTTTTWWTTTTTTWW",
-                    "WWTTTTTTWWTTTTTTTTTWWTTTTTTWW",
-                    "WWWWWTWWWWTTTTTTTTTWWWWWTWWWW",
-                    "WWWTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWTTTTDTTTTWWWWWWWWWW",
+                    "WWWWWWWWWWTTTTTTTTTWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWTTTWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWMMMMMTMMMMMWWWWWWWWW",
                     "WWWTTTTTTTTWWWTWWWTTTTTTTTWWW",
-                    "WWWTTTTTTTTWTTTTTWTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWTWWWTTTTTTTTWWW",
+                    "WWWTTTTTTTTWWWWWWWTTTTTTTTWWW",
+                    "WWWTTTTTTTTWWWWWWWTTTTTTTTWWW",
+                    "WWWTTTTTTTTWWWWWWWTTTTTTTTWWW",
                     "WWWTTTTTTTTTTTTTTTTTTTTTTTWWW",
-                    "WWWTTTTTTTTWTTPTTTTTTTTTTTWWW",
-                    "WWWTTTTTTTTWTTTTTWTTTTTTTTWWW",
-                    "WWWWWWTWWWWWWWWWWWWWWWTWWWWWW",
-                    "WWWWWWTWWWWWWWWWWWWWWWTWWWWWW",
-                    "WWTTTTTTTWWWWWWWWWWWTTTTTTTWW",
-                    "WWTTTTTTTWWWWWWWWWWWTTTTTTTWW",
-                    "WWTTCTTTTWWWWWWWWWWWTTTTRTTWW",
-                    "WWTTTTTTTWWWWWWWWWWWTTTTTTTWW",
+                    "WWWWTWWWWMMMMMTMMMMMWWWWTWWWW",
+                    "WWWWTWWWWMMMMMTMMMMMWWWWTWWWW",
+                    "WWTTTTTTTWWWWWTWTTTTTTTTTTTWW",
+                    "WWTTTTTTTWWWWWTWWWWWTTTTTTTWW",
+                    "WWTCTTTTTWWWWWTWWWWWTTTTTRTWW",
+                    "WWTTTTTTTWWWWWTWWWWWTTTTTTTWW",
                     "WWTTTTTTTWWTTTTTTTWWTTTTTTTWW",
                     "WWTTTTTTTWWTTTTTTTWWTTTTTTTWW",
-                    "WWWWWWTTTTTTTTUTTTTTTTTTWWWWW",
+                    "WWWWWWWWWWWTTTUTTTWWWWWWWWWWW",
                     "WWWWWWWWWWWTTTTTTTWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
                 ],
                 floorLinks: [
-                    { x: 14, y: 22, toFloor: 3, targetX: 10, targetY: 4, label: "火の祭壇へ戻る" }
+                    { x: 14, y: 22, toFloor: 3, targetX: 10, targetY: 4, label: "火の祭壇へ戻る" },
+                    { x: 14, y: 3, toFloor: 5, targetX: 14, targetY: 22, label: "炎心炉へ" }
                 ],
                 tileEffects: [
-                    { type: "poison", rects: [{ x1: 5, y1: 10, x2: 9, y2: 13 }, { x1: 20, y1: 10, x2: 24, y2: 13 }], damageRate: 0.08, message: "濃い火山ガスを吸った！" },
-                    { x: 22, y: 11, type: "warp", toX: 6, toY: 19, message: "熱脈の噴気で下層へ飛ばされた。" },
-                    { x: 6, y: 19, type: "warp", toX: 22, toY: 11, message: "上昇気流が岩棚へ運んだ。" },
-                    { x: 23, y: 19, type: "hunter", id: "volcano_deep_flame", imageKey: "overlay_dungeon_hunter_fire", monsterIds: [301010, 100013, 100014], speed: 0.5, range: 24, statMultiplier: 2.1, message: "炎を纏う強敵が迫る！" }
-                ],
-                bosses: [
-                    { x: 14, y: 4, monsterId: 301010, questId: "karin_volcano_depths", storyEventId: "quest_karin_volcano_clear", actionLabel: "火山深部の試練に挑む", inspectLog: "守る剣を試す炎が揺れている。" }
+                    { type: "poison", rects: [{ x1: 3, y1: 10, x2: 9, y2: 12 }, { x1: 19, y1: 10, x2: 25, y2: 12 }], damageRate: 0.08, message: "濃い火山ガスを吸った！" },
+                    { x: 6, y: 9, type: "warp", toX: 22, toY: 16, message: "噴気孔から熱風が吹き上がった。" },
+                    { x: 22, y: 16, type: "warp", toX: 6, toY: 9, message: "熱風に押し戻された。" },
+                    { x: 23, y: 19, type: "hunter", id: "volcano_deep_flame", imageKey: "overlay_dungeon_hunter_fire", monsterIds: [301010, 100013, 100014], speed: 0.65, range: 26, statMultiplier: 2.25, message: "炎を纏う強敵が迫る！" }
                 ],
                 chests: [
-                    { x: 5, y: 4, itemId: 3, type: "item" },
-                    { x: 24, y: 4, itemId: 105, type: "item", rare: true },
-                    { x: 4, y: 18, itemId: 5, type: "item" },
-                    { x: 24, y: 18, itemId: 106, type: "item", rare: true }
+                    { x: 3, y: 18, itemId: 3, type: "item" },
+                    { x: 25, y: 18, itemId: 106, type: "item", rare: true }
                 ],
                 mapActions: [
-                    { x: 14, y: 1, label: "熱脈を確かめる", log: "足元の黒曜石に、鍛冶場の炉より深い赤が脈打っている。", type: "log", imageKey: "overlay_dungeon_event" }
+                    { x: 6, y: 9, label: "左の排熱弁を回す", type: "switchGate", gateId: "volcano_deep_heat_gate", switchId: "left", requiredSwitches: ["left", "right"], imageKey: "overlay_dungeon_event", blocksMovement: false, opens: [{ x: 10, y: 5, tile: "T" }, { x: 11, y: 5, tile: "T" }, { x: 12, y: 5, tile: "T" }, { x: 13, y: 5, tile: "T" }, { x: 14, y: 5, tile: "T" }, { x: 15, y: 5, tile: "T" }, { x: 16, y: 5, tile: "T" }, { x: 17, y: 5, tile: "T" }, { x: 18, y: 5, tile: "T" }, { x: 13, y: 6, tile: "T" }, { x: 14, y: 6, tile: "T" }, { x: 15, y: 6, tile: "T" }, { x: 16, y: 6, tile: "T" }, { x: 17, y: 6, tile: "T" }, { x: 18, y: 6, tile: "T" }], log: "煤に埋もれた排熱弁を回した。", partialMessage: "天井の排気孔が唸った。反対側の弁も必要だ。", openMessage: "二つの排熱弁が開き、中央の熱壁が薄れていく。" },
+                    { x: 22, y: 16, label: "右の排熱弁を回す", type: "switchGate", gateId: "volcano_deep_heat_gate", switchId: "right", requiredSwitches: ["left", "right"], imageKey: "overlay_dungeon_event", blocksMovement: false, opens: [{ x: 10, y: 5, tile: "T" }, { x: 11, y: 5, tile: "T" }, { x: 12, y: 5, tile: "T" }, { x: 13, y: 5, tile: "T" }, { x: 14, y: 5, tile: "T" }, { x: 15, y: 5, tile: "T" }, { x: 16, y: 5, tile: "T" }, { x: 17, y: 5, tile: "T" }, { x: 18, y: 5, tile: "T" }, { x: 13, y: 6, tile: "T" }, { x: 14, y: 6, tile: "T" }, { x: 15, y: 6, tile: "T" }, { x: 16, y: 6, tile: "T" }, { x: 17, y: 6, tile: "T" }, { x: 18, y: 6, tile: "T" }], log: "赤く焼けた排熱弁を押し込んだ。", partialMessage: "中央の熱壁が揺らいだ。もう片方の弁も必要だ。", openMessage: "二つの排熱弁が開き、中央の熱壁が薄れていく。" }
+                ],
+                entryPoint: { x: 14, y: 22 }
+            },
+            {
+                label: "火山深部・炎心炉",
+                encounterRank: 50,
+                monsters: [100012, 100013, 100014, 100015],
+                enemyBoost: { nameSuffix: "炎心", statMultiplier: 1.72, elmRes: { "火": 120, "水": -60 }, elmAtk: { "火": 30 }, resists: { Poison: 70, Fear: 40, Debuff: 50 } },
+                rareMonsters: [{ id: 200201, rate: 0.06 }],
+                width: 29,
+                height: 25,
+                tiles: [
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWMMMMMMMMMMMWWWWWWWWW",
+                    "WWWWWWWWWMTTTTTTTTTMWWWWWWWWW",
+                    "WWWWWWWWWMTTTTBTTTTMWWWWWWWWW",
+                    "WWWWWWWWWMTTTTTTTTTMWWWWWWWWW",
+                    "WWWWWWWWWMTTTTTTTTTMWWWWWWWWW",
+                    "WWWTTTTTTMTTTTTTTTTMTTTTTTWWW",
+                    "WWWTTTTTTMTTTTTTTTTMTTTTTTWWW",
+                    "WWWTTTTTTMTTTTTTTTTMTTTTTTWWW",
+                    "WWWTTTTTTMMMMMTMMMMMTTTTTTWWW",
+                    "WWWTTTTTTTWWWWTWWWWTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTWWWWTWWWWTTTTTTTWWW",
+                    "WWWTTTTTTTWWWWTWWWWTTTTTTTWWW",
+                    "WWWTTTTTTTWWWWTWWWWTTTTTTTWWW",
+                    "WWWTCTTTTTTTTTTTTTTTTTTTRTWWW",
+                    "WWWWWWWWWWWWWWTWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWTTTTTTTTTWWWWWWWWWW",
+                    "WWWWWWWWWWTTTTTTTTTWWWWWWWWWW",
+                    "WWWWWWWWWWTTTTUTTTTWWWWWWWWWW",
+                    "WWWWWWWWWWTTTTTTTTTWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                floorLinks: [
+                    { x: 14, y: 22, toFloor: 4, targetX: 14, targetY: 3, label: "煤風洞へ戻る" }
+                ],
+                tileEffects: [
+                    { type: "poison", rects: [{ x1: 3, y1: 9, x2: 8, y2: 12 }, { x1: 20, y1: 9, x2: 25, y2: 12 }], damageRate: 0.09, message: "炉心の煙が体を焼く！" },
+                    { x: 24, y: 18, type: "hunter", id: "volcano_furnace_guard", imageKey: "overlay_dungeon_hunter_fire", monsterIds: [301010, 100015, 100014], speed: 0.75, range: 28, statMultiplier: 2.35, message: "炉心の番人が迫る！" }
+                ],
+                bosses: [
+                    { x: 14, y: 6, monsterId: 301010, questId: "karin_volcano_depths", storyEventId: "quest_karin_volcano_clear", bossStatMultiplier: 1.35, actionLabel: "炎心炉の試練に挑む", inspectLog: "守る剣を試す炎が、炉心の中心で人の形を成している。" }
+                ],
+                chests: [
+                    { x: 4, y: 18, itemId: 5, type: "item" },
+                    { x: 24, y: 18, itemId: 107, type: "item", rare: true }
                 ],
                 entryPoint: { x: 14, y: 22 }
             }
@@ -1540,59 +1589,105 @@ const FIXED_DUNGEON_MAPS = {
                 entryPoint: { x: 35, y: 32 }
             },
             {
-                label: "禁忌の森深部・呪風の根",
-                encounterRank: 55,
-                monsters: [100020, 100021, 100022, 100023, 100024],
-                enemyBoost: { nameSuffix: "強", statMultiplier: 1.5, elmRes: { "風": 100, "雷": 50, "火": -50 }, elmAtk: { "風": 20 } },
+                label: "禁忌の森深部・迷い根の庭",
+                encounterRank: 48,
+                monsters: [100020, 100021, 100022, 100023],
+                enemyBoost: { nameSuffix: "深層", statMultiplier: 1.58, elmRes: { "風": 100, "水": 40, "火": -40 }, elmAtk: { "風": 25 }, resists: { Poison: 80, Fear: 40, Debuff: 50 } },
+                rareMonsters: [{ id: 200201, rate: 0.06 }],
                 width: 31,
                 height: 25,
                 tiles: [
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWTTTTTTWWWTTTTTTTTTWWWTTTTTTWW",
-                    "WWTTTTTTWWWTTTTTTTTTWWWTTTTTTWW",
-                    "WWTTTCTTTTTTTTTBTTTTTTTTTTRTTWW",
-                    "WWTTTTTTWWWTTTTTTTTTWWWTTTTTTWW",
-                    "WWTTTTTTWWWTTTTTTTTTWWWTTTTTTWW",
-                    "WWWWWTWWWWWTTTTTTTTTTTTTTTTTWWW",
-                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
-                    "WWWTTTTTTTTWWWWTWWWWTTTTTTTTWWW",
-                    "WWWTTTTTTTTWWWWTTTTTTTTTTTTTWWW",
-                    "WWWTTTTTTTTTTTTTTTTWTTTTTTTTWWW",
-                    "WWWTTTTTTTTWTTTTTTTWTTTTTTTTWWW",
-                    "WWWTTTTTTTTWTTTPTTTTTTTTTTTTWWW",
-                    "WWWWWWTWWWWWTTTTTTTWWWWWTWWWWWW",
-                    "WWWWWWTWWWWWWWWWWWWWWWWWTWWWWWW",
-                    "WWTTTTTTTTWWWWWWWWWWWTTTTTTTTWW",
-                    "WWTTTTTTTTWWWWWWWWWWWTTTTTTTTWW",
-                    "WWTTCTTTTTWWWWWWWWWWWTTTTTRTTWW",
-                    "WWTTTTTTTTWWWWWWWWWWWTTTTTTTTWW",
-                    "WWTTTTTTTTWWTTTTTTTWWTTTTTTTTWW",
-                    "WWTTTTTTTTWWTTTTTTTWWTTTTTTTTWW",
-                    "WWWWWWTTTTTTTTTUTTTTTTTTTTWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWTTTTDTTTTWWWWWWWWWWW",
+                    "WWWWWWWWWWWTTTTTTTTTWWWWWWWWWWW",
+                    "WWTTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
+                    "WWTTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWTTCTTTTTTWWWWTWWWWTTTTTTRTTWW",
+                    "WWTTTTTTTTTWWWWWWWWWTTTTTTTTTWW",
+                    "WWTTTTTTTTTWWWWTWWWWTTTTTTTTTWW",
+                    "WWTTTTTTTTTWWWWTWWWWTTTTTTTTTWW",
+                    "WWWWWWTWWWWWWWWTWWWWWWWWTWWWWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTWWWW",
+                    "WWWWWWTWWWWWWWWTWWWWWWWWTWWWWWW",
+                    "WWWWWWTWWWWWWWWTWWWWWWWWTWWWWWW",
+                    "WWWTTTTTTTWWWWWTWWWWWTTTTTTTWWW",
+                    "WWWTTTTTTTWWWWWTWWWWWTTTTTTTWWW",
+                    "WWWTCTTTTTWWWWWTWWWWWTTTTTRTWWW",
+                    "WWWTTTTTTTWWTTTTTTTWWTTTTTTTWWW",
+                    "WWWTTTTTTTWWTTTTTTTWWTTTTTTTWWW",
+                    "WWWWWWWWWWWWTTTUTTTWWWWWWWWWWWW",
                     "WWWWWWWWWWWWTTTTTTTWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
                 ],
                 floorLinks: [
-                    { x: 15, y: 22, toFloor: 2, targetX: 20, targetY: 9, label: "祈りの広場へ戻る" }
+                    { x: 15, y: 22, toFloor: 2, targetX: 27, targetY: 6, label: "祈りの広場へ戻る" },
+                    { x: 15, y: 4, toFloor: 4, targetX: 15, targetY: 22, label: "呪風の根へ" }
                 ],
                 tileEffects: [
-                    { type: "poison", rects: [{ x1: 4, y1: 4, x2: 7, y2: 6 }, { x1: 5, y1: 10, x2: 9, y2: 13 }], damageRate: 0.07, message: "呪毒の霧に触れた！" },
-                    { type: "ice", rect: { x1: 21, y1: 9, x2: 26, y2: 12 }, maxSlide: 24, message: "濡れた根を滑った。" },
-                    { x: 6, y: 19, type: "warp", toX: 25, toY: 19, message: "絡み合う根が道を反転させた。" },
-                    { x: 25, y: 19, type: "hunter", id: "forest_deep_curse", imageKey: "overlay_dungeon_hunter_forest", monsterIds: [301012, 100023, 100024], speed: 0.5, range: 26, statMultiplier: 2.1, message: "呪風の魔物が迫る！" }
-                ],
-                bosses: [
-                    { x: 15, y: 4, monsterId: [301011, 301012], questId: "arisa_haine_forest_depths", startEventId: "quest_arisa_haine_encounter", storyEventId: "quest_arisa_haine_clear", actionLabel: "アリサとハイネに加勢する", inspectLog: "森の奥で、刀の音と叫び声が聞こえる。" }
+                    { type: "poison", rects: [{ x1: 3, y1: 9, x2: 9, y2: 12 }, { x1: 21, y1: 9, x2: 27, y2: 12 }, { x1: 4, y1: 18, x2: 8, y2: 20 }, { x1: 22, y1: 18, x2: 26, y2: 20 }], damageRate: 0.075, message: "濃い瘴気がまとわりつく。" },
+                    { type: "ice", rect: { x1: 11, y1: 14, x2: 19, y2: 14 }, maxSlide: 18, message: "濡れた根の上を滑った。" },
+                    { x: 24, y: 19, type: "hunter", id: "forest_root_stalker", imageKey: "overlay_dungeon_hunter_forest", monsterIds: [301020, 100022, 100023], speed: 0.65, range: 25, statMultiplier: 2.15, message: "呪根の追跡者が迫る！" }
                 ],
                 chests: [
-                    { x: 5, y: 4, itemId: 4, type: "item" },
-                    { x: 26, y: 4, itemId: 105, type: "item", rare: true },
-                    { x: 4, y: 18, itemId: 4, type: "item" },
-                    { x: 26, y: 18, itemId: 106, type: "item", rare: true }
+                    { x: 4, y: 9, itemId: 4, type: "item" },
+                    { x: 26, y: 9, itemId: 106, type: "item", rare: true },
+                    { x: 4, y: 19, itemId: 5, type: "item" },
+                    { x: 26, y: 19, itemId: 107, type: "item", rare: true }
                 ],
                 mapActions: [
-                    { x: 15, y: 1, label: "風の途切れを調べる", log: "巨大樹の根元だけ、風の音が不自然に途切れている。", type: "log", imageKey: "overlay_dungeon_event" }
+                    { x: 6, y: 9, label: "西の根環を斬る", type: "switchGate", gateId: "forest_deep_root_gate", switchId: "west", requiredSwitches: ["west", "east"], imageKey: "overlay_dungeon_event", blocksMovement: false, opens: [{ x: 14, y: 10, tile: "T" }, { x: 15, y: 10, tile: "T" }, { x: 16, y: 10, tile: "T" }, { x: 2, y: 8, tile: "T" }, { x: 3, y: 8, tile: "T" }, { x: 4, y: 8, tile: "T" }, { x: 5, y: 8, tile: "T" }, { x: 6, y: 8, tile: "T" }, { x: 7, y: 8, tile: "T" }, { x: 8, y: 8, tile: "T" }, { x: 9, y: 8, tile: "T" }, { x: 10, y: 8, tile: "T" }, { x: 11, y: 8, tile: "T" }, { x: 12, y: 8, tile: "T" }, { x: 13, y: 8, tile: "T" }, { x: 14, y: 8, tile: "T" }, { x: 15, y: 8, tile: "T" }, { x: 16, y: 8, tile: "T" }, { x: 17, y: 8, tile: "T" }, { x: 18, y: 8, tile: "T" }, { x: 19, y: 8, tile: "T" }, { x: 20, y: 8, tile: "T" }, { x: 21, y: 8, tile: "T" }, { x: 22, y: 8, tile: "T" }, { x: 23, y: 8, tile: "T" }, { x: 24, y: 8, tile: "T" }, { x: 25, y: 8, tile: "T" }, { x: 26, y: 8, tile: "T" }, { x: 27, y: 8, tile: "T" }, { x: 28, y: 8, tile: "T" }], log: "絡み合う根の輪を斬った。", partialMessage: "北側の根壁が軋んだ。もう一方も断つ必要がある。", openMessage: "二つの根環が断たれ、北の根壁がほどけた。" },
+                    { x: 24, y: 19, label: "東の根環を斬る", type: "switchGate", gateId: "forest_deep_root_gate", switchId: "east", requiredSwitches: ["west", "east"], imageKey: "overlay_dungeon_event", blocksMovement: false, opens: [{ x: 14, y: 10, tile: "T" }, { x: 15, y: 10, tile: "T" }, { x: 16, y: 10, tile: "T" }, { x: 2, y: 8, tile: "T" }, { x: 3, y: 8, tile: "T" }, { x: 4, y: 8, tile: "T" }, { x: 5, y: 8, tile: "T" }, { x: 6, y: 8, tile: "T" }, { x: 7, y: 8, tile: "T" }, { x: 8, y: 8, tile: "T" }, { x: 9, y: 8, tile: "T" }, { x: 10, y: 8, tile: "T" }, { x: 11, y: 8, tile: "T" }, { x: 12, y: 8, tile: "T" }, { x: 13, y: 8, tile: "T" }, { x: 14, y: 8, tile: "T" }, { x: 15, y: 8, tile: "T" }, { x: 16, y: 8, tile: "T" }, { x: 17, y: 8, tile: "T" }, { x: 18, y: 8, tile: "T" }, { x: 19, y: 8, tile: "T" }, { x: 20, y: 8, tile: "T" }, { x: 21, y: 8, tile: "T" }, { x: 22, y: 8, tile: "T" }, { x: 23, y: 8, tile: "T" }, { x: 24, y: 8, tile: "T" }, { x: 25, y: 8, tile: "T" }, { x: 26, y: 8, tile: "T" }, { x: 27, y: 8, tile: "T" }, { x: 28, y: 8, tile: "T" }], log: "黒く脈打つ根の輪を断ち切った。", partialMessage: "北側の根壁が軋んだ。もう一方も断つ必要がある。", openMessage: "二つの根環が断たれ、北の根壁がほどけた。" }
+                ],
+                entryPoint: { x: 15, y: 22 }
+            },
+            {
+                label: "禁忌の森深部・呪風の根",
+                encounterRank: 55,
+                monsters: [100021, 100022, 100023, 100024],
+                enemyBoost: { nameSuffix: "呪根", statMultiplier: 1.7, elmRes: { "風": 120, "闇": 50, "火": -50 }, elmAtk: { "風": 30, "闇": 15 }, resists: { Poison: 90, Fear: 50, Debuff: 60 } },
+                rareMonsters: [{ id: 200201, rate: 0.06 }],
+                width: 31,
+                height: 25,
+                tiles: [
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWTTTTTTTTTTTTTTTWWWWWWWW",
+                    "WWWWWWWWTTTTTTTTTTTTTTTWWWWWWWW",
+                    "WWWWWWWWTTTTTTTBTTTTTTTWWWWWWWW",
+                    "WWTTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
+                    "WWTTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
+                    "WWTTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
+                    "WWTTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
+                    "WWTTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
+                    "WWTTTTTTTWWWWWWTWWWWWWTTTTTTTWW",
+                    "WWWWTWWWWWWWWWWTWWWWWWWWWWTWWWW",
+                    "WWWWTWWWWWWWWWWTWWWWWWWWWWTWWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTWWWW",
+                    "WWWWWWWWWWWWWWWTWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWTWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWTWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWTTTTTTTWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWTTTTTTTWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWTTTUTTTWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWTTTTTTTWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                floorLinks: [
+                    { x: 15, y: 22, toFloor: 3, targetX: 15, targetY: 4, label: "迷い根の庭へ戻る" }
+                ],
+                tileEffects: [
+                    { type: "poison", rects: [{ x1: 2, y1: 8, x2: 9, y2: 12 }, { x1: 21, y1: 8, x2: 28, y2: 12 }], damageRate: 0.085, message: "呪いの花粉が肺を刺す！" },
+                    { x: 25, y: 16, type: "hunter", id: "forest_curse_guard", imageKey: "overlay_dungeon_hunter_forest", monsterIds: [301020, 100024, 100023], speed: 0.75, range: 28, statMultiplier: 2.3, message: "呪風の番人が迫る！" }
+                ],
+                bosses: [
+                    { x: 15, y: 7, monsterId: [301020, 100023], questId: "wind_forest_depths", storyEventId: "quest_wind_forest_clear", bossStatMultiplier: 1.35, actionLabel: "呪風の根を断つ", inspectLog: "黒い風の中心で、森の根が鼓動のように膨らんでいる。" }
                 ],
                 entryPoint: { x: 15, y: 22 }
             }
@@ -1975,62 +2070,108 @@ const FIXED_DUNGEON_MAPS = {
                 }
             },
             {
-                label: "海底神殿深部・逆潮路",
-                encounterRank: 65,
-                monsters: [100033, 100034, 301021],
-                enemyBoost: { nameSuffix: "深層", statMultiplier: 1.45, elmRes: { "水": 100, "火": 50, "雷": -50 }, elmAtk: { "水": 25 }, resists: { Poison: 40, Shock: 40, Debuff: 40 } },
-                rareMonsters: [{ id: 200201, rate: 0.05 }],
-                width: 29,
+                label: "海底神殿深部・潮環回廊",
+                encounterRank: 68,
+                monsters: [100033, 100034, 100035, 301021],
+                enemyBoost: { nameSuffix: "深層", statMultiplier: 1.58, elmRes: { "水": 100, "火": 50, "雷": -50 }, elmAtk: { "水": 25 }, resists: { Poison: 45, Shock: 45, Debuff: 50 } },
+                rareMonsters: [{ id: 200201, rate: 0.06 }],
+                width: 31,
                 height: 25,
                 tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWTTTTTTWWTTTTTTTTTWWTTTTTTWW",
-                    "WWTTTTTTWWTTTTTTTTTWWTTTTTTWW",
-                    "WWTTTCTTTTTTTTBTTTTTTTTTRTTWW",
-                    "WWTTTTTTWWTTTTTTTTTWWTTTTTTWW",
-                    "WWTTTTTTWWTTTTTTTTTWWTTTTTTWW",
-                    "WWWWWTWWWWTTTTTTTTTWWWWWTWWWW",
-                    "WWTTTTTTTTTTTTTTTTTTTTTTTTTWW",
-                    "WWTTTTTTTTWWWWTWWWWTTTTTTTTWW",
-                    "WWTTTTTTTTWWWWTWWWWTTTTTTTTWW",
-                    "WWTTTTTTTTTTTTTTTTTTTTTTTTTWW",
-                    "WWTTTTTTTTWTTTTTTTWTTTTTTTTWW",
-                    "WWTTTTTTTTWTTTPTTTTTTTTTTTTWW",
-                    "WWWWWWTWWWWTTTTTTTWWWWWTWWWWW",
-                    "WWWWWWTWWWWWWWWWWWWWWWWTWWWWW",
-                    "WWTTTTTTTWWWWWWWWWWWTTTTTTTWW",
-                    "WWTTTTTTTWWWWWWWWWWWTTTTTTTWW",
-                    "WWTTCTTTTWWWWWWWWWWWTTTTRTTWW",
-                    "WWTTTTTTTWWWWWWWWWWWTTTTTTTWW",
-                    "WWTTTTTTTWWTTTTTTTWWTTTTTTTWW",
-                    "WWTTTTTTTWWTTTTTTTWWTTTTTTTWW",
-                    "WWWWWWTTTTTTTTUTTTTTTTTTWWWWW",
-                    "WWWWWWWWWWWTTTTTTTWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWTTTTTTTTTWWWWWWWWWWW",
+                    "WWWWWWWWWWWTTTTDTTTTWWWWWWWWWWW",
+                    "WWTTTTTTTTWTTTTTTTTTWTTTTTTTTWW",
+                    "WWTTTTTTTTWTTTTTTTTTWTTTTTTTTWW",
+                    "WWTCTTTTTTWWWWWTWWWWWTTTTTTRTWW",
+                    "WWTTTTTTTTWWWWWTWWWWWTTTTTTTTWW",
+                    "WWTTTTTTTTWWWWWWWWWWWTTTTTTTTWW",
+                    "WWTTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
+                    "WWTTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
+                    "WWWWWTWWWWTTTTTTTTTTTWWWWTWWWWW",
+                    "WWWWWTWWWWTTTTTTTTTTTWWWWTWWWWW",
+                    "WWWWWTWWWWTTTTTTTTTTTWWWWTWWWWW",
+                    "WWWWWTWWWWWWWWWTWWWWWWWWWTWWWWW",
+                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWWTWWWWWWWWWTWWWWWWWWWTWWWWW",
+                    "WWWWWTWWWWWWWWWTWWWWWWWWWTWWWWW",
+                    "WWWTTTTTTTWWWWWTWWWWWTTTTTTTWWW",
+                    "WWWTTTTTTTWWWWWTWWWWWTTTTTTTWWW",
+                    "WWWTCTTTTTWWTTTTTTTWWTTTTTRTWWW",
+                    "WWWTTTTTTTWWTTTTTTTWWTTTTTTTWWW",
+                    "WWWTTTTTTTWWTTTUTTTWWTTTTTTTWWW",
+                    "WWWWWWWWWWWWTTTTTTTWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
                 ],
                 floorLinks: [
-                    { x: 14, y: 22, toFloor: 3, targetX: 11, targetY: 5, label: "祈祷の間へ戻る" }
+                    { x: 15, y: 22, toFloor: 3, targetX: 11, targetY: 5, label: "祈祷の間へ戻る" },
+                    { x: 15, y: 3, toFloor: 5, targetX: 15, targetY: 22, label: "逆潮祭壇へ" }
                 ],
                 tileEffects: [
-                    { type: "ice", rects: [{ x1: 4, y1: 10, x2: 9, y2: 13 }, { x1: 19, y1: 10, x2: 24, y2: 13 }], maxSlide: 24, message: "逆潮に押し流された。" },
-                    { x: 23, y: 11, type: "warp", toX: 6, toY: 19, message: "渦潮に巻かれた。" },
-                    { x: 6, y: 19, type: "warp", toX: 23, toY: 11, message: "水鏡が反対岸へつながった。" },
-                    { x: 23, y: 19, type: "hunter", id: "seabed_current", imageKey: "overlay_dungeon_hunter_sea", monsterIds: [301021, 301022, 100034], speed: 0.5, range: 24, statMultiplier: 2.0, message: "逆潮の番人が迫る！" }
-                ],
-                bosses: [
-                    { x: 14, y: 4, monsterId: [301022, 301021], questId: "sophia_alan_seabed_depths", storyEventId: "quest_sophia_alan_clear", actionLabel: "神殿深部を鎮める", inspectLog: "ソフィアとアランが逆潮の核を睨んでいる。" }
+                    { type: "ice", rects: [{ x1: 3, y1: 9, x2: 27, y2: 10 }, { x1: 10, y1: 11, x2: 20, y2: 13 }], maxSlide: 26, message: "逆潮に押し流された。" },
+                    { x: 5, y: 20, type: "warp", toX: 25, toY: 6, message: "渦潮が反対側の水路へ運んだ。" },
+                    { x: 25, y: 6, type: "warp", toX: 5, toY: 20, message: "水鏡が戻り道を映した。" },
+                    { x: 25, y: 20, type: "hunter", id: "seabed_current", imageKey: "overlay_dungeon_hunter_sea", monsterIds: [301021, 301022, 100034], speed: 0.65, range: 26, statMultiplier: 2.2, message: "逆潮の番人が迫る！" }
                 ],
                 chests: [
-                    { x: 5, y: 4, itemId: 4, type: "item" },
-                    { x: 24, y: 4, itemId: 105, type: "item", rare: true },
-                    { x: 4, y: 18, itemId: 5, type: "item" },
-                    { x: 24, y: 18, itemId: 106, type: "item", rare: true }
+                    { x: 3, y: 6, itemId: 4, type: "item" },
+                    { x: 27, y: 6, itemId: 105, type: "item", rare: true },
+                    { x: 4, y: 20, itemId: 5, type: "item" },
+                    { x: 26, y: 20, itemId: 106, type: "item", rare: true }
                 ],
                 mapActions: [
-                    { x: 14, y: 1, label: "水圧の揺らぎを見る", log: "青い泡が柱の影をゆっくり歪ませている。", type: "log", imageKey: "overlay_dungeon_event" }
+                    { x: 5, y: 6, label: "西の水門を下ろす", type: "switchGate", gateId: "seabed_tide_gate", switchId: "west", requiredSwitches: ["west", "east"], imageKey: "overlay_dungeon_event", blocksMovement: false, opens: [{ x: 14, y: 8, tile: "T" }, { x: 15, y: 8, tile: "T" }, { x: 16, y: 8, tile: "T" }], log: "西の水門が低い音を立てた。", partialMessage: "中央の潮流が弱まった。反対側の水門も必要だ。", openMessage: "二つの水門が揃い、中央の逆潮が割れた。" },
+                    { x: 25, y: 20, label: "東の水門を下ろす", type: "switchGate", gateId: "seabed_tide_gate", switchId: "east", requiredSwitches: ["west", "east"], imageKey: "overlay_dungeon_event", blocksMovement: false, opens: [{ x: 14, y: 8, tile: "T" }, { x: 15, y: 8, tile: "T" }, { x: 16, y: 8, tile: "T" }], log: "東の水門が閉じ、潮の唸りが変わった。", partialMessage: "中央の潮流が弱まった。反対側の水門も必要だ。", openMessage: "二つの水門が揃い、中央の逆潮が割れた。" }
                 ],
-                entryPoint: { x: 14, y: 22 }
+                entryPoint: { x: 15, y: 22 }
+            },
+            {
+                label: "海底神殿深部・逆潮祭壇",
+                encounterRank: 76,
+                monsters: [100034, 100035, 301021, 301022],
+                enemyBoost: { nameSuffix: "逆潮", statMultiplier: 1.72, elmRes: { "水": 120, "雷": -60 }, elmAtk: { "水": 30 }, resists: { Poison: 50, Shock: 50, Debuff: 60 } },
+                rareMonsters: [{ id: 200201, rate: 0.06 }],
+                width: 31,
+                height: 25,
+                tiles: [
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWTTTTTTTTTTTTTTTWWWWWWWW",
+                    "WWWWWWWWTTTTTTTTTTTTTTTWWWWWWWW",
+                    "WWWWWWWWTTTTTTTBTTTTTTTWWWWWWWW",
+                    "WWWWWWWWTTTTTTTTTTTTTTTWWWWWWWW",
+                    "WWWWWWWWTTTTTTTTTTTTTTTWWWWWWWW",
+                    "WWWWWWWWTTTTTTTTTTTTTTTWWWWWWWW",
+                    "WWWWWWWWTTTTTTTTTTTTTTTWWWWWWWW",
+                    "WWWWWWWWWWWWWWWTWWWWWWWWWWWWWWW",
+                    "WWTTTTTTTTWWWWWTWWWWWTTTTTTTTWW",
+                    "WWTTTTTTTTWWWWWTWWWWWTTTTTTTTWW",
+                    "WWTTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
+                    "WWTTTTTTTTWWWWWTWWWWWTTTTTTTTWW",
+                    "WWTTTTTTTTWWWWWTWWWWWTTTTTTTTWW",
+                    "WWTTTTTTTTWWWWWTWWWWWTTTTTTTTWW",
+                    "WWTTTTTTTTWWWWWTWWWWWTTTTTTTTWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTWWWW",
+                    "WWWWWWWWWWWWTTTTTTTWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWTTTTTTTWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWTTTUTTTWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWTTTTTTTWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                floorLinks: [
+                    { x: 15, y: 22, toFloor: 4, targetX: 15, targetY: 3, label: "潮環回廊へ戻る" }
+                ],
+                tileEffects: [
+                    { type: "ice", rects: [{ x1: 2, y1: 14, x2: 28, y2: 14 }, { x1: 8, y1: 7, x2: 22, y2: 9 }], maxSlide: 28, message: "祭壇の逆潮に引かれた。" },
+                    { x: 25, y: 17, type: "hunter", id: "seabed_altar_guard", imageKey: "overlay_dungeon_hunter_sea", monsterIds: [301022, 301021, 100035], speed: 0.75, range: 29, statMultiplier: 2.35, message: "祭壇守が水を割って迫る！" }
+                ],
+                bosses: [
+                    { x: 15, y: 6, monsterId: [301022, 301021], questId: "sophia_alan_seabed_depths", storyEventId: "quest_sophia_alan_clear", bossStatMultiplier: 1.35, actionLabel: "逆潮祭壇を鎮める", inspectLog: "ソフィアとアランが、祭壇を縛る逆潮の核を睨んでいる。" }
+                ],
+                entryPoint: { x: 15, y: 22 }
             }
         ]
     },
@@ -2955,62 +3096,108 @@ const FIXED_DUNGEON_MAPS = {
                 ]
             },
             {
-                "label": "ライザーク要塞深部・高圧区画",
-                "encounterRank": 70,
-                "monsters": [100040, 100041, 100042, 100043],
-                "enemyBoost": { "nameSuffix": "深層", "statMultiplier": 1.5, "elmRes": { "雷": 100, "水": 50, "風": -50 }, "elmAtk": { "雷": 25 }, "resists": { "Poison": 50, "Shock": 80, "Debuff": 50 } },
-                "rareMonsters": [{ "id": 200201, "rate": 0.05 }],
+                "label": "ライザーク要塞深部・双電路",
+                "encounterRank": 74,
+                "monsters": [100040, 100041, 100042, 100043, 100044],
+                "enemyBoost": { "nameSuffix": "深層", "statMultiplier": 1.62, "elmRes": { "雷": 110, "水": 50, "風": -50 }, "elmAtk": { "雷": 28 }, "resists": { "Poison": 55, "Shock": 90, "Debuff": 55 } },
+                "rareMonsters": [{ "id": 200201, "rate": 0.06 }],
                 "width": 31,
                 "height": 25,
                 "tiles": [
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWTTTTTTWWWTTTTTTTTTWWWTTTTTTWW",
-                    "WWTTTTTTWWWTTTTTTTTTWWWTTTTTTWW",
-                    "WWTTTCTTTTTTTTTBTTTTTTTTTTRTTWW",
-                    "WWTTTTTTWWWTTTTTTTTTWWWTTTTTTWW",
-                    "WWTTTTTTWWWTTTTTTTTTWWWTTTTTTWW",
-                    "WWWWWTWWWWWTTTTTTTTTWWWWWWTWWWW",
-                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
-                    "WWWTTTTTTTTWWWWTWWWWTTTTTTTTWWW",
-                    "WWWTTTTTTTTWWWWTWWWWTTTTTTTTWWW",
-                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
-                    "WWWTTTTTTTTWTTTTTTTWTTTTTTTTWWW",
-                    "WWWTTTTTTTTWTTTPTTTTTTTTTTTTWWW",
-                    "WWWWWWTWWWWWTTWWWTTWWWWWTWWWWWW",
-                    "WWWWWWTWWWWWWWWWWWWWWWWWTWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWTTTTDTTTTWWWWWWWWWWW",
+                    "WWWWWWWWWWWTTTTTTTTTWWWWWWWWWWW",
+                    "WWTTTTTTTTWTTTTTTTTTWTTTTTTTTWW",
+                    "WWTTTTTTTTWTTTTTTTTTWTTTTTTTTWW",
+                    "WWTCTTTTTTWTTTTTTTTTWTTTTTTRTWW",
+                    "WWTTTTTTTTWWWWWTWWWWWTTTTTTTTWW",
+                    "WWTTTTTTTTWWWWWTWWWWWTTTTTTTTWW",
+                    "WWTTTTTTTTWWWWWTWWWWWTTTTTTTTWW",
+                    "WWTTTTTTTTWWWWWTWWWWWTTTTTTTTWW",
                     "WWTTTTTTTTWWWWWWWWWWWTTTTTTTTWW",
-                    "WWTTTTTTTTWWWWWWWWWWWTTTTTTTTWW",
-                    "WWTTCTTTTTWWWWWWWWWWWTTTTTRTTWW",
-                    "WWTTTTTTTTWWWWWWWWWWWTTTTTTTTWW",
-                    "WWTTTTTTTTWWTTTTTTTWWTTTTTTTTWW",
-                    "WWTTTTTTTTWWTTTTTTTWWTTTTTTTTWW",
-                    "WWWWWWTTTTTTTTTUTTTTTTTTTTWWWWW",
+                    "WWWWWTWWWWWWWWWTWWWWWWWWWTWWWWW",
+                    "WWWWWTWWWWWWWWWTWWWWWWWWWTWWWWW",
+                    "WWWWWTWWWWWWWWWTWWWWWWWWWTWWWWW",
+                    "WWTTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
+                    "WWWWWTWWWWWWWWWTWWWWWWWWWTWWWWW",
+                    "WWWTTTTTTTWWWWWTWWWWWTTTTTTTWWW",
+                    "WWWTTTTTTTWWWWWTWWWWWTTTTTTTWWW",
+                    "WWWTTTTTTTWWTTTTTTTWWTTTTTTTWWW",
+                    "WWWTTTTTTTWWTTTTTTTWWTTTTTTTWWW",
+                    "WWWTTTTTTTWWTTTUTTTWWTTTTTTTWWW",
                     "WWWWWWWWWWWWTTTTTTTWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
                 ],
                 "floorLinks": [
-                    { "x": 15, "y": 22, "toFloor": 4, "targetX": 15, "targetY": 5, "label": "雷の中枢へ戻る" }
+                    { "x": 15, "y": 22, "toFloor": 4, "targetX": 15, "targetY": 5, "label": "雷の中枢へ戻る" },
+                    { "x": 15, "y": 3, "toFloor": 6, "targetX": 15, "targetY": 22, "label": "制御核区へ" }
                 ],
                 "tileEffects": [
-                    { "x": 6, "y": 11, "type": "warp", "toX": 24, "toY": 11, "message": "雷流に弾かれた。" },
-                    { "x": 24, "y": 11, "type": "warp", "toX": 6, "toY": 11, "message": "雷流が反転した。" },
-                    { "type": "ice", "rects": [{ "x1": 4, "y1": 4, "x2": 9, "y2": 6 }, { "x1": 4, "y1": 18, "x2": 9, "y2": 20 }], "maxSlide": 26, "message": "帯電した床を滑った。" },
-                    { "x": 25, "y": 19, "type": "hunter", "id": "thunder_deep_guard", "imageKey": "overlay_dungeon_hunter_thunder", "monsterIds": [100081, 100043, 100043], "speed": 2, "range": 28, "statMultiplier": 2.2, "message": "雷鎧の強敵が迫る！" }
-                ],
-                "bosses": [
-                    { "x": 15, "y": 4, "monsterId": [100081, 100082], "questId": "frieda_baron_thunder_depths", "storyEventId": "quest_frieda_baron_clear", "actionLabel": "制御核を止める", "inspectLog": "フリーダとバロンが雷の核へ迫っている。" }
+                    { "type": "ice", "rects": [{ "x1": 2, "y1": 8, "x2": 9, "y2": 12 }, { "x1": 21, "y1": 8, "x2": 28, "y2": 12 }], "maxSlide": 28, "message": "帯電床を滑った。" },
+                    { "x": 5, "y": 16, "type": "warp", "toX": 25, "toY": 16, "message": "雷流に弾かれた。" },
+                    { "x": 25, "y": 16, "type": "warp", "toX": 5, "toY": 16, "message": "雷流が反転した。" },
+                    { "x": 25, "y": 20, "type": "hunter", "id": "thunder_deep_guard", "imageKey": "overlay_dungeon_hunter_thunder", "monsterIds": [100081, 100043, 100044], "speed": 1.1, "range": 29, "statMultiplier": 2.35, "message": "雷鎧の強敵が迫る！" }
                 ],
                 "chests": [
-                    { "x": 5, "y": 4, "itemId": 4, "type": "item" },
-                    { "x": 26, "y": 4, "itemId": 105, "type": "item", "rare": true },
-                    { "x": 4, "y": 18, "itemId": 6, "type": "item" },
-                    { "x": 26, "y": 18, "itemId": 107, "type": "item", "rare": true }
+                    { "x": 3, "y": 7, "itemId": 4, "type": "item" },
+                    { "x": 27, "y": 7, "itemId": 106, "type": "item", "rare": true }
                 ],
                 "mapActions": [
-                    { "x": 15, "y": 1, "label": "制御装置を調べる", "log": "壊れた導電装置が、まだ淡い雷光を吐いている。", "type": "log", "imageKey": "overlay_dungeon_event" },
-                    { "x": 8, "y": 13, "label": "左の雷導スイッチを押す", "type": "switchGate", "gateId": "thunder_deep_core_gate", "switchId": "left", "requiredSwitches": ["left", "right"], "imageKey": "overlay_dungeon_event", "blocksMovement": false, "opens": [{ "x": 14, "y": 14, "tile": "T" }, { "x": 15, "y": 14, "tile": "T" }, { "x": 16, "y": 14, "tile": "T" }], "log": "左の雷導スイッチに手を置いた。", "openMessage": "二つの雷導スイッチが同期し、中央奥の隔壁が消えた。", "partialMessage": "遠くで雷導装置が唸った。もう片方のスイッチも必要だ。" },
-                    { "x": 22, "y": 13, "label": "右の雷導スイッチを押す", "type": "switchGate", "gateId": "thunder_deep_core_gate", "switchId": "right", "requiredSwitches": ["left", "right"], "imageKey": "overlay_dungeon_event", "blocksMovement": false, "opens": [{ "x": 14, "y": 14, "tile": "T" }, { "x": 15, "y": 14, "tile": "T" }, { "x": 16, "y": 14, "tile": "T" }], "log": "右の雷導スイッチに手を置いた。", "openMessage": "二つの雷導スイッチが同期し、中央奥の隔壁が消えた。", "partialMessage": "遠くで雷導装置が唸った。もう片方のスイッチも必要だ。" }
+                    { "x": 5, "y": 11, "label": "左の雷導スイッチを押す", "type": "switchGate", "gateId": "thunder_deep_core_gate", "switchId": "left", "requiredSwitches": ["left", "right"], "imageKey": "overlay_dungeon_event", "blocksMovement": false, "opens": [{ "x": 14, "y": 12, "tile": "T" }, { "x": 15, "y": 12, "tile": "T" }, { "x": 16, "y": 12, "tile": "T" }], "log": "左の雷導スイッチに手を置いた。", "partialMessage": "中央の隔壁が青白く揺れた。右のスイッチも必要だ。", "openMessage": "二つの雷導スイッチが同期し、中央奥の隔壁が消えた。" },
+                    { "x": 25, "y": 11, "label": "右の雷導スイッチを押す", "type": "switchGate", "gateId": "thunder_deep_core_gate", "switchId": "right", "requiredSwitches": ["left", "right"], "imageKey": "overlay_dungeon_event", "blocksMovement": false, "opens": [{ "x": 14, "y": 12, "tile": "T" }, { "x": 15, "y": 12, "tile": "T" }, { "x": 16, "y": 12, "tile": "T" }], "log": "右の雷導スイッチに手を置いた。", "partialMessage": "中央の隔壁が青白く揺れた。左のスイッチも必要だ。", "openMessage": "二つの雷導スイッチが同期し、中央奥の隔壁が消えた。" }
+                ],
+                "entryPoint": { "x": 15, "y": 22 }
+            },
+            {
+                "label": "ライザーク要塞深部・制御核区",
+                "encounterRank": 82,
+                "monsters": [100041, 100042, 100043, 100044],
+                "enemyBoost": { "nameSuffix": "制御核", "statMultiplier": 1.76, "elmRes": { "雷": 130, "風": -60 }, "elmAtk": { "雷": 32 }, "resists": { "Poison": 60, "Shock": 100, "Debuff": 60 } },
+                "rareMonsters": [{ "id": 200201, "rate": 0.06 }],
+                "width": 31,
+                "height": 25,
+                "tiles": [
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWTTTTTTTTTTTTTTTWWWWWWWW",
+                    "WWWWWWWWTTTTTTTTTTTTTTTWWWWWWWW",
+                    "WWWWWWWWTTTTTTTBTTTTTTTWWWWWWWW",
+                    "WWWWWWWWTTTTTTTTTTTTTTTWWWWWWWW",
+                    "WWWWWWWWTTTTTTTTTTTTTTTWWWWWWWW",
+                    "WWWWWWWWTTTTTTTTTTTTTTTWWWWWWWW",
+                    "WWWWWWWWTTTTTTTTTTTTTTTWWWWWWWW",
+                    "WWWWWWWWWWWWWWWTWWWWWWWWWWWWWWW",
+                    "WWWTTTTTTTWWWWWTWWWWWTTTTTTTWWW",
+                    "WWWTTTTTTTWWWWWTWWWWWTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTWWWWWTWWWWWTTTTTTTWWW",
+                    "WWWTTCTTTTWWWWWTWWWWWTTTTRTTWWW",
+                    "WWWTTTTTTTWWWWWTWWWWWTTTTTTTWWW",
+                    "WWWTTTTTTTWWWWWTWWWWWTTTTTTTWWW",
+                    "WWWWWWWWWWWWWWWTWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWTTTTTTTWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWTTTTTTTWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWTTTUTTTWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWTTTTTTTWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                "floorLinks": [
+                    { "x": 15, "y": 22, "toFloor": 5, "targetX": 15, "targetY": 3, "label": "双電路へ戻る" }
+                ],
+                "tileEffects": [
+                    { "type": "ice", "rects": [{ "x1": 3, "y1": 14, "x2": 27, "y2": 14 }, { "x1": 8, "y1": 7, "x2": 22, "y2": 9 }], "maxSlide": 30, "message": "高圧電流に足を取られた。" },
+                    { "x": 25, "y": 16, "type": "hunter", "id": "thunder_core_guard", "imageKey": "overlay_dungeon_hunter_thunder", "monsterIds": [100081, 100082, 100044], "speed": 1.2, "range": 31, "statMultiplier": 2.45, "message": "制御核の守衛が迫る！" }
+                ],
+                "bosses": [
+                    { "x": 15, "y": 6, "monsterId": [100081, 100082], "questId": "frieda_baron_thunder_depths", "storyEventId": "quest_frieda_baron_clear", "bossStatMultiplier": 1.35, "actionLabel": "制御核を止める", "inspectLog": "フリーダとバロンが、雷の核へ同時に武器を構えている。" }
+                ],
+                "chests": [
+                    { "x": 5, "y": 16, "itemId": 6, "type": "item" },
+                    { "x": 25, "y": 16, "itemId": 107, "type": "item", "rare": true }
                 ],
                 "entryPoint": { "x": 15, "y": 22 }
             }
@@ -3946,53 +4133,105 @@ const FIXED_DUNGEON_MAPS = {
                 entryPoint: { x: 4, y: 20 }
             },
             {
-                label: "クレナ鍾乳洞深部・結界裏層",
-                encounterRank: 90,
+                label: "クレナ鍾乳洞深部・結晶裏路",
+                encounterRank: 92,
                 monsters: [100056, 100057, 100058, 100059],
-                enemyBoost: { nameSuffix: "強", statMultiplier: 1.3, elmRes: { "火": 30, "水": 30, "風": 30, "雷": 30, "光": 30, "闇": 30 }, resists: { Poison: 50, Shock: 50, Fear: 50, InstantDeath: 50, Debuff: 50, Seal: 50 } },
+                enemyBoost: { nameSuffix: "深層", statMultiplier: 1.55, elmRes: { "火": 35, "水": 45, "風": 35, "雷": 35, "光": 35, "闇": 60 }, resists: { Poison: 60, Shock: 50, Fear: 50, InstantDeath: 60, Debuff: 60, Seal: 60 } },
                 width: 29,
                 height: 25,
                 tiles: [
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWTTTTTTTTTWWWWWWWWWW",
+                    "WWWWWWWWWWTTTTDTTTTWWWWWWWWWW",
                     "WWWWWWWWWWTTTTTTTTTWWWWWWWWWW",
                     "WWWWWWWWWWTTTTTTTTTWWWWWWWWWW",
-                    "WWWWWWWWWWTTTTBTTTTWWWWWWWWWW",
-                    "WWWWWWWWWWTTTTTTTTTTTTTTWWWWW",
-                    "WWWWWWWWWWTTTTTTTTTWWWWTWWWWW",
-                    "WWWWWWWWWWTTTTTTTTTWWWWTWWWWW",
+                    "WWWWWWWWWWWWWWTWWWWTTTTTTTTWW",
+                    "WWWWWWWWWWWWWWTWWWWTTTTTTTTWW",
+                    "WWWTTTTTTTWWWWTWWWWTTTTTTRTWW",
+                    "WWWTTTTTTTWWWWWWWWWTTTTTTTTWW",
+                    "WWWTCTTTTTWWWWTWWWWTTTTTTTTWW",
+                    "WWWTTTTTTTWWWWTWWWWTTTTTTTTWW",
+                    "WWWTTTTTTTWWWWTWWWWWWWWWTWWWW",
+                    "WWWWWWTWWWWWWWTWWWWWWWWWTWWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTWWWW",
+                    "WWWWWWTWWWWWWWTWWWWWWWWWTWWWW",
+                    "WWWWWWTWWWWWWWTWWWWWWWWWTWWWW",
+                    "WWWWWWTWWWWWWWTWWWWWTTTTTTTWW",
                     "WWWWWWWWWWWWWWTWWWWWTTTTTTTWW",
                     "WWTTTTTTTWWWWWTWWWWWTTTTTTTWW",
                     "WWTTTTTTTWWWWWTWWWWWTTTTTTTWW",
-                    "WWTTCTTTTWWWWWTWWWWWTTTTTTTWW",
                     "WWTTTTTTTTTTTTTWWWWWTTTTTTTWW",
-                    "WWTTTTTTTWWWWWTWWWWWTTTTTTTWW",
-                    "WWTTTTTTTWWWWWTWWWWWTTTTTTTWW",
-                    "WWTTTTTTTWWWWWTWWWWWWWWWTWWWW",
-                    "WWWWWTWWWWWWWWTWWWWWWWWWTWWWW",
-                    "WWWWWTWWWWTTTTTTTTTWWWWWTWWWW",
-                    "WWWWWTWWWWTTTTTTTTTWWWWWTWWWW",
-                    "WWWWWTWWWWTTTTTTTTTWWTTTTTTWW",
-                    "WWTTTTTTWWTTTTTTTTTTTTTTTTTWW",
-                    "WWTTTTTTWWTTTTTTTTTWWTTTCTTWW",
-                    "WWUTTTTTWWTTTTTTTTTWWTTTTTTWW",
-                    "WWTTTTTTWWWWWWWWWWWWWWWWWWWWW",
+                    "WWTTTTTTTWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
                 ],
                 floorLinks: [
-                    { x: 2, y: 22, toFloor: 2, targetX: 23, targetY: 11, label: "結晶の間へ戻る" }
+                    { x: 2, y: 22, toFloor: 2, targetX: 23, targetY: 11, label: "結晶の間へ戻る" },
+                    { x: 14, y: 4, toFloor: 4, targetX: 2, targetY: 22, label: "結界核へ" }
                 ],
                 tileEffects: [
-                    { x: 5, y: 12, type: "poison", damageRate: 0.09, message: "結界毒が体を蝕む！" },
-                    { x: 23, y: 11, type: "ice", maxSlide: 24, message: "結界の膜を滑った。" },
-                    { x: 24, y: 21, type: "hunter", id: "crena_barrier_guard", imageKey: "overlay_dungeon_hunter_shadow", monsterIds: [100057, 100058, 100059], speed: 0.5, range: 26, statMultiplier: 2.1, message: "結界守が迫る！" },
-                ],
-                bosses: [
-                    { x: 14, y: 4, monsterId: [100078, 100082, 100078], questId: "licia_crena_depths", storyEventId: "quest_licia_clear", actionLabel: "結界核を砕く", inspectLog: "リーシアの魔力が結界核の奥で揺れている。" }
+                    { type: "poison", rects: [{ x1: 3, y1: 9, x2: 9, y2: 12 }, { x1: 20, y1: 9, x2: 26, y2: 12 }], damageRate: 0.09, message: "結界毒が体を蝕む！" },
+                    { type: "ice", rects: [{ x1: 4, y1: 15, x2: 24, y2: 15 }, { x1: 14, y1: 7, x2: 14, y2: 18 }], maxSlide: 26, message: "結界の膜を滑った。" },
+                    { x: 24, y: 20, type: "hunter", id: "crena_barrier_guard", imageKey: "overlay_dungeon_hunter_shadow", monsterIds: [100057, 100058, 100059], speed: 0.7, range: 28, statMultiplier: 2.25, message: "結界守が迫る！" }
                 ],
                 chests: [
                     { x: 4, y: 11, itemId: 103, type: "item", rare: true },
-                    { x: 24, y: 21, itemId: 105, type: "item", rare: true }
+                    { x: 25, y: 9, itemId: 105, type: "item", rare: true }
+                ],
+                mapActions: [
+                    { x: 5, y: 20, label: "南西の封晶を砕く", type: "switchGate", gateId: "crena_barrier_gate", switchId: "sw", requiredSwitches: ["sw", "ne"], imageKey: "overlay_dungeon_event", blocksMovement: false, opens: [{ x: 13, y: 10, tile: "T" }, { x: 14, y: 10, tile: "T" }, { x: 15, y: 10, tile: "T" }], log: "封晶のひとつにヒビが入った。", partialMessage: "中央の結界が薄れた。もう一つの封晶も砕く必要がある。", openMessage: "二つの封晶が砕け、中央の結界がほどけた。" },
+                    { x: 23, y: 20, label: "南東の封晶を砕く", type: "switchGate", gateId: "crena_barrier_gate", switchId: "ne", requiredSwitches: ["sw", "ne"], imageKey: "overlay_dungeon_event", blocksMovement: false, opens: [{ x: 13, y: 10, tile: "T" }, { x: 14, y: 10, tile: "T" }, { x: 15, y: 10, tile: "T" }], log: "封晶のひとつを砕いた。", partialMessage: "中央の結界が薄れた。もう一つの封晶も砕く必要がある。", openMessage: "二つの封晶が砕け、中央の結界がほどけた。" }
+                ],
+                entryPoint: { x: 2, y: 22 }
+            },
+            {
+                label: "クレナ鍾乳洞深部・結界核",
+                encounterRank: 102,
+                monsters: [100056, 100057, 100058, 100059],
+                enemyBoost: { nameSuffix: "結界核", statMultiplier: 1.72, elmRes: { "火": 45, "水": 55, "風": 45, "雷": 45, "光": 45, "闇": 80 }, resists: { Poison: 70, Shock: 60, Fear: 60, InstantDeath: 80, Debuff: 70, Seal: 70 } },
+                width: 29,
+                height: 25,
+                tiles: [
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWTTTTTTTTTTTWWWWWWWWW",
+                    "WWWWWWWWWTTTTTTTTTTTWWWWWWWWW",
+                    "WWWWWWWWWTTTTTBTTTTTWWWWWWWWW",
+                    "WWWWWWWWWTTTTTTTTTTTWWWWWWWWW",
+                    "WWWWWWWWWTTTTTTTTTTTWWWWWWWWW",
+                    "WWWWWWWWWTTTTTTTTTTTWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWTTTTTTTWWWWWWWWWWTTTTTTTWW",
+                    "WWWTTTTTTTWWWWTWWWWWTTTTTTTWW",
+                    "WWWTTTTTTTTTTTTTTTTTTTTTTTTWW",
+                    "WWWTTTTTTTWWWWTWWWWWTTTTTTTWW",
+                    "WWWTCTTTTTWWWWTWWWWWTTTTTRTWW",
+                    "WWWTTTTTTTWWWWTWWWWWTTTTTTTWW",
+                    "WWWTTTTTTTWWWWTWWWWWTTTTTTTWW",
+                    "WWWWWWWWWWWWWWTWWWWWWWWWWWWWW",
+                    "WWTTTTTTTWWWWWTWWWWWWWWWWWWWW",
+                    "WWTTTTTTTWWWWWTWWWWWWWWWWWWWW",
+                    "WWTTTTTTTTTTTTTWWWWWWWWWWWWWW",
+                    "WWTTTTTTTWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                floorLinks: [
+                    { x: 2, y: 22, toFloor: 3, targetX: 14, targetY: 4, label: "結晶裏路へ戻る" }
+                ],
+                tileEffects: [
+                    { type: "poison", rects: [{ x1: 9, y1: 5, x2: 19, y2: 10 }], damageRate: 0.1, message: "結界核の毒光が肌を焼く！" },
+                    { x: 25, y: 16, type: "hunter", id: "crena_core_guard", imageKey: "overlay_dungeon_hunter_shadow", monsterIds: [100078, 100082, 100059], speed: 0.8, range: 29, statMultiplier: 2.45, message: "結界核の守り手が迫る！" }
+                ],
+                bosses: [
+                    { x: 14, y: 7, monsterId: [100078, 100082, 100078], questId: "licia_crena_depths", storyEventId: "quest_licia_clear", bossStatMultiplier: 1.35, actionLabel: "結界核を砕く", inspectLog: "リーシアの魔力が、結界核の奥で苦しげに揺れている。" }
+                ],
+                chests: [
+                    { x: 4, y: 16, itemId: 103, type: "item", rare: true },
+                    { x: 25, y: 16, itemId: 105, type: "item", rare: true }
                 ],
                 entryPoint: { x: 2, y: 22 }
             }
