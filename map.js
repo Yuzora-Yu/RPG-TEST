@@ -6759,7 +6759,7 @@ const FIXED_DUNGEON_MAPS = {
                     "WWTTTTWTTWWWWWWWTWWWWWWWWWWWWWWWW",
                     "WWTTTTWTTWWWTTTTTTTTTWWWWWWWWWWWW",
                     "WWTTTTWTTWWWTTTTTTTTTWWWTTTTTTTWW",
-                    "WWTTRCZTTTTTTTTTTTTTTWWWTTTTTTTWW",
+                    "WWTTRTZTTTTTTTTTTTTTTWWWTTTTTTTWW",
                     "WWTTTTWTTWWWTTTTTTTTTTTTTTTTTTTWW",
                     "WWTTTTWTTWWWTTTTTTTTTWWWTTTTTTTWW",
                     "WWWWWWWWWWWWTTTTTTTTTWWWTTTTTTTWW",
@@ -6802,7 +6802,7 @@ const FIXED_DUNGEON_MAPS = {
                     },
                     {
                         x: 5,
-                        y: 13,
+                        y: 5,
                         itemId: 1,
                         type: "item"
                     }
@@ -6810,7 +6810,9 @@ const FIXED_DUNGEON_MAPS = {
                 entryPoint: {
                     x: 4,
                     y: 23
-                }
+                },
+                name: "",
+                themeKey: "LIGHT_PALACE"
             },
             {
                 label: "地下2階・結界の聖廊",
@@ -9861,7 +9863,7 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWWWWWWTWWWWWWWWWTWWWW",
                     "WWWWWWWWWWWWWWTWWWWWWWWWTWWWW",
                     "WWWTTTTTTTTWWWTWWWWWWWWTTTWWW",
-                    "WWWTWWWWWWTWWWTWWWWWWWWTTTWWW",
+                    "WWWTWTWWWWTWWWTWWWWWWWWTTTWWW",
                     "WWTTTWWWWWTWWWTWWWWWWWWTTTWWW",
                     "WWTTTWWWWWTTTTTWWWWWWWWWWWWWW",
                     "WWTTTWWWWWWWWWWWWWWWWWWWWWWWW",
