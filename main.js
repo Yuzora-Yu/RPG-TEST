@@ -5564,6 +5564,22 @@ const Field = {
         return 'T';
     },
 
+    getFixedChestAt: (tileX = null, tileY = null) => {
+        if (!Field.currentMapData?.isFixed || tileX === null || tileY === null) return null;
+        if (typeof MapRegistry !== 'undefined' && MapRegistry.findFixedChest) {
+            return MapRegistry.findFixedChest(Field.currentMapData, tileX, tileY);
+        }
+        return Array.isArray(Field.currentMapData.chests)
+            ? Field.currentMapData.chests.find(chest => Number(chest.x) === Number(tileX) && Number(chest.y) === Number(tileY)) || null
+            : null;
+    },
+
+    getFixedChestTileSign: (chestDef = null) => {
+        if (!chestDef) return null;
+        const rare = chestDef.rare === true || chestDef.type === 'rare' || chestDef.chestType === 'rare';
+        return rare ? 'R' : 'C';
+    },
+
     getMapDrawParts: (tileSign, tileX = null, tileY = null) => {
         const upper = String(tileSign || 'W').toUpperCase();
         const fixedOverlayConfig = Field.getFixedTileOverlayConfig ? Field.getFixedTileOverlayConfig(upper, tileX, tileY) : null;
@@ -5739,6 +5755,15 @@ const Field = {
                     if (nextTile === 'B' && typeof MapRegistry !== 'undefined' && MapRegistry.findFixedBoss) {
                         const bossDef = MapRegistry.findFixedBoss(Field.currentMapData, tileX, tileY);
                         if (!Field.isFixedBossAvailable(bossDef)) nextTile = bossDef?.inactiveTile || 'G';
+                    }
+
+                    // 固定MAP/固定ダンジョンの宝箱は、地形文字(C/R)だけでなく chests[] も正本として扱う。
+                    // 町の中では床タイル(G/Tなど)の上に宝箱レイヤーを置くため、
+                    // エディタが chests[] だけを出力してもゲーム内で表示・調査できるようにする。
+                    if (nextTile !== 'B') {
+                        const chestDef = Field.getFixedChestAt ? Field.getFixedChestAt(tileX, tileY) : null;
+                        const chestTile = Field.getFixedChestTileSign ? Field.getFixedChestTileSign(chestDef) : null;
+                        if (chestTile) nextTile = chestTile;
                     }
                 }
             }
@@ -6651,6 +6676,10 @@ const Field = {
                         return;
                     }
                 }
+
+                const chestDef = Field.getFixedChestAt ? Field.getFixedChestAt(nx, ny) : null;
+                const chestTile = Field.getFixedChestTileSign ? Field.getFixedChestTileSign(chestDef) : null;
+                if (chestTile) tile = chestTile;
             }
 
             const targetMapAction = typeof MapRegistry !== 'undefined' && MapRegistry.findMapAction

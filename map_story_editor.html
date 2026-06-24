@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PRISMA ABYSS - Map / Story Editor</title>
+  <script src="assets.js"></script>
+  <script src="skills.js"></script>
+  <script src="items.js"></script>
+  <script src="monsters.js"></script>
+  <script src="monster-images.js"></script>
+  <script src="characters.js"></script>
+  <script src="job_data.js"></script>
+  <script src="equips.js"></script>
+  <script src="database.js"></script>
+  <script src="passiveSkill.js"></script>
+  <script src="map.js"></script>
+  <script src="maps_logic.js"></script>
+  <script src="story.js"></script>
+  <script src="story_logic.js"></script>
+  <script src="quests.js"></script>
+  <style>
+    :root{
+      --bg:#08101f;--panel:#101a2f;--panel2:#17243e;--panel3:#0b1426;--line:#2a3956;
+      --text:#eef5ff;--muted:#9daac0;--accent:#f5bd4f;--accent2:#62d7ff;--ok:#48d68d;
+      --warn:#ffd568;--danger:#ff637a;--input:#091426;--shadow:0 18px 60px rgba(0,0,0,.35)
+    }
+    *{box-sizing:border-box}html,body{height:100%;margin:0}body{background:radial-gradient(circle at 18% 0%,rgba(86,130,255,.18),transparent 28%),var(--bg);color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP",sans-serif;overflow:hidden}button,input,select,textarea{font:inherit}button{cursor:pointer}input,select,textarea{width:100%;color:var(--text);background:var(--input);border:1px solid var(--line);border-radius:10px;padding:8px 10px;outline:none}textarea{resize:vertical;min-height:120px;line-height:1.55;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;font-size:12px}input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(245,189,79,.12)}label{display:block;color:var(--muted);font-size:12px;font-weight:800;margin:0 0 6px}.app{height:100%;display:grid;grid-template-rows:64px 1fr}.topbar{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 16px;border-bottom:1px solid var(--line);background:rgba(9,15,30,.94);backdrop-filter:blur(14px);position:relative;z-index:20}.brand{display:flex;align-items:baseline;gap:10px;white-space:nowrap}.brand strong{color:var(--accent);font-size:18px;letter-spacing:.03em}.brand span{color:var(--muted);font-size:12px}.top-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.layout{min-height:0;display:grid;grid-template-columns:320px minmax(430px,1fr) minmax(440px,54vw)}.sidebar{min-height:0;display:grid;grid-template-rows:auto auto 1fr auto;border-right:1px solid var(--line);background:rgba(8,14,27,.78)}.main{min-height:0;overflow:auto;padding:14px}.preview{min-height:0;display:grid;grid-template-rows:auto 1fr auto;border-left:1px solid var(--line);background:rgba(7,12,22,.92)}.searchbox{padding:12px;border-bottom:1px solid var(--line);display:grid;gap:8px}.navtabs{display:flex;gap:6px;padding:10px 12px;border-bottom:1px solid var(--line);overflow-x:auto}.navtab,.tab{flex:0 0 auto;border:1px solid transparent;background:transparent;color:var(--muted);border-radius:10px;padding:8px 10px;font-weight:900;font-size:12px}.navtab.active,.tab.active{color:var(--accent);background:rgba(245,189,79,.11);border-color:rgba(245,189,79,.25)}.list{overflow:auto;padding:8px}.row{width:100%;text-align:left;color:inherit;background:rgba(255,255,255,.035);border:1px solid transparent;border-radius:13px;padding:10px;margin-bottom:8px}.row:hover{border-color:var(--line);background:rgba(255,255,255,.06)}.row.active{border-color:rgba(245,189,79,.72);background:rgba(245,189,79,.10)}.row b{display:block;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:5px;color:var(--muted);font-size:11px}.pill{display:inline-flex;align-items:center;border:1px solid var(--line);background:rgba(255,255,255,.04);border-radius:999px;padding:3px 7px;color:var(--muted);font-size:11px}.pill.ok{color:#c8ffe2;border-color:rgba(72,214,141,.4);background:rgba(72,214,141,.08)}.pill.warn{color:#ffe9a9;border-color:rgba(255,213,104,.4);background:rgba(255,213,104,.08)}.pill.danger{color:#ffd0d7;border-color:rgba(255,99,122,.4);background:rgba(255,99,122,.08)}.btn{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:10px;padding:8px 11px;font-weight:900;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none}.btn:hover{filter:brightness(1.08)}.btn.primary{background:#255ec8;border-color:#397bff}.btn.gold{background:#8a5b16;border-color:#d69b2b}.btn.green{background:#12683f;border-color:#23a96b}.btn.red{background:#842237;border-color:#c64b60}.btn.ghost{background:transparent}.btn.small{padding:5px 7px;font-size:12px;border-radius:8px}.sidebar-actions{border-top:1px solid var(--line);padding:10px 12px;display:grid;grid-template-columns:1fr 1fr;gap:8px}.card{background:rgba(16,26,47,.94);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:0 10px 30px rgba(0,0,0,.16)}.card h2{margin:0 0 12px;color:var(--accent2);font-size:15px;display:flex;justify-content:space-between;align-items:center;gap:10px}.tabs{display:flex;gap:6px;overflow-x:auto;border-bottom:1px solid var(--line);margin-bottom:12px}.grid{display:grid;gap:10px}.cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}.cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.hint{color:var(--muted);font-size:12px;line-height:1.6}.mini{font-size:11px;color:var(--muted)}.preview-head{padding:10px 12px;border-bottom:1px solid var(--line);display:grid;gap:8px}.preview-title{display:flex;justify-content:space-between;align-items:center;gap:10px}.preview-title b{color:var(--accent)}.canvas-wrap{position:relative;overflow:auto;background:#020711}.canvas-stage{position:relative;display:inline-block;min-width:100%;min-height:100%;padding:16px}.map-canvas{image-rendering:pixelated;background:#060b14;border:1px solid var(--line);box-shadow:var(--shadow);display:block}.coord-box{position:absolute;left:20px;top:20px;background:rgba(0,0,0,.75);border:1px solid rgba(255,255,255,.18);border-radius:9px;color:#fff;padding:5px 8px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;pointer-events:none}.preview-foot{border-top:1px solid var(--line);padding:10px 12px;background:rgba(8,14,27,.78);max-height:180px;overflow:auto}.tile-palette{display:grid;grid-template-columns:repeat(auto-fill,minmax(46px,1fr));gap:8px}.tile-btn{min-height:44px;border:1px solid var(--line);background:var(--panel3);border-radius:10px;color:var(--text);font-weight:900;display:grid;place-items:center;position:relative;overflow:hidden}.tile-btn.active{border-color:var(--accent);box-shadow:0 0 0 3px rgba(245,189,79,.14)}.tile-btn small{position:absolute;left:5px;top:3px;color:#fff;text-shadow:0 1px 3px #000;font-size:11px}.tile-swatch{width:100%;height:100%;display:grid;place-items:center;background-size:cover;background-position:center}.object-list{display:grid;gap:8px}.object-row{display:grid;grid-template-columns:74px 1fr auto;gap:8px;align-items:start;border:1px solid var(--line);border-radius:12px;padding:8px;background:rgba(255,255,255,.035)}.object-row textarea{min-height:74px}.table{width:100%;border-collapse:separate;border-spacing:0 8px}.table th{color:var(--muted);font-size:11px;text-align:left;padding:0 7px}.table td{background:rgba(255,255,255,.035);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:7px;vertical-align:top}.table td:first-child{border-left:1px solid var(--line);border-radius:10px 0 0 10px}.table td:last-child{border-right:1px solid var(--line);border-radius:0 10px 10px 0}.split2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.jsonbox{min-height:420px;white-space:pre;overflow:auto;color:#b8fff0;background:#030711}.message{border:1px solid rgba(98,215,255,.28);background:rgba(98,215,255,.07);border-radius:12px;padding:10px;color:#d8f6ff;font-size:12px;line-height:1.6;margin-bottom:10px}.warnbox{border-color:rgba(255,213,104,.36);background:rgba(255,213,104,.08);color:#ffe9a9}.dangerbox{border-color:rgba(255,99,122,.36);background:rgba(255,99,122,.08);color:#ffd0d7}.script-lines{display:grid;gap:8px}.script-line{display:grid;grid-template-columns:92px 120px 1fr auto;gap:8px;align-items:start;border:1px solid var(--line);border-radius:12px;padding:8px;background:rgba(255,255,255,.035)}.script-line textarea{min-height:64px}.action-row{display:grid;grid-template-columns:120px 1fr auto;gap:8px;align-items:start;border:1px solid var(--line);border-radius:12px;padding:8px;background:rgba(255,255,255,.035);margin-bottom:8px}.kbd{font-family:ui-monospace,Menlo,Consolas,monospace;color:#ffe2a3}.asset-select{display:grid;grid-template-columns:1fr auto;gap:8px}.asset-preview{width:44px;height:44px;border:1px solid var(--line);border-radius:10px;background:#07101f;background-size:contain;background-position:center;background-repeat:no-repeat}.hidden{display:none!important}@media(max-width:1320px){.layout{grid-template-columns:290px minmax(420px,1fr) minmax(380px,45vw)}.cols-4{grid-template-columns:repeat(2,minmax(0,1fr))}.script-line{grid-template-columns:80px 110px 1fr}.preview{font-size:13px}}@media(max-width:1040px){body{overflow:auto}.app{height:auto;min-height:100%}.layout{display:block}.sidebar,.main,.preview{min-height:auto}.preview{height:70vh}.sidebar{height:420px}.topbar{position:sticky;top:0}.split2{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand"><strong>PRISMA ABYSS</strong><span>Map / Story Editor</span></div>
+    <div class="top-actions">
+      <button class="btn green" data-act="validate">検証</button>
+      <button class="btn gold" data-act="exportMap">map.js出力</button>
+      <button class="btn gold" data-act="exportStory">story.js出力</button>
+      <button class="btn primary" data-act="exportBoth">両方出力</button>
+      <button class="btn" data-act="reload">再読込</button>
+    </div>
+  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="searchbox">
+        <input id="search" placeholder="マップ / イベント / 会話を検索" />
+        <div class="grid cols-2">
+          <select id="typeFilter"><option value="all">すべて</option><option value="world">ワールド</option><option value="fixed">固定エリア</option><option value="dungeon">固定ダンジョン</option><option value="script">会話</option><option value="event">イベント</option></select>
+          <select id="sortMode"><option value="kind">種別順</option><option value="name">名前順</option><option value="size">サイズ順</option></select>
+        </div>
+      </div>
+      <div class="navtabs">
+        <button class="navtab active" data-main-tab="maps">マップ</button>
+        <button class="navtab" data-main-tab="story">ストーリー</button>
+        <button class="navtab" data-main-tab="data">マスタ</button>
+        <button class="navtab" data-main-tab="export">出力</button>
+      </div>
+      <div class="list" id="entityList"></div>
+      <div class="sidebar-actions">
+        <button class="btn primary" data-act="addMap">+ エリア</button>
+        <button class="btn primary" data-act="addScript">+ 会話</button>
+      </div>
+    </aside>
+    <main class="main" id="mainPane"></main>
+    <section class="preview">
+      <div class="preview-head">
+        <div class="preview-title"><b id="previewName">Preview</b><span id="previewStats" class="pill"></span></div>
+        <div class="toolbar">
+          <button class="btn small" data-act="zoomOut">−</button>
+          <input id="zoomRange" type="range" min="0.5" max="3" step="0.25" value="1" style="width:120px" />
+          <button class="btn small" data-act="zoomIn">＋</button>
+          <button class="btn small" data-act="fit">等倍</button>
+          <select id="drawMode" style="width:130px"><option value="select">選択</option><option value="paint">ペン</option><option value="fillRect">矩形塗り</option></select>
+          <label class="pill"><input type="checkbox" id="showGrid" checked style="width:auto;margin-right:5px">Grid</label>
+          <label class="pill"><input type="checkbox" id="showObjects" checked style="width:auto;margin-right:5px">Objects</label>
+        </div>
+      </div>
+      <div class="canvas-wrap" id="canvasWrap"><div class="canvas-stage"><canvas id="mapCanvas" class="map-canvas"></canvas><div class="coord-box" id="coordBox">x: -, y: -</div></div></div>
+      <div class="preview-foot" id="coordInfo"></div>
+    </section>
+  </div>
+</div>
+<script>
+(function(){
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const esc = (v) => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const clone = (v) => JSON.parse(JSON.stringify(v ?? null));
+  const num = (v, d=0) => Number.isFinite(Number(v)) ? Number(v) : d;
+  const uid = () => `${Date.now().toString(36)}_${Math.random().toString(36).slice(2,8)}`;
+  const actionTypes = ['CONV','ALLY','STEP','SUB','LOG','HEAL','BOSS','FLAG','UNLOCK','ITEM','QUEST_ACCEPT','QUEST_COMPLETE','STORY_DEFEAT','FIELD_CUTSCENE','MAP_VISUAL','START_FIXED_DUNGEON','START_ABYSS_DUNGEON','IF_FLAG','IF','CHOICE','MAP_CHANGE','EVENT','TEMP_LB_START','TEMP_LB_CLEAR'];
+
+  const state = {
+    tab:'maps', search:'', typeFilter:'all', sortMode:'kind', selectedKey:'map:world:WORLD', selectedTile:'T', selectedCoord:{x:0,y:0},
+    drawMode:'paint', zoom:1, showGrid:true, showObjects:true, drag:false, rectStart:null, dirty:false,
+    data:{}, maps:[], scripts:[], events:[], images:new Map(), imageBad:new Set(), validation:[], jsonDraft:'', scriptJsonDraft:'', eventJsonDraft:''
+  };
+
+  function safeGlobalData(){
+    const storyDataSource = (typeof STORY_MANAGER_DATA !== 'undefined') ? STORY_MANAGER_DATA : {
+      maxMainStoryProgress: (typeof StoryManager !== 'undefined' ? StoryManager.maxMainStoryProgress : {storyStep:0,subStep:0}),
+      storyObjectives: (typeof StoryManager !== 'undefined' ? StoryManager.storyObjectives : {}),
+      dungeonObjectiveMilestones: (typeof StoryManager !== 'undefined' ? StoryManager.dungeonObjectiveMilestones : []),
+      scripts: (typeof StoryManager !== 'undefined' ? StoryManager.scripts : {}),
+      events: (typeof StoryManager !== 'undefined' ? StoryManager.events : {})
+    };
+    return {
+      storyMapMutations: clone(typeof STORY_MAP_MUTATIONS !== 'undefined' ? STORY_MAP_MUTATIONS : (window.STORY_MAP_MUTATIONS || {})),
+      tileThemes: clone(typeof TILE_THEMES !== 'undefined' ? TILE_THEMES : (window.TILE_THEMES || {})),
+      storyData: clone(typeof STORY_DATA !== 'undefined' ? STORY_DATA : (window.STORY_DATA || {areas:{}})),
+      seaEncounterMonsters: clone(typeof SEA_ENCOUNTER_MONSTERS !== 'undefined' ? SEA_ENCOUNTER_MONSTERS : (window.SEA_ENCOUNTER_MONSTERS || [])),
+      fieldEncounterZones: clone(typeof FIELD_ENCOUNTER_ZONES !== 'undefined' ? FIELD_ENCOUNTER_ZONES : (window.FIELD_ENCOUNTER_ZONES || [])),
+      mapData: clone(typeof MAP_DATA !== 'undefined' ? MAP_DATA : (window.MAP_DATA || [])),
+      fixedTileOverlays: clone(typeof FIXED_TILE_OVERLAYS !== 'undefined' ? FIXED_TILE_OVERLAYS : (window.FIXED_TILE_OVERLAYS || {})),
+      fixedOverlayBaseTiles: clone(typeof FIXED_OVERLAY_BASE_TILES !== 'undefined' ? FIXED_OVERLAY_BASE_TILES : (window.FIXED_OVERLAY_BASE_TILES || {})),
+      fixedMaps: clone(typeof FIXED_MAPS !== 'undefined' ? FIXED_MAPS : (window.FIXED_MAPS || {})),
+      fixedDungeonMaps: clone(typeof FIXED_DUNGEON_MAPS !== 'undefined' ? FIXED_DUNGEON_MAPS : (window.FIXED_DUNGEON_MAPS || {})),
+      storyManagerData: clone(storyDataSource || {}),
+      graphics: clone(window.PRISMA_ASSETS?.graphics || {}),
+      items: clone(window.ITEMS_DATA || window.DB?.ITEMS || []),
+      monsters: clone(window.MonsterData?.allBases || window.MonsterData?.bases || []),
+      quests: clone(window.QUEST_DATA || {}),
+      chars: clone(window.DB?.CHARACTERS || [])
+    };
+  }
+
+  function init(){
+    state.data = safeGlobalData();
+    rebuildEntities();
+    bindEvents();
+    renderAll();
+  }
+
+  function rebuildEntities(){
+    state.maps = [];
+    const md = state.data.mapData || [];
+    state.maps.push({key:'map:world:WORLD', type:'world', id:'WORLD', name:'ワールドマップ', subtitle:`${md[0]?.length || 0}x${md.length}`, get:()=>worldMapProxy(), set:(v)=>{ state.data.mapData = normalizeRows(v.tiles || v, v.width, v.height); }});
+    Object.entries(state.data.fixedMaps || {}).forEach(([id, m]) => {
+      state.maps.push({key:`map:fixed:${id}`, type:'fixed', id, name:m.name || id, subtitle:`${m.width || rowWidth(m.tiles)}x${m.height || (m.tiles||[]).length}`, get:()=>state.data.fixedMaps[id], set:(v)=>{ state.data.fixedMaps[id]=v; }});
+    });
+    Object.entries(state.data.fixedDungeonMaps || {}).forEach(([id, d]) => {
+      if (Array.isArray(d.floors) && d.floors.length) {
+        d.floors.forEach((f, i) => state.maps.push({key:`map:dungeon:${id}:${i}`, type:'dungeon', id, floorIndex:i, base:d, name:`${d.name || id} / ${f.floorLabel || f.label || `${i+1}階`}`, subtitle:`${f.width || d.width || rowWidth(f.tiles)}x${f.height || d.height || (f.tiles||[]).length}`, get:()=>state.data.fixedDungeonMaps[id].floors[i], set:(v)=>{ state.data.fixedDungeonMaps[id].floors[i]=v; }}));
+      } else {
+        state.maps.push({key:`map:dungeon:${id}:base`, type:'dungeon', id, name:d.name || id, subtitle:`${d.width || rowWidth(d.tiles)}x${d.height || (d.tiles||[]).length}`, get:()=>state.data.fixedDungeonMaps[id], set:(v)=>{ state.data.fixedDungeonMaps[id]=v; }});
+      }
+    });
+    state.scripts = Object.keys(state.data.storyManagerData.scripts || {}).sort();
+    state.events = Object.keys(state.data.storyManagerData.events || {}).sort();
+    if (!findEntity(state.selectedKey)) state.selectedKey = state.maps[0]?.key || '';
+  }
+
+  function worldMapProxy(){
+    const rows = state.data.mapData || [];
+    return { name:'ワールドマップ', width: rowWidth(rows), height: rows.length, themeKey:'WORLD', tiles: rows, isWorld:true };
+  }
+  function rowWidth(rows){ return Array.isArray(rows) ? Math.max(0, ...rows.map(r => String(r).length)) : 0; }
+  function normalizeRows(rows, width=null, height=null){
+    const src = Array.isArray(rows) ? rows : [];
+    const h = height || src.length;
+    const w = width || rowWidth(src);
+    const out=[];
+    for(let y=0;y<h;y++){ const s=String(src[y] || ''); out.push((s + 'T'.repeat(w)).slice(0,w)); }
+    return out;
+  }
+  function findEntity(key){
+    if (!key) return null;
+    if (key.startsWith('map:')) return state.maps.find(m => m.key === key) || null;
+    if (key.startsWith('script:')) return {key, type:'script', id:key.slice(7), name:key.slice(7)};
+    if (key.startsWith('event:')) return {key, type:'event', id:key.slice(6), name:key.slice(6)};
+    return null;
+  }
+  function selectedMapEntity(){ const e=findEntity(state.selectedKey); return e?.key?.startsWith('map:') ? e : null; }
+  function selectedMap(){ return selectedMapEntity()?.get() || worldMapProxy(); }
+  function markDirty(){ state.dirty=true; }
+
+  function bindEvents(){
+    document.addEventListener('click', (ev) => {
+      const btn = ev.target.closest('[data-act]');
+      if (!btn) return;
+      handleAction(btn.dataset.act, btn);
+    });
+    document.addEventListener('click', (ev) => {
+      const nav = ev.target.closest('[data-main-tab]');
+      if (!nav) return;
+      state.tab = nav.dataset.mainTab;
+      if (state.tab === 'story' && state.selectedKey.startsWith('map:')) state.selectedKey = state.scripts[0] ? `script:${state.scripts[0]}` : (state.events[0] ? `event:${state.events[0]}` : state.selectedKey);
+      if (state.tab === 'maps' && !state.selectedKey.startsWith('map:')) state.selectedKey = state.maps[0]?.key || state.selectedKey;
+      renderAll();
+    });
+    $('search').addEventListener('input', e => { state.search=e.target.value; renderList(); });
+    $('typeFilter').addEventListener('change', e => { state.typeFilter=e.target.value; renderList(); });
+    $('sortMode').addEventListener('change', e => { state.sortMode=e.target.value; renderList(); });
+    $('zoomRange').addEventListener('input', e => { state.zoom=Number(e.target.value)||1; drawMap(); });
+    $('drawMode').addEventListener('change', e => { state.drawMode=e.target.value; });
+    $('showGrid').addEventListener('change', e => { state.showGrid=e.target.checked; drawMap(); });
+    $('showObjects').addEventListener('change', e => { state.showObjects=e.target.checked; drawMap(); });
+    const canvas = $('mapCanvas');
+    canvas.addEventListener('mousemove', onCanvasMove);
+    canvas.addEventListener('mouseleave', () => { $('coordBox').textContent='x: -, y: -'; state.drag=false; });
+    canvas.addEventListener('mousedown', onCanvasDown);
+    canvas.addEventListener('mouseup', onCanvasUp);
+  }
+
+  function handleAction(act, btn){
+    if (act === 'reload') location.reload();
+    if (act === 'validate') { runValidation(); state.tab='export'; renderAll(); }
+    if (act === 'exportMap') { downloadText('map.js', generateMapJs()); }
+    if (act === 'exportStory') { downloadText('story.js', generateStoryJs()); }
+    if (act === 'exportBoth') { downloadText('map.js', generateMapJs()); setTimeout(()=>downloadText('story.js', generateStoryJs()), 250); }
+    if (act === 'zoomIn') { state.zoom=Math.min(3,state.zoom+0.25); $('zoomRange').value=state.zoom; drawMap(); }
+    if (act === 'zoomOut') { state.zoom=Math.max(.5,state.zoom-0.25); $('zoomRange').value=state.zoom; drawMap(); }
+    if (act === 'fit') { state.zoom=1; $('zoomRange').value=1; drawMap(); }
+    if (act === 'addMap') addMapDialog();
+    if (act === 'addScript') addScriptDialog();
+    if (act === 'addEvent') addEventDialog();
+    if (act === 'applyMapJson') applyMapJson();
+    if (act === 'copyMapJs') copyText(generateMapJs());
+    if (act === 'copyStoryJs') copyText(generateStoryJs());
+    if (act === 'downloadLogicNote') alert('maps_logic.js / story_logic.js は今回の成果物に同梱されています。通常は編集せず、map.js / story.js だけをエディタから出力してください。');
+    if (act === 'addObject') addObject(btn.dataset.list);
+    if (act === 'applyObject') applyObject(btn.dataset.list, Number(btn.dataset.index));
+    if (act === 'deleteObject') deleteObject(btn.dataset.list, Number(btn.dataset.index));
+    if (act === 'applyScriptJson') applyScriptJson();
+    if (act === 'applyEventJson') applyEventJson();
+    if (act === 'addScriptLine') addScriptLine();
+    if (act === 'deleteScriptLine') deleteScriptLine(Number(btn.dataset.index));
+    if (act === 'applyScriptLines') applyScriptLines();
+    if (act === 'addAction') addAction(btn.dataset.phase || 'actions');
+    if (act === 'deleteAction') deleteAction(btn.dataset.phase, Number(btn.dataset.index));
+    if (act === 'applyActions') applyActions();
+    if (act === 'resizeMap') resizeSelectedMap();
+  }
+
+  function renderAll(){ renderNav(); renderList(); renderMain(); drawMap(); }
+  function renderNav(){
+    document.querySelectorAll('[data-main-tab]').forEach(b => b.classList.toggle('active', b.dataset.mainTab === state.tab));
+  }
+  function entityRows(){
+    const q = state.search.trim().toLowerCase();
+    let rows=[];
+    if (state.tab === 'maps' || state.tab === 'data' || state.typeFilter !== 'script' && state.typeFilter !== 'event') {
+      rows.push(...state.maps.map(m => ({...m, group:'map'})));
+    }
+    if (state.tab === 'story' || state.typeFilter === 'script' || state.typeFilter === 'event') {
+      rows.push(...state.scripts.map(id => ({key:`script:${id}`, type:'script', id, name:id, subtitle:`${(state.data.storyManagerData.scripts[id]||[]).length} lines`})));
+      rows.push(...state.events.map(id => ({key:`event:${id}`, type:'event', id, name:id, subtitle:`${((state.data.storyManagerData.events[id]||{}).actions||[]).length}+${((state.data.storyManagerData.events[id]||{}).winActions||[]).length} actions`})));
+    }
+    if (state.typeFilter !== 'all') rows = rows.filter(r => r.type === state.typeFilter);
+    if (q) rows = rows.filter(r => `${r.name} ${r.id} ${r.subtitle||''} ${r.type}`.toLowerCase().includes(q));
+    const typeOrder = {world:0,fixed:1,dungeon:2,script:3,event:4};
+    rows.sort((a,b) => state.sortMode === 'name' ? String(a.name).localeCompare(String(b.name),'ja') : state.sortMode === 'size' ? sizeOfEntity(b)-sizeOfEntity(a) : (typeOrder[a.type]-typeOrder[b.type]) || String(a.name).localeCompare(String(b.name),'ja'));
+    return rows;
+  }
+  function sizeOfEntity(e){ if (e.key?.startsWith('map:')) { const m=e.get(); return (m.width||rowWidth(m.tiles))*(m.height||(m.tiles||[]).length); } return 0; }
+  function renderList(){
+    const rows = entityRows();
+    $('entityList').innerHTML = rows.map(e => `<button class="row ${e.key===state.selectedKey?'active':''}" data-key="${esc(e.key)}"><b>${esc(e.name || e.id)}</b><span class="meta"><span class="pill">${esc(e.type)}</span><span>${esc(e.id||'')}</span><span>${esc(e.subtitle||'')}</span></span></button>`).join('') || `<div class="hint" style="padding:12px">該当データがありません。</div>`;
+    $('entityList').querySelectorAll('[data-key]').forEach(btn => btn.onclick = () => { state.selectedKey=btn.dataset.key; state.jsonDraft=''; state.scriptJsonDraft=''; state.eventJsonDraft=''; renderMain(); drawMap(); });
+  }
+
+  function renderMain(){
+    if (state.tab === 'export') return renderExportPane();
+    if (state.tab === 'data') return renderDataPane();
+    const e = findEntity(state.selectedKey);
+    if (!e) { $('mainPane').innerHTML = '<div class="message">データを選択してください。</div>'; return; }
+    if (e.type === 'script') return renderScriptEditor(e.id);
+    if (e.type === 'event') return renderEventEditor(e.id);
+    return renderMapEditor();
+  }
+
+  function renderMapEditor(){
+    const ent = selectedMapEntity(); const map = selectedMap();
+    const rows = map.tiles || [];
+    const w = map.width || rowWidth(rows); const h = map.height || rows.length;
+    const themeKey = getThemeKey(map, ent?.type);
+    if (!state.jsonDraft) state.jsonDraft = JSON.stringify(map, null, 2);
+    $('mainPane').innerHTML = `
+      <div class="message">右側プレビュー上で選択/ペイントできます。実プロジェクトで <span class="kbd">assets/</span> が存在する場合は、PRISMA_ASSETS.graphics の画像パスを使ってゲーム内に近い見え方で描画します。</div>
+      <div class="card"><h2>マップ基本設定 <span class="pill ${state.dirty?'warn':'ok'}">${state.dirty?'未出力の変更あり':'読み込み済み'}</span></h2>
+        <div class="grid cols-4">
+          <div><label>ID</label><input value="${esc(ent?.id || 'WORLD')}" readonly></div>
+          <div><label>種別</label><input value="${esc(ent?.type || 'world')}" readonly></div>
+          <div><label>幅</label><input id="mapWidth" type="number" value="${esc(w)}"></div>
+          <div><label>高さ</label><input id="mapHeight" type="number" value="${esc(h)}"></div>
+          <div><label>名前</label><input id="mapName" value="${esc(map.name || '')}"></div>
+          <div><label>themeKey</label><select id="mapTheme">${themeOptions(themeKey)}</select></div>
+          <div><label>battleBg</label><input id="mapBattleBg" value="${esc(map.battleBg || '')}"></div>
+          <div><label>選択座標</label><input value="x:${state.selectedCoord.x}, y:${state.selectedCoord.y}" readonly></div>
+        </div>
+        <div class="toolbar" style="margin-top:10px"><button class="btn green" data-act="resizeMap">基本設定を反映/リサイズ</button><span class="hint">リサイズ時、足りない部分は選択中タイルで埋めます。</span></div>
+      </div>
+      <div class="card"><h2>タイルパレット <span class="pill">選択中: ${esc(state.selectedTile)}</span></h2><div class="tile-palette">${tilePaletteHtml(map)}</div></div>
+      <div class="card"><h2>座標オブジェクト</h2>${coordinateObjectSummaryHtml(map)}${objectSectionsHtml(map)}</div>
+      <div class="card"><h2>詳細JSON <span class="hint">既存機能の全キーをここで編集できます</span></h2><textarea id="mapJson" class="jsonbox">${esc(state.jsonDraft)}</textarea><div class="toolbar" style="margin-top:10px"><button class="btn green" data-act="applyMapJson">JSONを反映</button></div></div>
+    `;
+    $('mainPane').querySelectorAll('[data-tile]').forEach(b => b.onclick = () => { state.selectedTile=b.dataset.tile; renderMain(); });
+    ['mapName','mapTheme','mapBattleBg'].forEach(id => { const el=$(id); if (el) el.addEventListener('change', updateMapBasics); });
+    const mj=$('mapJson'); if (mj) mj.addEventListener('input', e => { state.jsonDraft=e.target.value; });
+  }
+
+  function themeOptions(value){ return Object.keys(state.data.tileThemes || {}).sort().map(k => `<option value="${esc(k)}"${k===value?' selected':''}>${esc(k)}</option>`).join(''); }
+  function getThemeKey(map, type=null){ return map.themeKey || map.areaKey || map.baseName || (type==='world' || map.isWorld ? 'WORLD' : (map.isDungeon ? 'ABYSS' : 'FIELD')); }
+  function updateMapBasics(){
+    const ent=selectedMapEntity(); if (!ent) return; const map=ent.get();
+    if (!map.isWorld) map.name = $('mapName').value;
+    map.themeKey = $('mapTheme').value || map.themeKey;
+    map.battleBg = $('mapBattleBg').value || map.battleBg;
+    ent.set(map); state.jsonDraft=''; markDirty(); rebuildEntities(); renderAll();
+  }
+  function resizeSelectedMap(){
+    const ent=selectedMapEntity(); if (!ent) return; const map=ent.get();
+    const w=Math.max(1, Math.floor(num($('mapWidth').value, map.width || rowWidth(map.tiles))));
+    const h=Math.max(1, Math.floor(num($('mapHeight').value, map.height || (map.tiles||[]).length)));
+    map.width=w; map.height=h; map.tiles = normalizeRows(map.tiles || [], w, h).map(r => r.replace(/T/g, state.selectedTile || 'T'));
+    if (ent.type === 'world') state.data.mapData = map.tiles; else ent.set(map);
+    state.jsonDraft=''; markDirty(); rebuildEntities(); renderAll();
+  }
+  function tilePaletteHtml(map){
+    const chars = new Set();
+    (map.tiles || []).forEach(r => String(r).split('').forEach(c => chars.add(c)));
+    const theme = getTheme(map);
+    Object.keys(theme).forEach(k => chars.add(k));
+    ['T','G','W','S','C','R','B','D','U','P','X','Y','Z','Q','N','O','I','K','E','H','V','M','L','F','l','d'].forEach(c => chars.add(c));
+    return [...chars].filter(Boolean).sort().map(ch => {
+      const cfg = tileVisualConfig(map, ch); const src = assetPath(cfg.img); const bg = cfg.color || '#24324a';
+      return `<button class="tile-btn ${state.selectedTile===ch?'active':''}" data-tile="${esc(ch)}"><div class="tile-swatch" style="background-color:${esc(bg)};${src?`background-image:url('${esc(src)}')`:''}"><small>${esc(ch)}</small></div></button>`;
+    }).join('');
+  }
+  function getTheme(map){
+    const key = getThemeKey(map); const base = clone(state.data.tileThemes[key] || state.data.tileThemes.WORLD || {});
+    return {...base, ...(map.tileOverrides || {})};
+  }
+  function mergeOverlayMap(source, map){
+    const isDungeon = !!map.isDungeon || selectedMapEntity()?.type === 'dungeon';
+    const defaults = isDungeon ? (source.DEFAULT_DUNGEON || {}) : (source.DEFAULT_FIELD || {});
+    const themeKey = getThemeKey(map);
+    return {...defaults, ...(source[themeKey] || {}), ...(map.fixedTileOverlays || {}), ...(map.overlayOverrides || {})};
+  }
+  function overlayBaseSign(map, sign){
+    const isDungeon = !!map.isDungeon || selectedMapEntity()?.type === 'dungeon';
+    const source = state.data.fixedOverlayBaseTiles || {};
+    const defaults = isDungeon ? (source.DEFAULT_DUNGEON || {}) : (source.DEFAULT_FIELD || {});
+    const themeKey = getThemeKey(map);
+    const merged = {...defaults, ...(source[themeKey] || {}), ...(map.fixedOverlayBaseTiles || {})};
+    return merged[String(sign).toUpperCase()] || sign;
+  }
+  function tileVisualConfig(map, sign, x=null, y=null){
+    const theme = getTheme(map); const upper=String(sign || '').toUpperCase();
+    let overlay = mergeOverlayMap(state.data.fixedTileOverlays || {}, map)[upper];
+
+    // ゲーム側 Field.getFixedTileOverlayConfig() と同じく、固定ボスのBタイルは
+    // 汎用ボスアイコンではなく配置済み bossDef の monster_XXXX / overlay_boss_XXXX を優先する。
+    if (overlay && upper === 'B' && x !== null && y !== null) {
+      const bossKey = bossSpriteKeyFromDef(bossDefAt(map, x, y));
+      if (bossKey) overlay = {...overlay, img: bossKey};
+    }
+
+    const baseSign = overlay ? overlayBaseSign(map, upper) : sign;
+    const baseCfg = theme[baseSign] || theme[upper] || theme[sign] || {img:'',color:'#202a3e'};
+    if (overlay && overlay.img) return {...baseCfg, overlay};
+    return baseCfg;
+  }
+  function assetPath(keyOrPath){
+    if (!keyOrPath) return '';
+    return state.data.graphics[keyOrPath] || keyOrPath;
+  }
+
+  const BUILDING_IMAGE_PREFIXES = [
+    'overlay_building_', 'overlay_field_castle', 'overlay_field_fortress',
+    'overlay_field_hall', 'overlay_field_house', 'overlay_field_inn',
+    'overlay_field_lighthouse', 'overlay_field_medal', 'overlay_field_ruins',
+    'overlay_field_settlement', 'overlay_field_shop', 'overlay_field_smith',
+    'overlay_field_temple', 'overlay_field_tower', 'overlay_field_town',
+    'overlay_field_village', 'overlay_field_weapon'
+  ];
+  function isBuildingImageKey(key){ return BUILDING_IMAGE_PREFIXES.some(prefix => String(key || '').startsWith(prefix)); }
+  function isBossImageKey(key){
+    const k = String(key || '');
+    return k === 'boss' || k === 'boss_dungeon' || k === 'overlay_field_boss' ||
+      k === 'overlay_monster_guardian' || k === 'overlay_dungeon_boss' ||
+      k === 'overlay_named_dungeon_boss' || k.startsWith('overlay_boss_') ||
+      k.startsWith('monster_');
+  }
+  function bossSpriteKeyFromDef(bossDef){
+    if (!bossDef) return '';
+    if (bossDef.imageKey) return bossDef.imageKey;
+    const raw = Array.isArray(bossDef.monsterId) ? bossDef.monsterId[0]
+      : (Array.isArray(bossDef.monsterIds) ? bossDef.monsterIds[0] : bossDef.monsterId);
+    const id = Number(bossDef.mapSpriteMonsterId || raw);
+    if (!Number.isFinite(id)) return '';
+    const direct = `monster_${id}`;
+    if (state.data.graphics[direct]) return direct;
+    const compat = `overlay_boss_${id}`;
+    if (state.data.graphics[compat]) return compat;
+    return direct;
+  }
+  function bossDefAt(map,x,y){
+    return (map.bosses || []).find(b => Number(b.x) === Number(x) && Number(b.y) === Number(y)) || null;
+  }
+
+  function coordinateObjectSummaryHtml(map){
+    const x=state.selectedCoord.x, y=state.selectedCoord.y;
+    const lists = ['chests','bosses','floorLinks','mapActions','tileEffects','healSprings'];
+    const hits=[];
+    lists.forEach(list => (map[list] || []).forEach((o,i) => { if (Number(o.x)===x && Number(o.y)===y) hits.push(`<span class="pill">${esc(list)}#${i}</span> ${esc(labelForObject(list,o))}`); }));
+    const tile = (map.tiles?.[y] || '')[x] || '';
+    return `<div class="message"><b>選択座標</b> <span class="kbd">x:${x}, y:${y}</span> / tile: <span class="kbd">${esc(tile)}</span><br>${hits.length ? hits.join('<br>') : '<span class="hint">この座標に登録済みオブジェクトはありません。</span>'}</div>`;
+  }
+  function labelForObject(list,o){
+    if (list==='chests') return itemLabel(o.itemId);
+    if (list==='bosses') return monsterLabel(o.monsterId || o.monsterIds);
+    if (list==='mapActions') return `${o.label || o.type || ''} ${o.eventId || o.questId || ''}`;
+    if (list==='floorLinks') return `${o.label || ''} -> ${o.to || o.toFloor || ''}`;
+    if (list==='tileEffects') return o.type || JSON.stringify(o);
+    return o.label || o.type || JSON.stringify(o);
+  }
+  function objectSectionsHtml(map){
+    return ['chests','bosses','floorLinks','mapActions','tileEffects','healSprings'].map(list => objectSectionHtml(list, map[list] || [])).join('');
+  }
+  function objectSectionHtml(list, arr){
+    return `<details ${['chests','bosses','mapActions'].includes(list)?'open':''}><summary style="cursor:pointer;color:var(--accent);font-weight:900;margin:12px 0 8px">${esc(list)} <span class="pill">${arr.length}</span></summary><div class="toolbar" style="margin-bottom:8px"><button class="btn small primary" data-act="addObject" data-list="${esc(list)}">選択座標に追加</button></div><div class="object-list">${arr.map((o,i)=>`<div class="object-row"><div><span class="pill">#${i}</span><div class="mini">x:${esc(o.x)}, y:${esc(o.y)}</div></div><textarea id="obj_${list}_${i}">${esc(JSON.stringify(o,null,2))}</textarea><div class="grid"><button class="btn small green" data-act="applyObject" data-list="${esc(list)}" data-index="${i}">反映</button><button class="btn small red" data-act="deleteObject" data-list="${esc(list)}" data-index="${i}">削除</button></div></div>`).join('') || '<div class="hint">未登録</div>'}</div></details>`;
+  }
+  function addObject(list){
+    const ent=selectedMapEntity(); if (!ent) return; const map=ent.get(); if (!Array.isArray(map[list])) map[list]=[];
+    const {x,y}=state.selectedCoord;
+    const skeletons = {
+      chests:{x,y,itemId:firstItemId(),type:'item'},
+      bosses:{x,y,monsterId:firstMonsterId(),actionLabel:'戦う',inspectLog:'強敵の気配がする。'},
+      floorLinks:{x,y,toFloor:1,targetX:x,targetY:y,label:'階段を使う'},
+      mapActions:{x,y,label:'調べる',log:'何かがある。',type:'event',eventId:firstEventId()},
+      tileEffects:{x,y,type:'warp',toX:x,toY:y,message:'不思議な力で移動した。'},
+      healSprings:{x,y,label:'回復する',message:'体力が回復した。'}
+    };
+    map[list].push(skeletons[list] || {x,y}); ent.set(map); state.jsonDraft=''; markDirty(); renderAll();
+  }
+  function applyObject(list, i){
+    const ent=selectedMapEntity(); const map=ent?.get(); if (!map || !Array.isArray(map[list])) return;
+    try { map[list][i] = JSON.parse($(`obj_${list}_${i}`).value); ent.set(map); state.jsonDraft=''; markDirty(); drawMap(); renderMain(); }
+    catch(e){ alert(`JSONエラー: ${e.message}`); }
+  }
+  function deleteObject(list, i){
+    const ent=selectedMapEntity(); const map=ent?.get(); if (!map || !Array.isArray(map[list])) return;
+    map[list].splice(i,1); ent.set(map); state.jsonDraft=''; markDirty(); renderAll();
+  }
+
+  function applyMapJson(){
+    const ent=selectedMapEntity(); if (!ent) return;
+    try { const obj=JSON.parse($('mapJson').value); if (ent.type==='world') state.data.mapData = normalizeRows(obj.tiles || obj); else ent.set(obj); state.jsonDraft=''; markDirty(); rebuildEntities(); renderAll(); }
+    catch(e){ alert(`JSONエラー: ${e.message}`); }
+  }
+
+  function renderScriptEditor(id){
+    const lines = state.data.storyManagerData.scripts[id] || [];
+    if (!state.scriptJsonDraft) state.scriptJsonDraft = JSON.stringify(lines, null, 2);
+    $('mainPane').innerHTML = `<div class="card"><h2>会話スクリプト: ${esc(id)} <span class="pill">${lines.length} lines</span></h2><div class="toolbar"><button class="btn primary" data-act="addScriptLine">+ 行追加</button><button class="btn green" data-act="applyScriptLines">行編集を反映</button></div></div><div class="card"><h2>行エディタ</h2><div class="script-lines">${lines.map((l,i)=>scriptLineHtml(l,i)).join('') || '<div class="hint">行がありません。</div>'}</div></div><div class="card"><h2>詳細JSON</h2><textarea id="scriptJson" class="jsonbox">${esc(state.scriptJsonDraft)}</textarea><div class="toolbar" style="margin-top:10px"><button class="btn green" data-act="applyScriptJson">JSONを反映</button></div></div>`;
+    const sj=$('scriptJson'); if (sj) sj.addEventListener('input', e => state.scriptJsonDraft=e.target.value);
+  }
+  function scriptLineHtml(l,i){ return `<div class="script-line"><input id="sl_char_${i}" placeholder="charId" value="${esc(l.charId ?? '')}"><input id="sl_name_${i}" placeholder="name" value="${esc(l.name ?? '')}"><textarea id="sl_text_${i}" placeholder="text">${esc(l.text ?? '')}</textarea><button class="btn small red" data-act="deleteScriptLine" data-index="${i}">削除</button></div>`; }
+  function addScriptLine(){ const id=state.selectedKey.slice(7); state.data.storyManagerData.scripts[id].push({name:'システム',text:''}); state.scriptJsonDraft=''; markDirty(); renderMain(); }
+  function deleteScriptLine(i){ const id=state.selectedKey.slice(7); state.data.storyManagerData.scripts[id].splice(i,1); state.scriptJsonDraft=''; markDirty(); renderMain(); }
+  function applyScriptLines(){
+    const id=state.selectedKey.slice(7); const arr=state.data.storyManagerData.scripts[id] || [];
+    state.data.storyManagerData.scripts[id] = arr.map((old,i) => { const out={}; const c=$(`sl_char_${i}`).value.trim(); if(c) out.charId=Number(c); const n=$(`sl_name_${i}`).value.trim(); if(n) out.name=n; out.text=$(`sl_text_${i}`).value; return out; });
+    state.scriptJsonDraft=''; markDirty(); renderMain();
+  }
+  function applyScriptJson(){ const id=state.selectedKey.slice(7); try{ const arr=JSON.parse($('scriptJson').value); if(!Array.isArray(arr)) throw new Error('会話スクリプトは配列にしてください'); state.data.storyManagerData.scripts[id]=arr; state.scriptJsonDraft=''; markDirty(); renderMain(); }catch(e){ alert(`JSONエラー: ${e.message}`); } }
+
+  function renderEventEditor(id){
+    const ev = state.data.storyManagerData.events[id] || {actions:[]};
+    if (!state.eventJsonDraft) state.eventJsonDraft = JSON.stringify(ev, null, 2);
+    $('mainPane').innerHTML = `<div class="card"><h2>イベント: ${esc(id)}</h2><div class="toolbar"><button class="btn primary" data-act="addAction" data-phase="actions">+ actions</button><button class="btn primary" data-act="addAction" data-phase="winActions">+ winActions</button><button class="btn green" data-act="applyActions">アクション編集を反映</button><button class="btn primary" data-act="addEvent">+ 新規イベント</button></div></div><div class="split2"><div class="card"><h2>actions</h2>${actionListHtml(ev.actions || [], 'actions')}</div><div class="card"><h2>winActions</h2>${actionListHtml(ev.winActions || [], 'winActions')}</div></div><div class="card"><h2>詳細JSON</h2><textarea id="eventJson" class="jsonbox">${esc(state.eventJsonDraft)}</textarea><div class="toolbar" style="margin-top:10px"><button class="btn green" data-act="applyEventJson">JSONを反映</button></div></div>`;
+    const ej=$('eventJson'); if (ej) ej.addEventListener('input', e => state.eventJsonDraft=e.target.value);
+  }
+  function actionListHtml(arr, phase){ return (arr||[]).map((a,i)=>`<div class="action-row"><select id="act_type_${phase}_${i}">${actionTypes.map(t=>`<option value="${t}"${a.type===t?' selected':''}>${t}</option>`).join('')}</select><textarea id="act_json_${phase}_${i}">${esc(JSON.stringify({...a,type:undefined}, null, 2).replace(/\n  "type": undefined,?/,'').replace(/\{\n\}/,'{}'))}</textarea><button class="btn small red" data-act="deleteAction" data-phase="${phase}" data-index="${i}">削除</button></div>`).join('') || '<div class="hint">未登録</div>'; }
+  function addAction(phase){ const id=state.selectedKey.slice(6); const ev=state.data.storyManagerData.events[id] || (state.data.storyManagerData.events[id]={actions:[]}); if(!Array.isArray(ev[phase])) ev[phase]=[]; ev[phase].push({type:'CONV', value:firstScriptId()}); state.eventJsonDraft=''; markDirty(); renderMain(); }
+  function deleteAction(phase,i){ const id=state.selectedKey.slice(6); const arr=state.data.storyManagerData.events[id]?.[phase]; if(Array.isArray(arr)){ arr.splice(i,1); state.eventJsonDraft=''; markDirty(); renderMain(); } }
+  function applyActions(){
+    const id=state.selectedKey.slice(6); const ev=state.data.storyManagerData.events[id] || {actions:[]};
+    ['actions','winActions'].forEach(phase => { const arr=ev[phase] || []; ev[phase]=arr.map((old,i)=>{ const t=$(`act_type_${phase}_${i}`); const j=$(`act_json_${phase}_${i}`); if(!t || !j) return old; let obj={}; try{ obj=JSON.parse(j.value || '{}'); }catch(e){ throw new Error(`${phase} #${i}: ${e.message}`); } obj.type=t.value; return obj; }); });
+    state.data.storyManagerData.events[id]=ev; state.eventJsonDraft=''; markDirty(); renderMain();
+  }
+  function applyEventJson(){ const id=state.selectedKey.slice(6); try{ const obj=JSON.parse($('eventJson').value); state.data.storyManagerData.events[id]=obj; state.eventJsonDraft=''; markDirty(); renderMain(); }catch(e){ alert(`JSONエラー: ${e.message}`); } }
+
+  function addScriptDialog(){ const id=prompt('新しい会話スクリプトID'); if(!id) return; if(state.data.storyManagerData.scripts[id]) return alert('既に存在します'); state.data.storyManagerData.scripts[id]=[{name:'システム',text:''}]; rebuildEntities(); state.selectedKey=`script:${id}`; state.tab='story'; markDirty(); renderAll(); }
+  function addEventDialog(){ const id=prompt('新しいイベントID'); if(!id) return; if(state.data.storyManagerData.events[id]) return alert('既に存在します'); state.data.storyManagerData.events[id]={actions:[]}; rebuildEntities(); state.selectedKey=`event:${id}`; state.tab='story'; markDirty(); renderAll(); }
+  function addMapDialog(){ const id=prompt('新しい固定エリアID'); if(!id) return; if(state.data.fixedMaps[id]) return alert('既に存在します'); state.data.fixedMaps[id]={name:id,themeKey:'FIELD',width:15,height:11,entryPoint:{x:7,y:9},tiles:Array.from({length:11},()=> 'T'.repeat(15)),mapActions:[],chests:[],bosses:[]}; rebuildEntities(); state.selectedKey=`map:fixed:${id}`; state.tab='maps'; markDirty(); renderAll(); }
+
+  function renderDataPane(){
+    $('mainPane').innerHTML = `<div class="card"><h2>マスタ参照</h2><div class="grid cols-4"><div class="message"><b>モンスター</b><br>${state.data.monsters.length}件</div><div class="message"><b>アイテム</b><br>${state.data.items.length}件</div><div class="message"><b>画像キー</b><br>${Object.keys(state.data.graphics).length}件</div><div class="message"><b>クエスト</b><br>${Object.keys(state.data.quests).length}件</div></div></div><div class="card"><h2>エンカウントゾーン</h2>${encounterZoneHtml()}</div><div class="card"><h2>STORY_DATA.areas</h2><textarea id="areasJson" class="jsonbox">${esc(JSON.stringify(state.data.storyData.areas || {}, null, 2))}</textarea><div class="toolbar" style="margin-top:10px"><button class="btn green" onclick="window.__applyAreasJson&&window.__applyAreasJson()">areas JSONを反映</button></div></div>`;
+    window.__applyAreasJson = () => { try{ state.data.storyData.areas=JSON.parse($('areasJson').value); state.jsonDraft=''; markDirty(); drawMap(); }catch(e){ alert(e.message); } };
+  }
+  function encounterZoneHtml(){
+    return `<textarea id="zonesJson" class="jsonbox">${esc(JSON.stringify(state.data.fieldEncounterZones, null, 2))}</textarea><div class="toolbar" style="margin-top:10px"><button class="btn green" onclick="window.__applyZonesJson&&window.__applyZonesJson()">ゾーンJSONを反映</button><span class="hint">monsters / rareMonsters は monsters.js のIDで検証されます。</span></div>`;
+  }
+  window.__applyZonesJson = () => { try{ state.data.fieldEncounterZones=JSON.parse($('zonesJson').value); markDirty(); }catch(e){ alert(e.message); } };
+
+  function renderExportPane(){
+    const errors = state.validation.length ? state.validation : runValidation(false);
+    const fatal = errors.filter(e=>e.level==='error').length;
+    const warn = errors.filter(e=>e.level==='warn').length;
+    $('mainPane').innerHTML = `<div class="card"><h2>出力・検証</h2><div class="toolbar"><button class="btn green" data-act="validate">再検証</button><button class="btn gold" data-act="exportMap">map.jsをダウンロード</button><button class="btn gold" data-act="exportStory">story.jsをダウンロード</button><button class="btn primary" data-act="exportBoth">両方ダウンロード</button><button class="btn" data-act="copyMapJs">map.jsコピー</button><button class="btn" data-act="copyStoryJs">story.jsコピー</button><button class="btn ghost" data-act="downloadLogicNote">logicファイルについて</button></div><p class="hint">通常は <span class="kbd">map.js</span> と <span class="kbd">story.js</span> だけを出力します。<span class="kbd">maps_logic.js</span> / <span class="kbd">story_logic.js</span> は保護対象です。</p></div><div class="card"><h2>検証結果 <span class="pill ${fatal?'danger':warn?'warn':'ok'}">error ${fatal} / warn ${warn}</span></h2>${errors.length ? errors.map(e=>`<div class="message ${e.level==='error'?'dangerbox':'warnbox'}"><b>${esc(e.level.toUpperCase())}</b> ${esc(e.where)}<br>${esc(e.message)}</div>`).join('') : '<div class="message">問題は見つかりませんでした。</div>'}</div><div class="card"><h2>出力プレビュー</h2><div class="split2"><textarea class="jsonbox" readonly>${esc(generateMapJs().slice(0,50000))}</textarea><textarea class="jsonbox" readonly>${esc(generateStoryJs().slice(0,50000))}</textarea></div><p class="hint">プレビューは先頭50,000文字のみ表示しています。ダウンロードは全量出力します。</p></div>`;
+  }
+
+  function drawMap(){
+    const ent=selectedMapEntity(); const map=selectedMap();
+    $('previewName').textContent = ent ? `${ent.name}` : 'Preview';
+    const rows=map.tiles || []; const w=map.width || rowWidth(rows); const h=map.height || rows.length; const tile=Math.max(8, Math.floor(18*state.zoom));
+    $('previewStats').textContent = `${w}x${h} / tile ${state.selectedTile}`;
+    const canvas=$('mapCanvas'); canvas.width=w*tile; canvas.height=h*tile; canvas.style.width=`${w*tile}px`; canvas.style.height=`${h*tile}px`;
+    const ctx=canvas.getContext('2d'); ctx.imageSmoothingEnabled=false; ctx.clearRect(0,0,canvas.width,canvas.height);
+    for(let y=0;y<h;y++){
+      const row=String(rows[y] || '');
+      for(let x=0;x<w;x++){
+        const sign=row[x] || 'T'; const cfg=tileVisualConfig(map, sign, x, y); drawTile(ctx,cfg,x*tile,y*tile,tile,map,sign,x,y,ent?.type);
+      }
+    }
+    if (state.showGrid && tile>=10) { ctx.strokeStyle='rgba(255,255,255,.08)'; ctx.lineWidth=1; for(let x=0;x<=w;x++){ctx.beginPath();ctx.moveTo(x*tile+.5,0);ctx.lineTo(x*tile+.5,h*tile);ctx.stroke();} for(let y=0;y<=h;y++){ctx.beginPath();ctx.moveTo(0,y*tile+.5);ctx.lineTo(w*tile,y*tile+.5);ctx.stroke();} }
+    if (state.showObjects) drawObjects(ctx,map,tile,ent?.type);
+    ctx.strokeStyle='#f5bd4f'; ctx.lineWidth=Math.max(2,Math.floor(tile/8)); ctx.strokeRect(state.selectedCoord.x*tile+1,state.selectedCoord.y*tile+1,tile-2,tile-2);
+    updateCoordInfo();
+  }
+  function drawTile(ctx,cfg,px,py,tile,map,sign,x,y,entityType){
+    ctx.fillStyle = cfg.color || '#202a3e'; ctx.fillRect(px,py,tile,tile);
+    const src=assetPath(cfg.img);
+    const img=getImage(src);
+    if(img && img.complete && img.naturalWidth) ctx.drawImage(img,px,py,tile,tile);
+
+    if (cfg.overlay) {
+      drawOverlayImage(ctx, cfg.overlay, px, py, tile, !!map.isWorld || entityType === 'world');
+    }
+
+    if (!src && tile>=14) {
+      ctx.fillStyle='rgba(255,255,255,.22)'; ctx.font=`${Math.floor(tile*.55)}px monospace`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(sign,px+tile/2,py+tile/2);
+    }
+  }
+  function drawOverlayImage(ctx, overlay, px, py, tile, isWorldMap=false){
+    const key = overlay?.img || '';
+    const building = isBuildingImageKey(key);
+    const boss = isBossImageKey(key);
+
+    // phaser-field.js と合わせる。ワールドマップ上の町/神殿は地図記号として1マス、
+    // 固定マップの建物は約2.4マス、ボス/monster_* は2マスで足元を元マス下端に合わせる。
+    const scale = building && !isWorldMap ? 2.4 : (boss ? 2 : 1);
+    const dw = tile * scale;
+    const dh = tile * scale;
+    const dx = px + tile / 2 - dw / 2;
+    const dy = py + tile - dh;
+
+    if (!building && (boss || scale > 1)) {
+      ctx.save();
+      ctx.fillStyle = boss ? 'rgba(0,0,0,.30)' : 'rgba(0,0,0,.22)';
+      ctx.beginPath();
+      ctx.ellipse(px + tile/2 + tile*.12, py + tile*.92, tile * (boss ? .55 : .38), tile*.16, 0, 0, Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    const src=assetPath(key);
+    const oi=getImage(src);
+    if(oi && oi.complete && oi.naturalWidth) {
+      ctx.drawImage(oi,dx,dy,dw,dh);
+    } else {
+      ctx.fillStyle = overlay.color || '#db3b4d';
+      ctx.beginPath();
+      ctx.arc(px+tile/2, py+tile/2, Math.max(4, tile * (boss ? .55 : .32)), 0, Math.PI*2);
+      ctx.fill();
+    }
+  }
+  function getImage(src){
+    if (!src || state.imageBad.has(src)) return null;
+    if (state.images.has(src)) return state.images.get(src);
+    const img=new Image(); img.onload=()=>drawMap(); img.onerror=()=>{state.imageBad.add(src);}; img.src=src; state.images.set(src,img); return img;
+  }
+  function drawObjects(ctx,map,tile,type){
+    const drawMarker = (x,y,label,color,imgKey,opts={}) => {
+      const px=x*tile, py=y*tile;
+      const key = imgKey || '';
+      const scale = opts.scale || (isBuildingImageKey(key) && !map.isWorld ? 2.4 : (isBossImageKey(key) ? 2 : 1));
+      const dw = tile * scale, dh = tile * scale;
+      const dx = px + tile/2 - dw/2, dy = py + tile - dh;
+      const src=assetPath(key); const img=getImage(src);
+      if(img && img.complete && img.naturalWidth) {
+        if (scale > 1) { ctx.fillStyle='rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(px+tile*.62, py+tile*.92, tile*.48, tile*.14, 0, 0, Math.PI*2); ctx.fill(); }
+        ctx.drawImage(img,dx,dy,dw,dh);
+      } else {
+        ctx.fillStyle=color; ctx.beginPath(); ctx.arc(px+tile/2,py+tile/2,Math.max(4,tile*(scale>1?.48:.32)),0,Math.PI*2); ctx.fill();
+        ctx.fillStyle='#fff'; ctx.font=`${Math.floor(tile*.45)}px sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(label,px+tile/2,py+tile/2);
+      }
+    };
+    if (map.isWorld) Object.values(state.data.storyData.areas || {}).forEach(a => { if(Number.isFinite(Number(a.centerX))&&Number.isFinite(Number(a.centerY))) drawMarker(Number(a.centerX),Number(a.centerY),'A','#d7b45a',a.fieldTile?.img,{scale:1}); });
+    (map.chests||[]).forEach(c=>drawMarker(Number(c.x),Number(c.y),c.rare?'R':'C',c.rare?'#ff637a':'#a86b34', type==='dungeon' ? (c.rare?'chest_rare_dungeon':'chest_dungeon') : (c.rare?'chest_rare':'chest'),{scale:1}));
+
+    // Bタイル自体にもボスが描かれるため、ここではB以外の座標だけ補助表示。
+    // ただしタイルがBでない特殊配置はゲーム側同様 monster_* を2倍足元合わせで表示する。
+    (map.bosses||[]).forEach(b=>{
+      const bx=Number(b.x), by=Number(b.y);
+      const tileSign=String(map.tiles?.[by] || '')[bx];
+      if (String(tileSign || '').toUpperCase() === 'B') return;
+      drawMarker(bx,by,'B','#db3b4d', bossSpriteKeyFromDef(b) || (type==='dungeon'?'boss_dungeon':'boss'));
+    });
+    (map.floorLinks||[]).forEach(s=>drawMarker(Number(s.x),Number(s.y),'S','#d7b45a', type==='dungeon'?'stairs_dungeon':'stairs',{scale:1}));
+    (map.mapActions||[]).forEach(a=>drawMarker(Number(a.x),Number(a.y),'!', '#62d7ff', a.imageKey || (a.type==='quest'?'overlay_field_event':'')));
+    (map.tileEffects||[]).forEach(e=>drawMarker(Number(e.x),Number(e.y),'*', '#9a7dff', e.imageKey || (e.type==='warp'?'overlay_dungeon_warp':''),{scale:1}));
+    (map.healSprings||[]).forEach(e=>drawMarker(Number(e.x),Number(e.y),'H', '#48d68d', e.imageKey || 'overlay_dungeon_trial_angel',{scale:1}));
+    if (map.entryPoint) drawMarker(Number(map.entryPoint.x),Number(map.entryPoint.y),'IN','#48d68d','',{scale:1});
+    if (map.exitPoint && Number.isFinite(Number(map.exitPoint.x))) drawMarker(Number(map.exitPoint.x),Number(map.exitPoint.y),'OUT','#ffcf68','',{scale:1});
+  }
+  function canvasCoord(ev){
+    const canvas=$('mapCanvas'); const rect=canvas.getBoundingClientRect(); const map=selectedMap(); const rows=map.tiles||[]; const w=map.width||rowWidth(rows); const h=map.height||rows.length; const tile=canvas.width/Math.max(1,w);
+    const x=Math.floor((ev.clientX-rect.left)*(canvas.width/rect.width)/tile); const y=Math.floor((ev.clientY-rect.top)*(canvas.height/rect.height)/tile);
+    return {x:Math.max(0,Math.min(w-1,x)), y:Math.max(0,Math.min(h-1,y))};
+  }
+  function onCanvasMove(ev){ const c=canvasCoord(ev); $('coordBox').textContent=`x:${c.x}, y:${c.y}`; if(state.drag && state.drawMode==='paint') paintTile(c.x,c.y,false); }
+  function onCanvasDown(ev){ const c=canvasCoord(ev); state.selectedCoord=c; state.drag=true; if(state.drawMode==='paint') paintTile(c.x,c.y,true); else if(state.drawMode==='fillRect') state.rectStart=c; else { renderMain(); drawMap(); } }
+  function onCanvasUp(ev){ const c=canvasCoord(ev); if(state.drag && state.drawMode==='fillRect' && state.rectStart) fillRect(state.rectStart,c); state.drag=false; state.rectStart=null; renderMain(); drawMap(); }
+  function paintTile(x,y,rerender){ const ent=selectedMapEntity(); if(!ent) return; const map=ent.get(); const rows=normalizeRows(map.tiles || [], map.width || rowWidth(map.tiles), map.height || (map.tiles||[]).length); rows[y]=rows[y].slice(0,x)+state.selectedTile+rows[y].slice(x+1); if(ent.type==='world') state.data.mapData=rows; else { map.tiles=rows; ent.set(map); } state.selectedCoord={x,y}; markDirty(); drawMap(); if(rerender) renderMain(); }
+  function fillRect(a,b){ const x1=Math.min(a.x,b.x), x2=Math.max(a.x,b.x), y1=Math.min(a.y,b.y), y2=Math.max(a.y,b.y); for(let y=y1;y<=y2;y++) for(let x=x1;x<=x2;x++) paintTile(x,y,false); markDirty(); }
+  function updateCoordInfo(){
+    const map=selectedMap(); const {x,y}=state.selectedCoord; const tile=(map.tiles?.[y]||'')[x] || '';
+    const objs=[]; ['chests','bosses','floorLinks','mapActions','tileEffects','healSprings'].forEach(list => (map[list]||[]).forEach((o,i)=>{if(Number(o.x)===x&&Number(o.y)===y) objs.push(`${list}#${i}: ${labelForObject(list,o)}`);}));
+    $('coordInfo').innerHTML = `<b>座標</b> <span class="kbd">x:${x}, y:${y}</span> / tile <span class="kbd">${esc(tile)}</span><br>${objs.length?objs.map(esc).join('<br>'):'<span class="hint">クリックで座標選択。ペンモードならタイルを塗れます。</span>'}`;
+  }
+
+  function firstItemId(){ return state.data.items[0]?.id || 1; }
+  function firstMonsterId(){ return state.data.monsters[0]?.id || 100001; }
+  function firstScriptId(){ return state.scripts[0] || ''; }
+  function firstEventId(){ return state.events[0] || ''; }
+  function itemLabel(id){ const it=state.data.items.find(i=>Number(i.id)===Number(id)); return it ? `[${it.id}] ${it.name}` : `[${id ?? '?'}] 未登録アイテム`; }
+  function monsterLabel(id){ const ids=Array.isArray(id)?id:[id]; return ids.map(one=>{ const m=state.data.monsters.find(x=>Number(x.id)===Number(one)); return m ? `[${m.id}] ${m.name}` : `[${one ?? '?'}] 未登録モンスター`; }).join(', '); }
+
+  function runValidation(update=true){
+    const out=[]; const itemIds=new Set(state.data.items.map(i=>Number(i.id))); const monsterIds=new Set(state.data.monsters.map(m=>Number(m.id))); const scriptIds=new Set(Object.keys(state.data.storyManagerData.scripts||{})); const eventIds=new Set(Object.keys(state.data.storyManagerData.events||{})); const dungeonIds=new Set(Object.keys(state.data.fixedDungeonMaps||{})); const mutationIds=new Set(Object.keys(state.data.storyMapMutations||{})); const assetIds=new Set(Object.keys(state.data.graphics||{}));
+    const add=(level,where,message)=>out.push({level,where,message});
+    state.maps.forEach(ent=>{ const m=ent.get(); const rows=m.tiles || []; const w=m.width || rowWidth(rows); const h=m.height || rows.length; if(rows.length!==h) add('error',ent.name,`height ${h} と tiles行数 ${rows.length} が一致しません`); rows.forEach((r,y)=>{ if(String(r).length!==w) add('error',`${ent.name} y=${y}`,`width ${w} と行長 ${String(r).length} が一致しません`); }); const theme=getTheme(m); rows.forEach((r,y)=>String(r).split('').forEach((ch,x)=>{ const upper=String(ch).toUpperCase(); const has=theme[ch]||theme[upper]||mergeOverlayMap(state.data.fixedTileOverlays||{},m)[upper]; if(!has) add('warn',`${ent.name} (${x},${y})`,`未定義タイル '${ch}'`); })); const checkCoord=(o,list,i)=>{ if(!Number.isInteger(Number(o.x))||!Number.isInteger(Number(o.y))||Number(o.x)<0||Number(o.y)<0||Number(o.x)>=w||Number(o.y)>=h) add('error',`${ent.name} ${list}#${i}`,`座標が範囲外です x=${o.x}, y=${o.y}`); };
+      (m.chests||[]).forEach((c,i)=>{ checkCoord(c,'chests',i); if(!itemIds.has(Number(c.itemId))) add('error',`${ent.name} chests#${i}`,`itemId ${c.itemId} が items.js にありません`); });
+      (m.bosses||[]).forEach((b,i)=>{ checkCoord(b,'bosses',i); const ids=Array.isArray(b.monsterIds)?b.monsterIds:(Array.isArray(b.monsterId)?b.monsterId:[b.monsterId]); ids.filter(v=>v!==undefined).forEach(mid=>{ if(!monsterIds.has(Number(mid))) add('error',`${ent.name} bosses#${i}`,`monsterId ${mid} が monsters.js にありません`); }); if(b.storyEventId && !eventIds.has(b.storyEventId)) add('warn',`${ent.name} bosses#${i}`,`storyEventId ${b.storyEventId} が StoryManager.events にありません`); });
+      (m.floorLinks||[]).forEach((f,i)=>checkCoord(f,'floorLinks',i)); (m.tileEffects||[]).forEach((f,i)=>checkCoord(f,'tileEffects',i)); (m.healSprings||[]).forEach((f,i)=>checkCoord(f,'healSprings',i));
+      (m.mapActions||[]).forEach((a,i)=>{ checkCoord(a,'mapActions',i); if(a.eventId && !eventIds.has(a.eventId)) add('warn',`${ent.name} mapActions#${i}`,`eventId ${a.eventId} が StoryManager.events にありません`); if(a.imageKey && !assetIds.has(a.imageKey)) add('warn',`${ent.name} mapActions#${i}`,`imageKey ${a.imageKey} が PRISMA_ASSETS.graphics にありません`); });
+    });
+    (state.data.fieldEncounterZones||[]).forEach((z,i)=>{ (z.monsters||[]).forEach(mid=>{ if(!monsterIds.has(Number(mid))) add('error',`FIELD_ENCOUNTER_ZONES#${i}`,`monster ${mid} が monsters.js にありません`); }); (z.rareMonsters||[]).forEach((r,j)=>{ if(!monsterIds.has(Number(r.id))) add('error',`FIELD_ENCOUNTER_ZONES#${i}.rare#${j}`,`monster ${r.id} が monsters.js にありません`); if(Number(r.rate)<0||Number(r.rate)>1) add('warn',`FIELD_ENCOUNTER_ZONES#${i}.rare#${j}`,`rate ${r.rate} は0〜1推奨です`); }); });
+    Object.entries(state.data.storyManagerData.events||{}).forEach(([id,ev])=>{ ['actions','winActions'].forEach(phase=>{ (ev[phase]||[]).forEach((a,i)=>validateAction(a,`${id}.${phase}#${i}`)); }); });
+    Object.entries(state.data.storyManagerData.scripts||{}).forEach(([id,arr])=>{ if(!Array.isArray(arr)) add('error',`scripts.${id}`,'会話スクリプトは配列である必要があります'); else arr.forEach((line,i)=>{ const text=String(line.text||''); [...text.matchAll(/\[N:(\d+)\]/g)].forEach(m=>{ const cid=Number(m[1]); if(!state.data.chars.find(c=>Number(c.id)===cid || Number(c.uid)===cid)) add('warn',`scripts.${id}#${i}`,`[N:${cid}] に対応するキャラクターが見つかりません`); }); }); });
+    function validateAction(a,where){ if(!a || typeof a!=='object') return add('error',where,'actionがオブジェクトではありません'); if(!a.type) add('error',where,'typeがありません'); if(a.type==='CONV' && !scriptIds.has(a.value)) add('error',where,`CONV value ${a.value} が scripts にありません`); if(a.type==='EVENT' && !eventIds.has(a.value)) add('error',where,`EVENT value ${a.value} が events にありません`); if(a.type==='BOSS'){ const ids=Array.isArray(a.value)?a.value:[a.value]; ids.filter(v=>v!==undefined&&v!==null).forEach(mid=>{ if(!monsterIds.has(Number(mid))) add('error',where,`BOSS ${mid} が monsters.js にありません`); }); } if(a.type==='ITEM'){ const iid=Number(a.id ?? a.value); if(!itemIds.has(iid)) add('error',where,`ITEM ${iid} が items.js にありません`); } if(a.type==='START_FIXED_DUNGEON' && !dungeonIds.has(a.value)) add('error',where,`START_FIXED_DUNGEON ${a.value} がありません`); if(a.type==='MAP_CHANGE' && !mutationIds.has(a.value || a.key)) add('warn',where,`MAP_CHANGE ${a.value || a.key} が STORY_MAP_MUTATIONS にありません`); if((a.type==='IF_FLAG'||a.type==='IF') && Array.isArray(a.then)) a.then.forEach((sub,i)=>validateAction(sub,`${where}.then#${i}`)); if((a.type==='IF_FLAG'||a.type==='IF') && Array.isArray(a.else)) a.else.forEach((sub,i)=>validateAction(sub,`${where}.else#${i}`)); if(a.type==='CHOICE'){ (a.yes||[]).forEach((sub,i)=>validateAction(sub,`${where}.yes#${i}`)); (a.no||[]).forEach((sub,i)=>validateAction(sub,`${where}.no#${i}`)); } }
+    if(update) state.validation=out; return out;
+  }
+
+  function jsLiteral(v){ return JSON.stringify(v, null, 4).replace(/"([^"\\]*(?:\\.[^"\\]*)*)"\s*:/g, (m,k) => /^[A-Za-z_$][\w$]*$/.test(k) ? k+':' : m); }
+  function generateMapJs(){
+    return `/* map.js - generated by map_story_editor.html. Runtime logic is in maps_logic.js. */\nconst tileEntry = (img, color, options = {}) => ({ img, color, ...options });\n\nconst STORY_MAP_MUTATIONS = ${jsLiteral(state.data.storyMapMutations)};\n\nconst TILE_THEMES = ${jsLiteral(state.data.tileThemes)};\n\nconst STORY_DATA = ${jsLiteral(state.data.storyData)};\n\nconst SEA_ENCOUNTER_MONSTERS = ${jsLiteral(state.data.seaEncounterMonsters)};\n\nconst FIELD_ENCOUNTER_ZONES = ${jsLiteral(state.data.fieldEncounterZones)};\n\nconst MAP_DATA = ${jsLiteral(state.data.mapData)};\n\nconst FIXED_TILE_OVERLAYS = ${jsLiteral(state.data.fixedTileOverlays)};\n\nconst FIXED_OVERLAY_BASE_TILES = ${jsLiteral(state.data.fixedOverlayBaseTiles)};\n\nconst FIXED_MAPS = ${jsLiteral(state.data.fixedMaps)};\n\nconst FIXED_DUNGEON_MAPS = ${jsLiteral(state.data.fixedDungeonMaps)};\n\nif (typeof window !== "undefined") {\n    window.STORY_MAP_MUTATIONS = STORY_MAP_MUTATIONS;\n    window.TILE_THEMES = TILE_THEMES;\n    window.STORY_DATA = STORY_DATA;\n    window.SEA_ENCOUNTER_MONSTERS = SEA_ENCOUNTER_MONSTERS;\n    window.FIELD_ENCOUNTER_ZONES = FIELD_ENCOUNTER_ZONES;\n    window.MAP_DATA = MAP_DATA;\n    window.FIXED_TILE_OVERLAYS = FIXED_TILE_OVERLAYS;\n    window.FIXED_OVERLAY_BASE_TILES = FIXED_OVERLAY_BASE_TILES;\n    window.FIXED_MAPS = FIXED_MAPS;\n    window.FIXED_DUNGEON_MAPS = FIXED_DUNGEON_MAPS;\n}\n`;
+  }
+  function generateStoryJs(){
+    const d = state.data.storyManagerData;
+    const out = { maxMainStoryProgress:d.maxMainStoryProgress || {storyStep:0,subStep:0}, storyObjectives:d.storyObjectives || {}, dungeonObjectiveMilestones:d.dungeonObjectiveMilestones || [], scripts:d.scripts || {}, events:d.events || {} };
+    return `/* story.js - generated by map_story_editor.html. Runtime logic is in story_logic.js. */\nconst STORY_MANAGER_DATA = ${jsLiteral(out)};\n\nif (typeof window !== "undefined") {\n    window.STORY_MANAGER_DATA = STORY_MANAGER_DATA;\n}\n`;
+  }
+  function downloadText(filename,text){ const blob=new Blob([text],{type:'text/javascript;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();},500); state.dirty=false; }
+  async function copyText(text){ try{ await navigator.clipboard.writeText(text); alert('クリップボードへコピーしました'); }catch(e){ alert('コピーできませんでした。出力欄から手動コピーしてください。'); } }
+
+  init();
+})();
+</script>
+</body>
+</html>

@@ -1229,10 +1229,13 @@ const Dungeon = {
                 return;
             }
 
-            const mapDef = Dungeon.getFixedFloorDef(areaKey, App.data.progress.floor || 1) || FIXED_DUNGEON_MAPS[areaKey];
+            const mapDef = Field.currentMapData
+                || Dungeon.getFixedFloorDef(areaKey, App.data.progress.floor || 1)
+                || (typeof FIXED_MAPS !== 'undefined' ? FIXED_MAPS[areaKey] : null)
+                || (typeof FIXED_DUNGEON_MAPS !== 'undefined' ? FIXED_DUNGEON_MAPS[areaKey] : null);
             const chestDef = (typeof MapRegistry !== 'undefined' && MapRegistry.findFixedChest)
                 ? MapRegistry.findFixedChest(mapDef, x, y)
-                : (mapDef.chests ? mapDef.chests.find(c => c.x === x && c.y === y) : null);
+                : (mapDef?.chests ? mapDef.chests.find(c => Number(c.x) === Number(x) && Number(c.y) === Number(y)) : null);
 
             if (chestDef) {
                 App.data.progress.openedChests[progressKey].push(posKey);
@@ -1561,6 +1564,9 @@ const Dungeon = {
         const changeKey = Field.getCurrentMapChangeKey ? Field.getCurrentMapChangeKey(areaKey) : areaKey;
         let tile = (App.data.progress.mapChanges?.[changeKey]?.[`${x},${y}`] || App.data.progress.mapChanges?.[areaKey]?.[`${x},${y}`] || Field.currentMapData.tiles[y][x]).toUpperCase();
         if (tile === 'B' && App.data.progress.defeatedBosses?.[Field.getCurrentProgressMapKey()]?.includes(`${x},${y}`)) tile = 'G';
+        const chestDef = Field.getFixedChestAt ? Field.getFixedChestAt(x, y) : null;
+        const chestTile = Field.getFixedChestTileSign ? Field.getFixedChestTileSign(chestDef) : null;
+        if (chestTile) tile = chestTile;
         return tile !== 'W' && tile !== 'C' && tile !== 'R' && !Dungeon.isLockedDoorTile(tile);
     },
 
