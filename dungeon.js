@@ -301,7 +301,7 @@ const Dungeon = {
 
     getKeyScopeKey: (areaKey = null) => {
         if (typeof Field !== 'undefined' && Field.currentMapData?.isFixed) {
-            const fixedAreaKey = areaKey || (Field.getCurrentAreaKey ? Field.getCurrentAreaKey() : App.data?.location?.area);
+            const fixedAreaKey = Field.currentMapData?.canonicalAreaKey || areaKey || (Field.getCurrentAreaKey ? Field.getCurrentAreaKey() : App.data?.location?.area);
             return `FIXED:${fixedAreaKey || Field.currentMapData?.areaKey || 'UNKNOWN'}`;
         }
         const key = areaKey || (typeof Field !== 'undefined' && Field.getCurrentAreaKey ? Field.getCurrentAreaKey() : App.data?.location?.area || 'ABYSS');
@@ -518,6 +518,7 @@ const Dungeon = {
         App.data.location.x = Field.x;
         App.data.location.y = Field.y;
         Dungeon.rollTrialAngelSpawn({ fixed: true });
+        if (typeof Dungeon.markFixedVisibleArea === 'function') Dungeon.markFixedVisibleArea(Field.x, Field.y, nextDef.revealRadius || 3);
 
         App.save();
         App.changeScene('field');
@@ -793,6 +794,10 @@ const Dungeon = {
                 return flags.lighthouseCleared
                     ? ok()
                     : block('光の神殿は、触れる前から肌を刺すような結界に包まれている。', 'locked_light_palace');
+            case 'GALVANIA_CAVE_NORTH':
+                return flags.lightPalaceCleared
+                    ? ok()
+                    : block('魔王軍の活動が活発で危険すぎる。', 'galvania_cave_north_blocked');
             case 'DARK_CASTLE':
                 return (flags.lightPalaceCleared || atLeast(8, 0))
                     ? ok()
@@ -812,7 +817,14 @@ const Dungeon = {
             if (gate.message) App.log(gate.message);
             return false;
         }
-        const areaDef = Dungeon.getFixedFloorDef(mapKey, 1);
+        const baseDef = (typeof MapRegistry !== 'undefined' && MapRegistry.getFixedDungeonBase)
+            ? MapRegistry.getFixedDungeonBase(mapKey)
+            : ((typeof FIXED_DUNGEON_MAPS !== 'undefined') ? FIXED_DUNGEON_MAPS[mapKey] : null);
+        const entryFromKey = (options.entryKey && baseDef?.entryPoints && baseDef.entryPoints[options.entryKey])
+            ? baseDef.entryPoints[options.entryKey]
+            : null;
+        const startFloor = Math.max(1, Number(options.floor || entryFromKey?.floor || baseDef?.entryFloor || 1) || 1);
+        const areaDef = Dungeon.getFixedFloorDef(mapKey, startFloor);
         if (!areaDef) return false;
 
         // 帰還地点の保存。
@@ -849,14 +861,16 @@ const Dungeon = {
         Field.currentMapData = areaDef;
         if (typeof Dungeon.resetFixedHunterStateForCurrentMap === 'function') Dungeon.resetFixedHunterStateForCurrentMap();
 
-        const selectedEntry = (options.entryKey && areaDef.entryPoints && areaDef.entryPoints[options.entryKey])
-            ? areaDef.entryPoints[options.entryKey]
-            : areaDef.entryPoint;
+        const selectedEntry = entryFromKey
+            || ((options.entryKey && areaDef.entryPoints && areaDef.entryPoints[options.entryKey])
+                ? areaDef.entryPoints[options.entryKey]
+                : ((Number(baseDef?.entryFloor || 1) === startFloor && baseDef?.entryPoint) ? baseDef.entryPoint : areaDef.entryPoint));
         Field.x = selectedEntry ? selectedEntry.x : 1;
         Field.y = selectedEntry ? selectedEntry.y : 1;
         App.data.location.x = Field.x;
         App.data.location.y = Field.y;
         Dungeon.rollTrialAngelSpawn({ fixed: true });
+        if (typeof Dungeon.markFixedVisibleArea === 'function') Dungeon.markFixedVisibleArea(Field.x, Field.y, areaDef.revealRadius || 3);
 
         if (typeof App.discoverFixedMap === 'function') App.discoverFixedMap(mapKey, { save: false });
 
@@ -1784,6 +1798,59 @@ const Dungeon = {
         return logs;
     },
 
+    isFixedRevealLimitedFloor: (mapDef = null) => {
+        const def = mapDef || (typeof Field !== 'undefined' ? Field.currentMapData : null);
+        return !!(def?.isFixed && def?.isDungeon && def?.limitedMapReveal);
+    },
+
+    ensureFixedVisitedMap: (mapDef = null) => {
+        const def = mapDef || (typeof Field !== 'undefined' ? Field.currentMapData : null);
+        if (!Dungeon.isFixedRevealLimitedFloor(def) || !App.data?.progress) return null;
+        const areaKey = (typeof Field !== 'undefined' && Field.getCurrentAreaKey) ? Field.getCurrentAreaKey() : (def.areaKey || App.data?.location?.area);
+        const progressKey = (typeof Field !== 'undefined' && Field.getCurrentProgressMapKey)
+            ? Field.getCurrentProgressMapKey()
+            : (typeof MapRegistry !== 'undefined' && MapRegistry.getFixedDungeonProgressKey
+                ? MapRegistry.getFixedDungeonProgressKey(areaKey, def.floor || App.data?.progress?.floor || 1)
+                : `${areaKey}:F${def.floor || App.data?.progress?.floor || 1}`);
+        if (!App.data.progress.fixedDungeonVisitedMaps || typeof App.data.progress.fixedDungeonVisitedMaps !== 'object') {
+            App.data.progress.fixedDungeonVisitedMaps = {};
+        }
+        if (!App.data.progress.fixedDungeonVisitedMaps[progressKey]) {
+            App.data.progress.fixedDungeonVisitedMaps[progressKey] = { cells: {} };
+        }
+        return App.data.progress.fixedDungeonVisitedMaps[progressKey];
+    },
+
+    markFixedVisited: (x = null, y = null) => {
+        const vm = Dungeon.ensureFixedVisitedMap();
+        if (!vm) return false;
+        const px = Number(x == null ? Field.x : x);
+        const py = Number(y == null ? Field.y : y);
+        vm.cells[`${px},${py}`] = true;
+        return true;
+    },
+
+    markFixedVisibleArea: (x = null, y = null, radius = 3) => {
+        const vm = Dungeon.ensureFixedVisitedMap();
+        if (!vm || !Field.currentMapData) return false;
+        const px = Number(x == null ? Field.x : x);
+        const py = Number(y == null ? Field.y : y);
+        const r = Math.max(0, Number(radius || 0));
+        for (let yy = py - r; yy <= py + r; yy++) {
+            for (let xx = px - r; xx <= px + r; xx++) {
+                if (xx < 0 || yy < 0 || xx >= Field.currentMapData.width || yy >= Field.currentMapData.height) continue;
+                if (Math.abs(xx - px) + Math.abs(yy - py) <= r + 1) vm.cells[`${xx},${yy}`] = true;
+            }
+        }
+        return true;
+    },
+
+    isFixedVisitedForMap: (x, y) => {
+        if (!Dungeon.isFixedRevealLimitedFloor()) return true;
+        const vm = Dungeon.ensureFixedVisitedMap();
+        return !!vm?.cells?.[`${Number(x)},${Number(y)}`];
+    },
+
     handleFixedTileEffect: (effect, dx = 0, dy = 0) => {
         if (!effect || !Field.currentMapData?.isFixed) return false;
         if (effect.type === 'poison') {
@@ -1796,6 +1863,7 @@ const Dungeon = {
                 Field.y = Number(effect.toY);
                 App.data.location.x = Field.x;
                 App.data.location.y = Field.y;
+                if (typeof Dungeon.markFixedVisibleArea === 'function') Dungeon.markFixedVisibleArea(Field.x, Field.y, Field.currentMapData?.revealRadius || 3);
                 App.log(effect.message || '転移床が光った。');
                 Field.refreshCurrentAction({ silent: false });
                 return true;
@@ -1821,6 +1889,7 @@ const Dungeon = {
                 Field.y = sy;
                 App.data.location.x = sx;
                 App.data.location.y = sy;
+                if (typeof Dungeon.markFixedVisibleArea === 'function') Dungeon.markFixedVisibleArea(Field.x, Field.y, Field.currentMapData?.revealRadius || 3);
                 App.log(effect.message || '氷の床を滑った。');
                 Field.refreshCurrentAction({ silent: false });
                 return true;

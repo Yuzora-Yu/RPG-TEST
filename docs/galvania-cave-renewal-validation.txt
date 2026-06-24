@@ -1,0 +1,6 @@
+F 1 1階・北口 黒岩の胎道 strict cells 563 relaxed 563 miss []
+F 2 2階・偽りの無限回廊 strict cells 343 relaxed 343 miss []
+F 3 3階・溶岩の地底湖 strict cells 700 relaxed 701 miss []
+F 4 4階・氷晶の十字滑床 strict cells 334 relaxed 335 miss []
+F 5 5階・魔軍補給路 strict cells 507 relaxed 508 miss []
+F 6 6階・南口 白骨の旧坑 strict cells 449 relaxed 450 miss []

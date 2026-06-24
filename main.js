@@ -5361,12 +5361,23 @@ const Field = {
             && typeof Dungeon !== 'undefined'
             && typeof Dungeon.isMazeFloor === 'function'
             && Dungeon.isMazeFloor());
+        const revealLimitedFixedMap = !!(Field.currentMapData?.isDungeon && Field.currentMapData?.isFixed
+            && typeof Dungeon !== 'undefined'
+            && typeof Dungeon.isFixedRevealLimitedFloor === 'function'
+            && Dungeon.isFixedRevealLimitedFloor(Field.currentMapData));
 
         for (let y = 0; y < mapH; y++) {
             for (let x = 0; x < mapW; x++) {
                 let tile = Field.getRenderedTileForDraw(x, y, mapW, mapH, areaKey);
                 if (revealLimitedRandomMap) {
                     if (typeof Dungeon.isVisited === 'function' && !Dungeon.isVisited(x, y) && !(Math.abs(x - Field.x) <= 4 && Math.abs(y - Field.y) <= 4)) {
+                        tile = 'W';
+                    }
+                }
+                if (revealLimitedFixedMap) {
+                    const visibleNow = Math.abs(x - Field.x) <= Number(Field.currentMapData?.revealRadius || 3)
+                        && Math.abs(y - Field.y) <= Number(Field.currentMapData?.revealRadius || 3);
+                    if (typeof Dungeon.isFixedVisitedForMap === 'function' && !Dungeon.isFixedVisitedForMap(x, y) && !visibleNow) {
                         tile = 'W';
                     }
                 }
@@ -6745,6 +6756,9 @@ const Field = {
 
             Field.x = nx; Field.y = ny;
             App.data.location.x = nx; App.data.location.y = ny;
+            if (Field.currentMapData?.isFixed && typeof Dungeon !== 'undefined' && typeof Dungeon.markFixedVisibleArea === 'function') {
+                Dungeon.markFixedVisibleArea(Field.x, Field.y, Field.currentMapData.revealRadius || 3);
+            }
 
             if (tile === 'M' && Field.currentMapData.isFixed && !Field.currentMapData.isDungeon && typeof Dungeon !== 'undefined' && typeof Dungeon.stepOnLava === 'function') {
                 Dungeon.stepOnLava();

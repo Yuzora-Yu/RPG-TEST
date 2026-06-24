@@ -91,10 +91,11 @@ const MapRegistry = {
 
     getFixedDungeonProgressKey(areaKey, floorNo = 1) {
         const base = MapRegistry.getFixedDungeonBase(areaKey);
+        const progressAreaKey = base?.canonicalAreaKey || areaKey;
         if (base && Array.isArray(base.floors) && base.floors.length > 0) {
-            return `${areaKey}:F${Math.max(1, Number(floorNo || 1))}`;
+            return `${progressAreaKey}:F${Math.max(1, Number(floorNo || 1))}`;
         }
-        return areaKey;
+        return progressAreaKey;
     },
 
     findMapAction(mapDef, x, y) {
