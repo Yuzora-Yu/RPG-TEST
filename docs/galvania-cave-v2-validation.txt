@@ -1,0 +1,7 @@
+F1 1階・北口 黒岩の胎道: strict=893 relaxed=893 misses=[]
+F2 2階・偽りの無限回廊: strict=486 relaxed=486 misses=[]
+F3 3階・溶岩の地底湖: strict=1408 relaxed=1409 misses=[]
+F4 4階・氷晶の十字滑床: strict=490 relaxed=491 misses=[]
+F5 5階・魔軍補給路: strict=967 relaxed=968 misses=[]
+F6 6階・南口 白骨の旧坑: strict=778 relaxed=779 misses=[]
+F6S 6階・南口からの再進入: strict=778 relaxed=778 misses=[]

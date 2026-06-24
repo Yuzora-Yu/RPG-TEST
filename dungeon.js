@@ -528,6 +528,14 @@ const Dungeon = {
     followFixedFloorLink: (link, mapDef = null) => {
         if (!link || !Field.currentMapData?.isFixed) return false;
         if (link.to === 'EXIT') {
+            if (link.setFlag) {
+                if (!App.data.progress.flags) App.data.progress.flags = {};
+                App.data.progress.flags[link.setFlag] = true;
+            }
+            if (Array.isArray(link.setFlags)) {
+                if (!App.data.progress.flags) App.data.progress.flags = {};
+                link.setFlags.forEach(flag => { if (flag) App.data.progress.flags[flag] = true; });
+            }
             const forced = link.exitPoint ? {
                 x: Number(link.exitPoint.x),
                 y: Number(link.exitPoint.y),
@@ -756,7 +764,7 @@ const Dungeon = {
 
 	
     // --- 固定ダンジョン（試練の洞窟など）への進入 ---
-    canEnterFixedDungeon: (mapKey) => {
+    canEnterFixedDungeon: (mapKey, options = {}) => {
         const progress = App.data?.progress || {};
         const flags = progress.flags || {};
         const step = Number(progress.storyStep || 0);
@@ -794,10 +802,25 @@ const Dungeon = {
                 return flags.lighthouseCleared
                     ? ok()
                     : block('光の神殿は、触れる前から肌を刺すような結界に包まれている。', 'locked_light_palace');
+            case 'GALVANIA_CAVE': {
+                const entryKey = options.entryKey || 'north';
+                if (entryKey === 'south') {
+                    return flags.galvaniaCaveSouthOpened
+                        ? ok()
+                        : block('南口の岩戸は内側から開けられていない。北口から洞窟を抜ける必要がある。', null);
+                }
+                return flags.lightPalaceCleared
+                    ? ok()
+                    : block('魔王軍の活動が活発で危険すぎる。', 'galvania_cave_north_blocked');
+            }
             case 'GALVANIA_CAVE_NORTH':
                 return flags.lightPalaceCleared
                     ? ok()
                     : block('魔王軍の活動が活発で危険すぎる。', 'galvania_cave_north_blocked');
+            case 'GALVANIA_CAVE_SOUTH':
+                return flags.galvaniaCaveSouthOpened
+                    ? ok()
+                    : block('南口の岩戸は内側から開けられていない。北口から洞窟を抜ける必要がある。', null);
             case 'DARK_CASTLE':
                 return (flags.lightPalaceCleared || atLeast(8, 0))
                     ? ok()
@@ -808,7 +831,7 @@ const Dungeon = {
     },
 
     startFixed: (mapKey, options = {}) => {
-        const gate = Dungeon.canEnterFixedDungeon(mapKey);
+        const gate = Dungeon.canEnterFixedDungeon(mapKey, options);
         if (!gate.ok) {
             if (gate.eventId && typeof StoryManager !== 'undefined' && typeof StoryManager.executeEvent === 'function') {
                 StoryManager.executeEvent(gate.eventId);

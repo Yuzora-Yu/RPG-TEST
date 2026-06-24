@@ -6472,7 +6472,10 @@ const Field = {
                 const flags = App.data?.progress?.flags || {};
                 const bypassFlags = Array.isArray(areaDef.entryBypassFlags) ? areaDef.entryBypassFlags : [];
                 const bypassedEntryLock = bypassFlags.some(flag => !!flags[flag]);
-                if (areaDef.entryRequiredFlag && !flags[areaDef.entryRequiredFlag] && !bypassedEntryLock) {
+                const entryLockEntrances = Array.isArray(areaDef.entryRequiredEntrances) ? areaDef.entryRequiredEntrances : null;
+                const effectiveEntryKey = targetEntryKey || areaDef.defaultEntryKey || null;
+                const entryLockApplies = !entryLockEntrances || entryLockEntrances.includes(effectiveEntryKey);
+                if (entryLockApplies && areaDef.entryRequiredFlag && !flags[areaDef.entryRequiredFlag] && !bypassedEntryLock) {
                     if (areaDef.entryLockedEventId && typeof StoryManager !== 'undefined' && typeof StoryManager.executeEvent === 'function') {
                         StoryManager.executeEvent(areaDef.entryLockedEventId);
                     } else {

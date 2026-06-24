@@ -639,6 +639,14 @@ const TILE_THEMES = {
         P: {
             img: "event_dungeon",
             color: "#8f7dff"
+        },
+        M: {
+            img: "tile_magma",
+            color: "#e4511e"
+        },
+        Z: {
+            img: "door_key_gold",
+            color: "#b8892f"
         }
     },
     DARK_CASTLE: {
@@ -1002,8 +1010,8 @@ const STORY_DATA = {
                 color: "#eef0e8"
             }
         },
-        GALVANIA_CAVE_NORTH: {
-            name: "ガルヴァニアへの洞窟 北口",
+        GALVANIA_CAVE: {
+            name: "ガルヴァニアへの洞窟",
             rank: 68,
             centerX: 31,
             centerY: 40,
@@ -1011,18 +1019,21 @@ const STORY_DATA = {
             fieldTile: {
                 img: "overlay_field_cave",
                 color: "#303541"
-            }
-        },
-        GALVANIA_CAVE_SOUTH: {
-            name: "ガルヴァニアへの洞窟 南口",
-            rank: 68,
-            centerX: 35,
-            centerY: 42,
-            defaultEntryKey: "south",
-            fieldTile: {
-                img: "overlay_field_cave",
-                color: "#303541"
-            }
+            },
+            entrances: [
+                {
+                    x: 31,
+                    y: 40,
+                    entryKey: "north",
+                    label: "北口"
+                },
+                {
+                    x: 35,
+                    y: 42,
+                    entryKey: "south",
+                    label: "南口"
+                }
+            ]
         },
         DARK_CASTLE: {
             name: "魔王城ガルヴァニア",
@@ -7062,2309 +7073,1454 @@ const FIXED_DUNGEON_MAPS = {
             }
         ]
     },
-    GALVANIA_CAVE_NORTH: {
-        "name": "ガルヴァニアへの洞窟",
-        "themeKey": "GALVANIA_CAVE",
-        "canonicalAreaKey": "GALVANIA_CAVE",
-        "rank": 70,
-        "encounterRank": 70,
-        "rareMonsters": [
-            {
-                "id": 200202,
-                "rate": 0.05
-            },
-            {
-                "id": 200203,
-                "rate": 0.02
-            }
-        ],
-        "battleBg": "battle_bg_dungeon",
-        "enemyBoost": {
-            "nameSuffix": "・洞窟強化",
-            "statMultiplier": 1.14,
-            "resists": {
-                "Fear": 50,
-                "InstantDeath": 100
-            }
-        },
-        "entryFloor": 1,
-        "entryPoint": {
-            "x": 25,
-            "y": 27
-        },
-        "entryPoints": {
-            "north": {
-                "floor": 1,
-                "x": 25,
-                "y": 27
-            },
-            "south": {
-                "floor": 6,
-                "x": 47,
-                "y": 25
-            }
-        },
-        "floors": [
-            {
-                "label": "1階・北口 黒岩の胎道",
-                "encounterRank": 68,
-                "monsters": [
-                    100056,
-                    100057,
-                    100058,
-                    100059
-                ],
-                "width": 51,
-                "height": 29,
-                "tiles": [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWGGGGGGGGWWWWWWWWWWWWWWGGGGGGGGGGGGGGGGGGDGWWW",
-                    "WWWWWWGGGCTTTGWWWWWWWWWWWWWWGGGGGGGGGGGGGGGGGGTGWWW",
-                    "WWWWWWGGGGGGTTTTTTTTTTTTTTTTTTTTTTTGGGGGGGGGGGTGWWW",
-                    "WWWWWWGGGGGGGGWWTWWWWWWWWWWWGGGGGGTGGGGGGGGGTTTGWWW",
-                    "WWWWGGGGGGGGGGGGTGWWWWWWWWWWWWWWWWTGGGGGGGGGTGGGWWW",
-                    "WWWWGGGGGGGGGGGGTGWWWWWWWWWWWWWWWWTTTTTGRGGGTGGGWWW",
-                    "WWWWGTTTTTTTTTTTTGWWWWWWWWWWWWWWWWTGGGGGGGGGTGGGWWW",
-                    "WWWWGTGGGGGGGGGGGGWWWWWWWWWWWWWWWWTGGGGGGGGGTGGGWWW",
-                    "WWWWGTGGGGGGGGGGGGWWWWWWWWWWWWWWWWTGGGGGGGGGTGGGWWW",
-                    "WWWWWTWWWWWWWWWWWWWWWWWWWWWWWWWWWWTTTTTTTTTTTGGGWWW",
-                    "WWWWWTWWWWWWWWWWWWWWWWWWWWWWWWWWWWTGGGGGGGGGGGGGWWW",
-                    "WWWWWTTTTTTTTTTTTTTTTTWWWWWWWWWWWWTWWMMMMMMMMMWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWTWWWWWWWWWWWWTWWMMMMMMMMMWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWTWWWWGGGGGGGGTWWMMMMMMMMMWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWTWWWWGGGGGGGGTTTTTTTTTWWWWWWWW",
-                    "WWWWWWWWWWWWTTTTTTTTTTTTTTTTTCGGGGWWWWWWWWWWWWWWWWW",
-                    "WWWGGGGGGGGGTGWWWWWWWWWWWWGGGGGGGGWWWWWWWWWWWWWWWWW",
-                    "WWWGGGGGCGGGTGWWWWWWWWWWWWGGGGGGGGWWWWWWWWWWWWWWWWW",
-                    "WWWGGGGGTGGGTGWWWWWWWWWWWWGGGGGGGGWWWWWWWWWWWWWWWWW",
-                    "WWWGGGGGTGGGTGWWWWWWGGGGGGGGGGGWWWWWWWWWWWWWWWWWWWW",
-                    "WWWGGGGGTTTTTTTTTTTTTTTTTTGGGGGWWWWWWWWWWWWWWWWWWWW",
-                    "WWWGGGGGGGGGGGWWWWWWGGGGGTGGGGGWWWWWWWWWWWWWWWWWWWW",
-                    "WWWGGGGGGGGGGGWWWWWWGGGGGTGGGGGWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWGGGGGTGGGGGWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWGGGGGSGGGGGWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
-                ],
-                "floorLinks": [
-                    {
-                        "x": 25,
-                        "y": 27,
-                        "to": "EXIT",
-                        "label": "北口へ戻る",
-                        "exitPoint": {
-                            "areaKey": "WORLD",
-                            "x": 31,
-                            "y": 40
-                        }
-                    },
-                    {
-                        "x": 46,
-                        "y": 3,
-                        "toFloor": 2,
-                        "targetX": 4,
-                        "targetY": 25,
-                        "label": "無限回廊へ"
-                    }
-                ],
-                "tileEffects": [
-                    {
-                        "rect": {
-                            "x1": 37,
-                            "y1": 14,
-                            "x2": 45,
-                            "y2": 16
-                        },
-                        "type": "poison",
-                        "damageRate": 0.04,
-                        "message": "黒い溶岩の噴気で体力を奪われた！"
-                    },
-                    {
-                        "x": 7,
-                        "y": 21,
-                        "type": "hunter",
-                        "id": "galvania_f1_black_scout",
-                        "imageKey": "overlay_dungeon_hunter_shadow",
-                        "monsterIds": [
-                            100056,
-                            100057,
-                            100058
-                        ],
-                        "speed": 0.55,
-                        "range": 30,
-                        "statMultiplier": 1.7,
-                        "message": "黒岩の陰から魔族の斥候が襲いかかった！"
-                    }
-                ],
-                "chests": [
-                    {
-                        "x": 9,
-                        "y": 4,
-                        "itemId": 5,
-                        "type": "item"
-                    },
-                    {
-                        "x": 8,
-                        "y": 20,
-                        "itemId": 14,
-                        "type": "item"
-                    },
-                    {
-                        "x": 29,
-                        "y": 18,
-                        "itemId": 99,
-                        "type": "item"
-                    },
-                    {
-                        "x": 40,
-                        "y": 8,
-                        "itemId": 7,
-                        "type": "item",
-                        "rare": true
-                    }
-                ],
-                "mapActions": [
-                    {
-                        "x": 22,
-                        "y": 24,
-                        "label": "倒れている兵を調べる",
-                        "log": "鎧の兵はかすれた声で「奥の石碑を信じろ……見える道ほど罠だ」と告げ、動かなくなった。",
-                        "type": "log",
-                        "imageKey": "overlay_dungeon_adventurer",
-                        "blocksMovement": false,
-                        "baseTile": "G"
-                    },
-                    {
-                        "x": 34,
-                        "y": 12,
-                        "label": "黒い道標を読む",
-                        "log": "「南へ抜ける者よ。裂け道は遠回りを嫌う者から順に喰う」と刻まれている。",
-                        "type": "log",
-                        "imageKey": "overlay_dungeon_event",
-                        "blocksMovement": false,
-                        "baseTile": "G"
-                    }
-                ],
-                "entryPoint": {
-                    "x": 25,
-                    "y": 27
-                }
-            },
-            {
-                "label": "2階・偽りの無限回廊",
-                "encounterRank": 70,
-                "monsters": [
-                    100058,
-                    100059,
-                    100060
-                ],
-                "width": 51,
-                "height": 29,
-                "tiles": [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWTTTDWWWWW",
-                    "WWWWGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWTWWWWW",
-                    "WWWWGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWTWWWWW",
-                    "WWWWGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWTWWWWW",
-                    "WWWWGGTTTCGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWTWWWWW",
-                    "WWWWGGTGGGGGGWWWWWWWWWWWWWWGGGGGGGGGWWWWWWWWWTWWWWW",
-                    "WWWWWWTWWWWWWWWWWWWWWWWWWWWGGGGGGGGGWWWWWWWWWTWWWWW",
-                    "WWWWWWTWWWWWWWWWWWWWWWWWWWWGGGGGGGGGWWWWWWWWWTWWWWW",
-                    "WWWWWWTWWWWWWWGGGGGGGGGWWWWTTTTCGGGGWWWWWWWWWTWWWWW",
-                    "WWWWWWTWWWWWWWGGGGGGGGGWWWWTGGGGGGGGWWWWWWWWWTWWWWW",
-                    "WWWWWWTWWWWWWWGGGGGGGGGWWWWTWWWWWWWWWWWWWWWWWTWWWWW",
-                    "WWWWWWTWWWWWWWGGGCTTTTGWWWWTWWWWWWWWWWWWWWWWWTWWWWW",
-                    "WWWWWWTWWWWWWWGGGGGGGTGWWWWTWWWWWWWWWWWWWWWWWTWWWWW",
-                    "WWWWWWTWWWWWWWWWWWWWWTWWWWWTWWWWWWWWWWWWWWWWWTWWWWW",
-                    "WWWWWWTWWWWWWWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTWTWWWWW",
-                    "WWWWWWTWWWWWWWWWTWWWWTWWWWWTWWWWWWWWWWWWWWWTWTWWWWW",
-                    "WWWWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWTWWWWW",
-                    "WWWWWWWWWWTWWWWWWWWWWTWWWWWTWWWWWTWWWGGGGGGGGGWWWWW",
-                    "WWWWWWWWWWTWWWWWWWWWWTWWWWWTWWWWWTWWWGGGGGGGGGWWWWW",
-                    "WWGGGGGGGGTGWWWWWWWWWTWWWWWTWWWWWTWWWGGGGGGGGGWWWWW",
-                    "WWGGGGGGGGTGWWWWWWWWWTWWWWWTWWWWWTTTTGGTTTTRGGWWWWW",
-                    "WWGGUTTTTTTGWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGWWWWW",
-                    "WWGGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
-                ],
-                "floorLinks": [
-                    {
-                        "x": 4,
-                        "y": 25,
-                        "toFloor": 1,
-                        "targetX": 46,
-                        "targetY": 4,
-                        "label": "黒岩の胎道へ戻る"
-                    },
-                    {
-                        "x": 45,
-                        "y": 4,
-                        "toFloor": 3,
-                        "targetX": 4,
-                        "targetY": 3,
-                        "label": "溶岩の地底湖へ"
-                    }
-                ],
-                "tileEffects": [
-                    {
-                        "x": 21,
-                        "y": 24,
-                        "type": "warp",
-                        "toX": 16,
-                        "toY": 20,
-                        "message": "同じ景色の十字路へ戻された。"
-                    },
-                    {
-                        "x": 27,
-                        "y": 24,
-                        "type": "warp",
-                        "toX": 16,
-                        "toY": 20,
-                        "message": "足元の闇が反転し、入口側の十字路へ戻された。"
-                    },
-                    {
-                        "x": 39,
-                        "y": 24,
-                        "type": "warp",
-                        "toX": 16,
-                        "toY": 20,
-                        "message": "見覚えのある横穴へ押し戻された。"
-                    },
-                    {
-                        "x": 43,
-                        "y": 18,
-                        "type": "warp",
-                        "toX": 16,
-                        "toY": 20,
-                        "message": "曲がったはずの通路が、また最初の横穴につながっていた。"
-                    }
-                ],
-                "chests": [
-                    {
-                        "x": 17,
-                        "y": 15,
-                        "itemId": 99,
-                        "type": "item"
-                    },
-                    {
-                        "x": 31,
-                        "y": 12,
-                        "itemId": 6,
-                        "type": "item"
-                    },
-                    {
-                        "x": 9,
-                        "y": 8,
-                        "itemId": 14,
-                        "type": "item"
-                    },
-                    {
-                        "x": 43,
-                        "y": 24,
-                        "itemId": 7,
-                        "type": "item",
-                        "rare": true
-                    }
-                ],
-                "mapActions": [
-                    {
-                        "x": 16,
-                        "y": 20,
-                        "label": "古びた石碑を読む",
-                        "log": "「右へ進み、三つ目の十字を南へ。焦る者は同じ闇を歩く」と読める。",
-                        "type": "log",
-                        "imageKey": "overlay_dungeon_event",
-                        "blocksMovement": false,
-                        "baseTile": "T"
-                    },
-                    {
-                        "x": 8,
-                        "y": 8,
-                        "label": "白骨を調べる",
-                        "log": "白骨のそばに「戻されたら数え直せ」と血文字が残っている。",
-                        "type": "log",
-                        "imageKey": "overlay_dungeon_adventurer",
-                        "blocksMovement": false,
-                        "baseTile": "G"
-                    }
-                ],
-                "entryPoint": {
-                    "x": 4,
-                    "y": 25
-                }
-            },
-            {
-                "label": "3階・溶岩の地底湖",
-                "encounterRank": 72,
-                "monsters": [
-                    100059,
-                    100060,
-                    100061
-                ],
-                "width": 51,
-                "height": 29,
-                "tiles": [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWGGUTTTTGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWGGGGGGTGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWGGGGGGTGGWWWWWWWWWWWWWWMMMMMMMMMMMMMMMMMMMMMMWWWW",
-                    "WWGGGGGGTGGWWWWWWWWWWWWWWMMMMMMMMMMMMMMMMMMMMMMWWWW",
-                    "WWWWWWMMTMMMMMMMMMMMMMMMMMMMMMMMMMTTTTTTTTTTTMMWWWW",
-                    "WWWWWWMMTTTTTTTTTTTTTTTMMMMMMMMMMMTMMMMMMMMMTMMWWWW",
-                    "WWWWWWMMTMMMMMMMMMMMMMTMMMMMMMMMMMTMMMMMMMMMTMMWWWW",
-                    "WWWWWWMMTMMMMMMMMMMMMMTMMMMMMMMMMMTMMMMMMMMMTMMWWWW",
-                    "WWWWWWWWTWWWWWWWWWMMMMTMMMMMMMMMMMTMMMMMMMMMTMMWWWW",
-                    "WWWWWWWWTWWWWWWWWWMMMMTMMMMMCTTTMMTMMMMMMMMMTMMWWWW",
-                    "WWWWWWWWTWWWWWWWWWMMMMTMMMMMTMMMMMTMMMMMMMMMTMMWWWW",
-                    "WWWWWWWWTWWWWWWWWWMMMMTMMMMMTMMMMMTMMMMMMMMMTMMWWWW",
-                    "WWWWWWWWTWWWWWWWWWTTTTTTTTTTTTTTTTTMMMMMMMMMTMMWWWW",
-                    "WWWWWWWWTWWGGGGGGGTGMMMMMMMMMMMMMMTMMMMMMMMMTMMWWWW",
-                    "WWWWWWWWTWWGGGGRTTBGMMMMMMMMMMMMMMTMMMMMMMMMTMMWWWW",
-                    "WWWWWWWWTWWGGGGGGGGGWWWWWWWWWWWWWWTWWWWGGGGGTGGGGWW",
-                    "WWWWGGGGTGGGGGGGGGGGWWWWWWWWWWWWWWTWWWWGGGGGTGGGGWW",
-                    "WWWWGGGCTGGGGGGGGGGGWWWWWWGGGGGGGGTGWWWGGGGGTGGGGWW",
-                    "WWWWGGGGGGGGGGGGGGGGWWWWWWGGGGGGGGTGWWWGGGGGTGGGGWW",
-                    "WWWWGGGGGGGWWWWWWWWWWWWWWWGGGGCTTTTGWWWGGGGGTGGGGWW",
-                    "WWWWGGGGGGGWWWWWWWWWWWWWWWGGGGGGGGGGWWWGGGGGTGGGGWW",
-                    "WWWWGGGGGGGWWWWWWWWWWWWWWWGGGGGGGGGGWWWGGGGGTGGGGWW",
-                    "WWWWGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGTTTDGWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGGWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
-                ],
-                "floorLinks": [
-                    {
-                        "x": 4,
-                        "y": 3,
-                        "toFloor": 2,
-                        "targetX": 45,
-                        "targetY": 5,
-                        "label": "無限回廊へ戻る"
-                    },
-                    {
-                        "x": 47,
-                        "y": 25,
-                        "toFloor": 4,
-                        "targetX": 45,
-                        "targetY": 25,
-                        "label": "氷晶の十字滑床へ"
-                    }
-                ],
-                "tileEffects": [
-                    {
-                        "rects": [
-                            {
-                                "x1": 6,
-                                "y1": 7,
-                                "x2": 24,
-                                "y2": 10
-                            },
-                            {
-                                "x1": 18,
-                                "y1": 10,
-                                "x2": 28,
-                                "y2": 17
-                            },
-                            {
-                                "x1": 29,
-                                "y1": 5,
-                                "x2": 46,
-                                "y2": 17
-                            },
-                            {
-                                "x1": 25,
-                                "y1": 5,
-                                "x2": 31,
-                                "y2": 12
-                            }
-                        ],
-                        "type": "poison",
-                        "damageRate": 0.03,
-                        "message": "灼けた地熱が鎧の隙間から体力を削った！"
-                    },
-                    {
-                        "x": 41,
-                        "y": 21,
-                        "type": "hunter",
-                        "id": "galvania_f3_ash_daemon",
-                        "imageKey": "overlay_dungeon_hunter_fire",
-                        "monsterIds": [
-                            100059,
-                            100060,
-                            100061
-                        ],
-                        "speed": 0.45,
-                        "range": 34,
-                        "statMultiplier": 1.9,
-                        "message": "溶岩霧の向こうから、灼熱の魔族が迫る！"
-                    }
-                ],
-                "chests": [
-                    {
-                        "x": 7,
-                        "y": 20,
-                        "itemId": 14,
-                        "type": "item"
-                    },
-                    {
-                        "x": 30,
-                        "y": 22,
-                        "itemId": 99,
-                        "type": "item"
-                    },
-                    {
-                        "x": 28,
-                        "y": 12,
-                        "itemId": 5,
-                        "type": "item"
-                    },
-                    {
-                        "x": 15,
-                        "y": 17,
-                        "itemId": 7,
-                        "type": "item",
-                        "rare": true
-                    }
-                ],
-                "bosses": [
-                    {
-                        "x": 18,
-                        "y": 17,
-                        "monsterId": [
-                            100060,
-                            100061
-                        ],
-                        "mapSpriteMonsterId": 100060,
-                        "bossStatMultiplier": 1.25,
-                        "inactiveTile": "G",
-                        "inspectLog": "黒炎をまとった番人が、赤い宝箱の島を守っている。",
-                        "actionLabel": "黒炎の番人に挑む",
-                        "challengeText": "この番人を倒せば、溶岩島の宝へ進めそうだ。\n挑みますか？"
-                    }
-                ],
-                "mapActions": [
-                    {
-                        "x": 8,
-                        "y": 3,
-                        "label": "焦げた石碑を読む",
-                        "log": "「溶岩は短い道を残す。だが宝を欲するなら、黒炎の番人を越えよ」とある。",
-                        "type": "log",
-                        "imageKey": "overlay_dungeon_event",
-                        "blocksMovement": false,
-                        "baseTile": "G"
-                    }
-                ],
-                "limitedMapReveal": true,
-                "revealRadius": 4,
-                "entryPoint": {
-                    "x": 4,
-                    "y": 3
-                }
-            },
-            {
-                "label": "4階・氷晶の十字滑床",
-                "encounterRank": 74,
-                "monsters": [
-                    100060,
-                    100061,
-                    100062
-                ],
-                "width": 51,
-                "height": 29,
-                "tiles": [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWDWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGWWWWWWWWWWW",
-                    "WWWWTTTTTTTTTTTTTTTWWWWWWWWWWWWGGGCGGGGGWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWTWWWWWWWWWWWWGGGTGGGGGWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWTTTTTTTTTTTTTTTTTGGGGGWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWTWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWTTTTTTTTTTTTTWWWWWWTWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWTWWWWWWWWWWWWWWWWWWTWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWTWWWWWWWWWWWWWWGGGGGGGGGWWWWWWWWTTTTTWWWWWWWW",
-                    "WWWWWWTWWWWWWWWWWWWWWGGGGGGGGGWWWWWWWWTWWWTWWWWWWWW",
-                    "WWWWWWTWWWWWWWWWWWWWWGGGGGGGGGWWWWWWWWTWWWTWWWWWWWW",
-                    "WWWWWWTWWWWWWWWWWWWWWGGGGGGGGGWWWWWWWWTWWWTWWWWWWWW",
-                    "WWWWWWTWWTTTTTTTTTTTTGGGGGGGGGTTTTTTTTTWWWTWWWWWWWW",
-                    "WWWWWWTWWTWWWWWWWWWWWGGGGTTGGGWWWWWWWWWWWWTWWWWWWWW",
-                    "WWWWWWTWWTWWWWWWWWWWWGGGGTGGGGWWWWWWWWWWWWTWWWWWWWW",
-                    "WWWWWWTWWTWWWWWWWWWWWGGGGTGGGGWGGGGGGGGWWWTWWWWWWWW",
-                    "WWWWWWTWWTWWWWWWWWWWWGGGGTGGGGWGGGGGGGGWWWTWWWWWWWW",
-                    "WWWWWWTWWTWWWWWWWWWWWWWWWTTWWWWGGGGGGGGWWWTWWWWWWWW",
-                    "WWWWWWCTTTTTTWWWWWWWWWWWWTTTTTTGGGCTTGGTTTTWWWWWWWW",
-                    "WWWWWWWGGGGGTGGGGGWWWWWWWTWWWWWGGGGGGGGWWWWWWWWWWWW",
-                    "WWWWWWWGGGGGBGGGGGWWWWWWWTWWWWWWWWWWTWWGGGGGGGGGGWW",
-                    "WWWWWWWGGGGGTGGGGGWWWWWWWWWWWWWWWWWWTWWGGGGGGGGGGWW",
-                    "WWWWWWWGGGGGTGGGGGWWWWWWWWWWWWWWWWWWTWWGGGGGGGGGGWW",
-                    "WWWWWWWGGGGGTTTRGGWWWWWWWWWWWWWWWWWWTTTTTTTTTUGGGWW",
-                    "WWWWWWWGGGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGGWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
-                ],
-                "floorLinks": [
-                    {
-                        "x": 45,
-                        "y": 25,
-                        "toFloor": 3,
-                        "targetX": 47,
-                        "targetY": 24,
-                        "label": "溶岩の地底湖へ戻る"
-                    },
-                    {
-                        "x": 4,
-                        "y": 3,
-                        "toFloor": 5,
-                        "targetX": 5,
-                        "targetY": 3,
-                        "label": "魔軍補給路へ"
-                    }
-                ],
-                "tileEffects": [
-                    {
-                        "points": [
-                            {
-                                "x": 13,
-                                "y": 14
-                            },
-                            {
-                                "x": 14,
-                                "y": 14
-                            },
-                            {
-                                "x": 15,
-                                "y": 14
-                            },
-                            {
-                                "x": 16,
-                                "y": 14
-                            },
-                            {
-                                "x": 17,
-                                "y": 14
-                            },
-                            {
-                                "x": 18,
-                                "y": 14
-                            },
-                            {
-                                "x": 19,
-                                "y": 14
-                            },
-                            {
-                                "x": 20,
-                                "y": 14
-                            },
-                            {
-                                "x": 21,
-                                "y": 14
-                            },
-                            {
-                                "x": 22,
-                                "y": 14
-                            },
-                            {
-                                "x": 23,
-                                "y": 14
-                            },
-                            {
-                                "x": 24,
-                                "y": 14
-                            },
-                            {
-                                "x": 25,
-                                "y": 14
-                            },
-                            {
-                                "x": 26,
-                                "y": 14
-                            },
-                            {
-                                "x": 27,
-                                "y": 14
-                            },
-                            {
-                                "x": 28,
-                                "y": 14
-                            },
-                            {
-                                "x": 29,
-                                "y": 14
-                            },
-                            {
-                                "x": 30,
-                                "y": 14
-                            },
-                            {
-                                "x": 31,
-                                "y": 14
-                            },
-                            {
-                                "x": 32,
-                                "y": 14
-                            },
-                            {
-                                "x": 33,
-                                "y": 14
-                            },
-                            {
-                                "x": 34,
-                                "y": 14
-                            },
-                            {
-                                "x": 35,
-                                "y": 14
-                            },
-                            {
-                                "x": 36,
-                                "y": 14
-                            },
-                            {
-                                "x": 37,
-                                "y": 14
-                            },
-                            {
-                                "x": 25,
-                                "y": 7
-                            },
-                            {
-                                "x": 25,
-                                "y": 8
-                            },
-                            {
-                                "x": 25,
-                                "y": 9
-                            },
-                            {
-                                "x": 25,
-                                "y": 10
-                            },
-                            {
-                                "x": 25,
-                                "y": 11
-                            },
-                            {
-                                "x": 25,
-                                "y": 12
-                            },
-                            {
-                                "x": 25,
-                                "y": 13
-                            },
-                            {
-                                "x": 25,
-                                "y": 14
-                            },
-                            {
-                                "x": 25,
-                                "y": 15
-                            },
-                            {
-                                "x": 25,
-                                "y": 16
-                            },
-                            {
-                                "x": 25,
-                                "y": 17
-                            },
-                            {
-                                "x": 25,
-                                "y": 18
-                            },
-                            {
-                                "x": 25,
-                                "y": 19
-                            },
-                            {
-                                "x": 25,
-                                "y": 20
-                            },
-                            {
-                                "x": 25,
-                                "y": 21
-                            }
-                        ],
-                        "type": "ice",
-                        "maxSlide": 30,
-                        "message": "氷晶の床に足を取られ、止まるまで滑った！"
-                    },
-                    {
-                        "x": 42,
-                        "y": 11,
-                        "type": "hunter",
-                        "id": "galvania_f4_frost_hound",
-                        "imageKey": "overlay_dungeon_hunter_sea",
-                        "monsterIds": [
-                            100058,
-                            100061,
-                            100062
-                        ],
-                        "speed": 0.5,
-                        "range": 28,
-                        "statMultiplier": 1.75,
-                        "message": "氷壁の向こうから魔犬が滑るように迫ってきた！"
-                    }
-                ],
-                "chests": [
-                    {
-                        "x": 34,
-                        "y": 4,
-                        "itemId": 6,
-                        "type": "item"
-                    },
-                    {
-                        "x": 34,
-                        "y": 20,
-                        "itemId": 99,
-                        "type": "item"
-                    },
-                    {
-                        "x": 6,
-                        "y": 20,
-                        "itemId": 14,
-                        "type": "item"
-                    },
-                    {
-                        "x": 15,
-                        "y": 25,
-                        "itemId": 7,
-                        "type": "item",
-                        "rare": true
-                    }
-                ],
-                "bosses": [
-                    {
-                        "x": 12,
-                        "y": 22,
-                        "monsterId": [
-                            100061,
-                            100062
-                        ],
-                        "mapSpriteMonsterId": 100061,
-                        "bossStatMultiplier": 1.35,
-                        "inactiveTile": "G",
-                        "keyRewardColor": "gold",
-                        "inspectLog": "氷鎧の魔将が、古い金の鍵を握っている。南西の宝と、先の補給路の近道に関係しそうだ。",
-                        "actionLabel": "氷鎧の魔将に挑む",
-                        "challengeText": "この魔将は通路突破に必須ではないが、倒せば金の鍵を奪えそうだ。\n挑みますか？"
-                    }
-                ],
-                "mapActions": [
-                    {
-                        "x": 23,
-                        "y": 18,
-                        "label": "凍った石碑を読む",
-                        "log": "「十字で曲がるな。止まれる壁を探し、横から入れ」と氷の下に刻まれている。",
-                        "type": "log",
-                        "imageKey": "overlay_dungeon_event",
-                        "blocksMovement": false,
-                        "baseTile": "G"
-                    }
-                ],
-                "entryPoint": {
-                    "x": 45,
-                    "y": 25
-                }
-            },
-            {
-                "label": "5階・魔軍補給路",
-                "encounterRank": 76,
-                "monsters": [
-                    100061,
-                    100062,
-                    100063
-                ],
-                "width": 51,
-                "height": 29,
-                "tiles": [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWGGGUGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWGGGTGGGGGWWWGGGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWGGGTGGGGGWWWGGGGGGGGGGGWWWWGGGGGGGGGGGGGGGGGWWWWW",
-                    "WWWWWTWWWWWWWWGGGGCGGTTTTTTTTTTTTTTTTTTTTTTTTGWWWWW",
-                    "WWWWWTWWWWWWWWGGGGTGGTGGGWWWWGGGGGGGGGGGGGGGTGWWWWW",
-                    "WWWWWTTTTTTTTTTTTTTGGTGGGWWWWGGGGGGGGGGGGGGGTGWWWWW",
-                    "WWWWWWWWWWWWTWGGGGGGGTGGGWWWWGGGGGGGGGGGGGGGTGWWWWW",
-                    "WWWWWWWWWWWWTWGGGGGGGTGGGWWWWGGGGGGGGGGCGGGGTGWWWWW",
-                    "WWWWWWWWWWWWTWWWWWWWWTWWWWWWWGGGGGGGGGGTGGGGTGWWWWW",
-                    "WWWWWWWWWWWWTWWWWWWWWTWWWWWWWWWWWWWWWWWTWWWWTWWWWWW",
-                    "WWWWWWWTTTTTTWWWWWWWWTWWWWWWWWWWWWWWWWWTWWWWTWWWWWW",
-                    "WWWWWWWTWWWWWWWWWWWWWTTTTZTTTTTTTTTTTTTTWWWWTWWWWWW",
-                    "WWWWWWWTWWWWWWWWWWWWWWWWTWWWWWWWWWWWWWWTWWWWTWWWWWW",
-                    "WWWWWWWTWWWWWWWWWWWWWWWWTWWWWWWGGGGGGGGGGGWWTWWWWWW",
-                    "WWWWWWWTWWWWWWWWWWTTTTTTTWWWWWWGGGGGGGGGGGWWTWWWWWW",
-                    "WWWGGGGGGGGGGGWWWWTWWWWWTWWWWWWGGGRTTGGGGGTTTWWWWWW",
-                    "WWWGGGGGGGGGGGWWWWTWWWWWTWWWWWWGGGGGGGGGGGWWTWWWWWW",
-                    "WWWGGGGGGGGGGGWWWWTWWWWWTWWMMMMGGGGGGGGGGGWWTWWWWWW",
-                    "WWWGGGGGGGGGGGWWWWTWWWWWTWWMMMMMMMMWTWWWWWWWTWWWWWW",
-                    "WWWGGGGGGCGGGGTTTTTWWWWWTWWMTTCTTTMWTWWWWWWWTWWWWWW",
-                    "WWWGGGGGGGGGGGWWWWWWWWWWTWWMMMMMMMMWTWWWWWWWTWWWWWW",
-                    "WWWGGGGGGGGGGGWWWWWWWWWWTTTTTTTTTTTTTWWWWWWWTTDWWWW",
-                    "WWWGGGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
-                ],
-                "floorLinks": [
-                    {
-                        "x": 5,
-                        "y": 3,
-                        "toFloor": 4,
-                        "targetX": 4,
-                        "targetY": 4,
-                        "label": "氷晶の十字滑床へ戻る"
-                    },
-                    {
-                        "x": 46,
-                        "y": 24,
-                        "toFloor": 6,
-                        "targetX": 5,
-                        "targetY": 25,
-                        "label": "南口の旧坑へ"
-                    }
-                ],
-                "tileEffects": [
-                    {
-                        "x": 44,
-                        "y": 6,
-                        "type": "warp",
-                        "toX": 21,
-                        "toY": 14,
-                        "message": "補給路の見取り図がねじれ、封鎖扉の手前へ戻された。"
-                    },
-                    {
-                        "rect": {
-                            "x1": 27,
-                            "y1": 20,
-                            "x2": 34,
-                            "y2": 23
-                        },
-                        "type": "poison",
-                        "damageRate": 0.04,
-                        "message": "溶岩の排水溝から熱風が吹き上がった！"
-                    },
-                    {
-                        "x": 32,
-                        "y": 18,
-                        "type": "hunter",
-                        "id": "galvania_f5_supply_overseer",
-                        "imageKey": "overlay_dungeon_hunter_shadow",
-                        "monsterIds": [
-                            100061,
-                            100062,
-                            100063
-                        ],
-                        "speed": 0.65,
-                        "range": 40,
-                        "statMultiplier": 2.05,
-                        "message": "補給路を巡回する上級魔族が、こちらを捕捉した！"
-                    }
-                ],
-                "chests": [
-                    {
-                        "x": 18,
-                        "y": 6,
-                        "itemId": 99,
-                        "type": "item"
-                    },
-                    {
-                        "x": 39,
-                        "y": 10,
-                        "itemId": 6,
-                        "type": "item"
-                    },
-                    {
-                        "x": 9,
-                        "y": 22,
-                        "itemId": 14,
-                        "type": "item"
-                    },
-                    {
-                        "x": 30,
-                        "y": 22,
-                        "itemId": 5,
-                        "type": "item"
-                    },
-                    {
-                        "x": 34,
-                        "y": 18,
-                        "itemId": 7,
-                        "type": "item",
-                        "rare": true
-                    }
-                ],
-                "mapActions": [
-                    {
-                        "x": 21,
-                        "y": 14,
-                        "label": "補給路の石碑を読む",
-                        "log": "「金の鍵なき者は遠回りせよ。鍵ある者は灼けた水路を越え、南の坑道へ急げ」とある。",
-                        "type": "log",
-                        "imageKey": "overlay_dungeon_event",
-                        "blocksMovement": false,
-                        "baseTile": "T"
-                    },
-                    {
-                        "x": 38,
-                        "y": 10,
-                        "label": "魔軍の木箱を調べる",
-                        "log": "魔王城へ運ぶ兵糧と黒晶が積まれている。洞窟はただの自然洞ではなく、軍の補給路になっているようだ。",
-                        "type": "log",
-                        "imageKey": "overlay_dungeon_event",
-                        "blocksMovement": false,
-                        "baseTile": "G"
-                    }
-                ],
-                "limitedMapReveal": true,
-                "revealRadius": 3,
-                "entryPoint": {
-                    "x": 5,
-                    "y": 3
-                }
-            },
-            {
-                "label": "6階・南口 白骨の旧坑",
-                "encounterRank": 78,
-                "monsters": [
-                    100062,
-                    100063,
-                    100064
-                ],
-                "width": 51,
-                "height": 29,
-                "tiles": [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGWWWWWWWWWWWWWW",
-                    "WWWWGGGGGGGGGWWWWWWWWWWWWWWWWGGGGGGGGWWWWWWWWWWWWWW",
-                    "WWWWGGGGGGGGGWWWWWWWWWWWWWWWTGGGCGGGGTTTTWWWWWWWWWW",
-                    "WWWWGGGGGGCGGTTTTTTWWWWWWWWWTGGGGGGGGWWWTWWWWWWWWWW",
-                    "WWWWGGGGGGGGGWWWWWTWWWWWWWWWTGGGGGGGGWWWTWWWWWWWWWW",
-                    "WWWWGGGGGGGGGWWWWWTWWWWWWWWWTWWWWWWWWWWWTWWWWWWWWWW",
-                    "WWWWWWWWTWWWWWWWWWTWWWWWWWWWTWWWWWWWWWWWTWWWWWWWWWW",
-                    "WWWWWWWWTWWWWWWWWWTTTTTTTTTTTWWWWWWWWWWWTWWWWWWWWWW",
-                    "WWWWWWWWTWWWWWWWWWWWWWTWWWWWWWWWWWWWWWWWTWWWWWWWWWW",
-                    "WWWWWWWWTTTTTTTWWWWWWWTWWWWWWWWWWTTTTTTTTWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWTWWWWWWWTWWWWWWWWWWTWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWTWGGGGGGBTTTTTTTTTTTTTTTTWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWTWGGGGGGRGWWWWWWWWWTWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWTWGGGGGGTGWWWWWWWWWTWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWTWGGGGGGTGGGGGGGGWWTWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWTWGGGGGGTGGGGTTTTTTTTTTTTTTTTTTWWWWWW",
-                    "WWWWWTTTTTTTTTTWWWWWGGGGGGGTGGGWWWWWWWWWWWWWTWWWWWW",
-                    "WWWWWTWWWWWWWWWWWWWWGGGGGGGTGGGWWWWGGGGGGGGGGGGGGWW",
-                    "WWWWWTWWWWWWWWWWWWWWGGGGGGGCGGGWWWWGGGGMMMMMMMGGGWW",
-                    "WWGGGTGGGGGWWWWWWWWWGGGGGGGGGGGWWWWGGGGMMMMMMMGGGWW",
-                    "WWGGGTGGGGGWWWWWWWWWGGGGGGGGGGGWWWWGGGGMMMMMMMGGGWW",
-                    "WWGGGTGGGGGWWWWWWWWWGGGGGGGGGGGWWWWGGGGTTTCTTTGGGWW",
-                    "WWGGGUGGGGGWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGGGGSGWW",
-                    "WWGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGGGGGGWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
-                ],
-                "floorLinks": [
-                    {
-                        "x": 5,
-                        "y": 25,
-                        "toFloor": 5,
-                        "targetX": 46,
-                        "targetY": 23,
-                        "label": "魔軍補給路へ戻る"
-                    },
-                    {
-                        "x": 47,
-                        "y": 25,
-                        "to": "EXIT",
-                        "label": "南口へ出る",
-                        "exitPoint": {
-                            "areaKey": "WORLD",
-                            "x": 35,
-                            "y": 42
-                        }
-                    }
-                ],
-                "tileEffects": [
-                    {
-                        "x": 38,
-                        "y": 14,
-                        "type": "warp",
-                        "toX": 33,
-                        "toY": 12,
-                        "message": "南口が近いと思った瞬間、黒い風が中腹の分岐へ押し戻した。"
-                    },
-                    {
-                        "rect": {
-                            "x1": 39,
-                            "y1": 21,
-                            "x2": 45,
-                            "y2": 23
-                        },
-                        "type": "poison",
-                        "damageRate": 0.03,
-                        "message": "出口付近の溶岩割れ目から熱が噴き上がった！"
-                    },
-                    {
-                        "x": 41,
-                        "y": 22,
-                        "type": "hunter",
-                        "id": "galvania_f6_royal_rearguard",
-                        "imageKey": "overlay_dungeon_hunter_shadow",
-                        "monsterIds": [
-                            100062,
-                            100063,
-                            100064
-                        ],
-                        "speed": 0.55,
-                        "range": 36,
-                        "statMultiplier": 1.95,
-                        "message": "撤退路を守る魔族の後衛が立ちはだかった！"
-                    }
-                ],
-                "chests": [
-                    {
-                        "x": 10,
-                        "y": 6,
-                        "itemId": 14,
-                        "type": "item"
-                    },
-                    {
-                        "x": 27,
-                        "y": 21,
-                        "itemId": 99,
-                        "type": "item"
-                    },
-                    {
-                        "x": 32,
-                        "y": 5,
-                        "itemId": 6,
-                        "type": "item"
-                    },
-                    {
-                        "x": 42,
-                        "y": 24,
-                        "itemId": 5,
-                        "type": "item"
-                    },
-                    {
-                        "x": 22,
-                        "y": 15,
-                        "itemId": 7,
-                        "type": "item",
-                        "rare": true
-                    }
-                ],
-                "bosses": [
-                    {
-                        "x": 22,
-                        "y": 14,
-                        "monsterId": [
-                            100062,
-                            100064
-                        ],
-                        "mapSpriteMonsterId": 100064,
-                        "bossStatMultiplier": 1.3,
-                        "inactiveTile": "G",
-                        "inspectLog": "宝の横穴を守る魔族がうずくまっている。洞窟の突破そのものには関係なさそうだ。",
-                        "actionLabel": "横穴の守護魔に挑む",
-                        "challengeText": "この先には赤い宝箱が見える。守護魔に挑みますか？"
-                    }
-                ],
-                "mapActions": [
-                    {
-                        "x": 6,
-                        "y": 24,
-                        "label": "倒れた冒険者に声をかける",
-                        "log": "冒険者は息も絶え絶えに「南の光が見えても、最後の横道に惑わされるな」と呟く。",
-                        "type": "log",
-                        "imageKey": "overlay_dungeon_adventurer",
-                        "blocksMovement": false,
-                        "baseTile": "G"
-                    },
-                    {
-                        "x": 40,
-                        "y": 12,
-                        "label": "南口の石碑を読む",
-                        "log": "「ここを抜ければガルヴァニアの影。引き返す道は、北の記憶をたどれ」とある。",
-                        "type": "log",
-                        "imageKey": "overlay_dungeon_event",
-                        "blocksMovement": false,
-                        "baseTile": "T"
-                    }
-                ],
-                "entryPoint": {
-                    "x": 5,
-                    "y": 25
+    GALVANIA_CAVE: {
+        name: "ガルヴァニアへの洞窟",
+        themeKey: "GALVANIA_CAVE",
+        canonicalAreaKey: "GALVANIA_CAVE",
+        rank: 70,
+        encounterRank: 70,
+        rareMonsters: [
+                {
+                        id: 200202,
+                        rate: 0.05
                 },
-                "southEntryPoint": {
-                    "x": 47,
-                    "y": 25
+                {
+                        id: 200203,
+                        rate: 0.02
                 }
-            }
         ],
-        "entryRequiredFlag": "lightPalaceCleared",
-        "entryLockedEventId": "galvania_cave_north_blocked",
-        "entryLockedText": "魔王軍の活動が活発で危険すぎる。"
-    },
-    GALVANIA_CAVE_SOUTH: {
-        "name": "ガルヴァニアへの洞窟",
-        "themeKey": "GALVANIA_CAVE",
-        "canonicalAreaKey": "GALVANIA_CAVE",
-        "rank": 70,
-        "encounterRank": 70,
-        "rareMonsters": [
-            {
-                "id": 200202,
-                "rate": 0.05
-            },
-            {
-                "id": 200203,
-                "rate": 0.02
-            }
-        ],
-        "battleBg": "battle_bg_dungeon",
-        "enemyBoost": {
-            "nameSuffix": "・洞窟強化",
-            "statMultiplier": 1.14,
-            "resists": {
-                "Fear": 50,
-                "InstantDeath": 100
-            }
+        battleBg: "battle_bg_dungeon",
+        enemyBoost: {
+                nameSuffix: "・洞窟強化",
+                statMultiplier: 1.16,
+                resists: {
+                        Fear: 50,
+                        InstantDeath: 100
+                }
         },
-        "entryFloor": 6,
-        "entryPoint": {
-            "x": 47,
-            "y": 25
+        entryFloor: 1,
+        entryPoint: {
+                x: 30,
+                y: 32
         },
-        "entryPoints": {
-            "north": {
-                "floor": 1,
-                "x": 25,
-                "y": 27
-            },
-            "south": {
-                "floor": 6,
-                "x": 47,
-                "y": 25
-            }
-        },
-        "floors": [
-            {
-                "label": "1階・北口 黒岩の胎道",
-                "encounterRank": 68,
-                "monsters": [
-                    100056,
-                    100057,
-                    100058,
-                    100059
-                ],
-                "width": 51,
-                "height": 29,
-                "tiles": [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWGGGGGGGGWWWWWWWWWWWWWWGGGGGGGGGGGGGGGGGGDGWWW",
-                    "WWWWWWGGGCTTTGWWWWWWWWWWWWWWGGGGGGGGGGGGGGGGGGTGWWW",
-                    "WWWWWWGGGGGGTTTTTTTTTTTTTTTTTTTTTTTGGGGGGGGGGGTGWWW",
-                    "WWWWWWGGGGGGGGWWTWWWWWWWWWWWGGGGGGTGGGGGGGGGTTTGWWW",
-                    "WWWWGGGGGGGGGGGGTGWWWWWWWWWWWWWWWWTGGGGGGGGGTGGGWWW",
-                    "WWWWGGGGGGGGGGGGTGWWWWWWWWWWWWWWWWTTTTTGRGGGTGGGWWW",
-                    "WWWWGTTTTTTTTTTTTGWWWWWWWWWWWWWWWWTGGGGGGGGGTGGGWWW",
-                    "WWWWGTGGGGGGGGGGGGWWWWWWWWWWWWWWWWTGGGGGGGGGTGGGWWW",
-                    "WWWWGTGGGGGGGGGGGGWWWWWWWWWWWWWWWWTGGGGGGGGGTGGGWWW",
-                    "WWWWWTWWWWWWWWWWWWWWWWWWWWWWWWWWWWTTTTTTTTTTTGGGWWW",
-                    "WWWWWTWWWWWWWWWWWWWWWWWWWWWWWWWWWWTGGGGGGGGGGGGGWWW",
-                    "WWWWWTTTTTTTTTTTTTTTTTWWWWWWWWWWWWTWWMMMMMMMMMWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWTWWWWWWWWWWWWTWWMMMMMMMMMWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWTWWWWGGGGGGGGTWWMMMMMMMMMWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWTWWWWGGGGGGGGTTTTTTTTTWWWWWWWW",
-                    "WWWWWWWWWWWWTTTTTTTTTTTTTTTTTCGGGGWWWWWWWWWWWWWWWWW",
-                    "WWWGGGGGGGGGTGWWWWWWWWWWWWGGGGGGGGWWWWWWWWWWWWWWWWW",
-                    "WWWGGGGGCGGGTGWWWWWWWWWWWWGGGGGGGGWWWWWWWWWWWWWWWWW",
-                    "WWWGGGGGTGGGTGWWWWWWWWWWWWGGGGGGGGWWWWWWWWWWWWWWWWW",
-                    "WWWGGGGGTGGGTGWWWWWWGGGGGGGGGGGWWWWWWWWWWWWWWWWWWWW",
-                    "WWWGGGGGTTTTTTTTTTTTTTTTTTGGGGGWWWWWWWWWWWWWWWWWWWW",
-                    "WWWGGGGGGGGGGGWWWWWWGGGGGTGGGGGWWWWWWWWWWWWWWWWWWWW",
-                    "WWWGGGGGGGGGGGWWWWWWGGGGGTGGGGGWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWGGGGGTGGGGGWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWGGGGGSGGGGGWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
-                ],
-                "floorLinks": [
-                    {
-                        "x": 25,
-                        "y": 27,
-                        "to": "EXIT",
-                        "label": "北口へ戻る",
-                        "exitPoint": {
-                            "areaKey": "WORLD",
-                            "x": 31,
-                            "y": 40
-                        }
-                    },
-                    {
-                        "x": 46,
-                        "y": 3,
-                        "toFloor": 2,
-                        "targetX": 4,
-                        "targetY": 25,
-                        "label": "無限回廊へ"
-                    }
-                ],
-                "tileEffects": [
-                    {
-                        "rect": {
-                            "x1": 37,
-                            "y1": 14,
-                            "x2": 45,
-                            "y2": 16
-                        },
-                        "type": "poison",
-                        "damageRate": 0.04,
-                        "message": "黒い溶岩の噴気で体力を奪われた！"
-                    },
-                    {
-                        "x": 7,
-                        "y": 21,
-                        "type": "hunter",
-                        "id": "galvania_f1_black_scout",
-                        "imageKey": "overlay_dungeon_hunter_shadow",
-                        "monsterIds": [
-                            100056,
-                            100057,
-                            100058
-                        ],
-                        "speed": 0.55,
-                        "range": 30,
-                        "statMultiplier": 1.7,
-                        "message": "黒岩の陰から魔族の斥候が襲いかかった！"
-                    }
-                ],
-                "chests": [
-                    {
-                        "x": 9,
-                        "y": 4,
-                        "itemId": 5,
-                        "type": "item"
-                    },
-                    {
-                        "x": 8,
-                        "y": 20,
-                        "itemId": 14,
-                        "type": "item"
-                    },
-                    {
-                        "x": 29,
-                        "y": 18,
-                        "itemId": 99,
-                        "type": "item"
-                    },
-                    {
-                        "x": 40,
-                        "y": 8,
-                        "itemId": 7,
-                        "type": "item",
-                        "rare": true
-                    }
-                ],
-                "mapActions": [
-                    {
-                        "x": 22,
-                        "y": 24,
-                        "label": "倒れている兵を調べる",
-                        "log": "鎧の兵はかすれた声で「奥の石碑を信じろ……見える道ほど罠だ」と告げ、動かなくなった。",
-                        "type": "log",
-                        "imageKey": "overlay_dungeon_adventurer",
-                        "blocksMovement": false,
-                        "baseTile": "G"
-                    },
-                    {
-                        "x": 34,
-                        "y": 12,
-                        "label": "黒い道標を読む",
-                        "log": "「南へ抜ける者よ。裂け道は遠回りを嫌う者から順に喰う」と刻まれている。",
-                        "type": "log",
-                        "imageKey": "overlay_dungeon_event",
-                        "blocksMovement": false,
-                        "baseTile": "G"
-                    }
-                ],
-                "entryPoint": {
-                    "x": 25,
-                    "y": 27
-                }
-            },
-            {
-                "label": "2階・偽りの無限回廊",
-                "encounterRank": 70,
-                "monsters": [
-                    100058,
-                    100059,
-                    100060
-                ],
-                "width": 51,
-                "height": 29,
-                "tiles": [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWTTTDWWWWW",
-                    "WWWWGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWTWWWWW",
-                    "WWWWGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWTWWWWW",
-                    "WWWWGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWTWWWWW",
-                    "WWWWGGTTTCGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWTWWWWW",
-                    "WWWWGGTGGGGGGWWWWWWWWWWWWWWGGGGGGGGGWWWWWWWWWTWWWWW",
-                    "WWWWWWTWWWWWWWWWWWWWWWWWWWWGGGGGGGGGWWWWWWWWWTWWWWW",
-                    "WWWWWWTWWWWWWWWWWWWWWWWWWWWGGGGGGGGGWWWWWWWWWTWWWWW",
-                    "WWWWWWTWWWWWWWGGGGGGGGGWWWWTTTTCGGGGWWWWWWWWWTWWWWW",
-                    "WWWWWWTWWWWWWWGGGGGGGGGWWWWTGGGGGGGGWWWWWWWWWTWWWWW",
-                    "WWWWWWTWWWWWWWGGGGGGGGGWWWWTWWWWWWWWWWWWWWWWWTWWWWW",
-                    "WWWWWWTWWWWWWWGGGCTTTTGWWWWTWWWWWWWWWWWWWWWWWTWWWWW",
-                    "WWWWWWTWWWWWWWGGGGGGGTGWWWWTWWWWWWWWWWWWWWWWWTWWWWW",
-                    "WWWWWWTWWWWWWWWWWWWWWTWWWWWTWWWWWWWWWWWWWWWWWTWWWWW",
-                    "WWWWWWTWWWWWWWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTWTWWWWW",
-                    "WWWWWWTWWWWWWWWWTWWWWTWWWWWTWWWWWWWWWWWWWWWTWTWWWWW",
-                    "WWWWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWTWWWWW",
-                    "WWWWWWWWWWTWWWWWWWWWWTWWWWWTWWWWWTWWWGGGGGGGGGWWWWW",
-                    "WWWWWWWWWWTWWWWWWWWWWTWWWWWTWWWWWTWWWGGGGGGGGGWWWWW",
-                    "WWGGGGGGGGTGWWWWWWWWWTWWWWWTWWWWWTWWWGGGGGGGGGWWWWW",
-                    "WWGGGGGGGGTGWWWWWWWWWTWWWWWTWWWWWTTTTGGTTTTRGGWWWWW",
-                    "WWGGUTTTTTTGWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGWWWWW",
-                    "WWGGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
-                ],
-                "floorLinks": [
-                    {
-                        "x": 4,
-                        "y": 25,
-                        "toFloor": 1,
-                        "targetX": 46,
-                        "targetY": 4,
-                        "label": "黒岩の胎道へ戻る"
-                    },
-                    {
-                        "x": 45,
-                        "y": 4,
-                        "toFloor": 3,
-                        "targetX": 4,
-                        "targetY": 3,
-                        "label": "溶岩の地底湖へ"
-                    }
-                ],
-                "tileEffects": [
-                    {
-                        "x": 21,
-                        "y": 24,
-                        "type": "warp",
-                        "toX": 16,
-                        "toY": 20,
-                        "message": "同じ景色の十字路へ戻された。"
-                    },
-                    {
-                        "x": 27,
-                        "y": 24,
-                        "type": "warp",
-                        "toX": 16,
-                        "toY": 20,
-                        "message": "足元の闇が反転し、入口側の十字路へ戻された。"
-                    },
-                    {
-                        "x": 39,
-                        "y": 24,
-                        "type": "warp",
-                        "toX": 16,
-                        "toY": 20,
-                        "message": "見覚えのある横穴へ押し戻された。"
-                    },
-                    {
-                        "x": 43,
-                        "y": 18,
-                        "type": "warp",
-                        "toX": 16,
-                        "toY": 20,
-                        "message": "曲がったはずの通路が、また最初の横穴につながっていた。"
-                    }
-                ],
-                "chests": [
-                    {
-                        "x": 17,
-                        "y": 15,
-                        "itemId": 99,
-                        "type": "item"
-                    },
-                    {
-                        "x": 31,
-                        "y": 12,
-                        "itemId": 6,
-                        "type": "item"
-                    },
-                    {
-                        "x": 9,
-                        "y": 8,
-                        "itemId": 14,
-                        "type": "item"
-                    },
-                    {
-                        "x": 43,
-                        "y": 24,
-                        "itemId": 7,
-                        "type": "item",
-                        "rare": true
-                    }
-                ],
-                "mapActions": [
-                    {
-                        "x": 16,
-                        "y": 20,
-                        "label": "古びた石碑を読む",
-                        "log": "「右へ進み、三つ目の十字を南へ。焦る者は同じ闇を歩く」と読める。",
-                        "type": "log",
-                        "imageKey": "overlay_dungeon_event",
-                        "blocksMovement": false,
-                        "baseTile": "T"
-                    },
-                    {
-                        "x": 8,
-                        "y": 8,
-                        "label": "白骨を調べる",
-                        "log": "白骨のそばに「戻されたら数え直せ」と血文字が残っている。",
-                        "type": "log",
-                        "imageKey": "overlay_dungeon_adventurer",
-                        "blocksMovement": false,
-                        "baseTile": "G"
-                    }
-                ],
-                "entryPoint": {
-                    "x": 4,
-                    "y": 25
-                }
-            },
-            {
-                "label": "3階・溶岩の地底湖",
-                "encounterRank": 72,
-                "monsters": [
-                    100059,
-                    100060,
-                    100061
-                ],
-                "width": 51,
-                "height": 29,
-                "tiles": [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWGGUTTTTGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWGGGGGGTGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWGGGGGGTGGWWWWWWWWWWWWWWMMMMMMMMMMMMMMMMMMMMMMWWWW",
-                    "WWGGGGGGTGGWWWWWWWWWWWWWWMMMMMMMMMMMMMMMMMMMMMMWWWW",
-                    "WWWWWWMMTMMMMMMMMMMMMMMMMMMMMMMMMMTTTTTTTTTTTMMWWWW",
-                    "WWWWWWMMTTTTTTTTTTTTTTTMMMMMMMMMMMTMMMMMMMMMTMMWWWW",
-                    "WWWWWWMMTMMMMMMMMMMMMMTMMMMMMMMMMMTMMMMMMMMMTMMWWWW",
-                    "WWWWWWMMTMMMMMMMMMMMMMTMMMMMMMMMMMTMMMMMMMMMTMMWWWW",
-                    "WWWWWWWWTWWWWWWWWWMMMMTMMMMMMMMMMMTMMMMMMMMMTMMWWWW",
-                    "WWWWWWWWTWWWWWWWWWMMMMTMMMMMCTTTMMTMMMMMMMMMTMMWWWW",
-                    "WWWWWWWWTWWWWWWWWWMMMMTMMMMMTMMMMMTMMMMMMMMMTMMWWWW",
-                    "WWWWWWWWTWWWWWWWWWMMMMTMMMMMTMMMMMTMMMMMMMMMTMMWWWW",
-                    "WWWWWWWWTWWWWWWWWWTTTTTTTTTTTTTTTTTMMMMMMMMMTMMWWWW",
-                    "WWWWWWWWTWWGGGGGGGTGMMMMMMMMMMMMMMTMMMMMMMMMTMMWWWW",
-                    "WWWWWWWWTWWGGGGRTTBGMMMMMMMMMMMMMMTMMMMMMMMMTMMWWWW",
-                    "WWWWWWWWTWWGGGGGGGGGWWWWWWWWWWWWWWTWWWWGGGGGTGGGGWW",
-                    "WWWWGGGGTGGGGGGGGGGGWWWWWWWWWWWWWWTWWWWGGGGGTGGGGWW",
-                    "WWWWGGGCTGGGGGGGGGGGWWWWWWGGGGGGGGTGWWWGGGGGTGGGGWW",
-                    "WWWWGGGGGGGGGGGGGGGGWWWWWWGGGGGGGGTGWWWGGGGGTGGGGWW",
-                    "WWWWGGGGGGGWWWWWWWWWWWWWWWGGGGCTTTTGWWWGGGGGTGGGGWW",
-                    "WWWWGGGGGGGWWWWWWWWWWWWWWWGGGGGGGGGGWWWGGGGGTGGGGWW",
-                    "WWWWGGGGGGGWWWWWWWWWWWWWWWGGGGGGGGGGWWWGGGGGTGGGGWW",
-                    "WWWWGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGTTTDGWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGGWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
-                ],
-                "floorLinks": [
-                    {
-                        "x": 4,
-                        "y": 3,
-                        "toFloor": 2,
-                        "targetX": 45,
-                        "targetY": 5,
-                        "label": "無限回廊へ戻る"
-                    },
-                    {
-                        "x": 47,
-                        "y": 25,
-                        "toFloor": 4,
-                        "targetX": 45,
-                        "targetY": 25,
-                        "label": "氷晶の十字滑床へ"
-                    }
-                ],
-                "tileEffects": [
-                    {
-                        "rects": [
-                            {
-                                "x1": 6,
-                                "y1": 7,
-                                "x2": 24,
-                                "y2": 10
-                            },
-                            {
-                                "x1": 18,
-                                "y1": 10,
-                                "x2": 28,
-                                "y2": 17
-                            },
-                            {
-                                "x1": 29,
-                                "y1": 5,
-                                "x2": 46,
-                                "y2": 17
-                            },
-                            {
-                                "x1": 25,
-                                "y1": 5,
-                                "x2": 31,
-                                "y2": 12
-                            }
-                        ],
-                        "type": "poison",
-                        "damageRate": 0.03,
-                        "message": "灼けた地熱が鎧の隙間から体力を削った！"
-                    },
-                    {
-                        "x": 41,
-                        "y": 21,
-                        "type": "hunter",
-                        "id": "galvania_f3_ash_daemon",
-                        "imageKey": "overlay_dungeon_hunter_fire",
-                        "monsterIds": [
-                            100059,
-                            100060,
-                            100061
-                        ],
-                        "speed": 0.45,
-                        "range": 34,
-                        "statMultiplier": 1.9,
-                        "message": "溶岩霧の向こうから、灼熱の魔族が迫る！"
-                    }
-                ],
-                "chests": [
-                    {
-                        "x": 7,
-                        "y": 20,
-                        "itemId": 14,
-                        "type": "item"
-                    },
-                    {
-                        "x": 30,
-                        "y": 22,
-                        "itemId": 99,
-                        "type": "item"
-                    },
-                    {
-                        "x": 28,
-                        "y": 12,
-                        "itemId": 5,
-                        "type": "item"
-                    },
-                    {
-                        "x": 15,
-                        "y": 17,
-                        "itemId": 7,
-                        "type": "item",
-                        "rare": true
-                    }
-                ],
-                "bosses": [
-                    {
-                        "x": 18,
-                        "y": 17,
-                        "monsterId": [
-                            100060,
-                            100061
-                        ],
-                        "mapSpriteMonsterId": 100060,
-                        "bossStatMultiplier": 1.25,
-                        "inactiveTile": "G",
-                        "inspectLog": "黒炎をまとった番人が、赤い宝箱の島を守っている。",
-                        "actionLabel": "黒炎の番人に挑む",
-                        "challengeText": "この番人を倒せば、溶岩島の宝へ進めそうだ。\n挑みますか？"
-                    }
-                ],
-                "mapActions": [
-                    {
-                        "x": 8,
-                        "y": 3,
-                        "label": "焦げた石碑を読む",
-                        "log": "「溶岩は短い道を残す。だが宝を欲するなら、黒炎の番人を越えよ」とある。",
-                        "type": "log",
-                        "imageKey": "overlay_dungeon_event",
-                        "blocksMovement": false,
-                        "baseTile": "G"
-                    }
-                ],
-                "limitedMapReveal": true,
-                "revealRadius": 4,
-                "entryPoint": {
-                    "x": 4,
-                    "y": 3
-                }
-            },
-            {
-                "label": "4階・氷晶の十字滑床",
-                "encounterRank": 74,
-                "monsters": [
-                    100060,
-                    100061,
-                    100062
-                ],
-                "width": 51,
-                "height": 29,
-                "tiles": [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWDWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGWWWWWWWWWWW",
-                    "WWWWTTTTTTTTTTTTTTTWWWWWWWWWWWWGGGCGGGGGWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWTWWWWWWWWWWWWGGGTGGGGGWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWTTTTTTTTTTTTTTTTTGGGGGWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWTWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWTTTTTTTTTTTTTWWWWWWTWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWTWWWWWWWWWWWWWWWWWWTWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWTWWWWWWWWWWWWWWGGGGGGGGGWWWWWWWWTTTTTWWWWWWWW",
-                    "WWWWWWTWWWWWWWWWWWWWWGGGGGGGGGWWWWWWWWTWWWTWWWWWWWW",
-                    "WWWWWWTWWWWWWWWWWWWWWGGGGGGGGGWWWWWWWWTWWWTWWWWWWWW",
-                    "WWWWWWTWWWWWWWWWWWWWWGGGGGGGGGWWWWWWWWTWWWTWWWWWWWW",
-                    "WWWWWWTWWTTTTTTTTTTTTGGGGGGGGGTTTTTTTTTWWWTWWWWWWWW",
-                    "WWWWWWTWWTWWWWWWWWWWWGGGGTTGGGWWWWWWWWWWWWTWWWWWWWW",
-                    "WWWWWWTWWTWWWWWWWWWWWGGGGTGGGGWWWWWWWWWWWWTWWWWWWWW",
-                    "WWWWWWTWWTWWWWWWWWWWWGGGGTGGGGWGGGGGGGGWWWTWWWWWWWW",
-                    "WWWWWWTWWTWWWWWWWWWWWGGGGTGGGGWGGGGGGGGWWWTWWWWWWWW",
-                    "WWWWWWTWWTWWWWWWWWWWWWWWWTTWWWWGGGGGGGGWWWTWWWWWWWW",
-                    "WWWWWWCTTTTTTWWWWWWWWWWWWTTTTTTGGGCTTGGTTTTWWWWWWWW",
-                    "WWWWWWWGGGGGTGGGGGWWWWWWWTWWWWWGGGGGGGGWWWWWWWWWWWW",
-                    "WWWWWWWGGGGGBGGGGGWWWWWWWTWWWWWWWWWWTWWGGGGGGGGGGWW",
-                    "WWWWWWWGGGGGTGGGGGWWWWWWWWWWWWWWWWWWTWWGGGGGGGGGGWW",
-                    "WWWWWWWGGGGGTGGGGGWWWWWWWWWWWWWWWWWWTWWGGGGGGGGGGWW",
-                    "WWWWWWWGGGGGTTTRGGWWWWWWWWWWWWWWWWWWTTTTTTTTTUGGGWW",
-                    "WWWWWWWGGGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGGWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
-                ],
-                "floorLinks": [
-                    {
-                        "x": 45,
-                        "y": 25,
-                        "toFloor": 3,
-                        "targetX": 47,
-                        "targetY": 24,
-                        "label": "溶岩の地底湖へ戻る"
-                    },
-                    {
-                        "x": 4,
-                        "y": 3,
-                        "toFloor": 5,
-                        "targetX": 5,
-                        "targetY": 3,
-                        "label": "魔軍補給路へ"
-                    }
-                ],
-                "tileEffects": [
-                    {
-                        "points": [
-                            {
-                                "x": 13,
-                                "y": 14
-                            },
-                            {
-                                "x": 14,
-                                "y": 14
-                            },
-                            {
-                                "x": 15,
-                                "y": 14
-                            },
-                            {
-                                "x": 16,
-                                "y": 14
-                            },
-                            {
-                                "x": 17,
-                                "y": 14
-                            },
-                            {
-                                "x": 18,
-                                "y": 14
-                            },
-                            {
-                                "x": 19,
-                                "y": 14
-                            },
-                            {
-                                "x": 20,
-                                "y": 14
-                            },
-                            {
-                                "x": 21,
-                                "y": 14
-                            },
-                            {
-                                "x": 22,
-                                "y": 14
-                            },
-                            {
-                                "x": 23,
-                                "y": 14
-                            },
-                            {
-                                "x": 24,
-                                "y": 14
-                            },
-                            {
-                                "x": 25,
-                                "y": 14
-                            },
-                            {
-                                "x": 26,
-                                "y": 14
-                            },
-                            {
-                                "x": 27,
-                                "y": 14
-                            },
-                            {
-                                "x": 28,
-                                "y": 14
-                            },
-                            {
-                                "x": 29,
-                                "y": 14
-                            },
-                            {
-                                "x": 30,
-                                "y": 14
-                            },
-                            {
-                                "x": 31,
-                                "y": 14
-                            },
-                            {
-                                "x": 32,
-                                "y": 14
-                            },
-                            {
-                                "x": 33,
-                                "y": 14
-                            },
-                            {
-                                "x": 34,
-                                "y": 14
-                            },
-                            {
-                                "x": 35,
-                                "y": 14
-                            },
-                            {
-                                "x": 36,
-                                "y": 14
-                            },
-                            {
-                                "x": 37,
-                                "y": 14
-                            },
-                            {
-                                "x": 25,
-                                "y": 7
-                            },
-                            {
-                                "x": 25,
-                                "y": 8
-                            },
-                            {
-                                "x": 25,
-                                "y": 9
-                            },
-                            {
-                                "x": 25,
-                                "y": 10
-                            },
-                            {
-                                "x": 25,
-                                "y": 11
-                            },
-                            {
-                                "x": 25,
-                                "y": 12
-                            },
-                            {
-                                "x": 25,
-                                "y": 13
-                            },
-                            {
-                                "x": 25,
-                                "y": 14
-                            },
-                            {
-                                "x": 25,
-                                "y": 15
-                            },
-                            {
-                                "x": 25,
-                                "y": 16
-                            },
-                            {
-                                "x": 25,
-                                "y": 17
-                            },
-                            {
-                                "x": 25,
-                                "y": 18
-                            },
-                            {
-                                "x": 25,
-                                "y": 19
-                            },
-                            {
-                                "x": 25,
-                                "y": 20
-                            },
-                            {
-                                "x": 25,
-                                "y": 21
-                            }
-                        ],
-                        "type": "ice",
-                        "maxSlide": 30,
-                        "message": "氷晶の床に足を取られ、止まるまで滑った！"
-                    },
-                    {
-                        "x": 42,
-                        "y": 11,
-                        "type": "hunter",
-                        "id": "galvania_f4_frost_hound",
-                        "imageKey": "overlay_dungeon_hunter_sea",
-                        "monsterIds": [
-                            100058,
-                            100061,
-                            100062
-                        ],
-                        "speed": 0.5,
-                        "range": 28,
-                        "statMultiplier": 1.75,
-                        "message": "氷壁の向こうから魔犬が滑るように迫ってきた！"
-                    }
-                ],
-                "chests": [
-                    {
-                        "x": 34,
-                        "y": 4,
-                        "itemId": 6,
-                        "type": "item"
-                    },
-                    {
-                        "x": 34,
-                        "y": 20,
-                        "itemId": 99,
-                        "type": "item"
-                    },
-                    {
-                        "x": 6,
-                        "y": 20,
-                        "itemId": 14,
-                        "type": "item"
-                    },
-                    {
-                        "x": 15,
-                        "y": 25,
-                        "itemId": 7,
-                        "type": "item",
-                        "rare": true
-                    }
-                ],
-                "bosses": [
-                    {
-                        "x": 12,
-                        "y": 22,
-                        "monsterId": [
-                            100061,
-                            100062
-                        ],
-                        "mapSpriteMonsterId": 100061,
-                        "bossStatMultiplier": 1.35,
-                        "inactiveTile": "G",
-                        "keyRewardColor": "gold",
-                        "inspectLog": "氷鎧の魔将が、古い金の鍵を握っている。南西の宝と、先の補給路の近道に関係しそうだ。",
-                        "actionLabel": "氷鎧の魔将に挑む",
-                        "challengeText": "この魔将は通路突破に必須ではないが、倒せば金の鍵を奪えそうだ。\n挑みますか？"
-                    }
-                ],
-                "mapActions": [
-                    {
-                        "x": 23,
-                        "y": 18,
-                        "label": "凍った石碑を読む",
-                        "log": "「十字で曲がるな。止まれる壁を探し、横から入れ」と氷の下に刻まれている。",
-                        "type": "log",
-                        "imageKey": "overlay_dungeon_event",
-                        "blocksMovement": false,
-                        "baseTile": "G"
-                    }
-                ],
-                "entryPoint": {
-                    "x": 45,
-                    "y": 25
-                }
-            },
-            {
-                "label": "5階・魔軍補給路",
-                "encounterRank": 76,
-                "monsters": [
-                    100061,
-                    100062,
-                    100063
-                ],
-                "width": 51,
-                "height": 29,
-                "tiles": [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWGGGUGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWGGGTGGGGGWWWGGGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWGGGTGGGGGWWWGGGGGGGGGGGWWWWGGGGGGGGGGGGGGGGGWWWWW",
-                    "WWWWWTWWWWWWWWGGGGCGGTTTTTTTTTTTTTTTTTTTTTTTTGWWWWW",
-                    "WWWWWTWWWWWWWWGGGGTGGTGGGWWWWGGGGGGGGGGGGGGGTGWWWWW",
-                    "WWWWWTTTTTTTTTTTTTTGGTGGGWWWWGGGGGGGGGGGGGGGTGWWWWW",
-                    "WWWWWWWWWWWWTWGGGGGGGTGGGWWWWGGGGGGGGGGGGGGGTGWWWWW",
-                    "WWWWWWWWWWWWTWGGGGGGGTGGGWWWWGGGGGGGGGGCGGGGTGWWWWW",
-                    "WWWWWWWWWWWWTWWWWWWWWTWWWWWWWGGGGGGGGGGTGGGGTGWWWWW",
-                    "WWWWWWWWWWWWTWWWWWWWWTWWWWWWWWWWWWWWWWWTWWWWTWWWWWW",
-                    "WWWWWWWTTTTTTWWWWWWWWTWWWWWWWWWWWWWWWWWTWWWWTWWWWWW",
-                    "WWWWWWWTWWWWWWWWWWWWWTTTTZTTTTTTTTTTTTTTWWWWTWWWWWW",
-                    "WWWWWWWTWWWWWWWWWWWWWWWWTWWWWWWWWWWWWWWTWWWWTWWWWWW",
-                    "WWWWWWWTWWWWWWWWWWWWWWWWTWWWWWWGGGGGGGGGGGWWTWWWWWW",
-                    "WWWWWWWTWWWWWWWWWWTTTTTTTWWWWWWGGGGGGGGGGGWWTWWWWWW",
-                    "WWWGGGGGGGGGGGWWWWTWWWWWTWWWWWWGGGRTTGGGGGTTTWWWWWW",
-                    "WWWGGGGGGGGGGGWWWWTWWWWWTWWWWWWGGGGGGGGGGGWWTWWWWWW",
-                    "WWWGGGGGGGGGGGWWWWTWWWWWTWWMMMMGGGGGGGGGGGWWTWWWWWW",
-                    "WWWGGGGGGGGGGGWWWWTWWWWWTWWMMMMMMMMWTWWWWWWWTWWWWWW",
-                    "WWWGGGGGGCGGGGTTTTTWWWWWTWWMTTCTTTMWTWWWWWWWTWWWWWW",
-                    "WWWGGGGGGGGGGGWWWWWWWWWWTWWMMMMMMMMWTWWWWWWWTWWWWWW",
-                    "WWWGGGGGGGGGGGWWWWWWWWWWTTTTTTTTTTTTTWWWWWWWTTDWWWW",
-                    "WWWGGGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
-                ],
-                "floorLinks": [
-                    {
-                        "x": 5,
-                        "y": 3,
-                        "toFloor": 4,
-                        "targetX": 4,
-                        "targetY": 4,
-                        "label": "氷晶の十字滑床へ戻る"
-                    },
-                    {
-                        "x": 46,
-                        "y": 24,
-                        "toFloor": 6,
-                        "targetX": 5,
-                        "targetY": 25,
-                        "label": "南口の旧坑へ"
-                    }
-                ],
-                "tileEffects": [
-                    {
-                        "x": 44,
-                        "y": 6,
-                        "type": "warp",
-                        "toX": 21,
-                        "toY": 14,
-                        "message": "補給路の見取り図がねじれ、封鎖扉の手前へ戻された。"
-                    },
-                    {
-                        "rect": {
-                            "x1": 27,
-                            "y1": 20,
-                            "x2": 34,
-                            "y2": 23
-                        },
-                        "type": "poison",
-                        "damageRate": 0.04,
-                        "message": "溶岩の排水溝から熱風が吹き上がった！"
-                    },
-                    {
-                        "x": 32,
-                        "y": 18,
-                        "type": "hunter",
-                        "id": "galvania_f5_supply_overseer",
-                        "imageKey": "overlay_dungeon_hunter_shadow",
-                        "monsterIds": [
-                            100061,
-                            100062,
-                            100063
-                        ],
-                        "speed": 0.65,
-                        "range": 40,
-                        "statMultiplier": 2.05,
-                        "message": "補給路を巡回する上級魔族が、こちらを捕捉した！"
-                    }
-                ],
-                "chests": [
-                    {
-                        "x": 18,
-                        "y": 6,
-                        "itemId": 99,
-                        "type": "item"
-                    },
-                    {
-                        "x": 39,
-                        "y": 10,
-                        "itemId": 6,
-                        "type": "item"
-                    },
-                    {
-                        "x": 9,
-                        "y": 22,
-                        "itemId": 14,
-                        "type": "item"
-                    },
-                    {
-                        "x": 30,
-                        "y": 22,
-                        "itemId": 5,
-                        "type": "item"
-                    },
-                    {
-                        "x": 34,
-                        "y": 18,
-                        "itemId": 7,
-                        "type": "item",
-                        "rare": true
-                    }
-                ],
-                "mapActions": [
-                    {
-                        "x": 21,
-                        "y": 14,
-                        "label": "補給路の石碑を読む",
-                        "log": "「金の鍵なき者は遠回りせよ。鍵ある者は灼けた水路を越え、南の坑道へ急げ」とある。",
-                        "type": "log",
-                        "imageKey": "overlay_dungeon_event",
-                        "blocksMovement": false,
-                        "baseTile": "T"
-                    },
-                    {
-                        "x": 38,
-                        "y": 10,
-                        "label": "魔軍の木箱を調べる",
-                        "log": "魔王城へ運ぶ兵糧と黒晶が積まれている。洞窟はただの自然洞ではなく、軍の補給路になっているようだ。",
-                        "type": "log",
-                        "imageKey": "overlay_dungeon_event",
-                        "blocksMovement": false,
-                        "baseTile": "G"
-                    }
-                ],
-                "limitedMapReveal": true,
-                "revealRadius": 3,
-                "entryPoint": {
-                    "x": 5,
-                    "y": 3
-                }
-            },
-            {
-                "label": "6階・南口 白骨の旧坑",
-                "encounterRank": 78,
-                "monsters": [
-                    100062,
-                    100063,
-                    100064
-                ],
-                "width": 51,
-                "height": 29,
-                "tiles": [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGWWWWWWWWWWWWWW",
-                    "WWWWGGGGGGGGGWWWWWWWWWWWWWWWWGGGGGGGGWWWWWWWWWWWWWW",
-                    "WWWWGGGGGGGGGWWWWWWWWWWWWWWWTGGGCGGGGTTTTWWWWWWWWWW",
-                    "WWWWGGGGGGCGGTTTTTTWWWWWWWWWTGGGGGGGGWWWTWWWWWWWWWW",
-                    "WWWWGGGGGGGGGWWWWWTWWWWWWWWWTGGGGGGGGWWWTWWWWWWWWWW",
-                    "WWWWGGGGGGGGGWWWWWTWWWWWWWWWTWWWWWWWWWWWTWWWWWWWWWW",
-                    "WWWWWWWWTWWWWWWWWWTWWWWWWWWWTWWWWWWWWWWWTWWWWWWWWWW",
-                    "WWWWWWWWTWWWWWWWWWTTTTTTTTTTTWWWWWWWWWWWTWWWWWWWWWW",
-                    "WWWWWWWWTWWWWWWWWWWWWWTWWWWWWWWWWWWWWWWWTWWWWWWWWWW",
-                    "WWWWWWWWTTTTTTTWWWWWWWTWWWWWWWWWWTTTTTTTTWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWTWWWWWWWTWWWWWWWWWWTWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWTWGGGGGGBTTTTTTTTTTTTTTTTWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWTWGGGGGGRGWWWWWWWWWTWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWTWGGGGGGTGWWWWWWWWWTWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWTWGGGGGGTGGGGGGGGWWTWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWTWGGGGGGTGGGGTTTTTTTTTTTTTTTTTTWWWWWW",
-                    "WWWWWTTTTTTTTTTWWWWWGGGGGGGTGGGWWWWWWWWWWWWWTWWWWWW",
-                    "WWWWWTWWWWWWWWWWWWWWGGGGGGGTGGGWWWWGGGGGGGGGGGGGGWW",
-                    "WWWWWTWWWWWWWWWWWWWWGGGGGGGCGGGWWWWGGGGMMMMMMMGGGWW",
-                    "WWGGGTGGGGGWWWWWWWWWGGGGGGGGGGGWWWWGGGGMMMMMMMGGGWW",
-                    "WWGGGTGGGGGWWWWWWWWWGGGGGGGGGGGWWWWGGGGMMMMMMMGGGWW",
-                    "WWGGGTGGGGGWWWWWWWWWGGGGGGGGGGGWWWWGGGGTTTCTTTGGGWW",
-                    "WWGGGUGGGGGWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGGGGSGWW",
-                    "WWGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGGGGGGWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
-                ],
-                "floorLinks": [
-                    {
-                        "x": 5,
-                        "y": 25,
-                        "toFloor": 5,
-                        "targetX": 46,
-                        "targetY": 23,
-                        "label": "魔軍補給路へ戻る"
-                    },
-                    {
-                        "x": 47,
-                        "y": 25,
-                        "to": "EXIT",
-                        "label": "南口へ出る",
-                        "exitPoint": {
-                            "areaKey": "WORLD",
-                            "x": 35,
-                            "y": 42
-                        }
-                    }
-                ],
-                "tileEffects": [
-                    {
-                        "x": 38,
-                        "y": 14,
-                        "type": "warp",
-                        "toX": 33,
-                        "toY": 12,
-                        "message": "南口が近いと思った瞬間、黒い風が中腹の分岐へ押し戻した。"
-                    },
-                    {
-                        "rect": {
-                            "x1": 39,
-                            "y1": 21,
-                            "x2": 45,
-                            "y2": 23
-                        },
-                        "type": "poison",
-                        "damageRate": 0.03,
-                        "message": "出口付近の溶岩割れ目から熱が噴き上がった！"
-                    },
-                    {
-                        "x": 41,
-                        "y": 22,
-                        "type": "hunter",
-                        "id": "galvania_f6_royal_rearguard",
-                        "imageKey": "overlay_dungeon_hunter_shadow",
-                        "monsterIds": [
-                            100062,
-                            100063,
-                            100064
-                        ],
-                        "speed": 0.55,
-                        "range": 36,
-                        "statMultiplier": 1.95,
-                        "message": "撤退路を守る魔族の後衛が立ちはだかった！"
-                    }
-                ],
-                "chests": [
-                    {
-                        "x": 10,
-                        "y": 6,
-                        "itemId": 14,
-                        "type": "item"
-                    },
-                    {
-                        "x": 27,
-                        "y": 21,
-                        "itemId": 99,
-                        "type": "item"
-                    },
-                    {
-                        "x": 32,
-                        "y": 5,
-                        "itemId": 6,
-                        "type": "item"
-                    },
-                    {
-                        "x": 42,
-                        "y": 24,
-                        "itemId": 5,
-                        "type": "item"
-                    },
-                    {
-                        "x": 22,
-                        "y": 15,
-                        "itemId": 7,
-                        "type": "item",
-                        "rare": true
-                    }
-                ],
-                "bosses": [
-                    {
-                        "x": 22,
-                        "y": 14,
-                        "monsterId": [
-                            100062,
-                            100064
-                        ],
-                        "mapSpriteMonsterId": 100064,
-                        "bossStatMultiplier": 1.3,
-                        "inactiveTile": "G",
-                        "inspectLog": "宝の横穴を守る魔族がうずくまっている。洞窟の突破そのものには関係なさそうだ。",
-                        "actionLabel": "横穴の守護魔に挑む",
-                        "challengeText": "この先には赤い宝箱が見える。守護魔に挑みますか？"
-                    }
-                ],
-                "mapActions": [
-                    {
-                        "x": 6,
-                        "y": 24,
-                        "label": "倒れた冒険者に声をかける",
-                        "log": "冒険者は息も絶え絶えに「南の光が見えても、最後の横道に惑わされるな」と呟く。",
-                        "type": "log",
-                        "imageKey": "overlay_dungeon_adventurer",
-                        "blocksMovement": false,
-                        "baseTile": "G"
-                    },
-                    {
-                        "x": 40,
-                        "y": 12,
-                        "label": "南口の石碑を読む",
-                        "log": "「ここを抜ければガルヴァニアの影。引き返す道は、北の記憶をたどれ」とある。",
-                        "type": "log",
-                        "imageKey": "overlay_dungeon_event",
-                        "blocksMovement": false,
-                        "baseTile": "T"
-                    }
-                ],
-                "entryPoint": {
-                    "x": 5,
-                    "y": 25
+        entryPoints: {
+                north: {
+                        floor: 1,
+                        x: 30,
+                        y: 32
                 },
-                "southEntryPoint": {
-                    "x": 47,
-                    "y": 25
+                south: {
+                        floor: 6,
+                        x: 56,
+                        y: 32
                 }
-            }
+        },
+        entryRequiredFlag: "lightPalaceCleared",
+        entryRequiredEntrances: [
+                "north"
+        ],
+        entryLockedEventId: "galvania_cave_north_blocked",
+        entryLockedText: "魔王軍の活動が活発で危険すぎる。",
+        floors: [
+                {
+                        label: "1階・北口 黒岩の胎道",
+                        encounterRank: 70,
+                        monsters: [
+                                100056,
+                                100057,
+                                100058,
+                                100059
+                        ],
+                        width: 61,
+                        height: 35,
+                        tiles: [
+                                "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                                "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                                "WWWWWWWWWWWWWWGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGGGGGGGWW",
+                                "WWWWWWWWWWWWWWGGGGGGGGWWWWWWWWWWWWWTTTTTTTTTTTTTGGGGGGGDGGGWW",
+                                "WWWWWWWWWWWWWWGGGGCGGGTTWWWWWWWWWWWTWWWWWWWWGGGGGGGGGGGGGGGWW",
+                                "WWWWWWWWWWWWWWGGGGGGGGWTWWWWWWWWWWWTWWWWWWWWGGGGGGGGCGGGGGGWW",
+                                "WWWWGGGGGGGGGGWWWWWWGGGTGGGGGWWWWWWTWWWWWWWWGGGGGGGGGGGGGGGWW",
+                                "WWWWGGGGGGGGGGWWWWWWGGGTGGGGGWWWWWWTTTTTTTTTGGGGGGGGGGGGGGGWW",
+                                "WWWWGGGGGGGGGGWWWWWWGGGTGGGGGWWWWWWTWWWWWWWWGGGGGGGGGGGGGGGWW",
+                                "WWWWGGGGGGGGGGTTTTTTGGGTGGGGGWWWWWWTWWWWWWWWWWWWWWWWWWWWWWWWW",
+                                "WWWWGGGGGGGGGGWWWWWWGGGGGGGGGWWGGGGGGGGGGGWWWWWWWWWWWWWWWWWWW",
+                                "WWWWGGCGGGGGGGWWWWWWGGGGGGGGGWWGGGGGGGGGGGWWWWWWWWWWWWWWWWWWW",
+                                "WWWWGTTTTGGGGGWWWWWWGGGGGGGGGWWGGGGGGGGGGGWWWWWWWWWWWWWWWWWWW",
+                                "WWWWWTWWTWWWWWWWWWWWGGGGGGGGGTTTTTTTGGGCGTTTTTTTTTTTTWWWWWWWW",
+                                "WWWWWTWWTWWWWWWWWWWWGGGGGGGGGWWTGGGGGGGGGGTWWWWWWWWWTWWWWWWWW",
+                                "WWWWWTWWTWWWWWGGGGGGGGGWWWWWWWWTGGGGGGGGGGTWWWWWWWWWTWWWWWWWW",
+                                "WWWWWTWWTTTTTTGGGTTTTTTTTTTWWWWTGGGGGGGGGGTWWWWWWWWWTWWWWWWWW",
+                                "WWWWWTWWWWWWWWGGGGGGGGGWWWTWWWWTWWWWWWWWWWTWWWWWWWWWTWWWWWWWW",
+                                "WWWWWTWWWWWWWWGGGGGGGGGWWWTTTTTTWWWWWWWWWWTMMMMMMMMMMMMMWWWWW",
+                                "WWWWWTWWWWWWWWGGGGGGGGGWWWTWWWWWWWWWWWWGGGTMMMMMMMMMMMMMWWWWW",
+                                "WWWWGTGGGGGGGGGGGGGGGGGWWGTGGGGGGGGWWWWGGGTMMMMMMMMMMMMMWWWWW",
+                                "WWWWGTGGGGGGGGGGGGGGGGGWWGTGGGGGGGGWWWWGGGTMMMMMRMMMMTMMWWWWW",
+                                "WWWWGTGGGGGGGGGGGGGGGGGWWGTTTCTTTTTTTTTTTTTMMMMMMMMMMTMMWWWWW",
+                                "WWWWGTGGGGGGGGWWWWWWWWWWWGGTGGGGGGGWWWWGGGGMMMMMMMMMMTMMWWWWW",
+                                "WWWWGTGGGGGGGGWWWWWWWWWWWGGTGGGGGGGWWWWGTTTTTTTTTTTTTTGWWWWWW",
+                                "WWWWGTTTTTGGGGTTTTTTTWWWWGGTGGGGGGGWWWWGGGGGGGGGGGGGGGGWWWWWW",
+                                "WWWWGGGGGGGGGGWWWWWWTWWWWGGTGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                                "WWWWGGGGGGGGGGWWWWWWTWWWWWWTWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                                "WWWWGGGGGGGGGGWWWWWWTTTTTTTTTTTWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                                "WWWWWWWWWWWWWWWWWWWWWWWWGGGGGGTGGGGGGWWWWWWWWWWWWWWWWWWWWWWWW",
+                                "WWWWWWWWWWWWWWWWWWWWWWWWGGGGGGTGGGGGGWWWWWWWWWWWWWWWWWWWWWWWW",
+                                "WWWWWWWWWWWWWWWWWWWWWWWWGGGGGGTGGGGGGWWWWWWWWWWWWWWWWWWWWWWWW",
+                                "WWWWWWWWWWWWWWWWWWWWWWWWGGGGGGSGGGGGGWWWWWWWWWWWWWWWWWWWWWWWW",
+                                "WWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWW",
+                                "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                        ],
+                        floorLinks: [
+                                {
+                                        x: 30,
+                                        y: 32,
+                                        to: "EXIT",
+                                        label: "北口へ戻る",
+                                        exitPoint: {
+                                                areaKey: "WORLD",
+                                                x: 31,
+                                                y: 40
+                                        }
+                                },
+                                {
+                                        x: 55,
+                                        y: 3,
+                                        toFloor: 2,
+                                        targetX: 5,
+                                        targetY: 31,
+                                        label: "偽りの無限回廊へ"
+                                }
+                        ],
+                        tileEffects: [
+                                {
+                                        rect: {
+                                                x1: 43,
+                                                y1: 18,
+                                                x2: 55,
+                                                y2: 23
+                                        },
+                                        type: "poison",
+                                        damageRate: 0.035,
+                                        message: "黒い溶岩の噴気が体力を削った！"
+                                },
+                                {
+                                        x: 7,
+                                        y: 23,
+                                        type: "hunter",
+                                        id: "galvania_f1_black_scout_v2",
+                                        imageKey: "overlay_dungeon_hunter_shadow",
+                                        monsterIds: [
+                                                100056,
+                                                100057,
+                                                100058
+                                        ],
+                                        speed: 0.58,
+                                        range: 34,
+                                        statMultiplier: 1.75,
+                                        message: "黒岩の陰から魔族の斥候が襲いかかった！"
+                                },
+                                {
+                                        x: 52,
+                                        y: 13,
+                                        type: "warp",
+                                        toX: 41,
+                                        toY: 13,
+                                        message: "脆い横穴が崩れ、少し手前へ押し戻された。"
+                                }
+                        ],
+                        chests: [
+                                {
+                                        x: 18,
+                                        y: 4,
+                                        itemId: 99,
+                                        type: "item"
+                                },
+                                {
+                                        x: 6,
+                                        y: 11,
+                                        itemId: 14,
+                                        type: "item"
+                                },
+                                {
+                                        x: 29,
+                                        y: 22,
+                                        itemId: 5,
+                                        type: "item"
+                                },
+                                {
+                                        x: 39,
+                                        y: 13,
+                                        itemId: 6,
+                                        type: "item"
+                                },
+                                {
+                                        x: 52,
+                                        y: 5,
+                                        itemId: 99,
+                                        type: "item"
+                                },
+                                {
+                                        x: 48,
+                                        y: 21,
+                                        itemId: 7,
+                                        type: "item",
+                                        rare: true
+                                }
+                        ],
+                        mapActions: [
+                                {
+                                        x: 27,
+                                        y: 31,
+                                        label: "倒れている兵を調べる",
+                                        log: "兵は「見える近道ほど、地の熱に誘われる。南へ急ぐなら高い岩をたどれ」と息絶え絶えに告げた。",
+                                        type: "log",
+                                        imageKey: "overlay_dungeon_adventurer",
+                                        blocksMovement: false,
+                                        baseTile: "G"
+                                },
+                                {
+                                        x: 38,
+                                        y: 13,
+                                        label: "黒い道標を読む",
+                                        log: "「裂け道は輪を描く。火を見たら戻れ。高みの橋だけが次の闇へ続く」と刻まれている。",
+                                        type: "log",
+                                        imageKey: "overlay_dungeon_event",
+                                        blocksMovement: false,
+                                        baseTile: "G"
+                                },
+                                {
+                                        x: 51,
+                                        y: 5,
+                                        label: "魔族の残置物を調べる",
+                                        log: "魔王城へ運ぶ黒晶片が散らばっている。洞窟は補給路としても使われているようだ。",
+                                        type: "log",
+                                        imageKey: "overlay_dungeon_event",
+                                        blocksMovement: false,
+                                        baseTile: "G"
+                                }
+                        ],
+                        entryPoint: {
+                                x: 30,
+                                y: 32
+                        }
+                },
+                {
+                        label: "2階・偽りの無限回廊",
+                        encounterRank: 72,
+                        monsters: [
+                                100058,
+                                100059,
+                                100060
+                        ],
+                        width: 61,
+                        height: 35,
+                        tiles: [
+                                "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                                "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                                "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGWW",
+                                "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGWW",
+                                "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGDGGGWW",
+                                "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGWW",
+                                "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGWW",
+                                "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWTWWWWW",
+                                "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWTTTTTTTTWWWWW",
+                                "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWTWWWWWWWWWWWW",
+                                "WWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGWWWWWWWWWWWGGGGGGGGGWWWWWWWWWW",
+                                "WWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGWWWWWWWWWWWGGGGGGGGGWWWWWWWWWW",
+                                "WWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGWWWWWWWWWWWGGGGGGGGGWWWWWWWWWW",
+                                "WWWWWWWWWWWWWWWWWWWWWWGGGTTCGGGWWWWWWWWTTTGGGGTTRGGWWWWWWWWWW",
+                                "WWWWWWWWWWWWWWWGGGGGGGGGGTGGGGGGGGGGGWWTWWGGGGTGGGGWWWWWWWWWW",
+                                "WWWWWWWWWWWWWWWGGGGGGGGGGTGGGGGGGGGGGWWTWWGGGGTGGGGWWWWWWWWWW",
+                                "WWWWWWWWWWWWWWWGGGTCGGGWWTWWWGGGTTCGGWWTWWWWWWTWWWWWWWWWWWWWW",
+                                "WWWWGGGGGGGWWWWGGGTGGGGWWTWWWGGGTGGGGWWTWWWWWWTWWWWWWWWWWWWWW",
+                                "WWWWGGGCGGGWWWWGGGTGGGGWWTWWWGGGTGGGGWWTWWWWWWTWWWWWWWWWWWWWW",
+                                "WWWWGGGTGGGWWWWWWWTWWWWWWTWWWWWWTWWWWWWTWWWWWWTWWWWWWWWWWWWWW",
+                                "WWWWGGGTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTCTTTWWWWWW",
+                                "WWWWGGGGGGGWTWWWWWTWWWWWWTWWWWWWTWWWWWWTWWWWWWTWWWWWWWTWWWWWW",
+                                "WWWWGGGGGGGWTWWWWWTWWWWWWTWWWWWWTWWWWWWTWWWWWWTWWWWWWWTWWWWWW",
+                                "WWWWGGGGGGGWTWWWWWTWWWWWWTWWWWWWTWWWWWWTWWWWWWTWWWWWWWTWWWWWW",
+                                "WWWWWWWWWWWWTWWWWWTWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTCWWWTWWWWWW",
+                                "WWWWWWWWWWWWTWWWWWTWTWWWWTWWWWWWTWWWWWWTWWWWWWTWWWTWWWTWWWWWW",
+                                "WWWWWWWWWWWWTWWWWWTWTWWWWTWWWWWWTWWWWWWTWWWWWWTWWWTWWWTWWWWWW",
+                                "WWWWWWWWWWWWTWWWWWTWTWWWWTWWWWWWTWWWWWWTWWWWWWTWWWTWWWTWWWWWW",
+                                "WWGGGGGGGGGGTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWWWWW",
+                                "WWGGGGGGGGGGTWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGTGGGWWW",
+                                "WWGGGGGGGGGGTWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGTGGGWWW",
+                                "WWGGGUTTTTTTTWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGTTTTGGGWWW",
+                                "WWGGGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGGGWWW",
+                                "WWGGGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGGGWWW",
+                                "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                        ],
+                        floorLinks: [
+                                {
+                                        x: 5,
+                                        y: 31,
+                                        toFloor: 1,
+                                        targetX: 55,
+                                        targetY: 4,
+                                        label: "黒岩の胎道へ戻る"
+                                },
+                                {
+                                        x: 55,
+                                        y: 4,
+                                        toFloor: 3,
+                                        targetX: 5,
+                                        targetY: 4,
+                                        label: "溶岩の地底湖へ"
+                                }
+                        ],
+                        tileEffects: [
+                                {
+                                        x: 18,
+                                        y: 28,
+                                        type: "warp",
+                                        toX: 12,
+                                        toY: 28,
+                                        message: "同じ石柱の前へ戻された。"
+                                },
+                                {
+                                        x: 25,
+                                        y: 28,
+                                        type: "warp",
+                                        toX: 12,
+                                        toY: 28,
+                                        message: "床の紋様が反転し、入口側の横穴へ戻された。"
+                                },
+                                {
+                                        x: 32,
+                                        y: 28,
+                                        type: "warp",
+                                        toX: 12,
+                                        toY: 28,
+                                        message: "一歩進んだはずが、また最初の柱を見上げている。"
+                                },
+                                {
+                                        x: 46,
+                                        y: 28,
+                                        type: "warp",
+                                        toX: 12,
+                                        toY: 28,
+                                        message: "闇の風に巻かれ、数え始めの場所へ戻された。"
+                                },
+                                {
+                                        x: 54,
+                                        y: 20,
+                                        type: "warp",
+                                        toX: 12,
+                                        toY: 28,
+                                        message: "外周を回りきったはずの道が、また入口側へつながっていた。"
+                                },
+                                {
+                                        x: 50,
+                                        y: 28,
+                                        type: "warp",
+                                        toX: 20,
+                                        toY: 24,
+                                        message: "内側の回廊に吸い込まれた。"
+                                },
+                                {
+                                        x: 20,
+                                        y: 24,
+                                        type: "warp",
+                                        toX: 12,
+                                        toY: 28,
+                                        message: "輪の中心から、始まりの横穴へ放り出された。"
+                                }
+                        ],
+                        chests: [
+                                {
+                                        x: 19,
+                                        y: 16,
+                                        itemId: 99,
+                                        type: "item"
+                                },
+                                {
+                                        x: 27,
+                                        y: 13,
+                                        itemId: 14,
+                                        type: "item"
+                                },
+                                {
+                                        x: 34,
+                                        y: 16,
+                                        itemId: 5,
+                                        type: "item"
+                                },
+                                {
+                                        x: 7,
+                                        y: 18,
+                                        itemId: 6,
+                                        type: "item"
+                                },
+                                {
+                                        x: 51,
+                                        y: 20,
+                                        itemId: 99,
+                                        type: "item"
+                                },
+                                {
+                                        x: 50,
+                                        y: 24,
+                                        itemId: 14,
+                                        type: "item"
+                                },
+                                {
+                                        x: 48,
+                                        y: 13,
+                                        itemId: 7,
+                                        type: "item",
+                                        rare: true
+                                }
+                        ],
+                        mapActions: [
+                                {
+                                        x: 12,
+                                        y: 28,
+                                        label: "古びた石碑を読む",
+                                        log: "「柱を数えよ。三度目に迷い、四度目に上れ。端まで急ぐ者は輪の腹へ戻る」と読める。",
+                                        type: "log",
+                                        imageKey: "overlay_dungeon_event",
+                                        blocksMovement: false,
+                                        baseTile: "T"
+                                },
+                                {
+                                        x: 7,
+                                        y: 20,
+                                        label: "倒れた冒険者を調べる",
+                                        log: "革袋に「戻されたら、同じ柱を数え直せ。上へ行くのは四つ目」と震えた字で書かれている。",
+                                        type: "log",
+                                        imageKey: "overlay_dungeon_adventurer",
+                                        blocksMovement: false,
+                                        baseTile: "T"
+                                },
+                                {
+                                        x: 39,
+                                        y: 13,
+                                        label: "煤けた足跡を調べる",
+                                        log: "足跡は不自然に北へ伸びている。魔族の巡回はこの道だけを避けているようだ。",
+                                        type: "log",
+                                        imageKey: "overlay_dungeon_event",
+                                        blocksMovement: false,
+                                        baseTile: "T"
+                                }
+                        ],
+                        limitedMapReveal: true,
+                        revealRadius: 3,
+                        entryPoint: {
+                                x: 5,
+                                y: 31
+                        }
+                },
+                {
+                        label: "3階・溶岩の地底湖",
+                        encounterRank: 74,
+                        monsters: [
+                                100059,
+                                100060,
+                                100061
+                        ],
+                        width: 61,
+                        height: 35,
+                        tiles: [
+                                "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                                "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                                "WWWGGGGGGGGGGWWWWWWWWWWWWWWWWWGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWW",
+                                "WWWGGGGGGGGGGWWWWWWWWWWWWWWWWWGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWW",
+                                "WWWGGUTTTTTTGWWWWWWWWWWWWWWWWWGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWW",
+                                "WWWGGGGGGGGTGWWWWWWWWWWWWWTTTTGGGGCGGGGWWWWWWWWWWWWWWWWWWWWWW",
+                                "WWWGGGGGGGGTGWWWWWWWWWWWWWTWWWGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWW",
+                                "WWWGGGGGGGGTGWWWWWWWWWWWWWTWWWGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWW",
+                                "WWWWWMMMMMMTMMMMMMMMMMMMMMTMMMMMMMMMMMMMMMMMMMMMMMMMMMMMWWWWW",
+                                "WWWWWMMMMMMTMMMMMMMMMMMMMMTMMMMTTTTTTTTTTTTTTTTTTTTMMMMMWWWWW",
+                                "WWWWWMMMMMMTTTTTTTTTTTTTTTTMMMMTMMMMMMMMMMMTMMMMMMTMMMMMWWWWW",
+                                "WWWWWMMMMMMMMMMMMMMMTMMMMMMMMMMTMMMMMMMMMMMTMMMMMMTMGGGGGGGWW",
+                                "WWWWWMMMMMMMMMMMMMMMTMMMMMMMMMMTMMMMMMMMMMMTMMMMMMTMGGGGGGGWW",
+                                "WWWWWMMMMMMMMMMMMMMMTMMMMMMMMMMTMMMMMMMMMMMTMMMMMMTMGGGGGGGWW",
+                                "WWWWWMMMMMMMMMMMMMMMTMMMMMMMMMMTMMMMMMMMMMMTMMMMMMTTGGGGCGGWW",
+                                "WWWWWMMMMMMMMMMMMMMMTMMMMMMMMMMTMMMMMMMMMMMTMMMMMMMMGGGGGGGWW",
+                                "WWWWWMMMMMMMMMTTTTTTTTTTTTTTTTTTMMMMMMMMMMMTMMMMMMMMGGGGGGGWW",
+                                "WWWWWMMMMMMMMMTMMMMMMMMMTMMMMMMTMMMMMMMMMMMTMMMMMMMMGGGGGGGWW",
+                                "WWWWWMMMMMMMMMTMMMMMMMGGGGGGGGGTMMMMMMMMMMMTTTTTTTTTTTTTTTWWW",
+                                "WWWWWMMMMMMMMMTMMMMMMMGGGGGGGGGTMMMMMMMMMMMMMMMMMMMMTMMMWTWWW",
+                                "WWWWWMMMMMMMMMTMMMMMMMGGGGGGGGGTMMMMMMMMMMMMMMMMMMMMTMMMWTWWW",
+                                "WWWWWMMMMMMMMMTMMMMMTTTTTGGCGGGTMMMMMMMMMMMMMMMMMMMMTMMMWTWWW",
+                                "WWWWWGGGGGGGGMTMMMMMTMGGGGGGGGGTMMMMMMMMMMMMMMMMMMMMTMMMWTWWW",
+                                "WWWWWGGGGGGGGMTMMMMMTMGGGGGGGGGTTTTTTTTMMMMMMMMMMCTTTTTTTTWWW",
+                                "WWWWWGGGCGGGGTTMMMGGGGGGGGGGGGGMMMMMMMTMMMMMMMMMMMMMTMMMWWWWW",
+                                "WWWWWGGGGGGGGMMMMMGGGGGGGGGGGGGMMMMMMMTMMMMMMMMMMMMMTMMMWWWWW",
+                                "WWWWWGGGGGGGGMMMMMGGGGGGBGGGRGGMMMGGGGGGGGGMMMMMMMMMTMMMWWWWW",
+                                "WWWWWGGGGGGGGMMMMMGGGGGGGGGGGGGMMMGGGGGGGGGMMMMMMGGGTGGGGGGWW",
+                                "WWWWWGGGGGGGGMMMMMGGGGGGGGGGGGGMMMGGGGGGGGGMMMMMMGGGTGGGGGGWW",
+                                "WWWWWMMMMMMMMMMMMMGGGGGGGGGGGGGMMMGGGGCGGGGMMMMMMGGGTGGGGGGWW",
+                                "WWWWWMMMMMMMMMMMMMGGGGGGGGGGGGGMMMGGGGGGGGGMMMMMMGGGTTTDGGGWW",
+                                "WWWWWMMMMMMMMMMMMMMMMMMMMMMMMMMMMMGGGGGGGGGMMMMMMGGGGGGGGGGWW",
+                                "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGWWWWWWGGGGGGGGGGWW",
+                                "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGGWW",
+                                "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                        ],
+                        floorLinks: [
+                                {
+                                        x: 5,
+                                        y: 4,
+                                        toFloor: 2,
+                                        targetX: 55,
+                                        targetY: 5,
+                                        label: "偽りの無限回廊へ戻る"
+                                },
+                                {
+                                        x: 55,
+                                        y: 30,
+                                        toFloor: 4,
+                                        targetX: 55,
+                                        targetY: 30,
+                                        label: "氷晶の十字滑床へ"
+                                }
+                        ],
+                        tileEffects: [
+                                {
+                                        rect: {
+                                                x1: 5,
+                                                y1: 8,
+                                                x2: 55,
+                                                y2: 31
+                                        },
+                                        type: "poison",
+                                        damageRate: 0.028,
+                                        message: "溶岩の熱が足元から体力を奪った！"
+                                },
+                                {
+                                        x: 57,
+                                        y: 23,
+                                        type: "warp",
+                                        toX: 43,
+                                        toY: 18,
+                                        message: "噴き上がる蒸気に巻かれ、橋の分岐へ押し戻された。"
+                                },
+                                {
+                                        x: 36,
+                                        y: 28,
+                                        type: "hunter",
+                                        id: "galvania_f3_ash_daemon_v2",
+                                        imageKey: "overlay_dungeon_hunter_fire",
+                                        monsterIds: [
+                                                100059,
+                                                100060,
+                                                100061
+                                        ],
+                                        speed: 0.48,
+                                        range: 38,
+                                        statMultiplier: 1.95,
+                                        message: "溶岩霧の向こうから、灼熱の魔族が迫る！"
+                                }
+                        ],
+                        chests: [
+                                {
+                                        x: 8,
+                                        y: 24,
+                                        itemId: 14,
+                                        type: "item"
+                                },
+                                {
+                                        x: 38,
+                                        y: 29,
+                                        itemId: 99,
+                                        type: "item"
+                                },
+                                {
+                                        x: 56,
+                                        y: 14,
+                                        itemId: 6,
+                                        type: "item"
+                                },
+                                {
+                                        x: 34,
+                                        y: 5,
+                                        itemId: 5,
+                                        type: "item"
+                                },
+                                {
+                                        x: 27,
+                                        y: 21,
+                                        itemId: 99,
+                                        type: "item"
+                                },
+                                {
+                                        x: 49,
+                                        y: 23,
+                                        itemId: 14,
+                                        type: "item"
+                                },
+                                {
+                                        x: 28,
+                                        y: 26,
+                                        itemId: 7,
+                                        type: "item",
+                                        rare: true
+                                }
+                        ],
+                        bosses: [
+                                {
+                                        x: 24,
+                                        y: 26,
+                                        monsterId: [
+                                                100060,
+                                                100061
+                                        ],
+                                        mapSpriteMonsterId: 100060,
+                                        bossStatMultiplier: 1.3,
+                                        inactiveTile: "G",
+                                        inspectLog: "黒炎の番人が、赤い宝箱の島だけを守っている。洞窟突破には関係なさそうだ。",
+                                        actionLabel: "黒炎の番人に挑む",
+                                        challengeText: "番人を倒せば奥の赤い宝箱を取れそうだ。挑みますか？"
+                                }
+                        ],
+                        mapActions: [
+                                {
+                                        x: 11,
+                                        y: 4,
+                                        label: "焦げた石碑を読む",
+                                        log: "「湖は赤く、道は細い。まっすぐな橋ほど熱に沈む。黒炎の島は宝を守るだけ」とある。",
+                                        type: "log",
+                                        imageKey: "overlay_dungeon_event",
+                                        blocksMovement: false,
+                                        baseTile: "G"
+                                },
+                                {
+                                        x: 52,
+                                        y: 14,
+                                        label: "折れた橋脚を調べる",
+                                        log: "橋脚には魔王軍の焼印が残っている。補給路を急造した跡だ。",
+                                        type: "log",
+                                        imageKey: "overlay_dungeon_event",
+                                        blocksMovement: false,
+                                        baseTile: "G"
+                                },
+                                {
+                                        x: 7,
+                                        y: 26,
+                                        label: "倒れた人影を見る",
+                                        log: "灰まみれの旅人は「火の島に欲を出すな。出口は北東の橋から南へ折れる」と残している。",
+                                        type: "log",
+                                        imageKey: "overlay_dungeon_adventurer",
+                                        blocksMovement: false,
+                                        baseTile: "G"
+                                }
+                        ],
+                        limitedMapReveal: true,
+                        revealRadius: 4,
+                        entryPoint: {
+                                x: 5,
+                                y: 4
+                        }
+                },
+                {
+                        label: "4階・氷晶の十字滑床",
+                        encounterRank: 76,
+                        monsters: [
+                                100060,
+                                100061,
+                                100062
+                        ],
+                        width: 61,
+                        height: 35,
+                        tiles: [
+                                "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                                "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                                "WWGGGGGGGGWWWWWWWWWWWWWWWWWWGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWW",
+                                "WWGGGGGGGGWWWWWWWWWWWWWWWWWWGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWW",
+                                "WWGGGDGGGGWWWWWWWWWWWWWWWWWWGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWW",
+                                "WWGGGGGGGGWWWWWWWWWWWWWWWWWWGGCTTTTTTTTTTTTCWWWWWWWWWWWWWWWWW",
+                                "WWGGGGGGGGWWWWWWWWWWWWWWWWWWGGGGGGGGWWWWWWTWWWWWWWWWWWWWWWWWW",
+                                "WWWWWTWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGWWWWWWTWWWWWWWWWWWWWWWWWW",
+                                "WWWWWTWWWWWWWWWWWWWWWWWWWWWWWWWTWWWWWWWWWWTWWWWWWWWWWWWWWWWWW",
+                                "WWWWWTWWWWWWWWWWWWWWWWWWWWWWWWWTWWWWWWWWWWTWWWWWWWWWWWWWWWWWW",
+                                "WWWWWTWWWWWWWWWWWWWWWWWWWWWWWWWTWWWWWWWWWWTWWWWWWTTTTTTTWWWWW",
+                                "WWWWWTTTTTWWWWWWWWWWWWWWWWWWWWWTWWWWWCTTTTTWWWWWWTWWWWWTWWWWW",
+                                "WWWWWWWWWTWWWWWWWWWWWWWWWWWWWWWTWWWWWTWWWWWWWWWWWTWWWWWTWWWWW",
+                                "WWWWWWWWWTWWWWWWWWWWWWWWWWWWWWWTWWWWWTWWWWWWWWWWWTWWWWWTWWWWW",
+                                "WWWWWWWWWTWWWWWWWWWWWWWWWWWWWWWTWWWWWTTTTTTTTTWWWTWWWWWTWWWWW",
+                                "WWWWWWWWWTWGGGGGWWWWWWWWWWWWWWWTWWWWWTTWWWWWWTWWWTWWWWWTWWWWW",
+                                "WWWWWWWWWTWGGGGGWWWWWWWWWWWWWWWTWWWWWTTWWWWWWTWWWTWWWWWTWWWWW",
+                                "WWWWWWWWWTTTTTGGTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWWWWTWWWWW",
+                                "WWWWWWWWWWWGGTGGWTWWWWWWWWWWWWWTWWWWWWWWWWWWWTTTTTWWWWWTWWWWW",
+                                "WWWWWWWWWWWGGTGGWTWWWWWWWWWWWWWTWWWWWWWWWWWWWTWWWWWWWWWTWWWWW",
+                                "WWWWWWWWWWWWWTWWWTWWWWWWWWWWWWWTWWWWWWWWWWWWWTWWWWWWWWWTWWWWW",
+                                "WWWWWWWWWWWWWTWWWTWWWWWWWWWWWWWTWWWWWWWWWWWWWTWWWWWWWWWTWWWWW",
+                                "WWWWWWWWWWWWWTWWWTWWWWWWWWWWWWWTWWWWWWWWWWWWWTWWWWWWWWWTWWWWW",
+                                "WWWWWWWWTTTTTTWWWTWWWWWWWWWWWWWTWWWWWWWWWWWWWTWWWWWWWWWTWWWWW",
+                                "WWWWWWWWTWWWWWWWWTTTTTTTTWWWWWWTWWWWWWWWWWWWWTTTTTTTTTTTWWWWW",
+                                "WWWWWGGGGGGGGWWWWWWWWWWWTWWWWWWTWWWWWWWWWWWWWWWWWTWWWWWWWWWWW",
+                                "WWWWWGGGGGGGGGGGGGGGGGWWTWWWWWWTWWWWWWWWWWWWWWWWWTWWWWWWWWWWW",
+                                "WWWWWGGGGGGGGGGGGGGGGGWWTWWGGGGGGGGGWWWWWWWWWWWWWTGGGGGGGGGWW",
+                                "WWWWWGGGCGGGGGGGBGGGGGWWTWWGGGGGGGGGWWWWWWWWWWWWWTGGGGGGGGGWW",
+                                "WWWWWGGGGGGGGGGGGGGGGGTTTTTTTTTTCGGGWWWWWWWWWWWWWTGGGGGGGGGWW",
+                                "WWWWWGGGGGGGGGGGGGGGGGWWWWWGGGGGGGGGWWWWWWWWWWWWWTTTTTTUGGGWW",
+                                "WWWWWGGGGGGGGGGGRGGGGGWWWWWGGGGGGGGGWWWWWWWWWWWWWWGGGGGGGGGWW",
+                                "WWWWWWWWWWWWWGGGGGGGGGWWWWWGGGGGGGGGWWWWWWWWWWWWWWGGGGGGGGGWW",
+                                "WWWWWWWWWWWWWGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGWW",
+                                "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                        ],
+                        floorLinks: [
+                                {
+                                        x: 55,
+                                        y: 30,
+                                        toFloor: 3,
+                                        targetX: 55,
+                                        targetY: 29,
+                                        label: "溶岩の地底湖へ戻る"
+                                },
+                                {
+                                        x: 5,
+                                        y: 4,
+                                        toFloor: 5,
+                                        targetX: 5,
+                                        targetY: 4,
+                                        label: "魔軍補給路へ"
+                                }
+                        ],
+                        tileEffects: [
+                                {
+                                        points: [
+                                                {
+                                                        x: 14,
+                                                        y: 17
+                                                },
+                                                {
+                                                        x: 15,
+                                                        y: 17
+                                                },
+                                                {
+                                                        x: 16,
+                                                        y: 17
+                                                },
+                                                {
+                                                        x: 17,
+                                                        y: 17
+                                                },
+                                                {
+                                                        x: 18,
+                                                        y: 17
+                                                },
+                                                {
+                                                        x: 19,
+                                                        y: 17
+                                                },
+                                                {
+                                                        x: 20,
+                                                        y: 17
+                                                },
+                                                {
+                                                        x: 21,
+                                                        y: 17
+                                                },
+                                                {
+                                                        x: 22,
+                                                        y: 17
+                                                },
+                                                {
+                                                        x: 23,
+                                                        y: 17
+                                                },
+                                                {
+                                                        x: 24,
+                                                        y: 17
+                                                },
+                                                {
+                                                        x: 25,
+                                                        y: 17
+                                                },
+                                                {
+                                                        x: 26,
+                                                        y: 17
+                                                },
+                                                {
+                                                        x: 27,
+                                                        y: 17
+                                                },
+                                                {
+                                                        x: 28,
+                                                        y: 17
+                                                },
+                                                {
+                                                        x: 29,
+                                                        y: 17
+                                                },
+                                                {
+                                                        x: 30,
+                                                        y: 17
+                                                },
+                                                {
+                                                        x: 31,
+                                                        y: 17
+                                                },
+                                                {
+                                                        x: 32,
+                                                        y: 17
+                                                },
+                                                {
+                                                        x: 33,
+                                                        y: 17
+                                                },
+                                                {
+                                                        x: 34,
+                                                        y: 17
+                                                },
+                                                {
+                                                        x: 35,
+                                                        y: 17
+                                                },
+                                                {
+                                                        x: 36,
+                                                        y: 17
+                                                },
+                                                {
+                                                        x: 37,
+                                                        y: 17
+                                                },
+                                                {
+                                                        x: 38,
+                                                        y: 17
+                                                },
+                                                {
+                                                        x: 39,
+                                                        y: 17
+                                                },
+                                                {
+                                                        x: 40,
+                                                        y: 17
+                                                },
+                                                {
+                                                        x: 41,
+                                                        y: 17
+                                                },
+                                                {
+                                                        x: 42,
+                                                        y: 17
+                                                },
+                                                {
+                                                        x: 43,
+                                                        y: 17
+                                                },
+                                                {
+                                                        x: 44,
+                                                        y: 17
+                                                },
+                                                {
+                                                        x: 45,
+                                                        y: 17
+                                                },
+                                                {
+                                                        x: 46,
+                                                        y: 17
+                                                },
+                                                {
+                                                        x: 47,
+                                                        y: 17
+                                                },
+                                                {
+                                                        x: 48,
+                                                        y: 17
+                                                },
+                                                {
+                                                        x: 31,
+                                                        y: 6
+                                                },
+                                                {
+                                                        x: 31,
+                                                        y: 7
+                                                },
+                                                {
+                                                        x: 31,
+                                                        y: 8
+                                                },
+                                                {
+                                                        x: 31,
+                                                        y: 9
+                                                },
+                                                {
+                                                        x: 31,
+                                                        y: 10
+                                                },
+                                                {
+                                                        x: 31,
+                                                        y: 11
+                                                },
+                                                {
+                                                        x: 31,
+                                                        y: 12
+                                                },
+                                                {
+                                                        x: 31,
+                                                        y: 13
+                                                },
+                                                {
+                                                        x: 31,
+                                                        y: 14
+                                                },
+                                                {
+                                                        x: 31,
+                                                        y: 15
+                                                },
+                                                {
+                                                        x: 31,
+                                                        y: 16
+                                                },
+                                                {
+                                                        x: 31,
+                                                        y: 17
+                                                },
+                                                {
+                                                        x: 31,
+                                                        y: 18
+                                                },
+                                                {
+                                                        x: 31,
+                                                        y: 19
+                                                },
+                                                {
+                                                        x: 31,
+                                                        y: 20
+                                                },
+                                                {
+                                                        x: 31,
+                                                        y: 21
+                                                },
+                                                {
+                                                        x: 31,
+                                                        y: 22
+                                                },
+                                                {
+                                                        x: 31,
+                                                        y: 23
+                                                },
+                                                {
+                                                        x: 31,
+                                                        y: 24
+                                                },
+                                                {
+                                                        x: 31,
+                                                        y: 25
+                                                },
+                                                {
+                                                        x: 31,
+                                                        y: 26
+                                                },
+                                                {
+                                                        x: 31,
+                                                        y: 27
+                                                },
+                                                {
+                                                        x: 31,
+                                                        y: 28
+                                                }
+                                        ],
+                                        type: "ice",
+                                        maxSlide: 40,
+                                        message: "氷晶の床に足を取られ、止まるまで滑った！"
+                                },
+                                {
+                                        x: 54,
+                                        y: 13,
+                                        type: "hunter",
+                                        id: "galvania_f4_frost_hound_v2",
+                                        imageKey: "overlay_dungeon_hunter_sea",
+                                        monsterIds: [
+                                                100058,
+                                                100061,
+                                                100062
+                                        ],
+                                        speed: 0.52,
+                                        range: 34,
+                                        statMultiplier: 1.85,
+                                        message: "氷壁の向こうから魔犬が滑るように迫ってきた！"
+                                }
+                        ],
+                        chests: [
+                                {
+                                        x: 30,
+                                        y: 5,
+                                        itemId: 99,
+                                        type: "item"
+                                },
+                                {
+                                        x: 32,
+                                        y: 29,
+                                        itemId: 14,
+                                        type: "item"
+                                },
+                                {
+                                        x: 8,
+                                        y: 28,
+                                        itemId: 6,
+                                        type: "item"
+                                },
+                                {
+                                        x: 43,
+                                        y: 5,
+                                        itemId: 5,
+                                        type: "item"
+                                },
+                                {
+                                        x: 37,
+                                        y: 11,
+                                        itemId: 99,
+                                        type: "item"
+                                },
+                                {
+                                        x: 16,
+                                        y: 31,
+                                        itemId: 7,
+                                        type: "item",
+                                        rare: true
+                                }
+                        ],
+                        bosses: [
+                                {
+                                        x: 16,
+                                        y: 28,
+                                        monsterId: [
+                                                100061,
+                                                100062
+                                        ],
+                                        mapSpriteMonsterId: 100061,
+                                        bossStatMultiplier: 1.35,
+                                        inactiveTile: "G",
+                                        keyRewardColor: "gold",
+                                        inspectLog: "氷鎧の魔将が、古い金の鍵を握っている。先の補給路の近道を開ける鍵かもしれない。",
+                                        actionLabel: "氷鎧の魔将に挑む",
+                                        challengeText: "この魔将は通路突破に必須ではないが、倒せば金の鍵を奪えそうだ。挑みますか？"
+                                }
+                        ],
+                        mapActions: [
+                                {
+                                        x: 49,
+                                        y: 18,
+                                        label: "凍った石碑を読む",
+                                        log: "「十字の上では曲がれない。横から入り、壁で止まれ。南西の魔将は鍵を抱くが、道を塞ぐ者ではない」と刻まれている。",
+                                        type: "log",
+                                        imageKey: "overlay_dungeon_event",
+                                        blocksMovement: false,
+                                        baseTile: "T"
+                                },
+                                {
+                                        x: 8,
+                                        y: 27,
+                                        label: "氷漬けの荷物を調べる",
+                                        log: "古い地図には、滑床を大きく迂回する赤い線が引かれている。",
+                                        type: "log",
+                                        imageKey: "overlay_dungeon_event",
+                                        blocksMovement: false,
+                                        baseTile: "G"
+                                }
+                        ],
+                        entryPoint: {
+                                x: 55,
+                                y: 30
+                        }
+                },
+                {
+                        label: "5階・魔軍補給路",
+                        encounterRank: 78,
+                        monsters: [
+                                100061,
+                                100062,
+                                100063
+                        ],
+                        width: 61,
+                        height: 35,
+                        tiles: [
+                                "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                                "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                                "WWGGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                                "WWGGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                                "WWGGGUTTTGGGWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGGGGGGGGGGGGWWWWWW",
+                                "WWGGGGGGTGGGWGGGGGGGGGGGGGWWWWWWWWWGGGGGGGGGGGGGGGGGGGGWWWWWW",
+                                "WWGGGGGGTGGGWGGGGGGGGGGGGGWWWWWWWWWGGGGGGGGGGGGGGGGGGGGWWWWWW",
+                                "WWGGGGGGTGGGWGGGGGGCGGGGGGWWWWWWWWWGGGGGCTTTTTTTTTTTTTTTWWWWW",
+                                "WWWWWWWWTWWWWGGGGGGTGGGGGGWWWWWWWWWGGGGGGGGGGGGTGGGGGGGTWWWWW",
+                                "WWWWWWWWTWWWWGGGGGGTGGGGGGWWWWWWWWWGGGGGGGGGGGGTGGGGGGGTWWWWW",
+                                "WWWWWWWWTTTTTGTTTTTTGGGGGGWWWWWWWWWGGGGGGGGGGGGTGGGGGGGTWWWWW",
+                                "WWWWWWWWWWWWWGGGGGGGGGGGGGWWWWWWWWWGGGGGGGGGGGGTGGGGGGGTWWWWW",
+                                "WWWWWWWWWWWWWGGGGGGGGGGGGGTTTTTZTTTGGGGGGGGGGGGTGGGGGGGTWWWWW",
+                                "WWWWWWWWWWWWWWTWWWWWWWWWWWTWWWWWWWWGGGGGGGGGGGGGGGGGGGGTWWWWW",
+                                "WWWWWWWWWWWWWWTWWWWWWWWWWWTWWWWWWWWGGGGGGGGGGGGGGGGGGGGTWWWWW",
+                                "WWWWWWWWWWWWWWTWWWWWWWWWWWTWWWWWWWWWWWWWWWWWWWWTWWWWWWWTWWWWW",
+                                "WWWWWWWWWWWWWWTTTTTTTTTTTTTWWWWWWWWWWWWWWWWWWWWTWWWWWWWTWWWWW",
+                                "WWWWWWWWWWWWWWWWWWWWTWWWWWWWWWWWWWWWWWWWWWWWWWWTWWWWWWWTWWWWW",
+                                "WWWWWWWWWWWWWWWWWWWWTWWWMMMMMMMMMMMMMMMMGGGGGGGGGCTTTTTTWWWWW",
+                                "WWWWWWWWWWWWWWWWWWWWTWWWMMMMMMMMMMMMMMMMGGGGGGGGGGGGGWWWWWWWW",
+                                "WWWWWGGGGGGGGGGGGGWWTWWWMMTTTTTTTTTTTCMMGGGGGGGGGGGGGWWWWWWWW",
+                                "WWWWWGGGGGGGGGGGGGWWTWWWMMMMMMMMMMMMMTMMGGGGGGGGGGGGGWWWWWWWW",
+                                "WWWWWGGGGGGGGGGGGGWWTWWWWWWWWWWTTTTTTTTTGGGTTTTTTRGGGWWWWWWWW",
+                                "WWWWWGGGGGGGGGGGGGWWTWWWWWWWWWWTWWWWWWWWGGGGGGGGGGGGGWWWWWWWW",
+                                "WWWWWGGGGGCGGGGGGGWWTWWWGGGGGGGGGGGGGWWWGGGGGGGGGGGGGWWWWWWWW",
+                                "WWWWWGGGGGTGGGGGGGWWTWWWGGGGGGGGGGGGGWWWGGGGGGGGGGGGGWWWWWWWW",
+                                "WWWWWGGGGGTGGGGGGGWWTWWWGGGGGGGGGGGGGWWWWWWTWWWWWWWWWWWWWWWWW",
+                                "WWWWWGGGGGTGGGGGGGWWTWWWGGGGGGGGGGGGGWWWWWWTWWWWGGGGGGGGGGGWW",
+                                "WWWWWGGGGGTTTTTTTTTTTTTTGGGGGGGTGGGGGWWWWWWTWWWWGGGGGGGGGGGWW",
+                                "WWWWWGGGGGGGGGGGGGWWWWWWGGGGGGGTGGGGGWWWWWWTTTTTGGGGGGGGGGGWW",
+                                "WWWWWGGGGGGGGGGGGGWWWWWWGGGGGGGTTTCGGWWWWWWWWWWWGGGGGGGDGGGWW",
+                                "WWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGGGGGWWWWWWWWWWWGGGGGGGGGGGWW",
+                                "WWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGGGGGWWWWWWWWWWWGGGGGGGGGGGWW",
+                                "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGGGWW",
+                                "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                        ],
+                        floorLinks: [
+                                {
+                                        x: 5,
+                                        y: 4,
+                                        toFloor: 4,
+                                        targetX: 5,
+                                        targetY: 5,
+                                        label: "氷晶の十字滑床へ戻る"
+                                },
+                                {
+                                        x: 55,
+                                        y: 30,
+                                        toFloor: 6,
+                                        targetX: 5,
+                                        targetY: 30,
+                                        label: "南口の白骨旧坑へ"
+                                }
+                        ],
+                        tileEffects: [
+                                {
+                                        rect: {
+                                                x1: 24,
+                                                y1: 18,
+                                                x2: 39,
+                                                y2: 21
+                                        },
+                                        type: "poison",
+                                        damageRate: 0.035,
+                                        message: "溶岩の排水溝から熱風が吹き上がった！"
+                                },
+                                {
+                                        x: 55,
+                                        y: 7,
+                                        type: "warp",
+                                        toX: 20,
+                                        toY: 16,
+                                        message: "貨物用の転移陣が暴走し、分岐の手前へ戻された。"
+                                },
+                                {
+                                        x: 48,
+                                        y: 21,
+                                        type: "hunter",
+                                        id: "galvania_f5_supply_overseer_v2",
+                                        imageKey: "overlay_dungeon_hunter_shadow",
+                                        monsterIds: [
+                                                100061,
+                                                100062,
+                                                100063
+                                        ],
+                                        speed: 0.68,
+                                        range: 46,
+                                        statMultiplier: 2.1,
+                                        message: "補給路を巡回する上級魔族が、こちらを捕捉した！"
+                                }
+                        ],
+                        chests: [
+                                {
+                                        x: 19,
+                                        y: 7,
+                                        itemId: 99,
+                                        type: "item"
+                                },
+                                {
+                                        x: 40,
+                                        y: 7,
+                                        itemId: 6,
+                                        type: "item"
+                                },
+                                {
+                                        x: 10,
+                                        y: 24,
+                                        itemId: 14,
+                                        type: "item"
+                                },
+                                {
+                                        x: 34,
+                                        y: 30,
+                                        itemId: 5,
+                                        type: "item"
+                                },
+                                {
+                                        x: 37,
+                                        y: 20,
+                                        itemId: 99,
+                                        type: "item"
+                                },
+                                {
+                                        x: 49,
+                                        y: 18,
+                                        itemId: 14,
+                                        type: "item"
+                                },
+                                {
+                                        x: 49,
+                                        y: 22,
+                                        itemId: 7,
+                                        type: "item",
+                                        rare: true
+                                }
+                        ],
+                        mapActions: [
+                                {
+                                        x: 29,
+                                        y: 12,
+                                        label: "補給路の石碑を読む",
+                                        log: "「金の鍵あらば炉の橋を渡れ。なければ下層を迂回せよ。どちらも南の旧坑へ至る」とある。",
+                                        type: "log",
+                                        imageKey: "overlay_dungeon_event",
+                                        blocksMovement: false,
+                                        baseTile: "T"
+                                },
+                                {
+                                        x: 40,
+                                        y: 8,
+                                        label: "魔軍の積荷を調べる",
+                                        log: "箱には魔王城の紋章が焼き付けられている。兵糧、黒晶、予備の鎧が整然と並ぶ。",
+                                        type: "log",
+                                        imageKey: "overlay_dungeon_event",
+                                        blocksMovement: false,
+                                        baseTile: "G"
+                                },
+                                {
+                                        x: 10,
+                                        y: 25,
+                                        label: "倒れている運搬兵を調べる",
+                                        log: "運搬兵は「近道の鍵は氷の下……だが、鍵がなくとも下層を回れる」と書いた札を握っている。",
+                                        type: "log",
+                                        imageKey: "overlay_dungeon_adventurer",
+                                        blocksMovement: false,
+                                        baseTile: "G"
+                                }
+                        ],
+                        limitedMapReveal: true,
+                        revealRadius: 3,
+                        entryPoint: {
+                                x: 5,
+                                y: 4
+                        }
+                },
+                {
+                        label: "6階・南口 白骨の旧坑",
+                        encounterRank: 80,
+                        monsters: [
+                                100062,
+                                100063,
+                                100064
+                        ],
+                        width: 61,
+                        height: 35,
+                        tiles: [
+                                "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                                "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                                "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                                "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                                "WWWWWGGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                                "WWWWWGGGGGGGGGGWWWWWWWWWWWWWWWWGGGGGGGGGGGGWWWWWWWWWWWWWWWWWW",
+                                "WWWWWGGGGGGGGGGWWWWWWWWWWWWWWWWGGGGGGGGGGGGWWGGGGGGGGGGGGWWWW",
+                                "WWWWWGGGGGGGGGGWWWWWWWWWWWWWWWWGGGGGGGGGCGGWWGGGGGGGGGGGGWWWW",
+                                "WWWWWGGGGTTTCGGWWWWWWWWWWWWWWWWGGGGGGGGGTGGWWGGGGGGGGGGGGWWWW",
+                                "WWWWWGGGGTGGGGGWWWWWWWWWWWWWWWWGGGGGGGGGTGGWWGGGGGGGGGGGGWWWW",
+                                "WWWWWWWWWTWWWWWWWWWWWWWWTTTTTTTGGGGGTTTTTGGWWGGGGGGGGGGGGWWWW",
+                                "WWWWWWWWWTWWWWGGGGGGGWWWTWWWWWWGGGGGGGGGGGGWWGGGGGGGGGGGGWWWW",
+                                "WWWWWWWWWTWWWWGGGGGGGGGGTGGGGWWGGGGGGGGGGGGWWGGGGGGGTTTCGWWWW",
+                                "WWWWWWWWWTWWWWGGGBGGGGGGTGGGGWWWWWWWTWWWWWWWWGGGGGGGTGGGGWWWW",
+                                "WWWWWWWWWTWWWWGGGGGGGGGGTGGGGWWWWWWWTWWWWWWWWWWWWWWWTWWWWWWWW",
+                                "WWWWWWWWWTWWWWGGGRGGGGGGTGGGGWWWWWWWTWWWWWWWWWWWWWWWTWWWWWWWW",
+                                "WWWWWWWWWTWWWWGGGGGGGTTTTTTCGWWWWWWWTWWWWWWWWWWWWWWWTWWWWWWWW",
+                                "WWWWWWWWWTWWWWWWWWGGGGGGGGGGGWWWWWWWTWWWWWWWWWWWWWWWTWWWWWWWW",
+                                "WWWWWWWWWTTTTTTTTTGGGGGGGGGGGWWWWWWWTWWWGGGGGGGGGGGGTWWWWWWWW",
+                                "WWWWWWWWWWWWWWWTWWGGGGGGGGGGGWWWWWWWTWWWGGGGGGGGGGGGTWWWWWWWW",
+                                "WWWWWWWWWWWWWWWTWWGGGGGGGGGGGWWWWWWWTWWWGGGGGGGGGGGGTWWWWWWWW",
+                                "WWWWWWWWWWWWWWWTWWWWWWWWWWWWWWWWWWWWTTTTGGGGGGGTTTTTTWWWWWWWW",
+                                "WWWWWWWWWWWWWWWTWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGGGGGWWWWWWWW",
+                                "WWWWWWWWWWWWWWWTWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGGGGGWWWWWWWW",
+                                "WWWWWWWWWWWWWWWTWWWWTTTTTTTTTTTTWWWWWWWWGGGGGGGGGGGGGWWWWWWWW",
+                                "WWWWWWWTTTTTTTTTWWWWTWWWWWWWWWWTWWWWWWWWWWWWWWWTWMMMMMMMWWWWW",
+                                "WWWWWWWTWWWWWWWWWWWWTWWWWWWWWWWTWWWWWWWWWWWWWWWTWMMMMMMMWWWWW",
+                                "WWGGGGGTGGGGWGGGGGGGTGGGGGWWWWWTWWWWWWWWWWWWWWWTWMMMMMMMWWWWW",
+                                "WWGGGGGTGGGGWGGGGGGGTGGGGGWWWWWTWWWWWWWWWWWWWWWTWTTTCTTTTGGWW",
+                                "WWGGGGGTGGGGWGGGGGGGCGGGGGWWWWWTTTTTTTTTTTTTTTTTTTTGGGGGGGGWW",
+                                "WWGGGUTTGGGGWGGGGGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGWW",
+                                "WWGGGGGGGGGGWGGGGGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGWW",
+                                "WWGGGGGGGGGGWGGGGGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGSGGWW",
+                                "WWGGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGWW",
+                                "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                        ],
+                        floorLinks: [
+                                {
+                                        x: 5,
+                                        y: 30,
+                                        toFloor: 5,
+                                        targetX: 55,
+                                        targetY: 29,
+                                        label: "魔軍補給路へ戻る"
+                                },
+                                {
+                                        x: 56,
+                                        y: 32,
+                                        to: "EXIT",
+                                        label: "南口へ出る",
+                                        exitPoint: {
+                                                areaKey: "WORLD",
+                                                x: 35,
+                                                y: 42
+                                        },
+                                        setFlag: "galvaniaCaveSouthOpened",
+                                        openLog: "南口の岩戸を内側から開けた。以後、南口からも再進入できる。"
+                                }
+                        ],
+                        tileEffects: [
+                                {
+                                        x: 52,
+                                        y: 12,
+                                        type: "warp",
+                                        toX: 36,
+                                        toY: 21,
+                                        message: "南口が近いと思った瞬間、黒い風が中腹の分岐へ押し戻した。"
+                                },
+                                {
+                                        rect: {
+                                                x1: 49,
+                                                y1: 25,
+                                                x2: 55,
+                                                y2: 27
+                                        },
+                                        type: "poison",
+                                        damageRate: 0.03,
+                                        message: "出口付近の溶岩割れ目から熱が噴き上がった！"
+                                },
+                                {
+                                        x: 50,
+                                        y: 21,
+                                        type: "hunter",
+                                        id: "galvania_f6_royal_rearguard_v2",
+                                        imageKey: "overlay_dungeon_hunter_shadow",
+                                        monsterIds: [
+                                                100062,
+                                                100063,
+                                                100064
+                                        ],
+                                        speed: 0.58,
+                                        range: 42,
+                                        statMultiplier: 2.0,
+                                        message: "撤退路を守る魔族の後衛が立ちはだかった！"
+                                }
+                        ],
+                        chests: [
+                                {
+                                        x: 12,
+                                        y: 8,
+                                        itemId: 14,
+                                        type: "item"
+                                },
+                                {
+                                        x: 27,
+                                        y: 16,
+                                        itemId: 99,
+                                        type: "item"
+                                },
+                                {
+                                        x: 40,
+                                        y: 7,
+                                        itemId: 6,
+                                        type: "item"
+                                },
+                                {
+                                        x: 55,
+                                        y: 12,
+                                        itemId: 5,
+                                        type: "item"
+                                },
+                                {
+                                        x: 20,
+                                        y: 29,
+                                        itemId: 99,
+                                        type: "item"
+                                },
+                                {
+                                        x: 52,
+                                        y: 28,
+                                        itemId: 14,
+                                        type: "item"
+                                },
+                                {
+                                        x: 17,
+                                        y: 15,
+                                        itemId: 7,
+                                        type: "item",
+                                        rare: true
+                                }
+                        ],
+                        bosses: [
+                                {
+                                        x: 17,
+                                        y: 13,
+                                        monsterId: [
+                                                100062,
+                                                100064
+                                        ],
+                                        mapSpriteMonsterId: 100064,
+                                        bossStatMultiplier: 1.32,
+                                        inactiveTile: "G",
+                                        inspectLog: "宝の横穴を守る魔族がうずくまっている。洞窟突破には関係なさそうだ。",
+                                        actionLabel: "横穴の守護魔に挑む",
+                                        challengeText: "この先には赤い宝箱が見える。守護魔に挑みますか？"
+                                }
+                        ],
+                        mapActions: [
+                                {
+                                        x: 6,
+                                        y: 29,
+                                        label: "倒れた冒険者に声をかける",
+                                        log: "冒険者は「南の光が見えても、最後の横道に惑わされるな」と呟いた。",
+                                        type: "log",
+                                        imageKey: "overlay_dungeon_adventurer",
+                                        blocksMovement: false,
+                                        baseTile: "G"
+                                },
+                                {
+                                        x: 36,
+                                        y: 21,
+                                        label: "南口の石碑を読む",
+                                        log: "「ここを抜ければガルヴァニアの影。帰る者は北の記憶をたどれ。南口は踏破者だけを迎える」とある。",
+                                        type: "log",
+                                        imageKey: "overlay_dungeon_event",
+                                        blocksMovement: false,
+                                        baseTile: "T"
+                                },
+                                {
+                                        x: 54,
+                                        y: 12,
+                                        label: "魔王城の方角を確かめる",
+                                        log: "穴の先に黒い城壁の影が見える。もう魔王城の領域は近い。",
+                                        type: "log",
+                                        imageKey: "overlay_dungeon_event",
+                                        blocksMovement: false,
+                                        baseTile: "G"
+                                }
+                        ],
+                        entryPoint: {
+                                x: 5,
+                                y: 30
+                        },
+                        entryPoints: {
+                                south: {
+                                        x: 56,
+                                        y: 32
+                                }
+                        },
+                        southEntryPoint: {
+                                x: 56,
+                                y: 32
+                        }
+                }
         ]
-    },
+},
     DARK_CASTLE: {
         name: "魔王城ガルヴァニア",
         themeKey: "DARK_CASTLE",
