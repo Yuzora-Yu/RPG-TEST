@@ -3905,7 +3905,7 @@ const FIXED_DUNGEON_MAPS = {
                         x: 27,
                         y: 6,
                         toFloor: 3,
-                        targetX: 14,
+                        targetX: 15,
                         targetY: 22,
                         label: "森の深部へ",
                         requiredFlag: "waterCityCleared",
@@ -4214,8 +4214,8 @@ const FIXED_DUNGEON_MAPS = {
                 ],
                 tileEffects: [
                     {
-                        x: 25,
-                        y: 16,
+                        x: 15,
+                        y: 21,
                         type: "hunter",
                         id: "forest_curse_guard",
                         imageKey: "overlay_dungeon_hunter_forest",
@@ -4593,7 +4593,7 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWW",
                     "WWTTTWWWWWTTTWWWWWTTTWW",
-                    "WWTTTWWWWWTDTWWWWWTTTWW",
+                    "WWTTTWWWWWTDTWWWWWTBTWW",
                     "WWTTTWWWWWTTTWWWWWTTTWW",
                     "WWWTWWWWWWWTWWWWWWWTWWW",
                     "WWWTWWWWWWWYWWWWWWWTWWW",
@@ -4677,7 +4677,7 @@ const FIXED_DUNGEON_MAPS = {
                     "WTDTWWWWWWWWWWWWWWTTTTW",
                     "WTTTWWWWWWWWWWWWWWTTTTW",
                     "WWTWWWWWWWWWWWWWWWWWTWW",
-                    "WWTTTTTTTTTTWWWWWWWWTWW",
+                    "WWTTTTTTTTTTWWWWWWWWBWW",
                     "WWWWWWWWWWWTWWWWWWWWTWW",
                     "WWWWWWWWWWWTWWWWWWWWTWW",
                     "WWWWWWWWWWWXWWWWWWWWTWW",
@@ -4688,7 +4688,7 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWWWTWWWWWWWWWWW",
                     "WWWWWWWWWWWTTTTTTTTTTTW",
                     "WWWWWWWWWWWWWWWWWWWTTTW",
-                    "WWWWWWWWWWWWWWWWWWWTTTW",
+                    "WWWWWWWWWWWWWWWWWWWTBTW",
                     "WWWWWWWWWWWWWWWWWWWWTWW",
                     "WWWWWWWWWWTTTWWWWWWWTWW",
                     "WWWWWWWWWWTUTTTTTTTTTWW",
@@ -5122,12 +5122,12 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWTTTWWWWWWWWTWWWWWWWWTTTWWWW",
                     "WWWWTTTTTWWWWWWTWWWWWWTTTTTWWWW",
                     "WWWWTTTWTTTTTTTTWWWWWWTWTTTWWWW",
-                    "WWWWWWWWTWWWWWWWWWWWWWTWWWWWWWW",
-                    "WWWWWWWWTWWWWWWWWWWWWWTWTTTWWWW",
-                    "WWWWTTTWTTTTTWWWWWTTTTTTTTTWWWW",
-                    "WWWWTTTTTWWWTWWWWWTWWWTWTTTWWWW",
-                    "WWWWTTTWWWWWTTWWWTTWWWTWWWWWWWW",
-                    "WWWWWWWWWWWWTTTWTTTWWWTWTTTWWWW",
+                    "WWWWWWWWTWWWWWWTWWWWWWTWWWWWWWW",
+                    "WWWWWWWWTWWWWWWTWWWWWWTWTTTWWWW",
+                    "WWWWTTTWTTTTTWWTWWTTTTTTTTTWWWW",
+                    "WWWWTTTTTWWWTWWTWWTWWWTWTTTWWWW",
+                    "WWWWTTTWWWWWTTWTWTTWWWTWWWWWWWW",
+                    "WWWWWWWWWWWWTTTTTTTWWWTWTTTWWWW",
                     "WWWWWWWWWWWWWTTTTTWWWWTTTTTWWWW",
                     "WWWWWWWWWWWWWWTUTWWWWWWWTTTWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
@@ -5158,6 +5158,12 @@ const FIXED_DUNGEON_MAPS = {
                                 y1: 7,
                                 x2: 22,
                                 y2: 9
+                            },
+                            {
+                                x1: 15,
+                                y1: 7,
+                                x2: 15,
+                                y2: 21
                             }
                         ],
                         maxSlide: 28,
@@ -5720,11 +5726,11 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWTTTTTTTTTTTTTWWWW",
                     "WWWTTWWWTTTTTWWWTTWWW",
                     "WWTTTWWWTTTTTWWWTTTWW",
-                    "WWWTTWWWTTTTTWWWTTWWW",
+                    "WWWTTWWWTTBTTWWWTTWWW",
                     "WWWWTTTTTTTTTTTTTWWWW",
                     "WWWWWWWWWWTWWWWWWWWWW",
                     "WWWWWTTTTTTTTTTTWWWWW",
-                    "WWWWTTTTTTTTTTTTTWWWW",
+                    "WWWWTTTTTTBTTTTTTWWWW",
                     "WWWWTTWWTTTTTWWTTWWWW",
                     "WWWWTWWWWTTTWWWWTWWWW",
                     "WWTTTTTWWWTWWWTTTTTWW",
@@ -6146,7 +6152,7 @@ const FIXED_DUNGEON_MAPS = {
                         x: 4,
                         y: 21,
                         toFloor: 2,
-                        targetX: 25,
+                        targetX: 26,
                         targetY: 4,
                         label: "地下1階へ戻る"
                     },
@@ -6239,7 +6245,7 @@ const FIXED_DUNGEON_MAPS = {
                         x: 15,
                         y: 21,
                         toFloor: 3,
-                        targetX: 25,
+                        targetX: 26,
                         targetY: 4,
                         label: "地下2階へ戻る"
                     },
@@ -7018,11 +7024,11 @@ const FIXED_DUNGEON_MAPS = {
                     "WWTTTWWWWTTTTWWTTTWWTTTTWWWWTTTWW",
                     "WWTCTTTWWTTTTTTTTTTTTTTTWWTTTRTWW",
                     "WWTTTWTTTTTTTTTTTTTTTTTTTTTWTTTWW",
-                    "WWWWWWWWWWTTTTTTTTTTTTTTWWWWWWWWW",
-                    "WWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWTTTUTTTWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWW",
+                    "WWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWW",
+                    "WWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWW",
+                    "WWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWW",
+                    "WWWWWWWWTTTTTTTTUTTTTTTTTWWWWWWWW",
+                    "WWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWW",
                     "WWWWWWWWWWWWWWTTTTTWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
                 ],
@@ -7066,6 +7072,56 @@ const FIXED_DUNGEON_MAPS = {
                         startEventId: "light_palace_final_encounter",
                         storyEventId: "light_palace_clear",
                         actionLabel: "祭壇へ進む"
+                    }
+                ],
+                mapActions: [
+                    {
+                        x: 13,
+                        y: 21,
+                        label: "牢の国王と話す",
+                        log: "光の薄い牢の奥で、王冠を失った老人が顔を上げた。",
+                        type: "storyEvent",
+                        eventId: "light_palace_prison_king",
+                        imageKey: "overlay_light_captive_king",
+                        imageColor: "#f4d989",
+                        minimapColor: "#f4d989",
+                        missingFlag: "lightPalaceCleared"
+                    },
+                    {
+                        x: 19,
+                        y: 21,
+                        label: "牢の王女と話す",
+                        log: "鉄格子の向こうで、若い王女が聖印を握りしめている。",
+                        type: "storyEvent",
+                        eventId: "light_palace_prison_princess",
+                        imageKey: "overlay_light_captive_princess",
+                        imageColor: "#ffd8f0",
+                        minimapColor: "#ffd8f0",
+                        missingFlag: "lightPalaceCleared"
+                    },
+                    {
+                        x: 13,
+                        y: 23,
+                        label: "老神職と話す",
+                        log: "痩せた老神職が、壁にもたれて祈りを保っている。",
+                        type: "storyEvent",
+                        eventId: "light_palace_prison_priest_a",
+                        imageKey: "overlay_light_captive_priest_a",
+                        imageColor: "#d9dfff",
+                        minimapColor: "#d9dfff",
+                        missingFlag: "lightPalaceCleared"
+                    },
+                    {
+                        x: 19,
+                        y: 23,
+                        label: "若い神職と話す",
+                        log: "若い神職が、かすれた声で短い祈りを繰り返している。",
+                        type: "storyEvent",
+                        eventId: "light_palace_prison_priest_b",
+                        imageKey: "overlay_light_captive_priest_b",
+                        imageColor: "#cfefff",
+                        minimapColor: "#cfefff",
+                        missingFlag: "lightPalaceCleared"
                     }
                 ],
                 name: "",
@@ -7337,8 +7393,8 @@ const FIXED_DUNGEON_MAPS = {
                         x: 5,
                         y: 31,
                         toFloor: 1,
-                        targetX: 55,
-                        targetY: 4,
+                        targetX: 54,
+                        targetY: 3,
                         label: "黒岩の胎道へ戻る"
                     },
                     {
@@ -8002,7 +8058,7 @@ const FIXED_DUNGEON_MAPS = {
                         message: "氷晶の床に足を取られ、止まるまで滑った！"
                     },
                     {
-                        x: 54,
+                        x: 55,
                         y: 13,
                         type: "hunter",
                         id: "galvania_f4_frost_hound_v2",
@@ -9707,7 +9763,7 @@ const FIXED_DUNGEON_MAPS = {
                         x: 3,
                         y: 5,
                         type: "warp",
-                        toX: 21,
+                        toX: 22,
                         toY: 11,
                         message: "結晶光が空間を曲げた。"
                     },
@@ -9715,7 +9771,7 @@ const FIXED_DUNGEON_MAPS = {
                         x: 24,
                         y: 14,
                         type: "warp",
-                        toX: 5,
+                        toX: 6,
                         toY: 11,
                         message: "結晶光が戻り道を開いた。"
                     }
@@ -10719,8 +10775,8 @@ const FIXED_DUNGEON_MAPS = {
                         x: 17,
                         y: 26,
                         toFloor: 2,
-                        targetX: 28,
-                        targetY: 22,
+                        targetX: 26,
+                        targetY: 23,
                         label: "禁奥の核へ戻る"
                     }
                 ],

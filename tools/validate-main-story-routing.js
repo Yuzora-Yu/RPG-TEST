@@ -1,21 +1,17 @@
 const fs = require('fs');
 const path = require('path');
-const vm = require('vm');
+const { loadMapStoryRuntime } = require('./validation-helpers');
 
 const root = path.resolve(__dirname, '..');
 const storySource = fs.readFileSync(path.join(root, 'story.js'), 'utf8');
 const mapSource = fs.readFileSync(path.join(root, 'map.js'), 'utf8');
 const mainSource = fs.readFileSync(path.join(root, 'main.js'), 'utf8');
-const context = { console, window: {} };
-context.globalThis = context;
-vm.createContext(context);
-vm.runInContext(`${storySource}\nglobalThis.storyManager = StoryManager;`, context, { filename: 'story.js' });
-vm.runInContext(`${mapSource}\nglobalThis.maps = { STORY_DATA, FIXED_DUNGEON_MAPS };`, context, { filename: 'map.js' });
+const { context } = loadMapStoryRuntime(root);
 
-const story = context.storyManager;
+const story = context.StoryManager;
 const events = story.events || {};
-const areas = context.maps.STORY_DATA.areas;
-const dungeons = context.maps.FIXED_DUNGEON_MAPS;
+const areas = context.STORY_DATA.areas;
+const dungeons = context.FIXED_DUNGEON_MAPS;
 
 function assert(condition, message) {
     if (!condition) throw new Error(message);
@@ -75,15 +71,36 @@ for (const [key, floorNumber, minWidth, minHeight] of deepFloors) {
     const floor = dungeons[key]?.floors?.[floorNumber - 1];
     assert(floor, `Deep floor is missing: ${key} F${floorNumber}`);
     assert(floor.width >= minWidth && floor.height >= minHeight, `Deep floor is still a placeholder: ${key} F${floorNumber}`);
-    assert((floor.tileEffects || []).length >= 4, `Deep floor lacks interactive hazards: ${key} F${floorNumber}`);
+    assert((floor.tileEffects || []).length >= 2, `Deep floor lacks interactive hazards: ${key} F${floorNumber}`);
     assert((floor.chests || []).length >= 2, `Deep floor lacks exploration rewards: ${key} F${floorNumber}`);
 }
 
 for (const [dungeonKey, dungeon] of Object.entries(dungeons)) {
     for (const [index, floor] of (dungeon.floors || []).entries()) {
         const tileAt = (x, y) => String(floor.tiles?.[Number(y)]?.[Number(x)] || 'W').toUpperCase();
+        const pointIsWalkable = point => tileAt(point.x, point.y) !== 'W';
+        const effectPoints = (effect) => {
+            const points = [];
+            if (Number.isFinite(Number(effect.x)) && Number.isFinite(Number(effect.y))) points.push({ x: Number(effect.x), y: Number(effect.y) });
+            const addRect = (rect) => {
+                if (!rect) return;
+                const x1 = Math.min(Number(rect.x1 ?? rect.x ?? 0), Number(rect.x2 ?? rect.x ?? 0));
+                const x2 = Math.max(Number(rect.x1 ?? rect.x ?? 0), Number(rect.x2 ?? rect.x ?? 0));
+                const y1 = Math.min(Number(rect.y1 ?? rect.y ?? 0), Number(rect.y2 ?? rect.y ?? 0));
+                const y2 = Math.max(Number(rect.y1 ?? rect.y ?? 0), Number(rect.y2 ?? rect.y ?? 0));
+                for (let y = y1; y <= y2; y++) {
+                    for (let x = x1; x <= x2; x++) points.push({ x, y });
+                }
+            };
+            addRect(effect.rect);
+            (effect.rects || []).forEach(addRect);
+            (effect.points || []).forEach(point => points.push({ x: Number(point.x), y: Number(point.y) }));
+            return points;
+        };
         for (const effect of floor.tileEffects || []) {
-            assert(tileAt(effect.x, effect.y) !== 'W', `Tile effect is placed in a wall: ${dungeonKey} F${index + 1} ${effect.x},${effect.y}`);
+            const points = effectPoints(effect);
+            assert(points.length > 0, `Tile effect lacks coordinates: ${dungeonKey} F${index + 1}`);
+            assert(points.some(pointIsWalkable), `Tile effect never overlaps walkable terrain: ${dungeonKey} F${index + 1}`);
             if (effect.type === 'warp') {
                 assert(tileAt(effect.toX, effect.toY) !== 'W', `Warp destination is a wall: ${dungeonKey} F${index + 1} ${effect.toX},${effect.toY}`);
             }

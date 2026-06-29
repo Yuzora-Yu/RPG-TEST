@@ -1133,6 +1133,26 @@ const StoryManager = {
             this.syncHeroLimitBreak();
             if (typeof Menu !== 'undefined') Menu.renderPartyBar();
         }
+
+        if (action.type === 'LB_ADD_PARTY') {
+            const ids = Array.isArray(action.charIds)
+                ? action.charIds
+                : (action.charId != null ? [action.charId] : []);
+            const partyUids = Array.isArray(App.data?.party) ? App.data.party.filter(Boolean) : [];
+            const amount = Math.max(1, Math.floor(Number(action.amount) || 1));
+            ids.forEach(id => {
+                const char = Array.isArray(App.data?.characters)
+                    ? App.data.characters.find(c => c && Number(c.charId) === Number(id) && partyUids.includes(c.uid))
+                    : null;
+                if (!char || typeof App.addLimitBreak !== 'function') return;
+                const result = App.addLimitBreak(char, amount, action.source || 'story');
+                if (result.changed || result.internalChanged) {
+                    App.log(`${char.name || '仲間'}の絆が深まった。`);
+                }
+            });
+            if (typeof App.save === 'function') App.save();
+            if (typeof Menu !== 'undefined') Menu.renderPartyBar();
+        }
         
         if (action.type === 'HEAL') {
             App.data.characters.forEach(c => {

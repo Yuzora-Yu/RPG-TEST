@@ -45,11 +45,11 @@ reset({ flags: { waterCityCleared: true } });
 if (!context.App.acceptQuest('marie_water_city', { silent: true })) {
     throw new Error('Marie quest did not start after Water City clear.');
 }
-context.App.noteQuestKills([100030, 100033, 100020]);
+context.App.noteQuestKills([100033, 100036, 100020]);
 if (context.App.getQuestState('marie_water_city').progress.kills !== 2) {
     throw new Error('Hunt progress counted unrelated monsters or missed targets.');
 }
-context.App.noteQuestKills([100030, 100030, 100033]);
+context.App.noteQuestKills([100033, 100036, 100036]);
 if (!context.App.isQuestObjectiveComplete('marie_water_city')) {
     throw new Error('Hunt quest did not become reportable at the target count.');
 }

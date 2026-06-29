@@ -1127,6 +1127,23 @@ const Dungeon = {
     },
 	
     // --- 移動・イベント処理 (全文) ---
+    getAbyssBossStoryEventId: (floor = Dungeon.floor) => {
+        const f = Number(floor || 0);
+        const table = {
+            10: 'abyss_floor_010_leon_guardian',
+            20: 'abyss_floor_020_glen_guardian',
+            30: 'abyss_floor_030_leonard_abyss',
+            40: 'abyss_floor_040_elicia_abyss',
+            50: 'abyss_floor_050_syris_abyss',
+            60: 'abyss_floor_060_grad_abyss',
+            70: 'abyss_floor_070_veld_abyss',
+            80: 'abyss_floor_080_lilith_true',
+            90: 'abyss_floor_090_jasper_true',
+            100: 'abyss_floor_100_phase1'
+        };
+        return table[f] || null;
+    },
+
     handleMove: (x, y) => {
 		const tiles = (Field.currentMapData && Field.currentMapData.tiles) ? Field.currentMapData.tiles : Dungeon.map;
 		const areaKey = (typeof Field !== 'undefined' && typeof Field.getCurrentAreaKey === 'function') ? Field.getCurrentAreaKey() : 'ABYSS';
@@ -1214,6 +1231,11 @@ const Dungeon = {
             }
 
             App.log("ボスの気配が…");
+            const abyssBossEventId = (areaKey === 'ABYSS') ? Dungeon.getAbyssBossStoryEventId(Dungeon.floor) : null;
+            if (abyssBossEventId && typeof StoryManager !== 'undefined' && typeof StoryManager.executeEvent === 'function') {
+                App.setAction("対峙する", () => StoryManager.executeEvent(abyssBossEventId));
+                return;
+            }
             App.setAction("ボスと戦う", () => {
                 if (Field.currentMapData.isFixed) {
                     Dungeon.startFixedBoss(x, y);

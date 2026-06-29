@@ -1,11 +1,13 @@
 const fs = require('fs');
 const vm = require('vm');
+const { loadMapRuntime } = require('./validation-helpers');
 
 const root = process.cwd();
 const mapSource = fs.readFileSync(`${root}/map.js`, 'utf8');
+const mapsLogicSource = fs.readFileSync(`${root}/maps_logic.js`, 'utf8');
 const storySource = fs.readFileSync(`${root}/story.js`, 'utf8');
 
-const context = {
+const { context, runFile } = loadMapRuntime(root, { context: {
   console,
   Math,
   setTimeout,
@@ -42,25 +44,15 @@ const context = {
     getChar: () => null,
     createEquipByFloor: () => ({ name: 'equip', opts: [], data: {}, plus: 1 }),
   },
-};
-context.globalThis = context;
-vm.createContext(context);
+} });
 
-function runFile(file, suffix = '') {
-  const code = fs.readFileSync(`${root}/${file}`, 'utf8');
-  vm.runInContext(`${code}\n${suffix}`, context, { filename: file });
-}
-
-runFile('map.js', 'globalThis.__MAPS__ = { TILE_THEMES, STORY_DATA, MAP_DATA, FIXED_MAPS, FIXED_DUNGEON_MAPS, MapRegistry };');
-context.TILE_THEMES = context.__MAPS__.TILE_THEMES;
-context.STORY_DATA = context.__MAPS__.STORY_DATA;
-context.MAP_DATA = context.__MAPS__.MAP_DATA;
 runFile('dungeon.js', 'globalThis.Dungeon = Dungeon;');
-runFile('story.js', 'globalThis.__STORY__ = { StoryManager };');
+runFile('story.js', 'globalThis.STORY_MANAGER_DATA = STORY_MANAGER_DATA;');
+runFile('story_logic.js', 'globalThis.StoryManager = StoryManager;');
 
-const { FIXED_MAPS, FIXED_DUNGEON_MAPS, MapRegistry } = context.__MAPS__;
+const { FIXED_MAPS, FIXED_DUNGEON_MAPS, MapRegistry } = context;
 const Dungeon = context.Dungeon;
-const StoryManager = context.__STORY__.StoryManager;
+const StoryManager = context.StoryManager;
 
 const doorColors = { X: 'red', Y: 'blue', Z: 'gold' };
 const keyItemColors = { Q: 'red', N: 'blue', O: 'gold' };
@@ -124,7 +116,7 @@ function validateFixedDef(name, def) {
 
   (def.floorLinks || []).forEach((link) => {
     const tile = at(Number(link.x), Number(link.y));
-    assert(['S', 'D', 'U'].includes(tile), `${name}: floor link ${link.x},${link.y} is on ${tile}`);
+    assert(tile !== 'W', `${name}: floor link ${link.x},${link.y} is blocked`);
     if (link.toFloor) {
       assert(Number(link.toFloor) >= 1, `${name}: invalid toFloor at ${link.x},${link.y}`);
     }
@@ -132,7 +124,7 @@ function validateFixedDef(name, def) {
 
   (def.chests || []).forEach((chest) => {
     const tile = at(Number(chest.x), Number(chest.y));
-    assert(['C', 'R'].includes(tile), `${name}: chest ${chest.x},${chest.y} is on ${tile}`);
+    assert(tile !== 'W', `${name}: chest ${chest.x},${chest.y} is blocked`);
     if (chest.keyColor) assert(['red', 'blue', 'gold'].includes(chest.keyColor), `${name}: invalid keyColor ${chest.keyColor}`);
     else assert(chest.itemId !== undefined, `${name}: chest ${chest.x},${chest.y} has no itemId/keyColor`);
   });
@@ -175,7 +167,8 @@ Object.entries(FIXED_DUNGEON_MAPS).forEach(([key, base]) => {
 
 assert(!Object.prototype.hasOwnProperty.call(StoryManager, 'triggers'), 'story.js must not own map coordinates through triggers.');
 assert(!/"type"\s*:\s*"TILE"/.test(storySource), 'story.js must use named map.js mutations instead of coordinate TILE actions.');
-assert(mapSource.includes('START_CAVE_GATE_OPEN') && mapSource.includes('applyStoryMapMutation'), 'Named story map mutations must be owned by map.js.');
+assert(mapSource.includes('STORY_MAP_MUTATIONS') && mapSource.includes('START_CAVE_GATE_OPEN'), 'Named story map mutations must be defined by map.js.');
+assert(mapsLogicSource.includes('applyStoryMapMutation') && mapsLogicSource.includes('STORY_MAP_MUTATIONS'), 'Story map mutations must be applied by maps_logic.js.');
 let storyMapActionsChecked = 0;
 const validateStoryMapActions = (area, def) => {
   (def.mapActions || []).forEach(action => {

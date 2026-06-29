@@ -1,6 +1,9 @@
 const fs = require('fs');
 const path = require('path');
-const vm = require('vm');
+const {
+    collectReachableCells,
+    loadMapRuntime,
+} = require('./validation-helpers');
 
 const root = path.resolve(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
@@ -8,7 +11,10 @@ const mapSource = read('map.js');
 const mainSource = read('main.js');
 const questSource = read('quests.js');
 const menuSource = read('menus_status.js');
+const monsterSource = read('monsters.js');
 const storySource = read('story.js');
+const storyLogicSource = read('story_logic.js');
+const storyRuntimeSource = `${storySource}\n${storyLogicSource}`;
 const dungeonSource = read('dungeon.js');
 
 if (menuSource.includes("available: '未受注'") || menuSource.includes('rewardNames') || menuSource.includes('加入:')) {
@@ -16,6 +22,15 @@ if (menuSource.includes("available: '未受注'") || menuSource.includes('reward
 }
 if (!menuSource.includes("state === 'accepted' || state === 'completed'")) {
     throw new Error('Quest record must only show accepted and completed quests.');
+}
+if (!menuSource.includes('討伐対象') || !menuSource.includes('getMonsterName')) {
+    throw new Error('Quest record must show hunt target monster names.');
+}
+
+function getMonsterName(id) {
+    const match = monsterSource.match(new RegExp(`"id":${Number(id)},"name":"([^"]+)"`));
+    if (!match) throw new Error(`Monster name not found: ${id}`);
+    return match[1];
 }
 
 for (const marker of [
@@ -27,40 +42,28 @@ for (const marker of [
     if (!mainSource.includes(marker)) throw new Error(`Boss contact flow marker is missing: ${marker}`);
 }
 
-const context = { console, window: {} };
-context.globalThis = context;
-vm.createContext(context);
-vm.runInContext(questSource, context, { filename: 'quests.js' });
-vm.runInContext(
-    `${mapSource}\nglobalThis.MAPS = FIXED_DUNGEON_MAPS;`,
-    context,
-    { filename: 'map.js' }
-);
+const { context, runFile } = loadMapRuntime(root);
+runFile('quests.js');
 
 const questBosses = [];
 const unreachableBosses = [];
-for (const [areaKey, dungeon] of Object.entries(context.MAPS)) {
-    for (const floor of dungeon.floors || []) {
-        const entry = floor.entryPoint || dungeon.entryPoint;
-        const queue = entry ? [[Number(entry.x), Number(entry.y)]] : [];
-        const visited = new Set(queue.map(([x, y]) => `${x},${y}`));
-        while (queue.length) {
-            const [x, y] = queue.shift();
-            for (const [dx, dy] of [[0, -1], [1, 0], [0, 1], [-1, 0]]) {
-                const nx = x + dx;
-                const ny = y + dy;
-                const key = `${nx},${ny}`;
-                if (visited.has(key) || nx < 0 || ny < 0 || nx >= floor.width || ny >= floor.height) continue;
-                const tile = String(floor.tiles[ny]?.[nx] || 'W').toUpperCase();
-                if (tile === 'W' || tile === 'B') continue;
-                visited.add(key);
-                queue.push([nx, ny]);
+for (const [areaKey, dungeon] of Object.entries(context.FIXED_DUNGEON_MAPS)) {
+    const floors = dungeon.floors || [];
+    for (const [floorIndex, floor] of floors.entries()) {
+        const floorNo = floorIndex + 1;
+        const starts = [floor.entryPoint || dungeon.entryPoint].filter(Boolean);
+        for (const otherFloor of floors) {
+            for (const link of otherFloor.floorLinks || []) {
+                if (Number(link.toFloor) === floorNo && Number.isFinite(Number(link.targetX)) && Number.isFinite(Number(link.targetY))) {
+                    starts.push({ x: Number(link.targetX), y: Number(link.targetY) });
+                }
             }
         }
+        const reachableSets = starts.map(start => collectReachableCells(floor, start, { blockBosses: true }));
         for (const boss of floor.bosses || []) {
             if (boss.questId) questBosses.push({ areaKey, floor, boss });
             const adjacentReachable = [[0, -1], [1, 0], [0, 1], [-1, 0]]
-                .some(([dx, dy]) => visited.has(`${Number(boss.x) + dx},${Number(boss.y) + dy}`));
+                .some(([dx, dy]) => reachableSets.some(visited => visited.has(`${Number(boss.x) + dx},${Number(boss.y) + dy}`)));
             if (!adjacentReachable) unreachableBosses.push(`${areaKey} ${floor.label} (${boss.x},${boss.y})`);
         }
     }
@@ -82,12 +85,19 @@ for (const questId of ['marie_water_city', 'hayate_water_city', 'sylvia_water_ci
     if (!Array.isArray(quest?.targetMonsterIds) || quest.targetMonsterIds.length === 0 || Number(quest.targetCount) <= 0) {
         throw new Error(`Hunt quest lacks a real kill objective: ${questId}`);
     }
+    const questText = `${quest.objective || ''}\n${quest.startText || ''}\n${quest.progressText || ''}`;
+    for (const monsterId of quest.targetMonsterIds) {
+        const monsterName = getMonsterName(monsterId);
+        if (!questText.includes(monsterName)) {
+            throw new Error(`Hunt quest text does not name target monster ${monsterName}: ${questId}`);
+        }
+    }
     if (quest.initialComplete === true) {
         throw new Error(`Hunt quest still completes instantly: ${questId}`);
     }
     for (const eventKey of ['startEventId', 'reportEventId']) {
         const eventId = quest[eventKey];
-        if (!eventId || !storySource.includes(`"${eventId}"`)) {
+        if (!eventId || !storyRuntimeSource.includes(`"${eventId}"`)) {
             throw new Error(`Quest dialogue event is missing: ${questId}.${eventKey}`);
         }
     }
@@ -104,7 +114,7 @@ if (!read('dungeon.js').includes('fixedBossPosition')) {
     throw new Error('Adjacent boss battles must preserve the actual boss tile position.');
 }
 for (const marker of ['dismissChoiceUI', 'prepareBattleTransitionUI']) {
-    if (!storySource.includes(marker)) throw new Error(`Battle transition dialogue cleanup is missing: ${marker}`);
+    if (!storyRuntimeSource.includes(marker)) throw new Error(`Battle transition dialogue cleanup is missing: ${marker}`);
 }
 if (!mainSource.includes("sceneId === 'battle'") || !mainSource.includes('prepareBattleTransitionUI')) {
     throw new Error('Every battle scene transition must close transient story UI.');
@@ -122,7 +132,7 @@ for (const marker of [
     '"value": "ソフィアは微笑んだ。"',
     '"value": "リーシアの瞳が開いた。"'
 ]) {
-    if (storySource.includes(marker)) throw new Error(`Placeholder quest narration remains: ${marker}`);
+    if (storyRuntimeSource.includes(marker)) throw new Error(`Placeholder quest narration remains: ${marker}`);
 }
 for (const conversationId of [
     'QUEST_KARIN_CLEAR',
@@ -135,7 +145,7 @@ for (const conversationId of [
     'QUEST_RYU_MINERVA_CLEAR',
     'QUEST_ZENON_CLEAR'
 ]) {
-    if (!storySource.includes(`"value": "${conversationId}"`)) {
+    if (!storyRuntimeSource.includes(`"value": "${conversationId}"`)) {
         throw new Error(`Recruitment victory lacks a real conversation: ${conversationId}`);
     }
 }

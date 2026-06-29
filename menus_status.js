@@ -176,24 +176,67 @@ const MenuStatus = {
         });
         const stateLabel = { accepted: '進行中', completed: '完了' };
         const stateColor = { accepted: '#ffd700', completed: '#44ff44' };
+        const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, ch => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        }[ch]));
+        const getMonsterName = (monsterId) => {
+            const id = Number(monsterId);
+            const monster = (typeof DB !== 'undefined' && Array.isArray(DB.MONSTERS))
+                ? DB.MONSTERS.find(m => Number(m.id) === id)
+                : null;
+            return monster?.name || `モンスター${id}`;
+        };
+        const renderQuestDetail = (id, quest, state) => {
+            if (!quest || quest.kind !== 'hunt' || !Array.isArray(quest.targetMonsterIds) || quest.targetMonsterIds.length === 0) return '';
+            const total = Math.max(1, Number(quest.targetCount || 1));
+            const current = state?.state === 'completed'
+                ? total
+                : Math.min(total, Number(state?.progress?.kills || 0));
+            const targetNames = quest.targetMonsterIds.map(getMonsterName).join(' / ');
+            const canReport = current >= total && state?.state === 'accepted';
+            return `
+                <div style="margin-top:10px; padding:9px 10px; background:rgba(0,0,0,0.22); border:1px solid rgba(255,215,0,0.22); border-radius:6px;">
+                    <div style="display:flex; justify-content:space-between; gap:10px; align-items:center;">
+                        <div style="min-width:0;">
+                            <div style="font-size:10px; color:#aaa; margin-bottom:3px;">討伐対象</div>
+                            <div style="font-size:12px; color:#fff; line-height:1.5;">${escapeHtml(targetNames)}</div>
+                        </div>
+                        <div style="flex:0 0 auto; text-align:right;">
+                            <div style="font-size:10px; color:#aaa; margin-bottom:3px;">討伐数</div>
+                            <div style="font-size:14px; color:${canReport ? '#44ff44' : '#ffd700'}; font-weight:bold;">${current}/${total}</div>
+                        </div>
+                    </div>
+                    ${canReport ? '<div style="font-size:11px; color:#44ff44; margin-top:7px;">依頼人へ報告できます。</div>' : ''}
+                </div>`;
+        };
 
         const cards = questIds.map(id => {
             const quest = defs[id];
-            const state = (App.getQuestState ? App.getQuestState(id).state : 'accepted') || 'accepted';
-            const label = stateLabel[state] || state;
-            const color = stateColor[state] || '#aaa';
-            const objective = App.getQuestProgressText ? App.getQuestProgressText(id) : (quest.progressText || quest.objective || '');
+            const questState = App.getQuestState ? App.getQuestState(id) : { state: 'accepted' };
+            const state = (questState.state || 'accepted');
+            const isReportable = App.isQuestObjectiveComplete && App.isQuestObjectiveComplete(id);
+            const label = isReportable && state === 'accepted' ? '報告可' : (stateLabel[state] || state);
+            const color = isReportable && state === 'accepted' ? '#44ff44' : (stateColor[state] || '#aaa');
+            const detail = renderQuestDetail(id, quest, questState);
+            const objective = (quest.kind === 'hunt' && state === 'accepted')
+                ? (quest.progressText || quest.objective || quest.name || '')
+                : (App.getQuestProgressText ? App.getQuestProgressText(id) : (quest.progressText || quest.objective || ''));
 
             return `
                 <div style="background:rgba(255,255,255,0.05); border:1px solid #444; border-radius:8px; padding:12px; margin-bottom:10px;">
                     <div style="display:flex; justify-content:space-between; gap:10px; align-items:flex-start;">
                         <div style="min-width:0;">
-                            <div style="font-size:13px; color:#fff; font-weight:bold;">${quest.name}</div>
-                            <div style="font-size:10px; color:#888; margin-top:2px;">${quest.area || '-'}</div>
+                            <div style="font-size:13px; color:#fff; font-weight:bold;">${escapeHtml(quest.name)}</div>
+                            <div style="font-size:10px; color:#888; margin-top:2px;">${escapeHtml(quest.area || '-')}</div>
                         </div>
                         <div style="flex:0 0 auto; color:${color}; font-size:11px; font-weight:bold;">${label}</div>
                     </div>
-                    <div style="font-size:11px; color:#ccc; margin-top:8px; line-height:1.6;">${objective}</div>
+                    <div style="font-size:11px; color:#ccc; margin-top:8px; line-height:1.6; white-space:pre-wrap;">${escapeHtml(objective)}</div>
+                    ${detail}
                 </div>`;
         }).join('');
 

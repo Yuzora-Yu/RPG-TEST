@@ -1,17 +1,10 @@
 const fs = require('fs');
 const vm = require('vm');
+const { loadMapRuntime } = require('./validation-helpers');
 
 const root = process.cwd();
-const context = {
-  console,
-  window: {},
-  tileEntry: (img, color) => ({ img, color }),
-};
-context.globalThis = context;
-vm.createContext(context);
+const { context } = loadMapRuntime(root);
 
-const mapCode = fs.readFileSync(`${root}/map.js`, 'utf8');
-vm.runInContext(`${mapCode}\nglobalThis.__MAPS__ = { MAP_DATA, FIELD_ENCOUNTER_ZONES, STORY_DATA, FIXED_DUNGEON_MAPS, MapRegistry };`, context, { filename: 'map.js' });
 const charactersCode = fs.readFileSync(`${root}/characters.js`, 'utf8');
 vm.runInContext(charactersCode, context, { filename: 'characters.js' });
 const itemsCode = fs.readFileSync(`${root}/items.js`, 'utf8');
@@ -22,7 +15,7 @@ const questsCode = fs.readFileSync(`${root}/quests.js`, 'utf8');
 vm.runInContext(questsCode, context, { filename: 'quests.js' });
 const dungeonCode = fs.readFileSync(`${root}/dungeon.js`, 'utf8');
 
-const { MAP_DATA, FIELD_ENCOUNTER_ZONES, STORY_DATA, FIXED_DUNGEON_MAPS, MapRegistry } = context.__MAPS__;
+const { MAP_DATA, FIELD_ENCOUNTER_ZONES, STORY_DATA, FIXED_DUNGEON_MAPS, MapRegistry } = context;
 const QUEST_DATA = context.window.QUEST_DATA;
 const CHARACTERS_DATA = context.window.CHARACTERS_DATA;
 const ITEMS_DATA = context.window.ITEMS_DATA;
@@ -181,6 +174,27 @@ function isFixedWalkable(def, x, y) {
   return tile !== 'W';
 }
 
+function effectPoints(effect) {
+  const points = [];
+  if (Number.isFinite(Number(effect.x)) && Number.isFinite(Number(effect.y))) {
+    points.push({ x: Number(effect.x), y: Number(effect.y) });
+  }
+  const addRect = (rect) => {
+    if (!rect) return;
+    const x1 = Math.min(Number(rect.x1 ?? rect.x ?? 0), Number(rect.x2 ?? rect.x ?? 0));
+    const x2 = Math.max(Number(rect.x1 ?? rect.x ?? 0), Number(rect.x2 ?? rect.x ?? 0));
+    const y1 = Math.min(Number(rect.y1 ?? rect.y ?? 0), Number(rect.y2 ?? rect.y ?? 0));
+    const y2 = Math.max(Number(rect.y1 ?? rect.y ?? 0), Number(rect.y2 ?? rect.y ?? 0));
+    for (let y = y1; y <= y2; y++) {
+      for (let x = x1; x <= x2; x++) points.push({ x, y });
+    }
+  };
+  addRect(effect.rect);
+  (effect.rects || []).forEach(addRect);
+  (effect.points || []).forEach(point => points.push({ x: Number(point.x), y: Number(point.y) }));
+  return points;
+}
+
 Object.entries(FIXED_DUNGEON_MAPS).forEach(([area, base]) => {
   const floorCount = Array.isArray(base.floors) ? base.floors.length : 1;
   for (let floor = 1; floor <= floorCount; floor++) {
@@ -188,11 +202,14 @@ Object.entries(FIXED_DUNGEON_MAPS).forEach(([area, base]) => {
     (def.tileEffects || []).forEach((effect, index) => {
       const label = `${area} F${floor} tileEffects[${index}]`;
       assert(effect.type !== 'angel', `${label}: trial angels must be randomly spawned, not fixed`);
-      assert(isFixedWalkable(def, Number(effect.x), Number(effect.y)), `${label}: effect is not on walkable tile`);
+      const points = effectPoints(effect);
+      assert(points.length > 0, `${label}: effect has no coordinates`);
+      assert(points.some(point => isFixedWalkable(def, point.x, point.y)), `${label}: effect does not overlap any walkable tile`);
       if (effect.type === 'warp') {
         assert(isFixedWalkable(def, Number(effect.toX), Number(effect.toY)), `${label}: warp target is not walkable`);
       }
       if (effect.type === 'hunter' || effect.type === 'angel') {
+        assert(isFixedWalkable(def, Number(effect.x), Number(effect.y)), `${label}: hunter spawn is not on walkable tile`);
         (effect.monsterIds || [effect.monsterId]).filter(Boolean).forEach(id => {
           assert(typeof getMonsterById === 'function' && getMonsterById(Number(id)), `${label}: monster ${id} is missing`);
         });
