@@ -10209,6 +10209,9 @@ const FIXED_DUNGEON_MAPS = {
     DARK_SHRINE_RUINS: {
         name: "闇の神殿エクリプス跡",
         themeKey: "DARK_SHRINE_RUINS",
+        useDungeonWallFace: true,
+        wallFaceMode: "overlay",
+        wallFaceImg: "tile_dark_shrine_wall_face",
         rank: 75,
         encounterRank: 75,
         battleBg: "battle_bg_dark_shrine",

@@ -23,8 +23,17 @@ if (menuSource.includes("available: '未受注'") || menuSource.includes('reward
 if (!menuSource.includes("state === 'accepted' || state === 'completed'")) {
     throw new Error('Quest record must only show accepted and completed quests.');
 }
-if (!menuSource.includes('討伐対象') || !menuSource.includes('getMonsterName')) {
-    throw new Error('Quest record must show hunt target monster names.');
+if (!menuSource.includes('openQuestDetail') || !menuSource.includes('クエスト名を選ぶと詳細を確認できます')) {
+    throw new Error('Quest record must list quest names first and open details from a modal.');
+}
+if (!mainSource.includes('showQuestModal') || !mainSource.includes('offer: true') || !mainSource.includes('受ける') || !mainSource.includes('やめる')) {
+    throw new Error('Quest offers must use an accept/decline modal.');
+}
+if (!mainSource.includes('討伐対象') || !mainSource.includes('getQuestMonsterName')) {
+    throw new Error('Quest detail modal must show hunt target monster names.');
+}
+if (!mainSource.includes("action.log && action.type !== 'quest'")) {
+    throw new Error('Quest map actions must not write NPC flavor text to the log area.');
 }
 
 function getMonsterName(id) {
@@ -106,6 +115,17 @@ for (const questId of ['marie_water_city', 'hayate_water_city', 'sylvia_water_ci
 const zeliedQuest = context.window.QUEST_DATA?.zelied_big_tower;
 if (zeliedQuest?.kind !== 'boss' || !zeliedQuest.startEventId || !zeliedQuest.reportEventId) {
     throw new Error('Zelied quest must use a boss objective with start/report dialogue.');
+}
+for (const mainStoryQuestId of ['fire_holy_water', 'water_blue_crystal']) {
+    if (context.window.QUEST_DATA?.[mainStoryQuestId]) {
+        throw new Error(`${mainStoryQuestId} must remain main-story progression, not a quest entry.`);
+    }
+}
+const attunement = context.window.QUEST_DATA?.fire_water_attunement;
+if (!attunement?.unlockFlags?.includes('forestHolyWaterObtained') ||
+    !attunement?.unlockFlags?.includes('blueCrystalObtained') ||
+    Array.isArray(attunement?.requiredQuests)) {
+    throw new Error('Fire/water attunement must unlock from main-story flags, not removed quest IDs.');
 }
 if (!mainSource.includes('markQuestBossDefeated') || !mainSource.includes("quest.kind === 'boss'")) {
     throw new Error('Boss quest progress is not connected to fixed-boss victory.');

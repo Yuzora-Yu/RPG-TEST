@@ -183,69 +183,66 @@ const MenuStatus = {
             '"': '&quot;',
             "'": '&#39;'
         }[ch]));
-        const getMonsterName = (monsterId) => {
-            const id = Number(monsterId);
-            const monster = (typeof DB !== 'undefined' && Array.isArray(DB.MONSTERS))
-                ? DB.MONSTERS.find(m => Number(m.id) === id)
-                : null;
-            return monster?.name || `モンスター${id}`;
-        };
-        const renderQuestDetail = (id, quest, state) => {
-            if (!quest || quest.kind !== 'hunt' || !Array.isArray(quest.targetMonsterIds) || quest.targetMonsterIds.length === 0) return '';
-            const total = Math.max(1, Number(quest.targetCount || 1));
-            const current = state?.state === 'completed'
-                ? total
-                : Math.min(total, Number(state?.progress?.kills || 0));
-            const targetNames = quest.targetMonsterIds.map(getMonsterName).join(' / ');
-            const canReport = current >= total && state?.state === 'accepted';
-            return `
-                <div style="margin-top:10px; padding:9px 10px; background:rgba(0,0,0,0.22); border:1px solid rgba(255,215,0,0.22); border-radius:6px;">
-                    <div style="display:flex; justify-content:space-between; gap:10px; align-items:center;">
-                        <div style="min-width:0;">
-                            <div style="font-size:10px; color:#aaa; margin-bottom:3px;">討伐対象</div>
-                            <div style="font-size:12px; color:#fff; line-height:1.5;">${escapeHtml(targetNames)}</div>
-                        </div>
-                        <div style="flex:0 0 auto; text-align:right;">
-                            <div style="font-size:10px; color:#aaa; margin-bottom:3px;">討伐数</div>
-                            <div style="font-size:14px; color:${canReport ? '#44ff44' : '#ffd700'}; font-weight:bold;">${current}/${total}</div>
-                        </div>
-                    </div>
-                    ${canReport ? '<div style="font-size:11px; color:#44ff44; margin-top:7px;">依頼人へ報告できます。</div>' : ''}
-                </div>`;
-        };
 
-        const cards = questIds.map(id => {
+        const rows = questIds.map(id => {
             const quest = defs[id];
             const questState = App.getQuestState ? App.getQuestState(id) : { state: 'accepted' };
-            const state = (questState.state || 'accepted');
+            const state = questState.state || 'accepted';
             const isReportable = App.isQuestObjectiveComplete && App.isQuestObjectiveComplete(id);
             const label = isReportable && state === 'accepted' ? '報告可' : (stateLabel[state] || state);
             const color = isReportable && state === 'accepted' ? '#44ff44' : (stateColor[state] || '#aaa');
-            const detail = renderQuestDetail(id, quest, questState);
-            const objective = (quest.kind === 'hunt' && state === 'accepted')
-                ? (quest.progressText || quest.objective || quest.name || '')
-                : (App.getQuestProgressText ? App.getQuestProgressText(id) : (quest.progressText || quest.objective || ''));
+            const kind = App.getQuestKindLabel ? App.getQuestKindLabel(quest.kind) : (quest.kind || '依頼');
+            const icon = state === 'completed' ? '✓' : (isReportable ? '!' : '…');
+            const iconBg = state === 'completed' ? '#2d5b35' : (isReportable ? '#455f27' : '#5d451b');
 
             return `
-                <div style="background:rgba(255,255,255,0.05); border:1px solid #444; border-radius:8px; padding:12px; margin-bottom:10px;">
-                    <div style="display:flex; justify-content:space-between; gap:10px; align-items:flex-start;">
-                        <div style="min-width:0;">
-                            <div style="font-size:13px; color:#fff; font-weight:bold;">${escapeHtml(quest.name)}</div>
-                            <div style="font-size:10px; color:#888; margin-top:2px;">${escapeHtml(quest.area || '-')}</div>
-                        </div>
-                        <div style="flex:0 0 auto; color:${color}; font-size:11px; font-weight:bold;">${label}</div>
-                    </div>
-                    <div style="font-size:11px; color:#ccc; margin-top:8px; line-height:1.6; white-space:pre-wrap;">${escapeHtml(objective)}</div>
-                    ${detail}
-                </div>`;
+                <button
+                    class="list-item"
+                    style="width:100%; text-align:left; display:flex; align-items:center; gap:8px; padding:9px 10px; margin-bottom:5px; border-radius:4px; border:1px solid #3d3425; background:rgba(255,255,255,0.045); color:#eee; cursor:pointer;"
+                    onclick="MenuStatus.openQuestDetail('${escapeHtml(id)}')"
+                >
+                    <span style="flex:0 0 auto; width:18px; height:18px; display:inline-flex; align-items:center; justify-content:center; border-radius:3px; background:${iconBg}; color:#fff4c8; font-size:11px; font-weight:bold;">${icon}</span>
+                    <span style="flex:1; min-width:0;">
+                        <span style="display:block; font-size:13px; color:#fff; font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(quest.name)}</span>
+                        <span style="display:block; font-size:10px; color:#aaa; margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(quest.area || '-')} / ${escapeHtml(kind)}</span>
+                    </span>
+                    <span style="flex:0 0 auto; color:${color}; font-size:11px; font-weight:bold;">${label}</span>
+                </button>`;
         }).join('');
 
+        const acceptedCount = questIds.filter(id => App.getQuestState(id).state === 'accepted').length;
+        const completedCount = questIds.filter(id => App.getQuestState(id).state === 'completed').length;
+
         content.innerHTML = `
-            <div style="font-size:11px; color:#aaa; margin-bottom:10px; line-height:1.6;">
-                受注した依頼と、これまでに完了した依頼を確認できます。
+            <div style="display:flex; gap:8px; margin-bottom:10px;">
+                <div style="flex:1; background:rgba(255,255,255,0.055); border:1px solid #444; border-radius:6px; padding:8px;">
+                    <div style="font-size:10px; color:#aaa;">進行中</div>
+                    <div style="font-size:18px; color:#ffd700; font-weight:bold;">${acceptedCount}</div>
+                </div>
+                <div style="flex:1; background:rgba(255,255,255,0.055); border:1px solid #444; border-radius:6px; padding:8px;">
+                    <div style="font-size:10px; color:#aaa;">完了</div>
+                    <div style="font-size:18px; color:#44ff44; font-weight:bold;">${completedCount}</div>
+                </div>
             </div>
-            ${cards || '<div style="color:#888; font-size:12px;">受注中のクエストはありません。</div>'}
+            <div style="border:1px solid #3d3425; border-radius:7px; padding:8px; background:rgba(0,0,0,0.18);">
+                ${rows || '<div style="color:#888; font-size:12px; padding:12px;">受注中のクエストはありません。</div>'}
+            </div>
+            <div style="font-size:10px; color:#777; margin-top:8px;">クエスト名を選ぶと詳細を確認できます。</div>
         `;
+    },
+
+    openQuestDetail: async (questId) => {
+        if (!App.showQuestModal) return;
+        const quest = App.getQuestDefinition ? App.getQuestDefinition(questId) : null;
+        const state = App.getQuestState ? App.getQuestState(questId).state : 'available';
+        await App.showQuestModal(questId, {
+            statusLabel: state === 'completed'
+                ? 'クリア'
+                : (App.isQuestObjectiveComplete?.(questId) ? '報告できます' : '受注中'),
+            bodyText: state === 'completed'
+                ? (quest?.completeText || quest?.objective || '')
+                : (quest?.progressText || quest?.objective || '')
+        });
     }
 };
 

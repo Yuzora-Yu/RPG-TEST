@@ -6,30 +6,6 @@
     const travel = "travel";
 
     const QUEST_DATA = {
-        fire_holy_water: {
-            name: "火山を鎮める聖水",
-            area: "炎の里 / 森の風穴",
-            kind: boss,
-            unlockFlags: ["fireVillageConsulted"],
-            objective: "森の風穴の最奥で妖精を襲う闇の魔物を討伐し、聖水を受け取る。",
-            startText: "長老は、火山の炎を鎮めるには森の風穴の奥に湧く妖精の聖水が必要だと語った。",
-            progressText: "森の風穴の奥へ向かい、妖精の泉を探そう。",
-            completeText: "妖精の泉を守り、火山へ進むための聖水を受け取った。",
-            rewardFlags: ["forestHolyWaterObtained"],
-            rewardItems: [{ id: 301, count: 1 }]
-        },
-        water_blue_crystal: {
-            name: "青の結晶を求めて",
-            area: "水上都市 / クレナ鍾乳洞",
-            kind: boss,
-            unlockFlags: [],
-            objective: "クレナ鍾乳洞の最奥で青の結晶を守る魔物を討伐する。",
-            startText: "ソフィアは、海底神殿への道を開く鍵がクレナ鍾乳洞の青の結晶にあると告げた。",
-            progressText: "クレナ鍾乳洞の奥にある結晶の間へ進もう。",
-            completeText: "青の結晶を得た。海底神殿の入口へ向かえるはずだ。",
-            rewardFlags: ["blueCrystalObtained"],
-            rewardItems: [{ id: 302, count: 1 }]
-        },
         karin_volcano_depths: {
             name: "火山奥の鍛炎",
             area: "イグナ火山 深部",
@@ -90,7 +66,7 @@
             name: "火脈と水脈の調律",
             area: "水上都市",
             kind: conversation,
-            requiredQuests: ["fire_holy_water", "water_blue_crystal"],
+            unlockFlags: ["forestHolyWaterObtained", "blueCrystalObtained"],
             objective: "妖精の聖水と青の結晶の記録を合わせ、次の異変に備える。",
             startText: "水上都市の技師は、火山と神殿の異常が同じ脈動に連なる可能性を語った。",
             progressText: "水上都市の技師と、火脈と水脈の記録を照合しよう。",

@@ -1,5 +1,7 @@
 # 10_編集メモ_今後characters_jsへ入れたい項目
 
+注記: この文書は旧方針を含む資料です。現行の機能解放・プレイヤー導線は実装コードおよび最新READMEを正とします。
+
 ## なぜ追加したいか
 
 現行の `characters.js` は、アーカイブ文の中に関係性・隠し設定・感情の重さが大量に入っている。これは世界観としては良いが、今後ストーリーイベントやNPC会話、加入条件、ガチャ演出、図鑑表示を実装する時に、コードから参照しにくい。
@@ -13,7 +15,7 @@ story: {
   originArea: "START_VILLAGE",
   associatedAreas: ["START_VILLAGE", "ABYSS"],
   joinTiming: "after_start_village_clear",
-  storyRole: "story_join", // story_join, npc, postgame_gacha, boss, hidden
+  storyRole: "story_join", // story_join, npc, postgame_event, boss, hidden
   elementTheme: "fire",     // fire, wind, water, thunder, light, dark, chaos, none
   spoilerLevel: 0,           // 0=序盤公開可, 1=中盤, 2=終盤, 3=クリア後
   relationshipTags: [
@@ -126,7 +128,7 @@ story: {
     { target: 301, type: "rival", feeling: "respect", spoilerLevel: 2 }
   ],
   hiddenFlags: ["demon_king_as_wedge", "fighting_chaos"],
-  tutorialRole: "gacha_unlock"
+  tutorialRole: "legacy_gacha_internal"
 }
 ```
 
@@ -158,7 +160,7 @@ story: {
   originArea: "LIGHT_PALACE",
   associatedAreas: ["LIGHT_PALACE", "THUNDER_FORTRESS"],
   joinTiming: "postgame_or_late_story",
-  storyRole: "key_npc_or_postgame_gacha",
+  storyRole: "key_npc_or_postgame_event",
   elementTheme: "light",
   spoilerLevel: 2,
   relationshipTags: [

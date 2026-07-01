@@ -1169,11 +1169,11 @@ const StoryManager = {
         if (action.type === 'LOG')   App.log(action.value);
 
         if (action.type === 'QUEST_ACCEPT' && typeof App.acceptQuest === 'function') {
-            App.acceptQuest(action.value || action.questId);
+            App.acceptQuest(action.value || action.questId, { silent: true });
         }
 
         if (action.type === 'QUEST_COMPLETE' && typeof App.completeQuest === 'function') {
-            App.completeQuest(action.value || action.questId);
+            App.completeQuest(action.value || action.questId, { silent: true });
             this.refreshFieldAfterStoryStateChange();
         }
 

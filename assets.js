@@ -36,6 +36,7 @@ const PRISMA_NORMAL_MONSTER_IMAGE_IDS = Array.from({ length: 90 }, (_, i) => 100
 const PRISMA_BOSS_MONSTER_IMAGE_IDS = [
   200201, 200202, 200203, 200204,
   301000, 301001, 301002, 301010, 301011, 301012, 301020, 301021, 301022, 301030, 301031, 301032, 301040, 301050, 301060, 301061, 301062, 301070, 301080, 301081, 301082, 301100,
+  401010, 401020, 401030, 401040, 401050, 401060, 401070, 401080, 401081, 401082, 401090, 401100, 401110, 401120, 401130, 401140, 401150, 401151, 401152, 401153, 401160, 401161, 401162, 401170, 401071, 401180, 401190, 401200,
   902000,
 ];
 const PRISMA_MONSTER_IMAGE_FILES = PRISMA_NORMAL_MONSTER_IMAGE_IDS
@@ -295,11 +296,12 @@ const PRISMA_ASSETS = {
     tile_seabed_floor_2: "assets/map/terrain/tile_seabed_floor_alt_v002.png",
     tile_seabed_floor_3: "assets/map/terrain/tile_seabed_floor_alt_v003.png",
     tile_seabed_floor_4: "assets/map/terrain/tile_seabed_floor_alt_v004.png",
-    tile_dark_shrine_wall: "assets/map/terrain/tile_dark_shrine_wall_v001.png",
+    tile_dark_shrine_wall: "assets/map/terrain/tile_dark_shrine_wall_v004.png",
     tile_dark_shrine_floor: "assets/map/terrain/tile_dark_shrine_floor_v003.png",
-    tile_dark_shrine_wall_2: "assets/map/terrain/tile_dark_shrine_wall_alt_v002.png",
-    tile_dark_shrine_wall_3: "assets/map/terrain/tile_dark_shrine_wall_alt_v003.png",
-    tile_dark_shrine_wall_4: "assets/map/terrain/tile_dark_shrine_wall_alt_v004.png",
+    tile_dark_shrine_wall_2: "assets/map/terrain/tile_dark_shrine_wall_alt_v011.png",
+    tile_dark_shrine_wall_3: "assets/map/terrain/tile_dark_shrine_wall_alt_v012.png",
+    tile_dark_shrine_wall_4: "assets/map/terrain/tile_dark_shrine_wall_alt_v013.png",
+    tile_dark_shrine_wall_face: "assets/map/terrain/tile_dark_shrine_wall_face_v001.png",
     tile_dark_shrine_floor_2: "assets/map/terrain/tile_dark_shrine_floor_alt_v008.png",
     tile_dark_shrine_floor_3: "assets/map/terrain/tile_dark_shrine_floor_alt_v009.png",
     tile_dark_shrine_floor_4: "assets/map/terrain/tile_dark_shrine_floor_alt_v010.png",

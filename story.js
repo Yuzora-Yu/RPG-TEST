@@ -2756,6 +2756,10 @@ const STORY_MANAGER_DATA = {
                 { "name": "レオン将軍", "text": "ならば来い。\n命令の残骸を越え、次の戦場へ進む足を見せろ。" },
                 { "name": "ジョセフ", "text": "来い、亡霊の将軍。\nその古い号令ごと、俺の盾で止めてやる。", "charId": 101 }
         ],
+        "ABYSS_FLOOR_010_CLEAR": [
+                { "name": "システム", "text": "割れた軍旗が、音もなく灰になった。\n号令だけで立っていた影は、もう誰も呼ばない。" },
+                { "name": "ジョセフ", "text": "名簿から消えた奴にも、帰る場所はあったはずだ。\n……行くぞ。ここで足を止めたら、あいつらに怒られる。", "charId": 101 }
+        ],
         "ABYSS_FLOOR_020_GLEN_GUARDIAN": [
                 { "name": "システム", "text": "爪痕だらけの盾が落ちている。\n裏には、拙い字で子どもの名が彫られていた。" },
                 { "name": "グレン将軍", "text": "退け、人の子。ここは敗者の牙を納める場所だ。\n勝者の旗も、王の印も、腹の足しにはならぬ。" },
@@ -2763,6 +2767,10 @@ const STORY_MANAGER_DATA = {
                 { "name": "グレン将軍", "text": "守った巣だけが、名を覚える。\n奪った者の名など、冬が来れば骨から消える。" },
                 { "name": "魔王ゼノン", "text": "深淵め。誇りまで番犬にするか。\nだが牙を折らねば、奥へは進めぬ。", "charId": 402 },
                 { "name": "グレン将軍", "text": "ならば来い。お前たちの名が、\n守る者の名か、奪う者の名か、牙で確かめる。" }
+        ],
+        "ABYSS_FLOOR_020_CLEAR": [
+                { "name": "システム", "text": "盾の裏に刻まれた小さな名だけが残った。\n誰かの巣を守った牙は、ようやく眠りについた。" },
+                { "name": "魔王ゼノン", "text": "敵味方の旗で、死者の誇りまで分けられるものか。\n進むぞ。深淵に、これ以上の墓守を作らせるな。", "charId": 402 }
         ],
         "ABYSS_FLOOR_030_LEONARD": [
                 { "name": "システム", "text": "雷が鳴らない。黒い雲もない。\nただ、床に突き立つ剣だけが、歯を食いしばるように震えていた。" },
@@ -2774,6 +2782,11 @@ const STORY_MANAGER_DATA = {
                 { "name": "雷楔のレナード", "text": "ならば頼む、盾よ。\nかつて最強の剣と呼ばれた男の、最後の狂いを受け止めてくれ。" },
                 { "name": "ジョセフ", "text": "ああ。最強の盾は、まだ折れてねえ。\n友の剣くらい、泣きながらでも止めてやる。", "charId": 101 }
         ],
+        "ABYSS_FLOOR_030_CLEAR": [
+                { "name": "システム", "text": "剣の震えが止まった。\n雷の残滓は、ジョセフの盾に触れて、小さな火花を一つだけ散らした。" },
+                { "name": "雷楔のレナード", "text": "……すまなかった。"},
+                { "name": "ジョセフ", "text": "謝る相手は山ほどいる。\n俺が全部、覚えておく。だから今は、休め。", "charId": 101 }
+        ],
         "ABYSS_FLOOR_040_ELICIA": [
                 { "name": "システム", "text": "風が同じ向きに吹き続ける。\n迷いも声も、不要な荷物のように押し流されていく。" },
                 { "name": "風楔のエリシア", "text": "風は国のために吹く。\n福音を運び、従わぬ火を消し、逆らう息を奪う神の息吹。" },
@@ -2781,6 +2794,10 @@ const STORY_MANAGER_DATA = {
                 { "name": "風楔のエリシア", "text": "小さな暮らしは、国の風下に置くもの。\n旗が立つ限り、いくつかの家が潰れても国は残る。" },
                 { "name": "エリーゼ", "text": "家の灯りを知らない国なんて、ただの大きな箱です！\n人の暮らしを運ばない風を、私は福音なんて呼ばない！", "charId": 106 },
                 { "name": "風楔のエリシア", "text": "ならば吹いてみなさい。\nあなたの弱い息で、国のために荒れる私の風を裂いてみせなさい。" }
+        ],
+        "ABYSS_FLOOR_040_CLEAR": [
+                { "name": "システム", "text": "押し流すだけだった風がほどけ、誰かの窓辺を撫でるような弱い風になった。" },
+                { "name": "エリーゼ", "text": "弱い息でも、火を消すためだけにあるんじゃない。\n……帰り道を教える風に、いつか戻れますように。", "charId": 106 }
         ],
         "ABYSS_FLOOR_050_SYRIS": [
                 { "name": "システム", "text": "息が白く落ちる。床で凍ったその息は、\n踏み出すたびに、薄い悲鳴のような音を立てた。" },
@@ -2793,6 +2810,10 @@ const STORY_MANAGER_DATA = {
                 { "name": "ケイト", "text": "水だけで作る世界は、癒しではありません。\nそれは、誰の声も届かない冷たい混沌です。", "charId": 104 },
                 { "name": "氷楔のシーリス", "text": "ならば示しなさい。\nあなたの震える手が、私の氷より深く命へ届くのだと。" }
         ],
+        "ABYSS_FLOOR_050_CLEAR": [
+                { "name": "システム", "text": "凍った息が溶け、床に細い水筋を作った。\nその水は、深淵の奥へは流れず、足元で静かに澄んだ。" },
+                { "name": "ケイト", "text": "水は、全部を沈めるためのものじゃない。\n手を洗って、喉を潤して、明日へ渡すためのものです。", "charId": 104 }
+        ],
         "ABYSS_FLOOR_060_GRAD": [
                 { "name": "システム", "text": "床の亀裂から火が噴いた。\n石畳が赤く溶け、逃げ道が一つずつ炎に塗り潰される。" },
                 { "name": "炎楔のグラド", "text": "火山の時とは違うぞ、小僧ども。\nここでは炎が、世界の骨まで食う。光も闇も、混沌すら灰だ。" },
@@ -2802,6 +2823,11 @@ const STORY_MANAGER_DATA = {
                 { "name": "ガイル", "text": "火は支配するもんじゃねえ。\n胸に宿して、信念を燃やして、誰かを守り抜くもんだ。", "charId": 109 },
                 { "name": "ガイル", "text": "俺の炎は、俺のためじゃない。\n大事な奴を焼かせないために、何度でも燃やす灯だ！", "charId": 109 },
                 { "name": "炎楔のグラド", "text": "ならば証明してみせろ。\n俺の豪火より、貴様らのちっぽけな灯こそが炎の神髄であるのだと！" }
+        ],
+        "ABYSS_FLOOR_060_CLEAR": [
+                { "name": "システム", "text": "炎は消えなかった。\nただ、焼き尽くす赤から、手をかざせる橙へと色を戻した。" },
+                { "name": "サラ", "text": "火は怖いです。でも、怖いからこそ、丁寧に扱うんです。\n誰かの夕食を焦がさないように。", "charId": 110 },
+                { "name": "ガイル", "text": "ああ。豪火より先に、守る灯を絶やさねえ。\nそれが俺たちの炎だ。", "charId": 109 }
         ],
         "ABYSS_FLOOR_070_VELD": [
                 { "name": "システム", "text": "白い鎧が黒く脈打っている。\n混沌の騎士は、祈る者の列を見下ろすように剣を構えた。" },
@@ -2841,6 +2867,11 @@ const STORY_MANAGER_DATA = {
                 {"name": "シャニー", "text": "聞かなくていい。\nこの女は、痛みの名前を覚える気がない。", "charId": 306},
                 {"name": "ジョセフ", "text": "同感だ。\n盾で口を塞ぐ趣味はねえが、今日だけは迷いそうだな。", "charId": 101},
                 {"name": "常闇のリリス", "text": "怒りなさい。悲しみなさい。\nその色も、その熱も、深淵は余さず喜ぶわ。"}
+        ],
+        "ABYSS_FLOOR_080_CLEAR": [
+                {"name": "システム", "text": "リリスの影が床へほどけた。\n笑い声だけが残り、すぐに深淵の奥へ吸われて消えた。"},
+                {"name": "シャオ", "text": "掌の上で踊らされてたって言われて、腹が立たないわけない。\nでも、怒りの向きだけは、もう間違えない。", "charId": 105},
+                {"name": "シャニー", "text": "うん。痛みを笑う相手に、痛みを渡さない。\n私たちは、私たちのまま奥へ行こう。", "charId": 306}
         ],
         "ABYSS_FLOOR_090_JASPER": [
                 {"name": "システム", "text": "白い祭壇が、黒い光を吐いている。\n眩しいのに冷たい。祈りの場というより、裁きの台に近かった。"},
@@ -3794,7 +3825,8 @@ const STORY_MANAGER_DATA = {
         "quest_fire_holy_water_clear": {
                 "actions": [
                         { "type": "CONV", "value": "FOREST_HOLY_WATER_CLEAR" },
-                        { "type": "QUEST_COMPLETE", "value": "fire_holy_water" },
+                        { "type": "FLAG", "key": "forestHolyWaterObtained" },
+                        { "type": "ITEM", "id": 301, "count": 1 },
                         { "type": "SUB", "value": 5 },
                         { "type": "LOG", "value": "妖精の聖水を得た。イグナ火山へ戻ろう。" }
                 ],
@@ -3803,7 +3835,8 @@ const STORY_MANAGER_DATA = {
         "quest_water_blue_crystal_clear": {
                 "actions": [
                         { "type": "CONV", "value": "CRENA_BLUE_CRYSTAL_CLEAR" },
-                        { "type": "QUEST_COMPLETE", "value": "water_blue_crystal" },
+                        { "type": "FLAG", "key": "blueCrystalObtained" },
+                        { "type": "ITEM", "id": 302, "count": 1 },
                         { "type": "SUB", "value": 2 },
                         { "type": "LOG", "value": "青の結晶を得た。水上都市のソフィアへ届けよう。" }
                 ],
@@ -3982,7 +4015,6 @@ const STORY_MANAGER_DATA = {
         "fire_village_holy_water_briefing": {
                 "actions": [
                         { "type": "CONV", "value": "FIRE_VILLAGE_HOLY_WATER_BRIEFING" },
-                        { "type": "QUEST_ACCEPT", "value": "fire_holy_water" },
                         { "type": "FLAG", "key": "windHoleRouteKnown" },
                         { "type": "SUB", "value": 4 },
                         { "type": "LOG", "value": "森の風穴で、妖精の泉を探そう。" }
@@ -4560,10 +4592,6 @@ const STORY_MANAGER_DATA = {
                                 "value": 1
                         },
                         {
-                                "type": "QUEST_ACCEPT",
-                                "value": "water_blue_crystal"
-                        },
-                        {
                                 "type": "FLAG",
                                 "key": "crenaRouteKnown"
                         },
@@ -4702,7 +4730,10 @@ const STORY_MANAGER_DATA = {
                 "winActions": []
         },
         "abyss_floor_010_clear": {
-                "actions": [{ "type": "FLAG", "key": "abyssFloor010Cleared" }],
+                "actions": [
+                        { "type": "CONV", "value": "ABYSS_FLOOR_010_CLEAR" },
+                        { "type": "FLAG", "key": "abyssFloor010Cleared" }
+                ],
                 "winActions": []
         },
         "abyss_floor_020_glen_guardian": {
@@ -4713,7 +4744,10 @@ const STORY_MANAGER_DATA = {
                 "winActions": []
         },
         "abyss_floor_020_clear": {
-                "actions": [{ "type": "FLAG", "key": "abyssFloor020Cleared" }],
+                "actions": [
+                        { "type": "CONV", "value": "ABYSS_FLOOR_020_CLEAR" },
+                        { "type": "FLAG", "key": "abyssFloor020Cleared" }
+                ],
                 "winActions": []
         },
         "abyss_floor_030_leonard_abyss": {
@@ -4725,7 +4759,10 @@ const STORY_MANAGER_DATA = {
                 "winActions": []
         },
         "abyss_floor_030_clear": {
-                "actions": [{ "type": "FLAG", "key": "abyssFloor030Cleared" }],
+                "actions": [
+                        { "type": "CONV", "value": "ABYSS_FLOOR_030_CLEAR" },
+                        { "type": "FLAG", "key": "abyssFloor030Cleared" }
+                ],
                 "winActions": []
         },
         "abyss_floor_040_elicia_abyss": {
@@ -4737,7 +4774,10 @@ const STORY_MANAGER_DATA = {
                 "winActions": []
         },
         "abyss_floor_040_clear": {
-                "actions": [{ "type": "FLAG", "key": "abyssFloor040Cleared" }],
+                "actions": [
+                        { "type": "CONV", "value": "ABYSS_FLOOR_040_CLEAR" },
+                        { "type": "FLAG", "key": "abyssFloor040Cleared" }
+                ],
                 "winActions": []
         },
         "abyss_floor_050_syris_abyss": {
@@ -4749,7 +4789,10 @@ const STORY_MANAGER_DATA = {
                 "winActions": []
         },
         "abyss_floor_050_clear": {
-                "actions": [{ "type": "FLAG", "key": "abyssFloor050Cleared" }],
+                "actions": [
+                        { "type": "CONV", "value": "ABYSS_FLOOR_050_CLEAR" },
+                        { "type": "FLAG", "key": "abyssFloor050Cleared" }
+                ],
                 "winActions": []
         },
         "abyss_floor_060_grad_abyss": {
@@ -4761,7 +4804,10 @@ const STORY_MANAGER_DATA = {
                 "winActions": []
         },
         "abyss_floor_060_clear": {
-                "actions": [{ "type": "FLAG", "key": "abyssFloor060Cleared" }],
+                "actions": [
+                        { "type": "CONV", "value": "ABYSS_FLOOR_060_CLEAR" },
+                        { "type": "FLAG", "key": "abyssFloor060Cleared" }
+                ],
                 "winActions": []
         },
         "abyss_floor_070_veld_abyss": {
@@ -4787,7 +4833,10 @@ const STORY_MANAGER_DATA = {
                 "winActions": []
         },
         "abyss_floor_080_clear": {
-                "actions": [{ "type": "FLAG", "key": "abyssFloor080Cleared" }],
+                "actions": [
+                        { "type": "CONV", "value": "ABYSS_FLOOR_080_CLEAR" },
+                        { "type": "FLAG", "key": "abyssFloor080Cleared" }
+                ],
                 "winActions": []
         },
         "abyss_floor_090_jasper_true": {

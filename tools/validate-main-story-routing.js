@@ -27,14 +27,20 @@ function action(eventId, type, predicate = () => true) {
 
 assert(action('fire_volcano_entrance', 'CONV', entry => entry.value === 'FIRE_VOLCANO_SHAO_JOIN'), 'Shao meeting is not connected at the volcano entrance.');
 assert(!action('fire_volcano_entrance', 'START_FIXED_DUNGEON'), 'Volcano must not start before the holy-water detour.');
-assert(action('fire_village_holy_water_briefing', 'QUEST_ACCEPT', entry => entry.value === 'fire_holy_water'), 'Holy-water quest is not accepted after reporting the cursed flames.');
+assert(!action('fire_village_holy_water_briefing', 'QUEST_ACCEPT', entry => entry.value === 'fire_holy_water'), 'Holy water must be main-story routing, not a quest accept action.');
+assert(action('fire_village_holy_water_briefing', 'FLAG', entry => entry.key === 'windHoleRouteKnown'), 'Holy-water briefing does not reveal the Wind Hole route.');
 assert(action('forest_wind_hole_entry', 'START_FIXED_DUNGEON', entry => entry.value === 'FOREST_WIND_HOLE'), 'Forest Wind Hole entry event is not connected.');
+assert(action('quest_fire_holy_water_clear', 'FLAG', entry => entry.key === 'forestHolyWaterObtained'), 'Holy-water victory does not set its main-story flag.');
+assert(action('quest_fire_holy_water_clear', 'ITEM', entry => Number(entry.id) === 301), 'Holy-water victory does not grant the main-story item.');
 assert(action('quest_fire_holy_water_clear', 'SUB', entry => entry.value === 5), 'Holy-water victory does not advance the main story.');
 assert(action('fire_volcano_holy_water_used', 'START_FIXED_DUNGEON', entry => entry.value === 'IGNIS_VOLCANO'), 'Holy water does not open Ignis Volcano.');
 
-assert(action('water_city_sophia', 'QUEST_ACCEPT', entry => entry.value === 'water_blue_crystal'), 'Sophia does not start the blue-crystal quest.');
+assert(!action('water_city_sophia', 'QUEST_ACCEPT', entry => entry.value === 'water_blue_crystal'), 'Blue crystal must be main-story routing, not a quest accept action.');
+assert(action('water_city_sophia', 'FLAG', entry => entry.key === 'crenaRouteKnown'), 'Sophia does not reveal the Crena route.');
 assert(!action('water_city_sophia', 'START_FIXED_DUNGEON'), 'Water City must not send the party directly to the Seabed Temple.');
 assert(action('crena_cave_entry', 'START_FIXED_DUNGEON', entry => entry.value === 'CRENA_LIMESTONE_CAVE'), 'Crena Limestone Cave entry event is not connected.');
+assert(action('quest_water_blue_crystal_clear', 'FLAG', entry => entry.key === 'blueCrystalObtained'), 'Blue-crystal victory does not set its main-story flag.');
+assert(action('quest_water_blue_crystal_clear', 'ITEM', entry => Number(entry.id) === 302), 'Blue-crystal victory does not grant the main-story item.');
 assert(action('quest_water_blue_crystal_clear', 'SUB', entry => entry.value === 2), 'Blue-crystal victory does not return the objective to Sophia.');
 assert(action('water_city_blue_crystal_report', 'FLAG', entry => entry.key === 'seabedTempleRouteOpened'), 'Sophia report does not open the Seabed Temple route.');
 

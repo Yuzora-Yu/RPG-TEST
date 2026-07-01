@@ -1144,6 +1144,89 @@ const Dungeon = {
         return table[f] || null;
     },
 
+    getAbyssStoryBossDisplayMonsterId: (floor = Dungeon.floor) => {
+        const f = Number(floor || 0);
+        const table = {
+            10: 401010,
+            20: 401020,
+            30: 401030,
+            40: 401040,
+            50: 401050,
+            60: 401060,
+            70: 401070,
+            80: 401080,
+            90: 401090,
+            100: 401100
+        };
+        return table[f] || null;
+    },
+
+    selectAbyssBossEncounter: (floor = Dungeon.floor) => {
+        const f = Math.max(1, Number(floor || 1));
+        const storyDisplayId = Dungeon.getAbyssStoryBossDisplayMonsterId(f);
+        if (storyDisplayId) {
+            return {
+                active: true,
+                floor: f,
+                x: 5,
+                y: 5,
+                monsterIds: [storyDisplayId],
+                displayMonsterId: storyDisplayId,
+                source: 'story'
+            };
+        }
+
+        let ids = [];
+        const monsterData = (typeof window !== 'undefined') ? window.MonsterData : null;
+        const dbMonsters = (typeof DB !== 'undefined' && Array.isArray(DB.MONSTERS)) ? DB.MONSTERS : [];
+        if (f >= 201) {
+            const candidates = (monsterData?.bossMonsters || dbMonsters)
+                .filter(base => base && base.isBoss && !base.isRare
+                    && !(typeof Battle !== 'undefined' && Battle.isSpecialBossBase && Battle.isSpecialBossBase(base))
+                    && !(typeof Battle !== 'undefined' && Battle.isStoryBossBase && Battle.isStoryBossBase(base)));
+            const count = 1 + Math.floor(Math.random() * 3);
+            for (let i = 0; i < count && candidates.length > 0; i++) {
+                const base = candidates[Math.floor(Math.random() * candidates.length)];
+                if (base?.id) ids.push(Number(base.id));
+            }
+        } else if (monsterData && typeof monsterData.getBossesForFloor === 'function') {
+            const bosses = monsterData.getBossesForFloor(f) || monsterData.getBossesForFloor(200) || [];
+            ids = bosses.map(base => Number(base?.id)).filter(id => Number.isFinite(id));
+        }
+
+        if (ids.length === 0) ids = [401100];
+        return {
+            active: true,
+            floor: f,
+            x: 5,
+            y: 5,
+            monsterIds: ids,
+            displayMonsterId: ids[0],
+            source: f >= 201 ? 'deep-random' : 'floor-band'
+        };
+    },
+
+    ensureAbyssBossEncounter: (options = {}) => {
+        if (!App.data?.dungeon) return null;
+        const floor = Math.max(1, Number(options.floor || Dungeon.floor || App.data.progress?.floor || 1));
+        const current = App.data.dungeon.abyssBossEncounter;
+        if (!options.force && current && current.active && Number(current.floor) === floor && Array.isArray(current.monsterIds) && current.monsterIds.length) {
+            return current;
+        }
+        const encounter = Dungeon.selectAbyssBossEncounter(floor);
+        App.data.dungeon.abyssBossEncounter = encounter;
+        return encounter;
+    },
+
+    getCurrentAbyssBossEncounter: () => {
+        if (App.data?.location?.area !== 'ABYSS') return null;
+        const floor = Math.max(1, Number(Dungeon.floor || App.data?.progress?.floor || 1));
+        const encounter = App.data?.dungeon?.abyssBossEncounter;
+        if (encounter && encounter.active && Number(encounter.floor) === floor) return encounter;
+        if (floor > 0 && floor % 10 === 0) return Dungeon.ensureAbyssBossEncounter({ floor });
+        return null;
+    },
+
     handleMove: (x, y) => {
 		const tiles = (Field.currentMapData && Field.currentMapData.tiles) ? Field.currentMapData.tiles : Dungeon.map;
 		const areaKey = (typeof Field !== 'undefined' && typeof Field.getCurrentAreaKey === 'function') ? Field.getCurrentAreaKey() : 'ABYSS';
@@ -1246,6 +1329,10 @@ const Dungeon = {
                     //App.data.battle.isSpecialBoss = Dungeon.floor >= 300;
                     //App.data.battle.isEstark = Dungeon.floor >= 300;
                     //App.data.battle.fixedBossId = Dungeon.floor >= 300 ? 902000 : null;
+                    const abyssBossEncounter = (areaKey === 'ABYSS') ? Dungeon.getCurrentAbyssBossEncounter() : null;
+                    if (abyssBossEncounter && !Dungeon.getAbyssBossStoryEventId(Dungeon.floor)) {
+                        App.data.battle.abyssBossEncounter = abyssBossEncounter;
+                    }
                 }
                 App.changeScene('battle');
             });
@@ -2602,6 +2689,7 @@ const Dungeon = {
             App.data.dungeon.adventurer = null;
             App.data.dungeon.healSpring = null;
             App.data.dungeon.abyssRift = null;
+            App.data.dungeon.abyssBossEncounter = null;
             if (!keepVisited) App.data.dungeon.visitedMap = null;
             App.data.dungeon.genType = null;
             App.data.dungeon.genVariant = null;
@@ -2861,6 +2949,7 @@ const Dungeon = {
         Dungeon.map[cy][cx] = 'B';
         Field.x = cx;
         Field.y = cy + radius;
+        Dungeon.ensureAbyssBossEncounter({ floor: Dungeon.floor, force: true });
     },
 	
     generateTreasureRoom: () => {
@@ -3790,6 +3879,9 @@ const Dungeon = {
 				y: spring.y,
 				image: Dungeon.healSpringImagePath,
 			};
+            if (App.data.dungeon.abyssBossEncounter && Number(App.data.dungeon.abyssBossEncounter.floor) === Number(Dungeon.floor)) {
+                App.data.dungeon.abyssBossEncounter.active = false;
+            }
 
 			App.log('<span style="color:#80ffb0;">階段が現れた！</span>');
 			Dungeon.saveMapData();
