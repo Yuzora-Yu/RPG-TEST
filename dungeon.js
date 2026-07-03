@@ -44,15 +44,15 @@ const Dungeon = {
     keyColorLabels: { red: '赤', blue: '青', gold: '金' },
     keyGuardianImagePath: 'assets/map/overlays/overlay_monster_guardian_v001.png',
     randomVisualThemes: [
-        { id: 'forest', themeKey: 'WIND_VILLAGE', battleBg: 'battle_bg_forest' },
-        { id: 'tower', themeKey: 'BIG_TOWER', battleBg: 'battle_bg_big_tower' },
-        { id: 'thunder', themeKey: 'THUNDER_FORT', battleBg: 'battle_bg_thunder_fort' },
-        { id: 'light', themeKey: 'LIGHT_PALACE', battleBg: 'battle_bg_light_palace' },
-        { id: 'dark', themeKey: 'DARK_CASTLE', battleBg: 'battle_bg_dark_castle' },
-        { id: 'crena', themeKey: 'CRENA_CAVE', battleBg: 'battle_bg_crena' },
-        { id: 'seabed', themeKey: 'SEABED_TEMPLE', battleBg: 'battle_bg_seabed' },
-        { id: 'darkShrine', themeKey: 'DARK_SHRINE_RUINS', battleBg: 'battle_bg_dark_shrine' },
-        { id: 'grezelia', themeKey: 'GREZELIA_CAVE', battleBg: 'battle_bg_grezelia' }
+        { id: 'abyss', themeKey: 'ABYSS', battleBg: 'battle_bg_dungeon', minFloor: 1 },
+        { id: 'forest', themeKey: 'FORBIDDEN_FOREST', battleBg: 'battle_bg_forest', minFloor: 11 },
+        { id: 'fire', themeKey: 'FIRE_VILLAGE', battleBg: 'battle_bg_fire', minFloor: 11 },
+        { id: 'thunder', themeKey: 'THUNDER_FORT', battleBg: 'battle_bg_thunder_fort', minFloor: 21 },
+        { id: 'seabed', themeKey: 'SEABED_TEMPLE', battleBg: 'battle_bg_seabed', minFloor: 41 },
+        { id: 'tower', themeKey: 'BIG_TOWER', battleBg: 'battle_bg_big_tower', minFloor: 51 },
+        { id: 'light', themeKey: 'LIGHT_PALACE', battleBg: 'battle_bg_light_palace', minFloor: 51 },
+        { id: 'galvania', themeKey: 'GALVANIA_CAVE', battleBg: 'battle_bg_galvania_cave', minFloor: 71 },
+        { id: 'dark', themeKey: 'DARK_CASTLE', battleBg: 'battle_bg_dark_castle', minFloor: 71 }
     ],
 
     buildFixedBossBattleContext: (bossDef, x, y, mapDef = null) => {
@@ -2699,9 +2699,21 @@ const Dungeon = {
         }
     },
 
-    rollRandomVisualTheme: () => {
+    getRandomVisualThemeCandidates: (floor = Dungeon.floor || App.data?.progress?.floor || 1) => {
+        const currentFloor = Math.max(1, Number(floor) || 1);
+        const themes = Array.isArray(Dungeon.randomVisualThemes) ? Dungeon.randomVisualThemes : [];
+        const candidates = themes.filter(theme => {
+            const minFloor = Math.max(1, Number(theme.minFloor || 1) || 1);
+            const maxFloor = Number(theme.maxFloor || 0) || 0;
+            return currentFloor >= minFloor && (!maxFloor || currentFloor <= maxFloor);
+        });
+        return candidates.length ? candidates : themes.filter(theme => theme.id === 'abyss');
+    },
+
+    rollRandomVisualTheme: (floor = Dungeon.floor || App.data?.progress?.floor || 1) => {
         if (!App.data?.dungeon || !Array.isArray(Dungeon.randomVisualThemes) || !Dungeon.randomVisualThemes.length) return null;
-        const theme = Dungeon.randomVisualThemes[Dungeon.randInt(0, Dungeon.randomVisualThemes.length - 1)];
+        const candidates = Dungeon.getRandomVisualThemeCandidates(floor);
+        const theme = candidates[Dungeon.randInt(0, candidates.length - 1)] || Dungeon.randomVisualThemes[0];
         App.data.dungeon.visualThemeId = theme.id;
         App.data.dungeon.visualThemeKey = theme.themeKey;
         App.data.dungeon.visualBattleBg = theme.battleBg;

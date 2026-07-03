@@ -6708,6 +6708,7 @@ const Field = {
         if (App.data.battle && (App.data.battle.isSpecialBoss || App.data.battle.isEstark)) return 'battle_bg_lastboss';
         if (App.data.battle?.encounterType === 'sea') return 'battle_bg_sea';
         if (Field.currentMapData) {
+            if (Field.currentMapData.isDungeon && App.data?.dungeon?.isLavaFloor) return 'battle_bg_fire';
             if (Field.currentMapData.battleBg) return Field.currentMapData.battleBg;
             if (Field.currentMapData.isDungeon) {
                 const mapW = Field.currentMapData.width || 1;
@@ -6719,8 +6720,6 @@ const Field = {
 
                 // 溶岩フロアでは、溶岩マス上に限らず階層全体を炎背景にする。
                 // 「溶岩地帯に入った」というフロア体験を優先するため、現在地タイル判定には戻さないこと。
-                if (App.data?.dungeon?.isLavaFloor) return 'battle_bg_fire';
-
                 const floor = App.data.progress.floor || 0;
                 const genType = App.data.dungeon.genType;
                 if (floor % 10 === 0) return 'battle_bg_boss'; 
@@ -7256,14 +7255,17 @@ const Field = {
                 // 3. 固定MAP/固定ダンジョン専用オーバーレイ。
                 if (overlayConfig) {
                     const characterOverlay = String(overlayConfig.img || '').startsWith('overlay_npc_');
-                    if (useDepthRendering && (!isDungeonView || characterOverlay)) {
+                    const wallOverlay = overlayConfig.wallOverlay === true;
+                    if (useDepthRendering && !wallOverlay && (!isDungeonView || characterOverlay)) {
                         drawFootShadow(drawX, drawY, lift, 0.24);
                     }
-                    if (!drawGraphic(overlayConfig.img, drawX, drawY - lift, ts, ts + lift)) {
+                    const overlayHeight = wallOverlay ? Math.round(ts * 1.5) : ts + lift;
+                    const overlayY = wallOverlay ? drawY + ts - overlayHeight : drawY - lift;
+                    if (!drawGraphic(overlayConfig.img, drawX, overlayY, ts, overlayHeight)) {
                         ctx.save();
                         ctx.fillStyle = overlayConfig.color || config.color || '#fff';
                         ctx.beginPath();
-                        ctx.arc(drawX + ts / 2, drawY + ts / 2 - lift, ts * 0.34, 0, Math.PI * 2);
+                        ctx.arc(drawX + ts / 2, overlayY + overlayHeight / 2, ts * 0.34, 0, Math.PI * 2);
                         ctx.fill();
                         ctx.restore();
                     }

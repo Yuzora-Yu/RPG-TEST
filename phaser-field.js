@@ -235,6 +235,7 @@
 			const key = overlay.img;
 			const building = isBuildingTexture(key);
 			const characterOverlay = String(key || '').startsWith('overlay_npc_');
+			const wallOverlay = overlay.wallOverlay === true;
 			const bossOverlay =
 				String(key || '').startsWith('overlay_boss_') ||
 				String(key || '').startsWith('monster_');
@@ -247,11 +248,11 @@
 			// addImage() は originY=1 なので、足元は元マス下端に揃ったまま拡大される。
 			const overlayScale = bossOverlay ? 2 : 1;
 			const width = raisedBuilding ? TILE_SIZE * 2.4 : TILE_SIZE * overlayScale;
-			const height = raisedBuilding ? TILE_SIZE * 2.4 : TILE_SIZE * overlayScale;
+			const height = wallOverlay ? TILE_SIZE * 1.5 : (raisedBuilding ? TILE_SIZE * 2.4 : TILE_SIZE * overlayScale);
 
 			// ダンジョンの宝箱・階段・扉は影なし。
 			// NPCとボスは位置を読みやすくするため影を残す。
-			if (!building && (!field.currentMapData?.isDungeon || characterOverlay || bossOverlay)) {
+			if (!wallOverlay && !building && (!field.currentMapData?.isDungeon || characterOverlay || bossOverlay)) {
 				addShadow(
 					scene,
 					px + TILE_SIZE / 2 + 4,
@@ -265,7 +266,7 @@
 			if (!addImage(scene, key, px + TILE_SIZE / 2, py + TILE_SIZE, {
 				width,
 				height,
-				depth: isWorldMap ? -99880 : baseDepth + (bossOverlay ? 84 : 72)
+				depth: isWorldMap ? -99880 : baseDepth + (wallOverlay ? 48 : (bossOverlay ? 84 : 72))
 			})) {
 				const marker = scene.add.circle(
 					px + TILE_SIZE / 2,
@@ -273,7 +274,7 @@
 					bossOverlay ? 14 : 10,
 					colorToInt(overlay.color, 0xffffff)
 				);
-				marker.setDepth(isWorldMap ? -99880 : baseDepth + (bossOverlay ? 84 : 72));
+				marker.setDepth(isWorldMap ? -99880 : baseDepth + (wallOverlay ? 48 : (bossOverlay ? 84 : 72)));
 				state.worldObjects.push(marker);
 			}
 		}

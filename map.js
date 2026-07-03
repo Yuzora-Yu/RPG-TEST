@@ -1549,6 +1549,11 @@ const FIXED_TILE_OVERLAYS = {
         }
     },
     START_VILLAGE: {
+        W: {
+            img: "overlay_field_forest",
+            color: "#1f6a3f",
+            wallOverlay: true
+        },
         H: {
             img: "overlay_field_house_1",
             color: "#d9bd84"
@@ -1589,6 +1594,11 @@ const FIXED_TILE_OVERLAYS = {
         }
     },
     WIND_VILLAGE: {
+        W: {
+            img: "overlay_field_forest",
+            color: "#1f6a3f",
+            wallOverlay: true
+        },
         H: {
             img: "overlay_building_wind_hut",
             color: "#cbb77e"
@@ -1688,7 +1698,14 @@ const FIXED_OVERLAY_BASE_TILES = {
         P: "T",
         D: "T"
     },
+    START_VILLAGE: {
+        W: "G",
+        H: "T",
+        V: "T",
+        D: "T"
+    },
     WIND_VILLAGE: {
+        W: "G",
         H: "T",
         V: "T",
         A: "T",
