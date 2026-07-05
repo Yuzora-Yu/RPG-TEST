@@ -583,37 +583,37 @@ const TILE_THEMES = {
     },
     GALVANIA_CAVE: {
         W: {
-            img: "tile_dark_wall",
+            img: "tile_galvania_wall",
             color: "#1f222b",
             variants: [
-                "tile_dark_wall",
-                "tile_dark_wall_2",
-                "tile_dark_wall_3",
-                "tile_dark_wall_4"
+                "tile_galvania_wall",
+                "tile_galvania_wall_2",
+                "tile_galvania_wall_3",
+                "tile_galvania_wall_4"
             ]
         },
         T: {
-            img: "tile_dark_floor",
+            img: "tile_galvania_floor",
             color: "#2a2e39",
             variants: [
-                "tile_dark_floor",
-                "tile_dark_floor_2",
-                "tile_dark_floor_3",
-                "tile_dark_floor_4"
+                "tile_galvania_floor",
+                "tile_galvania_floor_2",
+                "tile_galvania_floor_3",
+                "tile_galvania_floor_4"
             ]
         },
         G: {
-            img: "tile_grezelia_floor",
+            img: "tile_galvania_floor",
             color: "#36303a",
             variants: [
-                "tile_grezelia_floor",
-                "tile_grezelia_floor_2",
-                "tile_grezelia_floor_3",
-                "tile_grezelia_floor_4"
+                "tile_galvania_floor",
+                "tile_galvania_floor_2",
+                "tile_galvania_floor_3",
+                "tile_galvania_floor_4"
             ]
         },
         S: {
-            img: "tile_dark_floor",
+            img: "tile_galvania_floor",
             color: "#d7b45a"
         },
         D: {
@@ -1549,6 +1549,11 @@ const FIXED_TILE_OVERLAYS = {
         }
     },
     START_VILLAGE: {
+        W: {
+            img: "overlay_field_forest",
+            color: "#1f6a3f",
+            wallOverlay: true
+        },
         H: {
             img: "overlay_field_house_1",
             color: "#d9bd84"
@@ -1589,6 +1594,11 @@ const FIXED_TILE_OVERLAYS = {
         }
     },
     WIND_VILLAGE: {
+        W: {
+            img: "overlay_field_forest",
+            color: "#1f6a3f",
+            wallOverlay: true
+        },
         H: {
             img: "overlay_building_wind_hut",
             color: "#cbb77e"
@@ -1688,7 +1698,14 @@ const FIXED_OVERLAY_BASE_TILES = {
         P: "T",
         D: "T"
     },
+    START_VILLAGE: {
+        W: "G",
+        H: "T",
+        V: "T",
+        D: "T"
+    },
     WIND_VILLAGE: {
+        W: "G",
         H: "T",
         V: "T",
         A: "T",
@@ -1924,7 +1941,7 @@ const FIXED_MAPS = {
                 label: "鍛冶師と話す",
                 log: "鍛冶師が炉の縁に手を置いている。",
                 type: "log",
-                imageKey: "overlay_npc_dark_soldier",
+                imageKey: "overlay_town_fire_blacksmith",
                 events: [
                     {
                         requiredFlag: "fireVillageCleared",
@@ -1943,7 +1960,7 @@ const FIXED_MAPS = {
                 log: "里の西を気にしているようだ。",
                 type: "storyEvent",
                 eventId: "town_fire_villager_2",
-                imageKey: "overlay_npc_villager"
+                imageKey: "overlay_town_fire_resident"
             },
             {
                 x: 10,
@@ -1951,7 +1968,7 @@ const FIXED_MAPS = {
                 label: "炭運びと話す",
                 log: "煤だらけの男が、背負い籠を下ろした。",
                 type: "log",
-                imageKey: "overlay_npc_dark_soldier",
+                imageKey: "overlay_town_fire_coal_carrier",
                 events: [
                     {
                         requiredFlag: "fireVillageCleared",
@@ -1970,7 +1987,7 @@ const FIXED_MAPS = {
                 log: "女侍が佇んでいる",
                 type: "quest",
                 questId: "karin_volcano_depths",
-                imageKey: "overlay_npc_bronze_knight",
+                imageKey: "overlay_companion_karin",
                 lockedText: "カリンはまだ、火山ガスが晴れる時を待っている。"
             },
             {
@@ -2160,7 +2177,7 @@ const FIXED_MAPS = {
                 label: "見張りと話す",
                 log: "見張りが枝の揺れを追っている。",
                 type: "log",
-                imageKey: "overlay_npc_bronze_knight",
+                imageKey: "overlay_town_wind_watch",
                 events: [
                     {
                         requiredFlag: "windVillageCleared",
@@ -2197,7 +2214,7 @@ const FIXED_MAPS = {
                 log: "職人が、風を含んだ薄布を指で弾いている。",
                 type: "storyEvent",
                 eventId: "town_wind_villager_3",
-                imageKey: "overlay_npc_villager"
+                imageKey: "overlay_town_wind_weaver"
             },
             {
                 x: 5,
@@ -2403,7 +2420,7 @@ const FIXED_MAPS = {
                 log: "黒鎧の兵士が橋を塞いでいる。",
                 type: "storyEvent",
                 eventId: "water_city_blockade_guard",
-                imageKey: "overlay_npc_dark_soldier",
+                imageKey: "overlay_town_water_guard",
                 missingFlag: "waterCityCleared",
                 baseTile: "T"
             },
@@ -2414,7 +2431,7 @@ const FIXED_MAPS = {
                 log: "黒鎧の兵士が橋を塞いでいる。",
                 type: "storyEvent",
                 eventId: "water_city_blockade_guard",
-                imageKey: "overlay_npc_dark_soldier",
+                imageKey: "overlay_town_water_guard",
                 missingFlag: "waterCityCleared",
                 baseTile: "T"
             },
@@ -2425,7 +2442,7 @@ const FIXED_MAPS = {
                 log: "黒鎧の兵士が橋を塞いでいる。",
                 type: "storyEvent",
                 eventId: "water_city_blockade_guard",
-                imageKey: "overlay_npc_dark_soldier",
+                imageKey: "overlay_town_water_guard",
                 missingFlag: "waterCityCleared",
                 baseTile: "T"
             },
@@ -2453,7 +2470,7 @@ const FIXED_MAPS = {
                 label: "船大工と話す",
                 log: "船大工が水路の流れを測っている。",
                 type: "log",
-                imageKey: "overlay_npc_villager",
+                imageKey: "overlay_town_water_boatman",
                 events: [
                     {
                         requiredFlag: "waterCityCleared",
@@ -2480,7 +2497,7 @@ const FIXED_MAPS = {
                 label: "渡し守と話す",
                 log: "渡し守が、濡れた綱の結び目を確かめている。",
                 type: "log",
-                imageKey: "overlay_npc_villager",
+                imageKey: "overlay_town_water_boatman",
                 events: [
                     {
                         requiredFlag: "waterCityCleared",
@@ -2553,7 +2570,7 @@ const FIXED_MAPS = {
                 log: "白いローブの女性が、避難民の無事を祈っている。",
                 type: "quest",
                 questId: "marie_water_city",
-                imageKey: "overlay_npc_villager",
+                imageKey: "overlay_companion_marie",
                 lockedText: "マリーはまだ街の混乱を鎮めることで手一杯のようだ。"
             },
             {
@@ -2563,7 +2580,7 @@ const FIXED_MAPS = {
                 log: "水路のそばに、落ち着きなく周囲を見渡す若者がいる。",
                 type: "quest",
                 questId: "hayate_water_city",
-                imageKey: "overlay_npc_bronze_knight",
+                imageKey: "overlay_companion_hayate",
                 lockedText: "ハヤテはまだ、信頼できる案内人を待っているようだ。"
             },
             {
@@ -2573,17 +2590,27 @@ const FIXED_MAPS = {
                 log: "優雅な身なりの貴人が、護衛を探している。",
                 type: "quest",
                 questId: "sylvia_water_city",
-                imageKey: "overlay_npc_villager",
+                imageKey: "overlay_companion_sylvia",
                 lockedText: "シルビアはまだ、声をかける相手を見定めている。"
             },
             {
                 x: 32,
                 y: 15,
-                label: "ソフィア達と話す",
-                log: "ソフィアとアランが、神殿奥の水流について話し込んでいる。",
+                label: "ソフィアと話す",
+                log: "ソフィアが、神殿奥の水流について記録を読み返している。",
                 type: "quest",
                 questId: "sophia_alan_seabed_depths",
-                imageKey: "overlay_npc_bronze_knight",
+                imageKey: "overlay_companion_sophia",
+                lockedText: "今はまだ、海底神殿の奥へ進む手段がない。"
+            },
+            {
+                x: 31,
+                y: 15,
+                label: "アランと話す",
+                log: "アランが、神殿奥へ向かう水路を見つめている。",
+                type: "quest",
+                questId: "sophia_alan_seabed_depths",
+                imageKey: "overlay_companion_alan",
                 lockedText: "今はまだ、海底神殿の奥へ進む手段がない。"
             }
         ],
@@ -3905,7 +3932,7 @@ const FIXED_DUNGEON_MAPS = {
                         x: 27,
                         y: 6,
                         toFloor: 3,
-                        targetX: 14,
+                        targetX: 15,
                         targetY: 22,
                         label: "森の深部へ",
                         requiredFlag: "waterCityCleared",
@@ -4214,8 +4241,8 @@ const FIXED_DUNGEON_MAPS = {
                 ],
                 tileEffects: [
                     {
-                        x: 25,
-                        y: 16,
+                        x: 15,
+                        y: 21,
                         type: "hunter",
                         id: "forest_curse_guard",
                         imageKey: "overlay_dungeon_hunter_forest",
@@ -4593,7 +4620,7 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWW",
                     "WWTTTWWWWWTTTWWWWWTTTWW",
-                    "WWTTTWWWWWTDTWWWWWTTTWW",
+                    "WWTTTWWWWWTDTWWWWWTBTWW",
                     "WWTTTWWWWWTTTWWWWWTTTWW",
                     "WWWTWWWWWWWTWWWWWWWTWWW",
                     "WWWTWWWWWWWYWWWWWWWTWWW",
@@ -4677,7 +4704,7 @@ const FIXED_DUNGEON_MAPS = {
                     "WTDTWWWWWWWWWWWWWWTTTTW",
                     "WTTTWWWWWWWWWWWWWWTTTTW",
                     "WWTWWWWWWWWWWWWWWWWWTWW",
-                    "WWTTTTTTTTTTWWWWWWWWTWW",
+                    "WWTTTTTTTTTTWWWWWWWWBWW",
                     "WWWWWWWWWWWTWWWWWWWWTWW",
                     "WWWWWWWWWWWTWWWWWWWWTWW",
                     "WWWWWWWWWWWXWWWWWWWWTWW",
@@ -4688,7 +4715,7 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWWWTWWWWWWWWWWW",
                     "WWWWWWWWWWWTTTTTTTTTTTW",
                     "WWWWWWWWWWWWWWWWWWWTTTW",
-                    "WWWWWWWWWWWWWWWWWWWTTTW",
+                    "WWWWWWWWWWWWWWWWWWWTBTW",
                     "WWWWWWWWWWWWWWWWWWWWTWW",
                     "WWWWWWWWWWTTTWWWWWWWTWW",
                     "WWWWWWWWWWTUTTTTTTTTTWW",
@@ -5122,12 +5149,12 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWTTTWWWWWWWWTWWWWWWWWTTTWWWW",
                     "WWWWTTTTTWWWWWWTWWWWWWTTTTTWWWW",
                     "WWWWTTTWTTTTTTTTWWWWWWTWTTTWWWW",
-                    "WWWWWWWWTWWWWWWWWWWWWWTWWWWWWWW",
-                    "WWWWWWWWTWWWWWWWWWWWWWTWTTTWWWW",
-                    "WWWWTTTWTTTTTWWWWWTTTTTTTTTWWWW",
-                    "WWWWTTTTTWWWTWWWWWTWWWTWTTTWWWW",
-                    "WWWWTTTWWWWWTTWWWTTWWWTWWWWWWWW",
-                    "WWWWWWWWWWWWTTTWTTTWWWTWTTTWWWW",
+                    "WWWWWWWWTWWWWWWTWWWWWWTWWWWWWWW",
+                    "WWWWWWWWTWWWWWWTWWWWWWTWTTTWWWW",
+                    "WWWWTTTWTTTTTWWTWWTTTTTTTTTWWWW",
+                    "WWWWTTTTTWWWTWWTWWTWWWTWTTTWWWW",
+                    "WWWWTTTWWWWWTTWTWTTWWWTWWWWWWWW",
+                    "WWWWWWWWWWWWTTTTTTTWWWTWTTTWWWW",
                     "WWWWWWWWWWWWWTTTTTWWWWTTTTTWWWW",
                     "WWWWWWWWWWWWWWTUTWWWWWWWTTTWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
@@ -5158,6 +5185,12 @@ const FIXED_DUNGEON_MAPS = {
                                 y1: 7,
                                 x2: 22,
                                 y2: 9
+                            },
+                            {
+                                x1: 15,
+                                y1: 7,
+                                x2: 15,
+                                y2: 21
                             }
                         ],
                         maxSlide: 28,
@@ -5290,7 +5323,7 @@ const FIXED_DUNGEON_MAPS = {
                         log: "ゼリードが、頂上に残る歪みを見上げている。",
                         type: "quest",
                         questId: "zelied_big_tower",
-                        imageKey: "overlay_npc_villager",
+                        imageKey: "overlay_companion_zelied",
                         lockedText: "ゼリードはまだ、灯台の異変を見極めているようだ。"
                     }
                 ],
@@ -5720,11 +5753,11 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWTTTTTTTTTTTTTWWWW",
                     "WWWTTWWWTTTTTWWWTTWWW",
                     "WWTTTWWWTTTTTWWWTTTWW",
-                    "WWWTTWWWTTTTTWWWTTWWW",
+                    "WWWTTWWWTTBTTWWWTTWWW",
                     "WWWWTTTTTTTTTTTTTWWWW",
                     "WWWWWWWWWWTWWWWWWWWWW",
                     "WWWWWTTTTTTTTTTTWWWWW",
-                    "WWWWTTTTTTTTTTTTTWWWW",
+                    "WWWWTTTTTTBTTTTTTWWWW",
                     "WWWWTTWWTTTTTWWTTWWWW",
                     "WWWWTWWWWTTTWWWWTWWWW",
                     "WWTTTTTWWWTWWWTTTTTWW",
@@ -5917,17 +5950,27 @@ const FIXED_DUNGEON_MAPS = {
                         type: "quest",
                         questId: "rin_thunder_fort",
                         complete: true,
-                        imageKey: "overlay_npc_villager",
+                        imageKey: "overlay_companion_rin",
                         lockedText: "リンはまだ、光を導く者の到着を待っている。"
                     },
                     {
                         x: 13,
                         y: 19,
-                        label: "フリーダ達と話す",
-                        log: "フリーダとバロンが、高圧電流の先を見据えている。",
+                        label: "フリーダと話す",
+                        log: "フリーダが、高圧電流の先を見据えている。",
                         type: "quest",
                         questId: "frieda_baron_thunder_depths",
-                        imageKey: "overlay_npc_villager",
+                        imageKey: "overlay_companion_frieda",
+                        lockedText: "今はまだ、要塞深部の電流を越える加護が足りない。"
+                    },
+                    {
+                        x: 14,
+                        y: 19,
+                        label: "バロンと話す",
+                        log: "バロンが、雷の制御核へ向けて武器を握り直している。",
+                        type: "quest",
+                        questId: "frieda_baron_thunder_depths",
+                        imageKey: "overlay_companion_baron",
                         lockedText: "今はまだ、要塞深部の電流を越える加護が足りない。"
                     },
                     {
@@ -6146,7 +6189,7 @@ const FIXED_DUNGEON_MAPS = {
                         x: 4,
                         y: 21,
                         toFloor: 2,
-                        targetX: 25,
+                        targetX: 26,
                         targetY: 4,
                         label: "地下1階へ戻る"
                     },
@@ -6239,7 +6282,7 @@ const FIXED_DUNGEON_MAPS = {
                         x: 15,
                         y: 21,
                         toFloor: 3,
-                        targetX: 25,
+                        targetX: 26,
                         targetY: 4,
                         label: "地下2階へ戻る"
                     },
@@ -6768,7 +6811,7 @@ const FIXED_DUNGEON_MAPS = {
                         title: "光の宮殿グランプリズマ 聖薬所",
                         shopRank: 55,
                         requiredFlag: "lightPalaceCleared",
-                        imageKey: "overlay_npc_villager",
+                        imageKey: "overlay_town_light_pilgrim",
                         lockedText: "まだ巡礼者は戻っていない。"
                     },
                     {
@@ -6781,7 +6824,7 @@ const FIXED_DUNGEON_MAPS = {
                         title: "光の宮殿グランプリズマ 武器庫",
                         shopRank: 55,
                         requiredFlag: "lightPalaceCleared",
-                        imageKey: "overlay_npc_villager",
+                        imageKey: "overlay_town_light_pilgrim",
                         lockedText: "武器庫は沈黙している。"
                     },
                     {
@@ -6794,7 +6837,7 @@ const FIXED_DUNGEON_MAPS = {
                         title: "光の宮殿グランプリズマ 防具庫",
                         shopRank: 55,
                         requiredFlag: "lightPalaceCleared",
-                        imageKey: "overlay_npc_villager",
+                        imageKey: "overlay_town_light_pilgrim",
                         lockedText: "防具庫は閉ざされている。"
                     },
                     {
@@ -6805,7 +6848,7 @@ const FIXED_DUNGEON_MAPS = {
                         type: "storyEvent",
                         eventId: "post_light_palace_base_1",
                         requiredFlag: "lightPalaceCleared",
-                        imageKey: "overlay_npc_villager",
+                        imageKey: "overlay_town_light_pilgrim",
                         lockedText: "光の宮殿グランプリズマはまだ緊張に包まれている。"
                     }
                 ],
@@ -7018,11 +7061,11 @@ const FIXED_DUNGEON_MAPS = {
                     "WWTTTWWWWTTTTWWTTTWWTTTTWWWWTTTWW",
                     "WWTCTTTWWTTTTTTTTTTTTTTTWWTTTRTWW",
                     "WWTTTWTTTTTTTTTTTTTTTTTTTTTWTTTWW",
-                    "WWWWWWWWWWTTTTTTTTTTTTTTWWWWWWWWW",
-                    "WWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWTTTUTTTWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWW",
+                    "WWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWW",
+                    "WWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWW",
+                    "WWWWWWWWWWWWWWTTTTTWWWWWWWWWWWWWW",
+                    "WWWWWWWWTTTTTTTTUTTTTTTTTWWWWWWWW",
+                    "WWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWW",
                     "WWWWWWWWWWWWWWTTTTTWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
                 ],
@@ -7068,6 +7111,56 @@ const FIXED_DUNGEON_MAPS = {
                         actionLabel: "祭壇へ進む"
                     }
                 ],
+                mapActions: [
+                    {
+                        x: 13,
+                        y: 21,
+                        label: "牢の国王と話す",
+                        log: "光の薄い牢の奥で、王冠を失った老人が顔を上げた。",
+                        type: "storyEvent",
+                        eventId: "light_palace_prison_king",
+                        imageKey: "overlay_light_captive_king",
+                        imageColor: "#f4d989",
+                        minimapColor: "#f4d989",
+                        missingFlag: "lightPalaceCleared"
+                    },
+                    {
+                        x: 19,
+                        y: 21,
+                        label: "牢の王女と話す",
+                        log: "鉄格子の向こうで、若い王女が聖印を握りしめている。",
+                        type: "storyEvent",
+                        eventId: "light_palace_prison_princess",
+                        imageKey: "overlay_light_captive_princess",
+                        imageColor: "#ffd8f0",
+                        minimapColor: "#ffd8f0",
+                        missingFlag: "lightPalaceCleared"
+                    },
+                    {
+                        x: 13,
+                        y: 23,
+                        label: "老神職と話す",
+                        log: "痩せた老神職が、壁にもたれて祈りを保っている。",
+                        type: "storyEvent",
+                        eventId: "light_palace_prison_priest_a",
+                        imageKey: "overlay_light_captive_priest_a",
+                        imageColor: "#d9dfff",
+                        minimapColor: "#d9dfff",
+                        missingFlag: "lightPalaceCleared"
+                    },
+                    {
+                        x: 19,
+                        y: 23,
+                        label: "若い神職と話す",
+                        log: "若い神職が、かすれた声で短い祈りを繰り返している。",
+                        type: "storyEvent",
+                        eventId: "light_palace_prison_priest_b",
+                        imageKey: "overlay_light_captive_priest_b",
+                        imageColor: "#cfefff",
+                        minimapColor: "#cfefff",
+                        missingFlag: "lightPalaceCleared"
+                    }
+                ],
                 name: "",
                 themeKey: "LIGHT_PALACE"
             }
@@ -7089,7 +7182,7 @@ const FIXED_DUNGEON_MAPS = {
                 rate: 0.02
             }
         ],
-        battleBg: "battle_bg_dungeon",
+        battleBg: "battle_bg_galvania_cave",
         enemyBoost: {
             nameSuffix: "・洞窟強化",
             statMultiplier: 1.16,
@@ -7337,8 +7430,8 @@ const FIXED_DUNGEON_MAPS = {
                         x: 5,
                         y: 31,
                         toFloor: 1,
-                        targetX: 55,
-                        targetY: 4,
+                        targetX: 54,
+                        targetY: 3,
                         label: "黒岩の胎道へ戻る"
                     },
                     {
@@ -7966,7 +8059,7 @@ const FIXED_DUNGEON_MAPS = {
                         message: "氷晶の床に足を取られ、止まるまで滑った！"
                     },
                     {
-                        x: 54,
+                        x: 55,
                         y: 13,
                         type: "hunter",
                         id: "galvania_f4_frost_hound_v2",
@@ -8495,7 +8588,7 @@ const FIXED_DUNGEON_MAPS = {
                         title: "魔王城ガルヴァニア 闇市",
                         shopRank: 65,
                         requiredFlag: "darkCastleCleared",
-                        imageKey: "overlay_npc_villager",
+                        imageKey: "overlay_town_demon_guard",
                         lockedText: "城内はまだ戦闘態勢だ。"
                     },
                     {
@@ -8508,7 +8601,7 @@ const FIXED_DUNGEON_MAPS = {
                         title: "魔王城ガルヴァニア 武器庫",
                         shopRank: 65,
                         requiredFlag: "darkCastleCleared",
-                        imageKey: "overlay_npc_villager",
+                        imageKey: "overlay_town_demon_guard",
                         lockedText: "武器庫には近づけない。"
                     },
                     {
@@ -8521,7 +8614,7 @@ const FIXED_DUNGEON_MAPS = {
                         title: "魔王城ガルヴァニア 防具庫",
                         shopRank: 65,
                         requiredFlag: "darkCastleCleared",
-                        imageKey: "overlay_npc_villager",
+                        imageKey: "overlay_town_demon_guard",
                         lockedText: "防具庫には近づけない。"
                     },
                     {
@@ -8532,7 +8625,7 @@ const FIXED_DUNGEON_MAPS = {
                         type: "storyEvent",
                         eventId: "post_dark_castle_base_1",
                         requiredFlag: "darkCastleCleared",
-                        imageKey: "overlay_npc_villager",
+                        imageKey: "overlay_town_demon_guard",
                         lockedText: "魔族兵は警戒している。"
                     }
                 ],
@@ -9572,7 +9665,7 @@ const FIXED_DUNGEON_MAPS = {
                         x: 3,
                         y: 5,
                         type: "warp",
-                        toX: 21,
+                        toX: 22,
                         toY: 11,
                         message: "結晶光が空間を曲げた。"
                     },
@@ -9580,7 +9673,7 @@ const FIXED_DUNGEON_MAPS = {
                         x: 24,
                         y: 14,
                         type: "warp",
-                        toX: 5,
+                        toX: 6,
                         toY: 11,
                         message: "結晶光が戻り道を開いた。"
                     }
@@ -9593,6 +9686,7 @@ const FIXED_DUNGEON_MAPS = {
                         log: "結晶の影に、結界の奥へ続くかすかな気配が残っている。",
                         type: "quest",
                         questId: "licia_crena_depths",
+                        imageKey: "overlay_companion_licia",
                         lockedText: "闇の加護がなければ、この結界の奥は見えない。"
                     }
                 ],
@@ -9997,6 +10091,9 @@ const FIXED_DUNGEON_MAPS = {
     DARK_SHRINE_RUINS: {
         name: "闇の神殿エクリプス跡",
         themeKey: "DARK_SHRINE_RUINS",
+        useDungeonWallFace: true,
+        wallFaceMode: "overlay",
+        wallFaceImg: "tile_dark_shrine_wall_face",
         rank: 75,
         encounterRank: 75,
         battleBg: "battle_bg_dark_shrine",
@@ -10102,11 +10199,20 @@ const FIXED_DUNGEON_MAPS = {
                     {
                         x: 14,
                         y: 19,
-                        label: "二人に声をかける",
-                        log: "二人の剣士が、奥から漏れる闇を警戒している。",
+                        label: "クロードに声をかける",
+                        log: "クロードが、奥から漏れる闇を警戒している。",
                         type: "quest",
                         questId: "claude_leon_dark_shrine",
-                        imageKey: "overlay_npc_bronze_knight"
+                        imageKey: "overlay_companion_claude"
+                    },
+                    {
+                        x: 15,
+                        y: 19,
+                        label: "レオンに声をかける",
+                        log: "レオンが、神殿跡地に残る光の痕跡を確かめている。",
+                        type: "quest",
+                        questId: "claude_leon_dark_shrine",
+                        imageKey: "overlay_companion_leon"
                     }
                 ],
                 bosses: [
@@ -10229,7 +10335,7 @@ const FIXED_DUNGEON_MAPS = {
                         log: "月光の向こうから、静かな呼び声が届く。",
                         type: "quest",
                         questId: "luna_hidden_dark_shrine",
-                        imageKey: "overlay_npc_villager"
+                        imageKey: "overlay_companion_luna"
                     },
                     {
                         x: 15,
@@ -10384,11 +10490,20 @@ const FIXED_DUNGEON_MAPS = {
                     {
                         x: 15,
                         y: 21,
-                        label: "二人の作戦を聞く",
-                        log: "リュウとミネルバが、禁則術式の崩し方を探っている。",
+                        label: "リュウの作戦を聞く",
+                        log: "リュウが、禁則術式の崩し方を探っている。",
                         type: "quest",
                         questId: "ryu_minerva_grezelia",
-                        imageKey: "overlay_npc_dark_soldier"
+                        imageKey: "overlay_companion_ryu"
+                    },
+                    {
+                        x: 16,
+                        y: 21,
+                        label: "ミネルバの作戦を聞く",
+                        log: "ミネルバが、禁則術式の継ぎ目を読み解いている。",
+                        type: "quest",
+                        questId: "ryu_minerva_grezelia",
+                        imageKey: "overlay_companion_minerva"
                     }
                 ],
                 bosses: [],
@@ -10584,8 +10699,8 @@ const FIXED_DUNGEON_MAPS = {
                         x: 17,
                         y: 26,
                         toFloor: 2,
-                        targetX: 28,
-                        targetY: 22,
+                        targetX: 26,
+                        targetY: 23,
                         label: "禁奥の核へ戻る"
                     }
                 ],
@@ -10631,7 +10746,7 @@ const FIXED_DUNGEON_MAPS = {
                         log: "最深部から、ゼノンの声が低く響いている。",
                         type: "quest",
                         questId: "zenon_hidden_grezelia",
-                        imageKey: "overlay_npc_dark_soldier"
+                        imageKey: "overlay_companion_zenon"
                     }
                 ],
                 bosses: [

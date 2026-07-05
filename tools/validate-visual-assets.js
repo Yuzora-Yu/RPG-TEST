@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { loadMapRuntime } = require('./validation-helpers');
 
 const root = path.resolve(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
@@ -8,6 +9,7 @@ const mapSource = read('map.js');
 const dungeonSource = read('dungeon.js');
 const phaserFieldSource = read('phaser-field.js');
 const mainSource = read('main.js');
+const { context } = loadMapRuntime(root);
 
 if (/water\.y\s*=|waterBaseY/.test(phaserFieldSource)) {
     throw new Error('Water animation must not move the tile image or expose the terrain below it.');
@@ -70,10 +72,13 @@ if (missingKeys.length) {
 }
 
 const hunterKeys = new Set();
-for (const line of mapSource.split(/\r?\n/)) {
-    if (!line.includes('"hunter"') || !line.includes('imageKey')) continue;
-    const imageKey = line.match(/imageKey"?\s*:\s*"([^"]+)"/);
-    if (imageKey) hunterKeys.add(imageKey[1]);
+for (const dungeon of Object.values(context.FIXED_DUNGEON_MAPS || {})) {
+    const floors = Array.isArray(dungeon.floors) && dungeon.floors.length ? dungeon.floors : [dungeon];
+    for (const floor of floors) {
+        for (const effect of floor.tileEffects || []) {
+            if (effect?.type === 'hunter' && effect.imageKey) hunterKeys.add(effect.imageKey);
+        }
+    }
 }
 const requiredHunterKeys = [
     'overlay_dungeon_hunter_fire',
@@ -108,17 +113,19 @@ const fixedBossIds = collectValues(mapSource, /\bmonsterId"?\s*:\s*(?:\[\s*)?(\d
 const missingBossSprites = [...fixedBossIds]
     .map(Number)
     .filter(id => id >= 100000)
-    .filter(id => !graphics.has(`overlay_boss_${id}`));
+    .filter(id => !graphics.has(`monster_${id}`) && !graphics.has(`overlay_boss_${id}`) && !fs.existsSync(path.join(root, `assets/monsters/monster_${id}.png`)));
 if (missingBossSprites.length) {
     throw new Error(`Fixed bosses missing map sprites:\n${missingBossSprites.join('\n')}`);
 }
 
-if (!/FORBIDDEN_FOREST:\s*\{[\s\S]*?W:\s*tileEntry\("tile_forbidden_forest_wall"/.test(mapSource) ||
+if (context.TILE_THEMES?.FORBIDDEN_FOREST?.W?.img !== 'tile_forbidden_forest_wall' ||
+    context.TILE_THEMES?.FORBIDDEN_FOREST?.T?.img !== 'tile_forbidden_forest_floor' ||
     graphics.get('tile_forbidden_forest_wall') !== 'assets/map/terrain/tile_forbidden_forest_wall_v001.png' ||
     graphics.get('tile_forbidden_forest_floor') !== 'assets/map/terrain/tile_forbidden_forest_floor_v001.png') {
     throw new Error('Forbidden Forest must use its generated floor and dense forest wall tiles.');
 }
-if (!/WIND_HOLE:\s*\{[\s\S]*?W:\s*tileEntry\("tile_wind_hole_wall"/.test(mapSource) ||
+if (context.TILE_THEMES?.WIND_HOLE?.W?.img !== 'tile_wind_hole_wall' ||
+    context.TILE_THEMES?.WIND_HOLE?.T?.img !== 'tile_wind_hole_floor' ||
     graphics.get('tile_wind_hole_wall') !== 'assets/map/terrain/tile_wind_hole_wall_v001.png' ||
     graphics.get('tile_wind_hole_floor') !== 'assets/map/terrain/tile_wind_hole_floor_v001.png') {
     throw new Error('Forest Wind Hole must use its generated floor and wall tiles.');

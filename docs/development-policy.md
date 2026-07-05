@@ -10,9 +10,9 @@ Story, character relationship, and hidden-setting references are archived under 
 
 The game has become feature-rich, but the next direction is to reorganize it as an RPG where features open naturally through story progression.
 
-The game should not begin with every major system available. Gacha, blacksmithing, the abyss, boat travel, wing flight, dungeon transfer, and other systems should become available as the player explores the field, clears regional fixed maps, gains allies, and expands the world.
+The game should not begin with every major system available. Blacksmithing, the abyss, boat travel, wing flight, dungeon transfer, and other systems should become available as the player explores the field, clears regional fixed maps, gains allies, and expands the world. Gacha-related code and assets may remain as legacy/internal implementation, but the current player-facing route does not expose gacha as an unlockable main feature.
 
-Existing code already has `progress.unlocked.smith` and `progress.unlocked.gacha`. Future work should expand this structure so menus, facilities, travel tools, and dungeon systems are connected to story progress.
+Existing code uses `progress.unlocked` for story-gated systems. Current player-facing menu access is routed through unlock checks for blacksmith and dungeon systems; gacha is not shown in the main menu route.
 
 Travel and key items such as `Magic Boat`, `Light Wing`, and `Sky Prism` should be treated as story rewards rather than ordinary inventory entries.
 
@@ -24,7 +24,7 @@ During this period:
 
 - Field travel and fixed maps should be the main experience.
 - Story allies should carry the party experience.
-- Gacha and abyss farming should not be the main route to power.
+- Abyss farming should not be the main route to power during the main story.
 - Fixed story dungeons should be hand-authored rather than randomly generated.
 - Random/deep farming systems should become stronger after the main story opens them.
 
@@ -97,7 +97,7 @@ Proposed unlock route:
   - Kate joins.
   - Magic Boat obtained.
   - Sea movement opens.
-  - Casino is placed in Water City.
+  - Casino is placed in Water City as a map facility.
 
 - Thunder Fortress clear:
   - Joseph joins.
@@ -114,8 +114,8 @@ Proposed unlock route:
 
 - Demon Castle clear:
   - Main story reaches a major ending point.
-  - Gacha opens.
-  - Main postgame/farming systems open.
+  - Gacha remains a legacy/internal route unless a future player-facing design explicitly reintroduces it.
+  - Main postgame/farming systems open through their implemented story gates.
 
 - Six regions and Demon Castle clear:
   - Abyss opens.
@@ -142,14 +142,13 @@ Future `progress.unlocked` should move toward this shape:
 ```js
 progress.unlocked = {
   smith: false,
-  gacha: false,
-  abyss: false,
-  teleport: false,
-  casino: false,
-  medalKing: false,
+  gacha: false, // legacy/internal; no current main-menu player route
+  abyss: true,
+  dungeonMenu: false,
+  teleport: true,
   boat: false,
-  wing: false,
-  fixedDungeonEndless: false
+  wing: true,
+  fixedDungeonEndless: true
 };
 ```
 
@@ -162,7 +161,7 @@ Implementation rule:
 
 ## Story Ally Policy
 
-During the main story, party growth should center on story allies. Gacha should not be open during the main route.
+During the main story, party growth should center on story allies. Gacha is not exposed as a current player-facing progression route.
 
 Planned story joins:
 
@@ -243,8 +242,8 @@ Light Palace:
 Demon Castle:
 
 - Demon King defeat
-- Gacha unlock
 - Transition from main story to postgame
+- Gacha code may remain in the repository, but it is not documented as a current in-game unlock.
 
 Menu and facility display should follow unlock state. Unreleased systems can be hidden, or shown as `???` with a clear note such as "unlocks through story progress" if hiding them makes the UI confusing.
 
@@ -529,7 +528,7 @@ Tutorial placement:
   - After Abyss floor 40 boss and Light Palace event.
 
 - Gacha tutorial:
-  - After Demon King defeat.
+  - No current player-facing tutorial route. Existing gacha code/assets are legacy/internal unless deliberately reintroduced.
 
 The player should learn naturally through the story rather than feel forced to read detached instructions.
 
@@ -548,8 +547,8 @@ Priority: build the foundation for "when systems can be used" before adding more
 Current status on 2026-05-15:
 
 - `progress.unlocked` now migrates toward the full planned key set.
-- Main menu access for blacksmith, Abyss/dungeon, and gacha is routed through shared unlock checks.
-- Casino, Medal King, Abyss entry, inn teleport, Magic Boat, and Light Wing access now use the same unlock foundation or legacy key-item compatibility.
+- Main menu access for blacksmith and dungeon systems is routed through shared unlock checks. Gacha has no current main-menu button.
+- Abyss entry, inn teleport, Magic Boat, and Light Wing access now use the unlock foundation or legacy key-item compatibility. Casino and Medal exchange remain map-facility routes in the current implementation.
 - Future story events should call `App.unlockFeature(key)` at the planned unlock moments instead of directly opening systems.
 
 ### Phase 2: Story Progress And Ally Joins
@@ -573,9 +572,9 @@ Keep the current policy that `Sky Prism` moves to the world-map coordinate near 
 ### Phase 4: Facility Unlocks
 
 - Fire Village clear opens blacksmith.
-- Water City clear opens boat and casino.
-- Thunder Fortress opens Medal King.
-- Demon King defeat opens gacha.
+- Water City / Seabed Temple progression grants the Magic Boat and opens sea travel through `boat`, item `108`, and `hasShip` compatibility.
+- Casino and Medal exchange are current map-facility routes rather than separately documented `progress.unlocked` gates.
+- Demon King defeat does not currently open gacha through the player-facing menu route.
 - Abyss/Light Palace event opens transfer service.
 - Abyss floor 100 opens Light Wing.
 
@@ -611,6 +610,6 @@ The core progression should feel like:
 
 Do not give everything to the player immediately. The player should feel the world expanding through adventure.
 
-During the main story, the player should struggle forward with story allies. The intended RPG identity is not "use gacha and abyss farming to brute-force everything", but "travel through fire, wind, water, thunder, light, and dark regions while gathering allies, tools, and systems."
+During the main story, the player should struggle forward with story allies. The intended RPG identity is not "use farming to brute-force everything", but "travel through fire, wind, water, thunder, light, and dark regions while gathering allies, tools, and systems."
 
-After Demon King defeat, unlock gacha, Abyss, reincarnation, endless exploration, and attribute equipment farming, then expand the game as a long-term postgame RPG.
+After Demon King defeat and the later Abyss gates, expand the game as a long-term postgame RPG through the implemented Abyss, travel, and fixed-dungeon systems. Gacha is not part of the current player-facing unlock route.

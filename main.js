@@ -387,8 +387,8 @@ const App = {
         
         205: 43,  // バロン（光の宮殿クリア後⇒雷の要塞深部）
         302: 43,  // フリーダ（光の宮殿クリア後⇒雷の要塞深部）
-        306: 47,  // クロード（光の宮殿クリア後⇒闇の神殿跡地）
-        306: 46,  // レオン（光の宮殿クリア後⇒闇の神殿跡地）
+        304: 47,  // クロード（光の宮殿クリア後⇒闇の神殿跡地）
+        305: 46,  // レオン（光の宮殿クリア後⇒闇の神殿跡地）
 
         208: 45,  // リン（レイラ加入後⇒雷の要塞）
 
@@ -1956,7 +1956,7 @@ const App = {
      * ストーリー上の仲間を加入させる
      * ガチャ産キャラクターと同一のデータ構造で初期化する
      */
-    addStoryAlly: (charId) => {
+    addStoryAlly: (charId, options = {}) => {
         const master = window.CHARACTERS_DATA.find(c => c.id === charId);
         if (!master) return;
         const initialLevel = App.getStoryAllyInitialLevel(charId);
@@ -1972,7 +1972,7 @@ const App = {
                 if (emptyIndex >= 0) {
                     App.data.party[emptyIndex] = existing.uid;
                     changed = true;
-                    App.log(`【仲間加入】${existing.name}がパーティに加わった！`);
+                    if (!options.silent) App.log(`【仲間加入】${existing.name}がパーティに加わった！`);
                 }
             }
             if (changed) App.save();
@@ -2038,9 +2038,11 @@ const App = {
             }
         }
         App.save();
-        App.log(joinedParty
-            ? `なんと ${saveAlly.name}が仲間に加わった！`
-            : `なんと ${saveAlly.name}が仲間に加わった！`);
+        if (!options.silent) {
+            App.log(joinedParty
+                ? `なんと ${saveAlly.name}が仲間に加わった！`
+                : `なんと ${saveAlly.name}が仲間に加わった！`);
+        }
     },
 
     monsterRecruitConfig: {
@@ -2504,21 +2506,166 @@ const App = {
             && !alreadyRewarded;
     },
 
+    escapeHtml: (value) => String(value ?? '').replace(/[&<>"']/g, ch => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    }[ch])),
+
+    getQuestKindLabel: (kind) => ({
+        hunt: '討伐依頼',
+        boss: '強敵討伐',
+        conversation: '相談',
+        travel: '探索'
+    }[kind] || '依頼'),
+
+    getQuestMonsterName: (monsterId) => {
+        const id = Number(monsterId);
+        const monster = (typeof DB !== 'undefined' && Array.isArray(DB.MONSTERS))
+            ? DB.MONSTERS.find(m => Number(m.id) === id)
+            : null;
+        return monster?.name || `モンスター${id}`;
+    },
+
+    getQuestTargetSummary: (questId) => {
+        const quest = App.getQuestDefinition(questId);
+        const state = App.getQuestState(questId);
+        if (!quest) return '';
+        if (quest.kind === 'hunt' && Array.isArray(quest.targetMonsterIds) && quest.targetMonsterIds.length > 0) {
+            const names = quest.targetMonsterIds.map(App.getQuestMonsterName).join(' / ');
+            const total = Math.max(1, Number(quest.targetCount || 1));
+            const current = state.state === 'completed'
+                ? total
+                : Math.min(total, Number(state.progress?.kills || 0));
+            return `討伐対象: ${names}\n討伐数: ${current}/${total}`;
+        }
+        if (quest.kind === 'boss') {
+            return state.state === 'accepted' && state.progress?.bossDefeated
+                ? (quest.reportText || '依頼人へ報告しよう。')
+                : '目的地の強敵を倒す。';
+        }
+        return '';
+    },
+
+    getQuestRewardSummary: (quest) => {
+        if (!quest) return '';
+        const lines = [];
+        if (Array.isArray(quest.rewardItems)) {
+            quest.rewardItems.forEach(reward => {
+                const itemId = Number(reward.id || reward.itemId);
+                const count = Math.max(1, Number(reward.count || 1));
+                const item = (typeof DB !== 'undefined' && Array.isArray(DB.ITEMS))
+                    ? DB.ITEMS.find(i => Number(i.id) === itemId)
+                    : null;
+                lines.push(`${item?.name || `アイテム${itemId}`} x${count}`);
+            });
+        }
+        if (Array.isArray(quest.rewardAllies)) {
+            quest.rewardAllies.forEach(charId => {
+                const ally = (typeof window !== 'undefined' && Array.isArray(window.CHARACTERS_DATA))
+                    ? window.CHARACTERS_DATA.find(c => Number(c.id) === Number(charId))
+                    : null;
+                lines.push(`${ally?.name || `仲間${charId}`} 加入`);
+            });
+        }
+        if (Array.isArray(quest.rewardFlags) && quest.rewardFlags.length && lines.length === 0) lines.push('物語進行');
+        return lines.join('\n') || 'なし';
+    },
+
+    buildQuestModalHtml: (questId, options = {}) => {
+        const quest = App.getQuestDefinition(questId);
+        const state = App.getQuestState(questId);
+        if (!quest) return '';
+        const esc = App.escapeHtml;
+        const status = options.statusLabel || ({
+            available: '紹介中',
+            accepted: App.isQuestObjectiveComplete?.(questId) ? '報告できます' : '受注中',
+            completed: 'クリア'
+        }[state.state || 'available'] || '紹介中');
+        const target = App.getQuestTargetSummary(questId);
+        const reward = App.getQuestRewardSummary(quest);
+        const bodyText = options.bodyText || quest.startText || quest.objective || '';
+        const progressText = state.state === 'accepted'
+            ? (App.getQuestProgressText ? App.getQuestProgressText(questId) : quest.progressText || quest.objective || '')
+            : (quest.objective || quest.progressText || '');
+        return `
+            <div style="width:min(420px, calc(100vw - 24px)); max-height:calc(100vh - 30px); overflow:auto; color:#f6ead2; font-family:inherit; background:#2a1b11; border:2px solid #b88a4c; box-shadow:0 18px 60px rgba(0,0,0,.72), inset 0 0 0 2px rgba(255,230,170,.18); border-radius:8px;">
+                <div style="padding:12px 14px 10px; background:linear-gradient(180deg,#6b4421,#3c2515); border-bottom:1px solid rgba(255,220,150,.35);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+                        <div style="font-size:12px; color:#ffe2a4;">クエスト</div>
+                        <div style="font-size:11px; color:#2a1608; background:#f1d184; border:1px solid #fff0bc; border-radius:10px; padding:2px 8px; font-weight:bold;">${esc(status)}</div>
+                    </div>
+                    <div style="font-size:18px; color:#fff7dc; font-weight:bold; margin-top:3px; line-height:1.25;">${esc(quest.name)}</div>
+                    <div style="font-size:11px; color:#d8b982; margin-top:4px;">${esc(quest.area || '-')} / ${esc(App.getQuestKindLabel(quest.kind))}</div>
+                </div>
+                <div style="padding:12px 14px;">
+                    <div style="font-size:13px; color:#f7ead0; line-height:1.65; white-space:pre-wrap;">${esc(bodyText)}</div>
+                    <div style="margin-top:12px; padding:10px; background:rgba(0,0,0,.22); border:1px solid rgba(255,225,160,.2); border-radius:6px;">
+                        <div style="font-size:11px; color:#e6c27c; margin-bottom:4px;">目的</div>
+                        <div style="font-size:12px; line-height:1.55; white-space:pre-wrap;">${esc(progressText)}</div>
+                    </div>
+                    ${target ? `<div style="margin-top:8px; padding:10px; background:rgba(0,0,0,.18); border:1px solid rgba(255,225,160,.16); border-radius:6px;"><div style="font-size:11px; color:#e6c27c; margin-bottom:4px;">対象</div><div style="font-size:12px; line-height:1.55; white-space:pre-wrap;">${esc(target)}</div></div>` : ''}
+                    <div style="margin-top:8px; padding:10px; background:rgba(82,54,25,.38); border:1px solid rgba(255,225,160,.18); border-radius:6px;">
+                        <div style="font-size:11px; color:#e6c27c; margin-bottom:4px;">報酬</div>
+                        <div style="font-size:12px; line-height:1.55; white-space:pre-wrap;">${esc(reward)}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    showQuestModal: (questId, options = {}) => new Promise(resolve => {
+        const quest = App.getQuestDefinition(questId);
+        if (!quest || typeof document === 'undefined') {
+            resolve(options.defaultValue ?? false);
+            return;
+        }
+        const old = document.getElementById('quest-detail-modal');
+        if (old) old.remove();
+        const overlay = document.createElement('div');
+        overlay.id = 'quest-detail-modal';
+        overlay.style.cssText = 'position:fixed; inset:0; z-index:7000; background:rgba(0,0,0,.72); display:flex; align-items:center; justify-content:center; padding:12px; box-sizing:border-box;';
+        const buttons = options.offer ? `
+            <div style="display:flex; gap:8px; padding:0 14px 14px;">
+                <button id="quest-modal-accept" class="btn" style="flex:1; border-color:#ffd56b; color:#fff7dc; background:#6f4b1f;">受ける</button>
+                <button id="quest-modal-decline" class="btn" style="flex:1; background:#2f2f2f;">やめる</button>
+            </div>
+        ` : `
+            <div style="display:flex; gap:8px; padding:0 14px 14px;">
+                <button id="quest-modal-close" class="btn" style="flex:1; border-color:#ffd56b; color:#fff7dc; background:#6f4b1f;">閉じる</button>
+            </div>
+        `;
+        overlay.innerHTML = `<div onclick="event.stopPropagation()">${App.buildQuestModalHtml(questId, options)}${buttons}</div>`;
+        document.body.appendChild(overlay);
+        const close = (value) => {
+            overlay.remove();
+            resolve(value);
+        };
+        overlay.onclick = () => {
+            if (!options.offer) close(options.defaultValue ?? true);
+        };
+        const accept = document.getElementById('quest-modal-accept');
+        const decline = document.getElementById('quest-modal-decline');
+        const closeBtn = document.getElementById('quest-modal-close');
+        if (accept) accept.onclick = () => close(true);
+        if (decline) decline.onclick = () => close(false);
+        if (closeBtn) closeBtn.onclick = () => close(true);
+    }),
+
     acceptQuest: (questId, options = {}) => {
         const quest = App.getQuestDefinition(questId);
         if (!quest) return false;
         const quests = App.ensureQuestState();
         const current = quests[questId];
         if (current && current.state === 'completed') {
-            if (!options.silent) App.log(`【クエスト完了済】${quest.name}`);
             return true;
         }
         if (current && current.state === 'accepted') {
-            if (!options.silent) App.log(`【クエスト進行中】${quest.progressText || quest.objective || quest.name}`);
             return true;
         }
         if (!App.isQuestUnlocked(questId)) {
-            if (!options.silent) App.log(options.lockedText || '今はまだ、この依頼を受ける時ではないようだ。');
             return false;
         }
         quests[questId] = {
@@ -2528,10 +2675,7 @@ const App = {
             progress: {}
         };
         App.save();
-        if (!options.silent) {
-            App.log(`【クエスト受注】${quest.name}`);
-            if (quest.startText) App.log(quest.startText);
-        }
+        if (typeof MenuStatus !== 'undefined' && typeof MenuStatus.render === 'function') MenuStatus.render();
         return true;
     },
 
@@ -2541,11 +2685,9 @@ const App = {
         const quests = App.ensureQuestState();
         const current = quests[questId];
         if (current && current.state === 'completed') {
-            if (!options.silent) App.log(`【クエスト完了済】${quest.name}`);
             return true;
         }
         if (!App.isQuestUnlocked(questId)) {
-            if (!options.silent) App.log(options.lockedText || 'この依頼を完了するための条件が整っていない。');
             return false;
         }
 
@@ -2566,19 +2708,13 @@ const App = {
                 const count = Math.max(1, Number(reward.count || 1));
                 if (!Number.isFinite(itemId)) return;
                 App.data.items[itemId] = Number(App.data.items[itemId] || 0) + count;
-                const item = (DB.ITEMS || []).find(i => Number(i.id) === itemId);
-                if (!options.silent) App.log(`${item?.name || `アイテム${itemId}`}を手に入れた！`);
             });
         }
         if (Array.isArray(quest.rewardAllies)) {
-            quest.rewardAllies.forEach(charId => App.addStoryAlly(charId));
+            quest.rewardAllies.forEach(charId => App.addStoryAlly(charId, { silent: true }));
         }
 
         App.save();
-        if (!options.silent) {
-            App.log(`【クエスト完了】${quest.name}`);
-            if (quest.completeText) App.log(quest.completeText);
-        }
         if (typeof MenuStatus !== 'undefined' && typeof MenuStatus.render === 'function') MenuStatus.render();
         return true;
     },
@@ -2610,7 +2746,6 @@ const App = {
         state.progress.bossDefeated = true;
         state.progress.bossDefeatedAt = Date.now();
         App.save();
-        if (quest.reportText) App.log(quest.reportText);
         return true;
     },
 
@@ -2642,38 +2777,67 @@ const App = {
     runQuestAction: async (questId, options = {}) => {
         const quest = App.getQuestDefinition(questId);
         if (!quest) {
-            App.log('今は何も起こらないようだ。');
             return false;
         }
         if (!App.isQuestUnlocked(questId)) {
-            App.log(options.lockedText || '今はまだ、この依頼を進める時ではないようだ。');
+            await App.showQuestModal(questId, {
+                statusLabel: 'まだ受けられません',
+                bodyText: options.lockedText || '今はまだ、この依頼を進める時ではないようだ。'
+            });
             return false;
         }
         const state = App.getQuestState(questId).state;
         if (state === 'completed') {
-            App.log(`【クエスト完了済】${quest.name}`);
+            await App.showQuestModal(questId, {
+                statusLabel: 'クリア',
+                bodyText: quest.completeText || quest.objective || quest.name
+            });
             return true;
         }
         if (state !== 'accepted') {
+            const accepted = await App.showQuestModal(questId, {
+                offer: true,
+                statusLabel: '紹介中',
+                bodyText: quest.startText || quest.objective || quest.name,
+                defaultValue: false
+            });
+            if (!accepted) return false;
             if (quest.startEventId && typeof StoryManager !== 'undefined' && typeof StoryManager.executeEvent === 'function') {
                 await StoryManager.executeEvent(quest.startEventId);
             }
-            App.acceptQuest(questId);
-            if (options.complete || quest.initialComplete || quest.kind === 'conversation') App.completeQuest(questId);
+            App.acceptQuest(questId, { silent: true });
+            if (options.complete || quest.initialComplete || quest.kind === 'conversation') {
+                App.completeQuest(questId, { silent: true });
+                await App.showQuestModal(questId, {
+                    statusLabel: 'クリア',
+                    bodyText: quest.completeText || quest.objective || quest.name
+                });
+            }
             return true;
         }
         if (App.isQuestObjectiveComplete(questId)) {
             if (quest.reportEventId && typeof StoryManager !== 'undefined' && typeof StoryManager.executeEvent === 'function') {
                 await StoryManager.executeEvent(quest.reportEventId);
             }
-            App.completeQuest(questId);
+            App.completeQuest(questId, { silent: true });
+            await App.showQuestModal(questId, {
+                statusLabel: 'クリア',
+                bodyText: quest.completeText || quest.objective || quest.name
+            });
             return true;
         }
         if (options.complete || quest.initialComplete || quest.kind === 'conversation') {
-            App.completeQuest(questId);
+            App.completeQuest(questId, { silent: true });
+            await App.showQuestModal(questId, {
+                statusLabel: 'クリア',
+                bodyText: quest.completeText || quest.objective || quest.name
+            });
             return true;
         }
-        App.log(`【クエスト進行中】${App.getQuestProgressText(questId)}`);
+        await App.showQuestModal(questId, {
+            statusLabel: App.isQuestObjectiveComplete?.(questId) ? '報告できます' : '受注中',
+            bodyText: quest.progressText || quest.objective || quest.name
+        });
         return true;
     },
 
@@ -6257,7 +6421,7 @@ const Field = {
             return;
         }
 
-        if (action.log) App.log(action.log);
+        if (action.log && action.type !== 'quest') App.log(action.log);
 
         const progressEventId = Field.resolveMapActionEventId(action);
         if (progressEventId && typeof StoryManager !== 'undefined') {
@@ -6536,6 +6700,7 @@ const Field = {
         if (Field.currentMapData.isFixed && !Field.currentMapData.useDungeonWallFace) return null;
 
         if (Field.getRenderedTileForDraw(tileX, tileY + 1, mapW, mapH, areaKey) === 'W') return null;
+        if (Field.currentMapData.wallFaceImg) return Field.currentMapData.wallFaceImg;
         return (((tileX % 5) + 5) % 5) === 0 ? 'wall_face_torch' : 'wall_face';
     },
     
@@ -6543,6 +6708,7 @@ const Field = {
         if (App.data.battle && (App.data.battle.isSpecialBoss || App.data.battle.isEstark)) return 'battle_bg_lastboss';
         if (App.data.battle?.encounterType === 'sea') return 'battle_bg_sea';
         if (Field.currentMapData) {
+            if (Field.currentMapData.isDungeon && App.data?.dungeon?.isLavaFloor) return 'battle_bg_fire';
             if (Field.currentMapData.battleBg) return Field.currentMapData.battleBg;
             if (Field.currentMapData.isDungeon) {
                 const mapW = Field.currentMapData.width || 1;
@@ -6554,8 +6720,6 @@ const Field = {
 
                 // 溶岩フロアでは、溶岩マス上に限らず階層全体を炎背景にする。
                 // 「溶岩地帯に入った」というフロア体験を優先するため、現在地タイル判定には戻さないこと。
-                if (App.data?.dungeon?.isLavaFloor) return 'battle_bg_fire';
-
                 const floor = App.data.progress.floor || 0;
                 const genType = App.data.dungeon.genType;
                 if (floor % 10 === 0) return 'battle_bg_boss'; 
@@ -7068,11 +7232,16 @@ const Field = {
                 if (upper !== 'T' && upper !== 'G' && !overlayConfig) {
                     if (lift > 0) drawFootShadow(drawX, drawY, lift, tone === 'ridge' ? 0.30 : 0.24);
                     const imageY = drawY - lift;
-                    if (!drawGraphic(wallGraphic || config.img, drawX, imageY, ts, ts + lift)) {
+                    const wallFaceOverlay = !!(wallGraphic && Field.currentMapData?.wallFaceMode === 'overlay');
+                    const objectGraphic = wallFaceOverlay ? config.img : (wallGraphic || config.img);
+                    if (!drawGraphic(objectGraphic, drawX, imageY, ts, ts + lift)) {
                         if (config.color && config.color !== floorConfig.color) {
                             ctx.fillStyle = config.color;
                             ctx.fillRect(drawX, imageY, ts, ts + lift);
                         }
+                    }
+                    if (wallFaceOverlay) {
+                        drawGraphic(wallGraphic, drawX, imageY, ts, ts + lift);
                     }
                     if (lift > 0) {
                         ctx.save();
@@ -7086,14 +7255,17 @@ const Field = {
                 // 3. 固定MAP/固定ダンジョン専用オーバーレイ。
                 if (overlayConfig) {
                     const characterOverlay = String(overlayConfig.img || '').startsWith('overlay_npc_');
-                    if (useDepthRendering && (!isDungeonView || characterOverlay)) {
+                    const wallOverlay = overlayConfig.wallOverlay === true;
+                    if (useDepthRendering && !wallOverlay && (!isDungeonView || characterOverlay)) {
                         drawFootShadow(drawX, drawY, lift, 0.24);
                     }
-                    if (!drawGraphic(overlayConfig.img, drawX, drawY - lift, ts, ts + lift)) {
+                    const overlayHeight = wallOverlay ? Math.round(ts * 1.5) : ts + lift;
+                    const overlayY = wallOverlay ? drawY + ts - overlayHeight : drawY - lift;
+                    if (!drawGraphic(overlayConfig.img, drawX, overlayY, ts, overlayHeight)) {
                         ctx.save();
                         ctx.fillStyle = overlayConfig.color || config.color || '#fff';
                         ctx.beginPath();
-                        ctx.arc(drawX + ts / 2, drawY + ts / 2 - lift, ts * 0.34, 0, Math.PI * 2);
+                        ctx.arc(drawX + ts / 2, overlayY + overlayHeight / 2, ts * 0.34, 0, Math.PI * 2);
                         ctx.fill();
                         ctx.restore();
                     }
@@ -7155,6 +7327,38 @@ const Field = {
             }
         };
 
+        const drawAbyssBossSprite = () => {
+            if (areaKey !== 'ABYSS' || !Field.currentMapData?.isDungeon || typeof Dungeon === 'undefined') return;
+            const encounter = typeof Dungeon.getCurrentAbyssBossEncounter === 'function'
+                ? Dungeon.getCurrentAbyssBossEncounter()
+                : App.data?.dungeon?.abyssBossEncounter;
+            if (!encounter || !encounter.active || Number(encounter.floor) !== Number(Dungeon.floor)) return;
+            const monsterId = Number(encounter.displayMonsterId || encounter.monsterIds?.[0]);
+            if (!Number.isFinite(monsterId)) return;
+
+            const ox = Number(encounter.x ?? 5) - Number(Field.x);
+            const oy = Number(encounter.y ?? 5) - Number(Field.y);
+            if (Math.abs(ox) > rangeX + 1 || Math.abs(oy) > rangeY + 1) return;
+
+            const size = ts * 2;
+            const px = Math.floor(cx + (ox * ts) - (size / 2));
+            const py = Math.floor(cy + (oy * ts) - (size / 2));
+            const src = Field.getMonsterMapSpriteSrc ? Field.getMonsterMapSpriteSrc(monsterId) : `assets/monsters/monster_${monsterId}.png`;
+            const img = Field.getDirectImage(src);
+            if (img && img.complete && img.naturalWidth > 0) {
+                ctx.save();
+                ctx.drawImage(img, px, py, size, size);
+                ctx.restore();
+            } else {
+                ctx.save();
+                ctx.fillStyle = '#c78cff';
+                ctx.beginPath();
+                ctx.arc(px + size / 2, py + size / 2, ts * 0.55, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        };
+
         drawOverlayImage(App.data?.dungeon?.healSpring, 'assets/effect/fx-buff-ai.png', '#80ffb0');
         if (Field.currentMapData?.isFixed && Field.getFixedHealSpringsForCurrentFloor) {
             Field.getFixedHealSpringsForCurrentFloor().forEach(s => {
@@ -7165,6 +7369,7 @@ const Field = {
         drawOverlayImage(App.data?.dungeon?.adventurer, 'assets/monsters/monster_100009.png', '#5bd6ff');
         drawOverlayImage(App.data?.dungeon?.keyGuardian, 'assets/monsters/monster_100010.png', '#ffd78a');
         drawOverlayImage(App.data?.dungeon?.trialAngel, 'assets/map/overlays/overlay_dungeon_trial_angel_v001.png', '#fff3a6');
+        drawAbyssBossSprite();
 
         // 4. 壁際の影は、溶岩・宝箱・階段・常設泉などの上から最後に重ねる。
         // プレイヤーまで暗くしないよう、プレイヤー描画の直前で止める。

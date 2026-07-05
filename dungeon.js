@@ -44,15 +44,15 @@ const Dungeon = {
     keyColorLabels: { red: '赤', blue: '青', gold: '金' },
     keyGuardianImagePath: 'assets/map/overlays/overlay_monster_guardian_v001.png',
     randomVisualThemes: [
-        { id: 'forest', themeKey: 'WIND_VILLAGE', battleBg: 'battle_bg_forest' },
-        { id: 'tower', themeKey: 'BIG_TOWER', battleBg: 'battle_bg_big_tower' },
-        { id: 'thunder', themeKey: 'THUNDER_FORT', battleBg: 'battle_bg_thunder_fort' },
-        { id: 'light', themeKey: 'LIGHT_PALACE', battleBg: 'battle_bg_light_palace' },
-        { id: 'dark', themeKey: 'DARK_CASTLE', battleBg: 'battle_bg_dark_castle' },
-        { id: 'crena', themeKey: 'CRENA_CAVE', battleBg: 'battle_bg_crena' },
-        { id: 'seabed', themeKey: 'SEABED_TEMPLE', battleBg: 'battle_bg_seabed' },
-        { id: 'darkShrine', themeKey: 'DARK_SHRINE_RUINS', battleBg: 'battle_bg_dark_shrine' },
-        { id: 'grezelia', themeKey: 'GREZELIA_CAVE', battleBg: 'battle_bg_grezelia' }
+        { id: 'abyss', themeKey: 'ABYSS', battleBg: 'battle_bg_dungeon', minFloor: 1 },
+        { id: 'forest', themeKey: 'FORBIDDEN_FOREST', battleBg: 'battle_bg_forest', minFloor: 11 },
+        { id: 'fire', themeKey: 'FIRE_VILLAGE', battleBg: 'battle_bg_fire', minFloor: 11 },
+        { id: 'thunder', themeKey: 'THUNDER_FORT', battleBg: 'battle_bg_thunder_fort', minFloor: 21 },
+        { id: 'seabed', themeKey: 'SEABED_TEMPLE', battleBg: 'battle_bg_seabed', minFloor: 41 },
+        { id: 'tower', themeKey: 'BIG_TOWER', battleBg: 'battle_bg_big_tower', minFloor: 51 },
+        { id: 'light', themeKey: 'LIGHT_PALACE', battleBg: 'battle_bg_light_palace', minFloor: 51 },
+        { id: 'galvania', themeKey: 'GALVANIA_CAVE', battleBg: 'battle_bg_galvania_cave', minFloor: 71 },
+        { id: 'dark', themeKey: 'DARK_CASTLE', battleBg: 'battle_bg_dark_castle', minFloor: 71 }
     ],
 
     buildFixedBossBattleContext: (bossDef, x, y, mapDef = null) => {
@@ -1127,6 +1127,106 @@ const Dungeon = {
     },
 	
     // --- 移動・イベント処理 (全文) ---
+    getAbyssBossStoryEventId: (floor = Dungeon.floor) => {
+        const f = Number(floor || 0);
+        const table = {
+            10: 'abyss_floor_010_leon_guardian',
+            20: 'abyss_floor_020_glen_guardian',
+            30: 'abyss_floor_030_leonard_abyss',
+            40: 'abyss_floor_040_elicia_abyss',
+            50: 'abyss_floor_050_syris_abyss',
+            60: 'abyss_floor_060_grad_abyss',
+            70: 'abyss_floor_070_veld_abyss',
+            80: 'abyss_floor_080_lilith_true',
+            90: 'abyss_floor_090_jasper_true',
+            100: 'abyss_floor_100_phase1'
+        };
+        return table[f] || null;
+    },
+
+    getAbyssStoryBossDisplayMonsterId: (floor = Dungeon.floor) => {
+        const f = Number(floor || 0);
+        const table = {
+            10: 401010,
+            20: 401020,
+            30: 401030,
+            40: 401040,
+            50: 401050,
+            60: 401060,
+            70: 401070,
+            80: 401080,
+            90: 401090,
+            100: 401100
+        };
+        return table[f] || null;
+    },
+
+    selectAbyssBossEncounter: (floor = Dungeon.floor) => {
+        const f = Math.max(1, Number(floor || 1));
+        const storyDisplayId = Dungeon.getAbyssStoryBossDisplayMonsterId(f);
+        if (storyDisplayId) {
+            return {
+                active: true,
+                floor: f,
+                x: 5,
+                y: 5,
+                monsterIds: [storyDisplayId],
+                displayMonsterId: storyDisplayId,
+                source: 'story'
+            };
+        }
+
+        let ids = [];
+        const monsterData = (typeof window !== 'undefined') ? window.MonsterData : null;
+        const dbMonsters = (typeof DB !== 'undefined' && Array.isArray(DB.MONSTERS)) ? DB.MONSTERS : [];
+        if (f >= 201) {
+            const candidates = (monsterData?.bossMonsters || dbMonsters)
+                .filter(base => base && base.isBoss && !base.isRare
+                    && !(typeof Battle !== 'undefined' && Battle.isSpecialBossBase && Battle.isSpecialBossBase(base))
+                    && !(typeof Battle !== 'undefined' && Battle.isStoryBossBase && Battle.isStoryBossBase(base)));
+            const count = 1 + Math.floor(Math.random() * 3);
+            for (let i = 0; i < count && candidates.length > 0; i++) {
+                const base = candidates[Math.floor(Math.random() * candidates.length)];
+                if (base?.id) ids.push(Number(base.id));
+            }
+        } else if (monsterData && typeof monsterData.getBossesForFloor === 'function') {
+            const bosses = monsterData.getBossesForFloor(f) || monsterData.getBossesForFloor(200) || [];
+            ids = bosses.map(base => Number(base?.id)).filter(id => Number.isFinite(id));
+        }
+
+        if (ids.length === 0) ids = [401100];
+        return {
+            active: true,
+            floor: f,
+            x: 5,
+            y: 5,
+            monsterIds: ids,
+            displayMonsterId: ids[0],
+            source: f >= 201 ? 'deep-random' : 'floor-band'
+        };
+    },
+
+    ensureAbyssBossEncounter: (options = {}) => {
+        if (!App.data?.dungeon) return null;
+        const floor = Math.max(1, Number(options.floor || Dungeon.floor || App.data.progress?.floor || 1));
+        const current = App.data.dungeon.abyssBossEncounter;
+        if (!options.force && current && current.active && Number(current.floor) === floor && Array.isArray(current.monsterIds) && current.monsterIds.length) {
+            return current;
+        }
+        const encounter = Dungeon.selectAbyssBossEncounter(floor);
+        App.data.dungeon.abyssBossEncounter = encounter;
+        return encounter;
+    },
+
+    getCurrentAbyssBossEncounter: () => {
+        if (App.data?.location?.area !== 'ABYSS') return null;
+        const floor = Math.max(1, Number(Dungeon.floor || App.data?.progress?.floor || 1));
+        const encounter = App.data?.dungeon?.abyssBossEncounter;
+        if (encounter && encounter.active && Number(encounter.floor) === floor) return encounter;
+        if (floor > 0 && floor % 10 === 0) return Dungeon.ensureAbyssBossEncounter({ floor });
+        return null;
+    },
+
     handleMove: (x, y) => {
 		const tiles = (Field.currentMapData && Field.currentMapData.tiles) ? Field.currentMapData.tiles : Dungeon.map;
 		const areaKey = (typeof Field !== 'undefined' && typeof Field.getCurrentAreaKey === 'function') ? Field.getCurrentAreaKey() : 'ABYSS';
@@ -1214,6 +1314,11 @@ const Dungeon = {
             }
 
             App.log("ボスの気配が…");
+            const abyssBossEventId = (areaKey === 'ABYSS') ? Dungeon.getAbyssBossStoryEventId(Dungeon.floor) : null;
+            if (abyssBossEventId && typeof StoryManager !== 'undefined' && typeof StoryManager.executeEvent === 'function') {
+                App.setAction("対峙する", () => StoryManager.executeEvent(abyssBossEventId));
+                return;
+            }
             App.setAction("ボスと戦う", () => {
                 if (Field.currentMapData.isFixed) {
                     Dungeon.startFixedBoss(x, y);
@@ -1224,6 +1329,10 @@ const Dungeon = {
                     //App.data.battle.isSpecialBoss = Dungeon.floor >= 300;
                     //App.data.battle.isEstark = Dungeon.floor >= 300;
                     //App.data.battle.fixedBossId = Dungeon.floor >= 300 ? 902000 : null;
+                    const abyssBossEncounter = (areaKey === 'ABYSS') ? Dungeon.getCurrentAbyssBossEncounter() : null;
+                    if (abyssBossEncounter && !Dungeon.getAbyssBossStoryEventId(Dungeon.floor)) {
+                        App.data.battle.abyssBossEncounter = abyssBossEncounter;
+                    }
                 }
                 App.changeScene('battle');
             });
@@ -2580,6 +2689,7 @@ const Dungeon = {
             App.data.dungeon.adventurer = null;
             App.data.dungeon.healSpring = null;
             App.data.dungeon.abyssRift = null;
+            App.data.dungeon.abyssBossEncounter = null;
             if (!keepVisited) App.data.dungeon.visitedMap = null;
             App.data.dungeon.genType = null;
             App.data.dungeon.genVariant = null;
@@ -2589,9 +2699,21 @@ const Dungeon = {
         }
     },
 
-    rollRandomVisualTheme: () => {
+    getRandomVisualThemeCandidates: (floor = Dungeon.floor || App.data?.progress?.floor || 1) => {
+        const currentFloor = Math.max(1, Number(floor) || 1);
+        const themes = Array.isArray(Dungeon.randomVisualThemes) ? Dungeon.randomVisualThemes : [];
+        const candidates = themes.filter(theme => {
+            const minFloor = Math.max(1, Number(theme.minFloor || 1) || 1);
+            const maxFloor = Number(theme.maxFloor || 0) || 0;
+            return currentFloor >= minFloor && (!maxFloor || currentFloor <= maxFloor);
+        });
+        return candidates.length ? candidates : themes.filter(theme => theme.id === 'abyss');
+    },
+
+    rollRandomVisualTheme: (floor = Dungeon.floor || App.data?.progress?.floor || 1) => {
         if (!App.data?.dungeon || !Array.isArray(Dungeon.randomVisualThemes) || !Dungeon.randomVisualThemes.length) return null;
-        const theme = Dungeon.randomVisualThemes[Dungeon.randInt(0, Dungeon.randomVisualThemes.length - 1)];
+        const candidates = Dungeon.getRandomVisualThemeCandidates(floor);
+        const theme = candidates[Dungeon.randInt(0, candidates.length - 1)] || Dungeon.randomVisualThemes[0];
         App.data.dungeon.visualThemeId = theme.id;
         App.data.dungeon.visualThemeKey = theme.themeKey;
         App.data.dungeon.visualBattleBg = theme.battleBg;
@@ -2839,6 +2961,7 @@ const Dungeon = {
         Dungeon.map[cy][cx] = 'B';
         Field.x = cx;
         Field.y = cy + radius;
+        Dungeon.ensureAbyssBossEncounter({ floor: Dungeon.floor, force: true });
     },
 	
     generateTreasureRoom: () => {
@@ -3768,6 +3891,9 @@ const Dungeon = {
 				y: spring.y,
 				image: Dungeon.healSpringImagePath,
 			};
+            if (App.data.dungeon.abyssBossEncounter && Number(App.data.dungeon.abyssBossEncounter.floor) === Number(Dungeon.floor)) {
+                App.data.dungeon.abyssBossEncounter.active = false;
+            }
 
 			App.log('<span style="color:#80ffb0;">階段が現れた！</span>');
 			Dungeon.saveMapData();

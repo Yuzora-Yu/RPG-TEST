@@ -515,6 +515,7 @@
         const sign=row[x] || 'T'; const cfg=tileVisualConfig(map, sign, x, y); drawTile(ctx,cfg,x*tile,y*tile,tile,map,sign,x,y,ent?.type);
       }
     }
+    if (state.showObjects) drawTileEffects(ctx,map,tile,w,h);
     if (state.showGrid && tile>=10) { ctx.strokeStyle='rgba(255,255,255,.08)'; ctx.lineWidth=1; for(let x=0;x<=w;x++){ctx.beginPath();ctx.moveTo(x*tile+.5,0);ctx.lineTo(x*tile+.5,h*tile);ctx.stroke();} for(let y=0;y<=h;y++){ctx.beginPath();ctx.moveTo(0,y*tile+.5);ctx.lineTo(w*tile,y*tile+.5);ctx.stroke();} }
     if (state.showObjects) drawObjects(ctx,map,tile,ent?.type);
     ctx.strokeStyle='#f5bd4f'; ctx.lineWidth=Math.max(2,Math.floor(tile/8)); ctx.strokeRect(state.selectedCoord.x*tile+1,state.selectedCoord.y*tile+1,tile-2,tile-2);
@@ -533,6 +534,54 @@
     if (!src && tile>=14) {
       ctx.fillStyle='rgba(255,255,255,.22)'; ctx.font=`${Math.floor(tile*.55)}px monospace`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(sign,px+tile/2,py+tile/2);
     }
+  }
+  function tileEffectCells(effect,w,h){
+    const cells=[]; const seen=new Set();
+    const add=(x,y)=>{ x=Number(x); y=Number(y); if(!Number.isFinite(x)||!Number.isFinite(y)) return; x=Math.floor(x); y=Math.floor(y); if(x<0||y<0||x>=w||y>=h) return; const key=`${x},${y}`; if(!seen.has(key)){ seen.add(key); cells.push({x,y}); } };
+    const addRect=(rect)=>{
+      if(!rect) return;
+      const x1=Math.min(Number(rect.x1 ?? rect.x ?? 0), Number(rect.x2 ?? rect.x ?? 0));
+      const x2=Math.max(Number(rect.x1 ?? rect.x ?? 0), Number(rect.x2 ?? rect.x ?? 0));
+      const y1=Math.min(Number(rect.y1 ?? rect.y ?? 0), Number(rect.y2 ?? rect.y ?? 0));
+      const y2=Math.max(Number(rect.y1 ?? rect.y ?? 0), Number(rect.y2 ?? rect.y ?? 0));
+      for(let y=Math.floor(y1);y<=Math.floor(y2);y++) for(let x=Math.floor(x1);x<=Math.floor(x2);x++) add(x,y);
+    };
+    if (effect && Number.isFinite(Number(effect.x)) && Number.isFinite(Number(effect.y))) add(effect.x,effect.y);
+    if (effect?.rect) addRect(effect.rect);
+    (effect?.rects || []).forEach(addRect);
+    (effect?.points || []).forEach(p=>add(p?.x,p?.y));
+    return cells;
+  }
+  function tileEffectPreviewConfig(effect){
+    const type=String(effect?.type || '').toLowerCase();
+    if (type === 'ice') return {img:'tile_ice_slide', color:'rgba(112,219,255,.54)', stroke:'#baf6ff', label:'ICE'};
+    if (type === 'poison') return {img:'tile_poison_bog', color:'rgba(117,216,74,.50)', stroke:'#baff7a', label:'POI'};
+    if (type === 'magma' || type === 'lava' || type === 'fire') return {img:'tile_magma', color:'rgba(255,96,36,.50)', stroke:'#ffb068', label:'HOT'};
+    if (type === 'warp') return {img:'', color:'rgba(154,125,255,.36)', stroke:'#c7b8ff', label:'W'};
+    if (!effect?.rect && !Array.isArray(effect?.rects) && !Array.isArray(effect?.points)) return null;
+    return {img:'', color:'rgba(154,125,255,.28)', stroke:'#c7b8ff', label:type.slice(0,3).toUpperCase() || 'FX'};
+  }
+  function drawTileEffects(ctx,map,tile,w,h){
+    (map.tileEffects || []).forEach(effect=>{
+      const cfg=tileEffectPreviewConfig(effect);
+      if (!cfg) return;
+      const cells=tileEffectCells(effect,w,h);
+      if (!cells.length) return;
+      const src=assetPath(cfg.img); const img=getImage(src);
+      cells.forEach(({x,y})=>{
+        const px=x*tile, py=y*tile;
+        if (img && img.complete && img.naturalWidth) {
+          ctx.globalAlpha=.78; ctx.drawImage(img,px,py,tile,tile); ctx.globalAlpha=1;
+        } else {
+          ctx.fillStyle=cfg.color; ctx.fillRect(px,py,tile,tile);
+        }
+        ctx.strokeStyle=cfg.stroke; ctx.lineWidth=Math.max(1,Math.floor(tile/12)); ctx.strokeRect(px+.5,py+.5,tile-1,tile-1);
+        if (tile>=18) {
+          ctx.fillStyle='rgba(0,0,0,.45)'; ctx.fillRect(px+2,py+2,tile-4,Math.max(9,tile*.28));
+          ctx.fillStyle='#fff'; ctx.font=`${Math.max(8,Math.floor(tile*.26))}px sans-serif`; ctx.textAlign='left'; ctx.textBaseline='top'; ctx.fillText(cfg.label,px+4,py+3);
+        }
+      });
+    });
   }
   function drawOverlayImage(ctx, overlay, px, py, tile, isWorldMap=false){
     const key = overlay?.img || '';
@@ -601,7 +650,10 @@
     });
     (map.floorLinks||[]).forEach(s=>drawMarker(Number(s.x),Number(s.y),'S','#d7b45a', type==='dungeon'?'stairs_dungeon':'stairs',{scale:1}));
     (map.mapActions||[]).forEach(a=>drawMarker(Number(a.x),Number(a.y),'!', '#62d7ff', a.imageKey || (a.type==='quest'?'overlay_field_event':'')));
-    (map.tileEffects||[]).forEach(e=>drawMarker(Number(e.x),Number(e.y),'*', '#9a7dff', e.imageKey || (e.type==='warp'?'overlay_dungeon_warp':''),{scale:1}));
+    (map.tileEffects||[]).forEach(e=>{
+      if (['ice','poison','magma','lava','fire'].includes(String(e.type || '').toLowerCase())) return;
+      drawMarker(Number(e.x),Number(e.y),'*', '#9a7dff', e.imageKey || (e.type==='warp'?'overlay_dungeon_warp':''),{scale:1});
+    });
     (map.healSprings||[]).forEach(e=>drawMarker(Number(e.x),Number(e.y),'H', '#48d68d', e.imageKey || 'overlay_dungeon_trial_angel',{scale:1}));
     if (map.entryPoint) drawMarker(Number(map.entryPoint.x),Number(map.entryPoint.y),'IN','#48d68d','',{scale:1});
     if (map.exitPoint && Number.isFinite(Number(map.exitPoint.x))) drawMarker(Number(map.exitPoint.x),Number(map.exitPoint.y),'OUT','#ffcf68','',{scale:1});

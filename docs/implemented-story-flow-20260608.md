@@ -53,8 +53,8 @@
 - 1階の封鎖兵ボスマスは `sea_temple_gate_encounter` から起動する。
 - 暗黒兵士 `301021` x2 と氷楔のシーリス側近 `301022` 撃破で、赤鍵と青鍵を同時取得し、`seabedTempleGateCleared` を立てる。
 - 3階の祈祷の間では `water_temple_syris_encounter` から `301022`, `301030`, `301022` の不意打ち戦が起動する。
-- 勝利後 `water_temple_clear` でケイトを再加入保証し、魔法の小舟 `108` を取得し、`boat` と `medalKing` を解放し、`hasShip` / `waterCityCleared` を立てて `storyStep: 5 / subStep: 0` へ進む。
-- 注意: 長期方針では水上都市クリアで `boat` と `casino`、雷の要塞クリアで `medalKing` の想定だったが、現行の `water_temple_clear` は `boat` + `medalKing` を解放する。後述の評価を参照。
+- 勝利後 `water_temple_clear` でケイトを再加入保証し、魔法の小舟 `108` を取得し、`boat` を解放し、`hasShip` / `waterCityCleared` を立てて `storyStep: 5 / subStep: 0` へ進む。
+- カジノとメダル交換は現行コードではフィールド/固定マップ上の施設タイルから入る導線であり、ここではクエストやメニュー解放として扱わない。
 
 ### 4. 雷の要塞
 
@@ -66,8 +66,8 @@
 - 地下3階の `thunder_leonard_encounter` でレナード `301040` 戦が起動する。
 - レナード撃破後、`thunder_fort_clear` で聖騎士ヴェルド `301050` 戦に入る。
 - ヴェルド戦は `bossStatMultiplier: 3`。勝った場合も `thunder_veld_forced_loss` で通常全滅演出へ落とす。負けた場合は `thunder_veld_loss` へ入る。
-- `thunder_veld_loss` ではジョセフを再加入保証し、`medalKing` を解放し、`thunderFortCleared` を立てて `storyStep: 6 / subStep: 0` へ進む。
-- 注意: `thunder_veld_forced_loss` は現状 `casino` を解放する。一方で通常敗北側の `thunder_veld_loss` は `medalKing` を解放する。どちらの分岐でも最終的な解放内容が揃うよう整理した方がよい。
+- `thunder_veld_loss` ではジョセフを再加入保証し、`thunderFortCleared` を立てて `storyStep: 6 / subStep: 0` へ進む。
+- 現行コード上、カジノ/メダル交換は施設タイル導線で利用する扱い。古い `casino` / `medalKing` 解放方針とは切り分ける。
 
 ### 5. 大灯台
 
@@ -116,7 +116,7 @@
 - レイラ `204`: 光の宮殿クリア後に加入。初期Lv32。
 - シャニー `306`: 魔王城クリア後に加入。初期Lv40。
 
-`App.addStoryAlly()` は、既に加入済みのキャラにも対応している。既存キャラは初期Lv基準まで内部レベルアップし、空きパーティ枠があれば自動で入る。未加入キャラはガチャ産と同じ保存構造で生成され、初期Lvまで通常レベルアップ相当の成長、SP、特性付与を適用する。
+`App.addStoryAlly()` は、既に加入済みのキャラにも対応している。既存キャラは初期Lv基準まで内部レベルアップし、空きパーティ枠があれば自動で入る。未加入キャラは共通キャラクター保存構造で生成され、初期Lvまで通常レベルアップ相当の成長、SP、特性付与を適用する。
 
 ## 固定ダンジョンと鍵
 
@@ -160,7 +160,7 @@
 
 - サブクエスト専用の状態領域がまだない。すべて `progress.flags` に積むと、メイン進行、加入済み、施設解放、一時状態、サブクエスト段階が混在し、後で追跡が難しくなる。
 - `StoryManager.triggers` はメイン進行向けの座標トリガーが中心。複数NPCの会話段階、受注中、報告待ち、完了後会話を増やすには、クエストID単位の条件表現が欲しい。
-- 解放タイミングに一部不整合がある。`water_temple_clear` は `boat` + `medalKing`、`thunder_veld_forced_loss` は `casino`、`thunder_veld_loss` は `medalKing` を解放する。長期方針では水上都市で `boat` + `casino`、雷の要塞で `medalKing` が自然。
+- 現行コードでは、海底神殿クリア系イベントで魔法の小舟と `boat` / `hasShip` を確定し、カジノ/メダル交換は施設タイル導線として扱う。古い `casino` / `medalKing` 解放方針は現在の正本ではない。
 - 旧系統イベントらしい `fire_village_clear`, `wind_village_clear`, `water_city_clear` と、現在の細分化イベントが併存している。使っていないなら互換イベントとして明記し、使うなら現行ルートと報酬内容を合わせる。
 - `tools/validate-key-door-runtime.js` は、現行の複数鍵報酬、固定ダンジョン鍵タイル、固定鍵スコープに合わせて更新済み。
 
@@ -215,7 +215,7 @@ progress.quests = {
 - 現状の `ALLY` は即座に永続加入する。仮加入をやるなら `TEMP_ALLY` のような別アクションが必要。
 - パーティ枠が埋まっている時は控え加入になる。加入演出では「パーティ」ではなく「仲間」表現にしておくと齟齬が出にくい。
 - 個人クエストで限界突破や専用スキルを解放する場合、`lbProgress.sources.quest` と `trials` を混ぜない。
-- 高レアキャラの早期加入は長期方針に反するため、メイン中はゲスト出演、正式加入は後半またはポストゲームに寄せる。
+- 高レア相当のキャラの早期加入は物語の段階設計に反するため、メイン中はゲスト出演、正式加入は後半またはポストゲームに寄せる。
 
 ## 検証結果と評価
 
@@ -242,5 +242,5 @@ progress.quests = {
 
 未完了 / 注意:
 
-- `water_temple_clear` / `thunder_veld_forced_loss` / `thunder_veld_loss` の解放内容は、長期方針と揃える価値がある。
+- 旧方針由来の `casino` / `medalKing` 解放コメントは現行実装と切り分け済み。今後変更する場合は、施設タイル導線との関係を先に決める。
 - 今後のサブクエスト追加前に、`progress.quests` の導入とイベントアクション追加を行うと、後からの修正量を抑えられる。

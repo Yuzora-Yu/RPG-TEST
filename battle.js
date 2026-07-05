@@ -728,6 +728,30 @@ const Battle = {
             return newEnemies;
         }
 
+        const storedAbyssBoss = battleData.abyssBossEncounter;
+        if (isBoss && storedAbyssBoss && Array.isArray(storedAbyssBoss.monsterIds) && storedAbyssBoss.monsterIds.length > 0) {
+            const storedFloor = Math.max(1, Number(storedAbyssBoss.floor) || floor);
+            const storedIds = storedAbyssBoss.monsterIds.map(id => Number(id)).filter(id => Number.isFinite(id));
+            if (storedFloor >= 201) {
+                Battle.log('<span style="color:#ff0000; font-size:1em; font-weight:bold;">深淵の守護者が現れた！</span>');
+                storedIds.forEach((id, i) => {
+                    const base = Battle.getMonsterBaseById(id);
+                    if (!base) return;
+                    const m = Battle.createDeepFloorMonster(Battle.cloneMonsterBase(base), storedFloor, true);
+                    if (storedIds.length > 1) m.name += String.fromCharCode(65 + i);
+                    newEnemies.push(m);
+                });
+            } else {
+                Battle.log('強大な魔物が現れた！');
+                storedIds.forEach((id, i) => {
+                    const base = Battle.getMonsterBaseById(id);
+                    if (!base) return;
+                    pushBase(base, i, storedIds.length, { isBossBattle: true });
+                });
+            }
+            if (newEnemies.length > 0) return newEnemies;
+        }
+
         if (isBoss && targetId) {
             const bases = Battle.getMonsterBasesByIds(targetId);
             if (bases.length > 0) {

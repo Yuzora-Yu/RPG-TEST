@@ -1,9 +1,10 @@
 const fs = require('fs');
 const vm = require('vm');
+const { loadMapRuntime } = require('./validation-helpers');
 
 const root = process.cwd();
 
-const context = {
+const { context, runFile } = loadMapRuntime(root, { context: {
   console,
   Math,
   setTimeout,
@@ -51,17 +52,8 @@ const context = {
     tryRandomEncounter: () => false,
     discoverFixedMap: () => {},
   },
-};
-context.globalThis = context;
-vm.createContext(context);
+} });
 
-function runFile(file, suffix = '') {
-  const code = fs.readFileSync(`${root}/${file}`, 'utf8');
-  vm.runInContext(`${code}\n${suffix}`, context, { filename: file });
-}
-
-runFile('map.js', 'globalThis.__MAPS__ = { TILE_THEMES, STORY_DATA, MAP_DATA, FIXED_MAPS, FIXED_DUNGEON_MAPS, MapRegistry };');
-Object.assign(context, context.__MAPS__);
 runFile('dungeon.js', 'globalThis.Dungeon = Dungeon;');
 
 const { FIXED_DUNGEON_MAPS, MapRegistry, Dungeon, Field, App } = context;
@@ -435,7 +427,7 @@ function validateMultiColorFixedBossRewardRuntime() {
 
 function validateSourceHooks() {
   const main = fs.readFileSync(`${root}/main.js`, 'utf8');
-  const story = fs.readFileSync(`${root}/story.js`, 'utf8');
+  const story = `${fs.readFileSync(`${root}/story.js`, 'utf8')}\n${fs.readFileSync(`${root}/story_logic.js`, 'utf8')}`;
   const battle = fs.readFileSync(`${root}/battle.js`, 'utf8');
   assert(/Dungeon\.isLockedDoorTile\(tile\)[\s\S]{0,800}Dungeon\.unlockDoorAt\(nx,\s*ny,\s*tile\)/.test(main), 'Field.move is not wired to Dungeon.unlockDoorAt');
   assert(/Dungeon\.handleMove\(nx,\s*ny\)/.test(main), 'Field.move is not wired to Dungeon.handleMove');
