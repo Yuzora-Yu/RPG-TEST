@@ -42,7 +42,7 @@ const Dungeon = {
     keyItemTiles: { Q: 'red', N: 'blue', O: 'gold' },
     keyItemSymbols: { red: 'Q', blue: 'N', gold: 'O' },
     keyColorLabels: { red: '赤', blue: '青', gold: '金' },
-    keyGuardianImagePath: 'assets/map/overlays/overlay_monster_guardian_v001.png',
+    keyGuardianImagePath: 'assets/monsters/monster_100010.png',
     randomVisualThemes: [
         { id: 'abyss', themeKey: 'ABYSS', battleBg: 'battle_bg_dungeon', minFloor: 1 },
         { id: 'forest', themeKey: 'FORBIDDEN_FOREST', battleBg: 'battle_bg_forest', minFloor: 11 },
@@ -411,9 +411,22 @@ const Dungeon = {
         const color = floorKey?.color || Dungeon.getKeyItemColor(tile);
         if (!color) return false;
         if (floorKey) floorKey.active = false;
-        if (Dungeon.map?.[y]?.[x]) Dungeon.map[y][x] = 'T';
+        const isFixedMap = !!Field.currentMapData?.isFixed;
+        if (isFixedMap) {
+            const areaKey = Field.getCurrentAreaKey ? Field.getCurrentAreaKey() : App.data?.location?.area;
+            const changeKey = Dungeon.getMapChangeKey(areaKey);
+            if (!App.data.progress.mapChanges) App.data.progress.mapChanges = {};
+            if (!App.data.progress.mapChanges[changeKey]) App.data.progress.mapChanges[changeKey] = {};
+            App.data.progress.mapChanges[changeKey][`${Number(x)},${Number(y)}`] = 'T';
+        } else if (Dungeon.map?.[y]?.[x]) {
+            Dungeon.map[y][x] = 'T';
+        }
         Dungeon.grantDungeonKey(color, 'floor');
-        Dungeon.saveMapData();
+        if (isFixedMap) {
+            App.save();
+        } else {
+            Dungeon.saveMapData();
+        }
         if (typeof Field !== 'undefined' && typeof Field.render === 'function') Field.render();
         return true;
     },
@@ -971,6 +984,25 @@ const Dungeon = {
             if (App.data.dungeon.visitedMap && Number(App.data.dungeon.visitedMap.floor) !== Number(Dungeon.floor)) {
                 App.data.dungeon.visitedMap = null;
             }
+            const activeAbyssBossEncounter = App.data.dungeon.abyssBossEncounter &&
+                App.data.dungeon.abyssBossEncounter.active &&
+                Number(App.data.dungeon.abyssBossEncounter.floor) === Number(Dungeon.floor);
+            const hasAbyssBossTile = Dungeon.hasCurrentAbyssBossTile();
+            if (Dungeon.isBossFloor() && (hasAbyssBossTile || activeAbyssBossEncounter)) {
+                const layout = Dungeon.getAbyssBossRoomLayout ? Dungeon.getAbyssBossRoomLayout() : null;
+                if (layout && (App.data.dungeon.bossRoomLayout !== layout.id || !hasAbyssBossTile)) {
+                    const preservedEncounter = App.data.dungeon.abyssBossEncounter;
+                    Dungeon.generateAbyssBossRoom({ preserveEncounter: preservedEncounter });
+                    App.data.dungeon.map = Dungeon.map;
+                    App.data.dungeon.width = Dungeon.width;
+                    App.data.dungeon.height = Dungeon.height;
+                } else {
+                    Dungeon.ensureAbyssBossEncounter({ floor: Dungeon.floor });
+                }
+                if (typeof App.save === 'function') App.save();
+            } else if (App.data.dungeon.abyssBossEncounter && Number(App.data.dungeon.abyssBossEncounter.floor) !== Number(Dungeon.floor)) {
+                App.data.dungeon.abyssBossEncounter = null;
+            }
             App.log(`地下 ${Dungeon.floor} 階の冒険を再開します。`);
         } else {
             if(Dungeon.floor > App.data.dungeon.maxFloor) {
@@ -1161,15 +1193,28 @@ const Dungeon = {
         return table[f] || null;
     },
 
+    getAbyssBossRoomLayout: () => ({
+        id: 'narrow-v2',
+        width: 9,
+        height: 21,
+        centerX: 4,
+        boss: { x: 4, y: 5 },
+        entry: { x: 4, y: 19 },
+        stair: { x: 4, y: 1 },
+        spring: { x: 3, y: 3 },
+        rareChest: { x: 5, y: 3 }
+    }),
+
     selectAbyssBossEncounter: (floor = Dungeon.floor) => {
         const f = Math.max(1, Number(floor || 1));
+        const layout = Dungeon.getAbyssBossRoomLayout ? Dungeon.getAbyssBossRoomLayout() : { boss: { x: 5, y: 5 } };
         const storyDisplayId = Dungeon.getAbyssStoryBossDisplayMonsterId(f);
         if (storyDisplayId) {
             return {
                 active: true,
                 floor: f,
-                x: 5,
-                y: 5,
+                x: layout.boss.x,
+                y: layout.boss.y,
                 monsterIds: [storyDisplayId],
                 displayMonsterId: storyDisplayId,
                 source: 'story'
@@ -1198,8 +1243,8 @@ const Dungeon = {
         return {
             active: true,
             floor: f,
-            x: 5,
-            y: 5,
+            x: layout.boss.x,
+            y: layout.boss.y,
             monsterIds: ids,
             displayMonsterId: ids[0],
             source: f >= 201 ? 'deep-random' : 'floor-band'
@@ -1218,13 +1263,63 @@ const Dungeon = {
         return encounter;
     },
 
+    hasCurrentAbyssBossTile: () => {
+        if (App.data?.location?.area !== 'ABYSS') return false;
+        if (!Array.isArray(Dungeon.map) || !Dungeon.map.length) return false;
+        return Dungeon.map.some(row => Array.isArray(row) && row.some(tile => String(tile || '').toUpperCase() === 'B'));
+    },
+
     getCurrentAbyssBossEncounter: () => {
         if (App.data?.location?.area !== 'ABYSS') return null;
         const floor = Math.max(1, Number(Dungeon.floor || App.data?.progress?.floor || 1));
         const encounter = App.data?.dungeon?.abyssBossEncounter;
         if (encounter && encounter.active && Number(encounter.floor) === floor) return encounter;
-        if (floor > 0 && floor % 10 === 0) return Dungeon.ensureAbyssBossEncounter({ floor });
+        if (floor > 0 && floor % 10 === 0 && Dungeon.hasCurrentAbyssBossTile()) {
+            return Dungeon.ensureAbyssBossEncounter({ floor });
+        }
         return null;
+    },
+
+    isAbyssBossAt: (x, y) => {
+        const encounter = Dungeon.getCurrentAbyssBossEncounter ? Dungeon.getCurrentAbyssBossEncounter() : null;
+        return !!(encounter && encounter.active &&
+            Number(encounter.floor) === Number(Dungeon.floor) &&
+            Number(encounter.x) === Number(x) &&
+            Number(encounter.y) === Number(y));
+    },
+
+    prepareAbyssBossTileAction: (x, y, options = {}) => {
+        if (App.data?.location?.area !== 'ABYSS') return false;
+        if (!Dungeon.isAbyssBossAt(x, y)) return false;
+        const silent = options.silent !== false;
+        const eventId = Dungeon.getAbyssBossStoryEventId(Dungeon.floor);
+        if (!silent) App.log("ボスの気配が立ちはだかっている。");
+        if (eventId && typeof StoryManager !== 'undefined' && typeof StoryManager.executeEvent === 'function') {
+            App.setAction("対峙する", () => StoryManager.executeEvent(eventId));
+        } else {
+            App.setAction("ボスと戦う", () => Dungeon.startAbyssBossBattle(x, y));
+        }
+        return true;
+    },
+
+    startAbyssBossBattle: (x = null, y = null) => {
+        const encounter = Dungeon.getCurrentAbyssBossEncounter ? Dungeon.getCurrentAbyssBossEncounter() : null;
+        if (!encounter) return false;
+        if (App.data.battle) {
+            App.data.battle.isBossBattle = true;
+            App.data.battle.isSpecialBoss = false;
+            App.data.battle.isEstark = false;
+            App.data.battle.fixedBossId = null;
+            App.data.battle.abyssBossEncounter = encounter;
+            App.data.battle.abyssBossPosition = {
+                x: Number(x ?? encounter.x ?? 5),
+                y: Number(y ?? encounter.y ?? 5),
+                floor: Number(Dungeon.floor)
+            };
+        }
+        App.save();
+        App.changeScene('battle');
+        return true;
     },
 
     handleMove: (x, y) => {
@@ -2133,7 +2228,7 @@ const Dungeon = {
         const lines = [`地下 ${floor} 階に到達した`];
 
         if (Dungeon.isBossFloor()) {
-            lines.push('部屋の中央から強大な気配を感じる…');
+            lines.push('通路の奥から強大な気配を感じる…');
         } else {
             if (App.data?.dungeon?.isTreasureRoom) {
                 lines.push('なんと、宝物庫のようだ！');
@@ -2902,7 +2997,7 @@ const Dungeon = {
         
         if (Dungeon.floor > 0 && Dungeon.floor % 10 === 0) {
             Dungeon.rollRandomVisualTheme();
-            Dungeon.generateBossRoom();
+            Dungeon.generateAbyssBossRoom();
         } else {
             let valid = false;
             let lastValidation = null;
@@ -2940,6 +3035,48 @@ const Dungeon = {
         };
         App.data.location.x = Field.x;
         App.data.location.y = Field.y;
+    },
+
+    generateAbyssBossRoom: (options = {}) => {
+        const layout = Dungeon.getAbyssBossRoomLayout();
+        const w = layout.width;
+        const h = layout.height;
+        const cx = layout.centerX;
+        Dungeon.map = [];
+        Dungeon.width = w;
+        Dungeon.height = h;
+        for (let y = 0; y < h; y++) {
+            const row = [];
+            for (let x = 0; x < w; x++) row.push('W');
+            Dungeon.map.push(row);
+        }
+
+        for (let y = 2; y <= layout.entry.y; y++) {
+            for (let x = cx - 1; x <= cx + 1; x++) {
+                Dungeon.map[y][x] = 'T';
+            }
+        }
+        Dungeon.map[layout.stair.y][layout.stair.x] = 'T';
+        Dungeon.map[layout.boss.y][cx - 1] = 'T';
+        Dungeon.map[layout.boss.y][cx + 1] = 'T';
+        Dungeon.map[layout.boss.y][layout.boss.x] = 'B';
+
+        Field.x = layout.entry.x;
+        Field.y = layout.entry.y;
+
+        const preserved = options.preserveEncounter;
+        if (preserved && Number(preserved.floor) === Number(Dungeon.floor) && Array.isArray(preserved.monsterIds) && preserved.monsterIds.length) {
+            App.data.dungeon.abyssBossEncounter = {
+                ...preserved,
+                active: true,
+                floor: Dungeon.floor,
+                x: layout.boss.x,
+                y: layout.boss.y,
+            };
+        } else {
+            Dungeon.ensureAbyssBossEncounter({ floor: Dungeon.floor, force: true });
+        }
+        App.data.dungeon.bossRoomLayout = layout.id;
     },
 
     generateBossRoom: () => {
@@ -3873,14 +4010,23 @@ const Dungeon = {
 		} 
 		// 2. ランダムダンジョン（ABYSS）の場合
 		else if (isAbyss) {
-			// ボス撃破後の報酬配置。足元を階段にする旧仕様ではなく、
-			// ひし形ボス部屋の上端に階段、左下に全回復の泉、右下にレア宝箱を出す。
-			// 配置座標は generateBossRoom() の 11x11 / 中心(5,5) / 半径4 と対応している。
-			const stair = { x: 5, y: 1 };
-			const spring = { x: 4, y: 2 };
-			const rareChest = { x: 6, y: 2 };
+			// ボス撃破後の報酬配置。ボスの奥に階段・泉・レア宝箱を開放する。
+			// 配置座標は getAbyssBossRoomLayout() と対応している。
+			const layout = Dungeon.getAbyssBossRoomLayout ? Dungeon.getAbyssBossRoomLayout() : {
+				centerX: 5,
+				boss: { x: 5, y: 5 },
+				stair: { x: 5, y: 1 },
+				spring: { x: 4, y: 2 },
+				rareChest: { x: 6, y: 2 }
+			};
+			const stair = layout.stair;
+			const spring = layout.spring;
+			const rareChest = layout.rareChest;
+			const bossPos = App.data.battle?.abyssBossPosition || App.data.dungeon.abyssBossEncounter || layout.boss;
 
-			if (Dungeon.map?.[Field.y]?.[Field.x]) Dungeon.map[Field.y][Field.x] = 'T';
+			if (Dungeon.map?.[bossPos.y]?.[bossPos.x]) Dungeon.map[bossPos.y][bossPos.x] = 'T';
+			if (Dungeon.map?.[layout.boss.y]?.[layout.centerX - 1]) Dungeon.map[layout.boss.y][layout.centerX - 1] = 'T';
+			if (Dungeon.map?.[layout.boss.y]?.[layout.centerX + 1]) Dungeon.map[layout.boss.y][layout.centerX + 1] = 'T';
 			if (Dungeon.map?.[stair.y]?.[stair.x]) Dungeon.map[stair.y][stair.x] = 'S';
 			if (Dungeon.map?.[rareChest.y]?.[rareChest.x]) Dungeon.map[rareChest.y][rareChest.x] = 'R';
 
@@ -3915,6 +4061,8 @@ const Dungeon = {
 			App.data.battle.isSpecialBoss = false;
 			App.data.battle.isEstark = false;
 			App.data.battle.fixedBossId = null; 
+			App.data.battle.abyssBossEncounter = null;
+			App.data.battle.abyssBossPosition = null;
 		}
 	}
 

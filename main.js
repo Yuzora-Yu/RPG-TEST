@@ -744,7 +744,7 @@ const App = {
 
 	// 全画像データの手動/初回ダウンロード用キャッシュ名。
 	// sw.js の RUNTIME_CACHE_NAME と揃えること。
-	fullDataCacheName: 'prisma-abyss-v3.51-full-data-runtime-assets',
+	fullDataCacheName: 'prisma-abyss-v3.58-full-data-runtime-assets',
 
 
 	// 初回の「全データをダウンロードしますか？」で「いいえ」を選んだ記録。
@@ -1257,6 +1257,14 @@ const App = {
 			// 画像全体の初回キャッシュは sw.js / 起動時モーダル / 設定メニューから実行する。
 			if (typeof App.preloadStartupImages === 'function') {
 				await App.preloadStartupImages();
+			}
+
+			if (typeof Field !== 'undefined' && Field.ready) {
+				if (typeof Field.syncCanvasToWrapperSize === 'function') Field.syncCanvasToWrapperSize();
+				if (typeof Field.render === 'function') Field.render();
+				if (typeof PhaserFieldRenderer !== 'undefined' && typeof PhaserFieldRenderer.resize === 'function') {
+					PhaserFieldRenderer.resize();
+				}
 			}
 
 			if (window.InitialLoading) {
@@ -5202,6 +5210,50 @@ const Field = {
         }
         return Field.directImageCache[src];
     },
+
+    syncCanvasToWrapperSize: () => {
+        const canvas = document.getElementById('field-canvas');
+        const wrapper = document.getElementById('canvas-wrapper');
+        if (!canvas || !wrapper || !wrapper.getBoundingClientRect) return false;
+        const rect = wrapper.getBoundingClientRect();
+        const width = Math.max(320, Math.round(rect.width || wrapper.clientWidth || 0));
+        const height = Math.max(320, Math.round(rect.height || wrapper.clientHeight || 0));
+        if (!width || !height) return false;
+        if (canvas.width !== width || canvas.height !== height) {
+            canvas.width = width;
+            canvas.height = height;
+            if (typeof Field.updateMinimapHotspotBounds === 'function') {
+                window.requestAnimationFrame(() => Field.updateMinimapHotspotBounds());
+            }
+            return true;
+        }
+        return false;
+    },
+
+    bindViewportResizeObserver: () => {
+        if (Field._viewportResizeObserverBound) return;
+        const wrapper = document.getElementById('canvas-wrapper');
+        if (!wrapper || !window.ResizeObserver) return;
+        Field._viewportResizeObserverBound = true;
+        let scheduled = false;
+        Field._viewportResizeObserver = new ResizeObserver(() => {
+            if (scheduled) return;
+            scheduled = true;
+            window.requestAnimationFrame(() => {
+                scheduled = false;
+                const resized = typeof Field.syncCanvasToWrapperSize === 'function'
+                    ? Field.syncCanvasToWrapperSize()
+                    : false;
+                if (typeof PhaserFieldRenderer !== 'undefined' && typeof PhaserFieldRenderer.resize === 'function') {
+                    PhaserFieldRenderer.resize();
+                }
+                if (resized && Field.ready && typeof Field.render === 'function') {
+                    Field.render();
+                }
+            });
+        });
+        Field._viewportResizeObserver.observe(wrapper);
+    },
 	
 	// ★追加：移動を強制停止するメソッド
     stopMove: () => {
@@ -5300,6 +5352,8 @@ const Field = {
         }
 
         Field.ready = true;
+        if (typeof Field.bindViewportResizeObserver === 'function') Field.bindViewportResizeObserver();
+        if (typeof Field.syncCanvasToWrapperSize === 'function') Field.syncCanvasToWrapperSize();
         Field.render();
         
         // ★修正：直接代入を App.updateHUD() の呼び出しに変更
@@ -5634,6 +5688,9 @@ const Field = {
         const theme = Field.getCurrentTileTheme();
         
         let config = theme[upper] || TILE_THEMES['DEFAULT'][upper] || { img: null, color: '#000' };
+        if (Field.currentMapData && Field.currentMapData.isDungeon && !Field.currentMapData.isFixed && upper === 'B' && Field.getCurrentAreaKey?.() === 'ABYSS') {
+            return theme.T || TILE_THEMES['DEFAULT'].T || { img: null, color: '#222' };
+        }
 
         // ランダム生成ダンジョン専用: 溶岩マス(M)。
         // WORLDのM(山)とは意味が違うため、map.jsではなくここでダンジョン時だけ上書きする。
@@ -5790,6 +5847,14 @@ const Field = {
 
     getMapDrawParts: (tileSign, tileX = null, tileY = null) => {
         const upper = String(tileSign || 'W').toUpperCase();
+        if (upper === 'B' && Field.currentMapData?.isDungeon && !Field.currentMapData?.isFixed && Field.getCurrentAreaKey?.() === 'ABYSS') {
+            return {
+                upper: 'T',
+                baseTile: 'T',
+                overlayConfig: null,
+                worldOverlay: false
+            };
+        }
         const fixedOverlayConfig = Field.getFixedTileOverlayConfig ? Field.getFixedTileOverlayConfig(upper, tileX, tileY) : null;
         const actionOverlayConfig = Field.getMapActionOverlayConfig ? Field.getMapActionOverlayConfig(tileX, tileY) : null;
 
@@ -6347,6 +6412,23 @@ const Field = {
         return null;
     },
 
+    getAdjacentAbyssBoss: () => {
+        if (!Field.currentMapData?.isDungeon || Field.currentMapData?.isFixed) return null;
+        if (Field.getCurrentAreaKey?.() !== 'ABYSS') return null;
+        if (typeof Dungeon === 'undefined' || typeof Dungeon.isAbyssBossAt !== 'function') return null;
+        const directions = {
+            0: [0, 1],
+            1: [-1, 0],
+            2: [1, 0],
+            3: [0, -1]
+        };
+        const [dx, dy] = directions[Number(Field.dir)] || [0, 1];
+        const x = Number(Field.x) + dx;
+        const y = Number(Field.y) + dy;
+        if (x < 0 || y < 0 || x >= Field.currentMapData.width || y >= Field.currentMapData.height) return null;
+        return Dungeon.isAbyssBossAt(x, y) ? { x, y } : null;
+    },
+
     activateSwitchGate: (action) => {
         if (!action || !Field.currentMapData?.isFixed) return false;
         const progress = App.data.progress || (App.data.progress = {});
@@ -6661,6 +6743,10 @@ const Field = {
             const adjacentBoss = Field.getAdjacentFixedBoss();
             if (adjacentBoss && typeof Dungeon !== 'undefined' && typeof Dungeon.prepareFixedTileAction === 'function') {
                 return Dungeon.prepareFixedTileAction('B', adjacentBoss.x, adjacentBoss.y, { silent });
+            }
+            const adjacentAbyssBoss = Field.getAdjacentAbyssBoss ? Field.getAdjacentAbyssBoss() : null;
+            if (adjacentAbyssBoss && typeof Dungeon !== 'undefined' && typeof Dungeon.prepareAbyssBossTileAction === 'function') {
+                return Dungeon.prepareAbyssBossTileAction(adjacentAbyssBoss.x, adjacentAbyssBoss.y, { silent });
             }
             if (Field.prepareAdjacentMapActorAction({ silent })) return true;
             if (Field.prepareAdjacentChestAction({ silent })) return true;
@@ -7005,6 +7091,11 @@ const Field = {
                 const chestDef = Field.getFixedChestAt ? Field.getFixedChestAt(nx, ny) : null;
                 const chestTile = Field.getFixedChestTileSign ? Field.getFixedChestTileSign(chestDef) : null;
                 if (chestTile) tile = chestTile;
+            } else if (tile === 'B' && areaKey === 'ABYSS' && typeof Dungeon !== 'undefined' && typeof Dungeon.prepareAbyssBossTileAction === 'function') {
+                Dungeon.prepareAbyssBossTileAction(nx, ny, { silent: false });
+                keepCurrentTileAction();
+                Field.render();
+                return;
             }
 
             const targetMapAction = typeof MapRegistry !== 'undefined' && MapRegistry.findMapAction
@@ -7143,6 +7234,7 @@ const Field = {
 
     render: () => {
         const canvas = document.getElementById('field-canvas'); if(!canvas) return;
+        if (typeof Field.syncCanvasToWrapperSize === 'function') Field.syncCanvasToWrapperSize();
         if (typeof PhaserFieldRenderer !== 'undefined' && PhaserFieldRenderer.render(Field)) {
             let locName = Field.currentMapData ? Field.currentMapData.name : `世界地図 (${Field.x}, ${Field.y})`;
             if (!Field.currentMapData && App.data?.transportMode === 'flying') locName += ' - 飛行中';
@@ -7492,7 +7584,7 @@ const Field = {
             const oy = Number(encounter.y ?? 5) - Number(Field.y);
             if (Math.abs(ox) > rangeX + 1 || Math.abs(oy) > rangeY + 1) return;
 
-            const size = ts * 2;
+            const size = ts * 2.6;
             const px = Math.floor(cx + (ox * ts) - (size / 2));
             const py = Math.floor(cy + (oy * ts) - (size / 2));
             const src = Field.getMonsterMapSpriteSrc ? Field.getMonsterMapSpriteSrc(monsterId) : `assets/monsters/monster_${monsterId}.png`;
@@ -7711,11 +7803,17 @@ const Field = {
 if (typeof window !== 'undefined') {
     window.addEventListener('resize', () => {
         window.requestAnimationFrame(() => {
+            if (typeof Field.syncCanvasToWrapperSize === 'function') {
+                Field.syncCanvasToWrapperSize();
+            }
             if (typeof PhaserFieldRenderer !== 'undefined' && typeof PhaserFieldRenderer.resize === 'function') {
                 PhaserFieldRenderer.resize();
             }
             if (typeof Field.updateMinimapHotspotBounds === 'function') {
                 Field.updateMinimapHotspotBounds();
+            }
+            if (Field.ready && typeof Field.render === 'function') {
+                Field.render();
             }
         });
     });

@@ -37,6 +37,7 @@ const PRISMA_BOSS_MONSTER_IMAGE_IDS = [
   200201, 200202, 200203, 200204,
   301000, 301001, 301002, 301010, 301011, 301012, 301020, 301021, 301022, 301030, 301031, 301032, 301040, 301050, 301060, 301061, 301062, 301070, 301080, 301081, 301082, 301100,
   401010, 401020, 401030, 401040, 401050, 401060, 401070, 401080, 401081, 401082, 401090, 401100, 401110, 401120, 401130, 401140, 401150, 401151, 401152, 401153, 401160, 401161, 401162, 401170, 401180, 401190, 401200,
+  502049, 502098,
   902000,
 ];
 const PRISMA_MONSTER_IMAGE_FILES = PRISMA_NORMAL_MONSTER_IMAGE_IDS
@@ -193,8 +194,7 @@ const PRISMA_ASSETS = {
     overlay_town_water_boatman: "assets/map/overlays/overlay_town_water_boatman_v001.png",
     overlay_town_light_pilgrim: "assets/map/overlays/overlay_town_light_pilgrim_v001.png",
     overlay_town_demon_guard: "assets/map/overlays/overlay_town_demon_guard_v001.png",
-    overlay_monster_guardian: "assets/map/overlays/overlay_monster_guardian_v001.png",
-    overlay_stone_tablet_sfc: "assets/map/overlays/overlay_stone_tablet_sfc_v001.png",
+    overlay_monster_guardian: "assets/monsters/monster_100010.png",
     overlay_building_fire_forge: "assets/map/overlays/overlay_building_fire_forge_v002.png",
     overlay_building_wind_hut: "assets/map/overlays/overlay_building_wind_hut_v002.png",
     overlay_building_water_shop: "assets/map/overlays/overlay_building_water_shop_v002.png",

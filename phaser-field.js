@@ -168,7 +168,9 @@
         const parts = field.getMapDrawParts
             ? field.getMapDrawParts(tile, tileX, tileY)
             : { upper: String(tile).toUpperCase(), baseTile: tile, overlayConfig: null };
-        const upper = parts.upper;
+        const rawUpper = String(tile || '').toUpperCase();
+        const isRandomAbyssBossTile = rawUpper === 'B' && field.currentMapData?.isDungeon && !field.currentMapData?.isFixed && areaKey === 'ABYSS';
+        const upper = isRandomAbyssBossTile ? 'T' : parts.upper;
         const overlay = parts.overlayConfig;
         const groundTile = overlay ? parts.baseTile : (upper === 'G' ? 'G' : 'T');
         const floorConfig = parts.worldOverlay
@@ -327,6 +329,41 @@
         }
     };
 
+    const drawAbyssBossObject = (scene, field, mapFloor) => {
+        const dungeon = getDungeon();
+        const app = getApp();
+        if (!field.currentMapData?.isDungeon || field.currentMapData?.isFixed) return;
+        if (app?.data?.location?.area !== 'ABYSS') return;
+        if (!dungeon || typeof dungeon.getCurrentAbyssBossEncounter !== 'function') return;
+
+        const encounter = dungeon.getCurrentAbyssBossEncounter();
+        if (!encounter || !encounter.active || Number(encounter.floor) !== Number(mapFloor)) return;
+
+        const monsterId = Number(encounter.displayMonsterId || encounter.monsterIds?.[0]);
+        if (!Number.isFinite(monsterId)) return;
+
+        const x = Number(encounter.x ?? 5);
+        const y = Number(encounter.y ?? 5);
+        const px = x * TILE_SIZE + TILE_SIZE / 2;
+        const py = y * TILE_SIZE + TILE_SIZE;
+        const key = field.getMonsterMapSpriteKey
+            ? field.getMonsterMapSpriteKey(monsterId)
+            : `monster_${monsterId}`;
+        const depth = y * 100 + 90;
+
+        const abyssBossScale = 2.6;
+        addShadow(scene, px + 4, py - 2, 44, 0.30, depth - 3);
+        if (!addImage(scene, key, px, py, {
+            width: TILE_SIZE * abyssBossScale,
+            height: TILE_SIZE * abyssBossScale,
+            depth
+        })) {
+            const marker = scene.add.circle(px, py - TILE_SIZE / 2, 17, 0xc78cff, 0.95);
+            marker.setDepth(depth);
+            state.worldObjects.push(marker);
+        }
+    };
+
     const miniTileColor = (field, tile, x, y) => {
         const upper = String(tile || '').toUpperCase();
         if (upper === 'W') return 0x08090b;
@@ -412,6 +449,7 @@
         drawObjectMarker(dungeonData?.adventurer, 0x5bd6ff);
         drawObjectMarker(dungeonData?.trialAngel, 0xfff3a6);
         drawObjectMarker(dungeonData?.keyGuardian, 0xffd78a);
+        drawObjectMarker(dungeonData?.abyssBossEncounter, 0xc78cff);
         if (field.currentMapData?.isFixed && typeof field.getFixedHealSpringsForCurrentFloor === 'function') {
             field.getFixedHealSpringsForCurrentFloor().forEach(spring => {
                 drawObjectMarker({
@@ -481,8 +519,12 @@
             dungeon.abyssRift,
             dungeon.adventurer,
             dungeon.keyGuardian,
-            dungeon.trialAngel
-        ].map(object => object ? `${object.active}:${object.floor}:${object.x}:${object.y}` : '-').join('|');
+            dungeon.trialAngel,
+            dungeon.abyssBossEncounter
+        ].map(object => object
+            ? `${object.active}:${object.floor}:${object.x}:${object.y}:${object.displayMonsterId || ''}:${Array.isArray(object.monsterIds) ? object.monsterIds.join(',') : ''}`
+            : '-'
+        ).join('|');
 		const randomDungeonMapSignature = (
 			field.currentMapData?.isDungeon &&
 			!field.currentMapData?.isFixed &&
@@ -592,6 +634,7 @@
             drawSpecialObject(scene, field, dungeonData.adventurer, null, 0x5bd6ff, floor);
             drawSpecialObject(scene, field, dungeonData.keyGuardian, null, 0xffd78a, floor);
             drawSpecialObject(scene, field, dungeonData.trialAngel, 'overlay_dungeon_trial_angel', 0xfff3a6, floor);
+            drawAbyssBossObject(scene, field, floor);
         }
         if (field.currentMapData?.isFixed && typeof field.getFixedHealSpringsForCurrentFloor === 'function') {
             field.getFixedHealSpringsForCurrentFloor().forEach(spring => {

@@ -22,8 +22,8 @@ try {
   console.warn("[SW] assets.js の読み込みに失敗しました。画像初回キャッシュは最小限で続行します。", error);
 }
 
-const CACHE_NAME = "prisma-abyss-v3.51-full-data";
-const RUNTIME_CACHE_NAME = "prisma-abyss-v3.51-full-data-runtime-assets";
+const CACHE_NAME = "prisma-abyss-v3.58-full-data";
+const RUNTIME_CACHE_NAME = "prisma-abyss-v3.58-full-data-runtime-assets";
 const WARM_CACHE_META_KEY = "__prisma_abyss_warm_cache_complete__";
 
 // 起動に必要な App Shell。
