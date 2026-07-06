@@ -119,7 +119,7 @@ const PRISMA_ASSETS = {
     overlay_field_event: "assets/map/overlays/overlay_field_event_v002.png",
     overlay_field_farm: "assets/map/overlays/overlay_field_farm_v002.png",
     overlay_field_fire_village: "assets/map/overlays/overlay_field_fire_village_v002.png",
-    overlay_field_forest: "assets/map/overlays/overlay_field_forest_v005.png",
+    overlay_field_forest: "assets/map/overlays/overlay_field_forest_v006.png",
     overlay_field_fortress: "assets/map/overlays/overlay_field_fortress_v002.png",
     overlay_field_grass: "assets/map/overlays/overlay_field_grass_v002.png",
     overlay_field_hall: "assets/map/overlays/overlay_field_hall_v002.png",

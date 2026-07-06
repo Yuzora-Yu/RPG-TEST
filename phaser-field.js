@@ -2,7 +2,8 @@
     'use strict';
 
     const TILE_SIZE = 32;
-    const VIEW_PADDING = 2;
+    const FIELD_VIEW_TILES = 15;
+    const VIEW_PADDING = 1;
     const BUILDING_PREFIXES = [
         'overlay_building_',
         'overlay_field_castle',
@@ -35,7 +36,9 @@
         uiObjects: [],
         textureKeys: new Set(),
         resizeObserver: null,
-        lastStaticSignature: null
+        lastStaticSignature: null,
+        lastParentWidth: 0,
+        lastParentHeight: 0
     };
 
     const getApp = () => (typeof App !== 'undefined' ? App : null);
@@ -105,7 +108,8 @@
         if (!key || !scene.textures.exists(key)) return null;
         const image = scene.add.image(x, y, key);
         image.setOrigin(options.originX ?? 0.5, options.originY ?? 1);
-        image.setDisplaySize(options.width || TILE_SIZE, options.height || TILE_SIZE);
+        const bleed = options.bleed || 0;
+        image.setDisplaySize((options.width || TILE_SIZE) + bleed, (options.height || TILE_SIZE) + bleed);
         image.setDepth(options.depth || 0);
         if (options.alpha !== undefined) image.setAlpha(options.alpha);
         if (options.tint !== undefined) image.setTint(options.tint);
@@ -121,7 +125,6 @@
             TILE_SIZE,
             colorToInt(color, 0x171b1d)
         );
-        rect.setStrokeStyle(1, 0xffffff, 0.055);
         rect.setDepth(depth);
         state.worldObjects.push(rect);
         return rect;
@@ -143,9 +146,21 @@
             : Number(getWorldMap()?.length || 32)
     });
 
+    const applyFieldCamera = (scene, field) => {
+        const camera = scene?.cameras?.main;
+        if (!camera) return;
+        const width = Math.max(1, scene.scale.width || 1);
+        const height = Math.max(1, scene.scale.height || 1);
+        camera.setViewport(0, 0, width, height);
+        camera.setZoom(width / (FIELD_VIEW_TILES * TILE_SIZE));
+        const px = Number(field.x) * TILE_SIZE + TILE_SIZE / 2;
+        const py = Number(field.y) * TILE_SIZE + TILE_SIZE / 2;
+        camera.centerOn(px, py);
+    };
+
     const getVisibleRange = (scene) => ({
-        x: Math.ceil(scene.scale.width / (2 * TILE_SIZE)) + VIEW_PADDING,
-        y: Math.ceil(scene.scale.height / (2 * TILE_SIZE)) + VIEW_PADDING
+        x: Math.floor(FIELD_VIEW_TILES / 2) + VIEW_PADDING,
+        y: Math.ceil((scene.scale.height || FIELD_VIEW_TILES * TILE_SIZE) / (2 * TILE_SIZE * Math.max(0.1, scene.cameras.main.zoom || 1))) + VIEW_PADDING
     });
 
     const drawTile = (scene, field, mapSize, areaKey, tileX, tileY) => {
@@ -188,7 +203,8 @@
             const water = addImage(scene, objectConfig.img, px + TILE_SIZE / 2, py + TILE_SIZE, {
                 depth: waterDepth,
                 width: TILE_SIZE,
-                height: TILE_SIZE
+                height: TILE_SIZE,
+                bleed: 0.6
             });
             if (water) {
                 const waveA = scene.add.rectangle(px + 9, py + 11, 11, 1, 0xa8e8ff, 0.18);
@@ -210,7 +226,8 @@
         } else {
             if (!addImage(scene, floorConfig.img, px + TILE_SIZE / 2, py + TILE_SIZE, {
                 depth: groundDepth,
-                originY: 1
+                originY: 1,
+                bleed: 0.6
             })) {
                 addTileFallback(scene, px, py, floorConfig.color, groundDepth);
             }
@@ -323,17 +340,24 @@
                 ? field.getFieldMinimapDisplaySize()
                 : 80
         ));
-        const margin = 10;
+        const margin = 14;
         const range = 7;
         const cells = range * 2 + 1;
-        const cell = size / cells;
-        const left = Math.max(margin, scene.scale.width - size - margin);
-        const top = margin;
+        const camera = scene.cameras.main;
+        const zoom = Math.max(0.1, camera.zoom || 1);
+        const screenLeft = Math.max(margin, scene.scale.width - size - margin);
+        const screenTop = margin;
+        const worldTopLeft = camera.getWorldPoint(screenLeft, screenTop);
+        const left = worldTopLeft.x;
+        const top = worldTopLeft.y;
+        const drawSize = size / zoom;
+        const cell = drawSize / cells;
         const graphics = scene.add.graphics();
-        graphics.setScrollFactor(0);
         graphics.setDepth(1000000);
-        graphics.fillStyle(0x000000, 0.72);
-        graphics.fillRect(left, top, size, size);
+        graphics.fillStyle(0x000000, 0.56);
+        graphics.fillRect(left, top, drawSize, drawSize);
+        graphics.lineStyle(Math.max(1 / zoom, 0.5), 0xffffff, 0.62);
+        graphics.strokeRect(left, top, drawSize, drawSize);
 
         for (let dy = -range; dy <= range; dy++) {
             for (let dx = -range; dx <= range; dx++) {
@@ -351,11 +375,11 @@
                 const cellX = left + (dx + range) * cell;
                 const cellY = top + (dy + range) * cell;
                 graphics.fillStyle(dx === 0 && dy === 0 ? 0xffffff : miniTileColor(field, tile, tx, ty), 1);
-                graphics.fillRect(cellX, cellY, Math.ceil(cell), Math.ceil(cell));
+                graphics.fillRect(cellX, cellY, cell + (1 / zoom), cell + (1 / zoom));
                 if ((dx !== 0 || dy !== 0) && typeof field.getMiniMapMarkerColor === 'function') {
                     const markerColor = field.getMiniMapMarkerColor(tile, tx, ty);
                     if (markerColor) {
-                        const markerSize = Math.max(2, Math.ceil(cell * 0.46));
+                        const markerSize = Math.max(2 / zoom, cell * 0.46);
                         graphics.fillStyle(colorToInt(markerColor, 0xffffff), 1);
                         graphics.fillRect(
                             cellX + (cell - markerSize) / 2,
@@ -375,10 +399,10 @@
             if ((dx === 0 && dy === 0) || Math.abs(dx) > range || Math.abs(dy) > range) return;
             graphics.fillStyle(color, 1);
             graphics.fillRect(
-                left + (dx + range) * cell + 1,
-                top + (dy + range) * cell + 1,
-                Math.max(2, cell - 2),
-                Math.max(2, cell - 2)
+                left + (dx + range) * cell + (1 / zoom),
+                top + (dy + range) * cell + (1 / zoom),
+                Math.max(2 / zoom, cell - (2 / zoom)),
+                Math.max(2 / zoom, cell - (2 / zoom))
             );
         };
 
@@ -414,9 +438,8 @@
             getDungeon().getHeldKeyOrder().forEach((color, index) => {
                 const key = keyTexture[color];
                 if (!key || !scene.textures.exists(key)) return;
-                const image = scene.add.image(left + size - 9 - index * 22, top + size + 15, key);
-                image.setDisplaySize(18, 18);
-                image.setScrollFactor(0);
+                const image = scene.add.image(left + drawSize - ((9 + index * 22) / zoom), top + drawSize + (15 / zoom), key);
+                image.setDisplaySize(18 / zoom, 18 / zoom);
                 image.setDepth(1000001);
                 state.uiObjects.push(image);
             });
@@ -510,7 +533,7 @@
             hero.setDepth(Number(field.y) * 100 + 88);
             state.actorObjects.push(hero);
         }
-        scene.cameras.main.centerOn(px, py - TILE_SIZE / 2);
+        applyFieldCamera(scene, field);
         scene.cameras.main.setRoundPixels(true);
         state.waterObjects.forEach((water) => {
             const shifted = ((field.step + water.phase) & 1) === 0;
@@ -527,6 +550,17 @@
         const scene = state.scene;
         if (!scene || !field || !field.ready) return;
         addKnownTextures(scene);
+        const parent = document.getElementById('phaser-field-root');
+        if (parent && state.game && parent.clientWidth > 0 && parent.clientHeight > 0) {
+            const parentWidth = parent.clientWidth;
+            const parentHeight = parent.clientHeight;
+            if (state.lastParentWidth !== parentWidth || state.lastParentHeight !== parentHeight) {
+                state.lastParentWidth = parentWidth;
+                state.lastParentHeight = parentHeight;
+                state.game.scale.resize(parentWidth, parentHeight);
+                state.lastStaticSignature = null;
+            }
+        }
 
         const staticSignature = getStaticSignature(field);
         if (state.lastStaticSignature === staticSignature) {
@@ -541,6 +575,7 @@
 
         const mapSize = getMapSize(field);
         const areaKey = field.getCurrentAreaKey();
+        applyFieldCamera(scene, field);
         const range = getVisibleRange(scene);
 
         for (let dy = -range.y; dy <= range.y; dy++) {
@@ -572,7 +607,7 @@
 
         drawPlayer(scene, field);
         drawAtmosphere(scene, field);
-        if (field.minimapMode !== 'minimized') drawMinimap(scene, field, mapSize, areaKey);
+        if (typeof field.drawHudMinimap === 'function') field.drawHudMinimap();
         state.lastStaticSignature = staticSignature;
     };
 
@@ -617,6 +652,10 @@
                         parent.classList.add('is-ready');
                         document.getElementById('canvas-wrapper')?.classList.add('phaser-field-active');
                         if (state.pendingField) sync(state.pendingField);
+                        window.requestAnimationFrame(() => {
+                            refreshVisibleField();
+                            window.requestAnimationFrame(refreshVisibleField);
+                        });
                     }
                 }
             });
@@ -625,6 +664,8 @@
                 state.resizeObserver = new ResizeObserver(() => {
                     if (!state.game || !parent.clientWidth || !parent.clientHeight) return;
                     state.game.scale.resize(parent.clientWidth, parent.clientHeight);
+                    state.lastParentWidth = parent.clientWidth;
+                    state.lastParentHeight = parent.clientHeight;
                     if (state.pendingField) sync(state.pendingField);
                 });
                 state.resizeObserver.observe(parent);

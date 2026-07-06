@@ -142,6 +142,7 @@ if ('serviceWorker' in navigator) {
         <div id="canvas-wrapper">
             <div id="phaser-field-root" aria-hidden="true"></div>
             <canvas id="field-canvas" width="320" height="320"></canvas>
+            <canvas id="field-minimap-canvas" width="80" height="80" aria-hidden="true"></canvas>
             <button id="field-minimap-hotspot" type="button" aria-label="MAP" onclick="Field.handleMinimapTap(event)"></button>
             <button id="field-minimap-restore" type="button" onclick="Field.restoreMinimap(event)">MAP</button>
             <div class="ui-layer">

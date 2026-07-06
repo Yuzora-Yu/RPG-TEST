@@ -744,7 +744,7 @@ const App = {
 
 	// 全画像データの手動/初回ダウンロード用キャッシュ名。
 	// sw.js の RUNTIME_CACHE_NAME と揃えること。
-	fullDataCacheName: 'prisma-abyss-v3.44-full-data-runtime-assets',
+	fullDataCacheName: 'prisma-abyss-v3.51-full-data-runtime-assets',
 
 
 	// 初回の「全データをダウンロードしますか？」で「いいえ」を選んだ記録。
@@ -3223,6 +3223,11 @@ const App = {
         if(!btn) return;
         btn.innerText = label;
         btn.style.display = 'block';
+        const okBtn = document.getElementById('btn-ok');
+        if (okBtn) {
+            okBtn.textContent = 'OK';
+            okBtn.classList.add('has-field-action');
+        }
         App.pendingAction = callback;
     },
 
@@ -3267,6 +3272,11 @@ const App = {
     clearAction: () => {
         const btn = document.getElementById('action-indicator');
         if(btn) btn.style.display = 'none';
+        const okBtn = document.getElementById('btn-ok');
+        if (okBtn) {
+            okBtn.textContent = 'OK';
+            okBtn.classList.remove('has-field-action');
+        }
         App.pendingAction = null;
     },
 
@@ -4473,13 +4483,25 @@ load: () => {
 
     log: (msg) => {
         const e = document.getElementById('msg-text');
-        if(e) e.innerHTML = msg; 
+        if(e) {
+            if (App._fieldToastTimer) clearTimeout(App._fieldToastTimer);
+            e.innerHTML = msg;
+            e.classList.remove('is-visible');
+            void e.offsetWidth;
+            e.classList.add('is-visible');
+            App._fieldToastTimer = setTimeout(() => {
+                e.classList.remove('is-visible');
+            }, 2000);
+        }
         console.log(`[App] ${msg}`);
     },
 
     resetFieldLog: () => {
         const e = document.getElementById('msg-text');
-        if (e) e.innerHTML = '';
+        if (e) {
+            e.innerHTML = '';
+            e.classList.remove('is-visible');
+        }
     },
     
     createCharHTML: (c) => {
@@ -5417,6 +5439,7 @@ const Field = {
         const phaserRoot = document.getElementById('phaser-field-root');
         const wrapper = document.getElementById('canvas-wrapper');
         const hotspot = document.getElementById('field-minimap-hotspot');
+        const minimapCanvas = document.getElementById('field-minimap-canvas');
         const restore = document.getElementById('field-minimap-restore');
         if (!canvas || !wrapper || !hotspot) return;
 
@@ -5474,6 +5497,16 @@ const Field = {
             width: `${width}px`,
             height: `${height}px`
         });
+
+        if (minimapCanvas) {
+            Object.assign(minimapCanvas.style, {
+                left: `${left}px`,
+                top: `${top}px`,
+                right: 'auto',
+                width: `${width}px`,
+                height: `${height}px`
+            });
+        }
 
         if (restore) {
             Object.assign(restore.style, {
@@ -5889,6 +5922,120 @@ const Field = {
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(markerX, markerY, Math.max(1, Math.floor(marker * 0.34)), Math.max(1, Math.floor(marker * 0.28)));
         }
+        ctx.restore();
+    },
+
+    drawHudMinimap: () => {
+        const canvas = document.getElementById('field-minimap-canvas');
+        if (!canvas) return;
+        const size = 80;
+        if (canvas.width !== size) canvas.width = size;
+        if (canvas.height !== size) canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        ctx.clearRect(0, 0, size, size);
+        if (Field.minimapMode === 'minimized') return;
+
+        const range = 7;
+        const cells = range * 2 + 1;
+        const cell = size / cells;
+        const mapW = Field.currentMapData ? Field.currentMapData.width : (typeof MAP_DATA !== 'undefined' ? MAP_DATA[0].length : 50);
+        const mapH = Field.currentMapData ? Field.currentMapData.height : (typeof MAP_DATA !== 'undefined' ? MAP_DATA.length : 32);
+
+        ctx.save();
+        ctx.globalAlpha = 0.56;
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, size, size);
+        ctx.globalAlpha = 1;
+
+        const miniTileColor = (tile, tx, ty) => {
+            const upper = String(tile || '').toUpperCase();
+            const cfg = Field.getTileConfigForDraw ? Field.getTileConfigForDraw(tile, tx, ty) : Field.getTileConfig(tile);
+            let color = cfg?.color || '#000';
+            if (upper === 'W') return '#000';
+            if (upper === 'M' && (!color || color === '#000' || color === '#000000')) color = '#54515b';
+            return color;
+        };
+
+        const isRandomDungeonHidden = (relX, relY, tileX, tileY) => {
+            if (!Field.currentMapData?.isDungeon || Field.currentMapData?.isFixed) return false;
+            if (typeof Dungeon === 'undefined' || typeof Dungeon.isVisited !== 'function') return false;
+            const inCurrentSight = Math.abs(relX) <= 4 && Math.abs(relY) <= 4;
+            return !inCurrentSight && !Dungeon.isVisited(tileX, tileY);
+        };
+
+        for (let dy = -range; dy <= range; dy++) {
+            for (let dx = -range; dx <= range; dx++) {
+                let tx = Number(Field.x) + dx;
+                let ty = Number(Field.y) + dy;
+                let tile = 'W';
+                let visible = true;
+
+                if (Field.currentMapData) {
+                    if (tx < 0 || tx >= mapW || ty < 0 || ty >= mapH || isRandomDungeonHidden(dx, dy, tx, ty)) {
+                        visible = false;
+                    } else {
+                        const areaKey = Field.getCurrentAreaKey();
+                        const progressKey = Field.currentMapData?.isFixed && Field.getCurrentProgressMapKey
+                            ? Field.getCurrentProgressMapKey()
+                            : areaKey;
+                        const key = `${tx},${ty}`;
+                        tile = App.data.progress.mapChanges?.[progressKey]?.[key]
+                            || App.data.progress.mapChanges?.[areaKey]?.[key]
+                            || Field.currentMapData.tiles[ty][tx];
+                        if (App.data.progress.defeatedBosses?.[progressKey]?.includes(key)) tile = 'G';
+                    }
+                } else if (typeof MAP_DATA !== 'undefined') {
+                    tile = MAP_DATA[((ty % mapH) + mapH) % mapH][((tx % mapW) + mapW) % mapW];
+                }
+
+                if (!visible) continue;
+                const x = (dx + range) * cell;
+                const y = (dy + range) * cell;
+                ctx.fillStyle = (dx === 0 && dy === 0) ? '#fff' : miniTileColor(tile, tx, ty);
+                ctx.fillRect(Math.floor(x), Math.floor(y), Math.ceil(cell), Math.ceil(cell));
+
+                if ((dx !== 0 || dy !== 0) && Field.getMiniMapMarkerColor && Field.drawMiniMapTileMarker) {
+                    const markerColor = Field.getMiniMapMarkerColor(tile, tx, ty);
+                    if (markerColor) Field.drawMiniMapTileMarker(ctx, markerColor, x, y, cell);
+                }
+            }
+        }
+
+        const drawMarker = (relX, relY, color) => {
+            if (!color || relX === 0 && relY === 0) return;
+            if (relX < -range || relX > range || relY < -range || relY > range) return;
+            if (Field.drawMiniMapTileMarker) {
+                Field.drawMiniMapTileMarker(ctx, color, (relX + range) * cell, (relY + range) * cell, cell);
+            } else {
+                ctx.fillStyle = color;
+                ctx.fillRect((relX + range) * cell, (relY + range) * cell, Math.max(2, cell), Math.max(2, cell));
+            }
+        };
+
+        const drawDungeonObject = (obj, color) => {
+            if (!Field.currentMapData?.isDungeon || !obj || !obj.active || typeof Dungeon === 'undefined') return;
+            if (Number(obj.floor) !== Number(Dungeon.floor)) return;
+            const relX = Number(obj.x) - Number(Field.x);
+            const relY = Number(obj.y) - Number(Field.y);
+            if (isRandomDungeonHidden(relX, relY, Number(obj.x), Number(obj.y))) return;
+            drawMarker(relX, relY, color);
+        };
+
+        if (Field.currentMapData?.isFixed && Field.getFixedHealSpringsForCurrentFloor) {
+            Field.getFixedHealSpringsForCurrentFloor().forEach(spring => {
+                drawMarker(Number(spring.x) - Number(Field.x), Number(spring.y) - Number(Field.y), '#80ffb0');
+            });
+        }
+        drawDungeonObject(App.data?.dungeon?.healSpring, '#80ffb0');
+        drawDungeonObject(App.data?.dungeon?.abyssRift, '#a34cff');
+        drawDungeonObject(App.data?.dungeon?.adventurer, '#5bd6ff');
+        drawDungeonObject(App.data?.dungeon?.trialAngel, '#fff3a6');
+        drawDungeonObject(App.data?.dungeon?.keyGuardian, '#ffd78a');
+
+        ctx.strokeStyle = 'rgba(255,255,255,0.72)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(0.5, 0.5, size - 1, size - 1);
         ctx.restore();
     },
 
@@ -7013,12 +7160,17 @@ const Field = {
             if (locNameElement) locNameElement.innerText = locName;
             if (typeof App.updateObjectiveHUD === 'function') App.updateObjectiveHUD();
             if (typeof Field.updateFieldHudState === 'function') Field.updateFieldHudState();
+            if (typeof Field.drawHudMinimap === 'function') Field.drawHudMinimap();
             const fullMapCanvas = document.getElementById('field-map-modal-canvas');
             if (fullMapCanvas && typeof Field.drawFullMap === 'function') Field.drawFullMap(fullMapCanvas);
             return;
         }
-        const ctx = canvas.getContext('2d'), ts = 32, w = canvas.width, h = canvas.height;
-        const cx = w/2, cy = h/2, rangeX = Math.ceil(w/(2*ts))+1, rangeY = Math.ceil(h/(2*ts))+1;
+        const ctx = canvas.getContext('2d'), w = canvas.width, h = canvas.height;
+        const FIELD_VIEW_TILES = 15;
+        const ts = Math.max(16, Math.floor(w / FIELD_VIEW_TILES));
+        const cx = w/2, cy = h/2;
+        const rangeX = Math.floor(FIELD_VIEW_TILES / 2) + 1;
+        const rangeY = Math.ceil(h / (2 * ts)) + 1;
         const mapW = Field.currentMapData ? Field.currentMapData.width : (typeof MAP_DATA !== 'undefined' ? MAP_DATA[0].length : 50);
         const mapH = Field.currentMapData ? Field.currentMapData.height : (typeof MAP_DATA !== 'undefined' ? MAP_DATA.length : 32);
         const g = (typeof GRAPHICS !== 'undefined' && GRAPHICS.images) ? GRAPHICS.images : {};
@@ -7401,19 +7553,22 @@ const Field = {
         document.getElementById('loc-name').innerText = locName;
         if (typeof App.updateObjectiveHUD === 'function') App.updateObjectiveHUD();
         if (typeof Field.updateFieldHudState === 'function') Field.updateFieldHudState();
+        if (typeof Field.drawHudMinimap === 'function') Field.drawHudMinimap();
         const fullMapCanvas = document.getElementById('field-map-modal-canvas');
         if (fullMapCanvas && typeof Field.drawFullMap === 'function') Field.drawFullMap(fullMapCanvas);
 
+        return;
+
         if (Field.minimapMode === 'minimized') return;
 
-        const mmSize = 80, mmX = w-mmSize-10, mmY = 10, range = 7;
+        const mmSize = 80, mmX = w - mmSize - 14, mmY = 14, range = 7;
         const miniCells = range * 2 + 1;
         const dms = mmSize / miniCells;
         ctx.save();
-        ctx.globalAlpha = 0.68;
+        ctx.globalAlpha = 0.56;
         ctx.fillStyle = '#000';
         ctx.fillRect(mmX, mmY, mmSize, mmSize);
-        ctx.strokeStyle = 'rgba(255,255,255,0.72)';
+        ctx.strokeStyle = 'rgba(255,255,255,0.62)';
         ctx.lineWidth = 1;
         ctx.strokeRect(mmX + 0.5, mmY + 0.5, mmSize - 1, mmSize - 1);
 

@@ -1744,11 +1744,11 @@ const FIXED_MAPS = {
         battleBg: "battle_bg_field",
         tiles: [
             "WWWWWWWWWWWDWWW",
-            "WHGHGWWWGGGGWWW",
+            "WGHGHWWWGGGGWWW",
             "WGGGGWWWWGGGGGW",
             "WGGWWWTWWWWGGGW",
-            "WGGWGGGGHGHGGGW",
-            "WGGIGGGGGGGGGGS",
+            "WGGIGGGGHGHGGGW",
+            "WGGGGGGGGGGGGGS",
             "WGGGGGGGGGGGGGS",
             "WGGGGGGGGWWGGGW",
             "WGHGGGGGGGGGHGW",
@@ -1808,7 +1808,7 @@ const FIXED_MAPS = {
                 baseTile: "G"
             },
             {
-                x: 2,
+                x: 3,
                 y: 1,
                 label: "薬草摘みと話す",
                 log: "籠を抱えた女性が、葉についた泥を払っている。",
@@ -3903,7 +3903,7 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWTTWWWWWTTWWWWWWWWTTTWWWWWTTTTTTGWW",
                     "WWWWWWWWWWWWWWWTTTTTTWWWTWWWWWWWWWTTTWSWW",
                     "WWWWWWWWWWWWWWWWWWWWTWWTTWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWTTTWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWTTTTWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
                 ],
                 floorLinks: [
