@@ -159,6 +159,14 @@ const TILE_THEMES = {
         M: {
             img: "tile_magma",
             color: "#e4511e"
+        },
+        // ランダムダンジョンの浸水フロア専用。Wは壁として予約されているため、
+        // 通行可能な水面を独立記号にして生成・経路探索・描画の意味を分離する。
+        "~": {
+            img: "sea",
+            color: "#155d7a",
+            animatedWater: true,
+            lowerLayer: true
         }
     },
     START_VILLAGE: {
@@ -909,6 +917,31 @@ const TILE_THEMES = {
     }
 };
 
+// Single source of truth for exposed dungeon wall faces.
+// `disabled` is deliberate for themes whose W tile is a water surface rather than a wall.
+// Per-map wallFace* fields remain supported as explicit overrides, but normal fixed and
+// random dungeon rendering should resolve through this registry.
+const DUNGEON_WALL_FACE_THEMES = Object.freeze({
+    DEFAULT: Object.freeze({ img: "wall_face", accentImg: "wall_face_torch", accentEvery: 5 }),
+    ABYSS: Object.freeze({ img: "wall_face", accentImg: "wall_face_torch", accentEvery: 5 }),
+    START_CAVE: Object.freeze({ img: "wall_face", accentImg: "wall_face_torch", accentEvery: 5 }),
+    FIRE_VILLAGE: Object.freeze({ img: "tile_fire_wall_face" }),
+    // The forest intentionally keeps its four organic W variants. Replacing the
+    // exposed row with one wall-face image destroys that authored variation.
+    FORBIDDEN_FOREST: Object.freeze({ disabled: true, reason: "theme-wall-variants" }),
+    WIND_VILLAGE: Object.freeze({ img: "tile_wind_temple_wall_face" }),
+    WIND_HOLE: Object.freeze({ img: "tile_wind_hole_wall_face" }),
+    BIG_TOWER: Object.freeze({ img: "tile_tower_wall_face" }),
+    THUNDER_FORT: Object.freeze({ img: "tile_thunder_wall_face" }),
+    LIGHT_PALACE: Object.freeze({ img: "tile_light_wall_face", accentImg: "tile_light_wall_face_prism", accentEvery: 5 }),
+    DARK_CASTLE: Object.freeze({ img: "tile_dark_castle_wall_face" }),
+    GALVANIA_CAVE: Object.freeze({ img: "tile_galvania_wall_face" }),
+    DARK_SHRINE_RUINS: Object.freeze({ img: "tile_dark_shrine_wall_face", mode: "overlay" }),
+    GREZELIA_CAVE: Object.freeze({ img: "tile_grezelia_wall_face" }),
+    CRENA_CAVE: Object.freeze({ disabled: true, reason: "water-surface-W" }),
+    SEABED_TEMPLE: Object.freeze({ disabled: true, reason: "water-surface-W" })
+});
+
 const STORY_DATA = {
     areas: {
         START_VILLAGE: {
@@ -1337,6 +1370,14 @@ const FIELD_ENCOUNTER_ZONES = [
     }
 ];
 
+// World bridges are explicit map objects. Their base tiles remain water so the
+// coast/river shape is data-correct; movement is opened only by this registry.
+const WORLD_BRIDGES = Object.freeze([
+    Object.freeze({ x: 53, y: 69, direction: "horizontal" }),
+    Object.freeze({ x: 78, y: 58, direction: "horizontal" }),
+    Object.freeze({ x: 79, y: 58, direction: "horizontal" })
+]);
+
 const MAP_DATA = [
     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
     "WMMMLWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
@@ -1396,7 +1437,7 @@ const MAP_DATA = [
     "WMMMWMMMMMMMWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGLLLLLGGGdMMMMMMMMGGGGGGGMMMMMMFFFFFWWGGGGGGGGGGllllllMMMMWWWWWWWWWW",
     "WMMMWTTMMMMMMWWWWWWWWWWWWWWWWWWWWWWWGGMMMGGGGLLGGMMMMMMMMMGGGGGGMMMMMMMFFFFFGGWWGGGGGGGGlllllllMMMMMWWWWWWWWWW",
     "WMMMWTTTMMMMMMWWWWWWWWWWWWWWWWWWWWWWMMMMMMMGGGGGMMMMMMMMMMMMMMMMMMMMFFFFFFGGGGWWGGGGGGlllllllMMMMMWWWWWWWWWWWW",
-    "WMMWWWTTTMMMMMMWWWWWWWWWWWWWWWWWWWWWGMMMMMMMMMGMMMMMMMMWMMMMMMMMMMFFFFFFGGGGGGGGGGGGllllllMMMMMMMWWWWWWWWWWWWW",
+    "WMMWWWTTTMMMMMMWWWWWWWWWWWWWWWWWWWWWGMMMMMMMMMGMMMMMMMMWMMMMMMMMMMFFFFFFGGGGGGWWGGGGllllllMMMMMMMWWWWWWWWWWWWW",
     "WWMWWWWTTTMMMMMMMMWWWWWWWWWWWWWWWWWGGGGMMMMMMMMMMMMMMMMWMMMMMMMFFFFFFFFGGGGGGGWWGlllllllMMMMMMMMMWWWWWWWWWWWWW",
     "WWMMWWWTTMMMMMMMMMMWWWWWWWWWWWWWWWTLLLMMMMMMMMMMMMMMMMMWMMMMFFFFFFFFFFFGGGGGGFWWllllllMMMMMMMMMMWWWWWWWWWWWWWW",
     "WWMMWWWWMMMMMMMMMWWWWWWWWWWWWWWWWMMMMMMMMMMMMMMMMMMMMMWWWFFFFFFFFFFGGGGGGGGGFFWWllMMMMMMMMMMWWWWWWWWWWWWWWWWWW",
@@ -1407,7 +1448,7 @@ const MAP_DATA = [
     "WWWWWMMMMMWWWWWWMMMMMMMMMMMMMMMMMMMMMMllllllFFFFFGGGGWGGGGGGGGGGGGGGFFFFFWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
     "WWWWWMMMMMMWWWWWWWMMMMMMMMMMMMMMMMMMllllllllllFFGGGGGWGGGGGGGGGGGGGFFFFFWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
     "WWWWWWWMMMMMMWWWWWWMMMMMMMMMMMMMllllllllllllllGGGGGGGWGGGGGGGGGGFFFFFFWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-    "WWWWWWWWMMMMMMMMWWWWMMMMMMMMMMlllllllllllllGGGGGGGGGGGGGGGGGGGGFFFFFWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+    "WWWWWWWWMMMMMMMMWWWWMMMMMMMMMMlllllllllllllGGGGGGGGGGWGGGGGGGGGFFFFFWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
     "WWWWWWWWWWMMMMMMMWWWWWMMMMMMllllllllllGGGGGGGGGGGGGGGWGGGGGGGGFFFFWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
     "WWWWWWWWWWWMMMMMMMMWWWWMMMlllllllGGGGGGGGFFFGGGGGGGGGWGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
     "WWWWWWWWWWWWMMMMMMMMWWWWLlllllGGGGGGGFFFFFFFFGGGGGGGGWGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
@@ -1793,7 +1834,8 @@ const FIXED_MAPS = {
                 label: "村人と話す",
                 log: "村人が、北東の穴を見つめている。",
                 type: "storyEvent",
-                eventId: "town_start_villager_1",
+                conversationKey: "lumina_villager_sinkhole",
+                cycleEventIds: ["town_start_villager_1_a", "town_start_villager_1_b", "town_start_villager_1_c"],
                 imageKey: "overlay_npc_villager",
                 baseTile: "G"
             },
@@ -1803,7 +1845,8 @@ const FIXED_MAPS = {
                 label: "村の若者と話す",
                 log: "若者が木剣を握りしめている。",
                 type: "storyEvent",
-                eventId: "town_start_villager_2",
+                conversationKey: "lumina_villager_youth",
+                cycleEventIds: ["town_start_villager_2_a", "town_start_villager_2_b"],
                 imageKey: "overlay_npc_bronze_knight",
                 baseTile: "G"
             },
@@ -1813,7 +1856,8 @@ const FIXED_MAPS = {
                 label: "薬草摘みと話す",
                 log: "籠を抱えた女性が、葉についた泥を払っている。",
                 type: "storyEvent",
-                eventId: "town_start_villager_3",
+                conversationKey: "lumina_villager_herbalist",
+                cycleEventIds: ["town_start_villager_3_a", "town_start_villager_3_b"],
                 imageKey: "overlay_npc_villager",
                 baseTile: "G"
             },
@@ -1851,11 +1895,11 @@ const FIXED_MAPS = {
             {
                 x: 11,
                 y: 0,
-                label: "洞窟に入る",
-                log: "洞窟の入口だ。",
+                label: "洞穴に入る",
+                log: "北東の洞穴から冷たい風が吹いている。",
                 type: "fixedDungeon",
                 target: "START_CAVE"
-            }
+            },
         ],
         exitPoint: {
             area: "WORLD",
@@ -2810,6 +2854,9 @@ const FIXED_MAPS = {
     SUMMIT_TEMPLE: {
         name: "頂の神殿",
         themeKey: "LIGHT_PALACE",
+        useDungeonWallFace: true,
+        wallFaceImg: "tile_light_wall_face",
+        wallFaceTorchImg: "tile_light_wall_face_prism",
         tileOverrides: {
             W: {
                 img: "tile_light_wall",
@@ -2876,6 +2923,7 @@ const FIXED_DUNGEON_MAPS = {
     START_CAVE: {
         name: "北東の洞穴",
         themeKey: "START_CAVE",
+        useDungeonWallFace: true,
         rank: 5,
         encounterRank: 5,
         tileOverrides: {},
@@ -2950,7 +2998,7 @@ const FIXED_DUNGEON_MAPS = {
                 label: "見張りと話す",
                 log: "見張りが洞穴の封鎖を守っている。",
                 type: "log",
-                imageKey: "overlay_npc_bronze_knight",
+                imageKey: "overlay_npc_villager",
                 hideWhenNoEvent: true,
                 events: [
                     {
@@ -6685,6 +6733,9 @@ const FIXED_DUNGEON_MAPS = {
     LIGHT_PALACE: {
         name: "光の宮殿グランプリズマ",
         themeKey: "LIGHT_PALACE",
+        useDungeonWallFace: true,
+        wallFaceImg: "tile_light_wall_face",
+        wallFaceTorchImg: "tile_light_wall_face_prism",
         rank: 50,
         encounterRank: 50,
         battleBg: "battle_bg_light_palace",
@@ -7376,7 +7427,7 @@ const FIXED_DUNGEON_MAPS = {
                     y: 32
                 },
                 name: "",
-                themeKey: "DEFAULT"
+                themeKey: "GALVANIA_CAVE"
             },
             {
                 label: "2階・偽りの無限回廊",
@@ -7583,7 +7634,7 @@ const FIXED_DUNGEON_MAPS = {
                     y: 31
                 },
                 name: "",
-                themeKey: "DEFAULT"
+                themeKey: "GALVANIA_CAVE"
             },
             {
                 label: "3階・溶岩の地底湖",
@@ -7787,7 +7838,7 @@ const FIXED_DUNGEON_MAPS = {
                     y: 4
                 },
                 name: "",
-                themeKey: "DEFAULT"
+                themeKey: "GALVANIA_CAVE"
             },
             {
                 label: "4階・氷晶の十字滑床",
@@ -8148,7 +8199,7 @@ const FIXED_DUNGEON_MAPS = {
                     y: 30
                 },
                 name: "",
-                themeKey: "DEFAULT"
+                themeKey: "GALVANIA_CAVE"
             },
             {
                 label: "5階・魔軍補給路",
@@ -8297,7 +8348,7 @@ const FIXED_DUNGEON_MAPS = {
                     y: 4
                 },
                 name: "",
-                themeKey: "DEFAULT"
+                themeKey: "GALVANIA_CAVE"
             },
             {
                 label: "6階・南口 白骨の旧坑",
@@ -8464,7 +8515,7 @@ const FIXED_DUNGEON_MAPS = {
                     y: 32
                 },
                 name: "",
-                themeKey: "DEFAULT"
+                themeKey: "GALVANIA_CAVE"
             }
         ]
     },
@@ -8523,6 +8574,35 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWWWWWTTTTTWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWTTTWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWSWWWWWWWWWWWWWWW"
+                ],
+                // 入口から中央広間へ続く3マス幅の絨毯。描画側が隣接状態から
+                // 金縁を外周だけに置くため、幅・長さを変えても内側に境界線が出ない。
+                floorDecorations: [
+                    {
+                        type: "castle_carpet",
+                        x: 14,
+                        y: 19,
+                        width: 3,
+                        height: 7
+                    }
+                ],
+                blockingObjects: [
+                    {
+                        x: 14,
+                        y: 3,
+                        imageKey: "object_blocking_castle_candelabrum",
+                        drawWidth: 32,
+                        drawHeight: 48,
+                        log: "重厚な燭台が道を塞いでいる。"
+                    },
+                    {
+                        x: 16,
+                        y: 3,
+                        imageKey: "object_blocking_castle_candelabrum",
+                        drawWidth: 32,
+                        drawHeight: 48,
+                        log: "重厚な燭台が道を塞いでいる。"
+                    }
                 ],
                 floorLinks: [
                     {
@@ -10794,6 +10874,7 @@ if (typeof window !== "undefined") {
     window.STORY_DATA = STORY_DATA;
     window.SEA_ENCOUNTER_MONSTERS = SEA_ENCOUNTER_MONSTERS;
     window.FIELD_ENCOUNTER_ZONES = FIELD_ENCOUNTER_ZONES;
+    window.WORLD_BRIDGES = WORLD_BRIDGES;
     window.MAP_DATA = MAP_DATA;
     window.FIXED_TILE_OVERLAYS = FIXED_TILE_OVERLAYS;
     window.FIXED_OVERLAY_BASE_TILES = FIXED_OVERLAY_BASE_TILES;

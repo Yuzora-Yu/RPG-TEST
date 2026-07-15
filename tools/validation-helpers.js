@@ -32,6 +32,7 @@ function loadMapRuntime(root, options = {}) {
   runtime.runFile('map.js', `
 globalThis.STORY_MAP_MUTATIONS = STORY_MAP_MUTATIONS;
 globalThis.TILE_THEMES = TILE_THEMES;
+globalThis.DUNGEON_WALL_FACE_THEMES = DUNGEON_WALL_FACE_THEMES;
 globalThis.STORY_DATA = STORY_DATA;
 globalThis.MAP_DATA = MAP_DATA;
 globalThis.FIXED_MAPS = FIXED_MAPS;

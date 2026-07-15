@@ -60,7 +60,8 @@ function inspectMap(key, mapDef, label) {
         occupied.add(coord);
         const tile = String(mapDef.tiles?.[y]?.[x] || 'W').toUpperCase();
         if (tile === 'W') errors.push(`${label}: actor placed on wall at ${coord}`);
-        if (!['T', 'G', 'L', 'M'].includes(tile)) {
+        const isVisibleEntranceActor = tile === 'D' && action.type === 'fixedDungeon';
+        if (!['T', 'G', 'L', 'M'].includes(tile) && !isVisibleEntranceActor) {
             errors.push(`${label}: actor tile was not normalized at ${coord}: ${tile}`);
         }
         if (action.blocksMovement !== false && !action.label) {
@@ -68,6 +69,11 @@ function inspectMap(key, mapDef, label) {
         }
         if (action.eventId && !storySource.includes(`"${action.eventId}"`)) {
             errors.push(`${label}: missing story event ${action.eventId}`);
+        }
+        for (const eventId of action.cycleEventIds || []) {
+            if (eventId && !storySource.includes(`"${eventId}"`)) {
+                errors.push(`${label}: missing cycled story event ${eventId}`);
+            }
         }
         for (const event of action.events || []) {
             if (event.eventId && !storySource.includes(`"${event.eventId}"`)) {

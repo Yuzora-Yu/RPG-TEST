@@ -205,14 +205,27 @@ const Battle = {
             const bgKey = Field.getBattleBg();
             const g = (typeof GRAPHICS !== 'undefined' && GRAPHICS.images) ? GRAPHICS.images : {};
 
-            if (g[bgKey]) {
-                enemyArea.style.backgroundImage = `url('${g[bgKey].src}')`;
+            // GRAPHICS.load() completes before gameplay begins. A corrupt individual file
+            // must still never produce a blank battle frame, so resolve a loaded fallback
+            // synchronously instead of drawing a temporary solid-color area.
+            const fallbackKeys = ['battle_bg_dungeon', 'battle_bg_field'];
+            const resolvedBgKey = [bgKey, ...fallbackKeys].find(key => {
+                const image = g[key];
+                return !!(image && image.complete && image.naturalWidth > 0);
+            });
+            const background = resolvedBgKey ? g[resolvedBgKey] : null;
+
+            if (background) {
+                enemyArea.style.backgroundImage = `url('${background.src}')`;
                 enemyArea.style.backgroundSize = 'cover';
                 enemyArea.style.backgroundPosition = 'center bottom';
                 enemyArea.style.backgroundRepeat = 'no-repeat';
+                enemyArea.dataset.battleBgKey = resolvedBgKey;
+                enemyArea.dataset.requestedBattleBgKey = bgKey || '';
             } else {
-                enemyArea.style.backgroundColor = '#222';
-                enemyArea.style.backgroundImage = 'none';
+                // This is a startup-integrity failure, not a supported rendering mode.
+                // Keep the prior valid frame rather than flashing black while reporting it.
+                console.error(`[Battle] No decoded battle background is available: ${bgKey}`);
             }
         }
         

@@ -9,22 +9,15 @@
 
     <!--
       初回表示の体感改善用プリロード。
-      画像キャッシュ対象の正本は assets.js。ここはロード画面/初戦闘/ガチャ/施設背景で
-      初回だけ空白になりやすいものを先に取りに行くための補助。
+      画像キャッシュ対象の正本は assets.js。ここはリュミナ村と開幕戦で
+      初回だけ空白になりやすい最小画像を先に取りに行くための補助。
       大量追加する場合は、まず assets.js の PRISMA_ASSETS.cacheWarmup を更新すること。
     -->
     <link rel="preload" as="image" href="assets/monsters/monster_100001.png">
-    <link rel="preload" as="image" href="assets/monsters/monster_100002.png">
-    <link rel="preload" as="image" href="assets/monsters/monster_100003.png">
-    <link rel="preload" as="image" href="assets/monsters/monster_100004.png">
     <link rel="preload" as="image" href="assets/generated/battle-field-ai.png">
-    <link rel="preload" as="image" href="assets/generated/battle-dungeon-ai.png">
-    <link rel="preload" as="image" href="assets/gacha/back_card.png">
-    <link rel="preload" as="image" href="assets/gacha/front_card.png">
-    <link rel="preload" as="image" href="assets/background/bg_inn.jpg">
-    <link rel="preload" as="image" href="assets/background/bg_casino.png">
     
 <link rel="stylesheet" href="modern-polish.css">
+<link rel="stylesheet" href="opening.css">
 
 	<script>
 if ('serviceWorker' in navigator) {
@@ -498,6 +491,7 @@ if ('serviceWorker' in navigator) {
 <script src="phaser-field.js"></script>
 <script src="story.js"></script>
 <script src="story_logic.js"></script>
+<script src="opening.js"></script>
 <script src="quests.js"></script>
 <script src="dungeon.js"></script>
 <script src="gacha.js"></script>

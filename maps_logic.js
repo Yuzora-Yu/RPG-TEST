@@ -23,6 +23,41 @@ normalizeCoordinateActorTiles(FIXED_MAPS);
 normalizeCoordinateActorTiles(FIXED_DUNGEON_MAPS);
 
 const MapRegistry = {
+    normalizeWorldPoint(x, y) {
+        const width = (typeof MAP_DATA !== "undefined" && MAP_DATA[0]) ? MAP_DATA[0].length : 1;
+        const height = (typeof MAP_DATA !== "undefined" && MAP_DATA.length) ? MAP_DATA.length : 1;
+        return {
+            x: ((Number(x) % width) + width) % width,
+            y: ((Number(y) % height) + height) % height
+        };
+    },
+
+    getWorldBridgeAt(x, y) {
+        if (typeof WORLD_BRIDGES === "undefined") return null;
+        const point = MapRegistry.normalizeWorldPoint(x, y);
+        return WORLD_BRIDGES.find(bridge => Number(bridge.x) === point.x && Number(bridge.y) === point.y) || null;
+    },
+
+    isWorldBridgeAt(x, y) {
+        return !!MapRegistry.getWorldBridgeAt(x, y);
+    },
+
+    // ワールド地形の意味を、移動・描画・エンカウントで共有する。
+    // 橋の基礎タイルは W だが、ゲーム上は海ではなく陸上として扱う。
+    getWorldSurfaceAt(x, y) {
+        const point = MapRegistry.normalizeWorldPoint(x, y);
+        const tile = String((typeof MAP_DATA !== "undefined" ? MAP_DATA[point.y]?.[point.x] : '') || '').toUpperCase();
+        const bridge = MapRegistry.getWorldBridgeAt(point.x, point.y);
+        return {
+            x: point.x,
+            y: point.y,
+            tile,
+            bridge,
+            isBridge: !!bridge,
+            isSea: tile === 'W' && !bridge
+        };
+    },
+
     applyStoryMapMutation(mutationKey) {
         const mutation = STORY_MAP_MUTATIONS[mutationKey];
         if (!mutation || typeof App === "undefined" || !App.data?.progress) return false;
@@ -103,6 +138,15 @@ const MapRegistry = {
         return mapDef.mapActions.find(action => Number(action.x) === Number(x) && Number(action.y) === Number(y)) || null;
     },
 
+    findBlockingObject(mapDef, x, y) {
+        if (!mapDef || !Array.isArray(mapDef.blockingObjects)) return null;
+        return mapDef.blockingObjects.find(object =>
+            object?.active !== false &&
+            Number(object.x) === Number(x) &&
+            Number(object.y) === Number(y)
+        ) || null;
+    },
+
     isPointInEffect(effect, x, y) {
         if (!effect) return false;
         const tx = Number(x);
@@ -145,8 +189,9 @@ const MapRegistry = {
 
     getWorldAreaAt(x, y) {
         if (typeof STORY_DATA === "undefined" || !STORY_DATA.areas) return null;
-        const wx = Number(x);
-        const wy = Number(y);
+        const point = MapRegistry.normalizeWorldPoint(x, y);
+        const wx = point.x;
+        const wy = point.y;
         for (const [key, area] of Object.entries(STORY_DATA.areas)) {
             if (Array.isArray(area.entrances)) {
                 const entrance = area.entrances.find(pos => Number(pos.x) === wx && Number(pos.y) === wy);

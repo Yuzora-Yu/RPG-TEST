@@ -8,7 +8,9 @@ context.globalThis = context;
 vm.createContext(context);
 
 const mapCode = fs.readFileSync(path.join(root, 'map.js'), 'utf8');
-vm.runInContext(`${mapCode}\nglobalThis.__MAPS__ = { FIXED_DUNGEON_MAPS, MapRegistry };`, context, { filename: 'map.js' });
+vm.runInContext(`${mapCode}\nglobalThis.FIXED_DUNGEON_MAPS = FIXED_DUNGEON_MAPS;`, context, { filename: 'map.js' });
+const mapsLogicCode = fs.readFileSync(path.join(root, 'maps_logic.js'), 'utf8');
+vm.runInContext(`${mapsLogicCode}\nglobalThis.__MAPS__ = { FIXED_DUNGEON_MAPS, MapRegistry };`, context, { filename: 'maps_logic.js' });
 
 const { FIXED_DUNGEON_MAPS, MapRegistry } = context.__MAPS__;
 

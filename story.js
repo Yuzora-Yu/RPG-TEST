@@ -218,69 +218,65 @@ const STORY_MANAGER_DATA = {
                 {
                         "charId": 1001,
                         "name": "長老",
-                        "text": "なんと、もうあの化け物を討伐してくださったとは！\n[N:301]様、ありがとうございます。"
+                        "text": "なんと、もうあの化け物を討伐してくださったとは！\n[N:301]様、本当にありがとうございます。"
                 },
                 {
                         "charId": 1001,
                         "name": "長老",
-                        "text": "…どうやら世界の各地で、同じように異変が起きているとのこと。"
+                        "text": "……あの穴から吹いていた風を、わしは一度だけ知っております。"
                 },
                 {
                         "charId": 1001,
                         "name": "長老",
-                        "text": "東の果て、炎の里では突如火が消えてしまい、鍛冶が出来なくなったと聞きましたぞ。"
+                        "text": "わしがまだ、[N:109]ほどの年だった頃。\n王都の空が、夜中だというのに真昼のように白くなった。"
                 },
                 {
-                        "charId": 109,
-                        "name": "",
-                        "text": "[N:301]さま！助けに行こう！！\n炎の里で鍛冶ができなくなったら、もう誰も武器が持てなくなっちまう。"
+                        "charId": 1001,
+                        "name": "長老",
+                        "text": "翌朝、井戸には虹色の膜が浮き、北の畑には細い亀裂が走っておった。\n大人たちは『王都の大儀式が失敗した』と、小声で話していました。"
                 },
                 {
-                        "charId": 110,
-                        "name": "",
-                        "text": "まったくもう、[N:109]ったら…\nすみません、[N:301]様。村を救ってもらったばかりでこんなこと…"
+                        "charId": 1001,
+                        "name": "長老",
+                        "text": "何が行われたのか、村まで届いた記録は途切れ途切れです。\nただ、あの日からプリズマの光は乱れ、各地でおかしなことが起き始めた。"
                 },
                 {
-                        "charId": 109,
-                        "name": "",
-                        "text": "だって、放っておけねえよ！\nこの村だって、あと一歩でボロボロになるとこだったんだ…"
+                        "charId": 1001,
+                        "name": "長老",
+                        "text": "そして今、東の炎の里では炉の火が言うことを聞かず、鍋ひとつ満足に直せぬそうです。"
                 },
                 {
-                        "charId": 109,
-                        "name": "",
-                        "text": "世界がおかしくなってんなら、俺は助けに行きたい！！"
+                        "charId": 1001,
+                        "name": "長老",
+                        "text": "此度の大穴も、あの日に生まれた傷が、また口を開けたものかもしれません。"
                 },
                 {
-                        "charId": 110,
-                        "name": "",
-                        "text": "それは…そうだけど…"
-                },
-                {
-                        "name": "システム",
-                        "text": "[N:301]は静かに頷いた"
-                },
-//                {
-//                        "charId": 301,
-//                        "name": "",
-//                        "text": "そうだな。\n[N:109]、[N:110]。長い旅になるが、ついてきてくれるか？"
-//                },
-                {
-                        "charId": 109,
-                        "name": "",
-                        "text": "やったぜ！\n俺が道を切り開くから、頼りにしてくれよな。"
-                },
-                {
-                        "charId": 110,
-                        "name": "",
-                        "text": "ありがとうございます…\nあの、これからよろしくお願いしますね！"
+                        "charId": 1001,
+                        "name": "長老",
+                        "text": "[N:301]様。あの風を、以前にもご存じなのではありませんか。"
                 },
                 {
                         "name": "システム",
-                        "text": "ガイルとサラが、正式に仲間に加わった！"
+                        "text": "故郷を失った夜にも、同じ冷たい風が吹いていた。"
+                },
+                {
+                        "charId": 109,
+                        "name": "ガイル",
+                        "text": "だったら、なおさら放っておけねえ。\nこの村みたいな目に遭う場所を、これ以上増やしたくない。"
+                },
+                {
+                        "charId": 110,
+                        "name": "サラ",
+                        "text": "怖いです。でも……ここで待っているだけなら、きっとまた誰かが泣きます。"
+                },
+                {
+                        "charId": 1001,
+                        "name": "長老",
+                        "text": "炎の里へ向かうなら、東の街道をお進みくだされ。\n古い話の続きを、その目で確かめてきてください。"
                 },
                 {
                         "name": "システム",
-                        "text": "世界を蝕む異変とは？[N:301]達の冒険が、今幕を開けた。"
+                        "text": "[N:301]は、剣の柄に手を置き、静かに頷いた。"
                 }
         ],
         "START_DUNGEON_CLEAR": [
@@ -494,41 +490,49 @@ const STORY_MANAGER_DATA = {
                         "text": "[N:306]が仲間に加わった！"
                 }
         ],
-        "TOWN_START_VILLAGER_1": [
+        "TOWN_START_VILLAGER_1_A": [
                 {
                         "name": "村人",
                         "text": "そこ、踏むなよ。昨日まで、うちの草地だったんだ。",
                         "charId": 1003
-                },
+                }
+        ],
+        "TOWN_START_VILLAGER_1_B": [
                 {
                         "name": "村人",
                         "text": "柵も鍬も、まとめて穴に飲まれた。\n……次は家かもしれねえ。",
                         "charId": 1003
-                },
+                }
+        ],
+        "TOWN_START_VILLAGER_1_C": [
                 {
                         "name": "村人",
                         "text": "笑うなよ。畑がなくなるってのはな、\n明日の飯を誰も約束してくれねえってことだ。",
                         "charId": 1003
                 }
         ],
-        "TOWN_START_VILLAGER_2": [
+        "TOWN_START_VILLAGER_2_A": [
                 {
                         "name": "村の若者",
                         "text": "俺も行くって言ったんだ。言っただけで、足が笑った。",
                         "charId": 1002
-                },
+                }
+        ],
+        "TOWN_START_VILLAGER_2_B": [
                 {
                         "name": "村の若者",
                         "text": "情けねえよな。でも、薬草くらいは運ばせてくれ。\n何もしないで待つ方が、よっぽど怖い。",
                         "charId": 1002
                 }
         ],
-        "TOWN_START_VILLAGER_3": [
+        "TOWN_START_VILLAGER_3_A": [
                 {
                         "name": "薬草摘み",
                         "text": "今朝の薬草、苦いんだ。\n根っこが黒くなってる。",
                         "charId": 1003
-                },
+                }
+        ],
+        "TOWN_START_VILLAGER_3_B": [
                 {
                         "name": "薬草摘み",
                         "text": "傷薬にはできるよ。\n飲む時は、鼻をつまみな。",
@@ -3200,6 +3204,10 @@ const STORY_MANAGER_DATA = {
                         {
                                 "type": "SUB",
                                 "value": 1
+                        },
+                        {
+                                "type": "OPENING_KAMISHIBAI",
+                                "flag": "openingPrologue3Viewed"
                         }
                 ],
                 "winActions": []
@@ -4405,16 +4413,32 @@ const STORY_MANAGER_DATA = {
                 ],
                 "winActions": []
         },
-        "town_start_villager_1": {
-                "actions": [{ "type": "CONV", "value": "TOWN_START_VILLAGER_1" }],
+        "town_start_villager_1_a": {
+                "actions": [{ "type": "CONV", "value": "TOWN_START_VILLAGER_1_A" }],
                 "winActions": []
         },
-        "town_start_villager_2": {
-                "actions": [{ "type": "CONV", "value": "TOWN_START_VILLAGER_2" }],
+        "town_start_villager_1_b": {
+                "actions": [{ "type": "CONV", "value": "TOWN_START_VILLAGER_1_B" }],
                 "winActions": []
         },
-        "town_start_villager_3": {
-                "actions": [{ "type": "CONV", "value": "TOWN_START_VILLAGER_3" }],
+        "town_start_villager_1_c": {
+                "actions": [{ "type": "CONV", "value": "TOWN_START_VILLAGER_1_C" }],
+                "winActions": []
+        },
+        "town_start_villager_2_a": {
+                "actions": [{ "type": "CONV", "value": "TOWN_START_VILLAGER_2_A" }],
+                "winActions": []
+        },
+        "town_start_villager_2_b": {
+                "actions": [{ "type": "CONV", "value": "TOWN_START_VILLAGER_2_B" }],
+                "winActions": []
+        },
+        "town_start_villager_3_a": {
+                "actions": [{ "type": "CONV", "value": "TOWN_START_VILLAGER_3_A" }],
+                "winActions": []
+        },
+        "town_start_villager_3_b": {
+                "actions": [{ "type": "CONV", "value": "TOWN_START_VILLAGER_3_B" }],
                 "winActions": []
         },
         "town_fire_villager_1": {

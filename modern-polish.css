@@ -3020,6 +3020,154 @@ body.game-page .battle-fx-image::after {
   display: none;
 }
 
+/* 終盤奥義は各スキルの威力・範囲・連撃構造をそのまま動きにする。 */
+body.game-page .battle-fx-ultimate-ragnarok.battle-fx-image {
+  animation: fx-ultimate-ragnarok 1040ms cubic-bezier(.12,.72,.18,1) forwards;
+}
+
+body.game-page .battle-fx-ultimate-prisma-end.battle-fx-image {
+  animation: fx-ultimate-prisma-end 900ms cubic-bezier(.08,.84,.14,1) forwards;
+}
+
+body.game-page .battle-fx-ultimate-big-bang.battle-fx-image {
+  animation: fx-ultimate-big-bang 1260ms cubic-bezier(.16,.76,.18,1) forwards;
+}
+
+body.game-page .battle-fx-ultimate-abyss-wall.battle-fx-image {
+  transform-origin: 50% 92%;
+  animation: fx-ultimate-abyss-wall 1200ms cubic-bezier(.12,.74,.16,1) forwards;
+}
+
+body.game-page .battle-fx-ultimate-phoenix-flare.battle-fx-image {
+  transform-origin: 50% 88%;
+  animation: fx-ultimate-phoenix-flare 1080ms cubic-bezier(.1,.76,.16,1) forwards;
+}
+
+body.game-page .battle-fx-ultimate-genesis-magic.battle-fx-image {
+  animation: fx-ultimate-genesis-magic 1320ms cubic-bezier(.16,.74,.18,1) forwards;
+}
+
+body.game-page .battle-fx-ultimate-chaos-shock.battle-fx-image {
+  animation: fx-ultimate-chaos-shock 1180ms cubic-bezier(.12,.74,.16,1) forwards;
+}
+
+body.game-page .battle-fx-ultimate-illuminati-break.battle-fx-image {
+  transform-origin: 50% 14%;
+  animation: fx-ultimate-illuminati-break 980ms cubic-bezier(.08,.82,.14,1) forwards;
+}
+
+body.game-page .battle-fx-ultimate-the-end.battle-fx-image {
+  transform-origin: 50% 96%;
+  animation: fx-ultimate-the-end 1100ms cubic-bezier(.12,.78,.16,1) forwards;
+}
+
+body.game-page .battle-fx-ultimate-lost-prisma.battle-fx-image {
+  animation: fx-ultimate-lost-prisma 1380ms cubic-bezier(.14,.7,.16,1) forwards;
+}
+
+@keyframes fx-ultimate-ragnarok {
+  0% { opacity: 0; transform: translate(-50%,-50%) scale(1.3) rotate(-42deg); }
+  24% { opacity: .96; }
+  64% { opacity: 1; transform: translate(-50%,-50%) scale(.82) rotate(18deg); }
+  100% { opacity: 0; transform: translate(-50%,-50%) scale(1.16) rotate(30deg); }
+}
+
+@keyframes fx-ultimate-prisma-end {
+  0% { opacity: 0; transform: translate(-72%,-28%) scale(.42); filter: brightness(2.2); }
+  22% { opacity: 1; }
+  58% { opacity: 1; transform: translate(-50%,-50%) scale(1.12); filter: brightness(1.25); }
+  100% { opacity: 0; transform: translate(-34%,-66%) scale(1.22); filter: brightness(.8); }
+}
+
+@keyframes fx-ultimate-big-bang {
+  0% { opacity: 0; transform: translate(-50%,-50%) scale(.04); filter: brightness(.4); }
+  30% { opacity: 1; transform: translate(-50%,-50%) scale(.24); filter: brightness(2.4); }
+  72% { opacity: 1; transform: translate(-50%,-50%) scale(1.16); }
+  100% { opacity: 0; transform: translate(-50%,-50%) scale(1.4); filter: brightness(1.5); }
+}
+
+@keyframes fx-ultimate-abyss-wall {
+  0% { opacity: 0; transform: translate(-50%,-18%) scaleX(.72) scaleY(.04); }
+  42% { opacity: 1; transform: translate(-50%,-50%) scaleX(1.02) scaleY(1.05); }
+  78% { opacity: 1; transform: translate(-50%,-50%) scale(1.04); }
+  100% { opacity: 0; transform: translate(-50%,-54%) scale(1.08); }
+}
+
+@keyframes fx-ultimate-phoenix-flare {
+  0% { opacity: 0; transform: translate(-50%,-94%) scale(.5); }
+  46% { opacity: 1; transform: translate(-50%,-48%) scale(.92); filter: brightness(1.25); }
+  70% { opacity: 1; transform: translate(-50%,-50%) scale(1.12); filter: brightness(2); }
+  100% { opacity: 0; transform: translate(-50%,-44%) scale(1.3); }
+}
+
+@keyframes fx-ultimate-genesis-magic {
+  0% { opacity: 0; transform: translate(-50%,-50%) scale(.4) rotate(-36deg); }
+  36% { opacity: .92; }
+  76% { opacity: 1; transform: translate(-50%,-50%) scale(1.08) rotate(10deg); }
+  100% { opacity: 0; transform: translate(-50%,-50%) scale(1.18) rotate(18deg); }
+}
+
+@keyframes fx-ultimate-chaos-shock {
+  0% { opacity: 0; transform: translate(-50%,-50%) scale(1.3) rotate(18deg); }
+  32% { opacity: 1; transform: translate(-50%,-50%) scale(.2) rotate(-20deg); }
+  72% { opacity: 1; transform: translate(-50%,-50%) scale(1.14) rotate(8deg); }
+  100% { opacity: 0; transform: translate(-50%,-50%) scale(1.36) rotate(18deg); }
+}
+
+@keyframes fx-ultimate-illuminati-break {
+  0% { opacity: 0; transform: translate(-50%,-88%) scaleY(.35); }
+  34% { opacity: 1; transform: translate(-50%,-52%) scaleY(1.06); filter: brightness(1.4); }
+  72% { opacity: 1; transform: translate(-50%,-50%) scale(1.08); }
+  100% { opacity: 0; transform: translate(-50%,-46%) scale(1.18); filter: brightness(2); }
+}
+
+@keyframes fx-ultimate-the-end {
+  0% { opacity: 0; transform: translate(-50%,-50%) scaleX(1.62) scaleY(.72); }
+  52% { opacity: 1; transform: translate(-50%,-50%) scaleX(.72) scaleY(1.04); }
+  74% { opacity: 1; transform: translate(-50%,-50%) scaleX(.2) scaleY(1.12); filter: brightness(1.8); }
+  100% { opacity: 0; transform: translate(-50%,-50%) scaleX(.03) scaleY(1.2); }
+}
+
+@keyframes fx-ultimate-lost-prisma {
+  0% { opacity: 0; transform: translate(-50%,-50%) scale(1.34) rotate(28deg); filter: saturate(1.4); }
+  46% { opacity: 1; transform: translate(-50%,-50%) scale(.58) rotate(-12deg); }
+  72% { opacity: 1; transform: translate(-50%,-50%) scale(1.04) rotate(2deg); filter: saturate(.7) brightness(1.65); }
+  100% { opacity: 0; transform: translate(-50%,-50%) scale(1.34); filter: saturate(0) brightness(2.2); }
+}
+
+body.game-page .battle-fx-accent {
+  position: absolute;
+  inset: -8%;
+  pointer-events: none;
+  background: center / contain no-repeat;
+  mix-blend-mode: screen;
+  opacity: 0;
+}
+
+body.game-page .battle-fx-accent-arcane {
+  animation: fx-arcane-accent 860ms cubic-bezier(.18, .9, .22, 1) forwards;
+}
+
+body.game-page .battle-fx-ranged-volley.battle-fx-image {
+  animation: fx-ranged-volley 680ms cubic-bezier(.16, .82, .2, 1) forwards;
+}
+
+body.game-page .battle-fx-neutral-pierce.battle-fx-image,
+body.game-page .battle-fx-phys-spear.battle-fx-image {
+  animation: fx-pierce-lunge 610ms cubic-bezier(.16, .82, .2, 1) forwards;
+}
+
+body.game-page .battle-fx-neutral-smash.battle-fx-image,
+body.game-page .battle-fx-phys-axe.battle-fx-image {
+  animation: fx-smash-impact 720ms cubic-bezier(.16, .82, .2, 1) forwards;
+}
+
+body.game-page .battle-fx-image[class*="battle-fx-breath-"] ,
+body.game-page .battle-fx-breath.battle-fx-image {
+  animation: fx-breath-cone 820ms cubic-bezier(.14, .78, .18, 1) forwards;
+  transform-origin: 18% 50%;
+}
+
 body.game-page .battle-fx-image.battle-fx-phys-fire,
 body.game-page .battle-fx-image.battle-fx-breath-fire {
   filter: sepia(0.45) saturate(1.9) hue-rotate(-18deg) drop-shadow(0 0 12px rgba(255, 120, 48, 0.62));
@@ -3053,6 +3201,58 @@ body.game-page .battle-fx-image.battle-fx-breath-dark {
 body.game-page .battle-fx-image.battle-fx-phys-chaos,
 body.game-page .battle-fx-image.battle-fx-breath-chaos {
   filter: saturate(1.85) hue-rotate(126deg) brightness(1.08) drop-shadow(0 0 14px rgba(103, 215, 196, 0.66));
+}
+
+/* スキル威力・範囲プロファイル。画像は同じでも、小技と奥義が同じ重さに見えないようにする。 */
+body.game-page .battle-fx-image.battle-fx-tier-1 {
+  opacity: 0.82;
+}
+
+body.game-page .battle-fx-image.battle-fx-tier-3::before,
+body.game-page .battle-fx-image.battle-fx-tier-4::before {
+  display: block;
+  content: "";
+  position: absolute;
+  inset: 12%;
+  border: 2px solid rgba(255, 255, 255, 0.62);
+  border-radius: 50%;
+  box-shadow: 0 0 16px rgba(255, 255, 255, 0.34), inset 0 0 14px rgba(255, 255, 255, 0.22);
+  animation: fx-profile-ring 720ms cubic-bezier(.18, .9, .22, 1) forwards;
+}
+
+body.game-page .battle-fx-image.battle-fx-tier-4::after {
+  display: block;
+  content: "";
+  position: absolute;
+  inset: -18%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.42) 0 5%, rgba(255,230,160,0.18) 28%, transparent 66%);
+  animation: fx-profile-flash 900ms ease-out forwards;
+}
+
+body.game-page .battle-fx-image.battle-fx-multihit {
+  background-size: 92% 92%;
+}
+
+body.game-page .battle-fx-screen.battle-fx-tier-3,
+body.game-page .battle-fx-screen.battle-fx-tier-4 {
+  box-shadow: inset 0 0 34px rgba(255,255,255,0.14), 0 0 28px rgba(255,255,255,0.10);
+}
+
+body.game-page .battle-fx-screen.battle-fx-type-breath {
+  transform-origin: 18% 72%;
+}
+
+@keyframes fx-profile-ring {
+  0% { opacity: 0; transform: scale(0.42) rotate(-22deg); }
+  28% { opacity: 0.95; }
+  100% { opacity: 0; transform: scale(1.34) rotate(28deg); }
+}
+
+@keyframes fx-profile-flash {
+  0% { opacity: 0; transform: scale(0.2); }
+  18% { opacity: 0.9; }
+  100% { opacity: 0; transform: scale(1.45); }
 }
 
 body.game-page .battle-fx::before,
@@ -3264,6 +3464,41 @@ body.game-page .p-box.battle-heal-pulse {
   14% { opacity: 0.95; }
   58% { opacity: 0.82; }
   100% { opacity: 0; transform: translate(-50%, -50%) scale(1.08) rotate(2deg); filter: brightness(1.2) saturate(1.35); }
+}
+
+@keyframes fx-arcane-accent {
+  0% { opacity: 0; transform: scale(0.38) rotate(-32deg); }
+  20% { opacity: 0.78; }
+  66% { opacity: 0.46; }
+  100% { opacity: 0; transform: scale(1.22) rotate(28deg); }
+}
+
+@keyframes fx-ranged-volley {
+  0% { opacity: 0; transform: translate(-72%, -72%) scale(0.56); }
+  16% { opacity: 1; }
+  68% { opacity: 0.96; }
+  100% { opacity: 0; transform: translate(-36%, -36%) scale(1.08); }
+}
+
+@keyframes fx-pierce-lunge {
+  0% { opacity: 0; transform: translate(-78%, -50%) scale(0.44, 0.72); }
+  18% { opacity: 1; }
+  58% { opacity: 0.98; transform: translate(-48%, -50%) scale(1.06, 0.94); }
+  100% { opacity: 0; transform: translate(-34%, -50%) scale(1.18, 0.78); }
+}
+
+@keyframes fx-smash-impact {
+  0% { opacity: 0; transform: translate(-50%, -58%) scale(0.3); }
+  18% { opacity: 1; transform: translate(-50%, -50%) scale(1.08); }
+  46% { opacity: 0.96; transform: translate(-50%, -50%) scale(0.92); }
+  100% { opacity: 0; transform: translate(-50%, -47%) scale(1.24); }
+}
+
+@keyframes fx-breath-cone {
+  0% { opacity: 0; transform: translate(-66%, -50%) scale(0.18, 0.52); }
+  18% { opacity: 1; }
+  62% { opacity: 0.92; transform: translate(-48%, -50%) scale(1.02, 0.96); }
+  100% { opacity: 0; transform: translate(-38%, -50%) scale(1.18, 1.06); }
 }
 
 @keyframes fx-rise {

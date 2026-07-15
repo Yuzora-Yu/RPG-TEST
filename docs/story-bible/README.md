@@ -2,7 +2,7 @@
 
 This folder stores current story, worldbuilding, character relationship, and future-plot references.
 
-Note: dated archive files can include old planning assumptions. Current feature unlocks and player-facing routes should follow the implementation code and the latest README/status documents.
+Note: dated archive files can include old planning assumptions. `docs/CURRENT_PRODUCT_DIRECTIVES_20260714.md` has priority: dialogue has no fixed character limit; tutorials are created only after every target screen and flow is complete; gacha has no planned player-facing use in the main game, postgame, or events. Conflicting archive text is obsolete.
 
 ## Current Archive
 

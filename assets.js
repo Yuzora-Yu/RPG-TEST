@@ -44,16 +44,14 @@ const PRISMA_MONSTER_IMAGE_FILES = PRISMA_NORMAL_MONSTER_IMAGE_IDS
   .concat(PRISMA_BOSS_MONSTER_IMAGE_IDS)
   .map((id) => `assets/monsters/monster_${id}.png`);
 
-// ロード画面・序盤戦闘で使う候補。
-// 初回起動時の見栄えを優先し、やや多めに先読み/初回キャッシュする。
-// 画像軽量化後はここを増減してよいが、参照リストは sw.js 側へ複製しないこと。
-const PRISMA_LOADING_MONSTER_IMAGE_FILES = PRISMA_NORMAL_MONSTER_IMAGE_IDS
-  .slice(0, 24)
+// OPより前に戦う、開幕ジェリーと始まりの洞穴の通常敵・ボスを起動前に取得する。
+const PRISMA_PRE_OP_MONSTER_IMAGE_FILES = [100001, 100002, 100003, 100004, 301000]
   .map((id) => `assets/monsters/monster_${id}.png`);
 
 const PRISMA_ASSETS = {
   // Field.render / Battle 背景 / 主人公歩行画像で使う GRAPHICS 用画像。
   graphics: {
+    opening_prism_collapse: "assets/generated/opening-prism-collapse-v002.png",
     floor: "assets/map/terrain/terrain_grass_field_v001.png",
     sea: "assets/map/terrain/terrain_sea_v001.png",
     forest: "assets/map/objects/object_field_forest_v003.png",
@@ -62,7 +60,15 @@ const PRISMA_ASSETS = {
     wall: "assets/map/terrain/terrain_dungeon_wall_v001.png",
     wall_face: "assets/map/terrain/terrain_dungeon_wall_face_v002.png",
     wall_face_torch: "assets/map/terrain/terrain_dungeon_wall_face_torch_v002.png",
-    magma: "assets/map/objects/magma.png",
+    tile_fire_wall_face: "assets/map/terrain/tile_fire_wall_face_v001.png",
+    tile_wind_temple_wall_face: "assets/map/terrain/tile_wind_temple_wall_face_v001.png",
+    tile_wind_hole_wall_face: "assets/map/terrain/tile_wind_hole_wall_face_v001.png",
+    tile_tower_wall_face: "assets/map/terrain/tile_tower_wall_face_v001.png",
+    tile_thunder_wall_face: "assets/map/terrain/tile_thunder_wall_face_v001.png",
+    tile_dark_castle_wall_face: "assets/map/terrain/tile_dark_castle_wall_face_v001.png",
+    tile_galvania_wall_face: "assets/map/terrain/tile_galvania_wall_face_v001.png",
+    tile_grezelia_wall_face: "assets/map/terrain/tile_grezelia_wall_face_v001.png",
+    magma: "assets/map/terrain/magma.png",
     dungeon_floor: "assets/map/terrain/terrain_dungeon_floor_v001.png",
     stairs: "assets/map/objects/object_field_stairs_v002.png",
     stairs_dungeon: "assets/map/objects/object_dungeon_stairs_v002.png",
@@ -143,6 +149,43 @@ const PRISMA_ASSETS = {
     overlay_field_town: "assets/map/overlays/overlay_field_town_v002.png",
     overlay_field_village: "assets/map/overlays/overlay_field_village_v002.png",
     overlay_field_weapon: "assets/map/overlays/overlay_field_weapon_v002.png",
+    overlay_decor_default_cave_dust: "assets/map/overlays/overlay_decor_default_cave_dust_v001.png",
+    overlay_decor_start_village_herbs: "assets/map/overlays/overlay_decor_start_village_herbs_v001.png",
+    overlay_decor_start_cave_damp: "assets/map/overlays/overlay_decor_start_cave_damp_v001.png",
+    overlay_decor_fire_ember_fissure: "assets/map/overlays/overlay_decor_fire_ember_fissure_v001.png",
+    overlay_decor_wind_village_feather: "assets/map/overlays/overlay_decor_wind_village_feather_v001.png",
+    overlay_decor_wind_hole_root: "assets/map/overlays/overlay_decor_wind_hole_root_v001.png",
+    overlay_decor_forbidden_forest_moss: "assets/map/overlays/overlay_decor_forbidden_forest_moss_v001.png",
+    overlay_decor_water_city_puddle: "assets/map/overlays/overlay_decor_water_city_puddle_v001.png",
+    overlay_decor_big_tower_gear_oil: "assets/map/overlays/overlay_decor_big_tower_gear_oil_v001.png",
+    overlay_decor_thunder_fort_wiring: "assets/map/overlays/overlay_decor_thunder_fort_wiring_v001.png",
+    overlay_decor_light_palace_prism: "assets/map/overlays/overlay_decor_light_palace_prism_v001.png",
+    overlay_decor_galvania_crystal: "assets/map/overlays/overlay_decor_galvania_crystal_v001.png",
+    overlay_decor_dark_castle_chain: "assets/map/overlays/overlay_decor_dark_castle_chain_v001.png",
+    overlay_decor_crena_limestone_pool: "assets/map/overlays/overlay_decor_crena_limestone_pool_v001.png",
+    overlay_decor_seabed_temple_ripple: "assets/map/overlays/overlay_decor_seabed_temple_ripple_v001.png",
+    overlay_decor_dark_shrine_sigil: "assets/map/overlays/overlay_decor_dark_shrine_sigil_v001.png",
+    overlay_decor_grezelia_fossil: "assets/map/overlays/overlay_decor_grezelia_fossil_v001.png",
+    overlay_decor_abyss_void_dust: "assets/map/overlays/overlay_decor_abyss_void_dust_v001.png",
+    overlay_decor_abyss_field_flora: "assets/map/overlays/overlay_decor_abyss_field_flora_v001.png",
+    overlay_decor_ruined_shrine_glyph: "assets/map/overlays/overlay_decor_ruined_shrine_glyph_v001.png",
+    overlay_castle_carpet_fill: "assets/map/overlays/overlay_castle_carpet_fill_v001.png",
+    overlay_castle_carpet_edge_n: "assets/map/overlays/overlay_castle_carpet_edge_n_v001.png",
+    overlay_castle_carpet_edge_s: "assets/map/overlays/overlay_castle_carpet_edge_s_v001.png",
+    overlay_castle_carpet_edge_w: "assets/map/overlays/overlay_castle_carpet_edge_w_v001.png",
+    overlay_castle_carpet_edge_e: "assets/map/overlays/overlay_castle_carpet_edge_e_v001.png",
+    overlay_castle_carpet_corner_nw: "assets/map/overlays/overlay_castle_carpet_corner_nw_v001.png",
+    overlay_castle_carpet_corner_ne: "assets/map/overlays/overlay_castle_carpet_corner_ne_v001.png",
+    overlay_castle_carpet_corner_sw: "assets/map/overlays/overlay_castle_carpet_corner_sw_v001.png",
+    overlay_castle_carpet_corner_se: "assets/map/overlays/overlay_castle_carpet_corner_se_v001.png",
+    overlay_world_grass_detail: "assets/map/overlays/overlay_world_grass_detail_v001.png",
+    overlay_world_grass_weeds: "assets/map/overlays/overlay_world_grass_weeds_v001.png",
+    overlay_world_grass_earth: "assets/map/overlays/overlay_world_grass_earth_v001.png",
+    overlay_world_forest_understory: "assets/map/overlays/overlay_world_forest_understory_v001.png",
+    overlay_world_forest_roots: "assets/map/overlays/overlay_world_forest_roots_v001.png",
+    overlay_world_foothill_rocks: "assets/map/overlays/overlay_world_foothill_rocks_v001.png",
+    overlay_world_shore_foam: "assets/map/overlays/overlay_world_shore_foam_v001.png",
+    overlay_world_bridge_wood: "assets/map/overlays/overlay_world_bridge_wood_v001.png",
     overlay_dungeon_boss: "assets/map/overlays/overlay_dungeon_boss_v002.png",
     overlay_dungeon_chest: "assets/map/overlays/overlay_dungeon_chest_v002.png",
     overlay_dungeon_chest_rare: "assets/map/overlays/overlay_dungeon_chest_rare_v002.png",
@@ -151,9 +194,18 @@ const PRISMA_ASSETS = {
     overlay_dungeon_event: "assets/map/overlays/overlay_dungeon_event_v002.png",
     overlay_dungeon_portal: "assets/map/overlays/overlay_dungeon_portal_v002.png",
     overlay_dungeon_stairs: "assets/map/overlays/overlay_dungeon_stairs_v002.png",
-    door_key_red: "assets/map/objects/door_key_red_v002.png",
-    door_key_blue: "assets/map/objects/door_key_blue_v002.png",
-    door_key_gold: "assets/map/objects/door_key_gold_v002.png",
+    door_key_red: "assets/map/objects/door_key_red_v003.png",
+    door_key_blue: "assets/map/objects/door_key_blue_v003.png",
+    door_key_gold: "assets/map/objects/door_key_gold_v003.png",
+    object_blocking_castle_candelabrum: "assets/map/objects/object_blocking_castle_candelabrum_v001.png",
+    object_blocking_forest_stump: "assets/map/objects/object_blocking_forest_stump_v001.png",
+    object_blocking_thunder_terminal: "assets/map/objects/object_blocking_thunder_terminal_v001.png",
+    object_blocking_cave_stalagmite: "assets/map/objects/object_blocking_cave_stalagmite_v001.png",
+    object_blocking_seabed_coral_pillar: "assets/map/objects/object_blocking_seabed_coral_pillar_v001.png",
+    object_blocking_light_crystal_pedestal: "assets/map/objects/object_blocking_light_crystal_pedestal_v001.png",
+    object_blocking_fire_brazier: "assets/map/objects/object_blocking_fire_brazier_v001.png",
+    object_blocking_lighthouse_gear_pedestal: "assets/map/objects/object_blocking_lighthouse_gear_pedestal_v001.png",
+    object_blocking_dark_shrine_obelisk: "assets/map/objects/object_blocking_dark_shrine_obelisk_v001.png",
     item_key_red: "assets/map/objects/item_key_red_v002.png",
     item_key_blue: "assets/map/objects/item_key_blue_v002.png",
     item_key_gold: "assets/map/objects/item_key_gold_v002.png",
@@ -201,6 +253,14 @@ const PRISMA_ASSETS = {
     overlay_dungeon_warp: "assets/map/overlays/overlay_dungeon_warp_v001.png",
     overlay_dungeon_trial_angel: "assets/map/overlays/overlay_dungeon_trial_angel_v001.png",
     overlay_dungeon_adventurer: "assets/map/overlays/overlay_dungeon_adventurer_v001.png",
+    overlay_dungeon_adventurer_down_1: "assets/map/overlays/overlay_dungeon_adventurer_down_1_v001.png",
+    overlay_dungeon_adventurer_down_2: "assets/map/overlays/overlay_dungeon_adventurer_down_2_v001.png",
+    overlay_dungeon_adventurer_left_1: "assets/map/overlays/overlay_dungeon_adventurer_left_1_v001.png",
+    overlay_dungeon_adventurer_left_2: "assets/map/overlays/overlay_dungeon_adventurer_left_2_v001.png",
+    overlay_dungeon_adventurer_right_1: "assets/map/overlays/overlay_dungeon_adventurer_right_1_v001.png",
+    overlay_dungeon_adventurer_right_2: "assets/map/overlays/overlay_dungeon_adventurer_right_2_v001.png",
+    overlay_dungeon_adventurer_up_1: "assets/map/overlays/overlay_dungeon_adventurer_up_1_v001.png",
+    overlay_dungeon_adventurer_up_2: "assets/map/overlays/overlay_dungeon_adventurer_up_2_v001.png",
                                 "buff-ai": "assets/effect/fx-buff-ai.png",
                                 "abyss-vortex": "assets/effect/fx-abyss-vortex-ai.png",
     overlay_dungeon_hunter: "assets/map/overlays/overlay_dungeon_hunter_v001.png",
@@ -282,6 +342,8 @@ const PRISMA_ASSETS = {
     tile_thunder_floor_4: "assets/map/terrain/tile_thunder_floor_alt_v004.png",
     tile_light_wall: "assets/map/terrain/tile_light_wall_v005.png",
     tile_light_floor: "assets/map/terrain/tile_light_floor_v005.png",
+    tile_light_wall_face: "assets/map/terrain/tile_light_wall_face_v001.png",
+    tile_light_wall_face_prism: "assets/map/terrain/tile_light_wall_face_prism_v001.png",
     tile_dark_wall: "assets/map/terrain/tile_dark_wall_v005.png",
     tile_dark_floor: "assets/map/terrain/tile_dark_floor_v005.png",
     tile_dark_wall_2: "assets/map/terrain/tile_dark_wall_alt_v002.png",
@@ -360,6 +422,7 @@ const PRISMA_ASSETS = {
     battle_bg_dark_castle: "assets/generated/battle-dark-castle-v001.png",
     battle_bg_crena: "assets/generated/battle-crena-v001.png",
     battle_bg_seabed: "assets/generated/battle-seabed-v001.png",
+    battle_bg_flooded: "assets/generated/battle-flooded-v001.png",
     battle_bg_dark_shrine: "assets/generated/battle-dark-shrine-v001.png",
     battle_bg_galvania_cave: "assets/generated/battle-galvania-cave-v001.png",
     battle_bg_grezelia: "assets/generated/battle-grezelia-v001.png",
@@ -381,7 +444,7 @@ const PRISMA_ASSETS = {
     heal: "assets/effect/fx-heal-ai.png",
     buff: "assets/effect/fx_support_buff_v001.png",
     "buff-ai": "assets/effect/fx-buff-ai.png",
-    debuff: "assets/effect/fx_support_debuff_v001.png",
+    debuff: "assets/effect/fx_support_debuff_hex_v002.png",
     combo: "assets/effect/fx-combo-ai.png",
     "all-slash": "assets/effect/fx-all-slash-ai.png",
     "enemy-claw": "assets/effect/fx-enemy-claw-ai.png",
@@ -393,16 +456,27 @@ const PRISMA_ASSETS = {
     "holy-burst": "assets/effect/fx-holy-burst-ai.png",
     poison: "assets/effect/fx-poison-ai.png",
     "ultimate-chaos": "assets/effect/fx-ultimate-chaos-ai.png",
-    "heal-blossom": "assets/effect/fx_support_heal_v001.png",
-    "neutral-slash": "assets/effect/fx_phys_neutral_slash_v001.png",
-    "neutral-smash": "assets/effect/fx_phys_neutral_smash_v001.png",
-    "neutral-pierce": "assets/effect/fx_phys_neutral_pierce_v001.png",
+    "ultimate-ragnarok": "assets/effect/fx_ultimate_166_ragnarok_v001.png",
+    "ultimate-prisma-end": "assets/effect/fx_ultimate_168_prisma_end_v001.png",
+    "ultimate-big-bang": "assets/effect/fx_ultimate_238_big_bang_v001.png",
+    "ultimate-abyss-wall": "assets/effect/fx_ultimate_242_abyss_wall_v001.png",
+    "ultimate-phoenix-flare": "assets/effect/fx_ultimate_243_phoenix_flare_v001.png",
+    "ultimate-genesis-magic": "assets/effect/fx_ultimate_244_genesis_magic_v001.png",
+    "ultimate-chaos-shock": "assets/effect/fx_ultimate_245_chaos_shock_v001.png",
+    "ultimate-illuminati-break": "assets/effect/fx_ultimate_246_illuminati_break_v001.png",
+    "ultimate-the-end": "assets/effect/fx_ultimate_247_the_end_v001.png",
+    "ultimate-lost-prisma": "assets/effect/fx_ultimate_248_lost_prisma_v001.png",
+    "heal-blossom": "assets/effect/fx_support_heal_radiance_v002.png",
+    "neutral-slash": "assets/effect/fx_phys_slash_arc_v002.png",
+    "neutral-smash": "assets/effect/fx_phys_smash_impact_v002.png",
+    "neutral-pierce": "assets/effect/fx_phys_pierce_lance_v002.png",
     "neutral-combo": "assets/effect/fx_phys_neutral_combo_v001.png",
     "neutral-chain": "assets/effect/fx_phys_neutral_chain_v001.png",
     "neutral-heavy": "assets/effect/fx_phys_neutral_heavy_v001.png",
-    "phys-sword": "assets/effect/fx_phys_neutral_slash_v001.png",
-    "phys-spear": "assets/effect/fx_phys_neutral_pierce_v001.png",
-    "phys-axe": "assets/effect/fx_phys_neutral_smash_v001.png",
+    "phys-sword": "assets/effect/fx_phys_slash_arc_v002.png",
+    "phys-spear": "assets/effect/fx_phys_pierce_lance_v002.png",
+    "phys-axe": "assets/effect/fx_phys_smash_impact_v002.png",
+    "ranged-volley": "assets/effect/fx_phys_ranged_volley_v001.png",
     "phys-combo": "assets/effect/fx_phys_neutral_combo_v001.png",
     "spell-fire": "assets/effect/fx_spell_fire_v001.png",
     "spell-ice": "assets/effect/fx_spell_ice_v001.png",
@@ -411,36 +485,109 @@ const PRISMA_ASSETS = {
     "spell-light": "assets/effect/fx_spell_light_v001.png",
     "spell-dark": "assets/effect/fx_spell_dark_v001.png",
     "spell-chaos": "assets/effect/fx_spell_chaos_v001.png",
-    breath: "assets/effect/fx_breath_dragon_v001.png",
+    breath: "assets/effect/fx_breath_cone_master_v001.png",
+    "arcane-burst": "assets/effect/fx_magic_arcane_burst_v001.png",
     "special-rupture": "assets/effect/fx_special_rupture_v001.png",
     "critical-spark": "assets/effect/fx_critical_spark_v001.png",
+    "phys-elemental": "assets/effect/fx_phys_elemental_arc_v001.png",
   },
 
 
   // Service Worker / 起動時先読みへ渡す画像キャッシュ用リスト。
-  // criticalImages: 初回表示で特に遅延が目立つ画像。
+  // initialGraphicKeys / criticalImages: 全量取得を待たない場合でも起動直後に必要なセット。
+  // openingImages: PROLOGUE3後の紙芝居OPで使う画像（全量キャッシュにも含める）。
   // startupImages: ローディング中にブラウザ側でも先読みする画像。
   // installImages: Service Worker の初回install時にキャッシュする画像全体。
   // backgroundImages: install後の再試行/補助ウォームキャッシュ用。
   cacheWarmup: {
-    version: "2026-06-29-light-palace-captives-v1",
+    version: "2026-07-16-blocking-map-objects-v27",
+    initialGraphicKeys: [
+      "floor", "sea", "forest", "mountain", "Low_mountain", "cave", "house-1", "house-2", "inn", "wall", "dungeon_floor",
+      "overlay_field_forest", "overlay_field_house_1", "overlay_field_house_2", "overlay_field_cave",
+      "overlay_field_village",
+      "overlay_decor_default_cave_dust", "overlay_decor_start_village_herbs", "overlay_decor_start_cave_damp",
+      "overlay_decor_fire_ember_fissure", "overlay_decor_wind_village_feather", "overlay_decor_wind_hole_root",
+      "overlay_decor_forbidden_forest_moss", "overlay_decor_water_city_puddle", "overlay_decor_big_tower_gear_oil",
+      "overlay_decor_thunder_fort_wiring", "overlay_decor_light_palace_prism", "overlay_decor_galvania_crystal",
+      "overlay_decor_dark_castle_chain", "overlay_decor_crena_limestone_pool", "overlay_decor_seabed_temple_ripple",
+      "overlay_decor_dark_shrine_sigil", "overlay_decor_grezelia_fossil", "overlay_decor_abyss_void_dust",
+      "overlay_decor_abyss_field_flora", "overlay_decor_ruined_shrine_glyph",
+      "overlay_castle_carpet_fill", "overlay_castle_carpet_edge_n", "overlay_castle_carpet_edge_s",
+      "overlay_castle_carpet_edge_w", "overlay_castle_carpet_edge_e", "overlay_castle_carpet_corner_nw",
+      "overlay_castle_carpet_corner_ne", "overlay_castle_carpet_corner_sw", "overlay_castle_carpet_corner_se",
+      "door_key_red", "door_key_blue", "door_key_gold",
+      "object_blocking_castle_candelabrum", "object_blocking_forest_stump", "object_blocking_thunder_terminal",
+      "object_blocking_cave_stalagmite", "object_blocking_seabed_coral_pillar", "object_blocking_light_crystal_pedestal",
+      "object_blocking_fire_brazier", "object_blocking_lighthouse_gear_pedestal", "object_blocking_dark_shrine_obelisk",
+      "overlay_world_grass_detail", "overlay_world_forest_understory", "overlay_world_foothill_rocks", "overlay_world_shore_foam", "overlay_world_bridge_wood",
+      "overlay_world_grass_weeds", "overlay_world_grass_earth", "overlay_world_forest_roots",
+      "overlay_named_dungeon_chest", "overlay_named_dungeon_chest_rare",
+      "overlay_dungeon_chest", "overlay_dungeon_chest_rare",
+      "overlay_dungeon_stairs",
+      "overlay_dungeon_chest_empty", "overlay_dungeon_chest_rare_empty",
+      "overlay_dungeon_adventurer_down_1", "overlay_dungeon_adventurer_down_2",
+      "overlay_dungeon_adventurer_left_1", "overlay_dungeon_adventurer_left_2",
+      "overlay_dungeon_adventurer_right_1", "overlay_dungeon_adventurer_right_2",
+      "overlay_dungeon_adventurer_up_1", "overlay_dungeon_adventurer_up_2",
+      "overlay_npc_elder", "overlay_npc_villager", "overlay_npc_child", "overlay_npc_bronze_knight",
+      "overlay_boss_301000", "battle_bg_field", "battle_bg_dungeon", "battle_bg_flooded",
+      "hero_down_1", "hero_down_2", "hero_up_1", "hero_up_2",
+      "hero_left_1", "hero_left_2", "hero_right_1", "hero_right_2",
+      "hero_wing_down_1", "hero_wing_down_2", "hero_wing_up_1", "hero_wing_up_2",
+      "hero_wing_left_1", "hero_wing_left_2", "hero_wing_right_1", "hero_wing_right_2",
+    ],
     criticalImages: [
-      ...PRISMA_LOADING_MONSTER_IMAGE_FILES,
-      "assets/monsters/monster_301000.png",
-      "assets/monsters/monster_902000.png",
+      ...PRISMA_PRE_OP_MONSTER_IMAGE_FILES,
       "assets/generated/battle-field-ai.png",
-      "assets/generated/battle-forest-ai.png",
       "assets/generated/battle-dungeon-ai.png",
-      "assets/generated/battle-boss-ai.png",
-      "assets/generated/battle-maze-ai.png",
-      "assets/generated/battle-fire.png",
-      "assets/generated/battle-abyss-ai.png",
-      "assets/map/objects/magma.png",
-      "assets/gacha/back_card.png",
-      "assets/gacha/front_card.png",
-      "assets/background/bg_inn.jpg",
-      "assets/background/bg_medal.png",
-      "assets/background/bg_casino.png",
+      "assets/generated/battle-flooded-v001.png",
+      "assets/map/terrain/terrain_grass_field_v001.png",
+      "assets/map/terrain/terrain_sea_v001.png",
+      "assets/map/objects/object_field_forest_v003.png",
+      "assets/map/objects/object_field_mountain_v002.png",
+      "assets/map/objects/object_field_low_mountain_v002.png",
+      "assets/map/objects/object_field_cave_v002.png",
+      "assets/map/objects/object_field_house_1_v002.png",
+      "assets/map/objects/object_field_house_2_v002.png",
+      "assets/map/objects/object_field_inn_v002.png",
+      "assets/map/overlays/overlay_field_forest_v006.png",
+      "assets/map/overlays/overlay_field_house_1_v002.png",
+      "assets/map/overlays/overlay_field_house_2_v002.png",
+      "assets/map/overlays/overlay_field_cave_v002.png",
+      "assets/map/overlays/overlay_field_village_v002.png",
+      "assets/map/overlays/overlay_decor_start_village_herbs_v001.png",
+      "assets/map/overlays/overlay_decor_start_cave_damp_v001.png",
+      "assets/map/overlays/overlay_world_grass_detail_v001.png",
+      "assets/map/overlays/overlay_world_grass_weeds_v001.png",
+      "assets/map/overlays/overlay_world_grass_earth_v001.png",
+      "assets/map/overlays/overlay_world_forest_understory_v001.png",
+      "assets/map/overlays/overlay_world_forest_roots_v001.png",
+      "assets/map/overlays/overlay_world_foothill_rocks_v001.png",
+      "assets/map/overlays/overlay_world_shore_foam_v001.png",
+      "assets/effect/fx_phys_slash_arc_v002.png",
+      "assets/effect/fx_phys_elemental_arc_v001.png",
+      "assets/map/terrain/terrain_dungeon_wall_v001.png",
+      "assets/map/terrain/terrain_dungeon_floor_v001.png",
+      "assets/map/overlays/overlay_named_dungeon_chest.png",
+      "assets/map/overlays/overlay_named_dungeon_chest_rare.png",
+      "assets/map/overlays/overlay_dungeon_chest_v002.png",
+      "assets/map/overlays/overlay_dungeon_chest_rare_v002.png",
+      "assets/map/overlays/overlay_dungeon_stairs_v002.png",
+      "assets/map/overlays/overlay_dungeon_chest_empty_v001.png",
+      "assets/map/overlays/overlay_dungeon_chest_rare_empty_v001.png",
+      "assets/map/overlays/overlay_npc_elder_v002.png",
+      "assets/map/overlays/overlay_npc_villager_v002.png",
+      "assets/map/overlays/overlay_npc_child_v002.png",
+      "assets/map/overlays/overlay_npc_bronze_knight_v002.png",
+      "assets/generated/hero-down-1.gif", "assets/generated/hero-down-2.gif",
+      "assets/generated/hero-up-1.gif", "assets/generated/hero-up-2.gif",
+      "assets/generated/hero-left-1.gif", "assets/generated/hero-left-2.gif",
+      "assets/generated/hero-right-1.gif", "assets/generated/hero-right-2.gif",
+    ],
+    openingImages: [
+      "assets/generated/opening-prism-collapse-v002.png",
+      "assets/background/PRISMA ABYSS.png",
+      "assets/effect/fx_special_rupture_v001.png",
     ],
     startupImages: [],
     installImages: [],
@@ -472,11 +619,7 @@ globalThis.PRISMA_ASSETS = PRISMA_ASSETS;
 
   // ローディング画面中にブラウザ側でも先読みする対象。
   // ここを増やしすぎると起動待ちが長くなるため、初回表示で目立つ素材に絞る。
-  PRISMA_ASSETS.cacheWarmup.startupImages = unique([
-    ...critical,
-    "assets/generated/battle-mountain-ai.png",
-    "assets/generated/battle-maze-ai.png",
-  ]);
+  PRISMA_ASSETS.cacheWarmup.startupImages = unique([...critical]);
 
   // Service Worker install時に一度だけキャッシュする対象。
   // 画像リストの正本はここ。sw.js 側へ手書きで複製しないこと。
@@ -504,6 +647,7 @@ PRISMA_BOSS_MONSTER_IMAGE_IDS.forEach((id) => {
 
 const GRAPHICS = {
   images: {},
+  loading: {},
   spriteDefs: {},
   loadedCount: 0,
   totalCount: 0,
@@ -549,15 +693,33 @@ const GRAPHICS = {
   // 画像管理を分散させず、この関数から PRISMA_ASSETS.graphics を参照する。
   get(key) {
     if (GRAPHICS.images[key]) return GRAPHICS.images[key];
+    if (GRAPHICS.loading[key]) return GRAPHICS.loading[key];
 
     const src = GRAPHICS.data[key];
     if (!src) return null;
 
     const img = new Image();
+    GRAPHICS.loading[key] = img;
     img.onload = () => {
+      delete GRAPHICS.loading[key];
       GRAPHICS.images[key] = img;
+      if (!GRAPHICS.redrawQueued) {
+        GRAPHICS.redrawQueued = true;
+        requestAnimationFrame(() => {
+          GRAPHICS.redrawQueued = false;
+          // Phaser側は静的マップ署名が同じだとプレイヤーだけを更新する。
+          // 遅延画像をテクスチャへ追加した直後は静的層を明示的に破棄し、
+          // 「一歩歩くまで画像が出ない」状態を作らない。
+          if (typeof PhaserFieldRenderer !== "undefined" && typeof PhaserFieldRenderer.refresh === "function") {
+            PhaserFieldRenderer.refresh();
+          } else if (typeof Field !== "undefined" && typeof Field.render === "function") {
+            Field.render();
+          }
+        });
+      }
     };
     img.onerror = () => {
+      delete GRAPHICS.loading[key];
       delete GRAPHICS.images[key];
       console.warn(`[GRAPHICS] 遅延読み込み失敗: ${key} -> ${src}`);
     };

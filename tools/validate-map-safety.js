@@ -53,6 +53,9 @@ runFile('story_logic.js', 'globalThis.StoryManager = StoryManager;');
 const { FIXED_MAPS, FIXED_DUNGEON_MAPS, MapRegistry } = context;
 const Dungeon = context.Dungeon;
 const StoryManager = context.StoryManager;
+const runtimeVisualThemeTestOverride = Dungeon.randomVisualThemeTestOverrideId;
+// 通常確率の回帰試験中は暫定100%森モードを外し、後段で暫定版自体を別途検証する。
+Dungeon.randomVisualThemeTestOverrideId = null;
 
 const doorColors = { X: 'red', Y: 'blue', Z: 'gold' };
 const keyItemColors = { Q: 'red', N: 'blue', O: 'gold' };
@@ -200,6 +203,9 @@ let randomFloorsChecked = 0;
 let randomLockedDoorFloors = 0;
 let randomFloorKeys = 0;
 let randomMazeFloors = 0;
+let randomFloodedFloors = 0;
+const randomPlanCounts = new Map();
+const randomThemeCounts = new Map();
 
 for (let sample = 0; sample < randomSamples; sample++) {
   for (let floor = 1; floor <= 120; floor++) {
@@ -223,6 +229,16 @@ for (let sample = 0; sample < randomSamples; sample++) {
       if (keyItemColors[String(tile || '').toUpperCase()]) randomFloorKeys++;
     }));
     if (Number(context.App.data.dungeon.genType) === 2) randomMazeFloors++;
+    const planType = context.App.data.dungeon.floorPlanType || (floor % 10 === 0 ? 'boss' : 'unknown');
+    randomPlanCounts.set(planType, (randomPlanCounts.get(planType) || 0) + 1);
+    const themeId = context.App.data.dungeon.visualThemeId || 'missing';
+    randomThemeCounts.set(themeId, (randomThemeCounts.get(themeId) || 0) + 1);
+    assert(context.Field.currentMapData?.themeKey === context.App.data.dungeon.visualThemeKey, `ABYSS sample ${sample + 1} F${floor}: Field theme was overwritten`);
+    if (context.App.data.dungeon.isFloodedFloor) {
+      randomFloodedFloors++;
+      assert(Dungeon.map.some(row => row.includes(Dungeon.floodedTile)), `ABYSS sample ${sample + 1} F${floor}: flooded flag has no water cells`);
+      assert(context.Field.currentMapData?.battleBg === Dungeon.floodedBattleBgKey, `ABYSS sample ${sample + 1} F${floor}: flooded battle background mismatch`);
+    }
     if (doors.length) randomLockedDoorFloors++;
     const stairs = Dungeon.collectTiles(Dungeon.map, ['S'])[0];
     if (floor % 10 !== 0) {
@@ -239,4 +255,149 @@ for (let sample = 0; sample < randomSamples; sample++) {
   }
 }
 
-console.log(`Map safety validation passed. Random floors checked: ${randomFloorsChecked}. Maze floors: ${randomMazeFloors}. Locked-door floors: ${randomLockedDoorFloors}. Floor keys: ${randomFloorKeys}. Story map actions checked: ${storyMapActionsChecked}.`);
+// 確率に依存せず、浸水変換そのものと到達性を必ず1回検証する。
+context.App.data.dungeon = { genType: 0, isTreasureRoom: false };
+context.App.data.progress.floor = 41;
+Dungeon.floor = 41;
+Dungeon.width = 9;
+Dungeon.height = 9;
+Dungeon.map = Array.from({ length: 9 }, (_, y) => Array.from({ length: 9 }, (_, x) => (x === 0 || y === 0 || x === 8 || y === 8) ? 'W' : 'T'));
+Dungeon.map[1][1] = 'S';
+context.Field.x = 7;
+context.Field.y = 7;
+const originalFloodRate = Dungeon.floodedFloorSpawnRate;
+Dungeon.floodedFloorSpawnRate = 1;
+assert(Dungeon.applyFloodedFloorIfNeeded(), 'forced flooded floor did not activate');
+Dungeon.floodedFloorSpawnRate = originalFloodRate;
+assert(Dungeon.map[7][7] === Dungeon.floodedTile, 'flooded floor did not convert the player cell');
+const floodedStairs = Dungeon.collectTiles(Dungeon.map, ['S'])[0];
+const floodedDistance = Dungeon.distanceMap(Dungeon.map, { x: context.Field.x, y: context.Field.y });
+assert(floodedStairs && floodedDistance[floodedStairs.y][floodedStairs.x] >= 0, 'flooded stairs are unreachable');
+
+const expectedCandidateCounts = new Map([[1, 1], [11, 2], [21, 3], [41, 4], [51, 5], [61, 6], [71, 7], [81, 13]]);
+for (const [floor, count] of expectedCandidateCounts) {
+  assert(Dungeon.getRandomVisualThemeCandidates(floor).length === count, `ABYSS F${floor}: visual theme candidate count mismatch`);
+}
+
+const expectedPlanBoundaries = [
+  [0.05, 'lava'],
+  [0.15, 'flooded'],
+  [0.215, 'maze'],
+  [0.24, 'treasure'],
+  [0.35, 'abyss'],
+  [0.75, 'random']
+];
+for (const [roll, category] of expectedPlanBoundaries) {
+  assert(Dungeon.rollRandomFloorPlan(53, roll).category === category, `F53 plan roll ${roll}: expected ${category}`);
+}
+assert(Dungeon.rollRandomFloorPlan(53, 0.15).themeId === 'abyss', 'flooded floor map tiles must remain abyss-themed');
+assert(Dungeon.rollRandomFloorPlan(53, 0.24).themeId === 'abyss', 'treasure floor map tiles must remain abyss-themed');
+const deterministicPlanCounts = new Map();
+for (let i = 0; i < 10000; i++) {
+  const category = Dungeon.rollRandomFloorPlan(53, (i + 0.5) / 10000).category;
+  deterministicPlanCounts.set(category, (deterministicPlanCounts.get(category) || 0) + 1);
+}
+for (const [category, expectedCount] of Object.entries({
+  lava: 1000,
+  flooded: 1000,
+  maze: 300,
+  treasure: 200,
+  abyss: 2500,
+  random: 5000
+})) {
+  assert(deterministicPlanCounts.get(category) === expectedCount, `F53 plan distribution mismatch for ${category}`);
+}
+assert(Dungeon.rollRandomFloorPlan(40, 0.05).category === 'abyss', 'lava bucket must fold into abyss before floor 50');
+assert(Dungeon.rollRandomFloorPlan(40, 0.15).category === 'abyss', 'flooded bucket must fold into abyss before floor 41');
+for (const requiredTheme of ['abyss', 'forbidden-forest', 'thunder-fort', 'seabed-temple', 'ignis-volcano']) {
+  assert(randomThemeCounts.has(requiredTheme), `random generation never applied eligible theme: ${requiredTheme}`);
+}
+
+// 全テーマについて「抽選結果→保存値→Field.currentMapData」を強制的に通し、
+// 再開途中で深淵値が混入してもfloorPlanThemeIdから復元できることを確認する。
+for (const theme of Dungeon.randomVisualThemes) {
+  const floor = Math.max(1, Number(theme.minFloor || 1));
+  Dungeon.floor = floor;
+  context.App.data.progress.floor = floor;
+  context.App.data.dungeon = {
+    floorPlanType: 'random',
+    floorPlanThemeId: theme.id,
+    visualThemeId: 'abyss',
+    visualThemeKey: 'ABYSS',
+    visualBattleBg: 'battle_bg_dungeon',
+    isFloodedFloor: false
+  };
+  Dungeon.width = 3;
+  Dungeon.height = 3;
+  Dungeon.map = [
+    ['W', 'W', 'W'],
+    ['W', 'T', 'W'],
+    ['W', 'S', 'W']
+  ];
+  const fieldMap = Dungeon.createRandomFieldMapData();
+  assert(context.App.data.dungeon.visualThemeId === theme.id, `${theme.id}: planned theme was not restored from an abyss overwrite`);
+  assert(fieldMap.visualThemeId === theme.id, `${theme.id}: Field visualThemeId mismatch`);
+  assert(fieldMap.themeKey === theme.themeKey, `${theme.id}: Field themeKey mismatch`);
+  assert(fieldMap.battleBg === theme.battleBg, `${theme.id}: Field battle background mismatch`);
+  if (theme.id === 'light-palace') {
+    assert(fieldMap.wallFaceImg === 'tile_light_wall_face', 'light-palace: dedicated wall face was not restored');
+    assert(fieldMap.wallFaceTorchImg === 'tile_light_wall_face_prism', 'light-palace: prism wall accent was not restored');
+  }
+  assert(context.App.data.dungeon.visualThemeAudit?.appliedThemeId === theme.id, `${theme.id}: visual audit lost the applied theme`);
+  assert(context.App.data.dungeon.visualThemeAudit?.plannedThemeId === theme.id, `${theme.id}: visual audit lost the planned theme`);
+  const tileTheme = context.TILE_THEMES?.[fieldMap.themeKey];
+  assert(tileTheme?.W?.img && tileTheme?.T?.img, `${theme.id}: rendered W/T tile definitions are missing`);
+  if (theme.id !== 'abyss') {
+    const abyssTheme = context.TILE_THEMES?.ABYSS;
+    assert(tileTheme.W.img !== abyssTheme.W.img || tileTheme.T.img !== abyssTheme.T.img, `${theme.id}: rendered tiles collapse to abyss graphics`);
+  }
+}
+
+for (const planType of ['flooded', 'treasure', 'boss']) {
+  Dungeon.floor = planType === 'boss' ? 80 : 77;
+  context.App.data.progress.floor = Dungeon.floor;
+  context.App.data.dungeon = {
+    floorPlanType: planType,
+    floorPlanThemeId: 'light-palace',
+    visualThemeId: 'light-palace',
+    visualThemeKey: 'LIGHT_PALACE',
+    visualBattleBg: 'battle_bg_light_palace',
+    isFloodedFloor: planType === 'flooded'
+  };
+  const forcedMap = Dungeon.createRandomFieldMapData();
+  assert(forcedMap.themeKey === 'ABYSS' && forcedMap.visualThemeId === 'abyss', `${planType}: special floor did not force abyss map tiles`);
+  assert(context.App.data.dungeon.floorPlanThemeId === 'abyss', `${planType}: saved theme plan was not repaired to abyss`);
+  if (planType === 'flooded') assert(forcedMap.battleBg === Dungeon.floodedBattleBgKey, 'flooded: dedicated battle background was lost');
+}
+
+for (const category of ['maze', 'treasure']) {
+  context.App.data.dungeon = {};
+  context.App.data.progress.floor = 53;
+  Dungeon.floor = 53;
+  const fallbackPlan = { floor: 53, category, themeId: 'abyss' };
+  Dungeon.resetRandomFloorAttemptState(false);
+  Dungeon.applyRandomFloorPlan(fallbackPlan);
+  Dungeon.generateFallbackRandomFloor(fallbackPlan);
+  const fallbackCheck = Dungeon.validateGeneratedFloor();
+  assert(fallbackCheck.ok, `${category}: deterministic fallback is invalid (${fallbackCheck.reason})`);
+}
+
+Dungeon.randomVisualThemeTestOverrideId = 'forbidden-forest';
+context.App.data.dungeon = {};
+context.App.data.progress.floor = 62;
+Dungeon.floor = 62;
+Dungeon.width = 3;
+Dungeon.height = 3;
+Dungeon.map = [['W','W','W'], ['W','T','W'], ['W','S','W']];
+const forestTestPlan = Dungeon.rollRandomFloorPlan(62, 0.01);
+assert(forestTestPlan.category === 'random' && forestTestPlan.themeId === 'forbidden-forest', 'temporary forest QA build is not 100% forced');
+Dungeon.applyRandomFloorPlan(forestTestPlan);
+const forestTestMap = Dungeon.createRandomFieldMapData();
+assert(forestTestMap.themeKey === 'FORBIDDEN_FOREST', 'temporary forest QA map does not use forest tiles');
+assert(forestTestMap.battleBg === 'battle_bg_forest', 'temporary forest QA map does not use the forest battle background');
+assert(forestTestMap.visualTestOverride === true && forestTestMap.name.includes('森固定検証'), 'temporary forest QA build is not visibly identified');
+assert(context.App.data.dungeon.visualThemeAudit?.testOverrideId === 'forbidden-forest', 'temporary forest QA override is missing from the visual audit');
+assert(Dungeon.getRandomVisualThemeTestOverride(60) === null, 'boss floors must remain abyss floors during the forest QA build');
+Dungeon.randomVisualThemeTestOverrideId = runtimeVisualThemeTestOverride;
+
+console.log(`Map safety validation passed. Random floors checked: ${randomFloorsChecked}. Maze floors: ${randomMazeFloors}. Flooded floors: ${randomFloodedFloors}. Locked-door floors: ${randomLockedDoorFloors}. Floor keys: ${randomFloorKeys}. Story map actions checked: ${storyMapActionsChecked}. Plans: ${JSON.stringify(Object.fromEntries(randomPlanCounts))}. Themes: ${JSON.stringify(Object.fromEntries(randomThemeCounts))}.`);
