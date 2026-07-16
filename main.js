@@ -756,7 +756,11 @@ const App = {
 
 	// 全画像データの手動/初回ダウンロード用キャッシュ名。
 	// sw.js の RUNTIME_CACHE_NAME と揃えること。
+<<<<<<< HEAD
 	fullDataCacheName: 'prisma-abyss-v3.89-forest-sign-runtime-assets',
+=======
+	fullDataCacheName: 'prisma-abyss-v3.85-blocking-map-objects-runtime-assets',
+>>>>>>> 2069569eb8fb4158c20e139c27fcfc5d5dc3bcf8
 
 
 	// 初回起動時の「全データを今ダウンロードしますか？」で「いいえ」を選んだ記録。
@@ -7197,6 +7201,7 @@ const Field = {
     getDungeonWallGraphicForDraw: (tileX, tileY, upper, mapW, mapH, areaKey) => {
         if (!Field.currentMapData?.isDungeon || upper !== 'W') return null;
 
+<<<<<<< HEAD
         const sharedWallTile = Field.getTileConfigForDraw
             ? Field.getTileConfigForDraw('W', tileX, tileY)
             : Field.getTileConfig('W');
@@ -7219,6 +7224,14 @@ const Field = {
             : Field.getTileConfig('W');
         if (wallTile?.lowerLayer === true || wallTile?.animatedWater === true) return null;
 
+=======
+        // 水系ダンジョンの W は壁ではなく、下層に敷くアニメーション水面。
+        const wallTile = Field.getTileConfigForDraw
+            ? Field.getTileConfigForDraw('W', tileX, tileY)
+            : Field.getTileConfig('W');
+        if (wallTile?.lowerLayer === true || wallTile?.animatedWater === true) return null;
+
+>>>>>>> 2069569eb8fb4158c20e139c27fcfc5d5dc3bcf8
         const theme = Field.getDungeonWallFaceThemeForDraw();
         if (theme?.disabled) return null;
 
@@ -7232,7 +7245,10 @@ const Field = {
         const accentEvery = Math.max(1, Number(theme?.accentEvery || 5) || 5);
         const useAccent = !!accentImg && (((tileX % accentEvery) + accentEvery) % accentEvery) === 0;
         return useAccent ? accentImg : baseImg;
+<<<<<<< HEAD
         */
+=======
+>>>>>>> 2069569eb8fb4158c20e139c27fcfc5d5dc3bcf8
     },
     
     getBattleBg: () => {
