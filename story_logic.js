@@ -752,8 +752,9 @@ const StoryManager = {
 
     refreshFieldAfterStoryStateChange: function() {
         if (typeof Field === 'undefined') return;
-        if (typeof Field.render === 'function') Field.render();
         if (typeof Field.refreshCurrentAction === 'function') Field.refreshCurrentAction({ silent: true });
+        if (typeof Field.refreshVisualState === 'function') Field.refreshVisualState();
+        else if (typeof Field.render === 'function') Field.render();
     },
 
     getPostBattleBossVisualContext: function(eventId) {
@@ -921,9 +922,7 @@ const StoryManager = {
             // イベント完了後も同じタイル上にいる場合は、現在地アクションを再評価する。
             // main.js 側の Field.refreshCurrentAction() が正本。
             // ここで呼ぶことで、会話・選択肢・ストーリー進行後にボタンが消えっぱなしになるのを防ぐ。
-            if (!isSubEvent && typeof Field !== 'undefined' && typeof Field.refreshCurrentAction === 'function') {
-                Field.refreshCurrentAction({ silent: true });
-            }
+            if (!isSubEvent) this.refreshFieldAfterStoryStateChange();
         } finally {
             if (autoPostBattleBossSprite) this.cleanupPostBattleBossSprite();
         }
@@ -956,9 +955,7 @@ const StoryManager = {
             App.save();
 
             // 戦闘勝利後イベントが終わってフィールドへ戻った際、現在地タイルのボタンを復元する。
-            if (typeof Field !== 'undefined' && typeof Field.refreshCurrentAction === 'function') {
-                Field.refreshCurrentAction({ silent: true });
-            }
+            this.refreshFieldAfterStoryStateChange();
         } finally {
             if (autoPostBattleBossSprite) this.cleanupPostBattleBossSprite();
         }
@@ -1185,6 +1182,34 @@ const StoryManager = {
             await this.runStoryFieldVisual(action.value || action.name || 'ACTION_STORY_VISUAL', action);
         }
 
+        if (action.type === 'OPENING_KAMISHIBAI') {
+            if (!data.flags) data.flags = {};
+            const flagKey = action.flag || 'openingKamishibaiViewed';
+            if (!data.flags[flagKey] && typeof OpeningSequence !== 'undefined' && typeof OpeningSequence.play === 'function') {
+                const storyOverlay = document.getElementById('story-ui-overlay');
+                if (storyOverlay) storyOverlay.style.display = 'none';
+                await OpeningSequence.play(action.options || {});
+                data.flags[flagKey] = true;
+                App.save();
+            }
+        }
+
+        if (action.type === 'FULL_DATA_PROMPT') {
+            try {
+                if (typeof App.handlePostPrologueFullDataDownload === 'function') {
+                    await App.handlePostPrologueFullDataDownload();
+                }
+            } catch (e) {
+                console.error(e);
+                if (typeof App.showFullDataDialog === 'function') {
+                    await App.showFullDataDialog(
+                        `全データダウンロード確認中にエラーが発生しました。\n設定メニューから再実行できます。\n\n${e.message || e}`,
+                        { messageOnly: true }
+                    );
+                }
+            }
+        }
+
         if (action.type === 'FLAG') {
             if (!data.flags) data.flags = {};
             const key = action.key || action.value;
@@ -1354,6 +1379,13 @@ const StoryManager = {
         }
     },
 
+    clearStoryPortrait: function() {
+        const portrait = document.getElementById('story-portrait');
+        if (!portrait) return;
+        portrait.removeAttribute('src');
+        portrait.style.display = 'none';
+    },
+
     prepareBattleTransitionUI: function() {
         this.dismissChoiceUI({ hideOverlay: true });
         const backlog = document.getElementById('backlog-overlay');
@@ -1366,6 +1398,8 @@ const StoryManager = {
             this.dismissChoiceUI({ hideOverlay: false });
             const overlay = document.getElementById('story-ui-overlay') || this.createStoryDOM();
             overlay.style.display = 'flex';
+            // 選択肢には話者が存在しない。直前のボス会話などの立ち絵を絶対に持ち越さない。
+            this.clearStoryPortrait();
             const choiceName = document.getElementById('story-name');
             const choiceText = document.getElementById('story-text');
             choiceName.style.display = 'block';
@@ -1452,6 +1486,7 @@ const StoryManager = {
             const savedChar = hasExplicitCharId ? App.data.characters.find(c => c.charId === line.charId) : null;
             let displayName = isSystemLine ? '' : (savedChar ? savedChar.name : (masterChar ? masterChar.name : line.name));
             let displayImg = isSystemLine ? '' : (savedChar?.img || masterChar?.img);
+            if (line.hidePortrait === true) displayImg = '';
 
             if (textWindow) {
                 if (isSystemLine) {
@@ -1517,6 +1552,7 @@ const StoryManager = {
      */
     endConversation: function() {
         this.dismissChoiceUI({ hideOverlay: false });
+        this.clearStoryPortrait();
         const overlay = document.getElementById('story-ui-overlay');
         if (overlay) overlay.style.display = 'none';
         this.active = false;

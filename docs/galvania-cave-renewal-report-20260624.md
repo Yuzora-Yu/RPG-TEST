@@ -75,4 +75,4 @@
 - 通常ルートは任意ボスを倒さなくても北口から南口まで到達可能
 - 氷床フロアは実移動ルールに近い滑走処理で到達検証済み
 
-既存の `tools/validate-map-safety.js` は、今回の修正前から `MapRegistry is not defined` で停止する読み込み順問題があるため、今回のガルヴァニア検証には独自検証を使用した。
+既存の `tools/validation/validate-map-safety.js` は、今回の修正前から `MapRegistry is not defined` で停止する読み込み順問題があるため、今回のガルヴァニア検証には独自検証を使用した。

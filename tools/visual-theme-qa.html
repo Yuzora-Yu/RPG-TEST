@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <title>Map Theme Visual QA</title>
+  <style>
+    :root { color-scheme: dark; font-family: system-ui, sans-serif; }
+    body { margin: 0; padding: 20px; background: #0d1016; color: #e7e8ed; }
+    h1, h2 { margin: 0 0 14px; }
+    h2 { margin-top: 28px; }
+    #status { color: #9bd5aa; margin-bottom: 16px; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(270px, 1fr)); gap: 14px; }
+    .card { padding: 10px; border: 1px solid #343b4a; background: #171b24; }
+    .label { margin-bottom: 8px; color: #f1d691; font-size: 13px; }
+    canvas { display: block; width: 256px; height: 128px; image-rendering: pixelated; background: #080a0e; }
+    .feature-row { display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-start; }
+    .feature-row canvas { width: auto; height: auto; }
+    #doors { width: 384px; height: 128px; }
+    #carpet { width: 320px; height: 448px; }
+  </style>
+</head>
+<body>
+  <h1>Map Theme Visual QA</h1>
+  <div id="status">loading…</div>
+  <div id="themes" class="grid"></div>
+  <h2>Blocking key doors / connected Demon Castle carpet</h2>
+  <div class="feature-row">
+    <div class="card"><div class="label">RED / BLUE / GOLD — full blocking tile</div><canvas id="doors" width="96" height="32"></canvas></div>
+    <div class="card"><div class="label">Demon Castle 1F — 3 × 7 connected carpet</div><canvas id="carpet" width="160" height="224"></canvas></div>
+  </div>
+  <script src="../assets.js"></script>
+  <script>
+    const THEMES = [
+      ['DEFAULT', 'dungeon_floor', 'overlay_decor_default_cave_dust'],
+      ['START_VILLAGE', 'floor', 'overlay_decor_start_village_herbs'],
+      ['START_CAVE', 'dungeon_floor', 'overlay_decor_start_cave_damp'],
+      ['FIRE_VILLAGE', 'tile_fire_floor', 'overlay_decor_fire_ember_fissure'],
+      ['WIND_VILLAGE', 'tile_wind_floor', 'overlay_decor_wind_village_feather'],
+      ['WIND_HOLE', 'tile_wind_hole_floor', 'overlay_decor_wind_hole_root'],
+      ['FORBIDDEN_FOREST', 'tile_forbidden_forest_floor', 'overlay_decor_forbidden_forest_moss'],
+      ['WATER_CITY', 'tile_water_pave', 'overlay_decor_water_city_puddle'],
+      ['BIG_TOWER', 'tile_tower_floor', 'overlay_decor_big_tower_gear_oil'],
+      ['THUNDER_FORT', 'tile_thunder_floor', 'overlay_decor_thunder_fort_wiring'],
+      ['LIGHT_PALACE', 'tile_light_floor', 'overlay_decor_light_palace_prism'],
+      ['GALVANIA_CAVE', 'tile_galvania_floor', 'overlay_decor_galvania_crystal'],
+      ['DARK_CASTLE', 'tile_dark_floor', 'overlay_decor_dark_castle_chain'],
+      ['CRENA_CAVE', 'tile_crena_floor', 'overlay_decor_crena_limestone_pool'],
+      ['SEABED_TEMPLE', 'tile_seabed_floor', 'overlay_decor_seabed_temple_ripple'],
+      ['DARK_SHRINE_RUINS', 'tile_dark_shrine_floor', 'overlay_decor_dark_shrine_sigil'],
+      ['GREZELIA_CAVE', 'tile_grezelia_floor', 'overlay_decor_grezelia_fossil'],
+      ['ABYSS', 'tile_dark_floor', 'overlay_decor_abyss_void_dust'],
+      ['ABYSS_FIELD', 'tile_abyss_grass', 'overlay_decor_abyss_field_flora'],
+      ['RUINED_SHRINE', 'tile_shrine_floor', 'overlay_decor_ruined_shrine_glyph']
+    ];
+    const imageCache = new Map();
+    const assetPath = key => `../${PRISMA_ASSETS.graphics[key]}`;
+    const load = key => {
+      if (imageCache.has(key)) return imageCache.get(key);
+      const promise = new Promise((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = () => reject(new Error(`${key}: ${image.src}`));
+        image.src = assetPath(key);
+      });
+      imageCache.set(key, promise);
+      return promise;
+    };
+    const setup = canvas => {
+      const ctx = canvas.getContext('2d');
+      ctx.imageSmoothingEnabled = false;
+      return ctx;
+    };
+    async function drawTheme(canvas, floorKey, decorKey) {
+      const ctx = setup(canvas);
+      const [floor, decor] = await Promise.all([load(floorKey), load(decorKey)]);
+      for (let y = 0; y < 2; y += 1) for (let x = 0; x < 4; x += 1) ctx.drawImage(floor, x * 32, y * 32, 32, 32);
+      ctx.drawImage(decor, 48, 16, 32, 32);
+    }
+    async function drawDoors() {
+      const ctx = setup(document.getElementById('doors'));
+      const floor = await load('tile_dark_floor');
+      const doors = await Promise.all(['door_key_red', 'door_key_blue', 'door_key_gold'].map(load));
+      doors.forEach((door, index) => {
+        ctx.drawImage(floor, index * 32, 0, 32, 32);
+        ctx.drawImage(door, index * 32, 0, 32, 32);
+      });
+    }
+    async function drawCarpet() {
+      const canvas = document.getElementById('carpet');
+      const ctx = setup(canvas);
+      const floor = await load('tile_dark_floor');
+      const keys = ['fill', 'edge_n', 'edge_s', 'edge_w', 'edge_e', 'corner_nw', 'corner_ne', 'corner_sw', 'corner_se'];
+      const pieces = Object.fromEntries(await Promise.all(keys.map(async key => [key, await load(`overlay_castle_carpet_${key}`)])));
+      for (let y = 0; y < 7; y += 1) for (let x = 0; x < 5; x += 1) ctx.drawImage(floor, x * 32, y * 32, 32, 32);
+      const carpetAt = (x, y) => x >= 1 && x <= 3 && y >= 0 && y <= 6;
+      for (let y = 0; y < 7; y += 1) for (let x = 1; x <= 3; x += 1) {
+        const px = x * 32, py = y * 32;
+        const open = { n: !carpetAt(x, y - 1), s: !carpetAt(x, y + 1), w: !carpetAt(x - 1, y), e: !carpetAt(x + 1, y) };
+        ctx.drawImage(pieces.fill, px, py, 32, 32);
+        if (open.n) ctx.drawImage(pieces.edge_n, px, py, 32, 4);
+        if (open.s) ctx.drawImage(pieces.edge_s, px, py + 28, 32, 4);
+        if (open.w) ctx.drawImage(pieces.edge_w, px, py, 4, 32);
+        if (open.e) ctx.drawImage(pieces.edge_e, px + 28, py, 4, 32);
+        if (open.n && open.w) ctx.drawImage(pieces.corner_nw, px, py, 4, 4);
+        if (open.n && open.e) ctx.drawImage(pieces.corner_ne, px + 28, py, 4, 4);
+        if (open.s && open.w) ctx.drawImage(pieces.corner_sw, px, py + 28, 4, 4);
+        if (open.s && open.e) ctx.drawImage(pieces.corner_se, px + 28, py + 28, 4, 4);
+      }
+    }
+    (async () => {
+      const host = document.getElementById('themes');
+      await Promise.all(THEMES.map(async ([name, floor, decor]) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `<div class="label">${name} — ${decor}</div><canvas width="128" height="64"></canvas>`;
+        host.append(card);
+        await drawTheme(card.querySelector('canvas'), floor, decor);
+      }));
+      await Promise.all([drawDoors(), drawCarpet()]);
+      document.getElementById('status').textContent = `PASS — ${THEMES.length} unique themes, 3 blocking doors, connected carpet`;
+    })().catch(error => {
+      document.getElementById('status').textContent = `FAIL — ${error.message}`;
+      document.getElementById('status').style.color = '#ff8d8d';
+    });
+  </script>
+</body>
+</html>

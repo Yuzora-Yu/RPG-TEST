@@ -218,69 +218,65 @@ const STORY_MANAGER_DATA = {
                 {
                         "charId": 1001,
                         "name": "長老",
-                        "text": "なんと、もうあの化け物を討伐してくださったとは！\n[N:301]様、ありがとうございます。"
+                        "text": "なんと、もうあの化け物を討伐してくださったとは！\n[N:301]様、本当にありがとうございます。"
                 },
                 {
                         "charId": 1001,
                         "name": "長老",
-                        "text": "…どうやら世界の各地で、同じように異変が起きているとのこと。"
+                        "text": "……あの穴から吹いていた風を、わしは一度だけ知っております。"
                 },
                 {
                         "charId": 1001,
                         "name": "長老",
-                        "text": "東の果て、炎の里では突如火が消えてしまい、鍛冶が出来なくなったと聞きましたぞ。"
+                        "text": "わしがまだ、[N:109]ほどの年だった頃。\n王都の空が、夜中だというのに真昼のように白くなった。"
                 },
                 {
-                        "charId": 109,
-                        "name": "",
-                        "text": "[N:301]さま！助けに行こう！！\n炎の里で鍛冶ができなくなったら、もう誰も武器が持てなくなっちまう。"
+                        "charId": 1001,
+                        "name": "長老",
+                        "text": "翌朝、井戸には虹色の膜が浮き、北の畑には細い亀裂が走っておった。\n大人たちは『王都の大儀式が失敗した』と、小声で話していました。"
                 },
                 {
-                        "charId": 110,
-                        "name": "",
-                        "text": "まったくもう、[N:109]ったら…\nすみません、[N:301]様。村を救ってもらったばかりでこんなこと…"
+                        "charId": 1001,
+                        "name": "長老",
+                        "text": "何が行われたのか、村まで届いた記録は途切れ途切れです。\nただ、あの日からプリズマの光は乱れ、各地でおかしなことが起き始めた。"
                 },
                 {
-                        "charId": 109,
-                        "name": "",
-                        "text": "だって、放っておけねえよ！\nこの村だって、あと一歩でボロボロになるとこだったんだ…"
+                        "charId": 1001,
+                        "name": "長老",
+                        "text": "そして今、東の炎の里では炉の火が言うことを聞かず、鍋ひとつ満足に直せぬそうです。"
                 },
                 {
-                        "charId": 109,
-                        "name": "",
-                        "text": "世界がおかしくなってんなら、俺は助けに行きたい！！"
+                        "charId": 1001,
+                        "name": "長老",
+                        "text": "此度の大穴も、あの日に生まれた傷が、また口を開けたものかもしれません。"
                 },
                 {
-                        "charId": 110,
-                        "name": "",
-                        "text": "それは…そうだけど…"
-                },
-                {
-                        "name": "システム",
-                        "text": "[N:301]は静かに頷いた"
-                },
-//                {
-//                        "charId": 301,
-//                        "name": "",
-//                        "text": "そうだな。\n[N:109]、[N:110]。長い旅になるが、ついてきてくれるか？"
-//                },
-                {
-                        "charId": 109,
-                        "name": "",
-                        "text": "やったぜ！\n俺が道を切り開くから、頼りにしてくれよな。"
-                },
-                {
-                        "charId": 110,
-                        "name": "",
-                        "text": "ありがとうございます…\nあの、これからよろしくお願いしますね！"
+                        "charId": 1001,
+                        "name": "長老",
+                        "text": "[N:301]様。あの風を、以前にもご存じなのではありませんか。"
                 },
                 {
                         "name": "システム",
-                        "text": "ガイルとサラが、正式に仲間に加わった！"
+                        "text": "故郷を失った夜にも、同じ冷たい風が吹いていた。"
+                },
+                {
+                        "charId": 109,
+                        "name": "ガイル",
+                        "text": "だったら、なおさら放っておけねえ。\nこの村みたいな目に遭う場所を、これ以上増やしたくない。"
+                },
+                {
+                        "charId": 110,
+                        "name": "サラ",
+                        "text": "怖いです。でも……ここで待っているだけなら、きっとまた誰かが泣きます。"
+                },
+                {
+                        "charId": 1001,
+                        "name": "長老",
+                        "text": "炎の里へ向かうなら、東の街道をお進みくだされ。\n古い話の続きを、その目で確かめてきてください。"
                 },
                 {
                         "name": "システム",
-                        "text": "世界を蝕む異変とは？[N:301]達の冒険が、今幕を開けた。"
+                        "text": "[N:301]は、剣の柄に手を置き、静かに頷いた。"
                 }
         ],
         "START_DUNGEON_CLEAR": [
@@ -494,41 +490,49 @@ const STORY_MANAGER_DATA = {
                         "text": "[N:306]が仲間に加わった！"
                 }
         ],
-        "TOWN_START_VILLAGER_1": [
+        "TOWN_START_VILLAGER_1_A": [
                 {
                         "name": "村人",
                         "text": "そこ、踏むなよ。昨日まで、うちの草地だったんだ。",
                         "charId": 1003
-                },
+                }
+        ],
+        "TOWN_START_VILLAGER_1_B": [
                 {
                         "name": "村人",
                         "text": "柵も鍬も、まとめて穴に飲まれた。\n……次は家かもしれねえ。",
                         "charId": 1003
-                },
+                }
+        ],
+        "TOWN_START_VILLAGER_1_C": [
                 {
                         "name": "村人",
                         "text": "笑うなよ。畑がなくなるってのはな、\n明日の飯を誰も約束してくれねえってことだ。",
                         "charId": 1003
                 }
         ],
-        "TOWN_START_VILLAGER_2": [
+        "TOWN_START_VILLAGER_2_A": [
                 {
                         "name": "村の若者",
                         "text": "俺も行くって言ったんだ。言っただけで、足が笑った。",
                         "charId": 1002
-                },
+                }
+        ],
+        "TOWN_START_VILLAGER_2_B": [
                 {
                         "name": "村の若者",
                         "text": "情けねえよな。でも、薬草くらいは運ばせてくれ。\n何もしないで待つ方が、よっぽど怖い。",
                         "charId": 1002
                 }
         ],
-        "TOWN_START_VILLAGER_3": [
+        "TOWN_START_VILLAGER_3_A": [
                 {
                         "name": "薬草摘み",
                         "text": "今朝の薬草、苦いんだ。\n根っこが黒くなってる。",
                         "charId": 1003
-                },
+                }
+        ],
+        "TOWN_START_VILLAGER_3_B": [
                 {
                         "name": "薬草摘み",
                         "text": "傷薬にはできるよ。\n飲む時は、鼻をつまみな。",
@@ -955,6 +959,16 @@ const STORY_MANAGER_DATA = {
                         "text": "次は同じ敵を斬る。\nそれなら背中を預けられる。"
                 }
         ],
+        "QUEST_KARIN_VOLCANO_ENCOUNTER": [
+                {
+                        "name": "カリン",
+                        "text": "炉の奥に、何かいる。\n灰がこちらへ流れてくる。"
+                },
+                {
+                        "name": "カリン",
+                        "text": "無理に踏み込まないで。\nあの角がこちらを向いたら、私が合わせる。"
+                }
+        ],
         "QUEST_KARIN_CLEAR": [
                 {
                         "name": "カリン",
@@ -1063,6 +1077,16 @@ const STORY_MANAGER_DATA = {
                         "text": "[N:108]と[N:207]が仲間に加わった！"
                 }
         ],
+        "QUEST_SOPHIA_ALAN_ENCOUNTER": [
+                {
+                        "name": "ソフィア",
+                        "text": "祭壇の流れが逆向きだ。\n来るよ、足場から離れないで。"
+                },
+                {
+                        "name": "アラン",
+                        "text": "正面は私が受けます。\nソフィア、流れを読むのは任せた。"
+                }
+        ],
         "QUEST_SOPHIA_ALAN_CLEAR": [
                 {
                         "name": "ソフィア",
@@ -1075,6 +1099,16 @@ const STORY_MANAGER_DATA = {
                 {
                         "name": "ソフィア",
                         "text": "決まりだね。\n未知の続きは、この一行で見る。"
+                }
+        ],
+        "QUEST_FRIEDA_BARON_ENCOUNTER": [
+                {
+                        "name": "フリーダ",
+                        "text": "制御環が勝手に回ってる。\nまずい、あれ自身が核だ。"
+                },
+                {
+                        "name": "バロン",
+                        "text": "退路は確保した。\n放電が収まる前に叩くぞ。"
                 }
         ],
         "QUEST_FRIEDA_BARON_CLEAR": [
@@ -1091,6 +1125,26 @@ const STORY_MANAGER_DATA = {
                         "text": "相変わらず固いなあ。\nじゃあ二人とも、連れていって。"
                 }
         ],
+        "QUEST_LICIA_START": [
+                {
+                        "name": "リーシア",
+                        "text": "この先の小部屋は、結界で閉ざされているわ。"
+                },
+                {
+                        "name": "リーシア",
+                        "text": "私が結界を解く。\n離れずについてきて。"
+                }
+        ],
+        "QUEST_LICIA_ENCOUNTER": [
+                {
+                        "name": "リーシア",
+                        "text": "待って。あの結界、壁じゃない。\n中で何かを飼ってる。"
+                },
+                {
+                        "name": "リーシア",
+                        "text": "核を壊せば解ける。\n来るわ。"
+                }
+        ],
         "QUEST_LICIA_CLEAR": [
                 {
                         "name": "リーシア",
@@ -1103,6 +1157,16 @@ const STORY_MANAGER_DATA = {
                 {
                         "name": "リーシア",
                         "text": "同行するわ。\n見逃したものを、あとで悔やむ方がずっと面倒だもの。"
+                }
+        ],
+        "QUEST_CLAUDE_LEON_ENCOUNTER": [
+                {
+                        "name": "クロード",
+                        "text": "王冠の下にいるのは、一体じゃない。\n声が重なってる。"
+                },
+                {
+                        "name": "レオン",
+                        "text": "耳を貸すな。\n影が形を取る前に断つ。"
                 }
         ],
         "QUEST_CLAUDE_LEON_CLEAR": [
@@ -1119,6 +1183,16 @@ const STORY_MANAGER_DATA = {
                         "text": "借りが増えたな。\n旅の中で、二人分返させてくれ。"
                 }
         ],
+        "QUEST_LUNA_ENCOUNTER": [
+                {
+                        "name": "ルーナ",
+                        "text": "月の光が、ここだけ届かない。\n影がこちらを見ています。"
+                },
+                {
+                        "name": "ルーナ",
+                        "text": "私は退きません。\n共に、あれを止めてください。"
+                }
+        ],
         "QUEST_LUNA_CLEAR": [
                 {
                         "name": "ルーナ",
@@ -1127,6 +1201,16 @@ const STORY_MANAGER_DATA = {
                 {
                         "name": "ルーナ",
                         "text": "今度は私が立ちます。\nこの光は、私が選んだものです。"
+                }
+        ],
+        "QUEST_RYU_MINERVA_ENCOUNTER": [
+                {
+                        "name": "ミネルバ",
+                        "text": "待って。この留め具、\n誰かが内側から削ってる。"
+                },
+                {
+                        "name": "リュウ",
+                        "text": "来る。\n話は生きて戻ってからだ。"
                 }
         ],
         "QUEST_RYU_MINERVA_CLEAR": [
@@ -1141,6 +1225,16 @@ const STORY_MANAGER_DATA = {
                 {
                         "name": "ミネルバ",
                         "text": "交渉成立ね。\n拳が要る時は、あなたに任せるわ。"
+                }
+        ],
+        "QUEST_ZENON_ENCOUNTER": [
+                {
+                        "name": "ゼノン",
+                        "text": "封じたはずの最悪が、\nまだ底で息をしている。"
+                },
+                {
+                        "name": "ゼノン",
+                        "text": "私が縛る。\nお前は、その間に斬れ。"
                 }
         ],
         "QUEST_ZENON_CLEAR": [
@@ -3200,6 +3294,10 @@ const STORY_MANAGER_DATA = {
                         {
                                 "type": "SUB",
                                 "value": 1
+                        },
+                        {
+                                "type": "OPENING_KAMISHIBAI",
+                                "flag": "openingPrologue3Viewed"
                         }
                 ],
                 "winActions": []
@@ -3842,10 +3940,24 @@ const STORY_MANAGER_DATA = {
                 ],
                 "winActions": []
         },
+        "quest_claude_leon_encounter": {
+                "actions": [
+                        { "type": "CONV", "value": "QUEST_CLAUDE_LEON_ENCOUNTER" },
+                        { "type": "BOSS", "value": 302206, "winEventId": "quest_claude_leon_clear" }
+                ],
+                "winActions": []
+        },
         "quest_claude_leon_clear": {
                 "actions": [
                         { "type": "CONV", "value": "QUEST_CLAUDE_LEON_CLEAR" },
                         { "type": "QUEST_COMPLETE", "value": "claude_leon_dark_shrine" }
+                ],
+                "winActions": []
+        },
+        "quest_luna_hidden_encounter": {
+                "actions": [
+                        { "type": "CONV", "value": "QUEST_LUNA_ENCOUNTER" },
+                        { "type": "BOSS", "value": 902000, "winEventId": "quest_luna_hidden_clear" }
                 ],
                 "winActions": []
         },
@@ -3856,6 +3968,13 @@ const STORY_MANAGER_DATA = {
                 ],
                 "winActions": []
         },
+        "quest_ryu_minerva_encounter": {
+                "actions": [
+                        { "type": "CONV", "value": "QUEST_RYU_MINERVA_ENCOUNTER" },
+                        { "type": "BOSS", "value": 301100, "winEventId": "quest_ryu_minerva_clear" }
+                ],
+                "winActions": []
+        },
         "quest_ryu_minerva_clear": {
                 "actions": [
                         { "type": "CONV", "value": "QUEST_RYU_MINERVA_CLEAR" },
@@ -3863,10 +3982,24 @@ const STORY_MANAGER_DATA = {
                 ],
                 "winActions": []
         },
+        "quest_zenon_hidden_encounter": {
+                "actions": [
+                        { "type": "CONV", "value": "QUEST_ZENON_ENCOUNTER" },
+                        { "type": "BOSS", "value": 902000, "winEventId": "quest_zenon_hidden_clear" }
+                ],
+                "winActions": []
+        },
         "quest_zenon_hidden_clear": {
                 "actions": [
                         { "type": "CONV", "value": "QUEST_ZENON_CLEAR" },
                         { "type": "QUEST_COMPLETE", "value": "zenon_hidden_grezelia" }
+                ],
+                "winActions": []
+        },
+        "quest_karin_volcano_encounter": {
+                "actions": [
+                        { "type": "CONV", "value": "QUEST_KARIN_VOLCANO_ENCOUNTER" },
+                        { "type": "BOSS", "value": 302201, "winEventId": "quest_karin_volcano_clear" }
                 ],
                 "winActions": []
         },
@@ -3886,7 +4019,7 @@ const STORY_MANAGER_DATA = {
         "quest_arisa_haine_encounter": {
                 "actions": [
                         { "type": "CONV", "value": "QUEST_ARISA_HAINE_ENCOUNTER" },
-                        { "type": "BOSS", "value": [301011, 301012], "winEventId": "quest_arisa_haine_clear" }
+                        { "type": "BOSS", "value": [302203, 302207], "winEventId": "quest_arisa_haine_clear" }
                 ],
                 "winActions": []
         },
@@ -3897,6 +4030,13 @@ const STORY_MANAGER_DATA = {
                 ],
                 "winActions": []
         },
+        "quest_sophia_alan_encounter": {
+                "actions": [
+                        { "type": "CONV", "value": "QUEST_SOPHIA_ALAN_ENCOUNTER" },
+                        { "type": "BOSS", "value": [302208, 302202], "winEventId": "quest_sophia_alan_clear" }
+                ],
+                "winActions": []
+        },
         "quest_sophia_alan_clear": {
                 "actions": [
                         { "type": "CONV", "value": "QUEST_SOPHIA_ALAN_CLEAR" },
@@ -3904,10 +4044,30 @@ const STORY_MANAGER_DATA = {
                 ],
                 "winActions": []
         },
+        "quest_frieda_baron_encounter": {
+                "actions": [
+                        { "type": "CONV", "value": "QUEST_FRIEDA_BARON_ENCOUNTER" },
+                        { "type": "BOSS", "value": [302204, 100082], "winEventId": "quest_frieda_baron_clear" }
+                ],
+                "winActions": []
+        },
         "quest_frieda_baron_clear": {
                 "actions": [
                         { "type": "CONV", "value": "QUEST_FRIEDA_BARON_CLEAR" },
                         { "type": "QUEST_COMPLETE", "value": "frieda_baron_thunder_depths" }
+                ],
+                "winActions": []
+        },
+        "quest_licia_start": {
+                "actions": [
+                        { "type": "CONV", "value": "QUEST_LICIA_START" }
+                ],
+                "winActions": []
+        },
+        "quest_licia_encounter": {
+                "actions": [
+                        { "type": "CONV", "value": "QUEST_LICIA_ENCOUNTER" },
+                        { "type": "BOSS", "value": [100078, 100082, 100078], "winEventId": "quest_licia_clear" }
                 ],
                 "winActions": []
         },
@@ -4405,16 +4565,32 @@ const STORY_MANAGER_DATA = {
                 ],
                 "winActions": []
         },
-        "town_start_villager_1": {
-                "actions": [{ "type": "CONV", "value": "TOWN_START_VILLAGER_1" }],
+        "town_start_villager_1_a": {
+                "actions": [{ "type": "CONV", "value": "TOWN_START_VILLAGER_1_A" }],
                 "winActions": []
         },
-        "town_start_villager_2": {
-                "actions": [{ "type": "CONV", "value": "TOWN_START_VILLAGER_2" }],
+        "town_start_villager_1_b": {
+                "actions": [{ "type": "CONV", "value": "TOWN_START_VILLAGER_1_B" }],
                 "winActions": []
         },
-        "town_start_villager_3": {
-                "actions": [{ "type": "CONV", "value": "TOWN_START_VILLAGER_3" }],
+        "town_start_villager_1_c": {
+                "actions": [{ "type": "CONV", "value": "TOWN_START_VILLAGER_1_C" }],
+                "winActions": []
+        },
+        "town_start_villager_2_a": {
+                "actions": [{ "type": "CONV", "value": "TOWN_START_VILLAGER_2_A" }],
+                "winActions": []
+        },
+        "town_start_villager_2_b": {
+                "actions": [{ "type": "CONV", "value": "TOWN_START_VILLAGER_2_B" }],
+                "winActions": []
+        },
+        "town_start_villager_3_a": {
+                "actions": [{ "type": "CONV", "value": "TOWN_START_VILLAGER_3_A" }],
+                "winActions": []
+        },
+        "town_start_villager_3_b": {
+                "actions": [{ "type": "CONV", "value": "TOWN_START_VILLAGER_3_B" }],
                 "winActions": []
         },
         "town_fire_villager_1": {
@@ -4504,7 +4680,7 @@ const STORY_MANAGER_DATA = {
         "quest_zelied_tower_echo_encounter": {
                 "actions": [
                         { "type": "CONV", "value": "QUEST_ZELIED_TOWER_ECHO_ENCOUNTER" },
-                        { "type": "BOSS", "value": [301060, 301062], "bossStatMultiplier": 1.25, "winEventId": "quest_zelied_tower_echo_clear" }
+                        { "type": "BOSS", "value": [301060, 302205], "bossStatMultiplier": 1.25, "winEventId": "quest_zelied_tower_echo_clear" }
                 ],
                 "winActions": []
         },

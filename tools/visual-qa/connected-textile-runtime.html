@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <base href="../../">
+  <title>Connected Textile Runtime QA</title>
+  <style>
+    html, body { margin: 0; min-height: 100%; background: #0b0d12; color: #fff; }
+    #canvas-wrapper, #phaser-field-root { width: 512px; height: 512px; }
+  </style>
+</head>
+<body>
+  <div id="canvas-wrapper"><div id="phaser-field-root" aria-label="connected textile runtime preview"></div></div>
+  <script src="assets.js"></script>
+  <script src="vendor/phaser/phaser.min.js"></script>
+  <script src="phaser-field.js"></script>
+  <script>
+    const width = 30;
+    const height = 26;
+    const rows = Array.from({ length: height }, (_, y) => (
+      y === 0 || y === height - 1
+        ? 'W'.repeat(width)
+        : `W${'T'.repeat(width - 2)}W`
+    ));
+    const floorDecoration = { type: 'castle_carpet', x: 14, y: 8, width: 3, height: 7, blocking: false };
+    const configFor = sign => String(sign).toUpperCase() === 'W'
+      ? { img: 'wall', color: '#171922' }
+      : { img: 'dungeon_floor', color: '#444852' };
+    const field = {
+      ready: true,
+      x: 15,
+      y: 12,
+      dir: 0,
+      step: 1,
+      minimapMode: 'small',
+      currentMapData: {
+        name: 'Connected Textile Runtime QA',
+        themeKey: 'DEFAULT',
+        isFixed: true,
+        isDungeon: false,
+        width,
+        height,
+        tiles: rows,
+        floorDecorations: [floorDecoration]
+      },
+      getCurrentAreaKey: () => 'TEXTILE_QA',
+      getCurrentProgressMapKey: () => 'TEXTILE_QA:1',
+      getFieldMinimapDisplaySize: () => 80,
+      getRenderedTileForDraw: (x, y) => rows[y]?.[x] || 'W',
+      getMapDrawParts: tile => ({ upper: String(tile).toUpperCase(), baseTile: tile, overlayConfig: null }),
+      getTileConfigForDraw: sign => configFor(sign),
+      getTileConfig: sign => configFor(sign),
+      getDungeonWallGraphicForDraw: () => null,
+      getTileEffectGraphicKey: () => null,
+      getTileEffectMarkerColor: () => null,
+      getFixedHealSpringsForCurrentFloor: () => [],
+      isPlayerOnFloodedWater: () => false,
+      drawHudMinimap: () => {}
+    };
+    const carpetKeys = [
+      'overlay_castle_carpet_fill', 'overlay_castle_carpet_edge_n', 'overlay_castle_carpet_edge_s',
+      'overlay_castle_carpet_edge_w', 'overlay_castle_carpet_edge_e', 'overlay_castle_carpet_corner_nw',
+      'overlay_castle_carpet_corner_ne', 'overlay_castle_carpet_corner_sw', 'overlay_castle_carpet_corner_se'
+    ];
+    GRAPHICS.load(() => {
+      PhaserFieldRenderer.render(field);
+      requestAnimationFrame(() => PhaserFieldRenderer.refresh());
+    }, { keys: ['dungeon_floor', 'wall', 'hero_down_1', ...carpetKeys] });
+  </script>
+</body>
+</html>

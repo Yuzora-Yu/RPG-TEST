@@ -16,6 +16,7 @@
   <script src="passiveSkill.js"></script>
   <script src="map.js"></script>
   <script src="maps_logic.js"></script>
+  <script src="map_render_shared.js"></script>
   <script src="story.js"></script>
   <script src="story_logic.js"></script>
   <script src="quests.js"></script>
@@ -26,6 +27,20 @@
       --warn:#ffd568;--danger:#ff637a;--input:#091426;--shadow:0 18px 60px rgba(0,0,0,.35)
     }
     *{box-sizing:border-box}html,body{height:100%;margin:0}body{background:radial-gradient(circle at 18% 0%,rgba(86,130,255,.18),transparent 28%),var(--bg);color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP",sans-serif;overflow:hidden}button,input,select,textarea{font:inherit}button{cursor:pointer}input,select,textarea{width:100%;color:var(--text);background:var(--input);border:1px solid var(--line);border-radius:10px;padding:8px 10px;outline:none}textarea{resize:vertical;min-height:120px;line-height:1.55;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;font-size:12px}input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(245,189,79,.12)}label{display:block;color:var(--muted);font-size:12px;font-weight:800;margin:0 0 6px}.app{height:100%;display:grid;grid-template-rows:64px 1fr}.topbar{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 16px;border-bottom:1px solid var(--line);background:rgba(9,15,30,.94);backdrop-filter:blur(14px);position:relative;z-index:20}.brand{display:flex;align-items:baseline;gap:10px;white-space:nowrap}.brand strong{color:var(--accent);font-size:18px;letter-spacing:.03em}.brand span{color:var(--muted);font-size:12px}.top-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.layout{min-height:0;display:grid;grid-template-columns:320px minmax(430px,1fr) minmax(440px,54vw)}.sidebar{min-height:0;display:grid;grid-template-rows:auto auto 1fr auto;border-right:1px solid var(--line);background:rgba(8,14,27,.78)}.main{min-height:0;overflow:auto;padding:14px}.preview{min-height:0;display:grid;grid-template-rows:auto 1fr auto;border-left:1px solid var(--line);background:rgba(7,12,22,.92)}.searchbox{padding:12px;border-bottom:1px solid var(--line);display:grid;gap:8px}.navtabs{display:flex;gap:6px;padding:10px 12px;border-bottom:1px solid var(--line);overflow-x:auto}.navtab,.tab{flex:0 0 auto;border:1px solid transparent;background:transparent;color:var(--muted);border-radius:10px;padding:8px 10px;font-weight:900;font-size:12px}.navtab.active,.tab.active{color:var(--accent);background:rgba(245,189,79,.11);border-color:rgba(245,189,79,.25)}.list{overflow:auto;padding:8px}.row{width:100%;text-align:left;color:inherit;background:rgba(255,255,255,.035);border:1px solid transparent;border-radius:13px;padding:10px;margin-bottom:8px}.row:hover{border-color:var(--line);background:rgba(255,255,255,.06)}.row.active{border-color:rgba(245,189,79,.72);background:rgba(245,189,79,.10)}.row b{display:block;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:5px;color:var(--muted);font-size:11px}.pill{display:inline-flex;align-items:center;border:1px solid var(--line);background:rgba(255,255,255,.04);border-radius:999px;padding:3px 7px;color:var(--muted);font-size:11px}.pill.ok{color:#c8ffe2;border-color:rgba(72,214,141,.4);background:rgba(72,214,141,.08)}.pill.warn{color:#ffe9a9;border-color:rgba(255,213,104,.4);background:rgba(255,213,104,.08)}.pill.danger{color:#ffd0d7;border-color:rgba(255,99,122,.4);background:rgba(255,99,122,.08)}.btn{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:10px;padding:8px 11px;font-weight:900;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none}.btn:hover{filter:brightness(1.08)}.btn.primary{background:#255ec8;border-color:#397bff}.btn.gold{background:#8a5b16;border-color:#d69b2b}.btn.green{background:#12683f;border-color:#23a96b}.btn.red{background:#842237;border-color:#c64b60}.btn.ghost{background:transparent}.btn.small{padding:5px 7px;font-size:12px;border-radius:8px}.sidebar-actions{border-top:1px solid var(--line);padding:10px 12px;display:grid;grid-template-columns:1fr 1fr;gap:8px}.card{background:rgba(16,26,47,.94);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:0 10px 30px rgba(0,0,0,.16)}.card h2{margin:0 0 12px;color:var(--accent2);font-size:15px;display:flex;justify-content:space-between;align-items:center;gap:10px}.tabs{display:flex;gap:6px;overflow-x:auto;border-bottom:1px solid var(--line);margin-bottom:12px}.grid{display:grid;gap:10px}.cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}.cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.hint{color:var(--muted);font-size:12px;line-height:1.6}.mini{font-size:11px;color:var(--muted)}.preview-head{padding:10px 12px;border-bottom:1px solid var(--line);display:grid;gap:8px}.preview-title{display:flex;justify-content:space-between;align-items:center;gap:10px}.preview-title b{color:var(--accent)}.canvas-wrap{position:relative;overflow:auto;background:#020711}.canvas-stage{position:relative;display:inline-block;min-width:100%;min-height:100%;padding:16px}.map-canvas{image-rendering:pixelated;background:#060b14;border:1px solid var(--line);box-shadow:var(--shadow);display:block}.coord-box{position:absolute;left:20px;top:20px;background:rgba(0,0,0,.75);border:1px solid rgba(255,255,255,.18);border-radius:9px;color:#fff;padding:5px 8px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;pointer-events:none}.preview-foot{border-top:1px solid var(--line);padding:10px 12px;background:rgba(8,14,27,.78);max-height:180px;overflow:auto}.tile-palette{display:grid;grid-template-columns:repeat(auto-fill,minmax(46px,1fr));gap:8px}.tile-btn{min-height:44px;border:1px solid var(--line);background:var(--panel3);border-radius:10px;color:var(--text);font-weight:900;display:grid;place-items:center;position:relative;overflow:hidden}.tile-btn.active{border-color:var(--accent);box-shadow:0 0 0 3px rgba(245,189,79,.14)}.tile-btn small{position:absolute;left:5px;top:3px;color:#fff;text-shadow:0 1px 3px #000;font-size:11px}.tile-swatch{width:100%;height:100%;display:grid;place-items:center;background-size:cover;background-position:center}.object-list{display:grid;gap:8px}.object-row{display:grid;grid-template-columns:74px 1fr auto;gap:8px;align-items:start;border:1px solid var(--line);border-radius:12px;padding:8px;background:rgba(255,255,255,.035)}.object-row textarea{min-height:74px}.table{width:100%;border-collapse:separate;border-spacing:0 8px}.table th{color:var(--muted);font-size:11px;text-align:left;padding:0 7px}.table td{background:rgba(255,255,255,.035);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:7px;vertical-align:top}.table td:first-child{border-left:1px solid var(--line);border-radius:10px 0 0 10px}.table td:last-child{border-right:1px solid var(--line);border-radius:0 10px 10px 0}.split2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.jsonbox{min-height:420px;white-space:pre;overflow:auto;color:#b8fff0;background:#030711}.message{border:1px solid rgba(98,215,255,.28);background:rgba(98,215,255,.07);border-radius:12px;padding:10px;color:#d8f6ff;font-size:12px;line-height:1.6;margin-bottom:10px}.warnbox{border-color:rgba(255,213,104,.36);background:rgba(255,213,104,.08);color:#ffe9a9}.dangerbox{border-color:rgba(255,99,122,.36);background:rgba(255,99,122,.08);color:#ffd0d7}.script-lines{display:grid;gap:8px}.script-line{display:grid;grid-template-columns:92px 120px 1fr auto;gap:8px;align-items:start;border:1px solid var(--line);border-radius:12px;padding:8px;background:rgba(255,255,255,.035)}.script-line textarea{min-height:64px}.action-row{display:grid;grid-template-columns:120px 1fr auto;gap:8px;align-items:start;border:1px solid var(--line);border-radius:12px;padding:8px;background:rgba(255,255,255,.035);margin-bottom:8px}.kbd{font-family:ui-monospace,Menlo,Consolas,monospace;color:#ffe2a3}.asset-select{display:grid;grid-template-columns:1fr auto;gap:8px}.asset-preview{width:44px;height:44px;border:1px solid var(--line);border-radius:10px;background:#07101f;background-size:contain;background-position:center;background-repeat:no-repeat}.hidden{display:none!important}@media(max-width:1320px){.layout{grid-template-columns:290px minmax(420px,1fr) minmax(380px,45vw)}.cols-4{grid-template-columns:repeat(2,minmax(0,1fr))}.script-line{grid-template-columns:80px 110px 1fr}.preview{font-size:13px}}@media(max-width:1040px){body{overflow:auto}.app{height:auto;min-height:100%}.layout{display:block}.sidebar,.main,.preview{min-height:auto}.preview{height:70vh}.sidebar{height:420px}.topbar{position:sticky;top:0}.split2{grid-template-columns:1fr}}
+    .placement-card{border-color:rgba(98,215,255,.34);background:linear-gradient(180deg,rgba(20,42,69,.96),rgba(13,25,46,.96))}
+    .tool-tabs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:7px;margin-bottom:12px}
+    .tool-tab{border:1px solid var(--line);border-radius:10px;background:var(--panel3);color:var(--muted);padding:9px 7px;font-weight:900;font-size:12px}
+    .tool-tab.active{color:#fff;border-color:var(--accent2);background:#174a70;box-shadow:0 0 0 3px rgba(98,215,255,.12)}
+    .asset-browser{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:8px;max-height:310px;overflow:auto;padding:3px}
+    .asset-chip{min-height:88px;border:1px solid var(--line);border-radius:11px;background:rgba(0,0,0,.18);color:var(--text);padding:6px;display:grid;grid-template-rows:50px auto;gap:4px;text-align:center;overflow:hidden}
+    .asset-chip.active{border-color:var(--accent);box-shadow:0 0 0 3px rgba(245,189,79,.15)}
+    .asset-chip img{width:100%;height:50px;object-fit:contain;image-rendering:pixelated;background:rgba(0,0,0,.2);border-radius:7px}
+    .asset-chip span{font-size:10px;line-height:1.25;overflow-wrap:anywhere}
+    .tool-panel{display:none}.tool-panel.active{display:block}
+    .brush-status{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-top:10px;padding:9px;border:1px solid rgba(98,215,255,.25);border-radius:10px;background:rgba(98,215,255,.06)}
+    .mode-help{color:#d9f7ff;font-size:12px;line-height:1.55}
+    .danger-note{color:#ffd0d7}.recommended{outline:1px solid rgba(72,214,141,.42)}
+    @media(max-width:1320px){.tool-tabs{grid-template-columns:repeat(3,minmax(0,1fr))}.asset-browser{grid-template-columns:repeat(auto-fill,minmax(76px,1fr))}}
   </style>
 </head>
 <body>
@@ -70,7 +85,7 @@
           <input id="zoomRange" type="range" min="0.5" max="3" step="0.25" value="1" style="width:120px" />
           <button class="btn small" data-act="zoomIn">＋</button>
           <button class="btn small" data-act="fit">等倍</button>
-          <select id="drawMode" style="width:130px"><option value="select">選択</option><option value="paint">ペン</option><option value="fillRect">矩形塗り</option></select>
+          <select id="drawMode" style="width:150px"><option value="select">座標選択</option><option value="paint">1マス / ペン</option><option value="fillRect">矩形配置</option></select>
           <label class="pill"><input type="checkbox" id="showGrid" checked style="width:auto;margin-right:5px">Grid</label>
           <label class="pill"><input type="checkbox" id="showObjects" checked style="width:auto;margin-right:5px">Objects</label>
         </div>
@@ -89,10 +104,13 @@
   const num = (v, d=0) => Number.isFinite(Number(v)) ? Number(v) : d;
   const uid = () => `${Date.now().toString(36)}_${Math.random().toString(36).slice(2,8)}`;
   const actionTypes = ['CONV','ALLY','STEP','SUB','LOG','HEAL','BOSS','FLAG','UNLOCK','ITEM','QUEST_ACCEPT','QUEST_COMPLETE','STORY_DEFEAT','FIELD_CUTSCENE','MAP_VISUAL','START_FIXED_DUNGEON','START_ABYSS_DUNGEON','IF_FLAG','IF','CHOICE','MAP_CHANGE','EVENT','TEMP_LB_START','TEMP_LB_CLEAR'];
+  const renderShared = window.MapRenderShared;
 
   const state = {
     tab:'maps', search:'', typeFilter:'all', sortMode:'kind', selectedKey:'map:world:WORLD', selectedTile:'T', selectedCoord:{x:0,y:0},
-    drawMode:'paint', zoom:1, showGrid:true, showObjects:true, drag:false, rectStart:null, dirty:false,
+    drawMode:'select', zoom:1, showGrid:true, showObjects:true, drag:false, rectStart:null, dirty:false,
+    editorTool:'tile', selectedProp:'', selectedTextile:'castle_carpet', selectedHazard:'ice',
+    textileWidth:3, textileHeight:5, propSearch:'', propTheme:'all', propRole:'all', lastPaintCoord:null,
     data:{}, maps:[], scripts:[], events:[], images:new Map(), imageBad:new Set(), validation:[], jsonDraft:'', scriptJsonDraft:'', eventJsonDraft:''
   };
 
@@ -113,8 +131,12 @@
       mapData: clone(typeof MAP_DATA !== 'undefined' ? MAP_DATA : (window.MAP_DATA || [])),
       fixedTileOverlays: clone(typeof FIXED_TILE_OVERLAYS !== 'undefined' ? FIXED_TILE_OVERLAYS : (window.FIXED_TILE_OVERLAYS || {})),
       fixedOverlayBaseTiles: clone(typeof FIXED_OVERLAY_BASE_TILES !== 'undefined' ? FIXED_OVERLAY_BASE_TILES : (window.FIXED_OVERLAY_BASE_TILES || {})),
+      worldBridges: clone(typeof WORLD_BRIDGES !== 'undefined' ? WORLD_BRIDGES : (window.WORLD_BRIDGES || [])),
+      dungeonWallFaceThemes: clone(typeof DUNGEON_WALL_FACE_THEMES !== 'undefined' ? DUNGEON_WALL_FACE_THEMES : (window.DUNGEON_WALL_FACE_THEMES || {})),
+      mapFloorDecorThemes: clone(typeof MAP_FLOOR_DECOR_THEMES !== 'undefined' ? MAP_FLOOR_DECOR_THEMES : (window.MAP_FLOOR_DECOR_THEMES || {})),
       fixedMaps: clone(typeof FIXED_MAPS !== 'undefined' ? FIXED_MAPS : (window.FIXED_MAPS || {})),
       fixedDungeonMaps: clone(typeof FIXED_DUNGEON_MAPS !== 'undefined' ? FIXED_DUNGEON_MAPS : (window.FIXED_DUNGEON_MAPS || {})),
+      authoredMapPropPlacements: clone(typeof AUTHORED_MAP_PROP_PLACEMENTS !== 'undefined' ? AUTHORED_MAP_PROP_PLACEMENTS : (window.AUTHORED_MAP_PROP_PLACEMENTS || [])),
       storyManagerData: clone(storyDataSource || {}),
       graphics: clone(window.PRISMA_ASSETS?.graphics || {}),
       items: clone(window.ITEMS_DATA || window.DB?.ITEMS || []),
@@ -172,6 +194,11 @@
   }
   function selectedMapEntity(){ const e=findEntity(state.selectedKey); return e?.key?.startsWith('map:') ? e : null; }
   function selectedMap(){ return selectedMapEntity()?.get() || worldMapProxy(); }
+  function effectiveMapForRender(ent=selectedMapEntity(), raw=ent?.get() || worldMapProxy()){
+    if(ent?.type!=='dungeon') return raw;
+    return {...(ent.base||{}),...raw,isDungeon:true,isFixed:true};
+  }
+  function selectedMapForRender(){ const ent=selectedMapEntity(); return effectiveMapForRender(ent,ent?.get()||worldMapProxy()); }
   function markDirty(){ state.dirty=true; }
 
   function bindEvents(){
@@ -187,6 +214,17 @@
       if (state.tab === 'story' && state.selectedKey.startsWith('map:')) state.selectedKey = state.scripts[0] ? `script:${state.scripts[0]}` : (state.events[0] ? `event:${state.events[0]}` : state.selectedKey);
       if (state.tab === 'maps' && !state.selectedKey.startsWith('map:')) state.selectedKey = state.maps[0]?.key || state.selectedKey;
       renderAll();
+    });
+    document.addEventListener('click', (ev) => {
+      const tool = ev.target.closest('[data-editor-tool]');
+      if (!tool) return;
+      state.editorTool = tool.dataset.editorTool;
+      if (state.editorTool !== 'inspect' && state.drawMode === 'select') {
+        state.drawMode = 'paint';
+        $('drawMode').value = 'paint';
+      }
+      renderMain();
+      drawMap();
     });
     $('search').addEventListener('input', e => { state.search=e.target.value; renderList(); });
     $('typeFilter').addEventListener('change', e => { state.typeFilter=e.target.value; renderList(); });
@@ -230,6 +268,8 @@
     if (act === 'deleteAction') deleteAction(btn.dataset.phase, Number(btn.dataset.index));
     if (act === 'applyActions') applyActions();
     if (act === 'resizeMap') resizeSelectedMap();
+    if (act === 'removeAtCoord') removePlacementAt(state.selectedCoord.x, state.selectedCoord.y, btn.dataset.kind || 'all');
+    if (act === 'clearManagedHazard') clearManagedHazard(btn.dataset.hazard || state.selectedHazard);
   }
 
   function renderAll(){ renderNav(); renderList(); renderMain(); drawMap(); }
@@ -270,11 +310,11 @@
   }
 
   function renderMapEditor(){
-    const ent = selectedMapEntity(); const map = selectedMap();
+    const ent = selectedMapEntity(); const rawMap = selectedMap(); const map = effectiveMapForRender(ent,rawMap);
     const rows = map.tiles || [];
     const w = map.width || rowWidth(rows); const h = map.height || rows.length;
     const themeKey = getThemeKey(map, ent?.type);
-    if (!state.jsonDraft) state.jsonDraft = JSON.stringify(map, null, 2);
+    if (!state.jsonDraft) state.jsonDraft = JSON.stringify(rawMap, null, 2);
     $('mainPane').innerHTML = `
       <div class="message">右側プレビュー上で選択/ペイントできます。実プロジェクトで <span class="kbd">assets/</span> が存在する場合は、PRISMA_ASSETS.graphics の画像パスを使ってゲーム内に近い見え方で描画します。</div>
       <div class="card"><h2>マップ基本設定 <span class="pill ${state.dirty?'warn':'ok'}">${state.dirty?'未出力の変更あり':'読み込み済み'}</span></h2>
@@ -290,11 +330,20 @@
         </div>
         <div class="toolbar" style="margin-top:10px"><button class="btn green" data-act="resizeMap">基本設定を反映/リサイズ</button><span class="hint">リサイズ時、足りない部分は選択中タイルで埋めます。</span></div>
       </div>
-      <div class="card"><h2>タイルパレット <span class="pill">選択中: ${esc(state.selectedTile)}</span></h2><div class="tile-palette">${tilePaletteHtml(map)}</div></div>
+      ${placementToolsHtml(map, ent)}
+      <div class="card"><h2>地形タイル一覧 <span class="pill">選択中: ${esc(state.selectedTile)}</span></h2><div class="tile-palette">${tilePaletteHtml(map)}</div></div>
       <div class="card"><h2>座標オブジェクト</h2>${coordinateObjectSummaryHtml(map)}${objectSectionsHtml(map)}</div>
       <div class="card"><h2>詳細JSON <span class="hint">既存機能の全キーをここで編集できます</span></h2><textarea id="mapJson" class="jsonbox">${esc(state.jsonDraft)}</textarea><div class="toolbar" style="margin-top:10px"><button class="btn green" data-act="applyMapJson">JSONを反映</button></div></div>
     `;
-    $('mainPane').querySelectorAll('[data-tile]').forEach(b => b.onclick = () => { state.selectedTile=b.dataset.tile; renderMain(); });
+    $('mainPane').querySelectorAll('[data-tile]').forEach(b => b.onclick = () => { state.selectedTile=b.dataset.tile; state.editorTool='tile'; ensurePaintMode(); renderMain(); drawMap(); });
+    $('mainPane').querySelectorAll('[data-textile]').forEach(b => b.onclick = () => { state.selectedTextile=b.dataset.textile; state.editorTool='textile'; ensurePaintMode(); renderMain(); drawMap(); });
+    $('mainPane').querySelectorAll('[data-prop]').forEach(b => b.onclick = () => { state.selectedProp=b.dataset.prop; state.editorTool='prop'; ensurePaintMode(); renderMain(); drawMap(); });
+    $('mainPane').querySelectorAll('[data-hazard]').forEach(b => b.onclick = () => { state.selectedHazard=b.dataset.hazard; state.editorTool='hazard'; ensurePaintMode(); renderMain(); drawMap(); });
+    const tw=$('textileWidth'); if(tw) tw.oninput=()=>{state.textileWidth=Math.max(1,num(tw.value,3));};
+    const th=$('textileHeight'); if(th) th.oninput=()=>{state.textileHeight=Math.max(1,num(th.value,5));};
+    const ps=$('propSearch'); if(ps) ps.oninput=()=>{state.propSearch=ps.value; renderMain(); requestAnimationFrame(()=>{const next=$('propSearch');if(next){next.focus();next.setSelectionRange(next.value.length,next.value.length);}});};
+    const pt=$('propTheme'); if(pt) pt.onchange=()=>{state.propTheme=pt.value; renderMain();};
+    const pr=$('propRole'); if(pr) pr.onchange=()=>{state.propRole=pr.value; renderMain();};
     ['mapName','mapTheme','mapBattleBg'].forEach(id => { const el=$(id); if (el) el.addEventListener('change', updateMapBasics); });
     const mj=$('mapJson'); if (mj) mj.addEventListener('input', e => { state.jsonDraft=e.target.value; });
   }
@@ -316,6 +365,71 @@
     if (ent.type === 'world') state.data.mapData = map.tiles; else ent.set(map);
     state.jsonDraft=''; markDirty(); rebuildEntities(); renderAll();
   }
+  function ensurePaintMode(){
+    if (state.drawMode !== 'select') return;
+    state.drawMode='paint';
+    if ($('drawMode')) $('drawMode').value='paint';
+  }
+  function recommendedLibraryTheme(map){
+    const key=String(getThemeKey(map)||'').toUpperCase();
+    if (key.includes('VILLAGE') || key === 'START_VILLAGE') return 'village';
+    if (key.includes('FOREST') || key.includes('WIND')) return 'forest';
+    if (key.includes('FIRE') || key.includes('VOLCANO') || key.includes('IGNIS')) return 'volcanic';
+    if (key.includes('WATER') || key.includes('SEABED') || key.includes('CRENA')) return 'water';
+    if (key.includes('THUNDER')) return 'thunder';
+    if (key.includes('LIGHT')) return 'light';
+    if (key.includes('DARK') || key.includes('ABYSS')) return 'dark';
+    if (key.includes('TOWER')) return 'tower';
+    if (key.includes('RUIN') || key.includes('SHRINE')) return 'ruins';
+    return 'cave';
+  }
+  function mapChipLibraryAssets(){
+    const groups=(typeof PRISMA_MAP_CHIP_LIBRARY_GROUPS !== 'undefined') ? PRISMA_MAP_CHIP_LIBRARY_GROUPS : {};
+    const decorationSlugs=(typeof PRISMA_MAP_CHIP_DECORATION_SLUGS !== 'undefined') ? PRISMA_MAP_CHIP_DECORATION_SLUGS : new Set();
+    const out=[];
+    Object.entries(groups).forEach(([theme,slugs])=>(slugs||[]).forEach(slug=>{
+      const key=`maplib_${theme}_${slug}`;
+      out.push({key,theme,slug,role:decorationSlugs.has(slug)?'decoration':'blocking',src:assetPath(key)});
+    }));
+    return out;
+  }
+  function toolTab(key,label){ return `<button class="tool-tab ${state.editorTool===key?'active':''}" data-editor-tool="${key}">${label}</button>`; }
+  function textileAssetChip(type,label,key){
+    const src=assetPath(`${key}_fill`);
+    return `<button class="asset-chip ${state.selectedTextile===type?'active':''}" data-textile="${esc(type)}"><img src="${esc(src)}" alt=""><span>${esc(label)}</span></button>`;
+  }
+  function placementToolsHtml(map,ent){
+    const recommended=recommendedLibraryTheme(map);
+    const themes=Object.keys((typeof PRISMA_MAP_CHIP_LIBRARY_GROUPS!=='undefined'&&PRISMA_MAP_CHIP_LIBRARY_GROUPS)||{});
+    const q=state.propSearch.trim().toLowerCase();
+    const assets=mapChipLibraryAssets().filter(a=>(state.propTheme==='all'||a.theme===state.propTheme)&&(state.propRole==='all'||a.role===state.propRole)&&(!q||`${a.key} ${a.slug} ${a.theme} ${a.role}`.toLowerCase().includes(q)));
+    const toolNames={inspect:'座標確認',tile:`地形 ${state.selectedTile}`,textile:state.selectedTextile,prop:state.selectedProp||'小物未選択',hazard:state.selectedHazard,erase:'配置物消去'};
+    return `<div class="card placement-card"><h2>マップ直接配置 <span class="pill">${esc(toolNames[state.editorTool]||state.editorTool)}</span></h2>
+      <div class="tool-tabs">${toolTab('inspect','確認')}${toolTab('tile','地形')}${toolTab('textile','敷物')}${toolTab('prop','小物')}${toolTab('hazard','氷・毒')}${toolTab('erase','消去')}</div>
+      <div class="tool-panel ${state.editorTool==='inspect'?'active':''}"><div class="message">マップ上のマスを選択し、その座標にある地形・配置物・効果を確認します。データは変更しません。</div></div>
+      <div class="tool-panel ${state.editorTool==='tile'?'active':''}"><div class="message">下の「地形タイル一覧」でチップを選び、マップ内のマスをクリックして配置します。ドラッグで連続配置、矩形配置で範囲を一括変更できます。</div></div>
+      <div class="tool-panel ${state.editorTool==='textile'?'active':''}">
+        <div class="asset-browser">${textileAssetChip('castle_carpet','赤カーペット（金縁）','overlay_castle_carpet')}${textileAssetChip('castle_carpet_blue_silver','青カーペット（銀縁）','overlay_castle_carpet_blue_silver')}${textileAssetChip('village_goza','ござ','overlay_village_goza')}</div>
+        <div class="grid cols-2" style="margin-top:10px"><div><label>標準幅</label><input id="textileWidth" type="number" min="1" value="${esc(state.textileWidth)}"></div><div><label>標準高さ</label><input id="textileHeight" type="number" min="1" value="${esc(state.textileHeight)}"></div></div>
+        <p class="hint">1マス配置では上記サイズ、矩形配置ではドラッグした範囲を使います。人物・ボス・操作盤が上にいても敷物は消えません。</p>
+      </div>
+      <div class="tool-panel ${state.editorTool==='prop'?'active':''}">
+        <div class="grid cols-3"><div><label>検索</label><input id="propSearch" value="${esc(state.propSearch)}" placeholder="terminal / stump / 環境名"></div><div><label>系統</label><select id="propTheme"><option value="all">すべて</option>${themes.map(t=>`<option value="${esc(t)}"${state.propTheme===t?' selected':''}>${esc(t)}${t===recommended?' ★':''}</option>`).join('')}</select></div><div><label>通行</label><select id="propRole"><option value="all">すべて</option><option value="decoration"${state.propRole==='decoration'?' selected':''}>通行可能</option><option value="blocking"${state.propRole==='blocking'?' selected':''}>通行不能</option></select></div></div>
+        <p class="hint">★は現在のテーマ推奨。通行可能小物は床レイヤー、通行不能小物は衝突判定付きでゲームへ出力されます。</p>
+        <div class="asset-browser">${assets.map(a=>`<button class="asset-chip ${state.selectedProp===a.key?'active':''} ${a.theme===recommended?'recommended':''}" data-prop="${esc(a.key)}"><img src="${esc(a.src)}" alt=""><span>${esc(a.slug)}<br>${a.role==='blocking'?'通行不能':'通行可能'}</span></button>`).join('')||'<div class="hint">条件に合う小物がありません。</div>'}</div>
+      </div>
+      <div class="tool-panel ${state.editorTool==='hazard'?'active':''}">
+        <div class="asset-browser">
+          <button class="asset-chip ${state.selectedHazard==='ice'?'active':''}" data-hazard="ice"><img src="${esc(assetPath('tile_ice_slide'))}" alt=""><span>氷床（滑走）</span></button>
+          <button class="asset-chip ${state.selectedHazard==='poison'?'active':''}" data-hazard="poison"><img src="${esc(assetPath('tile_poison_bog'))}" alt=""><span>毒床</span></button>
+          <button class="asset-chip ${state.selectedHazard==='erase'?'active':''}" data-hazard="erase"><span style="display:grid;place-items:center;height:50px;font-size:24px">×</span><span>氷・毒を消去</span></button>
+        </div>
+        <p class="hint">既存の矩形効果を壊さず、クリックしたマスだけを追加・除外します。壁・階段・宝箱・ボス・操作盤などの保護マスには配置しません。</p>
+      </div>
+      <div class="tool-panel ${state.editorTool==='erase'?'active':''}"><div class="message dangerbox">マップ内のマスをクリックすると、そのマスの手動小物または敷物を削除します。地形・階段・イベントは削除しません。</div></div>
+      <div class="brush-status"><b>操作:</b><span class="mode-help">上部の操作方式を「1マス / ペン」または「矩形配置」にし、右のマップをクリックしてください。</span><span class="pill">map.js と同じデータへ反映</span></div>
+    </div>`;
+  }
   function tilePaletteHtml(map){
     const chars = new Set();
     (map.tiles || []).forEach(r => String(r).split('').forEach(c => chars.add(c)));
@@ -328,8 +442,10 @@
     }).join('');
   }
   function getTheme(map){
-    const key = getThemeKey(map); const base = clone(state.data.tileThemes[key] || state.data.tileThemes.WORLD || {});
-    return {...base, ...(map.tileOverrides || {})};
+    const key = getThemeKey(map);
+    const defaults=clone(state.data.tileThemes.DEFAULT||{});
+    const base=clone(state.data.tileThemes[key]||state.data.tileThemes.WORLD||{});
+    return {...defaults,...base,...(map.tileOverrides||{})};
   }
   function mergeOverlayMap(source, map){
     const isDungeon = !!map.isDungeon || selectedMapEntity()?.type === 'dungeon';
@@ -357,7 +473,8 @@
     }
 
     const baseSign = overlay ? overlayBaseSign(map, upper) : sign;
-    const baseCfg = theme[baseSign] || theme[upper] || theme[sign] || {img:'',color:'#202a3e'};
+    const rawBaseCfg = theme[baseSign] || theme[upper] || theme[sign] || {img:'',color:'#202a3e'};
+    const baseCfg = renderShared.resolveTileVariant(rawBaseCfg,x,y);
     if (overlay && overlay.img) return {...baseCfg, overlay};
     return baseCfg;
   }
@@ -401,9 +518,12 @@
 
   function coordinateObjectSummaryHtml(map){
     const x=state.selectedCoord.x, y=state.selectedCoord.y;
-    const lists = ['chests','bosses','floorLinks','mapActions','tileEffects','healSprings'];
+    const lists = ['chests','bosses','floorLinks','mapActions','tileEffects','healSprings','floorDecorations','blockingObjects'];
     const hits=[];
-    lists.forEach(list => (map[list] || []).forEach((o,i) => { if (Number(o.x)===x && Number(o.y)===y) hits.push(`<span class="pill">${esc(list)}#${i}</span> ${esc(labelForObject(list,o))}`); }));
+    lists.forEach(list => (map[list] || []).forEach((o,i) => {
+      const covers=list==='floorDecorations' ? x>=Number(o.x)&&x<Number(o.x)+Math.max(1,Number(o.width||1))&&y>=Number(o.y)&&y<Number(o.y)+Math.max(1,Number(o.height||1)) : Number(o.x)===x&&Number(o.y)===y;
+      if(covers) hits.push(`<span class="pill">${esc(list)}#${i}</span> ${esc(labelForObject(list,o))}`);
+    }));
     const tile = (map.tiles?.[y] || '')[x] || '';
     return `<div class="message"><b>選択座標</b> <span class="kbd">x:${x}, y:${y}</span> / tile: <span class="kbd">${esc(tile)}</span><br>${hits.length ? hits.join('<br>') : '<span class="hint">この座標に登録済みオブジェクトはありません。</span>'}</div>`;
   }
@@ -413,10 +533,12 @@
     if (list==='mapActions') return `${o.label || o.type || ''} ${o.eventId || o.questId || ''}`;
     if (list==='floorLinks') return `${o.label || ''} -> ${o.to || o.toFloor || ''}`;
     if (list==='tileEffects') return o.type || JSON.stringify(o);
+    if (list==='floorDecorations') return `${o.type || 'image'} ${o.imageKey || ''} ${o.width || 1}x${o.height || 1}`;
+    if (list==='blockingObjects') return o.imageKey || o.label || 'blocking object';
     return o.label || o.type || JSON.stringify(o);
   }
   function objectSectionsHtml(map){
-    return ['chests','bosses','floorLinks','mapActions','tileEffects','healSprings'].map(list => objectSectionHtml(list, map[list] || [])).join('');
+    return ['chests','bosses','floorLinks','mapActions','tileEffects','healSprings','floorDecorations','blockingObjects'].map(list => objectSectionHtml(list, map[list] || [])).join('');
   }
   function objectSectionHtml(list, arr){
     return `<details ${['chests','bosses','mapActions'].includes(list)?'open':''}><summary style="cursor:pointer;color:var(--accent);font-weight:900;margin:12px 0 8px">${esc(list)} <span class="pill">${arr.length}</span></summary><div class="toolbar" style="margin-bottom:8px"><button class="btn small primary" data-act="addObject" data-list="${esc(list)}">選択座標に追加</button></div><div class="object-list">${arr.map((o,i)=>`<div class="object-row"><div><span class="pill">#${i}</span><div class="mini">x:${esc(o.x)}, y:${esc(o.y)}</div></div><textarea id="obj_${list}_${i}">${esc(JSON.stringify(o,null,2))}</textarea><div class="grid"><button class="btn small green" data-act="applyObject" data-list="${esc(list)}" data-index="${i}">反映</button><button class="btn small red" data-act="deleteObject" data-list="${esc(list)}" data-index="${i}">削除</button></div></div>`).join('') || '<div class="hint">未登録</div>'}</div></details>`;
@@ -430,7 +552,9 @@
       floorLinks:{x,y,toFloor:1,targetX:x,targetY:y,label:'階段を使う'},
       mapActions:{x,y,label:'調べる',log:'何かがある。',type:'event',eventId:firstEventId()},
       tileEffects:{x,y,type:'warp',toX:x,toY:y,message:'不思議な力で移動した。'},
-      healSprings:{x,y,label:'回復する',message:'体力が回復した。'}
+      healSprings:{x,y,label:'回復する',message:'体力が回復した。'},
+      floorDecorations:{x,y,width:1,height:1,type:'image',imageKey:'maplib_village_wildflowers',blocking:false},
+      blockingObjects:{x,y,imageKey:'maplib_village_clay_jar',drawWidth:32,drawHeight:32,log:'調べても特に変わったものはない。'}
     };
     map[list].push(skeletons[list] || {x,y}); ent.set(map); state.jsonDraft=''; markDirty(); renderAll();
   }
@@ -503,7 +627,7 @@
   }
 
   function drawMap(){
-    const ent=selectedMapEntity(); const map=selectedMap();
+    const ent=selectedMapEntity(); const map=selectedMapForRender();
     $('previewName').textContent = ent ? `${ent.name}` : 'Preview';
     const rows=map.tiles || []; const w=map.width || rowWidth(rows); const h=map.height || rows.length; const tile=Math.max(8, Math.floor(18*state.zoom));
     $('previewStats').textContent = `${w}x${h} / tile ${state.selectedTile}`;
@@ -522,18 +646,106 @@
     updateCoordInfo();
   }
   function drawTile(ctx,cfg,px,py,tile,map,sign,x,y,entityType){
-    ctx.fillStyle = cfg.color || '#202a3e'; ctx.fillRect(px,py,tile,tile);
-    const src=assetPath(cfg.img);
-    const img=getImage(src);
-    if(img && img.complete && img.naturalWidth) ctx.drawImage(img,px,py,tile,tile);
+    const upper=String(sign||'T').toUpperCase();
+    const overlay=cfg.overlay||null;
+    const theme=getTheme(map);
+    const baseSign=overlay ? overlayBaseSign(map,upper) : (upper==='G'?'G':'T');
+    const floorCfg=renderShared.resolveTileVariant(theme[baseSign]||theme.T||cfg||{img:'',color:'#202a3e'},x,y);
+    drawEditorImageOrColor(ctx,floorCfg.img,floorCfg.color,px,py,tile,tile);
 
-    if (cfg.overlay) {
-      drawOverlayImage(ctx, cfg.overlay, px, py, tile, !!map.isWorld || entityType === 'world');
+    const fixed=drawEditorFixedDecorations(ctx,map,x,y,px,py,tile);
+    if(entityType==='world' && ['F','L'].includes(upper)) drawEditorWorldDecoration(ctx,map,x,y,upper,px,py,tile,'under');
+    if(!fixed && !overlay && ['T','G'].includes(upper) && !hasApplicableFloorEffect(map,x,y)){
+      if(entityType==='world') drawEditorWorldDecoration(ctx,map,x,y,upper,px,py,tile,'over');
+      else drawEditorRandomDecoration(ctx,map,x,y,px,py,tile);
     }
 
-    if (!src && tile>=14) {
-      ctx.fillStyle='rgba(255,255,255,.22)'; ctx.font=`${Math.floor(tile*.55)}px monospace`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(sign,px+tile/2,py+tile/2);
+    if(!overlay && !['T','G'].includes(upper)){
+      const face=wallFaceKeyForEditor(map,x,y,upper,entityType);
+      const mode=wallFaceModeForEditor(map,entityType);
+      const objectKey=face&&mode!=='overlay'?face:cfg.img;
+      const height=upper==='W'&&entityType==='dungeon'?Math.round(tile*1.5):tile;
+      drawEditorImageOrColor(ctx,objectKey,cfg.color,px,py+tile-height,tile,height);
+      if(face&&mode==='overlay') drawEditorImageOrColor(ctx,face,'',px,py+tile-height,tile,height);
     }
+    if(entityType==='world'&&upper==='W') drawEditorWorldDecoration(ctx,map,x,y,upper,px,py,tile,'over');
+    if(overlay) drawOverlayImage(ctx,overlay,px,py,tile,!!map.isWorld||entityType==='world');
+
+    if(!assetPath(cfg.img)&&!overlay&&tile>=14){
+      ctx.fillStyle='rgba(255,255,255,.22)';ctx.font=`${Math.floor(tile*.55)}px monospace`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(sign,px+tile/2,py+tile/2);
+    }
+  }
+  function drawEditorImageOrColor(ctx,key,color,px,py,w,h,alpha=1){
+    if(color){ctx.fillStyle=color;ctx.fillRect(px,py,w,h);}
+    const img=getImage(assetPath(key));
+    if(img&&img.complete&&img.naturalWidth){ctx.save();ctx.globalAlpha=alpha;ctx.drawImage(img,px,py,w,h);ctx.restore();return true;}
+    return false;
+  }
+  function wallFaceModeForEditor(map,entityType){
+    if(entityType!=='dungeon') return 'replace';
+    const theme=state.data.dungeonWallFaceThemes[String(getThemeKey(map)||'DEFAULT').toUpperCase()]||{};
+    return map.wallFaceMode||theme.mode||'replace';
+  }
+  function wallFaceKeyForEditor(map,x,y,upper,entityType){
+    const wallFaceTheme=state.data.dungeonWallFaceThemes[String(getThemeKey(map)||'DEFAULT').toUpperCase()]||{};
+    return renderShared.wallFacePlan({map:{...map,wallFaceTheme},theme:getTheme(map),x,y,upper,entityType})?.key||'';
+  }
+  function floorDecorationsAt(map,x,y){ return renderShared.fixedFloorDecorationsAt(map,x,y); }
+  function drawEditorTextileCell(ctx,d,x,y,px,py,tile){
+    const plan=renderShared.textileCellPlan(d,x,y); if(!plan) return false;
+    const style=plan.style, open=plan.open, prefix=style.keyPrefix;
+    drawEditorImageOrColor(ctx,`${prefix}_fill`,'',px,py,tile,tile);
+    const edge=Math.max(1,Math.round(tile*(style.edgeSize/32))), key=s=>`${prefix}_${s}`;
+    if(open.n) drawEditorImageOrColor(ctx,key('edge_n'),'',px,py,tile,edge);
+    if(open.s) drawEditorImageOrColor(ctx,key('edge_s'),'',px,py+tile-edge,tile,edge);
+    if(open.w) drawEditorImageOrColor(ctx,key('edge_w'),'',px,py,edge,tile);
+    if(open.e) drawEditorImageOrColor(ctx,key('edge_e'),'',px+tile-edge,py,edge,tile);
+    if(open.n&&open.w) drawEditorImageOrColor(ctx,key('corner_nw'),'',px,py,edge,edge);
+    if(open.n&&open.e) drawEditorImageOrColor(ctx,key('corner_ne'),'',px+tile-edge,py,edge,edge);
+    if(open.s&&open.w) drawEditorImageOrColor(ctx,key('corner_sw'),'',px,py+tile-edge,edge,edge);
+    if(open.s&&open.e) drawEditorImageOrColor(ctx,key('corner_se'),'',px+tile-edge,py+tile-edge,edge,edge);
+    return true;
+  }
+  function drawEditorFixedDecorations(ctx,map,x,y,px,py,tile){
+    let drew=false;
+    floorDecorationsAt(map,x,y).forEach(d=>{
+      if(drawEditorTextileCell(ctx,d,x,y,px,py,tile)){drew=true;return;}
+      if(d.type==='image'&&d.imageKey){
+        const dw=tile*Math.max(8,Number(d.drawWidth||32))/32,dh=tile*Math.max(8,Number(d.drawHeight||32))/32;
+        drawEditorImageOrColor(ctx,d.imageKey,'',px+tile/2-dw/2,py+tile-dh,dw,dh,d.alpha===undefined?1:Number(d.alpha));drew=true;
+      }
+    });
+    return drew;
+  }
+  function editorStableHash(...parts){return renderShared.stableHash(...parts);}
+  function drawEditorRandomDecoration(ctx,map,x,y,px,py,tile){
+    const key=String(getThemeKey(map)||'DEFAULT').toUpperCase();
+    const def=renderShared.floorDecorationPlan({themes:state.data.mapFloorDecorThemes,themeKey:key,areaKey:key,floor:map.floor||0,x,y});
+    if(!def) return;
+    drawEditorRotatedImage(ctx,def.key,px+tile/2,py+tile/2,tile,tile,def.angle,def.alpha,def.flipX);
+  }
+  function drawEditorRotatedImage(ctx,key,cx,cy,w,h,angle=0,alpha=1,flipX=false){
+    const img=getImage(assetPath(key)); if(!(img&&img.complete&&img.naturalWidth)) return false;
+    ctx.save();ctx.globalAlpha=alpha;ctx.translate(cx,cy);ctx.rotate(angle*Math.PI/180);if(flipX)ctx.scale(-1,1);ctx.drawImage(img,-w/2,-h/2,w,h);ctx.restore();return true;
+  }
+  function drawEditorWorldDecoration(ctx,map,x,y,upper,px,py,tile,layer){
+    const plan=renderShared.worldDecorationPlan({map,bridges:state.data.worldBridges,x,y,tileSign:upper});
+    if(!plan) return;
+    if(plan.kind==='bridge'){
+      drawEditorRotatedImage(ctx,plan.key,px+tile/2,py+tile/2,tile*1.2,tile*.6,plan.direction==='vertical'?90:0,.98);
+      return;
+    }
+    if(plan.kind==='detail'&&plan.layer===layer){
+      drawEditorRotatedImage(ctx,plan.key,px+tile/2,py+tile/2,tile*plan.size,tile*plan.size,plan.angle,plan.alpha,plan.flipX);
+      return;
+    }
+    if(plan.kind==='shore'&&layer==='over') plan.edges.forEach(edge=>{
+      drawEditorRotatedImage(ctx,plan.key,px+tile/2+edge.offsetX*tile,py+tile/2+edge.offsetY*tile,tile,tile*.25,edge.angle,plan.alpha);
+    });
+  }
+  function hasApplicableFloorEffect(map,x,y){
+    const w=map.width||rowWidth(map.tiles),h=map.height||(map.tiles||[]).length;
+    return (map.tileEffects||[]).some(e=>effectContainsRawCell(e,x,y,w,h)&&!pointListHas(e.excludePoints,x,y));
   }
   function tileEffectCells(effect,w,h){
     const cells=[]; const seen=new Set();
@@ -565,7 +777,12 @@
     (map.tileEffects || []).forEach(effect=>{
       const cfg=tileEffectPreviewConfig(effect);
       if (!cfg) return;
-      const cells=tileEffectCells(effect,w,h);
+      const type=String(effect?.type||'').toLowerCase();
+      const cells=tileEffectCells(effect,w,h).filter(({x,y})=>{
+        if(pointListHas(effect.excludePoints,x,y)) return false;
+        if(['ice','poison'].includes(type) && isCellReserved(map,x,y)) return false;
+        return true;
+      });
       if (!cells.length) return;
       const src=assetPath(cfg.img); const img=getImage(src);
       cells.forEach(({x,y})=>{
@@ -626,7 +843,8 @@
       const px=x*tile, py=y*tile;
       const key = imgKey || '';
       const scale = opts.scale || (isBuildingImageKey(key) && !map.isWorld ? 2.4 : (isBossImageKey(key) ? 2 : 1));
-      const dw = tile * scale, dh = tile * scale;
+      const dw = opts.drawWidth ? tile*Math.max(8,Number(opts.drawWidth))/32 : tile * scale;
+      const dh = opts.drawHeight ? tile*Math.max(8,Number(opts.drawHeight))/32 : tile * scale;
       const dx = px + tile/2 - dw/2, dy = py + tile - dh;
       const src=assetPath(key); const img=getImage(src);
       if(img && img.complete && img.naturalWidth) {
@@ -648,6 +866,7 @@
       if (String(tileSign || '').toUpperCase() === 'B') return;
       drawMarker(bx,by,'B','#db3b4d', bossSpriteKeyFromDef(b) || (type==='dungeon'?'boss_dungeon':'boss'));
     });
+    (map.blockingObjects||[]).forEach(o=>drawMarker(Number(o.x),Number(o.y),'#','#6f819b',o.imageKey,{scale:1,drawWidth:o.drawWidth,drawHeight:o.drawHeight}));
     (map.floorLinks||[]).forEach(s=>drawMarker(Number(s.x),Number(s.y),'S','#d7b45a', type==='dungeon'?'stairs_dungeon':'stairs',{scale:1}));
     (map.mapActions||[]).forEach(a=>drawMarker(Number(a.x),Number(a.y),'!', '#62d7ff', a.imageKey || (a.type==='quest'?'overlay_field_event':'')));
     (map.tileEffects||[]).forEach(e=>{
@@ -663,14 +882,151 @@
     const x=Math.floor((ev.clientX-rect.left)*(canvas.width/rect.width)/tile); const y=Math.floor((ev.clientY-rect.top)*(canvas.height/rect.height)/tile);
     return {x:Math.max(0,Math.min(w-1,x)), y:Math.max(0,Math.min(h-1,y))};
   }
-  function onCanvasMove(ev){ const c=canvasCoord(ev); $('coordBox').textContent=`x:${c.x}, y:${c.y}`; if(state.drag && state.drawMode==='paint') paintTile(c.x,c.y,false); }
-  function onCanvasDown(ev){ const c=canvasCoord(ev); state.selectedCoord=c; state.drag=true; if(state.drawMode==='paint') paintTile(c.x,c.y,true); else if(state.drawMode==='fillRect') state.rectStart=c; else { renderMain(); drawMap(); } }
-  function onCanvasUp(ev){ const c=canvasCoord(ev); if(state.drag && state.drawMode==='fillRect' && state.rectStart) fillRect(state.rectStart,c); state.drag=false; state.rectStart=null; renderMain(); drawMap(); }
-  function paintTile(x,y,rerender){ const ent=selectedMapEntity(); if(!ent) return; const map=ent.get(); const rows=normalizeRows(map.tiles || [], map.width || rowWidth(map.tiles), map.height || (map.tiles||[]).length); rows[y]=rows[y].slice(0,x)+state.selectedTile+rows[y].slice(x+1); if(ent.type==='world') state.data.mapData=rows; else { map.tiles=rows; ent.set(map); } state.selectedCoord={x,y}; markDirty(); drawMap(); if(rerender) renderMain(); }
+  function onCanvasMove(ev){
+    const c=canvasCoord(ev); $('coordBox').textContent=`x:${c.x}, y:${c.y}`;
+    if(!state.drag || state.drawMode!=='paint') return;
+    if(state.lastPaintCoord && state.lastPaintCoord.x===c.x && state.lastPaintCoord.y===c.y) return;
+    if(state.editorTool==='tile' || state.editorTool==='hazard') applyEditorToolAt(c.x,c.y,false);
+  }
+  function onCanvasDown(ev){
+    const c=canvasCoord(ev); state.selectedCoord=c; state.drag=true; state.lastPaintCoord=null;
+    if(state.drawMode==='paint') applyEditorToolAt(c.x,c.y,true);
+    else if(state.drawMode==='fillRect') state.rectStart=c;
+    else { renderMain(); drawMap(); }
+  }
+  function onCanvasUp(ev){
+    const c=canvasCoord(ev);
+    if(state.drag && state.drawMode==='fillRect' && state.rectStart) applyEditorToolRect(state.rectStart,c);
+    state.drag=false; state.rectStart=null; state.lastPaintCoord=null; syncCanvasEdit();
+  }
+  function syncCanvasEdit(){
+    state.jsonDraft=JSON.stringify(selectedMap(),null,2);
+    const json=$('mapJson'); if(json) json.value=state.jsonDraft;
+    markDirty(); drawMap(); updateCoordInfo();
+  }
+  function paintTile(x,y,rerender){ const ent=selectedMapEntity(); if(!ent) return; const map=ent.get(); const rows=normalizeRows(map.tiles || [], map.width || rowWidth(map.tiles), map.height || (map.tiles||[]).length); rows[y]=rows[y].slice(0,x)+state.selectedTile+rows[y].slice(x+1); if(ent.type==='world') state.data.mapData=rows; else { map.tiles=rows; ent.set(map); } state.selectedCoord={x,y}; markDirty(); drawMap(); if(rerender) syncCanvasEdit(); }
   function fillRect(a,b){ const x1=Math.min(a.x,b.x), x2=Math.max(a.x,b.x), y1=Math.min(a.y,b.y), y2=Math.max(a.y,b.y); for(let y=y1;y<=y2;y++) for(let x=x1;x<=x2;x++) paintTile(x,y,false); markDirty(); }
+  function applyEditorToolAt(x,y,rerender=true){
+    state.selectedCoord={x,y}; state.lastPaintCoord={x,y};
+    if(state.editorTool==='inspect') { if(rerender) renderMain(); drawMap(); return; }
+    if(state.editorTool==='tile') return paintTile(x,y,rerender);
+    if(state.editorTool==='textile') placeTextileRect(x,y,x+state.textileWidth-1,y+state.textileHeight-1);
+    if(state.editorTool==='prop') placePropAt(x,y);
+    if(state.editorTool==='hazard') editHazardAt(x,y,state.selectedHazard);
+    if(state.editorTool==='erase') removePlacementAt(x,y,'all',false);
+    state.jsonDraft=''; markDirty(); drawMap(); if(rerender) syncCanvasEdit();
+  }
+  function applyEditorToolRect(a,b){
+    const x1=Math.min(a.x,b.x),x2=Math.max(a.x,b.x),y1=Math.min(a.y,b.y),y2=Math.max(a.y,b.y);
+    if(state.editorTool==='tile') fillRect(a,b);
+    else if(state.editorTool==='textile') placeTextileRect(x1,y1,x2,y2);
+    else if(state.editorTool==='hazard') for(let y=y1;y<=y2;y++) for(let x=x1;x<=x2;x++) editHazardAt(x,y,state.selectedHazard,false);
+    else if(state.editorTool==='erase') for(let y=y1;y<=y2;y++) for(let x=x1;x<=x2;x++) removePlacementAt(x,y,'all',false);
+    else if(state.editorTool==='prop') placePropAt(x1,y1);
+    state.selectedCoord={x:x2,y:y2}; state.jsonDraft=''; markDirty();
+  }
+  function setSelectedMap(map){ const ent=selectedMapEntity(); if(ent && ent.type!=='world') ent.set(map); }
+  function rectsOverlap(a,b){ return a.x < b.x+b.width && a.x+a.width > b.x && a.y < b.y+b.height && a.y+a.height > b.y; }
+  function placeTextileRect(x1,y1,x2,y2){
+    const ent=selectedMapEntity(); if(!ent || ent.type==='world') return;
+    const map=ent.get(), w=map.width||rowWidth(map.tiles), h=map.height||(map.tiles||[]).length;
+    const rect={x:Math.max(0,Math.min(x1,x2)),y:Math.max(0,Math.min(y1,y2))};
+    rect.width=Math.max(1,Math.min(w-rect.x,Math.abs(x2-x1)+1)); rect.height=Math.max(1,Math.min(h-rect.y,Math.abs(y2-y1)+1));
+    for(let py=rect.y;py<rect.y+rect.height;py++)for(let px=rect.x;px<rect.x+rect.width;px++){
+      const sign=String(map.tiles?.[py]||'')[px]?.toUpperCase();
+      if(!['T','G','B'].includes(sign)){alert(`敷物の範囲に床以外のタイルがあります（${px},${py}: ${sign||'?'}）。`);return;}
+    }
+    if(!Array.isArray(map.floorDecorations)) map.floorDecorations=[];
+    const removedAuthoredIds=map.floorDecorations.filter(d=>['castle_carpet','castle_carpet_blue_silver','village_goza'].includes(d?.type)&&rectsOverlap({x:Number(d.x)||0,y:Number(d.y)||0,width:Math.max(1,Number(d.width)||1),height:Math.max(1,Number(d.height)||1)},rect)).map(d=>d.authoredPlacementId).filter(Boolean);
+    if(removedAuthoredIds.length) state.data.authoredMapPropPlacements=(state.data.authoredMapPropPlacements||[]).filter(p=>!removedAuthoredIds.includes(p.id));
+    map.floorDecorations=map.floorDecorations.filter(d=>!(['castle_carpet','castle_carpet_blue_silver','village_goza'].includes(d?.type)) || !rectsOverlap({x:Number(d.x)||0,y:Number(d.y)||0,width:Math.max(1,Number(d.width)||1),height:Math.max(1,Number(d.height)||1)},rect));
+    map.floorDecorations.push({editorPlacementId:`textile_${uid()}`,type:state.selectedTextile,x:rect.x,y:rect.y,width:rect.width,height:rect.height,blocking:false});
+    setSelectedMap(map);
+  }
+  function libraryAssetMeta(key){ return mapChipLibraryAssets().find(a=>a.key===key)||null; }
+  function isCellReserved(map,x,y){
+    const sign=String(map.tiles?.[y]||'')[x]?.toUpperCase();
+    if(!sign || !['T','G'].includes(sign)) return true;
+    return ['chests','bosses','floorLinks','mapActions','healSprings','blockingObjects'].some(list=>(map[list]||[]).some(o=>Number(o.x)===x&&Number(o.y)===y));
+  }
+  function placePropAt(x,y){
+    const ent=selectedMapEntity(); if(!ent || ent.type==='world' || !state.selectedProp) return;
+    const map=ent.get(), meta=libraryAssetMeta(state.selectedProp); if(!meta) return;
+    const w=map.width||rowWidth(map.tiles),h=map.height||(map.tiles||[]).length;
+    const onSurfaceEffect=(map.tileEffects||[]).some(effect=>['ice','poison'].includes(String(effect.type||'').toLowerCase())&&effectContainsRawCell(effect,x,y,w,h)&&!pointListHas(effect.excludePoints,x,y));
+    if(isCellReserved(map,x,y)||onSurfaceEffect){alert('小物は、床効果やイベントのない通常床へ配置してください。');return;}
+    if(meta.role==='blocking'){
+      if(!Array.isArray(map.blockingObjects)) map.blockingObjects=[];
+      map.blockingObjects=map.blockingObjects.filter(o=>!(Number(o.x)===x&&Number(o.y)===y));
+      map.blockingObjects.push({editorPlacementId:`prop_${uid()}`,x,y,imageKey:meta.key,drawWidth:32,drawHeight:32,log:'調べても特に変わったものはない。'});
+    }else{
+      if(!Array.isArray(map.floorDecorations)) map.floorDecorations=[];
+      map.floorDecorations=map.floorDecorations.filter(d=>!(d?.type==='image'&&Number(d.x)===x&&Number(d.y)===y));
+      map.floorDecorations.push({editorPlacementId:`prop_${uid()}`,type:'image',imageKey:meta.key,x,y,width:1,height:1,blocking:false});
+    }
+    setSelectedMap(map);
+  }
+  function effectContainsRawCell(effect,x,y,w,h){ return tileEffectCells(effect,w,h).some(p=>p.x===x&&p.y===y); }
+  function pointListHas(list,x,y){ return (list||[]).some(p=>Number(p.x)===x&&Number(p.y)===y); }
+  function editHazardAt(x,y,type,commit=true){
+    const ent=selectedMapEntity(); if(!ent || ent.type==='world') return;
+    const map=ent.get(), w=map.width||rowWidth(map.tiles), h=map.height||(map.tiles||[]).length;
+    if(!Array.isArray(map.tileEffects)) map.tileEffects=[];
+    const hazardTypes=type==='erase'?['ice','poison']:[type];
+    hazardTypes.forEach(hazard=>{
+      const effects=map.tileEffects.filter(e=>String(e.type||'').toLowerCase()===hazard);
+      if(type==='erase'){
+        effects.forEach(effect=>{
+          if(effect.editorManaged){ effect.points=(effect.points||[]).filter(p=>Number(p.x)!==x||Number(p.y)!==y); }
+          else if(effectContainsRawCell(effect,x,y,w,h) && !pointListHas(effect.excludePoints,x,y)){ if(!Array.isArray(effect.excludePoints)) effect.excludePoints=[]; effect.excludePoints.push({x,y}); }
+        });
+      }else{
+        if(isCellReserved(map,x,y)) return;
+        const conflicting=(map.tileEffects||[]).some(other=>['ice','poison'].includes(String(other.type||'').toLowerCase())&&String(other.type||'').toLowerCase()!==hazard&&effectContainsRawCell(other,x,y,w,h)&&!pointListHas(other.excludePoints,x,y));
+        if(conflicting) return;
+        let covered=false;
+        effects.forEach(effect=>{
+          if(effectContainsRawCell(effect,x,y,w,h)){
+            covered=true;
+            if(Array.isArray(effect.excludePoints)) effect.excludePoints=effect.excludePoints.filter(p=>Number(p.x)!==x||Number(p.y)!==y);
+          }
+        });
+        if(!covered){
+          let managed=effects.find(e=>e.editorManaged===true);
+          if(!managed){ managed={type:hazard,onlyWalkable:true,editorManaged:true,points:[]}; map.tileEffects.push(managed); }
+          if(!pointListHas(managed.points,x,y)) managed.points.push({x,y});
+        }
+      }
+    });
+    map.tileEffects=map.tileEffects.filter(e=>!(e.editorManaged&&Array.isArray(e.points)&&e.points.length===0));
+    setSelectedMap(map); if(commit){state.jsonDraft='';markDirty();}
+  }
+  function removePlacementAt(x,y,kind='all',rerender=true){
+    const ent=selectedMapEntity(); if(!ent || ent.type==='world') return;
+    const map=ent.get(); let removed=0;
+    if(kind==='all'||kind==='textile'||kind==='prop'){
+      const before=(map.floorDecorations||[]).length;
+      const removedAuthoredIds=(map.floorDecorations||[]).filter(d=>x>=Number(d.x)&&x<Number(d.x)+Math.max(1,Number(d.width||1))&&y>=Number(d.y)&&y<Number(d.y)+Math.max(1,Number(d.height||1))).map(d=>d.authoredPlacementId).filter(Boolean);
+      if(removedAuthoredIds.length) state.data.authoredMapPropPlacements=(state.data.authoredMapPropPlacements||[]).filter(p=>!removedAuthoredIds.includes(p.id));
+      map.floorDecorations=(map.floorDecorations||[]).filter(d=>!(x>=Number(d.x)&&x<Number(d.x)+Math.max(1,Number(d.width||1))&&y>=Number(d.y)&&y<Number(d.y)+Math.max(1,Number(d.height||1))));
+      removed+=before-map.floorDecorations.length;
+    }
+    if(kind==='all'||kind==='prop'){
+      const before=(map.blockingObjects||[]).length;
+      const removedAuthoredIds=(map.blockingObjects||[]).filter(o=>Number(o.x)===x&&Number(o.y)===y).map(o=>o.authoredPlacementId).filter(Boolean);
+      if(removedAuthoredIds.length) state.data.authoredMapPropPlacements=(state.data.authoredMapPropPlacements||[]).filter(p=>!removedAuthoredIds.includes(p.id));
+      map.blockingObjects=(map.blockingObjects||[]).filter(o=>!(Number(o.x)===x&&Number(o.y)===y)); removed+=before-map.blockingObjects.length;
+    }
+    setSelectedMap(map); state.jsonDraft=''; if(removed) markDirty(); if(rerender) syncCanvasEdit();
+  }
+  function clearManagedHazard(type){
+    const ent=selectedMapEntity(); if(!ent||ent.type==='world') return; const map=ent.get();
+    map.tileEffects=(map.tileEffects||[]).filter(e=>!(e.editorManaged&&String(e.type||'').toLowerCase()===String(type||'').toLowerCase()));
+    setSelectedMap(map); state.jsonDraft=''; markDirty(); renderAll();
+  }
   function updateCoordInfo(){
     const map=selectedMap(); const {x,y}=state.selectedCoord; const tile=(map.tiles?.[y]||'')[x] || '';
-    const objs=[]; ['chests','bosses','floorLinks','mapActions','tileEffects','healSprings'].forEach(list => (map[list]||[]).forEach((o,i)=>{if(Number(o.x)===x&&Number(o.y)===y) objs.push(`${list}#${i}: ${labelForObject(list,o)}`);}));
+    const objs=[]; ['chests','bosses','floorLinks','mapActions','tileEffects','healSprings','floorDecorations','blockingObjects'].forEach(list => (map[list]||[]).forEach((o,i)=>{const covers=list==='floorDecorations'?x>=Number(o.x)&&x<Number(o.x)+Math.max(1,Number(o.width||1))&&y>=Number(o.y)&&y<Number(o.y)+Math.max(1,Number(o.height||1)):Number(o.x)===x&&Number(o.y)===y;if(covers) objs.push(`${list}#${i}: ${labelForObject(list,o)}`);}));
     $('coordInfo').innerHTML = `<b>座標</b> <span class="kbd">x:${x}, y:${y}</span> / tile <span class="kbd">${esc(tile)}</span><br>${objs.length?objs.map(esc).join('<br>'):'<span class="hint">クリックで座標選択。ペンモードならタイルを塗れます。</span>'}`;
   }
 
@@ -687,8 +1043,12 @@
     state.maps.forEach(ent=>{ const m=ent.get(); const rows=m.tiles || []; const w=m.width || rowWidth(rows); const h=m.height || rows.length; if(rows.length!==h) add('error',ent.name,`height ${h} と tiles行数 ${rows.length} が一致しません`); rows.forEach((r,y)=>{ if(String(r).length!==w) add('error',`${ent.name} y=${y}`,`width ${w} と行長 ${String(r).length} が一致しません`); }); const theme=getTheme(m); rows.forEach((r,y)=>String(r).split('').forEach((ch,x)=>{ const upper=String(ch).toUpperCase(); const has=theme[ch]||theme[upper]||mergeOverlayMap(state.data.fixedTileOverlays||{},m)[upper]; if(!has) add('warn',`${ent.name} (${x},${y})`,`未定義タイル '${ch}'`); })); const checkCoord=(o,list,i)=>{ if(!Number.isInteger(Number(o.x))||!Number.isInteger(Number(o.y))||Number(o.x)<0||Number(o.y)<0||Number(o.x)>=w||Number(o.y)>=h) add('error',`${ent.name} ${list}#${i}`,`座標が範囲外です x=${o.x}, y=${o.y}`); };
       (m.chests||[]).forEach((c,i)=>{ checkCoord(c,'chests',i); if(!itemIds.has(Number(c.itemId))) add('error',`${ent.name} chests#${i}`,`itemId ${c.itemId} が items.js にありません`); });
       (m.bosses||[]).forEach((b,i)=>{ checkCoord(b,'bosses',i); const ids=Array.isArray(b.monsterIds)?b.monsterIds:(Array.isArray(b.monsterId)?b.monsterId:[b.monsterId]); ids.filter(v=>v!==undefined).forEach(mid=>{ if(!monsterIds.has(Number(mid))) add('error',`${ent.name} bosses#${i}`,`monsterId ${mid} が monsters.js にありません`); }); if(b.storyEventId && !eventIds.has(b.storyEventId)) add('warn',`${ent.name} bosses#${i}`,`storyEventId ${b.storyEventId} が StoryManager.events にありません`); });
-      (m.floorLinks||[]).forEach((f,i)=>checkCoord(f,'floorLinks',i)); (m.tileEffects||[]).forEach((f,i)=>checkCoord(f,'tileEffects',i)); (m.healSprings||[]).forEach((f,i)=>checkCoord(f,'healSprings',i));
+      (m.floorLinks||[]).forEach((f,i)=>checkCoord(f,'floorLinks',i));
+      (m.tileEffects||[]).forEach((f,i)=>{if(Number.isFinite(Number(f.x))&&Number.isFinite(Number(f.y)))checkCoord(f,'tileEffects',i);const cells=tileEffectCells(f,w,h);if(!cells.length)add('warn',`${ent.name} tileEffects#${i}`,'効果範囲が空です');});
+      (m.healSprings||[]).forEach((f,i)=>checkCoord(f,'healSprings',i));
       (m.mapActions||[]).forEach((a,i)=>{ checkCoord(a,'mapActions',i); if(a.eventId && !eventIds.has(a.eventId)) add('warn',`${ent.name} mapActions#${i}`,`eventId ${a.eventId} が StoryManager.events にありません`); if(a.imageKey && !assetIds.has(a.imageKey)) add('warn',`${ent.name} mapActions#${i}`,`imageKey ${a.imageKey} が PRISMA_ASSETS.graphics にありません`); });
+      (m.floorDecorations||[]).forEach((d,i)=>{checkCoord(d,'floorDecorations',i);const dw=Math.max(1,Number(d.width||1)),dh=Math.max(1,Number(d.height||1));if(Number(d.x)+dw>w||Number(d.y)+dh>h)add('error',`${ent.name} floorDecorations#${i}`,'敷物・装飾の範囲がマップ外へ出ています');if(d.imageKey&&!assetIds.has(d.imageKey))add('error',`${ent.name} floorDecorations#${i}`,`imageKey ${d.imageKey} が PRISMA_ASSETS.graphics にありません`);if(!d.imageKey&&!TEXTILE_EDITOR_STYLES[d.type])add('warn',`${ent.name} floorDecorations#${i}`,`未対応の装飾 type ${d.type}`);});
+      (m.blockingObjects||[]).forEach((o,i)=>{checkCoord(o,'blockingObjects',i);if(o.imageKey&&!assetIds.has(o.imageKey))add('error',`${ent.name} blockingObjects#${i}`,`imageKey ${o.imageKey} が PRISMA_ASSETS.graphics にありません`);const sign=String(rows?.[Number(o.y)]||'')[Number(o.x)]?.toUpperCase();if(sign&&!['T','G'].includes(sign))add('warn',`${ent.name} blockingObjects#${i}`,`通行不能小物が通常床以外の ${sign} 上にあります`);});
     });
     (state.data.fieldEncounterZones||[]).forEach((z,i)=>{ (z.monsters||[]).forEach(mid=>{ if(!monsterIds.has(Number(mid))) add('error',`FIELD_ENCOUNTER_ZONES#${i}`,`monster ${mid} が monsters.js にありません`); }); (z.rareMonsters||[]).forEach((r,j)=>{ if(!monsterIds.has(Number(r.id))) add('error',`FIELD_ENCOUNTER_ZONES#${i}.rare#${j}`,`monster ${r.id} が monsters.js にありません`); if(Number(r.rate)<0||Number(r.rate)>1) add('warn',`FIELD_ENCOUNTER_ZONES#${i}.rare#${j}`,`rate ${r.rate} は0〜1推奨です`); }); });
     Object.entries(state.data.storyManagerData.events||{}).forEach(([id,ev])=>{ ['actions','winActions'].forEach(phase=>{ (ev[phase]||[]).forEach((a,i)=>validateAction(a,`${id}.${phase}#${i}`)); }); });
@@ -699,7 +1059,7 @@
 
   function jsLiteral(v){ return JSON.stringify(v, null, 4).replace(/"([^"\\]*(?:\\.[^"\\]*)*)"\s*:/g, (m,k) => /^[A-Za-z_$][\w$]*$/.test(k) ? k+':' : m); }
   function generateMapJs(){
-    return `/* map.js - generated by map_story_editor.html. Runtime logic is in maps_logic.js. */\nconst tileEntry = (img, color, options = {}) => ({ img, color, ...options });\n\nconst STORY_MAP_MUTATIONS = ${jsLiteral(state.data.storyMapMutations)};\n\nconst TILE_THEMES = ${jsLiteral(state.data.tileThemes)};\n\nconst STORY_DATA = ${jsLiteral(state.data.storyData)};\n\nconst SEA_ENCOUNTER_MONSTERS = ${jsLiteral(state.data.seaEncounterMonsters)};\n\nconst FIELD_ENCOUNTER_ZONES = ${jsLiteral(state.data.fieldEncounterZones)};\n\nconst MAP_DATA = ${jsLiteral(state.data.mapData)};\n\nconst FIXED_TILE_OVERLAYS = ${jsLiteral(state.data.fixedTileOverlays)};\n\nconst FIXED_OVERLAY_BASE_TILES = ${jsLiteral(state.data.fixedOverlayBaseTiles)};\n\nconst FIXED_MAPS = ${jsLiteral(state.data.fixedMaps)};\n\nconst FIXED_DUNGEON_MAPS = ${jsLiteral(state.data.fixedDungeonMaps)};\n\nif (typeof window !== "undefined") {\n    window.STORY_MAP_MUTATIONS = STORY_MAP_MUTATIONS;\n    window.TILE_THEMES = TILE_THEMES;\n    window.STORY_DATA = STORY_DATA;\n    window.SEA_ENCOUNTER_MONSTERS = SEA_ENCOUNTER_MONSTERS;\n    window.FIELD_ENCOUNTER_ZONES = FIELD_ENCOUNTER_ZONES;\n    window.MAP_DATA = MAP_DATA;\n    window.FIXED_TILE_OVERLAYS = FIXED_TILE_OVERLAYS;\n    window.FIXED_OVERLAY_BASE_TILES = FIXED_OVERLAY_BASE_TILES;\n    window.FIXED_MAPS = FIXED_MAPS;\n    window.FIXED_DUNGEON_MAPS = FIXED_DUNGEON_MAPS;\n}\n`;
+    return `/* map.js - generated by map_story_editor.html. Runtime logic is in maps_logic.js. */\nconst tileEntry = (img, color, options = {}) => ({ img, color, ...options });\n\nconst STORY_MAP_MUTATIONS = ${jsLiteral(state.data.storyMapMutations)};\n\nconst TILE_THEMES = ${jsLiteral(state.data.tileThemes)};\n\nconst DUNGEON_WALL_FACE_THEMES = ${jsLiteral(state.data.dungeonWallFaceThemes)};\n\nconst MAP_FLOOR_DECOR_THEMES = ${jsLiteral(state.data.mapFloorDecorThemes)};\n\nconst STORY_DATA = ${jsLiteral(state.data.storyData)};\n\nconst SEA_ENCOUNTER_MONSTERS = ${jsLiteral(state.data.seaEncounterMonsters)};\n\nconst FIELD_ENCOUNTER_ZONES = ${jsLiteral(state.data.fieldEncounterZones)};\n\nconst WORLD_BRIDGES = ${jsLiteral(state.data.worldBridges)};\n\nconst MAP_DATA = ${jsLiteral(state.data.mapData)};\n\nconst FIXED_TILE_OVERLAYS = ${jsLiteral(state.data.fixedTileOverlays)};\n\nconst FIXED_OVERLAY_BASE_TILES = ${jsLiteral(state.data.fixedOverlayBaseTiles)};\n\nconst FIXED_MAPS = ${jsLiteral(state.data.fixedMaps)};\n\nconst FIXED_DUNGEON_MAPS = ${jsLiteral(state.data.fixedDungeonMaps)};\n\nconst AUTHORED_MAP_PROP_PLACEMENTS = ${jsLiteral(state.data.authoredMapPropPlacements)};\n\nif (typeof window !== "undefined") {\n    window.STORY_MAP_MUTATIONS = STORY_MAP_MUTATIONS;\n    window.TILE_THEMES = TILE_THEMES;\n    window.DUNGEON_WALL_FACE_THEMES = DUNGEON_WALL_FACE_THEMES;\n    window.MAP_FLOOR_DECOR_THEMES = MAP_FLOOR_DECOR_THEMES;\n    window.STORY_DATA = STORY_DATA;\n    window.SEA_ENCOUNTER_MONSTERS = SEA_ENCOUNTER_MONSTERS;\n    window.FIELD_ENCOUNTER_ZONES = FIELD_ENCOUNTER_ZONES;\n    window.WORLD_BRIDGES = WORLD_BRIDGES;\n    window.MAP_DATA = MAP_DATA;\n    window.FIXED_TILE_OVERLAYS = FIXED_TILE_OVERLAYS;\n    window.FIXED_OVERLAY_BASE_TILES = FIXED_OVERLAY_BASE_TILES;\n    window.FIXED_MAPS = FIXED_MAPS;\n    window.FIXED_DUNGEON_MAPS = FIXED_DUNGEON_MAPS;\n    window.AUTHORED_MAP_PROP_PLACEMENTS = AUTHORED_MAP_PROP_PLACEMENTS;\n}\n`;
   }
   function generateStoryJs(){
     const d = state.data.storyManagerData;

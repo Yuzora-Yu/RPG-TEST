@@ -1,13 +1,11 @@
 // sw.js: Prisma Abyss Service Worker
 // ============================================================================
-// 2026-06-22 方針変更: 全画像データは main.js の起動時確認/設定メニューでキャッシュ
+// 2026-07-15 方針: 初回に全量取得の待機可否を確認し、どちらでも全画像をキャッシュ
 // ----------------------------------------------------------------------------
-// 初回起動時/キャッシュ削除後に未ダウンロード画像がある場合、main.js 側で
-// 「全データをダウンロードしますか」を表示する。
-// 「はい」は起動前に全画像を保存し、「いいえ」は起動後に裏側ウォームキャッシュを進める。
+// 「はい」は起動前に進捗表示付きで全量取得し、「いいえ」は即起動後、裏で全量取得する。
 //
 // 今後の方針:
-// - App Shell と最低限の重要画像だけを初回install時にキャッシュする。
+// - App Shell と重要画像はService Worker install時にキャッシュする。
 // - 全画像リストの正本は assets.js の PRISMA_ASSETS.cacheWarmup.installImages。
 // - sw.js 側にモンスター/エフェクト/背景の巨大配列を手書きで復活させないこと。
 // - 設定メニューの「全データダウンロード」も main.js の同じロジックを使う。
@@ -22,8 +20,8 @@ try {
   console.warn("[SW] assets.js の読み込みに失敗しました。画像初回キャッシュは最小限で続行します。", error);
 }
 
-const CACHE_NAME = "prisma-abyss-v3.58-full-data";
-const RUNTIME_CACHE_NAME = "prisma-abyss-v3.58-full-data-runtime-assets";
+const CACHE_NAME = "prisma-abyss-v3.91-map-render-shared";
+const RUNTIME_CACHE_NAME = "prisma-abyss-v3.89-forest-sign-runtime-assets";
 const WARM_CACHE_META_KEY = "__prisma_abyss_warm_cache_complete__";
 
 // 起動に必要な App Shell。
@@ -35,9 +33,11 @@ const PRECACHE_FILES = [
   "index.html",
   "manifest.json",
   "modern-polish.css",
+  "opening.css",
   "assets.js",
   "vendor/phaser/phaser.min.js",
   "phaser-field.js",
+  "map_render_shared.js",
   "polish.js",
   "main.js",
   "save_crypto.js",
@@ -71,6 +71,7 @@ const PRECACHE_FILES = [
   "job_data.js",
   "map.js",
   "story.js",
+  "opening.js",
   "passiveSkill.js",
   "achievements.js",
   "news.js",
@@ -80,19 +81,20 @@ const ASSET_WARMUP = (self.PRISMA_ASSETS && self.PRISMA_ASSETS.cacheWarmup) || {
 
 // 初回表示で特に遅延が目立つ画像。assets.js から取得する。
 const INITIAL_IMAGE_PRECACHE = ASSET_WARMUP.criticalImages || [
-  ...Array.from({ length: 24 }, (_, i) => `assets/monsters/monster_${100001 + i}.png`),
+  "assets/monsters/monster_100001.png",
+  "assets/monsters/monster_100002.png",
+  "assets/monsters/monster_100003.png",
+  "assets/monsters/monster_100004.png",
+  "assets/monsters/monster_301000.png",
   "assets/generated/battle-field-ai.png",
   "assets/generated/battle-dungeon-ai.png",
-  "assets/generated/battle-fire.png",
-  "assets/map/objects/magma.png",
-  "assets/gacha/back_card.png",
-  "assets/gacha/front_card.png",
-  "assets/background/bg_inn.jpg",
-  "assets/background/bg_casino.png",
+  "assets/map/terrain/terrain_grass_field_v001.png",
+  "assets/map/objects/object_field_forest_v003.png",
+  "assets/map/overlays/overlay_npc_villager_v002.png",
 ];
 
 // 初回install時は最低限の重要画像だけをキャッシュする。
-// 全画像データは main.js の起動時モーダル、または設定メニューの「全データダウンロード」から実行する。
+// 全画像データは main.js の起動時モーダル、起動後の背景ウォーム、または設定メニューから取得する。
 const INSTALL_IMAGE_PRECACHE = ASSET_WARMUP.criticalImages || INITIAL_IMAGE_PRECACHE;
 
 const isSameOrigin = (request) => {
@@ -229,13 +231,22 @@ self.addEventListener("install", (event) => {
   self.skipWaiting();
 
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) =>
-      Promise.allSettled(
-        Array.from(new Set([...PRECACHE_FILES, ...INSTALL_IMAGE_PRECACHE])).map((file) =>
+    caches.open(CACHE_NAME).then(async (cache) => {
+      // 新版の必須画像が一つでも取得できなければinstallを失敗させる。
+      // 旧Service Workerと旧キャッシュを残し、更新直後の画像欠落を防ぐ。
+      await Promise.all(
+        Array.from(new Set(INSTALL_IMAGE_PRECACHE)).map((file) =>
           cache.add(new Request(file, { cache: "reload" }))
         )
-      )
-    )
+      );
+
+      // App Shellも同じ更新単位で確立する。必須ファイルが欠けた新版へ切り替えない。
+      await Promise.all(
+        Array.from(new Set(PRECACHE_FILES)).map((file) =>
+          cache.add(new Request(file, { cache: "reload" }))
+        )
+      );
+    })
   );
 });
 
@@ -246,7 +257,8 @@ self.addEventListener("activate", (event) => {
       caches.keys().then((keys) =>
         Promise.all(
           keys
-            .filter((key) => key !== CACHE_NAME && key !== RUNTIME_CACHE_NAME)
+            // 同一オリジンを共有する別アプリのCache Storageは削除しない。
+            .filter((key) => key.startsWith("prisma-abyss-") && key !== CACHE_NAME && key !== RUNTIME_CACHE_NAME)
             .map((key) => caches.delete(key))
         )
       ),

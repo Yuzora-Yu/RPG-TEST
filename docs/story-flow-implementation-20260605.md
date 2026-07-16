@@ -74,8 +74,8 @@
 | 検証 | 結果 |
 |---|---|
 | `node --check story.js dungeon.js map.js main.js assets.js sw.js` | OK |
-| `tools/validate-map-safety.js` | OK。ランダム480階、鍵扉128階、床鍵190件、ストーリートリガー11件 |
-| `tools/validate-key-door-runtime.js` | OK。ランダム鍵扉、固定鍵分離、鍵消費、守護者報酬を確認 |
+| `tools/validation/validate-map-safety.js` | OK。ランダム480階、鍵扉128階、床鍵190件、ストーリートリガー11件 |
+| `tools/validation/validate-key-door-runtime.js` | OK。ランダム鍵扉、固定鍵分離、鍵消費、守護者報酬を確認 |
 | ストーリー参照検証 | OK。16イベント、11トリガー、固定ボス `storyEventId`、加入ID、目的文を確認 |
 
 ## 2026-06-05 追補
