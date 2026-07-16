@@ -942,7 +942,6 @@ const DUNGEON_WALL_FACE_THEMES = Object.freeze({
     SEABED_TEMPLE: Object.freeze({ disabled: true, reason: "water-surface-W" })
 });
 
-<<<<<<< HEAD
 // Shared by the game renderer and map editor. Keeping the deterministic floor-
 // decoration registry in map.js prevents editor previews from drifting away from
 // the exact asset, frequency, and animation settings used during play.
@@ -969,8 +968,6 @@ const MAP_FLOOR_DECOR_THEMES = Object.freeze({
     RUINED_SHRINE: Object.freeze({ key: "overlay_decor_ruined_shrine_glyph", frequency: 40, alpha: 0.68 })
 });
 
-=======
->>>>>>> 2069569eb8fb4158c20e139c27fcfc5d5dc3bcf8
 const STORY_DATA = {
     areas: {
         START_VILLAGE: {

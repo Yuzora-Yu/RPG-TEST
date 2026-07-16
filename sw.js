@@ -20,13 +20,8 @@ try {
   console.warn("[SW] assets.js の読み込みに失敗しました。画像初回キャッシュは最小限で続行します。", error);
 }
 
-<<<<<<< HEAD
 const CACHE_NAME = "prisma-abyss-v3.91-map-render-shared";
 const RUNTIME_CACHE_NAME = "prisma-abyss-v3.89-forest-sign-runtime-assets";
-=======
-const CACHE_NAME = "prisma-abyss-v3.85-blocking-map-objects";
-const RUNTIME_CACHE_NAME = "prisma-abyss-v3.85-blocking-map-objects-runtime-assets";
->>>>>>> 2069569eb8fb4158c20e139c27fcfc5d5dc3bcf8
 const WARM_CACHE_META_KEY = "__prisma_abyss_warm_cache_complete__";
 
 // 起動に必要な App Shell。

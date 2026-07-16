@@ -44,7 +44,6 @@ const PRISMA_MONSTER_IMAGE_FILES = PRISMA_NORMAL_MONSTER_IMAGE_IDS
   .concat(PRISMA_BOSS_MONSTER_IMAGE_IDS)
   .map((id) => `assets/monsters/monster_${id}.png`);
 
-<<<<<<< HEAD
 // Runtime-ready but not yet placed/assigned visual libraries.
 // Their manifests under assets/map/library and assets/monsters/library are the metadata source of truth.
 const PRISMA_MAP_CHIP_LIBRARY_GROUPS = {
@@ -71,8 +70,6 @@ const PRISMA_MONSTER_LIBRARY_GROUPS = {
   },
 };
 
-=======
->>>>>>> 2069569eb8fb4158c20e139c27fcfc5d5dc3bcf8
 // OPより前に戦う、開幕ジェリーと始まりの洞穴の通常敵・ボスを起動前に取得する。
 const PRISMA_PRE_OP_MONSTER_IMAGE_FILES = [100001, 100002, 100003, 100004, 301000]
   .map((id) => `assets/monsters/monster_${id}.png`);
@@ -207,7 +204,6 @@ const PRISMA_ASSETS = {
     overlay_castle_carpet_corner_ne: "assets/map/overlays/overlay_castle_carpet_corner_ne_v001.png",
     overlay_castle_carpet_corner_sw: "assets/map/overlays/overlay_castle_carpet_corner_sw_v001.png",
     overlay_castle_carpet_corner_se: "assets/map/overlays/overlay_castle_carpet_corner_se_v001.png",
-<<<<<<< HEAD
     overlay_castle_carpet_blue_silver_fill: "assets/map/overlays/overlay_castle_carpet_blue_silver_fill_v001.png",
     overlay_castle_carpet_blue_silver_edge_n: "assets/map/overlays/overlay_castle_carpet_blue_silver_edge_n_v001.png",
     overlay_castle_carpet_blue_silver_edge_s: "assets/map/overlays/overlay_castle_carpet_blue_silver_edge_s_v001.png",
@@ -226,8 +222,6 @@ const PRISMA_ASSETS = {
     overlay_village_goza_corner_ne: "assets/map/overlays/overlay_village_goza_corner_ne_v001.png",
     overlay_village_goza_corner_sw: "assets/map/overlays/overlay_village_goza_corner_sw_v001.png",
     overlay_village_goza_corner_se: "assets/map/overlays/overlay_village_goza_corner_se_v001.png",
-=======
->>>>>>> 2069569eb8fb4158c20e139c27fcfc5d5dc3bcf8
     overlay_world_grass_detail: "assets/map/overlays/overlay_world_grass_detail_v001.png",
     overlay_world_grass_weeds: "assets/map/overlays/overlay_world_grass_weeds_v001.png",
     overlay_world_grass_earth: "assets/map/overlays/overlay_world_grass_earth_v001.png",
@@ -550,11 +544,7 @@ const PRISMA_ASSETS = {
   // installImages: Service Worker の初回install時にキャッシュする画像全体。
   // backgroundImages: install後の再試行/補助ウォームキャッシュ用。
   cacheWarmup: {
-<<<<<<< HEAD
     version: "2026-07-16-forest-sign-v31",
-=======
-    version: "2026-07-16-blocking-map-objects-v27",
->>>>>>> 2069569eb8fb4158c20e139c27fcfc5d5dc3bcf8
     initialGraphicKeys: [
       "floor", "sea", "forest", "mountain", "Low_mountain", "cave", "house-1", "house-2", "inn", "wall", "dungeon_floor",
       "overlay_field_forest", "overlay_field_house_1", "overlay_field_house_2", "overlay_field_cave",
@@ -569,15 +559,12 @@ const PRISMA_ASSETS = {
       "overlay_castle_carpet_fill", "overlay_castle_carpet_edge_n", "overlay_castle_carpet_edge_s",
       "overlay_castle_carpet_edge_w", "overlay_castle_carpet_edge_e", "overlay_castle_carpet_corner_nw",
       "overlay_castle_carpet_corner_ne", "overlay_castle_carpet_corner_sw", "overlay_castle_carpet_corner_se",
-<<<<<<< HEAD
       "overlay_castle_carpet_blue_silver_fill", "overlay_castle_carpet_blue_silver_edge_n", "overlay_castle_carpet_blue_silver_edge_s",
       "overlay_castle_carpet_blue_silver_edge_w", "overlay_castle_carpet_blue_silver_edge_e", "overlay_castle_carpet_blue_silver_corner_nw",
       "overlay_castle_carpet_blue_silver_corner_ne", "overlay_castle_carpet_blue_silver_corner_sw", "overlay_castle_carpet_blue_silver_corner_se",
       "overlay_village_goza_fill", "overlay_village_goza_edge_n", "overlay_village_goza_edge_s",
       "overlay_village_goza_edge_w", "overlay_village_goza_edge_e", "overlay_village_goza_corner_nw",
       "overlay_village_goza_corner_ne", "overlay_village_goza_corner_sw", "overlay_village_goza_corner_se",
-=======
->>>>>>> 2069569eb8fb4158c20e139c27fcfc5d5dc3bcf8
       "door_key_red", "door_key_blue", "door_key_gold",
       "object_blocking_castle_candelabrum", "object_blocking_forest_stump", "object_blocking_thunder_terminal",
       "object_blocking_cave_stalagmite", "object_blocking_seabed_coral_pillar", "object_blocking_light_crystal_pedestal",

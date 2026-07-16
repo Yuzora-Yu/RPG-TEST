@@ -156,28 +156,12 @@
         state.atmosphereSignature = null;
     };
 
-<<<<<<< HEAD
     const stableHash = (...parts) => renderShared.stableHash(...parts);
-=======
-    const stableHash = (...parts) => {
-        const text = parts.join(':');
-        let hash = 2166136261;
-        for (let index = 0; index < text.length; index += 1) {
-            hash ^= text.charCodeAt(index);
-            hash = Math.imul(hash, 16777619);
-        }
-        return hash >>> 0;
-    };
->>>>>>> 2069569eb8fb4158c20e139c27fcfc5d5dc3bcf8
 
     // Each map theme owns its floor detail. This prevents a generic stone crack
     // from leaking into forests, palaces, machinery, and underwater ruins.
     // A frequency of 40 is 2.5%, less than half the former 1/17 dungeon rate.
-<<<<<<< HEAD
     const FLOOR_DECOR_THEME_CONFIG = window.MAP_FLOOR_DECOR_THEMES || Object.freeze({
-=======
-    const FLOOR_DECOR_THEME_CONFIG = Object.freeze({
->>>>>>> 2069569eb8fb4158c20e139c27fcfc5d5dc3bcf8
         DEFAULT: { key: 'overlay_decor_default_cave_dust', frequency: 40, alpha: 0.64 },
         START_VILLAGE: { key: 'overlay_decor_start_village_herbs', frequency: 40, alpha: 0.78 },
         START_CAVE: { key: 'overlay_decor_start_cave_damp', frequency: 40, alpha: 0.72 },
@@ -185,21 +169,13 @@
         WIND_VILLAGE: { key: 'overlay_decor_wind_village_feather', frequency: 40, alpha: 0.74 },
         WIND_HOLE: { key: 'overlay_decor_wind_hole_root', frequency: 40, alpha: 0.76 },
         FORBIDDEN_FOREST: { key: 'overlay_decor_forbidden_forest_moss', frequency: 40, alpha: 0.78 },
-<<<<<<< HEAD
         WATER_CITY: { key: null, disabled: true, reason: 'authored-clear-floor' },
-=======
-        WATER_CITY: { key: 'overlay_decor_water_city_puddle', frequency: 40, alpha: 0.68 },
->>>>>>> 2069569eb8fb4158c20e139c27fcfc5d5dc3bcf8
         BIG_TOWER: { key: 'overlay_decor_big_tower_gear_oil', frequency: 40, alpha: 0.72 },
         THUNDER_FORT: { key: 'overlay_decor_thunder_fort_wiring', frequency: 40, alpha: 0.88, animate: 'electric' },
         LIGHT_PALACE: { key: 'overlay_decor_light_palace_prism', frequency: 40, alpha: 0.66 },
         GALVANIA_CAVE: { key: 'overlay_decor_galvania_crystal', frequency: 40, alpha: 0.72 },
         DARK_CASTLE: { key: 'overlay_decor_dark_castle_chain', frequency: 40, alpha: 0.70 },
-<<<<<<< HEAD
         CRENA_CAVE: { key: null, disabled: true, reason: 'authored-clear-floor' },
-=======
-        CRENA_CAVE: { key: 'overlay_decor_crena_limestone_pool', frequency: 40, alpha: 0.72 },
->>>>>>> 2069569eb8fb4158c20e139c27fcfc5d5dc3bcf8
         SEABED_TEMPLE: { key: 'overlay_decor_seabed_temple_ripple', frequency: 40, alpha: 0.70 },
         DARK_SHRINE_RUINS: { key: 'overlay_decor_dark_shrine_sigil', frequency: 40, alpha: 0.66 },
         GREZELIA_CAVE: { key: 'overlay_decor_grezelia_fossil', frequency: 40, alpha: 0.72 },
@@ -208,7 +184,6 @@
         RUINED_SHRINE: { key: 'overlay_decor_ruined_shrine_glyph', frequency: 40, alpha: 0.68 }
     });
 
-<<<<<<< HEAD
     const getFixedFloorDecorationsAt = (field, tileX, tileY) => renderShared.fixedFloorDecorationsAt(field.currentMapData, tileX, tileY);
 
     const drawConnectedFloorTextile = (scene, field, tileX, tileY, definition, baseDepth) => {
@@ -254,47 +229,6 @@
             depth: baseDepth + 7,
             alpha: definition.alpha === undefined ? 1 : Number(definition.alpha)
         });
-=======
-    const getFixedFloorDecorationAt = (field, tileX, tileY) => {
-        const definitions = field.currentMapData?.floorDecorations;
-        if (!Array.isArray(definitions)) return null;
-        return definitions.find(definition => {
-            const x = Number(definition?.x);
-            const y = Number(definition?.y);
-            const width = Math.max(1, Number(definition?.width || 1));
-            const height = Math.max(1, Number(definition?.height || 1));
-            return tileX >= x && tileX < x + width && tileY >= y && tileY < y + height;
-        }) || null;
-    };
-
-    const drawConnectedCastleCarpet = (scene, field, tileX, tileY, definition, baseDepth) => {
-        if (definition?.type !== 'castle_carpet') return false;
-        const px = tileX * TILE_SIZE;
-        const py = tileY * TILE_SIZE;
-        const hasCarpet = (x, y) => getFixedFloorDecorationAt(field, x, y)?.type === 'castle_carpet';
-        const open = {
-            n: !hasCarpet(tileX, tileY - 1),
-            s: !hasCarpet(tileX, tileY + 1),
-            w: !hasCarpet(tileX - 1, tileY),
-            e: !hasCarpet(tileX + 1, tileY)
-        };
-
-        addImage(scene, 'overlay_castle_carpet_fill', px + 16, py + 32, {
-            width: 32,
-            height: 32,
-            depth: baseDepth + 6
-        });
-        if (open.n) addImage(scene, 'overlay_castle_carpet_edge_n', px + 16, py + 4, { width: 32, height: 4, depth: baseDepth + 7 });
-        if (open.s) addImage(scene, 'overlay_castle_carpet_edge_s', px + 16, py + 32, { width: 32, height: 4, depth: baseDepth + 7 });
-        if (open.w) addImage(scene, 'overlay_castle_carpet_edge_w', px + 2, py + 32, { width: 4, height: 32, depth: baseDepth + 7 });
-        if (open.e) addImage(scene, 'overlay_castle_carpet_edge_e', px + 30, py + 32, { width: 4, height: 32, depth: baseDepth + 7 });
-
-        if (open.n && open.w) addImage(scene, 'overlay_castle_carpet_corner_nw', px + 2, py + 4, { width: 4, height: 4, depth: baseDepth + 8 });
-        if (open.n && open.e) addImage(scene, 'overlay_castle_carpet_corner_ne', px + 30, py + 4, { width: 4, height: 4, depth: baseDepth + 8 });
-        if (open.s && open.w) addImage(scene, 'overlay_castle_carpet_corner_sw', px + 2, py + 32, { width: 4, height: 4, depth: baseDepth + 8 });
-        if (open.s && open.e) addImage(scene, 'overlay_castle_carpet_corner_se', px + 30, py + 32, { width: 4, height: 4, depth: baseDepth + 8 });
-        return true;
->>>>>>> 2069569eb8fb4158c20e139c27fcfc5d5dc3bcf8
     };
 
     const drawGroundDecoration = (scene, field, areaKey, tileX, tileY, rawUpper, floorConfig, overlay, baseDepth) => {
@@ -376,7 +310,6 @@
             return;
         }
 
-<<<<<<< HEAD
         // Connected carpets/mats are ground layers. Draw them before checking actor,
         // boss, event, or floor-effect overlays so an object placed on top cannot cut
         // a square hole out of the textile.
@@ -389,13 +322,10 @@
             if (drewFixedDecoration) return;
         }
 
-=======
->>>>>>> 2069569eb8fb4158c20e139c27fcfc5d5dc3bcf8
         if (rawUpper !== 'T' && rawUpper !== 'G') return;
         if (overlay || field.getTileEffectGraphicKey?.(tileX, tileY)) return;
         if (!field.currentMapData) return; // ワールドマップは1マスが広域地形なので小物を置かない。
 
-<<<<<<< HEAD
         const themeKey = String(field.currentMapData?.themeKey || areaKey || 'DEFAULT').toUpperCase();
         const decor = renderShared.floorDecorationPlan({
             themes: FLOOR_DECOR_THEME_CONFIG,
@@ -406,16 +336,6 @@
             y: tileY
         });
         if (!decor) return;
-=======
-        const fixedDecoration = getFixedFloorDecorationAt(field, tileX, tileY);
-        if (fixedDecoration && drawConnectedCastleCarpet(scene, field, tileX, tileY, fixedDecoration, baseDepth)) return;
-
-        const themeKey = String(field.currentMapData?.themeKey || areaKey || 'DEFAULT').toUpperCase();
-        const decor = FLOOR_DECOR_THEME_CONFIG[themeKey] || FLOOR_DECOR_THEME_CONFIG.DEFAULT;
-        if (!decor?.key) return;
-        const hash = stableHash(themeKey, areaKey, field.currentMapData?.floor || 0, tileX, tileY, decor.key);
-        if (hash % decor.frequency !== 0) return;
->>>>>>> 2069569eb8fb4158c20e139c27fcfc5d5dc3bcf8
 
         const image = addImage(scene, decor.key, tileX * TILE_SIZE + TILE_SIZE / 2, tileY * TILE_SIZE + TILE_SIZE, {
             width: 32,
@@ -424,30 +344,17 @@
             alpha: decor.alpha
         });
         if (!image) return;
-<<<<<<< HEAD
         image.setFlipX(decor.flipX);
         image.setAngle(decor.angle);
-=======
-        image.setFlipX(((hash >>> 4) & 1) === 1);
-        image.setAngle((((hash >>> 8) % 3) - 1) * 3);
->>>>>>> 2069569eb8fb4158c20e139c27fcfc5d5dc3bcf8
         if (decor.animate === 'electric') {
             scene.tweens.add({
                 targets: image,
                 alpha: Math.max(0.42, decor.alpha - 0.28),
-<<<<<<< HEAD
                 duration: 420 + (decor.hash % 240),
                 ease: 'Stepped',
                 yoyo: true,
                 repeat: -1,
                 repeatDelay: 1800 + ((decor.hash >>> 10) % 1300)
-=======
-                duration: 420 + (hash % 240),
-                ease: 'Stepped',
-                yoyo: true,
-                repeat: -1,
-                repeatDelay: 1800 + ((hash >>> 10) % 1300)
->>>>>>> 2069569eb8fb4158c20e139c27fcfc5d5dc3bcf8
             });
         }
     };
