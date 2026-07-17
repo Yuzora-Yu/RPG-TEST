@@ -35,9 +35,7 @@ for (const src of requiredPreOpImages) {
     if (!critical.includes(src)) errors.push(`pre-OP battle image is not in the critical cache: ${src}`);
 }
 // ランダムダンジョン宝箱2種も床と同時に表示するため、起動時安全セットへ含める。
-// first-battle.png is required by the opening event battle, so the startup-safe
-// ceiling is 55. World-map forest remains in the full background cache, not here.
-if (critical.length > 55) errors.push(`critical cache is no longer limited to the startup-safe set: ${critical.length} images`);
+if (critical.length > 54) errors.push(`critical cache is no longer limited to the startup-safe set: ${critical.length} images`);
 if (!Array.isArray(warmup.initialGraphicKeys) || !warmup.initialGraphicKeys.includes('battle_bg_field')) {
     errors.push('initial graphics do not include the opening battle background');
 }
@@ -106,10 +104,10 @@ if (!initialCacheHandler.includes('バックグラウンドで全データのキ
 }
 if (!initialCacheHandler.includes('App.setDeclinedInitialFullDataPrompt(true)')) errors.push('startup prompt choice is not remembered');
 if (initialCacheHandler.includes('裏側で全量取得しない')) errors.push('obsolete no-background-cache policy remains in the startup handler');
-if (mainSource.includes("fullDataCacheName: 'prisma-abyss-v3.100-battle-logic-ui-runtime'") === false) {
+if (mainSource.includes("fullDataCacheName: 'prisma-abyss-v3.89-forest-sign-runtime-assets'") === false) {
     errors.push('main.js full cache version is not the current full-cache version');
 }
-if (!swSource.includes('const RUNTIME_CACHE_NAME = "prisma-abyss-v3.100-battle-logic-ui-runtime"')) {
+if (!swSource.includes('const RUNTIME_CACHE_NAME = "prisma-abyss-v3.89-forest-sign-runtime-assets"')) {
     errors.push('main.js and sw.js runtime cache versions are not aligned');
 }
 const allRegisteredImages = [

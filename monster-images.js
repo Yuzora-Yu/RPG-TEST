@@ -2,8 +2,6 @@
   const base = "assets/monsters/";
   const normalIds = Array.from({ length: 90 }, (_, i) => 100001 + i);
   const abyssHighFloorIds = Array.from({ length: 90 }, (_, i) => 100091 + i);
-  const adoptedNormalIds = Array.from({ length: 16 }, (_, i) => 200001 + i);
-  const adoptedQuestBossIds = Array.from({ length: 8 }, (_, i) => 302201 + i);
   const bossIds = [
     200201, 200202, 200203, 200204,
     301000, 301001, 301002,
@@ -22,18 +20,42 @@
     502049, 502098,
     902000,
   ];
-  const ids = normalIds.concat(abyssHighFloorIds, adoptedNormalIds, adoptedQuestBossIds, bossIds);
+  const ids = normalIds.concat(abyssHighFloorIds, bossIds);
 
   const bossCandidateMap = ids.reduce((map, id) => {
     map[id] = `${base}monster_${id}.png`;
     return map;
   }, {});
 
-  const chestTrapMonsterImages = {
+  const adoptedLibraryMonsters = {
+    302201: "assets/monsters/library/midboss/fire/monsterlib_midboss_fire_ashhorn_minotaur_v001.png",
+    302202: "assets/monsters/library/midboss/water/monsterlib_midboss_water_abyssal_shell_knight_v001.png",
+    302203: "assets/monsters/library/midboss/wind/monsterlib_midboss_wind_zephyr_manticore_v001.png",
+    302204: "assets/monsters/library/midboss/thunder/monsterlib_midboss_thunder_thunder_coil_golem_v001.png",
+    302205: "assets/monsters/library/midboss/light/monsterlib_midboss_light_cathedral_chimera_v001.png",
+    302206: "assets/monsters/library/midboss/dark/monsterlib_midboss_dark_grave_regent_v001.png",
+    302207: "assets/monsters/library/midboss/earth/monsterlib_midboss_earth_root_titan_v001.png",
+    302208: "assets/monsters/library/midboss/ice/monsterlib_midboss_ice_frostfang_wyrm_v001.png",
+    110201: "assets/monsters/library/normal/fire/monsterlib_normal_fire_cinder_imp_v001.png",
+    110202: "assets/monsters/library/normal/fire/monsterlib_normal_fire_magma_salamander_v001.png",
+    110203: "assets/monsters/library/normal/water/monsterlib_normal_water_tide_jelly_v001.png",
+    110204: "assets/monsters/library/normal/water/monsterlib_normal_water_shellback_crab_v001.png",
+    110205: "assets/monsters/library/normal/wind/monsterlib_normal_wind_razorwing_hawk_v001.png",
+    110206: "assets/monsters/library/normal/wind/monsterlib_normal_wind_breeze_moth_v001.png",
+    110207: "assets/monsters/library/normal/thunder/monsterlib_normal_thunder_spark_hound_v001.png",
+    110208: "assets/monsters/library/normal/thunder/monsterlib_normal_thunder_volt_beetle_v001.png",
+    110209: "assets/monsters/library/normal/light/monsterlib_normal_light_prism_wisp_v001.png",
+    110210: "assets/monsters/library/normal/light/monsterlib_normal_light_shrine_sentinel_v001.png",
+    110211: "assets/monsters/library/normal/dark/monsterlib_normal_dark_gloom_bat_v001.png",
+    110212: "assets/monsters/library/normal/dark/monsterlib_normal_dark_shade_crawler_v001.png",
+    110213: "assets/monsters/library/normal/earth/monsterlib_normal_earth_stone_mole_v001.png",
+    110214: "assets/monsters/library/normal/earth/monsterlib_normal_earth_thorn_boar_v001.png",
+    110215: "assets/monsters/library/normal/ice/monsterlib_normal_ice_frost_jelly_v001.png",
+    110216: "assets/monsters/library/normal/ice/monsterlib_normal_ice_shard_hare_v001.png",
     120301: "assets/monsters/chest-mimics/monster_120301.png",
     120302: "assets/monsters/chest-mimics/monster_120302.png",
     120303: "assets/monsters/chest-mimics/monster_120303.png",
   };
 
-  window.MonsterImageMap = Object.assign({}, window.MonsterImageMap || {}, bossCandidateMap, chestTrapMonsterImages);
+  window.MonsterImageMap = Object.assign({}, window.MonsterImageMap || {}, bossCandidateMap, adoptedLibraryMonsters);
 })();

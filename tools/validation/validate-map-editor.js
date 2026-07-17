@@ -28,7 +28,7 @@ inlineScripts.forEach((source, index) => {
 });
 new Function(sharedRenderSource);
 
-for (const requiredScript of ['assets.js', 'chest-mimics.js', 'map.js', 'maps_logic.js', 'map_render_shared.js']) {
+for (const requiredScript of ['assets.js', 'map.js', 'maps_logic.js', 'map_render_shared.js']) {
     assert(editorSource.includes(`<script src="${requiredScript}"></script>`), `Editor does not load runtime source ${requiredScript}.`);
 }
 assert(indexSource.includes('<script src="map_render_shared.js"></script>'), 'The game does not load the shared map render resolver.');
@@ -52,9 +52,6 @@ for (const marker of [
     'renderShared.textileCellPlan(',
     'renderShared.floorDecorationPlan(',
     'renderShared.wallFacePlan(',
-    'chestQuickEditorHtml(',
-    'applyChestMode(',
-    'trapMonsterId',
 ]) {
     assert(editorSource.includes(marker), `Editor runtime feature is missing: ${marker}`);
 }

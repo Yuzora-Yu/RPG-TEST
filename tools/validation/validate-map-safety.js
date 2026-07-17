@@ -55,7 +55,7 @@ const { FIXED_MAPS, FIXED_DUNGEON_MAPS, MapRegistry } = context;
 const Dungeon = context.Dungeon;
 const StoryManager = context.StoryManager;
 const runtimeVisualThemeTestOverride = Dungeon.randomVisualThemeTestOverrideId;
-// 通常確率の回帰試験では、森固定検証モードを外し、通常のランダム外観選定を確認する。
+// 通常確率の回帰試験中は暫定100%森モードを外し、後段で暫定版自体を別途検証する。
 Dungeon.randomVisualThemeTestOverrideId = null;
 
 const doorColors = { X: 'red', Y: 'blue', Z: 'gold' };
