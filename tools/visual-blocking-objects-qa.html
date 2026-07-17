@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <title>Blocking Map Objects Visual QA</title>
+  <style>
+    :root { color-scheme: dark; font-family: system-ui, sans-serif; }
+    body { margin: 0; padding: 20px; background: #0d1016; color: #e7e8ed; }
+    h1, h2 { margin: 0 0 14px; }
+    h2 { margin-top: 28px; }
+    #status { color: #9bd5aa; margin-bottom: 16px; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(220px, 1fr)); gap: 14px; }
+    .card { padding: 10px; border: 1px solid #343b4a; background: #171b24; }
+    .label { margin-bottom: 8px; color: #f1d691; font-size: 13px; }
+    canvas { display: block; image-rendering: pixelated; background: #080a0e; }
+    .object-canvas { width: 128px; height: 192px; }
+    #castle-sample { width: 384px; height: 256px; }
+  </style>
+</head>
+<body>
+  <h1>Blocking Map Objects Visual QA</h1>
+  <div id="status">Loading...</div>
+  <h2>Demon Castle 1F sample</h2>
+  <div class="card">
+    <div class="label">Candelabrum / upper stair / candelabrum</div>
+    <canvas id="castle-sample" width="96" height="64"></canvas>
+  </div>
+  <h2>Reusable object library</h2>
+  <div id="objects" class="grid"></div>
+  <script src="../assets.js"></script>
+  <script>
+    const OBJECTS = [
+      ['Demon Castle candelabrum', 'tile_dark_floor', 'object_blocking_castle_candelabrum', 48],
+      ['Forbidden Forest stump', 'tile_forbidden_forest_floor', 'object_blocking_forest_stump', 32],
+      ['Thunder Fortress terminal', 'tile_thunder_floor', 'object_blocking_thunder_terminal', 40],
+      ['Cave stalagmite', 'dungeon_floor', 'object_blocking_cave_stalagmite', 48],
+      ['Seabed coral pillar', 'tile_seabed_floor', 'object_blocking_seabed_coral_pillar', 48],
+      ['Light crystal pedestal', 'tile_light_floor', 'object_blocking_light_crystal_pedestal', 48],
+      ['Volcanic brazier', 'tile_fire_floor', 'object_blocking_fire_brazier', 40],
+      ['Lighthouse mechanism', 'tile_tower_floor', 'object_blocking_lighthouse_gear_pedestal', 48],
+      ['Dark Shrine obelisk', 'tile_dark_shrine_floor', 'object_blocking_dark_shrine_obelisk', 48]
+    ];
+    const imageCache = new Map();
+    const load = key => {
+      if (imageCache.has(key)) return imageCache.get(key);
+      const promise = new Promise((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = () => reject(new Error(`${key}: ${image.src}`));
+        image.src = `../${PRISMA_ASSETS.graphics[key]}`;
+      });
+      imageCache.set(key, promise);
+      return promise;
+    };
+    const setup = canvas => {
+      const ctx = canvas.getContext('2d');
+      ctx.imageSmoothingEnabled = false;
+      return ctx;
+    };
+    const drawGroundedObject = (ctx, image, x, y, height) => {
+      ctx.save();
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.42)';
+      ctx.beginPath();
+      ctx.ellipse(x + 16, y + 29, 11, 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+      ctx.drawImage(image, x, y + 32 - height, 32, height);
+    };
+    async function drawCastleSample() {
+      const ctx = setup(document.getElementById('castle-sample'));
+      const [floor, stairs, candelabrum] = await Promise.all([
+        load('tile_dark_floor'), load('overlay_dungeon_stairs'), load('object_blocking_castle_candelabrum')
+      ]);
+      for (let y = 0; y < 2; y += 1) for (let x = 0; x < 3; x += 1) ctx.drawImage(floor, x * 32, y * 32, 32, 32);
+      ctx.drawImage(stairs, 32, 0, 32, 32);
+      drawGroundedObject(ctx, candelabrum, 0, 0, 48);
+      drawGroundedObject(ctx, candelabrum, 64, 0, 48);
+    }
+    async function drawObject(host, label, floorKey, objectKey, height) {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `<div class="label">${label}</div><canvas class="object-canvas" width="32" height="48"></canvas>`;
+      host.append(card);
+      const ctx = setup(card.querySelector('canvas'));
+      const [floor, object] = await Promise.all([load(floorKey), load(objectKey)]);
+      ctx.drawImage(floor, 0, 16, 32, 32);
+      drawGroundedObject(ctx, object, 0, 16, height);
+    }
+    (async () => {
+      const host = document.getElementById('objects');
+      await Promise.all([drawCastleSample(), ...OBJECTS.map(object => drawObject(host, ...object))]);
+      document.getElementById('status').textContent = `PASS — ${OBJECTS.length} cached objects and Demon Castle sample rendered`;
+    })().catch(error => {
+      document.getElementById('status').textContent = `FAIL — ${error.message}`;
+      document.getElementById('status').style.color = '#ff8d8d';
+    });
+  </script>
+</body>
+</html>

@@ -450,7 +450,7 @@ const MenuAllies = {
 
         if (!c.equips) c.equips = { '武器':null, '盾':null, '頭':null, '体':null, '足':null };
         if (typeof App !== 'undefined' && App.ensureCharacterBattleConfig) App.ensureCharacterBattleConfig(c);
-        else if (!c.config) c.config = { fullAuto: false, hiddenSkills: [], strategy: 'balanced' };
+        else if (!c.config) c.config = { fullAuto: false, hiddenSkills: [], autoDisabledSkills: [], skillUsageConfigVersion: 2, strategy: 'balanced' };
         if (!c.disabledTraits) c.disabledTraits = [];
         if (PS && typeof PS.normalizeDisabledTraits === 'function') PS.normalizeDisabledTraits(c);
 
@@ -768,6 +768,7 @@ const MenuAllies = {
                 ? '<div style="padding:20px; text-align:center; color:#555;">習得スキルなし</div>'
                 : orderedSkills.map(sk => {
                     const isHidden = (c.config?.hiddenSkills || []).includes(Number(sk.id));
+                    const isAutoDisabled = (c.config?.autoDisabledSkills || []).includes(Number(sk.id));
                     let elmHtml = sk.elm ? `<span style="color:${{'火':'#f88','水':'#88f','雷':'#ff0','風':'#8f8','光':'#ffc','闇':'#a8f','混沌':'#d4d'}[sk.elm]||'#ccc'}; margin-right:3px;">[${sk.elm}]</span>` : '';
                     return `
                         <div style="background:${isHidden ? 'rgba(0,0,0,0.2)' : '#252525'}; border:1px solid #444; border-radius:4px; padding:6px; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center;">
@@ -775,9 +776,12 @@ const MenuAllies = {
                                 <div style="font-size:12px; font-weight:bold; color:${isHidden ? '#666' : '#ddd'};">${sk.name} <span style="font-size:10px; color:#888;">(${sk.type})</span></div>
                                 <div style="font-size:10px; color:#aaa;">${elmHtml}${sk.desc || ''}</div>
                             </div>
-                            <div style="text-align:right; min-width:80px;">
+                            <div style="text-align:right; min-width:116px; margin-left:6px;">
                                 <div style="font-size:11px; color:#88f; margin-bottom:4px;">MP:${sk.mp}</div>
-                                <button class="btn" style="padding:2px 8px; font-size:10px; background:${isHidden ? '#555' : '#3a3'};" onclick="event.stopPropagation(); MenuAllies.toggleSkillVisibility(${sk.id})">${isHidden ? '封印中' : '使用許可'}</button>
+                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:3px;">
+                                    <button class="btn skill-usage-toggle ${isAutoDisabled ? 'is-disabled' : 'is-enabled'}" title="オート戦闘でこの技を使用するか" style="background:${isAutoDisabled ? '#444' : '#ffd700'} !important; color:${isAutoDisabled ? '#bbb' : '#000'} !important;" onclick="event.stopPropagation(); MenuAllies.toggleSkillAutoUsage(${sk.id})">オート<br>${isAutoDisabled ? '使用否' : '使用可'}</button>
+                                    <button class="btn skill-usage-toggle ${isHidden ? 'is-disabled' : 'is-enabled'}" title="手動の戦闘・回復メニューに表示するか" style="background:${isHidden ? '#444' : '#ffd700'} !important; color:${isHidden ? '#bbb' : '#000'} !important;" onclick="event.stopPropagation(); MenuAllies.toggleSkillVisibility(${sk.id})">メニュー<br>${isHidden ? '非表示' : '表示'}</button>
+                                </div>
                             </div>
                         </div>`;
                 }).join('');
@@ -1353,10 +1357,29 @@ const MenuAllies = {
         const container = document.querySelector('#allies-detail-view .scroll-container-inner');
         const scrollPos = container ? container.scrollTop : 0;
         if (typeof App !== 'undefined' && App.ensureCharacterBattleConfig) App.ensureCharacterBattleConfig(c);
-        else if (!c.config) c.config = { fullAuto: false, hiddenSkills: [], strategy: 'balanced' };
+        else if (!c.config) c.config = { fullAuto: false, hiddenSkills: [], autoDisabledSkills: [], skillUsageConfigVersion: 2, strategy: 'balanced' };
         const idx = c.config.hiddenSkills.indexOf(Number(skillId));
         if (idx >= 0) c.config.hiddenSkills.splice(idx, 1);
         else c.config.hiddenSkills.push(Number(skillId));
+        App.save();
+        MenuAllies.renderDetail();
+        const newContainer = document.querySelector('#allies-detail-view .scroll-container-inner');
+        if (newContainer) newContainer.scrollTop = scrollPos;
+    },
+
+    toggleSkillAutoUsage: (skillId) => {
+        const c = MenuAllies.selectedChar;
+        if (!c) return;
+        const container = document.querySelector('#allies-detail-view .scroll-container-inner');
+        const scrollPos = container ? container.scrollTop : 0;
+        if (typeof App !== 'undefined' && App.ensureCharacterBattleConfig) App.ensureCharacterBattleConfig(c);
+        else if (!c.config) c.config = { fullAuto: false, hiddenSkills: [], autoDisabledSkills: [], skillUsageConfigVersion: 2, strategy: 'balanced' };
+        if (!Array.isArray(c.config.autoDisabledSkills)) c.config.autoDisabledSkills = [];
+        const id = Number(skillId);
+        const idx = c.config.autoDisabledSkills.indexOf(id);
+        if (idx >= 0) c.config.autoDisabledSkills.splice(idx, 1);
+        else c.config.autoDisabledSkills.push(id);
+        App.save();
         MenuAllies.renderDetail();
         const newContainer = document.querySelector('#allies-detail-view .scroll-container-inner');
         if (newContainer) newContainer.scrollTop = scrollPos;

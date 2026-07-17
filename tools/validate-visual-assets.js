@@ -23,13 +23,65 @@ if (!phaserFieldSource.includes("!field.currentMapData?.isDungeon || characterOv
     throw new Error('Dungeon prop overlays must not receive artificial ellipse shadows.');
 }
 
-const graphicsStart = assetsSource.indexOf('  graphics: {');
-const graphicsEnd = assetsSource.indexOf('\n  },\n\n  // polish.js', graphicsStart);
-if (graphicsStart < 0 || graphicsEnd < 0) {
-    throw new Error('Unable to locate PRISMA_ASSETS.graphics.');
+function findObjectSection(source, propertyMarker) {
+    const markerStart = source.indexOf(propertyMarker);
+    if (markerStart < 0) return null;
+    const openingBrace = source.indexOf('{', markerStart + propertyMarker.length);
+    if (openingBrace < 0) return null;
+
+    let depth = 0;
+    let quote = null;
+    let escaped = false;
+    let lineComment = false;
+    let blockComment = false;
+    for (let index = openingBrace; index < source.length; index += 1) {
+        const char = source[index];
+        const next = source[index + 1];
+
+        if (lineComment) {
+            if (char === '\n') lineComment = false;
+            continue;
+        }
+        if (blockComment) {
+            if (char === '*' && next === '/') {
+                blockComment = false;
+                index += 1;
+            }
+            continue;
+        }
+        if (quote) {
+            if (escaped) escaped = false;
+            else if (char === '\\') escaped = true;
+            else if (char === quote) quote = null;
+            continue;
+        }
+        if (char === '/' && next === '/') {
+            lineComment = true;
+            index += 1;
+            continue;
+        }
+        if (char === '/' && next === '*') {
+            blockComment = true;
+            index += 1;
+            continue;
+        }
+        if (char === '"' || char === "'" || char === '`') {
+            quote = char;
+            continue;
+        }
+        if (char === '{') depth += 1;
+        if (char === '}') {
+            depth -= 1;
+            if (depth === 0) return source.slice(markerStart, index + 1);
+        }
+    }
+    return null;
 }
 
-const graphicsSection = assetsSource.slice(graphicsStart, graphicsEnd);
+const graphicsSection = findObjectSection(assetsSource, '  graphics:');
+if (!graphicsSection) {
+    throw new Error('Unable to locate PRISMA_ASSETS.graphics.');
+}
 const graphics = new Map();
 const graphicPattern = /^\s*([A-Za-z0-9_]+):\s*"([^"]+)"/gm;
 let match;
@@ -92,13 +144,32 @@ for (const key of requiredHunterKeys) {
 }
 
 const requiredBackgrounds = [
+    'battle_bg_dungeon',
     'battle_bg_forest',
+    'battle_bg_fire',
     'battle_bg_big_tower',
     'battle_bg_thunder_fort',
     'battle_bg_light_palace',
     'battle_bg_dark_castle',
     'battle_bg_crena',
     'battle_bg_seabed',
+    'battle_bg_flooded',
+    'battle_bg_dark_shrine',
+    'battle_bg_galvania_cave',
+    'battle_bg_grezelia'
+];
+const requiredRandomBackgrounds = [
+    'battle_bg_dungeon',
+    'battle_bg_forest',
+    'battle_bg_fire',
+    'battle_bg_thunder_fort',
+    'battle_bg_seabed',
+    'battle_bg_big_tower',
+    'battle_bg_light_palace',
+    'battle_bg_dark_castle',
+    'battle_bg_galvania_cave',
+    'battle_bg_wind_hole',
+    'battle_bg_crena',
     'battle_bg_dark_shrine',
     'battle_bg_grezelia'
 ];
@@ -155,10 +226,88 @@ if (graphics.get('battle_bg_forest') !== 'assets/generated/battle-forbidden-fore
 }
 
 const randomThemeBackgrounds = collectValues(dungeonSource, /\bbattleBg:\s*'(battle_bg_[^']+)'/g);
-for (const key of requiredBackgrounds) {
+for (const key of requiredRandomBackgrounds) {
     if (!randomThemeBackgrounds.has(key)) {
         throw new Error(`Random dungeon theme does not include background: ${key}`);
     }
+}
+
+const expectedThemeThresholds = new Map([
+    ['abyss', 1],
+    ['forbidden-forest', 11],
+    ['thunder-fort', 21],
+    ['seabed-temple', 41],
+    ['ignis-volcano', 51],
+    ['great-lighthouse', 61],
+    ['light-palace', 71],
+    ['dark-castle', 81],
+    ['galvania-cave', 81],
+    ['forest-wind-hole', 81],
+    ['crena-cave', 81],
+    ['dark-shrine', 81],
+    ['grezelia', 81]
+]);
+for (const [id, minFloor] of expectedThemeThresholds) {
+    const pattern = new RegExp(`id:\\s*'${id}'[\\s\\S]*?minFloor:\\s*${minFloor}\\b`);
+    if (!pattern.test(dungeonSource)) throw new Error(`Random dungeon theme threshold is missing or incorrect: ${id} -> ${minFloor}`);
+}
+if (!dungeonSource.includes('ensureRandomVisualTheme:') || !dungeonSource.includes('visualBattleBg = theme.battleBg')) {
+    throw new Error('Random dungeon saved themes are not repaired as a map/background pair.');
+}
+
+const expectedThemeKeys = [
+    'ABYSS', 'FORBIDDEN_FOREST', 'THUNDER_FORT', 'SEABED_TEMPLE', 'FIRE_VILLAGE',
+    'BIG_TOWER', 'LIGHT_PALACE', 'DARK_CASTLE', 'GALVANIA_CAVE', 'WIND_HOLE',
+    'CRENA_CAVE', 'DARK_SHRINE_RUINS', 'GREZELIA_CAVE'
+];
+for (const themeKey of expectedThemeKeys) {
+    const theme = context.TILE_THEMES?.[themeKey];
+    if (!theme?.W?.img || !theme?.T?.img) throw new Error(`Random dungeon map-chip theme is incomplete: ${themeKey}`);
+    if (themeKey !== 'ABYSS' && theme.W.img === context.TILE_THEMES.DEFAULT.W.img && theme.T.img === context.TILE_THEMES.DEFAULT.T.img) {
+        throw new Error(`Random dungeon theme is visually identical to the default: ${themeKey}`);
+    }
+}
+const wallRegistry = context.DUNGEON_WALL_FACE_THEMES || {};
+const fixedDungeonThemeKeys = new Set();
+for (const [areaKey, dungeon] of Object.entries(context.FIXED_DUNGEON_MAPS || {})) {
+    const floorCount = Math.max(1, dungeon.floors?.length || 1);
+    for (let floor = 1; floor <= floorCount; floor += 1) {
+        const def = context.MapRegistry.getFixedDungeonFloor(areaKey, floor);
+        fixedDungeonThemeKeys.add(def.themeKey || areaKey);
+    }
+}
+for (const themeKey of new Set([...expectedThemeKeys, ...fixedDungeonThemeKeys])) {
+    const tileTheme = context.TILE_THEMES?.[themeKey] || context.TILE_THEMES?.DEFAULT;
+    const wallDef = wallRegistry[themeKey];
+    if (!wallDef) throw new Error(`Dungeon wall-face registry is missing theme: ${themeKey}`);
+    const waterSurface = tileTheme?.W?.lowerLayer === true || tileTheme?.W?.animatedWater === true;
+    if (waterSurface) {
+        if (wallDef.disabled !== true) throw new Error(`Water-surface W theme must disable wall faces: ${themeKey}`);
+        continue;
+    }
+    if (wallDef.disabled === true) {
+        if (wallDef.reason !== 'theme-wall-variants' || !Array.isArray(tileTheme?.W?.variants) || tileTheme.W.variants.length < 2) {
+            throw new Error(`Solid dungeon theme disables wall faces without preserved W variants: ${themeKey}`);
+        }
+        continue;
+    }
+    if (!wallDef.img || !graphics.has(wallDef.img)) throw new Error(`Solid dungeon theme has no registered wall-face asset: ${themeKey}`);
+    if (wallDef.accentImg && !graphics.has(wallDef.accentImg)) throw new Error(`Dungeon wall-face accent is not registered: ${themeKey} -> ${wallDef.accentImg}`);
+}
+for (let floor = 1; floor <= context.FIXED_DUNGEON_MAPS.GALVANIA_CAVE.floors.length; floor += 1) {
+    if (context.MapRegistry.getFixedDungeonFloor('GALVANIA_CAVE', floor).themeKey !== 'GALVANIA_CAVE') {
+        throw new Error(`Galvania fixed floor ${floor} overrides its dedicated tile and wall theme.`);
+    }
+}
+if (context.TILE_THEMES?.DEFAULT?.['~']?.animatedWater !== true || context.TILE_THEMES?.DEFAULT?.['~']?.lowerLayer !== true) {
+    throw new Error('Flooded random-dungeon water tile must be animated and rendered as a lower layer.');
+}
+for (const marker of [
+    'lava: 0.10', 'flooded: 0.10', 'maze: 0.03', 'treasure: 0.02', 'abyss: 0.25', 'random: 0.50',
+    "floodedTile: '~'", 'rollRandomFloorPlan:', 'applyFloodedFloorIfNeeded:',
+    'Dungeon.applyRandomFloorPlan(floorPlan);\n                Dungeon.generateFallbackRandomFloor(floorPlan);'
+]) {
+    if (!dungeonSource.includes(marker)) throw new Error(`Random dungeon flooded/fallback integrity marker is missing: ${marker}`);
 }
 
 console.log(`Visual asset validation passed. Graphics checked: ${graphics.size}.`);

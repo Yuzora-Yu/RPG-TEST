@@ -1,16 +1,28 @@
 # PRISMA ABYSS Development Policy
 
-Last updated: 2026-05-15
+Last updated: 2026-07-14
 
 This document records the current long-term development direction. Treat it as a product/design policy, not just an implementation TODO.
 
 Story, character relationship, and hidden-setting references are archived under `docs/story-bible/`.
 
+The current non-negotiable directives are recorded in `docs/CURRENT_PRODUCT_DIRECTIVES_20260714.md`. They supersede older notes about dialogue length, tutorial timing, cache confirmation, and future gacha use.
+
+Opening asset delivery is staged: before play begins, preload Lumina Village, the opening Jelly battle, and the complete pre-opening first-cave battle set (map tiles, regular enemies, boss, and field/dungeon battle backgrounds). Play the paper-theater opening after the first-cave clear report `PROLOGUE3` advances the save to `storyStep: 2 / subStep: 1`, then present the full-image download choice.
+
 ## Core Intent
 
 The game has become feature-rich, but the next direction is to reorganize it as an RPG where features open naturally through story progression.
 
-The game should not begin with every major system available. Blacksmithing, the abyss, boat travel, wing flight, dungeon transfer, and other systems should become available as the player explores the field, clears regional fixed maps, gains allies, and expands the world. Gacha-related code and assets may remain as legacy/internal implementation, but the current player-facing route does not expose gacha as an unlockable main feature.
+## Maintainable Implementation Rule
+
+手抜き作業と、その場しのぎのつぎはぎ修正を禁止する。症状だけを局所的に隠すのではなく、描画・移動・イベント・データ参照の正本を確認し、同種の挙動が一つの共有ロジックへ収束するよう修正すること。
+
+新しいデータやアセットは、後から由来・用途・再生成方法を追跡できる状態で格納する。既存ファイルの配置が保守を妨げている場合は、参照元・全量キャッシュ・検証スクリプトを同時に更新したうえで適切なフォルダへ整理する。生成原画、ゲーム用加工物、マニフェスト、加工スクリプトを分離し、無名の上書きや用途不明ファイルを増やさない。
+
+変更時は少なくとも、既存セーブ互換、入口と帰還先、通行可能性、画像の全量キャッシュ登録、描画欠けの同期フォールバック、データ検証を確認する。短期的に動くことより、再現可能で管理しやすい構成を優先する。
+
+The game should not begin with every major system available. Blacksmithing, the abyss, boat travel, wing flight, dungeon transfer, and other systems should become available as the player explores the field, clears regional fixed maps, gains allies, and expands the world. Gacha-related code and assets may remain as dormant legacy/internal implementation, but gacha is not planned as a player-facing feature and must not receive an unlock route.
 
 Existing code uses `progress.unlocked` for story-gated systems. Current player-facing menu access is routed through unlock checks for blacksmith and dungeon systems; gacha is not shown in the main menu route.
 
@@ -81,17 +93,17 @@ Proposed unlock route:
 
 - Beginning Village clear:
   - Gaile and Sara join.
-  - Basic controls, battle, and item tutorial.
+  - Record future tutorial requirements only; implementation waits until all target screens are complete.
 
 - Fire Village clear:
   - Xiao joins.
   - Blacksmith opens.
-  - Blacksmith tutorial.
+  - Record the future blacksmith tutorial requirement, but do not implement it before the blacksmith UI is final.
 
 - Wind Settlement clear:
   - Elise joins.
   - Wind area progression.
-  - Status ailment and speed-focused combat tutorial.
+  - Reserve status-ailment and speed teaching goals for the post-UI-completion tutorial pass.
 
 - Water City clear:
   - Kate joins.
@@ -107,14 +119,14 @@ Proposed unlock route:
 - Light Palace clear:
   - Layla joins.
   - Abyss and reincarnation foreshadowing.
-  - Light/dark element tutorial.
+  - Reserve light/dark teaching goals for the post-UI-completion tutorial pass.
 
 - Demon Castle arrival event battle:
   - Shanny joins.
 
 - Demon Castle clear:
   - Main story reaches a major ending point.
-  - Gacha remains a legacy/internal route unless a future player-facing design explicitly reintroduces it.
+  - Gacha remains unused dormant legacy/internal code; no player-facing unlock is planned.
   - Main postgame/farming systems open through their implemented story gates.
 
 - Six regions and Demon Castle clear:
@@ -134,6 +146,8 @@ Proposed unlock route:
   - Light Wing opens.
 
 Inn transfer logic already exists. It should eventually be gated by something like `progress.unlocked.teleport`.
+
+Current gate override (2026-07-14): hide the inn transfer door completely until the save has entered the Abyss at least once. First entry records `abyssFirstEntered` and unlocks `teleport`; older saves infer this from Abyss attempts, maximum floor, or an Abyss location.
 
 ## Unlock State Shape
 
@@ -502,35 +516,13 @@ Examples:
 
 ## Tutorial Policy
 
-Tutorials should be embedded into story events and NPC conversations instead of isolated explanation screens.
+Tutorial implementation is deferred until every target screen and interaction flow is complete. Tutorials built against obsolete screens create incorrect guidance and rework.
 
-Tutorial placement:
+Before the UI completion gate, only maintain a tutorial-requirement ledger: what must be taught, the intended story timing, prerequisites, and measurable success conditions. Do not finalize tutorial copy, screenshots, pointer coordinates, or forced input sequences.
 
-- Battle tutorial:
-  - First battle around Beginning Village.
+After the UI completion gate, build and validate tutorials against the final screens. Prefer teaching through current gameplay and story context rather than detached explanation screens.
 
-- Item tutorial:
-  - During Beginning Village progress.
-
-- Blacksmith tutorial:
-  - After Fire Village.
-
-- Boat tutorial:
-  - After Water City.
-
-- Medal tutorial:
-  - After Thunder Fortress arrival.
-
-- Abyss tutorial:
-  - After Demon Castle clear or first Abyss entry.
-
-- Reincarnation tutorial:
-  - After Abyss floor 40 boss and Light Palace event.
-
-- Gacha tutorial:
-  - No current player-facing tutorial route. Existing gacha code/assets are legacy/internal unless deliberately reintroduced.
-
-The player should learn naturally through the story rather than feel forced to read detached instructions.
+There is no gacha tutorial because gacha is not planned for player use.
 
 ## Implementation Phases
 
@@ -567,7 +559,7 @@ Main story should be playable with story allies.
 - Place fixed dungeon entrances.
 - Connect `Sky Prism` to discovered/undiscovered fixed-map records.
 
-Keep the current policy that `Sky Prism` moves to the world-map coordinate near a fixed map, not directly inside that fixed map.
+`Sky Prism` normally moves to the world-map entrance. When a fixed dungeon's actual entrance is authored inside another fixed map, resolve that `mapActions` entrance through the shared map registry and land on the entrance tile inside the parent fixed map instead of dropping the player on the world map.
 
 ### Phase 4: Facility Unlocks
 

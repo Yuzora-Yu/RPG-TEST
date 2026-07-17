@@ -27,11 +27,12 @@
 Score:
 Notes:
 
-### 2. Dialogue line length
+### 2. On-screen readability and dialogue rhythm
 
-- 各行が30文字程度に収まっているか。
-- `\n` 区切りの行も長すぎないか。
-- システム文が長くなりすぎていないか。
+- 固定文字数ではなく、実際の会話画面で無理なく読めるか。
+- `\n` の位置が意味、間、人物の呼吸に合っているか。
+- 情報を詰め込みすぎて人物の声や場面のテンポを損なっていないか。
+- システム文が必要な情報を保ちつつ理解しやすい構成になっているか。
 
 Score:
 Notes:
@@ -115,7 +116,7 @@ Date:
 
 ### Scores
 - Character voice separation:
-- Dialogue line length:
+- On-screen readability and dialogue rhythm:
 - Spoiler discipline:
 - Lived-in world detail:
 - Exposition control:

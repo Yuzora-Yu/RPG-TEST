@@ -24,9 +24,9 @@ const MenuStatus = {
 				<button class="btn" onclick="Menu.closeSubScreen('status')">もどる</button>
 			</div>
 
-            <div style="display:flex; gap:8px; padding:10px 12px 0; background:#101010;">
-                <button id="status-tab-record" class="btn" style="flex:1;" onclick="MenuStatus.setTab('record')">記録</button>
-                <button id="status-tab-quests" class="btn" style="flex:1;" onclick="MenuStatus.setTab('quests')">クエスト</button>
+            <div style="display:flex; margin:10px 12px 0; border-radius:6px; overflow:hidden; border:1px solid #444; background:#222; flex-shrink:0;">
+                <button id="status-tab-record" style="flex:1; min-width:0; padding:10px 4px; border:none; font-weight:bold; font-size:11px; font-family:inherit;" onclick="MenuStatus.setTab('record')">記録</button>
+                <button id="status-tab-quests" style="flex:1; min-width:0; padding:10px 4px; border:none; font-weight:bold; font-size:11px; font-family:inherit;" onclick="MenuStatus.setTab('quests')">クエスト</button>
             </div>
 
 			<div
@@ -65,8 +65,13 @@ const MenuStatus = {
 
         const tabRecord = document.getElementById('status-tab-record');
         const tabQuests = document.getElementById('status-tab-quests');
-        if (tabRecord) tabRecord.style.borderColor = MenuStatus.activeTab === 'record' ? '#ffd700' : '';
-        if (tabQuests) tabQuests.style.borderColor = MenuStatus.activeTab === 'quests' ? '#ffd700' : '';
+        const styleTab = (button, active) => {
+            if (!button) return;
+            button.style.background = active ? '#ffd700' : '#111';
+            button.style.color = active ? '#000' : '#777';
+        };
+        styleTab(tabRecord, MenuStatus.activeTab === 'record');
+        styleTab(tabQuests, MenuStatus.activeTab === 'quests');
 
         if (MenuStatus.activeTab === 'quests') {
             MenuStatus.renderQuests(content);

@@ -322,7 +322,12 @@ const Menu = {
     },
 
     getItemIconPath: (item) => {
+        if (item?.icon) return item.icon;
         const type = String(item?.type || '');
+        if (type === '攻撃道具') return 'assets/ui/menu-icons/item-attack-v001.png';
+        if (type === '強化道具') return 'assets/ui/menu-icons/item-buff-v001.png';
+        if (type === '弱体道具') return 'assets/ui/menu-icons/item-debuff-v001.png';
+        if (type === '素材') return 'assets/ui/menu-icons/item-material-v001.png';
         let key = 'item';
         if (type.includes('HP') || type.includes('回復')) key = 'heal';
         else if (type.includes('MP')) key = 'mp';

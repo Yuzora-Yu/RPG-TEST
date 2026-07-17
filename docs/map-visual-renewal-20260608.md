@@ -39,7 +39,7 @@
 - `node --check assets.js`
 - `node --check map.js`
 - `node --check main.js`
-- `node tools/validate-key-door-runtime.js`
-- `node tools/validate-map-safety.js`
+- `node tools/validation/validate-key-door-runtime.js`
+- `node tools/validation/validate-map-safety.js`
 - 固定マップ/固定ダンジョンの行幅・高さ検証
 - `assets.js` の参照画像存在検証

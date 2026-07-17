@@ -1,0 +1,163 @@
+127.0.0.1 - - [16/Jul/2026 19:46:42] "GET /tools/visual-qa/connected-textile-runtime.html HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:42] "GET /assets.js HTTP/1.1" 304 -
+127.0.0.1 - - [16/Jul/2026 19:46:42] "GET /phaser-field.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:42] code 404, message File not found
+127.0.0.1 - - [16/Jul/2026 19:46:42] code 404, message File not found
+127.0.0.1 - - [16/Jul/2026 19:46:42] "GET /tools/visual-qa/assets/map/terrain/terrain_dungeon_floor_v001.png HTTP/1.1" 404 -
+127.0.0.1 - - [16/Jul/2026 19:46:42] "GET /tools/visual-qa/assets/map/terrain/terrain_dungeon_wall_v001.png HTTP/1.1" 404 -
+127.0.0.1 - - [16/Jul/2026 19:46:42] code 404, message File not found
+127.0.0.1 - - [16/Jul/2026 19:46:42] "GET /tools/visual-qa/assets/generated/hero-down-1.gif HTTP/1.1" 404 -
+127.0.0.1 - - [16/Jul/2026 19:46:42] code 404, message File not found
+127.0.0.1 - - [16/Jul/2026 19:46:42] code 404, message File not found
+127.0.0.1 - - [16/Jul/2026 19:46:42] "GET /tools/visual-qa/assets/map/overlays/overlay_castle_carpet_fill_v001.png HTTP/1.1" 404 -
+127.0.0.1 - - [16/Jul/2026 19:46:42] "GET /tools/visual-qa/assets/map/overlays/overlay_castle_carpet_edge_n_v001.png HTTP/1.1" 404 -
+127.0.0.1 - - [16/Jul/2026 19:46:42] code 404, message File not found
+127.0.0.1 - - [16/Jul/2026 19:46:42] "GET /tools/visual-qa/assets/map/overlays/overlay_castle_carpet_edge_s_v001.png HTTP/1.1" 404 -
+127.0.0.1 - - [16/Jul/2026 19:46:42] code 404, message File not found
+127.0.0.1 - - [16/Jul/2026 19:46:42] "GET /tools/visual-qa/assets/map/overlays/overlay_castle_carpet_edge_w_v001.png HTTP/1.1" 404 -
+127.0.0.1 - - [16/Jul/2026 19:46:42] code 404, message File not found
+127.0.0.1 - - [16/Jul/2026 19:46:42] "GET /tools/visual-qa/assets/map/overlays/overlay_castle_carpet_edge_e_v001.png HTTP/1.1" 404 -
+127.0.0.1 - - [16/Jul/2026 19:46:42] code 404, message File not found
+127.0.0.1 - - [16/Jul/2026 19:46:42] "GET /tools/visual-qa/assets/map/overlays/overlay_castle_carpet_corner_nw_v001.png HTTP/1.1" 404 -
+127.0.0.1 - - [16/Jul/2026 19:46:42] code 404, message File not found
+127.0.0.1 - - [16/Jul/2026 19:46:42] code 404, message File not found
+127.0.0.1 - - [16/Jul/2026 19:46:42] "GET /tools/visual-qa/assets/map/overlays/overlay_castle_carpet_corner_ne_v001.png HTTP/1.1" 404 -
+127.0.0.1 - - [16/Jul/2026 19:46:42] "GET /tools/visual-qa/assets/map/overlays/overlay_castle_carpet_corner_sw_v001.png HTTP/1.1" 404 -
+127.0.0.1 - - [16/Jul/2026 19:46:42] code 404, message File not found
+127.0.0.1 - - [16/Jul/2026 19:46:42] "GET /tools/visual-qa/assets/map/overlays/overlay_castle_carpet_corner_se_v001.png HTTP/1.1" 404 -
+127.0.0.1 - - [16/Jul/2026 19:46:42] code 404, message File not found
+127.0.0.1 - - [16/Jul/2026 19:46:42] "GET /tools/visual-qa/assets/map/terrain/terrain_dungeon_floor_v001.png HTTP/1.1" 404 -
+127.0.0.1 - - [16/Jul/2026 19:46:42] code 404, message File not found
+127.0.0.1 - - [16/Jul/2026 19:46:42] "GET /tools/visual-qa/assets/map/overlays/overlay_decor_default_cave_dust_v001.png HTTP/1.1" 404 -
+127.0.0.1 - - [16/Jul/2026 19:46:42] code 404, message File not found
+127.0.0.1 - - [16/Jul/2026 19:46:42] code 404, message File not found
+127.0.0.1 - - [16/Jul/2026 19:46:42] "GET /tools/visual-qa/assets/map/terrain/terrain_dungeon_wall_v001.png HTTP/1.1" 404 -
+127.0.0.1 - - [16/Jul/2026 19:46:42] "GET /tools/visual-qa/assets/map/overlays/overlay_castle_carpet_fill_v001.png HTTP/1.1" 404 -
+127.0.0.1 - - [16/Jul/2026 19:46:42] code 404, message File not found
+127.0.0.1 - - [16/Jul/2026 19:46:42] "GET /tools/visual-qa/assets/map/overlays/overlay_castle_carpet_edge_n_v001.png HTTP/1.1" 404 -
+127.0.0.1 - - [16/Jul/2026 19:46:42] code 404, message File not found
+127.0.0.1 - - [16/Jul/2026 19:46:42] code 404, message File not found
+127.0.0.1 - - [16/Jul/2026 19:46:42] "GET /tools/visual-qa/assets/map/overlays/overlay_castle_carpet_edge_w_v001.png HTTP/1.1" 404 -
+127.0.0.1 - - [16/Jul/2026 19:46:42] "GET /tools/visual-qa/assets/map/overlays/overlay_castle_carpet_corner_nw_v001.png HTTP/1.1" 404 -
+127.0.0.1 - - [16/Jul/2026 19:46:42] code 404, message File not found
+127.0.0.1 - - [16/Jul/2026 19:46:42] "GET /tools/visual-qa/assets/map/overlays/overlay_castle_carpet_edge_e_v001.png HTTP/1.1" 404 -
+127.0.0.1 - - [16/Jul/2026 19:46:42] code 404, message File not found
+127.0.0.1 - - [16/Jul/2026 19:46:42] code 404, message File not found
+127.0.0.1 - - [16/Jul/2026 19:46:42] "GET /tools/visual-qa/assets/map/overlays/overlay_castle_carpet_corner_ne_v001.png HTTP/1.1" 404 -
+127.0.0.1 - - [16/Jul/2026 19:46:42] "GET /tools/visual-qa/assets/map/overlays/overlay_castle_carpet_edge_s_v001.png HTTP/1.1" 404 -
+127.0.0.1 - - [16/Jul/2026 19:46:42] code 404, message File not found
+127.0.0.1 - - [16/Jul/2026 19:46:42] "GET /tools/visual-qa/assets/map/overlays/overlay_castle_carpet_corner_sw_v001.png HTTP/1.1" 404 -
+127.0.0.1 - - [16/Jul/2026 19:46:42] code 404, message File not found
+127.0.0.1 - - [16/Jul/2026 19:46:42] "GET /tools/visual-qa/assets/map/overlays/overlay_castle_carpet_corner_se_v001.png HTTP/1.1" 404 -
+127.0.0.1 - - [16/Jul/2026 19:46:42] code 404, message File not found
+127.0.0.1 - - [16/Jul/2026 19:46:42] "GET /tools/visual-qa/assets/generated/hero-down-1.gif HTTP/1.1" 404 -
+127.0.0.1 - - [16/Jul/2026 19:46:42] code 404, message File not found
+127.0.0.1 - - [16/Jul/2026 19:46:42] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [16/Jul/2026 19:46:44] "GET /sw.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:44] "GET /assets/monsters/monster_100002.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:44] "GET /assets/monsters/monster_100001.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:44] "GET /assets/monsters/monster_100003.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:44] "GET /assets/monsters/monster_100004.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:44] "GET /assets/monsters/monster_301000.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:44] "GET /assets/generated/battle-field-ai.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:44] "GET /assets/generated/battle-dungeon-ai.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:44] "GET /assets/generated/battle-flooded-v001.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:44] "GET /assets/map/terrain/terrain_grass_field_v001.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:44] "GET /assets/map/terrain/terrain_sea_v001.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:44] "GET /assets/map/objects/object_field_forest_v003.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:44] "GET /assets/map/objects/object_field_mountain_v002.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:44] "GET /assets/map/objects/object_field_low_mountain_v002.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:44] "GET /assets/map/objects/object_field_cave_v002.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:44] "GET /assets/map/objects/object_field_house_1_v002.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:44] "GET /assets/map/objects/object_field_house_2_v002.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:44] "GET /assets/map/objects/object_field_inn_v002.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:44] "GET /assets/map/overlays/overlay_field_forest_v006.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:44] "GET /assets/map/overlays/overlay_field_house_1_v002.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:44] "GET /assets/map/overlays/overlay_field_house_2_v002.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:44] "GET /assets/map/overlays/overlay_field_cave_v002.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:44] "GET /assets/map/overlays/overlay_field_village_v002.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:44] "GET /assets/map/overlays/overlay_decor_start_village_herbs_v001.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:44] "GET /assets/map/overlays/overlay_decor_start_cave_damp_v001.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /assets/map/overlays/overlay_world_grass_detail_v001.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /assets/map/overlays/overlay_world_grass_weeds_v001.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /assets/map/overlays/overlay_world_grass_earth_v001.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /assets/map/overlays/overlay_world_forest_understory_v001.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /assets/map/overlays/overlay_world_forest_roots_v001.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /assets/map/overlays/overlay_world_foothill_rocks_v001.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /assets/map/overlays/overlay_world_shore_foam_v001.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /assets/effect/fx_phys_slash_arc_v002.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /assets/effect/fx_phys_elemental_arc_v001.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /assets/map/terrain/terrain_dungeon_wall_v001.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /assets/map/terrain/terrain_dungeon_floor_v001.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /assets/map/overlays/overlay_named_dungeon_chest.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /assets/map/overlays/overlay_named_dungeon_chest_rare.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /assets/map/overlays/overlay_dungeon_chest_v002.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /assets/map/overlays/overlay_dungeon_chest_rare_v002.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /assets/map/overlays/overlay_dungeon_stairs_v002.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /assets/map/overlays/overlay_dungeon_chest_empty_v001.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /assets/map/overlays/overlay_dungeon_chest_rare_empty_v001.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /assets/map/overlays/overlay_npc_elder_v002.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /assets/map/overlays/overlay_npc_villager_v002.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /assets/map/overlays/overlay_npc_child_v002.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /assets/map/overlays/overlay_npc_bronze_knight_v002.png HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /assets/generated/hero-down-1.gif HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /assets/generated/hero-down-2.gif HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /assets/generated/hero-up-1.gif HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /assets/generated/hero-up-2.gif HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /assets/generated/hero-left-1.gif HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /assets/generated/hero-left-2.gif HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /assets/generated/hero-right-1.gif HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /assets/generated/hero-right-2.gif HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /main.html HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /index.html HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /manifest.json HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /modern-polish.css HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /opening.css HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /vendor/phaser/phaser.min.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /assets.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /phaser-field.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /polish.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /main.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /save_crypto.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /menus.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /menus_config.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /menus_party.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /menus_items.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /menus_status.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /menus_allies.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /menus_inventory.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /menus_skills.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /menus_book.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /menus_ally_detail.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /menus_skill_detail.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /menus_trait_detail.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /menus_exchange.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /menus_news_detail.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /menus_achievements.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /database.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /gacha.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /monsters.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /monster-images.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /skills.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /characters.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /battle.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /equips.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /blacksmith.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /dungeon.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /facilities.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /items.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /job_data.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /map.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /story.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /opening.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /passiveSkill.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /achievements.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:46:45] "GET /news.js HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:47:53] "GET /tools/visual-qa/connected-textile-runtime.html HTTP/1.1" 200 -
+127.0.0.1 - - [16/Jul/2026 19:47:53] "GET /phaser-field.js HTTP/1.1" 304 -
+127.0.0.1 - - [16/Jul/2026 19:47:55] "GET /sw.js HTTP/1.1" 304 -
+127.0.0.1 - - [16/Jul/2026 19:49:28] "GET /tools/visual-qa/connected-textile-runtime.html HTTP/1.1" 304 -
+127.0.0.1 - - [16/Jul/2026 19:49:28] "GET /phaser-field.js HTTP/1.1" 304 -
+127.0.0.1 - - [16/Jul/2026 19:49:30] "GET /sw.js HTTP/1.1" 304 -
+127.0.0.1 - - [16/Jul/2026 19:50:22] "GET /tools/visual-qa/connected-textile-runtime.html HTTP/1.1" 200 -

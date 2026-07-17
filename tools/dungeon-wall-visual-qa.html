@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dungeon Wall Visual QA</title>
+<style>
+html,body{margin:0;min-height:100%;background:#11141c;color:#f5edd6;font-family:system-ui,sans-serif}
+main{width:min(1080px,100%);margin:0 auto;padding:20px;box-sizing:border-box}
+h1{font-size:20px;margin:0 0 6px}.note{font-size:12px;color:#bfc4d1;margin:0 0 18px}
+#grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(224px,1fr));gap:16px}
+.card{background:#1b202c;border:1px solid #3a4356;border-radius:8px;padding:10px;box-shadow:0 8px 24px #0006}
+.card h2{font-size:13px;margin:0 0 8px}.stage{position:relative;width:224px;height:160px;max-width:100%;overflow:hidden;background:#000;image-rendering:pixelated}
+.tile{position:absolute;width:32px;height:32px;background-position:center;background-size:32px 32px;background-repeat:no-repeat;image-rendering:pixelated}
+.wall{position:absolute;width:32px;height:48px;object-fit:fill;image-rendering:pixelated}
+.badge{font-size:10px;color:#aeb7ca;margin-top:7px}.water{color:#84d8ef}
+</style>
+</head>
+<body>
+<main>
+  <h1>全ダンジョン壁面：原寸QA</h1>
+  <p class="note">32px床／露出壁面48px。水面Wの2テーマは壁面置換を禁止。</p>
+  <div id="grid"></div>
+</main>
+<script>
+const root='../assets/map/terrain/';
+const themes=[
+  {name:'開始洞窟／深淵',floor:'terrain_dungeon_floor_v001.png',wall:'terrain_dungeon_wall_v001.png',face:'terrain_dungeon_wall_face_v002.png',accent:'terrain_dungeon_wall_face_torch_v002.png'},
+  {name:'イグニス火山',floor:'tile_fire_floor_v004.png',wall:'tile_fire_wall_v004.png',face:'tile_fire_wall_face_v001.png'},
+  {name:'禁忌の森',floor:'tile_forbidden_forest_floor_v001.png',wall:'tile_forbidden_forest_wall_v001.png',variants:['tile_forbidden_forest_wall_v001.png','tile_forbidden_forest_wall_v002.png','tile_forbidden_forest_wall_v003.png','tile_forbidden_forest_wall_v004.png']},
+  {name:'風の神殿',floor:'tile_wind_floor_v004.png',wall:'tile_wind_wall_v004.png',face:'tile_wind_temple_wall_face_v001.png'},
+  {name:'森の風穴',floor:'tile_wind_hole_floor_v001.png',wall:'tile_wind_hole_wall_v001.png',face:'tile_wind_hole_wall_face_v001.png'},
+  {name:'大灯台',floor:'tile_tower_floor_v005.png',wall:'tile_tower_wall_v005.png',face:'tile_tower_wall_face_v001.png'},
+  {name:'雷の要塞',floor:'tile_thunder_floor_v005.png',wall:'tile_thunder_wall_v005.png',face:'tile_thunder_wall_face_v001.png'},
+  {name:'光の宮殿',floor:'tile_light_floor_v005.png',wall:'tile_light_wall_v005.png',face:'tile_light_wall_face_v001.png',accent:'tile_light_wall_face_prism_v001.png'},
+  {name:'魔王城',floor:'tile_dark_floor_v005.png',wall:'tile_dark_wall_v005.png',face:'tile_dark_castle_wall_face_v001.png'},
+  {name:'ガルヴァニア洞窟',floor:'tile_galvania_floor_v001.png',wall:'tile_galvania_wall_v001.png',face:'tile_galvania_wall_face_v001.png'},
+  {name:'闇の神殿跡',floor:'tile_dark_shrine_floor_v003.png',wall:'tile_dark_shrine_wall_v004.png',face:'tile_dark_shrine_wall_face_v001.png',overlay:true},
+  {name:'グレゼリア禁足地',floor:'tile_grezelia_floor_v001.png',wall:'tile_grezelia_wall_v001.png',face:'tile_grezelia_wall_face_v001.png'},
+  {name:'クレナ洞窟',floor:'tile_crena_floor_v001.png',wall:'tile_crena_water_v001.png',water:true},
+  {name:'海底神殿',floor:'tile_seabed_floor_v001.png',wall:'tile_water_canal_v004.png',water:true}
+];
+const rows=['WWWWWWW','WWWWWWW','WTTTTTW','WTTTTTW','WTTTTTW'];
+const grid=document.getElementById('grid');
+for(const theme of themes){
+  const card=document.createElement('section'); card.className='card';
+  card.innerHTML=`<h2>${theme.name}</h2><div class="stage"></div><div class="badge ${theme.water?'water':''}">${theme.water?'W＝水面（壁面置換なし）':theme.variants?'固有Wバリエーション4種（壁面置換なし）':theme.overlay?'既存壁＋壁面オーバーレイ':'テーマ専用露出壁面'}</div>`;
+  const stage=card.querySelector('.stage');
+  for(let y=0;y<rows.length;y++)for(let x=0;x<7;x++){
+    const tile=document.createElement('div');tile.className='tile';tile.style.left=`${x*32}px`;tile.style.top=`${y*32}px`;tile.style.backgroundImage=`url('${root+theme.floor}')`;stage.appendChild(tile);
+  }
+  for(let y=0;y<rows.length;y++)for(let x=0;x<7;x++)if(rows[y][x]==='W'){
+    const exposed=rows[y+1]?.[x]!=='W';
+    const img=document.createElement('img');img.className='wall';
+    const wallSource=theme.variants?theme.variants[(x+y*3)%theme.variants.length]:theme.wall;
+    img.src=root+(exposed&&!theme.water&&!theme.overlay&&!theme.variants?(theme.accent&&x%5===0?theme.accent:theme.face):wallSource);
+    img.style.left=`${x*32}px`;img.style.top=`${y*32-16}px`;img.style.zIndex=String(20+y);stage.appendChild(img);
+    if(exposed&&theme.overlay){const overlay=img.cloneNode();overlay.src=root+theme.face;overlay.style.zIndex=String(40+y);stage.appendChild(overlay)}
+  }
+  grid.appendChild(card);
+}
+</script>
+</body>
+</html>

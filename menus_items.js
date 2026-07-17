@@ -19,12 +19,16 @@ const MenuItems = {
     },
 
     setTab: (tab) => {
-        MenuItems.activeTab = (tab === 'valuables') ? 'valuables' : 'tools';
+        MenuItems.activeTab = ['tools', 'materials', 'valuables'].includes(tab) ? tab : 'tools';
         MenuItems.renderList();
     },
 
     isValuable: (def) => {
         return !!def && def.type === '貴重品';
+    },
+
+    isMaterial: (def) => {
+        return !!def && def.type === '素材';
     },
 
     getOwnedItems: () => {
@@ -70,6 +74,7 @@ const MenuItems = {
         };
 
         tabWrap.appendChild(makeTab('tools', '道具', counts.tools));
+        tabWrap.appendChild(makeTab('materials', '素材', counts.materials));
         tabWrap.appendChild(makeTab('valuables', '貴重品', counts.valuables));
         list.appendChild(tabWrap);
     },
@@ -79,17 +84,22 @@ const MenuItems = {
         list.innerHTML = '';
 
         const allItems = MenuItems.getOwnedItems();
-        const tools = allItems.filter(it => !MenuItems.isValuable(it.def));
+        const tools = allItems.filter(it => !MenuItems.isValuable(it.def) && !MenuItems.isMaterial(it.def));
+        const materials = allItems.filter(it => MenuItems.isMaterial(it.def));
         const valuables = allItems.filter(it => MenuItems.isValuable(it.def));
-        const counts = { tools: tools.length, valuables: valuables.length };
+        const counts = { tools: tools.length, materials: materials.length, valuables: valuables.length };
 
         MenuItems.renderTabs(list, counts);
 
-        const currentItems = MenuItems.sortItemsForCurrentTab(MenuItems.activeTab === 'valuables' ? valuables : tools);
+        const currentItems = MenuItems.sortItemsForCurrentTab(
+            MenuItems.activeTab === 'valuables' ? valuables : (MenuItems.activeTab === 'materials' ? materials : tools)
+        );
         if (currentItems.length === 0) {
             const empty = document.createElement('div');
             empty.style.cssText = 'padding:24px 20px; text-align:center; color:#555;';
-            empty.innerText = MenuItems.activeTab === 'valuables' ? '貴重品を持っていません' : '道具を持っていません';
+            empty.innerText = MenuItems.activeTab === 'valuables'
+                ? '貴重品を持っていません'
+                : (MenuItems.activeTab === 'materials' ? '素材を持っていません' : '道具を持っていません');
             list.appendChild(empty);
             return;
         }
@@ -103,7 +113,7 @@ const MenuItems = {
                 <div class="menu-pick-icon" data-icon-id="item-${it.def.id}"><img src="${fallbackPath}" alt=""></div>
                 <div class="menu-pick-main">
                     <div class="menu-pick-title">${Menu.escapeHtml(it.def.name)}</div>
-                    <div class="menu-pick-meta">${Menu.escapeHtml(it.def.type || '')}</div>
+                    <div class="menu-pick-meta">${Menu.escapeHtml(MenuItems.isMaterial(it.def) ? `素材 / Rank ${it.def.materialRank || '-'}` : `${it.def.type || ''}${it.def.rank ? ` / Rank ${it.def.rank}` : ''}`)}</div>
                     <div class="menu-pick-desc">${Menu.escapeHtml(it.def.desc || '')}</div>
                 </div>
                 <div class="menu-pick-count">x${it.count}</div>
@@ -116,8 +126,12 @@ const MenuItems = {
     handleItemClick: (item) => {
         if (!item) return;
 
-        if (MenuItems.activeTab === 'valuables') {
+        if (MenuItems.activeTab === 'valuables' || MenuItems.isValuable(item)) {
             Menu.msg("貴重品は使用できません。");
+            return;
+        }
+        if (MenuItems.activeTab === 'materials' || MenuItems.isMaterial(item)) {
+            Menu.msg("素材は今後の生成・加工に使用します。");
             return;
         }
 
@@ -128,12 +142,43 @@ const MenuItems = {
         } else if(item.type === '移動' || item.id === 110 || item.name === 'スカイプリズム') {
             MenuItems.selectedItem = item;
             MenuItems.useSkyPrismItem(item);
+        } else if (item.fieldGroup || item.effectKind === 'camp') {
+            MenuItems.selectedItem = item;
+            MenuItems.useGroupItem(item);
         } else if(item.type && (item.type.includes('回復') || item.type.includes('蘇生') || item.type.includes('育成'))) {
             MenuItems.selectedItem = item;
             MenuItems.renderTargetList();
+        } else if (window.ItemRuntime && window.ItemRuntime.isBattleUsable(item)) {
+            Menu.msg("この道具は戦闘中のみ使用できます。");
         } else {
             Menu.msg("使用できないアイテムです。");
         }
+    },
+
+    useGroupItem: (item) => {
+        if (!item || !App.data.items?.[item.id]) {
+            Menu.msg("アイテムを持っていません。");
+            return;
+        }
+        if (!window.ItemRuntime || !window.ItemRuntime.isFieldUsable(item)) {
+            Menu.msg("この道具は戦闘中のみ使用できます。");
+            return;
+        }
+        Menu.confirm(`仲間全員に ${item.name} を使いますか？`, () => {
+            const party = (App.data.party || []).map(uid => uid ? App.getChar(uid) : null).filter(Boolean);
+            const result = window.ItemRuntime.applyFieldGroupItem({ App, item, party });
+            if (!result.success) {
+                Menu.msg(result.message || "今は使用する必要がありません。");
+                return;
+            }
+            App.data.items[item.id] -= 1;
+            if (App.data.items[item.id] <= 0) delete App.data.items[item.id];
+            App.save();
+            Menu.msg(result.message, () => {
+                MenuItems.renderList();
+                Menu.renderPartyBar();
+            });
+        });
     },
 
     useVehicleItem: (item) => {

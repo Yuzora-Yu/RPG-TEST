@@ -42,8 +42,13 @@ const MenuSkills = {
         const list = document.getElementById('skill-list');
         list.innerHTML = '';
         const c = App.getChar(MenuSkills.selectedCharUid);
+        if (App.ensureCharacterBattleConfig) App.ensureCharacterBattleConfig(c);
         const player = new Player(c);
-        const skills = player.skills.filter(s => s.type.includes('回復') || s.type.includes('蘇生'));
+        const hiddenIds = new Set((c.config?.hiddenSkills || []).map(id => Number(id)));
+        const skills = player.skills.filter(s =>
+            (s.type.includes('回復') || s.type.includes('蘇生')) &&
+            !hiddenIds.has(Number(s.id))
+        );
 
         if (skills.length === 0) {
             list.innerHTML = '<div style="padding:10px; color:#888;">使用可能なスキルがありません</div>';

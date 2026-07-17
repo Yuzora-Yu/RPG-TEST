@@ -82,8 +82,9 @@ Only `approved_*` entries may be implemented.
 
 ## Dialogue hard rules
 
-- Keep each displayed line around 30 Japanese characters or fewer.
-- Split long thoughts into multiple dialogue entries.
+- Do not apply a fixed character-count limit to dialogue.
+- Judge each displayed line by on-screen readability, natural breathing, information density, and character voice.
+- Split long thoughts only when the split improves rhythm or comprehension, not to satisfy a numeric threshold.
 - Consecutive lines by the same speaker are allowed.
 - Never let all characters share the same sentence rhythm.
 - Never use NPCs only to deliver hints.
@@ -208,7 +209,7 @@ Before finalizing, score the scene from 1 to 5:
 - Spoiler discipline
 - Subtle foreshadowing
 - Lack of exposition dump
-- Dialogue line length
+- On-screen readability and dialogue rhythm
 - Emotional specificity
 - Implementation readiness
 - Approval status clarity

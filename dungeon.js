@@ -9,6 +9,12 @@ const Dungeon = {
     // 迷路マップ(genType === 2)だけは検証・メリハリ用に全特殊オブジェクトを100%出現させる。
     adventurerSpawnRate: 0.10,
     adventurerImagePath: 'assets/map/overlays/overlay_dungeon_adventurer_v001.png',
+    adventurerGraphicKeys: Object.freeze({
+        down: Object.freeze(['overlay_dungeon_adventurer_down_1', 'overlay_dungeon_adventurer_down_2']),
+        left: Object.freeze(['overlay_dungeon_adventurer_left_1', 'overlay_dungeon_adventurer_left_2']),
+        right: Object.freeze(['overlay_dungeon_adventurer_right_1', 'overlay_dungeon_adventurer_right_2']),
+        up: Object.freeze(['overlay_dungeon_adventurer_up_1', 'overlay_dungeon_adventurer_up_2'])
+    }),
     adventurerPromptOpen: false,
 
     // 回復の泉: 通常フロアでは5%、迷路では100%。
@@ -22,20 +28,43 @@ const Dungeon = {
     abyssRiftImagePath: 'assets/effect/fx-abyss-vortex-ai.png',
     abyssRiftPromptOpen: false,
     riftBattleEventId: '__DUNGEON_ABYSS_RIFT__',
-    mazeFloorSpawnRate: 0.05,
+    mazeFloorSpawnRate: 0.03,
     mazeMemorySightRadius: 4,
     trialAngelSpawnRate: 0.05,
     trialAngelMinFloor: 50,
     trialAngelMinEncounterRank: 50,
     trialAngelImagePath: 'assets/map/overlays/overlay_dungeon_trial_angel_v001.png',
 
-    // 溶岩フロア: 50階以降の通常マップで30%発生。
+    // 生成形態は rollRandomFloorPlan() の単一抽選表で決定する。
+    // 50階以降は、溶岩10%・浸水10%・迷路3%・宝物庫2%・深淵25%・ランダム外観50%。
+    // ランダム外観には深淵も含める。生成再試行では同じ抽選結果を維持する。
+    randomFloorPlanRates: Object.freeze({
+        lava: 0.10,
+        flooded: 0.10,
+        maze: 0.03,
+        treasure: 0.02,
+        abyss: 0.25,
+        random: 0.50
+    }),
+
+    // 溶岩フロア: 50階以降の単一抽選表で10%発生。
     // 発生時は通常宝箱を消し、床の25%を溶岩(M)にしてレア宝箱を2つだけ配置する。
     // Mは通行可能だが、踏むたびに最大HPの3%ダメージを受ける。
     lavaFloorMinFloor: 50,
-    lavaFloorSpawnRate: 0.30,
-    lavaTileImagePath: 'assets/map/objects/magma.png',
+    lavaFloorSpawnRate: 0.10,
+    lavaTileImagePath: 'assets/map/terrain/magma.png',
     lavaBattleBgKey: 'battle_bg_fire',
+
+    // 浸水フロア: 41階以降の通常ランダムフロアで10%発生。
+    // Wはダンジョン壁として予約済みなので、通行可能な水面は ~ で表す。
+    // 船所持判定は深淵挑戦の前提条件とし、フロア内では専用の船表示を使う。
+    floodedFloorMinFloor: 41,
+    floodedFloorSpawnRate: 0.10,
+    floodedTile: '~',
+    floodedBattleBgKey: 'battle_bg_flooded',
+
+    // 外観経路の実機検証時だけテーマIDを入れる。通常版では必ず null。
+    randomVisualThemeTestOverrideId: null,
 
     keyDoorTiles: { X: 'red', Y: 'blue', Z: 'gold' },
     keyDoorSymbols: { red: 'X', blue: 'Y', gold: 'Z' },
@@ -43,17 +72,33 @@ const Dungeon = {
     keyItemSymbols: { red: 'Q', blue: 'N', gold: 'O' },
     keyColorLabels: { red: '赤', blue: '青', gold: '金' },
     keyGuardianImagePath: 'assets/monsters/monster_100010.png',
-    randomVisualThemes: [
-        { id: 'abyss', themeKey: 'ABYSS', battleBg: 'battle_bg_dungeon', minFloor: 1 },
-        { id: 'forest', themeKey: 'FORBIDDEN_FOREST', battleBg: 'battle_bg_forest', minFloor: 11 },
-        { id: 'fire', themeKey: 'FIRE_VILLAGE', battleBg: 'battle_bg_fire', minFloor: 11 },
-        { id: 'thunder', themeKey: 'THUNDER_FORT', battleBg: 'battle_bg_thunder_fort', minFloor: 21 },
-        { id: 'seabed', themeKey: 'SEABED_TEMPLE', battleBg: 'battle_bg_seabed', minFloor: 41 },
-        { id: 'tower', themeKey: 'BIG_TOWER', battleBg: 'battle_bg_big_tower', minFloor: 51 },
-        { id: 'light', themeKey: 'LIGHT_PALACE', battleBg: 'battle_bg_light_palace', minFloor: 51 },
-        { id: 'galvania', themeKey: 'GALVANIA_CAVE', battleBg: 'battle_bg_galvania_cave', minFloor: 71 },
-        { id: 'dark', themeKey: 'DARK_CASTLE', battleBg: 'battle_bg_dark_castle', minFloor: 71 }
-    ],
+    // Random-dungeon appearance catalog. This is the single source of truth for both
+    // map tiles (themeKey) and battle backgrounds (battleBg). Later thresholds add
+    // candidates without removing earlier appearances.
+    randomVisualThemes: Object.freeze([
+        Object.freeze({ id: 'abyss', label: '深淵', sourceAreaKey: 'ABYSS', themeKey: 'ABYSS', battleBg: 'battle_bg_dungeon', minFloor: 1 }),
+        Object.freeze({ id: 'forbidden-forest', label: '禁忌の森', sourceAreaKey: 'FORBIDDEN_FOREST', themeKey: 'FORBIDDEN_FOREST', battleBg: 'battle_bg_forest', minFloor: 11 }),
+        Object.freeze({ id: 'thunder-fort', label: '雷要塞', sourceAreaKey: 'THUNDER_FORT', themeKey: 'THUNDER_FORT', battleBg: 'battle_bg_thunder_fort', minFloor: 21 }),
+        Object.freeze({ id: 'seabed-temple', label: '海底神殿', sourceAreaKey: 'SEABED_TEMPLE', themeKey: 'SEABED_TEMPLE', battleBg: 'battle_bg_seabed', minFloor: 41 }),
+        Object.freeze({ id: 'ignis-volcano', label: 'イグナ火山', sourceAreaKey: 'IGNIS_VOLCANO', themeKey: 'FIRE_VILLAGE', battleBg: 'battle_bg_fire', minFloor: 51 }),
+        Object.freeze({ id: 'great-lighthouse', label: '大灯台', sourceAreaKey: 'BIG_TOWER', themeKey: 'BIG_TOWER', battleBg: 'battle_bg_big_tower', minFloor: 61 }),
+        Object.freeze({
+            id: 'light-palace',
+            label: '光の宮殿',
+            sourceAreaKey: 'LIGHT_PALACE',
+            themeKey: 'LIGHT_PALACE',
+            battleBg: 'battle_bg_light_palace',
+            wallFaceImg: 'tile_light_wall_face',
+            wallFaceTorchImg: 'tile_light_wall_face_prism',
+            minFloor: 71
+        }),
+        Object.freeze({ id: 'dark-castle', label: '魔王城', sourceAreaKey: 'DARK_CASTLE', themeKey: 'DARK_CASTLE', battleBg: 'battle_bg_dark_castle', minFloor: 81 }),
+        Object.freeze({ id: 'galvania-cave', label: 'ガルヴァニア洞窟', sourceAreaKey: 'GALVANIA_CAVE', themeKey: 'GALVANIA_CAVE', battleBg: 'battle_bg_galvania_cave', minFloor: 81 }),
+        Object.freeze({ id: 'forest-wind-hole', label: '森の風穴', sourceAreaKey: 'FOREST_WIND_HOLE', themeKey: 'WIND_HOLE', battleBg: 'battle_bg_wind_hole', minFloor: 81 }),
+        Object.freeze({ id: 'crena-cave', label: 'クレナ鍾乳洞', sourceAreaKey: 'CRENA_LIMESTONE_CAVE', themeKey: 'CRENA_CAVE', battleBg: 'battle_bg_crena', minFloor: 81 }),
+        Object.freeze({ id: 'dark-shrine', label: '闇の神殿跡', sourceAreaKey: 'DARK_SHRINE_RUINS', themeKey: 'DARK_SHRINE_RUINS', battleBg: 'battle_bg_dark_shrine', minFloor: 81 }),
+        Object.freeze({ id: 'grezelia', label: '禁足地グレゼリア', sourceAreaKey: 'GREZELIA_FORBIDDEN', themeKey: 'GREZELIA_CAVE', battleBg: 'battle_bg_grezelia', minFloor: 81 })
+    ]),
 
     buildFixedBossBattleContext: (bossDef, x, y, mapDef = null) => {
         if (!bossDef) return null;
@@ -92,6 +137,28 @@ const Dungeon = {
                 scopeKey: (typeof Dungeon.getKeyScopeKey === 'function') ? Dungeon.getKeyScopeKey() : null
             } : null
         };
+    },
+
+    // 固定ボスの表示・接触・アクション・戦闘開始で共有する最終ゲート。
+    // questId を持つボスは「解放済み」だけでは足りず、必ず受注中であることを要求する。
+    // ボタン表示後にクエスト状態が変わった場合も、戦闘開始直前の再判定で防ぐ。
+    isFixedBossTriggerAllowed: (bossDef, x, y, mapDef = null) => {
+        const currentMapDef = mapDef || (typeof Field !== 'undefined' ? Field.currentMapData : null);
+        if (!bossDef || !currentMapDef?.isFixed) return false;
+        if (typeof Field === 'undefined' || typeof Field.isFixedBossAvailable !== 'function' || !Field.isFixedBossAvailable(bossDef)) {
+            return false;
+        }
+
+        const fx = Number(x);
+        const fy = Number(y);
+        if (!Number.isFinite(fx) || !Number.isFinite(fy)) return false;
+        const areaKey = (typeof Field.getCurrentAreaKey === 'function')
+            ? Field.getCurrentAreaKey()
+            : (currentMapDef.areaKey || App.data?.location?.area || null);
+        const progressKey = areaKey ? Dungeon.getFixedProgressKey(areaKey) : null;
+        return !(typeof Field.isFixedBossDefeatedAt === 'function'
+            ? Field.isFixedBossDefeatedAt(bossDef, fx, fy, progressKey)
+            : (progressKey && App.data?.progress?.defeatedBosses?.[progressKey]?.includes(`${fx},${fy}`)));
     },
     
 	getEntryChoices: () => {
@@ -250,6 +317,10 @@ const Dungeon = {
     start: (startFloor) => {
 		if (typeof App !== 'undefined' && typeof App.requireFeatureUnlocked === 'function' && !App.requireFeatureUnlocked('abyss')) return;
 		if (typeof App !== 'undefined' && typeof App.unlockFeature === 'function') App.unlockFeature('dungeonMenu');
+		if (!App.data.progress.flags) App.data.progress.flags = {};
+		if (!App.data.progress.unlocked) App.data.progress.unlocked = {};
+		App.data.progress.flags.abyssFirstEntered = true;
+		App.data.progress.unlocked.teleport = true;
 		if (!App.data.dungeon.returnPoint) {
 			App.data.dungeon.returnPoint = {
 				x: App.data.location.x,
@@ -494,6 +565,56 @@ const Dungeon = {
         return true;
     },
 
+    getChestTrapMonsterForFloor: (floor) => {
+        if (window.CHEST_MIMIC_DATA?.getForFloor) return window.CHEST_MIMIC_DATA.getForFloor(floor);
+        const fallbackId = Number(floor) >= 170 ? 120303 : (Number(floor) >= 120 ? 120302 : 120301);
+        return window.MonsterData?.getMonsterById?.(fallbackId)
+            || (Array.isArray(DB?.MONSTERS) ? DB.MONSTERS.find(monster => Number(monster.id) === fallbackId) : null)
+            || null;
+    },
+
+    startChestTrapBattle: (monsterId, options = {}) => {
+        const numericId = Number(monsterId);
+        const monster = window.MonsterData?.getMonsterById?.(numericId)
+            || (Array.isArray(DB?.MONSTERS) ? DB.MONSTERS.find(entry => Number(entry.id) === numericId) : null);
+        if (!monster || !monster.isChestTrap) {
+            console.error(`[Dungeon] 未登録の宝箱トラップ monsterId=${monsterId}`);
+            App.log('宝箱の中で何かが蠢いたが、姿を現さなかった…。');
+            return false;
+        }
+
+        const currentFloor = Math.max(1, Number(options.floor)
+            || Number(Field.currentMapData?.encounterRank)
+            || Number(Field.currentMapData?.rank)
+            || Number(Dungeon.floor)
+            || Number(App.data.progress?.floor)
+            || Number(monster.rank)
+            || 1);
+        App.log(`宝箱を開けた！<br><span style="color:#ff8a72;font-weight:bold;">${monster.name}</span> が襲いかかってきた！`);
+        App.data.battle = {
+            active: false,
+            isBossBattle: false,
+            isSpecialBoss: false,
+            isEstark: false,
+            isChestTrapBattle: true,
+            preventEscape: true,
+            chestTrapMonsterId: numericId,
+            chestTrapFloor: currentFloor,
+            encounterRank: currentFloor,
+            fixedEnemyIds: [numericId],
+            enemies: []
+        };
+        App.save();
+        const startBattleScene = () => App.changeScene('battle');
+        if (typeof App.playEncounterTransition === 'function') {
+            if (typeof App.lockFieldInput === 'function') App.lockFieldInput(1200);
+            App.playEncounterTransition(startBattleScene, { eventBattle: true });
+        } else {
+            startBattleScene();
+        }
+        return true;
+    },
+
     completeKeyGuardianReward: (reward) => {
         if (!reward || !reward.color) return;
         Dungeon.grantDungeonKey(reward.color, 'guardian');
@@ -652,29 +773,9 @@ const Dungeon = {
                 if (typeof App.save === 'function') App.save();
             }
 
-            if (defeated) {
-                App.clearAction();
-                return true;
-            }
-            if (typeof Field !== 'undefined' && typeof Field.isFixedBossAvailable === 'function' && !Field.isFixedBossAvailable(bossDef)) {
+            if (!Dungeon.isFixedBossTriggerAllowed(bossDef, x, y, mapDef)) {
                 App.clearAction();
                 return false;
-            }
-            if (bossDef?.requiredFlag && !flags[bossDef.requiredFlag]) {
-                // ストーリー進行前の固定ボスは、存在しない床として扱う。
-                // 例: 大灯台は入れるが、雷の要塞クリア前は結界炉・頂上ボスが出現しない。
-                App.clearAction();
-                return false;
-            }
-            if (bossDef?.questId) {
-                if (!App.isQuestUnlocked(bossDef.questId)) {
-                    App.clearAction();
-                    return false;
-                }
-                if (App.getQuestState(bossDef.questId).state !== 'accepted') {
-                    App.clearAction();
-                    return false;
-                }
             }
 
             logIfNeeded(bossDef?.inspectLog || 'ただならぬ気配が立ちはだかっている。');
@@ -685,6 +786,11 @@ const Dungeon = {
 
             if (bossDef?.startEventId && typeof StoryManager !== 'undefined' && typeof StoryManager.executeEvent === 'function') {
                 App.setAction(actionLabel || '対峙する', () => {
+                    if (!Dungeon.isFixedBossTriggerAllowed(bossDef, x, y, mapDef)) {
+                        App.clearAction();
+                        Field.refreshCurrentAction?.({ silent: true });
+                        return false;
+                    }
                     const fixedBossContext = Dungeon.buildFixedBossBattleContext(bossDef, x, y, mapDef);
                     if (fixedBossContext) {
                         if (!App.data.progress) App.data.progress = {};
@@ -708,7 +814,7 @@ const Dungeon = {
         const bossDef = (typeof MapRegistry !== 'undefined' && MapRegistry.findFixedBoss)
             ? MapRegistry.findFixedBoss(mapDef, x, y)
             : null;
-        if (!Field.isFixedBossAvailable?.(bossDef)) return false;
+        if (!Dungeon.isFixedBossTriggerAllowed(bossDef, x, y, mapDef)) return false;
         const rawId = Array.isArray(bossDef?.monsterId) ? bossDef.monsterId[0] : bossDef?.monsterId;
         const monster = window.MonsterData?.getMonsterById?.(Number(rawId));
         const name = monster?.name || '強敵';
@@ -727,6 +833,10 @@ const Dungeon = {
             Field.refreshCurrentAction?.({ silent: true });
             return false;
         }
+        if (!Dungeon.isFixedBossTriggerAllowed(bossDef, x, y, mapDef)) {
+            Field.refreshCurrentAction?.({ silent: true });
+            return false;
+        }
         if (typeof StoryManager !== 'undefined' && typeof StoryManager.prepareBattleTransitionUI === 'function') {
             StoryManager.prepareBattleTransitionUI();
         }
@@ -735,13 +845,18 @@ const Dungeon = {
     },
 
     startFixedBoss: (x, y) => {
-        if (typeof StoryManager !== 'undefined' && typeof StoryManager.prepareBattleTransitionUI === 'function') {
-            StoryManager.prepareBattleTransitionUI();
-        }
         const mapDef = Field.currentMapData;
         const bossDef = (typeof MapRegistry !== 'undefined' && MapRegistry.findFixedBoss)
             ? MapRegistry.findFixedBoss(mapDef, x, y)
             : null;
+        if (!Dungeon.isFixedBossTriggerAllowed(bossDef, x, y, mapDef)) {
+            App.clearAction();
+            Field.refreshCurrentAction?.({ silent: true });
+            return false;
+        }
+        if (typeof StoryManager !== 'undefined' && typeof StoryManager.prepareBattleTransitionUI === 'function') {
+            StoryManager.prepareBattleTransitionUI();
+        }
         const fixedBossId = bossDef?.monsterId || null;
         const fixedBossIds = Array.isArray(fixedBossId) ? fixedBossId : [fixedBossId].filter(id => id !== null);
         const isSpecialBoss = fixedBossIds.some(id => {
@@ -773,6 +888,7 @@ const Dungeon = {
         } else {
             startBattleScene();
         }
+        return true;
     },
 
 	
@@ -953,7 +1069,7 @@ const Dungeon = {
             Dungeon.map = App.data.dungeon.map;
             Dungeon.width = App.data.dungeon.width;
             Dungeon.height = App.data.dungeon.height;
-            if (!App.data.dungeon.visualThemeKey) Dungeon.rollRandomVisualTheme();
+            Dungeon.ensureRandomVisualTheme(Dungeon.floor);
             // v3.18以前に保存された階層にも、孤立した1マス壁が残っている場合がある。
             // 復元時に地形だけ整形し、階段・鍵・宝箱など既存の進行状態は維持する。
             const removedIsolatedWalls = Dungeon.removeIsolatedWallTiles(Dungeon.map);
@@ -970,6 +1086,9 @@ const Dungeon = {
             if (App.data.dungeon.abyssRift && Number(App.data.dungeon.abyssRift.floor) !== Number(Dungeon.floor)) {
                 App.data.dungeon.abyssRift = null;
             }
+            if (App.data.dungeon.trialAngel && Number(App.data.dungeon.trialAngel.floor) !== Number(Dungeon.floor)) {
+                App.data.dungeon.trialAngel = null;
+            }
             if (Array.isArray(App.data.dungeon.keyChests)) {
                 App.data.dungeon.keyChests = App.data.dungeon.keyChests.filter(chest => Number(chest.floor) === Number(Dungeon.floor));
                 if (!App.data.dungeon.keyChests.length) App.data.dungeon.keyChests = null;
@@ -984,6 +1103,7 @@ const Dungeon = {
             if (App.data.dungeon.visitedMap && Number(App.data.dungeon.visitedMap.floor) !== Number(Dungeon.floor)) {
                 App.data.dungeon.visitedMap = null;
             }
+            if (!Dungeon.isBossFloor()) Dungeon.repairLoadedRandomFloorIntegrity();
             const activeAbyssBossEncounter = App.data.dungeon.abyssBossEncounter &&
                 App.data.dungeon.abyssBossEncounter.active &&
                 Number(App.data.dungeon.abyssBossEncounter.floor) === Number(Dungeon.floor);
@@ -1025,15 +1145,7 @@ const Dungeon = {
             Dungeon.logFloorArrival();
         }
         
-        Field.currentMapData = { 
-            name: STORY_DATA.areas['ABYSS'].name,
-			width: Dungeon.width, 
-			height: Dungeon.height, 
-			tiles: Dungeon.map, 
-			isDungeon: true,
-            themeKey: App.data.dungeon.visualThemeKey || 'DEFAULT',
-            battleBg: App.data.dungeon.visualBattleBg || 'battle_bg_dungeon'
-        };
+        Field.currentMapData = Dungeon.createRandomFieldMapData();
 
         App.data.location.x = Field.x;
         App.data.location.y = Field.y;
@@ -1056,6 +1168,68 @@ const Dungeon = {
         App.data.dungeon.width = Dungeon.width;
         App.data.dungeon.height = Dungeon.height;
         App.save();
+    },
+
+    repairLoadedRandomFloorIntegrity: () => {
+        if (!Array.isArray(Dungeon.map) || !Dungeon.map.length || Dungeon.isBossFloor()) return false;
+        let changed = false;
+        const actualHeight = Dungeon.map.length;
+        const actualWidth = Array.isArray(Dungeon.map[0]) ? Dungeon.map[0].length : 0;
+        if (actualWidth && (Number(Dungeon.width) !== actualWidth || Number(Dungeon.height) !== actualHeight)) {
+            Dungeon.width = actualWidth;
+            Dungeon.height = actualHeight;
+            App.data.dungeon.width = actualWidth;
+            App.data.dungeon.height = actualHeight;
+            changed = true;
+        }
+
+        if (Dungeon.pruneUnreachableFromPlayer() > 0) changed = true;
+        const dist = Dungeon.distanceMap(Dungeon.map, { x: Number(Field.x), y: Number(Field.y) });
+        let stairs = Dungeon.collectTiles(Dungeon.map, ['S']).filter(pos => dist[pos.y]?.[pos.x] >= 0);
+        if (stairs.length !== 1) {
+            const keep = stairs.sort((a, b) => dist[b.y][b.x] - dist[a.y][a.x])[0] || null;
+            Dungeon.collectTiles(Dungeon.map, ['S']).forEach(pos => {
+                Dungeon.map[pos.y][pos.x] = keep && pos.x === keep.x && pos.y === keep.y ? 'S' : 'T';
+            });
+            if (!keep) {
+                const candidates = Dungeon.collectTiles(Dungeon.map, ['T', 'G'])
+                    .filter(pos => dist[pos.y]?.[pos.x] >= 0)
+                    .sort((a, b) => dist[b.y][b.x] - dist[a.y][a.x]);
+                if (candidates[0]) Dungeon.map[candidates[0].y][candidates[0].x] = 'S';
+            }
+            changed = true;
+        }
+
+        let reachable = Dungeon.getProgressionReachableCells();
+        const occupied = new Set();
+        for (const { name, object } of Dungeon.getActiveRandomFloorObjects()) {
+            const currentKey = `${Number(object.x)},${Number(object.y)}`;
+            if (reachable.has(currentKey) && !occupied.has(currentKey)) {
+                occupied.add(currentKey);
+                continue;
+            }
+            const candidates = Dungeon.getSpecialSpawnCandidates()
+                .filter(pos => !occupied.has(`${pos.x},${pos.y}`));
+            const replacement = candidates[0] || null;
+            if (replacement) {
+                object.x = replacement.x;
+                object.y = replacement.y;
+                occupied.add(`${replacement.x},${replacement.y}`);
+                changed = true;
+                reachable = Dungeon.getProgressionReachableCells();
+            } else if (!name.startsWith('key') && !name.startsWith('floorKey')) {
+                object.active = false;
+                changed = true;
+            }
+        }
+
+        if (changed) {
+            App.data.dungeon.map = Dungeon.map;
+            App.data.dungeon.width = Dungeon.width;
+            App.data.dungeon.height = Dungeon.height;
+            if (typeof App.save === 'function') App.save();
+        }
+        return changed;
     },
 
     // --- 脱出処理 (安全装置付き) ---
@@ -1339,13 +1513,6 @@ const Dungeon = {
             return;
         }
 
-        // ランダム生成ダンジョン内の冒険者NPC。
-        // 接触時はその場で会話選択を出す。移動・エンカウント・宝箱処理とは独立管理。
-        if (Dungeon.isAdventurerAt(x, y)) {
-            Dungeon.encounterAdventurer({ auto: true });
-            return;
-        }
-
         // 深淵の裂け目。接触時は会話選択を出し、承諾時のみ強敵戦へ入る。
         if (Dungeon.isAbyssRiftAt(x, y)) {
             Dungeon.encounterAbyssRift({ auto: true });
@@ -1405,7 +1572,10 @@ const Dungeon = {
 		// ボス判定
         if(tile === 'B') {
             if (Field.currentMapData.isFixed) {
-                if (Dungeon.prepareFixedTileAction(tile, x, y, { silent: false })) return;
+                // 固定ボスは専用ゲートで完結させる。未受注・未解放・討伐済みでも、
+                // 汎用ボス処理へフォールスルーさせてはならない。
+                Dungeon.prepareFixedTileAction(tile, x, y, { silent: false });
+                return;
             }
 
             App.log("ボスの気配が…");
@@ -1441,7 +1611,7 @@ const Dungeon = {
 
 		// 通常床ではランダムエンカウントを発生させる
 		// 宝箱・階段・出口・ボス・イベントアクション中は除外
-		if ((tile === 'T' || tile === 'G' || tile === 'M') && !App.pendingAction) {
+        if ((tile === 'T' || tile === 'G' || tile === 'M' || tile === Dungeon.floodedTile) && !App.pendingAction) {
 			const occurred = App.tryRandomEncounter();
 
 			if (!occurred) {
@@ -1480,6 +1650,14 @@ const Dungeon = {
 
             if (chestDef) {
                 App.data.progress.openedChests[progressKey].push(posKey);
+                if (chestDef.trapMonsterId !== undefined && chestDef.trapMonsterId !== null) {
+                    App.save();
+                    Field.render();
+                    Dungeon.startChestTrapBattle(chestDef.trapMonsterId, {
+                        floor: chestDef.trapFloor || mapDef?.encounterRank || mapDef?.rank
+                    });
+                    return;
+                }
                 if (chestDef.keyColor) {
                     Dungeon.grantDungeonKey(chestDef.keyColor, 'chest');
                     App.save();
@@ -1520,6 +1698,17 @@ const Dungeon = {
         let msg = "";
         let hasRareDrop = false, hasUltraRareDrop = false;
         const floor = Dungeon.floor;
+
+        // 深淵40階以降の通常宝箱のみ5%で擬態箱になる。赤宝箱・鍵宝箱は対象外。
+        const mimicConfig = window.CHEST_MIMIC_DATA;
+        const mimicChance = Math.max(0, Math.min(1, Number(mimicConfig?.normalChestChance ?? 0.05)));
+        const mimicMinimumFloor = Math.max(1, Number(mimicConfig?.minimumAbyssFloor ?? 40));
+        if (type === 'normal' && floor >= mimicMinimumFloor && Math.random() < mimicChance) {
+            const mimic = Dungeon.getChestTrapMonsterForFloor(floor);
+            Dungeon.saveMapData();
+            App.save();
+            if (mimic && Dungeon.startChestTrapBattle(mimic.id, { floor })) return;
+        }
 
         // ★追加: 特性「57:目利き」のパーティ合計値を算出
         // --- 特性計算対象を「現在のパーティメンバー」に限定 ---
@@ -1612,8 +1801,14 @@ const Dungeon = {
             else {
                 if (Math.random() < 0.5) {
                     // アイテム
-                    const candidates = DB.ITEMS.filter(i => i.id !== 99 && i.type !== '貴重品' && i.rank <= floor);
-                    const item = candidates.length > 0 ? candidates[Math.floor(Math.random() * candidates.length)] : DB.ITEMS[0];
+                    const item = window.PRISMA_ITEM_CATALOG?.pickAbyssChestItem
+                        ? window.PRISMA_ITEM_CATALOG.pickAbyssChestItem(floor)
+                        : DB.ITEMS.find(i => i.id !== 99 && i.type !== '貴重品' && i.rank <= floor);
+                    if (!item) {
+                        App.log('宝箱を開けた！<br>中身は空だった…。');
+                        App.save();
+                        return;
+                    }
                     App.data.items[item.id] = (App.data.items[item.id]||0)+1; 
                     msg = `${item.name}`;
                 } else {
@@ -1804,7 +1999,12 @@ const Dungeon = {
         const areaKey = Field.getCurrentAreaKey ? Field.getCurrentAreaKey() : App.data.location.area;
         const changeKey = Field.getCurrentMapChangeKey ? Field.getCurrentMapChangeKey(areaKey) : areaKey;
         let tile = (App.data.progress.mapChanges?.[changeKey]?.[`${x},${y}`] || App.data.progress.mapChanges?.[areaKey]?.[`${x},${y}`] || Field.currentMapData.tiles[y][x]).toUpperCase();
-        if (tile === 'B' && App.data.progress.defeatedBosses?.[Field.getCurrentProgressMapKey()]?.includes(`${x},${y}`)) tile = 'G';
+        if (tile === 'B') {
+            const bossDef = (typeof MapRegistry !== 'undefined' && MapRegistry.findFixedBoss)
+                ? MapRegistry.findFixedBoss(Field.currentMapData, x, y)
+                : null;
+            if (Field.isFixedBossDefeatedAt?.(bossDef, x, y, Field.getCurrentProgressMapKey())) tile = 'G';
+        }
         const chestDef = Field.getFixedChestAt ? Field.getFixedChestAt(x, y) : null;
         const chestTile = Field.getFixedChestTileSign ? Field.getFixedChestTileSign(chestDef) : null;
         if (chestTile) tile = chestTile;
@@ -2108,8 +2308,12 @@ const Dungeon = {
                 sx = nx;
                 sy = ny;
                 moved = true;
-                const nextEffect = MapRegistry.findTileEffect(Field.currentMapData, sx, sy);
-                if (nextEffect && nextEffect.type !== 'ice') break;
+                const nextEffect = Field.getRuntimeTileEffectAt
+                    ? Field.getRuntimeTileEffectAt(sx, sy)
+                    : MapRegistry.findTileEffect(Field.currentMapData, sx, sy);
+                // Stop on the first non-ice cell instead of sliding across ordinary floor
+                // until a wall. This keeps stairs and event cells enterable.
+                if (!nextEffect || nextEffect.type !== 'ice') break;
             }
             if (moved) {
                 Field.x = sx;
@@ -2150,6 +2354,10 @@ const Dungeon = {
         if (!adv || !adv.active) return;
         if (Number(adv.floor) !== Number(Dungeon.floor)) return;
 
+        // 会話可能距離ではその場に留まり、アクション表示中に歩き去らない。
+        const playerDistance = Math.abs(Number(adv.x) - Number(Field.x)) + Math.abs(Number(adv.y) - Number(Field.y));
+        if (playerDistance <= 1) return;
+
         adv.moveCounter = Number(adv.moveCounter || 0) + 1;
         if (adv.moveCounter < 4) return;
         adv.moveCounter = 0;
@@ -2167,9 +2375,19 @@ const Dungeon = {
             if (!Dungeon.canAdventurerMoveTo(nx, ny)) continue;
             adv.x = nx;
             adv.y = ny;
+            adv.direction = d.dy > 0 ? 'down' : d.dy < 0 ? 'up' : d.dx < 0 ? 'left' : 'right';
+            adv.step = Number(adv.step) === 2 ? 1 : 2;
             App.save();
             return;
         }
+    },
+
+    getAdventurerGraphicKey: (adventurer = App.data?.dungeon?.adventurer) => {
+        const direction = ['down', 'left', 'right', 'up'].includes(adventurer?.direction)
+            ? adventurer.direction
+            : 'down';
+        const frames = Dungeon.adventurerGraphicKeys[direction] || Dungeon.adventurerGraphicKeys.down;
+        return frames[Number(adventurer?.step) === 2 ? 1 : 0];
     },
 
     isMazeFloor: () => Number(App.data?.dungeon?.genType) === 2,
@@ -2239,6 +2457,9 @@ const Dungeon = {
             if (App.data?.dungeon?.isLavaFloor) {
                 lines.push('灼熱の溶岩が湧き出ている…');
             }
+            if (App.data?.dungeon?.isFloodedFloor) {
+                lines.push('水没した回廊を、魔法の小舟で進むことになりそうだ…');
+            }
         }
 
         return lines.join('<br>');
@@ -2267,10 +2488,14 @@ const Dungeon = {
     getSpecialSpawnCandidates: () => {
         const candidates = [];
         if (!Array.isArray(Dungeon.map) || !Dungeon.map.length) return candidates;
+        const reachable = typeof Dungeon.getProgressionReachableCells === 'function'
+            ? Dungeon.getProgressionReachableCells()
+            : null;
         for (let y = 1; y < Dungeon.height - 1; y++) {
             for (let x = 1; x < Dungeon.width - 1; x++) {
                 const tile = String(Dungeon.map[y]?.[x] || 'W').toUpperCase();
                 if (tile !== 'T' && tile !== 'G') continue;
+                if (reachable && !reachable.has(`${x},${y}`)) continue;
                 if (Number(x) === Number(Field.x) && Number(y) === Number(Field.y)) continue;
                 if (Dungeon.isSpecialObjectAt(x, y)) continue;
 
@@ -2396,7 +2621,8 @@ const Dungeon = {
             x: pos.x,
             y: pos.y,
             moveCounter: 0,
-            image: Dungeon.adventurerImagePath
+            direction: 'down',
+            step: 1
         };
     },
 
@@ -2464,6 +2690,11 @@ const Dungeon = {
     encounterAdventurer: async (options = {}) => {
         const adv = App.data?.dungeon?.adventurer;
         if (!adv || !adv.active) return;
+        const distance = Math.abs(Number(adv.x) - Number(Field.x)) + Math.abs(Number(adv.y) - Number(Field.y));
+        if (distance > 1) {
+            if (typeof Field.refreshCurrentAction === 'function') Field.refreshCurrentAction({ silent: true });
+            return;
+        }
         if (Dungeon.adventurerPromptOpen) return;
         Dungeon.adventurerPromptOpen = true;
         App.clearAction();
@@ -2497,11 +2728,6 @@ const Dungeon = {
             const eq = App.createEquipByFloor('adventurer', rewardFloor, 3);
             App.data.inventory.push(eq);
 
-            // 受け取り後は冒険者を消す。同じ階で再取得できないよう必ず保存する。
-            App.data.dungeon.adventurer = null;
-            App.save();
-            if (typeof Field !== 'undefined') Field.render();
-
             const rewardText = `${eq.name}を手に入れた！`;
 
             if (typeof StoryManager !== 'undefined' && typeof StoryManager.showConversation === 'function') {
@@ -2509,11 +2735,13 @@ const Dungeon = {
                 StoryManager.scripts[key] = [
                     {
                         charId: 9998,
+                        hidePortrait: true,
                         name: '冒険者',
                         text: 'こんなところで会うなんて、これも何かの縁だ。\nさっき手に入れた装備だが俺には使えないみたいだから、あんたにやるよ'
                     },
                     {
                         charId: 1000,
+                        hidePortrait: true,
                         name: 'システム',
                         text: rewardText
                     }
@@ -2525,6 +2753,12 @@ const Dungeon = {
             } else {
                 App.log(`こんなところで会うなんて、これも何かの縁だ。<br>${rewardText}`);
             }
+
+            // 選択中・報酬会話中はキャラチップを残し、会話完了後にだけ消す。
+            // 同じ階で再取得できないよう、消去状態は直ちに保存する。
+            App.data.dungeon.adventurer = null;
+            App.save();
+            if (typeof Field !== 'undefined') Field.render();
             App.log(`<span style="color:#ffd700;">${rewardText}</span>`);
 			
         } finally {
@@ -2741,6 +2975,41 @@ const Dungeon = {
         return true;
     },
 
+    applyFloodedFloorIfNeeded: (force = false) => {
+        if (!App.data?.dungeon || !Array.isArray(Dungeon.map) || !Dungeon.map.length) return false;
+        App.data.dungeon.isFloodedFloor = false;
+        App.data.dungeon.flooded = null;
+
+        if (Dungeon.isBossFloor() || App.data.dungeon.isTreasureRoom || Dungeon.isMazeFloor()) return false;
+        if (Number(Dungeon.floor || 0) < Dungeon.floodedFloorMinFloor) return false;
+        if (!force && Math.random() >= Dungeon.floodedFloorSpawnRate) return false;
+
+        const waterCells = [];
+        for (let y = 1; y < Dungeon.height - 1; y++) {
+            for (let x = 1; x < Dungeon.width - 1; x++) {
+                const tile = String(Dungeon.map[y]?.[x] || 'W').toUpperCase();
+                if (tile !== 'T' && tile !== 'G') continue;
+                Dungeon.map[y][x] = Dungeon.floodedTile;
+                waterCells.push({ x, y });
+            }
+        }
+
+        // 極端に小さい生成結果では特殊化せず、通常フロアとして安全に扱う。
+        if (waterCells.length < 20) {
+            waterCells.forEach(({ x, y }) => { Dungeon.map[y][x] = 'T'; });
+            return false;
+        }
+
+        App.data.dungeon.isFloodedFloor = true;
+        App.data.dungeon.flooded = {
+            active: true,
+            floor: Dungeon.floor,
+            tile: Dungeon.floodedTile,
+            cellCount: waterCells.length
+        };
+        return true;
+    },
+
     createEquipWithMinRarity: (floor, plus, minRarityList, forcePart = null) => {
         let eq = App.createEquipByFloor('drop', floor, plus);
         
@@ -2778,16 +3047,21 @@ const Dungeon = {
             App.data.dungeon.isTreasureRoom = false;
             App.data.dungeon.isLavaFloor = false;
             App.data.dungeon.lava = null;
+            App.data.dungeon.isFloodedFloor = false;
+            App.data.dungeon.flooded = null;
             App.data.dungeon.keyChests = null;
             App.data.dungeon.floorKeys = null;
             App.data.dungeon.keyGuardian = null;
             App.data.dungeon.adventurer = null;
             App.data.dungeon.healSpring = null;
             App.data.dungeon.abyssRift = null;
+            App.data.dungeon.trialAngel = null;
             App.data.dungeon.abyssBossEncounter = null;
             if (!keepVisited) App.data.dungeon.visitedMap = null;
             App.data.dungeon.genType = null;
             App.data.dungeon.genVariant = null;
+            App.data.dungeon.floorPlanType = null;
+            App.data.dungeon.floorPlanThemeId = null;
             App.data.dungeon.visualThemeId = null;
             App.data.dungeon.visualThemeKey = null;
             App.data.dungeon.visualBattleBg = null;
@@ -2805,20 +3079,160 @@ const Dungeon = {
         return candidates.length ? candidates : themes.filter(theme => theme.id === 'abyss');
     },
 
-    rollRandomVisualTheme: (floor = Dungeon.floor || App.data?.progress?.floor || 1) => {
-        if (!App.data?.dungeon || !Array.isArray(Dungeon.randomVisualThemes) || !Dungeon.randomVisualThemes.length) return null;
-        const candidates = Dungeon.getRandomVisualThemeCandidates(floor);
-        const theme = candidates[Dungeon.randInt(0, candidates.length - 1)] || Dungeon.randomVisualThemes[0];
+    getRandomVisualThemeBySavedData: () => {
+        const dungeon = App.data?.dungeon;
+        if (!dungeon) return null;
+        return Dungeon.randomVisualThemes.find(theme => theme.id === dungeon.visualThemeId)
+            || Dungeon.randomVisualThemes.find(theme => theme.themeKey === dungeon.visualThemeKey)
+            || null;
+    },
+
+    getRandomVisualThemeTestOverride: (floor = Dungeon.floor || App.data?.progress?.floor || 1) => {
+        const currentFloor = Math.max(1, Number(floor) || 1);
+        if (!Dungeon.randomVisualThemeTestOverrideId || currentFloor % 10 === 0) return null;
+        return Dungeon.randomVisualThemes.find(theme => theme.id === Dungeon.randomVisualThemeTestOverrideId) || null;
+    },
+
+    isRandomVisualThemeTestOverrideActive: (floor = Dungeon.floor || App.data?.progress?.floor || 1) => {
+        return !!Dungeon.getRandomVisualThemeTestOverride(floor);
+    },
+
+    getForcedVisualThemeIdForFloorPlan: (planType = App.data?.dungeon?.floorPlanType) => {
+        // 特殊フロアは地形の意味を優先し、外観抽選で別施設の壁・床へ変えない。
+        return ['flooded', 'treasure', 'boss'].includes(String(planType || '')) ? 'abyss' : null;
+    },
+
+    ensureRandomVisualTheme: (floor = Dungeon.floor || App.data?.progress?.floor || 1) => {
+        if (!App.data?.dungeon) return null;
+        const currentFloor = Math.max(1, Number(floor) || 1);
+        const testOverride = Dungeon.getRandomVisualThemeTestOverride(currentFloor);
+        if (testOverride) return Dungeon.setRandomVisualTheme(testOverride);
+        const forcedThemeId = Dungeon.getForcedVisualThemeIdForFloorPlan();
+        if (forcedThemeId) {
+            const forcedTheme = Dungeon.randomVisualThemes.find(entry => entry.id === forcedThemeId) || Dungeon.randomVisualThemes[0];
+            App.data.dungeon.floorPlanThemeId = forcedTheme?.id || 'abyss';
+            return Dungeon.setRandomVisualTheme(forcedTheme);
+        }
+        // 森100%検証版で保存された階は、通常版へ戻した初回だけ現在階の外観も再抽選する。
+        // 検証用のforest値を通常抽選結果として固定し続けない。
+        if (App.data.dungeon.visualThemeAudit?.testOverrideId) {
+            App.data.dungeon.visualThemeAudit = null;
+            const restoredTheme = Dungeon.rollRandomVisualTheme(currentFloor);
+            App.data.dungeon.floorPlanThemeId = restoredTheme?.id || 'abyss';
+            return restoredTheme;
+        }
+        let theme = Dungeon.getRandomVisualThemeBySavedData();
+        const plannedTheme = Dungeon.randomVisualThemes.find(entry => entry.id === App.data.dungeon.floorPlanThemeId) || null;
+        // フロア抽選結果を正本とし、復元途中や別処理でDEFAULT/深淵へ戻されてもここで必ず修復する。
+        if (plannedTheme && theme?.id !== plannedTheme.id) theme = Dungeon.setRandomVisualTheme(plannedTheme);
+        const matchesPlan = !!(theme && plannedTheme && theme.id === plannedTheme.id);
+        if (!theme || (currentFloor < Number(theme.minFloor || 1) && !matchesPlan)) {
+            theme = Dungeon.rollRandomVisualTheme(currentFloor);
+        } else {
+            // Repair legacy saves that stored only one half of the visual-theme pair.
+            App.data.dungeon.visualThemeId = theme.id;
+            App.data.dungeon.visualThemeKey = theme.themeKey;
+            App.data.dungeon.visualBattleBg = theme.battleBg;
+        }
+        return theme;
+    },
+
+    getRandomFloorBattleBg: () => {
+        const testOverride = Dungeon.getRandomVisualThemeTestOverride(Dungeon.floor);
+        if (testOverride) return testOverride.battleBg;
+        if (App.data?.dungeon?.isFloodedFloor) return Dungeon.floodedBattleBgKey;
+        return App.data?.dungeon?.visualBattleBg || 'battle_bg_dungeon';
+    },
+
+    createRandomFieldMapData: () => {
+        const theme = Dungeon.ensureRandomVisualTheme(Dungeon.floor);
+        const testOverride = Dungeon.getRandomVisualThemeTestOverride(Dungeon.floor);
+        const battleBg = Dungeon.getRandomFloorBattleBg();
+        const mapData = {
+            name: testOverride ? `${STORY_DATA.areas['ABYSS'].name}【森固定検証】` : STORY_DATA.areas['ABYSS'].name,
+            width: Dungeon.width,
+            height: Dungeon.height,
+            tiles: Dungeon.map,
+            isDungeon: true,
+            themeKey: theme?.themeKey || App.data?.dungeon?.visualThemeKey || 'ABYSS',
+            visualThemeId: theme?.id || App.data?.dungeon?.visualThemeId || 'abyss',
+            battleBg,
+            visualTestOverride: !!testOverride,
+            wallFaceImg: theme?.wallFaceImg || null,
+            wallFaceTorchImg: theme?.wallFaceTorchImg || null
+        };
+        App.data.dungeon.visualThemeAudit = {
+            floor: Number(Dungeon.floor || 0),
+            planType: App.data.dungeon.floorPlanType || null,
+            plannedThemeId: App.data.dungeon.floorPlanThemeId || null,
+            appliedThemeId: mapData.visualThemeId,
+            themeKey: mapData.themeKey,
+            battleBg
+        };
+        App.data.dungeon.visualThemeAudit.testOverrideId = testOverride?.id || null;
+        return mapData;
+    },
+
+    setRandomVisualTheme: (theme) => {
+        if (!App.data?.dungeon || !theme) return null;
         App.data.dungeon.visualThemeId = theme.id;
         App.data.dungeon.visualThemeKey = theme.themeKey;
         App.data.dungeon.visualBattleBg = theme.battleBg;
         return theme;
     },
 
+    rollRandomVisualTheme: (floor = Dungeon.floor || App.data?.progress?.floor || 1) => {
+        if (!App.data?.dungeon || !Array.isArray(Dungeon.randomVisualThemes) || !Dungeon.randomVisualThemes.length) return null;
+        const candidates = Dungeon.getRandomVisualThemeCandidates(floor);
+        const theme = candidates[Dungeon.randInt(0, candidates.length - 1)] || Dungeon.randomVisualThemes[0];
+        return Dungeon.setRandomVisualTheme(theme);
+    },
+
+    rollRandomFloorPlan: (floor = Dungeon.floor || App.data?.progress?.floor || 1, randomValue = null, options = {}) => {
+        const currentFloor = Math.max(1, Number(floor) || 1);
+        const testOverride = options.ignoreTestOverride ? null : Dungeon.getRandomVisualThemeTestOverride(currentFloor);
+        if (testOverride) {
+            return Object.freeze({ floor: currentFloor, category: 'random', themeId: testOverride.id, testOverride: true });
+        }
+        const roll = randomValue === null
+            ? Math.random()
+            : Math.max(0, Math.min(0.999999999, Number(randomValue) || 0));
+        let category;
+        if (roll < 0.10) category = currentFloor >= Dungeon.lavaFloorMinFloor ? 'lava' : 'abyss';
+        else if (roll < 0.20) category = currentFloor >= Dungeon.floodedFloorMinFloor ? 'flooded' : 'abyss';
+        else if (roll < 0.23) category = 'maze';
+        else if (roll < 0.25) category = 'treasure';
+        else if (roll < 0.50) category = 'abyss';
+        else category = 'random';
+
+        const byId = id => Dungeon.randomVisualThemes.find(theme => theme.id === id) || null;
+        let theme = null;
+        if (category === 'lava') theme = byId('ignis-volcano');
+        else if (category === 'flooded') theme = byId('abyss');
+        else if (category === 'random') {
+            const candidates = Dungeon.getRandomVisualThemeCandidates(currentFloor);
+            theme = candidates[Dungeon.randInt(0, candidates.length - 1)] || byId('abyss');
+        } else {
+            theme = byId('abyss');
+        }
+
+        return Object.freeze({ floor: currentFloor, category, themeId: theme?.id || 'abyss' });
+    },
+
+    applyRandomFloorPlan: (plan) => {
+        if (!App.data?.dungeon || !plan) return null;
+        const theme = Dungeon.randomVisualThemes.find(entry => entry.id === plan.themeId)
+            || Dungeon.randomVisualThemes.find(entry => entry.id === 'abyss')
+            || Dungeon.randomVisualThemes[0];
+        App.data.dungeon.floorPlanType = plan.category;
+        App.data.dungeon.floorPlanThemeId = theme?.id || null;
+        Dungeon.setRandomVisualTheme(theme);
+        return theme;
+    },
+
     pickRandomFloorType: () => {
         const r = Math.random();
-        if (r < Dungeon.mazeFloorSpawnRate) return 2; // 迷路
-        if (r < 0.32) return 0; // 部屋
+        if (r < 0.30) return 0; // 部屋
         if (r < 0.80) return 1; // 洞窟
         return 3; // 遺跡回廊
     },
@@ -2875,16 +3289,16 @@ const Dungeon = {
         return count;
     },
 
-    buildRandomFloorLayout: () => {
-        Dungeon.rollRandomVisualTheme();
-        if (Math.random() < 0.02) {
+    buildRandomFloorLayout: (plan = Dungeon.rollRandomFloorPlan()) => {
+        Dungeon.applyRandomFloorPlan(plan);
+        if (plan.category === 'treasure') {
             Dungeon.generateTreasureRoom();
             if (App.data?.dungeon) App.data.dungeon.isTreasureRoom = true;
             return;
         }
 
         Dungeon.lastGenVariant = null;
-        const type = Dungeon.pickRandomFloorType();
+        const type = plan.category === 'maze' ? 2 : Dungeon.pickRandomFloorType();
 
         if (type === 0) Dungeon.generateRoomMap();
         else if (type === 1) Dungeon.generateCaveMap();
@@ -2900,11 +3314,18 @@ const Dungeon = {
         Dungeon.pruneUnreachableFromPlayer();
     },
 
-    finalizeRandomFloorFeatures: () => {
-        // 50階以降の通常マップでは、30%で溶岩フロア化する。
+    finalizeRandomFloorFeatures: (plan = null) => {
+        const category = plan?.category || App.data?.dungeon?.floorPlanType || 'abyss';
+        // 浸水フロアは全面を船で進む独立した特殊形態。
+        // 溶岩・鍵扉・歩行NPCを同居させると意味や経路が破綻するため排他的にする。
+        if (category === 'flooded') {
+            Dungeon.applyFloodedFloorIfNeeded(true);
+            return;
+        }
+
+        // 50階以降の単一抽選表で選ばれた場合だけ溶岩フロア化する。
         // 通常宝箱を消し、床の25%を溶岩にしてレア宝箱2個だけを配置する。
-        // 迷路フロアでも通常どおり判定する。
-        Dungeon.applyLavaFloorIfNeeded();
+        if (category === 'lava') Dungeon.applyLavaFloorIfNeeded(true);
 
         Dungeon.applyKeyDoorPuzzleIfNeeded();
 
@@ -2914,10 +3335,30 @@ const Dungeon = {
         Dungeon.rollSpecialObjects();
     },
 
-    generateFallbackRandomFloor: () => {
+    generateFallbackRandomFloor: (plan = null) => {
+        const category = plan?.category || App.data?.dungeon?.floorPlanType || 'abyss';
         Dungeon.width = 15;
         Dungeon.height = 15;
         Dungeon.map = Dungeon.makeMap(Dungeon.width, Dungeon.height, 'W');
+
+        if (category === 'maze') {
+            // 生成試行が尽きても破綻しない決定的な蛇行迷路。単一路なので階段到達性を数学的に保証できる。
+            let connectorX = 1;
+            for (let y = Dungeon.height - 2; y >= 1; y -= 2) {
+                for (let x = 1; x < Dungeon.width - 1; x++) Dungeon.map[y][x] = 'T';
+                if (y > 1) Dungeon.map[y - 1][connectorX] = 'T';
+                connectorX = connectorX === 1 ? Dungeon.width - 2 : 1;
+            }
+            Field.x = 1;
+            Field.y = Dungeon.height - 2;
+            Dungeon.map[1][1] = 'S';
+            if (App.data?.dungeon) {
+                App.data.dungeon.genType = 2;
+                App.data.dungeon.genVariant = 'fallback-safe-maze';
+            }
+            return;
+        }
+
         for (let y = 1; y < Dungeon.height - 1; y++) {
             for (let x = 1; x < Dungeon.width - 1; x++) {
                 Dungeon.map[y][x] = 'T';
@@ -2932,6 +3373,7 @@ const Dungeon = {
         if (App.data?.dungeon) {
             App.data.dungeon.genType = 0;
             App.data.dungeon.genVariant = 'fallback-safe-room';
+            if (category === 'treasure') App.data.dungeon.isTreasureRoom = true;
         }
     },
 
@@ -2953,8 +3395,76 @@ const Dungeon = {
         return colors;
     },
 
+    // 宝箱を障害物、鍵扉を所持鍵依存として扱い、実際の進行条件で到達できる座標を返す。
+    // 単純な W 判定だけでは「地形上は接続しているが宝箱や鍵扉で特殊物へ行けない」配置を見逃す。
+    getProgressionReachableCells: () => {
+        const reachable = new Set();
+        if (!Array.isArray(Dungeon.map) || !Dungeon.map.length) return reachable;
+        const start = { x: Number(Field.x), y: Number(Field.y) };
+        if (!Number.isFinite(start.x) || !Number.isFinite(start.y)) return reachable;
+
+        const keyAt = new Map();
+        (App.data?.dungeon?.keyChests || []).forEach(key => {
+            if (key?.active && key.color) keyAt.set(`${Number(key.x)},${Number(key.y)}`, key.color);
+        });
+        (App.data?.dungeon?.floorKeys || []).forEach(key => {
+            if (key?.active && key.color) keyAt.set(`${Number(key.x)},${Number(key.y)}`, key.color);
+        });
+        const guardian = App.data?.dungeon?.keyGuardian;
+        if (guardian?.active && guardian.color) keyAt.set(`${Number(guardian.x)},${Number(guardian.y)}`, guardian.color);
+
+        const colorBit = { red: 1, blue: 2, gold: 4 };
+        const queue = [{ ...start, mask: 0 }];
+        const seen = new Set([`${start.x},${start.y},0`]);
+        for (let index = 0; index < queue.length; index++) {
+            const current = queue[index];
+            reachable.add(`${current.x},${current.y}`);
+            for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+                const x = current.x + dx;
+                const y = current.y + dy;
+                if (x < 0 || y < 0 || x >= Dungeon.width || y >= Dungeon.height) continue;
+                const tile = String(Dungeon.map[y]?.[x] || 'W').toUpperCase();
+                if (tile === 'W' || tile === 'C' || tile === 'R' || tile === 'B') continue;
+                const doorColor = Dungeon.getDoorColor(tile);
+                if (doorColor && !(current.mask & colorBit[doorColor])) continue;
+                let mask = current.mask;
+                const tileColor = Dungeon.getKeyItemColor(tile);
+                if (tileColor && colorBit[tileColor]) mask |= colorBit[tileColor];
+                const objectColor = keyAt.get(`${x},${y}`);
+                if (objectColor && colorBit[objectColor]) mask |= colorBit[objectColor];
+                const stateKey = `${x},${y},${mask}`;
+                if (seen.has(stateKey)) continue;
+                seen.add(stateKey);
+                queue.push({ x, y, mask });
+            }
+        }
+        return reachable;
+    },
+
+    getActiveRandomFloorObjects: () => {
+        const dungeon = App.data?.dungeon || {};
+        const direct = ['adventurer', 'healSpring', 'abyssRift', 'trialAngel', 'keyGuardian']
+            .map(name => ({ name, object: dungeon[name] }))
+            .filter(entry => entry.object?.active && Number(entry.object.floor) === Number(Dungeon.floor));
+        const arrays = [
+            ['keyChest', dungeon.keyChests],
+            ['floorKey', dungeon.floorKeys]
+        ].flatMap(([name, entries]) => (Array.isArray(entries) ? entries : [])
+            .filter(object => object?.active && Number(object.floor) === Number(Dungeon.floor))
+            .map((object, index) => ({ name: `${name}[${index}]`, object })));
+        return direct.concat(arrays);
+    },
+
     validateGeneratedFloor: () => {
         if (!Array.isArray(Dungeon.map) || !Dungeon.map.length) return { ok: false, reason: 'map missing' };
+        const actualHeight = Dungeon.map.length;
+        const actualWidth = Array.isArray(Dungeon.map[0]) ? Dungeon.map[0].length : 0;
+        if (!actualWidth || Dungeon.map.some(row => !Array.isArray(row) || row.length !== actualWidth)) {
+            return { ok: false, reason: 'map rows are not rectangular' };
+        }
+        if (actualWidth !== Number(Dungeon.width) || actualHeight !== Number(Dungeon.height)) {
+            return { ok: false, reason: `map dimensions mismatch ${actualWidth}x${actualHeight} != ${Dungeon.width}x${Dungeon.height}` };
+        }
         const start = { x: Number(Field.x), y: Number(Field.y) };
         const startTile = String(Dungeon.map[start.y]?.[start.x] || 'W').toUpperCase();
         if (startTile === 'W') return { ok: false, reason: `player starts in wall ${start.x},${start.y}` };
@@ -2964,11 +3474,17 @@ const Dungeon = {
             return bosses.length ? { ok: true } : { ok: false, reason: 'boss missing' };
         }
 
-        const stairs = Dungeon.collectTiles(Dungeon.map, ['S'])[0];
-        if (!stairs) return { ok: false, reason: 'stairs missing' };
+        const stairTiles = Dungeon.collectTiles(Dungeon.map, ['S']);
+        if (stairTiles.length !== 1) return { ok: false, reason: `stairs count must be 1: ${stairTiles.length}` };
+        const stairs = stairTiles[0];
 
         const dist = Dungeon.distanceMap(Dungeon.map, start);
         if (dist[stairs.y]?.[stairs.x] < 0) return { ok: false, reason: 'stairs unreachable' };
+        let disconnected = 0;
+        Dungeon.map.forEach((row, y) => row.forEach((tile, x) => {
+            if (String(tile || 'W').toUpperCase() !== 'W' && dist[y]?.[x] < 0) disconnected++;
+        }));
+        if (disconnected > 0) return { ok: false, reason: `${disconnected} disconnected walkable tiles remain` };
 
         const doors = [];
         Dungeon.map.forEach((row, y) => row.forEach((tile, x) => {
@@ -2989,6 +3505,29 @@ const Dungeon = {
         if (chestBlockedDist[stairs.y]?.[stairs.x] < 0) return { ok: false, reason: 'chests block the route to stairs' };
 
         if (!Dungeon.validateKeyDoorPuzzle()) return { ok: false, reason: 'key-door route invalid' };
+        const progressionReachable = Dungeon.getProgressionReachableCells();
+        if (!progressionReachable.has(`${stairs.x},${stairs.y}`)) return { ok: false, reason: 'stairs unreachable under actual blockers' };
+        const occupied = new Map();
+        for (const { name, object } of Dungeon.getActiveRandomFloorObjects()) {
+            const x = Number(object.x);
+            const y = Number(object.y);
+            const key = `${x},${y}`;
+            if (!Number.isInteger(x) || !Number.isInteger(y) || x < 0 || y < 0 || x >= Dungeon.width || y >= Dungeon.height) {
+                return { ok: false, reason: `${name} is outside map: ${key}` };
+            }
+            if (!progressionReachable.has(key)) return { ok: false, reason: `${name} unreachable: ${key}` };
+            if (occupied.has(key)) return { ok: false, reason: `${name} overlaps ${occupied.get(key)} at ${key}` };
+            occupied.set(key, name);
+        }
+
+        const planType = App.data?.dungeon?.floorPlanType;
+        if (planType === 'lava' && !App.data.dungeon.isLavaFloor) return { ok: false, reason: 'lava plan was not applied' };
+        if (planType === 'flooded' && !App.data.dungeon.isFloodedFloor) return { ok: false, reason: 'flooded plan was not applied' };
+        if (planType === 'maze' && !Dungeon.isMazeFloor()) return { ok: false, reason: 'maze plan was not applied' };
+        if (planType === 'treasure' && !App.data.dungeon.isTreasureRoom) return { ok: false, reason: 'treasure plan was not applied' };
+        if (App.data?.dungeon?.floorPlanThemeId && App.data.dungeon.floorPlanThemeId !== App.data.dungeon.visualThemeId) {
+            return { ok: false, reason: 'visual theme was overwritten after floor-plan selection' };
+        }
         return { ok: true };
     },
 
@@ -2996,16 +3535,21 @@ const Dungeon = {
         Dungeon.resetRandomFloorAttemptState(false);
         
         if (Dungeon.floor > 0 && Dungeon.floor % 10 === 0) {
-            Dungeon.rollRandomVisualTheme();
+            Dungeon.setRandomVisualTheme(Dungeon.randomVisualThemes.find(theme => theme.id === 'abyss'));
+            App.data.dungeon.floorPlanType = 'boss';
+            App.data.dungeon.floorPlanThemeId = 'abyss';
             Dungeon.generateAbyssBossRoom();
         } else {
+            // フロア形態・外観は階層につき一度だけ抽選し、生成再試行では固定する。
+            // 再試行ごとに引き直すと、検証に通りにくい形態の実効確率が下がるため。
+            const floorPlan = Dungeon.rollRandomFloorPlan(Dungeon.floor);
             let valid = false;
             let lastValidation = null;
             const maxAttempts = 12;
             for (let attempt = 0; attempt < maxAttempts; attempt++) {
                 Dungeon.resetRandomFloorAttemptState(attempt > 0);
-                Dungeon.buildRandomFloorLayout();
-                Dungeon.finalizeRandomFloorFeatures();
+                Dungeon.buildRandomFloorLayout(floorPlan);
+                Dungeon.finalizeRandomFloorFeatures(floorPlan);
                 lastValidation = Dungeon.validateGeneratedFloor();
                 if (lastValidation.ok) {
                     valid = true;
@@ -3015,8 +3559,11 @@ const Dungeon = {
 
             if (!valid) {
                 Dungeon.resetRandomFloorAttemptState(true);
-                Dungeon.generateFallbackRandomFloor();
-                Dungeon.finalizeRandomFloorFeatures();
+                // 安全用フォールバックでも外観テーマを失わない。
+                // 以前はここだけ未選択になり、常に既定の深淵チップへ戻っていた。
+                Dungeon.applyRandomFloorPlan(floorPlan);
+                Dungeon.generateFallbackRandomFloor(floorPlan);
+                Dungeon.finalizeRandomFloorFeatures(floorPlan);
                 const fallbackValidation = Dungeon.validateGeneratedFloor();
                 if (!fallbackValidation.ok && typeof console !== 'undefined' && console.warn) {
                     console.warn('Fallback random floor validation failed:', fallbackValidation.reason, lastValidation?.reason);
@@ -3024,15 +3571,7 @@ const Dungeon = {
             }
 		}
         
-        Field.currentMapData = { 
-			name: STORY_DATA.areas['ABYSS'].name,
-            width: Dungeon.width, 
-            height: Dungeon.height, 
-            tiles: Dungeon.map, 
-            isDungeon: true,
-            themeKey: App.data.dungeon.visualThemeKey || 'DEFAULT',
-            battleBg: App.data.dungeon.visualBattleBg || 'battle_bg_dungeon'
-        };
+        Field.currentMapData = Dungeon.createRandomFieldMapData();
         App.data.location.x = Field.x;
         App.data.location.y = Field.y;
     },
