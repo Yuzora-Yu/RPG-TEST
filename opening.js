@@ -1,14 +1,12 @@
 /* opening.js - PROLOGUE3後に再生する自動進行の紙芝居風オープニング。 */
 const PRISMA_OPENING_PAGES = [
-    { text: 'あの日、王都では「大いなる祝福」の儀式が行われた。', effect: 'prism', focus: '50% 46%', startScale: 1.02, endScale: 1.12, startX: '0%', endX: '0%', startY: '2%', endY: '-1%' },
-    { text: '六つの力を結ぶはずだったプリズマは、白く瞬いたあと、音もなく割れた。', effect: 'rupture', focus: '50% 43%', startScale: 1.1, endScale: 1.24, startX: '0%', endX: '0%', startY: '0%', endY: '-2%' },
-    { text: '七色の破片は空へ散り、地の底には、地図にない裂け目が走った。', effect: 'rupture', focus: '50% 58%', startScale: 1.18, endScale: 1.05, startX: '0%', endX: '0%', startY: '-2%', endY: '3%' },
-    { text: '同じ夜、遠い村がひとつ、冷たい風と底知れぬ闇に呑まれた。', effect: 'abyss', focus: '72% 38%', startScale: 1.08, endScale: 1.18, startX: '-1%', endX: '1%', startY: '1%', endY: '-1%' },
-    { text: '生き残った者は、答えのないまま剣を取った。', effect: 'abyss', focus: '78% 58%', startScale: 1.15, endScale: 1.06, startX: '1%', endX: '-1%', startY: '-1%', endY: '1%' },
-    { text: 'やがて、地の底から、あの夜と同じ風が吹き始める。', effect: 'abyss', focus: '50% 68%', startScale: 1.08, endScale: 1.18, startX: '0%', endX: '0%', startY: '-1%', endY: '2%' },
-    { text: '東では、炉の火までもが人の手を離れようとしていた。', effect: 'embers', focus: '20% 52%', startScale: 1.12, endScale: 1.22, startX: '1%', endX: '-2%', startY: '0%', endY: '-1%' },
-    { text: '異変はまだ、世界の片隅で静かに息をしている。', effect: 'abyss', focus: '50% 50%', startScale: 1.04, endScale: 1.14, startX: '0%', endX: '-1%', startY: '0%', endY: '0%' },
-    { text: 'その始まりを確かめるため、旅は続く。', effect: 'prism', focus: '55% 45%', startScale: 1.06, endScale: 1.17, startX: '0%', endX: '0%', startY: '1%', endY: '-1%' },
+    { text: '五年前のあの日　王都では「大いなる祝福」の儀式が行われた。', effect: 'prism', focus: '50% 46%', startScale: 1.02, endScale: 1.12, startX: '0%', endX: '0%', startY: '2%', endY: '-1%' },
+    { text: '六つの属性は一つに混じり　白く瞬いたあと　音もなく割れた。', effect: 'rupture', focus: '50% 43%', startScale: 1.1, endScale: 1.24, startX: '0%', endX: '0%', startY: '0%', endY: '-2%' },
+    { text: '六色の破片は空へ散り、地は裂け　大陸は分割された。', effect: 'rupture', focus: '50% 58%', startScale: 1.18, endScale: 1.05, startX: '0%', endX: '0%', startY: '-2%', endY: '3%' },
+    { text: '同じ夜　山奥の村がひとつ　底知れぬ闇に呑まれ　地図から消えた。', effect: 'abyss', focus: '72% 38%', startScale: 1.08, endScale: 1.18, startX: '-1%', endX: '1%', startY: '1%', endY: '-1%' },
+    { text: '今もまた　地の底から　あの夜と同じ闇が忍びよっていた。', effect: 'abyss', focus: '50% 68%', startScale: 1.08, endScale: 1.18, startX: '0%', endX: '0%', startY: '-1%', endY: '2%' },
+    { text: 'そして東では　炉の火までもが人の手を離れようとしている。', effect: 'embers', focus: '20% 52%', startScale: 1.12, endScale: 1.22, startX: '1%', endX: '-2%', startY: '0%', endY: '-1%' },
+    { text: '国の儀式とは…世界に広がる異変とは……その答えを探すため　冒険者達は旅に出る。', effect: 'abyss', focus: '50% 50%', startScale: 1.04, endScale: 1.14, startX: '0%', endX: '-1%', startY: '0%', endY: '0%' },
     { logo: true, text: '', effect: 'prism', focus: '50% 48%', startScale: 1.12, endScale: 1.02, startX: '0%', endX: '0%', startY: '-1%', endY: '1%', duration: 5000 }
 ];
 
@@ -60,7 +58,6 @@ const OpeningSequence = {
                 <p class="prisma-opening__text"></p>
                 <div class="prisma-opening__footer">
                     <span class="prisma-opening__counter"></span>
-                    <span class="prisma-opening__auto">AUTO</span>
                 </div>
             </article>`;
         document.body.appendChild(root);
@@ -109,7 +106,6 @@ const OpeningSequence = {
             logo.hidden = !page.logo;
             title.textContent = page.title || '';
             title.hidden = !page.title;
-            counter.textContent = `${String(pageIndex + 1).padStart(2, '0')} / ${String(pages.length).padStart(2, '0')}`;
             image.src = page.image || '';
             image.style.setProperty('--op-focus', page.focus || '50% 50%');
             image.style.setProperty('--op-start-scale', String(page.startScale || 1.08));
