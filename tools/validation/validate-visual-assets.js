@@ -9,7 +9,6 @@ const mapSource = read('map.js');
 const dungeonSource = read('dungeon.js');
 const phaserFieldSource = read('phaser-field.js');
 const mainSource = read('main.js');
-const sharedRenderSource = read('map_render_shared.js');
 const { context } = loadMapRuntime(root);
 
 if (/water\.y\s*=|waterBaseY/.test(phaserFieldSource)) {
@@ -223,7 +222,7 @@ for (const stem of [
         if (!graphics.has(`${stem}_${index}`)) throw new Error(`Terrain variation is missing: ${stem}_${index}`);
     }
 }
-if (!mainSource.includes('window.MapRenderShared.resolveTileVariant(base, tileX, tileY)') || !sharedRenderSource.includes('Math.imul(x, 374761393)')) {
+if (!mainSource.includes('base?.variants') || !mainSource.includes('Math.imul(x, 374761393)')) {
     throw new Error('Coordinate-stable terrain variation selection is missing.');
 }
 if (graphics.get('battle_bg_wind_hole') !== 'assets/generated/battle-forest-wind-hole-v001.png' ||

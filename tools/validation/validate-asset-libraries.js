@@ -96,13 +96,13 @@ for (const asset of monsterAssets) {
     if (sourceHeader && ![4, 6].includes(sourceHeader.colorType)) errors.push(`monster source has no alpha: ${asset.source}`);
 }
 
-if (assets.cacheWarmup?.version !== '2026-07-17-battle-logic-ui-v40') {
+if (assets.cacheWarmup?.version !== '2026-07-16-forest-sign-v31') {
     errors.push('assets.js cache warmup version is stale');
 }
-if (!read('main.js').includes("fullDataCacheName: 'prisma-abyss-v3.100-battle-logic-ui-runtime'")) {
+if (!read('main.js').includes("fullDataCacheName: 'prisma-abyss-v3.89-forest-sign-runtime-assets'")) {
     errors.push('main.js full-data cache version is stale');
 }
-if (!read('sw.js').includes('const RUNTIME_CACHE_NAME = "prisma-abyss-v3.100-battle-logic-ui-runtime"')) {
+if (!read('sw.js').includes('const RUNTIME_CACHE_NAME = "prisma-abyss-v3.89-forest-sign-runtime-assets"')) {
     errors.push('sw.js runtime cache version is stale');
 }
 

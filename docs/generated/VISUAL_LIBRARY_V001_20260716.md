@@ -48,18 +48,6 @@
 
 `monsterId` と `storyAssignment` は全件確定済み。個別能力・スキル・耐性・配置の詳細は `docs/generated/adopted-monsters-20260716.md` を参照する。
 
-## 仲間マップチップ v003
-
-- 対象: アリサ、バロン、アラン、ソフィア、フリーダ、ハイネ、リュウ、クロード、レオン
-- 基準: 各キャラクターの `char_face_*.gif` を正本として衣装、髪色、武器、役割を再解釈
-- 実行形式: 生成解像度を維持した正方形RGBA PNG、下中央基準、床影なし。ゲーム内では1タイルの表示枠へ縮小する。
-- 実行素材: `assets/map/overlays/overlay_companion_*_v003.png`
-- 原版・索引: `assets/map/overlays/source/companion-highres-v003/`
-- 再構築: `tools/assets/build-companion-map-sprites-highres.py`
-- 回帰検証: `tools/validation/validate-companion-map-sprites.js`
-
-特に旧版との乖離が大きかったバロンは赤髪・鼻の絆創膏・傷んだ革鎧・棘肩当て・両刃斧、アリサは緑の短髪・斥候用革装備・短剣という実キャラクター設定へ戻した。レオンは実際の顔グラフィックを基準に、青髪・白青金の騎士鎧・翼章・青盾で新規作成した。
-
 ## 採用手順
 
 1. `manifest.json` からテーマ・属性・役割で候補を選ぶ。

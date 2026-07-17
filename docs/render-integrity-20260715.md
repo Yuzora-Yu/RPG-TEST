@@ -79,11 +79,19 @@
 
 ## 回帰検証
 
+<<<<<<< HEAD
 - `tools/validation/validate-field-render-lifecycle.js`: 全GRAPHICS読込、背景フォールバック、溶岩背景、テーマ背景優先、円光追従、冒険者隣接・8フレーム・会話後消去、ログ保持を検証する。
 - `tools/validation/validate-visual-assets.js`: 13テーマの最低階、全テーマの壁・床チップ差、テーマ背景登録、浸水水面設定、画像ファイル、固定ダンジョン画像を検証する。
 - `tools/dungeon-wall-visual-qa.html`: 14系統を同一の32px床／48px露出壁条件で並べ、境界、明度、アクセント、水面除外を原寸比較する。
 - `tools/validation/validate-map-safety.js`: 生成階の到達性に加え、テーマ候補数、浸水変換、船移動用水面から階段までの到達性を検証する。
 - `tools/validation/validate-opening-flow.js`: 全キャッシュ確認、初期必須画像、キャッシュ世代を検証する。
+=======
+- `tools/validate-field-render-lifecycle.js`: 全GRAPHICS読込、背景フォールバック、溶岩背景、テーマ背景優先、円光追従、冒険者隣接・8フレーム・会話後消去、ログ保持を検証する。
+- `tools/validate-visual-assets.js`: 13テーマの最低階、全テーマの壁・床チップ差、テーマ背景登録、浸水水面設定、画像ファイル、固定ダンジョン画像を検証する。
+- `tools/dungeon-wall-visual-qa.html`: 14系統を同一の32px床／48px露出壁条件で並べ、境界、明度、アクセント、水面除外を原寸比較する。
+- `tools/validate-map-safety.js`: 生成階の到達性に加え、テーマ候補数、浸水変換、船移動用水面から階段までの到達性を検証する。
+- `tools/validate-opening-flow.js`: 全キャッシュ確認、初期必須画像、キャッシュ世代を検証する。
+>>>>>>> 2069569eb8fb4158c20e139c27fcfc5d5dc3bcf8
 - 実画面QAでは別オリジンで旧Service Workerを排除し、全GRAPHICS読込後に迷路テーマ背景と溶岩背景の要求キー・実描画キー・CSS背景URLの一致を確認する。
 
 ## 禁止事項

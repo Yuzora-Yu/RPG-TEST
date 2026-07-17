@@ -2011,6 +2011,80 @@ const Dungeon = {
         return tile !== 'W' && tile !== 'C' && tile !== 'R' && !Dungeon.isLockedDoorTile(tile);
     },
 
+    findShortestGridPath: (startX, startY, targetX, targetY, isWalkable, width, height) => {
+        const sx = Number(startX), sy = Number(startY), tx = Number(targetX), ty = Number(targetY);
+        const w = Number(width), h = Number(height);
+        if (![sx, sy, tx, ty, w, h].every(Number.isFinite) || w <= 0 || h <= 0 || typeof isWalkable !== 'function') return null;
+        if (sx === tx && sy === ty) return [];
+
+        const startKey = `${sx},${sy}`;
+        const targetKey = `${tx},${ty}`;
+        const queue = [{ x: sx, y: sy }];
+        const parents = new Map([[startKey, null]]);
+
+        for (let qi = 0; qi < queue.length; qi++) {
+            const current = queue[qi];
+            // 同じ最短距離なら、目標へ近づく向きを優先して見た目の蛇行を抑える。
+            const directions = [[1, 0], [-1, 0], [0, 1], [0, -1]].sort((a, b) => {
+                const ad = Math.abs(tx - (current.x + a[0])) + Math.abs(ty - (current.y + a[1]));
+                const bd = Math.abs(tx - (current.x + b[0])) + Math.abs(ty - (current.y + b[1]));
+                return ad - bd;
+            });
+            for (const [dx, dy] of directions) {
+                const nx = current.x + dx;
+                const ny = current.y + dy;
+                if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+                const nextKey = `${nx},${ny}`;
+                if (parents.has(nextKey)) continue;
+                if (!isWalkable(nx, ny, current.x, current.y)) continue;
+                parents.set(nextKey, `${current.x},${current.y}`);
+                if (nextKey === targetKey) {
+                    const reversed = [{ x: nx, y: ny }];
+                    let cursor = parents.get(nextKey);
+                    while (cursor && cursor !== startKey) {
+                        const [px, py] = cursor.split(',').map(Number);
+                        reversed.push({ x: px, y: py });
+                        cursor = parents.get(cursor);
+                    }
+                    return reversed.reverse();
+                }
+                queue.push({ x: nx, y: ny });
+            }
+        }
+        return null;
+    },
+
+    isFixedHunterWalkable: (x, y, fromX, fromY, occupied = null) => {
+        if (!Dungeon.isFixedWalkableForEffect(x, y)) return false;
+        const map = Field.currentMapData;
+        const areaKey = Field.getCurrentAreaKey ? Field.getCurrentAreaKey() : App.data.location.area;
+        const changeKey = Field.getCurrentMapChangeKey ? Field.getCurrentMapChangeKey(areaKey) : areaKey;
+        let tile = String(App.data.progress.mapChanges?.[changeKey]?.[`${x},${y}`]
+            || App.data.progress.mapChanges?.[areaKey]?.[`${x},${y}`]
+            || map.tiles[y][x]).toUpperCase();
+
+        // 固定ダンジョンの水面はプレイヤーも通常歩行できないため、追跡者も経路に使わない。
+        if (tile === '~') return false;
+        if (tile === 'B') {
+            const bossDef = (typeof MapRegistry !== 'undefined' && MapRegistry.findFixedBoss)
+                ? MapRegistry.findFixedBoss(map, x, y)
+                : null;
+            const defeated = Field.isFixedBossDefeatedAt?.(bossDef, x, y, Field.getCurrentProgressMapKey?.());
+            const available = Field.isFixedBossAvailable ? Field.isFixedBossAvailable(bossDef) : true;
+            if (!defeated && available) return false;
+        }
+
+        const mapAction = (typeof MapRegistry !== 'undefined' && MapRegistry.findMapAction)
+            ? MapRegistry.findMapAction(map, x, y)
+            : null;
+        if (Field.isBlockingMapActor?.(mapAction)) return false;
+        if (Field.getBlockingObjectAt?.(x, y)) return false;
+        if (Dungeon.isAdventurerAt?.(x, y)) return false;
+        if (Field.isBuildingMovementBlocked?.(fromX, fromY, x, y)) return false;
+        if (occupied instanceof Set && occupied.has(`${x},${y}`) && !(Number(x) === Number(Field.x) && Number(y) === Number(Field.y))) return false;
+        return true;
+    },
+
     triggerFixedEffectBattle: (effect, options = {}) => {
         const ids = Array.isArray(effect.monsterIds) ? effect.monsterIds : [effect.monsterId].filter(Boolean);
         if (ids.length === 0) return false;
@@ -2128,6 +2202,14 @@ const Dungeon = {
         const key = Dungeon.getCurrentFixedHunterKey();
         const state = Dungeon.getFixedHunterState();
         const defs = Field.currentMapData.tileEffects.filter(e => e.type === 'hunter');
+        const occupied = new Set();
+        defs.forEach((def, index) => {
+            const hunterId = def.id || `hunter_${index}`;
+            const hunterPos = state?.[hunterId];
+            if (hunterPos?.active && !Dungeon.isFixedHunterDefeated(hunterId, key)) {
+                occupied.add(`${Number(hunterPos.x)},${Number(hunterPos.y)}`);
+            }
+        });
         for (let i = 0; i < defs.length; i++) {
             const def = defs[i];
             const id = def.id || `hunter_${i}`;
@@ -2137,37 +2219,44 @@ const Dungeon = {
             const rawSpeed = Number.isFinite(Number(def.speed)) ? Number(def.speed) : 2;
             const speed = Math.max(0, rawSpeed);
             const range = Math.max(1, Number(def.range || 99));
-            const dist = Math.abs(Number(pos.x) - Field.x) + Math.abs(Number(pos.y) - Field.y);
-            if (dist > range || speed <= 0) continue;
+            if (speed <= 0) continue;
+
+            const originalKey = `${Number(pos.x)},${Number(pos.y)}`;
+            occupied.delete(originalKey);
+            const path = Dungeon.findShortestGridPath(
+                pos.x,
+                pos.y,
+                Field.x,
+                Field.y,
+                (nx, ny, fromX, fromY) => Dungeon.isFixedHunterWalkable(nx, ny, fromX, fromY, occupied),
+                Field.currentMapData.width,
+                Field.currentMapData.height
+            );
+            // range は直線距離ではなく、実際に歩く最短経路の長さで判定する。
+            if (!path || path.length === 0 || path.length > range) {
+                occupied.add(originalKey);
+                continue;
+            }
 
             pos.moveProgress = Number(pos.moveProgress || 0) + speed;
             const moveCount = Math.floor(pos.moveProgress);
             pos.moveProgress -= moveCount;
-            if (moveCount <= 0) continue;
+            if (moveCount <= 0) {
+                occupied.add(originalKey);
+                continue;
+            }
 
-            for (let step = 0; step < moveCount; step++) {
-                const dx = Field.x === pos.x ? 0 : (Field.x > pos.x ? 1 : -1);
-                const dy = Field.y === pos.y ? 0 : (Field.y > pos.y ? 1 : -1);
-                const horizontalFirst = Math.abs(Field.x - pos.x) >= Math.abs(Field.y - pos.y);
-                const attempts = horizontalFirst ? [[dx, 0], [0, dy]] : [[0, dy], [dx, 0]];
-                let moved = false;
-                for (const [mx, my] of attempts) {
-                    if (!mx && !my) continue;
-                    const nx = Number(pos.x) + mx;
-                    const ny = Number(pos.y) + my;
-                    if (!Dungeon.isFixedWalkableForEffect(nx, ny)) continue;
-                    pos.x = nx;
-                    pos.y = ny;
-                    moved = true;
-                    break;
-                }
-                if (!moved) break;
+            const actualMoveCount = Math.min(moveCount, path.length);
+            for (let step = 0; step < actualMoveCount; step++) {
+                pos.x = path[step].x;
+                pos.y = path[step].y;
                 if (Number(pos.x) === Number(Field.x) && Number(pos.y) === Number(Field.y)) {
                     App.log(def.message || '追跡する強敵に追いつかれた！');
                     Dungeon.triggerFixedEffectBattle({ ...def, id }, { statMultiplier: Number(def.statMultiplier || 1.8), hunterMapKey: key });
                     return true;
                 }
             }
+            occupied.add(`${Number(pos.x)},${Number(pos.y)}`);
         }
         App.save();
         return false;
