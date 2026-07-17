@@ -23,6 +23,41 @@ normalizeCoordinateActorTiles(FIXED_MAPS);
 normalizeCoordinateActorTiles(FIXED_DUNGEON_MAPS);
 
 const MapRegistry = {
+    normalizeWorldPoint(x, y) {
+        const width = (typeof MAP_DATA !== "undefined" && MAP_DATA[0]) ? MAP_DATA[0].length : 1;
+        const height = (typeof MAP_DATA !== "undefined" && MAP_DATA.length) ? MAP_DATA.length : 1;
+        return {
+            x: ((Number(x) % width) + width) % width,
+            y: ((Number(y) % height) + height) % height
+        };
+    },
+
+    getWorldBridgeAt(x, y) {
+        if (typeof WORLD_BRIDGES === "undefined") return null;
+        const point = MapRegistry.normalizeWorldPoint(x, y);
+        return WORLD_BRIDGES.find(bridge => Number(bridge.x) === point.x && Number(bridge.y) === point.y) || null;
+    },
+
+    isWorldBridgeAt(x, y) {
+        return !!MapRegistry.getWorldBridgeAt(x, y);
+    },
+
+    // ワールド地形の意味を、移動・描画・エンカウントで共有する。
+    // 橋の基礎タイルは W だが、ゲーム上は海ではなく陸上として扱う。
+    getWorldSurfaceAt(x, y) {
+        const point = MapRegistry.normalizeWorldPoint(x, y);
+        const tile = String((typeof MAP_DATA !== "undefined" ? MAP_DATA[point.y]?.[point.x] : '') || '').toUpperCase();
+        const bridge = MapRegistry.getWorldBridgeAt(point.x, point.y);
+        return {
+            x: point.x,
+            y: point.y,
+            tile,
+            bridge,
+            isBridge: !!bridge,
+            isSea: tile === 'W' && !bridge
+        };
+    },
+
     applyStoryMapMutation(mutationKey) {
         const mutation = STORY_MAP_MUTATIONS[mutationKey];
         if (!mutation || typeof App === "undefined" || !App.data?.progress) return false;
@@ -89,6 +124,34 @@ const MapRegistry = {
         };
     },
 
+    // 固有ダンジョンの入口が街・集落など別の固定MAP内にある場合、その実座標を返す。
+    // スカイプリズム、検証ツール、将来の移動UIで同じ解決規則を共有する。
+    findFixedMapEntranceForDungeon(areaKey) {
+        if (!areaKey || typeof FIXED_MAPS === "undefined") return null;
+        const candidates = [];
+        Object.entries(FIXED_MAPS).forEach(([parentAreaKey, parentDef]) => {
+            const actions = Array.isArray(parentDef?.mapActions) ? parentDef.mapActions : [];
+            actions.forEach(action => {
+                if (!action || (action.target !== areaKey && action.targetAreaKey !== areaKey)) return;
+                const x = Number(action.x);
+                const y = Number(action.y);
+                if (!Number.isInteger(x) || !Number.isInteger(y)) return;
+                if (x < 0 || y < 0 || x >= Number(parentDef.width) || y >= Number(parentDef.height)) return;
+                candidates.push({ parentAreaKey, parentDef, action, x, y });
+            });
+        });
+        if (!candidates.length) return null;
+
+        // 複数マス幅の入口は中央マスへ着地する。座標順を固定して結果を決定論的にする。
+        candidates.sort((a, b) =>
+            a.parentAreaKey.localeCompare(b.parentAreaKey) ||
+            (a.x - b.x) ||
+            (a.y - b.y)
+        );
+        const sameParent = candidates.filter(entry => entry.parentAreaKey === candidates[0].parentAreaKey);
+        return sameParent[Math.floor(sameParent.length / 2)];
+    },
+
     getFixedDungeonProgressKey(areaKey, floorNo = 1) {
         const base = MapRegistry.getFixedDungeonBase(areaKey);
         const progressAreaKey = base?.canonicalAreaKey || areaKey;
@@ -101,6 +164,15 @@ const MapRegistry = {
     findMapAction(mapDef, x, y) {
         if (!mapDef || !Array.isArray(mapDef.mapActions)) return null;
         return mapDef.mapActions.find(action => Number(action.x) === Number(x) && Number(action.y) === Number(y)) || null;
+    },
+
+    findBlockingObject(mapDef, x, y) {
+        if (!mapDef || !Array.isArray(mapDef.blockingObjects)) return null;
+        return mapDef.blockingObjects.find(object =>
+            object?.active !== false &&
+            Number(object.x) === Number(x) &&
+            Number(object.y) === Number(y)
+        ) || null;
     },
 
     isPointInEffect(effect, x, y) {
@@ -122,9 +194,51 @@ const MapRegistry = {
         return false;
     },
 
+    getMapTileSign(mapDef, x, y) {
+        if (!mapDef || !Array.isArray(mapDef.tiles)) return 'W';
+        const row = mapDef.tiles[Number(y)];
+        return String(row?.[Number(x)] || 'W').toUpperCase();
+    },
+
+    isProtectedTileEffectCell(mapDef, x, y) {
+        if (!mapDef) return true;
+        const tx = Number(x);
+        const ty = Number(y);
+        const tile = MapRegistry.getMapTileSign(mapDef, tx, ty);
+
+        // Rectangular effect definitions may cross geometry. Walls never become effects.
+        if (tile === 'W') return true;
+
+        // Interactive cells retain their identity when a surface-effect range crosses them.
+        // Stairs in particular must remain reliable stopping points for sliding movement.
+        if (['C', 'R', 'B', 'S', 'D', 'U', 'X', 'Y', 'Z', 'Q', 'N', 'O'].includes(tile)) return true;
+        const occupies = (list) => Array.isArray(list) && list.some(entry =>
+            Number(entry?.x) === tx && Number(entry?.y) === ty
+        );
+        return occupies(mapDef.floorLinks)
+            || occupies(mapDef.chests)
+            || occupies(mapDef.bosses)
+            || occupies(mapDef.mapActions)
+            || occupies(mapDef.blockingObjects)
+            || occupies(mapDef.healSprings);
+    },
+
+    isTileEffectApplicableAt(mapDef, effect, x, y) {
+        if (!MapRegistry.isPointInEffect(effect, x, y)) return false;
+        if (Array.isArray(effect?.excludePoints) && effect.excludePoints.some(point =>
+            Number(point?.x) === Number(x) && Number(point?.y) === Number(y)
+        )) return false;
+        const tile = MapRegistry.getMapTileSign(mapDef, x, y);
+        if (tile === 'W') return false;
+        if (effect?.type === 'ice' || effect?.type === 'poison') {
+            return !MapRegistry.isProtectedTileEffectCell(mapDef, x, y);
+        }
+        return true;
+    },
+
     findTileEffect(mapDef, x, y) {
         if (!mapDef || !Array.isArray(mapDef.tileEffects)) return null;
-        const effect = mapDef.tileEffects.find(effect => MapRegistry.isPointInEffect(effect, x, y)) || null;
+        const effect = mapDef.tileEffects.find(effect => MapRegistry.isTileEffectApplicableAt(mapDef, effect, x, y)) || null;
         return effect ? { ...effect, x: Number(x), y: Number(y) } : null;
     },
 
@@ -145,8 +259,9 @@ const MapRegistry = {
 
     getWorldAreaAt(x, y) {
         if (typeof STORY_DATA === "undefined" || !STORY_DATA.areas) return null;
-        const wx = Number(x);
-        const wy = Number(y);
+        const point = MapRegistry.normalizeWorldPoint(x, y);
+        const wx = point.x;
+        const wy = point.y;
         for (const [key, area] of Object.entries(STORY_DATA.areas)) {
             if (Array.isArray(area.entrances)) {
                 const entrance = area.entrances.find(pos => Number(pos.x) === wx && Number(pos.y) === wy);

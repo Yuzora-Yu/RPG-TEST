@@ -51,7 +51,7 @@ Source links:
 - Put any required key pickup on the visible or near-visible side route.
 - Put reward chests after the door or in dead-end branches.
 - Keep floor links and exit tiles reachable without ambiguity.
-- Validate every edited floor with `node tools/validate-map-safety.js`.
+- Validate every edited floor with `node tools/validation/validate-map-safety.js`.
 
 ## Fixed Map Guidelines
 
@@ -64,8 +64,8 @@ Source links:
 
 - `docs/generated/fixed-map-preview.html`: overview of all fixed field maps.
 - `docs/generated/fixed-dungeon-preview.html`: overview of all fixed dungeon floors.
-- `tools/validate-map-safety.js`: coordinate integrity, `story.js` trigger coverage, and random-floor key-door safety validation.
-- `tools/validate-key-door-runtime.js`: runtime-like checks for locked-door movement, floor key pickup, guardian key rewards, and fixed-floor links.
+- `tools/validation/validate-map-safety.js`: coordinate integrity, `story.js` trigger coverage, and random-floor key-door safety validation.
+- `tools/validation/validate-key-door-runtime.js`: runtime-like checks for locked-door movement, floor key pickup, guardian key rewards, and fixed-floor links.
 - `tools/render-random-key-door-preview.js`: visual overview of generated route-blocking doors and floor keys.
 
 ## Rendering Guidelines

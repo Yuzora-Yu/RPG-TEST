@@ -6,9 +6,11 @@
   <title>PRISMA ABYSS - Monster Editor ID順CSV/1行出力版</title>
   <script src="skills.js"></script>
   <script src="items.js"></script>
+  <script src="item-expansion.js"></script>
   <script src="passiveSkill.js"></script>
   <script src="monster-images.js"></script>
   <script src="monsters.js"></script>
+  <script src="chest-mimics.js"></script>
   <style>
     :root{
       --bg:#0b1020;--panel:#121a2f;--panel2:#18233c;--panel3:#0f1729;--line:#2b3854;
@@ -464,7 +466,7 @@
 `function applyFloorOffset(baseMonster, floor, band) {\n  const offset = getFloorOffset(floor, band);\n  const monster = cloneMonsterData(baseMonster);\n\n  monster.hp = Math.floor(monster.hp * offset.hpMp);\n  monster.mp = Math.floor(monster.mp * offset.hpMp);\n  monster.atk = Math.floor(monster.atk * offset.other);\n  monster.def = Math.floor(monster.def * offset.other);\n  monster.spd = Math.floor(monster.spd * offset.other);\n  monster.mag = Math.floor(monster.mag * offset.other);\n  monster.mdef = Math.floor(monster.mdef * offset.other);\n  monster.gold = Math.floor(monster.gold * offset.reward);\n  monster.exp = Math.floor(monster.exp * offset.reward);\n\n  monster.baseId = baseMonster.id;\n  monster.generatedFloor = floor;\n  monster.isBandMonster = true;\n\n  return monster;\n}\n\n` +
 `function getMonsterBandForFloor(floor) {\n  return MONSTER_BANDS_1_200.find((band) => floor >= band.bandStart && floor <= band.bandEnd) || null;\n}\n\n` +
 `function generateBandMonster(floor) {\n  const band = getMonsterBandForFloor(floor);\n\n  if (!band || !band.monsters || band.monsters.length === 0) {\n    return null;\n  }\n\n  const base = band.monsters[Math.floor(Math.random() * band.monsters.length)];\n  return applyFloorOffset(base, floor, band);\n}\n\n` +
-`function isStoryOnlyBoss(monster) {\n  const id = Number(monster?.id);\n  return !!(monster?.isStoryBoss || monster?.storyOnly || (id >= 301000 && id < 400000));\n}\n\n` +
+`function isStoryOnlyBoss(monster) {\n  const id = Number(monster?.id);\n  return Number.isFinite(id) && id >= 300000 && id < 400000;\n}\n\n` +
 `function getBossesForFloor(floor) {\n  return FIXED_BOSS_MONSTERS\n    .filter((monster) => monster.isBoss && !monster.isRare && !monster.isEstark && !monster.isSpecialBoss && !isStoryOnlyBoss(monster) && monster.minF === floor)\n    .map(cloneMonsterData);\n}\n\n` +
 `function getSpecialBossesForFloor(floor) {\n  return FIXED_SPECIAL_BOSSES\n    .filter((monster) => monster.isBoss && (monster.isSpecialBoss || monster.isEstark) && monster.minF === floor)\n    .map(cloneMonsterData);\n}\n\n` +
 `function getBossesByIds(ids) {\n  const idList = Array.isArray(ids) ? ids : [ids];\n\n  return idList\n    .map((id) => ALL_MONSTER_BASES.find((monster) => monster.id === id))\n    .filter(Boolean)\n    .map(cloneMonsterData);\n}\n\n` +

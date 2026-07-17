@@ -2,6 +2,8 @@
   const base = "assets/monsters/";
   const normalIds = Array.from({ length: 90 }, (_, i) => 100001 + i);
   const abyssHighFloorIds = Array.from({ length: 90 }, (_, i) => 100091 + i);
+  const adoptedNormalIds = Array.from({ length: 16 }, (_, i) => 200001 + i);
+  const adoptedQuestBossIds = Array.from({ length: 8 }, (_, i) => 302201 + i);
   const bossIds = [
     200201, 200202, 200203, 200204,
     301000, 301001, 301002,
@@ -20,12 +22,18 @@
     502049, 502098,
     902000,
   ];
-  const ids = normalIds.concat(abyssHighFloorIds, bossIds);
+  const ids = normalIds.concat(abyssHighFloorIds, adoptedNormalIds, adoptedQuestBossIds, bossIds);
 
   const bossCandidateMap = ids.reduce((map, id) => {
     map[id] = `${base}monster_${id}.png`;
     return map;
   }, {});
 
-  window.MonsterImageMap = Object.assign({}, window.MonsterImageMap || {}, bossCandidateMap);
+  const chestTrapMonsterImages = {
+    120301: "assets/monsters/chest-mimics/monster_120301.png",
+    120302: "assets/monsters/chest-mimics/monster_120302.png",
+    120303: "assets/monsters/chest-mimics/monster_120303.png",
+  };
+
+  window.MonsterImageMap = Object.assign({}, window.MonsterImageMap || {}, bossCandidateMap, chestTrapMonsterImages);
 })();

@@ -57,7 +57,8 @@
             kind: boss,
             unlockFlags: ["darkCastleCleared"],
             objective: "闇の加護で見えるようになった結界の奥へ進み、リーシアを救う。",
-            startText: "リーシアの気配は、クレナ鍾乳洞の結界の奥にかすかに残っている。",
+            startText: "結界の前に立つリーシアは、奥に潜む魔力を断つため同行を求めている。",
+            startEventId: "quest_licia_start",
             progressText: "クレナ鍾乳洞深部で結界の核を探そう。",
             completeText: "結界の核は砕け、リーシアが仲間に加わった。",
             rewardAllies: [303]

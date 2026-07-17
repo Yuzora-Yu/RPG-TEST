@@ -3,7 +3,10 @@
 
     const TILE_SIZE = 32;
     const FIELD_VIEW_TILES = 15;
-    const VIEW_PADDING = 1;
+    // 静的タイルは4マス単位で再利用し、歩くたびの全破棄・全生成を避ける。
+    // その間にカメラが移動しても画面端が欠けないよう、同じ幅だけ余白を描く。
+    const RENDER_BUCKET_SIZE = 4;
+    const VIEW_PADDING = RENDER_BUCKET_SIZE;
     const BUILDING_PREFIXES = [
         'overlay_building_',
         'overlay_field_castle',
@@ -34,7 +37,11 @@
         actorObjects: [],
         waterObjects: [],
         uiObjects: [],
+        atmosphereObjects: [],
+        atmosphereLight: null,
+        atmosphereSignature: null,
         textureKeys: new Set(),
+        lastPlayerTextureKey: null,
         resizeObserver: null,
         lastStaticSignature: null,
         lastParentWidth: 0,
@@ -44,6 +51,7 @@
     const getApp = () => (typeof App !== 'undefined' ? App : null);
     const getDungeon = () => (typeof Dungeon !== 'undefined' ? Dungeon : null);
     const getWorldMap = () => (typeof MAP_DATA !== 'undefined' ? MAP_DATA : null);
+    const renderShared = window.MapRenderShared;
 
     const isBuildingTexture = (key) => BUILDING_PREFIXES.some(prefix => String(key || '').startsWith(prefix));
 
@@ -92,6 +100,12 @@
         Object.entries(graphics.images).forEach(([key, image]) => {
             if (!image || !image.complete || !image.naturalWidth || state.textureKeys.has(key)) return;
             if (!scene.textures.exists(key)) scene.textures.addImage(key, image);
+            // High-resolution companion masters are reduced once at render time.
+            // Per-texture linear filtering avoids the aliasing caused by forcing a
+            // 1200px source through the global nearest-neighbour tile filter.
+            if (String(key).startsWith('overlay_companion_') && typeof Phaser !== 'undefined') {
+                scene.textures.get(key)?.setFilter?.(Phaser.Textures.FilterMode.LINEAR);
+            }
             state.textureKeys.add(key);
         });
     };
@@ -105,7 +119,11 @@
 
     const addImage = (scene, key, x, y, options = {}, target = state.worldObjects) => {
         key = resolveTextureKey(key);
-        if (!key || !scene.textures.exists(key)) return null;
+        if (!key) return null;
+        if (!scene.textures.exists(key)) {
+            window.GRAPHICS?.get?.(key);
+            return null;
+        }
         const image = scene.add.image(x, y, key);
         image.setOrigin(options.originX ?? 0.5, options.originY ?? 1);
         const bleed = options.bleed || 0;
@@ -135,6 +153,216 @@
         shadow.setDepth(depth);
         target.push(shadow);
         return shadow;
+    };
+
+    const destroyAtmosphere = (scene) => {
+        state.atmosphereObjects.forEach(object => scene?.tweens?.killTweensOf?.(object));
+        destroyObjects(state.atmosphereObjects);
+        state.atmosphereLight = null;
+        state.atmosphereSignature = null;
+    };
+
+    const stableHash = (...parts) => renderShared.stableHash(...parts);
+
+    // Each map theme owns its floor detail. This prevents a generic stone crack
+    // from leaking into forests, palaces, machinery, and underwater ruins.
+    // A frequency of 40 is 2.5%, less than half the former 1/17 dungeon rate.
+    const FLOOR_DECOR_THEME_CONFIG = window.MAP_FLOOR_DECOR_THEMES || Object.freeze({
+        DEFAULT: { key: 'overlay_decor_default_cave_dust', frequency: 40, alpha: 0.64 },
+        START_VILLAGE: { key: 'overlay_decor_start_village_herbs', frequency: 40, alpha: 0.78 },
+        START_CAVE: { key: 'overlay_decor_start_cave_damp', frequency: 40, alpha: 0.72 },
+        FIRE_VILLAGE: { key: 'overlay_decor_fire_ember_fissure', frequency: 40, alpha: 0.84 },
+        WIND_VILLAGE: { key: 'overlay_decor_wind_village_feather', frequency: 40, alpha: 0.74 },
+        WIND_HOLE: { key: 'overlay_decor_wind_hole_root', frequency: 40, alpha: 0.76 },
+        FORBIDDEN_FOREST: { key: 'overlay_decor_forbidden_forest_moss', frequency: 40, alpha: 0.78 },
+        WATER_CITY: { key: null, disabled: true, reason: 'authored-clear-floor' },
+        BIG_TOWER: { key: 'overlay_decor_big_tower_gear_oil', frequency: 40, alpha: 0.72 },
+        THUNDER_FORT: { key: 'overlay_decor_thunder_fort_wiring', frequency: 40, alpha: 0.88, animate: 'electric' },
+        LIGHT_PALACE: { key: 'overlay_decor_light_palace_prism', frequency: 40, alpha: 0.66 },
+        GALVANIA_CAVE: { key: 'overlay_decor_galvania_crystal', frequency: 40, alpha: 0.72 },
+        DARK_CASTLE: { key: 'overlay_decor_dark_castle_chain', frequency: 40, alpha: 0.70 },
+        CRENA_CAVE: { key: null, disabled: true, reason: 'authored-clear-floor' },
+        SEABED_TEMPLE: { key: 'overlay_decor_seabed_temple_ripple', frequency: 40, alpha: 0.70 },
+        DARK_SHRINE_RUINS: { key: 'overlay_decor_dark_shrine_sigil', frequency: 40, alpha: 0.66 },
+        GREZELIA_CAVE: { key: 'overlay_decor_grezelia_fossil', frequency: 40, alpha: 0.72 },
+        ABYSS: { key: 'overlay_decor_abyss_void_dust', frequency: 40, alpha: 0.62 },
+        ABYSS_FIELD: { key: 'overlay_decor_abyss_field_flora', frequency: 40, alpha: 0.74 },
+        RUINED_SHRINE: { key: 'overlay_decor_ruined_shrine_glyph', frequency: 40, alpha: 0.68 }
+    });
+
+    const getFixedFloorDecorationsAt = (field, tileX, tileY) => renderShared.fixedFloorDecorationsAt(field.currentMapData, tileX, tileY);
+
+    const drawConnectedFloorTextile = (scene, field, tileX, tileY, definition, baseDepth) => {
+        const plan = renderShared.textileCellPlan(definition, tileX, tileY);
+        if (!plan) return false;
+        const style = plan.style;
+        const px = tileX * TILE_SIZE;
+        const py = tileY * TILE_SIZE;
+        const edge = style.edgeSize;
+        const key = suffix => `${style.keyPrefix}_${suffix}`;
+        const open = plan.open;
+
+        // Every tile keeps its own row depth so later floor rows cannot cover a tall carpet.
+        // A two-pixel overlap hides the source texture boundary without exposing a seam.
+        addImage(scene, key('fill'), px + TILE_SIZE / 2, py + TILE_SIZE, {
+            width: TILE_SIZE,
+            height: TILE_SIZE,
+            bleed: 2,
+            depth: baseDepth + 6
+        });
+        if (open.n) addImage(scene, key('edge_n'), px + TILE_SIZE / 2, py + edge, { width: TILE_SIZE, height: edge, depth: baseDepth + 7 });
+        if (open.s) addImage(scene, key('edge_s'), px + TILE_SIZE / 2, py + TILE_SIZE, { width: TILE_SIZE, height: edge, depth: baseDepth + 7 });
+        // The next row has a larger depth and its fill overlaps two pixels upward.
+        // Extend each side segment by the same amount so that fill cannot notch the trim.
+        if (open.w) addImage(scene, key('edge_w'), px + edge / 2, py + TILE_SIZE, { width: edge, height: TILE_SIZE + 2, depth: baseDepth + 7 });
+        if (open.e) addImage(scene, key('edge_e'), px + TILE_SIZE - edge / 2, py + TILE_SIZE, { width: edge, height: TILE_SIZE + 2, depth: baseDepth + 7 });
+
+        if (open.n && open.w) addImage(scene, key('corner_nw'), px + edge / 2, py + edge, { width: edge, height: edge, depth: baseDepth + 8 });
+        if (open.n && open.e) addImage(scene, key('corner_ne'), px + TILE_SIZE - edge / 2, py + edge, { width: edge, height: edge, depth: baseDepth + 8 });
+        if (open.s && open.w) addImage(scene, key('corner_sw'), px + edge / 2, py + TILE_SIZE, { width: edge, height: edge, depth: baseDepth + 8 });
+        if (open.s && open.e) addImage(scene, key('corner_se'), px + TILE_SIZE - edge / 2, py + TILE_SIZE, { width: edge, height: edge, depth: baseDepth + 8 });
+        return true;
+    };
+
+    const drawFixedFloorDecoration = (scene, field, tileX, tileY, definition, baseDepth) => {
+        if (drawConnectedFloorTextile(scene, field, tileX, tileY, definition, baseDepth)) return true;
+        if (definition?.type !== 'image' || !definition.imageKey) return false;
+        const px = tileX * TILE_SIZE;
+        const py = tileY * TILE_SIZE;
+        return !!addImage(scene, definition.imageKey, px + TILE_SIZE / 2, py + TILE_SIZE, {
+            width: Math.max(8, Number(definition.drawWidth || TILE_SIZE)),
+            height: Math.max(8, Number(definition.drawHeight || TILE_SIZE)),
+            depth: baseDepth + 7,
+            alpha: definition.alpha === undefined ? 1 : Number(definition.alpha)
+        });
+    };
+
+    const drawGroundDecoration = (scene, field, areaKey, tileX, tileY, rawUpper, floorConfig, overlay, baseDepth) => {
+        if (!field.currentMapData) {
+            if (overlay || field.getTileEffectGraphicKey?.(tileX, tileY)) return;
+            const point = window.MapRegistry?.normalizeWorldPoint?.(tileX, tileY) || { x: tileX, y: tileY };
+            const hash = stableHash('WORLD-DECOR', point.x, point.y, rawUpper);
+            const worldDepth = -99900;
+            const map = getWorldMap();
+            const worldTileAt = (x, y) => {
+                const normalized = window.MapRegistry?.normalizeWorldPoint?.(x, y) || { x, y };
+                return String(map?.[normalized.y]?.[normalized.x] || '').toUpperCase();
+            };
+
+            // Bridges are explicit water-tile overlays. Never infer crossings from
+            // neighboring terrain: only authored coordinates may become passable.
+            const bridgeDef = window.MapRegistry?.getWorldBridgeAt?.(point.x, point.y);
+            if (bridgeDef) {
+                const bridge = addImage(scene, 'overlay_world_bridge_wood', tileX * TILE_SIZE + TILE_SIZE / 2, tileY * TILE_SIZE + TILE_SIZE / 2, {
+                    width: 38,
+                    height: 19,
+                    originY: 0.5,
+                    depth: worldDepth + 4,
+                    alpha: 0.98
+                });
+                if (bridge && bridgeDef.direction === 'vertical') bridge.setAngle(90);
+                return;
+            }
+            const addWorldDecor = (keys, size, alpha, frequency) => {
+                if (hash % frequency !== 0) return;
+                const variants = Array.isArray(keys) ? keys : [keys];
+                const key = variants[(hash >>> 11) % variants.length];
+                const image = addImage(scene, key, tileX * TILE_SIZE + TILE_SIZE / 2, tileY * TILE_SIZE + TILE_SIZE, {
+                    width: size,
+                    height: size,
+                    depth: worldDepth,
+                    alpha
+                });
+                if (!image) return;
+                image.setFlipX(((hash >>> 4) & 1) === 1);
+                image.setAngle((((hash >>> 8) % 3) - 1) * 3);
+            };
+
+            if (rawUpper === 'G' || rawUpper === 'T') {
+                addWorldDecor([
+                    'overlay_world_grass_detail',
+                    'overlay_world_grass_weeds',
+                    'overlay_world_grass_earth'
+                ], 23, 0.78, 24);
+            } else if (rawUpper === 'F') {
+                addWorldDecor([
+                    'overlay_world_forest_understory',
+                    'overlay_world_forest_roots'
+                ], 26, 0.75, 10);
+            } else if (rawUpper === 'L') {
+                addWorldDecor('overlay_world_foothill_rocks', 27, 0.72, 10);
+            } else if (rawUpper === 'W') {
+                const neighbors = [
+                    [0, -1, 0, 0, -TILE_SIZE / 2],
+                    [1, 0, 90, TILE_SIZE / 2, 0],
+                    [0, 1, 180, 0, TILE_SIZE / 2],
+                    [-1, 0, 270, -TILE_SIZE / 2, 0]
+                ];
+                // 水タイル中央へ波線を置かず、水と陸が接する境界線へ各辺を密着させる。
+                // 角では二辺を描き、海の内部に縦縞が走る見え方を防ぐ。
+                neighbors.forEach(([dx, dy, angle, offsetX, offsetY]) => {
+                    const neighbor = worldTileAt(tileX + dx, tileY + dy);
+                    if (!neighbor || neighbor === 'W') return;
+                    const foam = addImage(scene, 'overlay_world_shore_foam', tileX * TILE_SIZE + TILE_SIZE / 2 + offsetX, tileY * TILE_SIZE + TILE_SIZE / 2 + offsetY, {
+                        width: 32,
+                        height: 8,
+                        originY: 0.5,
+                        depth: worldDepth + 2,
+                        alpha: 0.58
+                    });
+                    if (foam) foam.setAngle(angle);
+                });
+            }
+            return;
+        }
+
+        // Connected carpets/mats are ground layers. Draw them before checking actor,
+        // boss, event, or floor-effect overlays so an object placed on top cannot cut
+        // a square hole out of the textile.
+        if (field.currentMapData) {
+            const fixedDecorations = getFixedFloorDecorationsAt(field, tileX, tileY);
+            let drewFixedDecoration = false;
+            fixedDecorations.forEach(definition => {
+                drewFixedDecoration = drawFixedFloorDecoration(scene, field, tileX, tileY, definition, baseDepth) || drewFixedDecoration;
+            });
+            if (drewFixedDecoration) return;
+        }
+
+        if (rawUpper !== 'T' && rawUpper !== 'G') return;
+        if (overlay || field.getTileEffectGraphicKey?.(tileX, tileY)) return;
+        if (!field.currentMapData) return; // ワールドマップは1マスが広域地形なので小物を置かない。
+
+        const themeKey = String(field.currentMapData?.themeKey || areaKey || 'DEFAULT').toUpperCase();
+        const decor = renderShared.floorDecorationPlan({
+            themes: FLOOR_DECOR_THEME_CONFIG,
+            themeKey,
+            areaKey,
+            floor: field.currentMapData?.floor || 0,
+            x: tileX,
+            y: tileY
+        });
+        if (!decor) return;
+
+        const image = addImage(scene, decor.key, tileX * TILE_SIZE + TILE_SIZE / 2, tileY * TILE_SIZE + TILE_SIZE, {
+            width: 32,
+            height: 32,
+            depth: baseDepth + 7,
+            alpha: decor.alpha
+        });
+        if (!image) return;
+        image.setFlipX(decor.flipX);
+        image.setAngle(decor.angle);
+        if (decor.animate === 'electric') {
+            scene.tweens.add({
+                targets: image,
+                alpha: Math.max(0.42, decor.alpha - 0.28),
+                duration: 420 + (decor.hash % 240),
+                ease: 'Stepped',
+                yoyo: true,
+                repeat: -1,
+                repeatDelay: 1800 + ((decor.hash >>> 10) % 1300)
+            });
+        }
     };
 
     const getMapSize = (field) => ({
@@ -190,8 +418,8 @@
         const isWorldMap = !field.currentMapData;
         // Wの意味はマップごとに異なる。水路画像を割り当てたWだけを低い水面として扱う。
         // これにより水上都市・海底神殿・クレナ鍾乳洞へ適用し、通常の石壁には影響しない。
-        const isAnimatedWaterTile = upper === 'W' && objectConfig.animatedWater === true;
-        const isLowerWaterTile = upper === 'W' && objectConfig.lowerLayer === true;
+        const isAnimatedWaterTile = objectConfig.animatedWater === true;
+        const isLowerWaterTile = objectConfig.lowerLayer === true;
         // ワールドマップは海・山・森・草地をすべて同一の地形層として描く。
         // Y深度を与えると下段の海が上段の山へ乗り、地形が欠けて見える。
         const groundDepth = isWorldMap ? -100000 : baseDepth;
@@ -235,8 +463,11 @@
             }
         }
 
+        drawGroundDecoration(scene, field, areaKey, tileX, tileY, rawUpper, floorConfig, overlay, baseDepth);
+
         if (!isLowerWaterTile && upper !== 'T' && upper !== 'G' && !overlay) {
-            const key = wallGraphic || objectConfig.img;
+            const wallFaceOverlay = !!(wallGraphic && field.getDungeonWallFaceModeForDraw?.() === 'overlay');
+            const key = wallFaceOverlay ? objectConfig.img : (wallGraphic || objectConfig.img);
             const isWall = upper === 'W';
             const height = isWall && !isWorldMap ? 48 : TILE_SIZE;
             if (key && !isWorldMap) addShadow(scene, px + TILE_SIZE / 2 + 3, py + TILE_SIZE - 3, 24, 0.24, baseDepth + 10);
@@ -248,13 +479,21 @@
             if (!objectImage && objectConfig.color && objectConfig.color !== floorConfig.color) {
                 addTileFallback(scene, px, py, objectConfig.color, isWorldMap ? terrainDepth : baseDepth + 40);
             }
+            if (wallFaceOverlay) {
+                addImage(scene, wallGraphic, px + TILE_SIZE / 2, py + TILE_SIZE, {
+                    width: TILE_SIZE,
+                    height,
+                    depth: baseDepth + 49
+                });
+            }
         }
 
 		if (overlay) {
 			const key = overlay.img;
 			const building = isBuildingTexture(key);
-			const characterOverlay = String(key || '').startsWith('overlay_npc_');
+			const characterOverlay = /^(overlay_npc_|overlay_companion_)/.test(String(key || ''));
 			const wallOverlay = overlay.wallOverlay === true;
+			const blockingObjectOverlay = overlay.blockingObject === true;
 			const bossOverlay =
 				String(key || '').startsWith('overlay_boss_') ||
 				String(key || '').startsWith('monster_');
@@ -266,12 +505,16 @@
 			// ボスマス画像だけ一括で2倍表示する。
 			// addImage() は originY=1 なので、足元は元マス下端に揃ったまま拡大される。
 			const overlayScale = bossOverlay ? 2 : 1;
-			const width = raisedBuilding ? TILE_SIZE * 2.4 : TILE_SIZE * overlayScale;
-			const height = wallOverlay ? TILE_SIZE * 1.5 : (raisedBuilding ? TILE_SIZE * 2.4 : TILE_SIZE * overlayScale);
+			const width = blockingObjectOverlay
+				? Math.max(8, Number(overlay.drawWidth || TILE_SIZE))
+				: (raisedBuilding ? TILE_SIZE * 2.4 : TILE_SIZE * overlayScale);
+			const height = blockingObjectOverlay
+				? Math.max(8, Number(overlay.drawHeight || TILE_SIZE))
+				: (wallOverlay ? TILE_SIZE * 1.5 : (raisedBuilding ? TILE_SIZE * 2.4 : TILE_SIZE * overlayScale));
 
 			// ダンジョンの宝箱・階段・扉は影なし。
 			// NPCとボスは位置を読みやすくするため影を残す。
-			if (!wallOverlay && !building && (!field.currentMapData?.isDungeon || characterOverlay || bossOverlay)) {
+            if (!parts.worldOverlay && !wallOverlay && !building && (blockingObjectOverlay || !field.currentMapData?.isDungeon || characterOverlay || bossOverlay)) {
 				addShadow(
 					scene,
 					px + TILE_SIZE / 2 + 4,
@@ -486,26 +729,96 @@
 
     const drawAtmosphere = (scene, field) => {
         const dungeon = !!field.currentMapData?.isDungeon;
-        if (!dungeon) return;
+        if (!dungeon || field.getCurrentAreaKey?.() === 'WORLD') {
+            if (state.atmosphereObjects.length) destroyAtmosphere(scene);
+            return;
+        }
 
+        const areaKey = String(field.getCurrentAreaKey?.() || 'DUNGEON');
+        const floor = Number(getDungeon()?.floor || field.currentMapData?.floor || 0);
+        const zoom = Math.max(0.1, Number(scene.cameras?.main?.zoom || 1));
+        const logicalWidth = scene.scale.width / zoom;
+        const logicalHeight = scene.scale.height / zoom;
+        const signature = `${areaKey}:${floor}:${scene.scale.width}x${scene.scale.height}:${zoom.toFixed(4)}`;
+        if (state.atmosphereSignature === signature && state.atmosphereObjects.length) return;
+        destroyAtmosphere(scene);
+
+        // Preserve the authored darkness and player-centered light, but remove the four
+        // black edge rectangles that looked like a square frame. All atmosphere objects
+        // persist across steps; only motes animate on a three-second drift cycle.
+        let atmosphereColor = 0x1a1028;
+        let atmosphereAlpha = 0.10;
+        let moteColor = 0xc9b6ff;
+        if (/FIRE|IGNIS|VOLCANO/i.test(areaKey)) {
+            atmosphereColor = 0x4a160d;
+            moteColor = 0xff9a45;
+        } else if (/WATER|SEA|CRENA|ICE/i.test(areaKey)) {
+            atmosphereColor = 0x0b3150;
+            atmosphereAlpha = 0.085;
+            moteColor = 0xa8ecff;
+        } else if (/WIND|FOREST/i.test(areaKey)) {
+            atmosphereColor = 0x143d2b;
+            atmosphereAlpha = 0.055;
+            moteColor = 0xb6f7a5;
+        } else if (/LIGHT|PALACE|SHRINE/i.test(areaKey)) {
+            atmosphereColor = 0x4a4218;
+            atmosphereAlpha = 0.045;
+            moteColor = 0xfff4b8;
+        } else if (/DARK|ABYSS/i.test(areaKey)) {
+            atmosphereColor = 0x180b2d;
+            atmosphereAlpha = 0.13;
+            moteColor = 0xc084fc;
+        }
+
+        const atmosphereMargin = TILE_SIZE;
         const overlay = scene.add.rectangle(
-            0,
-            0,
-            scene.scale.width,
-            scene.scale.height,
-            0x1a1028,
-            0.10
+            -atmosphereMargin,
+            -atmosphereMargin,
+            logicalWidth + atmosphereMargin * 2,
+            logicalHeight + atmosphereMargin * 2,
+            atmosphereColor,
+            atmosphereAlpha
         );
         overlay.setOrigin(0, 0);
         overlay.setScrollFactor(0);
         overlay.setDepth(900000);
-        state.uiObjects.push(overlay);
+        state.atmosphereObjects.push(overlay);
 
-        const light = scene.add.circle(scene.scale.width / 2, scene.scale.height / 2, 95, 0xffedbd, 0.055);
-        light.setScrollFactor(0);
-        light.setBlendMode(window.Phaser.BlendModes.ADD);
+        const playerLightX = Number(field.x) * TILE_SIZE + TILE_SIZE / 2;
+        const playerLightY = Number(field.y) * TILE_SIZE + TILE_SIZE / 2;
+        const light = scene.add.circle(playerLightX, playerLightY, 95 / zoom, 0xffedbd, 0.055);
+        // Use world coordinates. A screen-center light drifts away from the hero whenever
+        // viewport sizing or camera transforms differ; this point is updated on every step.
+        light.setScrollFactor(1);
         light.setDepth(900001);
-        state.uiObjects.push(light);
+        state.atmosphereObjects.push(light);
+        state.atmosphereLight = light;
+
+        const width = Math.max(72, logicalWidth - 36);
+        const height = Math.max(72, logicalHeight - 36);
+        for (let index = 0; index < 9; index += 1) {
+            const hash = stableHash(areaKey, floor, index);
+            const driftHash = stableHash('DRIFT', areaKey, floor, index);
+            const x = 18 + (hash % width);
+            const y = 18 + ((hash >>> 9) % height);
+            const radius = (1 + ((hash >>> 17) % 2)) / zoom;
+            const mote = scene.add.circle(x, y, radius, moteColor, 0.18 + (index % 3) * 0.04);
+            mote.setScrollFactor(0);
+            mote.setDepth(900003);
+            state.atmosphereObjects.push(mote);
+            scene.tweens.add({
+                targets: mote,
+                x: Math.max(18, Math.min(logicalWidth - 18, x + ((driftHash % 31) - 15))),
+                y: Math.max(18, Math.min(logicalHeight - 18, y + (((driftHash >>> 8) % 25) - 12))),
+                alpha: 0.10 + ((driftHash >>> 16) % 10) / 100,
+                duration: 3000,
+                ease: 'Sine.easeInOut',
+                yoyo: true,
+                repeat: -1,
+                delay: (index % 3) * 180
+            });
+        }
+        state.atmosphereSignature = signature;
     };
 
     const getStaticSignature = (field) => {
@@ -522,7 +835,7 @@
             dungeon.trialAngel,
             dungeon.abyssBossEncounter
         ].map(object => object
-            ? `${object.active}:${object.floor}:${object.x}:${object.y}:${object.displayMonsterId || ''}:${Array.isArray(object.monsterIds) ? object.monsterIds.join(',') : ''}`
+            ? `${object.active}:${object.floor}:${object.x}:${object.y}:${object.direction || ''}:${object.step || ''}:${object.displayMonsterId || ''}:${Array.isArray(object.monsterIds) ? object.monsterIds.join(',') : ''}`
             : '-'
         ).join('|');
 		const randomDungeonMapSignature = (
@@ -537,11 +850,15 @@
         return [
             field.getCurrentAreaKey(),
             getDungeon()?.floor || 0,
-            field.x,
-            field.y,
+            Math.floor(Number(field.x || 0) / RENDER_BUCKET_SIZE),
+            Math.floor(Number(field.y || 0) / RENDER_BUCKET_SIZE),
             field.minimapMode,
             typeof field.getFieldMinimapDisplaySize === 'function' ? field.getFieldMinimapDisplaySize() : 80,
             field.currentMapData?.name || 'WORLD',
+            field.currentMapData?.themeKey || 'DEFAULT',
+            field.currentMapData?.battleBg || '',
+            dungeon.floorPlanType || '',
+            dungeon.visualThemeId || '',
             progress.storyStep || 0,
             progress.subStep || 0,
             JSON.stringify(progress.flags || {}),
@@ -560,23 +877,34 @@
         const py = Number(field.y) * TILE_SIZE + TILE_SIZE;
         const direction = ['down', 'left', 'right', 'up'][field.dir];
         const transport = getApp()?.data?.transportMode;
-        const heroKey = transport === 'boat'
+        const floodedBoat = typeof field.isPlayerOnFloodedWater === 'function' && field.isPlayerOnFloodedWater();
+        const isBoat = transport === 'boat' || floodedBoat;
+        const heroKey = isBoat
             ? `overlay_magic_boat_${direction}`
             : transport === 'flying'
                 ? `hero_wing_${direction}_${field.step}`
                 : `hero_${direction}_${field.step}`;
-        if (transport !== 'boat') {
-            addShadow(scene, px + 3, py - 3, 22, 0.30, Number(field.y) * 100 + 82, state.actorObjects);
+        if (!isBoat) {
+            // 主人公の左右へはみ出さず、両足の接地だけが分かる幅にする。
+            addShadow(scene, px, py - 2, 16, 0.34, Number(field.y) * 100 + 82, state.actorObjects);
         }
-        if (!addImage(scene, heroKey, px, py, {
+        // Request the desired frame, but never replace the actor with a white circle while
+        // a newly cached wing frame is being promoted into Phaser's texture manager.
+        window.GRAPHICS?.get?.(heroKey);
+        const normalKey = `hero_${direction}_${field.step}`;
+        const fallbackKeys = [state.lastPlayerTextureKey, normalKey, 'hero_down_1'];
+        const drawKey = scene.textures.exists(heroKey)
+            ? heroKey
+            : fallbackKeys.find(key => key && scene.textures.exists(key));
+        const playerImage = drawKey ? addImage(scene, drawKey, px, py, {
             depth: Number(field.y) * 100 + 88
-        }, state.actorObjects)) {
-            const hero = scene.add.circle(px, py - TILE_SIZE / 2, 10, 0xffffff);
-            hero.setDepth(Number(field.y) * 100 + 88);
-            state.actorObjects.push(hero);
-        }
+        }, state.actorObjects) : null;
+        if (playerImage) state.lastPlayerTextureKey = drawKey;
         applyFieldCamera(scene, field);
         scene.cameras.main.setRoundPixels(true);
+        if (state.atmosphereLight?.active) {
+            state.atmosphereLight.setPosition(px, py - TILE_SIZE / 2);
+        }
         state.waterObjects.forEach((water) => {
             const shifted = ((field.step + water.phase) & 1) === 0;
             // タイル画像と描画矩形は動かさず、1マス内の波紋だけを左右へ揺らす。
@@ -607,6 +935,7 @@
         const staticSignature = getStaticSignature(field);
         if (state.lastStaticSignature === staticSignature) {
             drawPlayer(scene, field);
+            if (typeof field.drawHudMinimap === 'function') field.drawHudMinimap();
             return;
         }
 
@@ -631,7 +960,9 @@
         if (field.currentMapData?.isDungeon && dungeonData) {
             drawSpecialObject(scene, field, dungeonData.healSpring, 'buff-ai', 0x80ffb0, floor);
             drawSpecialObject(scene, field, dungeonData.abyssRift, 'abyss-vortex', 0xa34cff, floor);
-            drawSpecialObject(scene, field, dungeonData.adventurer, null, 0x5bd6ff, floor);
+            const adventurer = dungeonData.adventurer;
+            const adventurerKey = getDungeon()?.getAdventurerGraphicKey?.(adventurer) || 'overlay_dungeon_adventurer';
+            drawSpecialObject(scene, field, adventurer ? { ...adventurer, image: null } : null, adventurerKey, 0x5bd6ff, floor);
             drawSpecialObject(scene, field, dungeonData.keyGuardian, null, 0xffd78a, floor);
             drawSpecialObject(scene, field, dungeonData.trialAngel, 'overlay_dungeon_trial_angel', 0xfff3a6, floor);
             drawAbyssBossObject(scene, field, floor);

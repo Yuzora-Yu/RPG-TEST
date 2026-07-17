@@ -11,6 +11,7 @@ The scenario should feel like an authored large-scale JRPG, not generic AI fanta
 Before editing scenario, dialogue, NPC text, story flags, map event text, or character-related content, read the relevant files first:
 
 - `docs/development-policy.md`
+- `docs/CURRENT_PRODUCT_DIRECTIVES_20260714.md`
 - `docs/main-story-plot-prism-arc-20260608.md`
 - `docs/implemented-story-flow-20260608.md`
 - `docs/story-bible/README.md`
@@ -56,8 +57,9 @@ The user decides whether a legacy line becomes canon, gets revised, is rewritten
 
 ## Dialogue rules
 
-- One displayed dialogue line should be about 30 Japanese characters or fewer.
-- Split long thoughts into multiple dialogue entries.
+- There is no fixed character-count limit for dialogue lines.
+- Judge dialogue by on-screen readability, natural breathing, information density, and character voice.
+- Split a thought only when the split improves rhythm, comprehension, or presentation; do not split mechanically by length.
 - Consecutive lines by the same speaker are allowed.
 - Do not make all characters speak in the same rhythm.
 - Do not make NPCs exist only as hint dispensers.
@@ -116,7 +118,7 @@ Do not reveal early that the kingdom army is being drawn into the Abyss unless t
 Before finalizing any scenario draft or implementation, check:
 
 - character voice separation
-- line length
+- on-screen readability and dialogue rhythm
 - story timing
 - known facts versus hidden facts
 - flag and party conditions
@@ -127,3 +129,10 @@ Before finalizing any scenario draft or implementation, check:
 - whether user approval is required
 
 If a change touches legacy implemented dialogue, it needs a review queue entry unless the user explicitly instructs direct replacement.
+
+## Current product directives
+
+- On first launch, ask whether to download the full image cache now. If the player selects Yes, show progress and wait for the complete download before starting. If the player selects No, start immediately and still cache the complete image set in the background. No means “do not wait before play,” not “disable full caching.” Do not use lazy/on-demand image fetching as the core policy. Keep every map, monster, boss, battle background, battle effect, and newly added visual registered in the centralized `assets.js` full-cache list. Optimize map rendering without reducing cache coverage. Do not repeat this prompt after the post-`PROLOGUE3` opening.
+- Do not create or implement tutorials until all target screens and interaction flows are complete. A tutorial based on an obsolete screen is invalid. Tutorial planning notes may remain, but runtime tutorial implementation is deferred until the UI completion gate is satisfied.
+- Gacha is not planned for player use. Keep legacy code only when removal would create unnecessary risk, but do not add a player-facing route, unlock, tutorial, reward dependency, or future-release promise.
+- Do not infer effective starting combat stats from a single displayed value or one battle sample. Trace character master data, new-game copying, randomized starting equipment, `App.calcStats()`, traits, allocations, limit breaks, auras, and battle initialization first.

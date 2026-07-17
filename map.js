@@ -159,6 +159,12 @@ const TILE_THEMES = {
         M: {
             img: "tile_magma",
             color: "#e4511e"
+        },
+        "~": {
+            img: "sea",
+            color: "#155d7a",
+            animatedWater: true,
+            lowerLayer: true
         }
     },
     START_VILLAGE: {
@@ -326,6 +332,24 @@ const TILE_THEMES = {
         },
         S: {
             img: "tile_wind_floor",
+            color: "#d7b45a"
+        }
+    },
+    WIND_TEMPLE: {
+        W: {
+            img: "tile_wind_temple_wall",
+            color: "#33474a"
+        },
+        T: {
+            img: "tile_wind_temple_floor",
+            color: "#748a89"
+        },
+        G: {
+            img: "tile_wind_temple_floor",
+            color: "#748a89"
+        },
+        S: {
+            img: "tile_wind_temple_floor",
             color: "#d7b45a"
         }
     },
@@ -909,6 +933,181 @@ const TILE_THEMES = {
     }
 };
 
+const DUNGEON_WALL_FACE_THEMES = {
+    DEFAULT: {
+        img: "wall_face",
+        accentImg: "wall_face_torch",
+        accentEvery: 5
+    },
+    ABYSS: {
+        img: "wall_face",
+        accentImg: "wall_face_torch",
+        accentEvery: 5
+    },
+    START_CAVE: {
+        img: "wall_face",
+        accentImg: "wall_face_torch",
+        accentEvery: 5
+    },
+    FIRE_VILLAGE: {
+        img: "tile_fire_wall_face"
+    },
+    FORBIDDEN_FOREST: {
+        disabled: true,
+        reason: "theme-wall-variants"
+    },
+    WIND_VILLAGE: {
+        img: "tile_wind_temple_wall_face"
+    },
+    WIND_TEMPLE: {
+        img: "tile_wind_temple_wall_face"
+    },
+    WIND_HOLE: {
+        img: "tile_wind_hole_wall_face"
+    },
+    BIG_TOWER: {
+        img: "tile_tower_wall_face"
+    },
+    THUNDER_FORT: {
+        img: "tile_thunder_wall_face"
+    },
+    LIGHT_PALACE: {
+        img: "tile_light_wall_face",
+        accentImg: "tile_light_wall_face_prism",
+        accentEvery: 5
+    },
+    DARK_CASTLE: {
+        img: "tile_dark_castle_wall_face"
+    },
+    GALVANIA_CAVE: {
+        img: "tile_galvania_wall_face"
+    },
+    DARK_SHRINE_RUINS: {
+        img: "tile_dark_shrine_wall_face",
+        mode: "overlay"
+    },
+    GREZELIA_CAVE: {
+        img: "tile_grezelia_wall_face"
+    },
+    CRENA_CAVE: {
+        disabled: true,
+        reason: "water-surface-W"
+    },
+    SEABED_TEMPLE: {
+        disabled: true,
+        reason: "water-surface-W"
+    }
+};
+
+const MAP_FLOOR_DECOR_THEMES = {
+    DEFAULT: {
+        key: "overlay_decor_default_cave_dust",
+        frequency: 40,
+        alpha: 0.64
+    },
+    START_VILLAGE: {
+        key: "overlay_decor_start_village_herbs",
+        frequency: 40,
+        alpha: 0.78
+    },
+    START_CAVE: {
+        key: "overlay_decor_start_cave_damp",
+        frequency: 40,
+        alpha: 0.72
+    },
+    FIRE_VILLAGE: {
+        key: "overlay_decor_fire_ember_fissure",
+        frequency: 40,
+        alpha: 0.84
+    },
+    WIND_VILLAGE: {
+        key: "overlay_decor_wind_village_feather",
+        frequency: 40,
+        alpha: 0.74
+    },
+    WIND_TEMPLE: {
+        key: null,
+        disabled: true,
+        reason: "authored-clear-floor"
+    },
+    WIND_HOLE: {
+        key: "overlay_decor_wind_hole_root",
+        frequency: 40,
+        alpha: 0.76
+    },
+    FORBIDDEN_FOREST: {
+        key: "overlay_decor_forbidden_forest_moss",
+        frequency: 40,
+        alpha: 0.78
+    },
+    WATER_CITY: {
+        key: null,
+        disabled: true,
+        reason: "authored-clear-floor"
+    },
+    BIG_TOWER: {
+        key: "overlay_decor_big_tower_gear_oil",
+        frequency: 40,
+        alpha: 0.72
+    },
+    THUNDER_FORT: {
+        key: "overlay_decor_thunder_fort_wiring",
+        frequency: 40,
+        alpha: 0.88,
+        animate: "electric"
+    },
+    LIGHT_PALACE: {
+        key: "overlay_decor_light_palace_prism",
+        frequency: 40,
+        alpha: 0.66
+    },
+    GALVANIA_CAVE: {
+        key: "overlay_decor_galvania_crystal",
+        frequency: 40,
+        alpha: 0.72
+    },
+    DARK_CASTLE: {
+        key: "overlay_decor_dark_castle_chain",
+        frequency: 40,
+        alpha: 0.7
+    },
+    CRENA_CAVE: {
+        key: null,
+        disabled: true,
+        reason: "authored-clear-floor"
+    },
+    SEABED_TEMPLE: {
+        key: "overlay_decor_seabed_temple_ripple",
+        frequency: 40,
+        alpha: 0.7
+    },
+    DARK_SHRINE_RUINS: {
+        key: "overlay_decor_dark_shrine_sigil",
+        frequency: 40,
+        alpha: 0.66
+    },
+    GREZELIA_CAVE: {
+        key: "overlay_decor_grezelia_fossil",
+        frequency: 40,
+        alpha: 0.72
+    },
+    ABYSS: {
+        key: "overlay_decor_abyss_void_dust",
+        frequency: 40,
+        alpha: 0.62
+    },
+    ABYSS_FIELD: {
+        key: "overlay_decor_abyss_field_flora",
+        frequency: 40,
+        alpha: 0.74
+    },
+    RUINED_SHRINE: {
+        key: "overlay_decor_ruined_shrine_glyph",
+        frequency: 40,
+        alpha: 0.68
+    }
+};
+
 const STORY_DATA = {
     areas: {
         START_VILLAGE: {
@@ -1092,14 +1291,13 @@ const STORY_DATA = {
                 img: "overlay_field_cave",
                 color: "#72c7dd"
             },
-            entryRequiredFlag: "crenaRouteKnown",
             entryBypassFlags: [
                 "blueCrystalObtained",
                 "waterCityCleared"
             ],
             entryEventId: "crena_cave_entry",
             entryEventStoryStep: 4,
-            entryLockedText: "青い光が洞口の奥で揺れている。今はまだ、鍾乳洞へ入る理由がない。"
+            entryLockedText: "青い光が洞口の奥で揺れている。"
         },
         DARK_SHRINE_RUINS: {
             name: "闇の神殿エクリプス跡",
@@ -1337,6 +1535,24 @@ const FIELD_ENCOUNTER_ZONES = [
     }
 ];
 
+const WORLD_BRIDGES = [
+    {
+        x: 53,
+        y: 69,
+        direction: "horizontal"
+    },
+    {
+        x: 78,
+        y: 58,
+        direction: "horizontal"
+    },
+    {
+        x: 79,
+        y: 58,
+        direction: "horizontal"
+    }
+];
+
 const MAP_DATA = [
     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
     "WMMMLWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
@@ -1396,7 +1612,7 @@ const MAP_DATA = [
     "WMMMWMMMMMMMWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGLLLLLGGGdMMMMMMMMGGGGGGGMMMMMMFFFFFWWGGGGGGGGGGllllllMMMMWWWWWWWWWW",
     "WMMMWTTMMMMMMWWWWWWWWWWWWWWWWWWWWWWWGGMMMGGGGLLGGMMMMMMMMMGGGGGGMMMMMMMFFFFFGGWWGGGGGGGGlllllllMMMMMWWWWWWWWWW",
     "WMMMWTTTMMMMMMWWWWWWWWWWWWWWWWWWWWWWMMMMMMMGGGGGMMMMMMMMMMMMMMMMMMMMFFFFFFGGGGWWGGGGGGlllllllMMMMMWWWWWWWWWWWW",
-    "WMMWWWTTTMMMMMMWWWWWWWWWWWWWWWWWWWWWGMMMMMMMMMGMMMMMMMMWMMMMMMMMMMFFFFFFGGGGGGGGGGGGllllllMMMMMMMWWWWWWWWWWWWW",
+    "WMMWWWTTTMMMMMMWWWWWWWWWWWWWWWWWWWWWGMMMMMMMMMGMMMMMMMMWMMMMMMMMMMFFFFFFGGGGGGWWGGGGllllllMMMMMMMWWWWWWWWWWWWW",
     "WWMWWWWTTTMMMMMMMMWWWWWWWWWWWWWWWWWGGGGMMMMMMMMMMMMMMMMWMMMMMMMFFFFFFFFGGGGGGGWWGlllllllMMMMMMMMMWWWWWWWWWWWWW",
     "WWMMWWWTTMMMMMMMMMMWWWWWWWWWWWWWWWTLLLMMMMMMMMMMMMMMMMMWMMMMFFFFFFFFFFFGGGGGGFWWllllllMMMMMMMMMMWWWWWWWWWWWWWW",
     "WWMMWWWWMMMMMMMMMWWWWWWWWWWWWWWWWMMMMMMMMMMMMMMMMMMMMMWWWFFFFFFFFFFGGGGGGGGGFFWWllMMMMMMMMMMWWWWWWWWWWWWWWWWWW",
@@ -1407,7 +1623,7 @@ const MAP_DATA = [
     "WWWWWMMMMMWWWWWWMMMMMMMMMMMMMMMMMMMMMMllllllFFFFFGGGGWGGGGGGGGGGGGGGFFFFFWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
     "WWWWWMMMMMMWWWWWWWMMMMMMMMMMMMMMMMMMllllllllllFFGGGGGWGGGGGGGGGGGGGFFFFFWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
     "WWWWWWWMMMMMMWWWWWWMMMMMMMMMMMMMllllllllllllllGGGGGGGWGGGGGGGGGGFFFFFFWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-    "WWWWWWWWMMMMMMMMWWWWMMMMMMMMMMlllllllllllllGGGGGGGGGGGGGGGGGGGGFFFFFWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+    "WWWWWWWWMMMMMMMMWWWWMMMMMMMMMMlllllllllllllGGGGGGGGGGWGGGGGGGGGFFFFFWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
     "WWWWWWWWWWMMMMMMMWWWWWMMMMMMllllllllllGGGGGGGGGGGGGGGWGGGGGGGGFFFFWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
     "WWWWWWWWWWWMMMMMMMMWWWWMMMlllllllGGGGGGGGFFFGGGGGGGGGWGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
     "WWWWWWWWWWWWMMMMMMMMWWWWLlllllGGGGGGGFFFFFFFFGGGGGGGGWGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
@@ -1793,7 +2009,12 @@ const FIXED_MAPS = {
                 label: "村人と話す",
                 log: "村人が、北東の穴を見つめている。",
                 type: "storyEvent",
-                eventId: "town_start_villager_1",
+                conversationKey: "lumina_villager_sinkhole",
+                cycleEventIds: [
+                    "town_start_villager_1_a",
+                    "town_start_villager_1_b",
+                    "town_start_villager_1_c"
+                ],
                 imageKey: "overlay_npc_villager",
                 baseTile: "G"
             },
@@ -1803,7 +2024,11 @@ const FIXED_MAPS = {
                 label: "村の若者と話す",
                 log: "若者が木剣を握りしめている。",
                 type: "storyEvent",
-                eventId: "town_start_villager_2",
+                conversationKey: "lumina_villager_youth",
+                cycleEventIds: [
+                    "town_start_villager_2_a",
+                    "town_start_villager_2_b"
+                ],
                 imageKey: "overlay_npc_bronze_knight",
                 baseTile: "G"
             },
@@ -1813,7 +2038,11 @@ const FIXED_MAPS = {
                 label: "薬草摘みと話す",
                 log: "籠を抱えた女性が、葉についた泥を払っている。",
                 type: "storyEvent",
-                eventId: "town_start_villager_3",
+                conversationKey: "lumina_villager_herbalist",
+                cycleEventIds: [
+                    "town_start_villager_3_a",
+                    "town_start_villager_3_b"
+                ],
                 imageKey: "overlay_npc_villager",
                 baseTile: "G"
             },
@@ -1851,8 +2080,8 @@ const FIXED_MAPS = {
             {
                 x: 11,
                 y: 0,
-                label: "洞窟に入る",
-                log: "洞窟の入口だ。",
+                label: "洞穴に入る",
+                log: "北東の洞穴から冷たい風が吹いている。",
                 type: "fixedDungeon",
                 target: "START_CAVE"
             }
@@ -2775,7 +3004,7 @@ const FIXED_MAPS = {
             x: 6,
             y: 11
         },
-        battleBg: "battle_bg_field",
+        battleBg: "battle_bg_mountain_wind_ruins",
         tiles: [
             "WWWWWWWWWWWWW",
             "WWWWWWGWWWWWW",
@@ -2810,6 +3039,9 @@ const FIXED_MAPS = {
     SUMMIT_TEMPLE: {
         name: "頂の神殿",
         themeKey: "LIGHT_PALACE",
+        useDungeonWallFace: true,
+        wallFaceImg: "tile_light_wall_face",
+        wallFaceTorchImg: "tile_light_wall_face_prism",
         tileOverrides: {
             W: {
                 img: "tile_light_wall",
@@ -2838,7 +3070,7 @@ const FIXED_MAPS = {
             x: 6,
             y: 11
         },
-        battleBg: "battle_bg_field",
+        battleBg: "battle_bg_mountain_wind_ruins",
         tiles: [
             "WWWWWWWWWWWWW",
             "WWWWWWGWWWWWW",
@@ -2876,6 +3108,7 @@ const FIXED_DUNGEON_MAPS = {
     START_CAVE: {
         name: "北東の洞穴",
         themeKey: "START_CAVE",
+        useDungeonWallFace: true,
         rank: 5,
         encounterRank: 5,
         tileOverrides: {},
@@ -2950,7 +3183,7 @@ const FIXED_DUNGEON_MAPS = {
                 label: "見張りと話す",
                 log: "見張りが洞穴の封鎖を守っている。",
                 type: "log",
-                imageKey: "overlay_npc_bronze_knight",
+                imageKey: "overlay_npc_villager",
                 hideWhenNoEvent: true,
                 events: [
                     {
@@ -3141,7 +3374,7 @@ const FIXED_DUNGEON_MAPS = {
                 height: 21,
                 tiles: [
                     "WWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWMWWWWWWWWWW",
+                    "WWWWWWWWWWSWWWWWWWWWW",
                     "WWWWWWWWMMMMMWWWWWWWW",
                     "WWWWWWMMMMMMMMMWWWWWW",
                     "WWWWMMMTTTTMMTMMMWWWW",
@@ -3208,17 +3441,15 @@ const FIXED_DUNGEON_MAPS = {
             },
             {
                 label: "火山深部・煤風洞",
-                encounterRank: 44,
+                encounterRank: 48,
                 monsters: [
-                    100010,
-                    100011,
-                    100012,
-                    100013,
-                    100014
+                    100041,
+                    100043,
+                    100044,
+                    100047
                 ],
                 enemyBoost: {
-                    nameSuffix: "深層",
-                    statMultiplier: 1.62,
+                    statMultiplier: 1.08,
                     elmRes: {
                         "火": 100,
                         "風": 50,
@@ -3307,18 +3538,18 @@ const FIXED_DUNGEON_MAPS = {
                         message: "濃い火山ガスを吸った！"
                     },
                     {
-                        x: 6,
+                        x: 5,
                         y: 9,
                         type: "warp",
                         toX: 22,
-                        toY: 16,
+                        toY: 17,
                         message: "噴気孔から熱風が吹き上がった。"
                     },
                     {
                         x: 22,
-                        y: 16,
+                        y: 17,
                         type: "warp",
-                        toX: 6,
+                        toX: 5,
                         toY: 9,
                         message: "熱風に押し戻された。"
                     },
@@ -3329,13 +3560,13 @@ const FIXED_DUNGEON_MAPS = {
                         id: "volcano_deep_flame",
                         imageKey: "overlay_dungeon_hunter_fire",
                         monsterIds: [
-                            301010,
-                            100013,
-                            100014
+                            100050,
+                            100052,
+                            100054
                         ],
                         speed: 0.65,
                         range: 26,
-                        statMultiplier: 2.25,
+                        statMultiplier: 1.3,
                         message: "炎を纏う強敵が迫る！"
                     }
                 ],
@@ -3380,8 +3611,11 @@ const FIXED_DUNGEON_MAPS = {
                             "left",
                             "right"
                         ],
-                        imageKey: "overlay_dungeon_event",
-                        blocksMovement: false,
+                        imageKey: "maplib_volcanic_fire_rune_stone",
+                        imageColor: "#ff8a47",
+                        minimapColor: "#ff8a47",
+                        blocksMovement: true,
+                        interactFromAdjacent: true,
                         opens: [
                             {
                                 x: 10,
@@ -3474,8 +3708,11 @@ const FIXED_DUNGEON_MAPS = {
                             "left",
                             "right"
                         ],
-                        imageKey: "overlay_dungeon_event",
-                        blocksMovement: false,
+                        imageKey: "maplib_volcanic_fire_rune_stone",
+                        imageColor: "#ff8a47",
+                        minimapColor: "#ff8a47",
+                        blocksMovement: true,
+                        interactFromAdjacent: true,
                         opens: [
                             {
                                 x: 10,
@@ -3567,16 +3804,15 @@ const FIXED_DUNGEON_MAPS = {
             },
             {
                 label: "火山深部・炎心炉",
-                encounterRank: 50,
+                encounterRank: 56,
                 monsters: [
-                    100012,
-                    100013,
-                    100014,
-                    100015
+                    100050,
+                    100052,
+                    100053,
+                    100054
                 ],
                 enemyBoost: {
-                    nameSuffix: "炎心",
-                    statMultiplier: 1.72,
+                    statMultiplier: 1.1,
                     elmRes: {
                         "火": 120,
                         "水": -60
@@ -3662,13 +3898,13 @@ const FIXED_DUNGEON_MAPS = {
                         id: "volcano_furnace_guard",
                         imageKey: "overlay_dungeon_hunter_fire",
                         monsterIds: [
-                            301010,
-                            100015,
-                            100014
+                            100055,
+                            100057,
+                            100060
                         ],
                         speed: 0.75,
                         range: 28,
-                        statMultiplier: 2.35,
+                        statMultiplier: 1.35,
                         message: "炉心の番人が迫る！"
                     }
                 ],
@@ -3676,8 +3912,9 @@ const FIXED_DUNGEON_MAPS = {
                     {
                         x: 14,
                         y: 6,
-                        monsterId: 301010,
+                        monsterId: 302201,
                         questId: "karin_volcano_depths",
+                        startEventId: "quest_karin_volcano_encounter",
                         storyEventId: "quest_karin_volcano_clear",
                         bossStatMultiplier: 1.35,
                         actionLabel: "炎心炉の試練に挑む",
@@ -3843,9 +4080,14 @@ const FIXED_DUNGEON_MAPS = {
                     {
                         x: 42,
                         y: 15,
-                        label: "朽ちた杭を調べる",
+                        label: "立札を読む",
                         log: "掠れた字で「北」と書かれているようだ…",
-                        type: "log"
+                        type: "log",
+                        imageKey: "maplib_forest_decayed_roadside_sign",
+                        baseTile: "T",
+                        blocksMovement: true,
+                        interactFromAdjacent: true,
+                        minimapColor: "#d8b36a"
                     }
                 ],
                 entryPoint: {
@@ -4007,14 +4249,13 @@ const FIXED_DUNGEON_MAPS = {
                 label: "禁忌の森深部・迷い根の庭",
                 encounterRank: 48,
                 monsters: [
-                    100020,
-                    100021,
-                    100022,
-                    100023
+                    100043,
+                    100044,
+                    100047,
+                    100048
                 ],
                 enemyBoost: {
-                    nameSuffix: "深層",
-                    statMultiplier: 1.58,
+                    statMultiplier: 1.08,
                     elmRes: {
                         "風": 100,
                         "水": 40,
@@ -4042,7 +4283,7 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWTTTTTTTTWWWW",
                     "WWWWWWWTTWWWWWWWWWWTWWWWWWTWWWW",
-                    "WWWWWWWTTTWWWWWDWWTTWWWWWWTWWWW",
+                    "WWWWWWTTTTWWWWWDWWTTWWWWWWTWWWW",
                     "WWWWTTTWWTWWWWTTTTTWWWWWWWTWWWW",
                     "WWWWTWWWWTWWWWWWWWWWWTTTTTTWWWW",
                     "WWWWTWWWWTWWWWWWWWWWWTWWWWWWWWW",
@@ -4088,7 +4329,7 @@ const FIXED_DUNGEON_MAPS = {
                         rects: [
                             {
                                 x1: 3,
-                                y1: 9,
+                                y1: 8,
                                 x2: 9,
                                 y2: 12
                             },
@@ -4121,13 +4362,13 @@ const FIXED_DUNGEON_MAPS = {
                         id: "forest_root_stalker",
                         imageKey: "overlay_dungeon_hunter_forest",
                         monsterIds: [
-                            301020,
-                            100022,
-                            100023
+                            100051,
+                            100053,
+                            100055
                         ],
                         speed: 0.65,
                         range: 25,
-                        statMultiplier: 2.15,
+                        statMultiplier: 1.3,
                         message: "呪根の追跡者が迫る！"
                     }
                 ],
@@ -4169,16 +4410,15 @@ const FIXED_DUNGEON_MAPS = {
             },
             {
                 label: "禁忌の森深部・呪風の根",
-                encounterRank: 55,
+                encounterRank: 56,
                 monsters: [
-                    100021,
-                    100022,
-                    100023,
-                    100024
+                    100050,
+                    100051,
+                    100053,
+                    100054
                 ],
                 enemyBoost: {
-                    nameSuffix: "呪根",
-                    statMultiplier: 1.7,
+                    statMultiplier: 1.1,
                     elmRes: {
                         "風": 120,
                         "闇": 50,
@@ -4247,13 +4487,13 @@ const FIXED_DUNGEON_MAPS = {
                         id: "forest_curse_guard",
                         imageKey: "overlay_dungeon_hunter_forest",
                         monsterIds: [
-                            301020,
-                            100024,
-                            100023
+                            100055,
+                            100061,
+                            100063
                         ],
                         speed: 0.75,
                         range: 28,
-                        statMultiplier: 2.3,
+                        statMultiplier: 1.35,
                         message: "呪風の番人が迫る！"
                     },
                     {
@@ -4318,10 +4558,12 @@ const FIXED_DUNGEON_MAPS = {
                         x: 3,
                         y: 3,
                         monsterId: [
-                            301020
+                            302203,
+                            302207
                         ],
-                        questId: "wind_forest_depths",
-                        storyEventId: "quest_wind_forest_clear",
+                        questId: "arisa_haine_forest_depths",
+                        startEventId: "quest_arisa_haine_encounter",
+                        storyEventId: "quest_arisa_haine_clear",
                         bossStatMultiplier: 1.35,
                         actionLabel: "呪風の根を断つ",
                         inspectLog: "黒い風の中心で、森の根が鼓動のように膨らんでいる。"
@@ -4352,10 +4594,10 @@ const FIXED_DUNGEON_MAPS = {
     },
     WIND_TEMPLE: {
         name: "風の神殿",
-        themeKey: "WIND_VILLAGE",
+        themeKey: "WIND_TEMPLE",
         rank: 26,
         encounterRank: 26,
-        battleBg: "battle_bg_dungeon",
+        battleBg: "battle_bg_wind_temple",
         entryPoint: {
             x: 11,
             y: 18
@@ -4429,7 +4671,7 @@ const FIXED_DUNGEON_MAPS = {
                     y: 19
                 },
                 name: "",
-                themeKey: "WIND_VILLAGE"
+                themeKey: "WIND_TEMPLE"
             },
             {
                 label: "旋風の回廊",
@@ -4487,7 +4729,7 @@ const FIXED_DUNGEON_MAPS = {
                     y: 9
                 },
                 name: "",
-                themeKey: "WIND_VILLAGE",
+                themeKey: "WIND_TEMPLE",
                 tileEffects: [
                     {
                         x: 2,
@@ -4573,7 +4815,7 @@ const FIXED_DUNGEON_MAPS = {
                     y: 17
                 },
                 name: "",
-                themeKey: "WIND_VILLAGE"
+                themeKey: "WIND_TEMPLE"
             }
         ]
     },
@@ -4610,7 +4852,7 @@ const FIXED_DUNGEON_MAPS = {
                 monsters: [
                     100033,
                     100034,
-                    301021
+                    100035
                 ],
                 width: 23,
                 height: 23,
@@ -4694,7 +4936,7 @@ const FIXED_DUNGEON_MAPS = {
                 monsters: [
                     100034,
                     100035,
-                    301022
+                    100036
                 ],
                 width: 23,
                 height: 23,
@@ -4794,7 +5036,7 @@ const FIXED_DUNGEON_MAPS = {
                 monsters: [
                     100036,
                     100037,
-                    301022
+                    100039
                 ],
                 width: 23,
                 height: 23,
@@ -4869,14 +5111,13 @@ const FIXED_DUNGEON_MAPS = {
                 label: "海底神殿深部・潮環回廊",
                 encounterRank: 68,
                 monsters: [
-                    100033,
-                    100034,
-                    100035,
-                    301021
+                    100062,
+                    100064,
+                    100066,
+                    100067
                 ],
                 enemyBoost: {
-                    nameSuffix: "深層",
-                    statMultiplier: 1.58,
+                    statMultiplier: 1.08,
                     elmRes: {
                         "水": 100,
                         "火": 50,
@@ -4921,7 +5162,7 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWWWWWWWWWWWWWWTTTTTTWWW",
                     "WWWWTTTWWWWWWWWWWWWWWWTTTTTTWWW",
                     "WWWTTTTTTTTTWWWWWWWWWWTTTTTTWWW",
-                    "WWWWTTTWWWWTWWTTTWWWWWTTTTTTWWW",
+                    "WWWWTTTWWWWTWWTTTTTTTTTTTTTTWWW",
                     "WWWWWWWWWWWTTTTUTTWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWTTTWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
@@ -4961,6 +5202,20 @@ const FIXED_DUNGEON_MAPS = {
                                 y2: 13
                             }
                         ],
+                        excludePoints: [
+                            {
+                                x: 21,
+                                y: 9
+                            },
+                            {
+                                x: 15,
+                                y: 9
+                            },
+                            {
+                                x: 8,
+                                y: 9
+                            }
+                        ],
                         maxSlide: 26,
                         message: "逆潮に押し流された。"
                     },
@@ -4987,13 +5242,13 @@ const FIXED_DUNGEON_MAPS = {
                         id: "seabed_current",
                         imageKey: "overlay_dungeon_hunter_sea",
                         monsterIds: [
-                            301021,
-                            301022,
-                            100034
+                            100068,
+                            100069,
+                            100073
                         ],
                         speed: 0.65,
                         range: 26,
-                        statMultiplier: 2.2,
+                        statMultiplier: 1.3,
                         message: "逆潮の番人が迫る！"
                     }
                 ],
@@ -5037,8 +5292,11 @@ const FIXED_DUNGEON_MAPS = {
                             "west",
                             "east"
                         ],
-                        imageKey: "overlay_dungeon_event",
-                        blocksMovement: false,
+                        imageKey: "maplib_water_sunken_urn",
+                        imageColor: "#59dbe8",
+                        minimapColor: "#59dbe8",
+                        blocksMovement: true,
+                        interactFromAdjacent: true,
                         opens: [
                             {
                                 x: 14,
@@ -5071,8 +5329,11 @@ const FIXED_DUNGEON_MAPS = {
                             "west",
                             "east"
                         ],
-                        imageKey: "overlay_dungeon_event",
-                        blocksMovement: false,
+                        imageKey: "maplib_water_sunken_urn",
+                        imageColor: "#59dbe8",
+                        minimapColor: "#59dbe8",
+                        blocksMovement: true,
+                        interactFromAdjacent: true,
                         opens: [
                             {
                                 x: 14,
@@ -5104,14 +5365,13 @@ const FIXED_DUNGEON_MAPS = {
                 label: "海底神殿深部・逆潮祭壇",
                 encounterRank: 76,
                 monsters: [
-                    100034,
-                    100035,
-                    301021,
-                    301022
+                    100068,
+                    100069,
+                    100070,
+                    100071
                 ],
                 enemyBoost: {
-                    nameSuffix: "逆潮",
-                    statMultiplier: 1.72,
+                    statMultiplier: 1.1,
                     elmRes: {
                         "水": 120,
                         "雷": -60
@@ -5203,13 +5463,13 @@ const FIXED_DUNGEON_MAPS = {
                         id: "seabed_altar_guard",
                         imageKey: "overlay_dungeon_hunter_sea",
                         monsterIds: [
-                            301022,
-                            301021,
-                            100035
+                            100073,
+                            100075,
+                            100080
                         ],
                         speed: 0.75,
                         range: 29,
-                        statMultiplier: 2.35,
+                        statMultiplier: 1.35,
                         message: "祭壇守が水を割って迫る！"
                     }
                 ],
@@ -5218,10 +5478,11 @@ const FIXED_DUNGEON_MAPS = {
                         x: 15,
                         y: 6,
                         monsterId: [
-                            301022,
-                            301021
+                            302208,
+                            302202
                         ],
                         questId: "sophia_alan_seabed_depths",
+                        startEventId: "quest_sophia_alan_encounter",
                         storyEventId: "quest_sophia_alan_clear",
                         bossStatMultiplier: 1.35,
                         actionLabel: "逆潮祭壇を鎮める",
@@ -5805,7 +6066,7 @@ const FIXED_DUNGEON_MAPS = {
                         y: 8,
                         monsterId: [
                             301060,
-                            301062
+                            302205
                         ],
                         questId: "zelied_big_tower",
                         inactiveTile: "G",
@@ -6328,21 +6589,33 @@ const FIXED_DUNGEON_MAPS = {
                     }
                 ],
                 name: "",
-                themeKey: "THUNDER_FORT"
+                themeKey: "THUNDER_FORT",
+                floorDecorations: [
+                    {
+                        authoredPlacementId: "carpet-thunder-final",
+                        type: "castle_carpet",
+                        imageKey: null,
+                        x: 14,
+                        y: 4,
+                        width: 3,
+                        height: 13,
+                        blocking: false,
+                        baseTile: "T",
+                        allowedBaseTiles: null
+                    }
+                ]
             },
             {
                 label: "ライザーク要塞深部・双電路",
-                encounterRank: 74,
+                encounterRank: 76,
                 monsters: [
-                    100040,
-                    100041,
-                    100042,
-                    100043,
-                    100044
+                    100068,
+                    100069,
+                    100070,
+                    100072
                 ],
                 enemyBoost: {
-                    nameSuffix: "深層",
-                    statMultiplier: 1.62,
+                    statMultiplier: 1.08,
                     elmRes: {
                         "雷": 110,
                         "水": 50,
@@ -6434,13 +6707,13 @@ const FIXED_DUNGEON_MAPS = {
                         id: "thunder_deep_guard",
                         imageKey: "overlay_dungeon_hunter_thunder",
                         monsterIds: [
-                            100081,
-                            100043,
-                            100044
+                            100073,
+                            100076,
+                            100079
                         ],
                         speed: 1.1,
                         range: 29,
-                        statMultiplier: 2.35,
+                        statMultiplier: 1.3,
                         message: "雷鎧の強敵が迫る！"
                     }
                 ],
@@ -6471,8 +6744,11 @@ const FIXED_DUNGEON_MAPS = {
                             "left",
                             "right"
                         ],
-                        imageKey: "overlay_dungeon_event",
-                        blocksMovement: false,
+                        imageKey: "maplib_thunder_control_terminal",
+                        imageColor: "#67d9ff",
+                        minimapColor: "#67d9ff",
+                        blocksMovement: true,
+                        interactFromAdjacent: true,
                         opens: [
                             {
                                 x: 15,
@@ -6505,8 +6781,11 @@ const FIXED_DUNGEON_MAPS = {
                             "left",
                             "right"
                         ],
-                        imageKey: "overlay_dungeon_event",
-                        blocksMovement: false,
+                        imageKey: "maplib_thunder_control_terminal",
+                        imageColor: "#67d9ff",
+                        minimapColor: "#67d9ff",
+                        blocksMovement: true,
+                        interactFromAdjacent: true,
                         opens: [
                             {
                                 x: 15,
@@ -6538,16 +6817,15 @@ const FIXED_DUNGEON_MAPS = {
             },
             {
                 label: "ライザーク要塞深部・制御核区",
-                encounterRank: 82,
+                encounterRank: 81,
                 monsters: [
-                    100041,
-                    100042,
-                    100043,
-                    100044
+                    100073,
+                    100074,
+                    100075,
+                    100076
                 ],
                 enemyBoost: {
-                    nameSuffix: "制御核",
-                    statMultiplier: 1.76,
+                    statMultiplier: 1.1,
                     elmRes: {
                         "雷": 130,
                         "風": -60
@@ -6608,38 +6886,19 @@ const FIXED_DUNGEON_MAPS = {
                 ],
                 tileEffects: [
                     {
-                        type: "ice",
-                        rects: [
-                            {
-                                x1: 3,
-                                y1: 14,
-                                x2: 27,
-                                y2: 14
-                            },
-                            {
-                                x1: 8,
-                                y1: 7,
-                                x2: 22,
-                                y2: 9
-                            }
-                        ],
-                        maxSlide: 30,
-                        message: "高圧電流に足を取られた。"
-                    },
-                    {
                         x: 25,
                         y: 16,
                         type: "hunter",
                         id: "thunder_core_guard",
                         imageKey: "overlay_dungeon_hunter_thunder",
                         monsterIds: [
+                            100079,
                             100081,
-                            100082,
-                            100044
+                            100082
                         ],
                         speed: 1.2,
                         range: 31,
-                        statMultiplier: 2.45,
+                        statMultiplier: 1.35,
                         message: "制御核の守衛が迫る！"
                     }
                 ],
@@ -6648,10 +6907,11 @@ const FIXED_DUNGEON_MAPS = {
                         x: 15,
                         y: 6,
                         monsterId: [
-                            100081,
+                            302204,
                             100082
                         ],
                         questId: "frieda_baron_thunder_depths",
+                        startEventId: "quest_frieda_baron_encounter",
                         storyEventId: "quest_frieda_baron_clear",
                         bossStatMultiplier: 1.35,
                         actionLabel: "制御核を止める",
@@ -6678,13 +6938,30 @@ const FIXED_DUNGEON_MAPS = {
                     y: 22
                 },
                 name: "",
-                themeKey: "THUNDER_FORT"
+                themeKey: "THUNDER_FORT",
+                floorDecorations: [
+                    {
+                        authoredPlacementId: "carpet-thunder-final",
+                        type: "castle_carpet",
+                        imageKey: null,
+                        x: 13,
+                        y: 4,
+                        width: 5,
+                        height: 5,
+                        blocking: false,
+                        baseTile: "T",
+                        allowedBaseTiles: null
+                    }
+                ]
             }
         ]
     },
     LIGHT_PALACE: {
         name: "光の宮殿グランプリズマ",
         themeKey: "LIGHT_PALACE",
+        useDungeonWallFace: true,
+        wallFaceImg: "tile_light_wall_face",
+        wallFaceTorchImg: "tile_light_wall_face_prism",
         rank: 50,
         encounterRank: 50,
         battleBg: "battle_bg_light_palace",
@@ -7162,7 +7439,21 @@ const FIXED_DUNGEON_MAPS = {
                     }
                 ],
                 name: "",
-                themeKey: "LIGHT_PALACE"
+                themeKey: "LIGHT_PALACE",
+                floorDecorations: [
+                    {
+                        authoredPlacementId: "carpet-light-final",
+                        type: "castle_carpet",
+                        imageKey: null,
+                        x: 15,
+                        y: 6,
+                        width: 3,
+                        height: 7,
+                        blocking: false,
+                        baseTile: "T",
+                        allowedBaseTiles: null
+                    }
+                ]
             }
         ]
     },
@@ -7184,8 +7475,7 @@ const FIXED_DUNGEON_MAPS = {
         ],
         battleBg: "battle_bg_galvania_cave",
         enemyBoost: {
-            nameSuffix: "・洞窟強化",
-            statMultiplier: 1.16,
+            statMultiplier: 1,
             resists: {
                 Fear: 50,
                 InstantDeath: 100
@@ -7217,12 +7507,11 @@ const FIXED_DUNGEON_MAPS = {
         floors: [
             {
                 label: "1階・北口 黒岩の胎道",
-                encounterRank: 70,
+                encounterRank: 61,
                 monsters: [
                     100056,
                     100057,
-                    100058,
-                    100059
+                    100058
                 ],
                 width: 61,
                 height: 35,
@@ -7292,13 +7581,13 @@ const FIXED_DUNGEON_MAPS = {
                         id: "galvania_f1_black_scout_v2",
                         imageKey: "overlay_dungeon_hunter_shadow",
                         monsterIds: [
-                            100056,
-                            100057,
-                            100058
+                            100059,
+                            100063,
+                            100067
                         ],
                         speed: 0.58,
                         range: 34,
-                        statMultiplier: 1.75,
+                        statMultiplier: 1.22,
                         message: "黒岩の陰から魔族の斥候が襲いかかった！"
                     },
                     {
@@ -7376,11 +7665,11 @@ const FIXED_DUNGEON_MAPS = {
                     y: 32
                 },
                 name: "",
-                themeKey: "DEFAULT"
+                themeKey: "GALVANIA_CAVE"
             },
             {
                 label: "2階・偽りの無限回廊",
-                encounterRank: 72,
+                encounterRank: 66,
                 monsters: [
                     100058,
                     100059,
@@ -7583,11 +7872,11 @@ const FIXED_DUNGEON_MAPS = {
                     y: 31
                 },
                 name: "",
-                themeKey: "DEFAULT"
+                themeKey: "GALVANIA_CAVE"
             },
             {
                 label: "3階・溶岩の地底湖",
-                encounterRank: 74,
+                encounterRank: 66,
                 monsters: [
                     100059,
                     100060,
@@ -7677,13 +7966,13 @@ const FIXED_DUNGEON_MAPS = {
                         id: "galvania_f3_ash_daemon_v2",
                         imageKey: "overlay_dungeon_hunter_fire",
                         monsterIds: [
-                            100059,
-                            100060,
-                            100061
+                            100064,
+                            100067,
+                            100068
                         ],
                         speed: 0.48,
                         range: 38,
-                        statMultiplier: 1.95,
+                        statMultiplier: 1.28,
                         message: "溶岩霧の向こうから、灼熱の魔族が迫る！"
                     }
                 ],
@@ -7787,13 +8076,13 @@ const FIXED_DUNGEON_MAPS = {
                     y: 4
                 },
                 name: "",
-                themeKey: "DEFAULT"
+                themeKey: "GALVANIA_CAVE"
             },
             {
                 label: "4階・氷晶の十字滑床",
-                encounterRank: 76,
+                encounterRank: 66,
                 monsters: [
-                    100060,
+                    100058,
                     100061,
                     100062
                 ],
@@ -8065,13 +8354,13 @@ const FIXED_DUNGEON_MAPS = {
                         id: "galvania_f4_frost_hound_v2",
                         imageKey: "overlay_dungeon_hunter_sea",
                         monsterIds: [
-                            100058,
-                            100061,
-                            100062
+                            100065,
+                            100067,
+                            100069
                         ],
                         speed: 0.52,
                         range: 34,
-                        statMultiplier: 1.85,
+                        statMultiplier: 1.28,
                         message: "氷壁の向こうから魔犬が滑るように迫ってきた！"
                     }
                 ],
@@ -8148,11 +8437,11 @@ const FIXED_DUNGEON_MAPS = {
                     y: 30
                 },
                 name: "",
-                themeKey: "DEFAULT"
+                themeKey: "GALVANIA_CAVE"
             },
             {
                 label: "5階・魔軍補給路",
-                encounterRank: 78,
+                encounterRank: 66,
                 monsters: [
                     100061,
                     100062,
@@ -8223,13 +8512,13 @@ const FIXED_DUNGEON_MAPS = {
                         id: "galvania_f5_supply_overseer_v2",
                         imageKey: "overlay_dungeon_hunter_shadow",
                         monsterIds: [
-                            100061,
-                            100062,
-                            100063
+                            100064,
+                            100067,
+                            100070
                         ],
                         speed: 0.68,
                         range: 46,
-                        statMultiplier: 2.1,
+                        statMultiplier: 1.32,
                         message: "補給路を巡回する上級魔族が、こちらを捕捉した！"
                     }
                 ],
@@ -8297,15 +8586,16 @@ const FIXED_DUNGEON_MAPS = {
                     y: 4
                 },
                 name: "",
-                themeKey: "DEFAULT"
+                themeKey: "GALVANIA_CAVE"
             },
             {
                 label: "6階・南口 白骨の旧坑",
-                encounterRank: 80,
+                encounterRank: 76,
                 monsters: [
-                    100062,
                     100063,
-                    100064
+                    100064,
+                    100065,
+                    100068
                 ],
                 width: 61,
                 height: 35,
@@ -8377,13 +8667,13 @@ const FIXED_DUNGEON_MAPS = {
                         id: "galvania_f6_royal_rearguard_v2",
                         imageKey: "overlay_dungeon_hunter_shadow",
                         monsterIds: [
-                            100062,
-                            100063,
-                            100064
+                            100073,
+                            100076,
+                            100077
                         ],
                         speed: 0.58,
                         range: 42,
-                        statMultiplier: 2,
+                        statMultiplier: 1.36,
                         message: "撤退路を守る魔族の後衛が立ちはだかった！"
                     }
                 ],
@@ -8464,15 +8754,15 @@ const FIXED_DUNGEON_MAPS = {
                     y: 32
                 },
                 name: "",
-                themeKey: "DEFAULT"
+                themeKey: "GALVANIA_CAVE"
             }
         ]
     },
     DARK_CASTLE: {
         name: "魔王城ガルヴァニア",
         themeKey: "DARK_CASTLE",
-        rank: 60,
-        encounterRank: 60,
+        rank: 80,
+        encounterRank: 80,
         rareMonsters: [
             {
                 id: 200202,
@@ -8487,11 +8777,11 @@ const FIXED_DUNGEON_MAPS = {
         floors: [
             {
                 label: "本館1階・中央広間",
-                encounterRank: 60,
+                encounterRank: 66,
                 monsters: [
-                    100056,
-                    100057,
-                    100058
+                    100059,
+                    100060,
+                    100061
                 ],
                 width: 31,
                 height: 27,
@@ -8523,6 +8813,33 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWWWWWTTTTTWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWTTTWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWSWWWWWWWWWWWWWWW"
+                ],
+                floorDecorations: [
+                    {
+                        type: "castle_carpet",
+                        x: 14,
+                        y: 19,
+                        width: 3,
+                        height: 7
+                    }
+                ],
+                blockingObjects: [
+                    {
+                        x: 14,
+                        y: 3,
+                        imageKey: "object_blocking_castle_candelabrum",
+                        drawWidth: 32,
+                        drawHeight: 48,
+                        log: "重厚な燭台が道を塞いでいる。"
+                    },
+                    {
+                        x: 16,
+                        y: 3,
+                        imageKey: "object_blocking_castle_candelabrum",
+                        drawWidth: 32,
+                        drawHeight: 48,
+                        log: "重厚な燭台が道を塞いでいる。"
+                    }
                 ],
                 floorLinks: [
                     {
@@ -8638,11 +8955,11 @@ const FIXED_DUNGEON_MAPS = {
             },
             {
                 label: "西館1階・黒影廊",
-                encounterRank: 62,
+                encounterRank: 71,
                 monsters: [
-                    100058,
-                    100059,
-                    100060
+                    100061,
+                    100063,
+                    100064
                 ],
                 width: 31,
                 height: 27,
@@ -8732,13 +9049,13 @@ const FIXED_DUNGEON_MAPS = {
                         id: "dark_castle_west_patrol",
                         imageKey: "overlay_dungeon_hunter_shadow",
                         monsterIds: [
-                            100058,
-                            100059,
-                            100060
+                            100068,
+                            100069,
+                            100073
                         ],
                         speed: 1,
                         range: 24,
-                        statMultiplier: 1.7,
+                        statMultiplier: 1.3,
                         message: "西館の巡察兵が迫る！"
                     }
                 ],
@@ -8752,11 +9069,11 @@ const FIXED_DUNGEON_MAPS = {
             },
             {
                 label: "西館2階・結界の間",
-                encounterRank: 64,
+                encounterRank: 71,
                 monsters: [
-                    100059,
-                    100060,
-                    100061
+                    100064,
+                    100065,
+                    100066
                 ],
                 width: 31,
                 height: 27,
@@ -8834,11 +9151,11 @@ const FIXED_DUNGEON_MAPS = {
             },
             {
                 label: "東館1階・風哭廊",
-                encounterRank: 62,
+                encounterRank: 71,
                 monsters: [
-                    100058,
                     100061,
-                    100062
+                    100064,
+                    100065
                 ],
                 width: 31,
                 height: 27,
@@ -8928,13 +9245,13 @@ const FIXED_DUNGEON_MAPS = {
                         id: "dark_castle_east_patrol",
                         imageKey: "overlay_dungeon_hunter_shadow",
                         monsterIds: [
-                            100060,
-                            100061,
-                            100062
+                            100068,
+                            100070,
+                            100075
                         ],
                         speed: 1,
                         range: 24,
-                        statMultiplier: 1.7,
+                        statMultiplier: 1.3,
                         message: "東館の追跡者が迫る！"
                     }
                 ],
@@ -8948,11 +9265,11 @@ const FIXED_DUNGEON_MAPS = {
             },
             {
                 label: "東館2階・結界の間",
-                encounterRank: 64,
+                encounterRank: 71,
                 monsters: [
-                    100061,
-                    100062,
-                    100063
+                    100064,
+                    100066,
+                    100067
                 ],
                 width: 31,
                 height: 27,
@@ -9030,11 +9347,11 @@ const FIXED_DUNGEON_MAPS = {
             },
             {
                 label: "本館2階・夢幻回廊",
-                encounterRank: 68,
+                encounterRank: 76,
                 monsters: [
-                    100063,
-                    100064,
-                    100065
+                    100068,
+                    100069,
+                    100070
                 ],
                 width: 31,
                 height: 27,
@@ -9124,13 +9441,13 @@ const FIXED_DUNGEON_MAPS = {
                         id: "dark_castle_dream_guard",
                         imageKey: "overlay_dungeon_hunter_shadow",
                         monsterIds: [
-                            301081,
-                            100064,
-                            100065
+                            100073,
+                            100076,
+                            100077
                         ],
                         speed: 0.5,
                         range: 26,
-                        statMultiplier: 1.9,
+                        statMultiplier: 1.35,
                         message: "夢幻の番人が迫る！"
                     }
                 ],
@@ -9154,11 +9471,11 @@ const FIXED_DUNGEON_MAPS = {
             },
             {
                 label: "本館3階・謁見の間",
-                encounterRank: 72,
+                encounterRank: 81,
                 monsters: [
-                    100066,
-                    100067,
-                    100068
+                    100073,
+                    100074,
+                    100075
                 ],
                 width: 31,
                 height: 27,
@@ -9254,7 +9571,21 @@ const FIXED_DUNGEON_MAPS = {
                     y: 24
                 },
                 name: "",
-                themeKey: "DARK_CASTLE"
+                themeKey: "DARK_CASTLE",
+                floorDecorations: [
+                    {
+                        authoredPlacementId: "carpet-dark-final",
+                        type: "castle_carpet",
+                        imageKey: null,
+                        x: 13,
+                        y: 2,
+                        width: 5,
+                        height: 6,
+                        blocking: false,
+                        baseTile: "T",
+                        allowedBaseTiles: null
+                    }
+                ]
             }
         ]
     },
@@ -9344,12 +9675,12 @@ const FIXED_DUNGEON_MAPS = {
                         imageKey: "overlay_dungeon_hunter_forest",
                         monsterIds: [
                             100010,
-                            100013,
-                            100010
+                            100014,
+                            100015
                         ],
                         speed: 0.5,
                         range: 18,
-                        statMultiplier: 1.7,
+                        statMultiplier: 1.22,
                         message: "黒風の魔物が迫る！"
                     }
                 ],
@@ -9375,7 +9706,8 @@ const FIXED_DUNGEON_MAPS = {
                         label: "風の通り道を聞く",
                         log: "洞の奥へ、低く澄んだ風の音が吸い込まれていく。",
                         type: "log",
-                        imageKey: "overlay_dungeon_event"
+                        imageKey: "overlay_dungeon_event",
+                        blocksMovement: false
                     }
                 ],
                 entryPoint: {
@@ -9553,16 +9885,18 @@ const FIXED_DUNGEON_MAPS = {
                     {
                         x: 8,
                         y: 10,
-                        type: "ice",
-                        maxSlide: 18,
-                        message: "濡れた石床を滑った。"
+                        type: "warp",
+                        toX: 19,
+                        toY: 9,
+                        message: "結晶光が鍾乳洞の反対側へ運んだ。"
                     },
                     {
                         x: 19,
                         y: 9,
-                        type: "ice",
-                        maxSlide: 18,
-                        message: "氷の膜に足を取られた。"
+                        type: "warp",
+                        toX: 8,
+                        toY: 10,
+                        message: "結晶光が元の足場へ引き戻した。"
                     },
                     {
                         x: 6,
@@ -9571,14 +9905,28 @@ const FIXED_DUNGEON_MAPS = {
                         id: "crena_claw",
                         imageKey: "overlay_dungeon_hunter_sea",
                         monsterIds: [
-                            100024,
+                            100028,
                             100030,
-                            100024
+                            100032
                         ],
                         speed: 0.5,
                         range: 22,
-                        statMultiplier: 1.8,
+                        statMultiplier: 1.25,
                         message: "爪痕の主が襲いかかる！"
+                    }
+                ],
+                mapActions: [
+                    {
+                        x: 19,
+                        y: 17,
+                        label: "王国兵に話す",
+                        log: "王国軍が鍾乳洞を調査中だ。安全が確認できるまで、これ以上先へは通せない。",
+                        type: "log",
+                        imageKey: "overlay_npc_dark_soldier",
+                        baseTile: "T",
+                        missingFlag: "crenaRouteKnown",
+                        interactFromAdjacent: true,
+                        minimapColor: "#8f99a8"
                     }
                 ],
                 chests: [
@@ -9652,7 +10000,7 @@ const FIXED_DUNGEON_MAPS = {
                         x: 23,
                         y: 10,
                         toFloor: 3,
-                        targetX: 2,
+                        targetX: 3,
                         targetY: 22,
                         label: "結界の奥へ",
                         requiredFlag: "darkCastleCleared",
@@ -9665,28 +10013,29 @@ const FIXED_DUNGEON_MAPS = {
                         x: 3,
                         y: 5,
                         type: "warp",
-                        toX: 22,
-                        toY: 11,
+                        toX: 24,
+                        toY: 14,
                         message: "結晶光が空間を曲げた。"
                     },
                     {
                         x: 24,
                         y: 14,
                         type: "warp",
-                        toX: 6,
-                        toY: 11,
+                        toX: 3,
+                        toY: 5,
                         message: "結晶光が戻り道を開いた。"
                     }
                 ],
                 mapActions: [
                     {
-                        x: 23,
+                        x: 20,
                         y: 9,
-                        label: "リーシアの気配を追う",
-                        log: "結晶の影に、結界の奥へ続くかすかな気配が残っている。",
+                        label: "リーシアに話す",
+                        log: "リーシアが結界の前で奥の魔力を探っている。",
                         type: "quest",
                         questId: "licia_crena_depths",
                         imageKey: "overlay_companion_licia",
+                        hideWhenQuestAccepted: true,
                         lockedText: "闇の加護がなければ、この結界の奥は見えない。"
                     }
                 ],
@@ -9725,16 +10074,15 @@ const FIXED_DUNGEON_MAPS = {
             },
             {
                 label: "クレナ鍾乳洞深部・結晶裏路",
-                encounterRank: 92,
+                encounterRank: 91,
                 monsters: [
-                    100056,
-                    100057,
-                    100058,
-                    100059
+                    100082,
+                    100083,
+                    100084,
+                    100085
                 ],
                 enemyBoost: {
-                    nameSuffix: "深層",
-                    statMultiplier: 1.55,
+                    statMultiplier: 1.08,
                     elmRes: {
                         "火": 35,
                         "水": 45,
@@ -9760,12 +10108,12 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWTTTTTWWWWWWWWWWWW",
                     "WWWWWWWWWWWTTTDTTTWWWWWWWWWWW",
-                    "WWWWWWWWWWWTTTTTTTWWWWWWWWWWW",
-                    "WWWWWWWWWWWWTTTTTWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWTWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWTWWWWWWWWTTTTWW",
-                    "WWWWWWWWWWWWWWTWWWWWWWWTTRTWW",
-                    "WWWTTTTWWWWWWWTWWWWWWWWTTTTWW",
+                    "WWWTTTTTWWWTTTTTTTWWWWWWWWWWW",
+                    "WWWTTTTTWWWWTTTTTWWWWWWWWWWWW",
+                    "WWWTTTTTWWWWWWTWWWWWWWWWWWWWW",
+                    "WWWWWTWWWWWWWWTWWWWWWWWTTTTWW",
+                    "WWWWWTWWWWWWWWTWWWWWWWWTTRTWW",
+                    "WWWTTTTWWWWWWWWWWWWWWWWTTTTWW",
                     "WWWTCTTWWWWWWWTWWWWWWWWTTTTWW",
                     "WWWTTTTWWWWWWWTWWWWWWWWTTTTWW",
                     "WWWWWWTWWWWWWWTWWWWWWWWWTWWWW",
@@ -9775,15 +10123,15 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWWWWWWTWWWWWWWWWTWWWW",
                     "WWWWWWWWWWWWWWTWWWWWWWWWTWWWW",
                     "WWWTTTTTTTTWWWTWWWWWWWWTTTWWW",
-                    "WWWTWTWWWWTWWWTWWWWWWWWTTTWWW",
+                    "WWWTWWWWWWTWWWTWWWWWWWWTTTWWW",
                     "WWTTTWWWWWTWWWTWWWWWWWWTTTWWW",
-                    "WWTTTWWWWWTTTTTWWWWWWWWWWWWWW",
+                    "WWTSTWWWWWTTTTTWWWWWWWWWWWWWW",
                     "WWTTTWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
                 ],
                 floorLinks: [
                     {
-                        x: 2,
+                        x: 3,
                         y: 22,
                         toFloor: 2,
                         targetX: 23,
@@ -9805,13 +10153,13 @@ const FIXED_DUNGEON_MAPS = {
                         rects: [
                             {
                                 x1: 3,
-                                y1: 9,
+                                y1: 10,
                                 x2: 9,
                                 y2: 12
                             },
                             {
                                 x1: 20,
-                                y1: 9,
+                                y1: 8,
                                 x2: 26,
                                 y2: 12
                             }
@@ -9835,23 +10183,33 @@ const FIXED_DUNGEON_MAPS = {
                                 y2: 18
                             }
                         ],
+                        excludePoints: [
+                            {
+                                x: 14,
+                                y: 15
+                            },
+                            {
+                                x: 24,
+                                y: 15
+                            }
+                        ],
                         maxSlide: 26,
                         message: "結界の膜を滑った。"
                     },
                     {
                         x: 24,
-                        y: 20,
+                        y: 19,
                         type: "hunter",
                         id: "crena_barrier_guard",
                         imageKey: "overlay_dungeon_hunter_shadow",
                         monsterIds: [
-                            100057,
-                            100058,
-                            100059
+                            100086,
+                            100089,
+                            100093
                         ],
                         speed: 0.7,
                         range: 28,
-                        statMultiplier: 2.25,
+                        statMultiplier: 1.32,
                         message: "結界守が迫る！"
                     }
                 ],
@@ -9874,8 +10232,8 @@ const FIXED_DUNGEON_MAPS = {
                 mapActions: [
                     {
                         x: 5,
-                        y: 20,
-                        label: "南西の封晶を砕く",
+                        y: 6,
+                        label: "上層小部屋の封晶を砕く",
                         type: "switchGate",
                         gateId: "crena_barrier_gate",
                         switchId: "sw",
@@ -9883,31 +10241,27 @@ const FIXED_DUNGEON_MAPS = {
                             "sw",
                             "ne"
                         ],
-                        imageKey: "overlay_dungeon_event",
-                        blocksMovement: false,
+                        imageKey: "maplib_cave_purple_crystals",
+                        imageColor: "#c88cff",
+                        minimapColor: "#c88cff",
+                        blocksMovement: true,
+                        interactFromAdjacent: true,
                         opens: [
-                            {
-                                x: 13,
-                                y: 10,
-                                tile: "T"
-                            },
                             {
                                 x: 14,
                                 y: 10,
-                                tile: "T"
-                            },
-                            {
-                                x: 15,
-                                y: 10,
-                                tile: "T"
+                                tile: "T",
+                                effectType: "ice",
+                                maxSlide: 6,
+                                effectMessage: "封晶から伸びた氷床を滑った。"
                             }
                         ],
                         log: "封晶のひとつにヒビが入った。",
                         partialMessage: "中央の結界が薄れた。もう一つの封晶も砕く必要がある。",
-                        openMessage: "二つの封晶が砕け、中央の結界がほどけた。"
+                        openMessage: "二つの封晶が砕け、中央の壁が一枚の氷床へ変わった。"
                     },
                     {
-                        x: 23,
+                        x: 24,
                         y: 20,
                         label: "南東の封晶を砕く",
                         type: "switchGate",
@@ -9917,28 +10271,24 @@ const FIXED_DUNGEON_MAPS = {
                             "sw",
                             "ne"
                         ],
-                        imageKey: "overlay_dungeon_event",
-                        blocksMovement: false,
+                        imageKey: "maplib_cave_purple_crystals",
+                        imageColor: "#c88cff",
+                        minimapColor: "#c88cff",
+                        blocksMovement: true,
+                        interactFromAdjacent: true,
                         opens: [
-                            {
-                                x: 13,
-                                y: 10,
-                                tile: "T"
-                            },
                             {
                                 x: 14,
                                 y: 10,
-                                tile: "T"
-                            },
-                            {
-                                x: 15,
-                                y: 10,
-                                tile: "T"
+                                tile: "T",
+                                effectType: "ice",
+                                maxSlide: 6,
+                                effectMessage: "封晶から伸びた氷床を滑った。"
                             }
                         ],
                         log: "封晶のひとつを砕いた。",
                         partialMessage: "中央の結界が薄れた。もう一つの封晶も砕く必要がある。",
-                        openMessage: "二つの封晶が砕け、中央の結界がほどけた。"
+                        openMessage: "二つの封晶が砕け、中央の壁が一枚の氷床へ変わった。"
                     }
                 ],
                 entryPoint: {
@@ -9950,16 +10300,15 @@ const FIXED_DUNGEON_MAPS = {
             },
             {
                 label: "クレナ鍾乳洞深部・結界核",
-                encounterRank: 102,
+                encounterRank: 101,
                 monsters: [
-                    100056,
-                    100057,
-                    100058,
-                    100059
+                    100091,
+                    100092,
+                    100093,
+                    100094
                 ],
                 enemyBoost: {
-                    nameSuffix: "結界核",
-                    statMultiplier: 1.72,
+                    statMultiplier: 1.1,
                     elmRes: {
                         "火": 45,
                         "水": 55,
@@ -10002,7 +10351,7 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWWWWWWTWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWTWWWWWWWWWWWWWW",
                     "WWTTTWWWWWWWWWTWWWWWWWWWWWWWW",
-                    "WWTTTTTTTTTTTTTWWWWWWWWWWWWWW",
+                    "WWSTTTTTTTTTTTTWWWWWWWWWWWWWW",
                     "WWTTTWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
                 ],
@@ -10037,13 +10386,13 @@ const FIXED_DUNGEON_MAPS = {
                         id: "crena_core_guard",
                         imageKey: "overlay_dungeon_hunter_shadow",
                         monsterIds: [
-                            100078,
-                            100082,
-                            100059
+                            100095,
+                            100099,
+                            100103
                         ],
                         speed: 0.8,
                         range: 29,
-                        statMultiplier: 2.45,
+                        statMultiplier: 1.36,
                         message: "結界核の守り手が迫る！"
                     }
                 ],
@@ -10057,6 +10406,7 @@ const FIXED_DUNGEON_MAPS = {
                             100078
                         ],
                         questId: "licia_crena_depths",
+                        startEventId: "quest_licia_encounter",
                         storyEventId: "quest_licia_clear",
                         bossStatMultiplier: 1.35,
                         actionLabel: "結界核を砕く",
@@ -10104,12 +10454,12 @@ const FIXED_DUNGEON_MAPS = {
         floors: [
             {
                 label: "影残る拝廊",
-                encounterRank: 75,
+                encounterRank: 76,
                 monsters: [
-                    100064,
-                    100065,
-                    100066,
-                    100067
+                    100068,
+                    100069,
+                    100070,
+                    100071
                 ],
                 width: 29,
                 height: 23,
@@ -10185,13 +10535,13 @@ const FIXED_DUNGEON_MAPS = {
                         id: "shrine_shadow",
                         imageKey: "overlay_dungeon_hunter_shadow",
                         monsterIds: [
-                            301080,
-                            100066,
-                            100067
+                            100073,
+                            100075,
+                            100077
                         ],
                         speed: 0.5,
                         range: 26,
-                        statMultiplier: 2,
+                        statMultiplier: 1.35,
                         message: "神殿の影が追ってくる！"
                     }
                 ],
@@ -10219,8 +10569,9 @@ const FIXED_DUNGEON_MAPS = {
                     {
                         x: 14,
                         y: 5,
-                        monsterId: 301080,
+                        monsterId: 302206,
                         questId: "claude_leon_dark_shrine",
+                        startEventId: "quest_claude_leon_encounter",
                         storyEventId: "quest_claude_leon_clear",
                         requiredFlag: "lightPalaceCleared",
                         actionLabel: "クロードとレオンに加勢する",
@@ -10250,11 +10601,11 @@ const FIXED_DUNGEON_MAPS = {
             },
             {
                 label: "月影の祭壇",
-                encounterRank: 95,
+                encounterRank: 96,
                 monsters: [
-                    100066,
-                    100067,
-                    100068
+                    100086,
+                    100087,
+                    100089
                 ],
                 width: 31,
                 height: 25,
@@ -10352,6 +10703,7 @@ const FIXED_DUNGEON_MAPS = {
                         y: 4,
                         monsterId: 902000,
                         questId: "luna_hidden_dark_shrine",
+                        startEventId: "quest_luna_hidden_encounter",
                         storyEventId: "quest_luna_hidden_clear",
                         requiredFlag: "lightPalaceCleared",
                         actionLabel: "月影の試練に挑む",
@@ -10390,8 +10742,8 @@ const FIXED_DUNGEON_MAPS = {
     GREZELIA_FORBIDDEN: {
         name: "禁則地グレゼリア",
         themeKey: "GREZELIA_CAVE",
-        rank: 85,
-        encounterRank: 85,
+        rank: 86,
+        encounterRank: 86,
         battleBg: "battle_bg_grezelia",
         entryPoint: {
             x: 15,
@@ -10400,12 +10752,12 @@ const FIXED_DUNGEON_MAPS = {
         floors: [
             {
                 label: "禁則回廊",
-                encounterRank: 85,
+                encounterRank: 86,
                 monsters: [
-                    100064,
-                    100065,
-                    100066,
-                    100067
+                    100077,
+                    100078,
+                    100079,
+                    100080
                 ],
                 width: 31,
                 height: 25,
@@ -10476,13 +10828,13 @@ const FIXED_DUNGEON_MAPS = {
                         id: "grezelia_rule",
                         imageKey: "overlay_dungeon_hunter_shadow",
                         monsterIds: [
-                            301100,
-                            100067,
-                            100068
+                            100082,
+                            100083,
+                            100086
                         ],
                         speed: 0.5,
                         range: 28,
-                        statMultiplier: 2.2,
+                        statMultiplier: 1.35,
                         message: "禁則の番人が迫る！"
                     }
                 ],
@@ -10532,11 +10884,12 @@ const FIXED_DUNGEON_MAPS = {
             },
             {
                 label: "禁奥の核",
-                encounterRank: 110,
+                encounterRank: 86,
                 monsters: [
-                    100066,
-                    100067,
-                    100068
+                    100077,
+                    100079,
+                    100080,
+                    100081
                 ],
                 width: 33,
                 height: 27,
@@ -10614,6 +10967,7 @@ const FIXED_DUNGEON_MAPS = {
                         y: 4,
                         monsterId: 301100,
                         questId: "ryu_minerva_grezelia",
+                        startEventId: "quest_ryu_minerva_encounter",
                         storyEventId: "quest_ryu_minerva_clear",
                         requiredFlag: "darkCastleCleared",
                         actionLabel: "外殻術式を破る",
@@ -10655,11 +11009,12 @@ const FIXED_DUNGEON_MAPS = {
             },
             {
                 label: "零式禁則層",
-                encounterRank: 125,
+                encounterRank: 91,
                 monsters: [
-                    100066,
-                    100067,
-                    100068
+                    100082,
+                    100083,
+                    100084,
+                    100085
                 ],
                 width: 35,
                 height: 29,
@@ -10728,13 +11083,13 @@ const FIXED_DUNGEON_MAPS = {
                         id: "grezelia_zero_executor",
                         imageKey: "overlay_dungeon_hunter_shadow",
                         monsterIds: [
-                            301100,
-                            100067,
-                            100068
+                            100086,
+                            100089,
+                            100093
                         ],
                         speed: 2,
                         range: 34,
-                        statMultiplier: 2.7,
+                        statMultiplier: 1.4,
                         message: "零式執行者が二歩ずつ迫る！"
                     }
                 ],
@@ -10755,6 +11110,7 @@ const FIXED_DUNGEON_MAPS = {
                         y: 4,
                         monsterId: 902000,
                         questId: "zenon_hidden_grezelia",
+                        startEventId: "quest_zenon_hidden_encounter",
                         storyEventId: "quest_zenon_hidden_clear",
                         requiredFlag: "grezeliaOuterSealBroken",
                         actionLabel: "零式禁則試練に挑む",
@@ -10788,15 +11144,58 @@ const FIXED_DUNGEON_MAPS = {
     }
 };
 
+const AUTHORED_MAP_PROP_PLACEMENTS = [
+    {
+        id: "carpet-thunder-final",
+        areaKey: "THUNDER_FORT",
+        floor: 6,
+        x: 13,
+        y: 4,
+        width: 5,
+        height: 7,
+        type: "castle_carpet",
+        role: "decoration",
+        baseTile: "T"
+    },
+    {
+        id: "carpet-light-final",
+        areaKey: "LIGHT_PALACE",
+        floor: 4,
+        x: 15,
+        y: 6,
+        width: 3,
+        height: 7,
+        type: "castle_carpet",
+        role: "decoration",
+        baseTile: "T"
+    },
+    {
+        id: "carpet-dark-final",
+        areaKey: "DARK_CASTLE",
+        floor: 7,
+        x: 13,
+        y: 2,
+        width: 5,
+        height: 6,
+        type: "castle_carpet",
+        role: "decoration",
+        baseTile: "T"
+    }
+];
+
 if (typeof window !== "undefined") {
     window.STORY_MAP_MUTATIONS = STORY_MAP_MUTATIONS;
     window.TILE_THEMES = TILE_THEMES;
+    window.DUNGEON_WALL_FACE_THEMES = DUNGEON_WALL_FACE_THEMES;
+    window.MAP_FLOOR_DECOR_THEMES = MAP_FLOOR_DECOR_THEMES;
     window.STORY_DATA = STORY_DATA;
     window.SEA_ENCOUNTER_MONSTERS = SEA_ENCOUNTER_MONSTERS;
     window.FIELD_ENCOUNTER_ZONES = FIELD_ENCOUNTER_ZONES;
+    window.WORLD_BRIDGES = WORLD_BRIDGES;
     window.MAP_DATA = MAP_DATA;
     window.FIXED_TILE_OVERLAYS = FIXED_TILE_OVERLAYS;
     window.FIXED_OVERLAY_BASE_TILES = FIXED_OVERLAY_BASE_TILES;
     window.FIXED_MAPS = FIXED_MAPS;
     window.FIXED_DUNGEON_MAPS = FIXED_DUNGEON_MAPS;
+    window.AUTHORED_MAP_PROP_PLACEMENTS = AUTHORED_MAP_PROP_PLACEMENTS;
 }

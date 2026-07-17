@@ -1,0 +1,15 @@
+{
+  "version": "2026-07-17-companion-map-sprites-v002",
+  "format": "64x64 RGBA PNG, transparent background, bottom-center aligned",
+  "buildScript": "tools/assets/build-companion-map-sprites.py",
+  "assets": [
+    { "name": "arisa", "characterId": 108, "portrait": "assets/characters/char_face_108.gif", "source": "arisa_chroma_source.png", "runtime": "assets/map/overlays/overlay_companion_arisa_v002.png" },
+    { "name": "baron", "characterId": 205, "portrait": "assets/characters/char_face_205.gif", "source": "baron_chroma_source.png", "runtime": "assets/map/overlays/overlay_companion_baron_v002.png" },
+    { "name": "alan", "characterId": 201, "portrait": "assets/characters/char_face_201.gif", "source": "alan_chroma_source.png", "runtime": "assets/map/overlays/overlay_companion_alan_v002.png" },
+    { "name": "sophia", "characterId": 202, "portrait": "assets/characters/char_face_202.gif", "source": "sophia_chroma_source.png", "runtime": "assets/map/overlays/overlay_companion_sophia_v002.png" },
+    { "name": "frieda", "characterId": 302, "portrait": "assets/characters/char_face_302.gif", "source": "frieda_chroma_source.png", "runtime": "assets/map/overlays/overlay_companion_frieda_v002.png" },
+    { "name": "haine", "characterId": 207, "portrait": "assets/characters/char_face_207.gif", "source": "haine_chroma_source.png", "runtime": "assets/map/overlays/overlay_companion_haine_v002.png" },
+    { "name": "ryu", "characterId": 107, "portrait": "assets/characters/char_face_107.gif", "source": "ryu_chroma_source.png", "runtime": "assets/map/overlays/overlay_companion_ryu_v002.png" },
+    { "name": "claude", "characterId": 304, "portrait": "assets/characters/char_face_304.gif", "source": "claude_chroma_source.png", "runtime": "assets/map/overlays/overlay_companion_claude_v002.png" }
+  ]
+}

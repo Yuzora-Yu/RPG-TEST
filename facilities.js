@@ -94,10 +94,12 @@ const Facilities = {
     // --- 1. 宿屋 ---
     initInn: () => {
         const exitFn = "App.changeScene('field')";
-        const teleportOpen = typeof App === 'undefined' || typeof App.isFeatureUnlocked !== 'function' || App.isFeatureUnlocked('teleport');
+        const teleportOpen = typeof App !== 'undefined' && typeof App.hasEnteredAbyss === 'function'
+            ? App.hasEnteredAbyss()
+            : (typeof App !== 'undefined' && Number(App.data?.dungeon?.tryCount || 0) > 0);
         const teleportButton = teleportOpen
             ? `<button class="menu-btn" style="background:#000; border:1px solid #fff; height:40px; color:#fff;" onclick="Facilities.openTeleport()">転送の扉</button>`
-            : `<button class="menu-btn" style="background:#111; border:1px solid #555; height:40px; color:#777;" onclick="App.requireFeatureUnlocked('teleport')">???</button>`;
+            : '';
         const cmds = `
             <button class="menu-btn" style="background:#000; border:1px solid #fff; height:40px; color:#fff;" onclick="Facilities.stayInn(50)">泊まる (50Gold)</button>
             ${teleportButton}
@@ -122,6 +124,7 @@ const Facilities = {
     },
 
     openTeleport: () => {
+        if (typeof App !== 'undefined' && typeof App.hasEnteredAbyss === 'function' && !App.hasEnteredAbyss()) return;
         if (typeof App !== 'undefined' && typeof App.requireFeatureUnlocked === 'function' && !App.requireFeatureUnlocked('teleport')) return;
         const maxF = (App.data.dungeon && App.data.dungeon.maxFloor) ? App.data.dungeon.maxFloor : 0;
         if(maxF === 0) return Menu.msg("まだ 行ける階層が ないようです。");
@@ -149,6 +152,7 @@ const Facilities = {
     },
 
     execTele: () => {
+        if (typeof App !== 'undefined' && typeof App.hasEnteredAbyss === 'function' && !App.hasEnteredAbyss()) return;
         if (typeof App !== 'undefined' && typeof App.requireFeatureUnlocked === 'function' && !App.requireFeatureUnlocked('teleport')) return;
         const cost = Facilities.teleportFloor * 10000;
         if(App.data.gold < cost) return Menu.msg("ゴールドが 足りません。");
@@ -1092,11 +1096,18 @@ const Facilities = {
     },
 
     getItemShopLineup: (rank = 1) => {
-        const allowedTypes = new Set(['HP回復', 'MP回復', '状態異常回復', '蘇生', '移動']);
-        const typeOrder = ['HP回復', 'MP回復', '状態異常回復', '蘇生', '移動', '換金'];
+        const allowedTypes = new Set([
+            'HP回復', 'MP回復', '状態異常回復', '蘇生', '移動',
+            '攻撃道具', '強化道具', '弱体道具', 'キャンプ'
+        ]);
+        const typeOrder = [
+            'HP回復', 'MP回復', '状態異常回復', '蘇生',
+            '攻撃道具', '強化道具', '弱体道具', 'キャンプ', '移動', '換金'
+        ];
         const maxRank = Math.max(1, Number(rank) || 1);
         const items = (DB.ITEMS || [])
             .filter(item => allowedTypes.has(item.type))
+            .filter(item => item.shopAvailable !== false && item.medalOnly !== true)
             .filter(item => Number(item.price || 0) > 0)
             .filter(item => Number(item.rank || 1) <= maxRank);
 
