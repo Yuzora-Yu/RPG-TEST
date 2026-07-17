@@ -2011,7 +2011,7 @@ const Dungeon = {
         return tile !== 'W' && tile !== 'C' && tile !== 'R' && !Dungeon.isLockedDoorTile(tile);
     },
 
-    findShortestGridPath: (startX, startY, targetX, targetY, isWalkable, width, height) => {
+    findShortestGridPath: (startX, startY, targetX, targetY, isWalkable, width, height, maxDistance = Infinity) => {
         const sx = Number(startX), sy = Number(startY), tx = Number(targetX), ty = Number(targetY);
         const w = Number(width), h = Number(height);
         if (![sx, sy, tx, ty, w, h].every(Number.isFinite) || w <= 0 || h <= 0 || typeof isWalkable !== 'function') return null;
@@ -2019,11 +2019,15 @@ const Dungeon = {
 
         const startKey = `${sx},${sy}`;
         const targetKey = `${tx},${ty}`;
-        const queue = [{ x: sx, y: sy }];
+        const maxSteps = Number.isFinite(Number(maxDistance))
+            ? Math.max(0, Math.floor(Number(maxDistance)))
+            : w * h;
+        const queue = [{ x: sx, y: sy, distance: 0 }];
         const parents = new Map([[startKey, null]]);
 
         for (let qi = 0; qi < queue.length; qi++) {
             const current = queue[qi];
+            if (current.distance >= maxSteps) continue;
             // 同じ最短距離なら、目標へ近づく向きを優先して見た目の蛇行を抑える。
             const directions = [[1, 0], [-1, 0], [0, 1], [0, -1]].sort((a, b) => {
                 const ad = Math.abs(tx - (current.x + a[0])) + Math.abs(ty - (current.y + a[1]));
@@ -2048,7 +2052,7 @@ const Dungeon = {
                     }
                     return reversed.reverse();
                 }
-                queue.push({ x: nx, y: ny });
+                queue.push({ x: nx, y: ny, distance: current.distance + 1 });
             }
         }
         return null;
@@ -2230,10 +2234,16 @@ const Dungeon = {
                 Field.y,
                 (nx, ny, fromX, fromY) => Dungeon.isFixedHunterWalkable(nx, ny, fromX, fromY, occupied),
                 Field.currentMapData.width,
-                Field.currentMapData.height
+                Field.currentMapData.height,
+                range
             );
+            if (Array.isArray(path) && path.length === 0) {
+                App.log(def.message || '追跡する強敵に追いつかれた！');
+                Dungeon.triggerFixedEffectBattle({ ...def, id }, { statMultiplier: Number(def.statMultiplier || 1.8), hunterMapKey: key });
+                return true;
+            }
             // range は直線距離ではなく、実際に歩く最短経路の長さで判定する。
-            if (!path || path.length === 0 || path.length > range) {
+            if (!path || path.length > range) {
                 occupied.add(originalKey);
                 continue;
             }

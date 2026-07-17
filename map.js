@@ -1291,14 +1291,13 @@ const STORY_DATA = {
                 img: "overlay_field_cave",
                 color: "#72c7dd"
             },
-            entryRequiredFlag: "crenaRouteKnown",
             entryBypassFlags: [
                 "blueCrystalObtained",
                 "waterCityCleared"
             ],
             entryEventId: "crena_cave_entry",
             entryEventStoryStep: 4,
-            entryLockedText: "青い光が洞口の奥で揺れている。今はまだ、鍾乳洞へ入る理由がない。"
+            entryLockedText: "青い光が洞口の奥で揺れている。"
         },
         DARK_SHRINE_RUINS: {
             name: "闇の神殿エクリプス跡",
@@ -3442,17 +3441,15 @@ const FIXED_DUNGEON_MAPS = {
             },
             {
                 label: "火山深部・煤風洞",
-                encounterRank: 44,
+                encounterRank: 48,
                 monsters: [
-                    100010,
-                    100011,
-                    100012,
-                    100013,
-                    100014
+                    100041,
+                    100043,
+                    100044,
+                    100047
                 ],
                 enemyBoost: {
-                    nameSuffix: "深層",
-                    statMultiplier: 1.62,
+                    statMultiplier: 1.08,
                     elmRes: {
                         "火": 100,
                         "風": 50,
@@ -3563,13 +3560,13 @@ const FIXED_DUNGEON_MAPS = {
                         id: "volcano_deep_flame",
                         imageKey: "overlay_dungeon_hunter_fire",
                         monsterIds: [
-                            301010,
-                            100013,
-                            100014
+                            100050,
+                            100052,
+                            100054
                         ],
                         speed: 0.65,
                         range: 26,
-                        statMultiplier: 2.25,
+                        statMultiplier: 1.3,
                         message: "炎を纏う強敵が迫る！"
                     }
                 ],
@@ -3807,16 +3804,15 @@ const FIXED_DUNGEON_MAPS = {
             },
             {
                 label: "火山深部・炎心炉",
-                encounterRank: 50,
+                encounterRank: 56,
                 monsters: [
-                    100012,
-                    100013,
-                    100014,
-                    100015
+                    100050,
+                    100052,
+                    100053,
+                    100054
                 ],
                 enemyBoost: {
-                    nameSuffix: "炎心",
-                    statMultiplier: 1.72,
+                    statMultiplier: 1.1,
                     elmRes: {
                         "火": 120,
                         "水": -60
@@ -3902,13 +3898,13 @@ const FIXED_DUNGEON_MAPS = {
                         id: "volcano_furnace_guard",
                         imageKey: "overlay_dungeon_hunter_fire",
                         monsterIds: [
-                            301010,
-                            100015,
-                            100014
+                            100055,
+                            100057,
+                            100060
                         ],
                         speed: 0.75,
                         range: 28,
-                        statMultiplier: 2.35,
+                        statMultiplier: 1.35,
                         message: "炉心の番人が迫る！"
                     }
                 ],
@@ -4253,14 +4249,13 @@ const FIXED_DUNGEON_MAPS = {
                 label: "禁忌の森深部・迷い根の庭",
                 encounterRank: 48,
                 monsters: [
-                    100020,
-                    100021,
-                    100022,
-                    100023
+                    100043,
+                    100044,
+                    100047,
+                    100048
                 ],
                 enemyBoost: {
-                    nameSuffix: "深層",
-                    statMultiplier: 1.58,
+                    statMultiplier: 1.08,
                     elmRes: {
                         "風": 100,
                         "水": 40,
@@ -4367,13 +4362,13 @@ const FIXED_DUNGEON_MAPS = {
                         id: "forest_root_stalker",
                         imageKey: "overlay_dungeon_hunter_forest",
                         monsterIds: [
-                            301020,
-                            100022,
-                            100023
+                            100051,
+                            100053,
+                            100055
                         ],
                         speed: 0.65,
                         range: 25,
-                        statMultiplier: 2.15,
+                        statMultiplier: 1.3,
                         message: "呪根の追跡者が迫る！"
                     }
                 ],
@@ -4415,16 +4410,15 @@ const FIXED_DUNGEON_MAPS = {
             },
             {
                 label: "禁忌の森深部・呪風の根",
-                encounterRank: 55,
+                encounterRank: 56,
                 monsters: [
-                    100021,
-                    100022,
-                    100023,
-                    100024
+                    100050,
+                    100051,
+                    100053,
+                    100054
                 ],
                 enemyBoost: {
-                    nameSuffix: "呪根",
-                    statMultiplier: 1.7,
+                    statMultiplier: 1.1,
                     elmRes: {
                         "風": 120,
                         "闇": 50,
@@ -4493,13 +4487,13 @@ const FIXED_DUNGEON_MAPS = {
                         id: "forest_curse_guard",
                         imageKey: "overlay_dungeon_hunter_forest",
                         monsterIds: [
-                            301020,
-                            100024,
-                            100023
+                            100055,
+                            100061,
+                            100063
                         ],
                         speed: 0.75,
                         range: 28,
-                        statMultiplier: 2.3,
+                        statMultiplier: 1.35,
                         message: "呪風の番人が迫る！"
                     },
                     {
@@ -4858,7 +4852,7 @@ const FIXED_DUNGEON_MAPS = {
                 monsters: [
                     100033,
                     100034,
-                    301021
+                    100035
                 ],
                 width: 23,
                 height: 23,
@@ -4942,7 +4936,7 @@ const FIXED_DUNGEON_MAPS = {
                 monsters: [
                     100034,
                     100035,
-                    301022
+                    100036
                 ],
                 width: 23,
                 height: 23,
@@ -5042,7 +5036,7 @@ const FIXED_DUNGEON_MAPS = {
                 monsters: [
                     100036,
                     100037,
-                    301022
+                    100039
                 ],
                 width: 23,
                 height: 23,
@@ -5117,14 +5111,13 @@ const FIXED_DUNGEON_MAPS = {
                 label: "海底神殿深部・潮環回廊",
                 encounterRank: 68,
                 monsters: [
-                    100033,
-                    100034,
-                    100035,
-                    301021
+                    100062,
+                    100064,
+                    100066,
+                    100067
                 ],
                 enemyBoost: {
-                    nameSuffix: "深層",
-                    statMultiplier: 1.58,
+                    statMultiplier: 1.08,
                     elmRes: {
                         "水": 100,
                         "火": 50,
@@ -5249,13 +5242,13 @@ const FIXED_DUNGEON_MAPS = {
                         id: "seabed_current",
                         imageKey: "overlay_dungeon_hunter_sea",
                         monsterIds: [
-                            301021,
-                            301022,
-                            100034
+                            100068,
+                            100069,
+                            100073
                         ],
                         speed: 0.65,
                         range: 26,
-                        statMultiplier: 2.2,
+                        statMultiplier: 1.3,
                         message: "逆潮の番人が迫る！"
                     }
                 ],
@@ -5372,14 +5365,13 @@ const FIXED_DUNGEON_MAPS = {
                 label: "海底神殿深部・逆潮祭壇",
                 encounterRank: 76,
                 monsters: [
-                    100034,
-                    100035,
-                    301021,
-                    301022
+                    100068,
+                    100069,
+                    100070,
+                    100071
                 ],
                 enemyBoost: {
-                    nameSuffix: "逆潮",
-                    statMultiplier: 1.72,
+                    statMultiplier: 1.1,
                     elmRes: {
                         "水": 120,
                         "雷": -60
@@ -5471,13 +5463,13 @@ const FIXED_DUNGEON_MAPS = {
                         id: "seabed_altar_guard",
                         imageKey: "overlay_dungeon_hunter_sea",
                         monsterIds: [
-                            301022,
-                            301021,
-                            100035
+                            100073,
+                            100075,
+                            100080
                         ],
                         speed: 0.75,
                         range: 29,
-                        statMultiplier: 2.35,
+                        statMultiplier: 1.35,
                         message: "祭壇守が水を割って迫る！"
                     }
                 ],
@@ -6615,17 +6607,15 @@ const FIXED_DUNGEON_MAPS = {
             },
             {
                 label: "ライザーク要塞深部・双電路",
-                encounterRank: 74,
+                encounterRank: 76,
                 monsters: [
-                    100040,
-                    100041,
-                    100042,
-                    100043,
-                    100044
+                    100068,
+                    100069,
+                    100070,
+                    100072
                 ],
                 enemyBoost: {
-                    nameSuffix: "深層",
-                    statMultiplier: 1.62,
+                    statMultiplier: 1.08,
                     elmRes: {
                         "雷": 110,
                         "水": 50,
@@ -6717,13 +6707,13 @@ const FIXED_DUNGEON_MAPS = {
                         id: "thunder_deep_guard",
                         imageKey: "overlay_dungeon_hunter_thunder",
                         monsterIds: [
-                            100081,
-                            100043,
-                            100044
+                            100073,
+                            100076,
+                            100079
                         ],
                         speed: 1.1,
                         range: 29,
-                        statMultiplier: 2.35,
+                        statMultiplier: 1.3,
                         message: "雷鎧の強敵が迫る！"
                     }
                 ],
@@ -6827,16 +6817,15 @@ const FIXED_DUNGEON_MAPS = {
             },
             {
                 label: "ライザーク要塞深部・制御核区",
-                encounterRank: 82,
+                encounterRank: 81,
                 monsters: [
-                    100041,
-                    100042,
-                    100043,
-                    100044
+                    100073,
+                    100074,
+                    100075,
+                    100076
                 ],
                 enemyBoost: {
-                    nameSuffix: "制御核",
-                    statMultiplier: 1.76,
+                    statMultiplier: 1.1,
                     elmRes: {
                         "雷": 130,
                         "風": -60
@@ -6903,13 +6892,13 @@ const FIXED_DUNGEON_MAPS = {
                         id: "thunder_core_guard",
                         imageKey: "overlay_dungeon_hunter_thunder",
                         monsterIds: [
+                            100079,
                             100081,
-                            100082,
-                            100044
+                            100082
                         ],
                         speed: 1.2,
                         range: 31,
-                        statMultiplier: 2.45,
+                        statMultiplier: 1.35,
                         message: "制御核の守衛が迫る！"
                     }
                 ],
@@ -7486,8 +7475,7 @@ const FIXED_DUNGEON_MAPS = {
         ],
         battleBg: "battle_bg_galvania_cave",
         enemyBoost: {
-            nameSuffix: "・洞窟強化",
-            statMultiplier: 1.16,
+            statMultiplier: 1,
             resists: {
                 Fear: 50,
                 InstantDeath: 100
@@ -7519,12 +7507,11 @@ const FIXED_DUNGEON_MAPS = {
         floors: [
             {
                 label: "1階・北口 黒岩の胎道",
-                encounterRank: 70,
+                encounterRank: 61,
                 monsters: [
                     100056,
                     100057,
-                    100058,
-                    100059
+                    100058
                 ],
                 width: 61,
                 height: 35,
@@ -7594,13 +7581,13 @@ const FIXED_DUNGEON_MAPS = {
                         id: "galvania_f1_black_scout_v2",
                         imageKey: "overlay_dungeon_hunter_shadow",
                         monsterIds: [
-                            100056,
-                            100057,
-                            100058
+                            100059,
+                            100063,
+                            100067
                         ],
                         speed: 0.58,
                         range: 34,
-                        statMultiplier: 1.75,
+                        statMultiplier: 1.22,
                         message: "黒岩の陰から魔族の斥候が襲いかかった！"
                     },
                     {
@@ -7682,7 +7669,7 @@ const FIXED_DUNGEON_MAPS = {
             },
             {
                 label: "2階・偽りの無限回廊",
-                encounterRank: 72,
+                encounterRank: 66,
                 monsters: [
                     100058,
                     100059,
@@ -7889,7 +7876,7 @@ const FIXED_DUNGEON_MAPS = {
             },
             {
                 label: "3階・溶岩の地底湖",
-                encounterRank: 74,
+                encounterRank: 66,
                 monsters: [
                     100059,
                     100060,
@@ -7979,13 +7966,13 @@ const FIXED_DUNGEON_MAPS = {
                         id: "galvania_f3_ash_daemon_v2",
                         imageKey: "overlay_dungeon_hunter_fire",
                         monsterIds: [
-                            100059,
-                            100060,
-                            100061
+                            100064,
+                            100067,
+                            100068
                         ],
                         speed: 0.48,
                         range: 38,
-                        statMultiplier: 1.95,
+                        statMultiplier: 1.28,
                         message: "溶岩霧の向こうから、灼熱の魔族が迫る！"
                     }
                 ],
@@ -8093,9 +8080,9 @@ const FIXED_DUNGEON_MAPS = {
             },
             {
                 label: "4階・氷晶の十字滑床",
-                encounterRank: 76,
+                encounterRank: 66,
                 monsters: [
-                    100060,
+                    100058,
                     100061,
                     100062
                 ],
@@ -8367,13 +8354,13 @@ const FIXED_DUNGEON_MAPS = {
                         id: "galvania_f4_frost_hound_v2",
                         imageKey: "overlay_dungeon_hunter_sea",
                         monsterIds: [
-                            100058,
-                            100061,
-                            100062
+                            100065,
+                            100067,
+                            100069
                         ],
                         speed: 0.52,
                         range: 34,
-                        statMultiplier: 1.85,
+                        statMultiplier: 1.28,
                         message: "氷壁の向こうから魔犬が滑るように迫ってきた！"
                     }
                 ],
@@ -8454,7 +8441,7 @@ const FIXED_DUNGEON_MAPS = {
             },
             {
                 label: "5階・魔軍補給路",
-                encounterRank: 78,
+                encounterRank: 66,
                 monsters: [
                     100061,
                     100062,
@@ -8525,13 +8512,13 @@ const FIXED_DUNGEON_MAPS = {
                         id: "galvania_f5_supply_overseer_v2",
                         imageKey: "overlay_dungeon_hunter_shadow",
                         monsterIds: [
-                            100061,
-                            100062,
-                            100063
+                            100064,
+                            100067,
+                            100070
                         ],
                         speed: 0.68,
                         range: 46,
-                        statMultiplier: 2.1,
+                        statMultiplier: 1.32,
                         message: "補給路を巡回する上級魔族が、こちらを捕捉した！"
                     }
                 ],
@@ -8603,11 +8590,12 @@ const FIXED_DUNGEON_MAPS = {
             },
             {
                 label: "6階・南口 白骨の旧坑",
-                encounterRank: 80,
+                encounterRank: 76,
                 monsters: [
-                    100062,
                     100063,
-                    100064
+                    100064,
+                    100065,
+                    100068
                 ],
                 width: 61,
                 height: 35,
@@ -8679,13 +8667,13 @@ const FIXED_DUNGEON_MAPS = {
                         id: "galvania_f6_royal_rearguard_v2",
                         imageKey: "overlay_dungeon_hunter_shadow",
                         monsterIds: [
-                            100062,
-                            100063,
-                            100064
+                            100073,
+                            100076,
+                            100077
                         ],
                         speed: 0.58,
                         range: 42,
-                        statMultiplier: 2,
+                        statMultiplier: 1.36,
                         message: "撤退路を守る魔族の後衛が立ちはだかった！"
                     }
                 ],
@@ -8773,8 +8761,8 @@ const FIXED_DUNGEON_MAPS = {
     DARK_CASTLE: {
         name: "魔王城ガルヴァニア",
         themeKey: "DARK_CASTLE",
-        rank: 60,
-        encounterRank: 60,
+        rank: 80,
+        encounterRank: 80,
         rareMonsters: [
             {
                 id: 200202,
@@ -8789,11 +8777,11 @@ const FIXED_DUNGEON_MAPS = {
         floors: [
             {
                 label: "本館1階・中央広間",
-                encounterRank: 60,
+                encounterRank: 66,
                 monsters: [
-                    100056,
-                    100057,
-                    100058
+                    100059,
+                    100060,
+                    100061
                 ],
                 width: 31,
                 height: 27,
@@ -8967,11 +8955,11 @@ const FIXED_DUNGEON_MAPS = {
             },
             {
                 label: "西館1階・黒影廊",
-                encounterRank: 62,
+                encounterRank: 71,
                 monsters: [
-                    100058,
-                    100059,
-                    100060
+                    100061,
+                    100063,
+                    100064
                 ],
                 width: 31,
                 height: 27,
@@ -9061,13 +9049,13 @@ const FIXED_DUNGEON_MAPS = {
                         id: "dark_castle_west_patrol",
                         imageKey: "overlay_dungeon_hunter_shadow",
                         monsterIds: [
-                            100058,
-                            100059,
-                            100060
+                            100068,
+                            100069,
+                            100073
                         ],
                         speed: 1,
                         range: 24,
-                        statMultiplier: 1.7,
+                        statMultiplier: 1.3,
                         message: "西館の巡察兵が迫る！"
                     }
                 ],
@@ -9081,11 +9069,11 @@ const FIXED_DUNGEON_MAPS = {
             },
             {
                 label: "西館2階・結界の間",
-                encounterRank: 64,
+                encounterRank: 71,
                 monsters: [
-                    100059,
-                    100060,
-                    100061
+                    100064,
+                    100065,
+                    100066
                 ],
                 width: 31,
                 height: 27,
@@ -9163,11 +9151,11 @@ const FIXED_DUNGEON_MAPS = {
             },
             {
                 label: "東館1階・風哭廊",
-                encounterRank: 62,
+                encounterRank: 71,
                 monsters: [
-                    100058,
                     100061,
-                    100062
+                    100064,
+                    100065
                 ],
                 width: 31,
                 height: 27,
@@ -9257,13 +9245,13 @@ const FIXED_DUNGEON_MAPS = {
                         id: "dark_castle_east_patrol",
                         imageKey: "overlay_dungeon_hunter_shadow",
                         monsterIds: [
-                            100060,
-                            100061,
-                            100062
+                            100068,
+                            100070,
+                            100075
                         ],
                         speed: 1,
                         range: 24,
-                        statMultiplier: 1.7,
+                        statMultiplier: 1.3,
                         message: "東館の追跡者が迫る！"
                     }
                 ],
@@ -9277,11 +9265,11 @@ const FIXED_DUNGEON_MAPS = {
             },
             {
                 label: "東館2階・結界の間",
-                encounterRank: 64,
+                encounterRank: 71,
                 monsters: [
-                    100061,
-                    100062,
-                    100063
+                    100064,
+                    100066,
+                    100067
                 ],
                 width: 31,
                 height: 27,
@@ -9359,11 +9347,11 @@ const FIXED_DUNGEON_MAPS = {
             },
             {
                 label: "本館2階・夢幻回廊",
-                encounterRank: 68,
+                encounterRank: 76,
                 monsters: [
-                    100063,
-                    100064,
-                    100065
+                    100068,
+                    100069,
+                    100070
                 ],
                 width: 31,
                 height: 27,
@@ -9453,13 +9441,13 @@ const FIXED_DUNGEON_MAPS = {
                         id: "dark_castle_dream_guard",
                         imageKey: "overlay_dungeon_hunter_shadow",
                         monsterIds: [
-                            301081,
-                            100064,
-                            100065
+                            100073,
+                            100076,
+                            100077
                         ],
                         speed: 0.5,
                         range: 26,
-                        statMultiplier: 1.9,
+                        statMultiplier: 1.35,
                         message: "夢幻の番人が迫る！"
                     }
                 ],
@@ -9483,11 +9471,11 @@ const FIXED_DUNGEON_MAPS = {
             },
             {
                 label: "本館3階・謁見の間",
-                encounterRank: 72,
+                encounterRank: 81,
                 monsters: [
-                    100066,
-                    100067,
-                    100068
+                    100073,
+                    100074,
+                    100075
                 ],
                 width: 31,
                 height: 27,
@@ -9687,12 +9675,12 @@ const FIXED_DUNGEON_MAPS = {
                         imageKey: "overlay_dungeon_hunter_forest",
                         monsterIds: [
                             100010,
-                            100013,
-                            100010
+                            100014,
+                            100015
                         ],
                         speed: 0.5,
                         range: 18,
-                        statMultiplier: 1.7,
+                        statMultiplier: 1.22,
                         message: "黒風の魔物が迫る！"
                     }
                 ],
@@ -9917,14 +9905,28 @@ const FIXED_DUNGEON_MAPS = {
                         id: "crena_claw",
                         imageKey: "overlay_dungeon_hunter_sea",
                         monsterIds: [
-                            100024,
+                            100028,
                             100030,
-                            100024
+                            100032
                         ],
                         speed: 0.5,
                         range: 22,
-                        statMultiplier: 1.8,
+                        statMultiplier: 1.25,
                         message: "爪痕の主が襲いかかる！"
+                    }
+                ],
+                mapActions: [
+                    {
+                        x: 19,
+                        y: 17,
+                        label: "王国兵に話す",
+                        log: "王国軍が鍾乳洞を調査中だ。安全が確認できるまで、これ以上先へは通せない。",
+                        type: "log",
+                        imageKey: "overlay_npc_dark_soldier",
+                        baseTile: "T",
+                        missingFlag: "crenaRouteKnown",
+                        interactFromAdjacent: true,
+                        minimapColor: "#8f99a8"
                     }
                 ],
                 chests: [
@@ -10072,16 +10074,15 @@ const FIXED_DUNGEON_MAPS = {
             },
             {
                 label: "クレナ鍾乳洞深部・結晶裏路",
-                encounterRank: 92,
+                encounterRank: 91,
                 monsters: [
-                    100056,
-                    100057,
-                    100058,
-                    100059
+                    100082,
+                    100083,
+                    100084,
+                    100085
                 ],
                 enemyBoost: {
-                    nameSuffix: "深層",
-                    statMultiplier: 1.55,
+                    statMultiplier: 1.08,
                     elmRes: {
                         "火": 35,
                         "水": 45,
@@ -10202,13 +10203,13 @@ const FIXED_DUNGEON_MAPS = {
                         id: "crena_barrier_guard",
                         imageKey: "overlay_dungeon_hunter_shadow",
                         monsterIds: [
-                            100057,
-                            100058,
-                            100059
+                            100086,
+                            100089,
+                            100093
                         ],
                         speed: 0.7,
                         range: 28,
-                        statMultiplier: 2.25,
+                        statMultiplier: 1.32,
                         message: "結界守が迫る！"
                     }
                 ],
@@ -10299,16 +10300,15 @@ const FIXED_DUNGEON_MAPS = {
             },
             {
                 label: "クレナ鍾乳洞深部・結界核",
-                encounterRank: 102,
+                encounterRank: 101,
                 monsters: [
-                    100056,
-                    100057,
-                    100058,
-                    100059
+                    100091,
+                    100092,
+                    100093,
+                    100094
                 ],
                 enemyBoost: {
-                    nameSuffix: "結界核",
-                    statMultiplier: 1.72,
+                    statMultiplier: 1.1,
                     elmRes: {
                         "火": 45,
                         "水": 55,
@@ -10386,13 +10386,13 @@ const FIXED_DUNGEON_MAPS = {
                         id: "crena_core_guard",
                         imageKey: "overlay_dungeon_hunter_shadow",
                         monsterIds: [
-                            100078,
-                            100082,
-                            100059
+                            100095,
+                            100099,
+                            100103
                         ],
                         speed: 0.8,
                         range: 29,
-                        statMultiplier: 2.45,
+                        statMultiplier: 1.36,
                         message: "結界核の守り手が迫る！"
                     }
                 ],
@@ -10454,12 +10454,12 @@ const FIXED_DUNGEON_MAPS = {
         floors: [
             {
                 label: "影残る拝廊",
-                encounterRank: 75,
+                encounterRank: 76,
                 monsters: [
-                    100064,
-                    100065,
-                    100066,
-                    100067
+                    100068,
+                    100069,
+                    100070,
+                    100071
                 ],
                 width: 29,
                 height: 23,
@@ -10535,13 +10535,13 @@ const FIXED_DUNGEON_MAPS = {
                         id: "shrine_shadow",
                         imageKey: "overlay_dungeon_hunter_shadow",
                         monsterIds: [
-                            301080,
-                            100066,
-                            100067
+                            100073,
+                            100075,
+                            100077
                         ],
                         speed: 0.5,
                         range: 26,
-                        statMultiplier: 2,
+                        statMultiplier: 1.35,
                         message: "神殿の影が追ってくる！"
                     }
                 ],
@@ -10601,11 +10601,11 @@ const FIXED_DUNGEON_MAPS = {
             },
             {
                 label: "月影の祭壇",
-                encounterRank: 95,
+                encounterRank: 96,
                 monsters: [
-                    100066,
-                    100067,
-                    100068
+                    100086,
+                    100087,
+                    100089
                 ],
                 width: 31,
                 height: 25,
@@ -10742,8 +10742,8 @@ const FIXED_DUNGEON_MAPS = {
     GREZELIA_FORBIDDEN: {
         name: "禁則地グレゼリア",
         themeKey: "GREZELIA_CAVE",
-        rank: 85,
-        encounterRank: 85,
+        rank: 86,
+        encounterRank: 86,
         battleBg: "battle_bg_grezelia",
         entryPoint: {
             x: 15,
@@ -10752,12 +10752,12 @@ const FIXED_DUNGEON_MAPS = {
         floors: [
             {
                 label: "禁則回廊",
-                encounterRank: 85,
+                encounterRank: 86,
                 monsters: [
-                    100064,
-                    100065,
-                    100066,
-                    100067
+                    100077,
+                    100078,
+                    100079,
+                    100080
                 ],
                 width: 31,
                 height: 25,
@@ -10828,13 +10828,13 @@ const FIXED_DUNGEON_MAPS = {
                         id: "grezelia_rule",
                         imageKey: "overlay_dungeon_hunter_shadow",
                         monsterIds: [
-                            301100,
-                            100067,
-                            100068
+                            100082,
+                            100083,
+                            100086
                         ],
                         speed: 0.5,
                         range: 28,
-                        statMultiplier: 2.2,
+                        statMultiplier: 1.35,
                         message: "禁則の番人が迫る！"
                     }
                 ],
@@ -10884,11 +10884,12 @@ const FIXED_DUNGEON_MAPS = {
             },
             {
                 label: "禁奥の核",
-                encounterRank: 110,
+                encounterRank: 86,
                 monsters: [
-                    100066,
-                    100067,
-                    100068
+                    100077,
+                    100079,
+                    100080,
+                    100081
                 ],
                 width: 33,
                 height: 27,
@@ -11008,11 +11009,12 @@ const FIXED_DUNGEON_MAPS = {
             },
             {
                 label: "零式禁則層",
-                encounterRank: 125,
+                encounterRank: 91,
                 monsters: [
-                    100066,
-                    100067,
-                    100068
+                    100082,
+                    100083,
+                    100084,
+                    100085
                 ],
                 width: 35,
                 height: 29,
@@ -11081,13 +11083,13 @@ const FIXED_DUNGEON_MAPS = {
                         id: "grezelia_zero_executor",
                         imageKey: "overlay_dungeon_hunter_shadow",
                         monsterIds: [
-                            301100,
-                            100067,
-                            100068
+                            100086,
+                            100089,
+                            100093
                         ],
                         speed: 2,
                         range: 34,
-                        statMultiplier: 2.7,
+                        statMultiplier: 1.4,
                         message: "零式執行者が二歩ずつ迫る！"
                     }
                 ],
