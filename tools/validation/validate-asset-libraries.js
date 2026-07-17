@@ -48,21 +48,15 @@ const installImages = new Set(assets.cacheWarmup?.installImages || []);
 const startupImages = new Set(assets.cacheWarmup?.startupImages || []);
 
 const mapManifest = JSON.parse(read('assets/map/library/manifest.json'));
-const monsterManifest = JSON.parse(read('assets/monsters/library/manifest.json'));
 const mapAssets = mapManifest.assets || [];
-const monsterAssets = monsterManifest.assets || [];
+const adoptedMonsterIds = [
+    200001, 200002, 200003, 200004, 200005, 200006, 200007, 200008,
+    200009, 200010, 200011, 200012, 200013, 200014, 200015, 200016,
+    302201, 302202, 302203, 302204, 302205, 302206, 302207, 302208,
+];
 
 if (mapAssets.length !== 91) errors.push(`map library count is ${mapAssets.length}, expected 91`);
 if (new Set(mapAssets.map(asset => asset.theme)).size !== 10) errors.push('map library must contain 10 themes');
-if (monsterAssets.length !== 24) errors.push(`monster library count is ${monsterAssets.length}, expected 24`);
-if (monsterAssets.filter(asset => asset.role === 'midboss').length !== 8) errors.push('midboss library must contain 8 candidates');
-if (monsterAssets.filter(asset => asset.role === 'normal').length !== 16) errors.push('normal monster library must contain 16 candidates');
-if (new Set(monsterAssets.map(asset => asset.element)).size !== 8) errors.push('monster library must contain 8 elements');
-if (monsterManifest.runtimeFormat?.logicalCanvas?.join('x') !== '192x192' || monsterManifest.runtimeFormat?.nearestScale !== 4) {
-    errors.push('monster library must preserve the 192px logical canvas and 4x nearest scaling contract');
-}
-if (monsterManifest.status !== 'adopted-runtime-v001') errors.push('monster library manifest must be marked adopted-runtime-v001');
-if (new Set(monsterAssets.map(asset => asset.monsterId)).size !== 24) errors.push('adopted monster IDs must be unique');
 
 const keys = new Set();
 const paths = new Set();
@@ -80,29 +74,33 @@ for (const asset of mapAssets) {
     expectPng(asset.master, 256, 256);
 }
 
-for (const asset of monsterAssets) {
-    if (keys.has(asset.key)) errors.push(`duplicate key: ${asset.key}`);
-    if (paths.has(asset.path)) errors.push(`duplicate path: ${asset.path}`);
-    keys.add(asset.key);
-    paths.add(asset.path);
-    if (graphics[asset.key] !== asset.path) errors.push(`monster asset registration mismatch: ${asset.key}`);
-    if (!installImages.has(asset.path)) errors.push(`monster asset missing from full cache: ${asset.path}`);
-    if (startupImages.has(asset.path)) errors.push(`library monster must not delay startup: ${asset.path}`);
-    if (!Number.isInteger(asset.monsterId) || !asset.storyAssignment) errors.push(`adopted monster is missing ID/assignment: ${asset.key}`);
-    if (graphics[`monster_${asset.monsterId}`] !== asset.path) errors.push(`numeric monster alias mismatch: ${asset.monsterId}`);
-    if (!['midboss', 'normal'].includes(asset.role)) errors.push(`invalid monster role: ${asset.key}`);
-    expectPng(asset.path, 768, 768);
-    const sourceHeader = readPngHeader(asset.source);
-    if (sourceHeader && ![4, 6].includes(sourceHeader.colorType)) errors.push(`monster source has no alpha: ${asset.source}`);
+for (const id of adoptedMonsterIds) {
+    const relative = `assets/monsters/monster_${id}.png`;
+    expectPng(relative, 768, 768);
+    if (!installImages.has(relative)) errors.push(`adopted monster missing from full cache: ${relative}`);
+    if (startupImages.has(relative)) errors.push(`adopted monster must not delay startup: ${relative}`);
+    if (id >= 302201 && id <= 302208 && graphics[`monster_${id}`] !== relative) {
+        errors.push(`quest boss numeric graphics alias mismatch: ${id}`);
+    }
 }
 
-if (assets.cacheWarmup?.version !== '2026-07-16-forest-sign-v31') {
+if (fs.existsSync(path.join(root, 'assets/monsters/library'))) {
+    errors.push('obsolete runtime monster library directory still exists');
+}
+for (const source of [read('assets.js'), read('monster-images.js'), read('monsters.js')]) {
+    if (source.includes('assets/monsters/library') || source.includes('monsterlib_')) {
+        errors.push('obsolete runtime monster library reference remains');
+        break;
+    }
+}
+
+if (assets.cacheWarmup?.version !== '2026-07-17-battle-logic-ui-v40') {
     errors.push('assets.js cache warmup version is stale');
 }
-if (!read('main.js').includes("fullDataCacheName: 'prisma-abyss-v3.89-forest-sign-runtime-assets'")) {
+if (!read('main.js').includes("fullDataCacheName: 'prisma-abyss-v3.100-battle-logic-ui-runtime'")) {
     errors.push('main.js full-data cache version is stale');
 }
-if (!read('sw.js').includes('const RUNTIME_CACHE_NAME = "prisma-abyss-v3.89-forest-sign-runtime-assets"')) {
+if (!read('sw.js').includes('const RUNTIME_CACHE_NAME = "prisma-abyss-v3.100-battle-logic-ui-runtime"')) {
     errors.push('sw.js runtime cache version is stale');
 }
 
@@ -112,4 +110,4 @@ if (errors.length) {
     process.exit(1);
 }
 
-console.log(`Asset library validation passed: ${mapAssets.length} map chips, ${monsterAssets.length} adopted monsters, all fully cached.`);
+console.log(`Asset library validation passed: ${mapAssets.length} map chips and ${adoptedMonsterIds.length} canonical adopted monsters are fully cached.`);

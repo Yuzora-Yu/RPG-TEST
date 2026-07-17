@@ -261,6 +261,38 @@ if (liciaQuest?.startEventId !== 'quest_licia_start' ||
     throw new Error('Licia quest acceptance dialogue does not explain that she will break the barrier and lead the party onward.');
 }
 
+// リーシアだけは受注時に結界前から離れる。ほかの同行者は討伐後も
+// 依頼地点に残り、本人への報告で完了・加入した時点ではじめて消える。
+const reportRequiredCompanionQuests = [
+    'arisa_haine_forest_depths',
+    'sophia_alan_seabed_depths',
+    'frieda_baron_thunder_depths',
+    'claude_leon_dark_shrine',
+    'ryu_minerva_grezelia',
+];
+const authoredQuestActions = [
+    ...Object.values(context.FIXED_MAPS || {}).flatMap(map => map.mapActions || []),
+    ...Object.values(context.FIXED_DUNGEON_MAPS || {}).flatMap(dungeon =>
+        (dungeon.floors || []).flatMap(floor => floor.mapActions || [])),
+];
+for (const questId of reportRequiredCompanionQuests) {
+    const giverActions = authoredQuestActions.filter(action => action.questId === questId);
+    if (!giverActions.length) throw new Error(`Companion quest has no report NPC action: ${questId}`);
+    if (giverActions.some(action => action.hideWhenQuestAccepted === true)) {
+        throw new Error(`Companion report NPC disappears on acceptance: ${questId}`);
+    }
+    const bossEntry = questBosses.find(entry => entry.boss.questId === questId);
+    const victoryEvent = context.STORY_MANAGER_DATA?.events?.[bossEntry?.boss?.storyEventId];
+    if (!victoryEvent) throw new Error(`Companion quest has no victory event: ${questId}`);
+    if ((victoryEvent.actions || []).some(action => action?.type === 'QUEST_COMPLETE')) {
+        throw new Error(`Companion quest completes before reporting to its NPC: ${questId}`);
+    }
+}
+if (!mainSource.includes("if (questState === 'completed') return false") ||
+    !mainSource.includes("questState === 'accepted'")) {
+    throw new Error('Quest NPC visibility does not distinguish accepted quests from reported/completed quests.');
+}
+
 for (const questId of ['marie_water_city', 'hayate_water_city', 'sylvia_water_city', 'rin_thunder_fort']) {
     const quest = context.window.QUEST_DATA?.[questId];
     if (!Array.isArray(quest?.targetMonsterIds) || quest.targetMonsterIds.length === 0 || Number(quest.targetCount) <= 0) {

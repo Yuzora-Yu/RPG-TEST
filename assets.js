@@ -32,10 +32,12 @@
 //   「初回だけ画像が出ない/遅れる」体験を避ける。
 // - ただし、正本はこの assets.js。Android化や画像軽量化時もここを編集する。
 // - main.js は startupImages をローディング中に先読みし、sw.js は installImages を初回キャッシュする。
-const PRISMA_NORMAL_MONSTER_IMAGE_IDS = Array.from({ length: 90 }, (_, i) => 100001 + i);
+const PRISMA_NORMAL_MONSTER_IMAGE_IDS = Array.from({ length: 90 }, (_, i) => 100001 + i)
+  .concat(Array.from({ length: 16 }, (_, i) => 200001 + i));
 const PRISMA_BOSS_MONSTER_IMAGE_IDS = [
   200201, 200202, 200203, 200204,
   301000, 301001, 301002, 301010, 301011, 301012, 301020, 301021, 301022, 301030, 301031, 301032, 301040, 301050, 301060, 301061, 301062, 301070, 301080, 301081, 301082, 301100,
+  302201, 302202, 302203, 302204, 302205, 302206, 302207, 302208,
   401010, 401020, 401030, 401040, 401050, 401060, 401070, 401080, 401081, 401082, 401090, 401100, 401110, 401120, 401130, 401140, 401150, 401151, 401152, 401153, 401160, 401161, 401162, 401170, 401180, 401190, 401200,
   502049, 502098,
   902000,
@@ -44,8 +46,8 @@ const PRISMA_MONSTER_IMAGE_FILES = PRISMA_NORMAL_MONSTER_IMAGE_IDS
   .concat(PRISMA_BOSS_MONSTER_IMAGE_IDS)
   .map((id) => `assets/monsters/monster_${id}.png`);
 
-// Runtime-ready but not yet placed/assigned visual libraries.
-// Their manifests under assets/map/library and assets/monsters/library are the metadata source of truth.
+// Runtime-ready but not yet placed/assigned map visual libraries.
+// The manifest under assets/map/library is the metadata source of truth.
 const PRISMA_MAP_CHIP_LIBRARY_GROUPS = {
   village: ["wildflowers", "medicinal_herbs", "mushroom_patch", "hay_bundle", "fence_post", "roadside_sign", "clay_jar", "mossy_stone", "firewood_stack"],
   forest: ["ancient_stump", "exposed_roots", "fern_patch", "red_mushrooms", "fallen_log", "lichen_boulder", "twisted_sapling", "vine_stone", "glowing_fungus", "decayed_roadside_sign"],
@@ -58,18 +60,6 @@ const PRISMA_MAP_CHIP_LIBRARY_GROUPS = {
   tower: ["gear_assembly", "rope_coil", "hand_winch", "oil_lamp", "reinforced_crate", "weathered_barrel", "brass_pipe", "lens_fragment", "iron_anchor"],
   ruins: ["broken_column", "ancient_tablet", "void_crystals", "black_roots", "ritual_brazier", "masonry_pile", "weathered_rune", "bone_lantern", "prism_shard"],
 };
-const PRISMA_MONSTER_LIBRARY_GROUPS = {
-  midboss: {
-    fire: ["ashhorn_minotaur"], water: ["abyssal_shell_knight"], wind: ["zephyr_manticore"], thunder: ["thunder_coil_golem"],
-    light: ["cathedral_chimera"], dark: ["grave_regent"], earth: ["root_titan"], ice: ["frostfang_wyrm"],
-  },
-  normal: {
-    fire: ["cinder_imp", "magma_salamander"], water: ["tide_jelly", "shellback_crab"], wind: ["razorwing_hawk", "breeze_moth"],
-    thunder: ["spark_hound", "volt_beetle"], light: ["prism_wisp", "shrine_sentinel"], dark: ["gloom_bat", "shade_crawler"],
-    earth: ["stone_mole", "thorn_boar"], ice: ["frost_jelly", "shard_hare"],
-  },
-};
-
 // OPより前に戦う、開幕ジェリーと始まりの洞穴の通常敵・ボスを起動前に取得する。
 const PRISMA_PRE_OP_MONSTER_IMAGE_FILES = [100001, 100002, 100003, 100004, 301000]
   .map((id) => `assets/monsters/monster_${id}.png`);
@@ -679,47 +669,8 @@ Object.entries(PRISMA_MAP_CHIP_LIBRARY_GROUPS).forEach(([theme, slugs]) => {
     PRISMA_ASSETS.graphics[key] = `assets/map/library/${theme}/${role}/maplib_${theme}_${slug}_v001.png`;
   });
 });
-Object.entries(PRISMA_MONSTER_LIBRARY_GROUPS).forEach(([role, elements]) => {
-  Object.entries(elements).forEach(([element, slugs]) => {
-    slugs.forEach((slug) => {
-      const key = `monsterlib_${role}_${element}_${slug}`;
-      PRISMA_ASSETS.graphics[key] = `assets/monsters/library/${role}/${element}/${key}_v001.png`;
-    });
-  });
-});
-
 // 採用済みライブラリモンスターは、戦闘とフィールド表示の双方が同じ原画を参照する。
 // IDと用途は個別に決めており、この対応表から自動採番・自動配置は行わない。
-const PRISMA_ADOPTED_MONSTER_IMAGE_PATHS = {
-  302201: "assets/monsters/library/midboss/fire/monsterlib_midboss_fire_ashhorn_minotaur_v001.png",
-  302202: "assets/monsters/library/midboss/water/monsterlib_midboss_water_abyssal_shell_knight_v001.png",
-  302203: "assets/monsters/library/midboss/wind/monsterlib_midboss_wind_zephyr_manticore_v001.png",
-  302204: "assets/monsters/library/midboss/thunder/monsterlib_midboss_thunder_thunder_coil_golem_v001.png",
-  302205: "assets/monsters/library/midboss/light/monsterlib_midboss_light_cathedral_chimera_v001.png",
-  302206: "assets/monsters/library/midboss/dark/monsterlib_midboss_dark_grave_regent_v001.png",
-  302207: "assets/monsters/library/midboss/earth/monsterlib_midboss_earth_root_titan_v001.png",
-  302208: "assets/monsters/library/midboss/ice/monsterlib_midboss_ice_frostfang_wyrm_v001.png",
-  110201: "assets/monsters/library/normal/fire/monsterlib_normal_fire_cinder_imp_v001.png",
-  110202: "assets/monsters/library/normal/fire/monsterlib_normal_fire_magma_salamander_v001.png",
-  110203: "assets/monsters/library/normal/water/monsterlib_normal_water_tide_jelly_v001.png",
-  110204: "assets/monsters/library/normal/water/monsterlib_normal_water_shellback_crab_v001.png",
-  110205: "assets/monsters/library/normal/wind/monsterlib_normal_wind_razorwing_hawk_v001.png",
-  110206: "assets/monsters/library/normal/wind/monsterlib_normal_wind_breeze_moth_v001.png",
-  110207: "assets/monsters/library/normal/thunder/monsterlib_normal_thunder_spark_hound_v001.png",
-  110208: "assets/monsters/library/normal/thunder/monsterlib_normal_thunder_volt_beetle_v001.png",
-  110209: "assets/monsters/library/normal/light/monsterlib_normal_light_prism_wisp_v001.png",
-  110210: "assets/monsters/library/normal/light/monsterlib_normal_light_shrine_sentinel_v001.png",
-  110211: "assets/monsters/library/normal/dark/monsterlib_normal_dark_gloom_bat_v001.png",
-  110212: "assets/monsters/library/normal/dark/monsterlib_normal_dark_shade_crawler_v001.png",
-  110213: "assets/monsters/library/normal/earth/monsterlib_normal_earth_stone_mole_v001.png",
-  110214: "assets/monsters/library/normal/earth/monsterlib_normal_earth_thorn_boar_v001.png",
-  110215: "assets/monsters/library/normal/ice/monsterlib_normal_ice_frost_jelly_v001.png",
-  110216: "assets/monsters/library/normal/ice/monsterlib_normal_ice_shard_hare_v001.png",
-};
-Object.entries(PRISMA_ADOPTED_MONSTER_IMAGE_PATHS).forEach(([id, src]) => {
-  PRISMA_ASSETS.graphics[`monster_${id}`] = src;
-});
-
 globalThis.PRISMA_ASSETS = PRISMA_ASSETS;
 
 // backgroundImages は graphics / battleFx / monster画像から自動構築する。

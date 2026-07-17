@@ -14,6 +14,14 @@ Opening asset delivery is staged: before play begins, preload Lumina Village, th
 
 The game has become feature-rich, but the next direction is to reorganize it as an RPG where features open naturally through story progression.
 
+## Maintainable Implementation Rule
+
+手抜き作業と、その場しのぎのつぎはぎ修正を禁止する。症状だけを局所的に隠すのではなく、描画・移動・イベント・データ参照の正本を確認し、同種の挙動が一つの共有ロジックへ収束するよう修正すること。
+
+新しいデータやアセットは、後から由来・用途・再生成方法を追跡できる状態で格納する。既存ファイルの配置が保守を妨げている場合は、参照元・全量キャッシュ・検証スクリプトを同時に更新したうえで適切なフォルダへ整理する。生成原画、ゲーム用加工物、マニフェスト、加工スクリプトを分離し、無名の上書きや用途不明ファイルを増やさない。
+
+変更時は少なくとも、既存セーブ互換、入口と帰還先、通行可能性、画像の全量キャッシュ登録、描画欠けの同期フォールバック、データ検証を確認する。短期的に動くことより、再現可能で管理しやすい構成を優先する。
+
 The game should not begin with every major system available. Blacksmithing, the abyss, boat travel, wing flight, dungeon transfer, and other systems should become available as the player explores the field, clears regional fixed maps, gains allies, and expands the world. Gacha-related code and assets may remain as dormant legacy/internal implementation, but gacha is not planned as a player-facing feature and must not receive an unlock route.
 
 Existing code uses `progress.unlocked` for story-gated systems. Current player-facing menu access is routed through unlock checks for blacksmith and dungeon systems; gacha is not shown in the main menu route.
@@ -551,7 +559,7 @@ Main story should be playable with story allies.
 - Place fixed dungeon entrances.
 - Connect `Sky Prism` to discovered/undiscovered fixed-map records.
 
-Keep the current policy that `Sky Prism` moves to the world-map coordinate near a fixed map, not directly inside that fixed map.
+`Sky Prism` normally moves to the world-map entrance. When a fixed dungeon's actual entrance is authored inside another fixed map, resolve that `mapActions` entrance through the shared map registry and land on the entrance tile inside the parent fixed map instead of dropping the player on the world map.
 
 ### Phase 4: Facility Unlocks
 

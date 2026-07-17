@@ -9,6 +9,7 @@ const mapSource = read('map.js');
 const dungeonSource = read('dungeon.js');
 const phaserFieldSource = read('phaser-field.js');
 const mainSource = read('main.js');
+const sharedRenderSource = read('map_render_shared.js');
 const { context } = loadMapRuntime(root);
 
 if (/water\.y\s*=|waterBaseY/.test(phaserFieldSource)) {
@@ -88,15 +89,6 @@ let match;
 while ((match = graphicPattern.exec(graphicsSection))) {
     graphics.set(match[1], match[2]);
 }
-// Adopted library monsters use numeric aliases assembled from their curated
-// manifest instead of duplicating 768px PNGs under monster_<id>.png.
-const adoptedMonsterManifest = JSON.parse(read('assets/monsters/library/manifest.json'));
-for (const monster of adoptedMonsterManifest.assets || []) {
-    if (Number.isInteger(monster.monsterId) && monster.path) {
-        graphics.set(`monster_${monster.monsterId}`, monster.path);
-    }
-}
-
 const missingFiles = [];
 for (const [key, relativePath] of graphics) {
     if (!relativePath.startsWith('assets/')) continue;
@@ -106,6 +98,9 @@ for (const [key, relativePath] of graphics) {
 }
 if (missingFiles.length) {
     throw new Error(`Missing graphic files:\n${missingFiles.join('\n')}`);
+}
+if (assetsSource.includes('assets/monsters/library') || assetsSource.includes('monsterlib_')) {
+    throw new Error('Obsolete runtime monster library reference remains in assets.js.');
 }
 
 function collectValues(source, pattern) {
@@ -222,7 +217,7 @@ for (const stem of [
         if (!graphics.has(`${stem}_${index}`)) throw new Error(`Terrain variation is missing: ${stem}_${index}`);
     }
 }
-if (!mainSource.includes('base?.variants') || !mainSource.includes('Math.imul(x, 374761393)')) {
+if (!mainSource.includes('window.MapRenderShared.resolveTileVariant(base, tileX, tileY)') || !sharedRenderSource.includes('Math.imul(x, 374761393)')) {
     throw new Error('Coordinate-stable terrain variation selection is missing.');
 }
 if (graphics.get('battle_bg_wind_hole') !== 'assets/generated/battle-forest-wind-hole-v001.png' ||

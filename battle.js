@@ -345,7 +345,6 @@ const Battle = {
                 m.isRare = e.isRare || base.isRare || false;
                 m.isEstark = e.isEstark || base.isEstark || false;
                 m.isSpecialBoss = e.isSpecialBoss || base.isSpecialBoss || base.isEstark || Number(e.baseId) === 902000;
-                m.isStoryBoss = Battle.isStoryBossBase(base);
                 // ステータス適用の安全策
                 m.atk = m.baseStats?.atk || base.atk; m.def = m.baseStats?.def || base.def; 
                 m.spd = m.baseStats?.spd || base.spd; m.mag = m.baseStats?.mag || base.mag;
@@ -531,10 +530,10 @@ const Battle = {
 
     isSpecialBossBase: (base) => !!(base && (base.isSpecialBoss || base.isEstark || Number(base.id) === 902000)),
     isNormalEncounterBase: (base) => !!(base && !base.isBoss && !base.isRare && !Battle.isSpecialBossBase(base)),
-    isStoryBossBase: (base) => {
+    isAbyssRandomBossBase: (base) => {
         if (!base) return false;
         const id = Number(base.id ?? base.baseId);
-        return Number.isFinite(id) && id >= 300000 && id < 400000;
+        return Number.isFinite(id) && id >= 400000 && id < 500000;
     },
 
     getEquipmentRewardFloor: (enemy, fallbackFloor = 1) => {
@@ -562,7 +561,6 @@ const Battle = {
         m.isRare = base.isRare || false;
         m.isEstark = base.isEstark || false;
         m.isSpecialBoss = base.isSpecialBoss || base.isEstark || Number(base.id) === 902000;
-        m.isStoryBoss = Battle.isStoryBossBase(base);
         m.race = base.race || '\u4e0d\u660e';
         m.drops = JSON.parse(JSON.stringify(base.drops || null));
         m.traits = JSON.parse(JSON.stringify(base.traits || []));
@@ -874,7 +872,7 @@ const Battle = {
             if (isBoss) {
                 Battle.log('<span style="color:#ff0000; font-size:1em; font-weight:bold;">\u6df1\u6df5\u306e\u5b88\u8b77\u8005\u304c\u73fe\u308c\u305f\uff01</span>');
                 const candidates = (window.MonsterData?.bossMonsters || DB.MONSTERS || [])
-                    .filter(base => base.isBoss && !base.isRare && !Battle.isSpecialBossBase(base) && !Battle.isStoryBossBase(base));
+                    .filter(base => base.isBoss && !base.isRare && !Battle.isSpecialBossBase(base) && Battle.isAbyssRandomBossBase(base));
                 for (let i = 0; i < deepBossCount; i++) {
                     const base = candidates[Math.floor(Math.random() * candidates.length)];
                     if (!base) continue;

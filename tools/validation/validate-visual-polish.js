@@ -26,6 +26,7 @@ const graphics = assets.graphics || {};
 const battleFx = assets.battleFx || {};
 const skills = skillContext.window.SKILLS_DATA || [];
 const polish = read('polish.js');
+const sharedRender = read('map_render_shared.js');
 const phaser = read('phaser-field.js');
 const main = read('main.js');
 const css = read('modern-polish.css');
@@ -112,7 +113,7 @@ const themeDecorByTheme = {
     ABYSS_FIELD: 'overlay_decor_abyss_field_flora',
     RUINED_SHRINE: 'overlay_decor_ruined_shrine_glyph'
 };
-const disabledThemeDecor = new Set(['WATER_CITY', 'CRENA_CAVE']);
+const disabledThemeDecor = new Set(['WATER_CITY', 'CRENA_CAVE', 'WIND_TEMPLE']);
 for (const [theme, key] of Object.entries(themeDecorByTheme)) {
     if (!phaser.includes(`${theme}: { key: '${key}'`)) errors.push(`theme-specific floor decoration route is missing: ${theme}`);
 }
@@ -122,6 +123,7 @@ for (const theme of tileThemeKeys) {
 }
 if (!phaser.includes("CRENA_CAVE: { key: null, disabled: true")) errors.push('Crena Cave random floor puddles are not disabled');
 if (!phaser.includes("WATER_CITY: { key: null, disabled: true")) errors.push('Water City random floor puddles are not disabled');
+if (mapContext.window.MAP_FLOOR_DECOR_THEMES?.WIND_TEMPLE?.disabled !== true) errors.push('Wind Temple clear authored floor is not protected from random decoration');
 if (battleFx['phys-elemental'] !== 'assets/effect/fx_phys_elemental_arc_v001.png') {
     errors.push('generated elemental physical effect is not registered');
 }
@@ -213,13 +215,19 @@ for (const [relative, expectedWidth, expectedHeight] of [
 for (const marker of [
     'drawGroundDecoration', 'stableHash', 'FLOOR_DECOR_THEME_CONFIG',
     'overlay_decor_thunder_fort_wiring', 'overlay_decor_seabed_temple_ripple',
-    'drawConnectedFloorTextile', 'CONNECTED_TEXTILE_STYLES', "keyPrefix: 'overlay_castle_carpet'",
+    'drawConnectedFloorTextile', 'renderShared.textileCellPlan',
     'Connected carpets/mats are ground layers',
-    'castle_carpet_blue_silver', 'village_goza', 'bleed: 2', 'height: TILE_SIZE + 2', 'tileY === startY', 'tileY === endY',
+    'bleed: 2', 'height: TILE_SIZE + 2',
     'overlay_world_shore_foam', 'overlay_world_bridge_wood',
     "field.getCurrentAreaKey?.() === 'WORLD'", 'field.getTileEffectGraphicKey?.(tileX, tileY)'
 ]) {
     if (!phaser.includes(marker)) errors.push(`map decoration runtime marker is missing: ${marker}`);
+}
+for (const marker of [
+    'TEXTILE_STYLES', "keyPrefix: 'overlay_castle_carpet'", 'castle_carpet_blue_silver',
+    'village_goza', 'tileY === startY', 'tileY === endY'
+]) {
+    if (!sharedRender.includes(marker)) errors.push(`shared map decoration resolver marker is missing: ${marker}`);
 }
 if (phaser.includes('if (tileX !== Number(definition.x) || tileY !== Number(definition.y)) return true;')) {
     errors.push('connected textile is still rendered only at the top-left row depth');

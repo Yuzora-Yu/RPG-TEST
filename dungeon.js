@@ -1402,7 +1402,7 @@ const Dungeon = {
             const candidates = (monsterData?.bossMonsters || dbMonsters)
                 .filter(base => base && base.isBoss && !base.isRare
                     && !(typeof Battle !== 'undefined' && Battle.isSpecialBossBase && Battle.isSpecialBossBase(base))
-                    && !(typeof Battle !== 'undefined' && Battle.isStoryBossBase && Battle.isStoryBossBase(base)));
+                    && (typeof Battle === 'undefined' || !Battle.isAbyssRandomBossBase || Battle.isAbyssRandomBossBase(base)));
             const count = 1 + Math.floor(Math.random() * 3);
             for (let i = 0; i < count && candidates.length > 0; i++) {
                 const base = candidates[Math.floor(Math.random() * candidates.length)];

@@ -33,9 +33,9 @@
 - 仲間加入クエストボス: 8体（炎・水・風・雷・光・闇・土・氷を各1体）
 - 深淵階層モンスター: 16体（同8属性を各2体）
 - 実行形式: 192x192の論理解像度で中ボス40色・雑魚28色へ減色し、4倍ニアレスト拡大した768x768 RGBA PNG
-- 実行素材: `assets/monsters/library/<midboss|normal>/<element>/`
+- 実行素材: `assets/monsters/monster_<ID>.png`
 - 原版: `assets/managed/source/monster-library/v001/`
-- 索引: `assets/monsters/library/manifest.json`
+- 索引: `docs/generated/adopted-monsters-20260716.md`
 - 一覧: `docs/generated/monster-library/monster-library-v001.png`
 
 中ボス候補は、灰角のミノタウロス、深淵殻の騎士、疾風のマンティコア、雷環のゴーレム、聖堂のキマイラ、墓所の王、根脈の巨人、氷牙のワーム。
@@ -47,6 +47,18 @@
 > One complete unassigned PRISMA ABYSS battle sprite. Authentic late-SFC Japanese RPG enemy sprite with hand-placed chunky pixel clusters, limited 20-32 color appearance, readable silhouette, flat #ff00ff chroma-key background. Exactly one centered monster. No floor, no cast shadow, no particles, no text, no watermark, no glossy 3D, no high-resolution AI painting.
 
 `monsterId` と `storyAssignment` は全件確定済み。個別能力・スキル・耐性・配置の詳細は `docs/generated/adopted-monsters-20260716.md` を参照する。
+
+## 仲間マップチップ v003
+
+- 対象: アリサ、バロン、アラン、ソフィア、フリーダ、ハイネ、リュウ、クロード、レオン
+- 基準: 各キャラクターの `char_face_*.gif` を正本として衣装、髪色、武器、役割を再解釈
+- 実行形式: 生成解像度を維持した正方形RGBA PNG、下中央基準、床影なし。ゲーム内では1タイルの表示枠へ縮小する。
+- 実行素材: `assets/map/overlays/overlay_companion_*_v003.png`
+- 原版・索引: `assets/map/overlays/source/companion-highres-v003/`
+- 再構築: `tools/assets/build-companion-map-sprites-highres.py`
+- 回帰検証: `tools/validation/validate-companion-map-sprites.js`
+
+特に旧版との乖離が大きかったバロンは赤髪・鼻の絆創膏・傷んだ革鎧・棘肩当て・両刃斧、アリサは緑の短髪・斥候用革装備・短剣という実キャラクター設定へ戻した。レオンは実際の顔グラフィックを基準に、青髪・白青金の騎士鎧・翼章・青盾で新規作成した。
 
 ## 採用手順
 
