@@ -242,12 +242,15 @@ class Monster extends Entity {
 
         this.hp = Math.floor((data.hp || 100) * scale * hpMod);
         this.baseMaxHp = this.hp;
+        this.mp = Math.floor((data.mp || 0) * scale);
+        this.baseMaxMp = this.mp;
         
         // 攻撃力等は少し高くして、戦闘のテンポを上げる（受けるダメ増、敵すぐ死ぬ）
         this.baseStats.atk = Math.floor((data.atk || 10) * scale * statMod);
         this.baseStats.def = Math.floor((data.def || 10) * scale); 
         this.baseStats.spd = Math.floor((data.spd || 10) * scale);
         this.baseStats.mag = Math.floor((data.mag || 10) * scale * statMod);
+        this.baseStats.mdef = Math.floor((data.mdef || 0) * scale);
         
         this.acts = data.acts || [1];
         this.baseId = data.id;
@@ -767,7 +770,7 @@ const App = {
 
 	// 全画像データの手動/初回ダウンロード用キャッシュ名。
 	// sw.js の RUNTIME_CACHE_NAME と揃えること。
-    fullDataCacheName: 'prisma-abyss-v3.119-summit-sky-cloud-runtime',
+    fullDataCacheName: 'prisma-abyss-v3.122-summit-clouds-runtime',
 
 
 	// 初回起動時の「全データを今ダウンロードしますか？」で「いいえ」を選んだ記録。
@@ -3789,12 +3792,19 @@ load: () => {
 	// --- 追加：装備を「全スロット」から集める（重複キー対策付き） ---
 	const allEquips = [];
 	const seen = new Set();
+	const seenEquipObjects = new WeakSet();
 	// ★新規追加：集約用スキルSet
     const allSkillIds = new Set(char.skills || []);
 
 	if (char.equips) {
 		for (const [slotKey, eq] of Object.entries(char.equips)) {
 			if (!eq || !eq.data) continue;
+			// 旧互換キーが同じ装備オブジェクトを指す場合だけ確実に除外する。
+			// 別オブジェクトとして所持する同型武器は、二刀流で両方加算するため除外しない。
+			if (typeof eq === 'object') {
+				if (seenEquipObjects.has(eq)) continue;
+				seenEquipObjects.add(eq);
+			}
 
 			// 「同一装備が複数キーに入ってる」ケースの二重加算を避けるための署名
 			// ※プロジェクト側にユニークIDがあるならそれを最優先で使ってください
@@ -4016,16 +4026,19 @@ load: () => {
 	// --- calcStats の内部、オーラ判定の直前に配置 ---
 	const getAuraVal = (entity, traitId, key) => {
 		let totalLevel = 0;
+		if (PassiveSkill && typeof PassiveSkill.normalizeDisabledTraits === 'function') {
+			PassiveSkill.normalizeDisabledTraits(entity);
+		}
 
 		// 1. 本人が習得している特性 (disabledTraitsによるOFF設定を反映)
-		const learned = entity.traits ? entity.traits.find(t => t.id === traitId) : null;
+		const learned = entity.traits ? entity.traits.find(t => Number(t.id) === Number(traitId)) : null;
 		if (learned && !(entity.disabledTraits && entity.disabledTraits.includes(traitId))) {
 			totalLevel += (learned.level || 1);
 		}
 
 		// 2. 装備品に付いている特性 (常にON)
 		if (entity.equips) {
-			Object.values(entity.equips).forEach(eq => {
+			PassiveSkill.getUniqueEquips(entity).forEach(eq => {
 				if (eq && eq.traits) {
 					eq.traits.forEach(t => {
 						if (t.id === traitId) totalLevel += (t.level || 1);
@@ -5269,6 +5282,7 @@ load: () => {
         if(sceneId === 'medal') Facilities.initMedal();
         if(sceneId === 'casino') Casino.init();
         if(sceneId === 'shop') Facilities.initShop();
+        if(sceneId === 'alchemy' && typeof Alchemy !== 'undefined') Alchemy.init();
     }
 };
 
@@ -7184,6 +7198,11 @@ const Field = {
             return;
         }
 
+        if (action.type === 'alchemy' && typeof Alchemy !== 'undefined' && typeof Alchemy.openFromField === 'function') {
+            Alchemy.openFromField(action);
+            return;
+        }
+
         if (action.type === 'inn') {
             App.changeScene('inn');
             return;
@@ -8021,6 +8040,8 @@ const Field = {
             }
         };
 
+        const elevatedEdgePlans = [];
+        const elevatedEdgeDefinition = Field.currentMapData?.elevatedEdges;
         for (let dy = -rangeY; dy <= rangeY; dy++) {
             for (let dx = -rangeX; dx <= rangeX; dx++) {
                 const drawX = Math.floor(cx + (dx * ts) - (ts / 2)), drawY = Math.floor(cy + (dy * ts) - (ts / 2));
@@ -8030,7 +8051,8 @@ const Field = {
                 const config = Field.getTileConfigForDraw ? Field.getTileConfigForDraw(upper, tx, ty) : Field.getTileConfig(upper);
                 const wallGraphic = Field.getDungeonWallGraphicForDraw(tx, ty, upper, mapW, mapH, areaKey);
                 const overlayConfig = parts.overlayConfig;
-                const groundTile = overlayConfig ? parts.baseTile : (upper === 'G' ? 'G' : 'T');
+                const isBaseTerrainTile = upper === 'T' || upper === 'G' || config?.terrain === true;
+                const groundTile = overlayConfig ? parts.baseTile : (isBaseTerrainTile ? upper : 'T');
                 // 地面は座標依存のフィールド施設オーバーレイを混ぜず、純粋な床タイルとして描く。
                 // これにより透過素材の下が黒くならず、G/Tなどの地面の上に施設画像が重なる。
                 const floorConfig = parts.worldOverlay
@@ -8059,7 +8081,7 @@ const Field = {
                 }
 
                 // 2. 通常オブジェクトの描画。overlayConfig があるタイルはここでは描かない。
-                if (upper !== 'T' && upper !== 'G' && !overlayConfig) {
+                if (!isBaseTerrainTile && !overlayConfig) {
                     if (lift > 0) drawFootShadow(drawX, drawY, lift, tone === 'ridge' ? 0.30 : 0.24);
                     const imageY = drawY - lift;
                     const wallFaceOverlay = !!(wallGraphic && Field.getDungeonWallFaceModeForDraw?.() === 'overlay');
@@ -8131,8 +8153,39 @@ const Field = {
                     ctx.fillRect(drawX + 6, drawY + ts - 8, ts - 12, 3);
                     ctx.restore();
                 }
+
+                if (elevatedEdgeDefinition) {
+                    const edgePlan = window.MapRenderShared?.elevatedEdgeCellPlan?.({
+                        map: Field.currentMapData,
+                        definition: elevatedEdgeDefinition,
+                        x: tx,
+                        y: ty,
+                        tileSign: tile,
+                        tileAtFn: (x, y) => Field.getRenderedTileForDraw(x, y, mapW, mapH, areaKey)
+                    });
+                    const edgeScale = ts / 32;
+                    edgePlan?.edges?.forEach(edge => elevatedEdgePlans.push({
+                        key: edge.key,
+                        x: drawX + edge.x * edgeScale,
+                        y: drawY + edge.y * edgeScale,
+                        width: edge.width * edgeScale,
+                        height: edge.height * edgeScale
+                    }));
+                }
             }
         }
+
+        (Field.currentMapData?.skyOverlays || []).forEach(definition => {
+            const drawX = cx + ((Number(definition.x || 0) - Number(Field.x)) * ts) - ts / 2;
+            const drawY = cy + ((Number(definition.y || 0) - Number(Field.y)) * ts) - ts / 2;
+            const drawWidth = Math.max(8, Number(definition.drawWidth || 32)) * ts / 32;
+            const drawHeight = Math.max(8, Number(definition.drawHeight || 32)) * ts / 32;
+            drawGraphic(definition.imageKey, drawX, drawY, drawWidth, drawHeight);
+        });
+
+        // Canvas is the error-recovery renderer.  Draw ledges in a second pass so
+        // neighboring sky tiles cannot paint over the exposed platform sides.
+        elevatedEdgePlans.forEach(edge => drawGraphic(edge.key, edge.x, edge.y, edge.width, edge.height));
 
         if (useDepthRendering) {
             ctx.save();

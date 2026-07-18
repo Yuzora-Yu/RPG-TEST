@@ -66,6 +66,46 @@
         return { style, startX, startY, endX, endY, open, keys };
     };
 
+    const elevatedEdgeCellPlan = ({ map, definition, x, y, tileSign, tileAtFn = null }) => {
+        if (!definition) return null;
+        const terrain = new Set((definition.terrainTiles || ['T']).map(value => String(value).toUpperCase()));
+        const voids = new Set((definition.voidTiles || []).map(value => String(value).toUpperCase()));
+        if (!terrain.has(String(tileSign || '').toUpperCase()) || !voids.size) return null;
+        const readTile = (tileX, tileY) => String(tileAtFn
+            ? tileAtFn(tileX, tileY)
+            : tileAt(map, tileX, tileY)).toUpperCase();
+        const open = {
+            n: voids.has(readTile(Number(x), Number(y) - 1)),
+            e: voids.has(readTile(Number(x) + 1, Number(y))),
+            s: voids.has(readTile(Number(x), Number(y) + 1)),
+            w: voids.has(readTile(Number(x) - 1, Number(y)))
+        };
+        if (!Object.values(open).some(Boolean)) return null;
+
+        const thickness = Math.max(2, Math.min(16, Number(definition.thickness || 6)));
+        const join = Math.max(0, Math.min(4, Number(definition.joinOverlap ?? 1)));
+        const corner = Math.max(join, Math.min(16, Number(definition.cornerOverhang ?? thickness)));
+        const edges = [];
+        const horizontal = (id, offsetY) => {
+            if (!open[id]) return;
+            const before = open.w ? corner : join;
+            const after = open.e ? corner : join;
+            edges.push({ id, x: -before, y: offsetY, width: 32 + before + after, height: thickness });
+        };
+        const vertical = (id, offsetX) => {
+            if (!open[id]) return;
+            const before = open.n ? corner : join;
+            const after = open.s ? corner : join;
+            edges.push({ id, x: offsetX, y: -before, width: thickness, height: 32 + before + after });
+        };
+        horizontal('n', -thickness);
+        horizontal('s', 32);
+        vertical('w', -thickness);
+        vertical('e', 32);
+        edges.forEach(edge => { edge.key = definition.keys?.[edge.id] || ''; });
+        return { open, thickness, join, corner, edges: edges.filter(edge => edge.key) };
+    };
+
     const floorDecorationPlan = ({ themes, themeKey, areaKey, floor, x, y, tileSign = null }) => {
         const normalizedTheme = String(themeKey || 'DEFAULT').toUpperCase();
         const config = themes?.[normalizedTheme] || themes?.DEFAULT || null;
@@ -145,6 +185,7 @@
         resolveTileVariant,
         fixedFloorDecorationsAt,
         textileCellPlan,
+        elevatedEdgeCellPlan,
         floorDecorationPlan,
         worldDecorationPlan,
         wallFacePlan

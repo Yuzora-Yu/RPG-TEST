@@ -1018,11 +1018,8 @@ const TILE_THEMES = {
         },
         "^": {
             img: "tile_summit_temple_sky",
-            variants: [
-                "tile_summit_temple_sky",
-                "tile_summit_temple_sky_2"
-            ],
-            color: "#6f9bc7"
+            color: "#6f9bc7",
+            terrain: true
         },
         S: {
             img: "tile_summit_temple_mountain_trail",
@@ -2731,6 +2728,13 @@ const FIXED_MAPS = {
         ],
         mapActions: [
             {
+                x: 31,
+                y: 3,
+                label: "錬金所に入る",
+                log: "薬草と魔石の香りが漂う、水上都市の錬金所だ。",
+                type: "alchemy"
+            },
+            {
                 x: 4,
                 y: 10,
                 label: "道具を買う",
@@ -3433,6 +3437,19 @@ const FIXED_MAPS = {
         autoExitOnPerimeter: true,
         perimeterExitMiniMapColor: "#76a36a",
         wallFaceImg: "tile_summit_temple_wall_face",
+        elevatedEdges: {
+            terrainTiles: ["T"],
+            voidTiles: ["^"],
+            thickness: 6,
+            joinOverlap: 1,
+            cornerOverhang: 6,
+            keys: {
+                n: "overlay_summit_temple_cliff_edge_n",
+                e: "overlay_summit_temple_cliff_edge_e",
+                s: "overlay_summit_temple_cliff_edge_s",
+                w: "overlay_summit_temple_cliff_edge_w"
+            }
+        },
         tileOverrides: {},
         impassableTiles: ["^"],
         width: 25,
@@ -3464,6 +3481,11 @@ const FIXED_MAPS = {
             "SGGGGGGGGGGGGGGGGGGGGGGGS",
             "SGGGGGGGGGGGGGGGGGGGGGGGS",
             "SSSSSSSSSSSSSSSSSSSSSSSSS"
+        ],
+        skyOverlays: [
+            { imageKey: "overlay_summit_temple_cloud_bank", x: 2, y: 1, drawWidth: 224, drawHeight: 64 },
+            { imageKey: "overlay_summit_temple_cloud_wispy", x: 16, y: 1, drawWidth: 160, drawHeight: 48 },
+            { imageKey: "overlay_summit_temple_cloud_compact", x: 17, y: 6, drawWidth: 128, drawHeight: 64 }
         ],
         floorDecorations: [
             { type: "image", imageKey: "overlay_summit_temple_stage_a", x: 10, y: 3, drawWidth: 32, drawHeight: 32, baseTile: "T" },

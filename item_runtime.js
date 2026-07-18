@@ -102,10 +102,16 @@
             Object.entries(item.buff || {}).forEach(([key, value]) => {
                 const turns = Math.max(1, Number(item.turn || 4));
                 const current = status.buffs[key]?.val;
-                if (key === 'elmResUp') {
-                    status.buffs[key] = { val: Math.max(Number(current || 0), Number(value)), turns };
+                if (key === 'elmResUp' || key.startsWith('resists_')) {
+                    status.buffs[key] = {
+                        val: Math.max(Number(current || 0), Number(value)),
+                        turns: status.buffs[key]?.turns === null ? null : Math.max(Number(status.buffs[key]?.turns || 0), turns)
+                    };
                 } else {
-                    status.buffs[key] = { val: Math.max(Number(current || 1), Number(value)), turns };
+                    status.buffs[key] = {
+                        val: Math.max(Number(current || 1), Number(value)),
+                        turns: status.buffs[key]?.turns === null ? null : Math.max(Number(status.buffs[key]?.turns || 0), turns)
+                    };
                 }
                 Battle.log(`${target.name}の${Battle.statNames?.[key] || key}が上がった！`);
             });
@@ -128,9 +134,15 @@
                 const turns = Math.max(1, Number(item.turn || 4));
                 const current = status.debuffs[key]?.val;
                 if (key === 'elmResDown') {
-                    status.debuffs[key] = { val: Math.max(Number(current || 0), Number(value)), turns };
+                    status.debuffs[key] = {
+                        val: Math.max(Number(current || 0), Number(value)),
+                        turns: status.debuffs[key]?.turns === null ? null : Math.max(Number(status.debuffs[key]?.turns || 0), turns)
+                    };
                 } else {
-                    status.debuffs[key] = { val: Math.min(Number(current || 1), Number(value)), turns };
+                    status.debuffs[key] = {
+                        val: Math.min(Number(current || 1), Number(value)),
+                        turns: status.debuffs[key]?.turns === null ? null : Math.max(Number(status.debuffs[key]?.turns || 0), turns)
+                    };
                 }
                 Battle.log(`${target.name}の${Battle.statNames?.[key] || key}が下がった！`);
             });
@@ -148,6 +160,12 @@
                 target.isDead = false;
                 const rate = Number(item.rate ?? 1);
                 target.hp = Math.max(1, Math.floor(getMaxHp(Battle, target) * rate));
+                if (typeof Battle.applyPersistentBattlePassives === 'function') {
+                    Battle.applyPersistentBattlePassives(target);
+                }
+                if (typeof Battle.refreshPartyFormationAuras === 'function' && (Battle.party || []).includes(target)) {
+                    Battle.refreshPartyFormationAuras();
+                }
                 Battle.log(`${target.name}は生き返った！`);
                 effected += 1;
                 return;

@@ -91,10 +91,15 @@ PassiveSkill.hasLearnedLateBloomer = function(char) {
 };
 
 PassiveSkill.normalizeDisabledTraits = function(char) {
-    if (!char || !Array.isArray(char.disabledTraits)) return;
+    if (!char) return;
+    const normalized = Array.isArray(char.disabledTraits)
+        ? [...new Set(char.disabledTraits.map(Number).filter(id => Number.isInteger(id) && id > 0))]
+        : [];
     if (PassiveSkill.hasLearnedLateBloomer(char)) {
-        char.disabledTraits = char.disabledTraits.filter(id => Number(id) !== PassiveSkill.LATE_BLOOMER_TRAIT_ID);
+        char.disabledTraits = normalized.filter(id => id !== PassiveSkill.LATE_BLOOMER_TRAIT_ID);
+        return;
     }
+    char.disabledTraits = normalized;
 };
 
 PassiveSkill.isTraitToggleLocked = function(char, traitId) {
@@ -238,6 +243,30 @@ PassiveSkill.generateEquipmentTraits = function(opt = null) {
   return traits;
 };
 
+/**
+ * 互換スロットが同じ装備実体を重複参照していても、特性を二重集計しない。
+ * 別オブジェクトとして所持する同型装備（二刀流など）は別装備として残す。
+ */
+PassiveSkill.getUniqueEquips = function(entity) {
+    if (!entity || !entity.equips) return [];
+    const result = [];
+    const seenObjects = new WeakSet();
+    const seenIds = new Set();
+    Object.values(entity.equips).forEach(eq => {
+        if (!eq || typeof eq !== 'object') return;
+        if (seenObjects.has(eq)) return;
+        seenObjects.add(eq);
+        const stableId = eq.uid ?? eq.guid ?? eq.uniqueId;
+        if (stableId !== undefined && stableId !== null && stableId !== '') {
+            const key = String(stableId);
+            if (seenIds.has(key)) return;
+            seenIds.add(key);
+        }
+        result.push(eq);
+    });
+    return result;
+};
+
 
 /**
  * 特定の補正項目の合計値を算出する
@@ -259,12 +288,12 @@ PassiveSkill.getSumValue = function(entity, key, ignoreWeapon) {
 
     if (entity.traits) {
         entity.traits.forEach(t => {
-            if (entity.disabledTraits && entity.disabledTraits.includes(t.id)) return;
+            if (entity.disabledTraits && entity.disabledTraits.includes(Number(t.id))) return;
             traitLvlMap[t.id] = (traitLvlMap[t.id] || 0) + (t.level || 0);
         });
     }
     if (entity.equips) {
-        Object.values(entity.equips).forEach(eq => {
+        PassiveSkill.getUniqueEquips(entity).forEach(eq => {
             if (eq && eq.traits) {
                 eq.traits.forEach(t => {
                     traitLvlMap[t.id] = (traitLvlMap[t.id] || 0) + (t.level || 0);
@@ -308,19 +337,19 @@ PassiveSkill.getSumValue = function(entity, key, ignoreWeapon) {
         }
 
         // ID 18: 根性
-        if ((key === 'guts_mult' || key === 'guts_rate') && Number(id) === 18) {
+        if (key === 'guts_mult' && Number(id) === 18) {
             total += (p.guts_rate * lv) + p.guts_base;
         }
         // ID 31: 呪い体質
-        if ((key === 'proc_curse_bonus' || key === 'proc_curse_add') && Number(id) === 31) {
+        if (key === 'proc_curse_bonus' && Number(id) === 31) {
             total += (p.proc_curse_add * lv) + p.proc_curse_base;
         }
         // ID 32: 人体知識
-        if ((key === 'proc_body_bonus' || key === 'proc_body_add') && Number(id) === 32) {
+        if (key === 'proc_body_bonus' && Number(id) === 32) {
             total += (p.proc_body_add * lv) + p.proc_body_base;
         }
 		// ID 61: 暗殺術
-		if ((key === 'proc_instantdeath_bonus' || key === 'proc_instantdeath_add') && Number(id) === 61) {
+		if (key === 'proc_instantdeath_bonus' && Number(id) === 61) {
 			total += (p.proc_instantdeath_add * lv) + p.proc_instantdeath_base;
 		}
     }
@@ -349,7 +378,7 @@ PassiveSkill.getPartySumValue = function(key) {
         if (c.traits) {
             c.traits.forEach(t => {
                 // ★重要: OFFにされている特性は除外
-                if (c.disabledTraits && c.disabledTraits.includes(t.id)) return;
+                if (c.disabledTraits && c.disabledTraits.includes(Number(t.id))) return;
                 
                 const master = PassiveSkill.MASTER[t.id];
                 // マスタの params 内に指定されたキーが存在するかチェック
@@ -361,7 +390,7 @@ PassiveSkill.getPartySumValue = function(key) {
 
         // --- 装備品に付与されている特性 ---
         if (c.equips) {
-            Object.values(c.equips).forEach(eq => {
+            PassiveSkill.getUniqueEquips(c).forEach(eq => {
                 if (eq && eq.traits) {
                     eq.traits.forEach(t => {
                         const master = PassiveSkill.MASTER[t.id];

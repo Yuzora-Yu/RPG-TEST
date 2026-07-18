@@ -376,6 +376,58 @@
             : Number(getWorldMap()?.length || 32)
     });
 
+    const drawElevatedTerrainEdges = (scene, field, mapSize, areaKey, tileX, tileY, rawUpper, baseDepth) => {
+        const definition = field.currentMapData?.elevatedEdges;
+        if (!definition) return;
+        const px = tileX * TILE_SIZE;
+        const py = tileY * TILE_SIZE;
+        const plan = renderShared.elevatedEdgeCellPlan({
+            map: field.currentMapData,
+            definition,
+            x: tileX,
+            y: tileY,
+            tileSign: rawUpper,
+            tileAtFn: (x, y) => field.getRenderedTileForDraw(
+                x,
+                y,
+                mapSize.width,
+                mapSize.height,
+                areaKey
+            )
+        });
+        if (!plan) return;
+        plan.edges.forEach(edge => {
+            addImage(scene, edge.key, px + edge.x, py + edge.y, {
+                width: edge.width,
+                height: edge.height,
+                originX: 0,
+                originY: 0,
+                depth: baseDepth + 12
+            });
+        });
+    };
+
+    const drawMapSkyOverlays = (scene, field) => {
+        const overlays = field.currentMapData?.skyOverlays;
+        if (!Array.isArray(overlays)) return;
+        overlays.forEach(definition => {
+            const width = Math.max(8, Number(definition.drawWidth || TILE_SIZE));
+            const height = Math.max(8, Number(definition.drawHeight || TILE_SIZE));
+            const x = Number(definition.x || 0) * TILE_SIZE;
+            const y = Number(definition.y || 0) * TILE_SIZE;
+            // Sit above every covered sky row but below the next authored terrain row.
+            const depth = Math.floor((Number(definition.y || 0) + height / TILE_SIZE) * 100) - 10;
+            addImage(scene, definition.imageKey, x, y, {
+                width,
+                height,
+                originX: 0,
+                originY: 0,
+                depth,
+                alpha: definition.alpha === undefined ? 1 : Number(definition.alpha)
+            });
+        });
+    };
+
     const applyFieldCamera = (scene, field) => {
         const camera = scene?.cameras?.main;
         if (!camera) return;
@@ -402,15 +454,16 @@
         const isRandomAbyssBossTile = rawUpper === 'B' && field.currentMapData?.isDungeon && !field.currentMapData?.isFixed && areaKey === 'ABYSS';
         const upper = isRandomAbyssBossTile ? 'T' : parts.upper;
         const overlay = parts.overlayConfig;
-        const groundTile = overlay ? parts.baseTile : (upper === 'G' ? 'G' : 'T');
+        const objectConfig = field.getTileConfigForDraw
+            ? field.getTileConfigForDraw(upper, tileX, tileY)
+            : field.getTileConfig(upper);
+        const isBaseTerrainTile = upper === 'T' || upper === 'G' || objectConfig?.terrain === true;
+        const groundTile = overlay ? parts.baseTile : (isBaseTerrainTile ? upper : 'T');
         const floorConfig = parts.worldOverlay
             ? field.getTileConfig(groundTile)
             : (field.getTileConfigForDraw
                 ? field.getTileConfigForDraw(groundTile, tileX, tileY)
                 : field.getTileConfig(groundTile));
-        const objectConfig = field.getTileConfigForDraw
-            ? field.getTileConfigForDraw(upper, tileX, tileY)
-            : field.getTileConfig(upper);
         const wallGraphic = field.getDungeonWallGraphicForDraw
             ? field.getDungeonWallGraphicForDraw(tileX, tileY, upper, mapSize.width, mapSize.height, areaKey)
             : null;
@@ -466,8 +519,9 @@
         }
 
         drawGroundDecoration(scene, field, areaKey, tileX, tileY, rawUpper, floorConfig, overlay, baseDepth);
+        drawElevatedTerrainEdges(scene, field, mapSize, areaKey, tileX, tileY, rawUpper, baseDepth);
 
-        if (!isLowerWaterTile && upper !== 'T' && upper !== 'G' && !overlay) {
+        if (!isLowerWaterTile && !isBaseTerrainTile && !overlay) {
             const wallFaceOverlay = !!(wallGraphic && field.getDungeonWallFaceModeForDraw?.() === 'overlay');
             const key = wallFaceOverlay ? objectConfig.img : (wallGraphic || objectConfig.img);
             const isWall = upper === 'W';
@@ -839,13 +893,12 @@
 
     const drawAtmosphere = (scene, field) => {
         const dungeon = !!field.currentMapData?.isDungeon;
-        const areaKey = String(field.getCurrentAreaKey?.() || 'DUNGEON');
-        const isSummitTemple = areaKey === 'SUMMIT_TEMPLE';
-        if ((!dungeon && !isSummitTemple) || areaKey === 'WORLD') {
+        if (!dungeon || field.getCurrentAreaKey?.() === 'WORLD') {
             if (state.atmosphereObjects.length) destroyAtmosphere(scene);
             return;
         }
 
+        const areaKey = String(field.getCurrentAreaKey?.() || 'DUNGEON');
         const floor = Number(getDungeon()?.floor || field.currentMapData?.floor || 0);
         const zoom = Math.max(0.1, Number(scene.cameras?.main?.zoom || 1));
         const logicalWidth = scene.scale.width / zoom;
@@ -853,38 +906,6 @@
         const signature = `${areaKey}:${floor}:${scene.scale.width}x${scene.scale.height}:${zoom.toFixed(4)}`;
         if (state.atmosphereSignature === signature && state.atmosphereObjects.length) return;
         destroyAtmosphere(scene);
-
-        // A single broad, irregular cloud shadow crosses the mountaintop sanctuary.
-        // It lives in world coordinates so it sweeps over the cliff stage, actors,
-        // and architecture together without being tied to player movement.
-        if (isSummitTemple) {
-            const mapPixelWidth = Math.max(TILE_SIZE, Number(field.currentMapData?.width || 25) * TILE_SIZE);
-            const cloudShadow = scene.add.container(mapPixelWidth + 230, TILE_SIZE * 5.4);
-            const cloudBlobs = [
-                { x: -118, y: 8, width: 210, height: 92, alpha: 0.13 },
-                { x: -28, y: -18, width: 250, height: 118, alpha: 0.16 },
-                { x: 86, y: 5, width: 225, height: 100, alpha: 0.14 },
-                { x: 15, y: 48, width: 280, height: 78, alpha: 0.11 },
-                { x: 142, y: 42, width: 155, height: 65, alpha: 0.09 }
-            ];
-            cloudBlobs.forEach(blob => {
-                const ellipse = scene.add.ellipse(blob.x, blob.y, blob.width, blob.height, 0x24384d, blob.alpha);
-                if (typeof Phaser !== 'undefined' && Phaser.BlendModes) ellipse.setBlendMode(Phaser.BlendModes.MULTIPLY);
-                cloudShadow.add(ellipse);
-            });
-            cloudShadow.setDepth(899000);
-            state.atmosphereObjects.push(cloudShadow);
-            cloudShadow.__prismaTween = scene.tweens.add({
-                targets: cloudShadow,
-                x: { from: mapPixelWidth + 230, to: -250 },
-                duration: 30000,
-                ease: 'Linear',
-                repeat: -1,
-                repeatDelay: 1800
-            });
-            state.atmosphereSignature = signature;
-            return;
-        }
 
         // Preserve the authored darkness and player-centered light, but remove the four
         // black edge rectangles that looked like a square frame. All atmosphere objects
@@ -1097,6 +1118,7 @@
                 drawTile(scene, field, mapSize, areaKey, Number(field.x) + dx, Number(field.y) + dy);
             }
         }
+        drawMapSkyOverlays(scene, field);
 
         const dungeonData = getApp()?.data?.dungeon;
         const floor = getDungeon()?.floor;

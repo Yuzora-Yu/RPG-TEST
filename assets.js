@@ -515,9 +515,15 @@ const PRISMA_ASSETS = {
     tile_summit_temple_mountain_trail: "assets/map/terrain/tile_summit_temple_mountain_trail_v001_a.png",
     tile_summit_temple_mountain_trail_2: "assets/map/terrain/tile_summit_temple_mountain_trail_v001_b.png",
     tile_summit_temple_sky: "assets/map/terrain/tile_summit_temple_sky_v001_a.png",
-    tile_summit_temple_sky_2: "assets/map/terrain/tile_summit_temple_sky_v001_b.png",
     tile_summit_temple_wall: "assets/map/terrain/tile_summit_temple_wall_v001.png",
     tile_summit_temple_wall_face: "assets/map/terrain/tile_summit_temple_wall_face_v001.png",
+    overlay_summit_temple_cloud_bank: "assets/map/overlays/overlay_summit_temple_cloud_bank_v002.png",
+    overlay_summit_temple_cloud_wispy: "assets/map/overlays/overlay_summit_temple_cloud_wispy_v001.png",
+    overlay_summit_temple_cloud_compact: "assets/map/overlays/overlay_summit_temple_cloud_compact_v001.png",
+    overlay_summit_temple_cliff_edge_n: "assets/map/overlays/overlay_summit_temple_cliff_edge_n_v001.png",
+    overlay_summit_temple_cliff_edge_e: "assets/map/overlays/overlay_summit_temple_cliff_edge_e_v001.png",
+    overlay_summit_temple_cliff_edge_s: "assets/map/overlays/overlay_summit_temple_cliff_edge_s_v001.png",
+    overlay_summit_temple_cliff_edge_w: "assets/map/overlays/overlay_summit_temple_cliff_edge_w_v001.png",
     overlay_shrine_healing_spring: "assets/map/overlays/overlay_shrine_healing_spring_v002.png",
     overlay_summit_temple_stage_a: "assets/map/overlays/overlay_summit_temple_stage_v001_a.png",
     overlay_summit_temple_stage_b: "assets/map/overlays/overlay_summit_temple_stage_v001_b.png",
@@ -657,7 +663,7 @@ const PRISMA_ASSETS = {
   // installImages: Service Worker の初回install時にキャッシュする画像全体。
   // backgroundImages: install後の再試行/補助ウォームキャッシュ用。
   cacheWarmup: {
-    version: "2026-07-18-summit-temple-sky-v55",
+    version: "2026-07-18-summit-temple-sky-v58",
     initialGraphicKeys: [
       "floor", "sea", "forest", "mountain", "Low_mountain", "cave", "house-1", "house-2", "inn", "wall", "dungeon_floor",
       "item_icon_attack", "item_icon_buff", "item_icon_debuff", "item_icon_material", "item_icon_vehicle", "item_icon_travel",

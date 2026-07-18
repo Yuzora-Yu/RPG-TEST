@@ -648,6 +648,8 @@
         const sign=row[x] || 'T'; const cfg=tileVisualConfig(map, sign, x, y); drawTile(ctx,cfg,x*tile,y*tile,tile,map,sign,x,y,renderEntityType);
       }
     }
+    drawEditorSkyOverlays(ctx,map,tile);
+    drawEditorElevatedEdges(ctx,map,tile,w,h);
     if (state.showObjects) drawTileEffects(ctx,map,tile,w,h);
     if (state.showGrid && tile>=10) { ctx.strokeStyle='rgba(255,255,255,.08)'; ctx.lineWidth=1; for(let x=0;x<=w;x++){ctx.beginPath();ctx.moveTo(x*tile+.5,0);ctx.lineTo(x*tile+.5,h*tile);ctx.stroke();} for(let y=0;y<=h;y++){ctx.beginPath();ctx.moveTo(0,y*tile+.5);ctx.lineTo(w*tile,y*tile+.5);ctx.stroke();} }
     if (state.showObjects) drawObjects(ctx,map,tile,renderEntityType);
@@ -658,7 +660,8 @@
     const upper=String(sign||'T').toUpperCase();
     const overlay=cfg.overlay||null;
     const theme=getTheme(map);
-    const baseSign=overlay ? overlayBaseSign(map,upper) : (upper==='G'?'G':'T');
+    const isBaseTerrainTile=upper==='T'||upper==='G'||cfg?.terrain===true;
+    const baseSign=overlay ? overlayBaseSign(map,upper) : (isBaseTerrainTile?upper:'T');
     const floorCfg=renderShared.resolveTileVariant(theme[baseSign]||theme.T||cfg||{img:'',color:'#202a3e'},x,y);
     drawEditorImageOrColor(ctx,floorCfg.img,floorCfg.color,px,py,tile,tile);
 
@@ -669,7 +672,7 @@
       else drawEditorRandomDecoration(ctx,map,x,y,px,py,tile,upper);
     }
 
-    if(!overlay && !['T','G'].includes(upper)){
+    if(!overlay && !isBaseTerrainTile){
       const face=wallFaceKeyForEditor(map,x,y,upper,entityType);
       const mode=wallFaceModeForEditor(map,entityType);
       const objectKey=face&&mode!=='overlay'?face:cfg.img;
@@ -682,6 +685,25 @@
 
     if(!assetPath(cfg.img)&&!overlay&&tile>=14){
       ctx.fillStyle='rgba(255,255,255,.22)';ctx.font=`${Math.floor(tile*.55)}px monospace`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(sign,px+tile/2,py+tile/2);
+    }
+  }
+  function drawEditorSkyOverlays(ctx,map,tile){
+    (map?.skyOverlays||[]).forEach(definition=>{
+      const dw=tile*Math.max(8,Number(definition.drawWidth||32))/32;
+      const dh=tile*Math.max(8,Number(definition.drawHeight||32))/32;
+      drawEditorImageOrColor(ctx,definition.imageKey,'',Number(definition.x||0)*tile,Number(definition.y||0)*tile,dw,dh,definition.alpha===undefined?1:Number(definition.alpha));
+    });
+  }
+  function drawEditorElevatedEdges(ctx,map,tile,w,h){
+    const definition=map?.elevatedEdges; if(!definition) return;
+    const tileAt=(x,y)=>String(map.tiles?.[y]?.[x]||'').toUpperCase();
+    for(let y=0;y<h;y++) for(let x=0;x<w;x++){
+      const px=x*tile, py=y*tile;
+      const plan=renderShared.elevatedEdgeCellPlan({map,definition,x,y,tileSign:tileAt(x,y),tileAtFn:tileAt});
+      plan?.edges?.forEach(edge=>{
+        const scale=tile/32;
+        drawEditorImageOrColor(ctx,edge.key,'',px+edge.x*scale,py+edge.y*scale,edge.width*scale,edge.height*scale);
+      });
     }
   }
   function applyChestMode(i){
