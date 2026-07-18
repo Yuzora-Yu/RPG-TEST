@@ -6193,7 +6193,11 @@ const Field = {
         for (let y = Math.max(0, centerY - radiusY); y <= Math.min(height - 1, centerY + radiusY); y++) {
             for (let x = Math.max(0, centerX - radiusX); x <= Math.min(width - 1, centerX + radiusX); x++) {
                 const tile = Field.getRenderedTileForDraw(x, y, width, height, areaKey);
-                const overlay = Field.getFixedTileOverlayConfig(tile, x, y);
+                // A map action may replace a generic house with a dedicated facility
+                // image at one coordinate.  Treat that visual anchor exactly like the
+                // ordinary shop/inn anchors for roof-depth movement rules.
+                const overlay = Field.getMapActionOverlayConfig?.(x, y)
+                    || Field.getFixedTileOverlayConfig(tile, x, y);
                 if (Field.isBuildingOverlayConfig(overlay)) anchors.push({ x, y, overlay });
             }
         }
@@ -6758,6 +6762,7 @@ const Field = {
             blockingObject: action.renderAsBlockingObject === true,
             drawWidth: Math.max(8, Number(action.drawWidth || 32)),
             drawHeight: Math.max(8, Number(action.drawHeight || 32)),
+            buildingScale: Math.max(1, Number(action.buildingScale || 2.4)),
             suppressShadow: action.suppressShadow === true
         };
     },
@@ -7914,6 +7919,27 @@ const Field = {
             return false;
         };
 
+        const drawWaterShore = (plan, drawX, drawY) => {
+            if (!plan?.edges?.length) return;
+            const image = g[plan.key];
+            if (!image) {
+                GRAPHICS?.get?.(plan.key);
+                return;
+            }
+            const foamHeight = Math.max(2, ts * 8 / 32);
+            plan.edges.forEach(edge => {
+                ctx.save();
+                ctx.globalAlpha = Number(plan.alpha ?? 0.58);
+                ctx.translate(
+                    drawX + ts / 2 + edge.offsetX * ts,
+                    drawY + ts / 2 + edge.offsetY * ts
+                );
+                ctx.rotate(Number(edge.angle || 0) * Math.PI / 180);
+                ctx.drawImage(image, -ts / 2, -foamHeight / 2, ts, foamHeight);
+                ctx.restore();
+            });
+        };
+
         const tileTone = (tileSign) => {
             const upper = String(tileSign || '').toUpperCase();
             if (upper === 'W') return 'water';
@@ -8105,8 +8131,22 @@ const Field = {
                 }
 
                 // 3. 固定MAP/固定ダンジョン専用オーバーレイ。
+                const shorePlan = config?.animatedWater === true && config?.shoreFoam === true
+                    ? window.MapRenderShared?.waterShorePlan?.({
+                        map: Field.currentMapData,
+                        x: tx,
+                        y: ty,
+                        tileSign: upper,
+                        enabled: true,
+                        alpha: Number(config.shoreFoamAlpha ?? 0.58),
+                        tileAtFn: (x, y) => Field.getRenderedTileForDraw(x, y, mapW, mapH, areaKey)
+                    })
+                    : null;
+                drawWaterShore(shorePlan, drawX, drawY);
+
                 if (overlayConfig) {
                     const characterOverlay = /^(overlay_npc_|overlay_companion_)/.test(String(overlayConfig.img || ''));
+                    const buildingOverlay = Field.isBuildingOverlayConfig?.(overlayConfig) === true;
                     const wallOverlay = overlayConfig.wallOverlay === true;
                     const blockingObjectOverlay = overlayConfig.blockingObject === true;
                     const eventMarkerOverlay = overlayConfig.eventMarker === true;
@@ -8116,16 +8156,20 @@ const Field = {
                     }
                     const overlayWidth = eventMarkerOverlay
                         ? Math.max(9, Math.round(ts * (Number(overlayConfig.drawWidth || 12) / 32) * eventMarkerPulse))
+                        : buildingOverlay
+                        ? Math.round(ts * Math.max(1, Number(overlayConfig.buildingScale || 2.4)))
                         : (blockingObjectOverlay ? Math.round(ts * (Number(overlayConfig.drawWidth || 32) / 32)) : ts);
                     const overlayHeight = eventMarkerOverlay
                         ? Math.max(9, Math.round(ts * (Number(overlayConfig.drawHeight || 12) / 32) * eventMarkerPulse))
+                        : buildingOverlay
+                        ? Math.round(ts * Math.max(1, Number(overlayConfig.buildingScale || 2.4)))
                         : blockingObjectOverlay
                         ? Math.round(ts * (Number(overlayConfig.drawHeight || 32) / 32))
                         : (wallOverlay ? Math.round(ts * 1.5) : ts + lift);
                     const overlayX = drawX + Math.round((ts - overlayWidth) / 2);
                     const overlayY = eventMarkerOverlay
                         ? drawY + Math.round((ts - overlayHeight) / 2) - lift
-                        : ((wallOverlay || blockingObjectOverlay) ? drawY + ts - overlayHeight : drawY - lift);
+                        : ((buildingOverlay || wallOverlay || blockingObjectOverlay) ? drawY + ts - overlayHeight : drawY - lift);
                     ctx.save();
                     if (eventMarkerOverlay) {
                         ctx.globalAlpha = Field.step === 1 ? 0.52 : 0.92;

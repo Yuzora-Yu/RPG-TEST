@@ -298,6 +298,7 @@ const PRISMA_ASSETS = {
     overlay_building_fire_forge: "assets/map/overlays/overlay_building_fire_forge_v002.png",
     overlay_building_wind_hut: "assets/map/overlays/overlay_building_wind_hut_v002.png",
     overlay_building_water_shop: "assets/map/overlays/overlay_building_water_shop_v002.png",
+    overlay_building_water_alchemy: "assets/map/overlays/overlay_building_water_alchemy_v002.png",
     overlay_dungeon_warp: "assets/map/overlays/overlay_dungeon_warp_v001.png",
     overlay_dungeon_trial_angel: "assets/map/overlays/overlay_dungeon_trial_angel_v001.png",
     overlay_dungeon_adventurer: "assets/map/overlays/overlay_dungeon_adventurer_v001.png",
@@ -808,6 +809,7 @@ globalThis.PRISMA_ASSETS = PRISMA_ASSETS;
     "assets/background/bg_inn.jpg",
     "assets/background/bg_medal.png",
     "assets/background/bg_casino.png",
+    "assets/background/bg_alchemy_water_city_v001.png",
     ...PRISMA_MONSTER_IMAGE_FILES,
   ]);
 

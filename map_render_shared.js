@@ -130,6 +130,24 @@
         };
     };
 
+    const waterShorePlan = ({ map, x, y, tileSign, tileAtFn = null, enabled = true, alpha = 0.58 }) => {
+        if (!enabled || String(tileSign || '').toUpperCase() !== 'W') return null;
+        const edges = [
+            { id: 'n', dx: 0, dy: -1, angle: 0, offsetX: 0, offsetY: -0.5 },
+            { id: 'e', dx: 1, dy: 0, angle: 90, offsetX: 0.5, offsetY: 0 },
+            { id: 's', dx: 0, dy: 1, angle: 180, offsetX: 0, offsetY: 0.5 },
+            { id: 'w', dx: -1, dy: 0, angle: 270, offsetX: -0.5, offsetY: 0 }
+        ].filter(edge => {
+            const neighbor = String(tileAtFn
+                ? tileAtFn(Number(x) + edge.dx, Number(y) + edge.dy)
+                : tileAt(map, Number(x) + edge.dx, Number(y) + edge.dy)).toUpperCase();
+            return !!neighbor && neighbor !== 'W';
+        });
+        return edges.length
+            ? { kind: 'shore', key: 'overlay_world_shore_foam', edges, alpha: Number(alpha ?? 0.58) }
+            : null;
+    };
+
     const worldDecorationPlan = ({ map, bridges, x, y, tileSign, tileAtFn = null }) => {
         const upper = String(tileSign || '').toUpperCase();
         const bridge = (bridges || []).find(item => Number(item?.x) === Number(x) && Number(item?.y) === Number(y));
@@ -147,19 +165,9 @@
         if (upper === 'G' || upper === 'T') return variant(['overlay_world_grass_detail', 'overlay_world_grass_weeds', 'overlay_world_grass_earth'], 24, 23 / 32, 0.78);
         if (upper === 'F') return variant(['overlay_world_forest_understory', 'overlay_world_forest_roots'], 10, 26 / 32, 0.75, 'under');
         if (upper === 'L') return variant('overlay_world_foothill_rocks', 10, 27 / 32, 0.72, 'under');
-        if (upper !== 'W') return null;
-        const edges = [
-            { dx: 0, dy: -1, angle: 0, offsetX: 0, offsetY: -0.5 },
-            { dx: 1, dy: 0, angle: 90, offsetX: 0.5, offsetY: 0 },
-            { dx: 0, dy: 1, angle: 180, offsetX: 0, offsetY: 0.5 },
-            { dx: -1, dy: 0, angle: 270, offsetX: -0.5, offsetY: 0 }
-        ].filter(edge => {
-            const neighbor = String(tileAtFn
-                ? tileAtFn(Number(x) + edge.dx, Number(y) + edge.dy)
-                : tileAt(map, Number(x) + edge.dx, Number(y) + edge.dy)).toUpperCase();
-            return !!neighbor && neighbor !== 'W';
-        });
-        return edges.length ? { kind: 'shore', key: 'overlay_world_shore_foam', edges, alpha: 0.58 } : null;
+        return upper === 'W'
+            ? waterShorePlan({ map, x, y, tileSign: upper, tileAtFn, enabled: true, alpha: 0.58 })
+            : null;
     };
 
     const wallFacePlan = ({ map, theme, x, y, upper, entityType, tileAtFn = null }) => {
@@ -187,6 +195,7 @@
         textileCellPlan,
         elevatedEdgeCellPlan,
         floorDecorationPlan,
+        waterShorePlan,
         worldDecorationPlan,
         wallFacePlan
     });

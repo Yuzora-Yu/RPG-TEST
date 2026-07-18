@@ -518,6 +518,39 @@
             }
         }
 
+        // Water-edge foam is opt-in per water tile theme.  The shared resolver is
+        // also used by the world map, so fixed maps get the same tight shoreline
+        // placement without treating ordinary dungeon walls as water.
+        const shorePlan = isAnimatedWaterTile && objectConfig.shoreFoam === true
+            ? renderShared.waterShorePlan({
+                map: field.currentMapData,
+                x: tileX,
+                y: tileY,
+                tileSign: upper,
+                enabled: true,
+                alpha: Number(objectConfig.shoreFoamAlpha ?? 0.58),
+                tileAtFn: (x, y) => field.getRenderedTileForDraw(x, y, mapSize.width, mapSize.height, areaKey)
+            })
+            : null;
+        shorePlan?.edges?.forEach(edge => {
+            const edgeY = tileY + edge.dy;
+            const depth = Math.max(tileY, edgeY) * 100 + 44;
+            const foam = addImage(
+                scene,
+                shorePlan.key,
+                px + TILE_SIZE / 2 + edge.offsetX * TILE_SIZE,
+                py + TILE_SIZE / 2 + edge.offsetY * TILE_SIZE,
+                {
+                    width: TILE_SIZE,
+                    height: 8,
+                    originY: 0.5,
+                    depth,
+                    alpha: shorePlan.alpha
+                }
+            );
+            if (foam) foam.setAngle(edge.angle);
+        });
+
         drawGroundDecoration(scene, field, areaKey, tileX, tileY, rawUpper, floorConfig, overlay, baseDepth);
         drawElevatedTerrainEdges(scene, field, mapSize, areaKey, tileX, tileY, rawUpper, baseDepth);
 
@@ -558,6 +591,9 @@
 			// ワールドマップ上の町・神殿等は地図記号として1マス表示にする。
 			// 固定マップの建物は高さを残すが、手前の楕円影は不自然なので描かない。
 			const raisedBuilding = building && !isWorldMap;
+			const buildingScale = raisedBuilding
+				? Math.max(1, Number(overlay.buildingScale || 2.4))
+				: 1;
 
 			// ボスマス画像だけ一括で2倍表示する。
 			// addImage() は originY=1 なので、足元は元マス下端に揃ったまま拡大される。
@@ -566,12 +602,12 @@
 				? Math.max(9, Number(overlay.drawWidth || 12))
 				: blockingObjectOverlay
 				? Math.max(8, Number(overlay.drawWidth || TILE_SIZE))
-				: (raisedBuilding ? TILE_SIZE * 2.4 : TILE_SIZE * overlayScale);
+				: (raisedBuilding ? TILE_SIZE * buildingScale : TILE_SIZE * overlayScale);
 			const height = eventMarkerOverlay
 				? Math.max(9, Number(overlay.drawHeight || 12))
 				: blockingObjectOverlay
 				? Math.max(8, Number(overlay.drawHeight || TILE_SIZE))
-				: (wallOverlay ? TILE_SIZE * 1.5 : (raisedBuilding ? TILE_SIZE * 2.4 : TILE_SIZE * overlayScale));
+				: (wallOverlay ? TILE_SIZE * 1.5 : (raisedBuilding ? TILE_SIZE * buildingScale : TILE_SIZE * overlayScale));
 
 			// ダンジョンの宝箱・階段・扉は影なし。
 			// NPCとボスは位置を読みやすくするため影を残す。

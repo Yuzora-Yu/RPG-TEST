@@ -430,7 +430,8 @@ const TILE_THEMES = {
             img: "tile_water_canal",
             color: "#155d7a",
             lowerLayer: true,
-            animatedWater: true
+            animatedWater: true,
+            shoreFoam: true
         },
         T: {
             img: "tile_water_pave",
@@ -734,7 +735,8 @@ const TILE_THEMES = {
             img: "tile_crena_water",
             color: "#155d7a",
             lowerLayer: true,
-            animatedWater: true
+            animatedWater: true,
+            shoreFoam: true
         },
         T: {
             img: "tile_crena_floor",
@@ -754,7 +756,8 @@ const TILE_THEMES = {
             img: "tile_water_canal",
             color: "#155d7a",
             lowerLayer: true,
-            animatedWater: true
+            animatedWater: true,
+            shoreFoam: true
         },
         T: {
             img: "tile_seabed_floor",
@@ -2732,7 +2735,12 @@ const FIXED_MAPS = {
                 y: 3,
                 label: "錬金所に入る",
                 log: "薬草と魔石の香りが漂う、水上都市の錬金所だ。",
-                type: "alchemy"
+                type: "alchemy",
+                imageKey: "overlay_building_water_alchemy",
+                baseTile: "T",
+                blocksMovement: false,
+                buildingScale: 3,
+                suppressShadow: true
             },
             {
                 x: 4,
