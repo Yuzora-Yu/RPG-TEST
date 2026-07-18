@@ -21,6 +21,8 @@ const expectedGraphics = new Map([
     ['tile_wind_temple_floor', 'assets/map/terrain/tile_wind_temple_floor_v001.png'],
     ['battle_bg_wind_temple', 'assets/generated/battle-wind-temple-v001.png'],
     ['battle_bg_mountain_wind_ruins', 'assets/generated/battle-mountain-wind-ruins-v001.png'],
+    ['battle_bg_trial_shrine', 'assets/generated/battle-trial-shrine-v001.png'],
+    ['battle_bg_summit_temple', 'assets/generated/battle-summit-temple-v001.png'],
     ['battle_bg_sea', 'assets/generated/battle-sea-v002.png'],
     ['battle_bg_field_forest', 'assets/generated/battle-forest-ai.png'],
     ['battle_bg_abyss_boss', 'assets/generated/battle-abyss-boss-v001.png'],
@@ -44,9 +46,9 @@ if (map.TILE_THEMES.WIND_TEMPLE.W.img !== 'tile_wind_temple_wall' ||
     map.TILE_THEMES.WIND_TEMPLE.T.img !== 'tile_wind_temple_floor') {
     throw new Error('Wind Temple floor/wall theme is incomplete.');
 }
-if (map.FIXED_MAPS.TRIAL_ISLAND.battleBg !== 'battle_bg_mountain_wind_ruins' ||
-    map.FIXED_MAPS.SUMMIT_TEMPLE.battleBg !== 'battle_bg_mountain_wind_ruins') {
-    throw new Error('The rejected outdoor Wind Temple background was not reassigned to both ruin maps.');
+if (map.FIXED_MAPS.TRIAL_ISLAND.battleBg !== 'battle_bg_trial_shrine' ||
+    map.FIXED_MAPS.SUMMIT_TEMPLE.battleBg !== 'battle_bg_summit_temple') {
+    throw new Error('The two trial facilities do not use their dedicated battle backgrounds.');
 }
 if (map.FIXED_MAPS.START_VILLAGE.battleBg !== 'battle_bg_field' ||
     map.FIXED_MAPS.WIND_VILLAGE.battleBg !== 'battle_bg_field') {

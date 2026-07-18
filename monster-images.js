@@ -30,9 +30,9 @@
   }, {});
 
   const chestTrapMonsterImages = {
-    120301: "assets/monsters/chest-mimics/monster_120301.png",
-    120302: "assets/monsters/chest-mimics/monster_120302.png",
-    120303: "assets/monsters/chest-mimics/monster_120303.png",
+    120301: "assets/monsters/monster_120301.png",
+    120302: "assets/monsters/monster_120302.png",
+    120303: "assets/monsters/monster_120303.png",
   };
 
   window.MonsterImageMap = Object.assign({}, window.MonsterImageMap || {}, bossCandidateMap, chestTrapMonsterImages);

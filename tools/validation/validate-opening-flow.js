@@ -76,7 +76,7 @@ if (promptIndex >= 0) errors.push('start_adventure3 must not repeat the startup 
 if (!openingSource.includes("const PRISMA_OPENING_IMAGE = 'assets/generated/opening-prism-collapse-v002.png'")) errors.push('opening does not use the generated collapse illustration');
 if (!openingSource.includes('autoTimer = setTimeout(advance')) errors.push('opening does not auto-advance');
 const openingSceneCount = (openingSource.match(/\{ (?:logo: true, )?text: /g) || []).length;
-if (openingSceneCount !== 10) errors.push(`opening must contain 9 concise story lines plus the title logo: ${openingSceneCount}`);
+if (openingSceneCount !== 8) errors.push(`opening must contain the current 7 concise story lines plus the title logo: ${openingSceneCount}`);
 if (!openingSource.includes("const PRISMA_OPENING_LOGO = 'assets/background/PRISMA ABYSS.png'")) errors.push('opening does not reuse the title-screen logo');
 if (!openingSource.includes('prisma-opening__entry-curtain')) errors.push('opening does not insert a blackout transition');
 for (const spoiler of ['アルス', 'リュミナ村', '風の集落', '水上都市', '雷の要塞', '光の宮殿', '闇の城']) {
@@ -106,12 +106,10 @@ if (!initialCacheHandler.includes('バックグラウンドで全データのキ
 }
 if (!initialCacheHandler.includes('App.setDeclinedInitialFullDataPrompt(true)')) errors.push('startup prompt choice is not remembered');
 if (initialCacheHandler.includes('裏側で全量取得しない')) errors.push('obsolete no-background-cache policy remains in the startup handler');
-if (mainSource.includes("fullDataCacheName: 'prisma-abyss-v3.100-battle-logic-ui-runtime'") === false) {
-    errors.push('main.js full cache version is not the current full-cache version');
-}
-if (!swSource.includes('const RUNTIME_CACHE_NAME = "prisma-abyss-v3.100-battle-logic-ui-runtime"')) {
-    errors.push('main.js and sw.js runtime cache versions are not aligned');
-}
+const mainCacheName = mainSource.match(/fullDataCacheName:\s*'([^']+)'/)?.[1] || '';
+const swCacheName = swSource.match(/const RUNTIME_CACHE_NAME = "([^"]+)"/)?.[1] || '';
+if (!mainCacheName || !mainCacheName.endsWith('-runtime')) errors.push('main.js full cache version is missing or malformed');
+if (!swCacheName || mainCacheName !== swCacheName) errors.push('main.js and sw.js runtime cache versions are not aligned');
 const allRegisteredImages = [
     ...Object.values(assetContext.__ASSETS?.graphics || {}),
     ...Object.values(assetContext.__ASSETS?.battleFx || {})

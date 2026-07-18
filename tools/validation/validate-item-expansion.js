@@ -8,7 +8,7 @@ const context = { window: {}, console };
 context.Math = Object.create(Math);
 context.Math.random = () => 0.5;
 vm.createContext(context);
-for (const file of ['items.js', 'item-expansion.js', 'monsters.js', 'chest-mimics.js', 'monster-drop-policy.js', 'item_runtime.js']) {
+for (const file of ['items.js', 'monsters.js', 'chest-mimics.js', 'monster-drop-policy.js', 'item_runtime.js']) {
     vm.runInContext(read(file), context, { filename: file });
 }
 
@@ -134,11 +134,21 @@ for (const relative of iconPaths) {
 }
 
 const index = read('index.html');
-for (const script of ['item-expansion.js', 'chest-mimics.js', 'monster-drop-policy.js', 'item_runtime.js']) {
+assert(!index.includes('item-expansion.js'), 'retired item-expansion.js must not be loaded');
+for (const script of ['chest-mimics.js', 'monster-drop-policy.js', 'item_runtime.js']) {
     assert(index.includes(`<script src="${script}"></script>`), `${script} is not loaded by index.html`);
     assert(read('sw.js').includes(`"${script}"`), `${script} is not precached`);
 }
 const facilities = read('facilities.js');
+assert(facilities.includes("const excludedEffectKinds = new Set(['damage', 'buff', 'debuff'])"), 'Ordinary shops do not exclude attack/buff/debuff consumables');
+assert(facilities.includes("!excludedEffectKinds.has(String(item.effectKind || '').toLowerCase())"), 'Item-shop filtering is not connected to the combat-item exclusion policy');
+const shopContext = { console, DB: { ITEMS: items }, App: { data: {} } };
+shopContext.window = shopContext;
+shopContext.globalThis = shopContext;
+vm.createContext(shopContext);
+vm.runInContext(`${facilities}\nglobalThis.__Facilities = Facilities;`, shopContext, { filename: 'facilities.js' });
+const highRankShop = shopContext.__Facilities.getItemShopLineup(999);
+assert(!highRankShop.some(item => ['damage', 'buff', 'debuff'].includes(item.effectKind)), 'Ordinary item shop still sells attack/buff/debuff consumables');
 for (const type of ['攻撃道具', '強化道具', '弱体道具', 'キャンプ']) assert(facilities.includes(`'${type}'`), `${type} is absent from item shops`);
 const medalSource = read('database.js');
 for (const id of [1004, 1009, 1014, 1019, 1024, 1029, 1034, 1043, 1061, 1062]) assert(medalSource.includes(`id: ${id}`), `medal reward ${id} is missing`);

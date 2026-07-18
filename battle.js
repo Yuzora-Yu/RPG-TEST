@@ -1737,7 +1737,9 @@ findNextActor: () => {
         const config = actor.config || { fullAuto: false, hiddenSkills: [], autoDisabledSkills: [] };
         const hiddenIds = config.hiddenSkills.map(id => Number(id));
         
-        actor.skills.forEach(sk => {
+        [...actor.skills]
+            .sort(window.PRISMA_SKILL_ORDER?.compareById || ((a, b) => Number(a.id || 0) - Number(b.id || 0)))
+            .forEach(sk => {
             // 通常攻撃(ID:1)および、メニューで「非表示」設定されたスキルは出さない
             if (sk.id === 1) return;
             if (hiddenIds.includes(Number(sk.id))) return;
@@ -1851,6 +1853,10 @@ findNextActor: () => {
 			content.innerHTML = '<div style="padding:10px; font-size:12px;">使える道具がありません</div>';
 			return;
 		}
+
+		items.sort((a, b) => window.PRISMA_ITEM_CATALOG?.compareToolsByTypeAndId
+			? window.PRISMA_ITEM_CATALOG.compareToolsByTypeAndId(a.def, b.def)
+			: Number(a.def?.id || 0) - Number(b.def?.id || 0));
 
 		items.forEach(obj => {
 			const it = obj.def;
@@ -4476,6 +4482,12 @@ findNextActor: () => {
     lose: () => { 
 		Battle.active = false; 
 		Battle.log("全滅した..."); 
+		// 固定マップの擬態箱は、敗北時にだけ未開封へ戻して再挑戦可能にする。
+		// 戦闘データを endBattle() が初期化する前に座標情報を消費する。
+		if (App.data.battle?.isChestTrapBattle && App.data.battle?.fixedChestTrap
+			&& typeof Dungeon !== 'undefined' && typeof Dungeon.rollbackFixedChestTrap === 'function') {
+			Dungeon.rollbackFixedChestTrap(App.data.battle);
+		}
 		if (typeof App.clearPendingLimitBreakTrial === 'function') App.clearPendingLimitBreakTrial();
 		// ★追加: 全滅回数のカウントアップ
 		if(App.data.stats) App.data.stats.wipeoutCount = (App.data.stats.wipeoutCount || 0) + 1;

@@ -767,7 +767,7 @@ const App = {
 
 	// 全画像データの手動/初回ダウンロード用キャッシュ名。
 	// sw.js の RUNTIME_CACHE_NAME と揃えること。
-	fullDataCacheName: 'prisma-abyss-v3.100-battle-logic-ui-runtime',
+    fullDataCacheName: 'prisma-abyss-v3.119-summit-sky-cloud-runtime',
 
 
 	// 初回起動時の「全データを今ダウンロードしますか？」で「いいえ」を選んだ記録。
@@ -1069,6 +1069,26 @@ const App = {
 		}
 	}),
 
+	fetchAndCacheFullDataAsset: async (cache, request, options = {}) => {
+		const maxAttempts = Math.max(1, Number(options.maxAttempts || 3));
+		let lastError = null;
+		for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+			try {
+				const retryRequest = new Request(request, { cache: attempt === 1 ? 'reload' : 'no-cache' });
+				const response = await fetch(retryRequest);
+				if (!response || !response.ok) throw new Error(`HTTP ${response ? response.status : 'ERR'}`);
+				await cache.put(request, response.clone());
+				return { ok: true, attempts: attempt };
+			} catch (error) {
+				lastError = error;
+				if (attempt < maxAttempts) {
+					await new Promise(resolve => setTimeout(resolve, 180 * attempt));
+				}
+			}
+		}
+		return { ok: false, attempts: maxAttempts, error: lastError };
+	},
+
 	downloadFullDataCache: async (options = {}) => {
 		if (!App.isFullDataCacheSupported()) {
 			throw new Error(App.getFullDataCacheUnsupportedMessage());
@@ -1115,11 +1135,8 @@ const App = {
 						continue;
 					}
 
-					try {
-						const response = await fetch(request);
-						if (!response || !response.ok) throw new Error(`HTTP ${response ? response.status : 'ERR'}`);
-						await cache.put(request, response.clone());
-					} catch (e) {
+					const result = await App.fetchAndCacheFullDataAsset(cache, request, { maxAttempts: 3 });
+					if (!result.ok) {
 						failed++;
 						failedUrls.push(url);
 					}
@@ -1945,7 +1962,7 @@ const App = {
             ? {
                 ...localDest.parentDef,
                 isFixed: true,
-                isDungeon: false,
+                isDungeon: localDest.parentDef?.isDungeon === true,
                 areaKey: localDest.parentAreaKey
             }
             : null;
@@ -5409,7 +5426,7 @@ const Field = {
                 Field.currentMapData = {
                     ...FIXED_MAPS[areaKey],
                     isFixed: true,
-                    isDungeon: false,
+                    isDungeon: FIXED_MAPS[areaKey].isDungeon === true,
                     areaKey
                 };
             }
@@ -5492,7 +5509,7 @@ const Field = {
         Field.currentMapData = {
             ...areaDef,
             isFixed: true,
-            isDungeon: false,
+            isDungeon: areaDef.isDungeon === true,
             areaKey: targetAreaKey
         };
         Field.x = areaDef.entryPoint ? areaDef.entryPoint.x : Math.floor(areaDef.width / 2);
@@ -5827,7 +5844,17 @@ const Field = {
     getTileConfigForDraw: (tileSign, tileX = null, tileY = null) => {
         const base = Field.getTileConfig(tileSign);
         if (Array.isArray(base?.variants) && base.variants.length && tileX !== null && tileY !== null) {
-            return window.MapRenderShared.resolveTileVariant(base, tileX, tileY);
+            let variantX = Number(tileX);
+            let variantY = Number(tileY);
+            // Outside a fixed map, select the exact same image variant as the
+            // nearest edge cell, then repeat that image on the ordinary 32px grid.
+            if (Field.currentMapData?.isFixed) {
+                const mapW = Math.max(1, Number(Field.currentMapData.width || Field.currentMapData.tiles?.[0]?.length || 1));
+                const mapH = Math.max(1, Number(Field.currentMapData.height || Field.currentMapData.tiles?.length || 1));
+                variantX = Math.max(0, Math.min(mapW - 1, variantX));
+                variantY = Math.max(0, Math.min(mapH - 1, variantY));
+            }
+            return window.MapRenderShared.resolveTileVariant(base, variantX, variantY);
         }
         if (!Field.currentMapData && tileX !== null && tileY !== null && typeof MapRegistry !== 'undefined' && MapRegistry.getWorldTileConfig) {
             const point = MapRegistry.normalizeWorldPoint ? MapRegistry.normalizeWorldPoint(tileX, tileY) : { x: tileX, y: tileY };
@@ -5891,6 +5918,9 @@ const Field = {
 
     getMiniMapTileColor: (tileSign, tileX = null, tileY = null) => {
         const upper = String(tileSign || 'W').toUpperCase();
+        if (upper === 'S' && Field.currentMapData?.autoExitOnPerimeter === true) {
+            return Field.currentMapData.perimeterExitMiniMapColor || '#766746';
+        }
         const cfg = Field.getTileConfigForDraw
             ? Field.getTileConfigForDraw(upper, tileX, tileY)
             : Field.getTileConfig(upper);
@@ -5942,13 +5972,22 @@ const Field = {
             : null;
         if (!config) return null;
 
-        if ((upper === 'C' || upper === 'R') && x !== null && y !== null &&
-            typeof Dungeon !== 'undefined' && Dungeon.isFixedChestOpenedAt(x, y)) {
-            config = {
-                ...config,
-                img: upper === 'R' ? 'overlay_dungeon_chest_rare_empty' : 'overlay_dungeon_chest_empty',
-                color: '#665b52'
-            };
+        if ((upper === 'C' || upper === 'R') && x !== null && y !== null) {
+            const chestDef = Field.getFixedChestAt ? Field.getFixedChestAt(x, y) : null;
+            const opened = typeof Dungeon !== 'undefined' && Dungeon.isFixedChestOpenedAt(x, y);
+            if (chestDef?.imageKey) {
+                config = {
+                    ...config,
+                    img: opened ? (chestDef.openedImageKey || chestDef.imageKey) : chestDef.imageKey,
+                    color: chestDef.color || config.color
+                };
+            } else if (opened) {
+                config = {
+                    ...config,
+                    img: upper === 'R' ? 'overlay_dungeon_chest_rare_empty' : 'overlay_dungeon_chest_empty',
+                    color: '#665b52'
+                };
+            }
         }
 
         // ボスマスは固定の汎用記号ではなく、配置されたモンスター原画由来のチップを使う。
@@ -6022,6 +6061,18 @@ const Field = {
 
     getMapDrawParts: (tileSign, tileX = null, tileY = null) => {
         const upper = String(tileSign || 'W').toUpperCase();
+        // A perimeter auto-exit cell is logically S, but visually it is authored
+        // terrain. Rendering it as an S object would add lift/contact shadows to
+        // every repeated cell and expose seams outside the map.
+        if (upper === 'S' && Field.currentMapData?.autoExitOnPerimeter === true) {
+            return {
+                upper: 'G',
+                baseTile: 'G',
+                overlayConfig: null,
+                worldOverlay: false,
+                logicalUpper: 'S'
+            };
+        }
         if (upper === 'B' && Field.currentMapData?.isDungeon && !Field.currentMapData?.isFixed && Field.getCurrentAreaKey?.() === 'ABYSS') {
             return {
                 upper: 'T',
@@ -6031,6 +6082,9 @@ const Field = {
             };
         }
         const fixedOverlayConfig = Field.getFixedTileOverlayConfig ? Field.getFixedTileOverlayConfig(upper, tileX, tileY) : null;
+        const fixedContainerDef = (fixedOverlayConfig && (upper === 'C' || upper === 'R') && Field.getFixedChestAt)
+            ? Field.getFixedChestAt(tileX, tileY)
+            : null;
         const actionOverlayConfig = Field.getMapActionOverlayConfig ? Field.getMapActionOverlayConfig(tileX, tileY) : null;
         const blockingObject = Field.getBlockingObjectAt ? Field.getBlockingObjectAt(tileX, tileY) : null;
         const blockingObjectOverlayConfig = blockingObject?.imageKey
@@ -6061,16 +6115,26 @@ const Field = {
             ? MapRegistry.getWorldTileConfig(worldPoint.x, worldPoint.y)
             : null;
 
-        const overlayConfig = blockingObjectOverlayConfig || actionOverlayConfig || fixedOverlayConfig || randomDungeonChestOverlay || randomDungeonStairsOverlay || worldOverlayConfig;
+        const resolvedOverlayConfig = blockingObjectOverlayConfig || actionOverlayConfig || fixedOverlayConfig || randomDungeonChestOverlay || randomDungeonStairsOverlay || worldOverlayConfig;
+        // Chest/pot/barrel art already contains its own contact shading. Adding the
+        // generic actor ellipse underneath produces a dark rectangular-looking patch
+        // on bright facility floors, so containers explicitly suppress that pass.
+        const isContainerOverlay = (upper === 'C' || upper === 'R')
+            && !!(fixedContainerDef || randomDungeonChestOverlay);
+        const overlayConfig = isContainerOverlay && resolvedOverlayConfig
+            ? { ...resolvedOverlayConfig, suppressShadow: true }
+            : resolvedOverlayConfig;
         const baseTile = blockingObjectOverlayConfig
             ? (blockingObject.baseTile || upper)
             : (actionOverlayConfig
             ? actionOverlayConfig.baseTile
-            : (randomDungeonChestOverlay || randomDungeonStairsOverlay
+            : (fixedContainerDef?.baseTile
+                ? fixedContainerDef.baseTile
+                : (randomDungeonChestOverlay || randomDungeonStairsOverlay
                 ? 'T'
                 : (fixedOverlayConfig && Field.getFixedTileOverlayBaseTile
                 ? Field.getFixedTileOverlayBaseTile(upper)
-                : upper)));
+                : upper))));
         return {
             upper,
             baseTile: baseTile || upper,
@@ -6137,16 +6201,64 @@ const Field = {
         });
     },
 
+    // Raised stages remain walkable inside, while crossing their outline is restricted
+    // to explicitly authored gateways. This avoids filling stage cells with invisible
+    // blocking objects and keeps the rule reusable for future maps.
+    isMovementRegionCrossingBlocked: (fromX, fromY, toX, toY) => {
+        const regions = Field.currentMapData?.movementRegions;
+        if (!Array.isArray(regions)) return false;
+        return regions.some(region => {
+            const left = Number(region.x);
+            const top = Number(region.y);
+            const width = Math.max(1, Number(region.width) || 1);
+            const height = Math.max(1, Number(region.height) || 1);
+            if (!Number.isFinite(left) || !Number.isFinite(top)) return false;
+            const inside = (x, y) => x >= left && x < left + width && y >= top && y < top + height;
+            const fromInside = inside(Number(fromX), Number(fromY));
+            const toInside = inside(Number(toX), Number(toY));
+            if (fromInside === toInside) return false;
+            const gateways = Array.isArray(region.gateways) ? region.gateways : [];
+            const permitted = gateways.some(gateway => {
+                const a = gateway?.inside;
+                const b = gateway?.outside;
+                if (!a || !b) return false;
+                return (Number(fromX) === Number(a.x) && Number(fromY) === Number(a.y)
+                    && Number(toX) === Number(b.x) && Number(toY) === Number(b.y))
+                    || (Number(fromX) === Number(b.x) && Number(fromY) === Number(b.y)
+                        && Number(toX) === Number(a.x) && Number(toY) === Number(a.y));
+            });
+            return !permitted;
+        });
+    },
+
+    // Maps may author additional non-walkable terrain without borrowing a door,
+    // facility, or event sign. The Summit Temple uses this for open sky.
+    isTileImpassableForCurrentMap: (tileSign) => {
+        const upper = String(tileSign || '').toUpperCase();
+        if (upper === 'W') return true;
+        const authored = Array.isArray(Field.currentMapData?.impassableTiles)
+            ? Field.currentMapData.impassableTiles
+            : [];
+        return authored.some(sign => String(sign || '').toUpperCase() === upper);
+    },
+
 
     getMiniMapMarkerColor: (tileSign, tileX = null, tileY = null) => {
         const upper = String(tileSign || '').toUpperCase();
+        if (upper === 'S' && Field.currentMapData?.autoExitOnPerimeter === true) return null;
         const actionOverlay = Field.getMapActionOverlayConfig ? Field.getMapActionOverlayConfig(tileX, tileY) : null;
         if (actionOverlay) {
             const imageKey = String(actionOverlay.img || '');
             if (imageKey.startsWith('overlay_npc_')) return actionOverlay.minimapColor || '#5bd6ff';
             return actionOverlay.minimapColor || actionOverlay.color || '#8f7dff';
         }
-        if (!upper || upper === 'W' || upper === 'T' || upper === 'G' || upper === 'L' || upper === 'M' || upper === '~') return null;
+        const areaAction = tileX !== null && tileY !== null && typeof MapRegistry !== 'undefined' && MapRegistry.findMapActionInteractionCell
+            ? MapRegistry.findMapActionInteractionCell(Field.currentMapData, tileX, tileY)
+            : null;
+        if (areaAction?.interactionArea && Field.isMapActionAvailable(areaAction)) {
+            return areaAction.minimapColor || '#3f245c';
+        }
+        if (!upper || upper === 'W' || upper === 'T' || upper === 'G' || upper === 'L' || upper === 'M' || upper === '~' || upper === '^') return null;
 
         if (Field.currentMapData?.isFixed && upper === 'B' && tileX !== null && tileY !== null && typeof MapRegistry !== 'undefined' && MapRegistry.findFixedBoss) {
             const bossDef = MapRegistry.findFixedBoss(Field.currentMapData, tileX, tileY);
@@ -6191,6 +6303,33 @@ const Field = {
         ctx.restore();
     },
 
+    updateHeldKeyHud: () => {
+        const hud = document.getElementById('field-key-hud');
+        if (!hud) return;
+        const canShow = Field.minimapMode !== 'minimized'
+            && !!Field.currentMapData?.isDungeon
+            && typeof Dungeon !== 'undefined'
+            && typeof Dungeon.getHeldKeyOrder === 'function';
+        const colors = canShow ? Dungeon.getHeldKeyOrder() : [];
+        const keyDefs = {
+            red: { key: 'item_key_red', label: '赤の鍵' },
+            blue: { key: 'item_key_blue', label: '青の鍵' },
+            gold: { key: 'item_key_gold', label: '金の鍵' }
+        };
+        const nodes = colors.map(color => {
+            const def = keyDefs[color];
+            const src = def ? window.GRAPHICS?.data?.[def.key] : null;
+            if (!def || !src) return null;
+            const image = document.createElement('img');
+            image.src = src;
+            image.alt = def.label;
+            image.title = def.label;
+            return image;
+        }).filter(Boolean);
+        hud.replaceChildren(...nodes);
+        hud.classList.toggle('is-visible', nodes.length > 0);
+    },
+
     drawHudMinimap: () => {
         const canvas = document.getElementById('field-minimap-canvas');
         if (!canvas) return;
@@ -6200,6 +6339,7 @@ const Field = {
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
         ctx.clearRect(0, 0, size, size);
+        Field.updateHeldKeyHud();
         if (Field.minimapMode === 'minimized') return;
 
         const range = 7;
@@ -6333,7 +6473,11 @@ const Field = {
     getRenderedTileForDraw: (tileX, tileY, mapW, mapH, areaKey) => {
         let nextTile = 'W';
         if (Field.currentMapData) {
-            if (tileX >= 0 && tileX < mapW && tileY >= 0 && tileY < mapH) {
+            const inBounds = tileX >= 0 && tileX < mapW && tileY >= 0 && tileY < mapH;
+            const sourceX = Math.max(0, Math.min(mapW - 1, Number(tileX)));
+            const sourceY = Math.max(0, Math.min(mapH - 1, Number(tileY)));
+            nextTile = Field.currentMapData.tiles?.[sourceY]?.[sourceX] || 'W';
+            if (inBounds) {
                 const posKey = `${tileX},${tileY}`;
                 const changeKey = Field.getCurrentMapChangeKey ? Field.getCurrentMapChangeKey(areaKey) : areaKey;
                 nextTile = App.data.progress.mapChanges?.[changeKey]?.[posKey] || App.data.progress.mapChanges?.[areaKey]?.[posKey] || Field.currentMapData.tiles[tileY][tileX];
@@ -6535,7 +6679,7 @@ const Field = {
     },
 
     isMapActionImageAvailable: (action) => {
-        if (!action?.imageKey || !Field.isMapActionAvailable(action)) return false;
+        if (!action || !Field.isMapActionAvailable(action)) return false;
         const flags = App.data?.progress?.flags || {};
         const requiredFlags = Array.isArray(action.imageRequiredFlags)
             ? action.imageRequiredFlags
@@ -6543,23 +6687,69 @@ const Field = {
         const missingFlags = Array.isArray(action.imageMissingFlags)
             ? action.imageMissingFlags
             : (action.imageMissingFlag ? [action.imageMissingFlag] : []);
-        return requiredFlags.every(flag => !!flags[flag]) && missingFlags.every(flag => !flags[flag]);
+        return requiredFlags.every(flag => !!flags[flag])
+            && missingFlags.every(flag => !flags[flag])
+            && !!Field.resolveMapActionImageKey(action);
+    },
+
+    resolveMapActionImageKey: (action) => {
+        if (!action) return null;
+        const flags = App.data?.progress?.flags || {};
+        const variants = Array.isArray(action.imageVariants) ? action.imageVariants : [];
+        const variant = variants.find(entry => {
+            if (!entry?.imageKey) return false;
+            const required = Array.isArray(entry.requiredFlags)
+                ? entry.requiredFlags
+                : (entry.requiredFlag ? [entry.requiredFlag] : []);
+            const missing = Array.isArray(entry.missingFlags)
+                ? entry.missingFlags
+                : (entry.missingFlag ? [entry.missingFlag] : []);
+            return required.every(flag => !!flags[flag]) && missing.every(flag => !flags[flag]);
+        });
+        return variant?.imageKey || action.imageKey || null;
     },
 
     getMapActionOverlayConfig: (tileX = null, tileY = null) => {
         if (!Field.currentMapData || tileX === null || tileY === null || typeof MapRegistry === 'undefined') return null;
         const action = MapRegistry.findMapAction?.(Field.currentMapData, tileX, tileY);
+        if (!action || !Field.isMapActionAvailable(action)) return null;
+        const hasExplicitImage = !!action.imageKey || (Array.isArray(action.imageVariants) && action.imageVariants.length > 0);
+        if (!hasExplicitImage) {
+            if (action.suppressEventMarker === true) return null;
+            const tileSign = String(Field.currentMapData.tiles?.[Number(tileY)] || '')[Number(tileX)] || 'T';
+            const hasPhysicalObject = !!Field.getBlockingObjectAt?.(tileX, tileY)
+                || !!Field.getFixedTileOverlayConfig?.(tileSign, tileX, tileY);
+            if (hasPhysicalObject) return null;
+            return {
+                img: 'overlay_event_blue_glimmer',
+                color: action.imageColor || '#62d7ff',
+                minimapColor: action.minimapColor || '#62d7ff',
+                baseTile: action.baseTile || 'T',
+                blockingObject: false,
+                eventMarker: true,
+                drawWidth: Math.max(9, Number(action.markerDrawWidth || 12)),
+                drawHeight: Math.max(9, Number(action.markerDrawHeight || 12)),
+                suppressShadow: true
+            };
+        }
+        // An explicitly configured image can have its own flag conditions. When
+        // those conditions are unmet, keep it hidden instead of substituting a marker.
         if (!Field.isMapActionImageAvailable(action)) return null;
+        const imageKey = Field.resolveMapActionImageKey(action);
         return {
-            img: action.imageKey,
+            img: imageKey,
             color: action.imageColor || '#d6c8a7',
             minimapColor: action.minimapColor || null,
-            baseTile: action.baseTile || 'T'
+            baseTile: action.baseTile || 'T',
+            blockingObject: action.renderAsBlockingObject === true,
+            drawWidth: Math.max(8, Number(action.drawWidth || 32)),
+            drawHeight: Math.max(8, Number(action.drawHeight || 32)),
+            suppressShadow: action.suppressShadow === true
         };
     },
 
     isBlockingMapActor: (action) => {
-        if (!action?.imageKey || action.blocksMovement === false) return false;
+        if (!action || action.blocksMovement === false) return false;
         return Field.isMapActionImageAvailable(action);
     },
 
@@ -6588,7 +6778,9 @@ const Field = {
             if (seen.has(posKey)) continue;
             seen.add(posKey);
             if (x < 0 || y < 0 || x >= Field.currentMapData.width || y >= Field.currentMapData.height) continue;
-            const action = MapRegistry.findMapAction?.(Field.currentMapData, x, y);
+            const action = MapRegistry.findMapActionInteractionCell
+                ? MapRegistry.findMapActionInteractionCell(Field.currentMapData, x, y)
+                : MapRegistry.findMapAction?.(Field.currentMapData, x, y);
             if (!Field.isAdjacentInteractableMapAction(action)) continue;
             return { x, y, action };
         }
@@ -6647,7 +6839,9 @@ const Field = {
             seen.add(posKey);
             if (x < 0 || y < 0 || x >= mapW || y >= mapH) continue;
             const tile = Field.getRenderedTileForDraw(x, y, mapW, mapH, areaKey);
-            if (tile === 'C' || tile === 'R') return { x, y, tile };
+            if (tile === 'C' || tile === 'R') {
+                return { x, y, tile, definition: Field.getFixedChestAt ? Field.getFixedChestAt(x, y) : null };
+            }
         }
         return null;
     },
@@ -6656,12 +6850,15 @@ const Field = {
         const chest = Field.getAdjacentChest();
         if (!chest || typeof Dungeon === 'undefined') return false;
         const opened = Field.currentMapData?.isFixed && Dungeon.isFixedChestOpenedAt(chest.x, chest.y);
+        const container = Dungeon.getContainerPresentation
+            ? Dungeon.getContainerPresentation(chest.definition)
+            : { closed: '宝箱がある。', opened: '開いたままの空箱がある。', action: '調べる' };
         if (options.silent === false) {
             App.log(opened
-                ? '開いたままの空箱がある。'
-                : (chest.tile === 'R' ? '赤い宝箱がある。' : '宝箱がある。'));
+                ? container.opened
+                : (chest.tile === 'R' ? '赤い宝箱がある。' : container.closed));
         }
-        App.setAction('調べる', () => Dungeon.openChest(chest.x, chest.y, chest.tile === 'R' ? 'rare' : 'normal'));
+        App.setAction(container.action, () => Dungeon.openChest(chest.x, chest.y, chest.tile === 'R' ? 'rare' : 'normal'));
         return true;
     },
 
@@ -6998,21 +7195,28 @@ const Field = {
         }
 
         if (action.type === 'boss') {
-            const fixedBossId = action.monsterId !== undefined ? action.monsterId : null;
-            let isSpecialBoss = !!action.special;
-            if (!isSpecialBoss && fixedBossId !== null) {
-                const base = window.MonsterData?.getMonsterById?.(Number(fixedBossId));
-                isSpecialBoss = !!(base?.isSpecialBoss || base?.isEstark || Number(fixedBossId) === 902000);
-            }
-            App.data.battle = {
-                active: false,
-                isBossBattle: true,
-                fixedBossId,
-                isSpecialBoss,
-                isEstark: isSpecialBoss
+            const startBossBattle = () => {
+                const fixedBossId = action.monsterId !== undefined ? action.monsterId : null;
+                let isSpecialBoss = !!action.special;
+                if (!isSpecialBoss && fixedBossId !== null) {
+                    const base = window.MonsterData?.getMonsterById?.(Number(fixedBossId));
+                    isSpecialBoss = !!(base?.isSpecialBoss || base?.isEstark || Number(fixedBossId) === 902000);
+                }
+                App.data.battle = {
+                    active: false,
+                    isBossBattle: true,
+                    fixedBossId,
+                    isSpecialBoss,
+                    isEstark: isSpecialBoss
+                };
+                App.save();
+                App.changeScene('battle');
             };
-            App.save();
-            App.changeScene('battle');
+            if (action.confirmText && typeof Menu !== 'undefined' && typeof Menu.confirm === 'function') {
+                Menu.confirm(action.confirmText, startBossBattle);
+                return;
+            }
+            startBossBattle();
             return;
         }
     },
@@ -7041,7 +7245,7 @@ const Field = {
             if (!silent && message) App.log(message);
         };
         if (Field.currentMapData) {
-            if (tile === 'W') return false;
+            if (Field.isTileImpassableForCurrentMap(tile)) return false;
 
             const adjacentBoss = Field.getAdjacentFixedBoss();
             if (adjacentBoss && typeof Dungeon !== 'undefined' && typeof Dungeon.prepareFixedTileAction === 'function') {
@@ -7227,7 +7431,8 @@ const Field = {
     },
 
     getDungeonWallFaceThemeForDraw: () => {
-        if (!Field.currentMapData?.isDungeon || typeof DUNGEON_WALL_FACE_THEMES === 'undefined') return null;
+        const usesWallFaces = Field.currentMapData?.isDungeon || Field.currentMapData?.useDungeonWallFace === true;
+        if (!usesWallFaces || typeof DUNGEON_WALL_FACE_THEMES === 'undefined') return null;
         const themeKey = String(Field.currentMapData.themeKey || 'DEFAULT').toUpperCase();
         return DUNGEON_WALL_FACE_THEMES[themeKey] || null;
     },
@@ -7238,7 +7443,8 @@ const Field = {
     },
 
     getDungeonWallGraphicForDraw: (tileX, tileY, upper, mapW, mapH, areaKey) => {
-        if (!Field.currentMapData?.isDungeon || upper !== 'W') return null;
+        const usesWallFaces = Field.currentMapData?.isDungeon || Field.currentMapData?.useDungeonWallFace === true;
+        if (!usesWallFaces || upper !== 'W') return null;
 
         const sharedWallTile = Field.getTileConfigForDraw
             ? Field.getTileConfigForDraw('W', tileX, tileY)
@@ -7410,11 +7616,17 @@ const Field = {
 
         if (Field.currentMapData) {
             if (nx < 0 || nx >= Field.currentMapData.width || ny < 0 || ny >= Field.currentMapData.height) { keepCurrentTileAction(); return; }
+            if (Field.isMovementRegionCrossingBlocked(Field.x, Field.y, nx, ny)) {
+                keepCurrentTileAction();
+                Field.render();
+                return;
+            }
             
 			//let tile = Field.currentMapData.tiles[ny][nx].toUpperCase();
 			// ★修正: 書き換えられたタイルがあればそれを優先、なければ元のタイルを参照
             const changeKey = Field.getCurrentMapChangeKey ? Field.getCurrentMapChangeKey(areaKey) : areaKey;
 			let tile = (App.data.progress.mapChanges?.[changeKey]?.[`${nx},${ny}`] || App.data.progress.mapChanges?.[areaKey]?.[`${nx},${ny}`] || Field.currentMapData.tiles[ny][nx]).toUpperCase();
+            let chestDef = null;
 
             // ★追加: 固定宝箱/ボスの判定を移動前に行う (撃破・取得済みなら通り抜け可能にする)
             if (Field.currentMapData.isFixed) {
@@ -7437,7 +7649,7 @@ const Field = {
                     }
                 }
 
-                const chestDef = Field.getFixedChestAt ? Field.getFixedChestAt(nx, ny) : null;
+                chestDef = Field.getFixedChestAt ? Field.getFixedChestAt(nx, ny) : null;
                 const chestTile = Field.getFixedChestTileSign ? Field.getFixedChestTileSign(chestDef) : null;
                 if (chestTile) tile = chestTile;
             } else if (tile === 'B' && areaKey === 'ABYSS' && typeof Dungeon !== 'undefined' && typeof Dungeon.prepareAbyssBossTileAction === 'function') {
@@ -7464,7 +7676,7 @@ const Field = {
             }
             const targetBlockingObject = Field.getBlockingObjectAt ? Field.getBlockingObjectAt(nx, ny) : null;
             if (targetBlockingObject) {
-                App.log(targetBlockingObject.log || '大きな障害物が道を塞いでいる。');
+                if (targetBlockingObject.log) App.log(targetBlockingObject.log);
                 keepCurrentTileAction();
                 Field.render();
                 return;
@@ -7472,16 +7684,19 @@ const Field = {
             if (tile === 'C' || tile === 'R') {
                 const opened = Field.currentMapData.isFixed && typeof Dungeon !== 'undefined' &&
                     Dungeon.isFixedChestOpenedAt(nx, ny);
+                const container = typeof Dungeon !== 'undefined' && Dungeon.getContainerPresentation
+                    ? Dungeon.getContainerPresentation(chestDef)
+                    : { opened: '空箱が置かれている。', blocked: '宝箱が道を塞いでいる。' };
                 App.log(opened
-                    ? '空箱が置かれている。'
-                    : (tile === 'R' ? '赤い宝箱が道を塞いでいる。' : '宝箱が道を塞いでいる。'));
+                    ? container.opened
+                    : (tile === 'R' ? '赤い宝箱が道を塞いでいる。' : container.blocked));
                 keepCurrentTileAction();
                 Field.render();
                 return;
             }
 
             const isFloodedRandomFloor = !!(Field.currentMapData.isDungeon && !Field.currentMapData.isFixed && App.data?.dungeon?.isFloodedFloor);
-            if (tile === 'W') { keepCurrentTileAction(); return; }
+            if (Field.isTileImpassableForCurrentMap(tile)) { keepCurrentTileAction(); return; }
             if (tile === '~' && !isFloodedRandomFloor) { keepCurrentTileAction(); return; }
 
             if (Field.isBuildingMovementBlocked(Field.x, Field.y, nx, ny)) {
@@ -7607,7 +7822,7 @@ const Field = {
             let locName = Field.currentMapData ? Field.currentMapData.name : `世界地図 (${Field.x}, ${Field.y})`;
             if (!Field.currentMapData && App.data?.transportMode === 'flying') locName += ' - 飛行中';
             if (!Field.currentMapData && App.data?.transportMode === 'boat') locName += ' - 小舟';
-            if (Field.currentMapData?.isDungeon) {
+            if (Field.currentMapData?.isDungeon && Field.currentMapData?.hideFloorLabel !== true) {
                 if (Field.currentMapData.isFixed) {
                     const baseName = Field.currentMapData.baseName || Field.currentMapData.name;
                     const floorLabel = Field.currentMapData.floorLabel || `${Dungeon.floor}階`;
@@ -7872,23 +8087,34 @@ const Field = {
                     const characterOverlay = /^(overlay_npc_|overlay_companion_)/.test(String(overlayConfig.img || ''));
                     const wallOverlay = overlayConfig.wallOverlay === true;
                     const blockingObjectOverlay = overlayConfig.blockingObject === true;
-                    if (useDepthRendering && !parts.worldOverlay && !wallOverlay && (blockingObjectOverlay || !isDungeonView || characterOverlay)) {
+                    const eventMarkerOverlay = overlayConfig.eventMarker === true;
+                    const eventMarkerPulse = eventMarkerOverlay && Field.step === 1 ? 0.75 : 1;
+                    if (useDepthRendering && !parts.worldOverlay && !wallOverlay && overlayConfig.suppressShadow !== true && (blockingObjectOverlay || !isDungeonView || characterOverlay)) {
                         drawFootShadow(drawX, drawY, lift, 0.24);
                     }
-                    const overlayWidth = blockingObjectOverlay ? Math.round(ts * (Number(overlayConfig.drawWidth || 32) / 32)) : ts;
-                    const overlayHeight = blockingObjectOverlay
+                    const overlayWidth = eventMarkerOverlay
+                        ? Math.max(9, Math.round(ts * (Number(overlayConfig.drawWidth || 12) / 32) * eventMarkerPulse))
+                        : (blockingObjectOverlay ? Math.round(ts * (Number(overlayConfig.drawWidth || 32) / 32)) : ts);
+                    const overlayHeight = eventMarkerOverlay
+                        ? Math.max(9, Math.round(ts * (Number(overlayConfig.drawHeight || 12) / 32) * eventMarkerPulse))
+                        : blockingObjectOverlay
                         ? Math.round(ts * (Number(overlayConfig.drawHeight || 32) / 32))
                         : (wallOverlay ? Math.round(ts * 1.5) : ts + lift);
                     const overlayX = drawX + Math.round((ts - overlayWidth) / 2);
-                    const overlayY = (wallOverlay || blockingObjectOverlay) ? drawY + ts - overlayHeight : drawY - lift;
+                    const overlayY = eventMarkerOverlay
+                        ? drawY + Math.round((ts - overlayHeight) / 2) - lift
+                        : ((wallOverlay || blockingObjectOverlay) ? drawY + ts - overlayHeight : drawY - lift);
+                    ctx.save();
+                    if (eventMarkerOverlay) {
+                        ctx.globalAlpha = Field.step === 1 ? 0.52 : 0.92;
+                    }
                     if (!drawGraphic(overlayConfig.img, overlayX, overlayY, overlayWidth, overlayHeight)) {
-                        ctx.save();
                         ctx.fillStyle = overlayConfig.color || config.color || '#fff';
                         ctx.beginPath();
-                        ctx.arc(drawX + ts / 2, overlayY + overlayHeight / 2, ts * 0.34, 0, Math.PI * 2);
+                        ctx.arc(drawX + ts / 2, overlayY + overlayHeight / 2, eventMarkerOverlay ? ts * 0.08 : ts * 0.34, 0, Math.PI * 2);
                         ctx.fill();
-                        ctx.restore();
                     }
+                    ctx.restore();
                 }
 
                 const effectGraphicKey = Field.getTileEffectGraphicKey ? Field.getTileEffectGraphicKey(tx, ty) : null;
@@ -7924,8 +8150,8 @@ const Field = {
         // 3. ランダム生成ダンジョン内の特殊オブジェクト描画。
         // タイル文字を増やさず App.data.dungeon.* で管理するため、
         // 地形・宝箱・階段などの既存生成ロジックを壊さない。
-        const drawOverlayImage = (obj, fallbackSrc, fallbackColor) => {
-            if (!Field.currentMapData?.isDungeon || !obj || !obj.active || Number(obj.floor) !== Number(Dungeon.floor)) return;
+        const drawOverlayImage = (obj, fallbackSrc, fallbackColor, options = {}) => {
+            if ((!Field.currentMapData?.isDungeon && options.allowFixed !== true) || !obj || !obj.active || Number(obj.floor) !== Number(Dungeon.floor)) return;
             const ox = Number(obj.x) - Number(Field.x);
             const oy = Number(obj.y) - Number(Field.y);
             if (Math.abs(ox) > rangeX || Math.abs(oy) > rangeY) return;
@@ -7979,10 +8205,13 @@ const Field = {
             }
         };
 
-        drawOverlayImage(App.data?.dungeon?.healSpring, 'assets/effect/fx-buff-ai.png', '#80ffb0');
+        drawOverlayImage(App.data?.dungeon?.healSpring, Dungeon.healSpringImagePath || 'assets/map/overlays/overlay_shrine_healing_spring_v002.png', '#80ffb0');
         if (Field.currentMapData?.isFixed && Field.getFixedHealSpringsForCurrentFloor) {
             Field.getFixedHealSpringsForCurrentFloor().forEach(s => {
-                drawOverlayImage({ active: true, floor: Dungeon.floor, x: Number(s.x), y: Number(s.y), image: Dungeon.healSpringImagePath || 'assets/effect/fx-buff-ai.png' }, 'assets/effect/fx-buff-ai.png', '#80ffb0');
+                const springSrc = window.GRAPHICS?.data?.[s.imageKey]
+                    || Dungeon.healSpringImagePath
+                    || 'assets/map/overlays/overlay_shrine_healing_spring_v002.png';
+                drawOverlayImage({ active: true, floor: Dungeon.floor, x: Number(s.x), y: Number(s.y), image: springSrc }, springSrc, '#80ffb0', { allowFixed: true });
             });
         }
         drawOverlayImage(App.data?.dungeon?.abyssRift, 'assets/effect/fx-abyss-vortex-ai.png', '#a34cff');
@@ -8011,7 +8240,7 @@ const Field = {
         let locName = Field.currentMapData ? Field.currentMapData.name : `世界地図 (${Field.x}, ${Field.y})`;
         if (!Field.currentMapData && App.data?.transportMode === 'flying') locName += ' - 飛行中';
         if (!Field.currentMapData && App.data?.transportMode === 'boat') locName += ' - 小舟';
-        if (Field.currentMapData && Field.currentMapData.isDungeon) {
+        if (Field.currentMapData && Field.currentMapData.isDungeon && Field.currentMapData.hideFloorLabel !== true) {
             if (Field.currentMapData.isFixed) {
                 const baseName = Field.currentMapData.baseName || Field.currentMapData.name;
                 const floorLabel = Field.currentMapData.floorLabel || `${Dungeon.floor}階`;

@@ -58,6 +58,7 @@
     const destroyObjects = (objects) => {
         while (objects.length) {
             const object = objects.pop();
+            object?.__prismaTween?.remove?.();
             if (object && object.destroy) object.destroy();
         }
     };
@@ -186,7 +187,7 @@
         DARK_SHRINE_RUINS: { key: 'overlay_decor_dark_shrine_sigil', frequency: 40, alpha: 0.66 },
         GREZELIA_CAVE: { key: 'overlay_decor_grezelia_fossil', frequency: 40, alpha: 0.72 },
         ABYSS: { key: 'overlay_decor_abyss_void_dust', frequency: 40, alpha: 0.62 },
-        ABYSS_FIELD: { key: 'overlay_decor_abyss_field_flora', frequency: 40, alpha: 0.74 },
+        ABYSS_FIELD: { key: null, disabled: true, reason: 'authored-ritual-ruin' },
         RUINED_SHRINE: { key: 'overlay_decor_ruined_shrine_glyph', frequency: 40, alpha: 0.68 }
     });
 
@@ -339,7 +340,8 @@
             areaKey,
             floor: field.currentMapData?.floor || 0,
             x: tileX,
-            y: tileY
+            y: tileY,
+            tileSign: rawUpper
         });
         if (!decor) return;
 
@@ -494,6 +496,7 @@
 			const characterOverlay = /^(overlay_npc_|overlay_companion_)/.test(String(key || ''));
 			const wallOverlay = overlay.wallOverlay === true;
 			const blockingObjectOverlay = overlay.blockingObject === true;
+			const eventMarkerOverlay = overlay.eventMarker === true;
 			const bossOverlay =
 				String(key || '').startsWith('overlay_boss_') ||
 				String(key || '').startsWith('monster_');
@@ -505,16 +508,20 @@
 			// ボスマス画像だけ一括で2倍表示する。
 			// addImage() は originY=1 なので、足元は元マス下端に揃ったまま拡大される。
 			const overlayScale = bossOverlay ? 2 : 1;
-			const width = blockingObjectOverlay
+			const width = eventMarkerOverlay
+				? Math.max(9, Number(overlay.drawWidth || 12))
+				: blockingObjectOverlay
 				? Math.max(8, Number(overlay.drawWidth || TILE_SIZE))
 				: (raisedBuilding ? TILE_SIZE * 2.4 : TILE_SIZE * overlayScale);
-			const height = blockingObjectOverlay
+			const height = eventMarkerOverlay
+				? Math.max(9, Number(overlay.drawHeight || 12))
+				: blockingObjectOverlay
 				? Math.max(8, Number(overlay.drawHeight || TILE_SIZE))
 				: (wallOverlay ? TILE_SIZE * 1.5 : (raisedBuilding ? TILE_SIZE * 2.4 : TILE_SIZE * overlayScale));
 
 			// ダンジョンの宝箱・階段・扉は影なし。
 			// NPCとボスは位置を読みやすくするため影を残す。
-            if (!parts.worldOverlay && !wallOverlay && !building && (blockingObjectOverlay || !field.currentMapData?.isDungeon || characterOverlay || bossOverlay)) {
+            if (overlay.suppressShadow !== true && !parts.worldOverlay && !wallOverlay && !building && (blockingObjectOverlay || !field.currentMapData?.isDungeon || characterOverlay || bossOverlay)) {
 				addShadow(
 					scene,
 					px + TILE_SIZE / 2 + 4,
@@ -525,19 +532,45 @@
 				);
 			}
 
-			if (!addImage(scene, key, px + TILE_SIZE / 2, py + TILE_SIZE, {
+			const overlayImage = addImage(scene, key, px + TILE_SIZE / 2, eventMarkerOverlay ? py + TILE_SIZE / 2 : py + TILE_SIZE, {
 				width,
 				height,
+				originY: eventMarkerOverlay ? 0.5 : 1,
+				alpha: eventMarkerOverlay ? 0.92 : 1,
 				depth: isWorldMap ? -99880 : baseDepth + (wallOverlay ? 48 : (bossOverlay ? 84 : 72))
-			})) {
+			});
+			if (overlayImage && eventMarkerOverlay) {
+				overlayImage.__prismaTween = scene.tweens.add({
+					targets: overlayImage,
+					displayWidth: { from: Math.max(9, width * 0.75), to: width },
+					displayHeight: { from: Math.max(9, height * 0.75), to: height },
+					alpha: { from: 0.52, to: 0.92 },
+					duration: 520,
+					ease: 'Sine.easeInOut',
+					yoyo: true,
+					repeat: -1
+				});
+			} else if (!overlayImage) {
 				const marker = scene.add.circle(
 					px + TILE_SIZE / 2,
 					py + TILE_SIZE / 2,
-					bossOverlay ? 14 : 10,
+					bossOverlay ? 14 : (eventMarkerOverlay ? 6 : 10),
 					colorToInt(overlay.color, 0xffffff)
 				);
 				marker.setDepth(isWorldMap ? -99880 : baseDepth + (wallOverlay ? 48 : (bossOverlay ? 84 : 72)));
 				state.worldObjects.push(marker);
+				if (eventMarkerOverlay) {
+					marker.__prismaTween = scene.tweens.add({
+						targets: marker,
+						scaleX: { from: 0.75, to: 1 },
+						scaleY: { from: 0.75, to: 1 },
+						alpha: { from: 0.52, to: 0.92 },
+						duration: 520,
+						ease: 'Sine.easeInOut',
+						yoyo: true,
+						repeat: -1
+					});
+				}
 			}
 		}
 
@@ -564,8 +597,98 @@
         const px = x * TILE_SIZE + TILE_SIZE / 2;
         const py = y * TILE_SIZE + TILE_SIZE;
         const depth = y * 100 + 78;
-        addShadow(scene, px + 3, py - 3, 23, 0.25, depth - 2);
-        if (!addImage(scene, object.image || key, px, py, { depth })) {
+        if (object.suppressShadow !== true) addShadow(scene, px + 3, py - 3, 23, 0.25, depth - 2);
+        let glow = null;
+        if (object.shimmer === true) {
+            glow = scene.add.circle(px, py - 15, 18, color, 0.20);
+            glow.setDepth(depth - 1);
+            state.worldObjects.push(glow);
+        }
+        const image = addImage(scene, object.image || key, px, py, {
+            depth,
+            width: Math.max(16, Number(object.drawWidth) || TILE_SIZE),
+            height: Math.max(16, Number(object.drawHeight) || TILE_SIZE)
+        });
+        if (image && object.shimmer === true) {
+            // 水面そのものは固定する。建造物のように泉全体が伸縮して見えないよう、
+            // 本体はごく弱い明滅だけに留め、周囲光だけを呼吸させる。
+            image.__prismaTween = scene.tweens.add({
+                targets: image,
+                alpha: { from: 0.72, to: 1 },
+                duration: 760,
+                ease: 'Sine.easeInOut',
+                yoyo: true,
+                repeat: -1
+            });
+            const aura = addImage(scene, object.auraKey || 'heal-blossom', px, py + 4, {
+                depth: depth + 1,
+                width: 48,
+                height: 72,
+                alpha: 0.38
+            });
+            if (aura) {
+                if (typeof Phaser !== 'undefined' && Phaser.BlendModes) aura.setBlendMode(Phaser.BlendModes.ADD);
+                aura.__prismaTween = scene.tweens.add({
+                    targets: aura,
+                    y: { from: py + 8, to: py - 10 },
+                    alpha: { from: 0.20, to: 0.78 },
+                    duration: 920,
+                    ease: 'Sine.easeInOut',
+                    yoyo: true,
+                    repeat: -1
+                });
+            }
+            const upperAura = addImage(scene, object.auraKey || 'heal-blossom', px, py + 8, {
+                depth: depth + 2,
+                width: 34,
+                height: 62,
+                alpha: 0.18,
+                tint: 0xc8ffff
+            });
+            if (upperAura) {
+                if (typeof Phaser !== 'undefined' && Phaser.BlendModes) upperAura.setBlendMode(Phaser.BlendModes.ADD);
+                upperAura.__prismaTween = scene.tweens.add({
+                    targets: upperAura,
+                    y: { from: py + 12, to: py - 19 },
+                    alpha: { from: 0.10, to: 0.58 },
+                    duration: 1320,
+                    ease: 'Sine.easeInOut',
+                    yoyo: true,
+                    repeat: -1,
+                    delay: 260
+                });
+            }
+            [-12, -5, 5, 12].forEach((offsetX, index) => {
+                const startY = py - 7 + (index % 2) * 4;
+                const mote = scene.add.circle(px + offsetX, startY, index % 2 ? 1.3 : 1.7, 0xe6ffff, 0.88);
+                mote.setDepth(depth + 3);
+                if (typeof Phaser !== 'undefined' && Phaser.BlendModes) mote.setBlendMode(Phaser.BlendModes.ADD);
+                state.worldObjects.push(mote);
+                mote.__prismaTween = scene.tweens.add({
+                    targets: mote,
+                    y: { from: startY, to: py - 38 - index * 3 },
+                    x: { from: px + offsetX, to: px + offsetX + (index % 2 ? 3 : -3) },
+                    alpha: { from: 0.88, to: 0.04 },
+                    scale: { from: 0.72, to: 1.45 },
+                    duration: 1080 + index * 140,
+                    ease: 'Sine.easeOut',
+                    repeat: -1,
+                    delay: index * 210
+                });
+            });
+            if (glow) {
+                glow.__prismaTween = scene.tweens.add({
+                    targets: glow,
+                    alpha: { from: 0.12, to: 0.46 },
+                    scaleX: { from: 0.78, to: 1.28 },
+                    scaleY: { from: 0.78, to: 1.28 },
+                    duration: 760,
+                    ease: 'Sine.easeInOut',
+                    yoyo: true,
+                    repeat: -1
+                });
+            }
+        } else if (!image) {
             const marker = scene.add.circle(px, py - TILE_SIZE / 2, 10, color, 0.95);
             marker.setDepth(depth);
             state.worldObjects.push(marker);
@@ -710,31 +833,19 @@
 
         state.uiObjects.push(graphics);
 
-        if (field.currentMapData?.isDungeon && getDungeon() && typeof getDungeon().getHeldKeyOrder === 'function') {
-            const keyTexture = {
-                red: 'item_key_red',
-                blue: 'item_key_blue',
-                gold: 'item_key_gold'
-            };
-            getDungeon().getHeldKeyOrder().forEach((color, index) => {
-                const key = keyTexture[color];
-                if (!key || !scene.textures.exists(key)) return;
-                const image = scene.add.image(left + drawSize - ((9 + index * 22) / zoom), top + drawSize + (15 / zoom), key);
-                image.setDisplaySize(18 / zoom, 18 / zoom);
-                image.setDepth(1000001);
-                state.uiObjects.push(image);
-            });
-        }
+        // 所持鍵はHTMLミニマップ直下の専用HUDに描画する。
+        // Phaserキャンバス内へ置くと画面サイズによって下端がクリップされるため重複描画しない。
     };
 
     const drawAtmosphere = (scene, field) => {
         const dungeon = !!field.currentMapData?.isDungeon;
-        if (!dungeon || field.getCurrentAreaKey?.() === 'WORLD') {
+        const areaKey = String(field.getCurrentAreaKey?.() || 'DUNGEON');
+        const isSummitTemple = areaKey === 'SUMMIT_TEMPLE';
+        if ((!dungeon && !isSummitTemple) || areaKey === 'WORLD') {
             if (state.atmosphereObjects.length) destroyAtmosphere(scene);
             return;
         }
 
-        const areaKey = String(field.getCurrentAreaKey?.() || 'DUNGEON');
         const floor = Number(getDungeon()?.floor || field.currentMapData?.floor || 0);
         const zoom = Math.max(0.1, Number(scene.cameras?.main?.zoom || 1));
         const logicalWidth = scene.scale.width / zoom;
@@ -742,6 +853,38 @@
         const signature = `${areaKey}:${floor}:${scene.scale.width}x${scene.scale.height}:${zoom.toFixed(4)}`;
         if (state.atmosphereSignature === signature && state.atmosphereObjects.length) return;
         destroyAtmosphere(scene);
+
+        // A single broad, irregular cloud shadow crosses the mountaintop sanctuary.
+        // It lives in world coordinates so it sweeps over the cliff stage, actors,
+        // and architecture together without being tied to player movement.
+        if (isSummitTemple) {
+            const mapPixelWidth = Math.max(TILE_SIZE, Number(field.currentMapData?.width || 25) * TILE_SIZE);
+            const cloudShadow = scene.add.container(mapPixelWidth + 230, TILE_SIZE * 5.4);
+            const cloudBlobs = [
+                { x: -118, y: 8, width: 210, height: 92, alpha: 0.13 },
+                { x: -28, y: -18, width: 250, height: 118, alpha: 0.16 },
+                { x: 86, y: 5, width: 225, height: 100, alpha: 0.14 },
+                { x: 15, y: 48, width: 280, height: 78, alpha: 0.11 },
+                { x: 142, y: 42, width: 155, height: 65, alpha: 0.09 }
+            ];
+            cloudBlobs.forEach(blob => {
+                const ellipse = scene.add.ellipse(blob.x, blob.y, blob.width, blob.height, 0x24384d, blob.alpha);
+                if (typeof Phaser !== 'undefined' && Phaser.BlendModes) ellipse.setBlendMode(Phaser.BlendModes.MULTIPLY);
+                cloudShadow.add(ellipse);
+            });
+            cloudShadow.setDepth(899000);
+            state.atmosphereObjects.push(cloudShadow);
+            cloudShadow.__prismaTween = scene.tweens.add({
+                targets: cloudShadow,
+                x: { from: mapPixelWidth + 230, to: -250 },
+                duration: 30000,
+                ease: 'Linear',
+                repeat: -1,
+                repeatDelay: 1800
+            });
+            state.atmosphereSignature = signature;
+            return;
+        }
 
         // Preserve the authored darkness and player-centered light, but remove the four
         // black edge rectangles that looked like a square frame. All atmosphere objects
@@ -958,7 +1101,9 @@
         const dungeonData = getApp()?.data?.dungeon;
         const floor = getDungeon()?.floor;
         if (field.currentMapData?.isDungeon && dungeonData) {
-            drawSpecialObject(scene, field, dungeonData.healSpring, 'buff-ai', 0x80ffb0, floor);
+            drawSpecialObject(scene, field, dungeonData.healSpring
+                ? { ...dungeonData.healSpring, image: getDungeon()?.healSpringImagePath, drawWidth: 44, drawHeight: 44, shimmer: true, auraKey: 'heal-blossom', suppressShadow: true }
+                : null, 'overlay_shrine_healing_spring', 0x80ffb0, floor);
             drawSpecialObject(scene, field, dungeonData.abyssRift, 'abyss-vortex', 0xa34cff, floor);
             const adventurer = dungeonData.adventurer;
             const adventurerKey = getDungeon()?.getAdventurerGraphicKey?.(adventurer) || 'overlay_dungeon_adventurer';
@@ -974,8 +1119,13 @@
                     floor,
                     x: Number(spring.x),
                     y: Number(spring.y),
-                    image: getDungeon()?.healSpringImagePath || 'assets/effect/fx-buff-ai.png'
-                }, 'buff-ai', 0x80ffb0, floor);
+                    image: spring.imageKey || getDungeon()?.healSpringImagePath || 'assets/map/overlays/overlay_shrine_healing_spring_v001.png',
+                    drawWidth: Number(spring.drawWidth) || 44,
+                    drawHeight: Number(spring.drawHeight) || 44,
+                    shimmer: spring.shimmer !== false,
+                    auraKey: spring.auraKey || 'heal-blossom',
+                    suppressShadow: true
+                }, 'overlay_shrine_healing_spring', 0x80ffb0, floor);
             });
         }
 

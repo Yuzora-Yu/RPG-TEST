@@ -48,7 +48,7 @@ const MenuSkills = {
         const skills = player.skills.filter(s =>
             (s.type.includes('回復') || s.type.includes('蘇生')) &&
             !hiddenIds.has(Number(s.id))
-        );
+        ).sort(window.PRISMA_SKILL_ORDER?.compareById || ((a, b) => Number(a.id || 0) - Number(b.id || 0)));
 
         if (skills.length === 0) {
             list.innerHTML = '<div style="padding:10px; color:#888;">使用可能なスキルがありません</div>';

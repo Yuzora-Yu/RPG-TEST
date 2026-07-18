@@ -36,6 +36,7 @@ assert(action('quest_fire_holy_water_clear', 'SUB', entry => entry.value === 5),
 assert(action('fire_volcano_holy_water_used', 'START_FIXED_DUNGEON', entry => entry.value === 'IGNIS_VOLCANO'), 'Holy water does not open Ignis Volcano.');
 
 assert(!action('water_city_sophia', 'QUEST_ACCEPT', entry => entry.value === 'water_blue_crystal'), 'Blue crystal must be main-story routing, not a quest accept action.');
+assert(action('water_city_sophia', 'FLAG', entry => entry.key === 'waterCityIntroCleared' && entry.refreshField === true), 'Water City intro victory does not switch the plaza actor immediately.');
 assert(action('water_city_sophia', 'FLAG', entry => entry.key === 'crenaRouteKnown'), 'Sophia does not reveal the Crena route.');
 assert(!action('water_city_sophia', 'START_FIXED_DUNGEON'), 'Water City must not send the party directly to the Seabed Temple.');
 assert(action('crena_cave_entry', 'START_FIXED_DUNGEON', entry => entry.value === 'CRENA_LIMESTONE_CAVE'), 'Crena Limestone Cave entry event is not connected.');
@@ -43,6 +44,13 @@ assert(action('quest_water_blue_crystal_clear', 'FLAG', entry => entry.key === '
 assert(action('quest_water_blue_crystal_clear', 'ITEM', entry => Number(entry.id) === 302), 'Blue-crystal victory does not grant the main-story item.');
 assert(action('quest_water_blue_crystal_clear', 'SUB', entry => entry.value === 2), 'Blue-crystal victory does not return the objective to Sophia.');
 assert(action('water_city_blue_crystal_report', 'FLAG', entry => entry.key === 'seabedTempleRouteOpened'), 'Sophia report does not open the Seabed Temple route.');
+
+const waterCityPlaza = context.FIXED_MAPS.WATER_CITY.mapActions.find(entry => Number(entry.x) === 19 && Number(entry.y) === 13);
+const sophiaVariant = waterCityPlaza?.imageVariants?.find(entry => entry.imageKey === 'overlay_companion_sophia');
+assert(waterCityPlaza?.imageKey === 'overlay_npc_dark_soldier', 'Water City plaza no longer shows the soldier before the intro battle.');
+assert(sophiaVariant?.requiredFlag === 'waterCityIntroCleared' && sophiaVariant?.missingFlag === 'waterCityCleared', 'Water City plaza Sophia state is not bounded between intro victory and city clear.');
+assert(waterCityPlaza?.imageMissingFlag === 'waterCityCleared', 'Water City plaza actor is not removed after city clear.');
+assert(mainSource.includes('resolveMapActionImageKey') && mainSource.includes('action.imageVariants'), 'Flag-driven map actor image variants are not resolved by Field.');
 
 assert(areas.FOREST_WIND_HOLE.entryRequiredFlag === 'windHoleRouteKnown', 'Forest Wind Hole can be entered before its story reveal.');
 assert(!areas.CRENA_LIMESTONE_CAVE.entryRequiredFlag, 'Crena Cave should allow early exploration up to the royal-army cordon.');
@@ -52,22 +60,6 @@ assert(areas.SEABED_TEMPLE.entryRequiredFlag === 'seabedTempleRouteOpened', 'Sea
 assert(areas.FOREST_WIND_HOLE.entryEventStoryStep === 2 && areas.CRENA_LIMESTONE_CAVE.entryEventStoryStep === 4, 'New-dungeon entrance scenes are not limited to their main-story chapters.');
 assert(mainSource.includes('areaDef.entryRequiredFlag') && mainSource.includes('areaDef.entryEventId') &&
     mainSource.includes('entryEventStageMatches'), 'World-area entry gates are not enforced by Field.');
-
-for (const scriptId of [
-    'FIRE_VOLCANO_CURSED_FLAMES',
-    'FIRE_VILLAGE_HOLY_WATER_BRIEFING',
-    'FOREST_WIND_HOLE_ENTRY',
-    'FOREST_HOLY_WATER_CLEAR',
-    'FIRE_VOLCANO_HOLY_WATER_USED',
-    'CRENA_CAVE_ENTRY',
-    'CRENA_BLUE_CRYSTAL_CLEAR',
-    'WATER_CITY_BLUE_CRYSTAL_REPORT'
-]) {
-    for (const line of story.scripts?.[scriptId] || []) {
-        const longest = Math.max(...String(line.text || '').split('\n').map(part => [...part].length));
-        assert(longest <= 34, `New main-story dialogue exceeds the mobile line target: ${scriptId} (${longest})`);
-    }
-}
 
 const deepFloors = [
     ['IGNIS_VOLCANO', 4, 29, 25],

@@ -166,11 +166,9 @@ const Facilities = {
     // --- 2. メダル交換所 ---
     initMedal: () => {
         const exitFn = "App.changeScene('field')";
-		const hasWedge = App.data.items && App.data.items[98] > 0;
         // コマンドボタンの構成
         const cmds = `
-            <button class="menu-btn" style="background:#000; border:1px solid #fff; height:40px; color:#fff; ${hasWedge ? '' : 'grid-column: span 2;'}" onclick="Facilities.openMedalMenu()">メダルを交換する</button>
-            ${hasWedge ? `<button class="menu-btn" style="background:#000; border:1px solid #f44; height:40px; color:#f44;" onclick="Facilities.challengeSpecialBoss()">災厄に挑む</button>` : ''}
+            <button class="menu-btn" style="background:#000; border:1px solid #fff; height:40px; color:#fff; grid-column: span 2;" onclick="Facilities.openMedalMenu()">メダルを交換する</button>
         `;
         Facilities.setupBaseLayout('medal-scene', 'メダル交換所', 'facility_bg_medal', cmds, exitFn);
         const medals = App.data.items[99] || 0;
@@ -178,22 +176,6 @@ const Facilities = {
             「よくぞ参った。メダルを褒美と交換しよう」<br><br>
             <span style="color:#ffd700; font-weight:bold;">所持メダル: ${medals} 枚</span>
         `;
-    },
-
-// 特殊ボス戦開始ロジック
-    challengeSpecialBoss: () => {
-        Menu.confirm("「災厄の楔」が<br>不気味に脈動している……<br>ギルガメッシュを呼び覚ましますか？<br><span style='color:#f44; font-size:11px;'>※この戦いからは逃げられません</span>", () => {
-            App.data.battle = {
-                active: true,
-                isBossBattle: true,
-                isSpecialBoss: true,
-                isEstark: true,
-                fixedBossId: 902000,
-                enemies: []     // Battle.init で生成
-            };
-            App.save();
-            App.changeScene('battle');
-        });
     },
 
     openMedalMenu: () => {
@@ -1096,6 +1078,9 @@ const Facilities = {
     },
 
     getItemShopLineup: (rank = 1) => {
+        // Offensive and battle-control consumables are obtained from drops,
+        // treasure and medal exchange rather than ordinary item shops.
+        const excludedEffectKinds = new Set(['damage', 'buff', 'debuff']);
         const allowedTypes = new Set([
             'HP回復', 'MP回復', '状態異常回復', '蘇生', '移動',
             '攻撃道具', '強化道具', '弱体道具', 'キャンプ'
@@ -1107,6 +1092,7 @@ const Facilities = {
         const maxRank = Math.max(1, Number(rank) || 1);
         const items = (DB.ITEMS || [])
             .filter(item => allowedTypes.has(item.type))
+            .filter(item => !excludedEffectKinds.has(String(item.effectKind || '').toLowerCase()))
             .filter(item => item.shopAvailable !== false && item.medalOnly !== true)
             .filter(item => Number(item.price || 0) > 0)
             .filter(item => Number(item.rank || 1) <= maxRank);

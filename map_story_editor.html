@@ -7,7 +7,6 @@
   <script src="assets.js"></script>
   <script src="skills.js"></script>
   <script src="items.js"></script>
-  <script src="item-expansion.js"></script>
   <script src="monsters.js"></script>
   <script src="chest-mimics.js"></script>
   <script src="monster-images.js"></script>
@@ -563,7 +562,7 @@
       tileEffects:{x,y,type:'warp',toX:x,toY:y,message:'不思議な力で移動した。'},
       healSprings:{x,y,label:'回復する',message:'体力が回復した。'},
       floorDecorations:{x,y,width:1,height:1,type:'image',imageKey:'maplib_village_wildflowers',blocking:false},
-      blockingObjects:{x,y,imageKey:'maplib_village_clay_jar',drawWidth:32,drawHeight:32,log:'調べても特に変わったものはない。'}
+      blockingObjects:{x,y,imageKey:'maplib_village_clay_jar',drawWidth:32,drawHeight:32}
     };
     map[list].push(skeletons[list] || {x,y}); ent.set(map); state.jsonDraft=''; markDirty(); renderAll();
   }
@@ -637,6 +636,7 @@
 
   function drawMap(){
     const ent=selectedMapEntity(); const map=selectedMapForRender();
+    const renderEntityType=(map?.isDungeon === true || map?.useDungeonWallFace === true) ? 'dungeon' : ent?.type;
     $('previewName').textContent = ent ? `${ent.name}` : 'Preview';
     const rows=map.tiles || []; const w=map.width || rowWidth(rows); const h=map.height || rows.length; const tile=Math.max(8, Math.floor(18*state.zoom));
     $('previewStats').textContent = `${w}x${h} / tile ${state.selectedTile}`;
@@ -645,12 +645,12 @@
     for(let y=0;y<h;y++){
       const row=String(rows[y] || '');
       for(let x=0;x<w;x++){
-        const sign=row[x] || 'T'; const cfg=tileVisualConfig(map, sign, x, y); drawTile(ctx,cfg,x*tile,y*tile,tile,map,sign,x,y,ent?.type);
+        const sign=row[x] || 'T'; const cfg=tileVisualConfig(map, sign, x, y); drawTile(ctx,cfg,x*tile,y*tile,tile,map,sign,x,y,renderEntityType);
       }
     }
     if (state.showObjects) drawTileEffects(ctx,map,tile,w,h);
     if (state.showGrid && tile>=10) { ctx.strokeStyle='rgba(255,255,255,.08)'; ctx.lineWidth=1; for(let x=0;x<=w;x++){ctx.beginPath();ctx.moveTo(x*tile+.5,0);ctx.lineTo(x*tile+.5,h*tile);ctx.stroke();} for(let y=0;y<=h;y++){ctx.beginPath();ctx.moveTo(0,y*tile+.5);ctx.lineTo(w*tile,y*tile+.5);ctx.stroke();} }
-    if (state.showObjects) drawObjects(ctx,map,tile,ent?.type);
+    if (state.showObjects) drawObjects(ctx,map,tile,renderEntityType);
     ctx.strokeStyle='#f5bd4f'; ctx.lineWidth=Math.max(2,Math.floor(tile/8)); ctx.strokeRect(state.selectedCoord.x*tile+1,state.selectedCoord.y*tile+1,tile-2,tile-2);
     updateCoordInfo();
   }
@@ -666,7 +666,7 @@
     if(entityType==='world' && ['F','L'].includes(upper)) drawEditorWorldDecoration(ctx,map,x,y,upper,px,py,tile,'under');
     if(!fixed && !overlay && ['T','G'].includes(upper) && !hasApplicableFloorEffect(map,x,y)){
       if(entityType==='world') drawEditorWorldDecoration(ctx,map,x,y,upper,px,py,tile,'over');
-      else drawEditorRandomDecoration(ctx,map,x,y,px,py,tile);
+      else drawEditorRandomDecoration(ctx,map,x,y,px,py,tile,upper);
     }
 
     if(!overlay && !['T','G'].includes(upper)){
@@ -743,9 +743,9 @@
     return drew;
   }
   function editorStableHash(...parts){return renderShared.stableHash(...parts);}
-  function drawEditorRandomDecoration(ctx,map,x,y,px,py,tile){
+  function drawEditorRandomDecoration(ctx,map,x,y,px,py,tile,tileSign){
     const key=String(getThemeKey(map)||'DEFAULT').toUpperCase();
-    const def=renderShared.floorDecorationPlan({themes:state.data.mapFloorDecorThemes,themeKey:key,areaKey:key,floor:map.floor||0,x,y});
+    const def=renderShared.floorDecorationPlan({themes:state.data.mapFloorDecorThemes,themeKey:key,areaKey:key,floor:map.floor||0,x,y,tileSign});
     if(!def) return;
     drawEditorRotatedImage(ctx,def.key,px+tile/2,py+tile/2,tile,tile,def.angle,def.alpha,def.flipX);
   }
@@ -893,7 +893,13 @@
     });
     (map.blockingObjects||[]).forEach(o=>drawMarker(Number(o.x),Number(o.y),'#','#6f819b',o.imageKey,{scale:1,drawWidth:o.drawWidth,drawHeight:o.drawHeight}));
     (map.floorLinks||[]).forEach(s=>drawMarker(Number(s.x),Number(s.y),'S','#d7b45a', type==='dungeon'?'stairs_dungeon':'stairs',{scale:1}));
-    (map.mapActions||[]).forEach(a=>drawMarker(Number(a.x),Number(a.y),'!', '#62d7ff', a.imageKey || (a.type==='quest'?'overlay_field_event':'')));
+    (map.mapActions||[]).forEach(a=>{
+      const ax=Number(a.x), ay=Number(a.y);
+      const physicalTile=['C','R','B','D','U'].includes(String(map.tiles?.[ay] || '')[ax]?.toUpperCase());
+      const physicalObject=(map.blockingObjects||[]).some(o=>Number(o.x)===ax&&Number(o.y)===ay);
+      const markerKey=a.imageKey || (!physicalTile && !physicalObject && a.suppressEventMarker !== true ? 'overlay_event_blue_glimmer' : '');
+      drawMarker(ax,ay,'!','#62d7ff',markerKey,{scale:a.imageKey ? 1 : 0.375});
+    });
     (map.tileEffects||[]).forEach(e=>{
       if (['ice','poison','magma','lava','fire'].includes(String(e.type || '').toLowerCase())) return;
       drawMarker(Number(e.x),Number(e.y),'*', '#9a7dff', e.imageKey || (e.type==='warp'?'overlay_dungeon_warp':''),{scale:1});
@@ -983,7 +989,7 @@
     if(meta.role==='blocking'){
       if(!Array.isArray(map.blockingObjects)) map.blockingObjects=[];
       map.blockingObjects=map.blockingObjects.filter(o=>!(Number(o.x)===x&&Number(o.y)===y));
-      map.blockingObjects.push({editorPlacementId:`prop_${uid()}`,x,y,imageKey:meta.key,drawWidth:32,drawHeight:32,log:'調べても特に変わったものはない。'});
+      map.blockingObjects.push({editorPlacementId:`prop_${uid()}`,x,y,imageKey:meta.key,drawWidth:32,drawHeight:32});
     }else{
       if(!Array.isArray(map.floorDecorations)) map.floorDecorations=[];
       map.floorDecorations=map.floorDecorations.filter(d=>!(d?.type==='image'&&Number(d.x)===x&&Number(d.y)===y));

@@ -130,7 +130,7 @@ function validateFixedDef(name, def) {
     const tile = at(Number(chest.x), Number(chest.y));
     assert(tile !== 'W', `${name}: chest ${chest.x},${chest.y} is blocked`);
     if (chest.keyColor) assert(['red', 'blue', 'gold'].includes(chest.keyColor), `${name}: invalid keyColor ${chest.keyColor}`);
-    else assert(chest.itemId !== undefined, `${name}: chest ${chest.x},${chest.y} has no itemId/keyColor`);
+    else assert(chest.itemId !== undefined || chest.trapMonsterId !== undefined, `${name}: chest ${chest.x},${chest.y} has no itemId/keyColor/trapMonsterId`);
   });
 
   (def.bosses || []).forEach((boss) => {

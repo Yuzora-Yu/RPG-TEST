@@ -643,10 +643,19 @@ const FIXED_SPECIAL_BOSSES = [
   {"hit":150,"eva":20,"cri":30,"isBoss":true,"isRare":true,"isEstark":true,"isSpecialBoss":true,"drops":{"normal":{"id":106,"rate":50},"rare":{"id":107,"rate":10}},"elmRes":{"火":80,"水":80,"風":80,"雷":80,"光":80,"闇":80,"混沌":0,"json":0},"resists":{"Poison":90,"Shock":90,"Fear":200,"InstantDeath":200,"Debuff":90,"Seal":200},"traits":[{"id":52,"level":5},{"id":19,"level":10},{"id":10,"level":10}],"archives":[],"id":902000,"name":"ギルガメッシュ","race":"魔族","rank":999,"minF":999,"hp":132000,"mp":2950,"atk":829,"def":1034,"spd":527,"mag":797,"mdef":979,"gold":9999999,"exp":9999999,"actCount":3,"acts":[{"id":1,"rate":55,"condition":0},{"id":167,"rate":15,"condition":0},{"id":161,"rate":15,"condition":0},{"id":712,"rate":10,"condition":0},{"id":234,"rate":10,"condition":2},{"id":237,"rate":10,"condition":2},{"id":314,"rate":10,"condition":2},{"id":315,"rate":10,"condition":2},{"id":510,"rate":10,"condition":2},{"id":314,"rate":10,"condition":2},{"id":315,"rate":10,"condition":2},{"id":408,"rate":8,"condition":3},{"id":705,"rate":8,"condition":3},{"id":230,"rate":30,"condition":3}]}
 ];
 
+// 宝箱トラップも通常モンスターと同じ正本・画像参照規約で管理する。
+// 深淵の通常編成には混ぜず、宝箱を開けた時だけIDを明示して呼び出す。
+const CHEST_TRAP_MONSTERS = [
+  {"hit":112,"eva":6,"cri":12,"isBoss":false,"isRare":false,"isEstark":false,"isSpecialBoss":false,"isElite":true,"isChestTrap":true,"drops":{"normal":{"id":99,"rate":100},"rare":{"id":102,"rate":5}},"elmRes":{"火":10,"水":10,"雷":-20,"風":10,"光":-10,"闇":30,"混沌":20},"resists":{"Poison":70,"ToxicPoison":70,"Shock":40,"Fear":100,"Seal":60,"Debuff":35,"InstantDeath":100},"traits":[],"archives":["深淵の宝箱に擬態する魔物。蓋を開けた獲物を二度の連撃で仕留める。"],"id":120301,"name":"貪欲箱グラット","race":"無生物","rank":70,"minF":51,"hp":1140,"mp":270,"atk":222,"def":237,"spd":138,"mag":213,"mdef":219,"gold":2700,"exp":2250,"actCount":2,"image":"assets/monsters/monster_120301.png","acts":[{"id":1,"rate":45,"condition":0},{"id":113,"rate":25,"condition":0},{"id":500,"rate":15,"condition":0},{"id":701,"rate":15,"condition":0}]},
+  {"hit":125,"eva":12,"cri":16,"isBoss":false,"isRare":false,"isEstark":false,"isSpecialBoss":false,"isElite":true,"isChestTrap":true,"drops":{"normal":{"id":99,"rate":100},"rare":{"id":104,"rate":5}},"elmRes":{"火":25,"水":25,"雷":10,"風":10,"光":-20,"闇":50,"混沌":40},"resists":{"Poison":85,"ToxicPoison":85,"Shock":65,"Fear":100,"Seal":80,"Debuff":50,"InstantDeath":100},"traits":[],"archives":["古い宝物庫の呪念を吸った鋼の擬態箱。攻撃と呪術を同時に操る。"],"id":120302,"name":"呪宝箱パンドラ","race":"無生物","rank":140,"minF":101,"hp":4020,"mp":630,"atk":558,"def":615,"spd":414,"mag":603,"mdef":597,"gold":12750,"exp":21000,"actCount":2,"image":"assets/monsters/monster_120302.png","acts":[{"id":1,"rate":35,"condition":0},{"id":149,"rate":20,"condition":0},{"id":225,"rate":20,"condition":0},{"id":604,"rate":15,"condition":0},{"id":238,"rate":10,"condition":2}]},
+  {"hit":138,"eva":18,"cri":20,"isBoss":false,"isRare":false,"isEstark":false,"isSpecialBoss":false,"isElite":true,"isChestTrap":true,"drops":{"normal":{"id":99,"rate":100},"rare":{"id":106,"rate":5}},"elmRes":{"火":45,"水":45,"雷":35,"風":35,"光":10,"闇":70,"混沌":60},"resists":{"Poison":95,"ToxicPoison":95,"Shock":85,"Fear":100,"Seal":95,"Debuff":70,"InstantDeath":100},"traits":[],"archives":["深層の混沌が宝匣を核に実体化したもの。二度の行動で獲物の退路を断つ。"],"id":120303,"name":"深淵宝匣アケロン","race":"無生物","rank":190,"minF":151,"hp":7020,"mp":1080,"atk":885,"def":942,"spd":603,"mag":957,"mdef":978,"gold":42000,"exp":63000,"actCount":2,"image":"assets/monsters/monster_120303.png","acts":[{"id":1,"rate":30,"condition":0},{"id":161,"rate":20,"condition":0},{"id":238,"rate":20,"condition":0},{"id":315,"rate":15,"condition":2},{"id":705,"rate":15,"condition":0}]}
+];
+
 const FIXED_MONSTERS = [
   ...FIXED_RARE_MONSTERS,
   ...FIXED_BOSS_MONSTERS,
   ...FIXED_SPECIAL_BOSSES,
+  ...CHEST_TRAP_MONSTERS,
 ];
 
 const NORMAL_MONSTER_BASES = MONSTER_BANDS_1_200.flatMap((band) => band.monsters);
@@ -775,6 +784,16 @@ function getMonsterById(id) {
   return ALL_MONSTER_BASES.find((monster) => monster.id === id) || null;
 }
 
+function getChestTrapById(id) {
+  return cloneMonsterData(CHEST_TRAP_MONSTERS.find((monster) => monster.id === Number(id)) || null);
+}
+
+function getChestTrapForFloor(floor) {
+  const value = Math.max(1, Number(floor) || 1);
+  const id = value >= 151 ? 120303 : value >= 101 ? 120302 : 120301;
+  return getChestTrapById(id);
+}
+
 function getDeepFloorNormalBaseCandidates() {
   return NORMAL_MONSTER_BASES.filter((monster) => !monster.isBoss && !monster.isRare && !monster.isEstark && !monster.isSpecialBoss);
 }
@@ -807,6 +826,7 @@ window.MonsterData = {
   rareMonsters: FIXED_RARE_MONSTERS,
   bossMonsters: FIXED_BOSS_MONSTERS,
   specialBosses: FIXED_SPECIAL_BOSSES,
+  chestTrapMonsters: CHEST_TRAP_MONSTERS,
   fixedMonsters: FIXED_MONSTERS,
   allBases: ALL_MONSTER_BASES,
 
@@ -824,6 +844,8 @@ window.MonsterData = {
   getRareEncounterRate,
   tryGenerateRareMonster,
   getMonsterById,
+  getChestTrapById,
+  getChestTrapForFloor,
   getDeepFloorNormalBaseCandidates,
   generateEnemyForFloor,
 };

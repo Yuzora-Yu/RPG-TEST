@@ -166,6 +166,27 @@ const MapRegistry = {
         return mapDef.mapActions.find(action => Number(action.x) === Number(x) && Number(action.y) === Number(y)) || null;
     },
 
+    isPointInMapActionArea(action, x, y) {
+        const area = action?.interactionArea;
+        if (!area) return false;
+        const left = Number(area.x);
+        const top = Number(area.y);
+        const width = Math.max(1, Number(area.width || 1));
+        const height = Math.max(1, Number(area.height || 1));
+        const tx = Number(x);
+        const ty = Number(y);
+        return Number.isFinite(left) && Number.isFinite(top)
+            && tx >= left && tx < left + width
+            && ty >= top && ty < top + height;
+    },
+
+    findMapActionInteractionCell(mapDef, x, y) {
+        const exact = MapRegistry.findMapAction(mapDef, x, y);
+        if (exact) return exact;
+        if (!mapDef || !Array.isArray(mapDef.mapActions)) return null;
+        return mapDef.mapActions.find(action => MapRegistry.isPointInMapActionArea(action, x, y)) || null;
+    },
+
     findBlockingObject(mapDef, x, y) {
         if (!mapDef || !Array.isArray(mapDef.blockingObjects)) return null;
         return mapDef.blockingObjects.find(object =>

@@ -435,6 +435,12 @@ function validateSourceHooks() {
   assert(/Dungeon\.isLockedDoorTile\(tile\)[\s\S]{0,800}Dungeon\.unlockDoorAt\(nx,\s*ny,\s*tile\)/.test(main), 'Field.move is not wired to Dungeon.unlockDoorAt');
   assert(/Dungeon\.handleMove\(nx,\s*ny\)/.test(main), 'Field.move is not wired to Dungeon.handleMove');
   assert(/item_key_red/.test(main) && /item_key_blue/.test(main) && /item_key_gold/.test(main), 'Field.render does not show held key icons');
+  assert(main.includes('updateHeldKeyHud: () =>') && main.includes("document.getElementById('field-key-hud')"),
+    'held-key HUD is not synchronized below the minimap');
+  assert(fs.readFileSync(`${root}/index.html`, 'utf8').includes('id="field-key-hud"'), 'held-key HUD host is missing from index.html');
+  assert(fs.readFileSync(`${root}/modern-polish.css`, 'utf8').includes('#field-key-hud.is-visible'), 'held-key HUD visibility styling is missing');
+  assert(fs.readFileSync(`${root}/phaser-field.js`, 'utf8').includes('所持鍵はHTMLミニマップ直下の専用HUDに描画する'),
+    'Phaser still owns a clip-prone duplicate held-key renderer');
   assert(/Array\.isArray\(keyReward\.colors\)[\s\S]{0,260}keyReward\.colors\.filter\(Boolean\)\.map\(color/.test(battle), 'Battle victory does not expand multi-color key rewards');
   assert(/keyRewards\.forEach\(reward\s*=>\s*{[\s\S]{0,160}Dungeon\.completeKeyGuardianReward\(reward\)/.test(battle), 'Battle victory is not wired to complete each key reward');
   assert(/App\.data\.battle\.keyReward\s*=\s*null[\s\S]{0,120}App\.data\.battle\.fixedKeyReward\s*=\s*null/.test(battle), 'Battle victory does not clear consumed key reward state');

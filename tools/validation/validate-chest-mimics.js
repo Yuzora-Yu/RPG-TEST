@@ -9,14 +9,15 @@ const assert = (condition, message) => { if (!condition) throw new Error(message
 const dataContext = { window: {}, console };
 dataContext.globalThis = dataContext;
 vm.createContext(dataContext);
-for (const file of ['items.js', 'item-expansion.js', 'monsters.js', 'chest-mimics.js', 'monster-drop-policy.js']) {
+for (const file of ['items.js', 'monsters.js', 'chest-mimics.js', 'monster-drop-policy.js']) {
     vm.runInContext(read(file), dataContext, { filename: file });
 }
 
 const traps = dataContext.window.MONSTERS_DATA.filter(monster => monster.isChestTrap);
 assert(traps.length === 3, `expected 3 chest traps, got ${traps.length}`);
 assert(JSON.stringify(traps.map(monster => monster.id)) === JSON.stringify([120301, 120302, 120303]), 'chest trap IDs changed');
-assert(JSON.stringify(traps.map(monster => monster.rank)) === JSON.stringify([50, 120, 170]), 'chest trap ranks changed');
+assert(JSON.stringify(traps.map(monster => monster.rank)) === JSON.stringify([70, 140, 190]), 'chest trap ranks changed');
+assert(JSON.stringify(traps.map(monster => monster.minF)) === JSON.stringify([51, 101, 151]), 'chest trap appearance floors changed');
 for (const monster of traps) {
     assert(monster.isElite && Number(monster.actCount) === 2, `${monster.name} is not a two-action elite`);
     assert(monster.drops?.normal?.id === 99 && monster.drops.normal.rate === 100, `${monster.name} does not always drop a small medal`);
@@ -27,8 +28,8 @@ for (const monster of traps) {
 
 const mimicData = dataContext.window.CHEST_MIMIC_DATA;
 assert(mimicData.normalChestChance === 0.05, 'normal chest mimic rate is not 5%');
-assert(mimicData.minimumAbyssFloor === 40, 'mimics do not begin at floor 40');
-for (const [floor, id] of [[40,120301],[119,120301],[120,120302],[169,120302],[170,120303],[201,120303]]) {
+assert(mimicData.minimumAbyssFloor === 51, 'mimics do not begin at floor 51');
+for (const [floor, id] of [[51,120301],[100,120301],[101,120302],[150,120302],[151,120303],[201,120303]]) {
     assert(mimicData.getForFloor(floor).id === id, `floor ${floor} selects the wrong mimic`);
 }
 
@@ -47,7 +48,7 @@ runtimeContext.MonsterData = dataContext.window.MonsterData;
 runtimeContext.CHEST_MIMIC_DATA = mimicData;
 runtimeContext.App = {
     data: {
-        progress: { floor: 40, openedChests: {}, mapChanges: {} },
+        progress: { floor: 51, openedChests: {}, mapChanges: {} },
         dungeon: { keyChests: [] },
         battle: { active: false },
         party: [], items: {}, inventory: [], stats: {}, gold: 0
@@ -67,14 +68,35 @@ vm.runInContext(`${read('dungeon.js')}\nglobalThis.Dungeon = Dungeon;`, runtimeC
 
 (async () => {
     const Dungeon = runtimeContext.Dungeon;
-    Dungeon.floor = 40;
+    Dungeon.floor = 51;
     Dungeon.map = [['C']];
     await Dungeon.openChest(0, 0, 'normal');
     assert(Dungeon.map[0][0] === 'T', 'opened mimic chest was not persisted as floor');
     assert(runtimeContext.App.data.battle.isChestTrapBattle, 'mimic chest did not build a chest-trap battle context');
     assert(runtimeContext.App.data.battle.preventEscape, 'mimic battle incorrectly permits escape after consuming the chest');
-    assert(runtimeContext.App.data.battle.chestTrapMonsterId === 120301, 'floor 40 chest did not select rank-50 mimic');
+    assert(runtimeContext.App.data.battle.chestTrapMonsterId === 120301, 'floor 51 chest did not select rank-70 mimic');
     assert(runtimeContext.App.lastScene === 'battle', 'mimic chest did not enter battle');
+
+    // 固定マップは敗北時だけ未開封へ戻り、勝利時は開封状態を保持する。
+    runtimeContext.Field.currentMapData = {
+        isFixed: true,
+        rank: 70,
+        chests: [{ x: 2, y: 3, trapMonsterId: 120301, trapFloor: 70 }]
+    };
+    runtimeContext.Field.getCurrentAreaKey = () => 'FIXED_MIMIC_TEST';
+    runtimeContext.App.data.progress.floor = 1;
+    await Dungeon.openChest(2, 3, 'trap');
+    const fixedProgressKey = 'FIXED_MIMIC_TEST';
+    assert(runtimeContext.App.data.progress.openedChests[fixedProgressKey].includes('2,3'), 'fixed mimic chest was not marked opened before battle');
+    assert(runtimeContext.App.data.battle.fixedChestTrap?.progressKey === fixedProgressKey
+        && runtimeContext.App.data.battle.fixedChestTrap?.posKey === '2,3', 'fixed mimic battle lost its chest identity');
+    assert(Dungeon.rollbackFixedChestTrap(runtimeContext.App.data.battle), 'fixed mimic defeat rollback did not run');
+    assert(!runtimeContext.App.data.progress.openedChests[fixedProgressKey].includes('2,3'), 'fixed mimic remained opened after defeat rollback');
+    await Dungeon.openChest(2, 3, 'trap');
+    assert(runtimeContext.App.data.progress.openedChests[fixedProgressKey].includes('2,3'), 'fixed mimic chest did not reopen for a retry');
+    assert(runtimeContext.App.data.progress.openedChests[fixedProgressKey].includes('2,3'), 'fixed mimic victory path did not retain opened state');
+    runtimeContext.Field.currentMapData = null;
+    runtimeContext.Field.getCurrentAreaKey = () => 'ABYSS';
 
     class Monster {
         constructor(base) {
@@ -108,7 +130,7 @@ vm.runInContext(`${read('dungeon.js')}\nglobalThis.Dungeon = Dungeon;`, runtimeC
     battleContext.Battle.initBattleStatus = target => { target.battleStatus = { buffs:{}, debuffs:{}, ailments:{} }; };
     const deepEnemies = battleContext.Battle.generateNewEnemies(false);
     assert(deepEnemies.length === 1, `201F mimic battle generated ${deepEnemies.length} enemies`);
-    assert(deepEnemies[0].baseId === 120303 && deepEnemies[0].generatedFloor === 201, '201F mimic did not use rank-170 base with deep scaling');
+    assert(deepEnemies[0].baseId === 120303 && deepEnemies[0].generatedFloor === 201, '201F mimic did not use rank-190 base with deep scaling');
     assert(deepEnemies[0].actCount === 2, 'deep-scaled mimic lost two-action behavior');
 
     const editor = read('map_story_editor.html');
@@ -120,6 +142,7 @@ vm.runInContext(`${read('dungeon.js')}\nglobalThis.Dungeon = Dungeon;`, runtimeC
     assert(dungeonSource.includes('Math.random() < mimicChance'), 'mimic probability roll is missing');
     assert(read('battle.js').includes('trapFloor >= 201'), '201F deep mimic route is missing');
     assert(read('battle.js').includes('App.data.battle.isBossBattle || App.data.battle.preventEscape'), 'mimic escape lock is missing');
+    assert(read('battle.js').includes('Dungeon.rollbackFixedChestTrap(App.data.battle)'), 'battle defeat does not roll back a fixed mimic chest');
 
     for (const monster of traps) {
         const relative = monster.image;
@@ -134,7 +157,7 @@ vm.runInContext(`${read('dungeon.js')}\nglobalThis.Dungeon = Dungeon;`, runtimeC
     for (const script of ['index.html', 'map_story_editor.html', 'monster_editor.html', 'sw.js']) {
         assert(read(script).includes('chest-mimics.js'), `${script} does not load/cache chest-mimics.js`);
     }
-    console.log('Chest mimic validation passed: 3 elite traps, 5% F40+ normal-chest route, fixed-map editor support, 201F deep scaling, drops, and fully cached 768px assets.');
+    console.log('Chest mimic validation passed: 70/140/190F elite stats, 5% F51+ bands, fixed-map defeat rollback, editor support, 201F scaling, drops, and cached assets.');
 })().catch(error => {
     console.error(error);
     process.exitCode = 1;

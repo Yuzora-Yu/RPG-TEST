@@ -13,6 +13,18 @@ The target look is late-SFC pixel art with HD-2D-like depth:
 
 ## Current phase
 
+### Renderer priority rule
+
+The active production map view is Phaser-first. Implement and verify map
+visuals, overlay sizing, animation, depth, shadow, and atmosphere in
+`phaser-field.js` before touching the legacy renderer. The old 2D Canvas path
+inside `Field.render()` is retained only as an error-recovery fallback.
+
+Phaser currently runs with Phaser's Canvas backend for image-cache and CORS
+compatibility. That backend choice does not make the old `Field.render()` path
+authoritative: Phaser remains the primary renderer, while the legacy Canvas
+renderer remains the fallback. Editor preview alone is not runtime verification.
+
 `phaser-field.js` is an adapter around the existing `Field`, `Dungeon`, and
 `MapRegistry` state. Game rules, collision, encounters, quests, saves, battles,
 and menus remain owned by the existing modules.

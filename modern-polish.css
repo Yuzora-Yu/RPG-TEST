@@ -5904,9 +5904,33 @@ body.game-page #field-minimap-canvas {
   pointer-events: none;
 }
 
+body.game-page #field-key-hud {
+  position: absolute;
+  top: calc(var(--field-hud-top) + var(--field-minimap-width) + 6px);
+  right: 14px;
+  z-index: 14;
+  display: none;
+  flex-direction: row-reverse;
+  align-items: center;
+  gap: 4px;
+  min-height: 18px;
+  pointer-events: none;
+}
+
+body.game-page #field-key-hud.is-visible { display: flex; }
+
+body.game-page #field-key-hud img {
+  width: 18px;
+  height: 18px;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.9));
+}
+
 body.game-page #canvas-wrapper.is-minimap-minimized #field-minimap-canvas {
   display: none !important;
 }
+
+body.game-page #canvas-wrapper.is-minimap-minimized #field-key-hud { display: none !important; }
 
 body.game-page .msg-area {
   position: absolute !important;

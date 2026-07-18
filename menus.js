@@ -328,15 +328,15 @@ const Menu = {
         if (type === '強化道具') return 'assets/ui/menu-icons/item-buff-v001.png';
         if (type === '弱体道具') return 'assets/ui/menu-icons/item-debuff-v001.png';
         if (type === '素材') return 'assets/ui/menu-icons/item-material-v001.png';
-        let key = 'item';
-        if (type.includes('HP') || type.includes('回復')) key = 'heal';
-        else if (type.includes('MP')) key = 'mp';
-        else if (type.includes('蘇生')) key = 'revive';
-        else if (type.includes('移動')) key = 'travel';
-        else if (type.includes('乗り物')) key = 'vehicle';
-        else if (type.includes('育成')) key = 'growth';
-        else if (type.includes('貴重')) key = 'key';
-        return Menu.getMenuIconPath('item', key);
+        if (type === '乗り物') return 'assets/ui/menu-icons/item-vehicle-v001.png';
+        if (type === '移動' || Number(item?.id) === 110 || item?.name === 'スカイプリズム') return 'assets/ui/menu-icons/item-travel-v001.png';
+        if (type === '蘇生') return 'assets/ui/menu-icons/item-revive-v001.png';
+        if (type === '育成') return 'assets/ui/menu-icons/item-growth-v001.png';
+        if (type === '貴重品') return 'assets/ui/menu-icons/item-key-v001.png';
+        if (type === 'HP回復' || type === 'MP回復' || type === '状態異常回復' || type.includes('回復')) {
+            return 'assets/ui/menu-icons/item-heal-v001.png';
+        }
+        return Menu.getMenuIconPath('item', 'item');
     },
 
     getIconFallbackAttr: (fallbackPath) => ` onerror="this.onerror=null;this.src='${fallbackPath}'"`,

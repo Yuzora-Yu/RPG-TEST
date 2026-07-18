@@ -16,6 +16,14 @@ The game has become feature-rich, but the next direction is to reorganize it as 
 
 ## Maintainable Implementation Rule
 
+### Map rendering authority
+
+- `phaser-field.js` is the production field/map renderer and must be implemented and verified first for every map visual, overlay, animation, depth, shadow, and atmosphere change.
+- The legacy `Field.render()` 2D Canvas path in `main.js` exists only as an automatic safety fallback when Phaser initialization or synchronization fails. It is not the primary implementation target.
+- Phaser itself currently uses its Canvas backend for asset compatibility. This is separate from the legacy Canvas fallback above; “Phaser-first” still applies.
+- After the Phaser implementation is complete, mirror the minimum equivalent behavior into the legacy Canvas path so a renderer failure does not break movement or essential readability.
+- A map-editor preview or a passing legacy-Canvas check does not prove the production renderer is correct. Visual changes must be checked in the active Phaser game view, and validation must assert both paths when fallback parity matters.
+
 手抜き作業と、その場しのぎのつぎはぎ修正を禁止する。症状だけを局所的に隠すのではなく、描画・移動・イベント・データ参照の正本を確認し、同種の挙動が一つの共有ロジックへ収束するよう修正すること。
 
 新しいデータやアセットは、後から由来・用途・再生成方法を追跡できる状態で格納する。既存ファイルの配置が保守を妨げている場合は、参照元・全量キャッシュ・検証スクリプトを同時に更新したうえで適切なフォルダへ整理する。生成原画、ゲーム用加工物、マニフェスト、加工スクリプトを分離し、無名の上書きや用途不明ファイルを増やさない。

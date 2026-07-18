@@ -110,10 +110,9 @@ const themeDecorByTheme = {
     DARK_SHRINE_RUINS: 'overlay_decor_dark_shrine_sigil',
     GREZELIA_CAVE: 'overlay_decor_grezelia_fossil',
     ABYSS: 'overlay_decor_abyss_void_dust',
-    ABYSS_FIELD: 'overlay_decor_abyss_field_flora',
     RUINED_SHRINE: 'overlay_decor_ruined_shrine_glyph'
 };
-const disabledThemeDecor = new Set(['WATER_CITY', 'CRENA_CAVE', 'WIND_TEMPLE']);
+const disabledThemeDecor = new Set(['WATER_CITY', 'CRENA_CAVE', 'WIND_TEMPLE', 'ABYSS_FIELD', 'TRIAL_SHRINE', 'SUMMIT_TEMPLE']);
 for (const [theme, key] of Object.entries(themeDecorByTheme)) {
     if (!phaser.includes(`${theme}: { key: '${key}'`)) errors.push(`theme-specific floor decoration route is missing: ${theme}`);
 }
@@ -124,6 +123,9 @@ for (const theme of tileThemeKeys) {
 if (!phaser.includes("CRENA_CAVE: { key: null, disabled: true")) errors.push('Crena Cave random floor puddles are not disabled');
 if (!phaser.includes("WATER_CITY: { key: null, disabled: true")) errors.push('Water City random floor puddles are not disabled');
 if (mapContext.window.MAP_FLOOR_DECOR_THEMES?.WIND_TEMPLE?.disabled !== true) errors.push('Wind Temple clear authored floor is not protected from random decoration');
+if (mapContext.window.MAP_FLOOR_DECOR_THEMES?.ABYSS_FIELD?.disabled !== true) errors.push('Abyss Outer Rim authored ritual floor is not protected from random decoration');
+if (mapContext.window.MAP_FLOOR_DECOR_THEMES?.TRIAL_SHRINE?.disabled !== true) errors.push('Trial Shrine authored floor is not protected from random decoration');
+if (mapContext.window.MAP_FLOOR_DECOR_THEMES?.SUMMIT_TEMPLE?.disabled !== true) errors.push('Summit Temple authored floor is not protected from random decoration');
 if (battleFx['phys-elemental'] !== 'assets/effect/fx_phys_elemental_arc_v001.png') {
     errors.push('generated elemental physical effect is not registered');
 }
@@ -219,7 +221,7 @@ for (const marker of [
     'Connected carpets/mats are ground layers',
     'bleed: 2', 'height: TILE_SIZE + 2',
     'overlay_world_shore_foam', 'overlay_world_bridge_wood',
-    "field.getCurrentAreaKey?.() === 'WORLD'", 'field.getTileEffectGraphicKey?.(tileX, tileY)'
+    "areaKey === 'WORLD'", 'field.getTileEffectGraphicKey?.(tileX, tileY)'
 ]) {
     if (!phaser.includes(marker)) errors.push(`map decoration runtime marker is missing: ${marker}`);
 }

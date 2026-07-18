@@ -217,7 +217,7 @@ for (const stem of [
         if (!graphics.has(`${stem}_${index}`)) throw new Error(`Terrain variation is missing: ${stem}_${index}`);
     }
 }
-if (!mainSource.includes('window.MapRenderShared.resolveTileVariant(base, tileX, tileY)') || !sharedRenderSource.includes('Math.imul(x, 374761393)')) {
+if (!mainSource.includes('window.MapRenderShared.resolveTileVariant(base, variantX, variantY)') || !sharedRenderSource.includes('Math.imul(x, 374761393)')) {
     throw new Error('Coordinate-stable terrain variation selection is missing.');
 }
 if (graphics.get('battle_bg_wind_hole') !== 'assets/generated/battle-forest-wind-hole-v001.png' ||

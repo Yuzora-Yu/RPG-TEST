@@ -889,46 +889,148 @@ const TILE_THEMES = {
     },
     ABYSS_FIELD: {
         W: {
-            img: "forest",
-            color: "#141720"
+            img: "tile_abyss_outer_wall",
+            variants: [
+                "tile_abyss_outer_wall",
+                "tile_abyss_outer_wall_2",
+                "tile_abyss_outer_wall_3",
+                "tile_abyss_outer_wall_4"
+            ],
+            color: "#17101f"
         },
         T: {
-            img: "tile_abyss_path",
-            color: "#3b4b3a"
+            img: "tile_abyss_outer_floor",
+            variants: [
+                "tile_abyss_outer_floor",
+                "tile_abyss_outer_floor_2",
+                "tile_abyss_outer_floor_3",
+                "tile_abyss_outer_floor_4"
+            ],
+            color: "#3c3447"
         },
         G: {
-            img: "tile_abyss_grass",
-            color: "#264931"
+            img: "tile_abyss_outer_prism_paving",
+            variants: [
+                "tile_abyss_outer_prism_paving",
+                "tile_abyss_outer_prism_paving_2",
+                "tile_abyss_outer_prism_paving_3",
+                "tile_abyss_outer_prism_paving_4"
+            ],
+            color: "#413651"
         },
         D: {
-            img: "portal_dungeon",
-            color: "#2c1d4d"
+            img: "tile_abyss_outer_floor",
+            color: "#16101d"
         },
         S: {
-            img: "tile_abyss_grass",
+            img: "tile_abyss_outer_prism_paving",
             color: "#d7b45a"
         }
     },
     RUINED_SHRINE: {
         W: {
-            img: "tile_shrine_wall",
+            img: "tile_ruined_shrine_wall",
+            variants: [
+                "tile_ruined_shrine_wall",
+                "tile_ruined_shrine_wall_2",
+                "tile_ruined_shrine_wall_3",
+                "tile_ruined_shrine_wall_4"
+            ],
             color: "#4b5b48"
         },
         T: {
-            img: "tile_shrine_floor",
+            img: "tile_ruined_shrine_floor",
+            variants: [
+                "tile_ruined_shrine_floor",
+                "tile_ruined_shrine_floor_2",
+                "tile_ruined_shrine_floor_3",
+                "tile_ruined_shrine_floor_4"
+            ],
             color: "#3c5145"
         },
         G: {
-            img: "tile_shrine_floor",
-            color: "#34493c"
+            img: "tile_ruined_shrine_withered_grass",
+            variants: [
+                "tile_ruined_shrine_withered_grass",
+                "tile_ruined_shrine_withered_grass_2",
+                "tile_ruined_shrine_withered_grass_3",
+                "tile_ruined_shrine_withered_grass_4"
+            ],
+            color: "#62563b"
         },
         P: {
-            img: "tile_stone_tablet",
+            img: "tile_ruined_shrine_floor",
             color: "#8f7dff"
         },
         S: {
-            img: "tile_shrine_floor",
+            img: "tile_ruined_shrine_withered_grass",
+            variants: [
+                "tile_ruined_shrine_withered_grass",
+                "tile_ruined_shrine_withered_grass_2",
+                "tile_ruined_shrine_withered_grass_3",
+                "tile_ruined_shrine_withered_grass_4"
+            ],
+            color: "#62563b"
+        }
+    },
+    TRIAL_SHRINE: {
+        W: {
+            img: "tile_trial_shrine_wall",
+            color: "#25393b"
+        },
+        T: {
+            img: "tile_trial_shrine_floor",
+            variants: [
+                "tile_trial_shrine_floor",
+                "tile_trial_shrine_floor_2"
+            ],
+            color: "#526f70"
+        },
+        G: {
+            img: "floor",
+            color: "#65753f"
+        },
+        S: {
+            img: "floor",
             color: "#d7b45a"
+        }
+    },
+    SUMMIT_TEMPLE: {
+        W: {
+            img: "tile_summit_temple_wall",
+            color: "#aab9cd"
+        },
+        T: {
+            img: "tile_summit_temple_floor",
+            variants: [
+                "tile_summit_temple_floor",
+                "tile_summit_temple_floor_2"
+            ],
+            color: "#e8edf2"
+        },
+        G: {
+            img: "tile_summit_temple_mountain_trail",
+            variants: [
+                "tile_summit_temple_mountain_trail",
+                "tile_summit_temple_mountain_trail_2"
+            ],
+            color: "#a3a49d"
+        },
+        "^": {
+            img: "tile_summit_temple_sky",
+            variants: [
+                "tile_summit_temple_sky",
+                "tile_summit_temple_sky_2"
+            ],
+            color: "#6f9bc7"
+        },
+        S: {
+            img: "tile_summit_temple_mountain_trail",
+            variants: [
+                "tile_summit_temple_mountain_trail",
+                "tile_summit_temple_mountain_trail_2"
+            ],
+            color: "#b6aa8f"
         }
     }
 };
@@ -989,6 +1091,17 @@ const DUNGEON_WALL_FACE_THEMES = {
     GREZELIA_CAVE: {
         img: "tile_grezelia_wall_face"
     },
+    RUINED_SHRINE: {
+        img: "tile_ruined_shrine_wall_face",
+        accentImg: "tile_ruined_shrine_wall_face_rooted",
+        accentEvery: 5
+    },
+    TRIAL_SHRINE: {
+        img: "tile_trial_shrine_wall_face"
+    },
+    SUMMIT_TEMPLE: {
+        img: "tile_summit_temple_wall_face"
+    },
     CRENA_CAVE: {
         disabled: true,
         reason: "water-surface-W"
@@ -999,7 +1112,7 @@ const DUNGEON_WALL_FACE_THEMES = {
     }
 };
 
-const MAP_FLOOR_DECOR_THEMES = {
+const MAP_FLOOR_DECOR_THEMES = Object.freeze({
     DEFAULT: {
         key: "overlay_decor_default_cave_dust",
         frequency: 40,
@@ -1097,16 +1210,26 @@ const MAP_FLOOR_DECOR_THEMES = {
         alpha: 0.62
     },
     ABYSS_FIELD: {
-        key: "overlay_decor_abyss_field_flora",
-        frequency: 40,
-        alpha: 0.74
+        key: null,
+        disabled: true,
+        reason: "authored-ritual-ruin"
     },
     RUINED_SHRINE: {
-        key: "overlay_decor_ruined_shrine_glyph",
-        frequency: 40,
-        alpha: 0.68
+        key: null,
+        disabled: true,
+        reason: "authored-blocking-ruined-shrine"
+    },
+    TRIAL_SHRINE: {
+        key: null,
+        disabled: true,
+        reason: "authored-seeker-shrine"
+    },
+    SUMMIT_TEMPLE: {
+        key: null,
+        disabled: true,
+        reason: "authored-summit-sanctuary"
     }
-};
+});
 
 const STORY_DATA = {
     areas: {
@@ -1858,12 +1981,7 @@ const FIXED_TILE_OVERLAYS = {
             color: "#8f7dff"
         }
     },
-    ABYSS_FIELD: {
-        D: {
-            img: "overlay_dungeon_portal",
-            color: "#2c1d4d"
-        }
-    },
+    ABYSS_FIELD: {},
     RUINED_SHRINE: {
         P: {
             img: "overlay_field_event",
@@ -1969,8 +2087,8 @@ const FIXED_MAPS = {
             "WGGGGGGGGWWGGGW",
             "WGHGGGGGGGGGHGW",
             "WGGGGGGGGGGGGGW",
-            "WWWWWWSSWWWWWWW",
-            "WWWWWWWWWWWWWWW"
+            "WWWWWWGGWWWWWWW",
+            "WWWWWWSSWWWWWWW"
         ],
         mapActions: [
             {
@@ -2745,6 +2863,13 @@ const FIXED_MAPS = {
                 log: "濁った水路の音が、街の沈黙に混じっている。",
                 type: "log",
                 imageKey: "overlay_npc_dark_soldier",
+                imageVariants: [
+                    {
+                        requiredFlag: "waterCityIntroCleared",
+                        missingFlag: "waterCityCleared",
+                        imageKey: "overlay_companion_sophia"
+                    }
+                ],
                 imageMissingFlag: "waterCityCleared",
                 baseTile: "T",
                 events: [
@@ -2894,7 +3019,7 @@ const FIXED_MAPS = {
             "WGGGTTTTTTTTTGGWW",
             "WGGGTTTGGGTTTGGGW",
             "WGGGTTGTTTGTTGGWW",
-            "WWGGTTGTDTGTTGWWW",
+            "WWGGTTGTTTGTTGWWW",
             "WGGGTTGTTTGTTGWGW",
             "WGGWTTTGTGTTTGWGW",
             "WGGWTTTTTTTTTGGGW",
@@ -2903,10 +3028,184 @@ const FIXED_MAPS = {
             "WWWWWGGGGGGGWWWWW",
             "WWWWWWWWSWWWWWWWW"
         ],
+        floorDecorations: [
+            { authoredPlacementId: "abyss-chasm-nw", type: "image", imageKey: "overlay_abyss_outer_chasm_nw", x: 7, y: 6, blocking: false, baseTile: "T" },
+            { authoredPlacementId: "abyss-chasm-n", type: "image", imageKey: "overlay_abyss_outer_chasm_n", x: 8, y: 6, blocking: false, baseTile: "T" },
+            { authoredPlacementId: "abyss-chasm-ne", type: "image", imageKey: "overlay_abyss_outer_chasm_ne", x: 9, y: 6, blocking: false, baseTile: "T" },
+            { authoredPlacementId: "abyss-chasm-w", type: "image", imageKey: "overlay_abyss_outer_chasm_w", x: 7, y: 7, blocking: false, baseTile: "T" },
+            { authoredPlacementId: "abyss-chasm-c", type: "image", imageKey: "overlay_abyss_outer_chasm_c", x: 8, y: 7, blocking: false, baseTile: "T" },
+            { authoredPlacementId: "abyss-chasm-e", type: "image", imageKey: "overlay_abyss_outer_chasm_e", x: 9, y: 7, blocking: false, baseTile: "T" },
+            { authoredPlacementId: "abyss-chasm-sw", type: "image", imageKey: "overlay_abyss_outer_chasm_sw", x: 7, y: 8, blocking: false, baseTile: "T" },
+            { authoredPlacementId: "abyss-chasm-s", type: "image", imageKey: "overlay_abyss_outer_chasm_s", x: 8, y: 8, blocking: false, baseTile: "T" },
+            { authoredPlacementId: "abyss-chasm-se", type: "image", imageKey: "overlay_abyss_outer_chasm_se", x: 9, y: 8, blocking: false, baseTile: "T" }
+        ],
+        blockingObjects: [
+            {
+                x: 7, y: 6, baseTile: "T", log: "奈落が口を開けている。"
+            },
+            {
+                x: 8, y: 6, baseTile: "T", log: "奈落が口を開けている。"
+            },
+            {
+                x: 9, y: 6, baseTile: "T", log: "奈落が口を開けている。"
+            },
+            {
+                x: 7, y: 7, baseTile: "T", log: "奈落が口を開けている。"
+            },
+            {
+                x: 8, y: 7, baseTile: "T", log: "闇がどこまでも続いている。"
+            },
+            {
+                x: 9, y: 7, baseTile: "T", log: "奈落が口を開けている。"
+            },
+            {
+                x: 7, y: 8, baseTile: "T", log: "奈落が口を開けている。"
+            },
+            {
+                x: 8, y: 8, baseTile: "T", log: "奈落が口を開けている。"
+            },
+            {
+                x: 9, y: 8, baseTile: "T", log: "奈落が口を開けている。"
+            },
+            {
+                x: 8,
+                y: 4,
+                imageKey: "overlay_abyss_outer_ruined_altar",
+                drawWidth: 96,
+                drawHeight: 64,
+                baseTile: "T",
+                log: "崩れた祭壇には、古い儀式の痕跡が残っている。"
+            },
+            {
+                x: 7,
+                y: 4,
+                baseTile: "T",
+                log: "崩れた祭壇が道を塞いでいる。"
+            },
+            {
+                x: 9,
+                y: 4,
+                baseTile: "T",
+                log: "崩れた祭壇が道を塞いでいる。"
+            },
+            {
+                x: 4,
+                y: 4,
+                imageKey: "overlay_abyss_outer_intact_column",
+                drawWidth: 40,
+                drawHeight: 64,
+                baseTile: "T",
+                log: "亀裂だらけの柱が、奇跡的に立ち続けている。"
+            },
+            {
+                x: 12,
+                y: 4,
+                imageKey: "overlay_abyss_outer_intact_column",
+                drawWidth: 40,
+                drawHeight: 64,
+                baseTile: "T",
+                log: "柱の頂には、プリズムを支えた枠だけが残っている。"
+            },
+            {
+                x: 4,
+                y: 10,
+                imageKey: "overlay_abyss_outer_broken_column_stump",
+                drawWidth: 44,
+                drawHeight: 40,
+                baseTile: "T",
+                log: "折れた柱の内部から、古い金属の導線が覗いている。"
+            },
+            {
+                x: 12,
+                y: 10,
+                imageKey: "overlay_abyss_outer_fallen_pillar",
+                drawWidth: 64,
+                drawHeight: 64,
+                baseTile: "T",
+                log: "折れた柱には、読めない文字が刻まれている。"
+            },
+            {
+                x: 12,
+                y: 9,
+                baseTile: "T",
+                invisible: true,
+                log: "倒れた柱が斜めに通路を塞いでいる。"
+            },
+            {
+                x: 11,
+                y: 10,
+                baseTile: "T",
+                invisible: true,
+                log: "倒れた柱が斜めに通路を塞いでいる。"
+            },
+            {
+                x: 5,
+                y: 5,
+                imageKey: "overlay_abyss_outer_prism_pedestal_intact",
+                drawWidth: 34,
+                drawHeight: 30,
+                baseTile: "T",
+                log: "空になった台座。かつて何かが載せられていたようだ。"
+            },
+            {
+                x: 11,
+                y: 5,
+                imageKey: "overlay_abyss_outer_prism_pedestal_collapsed",
+                drawWidth: 38,
+                drawHeight: 30,
+                baseTile: "T",
+                log: "台座は崩れ、紫色の欠片だけが散らばっている。"
+            },
+            {
+                x: 5,
+                y: 7,
+                imageKey: "overlay_abyss_outer_prism_pedestal_collapsed",
+                drawWidth: 38,
+                drawHeight: 30,
+                baseTile: "T",
+                log: "壊れた固定具が、奈落の方を向いている。"
+            },
+            {
+                x: 11,
+                y: 7,
+                imageKey: "overlay_abyss_outer_prism_pedestal_intact",
+                drawWidth: 34,
+                drawHeight: 30,
+                baseTile: "T",
+                log: "六角形の窪みには、プリズムらしき傷跡がある。"
+            },
+            {
+                x: 6,
+                y: 9,
+                imageKey: "overlay_abyss_outer_prism_pedestal_intact",
+                drawWidth: 34,
+                drawHeight: 30,
+                baseTile: "T",
+                log: "台座から伸びる古い導線は、奈落の縁で途切れている。"
+            },
+            {
+                x: 10,
+                y: 9,
+                imageKey: "overlay_abyss_outer_prism_pedestal_collapsed",
+                drawWidth: 38,
+                drawHeight: 30,
+                baseTile: "T",
+                log: "崩れた台座に、微かな光を失った結晶片が残っている。"
+            }
+        ],
         mapActions: [
             {
                 x: 8,
                 y: 7,
+                minimapColor: "#9c64db",
+                baseTile: "T",
+                interactionArea: {
+                    x: 7,
+                    y: 6,
+                    width: 3,
+                    height: 3
+                },
+                interactFromAdjacent: true,
                 label: "魔窟に入る",
                 log: "闇がどこまでも続いているような穴がある。",
                 type: "abyssDungeon",
@@ -2929,106 +3228,194 @@ const FIXED_MAPS = {
     RUINED_SHRINE: {
         name: "朽ちた祠",
         themeKey: "RUINED_SHRINE",
+        isDungeon: true,
+        hideFloorLabel: true,
+        disableRandomEncounters: true,
+        autoExitOnPerimeter: true,
+        perimeterExitMiniMapColor: "#766746",
+        wallFaceImg: "tile_ruined_shrine_wall_face",
+        wallFaceTorchImg: "tile_ruined_shrine_wall_face_rooted",
         tileOverrides: {},
-        width: 17,
-        height: 15,
+        width: 19,
+        height: 19,
         entryPoint: {
-            x: 8,
-            y: 12
+            x: 9,
+            y: 17
         },
-        battleBg: "battle_bg_field",
+        battleBg: "battle_bg_dark_shrine",
         tiles: [
-            "WWWWWWWWWWWWWWWWW",
-            "WWWWWWWWWWWWWWWWW",
-            "WWGGGGGGGGGGGGGWW",
-            "WWGGGGGGGGGGGGGWW",
-            "WWGGWTTTTTTTWGGWW",
-            "WWGGTTTTTTTTTGGWW",
-            "WWGGTTWTTTWTTGGWW",
-            "WWGGTTTTPTTTTGGWW",
-            "WWGGTTWTTTWTTGGWW",
-            "WWGGTTTTTTTTTGGWW",
-            "WWGGWTTTTTTTWGGWW",
-            "WWGGGGGGGGGGGGGWW",
-            "WWGGGGGGGGGGGGGWW",
-            "WWWWWWWWGWWWWWWWW",
-            "WWWWWWWWSWWWWWWWW"
+            "SSSSSSSSSSSSSSSSSSS",
+            "SGGGGGGGGGGGGGGGGGS",
+            "SGWWWWWWWWWWWWWWWGS",
+            "SGWWWWWWWWWWWWWWWGS",
+            "SGWTTTTTTTTTTTTTWGS",
+            "SGWTTTTTTTTTTTTTWGS",
+            "SGWTTTTTTTTTTTTTWGS",
+            "SGWTTTTTTTTTTTTTWGS",
+            "SGWTTTTTTTTTTTTTTGS",
+            "SGWTTTTTTTTTTTTTWGS",
+            "SGWTTTTTTTTTTTTTWGS",
+            "SGWTTTTTTTTTTTTTWGS",
+            "SGTTTTTTTTTTTTTTWGS",
+            "SGWTTTTTTTTTTTTTWGS",
+            "SGWTTTTTTTTTTTTTWGS",
+            "SGWWWWWWWTWWWWWWWGS",
+            "SGWWWWWWWTWWWWWWWGS",
+            "SGGGGGGGGGGGGGGGGGS",
+            "SSSSSSSSSSSSSSSSSSS"
+        ],
+        floorDecorations: [
+            { type: "image", imageKey: "overlay_ruined_shrine_raised_stage_a", x: 8, y: 4, drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { type: "image", imageKey: "overlay_ruined_shrine_raised_stage_b", x: 9, y: 4, drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { type: "image", imageKey: "overlay_ruined_shrine_raised_stage_c", x: 10, y: 4, drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { type: "image", imageKey: "overlay_ruined_shrine_raised_stage_d", x: 8, y: 5, drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { type: "image", imageKey: "overlay_ruined_shrine_raised_stage_e", x: 9, y: 5, drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { type: "image", imageKey: "overlay_ruined_shrine_raised_stage_f", x: 10, y: 5, drawWidth: 32, drawHeight: 32, baseTile: "T" }
+        ],
+        blockingObjects: [
+            { x: 8, y: 4, baseTile: "T" },
+            { x: 10, y: 4, baseTile: "T" },
+            { x: 8, y: 5, baseTile: "T" },
+            { x: 10, y: 5, baseTile: "T" },
+            { x: 4, y: 5, imageKey: "overlay_ruined_shrine_pillar", drawWidth: 48, drawHeight: 72, baseTile: "T" },
+            { x: 14, y: 5, imageKey: "overlay_ruined_shrine_pillar", drawWidth: 48, drawHeight: 72, baseTile: "T" },
+            { x: 4, y: 13, imageKey: "overlay_ruined_shrine_pillar", drawWidth: 48, drawHeight: 72, baseTile: "T" },
+            { x: 14, y: 13, imageKey: "overlay_ruined_shrine_pillar", drawWidth: 48, drawHeight: 72, baseTile: "T" },
+            { x: 5, y: 7, imageKey: "maplib_dark_gargoyle_statue", drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { x: 13, y: 7, imageKey: "maplib_dark_gargoyle_statue", drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { x: 6, y: 11, imageKey: "maplib_dark_sealed_obelisk", drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { x: 12, y: 11, imageKey: "maplib_dark_sealed_obelisk", drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { x: 7, y: 4, imageKey: "maplib_ruins_ritual_brazier", drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { x: 11, y: 4, imageKey: "maplib_ruins_ritual_brazier", drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { x: 6, y: 5, imageKey: "maplib_ruins_ritual_brazier", drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { x: 12, y: 5, imageKey: "maplib_ruins_ritual_brazier", drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { x: 9, y: 9, imageKey: "overlay_ruined_shrine_ritual_astrolabe", drawWidth: 40, drawHeight: 40, baseTile: "T" },
+            { x: 5, y: 10, imageKey: "maplib_ruins_weathered_rune", drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { x: 13, y: 10, imageKey: "maplib_ruins_weathered_rune", drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { x: 3, y: 8, imageKey: "overlay_ruined_shrine_rusted_sword", drawWidth: 18, drawHeight: 28, baseTile: "T" },
+            { x: 12, y: 6, imageKey: "overlay_ruined_shrine_rusted_sword", drawWidth: 18, drawHeight: 28, baseTile: "T" },
+            { x: 4, y: 9, imageKey: "overlay_ruined_shrine_rusted_sword", drawWidth: 18, drawHeight: 28, baseTile: "T" },
+            { x: 8, y: 7, imageKey: "overlay_ruined_shrine_rusted_spear", drawWidth: 14, drawHeight: 30, baseTile: "T" },
+            { x: 14, y: 8, imageKey: "overlay_ruined_shrine_rusted_spear", drawWidth: 14, drawHeight: 30, baseTile: "T" },
+            { x: 7, y: 10, imageKey: "overlay_ruined_shrine_rusted_spear", drawWidth: 14, drawHeight: 30, baseTile: "T" },
+            { x: 10, y: 7, imageKey: "overlay_ruined_shrine_rusted_axe", drawWidth: 22, drawHeight: 26, baseTile: "T" },
+            { x: 12, y: 9, imageKey: "overlay_ruined_shrine_rusted_axe", drawWidth: 22, drawHeight: 26, baseTile: "T" },
+            { x: 8, y: 12, imageKey: "overlay_ruined_shrine_rusted_axe", drawWidth: 22, drawHeight: 26, baseTile: "T" }
         ],
         mapActions: [
             {
-                x: 8,
-                y: 7,
+                x: 9,
+                y: 4,
                 label: "石碑に触れる",
+                imageKey: "maplib_ruins_ancient_tablet",
+                renderAsBlockingObject: true,
+                interactFromAdjacent: true,
+                drawWidth: 32,
+                drawHeight: 40,
+                baseTile: "T",
+                minimapColor: "#8f7dff",
                 requiredItemId: 98,
                 requiredItemMissingText: "不思議な気配を感じる…",
                 log: "石碑からただならぬ気配があふれ出した……",
                 type: "boss",
                 monsterId: 902000,
-                special: true
+                special: true,
+                confirmText: "『災厄の楔』が石碑に呼応している……<br>ギルガメッシュに挑みますか？<br><span style='color:#f44; font-size:11px;'>※この戦いからは逃げられません</span>"
             }
+        ],
+        chests: [
+            { x: 3, y: 14, itemId: 4, type: "item", containerKind: "pot", imageKey: "overlay_field_pot", openedImageKey: "overlay_field_pot" },
+            { x: 15, y: 14, itemId: 99, type: "item", containerKind: "pot", imageKey: "overlay_field_pot", openedImageKey: "overlay_field_pot" }
         ],
         exitPoint: {
             area: "WORLD",
             x: 58,
-            y: 57
+            y: 56
         }
     },
     TRIAL_ISLAND: {
         name: "最果ての祠",
-        themeKey: "RUINED_SHRINE",
-        tileOverrides: {
-            W: {
-                img: "tile_shrine_wall",
-                color: "#4b5b48"
-            },
-            T: {
-                img: "tile_shrine_floor",
-                color: "#3c5145"
-            },
-            G: {
-                img: "tile_shrine_floor",
-                color: "#34493c"
-            },
-            P: {
-                img: "tile_stone_tablet",
-                color: "#8f7dff"
-            },
-            S: {
-                img: "tile_shrine_floor",
-                color: "#d7b45a"
-            }
-        },
-        width: 13,
-        height: 13,
+        themeKey: "TRIAL_SHRINE",
+        isDungeon: false,
+        useDungeonWallFace: true,
+        hideFloorLabel: true,
+        disableRandomEncounters: true,
+        autoExitOnPerimeter: true,
+        perimeterExitMiniMapColor: "#76a36a",
+        wallFaceImg: "tile_trial_shrine_wall_face",
+        tileOverrides: {},
+        width: 25,
+        height: 21,
         entryPoint: {
-            x: 6,
-            y: 11
+            x: 12,
+            y: 19
         },
-        battleBg: "battle_bg_mountain_wind_ruins",
+        battleBg: "battle_bg_trial_shrine",
         tiles: [
-            "WWWWWWWWWWWWW",
-            "WWWWWWGWWWWWW",
-            "WWWWGGGGGWWWW",
-            "WWWGGTTTGGWWW",
-            "WWGGTTTTTGGWW",
-            "WWGTTTTTTTGWW",
-            "WGGTTTPTTTGGW",
-            "WWGTTTTTTTGWW",
-            "WWGGTTTTTGGWW",
-            "WWWGGTTTGGWWW",
-            "WWWWGGGGGWWWW",
-            "WWWWWWTWWWWWW",
-            "WWWWWWSWWWWWW"
+            "SSSSSSSSSSSSSSSSSSSSSSSSS",
+            "SGCWWWWWWWWWWWWWWWWWWWGGS",
+            "SGGWWWWWWWWWWWWWWWWWWWGGS",
+            "SGGWWWWWWWTTTTTWWWWWWWGGS",
+            "SGGWWWWWWWTTTTTWWWWWWWGGS",
+            "SGGWWWWWWWTTTTTWWWWWWWGGS",
+            "SGGWWWWWWWTTTTTWWWWWWWGGS",
+            "SGGWWWWWWWTTTTTWWWWWWWGGS",
+            "SGGWWWWWWWTTTTTWWWWWWWGGS",
+            "SGGWWWWWWWTTTTTWWWWWWWGGS",
+            "SGGWWWWWWWTTTTTWWWWWWWGGS",
+            "SGGWTTTTTWTTTTTWTTTCTWGGS",
+            "SGGWTTTTTWTTTTTWTTTTTWGGS",
+            "SGGWTTTTTTTTTTTTTTTCTWGGS",
+            "SGGWTTTTTWTTTTTWTTTTTWGGS",
+            "SGGWTTTTTWTTTTTWTTTCTWGGS",
+            "SGGWWWWWWWWWTWWWWWWWWWGGS",
+            "SGGWWWWWWWWWTWWWWWWWWWGGS",
+            "SGGGGGGGGGGGGGGGGGGGGGGGS",
+            "SGGGGGGGGGGGGGGGGGGGGGGGS",
+            "SSSSSSSSSSSSSSSSSSSSSSSSS"
+        ],
+        floorDecorations: [
+            { type: "image", imageKey: "overlay_trial_shrine_stage_a", x: 10, y: 3, drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { type: "image", imageKey: "overlay_trial_shrine_stage_b", x: 11, y: 3, drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { type: "image", imageKey: "overlay_trial_shrine_stage_c", x: 12, y: 3, drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { type: "image", imageKey: "overlay_trial_shrine_stage_d", x: 13, y: 3, drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { type: "image", imageKey: "overlay_trial_shrine_stage_e", x: 14, y: 3, drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { type: "image", imageKey: "overlay_trial_shrine_stage_f", x: 10, y: 4, drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { type: "image", imageKey: "overlay_trial_shrine_stage_g", x: 11, y: 4, drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { type: "image", imageKey: "overlay_trial_shrine_stage_h", x: 12, y: 4, drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { type: "image", imageKey: "overlay_trial_shrine_stage_i", x: 13, y: 4, drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { type: "image", imageKey: "overlay_trial_shrine_stage_j", x: 14, y: 4, drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { type: "image", imageKey: "overlay_trial_shrine_stage_k", x: 10, y: 5, drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { type: "image", imageKey: "overlay_trial_shrine_stage_l", x: 11, y: 5, drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { type: "image", imageKey: "overlay_trial_shrine_stage_m", x: 12, y: 5, drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { type: "image", imageKey: "overlay_trial_shrine_stage_n", x: 13, y: 5, drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { type: "image", imageKey: "overlay_trial_shrine_stage_o", x: 14, y: 5, drawWidth: 32, drawHeight: 32, baseTile: "T" }
+        ],
+        movementRegions: [
+            { id: "raised-stage", x: 10, y: 3, width: 5, height: 3, gateways: [{ inside: { x: 12, y: 5 }, outside: { x: 12, y: 6 } }] }
+        ],
+        blockingObjects: [
+            { x: 10, y: 7, imageKey: "overlay_trial_shrine_statue_a", drawWidth: 40, drawHeight: 64, baseTile: "T", log: "口を開いた阿形の守護像が、挑む者の覚悟を見定めている。" },
+            { x: 14, y: 7, imageKey: "overlay_trial_shrine_statue_un", drawWidth: 40, drawHeight: 64, baseTile: "T", log: "口を結んだ吽形の守護像が、静かに祠の奥を守っている。" }
         ],
         mapActions: [
             {
-                x: 6,
-                y: 6,
+                x: 12,
+                y: 3,
                 label: "中間試練に挑む",
-                log: "石碑が、限界に触れた者の名を静かに問うている。",
+                log: "祠を満たす霊光が、自らの殻を破ろうとする者の魂へ応える。",
                 type: "limitBreakTrial",
                 trialType: "mid"
             }
+        ],
+        healSprings: [
+            { x: 6, y: 13, imageKey: "overlay_shrine_healing_spring", drawWidth: 44, drawHeight: 44, shimmer: true }
+        ],
+        chests: [
+            { x: 2, y: 1, itemId: 99, type: "item", containerKind: "pot", imageKey: "overlay_field_pot", openedImageKey: "overlay_field_pot", baseTile: "G" },
+            { x: 19, y: 11, itemId: 1051, type: "item" },
+            { x: 19, y: 13, itemId: 1004, type: "item" },
+            { x: 19, y: 15, trapMonsterId: 120301, trapFloor: 70, type: "trap" }
         ],
         exitPoint: {
             area: "WORLD",
@@ -3038,63 +3425,89 @@ const FIXED_MAPS = {
     },
     SUMMIT_TEMPLE: {
         name: "頂の神殿",
-        themeKey: "LIGHT_PALACE",
+        themeKey: "SUMMIT_TEMPLE",
+        isDungeon: false,
         useDungeonWallFace: true,
-        wallFaceImg: "tile_light_wall_face",
-        wallFaceTorchImg: "tile_light_wall_face_prism",
-        tileOverrides: {
-            W: {
-                img: "tile_light_wall",
-                color: "#d9ded4"
-            },
-            T: {
-                img: "tile_light_floor",
-                color: "#eef0e8"
-            },
-            G: {
-                img: "tile_light_floor",
-                color: "#d7dfd4"
-            },
-            P: {
-                img: "tile_stone_tablet",
-                color: "#f4d84a"
-            },
-            S: {
-                img: "tile_light_floor",
-                color: "#d7b45a"
-            }
-        },
-        width: 13,
-        height: 13,
+        hideFloorLabel: true,
+        disableRandomEncounters: true,
+        autoExitOnPerimeter: true,
+        perimeterExitMiniMapColor: "#76a36a",
+        wallFaceImg: "tile_summit_temple_wall_face",
+        tileOverrides: {},
+        impassableTiles: ["^"],
+        width: 25,
+        height: 21,
         entryPoint: {
-            x: 6,
-            y: 11
+            x: 12,
+            y: 19
         },
-        battleBg: "battle_bg_mountain_wind_ruins",
+        battleBg: "battle_bg_summit_temple",
         tiles: [
-            "WWWWWWWWWWWWW",
-            "WWWWWWGWWWWWW",
-            "WWWWGGGGGWWWW",
-            "WWWGGTTTGGWWW",
-            "WWGGTTTTTGGWW",
-            "WWGTTTTTTTGWW",
-            "WGGTTTPTTTGGW",
-            "WWGTTTTTTTGWW",
-            "WWGGTTTTTGGWW",
-            "WWWGGTTTGGWWW",
-            "WWWWGGGGGWWWW",
-            "WWWWWWTWWWWWW",
-            "WWWWWWSWWWWWW"
+            "^^^^^^^^^^^^^^^^^^^^^^^^^",
+            "^^^^^^^^^^^^^^^^^^^^^^^^^",
+            "^^^^^^^^^^^^^^^^^^^^^^^^^",
+            "^^^^^^^^^^TTTTT^^^^^^^^^^",
+            "^^^^^^^^^^TTTTT^^^^^^^^^^",
+            "^^^^^^^^^^TTTTT^^^^^^^^^^",
+            "^^^^^^^^^^TTTTT^^^^^^^^^^",
+            "^^^^^^^^^^TTTTT^^^^^^^^^^",
+            "^^^^^^^^^^TTTTT^^^^^^^^^^",
+            "SGGWWWWWWWTTTTTWWWWWWWGGS",
+            "SGGWWWWWWWTTTTTWWWWWWWGGS",
+            "SGGWTTTTTWTTTTTWTTTCTWGGS",
+            "SGGWTTTTTWTTTTTWTTTTTWGGS",
+            "SGGWTTTTTTTTTTTTTTTCTWGGS",
+            "SGGWTTTTTWTTTTTWTTTTTWGGS",
+            "SGGWTTTTTWTTTTTWTTTCTWGGS",
+            "SGGWWWWWWWWWTWWWWWWWWWGGS",
+            "SGGWWWWWWWWWTWWWWWWWWWGGS",
+            "SGGGGGGGGGGGGGGGGGGGGGGGS",
+            "SGGGGGGGGGGGGGGGGGGGGGGGS",
+            "SSSSSSSSSSSSSSSSSSSSSSSSS"
+        ],
+        floorDecorations: [
+            { type: "image", imageKey: "overlay_summit_temple_stage_a", x: 10, y: 3, drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { type: "image", imageKey: "overlay_summit_temple_stage_b", x: 11, y: 3, drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { type: "image", imageKey: "overlay_summit_temple_stage_c", x: 12, y: 3, drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { type: "image", imageKey: "overlay_summit_temple_stage_d", x: 13, y: 3, drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { type: "image", imageKey: "overlay_summit_temple_stage_e", x: 14, y: 3, drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { type: "image", imageKey: "overlay_summit_temple_stage_f", x: 10, y: 4, drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { type: "image", imageKey: "overlay_summit_temple_stage_g", x: 11, y: 4, drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { type: "image", imageKey: "overlay_summit_temple_stage_h", x: 12, y: 4, drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { type: "image", imageKey: "overlay_summit_temple_stage_i", x: 13, y: 4, drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { type: "image", imageKey: "overlay_summit_temple_stage_j", x: 14, y: 4, drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { type: "image", imageKey: "overlay_summit_temple_stage_k", x: 10, y: 5, drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { type: "image", imageKey: "overlay_summit_temple_stage_l", x: 11, y: 5, drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { type: "image", imageKey: "overlay_summit_temple_stage_m", x: 12, y: 5, drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { type: "image", imageKey: "overlay_summit_temple_stage_n", x: 13, y: 5, drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { type: "image", imageKey: "overlay_summit_temple_stage_o", x: 14, y: 5, drawWidth: 32, drawHeight: 32, baseTile: "T" },
+            { type: "castle_carpet_blue_silver", x: 12, y: 6, width: 1, height: 12 }
+        ],
+        movementRegions: [
+            { id: "raised-stage", x: 10, y: 3, width: 5, height: 3, gateways: [{ inside: { x: 12, y: 5 }, outside: { x: 12, y: 6 } }] }
+        ],
+        blockingObjects: [
+            { x: 10, y: 6, imageKey: "overlay_summit_temple_statue_angel", drawWidth: 40, drawHeight: 64, baseTile: "T", log: "剣を伏せた天使像が、挑戦者の歩みを静かに見守っている。" },
+            { x: 14, y: 6, imageKey: "overlay_summit_temple_statue_divine_dragon", drawWidth: 40, drawHeight: 64, baseTile: "T", log: "神竜の像が翼を畳み、山頂の聖域を守っている。" }
         ],
         mapActions: [
             {
-                x: 6,
-                y: 6,
+                x: 12,
+                y: 3,
                 label: "最終試練に挑む",
                 log: "祭壇が、極限に迫る者の名を静かに問うている。",
                 type: "limitBreakTrial",
                 trialType: "final"
             }
+        ],
+        healSprings: [
+            { x: 6, y: 13, imageKey: "overlay_shrine_healing_spring", drawWidth: 44, drawHeight: 44, shimmer: true }
+        ],
+        chests: [
+            { x: 22, y: 9, itemId: 99, type: "item", containerKind: "pot", imageKey: "overlay_field_pot", openedImageKey: "overlay_field_pot", baseTile: "G" },
+            { x: 19, y: 11, trapMonsterId: 120303, trapFloor: 190, type: "trap" },
+            { x: 19, y: 13, itemId: 1034, type: "item" },
+            { x: 19, y: 15, itemId: 1043, type: "item" }
         ],
         exitPoint: {
             area: "WORLD",
@@ -3975,9 +4388,9 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWGTTWWWTWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWGSTWWWTTWWWWWWWWWWGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWGTTWWWTTTWWWWWWWWTTTWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWTWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWSTWWWTTWWWWWWWWWWGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWTWWWTTTWWWWWWWWTTTWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWTWWWWTTWWWWWWGTTRTWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWTWWWWTTWWWWWWGTTTTWWWWWWWWWGGGGGGGGGGGGGGWWWGGGGWWW",
                     "WWWWGWWWWWTGWWWWWGWWWWWWWWWWWWWGGGGWWWGGGGWWWWWWWWGGGWW",
@@ -3988,7 +4401,7 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWWTWWWGTTTTTTTTTTGGTTTTTTGTTGWWWWWGWWWWWWWWGWWW",
                     "WWWWWWWWWTTWWTGWWWWWWWWWWGGTTWWWWWTTWWWWWGGGWWWWWWWGWWW",
                     "WWWWWWWWWTTWWTGWWWWWWWWWWGGTTTWWWWWTWWTGGGTGGGGWWWTGWWW",
-                    "WWWWWWWWWTWWWTWWWWWWWWWWWWGTTTTTWWWTWWWWWTTTWGGGWWTTTSW",
+                    "WWWWWWWWWTWWWTWWWWWWWWWWWWGTTTTTWWWTWWWWWTTTWGGGWWTTTTS",
                     "WWWWWWWWGGGGGGWWWWWWWWWWWWWWWGGGGWWTWWWWWWGWWGGGWWTGGWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGWWTGWWWWWGWWGGGTTTWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGWWWGGWWWWGWWWWWTTWWWWW",
@@ -4142,8 +4555,8 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWTGWWWWWWWWWWWWTTTWWWWWWWWWWWWWWW",
                     "WWWWWTNTTTGTTTTWWWWWWWWWWTTWTTTTTWWWWWWWW",
                     "WWWWGTTTTTGWWWTWWWWWWWWWWWTTTWWTTTTTTWWWW",
-                    "WWWWWWWTTWWWWWTTWWWWWWWWTTTWWWWWTTTTTTGWW",
-                    "WWWWWWWWWWWWWWWTTTTTTWWWTWWWWWWWWWTTTWSWW",
+                    "WWWWWWWTTWWWWWTTWWWWWWWWTTTWWWWWTTTTTTTWW",
+                    "WWWWWWWWWWWWWWWTTTTTTWWWTWWWWWWWWWWWWWSWW",
                     "WWWWWWWWWWWWWWWWWWWWTWWTTWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWTTTTWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
@@ -4876,7 +5289,7 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWWWTWWWWWWWWWWW",
                     "WWWWWWWWWWWTWWWWWWWWWWW",
                     "WWWWWWWWWWTTTWWWWWWWWWW",
-                    "WWWWWWWWWTTBTTWWWWWWWWW",
+                    "WWWWWWWWWTTTTTWWWWWWWWW",
                     "WWWWWWWWWTTTTTWWWWWWWWW",
                     "WWWWWWWWWWTTTWWWWWWWWWW",
                     "WWWWWWWWWWWSWWWWWWWWWWW"
@@ -5527,7 +5940,7 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWWWWWWWWWWWWW",
                     "WTTTWWWWWWWWWWWWWTTTW",
                     "WTCTTTTTTTTTTTTTTTDTW",
-                    "WTTTWWWWWWWWWWWWWWTTW",
+                    "WTTTWWWWWWWWWWWWWTTTW",
                     "WWWWWWWWWWWWWWWWWWTWW",
                     "WWWWWWWWWWWWWWWWWWTWW",
                     "WWWWWWWWWWWWWWWWWWTWW",
@@ -7012,8 +7425,8 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWTTTTTWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWSSSWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                    "WWWWWWWWWWWWWWWTTTWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWSSSWWWWWWWWWWWWWWW"
                 ],
                 floorLinks: [
                     {
@@ -9862,8 +10275,8 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWTTTWWWWTTTWWWWTWWWTWWW",
                     "WWWWWTTTWWWTTTTTWWWTTTTTWWW",
                     "WWWWWWWTTTTTTTTTTTTTTTWWWWW",
-                    "WWWWWWWWWWWWWSWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                    "WWWWWWWWWWWWWTWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWSWWWWWWWWWWWWW"
                 ],
                 floorLinks: [
                     {

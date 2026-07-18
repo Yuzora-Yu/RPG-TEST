@@ -1215,6 +1215,7 @@ const StoryManager = {
             const key = action.key || action.value;
             if (key) data.flags[key] = action.state !== undefined ? !!action.state : true;
             App.save();
+            if (action.refreshField === true) this.refreshFieldAfterStoryStateChange();
         }
 
         if (action.type === 'UNLOCK') {

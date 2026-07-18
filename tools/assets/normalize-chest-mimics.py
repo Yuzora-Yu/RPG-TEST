@@ -4,7 +4,7 @@ from PIL import Image
 
 
 ROOT = Path(__file__).resolve().parents[2]
-ASSET_DIR = ROOT / "assets" / "monsters" / "chest-mimics"
+ASSET_DIR = ROOT / "assets" / "monsters"
 CANVAS = 768
 PADDING = 28
 

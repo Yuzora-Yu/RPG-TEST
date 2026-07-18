@@ -66,15 +66,22 @@
         return { style, startX, startY, endX, endY, open, keys };
     };
 
-    const floorDecorationPlan = ({ themes, themeKey, areaKey, floor, x, y }) => {
+    const floorDecorationPlan = ({ themes, themeKey, areaKey, floor, x, y, tileSign = null }) => {
         const normalizedTheme = String(themeKey || 'DEFAULT').toUpperCase();
         const config = themes?.[normalizedTheme] || themes?.DEFAULT || null;
-        if (!config?.key || config.disabled) return null;
+        const keys = (Array.isArray(config?.keys) ? config.keys : [config?.key]).filter(Boolean);
+        if (!keys.length || config.disabled) return null;
+        const allowedTiles = Array.isArray(config.allowedTiles)
+            ? config.allowedTiles.map(sign => String(sign || '').toUpperCase())
+            : null;
+        if (allowedTiles && !allowedTiles.includes(String(tileSign || '').toUpperCase())) return null;
+        if (Number.isFinite(Number(config.minY)) && Number(y) < Number(config.minY)) return null;
+        if (Number.isFinite(Number(config.maxY)) && Number(y) > Number(config.maxY)) return null;
         const frequency = Math.max(1, Number(config.frequency || 40));
-        const hash = stableHash(normalizedTheme, areaKey || normalizedTheme, floor || 0, x, y, config.key);
+        const hash = stableHash(normalizedTheme, areaKey || normalizedTheme, floor || 0, x, y, keys.join('|'));
         if (hash % frequency !== 0) return null;
         return {
-            key: config.key,
+            key: keys[(hash >>> 11) % keys.length],
             alpha: Number(config.alpha ?? 1),
             animate: config.animate || null,
             flipX: ((hash >>> 4) & 1) === 1,

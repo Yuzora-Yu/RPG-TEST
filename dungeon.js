@@ -20,7 +20,7 @@ const Dungeon = {
     // 回復の泉: 通常フロアでは5%、迷路では100%。
     // 触れただけでは回復せず、アクションボタン押下で初めて回復する。
     healSpringSpawnRate: 0.05,
-    healSpringImagePath: 'assets/effect/fx-buff-ai.png',
+    healSpringImagePath: 'assets/map/overlays/overlay_shrine_healing_spring_v002.png',
 
     // 深淵の裂け目: 通常フロアでは10%、迷路では100%。
     // 勝利後報酬のため、戦闘時の eventId はこの定数に統一する。
@@ -437,6 +437,7 @@ const Dungeon = {
             state._order = state._order.filter(heldColor => heldColor !== color);
         }
         App.save();
+        if (typeof Field !== 'undefined' && typeof Field.updateHeldKeyHud === 'function') Field.updateHeldKeyHud();
         return true;
     },
 
@@ -452,6 +453,7 @@ const Dungeon = {
         if (!state._order.includes(color)) state._order.push(color);
         App.log(`<span style="color:#ffd78a;">${label}の鍵を手に入れた！</span>`);
         App.save();
+        if (typeof Field !== 'undefined' && typeof Field.updateHeldKeyHud === 'function') Field.updateHeldKeyHud();
         return true;
     },
 
@@ -538,6 +540,34 @@ const Dungeon = {
         return !!App.data.progress.openedChests?.[progressKey]?.includes(`${Number(x)},${Number(y)}`);
     },
 
+    getContainerPresentation: (containerDef = null) => {
+        const explicitKind = String(containerDef?.containerKind || containerDef?.objectKind || '').toLowerCase();
+        const imageKey = String(containerDef?.imageKey || '').toLowerCase();
+        const kind = explicitKind
+            || (imageKey.includes('barrel') ? 'barrel' : '')
+            || (imageKey.includes('pot') ? 'pot' : '')
+            || 'chest';
+        const defaults = {
+            pot: {
+                kind: 'pot', closed: 'ツボがある。', blocked: 'ツボが置かれている。',
+                opened: '空のツボだ。', action: 'ツボを覗く', inspect: 'ツボを覗いた。', empty: 'ツボの中は空だった。'
+            },
+            barrel: {
+                kind: 'barrel', closed: 'タルがある。', blocked: 'タルが置かれている。',
+                opened: '空のタルだ。', action: 'タルを調べる', inspect: 'タルの中を調べた。', empty: 'タルの中は空だった。'
+            },
+            chest: {
+                kind: 'chest', closed: '宝箱がある。', blocked: '宝箱が道を塞いでいる。',
+                opened: '開いたままの空箱がある。', action: '調べる', inspect: '宝箱を開けた！', empty: '宝箱は空だった…'
+            }
+        };
+        const base = defaults[kind] || defaults.chest;
+        return {
+            ...base,
+            ...(containerDef?.presentation || {})
+        };
+    },
+
     isKeyGuardianAt: (x, y) => {
         const g = App.data?.dungeon?.keyGuardian;
         return !!(g && g.active && Number(g.floor) === Number(Dungeon.floor) && Number(g.x) === Number(x) && Number(g.y) === Number(y));
@@ -567,7 +597,7 @@ const Dungeon = {
 
     getChestTrapMonsterForFloor: (floor) => {
         if (window.CHEST_MIMIC_DATA?.getForFloor) return window.CHEST_MIMIC_DATA.getForFloor(floor);
-        const fallbackId = Number(floor) >= 170 ? 120303 : (Number(floor) >= 120 ? 120302 : 120301);
+        const fallbackId = Number(floor) >= 151 ? 120303 : (Number(floor) >= 101 ? 120302 : 120301);
         return window.MonsterData?.getMonsterById?.(fallbackId)
             || (Array.isArray(DB?.MONSTERS) ? DB.MONSTERS.find(monster => Number(monster.id) === fallbackId) : null)
             || null;
@@ -601,6 +631,10 @@ const Dungeon = {
             chestTrapMonsterId: numericId,
             chestTrapFloor: currentFloor,
             encounterRank: currentFloor,
+            fixedChestTrap: options.fixedChestTrap ? {
+                progressKey: String(options.fixedChestTrap.progressKey || ''),
+                posKey: String(options.fixedChestTrap.posKey || '')
+            } : null,
             fixedEnemyIds: [numericId],
             enemies: []
         };
@@ -612,6 +646,22 @@ const Dungeon = {
         } else {
             startBattleScene();
         }
+        return true;
+    },
+
+    // 固定マップの擬態箱だけ、全滅時に未開封へ戻す。
+    // 深淵のランダム宝箱はマップ生成データ側で消費済みにする従来仕様を維持する。
+    rollbackFixedChestTrap: (battleData = null) => {
+        const marker = battleData?.fixedChestTrap;
+        const progressKey = String(marker?.progressKey || '');
+        const posKey = String(marker?.posKey || '');
+        if (!progressKey || !posKey) return false;
+        const opened = App.data?.progress?.openedChests?.[progressKey];
+        if (!Array.isArray(opened)) return false;
+        const next = opened.filter(entry => String(entry) !== posKey);
+        if (next.length === opened.length) return false;
+        App.data.progress.openedChests[progressKey] = next;
+        App.save();
         return true;
     },
 
@@ -690,6 +740,11 @@ const Dungeon = {
         return false;
     },
 
+    isFixedExitStepTile: (tile, link = null) => {
+        const upper = String(tile || '').toUpperCase();
+        return upper === 'S' && (!link || link.to === 'EXIT');
+    },
+
     tryFixedAutoFloorLink: (tile, x, y) => {
         if (!Field.currentMapData?.isFixed || !Field.currentMapData?.isDungeon) return false;
         const upper = String(tile || '').toUpperCase();
@@ -697,6 +752,32 @@ const Dungeon = {
         const link = (typeof MapRegistry !== 'undefined' && MapRegistry.findFloorLink)
             ? MapRegistry.findFloorLink(Field.currentMapData, x, y)
             : null;
+
+        // Every fixed-dungeon exit is contact-driven. S tiles that lead to another
+        // floor remain governed by their explicit floor-link auto setting.
+        if (Dungeon.isFixedExitStepTile(upper, link)) {
+            const flags = App.data?.progress?.flags || {};
+            if (link?.requiredFlag && !flags[link.requiredFlag]) {
+                App.clearAction();
+                if (link.lockedEventId && typeof StoryManager !== 'undefined' && typeof StoryManager.executeEvent === 'function') {
+                    StoryManager.executeEvent(link.lockedEventId);
+                } else {
+                    App.log(link.lockedLog || '封じられていて、今は外へ出られない。');
+                }
+                return true;
+            }
+            if (link?.openLog || link?.log) App.log(link.openLog || link.log);
+            if (link) return Dungeon.followFixedFloorLink(link, Field.currentMapData);
+            const exitPoint = Field.currentMapData.exitPoint;
+            const forced = exitPoint ? {
+                x: Number(exitPoint.x),
+                y: Number(exitPoint.y),
+                areaKey: exitPoint.areaKey || exitPoint.area || 'WORLD',
+                mapData: exitPoint.mapData || null
+            } : null;
+            Dungeon.exit(false, forced);
+            return true;
+        }
         if (!link || !link.auto) return false;
         const flags = App.data?.progress?.flags || {};
         if (link.requiredFlag && !flags[link.requiredFlag]) {
@@ -716,6 +797,13 @@ const Dungeon = {
             const link = (typeof MapRegistry !== 'undefined' && MapRegistry.findFloorLink)
                 ? MapRegistry.findFloorLink(mapDef, x, y)
                 : null;
+
+            // Exit S tiles are activated only after the player steps onto them.
+            // Do not expose an adjacent/on-tile action button for these cells.
+            if (Dungeon.isFixedExitStepTile(tile, link)) {
+                App.clearAction();
+                return false;
+            }
 
             if (link) {
                 const flags = App.data?.progress?.flags || {};
@@ -739,12 +827,6 @@ const Dungeon = {
                     : (link.to === 'EXIT' ? (link.label || '外に出る') : (link.label || '進む'));
                 logIfNeeded(link.openLog || link.log || (link.to === 'EXIT' ? '外への出口がある。' : (link.toDungeon ? '奥へ続く入口がある。' : '階段がある。')));
                 App.setAction(label, () => Dungeon.followFixedFloorLink(link, mapDef));
-                return true;
-            }
-
-            if (tile === 'S') {
-                logIfNeeded('外への出口がある。');
-                App.setAction('外に出る', () => Dungeon.exit(false));
                 return true;
             }
         }
@@ -1545,13 +1627,15 @@ const Dungeon = {
         }
 
         if(tile === 'C') { 
-            App.log(Dungeon.isFixedChestOpenedAt(x, y) ? '開いたままの空箱がある。' : '宝箱がある。');
-            App.setAction('調べる', () => Dungeon.openChest(x, y, 'normal'));
+            const container = Dungeon.getContainerPresentation(Field.getFixedChestAt?.(x, y));
+            App.log(Dungeon.isFixedChestOpenedAt(x, y) ? container.opened : container.closed);
+            App.setAction(container.action, () => Dungeon.openChest(x, y, 'normal'));
             return; 
         }
         if(tile === 'R') { 
-            App.log(Dungeon.isFixedChestOpenedAt(x, y) ? '開いたままの空箱がある。' : '赤い宝箱がある。');
-            App.setAction('調べる', () => Dungeon.openChest(x, y, 'rare'));
+            const container = Dungeon.getContainerPresentation(Field.getFixedChestAt?.(x, y));
+            App.log(Dungeon.isFixedChestOpenedAt(x, y) ? container.opened : '赤い宝箱がある。');
+            App.setAction(container.action, () => Dungeon.openChest(x, y, 'rare'));
             return; 
         }
 
@@ -1605,6 +1689,10 @@ const Dungeon = {
 		
 		// 10n階のボスフロアでは通常床でもランダムエンカウントを発生させない。
 		// ボス撃破後の階段・泉・レア宝箱へ向かう余韻を邪魔しないため。
+		if (Field.currentMapData?.disableRandomEncounters === true) {
+			return;
+		}
+
 		if (Dungeon.floor > 0 && Dungeon.floor % 10 === 0) {
 			return;
 		}
@@ -1634,11 +1722,6 @@ const Dungeon = {
             const progressKey = Dungeon.getFixedProgressKey(areaKey);
             if (!App.data.progress.openedChests) App.data.progress.openedChests = {};
             if (!App.data.progress.openedChests[progressKey]) App.data.progress.openedChests[progressKey] = [];
-            
-            if (App.data.progress.openedChests[progressKey].includes(posKey)) {
-                App.log('空箱だ。中には何も残っていない。');
-                return;
-            }
 
             const mapDef = Field.currentMapData
                 || Dungeon.getFixedFloorDef(areaKey, App.data.progress.floor || 1)
@@ -1647,6 +1730,12 @@ const Dungeon = {
             const chestDef = (typeof MapRegistry !== 'undefined' && MapRegistry.findFixedChest)
                 ? MapRegistry.findFixedChest(mapDef, x, y)
                 : (mapDef?.chests ? mapDef.chests.find(c => Number(c.x) === Number(x) && Number(c.y) === Number(y)) : null);
+            const container = Dungeon.getContainerPresentation(chestDef);
+            
+            if (App.data.progress.openedChests[progressKey].includes(posKey)) {
+                App.log(container.empty);
+                return;
+            }
 
             if (chestDef) {
                 App.data.progress.openedChests[progressKey].push(posKey);
@@ -1654,7 +1743,8 @@ const Dungeon = {
                     App.save();
                     Field.render();
                     Dungeon.startChestTrapBattle(chestDef.trapMonsterId, {
-                        floor: chestDef.trapFloor || mapDef?.encounterRank || mapDef?.rank
+                        floor: chestDef.trapFloor || mapDef?.encounterRank || mapDef?.rank,
+                        fixedChestTrap: { progressKey, posKey }
                     });
                     return;
                 }
@@ -1667,14 +1757,14 @@ const Dungeon = {
                 const item = DB.ITEMS.find(i => i.id === chestDef.itemId);
                 if (item) {
                     App.data.items[item.id] = (App.data.items[item.id] || 0) + 1;
-                    App.log(`宝箱を開けた！`);
+                    App.log(container.inspect);
                     App.log(`<span style="color:#ffd700;">${item.name}</span> を手に入れた！`);
                 } else {
-                    App.log("宝箱は空だった…");
+                    App.log(container.empty);
                 }
             } else {
                 App.data.progress.openedChests[progressKey].push(posKey);
-                App.log("宝箱は空だった…");
+                App.log(container.empty);
             }
             App.save();
             Field.render(); 
@@ -1699,10 +1789,10 @@ const Dungeon = {
         let hasRareDrop = false, hasUltraRareDrop = false;
         const floor = Dungeon.floor;
 
-        // 深淵40階以降の通常宝箱のみ5%で擬態箱になる。赤宝箱・鍵宝箱は対象外。
+        // 深淵51階以降の通常宝箱のみ5%で擬態箱になる。赤宝箱・鍵宝箱は対象外。
         const mimicConfig = window.CHEST_MIMIC_DATA;
         const mimicChance = Math.max(0, Math.min(1, Number(mimicConfig?.normalChestChance ?? 0.05)));
-        const mimicMinimumFloor = Math.max(1, Number(mimicConfig?.minimumAbyssFloor ?? 40));
+        const mimicMinimumFloor = Math.max(1, Number(mimicConfig?.minimumAbyssFloor ?? 51));
         if (type === 'normal' && floor >= mimicMinimumFloor && Math.random() < mimicChance) {
             const mimic = Dungeon.getChestTrapMonsterForFloor(floor);
             Dungeon.saveMapData();

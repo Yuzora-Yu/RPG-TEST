@@ -1,0 +1,4657 @@
+{
+  "generatedAt": "2026-07-18T04:28:40.951Z",
+  "policy": "Read-only audit. No duplicate is safe to delete without manual reference and compatibility review.",
+  "totals": {
+    "imageFiles": 1503,
+    "registeredPaths": 729,
+    "duplicateGroups": 209,
+    "duplicateFiles": 439,
+    "missingRegisteredPaths": 0
+  },
+  "missingRegistered": [],
+  "duplicateGroups": [
+    {
+      "hash": "5cd3f431af3a343793ef36c5c389c334c227db7fc7a9d9f63b3c3f579911506d",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/managed/source/abyss-outer/v001/abyss-outer-floor-master.png",
+          "bytes": 2123480,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/managed/source/abyss-outer/v002/abyss-outer-ritual-floor-master.png",
+          "bytes": 2123480,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/managed/source/abyss-outer/v003/abyss-outer-ritual-floor-master.png",
+          "bytes": 2123480,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "ff7a3278180796b598f2907e599dfe455c9671b66b318a892030596e19254987",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/managed/source/abyss-outer/v001/abyss-outer-wall-master.png",
+          "bytes": 1910779,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/managed/source/abyss-outer/v002/abyss-outer-wall-master.png",
+          "bytes": 1910779,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/managed/source/abyss-outer/v003/abyss-outer-wall-master.png",
+          "bytes": 1910779,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "7b48785ff53a79043a45fac976f42432d603a4ebd0a7fa0de9ab7983531b08ea",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/managed/source/abyss-outer/v001/abyss-outer-altar-alpha.png",
+          "bytes": 1504904,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/managed/source/abyss-outer/v002/abyss-outer-altar-alpha.png",
+          "bytes": 1504904,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/managed/source/abyss-outer/v003/abyss-outer-altar-alpha.png",
+          "bytes": 1504904,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "e2a1eac23d95d1af7c5c234e56405d6b2b57be037270c755314929aea59aaed6",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/managed/source/abyss-outer/v002/abyss-outer-prism-paving-master.png",
+          "bytes": 2062212,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/managed/source/abyss-outer/v003/abyss-outer-prism-paving-master.png",
+          "bytes": 2062212,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "930082ede0e83ec8ca0ca3163042cfe01920aa86429a217d51bc2f9600794a68",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/managed/source/abyss-outer/v001/abyss-outer-chasm-alpha.png",
+          "bytes": 1126923,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/managed/source/abyss-outer/v002/abyss-outer-chasm-alpha.png",
+          "bytes": 1126923,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/managed/source/abyss-outer/v003/abyss-outer-chasm-alpha.png",
+          "bytes": 1126923,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "5093fc1a1fcc195200b1869ef408e126d09867e9da79523876c7b63594342068",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/overlays/source/companion-highres-v003/sophia_chroma_source.png",
+          "bytes": 1510367,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/map/overlays/source/companion-regenerated-v002/sophia_chroma_source.png",
+          "bytes": 1510367,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "477cc535f0992d015b7ca78e5417d909001da1edba1b6c98bed0cb68da2c15b8",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/overlays/source/companion-highres-v003/frieda_chroma_source.png",
+          "bytes": 1482740,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/map/overlays/source/companion-regenerated-v002/frieda_chroma_source.png",
+          "bytes": 1482740,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "99f4eaa1cb4f7378d1efe5a51167dd4112a2ded4a5f81b8fb34a97b1bd56b8c3",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/managed/source/abyss-outer/v002/abyss-outer-prism-pedestal-intact-chroma.png",
+          "bytes": 1319120,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/managed/source/abyss-outer/v003/abyss-outer-prism-pedestal-intact-chroma.png",
+          "bytes": 1319120,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "d118d42787781719ea45b0ac16be695195228592b15d78ae9ee7e33738890aa0",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/overlays/source/companion-highres-v003/alan_chroma_source.png",
+          "bytes": 1300734,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/map/overlays/source/companion-regenerated-v002/alan_chroma_source.png",
+          "bytes": 1300734,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "bdfff4dbeaab1cb4a53f5b2e55cdafd3f566bf7603b0694a8aac30263d96207a",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/managed/source/abyss-outer/v002/abyss-outer-prism-pedestal-collapsed-chroma.png",
+          "bytes": 1278045,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/managed/source/abyss-outer/v003/abyss-outer-prism-pedestal-collapsed-chroma.png",
+          "bytes": 1278045,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "839f3fc53aff1b8b1943fa03fdb8ea686c4f38cd80adc3a80b0f57c9a55b7a06",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/overlays/source/companion-highres-v003/claude_chroma_source.png",
+          "bytes": 1275395,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/map/overlays/source/companion-regenerated-v002/claude_chroma_source.png",
+          "bytes": 1275395,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "1cdc78d15bb30ad134637a6bf46d991bc51ec2d4b52a493c85e3b1035a1bddbf",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/overlays/source/companion-highres-v003/arisa_chroma_source.png",
+          "bytes": 1253107,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/map/overlays/source/companion-regenerated-v002/arisa_chroma_source.png",
+          "bytes": 1253107,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "4505dff07c3d84afe0b0618aa59d2db6774bdd954865036c5311b81ee4b706f7",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/overlays/source/companion-highres-v003/haine_chroma_source.png",
+          "bytes": 1250201,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/map/overlays/source/companion-regenerated-v002/haine_chroma_source.png",
+          "bytes": 1250201,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "926bb196881751b76e1f916af4d807ae67bc710ea845c8c1c2444391ea80d1e2",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/managed/source/abyss-outer/v002/abyss-outer-intact-column-chroma.png",
+          "bytes": 1241780,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/managed/source/abyss-outer/v003/abyss-outer-intact-column-chroma.png",
+          "bytes": 1241780,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "06310a62ea58cb8f2bd7dbe4e1c99e4d35b3f9c81ad933c10e4d53de5563702d",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/overlays/source/companion-highres-v003/baron_chroma_source.png",
+          "bytes": 1232338,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/map/overlays/source/companion-regenerated-v002/baron_chroma_source.png",
+          "bytes": 1232338,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "b2a00f80858830a28dd3535632c83e16c8dc3726767b8aacd99470a6254aff04",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/managed/source/abyss-outer/v002/abyss-outer-ruined-arch-chroma.png",
+          "bytes": 1216732,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/managed/source/abyss-outer/v003/abyss-outer-ruined-arch-chroma.png",
+          "bytes": 1216732,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "5b7d19fdb45d10a47be4b924a3bd2c430706cbe7041a52c9bffe246bf24f8aca",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/managed/source/abyss-outer/v002/abyss-outer-broken-column-stump-chroma.png",
+          "bytes": 1202884,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/managed/source/abyss-outer/v003/abyss-outer-broken-column-stump-chroma.png",
+          "bytes": 1202884,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "ddc8e430c1175cc2a8a99ef6a4b117ee2512ea135daf3d4b4e98d50c21e5e0b7",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/overlays/source/companion-highres-v003/ryu_chroma_source.png",
+          "bytes": 1196279,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/map/overlays/source/companion-regenerated-v002/ryu_chroma_source.png",
+          "bytes": 1196279,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "da147dddf2368b638fc65a875b9339c04279843390d62d5c0b136934c643e3e2",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/managed/source/hero-wings/v002/hero-wing-layer-down-chroma.png",
+          "bytes": 1042421,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/managed/source/hero-wings/v003/hero-wing-layer-down-chroma.png",
+          "bytes": 1042421,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "54d6e1fa1db3570eacf3b25a23641caa1e8ae9a9f9ce6f328628e6833b9b8ca8",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/managed/source/abyss-outer/v002/abyss-outer-prism-pedestal-intact-alpha.png",
+          "bytes": 950152,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/managed/source/abyss-outer/v003/abyss-outer-prism-pedestal-intact-alpha.png",
+          "bytes": 950152,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "f213f5f71aa05dca28f367b74b3aa9415f2055635edc37983abc7754479174ae",
+      "classification": "keep-all-active",
+      "files": [
+        {
+          "path": "assets/monsters/monster_301030.png",
+          "bytes": 947099,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js",
+            "monsters.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/monsters/monster_401050.png",
+          "bytes": 947099,
+          "registryReference": true,
+          "directReferences": [],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "27b1f66f2500e2e327bcf8bd4372db3b3273217401c2c7b233922dbc1198ff8b",
+      "classification": "keep-all-active",
+      "files": [
+        {
+          "path": "assets/monsters/monster_301020.png",
+          "bytes": 876929,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js",
+            "monsters.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/monsters/monster_401040.png",
+          "bytes": 876929,
+          "registryReference": true,
+          "directReferences": [],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "d592cdf41c8eb762ca1660474cbee4de6123783932ec72783a1a5bb56748b5f6",
+      "classification": "keep-all-active",
+      "files": [
+        {
+          "path": "assets/monsters/monster_301010.png",
+          "bytes": 845149,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js",
+            "monsters.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/monsters/monster_401060.png",
+          "bytes": 845149,
+          "registryReference": true,
+          "directReferences": [],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "1472b12069f797da3d6e53aaa5dcd9dff15023d2f3458fa15d2570d00b48b881",
+      "classification": "keep-all-active",
+      "files": [
+        {
+          "path": "assets/monsters/monster_100018.png",
+          "bytes": 800871,
+          "registryReference": true,
+          "directReferences": [],
+          "activeReference": true
+        },
+        {
+          "path": "assets/monsters/monster_301002.png",
+          "bytes": 800871,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js",
+            "monsters.js"
+          ],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "334f7eec6911c1cabca1c7fcfdd9ff0dc826bfe53b3a2bd31107747596d70238",
+      "classification": "keep-all-active",
+      "files": [
+        {
+          "path": "assets/monsters/monster_301100.png",
+          "bytes": 790275,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js",
+            "monsters.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/monsters/monster_401100.png",
+          "bytes": 790275,
+          "registryReference": true,
+          "directReferences": [],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "d2450e0bccbe5126be5489059b61695aea0a11ad9ccd00d5c85702e38923d9cb",
+      "classification": "keep-all-active",
+      "files": [
+        {
+          "path": "assets/monsters/monster_100087.png",
+          "bytes": 775749,
+          "registryReference": true,
+          "directReferences": [],
+          "activeReference": true
+        },
+        {
+          "path": "assets/monsters/monster_301031.png",
+          "bytes": 775749,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js",
+            "monsters.js"
+          ],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "c06fb3350a77b0537dc88c7b61cbd423d93a108ccd8f0e4a771cf02300fb01ca",
+      "classification": "keep-all-active",
+      "files": [
+        {
+          "path": "assets/monsters/monster_100079.png",
+          "bytes": 763020,
+          "registryReference": true,
+          "directReferences": [],
+          "activeReference": true
+        },
+        {
+          "path": "assets/monsters/monster_301032.png",
+          "bytes": 763020,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js",
+            "monsters.js"
+          ],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "35858dc28aadc3b12e677990baf62cd2ed41999890ab0a5c3a4afb72a924ae3c",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/managed/source/abyss-outer/v001/abyss-outer-pillar-alpha.png",
+          "bytes": 497263,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/managed/source/abyss-outer/v002/abyss-outer-fallen-pillar-alpha.png",
+          "bytes": 497263,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/managed/source/abyss-outer/v003/abyss-outer-fallen-pillar-alpha.png",
+          "bytes": 497263,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "f91d255ce75e9922c3d956f705eb6fa31f1b201fd985333e0d63ba0c09c42eba",
+      "classification": "keep-all-active",
+      "files": [
+        {
+          "path": "assets/monsters/monster_301040.png",
+          "bytes": 719758,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js",
+            "monsters.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/monsters/monster_401030.png",
+          "bytes": 719758,
+          "registryReference": true,
+          "directReferences": [],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "49984c72ab1983a08dc9db860546831fc93c821dc12d0f3de951f3851227a2ac",
+      "classification": "keep-all-active",
+      "files": [
+        {
+          "path": "assets/monsters/monster_100045.png",
+          "bytes": 696866,
+          "registryReference": true,
+          "directReferences": [],
+          "activeReference": true
+        },
+        {
+          "path": "assets/monsters/monster_301022.png",
+          "bytes": 696866,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js",
+            "monsters.js"
+          ],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "7d672e57a715dd9b5d1b64ff3833668eacc5d6d2ec88e6d85432a01a0a334494",
+      "classification": "keep-all-active",
+      "files": [
+        {
+          "path": "assets/monsters/monster_401130.png",
+          "bytes": 684333,
+          "registryReference": true,
+          "directReferences": [],
+          "activeReference": true
+        },
+        {
+          "path": "assets/monsters/monster_502098.png",
+          "bytes": 684333,
+          "registryReference": true,
+          "directReferences": [],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "d61457c2da3b66ac2ac90f6407f593e12cf0c53eb47ff4b02aa77ee6c256f16c",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/managed/source/abyss-outer/v002/abyss-outer-prism-pedestal-collapsed-alpha.png",
+          "bytes": 680067,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/managed/source/abyss-outer/v003/abyss-outer-prism-pedestal-collapsed-alpha.png",
+          "bytes": 680067,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "2d403e6c2a8cf1a0ba951e53dd0d8f5d63674b1b0e34a22d263db705e8b32060",
+      "classification": "keep-all-active",
+      "files": [
+        {
+          "path": "assets/monsters/monster_100061.png",
+          "bytes": 652860,
+          "registryReference": true,
+          "directReferences": [],
+          "activeReference": true
+        },
+        {
+          "path": "assets/monsters/monster_301011.png",
+          "bytes": 652860,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js",
+            "monsters.js"
+          ],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "48857c75a509f54d5d363fa3d2d38fdf233a898af15833b74290318349cc380b",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/managed/source/abyss-outer/v002/abyss-outer-intact-column-alpha.png",
+          "bytes": 590789,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/managed/source/abyss-outer/v003/abyss-outer-intact-column-alpha.png",
+          "bytes": 590789,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "aff54ca159fc070b92449b95c478ffdad1a83b9ab0922da6e8ee4549d9551e17",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/managed/source/abyss-outer/v002/abyss-outer-ruined-arch-alpha.png",
+          "bytes": 569709,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/managed/source/abyss-outer/v003/abyss-outer-ruined-arch-alpha.png",
+          "bytes": 569709,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "1eada2c8c69e7a412d1eb0253304f42d8b7a52d6009881adaccbde16510b55d6",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/managed/source/abyss-outer/v002/abyss-outer-broken-column-stump-alpha.png",
+          "bytes": 563902,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/managed/source/abyss-outer/v003/abyss-outer-broken-column-stump-alpha.png",
+          "bytes": 563902,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "dbee5d4a2a243734e5a2da97b6e8899290574355a23b4bd25bec9af0e176c946",
+      "classification": "keep-all-active",
+      "files": [
+        {
+          "path": "assets/monsters/monster_100060.png",
+          "bytes": 558750,
+          "registryReference": true,
+          "directReferences": [],
+          "activeReference": true
+        },
+        {
+          "path": "assets/monsters/monster_100063.png",
+          "bytes": 558750,
+          "registryReference": true,
+          "directReferences": [],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "bd857506018f11a99a17c04bafff9ab14e990ccbc6bb118fcdc1cc2fe8eb4c11",
+      "classification": "keep-all-active",
+      "files": [
+        {
+          "path": "assets/monsters/monster_100041.png",
+          "bytes": 542216,
+          "registryReference": true,
+          "directReferences": [],
+          "activeReference": true
+        },
+        {
+          "path": "assets/monsters/monster_301021.png",
+          "bytes": 542216,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js",
+            "monsters.js"
+          ],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "6080909a6bc566eb408cb845ee92325955453da49cd29ed523e63fef72385310",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/monsters/monster_301050.png",
+          "bytes": 324633,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js",
+            "monsters.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/monsters/monster_301071.png",
+          "bytes": 324633,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/monsters/monster_401070.png",
+          "bytes": 324633,
+          "registryReference": true,
+          "directReferences": [],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "0e2983dbe6eb80d13a97633986b055e9b5cec9e17ad736fd59cb1d59be7fc1b9",
+      "classification": "keep-all-active",
+      "files": [
+        {
+          "path": "assets/monsters/monster_301060.png",
+          "bytes": 460467,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js",
+            "monsters.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/monsters/monster_401080.png",
+          "bytes": 460467,
+          "registryReference": true,
+          "directReferences": [],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "ad7abe500ae2397cc2606f9bea6937b91b5d1a038dd4a822fd48a12ca35a65a0",
+      "classification": "keep-all-active",
+      "files": [
+        {
+          "path": "assets/monsters/monster_301081.png",
+          "bytes": 457026,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js",
+            "monsters.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/monsters/monster_401161.png",
+          "bytes": 457026,
+          "registryReference": true,
+          "directReferences": [],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "d76d0574b49aa9c71ed0fa6fbe66d77c7e3aba17cc21ddea98ac647425a946da",
+      "classification": "keep-all-active",
+      "files": [
+        {
+          "path": "assets/monsters/monster_301082.png",
+          "bytes": 454225,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js",
+            "monsters.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/monsters/monster_401162.png",
+          "bytes": 454225,
+          "registryReference": true,
+          "directReferences": [],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "f0bd8b3ed70fc083d7ddeac6929e3881c33b792ade94ae01c1369d7526cec165",
+      "classification": "keep-all-active",
+      "files": [
+        {
+          "path": "assets/monsters/monster_301080.png",
+          "bytes": 437808,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js",
+            "monsters.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/monsters/monster_401160.png",
+          "bytes": 437808,
+          "registryReference": true,
+          "directReferences": [],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "5a56cd7bff47b5fb14c0ba8870e14f7150d3c50bde06318f39459c2511575b11",
+      "classification": "keep-all-active",
+      "files": [
+        {
+          "path": "assets/monsters/monster_401120.png",
+          "bytes": 409823,
+          "registryReference": true,
+          "directReferences": [],
+          "activeReference": true
+        },
+        {
+          "path": "assets/monsters/monster_502049.png",
+          "bytes": 409823,
+          "registryReference": true,
+          "directReferences": [],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "419e715ac56b2438bf6307441fdd97d08609afb0b127028686096b0789b5a1bc",
+      "classification": "keep-all-active",
+      "files": [
+        {
+          "path": "assets/monsters/monster_301070.png",
+          "bytes": 399132,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js",
+            "monsters.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/monsters/monster_401090.png",
+          "bytes": 399132,
+          "registryReference": true,
+          "directReferences": [],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "2440b257cf2118d42271df92f68a0d60e92e9d06843bd7ce499e1276a44d0773",
+      "classification": "keep-all-active",
+      "files": [
+        {
+          "path": "assets/monsters/monster_301062.png",
+          "bytes": 372022,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js",
+            "monsters.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/monsters/monster_401082.png",
+          "bytes": 372022,
+          "registryReference": true,
+          "directReferences": [],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "c1523cf63e1b1d2d9038315d55330000505172ced5f65a0405abdb5f431343b5",
+      "classification": "keep-all-active",
+      "files": [
+        {
+          "path": "assets/monsters/monster_301061.png",
+          "bytes": 349630,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js",
+            "monsters.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/monsters/monster_401081.png",
+          "bytes": 349630,
+          "registryReference": true,
+          "directReferences": [],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "1e97e3b34189102696821c6588f2de0e4bfca230c89a94a8014734de19cb4892",
+      "classification": "keep-all-active",
+      "files": [
+        {
+          "path": "assets/monsters/monster_100062.png",
+          "bytes": 329532,
+          "registryReference": true,
+          "directReferences": [],
+          "activeReference": true
+        },
+        {
+          "path": "assets/monsters/monster_301012.png",
+          "bytes": 329532,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js",
+            "monsters.js"
+          ],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "8cb222ebfaa64a3f95243b6677a66eaa9c1a6bf55b504ab8abba16dc3c4cd7d0",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/effect/fx-chaos-ai.png",
+          "bytes": 193056,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/effect/fx-spell-chaos-ai.png",
+          "bytes": 193056,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/effect/fx_spell_chaos_v001.png",
+          "bytes": 193056,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "53659a332b8ab0ae1c2c719f2e5a2daa8348571bc48f5b29ea2ce027d2e88c5a",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/effect/fx-dark-ai.png",
+          "bytes": 183877,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/effect/fx-spell-dark-ai.png",
+          "bytes": 183877,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/effect/fx_spell_dark_v001.png",
+          "bytes": 183877,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "2976f16c8e849aedeb5b269c2f7515ce7499c33537c2e1318f729b88edd1c93a",
+      "classification": "keep-all-active",
+      "files": [
+        {
+          "path": "assets/monsters/monster_100015.png",
+          "bytes": 259694,
+          "registryReference": true,
+          "directReferences": [],
+          "activeReference": true
+        },
+        {
+          "path": "assets/monsters/monster_301001.png",
+          "bytes": 259694,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js",
+            "monsters.js"
+          ],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "a28a7a91024a806cafea4861957ea182758144509dc7ac6304f82f17b4b4f943",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/effect/fx-ice-ai.png",
+          "bytes": 157369,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/effect/fx-spell-ice-ai.png",
+          "bytes": 157369,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/effect/fx_spell_ice_v001.png",
+          "bytes": 157369,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "b9f058c06cbdee93380cf6b4e0e44b571a9a415a9cfefb305ce7b358d3246701",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/managed/source/hero-wings/v002/hero-wing-layer-down-alpha.png",
+          "bytes": 234226,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/managed/source/hero-wings/v003/hero-wing-layer-down-alpha.png",
+          "bytes": 234226,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "2d1f2edfcc0349229853b5b735926518b1130ddd31263c4463992555e2086668",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/effect/fx-heal-blossom-ai.png",
+          "bytes": 184548,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/effect/fx_support_heal_v001.png",
+          "bytes": 184548,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "462223eb247f81588b5c5cd14ee765e42dbfdac8dfd873c098fd1d2f71279fc2",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/effect/fx-breath-ai.png",
+          "bytes": 171017,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/effect/fx-party-hit-ai.png",
+          "bytes": 171017,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "f57cdedf904aa7fb6df5cb685fa90e0f2a638c50abf2a33847c8490e9d970a7b",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/effect/fx-spell-wind-ai.png",
+          "bytes": 84622,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/effect/fx-wind-ai.png",
+          "bytes": 84622,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/effect/fx_spell_wind_v001.png",
+          "bytes": 84622,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "40ef29a34ec68ca58944770fd887b06e766c8a9de69ed7f96d4e7496a3f832fa",
+      "classification": "keep-all-active",
+      "files": [
+        {
+          "path": "assets/effect/fx-fire-ai.png",
+          "bytes": 113700,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/effect/fx_spell_fire_v001.png",
+          "bytes": 113700,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "b65c4a942d1437a7d58ce919791a6d83e8894f35d94aa6469e69742b5f658c92",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/effect/fx-neutral-smash-ai.png",
+          "bytes": 110042,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/effect/fx_phys_neutral_smash_v001.png",
+          "bytes": 110042,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "1312aed06337b36f89f384938d672647093a8e6b6186a528f672f5d4af620c8f",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/terrain_dungeon_wall_face_torch_v002.png",
+          "bytes": 108869,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/terrain_dungeon_wall_face_torch_v002.png",
+          "bytes": 108869,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "760bd5c4b731371c7a8f9fe1954748f4ff7b670c7e2512bc6842d8b73b25fcb2",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/terrain_dungeon_wall_face_v002.png",
+          "bytes": 102400,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/terrain_dungeon_wall_face_v002.png",
+          "bytes": 102400,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "9ab40da6fba2288e9908d62daa62ef1f56e9ea8f212596232e1d61777878cc68",
+      "classification": "keep-all-active",
+      "files": [
+        {
+          "path": "assets/map/overlays/overlay_dungeon_boss_v002.png",
+          "bytes": 98010,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/map/overlays/overlay_named_dungeon_boss.png",
+          "bytes": 98010,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "188eb51f452d4af6d478011bf0a1650f081d44536c3119574e66f23831f03a23",
+      "classification": "keep-all-active",
+      "files": [
+        {
+          "path": "assets/map/overlays/overlay_dungeon_stairs_v002.png",
+          "bytes": 94020,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js",
+            "tools/light-palace-visual-qa.html",
+            "tools/validation/validate-field-render-lifecycle.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/map/overlays/overlay_named_dungeon_stairs_down.png",
+          "bytes": 94020,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "7f66e888be09fe2b54762c11e6f5d3a466f5bad4145d3bbb4dc931eebb4507e8",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/effect/fx-neutral-combo-ai.png",
+          "bytes": 87837,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/effect/fx_phys_neutral_combo_v001.png",
+          "bytes": 87837,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "3962e862b7410440835f55780804c72b2108dd6f965c1dd6fb066c00d448a9d5",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/effect/fx-neutral-heavy-ai.png",
+          "bytes": 78336,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/effect/fx_phys_neutral_heavy_v001.png",
+          "bytes": 78336,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "6a7a9960253121dd882b460dd4f4ac054753d645748446fb5f54a75ed9875b1c",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/effect/fx-neutral-slash-ai.png",
+          "bytes": 77679,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/effect/fx_phys_neutral_slash_v001.png",
+          "bytes": 77679,
+          "registryReference": false,
+          "directReferences": [
+            "main.js",
+            "story_logic.js"
+          ],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "6ff7c83b1e3b91d146199727baa6ef6f02f23f1286fc36acd27c03ebb0223b72",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/effect/fx-light-ai.png",
+          "bytes": 76193,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/effect/fx-spell-light-ai.png",
+          "bytes": 76193,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "41d5a45727bc1729f6b2a66bef77a729161c9c39abce8ad13e06eff4b646d99a",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/objects/object_field_empty_v002.png",
+          "bytes": 39854,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/map/objects/object_field_grass_v002.png",
+          "bytes": 39854,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/map/objects/object_field_stairs_v002.png",
+          "bytes": 39854,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "7a2a142e04146eca4915020111dadcd59ac1e5b7ac0c2804b4c15b18a608c0c9",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/effect/fx-neutral-pierce-ai.png",
+          "bytes": 55945,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/effect/fx_phys_neutral_pierce_v001.png",
+          "bytes": 55945,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "8d0d8972d6136f229b94829eb14e663c001576e668c0f224e311b9eb8d175354",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/terrain_grass_field_v001.png",
+          "bytes": 36576,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js",
+            "sw.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/terrain_grass_field_v001.png",
+          "bytes": 36576,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "9f94cc309fa76505a795075fb935b599df031477b3ebafa65a4aefd998dd6485",
+      "classification": "keep-all-active",
+      "files": [
+        {
+          "path": "assets/map/objects/object_dungeon_event_v002.png",
+          "bytes": 35989,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/map/objects/object_dungeon_portal_v002.png",
+          "bytes": 35989,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "11bae90d3c8fed31ccd90fe2b2797de60a96eb464f40dce9b776b2d401ca926b",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/terrain_dungeon_floor_v001.png",
+          "bytes": 33099,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js",
+            "docs/generated/random-key-door-preview.html"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/terrain_dungeon_floor_v001.png",
+          "bytes": 33099,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "21a0a0f5f91ab9d64829afd3d4c7d4a4e8a96aeecbea8bc959eba84d0b1cf3f9",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/terrain_sea_v001.png",
+          "bytes": 30565,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js",
+            "tools/validation/validate-field-render-lifecycle.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/terrain_sea_v001.png",
+          "bytes": 30565,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "817ae777d4059ee41df3e9638e0e8b17225c4685bdf4308c9fa6f3d0c8eb05e7",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/effect/fx-neutral-chain-ai.png",
+          "bytes": 29714,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/effect/fx_phys_neutral_chain_v001.png",
+          "bytes": 29714,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "be6334167f8177d27f471e20ec3bd03618d84b3246b69530c291105d65b13f88",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/terrain_dungeon_wall_v001.png",
+          "bytes": 21768,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js",
+            "docs/generated/random-key-door-preview.html"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/terrain_dungeon_wall_v001.png",
+          "bytes": 21768,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "e47857f648301268b5262bcfb064558d37ffe3f39f4557e7fd413ad3e67779b5",
+      "classification": "keep-all-active",
+      "files": [
+        {
+          "path": "assets/map/overlays/overlay_dungeon_chest_v002.png",
+          "bytes": 20145,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js",
+            "tools/validation/validate-field-render-lifecycle.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/map/overlays/overlay_named_dungeon_chest.png",
+          "bytes": 20145,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "082df4bbb7e15088a694426ea6e6fc0c75ce4c03ecfd755fa55357a10844376b",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/overlays/overlay_abyss_outer_ruined_altar_v001.png",
+          "bytes": 12295,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/map/overlays/overlay_abyss_outer_ruined_altar_v002.png",
+          "bytes": 12295,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/map/overlays/overlay_abyss_outer_ruined_altar_v003.png",
+          "bytes": 12295,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "2b688edca6e90cc2f0692e1abf6c464de8eec3ff025c442234bd1469fa3a175a",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/generated/hero-wing-down-2-v002.png",
+          "bytes": 15383,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/generated/hero-wing-down-2-v003.png",
+          "bytes": 15383,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "306606f2ba7bb1d3c6200b0b84236e2311e2d69c5713b316abb88b66337413d2",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/generated/hero-wing-down-1-v002.png",
+          "bytes": 14464,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/generated/hero-wing-down-1-v003.png",
+          "bytes": 14464,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "98256e3778713707ba977a6d70fcb30efa56547ae17178ffe90cde8282de25f4",
+      "classification": "keep-all-active",
+      "files": [
+        {
+          "path": "assets/map/overlays/overlay_dungeon_chest_rare_v002.png",
+          "bytes": 10513,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js",
+            "tools/validation/validate-field-render-lifecycle.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/map/overlays/overlay_named_dungeon_chest_rare.png",
+          "bytes": 10513,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "328f6c35173bcd8a9bd7b31c8030c688eb038711767198bc869aa357cfac6cf9",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/overlays/overlay_abyss_outer_intact_column_v002.png",
+          "bytes": 4138,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/map/overlays/overlay_abyss_outer_intact_column_v003.png",
+          "bytes": 4138,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "99b784caed147a14030543398595edba84565008077610e7e5c52d3c4cc6c7c7",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/overlays/overlay_abyss_outer_broken_column_stump_v002.png",
+          "bytes": 4029,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/map/overlays/overlay_abyss_outer_broken_column_stump_v003.png",
+          "bytes": 4029,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "91ae1efe18b8e879ad156dcf5d5b48149897cfee8d8210c11c79408426530cc6",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_abyss_outer_wall_v001.png",
+          "bytes": 2448,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/map/terrain/tile_abyss_outer_wall_v002_a.png",
+          "bytes": 2448,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/map/terrain/tile_abyss_outer_wall_v003_a.png",
+          "bytes": 2448,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "2820a6f4de9363653d8a4472766c41411f8952b5f4ab89c0bd3d408bc1529656",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_abyss_outer_wall_alt_v002.png",
+          "bytes": 2435,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/map/terrain/tile_abyss_outer_wall_v002_b.png",
+          "bytes": 2435,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/map/terrain/tile_abyss_outer_wall_v003_b.png",
+          "bytes": 2435,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "671a9967a35496ec27496205158be7c94b2eb9f872a78029acef402ab7a972bb",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_abyss_outer_wall_alt_v003.png",
+          "bytes": 2432,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/map/terrain/tile_abyss_outer_wall_v002_c.png",
+          "bytes": 2432,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/map/terrain/tile_abyss_outer_wall_v003_c.png",
+          "bytes": 2432,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "fb5a5bffebc057441a021a5a4d156ff13f7378f60d1885df90b20923eea21e31",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_abyss_outer_wall_alt_v004.png",
+          "bytes": 2423,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/map/terrain/tile_abyss_outer_wall_v002_d.png",
+          "bytes": 2423,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/map/terrain/tile_abyss_outer_wall_v003_d.png",
+          "bytes": 2423,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "42df27ced017e1271446667b91b48f0b4f0af8031b9583799591b1f71218edf4",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/overlays/overlay_abyss_outer_prism_pedestal_collapsed_v002.png",
+          "bytes": 3331,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/map/overlays/overlay_abyss_outer_prism_pedestal_collapsed_v003.png",
+          "bytes": 3331,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "02a650e0fe989bc299f1349c50042c75b7bc8f30a0c28e2d797a64e7c7b34e77",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_dark_shrine_floor_v001.png",
+          "bytes": 3105,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_dark_shrine_floor_v001.png",
+          "bytes": 3105,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "0b4fce9db947fa40228d560ea08e869b8ca1f5c89c9cb57dcc9565e323b8d29a",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_crena_floor_v001.png",
+          "bytes": 3094,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_crena_floor_v001.png",
+          "bytes": 3094,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "b2a20aefeadbc58dc962bfcd13f4e80e166a1c1d7c1f9ba7332aa8fb39ac0dc1",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_dark_shrine_wall_v001.png",
+          "bytes": 2970,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_dark_shrine_wall_v001.png",
+          "bytes": 2970,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "f8745c3d272a1df552fbf8b5898330e78f55aa0339d800f8414f2ff1a308a5af",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/overlays/overlay_abyss_outer_chasm_v001.png",
+          "bytes": 2944,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/map/overlays/overlay_abyss_outer_chasm_v002.png",
+          "bytes": 2944,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "68ebac7dee76f6a40d4470c6b5e413866091fc0df1fa2f8912b1d5740faa1c5a",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/overlays/overlay_abyss_outer_prism_pedestal_intact_v002.png",
+          "bytes": 2859,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/map/overlays/overlay_abyss_outer_prism_pedestal_intact_v003.png",
+          "bytes": 2859,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "392eced3cdb4dd9d2a705be27ee2f5c21049d31d07a45d8e9e90ac25147fc04b",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_ice_slide_v001.png",
+          "bytes": 2776,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_ice_slide_v001.png",
+          "bytes": 2776,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "d6c1005004a81d6cf9b205e0cd6d479ad511c33e4fd014d10c89322005593b90",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_seabed_floor_v001.png",
+          "bytes": 2746,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_seabed_floor_v001.png",
+          "bytes": 2746,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "6ff26aa66e16d3ca7743fb3a748feaab55c22e5c55fc1c08f93cea4f8b7f57b7",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_dark_shrine_floor_alt_v004.png",
+          "bytes": 2677,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_dark_shrine_floor_alt_v004.png",
+          "bytes": 2677,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "f9c8f1e9a52b05b5c0e52772bd3e9a06e37b0f970cd39620105483ce6d7255ca",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_forest_wall_v001.png",
+          "bytes": 2671,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_forest_wall_v001.png",
+          "bytes": 2671,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "5299b2800a683320bca7ca5e29acedd20274f3459128e671f886f6a277ca9953",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_dark_shrine_floor_alt_v002.png",
+          "bytes": 2654,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_dark_shrine_floor_alt_v002.png",
+          "bytes": 2654,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "06818efa60e38f846a902ac2974e7fa04a5fb58aaa151a75a41ec1924c6c64c1",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/overlays/overlay_abyss_outer_collapsed_pillar_a_v001.png",
+          "bytes": 2653,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/map/overlays/overlay_abyss_outer_fallen_pillar_v002.png",
+          "bytes": 2653,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "8454a3c271cd151baf2f269b66066e9c5e91b1f6a1a69fb7d4d92462b508329c",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_tower_floor_v005.png",
+          "bytes": 2643,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_tower_floor_v005.png",
+          "bytes": 2643,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "2c5aed5d19fe90b7297bc46d6ddd4ed20e28d0e984767bcc0550e498277a2ac2",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_dark_shrine_floor_alt_v003.png",
+          "bytes": 2636,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_dark_shrine_floor_alt_v003.png",
+          "bytes": 2636,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "fe7a716d64b3ba8744324a0cc66cecc23c2de2fdfc1906081fe7cbc3a2691e90",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_grezelia_wall_v001.png",
+          "bytes": 2611,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_grezelia_wall_v001.png",
+          "bytes": 2611,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "3109e460d5af0c043c7a412728114b0dd406d7fe91664dcb82fdfc667cd5a4b2",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_dark_shrine_wall_alt_v002.png",
+          "bytes": 2606,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_dark_shrine_wall_alt_v002.png",
+          "bytes": 2606,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "c9edf64a5cf75c21b0ef9d0747b746cfee2b577b8edf871460becdcda45d3858",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_magma_v004.png",
+          "bytes": 2586,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_magma_v004.png",
+          "bytes": 2586,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "cbd00a8044bae816fb9fac6e8bc92a38c9a33e6ea94c5262f3be7d8619f163e5",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_tower_wall_v005.png",
+          "bytes": 2572,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_tower_wall_v005.png",
+          "bytes": 2572,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "f46e4b0a34d42487677018c91f811f1f63f7a412be56cb6824c155ac217d4bcb",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_dark_shrine_wall_alt_v004.png",
+          "bytes": 2566,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_dark_shrine_wall_alt_v004.png",
+          "bytes": 2566,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "1e3aac1ced55a3da8e09b0f2aa38c61806a257cfb45bb96b6ae66390b9f4997c",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_dark_shrine_wall_alt_v003.png",
+          "bytes": 2549,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_dark_shrine_wall_alt_v003.png",
+          "bytes": 2549,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "54275724adb50ba5d971537a9cb951bdaa15c35e2b675b17f30159b26ee8fd0d",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_crena_water_v001.png",
+          "bytes": 2534,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_crena_water_v001.png",
+          "bytes": 2534,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "e84cb01485f52e2e1219a6ea8aeefb6a44d9ded09eafed4d1a9cb7a8291f9b15",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_light_floor_v005.png",
+          "bytes": 2524,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js",
+            "tools/light-palace-visual-qa.html"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_light_floor_v005.png",
+          "bytes": 2524,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "8d693615a50a49e458d6b1b5a19cad469ab8af141672bf0c9befdd6f9ce441ba",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_forbidden_forest_wall_v004.png",
+          "bytes": 2499,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_forbidden_forest_wall_v004.png",
+          "bytes": 2499,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "174bae40001bb761979ab6cdf8eb5784cea355a7a70f91daa18bb1443a423854",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_forbidden_forest_wall_v003.png",
+          "bytes": 2487,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_forbidden_forest_wall_v003.png",
+          "bytes": 2487,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "8de3a09534a471f848f7e30df6025f39f681d43d152740d4c7bc640302957dd3",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_seabed_floor_alt_v003.png",
+          "bytes": 2476,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_seabed_floor_alt_v003.png",
+          "bytes": 2476,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "4e2ce8197606afe3fab4b98e8da25227a8c3a00156c22c85bdbb929fd6cc79a2",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_seabed_floor_alt_v002.png",
+          "bytes": 2475,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_seabed_floor_alt_v002.png",
+          "bytes": 2475,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "8c3c034d421b99429152aa3cb3939d6a52e02a02df2f967c66f433bf78f91ca8",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_forbidden_forest_wall_v001.png",
+          "bytes": 2473,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js",
+            "tools/validation/validate-visual-assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_forbidden_forest_wall_v001.png",
+          "bytes": 2473,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "0867e3945deca8b517b0b10fd4d28bfbe6dc607a46df670b964183841a0b77a8",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_water_canal_v004.png",
+          "bytes": 2473,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_water_canal_v004.png",
+          "bytes": 2473,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "0afa59901d2596441d7cec5e8a6a37a1d82c62f01995deadfdb68135c79d702f",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_wind_wall_v004.png",
+          "bytes": 2471,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_wind_wall_v004.png",
+          "bytes": 2471,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "167c80e14ab6ed295a3c85f2ceaeef7a641b7341bddb72b088686910c9e05ac0",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_forbidden_forest_wall_v002.png",
+          "bytes": 2462,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_forbidden_forest_wall_v002.png",
+          "bytes": 2462,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "2da2593299d4c68d01f7183ae494552b5065f082080bad420fbbafcd6da2f3fb",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_seabed_floor_alt_v004.png",
+          "bytes": 2451,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_seabed_floor_alt_v004.png",
+          "bytes": 2451,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "520a1bed63040b7c6e12f1555d2a9f29f2bbfb959f83f799a127474ba0ada39a",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_light_wall_v005.png",
+          "bytes": 2406,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js",
+            "tools/light-palace-visual-qa.html"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_light_wall_v005.png",
+          "bytes": 2406,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "d09a191d5093c3f13f75415ffad8be05122e6e7ef386d028a0c7213eb01165a0",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_wind_hole_wall_v003.png",
+          "bytes": 2393,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_wind_hole_wall_v003.png",
+          "bytes": 2393,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "722ee4798b062d2749b453b41813ef35079767216b967531300d0a99ddadbfd1",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_water_pave_v004.png",
+          "bytes": 2392,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_water_pave_v004.png",
+          "bytes": 2392,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "6316a36c293082a4fa24fdfa6f76258a1029d536cf72c0dd85940ea9dedb10d8",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_thunder_floor_v005.png",
+          "bytes": 2390,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_thunder_floor_v005.png",
+          "bytes": 2390,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "ee5424100dc4158585eda1be25dbcce3cd52db5d69a4240af0a6c1a6cb6e969d",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_wind_hole_floor_v002.png",
+          "bytes": 2384,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_wind_hole_floor_v002.png",
+          "bytes": 2384,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "70cd6f073746057ba69787b459c9051b9037f466daf40c00ae1133efccbdfad1",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_wind_hole_wall_v001.png",
+          "bytes": 2384,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js",
+            "tools/validation/validate-visual-assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_wind_hole_wall_v001.png",
+          "bytes": 2384,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "e900d44b94c36e1ba5aedf04cc3cd66ab8860b99a178eb5e075186c97c2d6871",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_wind_hole_wall_v002.png",
+          "bytes": 2366,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_wind_hole_wall_v002.png",
+          "bytes": 2366,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "9f962f062bcd126970ad169a3719dc317d263bc65b6f1f89b1d5539d77432ab4",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_wind_hole_wall_v004.png",
+          "bytes": 2361,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_wind_hole_wall_v004.png",
+          "bytes": 2361,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "b94b6649bc388148c4beed37664ad0668202c7899298da13b1baf05aff72289e",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_wind_hole_floor_v001.png",
+          "bytes": 2355,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js",
+            "tools/validation/validate-visual-assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_wind_hole_floor_v001.png",
+          "bytes": 2355,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "03b414fd1b19a397d1776a1f78d9988f9180d470e94a7acfb7ce479cbc628373",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_wind_hole_floor_v003.png",
+          "bytes": 2344,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_wind_hole_floor_v003.png",
+          "bytes": 2344,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "ac19b03129140ef9167688cd4f4f3c42db9537f0beb0169d016d741d9286fa3a",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_wind_floor_v004.png",
+          "bytes": 2331,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_wind_floor_v004.png",
+          "bytes": 2331,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "b4e77deb89cefe65cbdc5b84c7bb7ed5a77a81ca1eddc7097377c125fb30ee0d",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_wind_hole_floor_v004.png",
+          "bytes": 2316,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_wind_hole_floor_v004.png",
+          "bytes": 2316,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "19be04894f02b4a7ccc3b5f6d1fe2cf5de3800001813787ab5964ded6fd41900",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_grezelia_wall_alt_v002.png",
+          "bytes": 2276,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_grezelia_wall_alt_v002.png",
+          "bytes": 2276,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "20c297e30ce0fc11d871622e5a38511670ce9359dccf386a92ff7f1637887b1a",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_grezelia_wall_alt_v003.png",
+          "bytes": 2273,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_grezelia_wall_alt_v003.png",
+          "bytes": 2273,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "18aa8331da23059f7ddf05f605a4c840c32144859a8b852c87ff311bdfbf5024",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_grezelia_wall_alt_v004.png",
+          "bytes": 2243,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_grezelia_wall_alt_v004.png",
+          "bytes": 2243,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "f4816c55a1182368ed6cfe22a9a0ae722f989031b03638f3a1ec7278ed85b3ce",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_fire_wall_v004.png",
+          "bytes": 2239,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_fire_wall_v004.png",
+          "bytes": 2239,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "07feee60f9db4849f5396940207bbc70aa1edba3f531e40de3e1552f60a83707",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_grezelia_floor_v001.png",
+          "bytes": 2235,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_grezelia_floor_v001.png",
+          "bytes": 2235,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "5b31986c250c6945da77751934daea56ab638fa7c00d8ef67f65e216c53bc1d4",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_abyss_outer_prism_paving_v002_b.png",
+          "bytes": 2228,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/map/terrain/tile_abyss_outer_prism_paving_v003_b.png",
+          "bytes": 2228,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "231378322c232b24ffa7003a80ab313188b98ae34147088ce2037c0d685b4838",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_abyss_outer_prism_paving_v002_d.png",
+          "bytes": 2193,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/map/terrain/tile_abyss_outer_prism_paving_v003_d.png",
+          "bytes": 2193,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "3ecebb950ccc4eaea182f4d78446bd4285ba08cd1bc38ef823db2c5f1e591ba6",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_abyss_outer_prism_paving_v002_a.png",
+          "bytes": 2190,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/map/terrain/tile_abyss_outer_prism_paving_v003_a.png",
+          "bytes": 2190,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "788128d32a87fb89acf9d9bf84f93cf0173962cf4459e978e815e5ae50e41210",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_thunder_floor_alt_v002.png",
+          "bytes": 2157,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_thunder_floor_alt_v002.png",
+          "bytes": 2157,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "a8a9edf1d541bfc37b712187173866efd619602a37d9e14b2aae369bf782cee1",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_thunder_floor_alt_v004.png",
+          "bytes": 2152,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_thunder_floor_alt_v004.png",
+          "bytes": 2152,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "8cb69e688bc3aabeff283623ab06099614bad5cc691595e81edd6db90a84bcd6",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_thunder_floor_alt_v003.png",
+          "bytes": 2148,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_thunder_floor_alt_v003.png",
+          "bytes": 2148,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "0923dfdaf1e344566ba3ba1c1dc689d412177c87d746c728d19204a846dabefa",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_abyss_outer_prism_paving_v002_c.png",
+          "bytes": 2125,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/map/terrain/tile_abyss_outer_prism_paving_v003_c.png",
+          "bytes": 2125,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "9efe688ba416297bc7c198d6585d24aceaec7fe214dfd57d918c0071d784cbf0",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_wind_bridge_v004.png",
+          "bytes": 2117,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_wind_bridge_v004.png",
+          "bytes": 2117,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "af09775afa9fd27ac168947c6b771fc8c7886e584ed6cb782968fff67bf1fede",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_dark_floor_v005.png",
+          "bytes": 2113,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_dark_floor_v005.png",
+          "bytes": 2113,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "5b5b9f005cf677b1c17ab4b2004868f45f30285ba1b595c7d6956169b4ee971d",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_poison_bog_v001.png",
+          "bytes": 2110,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_poison_bog_v001.png",
+          "bytes": 2110,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "f11e3f9ad2fe1c9bdb14898490a5ceee8f1ca30d7fda6c4af7c359f178963a63",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_thunder_wall_v005.png",
+          "bytes": 2095,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_thunder_wall_v005.png",
+          "bytes": 2095,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "269100ea675820fe0192484fb83e9494417fa7ac7cd9c83f982fef870164f287",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_water_bridge_v004.png",
+          "bytes": 2086,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_water_bridge_v004.png",
+          "bytes": 2086,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "5b777abf7273956fa92f4953329e866a6a9dd736da644caf81af1bffa56e3b10",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_grezelia_floor_alt_v002.png",
+          "bytes": 2041,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_grezelia_floor_alt_v002.png",
+          "bytes": 2041,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "e0fef9acd96fde8e7ad2acb1d68b0f632e10ed4fda3972ff9a60a5ad8e78cd31",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_fire_floor_v004.png",
+          "bytes": 2039,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_fire_floor_v004.png",
+          "bytes": 2039,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "4d078d0f0fd57eb966bf5be1bbe4fbe4398e762cdabf09421a4c88f1427cc8f3",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_thunder_wall_alt_v004.png",
+          "bytes": 2021,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_thunder_wall_alt_v004.png",
+          "bytes": 2021,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "87f0290a82f8a20554b85566b70bbbe2dd71ab9562b607b021d6903b456ffe5e",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_grezelia_floor_alt_v003.png",
+          "bytes": 2019,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_grezelia_floor_alt_v003.png",
+          "bytes": 2019,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "baa0f3afd43e10dd4abd37c66cad569c1351470419708d0208d0a9eb0614a67a",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_thunder_wall_alt_v002.png",
+          "bytes": 2019,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_thunder_wall_alt_v002.png",
+          "bytes": 2019,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "f5382396e23049617b8d038f7eea9b440acc5bdefd24b8effa64f06e3c740957",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_thunder_wall_alt_v003.png",
+          "bytes": 2001,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_thunder_wall_alt_v003.png",
+          "bytes": 2001,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "a8a2d74b3a222b9353c87d17f4143ab98f6e981dd3fd5ceec2329cc5b888adc8",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_dark_floor_alt_v002.png",
+          "bytes": 1995,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_dark_floor_alt_v002.png",
+          "bytes": 1995,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "bb1d94c63215ed8f056554587450222ba93058845d46a99ae1054aaf5aae978d",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_grezelia_floor_alt_v004.png",
+          "bytes": 1987,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_grezelia_floor_alt_v004.png",
+          "bytes": 1987,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "c38b714f7712f9e72ca921ae2e1dfa31ba1a590f90d6e038886a85477eb89d25",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_dark_floor_alt_v004.png",
+          "bytes": 1980,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_dark_floor_alt_v004.png",
+          "bytes": 1980,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "ebe86fb8335825e094d8a75f958d1f8c68eb9c78f767eb1b4b5b461f7528290c",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_dark_floor_alt_v003.png",
+          "bytes": 1969,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_dark_floor_alt_v003.png",
+          "bytes": 1969,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "cff397d769bb462c5007ebd8a39641116956014f848472bbaf38c3c4282deeb4",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_magma_v003.png",
+          "bytes": 1956,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_magma_v003.png",
+          "bytes": 1956,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "47df80ea6e1e99ec58e03193d2a1b72c6cc9c164275aa5fc78e497ec9eee1fae",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_forbidden_forest_floor_v002.png",
+          "bytes": 1918,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_forbidden_forest_floor_v002.png",
+          "bytes": 1918,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "104b93068a2429a09e8ccb677a17eca580d13419a6eecc11f6ca86455907aab7",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_forbidden_forest_floor_v004.png",
+          "bytes": 1903,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_forbidden_forest_floor_v004.png",
+          "bytes": 1903,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "1f7109dd58677c87c1f3a04bf9b1e598575f1148929b1a2be272298b743641f4",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_forbidden_forest_floor_v001.png",
+          "bytes": 1878,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js",
+            "tools/validation/validate-visual-assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_forbidden_forest_floor_v001.png",
+          "bytes": 1878,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "14a918a17c2dc437e7808d7c91d6bfa41d5f9a2c4c89880143756554b2c06e61",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_dark_wall_v005.png",
+          "bytes": 1868,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_dark_wall_v005.png",
+          "bytes": 1868,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "1fbd93bd392237ed089d3092dccc44eac4cc4ddc5521ce61dacaab5362d701ce",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_forbidden_forest_floor_v003.png",
+          "bytes": 1863,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_forbidden_forest_floor_v003.png",
+          "bytes": 1863,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "3f7285d386d83c863506684e9a92154a607905497fff0f3805ec05347eed9e73",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_dark_wall_alt_v004.png",
+          "bytes": 1825,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_dark_wall_alt_v004.png",
+          "bytes": 1825,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "7886915b3cf1a90dcd6cc7f7a779bba39e2e3214675d1b045a13259b55effde0",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_dark_wall_alt_v003.png",
+          "bytes": 1808,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_dark_wall_alt_v003.png",
+          "bytes": 1808,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "cb06409cf9b3456afcddeda557f9fe477577fa29640476038e32feeaf84d31dd",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_dark_wall_alt_v002.png",
+          "bytes": 1796,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_dark_wall_alt_v002.png",
+          "bytes": 1796,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "5c97ad56653dc553046416f65921a58849243a7f8703b61343a8d40aa0fedc76",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_abyss_outer_floor_alt_v002.png",
+          "bytes": 1782,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/map/terrain/tile_abyss_outer_ritual_floor_v002_b.png",
+          "bytes": 1782,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "4edf62147eb33fd466644111aa3f4a96be29b7de1e086d65c1ffc9fbdcfe36fa",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_abyss_outer_floor_v001.png",
+          "bytes": 1751,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/map/terrain/tile_abyss_outer_ritual_floor_v002_a.png",
+          "bytes": 1751,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "39df90da033e31104d676f0466c33031b4510c0f236c65b7d9023f5d8b8aafd1",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_abyss_outer_floor_alt_v004.png",
+          "bytes": 1723,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/map/terrain/tile_abyss_outer_ritual_floor_v002_d.png",
+          "bytes": 1723,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "6bc2302cd8c93c9d8b1ff95d01cbfd52ba7f440d1f9372127192b3709614136a",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_abyss_outer_floor_alt_v003.png",
+          "bytes": 1708,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/map/terrain/tile_abyss_outer_ritual_floor_v002_c.png",
+          "bytes": 1708,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "aebc86755d7beb8b01bcd992ab44e1133afcb473511b7832eb82228be275473f",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/overlays/overlay_dungeon_event_v002.png",
+          "bytes": 334,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/map/overlays/overlay_dungeon_portal_v002.png",
+          "bytes": 334,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/map/overlays/overlay_field_empty_v002.png",
+          "bytes": 334,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/map/overlays/overlay_field_grass_v002.png",
+          "bytes": 334,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/map/overlays/overlay_field_stairs_v002.png",
+          "bytes": 334,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        }
+      ]
+    },
+    {
+      "hash": "22286dc7addb945c6e28aa76bce816fbd81f5579db7b5f4d0868a6349f6332e7",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_light_floor_v003.png",
+          "bytes": 799,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_light_floor_v003.png",
+          "bytes": 799,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "febee9f7bc5f973efff07f265ff7b81346f538a394051041dd37ea322d74a28d",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_wind_floor_v003.png",
+          "bytes": 780,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_wind_floor_v003.png",
+          "bytes": 780,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "22e8504a1c38a02d374d777b267e27c4c9adb7ccb0b79b4a0e7a0a3cd94456a7",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_tower_floor_v003.png",
+          "bytes": 769,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_tower_floor_v003.png",
+          "bytes": 769,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "c8eb8b3e2006a2cc8035ea568a971580491e5c95ccc310909139310d86b995d5",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_abyss_grass_v003.png",
+          "bytes": 743,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_abyss_grass_v003.png",
+          "bytes": 743,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "877df0aab799716f86bf7e1a07f0e24afc79cbcce41d5cfb70de05bdc425bc6d",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_fire_floor_v003.png",
+          "bytes": 616,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_fire_floor_v003.png",
+          "bytes": 616,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "c3e4dcfd051f0c091f544ab34823d0308005ca7b837d6843b2aa2d1be1a33141",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_abyss_path_v003.png",
+          "bytes": 608,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_abyss_path_v003.png",
+          "bytes": 608,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "c3edefa98fd62738de0bc402cba7817e839cd6e8c385f802afc6aad328893f46",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_water_pave_v003.png",
+          "bytes": 601,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_water_pave_v003.png",
+          "bytes": 601,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "906ec136e1858beff06dec9c8d6613759d2761321581c481278f37b35c574211",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_dark_floor_v003.png",
+          "bytes": 588,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_dark_floor_v003.png",
+          "bytes": 588,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "aaa6389272946a2a609e7b4d4dcf23f3534ebc9f332ef88cd0e00e88dec6713e",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_fire_wall_v003.png",
+          "bytes": 578,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_fire_wall_v003.png",
+          "bytes": 578,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "cc186fa262c76f7edfed3e39cb43e4b9c2e9f25b8af2e4fb5b3618660f7e2f13",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_shrine_floor_v003.png",
+          "bytes": 561,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_shrine_floor_v003.png",
+          "bytes": 561,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "3771f075f32b27b398a1d84bf4281a43a11cc6fe02f6d9852a28741c321f425f",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_light_wall_v003.png",
+          "bytes": 553,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_light_wall_v003.png",
+          "bytes": 553,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "e79e51705fdfae2b32f6de2457c574264cf1f0d9f648c1e74542d8b68a0448f1",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_tower_wall_v003.png",
+          "bytes": 517,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_tower_wall_v003.png",
+          "bytes": 517,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "6365190451a9ab98aabab85e3e7359e712b646e5f75bd7f4bfa809aacda8181a",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_wind_wall_v003.png",
+          "bytes": 513,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_wind_wall_v003.png",
+          "bytes": 513,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "1975380d873e751c8ae6fda3208db715b29ff24493ede6048e82ecae8a1420c1",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_water_canal_v003.png",
+          "bytes": 498,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_water_canal_v003.png",
+          "bytes": 498,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "c1e95fb8c317da65a8170a02a5e1012104245113108866958516a833a5a0bbbd",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_shrine_wall_v003.png",
+          "bytes": 490,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_shrine_wall_v003.png",
+          "bytes": 490,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "a6b4d8ca0e6a67ef509708e9a081a7e269bace508546bb53385c473c1d63f8c0",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_dark_wall_v003.png",
+          "bytes": 466,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_dark_wall_v003.png",
+          "bytes": 466,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "60ef394b06972c2211c277ad9a5993e0d2472db5075cd5fa57174046c89b441f",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_water_bridge_v003.png",
+          "bytes": 222,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/map/terrain/tile_wind_bridge_v003.png",
+          "bytes": 222,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_water_bridge_v003.png",
+          "bytes": 222,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_wind_bridge_v003.png",
+          "bytes": 222,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "8c31a0f376a5b6b7ed8db0bdb8d9e438e1d14d8077cbd32f79fbe8020b2e6e92",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_fire_wall.png",
+          "bytes": 408,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_fire_wall.png",
+          "bytes": 408,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "f16f78c8a76f13775c5bade4a7d3df24cc822b3159c31be7e2911083ed5f9d0f",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_thunder_wall_v003.png",
+          "bytes": 334,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_thunder_wall_v003.png",
+          "bytes": 334,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "742b17cd0d4a16d9eb9855b6f1bc04be27b1962025a3247a72d79f02315d416f",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_thunder_floor_v003.png",
+          "bytes": 325,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_thunder_floor_v003.png",
+          "bytes": 325,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "2f432d02b6d36f920d89decb00bf102f8354fc296fc9d6f385754c6268c4d2df",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_fire_floor.png",
+          "bytes": 196,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_fire_floor.png",
+          "bytes": 196,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "91a823fe64fff971be726848d41760a0ad42c4f29fa3e6f7ab3e9ec2148b0a5b",
+      "classification": "review-unreferenced-duplicates",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_stone_tablet.png",
+          "bytes": 184,
+          "registryReference": true,
+          "directReferences": [
+            "assets.js"
+          ],
+          "activeReference": true
+        },
+        {
+          "path": "assets/terrain/tile_stone_tablet.png",
+          "bytes": 184,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "a963790ed47f30af1d39ab43f25f831e4ab54d173ac7e89ba4a9df5ddc2cc19c",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_light_floor.png",
+          "bytes": 180,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_light_floor.png",
+          "bytes": 180,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "924f85c85821c2b3b55401ad04d92f59957fc67a30868c4d9a376c07b7cacfa1",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_light_wall.png",
+          "bytes": 178,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_light_wall.png",
+          "bytes": 178,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "7d1020436ca226ad2e8a8aacffa79ab89912a9bc69a0d4d0e5aad1ca655ed0f9",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_thunder_floor.png",
+          "bytes": 161,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_thunder_floor.png",
+          "bytes": 161,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "45b597a348e9939afd046e0546cac8a4d4cc8a61d907b3727735413cc6f82f90",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_thunder_wall.png",
+          "bytes": 161,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_thunder_wall.png",
+          "bytes": 161,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "1999dd108f93bc563ac26153b0ed539908b153b57e3da2feaf7c6c9329a27e35",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_water_canal.png",
+          "bytes": 153,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_water_canal.png",
+          "bytes": 153,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "534bc766756b3515cd271828104f8dd7af8c013a159973ea687442fc7ca04580",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_dark_wall.png",
+          "bytes": 144,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_dark_wall.png",
+          "bytes": 144,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "ab6d798a02bfce59b6ca32b4f11d3d704a4a384f2461d651513d508fe6f75ea2",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_shrine_wall.png",
+          "bytes": 139,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_shrine_wall.png",
+          "bytes": 139,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "350ad156294856fa343ca2ee3ae58c40c4d7ca9fcf887de461a6731e71415cb3",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_tower_wall.png",
+          "bytes": 139,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_tower_wall.png",
+          "bytes": 139,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "de3bcd5877cc0bda7d5be3e7b16f782e48d335c9b4c477f46b276b9645269409",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_wind_wall.png",
+          "bytes": 139,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_wind_wall.png",
+          "bytes": 139,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "9e36b3650087630a13ddcaec10fb98fe86565d459198c91e618d09709037a694",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_abyss_grass.png",
+          "bytes": 131,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_abyss_grass.png",
+          "bytes": 131,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "5e1cc44980d4ed1ab49012cc2ad265ba861b55c813c68dddc9b051f5584ec765",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_wind_floor.png",
+          "bytes": 131,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_wind_floor.png",
+          "bytes": 131,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "2c4e5313475d4398c9e46c385b4d60bd387a37d852dd5b10591fad2a4d96d5a3",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_tower_floor.png",
+          "bytes": 127,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_tower_floor.png",
+          "bytes": 127,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "84aa38d6b351171206d1f3315a3d79a0968f34b65bcc001ea46298dfdf79740e",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_water_pave.png",
+          "bytes": 127,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_water_pave.png",
+          "bytes": 127,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "199c3816e0614d2fa53473f34d4d348f906ef3e9620022ad5d0850a9cf7db9b5",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_abyss_path.png",
+          "bytes": 126,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_abyss_path.png",
+          "bytes": 126,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "2a2d939ecec406cbe8bfc50ece486adc4957877e5bc74cd2018f37360de02cbb",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_dark_floor.png",
+          "bytes": 126,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_dark_floor.png",
+          "bytes": 126,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "1a9d3180d7a33acf3bb8cd80e53bc10a6ecadab78a4a190d67a2e0d5a959a0b2",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_shrine_floor.png",
+          "bytes": 126,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_shrine_floor.png",
+          "bytes": 126,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "72d4095ee07e93c8baf279b07df65259c3ae94cd7b0308209e85b228b05b20a1",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_water_bridge.png",
+          "bytes": 126,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_water_bridge.png",
+          "bytes": 126,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    },
+    {
+      "hash": "20726097175c5f4d3f57fd203e8eb98be58979db3616b0c50690295119a0f94b",
+      "classification": "review-orphan-duplicate-group",
+      "files": [
+        {
+          "path": "assets/map/terrain/tile_wind_bridge.png",
+          "bytes": 126,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        },
+        {
+          "path": "assets/terrain/tile_wind_bridge.png",
+          "bytes": 126,
+          "registryReference": false,
+          "directReferences": [],
+          "activeReference": false
+        }
+      ]
+    }
+  ]
+}

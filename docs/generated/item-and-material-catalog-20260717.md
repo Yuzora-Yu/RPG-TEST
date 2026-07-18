@@ -3,7 +3,7 @@
 ## 正本とID帯
 
 - 既存道具: `items.js`
-- 追加道具・素材: `item-expansion.js`
+- 追加道具・素材: `items.js`（各IDを個別データとして明示登録）
 - 戦闘／非戦闘共通処理: `item_runtime.js`
 - 通常敵ドロップ方針: `monster-drop-policy.js`
 - 追加戦闘道具: ID 1000–1079内の64件

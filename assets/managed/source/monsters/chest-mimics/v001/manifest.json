@@ -1,0 +1,36 @@
+{
+  "version": "2026-07-18-v002-unified-monster-path",
+  "assetType": "battle-monster-cutout-source",
+  "generator": "built-in image generation with local chroma-key removal",
+  "normalizer": "tools/assets/normalize-chest-mimics.py",
+  "outputDirectory": "assets/monsters",
+  "outputPattern": "monster_{monsterId}.png",
+  "canvas": {
+    "width": 768,
+    "height": 768,
+    "format": "PNG RGBA"
+  },
+  "assets": [
+    {
+      "monsterId": 120301,
+      "name": "貪欲箱グラット",
+      "rank": 50,
+      "output": "assets/monsters/monster_120301.png",
+      "source": "monster_120301-chroma-v001.png"
+    },
+    {
+      "monsterId": 120302,
+      "name": "呪宝箱パンドラ",
+      "rank": 120,
+      "output": "assets/monsters/monster_120302.png",
+      "source": "monster_120302-chroma-v001.png"
+    },
+    {
+      "monsterId": 120303,
+      "name": "深淵宝匣アケロン",
+      "rank": 170,
+      "output": "assets/monsters/monster_120303.png",
+      "source": "monster_120303-chroma-v001.png"
+    }
+  ]
+}

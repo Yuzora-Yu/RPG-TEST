@@ -136,6 +136,7 @@ if ('serviceWorker' in navigator) {
             <div id="phaser-field-root" aria-hidden="true"></div>
             <canvas id="field-canvas" width="320" height="320"></canvas>
             <canvas id="field-minimap-canvas" width="80" height="80" aria-hidden="true"></canvas>
+            <div id="field-key-hud" aria-label="所持中のダンジョン鍵"></div>
             <button id="field-minimap-hotspot" type="button" aria-label="MAP" onclick="Field.handleMinimapTap(event)"></button>
             <button id="field-minimap-restore" type="button" onclick="Field.restoreMinimap(event)">MAP</button>
             <div class="ui-layer">
@@ -478,7 +479,6 @@ if ('serviceWorker' in navigator) {
 <script src="vendor/phaser/phaser.min.js"></script>
 <script src="skills.js"></script>
 <script src="items.js"></script>
-<script src="item-expansion.js"></script>
 <script src="monsters.js"></script>
 <script src="chest-mimics.js"></script>
 <script src="monster-drop-policy.js"></script>

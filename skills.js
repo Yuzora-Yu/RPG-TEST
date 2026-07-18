@@ -389,3 +389,7 @@ window.SKILLS_DATA = [
     { "id": 715, "name": "心ない天使",
       "type": "特殊", "target": "単体", "mp": 99, "rate": 0, "count": 1, "base": 0, "desc": "無慈悲な一撃", "priority": -5, "SuccessRate": 100, "PercentDamage": 0.99 }
 ];
+
+window.PRISMA_SKILL_ORDER = Object.freeze({
+    compareById: (left, right) => Number(left?.id || 0) - Number(right?.id || 0)
+});

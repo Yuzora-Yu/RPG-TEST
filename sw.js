@@ -20,8 +20,8 @@ try {
   console.warn("[SW] assets.js の読み込みに失敗しました。画像初回キャッシュは最小限で続行します。", error);
 }
 
-const CACHE_NAME = "prisma-abyss-v3.100-battle-logic-ui";
-const RUNTIME_CACHE_NAME = "prisma-abyss-v3.100-battle-logic-ui-runtime";
+const CACHE_NAME = "prisma-abyss-v3.119-summit-sky-cloud";
+const RUNTIME_CACHE_NAME = "prisma-abyss-v3.119-summit-sky-cloud-runtime";
 const WARM_CACHE_META_KEY = "__prisma_abyss_warm_cache_complete__";
 
 // 起動に必要な App Shell。
@@ -71,7 +71,6 @@ const PRECACHE_FILES = [
   "dungeon.js",
   "facilities.js",
   "items.js",
-  "item-expansion.js",
   "job_data.js",
   "map.js",
   "story.js",
@@ -185,31 +184,51 @@ const isWarmCacheComplete = async (version) => {
   }
 };
 
+const fetchAndCacheWithRetry = async (cache, request, maxAttempts = 3) => {
+  let lastError = null;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const retryRequest = new Request(request, { cache: attempt === 1 ? "reload" : "no-cache" });
+      const response = await fetch(retryRequest);
+      if (!response || !response.ok) throw new Error(`HTTP ${response ? response.status : "ERR"}`);
+      await cache.put(request, response.clone());
+      return true;
+    } catch (error) {
+      lastError = error;
+      if (attempt < maxAttempts) await sleep(180 * attempt);
+    }
+  }
+  console.warn(`[SW] キャッシュ取得を${maxAttempts}回試行しても失敗: ${request.url}`, lastError);
+  return false;
+};
+
 const warmCacheList = async (urls, options = {}) => {
   const cache = await caches.open(RUNTIME_CACHE_NAME);
   const uniqueUrls = Array.from(new Set((urls || []).filter(Boolean)));
   const batchSize = options.batchSize || 6;
   const delayMs = options.delayMs || 120;
+  const failedUrls = [];
 
   for (let i = 0; i < uniqueUrls.length; i += batchSize) {
     const batch = uniqueUrls.slice(i, i + batchSize);
 
-    await Promise.allSettled(batch.map(async (url) => {
+    const results = await Promise.all(batch.map(async (url) => {
       const request = toSameOriginRequest(url);
-      if (!request) return;
+      if (!request) return true;
 
       const cached = await cache.match(request);
-      if (cached) return;
+      if (cached) return true;
 
-      const response = await fetch(request);
-      if (response && response.ok) {
-        await cache.put(request, response.clone());
-      }
+      return fetchAndCacheWithRetry(cache, request, 3);
     }));
+    results.forEach((ok, index) => {
+      if (!ok) failedUrls.push(batch[index]);
+    });
 
     // 一気に大量取得すると、プレイ中の通信や描画に影響するため少し間隔を空ける。
     if (i + batchSize < uniqueUrls.length) await sleep(delayMs);
   }
+  return failedUrls;
 };
 
 const warmCacheInBackground = async (payload = {}) => {
@@ -223,12 +242,30 @@ const warmCacheInBackground = async (payload = {}) => {
   const backgroundImages = payload.backgroundImages || [];
 
   // 先にロード画面/初戦闘向けを少数キャッシュ。
-  await warmCacheList(criticalImages, { batchSize: 10, delayMs: 40 });
+  const failedUrls = await warmCacheList(criticalImages, { batchSize: 8, delayMs: 40 });
 
   // install時に取りこぼした画像の再試行。起動処理では待たないが、以前より速めに温める。
-  await warmCacheList(backgroundImages, { batchSize: 8, delayMs: 80 });
+  failedUrls.push(...await warmCacheList(backgroundImages, { batchSize: 6, delayMs: 80 }));
 
+  // 1件でも不足した状態を「全件完了」と記録しない。次回の起動・設定操作で再試行する。
+  if (failedUrls.length) {
+    console.warn(`[SW] 全画像キャッシュ未完了: ${failedUrls.length}件を次回再試行します。`, failedUrls);
+    return;
+  }
   await markWarmCacheComplete(version);
+};
+
+const precacheRequiredList = async (cache, files, batchSize = 8) => {
+  const uniqueFiles = Array.from(new Set(files || []));
+  for (let i = 0; i < uniqueFiles.length; i += batchSize) {
+    const batch = uniqueFiles.slice(i, i + batchSize);
+    const results = await Promise.all(batch.map(async file => {
+      const request = new Request(file, { cache: "reload" });
+      return fetchAndCacheWithRetry(cache, request, 3);
+    }));
+    const failedIndex = results.findIndex(ok => !ok);
+    if (failedIndex >= 0) throw new Error(`Required precache failed: ${batch[failedIndex]}`);
+  }
 };
 
 self.addEventListener("install", (event) => {
@@ -238,18 +275,10 @@ self.addEventListener("install", (event) => {
     caches.open(CACHE_NAME).then(async (cache) => {
       // 新版の必須画像が一つでも取得できなければinstallを失敗させる。
       // 旧Service Workerと旧キャッシュを残し、更新直後の画像欠落を防ぐ。
-      await Promise.all(
-        Array.from(new Set(INSTALL_IMAGE_PRECACHE)).map((file) =>
-          cache.add(new Request(file, { cache: "reload" }))
-        )
-      );
+      await precacheRequiredList(cache, INSTALL_IMAGE_PRECACHE, 8);
 
       // App Shellも同じ更新単位で確立する。必須ファイルが欠けた新版へ切り替えない。
-      await Promise.all(
-        Array.from(new Set(PRECACHE_FILES)).map((file) =>
-          cache.add(new Request(file, { cache: "reload" }))
-        )
-      );
+      await precacheRequiredList(cache, PRECACHE_FILES, 8);
     })
   );
 });

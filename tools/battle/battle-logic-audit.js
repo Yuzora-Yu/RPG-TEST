@@ -51,7 +51,7 @@ function loadRuntime(randomValue = 0.1) {
     dataContext.Math = Object.create(Math);
     dataContext.Math.random = nextRandom;
     vm.createContext(dataContext);
-    for (const file of ['skills.js', 'items.js', 'item-expansion.js', 'monsters.js', 'chest-mimics.js', 'monster-drop-policy.js', 'item_runtime.js']) {
+    for (const file of ['skills.js', 'items.js', 'monsters.js', 'chest-mimics.js', 'monster-drop-policy.js', 'item_runtime.js']) {
         vm.runInContext(read(file), dataContext, { filename: file });
     }
 

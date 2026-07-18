@@ -42,17 +42,19 @@ const MenuItems = {
     },
 
     getToolSortRank: (def) => {
-        if (!def) return 99;
-        if (def.type === '乗り物') return 0;
-        if (def.type === '移動' || def.id === 110 || def.name === 'スカイプリズム') return 1;
-        return 2;
+        return window.PRISMA_ITEM_CATALOG?.getToolTypeSortRank
+            ? window.PRISMA_ITEM_CATALOG.getToolTypeSortRank(def)
+            : 99;
     },
 
     sortItemsForCurrentTab: (items) => {
         return items.slice().sort((a, b) => {
             if (MenuItems.activeTab === 'tools') {
-                const rankDiff = MenuItems.getToolSortRank(a.def) - MenuItems.getToolSortRank(b.def);
-                if (rankDiff !== 0) return rankDiff;
+                if (window.PRISMA_ITEM_CATALOG?.compareToolsByTypeAndId) {
+                    return window.PRISMA_ITEM_CATALOG.compareToolsByTypeAndId(a.def, b.def);
+                }
+                const typeDiff = MenuItems.getToolSortRank(a.def) - MenuItems.getToolSortRank(b.def);
+                if (typeDiff !== 0) return typeDiff;
             }
             const itemRankDiff = Number(a.def.rank || 9999) - Number(b.def.rank || 9999);
             if (itemRankDiff !== 0) return itemRankDiff;

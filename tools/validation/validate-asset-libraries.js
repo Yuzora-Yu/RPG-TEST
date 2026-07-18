@@ -94,15 +94,13 @@ for (const source of [read('assets.js'), read('monster-images.js'), read('monste
     }
 }
 
-if (assets.cacheWarmup?.version !== '2026-07-17-battle-logic-ui-v40') {
+if (assets.cacheWarmup?.version !== '2026-07-18-summit-temple-sky-v55') {
     errors.push('assets.js cache warmup version is stale');
 }
-if (!read('main.js').includes("fullDataCacheName: 'prisma-abyss-v3.100-battle-logic-ui-runtime'")) {
-    errors.push('main.js full-data cache version is stale');
-}
-if (!read('sw.js').includes('const RUNTIME_CACHE_NAME = "prisma-abyss-v3.100-battle-logic-ui-runtime"')) {
-    errors.push('sw.js runtime cache version is stale');
-}
+const mainCacheName = read('main.js').match(/fullDataCacheName:\s*'([^']+)'/)?.[1] || '';
+const swRuntimeCacheName = read('sw.js').match(/const RUNTIME_CACHE_NAME = "([^"]+)"/)?.[1] || '';
+if (!mainCacheName || !mainCacheName.endsWith('-runtime')) errors.push('main.js full-data cache version is missing or malformed');
+if (!swRuntimeCacheName || mainCacheName !== swRuntimeCacheName) errors.push('main.js and sw.js runtime cache versions are not aligned');
 
 if (errors.length) {
     console.error(`Asset library validation failed (${errors.length}):`);

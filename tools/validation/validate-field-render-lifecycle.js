@@ -86,7 +86,7 @@ if (!stableBranch.includes("field.drawHudMinimap()")) errors.push('bucket reuse 
 const atmosphereStart = phaserSource.indexOf('const drawAtmosphere =');
 const atmosphereEnd = phaserSource.indexOf('const getStaticSignature =', atmosphereStart);
 const atmosphereBlock = phaserSource.slice(atmosphereStart, atmosphereEnd);
-if (!atmosphereBlock.includes('if (!dungeon ||')) errors.push('town/village atmosphere darkness is not disabled');
+if (!atmosphereBlock.includes('if ((!dungeon && !isSummitTemple)')) errors.push('town/village atmosphere darkness is not disabled outside the authored Summit cloud-shadow exception');
 if (atmosphereBlock.includes('edgeAlpha') || atmosphereBlock.includes('scene.scale.height - 26')) errors.push('dungeon black edge rectangles are still rendered');
 if (!atmosphereBlock.includes('atmosphereMargin = TILE_SIZE') || !atmosphereBlock.includes('logicalWidth + atmosphereMargin * 2')) errors.push('dungeon darkness does not cover the one-tile camera margin');
 if (!atmosphereBlock.includes('duration: 3000') || !atmosphereBlock.includes("stableHash(areaKey, floor, index)")) errors.push('dungeon motes are not persistent three-second animations');
@@ -99,7 +99,7 @@ if (playerBlock.includes('scene.add.circle(px, py - TILE_SIZE / 2, 10, 0xffffff)
 if (!playerBlock.includes("fallbackKeys.find")) errors.push('player texture fallback chain is missing');
 if (!playerBlock.includes('state.atmosphereLight.setPosition(px, py - TILE_SIZE / 2)')) errors.push('dungeon center light is not updated with the hero every frame');
 if (!playerBlock.includes('addShadow(scene, px, py - 2, 16, 0.34')) errors.push('player foot shadow is not confined to a visible contact shadow beneath the feet');
-if (!phaserSource.includes('if (!parts.worldOverlay && !wallOverlay && !building')) errors.push('world map point tiles can still receive synthetic object shadows');
+if (!phaserSource.includes('!parts.worldOverlay && !wallOverlay && !building')) errors.push('world map point tiles can still receive synthetic object shadows');
 const changeSceneStart = mainSource.indexOf('changeScene: (sceneId) =>');
 const fieldObjectStart = mainSource.indexOf('const Field =', changeSceneStart);
 const changeSceneBlock = mainSource.slice(changeSceneStart, fieldObjectStart);
@@ -130,7 +130,9 @@ const installStart = swSource.indexOf('self.addEventListener("install"');
 const activateStart = swSource.indexOf('self.addEventListener("activate"');
 const installBlock = swSource.slice(installStart, activateStart);
 if (installBlock.includes('Promise.allSettled')) errors.push('Service Worker update can activate with an incomplete critical cache');
-if (!installBlock.includes('Array.from(new Set(INSTALL_IMAGE_PRECACHE))')) errors.push('Service Worker install does not require the critical image set');
+if (!swSource.includes('const uniqueFiles = Array.from(new Set(files || []))') || !installBlock.includes('precacheRequiredList(cache, INSTALL_IMAGE_PRECACHE')) {
+  errors.push('Service Worker install does not require the deduplicated critical image set');
+}
 if (!swSource.includes('key.startsWith("prisma-abyss-")')) errors.push('Service Worker cache cleanup is not scoped to this game');
 if (!facilitiesSource.includes("? App.hasEnteredAbyss()")) errors.push('inn teleport visibility is not gated by first Abyss entry');
 if (!facilitiesSource.includes(": '';")) errors.push('locked inn teleport door is not fully hidden');
@@ -182,12 +184,17 @@ if (!wallGraphicBlock.includes('theme: { W: sharedWallTile }')) errors.push('wat
 if (!wallGraphicBlock.includes('wallFaceTheme: sharedWallFaceTheme')) errors.push('theme-specific wall accents are not passed to the shared wall resolver');
 if (!wallGraphicBlock.includes('tileAtFn: (x, y) => Field.getRenderedTileForDraw(x, y, mapW, mapH, areaKey)')) errors.push('wall faces no longer evaluate exposed rows through runtime map mutations');
 const wallThemeMapSource = read('map.js');
+const wallThemeContext = { console, window: {} };
+wallThemeContext.globalThis = wallThemeContext;
+vm.createContext(wallThemeContext);
+vm.runInContext(`${wallThemeMapSource}\nglobalThis.__WALL_THEMES = DUNGEON_WALL_FACE_THEMES;`, wallThemeContext, { filename: 'map.js' });
+const wallThemeRegistry = wallThemeContext.__WALL_THEMES || {};
 for (const themeKey of ['START_CAVE', 'FIRE_VILLAGE', 'WIND_VILLAGE', 'WIND_HOLE', 'BIG_TOWER', 'THUNDER_FORT', 'LIGHT_PALACE', 'DARK_CASTLE', 'GALVANIA_CAVE', 'DARK_SHRINE_RUINS', 'GREZELIA_CAVE']) {
-  if (!wallThemeMapSource.includes(`${themeKey}: Object.freeze({ img:`)) errors.push(`wall-face registry is missing ${themeKey}`);
+  if (!wallThemeRegistry[themeKey]?.img) errors.push(`wall-face registry is missing ${themeKey}`);
 }
-if (!wallThemeMapSource.includes('FORBIDDEN_FOREST: Object.freeze({ disabled: true, reason: "theme-wall-variants" })')) errors.push('Forbidden Forest no longer preserves its authored wall variants');
+if (wallThemeRegistry.FORBIDDEN_FOREST?.disabled !== true || wallThemeRegistry.FORBIDDEN_FOREST?.reason !== 'theme-wall-variants') errors.push('Forbidden Forest no longer preserves its authored wall variants');
 for (const waterThemeKey of ['CRENA_CAVE', 'SEABED_TEMPLE']) {
-  if (!wallThemeMapSource.includes(`${waterThemeKey}: Object.freeze({ disabled: true, reason: "water-surface-W" })`)) errors.push(`water-surface theme is not explicitly excluded: ${waterThemeKey}`);
+  if (wallThemeRegistry[waterThemeKey]?.disabled !== true || wallThemeRegistry[waterThemeKey]?.reason !== 'water-surface-W') errors.push(`water-surface theme is not explicitly excluded: ${waterThemeKey}`);
 }
 if (phaserSource.includes('overlay_decor_stone_cracks') || !phaserSource.includes("LIGHT_PALACE: { key: 'overlay_decor_light_palace_prism'")) {
   errors.push('Light Palace still receives generic gray floor debris instead of its prism inlay');
