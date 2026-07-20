@@ -770,7 +770,7 @@ const App = {
 
 	// 全画像データの手動/初回ダウンロード用キャッシュ名。
 	// sw.js の RUNTIME_CACHE_NAME と揃えること。
-    fullDataCacheName: 'prisma-abyss-v3.122-summit-clouds-runtime',
+    fullDataCacheName: 'prisma-abyss-v3.123-offline-shell-runtime',
 
 
 	// 初回起動時の「全データを今ダウンロードしますか？」で「いいえ」を選んだ記録。
@@ -3440,7 +3440,12 @@ const App = {
                 const c = App.data.characters.find(ch => ch.uid === App.data.party[0]);
                 if(c) { name = c.name; lv = c.level; }
             }
-            btn.innerHTML = `続きから<br><span style="font-size:12px">(${name} Lv.${lv})</span>`;
+            btn.textContent = '続きから';
+            const detail = document.createElement('span');
+            detail.style.fontSize = '12px';
+            detail.textContent = `(${name} Lv.${lv})`;
+            btn.appendChild(document.createElement('br'));
+            btn.appendChild(detail);
         } 
     },
 
@@ -3485,23 +3490,45 @@ load: () => {
 },
 
 	
-    save: () => { 
-        if(App.data && Field.ready) { 
-            App.data.location.x=Field.x; 
-            App.data.location.y=Field.y; 
-        } 
-		
-		// ★追加: 最大所持記録の更新
-		if(!App.data.stats) App.data.stats = { maxGold: 0, maxGems: 0 };
-		if(App.data.gold > (App.data.stats.maxGold || 0)) App.data.stats.maxGold = App.data.gold;
-		if(App.data.gems > (App.data.stats.maxGems || 0)) App.data.stats.maxGems = App.data.gems;
-		
+    saveJsonReplacer: function(key, value) {
+        // Character画像の旧互換キーが同じData URLを指す場合、保存時だけ重複を除く。
+        // 読込側は img/image のどちらにも対応しているため、既存セーブ互換性は維持される。
+        if (key === 'image' && typeof value === 'string' && this && this.img === value) return undefined;
+        return value;
+    },
+
+    serializeSaveData: (data) => JSON.stringify(data, App.saveJsonReplacer),
+
+    save: () => {
+        if (!App.data) return false;
+        let saved = false;
         try {
-            localStorage.setItem(CONST.SAVE_KEY, JSON.stringify(App.data));
-        } catch(e) { console.error(e); }
-		
-		// ★追加
-		if (typeof App.updateHUD === 'function') App.updateHUD();
+            if (Field.ready) {
+                App.data.location.x = Field.x;
+                App.data.location.y = Field.y;
+            }
+
+            if (!App.data.stats) App.data.stats = { maxGold: 0, maxGems: 0 };
+            if (App.data.gold > (App.data.stats.maxGold || 0)) App.data.stats.maxGold = App.data.gold;
+            if (App.data.gems > (App.data.stats.maxGems || 0)) App.data.stats.maxGems = App.data.gems;
+
+            localStorage.setItem(CONST.SAVE_KEY, App.serializeSaveData(App.data));
+            App.saveFailureNotified = false;
+            App.lastSaveError = null;
+            saved = true;
+        } catch (e) {
+            App.lastSaveError = e;
+            console.error('[SAVE] セーブデータを保存できませんでした。', e);
+            if (!App.saveFailureNotified) {
+                App.saveFailureNotified = true;
+                App.showMessage(
+                    'セーブデータを保存できませんでした。\nブラウザの保存領域が不足している可能性があります。ゲームを閉じる前に「セーブデータ出力」でバックアップしてください。'
+                );
+            }
+        }
+
+        if (typeof App.updateHUD === 'function') App.updateHUD();
+        return saved;
     },
 
 	updateHUD: () => {

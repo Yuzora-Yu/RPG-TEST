@@ -1785,7 +1785,17 @@ const MenuAllies = {
         const c = MenuAllies.selectedChar;
         const sp = c.sp || 0;
         const header = document.getElementById('tree-header');
-        header.innerHTML = `<div class="allies-tree-header-main"><span>${c.name} (SP:${sp})</span><button class="btn" onclick="MenuAllies.resetTree()">RESET</button></div>`;
+        header.textContent = '';
+        const headerMain = document.createElement('div');
+        headerMain.className = 'allies-tree-header-main';
+        const headerLabel = document.createElement('span');
+        headerLabel.textContent = `${c.name} (SP:${sp})`;
+        const resetButton = document.createElement('button');
+        resetButton.className = 'btn';
+        resetButton.textContent = 'RESET';
+        resetButton.onclick = () => MenuAllies.resetTree();
+        headerMain.append(headerLabel, resetButton);
+        header.appendChild(headerMain);
         const list = document.getElementById('tree-content');
         list.innerHTML = '';
         if (!c.tree) c.tree = { ATK:0, MAG:0, SPD:0, HP:0, MP:0 };

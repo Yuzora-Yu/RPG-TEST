@@ -81,6 +81,8 @@
 
 
     const FULL_DATA_PROMPT_DECLINE_KEY_PREFIX = 'prisma_abyss_full_data_prompt_declined_';
+    const APP_CACHE_KEY_PREFIX = 'prisma-abyss-';
+    const APP_SERVICE_WORKER_URL = new URL('sw.js', location.href).href;
 
     function clearFullDataPromptDeclineFlags() {
         try {
@@ -99,11 +101,17 @@
 
         const unregisterTask = ('serviceWorker' in navigator)
             ? navigator.serviceWorker.getRegistrations()
-                .then(regs => Promise.all(regs.map(reg => reg.unregister())))
+                .then(regs => Promise.all(regs
+                    .filter(reg => [reg.active, reg.waiting, reg.installing]
+                        .filter(Boolean)
+                        .some(worker => worker.scriptURL === APP_SERVICE_WORKER_URL))
+                    .map(reg => reg.unregister())))
             : Promise.resolve();
 
         const cacheTask = ('caches' in window)
-            ? caches.keys().then(keys => Promise.all(keys.map(key => caches.delete(key))))
+            ? caches.keys().then(keys => Promise.all(keys
+                .filter(key => key.startsWith(APP_CACHE_KEY_PREFIX))
+                .map(key => caches.delete(key))))
             : Promise.resolve();
 
         Promise.all([unregisterTask, cacheTask]).finally(() => {

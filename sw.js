@@ -20,8 +20,8 @@ try {
   console.warn("[SW] assets.js の読み込みに失敗しました。画像初回キャッシュは最小限で続行します。", error);
 }
 
-const CACHE_NAME = "prisma-abyss-v3.122-summit-clouds";
-const RUNTIME_CACHE_NAME = "prisma-abyss-v3.122-summit-clouds-runtime";
+const CACHE_NAME = "prisma-abyss-v3.123-offline-shell";
+const RUNTIME_CACHE_NAME = "prisma-abyss-v3.123-offline-shell-runtime";
 const WARM_CACHE_META_KEY = "__prisma_abyss_warm_cache_complete__";
 
 // 起動に必要な App Shell。
@@ -73,9 +73,13 @@ const PRECACHE_FILES = [
   "items.js",
   "job_data.js",
   "map.js",
+  "maps_logic.js",
   "story.js",
+  "story_logic.js",
   "opening.js",
+  "quests.js",
   "passiveSkill.js",
+  "alchemy.js",
   "achievements.js",
   "news.js",
 ];
