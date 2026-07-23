@@ -39,6 +39,12 @@ const MenuBook = {
         return null;
     },
 
+    // 図鑑の一覧と詳細ナビゲーションは、定義ファイル上の登録位置ではなくID昇順で統一する。
+    getMonstersById: () => {
+        const monsters = Array.isArray(DB.MONSTERS) ? DB.MONSTERS : [];
+        return [...monsters].sort((a, b) => Number(a.id) - Number(b.id));
+    },
+
 	showList: () => {
 		MenuBook.currentMode = 'list';
 		MenuBook.closeTraitDetail();
@@ -68,7 +74,7 @@ const MenuBook = {
         const defeated = App.data.book.monsters || [];
         const killCounts = App.data.book.killCounts || {};
         
-        DB.MONSTERS.forEach(m => {
+        MenuBook.getMonstersById().forEach(m => {
             const isKnown = defeated.includes(m.id);
             const div = document.createElement('div');
             div.className = 'list-item';
@@ -118,7 +124,7 @@ const MenuBook = {
 
     switchMonster: (dir) => {
         const defeatedIds = App.data.book.monsters || [];
-        const validMonsters = DB.MONSTERS.filter(m => defeatedIds.includes(m.id));
+        const validMonsters = MenuBook.getMonstersById().filter(m => defeatedIds.includes(m.id));
         if (validMonsters.length === 0) return;
         let currentIndex = MenuBook.selectedMonster ? validMonsters.findIndex(m => m.id === MenuBook.selectedMonster.id) : -1;
         let newIndex = (currentIndex + dir + validMonsters.length) % validMonsters.length;
