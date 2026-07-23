@@ -2,11 +2,11 @@
 
 This document records the current responsibility of each runtime JavaScript file after the menu module split.
 
-- `assets.js`: image path source of truth, `GRAPHICS`, battle effect paths, startup image preload lists, and Service Worker install/warm cache lists.
+- `assets.js`: generic image path rules, `GRAPHICS`, battle effect paths, automatic monster image registration/cache generation, startup image preload lists, and Service Worker install/warm cache lists.
 - `database.js`: constants, save key, static system tables, gacha/smith rates, and skill tree constants.
 - `characters.js`: playable character master data and character face paths.
-- `monsters.js`: monster master data and floor/boss enemy generation helpers.
-- `monster-images.js`: monster ID to `assets/monsters/monster_<id>.png` mapping.
+- `monsters.js`: monster master data, the monster ID source of truth, ID-derived image path/key helpers, and floor/boss enemy generation helpers.
+- `monster-images.js`: compatibility bridge for older cached pages; no hand-maintained monster ID mapping remains.
 - `main.js`: app lifecycle, save/load, new/continue game, field map rendering, HUD, movement, action button refresh, fixed-map discovery, boat/flight transport state, `Sky Prism` travel execution, sea encounter flagging, and startup image warm cache handoff.
 - `battle.js`: battle setup, enemy creation, turn/action resolution, damage/heal/status/passive rules, rewards, and battle rendering.
 - `dungeon.js`: random dungeon state, floor generation, special dungeon objects, fixed-dungeon floor links/actions, chests, stairs, boss/rift events, and dungeon entry/exit flow.

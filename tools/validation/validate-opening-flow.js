@@ -43,7 +43,7 @@ if (!Array.isArray(warmup.initialGraphicKeys) || !warmup.initialGraphicKeys.incl
 }
 if (!warmup.initialGraphicKeys.includes('battle_bg_dungeon')) errors.push('initial graphics do not include the first-cave battle background');
 if (!warmup.initialGraphicKeys.includes('battle_bg_flooded')) errors.push('initial graphics do not include the flooded-floor battle background');
-if (!warmup.initialGraphicKeys.includes('overlay_boss_301000')) errors.push('initial graphics do not include the first-cave boss image');
+if (!warmup.initialGraphicKeys.includes('monster_301000')) errors.push('initial graphics do not include the first-cave boss image');
 for (const key of [
     'overlay_field_forest', 'overlay_field_house_1', 'overlay_field_house_2', 'overlay_field_cave',
     'overlay_named_dungeon_chest', 'overlay_named_dungeon_chest_rare',

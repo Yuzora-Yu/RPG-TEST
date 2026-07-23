@@ -32,6 +32,6 @@
 ## 管理ルール
 
 - 実行ログは `../logs/`、検証スクリプトは `../tools/validation/` に置く。
-- 画像の登録正本は `../assets.js`。資料へパスを写して別の登録表を作らない。
+- 一般画像の登録正本は `../assets.js`。モンスター画像は `../monsters.js` のIDを正本とし、`assets/monsters/monster_<ID>.png` を自動解決する。資料や別JSへモンスターID表を複製しない。
 - 一時的な検証結果は `generated/` に置き、現行仕様と誤認しやすいものは `legacy-backup/` へ移す候補として記録する。
 - シナリオ本文を変更する場合は `AGENTS.md` のレビュー手順を優先する。

@@ -2316,9 +2316,14 @@ const App = {
     },
 
     getMonsterRecruitImagePath: (baseMonster = null, enemy = null) => {
+        const source = baseMonster || enemy;
+        const byId = (typeof MonsterData !== 'undefined' && typeof MonsterData.getImagePath === 'function')
+            ? MonsterData.getImagePath(source)
+            : window.PRISMA_ASSETS?.getMonsterImagePath?.(source);
+        if (byId) return byId;
         const monsterId = Number(baseMonster?.id ?? enemy?.baseId ?? enemy?.id);
         const map = (typeof window !== 'undefined' && window.MonsterImageMap) ? window.MonsterImageMap : {};
-        return baseMonster?.image || baseMonster?.img || enemy?.image || enemy?.img || map[monsterId] || null;
+        return map[monsterId] || baseMonster?.image || baseMonster?.img || enemy?.image || enemy?.img || null;
     },
 
     getMonsterRecruitRarity: (baseMonster = null, enemy = null) => {
@@ -7106,16 +7111,23 @@ const Field = {
     getMonsterMapSpriteKey: (monsterId) => {
         const id = Number(monsterId);
         if (!Number.isFinite(id)) return null;
-        const directKey = `monster_${id}`;
-        if (typeof GRAPHICS !== 'undefined' && GRAPHICS.data?.[directKey]) return directKey;
+        const directKey = window.PRISMA_ASSETS?.ensureMonsterGraphic?.(id)
+            || ((typeof MonsterData !== 'undefined' && typeof MonsterData.getImageKey === 'function')
+                ? MonsterData.getImageKey(id)
+                : (window.PRISMA_ASSETS?.getMonsterGraphicKey?.(id) || `monster_${id}`));
+        if (directKey && typeof GRAPHICS !== 'undefined' && GRAPHICS.data?.[directKey]) return directKey;
         const compatKey = `overlay_boss_${id}`;
         if (typeof GRAPHICS !== 'undefined' && GRAPHICS.data?.[compatKey]) return compatKey;
         return directKey;
     },
 
     getMonsterMapSpriteSrc: (monsterId) => {
+        const byId = (typeof MonsterData !== 'undefined' && typeof MonsterData.getImagePath === 'function')
+            ? MonsterData.getImagePath(monsterId)
+            : window.PRISMA_ASSETS?.getMonsterImagePath?.(monsterId);
+        if (byId) return byId;
         const key = Field.getMonsterMapSpriteKey ? Field.getMonsterMapSpriteKey(monsterId) : null;
-        return (key && typeof GRAPHICS !== 'undefined' && GRAPHICS.data?.[key]) || `assets/monsters/monster_${Number(monsterId)}.png`;
+        return key && typeof GRAPHICS !== 'undefined' ? (GRAPHICS.data?.[key] || null) : null;
     },
 
     ensureFieldVisualLayer: () => {

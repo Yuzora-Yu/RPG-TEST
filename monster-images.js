@@ -1,39 +1,26 @@
-(function () {
-  const base = "assets/monsters/";
-  const normalIds = Array.from({ length: 90 }, (_, i) => 100001 + i);
-  const abyssHighFloorIds = Array.from({ length: 90 }, (_, i) => 100091 + i);
-  const adoptedNormalIds = Array.from({ length: 16 }, (_, i) => 200001 + i);
-  const adoptedQuestBossIds = Array.from({ length: 8 }, (_, i) => 302201 + i);
-  const bossIds = [
-    200201, 200202, 200203, 200204,
-    301000, 301001, 301002,
-    301010, 301011, 301012,
-    301020, 301021, 301022,
-    301030, 301031, 301032,
-    301040, 301050,
-    301060, 301061, 301062,
-    301070, 301071,
-    301080, 301081, 301082,
-    301100,
-    401010, 401020, 401030, 401040, 401050, 401060, 401070,
-    401080, 401081, 401082, 401090, 401100,
-    401110, 401120, 401130, 401140, 401150, 401151, 401152, 401153,
-    401160, 401161, 401162, 401170, 401180, 401190, 401200,
-    502049, 502098,
-    902000,
-  ];
-  const ids = normalIds.concat(abyssHighFloorIds, adoptedNormalIds, adoptedQuestBossIds, bossIds);
+/*
+ * Monster image compatibility bridge.
+ *
+ * Monster image paths are no longer maintained as a separate ID list.
+ * The runtime derives every path from monsters.js using:
+ *   assets/monsters/monster_<monsterId>.png
+ *
+ * This file remains only for compatibility with older cached HTML/service workers.
+ */
+(function registerMonsterImages(root) {
+  const definitions = root.MonsterData?.allBases || root.MONSTERS_DATA || [];
+  const assets = root.PRISMA_ASSETS;
 
-  const bossCandidateMap = ids.reduce((map, id) => {
-    map[id] = `${base}monster_${id}.png`;
-    return map;
-  }, {});
+  if (assets?.registerMonsterDefinitions) {
+    assets.registerMonsterDefinitions(definitions);
+    return;
+  }
 
-  const chestTrapMonsterImages = {
-    120301: "assets/monsters/monster_120301.png",
-    120302: "assets/monsters/monster_120302.png",
-    120303: "assets/monsters/monster_120303.png",
-  };
-
-  window.MonsterImageMap = Object.assign({}, window.MonsterImageMap || {}, bossCandidateMap, chestTrapMonsterImages);
-})();
+  const map = root.MonsterImageMap || {};
+  definitions.forEach((monster) => {
+    const id = Number(monster?.baseId ?? monster?.id);
+    if (!Number.isFinite(id) || id <= 0) return;
+    map[id] = `assets/monsters/monster_${Math.floor(id)}.png`;
+  });
+  root.MonsterImageMap = map;
+})(globalThis);

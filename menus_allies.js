@@ -1691,8 +1691,12 @@ const MenuAllies = {
             : ((typeof window !== 'undefined' && Array.isArray(window.MONSTERS_DATA)) ? window.MONSTERS_DATA : []);
         const monster = monsters.find(m => String(m?.name || '').trim() === name);
         if (!monster) return null;
+        const byId = (typeof MonsterData !== 'undefined' && typeof MonsterData.getImagePath === 'function')
+            ? MonsterData.getImagePath(monster)
+            : window.PRISMA_ASSETS?.getMonsterImagePath?.(monster);
+        if (byId) return byId;
         const map = (typeof window !== 'undefined' && window.MonsterImageMap) ? window.MonsterImageMap : {};
-        return monster.image || monster.img || map[Number(monster.id)] || null;
+        return map[Number(monster.id)] || monster.image || monster.img || null;
     },
 
     getCharacterDefaultImageForReset: (char) => {

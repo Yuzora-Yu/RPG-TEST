@@ -27,7 +27,7 @@ const requiredKeys = [
   'overlay_world_bridge_wood',
   'overlay_dungeon_chest', 'overlay_dungeon_chest_rare',
   'overlay_dungeon_stairs',
-  'wall', 'dungeon_floor', 'overlay_npc_villager', 'overlay_boss_301000',
+  'wall', 'dungeon_floor', 'overlay_npc_villager', 'monster_301000',
   'battle_bg_field', 'battle_bg_dungeon', 'battle_bg_flooded',
   'hero_wing_down_1', 'hero_wing_down_2', 'hero_wing_up_1', 'hero_wing_up_2',
   'hero_wing_left_1', 'hero_wing_left_2', 'hero_wing_right_1', 'hero_wing_right_2'

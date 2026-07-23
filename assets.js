@@ -9,12 +9,13 @@
  * Codex等で編集する際の注意:
  * - マップ/戦闘背景/主人公歩行画像を追加・変更する場合は PRISMA_ASSETS.graphics を編集。
  * - 戦闘エフェクト画像を追加・変更する場合は PRISMA_ASSETS.battleFx を編集。
+ * - モンスター画像は monsters.js のIDから自動登録する。assets.jsへID配列を追加しないこと。
  * - polish.js 側に画像パス一覧を再作成しないこと。
  * - Base64画像の大量埋め込みは避け、原則として assets/ 配下の画像ファイルを参照すること。
  *
  * Service Worker 側の注意:
  * - 2026-05-14時点では、初回表示品質を優先し、初回起動時に画像もまとめてキャッシュする。
- * - ただし画像リストの正本はこの assets.js。sw.js 側に巨大な画像配列を再作成しないこと。
+ * - 一般画像リストの正本は assets.js、モンスターIDの正本は monsters.js。sw.js 側へ配列を複製しないこと。
  * - 将来、画像軽量化・分割ロード方針に戻す場合も、まずこの cacheWarmup 定義を変更する。
  * ============================================================================
  */
@@ -30,21 +31,29 @@
 // 現在の方針:
 // - 初回起動時に画像をまとめてキャッシュし、ロード画面・初戦闘・ガチャ・施設背景の
 //   「初回だけ画像が出ない/遅れる」体験を避ける。
-// - ただし、正本はこの assets.js。Android化や画像軽量化時もここを編集する。
+// - 共通画像規則の正本は assets.js、モンスターIDの正本は monsters.js。
 // - main.js は startupImages をローディング中に先読みし、sw.js は installImages を初回キャッシュする。
-const PRISMA_NORMAL_MONSTER_IMAGE_IDS = Array.from({ length: 90 }, (_, i) => 100001 + i)
-  .concat(Array.from({ length: 16 }, (_, i) => 200001 + i));
-const PRISMA_BOSS_MONSTER_IMAGE_IDS = [
-  200201, 200202, 200203, 200204,
-  301000, 301001, 301002, 301010, 301011, 301012, 301020, 301021, 301022, 301030, 301031, 301032, 301040, 301050, 301060, 301061, 301062, 301070, 301080, 301081, 301082, 301100,
-  302201, 302202, 302203, 302204, 302205, 302206, 302207, 302208,
-  401010, 401020, 401030, 401040, 401050, 401060, 401070, 401080, 401081, 401082, 401090, 401100, 401110, 401120, 401130, 401140, 401150, 401151, 401152, 401153, 401160, 401161, 401162, 401170, 401180, 401190, 401200,
-  502049, 502098,
-  902000,
-];
-const PRISMA_MONSTER_IMAGE_FILES = PRISMA_NORMAL_MONSTER_IMAGE_IDS
-  .concat(PRISMA_BOSS_MONSTER_IMAGE_IDS)
-  .map((id) => `assets/monsters/monster_${id}.png`);
+const PRISMA_MONSTER_IMAGE_BASE = "assets/monsters/";
+const PRISMA_MONSTER_IMAGE_IDS = [];
+const PRISMA_MONSTER_IMAGE_FILES = [];
+
+const normalizePrismaMonsterId = (monsterOrId) => {
+  const raw = (monsterOrId && typeof monsterOrId === "object")
+    ? (monsterOrId.baseId ?? monsterOrId.id)
+    : monsterOrId;
+  const id = Number(raw);
+  return Number.isFinite(id) && id > 0 ? Math.floor(id) : null;
+};
+
+const prismaMonsterImagePath = (monsterOrId) => {
+  const id = normalizePrismaMonsterId(monsterOrId);
+  return id === null ? null : `${PRISMA_MONSTER_IMAGE_BASE}monster_${id}.png`;
+};
+
+const prismaMonsterGraphicKey = (monsterOrId) => {
+  const id = normalizePrismaMonsterId(monsterOrId);
+  return id === null ? null : `monster_${id}`;
+};
 
 // Runtime-ready but not yet placed/assigned map visual libraries.
 // The manifest under assets/map/library is the metadata source of truth.
@@ -60,9 +69,9 @@ const PRISMA_MAP_CHIP_LIBRARY_GROUPS = {
   tower: ["gear_assembly", "rope_coil", "hand_winch", "oil_lamp", "reinforced_crate", "weathered_barrel", "brass_pipe", "lens_fragment", "iron_anchor"],
   ruins: ["broken_column", "ancient_tablet", "void_crystals", "black_roots", "ritual_brazier", "masonry_pile", "weathered_rune", "bone_lantern", "prism_shard"],
 };
-// OPより前に戦う、開幕ジェリーと始まりの洞穴の通常敵・ボスを起動前に取得する。
-const PRISMA_PRE_OP_MONSTER_IMAGE_FILES = [100001, 100002, 100003, 100004, 301000]
-  .map((id) => `assets/monsters/monster_${id}.png`);
+// monsters.js の preloadAtStartup フラグから、開幕前に必要な画像だけを自動抽出する。
+const PRISMA_STARTUP_MONSTER_IMAGE_FILES = [];
+const PRISMA_STARTUP_MONSTER_GRAPHIC_KEYS = [];
 
 const PRISMA_ASSETS = {
   // Field.render / Battle 背景 / 主人公歩行画像で使う GRAPHICS 用画像。
@@ -78,9 +87,6 @@ const PRISMA_ASSETS = {
     item_icon_revive: "assets/ui/menu-icons/item-revive.png",
     item_icon_growth: "assets/ui/menu-icons/item-growth.png",
     item_icon_key: "assets/ui/menu-icons/item-key.png",
-    monster_120301: "assets/monsters/monster_120301.png",
-    monster_120302: "assets/monsters/monster_120302.png",
-    monster_120303: "assets/monsters/monster_120303.png",
     floor: "assets/map/terrain/terrain_grass_field.png",
     sea: "assets/map/terrain/terrain_sea.png",
     forest: "assets/map/objects/object_field_forest.png",
@@ -320,34 +326,6 @@ const PRISMA_ASSETS = {
     overlay_dungeon_hunter_sea: "assets/map/overlays/overlay_dungeon_hunter_sea.png",
     overlay_dungeon_hunter_thunder: "assets/map/overlays/overlay_dungeon_hunter_thunder.png",
     overlay_dungeon_hunter_shadow: "assets/map/overlays/overlay_dungeon_hunter_shadow.png",
-    overlay_boss_100078: "assets/monsters/monster_100078.png",
-    overlay_boss_100081: "assets/monsters/monster_100081.png",
-    overlay_boss_100082: "assets/monsters/monster_100082.png",
-    overlay_boss_100089: "assets/monsters/monster_100089.png",
-    overlay_boss_301000: "assets/monsters/monster_301000.png",
-    overlay_boss_301001: "assets/monsters/monster_301001.png",
-    overlay_boss_301002: "assets/monsters/monster_301002.png",
-    overlay_boss_301010: "assets/monsters/monster_301010.png",
-    overlay_boss_301011: "assets/monsters/monster_301011.png",
-    overlay_boss_301012: "assets/monsters/monster_301012.png",
-    overlay_boss_301020: "assets/monsters/monster_301020.png",
-    overlay_boss_301021: "assets/monsters/monster_301021.png",
-    overlay_boss_301022: "assets/monsters/monster_301022.png",
-    overlay_boss_301030: "assets/monsters/monster_301030.png",
-    overlay_boss_301031: "assets/monsters/monster_301031.png",
-    overlay_boss_301032: "assets/monsters/monster_301032.png",
-    overlay_boss_301040: "assets/monsters/monster_301040.png",
-    overlay_boss_301050: "assets/monsters/monster_301050.png",
-    overlay_boss_301060: "assets/monsters/monster_301060.png",
-    overlay_boss_301061: "assets/monsters/monster_301061.png",
-    overlay_boss_301062: "assets/monsters/monster_301062.png",
-    overlay_boss_301070: "assets/monsters/monster_301070.png",
-    overlay_boss_301071: "assets/monsters/monster_301071.png",
-    overlay_boss_301080: "assets/monsters/monster_301080.png",
-    overlay_boss_301081: "assets/monsters/monster_301081.png",
-    overlay_boss_301082: "assets/monsters/monster_301082.png",
-    overlay_boss_301100: "assets/monsters/monster_301100.png",
-    overlay_boss_902000: "assets/monsters/monster_902000.png",
     overlay_magic_boat_down: "assets/map/overlays/overlay_magic_boat_down.png",
     overlay_magic_boat_up: "assets/map/overlays/overlay_magic_boat_up.png",
     overlay_magic_boat_left: "assets/map/overlays/overlay_magic_boat_left.png",
@@ -667,7 +645,7 @@ const PRISMA_ASSETS = {
   // installImages: Service Worker の初回install時にキャッシュする画像全体。
   // backgroundImages: install後の再試行/補助ウォームキャッシュ用。
   cacheWarmup: {
-    version: "2026-07-18-summit-temple-sky-v58",
+    version: "2026-07-24-monster-id-registry-v59",
     initialGraphicKeys: [
       "floor", "sea", "forest", "mountain", "Low_mountain", "cave", "house-1", "house-2", "inn", "wall", "dungeon_floor",
       "item_icon_attack", "item_icon_buff", "item_icon_debuff", "item_icon_material", "item_icon_vehicle", "item_icon_travel",
@@ -710,14 +688,13 @@ const PRISMA_ASSETS = {
       "overlay_dungeon_adventurer_right_1", "overlay_dungeon_adventurer_right_2",
       "overlay_dungeon_adventurer_up_1", "overlay_dungeon_adventurer_up_2",
       "overlay_npc_elder", "overlay_npc_villager", "overlay_npc_child", "overlay_npc_bronze_knight",
-      "overlay_boss_301000", "battle_bg_field", "battle_bg_dungeon", "battle_bg_flooded", "battle_bg_first",
+      "battle_bg_field", "battle_bg_dungeon", "battle_bg_flooded", "battle_bg_first",
       "hero_down_1", "hero_down_2", "hero_up_1", "hero_up_2",
       "hero_left_1", "hero_left_2", "hero_right_1", "hero_right_2",
       "hero_wing_down_1", "hero_wing_down_2", "hero_wing_up_1", "hero_wing_up_2",
       "hero_wing_left_1", "hero_wing_left_2", "hero_wing_right_1", "hero_wing_right_2",
     ],
     criticalImages: [
-      ...PRISMA_PRE_OP_MONSTER_IMAGE_FILES,
       "assets/generated/battle-field-ai.png",
       "assets/generated/battle-dungeon-ai.png",
       "assets/generated/battle-flooded.png",
@@ -794,15 +771,20 @@ Object.entries(PRISMA_MAP_CHIP_LIBRARY_GROUPS).forEach(([theme, slugs]) => {
     PRISMA_ASSETS.graphics[key] = `assets/map/library/${theme}/${role}/maplib_${theme}_${slug}.png`;
   });
 });
-// 採用済みライブラリモンスターは、戦闘とフィールド表示の双方が同じ原画を参照する。
-// IDと用途は個別に決めており、この対応表から自動採番・自動配置は行わない。
+// モンスター画像は monsters.js のIDを正本とし、命名規則から自動登録する。
 globalThis.PRISMA_ASSETS = PRISMA_ASSETS;
 
+const PRISMA_BASE_INITIAL_GRAPHIC_KEYS = [...(PRISMA_ASSETS.cacheWarmup.initialGraphicKeys || [])];
+const PRISMA_BASE_CRITICAL_IMAGES = [...(PRISMA_ASSETS.cacheWarmup.criticalImages || [])];
+
 // backgroundImages は graphics / battleFx / monster画像から自動構築する。
-// 画像を追加した場合は PRISMA_ASSETS.graphics または battleFx に足せば、裏側キャッシュにも反映される。
-(() => {
+// モンスター一覧は monsters.js 読み込み後に registerMonsterDefinitions() から追加される。
+function refreshPrismaAssetWarmupLists() {
   const unique = (items) => Array.from(new Set(items.filter(Boolean)));
-  const critical = unique(PRISMA_ASSETS.cacheWarmup.criticalImages || []);
+  const critical = unique([
+    ...PRISMA_BASE_CRITICAL_IMAGES,
+    ...PRISMA_STARTUP_MONSTER_IMAGE_FILES,
+  ]);
   const allImages = unique([
     ...Object.values(PRISMA_ASSETS.graphics || {}),
     ...Object.values(PRISMA_ASSETS.battleFx || {}),
@@ -816,33 +798,96 @@ globalThis.PRISMA_ASSETS = PRISMA_ASSETS;
     ...PRISMA_MONSTER_IMAGE_FILES,
   ]);
 
-  // ローディング画面中にブラウザ側でも先読みする対象。
-  // ここを増やしすぎると起動待ちが長くなるため、初回表示で目立つ素材に絞る。
+  PRISMA_ASSETS.cacheWarmup.initialGraphicKeys = unique([
+    ...PRISMA_BASE_INITIAL_GRAPHIC_KEYS,
+    ...PRISMA_STARTUP_MONSTER_GRAPHIC_KEYS,
+  ]);
+  PRISMA_ASSETS.cacheWarmup.criticalImages = critical;
   PRISMA_ASSETS.cacheWarmup.startupImages = unique([...critical]);
-
-  // Service Worker install時に一度だけキャッシュする対象。
-  // 画像リストの正本はここ。sw.js 側へ手書きで複製しないこと。
   PRISMA_ASSETS.cacheWarmup.installImages = allImages;
-
-  // install後の補助ウォームキャッシュ用。installに失敗/未完了だった画像もここで再試行される。
   PRISMA_ASSETS.cacheWarmup.backgroundImages = allImages.filter((src) => !critical.includes(src));
-})();
+}
 
-// マップ上のボスチップは低解像度の overlay_boss_* ではなく、
-// 戦闘用モンスター原画 assets/monsters/monster_*.png を直接参照できるキーも用意する。
-// overlay_boss_* は既存参照互換のため残すが、新規コードは monster_* を優先する。
-PRISMA_BOSS_MONSTER_IMAGE_IDS.forEach((id) => {
-  const key = `monster_${id}`;
-  if (!PRISMA_ASSETS.graphics[key]) {
-    PRISMA_ASSETS.graphics[key] = `assets/monsters/monster_${id}.png`;
+function shouldPreloadPrismaMonsterGraphic(monster) {
+  return !!(monster && (
+    monster.isBoss ||
+    monster.isRare ||
+    monster.isSpecialBoss ||
+    monster.isEstark ||
+    monster.mapSprite === true ||
+    monster.preloadAtStartup === true
+  ));
+}
+
+function ensurePrismaMonsterGraphic(monsterOrId, options = {}) {
+  const key = prismaMonsterGraphicKey(monsterOrId);
+  const path = prismaMonsterImagePath(monsterOrId);
+  if (!key || !path) return null;
+  if (!PRISMA_ASSETS.graphics[key]) PRISMA_ASSETS.graphics[key] = path;
+  const canLoadImage = options.load !== false && typeof Image !== "undefined";
+  if (canLoadImage && globalThis.GRAPHICS?.get && !globalThis.GRAPHICS.images?.[key]) {
+    globalThis.GRAPHICS.get(key);
   }
-});
-[100078, 100081, 100082, 100089].forEach((id) => {
-  const key = `monster_${id}`;
-  if (!PRISMA_ASSETS.graphics[key]) {
-    PRISMA_ASSETS.graphics[key] = `assets/monsters/monster_${id}.png`;
-  }
-});
+  return key;
+}
+
+function registerPrismaMonsterDefinitions(definitions) {
+  const list = Array.isArray(definitions) ? definitions : [];
+  const ids = Array.from(new Set(list
+    .map(normalizePrismaMonsterId)
+    .filter((id) => id !== null)))
+    .sort((a, b) => a - b);
+
+  PRISMA_MONSTER_IMAGE_IDS.splice(0, PRISMA_MONSTER_IMAGE_IDS.length, ...ids);
+  PRISMA_MONSTER_IMAGE_FILES.splice(
+    0,
+    PRISMA_MONSTER_IMAGE_FILES.length,
+    ...ids.map(prismaMonsterImagePath).filter(Boolean)
+  );
+
+  const startupMonsters = list.filter((monster) => monster?.preloadAtStartup === true);
+  PRISMA_STARTUP_MONSTER_IMAGE_FILES.splice(
+    0,
+    PRISMA_STARTUP_MONSTER_IMAGE_FILES.length,
+    ...startupMonsters.map(prismaMonsterImagePath).filter(Boolean)
+  );
+  PRISMA_STARTUP_MONSTER_GRAPHIC_KEYS.splice(
+    0,
+    PRISMA_STARTUP_MONSTER_GRAPHIC_KEYS.length,
+    ...startupMonsters.map(prismaMonsterGraphicKey).filter(Boolean)
+  );
+
+  const imageMap = globalThis.MonsterImageMap || {};
+  list.forEach((monster) => {
+    const id = normalizePrismaMonsterId(monster);
+    const path = prismaMonsterImagePath(id);
+    if (id === null || !path) return;
+    imageMap[id] = path;
+    if (shouldPreloadPrismaMonsterGraphic(monster)) ensurePrismaMonsterGraphic(id, { load: false });
+  });
+  globalThis.MonsterImageMap = imageMap;
+
+  refreshPrismaAssetWarmupLists();
+  return ids.slice();
+}
+
+PRISMA_ASSETS.monsters = {
+  basePath: PRISMA_MONSTER_IMAGE_BASE,
+  ids: PRISMA_MONSTER_IMAGE_IDS,
+  files: PRISMA_MONSTER_IMAGE_FILES,
+  getId: normalizePrismaMonsterId,
+  getPath: prismaMonsterImagePath,
+  getKey: prismaMonsterGraphicKey,
+  ensureGraphic: ensurePrismaMonsterGraphic,
+  register: registerPrismaMonsterDefinitions,
+};
+PRISMA_ASSETS.getMonsterImagePath = prismaMonsterImagePath;
+PRISMA_ASSETS.getMonsterGraphicKey = prismaMonsterGraphicKey;
+PRISMA_ASSETS.ensureMonsterGraphic = ensurePrismaMonsterGraphic;
+PRISMA_ASSETS.registerMonsterDefinitions = registerPrismaMonsterDefinitions;
+PRISMA_ASSETS.refreshCacheWarmup = refreshPrismaAssetWarmupLists;
+
+refreshPrismaAssetWarmupLists();
 
 const GRAPHICS = {
   images: {},
@@ -927,4 +972,4 @@ const GRAPHICS = {
   },
 };
 
-window.GRAPHICS = GRAPHICS;
+globalThis.GRAPHICS = GRAPHICS;

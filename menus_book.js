@@ -24,10 +24,14 @@ const MenuBook = {
 	},
 	
     getMonsterImgSrc: (m) => {
-        if (m.img) return m.img;
+        const byId = (typeof MonsterData !== 'undefined' && typeof MonsterData.getImagePath === 'function')
+            ? MonsterData.getImagePath(m)
+            : window.PRISMA_ASSETS?.getMonsterImagePath?.(m);
+        if (byId) return byId;
         const imageMap = window.MonsterImageMap || {};
-        const mappedById = imageMap[m.id] || imageMap[m.baseId];
+        const mappedById = imageMap[m.baseId] || imageMap[m.id];
         if (mappedById) return mappedById;
+        if (m.img || m.image) return m.img || m.image;
         if (typeof GRAPHICS === 'undefined' || !GRAPHICS.images) return null;
         let baseName = m.name.replace(/^(強・|真・|極・|神・)+/, '').replace(/ Lv\d+[A-Z]?$/, '').replace(/[A-Z]$/, '').trim();
         const imgKey = 'monster_' + baseName;

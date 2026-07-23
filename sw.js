@@ -13,15 +13,16 @@
 // ============================================================================
 
 try {
-  // 画像キャッシュ対象の正本を assets.js に統一する。
-  // Service Worker内では DOM/Image は使わず、PRISMA_ASSETS.cacheWarmup の配列だけ参照する。
-  importScripts("assets.js");
+  // assets.js の汎用登録処理へ monsters.js の全定義を渡し、
+  // monster_<ID>.png を全量キャッシュへ自動登録する。
+  // Service Worker内では DOM/Image を生成せず、構築済み配列だけを参照する。
+  importScripts("assets.js", "monsters.js", "monster-images.js");
 } catch (error) {
-  console.warn("[SW] assets.js の読み込みに失敗しました。画像初回キャッシュは最小限で続行します。", error);
+  console.warn("[SW] モンスター定義を含む画像一覧の読み込みに失敗しました。画像初回キャッシュは最小限で続行します。", error);
 }
 
-const CACHE_NAME = "prisma-abyss-v3.123-offline-shell";
-const RUNTIME_CACHE_NAME = "prisma-abyss-v3.123-offline-shell-runtime";
+const CACHE_NAME = "prisma-abyss-v3.124-offline-shell";
+const RUNTIME_CACHE_NAME = "prisma-abyss-v3.124-offline-shell-runtime";
 const WARM_CACHE_META_KEY = "__prisma_abyss_warm_cache_complete__";
 
 // 起動に必要な App Shell。
@@ -88,11 +89,6 @@ const ASSET_WARMUP = (self.PRISMA_ASSETS && self.PRISMA_ASSETS.cacheWarmup) || {
 
 // 初回表示で特に遅延が目立つ画像。assets.js から取得する。
 const INITIAL_IMAGE_PRECACHE = ASSET_WARMUP.criticalImages || [
-  "assets/monsters/monster_100001.png",
-  "assets/monsters/monster_100002.png",
-  "assets/monsters/monster_100003.png",
-  "assets/monsters/monster_100004.png",
-  "assets/monsters/monster_301000.png",
   "assets/generated/battle-field-ai.png",
   "assets/generated/battle-dungeon-ai.png",
   "assets/map/terrain/terrain_grass_field.png",

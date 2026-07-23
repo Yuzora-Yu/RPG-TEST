@@ -364,7 +364,11 @@ const StoryManager = {
         if (cmd.monsterId !== undefined && typeof Field !== 'undefined' && typeof Field.getMonsterMapSpriteSrc === 'function') {
             return Field.getMonsterMapSpriteSrc(cmd.monsterId);
         }
-        if (cmd.monsterId !== undefined) return `assets/monsters/monster_${Number(cmd.monsterId)}.png`;
+        if (cmd.monsterId !== undefined) {
+            return (typeof MonsterData !== 'undefined' && typeof MonsterData.getImagePath === 'function')
+                ? MonsterData.getImagePath(cmd.monsterId)
+                : window.PRISMA_ASSETS?.getMonsterImagePath?.(cmd.monsterId);
+        }
         if (cmd.effect === 'slash') return 'assets/effect/fx_phys_neutral_slash.png';
         return '';
     },
@@ -812,7 +816,9 @@ const StoryManager = {
         if (!ctx) return false;
         const src = (typeof Field.getMonsterMapSpriteSrc === 'function')
             ? Field.getMonsterMapSpriteSrc(ctx.monsterId)
-            : `assets/monsters/monster_${ctx.monsterId}.png`;
+            : ((typeof MonsterData !== 'undefined' && typeof MonsterData.getImagePath === 'function')
+                ? MonsterData.getImagePath(ctx.monsterId)
+                : window.PRISMA_ASSETS?.getMonsterImagePath?.(ctx.monsterId));
         Field.putFieldVisualSprite('field-visual-post-battle-boss', src, { x: ctx.x, y: ctx.y }, 2, 'z-index:4;');
         return true;
     },

@@ -4074,13 +4074,16 @@ findNextActor: () => {
 
     resolveMonsterImage: (monster, graphicsImages = {}) => {
         const baseName = Battle.cleanMonsterDisplayName(monster.name);
+        const imageById = (typeof MonsterData !== 'undefined' && typeof MonsterData.getImagePath === 'function')
+            ? MonsterData.getImagePath(monster)
+            : (window.PRISMA_ASSETS?.getMonsterImagePath?.(monster) || null);
         const map = window.MonsterImageMap || {};
-        const mapped = map[monster.id] || map[monster.baseId] || map[baseName];
+        const mapped = map[monster.baseId] || map[monster.id] || map[baseName];
         const mapSrc = mapped
             ? (graphicsImages[mapped]?.src || mapped)
             : null;
         const exactKey = 'monster_' + baseName;
-        const exactSrc = monster.image || monster.img || mapSrc || graphicsImages[exactKey]?.src || Battle.monsterImagePath(baseName);
+        const exactSrc = imageById || mapSrc || monster.image || monster.img || graphicsImages[exactKey]?.src || Battle.monsterImagePath(baseName);
 
         let fallbackName = 'ジェリー';
         if (monster.isSpecialBoss || monster.isEstark || Number(monster.id) === 902000 || Number(monster.baseId) === 902000) {
