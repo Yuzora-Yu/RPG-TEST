@@ -2128,11 +2128,7 @@ const FIXED_MAPS = {
                 log: "村人が、北東の穴を見つめている。",
                 type: "storyEvent",
                 conversationKey: "lumina_villager_sinkhole",
-                cycleEventIds: [
-                    "town_start_villager_1_a",
-                    "town_start_villager_1_b",
-                    "town_start_villager_1_c"
-                ],
+                eventId: "town_start_villager_1_a",
                 imageKey: "overlay_npc_villager",
                 baseTile: "G"
             },
@@ -2143,10 +2139,7 @@ const FIXED_MAPS = {
                 log: "若者が木剣を握りしめている。",
                 type: "storyEvent",
                 conversationKey: "lumina_villager_youth",
-                cycleEventIds: [
-                    "town_start_villager_2_a",
-                    "town_start_villager_2_b"
-                ],
+                eventId: "town_start_villager_2_a",
                 imageKey: "overlay_npc_bronze_knight",
                 baseTile: "G"
             },
@@ -2157,10 +2150,7 @@ const FIXED_MAPS = {
                 log: "籠を抱えた女性が、葉についた泥を払っている。",
                 type: "storyEvent",
                 conversationKey: "lumina_villager_herbalist",
-                cycleEventIds: [
-                    "town_start_villager_3_a",
-                    "town_start_villager_3_b"
-                ],
+                eventId: "town_start_villager_3_a",
                 imageKey: "overlay_npc_villager",
                 baseTile: "G"
             },
@@ -2559,8 +2549,17 @@ const FIXED_MAPS = {
                 y: 12,
                 label: "風織り職人と話す",
                 log: "職人が、風を含んだ薄布を指で弾いている。",
-                type: "storyEvent",
-                eventId: "town_wind_villager_3",
+                type: "log",
+                events: [
+                    {
+                        requiredFlag: "windVillageCleared",
+                        eventId: "town_wind_villager_3_after"
+                    },
+                    {
+                        default: true,
+                        eventId: "town_wind_villager_3"
+                    }
+                ],
                 imageKey: "overlay_town_wind_weaver"
             },
             {
@@ -4664,6 +4663,16 @@ const FIXED_DUNGEON_MAPS = {
                         log: "石碑には、森の風を鎮めた名もなき守人の印が刻まれている。",
                         type: "log",
                         imageKey: "overlay_dungeon_event"
+                    },
+                    {
+                        x: 20,
+                        y: 18,
+                        label: "石碑に祈る",
+                        log: "守護者を鎮めた石碑に、穏やかな風が巡っている。",
+                        type: "storyEvent",
+                        eventId: "wind_forest_guardians_after",
+                        requiredFlag: "windForestCleansed",
+                        imageKey: "overlay_dungeon_event"
                     }
                 ],
                 bosses: [
@@ -4677,6 +4686,7 @@ const FIXED_DUNGEON_MAPS = {
                         keyRewardColor: "gold",
                         startEventId: "wind_forest_guardians_encounter",
                         storyEventId: "wind_forest_guardians_clear",
+                        imageKey: "overlay_dungeon_event",
                         actionLabel: "守護者に祈る",
                         inspectLog: "祈りの広場の中央で、黒い風に包まれた守護者がうずくまっている。"
                     }
@@ -8110,213 +8120,213 @@ const FIXED_DUNGEON_MAPS = {
                 name: "",
                 themeKey: "GALVANIA_CAVE"
             },
-            {
-                label: "2階・偽りの無限回廊",
-                encounterRank: 66,
-                monsters: [
-                    100058,
-                    100059,
-                    100060
-                ],
-                width: 61,
-                height: 35,
-                tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWDWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWTWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWTTTTTTTTWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWTWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWGGGWWWWWWWWWWWWWWWGWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWGTTWWWWWWWWWWWWTTTGWWGTTWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWGTGWWWWWWWWWWWWTWWWWWGTGWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWGGTWWWWWTWWWWWWWWWWWWWTWWWWWGTGWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWGTTWWWWWTWWWWWGTTWWWWWTWWWWWWTWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWGTTWWWWWTTTTWWGTGWWWWWTWWWWWWTWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWTWWWWWWWWWTWWGTGWWWWWTWWWWWWTWWWWWWWWWWWWWW",
-                    "WWWWWWGTGWWWWWWWWWTWWWWWWWWWTWWWTWWWWWWTWWWWWWTWWWWWWWWWWWWWW",
-                    "WWWWWWGTTTTTTTTTTTTTTTTTWWWWTTTTTWWWTTTTWWWTTTTTTTTCWWTWWWWWW",
-                    "WWWWWWGGGWWWTWWWWWWWWWWTWWWWWWWWTWWWWWWTWWWWWWTWWWWWWWTWWWWWW",
-                    "WWWWWWWWWWWWTWWWWWWWWWWTTTWWWWWWTWWWWWWTWWWWWWTWWWWWWWTWWWWWW",
-                    "WWWWWWWWWWWWTWWWWWWWWWWWWTWWWWWWTWWWWWWTWWWWWWTWWWWWWWTWWWWWW",
-                    "WWWWWWWWWWWWTWWWWWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTCWWWTWWWWWW",
-                    "WWWWWWWWWWWWTWWWWWWWTWWWWTWWWWWWTWWWWWWWWWWWWWTWWWWWWWTWWWWWW",
-                    "WWWWWWWWWWWWTWWWWWWWTWWWWTWWWWWWTWWWWWWWWWWWWWTWWWWWWWTWWWWWW",
-                    "WWWWWWWWWWWWTWWWWWWWTWWWWTWWWWWWTWWWWWWWWWWWWWTWWWWWWWTWWWWWW",
-                    "WWWWWWWWWGGGTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWWWWW",
-                    "WWWWWWWGGGGGTWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWUWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
-                ],
-                floorLinks: [
-                    {
-                        x: 5,
-                        y: 31,
-                        toFloor: 1,
-                        targetX: 54,
-                        targetY: 3,
-                        label: "黒岩の胎道へ戻る"
-                    },
-                    {
-                        x: 55,
-                        y: 4,
-                        toFloor: 3,
-                        targetX: 5,
-                        targetY: 4,
-                        label: "溶岩の地底湖へ"
-                    }
-                ],
-                tileEffects: [
-                    {
-                        x: 18,
-                        y: 28,
-                        type: "warp",
-                        toX: 12,
-                        toY: 28,
-                        message: "同じ石柱の前へ戻された。"
-                    },
-                    {
-                        x: 25,
-                        y: 28,
-                        type: "warp",
-                        toX: 32,
-                        toY: 23,
-                        message: "道が不安定に変化した・・・"
-                    },
-                    {
-                        x: 32,
-                        y: 24,
-                        type: "warp",
-                        toX: 12,
-                        toY: 28,
-                        message: "一歩進んだはずが、また最初の柱を見上げている。"
-                    },
-                    {
-                        x: 46,
-                        y: 28,
-                        type: "warp",
-                        toX: 54,
-                        toY: 28,
-                        message: "闇の風に巻かれ、どこかへ移動した。"
-                    },
-                    {
-                        x: 54,
-                        y: 20,
-                        type: "warp",
-                        toX: 12,
-                        toY: 28,
-                        message: "外周を回りきったはずの道が、また入口側へつながっていた。"
-                    },
-                    {
-                        x: 50,
-                        y: 28,
-                        type: "warp",
-                        toX: 43,
-                        toY: 20,
-                        message: "内側の回廊に吸い込まれた。"
-                    },
-                    {
-                        x: 20,
-                        y: 24,
-                        type: "warp",
-                        toX: 12,
-                        toY: 28,
-                        message: "輪の中心から、始まりの横穴へ放り出された。"
-                    },
-                    {
-                        x: 36,
-                        y: 20,
-                        type: "warp",
-                        toX: 12,
-                        toY: 28,
-                        message: "輪の中心から、始まりの横穴へ放り出された。"
-                    }
-                ],
-                chests: [
-                    {
-                        x: 18,
-                        y: 16,
-                        itemId: 99,
-                        type: "item"
-                    },
-                    {
-                        x: 25,
-                        y: 13,
-                        itemId: 14,
-                        type: "item"
-                    },
-                    {
-                        x: 32,
-                        y: 17,
-                        itemId: 5,
-                        type: "item"
-                    },
-                    {
-                        x: 7,
-                        y: 20,
-                        itemId: 6,
-                        type: "item"
-                    },
-                    {
-                        x: 51,
-                        y: 20,
-                        itemId: 99,
-                        type: "item"
-                    },
-                    {
-                        x: 50,
-                        y: 24,
-                        itemId: 14,
-                        type: "item"
-                    },
-                    {
-                        x: 46,
-                        y: 14,
-                        itemId: 7,
-                        type: "item",
-                        rare: true
-                    }
-                ],
-                mapActions: [
-                    {
-                        x: 12,
-                        y: 28,
-                        label: "古びた石碑を読む",
-                        log: "「柱を数えよ。三度目に迷い、四度目に上れ。端まで急ぐ者は輪の腹へ戻る」と読める。",
-                        type: "log",
-                        imageKey: "overlay_dungeon_event",
-                        blocksMovement: false,
-                        baseTile: "T"
-                    },
-                    {
-                        x: 39,
-                        y: 13,
-                        label: "煤けた足跡を調べる",
-                        log: "足跡は不自然に北へ伸びている。魔族の巡回はこの道だけを避けているようだ。",
-                        type: "log",
-                        imageKey: "overlay_dungeon_event",
-                        blocksMovement: false,
-                        baseTile: "T"
-                    }
-                ],
-                limitedMapReveal: true,
-                revealRadius: 3,
-                entryPoint: {
-                    x: 5,
-                    y: 31
-                },
-                name: "",
-                themeKey: "GALVANIA_CAVE"
-            },
+			{
+			  "label": "2階・偽りの無限回廊",
+			  "encounterRank": 66,
+			  "monsters": [
+				100058,
+				100059,
+				100060
+			  ],
+			  "width": 61,
+			  "height": 35,
+			  "tiles": [
+				"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+				"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+				"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+				"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+				"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWDWWWWW",
+				"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGWWWWW",
+				"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGWWWWW",
+				"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWTWWWWW",
+				"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWTTTTTTTTWWWWW",
+				"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWTWWWWWWWWWWWW",
+				"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGWWWWWWWWWWWW",
+				"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGWWWWWWWWWWWWWWWWWW",
+				"WWWWWWWWWWWWWWWWWWWWWWWWGGGWWWWWWWWWWWWWWWGWWWWWWWWWWWWWWWWWW",
+				"WWWWWWWWWWWWWWWWWWWWWWWWGTTWWWWWWWWWWWWTTTGWWGTTWWWWWWWWWWWWW",
+				"WWWWWWWWWWWWWWWWWWWWWWWWGTGWWWWWWWWWWWWTWWWWWGTGWWWWWWWWWWWWW",
+				"WWWWWWWWWWWWWWWWWGGTWWWWWTWWWWWWWWWWWWWTWWWWWGTGWWWWWWWWWWWWW",
+				"WWWWWWWWWWWWWWWWWGTTWWWWWTWWWWWGTTWWWWWTWWWWWWTWWWWWWWWWWWWWW",
+				"WWWWWWWWWWWWWWWWWGTTWWWWWTTTTWWGTGWWWWWTWWWWWWTWWWWWWWWWWWWWW",
+				"WWWWWWWWWWWWWWWWWWTWWWWWWWWWTWWGTGWWWWWTWWWWWWTWWWWWWWWWWWWWW",
+				"WWWWWWGTGWWWWWWWWWTWWWWWWWWWTWWWTWWWWWWTWWWWWWTWWWWWWWWWWWWWW",
+				"WWWWWWGTTTTTTTTTTTTTTTTTWWWWTTTTTWWWTTTTWWWTTTTTTTTCWWTWWWWWW",
+				"WWWWWWGGGWWWTWWWWWWWWWWTWWWWWWWWTWWWWWWTWWWWWWTWWWWWWWTWWWWWW",
+				"WWWWWWWWWWWWTWWWWWWWWWWTTTWWWWWWTWWWWWWTWWWWWWTWWWWWWWTWWWWWW",
+				"WWWWWWWWWWWWTWWWWWWWWWWWWTWWWWWWTWWWWWWTWWWWWWTWWWWWWWTWWWWWW",
+				"WWWWWWWWWWWWTWWWWWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTCWWWTWWWWWW",
+				"WWWWWWWWWWWWTWWWWWWWTWWWWTWWWWWWTWWWWWWWWWWWWWTWWWWWWWTWWWWWW",
+				"WWWWWWWWWWWWTWWWWWWWTWWWWTWWWWWWTWWWWWWWWWWWWWTWWWWWWWTWWWWWW",
+				"WWWWWWWWWWWWTWWWWWWWTWWWWTWWWWWWTWWWWWWWWWWWWWTWWWWWWWTWWWWWW",
+				"WWWWWWWWWGGGTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWWWWW",
+				"WWWWWWWGGGGGTWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+				"WWWWWGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+				"WWWWWUWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+				"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+				"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+				"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+			  ],
+			  "floorLinks": [
+				{
+				  "x": 5,
+				  "y": 31,
+				  "toFloor": 1,
+				  "targetX": 54,
+				  "targetY": 3,
+				  "label": "黒岩の胎道へ戻る"
+				},
+				{
+				  "x": 55,
+				  "y": 4,
+				  "toFloor": 3,
+				  "targetX": 5,
+				  "targetY": 4,
+				  "label": "溶岩の地底湖へ"
+				}
+			  ],
+			  "tileEffects": [
+				{
+				  "x": 18,
+				  "y": 28,
+				  "type": "warp",
+				  "toX": 12,
+				  "toY": 28,
+				  "message": "同じ石柱の前へ戻された。"
+				},
+				{
+				  "x": 25,
+				  "y": 28,
+				  "type": "warp",
+				  "toX": 32,
+				  "toY": 23,
+				  "message": "道が不安定に変化した・・・"
+				},
+				{
+				  "x": 32,
+				  "y": 24,
+				  "type": "warp",
+				  "toX": 12,
+				  "toY": 28,
+				  "message": "一歩進んだはずが、また最初の柱を見上げている。"
+				},
+				{
+				  "x": 46,
+				  "y": 28,
+				  "type": "warp",
+				  "toX": 54,
+				  "toY": 28,
+				  "message": "闇の風に巻かれ、どこかへ移動した。"
+				},
+				{
+				  "x": 54,
+				  "y": 20,
+				  "type": "warp",
+				  "toX": 12,
+				  "toY": 28,
+				  "message": "外周を回りきったはずの道が、また入口側へつながっていた。"
+				},
+				{
+				  "x": 50,
+				  "y": 28,
+				  "type": "warp",
+				  "toX": 43,
+				  "toY": 20,
+				  "message": "内側の回廊に吸い込まれた。"
+				},
+				{
+				  "x": 20,
+				  "y": 24,
+				  "type": "warp",
+				  "toX": 32,
+				  "toY": 27,
+				  "message": "どこかに移動したようだ…"
+				},
+				{
+				  "x": 36,
+				  "y": 20,
+				  "type": "warp",
+				  "toX": 12,
+				  "toY": 28,
+				  "message": "輪の中心から、始まりの横穴へ放り出された。"
+				}
+			  ],
+			  "chests": [
+				{
+				  "x": 18,
+				  "y": 16,
+				  "itemId": 99,
+				  "type": "item"
+				},
+				{
+				  "x": 25,
+				  "y": 13,
+				  "itemId": 14,
+				  "type": "item"
+				},
+				{
+				  "x": 32,
+				  "y": 17,
+				  "itemId": 5,
+				  "type": "item"
+				},
+				{
+				  "x": 7,
+				  "y": 20,
+				  "itemId": 6,
+				  "type": "item"
+				},
+				{
+				  "x": 51,
+				  "y": 20,
+				  "itemId": 99,
+				  "type": "item"
+				},
+				{
+				  "x": 50,
+				  "y": 24,
+				  "itemId": 14,
+				  "type": "item"
+				},
+				{
+				  "x": 46,
+				  "y": 14,
+				  "itemId": 7,
+				  "type": "item",
+				  "rare": true
+				}
+			  ],
+			  "mapActions": [
+				{
+				  "x": 12,
+				  "y": 28,
+				  "label": "古びた石碑を読む",
+				  "log": "「柱を数えよ。三度目に迷い、四度目に上れ。端まで急ぐ者は輪の腹へ戻る」と読める。",
+				  "type": "log",
+				  "imageKey": "overlay_dungeon_event",
+				  "blocksMovement": false,
+				  "baseTile": "T"
+				},
+				{
+				  "x": 39,
+				  "y": 13,
+				  "label": "煤けた足跡を調べる",
+				  "log": "足跡は不自然に北へ伸びている。魔族の巡回はこの道だけを避けているようだ。",
+				  "type": "log",
+				  "imageKey": "overlay_dungeon_event",
+				  "blocksMovement": false,
+				  "baseTile": "T"
+				}
+			  ],
+			  "limitedMapReveal": true,
+			  "revealRadius": 3,
+			  "entryPoint": {
+				"x": 5,
+				"y": 31
+			  },
+			  "name": "",
+			  "themeKey": "GALVANIA_CAVE"
+			},
             {
                 label: "3階・溶岩の地底湖",
                 encounterRank: 66,
