@@ -6035,6 +6035,9 @@ const Field = {
         if (upper === 'B' && x !== null && y !== null && typeof MapRegistry !== 'undefined' && MapRegistry.findFixedBoss) {
             const bossDef = MapRegistry.findFixedBoss(Field.currentMapData, x, y);
             if (!Field.isFixedBossAvailable(bossDef)) return null;
+            if (bossDef?.imageKey && typeof GRAPHICS !== 'undefined' && GRAPHICS.data?.[bossDef.imageKey]) {
+                config = { img: bossDef.imageKey, color: bossDef.color || config.color || '#db3b4d' };
+            } else {
             const rawMonsterId = Array.isArray(bossDef?.monsterId) ? bossDef.monsterId[0] : bossDef?.monsterId;
             const monsterId = Number(bossDef?.mapSpriteMonsterId || rawMonsterId);
             const graphicKey = Number.isFinite(monsterId) && Field.getMonsterMapSpriteKey
@@ -6042,6 +6045,7 @@ const Field = {
                 : (Number.isFinite(monsterId) ? `monster_${monsterId}` : '');
             if (graphicKey && typeof GRAPHICS !== 'undefined' && GRAPHICS.data?.[graphicKey]) {
                 config = { img: graphicKey, color: config.color || '#db3b4d' };
+            }
             }
         }
 

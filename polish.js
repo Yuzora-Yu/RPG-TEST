@@ -190,6 +190,7 @@
     lastDamageEventByUnit: new WeakMap(),
     enemyHpDisplayHolds: new WeakMap(),
     enemyHpHoldTimers: new WeakMap(),
+    pendingHpTransitions: new WeakMap(),
     beforeSnapshot: null,
     now() {
       return (typeof performance !== "undefined" && performance.now) ? performance.now() : Date.now();
@@ -395,6 +396,16 @@
         }
       }, fallbackMs + 24);
       this.enemyHpHoldTimers.set(unit, timer);
+    },
+    stageHpTransition(unit, displayHp) {
+      if (!unit || !Number.isFinite(Number(displayHp))) return;
+      this.pendingHpTransitions.set(unit, Number(displayHp));
+    },
+    consumeHpTransition(unit) {
+      if (!unit || !this.pendingHpTransitions.has(unit)) return null;
+      const hp = this.pendingHpTransitions.get(unit);
+      this.pendingHpTransitions.delete(unit);
+      return Number.isFinite(Number(hp)) ? Number(hp) : null;
     },
     releaseEnemyHpDisplayHold(unit) {
       if (!unit || !this.isEnemy(unit)) return;
@@ -1113,9 +1124,12 @@
     enqueueHitEvent(event) {
       if (!event?.unit) return null;
       const { unit, cmd, hitIndex, area, screenArea, damageMatch, healMatch, kind, criticalKind, amount, hitColor } = event;
-      const sequenceAfterMs = screenArea ? this.areaHitIntervalMs : this.hitSequenceIntervalMs;
+      const supportSequenceMs = 120;
+      const sequenceAfterMs = healMatch
+        ? supportSequenceMs
+        : (screenArea ? this.areaHitIntervalMs : this.hitSequenceIntervalMs);
       const shouldShowPointEffect = !area || !screenArea;
-      const leadMs = shouldShowPointEffect ? this.hitEffectLeadMs : 0;
+      const leadMs = shouldShowPointEffect ? (healMatch ? 120 : this.hitEffectLeadMs) : 0;
       const queued = this.queueVisual(async () => {
         if (damageMatch) {
           if (shouldShowPointEffect) {
@@ -1152,7 +1166,9 @@
         this.float(unit, "MISS", "#d6d1c2", { hitIndex });
       }, { estimatedRunMs: leadMs, afterMs: sequenceAfterMs });
 
-      if ((damageMatch || healMatch) && this.isEnemy(unit)) this.startEnemyHpDisplayHold(unit, queued.endDelayMs);
+      if ((damageMatch || healMatch) && this.isEnemy(unit)) {
+        this.startEnemyHpDisplayHold(unit, queued.endDelayMs, event.displayHpBefore);
+      }
       if (damageMatch && event.defeatAtLog) this.startDefeatedHold(unit, queued.endDelayMs);
       return queued;
     },
@@ -1168,6 +1184,10 @@
           const queued = this.enqueueHitEvent(event);
           if (context) context.maxHitDelay = Math.max(context.maxHitDelay || 0, queued?.endDelayMs || 0);
         });
+    },
+    async waitForCurrentActionPhase() {
+      if (this.current) this.flushAreaHits(this.current);
+      await this.waitForVisuals(0);
     },
     playIntentEffects(cmd, options = {}) {
       if (!this.shouldPlayIntentEffects(cmd)) return 0;
@@ -1208,7 +1228,9 @@
       if (!unit) return;
 
       const damageMatch = text.match(/に\s*([0-9,]+)\s*のダメージ/) || text.match(/ダメージを\s*([0-9,]+)\s*受けた/) || text.match(/に\s*([0-9,]+)\s*の?ダメージ/);
-      const healMatch = text.match(/HP[をが]\s*([0-9,]+)\s*回復/) || text.match(/([0-9,]+)\s*回復/);
+      // MP回復（特に攻撃ごとの吸魔）をHP回復演出として扱わない。
+      // HP回復だけを明示的に拾い、不要なエフェクト待機とHPバー操作を防ぐ。
+      const healMatch = text.match(/HP[をが]\s*([0-9,]+)\s*回復/);
       const missMatch = /ミス|身をかわした|うけない|効かなかった|きかなかった/.test(text);
       const defeatMatch = /倒れた|息絶えた|戦闘不能/.test(text);
 
@@ -1259,15 +1281,16 @@
         criticalKind,
         amount: (damageMatch || healMatch)?.[1]?.replace(/,/g, "") || "",
         hitColor: this.hitColorFromLog(message),
-        defeatAtLog: !!damageMatch && this.isDefeatedEnemy(unit)
+        defeatAtLog: !!damageMatch && this.isDefeatedEnemy(unit),
+        displayHpBefore: this.consumeHpTransition(unit)
       };
 
       if (damageMatch) {
         this.lastDamageEventByUnit.set(unit, event);
-        if (this.isEnemy(unit)) this.startEnemyHpDisplayHold(unit);
+        if (this.isEnemy(unit)) this.startEnemyHpDisplayHold(unit, 0, event.displayHpBefore);
         if (event.defeatAtLog) this.startDefeatedHold(unit);
       } else if (healMatch && this.isEnemy(unit)) {
-        this.startEnemyHpDisplayHold(unit);
+        this.startEnemyHpDisplayHold(unit, 0, event.displayHpBefore);
       }
 
       if (screenArea) {

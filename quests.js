@@ -13,6 +13,7 @@
             unlockFlags: ["windVillageCleared"],
             objective: "風の加護で開いた火山深部を調査し、カリンの試練を越える。",
             startText: "カリンは、風の加護で火山ガスが晴れた今こそ奥へ進めると話した。",
+            startEventId: "quest_karin_start",
             progressText: "火山深部の強化された魔物を越え、最奥へ進もう。",
             completeText: "カリンは鍛えた炎を旅路に捧げ、仲間に加わった。",
             rewardAllies: [210]

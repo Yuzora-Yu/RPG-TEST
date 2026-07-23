@@ -1,6 +1,8 @@
 /* battle.js (AI行動ロジック刷新版: 条件・制約・確率抽選対応) */
 
 const Battle = {
+    // 吸魔シナジー：与ダメージの5%をMPへ変換する（最低1、最大MP上限あり）。
+    DRAIN_MP_RATE: 0.05,
     active: false,
     auto: false,
     phase: 'init',
@@ -225,6 +227,24 @@ const Battle = {
     },
 
     schedule: (fn, ms) => setTimeout(fn, Battle.getBattleWaitMs(ms)),
+
+    // 戦闘ロジックは描画実装に依存させず、導入済みの演出層へHP遷移だけを通知する。
+    // 多段攻撃で後続計算が先行しても、HPバーはダメージ数値の表示までは直前値を保つ。
+    stageHpVisualTransition: (unit, hpBefore) => {
+        const fx = (typeof window !== 'undefined') ? window.PolishBattleFX : null;
+        if (fx && typeof fx.stageHpTransition === 'function') {
+            fx.stageHpTransition(unit, hpBefore);
+        }
+    },
+
+    // 1ヒット分の計算・ログ・描画を演出側が消化するまで待つ任意フック。
+    // polish.js がない環境（Canvasのエラー回避経路を含む）では即時完了する。
+    awaitActionVisualPhase: async () => {
+        const fx = (typeof window !== 'undefined') ? window.PolishBattleFX : null;
+        if (fx && typeof fx.waitForCurrentActionPhase === 'function') {
+            await fx.waitForCurrentActionPhase();
+        }
+    },
 
     getAutoStartSetting: () => {
         if (typeof App !== 'undefined' && typeof App.getBattleAutoStartSetting === 'function') {
@@ -3200,6 +3220,7 @@ findNextActor: () => {
                         if (isImmune) dmg = 0;
                         const hpBeforeDamage = targetToHit.hp;
                         targetToHit.hp -= dmg;
+                        Battle.stageHpVisualTransition(targetToHit, hpBeforeDamage);
 
                         Battle.recordMaxDamage(actor, data, dmg, cmd);
 
@@ -3210,8 +3231,8 @@ findNextActor: () => {
                                 const oldHp = actor.hp; actor.hp = Math.min(actor.baseMaxHp, actor.hp + dAmt);
                                 if(actor.hp - oldHp > 0) Battle.log(`${actor.name}は吸収効果でHPを${actor.hp - oldHp}回復した！`);
                             }
-                            if (actor.passive?.drainMp) { 
-                                const mpAmt = Math.max(1, Math.floor(dmg * 0.01));
+                            if (actor.passive?.drainMp) {
+                                const mpAmt = Math.max(1, Math.floor(dmg * Battle.DRAIN_MP_RATE));
                                 actor.mp = Math.min(actor.baseMaxMp, actor.mp + mpAmt);
                             }
                         }
@@ -3226,6 +3247,7 @@ findNextActor: () => {
                             }
                         }
                         Battle.renderEnemies(); Battle.renderPartyStatus();
+                        await Battle.awaitActionVisualPhase();
                         if (hitCount > 1) await Battle.resultWait(150);
                     }
                 }
@@ -3408,7 +3430,8 @@ findNextActor: () => {
 					if (tryEffect('InstantDeath', successRate, assaBonus)) {
 						const hpBeforeDamage = t.hp;
 						let pdmg = Math.max(1, Math.floor(t.hp * d.PercentDamage));
-						t.hp -= pdmg; 
+						t.hp -= pdmg;
+						Battle.stageHpVisualTransition(t, hpBeforeDamage);
 						Battle.log(`${t.name}に ${pdmg} のダメージ！`);
                         if (t.hp <= 0) {
                             if (!Battle.tryGutsSurvive(t, hpBeforeDamage)) {
@@ -3456,6 +3479,7 @@ findNextActor: () => {
 						}
 						const beforeHp = t.hp;
 						t.hp = Math.min(t.baseMaxHp, t.hp + Math.floor(rec));
+						Battle.stageHpVisualTransition(t, beforeHp);
 						Battle.log(`${t.name}のHPが${t.hp - beforeHp}回復！`);
 					}
                     if (effectType === 'MP回復' && Battle.isBattleAlive(t)) {
@@ -3708,6 +3732,7 @@ findNextActor: () => {
                     const hpBeforeDamage = targetToHit.hp;
 
                     targetToHit.hp -= dmg;
+                    Battle.stageHpVisualTransition(targetToHit, hpBeforeDamage);
                     targetToHit.revengeStack = (targetToHit.revengeStack || 0) + 1;
                     actor.revengeStack = 0;
 
@@ -3734,12 +3759,12 @@ findNextActor: () => {
                         }
                         if (actor.passive?.drainMp) {
                             const beforeMp = actor.mp;
-                            actor.mp = Math.min(actor.baseMaxMp, actor.mp + Math.max(1, Math.floor(dmg * 0.01)));
+                            actor.mp = Math.min(actor.baseMaxMp, actor.mp + Math.max(1, Math.floor(dmg * Battle.DRAIN_MP_RATE)));
                             const recoveredMp = actor.mp - beforeMp;
                             if (recoveredMp > 0) Battle.log(`${actor.name}は吸魔効果でMPを${recoveredMp}回復した！`);
                         }
                     }
-                     
+
                     // --- 反射（理力の壁）判定箇所 ---
 					if (dmg > 0 && Battle.isBattleAlive(targetToHit)) {
 						const reflectRate = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(targetToHit, 'reflect_dmg_mult') : 0;
@@ -3757,7 +3782,7 @@ findNextActor: () => {
 
 						if (canReflect && Math.random() * 100 < (reflectTrigger > 0 ? reflectTrigger : 10)) { 
 							// getSumValue('reflect_dmg_mult') が固定10%も含むため、ここでは再加算しない。
-							const refDmg = Math.floor(dmg * (reflectRate / 100)); 
+							const refDmg = Math.floor(dmg * (reflectRate / 100));
 							const actorHpBeforeDamage = actor.hp;
 							actor.hp -= refDmg; 
 							Battle.log(`${targetToHit.name}の理力の壁が 反射！ ${actor.name}に ${refDmg} のダメージ！`);
@@ -3899,9 +3924,13 @@ findNextActor: () => {
                         break;
                     }
                     Battle.renderEnemies(); Battle.renderPartyStatus();
+                    await Battle.awaitActionVisualPhase();
                     if (hitCount > 1) await Battle.resultWait(150);
                 }
             }
+            // 二刀流は第1撃の全対象・全ヒット演出を完了してから第2撃へ進む。
+            // 第1撃で戦闘不能になった対象は、この待機後の次ループ対象判定から除外される。
+            await Battle.awaitActionVisualPhase();
             await Battle.resultWait(100);
         }
     },
