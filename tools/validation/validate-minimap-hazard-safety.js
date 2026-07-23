@@ -159,11 +159,11 @@ assert(crenaF3Graph?.hasPosition(state => state.switchMask === 3 && Number(state
 assert(crenaF3Switches.some(action => Number(action.x) === 5 && Number(action.y) === 6), 'Crena Cave B3 left switch is not in the new upper-left chamber');
 assert(crenaF3Graph?.hasPosition(state => Math.abs(state.x - 5) + Math.abs(state.y - 6) === 1), 'Crena Cave B3 upper-left switch chamber is not reachable');
 assert(crenaF3Switches.every(action => (action.opens || []).length === 1 && Number(action.opens[0].x) === 14 && Number(action.opens[0].y) === 10 && action.opens[0].effectType === 'ice'), 'Crena Cave B3 gate does not replace only the central wall with ice');
-assert(crenaF3Return && crenaF3.tiles?.[crenaF3Return.y]?.[crenaF3Return.x] === 'S', 'Crena Cave B3 return staircase has no visible stair tile');
+assert(crenaF3Return && crenaF3.tiles?.[crenaF3Return.y]?.[crenaF3Return.x] === 'U', 'Crena Cave B3 return staircase has no visible upward stair tile');
 
 const crenaF4 = MapRegistry.getFixedDungeonFloor('CRENA_LIMESTONE_CAVE', 4);
 const crenaF4Return = (crenaF4.floorLinks || []).find(link => Number(link.toFloor) === 3);
-assert(crenaF4Return && crenaF4.tiles?.[crenaF4Return.y]?.[crenaF4Return.x] === 'S', 'Crena Cave B4 return staircase has no visible stair tile');
+assert(crenaF4Return && crenaF4.tiles?.[crenaF4Return.y]?.[crenaF4Return.x] === 'U', 'Crena Cave B4 return staircase has no visible upward stair tile');
 
 assert(mainSource.includes('getMiniMapTileColor:'), 'minimap color policy is not centralized');
 assert(mainSource.includes("themeKey === 'DARK_CASTLE'"), 'dark-castle minimap contrast override is missing');

@@ -21,6 +21,12 @@ const wallFace = mapContext.window.DUNGEON_WALL_FACE_THEMES.SUMMIT_TEMPLE;
 const decor = mapContext.window.MAP_FLOOR_DECOR_THEMES.SUMMIT_TEMPLE;
 const graphics = assetContext.__ASSETS.graphics;
 const cached = new Set(assetContext.__ASSETS.cacheWarmup.installImages || []);
+const renderContext = { window: {}, globalThis: {}, console };
+renderContext.window = renderContext;
+renderContext.globalThis = renderContext;
+vm.createContext(renderContext);
+vm.runInContext(read('map_render_shared.js'), renderContext, { filename: 'map_render_shared.js' });
+const renderShared = renderContext.MapRenderShared;
 
 assert(map.width === 25 && map.height === 21, 'Summit Temple must use the expanded 25x21 sanctuary layout');
 assert(map.tiles.length === map.height && map.tiles.every(row => row.length === map.width), 'Summit Temple has a malformed tile row');
@@ -29,10 +35,13 @@ assert(map.isDungeon === false && map.useDungeonWallFace === true,
 assert(map.disableRandomEncounters === true, 'Summit Temple must remain encounter-free');
 assert(map.autoExitOnPerimeter === true, 'Summit Temple perimeter must exit on contact');
 for (let x = 0; x < map.width; x += 1) {
-    assert(map.tiles[0][x] === 'S' && map.tiles[map.height - 1][x] === 'S', `Summit top/bottom perimeter is not an exit at x=${x}`);
+    assert(map.tiles[0][x] === '^', `Summit cliff edge is not sky at x=${x}`);
+    assert(map.tiles[map.height - 1][x] === 'S', `Summit bottom perimeter is not an exit at x=${x}`);
 }
 for (let y = 0; y < map.height; y += 1) {
-    assert(map.tiles[y][0] === 'S' && map.tiles[y][map.width - 1] === 'S', `Summit side perimeter is not an exit at y=${y}`);
+    const expected = y <= 8 ? '^' : 'S';
+    assert(map.tiles[y][0] === expected && map.tiles[y][map.width - 1] === expected,
+        `Summit side perimeter is not ${expected === '^' ? 'cliff sky' : 'an exit'} at y=${y}`);
 }
 
 assert(map.themeKey === 'SUMMIT_TEMPLE', 'Summit Temple is not using its dedicated theme');
@@ -40,14 +49,48 @@ assert(theme.G.img === 'tile_summit_temple_mountain_trail' && theme.S.img === 't
     'Summit exterior must use its dedicated mountain-trail terrain');
 assert(theme.G.variants?.length === 2 && theme.S.variants?.length === 2,
     'Summit mountain trail must expose two authored variants');
-assert(theme['^']?.variants?.length === 2 && theme['^'].img === 'tile_summit_temple_sky',
-    'Summit cliff sky must expose two authored variants');
+assert(theme['^']?.img === 'tile_summit_temple_sky' && !theme['^'].variants,
+    'Summit cliff sky must use one quiet seamless base instead of repeating detailed variants');
+assert(theme['^']?.terrain === true,
+    'Summit sky must be rendered as base terrain, never as a shadow-casting tile object');
 assert(map.impassableTiles?.includes('^'), 'Summit cliff sky is not declared impassable');
 for (let y = 0; y <= 8; y += 1) {
     assert(!map.tiles[y].includes('G'), `Summit Y${y} still contains gravel instead of cliff sky`);
 }
 assert(theme.T.variants?.length === 2, 'Summit floor must expose two authored variants');
-for (const key of [theme.W.img, ...theme.T.variants, ...theme.G.variants, ...theme['^'].variants, wallFace.img, map.battleBg]) {
+const edgeKeys = ['n', 'e', 's', 'w'].map(direction => map.elevatedEdges?.keys?.[direction]);
+assert(JSON.stringify(map.elevatedEdges?.terrainTiles) === JSON.stringify(['T'])
+    && JSON.stringify(map.elevatedEdges?.voidTiles) === JSON.stringify(['^'])
+    && Number(map.elevatedEdges?.thickness) === 6
+    && Number(map.elevatedEdges?.joinOverlap) === 1
+    && Number(map.elevatedEdges?.cornerOverhang) === 6
+    && edgeKeys.every(Boolean),
+    'Summit elevated-floor edge routing is missing or malformed');
+const summitTileAt = (x, y) => String(map.tiles?.[y] || '')[x] || '';
+const topLeftEdgePlan = renderShared.elevatedEdgeCellPlan({
+    map,
+    definition: map.elevatedEdges,
+    x: 10,
+    y: 3,
+    tileSign: summitTileAt(10, 3),
+    tileAtFn: summitTileAt
+});
+const nextTopEdgePlan = renderShared.elevatedEdgeCellPlan({
+    map,
+    definition: map.elevatedEdges,
+    x: 11,
+    y: 3,
+    tileSign: summitTileAt(11, 3),
+    tileAtFn: summitTileAt
+});
+const topLeftNorth = topLeftEdgePlan?.edges?.find(edge => edge.id === 'n');
+const topLeftWest = topLeftEdgePlan?.edges?.find(edge => edge.id === 'w');
+const nextNorth = nextTopEdgePlan?.edges?.find(edge => edge.id === 'n');
+assert(topLeftNorth?.x === -6 && topLeftWest?.y === -6,
+    'Summit upper-left ledge does not extend both rails through the convex corner');
+assert(10 * 32 + topLeftNorth.x + topLeftNorth.width >= 11 * 32 + nextNorth.x,
+    'Summit neighboring handrail segments leave a horizontal seam');
+for (const key of [theme.W.img, ...theme.T.variants, ...theme.G.variants, theme['^'].img, wallFace.img, ...edgeKeys, map.battleBg]) {
     const assetKey = key === map.battleBg ? 'battle_bg_summit_temple' : key;
     assert(graphics[assetKey], `Missing registered Summit graphic: ${assetKey}`);
     assert(fs.existsSync(path.join(root, graphics[assetKey])), `Missing Summit asset file: ${graphics[assetKey]}`);
@@ -56,6 +99,20 @@ for (const key of [theme.W.img, ...theme.T.variants, ...theme.G.variants, ...the
 assert(decor.disabled === true, 'Summit Temple must not receive random generic floor decorations');
 
 const decorations = map.floorDecorations || [];
+const clouds = map.skyOverlays || [];
+assert(clouds.length === 3, 'Summit sky must use three unsliced transparent cloud banks');
+assert(clouds.some(entry => entry.imageKey === 'overlay_summit_temple_cloud_bank' && entry.x === 2 && entry.y === 1),
+    'The cleaned original cloud bank is not anchored on the left sky');
+assert(clouds.some(entry => entry.imageKey === 'overlay_summit_temple_cloud_wispy' && entry.x === 16),
+    'The wispy cloud variant is not placed on the right sky');
+assert(clouds.some(entry => entry.imageKey === 'overlay_summit_temple_cloud_compact' && entry.x === 17),
+    'The compact cloud variant is not placed on the right sky');
+clouds.forEach(entry => {
+    assert(graphics[entry.imageKey], `Unregistered Summit cloud overlay: ${entry.imageKey}`);
+    assert(cached.has(graphics[entry.imageKey]), `Summit cloud overlay is absent from full cache: ${entry.imageKey}`);
+});
+assert(!decorations.some(entry => String(entry.imageKey || '').startsWith('overlay_summit_temple_cloud_')),
+    'Summit clouds must not be split across floor-decoration tiles');
 const stage = decorations.filter(entry => entry.type === 'image' && String(entry.imageKey).startsWith('overlay_summit_temple_stage_'));
 assert(stage.length === 15, 'Summit 5x3 raised stage must contain exactly 15 rendered cells');
 for (let y = 3; y <= 5; y += 1) {
@@ -142,6 +199,22 @@ assert(mainSource.includes('isMovementRegionCrossingBlocked: (fromX, fromY, toX,
 assert(editorSource.includes("map?.useDungeonWallFace === true"),
     'Map editor cannot preview wall faces for a normal facility');
 const phaserSource = read('phaser-field.js');
+assert(phaserSource.includes("objectConfig?.terrain === true")
+    && phaserSource.includes("!isBaseTerrainTile && !overlay")
+    && phaserSource.includes('drawElevatedTerrainEdges(scene, field, mapSize, areaKey')
+    && phaserSource.includes('renderShared.elevatedEdgeCellPlan')
+    && phaserSource.includes('drawMapSkyOverlays(scene, field)'),
+    'Phaser does not render authored terrain and elevated edges through the shared base-layer path');
+assert(mainSource.includes("config?.terrain === true")
+    && mainSource.includes('elevatedEdgePlans.forEach')
+    && mainSource.includes('MapRenderShared?.elevatedEdgeCellPlan')
+    && mainSource.includes("Field.currentMapData?.skyOverlays"),
+    'Canvas fallback does not mirror authored terrain and elevated-edge routing');
+assert(editorSource.includes("cfg?.terrain===true")
+    && editorSource.includes('drawEditorElevatedEdges(ctx,map,tile,w,h)')
+    && editorSource.includes('renderShared.elevatedEdgeCellPlan')
+    && editorSource.includes('drawEditorSkyOverlays(ctx,map,tile)'),
+    'Map editor does not mirror the game terrain and elevated-edge routing');
 assert(phaserSource.includes("object.shimmer === true") && phaserSource.includes("duration: 760"),
     'Phaser recovery-spring shimmer tween is missing');
 assert(phaserSource.includes('水面そのものは固定する')
@@ -154,13 +227,11 @@ assert(phaserSource.includes("object.auraKey || 'heal-blossom'")
     && phaserSource.includes('const upperAura = addImage')
     && phaserSource.includes('[-12, -5, 5, 12].forEach'),
     'Healing spring does not have strong layered rising light and motes');
-assert(phaserSource.includes("const isSummitTemple = areaKey === 'SUMMIT_TEMPLE'")
-    && phaserSource.includes('const cloudShadow = scene.add.container')
-    && phaserSource.includes('duration: 30000')
-    && phaserSource.includes("ease: 'Linear'"),
-    'Summit Temple does not have a continuous right-to-left cloud shadow');
+assert(!phaserSource.includes('const cloudShadow = scene.add.container')
+    && !phaserSource.includes('cloudBlobs.forEach'),
+    'The rejected procedural cloud-shadow effect is still active');
 assert(mainSource.includes('isTileImpassableForCurrentMap: (tileSign) =>')
     && mainSource.includes('Field.isTileImpassableForCurrentMap(tile)'),
     'Summit sky does not use the shared authored impassable-terrain rule');
 
-console.log('Summit Temple cliff sky, cloud shadow, spring aura, navigation, treasure, and battle background validated.');
+console.log('Summit Temple seamless sky, elevated ledges, cloud bank, spring aura, navigation, treasure, and battle background validated.');

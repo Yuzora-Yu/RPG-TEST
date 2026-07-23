@@ -146,9 +146,9 @@
   - `overlay_npc_dark_soldier`
   - `overlay_npc_bronze_knight`
 - 鍵と扉:
-  - `assets/map/objects/item_key_red_v002.png`
-  - `assets/map/objects/item_key_blue_v002.png`
-  - `assets/map/objects/item_key_gold_v002.png`
+  - `assets/map/objects/item_key_red.png`
+  - `assets/map/objects/item_key_blue.png`
+  - `assets/map/objects/item_key_gold.png`
   - `assets/map/objects/door_key_red_v002.png`
   - `assets/map/objects/door_key_blue_v002.png`
   - `assets/map/objects/door_key_gold_v002.png`

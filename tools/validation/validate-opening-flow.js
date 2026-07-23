@@ -29,7 +29,7 @@ const requiredPreOpImages = [
     'assets/monsters/monster_301000.png',
     'assets/generated/battle-field-ai.png',
     'assets/generated/battle-dungeon-ai.png',
-    'assets/generated/battle-flooded-v001.png',
+    'assets/generated/battle-flooded.png',
 ];
 for (const src of requiredPreOpImages) {
     if (!critical.includes(src)) errors.push(`pre-OP battle image is not in the critical cache: ${src}`);
@@ -52,7 +52,7 @@ for (const key of [
     if (!warmup.initialGraphicKeys.includes(key)) errors.push(`pre-OP map graphic is not loaded at startup: ${key}`);
 }
 if (!warmup.initialGraphicKeys.includes('inn')) errors.push('Lumina village inn tile is missing from initial graphics');
-if (!Array.isArray(warmup.openingImages) || !warmup.openingImages.includes('assets/generated/opening-prism-collapse-v002.png')) {
+if (!Array.isArray(warmup.openingImages) || !warmup.openingImages.includes('assets/generated/opening-prism-collapse.png')) {
     errors.push('paper-theater opening image set is incomplete');
 }
 if (!warmup.openingImages.includes('assets/background/PRISMA ABYSS.png')) errors.push('title-screen logo is missing from the opening cache');
@@ -73,7 +73,7 @@ if (!(reportConversationIndex >= 0 && reportSubIndex > reportConversationIndex &
     errors.push('start_adventure3 must finish PROLOGUE3, advance subStep, then play the opening');
 }
 if (promptIndex >= 0) errors.push('start_adventure3 must not repeat the startup full-data prompt after the opening');
-if (!openingSource.includes("const PRISMA_OPENING_IMAGE = 'assets/generated/opening-prism-collapse-v002.png'")) errors.push('opening does not use the generated collapse illustration');
+if (!openingSource.includes("const PRISMA_OPENING_IMAGE = 'assets/generated/opening-prism-collapse.png'")) errors.push('opening does not use the generated collapse illustration');
 if (!openingSource.includes('autoTimer = setTimeout(advance')) errors.push('opening does not auto-advance');
 const openingSceneCount = (openingSource.match(/\{ (?:logo: true, )?text: /g) || []).length;
 if (openingSceneCount !== 8) errors.push(`opening must contain the current 7 concise story lines plus the title logo: ${openingSceneCount}`);
@@ -85,9 +85,7 @@ for (const spoiler of ['アルス', 'リュミナ村', '風の集落', '水上�
 
 for (const marker of [
     'openingPrologue3Viewed',
-    'handleInitialFullDataDownload',
-    'resolveCycledMapActionEventId',
-    'cycleEventIds'
+    'handleInitialFullDataDownload'
 ]) {
     if (!storySource.includes(marker) && !mainSource.includes(marker) && !mapSource.includes(marker)) {
         errors.push(`opening/village runtime marker is missing: ${marker}`);
@@ -134,12 +132,17 @@ if (villageCaveEntrance?.imageKey) errors.push('unwanted villager image remains 
 const caveGuard = (mapContext.__DUNGEONS?.START_CAVE?.mapActions || []).find(action => action.x === 15 && action.y === 17);
 if (caveGuard?.imageKey !== 'overlay_npc_villager') errors.push('existing START_CAVE lookout does not use the villager image');
 if (!Array.isArray(caveGuard?.events) || caveGuard.events.length < 2) errors.push('existing START_CAVE lookout events are incomplete');
-const cyclingResidents = (startVillage?.mapActions || []).filter(action => Array.isArray(action.cycleEventIds));
-if (cyclingResidents.length !== 3) errors.push(`expected 3 cycling Lumina residents, found ${cyclingResidents.length}`);
-for (const resident of cyclingResidents) {
-    for (const eventId of resident.cycleEventIds) {
-        if (!storySource.includes(`"${eventId}"`)) errors.push(`cycling resident event is missing: ${eventId}`);
-    }
+const expectedResidentEvents = [
+    'town_start_villager_1_a',
+    'town_start_villager_2_a',
+    'town_start_villager_3_a'
+];
+const villageResidents = (startVillage?.mapActions || []).filter(action => expectedResidentEvents.includes(action.eventId));
+if (villageResidents.length !== expectedResidentEvents.length) {
+    errors.push(`expected ${expectedResidentEvents.length} authored Lumina residents, found ${villageResidents.length}`);
+}
+for (const eventId of expectedResidentEvents) {
+    if (!storySource.includes(`"${eventId}"`)) errors.push(`Lumina resident event is missing: ${eventId}`);
 }
 
 for (const file of ['opening.css', 'opening.js']) {
@@ -149,4 +152,4 @@ for (const file of ['opening.css', 'opening.js']) {
 
 if (errors.length) throw new Error(`Opening flow validation failed:\n${errors.join('\n')}`);
 console.log(`Opening flow validation passed. Critical images: ${critical.length}. Opening scenes: ${openingSceneCount}.`);
-console.log(`Lumina cycling residents: ${cyclingResidents.length}. Existing cave lookout: adjacent villager actor.`);
+console.log(`Lumina authored residents: ${villageResidents.length}. Existing cave lookout: adjacent villager actor.`);

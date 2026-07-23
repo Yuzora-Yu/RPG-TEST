@@ -285,20 +285,6 @@ const STORY_MANAGER_DATA = {
                 "charId": 1003
             }
         ],
-        "TOWN_START_VILLAGER_1_B": [
-                {
-                        "name": "村人",
-                        "text": "柵も鍬も、まとめて穴に飲まれた。\n……次は家かもしれねえ。",
-                        "charId": 1003
-                }
-        ],
-        "TOWN_START_VILLAGER_1_C": [
-                {
-                        "name": "村人",
-                        "text": "笑うなよ。畑がなくなるってのはな、\n明日の飯を誰も約束してくれねえってことだ。",
-                        "charId": 1003
-                }
-        ],
         "TOWN_START_VILLAGER_2_A": [
             {
                 "name": "村の若者",
@@ -322,13 +308,6 @@ const STORY_MANAGER_DATA = {
                         "charId": 1002
                 }
         ],
-        "TOWN_START_VILLAGER_2_B": [
-                {
-                        "name": "村の若者",
-                        "text": "情けねえよな。でも、薬草くらいは運ばせてくれ。\n何もしないで待つ方が、よっぽど怖い。",
-                        "charId": 1002
-                }
-        ],
         "TOWN_START_VILLAGER_3_A": [
             {
                 "name": "薬草摘み",
@@ -341,14 +320,6 @@ const STORY_MANAGER_DATA = {
                 "charId": 1003
             }
         ],
-        "TOWN_START_VILLAGER_3_B": [
-                {
-                        "name": "薬草摘み",
-                        "text": "傷薬にはできるよ。\n飲む時は、鼻をつまみな。",
-                        "charId": 1003
-                }
-        ],
-
         "FIRE_VILLAGE_ELDER_BEFORE_STORY": [
                 {
                         "name": "里の長",
@@ -1197,6 +1168,20 @@ const STORY_MANAGER_DATA = {
             {
                 "name": "少女",
                 "text": "助けてくれてありがとうございます！\nうちの宿へついてきてもらえますか？\nあそこなら兵士の目が届きません。"
+            },
+            {
+                "type": "FIELD_CUTSCENE",
+                "commands": [
+                    {
+                        "op": "MOVE_PLAYER",
+                        "x": 13,
+                        "y": 10,
+                        "blackout": true,
+                        "holdMs": 140,
+                        "fadeInMs": 220,
+                        "fadeOutMs": 220
+                    }
+                ]
             },
             {
                 "name": "ソフィア",
@@ -2242,32 +2227,6 @@ const STORY_MANAGER_DATA = {
                         "text": "すまない。\nすまない、民よ。すまない、光よ。"
                 }
         ],
-        "LIGHT_PALACE_PRISON_PRINCESS": [
-                {
-                        "name": "王女",
-                        "text": "近づかないで……いえ、ごめんなさい。\nもう、誰が味方なのか分からないのです。"
-                },
-                {
-                        "name": "王女",
-                        "text": "私はまだ、声が聞こえます。\n光に膝をつけ、捧げよ、と壁の奥から。"
-                },
-                {
-                        "name": "王女",
-                        "text": "でも従えなかった。\n母が遺した聖印が、熱を持って私を起こすのです。"
-                },
-                {
-                        "name": "王女",
-                        "text": "従わぬ者は祝福の邪魔だと、\nここへ入れられました。水も、祈りも、少しずつ細っていく。"
-                },
-                {
-                        "name": "王女",
-                        "text": "聖女様は、聖騎士の一人が逃がしたと聞きました。\nでも、その先は誰も知らない。"
-                },
-                {
-                        "name": "王女",
-                        "text": "どうか、もし生きているなら……。\nあの子に、ここへ戻るなと伝えてください。"
-                }
-        ],
         "LIGHT_PALACE_PRISON_PRIEST_A": [
                 {
                         "name": "老神職",
@@ -2303,6 +2262,38 @@ const STORY_MANAGER_DATA = {
                         "name": "若い神職",
                         "text": "あの方を責めないでください。\n鎧の中で、誰より傷ついている音がしました。"
                 }
+        ],
+        "LIGHT_PALACE_PRISON_GUARD_ENCOUNTER": [
+                { "name": "地下牢の看守", "text": "止まれ。祝福を拒んだ者に、外の光を見せることは許されぬ。" },
+                { "name": "ジョセフ", "text": "祝福だと？　この奥から聞こえるのは、祈りじゃなく苦しむ声だ。", "charId": 101 },
+                { "name": "地下牢の看守", "text": "ならば貴様らも、光に裁かれてここへ沈め。" }
+        ],
+        "LIGHT_PALACE_PRISON_GUARD_CLEAR": [
+                { "name": "地下牢の看守", "text": "なぜだ……光に選ばれた、この私が……。" },
+                { "name": "システム", "text": "看守が握っていた封印具が砕け、牢の扉が一斉に開いた。" }
+        ],
+        "LIGHT_PALACE_LEILA_CURSED": [
+                { "name": "システム", "text": "ベッドに横たわる聖騎士は、汚染された光の呪いに蝕まれている。呼吸は浅く、目を開けることさえできない。" },
+                { "name": "レイラ", "text": "……ヴェル……ド……さま……。", "charId": 204 },
+                { "name": "ケイト", "text": "今は話せる状態ではありません。まず、宮殿を覆う濁った光を止めないと。", "charId": 104 }
+        ],
+        "LIGHT_PALACE_LEILA_STABILIZED": [
+                { "name": "システム", "text": "宮殿を覆っていた呪いは弱まった。しかし、レイラの生命力はひどく衰えたままだ。" },
+                { "name": "レイラ", "text": "……皆さんが、光を……取り戻してくださったのですね。", "charId": 204 },
+                { "name": "ケイト", "text": "容体は少し落ち着きました。でも、この衰弱を癒すには世界樹の葉ほどの生命力が必要です。", "charId": 104 }
+        ],
+        "LIGHT_PALACE_LEILA_NEEDS_LEAF": [
+                { "name": "システム", "text": "レイラを完全に回復させるには「世界樹の葉」が必要だ。" }
+        ],
+        "LIGHT_PALACE_LEILA_RECOVERY_JOIN": [
+                { "name": "システム", "text": "世界樹の葉からあふれた生命の光が、レイラを蝕む濁りを押し流していく。" },
+                { "name": "レイラ", "text": "……息が、できる。手足にも力が戻ってきます。助けてくださって、本当にありがとうございます。", "charId": 204 },
+                { "name": "レイラ", "text": "皆さんが探している闇のプリズムは、かつて光の宮殿の西――闇の神殿に安置されていました。", "charId": 204 },
+                { "name": "レイラ", "text": "ですが今、闇のプリズムは魔王城にあります。城へ至る道は王宮聖騎士の術式で封じられ、聖騎士でなければ通れません。", "charId": 204 },
+                { "name": "レイラ", "text": "ヴェルドは、私の育ての親です。以前は誰よりも優しく、正しい人でした。それなのに、あの人は変わってしまった。", "charId": 204 },
+                { "name": "レイラ", "text": "すべての真実を知り、闇のプリズムを守るために――どうか私を、魔王城まで同行させてください。", "charId": 204 },
+                { "name": "システム", "text": "レイラの同行を受け入れた。" },
+                { "name": "システム", "text": "[N:204]が仲間に加わった！" }
         ],
         "LIGHT_PALACE_FINAL_ENCOUNTER": [
                 {
@@ -2349,11 +2340,6 @@ const STORY_MANAGER_DATA = {
                         "text": "光の消えた瞳で、この世界の再誕を見届けるがよい。"
                 },
                 {
-                        "name": "レイラ",
-                        "text": "あれは……私の知る光ではありません。\n皆さん、近づきすぎないで。心まで膝をつかされます。",
-                        "charId": 204
-                },
-                {
                         "name": "システム",
                         "text": "ジャスパーとヴェルドの全身から、濁った白光が噴き上がる…！"
                 }
@@ -2370,11 +2356,6 @@ const STORY_MANAGER_DATA = {
                 {
                         "name": "システム",
                         "text": "その瞬間、[N:301]の胸の奥で、リュシオンの加護が強く輝いた。"
-                },
-                {
-                        "name": "レイラ",
-                        "text": "光のプリズムが……同調している……！",
-                        "charId": 204
                 },
                 {
                         "name": "聖騎士ヴェルド",
@@ -2407,26 +2388,12 @@ const STORY_MANAGER_DATA = {
                         "text": "その奔流の中心で、[N:301]の胸の奥に宿るリュシオンの加護が目覚める。"
                 },
                 {
-                        "name": "レイラ",
-                        "text": "プリズムが……本来の光を取り戻していく……！",
-                        "charId": 204
-                },
-                {
                         "name": "聖騎士ヴェルド",
                         "text": "バカな！混沌の光が……我らから……"
                 },
                 {
                         "name": "システム",
                         "text": "力を失ったジャスパーとヴェルドは、光の奔流の中へ音もなく消えていった。"
-                },
-                {
-                        "name": "レイラ",
-                        "text": "光のプリズムは救われました。残るは闇……魔王城へ向かいましょう。",
-                        "charId": 204
-                },
-                {
-                        "name": "システム",
-                        "text": "[N:204]が仲間に加わった！"
                 }
         ],
         "LIGHT_PALACE_CLEAR": [
@@ -2447,13 +2414,8 @@ const STORY_MANAGER_DATA = {
                         "text": "加護を失ったジャスパーとヴェルドは、音もなく光の奔流の中へ消えていった。"
                 },
                 {
-                        "name": "レイラ",
-                        "text": "光のプリズムは応えてくれました。残るプリズムは闇……魔王城へ向かいましょう。",
-                        "charId": 204
-                },
-                {
                         "name": "システム",
-                        "text": "[N:204]が仲間に加わった！"
+                        "text": "宮殿の地下から、封じられていた人々の声がかすかに届いた。"
                 }
         ],
 
@@ -2568,23 +2530,48 @@ const STORY_MANAGER_DATA = {
         ],
         "GALVANIA_CAVE_NORTH_BLOCKED": [
                 {
-                        "name": "兵士",
-                        "text": "魔王軍の活動が活発で危険すぎる。"
+                        "name": "ケイト",
+                        "text": "すさまじい結界でふさがれています。",
+                        "charId": 104
                 },
                 {
-                        "name": "兵士",
-                        "text": "洞窟内の闇の力も日に日に強くなっており、光の加護すらない者を通すことはできない"
+                        "name": "ジョセフ",
+                        "text": "これは……王宮聖騎士の紋章に見えるな。",
+                        "charId": 101
                 }
         ],
+        "MAP_SYSTEM_GALVANIA_CAVE_F1_ACTION_1": [{"name":"システム","text":"兵は「見える近道ほど、地の熱に誘われる。南へ急ぐなら高い岩をたどれ」と息絶え絶えに告げた。"}],
+        "MAP_SYSTEM_GALVANIA_CAVE_F1_ACTION_2": [{"name":"システム","text":"「・・・は輪を・・。火を・・・戻れ。高みの橋・・・次の闇へ・・」だけが読み取れた"}],
+        "MAP_SYSTEM_GALVANIA_CAVE_F2_ACTION_1": [{"name":"システム","text":"「柱を数えよ。三度目に迷い、四度目に上れ。端まで急ぐ者は輪の腹へ戻る」と読める。"}],
+        "MAP_SYSTEM_GALVANIA_CAVE_F2_ACTION_2": [{"name":"システム","text":"足跡は不自然に北へ伸びている。魔族の巡回はこの道だけを避けているようだ。"}],
+        "MAP_SYSTEM_GALVANIA_CAVE_F3_ACTION_1": [{"name":"システム","text":"「湖は赤く、道は細い。まっすぐな橋ほど熱に沈む。黒炎の島は宝を守るだけ」とある。"}],
+        "MAP_SYSTEM_GALVANIA_CAVE_F3_ACTION_2": [{"name":"システム","text":"橋脚には魔王軍の焼印が残っている。補給路を急造した跡だ。"}],
+        "MAP_SYSTEM_GALVANIA_CAVE_F3_ACTION_3": [{"name":"システム","text":"灰まみれの旅人は「火の島に欲を出すな。出口は北東の橋から南へ折れる」と残している。"}],
+        "MAP_SYSTEM_GALVANIA_CAVE_F4_ACTION_1": [{"name":"システム","text":"古い地図には、滑床を大きく迂回する赤い線が引かれている。"}],
+        "MAP_SYSTEM_GALVANIA_CAVE_F5_ACTION_1": [{"name":"システム","text":"箱には魔王城の紋章が焼き付けられている。兵糧、黒晶、予備の鎧が整然と並ぶ。"}],
+        "MAP_SYSTEM_GALVANIA_CAVE_F3_BOSS_1": [{"name":"システム","text":"黒炎の番人が、赤い宝箱の島だけを守っている。洞窟突破には関係なさそうだ。"}],
+        "MAP_SYSTEM_GALVANIA_CAVE_F4_BOSS_1": [{"name":"システム","text":"氷鎧の魔将が、古い金の鍵を握っている。先の補給路の近道を開ける鍵かもしれない。"}],
+        "MAP_SYSTEM_GALVANIA_CAVE_F6_BOSS_1": [{"name":"システム","text":"宝の横穴を守る魔族がうずくまっている。洞窟突破には関係なさそうだ。"}],
         "LOCKED_DARK_CASTLE": [
                 {
                         "name": "システム",
-                        "text": "西の果てに黒い城が沈むように建っている。近づくほどに、闇の気配よりも深い沈黙が胸に落ちる。"
+                        "text": "魔王城へ続く道を、王宮聖騎士の術式が幾重にも閉ざしている。"
                 },
                 {
-                        "name": "シャオ",
-                        "text": "まだここへ踏み込む理由が足りない気がする。光の神殿で、残るプリズムのことを確かめよう。",
-                        "charId": 105
+                        "name": "ジョセフ",
+                        "text": "この結界は力任せじゃ破れねえ。王宮聖騎士の力を借りる必要がある。",
+                        "charId": 101
+                }
+        ],
+        "LOCKED_DARK_SHRINE": [
+                {
+                        "name": "システム",
+                        "text": "闇の神殿の入口を、白い聖印の結界が塞いでいる。"
+                },
+                {
+                        "name": "ジョセフ",
+                        "text": "王国聖騎士が張った結界だ。聖騎士がいなきゃ、術式を解くことはできねえ。",
+                        "charId": 101
                 }
         ],
         "DARK_CASTLE_ZELDRAS_ENCOUNTER": [
@@ -2938,21 +2925,6 @@ const STORY_MANAGER_DATA = {
                         "name": "ケイト",
                         "text": "入る方法を探すしかなさそうです",
                         "charId": 104
-                }
-        ],
-        "STORY_ABYSS_UNSEALED": [
-                {
-                        "name": "システム",
-                        "text": "六つの加護が、世界の中心に開いた亀裂へ共鳴している。"
-                },
-                {
-                        "name": "シャニー",
-                        "text": "ここから先は、底が見えない。\n見えないのに、向こうから見られている。",
-                        "charId": 306
-                },
-                {
-                        "name": "システム",
-                        "text": "深淵への道が開いた。"
                 }
         ],
         "ABYSS_UNSEALED_FINAL": [
@@ -3419,12 +3391,6 @@ const STORY_MANAGER_DATA = {
                 ],
                 "winActions": []
         },
-        // legacy compatibility only: current route uses prism-specific clear events.
-
-        // legacy compatibility only: current route uses prism-specific clear events.
-
-        // legacy compatibility only: current route uses prism-specific clear events.
-
         "locked_abyss_field": {
                 "actions": [
                         {
@@ -3712,15 +3678,6 @@ const STORY_MANAGER_DATA = {
                 ],
                 "winActions": []
         },
-        "light_palace_prison_princess": {
-                "actions": [
-                        {
-                                "type": "CONV",
-                                "value": "LIGHT_PALACE_PRISON_PRINCESS"
-                        }
-                ],
-                "winActions": []
-        },
         "light_palace_prison_priest_a": {
                 "actions": [
                         {
@@ -3739,6 +3696,56 @@ const STORY_MANAGER_DATA = {
                 ],
                 "winActions": []
         },
+        "light_palace_prison_guard_encounter": {
+                "actions": [
+                        { "type": "CONV", "value": "LIGHT_PALACE_PRISON_GUARD_ENCOUNTER" },
+                        { "type": "BOSS", "value": 301071, "bossStatMultiplier": 1, "winEventId": "light_palace_prison_guard_clear" }
+                ],
+                "winActions": []
+        },
+        "light_palace_prison_guard_clear": {
+                "actions": [
+                        { "type": "CONV", "value": "LIGHT_PALACE_PRISON_GUARD_CLEAR" },
+                        { "type": "FLAG", "key": "lightPalacePrisonOpened", "refreshField": true }
+                ],
+                "winActions": []
+        },
+        "light_palace_prison_leila": {
+                "actions": [
+                        {
+                                "type": "IF_FLAG",
+                                "key": "lightPalaceCleared",
+                                "then": [
+                                        { "type": "CONV", "value": "LIGHT_PALACE_LEILA_STABILIZED" },
+                                        {
+                                                "type": "IF_ITEM",
+                                                "id": 5,
+                                                "count": 1,
+                                                "then": [
+                                                        {
+                                                                "type": "CHOICE",
+                                                                "text": "世界樹の葉をレイラに渡しますか？",
+                                                                "yes": [
+                                                                        { "type": "CONSUME_ITEM", "id": 5, "count": 1 },
+                                                                        { "type": "CONV", "value": "LIGHT_PALACE_LEILA_RECOVERY_JOIN" },
+                                                                        { "type": "ALLY", "value": 204 },
+                                                                        { "type": "FLAG", "key": "leilaJoined", "refreshField": true }
+                                                                ],
+                                                                "no": []
+                                                        }
+                                                ],
+                                                "else": [
+                                                        { "type": "CONV", "value": "LIGHT_PALACE_LEILA_NEEDS_LEAF" }
+                                                ]
+                                        }
+                                ],
+                                "else": [
+                                        { "type": "CONV", "value": "LIGHT_PALACE_LEILA_CURSED" }
+                                ]
+                        }
+                ],
+                "winActions": []
+        },
         "light_palace_overpower_clear": {
                 "actions": [
                         {
@@ -3746,12 +3753,9 @@ const STORY_MANAGER_DATA = {
                                 "value": "LIGHT_PALACE_OVERPOWER_CLEAR"
                         },
                         {
-                                "type": "ALLY",
-                                "value": 204
-                        },
-                        {
                                 "type": "FLAG",
-                                "key": "lightPalaceCleared"
+                                "key": "lightPalaceCleared",
+                                "refreshField": true
                         },
                         {
                                 "type": "STEP",
@@ -3763,7 +3767,7 @@ const STORY_MANAGER_DATA = {
                         },
                         {
                                 "type": "LOG",
-                                "value": "レイラが仲間に加わった。魔王城へ向かおう。"
+                                "value": "地下牢に囚われた人々の様子を確かめよう。"
                         }
                 ],
                 "winActions": []
@@ -3809,12 +3813,9 @@ const STORY_MANAGER_DATA = {
                                 "value": "LIGHT_PALACE_CLEAR"
                         },
                         {
-                                "type": "ALLY",
-                                "value": 204
-                        },
-                        {
                                 "type": "FLAG",
-                                "key": "lightPalaceCleared"
+                                "key": "lightPalaceCleared",
+                                "refreshField": true
                         },
                         {
                                 "type": "STEP",
@@ -3826,7 +3827,7 @@ const STORY_MANAGER_DATA = {
                         },
                         {
                                 "type": "LOG",
-                                "value": "レイラが仲間に加わった。魔王城へ向かおう。"
+                                "value": "地下牢に囚われた人々の様子を確かめよう。"
                         }
                 ],
                 "winActions": []
@@ -4515,14 +4516,6 @@ const STORY_MANAGER_DATA = {
                 "actions": [{ "type": "CONV", "value": "TOWN_START_VILLAGER_1_A" }],
                 "winActions": []
         },
-        "town_start_villager_1_b": {
-                "actions": [{ "type": "CONV", "value": "TOWN_START_VILLAGER_1_B" }],
-                "winActions": []
-        },
-        "town_start_villager_1_c": {
-                "actions": [{ "type": "CONV", "value": "TOWN_START_VILLAGER_1_C" }],
-                "winActions": []
-        },
         "town_start_villager_2_a": {
                 "actions": [
                         {
@@ -4538,16 +4531,8 @@ const STORY_MANAGER_DATA = {
                 ],
                 "winActions": []
         },
-        "town_start_villager_2_b": {
-                "actions": [{ "type": "CONV", "value": "TOWN_START_VILLAGER_2_B" }],
-                "winActions": []
-        },
         "town_start_villager_3_a": {
                 "actions": [{ "type": "CONV", "value": "TOWN_START_VILLAGER_3_A" }],
-                "winActions": []
-        },
-        "town_start_villager_3_b": {
-                "actions": [{ "type": "CONV", "value": "TOWN_START_VILLAGER_3_B" }],
                 "winActions": []
         },
         "town_fire_villager_1": {
@@ -5215,7 +5200,61 @@ const STORY_MANAGER_DATA = {
                         }
                 ],
                 "winActions": []
-        }
+        },
+        "locked_dark_shrine": {
+                "actions": [
+                        {
+                                "type": "CONV",
+                                "value": "LOCKED_DARK_SHRINE"
+                        }
+                ],
+                "winActions": []
+        },
+        "map_system_galvania_cave_f1_action_1": { "actions": [{ "type": "CONV", "value": "MAP_SYSTEM_GALVANIA_CAVE_F1_ACTION_1" }], "winActions": [] },
+        "map_system_galvania_cave_f1_action_2": { "actions": [{ "type": "CONV", "value": "MAP_SYSTEM_GALVANIA_CAVE_F1_ACTION_2" }], "winActions": [] },
+        "map_system_galvania_cave_f2_action_1": { "actions": [{ "type": "CONV", "value": "MAP_SYSTEM_GALVANIA_CAVE_F2_ACTION_1" }], "winActions": [] },
+        "map_system_galvania_cave_f2_action_2": { "actions": [{ "type": "CONV", "value": "MAP_SYSTEM_GALVANIA_CAVE_F2_ACTION_2" }], "winActions": [] },
+        "map_system_galvania_cave_f3_action_1": { "actions": [{ "type": "CONV", "value": "MAP_SYSTEM_GALVANIA_CAVE_F3_ACTION_1" }], "winActions": [] },
+        "map_system_galvania_cave_f3_action_2": { "actions": [{ "type": "CONV", "value": "MAP_SYSTEM_GALVANIA_CAVE_F3_ACTION_2" }], "winActions": [] },
+        "map_system_galvania_cave_f3_action_3": { "actions": [{ "type": "CONV", "value": "MAP_SYSTEM_GALVANIA_CAVE_F3_ACTION_3" }], "winActions": [] },
+        "map_system_galvania_cave_f4_action_1": { "actions": [{ "type": "CONV", "value": "MAP_SYSTEM_GALVANIA_CAVE_F4_ACTION_1" }], "winActions": [] },
+        "map_system_galvania_cave_f5_action_1": { "actions": [{ "type": "CONV", "value": "MAP_SYSTEM_GALVANIA_CAVE_F5_ACTION_1" }], "winActions": [] },
+        "map_system_galvania_cave_f3_boss_1": {
+                "actions": [
+                        { "type": "CONV", "value": "MAP_SYSTEM_GALVANIA_CAVE_F3_BOSS_1" },
+                        {
+                                "type": "CHOICE",
+                                "text": "番人を倒せば奥の赤い宝箱を取れそうだ。挑みますか？",
+                                "yes": [{ "type": "BOSS", "value": [100060, 100061] }],
+                                "no": []
+                        }
+                ],
+                "winActions": []
+        },
+        "map_system_galvania_cave_f4_boss_1": {
+                "actions": [
+                        { "type": "CONV", "value": "MAP_SYSTEM_GALVANIA_CAVE_F4_BOSS_1" },
+                        {
+                                "type": "CHOICE",
+                                "text": "この魔将は通路突破に必須ではないが、倒せば金の鍵を奪えそうだ。挑みますか？",
+                                "yes": [{ "type": "BOSS", "value": [100061, 100062] }],
+                                "no": []
+                        }
+                ],
+                "winActions": []
+        },
+        "map_system_galvania_cave_f6_boss_1": {
+                "actions": [
+                        { "type": "CONV", "value": "MAP_SYSTEM_GALVANIA_CAVE_F6_BOSS_1" },
+                        {
+                                "type": "CHOICE",
+                                "text": "この先には赤い宝箱が見える。守護魔に挑みますか？",
+                                "yes": [{ "type": "BOSS", "value": [100062, 100064] }],
+                                "no": []
+                        }
+                ],
+                "winActions": []
+        },
 }
 };
 

@@ -8,10 +8,10 @@
     "outdoorRuinsBattle": "mountain_wind_ruins_battle_source.png"
   },
   "runtime": {
-    "floor": "assets/map/terrain/tile_wind_temple_floor_v001.png",
-    "wall": "assets/map/terrain/tile_wind_temple_wall_v001.png",
-    "indoorBattle": "assets/generated/battle-wind-temple-v001.png",
-    "outdoorRuinsBattle": "assets/generated/battle-mountain-wind-ruins-v001.png"
+    "floor": "assets/map/terrain/tile_wind_temple_floor.png",
+    "wall": "assets/map/terrain/tile_wind_temple_wall.png",
+    "indoorBattle": "assets/generated/battle-wind-temple.png",
+    "outdoorRuinsBattle": "assets/generated/battle-mountain-wind-ruins.png"
   },
   "assignments": {
     "WIND_TEMPLE": "indoorBattle",

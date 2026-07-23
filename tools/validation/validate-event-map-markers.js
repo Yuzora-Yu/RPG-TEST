@@ -10,7 +10,7 @@ const phaser = read('phaser-field.js');
 const assets = read('assets.js');
 const editor = read('map_story_editor.html');
 const developmentPolicy = read('docs/development-policy.md');
-const markerRelative = 'assets/map/overlays/overlay_event_blue_glimmer_v001.png';
+const markerRelative = 'assets/map/overlays/overlay_event_blue_glimmer.png';
 const markerPath = path.join(root, markerRelative);
 
 assert(!main.includes('大きな障害物が道を塞いでいる'), 'Generic blocking-decoration log still exists');

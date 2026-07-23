@@ -8,7 +8,7 @@ const Dungeon = {
     // 冒険者・回復の泉・深淵の裂け目は App.data.dungeon.* で別管理する。
     // 迷路マップ(genType === 2)だけは検証・メリハリ用に全特殊オブジェクトを100%出現させる。
     adventurerSpawnRate: 0.10,
-    adventurerImagePath: 'assets/map/overlays/overlay_dungeon_adventurer_v001.png',
+    adventurerImagePath: 'assets/map/overlays/overlay_dungeon_adventurer.png',
     adventurerGraphicKeys: Object.freeze({
         down: Object.freeze(['overlay_dungeon_adventurer_down_1', 'overlay_dungeon_adventurer_down_2']),
         left: Object.freeze(['overlay_dungeon_adventurer_left_1', 'overlay_dungeon_adventurer_left_2']),
@@ -20,7 +20,7 @@ const Dungeon = {
     // 回復の泉: 通常フロアでは5%、迷路では100%。
     // 触れただけでは回復せず、アクションボタン押下で初めて回復する。
     healSpringSpawnRate: 0.05,
-    healSpringImagePath: 'assets/map/overlays/overlay_shrine_healing_spring_v002.png',
+    healSpringImagePath: 'assets/map/overlays/overlay_shrine_healing_spring.png',
 
     // 深淵の裂け目: 通常フロアでは10%、迷路では100%。
     // 勝利後報酬のため、戦闘時の eventId はこの定数に統一する。
@@ -33,7 +33,7 @@ const Dungeon = {
     trialAngelSpawnRate: 0.05,
     trialAngelMinFloor: 50,
     trialAngelMinEncounterRank: 50,
-    trialAngelImagePath: 'assets/map/overlays/overlay_dungeon_trial_angel_v001.png',
+    trialAngelImagePath: 'assets/map/overlays/overlay_dungeon_trial_angel.png',
 
     // 生成形態は rollRandomFloorPlan() の単一抽選表で決定する。
     // 50階以降は、溶岩10%・浸水10%・迷路3%・宝物庫2%・深淵25%・ランダム外観50%。
@@ -860,7 +860,7 @@ const Dungeon = {
                 return false;
             }
 
-            logIfNeeded(bossDef?.inspectLog || 'ただならぬ気配が立ちはだかっている。');
+            if (bossDef?.inspectLog) logIfNeeded(bossDef.inspectLog);
 
             const actionLabel = (isIgnisGladRetryTile && flags.fireVolcanoSoldiersCleared)
                 ? 'グラドに挑む'
@@ -981,6 +981,7 @@ const Dungeon = {
         const step = Number(progress.storyStep || 0);
         const sub = Number(progress.subStep || 0);
         const atLeast = (targetStep, targetSub = 0) => step > targetStep || (step === targetStep && sub >= targetSub);
+        const hasLeila = typeof App.hasStoryAlly === 'function' && App.hasStoryAlly(204);
         const ok = () => ({ ok: true });
         const block = (message, eventId = null) => ({ ok: false, message, eventId });
 
@@ -1020,22 +1021,26 @@ const Dungeon = {
                         ? ok()
                         : block('南口の岩戸は内側から開けられていない。北口から洞窟を抜ける必要がある。', null);
                 }
-                return flags.lightPalaceCleared
+                return hasLeila
                     ? ok()
-                    : block('魔王軍の活動が活発で危険すぎる。', 'galvania_cave_north_blocked');
+                    : block('すさまじい結界でふさがれている。', 'galvania_cave_north_blocked');
             }
             case 'GALVANIA_CAVE_NORTH':
-                return flags.lightPalaceCleared
+                return hasLeila
                     ? ok()
-                    : block('魔王軍の活動が活発で危険すぎる。', 'galvania_cave_north_blocked');
+                    : block('すさまじい結界でふさがれている。', 'galvania_cave_north_blocked');
             case 'GALVANIA_CAVE_SOUTH':
                 return flags.galvaniaCaveSouthOpened
                     ? ok()
                     : block('南口の岩戸は内側から開けられていない。北口から洞窟を抜ける必要がある。', null);
             case 'DARK_CASTLE':
-                return (flags.lightPalaceCleared || atLeast(8, 0))
+                return hasLeila
                     ? ok()
-                    : block('黒い城の気配は重い。今踏み込むには、まだ確かめるべきことが残っている。', 'locked_dark_castle');
+                    : block('王宮聖騎士の結界が道を閉ざしている。', 'locked_dark_castle');
+            case 'DARK_SHRINE_RUINS':
+                return hasLeila
+                    ? ok()
+                    : block('王国聖騎士の結界が入口を閉ざしている。', 'locked_dark_shrine');
             default:
                 return ok();
         }

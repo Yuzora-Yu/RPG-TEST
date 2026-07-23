@@ -365,7 +365,7 @@ const StoryManager = {
             return Field.getMonsterMapSpriteSrc(cmd.monsterId);
         }
         if (cmd.monsterId !== undefined) return `assets/monsters/monster_${Number(cmd.monsterId)}.png`;
-        if (cmd.effect === 'slash') return 'assets/effect/fx_phys_neutral_slash_v001.png';
+        if (cmd.effect === 'slash') return 'assets/effect/fx_phys_neutral_slash.png';
         return '';
     },
 
@@ -536,6 +536,26 @@ const StoryManager = {
                         img.dataset.tileY = String(tile.y);
                         img.dataset.sizeTiles = String(size);
                         await wait(duration);
+                        break;
+                    }
+                    case 'MOVE_PLAYER': {
+                        const x = Number(cmd.x);
+                        const y = Number(cmd.y);
+                        if (!Number.isFinite(x) || !Number.isFinite(y)) break;
+                        const movePlayer = () => {
+                            Field.x = x;
+                            Field.y = y;
+                            if (App?.data?.location) {
+                                App.data.location.x = x;
+                                App.data.location.y = y;
+                            }
+                            if (typeof App?.save === 'function') App.save();
+                            if (typeof Field.refreshVisualState === 'function') Field.refreshVisualState();
+                            else if (typeof Field.render === 'function') Field.render();
+                            Field.refreshCurrentAction?.({ silent: true });
+                        };
+                        if (cmd.blackout === true) await this.fadeStoryFieldBlackoutWithAction(movePlayer, cmd);
+                        else movePlayer();
                         break;
                     }
                     case 'PLAY_EFFECT': {
@@ -1241,6 +1261,20 @@ const StoryManager = {
                 App.save();
             }
         }
+
+        if (action.type === 'CONSUME_ITEM') {
+            const itemId = Number(action.id ?? action.value);
+            const count = Math.max(1, Math.floor(Number(action.count) || 1));
+            const owned = Number(App.data?.items?.[itemId] || 0);
+            if (Number.isFinite(itemId) && owned >= count) {
+                const remain = owned - count;
+                if (remain > 0) App.data.items[itemId] = remain;
+                else delete App.data.items[itemId];
+                const item = (DB.ITEMS || []).find(i => Number(i.id) === itemId);
+                if (action.silent !== true) App.log(`${item?.name || `アイテム${itemId}`}を渡した。`);
+                App.save();
+            }
+        }
         
         if (action.type === 'EVENT') await this.executeEvent(action.value, true);
 
@@ -1265,6 +1299,20 @@ const StoryManager = {
             const expected = action.state !== undefined ? !!action.state : true;
             const actual = key ? !!(data.flags && data.flags[key]) : false;
             const branch = (actual === expected) ? action.then : (action.else || action.otherwise);
+            if (Array.isArray(branch)) {
+                for (const sub of branch) {
+                    const res = await this.processAction(sub, eventId);
+                    if (res === 'BREAK') return 'BREAK';
+                }
+            }
+        }
+
+
+        if (action.type === 'IF_ITEM') {
+            const itemId = Number(action.id ?? action.itemId ?? action.value);
+            const requiredCount = Math.max(1, Math.floor(Number(action.count) || 1));
+            const ownedCount = Number(App.data?.items?.[itemId] || 0);
+            const branch = ownedCount >= requiredCount ? action.then : (action.else || action.otherwise);
             if (Array.isArray(branch)) {
                 for (const sub of branch) {
                     const res = await this.processAction(sub, eventId);

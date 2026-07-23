@@ -13,7 +13,7 @@
       "role": "decoration",
       "defaultCollision": false,
       "anchor": "bottom-center",
-      "path": "assets/map/library/village/decoration/maplib_village_wildflowers_v001.png",
+      "path": "assets/map/library/village/decoration/maplib_village_wildflowers.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/village/wildflowers.png"
     },
     {
@@ -23,7 +23,7 @@
       "role": "decoration",
       "defaultCollision": false,
       "anchor": "bottom-center",
-      "path": "assets/map/library/village/decoration/maplib_village_medicinal_herbs_v001.png",
+      "path": "assets/map/library/village/decoration/maplib_village_medicinal_herbs.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/village/medicinal_herbs.png"
     },
     {
@@ -33,7 +33,7 @@
       "role": "decoration",
       "defaultCollision": false,
       "anchor": "bottom-center",
-      "path": "assets/map/library/village/decoration/maplib_village_mushroom_patch_v001.png",
+      "path": "assets/map/library/village/decoration/maplib_village_mushroom_patch.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/village/mushroom_patch.png"
     },
     {
@@ -43,7 +43,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/village/blocking/maplib_village_hay_bundle_v001.png",
+      "path": "assets/map/library/village/blocking/maplib_village_hay_bundle.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/village/hay_bundle.png"
     },
     {
@@ -53,7 +53,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/village/blocking/maplib_village_fence_post_v001.png",
+      "path": "assets/map/library/village/blocking/maplib_village_fence_post.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/village/fence_post.png"
     },
     {
@@ -63,7 +63,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/village/blocking/maplib_village_roadside_sign_v001.png",
+      "path": "assets/map/library/village/blocking/maplib_village_roadside_sign.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/village/roadside_sign.png"
     },
     {
@@ -73,7 +73,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/village/blocking/maplib_village_clay_jar_v001.png",
+      "path": "assets/map/library/village/blocking/maplib_village_clay_jar.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/village/clay_jar.png"
     },
     {
@@ -83,7 +83,7 @@
       "role": "decoration",
       "defaultCollision": false,
       "anchor": "bottom-center",
-      "path": "assets/map/library/village/decoration/maplib_village_mossy_stone_v001.png",
+      "path": "assets/map/library/village/decoration/maplib_village_mossy_stone.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/village/mossy_stone.png"
     },
     {
@@ -93,7 +93,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/village/blocking/maplib_village_firewood_stack_v001.png",
+      "path": "assets/map/library/village/blocking/maplib_village_firewood_stack.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/village/firewood_stack.png"
     },
     {
@@ -103,7 +103,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/forest/blocking/maplib_forest_ancient_stump_v001.png",
+      "path": "assets/map/library/forest/blocking/maplib_forest_ancient_stump.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/forest/ancient_stump.png"
     },
     {
@@ -113,7 +113,7 @@
       "role": "decoration",
       "defaultCollision": false,
       "anchor": "bottom-center",
-      "path": "assets/map/library/forest/decoration/maplib_forest_exposed_roots_v001.png",
+      "path": "assets/map/library/forest/decoration/maplib_forest_exposed_roots.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/forest/exposed_roots.png"
     },
     {
@@ -123,7 +123,7 @@
       "role": "decoration",
       "defaultCollision": false,
       "anchor": "bottom-center",
-      "path": "assets/map/library/forest/decoration/maplib_forest_fern_patch_v001.png",
+      "path": "assets/map/library/forest/decoration/maplib_forest_fern_patch.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/forest/fern_patch.png"
     },
     {
@@ -133,7 +133,7 @@
       "role": "decoration",
       "defaultCollision": false,
       "anchor": "bottom-center",
-      "path": "assets/map/library/forest/decoration/maplib_forest_red_mushrooms_v001.png",
+      "path": "assets/map/library/forest/decoration/maplib_forest_red_mushrooms.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/forest/red_mushrooms.png"
     },
     {
@@ -143,7 +143,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/forest/blocking/maplib_forest_fallen_log_v001.png",
+      "path": "assets/map/library/forest/blocking/maplib_forest_fallen_log.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/forest/fallen_log.png"
     },
     {
@@ -153,7 +153,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/forest/blocking/maplib_forest_lichen_boulder_v001.png",
+      "path": "assets/map/library/forest/blocking/maplib_forest_lichen_boulder.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/forest/lichen_boulder.png"
     },
     {
@@ -163,7 +163,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/forest/blocking/maplib_forest_twisted_sapling_v001.png",
+      "path": "assets/map/library/forest/blocking/maplib_forest_twisted_sapling.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/forest/twisted_sapling.png"
     },
     {
@@ -173,7 +173,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/forest/blocking/maplib_forest_vine_stone_v001.png",
+      "path": "assets/map/library/forest/blocking/maplib_forest_vine_stone.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/forest/vine_stone.png"
     },
     {
@@ -183,7 +183,7 @@
       "role": "decoration",
       "defaultCollision": false,
       "anchor": "bottom-center",
-      "path": "assets/map/library/forest/decoration/maplib_forest_glowing_fungus_v001.png",
+      "path": "assets/map/library/forest/decoration/maplib_forest_glowing_fungus.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/forest/glowing_fungus.png"
     },
     {
@@ -193,7 +193,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/forest/blocking/maplib_forest_decayed_roadside_sign_v001.png",
+      "path": "assets/map/library/forest/blocking/maplib_forest_decayed_roadside_sign.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/forest/decayed_roadside_sign_alpha.png"
     },
     {
@@ -203,7 +203,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/cave/blocking/maplib_cave_stalagmite_v001.png",
+      "path": "assets/map/library/cave/blocking/maplib_cave_stalagmite.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/cave/stalagmite.png"
     },
     {
@@ -213,7 +213,7 @@
       "role": "decoration",
       "defaultCollision": false,
       "anchor": "bottom-center",
-      "path": "assets/map/library/cave/decoration/maplib_cave_rock_pile_v001.png",
+      "path": "assets/map/library/cave/decoration/maplib_cave_rock_pile.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/cave/rock_pile.png"
     },
     {
@@ -223,7 +223,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/cave/blocking/maplib_cave_purple_crystals_v001.png",
+      "path": "assets/map/library/cave/blocking/maplib_cave_purple_crystals.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/cave/purple_crystals.png"
     },
     {
@@ -233,7 +233,7 @@
       "role": "decoration",
       "defaultCollision": false,
       "anchor": "bottom-center",
-      "path": "assets/map/library/cave/decoration/maplib_cave_mineral_puddle_v001.png",
+      "path": "assets/map/library/cave/decoration/maplib_cave_mineral_puddle.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/cave/mineral_puddle.png"
     },
     {
@@ -243,7 +243,7 @@
       "role": "decoration",
       "defaultCollision": false,
       "anchor": "bottom-center",
-      "path": "assets/map/library/cave/decoration/maplib_cave_pale_mushrooms_v001.png",
+      "path": "assets/map/library/cave/decoration/maplib_cave_pale_mushrooms.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/cave/pale_mushrooms.png"
     },
     {
@@ -253,7 +253,7 @@
       "role": "decoration",
       "defaultCollision": false,
       "anchor": "bottom-center",
-      "path": "assets/map/library/cave/decoration/maplib_cave_bone_pile_v001.png",
+      "path": "assets/map/library/cave/decoration/maplib_cave_bone_pile.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/cave/bone_pile.png"
     },
     {
@@ -263,7 +263,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/cave/blocking/maplib_cave_mine_support_v001.png",
+      "path": "assets/map/library/cave/blocking/maplib_cave_mine_support.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/cave/mine_support.png"
     },
     {
@@ -273,7 +273,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/cave/blocking/maplib_cave_miner_cart_v001.png",
+      "path": "assets/map/library/cave/blocking/maplib_cave_miner_cart.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/cave/miner_cart.png"
     },
     {
@@ -283,7 +283,7 @@
       "role": "decoration",
       "defaultCollision": false,
       "anchor": "bottom-center",
-      "path": "assets/map/library/cave/decoration/maplib_cave_spring_vent_v001.png",
+      "path": "assets/map/library/cave/decoration/maplib_cave_spring_vent.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/cave/spring_vent.png"
     },
     {
@@ -293,7 +293,7 @@
       "role": "decoration",
       "defaultCollision": false,
       "anchor": "bottom-center",
-      "path": "assets/map/library/volcanic/decoration/maplib_volcanic_lava_vent_v001.png",
+      "path": "assets/map/library/volcanic/decoration/maplib_volcanic_lava_vent.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/volcanic/lava_vent.png"
     },
     {
@@ -303,7 +303,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/volcanic/blocking/maplib_volcanic_obsidian_shards_v001.png",
+      "path": "assets/map/library/volcanic/blocking/maplib_volcanic_obsidian_shards.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/volcanic/obsidian_shards.png"
     },
     {
@@ -313,7 +313,7 @@
       "role": "decoration",
       "defaultCollision": false,
       "anchor": "bottom-center",
-      "path": "assets/map/library/volcanic/decoration/maplib_volcanic_ember_fissure_v001.png",
+      "path": "assets/map/library/volcanic/decoration/maplib_volcanic_ember_fissure.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/volcanic/ember_fissure.png"
     },
     {
@@ -323,7 +323,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/volcanic/blocking/maplib_volcanic_ritual_brazier_v001.png",
+      "path": "assets/map/library/volcanic/blocking/maplib_volcanic_ritual_brazier.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/volcanic/ritual_brazier.png"
     },
     {
@@ -333,7 +333,7 @@
       "role": "decoration",
       "defaultCollision": false,
       "anchor": "bottom-center",
-      "path": "assets/map/library/volcanic/decoration/maplib_volcanic_scorched_bones_v001.png",
+      "path": "assets/map/library/volcanic/decoration/maplib_volcanic_scorched_bones.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/volcanic/scorched_bones.png"
     },
     {
@@ -343,7 +343,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/volcanic/blocking/maplib_volcanic_sulfur_crystals_v001.png",
+      "path": "assets/map/library/volcanic/blocking/maplib_volcanic_sulfur_crystals.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/volcanic/sulfur_crystals.png"
     },
     {
@@ -353,7 +353,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/volcanic/blocking/maplib_volcanic_molten_boulder_v001.png",
+      "path": "assets/map/library/volcanic/blocking/maplib_volcanic_molten_boulder.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/volcanic/molten_boulder.png"
     },
     {
@@ -363,7 +363,7 @@
       "role": "decoration",
       "defaultCollision": false,
       "anchor": "bottom-center",
-      "path": "assets/map/library/volcanic/decoration/maplib_volcanic_ash_heap_v001.png",
+      "path": "assets/map/library/volcanic/decoration/maplib_volcanic_ash_heap.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/volcanic/ash_heap.png"
     },
     {
@@ -373,7 +373,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/volcanic/blocking/maplib_volcanic_fire_rune_stone_v001.png",
+      "path": "assets/map/library/volcanic/blocking/maplib_volcanic_fire_rune_stone.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/volcanic/fire_rune_stone.png"
     },
     {
@@ -383,7 +383,7 @@
       "role": "decoration",
       "defaultCollision": false,
       "anchor": "bottom-center",
-      "path": "assets/map/library/water/decoration/maplib_water_puddle_ripple_v001.png",
+      "path": "assets/map/library/water/decoration/maplib_water_puddle_ripple.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/water/puddle_ripple.png"
     },
     {
@@ -393,7 +393,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/water/blocking/maplib_water_branching_coral_v001.png",
+      "path": "assets/map/library/water/blocking/maplib_water_branching_coral.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/water/branching_coral.png"
     },
     {
@@ -403,7 +403,7 @@
       "role": "decoration",
       "defaultCollision": false,
       "anchor": "bottom-center",
-      "path": "assets/map/library/water/decoration/maplib_water_shell_cluster_v001.png",
+      "path": "assets/map/library/water/decoration/maplib_water_shell_cluster.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/water/shell_cluster.png"
     },
     {
@@ -413,7 +413,7 @@
       "role": "decoration",
       "defaultCollision": false,
       "anchor": "bottom-center",
-      "path": "assets/map/library/water/decoration/maplib_water_seaweed_clump_v001.png",
+      "path": "assets/map/library/water/decoration/maplib_water_seaweed_clump.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/water/seaweed_clump.png"
     },
     {
@@ -423,7 +423,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/water/blocking/maplib_water_broken_column_v001.png",
+      "path": "assets/map/library/water/blocking/maplib_water_broken_column.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/water/broken_column.png"
     },
     {
@@ -433,7 +433,7 @@
       "role": "decoration",
       "defaultCollision": false,
       "anchor": "bottom-center",
-      "path": "assets/map/library/water/decoration/maplib_water_sea_anemone_v001.png",
+      "path": "assets/map/library/water/decoration/maplib_water_sea_anemone.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/water/sea_anemone.png"
     },
     {
@@ -443,7 +443,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/water/blocking/maplib_water_sunken_urn_v001.png",
+      "path": "assets/map/library/water/blocking/maplib_water_sunken_urn.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/water/sunken_urn.png"
     },
     {
@@ -453,7 +453,7 @@
       "role": "decoration",
       "defaultCollision": false,
       "anchor": "bottom-center",
-      "path": "assets/map/library/water/decoration/maplib_water_bubble_vent_v001.png",
+      "path": "assets/map/library/water/decoration/maplib_water_bubble_vent.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/water/bubble_vent.png"
     },
     {
@@ -463,7 +463,7 @@
       "role": "decoration",
       "defaultCollision": false,
       "anchor": "bottom-center",
-      "path": "assets/map/library/water/decoration/maplib_water_starfish_debris_v001.png",
+      "path": "assets/map/library/water/decoration/maplib_water_starfish_debris.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/water/starfish_debris.png"
     },
     {
@@ -473,7 +473,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/thunder/blocking/maplib_thunder_control_terminal_v001.png",
+      "path": "assets/map/library/thunder/blocking/maplib_thunder_control_terminal.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/thunder/control_terminal.png"
     },
     {
@@ -483,7 +483,7 @@
       "role": "decoration",
       "defaultCollision": false,
       "anchor": "bottom-center",
-      "path": "assets/map/library/thunder/decoration/maplib_thunder_cable_coil_v001.png",
+      "path": "assets/map/library/thunder/decoration/maplib_thunder_cable_coil.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/thunder/cable_coil.png"
     },
     {
@@ -493,7 +493,7 @@
       "role": "decoration",
       "defaultCollision": false,
       "anchor": "bottom-center",
-      "path": "assets/map/library/thunder/decoration/maplib_thunder_broken_conduit_v001.png",
+      "path": "assets/map/library/thunder/decoration/maplib_thunder_broken_conduit.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/thunder/broken_conduit.png"
     },
     {
@@ -503,7 +503,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/thunder/blocking/maplib_thunder_lightning_capacitor_v001.png",
+      "path": "assets/map/library/thunder/blocking/maplib_thunder_lightning_capacitor.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/thunder/lightning_capacitor.png"
     },
     {
@@ -513,7 +513,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/thunder/blocking/maplib_thunder_battery_cell_v001.png",
+      "path": "assets/map/library/thunder/blocking/maplib_thunder_battery_cell.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/thunder/battery_cell.png"
     },
     {
@@ -523,7 +523,7 @@
       "role": "decoration",
       "defaultCollision": false,
       "anchor": "bottom-center",
-      "path": "assets/map/library/thunder/decoration/maplib_thunder_floor_grate_v001.png",
+      "path": "assets/map/library/thunder/decoration/maplib_thunder_floor_grate.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/thunder/floor_grate.png"
     },
     {
@@ -533,7 +533,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/thunder/blocking/maplib_thunder_gear_assembly_v001.png",
+      "path": "assets/map/library/thunder/blocking/maplib_thunder_gear_assembly.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/thunder/gear_assembly.png"
     },
     {
@@ -543,7 +543,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/thunder/blocking/maplib_thunder_warning_beacon_v001.png",
+      "path": "assets/map/library/thunder/blocking/maplib_thunder_warning_beacon.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/thunder/warning_beacon.png"
     },
     {
@@ -553,7 +553,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/thunder/blocking/maplib_thunder_transformer_coil_v001.png",
+      "path": "assets/map/library/thunder/blocking/maplib_thunder_transformer_coil.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/thunder/transformer_coil.png"
     },
     {
@@ -563,7 +563,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/light/blocking/maplib_light_crystal_pedestal_v001.png",
+      "path": "assets/map/library/light/blocking/maplib_light_crystal_pedestal.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/light/crystal_pedestal.png"
     },
     {
@@ -573,7 +573,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/light/blocking/maplib_light_prism_cluster_v001.png",
+      "path": "assets/map/library/light/blocking/maplib_light_prism_cluster.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/light/prism_cluster.png"
     },
     {
@@ -583,7 +583,7 @@
       "role": "decoration",
       "defaultCollision": false,
       "anchor": "bottom-center",
-      "path": "assets/map/library/light/decoration/maplib_light_gold_inlay_v001.png",
+      "path": "assets/map/library/light/decoration/maplib_light_gold_inlay.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/light/gold_inlay.png"
     },
     {
@@ -593,7 +593,7 @@
       "role": "decoration",
       "defaultCollision": false,
       "anchor": "bottom-center",
-      "path": "assets/map/library/light/decoration/maplib_light_luminous_flower_v001.png",
+      "path": "assets/map/library/light/decoration/maplib_light_luminous_flower.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/light/luminous_flower.png"
     },
     {
@@ -603,7 +603,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/light/blocking/maplib_light_marble_urn_v001.png",
+      "path": "assets/map/library/light/blocking/maplib_light_marble_urn.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/light/marble_urn.png"
     },
     {
@@ -613,7 +613,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/light/blocking/maplib_light_mirror_stand_v001.png",
+      "path": "assets/map/library/light/blocking/maplib_light_mirror_stand.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/light/mirror_stand.png"
     },
     {
@@ -623,7 +623,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/light/blocking/maplib_light_sun_altar_v001.png",
+      "path": "assets/map/library/light/blocking/maplib_light_sun_altar.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/light/sun_altar.png"
     },
     {
@@ -633,7 +633,7 @@
       "role": "decoration",
       "defaultCollision": false,
       "anchor": "bottom-center",
-      "path": "assets/map/library/light/decoration/maplib_light_star_mosaic_v001.png",
+      "path": "assets/map/library/light/decoration/maplib_light_star_mosaic.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/light/star_mosaic.png"
     },
     {
@@ -643,7 +643,7 @@
       "role": "decoration",
       "defaultCollision": false,
       "anchor": "bottom-center",
-      "path": "assets/map/library/light/decoration/maplib_light_marble_rubble_v001.png",
+      "path": "assets/map/library/light/decoration/maplib_light_marble_rubble.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/light/marble_rubble.png"
     },
     {
@@ -653,7 +653,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/dark/blocking/maplib_dark_iron_candelabrum_v001.png",
+      "path": "assets/map/library/dark/blocking/maplib_dark_iron_candelabrum.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/dark/iron_candelabrum.png"
     },
     {
@@ -663,7 +663,7 @@
       "role": "decoration",
       "defaultCollision": false,
       "anchor": "bottom-center",
-      "path": "assets/map/library/dark/decoration/maplib_dark_chain_pile_v001.png",
+      "path": "assets/map/library/dark/decoration/maplib_dark_chain_pile.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/dark/chain_pile.png"
     },
     {
@@ -673,7 +673,7 @@
       "role": "decoration",
       "defaultCollision": false,
       "anchor": "bottom-center",
-      "path": "assets/map/library/dark/decoration/maplib_dark_horned_skull_v001.png",
+      "path": "assets/map/library/dark/decoration/maplib_dark_horned_skull.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/dark/horned_skull.png"
     },
     {
@@ -683,7 +683,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/dark/blocking/maplib_dark_gargoyle_statue_v001.png",
+      "path": "assets/map/library/dark/blocking/maplib_dark_gargoyle_statue.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/dark/gargoyle_statue.png"
     },
     {
@@ -693,7 +693,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/dark/blocking/maplib_dark_black_crystals_v001.png",
+      "path": "assets/map/library/dark/blocking/maplib_dark_black_crystals.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/dark/black_crystals.png"
     },
     {
@@ -703,7 +703,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/dark/blocking/maplib_dark_sealed_obelisk_v001.png",
+      "path": "assets/map/library/dark/blocking/maplib_dark_sealed_obelisk.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/dark/sealed_obelisk.png"
     },
     {
@@ -713,7 +713,7 @@
       "role": "decoration",
       "defaultCollision": false,
       "anchor": "bottom-center",
-      "path": "assets/map/library/dark/decoration/maplib_dark_broken_armor_v001.png",
+      "path": "assets/map/library/dark/decoration/maplib_dark_broken_armor.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/dark/broken_armor.png"
     },
     {
@@ -723,7 +723,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/dark/blocking/maplib_dark_blue_brazier_v001.png",
+      "path": "assets/map/library/dark/blocking/maplib_dark_blue_brazier.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/dark/blue_brazier.png"
     },
     {
@@ -733,7 +733,7 @@
       "role": "decoration",
       "defaultCollision": false,
       "anchor": "bottom-center",
-      "path": "assets/map/library/dark/decoration/maplib_dark_ritual_rune_v001.png",
+      "path": "assets/map/library/dark/decoration/maplib_dark_ritual_rune.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/dark/ritual_rune.png"
     },
     {
@@ -743,7 +743,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/tower/blocking/maplib_tower_gear_assembly_v001.png",
+      "path": "assets/map/library/tower/blocking/maplib_tower_gear_assembly.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/tower/gear_assembly.png"
     },
     {
@@ -753,7 +753,7 @@
       "role": "decoration",
       "defaultCollision": false,
       "anchor": "bottom-center",
-      "path": "assets/map/library/tower/decoration/maplib_tower_rope_coil_v001.png",
+      "path": "assets/map/library/tower/decoration/maplib_tower_rope_coil.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/tower/rope_coil.png"
     },
     {
@@ -763,7 +763,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/tower/blocking/maplib_tower_hand_winch_v001.png",
+      "path": "assets/map/library/tower/blocking/maplib_tower_hand_winch.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/tower/hand_winch.png"
     },
     {
@@ -773,7 +773,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/tower/blocking/maplib_tower_oil_lamp_v001.png",
+      "path": "assets/map/library/tower/blocking/maplib_tower_oil_lamp.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/tower/oil_lamp.png"
     },
     {
@@ -783,7 +783,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/tower/blocking/maplib_tower_reinforced_crate_v001.png",
+      "path": "assets/map/library/tower/blocking/maplib_tower_reinforced_crate.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/tower/reinforced_crate.png"
     },
     {
@@ -793,7 +793,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/tower/blocking/maplib_tower_weathered_barrel_v001.png",
+      "path": "assets/map/library/tower/blocking/maplib_tower_weathered_barrel.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/tower/weathered_barrel.png"
     },
     {
@@ -803,7 +803,7 @@
       "role": "decoration",
       "defaultCollision": false,
       "anchor": "bottom-center",
-      "path": "assets/map/library/tower/decoration/maplib_tower_brass_pipe_v001.png",
+      "path": "assets/map/library/tower/decoration/maplib_tower_brass_pipe.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/tower/brass_pipe.png"
     },
     {
@@ -813,7 +813,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/tower/blocking/maplib_tower_lens_fragment_v001.png",
+      "path": "assets/map/library/tower/blocking/maplib_tower_lens_fragment.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/tower/lens_fragment.png"
     },
     {
@@ -823,7 +823,7 @@
       "role": "decoration",
       "defaultCollision": false,
       "anchor": "bottom-center",
-      "path": "assets/map/library/tower/decoration/maplib_tower_iron_anchor_v001.png",
+      "path": "assets/map/library/tower/decoration/maplib_tower_iron_anchor.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/tower/iron_anchor.png"
     },
     {
@@ -833,7 +833,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/ruins/blocking/maplib_ruins_broken_column_v001.png",
+      "path": "assets/map/library/ruins/blocking/maplib_ruins_broken_column.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/ruins/broken_column.png"
     },
     {
@@ -843,7 +843,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/ruins/blocking/maplib_ruins_ancient_tablet_v001.png",
+      "path": "assets/map/library/ruins/blocking/maplib_ruins_ancient_tablet.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/ruins/ancient_tablet.png"
     },
     {
@@ -853,7 +853,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/ruins/blocking/maplib_ruins_void_crystals_v001.png",
+      "path": "assets/map/library/ruins/blocking/maplib_ruins_void_crystals.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/ruins/void_crystals.png"
     },
     {
@@ -863,7 +863,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/ruins/blocking/maplib_ruins_black_roots_v001.png",
+      "path": "assets/map/library/ruins/blocking/maplib_ruins_black_roots.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/ruins/black_roots.png"
     },
     {
@@ -873,7 +873,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/ruins/blocking/maplib_ruins_ritual_brazier_v001.png",
+      "path": "assets/map/library/ruins/blocking/maplib_ruins_ritual_brazier.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/ruins/ritual_brazier.png"
     },
     {
@@ -883,7 +883,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/ruins/blocking/maplib_ruins_masonry_pile_v001.png",
+      "path": "assets/map/library/ruins/blocking/maplib_ruins_masonry_pile.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/ruins/masonry_pile.png"
     },
     {
@@ -893,7 +893,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/ruins/blocking/maplib_ruins_weathered_rune_v001.png",
+      "path": "assets/map/library/ruins/blocking/maplib_ruins_weathered_rune.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/ruins/weathered_rune.png"
     },
     {
@@ -903,7 +903,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/ruins/blocking/maplib_ruins_bone_lantern_v001.png",
+      "path": "assets/map/library/ruins/blocking/maplib_ruins_bone_lantern.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/ruins/bone_lantern.png"
     },
     {
@@ -913,7 +913,7 @@
       "role": "blocking",
       "defaultCollision": true,
       "anchor": "bottom-center",
-      "path": "assets/map/library/ruins/blocking/maplib_ruins_prism_shard_v001.png",
+      "path": "assets/map/library/ruins/blocking/maplib_ruins_prism_shard.png",
       "master": "assets/managed/source/map-chip-library/v001/masters/ruins/prism_shard.png"
     }
   ]

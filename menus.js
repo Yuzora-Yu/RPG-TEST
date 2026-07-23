@@ -324,17 +324,17 @@ const Menu = {
     getItemIconPath: (item) => {
         if (item?.icon) return item.icon;
         const type = String(item?.type || '');
-        if (type === '攻撃道具') return 'assets/ui/menu-icons/item-attack-v001.png';
-        if (type === '強化道具') return 'assets/ui/menu-icons/item-buff-v001.png';
-        if (type === '弱体道具') return 'assets/ui/menu-icons/item-debuff-v001.png';
-        if (type === '素材') return 'assets/ui/menu-icons/item-material-v001.png';
-        if (type === '乗り物') return 'assets/ui/menu-icons/item-vehicle-v001.png';
-        if (type === '移動' || Number(item?.id) === 110 || item?.name === 'スカイプリズム') return 'assets/ui/menu-icons/item-travel-v001.png';
-        if (type === '蘇生') return 'assets/ui/menu-icons/item-revive-v001.png';
-        if (type === '育成') return 'assets/ui/menu-icons/item-growth-v001.png';
-        if (type === '貴重品') return 'assets/ui/menu-icons/item-key-v001.png';
+        if (type === '攻撃道具') return 'assets/ui/menu-icons/item-attack.png';
+        if (type === '強化道具') return 'assets/ui/menu-icons/item-buff.png';
+        if (type === '弱体道具') return 'assets/ui/menu-icons/item-debuff.png';
+        if (type === '素材') return 'assets/ui/menu-icons/item-material.png';
+        if (type === '乗り物') return 'assets/ui/menu-icons/item-vehicle.png';
+        if (type === '移動' || Number(item?.id) === 110 || item?.name === 'スカイプリズム') return 'assets/ui/menu-icons/item-travel.png';
+        if (type === '蘇生') return 'assets/ui/menu-icons/item-revive.png';
+        if (type === '育成') return 'assets/ui/menu-icons/item-growth.png';
+        if (type === '貴重品') return 'assets/ui/menu-icons/item-key.png';
         if (type === 'HP回復' || type === 'MP回復' || type === '状態異常回復' || type.includes('回復')) {
-            return 'assets/ui/menu-icons/item-heal-v001.png';
+            return 'assets/ui/menu-icons/item-heal.png';
         }
         return Menu.getMenuIconPath('item', 'item');
     },

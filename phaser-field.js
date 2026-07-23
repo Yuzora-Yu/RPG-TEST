@@ -821,6 +821,9 @@
     };
 
     const miniTileColor = (field, tile, x, y) => {
+        if (typeof field.getMiniMapTileColor === 'function') {
+            return colorToInt(field.getMiniMapTileColor(tile, x, y), 0x333333);
+        }
         const upper = String(tile || '').toUpperCase();
         if (upper === 'W') return 0x08090b;
         const config = field.getTileConfigForDraw ? field.getTileConfigForDraw(tile, x, y) : field.getTileConfig(tile);
@@ -857,7 +860,10 @@
                 const tx = Number(field.x) + dx;
                 const ty = Number(field.y) + dy;
                 let visible = true;
-                if (field.currentMapData && (tx < 0 || ty < 0 || tx >= mapSize.width || ty >= mapSize.height)) visible = false;
+                const outsideFixedMap = !!field.currentMapData && (tx < 0 || ty < 0 || tx >= mapSize.width || ty >= mapSize.height);
+                // 固定MAPの画面外は、通常描画と同じく最寄りの端タイルを延長する。
+                // 小型ミニマップだけ黒く欠ける状態を作らない。
+                if (outsideFixedMap && !field.currentMapData?.isFixed) visible = false;
                 if (visible && field.currentMapData?.isDungeon && !field.currentMapData?.isFixed &&
                     getDungeon() && typeof getDungeon().isVisited === 'function') {
                     const inSight = Math.abs(dx) <= 4 && Math.abs(dy) <= 4;
@@ -1177,7 +1183,7 @@
                     floor,
                     x: Number(spring.x),
                     y: Number(spring.y),
-                    image: spring.imageKey || getDungeon()?.healSpringImagePath || 'assets/map/overlays/overlay_shrine_healing_spring_v001.png',
+                    image: spring.imageKey || getDungeon()?.healSpringImagePath || 'assets/map/overlays/overlay_shrine_healing_spring.png',
                     drawWidth: Number(spring.drawWidth) || 44,
                     drawHeight: Number(spring.drawHeight) || 44,
                     shimmer: spring.shimmer !== false,

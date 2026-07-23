@@ -336,6 +336,22 @@ const TILE_THEMES = {
         }
     },
     WIND_TEMPLE: {
+        F: {
+            img: "tile_forbidden_forest_floor",
+            color: "#3d4d2d",
+            terrain: true,
+            variants: [
+                "tile_forbidden_forest_floor",
+                "tile_forbidden_forest_floor_2",
+                "tile_forbidden_forest_floor_3",
+                "tile_forbidden_forest_floor_4"
+            ]
+        },
+        K: {
+            img: null,
+            color: "#05070a",
+            terrain: true
+        },
         W: {
             img: "tile_wind_temple_wall",
             color: "#33474a"
@@ -475,6 +491,16 @@ const TILE_THEMES = {
         }
     },
     BIG_TOWER: {
+        F: {
+            img: "floor",
+            color: "#70843f",
+            terrain: true
+        },
+        "^": {
+            img: "tile_summit_temple_sky",
+            color: "#6098cf",
+            terrain: true
+        },
         W: {
             img: "tile_tower_wall",
             color: "#6a3e4a"
@@ -513,6 +539,21 @@ const TILE_THEMES = {
         }
     },
     THUNDER_FORT: {
+        F: {
+            img: "floor",
+            color: "#70843f",
+            terrain: true
+        },
+        H: {
+            img: "mountain",
+            color: "#6c665e",
+            terrain: true
+        },
+        K: {
+            img: null,
+            color: "#05070a",
+            terrain: true
+        },
         W: {
             img: "tile_thunder_wall",
             color: "#52616c",
@@ -569,6 +610,20 @@ const TILE_THEMES = {
         }
     },
     LIGHT_PALACE: {
+        I: {
+            img: "tile_summit_temple_mountain_trail",
+            color: "#89867d",
+            terrain: true,
+            variants: [
+                "tile_summit_temple_mountain_trail",
+                "tile_summit_temple_mountain_trail_2"
+            ]
+        },
+        "^": {
+            img: null,
+            color: "#ffffff",
+            terrain: true
+        },
         W: {
             img: "tile_light_wall",
             color: "#d9ded4"
@@ -675,6 +730,20 @@ const TILE_THEMES = {
         }
     },
     DARK_CASTLE: {
+        I: {
+            img: "tile_summit_temple_mountain_trail",
+            color: "#77736b",
+            terrain: true,
+            variants: [
+                "tile_summit_temple_mountain_trail",
+                "tile_summit_temple_mountain_trail_2"
+            ]
+        },
+        K: {
+            img: null,
+            color: "#05070a",
+            terrain: true
+        },
         W: {
             img: "tile_dark_wall",
             color: "#242a32",
@@ -785,6 +854,20 @@ const TILE_THEMES = {
         }
     },
     DARK_SHRINE_RUINS: {
+        I: {
+            img: "tile_summit_temple_mountain_trail",
+            color: "#77736b",
+            terrain: true,
+            variants: [
+                "tile_summit_temple_mountain_trail",
+                "tile_summit_temple_mountain_trail_2"
+            ]
+        },
+        K: {
+            img: null,
+            color: "#05070a",
+            terrain: true
+        },
         W: {
             img: "tile_dark_shrine_wall",
             color: "#34303f",
@@ -5052,211 +5135,225 @@ const FIXED_DUNGEON_MAPS = {
         encounterRank: 26,
         battleBg: "battle_bg_wind_temple",
         entryPoint: {
-            x: 11,
-            y: 18
+            x: 12,
+            y: 20
         },
         floors: [
             {
-                label: "風廊",
+                label: "1階・風廊",
                 encounterRank: 26,
                 monsters: [
                     100024,
                     100025,
                     100026
                 ],
-                width: 23,
-                height: 21,
+                width: 25,
+                height: 24,
                 tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWTTTTTWWWWWWWWWWWWWWWW",
-                    "WWTTTTTWWWWWWWWWWWWWWWW",
-                    "WWTTTTTWWWWWWWWWWWWWWWW",
-                    "WWWWTWWWWWWWWWWWWWWWWWW",
-                    "WWWWTWWWWWWWWWWWWWWWWWW",
-                    "WWWWTWWWWWWWWWWWWWWWWWW",
-                    "WWWWTWWWWWWWWWWWWTTTTTW",
-                    "WWWWTWWWWWWWWWWWWTTTDTW",
-                    "WWWWTWWWWWWWWWWWWTTTTTW",
-                    "WWWWTWWWWWWWWWWWWWWTWWW",
-                    "WWWWTWWWWWWWWWWWWWWTWWW",
-                    "WWWWTTTTTTTTTTTTTTTTWWW",
-                    "WWWWWWWWWWWTWWWWWWWWWWW",
-                    "WWWWWWWWWWWTWWWWWWWWWWW",
-                    "WWWWWWWWTTTTTTTWWWWWWWW",
-                    "WWWWWWWWTTTTTTTWWWWWWWW",
-                    "WWWWWWWWTTTTTTTWWWWWWWW",
-                    "WWWWWWWWTTTTTTTWWWWWWWW",
-                    "WWWWWWWWWWWSWWWWWWWWWWW"
+                    "FFFFFFFFFFFFFFFFFFFFFFFFF",
+                    "FWWWWWWWWWWWWWWWWWWWWWWWF",
+                    "FWWWWWWWWWWWWWWWWWWWWWWWF",
+                    "FWWWWWWWWWWWWWWWWWWWWWWWF",
+                    "FWWTTTTTWWWWWWWWWWWWWWWWF",
+                    "FWWTTTTTWWWWWWWWWWWWWWWWF",
+                    "FWWTTTTTWWWWWWWWWWWWWWWWF",
+                    "FWWWWTWWWWWWWWWWWWWWWWWWF",
+                    "FWWWWTWWWWWWWWWWWWWWWWWWF",
+                    "FWWWWTWWWWWWWWWWWWWWWWWWF",
+                    "FWWWWTWWWWWWWWWWWWTTTTTWF",
+                    "FWWWWTWWWWWWWWWWWWTTTUTWF",
+                    "FWWWWTWWWWWWWWWWWWTTTTTWF",
+                    "FWWWWTWWWWWWWWWWWWWWTWWWF",
+                    "FWWWWTWWWWWWWWWWWWWWTWWWF",
+                    "FWWWWTTTTTTTTTTTTTTTTWWWF",
+                    "FWWWWWWWWWWWTWWWWWWWWWWWF",
+                    "FWWWWWWWWWWWTWWWWWWWWWWWF",
+                    "FWWWWWWWWTTTTTTTWWWWWWWWF",
+                    "FWWWWWWWWTTTTTTTWWWWWWWWF",
+                    "FWWWWWWWWTTTTTTTWWWWWWWWF",
+                    "FWWWWWWWWTTTTTTTWWWWWWWWF",
+                    "FWWWWWWWWWWWSWWWWWWWWWWWF"
+                ,
+                    "FFFFFFFFFFFFFFFFFFFFFFFFF"
                 ],
                 floorLinks: [
                     {
-                        x: 11,
-                        y: 20,
+                        x: 12,
+                        y: 22,
                         to: "EXIT",
                         label: "森へ戻る"
                     },
                     {
-                        x: 20,
-                        y: 9,
+                        x: 21,
+                        y: 11,
                         toFloor: 2,
-                        targetX: 2,
-                        targetY: 9,
-                        label: "旋風の回廊へ"
+                        targetX: 3,
+                        targetY: 11,
+                        label: "2階へ上がる"
                     }
                 ],
                 chests: [
                     {
-                        x: 3,
-                        y: 3,
+                        x: 4,
+                        y: 5,
                         itemId: 2,
                         type: "item"
                     },
                     {
-                        x: 5,
-                        y: 3,
+                        x: 6,
+                        y: 5,
                         itemId: 4,
                         type: "item"
                     }
                 ],
                 entryPoint: {
-                    x: 11,
-                    y: 19
+                    x: 12,
+                    y: 21
                 },
                 name: "",
                 themeKey: "WIND_TEMPLE"
             },
             {
-                label: "旋風の回廊",
+                label: "2階・旋風の回廊",
                 encounterRank: 28,
                 monsters: [
                     100026,
                     100027,
                     100028
                 ],
-                width: 23,
-                height: 21,
+                width: 25,
+                height: 24,
+                impassableTiles: ["K"],
                 tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWTTTTTWWWWWWW",
-                    "WWWWWWWWWWWTWWWTTTWWWWW",
-                    "WWWWWWWWWWWTWWWWWTWWWWW",
-                    "WWWWWWWWWWTTTWWWWTWWWWW",
-                    "WWTWWWWWWTTTTTWWWTWWTWW",
-                    "WTTTWWWWWTTTTTWWWTWTTTW",
-                    "WTTTWWWWWWTTTWWWWTWTTTW",
-                    "WTTTWWWWWWWTWWWWWTWTTTW",
-                    "WWUWWWWWWWWTWWWWWTWWTWW",
-                    "WWWWWWWWWWWTWWWWWTTTTWW",
-                    "WWWWWWWWWWWTWWWWWWWWWWW",
-                    "WWWWWWWWWWWTWWWWWWWWWWW",
-                    "WWWWWWWWWWWTWWWWWWWWWWW",
-                    "WWWWWWWWTTTTTTTWWWWWWWW",
-                    "WWWWWWTTTWWWWWTTTWWWWWW",
-                    "WWWWWWTWWWWWWWWWTWWWWWW",
-                    "WWTTTWTWWWWWWWWWTWTTTWW",
-                    "WWTTTTTWWWWWWWWWTTTDTWW",
-                    "WWTTTWWWWWWWWWWWWWTTTWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWW"
+                    "KKKKKKKKKKKKKKKKKKKKKKKKK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWTTTTTWWWWWWWK",
+                    "KWWWWWWWWWWWTWWWTTTWWWWWK",
+                    "KWWWWWWWWWWWTWWWWWTWWWWWK",
+                    "KWWWWWWWWWWTTTWWWWTWWWWWK",
+                    "KWWTWWWWWWTTTTTWWWTWWTWWK",
+                    "KWTTTWWWWWTTTTTWWWTWTTTWK",
+                    "KWTTTWWWWWWTTTWWWWTWTTTWK",
+                    "KWTTTWWWWWWWTWWWWWTWTTTWK",
+                    "KWWDWWWWWWWWTWWWWWTWWTWWK",
+                    "KWWWWWWWWWWWTWWWWWTTTTWWK",
+                    "KWWWWWWWWWWWTWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWTWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWTWWWWWWWWWWWK",
+                    "KWWWWWWWWTTTTTTTWWWWWWWWK",
+                    "KWWWWWWTTTWWWWWTTTWWWWWWK",
+                    "KWWWWWWTWWWWWWWWWTWWWWWWK",
+                    "KWWTTTWTWWWWWWWWWTWTTTWWK",
+                    "KWWTTTTTWWWWWWWWWTTTUTWWK",
+                    "KWWTTTWWWWWWWWWWWWWTTTWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWK"
+                ,
+                    "KKKKKKKKKKKKKKKKKKKKKKKKK"
                 ],
                 floorLinks: [
                     {
-                        x: 2,
-                        y: 9,
+                        x: 3,
+                        y: 11,
                         toFloor: 1,
-                        targetX: 20,
-                        targetY: 9,
-                        label: "風廊へ戻る"
+                        targetX: 21,
+                        targetY: 11,
+                        label: "1階へ下りる"
                     },
                     {
-                        x: 19,
-                        y: 18,
+                        x: 20,
+                        y: 20,
                         toFloor: 3,
-                        targetX: 11,
-                        targetY: 17,
-                        label: "風の祭壇へ"
+                        targetX: 12,
+                        targetY: 19,
+                        label: "3階へ上がる"
                     }
                 ],
                 entryPoint: {
-                    x: 2,
-                    y: 9
+                    x: 3,
+                    y: 11
                 },
                 name: "",
                 themeKey: "WIND_TEMPLE",
                 tileEffects: [
                     {
-                        x: 2,
-                        y: 5,
+                        x: 3,
+                        y: 7,
                         type: "warp",
-                        toX: 20,
-                        toY: 5,
+                        toX: 21,
+                        toY: 7,
                         message: "不思議な力で移動した。"
                     },
                     {
-                        x: 20,
-                        y: 5,
+                        x: 21,
+                        y: 7,
                         type: "warp",
-                        toX: 2,
-                        toY: 5,
+                        toX: 3,
+                        toY: 7,
                         message: "不思議な力で移動した。"
                     }
                 ],
                 chests: [
                     {
-                        x: 3,
-                        y: 18,
+                        x: 4,
+                        y: 20,
                         itemId: 5,
                         type: "item"
                     }
                 ]
             },
             {
-                label: "風の祭壇",
+                label: "3階・風の祭壇",
                 encounterRank: 30,
                 monsters: [
                     100028,
                     100029,
                     100030
                 ],
-                width: 23,
-                height: 21,
+                width: 25,
+                height: 24,
+                impassableTiles: ["K"],
                 tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWTTWWWWWTTWWWWWWW",
-                    "WWWWWWTTTTWWWTTTTWWWWWW",
-                    "WWWWWTTTTTTTTTTTTTWWWWW",
-                    "WWWWWTTTTTTTTTTTTTWWWWW",
-                    "WWWWWTTTTTTBTTTTTTWWWWW",
-                    "WWWWWTTTTTTTTTTTTTWWWWW",
-                    "WWWWWWTTTTTTTTTTTWWWWWW",
-                    "WWWWWWWTTWWTWWTTWWWWWWW",
-                    "WWWWWWWWWWWTWWWWWWWWWWW",
-                    "WWWWWWWWWWWTWWWWWWWWWWW",
-                    "WWWWWWWWWWWTWWWWWWWWWWW",
-                    "WWWWWWWWWWWTWWWWWWWWWWW",
-                    "WWWWWWWWTTTTTTTWWWWWWWW",
-                    "WWWWWWWTTTTUTTTTWWWWWWW",
-                    "WWWWWWWWTTTTTTTWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWW"
+                    "KKKKKKKKKKKKKKKKKKKKKKKKK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWTTWWWWWTTWWWWWWWK",
+                    "KWWWWWWTTTTWWWTTTTWWWWWWK",
+                    "KWWWWWTTTTTTTTTTTTTWWWWWK",
+                    "KWWWWWTTTTTTTTTTTTTWWWWWK",
+                    "KWWWWWTTTTTTBTTTTTTWWWWWK",
+                    "KWWWWWTTTTTTTTTTTTTWWWWWK",
+                    "KWWWWWWTTTTTTTTTTTWWWWWWK",
+                    "KWWWWWWWTTWWTWWTTWWWWWWWK",
+                    "KWWWWWWWWWWWTWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWTWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWTWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWTWWWWWWWWWWWK",
+                    "KWWWWWWWWTTTTTTTWWWWWWWWK",
+                    "KWWWWWWWTTTTDTTTTWWWWWWWK",
+                    "KWWWWWWWWTTTTTTTWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWK"
+                ,
+                    "KKKKKKKKKKKKKKKKKKKKKKKKK"
                 ],
                 floorLinks: [
                     {
-                        x: 11,
-                        y: 17,
+                        x: 12,
+                        y: 19,
                         toFloor: 2,
-                        targetX: 19,
-                        targetY: 18,
-                        label: "旋風の回廊へ戻る"
+                        targetX: 20,
+                        targetY: 20,
+                        label: "2階へ下りる"
                     }
                 ],
                 bosses: [
                     {
-                        x: 11,
-                        y: 8,
+                        x: 12,
+                        y: 10,
                         monsterId: 301020,
                         startEventId: "wind_temple_elicia_encounter",
                         storyEventId: "wind_temple_clear",
@@ -5264,8 +5361,8 @@ const FIXED_DUNGEON_MAPS = {
                     }
                 ],
                 entryPoint: {
-                    x: 11,
-                    y: 17
+                    x: 12,
+                    y: 19
                 },
                 name: "",
                 themeKey: "WIND_TEMPLE"
@@ -5300,7 +5397,7 @@ const FIXED_DUNGEON_MAPS = {
         },
         floors: [
             {
-                label: "沈水回廊",
+                label: "地下1階・沈水回廊",
                 encounterRank: 35,
                 monsters: [
                     100033,
@@ -5347,7 +5444,7 @@ const FIXED_DUNGEON_MAPS = {
                         toFloor: 2,
                         targetX: 11,
                         targetY: 19,
-                        label: "水門へ"
+                        label: "地下2階へ下りる"
                     }
                 ],
                 bosses: [
@@ -5384,7 +5481,7 @@ const FIXED_DUNGEON_MAPS = {
                 ]
             },
             {
-                label: "水門",
+                label: "地下2階・水門",
                 encounterRank: 37,
                 monsters: [
                     100034,
@@ -5425,7 +5522,7 @@ const FIXED_DUNGEON_MAPS = {
                         toFloor: 1,
                         targetX: 11,
                         targetY: 5,
-                        label: "沈水回廊へ戻る"
+                        label: "地下1階へ上がる"
                     },
                     {
                         x: 2,
@@ -5433,7 +5530,7 @@ const FIXED_DUNGEON_MAPS = {
                         toFloor: 3,
                         targetX: 11,
                         targetY: 19,
-                        label: "祈祷の間へ"
+                        label: "地下3階へ下りる"
                     }
                 ],
                 entryPoint: {
@@ -5484,7 +5581,7 @@ const FIXED_DUNGEON_MAPS = {
                 ]
             },
             {
-                label: "祈祷の間",
+                label: "地下3階・祈祷の間",
                 encounterRank: 39,
                 monsters: [
                     100036,
@@ -5525,7 +5622,7 @@ const FIXED_DUNGEON_MAPS = {
                         toFloor: 2,
                         targetX: 2,
                         targetY: 2,
-                        label: "赤水門へ戻る"
+                        label: "地下2階へ上がる"
                     },
                     {
                         x: 11,
@@ -5533,7 +5630,7 @@ const FIXED_DUNGEON_MAPS = {
                         toFloor: 4,
                         targetX: 14,
                         targetY: 22,
-                        label: "水流の奥へ",
+                        label: "地下4階へ下りる",
                         requiredFlag: "thunderFortCleared",
                         lockedLabel: "激流を調べる",
                         lockedLog: "激しい水流で進めない。"
@@ -5561,7 +5658,7 @@ const FIXED_DUNGEON_MAPS = {
                 themeKey: "CRENA_CAVE"
             },
             {
-                label: "海底神殿深部・潮環回廊",
+                label: "地下4階・潮環回廊",
                 encounterRank: 68,
                 monsters: [
                     100062,
@@ -5626,8 +5723,8 @@ const FIXED_DUNGEON_MAPS = {
                         y: 22,
                         toFloor: 3,
                         targetX: 11,
-                        targetY: 5,
-                        label: "祈祷の間へ戻る"
+                        targetY: 2,
+                        label: "地下3階へ上がる"
                     },
                     {
                         x: 15,
@@ -5635,7 +5732,7 @@ const FIXED_DUNGEON_MAPS = {
                         toFloor: 5,
                         targetX: 15,
                         targetY: 22,
-                        label: "逆潮祭壇へ"
+                        label: "地下5階へ下りる"
                     }
                 ],
                 tileEffects: [
@@ -5815,7 +5912,7 @@ const FIXED_DUNGEON_MAPS = {
                 }
             },
             {
-                label: "海底神殿深部・逆潮祭壇",
+                label: "地下5階・逆潮祭壇",
                 encounterRank: 76,
                 monsters: [
                     100068,
@@ -5880,7 +5977,7 @@ const FIXED_DUNGEON_MAPS = {
                         toFloor: 4,
                         targetX: 15,
                         targetY: 3,
-                        label: "潮環回廊へ戻る"
+                        label: "地下4階へ上がる"
                     }
                 ],
                 tileEffects: [
@@ -5956,8 +6053,8 @@ const FIXED_DUNGEON_MAPS = {
         encounterRank: 30,
         battleBg: "battle_bg_big_tower",
         entryPoint: {
-            x: 10,
-            y: 19
+            x: 11,
+            y: 21
         },
         floors: [
             {
@@ -5974,65 +6071,69 @@ const FIXED_DUNGEON_MAPS = {
                         rate: 0.05
                     }
                 ],
-                width: 21,
-                height: 21,
+                width: 23,
+                height: 24,
                 tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWW",
-                    "WTTTWWWWWWWWWWWWWTTTW",
-                    "WTCTTTTTTTTTTTTTTTDTW",
-                    "WTTTWWWWWWWWWWWWWTTTW",
-                    "WWWWWWWWWWWWWWWWWWTWW",
-                    "WWWWWWWWWWWWWWWWWWTWW",
-                    "WWWWWWWWWWWWWWWWWWTWW",
-                    "WWWWWWWWTTTTTWWWWWTWW",
-                    "WWWWTTTTTTTTTTTTTTTWW",
-                    "WWWTTTTTTWWWTTTTTTWWW",
-                    "WWWTTTTTTWWWTTTTTTWWW",
-                    "WWWTTTTTTWWWTTTTTTWWW",
-                    "WWWTTTTTTTTTTTTTTTWWW",
-                    "WWWWTTTTTWTWTTTTTWWWW",
-                    "WWWWWWWWWWTWWWWWWWWWW",
-                    "WWWWWWWWWWTWWWWWWWWWW",
-                    "WWWWWWWWWWTWWWWWWWWWW",
-                    "WWTTTTTWWWTWWWTTTTTWW",
-                    "WWTTTTTTTTTTTTTTTTTWW",
-                    "WWTTTTTWWWTWWWTTTTTWW",
-                    "WWWWWWWWWWSWWWWWWWWWW"
+                    "FFFFFFFFFFFFFFFFFFFFFFF",
+                    "FWWWWWWWWWWWWWWWWWWWWWF",
+                    "FWWWWWWWWWWWWWWWWWWWWWF",
+                    "FWTTTWWWWWWWWWWWWWTTTWF",
+                    "FWTCTTTTTTTTTTTTTTTDTWF",
+                    "FWTTTWWWWWWWWWWWWWTTTWF",
+                    "FWWWWWWWWWWWWWWWWWWTWWF",
+                    "FWWWWWWWWWWWWWWWWWWTWWF",
+                    "FWWWWWWWWWWWWWWWWWWTWWF",
+                    "FWWWWWWWWTTTTTWWWWWTWWF",
+                    "FWWWWTTTTTTTTTTTTTTTWWF",
+                    "FWWWTTTTTTWWWTTTTTTWWWF",
+                    "FWWWTTTTTTWWWTTTTTTWWWF",
+                    "FWWWTTTTTTWWWTTTTTTWWWF",
+                    "FWWWTTTTTTTTTTTTTTTWWWF",
+                    "FWWWWTTTTTWTWTTTTTWWWWF",
+                    "FWWWWWWWWWWTWWWWWWWWWWF",
+                    "FWWWWWWWWWWTWWWWWWWWWWF",
+                    "FWWWWWWWWWWTWWWWWWWWWWF",
+                    "FWWTTTTTWWWTWWWTTTTTWWF",
+                    "FWWTTTTTTTTTTTTTTTTTWWF",
+                    "FWWTTTTTWWWTWWWTTTTTWWF",
+                    "FWWWWWWWWWWSWWWWWWWWWWF"
+                ,
+                    "FFFFFFFFFFFFFFFFFFFFFFF"
                 ],
                 floorLinks: [
                     {
-                        x: 10,
-                        y: 20,
+                        x: 11,
+                        y: 22,
                         to: "EXIT",
                         label: "外に出る"
                     },
                     {
-                        x: 18,
-                        y: 2,
+                        x: 19,
+                        y: 4,
                         toFloor: 2,
-                        targetX: 18,
-                        targetY: 18,
+                        targetX: 19,
+                        targetY: 20,
                         label: "2階へ"
                     }
                 ],
                 chests: [
                     {
-                        x: 2,
-                        y: 2,
+                        x: 3,
+                        y: 4,
                         itemId: 1,
                         type: "item"
                     },
                     {
-                        x: 17,
-                        y: 18,
+                        x: 18,
+                        y: 20,
                         itemId: 14,
                         type: "item"
                     }
                 ],
                 mapActions: [
                     {
-                        x: 4,
-                        y: 18,
+                        x: 5,
+                        y: 20,
                         label: "ゼリードと話す",
                         log: "ゼリードが、頂上に残る歪みを見上げている。",
                         type: "quest",
@@ -6042,8 +6143,8 @@ const FIXED_DUNGEON_MAPS = {
                     }
                 ],
                 entryPoint: {
-                    x: 10,
-                    y: 19
+                    x: 11,
+                    y: 21
                 },
                 name: "",
                 themeKey: "BIG_TOWER"
@@ -6062,65 +6163,70 @@ const FIXED_DUNGEON_MAPS = {
                         rate: 0.05
                     }
                 ],
-                width: 21,
-                height: 21,
+                width: 23,
+                height: 24,
+                impassableTiles: ["^"],
                 tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWW",
-                    "WWUTTTTWWTTTTTTTTTTWW",
-                    "WWTTTTTWWTTTTTTTTTTWW",
-                    "WWTTTTTWWTTTTTTTTTTWW",
-                    "WWTTTWWWWWWWWWWWTTTWW",
-                    "WWTTTWWWWWWWWWWWTTTWW",
-                    "WWTTTWWTTTTTTTWWTTTWW",
-                    "WWTTTWWTTTTTTTWWTTTWW",
-                    "WWTTTWWTTWWWTTWWTTTWW",
-                    "WWTTTTTTTWWWTTWWTTTWW",
-                    "WWWWWWWTTWWWTTWWTTTWW",
-                    "WWWWWWWTTTTTTTWWTTTWW",
-                    "WWTTTWWTTTTTTTWWTTTWW",
-                    "WWTTTWWWWWTWWWWWTTTWW",
-                    "WWTTTWWWWWTWWWWWTTTWW",
-                    "WWTTTTTTTTTTTTTTTTTWW",
-                    "WWTTTTTTTTTTTTTTTTTWW",
-                    "WWTTTTTTTTTTTTTTTTDWW",
-                    "WWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWW"
+                    "^^^^^^^^^^^^^^^^^^^^^^^",
+                    "^WWWWWWWWWWWWWWWWWWWWW^",
+                    "^WWWWWWWWWWWWWWWWWWWWW^",
+                    "^WWWWWWWWWWWWWWWWWWWWW^",
+                    "^WWUTTTTWWTTTTTTTTTTWW^",
+                    "^WWTTTTTWWTTTTTTTTTTWW^",
+                    "^WWTTTTTWWTTTTTTTTTTWW^",
+                    "^WWTTTWWWWWWWWWWWTTTWW^",
+                    "^WWTTTWWWWWWWWWWWTTTWW^",
+                    "^WWTTTWWTTTTTTTWWTTTWW^",
+                    "^WWTTTWWTTTTTTTWWTTTWW^",
+                    "^WWTTTWWTTWWWTTWWTTTWW^",
+                    "^WWTTTTTTTWWWTTWWTTTWW^",
+                    "^WWWWWWWTTWWWTTWWTTTWW^",
+                    "^WWWWWWWTTTTTTTWWTTTWW^",
+                    "^WWTTTWWTTTTTTTWWTTTWW^",
+                    "^WWTTTWWWWWTWWWWWTTTWW^",
+                    "^WWTTTWWWWWTWWWWWTTTWW^",
+                    "^WWTTTTTTTTTTTTTTTTTWW^",
+                    "^WWTTTTTTTTTTTTTTTTTWW^",
+                    "^WWTTTTTTTTTTTTTTTTDWW^",
+                    "^WWWWWWWWWWWWWWWWWWWWW^",
+                    "^WWWWWWWWWWWWWWWWWWWWW^"
+                ,
+                    "^^^^^^^^^^^^^^^^^^^^^^^"
                 ],
                 floorLinks: [
                     {
-                        x: 18,
-                        y: 18,
+                        x: 19,
+                        y: 20,
                         toFloor: 1,
-                        targetX: 18,
-                        targetY: 2,
+                        targetX: 19,
+                        targetY: 4,
                         label: "1階へ戻る"
                     },
                     {
-                        x: 2,
-                        y: 2,
+                        x: 3,
+                        y: 4,
                         toFloor: 3,
-                        targetX: 2,
-                        targetY: 18,
+                        targetX: 3,
+                        targetY: 20,
                         label: "3階へ"
                     }
                 ],
                 entryPoint: {
-                    x: 18,
-                    y: 18
+                    x: 19,
+                    y: 20
                 },
                 name: "",
                 themeKey: "BIG_TOWER",
                 chests: [
                     {
-                        x: 3,
-                        y: 14,
+                        x: 4,
+                        y: 16,
                         itemId: 5,
                         type: "item"
                     },
                     {
-                        x: 10,
-                        y: 3,
+                        x: 11,
+                        y: 5,
                         itemId: 14,
                         type: "item"
                     }
@@ -6140,66 +6246,71 @@ const FIXED_DUNGEON_MAPS = {
                         rate: 0.05
                     }
                 ],
-                width: 21,
-                height: 21,
+                width: 23,
+                height: 24,
+                impassableTiles: ["^"],
                 tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWW",
-                    "WTTTTTTWWWWWTWWWWTTTW",
-                    "WTCTTTTTWWWWTWWWWTDTW",
-                    "WTTTTTTTTTGTTWWWWTTTW",
-                    "WTWWTTTTWWWWTWWWWWTWW",
-                    "WTWWTTTTWWWWTTTTTTTWW",
-                    "WTTTTTTWWWWWTWWWWTTWW",
-                    "WWWWWWWWWWWWTWWWWTTWW",
-                    "WWWWWWWWTTTTTWWWWTTWW",
-                    "WWWWWWWWTWWWTWWWWTTWW",
-                    "WWWWWWWWGWWWGTTTGTTWW",
-                    "WWWWWWWWTWWWTWWWWWWWW",
-                    "WTTTTTTTTTTTTWWWWWWWW",
-                    "WTWWTTWWTTWWWWWWWWWWW",
-                    "WTWWTTWWTTWWWWTTTTTTW",
-                    "WTTTTTTTTTWWWTTTTWWTW",
-                    "WTTTWWWWWWWWWTTTTWWTW",
-                    "WTTTWWWWWWWWWTTTTTTTW",
-                    "WTUTTTTTTTTTTTTTTTCTW",
-                    "WTTTWWWWWWWWWTTTTTTTW",
-                    "WWWWWWWWWWWWWWWWWWWWW"
+                    "^^^^^^^^^^^^^^^^^^^^^^^",
+                    "^WWWWWWWWWWWWWWWWWWWWW^",
+                    "^WWWWWWWWWWWWWWWWWWWWW^",
+                    "^WTTTTTTWWWWWTWWWWTTTW^",
+                    "^WTCTTTTTWWWWTWWWWTDTW^",
+                    "^WTTTTTTTTTGTTWWWWTTTW^",
+                    "^WTWWTTTTWWWWTWWWWWTWW^",
+                    "^WTWWTTTTWWWWTTTTTTTWW^",
+                    "^WTTTTTTWWWWWTWWWWTTWW^",
+                    "^WWWWWWWWWWWWTWWWWTTWW^",
+                    "^WWWWWWWWTTTTTWWWWTTWW^",
+                    "^WWWWWWWWTWWWTWWWWTTWW^",
+                    "^WWWWWWWWGWWWGTTTGTTWW^",
+                    "^WWWWWWWWTWWWTWWWWWWWW^",
+                    "^WTTTTTTTTTTTTWWWWWWWW^",
+                    "^WTWWTTWWTTWWWWWWWWWWW^",
+                    "^WTWWTTWWTTWWWWTTTTTTW^",
+                    "^WTTTTTTTTTWWWTTTTWWTW^",
+                    "^WTTTWWWWWWWWWTTTTWWTW^",
+                    "^WTTTWWWWWWWWWTTTTTTTW^",
+                    "^WTUTTTTTTTTTTTTTTTCTW^",
+                    "^WTTTWWWWWWWWWTTTTTTTW^",
+                    "^WWWWWWWWWWWWWWWWWWWWW^"
+                ,
+                    "^^^^^^^^^^^^^^^^^^^^^^^"
                 ],
                 floorLinks: [
                     {
-                        x: 2,
-                        y: 18,
+                        x: 3,
+                        y: 20,
                         toFloor: 2,
-                        targetX: 2,
-                        targetY: 2,
+                        targetX: 3,
+                        targetY: 4,
                         label: "2階へ戻る"
                     },
                     {
-                        x: 18,
-                        y: 2,
+                        x: 19,
+                        y: 4,
                         toFloor: 4,
-                        targetX: 2,
-                        targetY: 18,
+                        targetX: 3,
+                        targetY: 20,
                         label: "4階へ"
                     }
                 ],
                 chests: [
                     {
-                        x: 2,
-                        y: 2,
+                        x: 3,
+                        y: 4,
                         itemId: 1,
                         type: "item"
                     },
                     {
-                        x: 18,
-                        y: 18,
+                        x: 19,
+                        y: 20,
                         itemId: 3,
                         type: "item"
                     }
                 ],
                 entryPoint: {
-                    x: 2,
-                    y: 18
+                    x: 3,
+                    y: 20
                 },
                 name: "",
                 themeKey: "BIG_TOWER"
@@ -6218,67 +6329,72 @@ const FIXED_DUNGEON_MAPS = {
                         rate: 0.05
                     }
                 ],
-                width: 21,
-                height: 21,
+                width: 23,
+                height: 24,
+                impassableTiles: ["^"],
                 tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWW",
-                    "WWWTTTTWWWWWWWWTTTTWW",
-                    "WWTTTTTTTTTTTTTTTTDWW",
-                    "WWWTTTTTTTGTTTTTTTTWW",
-                    "WWWWWWWWWWWWWWWWWTTWW",
-                    "WWWWWWWWWWWWWWWWWWTWW",
-                    "WWWWWWWWWWWWWWWWWWTWW",
-                    "WWWWWTTTTTGTTTTTWWTWW",
-                    "WWWWTTTTTTTTTTTTTWTWW",
-                    "WWWWTTTTTTTTTTTTTWTWW",
-                    "WWWWGWWWGTBTGTTTGWTWW",
-                    "WWTTTTTWWTGTWTTTTTTWW",
-                    "WWTWWWTTWTTTWTTWWWTWW",
-                    "WWTWWWWTWTTTWTWWWWTWW",
-                    "WWTWWWWTWTTTWTWWWWTWW",
-                    "WWTTTTTTWTGTWTTTTTTWW",
-                    "WWWWWWWWWTTTWWWWWWWWW",
-                    "WWWTTTTTTTTTTTTTTTWWW",
-                    "WWUTTTTTTTTTTTTTTTTWW",
-                    "WWWTTTTWWWWWWWWTTTWWW",
-                    "WWWWWWWWWWWWWWWWWWWWW"
+                    "^^^^^^^^^^^^^^^^^^^^^^^",
+                    "^WWWWWWWWWWWWWWWWWWWWW^",
+                    "^WWWWWWWWWWWWWWWWWWWWW^",
+                    "^WWWTTTTWWWWWWWWTTTTWW^",
+                    "^WWTTTTTTTTTTTTTTTTDWW^",
+                    "^WWWTTTTTTTGTTTTTTTTWW^",
+                    "^WWWWWWWWWWWWWWWWWTTWW^",
+                    "^WWWWWWWWWWWWWWWWWWTWW^",
+                    "^WWWWWWWWWWWWWWWWWWTWW^",
+                    "^WWWWWTTTTTGTTTTTWWTWW^",
+                    "^WWWWTTTTTTTTTTTTTWTWW^",
+                    "^WWWWTTTTTTTTTTTTTWTWW^",
+                    "^WWWWGWWWGTBTGTTTGWTWW^",
+                    "^WWTTTTTWWTGTWTTTTTTWW^",
+                    "^WWTWWWTTWTTTWTTWWWTWW^",
+                    "^WWTWWWWTWTTTWTWWWWTWW^",
+                    "^WWTWWWWTWTTTWTWWWWTWW^",
+                    "^WWTTTTTTWTGTWTTTTTTWW^",
+                    "^WWWWWWWWWTTTWWWWWWWWW^",
+                    "^WWWTTTTTTTTTTTTTTTWWW^",
+                    "^WWUTTTTTTTTTTTTTTTTWW^",
+                    "^WWWTTTTWWWWWWWWTTTWWW^",
+                    "^WWWWWWWWWWWWWWWWWWWWW^"
+                ,
+                    "^^^^^^^^^^^^^^^^^^^^^^^"
                 ],
                 floorLinks: [
                     {
-                        x: 2,
-                        y: 18,
+                        x: 3,
+                        y: 20,
                         toFloor: 3,
-                        targetX: 18,
-                        targetY: 2,
+                        targetX: 19,
+                        targetY: 4,
                         label: "3階へ戻る"
                     },
                     {
-                        x: 18,
-                        y: 2,
+                        x: 19,
+                        y: 4,
                         toFloor: 5,
-                        targetX: 18,
-                        targetY: 18,
+                        targetX: 19,
+                        targetY: 20,
                         label: "5階へ"
                     }
                 ],
                 chests: [
                     {
-                        x: 2,
-                        y: 2,
+                        x: 3,
+                        y: 4,
                         itemId: 104,
                         type: "item"
                     },
                     {
-                        x: 18,
-                        y: 18,
+                        x: 19,
+                        y: 20,
                         itemId: 5,
                         type: "item"
                     }
                 ],
                 bosses: [
                     {
-                        x: 10,
-                        y: 10,
+                        x: 11,
+                        y: 12,
                         monsterId: [
                             301060,
                             301062
@@ -6292,13 +6408,13 @@ const FIXED_DUNGEON_MAPS = {
                     }
                 ],
                 entryPoint: {
-                    x: 2,
-                    y: 18
+                    x: 3,
+                    y: 20
                 },
                 healSprings: [
                     {
-                        x: 10,
-                        y: 12
+                        x: 11,
+                        y: 14
                     }
                 ],
                 name: "",
@@ -6318,52 +6434,57 @@ const FIXED_DUNGEON_MAPS = {
                         rate: 0.05
                     }
                 ],
-                width: 21,
-                height: 21,
+                width: 23,
+                height: 24,
+                impassableTiles: ["^"],
                 tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWW",
-                    "WTTTTTTWWWWWWWTTTTTTW",
-                    "WTUTTTTWWWWWWWTTTTTTW",
-                    "WTTTTTTTTTTTTTTTTTTTW",
-                    "WTTTTTTWWWWWWWTTTTTTW",
-                    "WTTTTTTWWWWWWWTTTTTTW",
-                    "WWTWWWWWWWWWWWWWWWWWW",
-                    "WWTWWWWWWWWWWWWWWWWWW",
-                    "WWTTTTTTTTTTTTTTTTTWW",
-                    "WWTWWWWTTWWWTTWWWWTWW",
-                    "WWTWWWWTTWWWTTWWWWTWW",
-                    "WWTWWWWTTWWWTTWWWWTWW",
-                    "WWTWWWWTTTTTTTWWWWTWW",
-                    "WWTTTTTTTWTWTTTTTTTWW",
-                    "WWWWWWWWWWZWWWWWWWWWW",
-                    "WWWWWWWWWWTWWWWWWWWWW",
-                    "WTTTTTTTWWTWWTTTTTTTW",
-                    "WTTTTTTTWWTWWTTTTTTTW",
-                    "WTTTTTTTTTTTTTTTTTDTW",
-                    "WTTTTTTTWWWWWTTTTTTTW",
-                    "WWWWWWWWWWWWWWWWWWWWW"
+                    "^^^^^^^^^^^^^^^^^^^^^^^",
+                    "^WWWWWWWWWWWWWWWWWWWWW^",
+                    "^WWWWWWWWWWWWWWWWWWWWW^",
+                    "^WTTTTTTWWWWWWWTTTTTTW^",
+                    "^WTUTTTTWWWWWWWTTTTTTW^",
+                    "^WTTTTTTTTTTTTTTTTTTTW^",
+                    "^WTTTTTTWWWWWWWTTTTTTW^",
+                    "^WTTTTTTWWWWWWWTTTTTTW^",
+                    "^WWTWWWWWWWWWWWWWWWWWW^",
+                    "^WWTWWWWWWWWWWWWWWWWWW^",
+                    "^WWTTTTTTTTTTTTTTTTTWW^",
+                    "^WWTWWWWTTWWWTTWWWWTWW^",
+                    "^WWTWWWWTTWWWTTWWWWTWW^",
+                    "^WWTWWWWTTWWWTTWWWWTWW^",
+                    "^WWTWWWWTTTTTTTWWWWTWW^",
+                    "^WWTTTTTTTWTWTTTTTTTWW^",
+                    "^WWWWWWWWWWZWWWWWWWWWW^",
+                    "^WWWWWWWWWWTWWWWWWWWWW^",
+                    "^WTTTTTTTWWTWWTTTTTTTW^",
+                    "^WTTTTTTTWWTWWTTTTTTTW^",
+                    "^WTTTTTTTTTTTTTTTTTDTW^",
+                    "^WTTTTTTTWWWWWTTTTTTTW^",
+                    "^WWWWWWWWWWWWWWWWWWWWW^"
+                ,
+                    "^^^^^^^^^^^^^^^^^^^^^^^"
                 ],
                 floorLinks: [
                     {
-                        x: 18,
-                        y: 18,
+                        x: 19,
+                        y: 20,
                         toFloor: 4,
-                        targetX: 18,
-                        targetY: 2,
+                        targetX: 19,
+                        targetY: 4,
                         label: "4階へ戻る"
                     },
                     {
-                        x: 2,
-                        y: 2,
+                        x: 3,
+                        y: 4,
                         toFloor: 6,
-                        targetX: 2,
-                        targetY: 18,
+                        targetX: 3,
+                        targetY: 20,
                         label: "6階へ"
                     }
                 ],
                 entryPoint: {
-                    x: 18,
-                    y: 18
+                    x: 19,
+                    y: 20
                 },
                 name: "",
                 themeKey: "BIG_TOWER"
@@ -6382,66 +6503,71 @@ const FIXED_DUNGEON_MAPS = {
                         rate: 0.05
                     }
                 ],
-                width: 21,
-                height: 21,
+                width: 23,
+                height: 24,
+                impassableTiles: ["^"],
                 tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWW",
-                    "WWTTTWWTTTTTTTTTTTDWW",
-                    "WWTTTWWTTTTTTTTTTTTWW",
-                    "WWTTTWWTTTTTTTTTTTTWW",
-                    "WWTTTWWWWWWWWWWWTTTWW",
-                    "WWTTTWWWWWWWWWWWTTTWW",
-                    "WWTTTWWTTTTTTTWWTTTWW",
-                    "WWTTTWWTTTTTTTWWTTTWW",
-                    "WWTTTWWTTWWWTTWWTTTWW",
-                    "WWTTTWWTTWWWTTTTTTTWW",
-                    "WWTTTWWTTWWWTTWWTTTWW",
-                    "WWTTTWWTTTTTTTWWTTTWW",
-                    "WWTTTWWTTTTTTTWWTTTWW",
-                    "WWTTTWWWWWTWWWWWTTTWW",
-                    "WWTTTWWWWWTWWWWWTTTWW",
-                    "WWTTTTTTTTTTTTWWTTTWW",
-                    "WWTTTTTTTTTTTTWWTTTWW",
-                    "WWUTTTTTTTTTTTWWTTTWW",
-                    "WWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWW"
+                    "^^^^^^^^^^^^^^^^^^^^^^^",
+                    "^WWWWWWWWWWWWWWWWWWWWW^",
+                    "^WWWWWWWWWWWWWWWWWWWWW^",
+                    "^WWWWWWWWWWWWWWWWWWWWW^",
+                    "^WWTTTWWTTTTTTTTTTTDWW^",
+                    "^WWTTTWWTTTTTTTTTTTTWW^",
+                    "^WWTTTWWTTTTTTTTTTTTWW^",
+                    "^WWTTTWWWWWWWWWWWTTTWW^",
+                    "^WWTTTWWWWWWWWWWWTTTWW^",
+                    "^WWTTTWWTTTTTTTWWTTTWW^",
+                    "^WWTTTWWTTTTTTTWWTTTWW^",
+                    "^WWTTTWWTTWWWTTWWTTTWW^",
+                    "^WWTTTWWTTWWWTTTTTTTWW^",
+                    "^WWTTTWWTTWWWTTWWTTTWW^",
+                    "^WWTTTWWTTTTTTTWWTTTWW^",
+                    "^WWTTTWWTTTTTTTWWTTTWW^",
+                    "^WWTTTWWWWWTWWWWWTTTWW^",
+                    "^WWTTTWWWWWTWWWWWTTTWW^",
+                    "^WWTTTTTTTTTTTTWWTTTWW^",
+                    "^WWTTTTTTTTTTTTWWTTTWW^",
+                    "^WWUTTTTTTTTTTTWWTTTWW^",
+                    "^WWWWWWWWWWWWWWWWWWWWW^",
+                    "^WWWWWWWWWWWWWWWWWWWWW^"
+                ,
+                    "^^^^^^^^^^^^^^^^^^^^^^^"
                 ],
                 floorLinks: [
                     {
-                        x: 2,
-                        y: 18,
+                        x: 3,
+                        y: 20,
                         toFloor: 5,
-                        targetX: 2,
-                        targetY: 2,
+                        targetX: 3,
+                        targetY: 4,
                         label: "5階へ戻る"
                     },
                     {
-                        x: 18,
-                        y: 2,
+                        x: 19,
+                        y: 4,
                         toFloor: 7,
-                        targetX: 18,
-                        targetY: 18,
+                        targetX: 19,
+                        targetY: 20,
                         label: "7階へ"
                     }
                 ],
                 chests: [
                     {
-                        x: 3,
-                        y: 3,
+                        x: 4,
+                        y: 5,
                         itemId: 6,
                         type: "item"
                     },
                     {
-                        x: 17,
-                        y: 17,
+                        x: 18,
+                        y: 19,
                         itemId: 99,
                         type: "item"
                     }
                 ],
                 entryPoint: {
-                    x: 2,
-                    y: 18
+                    x: 3,
+                    y: 20
                 },
                 name: "",
                 themeKey: "BIG_TOWER"
@@ -6460,53 +6586,58 @@ const FIXED_DUNGEON_MAPS = {
                         rate: 0.05
                     }
                 ],
-                width: 21,
-                height: 21,
+                width: 23,
+                height: 24,
+                impassableTiles: ["^"],
                 tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWTTTTTTTTTTTTTWWWW",
-                    "WWWTTWWWTTTTTWWWTTWWW",
-                    "WWTTTWWWTTTTTWWWTTTWW",
-                    "WWWTTWWWTTBTTWWWTTWWW",
-                    "WWWWTTTTTTTTTTTTTWWWW",
-                    "WWWWWWWWWWTWWWWWWWWWW",
-                    "WWWWWTTTTTTTTTTTWWWWW",
-                    "WWWWTTTTTTBTTTTTTWWWW",
-                    "WWWWTTWWTTTTTWWTTWWWW",
-                    "WWWWTWWWWTTTWWWWTWWWW",
-                    "WWTTTTTWWWTWWWTTTTTWW",
-                    "WWTWWWTWWWTWWWTWWWTWW",
-                    "WWTWWWTWWWTWWWTWWWTWW",
-                    "WWTWWWTWWWTWWWTWWWTWW",
-                    "WWTTTTTWWWTWWWTTTTTWW",
-                    "WWWWWWWWWTTTWWWWWWWWW",
-                    "WWWWTTTTTTTTTTTTTTWWW",
-                    "WWWTTTTTTTTTTTTTTTDWW",
-                    "WWWWTTTTTWWWTTTTTTWWW",
-                    "WWWWWWWWWWWWWWWWWWWWW"
+                    "^^^^^^^^^^^^^^^^^^^^^^^",
+                    "^WWWWWWWWWWWWWWWWWWWWW^",
+                    "^WWWWWWWWWWWWWWWWWWWWW^",
+                    "^WWWWTTTTTTTTTTTTTWWWW^",
+                    "^WWWTTWWWTTTTTWWWTTWWW^",
+                    "^WWTTTWWWTTTTTWWWTTTWW^",
+                    "^WWWTTWWWTTBTTWWWTTWWW^",
+                    "^WWWWTTTTTTTTTTTTTWWWW^",
+                    "^WWWWWWWWWWTWWWWWWWWWW^",
+                    "^WWWWWTTTTTTTTTTTWWWWW^",
+                    "^WWWWTTTTTTBTTTTTTWWWW^",
+                    "^WWWWTTWWTTTTTWWTTWWWW^",
+                    "^WWWWTWWWWTTTWWWWTWWWW^",
+                    "^WWTTTTTWWWTWWWTTTTTWW^",
+                    "^WWTWWWTWWWTWWWTWWWTWW^",
+                    "^WWTWWWTWWWTWWWTWWWTWW^",
+                    "^WWTWWWTWWWTWWWTWWWTWW^",
+                    "^WWTTTTTWWWTWWWTTTTTWW^",
+                    "^WWWWWWWWWTTTWWWWWWWWW^",
+                    "^WWWWTTTTTTTTTTTTTTWWW^",
+                    "^WWWTTTTTTTTTTTTTTTDWW^",
+                    "^WWWWTTTTTWWWTTTTTTWWW^",
+                    "^WWWWWWWWWWWWWWWWWWWWW^"
+                ,
+                    "^^^^^^^^^^^^^^^^^^^^^^^"
                 ],
                 floorLinks: [
                     {
-                        x: 18,
-                        y: 18,
+                        x: 19,
+                        y: 20,
                         toFloor: 6,
-                        targetX: 18,
-                        targetY: 2,
+                        targetX: 19,
+                        targetY: 4,
                         label: "6階へ戻る"
                     }
                 ],
                 chests: [
                     {
-                        x: 2,
-                        y: 3,
+                        x: 3,
+                        y: 5,
                         itemId: 100,
                         type: "item"
                     }
                 ],
                 bosses: [
                     {
-                        x: 10,
-                        y: 4,
+                        x: 11,
+                        y: 6,
                         monsterId: 301061,
                         requiredFlag: "thunderFortCleared",
                         inactiveTile: "G",
@@ -6515,8 +6646,8 @@ const FIXED_DUNGEON_MAPS = {
                         actionLabel: "リリスと対峙する"
                     },
                     {
-                        x: 10,
-                        y: 8,
+                        x: 11,
+                        y: 10,
                         monsterId: [
                             301060,
                             302205
@@ -6532,8 +6663,8 @@ const FIXED_DUNGEON_MAPS = {
                     }
                 ],
                 entryPoint: {
-                    x: 18,
-                    y: 18
+                    x: 19,
+                    y: 20
                 },
                 name: "",
                 themeKey: "BIG_TOWER"
@@ -6547,17 +6678,17 @@ const FIXED_DUNGEON_MAPS = {
         encounterRank: 40,
         battleBg: "battle_bg_thunder_fort",
         entryPoint: {
-            x: 1,
-            y: 12
+            x: 2,
+            y: 14
         },
         entryPoints: {
             west: {
-                x: 1,
-                y: 12
+                x: 2,
+                y: 14
             },
             east: {
-                x: 29,
-                y: 12
+                x: 30,
+                y: 14
             }
         },
         floors: [
@@ -6575,39 +6706,44 @@ const FIXED_DUNGEON_MAPS = {
                         rate: 0.05
                     }
                 ],
-                width: 31,
-                height: 25,
+                width: 33,
+                height: 28,
+                impassableTiles: ["H"],
                 tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWTTTWWWWWWWWWWWWWWWWTTTWWWW",
-                    "WWWWWTCTTTTTTTTTTTTTTTTTTDTWWWW",
-                    "WWWWWTTTWWWWWWTTTWWWWWWWTTTWWWW",
-                    "WWWWWWWWWWWWWWTTTWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWTWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWTTTTTTTTTWWWWWWWWWWW",
-                    "WWWWWWWWWWTTTTTTTTTTTWWWWWWWWWW",
-                    "WWWWWWWWWWTTTTTTTTTTTWWWWWWWWWW",
-                    "WTTTTTTTWWTTTTTTTTTTTWWTTTTTTTW",
-                    "STTTTTTTTTTTTTTBTTTTTTTTTTTTTTS",
-                    "WTTTTTTTWWTTTTTTTTTTTWWTTTTTTTW",
-                    "WWWWWWWWWWTTTTTTTTTTTWWWWWWWWWW",
-                    "WWWWWWWWWWTTTTTTTTTTTWWWWWWWWWW",
-                    "WWWWWWWWWWWTTTTTTTTTWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWZWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWTWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWTTTTTTTWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWTTTTTTTWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWTCTTTTTWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWTTTTTTTWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                    "HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH",
+                    "HWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWH",
+                    "HWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWH",
+                    "HWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWH",
+                    "HWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWH",
+                    "HWWWWWTTTWWWWWWWWWWWWWWWWTTTWWWWH",
+                    "HWWWWWTCTTTTTTTTTTTTTTTTTTUTWWWWH",
+                    "HWWWWWTTTWWWWWWTTTWWWWWWWTTTWWWWH",
+                    "HWWWWWWWWWWWWWWTTTWWWWWWWWWWWWWWH",
+                    "HWWWWWWWWWWWWWWWTWWWWWWWWWWWWWWWH",
+                    "HWWWWWWWWWWWTTTTTTTTTWWWWWWWWWWWH",
+                    "HWWWWWWWWWWTTTTTTTTTTTWWWWWWWWWWH",
+                    "FWWWWWWWWWWTTTTTTTTTTTWWWWWWWWWWF",
+                    "FWTTTTTTTWWTTTTTTTTTTTWWTTTTTTTWF",
+                    "FSTTTTTTTTTTTTTTBTTTTTTTTTTTTTTSF",
+                    "FWTTTTTTTWWTTTTTTTTTTTWWTTTTTTTWF",
+                    "FWWWWWWWWWWTTTTTTTTTTTWWWWWWWWWWF",
+                    "HWWWWWWWWWWTTTTTTTTTTTWWWWWWWWWWH",
+                    "HWWWWWWWWWWWTTTTTTTTTWWWWWWWWWWWH",
+                    "HWWWWWWWWWWWWWWWZWWWWWWWWWWWWWWWH",
+                    "HWWWWWWWWWWWWWWWTWWWWWWWWWWWWWWWH",
+                    "HWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWH",
+                    "HWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWH",
+                    "HWWWWWWWWWWWWTCTTTTTWWWWWWWWWWWWH",
+                    "HWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWH",
+                    "HWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWH",
+                    "HWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWH"
+                ,
+                    "HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH"
                 ],
                 floorLinks: [
                     {
-                        x: 0,
-                        y: 12,
+                        x: 1,
+                        y: 14,
                         to: "EXIT",
                         label: "西門から外に出る",
                         log: "西門の向こうに、川沿いの岸辺が見える。",
@@ -6618,8 +6754,8 @@ const FIXED_DUNGEON_MAPS = {
                         }
                     },
                     {
-                        x: 30,
-                        y: 12,
+                        x: 31,
+                        y: 14,
                         to: "EXIT",
                         label: "東門から外に出る",
                         log: "門の向こうに、うっすらと光の神殿が見える。",
@@ -6633,32 +6769,32 @@ const FIXED_DUNGEON_MAPS = {
                         }
                     },
                     {
-                        x: 25,
-                        y: 4,
+                        x: 26,
+                        y: 6,
                         toFloor: 2,
-                        targetX: 4,
-                        targetY: 21,
-                        label: "地下1階へ"
+                        targetX: 5,
+                        targetY: 23,
+                        label: "2階へ上がる"
                     }
                 ],
                 chests: [
                     {
-                        x: 13,
-                        y: 21,
+                        x: 14,
+                        y: 23,
                         itemId: 3,
                         type: "item"
                     },
                     {
-                        x: 6,
-                        y: 4,
+                        x: 7,
+                        y: 6,
                         itemId: 1,
                         type: "item"
                     }
                 ],
                 mapActions: [
                     {
-                        x: 4,
-                        y: 11,
+                        x: 5,
+                        y: 13,
                         label: "リンと話す",
                         log: "リンが、雷鳴の奥に残る魔物の気配を追っている。",
                         type: "quest",
@@ -6668,8 +6804,8 @@ const FIXED_DUNGEON_MAPS = {
                         lockedText: "リンはまだ、光を導く者の到着を待っている。"
                     },
                     {
-                        x: 13,
-                        y: 19,
+                        x: 14,
+                        y: 21,
                         label: "フリーダと話す",
                         log: "フリーダが、高圧電流の先を見据えている。",
                         type: "quest",
@@ -6678,8 +6814,8 @@ const FIXED_DUNGEON_MAPS = {
                         lockedText: "今はまだ、要塞深部の電流を越える加護が足りない。"
                     },
                     {
-                        x: 14,
-                        y: 19,
+                        x: 15,
+                        y: 21,
                         label: "バロンと話す",
                         log: "バロンが、雷の制御核へ向けて武器を握り直している。",
                         type: "quest",
@@ -6688,8 +6824,8 @@ const FIXED_DUNGEON_MAPS = {
                         lockedText: "今はまだ、要塞深部の電流を越える加護が足りない。"
                     },
                     {
-                        x: 24,
-                        y: 11,
+                        x: 25,
+                        y: 13,
                         label: "補給品を買う",
                         log: "解放された要塞に補給隊が入っている。",
                         type: "shop",
@@ -6701,8 +6837,8 @@ const FIXED_DUNGEON_MAPS = {
                         lockedText: "まだ補給隊は入れないようだ。"
                     },
                     {
-                        x: 26,
-                        y: 11,
+                        x: 27,
+                        y: 13,
                         label: "武器を見る",
                         log: "押収された武器が整備されている。",
                         type: "shop",
@@ -6714,8 +6850,8 @@ const FIXED_DUNGEON_MAPS = {
                         lockedText: "武器庫は封鎖されている。"
                     },
                     {
-                        x: 28,
-                        y: 11,
+                        x: 29,
+                        y: 13,
                         label: "防具を見る",
                         log: "雷対策の防具が並び始めている。",
                         type: "shop",
@@ -6727,8 +6863,8 @@ const FIXED_DUNGEON_MAPS = {
                         lockedText: "防具庫は封鎖されている。"
                     },
                     {
-                        x: 19,
-                        y: 15,
+                        x: 20,
+                        y: 17,
                         label: "解放兵と話す",
                         log: "解放された兵が深く息を吐いている。",
                         type: "storyEvent",
@@ -6739,13 +6875,13 @@ const FIXED_DUNGEON_MAPS = {
                     }
                 ],
                 entryPoint: {
-                    x: 1,
-                    y: 12
+                    x: 2,
+                    y: 14
                 },
                 bosses: [
                     {
-                        x: 15,
-                        y: 12,
+                        x: 16,
+                        y: 14,
                         monsterId: 100081,
                         keyRewardColor: "gold",
                         actionLabel: "機械兵士と戦う",
@@ -6754,15 +6890,15 @@ const FIXED_DUNGEON_MAPS = {
                 ],
                 healSprings: [
                     {
-                        x: 17,
-                        y: 21
+                        x: 18,
+                        y: 23
                     }
                 ],
                 name: "",
                 themeKey: "THUNDER_FORT"
             },
             {
-                label: "地下1階・暴走機関室",
+                label: "2階・暴走機関室",
                 encounterRank: 44,
                 monsters: [
                     100042,
@@ -6775,76 +6911,81 @@ const FIXED_DUNGEON_MAPS = {
                         rate: 0.05
                     }
                 ],
-                width: 31,
-                height: 25,
+                width: 33,
+                height: 28,
+                impassableTiles: ["K"],
                 tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWTTTWWWWWWWTWWWTWWWWWWWWWWWWW",
-                    "WWWTTTTTTTTTTTWWWTTTTTTTXTTTTWW",
-                    "WWWTTTWWWWWWWTTTTTWWWWWWWWTDTWW",
-                    "WWWWWWWWWWWWWWTTTWWWWWWWWWTTTWW",
-                    "WWWWWWWWWWWWWWWTWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWTWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWTWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWTWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWTTTTTTTWWWWWWWWWWWW",
-                    "WWWWWWWWWWWTTTTTTTTTWWWWWWWWWWW",
-                    "WWWWWWWWWWWTTTTTTTTTWWWWWWWWWWW",
-                    "WWWWWWWWWWWTTTTBTTTTWWWWTTTWWWW",
-                    "WWWWWWWWWWWTTTTTTTTTWWWWTTTWWWW",
-                    "WWWWWWWWWWWWTTTTTTTWWWWWTTTWWWW",
-                    "WWWWWWWWWWWWWWWTWWWWWWWWWTWWWWW",
-                    "WWWWWWWWWWWWWWWTWWWWWWWWWTWWWWW",
-                    "WWWWWWWWWWWWWTTTTTWWWWWWWTTTTWW",
-                    "WWWTTTWWWWWTTTTTTTTTTWWWWWWWTWW",
-                    "WWTTTTTWWWTTTTTTTTTTTTTTWWWWTWW",
-                    "WWTTUTTTTTTTTWWTWWTTTWWTWWWWTWW",
-                    "WWTTTTTWWWTTTWWTWWTTTWWTTTTTTWW",
-                    "WWWTTTWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                    "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWTTTWWWWWWWTWWWTWWWWWWWWWWWWWK",
+                    "KWWWTTTTTTTTTTTWWWTTTTTTTXTTTTWWK",
+                    "KWWWTTTWWWWWWWTTTTTWWWWWWWWTUTWWK",
+                    "KWWWWWWWWWWWWWWTTTWWWWWWWWWTTTWWK",
+                    "KWWWWWWWWWWWWWWWTWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWTWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWTWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWTWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWTTTTTTTTTWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWTTTTTTTTTWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWTTTTBTTTTWWWWTTTWWWWK",
+                    "KWWWWWWWWWWWTTTTTTTTTWWWWTTTWWWWK",
+                    "KWWWWWWWWWWWWTTTTTTTWWWWWTTTWWWWK",
+                    "KWWWWWWWWWWWWWWWTWWWWWWWWWTWWWWWK",
+                    "KWWWWWWWWWWWWWWWTWWWWWWWWWTWWWWWK",
+                    "KWWWWWWWWWWWWWTTTTTWWWWWWWTTTTWWK",
+                    "KWWWTTTWWWWWTTTTTTTTTTWWWWWWWTWWK",
+                    "KWWTTTTTWWWTTTTTTTTTTTTTTWWWWTWWK",
+                    "KWWTTDTTTTTTTTWWTWWTTTWWTWWWWTWWK",
+                    "KWWTTTTTWWWTTTWWTWWTTTWWTTTTTTWWK",
+                    "KWWWTTTWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK"
+                ,
+                    "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK"
                 ],
                 floorLinks: [
                     {
-                        x: 4,
-                        y: 21,
+                        x: 5,
+                        y: 23,
                         toFloor: 1,
-                        targetX: 25,
-                        targetY: 4,
-                        label: "1階へ戻る"
+                        targetX: 26,
+                        targetY: 6,
+                        label: "1階へ下りる"
                     },
                     {
-                        x: 27,
-                        y: 4,
+                        x: 28,
+                        y: 6,
                         toFloor: 3,
-                        targetX: 4,
-                        targetY: 21,
-                        label: "地下2階へ"
+                        targetX: 5,
+                        targetY: 23,
+                        label: "3階へ上がる"
                     }
                 ],
                 chests: [
                     {
-                        x: 4,
-                        y: 3,
+                        x: 5,
+                        y: 5,
                         itemId: 102,
                         type: "item",
                         rare: true
                     },
                     {
-                        x: 25,
-                        y: 14,
+                        x: 26,
+                        y: 16,
                         itemId: 14,
                         type: "item"
                     }
                 ],
                 entryPoint: {
-                    x: 4,
-                    y: 21
+                    x: 5,
+                    y: 23
                 },
                 bosses: [
                     {
-                        x: 15,
-                        y: 13,
+                        x: 16,
+                        y: 15,
                         monsterId: 301031,
                         keyRewardColor: "red",
                         startEventId: "thunder_machine_gate_encounter",
@@ -6856,7 +6997,7 @@ const FIXED_DUNGEON_MAPS = {
                 themeKey: "THUNDER_FORT"
             },
             {
-                label: "地下2階・雷鎧の防衛線",
+                label: "3階・雷鎧の防衛線",
                 encounterRank: 46,
                 monsters: [
                     100044,
@@ -6869,75 +7010,80 @@ const FIXED_DUNGEON_MAPS = {
                         rate: 0.05
                     }
                 ],
-                width: 31,
-                height: 25,
+                width: 33,
+                height: 28,
+                impassableTiles: ["K"],
                 tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWTTTTWWWWW",
-                    "WWWWWWWWWWWWWTTTTTWWWWTWWTWWWWW",
-                    "WWWWWTTTTTTTTTTTTTTTTTTWTTTWWWW",
-                    "WWWWWTTTTWWWWTTTTTWWWWWWTDTWWWW",
-                    "WWWWWTTTTWWWWTTTTTWWWWWWTTTWWWW",
-                    "WWWWWTWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWTWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWTTTWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWTTTWWWWWWWTTTWWWWWWWWWWWWWW",
-                    "WWWWTTTTTWWWTTTTTTWWWWWTTTTTWWW",
-                    "WWWWTTTTTYTTTTTTTTWWWWTTTTTTTWW",
-                    "WWWWTTTTTWWWTTTBTTTWTTTTTTTTTWW",
-                    "WWWWWWWWWWWWWTTTTTTWTWTTTTTTTWW",
-                    "WWWWWWWWWWWWWTTTTTTTTWWTTTTTWWW",
-                    "WWWWWWWWWWWWWWTTTTWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWTWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWTWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWTTTTTTTWWWWWWWWWWWW",
-                    "WWWTTTWWWWWTTTTTTTTTWWTTTWWWWWW",
-                    "WWTTTTTWWWWTTTTTTTTTTTTCTWWWWWW",
-                    "WWTTUTTTTTTTTTTTTTTTWWTTTWWWWWW",
-                    "WWTTTTTWWWWTTTTTTTTTWWWWWWWWWWW",
-                    "WWWTTTWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                    "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWTTTTWWWWWK",
+                    "KWWWWWWWWWWWWWTTTTTWWWWTWWTWWWWWK",
+                    "KWWWWWTTTTTTTTTTTTTTTTTTWTTTWWWWK",
+                    "KWWWWWTTTTWWWWTTTTTWWWWWWTUTWWWWK",
+                    "KWWWWWTTTTWWWWTTTTTWWWWWWTTTWWWWK",
+                    "KWWWWWTWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWTWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWTTTWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWTTTWWWWWWWTTTWWWWWWWWWWWWWWK",
+                    "KWWWWTTTTTWWWTTTTTTWWWWWTTTTTWWWK",
+                    "KWWWWTTTTTYTTTTTTTTWWWWTTTTTTTWWK",
+                    "KWWWWTTTTTWWWTTTBTTTWTTTTTTTTTWWK",
+                    "KWWWWWWWWWWWWWTTTTTTWTWTTTTTTTWWK",
+                    "KWWWWWWWWWWWWWTTTTTTTTWWTTTTTWWWK",
+                    "KWWWWWWWWWWWWWWTTTTWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWTWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWTWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWK",
+                    "KWWWTTTWWWWWTTTTTTTTTWWTTTWWWWWWK",
+                    "KWWTTTTTWWWWTTTTTTTTTTTTCTWWWWWWK",
+                    "KWWTTDTTTTTTTTTTTTTTTWWTTTWWWWWWK",
+                    "KWWTTTTTWWWWTTTTTTTTTWWWWWWWWWWWK",
+                    "KWWWTTTWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK"
+                ,
+                    "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK"
                 ],
                 floorLinks: [
                     {
-                        x: 4,
-                        y: 21,
+                        x: 5,
+                        y: 23,
                         toFloor: 2,
-                        targetX: 26,
-                        targetY: 4,
-                        label: "地下1階へ戻る"
+                        targetX: 28,
+                        targetY: 6,
+                        label: "2階へ下りる"
                     },
                     {
-                        x: 25,
-                        y: 4,
+                        x: 26,
+                        y: 6,
                         toFloor: 4,
-                        targetX: 15,
-                        targetY: 21,
-                        label: "地下3階へ"
+                        targetX: 16,
+                        targetY: 23,
+                        label: "4階へ上がる"
                     }
                 ],
                 chests: [
                     {
-                        x: 23,
-                        y: 20,
+                        x: 24,
+                        y: 22,
                         itemId: 4,
                         type: "item"
                     },
                     {
-                        x: 25,
-                        y: 11,
+                        x: 26,
+                        y: 13,
                         itemId: 14,
                         type: "item"
                     }
                 ],
                 entryPoint: {
-                    x: 4,
-                    y: 21
+                    x: 5,
+                    y: 23
                 },
                 bosses: [
                     {
-                        x: 15,
-                        y: 12,
+                        x: 16,
+                        y: 14,
                         monsterId: 301032,
                         keyRewardColor: "blue",
                         startEventId: "thunder_armor_gate_encounter",
@@ -6949,7 +7095,7 @@ const FIXED_DUNGEON_MAPS = {
                 themeKey: "THUNDER_FORT"
             },
             {
-                label: "地下3階・雷の中枢",
+                label: "4階・雷の中枢",
                 encounterRank: 48,
                 monsters: [
                     100046,
@@ -6962,51 +7108,56 @@ const FIXED_DUNGEON_MAPS = {
                         rate: 0.05
                     }
                 ],
-                width: 31,
-                height: 25,
+                width: 33,
+                height: 28,
+                impassableTiles: ["K"],
                 tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWDWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWTTTTTTTWWWWWWWWWWWW",
-                    "WWWWWWWWWWWTTTTTTTTTWWWWWWWWWWW",
-                    "WWWWWWWWWWWTTTTTTTTTWWWWWWWWWWW",
-                    "WWWWWWWWWWWWTTTTTTTWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWTBTWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWTTTTTTTWWWWWWWWWWWW",
-                    "WWWWWWWWWTTTTTTTTTTTTTWWWWWWWWW",
-                    "WWWWWWWWWTTTTTTTTTTTTTWWWWWWWWW",
-                    "WWWWWWWWWTTTWWTTTWWTTTWWWWWWWWW",
-                    "WWWWWWWWWTTTWWTTTWWTTTWWWWWWWWW",
-                    "WWWWWWTTTTTTWWTTTWWTTTTTWWWWWWW",
-                    "WWWWWWTTTTTTWWTTTWWTTTTTTWWWWWW",
-                    "WWWWWTTTTTTTWWTTTWWTTTTTTTWWWWW",
-                    "WTTTWTTTTTTTWWTTTWWTTTTTTTWTTTW",
-                    "WTCTTTTTTTTTTTTTTTTTTTTTTTTTRTW",
-                    "WTTTWTTTTTTTTTTTTTTTTTTTTTWTTTW",
-                    "WWWWWWWWWWWWTTTTTTTWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWTTTWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWTTTTTWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWTTUTTWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWTTTWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                    "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWUWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWTTTTTTTTTWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWTTTTTTTTTWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWTBTWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWK",
+                    "KWWWWWWWWWTTTTTTTTTTTTTWWWWWWWWWK",
+                    "KWWWWWWWWWTTTTTTTTTTTTTWWWWWWWWWK",
+                    "KWWWWWWWWWTTTWWTTTWWTTTWWWWWWWWWK",
+                    "KWWWWWWWWWTTTWWTTTWWTTTWWWWWWWWWK",
+                    "KWWWWWWTTTTTTWWTTTWWTTTTTWWWWWWWK",
+                    "KWWWWWWTTTTTTWWTTTWWTTTTTTWWWWWWK",
+                    "KWWWWWTTTTTTTWWTTTWWTTTTTTTWWWWWK",
+                    "KWTTTWTTTTTTTWWTTTWWTTTTTTTWTTTWK",
+                    "KWTCTTTTTTTTTTTTTTTTTTTTTTTTTRTWK",
+                    "KWTTTWTTTTTTTTTTTTTTTTTTTTTWTTTWK",
+                    "KWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWTTTWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWTTTTTWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWTTDTTWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWTTTWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK"
+                ,
+                    "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK"
                 ],
                 floorLinks: [
                     {
-                        x: 15,
-                        y: 21,
+                        x: 16,
+                        y: 23,
                         toFloor: 3,
                         targetX: 26,
-                        targetY: 4,
-                        label: "地下2階へ戻る"
+                        targetY: 6,
+                        label: "3階へ下りる"
                     },
                     {
-                        x: 15,
-                        y: 1,
+                        x: 16,
+                        y: 3,
                         toFloor: 5,
-                        targetX: 15,
-                        targetY: 22,
-                        label: "高圧区画へ",
+                        targetX: 16,
+                        targetY: 24,
+                        label: "5階へ上がる",
                         requiredFlag: "lightPalaceCleared",
                         lockedLabel: "高圧電流を調べる",
                         lockedLog: "高圧電流が迸り、今は進めない。"
@@ -7014,27 +7165,27 @@ const FIXED_DUNGEON_MAPS = {
                 ],
                 chests: [
                     {
-                        x: 2,
-                        y: 16,
+                        x: 3,
+                        y: 18,
                         itemId: 3,
                         type: "item"
                     },
                     {
-                        x: 28,
-                        y: 16,
+                        x: 29,
+                        y: 18,
                         itemId: 106,
                         type: "item",
                         rare: true
                     }
                 ],
                 entryPoint: {
-                    x: 15,
-                    y: 21
+                    x: 16,
+                    y: 23
                 },
                 bosses: [
                     {
-                        x: 15,
-                        y: 6,
+                        x: 16,
+                        y: 8,
                         monsterId: 301040,
                         startEventId: "thunder_leonard_encounter",
                         storyEventId: "thunder_fort_clear",
@@ -7048,8 +7199,8 @@ const FIXED_DUNGEON_MAPS = {
                         authoredPlacementId: "carpet-thunder-final",
                         type: "castle_carpet",
                         imageKey: null,
-                        x: 14,
-                        y: 4,
+                        x: 15,
+                        y: 6,
                         width: 3,
                         height: 13,
                         blocking: false,
@@ -7059,7 +7210,7 @@ const FIXED_DUNGEON_MAPS = {
                 ]
             },
             {
-                label: "ライザーク要塞深部・双電路",
+                label: "5階・双電路",
                 encounterRank: 76,
                 monsters: [
                     100068,
@@ -7089,73 +7240,78 @@ const FIXED_DUNGEON_MAPS = {
                         rate: 0.06
                     }
                 ],
-                width: 31,
-                height: 25,
+                width: 33,
+                height: 28,
+                impassableTiles: ["K"],
                 tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWTTTTTTTTWWWWTTTWWWWTTTTTTTTWW",
-                    "WWTWWWWWWWWWWWTDTWWWWWWWWWWWTWW",
-                    "WWTWWWWWWWWWWWTTTWWWWWWWWWWWTWW",
-                    "WWTWWWWWWWWWWWWTWWWWWWWWWWWWTWW",
-                    "WWTTTWTTTTWWWWWTWWWWWTTTTWTTTWW",
-                    "WWTCTTTTTTWWWWWTWWWWWTTTTTTRTWW",
-                    "WWTTTWTTTTWWWWWTWWWWWTTTTWTTTWW",
-                    "WWTWWWTTTTWWWWWTWWWWWTTTTWWWTWW",
-                    "WWTWTTTTTTWWWWWTWWWWWTTTTTTWTWW",
-                    "WWTWTTTTTTWWWWWWWWWWWTTTTTTWTWW",
-                    "WWTWTTTTTTWWWWWWWWWWWTTTTTTWTWW",
-                    "WWTWWTWWWWWWWWWWWWWWWWWWWTWWTWW",
-                    "WWTWWTWWWWWWWWWTWWWWWWWWWTWWTWW",
-                    "WWTWWTWWWWWWWWTTTWWWWWWWWTWWTWW",
-                    "WWTWWTTTTTTTTTTTTTTTTTTTTTWWTWW",
-                    "WWWWWTWWWWWWWWTTTWWWWWWWWTWWWWW",
-                    "WWWWWTWWWWWWWWWTWWWWWWWWWTWWWWW",
-                    "WWWWTTTWWWWWWWWTWWWWWWWWTTTWWWW",
-                    "WWWWTTTWWWWWWTTTTTWWWWWWTTTWWWW",
-                    "WWWWTTTWWWWWTTTTTTTWWWWWTTTWWWW",
-                    "WWWWWWWWWWWWTTTUTTTWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWTTTTTWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                    "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWTTTTTTTTWWWWTTTWWWWTTTTTTTTWWK",
+                    "KWWTWWWWWWWWWWWTUTWWWWWWWWWWWTWWK",
+                    "KWWTWWWWWWWWWWWTTTWWWWWWWWWWWTWWK",
+                    "KWWTWWWWWWWWWWWWTWWWWWWWWWWWWTWWK",
+                    "KWWTTTWTTTTWWWWWTWWWWWTTTTWTTTWWK",
+                    "KWWTCTTTTTTWWWWWTWWWWWTTTTTTRTWWK",
+                    "KWWTTTWTTTTWWWWWTWWWWWTTTTWTTTWWK",
+                    "KWWTWWWTTTTWWWWWTWWWWWTTTTWWWTWWK",
+                    "KWWTWTTTTTTWWWWWTWWWWWTTTTTTWTWWK",
+                    "KWWTWTTTTTTWWWWWWWWWWWTTTTTTWTWWK",
+                    "KWWTWTTTTTTWWWWWWWWWWWTTTTTTWTWWK",
+                    "KWWTWWTWWWWWWWWWWWWWWWWWWWTWWTWWK",
+                    "KWWTWWTWWWWWWWWWTWWWWWWWWWTWWTWWK",
+                    "KWWTWWTWWWWWWWWTTTWWWWWWWWTWWTWWK",
+                    "KWWTWWTTTTTTTTTTTTTTTTTTTTTWWTWWK",
+                    "KWWWWWTWWWWWWWWTTTWWWWWWWWTWWWWWK",
+                    "KWWWWWTWWWWWWWWWTWWWWWWWWWTWWWWWK",
+                    "KWWWWTTTWWWWWWWWTWWWWWWWWTTTWWWWK",
+                    "KWWWWTTTWWWWWWTTTTTWWWWWWTTTWWWWK",
+                    "KWWWWTTTWWWWWTTTTTTTWWWWWTTTWWWWK",
+                    "KWWWWWWWWWWWWTTTDTTTWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWTTTTTWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK"
+                ,
+                    "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK"
                 ],
                 floorLinks: [
                     {
-                        x: 15,
-                        y: 22,
+                        x: 16,
+                        y: 24,
                         toFloor: 4,
-                        targetX: 15,
-                        targetY: 5,
-                        label: "雷の中枢へ戻る"
+                        targetX: 16,
+                        targetY: 3,
+                        label: "4階へ下りる"
                     },
                     {
-                        x: 15,
-                        y: 3,
+                        x: 16,
+                        y: 5,
                         toFloor: 6,
-                        targetX: 15,
-                        targetY: 22,
-                        label: "制御核区へ"
+                        targetX: 16,
+                        targetY: 24,
+                        label: "6階へ上がる"
                     }
                 ],
                 tileEffects: [
                     {
-                        x: 2,
-                        y: 16,
+                        x: 3,
+                        y: 18,
                         type: "warp",
-                        toX: 28,
-                        toY: 16,
+                        toX: 29,
+                        toY: 18,
                         message: "雷流に弾かれた。"
                     },
                     {
-                        x: 28,
-                        y: 16,
+                        x: 29,
+                        y: 18,
                         type: "warp",
-                        toX: 2,
-                        toY: 16,
+                        toX: 3,
+                        toY: 18,
                         message: "雷流が反転した。"
                     },
                     {
-                        x: 25,
-                        y: 20,
+                        x: 26,
+                        y: 22,
                         type: "hunter",
                         id: "thunder_deep_guard",
                         imageKey: "overlay_dungeon_hunter_thunder",
@@ -7172,14 +7328,14 @@ const FIXED_DUNGEON_MAPS = {
                 ],
                 chests: [
                     {
-                        x: 3,
-                        y: 7,
+                        x: 4,
+                        y: 9,
                         itemId: 4,
                         type: "item"
                     },
                     {
-                        x: 27,
-                        y: 7,
+                        x: 28,
+                        y: 9,
                         itemId: 106,
                         type: "item",
                         rare: true
@@ -7187,8 +7343,8 @@ const FIXED_DUNGEON_MAPS = {
                 ],
                 mapActions: [
                     {
-                        x: 9,
-                        y: 2,
+                        x: 10,
+                        y: 4,
                         label: "左の雷導スイッチを押す",
                         type: "switchGate",
                         gateId: "thunder_deep_core_gate",
@@ -7204,18 +7360,18 @@ const FIXED_DUNGEON_MAPS = {
                         interactFromAdjacent: true,
                         opens: [
                             {
-                                x: 15,
-                                y: 11,
-                                tile: "T"
-                            },
-                            {
-                                x: 15,
-                                y: 12,
-                                tile: "T"
-                            },
-                            {
-                                x: 15,
+                                x: 16,
                                 y: 13,
+                                tile: "T"
+                            },
+                            {
+                                x: 16,
+                                y: 14,
+                                tile: "T"
+                            },
+                            {
+                                x: 16,
+                                y: 15,
                                 tile: "T"
                             }
                         ],
@@ -7224,8 +7380,8 @@ const FIXED_DUNGEON_MAPS = {
                         openMessage: "二つの雷導スイッチが同期し、中央奥の隔壁が消えた。"
                     },
                     {
-                        x: 21,
-                        y: 2,
+                        x: 22,
+                        y: 4,
                         label: "東の雷導スイッチを押す",
                         type: "switchGate",
                         gateId: "thunder_deep_core_gate",
@@ -7241,18 +7397,18 @@ const FIXED_DUNGEON_MAPS = {
                         interactFromAdjacent: true,
                         opens: [
                             {
-                                x: 15,
-                                y: 11,
-                                tile: "T"
-                            },
-                            {
-                                x: 15,
-                                y: 12,
-                                tile: "T"
-                            },
-                            {
-                                x: 15,
+                                x: 16,
                                 y: 13,
+                                tile: "T"
+                            },
+                            {
+                                x: 16,
+                                y: 14,
+                                tile: "T"
+                            },
+                            {
+                                x: 16,
+                                y: 15,
                                 tile: "T"
                             }
                         ],
@@ -7262,14 +7418,14 @@ const FIXED_DUNGEON_MAPS = {
                     }
                 ],
                 entryPoint: {
-                    x: 15,
-                    y: 22
+                    x: 16,
+                    y: 24
                 },
                 name: "",
                 themeKey: "THUNDER_FORT"
             },
             {
-                label: "ライザーク要塞深部・制御核区",
+                label: "6階・制御核区",
                 encounterRank: 81,
                 monsters: [
                     100073,
@@ -7298,49 +7454,54 @@ const FIXED_DUNGEON_MAPS = {
                         rate: 0.06
                     }
                 ],
-                width: 31,
-                height: 25,
+                width: 33,
+                height: 28,
+                impassableTiles: ["K"],
                 tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWTTTTTWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWTTTTTTTTTWWWWWWWWWWW",
-                    "WWWWWWWWWWWTTTTBTTTTWWWWWWWWWWW",
-                    "WWWWWWWWWWWTTTTTTTTTWWWWWWWWWWW",
-                    "WWWWWWWWWWWTTTTTTTTTWWWWWWWWWWW",
-                    "WWWWWWWWWWWTTTTTTTTTWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWTTTTTWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWTWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWTWWWWWTTTTTTTWWW",
-                    "WWWWWWWWWWWWWWWTWWWWWTWWWWWTWWW",
-                    "WWWWWWWWWTTTTTTTTTTTTTWWWWWTWWW",
-                    "WWWWTTTWWTWWWWWTWWWWWTWWTTTTWWW",
-                    "WWWWTCTTTTWWWWWTWWWWWWWWTRTWWWW",
-                    "WWWWTTTWWWWWWWWTWWWWWWWWTTTWWWW",
-                    "WWWWWWWWWWWWWWWTWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWTWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWTTTTTWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWTTTTTTTWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWTTTUTTTWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWTTTTTWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                    "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWTTTTTWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWTTTTTTTTTWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWTTTTBTTTTWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWTTTTTTTTTWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWTTTTTTTTTWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWTTTTTTTTTWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWTTTTTWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWTWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWTWWWWWTTTTTTTWWWK",
+                    "KWWWWWWWWWWWWWWWTWWWWWTWWWWWTWWWK",
+                    "KWWWWWWWWWTTTTTTTTTTTTTWWWWWTWWWK",
+                    "KWWWWTTTWWTWWWWWTWWWWWTWWTTTTWWWK",
+                    "KWWWWTCTTTTWWWWWTWWWWWWWWTRTWWWWK",
+                    "KWWWWTTTWWWWWWWWTWWWWWWWWTTTWWWWK",
+                    "KWWWWWWWWWWWWWWWTWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWTWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWTTTTTWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWTTTDTTTWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWTTTTTWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK"
+                ,
+                    "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK"
                 ],
                 floorLinks: [
                     {
-                        x: 15,
-                        y: 22,
+                        x: 16,
+                        y: 24,
                         toFloor: 5,
-                        targetX: 15,
-                        targetY: 3,
-                        label: "双電路へ戻る"
+                        targetX: 16,
+                        targetY: 5,
+                        label: "5階へ下りる"
                     }
                 ],
                 tileEffects: [
                     {
-                        x: 25,
-                        y: 16,
+                        x: 26,
+                        y: 18,
                         type: "hunter",
                         id: "thunder_core_guard",
                         imageKey: "overlay_dungeon_hunter_thunder",
@@ -7357,8 +7518,8 @@ const FIXED_DUNGEON_MAPS = {
                 ],
                 bosses: [
                     {
-                        x: 15,
-                        y: 6,
+                        x: 16,
+                        y: 8,
                         monsterId: [
                             302204,
                             100082
@@ -7373,22 +7534,22 @@ const FIXED_DUNGEON_MAPS = {
                 ],
                 chests: [
                     {
-                        x: 5,
-                        y: 16,
+                        x: 6,
+                        y: 18,
                         itemId: 6,
                         type: "item"
                     },
                     {
-                        x: 25,
-                        y: 16,
+                        x: 26,
+                        y: 18,
                         itemId: 107,
                         type: "item",
                         rare: true
                     }
                 ],
                 entryPoint: {
-                    x: 15,
-                    y: 22
+                    x: 16,
+                    y: 24
                 },
                 name: "",
                 themeKey: "THUNDER_FORT",
@@ -7397,8 +7558,8 @@ const FIXED_DUNGEON_MAPS = {
                         authoredPlacementId: "carpet-thunder-final",
                         type: "castle_carpet",
                         imageKey: null,
-                        x: 13,
-                        y: 4,
+                        x: 14,
+                        y: 6,
                         width: 5,
                         height: 5,
                         blocking: false,
@@ -7419,8 +7580,8 @@ const FIXED_DUNGEON_MAPS = {
         encounterRank: 50,
         battleBg: "battle_bg_light_palace",
         entryPoint: {
-            x: 16,
-            y: 24
+            x: 17,
+            y: 26
         },
         floors: [
             {
@@ -7437,87 +7598,99 @@ const FIXED_DUNGEON_MAPS = {
                         rate: 0.05
                     }
                 ],
-                width: 33,
-                height: 27,
+                width: 35,
+                height: 30,
                 tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWTTTWWWWWWWWWWWWWWW",
-                    "WWTTTWWWWWWWWWWTDTTTWWWTTTTTTTWWW",
-                    "WWTTTTTWWWWWWWWTTTWTTTTTTTBTTTWWW",
-                    "WWTTTWTWTTTWWWWWWWWWWWWTTTTTTTWWW",
-                    "WWWWWWTTTTTWWWWWWWWWWWWTTTTTTTWWW",
-                    "WWTTTWTWTTTWWWWWWWWWWWWWWWTWWWWWW",
-                    "WWTTTTTWWWWWWWWWWWWWWWWWWWTWWWWWW",
-                    "WWTTTWTWTTTWWWWWWWWWWWWWWWTWWWWWW",
-                    "WWWWWWTTTTTWWWWWWWWWWWWTTTTTTTWWW",
-                    "WWTTTWTWTTTWWWWWWWWWWWWTTWWWTTWWW",
-                    "WWTTTTTWWWWWWWWWWWWWWWWTTWWWTTWWW",
-                    "WWTTTWTTTTTTTTTTTTTTTTTTTWWWTTWWW",
-                    "WWWWWWWWWWWWWWWWTWWWWWWTTTTTTTWWW",
-                    "WWWWWWWWWWWWWWWTTTWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWTTTTTWWWWWWWWWWWWWW",
-                    "WWWWTTTTTTTWWWWTTTWWWWTTTTTTTWWWW",
-                    "WWWWTTTTTTTWWWWWTWWWWWTTTTTTTWWWW",
-                    "WWWWTTTTTTTWWWTTTTTWWWTTTTTTTWWWW",
-                    "WWWWWWWTWWWWWTTTTTTTWWWWWTWWWWWWW",
-                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTTTWWWW",
-                    "WWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWTTTTTWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWTTTWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWSSSWWWWWWWWWWWWWWW"
+                    "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+                    "IWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWI",
+                    "IWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWI",
+                    "IWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWI",
+                    "IWWWWWWDWWWWWWWWTTTWWWWWWWWWWWWWWWI",
+                    "IWWTTTWTWWWWWWWWTUTTTWWWTTTTTTTWWWI",
+                    "IWWTTTTTWWWWWWWWTTTWTTTTTTTBTTTWWWI",
+                    "IWWTTTWTWTTTWWWWWWWWWWWWTTTTTTTWWWI",
+                    "IWWWWWWTTTTTWWWWWWWWWWWWTTTTTTTWWWI",
+                    "IWWTTTWTWTTTWWWWWWWWWWWWWWWTWWWWWWI",
+                    "IWWTTTTTWWWWWWWWWWWWWWWWWWWTWWWWWWI",
+                    "IWWTTTWTWTTTWWWWWWWWWWWWWWWTWWWWWWI",
+                    "IWWWWWWTTTTTWWWWWWWWWWWWTTTTTTTWWWI",
+                    "IWWTTTWTWTTTWWWWWWWWWWWWTTWWWTTWWWI",
+                    "IWWTTTTTWWWWWWWWWWWWWWWWTTWWWTTWWWI",
+                    "IWWTTTWTTTTTTTTTTTTTTTTTTTWWWTTWWWI",
+                    "IWWWWWWWWWWWWWWWWTWWWWWWTTTTTTTWWWI",
+                    "IWWWWWWWWWWWWWWWTTTWWWWWWWWWWWWWWWI",
+                    "IWWWWWWWWWWWWWWTTTTTWWWWWWWWWWWWWWI",
+                    "IWWWWTTTTTTTWWWWTTTWWWWTTTTTTTWWWWI",
+                    "IWWWWTTTTTTTWWWWWTWWWWWTTTTTTTWWWWI",
+                    "IWWWWTTTTTTTWWWTTTTTWWWTTTTTTTWWWWI",
+                    "IWWWWWWWTWWWWWTTTTTTTWWWWWTWWWWWWWI",
+                    "IWWWWTTTTTTTTTTTTTTTTTTTTTTTTTWWWWI",
+                    "IWWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWWI",
+                    "IWWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWWI",
+                    "IWWWWWWWWWWWWWWTTTTTWWWWWWWWWWWWWWI",
+                    "IWWWWWWWWWWWWWWWTTTWWWWWWWWWWWWWWWI",
+                    "IWWWWWWWWWWWWWWWSSSWWWWWWWWWWWWWWWI"
+                ,
+                    "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII"
                 ],
                 floorLinks: [
                     {
-                        x: 16,
-                        y: 25,
-                        to: "EXIT",
-                        label: "外に出る"
-                    },
-                    {
-                        x: 16,
-                        y: 3,
-                        toFloor: 2,
-                        targetX: 4,
-                        targetY: 23,
-                        label: "地下1階へ"
-                    },
-                    {
-                        x: 15,
-                        y: 25,
+                        x: 17,
+                        y: 27,
                         to: "EXIT",
                         label: "外に出る"
                     },
                     {
                         x: 17,
-                        y: 25,
+                        y: 5,
+                        toFloor: 2,
+                        targetX: 5,
+                        targetY: 25,
+                        label: "2階へ上がる"
+                    },
+                    {
+                        x: 7,
+                        y: 4,
+                        toFloor: 5,
+                        targetX: 13,
+                        targetY: 16,
+                        label: "地下牢へ下りる"
+                    },
+                    {
+                        x: 16,
+                        y: 27,
+                        to: "EXIT",
+                        label: "外に出る"
+                    },
+                    {
+                        x: 18,
+                        y: 27,
                         to: "EXIT",
                         label: "外に出る"
                     }
                 ],
                 chests: [
                     {
-                        x: 3,
-                        y: 4,
+                        x: 4,
+                        y: 6,
                         itemId: 5,
                         type: "item"
                     },
                     {
-                        x: 9,
-                        y: 6,
+                        x: 10,
+                        y: 8,
                         itemId: 7,
                         type: "item"
                     }
                 ],
                 entryPoint: {
-                    x: 16,
-                    y: 24
+                    x: 17,
+                    y: 26
                 },
                 bosses: [
                     {
-                        x: 26,
-                        y: 4,
+                        x: 27,
+                        y: 6,
                         monsterId: 100089,
                         keyRewardColor: "gold",
                         actionLabel: "白光の番兵と戦う",
@@ -7526,14 +7699,14 @@ const FIXED_DUNGEON_MAPS = {
                 ],
                 healSprings: [
                     {
-                        x: 16,
-                        y: 16
+                        x: 17,
+                        y: 18
                     }
                 ],
                 mapActions: [
                     {
-                        x: 23,
-                        y: 18,
+                        x: 24,
+                        y: 20,
                         label: "聖薬を買う",
                         log: "巡礼者の補給所が開かれている。",
                         type: "shop",
@@ -7545,8 +7718,8 @@ const FIXED_DUNGEON_MAPS = {
                         lockedText: "まだ巡礼者は戻っていない。"
                     },
                     {
-                        x: 5,
-                        y: 18,
+                        x: 6,
+                        y: 20,
                         label: "武器を見る",
                         log: "白光を帯びた武器が整えられている。",
                         type: "shop",
@@ -7558,8 +7731,8 @@ const FIXED_DUNGEON_MAPS = {
                         lockedText: "武器庫は沈黙している。"
                     },
                     {
-                        x: 9,
-                        y: 18,
+                        x: 10,
+                        y: 20,
                         label: "防具を見る",
                         log: "浄化された防具が並んでいる。",
                         type: "shop",
@@ -7571,8 +7744,8 @@ const FIXED_DUNGEON_MAPS = {
                         lockedText: "防具庫は閉ざされている。"
                     },
                     {
-                        x: 27,
-                        y: 18,
+                        x: 28,
+                        y: 20,
                         label: "巡礼者と話す",
                         log: "巡礼者が割れたステンドグラスを集めている。",
                         type: "storyEvent",
@@ -7586,7 +7759,7 @@ const FIXED_DUNGEON_MAPS = {
                 themeKey: "LIGHT_PALACE"
             },
             {
-                label: "地下1階・祝福の水盤",
+                label: "2階・祝福の水盤",
                 encounterRank: 64,
                 monsters: [
                     100062,
@@ -7599,79 +7772,84 @@ const FIXED_DUNGEON_MAPS = {
                         rate: 0.05
                     }
                 ],
-                width: 33,
-                height: 27,
+                width: 35,
+                height: 30,
+                impassableTiles: ["^"],
                 tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWTTTWWWWWWWTTTTTTTWWWWWWWWWWWWW",
-                    "WWWTTTTTWWWWWTTTTTTTWWWWWTTTTTWWW",
-                    "WWWTTTWTWWWWWTTTTTTTWWWWTTTTTTTWW",
-                    "WWWWWWWTTTTWWTTTTTTTWWWWTTTDTTTWW",
-                    "WWWWWWWTWWTWWTTTTTTTWWWWTTTTTTTWW",
-                    "WWWTTTWTWWTWWWWWTWWWWWWWWTTTTTWWW",
-                    "WWWTTTTTWWTWWWWWTWWWWWWWWWWTWWWWW",
-                    "WWWTTTWWWWTWWWWWTWWWWWWWWWWTWWWWW",
-                    "WWWWWWWWWWTWWWWWTWWWWWWWWWWTWWWWW",
-                    "WWWWWWWWWWTWTTTTTTTTTWWWWWWTWWWWW",
-                    "WWWTTTWWWWTWTWWTTTWWTWWWTTTTTTTWW",
-                    "WWWTRTZTWWTWTWWTTTWWTWWWTTTTTTTWW",
-                    "WWWTTTWTWWTTTWWTTTWWTTTTTTTTTTTWW",
-                    "WWWWWWWTWWWWTWWTTTWWTWWWTTTTTTTWW",
-                    "WWWWWWWTWWWWTWWTTTWWTWWWTTTTTTTWW",
-                    "WWWTTTWTWWWWTTTTTTTTTWWWWWWTWWWWW",
-                    "WWWTTTTTWWWWWWWTTTWWWWWWWWWTWWWWW",
-                    "WWWTTTWTWWWWWWWTTTWWWWWWWWWTWWWWW",
-                    "WWWWWWWTWWWTTTTTTTTTTTWWWWWTWWWWW",
-                    "WWWWWWWTWWWTTTWWWWWTTTWWWTTTTTWWW",
-                    "WWWTTTWTWWWTTTWWWWWTTTWWTTTTTTTWW",
-                    "WWWTUTTTTTTTTTWWWWWTTTWWTTTTTTTWW",
-                    "WWWTTTWWWWWTTTWWWWWTTTWWTTTTTTTWW",
-                    "WWWWWWWWWWWTTTTTTTTTTTWWWTTTTTWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                    "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+                    "^WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW^",
+                    "^WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW^",
+                    "^WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW^",
+                    "^WWWTTTWWWWWWWTTTTTTTWWWWWWWWWWWWW^",
+                    "^WWWTTTTTWWWWWTTTTTTTWWWWWTTTTTWWW^",
+                    "^WWWTTTWTWWWWWTTTTTTTWWWWTTTTTTTWW^",
+                    "^WWWWWWWTTTTWWTTTTTTTWWWWTTTUTTTWW^",
+                    "^WWWWWWWTWWTWWTTTTTTTWWWWTTTTTTTWW^",
+                    "^WWWTTTWTWWTWWWWWTWWWWWWWWTTTTTWWW^",
+                    "^WWWTTTTTWWTWWWWWTWWWWWWWWWWTWWWWW^",
+                    "^WWWTTTWWWWTWWWWWTWWWWWWWWWWTWWWWW^",
+                    "^WWWWWWWWWWTWWWWWTWWWWWWWWWWTWWWWW^",
+                    "^WWWWWWWWWWTWTTTTTTTTTWWWWWWTWWWWW^",
+                    "^WWWTTTWWWWTWTWWTTTWWTWWWTTTTTTTWW^",
+                    "^WWWTRTZTWWTWTWWTTTWWTWWWTTTTTTTWW^",
+                    "^WWWTTTWTWWTTTWWTTTWWTTTTTTTTTTTWW^",
+                    "^WWWWWWWTWWWWTWWTTTWWTWWWTTTTTTTWW^",
+                    "^WWWWWWWTWWWWTWWTTTWWTWWWTTTTTTTWW^",
+                    "^WWWTTTWTWWWWTTTTTTTTTWWWWWWTWWWWW^",
+                    "^WWWTTTTTWWWWWWWTTTWWWWWWWWWTWWWWW^",
+                    "^WWWTTTWTWWWWWWWTTTWWWWWWWWWTWWWWW^",
+                    "^WWWWWWWTWWWTTTTTTTTTTTWWWWWTWWWWW^",
+                    "^WWWWWWWTWWWTTTWWWWWTTTWWWTTTTTWWW^",
+                    "^WWWTTTWTWWWTTTWWWWWTTTWWTTTTTTTWW^",
+                    "^WWWTDTTTTTTTTTWWWWWTTTWWTTTTTTTWW^",
+                    "^WWWTTTWWWWWTTTWWWWWTTTWWTTTTTTTWW^",
+                    "^WWWWWWWWWWWTTTTTTTTTTTWWWTTTTTWWW^",
+                    "^WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW^"
+                ,
+                    "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
                 ],
                 floorLinks: [
                     {
-                        x: 4,
-                        y: 23,
+                        x: 5,
+                        y: 25,
                         toFloor: 1,
-                        targetX: 26,
-                        targetY: 4,
-                        label: "1階へ戻る"
+                        targetX: 17,
+                        targetY: 5,
+                        label: "1階へ下りる"
                     },
                     {
-                        x: 27,
-                        y: 5,
+                        x: 28,
+                        y: 7,
                         toFloor: 3,
-                        targetX: 4,
-                        targetY: 23,
-                        label: "地下2階へ"
+                        targetX: 5,
+                        targetY: 25,
+                        label: "3階へ上がる"
                     }
                 ],
                 chests: [
                     {
-                        x: 4,
-                        y: 13,
+                        x: 5,
+                        y: 15,
                         itemId: 103,
                         type: "item",
                         rare: true
                     },
                     {
-                        x: 4,
-                        y: 3,
+                        x: 5,
+                        y: 5,
                         itemId: 5,
                         type: "item"
                     }
                 ],
                 entryPoint: {
-                    x: 4,
-                    y: 23
+                    x: 5,
+                    y: 25
                 },
                 name: "",
                 themeKey: "LIGHT_PALACE"
             },
             {
-                label: "地下2階・結界の聖廊",
+                label: "3階・結界の聖廊",
                 encounterRank: 66,
                 monsters: [
                     100064,
@@ -7684,78 +7862,83 @@ const FIXED_DUNGEON_MAPS = {
                         rate: 0.05
                     }
                 ],
-                width: 33,
-                height: 27,
+                width: 35,
+                height: 30,
+                impassableTiles: ["^"],
                 tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWTTTTWWWWWWTTTTWWWWWWTTTTWWWW",
-                    "WWWWTTTTTTWWWWTTTTTTWWWWTTTTTTWWW",
-                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTDTTWWW",
-                    "WWWWTTTTTTWWWWTTTTTTWWWWTTTTTTWWW",
-                    "WWWWWTTTTWWWWWWTTTTWWWWWWTTTTWWWW",
-                    "WWWWWWWWWWWWWWWWTTWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWTTWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWTTWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWTTTTTTWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWTTTTTTTTWWWWWWWWWWWW",
-                    "WWWWWWTTTWWWWTTTWWTTTWWWWTTTWWWWW",
-                    "WWWWWTTTTTWWWTTWWWWTTWWWTTTTTWWWW",
-                    "WWWWWTTTTTTTTTTWWWWTTTTTTTTTTWWWW",
-                    "WWWWWTTTTTWWWTTTWWTTTWWWTTTTTWWWW",
-                    "WWWWWWTTTWWWWTTTTTTTTWWWWTTTWWWWW",
-                    "WWWWWWWWWWWWWWTTTTTTWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWTTWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWTTWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWTTTTTTWWWWWWWWWWWWW",
-                    "WWWWTTTTWWWWWTTTTTTTTWWWWWTTTTWWW",
-                    "WWWTTTTTTWWWWTTTTTTTTWWWWTTTTTTWW",
-                    "WWWTUTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
-                    "WWWTTTTTTWWWWTTTTTTTTWWWWTTTTTTWW",
-                    "WWWWTTTTWWWWWWTTTTTTWWWWWWTTTTWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                    "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+                    "^WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW^",
+                    "^WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW^",
+                    "^WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW^",
+                    "^WWWWWTTTTWWWWWWTTTTWWWWWWTTTTWWWW^",
+                    "^WWWWTTTTTTWWWWTTTTTTWWWWTTTTTTWWW^",
+                    "^WWWWTTTTTTTTTTTTTTTTTTTTTTTUTTWWW^",
+                    "^WWWWTTTTTTWWWWTTTTTTWWWWTTTTTTWWW^",
+                    "^WWWWWTTTTWWWWWWTTTTWWWWWWTTTTWWWW^",
+                    "^WWWWWWWWWWWWWWWWTTWWWWWWWWWWWWWWW^",
+                    "^WWWWWWWWWWWWWWWWTTWWWWWWWWWWWWWWW^",
+                    "^WWWWWWWWWWWWWWWWTTWWWWWWWWWWWWWWW^",
+                    "^WWWWWWWWWWWWWWTTTTTTWWWWWWWWWWWWW^",
+                    "^WWWWWWWWWWWWWTTTTTTTTWWWWWWWWWWWW^",
+                    "^WWWWWWTTTWWWWTTTWWTTTWWWWTTTWWWWW^",
+                    "^WWWWWTTTTTWWWTTWWWWTTWWWTTTTTWWWW^",
+                    "^WWWWWTTTTTTTTTTWWWWTTTTTTTTTTWWWW^",
+                    "^WWWWWTTTTTWWWTTTWWTTTWWWTTTTTWWWW^",
+                    "^WWWWWWTTTWWWWTTTTTTTTWWWWTTTWWWWW^",
+                    "^WWWWWWWWWWWWWWTTTTTTWWWWWWWWWWWWW^",
+                    "^WWWWWWWWWWWWWWWWTTWWWWWWWWWWWWWWW^",
+                    "^WWWWWWWWWWWWWWWWTTWWWWWWWWWWWWWWW^",
+                    "^WWWWWWWWWWWWWWTTTTTTWWWWWWWWWWWWW^",
+                    "^WWWWTTTTWWWWWTTTTTTTTWWWWWTTTTWWW^",
+                    "^WWWTTTTTTWWWWTTTTTTTTWWWWTTTTTTWW^",
+                    "^WWWTDTTTTTTTTTTTTTTTTTTTTTTTTTTWW^",
+                    "^WWWTTTTTTWWWWTTTTTTTTWWWWTTTTTTWW^",
+                    "^WWWWTTTTWWWWWWTTTTTTWWWWWWTTTTWWW^",
+                    "^WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW^"
+                ,
+                    "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
                 ],
                 floorLinks: [
                     {
-                        x: 4,
-                        y: 23,
+                        x: 5,
+                        y: 25,
                         toFloor: 2,
-                        targetX: 27,
-                        targetY: 5,
-                        label: "地下1階へ戻る"
+                        targetX: 28,
+                        targetY: 7,
+                        label: "2階へ下りる"
                     },
                     {
-                        x: 27,
-                        y: 4,
+                        x: 28,
+                        y: 6,
                         toFloor: 4,
-                        targetX: 16,
-                        targetY: 23,
-                        label: "地下3階へ"
+                        targetX: 17,
+                        targetY: 25,
+                        label: "4階へ上がる"
                     }
                 ],
                 chests: [
                     {
-                        x: 26,
-                        y: 13,
+                        x: 27,
+                        y: 15,
                         itemId: 5,
                         type: "item"
                     },
                     {
-                        x: 26,
-                        y: 15,
+                        x: 27,
+                        y: 17,
                         itemId: 105,
                         type: "item"
                     }
                 ],
                 entryPoint: {
-                    x: 4,
-                    y: 23
+                    x: 5,
+                    y: 25
                 },
                 name: "",
                 themeKey: "LIGHT_PALACE"
             },
             {
-                label: "地下3階・光の祭壇",
+                label: "4階・光の祭壇",
                 encounterRank: 68,
                 monsters: [
                     100066,
@@ -7768,70 +7951,75 @@ const FIXED_DUNGEON_MAPS = {
                         rate: 0.05
                     }
                 ],
-                width: 33,
-                height: 27,
+                width: 35,
+                height: 30,
+                impassableTiles: ["^"],
                 tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWTTTWWWWWWWWWTTTWWWWWWWWW",
-                    "WWWWWWWWTTTWWWWWWWWWWWTTTWWWWWWWW",
-                    "WWWWWWWTTTWWWWWTTTWWWWWTTTWWWWWWW",
-                    "WWWWWWWTTTWWWWTTTTTWWWWTTTWWWWWWW",
-                    "WWWWWWTTTTWWWTTTTTTTWWWTTTTWWWWWW",
-                    "WWWWWTTTTTWWWTTTBTTTWWWTTTTTWWWWW",
-                    "WWWWWTTTTTWWWWTTTTTWWWWTTTTTWWWWW",
-                    "WWWWWTTTTTWWWWWTTTWWWWWTTTTTWWWWW",
-                    "WWWWWWTTTTWWWWWTTTWWWWWTTTTWWWWWW",
-                    "WWWWWWTTTTWWWWWTTTWWWWWTTTTWWWWWW",
-                    "WWWWWWTTTTTWWWWTTTWWWWTTTTTWWWWWW",
-                    "WWWWWWWTTTTWWWWTTTWWWWTTTTWWWWWWW",
-                    "WWWWWWWWTTTTTWWTTTWWTTTTTWWWWWWWW",
-                    "WWTTTWWWWTTTTWWTTTWWTTTTWWWWTTTWW",
-                    "WWTCTTTWWTTTTTTTTTTTTTTTWWTTTRTWW",
-                    "WWTTTWTTTTTTTTTTTTTTTTTTTTTWTTTWW",
-                    "WWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWW",
-                    "WWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWW",
-                    "WWWWWWWWWWWWWWTTTTTWWWWWWWWWWWWWW",
-                    "WWWWWWWWTTTTTTTTUTTTTTTTTWWWWWWWW",
-                    "WWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWW",
-                    "WWWWWWWWWWWWWWTTTTTWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                    "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+                    "^WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW^",
+                    "^WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW^",
+                    "^WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW^",
+                    "^WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW^",
+                    "^WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW^",
+                    "^WWWWWWWWWTTTWWWWWWWWWTTTWWWWWWWWW^",
+                    "^WWWWWWWWTTTWWWWWWWWWWWTTTWWWWWWWW^",
+                    "^WWWWWWWTTTWWWWWTTTWWWWWTTTWWWWWWW^",
+                    "^WWWWWWWTTTWWWWTTTTTWWWWTTTWWWWWWW^",
+                    "^WWWWWWTTTTWWWTTTTTTTWWWTTTTWWWWWW^",
+                    "^WWWWWTTTTTWWWTTTBTTTWWWTTTTTWWWWW^",
+                    "^WWWWWTTTTTWWWWTTTTTWWWWTTTTTWWWWW^",
+                    "^WWWWWTTTTTWWWWWTTTWWWWWTTTTTWWWWW^",
+                    "^WWWWWWTTTTWWWWWTTTWWWWWTTTTWWWWWW^",
+                    "^WWWWWWTTTTWWWWWTTTWWWWWTTTTWWWWWW^",
+                    "^WWWWWWTTTTTWWWWTTTWWWWTTTTTWWWWWW^",
+                    "^WWWWWWWTTTTWWWWTTTWWWWTTTTWWWWWWW^",
+                    "^WWWWWWWWTTTTTWWTTTWWTTTTTWWWWWWWW^",
+                    "^WWTTTWWWWTTTTWWTTTWWTTTTWWWWTTTWW^",
+                    "^WWTCTTTWWTTTTTTTTTTTTTTTWWTTTRTWW^",
+                    "^WWTTTWTTTTTTTTTTTTTTTTTTTTTWTTTWW^",
+                    "^WWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWW^",
+                    "^WWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWW^",
+                    "^WWWWWWWWWWWWWWTTTTTWWWWWWWWWWWWWW^",
+                    "^WWWWWWWWTTTTTTTTDTTTTTTTTWWWWWWWW^",
+                    "^WWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWW^",
+                    "^WWWWWWWWWWWWWWTTTTTWWWWWWWWWWWWWW^",
+                    "^WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW^"
+                ,
+                    "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
                 ],
                 floorLinks: [
                     {
-                        x: 16,
-                        y: 23,
+                        x: 17,
+                        y: 25,
                         toFloor: 3,
-                        targetX: 27,
-                        targetY: 4,
-                        label: "地下2階へ戻る"
+                        targetX: 28,
+                        targetY: 6,
+                        label: "3階へ下りる"
                     }
                 ],
                 chests: [
                     {
-                        x: 3,
-                        y: 18,
+                        x: 4,
+                        y: 20,
                         itemId: 2,
                         type: "item"
                     },
                     {
-                        x: 29,
-                        y: 18,
+                        x: 30,
+                        y: 20,
                         itemId: 106,
                         type: "item",
                         rare: true
                     }
                 ],
                 entryPoint: {
-                    x: 16,
-                    y: 23
+                    x: 17,
+                    y: 25
                 },
                 bosses: [
                     {
-                        x: 16,
-                        y: 9,
+                        x: 17,
+                        y: 11,
                         monsterId: [
                             301070,
                             301050
@@ -7841,56 +8029,6 @@ const FIXED_DUNGEON_MAPS = {
                         actionLabel: "祭壇へ進む"
                     }
                 ],
-                mapActions: [
-                    {
-                        x: 13,
-                        y: 21,
-                        label: "牢の国王と話す",
-                        log: "光の薄い牢の奥で、王冠を失った老人が顔を上げた。",
-                        type: "storyEvent",
-                        eventId: "light_palace_prison_king",
-                        imageKey: "overlay_light_captive_king",
-                        imageColor: "#f4d989",
-                        minimapColor: "#f4d989",
-                        missingFlag: "lightPalaceCleared"
-                    },
-                    {
-                        x: 19,
-                        y: 21,
-                        label: "牢の王女と話す",
-                        log: "鉄格子の向こうで、若い王女が聖印を握りしめている。",
-                        type: "storyEvent",
-                        eventId: "light_palace_prison_princess",
-                        imageKey: "overlay_light_captive_princess",
-                        imageColor: "#ffd8f0",
-                        minimapColor: "#ffd8f0",
-                        missingFlag: "lightPalaceCleared"
-                    },
-                    {
-                        x: 13,
-                        y: 23,
-                        label: "老神職と話す",
-                        log: "痩せた老神職が、壁にもたれて祈りを保っている。",
-                        type: "storyEvent",
-                        eventId: "light_palace_prison_priest_a",
-                        imageKey: "overlay_light_captive_priest_a",
-                        imageColor: "#d9dfff",
-                        minimapColor: "#d9dfff",
-                        missingFlag: "lightPalaceCleared"
-                    },
-                    {
-                        x: 19,
-                        y: 23,
-                        label: "若い神職と話す",
-                        log: "若い神職が、かすれた声で短い祈りを繰り返している。",
-                        type: "storyEvent",
-                        eventId: "light_palace_prison_priest_b",
-                        imageKey: "overlay_light_captive_priest_b",
-                        imageColor: "#cfefff",
-                        minimapColor: "#cfefff",
-                        missingFlag: "lightPalaceCleared"
-                    }
-                ],
                 name: "",
                 themeKey: "LIGHT_PALACE",
                 floorDecorations: [
@@ -7898,8 +8036,8 @@ const FIXED_DUNGEON_MAPS = {
                         authoredPlacementId: "carpet-light-final",
                         type: "castle_carpet",
                         imageKey: null,
-                        x: 15,
-                        y: 6,
+                        x: 16,
+                        y: 8,
                         width: 3,
                         height: 7,
                         blocking: false,
@@ -7907,6 +8045,66 @@ const FIXED_DUNGEON_MAPS = {
                         allowedBaseTiles: null
                     }
                 ]
+            },
+            {
+                label: "地下牢",
+                encounterRank: 68,
+                monsters: [],
+                width: 27,
+                height: 19,
+                tiles: [
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWTTTWTTTWWTTTTTWWTTTWTTTWW",
+                    "WWTTTWTTTWWTTBTTWWTTTWTTTWW",
+                    "WWTTTWTTTWWTTTTTWWTTTWTTTWW",
+                    "WWWTWWWTWWWTTTTTWWWTWWWTWWW",
+                    "WWTTTTTTTTTTTTTTTTTTTTTTTWW",
+                    "WWTTTTTTTTTTTTTTTTTTTTTTTWW",
+                    "WWWWWWWWWWTWTTTWTWWWWWWWWWW",
+                    "WWWWWWWWWWTWTTTWTWWWWWWWWWW",
+                    "WWTTTWTTTWTWTTTWTWTTTWTTTWW",
+                    "WWTTTWTTTWTWTTTWTWTTTWTTTWW",
+                    "WWTTTWTTTWTWTTTWTWTTTWTTTWW",
+                    "WWWTWWWTWWTWTTTWTWWTWWWTWWW",
+                    "WWTTTTTTTTTWTTTWTTTTTTTTTWW",
+                    "WWTTTTTTTTTWTTTWTTTTTTTTTWW",
+                    "WWWWWWWWWWWWTUTWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                floorLinks: [
+                    { x: 13, y: 16, toFloor: 1, targetX: 7, targetY: 4, label: "1階へ上がる" }
+                ],
+                entryPoint: { x: 13, y: 16 },
+                chests: [
+                    { x: 3, y: 3, trapMonsterId: 120302, trapFloor: 140, type: "trap" },
+                    { x: 20, y: 2, itemId: 1072, type: "item", containerKind: "pot", imageKey: "overlay_field_pot", openedImageKey: "overlay_field_pot", baseTile: "T" },
+                    { x: 24, y: 2, itemId: 1076, type: "item", containerKind: "pot", imageKey: "overlay_field_pot", openedImageKey: "overlay_field_pot", baseTile: "T" },
+                    { x: 20, y: 10, itemId: 99, type: "item", containerKind: "pot", imageKey: "overlay_field_pot", openedImageKey: "overlay_field_pot", baseTile: "T" }
+                ],
+                blockingObjects: [
+                    { x: 3, y: 5, imageKey: "overlay_light_prison_gate_horizontal", missingFlag: "lightPalacePrisonOpened" },
+                    { x: 7, y: 5, imageKey: "overlay_light_prison_gate_horizontal", missingFlag: "lightPalacePrisonOpened" },
+                    { x: 19, y: 5, imageKey: "overlay_light_prison_gate_horizontal", missingFlag: "lightPalacePrisonOpened" },
+                    { x: 23, y: 5, imageKey: "overlay_light_prison_gate_horizontal", missingFlag: "lightPalacePrisonOpened" },
+                    { x: 3, y: 13, imageKey: "overlay_light_prison_gate_horizontal", missingFlag: "lightPalacePrisonOpened" },
+                    { x: 7, y: 13, imageKey: "overlay_light_prison_gate_horizontal", missingFlag: "lightPalacePrisonOpened" },
+                    { x: 19, y: 13, imageKey: "overlay_light_prison_gate_horizontal", missingFlag: "lightPalacePrisonOpened" },
+                    { x: 23, y: 13, imageKey: "overlay_light_prison_gate_horizontal", missingFlag: "lightPalacePrisonOpened" },
+                    { x: 23, y: 10, missingFlag: "leilaJoined" }
+                ],
+                mapActions: [
+                    { x: 7, y: 3, label: "国王と話す", type: "storyEvent", eventId: "light_palace_prison_king", imageKey: "overlay_light_captive_king", imageColor: "#f4d989", minimapColor: "#f4d989" },
+                    { x: 23, y: 10, label: "衰弱した聖騎士を診る", type: "storyEvent", eventId: "light_palace_prison_leila", imageKey: "overlay_light_captive_leila_bed", drawWidth: 64, drawHeight: 32, imageColor: "#f5dd86", minimapColor: "#f5dd86", missingFlag: "leilaJoined" },
+                    { x: 3, y: 11, label: "老神職と話す", type: "storyEvent", eventId: "light_palace_prison_priest_a", imageKey: "overlay_light_captive_priest_a", imageColor: "#d9dfff", minimapColor: "#d9dfff" },
+                    { x: 7, y: 11, label: "若い神職と話す", type: "storyEvent", eventId: "light_palace_prison_priest_b", imageKey: "overlay_light_captive_priest_b", imageColor: "#cfefff", minimapColor: "#cfefff" }
+                ],
+                bosses: [
+                    { x: 13, y: 3, monsterId: 301071, startEventId: "light_palace_prison_guard_encounter", storyEventId: "light_palace_prison_guard_clear", actionLabel: "地下牢の看守に挑む" }
+                ],
+                name: "",
+                themeKey: "LIGHT_PALACE"
             }
         ]
     },
@@ -7951,12 +8149,12 @@ const FIXED_DUNGEON_MAPS = {
                 y: 32
             }
         },
-        entryRequiredFlag: "lightPalaceCleared",
+        entryRequiredAllyId: 204,
         entryRequiredEntrances: [
             "north"
         ],
         entryLockedEventId: "galvania_cave_north_blocked",
-        entryLockedText: "魔王軍の活動が活発で危険すぎる。",
+        entryLockedText: "すさまじい結界でふさがれている。",
         floors: [
             {
                 label: "1階・北口 黒岩の胎道",
@@ -8096,8 +8294,8 @@ const FIXED_DUNGEON_MAPS = {
                         x: 25,
                         y: 29,
                         label: "倒れている兵を調べる",
-                        log: "兵は「見える近道ほど、地の熱に誘われる。南へ急ぐなら高い岩をたどれ」と息絶え絶えに告げた。",
-                        type: "log",
+                        eventId: "map_system_galvania_cave_f1_action_1",
+                        type: "storyEvent",
                         imageKey: "overlay_dungeon_adventurer",
                         blocksMovement: false,
                         baseTile: "G"
@@ -8106,8 +8304,8 @@ const FIXED_DUNGEON_MAPS = {
                         x: 38,
                         y: 13,
                         label: "黒い道標を読む",
-                        log: "「・・・は輪を・・。火を・・・戻れ。高みの橋・・・次の闇へ・・」だけが読み取れた",
-                        type: "log",
+                        eventId: "map_system_galvania_cave_f1_action_2",
+                        type: "storyEvent",
                         imageKey: "overlay_dungeon_event",
                         blocksMovement: false,
                         baseTile: "G"
@@ -8301,8 +8499,8 @@ const FIXED_DUNGEON_MAPS = {
 				  "x": 12,
 				  "y": 28,
 				  "label": "古びた石碑を読む",
-				  "log": "「柱を数えよ。三度目に迷い、四度目に上れ。端まで急ぐ者は輪の腹へ戻る」と読める。",
-				  "type": "log",
+				  "eventId": "map_system_galvania_cave_f2_action_1",
+				  "type": "storyEvent",
 				  "imageKey": "overlay_dungeon_event",
 				  "blocksMovement": false,
 				  "baseTile": "T"
@@ -8311,8 +8509,8 @@ const FIXED_DUNGEON_MAPS = {
 				  "x": 39,
 				  "y": 13,
 				  "label": "煤けた足跡を調べる",
-				  "log": "足跡は不自然に北へ伸びている。魔族の巡回はこの道だけを避けているようだ。",
-				  "type": "log",
+				  "eventId": "map_system_galvania_cave_f2_action_2",
+				  "type": "storyEvent",
 				  "imageKey": "overlay_dungeon_event",
 				  "blocksMovement": false,
 				  "baseTile": "T"
@@ -8338,41 +8536,41 @@ const FIXED_DUNGEON_MAPS = {
                 width: 61,
                 height: 35,
                 tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWUTTTTTGWWWWWWWWWWWWWWWWWWGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWTWWWWWWWWWWWWWWTTTTGGGGCGGGGWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWTWWWWWWWWWWWWWWTWWWGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWTWWWWWWWWWWWWWWTWWWGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWMMMMMMTMMMMMMMMMMMMMMTMMMMMMMMMMMMMMMMMMMMMMMMMMMMMWWWWW",
-                    "WWWWWMMMMMMTMMMMMMMMMMMMMMTMMMMTTTTTTTTTTTTTTTTTTTTMMMMMWWWWW",
-                    "WWWWWMMMMMMTTTTTTTTTTTTTTTTMMMMTMMMMMMMMMMMTMMMMMMTMMMMMWWWWW",
-                    "WWWWWMMMMMMMMMMMMMMMTMMMMMMMMMMTMMMMMMMMMMMTMMMMMMTMGGGGGGGWW",
-                    "WWWWWMMMMMMMMMMMMMMMTMMMMMMMMMMTMMMMMMMMMMMTMMMMMMTMGGGGGGGWW",
-                    "WWWWWMMMMMMMMMMMMMMMTMMMMMMMMMMTMMMMMMMMMMMTMMMMMMTMGGGGGGGWW",
-                    "WWWWWMMMMMMMMMMMMMMMTMMMMMMMMMMTMMMMMMMMMMMTMMMMMMTTGGGGCGGWW",
-                    "WWWWWMMMMMMMMMMMMMMMTMMMMMMMMMMTMMMMMMMMMMMTMMMMMMMMGGGGGGGWW",
-                    "WWWWWMMMMMMMMMTTTTTTTTTTTTTTTTTTMMMMMMMMMMMTMMMMMMMMGGGGGGGWW",
-                    "WWWWWMMMMMMMMMTMMMMMMMMMTMMMMMMTMMMMMMMMMMMTMMMMMMMMGGGGGGGWW",
-                    "WWWWWMMMMMMMMMTMMMMMMMGGGGGGGGGTMMMMMMMMMMMTTTTTTTTTTTTTTTWWW",
-                    "WWWWWMMMMMMMMMTMMMMMMMGGGGGGGGGTMMMMMMMMMMMMMMMMMMMMTMMMWTWWW",
-                    "WWWWWMMMMMMMMMTMMMMMMMGGGGGGGGGTMMMMMMMMMMMMMMMMMMMMTMMMWTWWW",
-                    "WWWWWMMMMMMMMMTMMMMMTTTTTGGCGGGTMMMMMMMMMMMMMMMMMMMMTMMMWTWWW",
-                    "WWWWWGGGGGGGGMTMMMMMTMGGGGGGGGGTMMMMMMMMMMMMMMMMMMMMTMMMWTWWW",
-                    "WWWWWGGGGGGGGMTMMMMMTMGGGGGGGGGTTTTTTTTMMMMMMMMMMCTTTTTTTTWWW",
-                    "WWWWWGGGCGGGGTTMMMGGGGGGGGGGGGGMMMMMMMTMMMMMMMMMMMMMTMMMWWWWW",
-                    "WWWWWGGGGGGGGMMMMMGGGGGGGGGGGGGMMMMMMMTMMMMMMMMMMMMMTMMMWWWWW",
-                    "WWWWWGGGGGGGGMMMMMGGGGGGBGGGRGGMMMGGGGGGGGGMMMMMMMMMTMMMWWWWW",
-                    "WWWWWGGGGGGGGMMMMMGGGGGGGGGGGGGMMMGGGGGGGGGMMMMMMGGGTGGGGGGWW",
-                    "WWWWWGGGGGGGGMMMMMGGGGGGGGGGGGGMMMGGGGGGGGGMMMMMMGGGTGGGGGGWW",
-                    "WWWWWMMMMMMMMMMMMMGGGGGGGGGGGGGMMMGGGGCGGGGMMMMMMGGGTGGGGGGWW",
-                    "WWWWWMMMMMMMMMMMMMGGGGGGGGGGGGGMMMGGGGGGGGGMMMMMMGGGTTTDGGGWW",
-                    "WWWWWMMMMMMMMMMMMMMMMMMMMMMMMMMMMMGGGGGGGGGMMMMMMGGGGGGGGGGWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGWWWWWWGGGGGGGGGGWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGGWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+					"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+					"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+					"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+					"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+					"WWWWWUTTTTTGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+					"WWWWWWWWWWWTWWWWWWWWWWWWWWTTTTGGGGCWWWWWWWWWWWWWWWWWWWWWWWWWW",
+					"WWWWWWWWWWWTWWWWWWWWWWWWWWTWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+					"WWWWWWWWWWWTWWWWWWWWWWWWWWTWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+					"WWWWWMMMMMMTMMMMMMMMMMMMMMTMMMMMMMMMMMMMMMMMMMMMMMMMWWWWWWWWW",
+					"WWWWWMMMMMMTMMMMMMMMMMMMMMTMMMMTTTTTTTTTTTTTTTTTTTTMWWWWWWWWW",
+					"WWWWWMMMMMMTTTTTTTTTTTTTTTTMMMMTMMMMMMMMMMMTMMMMMMTMWWWWWWWWW",
+					"WWWWWMMMMMMMMMMMMMMMTMMMMMMMMMMTMMMMMMMMMMMTMMMMMMTMWWWWWWWWW",
+					"WWWWWMMMMMMMMMMMMMMMTMMMMMMMMMMTMMMMMMMMMMMTMMMMMMTMWWWWWWWWW",
+					"WWWWWMMMMMMMMMMMMMMMTMMMMMMMMMMTMMMMMMMMMMMTMMMMMMTMWWWTGGWWW",
+					"WWWWWMMMMMMMMMMMMMMMTMMMMMMMMMMTMMMMMMMMMMMTMMMMMMTTTTTTCGWWW",
+					"WWWWWMMMMMMMMMMMMMMMTMMMMMMMMMMTMMMMMMMMMMMTMMMMMMMMWWWTGGWWW",
+					"WWWWWMMMMMMMMMTTTTTTTTTTTTTTTTTTMMMMMMMMMMMTMMMMMMMMWWWWWWWWW",
+					"WWWWWMMMMMMMMMTMMMMMMMMMTMMMMMMMMMMMMMMMMMMTMMMMMMMMWWWWWWWWW",
+					"WWWWWMMMMMMMMMTMMMMMMMMMGMMMMMMMMMMMMMMMMMMTTTTTTTTTWWWWWWWWW",
+					"WWWWWMMMMMMMMMTMMMMMMMMMGMMMMMMMMMMMMMMMMMMMMMMMMMMTWWWWWWWWW",
+					"WWWWWMMMMMMMMMTMMMMMMMMMGMGGGMMMMMMMMMMMMMMMMMMMMMMTWWWWWWWWW",
+					"WWWWWMMMMMMMMMTMMMMMTTTTTGGCGMMMMMMMMMMMMMMMMMMMMMMTWWWWWWWWW",
+					"WWWWWGGGGGGGGMTMMMMMTMMMMMGGGMMMMMMMMMMMMMMMMMMMMMMTWWWWWWWWW",
+					"WWWWWGGGGGGGGMTMMMMMTMMMMMMMMMGTTTTTTTTMMMMMMMMMMCTTWWWWWWWWW",
+					"WWWWWGGGCGGGGTTMMMGGGMMMMMMMMMGMMMMMMMTMMMMMMMMMMMMTWWWWWWWWW",
+					"WWWWWGGGGGGGGMMMMMGMMMGGGGGGGMGMMMMMMMTMMMMMMMMMMMMTWWWWWWWWW",
+					"WWWWWGGGGGGGGMMMMMGMMMGGBGGGRMGMMMGGGGGGGGGMMMMMMMMTWWWWWWWWW",
+					"WWWWWGGGGGGGGMMMMMGMMMGGTGGGGMGMMMGGGGGGGGGMMMMMMMMGWWWWWWWWW",
+					"WWWWWGGGGGGGGMMMMMGMMMGGMMMMMMGMMMGGGGGGGGGMMMMMMMMGWWWWWWWWW",
+					"WWWWWMMMMMMMMMMMMMGMMMGGMMMMMMGMMMGGGGCGGGGMMMMMMMMGTTGGGWWWW",
+					"WWWWWMMMMMMMMMMMMMGGGGGGGGGGGGGMMMTTTTGGGGGMMMMMMMMGWWTDGWWWW",
+					"WWWWWMMMMMMMMMMMMMMMMMMMMMMMMMMMMMTTTTGGGGGMMMMMMMMGWWGGGWWWW",
+					"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+					"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+					"WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"				
                 ],
                 floorLinks: [
                     {
@@ -8393,25 +8591,6 @@ const FIXED_DUNGEON_MAPS = {
                     }
                 ],
                 tileEffects: [
-                    {
-                        rect: {
-                            x1: 5,
-                            y1: 8,
-                            x2: 55,
-                            y2: 31
-                        },
-                        type: "poison",
-                        damageRate: 0.028,
-                        message: "溶岩の熱が足元から体力を奪った！"
-                    },
-                    {
-                        x: 57,
-                        y: 23,
-                        type: "warp",
-                        toX: 43,
-                        toY: 18,
-                        message: "噴き上がる蒸気に巻かれ、橋の分岐へ押し戻された。"
-                    },
                     {
                         x: 36,
                         y: 28,
@@ -8485,7 +8664,7 @@ const FIXED_DUNGEON_MAPS = {
                         mapSpriteMonsterId: 100060,
                         bossStatMultiplier: 1.3,
                         inactiveTile: "G",
-                        inspectLog: "黒炎の番人が、赤い宝箱の島だけを守っている。洞窟突破には関係なさそうだ。",
+                        startEventId: "map_system_galvania_cave_f3_boss_1",
                         actionLabel: "黒炎の番人に挑む",
                         challengeText: "番人を倒せば奥の赤い宝箱を取れそうだ。挑みますか？"
                     }
@@ -8495,8 +8674,8 @@ const FIXED_DUNGEON_MAPS = {
                         x: 11,
                         y: 4,
                         label: "焦げた石碑を読む",
-                        log: "「湖は赤く、道は細い。まっすぐな橋ほど熱に沈む。黒炎の島は宝を守るだけ」とある。",
-                        type: "log",
+                        eventId: "map_system_galvania_cave_f3_action_1",
+                        type: "storyEvent",
                         imageKey: "overlay_dungeon_event",
                         blocksMovement: false,
                         baseTile: "G"
@@ -8505,8 +8684,8 @@ const FIXED_DUNGEON_MAPS = {
                         x: 52,
                         y: 14,
                         label: "折れた橋脚を調べる",
-                        log: "橋脚には魔王軍の焼印が残っている。補給路を急造した跡だ。",
-                        type: "log",
+                        eventId: "map_system_galvania_cave_f3_action_2",
+                        type: "storyEvent",
                         imageKey: "overlay_dungeon_event",
                         blocksMovement: false,
                         baseTile: "G"
@@ -8515,8 +8694,8 @@ const FIXED_DUNGEON_MAPS = {
                         x: 7,
                         y: 26,
                         label: "倒れた人影を見る",
-                        log: "灰まみれの旅人は「火の島に欲を出すな。出口は北東の橋から南へ折れる」と残している。",
-                        type: "log",
+                        eventId: "map_system_galvania_cave_f3_action_3",
+                        type: "storyEvent",
                         imageKey: "overlay_dungeon_adventurer",
                         blocksMovement: false,
                         baseTile: "G"
@@ -8868,7 +9047,7 @@ const FIXED_DUNGEON_MAPS = {
                         bossStatMultiplier: 1.35,
                         inactiveTile: "G",
                         keyRewardColor: "gold",
-                        inspectLog: "氷鎧の魔将が、古い金の鍵を握っている。先の補給路の近道を開ける鍵かもしれない。",
+                        startEventId: "map_system_galvania_cave_f4_boss_1",
                         actionLabel: "氷鎧の魔将に挑む",
                         challengeText: "この魔将は通路突破に必須ではないが、倒せば金の鍵を奪えそうだ。挑みますか？"
                     }
@@ -8878,8 +9057,8 @@ const FIXED_DUNGEON_MAPS = {
                         x: 8,
                         y: 27,
                         label: "氷漬けの荷物を調べる",
-                        log: "古い地図には、滑床を大きく迂回する赤い線が引かれている。",
-                        type: "log",
+                        eventId: "map_system_galvania_cave_f4_action_1",
+                        type: "storyEvent",
                         imageKey: "overlay_dungeon_event",
                         blocksMovement: false,
                         baseTile: "G"
@@ -9025,8 +9204,8 @@ const FIXED_DUNGEON_MAPS = {
                         x: 40,
                         y: 8,
                         label: "魔軍の積荷を調べる",
-                        log: "箱には魔王城の紋章が焼き付けられている。兵糧、黒晶、予備の鎧が整然と並ぶ。",
-                        type: "log",
+                        eventId: "map_system_galvania_cave_f5_action_1",
+                        type: "storyEvent",
                         imageKey: "overlay_dungeon_event",
                         blocksMovement: false,
                         baseTile: "G"
@@ -9186,7 +9365,7 @@ const FIXED_DUNGEON_MAPS = {
                         mapSpriteMonsterId: 100064,
                         bossStatMultiplier: 1.32,
                         inactiveTile: "G",
-                        inspectLog: "宝の横穴を守る魔族がうずくまっている。洞窟突破には関係なさそうだ。",
+                        startEventId: "map_system_galvania_cave_f6_boss_1",
                         actionLabel: "横穴の守護魔に挑む",
                         challengeText: "この先には赤い宝箱が見える。守護魔に挑みますか？"
                     }
@@ -9214,6 +9393,9 @@ const FIXED_DUNGEON_MAPS = {
     DARK_CASTLE: {
         name: "魔王城ガルヴァニア",
         themeKey: "DARK_CASTLE",
+        entryRequiredAllyId: 204,
+        entryLockedEventId: "locked_dark_castle",
+        entryLockedText: "王宮聖騎士の結界が道を閉ざしている。",
         rank: 80,
         encounterRank: 80,
         rareMonsters: [
@@ -9224,8 +9406,8 @@ const FIXED_DUNGEON_MAPS = {
         ],
         battleBg: "battle_bg_dark_castle",
         entryPoint: {
-            x: 15,
-            y: 25
+            x: 16,
+            y: 27
         },
         floors: [
             {
@@ -9236,58 +9418,62 @@ const FIXED_DUNGEON_MAPS = {
                     100060,
                     100061
                 ],
-                width: 31,
-                height: 27,
+                width: 33,
+                height: 30,
                 tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWTDTWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWTTTTTWWWWWWWWWWWWW",
-                    "WWWWWWWWWTTTWTTTTTWTTTWWWWWWWWW",
-                    "WWWWWWWWWTTTWTTWTTWTTTWWWWWWWWW",
-                    "WWWWWWWWWTTTWTWWWTWTTTWWWWWWWWW",
-                    "WWWWWWWWWWTWWTWWWTWWTWWWWWWWWWW",
-                    "WWWWWWWWWTTTWTWWWTWTTTWWWWWWWWW",
-                    "WWWWWWWWWTTTWTWWWTWTTTWWWWWWWWW",
-                    "WWWWWWWWWTTTWTWWWTWTTTWWWWWWWWW",
-                    "WWWWTTWWTTTTTTWWWTTTTTTWWTTWWWW",
-                    "WWWDTTTTTTTTTTTTTTTTTTTTTTTDWWW",
-                    "WWWWTTWWTTTTTTTTTTTTTTTWWTTWWWW",
-                    "WWWWWWWWWWWWTTWWWTTWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWTTWWWTTWWWWWWWWWWWW",
-                    "WWWWWWWWTTTWTTWWWTTWTTTWWWWWWWW",
-                    "WWWWWWWWTTTWTTWWWTTWTTTWWWWWWWW",
-                    "WWWWWWWWTTTTTTTTTTTTTTTWWWWWWWW",
-                    "WWWWWWWWTTTWTTTGTTTWTTTWWWWWWWW",
-                    "WWWWWWWWTTTWTTTTTTTWTTTWWWWWWWW",
-                    "WWWWWWWWWWWWTTTTTTTWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWTTTTTWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWTTTTTWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWTTTWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWSWWWWWWWWWWWWWWW"
+                    "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+                    "IWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWI",
+                    "IWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWI",
+                    "IWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWI",
+                    "IWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWI",
+                    "IWWWWWWWWWWWWWWTUTWWWWWWWWWWWWWWI",
+                    "IWWWWWWWWWWWWWTTTTTWWWWWWWWWWWWWI",
+                    "IWWWWWWWWWTTTWTTTTTWTTTWWWWWWWWWI",
+                    "IWWWWWWWWWTTTWTTWTTWTTTWWWWWWWWWI",
+                    "IWWWWWWWWWTTTWTWWWTWTTTWWWWWWWWWI",
+                    "IWWWWWWWWWWTWWTWWWTWWTWWWWWWWWWWI",
+                    "IWWWWWWWWWTTTWTWWWTWTTTWWWWWWWWWI",
+                    "IWWWWWWWWWTTTWTWWWTWTTTWWWWWWWWWI",
+                    "IWWWWWWWWWTTTWTWWWTWTTTWWWWWWWWWI",
+                    "IWWWWTTWWTTTTTTWWWTTTTTTWWTTWWWWI",
+                    "IWWWUTTTTTTTTTTTTTTTTTTTTTTTUWWWI",
+                    "IWWWWTTWWTTTTTTTTTTTTTTTWWTTWWWWI",
+                    "IWWWWWWWWWWWWTTWWWTTWWWWWWWWWWWWI",
+                    "IWWWWWWWWWWWWTTWWWTTWWWWWWWWWWWWI",
+                    "IWWWWWWWWTTTWTTWWWTTWTTTWWWWWWWWI",
+                    "IWWWWWWWWTTTWTTWWWTTWTTTWWWWWWWWI",
+                    "IWWWWWWWWTTTTTTTTTTTTTTTWWWWWWWWI",
+                    "IWWWWWWWWTTTWTTTGTTTWTTTWWWWWWWWI",
+                    "IWWWWWWWWTTTWTTTTTTTWTTTWWWWWWWWI",
+                    "IWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWI",
+                    "IWWWWWWWWWWWWWTTTTTWWWWWWWWWWWWWI",
+                    "IWWWWWWWWWWWWWTTTTTWWWWWWWWWWWWWI",
+                    "IWWWWWWWWWWWWWWTTTWWWWWWWWWWWWWWI",
+                    "IWWWWWWWWWWWWWWWSWWWWWWWWWWWWWWWI"
+                ,
+                    "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII"
                 ],
                 floorDecorations: [
                     {
                         type: "castle_carpet",
-                        x: 14,
-                        y: 19,
+                        x: 15,
+                        y: 21,
                         width: 3,
                         height: 7
                     }
                 ],
                 blockingObjects: [
                     {
-                        x: 14,
-                        y: 3,
+                        x: 15,
+                        y: 5,
                         imageKey: "object_blocking_castle_candelabrum",
                         drawWidth: 32,
                         drawHeight: 48,
                         log: "重厚な燭台が道を塞いでいる。"
                     },
                     {
-                        x: 16,
-                        y: 3,
+                        x: 17,
+                        y: 5,
                         imageKey: "object_blocking_castle_candelabrum",
                         drawWidth: 32,
                         drawHeight: 48,
@@ -9296,46 +9482,46 @@ const FIXED_DUNGEON_MAPS = {
                 ],
                 floorLinks: [
                     {
-                        x: 15,
-                        y: 26,
+                        x: 16,
+                        y: 28,
                         to: "EXIT",
                         label: "外に出る"
                     },
                     {
-                        x: 3,
-                        y: 13,
+                        x: 4,
+                        y: 15,
                         toFloor: 2,
-                        targetX: 27,
-                        targetY: 13,
-                        label: "西館へ"
+                        targetX: 28,
+                        targetY: 15,
+                        label: "西館2階へ上がる"
                     },
                     {
-                        x: 27,
-                        y: 13,
+                        x: 28,
+                        y: 15,
                         toFloor: 4,
-                        targetX: 3,
-                        targetY: 13,
-                        label: "東館へ"
+                        targetX: 4,
+                        targetY: 15,
+                        label: "東館2階へ上がる"
                     },
                     {
-                        x: 15,
-                        y: 3,
+                        x: 16,
+                        y: 5,
                         toFloor: 6,
-                        targetX: 15,
-                        targetY: 24,
-                        label: "本館2階へ"
+                        targetX: 16,
+                        targetY: 26,
+                        label: "本館2階へ上がる"
                     }
                 ],
                 chests: [
                     {
-                        x: 10,
-                        y: 6,
+                        x: 11,
+                        y: 8,
                         itemId: 14,
                         type: "item"
                     },
                     {
-                        x: 20,
-                        y: 6,
+                        x: 21,
+                        y: 8,
                         itemId: 5,
                         type: "item"
                     }
@@ -9343,14 +9529,14 @@ const FIXED_DUNGEON_MAPS = {
                 bosses: [],
                 healSprings: [
                     {
-                        x: 15,
-                        y: 20
+                        x: 16,
+                        y: 22
                     }
                 ],
                 mapActions: [
                     {
-                        x: 9,
-                        y: 20,
+                        x: 10,
+                        y: 22,
                         label: "闇市を見る",
                         log: "魔族の商人が静かに品を広げている。",
                         type: "shop",
@@ -9362,8 +9548,8 @@ const FIXED_DUNGEON_MAPS = {
                         lockedText: "城内はまだ戦闘態勢だ。"
                     },
                     {
-                        x: 21,
-                        y: 18,
+                        x: 22,
+                        y: 20,
                         label: "武器を見る",
                         log: "魔族の鍛冶場から低い槌音が響く。",
                         type: "shop",
@@ -9375,8 +9561,8 @@ const FIXED_DUNGEON_MAPS = {
                         lockedText: "武器庫には近づけない。"
                     },
                     {
-                        x: 21,
-                        y: 20,
+                        x: 22,
+                        y: 22,
                         label: "防具を見る",
                         log: "闇に耐える防具が並んでいる。",
                         type: "shop",
@@ -9388,8 +9574,8 @@ const FIXED_DUNGEON_MAPS = {
                         lockedText: "防具庫には近づけない。"
                     },
                     {
-                        x: 9,
-                        y: 18,
+                        x: 10,
+                        y: 20,
                         label: "魔族兵と話す",
                         log: "魔族兵が城門の修復計画を見ている。",
                         type: "storyEvent",
@@ -9400,79 +9586,84 @@ const FIXED_DUNGEON_MAPS = {
                     }
                 ],
                 entryPoint: {
-                    x: 15,
-                    y: 25
+                    x: 16,
+                    y: 27
                 },
                 name: "",
                 themeKey: "DARK_CASTLE"
             },
             {
-                label: "西館1階・黒影廊",
+                label: "西館2階・黒影廊",
                 encounterRank: 71,
                 monsters: [
                     100061,
                     100063,
                     100064
                 ],
-                width: 31,
-                height: 27,
+                width: 33,
+                height: 30,
+                impassableTiles: ["K"],
                 tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWTTTWWWWWWWWWWWWWW",
-                    "WWWWTTTTTTTTTTTDTTTTTTTTTTTTTWW",
-                    "WWWWTTTTTTTTTTTTTWWWWWTWWTWWTWW",
-                    "WWWWWTWWWTWWWTWWWWTTTWTWTTTWTWW",
-                    "WWWWTTTWTTTWTTTWWWTTTWTWTTTWTWW",
-                    "WWWWTTTWTTTWTTTWWWTTTWTWTTTWTWW",
-                    "WWWWTTTWTTTWTTTWWWWTWWTWWWWWTWW",
-                    "WWWWWWWWWWWWWWWWWWTTTTTTTTTTTWW",
-                    "WWWWWWWTTTTTTTTTTTTWWWWWWWWWWWW",
-                    "WWWWWWTTWWTWWTTTTWWWWWWWWWWWWWW",
-                    "WWWWWTTWWTTTWWTTWWWWWTTTTTTTWWW",
-                    "WWWWWTTTTTTTTTTTWWWWWTTTTTTUWWW",
-                    "WWWWWTTWWTTTWWTTWWWWWTTTTTTTWWW",
-                    "WWWWWWTTWWTWWTTTTWWWWWWWWWWWWWW",
-                    "WWWWWWWTTTTTTTTTTTWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWTTWWWTTTTTTTWWW",
-                    "WWWWTTTWTTTWTTTWTTWWWTWWWWWTWWW",
-                    "WWWWTTTWTTTWTTTWTTWWWTWTTTWTWWW",
-                    "WWWWTTTWTTTWTTTWTTTTTTTTTTWTWWW",
-                    "WWWWWTWWWTWWWTWWTTWWWTWTTTWTWWW",
-                    "WWWWTTTTTTTTTTTTTTWWWTWWWWWTWWW",
-                    "WWWWTTTTTTTTTTTTTTWWWTTTTTTTWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                    "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWTTTWWWWWWWWWWWWWWK",
+                    "KWWWWTTTTTTTTTTTUTTTTTTTTTTTTTWWK",
+                    "KWWWWTTTTTTTTTTTTTWWWWWTWWTWWTWWK",
+                    "KWWWWWTWWWTWWWTWWWWTTTWTWTTTWTWWK",
+                    "KWWWWTTTWTTTWTTTWWWTTTWTWTTTWTWWK",
+                    "KWWWWTTTWTTTWTTTWWWTTTWTWTTTWTWWK",
+                    "KWWWWTTTWTTTWTTTWWWWTWWTWWWWWTWWK",
+                    "KWWWWWWWWWWWWWWWWWWTTTTTTTTTTTWWK",
+                    "KWWWWWWWTTTTTTTTTTTTWWWWWWWWWWWWK",
+                    "KWWWWWWTTWWTWWTTTTWWWWWWWWWWWWWWK",
+                    "KWWWWWTTWWTTTWWTTWWWWWTTTTTTTWWWK",
+                    "KWWWWWTTTTTTTTTTTWWWWWTTTTTTDWWWK",
+                    "KWWWWWTTWWTTTWWTTWWWWWTTTTTTTWWWK",
+                    "KWWWWWWTTWWTWWTTTTWWWWWWWWWWWWWWK",
+                    "KWWWWWWWTTTTTTTTTTTWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWTTWWWTTTTTTTWWWK",
+                    "KWWWWTTTWTTTWTTTWTTWWWTWWWWWTWWWK",
+                    "KWWWWTTTWTTTWTTTWTTWWWTWTTTWTWWWK",
+                    "KWWWWTTTWTTTWTTTWTTTTTTTTTTWTWWWK",
+                    "KWWWWWTWWWTWWWTWWTTWWWTWTTTWTWWWK",
+                    "KWWWWTTTTTTTTTTTTTTWWWTWWWWWTWWWK",
+                    "KWWWWTTTTTTTTTTTTTTWWWTTTTTTTWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK"
+                ,
+                    "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK"
                 ],
                 floorLinks: [
                     {
-                        x: 27,
-                        y: 13,
+                        x: 28,
+                        y: 15,
                         toFloor: 1,
-                        targetX: 3,
-                        targetY: 13,
-                        label: "本館1階へ戻る"
+                        targetX: 4,
+                        targetY: 15,
+                        label: "本館1階へ下りる"
                     },
                     {
-                        x: 15,
-                        y: 3,
+                        x: 16,
+                        y: 5,
                         toFloor: 3,
-                        targetX: 15,
-                        targetY: 24,
-                        label: "西館2階へ"
+                        targetX: 16,
+                        targetY: 26,
+                        label: "西館3階へ上がる"
                     }
                 ],
                 chests: [
                     {
-                        x: 5,
-                        y: 7,
+                        x: 6,
+                        y: 9,
                         itemId: 2,
                         type: "item"
                     },
                     {
-                        x: 5,
-                        y: 19,
+                        x: 6,
+                        y: 21,
                         itemId: 105,
                         type: "item",
                         rare: true
@@ -9480,24 +9671,24 @@ const FIXED_DUNGEON_MAPS = {
                 ],
                 tileEffects: [
                     {
-                        x: 10,
-                        y: 13,
+                        x: 11,
+                        y: 15,
                         type: "warp",
-                        toX: 22,
-                        toY: 13,
+                        toX: 23,
+                        toY: 15,
                         message: "黒鏡の回廊が左右を入れ替えた。"
                     },
                     {
-                        x: 22,
-                        y: 13,
+                        x: 23,
+                        y: 15,
                         type: "warp",
-                        toX: 10,
-                        toY: 13,
+                        toX: 11,
+                        toY: 15,
                         message: "黒鏡が元の廊下へ返した。"
                     },
                     {
-                        x: 24,
-                        y: 20,
+                        x: 25,
+                        y: 22,
                         type: "hunter",
                         id: "dark_castle_west_patrol",
                         imageKey: "overlay_dungeon_hunter_shadow",
@@ -9514,71 +9705,76 @@ const FIXED_DUNGEON_MAPS = {
                 ],
                 bosses: [],
                 entryPoint: {
-                    x: 27,
-                    y: 13
+                    x: 28,
+                    y: 15
                 },
                 name: "",
                 themeKey: "DARK_CASTLE"
             },
             {
-                label: "西館2階・結界の間",
+                label: "西館3階・結界の間",
                 encounterRank: 71,
                 monsters: [
                     100064,
                     100065,
                     100066
                 ],
-                width: 31,
-                height: 27,
+                width: 33,
+                height: 30,
+                impassableTiles: ["K"],
                 tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWTTTTBTTTTWWWWWWWWWWW",
-                    "WWWWWWWWWTTTTTTTTTTTTTWWWWWWWWW",
-                    "WWWWWWWWTTTTTTTTTTTTTTTWWWWWWWW",
-                    "WWWWWWWWTTTTTTTTTTTTTTTWWWWWWWW",
-                    "WWWWWWWWTTTTTTTTTTTTTTTWWWWWWWW",
-                    "WWWWWWWWTTTTTTTTTTTTTTTWWWWWWWW",
-                    "WWWWWWWWWTWWTTWWWTTWWTWWWWWWWWW",
-                    "WWWWWWWWTTTWTTWWWTTWTTTWWWWWWWW",
-                    "WWWWWWWWTTTWTTWWWTTWTTTWWWWWWWW",
-                    "WWWWWWWWTTTWTTWWWTTWTTTWWWWWWWW",
-                    "WWWWWWWWWWWWTTWWWTTWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWTTWWWTTWWWWWWWWWWWW",
-                    "WWWWWWWWTTTWTTWWWTTWTTTWWWWWWWW",
-                    "WWWWWWWWTTTWTTWWWTTWTTTWWWWWWWW",
-                    "WWWWWWWWTTTTTTWWWTTTTTTWWWWWWWW",
-                    "WWWWWWWWTTTWTTWWWTTWTTTWWWWWWWW",
-                    "WWWWWWWWTTTWTTTTTTTWTTTWWWWWWWW",
-                    "WWWWWWWWWWWWTTTTTTTWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWTTTTTWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWUWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                    "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWTTTTBTTTTWWWWWWWWWWWK",
+                    "KWWWWWWWWWTTTTTTTTTTTTTWWWWWWWWWK",
+                    "KWWWWWWWWTTTTTTTTTTTTTTTWWWWWWWWK",
+                    "KWWWWWWWWTTTTTTTTTTTTTTTWWWWWWWWK",
+                    "KWWWWWWWWTTTTTTTTTTTTTTTWWWWWWWWK",
+                    "KWWWWWWWWTTTTTTTTTTTTTTTWWWWWWWWK",
+                    "KWWWWWWWWWTWWTTWWWTTWWTWWWWWWWWWK",
+                    "KWWWWWWWWTTTWTTWWWTTWTTTWWWWWWWWK",
+                    "KWWWWWWWWTTTWTTWWWTTWTTTWWWWWWWWK",
+                    "KWWWWWWWWTTTWTTWWWTTWTTTWWWWWWWWK",
+                    "KWWWWWWWWWWWWTTWWWTTWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWTTWWWTTWWWWWWWWWWWWK",
+                    "KWWWWWWWWTTTWTTWWWTTWTTTWWWWWWWWK",
+                    "KWWWWWWWWTTTWTTWWWTTWTTTWWWWWWWWK",
+                    "KWWWWWWWWTTTTTTWWWTTTTTTWWWWWWWWK",
+                    "KWWWWWWWWTTTWTTWWWTTWTTTWWWWWWWWK",
+                    "KWWWWWWWWTTTWTTTTTTTWTTTWWWWWWWWK",
+                    "KWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWTTTTTWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWDWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK"
+                ,
+                    "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK"
                 ],
                 floorLinks: [
                     {
-                        x: 15,
-                        y: 24,
+                        x: 16,
+                        y: 26,
                         toFloor: 2,
-                        targetX: 15,
-                        targetY: 3,
-                        label: "西館1階へ戻る"
+                        targetX: 16,
+                        targetY: 5,
+                        label: "西館2階へ下りる"
                     }
                 ],
                 chests: [
                     {
-                        x: 9,
-                        y: 13,
+                        x: 10,
+                        y: 15,
                         itemId: 7,
                         type: "item"
                     },
                     {
-                        x: 21,
-                        y: 13,
+                        x: 22,
+                        y: 15,
                         itemId: 102,
                         type: "item",
                         rare: true
@@ -9586,8 +9782,8 @@ const FIXED_DUNGEON_MAPS = {
                 ],
                 bosses: [
                     {
-                        x: 15,
-                        y: 5,
+                        x: 16,
+                        y: 7,
                         monsterId: 301080,
                         keyRewardColor: "blue",
                         startEventId: "dark_castle_zeldras_encounter",
@@ -9596,79 +9792,84 @@ const FIXED_DUNGEON_MAPS = {
                     }
                 ],
                 entryPoint: {
-                    x: 15,
-                    y: 24
+                    x: 16,
+                    y: 26
                 },
                 name: "",
                 themeKey: "DARK_CASTLE"
             },
             {
-                label: "東館1階・風哭廊",
+                label: "東館2階・風哭廊",
                 encounterRank: 71,
                 monsters: [
                     100061,
                     100064,
                     100065
                 ],
-                width: 31,
-                height: 27,
+                width: 33,
+                height: 30,
+                impassableTiles: ["K"],
                 tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWDWWWWWWWWWWWWWWW",
-                    "WWWWWTTTWTWWWWTTTTTTTTTWWWWWWWW",
-                    "WWWWWTTTTTWWWWTWWWTWWWTWTTWWWWW",
-                    "WWWWWTTTWTWWWWTWWWTWWWTWCTTTWWW",
-                    "WWWWWWWWWTWWWWTWWWTWWWTWTTWTWWW",
-                    "WWWWWTTTWTWWWWTTTTTTTTTWWWWTWWW",
-                    "WWWWWTTTTTWWWWWWWWWWTTTTTTTTWWW",
-                    "WWWWWTTTWTTTTWWWWWWWWTWWWTTTWWW",
-                    "WWWWWWWWWWWWTWWWWWWWWTWWWTTTTWW",
-                    "WWWTTTTTTTTWTWWWWWWWTTTWWTWWTWW",
-                    "WWWUTTTTTTTWTTTTTTTTTTTTTTWWTWW",
-                    "WWWTTTTTTTTWTWWWWWWWTTTWWTWWTWW",
-                    "WWWWWWWWWWWWTWWWWWWWWWWWWTTTTWW",
-                    "WWWWWWWWWWTTTWWWWWTTTTTTTTTTWWW",
-                    "WWWWWWWWWWTWWWWWWWTTTTTTTTTWWWW",
-                    "WWWWWWWWWWTWWWWWWWWTWWWWTWWWWWW",
-                    "WWWWWTTTWTTTWTTTWWTTTWWTTTWWWWW",
-                    "WWWWWTTTTTTTTTTTWWTTTWWTRTWWWWW",
-                    "WWWWWTTTWTTTWTTTWWTTTWWTTTWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                    "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWUWWWWWWWWWWWWWWWK",
+                    "KWWWWWTTTWTWWWWTTTTTTTTTWWWWWWWWK",
+                    "KWWWWWTTTTTWWWWTWWWTWWWTWTTWWWWWK",
+                    "KWWWWWTTTWTWWWWTWWWTWWWTWCTTTWWWK",
+                    "KWWWWWWWWWTWWWWTWWWTWWWTWTTWTWWWK",
+                    "KWWWWWTTTWTWWWWTTTTTTTTTWWWWTWWWK",
+                    "KWWWWWTTTTTWWWWWWWWWWTTTTTTTTWWWK",
+                    "KWWWWWTTTWTTTTWWWWWWWWTWWWTTTWWWK",
+                    "KWWWWWWWWWWWWTWWWWWWWWTWWWTTTTWWK",
+                    "KWWWTTTTTTTTWTWWWWWWWTTTWWTWWTWWK",
+                    "KWWWDTTTTTTTWTTTTTTTTTTTTTTWWTWWK",
+                    "KWWWTTTTTTTTWTWWWWWWWTTTWWTWWTWWK",
+                    "KWWWWWWWWWWWWTWWWWWWWWWWWWTTTTWWK",
+                    "KWWWWWWWWWWTTTWWWWWTTTTTTTTTTWWWK",
+                    "KWWWWWWWWWWTWWWWWWWTTTTTTTTTWWWWK",
+                    "KWWWWWWWWWWTWWWWWWWWTWWWWTWWWWWWK",
+                    "KWWWWWTTTWTTTWTTTWWTTTWWTTTWWWWWK",
+                    "KWWWWWTTTTTTTTTTTWWTTTWWTRTWWWWWK",
+                    "KWWWWWTTTWTTTWTTTWWTTTWWTTTWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK"
+                ,
+                    "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK"
                 ],
                 floorLinks: [
                     {
-                        x: 3,
-                        y: 13,
+                        x: 4,
+                        y: 15,
                         toFloor: 1,
-                        targetX: 27,
-                        targetY: 13,
-                        label: "本館1階へ戻る"
+                        targetX: 28,
+                        targetY: 15,
+                        label: "本館1階へ下りる"
                     },
                     {
-                        x: 15,
-                        y: 3,
+                        x: 16,
+                        y: 5,
                         toFloor: 5,
-                        targetX: 15,
-                        targetY: 24,
-                        label: "東館2階へ"
+                        targetX: 16,
+                        targetY: 26,
+                        label: "東館3階へ上がる"
                     }
                 ],
                 chests: [
                     {
-                        x: 24,
-                        y: 6,
+                        x: 25,
+                        y: 8,
                         itemId: 2,
                         type: "item"
                     },
                     {
-                        x: 24,
-                        y: 20,
+                        x: 25,
+                        y: 22,
                         itemId: 105,
                         type: "item",
                         rare: true
@@ -9676,24 +9877,24 @@ const FIXED_DUNGEON_MAPS = {
                 ],
                 tileEffects: [
                     {
-                        x: 9,
-                        y: 13,
+                        x: 10,
+                        y: 15,
                         type: "warp",
-                        toX: 21,
-                        toY: 13,
+                        toX: 22,
+                        toY: 15,
                         message: "風哭の門が東西を反転した。"
                     },
                     {
-                        x: 21,
-                        y: 13,
+                        x: 22,
+                        y: 15,
                         type: "warp",
-                        toX: 9,
-                        toY: 13,
+                        toX: 10,
+                        toY: 15,
                         message: "風哭の門が閉じた。"
                     },
                     {
-                        x: 6,
-                        y: 20,
+                        x: 7,
+                        y: 22,
                         type: "hunter",
                         id: "dark_castle_east_patrol",
                         imageKey: "overlay_dungeon_hunter_shadow",
@@ -9710,71 +9911,76 @@ const FIXED_DUNGEON_MAPS = {
                 ],
                 bosses: [],
                 entryPoint: {
-                    x: 3,
-                    y: 13
+                    x: 4,
+                    y: 15
                 },
                 name: "",
                 themeKey: "DARK_CASTLE"
             },
             {
-                label: "東館2階・結界の間",
+                label: "東館3階・結界の間",
                 encounterRank: 71,
                 monsters: [
                     100064,
                     100066,
                     100067
                 ],
-                width: 31,
-                height: 27,
+                width: 33,
+                height: 30,
+                impassableTiles: ["K"],
                 tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWTTTTBTTTTWWWWWWWWWWW",
-                    "WWWWWWWWWTTTTTTTTTTTTTWWWWWWWWW",
-                    "WWWWWWWWTTTTTTTTTTTTTTTWWWWWWWW",
-                    "WWWWWWWWTTTTTTTTTTTTTTTWWWWWWWW",
-                    "WWWWWWWWTTTTTTTTTTTTTTTWWWWWWWW",
-                    "WWWWWWWWTTTTTTTTTTTTTTTWWWWWWWW",
-                    "WWWWWWWWWTWWTTWWWTTWWTWWWWWWWWW",
-                    "WWWWWWWWTTTWTTWWWTTWTTTWWWWWWWW",
-                    "WWWWWWWWTCTWTTWWWTTWTCTWWWWWWWW",
-                    "WWWWWWWWTTTWTTWWWTTWTTTWWWWWWWW",
-                    "WWWWWWWWWWWWTTWWWTTWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWTTWWWTTWWWWWWWWWWWW",
-                    "WWWWWWWWTTTWTTWWWTTWTTTWWWWWWWW",
-                    "WWWWWWWWTTTWTTWWWTTWTTTWWWWWWWW",
-                    "WWWWWWWWTTTTTTWWWTTTTTTWWWWWWWW",
-                    "WWWWWWWWTTTWTTWWWTTWTTTWWWWWWWW",
-                    "WWWWWWWWTTTWTTTTTTTWTTTWWWWWWWW",
-                    "WWWWWWWWWWWWTTTTTTTWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWTTTTTWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWUWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                    "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWTTTTBTTTTWWWWWWWWWWWK",
+                    "KWWWWWWWWWTTTTTTTTTTTTTWWWWWWWWWK",
+                    "KWWWWWWWWTTTTTTTTTTTTTTTWWWWWWWWK",
+                    "KWWWWWWWWTTTTTTTTTTTTTTTWWWWWWWWK",
+                    "KWWWWWWWWTTTTTTTTTTTTTTTWWWWWWWWK",
+                    "KWWWWWWWWTTTTTTTTTTTTTTTWWWWWWWWK",
+                    "KWWWWWWWWWTWWTTWWWTTWWTWWWWWWWWWK",
+                    "KWWWWWWWWTTTWTTWWWTTWTTTWWWWWWWWK",
+                    "KWWWWWWWWTCTWTTWWWTTWTCTWWWWWWWWK",
+                    "KWWWWWWWWTTTWTTWWWTTWTTTWWWWWWWWK",
+                    "KWWWWWWWWWWWWTTWWWTTWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWTTWWWTTWWWWWWWWWWWWK",
+                    "KWWWWWWWWTTTWTTWWWTTWTTTWWWWWWWWK",
+                    "KWWWWWWWWTTTWTTWWWTTWTTTWWWWWWWWK",
+                    "KWWWWWWWWTTTTTTWWWTTTTTTWWWWWWWWK",
+                    "KWWWWWWWWTTTWTTWWWTTWTTTWWWWWWWWK",
+                    "KWWWWWWWWTTTWTTTTTTTWTTTWWWWWWWWK",
+                    "KWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWTTTTTWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWDWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK"
+                ,
+                    "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK"
                 ],
                 floorLinks: [
                     {
-                        x: 15,
-                        y: 24,
+                        x: 16,
+                        y: 26,
                         toFloor: 4,
-                        targetX: 15,
-                        targetY: 3,
-                        label: "東館1階へ戻る"
+                        targetX: 16,
+                        targetY: 5,
+                        label: "東館2階へ下りる"
                     }
                 ],
                 chests: [
                     {
-                        x: 9,
-                        y: 13,
+                        x: 10,
+                        y: 15,
                         itemId: 5,
                         type: "item"
                     },
                     {
-                        x: 21,
-                        y: 13,
+                        x: 22,
+                        y: 15,
                         itemId: 103,
                         type: "item",
                         rare: true
@@ -9782,8 +9988,8 @@ const FIXED_DUNGEON_MAPS = {
                 ],
                 bosses: [
                     {
-                        x: 15,
-                        y: 5,
+                        x: 16,
+                        y: 7,
                         monsterId: 301082,
                         keyRewardColor: "red",
                         startEventId: "dark_castle_elmenas_encounter",
@@ -9792,8 +9998,8 @@ const FIXED_DUNGEON_MAPS = {
                     }
                 ],
                 entryPoint: {
-                    x: 15,
-                    y: 24
+                    x: 16,
+                    y: 26
                 },
                 name: "",
                 themeKey: "DARK_CASTLE"
@@ -9806,65 +10012,70 @@ const FIXED_DUNGEON_MAPS = {
                     100069,
                     100070
                 ],
-                width: 31,
-                height: 27,
+                width: 33,
+                height: 30,
+                impassableTiles: ["K"],
                 tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWTTTWWWWWWWWWWWWWW",
-                    "WWWWTTTWWWWWWTTDTTWWWWWWWWWWWWW",
-                    "WWWWTTTWWWWWWTTTTTWWWWWWWWWWWWW",
-                    "WWWWTTTWWWWWWWTTTWWWWWWTTTWWWWW",
-                    "WWWWWTWWWWWWWWWTWWWWWWWTTTWWWWW",
-                    "WWWWWTWTTTWWWWWTWWWWWWWTTTWWWWW",
-                    "WWWWWTWTTTWWWTTTTTWWWWWWTWWWWWW",
-                    "WWWWWTWTTTWWTTTTTTTWWWWWTWWWWWW",
-                    "WWWWWTWWTWWWTTTTTTTWWWWWTWWWWWW",
-                    "WWWWWTWWTWWWTTTBTTTWWWWWTWWWWWW",
-                    "WWWWWTWWTWWWWTTTTTWWWWWWTTTTTWW",
-                    "WWWWWTTTTWWWWWWTWWWWWWWWWWWWTWW",
-                    "WWWWWWWWTWWWWWWYWWWWWWWWWWWWTWW",
-                    "WWWWWWWWTTTTTWWTWWWWWWWWWWWWTWW",
-                    "WWWWWTTTTWWWTWWTWWWWWWWWWWWWTWW",
-                    "WWWWWTWWWWWWTWWXWWWWWTTTWWWWTWW",
-                    "WWWWWTTTTWWWTWWTTTTTTTTTTTTTTWW",
-                    "WWWWWWWTTTTTTWWWWWWWWTTTWWWWWWW",
-                    "WWWWWWWTWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWTWWWWTTTTTTTWWWWWWWWWWWW",
-                    "WWWWWWWTTTTTTTTTTTTTWWWWWWWWWWW",
-                    "WWWWWWWWWWWTTTTTTTTTWWWWWWWWWWW",
-                    "WWWWWWWWWWWWTTTUTTTWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                    "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWTTTWWWWWWWWWWWWWWK",
+                    "KWWWWTTTWWWWWWTTUTTWWWWWWWWWWWWWK",
+                    "KWWWWTTTWWWWWWTTTTTWWWWWWWWWWWWWK",
+                    "KWWWWTTTWWWWWWWTTTWWWWWWTTTWWWWWK",
+                    "KWWWWWTWWWWWWWWWTWWWWWWWTTTWWWWWK",
+                    "KWWWWWTWTTTWWWWWTWWWWWWWTTTWWWWWK",
+                    "KWWWWWTWTTTWWWTTTTTWWWWWWTWWWWWWK",
+                    "KWWWWWTWTTTWWTTTTTTTWWWWWTWWWWWWK",
+                    "KWWWWWTWWTWWWTTTTTTTWWWWWTWWWWWWK",
+                    "KWWWWWTWWTWWWTTTBTTTWWWWWTWWWWWWK",
+                    "KWWWWWTWWTWWWWTTTTTWWWWWWTTTTTWWK",
+                    "KWWWWWTTTTWWWWWWTWWWWWWWWWWWWTWWK",
+                    "KWWWWWWWWTWWWWWWYWWWWWWWWWWWWTWWK",
+                    "KWWWWWWWWTTTTTWWTWWWWWWWWWWWWTWWK",
+                    "KWWWWWTTTTWWWTWWTWWWWWWWWWWWWTWWK",
+                    "KWWWWWTWWWWWWTWWXWWWWWTTTWWWWTWWK",
+                    "KWWWWWTTTTWWWTWWTTTTTTTTTTTTTTWWK",
+                    "KWWWWWWWTTTTTTWWWWWWWWTTTWWWWWWWK",
+                    "KWWWWWWWTWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWTWWWWTTTTTTTWWWWWWWWWWWWK",
+                    "KWWWWWWWTTTTTTTTTTTTTWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWTTTTTTTTTWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWTTTDTTTWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK"
+                ,
+                    "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK"
                 ],
                 floorLinks: [
                     {
-                        x: 15,
-                        y: 24,
+                        x: 16,
+                        y: 26,
                         toFloor: 1,
-                        targetX: 15,
-                        targetY: 3,
-                        label: "本館1階へ戻る"
+                        targetX: 16,
+                        targetY: 5,
+                        label: "本館1階へ下りる"
                     },
                     {
-                        x: 15,
-                        y: 3,
+                        x: 16,
+                        y: 5,
                         toFloor: 7,
-                        targetX: 15,
-                        targetY: 24,
-                        label: "本館3階へ"
+                        targetX: 16,
+                        targetY: 26,
+                        label: "本館3階へ上がる"
                     }
                 ],
                 chests: [
                     {
-                        x: 5,
-                        y: 4,
+                        x: 6,
+                        y: 6,
                         itemId: 6,
                         type: "item"
                     },
                     {
-                        x: 24,
-                        y: 6,
+                        x: 25,
+                        y: 8,
                         itemId: 104,
                         type: "item",
                         rare: true
@@ -9872,24 +10083,24 @@ const FIXED_DUNGEON_MAPS = {
                 ],
                 tileEffects: [
                     {
-                        x: 8,
-                        y: 8,
+                        x: 9,
+                        y: 10,
                         type: "warp",
-                        toX: 22,
-                        toY: 18,
+                        toX: 23,
+                        toY: 20,
                         message: "夢幻回廊が景色を裏返した。"
                     },
                     {
-                        x: 22,
-                        y: 18,
+                        x: 23,
+                        y: 20,
                         type: "warp",
-                        toX: 8,
-                        toY: 8,
+                        toX: 9,
+                        toY: 10,
                         message: "夢の継ぎ目から戻った。"
                     },
                     {
-                        x: 24,
-                        y: 7,
+                        x: 25,
+                        y: 9,
                         type: "hunter",
                         id: "dark_castle_dream_guard",
                         imageKey: "overlay_dungeon_hunter_shadow",
@@ -9906,8 +10117,8 @@ const FIXED_DUNGEON_MAPS = {
                 ],
                 bosses: [
                     {
-                        x: 15,
-                        y: 11,
+                        x: 16,
+                        y: 13,
                         monsterId: 301081,
                         keyRewardColor: "gold",
                         startEventId: "dark_castle_belet_elm_encounter",
@@ -9916,8 +10127,8 @@ const FIXED_DUNGEON_MAPS = {
                     }
                 ],
                 entryPoint: {
-                    x: 15,
-                    y: 24
+                    x: 16,
+                    y: 26
                 },
                 name: "",
                 themeKey: "DARK_CASTLE"
@@ -9930,64 +10141,69 @@ const FIXED_DUNGEON_MAPS = {
                     100074,
                     100075
                 ],
-                width: 31,
-                height: 27,
+                width: 33,
+                height: 30,
+                impassableTiles: ["K"],
                 tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWTTTTTTTTTWWWWWWWWWWW",
-                    "WWWWWWWWWWTTTTTTTTTTTWWWWWWWWWW",
-                    "WWWWWWWWWWTTTTTTTTTTTWWWWWWWWWW",
-                    "WWWWWWWWWWTTTTTBTTTTTWWWWWWWWWW",
-                    "WWWWWWWWWWTTTTTTTTTTTWWWWWWWWWW",
-                    "WWWWWWWWWWWTTTTTTTTTWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWTTTWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWTTTWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWZWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWTTTWWTTTWWTTTWWWWWWWWW",
-                    "WWWWWWWWWTCTTTTTTTTTTTWWWWWWWWW",
-                    "WWWWWWWWWTTTWWTTTWWTTTWWWWWWWWW",
-                    "WWWWWWWWWWWWWWTTTWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWTTTWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWTTTWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWTTTWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWTTTWWWWWWWWWWWWWW",
-                    "WWWWWWWWTTTWWWTTTWWWTTTWWWWWWWW",
-                    "WWWWWWWWTCTTTTTTTTTTTRTWWWWWWWW",
-                    "WWWWWWWWTTTWWWTTTWWWTTTWWWWWWWW",
-                    "WWWWWWWWWWWWWWTTTWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWTTTWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWUWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                    "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWTTTTTTTTTWWWWWWWWWWWK",
+                    "KWWWWWWWWWWTTTTTTTTTTTWWWWWWWWWWK",
+                    "KWWWWWWWWWWTTTTTTTTTTTWWWWWWWWWWK",
+                    "KWWWWWWWWWWTTTTTBTTTTTWWWWWWWWWWK",
+                    "KWWWWWWWWWWTTTTTTTTTTTWWWWWWWWWWK",
+                    "KWWWWWWWWWWWTTTTTTTTTWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWTTTWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWTTTWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWZWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWTTTWWTTTWWTTTWWWWWWWWWK",
+                    "KWWWWWWWWWTCTTTTTTTTTTTWWWWWWWWWK",
+                    "KWWWWWWWWWTTTWWTTTWWTTTWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWTTTWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWTTTWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWTTTWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWTTTWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWTTTWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWTTTWWWTTTWWWTTTWWWWWWWWK",
+                    "KWWWWWWWWTCTTTTTTTTTTTRTWWWWWWWWK",
+                    "KWWWWWWWWTTTWWWTTTWWWTTTWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWTTTWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWTTTWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWDWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK"
+                ,
+                    "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK"
                 ],
                 floorLinks: [
                     {
-                        x: 15,
-                        y: 24,
+                        x: 16,
+                        y: 26,
                         toFloor: 6,
-                        targetX: 15,
-                        targetY: 3,
-                        label: "本館2階へ戻る"
+                        targetX: 16,
+                        targetY: 5,
+                        label: "本館2階へ下りる"
                     }
                 ],
                 chests: [
                     {
-                        x: 9,
-                        y: 20,
+                        x: 10,
+                        y: 22,
                         itemId: 7,
                         type: "item"
                     },
                     {
-                        x: 10,
-                        y: 12,
+                        x: 11,
+                        y: 14,
                         itemId: 100,
                         type: "item",
                         rare: true
                     },
                     {
-                        x: 21,
-                        y: 20,
+                        x: 22,
+                        y: 22,
                         itemId: 105,
                         type: "item",
                         rare: true
@@ -9995,8 +10211,8 @@ const FIXED_DUNGEON_MAPS = {
                 ],
                 bosses: [
                     {
-                        x: 15,
-                        y: 5,
+                        x: 16,
+                        y: 7,
                         monsterId: 301100,
                         startEventId: "dark_castle_zenon_encounter",
                         storyEventId: "dark_castle_clear",
@@ -10005,8 +10221,8 @@ const FIXED_DUNGEON_MAPS = {
                 ],
                 mapActions: [
                     {
-                        x: 20,
-                        y: 12,
+                        x: 21,
+                        y: 14,
                         label: "玉座の間を見渡す",
                         log: "滅びた玉座の前で、赤い空だけが静かに揺れている。",
                         type: "log",
@@ -10015,13 +10231,13 @@ const FIXED_DUNGEON_MAPS = {
                 ],
                 healSprings: [
                     {
-                        x: 20,
-                        y: 12
+                        x: 21,
+                        y: 14
                     }
                 ],
                 entryPoint: {
-                    x: 15,
-                    y: 24
+                    x: 16,
+                    y: 26
                 },
                 name: "",
                 themeKey: "DARK_CASTLE",
@@ -10030,8 +10246,8 @@ const FIXED_DUNGEON_MAPS = {
                         authoredPlacementId: "carpet-dark-final",
                         type: "castle_carpet",
                         imageKey: null,
-                        x: 13,
-                        y: 2,
+                        x: 14,
+                        y: 4,
                         width: 5,
                         height: 6,
                         blocking: false,
@@ -10283,7 +10499,7 @@ const FIXED_DUNGEON_MAPS = {
         },
         floors: [
             {
-                label: "蒼滴の道",
+                label: "地下1階・蒼滴の道",
                 encounterRank: 23,
                 monsters: [
                     100020,
@@ -10331,7 +10547,7 @@ const FIXED_DUNGEON_MAPS = {
                         toFloor: 2,
                         targetX: 4,
                         targetY: 20,
-                        label: "結晶の間へ"
+                        label: "地下2階へ下りる"
                     }
                 ],
                 tileEffects: [
@@ -10405,7 +10621,7 @@ const FIXED_DUNGEON_MAPS = {
                 themeKey: "CRENA_CAVE"
             },
             {
-                label: "青の結晶の間",
+                label: "地下2階・青の結晶の間",
                 encounterRank: 25,
                 monsters: [
                     100022,
@@ -10446,8 +10662,8 @@ const FIXED_DUNGEON_MAPS = {
                         y: 20,
                         toFloor: 1,
                         targetX: 22,
-                        targetY: 4,
-                        label: "入口へ戻る"
+                        targetY: 3,
+                        label: "地下1階へ上がる"
                     },
                     {
                         x: 23,
@@ -10455,7 +10671,7 @@ const FIXED_DUNGEON_MAPS = {
                         toFloor: 3,
                         targetX: 3,
                         targetY: 22,
-                        label: "結界の奥へ",
+                        label: "地下3階へ下りる",
                         requiredFlag: "darkCastleCleared",
                         lockedLabel: "結界を調べる",
                         lockedLog: "巧妙な結界に阻まれている。"
@@ -10526,7 +10742,7 @@ const FIXED_DUNGEON_MAPS = {
                 themeKey: "CRENA_CAVE"
             },
             {
-                label: "クレナ鍾乳洞深部・結晶裏路",
+                label: "地下3階・結晶裏路",
                 encounterRank: 91,
                 monsters: [
                     100082,
@@ -10578,7 +10794,7 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWTTTTTTTTWWWTWWWWWWWWTTTWWW",
                     "WWWTWWWWWWTWWWTWWWWWWWWTTTWWW",
                     "WWTTTWWWWWTWWWTWWWWWWWWTTTWWW",
-                    "WWTSTWWWWWTTTTTWWWWWWWWWWWWWW",
+                    "WWTUTWWWWWTTTTTWWWWWWWWWWWWWW",
                     "WWTTTWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
                 ],
@@ -10588,8 +10804,8 @@ const FIXED_DUNGEON_MAPS = {
                         y: 22,
                         toFloor: 2,
                         targetX: 23,
-                        targetY: 11,
-                        label: "結晶の間へ戻る"
+                        targetY: 10,
+                        label: "地下2階へ上がる"
                     },
                     {
                         x: 14,
@@ -10597,7 +10813,7 @@ const FIXED_DUNGEON_MAPS = {
                         toFloor: 4,
                         targetX: 2,
                         targetY: 22,
-                        label: "結界核へ"
+                        label: "地下4階へ下りる"
                     }
                 ],
                 tileEffects: [
@@ -10752,7 +10968,7 @@ const FIXED_DUNGEON_MAPS = {
                 themeKey: "CRENA_CAVE"
             },
             {
-                label: "クレナ鍾乳洞深部・結界核",
+                label: "地下4階・結界核",
                 encounterRank: 101,
                 monsters: [
                     100091,
@@ -10804,7 +11020,7 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWWWWWWTWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWTWWWWWWWWWWWWWW",
                     "WWTTTWWWWWWWWWTWWWWWWWWWWWWWW",
-                    "WWSTTTTTTTTTTTTWWWWWWWWWWWWWW",
+                    "WWUTTTTTTTTTTTTWWWWWWWWWWWWWW",
                     "WWTTTWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
                 ],
@@ -10815,7 +11031,7 @@ const FIXED_DUNGEON_MAPS = {
                         toFloor: 3,
                         targetX: 14,
                         targetY: 4,
-                        label: "結晶裏路へ戻る"
+                        label: "地下3階へ上がる"
                     }
                 ],
                 tileEffects: [
@@ -10894,6 +11110,9 @@ const FIXED_DUNGEON_MAPS = {
     DARK_SHRINE_RUINS: {
         name: "闇の神殿エクリプス跡",
         themeKey: "DARK_SHRINE_RUINS",
+        entryRequiredAllyId: 204,
+        entryLockedEventId: "locked_dark_shrine",
+        entryLockedText: "王国聖騎士の結界が入口を閉ざしている。",
         useDungeonWallFace: true,
         wallFaceMode: "overlay",
         wallFaceImg: "tile_dark_shrine_wall_face",
@@ -10901,12 +11120,12 @@ const FIXED_DUNGEON_MAPS = {
         encounterRank: 75,
         battleBg: "battle_bg_dark_shrine",
         entryPoint: {
-            x: 14,
-            y: 21
+            x: 15,
+            y: 23
         },
         floors: [
             {
-                label: "影残る拝廊",
+                label: "1階・影残る拝廊",
                 encounterRank: 76,
                 monsters: [
                     100068,
@@ -10914,76 +11133,80 @@ const FIXED_DUNGEON_MAPS = {
                     100070,
                     100071
                 ],
-                width: 29,
-                height: 23,
+                width: 31,
+                height: 26,
                 tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWTTTTTTTWWWWWWWWWWW",
-                    "WWTTTTTTWWWTTTTTTTWWWTTTTTTWW",
-                    "WWTTTTTTWWWTTTTTTTWWWTTTDTTWW",
-                    "WWTTCTTTWWWTTTBTTTTTTTTTTTTWW",
-                    "WWTTTTTTTTTTTTTTTTWWWTTTTTTWW",
-                    "WWTTTTTTWWWTTTTTTTWWWTTTTTTWW",
-                    "WWTTTTTTWWWTTTTTTTWWWTTTTTTWW",
-                    "WWWWWTWWWWWWWWWWWWWWWWWWTWWWW",
-                    "WWWWWTWWWWWWWWWWWWWWWWWWTWWWW",
-                    "WWWTTTTTTTTWWWWWWWTTTTTTTTWWW",
-                    "WWWTTTTTTTTWWWWWWWTTTTTTTTWWW",
-                    "WWWTTTTTTTTWWWWWWWTTTTTTTTWWW",
-                    "WWWTTTTTTTTTTTTTTTTTTTTTTTWWW",
-                    "WWWTTTTTTTTWWWTWWWTTTTTTTTWWW",
-                    "WWWTTTTTTTTWWWTWWWTTTTTTCTWWW",
-                    "WWWTTTTTTTTWWWTWWWTTTTTTTTWWW",
-                    "WWWWWWWWWWWTTTTTTTWWWWWWWWWWW",
-                    "WWWWWWWWWWWTTTTTTTWWWWWWWWWWW",
-                    "WWWWWWWWWWWTTTTTTTWWWWWWWWWWW",
-                    "WWWWWWWWWWWTTTSTTTWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                    "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+                    "IWWWWWWWWWWWWWWWWWWWWWWWWWWWWWI",
+                    "IWWWWWWWWWWWWWWWWWWWWWWWWWWWWWI",
+                    "IWWWWWWWWWWWWWWWWWWWWWWWWWWWWWI",
+                    "IWWWWWWWWWWWTTTTTTTWWWWWWWWWWWI",
+                    "IWWTTTTTTWWWTTTTTTTWWWTTTTTTWWI",
+                    "IWWTTTTTTWWWTTTTTTTWWWTTTUTTWWI",
+                    "IWWTTCTTTWWWTTTBTTTTTTTTTTTTWWI",
+                    "IWWTTTTTTTTTTTTTTTTWWWTTTTTTWWI",
+                    "IWWTTTTTTWWWTTTTTTTWWWTTTTTTWWI",
+                    "IWWTTTTTTWWWTTTTTTTWWWTTTTTTWWI",
+                    "IWWWWWTWWWWWWWWWWWWWWWWWWTWWWWI",
+                    "IWWWWWTWWWWWWWWWWWWWWWWWWTWWWWI",
+                    "IWWWTTTTTTTTWWWWWWWTTTTTTTTWWWI",
+                    "IWWWTTTTTTTTWWWWWWWTTTTTTTTWWWI",
+                    "IWWWTTTTTTTTWWWWWWWTTTTTTTTWWWI",
+                    "IWWWTTTTTTTTTTTTTTTTTTTTTTTWWWI",
+                    "IWWWTTTTTTTTWWWTWWWTTTTTTTTWWWI",
+                    "IWWWTTTTTTTTWWWTWWWTTTTTTCTWWWI",
+                    "IWWWTTTTTTTTWWWTWWWTTTTTTTTWWWI",
+                    "IWWWWWWWWWWWTTTTTTTWWWWWWWWWWWI",
+                    "IWWWWWWWWWWWTTTTTTTWWWWWWWWWWWI",
+                    "IWWWWWWWWWWWTTTTTTTWWWWWWWWWWWI",
+                    "IWWWWWWWWWWWTTTSTTTWWWWWWWWWWWI",
+                    "IWWWWWWWWWWWWWWWWWWWWWWWWWWWWWI"
+                ,
+                    "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIII"
                 ],
                 floorLinks: [
                     {
-                        x: 14,
-                        y: 21,
+                        x: 15,
+                        y: 23,
                         to: "EXIT",
                         label: "外へ出る"
                     },
                     {
-                        x: 24,
-                        y: 4,
+                        x: 25,
+                        y: 6,
                         toFloor: 2,
-                        targetX: 2,
-                        targetY: 22,
-                        label: "隠し祭壇へ"
+                        targetX: 3,
+                        targetY: 24,
+                        label: "2階へ上がる"
                     }
                 ],
                 tileEffects: [
                     {
-                        x: 6,
-                        y: 14,
+                        x: 7,
+                        y: 16,
                         type: "poison",
                         damageRate: 0.08,
                         message: "闇の霧が命を削る！"
                     },
                     {
-                        x: 5,
-                        y: 6,
+                        x: 6,
+                        y: 8,
                         type: "warp",
-                        toX: 24,
-                        toY: 6,
+                        toX: 25,
+                        toY: 8,
                         message: "影の門に呑まれた。"
                     },
                     {
-                        x: 24,
-                        y: 6,
+                        x: 25,
+                        y: 8,
                         type: "warp",
-                        toX: 5,
-                        toY: 6,
+                        toX: 6,
+                        toY: 8,
                         message: "影の門が開いた。"
                     },
                     {
-                        x: 22,
-                        y: 14,
+                        x: 23,
+                        y: 16,
                         type: "hunter",
                         id: "shrine_shadow",
                         imageKey: "overlay_dungeon_hunter_shadow",
@@ -11000,8 +11223,8 @@ const FIXED_DUNGEON_MAPS = {
                 ],
                 mapActions: [
                     {
-                        x: 14,
-                        y: 19,
+                        x: 15,
+                        y: 21,
                         label: "クロードに声をかける",
                         log: "クロードが、奥から漏れる闇を警戒している。",
                         type: "quest",
@@ -11009,8 +11232,8 @@ const FIXED_DUNGEON_MAPS = {
                         imageKey: "overlay_companion_claude"
                     },
                     {
-                        x: 15,
-                        y: 19,
+                        x: 16,
+                        y: 21,
                         label: "レオンに声をかける",
                         log: "レオンが、神殿跡地に残る光の痕跡を確かめている。",
                         type: "quest",
@@ -11020,8 +11243,8 @@ const FIXED_DUNGEON_MAPS = {
                 ],
                 bosses: [
                     {
-                        x: 14,
-                        y: 5,
+                        x: 15,
+                        y: 7,
                         monsterId: 302206,
                         questId: "claude_leon_dark_shrine",
                         startEventId: "quest_claude_leon_encounter",
@@ -11033,108 +11256,113 @@ const FIXED_DUNGEON_MAPS = {
                 ],
                 chests: [
                     {
-                        x: 4,
-                        y: 5,
+                        x: 5,
+                        y: 7,
                         itemId: 103,
                         type: "item",
                         rare: true
                     },
                     {
-                        x: 24,
-                        y: 16,
+                        x: 25,
+                        y: 18,
                         itemId: 105,
                         type: "item",
                         rare: true
                     }
                 ],
                 entryPoint: {
-                    x: 14,
-                    y: 21
+                    x: 15,
+                    y: 23
                 }
             },
             {
-                label: "月影の祭壇",
+                label: "2階・月影の祭壇",
                 encounterRank: 96,
                 monsters: [
                     100086,
                     100087,
                     100089
                 ],
-                width: 31,
-                height: 25,
+                width: 33,
+                height: 28,
+                impassableTiles: ["K"],
                 tiles: [
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWTTTTTTTTTWWWWWWWWWWW",
-                    "WWWWWWWWWWWTTTTTTTTTWWWWWWWWWWW",
-                    "WWWWWWWWWWWTTTTBTTTTWWWWWWWWWWW",
-                    "WWTTTTTTTWWTTTTTTTTTWWTTTTTTTWW",
-                    "WWTTTTTTTWWTTTTTTTTTWWTTTTTTTWW",
-                    "WWTTTTTTTWWTTTTTTTTTWWTTTTTTTWW",
-                    "WWTTCTTTTTTTTTTTTTTTTTTTTTTTTWW",
-                    "WWTTTTTTTWWWWWWWWWWWWWTTTTTTTWW",
-                    "WWTTTTTTTWWWWWWWWWWWWWTTTTTTTWW",
-                    "WWTTTTTTTWWWWWWWWWWWWWTTTTTTTWW",
-                    "WWWWWWTWWWWWWWWWWWWWWWWWWTWWWWW",
-                    "WWWWWWTWWWWWWWWWWWWWWWWWWTWWWWW",
-                    "WWWWWWTWWWWWWWWWWWWWWWWWWTWWWWW",
-                    "WWWTTTTTTTTWWWWWWWWWTTTTTTTTWWW",
-                    "WWWTTTTTTTTWWWWWWWWWTTTTTTTTWWW",
-                    "WWWTTTTTTTTWTTTTTTTWTTTTTTTTWWW",
-                    "WWWTTTTTTTTTTTTTTTTWTTTTTTCTWWW",
-                    "WWWTTTTTTTTWTTTTTTTWTTTTTTTTWWW",
-                    "WWWTTTTTTTTWTTTTTTTTTTTTTTTTWWW",
-                    "WWWTTTTTTTTWTTTTTTTWTTTTTTTTWWW",
-                    "WWUTTTTWWWWWTTTTTTTWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                    "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWTTTTTTTTTWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWTTTTTTTTTWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWTTTTBTTTTWWWWWWWWWWWK",
+                    "KWWTTTTTTTWWTTTTTTTTTWWTTTTTTTWWK",
+                    "KWWTTTTTTTWWTTTTTTTTTWWTTTTTTTWWK",
+                    "KWWTTTTTTTWWTTTTTTTTTWWTTTTTTTWWK",
+                    "KWWTTCTTTTTTTTTTTTTTTTTTTTTTTTWWK",
+                    "KWWTTTTTTTWWWWWWWWWWWWWTTTTTTTWWK",
+                    "KWWTTTTTTTWWWWWWWWWWWWWTTTTTTTWWK",
+                    "KWWTTTTTTTWWWWWWWWWWWWWTTTTTTTWWK",
+                    "KWWWWWWTWWWWWWWWWWWWWWWWWWTWWWWWK",
+                    "KWWWWWWTWWWWWWWWWWWWWWWWWWTWWWWWK",
+                    "KWWWWWWTWWWWWWWWWWWWWWWWWWTWWWWWK",
+                    "KWWWTTTTTTTTWWWWWWWWWTTTTTTTTWWWK",
+                    "KWWWTTTTTTTTWWWWWWWWWTTTTTTTTWWWK",
+                    "KWWWTTTTTTTTWTTTTTTTWTTTTTTTTWWWK",
+                    "KWWWTTTTTTTTTTTTTTTTWTTTTTTCTWWWK",
+                    "KWWWTTTTTTTTWTTTTTTTWTTTTTTTTWWWK",
+                    "KWWWTTTTTTTTWTTTTTTTTTTTTTTTTWWWK",
+                    "KWWWTTTTTTTTWTTTTTTTWTTTTTTTTWWWK",
+                    "KWWDTTTTWWWWWTTTTTTTWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK"
+                ,
+                    "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK"
                 ],
                 floorLinks: [
                     {
-                        x: 2,
-                        y: 22,
+                        x: 3,
+                        y: 24,
                         toFloor: 1,
-                        targetX: 24,
-                        targetY: 5,
-                        label: "拝廊へ戻る"
+                        targetX: 25,
+                        targetY: 6,
+                        label: "1階へ下りる"
                     }
                 ],
                 tileEffects: [
                     {
-                        x: 6,
-                        y: 8,
+                        x: 7,
+                        y: 10,
                         type: "ice",
                         maxSlide: 26,
                         message: "月光の床を滑った。"
                     },
                     {
-                        x: 25,
-                        y: 8,
+                        x: 26,
+                        y: 10,
                         type: "poison",
                         damageRate: 0.08,
                         message: "月影の闇が染み込む！"
                     },
                     {
-                        x: 6,
-                        y: 18,
+                        x: 7,
+                        y: 20,
                         type: "warp",
-                        toX: 24,
-                        toY: 18,
+                        toX: 25,
+                        toY: 20,
                         message: "月影が左右を反転させた。"
                     },
                     {
-                        x: 24,
-                        y: 18,
+                        x: 25,
+                        y: 20,
                         type: "warp",
-                        toX: 6,
-                        toY: 18,
+                        toX: 7,
+                        toY: 20,
                         message: "月影が元の祭廊へ返した。"
                     }
                 ],
                 mapActions: [
                     {
-                        x: 15,
-                        y: 19,
+                        x: 16,
+                        y: 21,
                         label: "月影の声を聞く",
                         log: "月光の向こうから、静かな呼び声が届く。",
                         type: "quest",
@@ -11142,8 +11370,8 @@ const FIXED_DUNGEON_MAPS = {
                         imageKey: "overlay_companion_luna"
                     },
                     {
-                        x: 15,
-                        y: 20,
+                        x: 16,
+                        y: 22,
                         label: "祭壇の残光に触れる",
                         log: "崩れた祭壇に、月明かりのような冷たい闇が残っている。",
                         type: "log",
@@ -11152,8 +11380,8 @@ const FIXED_DUNGEON_MAPS = {
                 ],
                 bosses: [
                     {
-                        x: 15,
-                        y: 4,
+                        x: 16,
+                        y: 6,
                         monsterId: 902000,
                         questId: "luna_hidden_dark_shrine",
                         startEventId: "quest_luna_hidden_encounter",
@@ -11165,15 +11393,15 @@ const FIXED_DUNGEON_MAPS = {
                 ],
                 chests: [
                     {
-                        x: 4,
-                        y: 8,
+                        x: 5,
+                        y: 10,
                         itemId: 106,
                         type: "item",
                         rare: true
                     },
                     {
-                        x: 26,
-                        y: 18,
+                        x: 27,
+                        y: 20,
                         itemId: 107,
                         type: "item",
                         rare: true
@@ -11181,13 +11409,13 @@ const FIXED_DUNGEON_MAPS = {
                 ],
                 healSprings: [
                     {
-                        x: 15,
-                        y: 20
+                        x: 16,
+                        y: 22
                     }
                 ],
                 entryPoint: {
-                    x: 2,
-                    y: 22
+                    x: 3,
+                    y: 24
                 }
             }
         ]
@@ -11602,8 +11830,8 @@ const AUTHORED_MAP_PROP_PLACEMENTS = [
         id: "carpet-thunder-final",
         areaKey: "THUNDER_FORT",
         floor: 6,
-        x: 13,
-        y: 4,
+        x: 14,
+        y: 6,
         width: 5,
         height: 7,
         type: "castle_carpet",
@@ -11614,8 +11842,8 @@ const AUTHORED_MAP_PROP_PLACEMENTS = [
         id: "carpet-light-final",
         areaKey: "LIGHT_PALACE",
         floor: 4,
-        x: 15,
-        y: 6,
+        x: 16,
+        y: 8,
         width: 3,
         height: 7,
         type: "castle_carpet",
@@ -11626,8 +11854,8 @@ const AUTHORED_MAP_PROP_PLACEMENTS = [
         id: "carpet-dark-final",
         areaKey: "DARK_CASTLE",
         floor: 7,
-        x: 13,
-        y: 2,
+        x: 14,
+        y: 4,
         width: 5,
         height: 6,
         type: "castle_carpet",

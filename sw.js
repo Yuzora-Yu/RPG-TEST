@@ -95,9 +95,9 @@ const INITIAL_IMAGE_PRECACHE = ASSET_WARMUP.criticalImages || [
   "assets/monsters/monster_301000.png",
   "assets/generated/battle-field-ai.png",
   "assets/generated/battle-dungeon-ai.png",
-  "assets/map/terrain/terrain_grass_field_v001.png",
-  "assets/map/objects/object_field_forest_v003.png",
-  "assets/map/overlays/overlay_npc_villager_v002.png",
+  "assets/map/terrain/terrain_grass_field.png",
+  "assets/map/objects/object_field_forest.png",
+  "assets/map/overlays/overlay_npc_villager.png",
 ];
 
 // 初回install時は最低限の重要画像だけをキャッシュする。

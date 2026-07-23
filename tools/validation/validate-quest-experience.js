@@ -46,10 +46,12 @@ function getMonsterName(id) {
 for (const marker of [
     'getAdjacentFixedBoss',
     "tile === 'B'",
-    '強敵が行く手を塞いでいる',
     'Field.isFixedBossAvailable(bossDef)'
 ]) {
     if (!mainSource.includes(marker)) throw new Error(`Boss contact flow marker is missing: ${marker}`);
+}
+for (const marker of ['bossDef?.challengeText', '覚悟を決めて挑みますか？']) {
+    if (!dungeonSource.includes(marker)) throw new Error(`Fixed-boss confirmation marker is missing: ${marker}`);
 }
 if (!dungeonSource.includes('isFixedBossTriggerAllowed')) {
     throw new Error('Fixed quest bosses do not have a shared final trigger gate.');

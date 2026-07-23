@@ -50,10 +50,10 @@ def main() -> None:
     parser.add_argument("--ruins-battle-source", required=True, type=Path)
     parser.add_argument("--project-root", required=True, type=Path)
     args = parser.parse_args()
-    build_tile(args.floor_source, args.project_root / "assets/map/terrain/tile_wind_temple_floor_v001.png")
-    build_tile(args.wall_source, args.project_root / "assets/map/terrain/tile_wind_temple_wall_v001.png")
-    build_battle(args.indoor_battle_source, args.project_root / "assets/generated/battle-wind-temple-v001.png")
-    build_battle(args.ruins_battle_source, args.project_root / "assets/generated/battle-mountain-wind-ruins-v001.png")
+    build_tile(args.floor_source, args.project_root / "assets/map/terrain/tile_wind_temple_floor.png")
+    build_tile(args.wall_source, args.project_root / "assets/map/terrain/tile_wind_temple_wall.png")
+    build_battle(args.indoor_battle_source, args.project_root / "assets/generated/battle-wind-temple.png")
+    build_battle(args.ruins_battle_source, args.project_root / "assets/generated/battle-mountain-wind-ruins.png")
 
 
 if __name__ == "__main__":

@@ -94,7 +94,7 @@ for (const source of [read('assets.js'), read('monster-images.js'), read('monste
     }
 }
 
-if (assets.cacheWarmup?.version !== '2026-07-18-summit-temple-sky-v55') {
+if (assets.cacheWarmup?.version !== '2026-07-18-summit-temple-sky-v58') {
     errors.push('assets.js cache warmup version is stale');
 }
 const mainCacheName = read('main.js').match(/fullDataCacheName:\s*'([^']+)'/)?.[1] || '';

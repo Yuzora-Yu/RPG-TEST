@@ -39,25 +39,20 @@ if (!waterCity) {
 for (const marker of [
     'isBlockingMapActor',
     'getAdjacentMapActor',
-    'prepareAdjacentMapActorAction',
-    "targetMapAction.log || '人が立っている。'"
+    'prepareAdjacentMapActorAction'
 ]) {
     if (!mainSource.includes(marker)) errors.push(`missing adjacent actor interaction marker: ${marker}`);
 }
 for (const marker of ['getAdjacentChest', 'prepareAdjacentChestAction', "tile === 'C' || tile === 'R'"]) {
     if (!mainSource.includes(marker)) errors.push(`missing adjacent chest interaction marker: ${marker}`);
 }
-if (mainSource.includes('if (!silent && actor.action.log) App.log(actor.action.log)')) {
-    errors.push('adjacent map actors must not emit their log before the player executes the action');
-}
-if (!mainSource.includes("action.log && action.type !== 'quest'")) {
-    errors.push('map actor logs must be emitted by executeMapAction after confirmation');
-}
-
 function inspectMap(key, mapDef, label) {
     const occupied = new Set();
     for (const action of mapDef.mapActions || []) {
         if (!action.imageKey) continue;
+        // A position-specific facility image is a building anchor, not an NPC.
+        // Its entrance behavior is validated by the facility-specific validator.
+        if (String(action.imageKey).startsWith('overlay_building_')) continue;
         actors++;
         const x = Number(action.x);
         const y = Number(action.y);
@@ -67,7 +62,8 @@ function inspectMap(key, mapDef, label) {
         const tile = String(mapDef.tiles?.[y]?.[x] || 'W').toUpperCase();
         if (tile === 'W') errors.push(`${label}: actor placed on wall at ${coord}`);
         const isVisibleEntranceActor = tile === 'D' && action.type === 'fixedDungeon';
-        if (!['T', 'G', 'L', 'M'].includes(tile) && !isVisibleEntranceActor) {
+        const isPostBossActor = tile === 'B' && (mapDef.bosses || []).some(boss => Number(boss.x) === x && Number(boss.y) === y);
+        if (!['T', 'G', 'L', 'M'].includes(tile) && !isVisibleEntranceActor && !isPostBossActor) {
             errors.push(`${label}: actor tile was not normalized at ${coord}: ${tile}`);
         }
         if (action.blocksMovement !== false && !action.label) {

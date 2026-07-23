@@ -2,7 +2,7 @@
 
 ## Battle backgrounds
 
-- World-map ship encounters: `battle_bg_sea` → `assets/generated/battle-sea-v002.png`
+- World-map ship encounters: `battle_bg_sea` → `assets/generated/battle-sea.png`
 - World-map forest encounters: `battle_bg_field_forest` → `assets/generated/battle-forest-ai.png`
 - Forbidden Forest remains isolated on `battle_bg_forest`.
 - Abyss ordinary boss floors: `battle_bg_abyss_boss`.

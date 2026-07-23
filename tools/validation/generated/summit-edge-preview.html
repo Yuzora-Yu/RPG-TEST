@@ -1,0 +1,31 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Summit elevated edge preview</title>
+<style>
+  html,body{margin:0;background:#1b2636;color:#fff;font:14px sans-serif}
+  canvas{display:block;margin:16px;image-rendering:pixelated;background:#5f9bd3;border:1px solid #fff}
+</style>
+<canvas id="preview" width="880" height="600"></canvas>
+<script src="../../../map_render_shared.js"></script>
+<script>
+(async()=>{
+  const c=document.getElementById('preview'),ctx=c.getContext('2d');
+  ctx.imageSmoothingEnabled=false;
+  const scale=3,tile=32,ox=80,oy=80;
+  const rows=['^^^^^^^','^TTTTT^','^TTTTT^','^TTTTT^','^^^^^^^'];
+  const definition={terrainTiles:['T'],voidTiles:['^'],thickness:6,joinOverlap:1,cornerOverhang:6,keys:{
+    n:'overlay_summit_temple_cliff_edge_n_v001.png',e:'overlay_summit_temple_cliff_edge_e_v001.png',
+    s:'overlay_summit_temple_cliff_edge_s_v001.png',w:'overlay_summit_temple_cliff_edge_w_v001.png'}};
+  const base='../../../assets/map/overlays/';
+  const images={};
+  await Promise.all(Object.values(definition.keys).map(name=>new Promise((resolve,reject)=>{const i=new Image();i.onload=()=>{images[name]=i;resolve()};i.onerror=reject;i.src=base+name})));
+  rows.forEach((row,y)=>[...row].forEach((sign,x)=>{
+    ctx.fillStyle=sign==='T'?'#f2f1e8':'#5f9bd3';ctx.fillRect(ox+x*tile*scale,oy+y*tile*scale,tile*scale,tile*scale);
+  }));
+  const tileAt=(x,y)=>rows[y]?.[x]||'^';
+  rows.forEach((row,y)=>[...row].forEach((sign,x)=>{
+    const plan=MapRenderShared.elevatedEdgeCellPlan({map:{tiles:rows},definition,x,y,tileSign:sign,tileAtFn:tileAt});
+    plan?.edges.forEach(edge=>ctx.drawImage(images[edge.key],ox+(x*tile+edge.x)*scale,oy+(y*tile+edge.y)*scale,edge.width*scale,edge.height*scale));
+  }));
+})();
+</script>

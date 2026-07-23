@@ -1883,7 +1883,7 @@
           "activeReference": false
         },
         {
-          "path": "assets/map/terrain/tile_abyss_outer_wall_v003_a.png",
+          "path": "assets/map/terrain/tile_abyss_outer_wall_variant_a.png",
           "bytes": 2448,
           "registryReference": true,
           "directReferences": [
@@ -1912,7 +1912,7 @@
           "activeReference": false
         },
         {
-          "path": "assets/map/terrain/tile_abyss_outer_wall_v003_b.png",
+          "path": "assets/map/terrain/tile_abyss_outer_wall_variant_b.png",
           "bytes": 2435,
           "registryReference": true,
           "directReferences": [
@@ -1941,7 +1941,7 @@
           "activeReference": false
         },
         {
-          "path": "assets/map/terrain/tile_abyss_outer_wall_v003_c.png",
+          "path": "assets/map/terrain/tile_abyss_outer_wall_variant_c.png",
           "bytes": 2432,
           "registryReference": true,
           "directReferences": [
@@ -1970,7 +1970,7 @@
           "activeReference": false
         },
         {
-          "path": "assets/map/terrain/tile_abyss_outer_wall_v003_d.png",
+          "path": "assets/map/terrain/tile_abyss_outer_wall_variant_d.png",
           "bytes": 2423,
           "registryReference": true,
           "directReferences": [
@@ -3031,7 +3031,7 @@
           "activeReference": false
         },
         {
-          "path": "assets/map/terrain/tile_abyss_outer_prism_paving_v003_b.png",
+          "path": "assets/map/terrain/tile_abyss_outer_prism_paving_variant_b.png",
           "bytes": 2228,
           "registryReference": true,
           "directReferences": [
@@ -3053,7 +3053,7 @@
           "activeReference": false
         },
         {
-          "path": "assets/map/terrain/tile_abyss_outer_prism_paving_v003_d.png",
+          "path": "assets/map/terrain/tile_abyss_outer_prism_paving_variant_d.png",
           "bytes": 2193,
           "registryReference": true,
           "directReferences": [
@@ -3075,7 +3075,7 @@
           "activeReference": false
         },
         {
-          "path": "assets/map/terrain/tile_abyss_outer_prism_paving_v003_a.png",
+          "path": "assets/map/terrain/tile_abyss_outer_prism_paving_variant_a.png",
           "bytes": 2190,
           "registryReference": true,
           "directReferences": [
@@ -3163,7 +3163,7 @@
           "activeReference": false
         },
         {
-          "path": "assets/map/terrain/tile_abyss_outer_prism_paving_v003_c.png",
+          "path": "assets/map/terrain/tile_abyss_outer_prism_paving_variant_c.png",
           "bytes": 2125,
           "registryReference": true,
           "directReferences": [

@@ -2,12 +2,12 @@
   "version": "2026-07-17-battle-backgrounds-v002",
   "buildScript": "tools/assets/build-battle-background.py",
   "assets": [
-    { "key": "battle_bg_sea", "source": "field-magic-boat-source.png", "runtime": "assets/generated/battle-sea-v002.png", "usage": "world sea encounters" },
-    { "key": "battle_bg_abyss_boss", "source": "abyss-boss-source.png", "runtime": "assets/generated/battle-abyss-boss-v001.png", "usage": "ordinary Abyss boss floors" },
-    { "key": "battle_bg_abyss_floor_200", "source": "abyss-floor-200-boss-source.png", "runtime": "assets/generated/battle-abyss-floor-200-v001.png", "usage": "Abyss floor 200 boss only" }
+    { "key": "battle_bg_sea", "source": "field-magic-boat-source.png", "runtime": "assets/generated/battle-sea.png", "usage": "world sea encounters" },
+    { "key": "battle_bg_abyss_boss", "source": "abyss-boss-source.png", "runtime": "assets/generated/battle-abyss-boss.png", "usage": "ordinary Abyss boss floors" },
+    { "key": "battle_bg_abyss_floor_200", "source": "abyss-floor-200-boss-source.png", "runtime": "assets/generated/battle-abyss-floor-200.png", "usage": "Abyss floor 200 boss only" }
   ],
   "existingExplicitAssignments": [
     { "key": "battle_bg_first", "runtime": "assets/generated/first-battle.png", "usage": "game_start and its retry only" },
-    { "key": "battle_bg_mountain_wind_ruins", "runtime": "assets/generated/battle-mountain-wind-ruins-v001.png", "usage": "TRIAL_ISLAND and SUMMIT_TEMPLE" }
+    { "key": "battle_bg_mountain_wind_ruins", "runtime": "assets/generated/battle-mountain-wind-ruins.png", "usage": "TRIAL_ISLAND and SUMMIT_TEMPLE" }
   ]
 }

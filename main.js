@@ -5815,7 +5815,7 @@ const Field = {
                 const drawX = offsetX + x * size;
                 const drawY = offsetY + y * size;
                 ctx.fillStyle = Field.getMiniMapTileColor
-                    ? Field.getMiniMapTileColor(parts.baseTile, x, y)
+                    ? Field.getMiniMapTileColor(tile, x, y)
                     : (cfg.color || '#000');
                 ctx.fillRect(drawX, drawY, Math.ceil(size), Math.ceil(size));
                 if (parts.overlayConfig && Field.drawMapOverlayMarker) {
@@ -5959,8 +5959,16 @@ const Field = {
 
     getMiniMapTileColor: (tileSign, tileX = null, tileY = null) => {
         const upper = String(tileSign || 'W').toUpperCase();
+        if (!Field.currentMapData && tileX !== null && tileY !== null
+            && typeof MapRegistry !== 'undefined' && typeof MapRegistry.getWorldSurfaceAt === 'function') {
+            const surface = MapRegistry.getWorldSurfaceAt(tileX, tileY);
+            if (surface?.isSea) return '#246f96';
+        }
         if (upper === 'S' && Field.currentMapData?.autoExitOnPerimeter === true) {
             return Field.currentMapData.perimeterExitMiniMapColor || '#766746';
+        }
+        if (Field.currentMapData?.isFixed && Field.getMinimapExitCellState?.(tileX, tileY) === 'inner') {
+            return '#000';
         }
         const cfg = Field.getTileConfigForDraw
             ? Field.getTileConfigForDraw(upper, tileX, tileY)
@@ -5973,6 +5981,70 @@ const Field = {
         const themeKey = String(Field.currentMapData?.themeKey || Field.getCurrentAreaKey?.() || '').toUpperCase();
         if (themeKey === 'DARK_CASTLE' && (upper === 'T' || upper === 'G')) return '#465064';
         return color;
+    },
+
+    _minimapExitCellCache: new WeakMap(),
+
+    getMinimapExitCells: () => {
+        const map = Field.currentMapData;
+        if (!map?.isFixed || !Array.isArray(map.tiles)) return { all: new Set(), edge: new Set() };
+        const cached = Field._minimapExitCellCache.get(map);
+        if (cached) return cached;
+
+        const width = Number(map.width || map.tiles[0]?.length || 0);
+        const height = Number(map.height || map.tiles.length || 0);
+        const all = new Set();
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                if (String(map.tiles[y]?.[x] || '').toUpperCase() === 'S') all.add(`${x},${y}`);
+            }
+        }
+        (map.floorLinks || []).forEach(link => {
+            if (link?.to === 'EXIT') all.add(`${Number(link.x)},${Number(link.y)}`);
+        });
+
+        const edge = new Set();
+        const visited = new Set();
+        const distanceToBoundary = (x, y) => Math.min(x, y, width - 1 - x, height - 1 - y);
+        all.forEach(startKey => {
+            if (visited.has(startKey)) return;
+            const queue = [startKey];
+            const component = [];
+            let minimum = Infinity;
+            visited.add(startKey);
+            while (queue.length) {
+                const key = queue.shift();
+                component.push(key);
+                const [x, y] = key.split(',').map(Number);
+                minimum = Math.min(minimum, distanceToBoundary(x, y));
+                [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]].forEach(([nx, ny]) => {
+                    const nextKey = `${nx},${ny}`;
+                    if (all.has(nextKey) && !visited.has(nextKey)) {
+                        visited.add(nextKey);
+                        queue.push(nextKey);
+                    }
+                });
+            }
+            component.forEach(key => {
+                const [x, y] = key.split(',').map(Number);
+                if (distanceToBoundary(x, y) === minimum) edge.add(key);
+            });
+        });
+        const result = { all, edge };
+        Field._minimapExitCellCache.set(map, result);
+        return result;
+    },
+
+    getMinimapExitCellState: (tileX, tileY) => {
+        const map = Field.currentMapData;
+        const x = Number(tileX);
+        const y = Number(tileY);
+        if (!map?.isFixed || !Number.isInteger(x) || !Number.isInteger(y)
+            || x < 0 || y < 0 || x >= Number(map.width) || y >= Number(map.height)) return null;
+        const key = `${x},${y}`;
+        const cells = Field.getMinimapExitCells();
+        if (!cells.all.has(key)) return null;
+        return cells.edge.has(key) ? 'edge' : 'inner';
     },
 
     getTileEffectGraphicKey: (tileX = null, tileY = null) => {
@@ -6295,6 +6367,9 @@ const Field = {
     getMiniMapMarkerColor: (tileSign, tileX = null, tileY = null) => {
         const upper = String(tileSign || '').toUpperCase();
         if (upper === 'S' && Field.currentMapData?.autoExitOnPerimeter === true) return null;
+        const exitState = Field.getMinimapExitCellState?.(tileX, tileY);
+        if (exitState === 'edge') return '#f6d46a';
+        if (exitState === 'inner') return null;
         const actionOverlay = Field.getMapActionOverlayConfig ? Field.getMapActionOverlayConfig(tileX, tileY) : null;
         if (actionOverlay) {
             const imageKey = String(actionOverlay.img || '');
@@ -6422,8 +6497,11 @@ const Field = {
                 let visible = true;
 
                 if (Field.currentMapData) {
-                    if (tx < 0 || tx >= mapW || ty < 0 || ty >= mapH || isRandomDungeonHidden(dx, dy, tx, ty)) {
+                    const outOfBounds = tx < 0 || tx >= mapW || ty < 0 || ty >= mapH;
+                    if (isRandomDungeonHidden(dx, dy, tx, ty) || (outOfBounds && !Field.currentMapData.isFixed)) {
                         visible = false;
+                    } else if (outOfBounds) {
+                        tile = Field.getRenderedTileForDraw(tx, ty, mapW, mapH, Field.getCurrentAreaKey());
                     } else {
                         const areaKey = Field.getCurrentAreaKey();
                         const progressKey = Field.currentMapData?.isFixed && Field.getCurrentProgressMapKey
@@ -6840,8 +6918,6 @@ const Field = {
     prepareAdjacentMapActorAction: (options = {}) => {
         const actor = Field.getAdjacentMapActor();
         if (!actor) return false;
-        // Adjacency only exposes the action. The log is emitted by
-        // executeMapAction() after the player explicitly confirms it.
         App.setAction(actor.action.label || '話す', () => Field.executeMapAction(actor.action));
         return true;
     },
@@ -7135,7 +7211,7 @@ const Field = {
     resolveFieldCutsceneSrc: (cmd) => {
         if (cmd?.src) return cmd.src;
         if (cmd?.monsterId !== undefined) return Field.getMonsterMapSpriteSrc(cmd.monsterId);
-        if (cmd?.effect === 'slash') return 'assets/effect/fx_phys_neutral_slash_v001.png';
+        if (cmd?.effect === 'slash') return 'assets/effect/fx_phys_neutral_slash.png';
         return '';
     },
 
@@ -7433,7 +7509,10 @@ const Field = {
                 const entryLockEntrances = Array.isArray(areaDef.entryRequiredEntrances) ? areaDef.entryRequiredEntrances : null;
                 const effectiveEntryKey = targetEntryKey || areaDef.defaultEntryKey || null;
                 const entryLockApplies = !entryLockEntrances || entryLockEntrances.includes(effectiveEntryKey);
-                if (entryLockApplies && areaDef.entryRequiredFlag && !flags[areaDef.entryRequiredFlag] && !bypassedEntryLock) {
+                const missingRequiredFlag = !!areaDef.entryRequiredFlag && !flags[areaDef.entryRequiredFlag];
+                const missingRequiredAlly = areaDef.entryRequiredAllyId !== undefined
+                    && !(typeof App.hasStoryAlly === 'function' && App.hasStoryAlly(areaDef.entryRequiredAllyId));
+                if (entryLockApplies && (missingRequiredFlag || missingRequiredAlly) && !bypassedEntryLock) {
                     if (areaDef.entryLockedEventId && typeof StoryManager !== 'undefined' && typeof StoryManager.executeEvent === 'function') {
                         StoryManager.executeEvent(areaDef.entryLockedEventId);
                     } else {
@@ -7697,7 +7776,7 @@ const Field = {
                     } else if (!Field.isFixedBossAvailable(bossDef)) {
                         tile = bossDef?.inactiveTile || 'G';
                     } else {
-                        App.log(bossDef?.inspectLog || '強敵が行く手を塞いでいる。');
+                        if (bossDef?.inspectLog) App.log(bossDef.inspectLog);
                         keepCurrentTileAction();
                         Field.render();
                         return;
@@ -7724,7 +7803,7 @@ const Field = {
                 return;
             }
             if (Field.isBlockingMapActor(targetMapAction)) {
-                App.log(targetMapAction.log || '人が立っている。');
+                if (targetMapAction.log) App.log(targetMapAction.log);
                 keepCurrentTileAction();
                 Field.render();
                 return;
@@ -8177,30 +8256,35 @@ const Field = {
 
                 if (overlayConfig) {
                     const characterOverlay = /^(overlay_npc_|overlay_companion_)/.test(String(overlayConfig.img || ''));
+                    const bossOverlay = /^(overlay_boss_|monster_)/.test(String(overlayConfig.img || ''));
                     const buildingOverlay = Field.isBuildingOverlayConfig?.(overlayConfig) === true;
                     const wallOverlay = overlayConfig.wallOverlay === true;
                     const blockingObjectOverlay = overlayConfig.blockingObject === true;
                     const eventMarkerOverlay = overlayConfig.eventMarker === true;
                     const eventMarkerPulse = eventMarkerOverlay && Field.step === 1 ? 0.75 : 1;
-                    if (useDepthRendering && !parts.worldOverlay && !wallOverlay && overlayConfig.suppressShadow !== true && (blockingObjectOverlay || !isDungeonView || characterOverlay)) {
+                    if (useDepthRendering && !parts.worldOverlay && !wallOverlay && overlayConfig.suppressShadow !== true && (blockingObjectOverlay || !isDungeonView || characterOverlay || bossOverlay)) {
                         drawFootShadow(drawX, drawY, lift, 0.24);
                     }
                     const overlayWidth = eventMarkerOverlay
                         ? Math.max(9, Math.round(ts * (Number(overlayConfig.drawWidth || 12) / 32) * eventMarkerPulse))
                         : buildingOverlay
                         ? Math.round(ts * Math.max(1, Number(overlayConfig.buildingScale || 2.4)))
+                        : bossOverlay
+                        ? Math.round(ts * 2)
                         : (blockingObjectOverlay ? Math.round(ts * (Number(overlayConfig.drawWidth || 32) / 32)) : ts);
                     const overlayHeight = eventMarkerOverlay
                         ? Math.max(9, Math.round(ts * (Number(overlayConfig.drawHeight || 12) / 32) * eventMarkerPulse))
                         : buildingOverlay
                         ? Math.round(ts * Math.max(1, Number(overlayConfig.buildingScale || 2.4)))
+                        : bossOverlay
+                        ? Math.round(ts * 2)
                         : blockingObjectOverlay
                         ? Math.round(ts * (Number(overlayConfig.drawHeight || 32) / 32))
                         : (wallOverlay ? Math.round(ts * 1.5) : ts + lift);
                     const overlayX = drawX + Math.round((ts - overlayWidth) / 2);
                     const overlayY = eventMarkerOverlay
                         ? drawY + Math.round((ts - overlayHeight) / 2) - lift
-                        : ((buildingOverlay || wallOverlay || blockingObjectOverlay) ? drawY + ts - overlayHeight : drawY - lift);
+                        : ((buildingOverlay || wallOverlay || blockingObjectOverlay || bossOverlay) ? drawY + ts - overlayHeight : drawY - lift);
                     ctx.save();
                     if (eventMarkerOverlay) {
                         ctx.globalAlpha = Field.step === 1 ? 0.52 : 0.92;
@@ -8333,19 +8417,19 @@ const Field = {
             }
         };
 
-        drawOverlayImage(App.data?.dungeon?.healSpring, Dungeon.healSpringImagePath || 'assets/map/overlays/overlay_shrine_healing_spring_v002.png', '#80ffb0');
+        drawOverlayImage(App.data?.dungeon?.healSpring, Dungeon.healSpringImagePath || 'assets/map/overlays/overlay_shrine_healing_spring.png', '#80ffb0');
         if (Field.currentMapData?.isFixed && Field.getFixedHealSpringsForCurrentFloor) {
             Field.getFixedHealSpringsForCurrentFloor().forEach(s => {
                 const springSrc = window.GRAPHICS?.data?.[s.imageKey]
                     || Dungeon.healSpringImagePath
-                    || 'assets/map/overlays/overlay_shrine_healing_spring_v002.png';
+                    || 'assets/map/overlays/overlay_shrine_healing_spring.png';
                 drawOverlayImage({ active: true, floor: Dungeon.floor, x: Number(s.x), y: Number(s.y), image: springSrc }, springSrc, '#80ffb0', { allowFixed: true });
             });
         }
         drawOverlayImage(App.data?.dungeon?.abyssRift, 'assets/effect/fx-abyss-vortex-ai.png', '#a34cff');
         drawOverlayImage(App.data?.dungeon?.adventurer, 'assets/monsters/monster_100009.png', '#5bd6ff');
         drawOverlayImage(App.data?.dungeon?.keyGuardian, 'assets/monsters/monster_100010.png', '#ffd78a');
-        drawOverlayImage(App.data?.dungeon?.trialAngel, 'assets/map/overlays/overlay_dungeon_trial_angel_v001.png', '#fff3a6');
+        drawOverlayImage(App.data?.dungeon?.trialAngel, 'assets/map/overlays/overlay_dungeon_trial_angel.png', '#fff3a6');
         drawAbyssBossSprite();
 
         // 4. 壁際の影は、溶岩・宝箱・階段・常設泉などの上から最後に重ねる。
@@ -8452,7 +8536,8 @@ const Field = {
                 let minimapVisible = true;
 
                 if (Field.currentMapData) {
-                    if (mtx >= 0 && mtx < mapW && mty >= 0 && mty < mapH) {
+                    const outOfBounds = mtx < 0 || mtx >= mapW || mty < 0 || mty >= mapH;
+                    if (!outOfBounds) {
                         const ak = Field.getCurrentAreaKey();
                         const pk = `${mtx},${mty}`;
 
@@ -8475,6 +8560,8 @@ const Field = {
                                 : null;
                             if (Field.isFixedBossDefeatedAt(bossDef, mtx, mty, progressKey)) mtile = 'G';
                         }
+                    } else if (Field.currentMapData.isFixed) {
+                        mtile = Field.getRenderedTileForDraw(mtx, mty, mapW, mapH, Field.getCurrentAreaKey());
                     } else {
                         minimapVisible = false;
                     }

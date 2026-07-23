@@ -34,14 +34,12 @@ for (const asset of manifest.assets) {
     if (width !== height || width < 1000 || colorType !== 6) {
         throw new Error(`Runtime companion art must preserve a >=1000px square RGBA source canvas: ${asset.runtime} (${width}x${height}, type ${colorType})`);
     }
-    const expectedReference = `overlay_companion_${asset.name}_v003.png`;
+    const expectedReference = path.posix.basename(asset.runtime);
     if (!assetsSource.includes(expectedReference)) {
         throw new Error(`assets.js does not reference high-resolution companion art: ${expectedReference}`);
     }
-    for (const obsolete of ['v001', 'v002']) {
-        if (assetsSource.includes(`overlay_companion_${asset.name}_${obsolete}.png`)) {
-            throw new Error(`assets.js still references obsolete companion art: ${asset.name} ${obsolete}`);
-        }
+    if (/[-_]v\d{3,}\.png/i.test(expectedReference)) {
+        throw new Error(`Companion runtime art still has a version suffix: ${expectedReference}`);
     }
 }
 

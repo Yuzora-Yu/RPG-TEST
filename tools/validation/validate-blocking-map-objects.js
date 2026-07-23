@@ -15,15 +15,15 @@ vm.runInContext(read('map.js'), context, { filename: 'map.js' });
 vm.runInContext(read('maps_logic.js'), context, { filename: 'maps_logic.js' });
 
 const required = {
-    object_blocking_castle_candelabrum: ['assets/map/objects/object_blocking_castle_candelabrum_v001.png', 32, 48],
-    object_blocking_forest_stump: ['assets/map/objects/object_blocking_forest_stump_v001.png', 32, 32],
-    object_blocking_thunder_terminal: ['assets/map/objects/object_blocking_thunder_terminal_v001.png', 32, 40],
-    object_blocking_cave_stalagmite: ['assets/map/objects/object_blocking_cave_stalagmite_v001.png', 32, 48],
-    object_blocking_seabed_coral_pillar: ['assets/map/objects/object_blocking_seabed_coral_pillar_v001.png', 32, 48],
-    object_blocking_light_crystal_pedestal: ['assets/map/objects/object_blocking_light_crystal_pedestal_v001.png', 32, 48],
-    object_blocking_fire_brazier: ['assets/map/objects/object_blocking_fire_brazier_v001.png', 32, 40],
-    object_blocking_lighthouse_gear_pedestal: ['assets/map/objects/object_blocking_lighthouse_gear_pedestal_v001.png', 32, 48],
-    object_blocking_dark_shrine_obelisk: ['assets/map/objects/object_blocking_dark_shrine_obelisk_v001.png', 32, 48]
+    object_blocking_castle_candelabrum: ['assets/map/objects/object_blocking_castle_candelabrum.png', 32, 48],
+    object_blocking_forest_stump: ['assets/map/objects/object_blocking_forest_stump.png', 32, 32],
+    object_blocking_thunder_terminal: ['assets/map/objects/object_blocking_thunder_terminal.png', 32, 40],
+    object_blocking_cave_stalagmite: ['assets/map/objects/object_blocking_cave_stalagmite.png', 32, 48],
+    object_blocking_seabed_coral_pillar: ['assets/map/objects/object_blocking_seabed_coral_pillar.png', 32, 48],
+    object_blocking_light_crystal_pedestal: ['assets/map/objects/object_blocking_light_crystal_pedestal.png', 32, 48],
+    object_blocking_fire_brazier: ['assets/map/objects/object_blocking_fire_brazier.png', 32, 40],
+    object_blocking_lighthouse_gear_pedestal: ['assets/map/objects/object_blocking_lighthouse_gear_pedestal.png', 32, 48],
+    object_blocking_dark_shrine_obelisk: ['assets/map/objects/object_blocking_dark_shrine_obelisk.png', 32, 48]
 };
 const graphics = context.__assets.graphics || {};
 const installImages = new Set(context.__assets.cacheWarmup?.installImages || []);
@@ -46,7 +46,7 @@ for (const [key, [relative, width, height]] of Object.entries(required)) {
 
 const floor = context.MapRegistry.getFixedDungeonFloor('DARK_CASTLE', 1);
 const objects = floor?.blockingObjects || [];
-const expected = new Set(['14,3', '16,3']);
+const expected = new Set(['15,5', '17,5']);
 if (objects.length !== 2) errors.push(`Demon Castle 1F must have two sample candelabra: ${objects.length}`);
 for (const object of objects) {
     const point = `${object.x},${object.y}`;
@@ -55,7 +55,7 @@ for (const object of objects) {
     if (!['T', 'G'].includes(floor.tiles?.[object.y]?.[object.x])) errors.push(`blocking object base is not walkable floor: ${point}`);
     if (context.MapRegistry.findBlockingObject(floor, object.x, object.y) !== object) errors.push(`blocking object registry lookup failed: ${point}`);
 }
-if (floor.tiles?.[3]?.[15] !== 'D') errors.push('Demon Castle upper stair is no longer centered between the candelabra');
+if (floor.tiles?.[5]?.[16] !== 'U') errors.push('Demon Castle upper stair is no longer centered between the candelabra');
 
 const blocked = new Set(objects.map(object => `${object.x},${object.y}`));
 const start = floor.entryPoint || { x: 15, y: 25 };
@@ -73,7 +73,7 @@ while (queue.length) {
         queue.push({ x, y });
     }
 }
-if (!seen.has('15,3')) errors.push('candelabra placement blocks access to the Demon Castle upper stair');
+if (!seen.has('16,5')) errors.push('candelabra placement blocks access to the Demon Castle upper stair');
 
 const main = read('main.js');
 const phaser = read('phaser-field.js');

@@ -194,14 +194,14 @@ if (missingBossSprites.length) {
 
 if (context.TILE_THEMES?.FORBIDDEN_FOREST?.W?.img !== 'tile_forbidden_forest_wall' ||
     context.TILE_THEMES?.FORBIDDEN_FOREST?.T?.img !== 'tile_forbidden_forest_floor' ||
-    graphics.get('tile_forbidden_forest_wall') !== 'assets/map/terrain/tile_forbidden_forest_wall_v001.png' ||
-    graphics.get('tile_forbidden_forest_floor') !== 'assets/map/terrain/tile_forbidden_forest_floor_v001.png') {
+    graphics.get('tile_forbidden_forest_wall') !== 'assets/map/terrain/tile_forbidden_forest_wall.png' ||
+    graphics.get('tile_forbidden_forest_floor') !== 'assets/map/terrain/tile_forbidden_forest_floor.png') {
     throw new Error('Forbidden Forest must use its generated floor and dense forest wall tiles.');
 }
 if (context.TILE_THEMES?.WIND_HOLE?.W?.img !== 'tile_wind_hole_wall' ||
     context.TILE_THEMES?.WIND_HOLE?.T?.img !== 'tile_wind_hole_floor' ||
-    graphics.get('tile_wind_hole_wall') !== 'assets/map/terrain/tile_wind_hole_wall_v001.png' ||
-    graphics.get('tile_wind_hole_floor') !== 'assets/map/terrain/tile_wind_hole_floor_v001.png') {
+    graphics.get('tile_wind_hole_wall') !== 'assets/map/terrain/tile_wind_hole_wall.png' ||
+    graphics.get('tile_wind_hole_floor') !== 'assets/map/terrain/tile_wind_hole_floor.png') {
     throw new Error('Forest Wind Hole must use its generated floor and wall tiles.');
 }
 for (const stem of [
@@ -220,11 +220,11 @@ for (const stem of [
 if (!mainSource.includes('window.MapRenderShared.resolveTileVariant(base, variantX, variantY)') || !sharedRenderSource.includes('Math.imul(x, 374761393)')) {
     throw new Error('Coordinate-stable terrain variation selection is missing.');
 }
-if (graphics.get('battle_bg_wind_hole') !== 'assets/generated/battle-forest-wind-hole-v001.png' ||
+if (graphics.get('battle_bg_wind_hole') !== 'assets/generated/battle-forest-wind-hole.png' ||
     !/FOREST_WIND_HOLE:\s*\{[\s\S]*?battleBg:\s*"battle_bg_wind_hole"/.test(mapSource)) {
     throw new Error('Forest Wind Hole must use its generated battle background.');
 }
-if (graphics.get('battle_bg_forest') !== 'assets/generated/battle-forbidden-forest-v001.png') {
+if (graphics.get('battle_bg_forest') !== 'assets/generated/battle-forbidden-forest.png') {
     throw new Error('Forbidden Forest must use its generated battle background.');
 }
 

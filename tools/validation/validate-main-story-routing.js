@@ -4,6 +4,7 @@ const { loadMapStoryRuntime } = require('./validation-helpers');
 
 const root = path.resolve(__dirname, '..', '..');
 const storySource = fs.readFileSync(path.join(root, 'story.js'), 'utf8');
+const storyLogicSource = fs.readFileSync(path.join(root, 'story_logic.js'), 'utf8');
 const mapSource = fs.readFileSync(path.join(root, 'map.js'), 'utf8');
 const mainSource = fs.readFileSync(path.join(root, 'main.js'), 'utf8');
 const { context } = loadMapStoryRuntime(root);
@@ -51,6 +52,14 @@ assert(waterCityPlaza?.imageKey === 'overlay_npc_dark_soldier', 'Water City plaz
 assert(sophiaVariant?.requiredFlag === 'waterCityIntroCleared' && sophiaVariant?.missingFlag === 'waterCityCleared', 'Water City plaza Sophia state is not bounded between intro victory and city clear.');
 assert(waterCityPlaza?.imageMissingFlag === 'waterCityCleared', 'Water City plaza actor is not removed after city clear.');
 assert(mainSource.includes('resolveMapActionImageKey') && mainSource.includes('action.imageVariants'), 'Flag-driven map actor image variants are not resolved by Field.');
+const waterCityRelocation = (story.scripts?.WATER_CITY_SOPHIA || [])
+    .flatMap(line => Array.isArray(line?.commands) ? line.commands : [])
+    .find(command => command?.op === 'MOVE_PLAYER');
+assert(waterCityRelocation?.x === 13 && waterCityRelocation?.y === 10 && waterCityRelocation?.blackout === true,
+    'Water City post-battle conversation does not move the party to the inn under blackout.');
+assert(context.FIXED_MAPS.WATER_CITY.tiles?.[10]?.[13] === 'I', 'Water City story relocation no longer targets the inn tile.');
+assert(storyLogicSource.includes("case 'MOVE_PLAYER':") && storyLogicSource.includes('fadeStoryFieldBlackoutWithAction(movePlayer, cmd)'),
+    'Story cutscene runtime does not support blackout player relocation.');
 
 assert(areas.FOREST_WIND_HOLE.entryRequiredFlag === 'windHoleRouteKnown', 'Forest Wind Hole can be entered before its story reveal.');
 assert(!areas.CRENA_LIMESTONE_CAVE.entryRequiredFlag, 'Crena Cave should allow early exploration up to the royal-army cordon.');

@@ -17,16 +17,16 @@ const graphics = assetsContext.PRISMA_ASSETS.graphics;
 const cached = new Set(assetsContext.PRISMA_ASSETS.cacheWarmup.installImages || []);
 
 const expectedGraphics = new Map([
-    ['tile_wind_temple_wall', 'assets/map/terrain/tile_wind_temple_wall_v001.png'],
-    ['tile_wind_temple_floor', 'assets/map/terrain/tile_wind_temple_floor_v001.png'],
-    ['battle_bg_wind_temple', 'assets/generated/battle-wind-temple-v001.png'],
-    ['battle_bg_mountain_wind_ruins', 'assets/generated/battle-mountain-wind-ruins-v001.png'],
-    ['battle_bg_trial_shrine', 'assets/generated/battle-trial-shrine-v001.png'],
-    ['battle_bg_summit_temple', 'assets/generated/battle-summit-temple-v001.png'],
-    ['battle_bg_sea', 'assets/generated/battle-sea-v002.png'],
+    ['tile_wind_temple_wall', 'assets/map/terrain/tile_wind_temple_wall.png'],
+    ['tile_wind_temple_floor', 'assets/map/terrain/tile_wind_temple_floor.png'],
+    ['battle_bg_wind_temple', 'assets/generated/battle-wind-temple.png'],
+    ['battle_bg_mountain_wind_ruins', 'assets/generated/battle-mountain-wind-ruins.png'],
+    ['battle_bg_trial_shrine', 'assets/generated/battle-trial-shrine.png'],
+    ['battle_bg_summit_temple', 'assets/generated/battle-summit-temple.png'],
+    ['battle_bg_sea', 'assets/generated/battle-sea.png'],
     ['battle_bg_field_forest', 'assets/generated/battle-forest-ai.png'],
-    ['battle_bg_abyss_boss', 'assets/generated/battle-abyss-boss-v001.png'],
-    ['battle_bg_abyss_floor_200', 'assets/generated/battle-abyss-floor-200-v001.png'],
+    ['battle_bg_abyss_boss', 'assets/generated/battle-abyss-boss.png'],
+    ['battle_bg_abyss_floor_200', 'assets/generated/battle-abyss-floor-200.png'],
     ['battle_bg_first', 'assets/generated/first-battle.png']
 ]);
 for (const [key, relative] of expectedGraphics) {

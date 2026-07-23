@@ -10,7 +10,7 @@ const PRISMA_OPENING_PAGES = [
     { logo: true, text: '', effect: 'prism', focus: '50% 48%', startScale: 1.12, endScale: 1.02, startX: '0%', endX: '0%', startY: '-1%', endY: '1%', duration: 5000 }
 ];
 
-const PRISMA_OPENING_IMAGE = 'assets/generated/opening-prism-collapse-v002.png';
+const PRISMA_OPENING_IMAGE = 'assets/generated/opening-prism-collapse.png';
 const PRISMA_OPENING_LOGO = 'assets/background/PRISMA ABYSS.png';
 PRISMA_OPENING_PAGES.forEach(page => { page.image = PRISMA_OPENING_IMAGE; });
 
@@ -19,7 +19,7 @@ const OpeningSequence = {
     pages: PRISMA_OPENING_PAGES,
 
     preload(pages) {
-        const urls = [...new Set(pages.flatMap(page => [page.image, page.logo ? PRISMA_OPENING_LOGO : null, page.effect === 'rupture' ? 'assets/effect/fx_special_rupture_v001.png' : null]).filter(Boolean))];
+        const urls = [...new Set(pages.flatMap(page => [page.image, page.logo ? PRISMA_OPENING_LOGO : null, page.effect === 'rupture' ? 'assets/effect/fx_special_rupture.png' : null]).filter(Boolean))];
         return Promise.allSettled(urls.map(src => new Promise(resolve => {
             const img = new Image();
             img.onload = () => resolve(src);
@@ -47,7 +47,7 @@ const OpeningSequence = {
             <img class="prisma-opening__image" alt="">
             <div class="prisma-opening__shade"></div>
             <div class="prisma-opening__particles"></div>
-            <img class="prisma-opening__rupture" src="assets/effect/fx_special_rupture_v001.png" alt="">
+            <img class="prisma-opening__rupture" src="assets/effect/fx_special_rupture.png" alt="">
             <div class="prisma-opening__flash"></div>
             <div class="prisma-opening__entry-curtain"></div>
             <img class="prisma-opening__logo" src="assets/background/PRISMA ABYSS.png" alt="PRISMA ABYSS" hidden>

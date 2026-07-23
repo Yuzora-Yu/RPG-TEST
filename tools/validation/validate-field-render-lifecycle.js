@@ -37,20 +37,20 @@ const adventurerFrameKeys = ['down_1', 'down_2', 'left_1', 'left_2', 'right_1', 
 const requiredFiles = [
   'assets/generated/battle-field-ai.png',
   'assets/generated/battle-dungeon-ai.png',
-  'assets/generated/battle-flooded-v001.png',
-  'assets/map/terrain/terrain_sea_v001.png',
-  'assets/map/objects/object_field_mountain_v002.png',
-  'assets/map/objects/object_field_low_mountain_v002.png',
-  'assets/map/overlays/overlay_field_village_v002.png',
-  'assets/map/overlays/overlay_dungeon_chest_v002.png',
-  'assets/map/overlays/overlay_dungeon_chest_rare_v002.png',
-  'assets/map/overlays/overlay_dungeon_stairs_v002.png',
+  'assets/generated/battle-flooded.png',
+  'assets/map/terrain/terrain_sea.png',
+  'assets/map/objects/object_field_mountain.png',
+  'assets/map/objects/object_field_low_mountain.png',
+  'assets/map/overlays/overlay_field_village.png',
+  'assets/map/overlays/overlay_dungeon_chest.png',
+  'assets/map/overlays/overlay_dungeon_chest_rare.png',
+  'assets/map/overlays/overlay_dungeon_stairs.png',
   'assets/monsters/monster_100001.png',
   'assets/monsters/monster_100002.png',
   'assets/monsters/monster_100003.png',
   'assets/monsters/monster_100004.png',
   'assets/monsters/monster_301000.png',
-  'assets/effect/fx_phys_slash_arc_v002.png'
+  'assets/effect/fx_phys_slash_arc.png'
 ];
 
 for (const key of requiredKeys) {
@@ -86,7 +86,7 @@ if (!stableBranch.includes("field.drawHudMinimap()")) errors.push('bucket reuse 
 const atmosphereStart = phaserSource.indexOf('const drawAtmosphere =');
 const atmosphereEnd = phaserSource.indexOf('const getStaticSignature =', atmosphereStart);
 const atmosphereBlock = phaserSource.slice(atmosphereStart, atmosphereEnd);
-if (!atmosphereBlock.includes('if ((!dungeon && !isSummitTemple)')) errors.push('town/village atmosphere darkness is not disabled outside the authored Summit cloud-shadow exception');
+if (!atmosphereBlock.includes('if (!dungeon ||')) errors.push('town/village atmosphere darkness is not disabled');
 if (atmosphereBlock.includes('edgeAlpha') || atmosphereBlock.includes('scene.scale.height - 26')) errors.push('dungeon black edge rectangles are still rendered');
 if (!atmosphereBlock.includes('atmosphereMargin = TILE_SIZE') || !atmosphereBlock.includes('logicalWidth + atmosphereMargin * 2')) errors.push('dungeon darkness does not cover the one-tile camera margin');
 if (!atmosphereBlock.includes('duration: 3000') || !atmosphereBlock.includes("stableHash(areaKey, floor, index)")) errors.push('dungeon motes are not persistent three-second animations');

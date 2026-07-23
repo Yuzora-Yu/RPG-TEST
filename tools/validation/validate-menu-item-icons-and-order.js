@@ -8,7 +8,7 @@ const assert = (condition, message) => { if (!condition) throw new Error(message
 
 const iconKeys = ['vehicle', 'travel', 'heal', 'revive', 'growth', 'key'];
 for (const key of iconKeys) {
-    const relative = `assets/ui/menu-icons/item-${key}-v001.png`;
+    const relative = `assets/ui/menu-icons/item-${key}.png`;
     const file = path.join(root, relative);
     assert(fs.existsSync(file), `Missing item category icon: ${relative}`);
     const png = fs.readFileSync(file);
@@ -36,7 +36,7 @@ const iconBuilder = read('tools/assets/build-item-menu-category-icons.py');
 assert(menuItems.includes('compareToolsByTypeAndId(a.def, b.def)'), 'Field item menu does not use the shared comparator');
 assert(battle.includes('compareToolsByTypeAndId(a.def, b.def)'), 'Battle item menu does not use the shared comparator');
 for (const key of iconKeys) {
-    assert(menus.includes(`item-${key}-v001.png`), `Menu icon mapping is missing ${key}`);
+    assert(menus.includes(`item-${key}.png`), `Menu icon mapping is missing ${key}`);
 }
 assert(fieldSkills.includes('PRISMA_SKILL_ORDER?.compareById'), 'Field skill menu is not sorted by ID');
 assert(battle.includes('PRISMA_SKILL_ORDER?.compareById'), 'Battle skill menu is not sorted by ID');

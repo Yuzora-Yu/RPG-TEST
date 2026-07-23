@@ -1,0 +1,104 @@
+﻿.\battle.js:114:        if (typeof PassiveSkill !== 'undefined' && PassiveSkill.getSumValue(actor, 'mag_amp_cost_mult') > 0) {
+.\battle.js:137:            return sum + PassiveSkill.getSumValue(source || member, key);
+.\battle.js:148:        const gutsChance = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(unit, 'guts_mult') : 0;
+.\battle.js:599:            const atkPct  = PassiveSkill.getSumValue(m, 'atk_pct');
+.\battle.js:600:            const defPct  = PassiveSkill.getSumValue(m, 'def_pct');
+.\battle.js:601:            const magPct  = PassiveSkill.getSumValue(m, 'mag_pct');
+.\battle.js:602:            const mdefPct = PassiveSkill.getSumValue(m, 'mdef_pct');
+.\battle.js:603:            const spdPct  = PassiveSkill.getSumValue(m, 'spd_pct');
+.\battle.js:611:            m.hit += PassiveSkill.getSumValue(m, 'hit_pct');
+.\battle.js:612:            m.eva += PassiveSkill.getSumValue(m, 'eva_pct');
+.\battle.js:613:            m.cri += PassiveSkill.getSumValue(m, 'cri_pct');
+.\battle.js:1097:            m.baseStats.atk  = Math.floor(m.baseStats.atk  * (1 + PassiveSkill.getSumValue(m, 'atk_pct') / 100));
+.\battle.js:1098:            m.baseStats.def  = Math.floor(m.baseStats.def  * (1 + PassiveSkill.getSumValue(m, 'def_pct') / 100));
+.\battle.js:1099:            m.baseStats.mag  = Math.floor(m.baseStats.mag  * (1 + PassiveSkill.getSumValue(m, 'mag_pct') / 100));
+.\battle.js:1100:            m.mdef           = Math.floor(m.mdef           * (1 + PassiveSkill.getSumValue(m, 'mdef_pct') / 100));
+.\battle.js:1101:            m.baseStats.spd  = Math.floor(m.baseStats.spd  * (1 + PassiveSkill.getSumValue(m, 'spd_pct') / 100));
+.\battle.js:1104:            m.hit += PassiveSkill.getSumValue(m, 'hit_pct');
+.\battle.js:1105:            m.eva += PassiveSkill.getSumValue(m, 'eva_pct');
+.\battle.js:1106:            m.cri += PassiveSkill.getSumValue(m, 'cri_pct');
+.\battle.js:1301:        amount *= 1 + (Number(PassiveSkill.getSumValue(actor, 'heal_pct') || 0) / 100);
+.\battle.js:1584:            const procBonus = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(actor, 'proc_instantdeath_bonus') : 0;
+.\battle.js:1616:                pierce += PassiveSkill.getSumValue(actor, 'all_elm_pierce_pct');
+.\battle.js:1618:                if (key) pierce += PassiveSkill.getSumValue(actor, `${key}_pierce_pct`);
+.\battle.js:1640:            if (damageKey) dmg *= 1 + PassiveSkill.getSumValue(actor, damageKey) / 100;
+.\battle.js:1641:            if (reduceKey) dmg *= 1 - PassiveSkill.getSumValue(target, reduceKey) / 100;
+.\battle.js:2574:                                    w += PassiveSkill.getSumValue(p, 'target_rate_mult');
+.\battle.js:2714:                    totalHpRegenPct += PassiveSkill.getSumValue(actor, 'turn_hp_regen_pct');
+.\battle.js:2716:                    totalMpRegenPct += PassiveSkill.getSumValue(actor, 'turn_mp_regen_pct');
+.\battle.js:3022:				const dualBonus = PassiveSkill.getSumValue(actor, 'dual_dmg_mult');
+.\battle.js:3062:								pierce += PassiveSkill.getSumValue(actor, 'all_elm_pierce_pct');
+.\battle.js:3065:								if(spKey) pierce += PassiveSkill.getSumValue(actor, spKey + '_pierce_pct');
+.\battle.js:3077:                        bonusRate += PassiveSkill.getSumValue(actor, 'dmg_pct');
+.\battle.js:3158:				const assaBonus = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(actor, 'proc_instantdeath_bonus') : 0;
+.\battle.js:3159:                const bodyBonus = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(actor, 'proc_body_bonus') : 0;
+.\battle.js:3160:                const curseBonus = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(actor, 'proc_curse_bonus') : 0; // ★追加
+.\battle.js:3264:						? PassiveSkill.getSumValue(actor, 'proc_instantdeath_bonus')
+.\battle.js:3308:						const healBonus = 1 + (PassiveSkill.getSumValue(actor, 'heal_pct') / 100);
+.\battle.js:3353:                            const chance = PassiveSkill.getSumValue(p, 'cover_rate_mult');
+.\battle.js:3411:							? PassiveSkill.getSumValue(targetToHit, 'preempt_rate_mult', isMonster) 
+.\battle.js:3492:						if (targetToHit.race === '死霊' || targetToHit.race === '魔族') totalMult *= (1 + PassiveSkill.getSumValue(actor, 'anti_demon_pct') / 100);
+.\battle.js:3493:						if (targetToHit.race === '獣' || targetToHit.race === '獣人') totalMult *= (1 + PassiveSkill.getSumValue(actor, 'anti_beast_pct') / 100);
+.\battle.js:3494:						if (targetToHit.race === '機械' || targetToHit.race === '無生物') totalMult *= (1 + PassiveSkill.getSumValue(actor, 'anti_machine_pct') / 100);
+.\battle.js:3495:						if (targetToHit.race === '竜' || targetToHit.race === '竜人') totalMult *= (1 + PassiveSkill.getSumValue(actor, 'anti_dragon_pct') / 100);
+.\battle.js:3497:						if (actor.hp <= actor.baseMaxHp * 0.5) totalMult *= (1 + PassiveSkill.getSumValue(actor, 'low_hp_dmg_mult') / 100);
+.\battle.js:3501:							const revPct = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(actor, 'revenge_dmg_pct', isMonster) : 0;
+.\battle.js:3527:                            pierce = PassiveSkill.getSumValue(actor, 'all_elm_pierce_pct');
+.\battle.js:3529:                            if(spKey) pierce += PassiveSkill.getSumValue(actor, spKey + '_pierce_pct');
+.\battle.js:3535:                    bonusRate += PassiveSkill.getSumValue(actor, 'dmg_pct');
+.\battle.js:3538:					if (isCoveringHit) finRed += PassiveSkill.getSumValue(targetToHit, 'cover_reduce_mult');
+.\battle.js:3549:							typeDmgPct = PassiveSkill.getSumValue(actor, 'physical_dmg_pct'); // ID 10
+.\battle.js:3550:							typeRedPct = PassiveSkill.getSumValue(targetToHit, 'physical_reduce_pct'); // ID 15
+.\battle.js:3552:							typeDmgPct = PassiveSkill.getSumValue(actor, 'magic_dmg_pct'); // ID 11
+.\battle.js:3553:							typeRedPct = PassiveSkill.getSumValue(targetToHit, 'magic_reduce_pct'); // ID 16
+.\battle.js:3555:							typeDmgPct = PassiveSkill.getSumValue(actor, 'breath_dmg_pct'); // ID 12
+.\battle.js:3556:							typeRedPct = PassiveSkill.getSumValue(targetToHit, 'breath_reduce_pct'); // ID 17
+.\battle.js:3586:						const reflectRate = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(targetToHit, 'reflect_dmg_mult') : 0;
+.\battle.js:3587:						const reflectTrigger = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(targetToHit, 'reflect_trigger_mult') : 0;
+.\battle.js:3600:							// getSumValue('reflect_dmg_mult') が固定10%も含むため、ここでは再加算しない。
+.\battle.js:3623:						const curseBonus = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(actor, 'proc_curse_bonus') : 0;
+.\battle.js:3624:						const assaBonus  = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(actor, 'proc_instantdeath_bonus') : 0;
+.\battle.js:3625:						const bodyBonus = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(actor, 'proc_body_bonus') : 0;
+.\battle.js:3676:							? PassiveSkill.getSumValue(targetToHit, 'counter_rate_mult', isMonster) 
+.\battle.js:3714:							const chainChance = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(p, 'chain_rate_mult', isMonsterPartner) : 0;
+.\battle.js:3731:							const chaseChance = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(actor, 'chase_rate_mult', isMonster) : 0;
+.\battle.js:4440:				bonusNormal += PassiveSkill.getSumValue(charData, 'drop_normal_pct');
+.\battle.js:4441:				bonusRare   += PassiveSkill.getSumValue(charData, 'drop_rare_pct');
+.\battle.js:4442:				bonusPlus3  += PassiveSkill.getSumValue(charData, 'equip_plus3_pct');
+.\dungeon.js:1815:                bonusNormal += PassiveSkill.getSumValue(char, 'chest_drop_normal_pct');
+.\dungeon.js:1816:                bonusRare   += PassiveSkill.getSumValue(char, 'chest_drop_rare_pct');
+.\dungeon.js:1817:                bonusPlus3  += PassiveSkill.getSumValue(char, 'chest_equip_plus3_pct');
+.\main.js:3992:        pctMods.maxHp += PassiveSkill.getSumValue(char, 'hp_pct');
+.\main.js:3993:        pctMods.maxMp += PassiveSkill.getSumValue(char, 'mp_pct');
+.\main.js:3994:        pctMods.atk   += PassiveSkill.getSumValue(char, 'atk_pct');
+.\main.js:3995:        pctMods.def   += PassiveSkill.getSumValue(char, 'def_pct');
+.\main.js:3996:        pctMods.mdef  += PassiveSkill.getSumValue(char, 'mdef_pct');
+.\main.js:3997:        pctMods.spd   += PassiveSkill.getSumValue(char, 'spd_pct');
+.\main.js:3998:        pctMods.mag   += PassiveSkill.getSumValue(char, 'mag_pct');
+.\main.js:4001:        pctMods.hit   += PassiveSkill.getSumValue(char, 'hit_pct');
+.\main.js:4002:        pctMods.eva   += PassiveSkill.getSumValue(char, 'eva_pct');
+.\main.js:4003:        pctMods.cri   += PassiveSkill.getSumValue(char, 'cri_pct');
+.\main.js:4012:	  const v = PassiveSkill.getSumValue(char, 'resists_' + rk);
+.\main.js:4137:            statBonus = PassiveSkill.getSumValue(charData, 'stat_bonus_mult');
+.\main.js:4140:            atkBonus = PassiveSkill.getSumValue(charData, 'atk_growth_bonus') / 100;
+.\main.js:4141:            defBonus = PassiveSkill.getSumValue(charData, 'def_growth_bonus') / 100;
+.\main.js:4144:            magBonus = PassiveSkill.getSumValue(charData, 'mag_growth_bonus') / 100;
+.\main.js:4145:            mdefBonus = PassiveSkill.getSumValue(charData, 'mdef_growth_bonus') / 100;
+.\main.js:4772:			const expAddPct = PassiveSkill.getSumValue(charData, 'exp_need_mult');
+.\main.js:4939:				ambushPrevention += PassiveSkill.getSumValue(c, 'ambush_prevent_pct');
+.\main.js:4940:				preemptiveBonus += PassiveSkill.getSumValue(c, 'ambush_chance_pct');
+.\menus_allies.js:575:			const hasDualWield = PS ? PS.getSumValue(c, 'dual_dmg_base') > 0 : false;
+.\menus_allies.js:576:			const hasTwoHanded = PS ? PS.getSumValue(c, 'two_handed') > 0 : false;
+.\menus_allies.js:995:            const hasDualWield = PS.getSumValue(c, 'dual_dmg_base') > 0;
+.\menus_allies.js:996:            const hasTwoHanded = PS.getSumValue(c, 'two_handed') > 0;
+.\menus_allies.js:1299:		  const hasTwoHanded = PS ? PS.getSumValue(c, 'two_handed') > 0 : false;
+.\menus_allies.js:1300:		  const hasDualWield = PS ? PS.getSumValue(c, 'dual_dmg_base') > 0 : false;
+.\menus_party.js:351:		const hasDualWield = PS ? PS.getSumValue(c, 'dual_dmg_base') > 0 : false;
+.\menus_party.js:352:		const hasTwoHanded = PS ? PS.getSumValue(c, 'two_handed') > 0 : false;
+.\polish.js:1098:        PassiveSkill.getSumValue(cmd.actor, "dual_dmg_mult") > 0
+.\tools\validation\validate-passive-skills.js:28:check(PS.getSumValue(legacy, 'aura_front_atk_pct') === 0, '文字列で保存された無効特性が発動しています');
+.\tools\validation\validate-passive-skills.js:47:    const canonical = PS.getSumValue(entity, test.canonical);
+.\tools\validation\validate-passive-skills.js:48:    const alias = PS.getSumValue(entity, test.alias);
+.\tools\battle\battle-logic-audit.js:686:    addCheck(report, 'regression-guards', !battleSource.includes("getSumValue(targetToHit, 'preempt_rate_base'") &&
+.\tools\battle\battle-logic-audit.js:687:        !battleSource.includes("getSumValue(targetToHit, 'counter_rate_base'") &&
+.\tools\battle\battle-logic-audit.js:688:        !battleSource.includes("getSumValue(p, 'chain_rate_base'"), '発動率特性が誤った_baseキーを参照しています');

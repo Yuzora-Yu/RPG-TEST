@@ -36,7 +36,7 @@ for (const element of ['火', '水', '雷', '風', '光', '闇', '混沌']) {
 assert(expanded.filter(item => item.type === '強化道具').length === 12, 'buff item count mismatch');
 assert(expanded.filter(item => item.type === '弱体道具').length === 10, 'debuff item count mismatch');
 assert(expanded.filter(item => item.fieldGroup).length === 7, 'field party recovery/camp item count mismatch');
-assert(materials.every(item => item.icon === 'assets/ui/menu-icons/item-material-v001.png'), 'materials do not share the material icon');
+assert(materials.every(item => item.icon === 'assets/ui/menu-icons/item-material.png'), 'materials do not share the material icon');
 
 const categoryPairs = new Set(materials.map(item => `${item.materialType}:${item.materialRank}`));
 assert(categoryPairs.size === 64, 'material category/rank matrix is incomplete');
@@ -124,7 +124,7 @@ for (const type of ['攻撃道具', '強化道具', '弱体道具']) {
     assert(assigned >= 10, `${type} is assigned to too few normal monsters: ${assigned}`);
 }
 
-const iconPaths = ['attack', 'buff', 'debuff', 'material'].map(key => `assets/ui/menu-icons/item-${key}-v001.png`);
+const iconPaths = ['attack', 'buff', 'debuff', 'material'].map(key => `assets/ui/menu-icons/item-${key}.png`);
 for (const relative of iconPaths) {
     const data = fs.readFileSync(path.join(root, relative));
     assert(data.toString('ascii', 1, 4) === 'PNG', `${relative} is not PNG`);

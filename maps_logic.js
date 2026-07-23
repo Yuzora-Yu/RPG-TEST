@@ -187,10 +187,23 @@ const MapRegistry = {
         return mapDef.mapActions.find(action => MapRegistry.isPointInMapActionArea(action, x, y)) || null;
     },
 
+    isProgressEntryActive(entry) {
+        if (!entry || entry.active === false) return false;
+        const flags = (typeof App !== 'undefined' && App.data?.progress?.flags) || {};
+        const requiredFlags = Array.isArray(entry.requiredFlags)
+            ? entry.requiredFlags
+            : (entry.requiredFlag ? [entry.requiredFlag] : []);
+        const missingFlags = Array.isArray(entry.missingFlags)
+            ? entry.missingFlags
+            : (entry.missingFlag ? [entry.missingFlag] : []);
+        return requiredFlags.every(flag => !!flags[flag])
+            && missingFlags.every(flag => !flags[flag]);
+    },
+
     findBlockingObject(mapDef, x, y) {
         if (!mapDef || !Array.isArray(mapDef.blockingObjects)) return null;
         return mapDef.blockingObjects.find(object =>
-            object?.active !== false &&
+            MapRegistry.isProgressEntryActive(object) &&
             Number(object.x) === Number(x) &&
             Number(object.y) === Number(y)
         ) || null;
@@ -233,14 +246,15 @@ const MapRegistry = {
         // Interactive cells retain their identity when a surface-effect range crosses them.
         // Stairs in particular must remain reliable stopping points for sliding movement.
         if (['C', 'R', 'B', 'S', 'D', 'U', 'X', 'Y', 'Z', 'Q', 'N', 'O'].includes(tile)) return true;
-        const occupies = (list) => Array.isArray(list) && list.some(entry =>
+        const occupies = (list, conditional = false) => Array.isArray(list) && list.some(entry =>
+            (!conditional || MapRegistry.isProgressEntryActive(entry)) &&
             Number(entry?.x) === tx && Number(entry?.y) === ty
         );
         return occupies(mapDef.floorLinks)
             || occupies(mapDef.chests)
             || occupies(mapDef.bosses)
             || occupies(mapDef.mapActions)
-            || occupies(mapDef.blockingObjects)
+            || occupies(mapDef.blockingObjects, true)
             || occupies(mapDef.healSprings);
     },
 

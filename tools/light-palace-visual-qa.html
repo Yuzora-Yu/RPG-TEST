@@ -9,7 +9,7 @@ html,body{margin:0;min-height:100%;background:#151821;color:#f5edd6;font-family:
 main{width:min(560px,100%);margin:0 auto;padding:20px;box-sizing:border-box}
 h1{font-size:18px;margin:0 0 6px}.note{font-size:12px;color:#c9c3b3;margin:0 0 14px}
 #stage{position:relative;width:480px;height:480px;max-width:100%;overflow:hidden;background:#eef0e8;border:2px solid #9e8d66;box-shadow:0 14px 36px #0008;image-rendering:pixelated}
-.tile{position:absolute;width:32px;height:32px;background:url('../assets/map/terrain/tile_light_floor_v005.png') center/32px 32px no-repeat;image-rendering:pixelated}
+.tile{position:absolute;width:32px;height:32px;background:url('../assets/map/terrain/tile_light_floor.png') center/32px 32px no-repeat;image-rendering:pixelated}
 .object{position:absolute;width:32px;height:48px;object-fit:fill;image-rendering:pixelated;pointer-events:none}
 .stairs{position:absolute;width:32px;height:32px;object-fit:contain;image-rendering:pixelated;pointer-events:none}
 </style>
@@ -50,10 +50,10 @@ for (let y=0;y<rows.length;y++) {
     if(sign==='W') {
       const exposed=rows[y+1]?.[x] !== 'W';
       const img=document.createElement('img'); img.className='object';
-      img.src=exposed && x%5===0 ? '../assets/map/terrain/tile_light_wall_face_prism_v001.png' : exposed ? '../assets/map/terrain/tile_light_wall_face_v001.png' : '../assets/map/terrain/tile_light_wall_v005.png';
+      img.src=exposed && x%5===0 ? '../assets/map/terrain/tile_light_wall_face_prism.png' : exposed ? '../assets/map/terrain/tile_light_wall_face.png' : '../assets/map/terrain/tile_light_wall.png';
       img.style.left=`${x*32}px`; img.style.top=`${y*32-16}px`; img.style.zIndex=String(100+y); stage.appendChild(img);
     } else if(sign==='S') {
-      const img=document.createElement('img'); img.className='stairs'; img.src='../assets/map/overlays/overlay_dungeon_stairs_v002.png';
+      const img=document.createElement('img'); img.className='stairs'; img.src='../assets/map/overlays/overlay_dungeon_stairs.png';
       img.style.left=`${x*32}px`; img.style.top=`${y*32}px`; img.style.zIndex=String(200+y); stage.appendChild(img);
     }
   }

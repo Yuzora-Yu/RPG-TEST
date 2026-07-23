@@ -135,7 +135,9 @@ function validateFixedDef(name, def) {
 
   (def.bosses || []).forEach((boss) => {
     const tile = at(Number(boss.x), Number(boss.y));
-    assert(tile === 'B', `${name}: boss ${boss.x},${boss.y} is on ${tile}`);
+    // maps_logic.js は固定ボスを bosses[] で管理し、描画前に旧B記号を
+    // 基礎床へ正規化する。現行ランタイムを正として、壁上配置だけを拒否する。
+    assert(tile !== 'W', `${name}: boss ${boss.x},${boss.y} is blocked by ${tile}`);
   });
 
   (def.mapActions || []).forEach((action) => {

@@ -345,7 +345,7 @@ window.ITEMS_DATA.push(
         "medalOnly": false,
         "shopAvailable": true,
         "price": 300,
-        "icon": "assets/ui/menu-icons/item-attack-v001.png",
+        "icon": "assets/ui/menu-icons/item-attack.png",
         "desc": "敵単体に弱い火属性固定ダメージを与える"
     },
     {
@@ -364,7 +364,7 @@ window.ITEMS_DATA.push(
         "medalOnly": false,
         "shopAvailable": true,
         "price": 8000,
-        "icon": "assets/ui/menu-icons/item-attack-v001.png",
+        "icon": "assets/ui/menu-icons/item-attack.png",
         "desc": "敵単体に強い火属性固定ダメージを与える"
     },
     {
@@ -383,7 +383,7 @@ window.ITEMS_DATA.push(
         "medalOnly": false,
         "shopAvailable": true,
         "price": 1800,
-        "icon": "assets/ui/menu-icons/item-attack-v001.png",
+        "icon": "assets/ui/menu-icons/item-attack.png",
         "desc": "敵全体に弱い火属性固定ダメージを与える"
     },
     {
@@ -402,7 +402,7 @@ window.ITEMS_DATA.push(
         "medalOnly": false,
         "shopAvailable": true,
         "price": 25000,
-        "icon": "assets/ui/menu-icons/item-attack-v001.png",
+        "icon": "assets/ui/menu-icons/item-attack.png",
         "desc": "敵全体に強い火属性固定ダメージを与える"
     },
     {
@@ -421,7 +421,7 @@ window.ITEMS_DATA.push(
         "medalOnly": true,
         "shopAvailable": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-attack-v001.png",
+        "icon": "assets/ui/menu-icons/item-attack.png",
         "desc": "敵へランダムに3回強い火属性固定ダメージを与える（3回）"
     },
     {
@@ -440,7 +440,7 @@ window.ITEMS_DATA.push(
         "medalOnly": false,
         "shopAvailable": true,
         "price": 300,
-        "icon": "assets/ui/menu-icons/item-attack-v001.png",
+        "icon": "assets/ui/menu-icons/item-attack.png",
         "desc": "敵単体に弱い水属性固定ダメージを与える"
     },
     {
@@ -459,7 +459,7 @@ window.ITEMS_DATA.push(
         "medalOnly": false,
         "shopAvailable": true,
         "price": 8000,
-        "icon": "assets/ui/menu-icons/item-attack-v001.png",
+        "icon": "assets/ui/menu-icons/item-attack.png",
         "desc": "敵単体に強い水属性固定ダメージを与える"
     },
     {
@@ -478,7 +478,7 @@ window.ITEMS_DATA.push(
         "medalOnly": false,
         "shopAvailable": true,
         "price": 1800,
-        "icon": "assets/ui/menu-icons/item-attack-v001.png",
+        "icon": "assets/ui/menu-icons/item-attack.png",
         "desc": "敵全体に弱い水属性固定ダメージを与える"
     },
     {
@@ -497,7 +497,7 @@ window.ITEMS_DATA.push(
         "medalOnly": false,
         "shopAvailable": true,
         "price": 25000,
-        "icon": "assets/ui/menu-icons/item-attack-v001.png",
+        "icon": "assets/ui/menu-icons/item-attack.png",
         "desc": "敵全体に強い水属性固定ダメージを与える"
     },
     {
@@ -516,7 +516,7 @@ window.ITEMS_DATA.push(
         "medalOnly": true,
         "shopAvailable": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-attack-v001.png",
+        "icon": "assets/ui/menu-icons/item-attack.png",
         "desc": "敵へランダムに3回強い水属性固定ダメージを与える（3回）"
     },
     {
@@ -535,7 +535,7 @@ window.ITEMS_DATA.push(
         "medalOnly": false,
         "shopAvailable": true,
         "price": 300,
-        "icon": "assets/ui/menu-icons/item-attack-v001.png",
+        "icon": "assets/ui/menu-icons/item-attack.png",
         "desc": "敵単体に弱い雷属性固定ダメージを与える"
     },
     {
@@ -554,7 +554,7 @@ window.ITEMS_DATA.push(
         "medalOnly": false,
         "shopAvailable": true,
         "price": 8000,
-        "icon": "assets/ui/menu-icons/item-attack-v001.png",
+        "icon": "assets/ui/menu-icons/item-attack.png",
         "desc": "敵単体に強い雷属性固定ダメージを与える"
     },
     {
@@ -573,7 +573,7 @@ window.ITEMS_DATA.push(
         "medalOnly": false,
         "shopAvailable": true,
         "price": 1800,
-        "icon": "assets/ui/menu-icons/item-attack-v001.png",
+        "icon": "assets/ui/menu-icons/item-attack.png",
         "desc": "敵全体に弱い雷属性固定ダメージを与える"
     },
     {
@@ -592,7 +592,7 @@ window.ITEMS_DATA.push(
         "medalOnly": false,
         "shopAvailable": true,
         "price": 25000,
-        "icon": "assets/ui/menu-icons/item-attack-v001.png",
+        "icon": "assets/ui/menu-icons/item-attack.png",
         "desc": "敵全体に強い雷属性固定ダメージを与える"
     },
     {
@@ -611,7 +611,7 @@ window.ITEMS_DATA.push(
         "medalOnly": true,
         "shopAvailable": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-attack-v001.png",
+        "icon": "assets/ui/menu-icons/item-attack.png",
         "desc": "敵へランダムに3回強い雷属性固定ダメージを与える（3回）"
     },
     {
@@ -630,7 +630,7 @@ window.ITEMS_DATA.push(
         "medalOnly": false,
         "shopAvailable": true,
         "price": 300,
-        "icon": "assets/ui/menu-icons/item-attack-v001.png",
+        "icon": "assets/ui/menu-icons/item-attack.png",
         "desc": "敵単体に弱い風属性固定ダメージを与える"
     },
     {
@@ -649,7 +649,7 @@ window.ITEMS_DATA.push(
         "medalOnly": false,
         "shopAvailable": true,
         "price": 8000,
-        "icon": "assets/ui/menu-icons/item-attack-v001.png",
+        "icon": "assets/ui/menu-icons/item-attack.png",
         "desc": "敵単体に強い風属性固定ダメージを与える"
     },
     {
@@ -668,7 +668,7 @@ window.ITEMS_DATA.push(
         "medalOnly": false,
         "shopAvailable": true,
         "price": 1800,
-        "icon": "assets/ui/menu-icons/item-attack-v001.png",
+        "icon": "assets/ui/menu-icons/item-attack.png",
         "desc": "敵全体に弱い風属性固定ダメージを与える"
     },
     {
@@ -687,7 +687,7 @@ window.ITEMS_DATA.push(
         "medalOnly": false,
         "shopAvailable": true,
         "price": 25000,
-        "icon": "assets/ui/menu-icons/item-attack-v001.png",
+        "icon": "assets/ui/menu-icons/item-attack.png",
         "desc": "敵全体に強い風属性固定ダメージを与える"
     },
     {
@@ -706,7 +706,7 @@ window.ITEMS_DATA.push(
         "medalOnly": true,
         "shopAvailable": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-attack-v001.png",
+        "icon": "assets/ui/menu-icons/item-attack.png",
         "desc": "敵へランダムに3回強い風属性固定ダメージを与える（3回）"
     },
     {
@@ -725,7 +725,7 @@ window.ITEMS_DATA.push(
         "medalOnly": false,
         "shopAvailable": true,
         "price": 300,
-        "icon": "assets/ui/menu-icons/item-attack-v001.png",
+        "icon": "assets/ui/menu-icons/item-attack.png",
         "desc": "敵単体に弱い光属性固定ダメージを与える"
     },
     {
@@ -744,7 +744,7 @@ window.ITEMS_DATA.push(
         "medalOnly": false,
         "shopAvailable": true,
         "price": 8000,
-        "icon": "assets/ui/menu-icons/item-attack-v001.png",
+        "icon": "assets/ui/menu-icons/item-attack.png",
         "desc": "敵単体に強い光属性固定ダメージを与える"
     },
     {
@@ -763,7 +763,7 @@ window.ITEMS_DATA.push(
         "medalOnly": false,
         "shopAvailable": true,
         "price": 1800,
-        "icon": "assets/ui/menu-icons/item-attack-v001.png",
+        "icon": "assets/ui/menu-icons/item-attack.png",
         "desc": "敵全体に弱い光属性固定ダメージを与える"
     },
     {
@@ -782,7 +782,7 @@ window.ITEMS_DATA.push(
         "medalOnly": false,
         "shopAvailable": true,
         "price": 25000,
-        "icon": "assets/ui/menu-icons/item-attack-v001.png",
+        "icon": "assets/ui/menu-icons/item-attack.png",
         "desc": "敵全体に強い光属性固定ダメージを与える"
     },
     {
@@ -801,7 +801,7 @@ window.ITEMS_DATA.push(
         "medalOnly": true,
         "shopAvailable": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-attack-v001.png",
+        "icon": "assets/ui/menu-icons/item-attack.png",
         "desc": "敵へランダムに3回強い光属性固定ダメージを与える（3回）"
     },
     {
@@ -820,7 +820,7 @@ window.ITEMS_DATA.push(
         "medalOnly": false,
         "shopAvailable": true,
         "price": 300,
-        "icon": "assets/ui/menu-icons/item-attack-v001.png",
+        "icon": "assets/ui/menu-icons/item-attack.png",
         "desc": "敵単体に弱い闇属性固定ダメージを与える"
     },
     {
@@ -839,7 +839,7 @@ window.ITEMS_DATA.push(
         "medalOnly": false,
         "shopAvailable": true,
         "price": 8000,
-        "icon": "assets/ui/menu-icons/item-attack-v001.png",
+        "icon": "assets/ui/menu-icons/item-attack.png",
         "desc": "敵単体に強い闇属性固定ダメージを与える"
     },
     {
@@ -858,7 +858,7 @@ window.ITEMS_DATA.push(
         "medalOnly": false,
         "shopAvailable": true,
         "price": 1800,
-        "icon": "assets/ui/menu-icons/item-attack-v001.png",
+        "icon": "assets/ui/menu-icons/item-attack.png",
         "desc": "敵全体に弱い闇属性固定ダメージを与える"
     },
     {
@@ -877,7 +877,7 @@ window.ITEMS_DATA.push(
         "medalOnly": false,
         "shopAvailable": true,
         "price": 25000,
-        "icon": "assets/ui/menu-icons/item-attack-v001.png",
+        "icon": "assets/ui/menu-icons/item-attack.png",
         "desc": "敵全体に強い闇属性固定ダメージを与える"
     },
     {
@@ -896,7 +896,7 @@ window.ITEMS_DATA.push(
         "medalOnly": true,
         "shopAvailable": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-attack-v001.png",
+        "icon": "assets/ui/menu-icons/item-attack.png",
         "desc": "敵へランダムに3回強い闇属性固定ダメージを与える（3回）"
     },
     {
@@ -915,7 +915,7 @@ window.ITEMS_DATA.push(
         "medalOnly": false,
         "shopAvailable": true,
         "price": 300,
-        "icon": "assets/ui/menu-icons/item-attack-v001.png",
+        "icon": "assets/ui/menu-icons/item-attack.png",
         "desc": "敵単体に弱い混沌属性固定ダメージを与える"
     },
     {
@@ -934,7 +934,7 @@ window.ITEMS_DATA.push(
         "medalOnly": false,
         "shopAvailable": true,
         "price": 8000,
-        "icon": "assets/ui/menu-icons/item-attack-v001.png",
+        "icon": "assets/ui/menu-icons/item-attack.png",
         "desc": "敵単体に強い混沌属性固定ダメージを与える"
     },
     {
@@ -953,7 +953,7 @@ window.ITEMS_DATA.push(
         "medalOnly": false,
         "shopAvailable": true,
         "price": 1800,
-        "icon": "assets/ui/menu-icons/item-attack-v001.png",
+        "icon": "assets/ui/menu-icons/item-attack.png",
         "desc": "敵全体に弱い混沌属性固定ダメージを与える"
     },
     {
@@ -972,7 +972,7 @@ window.ITEMS_DATA.push(
         "medalOnly": false,
         "shopAvailable": true,
         "price": 25000,
-        "icon": "assets/ui/menu-icons/item-attack-v001.png",
+        "icon": "assets/ui/menu-icons/item-attack.png",
         "desc": "敵全体に強い混沌属性固定ダメージを与える"
     },
     {
@@ -991,7 +991,7 @@ window.ITEMS_DATA.push(
         "medalOnly": true,
         "shopAvailable": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-attack-v001.png",
+        "icon": "assets/ui/menu-icons/item-attack.png",
         "desc": "敵へランダムに3回強い混沌属性固定ダメージを与える（3回）"
     },
     {
@@ -1095,7 +1095,7 @@ window.ITEMS_DATA.push(
         "battleUsable": true,
         "fieldUsable": false,
         "price": 2500,
-        "icon": "assets/ui/menu-icons/item-buff-v001.png",
+        "icon": "assets/ui/menu-icons/item-buff.png",
         "desc": "味方単体の攻撃を50%上げる（4ターン）"
     },
     {
@@ -1113,7 +1113,7 @@ window.ITEMS_DATA.push(
         "battleUsable": true,
         "fieldUsable": false,
         "price": 15000,
-        "icon": "assets/ui/menu-icons/item-buff-v001.png",
+        "icon": "assets/ui/menu-icons/item-buff.png",
         "desc": "味方全体の攻撃を30%上げる（4ターン）"
     },
     {
@@ -1131,7 +1131,7 @@ window.ITEMS_DATA.push(
         "battleUsable": true,
         "fieldUsable": false,
         "price": 2500,
-        "icon": "assets/ui/menu-icons/item-buff-v001.png",
+        "icon": "assets/ui/menu-icons/item-buff.png",
         "desc": "味方単体の防御を50%上げる（4ターン）"
     },
     {
@@ -1149,7 +1149,7 @@ window.ITEMS_DATA.push(
         "battleUsable": true,
         "fieldUsable": false,
         "price": 15000,
-        "icon": "assets/ui/menu-icons/item-buff-v001.png",
+        "icon": "assets/ui/menu-icons/item-buff.png",
         "desc": "味方全体の防御を30%上げる（4ターン）"
     },
     {
@@ -1167,7 +1167,7 @@ window.ITEMS_DATA.push(
         "battleUsable": true,
         "fieldUsable": false,
         "price": 2500,
-        "icon": "assets/ui/menu-icons/item-buff-v001.png",
+        "icon": "assets/ui/menu-icons/item-buff.png",
         "desc": "味方単体の魔力を50%上げる（4ターン）"
     },
     {
@@ -1185,7 +1185,7 @@ window.ITEMS_DATA.push(
         "battleUsable": true,
         "fieldUsable": false,
         "price": 15000,
-        "icon": "assets/ui/menu-icons/item-buff-v001.png",
+        "icon": "assets/ui/menu-icons/item-buff.png",
         "desc": "味方全体の魔力を30%上げる（4ターン）"
     },
     {
@@ -1203,7 +1203,7 @@ window.ITEMS_DATA.push(
         "battleUsable": true,
         "fieldUsable": false,
         "price": 2500,
-        "icon": "assets/ui/menu-icons/item-buff-v001.png",
+        "icon": "assets/ui/menu-icons/item-buff.png",
         "desc": "味方単体の魔法防御を50%上げる（4ターン）"
     },
     {
@@ -1221,7 +1221,7 @@ window.ITEMS_DATA.push(
         "battleUsable": true,
         "fieldUsable": false,
         "price": 15000,
-        "icon": "assets/ui/menu-icons/item-buff-v001.png",
+        "icon": "assets/ui/menu-icons/item-buff.png",
         "desc": "味方全体の魔法防御を30%上げる（4ターン）"
     },
     {
@@ -1239,7 +1239,7 @@ window.ITEMS_DATA.push(
         "battleUsable": true,
         "fieldUsable": false,
         "price": 2500,
-        "icon": "assets/ui/menu-icons/item-buff-v001.png",
+        "icon": "assets/ui/menu-icons/item-buff.png",
         "desc": "味方単体の全属性耐性を50%上げる（4ターン）"
     },
     {
@@ -1257,7 +1257,7 @@ window.ITEMS_DATA.push(
         "battleUsable": true,
         "fieldUsable": false,
         "price": 15000,
-        "icon": "assets/ui/menu-icons/item-buff-v001.png",
+        "icon": "assets/ui/menu-icons/item-buff.png",
         "desc": "味方全体の全属性耐性を30%上げる（4ターン）"
     },
     {
@@ -1291,7 +1291,7 @@ window.ITEMS_DATA.push(
         "medalOnly": true,
         "shopAvailable": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-buff-v001.png",
+        "icon": "assets/ui/menu-icons/item-buff.png",
         "desc": "味方単体の会心率を30%上げる（2ターン）"
     },
     {
@@ -1311,7 +1311,7 @@ window.ITEMS_DATA.push(
         "medalOnly": true,
         "shopAvailable": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-buff-v001.png",
+        "icon": "assets/ui/menu-icons/item-buff.png",
         "desc": "味方単体の回避率を30%上げる（2ターン）"
     },
     {
@@ -1330,7 +1330,7 @@ window.ITEMS_DATA.push(
         "battleUsable": true,
         "fieldUsable": false,
         "price": 3500,
-        "icon": "assets/ui/menu-icons/item-debuff-v001.png",
+        "icon": "assets/ui/menu-icons/item-debuff.png",
         "desc": "敵単体の攻撃を50%下げる（4ターン）"
     },
     {
@@ -1349,7 +1349,7 @@ window.ITEMS_DATA.push(
         "battleUsable": true,
         "fieldUsable": false,
         "price": 18000,
-        "icon": "assets/ui/menu-icons/item-debuff-v001.png",
+        "icon": "assets/ui/menu-icons/item-debuff.png",
         "desc": "敵全体の攻撃を30%下げる（4ターン）"
     },
     {
@@ -1368,7 +1368,7 @@ window.ITEMS_DATA.push(
         "battleUsable": true,
         "fieldUsable": false,
         "price": 3500,
-        "icon": "assets/ui/menu-icons/item-debuff-v001.png",
+        "icon": "assets/ui/menu-icons/item-debuff.png",
         "desc": "敵単体の防御を50%下げる（4ターン）"
     },
     {
@@ -1387,7 +1387,7 @@ window.ITEMS_DATA.push(
         "battleUsable": true,
         "fieldUsable": false,
         "price": 18000,
-        "icon": "assets/ui/menu-icons/item-debuff-v001.png",
+        "icon": "assets/ui/menu-icons/item-debuff.png",
         "desc": "敵全体の防御を30%下げる（4ターン）"
     },
     {
@@ -1406,7 +1406,7 @@ window.ITEMS_DATA.push(
         "battleUsable": true,
         "fieldUsable": false,
         "price": 3500,
-        "icon": "assets/ui/menu-icons/item-debuff-v001.png",
+        "icon": "assets/ui/menu-icons/item-debuff.png",
         "desc": "敵単体の魔力を50%下げる（4ターン）"
     },
     {
@@ -1425,7 +1425,7 @@ window.ITEMS_DATA.push(
         "battleUsable": true,
         "fieldUsable": false,
         "price": 18000,
-        "icon": "assets/ui/menu-icons/item-debuff-v001.png",
+        "icon": "assets/ui/menu-icons/item-debuff.png",
         "desc": "敵全体の魔力を30%下げる（4ターン）"
     },
     {
@@ -1444,7 +1444,7 @@ window.ITEMS_DATA.push(
         "battleUsable": true,
         "fieldUsable": false,
         "price": 3500,
-        "icon": "assets/ui/menu-icons/item-debuff-v001.png",
+        "icon": "assets/ui/menu-icons/item-debuff.png",
         "desc": "敵単体の魔法防御を50%下げる（4ターン）"
     },
     {
@@ -1463,7 +1463,7 @@ window.ITEMS_DATA.push(
         "battleUsable": true,
         "fieldUsable": false,
         "price": 18000,
-        "icon": "assets/ui/menu-icons/item-debuff-v001.png",
+        "icon": "assets/ui/menu-icons/item-debuff.png",
         "desc": "敵全体の魔法防御を30%下げる（4ターン）"
     },
     {
@@ -1482,7 +1482,7 @@ window.ITEMS_DATA.push(
         "battleUsable": true,
         "fieldUsable": false,
         "price": 3500,
-        "icon": "assets/ui/menu-icons/item-debuff-v001.png",
+        "icon": "assets/ui/menu-icons/item-debuff.png",
         "desc": "敵単体の全属性耐性を50%下げる（4ターン）"
     },
     {
@@ -1501,7 +1501,7 @@ window.ITEMS_DATA.push(
         "battleUsable": true,
         "fieldUsable": false,
         "price": 18000,
-        "icon": "assets/ui/menu-icons/item-debuff-v001.png",
+        "icon": "assets/ui/menu-icons/item-debuff.png",
         "desc": "敵全体の全属性耐性を30%下げる（4ターン）"
     },
     {
@@ -1519,7 +1519,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 10,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "金属系 Rank G 素材"
     },
     {
@@ -1537,7 +1537,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 30,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "金属系 Rank F 素材"
     },
     {
@@ -1555,7 +1555,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 90,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "金属系 Rank E 素材"
     },
     {
@@ -1573,7 +1573,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 250,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "金属系 Rank D 素材"
     },
     {
@@ -1591,7 +1591,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 700,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "金属系 Rank C 素材"
     },
     {
@@ -1609,7 +1609,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 1800,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "金属系 Rank B 素材"
     },
     {
@@ -1627,7 +1627,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 5000,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "金属系 Rank A 素材"
     },
     {
@@ -1645,7 +1645,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 15000,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "金属系 Rank S 素材"
     },
     {
@@ -1663,7 +1663,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 10,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "木材系 Rank G 素材"
     },
     {
@@ -1681,7 +1681,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 30,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "木材系 Rank F 素材"
     },
     {
@@ -1699,7 +1699,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 90,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "木材系 Rank E 素材"
     },
     {
@@ -1717,7 +1717,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 250,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "木材系 Rank D 素材"
     },
     {
@@ -1735,7 +1735,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 700,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "木材系 Rank C 素材"
     },
     {
@@ -1753,7 +1753,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 1800,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "木材系 Rank B 素材"
     },
     {
@@ -1771,7 +1771,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 5000,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "木材系 Rank A 素材"
     },
     {
@@ -1789,7 +1789,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 15000,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "木材系 Rank S 素材"
     },
     {
@@ -1807,7 +1807,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 10,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "魔石系 Rank G 素材"
     },
     {
@@ -1825,7 +1825,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 30,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "魔石系 Rank F 素材"
     },
     {
@@ -1843,7 +1843,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 90,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "魔石系 Rank E 素材"
     },
     {
@@ -1861,7 +1861,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 250,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "魔石系 Rank D 素材"
     },
     {
@@ -1879,7 +1879,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 700,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "魔石系 Rank C 素材"
     },
     {
@@ -1897,7 +1897,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 1800,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "魔石系 Rank B 素材"
     },
     {
@@ -1915,7 +1915,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 5000,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "魔石系 Rank A 素材"
     },
     {
@@ -1933,7 +1933,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 15000,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "魔石系 Rank S 素材"
     },
     {
@@ -1951,7 +1951,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 10,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "羽系 Rank G 素材"
     },
     {
@@ -1969,7 +1969,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 30,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "羽系 Rank F 素材"
     },
     {
@@ -1987,7 +1987,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 90,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "羽系 Rank E 素材"
     },
     {
@@ -2005,7 +2005,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 250,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "羽系 Rank D 素材"
     },
     {
@@ -2023,7 +2023,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 700,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "羽系 Rank C 素材"
     },
     {
@@ -2041,7 +2041,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 1800,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "羽系 Rank B 素材"
     },
     {
@@ -2059,7 +2059,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 5000,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "羽系 Rank A 素材"
     },
     {
@@ -2077,7 +2077,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 15000,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "羽系 Rank S 素材"
     },
     {
@@ -2095,7 +2095,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 10,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "爪系 Rank G 素材"
     },
     {
@@ -2113,7 +2113,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 30,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "爪系 Rank F 素材"
     },
     {
@@ -2131,7 +2131,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 90,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "爪系 Rank E 素材"
     },
     {
@@ -2149,7 +2149,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 250,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "爪系 Rank D 素材"
     },
     {
@@ -2167,7 +2167,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 700,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "爪系 Rank C 素材"
     },
     {
@@ -2185,7 +2185,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 1800,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "爪系 Rank B 素材"
     },
     {
@@ -2203,7 +2203,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 5000,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "爪系 Rank A 素材"
     },
     {
@@ -2221,7 +2221,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 15000,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "爪系 Rank S 素材"
     },
     {
@@ -2239,7 +2239,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 10,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "毛皮系 Rank G 素材"
     },
     {
@@ -2257,7 +2257,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 30,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "毛皮系 Rank F 素材"
     },
     {
@@ -2275,7 +2275,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 90,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "毛皮系 Rank E 素材"
     },
     {
@@ -2293,7 +2293,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 250,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "毛皮系 Rank D 素材"
     },
     {
@@ -2311,7 +2311,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 700,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "毛皮系 Rank C 素材"
     },
     {
@@ -2329,7 +2329,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 1800,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "毛皮系 Rank B 素材"
     },
     {
@@ -2347,7 +2347,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 5000,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "毛皮系 Rank A 素材"
     },
     {
@@ -2365,7 +2365,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 15000,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "毛皮系 Rank S 素材"
     },
     {
@@ -2383,7 +2383,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 10,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "液体系 Rank G 素材"
     },
     {
@@ -2401,7 +2401,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 30,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "液体系 Rank F 素材"
     },
     {
@@ -2419,7 +2419,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 90,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "液体系 Rank E 素材"
     },
     {
@@ -2437,7 +2437,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 250,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "液体系 Rank D 素材"
     },
     {
@@ -2455,7 +2455,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 700,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "液体系 Rank C 素材"
     },
     {
@@ -2473,7 +2473,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 1800,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "液体系 Rank B 素材"
     },
     {
@@ -2491,7 +2491,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 5000,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "液体系 Rank A 素材"
     },
     {
@@ -2509,7 +2509,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 15000,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "液体系 Rank S 素材"
     },
     {
@@ -2527,7 +2527,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 10,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "分類不能系 Rank G 素材"
     },
     {
@@ -2545,7 +2545,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 30,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "分類不能系 Rank F 素材"
     },
     {
@@ -2563,7 +2563,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 90,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "分類不能系 Rank E 素材"
     },
     {
@@ -2581,7 +2581,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 250,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "分類不能系 Rank D 素材"
     },
     {
@@ -2599,7 +2599,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 700,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "分類不能系 Rank C 素材"
     },
     {
@@ -2617,7 +2617,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 1800,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "分類不能系 Rank B 素材"
     },
     {
@@ -2635,7 +2635,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 5000,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "分類不能系 Rank A 素材"
     },
     {
@@ -2653,7 +2653,7 @@ window.ITEMS_DATA.push(
         "shopAvailable": false,
         "price": 0,
         "sellPrice": 15000,
-        "icon": "assets/ui/menu-icons/item-material-v001.png",
+        "icon": "assets/ui/menu-icons/item-material.png",
         "desc": "分類不能系 Rank S 素材"
     }
 );
@@ -2667,10 +2667,10 @@ window.ITEMS_DATA.push(
 
     const items = window.ITEMS_DATA;
     const ICONS = Object.freeze({
-        damage: 'assets/ui/menu-icons/item-attack-v001.png',
-        buff: 'assets/ui/menu-icons/item-buff-v001.png',
-        debuff: 'assets/ui/menu-icons/item-debuff-v001.png',
-        material: 'assets/ui/menu-icons/item-material-v001.png'
+        damage: 'assets/ui/menu-icons/item-attack.png',
+        buff: 'assets/ui/menu-icons/item-buff.png',
+        debuff: 'assets/ui/menu-icons/item-debuff.png',
+        material: 'assets/ui/menu-icons/item-material.png'
     });
     const ELEMENTS = Object.freeze(['火', '水', '雷', '風', '光', '闇', '混沌']);
     const MATERIAL_GRADES = Object.freeze([

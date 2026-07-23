@@ -32,37 +32,37 @@ const main = read('main.js');
 const css = read('modern-polish.css');
 
 const requiredThemeGraphics = {
-    overlay_decor_default_cave_dust: 'assets/map/overlays/overlay_decor_default_cave_dust_v001.png',
-    overlay_decor_start_village_herbs: 'assets/map/overlays/overlay_decor_start_village_herbs_v001.png',
-    overlay_decor_start_cave_damp: 'assets/map/overlays/overlay_decor_start_cave_damp_v001.png',
-    overlay_decor_fire_ember_fissure: 'assets/map/overlays/overlay_decor_fire_ember_fissure_v001.png',
-    overlay_decor_wind_village_feather: 'assets/map/overlays/overlay_decor_wind_village_feather_v001.png',
-    overlay_decor_wind_hole_root: 'assets/map/overlays/overlay_decor_wind_hole_root_v001.png',
-    overlay_decor_forbidden_forest_moss: 'assets/map/overlays/overlay_decor_forbidden_forest_moss_v001.png',
-    overlay_decor_water_city_puddle: 'assets/map/overlays/overlay_decor_water_city_puddle_v001.png',
-    overlay_decor_big_tower_gear_oil: 'assets/map/overlays/overlay_decor_big_tower_gear_oil_v001.png',
-    overlay_decor_thunder_fort_wiring: 'assets/map/overlays/overlay_decor_thunder_fort_wiring_v001.png',
-    overlay_decor_light_palace_prism: 'assets/map/overlays/overlay_decor_light_palace_prism_v001.png',
-    overlay_decor_galvania_crystal: 'assets/map/overlays/overlay_decor_galvania_crystal_v001.png',
-    overlay_decor_dark_castle_chain: 'assets/map/overlays/overlay_decor_dark_castle_chain_v001.png',
-    overlay_decor_crena_limestone_pool: 'assets/map/overlays/overlay_decor_crena_limestone_pool_v001.png',
-    overlay_decor_seabed_temple_ripple: 'assets/map/overlays/overlay_decor_seabed_temple_ripple_v001.png',
-    overlay_decor_dark_shrine_sigil: 'assets/map/overlays/overlay_decor_dark_shrine_sigil_v001.png',
-    overlay_decor_grezelia_fossil: 'assets/map/overlays/overlay_decor_grezelia_fossil_v001.png',
-    overlay_decor_abyss_void_dust: 'assets/map/overlays/overlay_decor_abyss_void_dust_v001.png',
-    overlay_decor_abyss_field_flora: 'assets/map/overlays/overlay_decor_abyss_field_flora_v001.png',
-    overlay_decor_ruined_shrine_glyph: 'assets/map/overlays/overlay_decor_ruined_shrine_glyph_v001.png'
+    overlay_decor_default_cave_dust: 'assets/map/overlays/overlay_decor_default_cave_dust.png',
+    overlay_decor_start_village_herbs: 'assets/map/overlays/overlay_decor_start_village_herbs.png',
+    overlay_decor_start_cave_damp: 'assets/map/overlays/overlay_decor_start_cave_damp.png',
+    overlay_decor_fire_ember_fissure: 'assets/map/overlays/overlay_decor_fire_ember_fissure.png',
+    overlay_decor_wind_village_feather: 'assets/map/overlays/overlay_decor_wind_village_feather.png',
+    overlay_decor_wind_hole_root: 'assets/map/overlays/overlay_decor_wind_hole_root.png',
+    overlay_decor_forbidden_forest_moss: 'assets/map/overlays/overlay_decor_forbidden_forest_moss.png',
+    overlay_decor_water_city_puddle: 'assets/map/overlays/overlay_decor_water_city_puddle.png',
+    overlay_decor_big_tower_gear_oil: 'assets/map/overlays/overlay_decor_big_tower_gear_oil.png',
+    overlay_decor_thunder_fort_wiring: 'assets/map/overlays/overlay_decor_thunder_fort_wiring.png',
+    overlay_decor_light_palace_prism: 'assets/map/overlays/overlay_decor_light_palace_prism.png',
+    overlay_decor_galvania_crystal: 'assets/map/overlays/overlay_decor_galvania_crystal.png',
+    overlay_decor_dark_castle_chain: 'assets/map/overlays/overlay_decor_dark_castle_chain.png',
+    overlay_decor_crena_limestone_pool: 'assets/map/overlays/overlay_decor_crena_limestone_pool.png',
+    overlay_decor_seabed_temple_ripple: 'assets/map/overlays/overlay_decor_seabed_temple_ripple.png',
+    overlay_decor_dark_shrine_sigil: 'assets/map/overlays/overlay_decor_dark_shrine_sigil.png',
+    overlay_decor_grezelia_fossil: 'assets/map/overlays/overlay_decor_grezelia_fossil.png',
+    overlay_decor_abyss_void_dust: 'assets/map/overlays/overlay_decor_abyss_void_dust.png',
+    overlay_decor_abyss_field_flora: 'assets/map/overlays/overlay_decor_abyss_field_flora.png',
+    overlay_decor_ruined_shrine_glyph: 'assets/map/overlays/overlay_decor_ruined_shrine_glyph.png'
 };
 const requiredCarpetGraphics = {
-    overlay_castle_carpet_fill: 'assets/map/overlays/overlay_castle_carpet_fill_v001.png',
-    overlay_castle_carpet_edge_n: 'assets/map/overlays/overlay_castle_carpet_edge_n_v001.png',
-    overlay_castle_carpet_edge_s: 'assets/map/overlays/overlay_castle_carpet_edge_s_v001.png',
-    overlay_castle_carpet_edge_w: 'assets/map/overlays/overlay_castle_carpet_edge_w_v001.png',
-    overlay_castle_carpet_edge_e: 'assets/map/overlays/overlay_castle_carpet_edge_e_v001.png',
-    overlay_castle_carpet_corner_nw: 'assets/map/overlays/overlay_castle_carpet_corner_nw_v001.png',
-    overlay_castle_carpet_corner_ne: 'assets/map/overlays/overlay_castle_carpet_corner_ne_v001.png',
-    overlay_castle_carpet_corner_sw: 'assets/map/overlays/overlay_castle_carpet_corner_sw_v001.png',
-    overlay_castle_carpet_corner_se: 'assets/map/overlays/overlay_castle_carpet_corner_se_v001.png'
+    overlay_castle_carpet_fill: 'assets/map/overlays/overlay_castle_carpet_fill.png',
+    overlay_castle_carpet_edge_n: 'assets/map/overlays/overlay_castle_carpet_edge_n.png',
+    overlay_castle_carpet_edge_s: 'assets/map/overlays/overlay_castle_carpet_edge_s.png',
+    overlay_castle_carpet_edge_w: 'assets/map/overlays/overlay_castle_carpet_edge_w.png',
+    overlay_castle_carpet_edge_e: 'assets/map/overlays/overlay_castle_carpet_edge_e.png',
+    overlay_castle_carpet_corner_nw: 'assets/map/overlays/overlay_castle_carpet_corner_nw.png',
+    overlay_castle_carpet_corner_ne: 'assets/map/overlays/overlay_castle_carpet_corner_ne.png',
+    overlay_castle_carpet_corner_sw: 'assets/map/overlays/overlay_castle_carpet_corner_sw.png',
+    overlay_castle_carpet_corner_se: 'assets/map/overlays/overlay_castle_carpet_corner_se.png'
 };
 const requiredConnectedTextileGraphics = Object.fromEntries([
     ['overlay_castle_carpet_blue_silver', 'assets/map/overlays/overlay_castle_carpet_blue_silver'],
@@ -70,25 +70,25 @@ const requiredConnectedTextileGraphics = Object.fromEntries([
 ].flatMap(([keyPrefix, pathPrefix]) => [
     'fill', 'edge_n', 'edge_s', 'edge_w', 'edge_e',
     'corner_nw', 'corner_ne', 'corner_sw', 'corner_se'
-].map(suffix => [`${keyPrefix}_${suffix}`, `${pathPrefix}_${suffix}_v001.png`])));
+].map(suffix => [`${keyPrefix}_${suffix}`, `${pathPrefix}_${suffix}.png`])));
 const requiredDoorGraphics = {
-    door_key_red: 'assets/map/objects/door_key_red_v003.png',
-    door_key_blue: 'assets/map/objects/door_key_blue_v003.png',
-    door_key_gold: 'assets/map/objects/door_key_gold_v003.png'
+    door_key_red: 'assets/map/objects/door_key_red.png',
+    door_key_blue: 'assets/map/objects/door_key_blue.png',
+    door_key_gold: 'assets/map/objects/door_key_gold.png'
 };
 const requiredGraphics = {
     ...requiredThemeGraphics,
     ...requiredCarpetGraphics,
     ...requiredConnectedTextileGraphics,
     ...requiredDoorGraphics,
-    overlay_world_grass_detail: 'assets/map/overlays/overlay_world_grass_detail_v001.png',
-    overlay_world_grass_weeds: 'assets/map/overlays/overlay_world_grass_weeds_v001.png',
-    overlay_world_grass_earth: 'assets/map/overlays/overlay_world_grass_earth_v001.png',
-    overlay_world_forest_understory: 'assets/map/overlays/overlay_world_forest_understory_v001.png',
-    overlay_world_forest_roots: 'assets/map/overlays/overlay_world_forest_roots_v001.png',
-    overlay_world_foothill_rocks: 'assets/map/overlays/overlay_world_foothill_rocks_v001.png',
-    overlay_world_shore_foam: 'assets/map/overlays/overlay_world_shore_foam_v001.png',
-    overlay_world_bridge_wood: 'assets/map/overlays/overlay_world_bridge_wood_v001.png'
+    overlay_world_grass_detail: 'assets/map/overlays/overlay_world_grass_detail.png',
+    overlay_world_grass_weeds: 'assets/map/overlays/overlay_world_grass_weeds.png',
+    overlay_world_grass_earth: 'assets/map/overlays/overlay_world_grass_earth.png',
+    overlay_world_forest_understory: 'assets/map/overlays/overlay_world_forest_understory.png',
+    overlay_world_forest_roots: 'assets/map/overlays/overlay_world_forest_roots.png',
+    overlay_world_foothill_rocks: 'assets/map/overlays/overlay_world_foothill_rocks.png',
+    overlay_world_shore_foam: 'assets/map/overlays/overlay_world_shore_foam.png',
+    overlay_world_bridge_wood: 'assets/map/overlays/overlay_world_bridge_wood.png'
 };
 for (const [key, expected] of Object.entries(requiredGraphics)) {
     if (graphics[key] !== expected) errors.push(`map decoration key is missing or wrong: ${key}`);
@@ -126,28 +126,28 @@ if (mapContext.window.MAP_FLOOR_DECOR_THEMES?.WIND_TEMPLE?.disabled !== true) er
 if (mapContext.window.MAP_FLOOR_DECOR_THEMES?.ABYSS_FIELD?.disabled !== true) errors.push('Abyss Outer Rim authored ritual floor is not protected from random decoration');
 if (mapContext.window.MAP_FLOOR_DECOR_THEMES?.TRIAL_SHRINE?.disabled !== true) errors.push('Trial Shrine authored floor is not protected from random decoration');
 if (mapContext.window.MAP_FLOOR_DECOR_THEMES?.SUMMIT_TEMPLE?.disabled !== true) errors.push('Summit Temple authored floor is not protected from random decoration');
-if (battleFx['phys-elemental'] !== 'assets/effect/fx_phys_elemental_arc_v001.png') {
+if (battleFx['phys-elemental'] !== 'assets/effect/fx_phys_elemental_arc.png') {
     errors.push('generated elemental physical effect is not registered');
 }
 const requiredBattleFx = {
-    'neutral-slash': 'assets/effect/fx_phys_slash_arc_v002.png',
-    'neutral-pierce': 'assets/effect/fx_phys_pierce_lance_v002.png',
-    'neutral-smash': 'assets/effect/fx_phys_smash_impact_v002.png',
-    'ranged-volley': 'assets/effect/fx_phys_ranged_volley_v001.png',
-    'arcane-burst': 'assets/effect/fx_magic_arcane_burst_v001.png',
-    'heal-blossom': 'assets/effect/fx_support_heal_radiance_v002.png',
-    'debuff': 'assets/effect/fx_support_debuff_hex_v002.png',
-    'breath': 'assets/effect/fx_breath_cone_master_v001.png',
-    'ultimate-ragnarok': 'assets/effect/fx_ultimate_166_ragnarok_v001.png',
-    'ultimate-prisma-end': 'assets/effect/fx_ultimate_168_prisma_end_v001.png',
-    'ultimate-big-bang': 'assets/effect/fx_ultimate_238_big_bang_v001.png',
-    'ultimate-abyss-wall': 'assets/effect/fx_ultimate_242_abyss_wall_v001.png',
-    'ultimate-phoenix-flare': 'assets/effect/fx_ultimate_243_phoenix_flare_v001.png',
-    'ultimate-genesis-magic': 'assets/effect/fx_ultimate_244_genesis_magic_v001.png',
-    'ultimate-chaos-shock': 'assets/effect/fx_ultimate_245_chaos_shock_v001.png',
-    'ultimate-illuminati-break': 'assets/effect/fx_ultimate_246_illuminati_break_v001.png',
-    'ultimate-the-end': 'assets/effect/fx_ultimate_247_the_end_v001.png',
-    'ultimate-lost-prisma': 'assets/effect/fx_ultimate_248_lost_prisma_v001.png'
+    'neutral-slash': 'assets/effect/fx_phys_slash_arc.png',
+    'neutral-pierce': 'assets/effect/fx_phys_pierce_lance.png',
+    'neutral-smash': 'assets/effect/fx_phys_smash_impact.png',
+    'ranged-volley': 'assets/effect/fx_phys_ranged_volley.png',
+    'arcane-burst': 'assets/effect/fx_magic_arcane_burst.png',
+    'heal-blossom': 'assets/effect/fx_support_heal_radiance.png',
+    'debuff': 'assets/effect/fx_support_debuff_hex.png',
+    'breath': 'assets/effect/fx_breath_cone_master.png',
+    'ultimate-ragnarok': 'assets/effect/fx_ultimate_166_ragnarok.png',
+    'ultimate-prisma-end': 'assets/effect/fx_ultimate_168_prisma_end.png',
+    'ultimate-big-bang': 'assets/effect/fx_ultimate_238_big_bang.png',
+    'ultimate-abyss-wall': 'assets/effect/fx_ultimate_242_abyss_wall.png',
+    'ultimate-phoenix-flare': 'assets/effect/fx_ultimate_243_phoenix_flare.png',
+    'ultimate-genesis-magic': 'assets/effect/fx_ultimate_244_genesis_magic.png',
+    'ultimate-chaos-shock': 'assets/effect/fx_ultimate_245_chaos_shock.png',
+    'ultimate-illuminati-break': 'assets/effect/fx_ultimate_246_illuminati_break.png',
+    'ultimate-the-end': 'assets/effect/fx_ultimate_247_the_end.png',
+    'ultimate-lost-prisma': 'assets/effect/fx_ultimate_248_lost_prisma.png'
 };
 for (const [key, expected] of Object.entries(requiredBattleFx)) {
     if (battleFx[key] !== expected) errors.push(`battle effect key is missing or wrong: ${key}`);
@@ -170,42 +170,42 @@ const pngInfo = relative => {
 for (const [relative, expectedWidth, expectedHeight] of [
     ...Object.values(requiredThemeGraphics).map(relative => [relative, 32, 32]),
     ...Object.values(requiredDoorGraphics).map(relative => [relative, 32, 32]),
-    ['assets/map/overlays/overlay_castle_carpet_fill_v001.png', 32, 32],
-    ['assets/map/overlays/overlay_castle_carpet_edge_n_v001.png', 32, 4],
-    ['assets/map/overlays/overlay_castle_carpet_edge_s_v001.png', 32, 4],
-    ['assets/map/overlays/overlay_castle_carpet_edge_w_v001.png', 4, 32],
-    ['assets/map/overlays/overlay_castle_carpet_edge_e_v001.png', 4, 32],
-    ['assets/map/overlays/overlay_castle_carpet_corner_nw_v001.png', 4, 4],
-    ['assets/map/overlays/overlay_castle_carpet_corner_ne_v001.png', 4, 4],
-    ['assets/map/overlays/overlay_castle_carpet_corner_sw_v001.png', 4, 4],
-    ['assets/map/overlays/overlay_castle_carpet_corner_se_v001.png', 4, 4],
-    ['assets/map/overlays/overlay_castle_carpet_blue_silver_fill_v001.png', 32, 32],
-    ['assets/map/overlays/overlay_castle_carpet_blue_silver_edge_n_v001.png', 32, 4],
-    ['assets/map/overlays/overlay_castle_carpet_blue_silver_edge_s_v001.png', 32, 4],
-    ['assets/map/overlays/overlay_castle_carpet_blue_silver_edge_w_v001.png', 4, 32],
-    ['assets/map/overlays/overlay_castle_carpet_blue_silver_edge_e_v001.png', 4, 32],
-    ['assets/map/overlays/overlay_castle_carpet_blue_silver_corner_nw_v001.png', 4, 4],
-    ['assets/map/overlays/overlay_castle_carpet_blue_silver_corner_ne_v001.png', 4, 4],
-    ['assets/map/overlays/overlay_castle_carpet_blue_silver_corner_sw_v001.png', 4, 4],
-    ['assets/map/overlays/overlay_castle_carpet_blue_silver_corner_se_v001.png', 4, 4],
-    ['assets/map/overlays/overlay_village_goza_fill_v001.png', 32, 32],
-    ['assets/map/overlays/overlay_village_goza_edge_n_v001.png', 32, 3],
-    ['assets/map/overlays/overlay_village_goza_edge_s_v001.png', 32, 3],
-    ['assets/map/overlays/overlay_village_goza_edge_w_v001.png', 3, 32],
-    ['assets/map/overlays/overlay_village_goza_edge_e_v001.png', 3, 32],
-    ['assets/map/overlays/overlay_village_goza_corner_nw_v001.png', 3, 3],
-    ['assets/map/overlays/overlay_village_goza_corner_ne_v001.png', 3, 3],
-    ['assets/map/overlays/overlay_village_goza_corner_sw_v001.png', 3, 3],
-    ['assets/map/overlays/overlay_village_goza_corner_se_v001.png', 3, 3],
-    ['assets/map/overlays/overlay_world_grass_detail_v001.png', 64, 64],
-    ['assets/map/overlays/overlay_world_grass_weeds_v001.png', 64, 64],
-    ['assets/map/overlays/overlay_world_grass_earth_v001.png', 64, 64],
-    ['assets/map/overlays/overlay_world_forest_understory_v001.png', 64, 64],
-    ['assets/map/overlays/overlay_world_forest_roots_v001.png', 64, 64],
-    ['assets/map/overlays/overlay_world_foothill_rocks_v001.png', 64, 64],
-    ['assets/map/overlays/overlay_world_shore_foam_v001.png', 64, 32],
-    ['assets/map/overlays/overlay_world_bridge_wood_v001.png', 64, 16],
-    ['assets/effect/fx_phys_elemental_arc_v001.png', 384, 384],
+    ['assets/map/overlays/overlay_castle_carpet_fill.png', 32, 32],
+    ['assets/map/overlays/overlay_castle_carpet_edge_n.png', 32, 4],
+    ['assets/map/overlays/overlay_castle_carpet_edge_s.png', 32, 4],
+    ['assets/map/overlays/overlay_castle_carpet_edge_w.png', 4, 32],
+    ['assets/map/overlays/overlay_castle_carpet_edge_e.png', 4, 32],
+    ['assets/map/overlays/overlay_castle_carpet_corner_nw.png', 4, 4],
+    ['assets/map/overlays/overlay_castle_carpet_corner_ne.png', 4, 4],
+    ['assets/map/overlays/overlay_castle_carpet_corner_sw.png', 4, 4],
+    ['assets/map/overlays/overlay_castle_carpet_corner_se.png', 4, 4],
+    ['assets/map/overlays/overlay_castle_carpet_blue_silver_fill.png', 32, 32],
+    ['assets/map/overlays/overlay_castle_carpet_blue_silver_edge_n.png', 32, 4],
+    ['assets/map/overlays/overlay_castle_carpet_blue_silver_edge_s.png', 32, 4],
+    ['assets/map/overlays/overlay_castle_carpet_blue_silver_edge_w.png', 4, 32],
+    ['assets/map/overlays/overlay_castle_carpet_blue_silver_edge_e.png', 4, 32],
+    ['assets/map/overlays/overlay_castle_carpet_blue_silver_corner_nw.png', 4, 4],
+    ['assets/map/overlays/overlay_castle_carpet_blue_silver_corner_ne.png', 4, 4],
+    ['assets/map/overlays/overlay_castle_carpet_blue_silver_corner_sw.png', 4, 4],
+    ['assets/map/overlays/overlay_castle_carpet_blue_silver_corner_se.png', 4, 4],
+    ['assets/map/overlays/overlay_village_goza_fill.png', 32, 32],
+    ['assets/map/overlays/overlay_village_goza_edge_n.png', 32, 3],
+    ['assets/map/overlays/overlay_village_goza_edge_s.png', 32, 3],
+    ['assets/map/overlays/overlay_village_goza_edge_w.png', 3, 32],
+    ['assets/map/overlays/overlay_village_goza_edge_e.png', 3, 32],
+    ['assets/map/overlays/overlay_village_goza_corner_nw.png', 3, 3],
+    ['assets/map/overlays/overlay_village_goza_corner_ne.png', 3, 3],
+    ['assets/map/overlays/overlay_village_goza_corner_sw.png', 3, 3],
+    ['assets/map/overlays/overlay_village_goza_corner_se.png', 3, 3],
+    ['assets/map/overlays/overlay_world_grass_detail.png', 64, 64],
+    ['assets/map/overlays/overlay_world_grass_weeds.png', 64, 64],
+    ['assets/map/overlays/overlay_world_grass_earth.png', 64, 64],
+    ['assets/map/overlays/overlay_world_forest_understory.png', 64, 64],
+    ['assets/map/overlays/overlay_world_forest_roots.png', 64, 64],
+    ['assets/map/overlays/overlay_world_foothill_rocks.png', 64, 64],
+    ['assets/map/overlays/overlay_world_shore_foam.png', 64, 32],
+    ['assets/map/overlays/overlay_world_bridge_wood.png', 64, 16],
+    ['assets/effect/fx_phys_elemental_arc.png', 384, 384],
     ...Object.values(requiredBattleFx).map(relative => [relative, 384, 384])
 ]) {
     const info = pngInfo(relative);
@@ -221,7 +221,7 @@ for (const marker of [
     'Connected carpets/mats are ground layers',
     'bleed: 2', 'height: TILE_SIZE + 2',
     'overlay_world_shore_foam', 'overlay_world_bridge_wood',
-    "areaKey === 'WORLD'", 'field.getTileEffectGraphicKey?.(tileX, tileY)'
+    "field.getCurrentAreaKey?.() === 'WORLD'", 'field.getTileEffectGraphicKey?.(tileX, tileY)'
 ]) {
     if (!phaser.includes(marker)) errors.push(`map decoration runtime marker is missing: ${marker}`);
 }
@@ -283,7 +283,7 @@ if (!mapContext.window.MapRegistry.getWorldTileConfig(2, 92)) errors.push('wrapp
 
 const darkCastleFloor = mapContext.window.MapRegistry.getFixedDungeonFloor('DARK_CASTLE', 1);
 const carpet = darkCastleFloor?.floorDecorations?.find(item => item?.type === 'castle_carpet');
-if (!carpet || carpet.x !== 14 || carpet.y !== 19 || carpet.width !== 3 || carpet.height !== 7) {
+if (!carpet || carpet.x !== 15 || carpet.y !== 21 || carpet.width !== 3 || carpet.height !== 7) {
     errors.push('Demon Castle 1F entrance carpet placement is missing or changed');
 } else {
     for (let y = carpet.y; y < carpet.y + carpet.height; y += 1) {
