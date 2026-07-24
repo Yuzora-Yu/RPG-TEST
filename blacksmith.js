@@ -12,10 +12,20 @@ const MenuBlacksmith = {
         target: null, material: null, materials: [], targetOptIdx: -1, requiredCount: 0
     },
 
-    init: () => {
+    // menu: メインメニューから開いた従来導線 / facility: 炎の里の施設画面から開いた導線
+    entryContext: 'menu',
+
+    init: (options = {}) => {
         const sub = document.getElementById('sub-screen-blacksmith');
         if(!sub) return;
+        MenuBlacksmith.entryContext = options.source === 'facility' ? 'facility' : 'menu';
         sub.style.display = 'flex';
+
+        if (typeof Menu !== 'undefined') {
+            Menu.installKeyboardNavigation?.();
+            Menu.installBackGuard?.();
+            Menu.ensureBackGuard?.();
+        }
         
         if(!document.getElementById('smith-ctrls')) {
             const ctrlDiv = document.createElement('div');
@@ -27,7 +37,62 @@ const MenuBlacksmith = {
 
         MenuBlacksmith.setupContainers(sub);
         MenuBlacksmith.resetState();
-        MenuBlacksmith.changeScreen('main');
+        if (options.mode) MenuBlacksmith.selectMode(options.mode);
+        else MenuBlacksmith.changeScreen('main');
+        Menu.refreshKeyboardNavigation?.(sub);
+    },
+
+    openFromField: () => {
+        if (typeof App !== 'undefined' && typeof App.requireFeatureUnlocked === 'function' && !App.requireFeatureUnlocked('smith')) return;
+        App.changeScene('blacksmith');
+    },
+
+    initFacility: () => {
+        MenuBlacksmith.entryContext = 'facility';
+        const commands = `
+            <button class="menu-btn" style="background:#2b160f;border:1px solid #ff8a55;height:40px;color:#fff;" onclick="MenuBlacksmith.openFacilityMode('synthesis')">装備合成</button>
+            <button class="menu-btn" style="background:#111a32;border:1px solid #87a8ff;height:40px;color:#fff;" onclick="MenuBlacksmith.openFacilityMode('refine')">装備精錬</button>
+            <button class="menu-btn" style="background:#102619;border:1px solid #79d99a;height:40px;color:#fff;" onclick="MenuBlacksmith.openFacilityMode('enhance')">装備強化</button>`;
+        Facilities.setupBaseLayout('blacksmith-scene', '炎の里イグニシア 鍛冶屋', 'facility_bg_blacksmith', commands, "App.changeScene('field')");
+        MenuBlacksmith.renderFacilityHome();
+    },
+
+    renderFacilityHome: () => {
+        const body = document.getElementById('blacksmith-scene-msg-content');
+        if (!body) return;
+        const smith = App.data.blacksmith || { level: 1, exp: 0 };
+        const nextExp = Math.max(1, smith.level * 100);
+        const progress = Math.max(0, Math.min(100, (Number(smith.exp || 0) / nextExp) * 100));
+        body.innerHTML = `
+            <div style="color:#ffc27a;margin-bottom:10px;">「聞こえるか。炉が、また飯を食い始めた。」</div>
+            <div style="border:1px solid #6c4936;background:rgba(43,22,15,0.72);padding:10px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
+                    <div><span style="color:#aaa;font-size:11px;">鍛冶レベル</span><br><b style="color:#ffd86a;font-size:22px;">Lv.${smith.level}</b></div>
+                    <button class="btn" style="height:34px;background:#24150f;border:1px solid #d28a54;color:#fff;" onclick="MenuBlacksmith.showLevelInfo()">上昇効果</button>
+                </div>
+                <div style="display:flex;justify-content:space-between;color:#bbb;font-size:10px;margin-top:10px;"><span>熟練度</span><span>${smith.exp} / ${nextExp} EXP</span></div>
+                <div style="height:7px;background:#080808;border:1px solid #4b3428;margin-top:4px;overflow:hidden;"><div style="height:100%;width:${progress}%;background:linear-gradient(90deg,#b94d24,#ffd86a);"></div></div>
+                <div style="color:#aaa;font-size:11px;margin-top:9px;">下のコマンドから鍛冶内容を選択してください。</div>
+            </div>`;
+    },
+
+    openFacilityMode: (mode) => {
+        MenuBlacksmith.init({ source: 'facility', mode });
+    },
+
+    exitWorkspace: () => {
+        const sub = document.getElementById('sub-screen-blacksmith');
+        if (MenuBlacksmith.entryContext === 'facility') {
+            if (sub) sub.style.display = 'none';
+            MenuBlacksmith.resetState();
+            MenuBlacksmith.renderFacilityHome();
+            return;
+        }
+        if (typeof Menu !== 'undefined' && typeof Menu.closeSubScreen === 'function') {
+            Menu.closeSubScreen('blacksmith');
+        } else if (sub) {
+            sub.style.display = 'none';
+        }
     },
 
     setupContainers: (parent) => {
@@ -75,6 +140,10 @@ const MenuBlacksmith = {
     },
 
     changeScreen: (screenId) => {
+        if (screenId === 'main' && MenuBlacksmith.entryContext === 'facility') {
+            MenuBlacksmith.exitWorkspace();
+            return;
+        }
         ['main', 'select', 'option'].forEach(id => {
             const el = document.getElementById(`smith-screen-${id}`);
             if(el) el.style.display = (id === screenId) ? 'flex' : 'none';
@@ -85,6 +154,8 @@ const MenuBlacksmith = {
             MenuBlacksmith.renderMain();
             MenuBlacksmith.updateTitle("⚒️ 鍛冶屋");
         }
+        const sub = document.getElementById('sub-screen-blacksmith');
+        if (sub) Menu.refreshKeyboardNavigation?.(sub);
     },
 	
 	handleBottomBack: () => {
@@ -93,7 +164,7 @@ const MenuBlacksmith = {
 		const optionScreen = document.getElementById('smith-screen-option');
 
 		if (mainScreen && mainScreen.style.display === 'flex') {
-			Menu.closeSubScreen('blacksmith');
+			MenuBlacksmith.exitWorkspace();
 			return;
 		}
 
@@ -156,7 +227,7 @@ const MenuBlacksmith = {
                 </div>
             </div>
 			<div class="sub-screen-bottom-panel">
-				<button class="btn sub-screen-back-btn" onclick="Menu.closeSubScreen('blacksmith')">もどる</button>
+				<button class="btn sub-screen-back-btn" onclick="MenuBlacksmith.exitWorkspace()">もどる</button>
 			</div>
         `;
     },

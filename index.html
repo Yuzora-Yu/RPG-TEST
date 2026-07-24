@@ -345,7 +345,7 @@ if ('serviceWorker' in navigator) {
 	</div>
 
     <div id="sub-screen-blacksmith" class="sub-screen">
-        <div class="header-bar"><span>⚒️ 鍛冶屋</span> <button class="btn" onclick="Menu.closeSubScreen('blacksmith')">もどる</button></div>
+        <div class="header-bar"><span>⚒️ 鍛冶屋</span> <button class="btn" onclick="MenuBlacksmith.exitWorkspace()">もどる</button></div>
         <div id="smith-screen-main" class="flex-col-container" style="align-items:center; justify-content:center; gap:20px;">
             <div id="smith-info" style="color:#ffd770;"></div>
             <button class="menu-btn" style="width:200px;" onclick="MenuBlacksmith.selectMode('enhance')">装備強化</button>
@@ -439,6 +439,7 @@ if ('serviceWorker' in navigator) {
 
     <div id="shop-scene" class="scene-layer"><div class="header-bar"><span>ショップ</span></div></div>
     <div id="alchemy-scene" class="scene-layer"><div class="header-bar"><span>錬金所</span></div></div>
+    <div id="blacksmith-scene" class="scene-layer"><div class="header-bar"><span>鍛冶屋</span></div></div>
 
     <div id="gacha-performance" class="scene-layer">
         <div id="freeze-overlay" style="position:absolute; top:0; left:0; width:100%; height:100%; background:black; z-index:400; display:none;"></div>

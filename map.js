@@ -2358,17 +2358,13 @@ const FIXED_MAPS = {
             {
                 x: 8,
                 y: 4,
-                label: "鍛冶師と話す",
+                label: "鍛冶屋を訪ねる",
                 log: "鍛冶師が炉の縁に手を置いている。",
-                type: "log",
+                type: "blacksmith",
                 imageKey: "overlay_town_fire_blacksmith",
                 events: [
                     {
-                        requiredFlag: "fireVillageCleared",
-                        eventId: "town_fire_villager_1"
-                    },
-                    {
-                        default: true,
+                        missingFlag: "fireVillageCleared",
                         eventId: "town_fire_villager_1_before"
                     }
                 ]

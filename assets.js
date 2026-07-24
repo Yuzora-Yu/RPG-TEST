@@ -795,6 +795,7 @@ function refreshPrismaAssetWarmupLists() {
     "assets/background/bg_medal.png",
     "assets/background/bg_casino.png",
     "assets/background/bg_alchemy_water_city.png",
+    "assets/background/bg_blacksmith.png",
     ...PRISMA_MONSTER_IMAGE_FILES,
   ]);
 

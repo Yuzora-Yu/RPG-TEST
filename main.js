@@ -341,6 +341,7 @@ const App = {
 
     unlockDefaults: {
         smith: false,
+        craftingMenu: false,
         gacha: false,
         abyss: true,
         dungeonMenu: false,
@@ -352,6 +353,7 @@ const App = {
 
     unlockLabels: {
         smith: '鍛冶屋',
+        craftingMenu: 'メニューからの鍛冶・錬金',
         gacha: 'ガチャ',
         abyss: '深淵の魔窟',
         dungeonMenu: 'ダンジョン',
@@ -459,6 +461,13 @@ const App = {
             App.data.progress.flags.abyssFirstEntered = enteredAbyss;
             App.data.progress.unlocked.teleport = enteredAbyss;
             App.data.progress.flags.menuUnlockMigrationV3 = true;
+        }
+
+        // 鍛冶屋そのものの解放(smith)と、どこからでも工房を呼べるメニュー権限を分離する。
+        // craftingMenu は将来の専用クエスト報酬。既存セーブでは一度だけ必ず未開放にする。
+        if (!App.data.progress.flags.menuUnlockMigrationV4) {
+            App.data.progress.unlocked.craftingMenu = false;
+            App.data.progress.flags.menuUnlockMigrationV4 = true;
         }
 
         return App.data.progress.unlocked;
@@ -5315,6 +5324,7 @@ load: () => {
         if(sceneId === 'casino') Casino.init();
         if(sceneId === 'shop') Facilities.initShop();
         if(sceneId === 'alchemy' && typeof Alchemy !== 'undefined') Alchemy.init();
+        if(sceneId === 'blacksmith' && typeof MenuBlacksmith !== 'undefined' && typeof MenuBlacksmith.initFacility === 'function') MenuBlacksmith.initFacility();
     }
 };
 
@@ -7324,6 +7334,11 @@ const Field = {
 
         if (action.type === 'alchemy' && typeof Alchemy !== 'undefined' && typeof Alchemy.openFromField === 'function') {
             Alchemy.openFromField(action);
+            return;
+        }
+
+        if (action.type === 'blacksmith' && typeof MenuBlacksmith !== 'undefined' && typeof MenuBlacksmith.openFromField === 'function') {
+            MenuBlacksmith.openFromField(action);
             return;
         }
 

@@ -9,6 +9,7 @@ const Facilities = {
     backgroundPaths: {
         facility_bg_inn: 'assets/background/bg_inn.jpg',
         facility_bg_alchemy: 'assets/background/bg_alchemy_water_city.png',
+        facility_bg_blacksmith: 'assets/background/bg_blacksmith.png',
         facility_bg_medal: 'assets/background/bg_medal.png',
         facility_bg_casino: 'assets/background/bg_casino.png'
     },

@@ -32,7 +32,7 @@ The game has become feature-rich, but the next direction is to reorganize it as 
 
 The game should not begin with every major system available. Blacksmithing, the abyss, boat travel, wing flight, dungeon transfer, and other systems should become available as the player explores the field, clears regional fixed maps, gains allies, and expands the world. Gacha-related code and assets may remain as dormant legacy/internal implementation, but gacha is not planned as a player-facing feature and must not receive an unlock route.
 
-Existing code uses `progress.unlocked` for story-gated systems. Current player-facing menu access is routed through unlock checks for blacksmith and dungeon systems; gacha is not shown in the main menu route.
+Existing code uses `progress.unlocked` for story-gated systems. Field blacksmith access is gated by `smith`, while future main-menu access to blacksmithing and alchemy is independently gated by `craftingMenu`. Dungeon menu access keeps its own unlock check; gacha is not shown in the main menu route.
 
 Travel and key items such as `Magic Boat`, `Light Wing`, and `Sky Prism` should be treated as story rewards rather than ordinary inventory entries.
 
@@ -105,7 +105,8 @@ Proposed unlock route:
 
 - Fire Village clear:
   - Xiao joins.
-  - Blacksmith opens.
+  - The local Fire Village blacksmith facility opens.
+  - Main-menu access to blacksmithing and alchemy remains locked until a future dedicated quest unlocks `craftingMenu`.
   - Record the future blacksmith tutorial requirement, but do not implement it before the blacksmith UI is final.
 
 - Wind Settlement clear:
@@ -163,7 +164,8 @@ Future `progress.unlocked` should move toward this shape:
 
 ```js
 progress.unlocked = {
-  smith: false,
+  smith: false, // local Fire Village blacksmith facility
+  craftingMenu: false, // future quest reward: menu access to blacksmithing and alchemy
   gacha: false, // legacy/internal; no current main-menu player route
   abyss: true,
   dungeonMenu: false,
@@ -267,7 +269,7 @@ Demon Castle:
 - Transition from main story to postgame
 - Gacha code may remain in the repository, but it is not documented as a current in-game unlock.
 
-Menu and facility display should follow unlock state. Unreleased systems can be hidden, or shown as `???` with a clear note such as "unlocks through story progress" if hiding them makes the UI confusing.
+Menu and facility display should follow their respective unlock states. Local facility access and remote menu access must not share a flag when they are intended as different rewards. Unreleased systems can be hidden, or shown as `???` with a clear note such as "unlocks through story progress" if hiding them makes the UI confusing.
 
 ## Abyss Positioning
 

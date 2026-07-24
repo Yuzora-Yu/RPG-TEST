@@ -342,7 +342,7 @@ const Menu = {
     getIconFallbackAttr: (fallbackPath) => ` onerror="this.onerror=null;this.src='${fallbackPath}'"`,
 
     subScreenFeatureMap: {
-        blacksmith: 'smith',
+        blacksmith: 'craftingMenu',
         dungeon: 'dungeonMenu',
         gacha: 'gacha'
     },
@@ -416,7 +416,7 @@ const Menu = {
                 <button class="menu-btn" onclick="Menu.openSubScreen('skills')">スキル</button>
 
                 <button class="menu-btn" onclick="Menu.openSubScreen('achievements')">実績${hasUnclaimedAchievement ? badge : ''}</button>
-                ${Menu.featureButton('blacksmith', '鍛冶屋', 'smith')}
+                ${Menu.featureButton('blacksmith', '鍛冶屋', 'craftingMenu')}
 
                 <button class="menu-btn" onclick="Menu.openSubScreen('status')">戦歴</button>
                 ${Menu.featureButton('dungeon', 'ダンジョン', 'dungeonMenu', 'background:#400040;')}
