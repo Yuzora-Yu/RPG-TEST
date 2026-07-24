@@ -353,7 +353,7 @@ const App = {
 
     unlockLabels: {
         smith: '鍛冶屋',
-        craftingMenu: 'メニューからの鍛冶・錬金',
+        craftingMenu: '加工',
         gacha: 'ガチャ',
         abyss: '深淵の魔窟',
         dungeonMenu: 'ダンジョン',
@@ -463,12 +463,14 @@ const App = {
             App.data.progress.flags.menuUnlockMigrationV3 = true;
         }
 
-        // 鍛冶屋そのものの解放(smith)と、どこからでも工房を呼べるメニュー権限を分離する。
-        // craftingMenu は将来の専用クエスト報酬。既存セーブでは一度だけ必ず未開放にする。
+        // 鍛冶屋そのものの解放(smith)と、どこからでも工房を呼べる加工メニュー権限を分離する。
+        // 加工メニューは貴重品「星詠みの触媒器」(ID:111)の所持状態から判定する。
         if (!App.data.progress.flags.menuUnlockMigrationV4) {
-            App.data.progress.unlocked.craftingMenu = false;
+            App.data.progress.unlocked.craftingMenu = App.hasItem(111);
             App.data.progress.flags.menuUnlockMigrationV4 = true;
         }
+        // 所持品を正本とし、ロード時にも表示用のunlock状態を同期する。
+        App.data.progress.unlocked.craftingMenu = App.hasItem(111);
 
         return App.data.progress.unlocked;
     },
@@ -1733,6 +1735,9 @@ const App = {
     },
 
     getFeatureLockedMessage: (key) => {
+        if (key === 'craftingMenu') {
+            return `まだ解放されていません！\n光の宮殿クリア後、地下牢の国王の依頼を達成すると利用できます。`;
+        }
         return `まだ解放されていません！\nストーリーを進めると利用できるようになります。`;
     },
 
@@ -1741,6 +1746,7 @@ const App = {
         const unlocked = App.ensureUnlockState();
         if (key === 'boat') return !!unlocked.boat || App.hasItem(108) || !!App.data?.progress?.flags?.hasShip;
         if (key === 'wing') return !!unlocked.wing || App.hasItem(109);
+        if (key === 'craftingMenu') return App.hasItem(111);
         return !!unlocked[key];
     },
 
@@ -1843,6 +1849,31 @@ const App = {
         const entries = [];
         const seen = new Set();
         const visited = App.ensureFixedMapDiscoveryStore ? App.ensureFixedMapDiscoveryStore() : (App.data?.progress?.visitedFixedMaps || {});
+        // スカイプリズム専用の表示順。戦闘難度などに使う各MAP本来のrankとは分離する。
+        const skyPrismRankByArea = {
+            START_VILLAGE: 1,
+            START_CAVE: 5,
+            FOREST_WIND_HOLE: 8,
+            FIRE_VILLAGE: 10,
+            IGNIS_VOLCANO: 12,
+            WIND_VILLAGE: 20,
+            FORBIDDEN_FOREST: 22,
+            WIND_TEMPLE: 26,
+            WATER_CITY: 30,
+            CRENA_LIMESTONE_CAVE: 32,
+            SEABED_TEMPLE: 35,
+            THUNDER_FORT: 40,
+            BIG_TOWER: 50,
+            LIGHT_PALACE: 60,
+            DARK_SHRINE_RUINS: 65,
+            GALVANIA_CAVE: 68,
+            DARK_CASTLE: 70,
+            GREZELIA_FORBIDDEN: 80,
+            ABYSS_FIELD: 90,
+            TRIAL_ISLAND: 120,
+            SUMMIT_TEMPLE: 150,
+            RUINED_SHRINE: 300
+        };
 
         const push = (areaKey) => {
             if (!areaKey || seen.has(areaKey)) return;
@@ -1854,7 +1885,11 @@ const App = {
             const dest = App.getFixedMapWorldDestination(areaKey);
             const record = visited[areaKey] || null;
             const discovered = !!record;
-            const rank = Number(storyArea?.rank ?? info.def.rank ?? info.def.encounterRank ?? 9999);
+            const configuredRank = skyPrismRankByArea[areaKey];
+            const sourceRank = Number(storyArea?.rank ?? info.def.rank ?? info.def.encounterRank ?? 0);
+            const rank = Number.isFinite(configuredRank)
+                ? configuredRank
+                : 10000 + (Number.isFinite(sourceRank) ? sourceRank : 0);
 
             entries.push({
                 areaKey,
@@ -2623,7 +2658,8 @@ const App = {
         hunt: '討伐依頼',
         boss: '強敵討伐',
         conversation: '相談',
-        travel: '探索'
+        travel: '探索',
+        collection: '収集依頼'
     }[kind] || '依頼'),
 
     getQuestMonsterName: (monsterId) => {
@@ -2645,6 +2681,20 @@ const App = {
                 ? total
                 : Math.min(total, Number(state.progress?.kills || 0));
             return `討伐対象: ${names}\n討伐数: ${current}/${total}`;
+        }
+        if (Array.isArray(quest.itemRequirements) && quest.itemRequirements.length > 0) {
+            const lines = quest.itemRequirements.map(requirement => {
+                const itemId = Number(requirement.id ?? requirement.itemId);
+                const required = Math.max(1, Math.floor(Number(requirement.count) || 1));
+                const owned = state.state === 'completed'
+                    ? required
+                    : Math.min(required, Number(App.data?.items?.[itemId] || 0));
+                const item = (typeof DB !== 'undefined' && Array.isArray(DB.ITEMS))
+                    ? DB.ITEMS.find(i => Number(i.id) === itemId)
+                    : null;
+                return `${item?.name || `アイテム${itemId}`}: ${owned}/${required}`;
+            });
+            return lines.join('\n');
         }
         if (quest.kind === 'boss') {
             return state.state === 'accepted' && state.progress?.bossDefeated
@@ -2796,11 +2846,31 @@ const App = {
             return false;
         }
 
+        const itemRequirements = Array.isArray(quest.itemRequirements) ? quest.itemRequirements : [];
+        if (quest.consumeItemsOnComplete === true && itemRequirements.length > 0) {
+            const canConsume = itemRequirements.every(requirement => {
+                const itemId = Number(requirement.id ?? requirement.itemId);
+                const count = Math.max(1, Math.floor(Number(requirement.count) || 1));
+                return Number(App.data?.items?.[itemId] || 0) >= count;
+            });
+            if (!canConsume) return false;
+        }
+
         quests[questId] = {
             state: 'completed',
             startedAt: current?.startedAt || Date.now(),
             completedAt: Date.now()
         };
+
+        if (quest.consumeItemsOnComplete === true && itemRequirements.length > 0) {
+            itemRequirements.forEach(requirement => {
+                const itemId = Number(requirement.id ?? requirement.itemId);
+                const count = Math.max(1, Math.floor(Number(requirement.count) || 1));
+                const remain = Number(App.data.items?.[itemId] || 0) - count;
+                if (remain > 0) App.data.items[itemId] = remain;
+                else delete App.data.items[itemId];
+            });
+        }
 
         if (Array.isArray(quest.rewardFlags)) {
             if (!App.data.progress.flags) App.data.progress.flags = {};
@@ -2861,6 +2931,13 @@ const App = {
         if (quest.kind === 'hunt') {
             return Number(state.progress?.kills || 0) >= Math.max(1, Number(quest.targetCount || 1));
         }
+        if (Array.isArray(quest.itemRequirements) && quest.itemRequirements.length > 0) {
+            return quest.itemRequirements.every(requirement => {
+                const itemId = Number(requirement.id ?? requirement.itemId);
+                const required = Math.max(1, Math.floor(Number(requirement.count) || 1));
+                return Number(App.data?.items?.[itemId] || 0) >= required;
+            });
+        }
         if (quest.kind === 'boss') return !!state.progress?.bossDefeated;
         return false;
     },
@@ -2872,6 +2949,10 @@ const App = {
         if (quest.kind === 'hunt' && state.state === 'accepted') {
             const current = Math.min(Number(quest.targetCount || 1), Number(state.progress?.kills || 0));
             return `${quest.progressText || quest.objective || quest.name}\n討伐数 ${current}/${Math.max(1, Number(quest.targetCount || 1))}`;
+        }
+        if (Array.isArray(quest.itemRequirements) && quest.itemRequirements.length > 0 && state.state === 'accepted') {
+            const summary = App.getQuestTargetSummary(questId);
+            return `${quest.progressText || quest.objective || quest.name}${summary ? `\n${summary}` : ''}`;
         }
         if (quest.kind === 'boss' && state.state === 'accepted' && state.progress?.bossDefeated) {
             return quest.reportText || '依頼人のもとへ戻り、勝利を伝えよう。';
@@ -2911,6 +2992,17 @@ const App = {
                 await StoryManager.executeEvent(quest.startEventId);
             }
             App.acceptQuest(questId, { silent: true });
+            if (App.isQuestObjectiveComplete(questId) && Array.isArray(quest.itemRequirements) && quest.itemRequirements.length > 0) {
+                if (quest.reportEventId && typeof StoryManager !== 'undefined' && typeof StoryManager.executeEvent === 'function') {
+                    await StoryManager.executeEvent(quest.reportEventId);
+                }
+                App.completeQuest(questId, { silent: true });
+                await App.showQuestModal(questId, {
+                    statusLabel: 'クリア',
+                    bodyText: quest.completeText || quest.objective || quest.name
+                });
+                return true;
+            }
             if (options.complete || quest.initialComplete || quest.kind === 'conversation') {
                 App.completeQuest(questId, { silent: true });
                 await App.showQuestModal(questId, {
@@ -6803,6 +6895,18 @@ const Field = {
             ? action.missingFlags
             : (action.missingFlag ? [action.missingFlag] : []);
         if (!requiredFlags.every(flag => !!flags[flag]) || !missingFlags.every(flag => !flags[flag])) return false;
+        const normalizeItemRequirements = (value) => {
+            if (!value) return [];
+            const list = Array.isArray(value) ? value : [value];
+            return list.map(entry => {
+                if (typeof entry === 'number' || typeof entry === 'string') return { id: Number(entry), count: 1 };
+                return { id: Number(entry?.id ?? entry?.itemId), count: Math.max(1, Math.floor(Number(entry?.count) || 1)) };
+            }).filter(entry => Number.isFinite(entry.id));
+        };
+        const requiredItems = normalizeItemRequirements(action.requiredItems);
+        const missingItems = normalizeItemRequirements(action.missingItems);
+        if (!requiredItems.every(entry => Number(App.data?.items?.[entry.id] || 0) >= entry.count)) return false;
+        if (!missingItems.every(entry => Number(App.data?.items?.[entry.id] || 0) < entry.count)) return false;
         if (action.requiredStoryStep !== undefined) {
             const step = Number(App.data?.progress?.storyStep || 0);
             const sub = Number(App.data?.progress?.subStep || 0);

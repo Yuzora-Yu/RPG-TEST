@@ -2227,6 +2227,54 @@ const STORY_MANAGER_DATA = {
                         "text": "すまない。\nすまない、民よ。すまない、光よ。"
                 }
         ],
+        "LIGHT_PALACE_CATALYST_QUEST_START": [
+                {
+                        "name": "国王",
+                        "text": "……一つ、頼みがある。王命ではない。\nここに残された者の、身勝手な頼みだ。"
+                },
+                {
+                        "name": "国王",
+                        "text": "宮殿の工房には、遠い土地の炉と錬金炉を結ぶ古い触媒器があった。\n神官たちは価値を知らず、核を抜いて捨てたらしい。"
+                },
+                {
+                        "name": "国王",
+                        "text": "業火の壺を三つ。星銀鋼、虹の結晶、星の涙を一つずつ。\nそれだけあれば、私の知る組み方で器を起こせる。"
+                },
+                {
+                        "name": "国王",
+                        "text": "そろったら、ここへ持ってきてほしい。\n牢の中でも、手だけはまだ動く。"
+                }
+        ],
+        "LIGHT_PALACE_CATALYST_QUEST_REPORT_BEFORE": [
+                {
+                        "name": "国王",
+                        "text": "……その匂い。業火の壺まで、本当に持ち帰ったのか。\n危うい品だ。こちらへ。"
+                }
+        ],
+        "LIGHT_PALACE_CATALYST_QUEST_REPORT_AFTER": [
+                {
+                        "name": "国王",
+                        "text": "星銀で熱を抱き、虹の結晶で流れを分け、星の涙で定着させる。\n……よし。まだ、私の指は覚えていた。"
+                },
+                {
+                        "name": "国王",
+                        "text": "これは『星詠みの触媒器』。\n持つ者のいる場所を仮の工房として、鍛冶と錬金の火をつなぐ器だ。"
+                },
+                {
+                        "name": "国王",
+                        "text": "受け取ってくれ。\n王冠ではなく、旅の役に立つものを渡せるのは……久しぶりだ。"
+                }
+        ],
+        "LIGHT_PALACE_PRISON_KING_AFTER_CATALYST": [
+                {
+                        "name": "国王",
+                        "text": "触媒器は、持ち主の手入れで長く働く。\n炉の音が鈍ったら、煤を落としてやってくれ。"
+                },
+                {
+                        "name": "国王",
+                        "text": "どこにいても工房の火は呼べる。\nだが、火を急かしすぎるな。良い仕事ほど、待つ時間が要る。"
+                }
+        ],
         "LIGHT_PALACE_PRISON_PRIEST_A": [
                 {
                         "name": "老神職",
@@ -3675,6 +3723,25 @@ const STORY_MANAGER_DATA = {
                                 "type": "CONV",
                                 "value": "LIGHT_PALACE_PRISON_KING"
                         }
+                ],
+                "winActions": []
+        },
+        "light_palace_catalyst_quest_start": {
+                "actions": [
+                        { "type": "CONV", "value": "LIGHT_PALACE_CATALYST_QUEST_START" }
+                ],
+                "winActions": []
+        },
+        "light_palace_catalyst_quest_report": {
+                "actions": [
+                        { "type": "CONV", "value": "LIGHT_PALACE_CATALYST_QUEST_REPORT_BEFORE" },
+                        { "type": "CONV", "value": "LIGHT_PALACE_CATALYST_QUEST_REPORT_AFTER" }
+                ],
+                "winActions": []
+        },
+        "light_palace_prison_king_after_catalyst": {
+                "actions": [
+                        { "type": "CONV", "value": "LIGHT_PALACE_PRISON_KING_AFTER_CATALYST" }
                 ],
                 "winActions": []
         },

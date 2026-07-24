@@ -8091,7 +8091,9 @@ const FIXED_DUNGEON_MAPS = {
                     { x: 23, y: 10, missingFlag: "leilaJoined" }
                 ],
                 mapActions: [
-                    { x: 7, y: 3, label: "国王と話す", type: "storyEvent", eventId: "light_palace_prison_king", imageKey: "overlay_light_captive_king", imageColor: "#f4d989", minimapColor: "#f4d989" },
+                    { x: 7, y: 3, label: "国王と話す", type: "storyEvent", eventId: "light_palace_prison_king", imageKey: "overlay_light_captive_king", imageColor: "#f4d989", minimapColor: "#f4d989", missingFlag: "lightPalaceCleared" },
+                    { x: 7, y: 3, label: "国王と話す", type: "quest", questId: "royal_star_catalyst", imageKey: "overlay_light_captive_king", imageColor: "#f4d989", minimapColor: "#f4d989", requiredFlag: "lightPalaceCleared", missingItems: [{ id: 111, count: 1 }] },
+                    { x: 7, y: 3, label: "国王と話す", type: "storyEvent", eventId: "light_palace_prison_king_after_catalyst", imageKey: "overlay_light_captive_king", imageColor: "#f4d989", minimapColor: "#f4d989", requiredItems: [{ id: 111, count: 1 }] },
                     { x: 23, y: 10, label: "衰弱した聖騎士を診る", type: "storyEvent", eventId: "light_palace_prison_leila", imageKey: "overlay_light_captive_leila_bed", drawWidth: 64, drawHeight: 32, imageColor: "#f5dd86", minimapColor: "#f5dd86", missingFlag: "leilaJoined" },
                     { x: 3, y: 11, label: "老神職と話す", type: "storyEvent", eventId: "light_palace_prison_priest_a", imageKey: "overlay_light_captive_priest_a", imageColor: "#d9dfff", minimapColor: "#d9dfff" },
                     { x: 7, y: 11, label: "若い神職と話す", type: "storyEvent", eventId: "light_palace_prison_priest_b", imageKey: "overlay_light_captive_priest_b", imageColor: "#cfefff", minimapColor: "#cfefff" }

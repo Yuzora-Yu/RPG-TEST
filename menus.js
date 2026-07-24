@@ -342,6 +342,7 @@ const Menu = {
     getIconFallbackAttr: (fallbackPath) => ` onerror="this.onerror=null;this.src='${fallbackPath}'"`,
 
     subScreenFeatureMap: {
+        crafting: 'craftingMenu',
         blacksmith: 'craftingMenu',
         dungeon: 'dungeonMenu',
         gacha: 'gacha'
@@ -363,7 +364,7 @@ const Menu = {
         const styleAttr = finalStyle ? ` style="${finalStyle}"` : '';
         const className = locked ? 'menu-btn is-feature-locked' : 'menu-btn';
         const body = locked
-            ? `？？？？<span style="display:block; font-size:9px; color:#444; margin-top:2px;">未開放</span>`
+            ? `${id === 'crafting' ? label : '？？？？'}<span style="display:block; font-size:9px; color:#444; margin-top:2px;">未開放</span>`
             : (isDungeonEscape ? 'エスケープ' : label);
         return `<button class="${className}" onclick="${click}"${styleAttr}>${body}</button>`;
     },
@@ -371,6 +372,23 @@ const Menu = {
     showLockedFeature: (featureKey) => {
         if (typeof App !== 'undefined' && typeof App.requireFeatureUnlocked === 'function') {
             App.requireFeatureUnlocked(featureKey);
+        }
+    },
+
+    openCraftingBlacksmith: () => {
+        if (typeof App !== 'undefined' && typeof App.requireFeatureUnlocked === 'function' && !App.requireFeatureUnlocked('craftingMenu')) return;
+        document.getElementById('menu-overlay').style.display = 'none';
+        document.querySelectorAll('.sub-screen').forEach(e => e.style.display = 'none');
+        const target = document.getElementById('sub-screen-blacksmith');
+        if (target) target.style.display = 'flex';
+        if (typeof MenuBlacksmith !== 'undefined') MenuBlacksmith.init({ source: 'menu', returnTo: 'crafting' });
+        if (target) Menu.refreshKeyboardNavigation(target);
+    },
+
+    openCraftingAlchemy: () => {
+        if (typeof App !== 'undefined' && typeof App.requireFeatureUnlocked === 'function' && !App.requireFeatureUnlocked('craftingMenu')) return;
+        if (typeof Alchemy !== 'undefined' && typeof Alchemy.openFromCraftingMenu === 'function') {
+            Alchemy.openFromCraftingMenu();
         }
     },
 
@@ -416,7 +434,7 @@ const Menu = {
                 <button class="menu-btn" onclick="Menu.openSubScreen('skills')">スキル</button>
 
                 <button class="menu-btn" onclick="Menu.openSubScreen('achievements')">実績${hasUnclaimedAchievement ? badge : ''}</button>
-                ${Menu.featureButton('blacksmith', '鍛冶屋', 'craftingMenu')}
+                ${Menu.featureButton('crafting', '加工', 'craftingMenu')}
 
                 <button class="menu-btn" onclick="Menu.openSubScreen('status')">戦歴</button>
                 ${Menu.featureButton('dungeon', 'ダンジョン', 'dungeonMenu', 'background:#400040;')}

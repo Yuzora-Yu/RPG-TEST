@@ -136,6 +136,7 @@
         selectedVariantIndex: 0,
         quantity: 1,
         randomSelection: {},
+        entryContext: 'facility',
 
         item: (id) => (window.DB?.ITEMS || window.ITEMS_DATA || []).find(entry => Number(entry.id) === Number(id)),
         // App は main.js のトップレベルconstであり window のプロパティではない。
@@ -226,15 +227,43 @@
         },
 
         openFromField: () => {
+            Alchemy.entryContext = 'facility';
             App.changeScene('alchemy');
         },
 
+        openFromCraftingMenu: () => {
+            Alchemy.entryContext = 'menu';
+            App.changeScene('alchemy');
+        },
+
+        backToCraftingMenu: () => {
+            Alchemy.entryContext = 'facility';
+            App.changeScene('field');
+            if (typeof Menu !== 'undefined' && typeof Menu.openSubScreen === 'function') {
+                Menu.openSubScreen('crafting');
+            }
+        },
+
+        exitToField: () => {
+            Alchemy.entryContext = 'facility';
+            App.changeScene('field');
+        },
+
         init: () => {
+            const fromCraftingMenu = Alchemy.entryContext === 'menu';
             const commands = `
                 <button class="menu-btn" style="background:#211a0d;border:1px solid #ffd86a;height:40px;color:#fff;" onclick="Alchemy.openRecipeList()">錬成品を選ぶ</button>
                 <button class="menu-btn" style="background:#10251b;border:1px solid #73e6ad;height:40px;color:#fff;" onclick="Alchemy.openAvailableList()">作成可能一覧</button>
                 <button class="menu-btn" style="background:#17172b;border:1px solid #9cb7ff;height:40px;color:#fff;" onclick="Alchemy.openRandomAlchemy()">ランダム錬成</button>`;
-            Facilities.setupBaseLayout('alchemy-scene', '水上都市リヴァリア 錬金所', 'facility_bg_alchemy', commands, "App.changeScene('field')");
+            Facilities.setupBaseLayout(
+                'alchemy-scene',
+                '水上都市リヴァリア 錬金所',
+                'facility_bg_alchemy',
+                commands,
+                "Alchemy.exitToField()",
+                false,
+                fromCraftingMenu ? { bottomExitFn: "Alchemy.backToCraftingMenu()", bottomExitLabel: 'もどる' } : {}
+            );
             const body = document.getElementById('alchemy-scene-msg-content');
             if (body) body.innerHTML = `<div style="color:#ffe69a;margin-bottom:8px;">「素材の組み合わせが違えば、同じ品にも別の道がある」</div><div id="alchemy-home-summary"></div>`;
             Alchemy.renderHome();

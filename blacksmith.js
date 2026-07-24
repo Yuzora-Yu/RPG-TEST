@@ -12,13 +12,16 @@ const MenuBlacksmith = {
         target: null, material: null, materials: [], targetOptIdx: -1, requiredCount: 0
     },
 
-    // menu: メインメニューから開いた従来導線 / facility: 炎の里の施設画面から開いた導線
+    // menu: 加工メニューから開いた導線 / facility: 炎の里の施設画面から開いた導線
     entryContext: 'menu',
+    returnContext: 'main',
 
     init: (options = {}) => {
         const sub = document.getElementById('sub-screen-blacksmith');
         if(!sub) return;
         MenuBlacksmith.entryContext = options.source === 'facility' ? 'facility' : 'menu';
+        MenuBlacksmith.returnContext = options.returnTo === 'crafting' ? 'crafting' : 'main';
+        MenuBlacksmith.setFacilityTopExitVisible(MenuBlacksmith.entryContext !== 'facility');
         sub.style.display = 'flex';
 
         if (typeof Menu !== 'undefined') {
@@ -49,6 +52,8 @@ const MenuBlacksmith = {
 
     initFacility: () => {
         MenuBlacksmith.entryContext = 'facility';
+        MenuBlacksmith.returnContext = 'main';
+        MenuBlacksmith.setFacilityTopExitVisible(true);
         const commands = `
             <button class="menu-btn" style="background:#2b160f;border:1px solid #ff8a55;height:40px;color:#fff;" onclick="MenuBlacksmith.openFacilityMode('synthesis')">装備合成</button>
             <button class="menu-btn" style="background:#111a32;border:1px solid #87a8ff;height:40px;color:#fff;" onclick="MenuBlacksmith.openFacilityMode('refine')">装備精錬</button>
@@ -80,18 +85,41 @@ const MenuBlacksmith = {
         MenuBlacksmith.init({ source: 'facility', mode });
     },
 
+    setFacilityTopExitVisible: (visible) => {
+        const button = document.getElementById('blacksmith-scene-top-exit-btn');
+        if (button) button.style.display = visible ? '' : 'none';
+    },
+
     exitWorkspace: () => {
         const sub = document.getElementById('sub-screen-blacksmith');
         if (MenuBlacksmith.entryContext === 'facility') {
             if (sub) sub.style.display = 'none';
+            MenuBlacksmith.setFacilityTopExitVisible(true);
             MenuBlacksmith.resetState();
             MenuBlacksmith.renderFacilityHome();
+            return;
+        }
+        if (MenuBlacksmith.returnContext === 'crafting' && typeof Menu !== 'undefined' && typeof Menu.openSubScreen === 'function') {
+            if (sub) sub.style.display = 'none';
+            MenuBlacksmith.resetState();
+            Menu.openSubScreen('crafting');
             return;
         }
         if (typeof Menu !== 'undefined' && typeof Menu.closeSubScreen === 'function') {
             Menu.closeSubScreen('blacksmith');
         } else if (sub) {
             sub.style.display = 'none';
+        }
+    },
+
+    exitToField: () => {
+        MenuBlacksmith.setFacilityTopExitVisible(true);
+        MenuBlacksmith.resetState();
+        if (typeof App !== 'undefined' && typeof App.changeScene === 'function') {
+            App.changeScene('field');
+        } else {
+            const sub = document.getElementById('sub-screen-blacksmith');
+            if (sub) sub.style.display = 'none';
         }
     },
 

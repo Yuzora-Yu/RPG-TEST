@@ -222,7 +222,7 @@ const MenuItems = {
 
         const entries = App.getAllFixedMapDiscoveryEntries();
         if (!entries.length) {
-            Menu.msg("移動できる固有MAPがありません。");
+            Menu.msg("移動できる場所がありません。");
             return;
         }
 
@@ -232,13 +232,12 @@ const MenuItems = {
                 return { label: '？？？', disabled: true, background: '#333' };
             }
 
-            const kindLabel = entry.kind === 'dungeon' ? 'ダンジョン' : '固有MAP';
-            const parentNote = entry.destination?.parentAreaKey ? ' 付近' : '';
-            const label = `${entry.name}${parentNote} [${kindLabel}]`;
+            const dungeonNote = entry.kind === 'dungeon' ? ' [ダンジョン]' : '';
+            const label = `${entry.name}${dungeonNote}`;
             return {
                 label,
                 callback: () => {
-                    Menu.confirm(`${entry.name}${parentNote}へ移動しますか？
+                    Menu.confirm(`${entry.name}へ移動しますか？
 スカイプリズムを1個消費します。`, () => {
                         const result = (typeof App.useSkyPrismTo === 'function')
                             ? App.useSkyPrismTo(entry.areaKey)

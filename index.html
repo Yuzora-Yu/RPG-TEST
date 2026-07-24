@@ -344,8 +344,35 @@ if ('serviceWorker' in navigator) {
 		</div>
 	</div>
 
+    <div id="sub-screen-crafting" class="sub-screen">
+        <div class="header-bar">
+            <span>🛠️ 加工</span>
+            <button class="btn" onclick="Menu.closeSubScreen('crafting')">もどる</button>
+        </div>
+        <div style="flex:1; display:flex; flex-direction:column; justify-content:center; gap:16px; padding:24px;">
+            <div style="text-align:center; color:#ffd770; font-size:13px; line-height:1.7;">利用する工房を選択してください。</div>
+            <button class="menu-btn" style="min-height:72px; background:#3b2112; border:1px solid #d28a54;" onclick="Menu.openCraftingBlacksmith()">
+                <span style="display:block; font-size:18px; color:#ffd86a;">鍛冶屋</span>
+                <span style="display:block; margin-top:4px; font-size:10px; color:#d8c3ad;">装備合成・装備精錬・装備強化</span>
+            </button>
+            <button class="menu-btn" style="min-height:72px; background:#12283b; border:1px solid #78b8dc;" onclick="Menu.openCraftingAlchemy()">
+                <span style="display:block; font-size:18px; color:#aee8ff;">錬金所</span>
+                <span style="display:block; margin-top:4px; font-size:10px; color:#c4dce7;">素材から道具や香を錬成</span>
+            </button>
+        </div>
+        <div class="sub-screen-bottom-panel">
+            <button class="btn sub-screen-back-btn" onclick="Menu.closeSubScreen('crafting')">もどる</button>
+        </div>
+    </div>
+
     <div id="sub-screen-blacksmith" class="sub-screen">
-        <div class="header-bar"><span>⚒️ 鍛冶屋</span> <button class="btn" onclick="MenuBlacksmith.exitWorkspace()">もどる</button></div>
+        <div class="header-bar">
+            <span>⚒️ 鍛冶屋</span>
+            <div style="display:flex; gap:6px; align-items:center;">
+                <button class="btn" onclick="MenuBlacksmith.exitWorkspace()">もどる</button>
+                <button class="btn" onclick="MenuBlacksmith.exitToField()">外へ出る</button>
+            </div>
+        </div>
         <div id="smith-screen-main" class="flex-col-container" style="align-items:center; justify-content:center; gap:20px;">
             <div id="smith-info" style="color:#ffd770;"></div>
             <button class="menu-btn" style="width:200px;" onclick="MenuBlacksmith.selectMode('enhance')">装備強化</button>

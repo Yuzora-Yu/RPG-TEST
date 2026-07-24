@@ -25,11 +25,15 @@ const Facilities = {
      * DQ風ベースレイアウト構築
      * IDの重複によるバグを防ぐため、モーダルやメッセージエリアにシーン固有の接尾辞を付与します。
      */
-    setupBaseLayout: (sceneId, title, bgKey, commandsHtml, exitFn, isLocked = false) => {
+    setupBaseLayout: (sceneId, title, bgKey, commandsHtml, exitFn, isLocked = false, options = {}) => {
         const container = document.getElementById(sceneId);
         if (!container) return;
 
         const bgUrl = Facilities.backgroundPaths[bgKey] || '';
+        const topExitFn = options.topExitFn || exitFn;
+        const bottomExitFn = options.bottomExitFn || exitFn;
+        const topExitLabel = options.topExitLabel || (isLocked ? '勝負中' : '外へ出る');
+        const bottomExitLabel = options.bottomExitLabel || '出る';
         const bgImageHtml = bgUrl ? `
                 <img src="${Facilities.escapeAttr(bgUrl)}" alt="" aria-hidden="true"
                     style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center; display:block;"
@@ -41,9 +45,9 @@ const Facilities = {
         
         container.innerHTML = `
             <div style="position:absolute; top:10px; right:10px; z-index:1000;">
-                <button class="btn" style="padding:6px 15px; font-size:11px; border:2px solid #fff; background:${isLocked?'#333':'#000'}; color:${isLocked?'#666':'#fff'};" 
-                    onclick="${isLocked ? '' : exitFn}" ${isLocked ? 'disabled' : ''}>
-                    ${isLocked ? '勝負中' : '外へ出る'}
+                <button id="${sceneId}-top-exit-btn" class="btn" style="padding:6px 15px; font-size:11px; border:2px solid #fff; background:${isLocked?'#333':'#000'}; color:${isLocked?'#666':'#fff'};" 
+                    onclick="${isLocked ? '' : topExitFn}" ${isLocked ? 'disabled' : ''}>
+                    ${topExitLabel}
                 </button>
             </div>
 
@@ -61,8 +65,8 @@ const Facilities = {
             <div style="background:#000; border-top:4px double #fff; padding:12px; flex-shrink:0; z-index:100;">
                 <div id="${sceneId}-cmd-row" style="display:grid; grid-template-columns:1fr 1fr; gap:8px; max-width:400px; margin:0 auto;">
                     ${commandsHtml}
-                    <button class="menu-btn" style="background:#000; border:1px solid #777; height:40px; font-size:13px; color:#aaa;" 
-                        onclick="${isLocked ? '' : exitFn}" ${isLocked ? 'disabled' : ''}>出る</button>
+                    <button id="${sceneId}-bottom-exit-btn" class="menu-btn" style="background:#000; border:1px solid #777; height:40px; font-size:13px; color:#aaa;" 
+                        onclick="${isLocked ? '' : bottomExitFn}" ${isLocked ? 'disabled' : ''}>${bottomExitLabel}</button>
                 </div>
             </div>
 

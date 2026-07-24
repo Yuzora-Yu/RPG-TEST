@@ -4,6 +4,7 @@
     const boss = "boss";
     const hunt = "hunt";
     const travel = "travel";
+    const collection = "collection";
 
     const QUEST_DATA = {
         karin_volcano_depths: {
@@ -63,6 +64,26 @@
             progressText: "クレナ鍾乳洞深部で結界の核を探そう。",
             completeText: "結界の核は砕け、リーシアが仲間に加わった。",
             rewardAllies: [303]
+        },
+        royal_star_catalyst: {
+            name: "王の星詠みと触媒器",
+            area: "光の宮殿 地下牢",
+            kind: collection,
+            unlockFlags: ["lightPalaceCleared"],
+            objective: "国王が示した四種の素材を集め、光の宮殿の地下牢へ届ける。",
+            startText: "国王は、失われた加工術式を再び動かすための素材を探している。素材をそろえて地下牢の国王へ届けよう。",
+            startEventId: "light_palace_catalyst_quest_start",
+            progressText: "業火の壺3つ、星銀鋼1つ、虹の結晶1つ、星の涙1つを集め、国王へ届けよう。",
+            reportEventId: "light_palace_catalyst_quest_report",
+            completeText: "素材を国王へ渡し、貴重品『星詠みの触媒器』を受け取った。メニューの『加工』が利用可能になった。",
+            itemRequirements: [
+                { id: 1001, count: 3 },
+                { id: 2005, count: 1 },
+                { id: 2021, count: 1 },
+                { id: 2053, count: 1 }
+            ],
+            consumeItemsOnComplete: true,
+            rewardItems: [{ id: 111, count: 1 }]
         },
         fire_water_attunement: {
             name: "火脈と水脈の調律",

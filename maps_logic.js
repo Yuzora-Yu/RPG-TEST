@@ -161,9 +161,23 @@ const MapRegistry = {
         return progressAreaKey;
     },
 
+    isMapActionRuntimeAvailable(action) {
+        if (!action) return false;
+        // 同一座標に進行状態別のmapActionが複数ある場合は、現在利用可能なものを選ぶ。
+        // Field側の完全な判定（クエスト状態・所持品条件を含む）が使える実行時はそれを優先し、
+        // エディタ等でFieldが未初期化の場合のみフラグ条件へフォールバックする。
+        if (typeof Field !== 'undefined' && typeof Field.isMapActionAvailable === 'function') {
+            return Field.isMapActionAvailable(action);
+        }
+        return MapRegistry.isProgressEntryActive(action);
+    },
+
     findMapAction(mapDef, x, y) {
         if (!mapDef || !Array.isArray(mapDef.mapActions)) return null;
-        return mapDef.mapActions.find(action => Number(action.x) === Number(x) && Number(action.y) === Number(y)) || null;
+        const matches = mapDef.mapActions.filter(action =>
+            Number(action.x) === Number(x) && Number(action.y) === Number(y)
+        );
+        return matches.find(action => MapRegistry.isMapActionRuntimeAvailable(action)) || null;
     },
 
     isPointInMapActionArea(action, x, y) {
@@ -184,7 +198,10 @@ const MapRegistry = {
         const exact = MapRegistry.findMapAction(mapDef, x, y);
         if (exact) return exact;
         if (!mapDef || !Array.isArray(mapDef.mapActions)) return null;
-        return mapDef.mapActions.find(action => MapRegistry.isPointInMapActionArea(action, x, y)) || null;
+        return mapDef.mapActions.find(action =>
+            MapRegistry.isPointInMapActionArea(action, x, y) &&
+            MapRegistry.isMapActionRuntimeAvailable(action)
+        ) || null;
     },
 
     isProgressEntryActive(entry) {
