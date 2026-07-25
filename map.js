@@ -7564,10 +7564,8 @@ const FIXED_DUNGEON_MAPS = {
                     }
                 ],
                 blockingObjects: [
-                    { x: 3, y: 20, baseTile: "T", invisible: true, log: "冒険者ギルドの受付カウンターだ。" },
-                    { x: 4, y: 20, baseTile: "T", invisible: true, log: "冒険者ギルドの受付カウンターだ。" },
-                    { x: 5, y: 20, baseTile: "T", invisible: true, log: "冒険者ギルドの受付カウンターだ。" },
-                    { x: 6, y: 20, baseTile: "T", invisible: true, log: "冒険者ギルドの受付カウンターだ。" },
+                    // カウンターの衝突正本。上段は右端だけ、下段は5マスすべてを通行不能にする。
+                    // 受付職員自身のマス (5,20) は mapAction の blocksMovement で別途塞ぐ。
                     { x: 7, y: 20, baseTile: "T", invisible: true, log: "冒険者ギルドの受付カウンターだ。" },
                     { x: 3, y: 21, baseTile: "T", invisible: true, log: "冒険者ギルドの受付カウンターだ。" },
                     { x: 4, y: 21, baseTile: "T", invisible: true, log: "冒険者ギルドの受付カウンターだ。" },
@@ -7644,10 +7642,13 @@ const FIXED_DUNGEON_MAPS = {
                         baseTile: "T",
                         blocksMovement: true,
                         interactFromAdjacent: true,
-                        interactionArea: { x: 3, y: 21, width: 5, height: 1 },
+                        // 受付の正面 (5,21) に向いている時だけ会話できる。
+                        interactionArea: { x: 5, y: 21, width: 1, height: 1 },
+                        // ミニマップではカウンターの客側5マスを連結し、受付職員自身はNPC印として別に残す。
                         minimapArea: { x: 3, y: 21, width: 5, height: 1 },
+                        minimapConnect: true,
                         minimapColor: "#5bd6ff",
-                        minimapAreaColor: "#8f7dff"
+                        minimapAreaColor: "#b77a32"
                     },
                     {
                         x: 8,

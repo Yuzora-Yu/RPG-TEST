@@ -2,7 +2,7 @@
 (function(root) {
     'use strict';
 
-    const GUILD_QUEST_SCHEMA_VERSION = 4;
+    const GUILD_QUEST_SCHEMA_VERSION = 5;
 
     // 旧町別掲示板時代のセーブIDを、新しいギルド依頼IDへ一度だけ移行するための対応表。
     // 依頼内容そのものは下記 GUILD_QUEST_DATA のみを正本とする。
@@ -483,7 +483,8 @@
                 "LIGHT_PALACE"
             ],
             "label": "光の宮殿グランプリズマ"
-        }
+        },
+        "spawnAreaLabel": "光の宮殿グランプリズマ"
     },
     "guild_prisma_sublimation": {
         "name": "聖光素材の昇華",
@@ -570,7 +571,8 @@
                 "DARK_CASTLE"
             ],
             "label": "魔王城ガルヴァニア"
-        }
+        },
+        "spawnAreaLabel": "魔王城ガルヴァニア"
     },
     "guild_galvania_refining": {
         "name": "魔城炉の高位精錬",
@@ -622,9 +624,9 @@
         "unlockFlags": [
             "abyssFirstEntered"
         ],
-        "objective": "深淵の魔窟内でアクアリリィ、ジェリーキング、バトルリザードを合計10体討伐する。",
+        "objective": "深淵の魔窟 地下71～75階に出現するアクアリリィ、ジェリーキング、バトルリザードを合計10体討伐する。",
         "startText": "深淵の観測路を維持するため、魔窟内に群れる指定魔物の鎮圧を頼まれた。",
-        "progressText": "深淵の魔窟内で指定された魔物を討伐し、ライザーク要塞のギルド受付へ報告しよう。",
+        "progressText": "深淵の魔窟 地下71～75階で指定された魔物を討伐し、ライザーク要塞のギルド受付へ報告しよう。",
         "targetMonsterIds": [
             100064,
             100066,
@@ -658,6 +660,228 @@
                 "ABYSS"
             ],
             "label": "深淵の魔窟"
+        },
+        "spawnAreaLabel": "深淵の魔窟 地下71～75階",
+        "requiredMaxAbyssFloor": 71
+    },
+    "guild_abyss_patrol_051_060": {
+        "name": "深淵巡回・第五十一～六十階",
+        "area": "深淵の魔窟 地下51～60階",
+        "kind": "hunt",
+        "unlockFlags": [
+            "abyssFirstEntered"
+        ],
+        "requiredMaxAbyssFloor": 60,
+        "objective": "深淵の魔窟 地下51～60階で、通常戦闘の魔物を合計8体討伐する。",
+        "startText": "第五十階層を越えた観測隊から、次の十階層に棲む魔物の間引き依頼が届いた。種類は問わない。",
+        "progressText": "深淵の魔窟 地下51～60階で通常戦闘の魔物を8体討伐し、ライザーク要塞のギルド受付へ報告しよう。",
+        "targetCount": 8,
+        "completeText": "観測路の安全が確保され、深層探索用の補給品を受け取った。",
+        "rewardItems": [
+            {
+                "id": 1041,
+                "count": 1
+            },
+            {
+                "id": 2019,
+                "count": 1
+            }
+        ],
+        "requiredRank": "D",
+        "guildExp": 70,
+        "guildPoints": 26,
+        "guildQuest": true,
+        "repeatable": true,
+        "id": "guild_abyss_patrol_051_060",
+        "regionKey": "ABYSS",
+        "requestType": "hunt",
+        "reportAt": "guildReception",
+        "sortOrder": 151,
+        "huntScope": {
+            "mode": "floorRange",
+            "areaKeys": [
+                "ABYSS"
+            ],
+            "label": "深淵の魔窟",
+            "floorMin": 51,
+            "floorMax": 60,
+            "normalBattlesOnly": true
+        }
+    },
+    "guild_abyss_patrol_081_090": {
+        "name": "深淵巡回・第八十一～九十階",
+        "area": "深淵の魔窟 地下81～90階",
+        "kind": "hunt",
+        "unlockFlags": [
+            "abyssFirstEntered"
+        ],
+        "requiredMaxAbyssFloor": 90,
+        "objective": "深淵の魔窟 地下81～90階で、通常戦闘の魔物を合計9体討伐する。",
+        "startText": "中層の足場を維持するため、第八十一階から九十階に出現する魔物の討伐を求められた。",
+        "progressText": "深淵の魔窟 地下81～90階で通常戦闘の魔物を9体討伐し、ライザーク要塞のギルド受付へ報告しよう。",
+        "targetCount": 9,
+        "completeText": "中層の巡回路が安定し、観測隊から希少素材が支給された。",
+        "rewardItems": [
+            {
+                "id": 1042,
+                "count": 1
+            },
+            {
+                "id": 2021,
+                "count": 1
+            }
+        ],
+        "requiredRank": "C",
+        "guildExp": 100,
+        "guildPoints": 38,
+        "guildQuest": true,
+        "repeatable": true,
+        "id": "guild_abyss_patrol_081_090",
+        "regionKey": "ABYSS",
+        "requestType": "hunt",
+        "reportAt": "guildReception",
+        "sortOrder": 152,
+        "huntScope": {
+            "mode": "floorRange",
+            "areaKeys": [
+                "ABYSS"
+            ],
+            "label": "深淵の魔窟",
+            "floorMin": 81,
+            "floorMax": 90,
+            "normalBattlesOnly": true
+        }
+    },
+    "guild_abyss_patrol_111_120": {
+        "name": "深淵巡回・第百十一～百二十階",
+        "area": "深淵の魔窟 地下111～120階",
+        "kind": "hunt",
+        "unlockFlags": [
+            "abyssFirstEntered"
+        ],
+        "requiredMaxAbyssFloor": 120,
+        "objective": "深淵の魔窟 地下111～120階で、通常戦闘の魔物を合計10体討伐する。",
+        "startText": "深層観測器の設置路を守るため、第百十一階から百二十階の掃討依頼が発行された。",
+        "progressText": "深淵の魔窟 地下111～120階で通常戦闘の魔物を10体討伐し、ライザーク要塞のギルド受付へ報告しよう。",
+        "targetCount": 10,
+        "completeText": "観測器の搬入路が開かれ、深層由来の素材を受け取った。",
+        "rewardItems": [
+            {
+                "id": 1043,
+                "count": 1
+            },
+            {
+                "id": 2022,
+                "count": 1
+            }
+        ],
+        "requiredRank": "B",
+        "guildExp": 140,
+        "guildPoints": 52,
+        "guildQuest": true,
+        "repeatable": true,
+        "id": "guild_abyss_patrol_111_120",
+        "regionKey": "ABYSS",
+        "requestType": "hunt",
+        "reportAt": "guildReception",
+        "sortOrder": 153,
+        "huntScope": {
+            "mode": "floorRange",
+            "areaKeys": [
+                "ABYSS"
+            ],
+            "label": "深淵の魔窟",
+            "floorMin": 111,
+            "floorMax": 120,
+            "normalBattlesOnly": true
+        }
+    },
+    "guild_abyss_patrol_151_160": {
+        "name": "深淵巡回・第百五十一～百六十階",
+        "area": "深淵の魔窟 地下151～160階",
+        "kind": "hunt",
+        "unlockFlags": [
+            "abyssFirstEntered"
+        ],
+        "requiredMaxAbyssFloor": 160,
+        "objective": "深淵の魔窟 地下151～160階で、通常戦闘の魔物を合計12体討伐する。",
+        "startText": "裂界濃度が急上昇する第百五十一階以降について、精鋭向けの掃討依頼が届いた。",
+        "progressText": "深淵の魔窟 地下151～160階で通常戦闘の魔物を12体討伐し、ライザーク要塞のギルド受付へ報告しよう。",
+        "targetCount": 12,
+        "completeText": "深層の魔物が減り、観測隊から最上級の育成資源を受け取った。",
+        "rewardItems": [
+            {
+                "id": 106,
+                "count": 1
+            },
+            {
+                "id": 2007,
+                "count": 1
+            }
+        ],
+        "requiredRank": "A",
+        "guildExp": 200,
+        "guildPoints": 78,
+        "guildQuest": true,
+        "repeatable": true,
+        "id": "guild_abyss_patrol_151_160",
+        "regionKey": "ABYSS",
+        "requestType": "hunt",
+        "reportAt": "guildReception",
+        "sortOrder": 154,
+        "huntScope": {
+            "mode": "floorRange",
+            "areaKeys": [
+                "ABYSS"
+            ],
+            "label": "深淵の魔窟",
+            "floorMin": 151,
+            "floorMax": 160,
+            "normalBattlesOnly": true
+        }
+    },
+    "guild_abyss_patrol_191_200": {
+        "name": "深淵巡回・第百九十一～二百階",
+        "area": "深淵の魔窟 地下191～200階",
+        "kind": "hunt",
+        "unlockFlags": [
+            "abyssFirstEntered"
+        ],
+        "requiredMaxAbyssFloor": 200,
+        "objective": "深淵の魔窟 地下191～200階で、通常戦闘の魔物を合計15体討伐する。",
+        "startText": "最深層の観測を継続するため、最高位冒険者にのみ許された掃討依頼が発行された。",
+        "progressText": "深淵の魔窟 地下191～200階で通常戦闘の魔物を15体討伐し、ライザーク要塞のギルド受付へ報告しよう。",
+        "targetCount": 15,
+        "completeText": "最深層の観測路が確保され、ギルド最高位の報奨を受け取った。",
+        "rewardItems": [
+            {
+                "id": 107,
+                "count": 1
+            },
+            {
+                "id": 2063,
+                "count": 1
+            }
+        ],
+        "requiredRank": "S",
+        "guildExp": 300,
+        "guildPoints": 120,
+        "guildQuest": true,
+        "repeatable": true,
+        "id": "guild_abyss_patrol_191_200",
+        "regionKey": "ABYSS",
+        "requestType": "hunt",
+        "reportAt": "guildReception",
+        "sortOrder": 155,
+        "huntScope": {
+            "mode": "floorRange",
+            "areaKeys": [
+                "ABYSS"
+            ],
+            "label": "深淵の魔窟",
+            "floorMin": 191,
+            "floorMax": 200,
+            "normalBattlesOnly": true
         }
     },
     "guild_abyss_stabilization": {

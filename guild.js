@@ -32,11 +32,17 @@
             const areaKeys = [...new Set((Array.isArray(raw.areaKeys) ? raw.areaKeys : (Array.isArray(def?.targetAreaKeys) ? def.targetAreaKeys : []))
                 .map(value => String(value || '').trim())
                 .filter(Boolean))];
-            const mode = raw.mode === 'dungeon' ? 'dungeon' : 'monster';
+            const allowedModes = new Set(['monster', 'dungeon', 'floorRange']);
+            const mode = allowedModes.has(String(raw.mode || '')) ? String(raw.mode) : 'monster';
+            const floorMin = Math.max(1, Math.floor(Number(raw.floorMin || 1)));
+            const floorMax = Math.max(floorMin, Math.floor(Number(raw.floorMax || floorMin)));
             return {
                 mode,
                 areaKeys,
-                label: String(raw.label || def?.area || '').trim()
+                label: String(raw.label || def?.area || '').trim(),
+                floorMin,
+                floorMax,
+                normalBattlesOnly: raw.normalBattlesOnly === true
             };
         },
 
@@ -59,6 +65,9 @@
                     : !!(currentMap?.isDungeon || areaKey === 'ABYSS'),
                 isFixed: context.isFixed !== undefined ? !!context.isFixed : !!currentMap?.isFixed,
                 floor: Math.max(1, Number(context.floor || currentMap?.floor || App.data?.progress?.floor || 1)),
+                isBossBattle: context.isBossBattle !== undefined
+                    ? !!context.isBossBattle
+                    : !!App.data?.battle?.isBossBattle,
                 guildPromotionTrial: context.guildPromotionTrial !== undefined
                     ? !!context.guildPromotionTrial
                     : !!App.data?.battle?.guildPromotionTrial,
@@ -72,7 +81,9 @@
             if (!battle.countsForGuildQuests || battle.guildPromotionTrial) return false;
             const battleKeys = new Set([battle.areaKey, battle.canonicalAreaKey].filter(Boolean));
             if (scope.areaKeys.length && !scope.areaKeys.some(key => battleKeys.has(key))) return false;
-            if (scope.mode === 'dungeon' && !battle.isDungeon) return false;
+            if ((scope.mode === 'dungeon' || scope.mode === 'floorRange') && !battle.isDungeon) return false;
+            if (scope.normalBattlesOnly && battle.isBossBattle) return false;
+            if (scope.mode === 'floorRange' && (battle.floor < scope.floorMin || battle.floor > scope.floorMax)) return false;
             return true;
         },
 
@@ -83,7 +94,7 @@
                 .filter(id => Number.isFinite(id) && id > 0);
             if (!normalizedIds.length) return 0;
             const scope = Guild.getHuntScope(def);
-            if (scope.mode === 'dungeon') return normalizedIds.length;
+            if (scope.mode === 'dungeon' || scope.mode === 'floorRange') return normalizedIds.length;
             const targets = (def.targetMonsterIds || []).map(Number).filter(Number.isFinite);
             if (!targets.length) return 0;
             return normalizedIds.filter(monsterId => targets.includes(monsterId)).length;
@@ -193,8 +204,11 @@
             const flags = App.data?.progress?.flags || {};
             const required = def.requiredRank || 'G';
             const unlockFlags = Array.isArray(def.unlockFlags) ? def.unlockFlags : [];
+            const requiredMaxAbyssFloor = Math.max(0, Math.floor(Number(def.requiredMaxAbyssFloor || 0)));
+            const reachedAbyssFloor = Math.max(0, Math.floor(Number(App.data?.dungeon?.maxFloor || 0)));
             return Guild.rankIndex(state.rank) >= Guild.rankIndex(required)
-                && unlockFlags.every(flag => !!flags[flag]);
+                && unlockFlags.every(flag => !!flags[flag])
+                && (!requiredMaxAbyssFloor || reachedAbyssFloor >= requiredMaxAbyssFloor);
         },
 
         availableCandidates(exclude = []) {
@@ -349,13 +363,22 @@
                 const scope = Guild.getHuntScope(def);
                 const current = Math.min(Number(def.targetCount || 1), Number(state.progress?.kills || 0));
                 const required = Math.max(1, Number(def.targetCount || 1));
-                const location = scope.label ? `討伐場所: ${scope.label}
-` : '';
+                if (scope.mode === 'floorRange') {
+                    const location = scope.label || '深淵の魔窟';
+                    return `対象階層: ${location} 地下${scope.floorMin}～${scope.floorMax}階
+対象: 通常戦闘の魔物（種類不問）
+進捗: ${current}/${required}`;
+                }
                 if (scope.mode === 'dungeon') {
+                    const location = scope.label ? `討伐場所: ${scope.label}
+` : '';
                     return `${location}対象: ダンジョン内の魔物（種類不問）
 進捗: ${current}/${required}`;
                 }
                 const names = (def.targetMonsterIds || []).map(monsterId => App.getQuestMonsterName?.(monsterId) || `モンスター${monsterId}`).join(' / ');
+                const spawnArea = String(def.spawnAreaLabel || scope.label || def.area || '').trim();
+                const location = spawnArea ? `出現地域: ${spawnArea}
+` : '';
                 return `${location}対象: ${names || '指定魔物'}
 進捗: ${current}/${required}`;
             }

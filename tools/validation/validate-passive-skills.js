@@ -40,6 +40,34 @@ const lateBloomer = {
 PS.normalizeDisabledTraits(lateBloomer);
 check(lateBloomer.disabledTraits.length === 0, '固定ONの大器晩成が旧セーブ値で無効化されています');
 
+const heroBookTarget = {
+    uid: 'p1', charId: 301, name: '主人公',
+    traits: [1, 2, 3, 4, 5, 6].map((id, index) => ({ id, level: index + 1, battleCount: 10 })),
+    disabledTraits: [2, 10]
+};
+const allyBookTarget = {
+    uid: 'ally', charId: 302, name: '仲間',
+    traits: [1, 2, 3, 4, 5, 6].map((id, index) => ({ id, level: index + 1, battleCount: 10 })),
+    disabledTraits: []
+};
+const monsterBookTarget = {
+    uid: 'monster', isMonsterAlly: true, name: '魔物',
+    traits: [1, 2, 3, 4, 5, 6].map((id, index) => ({ id, level: index + 1, battleCount: 10 })),
+    disabledTraits: []
+};
+context.App.data.characters = [heroBookTarget, allyBookTarget, monsterBookTarget];
+context.App.getHeroCharacter = () => heroBookTarget;
+context.App.isMonsterAlly = char => !!char?.isMonsterAlly;
+check(JSON.stringify(Array.from(PS.getTraitBookReplaceableSlots(heroBookTarget))) === '[1,2,3,4,5]', '主人公の特性書交換枠が2～6枠目ではありません');
+check(JSON.stringify(Array.from(PS.getTraitBookReplaceableSlots(allyBookTarget))) === '[4,5]', '通常仲間の特性書交換枠が5～6枠目ではありません');
+check(JSON.stringify(Array.from(PS.getTraitBookReplaceableSlots(monsterBookTarget))) === '[0,1,2,3,4,5]', '魔物仲間の特性書交換枠が全6枠ではありません');
+check(PS.canReplaceTraitWithBook(monsterBookTarget, 0, 2).ok === false, '特性書で重複特性を作成できます');
+const bookResult = PS.replaceTraitWithBook(heroBookTarget, 1, 10);
+check(bookResult.success === true, `特性書交換に失敗しました: ${bookResult.message}`);
+check(heroBookTarget.traits[1].id === 10 && heroBookTarget.traits[1].level === 2 && heroBookTarget.traits[1].battleCount === 0,
+    '特性書交換がレベル引継ぎ・熟練度リセット規則に一致しません');
+check(!heroBookTarget.disabledTraits.includes(2) && !heroBookTarget.disabledTraits.includes(10), '交換前後の特性が無効状態に残っています');
+
 const formulaCases = [
     { id: 18, level: 2, canonical: 'guts_rate', alias: 'guts_mult', expected: 26 },
     { id: 31, level: 2, canonical: 'proc_curse_add', alias: 'proc_curse_bonus', expected: 16 },

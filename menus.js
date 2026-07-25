@@ -331,7 +331,7 @@ const Menu = {
         if (type === '乗り物') return 'assets/ui/menu-icons/item-vehicle.png';
         if (type === '移動' || Number(item?.id) === 110 || item?.name === 'スカイプリズム') return 'assets/ui/menu-icons/item-travel.png';
         if (type === '蘇生') return 'assets/ui/menu-icons/item-revive.png';
-        if (type === '育成') return 'assets/ui/menu-icons/item-growth.png';
+        if (type === '育成' || type === '特性書') return 'assets/ui/menu-icons/item-growth.png';
         if (type === '貴重品') return 'assets/ui/menu-icons/item-key.png';
         if (type === 'HP回復' || type === 'MP回復' || type === '状態異常回復' || type.includes('回復')) {
             return 'assets/ui/menu-icons/item-heal.png';

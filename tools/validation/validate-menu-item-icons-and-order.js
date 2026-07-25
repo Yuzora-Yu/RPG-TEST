@@ -22,7 +22,7 @@ vm.runInContext(read('items.js'), context, { filename: 'items.js' });
 const catalog = context.window.PRISMA_ITEM_CATALOG;
 assert(catalog, 'PRISMA_ITEM_CATALOG is missing');
 assert(JSON.stringify(Array.from(catalog.toolTypeOrder)) === JSON.stringify([
-    '乗り物', '移動', 'HP回復', 'MP回復', '状態異常回復', '蘇生', '育成', '攻撃道具', '強化道具', '弱体道具'
+    '乗り物', '移動', 'HP回復', 'MP回復', '状態異常回復', '蘇生', '育成', '特性書', '攻撃道具', '強化道具', '弱体道具'
 ]), 'Tool type order differs from the requested order');
 const fixtures = catalog.toolTypeOrder.map((type, index) => ({ id: 100 - index, type }));
 fixtures.reverse().sort(catalog.compareToolsByTypeAndId);
@@ -42,5 +42,11 @@ assert(fieldSkills.includes('PRISMA_SKILL_ORDER?.compareById'), 'Field skill men
 assert(battle.includes('PRISMA_SKILL_ORDER?.compareById'), 'Battle skill menu is not sorted by ID');
 assert(iconBuilder.includes('keep_largest_alpha_component'), 'Icon normalization does not remove isolated matte fragments');
 assert(iconBuilder.includes('(64 - size[0]) // 2') && iconBuilder.includes('(64 - size[1]) // 2'), 'Icon normalization does not center the visible object');
+
+const traitBooks = context.window.ITEMS_DATA.filter(item => item.type === '特性書');
+assert(traitBooks.length === 11, `Expected 11 trait books, found ${traitBooks.length}`);
+assert(traitBooks.every(item => Number(item.traitId) > 0 && item.fieldUsable === true && item.battleUsable === false), 'Trait books must declare traitId and field-only use');
+assert(menus.includes("type === '育成' || type === '特性書'"), 'Trait books do not use the growth item icon');
+assert(menuItems.includes("item.type === '特性書'"), 'Field item menu has no trait-book route');
 
 console.log('Item category icons, item type ordering, and skill ID ordering validated.');

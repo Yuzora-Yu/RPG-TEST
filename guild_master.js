@@ -3,7 +3,7 @@
     'use strict';
 
     const GUILD_MASTER_DATA = {
-        schemaVersion: 4,
+        schemaVersion: 5,
         maxOffers: 5,
         ranks: [
             { id: 'G', requiredTotalExp: 0, label: 'Gランク' },
@@ -83,7 +83,18 @@
             { id: 'seed_sp', itemId: 106, count: 1, cost: 80 },
             { id: 'gem_100', gems: 100, cost: 50 },
             { id: 'gem_500', gems: 500, cost: 220 },
-            { id: 'reincarnation', itemId: 107, count: 1, cost: 1200, requiredRank: 'A' }
+            { id: 'reincarnation', itemId: 107, count: 1, cost: 1200, requiredRank: 'A' },
+            { id: 'trait_book_sword', itemId: 112, count: 1, cost: 5000 },
+            { id: 'trait_book_spear', itemId: 113, count: 1, cost: 5000 },
+            { id: 'trait_book_axe', itemId: 114, count: 1, cost: 5000 },
+            { id: 'trait_book_dagger', itemId: 115, count: 1, cost: 5000 },
+            { id: 'trait_book_bow', itemId: 116, count: 1, cost: 5000 },
+            { id: 'trait_book_staff', itemId: 117, count: 1, cost: 5000 },
+            { id: 'trait_book_eagle_eye', itemId: 118, count: 1, cost: 10000 },
+            { id: 'trait_book_martial_arts', itemId: 119, count: 1, cost: 10000 },
+            { id: 'trait_book_spell', itemId: 120, count: 1, cost: 10000 },
+            { id: 'trait_book_breath', itemId: 121, count: 1, cost: 10000 },
+            { id: 'trait_book_healing', itemId: 122, count: 1, cost: 10000 }
         ]
     };
 

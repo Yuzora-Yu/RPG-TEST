@@ -4118,6 +4118,7 @@ findNextActor: () => {
             isDungeon: !!(currentMap?.isDungeon || areaKey === 'ABYSS'),
             isFixed: !!currentMap?.isFixed,
             floor: Math.max(1, Number(currentMap?.floor || App.data?.progress?.floor || 1)),
+            isBossBattle: !!App.data?.battle?.isBossBattle,
             guildPromotionTrial: !!App.data?.battle?.guildPromotionTrial,
             countsForGuildQuests: !App.data?.battle?.excludeGuildQuestProgress
         };

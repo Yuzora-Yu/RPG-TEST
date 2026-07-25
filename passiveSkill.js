@@ -102,6 +102,89 @@ PassiveSkill.normalizeDisabledTraits = function(char) {
     char.disabledTraits = normalized;
 };
 
+PassiveSkill.TRAIT_BOOK_TRAIT_IDS = Object.freeze([1, 2, 3, 4, 5, 7, 6, 10, 11, 12, 13]);
+
+PassiveSkill.isHeroCharacter = function(char) {
+    if (!char) return false;
+    if (typeof App !== 'undefined' && typeof App.getHeroCharacter === 'function') {
+        const hero = App.getHeroCharacter();
+        if (hero && hero === char) return true;
+        if (hero?.uid && char.uid && hero.uid === char.uid) return true;
+    }
+    return char.uid === 'p1' || char.isHero === true || Number(char.charId) === 301;
+};
+
+PassiveSkill.isMonsterAllyCharacter = function(char) {
+    if (!char) return false;
+    if (typeof App !== 'undefined' && typeof App.isMonsterAlly === 'function') return !!App.isMonsterAlly(char);
+    return char.isMonsterAlly === true;
+};
+
+PassiveSkill.getTraitBookCharacterTypeLabel = function(char) {
+    if (PassiveSkill.isHeroCharacter(char)) return '主人公';
+    if (PassiveSkill.isMonsterAllyCharacter(char)) return '魔物';
+    return '仲間';
+};
+
+PassiveSkill.getTraitBookReplaceableSlots = function(char) {
+    const traits = Array.isArray(char?.traits) ? char.traits : [];
+    const maxIndex = Math.min(5, traits.length - 1);
+    if (maxIndex < 0) return [];
+    let startIndex = 4;
+    if (PassiveSkill.isMonsterAllyCharacter(char)) startIndex = 0;
+    else if (PassiveSkill.isHeroCharacter(char)) startIndex = 1;
+    const slots = [];
+    for (let index = startIndex; index <= maxIndex; index++) {
+        if (traits[index] && Number(traits[index].id) > 0) slots.push(index);
+    }
+    return slots;
+};
+
+PassiveSkill.canReplaceTraitWithBook = function(char, slotIndex, traitId) {
+    const normalizedTraitId = Number(traitId);
+    const index = Number(slotIndex);
+    if (!char || !Array.isArray(char.traits)) return { ok: false, reason: '特性データがありません。' };
+    if (!PassiveSkill.TRAIT_BOOK_TRAIT_IDS.includes(normalizedTraitId) || !PassiveSkill.MASTER[normalizedTraitId]) {
+        return { ok: false, reason: 'この特性書は使用できません。' };
+    }
+    if (!PassiveSkill.getTraitBookReplaceableSlots(char).includes(index)) {
+        return { ok: false, reason: 'この特性枠は交換できません。' };
+    }
+    if (char.traits.some((trait, currentIndex) => currentIndex !== index && Number(trait?.id) === normalizedTraitId)) {
+        return { ok: false, reason: '同じ特性をすでに所持しています。' };
+    }
+    const current = char.traits[index];
+    if (!current || Number(current.id) <= 0) return { ok: false, reason: '交換元の特性がありません。' };
+    if (Number(current.id) === normalizedTraitId) return { ok: false, reason: 'すでに同じ特性です。' };
+    return { ok: true, current };
+};
+
+PassiveSkill.replaceTraitWithBook = function(char, slotIndex, traitId) {
+    const check = PassiveSkill.canReplaceTraitWithBook(char, slotIndex, traitId);
+    if (!check.ok) return { success: false, message: check.reason };
+    const index = Number(slotIndex);
+    const normalizedTraitId = Number(traitId);
+    const oldTrait = char.traits[index];
+    const oldMaster = PassiveSkill.MASTER[Number(oldTrait.id)];
+    const newMaster = PassiveSkill.MASTER[normalizedTraitId];
+    const inheritedLevel = Math.max(1, Math.floor(Number(oldTrait.level || oldTrait.lv || 1)));
+    char.traits[index] = {
+        id: normalizedTraitId,
+        level: inheritedLevel,
+        battleCount: 0
+    };
+    const disabled = Array.isArray(char.disabledTraits) ? char.disabledTraits.map(Number) : [];
+    char.disabledTraits = disabled.filter(id => id !== Number(oldTrait.id) && id !== normalizedTraitId);
+    PassiveSkill.normalizeDisabledTraits(char);
+    return {
+        success: true,
+        oldTraitId: Number(oldTrait.id),
+        newTraitId: normalizedTraitId,
+        level: inheritedLevel,
+        message: `${char.name || '対象'}の「${oldMaster?.name || '特性'}」Lv${inheritedLevel}を「${newMaster?.name || '特性'}」Lv${inheritedLevel}へ交換した！`
+    };
+};
+
 PassiveSkill.isTraitToggleLocked = function(char, traitId) {
     return Number(traitId) === PassiveSkill.LATE_BLOOMER_TRAIT_ID && PassiveSkill.hasLearnedLateBloomer(char);
 };

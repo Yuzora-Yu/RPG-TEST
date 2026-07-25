@@ -9,7 +9,7 @@ const MenuItems = {
     getUseSeKey: (item) => {
         if (!item) return null;
         if (item.type === '乗り物' || item.type === '移動' || item.id === 110 || item.name === 'スカイプリズム') return 'ui_item_move';
-        if ((Number(item.id) >= 100 && Number(item.id) <= 107) || String(item.type || '').includes('育成')) return 'ui_item_growth';
+        if ((Number(item.id) >= 100 && Number(item.id) <= 107) || String(item.type || '').includes('育成') || item.type === '特性書') return 'ui_item_growth';
         if (item.fieldGroup || item.effectKind === 'camp' || String(item.type || '').includes('回復') || String(item.type || '').includes('蘇生')) return 'ui_item_heal';
         return null;
     },
@@ -150,8 +150,11 @@ const MenuItems = {
             return;
         }
 
-        // 回復・蘇生に加えて「育成」タイプもターゲット選択へ進む
-        if(item.type === '乗り物') {
+        // 特性書は、所持キャラクターと交換可能枠を専用UIで選択する。
+        if (item.type === '特性書' || Number(item.traitId) > 0) {
+            MenuItems.selectedItem = item;
+            MenuItems.openTraitBookCharacterSelection(item);
+        } else if(item.type === '乗り物') {
             MenuItems.selectedItem = item;
             MenuItems.useVehicleItem(item);
         } else if(item.type === '移動' || item.id === 110 || item.name === 'スカイプリズム') {
@@ -168,6 +171,120 @@ const MenuItems = {
         } else {
             Menu.msg("使用できないアイテムです。");
         }
+    },
+
+    getTraitBookOwnedCharacters: () => {
+        const characters = Array.isArray(App.data?.characters) ? App.data.characters.filter(Boolean) : [];
+        const passive = typeof PassiveSkill !== 'undefined' ? PassiveSkill : null;
+        return characters.slice().sort((left, right) => {
+            const heroDiff = Number(!(passive?.isHeroCharacter?.(left))) - Number(!(passive?.isHeroCharacter?.(right)));
+            if (heroDiff !== 0) return heroDiff;
+            const monsterDiff = Number(!!passive?.isMonsterAllyCharacter?.(left)) - Number(!!passive?.isMonsterAllyCharacter?.(right));
+            if (monsterDiff !== 0) return monsterDiff;
+            return String(left.name || '').localeCompare(String(right.name || ''), 'ja');
+        });
+    },
+
+    getTraitBookEligibleSlots: (character, item) => {
+        if (typeof PassiveSkill === 'undefined' || typeof PassiveSkill.getTraitBookReplaceableSlots !== 'function') return [];
+        const traitId = Number(item?.traitId || 0);
+        return PassiveSkill.getTraitBookReplaceableSlots(character).map(index => {
+            const current = character.traits[index];
+            const check = PassiveSkill.canReplaceTraitWithBook(character, index, traitId);
+            return { index, current, check };
+        });
+    },
+
+    openTraitBookCharacterSelection: (item) => {
+        if (!item || item.type !== '特性書' || !Number(item.traitId)) {
+            Menu.msg('この特性書は使用できません。');
+            return;
+        }
+        if (!Number(App.data?.items?.[item.id] || 0)) {
+            Menu.msg('アイテムを持っていません。');
+            return;
+        }
+        if (typeof PassiveSkill === 'undefined' || !PassiveSkill.MASTER?.[Number(item.traitId)]) {
+            Menu.msg('特性データを読み込めませんでした。');
+            return;
+        }
+        const targetTraitName = PassiveSkill.MASTER[Number(item.traitId)].name;
+        const characters = MenuItems.getTraitBookOwnedCharacters();
+        const choices = characters.map(character => {
+            const slots = MenuItems.getTraitBookEligibleSlots(character, item);
+            const canUse = slots.some(entry => entry.check.ok);
+            const duplicate = Array.isArray(character.traits) && character.traits.some(trait => Number(trait?.id) === Number(item.traitId));
+            const typeLabel = PassiveSkill.getTraitBookCharacterTypeLabel?.(character) || '仲間';
+            let suffix = `${slots.length}枠`;
+            if (duplicate) suffix = '同じ特性を所持';
+            else if (!slots.length) suffix = '交換可能枠なし';
+            return {
+                label: `${character.name || '名前なし'}［${typeLabel}／${suffix}］`,
+                disabled: !canUse,
+                callback: () => MenuItems.openTraitBookSlotSelection(item, character)
+            };
+        });
+        if (!choices.length) {
+            Menu.msg('特性を交換できる仲間がいません。');
+            return;
+        }
+        Menu.listChoice(`${item.name}
+変更先: ${targetTraitName}
+交換するキャラクターを選んでください。`, choices);
+    },
+
+    openTraitBookSlotSelection: (item, character) => {
+        if (!item || !character) return;
+        const targetMaster = PassiveSkill.MASTER?.[Number(item.traitId)];
+        const slots = MenuItems.getTraitBookEligibleSlots(character, item);
+        if (!slots.length) {
+            Menu.msg('交換可能な特性枠がありません。');
+            return;
+        }
+        const choices = slots.map(entry => {
+            const currentMaster = PassiveSkill.MASTER?.[Number(entry.current?.id)];
+            const level = Math.max(1, Number(entry.current?.level || entry.current?.lv || 1));
+            return {
+                label: `${entry.index + 1}枠目：${currentMaster?.name || `特性${entry.current?.id}`} Lv${level}`,
+                disabled: !entry.check.ok,
+                callback: () => MenuItems.applyTraitBook(item, character, entry.index)
+            };
+        });
+        Menu.listChoice(`${character.name || '対象'}の交換枠を選択
+変更先: ${targetMaster?.name || '特性'}
+※元の特性Lvを引き継ぎます。`, choices);
+    },
+
+    applyTraitBook: (item, character, slotIndex) => {
+        const targetMaster = PassiveSkill.MASTER?.[Number(item?.traitId)];
+        const current = character?.traits?.[Number(slotIndex)];
+        const currentMaster = PassiveSkill.MASTER?.[Number(current?.id)];
+        const level = Math.max(1, Number(current?.level || current?.lv || 1));
+        if (!item || !character || !current || !targetMaster) {
+            Menu.msg('特性交換の対象を確認できませんでした。');
+            return;
+        }
+        Menu.confirm(`${character.name}の「${currentMaster?.name || '特性'}」Lv${level}を「${targetMaster.name}」Lv${level}へ交換しますか？
+特性書は1冊消費されます。`, () => {
+            if (!Number(App.data?.items?.[item.id] || 0)) {
+                Menu.msg('アイテムを持っていません。');
+                return;
+            }
+            const result = PassiveSkill.replaceTraitWithBook(character, slotIndex, Number(item.traitId));
+            if (!result.success) {
+                Menu.msg(result.message || '特性を交換できませんでした。');
+                return;
+            }
+            App.data.items[item.id] -= 1;
+            if (App.data.items[item.id] <= 0) delete App.data.items[item.id];
+            App.save();
+            MenuItems.playUseSe(item);
+            Menu.msg(result.message, () => {
+                MenuItems.selectedItem = null;
+                MenuItems.changeScreen('list');
+                Menu.renderPartyBar();
+            });
+        });
     },
 
     useGroupItem: (item) => {
