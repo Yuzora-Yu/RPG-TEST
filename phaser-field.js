@@ -230,12 +230,18 @@
         if (definition?.type !== 'image' || !definition.imageKey) return false;
         const px = tileX * TILE_SIZE;
         const py = tileY * TILE_SIZE;
-        return !!addImage(scene, definition.imageKey, px + TILE_SIZE / 2, py + TILE_SIZE, {
-            width: Math.max(8, Number(definition.drawWidth || TILE_SIZE)),
-            height: Math.max(8, Number(definition.drawHeight || TILE_SIZE)),
-            depth: baseDepth + 7,
-            alpha: definition.alpha === undefined ? 1 : Number(definition.alpha)
-        });
+        return !!addImage(
+            scene,
+            definition.imageKey,
+            px + TILE_SIZE / 2 + Number(definition.drawOffsetX || 0),
+            py + TILE_SIZE + Number(definition.drawOffsetY || 0),
+            {
+                width: Math.max(8, Number(definition.drawWidth || TILE_SIZE)),
+                height: Math.max(8, Number(definition.drawHeight || TILE_SIZE)),
+                depth: baseDepth + 7,
+                alpha: definition.alpha === undefined ? 1 : Number(definition.alpha)
+            }
+        );
     };
 
     const drawGroundDecoration = (scene, field, areaKey, tileX, tileY, rawUpper, floorConfig, overlay, baseDepth) => {
@@ -609,20 +615,28 @@
 				? Math.max(8, Number(overlay.drawHeight || TILE_SIZE))
 				: (wallOverlay ? TILE_SIZE * 1.5 : (raisedBuilding ? TILE_SIZE * buildingScale : TILE_SIZE * overlayScale));
 
+			const drawOffsetX = Number(overlay.drawOffsetX || 0);
+			const drawOffsetY = Number(overlay.drawOffsetY || 0);
+
 			// ダンジョンの宝箱・階段・扉は影なし。
 			// NPCとボスは位置を読みやすくするため影を残す。
             if (overlay.suppressShadow !== true && !parts.worldOverlay && !wallOverlay && !building && (blockingObjectOverlay || !field.currentMapData?.isDungeon || characterOverlay || bossOverlay)) {
 				addShadow(
 					scene,
-					px + TILE_SIZE / 2 + 4,
-					py + TILE_SIZE - 2,
+					px + TILE_SIZE / 2 + 4 + drawOffsetX,
+					py + TILE_SIZE - 2 + drawOffsetY,
 					bossOverlay ? 34 : 24,
 					bossOverlay ? 0.28 : 0.22,
 					baseDepth + 50
 				);
 			}
 
-			const overlayImage = addImage(scene, key, px + TILE_SIZE / 2, eventMarkerOverlay ? py + TILE_SIZE / 2 : py + TILE_SIZE, {
+			const overlayImage = addImage(
+				scene,
+				key,
+				px + TILE_SIZE / 2 + drawOffsetX,
+				(eventMarkerOverlay ? py + TILE_SIZE / 2 : py + TILE_SIZE) + drawOffsetY,
+				{
 				width,
 				height,
 				originY: eventMarkerOverlay ? 0.5 : 1,

@@ -161,7 +161,10 @@ if ('serviceWorker' in navigator) {
     </div>
 
     <div id="battle-scene" class="scene-layer">
-        <button id="btn-auto" class="btn" style="position:absolute; top:10px; right:10px; z-index:10; width:80px;" onclick="Battle.toggleAuto()">AUTO: OFF</button>
+        <div id="battle-top-controls" aria-label="戦闘設定">
+            <button id="btn-battle-speed" class="btn" type="button" onclick="Battle.cycleBattleSpeed()" aria-label="戦闘速度: 普通" title="戦闘速度: 普通">▶</button>
+            <button id="btn-auto" class="btn" type="button" onclick="Battle.toggleAuto()" aria-pressed="false">AUTO: OFF</button>
+        </div>
         <div id="enemy-container"></div>
         <div class="party-bar" id="battle-party-bar"></div>
         

@@ -372,11 +372,10 @@
                 <div style="margin-top:8px; padding:9px; border:1px solid #5e4d2e; color:#dff0c8; white-space:pre-wrap; font-size:11px;">${App.escapeHtml(Guild.rewardSummary(def))}</div>
                 ${ready ? '<div style="color:#8cff9d; margin-top:8px; font-size:11px;">達成済みです。受付職員へ報告してください。</div>' : ''}
                 ${actionButton}
-            `);
+            `, { onClose: () => Guild.openBoard() });
             const accept = document.getElementById('guild-detail-accept');
             if (accept) accept.onclick = () => {
                 Guild.acceptQuest(id);
-                Facilities.closeModal('guild-scene');
                 Guild.openBoard();
             };
         },
@@ -391,7 +390,7 @@
                 <div style="font-size:11px; color:#aaa;">依頼は最大5件。更新しても受注中の依頼は残ります。</div>
                 ${html || '<div style="padding:16px; color:#888;">現在紹介できる依頼はありません。</div>'}
                 <button id="guild-board-refresh" class="menu-btn" style="width:100%; margin-top:12px;">依頼を更新する</button>
-            `);
+            `, { onClose: () => App.changeScene('field') });
             document.querySelectorAll('.guild-quest-entry').forEach(button => {
                 button.onclick = () => Guild.showQuestDetail(button.dataset.guildQuestId);
             });

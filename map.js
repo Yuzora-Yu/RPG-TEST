@@ -12889,6 +12889,8 @@ const FIXED_DUNGEON_MAPS = {
             y: 20,
             drawWidth: 64,
             drawHeight: 64,
+            drawOffsetX: 22,
+            drawOffsetY: -26,
             baseTile: "T"
         }
     ];
@@ -12960,6 +12962,7 @@ const FIXED_DUNGEON_MAPS = {
             renderAsBlockingObject: true,
             drawWidth: 64,
             drawHeight: 64,
+            drawOffsetX: 24,
             baseTile: "T",
             blocksMovement: true,
             interactFromAdjacent: true,

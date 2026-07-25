@@ -4,6 +4,7 @@
 
 const Facilities = {
     teleportFloor: 1,
+    modalCloseHandlers: Object.create(null),
 
     // 施設背景は assets.js / GRAPHICS を使わず、このファイルから直接参照する
     backgroundPaths: {
@@ -92,17 +93,25 @@ const Facilities = {
      * モーダルを表示
      * sceneIdを指定することで、隠れている別シーンのモーダルを誤操作するのを防ぎます。
      */
-    showModal: (sceneId, title, html) => {
+    showModal: (sceneId, title, html, options = {}) => {
         const layer = document.getElementById(`${sceneId}-modal-layer`);
         if(!layer) return;
         document.getElementById(`${sceneId}-modal-title`).innerText = title;
         document.getElementById(`${sceneId}-modal-body`).innerHTML = html;
+        if (typeof options.onClose === 'function') {
+            Facilities.modalCloseHandlers[sceneId] = options.onClose;
+        } else {
+            delete Facilities.modalCloseHandlers[sceneId];
+        }
         layer.style.display = 'flex';
     },
 
     closeModal: (sceneId) => {
         const layer = document.getElementById(`${sceneId}-modal-layer`);
         if(layer) layer.style.display = 'none';
+        const onClose = Facilities.modalCloseHandlers[sceneId];
+        delete Facilities.modalCloseHandlers[sceneId];
+        if (typeof onClose === 'function') onClose();
     },
 
     // --- 1. 宿屋 ---
