@@ -1223,6 +1223,7 @@ const Facilities = {
         Facilities.shopSelectedKey = key;
         Facilities.markShopSelectedRow(key);
         Facilities.showShopItemHelp(item.id);
+        if (typeof AudioManager !== 'undefined') AudioManager.playSe?.('ui_shop_buy');
         Menu.msg(`${item.name}を ${qty.toLocaleString()}個 購入しました。`);
     },
 
@@ -1499,6 +1500,7 @@ const Facilities = {
         Facilities.shopSelectedKey = key;
         Facilities.markShopSelectedRow(key);
         Facilities.showShopEquipHelp(base.eid);
+        if (typeof AudioManager !== 'undefined') AudioManager.playSe?.('ui_shop_buy');
 
         const detailHtml = (typeof Menu !== 'undefined' && typeof Menu.getEquipDetailHTML === 'function')
             ? Menu.getEquipDetailHTML(purchased, true)
@@ -1694,6 +1696,7 @@ const Facilities = {
         Facilities.updateShopGoldDisplay();
         Facilities.renderShopSellList();
         Facilities.setShopHelp('売却しました。');
+        if (typeof AudioManager !== 'undefined') AudioManager.playSe?.('ui_shop_sell');
         Menu.msg(`${total.toLocaleString()}G 獲得しました。`);
     },
 
@@ -1759,6 +1762,7 @@ const Facilities = {
         Facilities.updateShopGoldDisplay();
         Facilities.renderShopSellList();
         Facilities.setShopHelp('売却しました。');
+        if (typeof AudioManager !== 'undefined') AudioManager.playSe?.('ui_shop_sell');
         Menu.msg(`${price.toLocaleString()}G 獲得しました。`);
     },
 

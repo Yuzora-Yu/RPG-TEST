@@ -22,7 +22,7 @@ assert(!missing.length, `index.html scripts missing from Service Worker precache
 for (const required of ['maps_logic.js', 'story_logic.js', 'quests.js', 'alchemy.js']) {
     assert(precached.has(required), `Required offline game logic is not precached: ${required}`);
 }
-assert(/CACHE_NAME\s*=\s*"prisma-abyss-v3\.130-offline-shell"/.test(swSource),
+assert(/CACHE_NAME\s*=\s*"prisma-abyss-v3\.132-offline-shell"/.test(swSource),
     'Service Worker cache version was not advanced for the corrected app shell');
 
 console.log(`PASS: all ${scriptFiles.length} index.html scripts are present in the Service Worker precache.`);

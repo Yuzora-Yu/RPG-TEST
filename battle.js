@@ -230,12 +230,44 @@ const Battle = {
 
     // 戦闘ロジックは描画実装に依存させず、導入済みの演出層へHP遷移だけを通知する。
     // 多段攻撃で後続計算が先行しても、HPバーはダメージ数値の表示までは直前値を保つ。
-    stageHpVisualTransition: (unit, hpBefore) => {
-        if (Number(unit?.hp) < Number(hpBefore) && typeof AudioManager !== 'undefined') AudioManager.playSe?.('battle_damage');
+    stageHpVisualTransition: (unit, hpBefore, options = {}) => {
+        if (Number(unit?.hp) < Number(hpBefore) && typeof AudioManager !== 'undefined') {
+            AudioManager.playSe?.(options.critical ? 'battle_critical' : 'battle_damage');
+        }
         const fx = (typeof window !== 'undefined') ? window.PolishBattleFX : null;
         if (fx && typeof fx.stageHpTransition === 'function') {
             fx.stageHpTransition(unit, hpBefore);
         }
+    },
+
+    resolveActionSeKey: (cmd, data) => {
+        if (cmd?.type !== 'skill') return 'battle_attack';
+        const type = String(data?.type || '');
+        if (type === 'ブレス') return 'battle_skill_breath';
+        if (type === '物理' || type === '通常攻撃') return 'battle_skill_physical';
+        if (type === '魔法') return 'battle_skill_magic';
+        return 'battle_skill_other';
+    },
+
+    playRecoverySe: () => {
+        if (typeof AudioManager !== 'undefined') AudioManager.playSe?.('battle_heal');
+    },
+
+    playResultSeAndWait: async (key) => {
+        if (typeof AudioManager === 'undefined') return false;
+        if (typeof AudioManager.playSeAndWait === 'function') return AudioManager.playSeAndWait(key);
+        AudioManager.playSe?.(key);
+        return false;
+    },
+
+    waitForResultAdvance: () => {
+        if (Battle.phase !== 'result') return Promise.resolve();
+        return new Promise(resolve => {
+            Battle.resultAdvanceResolver = () => {
+                Battle.resultAdvanceResolver = null;
+                resolve();
+            };
+        });
     },
 
     // 1ヒット分の計算・ログ・描画を演出側が消化するまで待つ任意フック。
@@ -265,6 +297,9 @@ const Battle = {
         Battle.updateAutoButton();
         Battle.resultProcessing = false;
         Battle.resultReadyToEnd = false;
+        Battle.resultEndIsGameOver = false;
+        Battle.resultInputLocked = false;
+        Battle.resultAdvanceResolver = null;
         Battle.resultSkipRequested = false;
         Battle.resultWaiters = [];
         
@@ -2871,6 +2906,7 @@ findNextActor: () => {
                     const recHp = Math.floor(actor.baseMaxHp * (totalHpRegenPct / 100));
                     if (recHp > 0) {
                         actor.hp = Math.min(actor.baseMaxHp, actor.hp + recHp);
+                        Battle.playRecoverySe();
                         if (timedHpRegenRate > 0) Battle.log(`${actor.name}のHPが ${recHp} 回復した！`);
                         // ボスか味方かでログを少し変えるなど、演出の統合
                         if (actor.isBoss) {
@@ -2886,6 +2922,7 @@ findNextActor: () => {
                     const recMp = Math.floor(actor.baseMaxMp * (totalMpRegenPct / 100));
                     if (recMp > 0) {
                         actor.mp = Math.min(actor.baseMaxMp, actor.mp + recMp);
+                        Battle.playRecoverySe();
                         if (timedMpRegenRate > 0) Battle.log(`${actor.name}のMPが ${recMp} 回復した！`);
                         //Battle.log(`${actor.name}は魔力循環により MPが ${recMp} 回復した`);
                     }
@@ -3034,20 +3071,25 @@ findNextActor: () => {
                             if(t.hp < 1) t.hp = 1;
                             Battle.applyPersistentBattlePassives(t);
                             if (Battle.party.includes(t)) Battle.refreshPartyFormationAuras();
+                            Battle.playRecoverySe();
                             Battle.log(`${t.name}は生き返った！`); 
                         }
                         else Battle.log(`${t.name}には効果がなかった`);
                     } else if (item.type === 'HP回復') {
                         if (!t.isDead) {
                             let rec = item.val; if (item.val >= 9999) rec = t.baseMaxHp;
+                            const beforeHp = t.hp;
                             t.hp = Math.min(t.baseMaxHp, t.hp + rec);
-                            Battle.log(`${t.name}のHPが${rec}回復！`);
+                            if (t.hp > beforeHp) Battle.playRecoverySe();
+                            Battle.log(`${t.name}のHPが${t.hp - beforeHp}回復！`);
                         }
                     } else if (item.type === 'MP回復') {
                         if (!t.isDead) {
                             let rec = item.val; if (item.val >= 9999) rec = t.baseMaxMp;
+                            const beforeMp = t.mp;
                             t.mp = Math.min(t.baseMaxMp, t.mp + Math.floor(rec));
-                            Battle.log(`${t.name}のMPが${rec}回復！`);
+                            if (t.mp > beforeMp) Battle.playRecoverySe();
+                            Battle.log(`${t.name}のMPが${t.mp - beforeMp}回復！`);
                         }
                     } else if (item.type === '状態異常回復' && !t.isDead) {
                         let cured = false;
@@ -3084,7 +3126,7 @@ findNextActor: () => {
         }
 
         // --- [4] 攻撃/スキル準備 ---
-        if (typeof AudioManager !== 'undefined') AudioManager.playSe?.(cmd.type === 'skill' ? 'battle_skill' : 'battle_attack');
+        if (typeof AudioManager !== 'undefined') AudioManager.playSe?.(Battle.resolveActionSeKey(cmd, data));
         let skillName = "攻撃";
         let isPhysical = true;
         let skillRate = 1.0; 
@@ -3234,7 +3276,7 @@ findNextActor: () => {
                             if (dRate > 0) {
                                 const dAmt = Math.floor(dmg * dRate);
                                 const oldHp = actor.hp; actor.hp = Math.min(actor.baseMaxHp, actor.hp + dAmt);
-                                if(actor.hp - oldHp > 0) Battle.log(`${actor.name}は吸収効果でHPを${actor.hp - oldHp}回復した！`);
+                                if(actor.hp - oldHp > 0) { Battle.playRecoverySe(); Battle.log(`${actor.name}は吸収効果でHPを${actor.hp - oldHp}回復した！`); }
                             }
                             if (actor.passive?.drainMp) {
                                 const mpAmt = Math.max(1, Math.floor(dmg * Battle.DRAIN_MP_RATE));
@@ -3467,6 +3509,7 @@ findNextActor: () => {
                             t.hp = Math.max(1, Math.floor(t.baseMaxHp * (skillRate !== undefined ? skillRate : 0.5)));
                             Battle.applyPersistentBattlePassives(t);
                             if (Battle.party.includes(t)) Battle.refreshPartyFormationAuras();
+                            Battle.playRecoverySe();
                             Battle.log(`${t.name}は生き返った！`); 
                         } else { 
                             Battle.log(`${t.name}には効果がなかった`); 
@@ -3485,12 +3528,14 @@ findNextActor: () => {
 						const beforeHp = t.hp;
 						t.hp = Math.min(t.baseMaxHp, t.hp + Math.floor(rec));
 						Battle.stageHpVisualTransition(t, beforeHp);
+                        if (t.hp > beforeHp) Battle.playRecoverySe();
 						Battle.log(`${t.name}のHPが${t.hp - beforeHp}回復！`);
 					}
                     if (effectType === 'MP回復' && Battle.isBattleAlive(t)) {
                         let rec = data.ratio ? Math.floor(t.baseMaxMp * data.ratio) : baseDmg;
                         const beforeMp = t.mp;
                         t.mp = Math.min(t.baseMaxMp, t.mp + Math.floor(rec));
+                        if (t.mp > beforeMp) Battle.playRecoverySe();
                         Battle.log(`${t.name}のMPが${t.mp - beforeMp}回復！`);
                     }
                     if (Battle.isBattleAlive(t)) applyEffects(t, data);
@@ -3737,7 +3782,7 @@ findNextActor: () => {
                     const hpBeforeDamage = targetToHit.hp;
 
                     targetToHit.hp -= dmg;
-                    Battle.stageHpVisualTransition(targetToHit, hpBeforeDamage);
+                    Battle.stageHpVisualTransition(targetToHit, hpBeforeDamage, { critical: isCrit });
                     targetToHit.revengeStack = (targetToHit.revengeStack || 0) + 1;
                     actor.revengeStack = 0;
 
@@ -3760,7 +3805,7 @@ findNextActor: () => {
                             const beforeHp = actor.hp;
                             actor.hp = Math.min(actor.baseMaxHp, actor.hp + Math.floor(dmg * drainRate));
                             const recoveredHp = actor.hp - beforeHp;
-                            if (recoveredHp > 0) Battle.log(`${actor.name}は吸収効果でHPを${recoveredHp}回復した！`);
+                            if (recoveredHp > 0) { Battle.playRecoverySe(); Battle.log(`${actor.name}は吸収効果でHPを${recoveredHp}回復した！`); }
                         }
                         if (actor.passive?.drainMp) {
                             const beforeMp = actor.mp;
@@ -4548,6 +4593,9 @@ findNextActor: () => {
 		Battle.active = false;
 		Battle.resultProcessing = true;
 		Battle.resultReadyToEnd = false;
+        Battle.resultEndIsGameOver = false;
+        Battle.resultInputLocked = false;
+        Battle.resultAdvanceResolver = null;
 		Battle.resultSkipRequested = false;
 		Battle.resultWaiters = [];
 		if (App.data.battle) App.data.battle.active = false; 
@@ -4838,17 +4886,20 @@ findNextActor: () => {
 
 		// --- [6] ここから勝利演出（ログ表示、レベルアップ、待機など） ---
 		Battle.log(`<br><span style="color:#ffff00; font-size:1em; font-weight:bold;">戦闘に勝利した！</span>`);
-		// 勝利メッセージと報酬ログの区切りを作るため、ここだけ固定テンポで少し待つ。
-		// resultWait はリザルト中は戦闘速度で短縮されないため、ログ表示速度は維持される。
-		await Battle.resultWait(600);
+        Battle.resultInputLocked = true;
+        try {
+            await Battle.playResultSeAndWait('battle_victory');
+        } finally {
+            Battle.resultInputLocked = false;
+        }
 		Battle.log(`${totalGold} Goldを獲得！`);
 		Battle.log(`${totalExp} ポイントの経験値を 獲得した！`);
 		if (monsterRecruitResult && monsterRecruitResult.message) {
 			Battle.log(`<span style="color:#7fffd4; font-weight:bold;">${monsterRecruitResult.message}</span>`);
 		}
 
-		const resultLevelLogs = [];
-		const resultTraitAcquireLogs = [];
+		const resultLevelEvents = [];
+        const resultLevelLooseLogs = [];
 		const resultTraitGrowthLogs = [];
 
 		const partyHpRegen = Battle.getSurvivingPartyPassiveSum('post_battle_hp_regen_pct');
@@ -4867,12 +4918,20 @@ findNextActor: () => {
 			// App.gainExp が [Lv通知, ステ上昇, スキル習得, 特性習得] の順で配列を返す
 			const lvLogs = App.gainExp(charData, totalExp);
 
-			// レベルアップ/スキル・特性習得ログはいったん集約し、
-			// リザルト全体で見やすい順序に並べて表示する。
+			// 各レベルの通知と、その直後に続く成長詳細をひとまとまりで保持する。
+            // リザルト表示時は「通知 → SE完了 → 詳細 → 入力待ち」の順で進める。
+            let currentLevelEvent = null;
 			for (const msg of lvLogs) {
 				if (!msg) continue;
-				if (String(msg).includes('新たな特性')) resultTraitAcquireLogs.push(msg);
-				else resultLevelLogs.push(msg);
+                const text = String(msg);
+                if (text.includes('レベル') && text.includes('に上がった！')) {
+                    currentLevelEvent = { notification: msg, details: [] };
+                    resultLevelEvents.push(currentLevelEvent);
+                } else if (currentLevelEvent) {
+                    currentLevelEvent.details.push(msg);
+                } else {
+                    resultLevelLooseLogs.push(msg);
+                }
 			}
 
 			// 特性の成長判定
@@ -4914,15 +4973,23 @@ findNextActor: () => {
 			}
 		}
 
-		for (const msg of resultLevelLogs) {
-			Battle.log(msg);
-			await Battle.resultWait(500);
-		}
+        for (const event of resultLevelEvents) {
+            Battle.log(event.notification);
+            Battle.resultInputLocked = true;
+            try {
+                await Battle.playResultSeAndWait('battle_level_up');
+            } finally {
+                Battle.resultInputLocked = false;
+            }
+            for (const detail of event.details) Battle.log(detail);
+            Battle.log(`<span style="color:#aaa; font-size:0.85em;">▼ タップ / Enterキーで次へ ▼</span>`);
+            await Battle.waitForResultAdvance();
+        }
 
-		for (const msg of resultTraitAcquireLogs) {
-			Battle.log(msg);
-			await Battle.resultWait(350);
-		}
+        for (const msg of resultLevelLooseLogs) {
+            Battle.log(msg);
+            await Battle.resultWait(350);
+        }
 
 		for (const msg of resultTraitGrowthLogs) {
 			Battle.log(msg);
@@ -5029,50 +5096,51 @@ findNextActor: () => {
 		//}
 	},
 	
-    lose: () => { 
-		Battle.active = false; 
-		Battle.log("全滅した..."); 
-		// 固定マップの擬態箱は、敗北時にだけ未開封へ戻して再挑戦可能にする。
-		// 戦闘データを endBattle() が初期化する前に座標情報を消費する。
-		if (App.data.battle?.isChestTrapBattle && App.data.battle?.fixedChestTrap
-			&& typeof Dungeon !== 'undefined' && typeof Dungeon.rollbackFixedChestTrap === 'function') {
-			Dungeon.rollbackFixedChestTrap(App.data.battle);
-		}
-		if (typeof App.clearPendingLimitBreakTrial === 'function') App.clearPendingLimitBreakTrial();
-		// ★追加: 全滅回数のカウントアップ
-		if(App.data.stats) App.data.stats.wipeoutCount = (App.data.stats.wipeoutCount || 0) + 1;
-		
-		// ★追加: 最初の戦闘での特別救済判定
-        const eventId = (App.data.battle && App.data.battle.eventId) ? App.data.battle.eventId : null;
+    lose: () => {
+        Battle.phase = 'result';
+        Battle.active = false;
+        Battle.resultProcessing = true;
+        Battle.resultReadyToEnd = false;
+        Battle.resultEndIsGameOver = true;
+        Battle.resultInputLocked = false;
+        Battle.resultAdvanceResolver = null;
+        Battle.resultSkipRequested = false;
+        Battle.resultWaiters = [];
+        if (App.data.battle) App.data.battle.active = false;
+        Battle.log("全滅した...");
+
+        // 固定マップの擬態箱は、敗北時にだけ未開封へ戻して再挑戦可能にする。
+        // 戦闘データを endBattle() が初期化する前に座標情報を消費する。
+        if (App.data.battle?.isChestTrapBattle && App.data.battle?.fixedChestTrap
+            && typeof Dungeon !== 'undefined' && typeof Dungeon.rollbackFixedChestTrap === 'function') {
+            Dungeon.rollbackFixedChestTrap(App.data.battle);
+        }
+        if (typeof App.clearPendingLimitBreakTrial === 'function') App.clearPendingLimitBreakTrial();
+        if (App.data.stats) App.data.stats.wipeoutCount = (App.data.stats.wipeoutCount || 0) + 1;
+
+        const eventId = App.data.battle?.eventId || null;
         const storyLossEventId = App.data.battle?.storyLossEventId || null;
         if (eventId === 'game_start' || eventId === 'game_start_retry') {
-            // 一時LBが残っていた場合はいったん必ず解除し、再試行イベント側で再付与する。
             if (typeof App.clearTemporaryStoryPower === 'function') {
                 App.clearTemporaryStoryPower({ id: 'game_start_retry_lb99' });
             }
-
-            // フィールドに戻った後に「game_start_retry」イベントが走るように予約
+            if (!App.data.progress) App.data.progress = {};
             App.data.progress.pendingEventId = 'game_start_retry';
-
-			// 最初の救済敗北は通常の全滅回数に含めない
-			if(App.data.stats) App.data.stats.wipeoutCount = Math.max(0, (App.data.stats.wipeoutCount || 1) - 1);
-
-            App.save();
-            Battle.endBattle(false); // 全滅扱いにせず、フィールドに戻す
-            return;
-        }
-
-        if (storyLossEventId) {
+            if (App.data.stats) App.data.stats.wipeoutCount = Math.max(0, (App.data.stats.wipeoutCount || 1) - 1);
+            Battle.resultEndIsGameOver = false;
+        } else if (storyLossEventId) {
             if (!App.data.progress) App.data.progress = {};
             App.data.progress.pendingEventId = storyLossEventId;
-            App.save();
-            Battle.endBattle(false);
-            return;
+            Battle.resultEndIsGameOver = false;
         }
-		
-		Battle.endBattle(true); 
-	},
-	
+
+        App.save();
+        if (typeof AudioManager !== 'undefined') AudioManager.playBgm?.('battle_wipeout', { resume: false });
+        Battle.resultProcessing = false;
+        Battle.resultReadyToEnd = true;
+        Battle.log("\n▼ 画面タップ / Enterキーで終了 ▼");
+    },
+
     endBattle: (isGameOver = false) => {
         if (Battle.phase === 'result' && Battle.resultProcessing && !Battle.resultReadyToEnd && !isGameOver) {
             Battle.handleResultTap();
@@ -5080,7 +5148,14 @@ findNextActor: () => {
         }
         Battle.resultProcessing = false;
         Battle.resultReadyToEnd = false;
+        Battle.resultEndIsGameOver = false;
+        Battle.resultInputLocked = false;
         Battle.resultSkipRequested = false;
+        if (typeof Battle.resultAdvanceResolver === 'function') {
+            const resolveAdvance = Battle.resultAdvanceResolver;
+            Battle.resultAdvanceResolver = null;
+            try { resolveAdvance(); } catch (e) {}
+        }
         if (Array.isArray(Battle.resultWaiters)) {
             const waiters = Battle.resultWaiters.splice(0);
             waiters.forEach(fn => { try { fn(); } catch(e) {} });
@@ -5139,7 +5214,7 @@ findNextActor: () => {
                     App.changeScene('field');
                 }
                 if (typeof App.resetFieldLog === 'function') App.resetFieldLog();
-            }, 2000);
+            }, 500);
         } else {
             // ★修正：setTimeoutをasync化し、画面切り替え後にmain.jsのinit処理でストーリーを実行（復帰と同対応）
             Battle.schedule(async () => {
@@ -5176,9 +5251,15 @@ findNextActor: () => {
     },
 
     handleResultTap: () => {
-        if (Battle.phase !== 'result') return;
+        if (Battle.phase !== 'result' || Battle.resultInputLocked) return;
+        if (typeof Battle.resultAdvanceResolver === 'function') {
+            const resolveAdvance = Battle.resultAdvanceResolver;
+            Battle.resultAdvanceResolver = null;
+            resolveAdvance();
+            return;
+        }
         if (Battle.resultReadyToEnd) {
-            Battle.endBattle(false);
+            Battle.endBattle(Battle.resultEndIsGameOver === true);
             return;
         }
         Battle.resultSkipRequested = true;

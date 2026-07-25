@@ -603,6 +603,12 @@ const Dungeon = {
             || null;
     },
 
+    waitForChestTrapReveal: (ms = 650) => {
+        const waitMs = Math.max(0, Math.floor(Number(ms) || 0));
+        if (typeof App.lockFieldInput === 'function') App.lockFieldInput(waitMs + 150);
+        return waitMs > 0 ? new Promise(resolve => setTimeout(resolve, waitMs)) : Promise.resolve();
+    },
+
     startChestTrapBattle: (monsterId, options = {}) => {
         const numericId = Number(monsterId);
         const monster = window.MonsterData?.getMonsterById?.(numericId)
@@ -1751,6 +1757,7 @@ const Dungeon = {
                 if (chestDef.trapMonsterId !== undefined && chestDef.trapMonsterId !== null) {
                     App.save();
                     Field.render();
+                    await Dungeon.waitForChestTrapReveal();
                     Dungeon.startChestTrapBattle(chestDef.trapMonsterId, {
                         floor: chestDef.trapFloor || mapDef?.encounterRank || mapDef?.rank,
                         fixedChestTrap: { progressKey, posKey }
@@ -1807,7 +1814,10 @@ const Dungeon = {
             const mimic = Dungeon.getChestTrapMonsterForFloor(floor);
             Dungeon.saveMapData();
             App.save();
-            if (mimic && Dungeon.startChestTrapBattle(mimic.id, { floor })) return;
+            if (mimic) {
+                await Dungeon.waitForChestTrapReveal();
+                if (Dungeon.startChestTrapBattle(mimic.id, { floor })) return;
+            }
         }
 
         // ★追加: 特性「57:目利き」のパーティ合計値を算出

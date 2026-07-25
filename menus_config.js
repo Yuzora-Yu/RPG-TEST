@@ -6,19 +6,38 @@ const MenuConfig = {
         { value: 'fastest', label: '最速', desc: '戦闘中のウェイトを約30%に短縮' }
     ],
 
+    audioKinds: {
+        fieldBgm: { settingKey: 'fieldBgmVolume', category: 'field', type: 'bgm', preview: null },
+        battleBgm: { settingKey: 'battleBgmVolume', category: 'battle', type: 'bgm', preview: null },
+        uiSe: { settingKey: 'uiSeVolume', category: 'ui', type: 'se', preview: 'menu_confirm' },
+        battleSe: { settingKey: 'battleSeVolume', category: 'battle', type: 'se', preview: 'battle_attack' },
+        fieldSe: { settingKey: 'fieldSeVolume', category: 'field', type: 'se', preview: 'event_effect' }
+    },
+
     ensureSettings: () => {
-        if (typeof App !== 'undefined' && typeof App.ensureSettings === 'function') {
-            return App.ensureSettings();
+        if (typeof App !== 'undefined' && typeof App.ensureSettings === 'function') return App.ensureSettings();
+        if (typeof App === 'undefined' || !App.data) {
+            return {
+                battleSpeed: 'normal', battleAutoStart: false,
+                fieldBgmVolume: 30, battleBgmVolume: 30,
+                uiSeVolume: 5, battleSeVolume: 5, fieldSeVolume: 5
+            };
         }
-        if (!App.data) return { battleSpeed: 'normal', battleAutoStart: false, bgmVolume: 30, seVolume: 5 };
-        if (!App.data.settings || typeof App.data.settings !== 'object' || Array.isArray(App.data.settings)) {
-            App.data.settings = {};
-        }
-        if (!['normal', 'fast', 'fastest'].includes(App.data.settings.battleSpeed)) App.data.settings.battleSpeed = 'normal';
-        App.data.settings.battleAutoStart = App.data.settings.battleAutoStart === true;
-        App.data.settings.bgmVolume = Math.max(0, Math.min(100, Math.round(Number(App.data.settings.bgmVolume ?? 30) || 0)));
-        App.data.settings.seVolume = Math.max(0, Math.min(100, Math.round(Number(App.data.settings.seVolume ?? 5) || 0)));
-        return App.data.settings;
+        if (!App.data.settings || typeof App.data.settings !== 'object' || Array.isArray(App.data.settings)) App.data.settings = {};
+        const settings = App.data.settings;
+        const clamp = (value, fallback) => Math.max(0, Math.min(100, Math.round(Number(value ?? fallback) || 0)));
+        const legacyBgm = clamp(settings.bgmVolume, 30);
+        const legacySe = clamp(settings.seVolume, 5);
+        if (!['normal', 'fast', 'fastest'].includes(settings.battleSpeed)) settings.battleSpeed = 'normal';
+        settings.battleAutoStart = settings.battleAutoStart === true;
+        settings.fieldBgmVolume = clamp(settings.fieldBgmVolume, legacyBgm);
+        settings.battleBgmVolume = clamp(settings.battleBgmVolume, legacyBgm);
+        settings.uiSeVolume = clamp(settings.uiSeVolume, legacySe);
+        settings.battleSeVolume = clamp(settings.battleSeVolume, legacySe);
+        settings.fieldSeVolume = clamp(settings.fieldSeVolume, legacySe);
+        settings.bgmVolume = settings.fieldBgmVolume;
+        settings.seVolume = settings.uiSeVolume;
+        return settings;
     },
 
     createDOM: () => {
@@ -63,19 +82,26 @@ const MenuConfig = {
     },
 
     setAudioVolume: (kind, value, render = false) => {
+        const config = MenuConfig.audioKinds[kind];
+        if (!config) return;
         const normalized = Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
         const settings = MenuConfig.ensureSettings();
-        const isBgm = kind === 'bgm';
-        settings[isBgm ? 'bgmVolume' : 'seVolume'] = normalized;
-        const setter = isBgm ? App.setBgmVolumeSetting : App.setSeVolumeSetting;
-        if (typeof setter === 'function') setter(normalized);
-        else if (typeof AudioManager !== 'undefined') {
-            if (isBgm) AudioManager.setBgmVolume?.(normalized);
-            else AudioManager.setSeVolume?.(normalized);
-        } else if (typeof App.save === 'function') App.save();
+        settings[config.settingKey] = normalized;
+
+        if (typeof App !== 'undefined' && typeof App.setAudioVolumeSetting === 'function') {
+            App.setAudioVolumeSetting(kind, normalized);
+        } else if (typeof AudioManager !== 'undefined') {
+            if (config.type === 'bgm') AudioManager.setBgmCategoryVolume?.(config.category, normalized);
+            else AudioManager.setSeCategoryVolume?.(config.category, normalized);
+        } else if (typeof App !== 'undefined' && typeof App.save === 'function') {
+            App.save();
+        }
+
         const valueEl = document.getElementById(`config-${kind}-volume-value`);
         if (valueEl) valueEl.textContent = `${normalized}%`;
-        if (!isBgm && normalized > 0 && typeof AudioManager !== 'undefined') AudioManager.playSe?.('dialogue', { volume: 0.65 });
+        if (config.type === 'se' && normalized > 0 && config.preview && typeof AudioManager !== 'undefined') {
+            AudioManager.playSe?.(config.preview, { volume: 0.65, ignoreCooldown: true });
+        }
         if (render) MenuConfig.render();
     },
 
@@ -113,23 +139,14 @@ const MenuConfig = {
         const settings = MenuConfig.ensureSettings();
         const speed = settings.battleSpeed || 'normal';
         const autoStart = settings.battleAutoStart === true;
-        const bgmVolume = Math.max(0, Math.min(100, Number(settings.bgmVolume ?? 30)));
-        const seVolume = Math.max(0, Math.min(100, Number(settings.seVolume ?? 5)));
+        const getVolume = (key, fallback) => Math.max(0, Math.min(100, Number(settings[key] ?? fallback)));
 
         const speedRows = MenuConfig.speedOptions.map(opt => MenuConfig.radioRow(
-            'battle-speed',
-            opt.value,
-            opt.label,
-            opt.desc,
-            speed === opt.value,
+            'battle-speed', opt.value, opt.label, opt.desc, speed === opt.value,
             `MenuConfig.setBattleSpeed('${opt.value}')`
         )).join('');
 
         content.innerHTML = `
-            <div style="font-size:12px; color:#aaa; line-height:1.6; margin-bottom:14px;">
-                
-            </div>
-
             <div style="border:1px solid #333; border-radius:8px; padding:12px; margin-bottom:14px; background:#151515;">
                 <div style="color:#ffd700; font-weight:bold; margin-bottom:10px;">戦闘速度</div>
                 ${speedRows}
@@ -142,10 +159,17 @@ const MenuConfig = {
             </div>
 
             <div style="border:1px solid #333; border-radius:8px; padding:12px; margin-bottom:14px; background:#151515;">
-                <div style="color:#ffd700; font-weight:bold; margin-bottom:10px;">サウンド</div>
-                ${MenuConfig.volumeRow('bgm', 'BGM音量', bgmVolume, 'フィールド・施設・戦闘曲の音量')}
-                ${MenuConfig.volumeRow('se', 'SE音量', seVolume, '会話・移動・戦闘エフェクト音の音量')}
-                <div style="font-size:10px; color:#777; line-height:1.5;">音源ファイルが未登録の項目は無音のまま動作します。</div>
+                <div style="color:#ffd700; font-weight:bold; margin-bottom:10px;">BGM音量</div>
+                ${MenuConfig.volumeRow('fieldBgm', 'フィールドBGM', getVolume('fieldBgmVolume', 30), '町・施設・ダンジョン・船・翼を含む、戦闘以外のBGM')}
+                ${MenuConfig.volumeRow('battleBgm', '戦闘BGM', getVolume('battleBgmVolume', 30), '通常戦・ボス戦・全滅時のBGM')}
+            </div>
+
+            <div style="border:1px solid #333; border-radius:8px; padding:12px; margin-bottom:14px; background:#151515;">
+                <div style="color:#ffd700; font-weight:bold; margin-bottom:10px;">SE音量</div>
+                ${MenuConfig.volumeRow('uiSe', 'UI・メニューSE', getVolume('uiSeVolume', 5), '決定・戻る・道具・スキル・鍛冶・錬金・購入・売却')}
+                ${MenuConfig.volumeRow('battleSe', '戦闘SE', getVolume('battleSeVolume', 5), '攻撃・スキル・回復・ダメージ・勝利・レベルアップ')}
+                ${MenuConfig.volumeRow('fieldSe', 'フィールド・イベントSE', getVolume('fieldSeVolume', 5), '宝箱・泉・階段・床・スイッチ・壁衝突・イベント演出')}
+                <div style="font-size:10px; color:#777; line-height:1.5;">音源ファイルが無音プレースホルダーの項目は、処理だけ実行されます。</div>
             </div>
 
             <div style="border:1px solid #333; border-radius:8px; padding:12px; background:#151515;">

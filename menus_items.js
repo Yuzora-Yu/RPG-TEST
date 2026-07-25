@@ -6,6 +6,19 @@ const MenuItems = {
     selectedItem: null,
     activeTab: 'tools',
 
+    getUseSeKey: (item) => {
+        if (!item) return null;
+        if (item.type === '乗り物' || item.type === '移動' || item.id === 110 || item.name === 'スカイプリズム') return 'ui_item_move';
+        if ((Number(item.id) >= 100 && Number(item.id) <= 107) || String(item.type || '').includes('育成')) return 'ui_item_growth';
+        if (item.fieldGroup || item.effectKind === 'camp' || String(item.type || '').includes('回復') || String(item.type || '').includes('蘇生')) return 'ui_item_heal';
+        return null;
+    },
+
+    playUseSe: (item) => {
+        const key = MenuItems.getUseSeKey(item);
+        if (key && typeof AudioManager !== 'undefined') AudioManager.playSe?.(key);
+    },
+
     init: () => {
         document.getElementById('sub-screen-items').style.display = 'flex';
         MenuItems.activeTab = 'tools';
@@ -176,6 +189,7 @@ const MenuItems = {
             App.data.items[item.id] -= 1;
             if (App.data.items[item.id] <= 0) delete App.data.items[item.id];
             App.save();
+            MenuItems.playUseSe(item);
             Menu.msg(result.message, () => {
                 MenuItems.renderList();
                 Menu.renderPartyBar();
@@ -195,6 +209,7 @@ const MenuItems = {
         if (item.id === 109 || item.name === '光の翼') {
             const used = (typeof App.useLightWing === 'function') ? App.useLightWing() : false;
             if (used) {
+                MenuItems.playUseSe(item);
                 if (typeof Menu !== 'undefined' && typeof Menu.closeAll === 'function') Menu.closeAll();
                 if (typeof Field !== 'undefined' && typeof Field.render === 'function') Field.render();
             }
@@ -244,6 +259,7 @@ const MenuItems = {
                             : { ok: false, message: 'スカイプリズムを使用できませんでした。' };
 
                         if (result.ok) {
+                            MenuItems.playUseSe(item);
                             if (typeof Menu !== 'undefined' && typeof Menu.closeAll === 'function') Menu.closeAll();
                             if (typeof Field !== 'undefined' && typeof Field.render === 'function') Field.render();
                             if (typeof Menu !== 'undefined' && typeof Menu.renderPartyBar === 'function') Menu.renderPartyBar();
@@ -347,6 +363,7 @@ const MenuItems = {
                 if(currentCount <= 0) delete App.data.items[item.id];
                 
                 App.save();
+                MenuItems.playUseSe(item);
                 Menu.msg(msg, () => {
                     // ★修正: 使い切った(個数がなくなった)場合はリスト画面にもどる
                     if(!App.data.items[item.id] || App.data.items[item.id] <= 0) {

@@ -242,6 +242,7 @@ const MenuInventory = {
             App.data.gold += totalGold;
             MenuInventory.selectedIds = [];
             App.save();
+            if (typeof AudioManager !== 'undefined') AudioManager.playSe?.('ui_shop_sell');
             Menu.msg(`${totalGold.toLocaleString()}G 獲得しました`);
             MenuInventory.render();
         });
@@ -396,6 +397,7 @@ const MenuInventory = {
                 MenuInventory.page = 0;
                 App.save();
                 MenuInventory.render();
+                if (typeof AudioManager !== 'undefined') AudioManager.playSe?.('ui_shop_sell');
                 Menu.msg(`${targets.length.toLocaleString()} 個の装備を売却し、${totalGold.toLocaleString()}G を獲得しました。`);
             }
         );

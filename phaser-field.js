@@ -1083,11 +1083,15 @@
         const py = Number(field.y) * TILE_SIZE + TILE_SIZE;
         const direction = ['down', 'left', 'right', 'up'][field.dir];
         const transport = getApp()?.data?.transportMode;
+        const onWorldMap = !field.currentMapData;
         const floodedBoat = typeof field.isPlayerOnFloodedWater === 'function' && field.isPlayerOnFloodedWater();
-        const isBoat = transport === 'boat' || floodedBoat;
+        // The world-map vehicle state must not leak into dungeon rendering.
+        // On flooded floors, show the boat only while the current tile is water.
+        const isBoat = (onWorldMap && transport === 'boat') || floodedBoat;
+        const isFlying = onWorldMap && transport === 'flying';
         const heroKey = isBoat
             ? `overlay_magic_boat_${direction}`
-            : transport === 'flying'
+            : isFlying
                 ? `hero_wing_${direction}_${field.step}`
                 : `hero_${direction}_${field.step}`;
         if (!isBoat) {

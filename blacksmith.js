@@ -16,6 +16,15 @@ const MenuBlacksmith = {
     entryContext: 'menu',
     returnContext: 'main',
 
+    playStartSeAndWait: async () => {
+        if (typeof AudioManager === 'undefined') return false;
+        if (typeof AudioManager.playSeAndWait === 'function') {
+            return AudioManager.playSeAndWait('ui_blacksmith_start');
+        }
+        AudioManager.playSe?.('ui_blacksmith_start');
+        return false;
+    },
+
     init: (options = {}) => {
         const sub = document.getElementById('sub-screen-blacksmith');
         if(!sub) return;
@@ -494,7 +503,8 @@ const MenuBlacksmith = {
         const rateObj = MenuBlacksmith.getRateObj(lv);
         const rarities = ['N', 'R', 'SR', 'SSR', 'UR', 'EX'];
 
-        Menu.confirm(`【装備合成】＋４へ進化させ、新たな能力を継承します。`, () => {
+        Menu.confirm(`【装備合成】＋４へ進化させ、新たな能力を継承します。`, async () => {
+            await MenuBlacksmith.playStartSeAndWait();
             // 1. 合成品質の抽選 (newR)
             let r = Math.random()*100, current = 0, newR = 'R';
             for(let k in rateObj){ if(r < current+rateObj[k]){ newR=k; break; } current+=rateObj[k]; }
@@ -585,7 +595,8 @@ const MenuBlacksmith = {
 
     confirmRefine: (gem, rate, nextR, rule) => {
         if ((App.data.gems || 0) < gem) return Menu.msg("GEMが足りません");
-        Menu.confirm(`【精錬】費用: ${gem} GEM / 成功率: ${rate}%\n成功するとランクアップし数値が${nextR}の下限値へリセットされます。`, () => {
+        Menu.confirm(`【精錬】費用: ${gem} GEM / 成功率: ${rate}%\n成功するとランクアップし数値が${nextR}の下限値へリセットされます。`, async () => {
+            await MenuBlacksmith.playStartSeAndWait();
             App.data.gems -= gem;
             if (Math.random()*100 < rate) {
                 const opt = MenuBlacksmith.state.target.opts[MenuBlacksmith.state.targetOptIdx];
@@ -669,7 +680,8 @@ const MenuBlacksmith = {
         const successRate = Math.min(95, 50 + (App.data.blacksmith.level * 5));
         let inc = rule ? Math.max(1, Math.floor((rule.max[opt.rarity] - rule.min[opt.rarity]) * 0.1)) : 1;
 
-        Menu.confirm(`【能力強化】成功率: ${successRate}% / 成功すると数値が ${inc} 上昇します。`, () => {
+        Menu.confirm(`【能力強化】成功率: ${successRate}% / 成功すると数値が ${inc} 上昇します。`, async () => {
+            await MenuBlacksmith.playStartSeAndWait();
             // ★修正：素材消費の安全化と事後処理
             MenuBlacksmith.state.materials.forEach(mid => {
                 const invIdx = App.data.inventory.findIndex(i => i.id === mid);

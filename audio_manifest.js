@@ -6,6 +6,8 @@
     const BGM = {
         field_world: bgm('assets/audio/bgm/bgm_field_world.ogg', '世界フィールド', 'field'),
         field_abyss_outer: bgm('assets/audio/bgm/bgm_field_abyss_outer.ogg', '深淵の魔窟 外縁', 'field'),
+        field_ship: bgm('assets/audio/bgm/bgm_field_ship.ogg', '船で移動中', 'field'),
+        field_wing: bgm('assets/audio/bgm/bgm_field_wing.ogg', '翼で飛行中', 'field'),
 
         town_start_village: bgm('assets/audio/bgm/bgm_town_start_village.ogg', 'リュミナ村', 'town'),
         town_fire_village: bgm('assets/audio/bgm/bgm_town_fire_village.ogg', '炎の里イグニシア', 'town'),
@@ -46,7 +48,8 @@
         battle_midboss: bgm('assets/audio/bgm/bgm_battle_midboss.ogg', '中ボス戦闘', 'battle'),
         battle_bigboss: bgm('assets/audio/bgm/bgm_battle_bigboss.ogg', '大ボス戦闘', 'battle'),
         battle_finalboss: bgm('assets/audio/bgm/bgm_battle_finalboss.ogg', 'ラスボス戦闘', 'battle'),
-        battle_secretboss: bgm('assets/audio/bgm/bgm_battle_secretboss.ogg', '裏ボス戦闘', 'battle')
+        battle_secretboss: bgm('assets/audio/bgm/bgm_battle_secretboss.ogg', '裏ボス戦闘', 'battle'),
+        battle_wipeout: bgm('assets/audio/bgm/bgm_battle_wipeout.ogg', '全滅時', 'battle')
     };
 
     const SE = {
@@ -54,21 +57,38 @@
         heal: se('assets/audio/se/se_heal.ogg', '回復', 'event'),
         heal_spring: se('assets/audio/se/se_heal_spring.ogg', '回復の泉', 'event'),
         chest_open: se('assets/audio/se/se_chest_open.ogg', '宝箱開封', 'field'),
-        encounter_start: se('assets/audio/se/se_encounter_start.ogg', '戦闘開始', 'battle'),
-        menu_confirm: se('assets/audio/se/se_menu_confirm.ogg', 'メニュー決定', 'ui', 35),
-        menu_cancel: se('assets/audio/se/se_menu_cancel.ogg', 'メニューキャンセル／戻る', 'ui', 35),
-        dialogue: se('assets/audio/se/se_dialogue.ogg', '会話送り', 'ui', 45),
-        battle_attack: se('assets/audio/se/se_battle_attack.ogg', '通常攻撃', 'battle', 45),
-        battle_skill: se('assets/audio/se/se_battle_skill.ogg', 'スキル発動', 'battle', 45),
-        battle_item: se('assets/audio/se/se_battle_item.ogg', 'アイテム使用', 'battle', 45),
-        battle_damage: se('assets/audio/se/se_battle_damage.ogg', 'ダメージ', 'battle', 35),
         floor_move: se('assets/audio/se/se_floor_move.ogg', 'フロア移動', 'field'),
         stairs: se('assets/audio/se/se_stairs.ogg', '階段移動', 'field'),
         warp: se('assets/audio/se/se_warp.ogg', 'ワープ床', 'field'),
         damage_floor: se('assets/audio/se/se_damage_floor.ogg', 'ダメージ床', 'field', 120),
         switch: se('assets/audio/se/se_switch.ogg', 'スイッチ起動', 'field'),
         ice_slide: se('assets/audio/se/se_ice_slide.ogg', '氷床', 'field', 100),
-        wall_bump: se('assets/audio/se/se_wall_bump.ogg', '壁衝突', 'field', 130)
+        wall_bump: se('assets/audio/se/se_wall_bump.ogg', '壁衝突', 'field', 130),
+
+        menu_confirm: se('assets/audio/se/se_menu_confirm.ogg', 'メニュー決定', 'ui', 35),
+        menu_cancel: se('assets/audio/se/se_menu_cancel.ogg', 'メニューキャンセル／戻る', 'ui', 35),
+        dialogue: se('assets/audio/se/se_dialogue.ogg', '会話送り', 'ui', 45),
+        ui_item_heal: se('assets/audio/se/se_ui_item_heal.ogg', '道具使用（回復系）', 'ui', 45),
+        ui_item_move: se('assets/audio/se/se_ui_item_move.ogg', '道具使用（移動系）', 'ui', 45),
+        ui_item_growth: se('assets/audio/se/se_ui_item_growth.ogg', '道具使用（育成系）', 'ui', 45),
+        ui_skill_heal_revive: se('assets/audio/se/se_ui_skill_heal_revive.ogg', 'スキル使用（回復・蘇生）', 'ui', 45),
+        ui_blacksmith_start: se('assets/audio/se/se_ui_blacksmith_start.ogg', '鍛冶開始', 'ui'),
+        ui_alchemy_start: se('assets/audio/se/se_ui_alchemy_start.ogg', '錬金開始', 'ui'),
+        ui_shop_buy: se('assets/audio/se/se_ui_shop_buy.ogg', '購入', 'ui', 45),
+        ui_shop_sell: se('assets/audio/se/se_ui_shop_sell.ogg', '売却', 'ui', 45),
+
+        encounter_start: se('assets/audio/se/se_encounter_start.ogg', '戦闘開始', 'battle'),
+        battle_attack: se('assets/audio/se/se_battle_attack.ogg', '通常攻撃', 'battle', 45),
+        battle_skill_magic: se('assets/audio/se/se_battle_skill_magic.ogg', '魔法スキル発動', 'battle', 45),
+        battle_skill_breath: se('assets/audio/se/se_battle_skill_breath.ogg', 'ブレススキル発動', 'battle', 45),
+        battle_skill_physical: se('assets/audio/se/se_battle_skill_physical.ogg', '物理スキル発動', 'battle', 45),
+        battle_skill_other: se('assets/audio/se/se_battle_skill_other.ogg', 'その他スキル発動', 'battle', 45),
+        battle_item: se('assets/audio/se/se_battle_item.ogg', '戦闘中のアイテム使用', 'battle', 45),
+        battle_damage: se('assets/audio/se/se_battle_damage.ogg', 'ダメージ', 'battle', 35),
+        battle_heal: se('assets/audio/se/se_battle_heal.ogg', '戦闘中の回復', 'battle', 70),
+        battle_critical: se('assets/audio/se/se_battle_critical.ogg', 'クリティカルダメージ', 'battle', 45),
+        battle_victory: se('assets/audio/se/se_battle_victory.ogg', '戦闘勝利', 'battle'),
+        battle_level_up: se('assets/audio/se/se_battle_level_up.ogg', 'レベルアップ', 'battle')
     };
 
     const AREA_BGM = {

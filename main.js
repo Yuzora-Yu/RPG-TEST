@@ -478,6 +478,12 @@ const App = {
     defaultSettings: {
         battleSpeed: 'normal',
         battleAutoStart: false,
+        fieldBgmVolume: 30,
+        battleBgmVolume: 30,
+        uiSeVolume: 5,
+        battleSeVolume: 5,
+        fieldSeVolume: 5,
+        // 旧バージョンとの互換用。新規処理は上記5項目を参照する。
         bgmVolume: 30,
         seVolume: 5
     },
@@ -496,6 +502,17 @@ const App = {
             App.data.settings = {};
         }
         const defaults = App.getDefaultSettings();
+        const clampSetting = (value, fallback) => Math.max(0, Math.min(100, Math.round(Number(value ?? fallback) || 0)));
+        const legacyBgm = clampSetting(App.data.settings.bgmVolume, defaults.fieldBgmVolume);
+        const legacySe = clampSetting(App.data.settings.seVolume, defaults.uiSeVolume);
+
+        // 旧セーブのBGM/SE各1本設定を、初回ロード時に新しい5系統へ展開する。
+        if (App.data.settings.fieldBgmVolume === undefined) App.data.settings.fieldBgmVolume = legacyBgm;
+        if (App.data.settings.battleBgmVolume === undefined) App.data.settings.battleBgmVolume = legacyBgm;
+        if (App.data.settings.uiSeVolume === undefined) App.data.settings.uiSeVolume = legacySe;
+        if (App.data.settings.battleSeVolume === undefined) App.data.settings.battleSeVolume = legacySe;
+        if (App.data.settings.fieldSeVolume === undefined) App.data.settings.fieldSeVolume = legacySe;
+
         Object.keys(defaults).forEach(key => {
             if (App.data.settings[key] === undefined) App.data.settings[key] = defaults[key];
         });
@@ -503,27 +520,73 @@ const App = {
             App.data.settings.battleSpeed = defaults.battleSpeed;
         }
         App.data.settings.battleAutoStart = App.data.settings.battleAutoStart === true;
-        App.data.settings.bgmVolume = Math.max(0, Math.min(100, Math.round(Number(App.data.settings.bgmVolume ?? defaults.bgmVolume) || 0)));
-        App.data.settings.seVolume = Math.max(0, Math.min(100, Math.round(Number(App.data.settings.seVolume ?? defaults.seVolume) || 0)));
+        App.data.settings.fieldBgmVolume = clampSetting(App.data.settings.fieldBgmVolume, defaults.fieldBgmVolume);
+        App.data.settings.battleBgmVolume = clampSetting(App.data.settings.battleBgmVolume, defaults.battleBgmVolume);
+        App.data.settings.uiSeVolume = clampSetting(App.data.settings.uiSeVolume, defaults.uiSeVolume);
+        App.data.settings.battleSeVolume = clampSetting(App.data.settings.battleSeVolume, defaults.battleSeVolume);
+        App.data.settings.fieldSeVolume = clampSetting(App.data.settings.fieldSeVolume, defaults.fieldSeVolume);
+        // 旧API参照用の代表値を維持する。
+        App.data.settings.bgmVolume = App.data.settings.fieldBgmVolume;
+        App.data.settings.seVolume = App.data.settings.uiSeVolume;
         return App.data.settings;
     },
 
-    getBgmVolumeSetting: () => App.ensureSettings().bgmVolume,
+    audioSettingKeys: {
+        fieldBgm: 'fieldBgmVolume',
+        battleBgm: 'battleBgmVolume',
+        uiSe: 'uiSeVolume',
+        battleSe: 'battleSeVolume',
+        fieldSe: 'fieldSeVolume'
+    },
+
+    getAudioVolumeSetting: (kind) => {
+        const key = App.audioSettingKeys[kind];
+        const settings = App.ensureSettings();
+        return key ? settings[key] : 0;
+    },
+
+    setAudioVolumeSetting: (kind, value) => {
+        const key = App.audioSettingKeys[kind];
+        if (!key) return 0;
+        const normalized = Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
+        const settings = App.ensureSettings();
+        settings[key] = normalized;
+        if (kind === 'fieldBgm') settings.bgmVolume = normalized;
+        if (kind === 'uiSe') settings.seVolume = normalized;
+
+        if (typeof AudioManager !== 'undefined') {
+            if (kind === 'fieldBgm') AudioManager.setBgmCategoryVolume?.('field', normalized);
+            else if (kind === 'battleBgm') AudioManager.setBgmCategoryVolume?.('battle', normalized);
+            else if (kind === 'uiSe') AudioManager.setSeCategoryVolume?.('ui', normalized);
+            else if (kind === 'battleSe') AudioManager.setSeCategoryVolume?.('battle', normalized);
+            else if (kind === 'fieldSe') AudioManager.setSeCategoryVolume?.('field', normalized);
+        } else if (typeof App.save === 'function') {
+            App.save();
+        }
+        return normalized;
+    },
+
+    getBgmVolumeSetting: () => App.ensureSettings().fieldBgmVolume,
 
     setBgmVolumeSetting: (value) => {
         const normalized = Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
         const settings = App.ensureSettings();
+        settings.fieldBgmVolume = normalized;
+        settings.battleBgmVolume = normalized;
         settings.bgmVolume = normalized;
         if (typeof AudioManager !== 'undefined' && AudioManager.setBgmVolume) AudioManager.setBgmVolume(normalized);
         else if (typeof App.save === 'function') App.save();
         return normalized;
     },
 
-    getSeVolumeSetting: () => App.ensureSettings().seVolume,
+    getSeVolumeSetting: () => App.ensureSettings().uiSeVolume,
 
     setSeVolumeSetting: (value) => {
         const normalized = Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
         const settings = App.ensureSettings();
+        settings.uiSeVolume = normalized;
+        settings.battleSeVolume = normalized;
+        settings.fieldSeVolume = normalized;
         settings.seVolume = normalized;
         if (typeof AudioManager !== 'undefined' && AudioManager.setSeVolume) AudioManager.setSeVolume(normalized);
         else if (typeof App.save === 'function') App.save();
@@ -5056,8 +5119,16 @@ load: () => {
         if (!data.settings || typeof data.settings !== 'object' || Array.isArray(data.settings)) data.settings = {};
         if (!['normal', 'fast', 'fastest'].includes(data.settings.battleSpeed)) data.settings.battleSpeed = 'normal';
         data.settings.battleAutoStart = data.settings.battleAutoStart === true;
-        data.settings.bgmVolume = Math.max(0, Math.min(100, Math.round(Number(data.settings.bgmVolume ?? 30) || 0)));
-        data.settings.seVolume = Math.max(0, Math.min(100, Math.round(Number(data.settings.seVolume ?? 5) || 0)));
+        const clampAudioSetting = (value, fallback) => Math.max(0, Math.min(100, Math.round(Number(value ?? fallback) || 0)));
+        const legacyBgmVolume = clampAudioSetting(data.settings.bgmVolume, 30);
+        const legacySeVolume = clampAudioSetting(data.settings.seVolume, 5);
+        data.settings.fieldBgmVolume = clampAudioSetting(data.settings.fieldBgmVolume, legacyBgmVolume);
+        data.settings.battleBgmVolume = clampAudioSetting(data.settings.battleBgmVolume, legacyBgmVolume);
+        data.settings.uiSeVolume = clampAudioSetting(data.settings.uiSeVolume, legacySeVolume);
+        data.settings.battleSeVolume = clampAudioSetting(data.settings.battleSeVolume, legacySeVolume);
+        data.settings.fieldSeVolume = clampAudioSetting(data.settings.fieldSeVolume, legacySeVolume);
+        data.settings.bgmVolume = data.settings.fieldBgmVolume;
+        data.settings.seVolume = data.settings.uiSeVolume;
 
         return data;
     },

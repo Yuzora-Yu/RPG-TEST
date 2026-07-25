@@ -138,6 +138,15 @@
         randomSelection: {},
         entryContext: 'facility',
 
+        playStartSeAndWait: async () => {
+            if (typeof AudioManager === 'undefined') return false;
+            if (typeof AudioManager.playSeAndWait === 'function') {
+                return AudioManager.playSeAndWait('ui_alchemy_start');
+            }
+            AudioManager.playSe?.('ui_alchemy_start');
+            return false;
+        },
+
         item: (id) => (window.DB?.ITEMS || window.ITEMS_DATA || []).find(entry => Number(entry.id) === Number(id)),
         // App は main.js のトップレベルconstであり window のプロパティではない。
         // 遅延評価にして、main.js 読込後の実体を必ず参照する。
@@ -378,7 +387,10 @@
                 Alchemy.renderRandomModal();
                 return;
             }
-            Menu.confirm(`${validation.quality.label}のランダム錬成を行いますか？\n投入した素材はすべて消費されます。`, () => Alchemy.randomCraftConfirmed());
+            Menu.confirm(`${validation.quality.label}のランダム錬成を行いますか？\n投入した素材はすべて消費されます。`, async () => {
+                await Alchemy.playStartSeAndWait();
+                Alchemy.randomCraftConfirmed();
+            });
         },
 
         randomCraftConfirmed: (random = Math.random) => {
@@ -469,7 +481,10 @@
             const variant = Alchemy.getVariant();
             const output = Alchemy.item(recipe.outputItemId);
             const count = recipe.outputCount * Alchemy.quantity;
-            Menu.confirm(`${output?.name || '品物'}を ${count}個 錬成しますか？`, () => Alchemy.craftConfirmed(recipe.id, variant.id, Alchemy.quantity));
+            Menu.confirm(`${output?.name || '品物'}を ${count}個 錬成しますか？`, async () => {
+                await Alchemy.playStartSeAndWait();
+                Alchemy.craftConfirmed(recipe.id, variant.id, Alchemy.quantity);
+            });
         },
 
         craftConfirmed: (recipeId, variantId, quantity = 1) => {

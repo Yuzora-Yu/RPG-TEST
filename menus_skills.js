@@ -154,6 +154,7 @@ const MenuSkills = {
             if (effected) {
                 actorData.currentMp -= sk.mp;
                 App.save();
+                if (typeof AudioManager !== 'undefined') AudioManager.playSe?.('ui_skill_heal_revive');
                 Menu.msg(`${sk.name}を使用した！`, () => {
                     // 全体スキルの後はスキル一覧へ、単体はターゲット一覧を更新
                     if (sk.target === '全体') MenuSkills.renderSkillList();
