@@ -13,6 +13,9 @@ const Battle = {
     selectingAction: null, 
     selectedItemOrSkill: null,
 	runAttemptCount: 0, // ★追加: 逃走試行回数
+    battleSpeedOrder: ['normal', 'fast', 'fastest'],
+    battleSpeedIcons: { normal: '▶', fast: '▶▶', fastest: '▶▶▶' },
+    battleSpeedNames: { normal: '普通', fast: '早い', fastest: '最速' },
     
     // ステータス表示名マッピング
     statNames: {
@@ -228,6 +231,34 @@ const Battle = {
 
     schedule: (fn, ms) => setTimeout(fn, Battle.getBattleWaitMs(ms)),
 
+    cycleBattleSpeed: () => {
+        const current = Battle.getBattleSpeedSetting();
+        const currentIndex = Battle.battleSpeedOrder.indexOf(current);
+        const next = Battle.battleSpeedOrder[(currentIndex + 1) % Battle.battleSpeedOrder.length];
+
+        if (typeof App !== 'undefined' && typeof App.setBattleSpeedSetting === 'function') {
+            App.setBattleSpeedSetting(next);
+        } else if (typeof App !== 'undefined' && App.data) {
+            if (!App.data.settings || typeof App.data.settings !== 'object') App.data.settings = {};
+            App.data.settings.battleSpeed = next;
+            if (typeof App.save === 'function') App.save();
+        }
+        Battle.updateBattleSpeedButton();
+    },
+
+    updateBattleSpeedButton: () => {
+        const speed = Battle.getBattleSpeedSetting();
+        const btn = Battle.getEl('btn-battle-speed');
+        if (!btn) return;
+
+        const icon = Battle.battleSpeedIcons[speed] || Battle.battleSpeedIcons.normal;
+        const name = Battle.battleSpeedNames[speed] || Battle.battleSpeedNames.normal;
+        btn.textContent = icon;
+        btn.dataset.speed = speed;
+        btn.setAttribute('aria-label', `戦闘速度: ${name}`);
+        btn.title = `戦闘速度: ${name}`;
+    },
+
     // 戦闘ロジックは描画実装に依存させず、導入済みの演出層へHP遷移だけを通知する。
     // 多段攻撃で後続計算が先行しても、HPバーはダメージ数値の表示までは直前値を保つ。
     stageHpVisualTransition: (unit, hpBefore, options = {}) => {
@@ -295,6 +326,7 @@ const Battle = {
         Battle.runAttemptCount = 0; 
         Battle.skillScrollPositions = {};
         Battle.updateAutoButton();
+        Battle.updateBattleSpeedButton();
         Battle.resultProcessing = false;
         Battle.resultReadyToEnd = false;
         Battle.resultEndIsGameOver = false;
@@ -5241,6 +5273,14 @@ findNextActor: () => {
     toggleAuto: () => {
         const shouldStartAuto = !Battle.auto;
         Battle.auto = shouldStartAuto;
+
+        if (typeof App !== 'undefined' && typeof App.setBattleAutoStartSetting === 'function') {
+            App.setBattleAutoStartSetting(Battle.auto);
+        } else if (typeof App !== 'undefined' && App.data) {
+            if (!App.data.settings || typeof App.data.settings !== 'object') App.data.settings = {};
+            App.data.settings.battleAutoStart = Battle.auto;
+            if (typeof App.save === 'function') App.save();
+        }
         Battle.updateAutoButton();
 
         if (shouldStartAuto) {
@@ -5261,6 +5301,8 @@ findNextActor: () => {
             if(btn) {
                 btn.innerText = `AUTO: ${Battle.auto?'ON':'OFF'}`;
                 btn.style.background = Battle.auto ? '#d00' : '#333';
+                btn.setAttribute('aria-pressed', Battle.auto ? 'true' : 'false');
+                btn.title = Battle.auto ? 'オート戦闘: ON' : 'オート戦闘: OFF';
             }
         });
     },
