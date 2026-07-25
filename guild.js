@@ -296,6 +296,8 @@
                 isBossBattle: true,
                 fixedBossId: boss.monsterId,
                 preventEscape: true,
+                suppressFixedBossDefeat: true,
+                guildPromotionTrial: true,
                 guildPromotionTarget: next
             };
             state.pendingPromotion = next;

@@ -12912,12 +12912,15 @@ const FIXED_DUNGEON_MAPS = {
             });
         }
     }
+    // 掲示板画像は2x2タイルを占有するため、画像の全占有範囲を通行不能にする。
+    blockers.push({ x: 8, y: 19, baseTile: "T", invisible: true, log: "依頼掲示板が置かれている。" });
+    blockers.push({ x: 9, y: 19, baseTile: "T", invisible: true, log: "依頼掲示板が置かれている。" });
     blockers.push({ x: 9, y: 20, baseTile: "T", invisible: true, log: "依頼掲示板が置かれている。" });
     [
-        { x: 28, bottomY: 21 },
-        { x: 30, bottomY: 21 },
-        { x: 28, bottomY: 24 },
-        { x: 30, bottomY: 24 }
+        { x: 27, bottomY: 21 },
+        { x: 29, bottomY: 21 },
+        { x: 27, bottomY: 24 },
+        { x: 29, bottomY: 24 }
     ].forEach((bed, index) => {
         blockers.push({ x: bed.x, y: bed.bottomY - 1, baseTile: "T", invisible: true, log: "簡素な寝台が並んでいる。" });
         blockers.push({
@@ -12962,7 +12965,7 @@ const FIXED_DUNGEON_MAPS = {
             renderAsBlockingObject: true,
             drawWidth: 64,
             drawHeight: 64,
-            drawOffsetX: 24,
+            drawOffsetX: 18,
             baseTile: "T",
             blocksMovement: true,
             interactFromAdjacent: true,

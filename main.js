@@ -921,7 +921,7 @@ const App = {
 
 	// 全画像データの手動/初回ダウンロード用キャッシュ名。
 	// sw.js の RUNTIME_CACHE_NAME と揃えること。
-    fullDataCacheName: 'prisma-abyss-v3.141-adventurer-guild-layout-v2-runtime',
+    fullDataCacheName: 'prisma-abyss-v3.141-adventurer-guild-layout-v4-runtime',
 
 
 	// 初回起動時の「全データを今ダウンロードしますか？」で「いいえ」を選んだ記録。

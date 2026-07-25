@@ -4654,6 +4654,7 @@ findNextActor: () => {
         const keyReward = App.data.battle?.keyReward || App.data.battle?.fixedKeyReward || null;
         const fixedHunter = App.data.battle?.fixedHunter || null;
         const guildPromotionTarget = App.data.battle?.guildPromotionTarget || null;
+        let guildPromotionMessage = null;
 		
 		// --- [追加] 演出前にイベントを予約し、セーブデータに含める ---
 		if (isBossBattle && eventId) {
@@ -4909,6 +4910,12 @@ findNextActor: () => {
 			// 注：StoryManager.onBattleWin は会話を伴うため演出の最後に行いますが、
 			// 討伐フラグ自体はこの上の App.save() で確実に永続化されます。
 		}
+
+        // ギルド昇格試験は通常の固定マップボス進行から分離し、
+        // 勝利時にだけ冒険者ランクを確定する。
+        if (guildPromotionTarget && typeof Guild !== 'undefined' && typeof Guild.completePromotionTrial === 'function') {
+            guildPromotionMessage = Guild.completePromotionTrial(guildPromotionTarget);
+        }
 		const keyRewards = keyReward
 			? (Array.isArray(keyReward.colors)
 				? keyReward.colors.filter(Boolean).map(color => ({
@@ -4942,6 +4949,9 @@ findNextActor: () => {
         }
 		Battle.log(`${totalGold} Goldを獲得！`);
 		Battle.log(`${totalExp} ポイントの経験値を 獲得した！`);
+        if (guildPromotionMessage) {
+            Battle.log(`<span style="color:#ffd56b; font-weight:bold;">${Battle.escapeHtml(guildPromotionMessage).replace(/\n/g, '<br>')}</span>`);
+        }
 		if (monsterRecruitResult && monsterRecruitResult.message) {
 			Battle.log(`<span style="color:#7fffd4; font-weight:bold;">${monsterRecruitResult.message}</span>`);
 		}
@@ -5164,6 +5174,9 @@ findNextActor: () => {
             Dungeon.rollbackFixedChestTrap(App.data.battle);
         }
         if (typeof App.clearPendingLimitBreakTrial === 'function') App.clearPendingLimitBreakTrial();
+        if (App.data.battle?.guildPromotionTarget && App.data.progress?.guild) {
+            App.data.progress.guild.pendingPromotion = null;
+        }
         if (App.data.stats) App.data.stats.wipeoutCount = (App.data.stats.wipeoutCount || 0) + 1;
 
         const eventId = App.data.battle?.eventId || null;
