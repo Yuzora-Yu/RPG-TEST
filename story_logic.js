@@ -563,6 +563,7 @@ const StoryManager = {
                         break;
                     }
                     case 'PLAY_EFFECT': {
+                        if (typeof AudioManager !== 'undefined') AudioManager.playSe?.('event_effect');
                         const effect = this.putStoryFieldVisualSprite(cmd, anchor);
                         await wait(cmd.ms || 300);
                         if (effect && cmd.remove !== false) effect.remove();
@@ -1178,6 +1179,7 @@ const StoryManager = {
         }
         
         if (action.type === 'HEAL') {
+            if (typeof AudioManager !== 'undefined') AudioManager.playSe?.('heal');
             App.data.characters.forEach(c => {
                 const stats = App.calcStats(c);
                 c.currentHp = stats.maxHp;
@@ -1535,6 +1537,7 @@ const StoryManager = {
                 continue;
             }
             if (!line || typeof line.text !== 'string') continue;
+            if (typeof AudioManager !== 'undefined') AudioManager.playSe?.('dialogue');
 
             const hasExplicitCharId = line.charId !== undefined && line.charId !== null;
             const isSystemLine = line.name === 'システム' && !hasExplicitCharId;

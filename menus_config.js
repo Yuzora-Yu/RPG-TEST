@@ -10,12 +10,14 @@ const MenuConfig = {
         if (typeof App !== 'undefined' && typeof App.ensureSettings === 'function') {
             return App.ensureSettings();
         }
-        if (!App.data) return { battleSpeed: 'normal', battleAutoStart: false };
+        if (!App.data) return { battleSpeed: 'normal', battleAutoStart: false, bgmVolume: 30, seVolume: 5 };
         if (!App.data.settings || typeof App.data.settings !== 'object' || Array.isArray(App.data.settings)) {
             App.data.settings = {};
         }
         if (!['normal', 'fast', 'fastest'].includes(App.data.settings.battleSpeed)) App.data.settings.battleSpeed = 'normal';
         App.data.settings.battleAutoStart = App.data.settings.battleAutoStart === true;
+        App.data.settings.bgmVolume = Math.max(0, Math.min(100, Math.round(Number(App.data.settings.bgmVolume ?? 30) || 0)));
+        App.data.settings.seVolume = Math.max(0, Math.min(100, Math.round(Number(App.data.settings.seVolume ?? 5) || 0)));
         return App.data.settings;
     },
 
@@ -60,6 +62,33 @@ const MenuConfig = {
         MenuConfig.render();
     },
 
+    setAudioVolume: (kind, value, render = false) => {
+        const normalized = Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
+        const settings = MenuConfig.ensureSettings();
+        const isBgm = kind === 'bgm';
+        settings[isBgm ? 'bgmVolume' : 'seVolume'] = normalized;
+        const setter = isBgm ? App.setBgmVolumeSetting : App.setSeVolumeSetting;
+        if (typeof setter === 'function') setter(normalized);
+        else if (typeof AudioManager !== 'undefined') {
+            if (isBgm) AudioManager.setBgmVolume?.(normalized);
+            else AudioManager.setSeVolume?.(normalized);
+        } else if (typeof App.save === 'function') App.save();
+        const valueEl = document.getElementById(`config-${kind}-volume-value`);
+        if (valueEl) valueEl.textContent = `${normalized}%`;
+        if (!isBgm && normalized > 0 && typeof AudioManager !== 'undefined') AudioManager.playSe?.('dialogue', { volume: 0.65 });
+        if (render) MenuConfig.render();
+    },
+
+    volumeRow: (kind, label, value, description) => `
+        <label style="display:block; padding:10px; margin-bottom:8px; background:#181818; border:1px solid #333; border-radius:6px;">
+            <span style="display:flex; justify-content:space-between; gap:12px; color:#fff; font-size:14px; font-weight:bold;">
+                <span>${label}</span><span id="config-${kind}-volume-value" style="color:#ffd700;">${value}%</span>
+            </span>
+            <input type="range" min="0" max="100" step="1" value="${value}" aria-label="${label}" oninput="MenuConfig.setAudioVolume('${kind}', this.value)" style="width:100%; margin:10px 0 4px;">
+            <span style="display:block; color:#aaa; font-size:11px;">${description}</span>
+        </label>
+    `,
+
     downloadAllData: async () => {
         if (typeof App !== 'undefined' && typeof App.downloadFullDataFromConfig === 'function') {
             await App.downloadFullDataFromConfig();
@@ -84,6 +113,8 @@ const MenuConfig = {
         const settings = MenuConfig.ensureSettings();
         const speed = settings.battleSpeed || 'normal';
         const autoStart = settings.battleAutoStart === true;
+        const bgmVolume = Math.max(0, Math.min(100, Number(settings.bgmVolume ?? 30)));
+        const seVolume = Math.max(0, Math.min(100, Number(settings.seVolume ?? 5)));
 
         const speedRows = MenuConfig.speedOptions.map(opt => MenuConfig.radioRow(
             'battle-speed',
@@ -108,6 +139,13 @@ const MenuConfig = {
                 <div style="color:#ffd700; font-weight:bold; margin-bottom:10px;">オート戦闘</div>
                 ${MenuConfig.radioRow('battle-auto-start', 'on', 'ON', '戦闘開始時にAUTOを有効化', autoStart, 'MenuConfig.setBattleAutoStart(true)')}
                 ${MenuConfig.radioRow('battle-auto-start', 'off', 'OFF', '戦闘開始時は手動入力', !autoStart, 'MenuConfig.setBattleAutoStart(false)')}
+            </div>
+
+            <div style="border:1px solid #333; border-radius:8px; padding:12px; margin-bottom:14px; background:#151515;">
+                <div style="color:#ffd700; font-weight:bold; margin-bottom:10px;">サウンド</div>
+                ${MenuConfig.volumeRow('bgm', 'BGM音量', bgmVolume, 'フィールド・施設・戦闘曲の音量')}
+                ${MenuConfig.volumeRow('se', 'SE音量', seVolume, '会話・移動・戦闘エフェクト音の音量')}
+                <div style="font-size:10px; color:#777; line-height:1.5;">音源ファイルが未登録の項目は無音のまま動作します。</div>
             </div>
 
             <div style="border:1px solid #333; border-radius:8px; padding:12px; background:#151515;">

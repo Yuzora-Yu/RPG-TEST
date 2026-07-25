@@ -3920,6 +3920,8 @@ body.game-page .initial-loading-text {
 
 /* =========================================================
    Encounter transition
+   - 画面に「線を載せる」のではなく、画面そのものが割れて暗転する構成
+   - shatter / spiral / shutter の3パターン
 ========================================================= */
 
 body.game-page #encounter-transition {
@@ -3929,114 +3931,261 @@ body.game-page #encounter-transition {
     pointer-events: none;
     opacity: 0;
     overflow: hidden;
-    background: transparent;
+    contain: strict;
+    isolation: isolate;
+}
+
+body.game-page #encounter-transition > * {
+    position: absolute;
+    pointer-events: none;
 }
 
 body.game-page #encounter-transition.is-active {
-    animation: encounter-screen-dark 720ms ease-in-out forwards;
+    opacity: 1;
 }
 
-body.game-page #encounter-transition::before {
-    content: "";
-    position: absolute;
-    inset: -10%;
+body.game-page .encounter-backdrop {
+    inset: -4%;
+    background: #050403;
+    opacity: 0;
+    transform: scale(1.08);
+}
+
+body.game-page #encounter-transition.is-active .encounter-backdrop {
+    animation: encounter-backdrop-close 720ms steps(8, end) forwards;
+}
+
+body.game-page .encounter-vignette {
+    inset: -12%;
+    opacity: 0;
     background:
-        radial-gradient(circle at 50% 50%, rgba(255,255,255,0.28), transparent 18%),
-        radial-gradient(circle at 50% 50%, rgba(244,201,93,0.18), transparent 36%),
-        rgba(0,0,0,0.0);
-    opacity: 0;
+        radial-gradient(circle at center, transparent 0 18%, rgba(0,0,0,.12) 34%, rgba(0,0,0,.86) 72%, #000 100%),
+        repeating-linear-gradient(0deg, rgba(255,255,255,.025) 0 1px, transparent 1px 4px);
+    mix-blend-mode: normal;
 }
 
-body.game-page #encounter-transition.is-active::before {
-    animation: encounter-flash-pulse 720ms ease-in-out forwards;
+body.game-page #encounter-transition.is-active .encounter-vignette {
+    animation: encounter-vignette-pull 650ms cubic-bezier(.16,.8,.18,1) forwards;
 }
-
-body.game-page #encounter-transition::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background:
-        linear-gradient(90deg, transparent 0 48%, rgba(255,255,255,0.7) 49%, transparent 51%),
-        linear-gradient(25deg, transparent 0 46%, rgba(255,255,255,0.45) 47%, transparent 49%),
-        linear-gradient(145deg, transparent 0 50%, rgba(255,255,255,0.4) 51%, transparent 53%);
-    opacity: 0;
-    transform: scale(0.82);
-    filter: drop-shadow(0 0 8px rgba(255,255,255,0.55));
-}
-
-body.game-page #encounter-transition.is-active::after {
-    animation: encounter-crack-burst 720ms cubic-bezier(.2,.9,.25,1) forwards;
-}
-
-body.game-page .encounter-crack {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: 2px;
-    height: 160px;
-    background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.95), transparent);
-    opacity: 0;
-    transform-origin: center top;
-    filter: drop-shadow(0 0 6px rgba(255,255,255,0.8));
-}
-
-body.game-page #encounter-transition.is-active .encounter-crack {
-    animation: encounter-crack-line 620ms ease-out forwards;
-}
-
-body.game-page .crack-1 { transform: translate(-50%, -50%) rotate(18deg); }
-body.game-page .crack-2 { transform: translate(-50%, -50%) rotate(82deg); }
-body.game-page .crack-3 { transform: translate(-50%, -50%) rotate(136deg); }
-body.game-page .crack-4 { transform: translate(-50%, -50%) rotate(228deg); }
 
 body.game-page .encounter-flash-core {
-    position: absolute;
     left: 50%;
     top: 50%;
-    width: 34px;
-    height: 34px;
+    width: 10px;
+    height: 10px;
     border-radius: 50%;
-    background: #fff;
     opacity: 0;
-    transform: translate(-50%, -50%) scale(0.2);
-    box-shadow: 0 0 30px rgba(255,255,255,0.95);
+    transform: translate(-50%, -50%) scale(.15);
+    background: #fffdf1;
+    box-shadow: 0 0 18px #fff, 0 0 42px rgba(255,225,145,.9), 0 0 90px rgba(255,165,65,.55);
 }
 
 body.game-page #encounter-transition.is-active .encounter-flash-core {
-    animation: encounter-core-pop 560ms ease-out forwards;
+    animation: encounter-core-impact 560ms steps(6, end) forwards;
 }
 
-@keyframes encounter-screen-dark {
-    0% { opacity: 0; background: rgba(0,0,0,0); }
-    18% { opacity: 1; background: rgba(0,0,0,0.15); }
-    48% { opacity: 1; background: rgba(0,0,0,0.86); }
-    100% { opacity: 1; background: rgba(0,0,0,1); }
+body.game-page .encounter-crack-network {
+    inset: 0;
+    transform: translateZ(0);
 }
 
-@keyframes encounter-flash-pulse {
-    0% { opacity: 0; transform: scale(0.8); }
-    20% { opacity: 1; transform: scale(1.0); }
-    42% { opacity: 0.25; transform: scale(1.25); }
-    100% { opacity: 0; transform: scale(1.5); }
+body.game-page .encounter-crack-branch {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: clamp(90px, 24vmax, 330px);
+    height: 3px;
+    opacity: 0;
+    transform-origin: left center;
+    background:
+        linear-gradient(90deg, #fff 0 6%, #f8dca0 7% 14%, rgba(255,255,255,.96) 15% 38%, rgba(255,255,255,.18) 62%, transparent 100%);
+    clip-path: polygon(0 40%, 18% 0, 34% 58%, 48% 12%, 61% 72%, 78% 25%, 100% 48%, 100% 65%, 79% 44%, 62% 90%, 48% 32%, 34% 82%, 18% 25%, 0 62%);
+    filter: drop-shadow(0 0 3px rgba(255,255,255,.9)) drop-shadow(0 0 8px rgba(255,179,64,.42));
 }
 
-@keyframes encounter-crack-burst {
-    0% { opacity: 0; transform: scale(0.6) rotate(0deg); }
-    22% { opacity: 1; transform: scale(1.05) rotate(1deg); }
-    58% { opacity: 0.85; transform: scale(1.18) rotate(-1deg); }
-    100% { opacity: 0; transform: scale(1.35) rotate(0deg); }
+body.game-page .encounter-crack-branch::after {
+    content: "";
+    position: absolute;
+    left: 38%;
+    top: -1px;
+    width: 42%;
+    height: 2px;
+    transform: rotate(29deg);
+    transform-origin: left center;
+    background: linear-gradient(90deg, rgba(255,255,255,.9), transparent);
 }
 
-@keyframes encounter-crack-line {
-    0% { opacity: 0; height: 20px; }
-    18% { opacity: 1; height: 180px; }
-    100% { opacity: 0; height: 260px; }
+body.game-page .branch-1 { transform: rotate(8deg); }
+body.game-page .branch-2 { transform: rotate(47deg) scaleX(.92); }
+body.game-page .branch-3 { transform: rotate(91deg) scaleX(1.08); }
+body.game-page .branch-4 { transform: rotate(137deg) scaleX(.82); }
+body.game-page .branch-5 { transform: rotate(184deg) scaleX(1.02); }
+body.game-page .branch-6 { transform: rotate(226deg) scaleX(.9); }
+body.game-page .branch-7 { transform: rotate(278deg) scaleX(1.1); }
+body.game-page .branch-8 { transform: rotate(323deg) scaleX(.86); }
+body.game-page .branch-9 { transform: rotate(25deg) scaleX(1.18); }
+body.game-page .branch-10 { transform: rotate(116deg) scaleX(1.2); }
+body.game-page .branch-11 { transform: rotate(205deg) scaleX(1.18); }
+body.game-page .branch-12 { transform: rotate(300deg) scaleX(1.2); }
+
+body.game-page #encounter-transition.is-active .encounter-crack-branch {
+    animation: encounter-crack-grow 500ms steps(7, end) forwards;
+}
+body.game-page #encounter-transition.is-active .branch-2,
+body.game-page #encounter-transition.is-active .branch-6,
+body.game-page #encounter-transition.is-active .branch-10 { animation-delay: 24ms; }
+body.game-page #encounter-transition.is-active .branch-3,
+body.game-page #encounter-transition.is-active .branch-7,
+body.game-page #encounter-transition.is-active .branch-11 { animation-delay: 48ms; }
+body.game-page #encounter-transition.is-active .branch-4,
+body.game-page #encounter-transition.is-active .branch-8,
+body.game-page #encounter-transition.is-active .branch-12 { animation-delay: 70ms; }
+
+body.game-page .encounter-shards {
+    inset: 0;
 }
 
-@keyframes encounter-core-pop {
-    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.2); }
-    18% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
-    100% { opacity: 0; transform: translate(-50%, -50%) scale(12); }
+body.game-page .encounter-shard {
+    --angle: 0deg;
+    --distance: 60vmax;
+    --delay: 0ms;
+    --size: 42px;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: var(--size);
+    height: calc(var(--size) * .72);
+    opacity: 0;
+    background: linear-gradient(145deg, rgba(248,235,204,.32), rgba(20,14,10,.96) 45%, #000 100%);
+    border: 1px solid rgba(255,235,190,.24);
+    clip-path: polygon(8% 8%, 92% 0, 72% 100%, 0 74%);
+    transform: translate(-50%, -50%) rotate(var(--angle)) translateX(0) rotate(13deg) scale(.2);
+    transform-origin: center;
+    will-change: transform, opacity;
+}
+
+body.game-page #encounter-transition.is-active .encounter-shard {
+    animation: encounter-shard-burst 620ms cubic-bezier(.12,.72,.16,1) var(--delay) forwards;
+}
+
+body.game-page .encounter-ring {
+    left: 50%;
+    top: 50%;
+    width: 22vmin;
+    height: 22vmin;
+    border: 3px solid rgba(255,248,218,.8);
+    border-radius: 50%;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(.1);
+    box-shadow: 0 0 18px rgba(255,221,145,.65), inset 0 0 18px rgba(255,221,145,.45);
+}
+body.game-page .ring-b { border-width: 1px; }
+body.game-page #encounter-transition.is-active .ring-a { animation: encounter-ring-pop 420ms steps(5, end) forwards; }
+body.game-page #encounter-transition.is-active .ring-b { animation: encounter-ring-pop 520ms steps(6, end) 55ms forwards; }
+
+body.game-page .encounter-shutter {
+    left: 0;
+    width: 100%;
+    height: 52%;
+    background:
+        repeating-linear-gradient(0deg, rgba(255,255,255,.018) 0 2px, transparent 2px 6px),
+        linear-gradient(#080705, #000);
+    opacity: 0;
+}
+body.game-page .shutter-top { top: -52%; border-bottom: 2px solid rgba(255,235,185,.5); }
+body.game-page .shutter-bottom { bottom: -52%; border-top: 2px solid rgba(255,235,185,.5); }
+
+body.game-page #encounter-transition.encounter-pattern-shutter.is-active .shutter-top {
+    animation: encounter-shutter-top 610ms cubic-bezier(.3,.82,.2,1) forwards;
+}
+body.game-page #encounter-transition.encounter-pattern-shutter.is-active .shutter-bottom {
+    animation: encounter-shutter-bottom 610ms cubic-bezier(.3,.82,.2,1) forwards;
+}
+body.game-page #encounter-transition.encounter-pattern-shutter.is-active .encounter-shard { animation-duration: 430ms; }
+
+body.game-page #encounter-transition.encounter-pattern-spiral.is-active .encounter-crack-network {
+    animation: encounter-network-spin 570ms cubic-bezier(.15,.74,.22,1) forwards;
+}
+body.game-page #encounter-transition.encounter-pattern-spiral.is-active .encounter-shard {
+    animation-name: encounter-shard-spiral;
+}
+
+body.game-page #encounter-transition.is-event-battle .encounter-crack-branch {
+    height: 4px;
+    filter: drop-shadow(0 0 4px rgba(255,255,255,1)) drop-shadow(0 0 14px rgba(201,78,255,.75));
+}
+body.game-page #encounter-transition.is-event-battle .encounter-shard {
+    background: linear-gradient(145deg, rgba(238,205,255,.42), rgba(25,8,34,.98) 48%, #000);
+    border-color: rgba(230,165,255,.4);
+}
+body.game-page #encounter-transition.is-event-battle .encounter-backdrop {
+    background: radial-gradient(circle at center, #1a071f 0, #050205 40%, #000 78%);
+}
+
+@keyframes encounter-backdrop-close {
+    0% { opacity: 0; transform: scale(1.08); }
+    18% { opacity: .16; }
+    54% { opacity: .78; transform: scale(1.02); }
+    100% { opacity: 1; transform: scale(1); }
+}
+@keyframes encounter-vignette-pull {
+    0% { opacity: 0; transform: scale(1.45); }
+    28% { opacity: .65; }
+    100% { opacity: 1; transform: scale(1); }
+}
+@keyframes encounter-core-impact {
+    0% { opacity: 0; transform: translate(-50%,-50%) scale(.15); }
+    14% { opacity: 1; transform: translate(-50%,-50%) scale(1.2); }
+    34% { opacity: .9; transform: translate(-50%,-50%) scale(7); }
+    100% { opacity: 0; transform: translate(-50%,-50%) scale(32); }
+}
+@keyframes encounter-crack-grow {
+    0% { opacity: 0; clip-path: inset(0 100% 0 0); }
+    18% { opacity: 1; }
+    62% { opacity: .95; clip-path: inset(0 0 0 0); }
+    100% { opacity: 0; clip-path: inset(0 0 0 0); }
+}
+@keyframes encounter-shard-burst {
+    0% { opacity: 0; transform: translate(-50%,-50%) rotate(var(--angle)) translateX(0) rotate(13deg) scale(.2); }
+    20% { opacity: .95; }
+    72% { opacity: 1; }
+    100% { opacity: 0; transform: translate(-50%,-50%) rotate(var(--angle)) translateX(var(--distance)) rotate(104deg) scale(1.55); }
+}
+@keyframes encounter-shard-spiral {
+    0% { opacity: 0; transform: translate(-50%,-50%) rotate(var(--angle)) translateX(0) rotate(0) scale(.15); }
+    18% { opacity: 1; }
+    100% { opacity: 0; transform: translate(-50%,-50%) rotate(calc(var(--angle) + 210deg)) translateX(var(--distance)) rotate(220deg) scale(1.35); }
+}
+@keyframes encounter-ring-pop {
+    0% { opacity: 0; transform: translate(-50%,-50%) scale(.1); }
+    22% { opacity: .9; }
+    100% { opacity: 0; transform: translate(-50%,-50%) scale(7); }
+}
+@keyframes encounter-network-spin {
+    0% { transform: rotate(-12deg) scale(.62); }
+    100% { transform: rotate(155deg) scale(1.35); }
+}
+@keyframes encounter-shutter-top {
+    0% { top: -52%; opacity: .2; transform: skewY(-2deg); }
+    62% { top: -4%; opacity: 1; transform: skewY(0); }
+    100% { top: 0; opacity: 1; }
+}
+@keyframes encounter-shutter-bottom {
+    0% { bottom: -52%; opacity: .2; transform: skewY(2deg); }
+    62% { bottom: -4%; opacity: 1; transform: skewY(0); }
+    100% { bottom: 0; opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body.game-page #encounter-transition.is-active .encounter-backdrop {
+        animation: encounter-backdrop-close 280ms linear forwards;
+    }
+    body.game-page #encounter-transition.is-active .encounter-shard,
+    body.game-page #encounter-transition.is-active .encounter-crack-branch,
+    body.game-page #encounter-transition.is-active .encounter-ring,
+    body.game-page #encounter-transition.is-active .encounter-shutter {
+        animation-duration: 280ms !important;
+    }
 }
 
 /* 十字ボタンの長押し安定化 */

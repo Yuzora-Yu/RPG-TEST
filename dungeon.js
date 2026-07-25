@@ -677,6 +677,7 @@ const Dungeon = {
     },
 
     changeFixedFloor: (toFloor, targetX = null, targetY = null) => {
+        if (typeof AudioManager !== 'undefined') AudioManager.playSe?.('stairs');
         const areaKey = App.data.location.area;
         const nextDef = Dungeon.getFixedFloorDef(areaKey, toFloor);
         if (!nextDef) return;
@@ -1113,6 +1114,7 @@ const Dungeon = {
 
         if (typeof App.discoverFixedMap === 'function') App.discoverFixedMap(mapKey, { save: false });
 
+        if (typeof AudioManager !== 'undefined') AudioManager.playSe?.('floor_move');
         App.save();
         App.changeScene('field');
         App.log(`${areaDef.displayName || areaDef.name}に入った。`);
@@ -1124,6 +1126,7 @@ const Dungeon = {
             Dungeon.changeFixedFloor((App.data.progress.floor || 1) + 1);
             return;
         }
+        if (typeof AudioManager !== 'undefined') AudioManager.playSe?.('stairs');
         App.data.progress.floor++;
         App.data.dungeon.map = null; 
         App.data.dungeon.adventurer = null;
@@ -1741,6 +1744,7 @@ const Dungeon = {
                 App.log(container.empty);
                 return;
             }
+            if (typeof AudioManager !== 'undefined') AudioManager.playSe?.('chest_open');
 
             if (chestDef) {
                 App.data.progress.openedChests[progressKey].push(posKey);
@@ -1777,6 +1781,7 @@ const Dungeon = {
         }
 
         // --- 2. ランダム生成ダンジョン（深淵の魔窟）の処理 ---
+        if (typeof AudioManager !== 'undefined') AudioManager.playSe?.('chest_open');
         const keyChest = Dungeon.findRandomKeyChest(x, y);
         if (keyChest) {
             keyChest.active = false;
@@ -1984,6 +1989,7 @@ const Dungeon = {
             return;
         }
         if (!App.data || !Array.isArray(App.data.characters)) return;
+        if (typeof AudioManager !== 'undefined') AudioManager.playSe?.('heal_spring');
         App.data.characters.forEach(c => {
             const stats = (typeof App.calcStats === 'function') ? App.calcStats(c) : { maxHp: c.hp || 1, maxMp: c.mp || 0 };
             c.currentHp = stats.maxHp;
@@ -2029,6 +2035,7 @@ const Dungeon = {
     },
 
     stepOnLava: () => {
+        if (typeof AudioManager !== 'undefined') AudioManager.playSe?.('damage_floor');
         if (!App.data || !Array.isArray(App.data.party)) return;
 
         let damaged = false;
@@ -2475,10 +2482,12 @@ const Dungeon = {
     handleFixedTileEffect: (effect, dx = 0, dy = 0) => {
         if (!effect || !Field.currentMapData?.isFixed) return false;
         if (effect.type === 'poison') {
+            if (typeof AudioManager !== 'undefined') AudioManager.playSe?.('damage_floor');
             Dungeon.damagePartyByFloorEffect(effect.damageRate || 0.06, effect.message || '毒沼でダメージを受けた！');
             return false;
         }
         if (effect.type === 'warp') {
+            if (typeof AudioManager !== 'undefined') AudioManager.playSe?.('warp');
             if (Number.isFinite(Number(effect.toX)) && Number.isFinite(Number(effect.toY))) {
                 Field.x = Number(effect.toX);
                 Field.y = Number(effect.toY);
@@ -2491,6 +2500,7 @@ const Dungeon = {
             }
         }
         if (effect.type === 'ice') {
+            if (typeof AudioManager !== 'undefined') AudioManager.playSe?.('ice_slide');
             let sx = Field.x;
             let sy = Field.y;
             let moved = false;

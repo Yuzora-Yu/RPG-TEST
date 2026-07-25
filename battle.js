@@ -231,6 +231,7 @@ const Battle = {
     // 戦闘ロジックは描画実装に依存させず、導入済みの演出層へHP遷移だけを通知する。
     // 多段攻撃で後続計算が先行しても、HPバーはダメージ数値の表示までは直前値を保つ。
     stageHpVisualTransition: (unit, hpBefore) => {
+        if (Number(unit?.hp) < Number(hpBefore) && typeof AudioManager !== 'undefined') AudioManager.playSe?.('battle_damage');
         const fx = (typeof window !== 'undefined') ? window.PolishBattleFX : null;
         if (fx && typeof fx.stageHpTransition === 'function') {
             fx.stageHpTransition(unit, hpBefore);
@@ -413,6 +414,8 @@ const Battle = {
             };
             App.save();
         }
+
+        if (typeof AudioManager !== 'undefined') AudioManager.syncForScene?.('battle');
 
         // ★追加: 戦闘開始時の特殊状況ログ表示
         if (Battle.isAmbushed) {
@@ -3004,6 +3007,7 @@ findNextActor: () => {
 
         // --- [3] アイテムの処理 ---
         if (cmd.type === 'item') {
+            if (typeof AudioManager !== 'undefined') AudioManager.playSe?.('battle_item');
             const item = data;
             if (window.ItemRuntime) {
                 const result = window.ItemRuntime.applyBattleItem({ Battle, App, item, command: cmd });
@@ -3080,6 +3084,7 @@ findNextActor: () => {
         }
 
         // --- [4] 攻撃/スキル準備 ---
+        if (typeof AudioManager !== 'undefined') AudioManager.playSe?.(cmd.type === 'skill' ? 'battle_skill' : 'battle_attack');
         let skillName = "攻撃";
         let isPhysical = true;
         let skillRate = 1.0; 

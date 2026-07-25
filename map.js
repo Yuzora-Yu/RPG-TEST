@@ -2499,6 +2499,16 @@ const FIXED_MAPS = {
                         eventId: "fire_volcano_holy_water_used"
                     }
                 ]
+            },
+            {
+                x: 16,
+                y: 14,
+                label: "依頼掲示板を見る",
+                log: "里の小さな依頼が掲示されている。",
+                type: "questBoard",
+                questIds: ["fire_board_hunt", "fire_board_exchange"],
+                requiredFlag: "fireVillageCleared",
+                imageKey: "overlay_npc_villager"
             }
         ],
         exitPoint: {
@@ -2751,6 +2761,16 @@ const FIXED_MAPS = {
                         eventId: "wind_forest_entry"
                     }
                 ]
+            },
+            {
+                x: 14,
+                y: 12,
+                label: "依頼掲示板を見る",
+                log: "風除けの板に依頼札が結ばれている。",
+                type: "questBoard",
+                questIds: ["wind_board_hunt", "wind_board_exchange"],
+                requiredFlag: "windVillageCleared",
+                imageKey: "overlay_npc_villager"
             }
         ],
         exitPoint: {
@@ -3056,6 +3076,16 @@ const FIXED_MAPS = {
                 questId: "sophia_alan_seabed_depths",
                 imageKey: "overlay_companion_alan",
                 lockedText: "今はまだ、海底神殿の奥へ進む手段がない。"
+            },
+            {
+                x: 20,
+                y: 13,
+                label: "依頼掲示板を見る",
+                log: "水路の仕事と交換依頼が掲示されている。",
+                type: "questBoard",
+                questIds: ["water_board_hunt", "water_board_exchange"],
+                requiredFlag: "waterCityCleared",
+                imageKey: "overlay_npc_villager"
             }
         ],
         exitPoint: {
@@ -3307,6 +3337,16 @@ const FIXED_MAPS = {
                         eventId: "abyss_unsealed"
                     }
                 ]
+            },
+            {
+                x: 6,
+                y: 7,
+                label: "依頼掲示板を見る",
+                log: "観測隊が外縁で集めた依頼票が留められている。",
+                type: "questBoard",
+                questIds: ["abyss_board_hunt", "abyss_board_exchange"],
+                requiredFlag: "abyssFirstEntered",
+                imageKey: "overlay_npc_villager"
             }
         ],
         exitPoint: {
@@ -6136,6 +6176,16 @@ const FIXED_DUNGEON_MAPS = {
                         questId: "zelied_big_tower",
                         imageKey: "overlay_companion_zelied",
                         lockedText: "ゼリードはまだ、灯台の異変を見極めているようだ。"
+                    },
+                    {
+                        x: 7,
+                        y: 20,
+                        label: "依頼掲示板を見る",
+                        log: "灯台守と補修隊の依頼が掲示されている。",
+                        type: "questBoard",
+                        questIds: ["tower_board_hunt", "tower_board_exchange"],
+                        requiredFlag: "bigTowerCleared",
+                        imageKey: "overlay_npc_villager"
                     }
                 ],
                 entryPoint: {
@@ -6868,6 +6918,16 @@ const FIXED_DUNGEON_MAPS = {
                         requiredFlag: "thunderFortCleared",
                         imageKey: "overlay_npc_villager",
                         lockedText: "雷の轟きで声が届かない。"
+                    },
+                    {
+                        x: 18,
+                        y: 17,
+                        label: "依頼掲示板を見る",
+                        log: "解放後の要塞整備に関する依頼が掲示されている。",
+                        type: "questBoard",
+                        questIds: ["thunder_board_hunt", "thunder_board_exchange"],
+                        requiredFlag: "thunderFortCleared",
+                        imageKey: "overlay_npc_villager"
                     }
                 ],
                 entryPoint: {
@@ -7749,6 +7809,16 @@ const FIXED_DUNGEON_MAPS = {
                         requiredFlag: "lightPalaceCleared",
                         imageKey: "overlay_town_light_pilgrim",
                         lockedText: "光の宮殿グランプリズマはまだ緊張に包まれている。"
+                    },
+                    {
+                        x: 18,
+                        y: 23,
+                        label: "依頼掲示板を見る",
+                        log: "巡礼路の復旧と聖素材の依頼が掲示されている。",
+                        type: "questBoard",
+                        questIds: ["light_board_hunt", "light_board_exchange"],
+                        requiredFlag: "lightPalaceCleared",
+                        imageKey: "overlay_npc_villager"
                     }
                 ],
                 name: "",
@@ -9581,6 +9651,16 @@ const FIXED_DUNGEON_MAPS = {
                         requiredFlag: "darkCastleCleared",
                         imageKey: "overlay_town_demon_guard",
                         lockedText: "魔族兵は警戒している。"
+                    },
+                    {
+                        x: 14,
+                        y: 20,
+                        label: "依頼掲示板を見る",
+                        log: "城門修復と魔城炉の依頼が掲示されている。",
+                        type: "questBoard",
+                        questIds: ["dark_board_hunt", "dark_board_exchange"],
+                        requiredFlag: "darkCastleCleared",
+                        imageKey: "overlay_npc_villager"
                     }
                 ],
                 entryPoint: {

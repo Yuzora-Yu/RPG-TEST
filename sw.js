@@ -21,8 +21,8 @@ try {
   console.warn("[SW] モンスター定義を含む画像一覧の読み込みに失敗しました。画像初回キャッシュは最小限で続行します。", error);
 }
 
-const CACHE_NAME = "prisma-abyss-v3.128-offline-shell";
-const RUNTIME_CACHE_NAME = "prisma-abyss-v3.128-offline-shell-runtime";
+const CACHE_NAME = "prisma-abyss-v3.131-offline-shell";
+const RUNTIME_CACHE_NAME = "prisma-abyss-v3.131-offline-shell-runtime";
 const WARM_CACHE_META_KEY = "__prisma_abyss_warm_cache_complete__";
 
 // 起動に必要な App Shell。
@@ -41,6 +41,8 @@ const PRECACHE_FILES = [
   "map_render_shared.js",
   "polish.js",
   "main.js",
+  "audio_manifest.js",
+  "audio.js",
   "save_crypto.js",
   "menus.js",
   "menus_config.js",

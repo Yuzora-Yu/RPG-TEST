@@ -477,7 +477,9 @@ const App = {
 
     defaultSettings: {
         battleSpeed: 'normal',
-        battleAutoStart: false
+        battleAutoStart: false,
+        bgmVolume: 30,
+        seVolume: 5
     },
 
     battleSpeedLabels: {
@@ -501,7 +503,31 @@ const App = {
             App.data.settings.battleSpeed = defaults.battleSpeed;
         }
         App.data.settings.battleAutoStart = App.data.settings.battleAutoStart === true;
+        App.data.settings.bgmVolume = Math.max(0, Math.min(100, Math.round(Number(App.data.settings.bgmVolume ?? defaults.bgmVolume) || 0)));
+        App.data.settings.seVolume = Math.max(0, Math.min(100, Math.round(Number(App.data.settings.seVolume ?? defaults.seVolume) || 0)));
         return App.data.settings;
+    },
+
+    getBgmVolumeSetting: () => App.ensureSettings().bgmVolume,
+
+    setBgmVolumeSetting: (value) => {
+        const normalized = Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
+        const settings = App.ensureSettings();
+        settings.bgmVolume = normalized;
+        if (typeof AudioManager !== 'undefined' && AudioManager.setBgmVolume) AudioManager.setBgmVolume(normalized);
+        else if (typeof App.save === 'function') App.save();
+        return normalized;
+    },
+
+    getSeVolumeSetting: () => App.ensureSettings().seVolume,
+
+    setSeVolumeSetting: (value) => {
+        const normalized = Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
+        const settings = App.ensureSettings();
+        settings.seVolume = normalized;
+        if (typeof AudioManager !== 'undefined' && AudioManager.setSeVolume) AudioManager.setSeVolume(normalized);
+        else if (typeof App.save === 'function') App.save();
+        return normalized;
     },
 
     getBattleSpeedSetting: () => {
@@ -3038,6 +3064,57 @@ const App = {
         return true;
     },
 
+
+    showQuestBoardModal: (action = {}) => new Promise(resolve => {
+        const questIds = Array.isArray(action.questIds) ? action.questIds.filter(id => App.getQuestDefinition(id)) : [];
+        if (!questIds.length || typeof document === 'undefined') {
+            resolve(null);
+            return;
+        }
+        document.getElementById('quest-board-modal')?.remove();
+        const overlay = document.createElement('div');
+        overlay.id = 'quest-board-modal';
+        overlay.style.cssText = 'position:fixed; inset:0; z-index:6990; background:rgba(0,0,0,.76); display:flex; align-items:center; justify-content:center; padding:12px; box-sizing:border-box;';
+        const rows = questIds.map(id => {
+            const quest = App.getQuestDefinition(id);
+            const state = App.getQuestState(id);
+            const unlocked = App.isQuestUnlocked(id);
+            const objectiveReady = state.state === 'accepted' && App.isQuestObjectiveComplete(id);
+            const status = !unlocked ? '未解放' : state.state === 'completed' ? '達成済み' : objectiveReady ? '報告可能' : state.state === 'accepted' ? '受注中' : '受注可能';
+            const disabled = unlocked ? '' : 'disabled';
+            return `<button class="quest-board-entry btn" data-quest-id="${App.escapeHtml(id)}" ${disabled} style="display:block; width:100%; text-align:left; padding:11px 12px; margin-top:8px; background:${objectiveReady ? '#5c4517' : '#241b16'}; border:1px solid ${objectiveReady ? '#ffd56b' : '#76593a'}; color:#fff3d1; border-radius:6px;">
+                <span style="display:flex; justify-content:space-between; gap:10px; align-items:center;"><strong>${App.escapeHtml(quest.name)}</strong><small style="color:#e7c77d; white-space:nowrap;">${status}</small></span>
+                <span style="display:block; color:#c9b99d; font-size:11px; line-height:1.45; margin-top:5px;">${App.escapeHtml(quest.objective || '')}</span>
+                <span style="display:block; color:#98d9a8; font-size:11px; margin-top:5px; white-space:pre-wrap;">報酬: ${App.escapeHtml(App.getQuestRewardSummary(quest))}</span>
+            </button>`;
+        }).join('');
+        overlay.innerHTML = `<div style="width:min(460px,calc(100vw - 24px)); max-height:calc(100vh - 30px); overflow:auto; background:#17110d; border:2px solid #b88a4c; border-radius:8px; box-shadow:0 18px 60px rgba(0,0,0,.75); padding:14px; box-sizing:border-box;">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; border-bottom:1px solid #5c432a; padding-bottom:10px;">
+                <div><div style="font-size:18px; color:#fff2c6; font-weight:bold;">依頼掲示板</div><div style="font-size:11px; color:#bfa77f; margin-top:3px;">討伐・素材交換依頼</div></div>
+                <button id="quest-board-close" class="btn" style="min-width:72px;">閉じる</button>
+            </div>${rows}
+        </div>`;
+        document.body.appendChild(overlay);
+        const close = value => { overlay.remove(); resolve(value); };
+        overlay.onclick = event => { if (event.target === overlay) close(null); };
+        overlay.querySelector('#quest-board-close').onclick = () => close(null);
+        overlay.querySelectorAll('.quest-board-entry:not([disabled])').forEach(button => {
+            button.onclick = () => close(button.dataset.questId || null);
+        });
+        if (typeof AudioManager !== 'undefined') AudioManager.playSe?.('dialogue');
+    }),
+
+    runQuestBoard: async (action = {}) => {
+        const questId = await App.showQuestBoardModal(action);
+        if (!questId) return false;
+        await App.runQuestAction(questId, { lockedText: action.lockedText });
+        if (typeof Field !== 'undefined') {
+            Field.refreshVisualState?.();
+            Field.refreshCurrentAction?.({ silent: true });
+        }
+        return true;
+    },
+
     limitBreakConfig: {
         max: 99,
         midGate: 49,
@@ -4979,6 +5056,8 @@ load: () => {
         if (!data.settings || typeof data.settings !== 'object' || Array.isArray(data.settings)) data.settings = {};
         if (!['normal', 'fast', 'fastest'].includes(data.settings.battleSpeed)) data.settings.battleSpeed = 'normal';
         data.settings.battleAutoStart = data.settings.battleAutoStart === true;
+        data.settings.bgmVolume = Math.max(0, Math.min(100, Math.round(Number(data.settings.bgmVolume ?? 30) || 0)));
+        data.settings.seVolume = Math.max(0, Math.min(100, Math.round(Number(data.settings.seVolume ?? 5) || 0)));
 
         return data;
     },
@@ -5114,59 +5193,54 @@ load: () => {
 	},
 
 	playEncounterTransition: (callback, options = {}) => {
-		let layer = document.getElementById('encounter-transition');
-		const isEventBattle = !!options.eventBattle;
+        let layer = document.getElementById('encounter-transition');
+        const isEventBattle = !!options.eventBattle;
+        const patterns = isEventBattle ? ['shatter', 'shutter'] : ['shatter', 'spiral', 'shutter'];
+        const pattern = options.pattern || patterns[Math.floor(Math.random() * patterns.length)];
 
-		if (!layer) {
-			layer = document.createElement('div');
-			layer.id = 'encounter-transition';
-			layer.setAttribute('aria-hidden', 'true');
-			layer.innerHTML = `
-				<div class="encounter-crack crack-1"></div>
-				<div class="encounter-crack crack-2"></div>
-				<div class="encounter-crack crack-3"></div>
-				<div class="encounter-crack crack-4"></div>
-				<div class="encounter-flash-core"></div>
-			`;
-			(document.getElementById('game-container') || document.body).appendChild(layer);
-		}
+        if (!layer) {
+            layer = document.createElement('div');
+            layer.id = 'encounter-transition';
+            layer.setAttribute('aria-hidden', 'true');
+            (document.getElementById('game-container') || document.body).appendChild(layer);
+        }
+        layer.innerHTML = `
+            <div class="encounter-backdrop"></div>
+            <div class="encounter-vignette"></div>
+            <div class="encounter-ring ring-a"></div>
+            <div class="encounter-ring ring-b"></div>
+            <div class="encounter-crack-network">
+                ${Array.from({ length: isEventBattle ? 12 : 8 }, (_, i) => `<i class="encounter-crack-branch branch-${i + 1}"></i>`).join('')}
+            </div>
+            <div class="encounter-shutter shutter-top"></div>
+            <div class="encounter-shutter shutter-bottom"></div>
+            <div class="encounter-flash-core"></div>
+            <div class="encounter-shards"></div>
+        `;
+        const shardLayer = layer.querySelector('.encounter-shards');
+        const shardCount = isEventBattle ? 22 : 14;
+        for (let i = 0; i < shardCount; i++) {
+            const shard = document.createElement('i');
+            shard.className = 'encounter-shard';
+            shard.style.setProperty('--angle', `${(360 / shardCount) * i + (Math.random() * 18 - 9)}deg`);
+            shard.style.setProperty('--distance', `${40 + Math.random() * 58}vmax`);
+            shard.style.setProperty('--delay', `${Math.random() * 90}ms`);
+            shard.style.setProperty('--size', `${22 + Math.random() * 56}px`);
+            shardLayer.appendChild(shard);
+        }
 
-		const clearEventExtras = () => {
-			layer.classList.remove('is-event-battle');
-			layer.style.filter = '';
-			layer.querySelectorAll('.encounter-event-extra').forEach(el => el.remove());
-		};
+        layer.className = `encounter-pattern-${pattern}${isEventBattle ? ' is-event-battle' : ''}`;
+        if (typeof AudioManager !== 'undefined') AudioManager.playSe?.('encounter_start');
+        void layer.offsetWidth;
+        layer.classList.add('is-active');
 
-		clearEventExtras();
-
-		if (isEventBattle) {
-			layer.classList.add('is-event-battle');
-			layer.style.filter = 'contrast(1.35) brightness(1.15) saturate(1.2)';
-			const angles = [-34, 48, 104, 168, 236, 296];
-			angles.forEach((angle, i) => {
-				const crack = document.createElement('div');
-				crack.className = 'encounter-crack encounter-event-extra';
-				crack.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
-				crack.style.height = `${190 + (i % 3) * 28}px`;
-				crack.style.width = i % 2 === 0 ? '3px' : '2px';
-				layer.appendChild(crack);
-			});
-		}
-
-		layer.classList.remove('is-active');
-		void layer.offsetWidth;
-		layer.classList.add('is-active');
-
-		setTimeout(() => {
-			callback();
-
-			setTimeout(() => {
-				layer.classList.remove('is-active');
-				clearEventExtras();
-			}, isEventBattle ? 420 : 300);
-		}, isEventBattle ? 820 : 680);
-	},
-
+        const switchDelay = isEventBattle ? 760 : 610;
+        const releaseDelay = isEventBattle ? 460 : 340;
+        setTimeout(() => {
+            callback();
+            setTimeout(() => layer.classList.remove('is-active'), releaseDelay);
+        }, switchDelay);
+    },
 
     isWorldEncounterLandTile: (tile) => {
         const upper = String(tile || '').toUpperCase();
@@ -5345,6 +5419,9 @@ load: () => {
         
         if(typeof Menu !== 'undefined') Menu.closeAll();
         App.clearAction();
+        if (typeof AudioManager !== 'undefined' && typeof AudioManager.syncForScene === 'function') {
+            AudioManager.syncForScene(sceneId);
+        }
 
         if(sceneId === 'field') {
             Field.init();
@@ -6921,6 +6998,10 @@ const Field = {
             if (action.hideWhenQuestAccepted && questState === 'accepted') return false;
             return App.isQuestUnlocked(action.questId);
         }
+        if (action.type === 'questBoard') {
+            const questIds = Array.isArray(action.questIds) ? action.questIds : [];
+            return questIds.some(id => App.getQuestDefinition(id) && App.isQuestUnlocked(id));
+        }
         return true;
     },
 
@@ -7178,6 +7259,7 @@ const Field = {
         }
 
         gateState.pressed[switchId] = true;
+        if (typeof AudioManager !== 'undefined') AudioManager.playSe?.('switch');
         const required = Array.isArray(action.requiredSwitches) && action.requiredSwitches.length
             ? action.requiredSwitches.map(String)
             : (Field.currentMapData.mapActions || [])
@@ -7387,7 +7469,7 @@ const Field = {
             return;
         }
 
-        if (action.log && action.type !== 'quest') App.log(action.log);
+        if (action.log && action.type !== 'quest' && action.type !== 'questBoard') App.log(action.log);
 
         const progressEventId = Field.resolveMapActionEventId(action);
         if (progressEventId && typeof StoryManager !== 'undefined') {
@@ -7414,6 +7496,15 @@ const Field = {
 
         if (action.type === 'storyEvent' && action.eventId && typeof StoryManager !== 'undefined') {
             StoryManager.executeEvent(action.eventId);
+            return;
+        }
+
+        if (action.type === 'questBoard' && typeof App.runQuestBoard === 'function') {
+            if (action.log) App.log(action.log);
+            Promise.resolve(App.runQuestBoard(action)).finally(() => {
+                Field.refreshVisualState?.();
+                Field.refreshCurrentAction?.({ silent: true });
+            });
             return;
         }
 
@@ -7869,7 +7960,8 @@ const Field = {
         // 以前はここで App.clearAction() した後、壁/マップ外/海などで return していたため、
         // イベント・宿屋・ボス等のタイル上で移動できない方向へ入力するとボタンが消えていました。
         // 今後、移動不可 return を追加する場合も、この helper を通して現在地を再評価してください。
-        const keepCurrentTileAction = () => {
+        const keepCurrentTileAction = (options = {}) => {
+            if (options.bump && typeof AudioManager !== 'undefined') AudioManager.playSe?.('wall_bump');
             if (typeof Field.refreshCurrentAction === 'function') {
                 Field.refreshCurrentAction({ silent: true });
             }
@@ -7880,9 +7972,9 @@ const Field = {
         const areaKey = Field.getCurrentAreaKey();
 
         if (Field.currentMapData) {
-            if (nx < 0 || nx >= Field.currentMapData.width || ny < 0 || ny >= Field.currentMapData.height) { keepCurrentTileAction(); return; }
+            if (nx < 0 || nx >= Field.currentMapData.width || ny < 0 || ny >= Field.currentMapData.height) { keepCurrentTileAction({ bump: true }); Field.render(); return; }
             if (Field.isMovementRegionCrossingBlocked(Field.x, Field.y, nx, ny)) {
-                keepCurrentTileAction();
+                keepCurrentTileAction({ bump: true });
                 Field.render();
                 return;
             }
@@ -7908,7 +8000,7 @@ const Field = {
                         tile = bossDef?.inactiveTile || 'G';
                     } else {
                         if (bossDef?.inspectLog) App.log(bossDef.inspectLog);
-                        keepCurrentTileAction();
+                        keepCurrentTileAction({ bump: true });
                         Field.render();
                         return;
                     }
@@ -7919,7 +8011,7 @@ const Field = {
                 if (chestTile) tile = chestTile;
             } else if (tile === 'B' && areaKey === 'ABYSS' && typeof Dungeon !== 'undefined' && typeof Dungeon.prepareAbyssBossTileAction === 'function') {
                 Dungeon.prepareAbyssBossTileAction(nx, ny, { silent: false });
-                keepCurrentTileAction();
+                keepCurrentTileAction({ bump: true });
                 Field.render();
                 return;
             }
@@ -7929,20 +8021,20 @@ const Field = {
                 : null;
             if (Field.currentMapData.isDungeon && typeof Dungeon !== 'undefined' && typeof Dungeon.isAdventurerAt === 'function' && Dungeon.isAdventurerAt(nx, ny)) {
                 App.log('冒険者が立っている。');
-                keepCurrentTileAction();
+                keepCurrentTileAction({ bump: true });
                 Field.render();
                 return;
             }
             if (Field.isBlockingMapActor(targetMapAction)) {
                 if (targetMapAction.log) App.log(targetMapAction.log);
-                keepCurrentTileAction();
+                keepCurrentTileAction({ bump: true });
                 Field.render();
                 return;
             }
             const targetBlockingObject = Field.getBlockingObjectAt ? Field.getBlockingObjectAt(nx, ny) : null;
             if (targetBlockingObject) {
                 if (targetBlockingObject.log) App.log(targetBlockingObject.log);
-                keepCurrentTileAction();
+                keepCurrentTileAction({ bump: true });
                 Field.render();
                 return;
             }
@@ -7955,25 +8047,26 @@ const Field = {
                 App.log(opened
                     ? container.opened
                     : (tile === 'R' ? '赤い宝箱が道を塞いでいる。' : container.blocked));
-                keepCurrentTileAction();
+                keepCurrentTileAction({ bump: true });
                 Field.render();
                 return;
             }
 
             const isFloodedRandomFloor = !!(Field.currentMapData.isDungeon && !Field.currentMapData.isFixed && App.data?.dungeon?.isFloodedFloor);
-            if (Field.isTileImpassableForCurrentMap(tile)) { keepCurrentTileAction(); return; }
-            if (tile === '~' && !isFloodedRandomFloor) { keepCurrentTileAction(); return; }
+            if (Field.isTileImpassableForCurrentMap(tile)) { keepCurrentTileAction({ bump: true }); Field.render(); return; }
+            if (tile === '~' && !isFloodedRandomFloor) { keepCurrentTileAction({ bump: true }); Field.render(); return; }
 
             if (Field.isBuildingMovementBlocked(Field.x, Field.y, nx, ny)) {
                 App.log('建物に遮られて進めない。');
-                keepCurrentTileAction();
+                keepCurrentTileAction({ bump: true });
                 Field.render();
                 return;
             }
 
             if (typeof Dungeon !== 'undefined' && Dungeon.isLockedDoorTile && Dungeon.isLockedDoorTile(tile)) {
                 if (!Dungeon.unlockDoorAt(nx, ny, tile)) {
-                    keepCurrentTileAction();
+                    keepCurrentTileAction({ bump: true });
+                    Field.render();
                     return;
                 }
                 tile = 'T';
@@ -8052,9 +8145,9 @@ const Field = {
             const tile = surface.tile;
             const isBridge = surface.isBridge;
             const isFlying = typeof App.isFlying === 'function' && App.isFlying();
-            if (!isFlying && tile === 'M') { App.log("険しい岩山だ"); keepCurrentTileAction(); return; }
+            if (!isFlying && tile === 'M') { App.log("険しい岩山だ"); keepCurrentTileAction({ bump: true }); Field.render(); return; }
             if (!isFlying && surface.isSea) {
-                if (!App.hasMagicBoat || !App.hasMagicBoat()) { App.log("海は船がないと渡れない…"); keepCurrentTileAction(); return; }
+                if (!App.hasMagicBoat || !App.hasMagicBoat()) { App.log("海は船がないと渡れない…"); keepCurrentTileAction({ bump: true }); Field.render(); return; }
                 if (App.data.transportMode !== 'boat') App.log("魔法の小舟で海へ漕ぎ出した。");
                 App.data.transportMode = 'boat';
             }
@@ -8081,6 +8174,7 @@ const Field = {
     },
 
     render: () => {
+        if (typeof AudioManager !== 'undefined' && typeof AudioManager.syncFieldBgm === 'function') AudioManager.syncFieldBgm();
         const canvas = document.getElementById('field-canvas'); if(!canvas) return;
         if (typeof Field.syncCanvasToWrapperSize === 'function') Field.syncCanvasToWrapperSize();
         if (typeof PhaserFieldRenderer !== 'undefined' && PhaserFieldRenderer.render(Field)) {
