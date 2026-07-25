@@ -6365,7 +6365,11 @@ const Field = {
             if (bossDef?.imageKey && typeof GRAPHICS !== 'undefined' && GRAPHICS.data?.[bossDef.imageKey]) {
                 config = { img: bossDef.imageKey, color: bossDef.color || config.color || '#db3b4d' };
             } else {
-            const rawMonsterId = Array.isArray(bossDef?.monsterId) ? bossDef.monsterId[0] : bossDef?.monsterId;
+            const bossMonsterIds = (Array.isArray(bossDef?.monsterId) ? bossDef.monsterId : [bossDef?.monsterId])
+                .map(id => Number(id))
+                .filter(id => Number.isFinite(id) && id > 0);
+            // 3体編成は配置順の中央（2番目）を代表スプライトとして描画する。
+            const rawMonsterId = bossMonsterIds.length === 3 ? bossMonsterIds[1] : bossMonsterIds[0];
             const monsterId = Number(bossDef?.mapSpriteMonsterId || rawMonsterId);
             const graphicKey = Number.isFinite(monsterId) && Field.getMonsterMapSpriteKey
                 ? Field.getMonsterMapSpriteKey(monsterId)

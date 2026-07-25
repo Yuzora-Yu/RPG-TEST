@@ -1429,21 +1429,105 @@ const Dungeon = {
     },
 	
     // --- 移動・イベント処理 (全文) ---
-    getAbyssBossStoryEventId: (floor = Dungeon.floor) => {
+    getAbyssBossStoryDefinition: (floor = Dungeon.floor) => {
         const f = Number(floor || 0);
         const table = {
-            10: 'abyss_floor_010_leon_guardian',
-            20: 'abyss_floor_020_glen_guardian',
-            30: 'abyss_floor_030_leonard_abyss',
-            40: 'abyss_floor_040_elicia_abyss',
-            50: 'abyss_floor_050_syris_abyss',
-            60: 'abyss_floor_060_grad_abyss',
-            70: 'abyss_floor_070_veld_abyss',
-            80: 'abyss_floor_080_lilith_true',
-            90: 'abyss_floor_090_jasper_true',
-            100: 'abyss_floor_100_phase1'
+            10: {
+                eventId: 'abyss_floor_010_leon_guardian',
+                clearEventId: 'abyss_floor_010_clear',
+                clearFlag: 'abyssFloor010Cleared'
+            },
+            20: {
+                eventId: 'abyss_floor_020_glen_guardian',
+                clearEventId: 'abyss_floor_020_clear',
+                clearFlag: 'abyssFloor020Cleared'
+            },
+            30: {
+                eventId: 'abyss_floor_030_leonard_abyss',
+                clearEventId: 'abyss_floor_030_clear',
+                clearFlag: 'abyssFloor030Cleared'
+            },
+            40: {
+                eventId: 'abyss_floor_040_elicia_abyss',
+                clearEventId: 'abyss_floor_040_clear',
+                clearFlag: 'abyssFloor040Cleared'
+            },
+            50: {
+                eventId: 'abyss_floor_050_syris_abyss',
+                clearEventId: 'abyss_floor_050_clear',
+                clearFlag: 'abyssFloor050Cleared'
+            },
+            60: {
+                eventId: 'abyss_floor_060_grad_abyss',
+                clearEventId: 'abyss_floor_060_clear',
+                clearFlag: 'abyssFloor060Cleared'
+            },
+            70: {
+                eventId: 'abyss_floor_070_veld_abyss',
+                clearEventId: 'abyss_floor_070_clear',
+                clearFlag: 'abyssFloor070Cleared'
+            },
+            80: {
+                eventId: 'abyss_floor_080_lilith_true',
+                clearEventId: 'abyss_floor_080_clear',
+                clearFlag: 'abyssFloor080Cleared'
+            },
+            90: {
+                eventId: 'abyss_floor_090_jasper_true',
+                clearEventId: 'abyss_floor_090_clear',
+                clearFlag: 'abyssFloor090Cleared'
+            },
+            100: {
+                eventId: 'abyss_floor_100_phase1',
+                clearEventId: 'abyss_floor_100_clear',
+                clearFlag: 'abyssFloor100Cleared'
+            }
         };
         return table[f] || null;
+    },
+
+    isAbyssBossStoryDefeated: (floor = Dungeon.floor) => {
+        const f = Number(floor || 0);
+        const definition = Dungeon.getAbyssBossStoryDefinition(f);
+        if (!definition) return false;
+
+        const progress = App.data?.progress || {};
+        if (definition.clearFlag && progress.flags?.[definition.clearFlag]) return true;
+
+        // 勝利直後、クリア会話が始まる前にも再戦イベントを防げるよう、
+        // ストーリー会話用フラグとは別に討伐済み階を記録する。
+        const defeatedFloors = progress.abyssStoryBossDefeatedFloors;
+        if (Array.isArray(defeatedFloors)) {
+            return defeatedFloors.some(value => Number(value) === f);
+        }
+        return !!(defeatedFloors && typeof defeatedFloors === 'object' && defeatedFloors[String(f)]);
+    },
+
+    markAbyssBossStoryDefeated: (floor = Dungeon.floor) => {
+        const f = Number(floor || 0);
+        if (!Dungeon.getAbyssBossStoryDefinition(f)) return false;
+        if (!App.data.progress) App.data.progress = {};
+
+        const current = App.data.progress.abyssStoryBossDefeatedFloors;
+        if (!current || typeof current !== 'object' || Array.isArray(current)) {
+            const normalized = {};
+            if (Array.isArray(current)) {
+                current.forEach(value => {
+                    const savedFloor = Number(value);
+                    if (Number.isFinite(savedFloor) && savedFloor > 0) normalized[String(savedFloor)] = true;
+                });
+            }
+            App.data.progress.abyssStoryBossDefeatedFloors = normalized;
+        }
+        App.data.progress.abyssStoryBossDefeatedFloors[String(f)] = true;
+        return true;
+    },
+
+    getAbyssBossStoryEventId: (floor = Dungeon.floor, options = {}) => {
+        const definition = Dungeon.getAbyssBossStoryDefinition(floor);
+        if (!definition) return null;
+        if (options.includeCleared !== true && Dungeon.isAbyssBossStoryDefeated(floor)) return null;
+        return definition.eventId;
     },
 
     getAbyssStoryBossDisplayMonsterId: (floor = Dungeon.floor) => {
@@ -1475,37 +1559,90 @@ const Dungeon = {
         rareChest: { x: 5, y: 3 }
     }),
 
+    getAbyssBossDisplayMonsterId: (monsterIds, fallbackId = null) => {
+        const ids = (Array.isArray(monsterIds) ? monsterIds : [monsterIds])
+            .map(id => Number(id))
+            .filter(id => Number.isFinite(id) && id > 0);
+        // 3体編成は配置順の中央（2番目）をフィールド代表として描画する。
+        if (ids.length === 3) return ids[1];
+        if (ids.length > 0) return ids[0];
+        const fallback = Number(fallbackId);
+        return Number.isFinite(fallback) && fallback > 0 ? fallback : null;
+    },
+
+    normalizeAbyssBossEncounter: (encounter) => {
+        if (!encounter || !Array.isArray(encounter.monsterIds)) return encounter;
+        let ids = encounter.monsterIds
+            .map(id => Number(id))
+            .filter(id => Number.isFinite(id) && id > 0);
+        if (ids.length === 0) return encounter;
+
+        // 旧セーブではストーリー階の代表IDだけが保存されている場合がある。
+        // 代表IDと同じminFのボス編成が複数体なら、現在の定義から編成全体を復元する。
+        const floor = Math.max(1, Number(encounter.floor) || 1);
+        const storyDisplayId = Dungeon.getAbyssStoryBossDisplayMonsterId(floor);
+        const monsterData = (typeof window !== 'undefined') ? window.MonsterData : null;
+        if (storyDisplayId && ids.includes(Number(storyDisplayId)) && monsterData && typeof monsterData.getBossesForFloor === 'function') {
+            const floorIds = (monsterData.getBossesForFloor(floor) || [])
+                .map(base => Number(base?.id))
+                .filter(id => Number.isFinite(id) && id > 0);
+            if (floorIds.length > ids.length && floorIds.includes(Number(storyDisplayId))) ids = floorIds;
+        }
+
+        encounter.monsterIds = ids;
+        encounter.displayMonsterId = Dungeon.getAbyssBossDisplayMonsterId(ids, encounter.displayMonsterId);
+        return encounter;
+    },
+
     selectAbyssBossEncounter: (floor = Dungeon.floor) => {
         const f = Math.max(1, Number(floor || 1));
         const layout = Dungeon.getAbyssBossRoomLayout ? Dungeon.getAbyssBossRoomLayout() : { boss: { x: 5, y: 5 } };
+        const monsterData = (typeof window !== 'undefined') ? window.MonsterData : null;
         const storyDisplayId = Dungeon.getAbyssStoryBossDisplayMonsterId(f);
         if (storyDisplayId) {
+            const storyBossIds = (monsterData && typeof monsterData.getBossesForFloor === 'function')
+                ? (monsterData.getBossesForFloor(f) || [])
+                    .map(base => Number(base?.id))
+                    .filter(id => Number.isFinite(id) && id > 0)
+                : [];
+            const ids = storyBossIds.length > 0 ? storyBossIds : [storyDisplayId];
             return {
                 active: true,
                 floor: f,
                 x: layout.boss.x,
                 y: layout.boss.y,
-                monsterIds: [storyDisplayId],
-                displayMonsterId: storyDisplayId,
+                monsterIds: ids,
+                displayMonsterId: Dungeon.getAbyssBossDisplayMonsterId(ids, storyDisplayId),
                 source: 'story'
             };
         }
 
         let ids = [];
-        const monsterData = (typeof window !== 'undefined') ? window.MonsterData : null;
         const dbMonsters = (typeof DB !== 'undefined' && Array.isArray(DB.MONSTERS)) ? DB.MONSTERS : [];
         if (f >= 201) {
-            const candidates = (monsterData?.bossMonsters || dbMonsters)
+            const source = Array.isArray(monsterData?.bossMonsters) && monsterData.bossMonsters.length > 0
+                ? monsterData.bossMonsters
+                : dbMonsters;
+            const candidates = source
                 .filter(base => base && base.isBoss && !base.isRare
                     && !(typeof Battle !== 'undefined' && Battle.isSpecialBossBase && Battle.isSpecialBossBase(base))
                     && (typeof Battle === 'undefined' || !Battle.isAbyssRandomBossBase || Battle.isAbyssRandomBossBase(base)));
-            const count = 1 + Math.floor(Math.random() * 3);
-            for (let i = 0; i < count && candidates.length > 0; i++) {
-                const base = candidates[Math.floor(Math.random() * candidates.length)];
+            const uniqueCandidates = Array.from(new Map(
+                candidates
+                    .filter(base => Number.isFinite(Number(base?.id)) && Number(base.id) > 0)
+                    .map(base => [Number(base.id), base])
+            ).values());
+            const count = Math.min(uniqueCandidates.length, 1 + Math.floor(Math.random() * 3));
+            const pool = uniqueCandidates.slice();
+            for (let i = 0; i < count; i++) {
+                const index = Math.floor(Math.random() * pool.length);
+                const [base] = pool.splice(index, 1);
                 if (base?.id) ids.push(Number(base.id));
             }
         } else if (monsterData && typeof monsterData.getBossesForFloor === 'function') {
-            const bosses = monsterData.getBossesForFloor(f) || monsterData.getBossesForFloor(200) || [];
+            let bosses = monsterData.getBossesForFloor(f) || [];
+            // JavaScriptでは空配列がtruthyなので、`current || fallback` では代替候補へ移れない。
+            if (bosses.length === 0) bosses = monsterData.getBossesForFloor(200) || [];
             ids = bosses.map(base => Number(base?.id)).filter(id => Number.isFinite(id));
         }
 
@@ -1516,7 +1653,7 @@ const Dungeon = {
             x: layout.boss.x,
             y: layout.boss.y,
             monsterIds: ids,
-            displayMonsterId: ids[0],
+            displayMonsterId: Dungeon.getAbyssBossDisplayMonsterId(ids),
             source: f >= 201 ? 'deep-random' : 'floor-band'
         };
     },
@@ -1526,9 +1663,9 @@ const Dungeon = {
         const floor = Math.max(1, Number(options.floor || Dungeon.floor || App.data.progress?.floor || 1));
         const current = App.data.dungeon.abyssBossEncounter;
         if (!options.force && current && current.active && Number(current.floor) === floor && Array.isArray(current.monsterIds) && current.monsterIds.length) {
-            return current;
+            return Dungeon.normalizeAbyssBossEncounter(current);
         }
-        const encounter = Dungeon.selectAbyssBossEncounter(floor);
+        const encounter = Dungeon.normalizeAbyssBossEncounter(Dungeon.selectAbyssBossEncounter(floor));
         App.data.dungeon.abyssBossEncounter = encounter;
         return encounter;
     },
@@ -1543,7 +1680,7 @@ const Dungeon = {
         if (App.data?.location?.area !== 'ABYSS') return null;
         const floor = Math.max(1, Number(Dungeon.floor || App.data?.progress?.floor || 1));
         const encounter = App.data?.dungeon?.abyssBossEncounter;
-        if (encounter && encounter.active && Number(encounter.floor) === floor) return encounter;
+        if (encounter && encounter.active && Number(encounter.floor) === floor) return Dungeon.normalizeAbyssBossEncounter(encounter);
         if (floor > 0 && floor % 10 === 0 && Dungeon.hasCurrentAbyssBossTile()) {
             return Dungeon.ensureAbyssBossEncounter({ floor });
         }
@@ -1575,18 +1712,25 @@ const Dungeon = {
     startAbyssBossBattle: (x = null, y = null) => {
         const encounter = Dungeon.getCurrentAbyssBossEncounter ? Dungeon.getCurrentAbyssBossEncounter() : null;
         if (!encounter) return false;
-        if (App.data.battle) {
-            App.data.battle.isBossBattle = true;
-            App.data.battle.isSpecialBoss = false;
-            App.data.battle.isEstark = false;
-            App.data.battle.fixedBossId = null;
-            App.data.battle.abyssBossEncounter = encounter;
-            App.data.battle.abyssBossPosition = {
-                x: Number(x ?? encounter.x ?? 5),
-                y: Number(y ?? encounter.y ?? 5),
-                floor: Number(Dungeon.floor)
-            };
-        }
+        if (!App.data.battle) App.data.battle = {};
+
+        // 討伐済み階の再戦は通常ボス戦として開始する。
+        // 前回のイベント戦闘情報が残っていても、会話や勝利イベントを再予約しない。
+        App.data.battle.active = false;
+        App.data.battle.isBossBattle = true;
+        App.data.battle.isSpecialBoss = false;
+        App.data.battle.isEstark = false;
+        App.data.battle.isRiftBattle = false;
+        App.data.battle.fixedBossId = null;
+        App.data.battle.eventId = null;
+        App.data.battle.storyWinEventId = null;
+        App.data.battle.storyLossEventId = null;
+        App.data.battle.abyssBossEncounter = encounter;
+        App.data.battle.abyssBossPosition = {
+            x: Number(x ?? encounter.x ?? 5),
+            y: Number(y ?? encounter.y ?? 5),
+            floor: Number(Dungeon.floor)
+        };
         App.save();
         App.changeScene('battle');
         return true;
@@ -1687,16 +1831,8 @@ const Dungeon = {
                     Dungeon.startFixedBoss(x, y);
                     return;
                 }
-                if (App.data.battle) {
-                    App.data.battle.isBossBattle = true;
-                    //App.data.battle.isSpecialBoss = Dungeon.floor >= 300;
-                    //App.data.battle.isEstark = Dungeon.floor >= 300;
-                    //App.data.battle.fixedBossId = Dungeon.floor >= 300 ? 902000 : null;
-                    const abyssBossEncounter = (areaKey === 'ABYSS') ? Dungeon.getCurrentAbyssBossEncounter() : null;
-                    if (abyssBossEncounter && !Dungeon.getAbyssBossStoryEventId(Dungeon.floor)) {
-                        App.data.battle.abyssBossEncounter = abyssBossEncounter;
-                    }
-                }
+                if (areaKey === 'ABYSS' && Dungeon.startAbyssBossBattle(x, y)) return;
+                if (App.data.battle) App.data.battle.isBossBattle = true;
                 App.changeScene('battle');
             });
         } 
@@ -3819,13 +3955,13 @@ const Dungeon = {
 
         const preserved = options.preserveEncounter;
         if (preserved && Number(preserved.floor) === Number(Dungeon.floor) && Array.isArray(preserved.monsterIds) && preserved.monsterIds.length) {
-            App.data.dungeon.abyssBossEncounter = {
+            App.data.dungeon.abyssBossEncounter = Dungeon.normalizeAbyssBossEncounter({
                 ...preserved,
                 active: true,
                 floor: Dungeon.floor,
                 x: layout.boss.x,
                 y: layout.boss.y,
-            };
+            });
         } else {
             Dungeon.ensureAbyssBossEncounter({ floor: Dungeon.floor, force: true });
         }
@@ -4691,6 +4827,16 @@ const Dungeon = {
                 App.data.battle.eventId = null;
             }
             return;
+        }
+
+        // 10～100階のイベント戦闘は、各階の最終戦を初めて討伐した時だけ実行する。
+        // 100階の第1戦（phase1→phase2）はここでは完了扱いにしない。
+        if (isAbyss) {
+            const definition = Dungeon.getAbyssBossStoryDefinition(Dungeon.floor);
+            const winEventId = App.data.battle?.storyWinEventId || null;
+            if (definition && winEventId === definition.clearEventId) {
+                Dungeon.markAbyssBossStoryDefeated(Dungeon.floor);
+            }
         }
 
 		if (isAbyss) {

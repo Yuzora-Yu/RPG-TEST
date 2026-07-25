@@ -981,6 +981,7 @@ const Battle = {
                     const base = Battle.getMonsterBaseById(id);
                     if (!base) return;
                     const m = Battle.createDeepFloorMonster(Battle.cloneMonsterBase(base), storedFloor, true);
+                    if (!m) return;
                     if (storedIds.length > 1) m.name += String.fromCharCode(65 + i);
                     newEnemies.push(m);
                 });
@@ -1066,13 +1067,26 @@ const Battle = {
         if (floor >= 201) {
             if (isBoss) {
                 Battle.log('<span style="color:#ff0000; font-size:1em; font-weight:bold;">\u6df1\u6df5\u306e\u5b88\u8b77\u8005\u304c\u73fe\u308c\u305f\uff01</span>');
-                const candidates = (window.MonsterData?.bossMonsters || DB.MONSTERS || [])
+                let candidates = (window.MonsterData?.bossMonsters || DB.MONSTERS || [])
                     .filter(base => base.isBoss && !base.isRare && !Battle.isSpecialBossBase(base) && Battle.isAbyssRandomBossBase(base));
-                for (let i = 0; i < deepBossCount; i++) {
-                    const base = candidates[Math.floor(Math.random() * candidates.length)];
+                candidates = Array.from(new Map(
+                    candidates
+                        .filter(base => Number.isFinite(Number(base?.id)) && Number(base.id) > 0)
+                        .map(base => [Number(base.id), base])
+                ).values());
+                if (candidates.length === 0) {
+                    const fallback = Battle.getMonsterBaseById(401200) || Battle.getMonsterBaseById(401100);
+                    if (fallback) candidates = [fallback];
+                }
+                const count = Math.min(deepBossCount, candidates.length);
+                const pool = candidates.slice();
+                for (let i = 0; i < count; i++) {
+                    const index = Math.floor(Math.random() * pool.length);
+                    const [base] = pool.splice(index, 1);
                     if (!base) continue;
                     const m = Battle.createDeepFloorMonster(Battle.cloneMonsterBase(base), floor, true);
-                    if (deepBossCount > 1) m.name += String.fromCharCode(65 + i);
+                    if (!m) continue;
+                    if (count > 1) m.name += String.fromCharCode(65 + i);
                     newEnemies.push(m);
                 }
             } else {
@@ -1089,6 +1103,7 @@ const Battle = {
                     const base = candidates[Math.floor(Math.random() * candidates.length)];
                     if (!base) continue;
                     const m = Battle.createDeepFloorMonster(Battle.cloneMonsterBase(base), floor, false);
+                    if (!m) continue;
                     if (normalCount > 1) m.name += String.fromCharCode(65 + i);
                     newEnemies.push(m);
                 }
@@ -4982,7 +4997,7 @@ findNextActor: () => {
                 Battle.resultInputLocked = false;
             }
             for (const detail of event.details) Battle.log(detail);
-            Battle.log(`<span style="color:#aaa; font-size:0.85em;">▼ タップ / Enterキーで次へ ▼</span>`);
+            Battle.log(`<span style="color:#aaa; font-size:0.85em;">▼</span>`);
             await Battle.waitForResultAdvance();
         }
 

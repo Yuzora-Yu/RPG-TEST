@@ -1352,7 +1352,26 @@ const StoryManager = {
             this.endConversation();
             this.active = false;
             this.isTyping = false;
-            const fixedBossId = action.value !== undefined ? action.value : null;
+            const requestedBossId = action.value !== undefined ? action.value : null;
+            const requestedIds = (Array.isArray(requestedBossId) ? requestedBossId : [requestedBossId])
+                .map(id => Number(id))
+                .filter(id => Number.isFinite(id));
+            let fixedBossId = requestedBossId;
+            let abyssBossEncounter = null;
+
+            // 深淵のストーリー階でも、代表IDだけでなく同じminFの編成全体を戦闘へ渡す。
+            // 100階の別フェーズ編成など、イベント側が複数IDを明示している場合は上書きしない。
+            if (App.data?.location?.area === 'ABYSS' && requestedIds.length === 1 && typeof Dungeon !== 'undefined' && typeof Dungeon.getCurrentAbyssBossEncounter === 'function') {
+                const currentEncounter = Dungeon.getCurrentAbyssBossEncounter();
+                const encounterIds = (currentEncounter?.monsterIds || [])
+                    .map(id => Number(id))
+                    .filter(id => Number.isFinite(id));
+                if (encounterIds.length > 1 && encounterIds.includes(requestedIds[0])) {
+                    fixedBossId = encounterIds;
+                    abyssBossEncounter = currentEncounter;
+                }
+            }
+
             const ids = Array.isArray(fixedBossId) ? fixedBossId : [fixedBossId].filter(id => id !== null);
             const isSpecialBoss = ids.some(id => {
                 const base = window.MonsterData?.getMonsterById?.(Number(id));
@@ -1394,6 +1413,7 @@ const StoryManager = {
 			isBossBattle: true,
 			battleBg: action.battleBg || null,
 			fixedBossId: fixedBossId,
+            abyssBossEncounter: abyssBossEncounter,
 			fixedBossPosition: fixedBossPosition,
 			fixedBossProgressKey: action.fixedBossProgressKey || action.progressKey || activeFixedBossContext?.progressKey || null,
 			fixedQuestId: action.fixedQuestId || activeFixedBossContext?.fixedQuestId || null,
@@ -1465,6 +1485,13 @@ const StoryManager = {
             choiceText.innerText = text;
             const choiceWindow = choiceText.parentElement;
             if (choiceWindow?.dataset?.defaultStyle) choiceWindow.style.cssText = choiceWindow.dataset.defaultStyle;
+            // 選択肢はボタンを含むため、3行固定の会話ウィンドウとは分けて必要な高さまで広げる。
+            if (choiceWindow) {
+                choiceWindow.style.height = 'auto';
+                choiceWindow.style.minHeight = '148px';
+                choiceWindow.style.maxHeight = '300px';
+                choiceWindow.style.overflowY = 'auto';
+            }
 			
 			// ★修正: visibilityで制御することでshowConversationとの競合を回避
             document.getElementById('story-next-indicator').style.visibility = 'hidden';
@@ -1559,9 +1586,10 @@ const StoryManager = {
                         border-radius: 2px;
                         padding: 16px;
                         box-sizing: border-box;
-                        min-height: 96px;
-                        max-height: 280px;
-                        overflow-y: auto;
+                        height: 148px;
+                        min-height: 148px;
+                        max-height: 148px;
+                        overflow: hidden;
                         box-shadow: none;
                         z-index: 10;
                     `;
@@ -1744,9 +1772,10 @@ const StoryManager = {
 					border-radius: 8px;           
 					padding: 15px;
 					box-sizing: border-box;
-					min-height: 110px;            
-					max-height: 300px;            
-					overflow-y: auto;             
+					height: 148px;                /* 話者名 + 本文3行 + 送り表示を基準に固定 */
+					min-height: 148px;            
+					max-height: 148px;            
+					overflow: hidden;             
 					box-shadow: 0 4px 15px rgba(0,0,0,0.5); 
 					z-index: 10;               /* キャラ画像より前面に表示 */
 				">
@@ -1763,6 +1792,10 @@ const StoryManager = {
 						color: #fff;
 						font-size: 13px;
 						line-height: 1.6;
+						height: 4.8em;               /* 1.6em × 3行 */
+						min-height: 4.8em;
+						max-height: 4.8em;
+						overflow-y: auto;
 						letter-spacing: 0.5px;
 					"></div>
 
