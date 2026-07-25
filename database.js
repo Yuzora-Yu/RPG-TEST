@@ -283,14 +283,14 @@ const INITIAL_DATA_TEMPLATE = {
     inventory: [], 
     location: { 
         area: 'START_VILLAGE', 
-        x: 7, y: 8 // 村の広場の真ん中あたり
+        x: 7, y: 9 // 村の広場の真ん中あたり
     },
     transportMode: null, // null / "boat" / "flying"
     mapReturnPoint: null,
     progress: { 
         floor: 0,
         storyStep: 0,        // ストーリー進行フラグ
-        flags: { hasShip: false },           // イベント個別フラグ (hasShip 等)
+        flags: { hasShip: false, luminaVillageTopWallRowV1: true },           // イベント個別フラグ (hasShip 等)
         quests: {},
         unlocked: { smith: false, gacha: false, boat: false }, // 機能解放
         clearedDungeons: []  // 攻略済みエリア

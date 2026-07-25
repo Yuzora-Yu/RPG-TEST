@@ -148,6 +148,15 @@ const TILE_THEMES = {
             img: "medal",
             color: "#f6ca62"
         },
+        F: {
+            img: "floor",
+            color: "#70843f",
+            terrain: true
+        },
+        M: {
+            img: "forest",
+            color: "#1f6a3f"
+        },
         H: {
             img: "house-1",
             color: "#d9bd84"
@@ -235,7 +244,7 @@ const TILE_THEMES = {
             color: "#3c4151"
         },
         S: {
-            img: "dungeon_floor",
+            img: "floor",
             color: "#d7b45a"
         },
         V: {
@@ -2153,13 +2162,14 @@ const FIXED_MAPS = {
         themeKey: "START_VILLAGE",
         tileOverrides: {},
         width: 15,
-        height: 12,
+        height: 13,
         entryPoint: {
             x: 7,
-            y: 9
+            y: 10
         },
         battleBg: "battle_bg_field",
         tiles: [
+            "WWWWWWWWWWWWWWW",
             "WWWWWWWWWWWDWWW",
             "WGHGHWWWGGGGWWW",
             "WGGGGWWWWGGGGGW",
@@ -2176,7 +2186,7 @@ const FIXED_MAPS = {
         mapActions: [
             {
                 x: 2,
-                y: 8,
+                y: 9,
                 label: "道具を買う",
                 log: "道具屋の看板が出ている。",
                 type: "shop",
@@ -2186,7 +2196,7 @@ const FIXED_MAPS = {
             },
             {
                 x: 8,
-                y: 4,
+                y: 5,
                 label: "武器を見る",
                 log: "簡素な武器が並んでいる。",
                 type: "shop",
@@ -2196,7 +2206,7 @@ const FIXED_MAPS = {
             },
             {
                 x: 10,
-                y: 4,
+                y: 5,
                 label: "防具を見る",
                 log: "旅支度用の防具が並んでいる。",
                 type: "shop",
@@ -2206,7 +2216,7 @@ const FIXED_MAPS = {
             },
             {
                 x: 11,
-                y: 8,
+                y: 9,
                 label: "村人と話す",
                 log: "村人が、北東の穴を見つめている。",
                 type: "storyEvent",
@@ -2217,7 +2227,7 @@ const FIXED_MAPS = {
             },
             {
                 x: 13,
-                y: 2,
+                y: 3,
                 label: "村の若者と話す",
                 log: "若者が木剣を握りしめている。",
                 type: "storyEvent",
@@ -2228,7 +2238,7 @@ const FIXED_MAPS = {
             },
             {
                 x: 3,
-                y: 1,
+                y: 2,
                 label: "薬草摘みと話す",
                 log: "籠を抱えた女性が、葉についた泥を払っている。",
                 type: "storyEvent",
@@ -2239,7 +2249,7 @@ const FIXED_MAPS = {
             },
             {
                 x: 6,
-                y: 3,
+                y: 4,
                 label: "長老と話す",
                 log: "長老が旅人を待っている。",
                 type: "log",
@@ -2270,7 +2280,7 @@ const FIXED_MAPS = {
             },
             {
                 x: 11,
-                y: 0,
+                y: 1,
                 label: "洞穴に入る",
                 log: "北東の洞穴から冷たい風が吹いている。",
                 type: "fixedDungeon",
@@ -3677,7 +3687,7 @@ const FIXED_DUNGEON_MAPS = {
         height: 23,
         entryPoint: {
             x: 15,
-            y: 21
+            y: 20
         },
         battleBg: "battle_bg_dungeon",
         tiles: [
@@ -3702,8 +3712,8 @@ const FIXED_DUNGEON_MAPS = {
             "WWWWWWWWWWWWWTTTTTWWWWWWWWWWWWW",
             "WWWWWWWWWWWWTTTTTTTWWWWWWWWWWWW",
             "WWWWWWWWWWWWWTTTTTWWWWWWWWWWWWW",
-            "WWWWWWWWWWWWWWWSWWWWWWWWWWWWWWW",
-            "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+            "WWWWWWWWWWWWWWSSSWWWWWWWWWWWWWW",
+            "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
         ],
         chests: [
             {

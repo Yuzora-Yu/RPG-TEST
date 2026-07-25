@@ -860,10 +860,9 @@
                 const tx = Number(field.x) + dx;
                 const ty = Number(field.y) + dy;
                 let visible = true;
-                const outsideFixedMap = !!field.currentMapData && (tx < 0 || ty < 0 || tx >= mapSize.width || ty >= mapSize.height);
-                // 固定MAPの画面外は、通常描画と同じく最寄りの端タイルを延長する。
-                // 小型ミニマップだけ黒く欠ける状態を作らない。
-                if (outsideFixedMap && !field.currentMapData?.isFixed) visible = false;
+                const outsideCurrentMap = !!field.currentMapData && (tx < 0 || ty < 0 || tx >= mapSize.width || ty >= mapSize.height);
+                // ミニマップは実際のマップ範囲だけを描画し、端タイルを画面外へ延長しない。
+                if (outsideCurrentMap) visible = false;
                 if (visible && field.currentMapData?.isDungeon && !field.currentMapData?.isFixed &&
                     getDungeon() && typeof getDungeon().isVisited === 'function') {
                     const inSight = Math.abs(dx) <= 4 && Math.abs(dy) <= 4;

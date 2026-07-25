@@ -665,12 +665,12 @@ const App = {
     // セーブデータが全くない場合や、マイグレーション時のデフォルト参照用
     getInitialData: () => {
         return {
-            location: { area: 'START_VILLAGE', x: 6, y: 4 },
+            location: { area: 'START_VILLAGE', x: 6, y: 5 },
             settings: App.getDefaultSettings(),
             progress: { 
                 floor: 0, 
                 storyStep: 0, 
-                flags: { hasShip: false }, 
+                flags: { hasShip: false, luminaVillageTopWallRowV1: true }, 
                 unlocked: { ...App.getDefaultUnlockState(), boat: false },
                 clearedDungeons: [],
                 openedChests: {},  
@@ -774,6 +774,51 @@ const App = {
             if (!App.data.progress.openedChests) App.data.progress.openedChests = {};
             if (!App.data.progress.defeatedBosses) App.data.progress.defeatedBosses = {};
             if (!App.data.progress.visitedFixedMaps || typeof App.data.progress.visitedFixedMaps !== 'object' || Array.isArray(App.data.progress.visitedFixedMaps)) App.data.progress.visitedFixedMaps = {};
+        }
+
+        // リュミナ村の上端へ壁行を追加した版への座標移行。
+        // 新規データは初期フラグ済み。旧セーブだけ、村内のY座標と保存済み座標キーを一度だけ+1する。
+        if (!App.data.progress.flags.luminaVillageTopWallRowV1) {
+            const shiftLuminaPoint = (point) => {
+                if (!point || String(point.areaKey || point.area || '') !== 'START_VILLAGE') return;
+                const y = Number(point.y);
+                if (Number.isFinite(y)) point.y = y + 1;
+                if (point.mapData && String(point.mapData.themeKey || point.mapData.areaKey || '') === 'START_VILLAGE'
+                    && typeof FIXED_MAPS !== 'undefined' && FIXED_MAPS.START_VILLAGE) {
+                    point.mapData = {
+                        ...JSON.parse(JSON.stringify(FIXED_MAPS.START_VILLAGE)),
+                        isFixed: true,
+                        isDungeon: FIXED_MAPS.START_VILLAGE.isDungeon === true,
+                        areaKey: 'START_VILLAGE'
+                    };
+                }
+            };
+
+            if (App.data.location?.area === 'START_VILLAGE') {
+                const y = Number(App.data.location.y);
+                if (Number.isFinite(y)) App.data.location.y = y + 1;
+            }
+            shiftLuminaPoint(App.data.mapReturnPoint);
+            shiftLuminaPoint(App.data.dungeon?.returnPoint);
+            if (Array.isArray(App.data.dungeon?.returnStack)) {
+                App.data.dungeon.returnStack.forEach(shiftLuminaPoint);
+            }
+
+            const oldChanges = App.data.progress.mapChanges?.START_VILLAGE;
+            if (oldChanges && typeof oldChanges === 'object' && !Array.isArray(oldChanges)) {
+                const shiftedChanges = {};
+                Object.entries(oldChanges).forEach(([key, tile]) => {
+                    const match = /^(\-?\d+),(\-?\d+)$/.exec(String(key));
+                    if (!match) {
+                        shiftedChanges[key] = tile;
+                        return;
+                    }
+                    shiftedChanges[`${Number(match[1])},${Number(match[2]) + 1}`] = tile;
+                });
+                App.data.progress.mapChanges.START_VILLAGE = shiftedChanges;
+            }
+
+            App.data.progress.flags.luminaVillageTopWallRowV1 = true;
         }
 
         App.ensureUnlockState();
@@ -6073,28 +6118,41 @@ const Field = {
                     ? Field.getMiniMapTileColor(tile, x, y)
                     : (cfg.color || '#000');
                 ctx.fillRect(drawX, drawY, Math.ceil(size), Math.ceil(size));
-                if (parts.overlayConfig && Field.drawMapOverlayMarker) {
+                // 拡大マップでは壁そのものを丸いオーバーレイにしない。
+                // 建物・入口・NPCなどはタイル内の四角い記号で示す。
+                if (parts.overlayConfig && String(parts.upper || tile || '').toUpperCase() !== 'W' && Field.drawMapOverlayMarker) {
                     Field.drawMapOverlayMarker(ctx, parts.overlayConfig, drawX, drawY, size);
                 }
                 const effectColor = Field.getTileEffectMarkerColor ? Field.getTileEffectMarkerColor(x, y) : null;
-                if (effectColor && Field.drawMiniMapTileMarker) {
-                    Field.drawMiniMapTileMarker(ctx, effectColor, drawX, drawY, size);
+                if (effectColor && Field.drawFullMapTileMarker) {
+                    Field.drawFullMapTileMarker(ctx, effectColor, drawX, drawY, size);
                 }
                 const markerColor = Field.getMiniMapMarkerColor ? Field.getMiniMapMarkerColor(tile, x, y) : null;
-                if (markerColor && Field.drawMiniMapTileMarker) {
-                    Field.drawMiniMapTileMarker(ctx, markerColor, drawX, drawY, size);
+                if (markerColor && Field.drawFullMapTileMarker) {
+                    Field.drawFullMapTileMarker(ctx, markerColor, drawX, drawY, size);
                 }
             }
         }
 
-        if (Field.currentMapData?.isFixed && Field.getFixedHealSpringsForCurrentFloor && Field.drawMiniMapTileMarker) {
+        if (Field.currentMapData?.isFixed && Field.getFixedHealSpringsForCurrentFloor && Field.drawFullMapTileMarker) {
             Field.getFixedHealSpringsForCurrentFloor().forEach(s => {
-                Field.drawMiniMapTileMarker(ctx, '#80ffb0', offsetX + Number(s.x) * size, offsetY + Number(s.y) * size, size);
+                Field.drawFullMapTileMarker(ctx, '#80ffb0', offsetX + Number(s.x) * size, offsetY + Number(s.y) * size, size);
             });
         }
 
+        // 拡大マップでは主人公だけを白い「●」で表示する。
+        ctx.save();
         ctx.fillStyle = '#fff';
-        ctx.fillRect(offsetX + Field.x * size, offsetY + Field.y * size, Math.max(3, size), Math.max(3, size));
+        ctx.beginPath();
+        ctx.arc(
+            offsetX + (Number(Field.x) + 0.5) * size,
+            offsetY + (Number(Field.y) + 0.5) * size,
+            Math.max(2.5, Math.min(6, size * 0.34)),
+            0,
+            Math.PI * 2
+        );
+        ctx.fill();
+        ctx.restore();
         ctx.strokeStyle = 'rgba(255,255,255,0.72)';
         ctx.lineWidth = 1;
         ctx.strokeRect(Math.floor(offsetX) + 0.5, Math.floor(offsetY) + 0.5, Math.floor(mapW * size) - 1, Math.floor(mapH * size) - 1);
@@ -6665,6 +6723,18 @@ const Field = {
         return colors[upper] || null;
     },
 
+    drawFullMapTileMarker: (ctx, color, x, y, size) => {
+        if (!ctx || !color || size <= 0) return;
+        const marker = Math.max(2, Math.floor(size * 0.58));
+        const markerX = Math.floor(x + (size - marker) / 2);
+        const markerY = Math.floor(y + (size - marker) / 2);
+        ctx.save();
+        ctx.globalAlpha = 0.95;
+        ctx.fillStyle = color;
+        ctx.fillRect(markerX, markerY, marker, marker);
+        ctx.restore();
+    },
+
     drawMiniMapTileMarker: (ctx, color, x, y, size) => {
         if (!ctx || !color || size <= 0) return;
         const marker = Math.max(2, Math.ceil(size * 0.72));
@@ -6728,8 +6798,17 @@ const Field = {
         const range = 7;
         const cells = range * 2 + 1;
         const cell = size / cells;
-        const mapW = Field.currentMapData ? Field.currentMapData.width : (typeof MAP_DATA !== 'undefined' ? MAP_DATA[0].length : 50);
-        const mapH = Field.currentMapData ? Field.currentMapData.height : (typeof MAP_DATA !== 'undefined' ? MAP_DATA.length : 32);
+        const tileRows = Field.currentMapData?.tiles;
+        const actualMapH = Array.isArray(tileRows) ? tileRows.length : 0;
+        const actualMapW = Array.isArray(tileRows)
+            ? tileRows.reduce((max, row) => Math.max(max, Array.isArray(row) ? row.length : String(row || '').length), 0)
+            : 0;
+        const mapW = Field.currentMapData
+            ? Math.max(1, actualMapW || Number(Field.currentMapData.width || 0))
+            : (typeof MAP_DATA !== 'undefined' ? MAP_DATA[0].length : 50);
+        const mapH = Field.currentMapData
+            ? Math.max(1, actualMapH || Number(Field.currentMapData.height || 0))
+            : (typeof MAP_DATA !== 'undefined' ? MAP_DATA.length : 32);
 
         ctx.save();
         ctx.globalAlpha = 0.56;
@@ -6757,10 +6836,10 @@ const Field = {
 
                 if (Field.currentMapData) {
                     const outOfBounds = tx < 0 || tx >= mapW || ty < 0 || ty >= mapH;
-                    if (isRandomDungeonHidden(dx, dy, tx, ty) || (outOfBounds && !Field.currentMapData.isFixed)) {
+                    // ミニマップは実タイル配列の範囲だけを描画する。
+                    // 固定MAPの端タイルを画面外へ延長すると、出口が連続して見えるため描かない。
+                    if (outOfBounds || isRandomDungeonHidden(dx, dy, tx, ty)) {
                         visible = false;
-                    } else if (outOfBounds) {
-                        tile = Field.getRenderedTileForDraw(tx, ty, mapW, mapH, Field.getCurrentAreaKey());
                     } else {
                         const areaKey = Field.getCurrentAreaKey();
                         const progressKey = Field.currentMapData?.isFixed && Field.getCurrentProgressMapKey
@@ -6842,17 +6921,9 @@ const Field = {
         const markerX = Math.floor(x + (size - marker) / 2);
         const markerY = Math.floor(y + (size - marker) / 2);
         ctx.save();
+        ctx.globalAlpha = 0.95;
         ctx.fillStyle = overlayConfig.color || '#fff';
-        if (size < 5) {
-            ctx.fillRect(markerX, markerY, Math.max(1, marker), Math.max(1, marker));
-        } else {
-            ctx.beginPath();
-            ctx.arc(x + size / 2, y + size / 2, Math.max(1, marker / 2), 0, Math.PI * 2);
-            ctx.fill();
-            ctx.globalAlpha = 0.35;
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(markerX, markerY, Math.max(1, Math.floor(marker * 0.35)), Math.max(1, Math.floor(marker * 0.28)));
-        }
+        ctx.fillRect(markerX, markerY, marker, marker);
         ctx.restore();
     },
 
