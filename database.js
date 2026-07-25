@@ -292,6 +292,7 @@ const INITIAL_DATA_TEMPLATE = {
         storyStep: 0,        // ストーリー進行フラグ
         flags: { hasShip: false, luminaVillageTopWallRowV1: true },           // イベント個別フラグ (hasShip 等)
         quests: {},
+        guild: { rank: 'G', exp: 0, points: 0, offers: [], questStates: {}, completionCounts: {}, refreshCount: 0 },
         unlocked: { smith: false, gacha: false, boat: false }, // 機能解放
         clearedDungeons: []  // 攻略済みエリア
     },

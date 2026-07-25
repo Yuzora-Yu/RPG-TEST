@@ -268,6 +268,11 @@ const PRISMA_ASSETS = {
     overlay_npc_child: "assets/map/overlays/overlay_npc_child.png",
     overlay_npc_dark_soldier: "assets/map/overlays/overlay_npc_dark_soldier.png",
     overlay_npc_bronze_knight: "assets/map/overlays/overlay_npc_bronze_knight.png",
+    guild_counter: "assets/map/overlays/guild_counter.png",
+    guild_girl: "assets/map/overlays/guild_girl.png",
+    guild_sign: "assets/map/overlays/guild.png",
+    guild_bed: "assets/map/overlays/bed.png",
+    guild_questboard: "assets/map/overlays/questboard.png",
     overlay_light_captive_king: "assets/map/overlays/overlay_light_captive_king.png",
     overlay_light_captive_princess: "assets/map/overlays/overlay_light_captive_princess.png",
     overlay_light_captive_priest_a: "assets/map/overlays/overlay_light_captive_priest_a.png",
@@ -645,7 +650,7 @@ const PRISMA_ASSETS = {
   // installImages: Service Worker の初回install時にキャッシュする画像全体。
   // backgroundImages: install後の再試行/補助ウォームキャッシュ用。
   cacheWarmup: {
-    version: "2026-07-24-monster-id-registry-v59",
+    version: "2026-07-25-adventurer-guild-v60",
     initialGraphicKeys: [
       "floor", "sea", "forest", "mountain", "Low_mountain", "cave", "house-1", "house-2", "inn", "wall", "dungeon_floor",
       "item_icon_attack", "item_icon_buff", "item_icon_debuff", "item_icon_material", "item_icon_vehicle", "item_icon_travel",

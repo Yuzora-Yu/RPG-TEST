@@ -430,5 +430,35 @@
         }
     };
 
-    if (typeof window !== "undefined") window.QUEST_DATA = QUEST_DATA;
+    // 町ごとの旧「依頼掲示板」依頼は、通常クエストから分離して
+    // 冒険者ギルド専用の回転依頼として管理する。
+    const GUILD_QUEST_META = {
+        fire_board_hunt: { requiredRank: "G", guildExp: 18, guildPoints: 6 },
+        fire_board_exchange: { requiredRank: "G", guildExp: 16, guildPoints: 7 },
+        wind_board_hunt: { requiredRank: "G", guildExp: 22, guildPoints: 8 },
+        wind_board_exchange: { requiredRank: "F", guildExp: 28, guildPoints: 10 },
+        water_board_hunt: { requiredRank: "F", guildExp: 32, guildPoints: 12 },
+        water_board_exchange: { requiredRank: "E", guildExp: 42, guildPoints: 15 },
+        tower_board_hunt: { requiredRank: "E", guildExp: 46, guildPoints: 17 },
+        tower_board_exchange: { requiredRank: "D", guildExp: 58, guildPoints: 21 },
+        thunder_board_hunt: { requiredRank: "D", guildExp: 64, guildPoints: 24 },
+        thunder_board_exchange: { requiredRank: "C", guildExp: 82, guildPoints: 30 },
+        light_board_hunt: { requiredRank: "C", guildExp: 90, guildPoints: 34 },
+        light_board_exchange: { requiredRank: "B", guildExp: 118, guildPoints: 42 },
+        dark_board_hunt: { requiredRank: "B", guildExp: 130, guildPoints: 48 },
+        dark_board_exchange: { requiredRank: "A", guildExp: 172, guildPoints: 60 },
+        abyss_board_hunt: { requiredRank: "A", guildExp: 190, guildPoints: 68 },
+        abyss_board_exchange: { requiredRank: "S", guildExp: 250, guildPoints: 90 }
+    };
+    const GUILD_QUEST_DATA = {};
+    Object.entries(GUILD_QUEST_META).forEach(([id, meta]) => {
+        if (!QUEST_DATA[id]) return;
+        GUILD_QUEST_DATA[id] = { ...QUEST_DATA[id], ...meta, guildQuest: true, repeatable: true };
+        delete QUEST_DATA[id];
+    });
+
+    if (typeof window !== "undefined") {
+        window.QUEST_DATA = QUEST_DATA;
+        window.GUILD_QUEST_DATA = GUILD_QUEST_DATA;
+    }
 })();

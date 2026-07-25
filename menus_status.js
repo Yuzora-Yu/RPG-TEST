@@ -27,6 +27,7 @@ const MenuStatus = {
             <div style="display:flex; margin:10px 12px 0; border-radius:6px; overflow:hidden; border:1px solid #444; background:#222; flex-shrink:0;">
                 <button id="status-tab-record" style="flex:1; min-width:0; padding:10px 4px; border:none; font-weight:bold; font-size:11px; font-family:inherit;" onclick="MenuStatus.setTab('record')">記録</button>
                 <button id="status-tab-quests" style="flex:1; min-width:0; padding:10px 4px; border:none; font-weight:bold; font-size:11px; font-family:inherit;" onclick="MenuStatus.setTab('quests')">クエスト</button>
+                <button id="status-tab-guild" style="flex:1; min-width:0; padding:10px 4px; border:none; font-weight:bold; font-size:11px; font-family:inherit;" onclick="MenuStatus.setTab('guild')">ギルド</button>
             </div>
 
 			<div
@@ -65,6 +66,7 @@ const MenuStatus = {
 
         const tabRecord = document.getElementById('status-tab-record');
         const tabQuests = document.getElementById('status-tab-quests');
+        const tabGuild = document.getElementById('status-tab-guild');
         const styleTab = (button, active) => {
             if (!button) return;
             button.style.background = active ? '#ffd700' : '#111';
@@ -72,9 +74,14 @@ const MenuStatus = {
         };
         styleTab(tabRecord, MenuStatus.activeTab === 'record');
         styleTab(tabQuests, MenuStatus.activeTab === 'quests');
+        styleTab(tabGuild, MenuStatus.activeTab === 'guild');
 
         if (MenuStatus.activeTab === 'quests') {
             MenuStatus.renderQuests(content);
+            return;
+        }
+        if (MenuStatus.activeTab === 'guild') {
+            MenuStatus.renderGuild(content);
             return;
         }
         
@@ -233,6 +240,48 @@ const MenuStatus = {
                 ${rows || '<div style="color:#888; font-size:12px; padding:12px;">受注中のクエストはありません。</div>'}
             </div>
             <div style="font-size:10px; color:#777; margin-top:8px;">クエスト名を選ぶと詳細を確認できます。</div>
+        `;
+    },
+
+    renderGuild: (content) => {
+        if (typeof Guild === 'undefined') {
+            content.innerHTML = '<div style="color:#888; padding:16px;">冒険者ギルドの記録はまだ利用できません。</div>';
+            return;
+        }
+        const state = Guild.ensureState();
+        const progress = Guild.currentExpProgress();
+        const defs = Guild.getDefinitions();
+        const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, ch => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        }[ch]));
+        const rankStart = Number(Guild.expThresholds?.[state.rank] || 0);
+        const rankSpan = progress.next ? Math.max(1, progress.required - rankStart) : 1;
+        const rankEarned = progress.next ? Math.max(0, state.exp - rankStart) : rankSpan;
+        const rate = Math.max(0, Math.min(100, Math.floor(rankEarned / rankSpan * 100)));
+        const acceptedIds = Object.keys(state.questStates || {}).filter(id => state.questStates[id]?.state === 'accepted' && defs[id]);
+        const completedTotal = Object.values(state.completionCounts || {}).reduce((sum, count) => sum + Math.max(0, Number(count || 0)), 0);
+        const rows = acceptedIds.map(id => {
+            const def = defs[id];
+            const ready = Guild.isObjectiveComplete(id);
+            return `<div style="padding:9px 10px; margin-bottom:6px; border:1px solid ${ready ? '#5f8d52' : '#4b4435'}; border-radius:5px; background:rgba(255,255,255,.045);">
+                <div style="display:flex; justify-content:space-between; gap:8px;"><strong style="font-size:12px; color:#fff;">${escapeHtml(def.name)}</strong><span style="font-size:10px; color:${ready ? '#8cff9d' : '#ffd56b'};">${ready ? '報告可能' : '進行中'}</span></div>
+                <div style="font-size:10px; color:#aaa; margin-top:5px; white-space:pre-wrap;">${escapeHtml(Guild.targetSummary(id))}</div>
+            </div>`;
+        }).join('');
+
+        content.innerHTML = `
+            <div style="border:1px solid #78623a; border-radius:8px; padding:14px; background:linear-gradient(180deg, rgba(99,72,28,.32), rgba(0,0,0,.18)); margin-bottom:12px;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+                    <div><div style="font-size:10px; color:#cdbb91;">冒険者ランク</div><div style="font-size:42px; line-height:1; color:#ffd56b; font-weight:bold;">${escapeHtml(state.rank)}</div></div>
+                    <div style="text-align:right; font-size:11px; color:#bbb;">累計達成 ${completedTotal} 件<br><span style="color:#9fd8ff;">${state.points.toLocaleString()} GP</span></div>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-top:13px; font-size:10px; color:#aaa;"><span>ギルド経験値 ${state.exp.toLocaleString()}</span><span>${progress.next ? `次の${progress.next}まで ${progress.remaining.toLocaleString()}` : '最高ランク'}</span></div>
+                <div style="height:10px; margin-top:5px; border:1px solid #6a5a3a; background:#15120d; border-radius:5px; overflow:hidden;"><div style="height:100%; width:${rate}%; background:linear-gradient(90deg,#b78a2d,#ffe080);"></div></div>
+                <div style="font-size:9px; color:#777; text-align:right; margin-top:3px;">${progress.next ? `${rankEarned.toLocaleString()} / ${rankSpan.toLocaleString()}` : 'RANK MAX'}</div>
+            </div>
+            <div style="font-size:10px; color:#ffd56b; margin:0 0 7px 2px;">受注中のギルド依頼 (${acceptedIds.length}/5)</div>
+            <div style="border:1px solid #3d3425; border-radius:7px; padding:8px; background:rgba(0,0,0,.18);">${rows || '<div style="color:#888; font-size:12px; padding:12px;">受注中のギルド依頼はありません。</div>'}</div>
+            <div style="font-size:10px; color:#777; margin-top:8px;">依頼の受注はライザーク要塞1階の掲示板、達成報告はギルド受付で行います。</div>
         `;
     },
 

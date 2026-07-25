@@ -10,8 +10,15 @@ const Facilities = {
         facility_bg_inn: 'assets/background/bg_inn.jpg',
         facility_bg_alchemy: 'assets/background/bg_alchemy_water_city.png',
         facility_bg_blacksmith: 'assets/background/bg_blacksmith.png',
+        facility_bg_guild: 'assets/background/bg_guild.png',
         facility_bg_medal: 'assets/background/bg_medal.png',
         facility_bg_casino: 'assets/background/bg_casino.png'
+    },
+
+    // bg_guild.png が未配置の開発環境でも施設画面が真っ黒にならないようにする。
+    // 正式画像が存在する環境では常に primary path が優先される。
+    backgroundFallbackPaths: {
+        facility_bg_guild: 'assets/background/bg_blacksmith.png'
     },
 
     escapeAttr: (value) => String(value).replace(/[&<>"]/g, (ch) => ({
@@ -30,14 +37,15 @@ const Facilities = {
         if (!container) return;
 
         const bgUrl = Facilities.backgroundPaths[bgKey] || '';
+        const bgFallbackUrl = Facilities.backgroundFallbackPaths?.[bgKey] || '';
         const topExitFn = options.topExitFn || exitFn;
         const bottomExitFn = options.bottomExitFn || exitFn;
         const topExitLabel = options.topExitLabel || (isLocked ? '勝負中' : '外へ出る');
         const bottomExitLabel = options.bottomExitLabel || '出る';
         const bgImageHtml = bgUrl ? `
-                <img src="${Facilities.escapeAttr(bgUrl)}" alt="" aria-hidden="true"
+                <img src="${Facilities.escapeAttr(bgUrl)}" data-fallback-src="${Facilities.escapeAttr(bgFallbackUrl)}" alt="" aria-hidden="true"
                     style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center; display:block;"
-                    onerror="this.remove();">
+                    onerror="const fallback=this.dataset.fallbackSrc;if(fallback&&this.src.indexOf(fallback)===-1){this.onerror=()=>this.remove();this.src=fallback;}else{this.remove();}">
             ` : '';
 
         // レイアウトのリセットと構築

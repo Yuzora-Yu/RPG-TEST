@@ -675,7 +675,9 @@ const App = {
                 clearedDungeons: [],
                 openedChests: {},  
                 defeatedBosses: {},
-                visitedFixedMaps: {} 
+                visitedFixedMaps: {},
+                quests: {},
+                guild: { rank: 'G', exp: 0, points: 0, offers: [], questStates: {}, completionCounts: {}, refreshCount: 0 }
             },
             inventory: [],
             items: { "1": 3 }, 
@@ -822,6 +824,10 @@ const App = {
         }
 
         App.ensureUnlockState();
+        if (typeof Guild !== 'undefined' && typeof Guild.ensureState === 'function') {
+            Guild.ensureState();
+            Guild.ensureOffers({ save: false });
+        }
 
         // 既存セーブ救済: 固有MAP内で再開した場合は、そのMAPを発見済みにする。
         if (App.data.location && App.data.progress && typeof App.discoverFixedMap === 'function') {
@@ -915,7 +921,7 @@ const App = {
 
 	// 全画像データの手動/初回ダウンロード用キャッシュ名。
 	// sw.js の RUNTIME_CACHE_NAME と揃えること。
-    fullDataCacheName: 'prisma-abyss-v3.123-offline-shell-runtime',
+    fullDataCacheName: 'prisma-abyss-v3.141-adventurer-guild-runtime',
 
 
 	// 初回起動時の「全データを今ダウンロードしますか？」で「いいえ」を選んだ記録。
@@ -5610,6 +5616,7 @@ load: () => {
         if(sceneId === 'shop') Facilities.initShop();
         if(sceneId === 'alchemy' && typeof Alchemy !== 'undefined') Alchemy.init();
         if(sceneId === 'blacksmith' && typeof MenuBlacksmith !== 'undefined' && typeof MenuBlacksmith.initFacility === 'function') MenuBlacksmith.initFacility();
+        if(sceneId === 'guild' && typeof Guild !== 'undefined' && typeof Guild.initFacility === 'function') Guild.initFacility();
     }
 };
 
@@ -7615,7 +7622,7 @@ const Field = {
             return;
         }
 
-        if (action.log && action.type !== 'quest' && action.type !== 'questBoard') App.log(action.log);
+        if (action.log && action.type !== 'quest' && action.type !== 'questBoard' && action.type !== 'guildBoard') App.log(action.log);
 
         const progressEventId = Field.resolveMapActionEventId(action);
         if (progressEventId && typeof StoryManager !== 'undefined') {
@@ -7680,6 +7687,22 @@ const Field = {
 
         if (action.type === 'blacksmith' && typeof MenuBlacksmith !== 'undefined' && typeof MenuBlacksmith.openFromField === 'function') {
             MenuBlacksmith.openFromField(action);
+            return;
+        }
+
+        if (action.type === 'guild' && typeof Guild !== 'undefined') {
+            App.changeScene('guild');
+            return;
+        }
+
+        if (action.type === 'guildBoard' && typeof Guild !== 'undefined') {
+            if (action.log) App.log(action.log);
+            Guild.openBoard();
+            return;
+        }
+
+        if (action.type === 'freeRest' && typeof Guild !== 'undefined') {
+            Guild.freeRest();
             return;
         }
 
