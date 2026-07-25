@@ -4104,6 +4104,25 @@ findNextActor: () => {
         return weighted[weighted.length - 1].enemy;
     },
 	
+
+    getQuestProgressContext: () => {
+        const currentMap = (typeof Field !== 'undefined') ? Field.currentMapData : null;
+        const areaKey = String(
+            (typeof Field !== 'undefined' && typeof Field.getCurrentAreaKey === 'function' ? Field.getCurrentAreaKey() : '') ||
+            App.data?.location?.area ||
+            'WORLD'
+        );
+        return {
+            areaKey,
+            canonicalAreaKey: String(currentMap?.canonicalAreaKey || areaKey),
+            isDungeon: !!(currentMap?.isDungeon || areaKey === 'ABYSS'),
+            isFixed: !!currentMap?.isFixed,
+            floor: Math.max(1, Number(currentMap?.floor || App.data?.progress?.floor || 1)),
+            guildPromotionTrial: !!App.data?.battle?.guildPromotionTrial,
+            countsForGuildQuests: !App.data?.battle?.excludeGuildQuestProgress
+        };
+    },
+
 	saveBattleState: () => { 
         const isB = App.data.battle.isBossBattle; 
         const isE = App.data.battle.isEstark; 
@@ -4705,10 +4724,11 @@ findNextActor: () => {
 			}
 		});
 
-		// 仲間加入クエスト等の討伐数を更新
-		// 以前は装備再抽選用ヘルパー内で呼ばれていたため、
-		// 装備ドロップ生成が発生しない通常戦闘では討伐系クエストが進まなかった。
-		if (typeof App.noteQuestKills === 'function') App.noteQuestKills(defeatedMonsterIds);
+		// 討伐系クエストの進捗は、勝利時に確定した全撃破個体から一度だけ更新する。
+		// ダンジョン指定のギルド依頼は戦闘場所も判定し、施設内で開始する昇格試験は除外する。
+		if (typeof App.noteQuestKills === 'function') {
+			App.noteQuestKills(defeatedMonsterIds, Battle.getQuestProgressContext());
+		}
 
 		// 報酬の内部加算処理（ログを出す前に実行）
 		App.data.gold += totalGold;

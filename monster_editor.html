@@ -46,12 +46,12 @@
   "use strict";
 
   const tabs = [["basic","基本"],["acts","AI行動"],["drops","ドロップ"],["resist","耐性"],["traits","パッシブ/メモ"],["json","詳細JSON"],["csv","CSV"],["export","JS出力"]];
-  const flagFields = ["isBoss","isRare","isEstark","isSpecialBoss","isElite"];
-  const numericFields = new Set(["id","rank","minF","maxF","hp","mp","atk","def","spd","mag","mdef","hit","eva","cri","gold","exp","actCount","_bandStart","_bandEnd"]);
+  const flagFields = ["isBoss","isRare","isEstark","isSpecialBoss","isGuildPromotionBoss","isElite"];
+  const numericFields = new Set(["id","imageId","rank","minF","maxF","hp","mp","atk","def","spd","mag","mdef","hit","eva","cri","gold","exp","actCount","_bandStart","_bandEnd"]);
   const elements = ["火","水","風","雷","光","闇","混沌"];
   const ailmentLabels = {Poison:"毒",ToxicPoison:"猛毒",Shock:"感電",Fear:"怯え",SpellSeal:"呪文封印",SkillSeal:"特技封印",HealSeal:"回復封印",Seal:"封印",Debuff:"弱体",InstantDeath:"即死",PercentDamage:"割合ダメージ",Sleep:"眠り",Confusion:"混乱",Charm:"魅了",Curse:"呪い"};
 
-  const EDITOR_VERSION = "2026-06-10-id-order-one-line-csv";
+  const EDITOR_VERSION = "2026-07-26-guild-promotion-master";
   const DEFAULT_MONSTER_RACES = {"antiDemon": ["死霊", "魔族"], "antiBeast": ["獣", "獣人"], "antiMachine": ["機械", "無生物"], "antiDragon": ["竜", "竜人"], "noKillerCurrently": ["粘体", "精霊", "植物", "人"]};
   const DEFAULT_BALANCE_RULE = {"singleBossFloor": {"baseHp": "boss.hp", "basePower": "Math.max(boss.atk, boss.mag)"}, "multiBossFloor": {"baseHp": "sum(boss.hp) / (bossCount / 1.5)", "basePower": "sum(Math.max(boss.atk, boss.mag)) / (bossCount / 1.5)"}, "normalMonster": {"hpLimit": "baseHp * 0.20", "powerLimit": "basePower * 0.70"}, "eliteMonster": {"hpLimit": "baseHp * 0.30", "powerLimit": "basePower * 0.90", "note": "actCount: 2 の場合は、ATK/MAG * 2回行動込みで powerLimit 内に収める"}};
   const DEFAULT_LOW_FLOOR_OFFSETS = {"1": [{"hpMp": 1, "other": 1, "reward": 1}, {"hpMp": 1.8, "other": 1.2, "reward": 1.25}, {"hpMp": 2.9, "other": 1.4, "reward": 1.45}, {"hpMp": 4.3, "other": 1.65, "reward": 1.7}, {"hpMp": 6.3, "other": 2, "reward": 2}], "6": [{"hpMp": 1, "other": 1, "reward": 1}, {"hpMp": 1.15, "other": 1.06, "reward": 1.08}, {"hpMp": 1.3, "other": 1.12, "reward": 1.14}, {"hpMp": 1.45, "other": 1.18, "reward": 1.2}, {"hpMp": 1.6, "other": 1.24, "reward": 1.26}]};
@@ -188,7 +188,8 @@
     if (!m) return "";
     if (m.img) return m.img;
     const map = window.MonsterImageMap || {};
-    return map[m.id] || `assets/monsters/monster_${m.id}.png`;
+    const imageId = Number(m.imageId ?? m.id);
+    return map[m.id] || `assets/monsters/monster_${Number.isFinite(imageId) && imageId > 0 ? Math.floor(imageId) : m.id}.png`;
   }
 
   function skillLabel(id){ const s = state.skillMap.get(Number(id)); return s ? `[${s.id}] ${s.name}` : `[${id ?? "?"}] 未登録スキル`; }
@@ -317,6 +318,8 @@
         <div><label>経験値 exp</label><input data-field="exp" type="number" value="${esc(m.exp)}"></div>
         <div><label>ゴールド gold</label><input data-field="gold" type="number" value="${esc(m.gold)}"></div>
         <div><label>画像パス img 任意</label><input data-field="img" value="${esc(m.img || "")}" placeholder="空なら assets/monsters/monster_ID.png"></div>
+        <div><label>画像流用ID imageId 任意</label><input data-field="imageId" type="number" value="${esc(m.imageId ?? "")}" placeholder="別モンスター画像を流用"></div>
+        <div><label>昇格対象 promotionRank 任意</label><input data-field="promotionRank" value="${esc(m.promotionRank || "")}" placeholder="F / E / D / C / B / A / S"></div>
       </div></div>
       <div class="card"><h2>出力区分 / band情報</h2><div class="warnbox">通常雑魚は <b>MONSTER_BANDS_1_200</b> に、レア/ボス/特殊ボスは固定配列に出力します。フラグを変えると出力先も変わります。</div>
         <div class="checkgrid">${flagFields.map((f) => `<label class="check"><input data-flag="${f}" type="checkbox" ${m[f] ? "checked" : ""}>${f}</label>`).join("")}</div>
@@ -364,7 +367,7 @@
 
   function renderExport(){
     state.exportMode = "full";
-    return `<div class="card"><h2>JS出力 <span class="muted">${esc(EDITOR_VERSION)}</span></h2><div class="warnbox"><b>この版は出力形式を1つに固定しています。</b><br>必ず現行形式の <b>MONSTER_BANDS_1_200</b> / <b>FIXED_RARE_MONSTERS</b> / <b>FIXED_BOSS_MONSTERS</b> / <b>FIXED_SPECIAL_BOSSES</b> を再構築した、置き換え用の完全な monsters.js を出力します。<br><b>モンスター本体はID順で、helper関数を使わない直接オブジェクト形式・1モンスターにつき1行で出力します。</b><br><b>const monsters = [...] から始まる旧式出力は出ません。</b></div><div class="toolbar" style="margin-bottom:12px"><button class="btn gold" data-action="generateExport">完全版 monsters.js を生成</button><button class="btn primary" data-action="copyExport">コピー</button><button class="btn green" data-action="downloadExport">monsters.jsを保存</button><button class="btn" data-action="csvTab">CSVへ</button><span class="muted">${esc(state.lastMessage)}</span></div><textarea id="exportText" class="exportbox" spellcheck="false">${esc(state.exportText)}</textarea></div>`;
+    return `<div class="card"><h2>JS出力 <span class="muted">${esc(EDITOR_VERSION)}</span></h2><div class="warnbox"><b>この版は出力形式を1つに固定しています。</b><br>必ず現行形式の <b>MONSTER_BANDS_1_200</b> / <b>FIXED_RARE_MONSTERS</b> / <b>FIXED_BOSS_MONSTERS</b> / <b>FIXED_SPECIAL_BOSSES</b> を再構築した、置き換え用の完全な monsters.js を出力します。<br><b>モンスター本体はID順で、helper関数を使わない直接オブジェクト形式・1モンスターにつき1行で出力します。ギルド昇格試験ボスは FIXED_BOSS_MONSTERS 内の isGuildPromotionBoss レコードとして保持します。</b><br><b>const monsters = [...] から始まる旧式出力は出ません。</b></div><div class="toolbar" style="margin-bottom:12px"><button class="btn gold" data-action="generateExport">完全版 monsters.js を生成</button><button class="btn primary" data-action="copyExport">コピー</button><button class="btn green" data-action="downloadExport">monsters.jsを保存</button><button class="btn" data-action="csvTab">CSVへ</button><span class="muted">${esc(state.lastMessage)}</span></div><textarea id="exportText" class="exportbox" spellcheck="false">${esc(state.exportText)}</textarea></div>`;
   }
 
   function render(){ renderTopStats(); renderSidebar(); renderMain(); }
@@ -378,7 +381,7 @@
   }
 
   const monsterOutputOrder = [
-    "hit","eva","cri","isBoss","isRare","isEstark","isSpecialBoss","drops","elmRes","resists","traits","archives",
+    "hit","eva","cri","isBoss","isRare","isEstark","isSpecialBoss","isGuildPromotionBoss","promotionRank","imageId","drops","elmRes","resists","traits","archives",
     "id","name","race","rank","minF","maxF","hp","mp","atk","def","spd","mag","mdef","gold","exp","actCount","isElite","acts","img"
   ];
 
@@ -477,7 +480,7 @@
 `function getDeepFloorNormalBaseCandidates() {\n  return NORMAL_MONSTER_BASES.filter((monster) => !monster.isBoss && !monster.isRare && !monster.isEstark && !monster.isSpecialBoss);\n}\n\n` +
 `function generateEnemyForFloor(floor, options = {}) {\n  const { allowRare = true } = options;\n\n  if (allowRare) {\n    const rare = tryGenerateRareMonster(floor);\n    if (rare) return rare;\n  }\n\n  if (floor >= 1 && floor <= 200) {\n    return generateBandMonster(floor);\n  }\n\n  return null;\n}\n\n` +
 `window.MONSTERS_DATA = monsters;\n\n` +
-`window.MonsterData = {\n  races: MONSTER_RACES,\n  balanceRule: BALANCE_RULE,\n  lowFloorOffsets: LOW_FLOOR_OFFSETS,\n  standardFloorOffsets: STANDARD_FLOOR_OFFSETS,\n\n  bands: MONSTER_BANDS_1_200,\n  normalBases: NORMAL_MONSTER_BASES,\n  rareMonsters: FIXED_RARE_MONSTERS,\n  bossMonsters: FIXED_BOSS_MONSTERS,\n  specialBosses: FIXED_SPECIAL_BOSSES,\n  fixedMonsters: FIXED_MONSTERS,\n  allBases: ALL_MONSTER_BASES,\n\n  cloneMonsterData,\n  isStoryQuestBossId,\n  isAbyssRandomBossCandidate,\n  getFloorOffset,\n  applyFloorOffset,\n  getMonsterBandForFloor,\n  generateBandMonster,\n  getBossesForFloor,\n  getSpecialBossesForFloor,\n  getBossesByIds,\n  getRareCandidatesForFloor,\n  getRareEncounterRate,\n  tryGenerateRareMonster,\n  getMonsterById,\n  getDeepFloorNormalBaseCandidates,\n  generateEnemyForFloor,\n};\n`;
+`window.MonsterData = {\n  races: MONSTER_RACES,\n  balanceRule: BALANCE_RULE,\n  lowFloorOffsets: LOW_FLOOR_OFFSETS,\n  standardFloorOffsets: STANDARD_FLOOR_OFFSETS,\n\n  bands: MONSTER_BANDS_1_200,\n  normalBases: NORMAL_MONSTER_BASES,\n  rareMonsters: FIXED_RARE_MONSTERS,\n  bossMonsters: FIXED_BOSS_MONSTERS,\n  guildPromotionBosses: FIXED_BOSS_MONSTERS.filter((monster) => monster.isGuildPromotionBoss),\n  specialBosses: FIXED_SPECIAL_BOSSES,\n  fixedMonsters: FIXED_MONSTERS,\n  allBases: ALL_MONSTER_BASES,\n\n  cloneMonsterData,\n  isStoryQuestBossId,\n  isAbyssRandomBossCandidate,\n  getFloorOffset,\n  applyFloorOffset,\n  getMonsterBandForFloor,\n  generateBandMonster,\n  getBossesForFloor,\n  getSpecialBossesForFloor,\n  getBossesByIds,\n  getRareCandidatesForFloor,\n  getRareEncounterRate,\n  tryGenerateRareMonster,\n  getMonsterById,\n  getDeepFloorNormalBaseCandidates,\n  generateEnemyForFloor,\n};\n`;
   }
 
   function buildExport(){

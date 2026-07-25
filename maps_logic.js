@@ -180,8 +180,7 @@ const MapRegistry = {
         return matches.find(action => MapRegistry.isMapActionRuntimeAvailable(action)) || null;
     },
 
-    isPointInMapActionArea(action, x, y) {
-        const area = action?.interactionArea;
+    isPointInRectArea(area, x, y) {
         if (!area) return false;
         const left = Number(area.x);
         const top = Number(area.y);
@@ -194,6 +193,23 @@ const MapRegistry = {
             && ty >= top && ty < top + height;
     },
 
+    isPointInMapActionArea(action, x, y) {
+        return MapRegistry.isPointInRectArea(action?.interactionArea, x, y);
+    },
+
+    getMapActionMinimapArea(action) {
+        if (!action) return null;
+        // The interaction target and the schematic marker are related but not always identical.
+        // Large furniture can remain physically blocked while only its player-facing edge is
+        // shown as an actionable strip on the minimap.
+        return action.minimapArea || action.interactionArea || null;
+    },
+
+    isPointInMapActionMinimapArea(action, x, y) {
+        if (!action || action.hideFromMinimap === true) return false;
+        return MapRegistry.isPointInRectArea(MapRegistry.getMapActionMinimapArea(action), x, y);
+    },
+
     findMapActionInteractionCell(mapDef, x, y) {
         const exact = MapRegistry.findMapAction(mapDef, x, y);
         if (exact) return exact;
@@ -202,6 +218,26 @@ const MapRegistry = {
             MapRegistry.isPointInMapActionArea(action, x, y) &&
             MapRegistry.isMapActionRuntimeAvailable(action)
         ) || null;
+    },
+
+    findMapActionMinimapCell(mapDef, x, y) {
+        if (!mapDef || !Array.isArray(mapDef.mapActions)) return null;
+        return mapDef.mapActions.find(action =>
+            MapRegistry.isPointInMapActionMinimapArea(action, x, y) &&
+            MapRegistry.isMapActionRuntimeAvailable(action)
+        ) || null;
+    },
+
+    getMapActionMinimapConnections(action, x, y) {
+        if (!action || action.minimapConnect === false || !MapRegistry.isPointInMapActionMinimapArea(action, x, y)) {
+            return { left: false, right: false, up: false, down: false };
+        }
+        return {
+            left: MapRegistry.isPointInMapActionMinimapArea(action, Number(x) - 1, y),
+            right: MapRegistry.isPointInMapActionMinimapArea(action, Number(x) + 1, y),
+            up: MapRegistry.isPointInMapActionMinimapArea(action, x, Number(y) - 1),
+            down: MapRegistry.isPointInMapActionMinimapArea(action, x, Number(y) + 1)
+        };
     },
 
     isProgressEntryActive(entry) {

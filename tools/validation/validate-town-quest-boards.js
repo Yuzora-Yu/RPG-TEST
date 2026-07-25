@@ -1,84 +1,134 @@
+/*
+ * Compatibility filename retained for existing npm/docs references.
+ * The current design has no town quest boards: all rotating requests are
+ * mastered in guild_quests.js and accessed from the Raizark guild board.
+ */
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
-const { collectReachableCells } = require('./validation-helpers');
 
 const root = path.resolve(__dirname, '..', '..');
 const context = { console };
 context.window = context;
 context.globalThis = context;
 vm.createContext(context);
-for (const file of ['items.js', 'monsters.js', 'quests.js', 'map.js']) {
+for (const file of ['items.js', 'monsters.js', 'quests.js', 'guild_quests.js', 'guild_master.js', 'map.js']) {
     vm.runInContext(fs.readFileSync(path.join(root, file), 'utf8'), context, { filename: file });
 }
 
-const expected = {
-    FIRE_VILLAGE: ['fire_board_hunt', 'fire_board_exchange'],
-    WIND_VILLAGE: ['wind_board_hunt', 'wind_board_exchange'],
-    WATER_CITY: ['water_board_hunt', 'water_board_exchange'],
-    BIG_TOWER: ['tower_board_hunt', 'tower_board_exchange'],
-    THUNDER_FORT: ['thunder_board_hunt', 'thunder_board_exchange'],
-    LIGHT_PALACE: ['light_board_hunt', 'light_board_exchange'],
-    DARK_CASTLE: ['dark_board_hunt', 'dark_board_exchange'],
-    ABYSS_FIELD: ['abyss_board_hunt', 'abyss_board_exchange']
-};
-const items = context.ITEMS_DATA || context.window.ITEMS_DATA || [];
-const monsters = context.MonsterData?.allBases || context.MONSTERS_DATA || context.window.MONSTERS_DATA || [];
-const itemIds = new Set(items.map(item => Number(item.id)));
-const itemById = new Map(items.map(item => [Number(item.id), item]));
+const normalQuests = context.QUEST_DATA || {};
+const guildQuests = context.GUILD_QUEST_DATA || {};
+const guildMaster = context.GUILD_MASTER_DATA || {};
+const monsters = context.MonsterData?.allBases || context.MONSTERS_DATA || [];
+const items = context.ITEMS_DATA || [];
 const monsterIds = new Set(monsters.map(monster => Number(monster.id)));
-const quests = context.QUEST_DATA || context.window.QUEST_DATA;
-if (!quests) throw new Error('QUEST_DATA is unavailable.');
+const itemIds = new Set(items.map(item => Number(item.id)));
 
-for (const [areaKey, questIds] of Object.entries(expected)) {
-    const base = context.FIXED_MAPS?.[areaKey] || context.FIXED_DUNGEON_MAPS?.[areaKey];
-    if (!base) throw new Error(`Map not found: ${areaKey}`);
-    const floor = Array.isArray(base.floors) ? base.floors[0] : base;
-    const boards = (floor.mapActions || []).filter(action => action.type === 'questBoard');
-    if (boards.length !== 1) throw new Error(`${areaKey} must have exactly one quest board, found ${boards.length}.`);
-    const board = boards[0];
-    if (String(floor.tiles?.[board.y]?.[board.x] || '').toUpperCase() === 'W') {
-        throw new Error(`${areaKey} quest board is on a wall tile.`);
-    }
-    if (JSON.stringify(board.questIds) !== JSON.stringify(questIds)) {
-        throw new Error(`${areaKey} quest board IDs differ from the specification.`);
-    }
-    const start = floor.entryPoint || base.entryPoint;
-    const reachable = collectReachableCells(floor, start);
-    const hasReachableInteractionCell = [[0, -1], [1, 0], [0, 1], [-1, 0]]
-        .some(([dx, dy]) => reachable.has(`${Number(board.x) + dx},${Number(board.y) + dy}`));
-    if (!hasReachableInteractionCell) {
-        throw new Error(`${areaKey} quest board has no reachable adjacent interaction cell.`);
-    }
-    for (const questId of questIds) {
-        const quest = quests[questId];
-        if (!quest) throw new Error(`Quest not found: ${questId}`);
-        if (!Array.isArray(quest.unlockFlags) || !quest.unlockFlags.includes(board.requiredFlag)) {
-            throw new Error(`${questId} does not share the quest board unlock flag ${board.requiredFlag}.`);
-        }
-        if (!Array.isArray(quest.rewardItems) || !quest.rewardItems.length) {
-            throw new Error(`${questId} must grant at least one item reward.`);
-        }
-        for (const id of quest.targetMonsterIds || []) {
-            if (!monsterIds.has(Number(id))) throw new Error(`${questId} references missing monster ${id}.`);
-        }
-        for (const entry of [...(quest.itemRequirements || []), ...(quest.rewardItems || [])]) {
-            const id = Number(entry.id ?? entry.itemId);
-            if (!itemIds.has(id)) throw new Error(`${questId} references missing item ${id}.`);
-        }
-        if (quest.kind === 'collection') {
-            if (quest.consumeItemsOnComplete !== true) {
-                throw new Error(`${questId} must consume its submitted materials.`);
+if (Object.keys(guildQuests).length !== 16) {
+    throw new Error(`Guild request master must contain 16 requests, found ${Object.keys(guildQuests).length}.`);
+}
+if (Object.keys(normalQuests).some(id => guildQuests[id])) {
+    throw new Error('Normal quest and guild request masters must not share IDs.');
+}
+
+const visitMaps = (definitions) => {
+    Object.entries(definitions || {}).forEach(([areaKey, map]) => {
+        const floors = Array.isArray(map.floors) ? map.floors : [map];
+        floors.forEach((floor, floorIndex) => {
+            const legacyBoards = (floor.mapActions || []).filter(action => action?.type === 'questBoard');
+            if (legacyBoards.length) {
+                throw new Error(`${areaKey} floor ${floorIndex + 1} still contains a legacy town questBoard action.`);
             }
-            const requirementRanks = (quest.itemRequirements || []).map(entry => Number(itemById.get(Number(entry.id ?? entry.itemId))?.rank || 0));
-            const rewardRanks = (quest.rewardItems || []).map(entry => Number(itemById.get(Number(entry.id ?? entry.itemId))?.rank || 0));
-            if (!requirementRanks.length || !rewardRanks.length || Math.max(...rewardRanks) <= Math.max(...requirementRanks)) {
-                throw new Error(`${questId} must exchange submitted materials for a higher-rank item.`);
-            }
+        });
+    });
+};
+visitMaps(context.FIXED_MAPS);
+visitMaps(context.FIXED_DUNGEON_MAPS);
+
+const guildFloor = context.FIXED_DUNGEON_MAPS?.THUNDER_FORT?.floors?.[0];
+if (!guildFloor) throw new Error('THUNDER_FORT floor 1 is unavailable.');
+const guildBoardActions = (guildFloor.mapActions || []).filter(action => action?.type === 'guildBoard');
+const guildReceptionActions = (guildFloor.mapActions || []).filter(action => action?.type === 'guild');
+if (guildBoardActions.length !== 1) throw new Error(`Raizark must have one guildBoard action, found ${guildBoardActions.length}.`);
+if (guildReceptionActions.length !== 1) throw new Error(`Raizark must have one guild reception action, found ${guildReceptionActions.length}.`);
+if (Number(guildBoardActions[0].drawOffsetX) !== 12) throw new Error('Guild board drawOffsetX must be 12px.');
+
+const board = guildBoardActions[0];
+const reception = guildReceptionActions[0];
+const assertArea = (label, actual, expected) => {
+    for (const key of ['x', 'y', 'width', 'height']) {
+        if (Number(actual?.[key]) !== Number(expected[key])) {
+            throw new Error(`${label}.${key} must be ${expected[key]}, found ${actual?.[key]}.`);
         }
+    }
+};
+assertArea('guildBoard.interactionArea', board.interactionArea, { x: 8, y: 20, width: 2, height: 1 });
+assertArea('guildBoard.minimapArea', board.minimapArea, { x: 8, y: 20, width: 2, height: 1 });
+assertArea('guildReception.interactionArea', reception.interactionArea, { x: 3, y: 21, width: 5, height: 1 });
+assertArea('guildReception.minimapArea', reception.minimapArea, { x: 3, y: 21, width: 5, height: 1 });
+
+const blockerAt = (x, y) => (guildFloor.blockingObjects || []).some(object => Number(object.x) === x && Number(object.y) === y);
+for (const [x, y] of [[8, 19], [9, 19], [8, 20], [9, 20]]) {
+    const occupiedByBoardAction = Number(board.x) === x && Number(board.y) === y && board.blocksMovement === true;
+    if (!occupiedByBoardAction && !blockerAt(x, y)) throw new Error(`Guild board collision is missing at ${x},${y}.`);
+}
+for (let y = 20; y <= 21; y += 1) {
+    for (let x = 3; x <= 7; x += 1) {
+        const occupiedByReception = Number(reception.x) === x && Number(reception.y) === y && reception.blocksMovement === true;
+        if (!occupiedByReception && !blockerAt(x, y)) throw new Error(`Guild counter collision is missing at ${x},${y}.`);
     }
 }
 
-if (Object.keys(expected).flatMap(key => expected[key]).length !== 16) throw new Error('Expected 16 board quests.');
-console.log('Town quest board validation passed.');
-console.log('8 boards, 16 quests, reachable interaction cells, unlock flags, monster targets, item references, and higher-rank exchanges are valid.');
+const dungeonHuntIds = [
+    'guild_ignis_patrol',
+    'guild_kazaria_patrol',
+    'guild_rivaria_patrol',
+    'guild_lighthouse_patrol',
+    'guild_raizark_patrol'
+];
+for (const id of dungeonHuntIds) {
+    const quest = guildQuests[id];
+    if (quest?.kind !== 'hunt' || quest?.requestType !== 'dungeonHunt' || quest?.huntScope?.mode !== 'dungeon') {
+        throw new Error(`${id} must be mastered as a dungeon-wide hunt.`);
+    }
+    if (!Array.isArray(quest.huntScope.areaKeys) || quest.huntScope.areaKeys.length !== 1) {
+        throw new Error(`${id} must declare exactly one canonical dungeon area.`);
+    }
+    if (Array.isArray(quest.targetMonsterIds) && quest.targetMonsterIds.length) {
+        throw new Error(`${id} must not require monster-name knowledge at low rank.`);
+    }
+}
+
+for (const [id, quest] of Object.entries(guildQuests)) {
+    if (quest.id !== id) throw new Error(`${id} must declare the same canonical id in its master record.`);
+    if (quest.guildQuest !== true || quest.repeatable !== true) throw new Error(`${id} must be a repeatable guild request.`);
+    if (quest.reportAt !== 'guildReception') throw new Error(`${id} must be reported at the guild reception.`);
+    if (!guildMaster.ranks?.some(rank => rank.id === quest.requiredRank)) throw new Error(`${id} references invalid rank ${quest.requiredRank}.`);
+    for (const monsterId of quest.targetMonsterIds || []) {
+        if (!monsterIds.has(Number(monsterId))) throw new Error(`${id} references missing monster ${monsterId}.`);
+    }
+    for (const entry of [...(quest.itemRequirements || []), ...(quest.rewardItems || [])]) {
+        const itemId = Number(entry.id ?? entry.itemId);
+        if (!itemIds.has(itemId)) throw new Error(`${id} references missing item ${itemId}.`);
+    }
+}
+
+const expectedTrialRanks = ['F', 'E', 'D', 'C', 'B', 'A', 'S'];
+for (const rank of expectedTrialRanks) {
+    const trial = guildMaster.promotionTrials?.[rank];
+    if (!trial) throw new Error(`Promotion trial ${rank} is missing.`);
+    const boss = monsters.find(monster => Number(monster.id) === Number(trial.monsterId));
+    if (!boss?.isGuildPromotionBoss || boss.promotionRank !== rank) {
+        throw new Error(`Promotion trial ${rank} does not reference its dedicated monster master.`);
+    }
+}
+const leonard = monsters.find(monster => Number(monster.id) === 301040);
+const firstTrial = monsters.find(monster => Number(monster.id) === Number(guildMaster.promotionTrials?.F?.monsterId));
+for (const stat of ['hp', 'mp', 'atk', 'def', 'spd', 'mag', 'mdef']) {
+    if (Number(firstTrial?.[stat] || 0) < Number(leonard?.[stat] || 0)) {
+        throw new Error(`F promotion boss ${stat} must not be below Leonard.`);
+    }
+}
+
+console.log('Guild master validation passed.');
+console.log('No town boards, 16 canonical requests, dungeon-wide low-rank hunts, lower-edge minimap areas, and seven dedicated promotion boss masters are present.');

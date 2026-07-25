@@ -2506,19 +2506,6 @@ const FIXED_MAPS = {
                     }
                 ]
             },
-            {
-                x: 16,
-                y: 14,
-                label: "依頼掲示板を見る",
-                log: "里の小さな依頼が掲示されている。",
-                type: "questBoard",
-                questIds: [
-                    "fire_board_hunt",
-                    "fire_board_exchange"
-                ],
-                requiredFlag: "fireVillageCleared",
-                imageKey: "overlay_npc_villager"
-            }
         ],
         exitPoint: {
             area: "WORLD",
@@ -2771,19 +2758,6 @@ const FIXED_MAPS = {
                     }
                 ]
             },
-            {
-                x: 14,
-                y: 12,
-                label: "依頼掲示板を見る",
-                log: "風除けの板に依頼札が結ばれている。",
-                type: "questBoard",
-                questIds: [
-                    "wind_board_hunt",
-                    "wind_board_exchange"
-                ],
-                requiredFlag: "windVillageCleared",
-                imageKey: "overlay_npc_villager"
-            }
         ],
         exitPoint: {
             area: "WORLD",
@@ -3089,19 +3063,6 @@ const FIXED_MAPS = {
                 imageKey: "overlay_companion_alan",
                 lockedText: "今はまだ、海底神殿の奥へ進む手段がない。"
             },
-            {
-                x: 20,
-                y: 13,
-                label: "依頼掲示板を見る",
-                log: "水路の仕事と交換依頼が掲示されている。",
-                type: "questBoard",
-                questIds: [
-                    "water_board_hunt",
-                    "water_board_exchange"
-                ],
-                requiredFlag: "waterCityCleared",
-                imageKey: "overlay_npc_villager"
-            }
         ],
         exitPoint: {
             area: "WORLD",
@@ -3452,19 +3413,6 @@ const FIXED_MAPS = {
                     }
                 ]
             },
-            {
-                x: 6,
-                y: 7,
-                label: "依頼掲示板を見る",
-                log: "観測隊が外縁で集めた依頼票が留められている。",
-                type: "questBoard",
-                questIds: [
-                    "abyss_board_hunt",
-                    "abyss_board_exchange"
-                ],
-                requiredFlag: "abyssFirstEntered",
-                imageKey: "overlay_npc_villager"
-            }
         ],
         exitPoint: {
             area: "WORLD",
@@ -6944,19 +6892,6 @@ const FIXED_DUNGEON_MAPS = {
                         imageKey: "overlay_companion_zelied",
                         lockedText: "ゼリードはまだ、灯台の異変を見極めているようだ。"
                     },
-                    {
-                        x: 7,
-                        y: 20,
-                        label: "依頼掲示板を見る",
-                        log: "灯台守と補修隊の依頼が掲示されている。",
-                        type: "questBoard",
-                        questIds: [
-                            "tower_board_hunt",
-                            "tower_board_exchange"
-                        ],
-                        requiredFlag: "bigTowerCleared",
-                        imageKey: "overlay_npc_villager"
-                    }
                 ],
                 entryPoint: {
                     x: 11,
@@ -7614,7 +7549,138 @@ const FIXED_DUNGEON_MAPS = {
                         type: "item"
                     }
                 ],
+                floorDecorations: [
+                    {
+                        authoredPlacementId: "thunder-fort-guild-sign",
+                        type: "image",
+                        imageKey: "guild_sign",
+                        x: 3,
+                        y: 20,
+                        drawWidth: 64,
+                        drawHeight: 64,
+                        drawOffsetX: 22,
+                        drawOffsetY: -26,
+                        baseTile: "T"
+                    }
+                ],
+                blockingObjects: [
+                    { x: 3, y: 20, baseTile: "T", invisible: true, log: "冒険者ギルドの受付カウンターだ。" },
+                    { x: 4, y: 20, baseTile: "T", invisible: true, log: "冒険者ギルドの受付カウンターだ。" },
+                    { x: 5, y: 20, baseTile: "T", invisible: true, log: "冒険者ギルドの受付カウンターだ。" },
+                    { x: 6, y: 20, baseTile: "T", invisible: true, log: "冒険者ギルドの受付カウンターだ。" },
+                    { x: 7, y: 20, baseTile: "T", invisible: true, log: "冒険者ギルドの受付カウンターだ。" },
+                    { x: 3, y: 21, baseTile: "T", invisible: true, log: "冒険者ギルドの受付カウンターだ。" },
+                    { x: 4, y: 21, baseTile: "T", invisible: true, log: "冒険者ギルドの受付カウンターだ。" },
+                    {
+                        x: 5,
+                        y: 21,
+                        baseTile: "T",
+                        imageKey: "guild_counter",
+                        drawWidth: 160,
+                        drawHeight: 64,
+                        suppressShadow: true,
+                        log: "冒険者ギルドの受付カウンターだ。"
+                    },
+                    { x: 6, y: 21, baseTile: "T", invisible: true, log: "冒険者ギルドの受付カウンターだ。" },
+                    { x: 7, y: 21, baseTile: "T", invisible: true, log: "冒険者ギルドの受付カウンターだ。" },
+                    { x: 8, y: 19, baseTile: "T", invisible: true, log: "依頼掲示板が置かれている。" },
+                    { x: 9, y: 19, baseTile: "T", invisible: true, log: "依頼掲示板が置かれている。" },
+                    { x: 9, y: 20, baseTile: "T", invisible: true, log: "依頼掲示板が置かれている。" },
+                    { x: 27, y: 20, baseTile: "T", invisible: true, log: "簡素な寝台が並んでいる。" },
+                    { x: 29, y: 20, baseTile: "T", invisible: true, log: "簡素な寝台が並んでいる。" },
+                    {
+                        x: 27,
+                        y: 21,
+                        baseTile: "T",
+                        imageKey: "guild_bed",
+                        drawWidth: 32,
+                        drawHeight: 64,
+                        suppressShadow: true,
+                        log: "要塞の宿泊所に備えられた寝台だ。"
+                    },
+                    {
+                        x: 29,
+                        y: 21,
+                        baseTile: "T",
+                        imageKey: "guild_bed",
+                        drawWidth: 32,
+                        drawHeight: 64,
+                        suppressShadow: true,
+                        log: "要塞の宿泊所に備えられた寝台だ。"
+                    },
+                    { x: 27, y: 23, baseTile: "T", invisible: true, log: "簡素な寝台が並んでいる。" },
+                    { x: 29, y: 23, baseTile: "T", invisible: true, log: "簡素な寝台が並んでいる。" },
+                    {
+                        x: 27,
+                        y: 24,
+                        baseTile: "T",
+                        imageKey: "guild_bed",
+                        drawWidth: 32,
+                        drawHeight: 64,
+                        suppressShadow: true,
+                        log: "要塞の宿泊所に備えられた寝台だ。"
+                    },
+                    {
+                        x: 29,
+                        y: 24,
+                        baseTile: "T",
+                        imageKey: "guild_bed",
+                        drawWidth: 32,
+                        drawHeight: 64,
+                        suppressShadow: true,
+                        log: "要塞の宿泊所に備えられた寝台だ。"
+                    }
+                ],
                 mapActions: [
+                    {
+                        x: 5,
+                        y: 20,
+                        label: "受付職員と話す",
+                        log: "受付職員が丁寧に一礼した。",
+                        type: "guild",
+                        imageKey: "guild_girl",
+                        drawWidth: 32,
+                        drawHeight: 32,
+                        baseTile: "T",
+                        blocksMovement: true,
+                        interactFromAdjacent: true,
+                        interactionArea: { x: 3, y: 21, width: 5, height: 1 },
+                        minimapArea: { x: 3, y: 21, width: 5, height: 1 },
+                        minimapColor: "#5bd6ff",
+                        minimapAreaColor: "#8f7dff"
+                    },
+                    {
+                        x: 8,
+                        y: 20,
+                        label: "依頼掲示板を見る",
+                        log: "各地から届いた依頼票が掲示されている。",
+                        type: "guildBoard",
+                        imageKey: "guild_questboard",
+                        renderAsBlockingObject: true,
+                        drawWidth: 64,
+                        drawHeight: 64,
+                        drawOffsetX: 12,
+                        baseTile: "T",
+                        blocksMovement: true,
+                        interactFromAdjacent: true,
+                        interactionArea: { x: 8, y: 20, width: 2, height: 1 },
+                        minimapArea: { x: 8, y: 20, width: 2, height: 1 },
+                        minimapColor: "#d6a94a",
+                        minimapAreaColor: "#d6a94a"
+                    },
+                    {
+                        x: 25,
+                        y: 20,
+                        label: "無料で休む",
+                        log: "宿泊所の係員が空いている寝台を案内してくれた。",
+                        type: "freeRest",
+                        imageKey: "guild_girl",
+                        drawWidth: 32,
+                        drawHeight: 32,
+                        baseTile: "T",
+                        blocksMovement: true,
+                        interactFromAdjacent: true
+                    },
                     {
                         x: 5,
                         y: 13,
@@ -7696,19 +7762,6 @@ const FIXED_DUNGEON_MAPS = {
                         imageKey: "overlay_npc_villager",
                         lockedText: "雷の轟きで声が届かない。"
                     },
-                    {
-                        x: 18,
-                        y: 17,
-                        label: "依頼掲示板を見る",
-                        log: "解放後の要塞整備に関する依頼が掲示されている。",
-                        type: "questBoard",
-                        questIds: [
-                            "thunder_board_hunt",
-                            "thunder_board_exchange"
-                        ],
-                        requiredFlag: "thunderFortCleared",
-                        imageKey: "overlay_npc_villager"
-                    }
                 ],
                 entryPoint: {
                     x: 2,
@@ -8589,19 +8642,6 @@ const FIXED_DUNGEON_MAPS = {
                         imageKey: "overlay_town_light_pilgrim",
                         lockedText: "光の宮殿グランプリズマはまだ緊張に包まれている。"
                     },
-                    {
-                        x: 18,
-                        y: 23,
-                        label: "依頼掲示板を見る",
-                        log: "巡礼路の復旧と聖素材の依頼が掲示されている。",
-                        type: "questBoard",
-                        questIds: [
-                            "light_board_hunt",
-                            "light_board_exchange"
-                        ],
-                        requiredFlag: "lightPalaceCleared",
-                        imageKey: "overlay_npc_villager"
-                    }
                 ],
                 name: "",
                 themeKey: "LIGHT_PALACE"
@@ -10601,19 +10641,6 @@ const FIXED_DUNGEON_MAPS = {
                         imageKey: "overlay_town_demon_guard",
                         lockedText: "魔族兵は警戒している。"
                     },
-                    {
-                        x: 14,
-                        y: 20,
-                        label: "依頼掲示板を見る",
-                        log: "城門修復と魔城炉の依頼が掲示されている。",
-                        type: "questBoard",
-                        questIds: [
-                            "dark_board_hunt",
-                            "dark_board_exchange"
-                        ],
-                        requiredFlag: "darkCastleCleared",
-                        imageKey: "overlay_npc_villager"
-                    }
                 ],
                 entryPoint: {
                     x: 16,
@@ -12860,133 +12887,6 @@ const FIXED_DUNGEON_MAPS = {
         ]
     }
 };
-
-// 冒険者ギルド導入: 旧町別掲示板を撤去し、ライザーク要塞1階へ集約する。
-(() => {
-    const stripQuestBoards = (definitions) => {
-        Object.values(definitions || {}).forEach(mapDef => {
-            const floors = Array.isArray(mapDef?.floors) ? mapDef.floors : [mapDef];
-            floors.forEach(floor => {
-                if (Array.isArray(floor?.mapActions)) {
-                    floor.mapActions = floor.mapActions.filter(action => action?.type !== "questBoard");
-                }
-            });
-        });
-    };
-    stripQuestBoards(FIXED_MAPS);
-    stripQuestBoards(FIXED_DUNGEON_MAPS);
-
-    const guildFloor = FIXED_DUNGEON_MAPS?.THUNDER_FORT?.floors?.[0];
-    if (!guildFloor) return;
-
-    guildFloor.floorDecorations = [
-        ...(Array.isArray(guildFloor.floorDecorations) ? guildFloor.floorDecorations : []),
-        {
-            authoredPlacementId: "thunder-fort-guild-sign",
-            type: "image",
-            imageKey: "guild_sign",
-            x: 3,
-            y: 20,
-            drawWidth: 64,
-            drawHeight: 64,
-            drawOffsetX: 22,
-            drawOffsetY: -26,
-            baseTile: "T"
-        }
-    ];
-
-    const blockers = [];
-    for (let y = 20; y <= 21; y += 1) {
-        for (let x = 3; x <= 7; x += 1) {
-            blockers.push({
-                x,
-                y,
-                baseTile: "T",
-                ...(x === 5 && y === 21 ? {
-                    imageKey: "guild_counter",
-                    drawWidth: 160,
-                    drawHeight: 64,
-                    suppressShadow: true,
-                    log: "冒険者ギルドの受付カウンターだ。"
-                } : { invisible: true })
-            });
-        }
-    }
-    // 掲示板画像は2x2タイルを占有するため、画像の全占有範囲を通行不能にする。
-    blockers.push({ x: 8, y: 19, baseTile: "T", invisible: true, log: "依頼掲示板が置かれている。" });
-    blockers.push({ x: 9, y: 19, baseTile: "T", invisible: true, log: "依頼掲示板が置かれている。" });
-    blockers.push({ x: 9, y: 20, baseTile: "T", invisible: true, log: "依頼掲示板が置かれている。" });
-    [
-        { x: 27, bottomY: 21 },
-        { x: 29, bottomY: 21 },
-        { x: 27, bottomY: 24 },
-        { x: 29, bottomY: 24 }
-    ].forEach((bed, index) => {
-        blockers.push({ x: bed.x, y: bed.bottomY - 1, baseTile: "T", invisible: true, log: "簡素な寝台が並んでいる。" });
-        blockers.push({
-            x: bed.x,
-            y: bed.bottomY,
-            baseTile: "T",
-            imageKey: "guild_bed",
-            drawWidth: 32,
-            drawHeight: 64,
-            suppressShadow: true,
-            log: "要塞の宿泊所に備えられた寝台だ。"
-        });
-    });
-    guildFloor.blockingObjects = [
-        ...(Array.isArray(guildFloor.blockingObjects) ? guildFloor.blockingObjects : []),
-        ...blockers
-    ];
-
-    guildFloor.mapActions = [
-        ...(Array.isArray(guildFloor.mapActions) ? guildFloor.mapActions : []),
-        {
-            x: 5,
-            y: 20,
-            label: "受付職員と話す",
-            log: "受付職員が丁寧に一礼した。",
-            type: "guild",
-            imageKey: "guild_girl",
-            drawWidth: 32,
-            drawHeight: 32,
-            baseTile: "T",
-            blocksMovement: true,
-            interactFromAdjacent: true,
-            interactionArea: { x: 3, y: 20, width: 5, height: 2 }
-        },
-        {
-            x: 8,
-            y: 20,
-            label: "依頼掲示板を見る",
-            log: "各地から届いた依頼票が掲示されている。",
-            type: "guildBoard",
-            imageKey: "guild_questboard",
-            renderAsBlockingObject: true,
-            drawWidth: 64,
-            drawHeight: 64,
-            drawOffsetX: 18,
-            baseTile: "T",
-            blocksMovement: true,
-            interactFromAdjacent: true,
-            interactionArea: { x: 8, y: 19, width: 2, height: 2 },
-            minimapColor: "#d6a94a"
-        },
-        {
-            x: 25,
-            y: 20,
-            label: "無料で休む",
-            log: "宿泊所の係員が空いている寝台を案内してくれた。",
-            type: "freeRest",
-            imageKey: "guild_girl",
-            drawWidth: 32,
-            drawHeight: 32,
-            baseTile: "T",
-            blocksMovement: true,
-            interactFromAdjacent: true
-        }
-    ];
-})();
 
 const AUTHORED_MAP_PROP_PLACEMENTS = [
     {

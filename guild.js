@@ -2,39 +2,91 @@
 (function(global) {
     'use strict';
 
-    const RANKS = ['G', 'F', 'E', 'D', 'C', 'B', 'A', 'S'];
-    const EXP_THRESHOLDS = { G: 0, F: 60, E: 170, D: 340, C: 600, B: 980, A: 1500, S: 2200 };
-    const PROMOTION_BOSSES = {
-        F: { monsterId: 301000, name: 'バトルリザード' },
-        E: { monsterId: 301010, name: '炎楔のグラド' },
-        D: { monsterId: 301020, name: '風楔のエリシア' },
-        C: { monsterId: 301030, name: '氷楔のシーリス' },
-        B: { monsterId: 301040, name: '雷楔のレナード' },
-        A: { monsterId: 301050, name: '聖騎士ヴェルド' },
-        S: { monsterId: 301070, name: '魔道神官ジャスパー' }
-    };
-    const EXCHANGE = [
-        { id: 'seed_hp', itemId: 100, count: 1, cost: 30 },
-        { id: 'seed_mp', itemId: 101, count: 1, cost: 30 },
-        { id: 'seed_atk', itemId: 102, count: 1, cost: 35 },
-        { id: 'seed_mag', itemId: 103, count: 1, cost: 35 },
-        { id: 'seed_spd', itemId: 104, count: 1, cost: 35 },
-        { id: 'seed_def', itemId: 105, count: 1, cost: 35 },
-        { id: 'seed_sp', itemId: 106, count: 1, cost: 80 },
-        { id: 'gem_100', gems: 100, cost: 50 },
-        { id: 'gem_500', gems: 500, cost: 220 },
-        { id: 'reincarnation', itemId: 107, count: 1, cost: 1200, requiredRank: 'A' }
-    ];
+    const MASTER = global.GUILD_MASTER_DATA;
+    if (!MASTER || !Array.isArray(MASTER.ranks)) {
+        throw new Error('guild_master.js must be loaded before guild.js');
+    }
+
+    const RANK_DEFS = MASTER.ranks;
+    const RANKS = RANK_DEFS.map(rank => String(rank.id));
+    const EXP_THRESHOLDS = Object.fromEntries(RANK_DEFS.map(rank => [String(rank.id), Math.max(0, Number(rank.requiredTotalExp) || 0)]));
+    const PROMOTION_TRIALS = MASTER.promotionTrials || {};
+    const EXCHANGE = Array.isArray(MASTER.exchangeEntries) ? MASTER.exchangeEntries : [];
+    const LEGACY_QUEST_ID_MAP = global.GUILD_QUEST_LEGACY_ID_MAP || {};
+
 
     const Guild = {
-        maxOffers: 5,
+        maxOffers: Math.max(1, Number(MASTER.maxOffers) || 5),
         ranks: RANKS,
+        rankDefinitions: RANK_DEFS,
         expThresholds: EXP_THRESHOLDS,
-        promotionBosses: PROMOTION_BOSSES,
+        promotionTrials: PROMOTION_TRIALS,
         exchangeEntries: EXCHANGE,
 
         getDefinitions() {
             return global.GUILD_QUEST_DATA || {};
+        },
+
+        getHuntScope(def) {
+            const raw = (def && def.huntScope && typeof def.huntScope === 'object') ? def.huntScope : {};
+            const areaKeys = [...new Set((Array.isArray(raw.areaKeys) ? raw.areaKeys : (Array.isArray(def?.targetAreaKeys) ? def.targetAreaKeys : []))
+                .map(value => String(value || '').trim())
+                .filter(Boolean))];
+            const mode = raw.mode === 'dungeon' ? 'dungeon' : 'monster';
+            return {
+                mode,
+                areaKeys,
+                label: String(raw.label || def?.area || '').trim()
+            };
+        },
+
+        normalizeBattleContext(context = {}) {
+            const fieldAvailable = typeof Field !== 'undefined';
+            const currentMap = fieldAvailable ? Field.currentMapData : null;
+            const areaKey = String(
+                context.areaKey ||
+                context.mapAreaKey ||
+                (fieldAvailable && typeof Field.getCurrentAreaKey === 'function' ? Field.getCurrentAreaKey() : '') ||
+                App.data?.location?.area ||
+                'WORLD'
+            );
+            const canonicalAreaKey = String(context.canonicalAreaKey || currentMap?.canonicalAreaKey || areaKey);
+            return {
+                areaKey,
+                canonicalAreaKey,
+                isDungeon: context.isDungeon !== undefined
+                    ? !!context.isDungeon
+                    : !!(currentMap?.isDungeon || areaKey === 'ABYSS'),
+                isFixed: context.isFixed !== undefined ? !!context.isFixed : !!currentMap?.isFixed,
+                floor: Math.max(1, Number(context.floor || currentMap?.floor || App.data?.progress?.floor || 1)),
+                guildPromotionTrial: context.guildPromotionTrial !== undefined
+                    ? !!context.guildPromotionTrial
+                    : !!App.data?.battle?.guildPromotionTrial,
+                countsForGuildQuests: context.countsForGuildQuests !== false
+            };
+        },
+
+        isHuntBattleEligible(def, context = {}) {
+            const scope = Guild.getHuntScope(def);
+            const battle = Guild.normalizeBattleContext(context);
+            if (!battle.countsForGuildQuests || battle.guildPromotionTrial) return false;
+            const battleKeys = new Set([battle.areaKey, battle.canonicalAreaKey].filter(Boolean));
+            if (scope.areaKeys.length && !scope.areaKeys.some(key => battleKeys.has(key))) return false;
+            if (scope.mode === 'dungeon' && !battle.isDungeon) return false;
+            return true;
+        },
+
+        getHuntProgressIncrement(def, monsterIds = [], context = {}) {
+            if (!def || def.kind !== 'hunt' || !Guild.isHuntBattleEligible(def, context)) return 0;
+            const normalizedIds = (Array.isArray(monsterIds) ? monsterIds : [])
+                .map(Number)
+                .filter(id => Number.isFinite(id) && id > 0);
+            if (!normalizedIds.length) return 0;
+            const scope = Guild.getHuntScope(def);
+            if (scope.mode === 'dungeon') return normalizedIds.length;
+            const targets = (def.targetMonsterIds || []).map(Number).filter(Number.isFinite);
+            if (!targets.length) return 0;
+            return normalizedIds.filter(monsterId => targets.includes(monsterId)).length;
         },
 
         rankIndex(rank) {
@@ -45,6 +97,65 @@
         nextRank(rank) {
             const index = Guild.rankIndex(rank);
             return index < RANKS.length - 1 ? RANKS[index + 1] : null;
+        },
+
+        resolveQuestId(id) {
+            const value = String(id || '');
+            return LEGACY_QUEST_ID_MAP[value] || value;
+        },
+
+        mergeQuestState(current, incoming) {
+            if (!current) return incoming ? JSON.parse(JSON.stringify(incoming)) : null;
+            if (!incoming) return current;
+            const priority = { accepted: 3, completed: 2, available: 1 };
+            const currentPriority = priority[current.state] || 0;
+            const incomingPriority = priority[incoming.state] || 0;
+            if (incomingPriority > currentPriority) return JSON.parse(JSON.stringify(incoming));
+            if (incomingPriority < currentPriority) return current;
+            const currentTime = Number(current.completedAt || current.startedAt || 0);
+            const incomingTime = Number(incoming.completedAt || incoming.startedAt || 0);
+            return incomingTime > currentTime ? JSON.parse(JSON.stringify(incoming)) : current;
+        },
+
+        migrateStateToMaster(state) {
+            const defs = Guild.getDefinitions();
+            const normalizedStates = {};
+            Object.entries(state.questStates || {}).forEach(([storedId, questState]) => {
+                const id = Guild.resolveQuestId(storedId);
+                if (!defs[id]) return;
+                normalizedStates[id] = Guild.mergeQuestState(normalizedStates[id], questState);
+            });
+            state.questStates = normalizedStates;
+
+            const normalizedCounts = {};
+            Object.entries(state.completionCounts || {}).forEach(([storedId, count]) => {
+                const id = Guild.resolveQuestId(storedId);
+                if (!defs[id]) return;
+                normalizedCounts[id] = Math.max(Number(normalizedCounts[id] || 0), Math.max(0, Math.floor(Number(count) || 0)));
+            });
+            state.completionCounts = normalizedCounts;
+
+            state.offers = [...new Set((state.offers || [])
+                .map(id => Guild.resolveQuestId(id))
+                .filter(id => !!defs[id]))];
+
+            // 旧版では町別掲示板依頼が通常クエスト領域へ保存されていた。
+            // 旧IDと新IDの両方を受け取り、ギルド専用領域へ移してから削除する。
+            const legacyQuests = App.data.progress.quests || {};
+            Object.keys(legacyQuests).forEach(storedId => {
+                const id = Guild.resolveQuestId(storedId);
+                if (!defs[id]) return;
+                const old = legacyQuests[storedId];
+                if (old?.state === 'accepted') {
+                    state.questStates[id] = Guild.mergeQuestState(state.questStates[id], old);
+                } else if (old?.state === 'completed') {
+                    state.completionCounts[id] = Math.max(1, Number(state.completionCounts[id] || 0));
+                }
+                delete legacyQuests[storedId];
+            });
+
+            state.masterSchemaVersion = Math.max(1, Number(global.GUILD_QUEST_SCHEMA_VERSION) || 1);
+            state.migrationV1 = true;
         },
 
         ensureState() {
@@ -63,30 +174,19 @@
             if (!state.completionCounts || typeof state.completionCounts !== 'object' || Array.isArray(state.completionCounts)) state.completionCounts = {};
             state.refreshCount = Math.max(0, Math.floor(Number(state.refreshCount) || 0));
 
-            if (!state.migrationV1) {
-                const legacy = App.data.progress.quests || {};
-                Object.keys(Guild.getDefinitions()).forEach(id => {
-                    const old = legacy[id];
-                    if (!old) return;
-                    if (old.state === 'accepted') {
-                        state.questStates[id] = JSON.parse(JSON.stringify(old));
-                    } else if (old.state === 'completed') {
-                        state.completionCounts[id] = Math.max(1, Number(state.completionCounts[id] || 0));
-                    }
-                    delete legacy[id];
-                });
-                state.migrationV1 = true;
-            }
+            Guild.migrateStateToMaster(state);
 
             return state;
         },
 
         getQuestState(id) {
+            id = Guild.resolveQuestId(id);
             const state = Guild.ensureState();
             return state?.questStates?.[id] || { state: 'available', progress: {} };
         },
 
         isQuestUnlocked(id) {
+            id = Guild.resolveQuestId(id);
             const def = Guild.getDefinitions()[id];
             const state = Guild.ensureState();
             if (!def || !state) return false;
@@ -170,6 +270,7 @@
         },
 
         acceptQuest(id) {
+            id = Guild.resolveQuestId(id);
             const state = Guild.ensureState();
             if (!state || !state.offers.includes(id) || !Guild.isQuestUnlocked(id)) return false;
             if (Guild.getQuestState(id).state === 'accepted') return true;
@@ -178,7 +279,7 @@
             return true;
         },
 
-        noteQuestKills(monsterIds = []) {
+        noteQuestKills(monsterIds = [], context = {}, options = {}) {
             if (!Array.isArray(monsterIds) || !monsterIds.length) return [];
             const state = Guild.ensureState();
             if (!state) return [];
@@ -186,19 +287,49 @@
             Object.entries(state.questStates).forEach(([id, questState]) => {
                 if (questState?.state !== 'accepted') return;
                 const def = Guild.getDefinitions()[id];
-                if (def?.kind !== 'hunt') return;
-                const targets = (def.targetMonsterIds || []).map(Number);
-                const gained = monsterIds.filter(monsterId => targets.includes(Number(monsterId))).length;
+                const gained = Guild.getHuntProgressIncrement(def, monsterIds, context);
                 if (!gained) return;
                 if (!questState.progress || typeof questState.progress !== 'object') questState.progress = {};
                 questState.progress.kills = Math.min(Number(def.targetCount || 1), Number(questState.progress.kills || 0) + gained);
                 updated.push(id);
             });
-            if (updated.length) App.save();
+            if (updated.length && options.save !== false) App.save();
             return updated;
         },
 
+        cancelQuest(id) {
+            id = Guild.resolveQuestId(id);
+            const state = Guild.ensureState();
+            const def = Guild.getDefinitions()[id];
+            const current = state?.questStates?.[id];
+            if (!state || !def || current?.state !== 'accepted') return false;
+
+            // Cancellation discards only this attempt's progress and releases the occupied
+            // board slot. A different unlocked request is preferred for the replacement so
+            // the player does not immediately see the cancelled request forced back on them.
+            state.questStates[id] = {
+                state: 'available',
+                progress: {},
+                cancelledAt: Date.now()
+            };
+            state.offers = state.offers.filter(offerId => offerId !== id);
+            state.refreshCount += 1;
+
+            const remainingSlots = Math.max(0, Guild.maxOffers - state.offers.length);
+            let candidates = Guild.availableCandidates([...state.offers, id]);
+            if (!candidates.length) candidates = Guild.availableCandidates(state.offers);
+            Guild.pickCandidates(candidates, remainingSlots, state.refreshCount).forEach(candidateId => {
+                state.questStates[candidateId] = { state: 'available', progress: {} };
+                state.offers.push(candidateId);
+            });
+            Guild.ensureOffers({ save: false });
+            App.save();
+            if (typeof MenuStatus !== 'undefined' && typeof MenuStatus.render === 'function') MenuStatus.render();
+            return true;
+        },
+
         isObjectiveComplete(id) {
+            id = Guild.resolveQuestId(id);
             const def = Guild.getDefinitions()[id];
             const state = Guild.getQuestState(id);
             if (!def || state.state !== 'accepted') return false;
@@ -210,12 +341,23 @@
         },
 
         targetSummary(id) {
+            id = Guild.resolveQuestId(id);
             const def = Guild.getDefinitions()[id];
             const state = Guild.getQuestState(id);
             if (!def) return '';
             if (def.kind === 'hunt') {
+                const scope = Guild.getHuntScope(def);
+                const current = Math.min(Number(def.targetCount || 1), Number(state.progress?.kills || 0));
+                const required = Math.max(1, Number(def.targetCount || 1));
+                const location = scope.label ? `討伐場所: ${scope.label}
+` : '';
+                if (scope.mode === 'dungeon') {
+                    return `${location}対象: ダンジョン内の魔物（種類不問）
+進捗: ${current}/${required}`;
+                }
                 const names = (def.targetMonsterIds || []).map(monsterId => App.getQuestMonsterName?.(monsterId) || `モンスター${monsterId}`).join(' / ');
-                return `${names}\n${Math.min(Number(def.targetCount || 1), Number(state.progress?.kills || 0))}/${Math.max(1, Number(def.targetCount || 1))}`;
+                return `${location}対象: ${names || '指定魔物'}
+進捗: ${current}/${required}`;
             }
             if (Array.isArray(def.itemRequirements)) {
                 return def.itemRequirements.map(req => {
@@ -253,6 +395,7 @@
         },
 
         reportQuest(id) {
+            id = Guild.resolveQuestId(id);
             const state = Guild.ensureState();
             const def = Guild.getDefinitions()[id];
             if (!state || !def || !Guild.isObjectiveComplete(id) || !Guild.consumeRequirements(def)) return null;
@@ -290,14 +433,17 @@
             const state = Guild.ensureState();
             const next = Guild.nextRank(state?.rank);
             if (!next || !Guild.canTakePromotion()) return false;
-            const boss = PROMOTION_BOSSES[next];
+            const trial = PROMOTION_TRIALS[next];
+            const opponent = trial ? global.MonsterData?.getMonsterById?.(Number(trial.monsterId)) : null;
+            if (!trial || !opponent?.isGuildPromotionBoss || opponent.promotionRank !== next) return false;
             App.data.battle = {
                 active: false,
                 isBossBattle: true,
-                fixedBossId: boss.monsterId,
+                fixedBossId: trial.monsterId,
                 preventEscape: true,
                 suppressFixedBossDefeat: true,
                 guildPromotionTrial: true,
+                guildPromotionTrialId: trial.id,
                 guildPromotionTarget: next
             };
             state.pendingPromotion = next;
@@ -310,7 +456,9 @@
         completePromotionTrial(targetRank) {
             const state = Guild.ensureState();
             const next = Guild.nextRank(state?.rank);
-            if (!state || !targetRank || next !== targetRank || state.exp < EXP_THRESHOLDS[targetRank]) return null;
+            if (!state || !targetRank || next !== targetRank
+                || state.pendingPromotion !== targetRank
+                || state.exp < EXP_THRESHOLDS[targetRank]) return null;
             state.rank = targetRank;
             state.pendingPromotion = null;
             Guild.ensureOffers({ save: false });
@@ -361,12 +509,15 @@
         },
 
         showQuestDetail(id) {
+            id = Guild.resolveQuestId(id);
             const def = Guild.getDefinitions()[id];
             const state = Guild.getQuestState(id);
             if (!def) return;
             const ready = Guild.isObjectiveComplete(id);
-            const offer = state.state !== 'accepted';
-            const actionButton = offer ? `<button id="guild-detail-accept" class="menu-btn" style="width:100%; margin-top:12px;">受注する</button>` : '';
+            const accepted = state.state === 'accepted';
+            const actionButton = accepted
+                ? `<button id="guild-detail-cancel" class="menu-btn" style="width:100%; margin-top:12px; border-color:#a65b5b; color:#ffd4d4;">依頼をキャンセルする</button>`
+                : `<button id="guild-detail-accept" class="menu-btn" style="width:100%; margin-top:12px;">受注する</button>`;
             Facilities.showModal('guild-scene', def.name, `
                 <div style="font-size:11px; color:#d9bd7d;">必要ランク ${def.requiredRank || 'G'} / ${App.getQuestKindLabel?.(def.kind) || def.kind}</div>
                 <div style="font-size:12px; line-height:1.65; margin-top:10px; white-space:pre-wrap;">${App.escapeHtml(state.state === 'accepted' ? (def.progressText || def.objective) : (def.startText || def.objective))}</div>
@@ -380,6 +531,18 @@
                 Guild.acceptQuest(id);
                 Guild.openBoard();
             };
+            const cancel = document.getElementById('guild-detail-cancel');
+            if (cancel) cancel.onclick = () => {
+                const execute = () => {
+                    if (!Guild.cancelQuest(id)) return;
+                    Guild.openBoard();
+                };
+                if (typeof Menu !== 'undefined' && typeof Menu.confirm === 'function') {
+                    Menu.confirm('この依頼をキャンセルしますか？\n現在の進捗は失われます。', execute);
+                } else {
+                    execute();
+                }
+            };
         },
 
         openBoard() {
@@ -389,7 +552,7 @@
             Guild.ensureOffers({ save: false });
             const html = state.offers.map(id => Guild.questCard(id)).join('');
             Facilities.showModal('guild-scene', '依頼掲示板', `
-                <div style="font-size:11px; color:#aaa;">依頼は最大5件。更新しても受注中の依頼は残ります。</div>
+                <div style="font-size:11px; color:#aaa;">依頼は最大5件。更新しても受注中の依頼は残り、詳細画面からキャンセルできます。</div>
                 ${html || '<div style="padding:16px; color:#888;">現在紹介できる依頼はありません。</div>'}
                 <button id="guild-board-refresh" class="menu-btn" style="width:100%; margin-top:12px;">依頼を更新する</button>
             `, { onClose: () => App.changeScene('field') });
@@ -429,11 +592,16 @@
                 Facilities.showModal('guild-scene', '昇格試験', '<div style="padding:18px; text-align:center; color:#ffd56b;">すでに最高ランクです。</div>');
                 return;
             }
-            const boss = PROMOTION_BOSSES[progress.next];
+            const trial = PROMOTION_TRIALS[progress.next];
+            const opponent = trial ? global.MonsterData?.getMonsterById?.(Number(trial.monsterId)) : null;
+            if (!trial || !opponent?.isGuildPromotionBoss || opponent.promotionRank !== progress.next) {
+                Facilities.showModal('guild-scene', '昇格試験', '<div style="padding:18px; text-align:center; color:#f88;">昇格試験マスターが見つかりません。</div>');
+                return;
+            }
             const ready = Guild.canTakePromotion();
             Facilities.showModal('guild-scene', '昇格試験', `
                 <div style="line-height:1.7;">次のランク: <b style="color:#ffd56b;">${progress.next}</b><br>必要経験値: ${progress.required}<br>現在経験値: ${state.exp}</div>
-                <div style="margin-top:10px; padding:10px; border:1px solid #555;">試験内容: ${App.escapeHtml(boss.name)}とのボス戦<br><small style="color:#f88;">この戦闘からは逃げられません。</small></div>
+                <div style="margin-top:10px; padding:10px; border:1px solid #555;">${App.escapeHtml(trial.name)}<br><span style="color:#ddd;">対戦相手: ${App.escapeHtml(opponent.name)}</span><br><span style="font-size:12px; color:#bbb;">${App.escapeHtml(trial.objective || '')}</span><br><small style="color:#f88;">この戦闘からは逃げられません。</small></div>
                 <button id="guild-trial-start" class="menu-btn" ${ready ? '' : 'disabled'} style="width:100%; margin-top:12px;">${ready ? '試験を受ける' : `あと ${progress.remaining} 経験値必要`}</button>
             `);
             const start = document.getElementById('guild-trial-start');

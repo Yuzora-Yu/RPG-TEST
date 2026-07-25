@@ -65,7 +65,7 @@ assert(editorSource.includes("effect.excludePoints.push({x,y})"), 'Editor hazard
 assert(editorSource.includes("meta.role==='blocking'"), 'Editor does not separate passable and blocking map props.');
 assert(editorSource.includes("type:'image',imageKey:meta.key"), 'Editor does not emit passable image decorations.');
 
-assert(mapSource.includes('const MAP_FLOOR_DECOR_THEMES = Object.freeze({'), 'Shared floor decoration registry is missing from map.js.');
+assert(/const\s+MAP_FLOOR_DECOR_THEMES\s*=\s*(?:Object\.freeze\()?\s*\{/.test(mapSource), 'Shared floor decoration registry is missing from map.js.');
 assert(mapSource.includes('window.MAP_FLOOR_DECOR_THEMES = MAP_FLOOR_DECOR_THEMES'), 'Shared floor decoration registry is not exported.');
 assert(phaserFieldSource.includes('window.MAP_FLOOR_DECOR_THEMES || Object.freeze({'), 'Game renderer does not consume the shared floor decoration registry.');
 assert(phaserFieldSource.includes("definition?.type !== 'image' || !definition.imageKey"), 'Game renderer cannot draw editor-placed passable image decorations.');

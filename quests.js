@@ -1,464 +1,330 @@
-/* quests.js - story and ally quest registry */
-(function() {
-    const conversation = "conversation";
-    const boss = "boss";
-    const hunt = "hunt";
-    const travel = "travel";
-    const collection = "collection";
+/* quests.js - story and ally quest master (source of truth) */
+(function(root) {
+    'use strict';
 
+    // 冒険者ギルドの回転依頼は guild_quests.js を正本とし、ここには混在させない。
     const QUEST_DATA = {
-        karin_volcano_depths: {
-            name: "火山奥の鍛炎",
-            area: "イグナ火山 深部",
-            kind: boss,
-            unlockFlags: ["windVillageCleared"],
-            objective: "風の加護で開いた火山深部を調査し、カリンの試練を越える。",
-            startText: "カリンは、風の加護で火山ガスが晴れた今こそ奥へ進めると話した。",
-            startEventId: "quest_karin_start",
-            progressText: "火山深部の強化された魔物を越え、最奥へ進もう。",
-            completeText: "カリンは鍛えた炎を旅路に捧げ、仲間に加わった。",
-            rewardAllies: [210]
-        },
-        arisa_haine_forest_depths: {
-            name: "禁忌の森の双影",
-            area: "風の集落 / 禁忌の森 深部",
-            kind: boss,
-            unlockFlags: ["waterCityCleared"],
-            objective: "風の集落で、禁忌の森の奥へ消えたアリサとハイネの救援依頼を受ける。",
-            startText: "風の集落の村人から、アリサとハイネの救援を頼まれた。",
-            progressText: "禁忌の森深部へ向かい、アリサとハイネを救出しよう。",
-            completeText: "アリサとハイネを救出し、二人が仲間に加わった。",
-            startEventId: "quest_arisa_haine_start",
-            rewardAllies: [108, 207]
-        },
-        sophia_alan_seabed_depths: {
-            name: "水流の奥の誓い",
-            area: "海底神殿 深部",
-            kind: boss,
-            unlockFlags: ["thunderFortCleared"],
-            objective: "雷の加護で流れが弱まった海底神殿深部を攻略する。",
-            startText: "ソフィアとアランは、神殿奥の水流が弱まった今なら真相へ届くと判断した。",
-            progressText: "海底神殿深部の水流の先へ進もう。",
-            completeText: "神殿の奥に残った脅威を退け、ソフィアとアランが仲間に加わった。",
-            rewardAllies: [202, 201]
-        },
-        frieda_baron_thunder_depths: {
-            name: "雷光の封鎖線",
-            area: "雷の要塞 深部",
-            kind: boss,
-            unlockFlags: ["lightPalaceCleared"],
-            objective: "光の加護で高圧電流が弱まった雷の要塞深部を攻略する。",
-            startText: "フリーダとバロンは、要塞の奥に残る雷の制御核を止める決意を示した。",
-            progressText: "雷の要塞深部へ進み、制御核を守る魔物を倒そう。",
-            completeText: "雷の制御核は沈黙し、フリーダとバロンが仲間に加わった。",
-            rewardAllies: [302, 205]
-        },
-        licia_crena_depths: {
-            name: "結界の奥のリーシア",
-            area: "クレナ鍾乳洞 深部",
-            kind: boss,
-            unlockFlags: ["darkCastleCleared"],
-            objective: "闇の加護で見えるようになった結界の奥へ進み、リーシアを救う。",
-            startText: "結界の前に立つリーシアは、奥に潜む魔力を断つため同行を求めている。",
-            startEventId: "quest_licia_start",
-            progressText: "クレナ鍾乳洞深部で結界の核を探そう。",
-            completeText: "結界の核は砕け、リーシアが仲間に加わった。",
-            rewardAllies: [303]
-        },
-        royal_star_catalyst: {
-            name: "王の星詠みと触媒器",
-            area: "光の宮殿 地下牢",
-            kind: collection,
-            unlockFlags: ["lightPalaceCleared"],
-            objective: "国王が示した四種の素材を集め、光の宮殿の地下牢へ届ける。",
-            startText: "国王は、失われた加工術式を再び動かすための素材を探している。素材をそろえて地下牢の国王へ届けよう。",
-            startEventId: "light_palace_catalyst_quest_start",
-            progressText: "業火の壺3つ、星銀鋼1つ、虹の結晶1つ、星の涙1つを集め、国王へ届けよう。",
-            reportEventId: "light_palace_catalyst_quest_report",
-            completeText: "素材を国王へ渡し、貴重品『星詠みの触媒器』を受け取った。メニューの『加工』が利用可能になった。",
-            itemRequirements: [
-                { id: 1001, count: 3 },
-                { id: 2005, count: 1 },
-                { id: 2021, count: 1 },
-                { id: 2053, count: 1 }
-            ],
-            consumeItemsOnComplete: true,
-            rewardItems: [{ id: 111, count: 1 }]
-        },
-        fire_water_attunement: {
-            name: "火脈と水脈の調律",
-            area: "水上都市",
-            kind: conversation,
-            unlockFlags: ["forestHolyWaterObtained", "blueCrystalObtained"],
-            objective: "妖精の聖水と青の結晶の記録を合わせ、次の異変に備える。",
-            startText: "水上都市の技師は、火山と神殿の異常が同じ脈動に連なる可能性を語った。",
-            progressText: "水上都市の技師と、火脈と水脈の記録を照合しよう。",
-            completeText: "火と水の流れを読む調律の羅針片を受け取った。",
-            rewardFlags: ["attunementCompassObtained"],
-            rewardItems: [{ id: 306, count: 1 }],
-            initialComplete: true
-        },
-        marie_water_city: {
-            name: "祈り手マリーの討伐依頼",
-            area: "水上都市",
-            kind: hunt,
-            unlockFlags: ["waterCityCleared"],
-            objective: "水上都市近海に現れるアクアウィスプとウィスプナイトを合計5体討伐する。",
-            startText: "マリーは、水上都市近海で避難船を脅かすアクアウィスプとウィスプナイトの討伐を依頼した。",
-            progressText: "水上都市近海でアクアウィスプとウィスプナイトを討伐し、マリーへ報告しよう。",
-            startEventId: "quest_marie_start",
-            reportEventId: "quest_marie_report",
-            targetMonsterIds: [100033, 100036],
-            targetCount: 5,
-            completeText: "マリーは祈りだけでなく、杖を手にして旅に同行することを決めた。",
-            rewardAllies: [102]
-        },
-        zelied_big_tower: {
-            name: "大灯台のゼリード",
-            area: "大灯台",
-            kind: boss,
-            unlockFlags: ["bigTowerCleared"],
-            objective: "大灯台1階でゼリードと話し、再び頂上のボスを倒す。",
-            startText: "ゼリードは、大灯台の頂に残る歪みを確かめたいと申し出た。",
-            progressText: "大灯台の頂上へ向かい、再出現した強敵を倒そう。",
-            reportText: "頂を覆っていた歪みは消えた。大灯台1階のゼリードへ知らせよう。",
-            startEventId: "quest_zelied_start",
-            reportEventId: "quest_zelied_report",
-            completeText: "頂の歪みは消え、ゼリードが仲間に加わった。",
-            rewardAllies: [103]
-        },
-        hayate_water_city: {
-            name: "ハヤテの早駆け討伐",
-            area: "水上都市",
-            kind: hunt,
-            requiredAllies: [201],
-            objective: "アラン加入後、水上都市近海のアクアウィスプとバンパイアを合計6体討伐する。",
-            startText: "ハヤテは、アランの名を聞くと水上都市近海のアクアウィスプとバンパイア討伐を持ちかけた。",
-            progressText: "水上都市近海でアクアウィスプとバンパイアを討伐し、ハヤテへ報告しよう。",
-            startEventId: "quest_hayate_start",
-            reportEventId: "quest_hayate_report",
-            targetMonsterIds: [100033, 100037],
-            targetCount: 6,
-            completeText: "ハヤテは速度だけでなく覚悟も認め、仲間に加わった。",
-            rewardAllies: [203]
-        },
-        sylvia_water_city: {
-            name: "シルビアの護衛依頼",
-            area: "水上都市",
-            kind: hunt,
-            requiredAllies: [101],
-            objective: "ジョセフ加入後、水上都市外縁のウィスプナイトとバンパイアを合計5体討伐する。",
-            startText: "シルビアは、水上都市外縁で荷を止めているウィスプナイトとバンパイアの討伐を依頼した。",
-            progressText: "水上都市外縁でウィスプナイトとバンパイアを討伐し、シルビアへ報告しよう。",
-            startEventId: "quest_sylvia_start",
-            reportEventId: "quest_sylvia_report",
-            targetMonsterIds: [100036, 100037],
-            targetCount: 5,
-            completeText: "シルビアは旅の危うさを承知で、支援役として仲間に加わった。",
-            rewardAllies: [209]
-        },
-        rin_thunder_fort: {
-            name: "リンの雷鳴討伐",
-            area: "雷の要塞",
-            kind: hunt,
-            requiredAllies: [204],
-            objective: "レイラ加入後、雷の要塞に残るアイアンウルフとフレイムヴァインを合計6体討伐する。",
-            startText: "リンは、雷の要塞に残るアイアンウルフとフレイムヴァインの討伐を願い出た。",
-            progressText: "雷の要塞でアイアンウルフとフレイムヴァインを討伐し、リンへ報告しよう。",
-            startEventId: "quest_rin_start",
-            reportEventId: "quest_rin_report",
-            targetMonsterIds: [100040, 100043],
-            targetCount: 6,
-            completeText: "リンは雷鳴に臆さぬ一行を認め、仲間に加わった。",
-            rewardAllies: [208]
-        },
-        claude_leon_dark_shrine: {
-            name: "闇の神殿跡地の双剣",
-            area: "闇の神殿跡地",
-            kind: boss,
-            unlockFlags: ["lightPalaceCleared"],
-            objective: "闇の神殿跡地でクロードとレオンの加入クエストを進める。",
-            startText: "クロードとレオンは、光の宮殿の影に残った闇を断つため神殿跡地へ向かった。",
-            progressText: "闇の神殿跡地の最奥へ進もう。",
-            completeText: "闇の残滓は退けられ、クロードとレオンが仲間に加わった。",
-            rewardAllies: [304, 305]
-        },
-        luna_hidden_dark_shrine: {
-            name: "月影のルーナ",
-            area: "闇の神殿跡地",
-            kind: boss,
-            unlockFlags: ["lightPalaceCleared"],
-            requiredQuests: ["claude_leon_dark_shrine"],
-            objective: "闇の神殿跡地の隠し超強ボスを討伐する。",
-            startText: "ルーナは、月光すら飲み込む影を討てる者だけを待っている。",
-            progressText: "闇の神殿跡地の隠し祭壇で超強ボスに挑もう。",
-            completeText: "月影を縛る闇は砕け、ルーナが仲間に加わった。",
-            rewardAllies: [401]
-        },
-        ryu_minerva_grezelia: {
-            name: "禁則地の竜と智",
-            area: "禁則地グレゼリア",
-            kind: boss,
-            unlockFlags: ["darkCastleCleared"],
-            objective: "禁則地グレゼリアでリュウとミネルバの加入クエストを進める。",
-            startText: "リュウとミネルバは、魔王城の奥に残った禁則の術式を追っている。",
-            progressText: "禁則地グレゼリアの深部へ進もう。",
-            completeText: "禁則の術式は破られ、リュウとミネルバが仲間に加わった。",
-            rewardFlags: ["grezeliaOuterSealBroken"],
-            rewardAllies: [107, 206]
-        },
-
-        fire_board_hunt: {
-            name: "炉辺の小討伐",
-            area: "炎の里イグニシア / イグナ火山周辺",
-            kind: hunt,
-            unlockFlags: ["fireVillageCleared"],
-            objective: "マッドゴーレムとブラックバットを合計5体討伐する。",
-            startText: "炭運びたちの安全確保のため、火山道に残る魔物の間引きを頼まれた。",
-            progressText: "イグナ火山周辺でマッドゴーレムとブラックバットを討伐し、依頼掲示板へ報告しよう。",
-            targetMonsterIds: [100010, 100011],
-            targetCount: 5,
-            completeText: "火山道の安全が確保され、里の備蓄品を受け取った。",
-            rewardItems: [{ id: 2, count: 2 }, { id: 2001, count: 1 }]
-        },
-        fire_board_exchange: {
-            name: "炉材の仕立て直し",
-            area: "炎の里イグニシア",
-            kind: collection,
-            unlockFlags: ["fireVillageCleared"],
-            objective: "鉄くず4個と劣化した魔石2個を納品し、上位素材に交換する。",
-            startText: "鍛冶場では、低位素材をまとめて精錬するための材料を募っている。",
-            progressText: "鉄くず4個と劣化した魔石2個を集め、依頼掲示板へ持ってこよう。",
-            itemRequirements: [{ id: 2000, count: 4 }, { id: 2016, count: 2 }],
-            consumeItemsOnComplete: true,
-            completeText: "集めた素材が精錬され、扱いやすい上位素材になった。",
-            rewardItems: [{ id: 2001, count: 1 }, { id: 2017, count: 1 }]
-        },
-        wind_board_hunt: {
-            name: "枝道の魔物払い",
-            area: "風の集落カザリア / 禁忌の森周辺",
-            kind: hunt,
-            unlockFlags: ["windVillageCleared"],
-            objective: "ヘルラビットとマンドラゴラを合計6体討伐する。",
-            startText: "薬草採りが森へ戻れるよう、枝道に居着いた魔物の討伐を頼まれた。",
-            progressText: "禁忌の森周辺でヘルラビットとマンドラゴラを討伐し、依頼掲示板へ報告しよう。",
-            targetMonsterIds: [100020, 100022],
-            targetCount: 6,
-            completeText: "枝道に風が戻り、薬草採りから礼の品を受け取った。",
-            rewardItems: [{ id: 8, count: 3 }, { id: 2025, count: 1 }]
-        },
-        wind_board_exchange: {
-            name: "風織りの素材束",
-            area: "風の集落カザリア",
-            kind: collection,
-            unlockFlags: ["windVillageCleared"],
-            objective: "枯れ枝4個とくたびれた羽3個を納品し、上位素材に交換する。",
-            startText: "風織り職人が、傷んだ素材を選別して新しい加工材へ仕立てるという。",
-            progressText: "枯れ枝4個とくたびれた羽3個を集め、依頼掲示板へ持ってこよう。",
-            itemRequirements: [{ id: 2008, count: 4 }, { id: 2024, count: 3 }],
-            consumeItemsOnComplete: true,
-            completeText: "素材は乾燥と選別を施され、丈夫な加工材へ仕立て直された。",
-            rewardItems: [{ id: 2009, count: 1 }, { id: 2025, count: 1 }]
-        },
-        water_board_hunt: {
-            name: "水路灯の警備",
-            area: "水上都市リヴァリア近海",
-            kind: hunt,
-            unlockFlags: ["waterCityCleared"],
-            objective: "アクアウィスプとライトウィスプを合計6体討伐する。",
-            startText: "夜の水路灯へ集まる魔物を減らし、船の往来を守ってほしいと頼まれた。",
-            progressText: "水上都市近海でアクアウィスプとライトウィスプを討伐し、依頼掲示板へ報告しよう。",
-            targetMonsterIds: [100033, 100034],
-            targetCount: 6,
-            completeText: "水路灯の周囲が静まり、船大工から補給品を受け取った。",
-            rewardItems: [{ id: 3, count: 2 }, { id: 2050, count: 1 }]
-        },
-        water_board_exchange: {
-            name: "水薬の濃縮交換",
-            area: "水上都市リヴァリア",
-            kind: collection,
-            unlockFlags: ["waterCityCleared"],
-            objective: "青い薬4個と小さな魔石2個を納品し、上位素材に交換する。",
-            startText: "錬金所が低濃度の水薬と魔石を集め、濃縮素材へ加工している。",
-            progressText: "青い薬4個と小さな魔石2個を集め、依頼掲示板へ持ってこよう。",
-            itemRequirements: [{ id: 2049, count: 4 }, { id: 2017, count: 2 }],
-            consumeItemsOnComplete: true,
-            completeText: "水薬と魔石は濃縮され、より高位の素材へ変わった。",
-            rewardItems: [{ id: 2050, count: 1 }, { id: 2018, count: 1 }]
-        },
-        tower_board_hunt: {
-            name: "灯台下層の掃討",
-            area: "大灯台",
-            kind: hunt,
-            unlockFlags: ["bigTowerCleared"],
-            objective: "ヒールスポアとキラーバットを合計6体討伐する。",
-            startText: "灯台守から、補修隊を妨げる下層の魔物を掃討してほしいと頼まれた。",
-            progressText: "大灯台でヒールスポアとキラーバットを討伐し、依頼掲示板へ報告しよう。",
-            targetMonsterIds: [100026, 100028],
-            targetCount: 6,
-            completeText: "補修隊の通路が確保され、灯台の備蓄品を受け取った。",
-            rewardItems: [{ id: 4, count: 1 }, { id: 2026, count: 1 }]
-        },
-        tower_board_exchange: {
-            name: "高所補修材の調達",
-            area: "大灯台",
-            kind: collection,
-            unlockFlags: ["bigTowerCleared"],
-            objective: "鷹の羽3個と小さな魔石2個を納品し、上位素材に交換する。",
-            startText: "強風に耐える補修材を作るため、軽い羽と魔石を集めている。",
-            progressText: "鷹の羽3個と小さな魔石2個を集め、依頼掲示板へ持ってこよう。",
-            itemRequirements: [{ id: 2025, count: 3 }, { id: 2017, count: 2 }],
-            consumeItemsOnComplete: true,
-            completeText: "素材は塔の風で鍛えられ、より強い補修材へ加工された。",
-            rewardItems: [{ id: 2026, count: 1 }, { id: 2018, count: 1 }]
-        },
-        thunder_board_hunt: {
-            name: "残雷区画の巡回",
-            area: "ライザーク要塞",
-            kind: hunt,
-            unlockFlags: ["thunderFortCleared"],
-            objective: "アイアンウルフとリペアゼリーを合計7体討伐する。",
-            startText: "要塞の再利用に向け、残雷区画に潜む魔物の討伐を依頼された。",
-            progressText: "ライザーク要塞でアイアンウルフとリペアゼリーを討伐し、依頼掲示板へ報告しよう。",
-            targetMonsterIds: [100040, 100042],
-            targetCount: 7,
-            completeText: "巡回路が開通し、補給隊から整備用の素材を受け取った。",
-            rewardItems: [{ id: 13, count: 1 }, { id: 2003, count: 1 }]
-        },
-        thunder_board_exchange: {
-            name: "要塞部材の再精製",
-            area: "ライザーク要塞",
-            kind: collection,
-            unlockFlags: ["thunderFortCleared"],
-            objective: "黒鉄3個と歪な骨2個を納品し、上位素材に交換する。",
-            startText: "壊れた機構を直すため、強度の異なる部材をまとめて再精製するという。",
-            progressText: "黒鉄3個と歪な骨2個を集め、依頼掲示板へ持ってこよう。",
-            itemRequirements: [{ id: 2002, count: 3 }, { id: 2058, count: 2 }],
-            consumeItemsOnComplete: true,
-            completeText: "部材は要塞炉で再精製され、高位の素材へ変わった。",
-            rewardItems: [{ id: 2003, count: 1 }, { id: 2059, count: 1 }]
-        },
-        light_board_hunt: {
-            name: "白光回廊の浄掃",
-            area: "光の宮殿グランプリズマ",
-            kind: hunt,
-            unlockFlags: ["lightPalaceCleared"],
-            objective: "ダークバトラーとヒールフェアリーを合計7体討伐する。",
-            startText: "巡礼路を再開するため、白光回廊に残る魔物の討伐を頼まれた。",
-            progressText: "光の宮殿でダークバトラーとヒールフェアリーを討伐し、依頼掲示板へ報告しよう。",
-            targetMonsterIds: [100060, 100062],
-            targetCount: 7,
-            completeText: "巡礼路の安全が確認され、聖薬所から謝礼を受け取った。",
-            rewardItems: [{ id: 14, count: 1 }, { id: 2021, count: 1 }]
-        },
-        light_board_exchange: {
-            name: "聖光素材の昇華",
-            area: "光の宮殿グランプリズマ",
-            kind: collection,
-            unlockFlags: ["lightPalaceCleared"],
-            objective: "魔力結晶3個と精霊鳥の羽2個を納品し、上位素材に交換する。",
-            startText: "宮殿の工房が、光を通す素材を選別して昇華加工を行っている。",
-            progressText: "魔力結晶3個と精霊鳥の羽2個を集め、依頼掲示板へ持ってこよう。",
-            itemRequirements: [{ id: 2020, count: 3 }, { id: 2028, count: 2 }],
-            consumeItemsOnComplete: true,
-            completeText: "素材は白光の炉で昇華され、希少な上位素材になった。",
-            rewardItems: [{ id: 2021, count: 1 }, { id: 2029, count: 1 }]
-        },
-        dark_board_hunt: {
-            name: "城外縁の魔掃戦",
-            area: "魔王城ガルヴァニア周辺",
-            kind: hunt,
-            unlockFlags: ["darkCastleCleared"],
-            objective: "デーモンソルジャーとアークバットを合計8体討伐する。",
-            startText: "城門修復を進めるため、外縁に集まる魔物の討伐を依頼された。",
-            progressText: "魔王城周辺でデーモンソルジャーとアークバットを討伐し、依頼掲示板へ報告しよう。",
-            targetMonsterIds: [100068, 100069],
-            targetCount: 8,
-            completeText: "城門周辺の安全が戻り、闇市の商人から謝礼を受け取った。",
-            rewardItems: [{ id: 1040, count: 1 }, { id: 2005, count: 1 }]
-        },
-        dark_board_exchange: {
-            name: "魔城炉の高位精錬",
-            area: "魔王城ガルヴァニア",
-            kind: collection,
-            unlockFlags: ["darkCastleCleared"],
-            objective: "オリハルコンの欠片3個と水竜の血2個を納品し、上位素材に交換する。",
-            startText: "魔城炉の再点火に伴い、希少素材をさらに高位へ精錬する試みが始まった。",
-            progressText: "オリハルコンの欠片3個と水竜の血2個を集め、依頼掲示板へ持ってこよう。",
-            itemRequirements: [{ id: 2004, count: 3 }, { id: 2052, count: 2 }],
-            consumeItemsOnComplete: true,
-            completeText: "希少素材は魔城炉の熱に耐え、さらに純度の高い素材へ変わった。",
-            rewardItems: [{ id: 2005, count: 1 }, { id: 2053, count: 1 }]
-        },
-        abyss_board_hunt: {
-            name: "外縁裂界の鎮圧",
-            area: "深淵の魔窟 外縁",
-            kind: hunt,
-            unlockFlags: ["abyssFirstEntered"],
-            objective: "アクアリリー、ジェリーキング、バトルリザードを合計10体討伐する。",
-            startText: "外縁の観測地点を守るため、裂界から這い出す魔物の鎮圧を頼まれた。",
-            progressText: "深淵周辺で指定された魔物を討伐し、外縁の依頼掲示板へ報告しよう。",
-            targetMonsterIds: [100064, 100066, 100067],
-            targetCount: 10,
-            completeText: "外縁の揺らぎが弱まり、観測隊の貴重な備蓄品を受け取った。",
-            rewardItems: [{ id: 1042, count: 1 }, { id: 2061, count: 1 }]
-        },
-        abyss_board_exchange: {
-            name: "深淵素材の定着",
-            area: "深淵の魔窟 外縁",
-            kind: collection,
-            unlockFlags: ["abyssFirstEntered"],
-            objective: "世界の欠片2個と幻獣の毛皮2個を納品し、最上位素材に交換する。",
-            startText: "観測隊が、深淵で変質する素材を安定化させる実験を行っている。",
-            progressText: "世界の欠片2個と幻獣の毛皮2個を集め、外縁の依頼掲示板へ持ってこよう。",
-            itemRequirements: [{ id: 2061, count: 2 }, { id: 2045, count: 2 }],
-            consumeItemsOnComplete: true,
-            completeText: "素材は裂界の圧力に定着し、最上位の加工素材へ変わった。",
-            rewardItems: [{ id: 2062, count: 1 }, { id: 2046, count: 1 }]
-        },
-        zenon_hidden_grezelia: {
-            name: "ゼノンの禁則試練",
-            area: "禁則地グレゼリア",
-            kind: boss,
-            unlockFlags: ["darkCastleCleared"],
-            requiredQuests: ["ryu_minerva_grezelia"],
-            objective: "禁則地グレゼリアの隠し超強ボスを討伐する。",
-            startText: "ゼノンは、禁則の底に残る最悪の魔力を封じられる者を探している。",
-            progressText: "禁則地グレゼリアの最深部で超強ボスに挑もう。",
-            completeText: "禁則の残響は沈黙し、ゼノンが仲間に加わった。",
-            rewardAllies: [402]
-        }
-    };
-
-    // 町ごとの旧「依頼掲示板」依頼は、通常クエストから分離して
-    // 冒険者ギルド専用の回転依頼として管理する。
-    const GUILD_QUEST_META = {
-        fire_board_hunt: { requiredRank: "G", guildExp: 18, guildPoints: 6 },
-        fire_board_exchange: { requiredRank: "G", guildExp: 16, guildPoints: 7 },
-        wind_board_hunt: { requiredRank: "G", guildExp: 22, guildPoints: 8 },
-        wind_board_exchange: { requiredRank: "F", guildExp: 28, guildPoints: 10 },
-        water_board_hunt: { requiredRank: "F", guildExp: 32, guildPoints: 12 },
-        water_board_exchange: { requiredRank: "E", guildExp: 42, guildPoints: 15 },
-        tower_board_hunt: { requiredRank: "E", guildExp: 46, guildPoints: 17 },
-        tower_board_exchange: { requiredRank: "D", guildExp: 58, guildPoints: 21 },
-        thunder_board_hunt: { requiredRank: "D", guildExp: 64, guildPoints: 24 },
-        thunder_board_exchange: { requiredRank: "C", guildExp: 82, guildPoints: 30 },
-        light_board_hunt: { requiredRank: "C", guildExp: 90, guildPoints: 34 },
-        light_board_exchange: { requiredRank: "B", guildExp: 118, guildPoints: 42 },
-        dark_board_hunt: { requiredRank: "B", guildExp: 130, guildPoints: 48 },
-        dark_board_exchange: { requiredRank: "A", guildExp: 172, guildPoints: 60 },
-        abyss_board_hunt: { requiredRank: "A", guildExp: 190, guildPoints: 68 },
-        abyss_board_exchange: { requiredRank: "S", guildExp: 250, guildPoints: 90 }
-    };
-    const GUILD_QUEST_DATA = {};
-    Object.entries(GUILD_QUEST_META).forEach(([id, meta]) => {
-        if (!QUEST_DATA[id]) return;
-        GUILD_QUEST_DATA[id] = { ...QUEST_DATA[id], ...meta, guildQuest: true, repeatable: true };
-        delete QUEST_DATA[id];
-    });
-
-    if (typeof window !== "undefined") {
-        window.QUEST_DATA = QUEST_DATA;
-        window.GUILD_QUEST_DATA = GUILD_QUEST_DATA;
+    "karin_volcano_depths": {
+        "name": "火山奥の鍛炎",
+        "area": "イグナ火山 深部",
+        "kind": "boss",
+        "unlockFlags": [
+            "windVillageCleared"
+        ],
+        "objective": "風の加護で開いた火山深部を調査し、カリンの試練を越える。",
+        "startText": "カリンは、風の加護で火山ガスが晴れた今こそ奥へ進めると話した。",
+        "startEventId": "quest_karin_start",
+        "progressText": "火山深部の強化された魔物を越え、最奥へ進もう。",
+        "completeText": "カリンは鍛えた炎を旅路に捧げ、仲間に加わった。",
+        "rewardAllies": [
+            210
+        ]
+    },
+    "arisa_haine_forest_depths": {
+        "name": "禁忌の森の双影",
+        "area": "風の集落 / 禁忌の森 深部",
+        "kind": "boss",
+        "unlockFlags": [
+            "waterCityCleared"
+        ],
+        "objective": "風の集落で、禁忌の森の奥へ消えたアリサとハイネの救援依頼を受ける。",
+        "startText": "風の集落の村人から、アリサとハイネの救援を頼まれた。",
+        "progressText": "禁忌の森深部へ向かい、アリサとハイネを救出しよう。",
+        "completeText": "アリサとハイネを救出し、二人が仲間に加わった。",
+        "startEventId": "quest_arisa_haine_start",
+        "rewardAllies": [
+            108,
+            207
+        ]
+    },
+    "sophia_alan_seabed_depths": {
+        "name": "水流の奥の誓い",
+        "area": "海底神殿 深部",
+        "kind": "boss",
+        "unlockFlags": [
+            "thunderFortCleared"
+        ],
+        "objective": "雷の加護で流れが弱まった海底神殿深部を攻略する。",
+        "startText": "ソフィアとアランは、神殿奥の水流が弱まった今なら真相へ届くと判断した。",
+        "progressText": "海底神殿深部の水流の先へ進もう。",
+        "completeText": "神殿の奥に残った脅威を退け、ソフィアとアランが仲間に加わった。",
+        "rewardAllies": [
+            202,
+            201
+        ]
+    },
+    "frieda_baron_thunder_depths": {
+        "name": "雷光の封鎖線",
+        "area": "雷の要塞 深部",
+        "kind": "boss",
+        "unlockFlags": [
+            "lightPalaceCleared"
+        ],
+        "objective": "光の加護で高圧電流が弱まった雷の要塞深部を攻略する。",
+        "startText": "フリーダとバロンは、要塞の奥に残る雷の制御核を止める決意を示した。",
+        "progressText": "雷の要塞深部へ進み、制御核を守る魔物を倒そう。",
+        "completeText": "雷の制御核は沈黙し、フリーダとバロンが仲間に加わった。",
+        "rewardAllies": [
+            302,
+            205
+        ]
+    },
+    "licia_crena_depths": {
+        "name": "結界の奥のリーシア",
+        "area": "クレナ鍾乳洞 深部",
+        "kind": "boss",
+        "unlockFlags": [
+            "darkCastleCleared"
+        ],
+        "objective": "闇の加護で見えるようになった結界の奥へ進み、リーシアを救う。",
+        "startText": "結界の前に立つリーシアは、奥に潜む魔力を断つため同行を求めている。",
+        "startEventId": "quest_licia_start",
+        "progressText": "クレナ鍾乳洞深部で結界の核を探そう。",
+        "completeText": "結界の核は砕け、リーシアが仲間に加わった。",
+        "rewardAllies": [
+            303
+        ]
+    },
+    "royal_star_catalyst": {
+        "name": "王の星詠みと触媒器",
+        "area": "光の宮殿 地下牢",
+        "kind": "collection",
+        "unlockFlags": [
+            "lightPalaceCleared"
+        ],
+        "objective": "国王が示した四種の素材を集め、光の宮殿の地下牢へ届ける。",
+        "startText": "国王は、失われた加工術式を再び動かすための素材を探している。素材をそろえて地下牢の国王へ届けよう。",
+        "startEventId": "light_palace_catalyst_quest_start",
+        "progressText": "業火の壺3つ、星銀鋼1つ、虹の結晶1つ、星の涙1つを集め、国王へ届けよう。",
+        "reportEventId": "light_palace_catalyst_quest_report",
+        "completeText": "素材を国王へ渡し、貴重品『星詠みの触媒器』を受け取った。メニューの『加工』が利用可能になった。",
+        "itemRequirements": [
+            {
+                "id": 1001,
+                "count": 3
+            },
+            {
+                "id": 2005,
+                "count": 1
+            },
+            {
+                "id": 2021,
+                "count": 1
+            },
+            {
+                "id": 2053,
+                "count": 1
+            }
+        ],
+        "consumeItemsOnComplete": true,
+        "rewardItems": [
+            {
+                "id": 111,
+                "count": 1
+            }
+        ]
+    },
+    "fire_water_attunement": {
+        "name": "火脈と水脈の調律",
+        "area": "水上都市",
+        "kind": "conversation",
+        "unlockFlags": [
+            "forestHolyWaterObtained",
+            "blueCrystalObtained"
+        ],
+        "objective": "妖精の聖水と青の結晶の記録を合わせ、次の異変に備える。",
+        "startText": "水上都市の技師は、火山と神殿の異常が同じ脈動に連なる可能性を語った。",
+        "progressText": "水上都市の技師と、火脈と水脈の記録を照合しよう。",
+        "completeText": "火と水の流れを読む調律の羅針片を受け取った。",
+        "rewardFlags": [
+            "attunementCompassObtained"
+        ],
+        "rewardItems": [
+            {
+                "id": 306,
+                "count": 1
+            }
+        ],
+        "initialComplete": true
+    },
+    "marie_water_city": {
+        "name": "祈り手マリーの討伐依頼",
+        "area": "水上都市",
+        "kind": "hunt",
+        "unlockFlags": [
+            "waterCityCleared"
+        ],
+        "objective": "水上都市近海に現れるアクアウィスプとウィスプナイトを合計5体討伐する。",
+        "startText": "マリーは、水上都市近海で避難船を脅かすアクアウィスプとウィスプナイトの討伐を依頼した。",
+        "progressText": "水上都市近海でアクアウィスプとウィスプナイトを討伐し、マリーへ報告しよう。",
+        "startEventId": "quest_marie_start",
+        "reportEventId": "quest_marie_report",
+        "targetMonsterIds": [
+            100033,
+            100036
+        ],
+        "targetCount": 5,
+        "completeText": "マリーは祈りだけでなく、杖を手にして旅に同行することを決めた。",
+        "rewardAllies": [
+            102
+        ]
+    },
+    "zelied_big_tower": {
+        "name": "大灯台のゼリード",
+        "area": "大灯台",
+        "kind": "boss",
+        "unlockFlags": [
+            "bigTowerCleared"
+        ],
+        "objective": "大灯台1階でゼリードと話し、再び頂上のボスを倒す。",
+        "startText": "ゼリードは、大灯台の頂に残る歪みを確かめたいと申し出た。",
+        "progressText": "大灯台の頂上へ向かい、再出現した強敵を倒そう。",
+        "reportText": "頂を覆っていた歪みは消えた。大灯台1階のゼリードへ知らせよう。",
+        "startEventId": "quest_zelied_start",
+        "reportEventId": "quest_zelied_report",
+        "completeText": "頂の歪みは消え、ゼリードが仲間に加わった。",
+        "rewardAllies": [
+            103
+        ]
+    },
+    "hayate_water_city": {
+        "name": "ハヤテの早駆け討伐",
+        "area": "水上都市",
+        "kind": "hunt",
+        "requiredAllies": [
+            201
+        ],
+        "objective": "アラン加入後、水上都市近海のアクアウィスプとバンパイアを合計6体討伐する。",
+        "startText": "ハヤテは、アランの名を聞くと水上都市近海のアクアウィスプとバンパイア討伐を持ちかけた。",
+        "progressText": "水上都市近海でアクアウィスプとバンパイアを討伐し、ハヤテへ報告しよう。",
+        "startEventId": "quest_hayate_start",
+        "reportEventId": "quest_hayate_report",
+        "targetMonsterIds": [
+            100033,
+            100037
+        ],
+        "targetCount": 6,
+        "completeText": "ハヤテは速度だけでなく覚悟も認め、仲間に加わった。",
+        "rewardAllies": [
+            203
+        ]
+    },
+    "sylvia_water_city": {
+        "name": "シルビアの護衛依頼",
+        "area": "水上都市",
+        "kind": "hunt",
+        "requiredAllies": [
+            101
+        ],
+        "objective": "ジョセフ加入後、水上都市外縁のウィスプナイトとバンパイアを合計5体討伐する。",
+        "startText": "シルビアは、水上都市外縁で荷を止めているウィスプナイトとバンパイアの討伐を依頼した。",
+        "progressText": "水上都市外縁でウィスプナイトとバンパイアを討伐し、シルビアへ報告しよう。",
+        "startEventId": "quest_sylvia_start",
+        "reportEventId": "quest_sylvia_report",
+        "targetMonsterIds": [
+            100036,
+            100037
+        ],
+        "targetCount": 5,
+        "completeText": "シルビアは旅の危うさを承知で、支援役として仲間に加わった。",
+        "rewardAllies": [
+            209
+        ]
+    },
+    "rin_thunder_fort": {
+        "name": "リンの雷鳴討伐",
+        "area": "雷の要塞",
+        "kind": "hunt",
+        "requiredAllies": [
+            204
+        ],
+        "objective": "レイラ加入後、雷の要塞に残るアイアンウルフとフレイムヴァインを合計6体討伐する。",
+        "startText": "リンは、雷の要塞に残るアイアンウルフとフレイムヴァインの討伐を願い出た。",
+        "progressText": "雷の要塞でアイアンウルフとフレイムヴァインを討伐し、リンへ報告しよう。",
+        "startEventId": "quest_rin_start",
+        "reportEventId": "quest_rin_report",
+        "targetMonsterIds": [
+            100040,
+            100043
+        ],
+        "targetCount": 6,
+        "completeText": "リンは雷鳴に臆さぬ一行を認め、仲間に加わった。",
+        "rewardAllies": [
+            208
+        ]
+    },
+    "claude_leon_dark_shrine": {
+        "name": "闇の神殿跡地の双剣",
+        "area": "闇の神殿跡地",
+        "kind": "boss",
+        "unlockFlags": [
+            "lightPalaceCleared"
+        ],
+        "objective": "闇の神殿跡地でクロードとレオンの加入クエストを進める。",
+        "startText": "クロードとレオンは、光の宮殿の影に残った闇を断つため神殿跡地へ向かった。",
+        "progressText": "闇の神殿跡地の最奥へ進もう。",
+        "completeText": "闇の残滓は退けられ、クロードとレオンが仲間に加わった。",
+        "rewardAllies": [
+            304,
+            305
+        ]
+    },
+    "luna_hidden_dark_shrine": {
+        "name": "月影のルーナ",
+        "area": "闇の神殿跡地",
+        "kind": "boss",
+        "unlockFlags": [
+            "lightPalaceCleared"
+        ],
+        "requiredQuests": [
+            "claude_leon_dark_shrine"
+        ],
+        "objective": "闇の神殿跡地の隠し超強ボスを討伐する。",
+        "startText": "ルーナは、月光すら飲み込む影を討てる者だけを待っている。",
+        "progressText": "闇の神殿跡地の隠し祭壇で超強ボスに挑もう。",
+        "completeText": "月影を縛る闇は砕け、ルーナが仲間に加わった。",
+        "rewardAllies": [
+            401
+        ]
+    },
+    "ryu_minerva_grezelia": {
+        "name": "禁則地の竜と智",
+        "area": "禁則地グレゼリア",
+        "kind": "boss",
+        "unlockFlags": [
+            "darkCastleCleared"
+        ],
+        "objective": "禁則地グレゼリアでリュウとミネルバの加入クエストを進める。",
+        "startText": "リュウとミネルバは、魔王城の奥に残った禁則の術式を追っている。",
+        "progressText": "禁則地グレゼリアの深部へ進もう。",
+        "completeText": "禁則の術式は破られ、リュウとミネルバが仲間に加わった。",
+        "rewardFlags": [
+            "grezeliaOuterSealBroken"
+        ],
+        "rewardAllies": [
+            107,
+            206
+        ]
+    },
+    "zenon_hidden_grezelia": {
+        "name": "ゼノンの禁則試練",
+        "area": "禁則地グレゼリア",
+        "kind": "boss",
+        "unlockFlags": [
+            "darkCastleCleared"
+        ],
+        "requiredQuests": [
+            "ryu_minerva_grezelia"
+        ],
+        "objective": "禁則地グレゼリアの隠し超強ボスを討伐する。",
+        "startText": "ゼノンは、禁則の底に残る最悪の魔力を封じられる者を探している。",
+        "progressText": "禁則地グレゼリアの最深部で超強ボスに挑もう。",
+        "completeText": "禁則の残響は沈黙し、ゼノンが仲間に加わった。",
+        "rewardAllies": [
+            402
+        ]
     }
-})();
+};
+
+    root.QUEST_DATA = QUEST_DATA;
+})(globalThis);

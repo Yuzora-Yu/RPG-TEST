@@ -888,17 +888,19 @@
                 const cellY = top + (dy + range) * cell;
                 graphics.fillStyle(dx === 0 && dy === 0 ? 0xffffff : miniTileColor(field, tile, tx, ty), 1);
                 graphics.fillRect(cellX, cellY, cell + (1 / zoom), cell + (1 / zoom));
-                if ((dx !== 0 || dy !== 0) && typeof field.getMiniMapMarkerColor === 'function') {
-                    const markerColor = field.getMiniMapMarkerColor(tile, tx, ty);
-                    if (markerColor) {
-                        const markerSize = Math.max(2 / zoom, cell * 0.46);
-                        graphics.fillStyle(colorToInt(markerColor, 0xffffff), 1);
-                        graphics.fillRect(
-                            cellX + (cell - markerSize) / 2,
-                            cellY + (cell - markerSize) / 2,
-                            markerSize,
-                            markerSize
-                        );
+                if ((dx !== 0 || dy !== 0) && typeof field.getMiniMapMarkerInfo === 'function') {
+                    const markerInfo = field.getMiniMapMarkerInfo(tile, tx, ty);
+                    if (markerInfo?.color) {
+                        const markerSize = Math.max(2 / zoom, cell * 0.58);
+                        const markerX = cellX + (cell - markerSize) / 2;
+                        const markerY = cellY + (cell - markerSize) / 2;
+                        const connections = markerInfo.connections || {};
+                        graphics.fillStyle(colorToInt(markerInfo.color, 0xffffff), 1);
+                        graphics.fillRect(markerX, markerY, markerSize, markerSize);
+                        if (connections.left) graphics.fillRect(cellX, markerY, cell / 2, markerSize);
+                        if (connections.right) graphics.fillRect(cellX + cell / 2, markerY, cell / 2 + (1 / zoom), markerSize);
+                        if (connections.up) graphics.fillRect(markerX, cellY, markerSize, cell / 2);
+                        if (connections.down) graphics.fillRect(markerX, cellY + cell / 2, markerSize, cell / 2 + (1 / zoom));
                     }
                 }
             }

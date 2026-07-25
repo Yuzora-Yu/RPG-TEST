@@ -921,7 +921,7 @@ const App = {
 
 	// 全画像データの手動/初回ダウンロード用キャッシュ名。
 	// sw.js の RUNTIME_CACHE_NAME と揃えること。
-    fullDataCacheName: 'prisma-abyss-v3.141-adventurer-guild-layout-v4-runtime',
+    fullDataCacheName: 'prisma-abyss-v3.144-guild-minimap-cancel-runtime',
 
 
 	// 初回起動時の「全データを今ダウンロードしますか？」で「いいえ」を選んだ記録。
@@ -3034,7 +3034,7 @@ const App = {
         return true;
     },
 
-    noteQuestKills: (monsterIds = []) => {
+    noteQuestKills: (monsterIds = [], battleContext = {}) => {
         if (!Array.isArray(monsterIds) || monsterIds.length === 0) return [];
         const quests = App.ensureQuestState();
         const updated = [];
@@ -3049,8 +3049,11 @@ const App = {
             state.progress.kills = Math.min(Number(quest.targetCount || 1), Number(state.progress.kills || 0) + gained);
             updated.push(questId);
         });
-        if (updated.length) App.save();
-        return updated;
+        const guildUpdated = (typeof Guild !== 'undefined' && typeof Guild.noteQuestKills === 'function')
+            ? Guild.noteQuestKills(monsterIds, battleContext, { save: false })
+            : [];
+        if (updated.length || guildUpdated.length) App.save();
+        return [...updated, ...guildUpdated];
     },
 
     markQuestBossDefeated: (questId) => {
@@ -6134,9 +6137,9 @@ const Field = {
                 if (effectColor && Field.drawFullMapTileMarker) {
                     Field.drawFullMapTileMarker(ctx, effectColor, drawX, drawY, size);
                 }
-                const markerColor = Field.getMiniMapMarkerColor ? Field.getMiniMapMarkerColor(tile, x, y) : null;
-                if (markerColor && Field.drawFullMapTileMarker) {
-                    Field.drawFullMapTileMarker(ctx, markerColor, drawX, drawY, size);
+                const markerInfo = Field.getMiniMapMarkerInfo ? Field.getMiniMapMarkerInfo(tile, x, y) : null;
+                if (markerInfo?.color && Field.drawFullMapTileMarker) {
+                    Field.drawFullMapTileMarker(ctx, markerInfo.color, drawX, drawY, size, markerInfo.connections);
                 }
             }
         }
@@ -6688,23 +6691,49 @@ const Field = {
     },
 
 
-    getMiniMapMarkerColor: (tileSign, tileX = null, tileY = null) => {
+    getMiniMapMarkerInfo: (tileSign, tileX = null, tileY = null) => {
         const upper = String(tileSign || '').toUpperCase();
+        const emptyConnections = { left: false, right: false, up: false, down: false };
         if (upper === 'S' && Field.currentMapData?.autoExitOnPerimeter === true) return null;
         const exitState = Field.getMinimapExitCellState?.(tileX, tileY);
-        if (exitState === 'edge') return '#f6d46a';
+        if (exitState === 'edge') return { color: '#f6d46a', connections: emptyConnections };
         if (exitState === 'inner') return null;
+
+        // Multi-cell facilities may expose only their player-facing edge as an event strip.
+        // That strip is authored separately from the physical collision area and is rendered
+        // as one connected schematic marker instead of unrelated dots.
+        const minimapAction = tileX !== null && tileY !== null
+            && typeof MapRegistry !== 'undefined'
+            && typeof MapRegistry.findMapActionMinimapCell === 'function'
+            ? MapRegistry.findMapActionMinimapCell(Field.currentMapData, tileX, tileY)
+            : null;
+        if (minimapAction && Field.isMapActionAvailable(minimapAction)) {
+            const connections = typeof MapRegistry.getMapActionMinimapConnections === 'function'
+                ? MapRegistry.getMapActionMinimapConnections(minimapAction, tileX, tileY)
+                : emptyConnections;
+            return {
+                color: minimapAction.minimapAreaColor || minimapAction.minimapColor || '#3f245c',
+                connections,
+                action: minimapAction,
+                connectedArea: true
+            };
+        }
+
         const actionOverlay = Field.getMapActionOverlayConfig ? Field.getMapActionOverlayConfig(tileX, tileY) : null;
         if (actionOverlay) {
             const imageKey = String(actionOverlay.img || '');
-            if (imageKey.startsWith('overlay_npc_')) return actionOverlay.minimapColor || '#5bd6ff';
-            return actionOverlay.minimapColor || actionOverlay.color || '#8f7dff';
+            const color = imageKey.startsWith('overlay_npc_')
+                ? (actionOverlay.minimapColor || '#5bd6ff')
+                : (actionOverlay.minimapColor || actionOverlay.color || '#8f7dff');
+            return { color, connections: emptyConnections };
         }
+
+        // Legacy maps without an explicit minimapArea retain their interaction-area markers.
         const areaAction = tileX !== null && tileY !== null && typeof MapRegistry !== 'undefined' && MapRegistry.findMapActionInteractionCell
             ? MapRegistry.findMapActionInteractionCell(Field.currentMapData, tileX, tileY)
             : null;
         if (areaAction?.interactionArea && Field.isMapActionAvailable(areaAction)) {
-            return areaAction.minimapColor || '#3f245c';
+            return { color: areaAction.minimapAreaColor || areaAction.minimapColor || '#3f245c', connections: emptyConnections };
         }
         if (!upper || upper === 'W' || upper === 'T' || upper === 'G' || upper === 'L' || upper === 'M' || upper === '~' || upper === '^') return null;
 
@@ -6727,30 +6756,53 @@ const Field = {
             N: '#4aa0e6',
             O: '#e0b84a'
         };
-        return colors[upper] || null;
+        const color = colors[upper] || null;
+        return color ? { color, connections: emptyConnections } : null;
     },
 
-    drawFullMapTileMarker: (ctx, color, x, y, size) => {
+    getMiniMapMarkerColor: (tileSign, tileX = null, tileY = null) => {
+        return Field.getMiniMapMarkerInfo?.(tileSign, tileX, tileY)?.color || null;
+    },
+
+    drawFullMapTileMarker: (ctx, color, x, y, size, connections = null) => {
         if (!ctx || !color || size <= 0) return;
         const marker = Math.max(2, Math.floor(size * 0.58));
         const markerX = Math.floor(x + (size - marker) / 2);
         const markerY = Math.floor(y + (size - marker) / 2);
+        const hasConnections = !!connections && Object.values(connections).some(Boolean);
         ctx.save();
         ctx.globalAlpha = 0.95;
         ctx.fillStyle = color;
         ctx.fillRect(markerX, markerY, marker, marker);
+        if (hasConnections) {
+            const centerX = x + size / 2;
+            const centerY = y + size / 2;
+            if (connections.left) ctx.fillRect(x, markerY, Math.ceil(centerX - x), marker);
+            if (connections.right) ctx.fillRect(Math.floor(centerX), markerY, Math.ceil(x + size - centerX), marker);
+            if (connections.up) ctx.fillRect(markerX, y, marker, Math.ceil(centerY - y));
+            if (connections.down) ctx.fillRect(markerX, Math.floor(centerY), marker, Math.ceil(y + size - centerY));
+        }
         ctx.restore();
     },
 
-    drawMiniMapTileMarker: (ctx, color, x, y, size) => {
+    drawMiniMapTileMarker: (ctx, color, x, y, size, connections = null) => {
         if (!ctx || !color || size <= 0) return;
         const marker = Math.max(2, Math.ceil(size * 0.72));
         const markerX = Math.floor(x + (size - marker) / 2);
         const markerY = Math.floor(y + (size - marker) / 2);
+        const hasConnections = !!connections && Object.values(connections).some(Boolean);
         ctx.save();
         ctx.globalAlpha = 0.95;
         ctx.fillStyle = color;
-        if (size <= 4) {
+        if (hasConnections) {
+            const centerX = x + size / 2;
+            const centerY = y + size / 2;
+            ctx.fillRect(markerX, markerY, marker, marker);
+            if (connections.left) ctx.fillRect(x, markerY, Math.ceil(centerX - x), marker);
+            if (connections.right) ctx.fillRect(Math.floor(centerX), markerY, Math.ceil(x + size - centerX), marker);
+            if (connections.up) ctx.fillRect(markerX, y, marker, Math.ceil(centerY - y));
+            if (connections.down) ctx.fillRect(markerX, Math.floor(centerY), marker, Math.ceil(y + size - centerY));
+        } else if (size <= 4) {
             ctx.fillRect(markerX, markerY, marker, marker);
         } else {
             ctx.beginPath();
@@ -6873,9 +6925,9 @@ const Field = {
                 ctx.fillStyle = (dx === 0 && dy === 0) ? '#fff' : miniTileColor(tile, tx, ty);
                 ctx.fillRect(Math.floor(x), Math.floor(y), Math.ceil(cell), Math.ceil(cell));
 
-                if ((dx !== 0 || dy !== 0) && Field.getMiniMapMarkerColor && Field.drawMiniMapTileMarker) {
-                    const markerColor = Field.getMiniMapMarkerColor(tile, tx, ty);
-                    if (markerColor) Field.drawMiniMapTileMarker(ctx, markerColor, x, y, cell);
+                if ((dx !== 0 || dy !== 0) && Field.getMiniMapMarkerInfo && Field.drawMiniMapTileMarker) {
+                    const markerInfo = Field.getMiniMapMarkerInfo(tile, tx, ty);
+                    if (markerInfo?.color) Field.drawMiniMapTileMarker(ctx, markerInfo.color, x, y, cell, markerInfo.connections);
                 }
             }
         }
@@ -8972,9 +9024,9 @@ const Field = {
                 ctx.fillRect(miniX, miniY, Math.ceil(dms), Math.ceil(dms));
 
                 if (!(mdx === 0 && mdy === 0)) {
-                    const markerColor = Field.getMiniMapMarkerColor ? Field.getMiniMapMarkerColor(mtile, mtx, mty) : null;
-                    if (markerColor && Field.drawMiniMapTileMarker) {
-                        Field.drawMiniMapTileMarker(ctx, markerColor, miniX, miniY, dms);
+                    const markerInfo = Field.getMiniMapMarkerInfo ? Field.getMiniMapMarkerInfo(mtile, mtx, mty) : null;
+                    if (markerInfo?.color && Field.drawMiniMapTileMarker) {
+                        Field.drawMiniMapTileMarker(ctx, markerInfo.color, miniX, miniY, dms, markerInfo.connections);
                     }
                 }
             }

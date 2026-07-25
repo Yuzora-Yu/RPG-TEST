@@ -11,7 +11,6 @@ if (start < 0 || end < 0) throw new Error('Unable to extract quest runtime metho
 
 const context = {
     console,
-    window: {},
     DB: { ITEMS: [] },
     MenuStatus: {},
     App: {
@@ -23,6 +22,7 @@ const context = {
         }
     }
 };
+context.window = context;
 context.globalThis = context;
 vm.createContext(context);
 vm.runInContext(questSource, context, { filename: 'quests.js' });

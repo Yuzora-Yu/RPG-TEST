@@ -37,17 +37,34 @@ const PRISMA_MONSTER_IMAGE_BASE = "assets/monsters/";
 const PRISMA_MONSTER_IMAGE_IDS = [];
 const PRISMA_MONSTER_IMAGE_FILES = [];
 
+const resolvePrismaMonsterDefinition = (monsterOrId) => {
+  if (monsterOrId && typeof monsterOrId === "object") return monsterOrId;
+  const id = Number(monsterOrId);
+  if (!Number.isFinite(id) || id <= 0) return null;
+  const normalizedId = Math.floor(id);
+  const byGetter = globalThis.MonsterData?.getMonsterById?.(normalizedId);
+  if (byGetter) return byGetter;
+  const definitions = globalThis.MonsterData?.allBases || globalThis.MONSTERS_DATA || [];
+  return definitions.find((monster) => Number(monster?.id) === normalizedId) || { id: normalizedId };
+};
+
 const normalizePrismaMonsterId = (monsterOrId) => {
-  const raw = (monsterOrId && typeof monsterOrId === "object")
-    ? (monsterOrId.baseId ?? monsterOrId.id)
-    : monsterOrId;
+  const monster = resolvePrismaMonsterDefinition(monsterOrId);
+  const raw = monster ? (monster.baseId ?? monster.id) : monsterOrId;
+  const id = Number(raw);
+  return Number.isFinite(id) && id > 0 ? Math.floor(id) : null;
+};
+
+const normalizePrismaMonsterImageId = (monsterOrId) => {
+  const monster = resolvePrismaMonsterDefinition(monsterOrId);
+  const raw = monster ? (monster.imageId ?? monster.baseId ?? monster.id) : monsterOrId;
   const id = Number(raw);
   return Number.isFinite(id) && id > 0 ? Math.floor(id) : null;
 };
 
 const prismaMonsterImagePath = (monsterOrId) => {
-  const id = normalizePrismaMonsterId(monsterOrId);
-  return id === null ? null : `${PRISMA_MONSTER_IMAGE_BASE}monster_${id}.png`;
+  const imageId = normalizePrismaMonsterImageId(monsterOrId);
+  return imageId === null ? null : `${PRISMA_MONSTER_IMAGE_BASE}monster_${imageId}.png`;
 };
 
 const prismaMonsterGraphicKey = (monsterOrId) => {
@@ -848,28 +865,28 @@ function registerPrismaMonsterDefinitions(definitions) {
   PRISMA_MONSTER_IMAGE_FILES.splice(
     0,
     PRISMA_MONSTER_IMAGE_FILES.length,
-    ...ids.map(prismaMonsterImagePath).filter(Boolean)
+    ...Array.from(new Set(list.map(prismaMonsterImagePath).filter(Boolean)))
   );
 
   const startupMonsters = list.filter((monster) => monster?.preloadAtStartup === true);
   PRISMA_STARTUP_MONSTER_IMAGE_FILES.splice(
     0,
     PRISMA_STARTUP_MONSTER_IMAGE_FILES.length,
-    ...startupMonsters.map(prismaMonsterImagePath).filter(Boolean)
+    ...Array.from(new Set(startupMonsters.map(prismaMonsterImagePath).filter(Boolean)))
   );
   PRISMA_STARTUP_MONSTER_GRAPHIC_KEYS.splice(
     0,
     PRISMA_STARTUP_MONSTER_GRAPHIC_KEYS.length,
-    ...startupMonsters.map(prismaMonsterGraphicKey).filter(Boolean)
+    ...Array.from(new Set(startupMonsters.map(prismaMonsterGraphicKey).filter(Boolean)))
   );
 
   const imageMap = globalThis.MonsterImageMap || {};
   list.forEach((monster) => {
     const id = normalizePrismaMonsterId(monster);
-    const path = prismaMonsterImagePath(id);
+    const path = prismaMonsterImagePath(monster);
     if (id === null || !path) return;
     imageMap[id] = path;
-    if (shouldPreloadPrismaMonsterGraphic(monster)) ensurePrismaMonsterGraphic(id, { load: false });
+    if (shouldPreloadPrismaMonsterGraphic(monster)) ensurePrismaMonsterGraphic(monster, { load: false });
   });
   globalThis.MonsterImageMap = imageMap;
 
@@ -882,6 +899,7 @@ PRISMA_ASSETS.monsters = {
   ids: PRISMA_MONSTER_IMAGE_IDS,
   files: PRISMA_MONSTER_IMAGE_FILES,
   getId: normalizePrismaMonsterId,
+  getImageId: normalizePrismaMonsterImageId,
   getPath: prismaMonsterImagePath,
   getKey: prismaMonsterGraphicKey,
   ensureGraphic: ensurePrismaMonsterGraphic,
