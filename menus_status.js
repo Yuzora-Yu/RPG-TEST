@@ -259,7 +259,7 @@ const MenuStatus = {
         const rankEarned = progress.next ? Math.max(0, state.exp - rankStart) : rankSpan;
         const rate = Math.max(0, Math.min(100, Math.floor(rankEarned / rankSpan * 100)));
         const acceptedIds = Object.keys(state.questStates || {}).filter(id => state.questStates[id]?.state === 'accepted' && defs[id]);
-        const completedTotal = Object.values(state.completionCounts || {}).reduce((sum, count) => sum + Math.max(0, Number(count || 0)), 0);
+        const completedTotal = Math.max(0, Number(state.generatedCompletionTotal || 0)) + Object.values(state.completionCounts || {}).reduce((sum, count) => sum + Math.max(0, Number(count || 0)), 0);
         const rows = acceptedIds.map(id => {
             const def = defs[id];
             const ready = Guild.isObjectiveComplete(id);

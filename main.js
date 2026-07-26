@@ -921,7 +921,7 @@ const App = {
 
 	// 全画像データの手動/初回ダウンロード用キャッシュ名。
 	// sw.js の RUNTIME_CACHE_NAME と揃えること。
-    fullDataCacheName: 'prisma-abyss-v3.145-guild-abyss-traitbooks-runtime',
+    fullDataCacheName: 'prisma-abyss-v3.146-guild-dynamic-quests-transcendence-runtime',
 
 
 	// 初回起動時の「全データを今ダウンロードしますか？」で「いいえ」を選んだ記録。
@@ -3283,7 +3283,7 @@ const App = {
         if (!p.sources || typeof p.sources !== 'object' || Array.isArray(p.sources)) p.sources = {};
         if (!p.trials || typeof p.trials !== 'object' || Array.isArray(p.trials)) p.trials = {};
 
-        const sourceKeys = ['story', 'battle', 'dungeon', 'quest', 'boss', 'prism', 'random', 'gacha', 'monster', 'trial', 'legacy'];
+        const sourceKeys = ['story', 'battle', 'dungeon', 'quest', 'boss', 'prism', 'random', 'gacha', 'monster', 'trial', 'item', 'legacy'];
         sourceKeys.forEach(key => {
             p.sources[key] = Math.max(0, Math.floor(Number(p.sources[key]) || 0));
         });

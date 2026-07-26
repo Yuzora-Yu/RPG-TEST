@@ -448,6 +448,22 @@ window.ITEMS_DATA = [
         "desc": "交換可能な特性枠1つを「治癒」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
+        "id": 123,
+        "rank": 99,
+        "name": "超越の実",
+        "type": "育成",
+        "effectKind": "limitBreak",
+        "limitBreakAmount": 1,
+        "consumable": true,
+        "battleUsable": false,
+        "fieldUsable": true,
+        "target": "単体",
+        "shopAvailable": false,
+        "price": 0,
+        "icon": "assets/ui/menu-icons/item-growth.png",
+        "desc": "仲間ひとりのLBを1増加させる。試練による上限を越えて使用することはできない。"
+    },
+    {
         "id": 301,
         "rank": 8,
         "name": "妖精の聖水",

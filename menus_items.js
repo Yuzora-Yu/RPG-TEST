@@ -447,7 +447,37 @@ const MenuItems = {
                 success = true; msg = `${target.name}は生き返った！`;
             }
 
-            // --- B. 育成アイテム(100-107)の処理 ---
+            // --- B. LB育成アイテム ---
+            else if (item.effectKind === 'limitBreak' || Number(item.id) === 123) {
+                if (typeof App.addLimitBreak !== 'function' || typeof App.getLimitBreakTrialCap !== 'function') {
+                    Menu.msg("LB成長処理を利用できません。");
+                    return;
+                }
+                App.backfillLimitBreakLegacy?.(target);
+                App.applyLimitBreakCap?.(target);
+                const currentLb = Math.max(0, Math.floor(Number(target.limitBreak) || 0));
+                const maxLb = Math.max(1, Math.floor(Number(App.limitBreakConfig?.max) || 99));
+                const trialCap = Math.max(0, Math.floor(Number(App.getLimitBreakTrialCap(target)) || 0));
+                if (currentLb >= maxLb) {
+                    Menu.msg("LBはすでに最大です。");
+                    return;
+                }
+                if (currentLb >= trialCap) {
+                    const gateName = trialCap < 50 ? "中間試練" : "最終試練";
+                    Menu.msg(`${gateName}に合格するまで、これ以上LBを増やせません。`);
+                    return;
+                }
+                const amount = Math.max(1, Math.floor(Number(item.limitBreakAmount) || 1));
+                const result = App.addLimitBreak(target, amount, 'item');
+                if (!result.changed) {
+                    Menu.msg("今はLBを増やせません。");
+                    return;
+                }
+                success = true;
+                msg = `${target.name}のLBが ${result.before} から ${result.after} に上がった！`;
+            }
+
+            // --- C. 育成アイテム(100-107)の処理 ---
             else if (item.id >= 100 && item.id <= 107) {
                 success = true;
                 switch(item.id) {

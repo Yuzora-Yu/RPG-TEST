@@ -2,10 +2,10 @@
 (function(root) {
     'use strict';
 
-    const GUILD_QUEST_SCHEMA_VERSION = 5;
+    const GUILD_QUEST_SCHEMA_VERSION = 6;
 
     // 旧町別掲示板時代のセーブIDを、新しいギルド依頼IDへ一度だけ移行するための対応表。
-    // 依頼内容そのものは下記 GUILD_QUEST_DATA のみを正本とする。
+    // 固定依頼は GUILD_QUEST_DATA、自動生成依頼の条件は GUILD_QUEST_GENERATOR_MASTER を正本とする。
     const GUILD_QUEST_LEGACY_ID_MAP = {
     "fire_board_hunt": "guild_ignis_patrol",
     "fire_board_exchange": "guild_ignis_refining",
@@ -645,8 +645,8 @@
             }
         ],
         "requiredRank": "A",
-        "guildExp": 190,
-        "guildPoints": 68,
+        "guildExp": 280,
+        "guildPoints": 110,
         "guildQuest": true,
         "repeatable": true,
         "id": "guild_abyss_suppression",
@@ -688,8 +688,8 @@
             }
         ],
         "requiredRank": "D",
-        "guildExp": 70,
-        "guildPoints": 26,
+        "guildExp": 216,
+        "guildPoints": 85,
         "guildQuest": true,
         "repeatable": true,
         "id": "guild_abyss_patrol_051_060",
@@ -732,8 +732,8 @@
             }
         ],
         "requiredRank": "C",
-        "guildExp": 100,
-        "guildPoints": 38,
+        "guildExp": 308,
+        "guildPoints": 122,
         "guildQuest": true,
         "repeatable": true,
         "id": "guild_abyss_patrol_081_090",
@@ -776,8 +776,8 @@
             }
         ],
         "requiredRank": "B",
-        "guildExp": 140,
-        "guildPoints": 52,
+        "guildExp": 400,
+        "guildPoints": 159,
         "guildQuest": true,
         "repeatable": true,
         "id": "guild_abyss_patrol_111_120",
@@ -820,8 +820,8 @@
             }
         ],
         "requiredRank": "A",
-        "guildExp": 200,
-        "guildPoints": 78,
+        "guildExp": 524,
+        "guildPoints": 209,
         "guildQuest": true,
         "repeatable": true,
         "id": "guild_abyss_patrol_151_160",
@@ -864,8 +864,8 @@
             }
         ],
         "requiredRank": "S",
-        "guildExp": 300,
-        "guildPoints": 120,
+        "guildExp": 650,
+        "guildPoints": 260,
         "guildQuest": true,
         "repeatable": true,
         "id": "guild_abyss_patrol_191_200",
@@ -929,7 +929,111 @@
     }
 };
 
+
+    // 自動生成依頼の正本。実際に掲示される依頼は guild.js 側でこのテンプレートから生成し、
+    // 生成結果そのものをセーブへ保存する。受注後に再読込しても討伐数・報酬・対象範囲は変化しない。
+    const GUILD_QUEST_GENERATOR_MASTER = {
+        schemaVersion: 1,
+        generatedOfferRatio: 0.75,
+        normalHunts: [
+            {
+                key: 'ignis',
+                baseQuestId: 'guild_ignis_patrol',
+                countMin: 4,
+                countMax: 9,
+                expPerExtraKill: 4,
+                pointsPerExtraKill: 2,
+                names: ['火山道の臨時掃討', '炉辺の安全確保', '煤煙路の魔物払い']
+            },
+            {
+                key: 'kazaria',
+                baseQuestId: 'guild_kazaria_patrol',
+                countMin: 5,
+                countMax: 10,
+                expPerExtraKill: 5,
+                pointsPerExtraKill: 2,
+                names: ['迷い路の臨時掃討', '森道の安全確保', '禁忌の森・巡回任務']
+            },
+            {
+                key: 'rivaria',
+                baseQuestId: 'guild_rivaria_patrol',
+                countMin: 5,
+                countMax: 11,
+                expPerExtraKill: 6,
+                pointsPerExtraKill: 2,
+                names: ['沈水回廊の掃討', '海底神殿・巡回任務', '水路保全の討伐依頼']
+            },
+            {
+                key: 'lighthouse',
+                baseQuestId: 'guild_lighthouse_patrol',
+                countMin: 6,
+                countMax: 12,
+                expPerExtraKill: 7,
+                pointsPerExtraKill: 3,
+                names: ['大灯台の巡回掃討', '機関区画の安全確保', '灯台守の討伐依頼']
+            },
+            {
+                key: 'raizark',
+                baseQuestId: 'guild_raizark_patrol',
+                countMin: 7,
+                countMax: 13,
+                expPerExtraKill: 8,
+                pointsPerExtraKill: 3,
+                names: ['要塞区画の臨時掃討', '雷路の安全確保', 'ライザーク巡回任務']
+            },
+            {
+                key: 'prisma',
+                baseQuestId: 'guild_prisma_patrol',
+                countMin: 7,
+                countMax: 14,
+                expPerExtraKill: 10,
+                pointsPerExtraKill: 4,
+                forceDungeonHunt: true,
+                names: ['光廊の臨時掃討', '宮殿区画の安全確保', 'グランプリズマ巡回任務']
+            },
+            {
+                key: 'galvania',
+                baseQuestId: 'guild_galvania_patrol',
+                countMin: 8,
+                countMax: 15,
+                expPerExtraKill: 12,
+                pointsPerExtraKill: 5,
+                forceDungeonHunt: true,
+                names: ['魔王城外郭の掃討', '暗黒回廊の安全確保', 'ガルヴァニア巡回任務']
+            }
+        ],
+        abyss: {
+            enabled: true,
+            maxOffersOnBoard: 2,
+            offerWeight: 0.35,
+            bandSize: 10,
+            minFloor: 1,
+            maxFloor: 200,
+            countBaseMin: 5,
+            countBaseMax: 8,
+            countStepEveryBands: 4,
+            expBase: 20,
+            expPerBand: 30,
+            expPerKill: 2,
+            pointsBase: 5,
+            pointsPerBand: 12,
+            pointsPerKill: 1,
+            names: ['深淵巡回', '観測路掃討', '裂界警戒'],
+            rankBands: [
+                { maxFloor: 20, rank: 'G' },
+                { maxFloor: 40, rank: 'F' },
+                { maxFloor: 50, rank: 'E' },
+                { maxFloor: 70, rank: 'D' },
+                { maxFloor: 100, rank: 'C' },
+                { maxFloor: 140, rank: 'B' },
+                { maxFloor: 180, rank: 'A' },
+                { maxFloor: 999, rank: 'S' }
+            ]
+        }
+    };
+
     root.GUILD_QUEST_SCHEMA_VERSION = GUILD_QUEST_SCHEMA_VERSION;
     root.GUILD_QUEST_LEGACY_ID_MAP = GUILD_QUEST_LEGACY_ID_MAP;
     root.GUILD_QUEST_DATA = GUILD_QUEST_DATA;
+    root.GUILD_QUEST_GENERATOR_MASTER = GUILD_QUEST_GENERATOR_MASTER;
 })(globalThis);

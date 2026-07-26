@@ -13,6 +13,8 @@
     const PROMOTION_TRIALS = MASTER.promotionTrials || {};
     const EXCHANGE = Array.isArray(MASTER.exchangeEntries) ? MASTER.exchangeEntries : [];
     const LEGACY_QUEST_ID_MAP = global.GUILD_QUEST_LEGACY_ID_MAP || {};
+    const GENERATOR_MASTER = global.GUILD_QUEST_GENERATOR_MASTER || {};
+    const GENERATOR_SCHEMA_VERSION = Math.max(0, Math.floor(Number(GENERATOR_MASTER.schemaVersion) || 0));
 
 
     const Guild = {
@@ -23,8 +25,335 @@
         promotionTrials: PROMOTION_TRIALS,
         exchangeEntries: EXCHANGE,
 
-        getDefinitions() {
+        getStaticDefinitions() {
             return global.GUILD_QUEST_DATA || {};
+        },
+
+        getGeneratedDefinitions() {
+            if (typeof App === 'undefined') return {};
+            const generated = App.data?.progress?.guild?.generatedQuests;
+            return generated && typeof generated === 'object' && !Array.isArray(generated) ? generated : {};
+        },
+
+        getDefinitions() {
+            return { ...Guild.getStaticDefinitions(), ...Guild.getGeneratedDefinitions() };
+        },
+
+        randomInt(min, max) {
+            const low = Math.ceil(Math.min(Number(min) || 0, Number(max) || 0));
+            const high = Math.floor(Math.max(Number(min) || 0, Number(max) || 0));
+            if (high <= low) return low;
+            return low + Math.floor(Math.random() * (high - low + 1));
+        },
+
+        pickRandom(values = []) {
+            if (!Array.isArray(values) || !values.length) return null;
+            return values[Guild.randomInt(0, values.length - 1)];
+        },
+
+        getQuestGeneratorSignature(id, def = null) {
+            const definition = def || Guild.getDefinitions()[id];
+            if (!definition) return '';
+            if (definition.generatorSignature) return String(definition.generatorSignature);
+            const scope = Guild.getHuntScope(definition);
+            if (scope.mode === 'floorRange' && scope.areaKeys.includes('ABYSS')) {
+                return `abyss:${scope.floorMin}-${scope.floorMax}`;
+            }
+            const template = (Array.isArray(GENERATOR_MASTER.normalHunts) ? GENERATOR_MASTER.normalHunts : [])
+                .find(entry => String(entry.baseQuestId || '') === String(id || definition.id || ''));
+            return template ? `normal:${template.key}` : '';
+        },
+
+        getCurrentOfferSignatures(state = null) {
+            const guildState = state || (typeof App !== 'undefined' ? App.data?.progress?.guild : null);
+            if (!guildState) return new Set();
+            const defs = Guild.getDefinitions();
+            const ids = new Set(guildState.offers || []);
+            Object.entries(guildState.questStates || {}).forEach(([id, questState]) => {
+                if (questState?.state === 'accepted') ids.add(id);
+            });
+            const signatures = new Set();
+            ids.forEach(id => {
+                const signature = Guild.getQuestGeneratorSignature(id, defs[id]);
+                if (signature) signatures.add(signature);
+            });
+            return signatures;
+        },
+
+        rankForAbyssFloor(floor) {
+            const bands = Array.isArray(GENERATOR_MASTER.abyss?.rankBands) ? GENERATOR_MASTER.abyss.rankBands : [];
+            const value = Math.max(1, Math.floor(Number(floor) || 1));
+            const match = bands.find(entry => value <= Math.max(1, Math.floor(Number(entry.maxFloor) || 1)));
+            return String(match?.rank || 'S').toUpperCase();
+        },
+
+        isDefinitionUnlocked(def) {
+            const state = Guild.ensureState();
+            if (!def || !state) return false;
+            const flags = App.data?.progress?.flags || {};
+            const required = def.requiredRank || 'G';
+            const unlockFlags = Array.isArray(def.unlockFlags) ? def.unlockFlags : [];
+            const requiredMaxAbyssFloor = Math.max(0, Math.floor(Number(def.requiredMaxAbyssFloor || 0)));
+            const reachedAbyssFloor = Math.max(0, Math.floor(Number(App.data?.dungeon?.maxFloor || 0)));
+            return Guild.rankIndex(state.rank) >= Guild.rankIndex(required)
+                && unlockFlags.every(flag => !!flags[flag])
+                && (!requiredMaxAbyssFloor || reachedAbyssFloor >= requiredMaxAbyssFloor);
+        },
+
+        buildGeneratorSpecs(excludedSignatures = new Set()) {
+            const specs = [];
+            const staticDefs = Guild.getStaticDefinitions();
+            (Array.isArray(GENERATOR_MASTER.normalHunts) ? GENERATOR_MASTER.normalHunts : []).forEach(template => {
+                const base = staticDefs[String(template.baseQuestId || '')];
+                const signature = `normal:${template.key}`;
+                if (!base || base.kind !== 'hunt' || excludedSignatures.has(signature) || !Guild.isDefinitionUnlocked(base)) return;
+                specs.push({ kind: 'normal', signature, template, base });
+            });
+
+            const abyss = GENERATOR_MASTER.abyss || {};
+            const flags = App.data?.progress?.flags || {};
+            const reached = Math.min(
+                Math.max(0, Math.floor(Number(App.data?.dungeon?.maxFloor || 0))),
+                Math.max(1, Math.floor(Number(abyss.maxFloor) || 200))
+            );
+            const minFloor = Math.max(1, Math.floor(Number(abyss.minFloor) || 1));
+            const bandSize = Math.max(1, Math.floor(Number(abyss.bandSize) || 10));
+            if (abyss.enabled !== false && flags.abyssFirstEntered && reached >= minFloor) {
+                for (let floorMin = minFloor; floorMin <= reached; floorMin += bandSize) {
+                    const floorMax = Math.min(reached, floorMin + bandSize - 1);
+                    const signature = `abyss:${floorMin}-${floorMax}`;
+                    if (excludedSignatures.has(signature)) continue;
+                    const requiredRank = Guild.rankForAbyssFloor(floorMax);
+                    const probe = {
+                        requiredRank,
+                        unlockFlags: ['abyssFirstEntered'],
+                        requiredMaxAbyssFloor: floorMax
+                    };
+                    if (!Guild.isDefinitionUnlocked(probe)) continue;
+                    specs.push({ kind: 'abyss', signature, floorMin, floorMax, requiredRank });
+                }
+            }
+            return specs;
+        },
+
+        createGeneratedQuest(spec, state = null) {
+            const guildState = state || Guild.ensureState();
+            if (!guildState || !spec) return null;
+            guildState.generatorSerial = Math.max(0, Math.floor(Number(guildState.generatorSerial) || 0)) + 1;
+            const id = `guild_auto_${Date.now().toString(36)}_${guildState.generatorSerial.toString(36)}`;
+            let def = null;
+
+            if (spec.kind === 'normal') {
+                const template = spec.template || {};
+                const base = spec.base || {};
+                const count = Guild.randomInt(template.countMin, template.countMax);
+                const baseCount = Math.max(1, Math.floor(Number(base.targetCount) || count));
+                const expPerExtra = Math.max(0, Number(template.expPerExtraKill) || 0);
+                const pointsPerExtra = Math.max(0, Number(template.pointsPerExtraKill) || 0);
+                const expJitter = Guild.randomInt(0, Math.max(1, Math.floor(expPerExtra)));
+                const pointsJitter = Guild.randomInt(0, Math.max(1, Math.floor(pointsPerExtra)));
+                const scope = JSON.parse(JSON.stringify(base.huntScope || {}));
+                if (template.forceDungeonHunt) scope.mode = 'dungeon';
+                const label = String(scope.label || base.area || '指定ダンジョン');
+                def = {
+                    ...JSON.parse(JSON.stringify(base)),
+                    id,
+                    name: Guild.pickRandom(template.names) || `${label}の臨時討伐`,
+                    area: label,
+                    objective: `${label}内で魔物を合計${count}体討伐する。`,
+                    startText: `${label}の通行路を確保するため、種類を問わない臨時討伐依頼が出された。`,
+                    progressText: `${label}内で魔物を${count}体討伐し、ライザーク要塞のギルド受付へ報告しよう。`,
+                    completeText: `${label}の安全が確保され、依頼は完了となった。`,
+                    targetCount: count,
+                    targetMonsterIds: undefined,
+                    spawnAreaLabel: undefined,
+                    rewardItems: [],
+                    guildExp: Math.max(1, Math.round(Number(base.guildExp || 0) + (count - baseCount) * expPerExtra + expJitter)),
+                    guildPoints: Math.max(1, Math.round(Number(base.guildPoints || 0) + (count - baseCount) * pointsPerExtra + pointsJitter)),
+                    requestType: 'dungeonHunt',
+                    huntScope: scope,
+                    generatedQuest: true,
+                    generatorKind: 'normal',
+                    generatorKey: String(template.key || ''),
+                    generatorSignature: spec.signature,
+                    generatedAt: Date.now(),
+                    sortOrder: 1000 + guildState.generatorSerial
+                };
+                delete def.targetMonsterIds;
+                delete def.spawnAreaLabel;
+            } else if (spec.kind === 'abyss') {
+                const abyss = GENERATOR_MASTER.abyss || {};
+                const bandSize = Math.max(1, Math.floor(Number(abyss.bandSize) || 10));
+                const bandIndex = Math.max(1, Math.ceil(Number(spec.floorMax || 1) / bandSize));
+                const stepEvery = Math.max(1, Math.floor(Number(abyss.countStepEveryBands) || 4));
+                const countStep = Math.floor((bandIndex - 1) / stepEvery);
+                const count = Guild.randomInt(
+                    Math.max(1, Math.floor(Number(abyss.countBaseMin) || 5) + countStep),
+                    Math.max(1, Math.floor(Number(abyss.countBaseMax) || 8) + countStep)
+                );
+                const namePrefix = Guild.pickRandom(abyss.names) || '深淵巡回';
+                const rangeLabel = `地下${spec.floorMin}～${spec.floorMax}階`;
+                const guildExp = Math.max(1, Math.round(
+                    Number(abyss.expBase || 0)
+                    + bandIndex * Number(abyss.expPerBand || 0)
+                    + count * Number(abyss.expPerKill || 0)
+                ));
+                const guildPoints = Math.max(1, Math.round(
+                    Number(abyss.pointsBase || 0)
+                    + bandIndex * Number(abyss.pointsPerBand || 0)
+                    + count * Number(abyss.pointsPerKill || 0)
+                ));
+                def = {
+                    id,
+                    name: `${namePrefix}・${rangeLabel}`,
+                    area: `深淵の魔窟 ${rangeLabel}`,
+                    kind: 'hunt',
+                    unlockFlags: ['abyssFirstEntered'],
+                    requiredMaxAbyssFloor: spec.floorMax,
+                    objective: `深淵の魔窟 ${rangeLabel}で、通常戦闘の魔物を合計${count}体討伐する。`,
+                    startText: `到達済みの観測路 ${rangeLabel}について、魔物の間引き依頼が発行された。種類は問わない。`,
+                    progressText: `深淵の魔窟 ${rangeLabel}で通常戦闘の魔物を${count}体討伐し、ライザーク要塞のギルド受付へ報告しよう。`,
+                    targetCount: count,
+                    completeText: `深淵の魔窟 ${rangeLabel}の観測路が安定し、巡回依頼を完了した。`,
+                    rewardItems: [],
+                    requiredRank: spec.requiredRank,
+                    guildExp,
+                    guildPoints,
+                    guildQuest: true,
+                    repeatable: true,
+                    regionKey: 'ABYSS',
+                    requestType: 'hunt',
+                    reportAt: 'guildReception',
+                    sortOrder: 2000 + bandIndex * 10 + guildState.generatorSerial,
+                    huntScope: {
+                        mode: 'floorRange',
+                        areaKeys: ['ABYSS'],
+                        label: '深淵の魔窟',
+                        floorMin: spec.floorMin,
+                        floorMax: spec.floorMax,
+                        normalBattlesOnly: true
+                    },
+                    spawnAreaLabel: `深淵の魔窟 ${rangeLabel}`,
+                    generatedQuest: true,
+                    generatorKind: 'abyss',
+                    generatorKey: `${spec.floorMin}-${spec.floorMax}`,
+                    generatorSignature: spec.signature,
+                    generatedAt: Date.now()
+                };
+            }
+
+            if (!def) return null;
+            guildState.generatedQuests[id] = def;
+            return def;
+        },
+
+        pruneGeneratedQuests(state = null) {
+            const guildState = state || (typeof App !== 'undefined' ? App.data?.progress?.guild : null);
+            if (!guildState?.generatedQuests) return;
+            const keep = new Set(guildState.offers || []);
+            Object.entries(guildState.questStates || {}).forEach(([id, questState]) => {
+                if (questState?.state === 'accepted') keep.add(id);
+            });
+            Object.keys(guildState.generatedQuests).forEach(id => {
+                if (keep.has(id)) return;
+                delete guildState.generatedQuests[id];
+                if (guildState.questStates?.[id]?.state !== 'accepted') delete guildState.questStates[id];
+                delete guildState.completionCounts?.[id];
+            });
+        },
+
+        migrateGeneratorState(state) {
+            if (!state) return;
+            if (!state.generatedQuests || typeof state.generatedQuests !== 'object' || Array.isArray(state.generatedQuests)) {
+                state.generatedQuests = {};
+            }
+            Object.entries(state.generatedQuests).forEach(([id, def]) => {
+                if (!def || typeof def !== 'object' || Array.isArray(def) || def.generatedQuest !== true || String(def.id || '') !== String(id)) {
+                    delete state.generatedQuests[id];
+                }
+            });
+            state.generatorSerial = Math.max(0, Math.floor(Number(state.generatorSerial) || 0));
+            state.generatedCompletionTotal = Math.max(0, Math.floor(Number(state.generatedCompletionTotal) || 0));
+            const storedVersion = Math.max(0, Math.floor(Number(state.generatorSchemaVersion) || 0));
+            if (storedVersion < GENERATOR_SCHEMA_VERSION) {
+                state.offers = (state.offers || []).filter(id => state.questStates?.[id]?.state === 'accepted');
+                state.generatorSchemaVersion = GENERATOR_SCHEMA_VERSION;
+            }
+            Guild.pruneGeneratedQuests(state);
+        },
+
+        fillOfferSlots(options = {}) {
+            const state = Guild.ensureState();
+            if (!state) return [];
+            const avoidIds = new Set(Array.isArray(options.avoidIds) ? options.avoidIds : []);
+            const ratio = Math.max(0, Math.min(1, Number(GENERATOR_MASTER.generatedOfferRatio) || 0));
+            let signatures = Guild.getCurrentOfferSignatures(state);
+            let specs = Guild.buildGeneratorSpecs(signatures);
+            let abyssOfferCount = [...signatures].filter(signature => String(signature).startsWith('abyss:')).length;
+            const maxAbyssOffers = Math.max(1, Math.floor(Number(GENERATOR_MASTER.abyss?.maxOffersOnBoard) || 2));
+            const abyssOfferWeight = Math.max(0, Math.min(1, Number(GENERATOR_MASTER.abyss?.offerWeight) || 0.35));
+            let forceAbyss = abyssOfferCount === 0 && specs.some(spec => spec.kind === 'abyss');
+            let guard = 0;
+
+            while (state.offers.length < Guild.maxOffers && guard < Guild.maxOffers * 8) {
+                guard += 1;
+                const staticCandidates = Guild.availableCandidates([...state.offers, ...avoidIds]).filter(id => {
+                    const signature = Guild.getQuestGeneratorSignature(id, Guild.getStaticDefinitions()[id]);
+                    return !signature || !signatures.has(signature);
+                });
+                specs = Guild.buildGeneratorSpecs(signatures).filter(spec => spec.kind !== 'abyss' || abyssOfferCount < maxAbyssOffers);
+                let generatedPreferred = forceAbyss || (specs.length > 0 && (staticCandidates.length === 0 || Math.random() < ratio));
+                let addedId = null;
+
+                if (generatedPreferred && specs.length) {
+                    const normalSpecs = specs.filter(spec => spec.kind === 'normal');
+                    const abyssSpecs = specs.filter(spec => spec.kind === 'abyss');
+                    let pool = specs;
+                    if (forceAbyss && abyssSpecs.length) pool = abyssSpecs;
+                    else if (normalSpecs.length && abyssSpecs.length) pool = Math.random() < abyssOfferWeight ? abyssSpecs : normalSpecs;
+                    else if (normalSpecs.length) pool = normalSpecs;
+                    else if (abyssSpecs.length) pool = abyssSpecs;
+                    const spec = Guild.pickRandom(pool);
+                    const def = Guild.createGeneratedQuest(spec, state);
+                    if (def) {
+                        addedId = def.id;
+                        signatures.add(spec.signature);
+                        if (spec.kind === 'abyss') {
+                            abyssOfferCount += 1;
+                            forceAbyss = false;
+                        }
+                    }
+                }
+
+                if (!addedId && staticCandidates.length) {
+                    addedId = Guild.pickCandidates(staticCandidates, 1, state.refreshCount + state.generatorSerial)[0] || null;
+                }
+
+                if (!addedId && specs.length) {
+                    const spec = Guild.pickRandom(specs);
+                    const def = Guild.createGeneratedQuest(spec, state);
+                    if (def) {
+                        addedId = def.id;
+                        signatures.add(spec.signature);
+                        if (spec.kind === 'abyss') abyssOfferCount += 1;
+                    }
+                }
+
+                if (!addedId) break;
+                const addedDef = Guild.getDefinitions()[addedId];
+                const addedSignature = Guild.getQuestGeneratorSignature(addedId, addedDef);
+                if (addedSignature && !signatures.has(addedSignature)) {
+                    signatures.add(addedSignature);
+                    if (addedSignature.startsWith('abyss:')) {
+                        abyssOfferCount += 1;
+                        forceAbyss = false;
+                    }
+                }
+                state.questStates[addedId] = { state: 'available', progress: {} };
+                state.offers.push(addedId);
+            }
+            Guild.pruneGeneratedQuests(state);
+            return state.offers;
         },
 
         getHuntScope(def) {
@@ -183,8 +512,11 @@
             if (!Array.isArray(state.offers)) state.offers = [];
             if (!state.questStates || typeof state.questStates !== 'object' || Array.isArray(state.questStates)) state.questStates = {};
             if (!state.completionCounts || typeof state.completionCounts !== 'object' || Array.isArray(state.completionCounts)) state.completionCounts = {};
+            if (!state.generatedQuests || typeof state.generatedQuests !== 'object' || Array.isArray(state.generatedQuests)) state.generatedQuests = {};
             state.refreshCount = Math.max(0, Math.floor(Number(state.refreshCount) || 0));
+            state.generatorSerial = Math.max(0, Math.floor(Number(state.generatorSerial) || 0));
 
+            Guild.migrateGeneratorState(state);
             Guild.migrateStateToMaster(state);
 
             return state;
@@ -198,31 +530,21 @@
 
         isQuestUnlocked(id) {
             id = Guild.resolveQuestId(id);
-            const def = Guild.getDefinitions()[id];
-            const state = Guild.ensureState();
-            if (!def || !state) return false;
-            const flags = App.data?.progress?.flags || {};
-            const required = def.requiredRank || 'G';
-            const unlockFlags = Array.isArray(def.unlockFlags) ? def.unlockFlags : [];
-            const requiredMaxAbyssFloor = Math.max(0, Math.floor(Number(def.requiredMaxAbyssFloor || 0)));
-            const reachedAbyssFloor = Math.max(0, Math.floor(Number(App.data?.dungeon?.maxFloor || 0)));
-            return Guild.rankIndex(state.rank) >= Guild.rankIndex(required)
-                && unlockFlags.every(flag => !!flags[flag])
-                && (!requiredMaxAbyssFloor || reachedAbyssFloor >= requiredMaxAbyssFloor);
+            return Guild.isDefinitionUnlocked(Guild.getDefinitions()[id]);
         },
 
         availableCandidates(exclude = []) {
             const excluded = new Set(exclude);
             const state = Guild.ensureState();
-            return Object.keys(Guild.getDefinitions()).filter(id => {
+            return Object.keys(Guild.getStaticDefinitions()).filter(id => {
                 if (excluded.has(id) || !Guild.isQuestUnlocked(id)) return false;
                 return Guild.getQuestState(id).state !== 'accepted';
             }).sort((a, b) => {
                 const ca = Number(state.completionCounts[a] || 0);
                 const cb = Number(state.completionCounts[b] || 0);
                 if (ca !== cb) return ca - cb;
-                const da = Guild.getDefinitions()[a];
-                const db = Guild.getDefinitions()[b];
+                const da = Guild.getStaticDefinitions()[a];
+                const db = Guild.getStaticDefinitions()[b];
                 return Guild.rankIndex(da.requiredRank) - Guild.rankIndex(db.requiredRank) || a.localeCompare(b);
             });
         },
@@ -250,15 +572,7 @@
                 if (Guild.getQuestState(id).state === 'accepted' || Guild.isQuestUnlocked(id)) keep.push(id);
             });
             state.offers = keep.slice(0, Guild.maxOffers);
-            const need = Guild.maxOffers - state.offers.length;
-            if (need > 0) {
-                const candidates = Guild.availableCandidates(state.offers);
-                const additions = Guild.pickCandidates(candidates, need, state.refreshCount);
-                additions.forEach(id => {
-                    state.questStates[id] = { state: 'available', progress: {} };
-                    state.offers.push(id);
-                });
-            }
+            Guild.fillOfferSlots(options);
             if (options.save !== false && typeof App.save === 'function') App.save();
             return state.offers;
         },
@@ -267,18 +581,11 @@
             const state = Guild.ensureState();
             if (!state) return [];
             const accepted = state.offers.filter(id => Guild.getQuestState(id).state === 'accepted');
-            const previousAvailable = new Set(state.offers.filter(id => Guild.getQuestState(id).state !== 'accepted'));
+            const previousAvailable = state.offers.filter(id => Guild.getQuestState(id).state !== 'accepted');
             state.refreshCount += 1;
             state.offers = [...accepted];
-            let candidates = Guild.availableCandidates(state.offers).filter(id => !previousAvailable.has(id));
-            if (candidates.length < Guild.maxOffers - state.offers.length) {
-                candidates = Guild.availableCandidates(state.offers);
-            }
-            Guild.pickCandidates(candidates, Guild.maxOffers - state.offers.length, state.refreshCount).forEach(id => {
-                state.questStates[id] = { state: 'available', progress: {} };
-                state.offers.push(id);
-            });
-            Guild.ensureOffers({ save: false });
+            Guild.pruneGeneratedQuests(state);
+            Guild.fillOfferSlots({ avoidIds: previousAvailable });
             App.save();
             return state.offers;
         },
@@ -329,14 +636,8 @@
             state.offers = state.offers.filter(offerId => offerId !== id);
             state.refreshCount += 1;
 
-            const remainingSlots = Math.max(0, Guild.maxOffers - state.offers.length);
-            let candidates = Guild.availableCandidates([...state.offers, id]);
-            if (!candidates.length) candidates = Guild.availableCandidates(state.offers);
-            Guild.pickCandidates(candidates, remainingSlots, state.refreshCount).forEach(candidateId => {
-                state.questStates[candidateId] = { state: 'available', progress: {} };
-                state.offers.push(candidateId);
-            });
-            Guild.ensureOffers({ save: false });
+            Guild.pruneGeneratedQuests(state);
+            Guild.fillOfferSlots({ avoidIds: [id] });
             App.save();
             if (typeof MenuStatus !== 'undefined' && typeof MenuStatus.render === 'function') MenuStatus.render();
             return true;
@@ -429,10 +730,12 @@
             });
             state.exp += Math.max(0, Number(def.guildExp || 0));
             state.points += Math.max(0, Number(def.guildPoints || 0));
-            state.completionCounts[id] = Number(state.completionCounts[id] || 0) + 1;
+            if (def.generatedQuest) state.generatedCompletionTotal = Number(state.generatedCompletionTotal || 0) + 1;
+            else state.completionCounts[id] = Number(state.completionCounts[id] || 0) + 1;
             state.questStates[id] = { state: 'completed', completedAt: Date.now(), progress: {} };
             state.offers = state.offers.filter(offerId => offerId !== id);
-            Guild.ensureOffers({ save: false });
+            Guild.pruneGeneratedQuests(state);
+            Guild.fillOfferSlots({ avoidIds: [id] });
             App.save();
             if (typeof MenuStatus !== 'undefined' && typeof MenuStatus.render === 'function') MenuStatus.render();
             return { def, guildExp: Number(def.guildExp || 0), guildPoints: Number(def.guildPoints || 0) };
@@ -575,7 +878,7 @@
             Guild.ensureOffers({ save: false });
             const html = state.offers.map(id => Guild.questCard(id)).join('');
             Facilities.showModal('guild-scene', '依頼掲示板', `
-                <div style="font-size:11px; color:#aaa;">依頼は最大5件。更新しても受注中の依頼は残り、詳細画面からキャンセルできます。</div>
+                <div style="font-size:11px; color:#aaa;">依頼は最大5件。討伐数と報酬は依頼ごとに変動します。深淵の依頼は到達済み階層だけが対象となり、深層ほど報酬が増えます。更新しても受注中の依頼は残ります。</div>
                 ${html || '<div style="padding:16px; color:#888;">現在紹介できる依頼はありません。</div>'}
                 <button id="guild-board-refresh" class="menu-btn" style="width:100%; margin-top:12px;">依頼を更新する</button>
             `, { onClose: () => App.changeScene('field') });

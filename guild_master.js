@@ -3,7 +3,7 @@
     'use strict';
 
     const GUILD_MASTER_DATA = {
-        schemaVersion: 5,
+        schemaVersion: 6,
         maxOffers: 5,
         ranks: [
             { id: 'G', requiredTotalExp: 0, label: 'Gランク' },
@@ -94,7 +94,8 @@
             { id: 'trait_book_martial_arts', itemId: 119, count: 1, cost: 10000 },
             { id: 'trait_book_spell', itemId: 120, count: 1, cost: 10000 },
             { id: 'trait_book_breath', itemId: 121, count: 1, cost: 10000 },
-            { id: 'trait_book_healing', itemId: 122, count: 1, cost: 10000 }
+            { id: 'trait_book_healing', itemId: 122, count: 1, cost: 10000 },
+            { id: 'transcendence_fruit', itemId: 123, count: 1, cost: 20000 }
         ]
     };
 
