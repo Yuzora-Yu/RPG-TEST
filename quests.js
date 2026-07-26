@@ -18,7 +18,10 @@
         "completeText": "カリンは鍛えた炎を旅路に捧げ、仲間に加わった。",
         "rewardAllies": [
             210
-        ]
+        ],
+        "travelTarget": {
+            "areaKey": "IGNIS_VOLCANO"
+        }
     },
     "arisa_haine_forest_depths": {
         "name": "禁忌の森の双影",
@@ -35,7 +38,10 @@
         "rewardAllies": [
             108,
             207
-        ]
+        ],
+        "travelTarget": {
+            "areaKey": "FORBIDDEN_FOREST"
+        }
     },
     "sophia_alan_seabed_depths": {
         "name": "水流の奥の誓い",
@@ -51,7 +57,10 @@
         "rewardAllies": [
             202,
             201
-        ]
+        ],
+        "travelTarget": {
+            "areaKey": "SEABED_TEMPLE"
+        }
     },
     "frieda_baron_thunder_depths": {
         "name": "雷光の封鎖線",
@@ -67,7 +76,10 @@
         "rewardAllies": [
             302,
             205
-        ]
+        ],
+        "travelTarget": {
+            "areaKey": "THUNDER_FORT"
+        }
     },
     "licia_crena_depths": {
         "name": "結界の奥のリーシア",
@@ -83,7 +95,10 @@
         "completeText": "結界の核は砕け、リーシアが仲間に加わった。",
         "rewardAllies": [
             303
-        ]
+        ],
+        "travelTarget": {
+            "areaKey": "CRENA_LIMESTONE_CAVE"
+        }
     },
     "royal_star_catalyst": {
         "name": "王の星詠みと触媒器",
@@ -122,7 +137,10 @@
                 "id": 111,
                 "count": 1
             }
-        ]
+        ],
+        "travelTarget": {
+            "areaKey": "LIGHT_PALACE"
+        }
     },
     "fire_water_attunement": {
         "name": "火脈と水脈の調律",
@@ -145,7 +163,10 @@
                 "count": 1
             }
         ],
-        "initialComplete": true
+        "initialComplete": true,
+        "travelTarget": {
+            "areaKey": "WATER_CITY"
+        }
     },
     "marie_water_city": {
         "name": "祈り手マリーの討伐依頼",
@@ -167,7 +188,10 @@
         "completeText": "マリーは祈りだけでなく、杖を手にして旅に同行することを決めた。",
         "rewardAllies": [
             102
-        ]
+        ],
+        "travelTarget": {
+            "areaKey": "WATER_CITY"
+        }
     },
     "zelied_big_tower": {
         "name": "大灯台のゼリード",
@@ -185,7 +209,10 @@
         "completeText": "頂の歪みは消え、ゼリードが仲間に加わった。",
         "rewardAllies": [
             103
-        ]
+        ],
+        "travelTarget": {
+            "areaKey": "BIG_TOWER"
+        }
     },
     "hayate_water_city": {
         "name": "ハヤテの早駆け討伐",
@@ -207,7 +234,10 @@
         "completeText": "ハヤテは速度だけでなく覚悟も認め、仲間に加わった。",
         "rewardAllies": [
             203
-        ]
+        ],
+        "travelTarget": {
+            "areaKey": "WATER_CITY"
+        }
     },
     "sylvia_water_city": {
         "name": "シルビアの護衛依頼",
@@ -229,7 +259,10 @@
         "completeText": "シルビアは旅の危うさを承知で、支援役として仲間に加わった。",
         "rewardAllies": [
             209
-        ]
+        ],
+        "travelTarget": {
+            "areaKey": "WATER_CITY"
+        }
     },
     "rin_thunder_fort": {
         "name": "リンの雷鳴討伐",
@@ -251,7 +284,10 @@
         "completeText": "リンは雷鳴に臆さぬ一行を認め、仲間に加わった。",
         "rewardAllies": [
             208
-        ]
+        ],
+        "travelTarget": {
+            "areaKey": "THUNDER_FORT"
+        }
     },
     "claude_leon_dark_shrine": {
         "name": "闇の神殿跡地の双剣",
@@ -267,7 +303,10 @@
         "rewardAllies": [
             304,
             305
-        ]
+        ],
+        "travelTarget": {
+            "areaKey": "DARK_SHRINE_RUINS"
+        }
     },
     "luna_hidden_dark_shrine": {
         "name": "月影のルーナ",
@@ -285,7 +324,10 @@
         "completeText": "月影を縛る闇は砕け、ルーナが仲間に加わった。",
         "rewardAllies": [
             401
-        ]
+        ],
+        "travelTarget": {
+            "areaKey": "DARK_SHRINE_RUINS"
+        }
     },
     "ryu_minerva_grezelia": {
         "name": "禁則地の竜と智",
@@ -304,7 +346,10 @@
         "rewardAllies": [
             107,
             206
-        ]
+        ],
+        "travelTarget": {
+            "areaKey": "GREZELIA_FORBIDDEN"
+        }
     },
     "zenon_hidden_grezelia": {
         "name": "ゼノンの禁則試練",
@@ -322,7 +367,10 @@
         "completeText": "禁則の残響は沈黙し、ゼノンが仲間に加わった。",
         "rewardAllies": [
             402
-        ]
+        ],
+        "travelTarget": {
+            "areaKey": "GREZELIA_FORBIDDEN"
+        }
     }
 };
 

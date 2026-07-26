@@ -921,7 +921,7 @@ const App = {
 
 	// 全画像データの手動/初回ダウンロード用キャッシュ名。
 	// sw.js の RUNTIME_CACHE_NAME と揃えること。
-    fullDataCacheName: 'prisma-abyss-v3.146-guild-dynamic-quests-transcendence-runtime',
+    fullDataCacheName: 'prisma-abyss-v3.147-guild-rarity-skyprism-pedestals-runtime',
 
 
 	// 初回起動時の「全データを今ダウンロードしますか？」で「いいえ」を選んだ記録。
@@ -1936,7 +1936,7 @@ const App = {
         return null;
     },
 
-    getFixedMapLocalEntranceDestination: (areaKey) => {
+    getFixedMapLocalEntranceDestination: (areaKey, visited = new Set()) => {
         if (!areaKey || typeof MapRegistry === 'undefined' ||
             typeof MapRegistry.findFixedMapEntranceForDungeon !== 'function') return null;
         const entrance = MapRegistry.findFixedMapEntranceForDungeon(areaKey);
@@ -1944,34 +1944,42 @@ const App = {
         const parentArea = (typeof STORY_DATA !== 'undefined' && STORY_DATA.areas)
             ? STORY_DATA.areas[entrance.parentAreaKey]
             : null;
+        let worldX = Number.isFinite(Number(parentArea?.centerX)) ? Number(parentArea.centerX) : null;
+        let worldY = Number.isFinite(Number(parentArea?.centerY)) ? Number(parentArea.centerY) : null;
+        if ((!Number.isFinite(worldX) || !Number.isFinite(worldY)) && !visited.has(entrance.parentAreaKey)) {
+            const nextVisited = new Set(visited);
+            nextVisited.add(areaKey);
+            const parentWorld = App.getFixedMapWorldDestination?.(entrance.parentAreaKey, nextVisited);
+            if (parentWorld) {
+                worldX = Number(parentWorld.x);
+                worldY = Number(parentWorld.y);
+            }
+        }
         return {
             areaKey,
             parentAreaKey: entrance.parentAreaKey,
             parentDef: entrance.parentDef,
+            parentMapDef: entrance.parentMapDef || entrance.parentDef,
+            parentKind: entrance.parentKind || 'field',
+            parentFloor: Math.max(0, Number(entrance.parentFloor || 0)),
             x: entrance.x,
             y: entrance.y,
-            worldX: Number.isFinite(Number(parentArea?.centerX)) ? Number(parentArea.centerX) : null,
-            worldY: Number.isFinite(Number(parentArea?.centerY)) ? Number(parentArea.centerY) : null
+            worldX: Number.isFinite(worldX) ? worldX : null,
+            worldY: Number.isFinite(worldY) ? worldY : null
         };
     },
 
-    getFixedMapWorldDestination: (areaKey) => {
-        if (!areaKey || typeof STORY_DATA === 'undefined' || !STORY_DATA.areas) return null;
+    getFixedMapWorldDestination: (areaKey, visited = new Set()) => {
+        if (!areaKey || visited.has(areaKey) || typeof STORY_DATA === 'undefined' || !STORY_DATA.areas) return null;
+        const nextVisited = new Set(visited);
+        nextVisited.add(areaKey);
 
-        // 基本: 固有MAPキーと同名のワールドマップ座標へ移動する。
         const area = STORY_DATA.areas[areaKey];
         if (area && Number.isFinite(Number(area.centerX)) && Number.isFinite(Number(area.centerY))) {
-            return {
-                areaKey,
-                x: Number(area.centerX),
-                y: Number(area.centerY),
-                sourceAreaKey: areaKey
-            };
+            return { areaKey, x: Number(area.centerX), y: Number(area.centerY), sourceAreaKey: areaKey };
         }
 
-        // 例外: START_CAVE のように固定街の中に入口がある固定ダンジョン。
-        // その場合は、親となる固定街のワールド座標へ移動する。
-        const localEntrance = App.getFixedMapLocalEntranceDestination?.(areaKey);
+        const localEntrance = App.getFixedMapLocalEntranceDestination?.(areaKey, nextVisited);
         if (localEntrance && Number.isFinite(localEntrance.worldX) && Number.isFinite(localEntrance.worldY)) {
             return {
                 areaKey,
@@ -1981,7 +1989,6 @@ const App = {
                 parentAreaKey: localEntrance.parentAreaKey
             };
         }
-
         return null;
     },
 
@@ -2104,7 +2111,6 @@ const App = {
 
     useSkyPrismTo: (areaKey) => {
         if (!App.hasItem(110)) return { ok: false, message: 'スカイプリズムを持っていません。' };
-        if (App.isInDungeonForSkyPrism()) return { ok: false, message: 'ダンジョン内ではスカイプリズムを使えない。' };
 
         const visited = App.ensureFixedMapDiscoveryStore();
         if (!visited[areaKey]) return { ok: false, message: 'まだ発見していない場所には移動できない。' };
@@ -2136,6 +2142,7 @@ const App = {
         }
         if (App.data.dungeon) {
             App.data.dungeon.returnPoint = null;
+            App.data.dungeon.returnStack = [];
             App.data.dungeon.map = null;
             App.data.dungeon.adventurer = null;
             App.data.dungeon.healSpring = null;
@@ -2143,16 +2150,20 @@ const App = {
             App.data.dungeon.pendingRiftReward = null;
             App.data.dungeon.visitedMap = null;
         }
-        if (App.data.progress) App.data.progress.floor = 0;
+        const localDungeon = !!(localDest && localDest.parentKind === 'dungeon');
+        if (App.data.progress) App.data.progress.floor = localDungeon ? Math.max(1, Number(localDest.parentFloor || 1)) : 0;
 
         Field.currentMapData = localDest
-            ? {
-                ...localDest.parentDef,
-                isFixed: true,
-                isDungeon: localDest.parentDef?.isDungeon === true,
-                areaKey: localDest.parentAreaKey
-            }
+            ? (localDungeon
+                ? (MapRegistry.getFixedDungeonFloor(localDest.parentAreaKey, localDest.parentFloor || 1) || localDest.parentMapDef)
+                : {
+                    ...localDest.parentDef,
+                    isFixed: true,
+                    isDungeon: localDest.parentDef?.isDungeon === true,
+                    areaKey: localDest.parentAreaKey
+                })
             : null;
+        if (localDungeon && typeof Dungeon !== 'undefined') Dungeon.floor = App.data.progress.floor;
         Field.x = localDest ? localDest.x : dest.x;
         Field.y = localDest ? localDest.y : dest.y;
 
@@ -2170,6 +2181,45 @@ const App = {
         // スカイプリズム成功時はログ表示のみ。
         // 使用確認の後に追加のOKモーダルを出さないため、呼び出し側へ通知する。
         return { ok: true, message, silentSuccess: true };
+    },
+
+    requestSkyPrismTravelTo: (areaKey, label = '') => {
+        if (!areaKey) return false;
+        const info = App.getFixedMapDef?.(areaKey);
+        const name = label || info?.def?.name || areaKey;
+        if (!App.hasItem(110)) {
+            Menu.msg('スカイプリズムを持っていません。');
+            return false;
+        }
+        const visited = App.ensureFixedMapDiscoveryStore?.() || {};
+        if (!visited[areaKey]) {
+            Menu.msg('まだ発見していない場所には移動できない。');
+            return false;
+        }
+        Menu.confirm(`${name}の入口へ移動しますか？
+スカイプリズムを1個消費します。`, () => {
+            const result = App.useSkyPrismTo(areaKey);
+            if (!result?.ok) {
+                Menu.msg(result?.message || '移動できません。');
+                return;
+            }
+            if (typeof Facilities !== 'undefined') Facilities.closeModal?.('guild-scene');
+            Menu.closeAll?.();
+        });
+        return true;
+    },
+
+    resolveQuestTravelAreaKey: (quest) => {
+        if (!quest) return null;
+        const explicit = quest.travelTarget?.areaKey || quest.travelAreaKey;
+        if (explicit) return String(explicit);
+        const scopeAreas = Array.isArray(quest.huntScope?.areaKeys) ? quest.huntScope.areaKeys : [];
+        const first = scopeAreas[0] ? String(scopeAreas[0]) : '';
+        if (first === 'ABYSS') return 'ABYSS_FIELD';
+        if (first && App.getFixedMapDef?.(first)) return first;
+        const region = String(quest.regionKey || '');
+        if (region === 'ABYSS') return 'ABYSS_FIELD';
+        return region && App.getFixedMapDef?.(region) ? region : null;
     },
 
     getWorldTileAt: (x, y) => {
@@ -2922,6 +2972,9 @@ const App = {
         const overlay = document.createElement('div');
         overlay.id = 'quest-detail-modal';
         overlay.style.cssText = 'position:fixed; inset:0; z-index:7000; background:rgba(0,0,0,.72); display:flex; align-items:center; justify-content:center; padding:12px; box-sizing:border-box;';
+        const travelButton = (!options.offer && options.travelAreaKey)
+            ? `<button id="quest-modal-travel" class="btn" style="flex:1; border-color:#8fd7ff; color:#eaf8ff; background:#23485f;">入口へ移動</button>`
+            : '';
         const buttons = options.offer ? `
             <div style="display:flex; gap:8px; padding:0 14px 14px;">
                 <button id="quest-modal-accept" class="btn" style="flex:1; border-color:#ffd56b; color:#fff7dc; background:#6f4b1f;">受ける</button>
@@ -2929,6 +2982,7 @@ const App = {
             </div>
         ` : `
             <div style="display:flex; gap:8px; padding:0 14px 14px;">
+                ${travelButton}
                 <button id="quest-modal-close" class="btn" style="flex:1; border-color:#ffd56b; color:#fff7dc; background:#6f4b1f;">閉じる</button>
             </div>
         `;
@@ -2944,9 +2998,16 @@ const App = {
         const accept = document.getElementById('quest-modal-accept');
         const decline = document.getElementById('quest-modal-decline');
         const closeBtn = document.getElementById('quest-modal-close');
+        const travelBtn = document.getElementById('quest-modal-travel');
         if (accept) accept.onclick = () => close(true);
         if (decline) decline.onclick = () => close(false);
         if (closeBtn) closeBtn.onclick = () => close(true);
+        if (travelBtn) travelBtn.onclick = () => {
+            const areaKey = String(options.travelAreaKey || '');
+            const label = options.travelLabel || quest.area || quest.name || areaKey;
+            close(true);
+            setTimeout(() => App.requestSkyPrismTravelTo?.(areaKey, label), 0);
+        };
     }),
 
     acceptQuest: (questId, options = {}) => {

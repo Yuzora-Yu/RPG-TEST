@@ -127,28 +127,62 @@ const MapRegistry = {
     // 固有ダンジョンの入口が街・集落など別の固定MAP内にある場合、その実座標を返す。
     // スカイプリズム、検証ツール、将来の移動UIで同じ解決規則を共有する。
     findFixedMapEntranceForDungeon(areaKey) {
-        if (!areaKey || typeof FIXED_MAPS === "undefined") return null;
+        if (!areaKey) return null;
         const candidates = [];
-        Object.entries(FIXED_MAPS).forEach(([parentAreaKey, parentDef]) => {
-            const actions = Array.isArray(parentDef?.mapActions) ? parentDef.mapActions : [];
-            actions.forEach(action => {
-                if (!action || (action.target !== areaKey && action.targetAreaKey !== areaKey)) return;
-                const x = Number(action.x);
-                const y = Number(action.y);
-                if (!Number.isInteger(x) || !Number.isInteger(y)) return;
-                if (x < 0 || y < 0 || x >= Number(parentDef.width) || y >= Number(parentDef.height)) return;
-                candidates.push({ parentAreaKey, parentDef, action, x, y });
+
+        if (typeof FIXED_MAPS !== "undefined") {
+            Object.entries(FIXED_MAPS).forEach(([parentAreaKey, parentDef]) => {
+                const actions = Array.isArray(parentDef?.mapActions) ? parentDef.mapActions : [];
+                actions.forEach(action => {
+                    if (!action || (action.target !== areaKey && action.targetAreaKey !== areaKey)) return;
+                    const x = Number(action.x);
+                    const y = Number(action.y);
+                    if (!Number.isInteger(x) || !Number.isInteger(y)) return;
+                    if (x < 0 || y < 0 || x >= Number(parentDef.width) || y >= Number(parentDef.height)) return;
+                    candidates.push({ parentAreaKey, parentDef, parentMapDef: parentDef, parentKind: 'field', parentFloor: 0, action, x, y });
+                });
             });
-        });
+        }
+
+        // 固定ダンジョン内に別の固定ダンジョン入口があるケースも正本から解決する。
+        // 例: 禁忌の森2階 -> 風の神殿。スカイプリズムとクエスト移動で同じ座標を使う。
+        if (typeof FIXED_DUNGEON_MAPS !== "undefined") {
+            Object.entries(FIXED_DUNGEON_MAPS).forEach(([parentAreaKey, parentDef]) => {
+                const floors = Array.isArray(parentDef?.floors) && parentDef.floors.length ? parentDef.floors : [parentDef];
+                floors.forEach((floorDef, floorIndex) => {
+                    const floorNo = floorIndex + 1;
+                    const links = Array.isArray(floorDef?.floorLinks) ? floorDef.floorLinks : [];
+                    links.forEach(link => {
+                        if (!link || link.toDungeon !== areaKey) return;
+                        const x = Number(link.x);
+                        const y = Number(link.y);
+                        if (!Number.isInteger(x) || !Number.isInteger(y)) return;
+                        if (x < 0 || y < 0 || x >= Number(floorDef.width) || y >= Number(floorDef.height)) return;
+                        const parentMapDef = MapRegistry.getFixedDungeonFloor(parentAreaKey, floorNo) || floorDef;
+                        candidates.push({ parentAreaKey, parentDef, parentMapDef, parentKind: 'dungeon', parentFloor: floorNo, action: link, x, y });
+                    });
+                    const actions = Array.isArray(floorDef?.mapActions) ? floorDef.mapActions : [];
+                    actions.forEach(action => {
+                        if (!action || (action.target !== areaKey && action.targetAreaKey !== areaKey)) return;
+                        const x = Number(action.x);
+                        const y = Number(action.y);
+                        if (!Number.isInteger(x) || !Number.isInteger(y)) return;
+                        const parentMapDef = MapRegistry.getFixedDungeonFloor(parentAreaKey, floorNo) || floorDef;
+                        candidates.push({ parentAreaKey, parentDef, parentMapDef, parentKind: 'dungeon', parentFloor: floorNo, action, x, y });
+                    });
+                });
+            });
+        }
         if (!candidates.length) return null;
 
-        // 複数マス幅の入口は中央マスへ着地する。座標順を固定して結果を決定論的にする。
         candidates.sort((a, b) =>
             a.parentAreaKey.localeCompare(b.parentAreaKey) ||
+            (Number(a.parentFloor || 0) - Number(b.parentFloor || 0)) ||
             (a.x - b.x) ||
             (a.y - b.y)
         );
-        const sameParent = candidates.filter(entry => entry.parentAreaKey === candidates[0].parentAreaKey);
+        const first = candidates[0];
+        const sameParent = candidates.filter(entry => entry.parentAreaKey === first.parentAreaKey && Number(entry.parentFloor || 0) === Number(first.parentFloor || 0));
         return sameParent[Math.floor(sameParent.length / 2)];
     },
 
@@ -254,12 +288,30 @@ const MapRegistry = {
     },
 
     findBlockingObject(mapDef, x, y) {
-        if (!mapDef || !Array.isArray(mapDef.blockingObjects)) return null;
-        return mapDef.blockingObjects.find(object =>
-            MapRegistry.isProgressEntryActive(object) &&
-            Number(object.x) === Number(x) &&
-            Number(object.y) === Number(y)
-        ) || null;
+        if (!mapDef) return null;
+        const tx = Number(x);
+        const ty = Number(y);
+        const explicit = Array.isArray(mapDef.blockingObjects)
+            ? mapDef.blockingObjects.find(object =>
+                MapRegistry.isProgressEntryActive(object) &&
+                Number(object.x) === tx &&
+                Number(object.y) === ty
+            )
+            : null;
+        if (explicit) return explicit;
+
+        // floorDecorations の blocking は装飾データ自身を衝突判定の正本にする。
+        // 台座などを別の invisible blockingObject と二重管理せず、エディタで座標を動かせる。
+        return Array.isArray(mapDef.floorDecorations)
+            ? mapDef.floorDecorations.find(decoration => {
+                if (decoration?.blocking !== true || !MapRegistry.isProgressEntryActive(decoration)) return false;
+                const left = Number(decoration.x);
+                const top = Number(decoration.y);
+                const width = Math.max(1, Math.floor(Number(decoration.width || 1)));
+                const height = Math.max(1, Math.floor(Number(decoration.height || 1)));
+                return tx >= left && tx < left + width && ty >= top && ty < top + height;
+            }) || null
+            : null;
     },
 
     isPointInEffect(effect, x, y) {
@@ -308,6 +360,12 @@ const MapRegistry = {
             || occupies(mapDef.bosses)
             || occupies(mapDef.mapActions)
             || occupies(mapDef.blockingObjects, true)
+            || (Array.isArray(mapDef.floorDecorations) && mapDef.floorDecorations.some(decoration =>
+                decoration?.blocking === true &&
+                MapRegistry.isProgressEntryActive(decoration) &&
+                tx >= Number(decoration.x) && tx < Number(decoration.x) + Math.max(1, Number(decoration.width || 1)) &&
+                ty >= Number(decoration.y) && ty < Number(decoration.y) + Math.max(1, Number(decoration.height || 1))
+            ))
             || occupies(mapDef.healSprings);
     },
 

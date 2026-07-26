@@ -2505,7 +2505,7 @@ const FIXED_MAPS = {
                         eventId: "fire_volcano_holy_water_used"
                     }
                 ]
-            },
+            }
         ],
         exitPoint: {
             area: "WORLD",
@@ -2757,7 +2757,7 @@ const FIXED_MAPS = {
                         eventId: "wind_forest_entry"
                     }
                 ]
-            },
+            }
         ],
         exitPoint: {
             area: "WORLD",
@@ -3062,7 +3062,7 @@ const FIXED_MAPS = {
                 questId: "sophia_alan_seabed_depths",
                 imageKey: "overlay_companion_alan",
                 lockedText: "今はまだ、海底神殿の奥へ進む手段がない。"
-            },
+            }
         ],
         exitPoint: {
             area: "WORLD",
@@ -3412,7 +3412,7 @@ const FIXED_MAPS = {
                         eventId: "abyss_unsealed"
                     }
                 ]
-            },
+            }
         ],
         exitPoint: {
             area: "WORLD",
@@ -4670,6 +4670,22 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWMMMMMMMMMWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWW"
+                ],
+                floorDecorations: [
+                    {
+                        authoredPlacementId: "prism-pedestal-fire",
+                        type: "image",
+                        imageKey: "prism_pedestal_fire",
+                        x: 10,
+                        y: 4,
+                        width: 1,
+                        height: 1,
+                        drawScale: 2.7,
+                        alpha: 0.96,
+                        shimmer: true,
+                        blocking: true,
+                        baseTile: "T"
+                    }
                 ],
                 floorLinks: [
                     {
@@ -6092,6 +6108,22 @@ const FIXED_DUNGEON_MAPS = {
                     "KWWWWWWWWWWWWWWWWWWWWWWWK",
                     "KKKKKKKKKKKKKKKKKKKKKKKKK"
                 ],
+                floorDecorations: [
+                    {
+                        authoredPlacementId: "prism-pedestal-wind",
+                        type: "image",
+                        imageKey: "prism_pedestal_wind",
+                        x: 12,
+                        y: 8,
+                        width: 1,
+                        height: 1,
+                        drawScale: 2.7,
+                        alpha: 0.96,
+                        shimmer: true,
+                        blocking: true,
+                        baseTile: "T"
+                    }
+                ],
                 floorLinks: [
                     {
                         x: 12,
@@ -6366,6 +6398,22 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWTTTTTWWWWWWWWW",
                     "WWWWWWWWWWTTTWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                floorDecorations: [
+                    {
+                        authoredPlacementId: "prism-pedestal-water",
+                        type: "image",
+                        imageKey: "prism_pedestal_water",
+                        x: 11,
+                        y: 7,
+                        width: 1,
+                        height: 1,
+                        drawScale: 2.7,
+                        alpha: 0.96,
+                        shimmer: true,
+                        blocking: true,
+                        baseTile: "T"
+                    }
                 ],
                 floorLinks: [
                     {
@@ -6891,7 +6939,7 @@ const FIXED_DUNGEON_MAPS = {
                         questId: "zelied_big_tower",
                         imageKey: "overlay_companion_zelied",
                         lockedText: "ゼリードはまだ、灯台の異変を見極めているようだ。"
-                    },
+                    }
                 ],
                 entryPoint: {
                     x: 11,
@@ -7564,11 +7612,27 @@ const FIXED_DUNGEON_MAPS = {
                     }
                 ],
                 blockingObjects: [
-                    // カウンターの衝突正本。上段は右端だけ、下段は5マスすべてを通行不能にする。
-                    // 受付職員自身のマス (5,20) は mapAction の blocksMovement で別途塞ぐ。
-                    { x: 7, y: 20, baseTile: "T", invisible: true, log: "冒険者ギルドの受付カウンターだ。" },
-                    { x: 3, y: 21, baseTile: "T", invisible: true, log: "冒険者ギルドの受付カウンターだ。" },
-                    { x: 4, y: 21, baseTile: "T", invisible: true, log: "冒険者ギルドの受付カウンターだ。" },
+                    {
+                        x: 7,
+                        y: 20,
+                        baseTile: "T",
+                        invisible: true,
+                        log: "冒険者ギルドの受付カウンターだ。"
+                    },
+                    {
+                        x: 3,
+                        y: 21,
+                        baseTile: "T",
+                        invisible: true,
+                        log: "冒険者ギルドの受付カウンターだ。"
+                    },
+                    {
+                        x: 4,
+                        y: 21,
+                        baseTile: "T",
+                        invisible: true,
+                        log: "冒険者ギルドの受付カウンターだ。"
+                    },
                     {
                         x: 5,
                         y: 21,
@@ -7579,13 +7643,55 @@ const FIXED_DUNGEON_MAPS = {
                         suppressShadow: true,
                         log: "冒険者ギルドの受付カウンターだ。"
                     },
-                    { x: 6, y: 21, baseTile: "T", invisible: true, log: "冒険者ギルドの受付カウンターだ。" },
-                    { x: 7, y: 21, baseTile: "T", invisible: true, log: "冒険者ギルドの受付カウンターだ。" },
-                    { x: 8, y: 19, baseTile: "T", invisible: true, log: "依頼掲示板が置かれている。" },
-                    { x: 9, y: 19, baseTile: "T", invisible: true, log: "依頼掲示板が置かれている。" },
-                    { x: 9, y: 20, baseTile: "T", invisible: true, log: "依頼掲示板が置かれている。" },
-                    { x: 27, y: 20, baseTile: "T", invisible: true, log: "簡素な寝台が並んでいる。" },
-                    { x: 29, y: 20, baseTile: "T", invisible: true, log: "簡素な寝台が並んでいる。" },
+                    {
+                        x: 6,
+                        y: 21,
+                        baseTile: "T",
+                        invisible: true,
+                        log: "冒険者ギルドの受付カウンターだ。"
+                    },
+                    {
+                        x: 7,
+                        y: 21,
+                        baseTile: "T",
+                        invisible: true,
+                        log: "冒険者ギルドの受付カウンターだ。"
+                    },
+                    {
+                        x: 8,
+                        y: 19,
+                        baseTile: "T",
+                        invisible: true,
+                        log: "依頼掲示板が置かれている。"
+                    },
+                    {
+                        x: 9,
+                        y: 19,
+                        baseTile: "T",
+                        invisible: true,
+                        log: "依頼掲示板が置かれている。"
+                    },
+                    {
+                        x: 9,
+                        y: 20,
+                        baseTile: "T",
+                        invisible: true,
+                        log: "依頼掲示板が置かれている。"
+                    },
+                    {
+                        x: 27,
+                        y: 20,
+                        baseTile: "T",
+                        invisible: true,
+                        log: "簡素な寝台が並んでいる。"
+                    },
+                    {
+                        x: 29,
+                        y: 20,
+                        baseTile: "T",
+                        invisible: true,
+                        log: "簡素な寝台が並んでいる。"
+                    },
                     {
                         x: 27,
                         y: 21,
@@ -7606,8 +7712,20 @@ const FIXED_DUNGEON_MAPS = {
                         suppressShadow: true,
                         log: "要塞の宿泊所に備えられた寝台だ。"
                     },
-                    { x: 27, y: 23, baseTile: "T", invisible: true, log: "簡素な寝台が並んでいる。" },
-                    { x: 29, y: 23, baseTile: "T", invisible: true, log: "簡素な寝台が並んでいる。" },
+                    {
+                        x: 27,
+                        y: 23,
+                        baseTile: "T",
+                        invisible: true,
+                        log: "簡素な寝台が並んでいる。"
+                    },
+                    {
+                        x: 29,
+                        y: 23,
+                        baseTile: "T",
+                        invisible: true,
+                        log: "簡素な寝台が並んでいる。"
+                    },
                     {
                         x: 27,
                         y: 24,
@@ -7642,10 +7760,18 @@ const FIXED_DUNGEON_MAPS = {
                         baseTile: "T",
                         blocksMovement: true,
                         interactFromAdjacent: true,
-                        // 受付の正面 (5,21) に向いている時だけ会話できる。
-                        interactionArea: { x: 5, y: 21, width: 1, height: 1 },
-                        // ミニマップではカウンターの客側5マスを連結し、受付職員自身はNPC印として別に残す。
-                        minimapArea: { x: 3, y: 21, width: 5, height: 1 },
+                        interactionArea: {
+                            x: 5,
+                            y: 21,
+                            width: 1,
+                            height: 1
+                        },
+                        minimapArea: {
+                            x: 3,
+                            y: 21,
+                            width: 5,
+                            height: 1
+                        },
                         minimapConnect: true,
                         minimapColor: "#5bd6ff",
                         minimapAreaColor: "#b77a32"
@@ -7664,8 +7790,18 @@ const FIXED_DUNGEON_MAPS = {
                         baseTile: "T",
                         blocksMovement: true,
                         interactFromAdjacent: true,
-                        interactionArea: { x: 8, y: 20, width: 2, height: 1 },
-                        minimapArea: { x: 8, y: 20, width: 2, height: 1 },
+                        interactionArea: {
+                            x: 8,
+                            y: 20,
+                            width: 2,
+                            height: 1
+                        },
+                        minimapArea: {
+                            x: 8,
+                            y: 20,
+                            width: 2,
+                            height: 1
+                        },
                         minimapColor: "#d6a94a",
                         minimapAreaColor: "#d6a94a"
                     },
@@ -7762,7 +7898,7 @@ const FIXED_DUNGEON_MAPS = {
                         requiredFlag: "thunderFortCleared",
                         imageKey: "overlay_npc_villager",
                         lockedText: "雷の轟きで声が届かない。"
-                    },
+                    }
                 ],
                 entryPoint: {
                     x: 2,
@@ -8004,10 +8140,10 @@ const FIXED_DUNGEON_MAPS = {
                     "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK",
                     "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
                     "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
-                    "KWWWWWWWWWWWWWWWUWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWTWWWWWWWWWWWWWWWK",
                     "KWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWK",
-                    "KWWWWWWWWWWWTTTTTTTTTWWWWWWWWWWWK",
-                    "KWWWWWWWWWWWTTTTTTTTTWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWTTTTTTTTTTTUWWWWWWWWK",
+                    "KWWWWWWWWWWWTTTTTTTTTTTTWWWWWWWWK",
                     "KWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWK",
                     "KWWWWWWWWWWWWWWTBTWWWWWWWWWWWWWWK",
                     "KWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWK",
@@ -8040,8 +8176,8 @@ const FIXED_DUNGEON_MAPS = {
                         label: "3階へ下りる"
                     },
                     {
-                        x: 16,
-                        y: 3,
+                        x: 23,
+                        y: 5,
                         toFloor: 5,
                         targetX: 16,
                         targetY: 24,
@@ -8084,11 +8220,25 @@ const FIXED_DUNGEON_MAPS = {
                 themeKey: "THUNDER_FORT",
                 floorDecorations: [
                     {
+                        authoredPlacementId: "prism-pedestal-thunder",
+                        type: "image",
+                        imageKey: "prism_pedestal_thunder",
+                        x: 16,
+                        y: 4,
+                        width: 1,
+                        height: 1,
+                        drawScale: 2.7,
+                        alpha: 0.96,
+                        shimmer: true,
+                        blocking: true,
+                        baseTile: "T"
+                    },
+                    {
                         authoredPlacementId: "carpet-thunder-final",
                         type: "castle_carpet",
                         imageKey: null,
                         x: 15,
-                        y: 6,
+                        y: 7,
                         width: 3,
                         height: 13,
                         blocking: false,
@@ -8642,7 +8792,7 @@ const FIXED_DUNGEON_MAPS = {
                         requiredFlag: "lightPalaceCleared",
                         imageKey: "overlay_town_light_pilgrim",
                         lockedText: "光の宮殿グランプリズマはまだ緊張に包まれている。"
-                    },
+                    }
                 ],
                 name: "",
                 themeKey: "LIGHT_PALACE"
@@ -8925,13 +9075,27 @@ const FIXED_DUNGEON_MAPS = {
                 themeKey: "LIGHT_PALACE",
                 floorDecorations: [
                     {
+                        authoredPlacementId: "prism-pedestal-light",
+                        type: "image",
+                        imageKey: "prism_pedestal_light",
+                        x: 17,
+                        y: 8,
+                        width: 1,
+                        height: 1,
+                        drawScale: 2.7,
+                        alpha: 0.96,
+                        shimmer: true,
+                        blocking: true,
+                        baseTile: "T"
+                    },
+                    {
                         authoredPlacementId: "carpet-light-final",
                         type: "castle_carpet",
                         imageKey: null,
                         x: 16,
-                        y: 8,
+                        y: 10,
                         width: 3,
-                        height: 7,
+                        height: 10,
                         blocking: false,
                         baseTile: "T",
                         allowedBaseTiles: null
@@ -10641,7 +10805,7 @@ const FIXED_DUNGEON_MAPS = {
                         requiredFlag: "darkCastleCleared",
                         imageKey: "overlay_town_demon_guard",
                         lockedText: "魔族兵は警戒している。"
-                    },
+                    }
                 ],
                 entryPoint: {
                     x: 16,
@@ -11307,13 +11471,27 @@ const FIXED_DUNGEON_MAPS = {
                 themeKey: "DARK_CASTLE",
                 floorDecorations: [
                     {
+                        authoredPlacementId: "prism-pedestal-dark",
+                        type: "image",
+                        imageKey: "prism_pedestal_dark",
+                        x: 16,
+                        y: 5,
+                        width: 1,
+                        height: 1,
+                        drawScale: 2.7,
+                        alpha: 0.96,
+                        shimmer: true,
+                        blocking: true,
+                        baseTile: "T"
+                    },
+                    {
                         authoredPlacementId: "carpet-dark-final",
                         type: "castle_carpet",
                         imageKey: null,
-                        x: 14,
-                        y: 4,
-                        width: 5,
-                        height: 6,
+                        x: 15,
+                        y: 13,
+                        width: 3,
+                        height: 12,
                         blocking: false,
                         baseTile: "T",
                         allowedBaseTiles: null

@@ -152,6 +152,10 @@ const MenuItems = {
 
         // 特性書は、所持キャラクターと交換可能枠を専用UIで選択する。
         if (item.type === '特性書' || Number(item.traitId) > 0) {
+            if (item.traitBookImplemented === false) {
+                Menu.msg('この特性書はマスター登録済みですが、交換機能はまだ準備中です。');
+                return;
+            }
             MenuItems.selectedItem = item;
             MenuItems.openTraitBookCharacterSelection(item);
         } else if(item.type === '乗り物') {
@@ -341,10 +345,6 @@ const MenuItems = {
         if (!App.data.items[item.id] || App.data.items[item.id] <= 0) {
             Menu.msg("アイテムを持っていません。");
             MenuItems.changeScreen('list');
-            return;
-        }
-        if (typeof App.isInDungeonForSkyPrism === 'function' && App.isInDungeonForSkyPrism()) {
-            Menu.msg("ダンジョン内ではスカイプリズムを使えない。");
             return;
         }
         if (typeof App.getAllFixedMapDiscoveryEntries !== 'function') {

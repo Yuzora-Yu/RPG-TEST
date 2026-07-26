@@ -263,9 +263,11 @@ const MenuStatus = {
         const rows = acceptedIds.map(id => {
             const def = defs[id];
             const ready = Guild.isObjectiveComplete(id);
+            const travelAreaKey = App.resolveQuestTravelAreaKey?.(def) || '';
             return `<div style="padding:9px 10px; margin-bottom:6px; border:1px solid ${ready ? '#5f8d52' : '#4b4435'}; border-radius:5px; background:rgba(255,255,255,.045);">
-                <div style="display:flex; justify-content:space-between; gap:8px;"><strong style="font-size:12px; color:#fff;">${escapeHtml(def.name)}</strong><span style="font-size:10px; color:${ready ? '#8cff9d' : '#ffd56b'};">${ready ? '報告可能' : '進行中'}</span></div>
+                <div style="display:flex; justify-content:space-between; gap:8px; align-items:center;"><strong style="font-size:12px; color:#fff; display:flex; align-items:center; min-width:0;">${Guild.rarityBadgeHtml?.(def) || ''}<span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(def.name)}</span></strong><span style="font-size:10px; color:${ready ? '#8cff9d' : '#ffd56b'};">${ready ? '報告可能' : '進行中'}</span></div>
                 <div style="font-size:10px; color:#aaa; margin-top:5px; white-space:pre-wrap;">${escapeHtml(Guild.targetSummary(id))}</div>
+                ${travelAreaKey ? `<button class="btn" style="width:100%; margin-top:7px; padding:6px; border-color:#5c96b5; color:#dff4ff; background:#183445;" onclick="MenuStatus.travelToGuildQuest('${escapeHtml(id)}')">対象エリア入口へ移動</button>` : ''}
             </div>`;
         }).join('');
 
@@ -289,14 +291,28 @@ const MenuStatus = {
         if (!App.showQuestModal) return;
         const quest = App.getQuestDefinition ? App.getQuestDefinition(questId) : null;
         const state = App.getQuestState ? App.getQuestState(questId).state : 'available';
+        const travelAreaKey = state === 'accepted' ? App.resolveQuestTravelAreaKey?.(quest) : null;
         await App.showQuestModal(questId, {
             statusLabel: state === 'completed'
                 ? 'クリア'
                 : (App.isQuestObjectiveComplete?.(questId) ? '報告できます' : '受注中'),
             bodyText: state === 'completed'
                 ? (quest?.completeText || quest?.objective || '')
-                : (quest?.progressText || quest?.objective || '')
+                : (quest?.progressText || quest?.objective || ''),
+            travelAreaKey,
+            travelLabel: quest?.area || quest?.name || ''
         });
+    },
+
+    travelToGuildQuest: (questId) => {
+        if (typeof Guild === 'undefined') return false;
+        const def = Guild.getDefinitions?.()[Guild.resolveQuestId?.(questId) || questId];
+        const areaKey = App.resolveQuestTravelAreaKey?.(def);
+        if (!areaKey) {
+            Menu.msg('この依頼には移動先が設定されていません。');
+            return false;
+        }
+        return App.requestSkyPrismTravelTo?.(areaKey, def?.area || def?.name || areaKey) || false;
     }
 };
 

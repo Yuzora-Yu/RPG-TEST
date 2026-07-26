@@ -230,18 +230,31 @@
         if (definition?.type !== 'image' || !definition.imageKey) return false;
         const px = tileX * TILE_SIZE;
         const py = tileY * TILE_SIZE;
-        return !!addImage(
+        const drawScale = Math.max(0.1, Number(definition.drawScale || 1));
+        const baseAlpha = definition.alpha === undefined ? 1 : Number(definition.alpha);
+        const sprite = addImage(
             scene,
             definition.imageKey,
             px + TILE_SIZE / 2 + Number(definition.drawOffsetX || 0),
             py + TILE_SIZE + Number(definition.drawOffsetY || 0),
             {
-                width: Math.max(8, Number(definition.drawWidth || TILE_SIZE)),
-                height: Math.max(8, Number(definition.drawHeight || TILE_SIZE)),
+                width: Math.max(8, Number(definition.drawWidth || (TILE_SIZE * drawScale))),
+                height: Math.max(8, Number(definition.drawHeight || (TILE_SIZE * drawScale))),
                 depth: baseDepth + 7,
-                alpha: definition.alpha === undefined ? 1 : Number(definition.alpha)
+                alpha: baseAlpha
             }
         );
+        if (sprite && definition.shimmer === true && scene?.tweens) {
+            scene.tweens.add({
+                targets: sprite,
+                alpha: Math.max(0.68, baseAlpha - 0.18),
+                duration: Math.max(300, Number(definition.shimmerDuration || 1050)),
+                ease: 'Sine.easeInOut',
+                yoyo: true,
+                repeat: -1
+            });
+        }
+        return !!sprite;
     };
 
     const drawGroundDecoration = (scene, field, areaKey, tileX, tileY, rawUpper, floorConfig, overlay, baseDepth) => {

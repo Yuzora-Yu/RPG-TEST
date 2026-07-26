@@ -3,8 +3,15 @@
     'use strict';
 
     const GUILD_MASTER_DATA = {
-        schemaVersion: 6,
+        schemaVersion: 8,
         maxOffers: 5,
+        questRarities: [
+            { id: 'R', label: 'R', difficultyLabel: '標準', minGuildRank: 'G', weight: 56, countMultiplier: 1.00, expMultiplier: 1.00, gpMultiplier: 1.00, expFlat: 0, gpFlat: 0, minAbyssFloor: 1, color: '#9fd8ff', bonusItemChance: 0, bonusItemPool: [] },
+            { id: 'SR', label: 'SR', difficultyLabel: '高難度', minGuildRank: 'F', weight: 28, countMultiplier: 1.25, expMultiplier: 1.55, gpMultiplier: 1.70, expFlat: 25, gpFlat: 10, minAbyssFloor: 31, color: '#8cff9d', bonusItemChance: 0.50, bonusItemPool: [100, 101] },
+            { id: 'SSR', label: 'SSR', difficultyLabel: '危険', minGuildRank: 'D', weight: 12, countMultiplier: 1.55, expMultiplier: 2.40, gpMultiplier: 2.70, expFlat: 80, gpFlat: 35, minAbyssFloor: 71, color: '#ffd56b', bonusItemChance: 1.00, bonusItemPool: [102, 103, 104, 105] },
+            { id: 'UR', label: 'UR', difficultyLabel: '極危険', minGuildRank: 'B', weight: 3.5, countMultiplier: 1.90, expMultiplier: 3.80, gpMultiplier: 4.50, expFlat: 180, gpFlat: 85, minAbyssFloor: 121, color: '#ff8ae8', bonusItemChance: 1.00, bonusItemPool: [106] },
+            { id: 'EX', label: 'EX', difficultyLabel: '規格外', minGuildRank: 'A', weight: 0.5, countMultiplier: 2.40, expMultiplier: 6.00, gpMultiplier: 7.50, expFlat: 450, gpFlat: 220, minAbyssFloor: 161, color: '#ff7676', bonusItemChance: 1.00, bonusItemPool: [107] }
+        ],
         ranks: [
             { id: 'G', requiredTotalExp: 0, label: 'Gランク' },
             { id: 'F', requiredTotalExp: 60, label: 'Fランク' },

@@ -12,6 +12,10 @@
     const EXP_THRESHOLDS = Object.fromEntries(RANK_DEFS.map(rank => [String(rank.id), Math.max(0, Number(rank.requiredTotalExp) || 0)]));
     const PROMOTION_TRIALS = MASTER.promotionTrials || {};
     const EXCHANGE = Array.isArray(MASTER.exchangeEntries) ? MASTER.exchangeEntries : [];
+    const RARITY_DEFS = Array.isArray(MASTER.questRarities) && MASTER.questRarities.length
+        ? MASTER.questRarities.map(def => ({ ...def, id: String(def.id || 'R').toUpperCase() }))
+        : [{ id: 'R', label: 'R', minGuildRank: 'G', weight: 1, countMultiplier: 1, expMultiplier: 1, gpMultiplier: 1, color: '#9fd8ff', bonusItemChance: 0, bonusItemPool: [] }];
+    const RARITY_MAP = Object.fromEntries(RARITY_DEFS.map(def => [def.id, def]));
     const LEGACY_QUEST_ID_MAP = global.GUILD_QUEST_LEGACY_ID_MAP || {};
     const GENERATOR_MASTER = global.GUILD_QUEST_GENERATOR_MASTER || {};
     const GENERATOR_SCHEMA_VERSION = Math.max(0, Math.floor(Number(GENERATOR_MASTER.schemaVersion) || 0));
@@ -24,6 +28,63 @@
         expThresholds: EXP_THRESHOLDS,
         promotionTrials: PROMOTION_TRIALS,
         exchangeEntries: EXCHANGE,
+        rarityDefinitions: RARITY_DEFS,
+
+        getRarityDefinition(rarity) {
+            return RARITY_MAP[String(rarity || 'R').toUpperCase()] || RARITY_MAP.R || RARITY_DEFS[0];
+        },
+
+        getRarityColor(rarity) {
+            return Guild.getRarityDefinition(rarity)?.color || '#9fd8ff';
+        },
+
+        getRarityLabel(rarity) {
+            const def = Guild.getRarityDefinition(rarity);
+            return String(def?.label || def?.id || 'R');
+        },
+
+        getDifficultyLabel(definition) {
+            const rarity = Guild.getRarityDefinition(definition?.rarity || 'R');
+            return String(definition?.difficultyLabel || rarity?.difficultyLabel || '標準');
+        },
+
+        rarityBadgeHtml(definition) {
+            const rarity = Guild.getRarityDefinition(definition?.rarity || 'R');
+            const label = App.escapeHtml(String(rarity?.label || rarity?.id || 'R'));
+            const color = String(rarity?.color || '#9fd8ff');
+            return `<span class="guild-rarity-badge" style="display:inline-flex; align-items:center; justify-content:center; min-width:30px; padding:2px 6px; margin-right:6px; border:1px solid ${color}; color:${color}; background:rgba(0,0,0,.38); border-radius:10px; font-size:10px; font-weight:bold;">${label}</span>`;
+        },
+
+        getEligibleRarities(options = {}) {
+            const guildState = options.state || Guild.ensureState();
+            const floorMax = Math.max(0, Math.floor(Number(options.floorMax || 0)));
+            return RARITY_DEFS.filter(def => {
+                if (Guild.rankIndex(guildState?.rank || 'G') < Guild.rankIndex(def.minGuildRank || 'G')) return false;
+                if (floorMax > 0 && floorMax < Math.max(1, Math.floor(Number(def.minAbyssFloor || 1)))) return false;
+                return Number(def.weight || 0) > 0;
+            });
+        },
+
+        rollRarity(options = {}) {
+            const pool = Guild.getEligibleRarities(options);
+            if (!pool.length) return Guild.getRarityDefinition('R');
+            const total = pool.reduce((sum, def) => sum + Math.max(0, Number(def.weight || 0)), 0);
+            if (total <= 0) return pool[0];
+            let roll = Math.random() * total;
+            for (const def of pool) {
+                roll -= Math.max(0, Number(def.weight || 0));
+                if (roll <= 0) return def;
+            }
+            return pool[pool.length - 1];
+        },
+
+        getRarityBonusRewards(rarityDef) {
+            const def = rarityDef || Guild.getRarityDefinition('R');
+            const pool = Array.isArray(def.bonusItemPool) ? def.bonusItemPool.map(Number).filter(Number.isFinite) : [];
+            if (!pool.length || Math.random() >= Math.max(0, Math.min(1, Number(def.bonusItemChance || 0)))) return [];
+            const itemId = Guild.pickRandom(pool);
+            return Number.isFinite(Number(itemId)) ? [{ id: Number(itemId), count: 1 }] : [];
+        },
 
         getStaticDefinitions() {
             return global.GUILD_QUEST_DATA || {};
@@ -146,8 +207,13 @@
             if (spec.kind === 'normal') {
                 const template = spec.template || {};
                 const base = spec.base || {};
-                const count = Guild.randomInt(template.countMin, template.countMax);
-                const baseCount = Math.max(1, Math.floor(Number(base.targetCount) || count));
+                const rarityDef = Guild.rollRarity({ state: guildState });
+                const generatedRequiredRank = Guild.rankIndex(base.requiredRank || 'G') >= Guild.rankIndex(rarityDef.minGuildRank || 'G')
+                    ? String(base.requiredRank || 'G')
+                    : String(rarityDef.minGuildRank || 'G');
+                const rawCount = Guild.randomInt(template.countMin, template.countMax);
+                const count = Math.max(1, Math.round(rawCount * Math.max(1, Number(rarityDef.countMultiplier || 1))));
+                const baseCount = Math.max(1, Math.floor(Number(base.targetCount) || rawCount));
                 const expPerExtra = Math.max(0, Number(template.expPerExtraKill) || 0);
                 const pointsPerExtra = Math.max(0, Number(template.pointsPerExtraKill) || 0);
                 const expJitter = Guild.randomInt(0, Math.max(1, Math.floor(expPerExtra)));
@@ -160,6 +226,7 @@
                     id,
                     name: Guild.pickRandom(template.names) || `${label}の臨時討伐`,
                     area: label,
+                    requiredRank: generatedRequiredRank,
                     objective: `${label}内で魔物を合計${count}体討伐する。`,
                     startText: `${label}の通行路を確保するため、種類を問わない臨時討伐依頼が出された。`,
                     progressText: `${label}内で魔物を${count}体討伐し、ライザーク要塞のギルド受付へ報告しよう。`,
@@ -167,9 +234,12 @@
                     targetCount: count,
                     targetMonsterIds: undefined,
                     spawnAreaLabel: undefined,
-                    rewardItems: [],
-                    guildExp: Math.max(1, Math.round(Number(base.guildExp || 0) + (count - baseCount) * expPerExtra + expJitter)),
-                    guildPoints: Math.max(1, Math.round(Number(base.guildPoints || 0) + (count - baseCount) * pointsPerExtra + pointsJitter)),
+                    rewardItems: Guild.getRarityBonusRewards(rarityDef),
+                    guildExp: Math.max(1, Math.round((Number(base.guildExp || 0) + Math.max(0, count - baseCount) * expPerExtra + expJitter) * Math.max(1, Number(rarityDef.expMultiplier || 1)) + Math.max(0, Number(rarityDef.expFlat || 0)))),
+                    guildPoints: Math.max(1, Math.round((Number(base.guildPoints || 0) + Math.max(0, count - baseCount) * pointsPerExtra + pointsJitter) * Math.max(1, Number(rarityDef.gpMultiplier || 1)) + Math.max(0, Number(rarityDef.gpFlat || 0)))),
+                    rarity: rarityDef.id,
+                    difficultyLabel: rarityDef.difficultyLabel || '',
+                    difficultyMultiplier: Math.max(1, Number(rarityDef.countMultiplier || 1)),
                     requestType: 'dungeonHunt',
                     huntScope: scope,
                     generatedQuest: true,
@@ -187,22 +257,27 @@
                 const bandIndex = Math.max(1, Math.ceil(Number(spec.floorMax || 1) / bandSize));
                 const stepEvery = Math.max(1, Math.floor(Number(abyss.countStepEveryBands) || 4));
                 const countStep = Math.floor((bandIndex - 1) / stepEvery);
-                const count = Guild.randomInt(
+                const rarityDef = Guild.rollRarity({ state: guildState, floorMax: spec.floorMax });
+                const generatedRequiredRank = Guild.rankIndex(spec.requiredRank || 'G') >= Guild.rankIndex(rarityDef.minGuildRank || 'G')
+                    ? String(spec.requiredRank || 'G')
+                    : String(rarityDef.minGuildRank || 'G');
+                const rawCount = Guild.randomInt(
                     Math.max(1, Math.floor(Number(abyss.countBaseMin) || 5) + countStep),
                     Math.max(1, Math.floor(Number(abyss.countBaseMax) || 8) + countStep)
                 );
+                const count = Math.max(1, Math.round(rawCount * Math.max(1, Number(rarityDef.countMultiplier || 1))));
                 const namePrefix = Guild.pickRandom(abyss.names) || '深淵巡回';
                 const rangeLabel = `地下${spec.floorMin}～${spec.floorMax}階`;
-                const guildExp = Math.max(1, Math.round(
+                const guildExp = Math.max(1, Math.round((
                     Number(abyss.expBase || 0)
                     + bandIndex * Number(abyss.expPerBand || 0)
-                    + count * Number(abyss.expPerKill || 0)
-                ));
-                const guildPoints = Math.max(1, Math.round(
+                    + rawCount * Number(abyss.expPerKill || 0)
+                ) * Math.max(1, Number(rarityDef.expMultiplier || 1)) + Math.max(0, Number(rarityDef.expFlat || 0))));
+                const guildPoints = Math.max(1, Math.round((
                     Number(abyss.pointsBase || 0)
                     + bandIndex * Number(abyss.pointsPerBand || 0)
-                    + count * Number(abyss.pointsPerKill || 0)
-                ));
+                    + rawCount * Number(abyss.pointsPerKill || 0)
+                ) * Math.max(1, Number(rarityDef.gpMultiplier || 1)) + Math.max(0, Number(rarityDef.gpFlat || 0))));
                 def = {
                     id,
                     name: `${namePrefix}・${rangeLabel}`,
@@ -215,11 +290,14 @@
                     progressText: `深淵の魔窟 ${rangeLabel}で通常戦闘の魔物を${count}体討伐し、ライザーク要塞のギルド受付へ報告しよう。`,
                     targetCount: count,
                     completeText: `深淵の魔窟 ${rangeLabel}の観測路が安定し、巡回依頼を完了した。`,
-                    rewardItems: [],
-                    requiredRank: spec.requiredRank,
+                    rewardItems: Guild.getRarityBonusRewards(rarityDef),
+                    requiredRank: generatedRequiredRank,
                     guildExp,
                     guildPoints,
                     guildQuest: true,
+                    rarity: rarityDef.id,
+                    difficultyLabel: rarityDef.difficultyLabel || '',
+                    difficultyMultiplier: Math.max(1, Number(rarityDef.countMultiplier || 1)),
                     repeatable: true,
                     regionKey: 'ABYSS',
                     requestType: 'hunt',
@@ -270,7 +348,12 @@
             Object.entries(state.generatedQuests).forEach(([id, def]) => {
                 if (!def || typeof def !== 'object' || Array.isArray(def) || def.generatedQuest !== true || String(def.id || '') !== String(id)) {
                     delete state.generatedQuests[id];
+                    return;
                 }
+                if (!def.rarity) def.rarity = 'R';
+                const rarityDef = Guild.getRarityDefinition(def.rarity);
+                def.rarity = rarityDef.id;
+                if (!def.difficultyLabel) def.difficultyLabel = rarityDef.difficultyLabel || '';
             });
             state.generatorSerial = Math.max(0, Math.floor(Number(state.generatorSerial) || 0));
             state.generatedCompletionTotal = Math.max(0, Math.floor(Number(state.generatedCompletionTotal) || 0));
@@ -828,8 +911,8 @@
             const status = ready ? '報告可能' : state.state === 'accepted' ? '受注中' : '受注可能';
             const color = ready ? '#8cff9d' : state.state === 'accepted' ? '#ffd56b' : '#b9d9ff';
             return `<button class="btn guild-quest-entry" data-guild-quest-id="${App.escapeHtml(id)}" style="width:100%; text-align:left; margin-top:8px; padding:10px; background:#17191d; border:1px solid #655b43; color:#fff; border-radius:6px;">
-                <span style="display:flex; justify-content:space-between; gap:8px;"><strong>${App.escapeHtml(def.name)}</strong><small style="color:${color};">${status}</small></span>
-                <span style="display:block; color:#c8b998; font-size:10px; margin-top:4px;">必要ランク ${App.escapeHtml(def.requiredRank || 'G')} / ${App.escapeHtml(App.getQuestKindLabel?.(def.kind) || def.kind)}</span>
+                <span style="display:flex; justify-content:space-between; gap:8px; align-items:center;"><strong style="display:flex; align-items:center; min-width:0;">${Guild.rarityBadgeHtml(def)}<span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${App.escapeHtml(def.name)}</span></strong><small style="color:${color}; white-space:nowrap;">${status}</small></span>
+                <span style="display:block; color:#c8b998; font-size:10px; margin-top:4px;">必要ランク ${App.escapeHtml(def.requiredRank || 'G')} / 危険度 ${App.escapeHtml(Guild.getDifficultyLabel(def))} / ${App.escapeHtml(App.getQuestKindLabel?.(def.kind) || def.kind)}</span>
                 <span style="display:block; color:#aaa; font-size:11px; line-height:1.5; margin-top:5px; white-space:pre-wrap;">${App.escapeHtml(def.objective || '')}</span>
             </button>`;
         },
@@ -844,18 +927,28 @@
             const actionButton = accepted
                 ? `<button id="guild-detail-cancel" class="menu-btn" style="width:100%; margin-top:12px; border-color:#a65b5b; color:#ffd4d4;">依頼をキャンセルする</button>`
                 : `<button id="guild-detail-accept" class="menu-btn" style="width:100%; margin-top:12px;">受注する</button>`;
+            const travelAreaKey = accepted ? App.resolveQuestTravelAreaKey?.(def) : null;
+            const travelButton = travelAreaKey
+                ? `<button id="guild-detail-travel" class="menu-btn" style="width:100%; margin-top:8px; border-color:#5c96b5; color:#dff4ff; background:#183445;">対象エリア入口へ移動</button>`
+                : '';
             Facilities.showModal('guild-scene', def.name, `
-                <div style="font-size:11px; color:#d9bd7d;">必要ランク ${def.requiredRank || 'G'} / ${App.getQuestKindLabel?.(def.kind) || def.kind}</div>
+                <div style="font-size:11px; color:#d9bd7d; display:flex; align-items:center;">${Guild.rarityBadgeHtml(def)}必要ランク ${def.requiredRank || 'G'} / ${App.getQuestKindLabel?.(def.kind) || def.kind} / 危険度 ${App.escapeHtml(Guild.getDifficultyLabel(def))}</div>
                 <div style="font-size:12px; line-height:1.65; margin-top:10px; white-space:pre-wrap;">${App.escapeHtml(state.state === 'accepted' ? (def.progressText || def.objective) : (def.startText || def.objective))}</div>
                 <div style="margin-top:10px; padding:9px; border:1px solid #444; white-space:pre-wrap; font-size:11px;">${App.escapeHtml(Guild.targetSummary(id))}</div>
                 <div style="margin-top:8px; padding:9px; border:1px solid #5e4d2e; color:#dff0c8; white-space:pre-wrap; font-size:11px;">${App.escapeHtml(Guild.rewardSummary(def))}</div>
                 ${ready ? '<div style="color:#8cff9d; margin-top:8px; font-size:11px;">達成済みです。受付職員へ報告してください。</div>' : ''}
                 ${actionButton}
+                ${travelButton}
             `, { onClose: () => Guild.openBoard() });
             const accept = document.getElementById('guild-detail-accept');
             if (accept) accept.onclick = () => {
                 Guild.acceptQuest(id);
                 Guild.openBoard();
+            };
+            const travel = document.getElementById('guild-detail-travel');
+            if (travel) travel.onclick = () => {
+                Facilities.closeModal?.('guild-scene');
+                App.requestSkyPrismTravelTo?.(travelAreaKey, def.area || def.name || travelAreaKey);
             };
             const cancel = document.getElementById('guild-detail-cancel');
             if (cancel) cancel.onclick = () => {
@@ -878,7 +971,7 @@
             Guild.ensureOffers({ save: false });
             const html = state.offers.map(id => Guild.questCard(id)).join('');
             Facilities.showModal('guild-scene', '依頼掲示板', `
-                <div style="font-size:11px; color:#aaa;">依頼は最大5件。討伐数と報酬は依頼ごとに変動します。深淵の依頼は到達済み階層だけが対象となり、深層ほど報酬が増えます。更新しても受注中の依頼は残ります。</div>
+                <div style="font-size:11px; color:#aaa;">依頼は最大5件。R・SR・SSR・UR・EXの順に討伐数と難度が上がり、ギルド経験値・GP・追加報酬も増えます。深淵の依頼は到達済み階層だけが対象となり、深層ほど報酬が増えます。更新しても受注中の依頼は残ります。</div>
                 ${html || '<div style="padding:16px; color:#888;">現在紹介できる依頼はありません。</div>'}
                 <button id="guild-board-refresh" class="menu-btn" style="width:100%; margin-top:12px;">依頼を更新する</button>
             `, { onClose: () => App.changeScene('field') });
@@ -896,7 +989,7 @@
                 const def = Guild.getDefinitions()[id];
                 const ready = Guild.isObjectiveComplete(id);
                 return `<button class="btn guild-report-entry" data-guild-quest-id="${App.escapeHtml(id)}" ${ready ? '' : 'disabled'} style="width:100%; text-align:left; margin-top:8px; padding:10px; background:${ready ? '#263b25' : '#222'}; border:1px solid ${ready ? '#79c878' : '#444'}; color:${ready ? '#fff' : '#777'};">
-                    <strong>${App.escapeHtml(def?.name || id)}</strong><span style="float:right; font-size:10px;">${ready ? '報告する' : '未達成'}</span>
+                    <strong>${Guild.rarityBadgeHtml(def)}${App.escapeHtml(def?.name || id)}</strong><span style="float:right; font-size:10px;">${ready ? '報告する' : '未達成'}</span>
                     <span style="display:block; clear:both; font-size:10px; margin-top:5px; white-space:pre-wrap;">${App.escapeHtml(Guild.targetSummary(id))}</span>
                 </button>`;
             }).join('');
