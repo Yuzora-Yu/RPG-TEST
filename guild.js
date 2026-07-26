@@ -1059,9 +1059,10 @@
             Guild.ensureOffers({ save: false });
             const progress = Guild.currentExpProgress();
             const commands = `
-                <button class="menu-btn" style="background:#000; border:1px solid #fff; height:40px; color:#fff;" onclick="Guild.openReportMenu()">報告する</button>
-                <button class="menu-btn" style="background:#000; border:1px solid #fff; height:40px; color:#fff;" onclick="Guild.openTrialMenu()">試験を受ける</button>
-                <button class="menu-btn" style="background:#000; border:1px solid #fff; height:40px; color:#fff; grid-column:span 2;" onclick="Guild.openExchangeMenu()">交換する</button>`;
+                <button class="menu-btn" style="background:#000; border:1px solid #fff; height:40px; color:#fff;" onclick="Guild.openReportMenu()">クエスト報告</button>
+                <button class="menu-btn" style="background:#000; border:1px solid #fff; height:40px; color:#fff;" onclick="Guild.openTrialMenu()">昇格試験</button>
+                <button class="menu-btn" style="background:#000; border:1px solid #fff; height:40px; color:#fff;" onclick="Guild.openExchangeMenu()">GP交換</button>
+                <button class="menu-btn" style="background:#000; border:1px solid #fff; height:40px; color:#fff;" onclick="App.changeScene('field')">出る</button>`;
             Facilities.setupBaseLayout('guild-scene', 'ライザーク冒険者ギルド', 'facility_bg_guild', commands, "App.changeScene('field')");
             const body = document.getElementById('guild-scene-msg-content');
             if (body) body.innerHTML = `
