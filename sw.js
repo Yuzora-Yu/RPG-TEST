@@ -21,8 +21,8 @@ try {
   console.warn("[SW] モンスター定義を含む画像一覧の読み込みに失敗しました。画像初回キャッシュは最小限で続行します。", error);
 }
 
-const CACHE_NAME = "prisma-abyss-v3.147-guild-rarity-skyprism-pedestals";
-const RUNTIME_CACHE_NAME = "prisma-abyss-v3.147-guild-rarity-skyprism-pedestals-runtime";
+const CACHE_NAME = "prisma-abyss-v3.148-prism-pedestal-render-fix";
+const RUNTIME_CACHE_NAME = "prisma-abyss-v3.148-prism-pedestal-render-fix-runtime";
 const WARM_CACHE_META_KEY = "__prisma_abyss_warm_cache_complete__";
 
 // 起動に必要な App Shell。

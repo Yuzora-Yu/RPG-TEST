@@ -921,7 +921,7 @@ const App = {
 
 	// 全画像データの手動/初回ダウンロード用キャッシュ名。
 	// sw.js の RUNTIME_CACHE_NAME と揃えること。
-    fullDataCacheName: 'prisma-abyss-v3.147-guild-rarity-skyprism-pedestals-runtime',
+    fullDataCacheName: 'prisma-abyss-v3.148-prism-pedestal-render-fix-runtime',
 
 
 	// 初回起動時の「全データを今ダウンロードしますか？」で「いいえ」を選んだ記録。
@@ -6592,7 +6592,13 @@ const Field = {
             : null;
         const actionOverlayConfig = Field.getMapActionOverlayConfig ? Field.getMapActionOverlayConfig(tileX, tileY) : null;
         const blockingObject = Field.getBlockingObjectAt ? Field.getBlockingObjectAt(tileX, tileY) : null;
-        const blockingObjectOverlayConfig = blockingObject?.imageKey
+        // blocking:true の floorDecorations は装飾描画側が正本。
+        // ここでも blockingObject として描くと、drawScale 適用済みの本体に加えて
+        // 32px版が重なり、台座などが大小二重に見えるためオーバーレイ化しない。
+        const blockingObjectIsFloorDecoration = !!blockingObject
+            && Array.isArray(Field.currentMapData?.floorDecorations)
+            && Field.currentMapData.floorDecorations.includes(blockingObject);
+        const blockingObjectOverlayConfig = blockingObject?.imageKey && !blockingObjectIsFloorDecoration
             ? {
                 img: blockingObject.imageKey,
                 color: blockingObject.color || '#6f6252',
@@ -8854,6 +8860,36 @@ const Field = {
         // Canvas is the error-recovery renderer.  Draw ledges in a second pass so
         // neighboring sky tiles cannot paint over the exposed platform sides.
         elevatedEdgePlans.forEach(edge => drawGraphic(edge.key, edge.x, edge.y, edge.width, edge.height));
+
+        // Phaserと同じく、renderLayer:"object" の固定装飾はタイル描画後に一度だけ描く。
+        // getMapDrawParts() の blockingObject オーバーレイからは除外しているため、
+        // Canvasフォールバックでも2.7倍の本体だけが表示される。
+        (Field.currentMapData?.floorDecorations || []).forEach(definition => {
+            if (String(definition?.renderLayer || '').toLowerCase() !== 'object' || definition?.type !== 'image' || !definition.imageKey) return;
+            const ox = Number(definition.x || 0) - Number(Field.x);
+            const oy = Number(definition.y || 0) - Number(Field.y);
+            if (Math.abs(ox) > rangeX + 3 || Math.abs(oy) > rangeY + 3) return;
+            const drawScale = Math.max(0.1, Number(definition.drawScale || 1));
+            const drawWidth = Math.max(8, Number(definition.drawWidth || (32 * drawScale))) * ts / 32;
+            const drawHeight = Math.max(8, Number(definition.drawHeight || (32 * drawScale))) * ts / 32;
+            const anchorX = cx + (ox * ts);
+            const anchorY = cy + (oy * ts) + ts / 2;
+            const offsetX = Number(definition.drawOffsetX || 0) * ts / 32;
+            const offsetY = Number(definition.drawOffsetY || 0) * ts / 32;
+            ctx.save();
+            const baseAlpha = definition.alpha === undefined ? 1 : Number(definition.alpha);
+            ctx.globalAlpha = definition.shimmer === true && Field.step === 1
+                ? Math.max(0.68, baseAlpha - 0.18)
+                : baseAlpha;
+            drawGraphic(
+                definition.imageKey,
+                anchorX - drawWidth / 2 + offsetX,
+                anchorY - drawHeight + offsetY,
+                drawWidth,
+                drawHeight
+            );
+            ctx.restore();
+        });
 
         if (useDepthRendering) {
             ctx.save();

@@ -232,6 +232,10 @@
         const py = tileY * TILE_SIZE;
         const drawScale = Math.max(0.1, Number(definition.drawScale || 1));
         const baseAlpha = definition.alpha === undefined ? 1 : Number(definition.alpha);
+        // 大型の台座・像などは地面装飾ではなくオブジェクト深度で描く。
+        // 地面深度のままだと、同じ行の壁面・イベント画像に右下が上書きされ、
+        // 画像の一部が欠けたように見えることがある。
+        const renderAsObject = String(definition.renderLayer || '').toLowerCase() === 'object';
         const sprite = addImage(
             scene,
             definition.imageKey,
@@ -240,7 +244,7 @@
             {
                 width: Math.max(8, Number(definition.drawWidth || (TILE_SIZE * drawScale))),
                 height: Math.max(8, Number(definition.drawHeight || (TILE_SIZE * drawScale))),
-                depth: baseDepth + 7,
+                depth: baseDepth + (renderAsObject ? 72 : 7),
                 alpha: baseAlpha
             }
         );

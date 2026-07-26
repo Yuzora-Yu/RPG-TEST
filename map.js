@@ -2,1572 +2,1572 @@
 const tileEntry = (img, color, options = {}) => ({ img, color, ...options });
 
 const STORY_MAP_MUTATIONS = {
-    START_CAVE_GATE_OPEN: {
-        area: "START_CAVE",
-        changes: [
+    "START_CAVE_GATE_OPEN": {
+        "area": "START_CAVE",
+        "changes": [
             {
-                x: 15,
-                y: 17,
-                tile: "G"
+                "x": 15,
+                "y": 17,
+                "tile": "G"
             },
             {
-                x: 15,
-                y: 16,
-                tile: "G"
+                "x": 15,
+                "y": 16,
+                "tile": "G"
             }
         ]
     }
 };
 
 const TILE_THEMES = {
-    WORLD: {
-        W: {
-            img: "sea",
-            color: "#155d7a",
-            animatedWater: true
+    "WORLD": {
+        "W": {
+            "img": "sea",
+            "color": "#155d7a",
+            "animatedWater": true
         },
-        M: {
-            img: "mountain",
-            color: "#64636a"
+        "M": {
+            "img": "mountain",
+            "color": "#64636a"
         },
-        F: {
-            img: "forest",
-            color: "#1f6a3f"
+        "F": {
+            "img": "forest",
+            "color": "#1f6a3f"
         },
-        L: {
-            img: "Low_mountain",
-            color: "#6c6847"
+        "L": {
+            "img": "Low_mountain",
+            "color": "#6c6847"
         },
-        G: {
-            img: "floor",
-            color: "#2c7a4e"
+        "G": {
+            "img": "floor",
+            "color": "#2c7a4e"
         },
-        T: {
-            img: "floor",
-            color: "#2c7a4e"
+        "T": {
+            "img": "floor",
+            "color": "#2c7a4e"
         },
-        I: {
-            img: "settlement",
-            color: "#d7b45a"
+        "I": {
+            "img": "settlement",
+            "color": "#d7b45a"
         },
-        B: {
-            img: "darkcastle",
-            color: "#db3b4d"
+        "B": {
+            "img": "darkcastle",
+            "color": "#db3b4d"
         },
-        D: {
-            img: "lost",
-            color: "#303541"
+        "D": {
+            "img": "lost",
+            "color": "#303541"
         },
-        K: {
-            img: "casino",
-            color: "#7e3fa1"
+        "K": {
+            "img": "casino",
+            "color": "#7e3fa1"
         },
-        E: {
-            img: "medal",
-            color: "#f6ca62"
+        "E": {
+            "img": "medal",
+            "color": "#f6ca62"
         }
     },
-    DEFAULT: {
-        W: {
-            img: "wall",
-            color: "#303541"
+    "DEFAULT": {
+        "W": {
+            "img": "wall",
+            "color": "#303541"
         },
-        T: {
-            img: "dungeon_floor",
-            color: "#3c4151"
+        "T": {
+            "img": "dungeon_floor",
+            "color": "#3c4151"
         },
-        G: {
-            img: "dungeon_floor",
-            color: "#3c4151"
+        "G": {
+            "img": "dungeon_floor",
+            "color": "#3c4151"
         },
-        L: {
-            img: "dungeon_floor",
-            color: "#4a5160"
+        "L": {
+            "img": "dungeon_floor",
+            "color": "#4a5160"
         },
-        S: {
-            img: "dungeon_floor",
-            color: "#d7b45a"
+        "S": {
+            "img": "dungeon_floor",
+            "color": "#d7b45a"
         },
-        D: {
-            img: "stairs_dungeon",
-            color: "#d7b45a"
+        "D": {
+            "img": "stairs_dungeon",
+            "color": "#d7b45a"
         },
-        U: {
-            img: "stairs_dungeon",
-            color: "#d7b45a"
+        "U": {
+            "img": "stairs_dungeon",
+            "color": "#d7b45a"
         },
-        C: {
-            img: "chest_dungeon",
-            color: "#9c6332"
+        "C": {
+            "img": "chest_dungeon",
+            "color": "#9c6332"
         },
-        R: {
-            img: "chest_rare_dungeon",
-            color: "#b6324b"
+        "R": {
+            "img": "chest_rare_dungeon",
+            "color": "#b6324b"
         },
-        B: {
-            img: "boss_dungeon",
-            color: "#db3b4d"
+        "B": {
+            "img": "boss_dungeon",
+            "color": "#db3b4d"
         },
-        P: {
-            img: "event_dungeon",
-            color: "#8f7dff"
+        "P": {
+            "img": "event_dungeon",
+            "color": "#8f7dff"
         },
-        X: {
-            img: "door_key_red",
-            color: "#8f2f2f"
+        "X": {
+            "img": "door_key_red",
+            "color": "#8f2f2f"
         },
-        Y: {
-            img: "door_key_blue",
-            color: "#2f6f9f"
+        "Y": {
+            "img": "door_key_blue",
+            "color": "#2f6f9f"
         },
-        Z: {
-            img: "door_key_gold",
-            color: "#b8892f"
+        "Z": {
+            "img": "door_key_gold",
+            "color": "#b8892f"
         },
-        Q: {
-            img: "item_key_red",
-            color: "#d94a4a"
+        "Q": {
+            "img": "item_key_red",
+            "color": "#d94a4a"
         },
-        N: {
-            img: "item_key_blue",
-            color: "#4aa0e6"
+        "N": {
+            "img": "item_key_blue",
+            "color": "#4aa0e6"
         },
-        O: {
-            img: "item_key_gold",
-            color: "#e0b84a"
+        "O": {
+            "img": "item_key_gold",
+            "color": "#e0b84a"
         },
-        I: {
-            img: "inn",
-            color: "#356ab8"
+        "I": {
+            "img": "inn",
+            "color": "#356ab8"
         },
-        K: {
-            img: "casino",
-            color: "#7e3fa1"
+        "K": {
+            "img": "casino",
+            "color": "#7e3fa1"
         },
-        E: {
-            img: "medal",
-            color: "#f6ca62"
+        "E": {
+            "img": "medal",
+            "color": "#f6ca62"
         },
-        F: {
-            img: "floor",
-            color: "#70843f",
-            terrain: true
+        "F": {
+            "img": "floor",
+            "color": "#70843f",
+            "terrain": true
         },
-        M: {
-            img: "tile_magma",
-            color: "#e4511e"
+        "M": {
+            "img": "tile_magma",
+            "color": "#e4511e"
         },
-        H: {
-            img: "house-1",
-            color: "#d9bd84"
+        "H": {
+            "img": "house-1",
+            "color": "#d9bd84"
         },
-        V: {
-            img: "house-2",
-            color: "#7e3fa1"
+        "V": {
+            "img": "house-2",
+            "color": "#7e3fa1"
         },
         "~": {
-            img: "sea",
-            color: "#155d7a",
-            animatedWater: true,
-            lowerLayer: true
+            "img": "sea",
+            "color": "#155d7a",
+            "animatedWater": true,
+            "lowerLayer": true
         }
     },
-    START_VILLAGE: {
-        W: {
-            img: "forest",
-            color: "#1f6a3f"
+    "START_VILLAGE": {
+        "W": {
+            "img": "forest",
+            "color": "#1f6a3f"
         },
-        T: {
-            img: "floor",
-            color: "#2c7a4e"
+        "T": {
+            "img": "floor",
+            "color": "#2c7a4e"
         },
-        G: {
-            img: "floor",
-            color: "#2c7a4e"
+        "G": {
+            "img": "floor",
+            "color": "#2c7a4e"
         },
-        H: {
-            img: "house-1",
-            color: "#d9bd84"
+        "H": {
+            "img": "house-1",
+            "color": "#d9bd84"
         },
-        V: {
-            img: "house-2",
-            color: "#7e3fa1"
+        "V": {
+            "img": "house-2",
+            "color": "#7e3fa1"
         },
-        D: {
-            img: "cave",
-            color: "#303541"
+        "D": {
+            "img": "cave",
+            "color": "#303541"
         },
-        S: {
-            img: "floor",
-            color: "#d7b45a"
+        "S": {
+            "img": "floor",
+            "color": "#d7b45a"
         },
-        I: {
-            img: "inn",
-            color: "#d7b45a"
+        "I": {
+            "img": "inn",
+            "color": "#d7b45a"
         },
-        K: {
-            img: "casino",
-            color: "#7e3fa1"
+        "K": {
+            "img": "casino",
+            "color": "#7e3fa1"
         },
-        E: {
-            img: "medal",
-            color: "#f6ca62"
+        "E": {
+            "img": "medal",
+            "color": "#f6ca62"
         },
-        C: {
-            img: "chest",
-            color: "#9c6332"
+        "C": {
+            "img": "chest",
+            "color": "#9c6332"
         },
-        R: {
-            img: "chest_rare",
-            color: "#b6324b"
+        "R": {
+            "img": "chest_rare",
+            "color": "#b6324b"
         },
-        B: {
-            img: "boss",
-            color: "#db3b4d"
+        "B": {
+            "img": "boss",
+            "color": "#db3b4d"
         }
     },
-    START_CAVE: {
-        W: {
-            img: "wall",
-            color: "#303541"
+    "START_CAVE": {
+        "W": {
+            "img": "wall",
+            "color": "#303541"
         },
-        T: {
-            img: "dungeon_floor",
-            color: "#3c4151"
+        "T": {
+            "img": "dungeon_floor",
+            "color": "#3c4151"
         },
-        G: {
-            img: "dungeon_floor",
-            color: "#3c4151"
+        "G": {
+            "img": "dungeon_floor",
+            "color": "#3c4151"
         },
-        S: {
-            img: "floor",
-            color: "#d7b45a"
+        "S": {
+            "img": "floor",
+            "color": "#d7b45a"
         },
-        V: {
-            img: "dungeon_floor",
-            color: "#4ab9d8"
+        "V": {
+            "img": "dungeon_floor",
+            "color": "#4ab9d8"
         },
-        C: {
-            img: "chest_dungeon",
-            color: "#9c6332"
+        "C": {
+            "img": "chest_dungeon",
+            "color": "#9c6332"
         },
-        R: {
-            img: "chest_rare_dungeon",
-            color: "#b6324b"
+        "R": {
+            "img": "chest_rare_dungeon",
+            "color": "#b6324b"
         },
-        B: {
-            img: "boss_dungeon",
-            color: "#db3b4d"
+        "B": {
+            "img": "boss_dungeon",
+            "color": "#db3b4d"
         }
     },
-    FIRE_VILLAGE: {
-        W: {
-            img: "tile_fire_wall",
-            color: "#4b2524"
+    "FIRE_VILLAGE": {
+        "W": {
+            "img": "tile_fire_wall",
+            "color": "#4b2524"
         },
-        T: {
-            img: "tile_fire_floor",
-            color: "#5b514d"
+        "T": {
+            "img": "tile_fire_floor",
+            "color": "#5b514d"
         },
-        G: {
-            img: "tile_fire_floor",
-            color: "#6b5144"
+        "G": {
+            "img": "tile_fire_floor",
+            "color": "#6b5144"
         },
-        M: {
-            img: "tile_magma",
-            color: "#e4511e"
+        "M": {
+            "img": "tile_magma",
+            "color": "#e4511e"
         },
-        H: {
-            img: "house-1",
-            color: "#d9bd84"
+        "H": {
+            "img": "house-1",
+            "color": "#d9bd84"
         },
-        V: {
-            img: "fire_village",
-            color: "#d95b3a"
+        "V": {
+            "img": "fire_village",
+            "color": "#d95b3a"
         },
-        I: {
-            img: "inn",
-            color: "#d7b45a"
+        "I": {
+            "img": "inn",
+            "color": "#d7b45a"
         },
-        D: {
-            img: "cave",
-            color: "#303541"
+        "D": {
+            "img": "cave",
+            "color": "#303541"
         },
-        S: {
-            img: "tile_fire_floor",
-            color: "#d7b45a"
+        "S": {
+            "img": "tile_fire_floor",
+            "color": "#d7b45a"
         },
-        P: {
-            img: "event_field",
-            color: "#ff8a3d"
+        "P": {
+            "img": "event_field",
+            "color": "#ff8a3d"
         }
     },
-    WIND_VILLAGE: {
-        W: {
-            img: "tile_wind_wall",
-            color: "#64636a"
+    "WIND_VILLAGE": {
+        "W": {
+            "img": "tile_wind_wall",
+            "color": "#64636a"
         },
-        T: {
-            img: "tile_wind_floor",
-            color: "#5b7b51"
+        "T": {
+            "img": "tile_wind_floor",
+            "color": "#5b7b51"
         },
-        G: {
-            img: "tile_wind_floor",
-            color: "#547d50"
+        "G": {
+            "img": "tile_wind_floor",
+            "color": "#547d50"
         },
-        L: {
-            img: "tile_wind_bridge",
-            color: "#9f8a5a"
+        "L": {
+            "img": "tile_wind_bridge",
+            "color": "#9f8a5a"
         },
-        H: {
-            img: "settlement",
-            color: "#d9bd84"
+        "H": {
+            "img": "settlement",
+            "color": "#d9bd84"
         },
-        V: {
-            img: "house-1",
-            color: "#cbb77e"
+        "V": {
+            "img": "house-1",
+            "color": "#cbb77e"
         },
-        I: {
-            img: "inn",
-            color: "#d7b45a"
+        "I": {
+            "img": "inn",
+            "color": "#d7b45a"
         },
-        P: {
-            img: "event_field",
-            color: "#8f7dff"
+        "P": {
+            "img": "event_field",
+            "color": "#8f7dff"
         },
-        S: {
-            img: "tile_wind_floor",
-            color: "#d7b45a"
+        "S": {
+            "img": "tile_wind_floor",
+            "color": "#d7b45a"
         }
     },
-    WIND_TEMPLE: {
-        F: {
-            img: "tile_forbidden_forest_floor",
-            color: "#3d4d2d",
-            terrain: true,
-            variants: [
+    "WIND_TEMPLE": {
+        "F": {
+            "img": "tile_forbidden_forest_floor",
+            "color": "#3d4d2d",
+            "terrain": true,
+            "variants": [
                 "tile_forbidden_forest_floor",
                 "tile_forbidden_forest_floor_2",
                 "tile_forbidden_forest_floor_3",
                 "tile_forbidden_forest_floor_4"
             ]
         },
-        K: {
-            img: null,
-            color: "#05070a",
-            terrain: true
+        "K": {
+            "img": null,
+            "color": "#05070a",
+            "terrain": true
         },
-        W: {
-            img: "tile_wind_temple_wall",
-            color: "#33474a"
+        "W": {
+            "img": "tile_wind_temple_wall",
+            "color": "#33474a"
         },
-        T: {
-            img: "tile_wind_temple_floor",
-            color: "#748a89"
+        "T": {
+            "img": "tile_wind_temple_floor",
+            "color": "#748a89"
         },
-        G: {
-            img: "tile_wind_temple_floor",
-            color: "#748a89"
+        "G": {
+            "img": "tile_wind_temple_floor",
+            "color": "#748a89"
         },
-        S: {
-            img: "tile_wind_temple_floor",
-            color: "#d7b45a"
+        "S": {
+            "img": "tile_wind_temple_floor",
+            "color": "#d7b45a"
         }
     },
-    WIND_HOLE: {
-        W: {
-            img: "tile_wind_hole_wall",
-            color: "#243f38",
-            variants: [
+    "WIND_HOLE": {
+        "W": {
+            "img": "tile_wind_hole_wall",
+            "color": "#243f38",
+            "variants": [
                 "tile_wind_hole_wall",
                 "tile_wind_hole_wall_2",
                 "tile_wind_hole_wall_3",
                 "tile_wind_hole_wall_4"
             ]
         },
-        T: {
-            img: "tile_wind_hole_floor",
-            color: "#536b62",
-            variants: [
+        "T": {
+            "img": "tile_wind_hole_floor",
+            "color": "#536b62",
+            "variants": [
                 "tile_wind_hole_floor",
                 "tile_wind_hole_floor_2",
                 "tile_wind_hole_floor_3",
                 "tile_wind_hole_floor_4"
             ]
         },
-        G: {
-            img: "tile_wind_hole_floor",
-            color: "#60796d",
-            variants: [
+        "G": {
+            "img": "tile_wind_hole_floor",
+            "color": "#60796d",
+            "variants": [
                 "tile_wind_hole_floor",
                 "tile_wind_hole_floor_2",
                 "tile_wind_hole_floor_3",
                 "tile_wind_hole_floor_4"
             ]
         },
-        S: {
-            img: "tile_wind_hole_floor",
-            color: "#d7b45a"
+        "S": {
+            "img": "tile_wind_hole_floor",
+            "color": "#d7b45a"
         }
     },
-    FORBIDDEN_FOREST: {
-        W: {
-            img: "tile_forbidden_forest_wall",
-            color: "#172a20",
-            variants: [
+    "FORBIDDEN_FOREST": {
+        "W": {
+            "img": "tile_forbidden_forest_wall",
+            "color": "#172a20",
+            "variants": [
                 "tile_forbidden_forest_wall",
                 "tile_forbidden_forest_wall_2",
                 "tile_forbidden_forest_wall_3",
                 "tile_forbidden_forest_wall_4"
             ]
         },
-        T: {
-            img: "tile_forbidden_forest_floor",
-            color: "#3d4d2d",
-            variants: [
+        "T": {
+            "img": "tile_forbidden_forest_floor",
+            "color": "#3d4d2d",
+            "variants": [
                 "tile_forbidden_forest_floor",
                 "tile_forbidden_forest_floor_2",
                 "tile_forbidden_forest_floor_3",
                 "tile_forbidden_forest_floor_4"
             ]
         },
-        G: {
-            img: "tile_forbidden_forest_floor",
-            color: "#485b34",
-            variants: [
+        "G": {
+            "img": "tile_forbidden_forest_floor",
+            "color": "#485b34",
+            "variants": [
                 "tile_forbidden_forest_floor",
                 "tile_forbidden_forest_floor_2",
                 "tile_forbidden_forest_floor_3",
                 "tile_forbidden_forest_floor_4"
             ]
         },
-        S: {
-            img: "tile_forbidden_forest_floor",
-            color: "#d7b45a"
+        "S": {
+            "img": "tile_forbidden_forest_floor",
+            "color": "#d7b45a"
         }
     },
-    WATER_CITY: {
-        W: {
-            img: "tile_water_canal",
-            color: "#155d7a",
-            lowerLayer: true,
-            animatedWater: true,
-            shoreFoam: true
+    "WATER_CITY": {
+        "W": {
+            "img": "tile_water_canal",
+            "color": "#155d7a",
+            "lowerLayer": true,
+            "animatedWater": true,
+            "shoreFoam": true
         },
-        T: {
-            img: "tile_water_pave",
-            color: "#3c4151"
+        "T": {
+            "img": "tile_water_pave",
+            "color": "#3c4151"
         },
-        G: {
-            img: "tile_water_pave",
-            color: "#4a5262"
+        "G": {
+            "img": "tile_water_pave",
+            "color": "#4a5262"
         },
-        L: {
-            img: "tile_water_bridge",
-            color: "#a99361"
+        "L": {
+            "img": "tile_water_bridge",
+            "color": "#a99361"
         },
-        H: {
-            img: "town",
-            color: "#d9bd84"
+        "H": {
+            "img": "town",
+            "color": "#d9bd84"
         },
-        V: {
-            img: "shop",
-            color: "#7e3fa1"
+        "V": {
+            "img": "shop",
+            "color": "#7e3fa1"
         },
-        I: {
-            img: "inn",
-            color: "#d7b45a"
+        "I": {
+            "img": "inn",
+            "color": "#d7b45a"
         },
-        K: {
-            img: "casino",
-            color: "#7e3fa1"
+        "K": {
+            "img": "casino",
+            "color": "#7e3fa1"
         },
-        E: {
-            img: "medal",
-            color: "#f6ca62"
+        "E": {
+            "img": "medal",
+            "color": "#f6ca62"
         },
-        P: {
-            img: "event_field",
-            color: "#8f7dff"
+        "P": {
+            "img": "event_field",
+            "color": "#8f7dff"
         },
-        S: {
-            img: "tile_water_bridge",
-            color: "#d7b45a"
+        "S": {
+            "img": "tile_water_bridge",
+            "color": "#d7b45a"
         }
     },
-    BIG_TOWER: {
-        F: {
-            img: "floor",
-            color: "#70843f",
-            terrain: true
+    "BIG_TOWER": {
+        "F": {
+            "img": "floor",
+            "color": "#70843f",
+            "terrain": true
         },
         "^": {
-            img: "tile_summit_temple_sky",
-            color: "#6098cf",
-            terrain: true
+            "img": "tile_summit_temple_sky",
+            "color": "#6098cf",
+            "terrain": true
         },
-        W: {
-            img: "tile_tower_wall",
-            color: "#6a3e4a"
+        "W": {
+            "img": "tile_tower_wall",
+            "color": "#6a3e4a"
         },
-        T: {
-            img: "tile_tower_floor",
-            color: "#65314c"
+        "T": {
+            "img": "tile_tower_floor",
+            "color": "#65314c"
         },
-        G: {
-            img: "tile_tower_floor",
-            color: "#65314c"
+        "G": {
+            "img": "tile_tower_floor",
+            "color": "#65314c"
         },
-        S: {
-            img: "tile_tower_floor",
-            color: "#d7b45a"
+        "S": {
+            "img": "tile_tower_floor",
+            "color": "#d7b45a"
         },
-        D: {
-            img: "stairs_dungeon",
-            color: "#d7b45a"
+        "D": {
+            "img": "stairs_dungeon",
+            "color": "#d7b45a"
         },
-        U: {
-            img: "stairs_dungeon",
-            color: "#d7b45a"
+        "U": {
+            "img": "stairs_dungeon",
+            "color": "#d7b45a"
         },
-        C: {
-            img: "chest_dungeon",
-            color: "#9c6332"
+        "C": {
+            "img": "chest_dungeon",
+            "color": "#9c6332"
         },
-        R: {
-            img: "chest_rare_dungeon",
-            color: "#b6324b"
+        "R": {
+            "img": "chest_rare_dungeon",
+            "color": "#b6324b"
         },
-        B: {
-            img: "boss_dungeon",
-            color: "#db3b4d"
+        "B": {
+            "img": "boss_dungeon",
+            "color": "#db3b4d"
         }
     },
-    THUNDER_FORT: {
-        F: {
-            img: "floor",
-            color: "#70843f",
-            terrain: true
+    "THUNDER_FORT": {
+        "F": {
+            "img": "floor",
+            "color": "#70843f",
+            "terrain": true
         },
-        H: {
-            img: "mountain",
-            color: "#6c665e",
-            terrain: true
+        "H": {
+            "img": "mountain",
+            "color": "#6c665e",
+            "terrain": true
         },
-        K: {
-            img: null,
-            color: "#05070a",
-            terrain: true
+        "K": {
+            "img": null,
+            "color": "#05070a",
+            "terrain": true
         },
-        W: {
-            img: "tile_thunder_wall",
-            color: "#52616c",
-            variants: [
+        "W": {
+            "img": "tile_thunder_wall",
+            "color": "#52616c",
+            "variants": [
                 "tile_thunder_wall",
                 "tile_thunder_wall_2",
                 "tile_thunder_wall_3",
                 "tile_thunder_wall_4"
             ]
         },
-        T: {
-            img: "tile_thunder_floor",
-            color: "#52616c",
-            variants: [
+        "T": {
+            "img": "tile_thunder_floor",
+            "color": "#52616c",
+            "variants": [
                 "tile_thunder_floor",
                 "tile_thunder_floor_2",
                 "tile_thunder_floor_3",
                 "tile_thunder_floor_4"
             ]
         },
-        G: {
-            img: "tile_thunder_floor",
-            color: "#52616c",
-            variants: [
+        "G": {
+            "img": "tile_thunder_floor",
+            "color": "#52616c",
+            "variants": [
                 "tile_thunder_floor",
                 "tile_thunder_floor_2",
                 "tile_thunder_floor_3",
                 "tile_thunder_floor_4"
             ]
         },
-        S: {
-            img: "tile_thunder_floor",
-            color: "#d7b45a"
+        "S": {
+            "img": "tile_thunder_floor",
+            "color": "#d7b45a"
         },
-        D: {
-            img: "stairs_dungeon",
-            color: "#d7b45a"
+        "D": {
+            "img": "stairs_dungeon",
+            "color": "#d7b45a"
         },
-        U: {
-            img: "stairs_dungeon",
-            color: "#d7b45a"
+        "U": {
+            "img": "stairs_dungeon",
+            "color": "#d7b45a"
         },
-        C: {
-            img: "chest_dungeon",
-            color: "#9c6332"
+        "C": {
+            "img": "chest_dungeon",
+            "color": "#9c6332"
         },
-        R: {
-            img: "chest_rare_dungeon",
-            color: "#b6324b"
+        "R": {
+            "img": "chest_rare_dungeon",
+            "color": "#b6324b"
         },
-        B: {
-            img: "boss_dungeon",
-            color: "#db3b4d"
+        "B": {
+            "img": "boss_dungeon",
+            "color": "#db3b4d"
         }
     },
-    LIGHT_PALACE: {
-        I: {
-            img: "tile_summit_temple_mountain_trail",
-            color: "#89867d",
-            terrain: true,
-            variants: [
+    "LIGHT_PALACE": {
+        "I": {
+            "img": "tile_summit_temple_mountain_trail",
+            "color": "#89867d",
+            "terrain": true,
+            "variants": [
                 "tile_summit_temple_mountain_trail",
                 "tile_summit_temple_mountain_trail_2"
             ]
         },
         "^": {
-            img: null,
-            color: "#ffffff",
-            terrain: true
+            "img": null,
+            "color": "#ffffff",
+            "terrain": true
         },
-        W: {
-            img: "tile_light_wall",
-            color: "#d9ded4"
+        "W": {
+            "img": "tile_light_wall",
+            "color": "#d9ded4"
         },
-        T: {
-            img: "tile_light_floor",
-            color: "#eef0e8"
+        "T": {
+            "img": "tile_light_floor",
+            "color": "#eef0e8"
         },
-        G: {
-            img: "tile_light_floor",
-            color: "#eef0e8"
+        "G": {
+            "img": "tile_light_floor",
+            "color": "#eef0e8"
         },
-        S: {
-            img: "tile_light_floor",
-            color: "#d7b45a"
+        "S": {
+            "img": "tile_light_floor",
+            "color": "#d7b45a"
         },
-        D: {
-            img: "stairs_dungeon",
-            color: "#d7b45a"
+        "D": {
+            "img": "stairs_dungeon",
+            "color": "#d7b45a"
         },
-        U: {
-            img: "stairs_dungeon",
-            color: "#d7b45a"
+        "U": {
+            "img": "stairs_dungeon",
+            "color": "#d7b45a"
         },
-        C: {
-            img: "chest_dungeon",
-            color: "#9c6332"
+        "C": {
+            "img": "chest_dungeon",
+            "color": "#9c6332"
         },
-        R: {
-            img: "chest_rare_dungeon",
-            color: "#b6324b"
+        "R": {
+            "img": "chest_rare_dungeon",
+            "color": "#b6324b"
         },
-        B: {
-            img: "boss_dungeon",
-            color: "#db3b4d"
+        "B": {
+            "img": "boss_dungeon",
+            "color": "#db3b4d"
         }
     },
-    GALVANIA_CAVE: {
-        W: {
-            img: "tile_galvania_wall",
-            color: "#1f222b",
-            variants: [
+    "GALVANIA_CAVE": {
+        "W": {
+            "img": "tile_galvania_wall",
+            "color": "#1f222b",
+            "variants": [
                 "tile_galvania_wall",
                 "tile_galvania_wall_2",
                 "tile_galvania_wall_3",
                 "tile_galvania_wall_4"
             ]
         },
-        T: {
-            img: "tile_galvania_floor",
-            color: "#2a2e39",
-            variants: [
+        "T": {
+            "img": "tile_galvania_floor",
+            "color": "#2a2e39",
+            "variants": [
                 "tile_galvania_floor",
                 "tile_galvania_floor_2",
                 "tile_galvania_floor_3",
                 "tile_galvania_floor_4"
             ]
         },
-        G: {
-            img: "tile_galvania_floor",
-            color: "#36303a",
-            variants: [
+        "G": {
+            "img": "tile_galvania_floor",
+            "color": "#36303a",
+            "variants": [
                 "tile_galvania_floor",
                 "tile_galvania_floor_2",
                 "tile_galvania_floor_3",
                 "tile_galvania_floor_4"
             ]
         },
-        S: {
-            img: "tile_galvania_floor",
-            color: "#d7b45a"
+        "S": {
+            "img": "tile_galvania_floor",
+            "color": "#d7b45a"
         },
-        D: {
-            img: "stairs_dungeon",
-            color: "#d7b45a"
+        "D": {
+            "img": "stairs_dungeon",
+            "color": "#d7b45a"
         },
-        U: {
-            img: "stairs_dungeon",
-            color: "#d7b45a"
+        "U": {
+            "img": "stairs_dungeon",
+            "color": "#d7b45a"
         },
-        C: {
-            img: "chest_dungeon",
-            color: "#9c6332"
+        "C": {
+            "img": "chest_dungeon",
+            "color": "#9c6332"
         },
-        R: {
-            img: "chest_rare_dungeon",
-            color: "#b6324b"
+        "R": {
+            "img": "chest_rare_dungeon",
+            "color": "#b6324b"
         },
-        B: {
-            img: "boss_dungeon",
-            color: "#db3b4d"
+        "B": {
+            "img": "boss_dungeon",
+            "color": "#db3b4d"
         },
-        P: {
-            img: "event_dungeon",
-            color: "#8f7dff"
+        "P": {
+            "img": "event_dungeon",
+            "color": "#8f7dff"
         },
-        M: {
-            img: "tile_magma",
-            color: "#e4511e"
+        "M": {
+            "img": "tile_magma",
+            "color": "#e4511e"
         },
-        Z: {
-            img: "door_key_gold",
-            color: "#b8892f"
+        "Z": {
+            "img": "door_key_gold",
+            "color": "#b8892f"
         }
     },
-    DARK_CASTLE: {
-        I: {
-            img: "tile_summit_temple_mountain_trail",
-            color: "#77736b",
-            terrain: true,
-            variants: [
+    "DARK_CASTLE": {
+        "I": {
+            "img": "tile_summit_temple_mountain_trail",
+            "color": "#77736b",
+            "terrain": true,
+            "variants": [
                 "tile_summit_temple_mountain_trail",
                 "tile_summit_temple_mountain_trail_2"
             ]
         },
-        K: {
-            img: null,
-            color: "#05070a",
-            terrain: true
+        "K": {
+            "img": null,
+            "color": "#05070a",
+            "terrain": true
         },
-        W: {
-            img: "tile_dark_wall",
-            color: "#242a32",
-            variants: [
+        "W": {
+            "img": "tile_dark_wall",
+            "color": "#242a32",
+            "variants": [
                 "tile_dark_wall",
                 "tile_dark_wall_2",
                 "tile_dark_wall_3",
                 "tile_dark_wall_4"
             ]
         },
-        T: {
-            img: "tile_dark_floor",
-            color: "#252b36",
-            variants: [
+        "T": {
+            "img": "tile_dark_floor",
+            "color": "#252b36",
+            "variants": [
                 "tile_dark_floor",
                 "tile_dark_floor_2",
                 "tile_dark_floor_3",
                 "tile_dark_floor_4"
             ]
         },
-        G: {
-            img: "tile_dark_floor",
-            color: "#252b36",
-            variants: [
+        "G": {
+            "img": "tile_dark_floor",
+            "color": "#252b36",
+            "variants": [
                 "tile_dark_floor",
                 "tile_dark_floor_2",
                 "tile_dark_floor_3",
                 "tile_dark_floor_4"
             ]
         },
-        S: {
-            img: "tile_dark_floor",
-            color: "#d7b45a"
+        "S": {
+            "img": "tile_dark_floor",
+            "color": "#d7b45a"
         },
-        D: {
-            img: "stairs_dungeon",
-            color: "#d7b45a"
+        "D": {
+            "img": "stairs_dungeon",
+            "color": "#d7b45a"
         },
-        U: {
-            img: "stairs_dungeon",
-            color: "#d7b45a"
+        "U": {
+            "img": "stairs_dungeon",
+            "color": "#d7b45a"
         },
-        C: {
-            img: "chest_dungeon",
-            color: "#9c6332"
+        "C": {
+            "img": "chest_dungeon",
+            "color": "#9c6332"
         },
-        R: {
-            img: "chest_rare_dungeon",
-            color: "#b6324b"
+        "R": {
+            "img": "chest_rare_dungeon",
+            "color": "#b6324b"
         },
-        B: {
-            img: "boss_dungeon",
-            color: "#db3b4d"
+        "B": {
+            "img": "boss_dungeon",
+            "color": "#db3b4d"
         }
     },
-    CRENA_CAVE: {
-        W: {
-            img: "tile_crena_water",
-            color: "#155d7a",
-            lowerLayer: true,
-            animatedWater: true,
-            shoreFoam: true
+    "CRENA_CAVE": {
+        "W": {
+            "img": "tile_crena_water",
+            "color": "#155d7a",
+            "lowerLayer": true,
+            "animatedWater": true,
+            "shoreFoam": true
         },
-        T: {
-            img: "tile_crena_floor",
-            color: "#466f7a"
+        "T": {
+            "img": "tile_crena_floor",
+            "color": "#466f7a"
         },
-        G: {
-            img: "tile_crena_floor",
-            color: "#527f89"
+        "G": {
+            "img": "tile_crena_floor",
+            "color": "#527f89"
         },
-        S: {
-            img: "tile_crena_floor",
-            color: "#d7b45a"
+        "S": {
+            "img": "tile_crena_floor",
+            "color": "#d7b45a"
         }
     },
-    SEABED_TEMPLE: {
-        W: {
-            img: "tile_water_canal",
-            color: "#155d7a",
-            lowerLayer: true,
-            animatedWater: true,
-            shoreFoam: true
+    "SEABED_TEMPLE": {
+        "W": {
+            "img": "tile_water_canal",
+            "color": "#155d7a",
+            "lowerLayer": true,
+            "animatedWater": true,
+            "shoreFoam": true
         },
-        T: {
-            img: "tile_seabed_floor",
-            color: "#347b82",
-            variants: [
+        "T": {
+            "img": "tile_seabed_floor",
+            "color": "#347b82",
+            "variants": [
                 "tile_seabed_floor",
                 "tile_seabed_floor_2",
                 "tile_seabed_floor_3",
                 "tile_seabed_floor_4"
             ]
         },
-        G: {
-            img: "tile_seabed_floor",
-            color: "#3f8e91",
-            variants: [
+        "G": {
+            "img": "tile_seabed_floor",
+            "color": "#3f8e91",
+            "variants": [
                 "tile_seabed_floor",
                 "tile_seabed_floor_2",
                 "tile_seabed_floor_3",
                 "tile_seabed_floor_4"
             ]
         },
-        S: {
-            img: "tile_seabed_floor",
-            color: "#d7b45a"
+        "S": {
+            "img": "tile_seabed_floor",
+            "color": "#d7b45a"
         }
     },
-    DARK_SHRINE_RUINS: {
-        I: {
-            img: "tile_summit_temple_mountain_trail",
-            color: "#77736b",
-            terrain: true,
-            variants: [
+    "DARK_SHRINE_RUINS": {
+        "I": {
+            "img": "tile_summit_temple_mountain_trail",
+            "color": "#77736b",
+            "terrain": true,
+            "variants": [
                 "tile_summit_temple_mountain_trail",
                 "tile_summit_temple_mountain_trail_2"
             ]
         },
-        K: {
-            img: null,
-            color: "#05070a",
-            terrain: true
+        "K": {
+            "img": null,
+            "color": "#05070a",
+            "terrain": true
         },
-        W: {
-            img: "tile_dark_shrine_wall",
-            color: "#34303f",
-            variants: [
+        "W": {
+            "img": "tile_dark_shrine_wall",
+            "color": "#34303f",
+            "variants": [
                 "tile_dark_shrine_wall",
                 "tile_dark_shrine_wall_2",
                 "tile_dark_shrine_wall_3",
                 "tile_dark_shrine_wall_4"
             ]
         },
-        T: {
-            img: "tile_dark_shrine_floor",
-            color: "#665f68",
-            variants: [
+        "T": {
+            "img": "tile_dark_shrine_floor",
+            "color": "#665f68",
+            "variants": [
                 "tile_dark_shrine_floor",
                 "tile_dark_shrine_floor_2",
                 "tile_dark_shrine_floor_3",
                 "tile_dark_shrine_floor_4"
             ]
         },
-        G: {
-            img: "tile_dark_shrine_floor",
-            color: "#736b72",
-            variants: [
+        "G": {
+            "img": "tile_dark_shrine_floor",
+            "color": "#736b72",
+            "variants": [
                 "tile_dark_shrine_floor",
                 "tile_dark_shrine_floor_2",
                 "tile_dark_shrine_floor_3",
                 "tile_dark_shrine_floor_4"
             ]
         },
-        S: {
-            img: "tile_dark_shrine_floor",
-            color: "#d7b45a"
+        "S": {
+            "img": "tile_dark_shrine_floor",
+            "color": "#d7b45a"
         }
     },
-    GREZELIA_CAVE: {
-        W: {
-            img: "tile_grezelia_wall",
-            color: "#211d25",
-            variants: [
+    "GREZELIA_CAVE": {
+        "W": {
+            "img": "tile_grezelia_wall",
+            "color": "#211d25",
+            "variants": [
                 "tile_grezelia_wall",
                 "tile_grezelia_wall_2",
                 "tile_grezelia_wall_3",
                 "tile_grezelia_wall_4"
             ]
         },
-        T: {
-            img: "tile_grezelia_floor",
-            color: "#39303a",
-            variants: [
+        "T": {
+            "img": "tile_grezelia_floor",
+            "color": "#39303a",
+            "variants": [
                 "tile_grezelia_floor",
                 "tile_grezelia_floor_2",
                 "tile_grezelia_floor_3",
                 "tile_grezelia_floor_4"
             ]
         },
-        G: {
-            img: "tile_grezelia_floor",
-            color: "#443643",
-            variants: [
+        "G": {
+            "img": "tile_grezelia_floor",
+            "color": "#443643",
+            "variants": [
                 "tile_grezelia_floor",
                 "tile_grezelia_floor_2",
                 "tile_grezelia_floor_3",
                 "tile_grezelia_floor_4"
             ]
         },
-        S: {
-            img: "tile_grezelia_floor",
-            color: "#d7b45a"
+        "S": {
+            "img": "tile_grezelia_floor",
+            "color": "#d7b45a"
         }
     },
-    ABYSS: {
-        W: {
-            img: "wall",
-            color: "#141720"
+    "ABYSS": {
+        "W": {
+            "img": "wall",
+            "color": "#141720"
         },
-        T: {
-            img: "dungeon_floor",
-            color: "#252b36"
+        "T": {
+            "img": "dungeon_floor",
+            "color": "#252b36"
         },
-        G: {
-            img: "dungeon_floor",
-            color: "#252b36"
+        "G": {
+            "img": "dungeon_floor",
+            "color": "#252b36"
         },
-        S: {
-            img: "stairs_dungeon",
-            color: "#d7b45a"
+        "S": {
+            "img": "stairs_dungeon",
+            "color": "#d7b45a"
         },
-        B: {
-            img: "boss_dungeon",
-            color: "#db3b4d"
+        "B": {
+            "img": "boss_dungeon",
+            "color": "#db3b4d"
         },
-        C: {
-            img: "chest_dungeon",
-            color: "#9c6332"
+        "C": {
+            "img": "chest_dungeon",
+            "color": "#9c6332"
         },
-        R: {
-            img: "chest_rare_dungeon",
-            color: "#b6324b"
+        "R": {
+            "img": "chest_rare_dungeon",
+            "color": "#b6324b"
         },
-        M: {
-            img: "tile_magma",
-            color: "#e4511e"
+        "M": {
+            "img": "tile_magma",
+            "color": "#e4511e"
         }
     },
-    ABYSS_FIELD: {
-        W: {
-            img: "tile_abyss_outer_wall",
-            variants: [
+    "ABYSS_FIELD": {
+        "W": {
+            "img": "tile_abyss_outer_wall",
+            "variants": [
                 "tile_abyss_outer_wall",
                 "tile_abyss_outer_wall_2",
                 "tile_abyss_outer_wall_3",
                 "tile_abyss_outer_wall_4"
             ],
-            color: "#17101f"
+            "color": "#17101f"
         },
-        T: {
-            img: "tile_abyss_outer_floor",
-            variants: [
+        "T": {
+            "img": "tile_abyss_outer_floor",
+            "variants": [
                 "tile_abyss_outer_floor",
                 "tile_abyss_outer_floor_2",
                 "tile_abyss_outer_floor_3",
                 "tile_abyss_outer_floor_4"
             ],
-            color: "#3c3447"
+            "color": "#3c3447"
         },
-        G: {
-            img: "tile_abyss_outer_prism_paving",
-            variants: [
+        "G": {
+            "img": "tile_abyss_outer_prism_paving",
+            "variants": [
                 "tile_abyss_outer_prism_paving",
                 "tile_abyss_outer_prism_paving_2",
                 "tile_abyss_outer_prism_paving_3",
                 "tile_abyss_outer_prism_paving_4"
             ],
-            color: "#413651"
+            "color": "#413651"
         },
-        D: {
-            img: "tile_abyss_outer_floor",
-            color: "#16101d"
+        "D": {
+            "img": "tile_abyss_outer_floor",
+            "color": "#16101d"
         },
-        S: {
-            img: "tile_abyss_outer_prism_paving",
-            color: "#d7b45a"
+        "S": {
+            "img": "tile_abyss_outer_prism_paving",
+            "color": "#d7b45a"
         }
     },
-    RUINED_SHRINE: {
-        W: {
-            img: "tile_ruined_shrine_wall",
-            variants: [
+    "RUINED_SHRINE": {
+        "W": {
+            "img": "tile_ruined_shrine_wall",
+            "variants": [
                 "tile_ruined_shrine_wall",
                 "tile_ruined_shrine_wall_2",
                 "tile_ruined_shrine_wall_3",
                 "tile_ruined_shrine_wall_4"
             ],
-            color: "#4b5b48"
+            "color": "#4b5b48"
         },
-        T: {
-            img: "tile_ruined_shrine_floor",
-            variants: [
+        "T": {
+            "img": "tile_ruined_shrine_floor",
+            "variants": [
                 "tile_ruined_shrine_floor",
                 "tile_ruined_shrine_floor_2",
                 "tile_ruined_shrine_floor_3",
                 "tile_ruined_shrine_floor_4"
             ],
-            color: "#3c5145"
+            "color": "#3c5145"
         },
-        G: {
-            img: "tile_ruined_shrine_withered_grass",
-            variants: [
+        "G": {
+            "img": "tile_ruined_shrine_withered_grass",
+            "variants": [
                 "tile_ruined_shrine_withered_grass",
                 "tile_ruined_shrine_withered_grass_2",
                 "tile_ruined_shrine_withered_grass_3",
                 "tile_ruined_shrine_withered_grass_4"
             ],
-            color: "#62563b"
+            "color": "#62563b"
         },
-        P: {
-            img: "tile_ruined_shrine_floor",
-            color: "#8f7dff"
+        "P": {
+            "img": "tile_ruined_shrine_floor",
+            "color": "#8f7dff"
         },
-        S: {
-            img: "tile_ruined_shrine_withered_grass",
-            variants: [
+        "S": {
+            "img": "tile_ruined_shrine_withered_grass",
+            "variants": [
                 "tile_ruined_shrine_withered_grass",
                 "tile_ruined_shrine_withered_grass_2",
                 "tile_ruined_shrine_withered_grass_3",
                 "tile_ruined_shrine_withered_grass_4"
             ],
-            color: "#62563b"
+            "color": "#62563b"
         }
     },
-    TRIAL_SHRINE: {
-        W: {
-            img: "tile_trial_shrine_wall",
-            color: "#25393b"
+    "TRIAL_SHRINE": {
+        "W": {
+            "img": "tile_trial_shrine_wall",
+            "color": "#25393b"
         },
-        T: {
-            img: "tile_trial_shrine_floor",
-            variants: [
+        "T": {
+            "img": "tile_trial_shrine_floor",
+            "variants": [
                 "tile_trial_shrine_floor",
                 "tile_trial_shrine_floor_2"
             ],
-            color: "#526f70"
+            "color": "#526f70"
         },
-        G: {
-            img: "floor",
-            color: "#65753f"
+        "G": {
+            "img": "floor",
+            "color": "#65753f"
         },
-        S: {
-            img: "floor",
-            color: "#d7b45a"
+        "S": {
+            "img": "floor",
+            "color": "#d7b45a"
         }
     },
-    SUMMIT_TEMPLE: {
-        W: {
-            img: "tile_summit_temple_wall",
-            color: "#aab9cd"
+    "SUMMIT_TEMPLE": {
+        "W": {
+            "img": "tile_summit_temple_wall",
+            "color": "#aab9cd"
         },
-        T: {
-            img: "tile_summit_temple_floor",
-            variants: [
+        "T": {
+            "img": "tile_summit_temple_floor",
+            "variants": [
                 "tile_summit_temple_floor",
                 "tile_summit_temple_floor_2"
             ],
-            color: "#e8edf2"
+            "color": "#e8edf2"
         },
-        G: {
-            img: "tile_summit_temple_mountain_trail",
-            variants: [
+        "G": {
+            "img": "tile_summit_temple_mountain_trail",
+            "variants": [
                 "tile_summit_temple_mountain_trail",
                 "tile_summit_temple_mountain_trail_2"
             ],
-            color: "#a3a49d"
+            "color": "#a3a49d"
         },
         "^": {
-            img: "tile_summit_temple_sky",
-            color: "#6f9bc7",
-            terrain: true
+            "img": "tile_summit_temple_sky",
+            "color": "#6f9bc7",
+            "terrain": true
         },
-        S: {
-            img: "tile_summit_temple_mountain_trail",
-            variants: [
+        "S": {
+            "img": "tile_summit_temple_mountain_trail",
+            "variants": [
                 "tile_summit_temple_mountain_trail",
                 "tile_summit_temple_mountain_trail_2"
             ],
-            color: "#b6aa8f"
+            "color": "#b6aa8f"
         }
     }
 };
 
 const DUNGEON_WALL_FACE_THEMES = {
-    DEFAULT: {
-        img: "wall_face",
-        accentImg: "wall_face_torch",
-        accentEvery: 5
+    "DEFAULT": {
+        "img": "wall_face",
+        "accentImg": "wall_face_torch",
+        "accentEvery": 5
     },
-    ABYSS: {
-        img: "wall_face",
-        accentImg: "wall_face_torch",
-        accentEvery: 5
+    "ABYSS": {
+        "img": "wall_face",
+        "accentImg": "wall_face_torch",
+        "accentEvery": 5
     },
-    START_CAVE: {
-        img: "wall_face",
-        accentImg: "wall_face_torch",
-        accentEvery: 5
+    "START_CAVE": {
+        "img": "wall_face",
+        "accentImg": "wall_face_torch",
+        "accentEvery": 5
     },
-    FIRE_VILLAGE: {
-        img: "tile_fire_wall_face"
+    "FIRE_VILLAGE": {
+        "img": "tile_fire_wall_face"
     },
-    FORBIDDEN_FOREST: {
-        disabled: true,
-        reason: "theme-wall-variants"
+    "FORBIDDEN_FOREST": {
+        "disabled": true,
+        "reason": "theme-wall-variants"
     },
-    WIND_VILLAGE: {
-        img: "tile_wind_temple_wall_face"
+    "WIND_VILLAGE": {
+        "img": "tile_wind_temple_wall_face"
     },
-    WIND_TEMPLE: {
-        img: "tile_wind_temple_wall_face"
+    "WIND_TEMPLE": {
+        "img": "tile_wind_temple_wall_face"
     },
-    WIND_HOLE: {
-        img: "tile_wind_hole_wall_face"
+    "WIND_HOLE": {
+        "img": "tile_wind_hole_wall_face"
     },
-    BIG_TOWER: {
-        img: "tile_tower_wall_face"
+    "BIG_TOWER": {
+        "img": "tile_tower_wall_face"
     },
-    THUNDER_FORT: {
-        img: "tile_thunder_wall_face"
+    "THUNDER_FORT": {
+        "img": "tile_thunder_wall_face"
     },
-    LIGHT_PALACE: {
-        img: "tile_light_wall_face",
-        accentImg: "tile_light_wall_face_prism",
-        accentEvery: 5
+    "LIGHT_PALACE": {
+        "img": "tile_light_wall_face",
+        "accentImg": "tile_light_wall_face_prism",
+        "accentEvery": 5
     },
-    DARK_CASTLE: {
-        img: "tile_dark_castle_wall_face"
+    "DARK_CASTLE": {
+        "img": "tile_dark_castle_wall_face"
     },
-    GALVANIA_CAVE: {
-        img: "tile_galvania_wall_face"
+    "GALVANIA_CAVE": {
+        "img": "tile_galvania_wall_face"
     },
-    DARK_SHRINE_RUINS: {
-        img: "tile_dark_shrine_wall_face",
-        mode: "overlay"
+    "DARK_SHRINE_RUINS": {
+        "img": "tile_dark_shrine_wall_face",
+        "mode": "overlay"
     },
-    GREZELIA_CAVE: {
-        img: "tile_grezelia_wall_face"
+    "GREZELIA_CAVE": {
+        "img": "tile_grezelia_wall_face"
     },
-    RUINED_SHRINE: {
-        img: "tile_ruined_shrine_wall_face",
-        accentImg: "tile_ruined_shrine_wall_face_rooted",
-        accentEvery: 5
+    "RUINED_SHRINE": {
+        "img": "tile_ruined_shrine_wall_face",
+        "accentImg": "tile_ruined_shrine_wall_face_rooted",
+        "accentEvery": 5
     },
-    TRIAL_SHRINE: {
-        img: "tile_trial_shrine_wall_face"
+    "TRIAL_SHRINE": {
+        "img": "tile_trial_shrine_wall_face"
     },
-    SUMMIT_TEMPLE: {
-        img: "tile_summit_temple_wall_face"
+    "SUMMIT_TEMPLE": {
+        "img": "tile_summit_temple_wall_face"
     },
-    CRENA_CAVE: {
-        disabled: true,
-        reason: "water-surface-W"
+    "CRENA_CAVE": {
+        "disabled": true,
+        "reason": "water-surface-W"
     },
-    SEABED_TEMPLE: {
-        disabled: true,
-        reason: "water-surface-W"
+    "SEABED_TEMPLE": {
+        "disabled": true,
+        "reason": "water-surface-W"
     }
 };
 
 const MAP_FLOOR_DECOR_THEMES = {
-    DEFAULT: {
-        key: "overlay_decor_default_cave_dust",
-        frequency: 40,
-        alpha: 0.64
+    "DEFAULT": {
+        "key": "overlay_decor_default_cave_dust",
+        "frequency": 40,
+        "alpha": 0.64
     },
-    START_VILLAGE: {
-        key: "overlay_decor_start_village_herbs",
-        frequency: 40,
-        alpha: 0.78
+    "START_VILLAGE": {
+        "key": "overlay_decor_start_village_herbs",
+        "frequency": 40,
+        "alpha": 0.78
     },
-    START_CAVE: {
-        key: "overlay_decor_start_cave_damp",
-        frequency: 40,
-        alpha: 0.72
+    "START_CAVE": {
+        "key": "overlay_decor_start_cave_damp",
+        "frequency": 40,
+        "alpha": 0.72
     },
-    FIRE_VILLAGE: {
-        key: "overlay_decor_fire_ember_fissure",
-        frequency: 40,
-        alpha: 0.84
+    "FIRE_VILLAGE": {
+        "key": "overlay_decor_fire_ember_fissure",
+        "frequency": 40,
+        "alpha": 0.84
     },
-    WIND_VILLAGE: {
-        key: "overlay_decor_wind_village_feather",
-        frequency: 40,
-        alpha: 0.74
+    "WIND_VILLAGE": {
+        "key": "overlay_decor_wind_village_feather",
+        "frequency": 40,
+        "alpha": 0.74
     },
-    WIND_TEMPLE: {
-        key: null,
-        disabled: true,
-        reason: "authored-clear-floor"
+    "WIND_TEMPLE": {
+        "key": null,
+        "disabled": true,
+        "reason": "authored-clear-floor"
     },
-    WIND_HOLE: {
-        key: "overlay_decor_wind_hole_root",
-        frequency: 40,
-        alpha: 0.76
+    "WIND_HOLE": {
+        "key": "overlay_decor_wind_hole_root",
+        "frequency": 40,
+        "alpha": 0.76
     },
-    FORBIDDEN_FOREST: {
-        key: "overlay_decor_forbidden_forest_moss",
-        frequency: 40,
-        alpha: 0.78
+    "FORBIDDEN_FOREST": {
+        "key": "overlay_decor_forbidden_forest_moss",
+        "frequency": 40,
+        "alpha": 0.78
     },
-    WATER_CITY: {
-        key: null,
-        disabled: true,
-        reason: "authored-clear-floor"
+    "WATER_CITY": {
+        "key": null,
+        "disabled": true,
+        "reason": "authored-clear-floor"
     },
-    BIG_TOWER: {
-        key: "overlay_decor_big_tower_gear_oil",
-        frequency: 40,
-        alpha: 0.72
+    "BIG_TOWER": {
+        "key": "overlay_decor_big_tower_gear_oil",
+        "frequency": 40,
+        "alpha": 0.72
     },
-    THUNDER_FORT: {
-        key: "overlay_decor_thunder_fort_wiring",
-        frequency: 40,
-        alpha: 0.88,
-        animate: "electric"
+    "THUNDER_FORT": {
+        "key": "overlay_decor_thunder_fort_wiring",
+        "frequency": 40,
+        "alpha": 0.88,
+        "animate": "electric"
     },
-    LIGHT_PALACE: {
-        key: "overlay_decor_light_palace_prism",
-        frequency: 40,
-        alpha: 0.66
+    "LIGHT_PALACE": {
+        "key": "overlay_decor_light_palace_prism",
+        "frequency": 40,
+        "alpha": 0.66
     },
-    GALVANIA_CAVE: {
-        key: "overlay_decor_galvania_crystal",
-        frequency: 40,
-        alpha: 0.72
+    "GALVANIA_CAVE": {
+        "key": "overlay_decor_galvania_crystal",
+        "frequency": 40,
+        "alpha": 0.72
     },
-    DARK_CASTLE: {
-        key: "overlay_decor_dark_castle_chain",
-        frequency: 40,
-        alpha: 0.7
+    "DARK_CASTLE": {
+        "key": "overlay_decor_dark_castle_chain",
+        "frequency": 40,
+        "alpha": 0.7
     },
-    CRENA_CAVE: {
-        key: null,
-        disabled: true,
-        reason: "authored-clear-floor"
+    "CRENA_CAVE": {
+        "key": null,
+        "disabled": true,
+        "reason": "authored-clear-floor"
     },
-    SEABED_TEMPLE: {
-        key: "overlay_decor_seabed_temple_ripple",
-        frequency: 40,
-        alpha: 0.7
+    "SEABED_TEMPLE": {
+        "key": "overlay_decor_seabed_temple_ripple",
+        "frequency": 40,
+        "alpha": 0.7
     },
-    DARK_SHRINE_RUINS: {
-        key: "overlay_decor_dark_shrine_sigil",
-        frequency: 40,
-        alpha: 0.66
+    "DARK_SHRINE_RUINS": {
+        "key": "overlay_decor_dark_shrine_sigil",
+        "frequency": 40,
+        "alpha": 0.66
     },
-    GREZELIA_CAVE: {
-        key: "overlay_decor_grezelia_fossil",
-        frequency: 40,
-        alpha: 0.72
+    "GREZELIA_CAVE": {
+        "key": "overlay_decor_grezelia_fossil",
+        "frequency": 40,
+        "alpha": 0.72
     },
-    ABYSS: {
-        key: "overlay_decor_abyss_void_dust",
-        frequency: 40,
-        alpha: 0.62
+    "ABYSS": {
+        "key": "overlay_decor_abyss_void_dust",
+        "frequency": 40,
+        "alpha": 0.62
     },
-    ABYSS_FIELD: {
-        key: null,
-        disabled: true,
-        reason: "authored-ritual-ruin"
+    "ABYSS_FIELD": {
+        "key": null,
+        "disabled": true,
+        "reason": "authored-ritual-ruin"
     },
-    RUINED_SHRINE: {
-        key: null,
-        disabled: true,
-        reason: "authored-blocking-ruined-shrine"
+    "RUINED_SHRINE": {
+        "key": null,
+        "disabled": true,
+        "reason": "authored-blocking-ruined-shrine"
     },
-    TRIAL_SHRINE: {
-        key: null,
-        disabled: true,
-        reason: "authored-seeker-shrine"
+    "TRIAL_SHRINE": {
+        "key": null,
+        "disabled": true,
+        "reason": "authored-seeker-shrine"
     },
-    SUMMIT_TEMPLE: {
-        key: null,
-        disabled: true,
-        reason: "authored-summit-sanctuary"
+    "SUMMIT_TEMPLE": {
+        "key": null,
+        "disabled": true,
+        "reason": "authored-summit-sanctuary"
     }
 };
 
 const STORY_DATA = {
-    areas: {
-        START_VILLAGE: {
-            name: "リュミナ村",
-            rank: 1,
-            centerX: 58,
-            centerY: 64,
-            fieldTile: {
-                img: "overlay_field_village",
-                color: "#d7b45a"
+    "areas": {
+        "START_VILLAGE": {
+            "name": "リュミナ村",
+            "rank": 1,
+            "centerX": 58,
+            "centerY": 64,
+            "fieldTile": {
+                "img": "overlay_field_village",
+                "color": "#d7b45a"
             }
         },
-        FIRE_VILLAGE: {
-            name: "炎の里イグニシア",
-            rank: 10,
-            centerX: 97,
-            centerY: 49,
-            fieldTile: {
-                img: "overlay_field_fire_village",
-                color: "#d95b3a"
+        "FIRE_VILLAGE": {
+            "name": "炎の里イグニシア",
+            "rank": 10,
+            "centerX": 97,
+            "centerY": 49,
+            "fieldTile": {
+                "img": "overlay_field_fire_village",
+                "color": "#d95b3a"
             }
         },
-        WIND_VILLAGE: {
-            name: "風の集落カザリア",
-            rank: 20,
-            centerX: 98,
-            centerY: 37,
-            fieldTile: {
-                img: "overlay_field_settlement",
-                color: "#b8d889"
+        "WIND_VILLAGE": {
+            "name": "風の集落カザリア",
+            "rank": 20,
+            "centerX": 98,
+            "centerY": 37,
+            "fieldTile": {
+                "img": "overlay_field_settlement",
+                "color": "#b8d889"
             }
         },
-        WATER_CITY: {
-            name: "水上都市リヴァリア",
-            rank: 30,
-            centerX: 68,
-            centerY: 21,
-            fieldTile: {
-                img: "overlay_field_town",
-                color: "#5bd6ff"
+        "WATER_CITY": {
+            "name": "水上都市リヴァリア",
+            "rank": 30,
+            "centerX": 68,
+            "centerY": 21,
+            "fieldTile": {
+                "img": "overlay_field_town",
+                "color": "#5bd6ff"
             }
         },
-        SEABED_TEMPLE: {
-            name: "海底神殿",
-            rank: 35,
-            centerX: 68,
-            centerY: 15,
-            fieldTile: {
-                img: "overlay_field_temple",
-                color: "#5bd6ff"
+        "SEABED_TEMPLE": {
+            "name": "海底神殿",
+            "rank": 35,
+            "centerX": 68,
+            "centerY": 15,
+            "fieldTile": {
+                "img": "overlay_field_temple",
+                "color": "#5bd6ff"
             },
-            entryRequiredFlag: "seabedTempleRouteOpened",
-            entryBypassFlags: [
+            "entryRequiredFlag": "seabedTempleRouteOpened",
+            "entryBypassFlags": [
                 "waterCityCleared"
             ],
-            entryLockedText: "海底神殿へ続く水路は、重い水圧に閉ざされている。青の結晶が必要だ。"
+            "entryLockedText": "海底神殿へ続く水路は、重い水圧に閉ざされている。青の結晶が必要だ。"
         },
-        BIG_TOWER: {
-            name: "大灯台",
-            rank: 30,
-            centerX: 21,
-            centerY: 79,
-            fieldTile: {
-                img: "overlay_field_lighthouse",
-                color: "#f2e7aa"
+        "BIG_TOWER": {
+            "name": "大灯台",
+            "rank": 30,
+            "centerX": 21,
+            "centerY": 79,
+            "fieldTile": {
+                "img": "overlay_field_lighthouse",
+                "color": "#f2e7aa"
             }
         },
-        THUNDER_FORT: {
-            name: "ライザーク要塞",
-            rank: 40,
-            centerX: 45,
-            centerY: 36,
-            fieldTile: {
-                img: "overlay_field_fortress",
-                color: "#f4d84a"
+        "THUNDER_FORT": {
+            "name": "ライザーク要塞",
+            "rank": 40,
+            "centerX": 45,
+            "centerY": 36,
+            "fieldTile": {
+                "img": "overlay_field_fortress",
+                "color": "#f4d84a"
             },
-            entrances: [
+            "entrances": [
                 {
-                    x: 45,
-                    y: 36,
-                    entryKey: "west",
-                    label: "西門"
+                    "x": 45,
+                    "y": 36,
+                    "entryKey": "west",
+                    "label": "西門"
                 },
                 {
-                    x: 47,
-                    y: 36,
-                    entryKey: "east",
-                    label: "東門"
+                    "x": 47,
+                    "y": 36,
+                    "entryKey": "east",
+                    "label": "東門"
                 }
             ]
         },
-        LIGHT_PALACE: {
-            name: "光の宮殿グランプリズマ",
-            rank: 50,
-            centerX: 67,
-            centerY: 48,
-            fieldTile: {
-                img: "overlay_field_temple",
-                color: "#eef0e8"
+        "LIGHT_PALACE": {
+            "name": "光の宮殿グランプリズマ",
+            "rank": 50,
+            "centerX": 67,
+            "centerY": 48,
+            "fieldTile": {
+                "img": "overlay_field_temple",
+                "color": "#eef0e8"
             }
         },
-        GALVANIA_CAVE: {
-            name: "ガルヴァニアへの洞窟",
-            rank: 68,
-            centerX: 31,
-            centerY: 40,
-            defaultEntryKey: "north",
-            fieldTile: {
-                img: "overlay_field_cave",
-                color: "#303541"
+        "GALVANIA_CAVE": {
+            "name": "ガルヴァニアへの洞窟",
+            "rank": 68,
+            "centerX": 31,
+            "centerY": 40,
+            "defaultEntryKey": "north",
+            "fieldTile": {
+                "img": "overlay_field_cave",
+                "color": "#303541"
             },
-            entrances: [
+            "entrances": [
                 {
-                    x: 31,
-                    y: 40,
-                    entryKey: "north",
-                    label: "北口"
+                    "x": 31,
+                    "y": 40,
+                    "entryKey": "north",
+                    "label": "北口"
                 },
                 {
-                    x: 35,
-                    y: 42,
-                    entryKey: "south",
-                    label: "南口"
+                    "x": 35,
+                    "y": 42,
+                    "entryKey": "south",
+                    "label": "南口"
                 }
             ]
         },
-        DARK_CASTLE: {
-            name: "魔王城ガルヴァニア",
-            rank: 60,
-            centerX: 8,
-            centerY: 50,
-            fieldTile: {
-                img: "overlay_field_darkcastle",
-                color: "#db3b4d"
+        "DARK_CASTLE": {
+            "name": "魔王城ガルヴァニア",
+            "rank": 60,
+            "centerX": 8,
+            "centerY": 50,
+            "fieldTile": {
+                "img": "overlay_field_darkcastle",
+                "color": "#db3b4d"
             }
         },
-        ABYSS: {
-            name: "深淵の魔窟",
-            rank: 70,
-            centerX: 51,
-            centerY: 55,
-            fieldTile: {
-                img: "overlay_field_lost",
-                color: "#303541"
+        "ABYSS": {
+            "name": "深淵の魔窟",
+            "rank": 70,
+            "centerX": 51,
+            "centerY": 55,
+            "fieldTile": {
+                "img": "overlay_field_lost",
+                "color": "#303541"
             }
         },
-        ABYSS_FIELD: {
-            name: "深淵の魔窟 外縁",
-            rank: 70,
-            centerX: 51,
-            centerY: 55,
-            fieldTile: {
-                img: "overlay_field_lost",
-                color: "#303541"
+        "ABYSS_FIELD": {
+            "name": "深淵の魔窟 外縁",
+            "rank": 70,
+            "centerX": 51,
+            "centerY": 55,
+            "fieldTile": {
+                "img": "overlay_field_lost",
+                "color": "#303541"
             }
         },
-        FOREST_WIND_HOLE: {
-            name: "森の風穴",
-            rank: 8,
-            centerX: 79,
-            centerY: 44,
-            fieldTile: {
-                img: "overlay_field_cave",
-                color: "#7fbf7a"
+        "FOREST_WIND_HOLE": {
+            "name": "森の風穴",
+            "rank": 8,
+            "centerX": 79,
+            "centerY": 44,
+            "fieldTile": {
+                "img": "overlay_field_cave",
+                "color": "#7fbf7a"
             },
-            entryRequiredFlag: "windHoleRouteKnown",
-            entryBypassFlags: [
+            "entryRequiredFlag": "windHoleRouteKnown",
+            "entryBypassFlags": [
                 "firePrismRestored",
                 "fireVillageCleared"
             ],
-            entryEventId: "forest_wind_hole_entry",
-            entryEventStoryStep: 2,
-            entryLockedText: "森の奥から冷たい風が流れてくる。だが、今は風穴へ向かう理由がない。"
+            "entryEventId": "forest_wind_hole_entry",
+            "entryEventStoryStep": 2,
+            "entryLockedText": "森の奥から冷たい風が流れてくる。だが、今は風穴へ向かう理由がない。"
         },
-        CRENA_LIMESTONE_CAVE: {
-            name: "クレナ鍾乳洞",
-            rank: 23,
-            centerX: 74,
-            centerY: 16,
-            fieldTile: {
-                img: "overlay_field_cave",
-                color: "#72c7dd"
+        "CRENA_LIMESTONE_CAVE": {
+            "name": "クレナ鍾乳洞",
+            "rank": 23,
+            "centerX": 74,
+            "centerY": 16,
+            "fieldTile": {
+                "img": "overlay_field_cave",
+                "color": "#72c7dd"
             },
-            entryBypassFlags: [
+            "entryBypassFlags": [
                 "blueCrystalObtained",
                 "waterCityCleared"
             ],
-            entryEventId: "crena_cave_entry",
-            entryEventStoryStep: 4,
-            entryLockedText: "青い光が洞口の奥で揺れている。"
+            "entryEventId": "crena_cave_entry",
+            "entryEventStoryStep": 4,
+            "entryLockedText": "青い光が洞口の奥で揺れている。"
         },
-        DARK_SHRINE_RUINS: {
-            name: "闇の神殿エクリプス跡",
-            rank: 75,
-            centerX: 37,
-            centerY: 47,
-            fieldTile: {
-                img: "overlay_field_ruins",
-                color: "#6a4e9f"
+        "DARK_SHRINE_RUINS": {
+            "name": "闇の神殿エクリプス跡",
+            "rank": 75,
+            "centerX": 37,
+            "centerY": 47,
+            "fieldTile": {
+                "img": "overlay_field_ruins",
+                "color": "#6a4e9f"
             }
         },
-        GREZELIA_FORBIDDEN: {
-            name: "禁則地グレゼリア",
-            rank: 85,
-            centerX: 38,
-            centerY: 59,
-            fieldTile: {
-                img: "overlay_field_darkcastle",
-                color: "#6d2534"
+        "GREZELIA_FORBIDDEN": {
+            "name": "禁則地グレゼリア",
+            "rank": 85,
+            "centerX": 38,
+            "centerY": 59,
+            "fieldTile": {
+                "img": "overlay_field_darkcastle",
+                "color": "#6d2534"
             }
         },
-        RUINED_SHRINE: {
-            name: "朽ちた祠",
-            rank: 300,
-            centerX: 58,
-            centerY: 56,
-            fieldTile: {
-                img: "overlay_field_ruins",
-                color: "#8f7dff"
+        "RUINED_SHRINE": {
+            "name": "朽ちた祠",
+            "rank": 300,
+            "centerX": 58,
+            "centerY": 56,
+            "fieldTile": {
+                "img": "overlay_field_ruins",
+                "color": "#8f7dff"
             }
         },
-        MEDAL: {
-            name: "メダル王",
-            rank: 1,
-            centerX: 32,
-            centerY: 18,
-            fieldTile: {
-                img: "overlay_field_medal",
-                color: "#f6ca62"
+        "MEDAL": {
+            "name": "メダル王",
+            "rank": 1,
+            "centerX": 32,
+            "centerY": 18,
+            "fieldTile": {
+                "img": "overlay_field_medal",
+                "color": "#f6ca62"
             }
         },
-        TRIAL_ISLAND: {
-            name: "最果ての祠",
-            rank: 120,
-            centerX: 2,
-            centerY: 2,
-            fieldTile: {
-                img: "overlay_field_temple",
-                color: "#eef0e8"
+        "TRIAL_ISLAND": {
+            "name": "最果ての祠",
+            "rank": 120,
+            "centerX": 2,
+            "centerY": 2,
+            "fieldTile": {
+                "img": "overlay_field_temple",
+                "color": "#eef0e8"
             }
         },
-        SUMMIT_TEMPLE: {
-            name: "頂の神殿",
-            rank: 150,
-            centerX: 89,
-            centerY: 77,
-            fieldTile: {
-                img: "overlay_field_temple",
-                color: "#eef0e8"
+        "SUMMIT_TEMPLE": {
+            "name": "頂の神殿",
+            "rank": 150,
+            "centerX": 89,
+            "centerY": 77,
+            "fieldTile": {
+                "img": "overlay_field_temple",
+                "color": "#eef0e8"
             }
         }
     }
@@ -1584,13 +1584,13 @@ const SEA_ENCOUNTER_MONSTERS = [
 
 const FIELD_ENCOUNTER_ZONES = [
     {
-        id: "START_PLAINS",
-        name: "リュミナ村周辺",
-        rank: 5,
-        centerX: 58,
-        centerY: 64,
-        radius: 34,
-        monsters: [
+        "id": "START_PLAINS",
+        "name": "リュミナ村周辺",
+        "rank": 5,
+        "centerX": 58,
+        "centerY": 64,
+        "radius": 34,
+        "monsters": [
             100001,
             100002,
             100003,
@@ -1600,13 +1600,13 @@ const FIELD_ENCOUNTER_ZONES = [
         ]
     },
     {
-        id: "FIRE_FOOTHILLS",
-        name: "イグナ火山山麓",
-        rank: 12,
-        centerX: 97,
-        centerY: 49,
-        radius: 24,
-        monsters: [
+        "id": "FIRE_FOOTHILLS",
+        "name": "イグナ火山山麓",
+        "rank": 12,
+        "centerX": 97,
+        "centerY": 49,
+        "radius": 24,
+        "monsters": [
             100010,
             100011,
             100012,
@@ -1615,13 +1615,13 @@ const FIELD_ENCOUNTER_ZONES = [
         ]
     },
     {
-        id: "WIND_HIGHLANDS",
-        name: "禁忌の森外縁",
-        rank: 22,
-        centerX: 98,
-        centerY: 37,
-        radius: 20,
-        monsters: [
+        "id": "WIND_HIGHLANDS",
+        "name": "禁忌の森外縁",
+        "rank": 22,
+        "centerX": 98,
+        "centerY": 37,
+        "radius": 20,
+        "monsters": [
             100020,
             100021,
             100022,
@@ -1630,13 +1630,13 @@ const FIELD_ENCOUNTER_ZONES = [
         ]
     },
     {
-        id: "WATER_COAST",
-        name: "水上都市リヴァリア近海",
-        rank: 35,
-        centerX: 68,
-        centerY: 21,
-        radius: 28,
-        monsters: [
+        "id": "WATER_COAST",
+        "name": "水上都市リヴァリア近海",
+        "rank": 35,
+        "centerX": 68,
+        "centerY": 21,
+        "radius": 28,
+        "monsters": [
             100033,
             100034,
             100035,
@@ -1644,13 +1644,13 @@ const FIELD_ENCOUNTER_ZONES = [
         ]
     },
     {
-        id: "BIG_TOWER_SHORE",
-        name: "大灯台沿岸",
-        rank: 30,
-        centerX: 21,
-        centerY: 79,
-        radius: 30,
-        monsters: [
+        "id": "BIG_TOWER_SHORE",
+        "name": "大灯台沿岸",
+        "rank": 30,
+        "centerX": 21,
+        "centerY": 79,
+        "radius": 30,
+        "monsters": [
             100026,
             100027,
             100028,
@@ -1658,13 +1658,13 @@ const FIELD_ENCOUNTER_ZONES = [
         ]
     },
     {
-        id: "THUNDER_FRONTIER",
-        name: "雷鳴の荒野",
-        rank: 42,
-        centerX: 45,
-        centerY: 36,
-        radius: 24,
-        monsters: [
+        "id": "THUNDER_FRONTIER",
+        "name": "雷鳴の荒野",
+        "rank": 42,
+        "centerX": 45,
+        "centerY": 36,
+        "radius": 24,
+        "monsters": [
             100040,
             100041,
             100042,
@@ -1672,13 +1672,13 @@ const FIELD_ENCOUNTER_ZONES = [
         ]
     },
     {
-        id: "LIGHT_PALACE_GROVE",
-        name: "光の宮殿グランプリズマ周辺",
-        rank: 62,
-        centerX: 67,
-        centerY: 48,
-        radius: 18,
-        monsters: [
+        "id": "LIGHT_PALACE_GROVE",
+        "name": "光の宮殿グランプリズマ周辺",
+        "rank": 62,
+        "centerX": 67,
+        "centerY": 48,
+        "radius": 18,
+        "monsters": [
             100060,
             100061,
             100062,
@@ -1686,13 +1686,13 @@ const FIELD_ENCOUNTER_ZONES = [
         ]
     },
     {
-        id: "DARK_WASTES",
-        name: "魔王城ガルヴァニア外郭",
-        rank: 60,
-        centerX: 8,
-        centerY: 50,
-        radius: 30,
-        monsters: [
+        "id": "DARK_WASTES",
+        "name": "魔王城ガルヴァニア外郭",
+        "rank": 60,
+        "centerX": 8,
+        "centerY": 50,
+        "radius": 30,
+        "monsters": [
             100056,
             100057,
             100058,
@@ -1700,14 +1700,14 @@ const FIELD_ENCOUNTER_ZONES = [
         ]
     },
     {
-        id: "ABYSS_EDGE",
-        name: "深淵外縁",
-        rank: 70,
-        centerX: 51,
-        centerY: 55,
-        radius: 20,
-        priority: 1,
-        monsters: [
+        "id": "ABYSS_EDGE",
+        "name": "深淵外縁",
+        "rank": 70,
+        "centerX": 51,
+        "centerY": 55,
+        "radius": 20,
+        "priority": 1,
+        "monsters": [
             100064,
             100065,
             100066,
@@ -1715,32 +1715,32 @@ const FIELD_ENCOUNTER_ZONES = [
         ]
     },
     {
-        id: "TRIAL_ISLAND_FIELD",
-        name: "最果ての祠周辺",
-        rank: 100,
-        centerX: 2,
-        centerY: 2,
-        radius: 10,
-        priority: 2,
-        rareMonsters: [
+        "id": "TRIAL_ISLAND_FIELD",
+        "name": "最果ての祠周辺",
+        "rank": 100,
+        "centerX": 2,
+        "centerY": 2,
+        "radius": 10,
+        "priority": 2,
+        "rareMonsters": [
             {
-                id: 200203,
-                rate: 0.05
+                "id": 200203,
+                "rate": 0.05
             }
         ]
     },
     {
-        id: "SUMMIT_TEMPLE_FIELD",
-        name: "頂の神殿周辺",
-        rank: 150,
-        centerX: 89,
-        centerY: 77,
-        radius: 12,
-        priority: 2,
-        rareMonsters: [
+        "id": "SUMMIT_TEMPLE_FIELD",
+        "name": "頂の神殿周辺",
+        "rank": 150,
+        "centerX": 89,
+        "centerY": 77,
+        "radius": 12,
+        "priority": 2,
+        "rareMonsters": [
             {
-                id: 200203,
-                rate: 0.05
+                "id": 200203,
+                "rate": 0.05
             }
         ]
     }
@@ -1748,19 +1748,19 @@ const FIELD_ENCOUNTER_ZONES = [
 
 const WORLD_BRIDGES = [
     {
-        x: 53,
-        y: 69,
-        direction: "horizontal"
+        "x": 53,
+        "y": 69,
+        "direction": "horizontal"
     },
     {
-        x: 78,
-        y: 58,
-        direction: "horizontal"
+        "x": 78,
+        "y": 58,
+        "direction": "horizontal"
     },
     {
-        x: 79,
-        y: 58,
-        direction: "horizontal"
+        "x": 79,
+        "y": 58,
+        "direction": "horizontal"
     }
 ];
 
@@ -1858,313 +1858,313 @@ const MAP_DATA = [
 ];
 
 const FIXED_TILE_OVERLAYS = {
-    DEFAULT_FIELD: {
-        H: {
-            img: "overlay_field_house_1",
-            color: "#d9bd84"
+    "DEFAULT_FIELD": {
+        "H": {
+            "img": "overlay_field_house_1",
+            "color": "#d9bd84"
         },
-        V: {
-            img: "overlay_field_house_2",
-            color: "#7e3fa1"
+        "V": {
+            "img": "overlay_field_house_2",
+            "color": "#7e3fa1"
         },
-        I: {
-            img: "overlay_field_inn",
-            color: "#d7b45a"
+        "I": {
+            "img": "overlay_field_inn",
+            "color": "#d7b45a"
         },
-        K: {
-            img: "overlay_field_casino",
-            color: "#7e3fa1"
+        "K": {
+            "img": "overlay_field_casino",
+            "color": "#7e3fa1"
         },
-        E: {
-            img: "overlay_field_medal",
-            color: "#f6ca62"
+        "E": {
+            "img": "overlay_field_medal",
+            "color": "#f6ca62"
         },
-        D: {
-            img: "overlay_field_cave",
-            color: "#303541"
+        "D": {
+            "img": "overlay_field_cave",
+            "color": "#303541"
         },
-        C: {
-            img: "overlay_field_chest",
-            color: "#9c6332"
+        "C": {
+            "img": "overlay_field_chest",
+            "color": "#9c6332"
         },
-        R: {
-            img: "overlay_field_chest_rare",
-            color: "#b6324b"
+        "R": {
+            "img": "overlay_field_chest_rare",
+            "color": "#b6324b"
         },
-        B: {
-            img: "overlay_field_boss",
-            color: "#db3b4d"
+        "B": {
+            "img": "overlay_field_boss",
+            "color": "#db3b4d"
         },
-        A: {
-            img: "overlay_npc_elder",
-            color: "#d8c89a"
+        "A": {
+            "img": "overlay_npc_elder",
+            "color": "#d8c89a"
         },
-        J: {
-            img: "overlay_npc_villager",
-            color: "#8fb066"
+        "J": {
+            "img": "overlay_npc_villager",
+            "color": "#8fb066"
         },
-        P: {
-            img: "overlay_field_event",
-            color: "#8f7dff"
+        "P": {
+            "img": "overlay_field_event",
+            "color": "#8f7dff"
         },
-        S: null
+        "S": null
     },
-    DEFAULT_DUNGEON: {
-        C: {
-            img: "overlay_named_dungeon_chest",
-            color: "#9c6332"
+    "DEFAULT_DUNGEON": {
+        "C": {
+            "img": "overlay_named_dungeon_chest",
+            "color": "#9c6332"
         },
-        R: {
-            img: "overlay_named_dungeon_chest_rare",
-            color: "#b6324b"
+        "R": {
+            "img": "overlay_named_dungeon_chest_rare",
+            "color": "#b6324b"
         },
-        B: {
-            img: "overlay_monster_guardian",
-            color: "#db3b4d"
+        "B": {
+            "img": "overlay_monster_guardian",
+            "color": "#db3b4d"
         },
-        A: {
-            img: "overlay_npc_bronze_knight",
-            color: "#b8843a"
+        "A": {
+            "img": "overlay_npc_bronze_knight",
+            "color": "#b8843a"
         },
-        J: {
-            img: "overlay_monster_guardian",
-            color: "#7f68a5"
+        "J": {
+            "img": "overlay_monster_guardian",
+            "color": "#7f68a5"
         },
-        D: {
-            img: "overlay_named_dungeon_stairs_down",
-            color: "#d7b45a"
+        "D": {
+            "img": "overlay_named_dungeon_stairs_down",
+            "color": "#d7b45a"
         },
-        U: {
-            img: "overlay_named_dungeon_stairs_up",
-            color: "#d7b45a"
+        "U": {
+            "img": "overlay_named_dungeon_stairs_up",
+            "color": "#d7b45a"
         },
-        S: {
-            img: "overlay_named_dungeon_stairs_up",
-            color: "#d7b45a"
+        "S": {
+            "img": "overlay_named_dungeon_stairs_up",
+            "color": "#d7b45a"
         },
-        P: {
-            img: "overlay_dungeon_event",
-            color: "#8f7dff"
+        "P": {
+            "img": "overlay_dungeon_event",
+            "color": "#8f7dff"
         },
-        V: {
-            img: "overlay_dungeon_event",
-            color: "#4ab9d8"
+        "V": {
+            "img": "overlay_dungeon_event",
+            "color": "#4ab9d8"
         },
-        X: {
-            img: "door_key_red",
-            color: "#8f2f2f"
+        "X": {
+            "img": "door_key_red",
+            "color": "#8f2f2f"
         },
-        Y: {
-            img: "door_key_blue",
-            color: "#2f6f9f"
+        "Y": {
+            "img": "door_key_blue",
+            "color": "#2f6f9f"
         },
-        Z: {
-            img: "door_key_gold",
-            color: "#b8892f"
+        "Z": {
+            "img": "door_key_gold",
+            "color": "#b8892f"
         },
-        Q: {
-            img: "item_key_red",
-            color: "#d94a4a"
+        "Q": {
+            "img": "item_key_red",
+            "color": "#d94a4a"
         },
-        N: {
-            img: "item_key_blue",
-            color: "#4aa0e6"
+        "N": {
+            "img": "item_key_blue",
+            "color": "#4aa0e6"
         },
-        O: {
-            img: "item_key_gold",
-            color: "#e0b84a"
+        "O": {
+            "img": "item_key_gold",
+            "color": "#e0b84a"
         }
     },
-    START_VILLAGE: {
-        W: {
-            img: "overlay_field_forest",
-            color: "#1f6a3f",
-            wallOverlay: true
+    "START_VILLAGE": {
+        "W": {
+            "img": "overlay_field_forest",
+            "color": "#1f6a3f",
+            "wallOverlay": true
         },
-        H: {
-            img: "overlay_field_house_1",
-            color: "#d9bd84"
+        "H": {
+            "img": "overlay_field_house_1",
+            "color": "#d9bd84"
         },
-        V: {
-            img: "overlay_field_house_2",
-            color: "#7e3fa1"
+        "V": {
+            "img": "overlay_field_house_2",
+            "color": "#7e3fa1"
         },
-        D: {
-            img: "overlay_field_cave",
-            color: "#303541"
+        "D": {
+            "img": "overlay_field_cave",
+            "color": "#303541"
         }
     },
-    FIRE_VILLAGE: {
-        H: {
-            img: "overlay_building_fire_forge",
-            color: "#d9bd84"
+    "FIRE_VILLAGE": {
+        "H": {
+            "img": "overlay_building_fire_forge",
+            "color": "#d9bd84"
         },
-        V: {
-            img: "overlay_building_fire_forge",
-            color: "#d95b3a"
+        "V": {
+            "img": "overlay_building_fire_forge",
+            "color": "#d95b3a"
         },
-        A: {
-            img: "overlay_npc_elder",
-            color: "#d8c89a"
+        "A": {
+            "img": "overlay_npc_elder",
+            "color": "#d8c89a"
         },
-        J: {
-            img: "overlay_npc_villager",
-            color: "#8fb066"
+        "J": {
+            "img": "overlay_npc_villager",
+            "color": "#8fb066"
         },
-        P: {
-            img: "overlay_field_event",
-            color: "#ff8a3d"
+        "P": {
+            "img": "overlay_field_event",
+            "color": "#ff8a3d"
         },
-        D: {
-            img: "overlay_field_cave",
-            color: "#303541"
+        "D": {
+            "img": "overlay_field_cave",
+            "color": "#303541"
         }
     },
-    WIND_VILLAGE: {
-        W: {
-            img: "overlay_field_forest",
-            color: "#1f6a3f",
-            wallOverlay: true
+    "WIND_VILLAGE": {
+        "W": {
+            "img": "overlay_field_forest",
+            "color": "#1f6a3f",
+            "wallOverlay": true
         },
-        H: {
-            img: "overlay_building_wind_hut",
-            color: "#cbb77e"
+        "H": {
+            "img": "overlay_building_wind_hut",
+            "color": "#cbb77e"
         },
-        V: {
-            img: "overlay_building_wind_hut",
-            color: "#d9bd84"
+        "V": {
+            "img": "overlay_building_wind_hut",
+            "color": "#d9bd84"
         },
-        A: {
-            img: "overlay_npc_child",
-            color: "#d9d28c"
+        "A": {
+            "img": "overlay_npc_child",
+            "color": "#d9d28c"
         },
-        J: {
-            img: "overlay_npc_child",
-            color: "#b7d8a6"
+        "J": {
+            "img": "overlay_npc_child",
+            "color": "#b7d8a6"
         },
-        P: {
-            img: "overlay_field_event",
-            color: "#8f7dff"
+        "P": {
+            "img": "overlay_field_event",
+            "color": "#8f7dff"
         }
     },
-    WATER_CITY: {
-        H: {
-            img: "overlay_building_water_shop",
-            color: "#d9bd84"
+    "WATER_CITY": {
+        "H": {
+            "img": "overlay_building_water_shop",
+            "color": "#d9bd84"
         },
-        V: {
-            img: "overlay_building_water_shop",
-            color: "#7e3fa1"
+        "V": {
+            "img": "overlay_building_water_shop",
+            "color": "#7e3fa1"
         },
-        A: {
-            img: "overlay_npc_villager",
-            color: "#8fb066"
+        "A": {
+            "img": "overlay_npc_villager",
+            "color": "#8fb066"
         },
-        J: {
-            img: "overlay_npc_villager",
-            color: "#8fb066"
+        "J": {
+            "img": "overlay_npc_villager",
+            "color": "#8fb066"
         },
-        P: {
-            img: "overlay_field_event",
-            color: "#8f7dff"
+        "P": {
+            "img": "overlay_field_event",
+            "color": "#8f7dff"
         }
     },
-    ABYSS_FIELD: {},
-    RUINED_SHRINE: {
-        P: {
-            img: "overlay_field_event",
-            color: "#8f7dff"
+    "ABYSS_FIELD": {},
+    "RUINED_SHRINE": {
+        "P": {
+            "img": "overlay_field_event",
+            "color": "#8f7dff"
         }
     }
 };
 
 const FIXED_OVERLAY_BASE_TILES = {
-    DEFAULT_FIELD: {
-        H: "T",
-        V: "T",
-        I: "T",
-        K: "T",
-        E: "T",
-        D: "T",
-        C: "T",
-        R: "T",
-        B: "T",
-        A: "T",
-        J: "T",
-        P: "T",
-        S: "S"
+    "DEFAULT_FIELD": {
+        "H": "T",
+        "V": "T",
+        "I": "T",
+        "K": "T",
+        "E": "T",
+        "D": "T",
+        "C": "T",
+        "R": "T",
+        "B": "T",
+        "A": "T",
+        "J": "T",
+        "P": "T",
+        "S": "S"
     },
-    DEFAULT_DUNGEON: {
-        C: "T",
-        R: "T",
-        B: "T",
-        A: "T",
-        J: "T",
-        D: "T",
-        U: "T",
-        S: "T",
-        P: "T",
-        V: "T",
-        X: "T",
-        Y: "T",
-        Z: "T",
-        Q: "T",
-        N: "T",
-        O: "T"
+    "DEFAULT_DUNGEON": {
+        "C": "T",
+        "R": "T",
+        "B": "T",
+        "A": "T",
+        "J": "T",
+        "D": "T",
+        "U": "T",
+        "S": "T",
+        "P": "T",
+        "V": "T",
+        "X": "T",
+        "Y": "T",
+        "Z": "T",
+        "Q": "T",
+        "N": "T",
+        "O": "T"
     },
-    FIRE_VILLAGE: {
-        H: "T",
-        V: "T",
-        A: "T",
-        J: "T",
-        P: "T",
-        D: "T"
+    "FIRE_VILLAGE": {
+        "H": "T",
+        "V": "T",
+        "A": "T",
+        "J": "T",
+        "P": "T",
+        "D": "T"
     },
-    START_VILLAGE: {
-        W: "G",
-        H: "T",
-        V: "T",
-        D: "T"
+    "START_VILLAGE": {
+        "W": "G",
+        "H": "T",
+        "V": "T",
+        "D": "T"
     },
-    WIND_VILLAGE: {
-        W: "G",
-        H: "T",
-        V: "T",
-        A: "T",
-        J: "T",
-        P: "T"
+    "WIND_VILLAGE": {
+        "W": "G",
+        "H": "T",
+        "V": "T",
+        "A": "T",
+        "J": "T",
+        "P": "T"
     },
-    WATER_CITY: {
-        H: "T",
-        V: "T",
-        I: "T",
-        K: "T",
-        E: "T",
-        A: "T",
-        J: "T",
-        P: "G"
+    "WATER_CITY": {
+        "H": "T",
+        "V": "T",
+        "I": "T",
+        "K": "T",
+        "E": "T",
+        "A": "T",
+        "J": "T",
+        "P": "G"
     },
-    ABYSS_FIELD: {
-        D: "T"
+    "ABYSS_FIELD": {
+        "D": "T"
     },
-    RUINED_SHRINE: {
-        P: "T"
+    "RUINED_SHRINE": {
+        "P": "T"
     }
 };
 
 const FIXED_MAPS = {
-    START_VILLAGE: {
-        name: "リュミナ村",
-        themeKey: "START_VILLAGE",
-        tileOverrides: {},
-        width: 15,
-        height: 13,
-        entryPoint: {
-            x: 7,
-            y: 10
+    "START_VILLAGE": {
+        "name": "リュミナ村",
+        "themeKey": "START_VILLAGE",
+        "tileOverrides": {},
+        "width": 15,
+        "height": 13,
+        "entryPoint": {
+            "x": 7,
+            "y": 10
         },
-        battleBg: "battle_bg_field",
-        tiles: [
+        "battleBg": "battle_bg_field",
+        "tiles": [
             "WWWWWWWWWWWWWWW",
             "WWWWWWWWWWWDWWW",
             "WGHGHWWWGGGGWWW",
@@ -2179,128 +2179,128 @@ const FIXED_MAPS = {
             "WWWWWWGGWWWWWWW",
             "WWWWWWSSWWWWWWW"
         ],
-        mapActions: [
+        "mapActions": [
             {
-                x: 2,
-                y: 9,
-                label: "道具を買う",
-                log: "道具屋の看板が出ている。",
-                type: "shop",
-                shopType: "item",
-                title: "リュミナ村 道具屋",
-                shopRank: 5
+                "x": 2,
+                "y": 9,
+                "label": "道具を買う",
+                "log": "道具屋の看板が出ている。",
+                "type": "shop",
+                "shopType": "item",
+                "title": "リュミナ村 道具屋",
+                "shopRank": 5
             },
             {
-                x: 8,
-                y: 5,
-                label: "武器を見る",
-                log: "簡素な武器が並んでいる。",
-                type: "shop",
-                shopType: "weapon",
-                title: "リュミナ村 武器屋",
-                shopRank: 5
+                "x": 8,
+                "y": 5,
+                "label": "武器を見る",
+                "log": "簡素な武器が並んでいる。",
+                "type": "shop",
+                "shopType": "weapon",
+                "title": "リュミナ村 武器屋",
+                "shopRank": 5
             },
             {
-                x: 10,
-                y: 5,
-                label: "防具を見る",
-                log: "旅支度用の防具が並んでいる。",
-                type: "shop",
-                shopType: "armor",
-                title: "リュミナ村 防具屋",
-                shopRank: 5
+                "x": 10,
+                "y": 5,
+                "label": "防具を見る",
+                "log": "旅支度用の防具が並んでいる。",
+                "type": "shop",
+                "shopType": "armor",
+                "title": "リュミナ村 防具屋",
+                "shopRank": 5
             },
             {
-                x: 11,
-                y: 9,
-                label: "村人と話す",
-                log: "村人が、北東の穴を見つめている。",
-                type: "storyEvent",
-                conversationKey: "lumina_villager_sinkhole",
-                eventId: "town_start_villager_1_a",
-                imageKey: "overlay_npc_villager",
-                baseTile: "G"
+                "x": 11,
+                "y": 9,
+                "label": "村人と話す",
+                "log": "村人が、北東の穴を見つめている。",
+                "type": "storyEvent",
+                "conversationKey": "lumina_villager_sinkhole",
+                "eventId": "town_start_villager_1_a",
+                "imageKey": "overlay_npc_villager",
+                "baseTile": "G"
             },
             {
-                x: 13,
-                y: 3,
-                label: "村の若者と話す",
-                log: "若者が木剣を握りしめている。",
-                type: "storyEvent",
-                conversationKey: "lumina_villager_youth",
-                eventId: "town_start_villager_2_a",
-                imageKey: "overlay_npc_bronze_knight",
-                baseTile: "G"
+                "x": 13,
+                "y": 3,
+                "label": "村の若者と話す",
+                "log": "若者が木剣を握りしめている。",
+                "type": "storyEvent",
+                "conversationKey": "lumina_villager_youth",
+                "eventId": "town_start_villager_2_a",
+                "imageKey": "overlay_npc_bronze_knight",
+                "baseTile": "G"
             },
             {
-                x: 3,
-                y: 2,
-                label: "薬草摘みと話す",
-                log: "籠を抱えた女性が、葉についた泥を払っている。",
-                type: "storyEvent",
-                conversationKey: "lumina_villager_herbalist",
-                eventId: "town_start_villager_3_a",
-                imageKey: "overlay_npc_villager",
-                baseTile: "G"
+                "x": 3,
+                "y": 2,
+                "label": "薬草摘みと話す",
+                "log": "籠を抱えた女性が、葉についた泥を払っている。",
+                "type": "storyEvent",
+                "conversationKey": "lumina_villager_herbalist",
+                "eventId": "town_start_villager_3_a",
+                "imageKey": "overlay_npc_villager",
+                "baseTile": "G"
             },
             {
-                x: 6,
-                y: 4,
-                label: "長老と話す",
-                log: "長老が旅人を待っている。",
-                type: "log",
-                imageKey: "overlay_npc_elder",
-                events: [
+                "x": 6,
+                "y": 4,
+                "label": "長老と話す",
+                "log": "長老が旅人を待っている。",
+                "type": "log",
+                "imageKey": "overlay_npc_elder",
+                "events": [
                     {
-                        stepMin: 0,
-                        stepMax: 0,
-                        eventId: "start_adventure"
+                        "stepMin": 0,
+                        "stepMax": 0,
+                        "eventId": "start_adventure"
                     },
                     {
-                        stepMin: 1,
-                        stepMax: 1,
-                        eventId: "start_adventure2"
+                        "stepMin": 1,
+                        "stepMax": 1,
+                        "eventId": "start_adventure2"
                     },
                     {
-                        stepMin: 2,
-                        stepMax: 2,
-                        subMin: 0,
-                        subMax: 0,
-                        eventId: "start_adventure3"
+                        "stepMin": 2,
+                        "stepMax": 2,
+                        "subMin": 0,
+                        "subMax": 0,
+                        "eventId": "start_adventure3"
                     },
                     {
-                        default: true,
-                        eventId: "start_village_elder_after"
+                        "default": true,
+                        "eventId": "start_village_elder_after"
                     }
                 ]
             },
             {
-                x: 11,
-                y: 1,
-                label: "洞穴に入る",
-                log: "北東の洞穴から冷たい風が吹いている。",
-                type: "fixedDungeon",
-                target: "START_CAVE"
+                "x": 11,
+                "y": 1,
+                "label": "洞穴に入る",
+                "log": "北東の洞穴から冷たい風が吹いている。",
+                "type": "fixedDungeon",
+                "target": "START_CAVE"
             }
         ],
-        exitPoint: {
-            area: "WORLD",
-            x: 58,
-            y: 65
+        "exitPoint": {
+            "area": "WORLD",
+            "x": 58,
+            "y": 65
         }
     },
-    FIRE_VILLAGE: {
-        name: "炎の里イグニシア",
-        themeKey: "FIRE_VILLAGE",
-        tileOverrides: {},
-        width: 29,
-        height: 21,
-        entryPoint: {
-            x: 14,
-            y: 18
+    "FIRE_VILLAGE": {
+        "name": "炎の里イグニシア",
+        "themeKey": "FIRE_VILLAGE",
+        "tileOverrides": {},
+        "width": 29,
+        "height": 21,
+        "entryPoint": {
+            "x": 14,
+            "y": 18
         },
-        battleBg: "battle_bg_fire",
-        tiles: [
+        "battleBg": "battle_bg_fire",
+        "tiles": [
             "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
             "WWWWWWWWWWWWWWDWWWWWWWWWWWWWW",
             "WWMMMMMMMMTTTTTTTTTMMMMMMMMWW",
@@ -2323,216 +2323,216 @@ const FIXED_MAPS = {
             "WWMMMMTTTTTTTTTTTTTTTTTMMMMWW",
             "WWWWWWWWWWWWWSSSWWWWWWWWWWWWW"
         ],
-        mapActions: [
+        "mapActions": [
             {
-                x: 21,
-                y: 14,
-                label: "泊まる",
-                log: "熱気をしのげる宿屋がある。",
-                type: "inn"
+                "x": 21,
+                "y": 14,
+                "label": "泊まる",
+                "log": "熱気をしのげる宿屋がある。",
+                "type": "inn"
             },
             {
-                x: 21,
-                y: 17,
-                label: "道具を買う",
-                log: "火山探索向けの道具屋だ。",
-                type: "shop",
-                shopType: "item",
-                title: "炎の里イグニシア 道具屋",
-                shopRank: 12
+                "x": 21,
+                "y": 17,
+                "label": "道具を買う",
+                "log": "火山探索向けの道具屋だ。",
+                "type": "shop",
+                "shopType": "item",
+                "title": "炎の里イグニシア 道具屋",
+                "shopRank": 12
             },
             {
-                x: 7,
-                y: 14,
-                label: "武器を見る",
-                log: "鍛冶火が赤く揺れる武器屋だ。",
-                type: "shop",
-                shopType: "weapon",
-                title: "炎の里イグニシア 武器屋",
-                shopRank: 12
+                "x": 7,
+                "y": 14,
+                "label": "武器を見る",
+                "log": "鍛冶火が赤く揺れる武器屋だ。",
+                "type": "shop",
+                "shopType": "weapon",
+                "title": "炎の里イグニシア 武器屋",
+                "shopRank": 12
             },
             {
-                x: 7,
-                y: 17,
-                label: "防具を見る",
-                log: "火山の熱に耐える防具を扱っている。",
-                type: "shop",
-                shopType: "armor",
-                title: "炎の里イグニシア 防具屋",
-                shopRank: 12
+                "x": 7,
+                "y": 17,
+                "label": "防具を見る",
+                "log": "火山の熱に耐える防具を扱っている。",
+                "type": "shop",
+                "shopType": "armor",
+                "title": "炎の里イグニシア 防具屋",
+                "shopRank": 12
             },
             {
-                x: 8,
-                y: 4,
-                label: "鍛冶屋を訪ねる",
-                log: "鍛冶師が炉の縁に手を置いている。",
-                type: "blacksmith",
-                imageKey: "overlay_town_fire_blacksmith",
-                events: [
+                "x": 8,
+                "y": 4,
+                "label": "鍛冶屋を訪ねる",
+                "log": "鍛冶師が炉の縁に手を置いている。",
+                "type": "blacksmith",
+                "imageKey": "overlay_town_fire_blacksmith",
+                "events": [
                     {
-                        missingFlag: "fireVillageCleared",
-                        eventId: "town_fire_villager_1_before"
+                        "missingFlag": "fireVillageCleared",
+                        "eventId": "town_fire_villager_1_before"
                     }
                 ]
             },
             {
-                x: 18,
-                y: 9,
-                label: "里の人と話す",
-                log: "里の西を気にしているようだ。",
-                type: "storyEvent",
-                eventId: "town_fire_villager_2",
-                imageKey: "overlay_town_fire_resident"
+                "x": 18,
+                "y": 9,
+                "label": "里の人と話す",
+                "log": "里の西を気にしているようだ。",
+                "type": "storyEvent",
+                "eventId": "town_fire_villager_2",
+                "imageKey": "overlay_town_fire_resident"
             },
             {
-                x: 10,
-                y: 13,
-                label: "炭運びと話す",
-                log: "煤だらけの男が、背負い籠を下ろした。",
-                type: "log",
-                imageKey: "overlay_town_fire_coal_carrier",
-                events: [
+                "x": 10,
+                "y": 13,
+                "label": "炭運びと話す",
+                "log": "煤だらけの男が、背負い籠を下ろした。",
+                "type": "log",
+                "imageKey": "overlay_town_fire_coal_carrier",
+                "events": [
                     {
-                        requiredFlag: "fireVillageCleared",
-                        eventId: "town_fire_villager_3_after"
+                        "requiredFlag": "fireVillageCleared",
+                        "eventId": "town_fire_villager_3_after"
                     },
                     {
-                        default: true,
-                        eventId: "town_fire_villager_3"
+                        "default": true,
+                        "eventId": "town_fire_villager_3"
                     }
                 ]
             },
             {
-                x: 19,
-                y: 4,
-                label: "カリンと話す",
-                log: "女侍が佇んでいる",
-                type: "quest",
-                questId: "karin_volcano_depths",
-                imageKey: "overlay_companion_karin",
-                lockedText: "カリンはまだ、火山ガスが晴れる時を待っている。"
+                "x": 19,
+                "y": 4,
+                "label": "カリンと話す",
+                "log": "女侍が佇んでいる",
+                "type": "quest",
+                "questId": "karin_volcano_depths",
+                "imageKey": "overlay_companion_karin",
+                "lockedText": "カリンはまだ、火山ガスが晴れる時を待っている。"
             },
             {
-                x: 14,
-                y: 15,
-                label: "里の長に話す",
-                log: "里の長が弱まった炎を見つめている。",
-                type: "log",
-                imageKey: "overlay_npc_elder",
-                events: [
+                "x": 14,
+                "y": 15,
+                "label": "里の長に話す",
+                "log": "里の長が弱まった炎を見つめている。",
+                "type": "log",
+                "imageKey": "overlay_npc_elder",
+                "events": [
                     {
-                        stepMin: 2,
-                        stepMax: 2,
-                        subMin: 1,
-                        subMax: 1,
-                        eventId: "fire_village_consult"
+                        "stepMin": 2,
+                        "stepMax": 2,
+                        "subMin": 1,
+                        "subMax": 1,
+                        "eventId": "fire_village_consult"
                     },
                     {
-                        stepMin: 0,
-                        stepMax: 1,
-                        eventId: "fire_village_elder_before_story"
+                        "stepMin": 0,
+                        "stepMax": 1,
+                        "eventId": "fire_village_elder_before_story"
                     },
                     {
-                        stepMin: 2,
-                        stepMax: 2,
-                        subMin: 2,
-                        subMax: 2,
-                        eventId: "fire_village_elder_during_volcano"
+                        "stepMin": 2,
+                        "stepMax": 2,
+                        "subMin": 2,
+                        "subMax": 2,
+                        "eventId": "fire_village_elder_during_volcano"
                     },
                     {
-                        stepMin: 2,
-                        stepMax: 2,
-                        subMin: 3,
-                        subMax: 3,
-                        eventId: "fire_village_holy_water_briefing"
+                        "stepMin": 2,
+                        "stepMax": 2,
+                        "subMin": 3,
+                        "subMax": 3,
+                        "eventId": "fire_village_holy_water_briefing"
                     },
                     {
-                        stepMin: 2,
-                        stepMax: 2,
-                        subMin: 4,
-                        subMax: 6,
-                        eventId: "fire_village_elder_during_volcano"
+                        "stepMin": 2,
+                        "stepMax": 2,
+                        "subMin": 4,
+                        "subMax": 6,
+                        "eventId": "fire_village_elder_during_volcano"
                     },
                     {
-                        stepMin: 2,
-                        stepMax: 2,
-                        subMin: 7,
-                        subMax: 7,
-                        eventId: "fire_village_report"
+                        "stepMin": 2,
+                        "stepMax": 2,
+                        "subMin": 7,
+                        "subMax": 7,
+                        "eventId": "fire_village_report"
                     },
                     {
-                        stepMin: 3,
-                        stepMax: 99,
-                        eventId: "fire_village_elder_after_clear"
+                        "stepMin": 3,
+                        "stepMax": 99,
+                        "eventId": "fire_village_elder_after_clear"
                     },
                     {
-                        default: true,
-                        eventId: "fire_village_elder_idle"
+                        "default": true,
+                        "eventId": "fire_village_elder_idle"
                     }
                 ]
             },
             {
-                x: 14,
-                y: 1,
-                label: "イグナ火山へ入る",
-                log: "北の火山道から、熱と魔物の気配が流れてくる。",
-                type: "fixedDungeon",
-                target: "IGNIS_VOLCANO",
-                requiredStoryStep: 2,
-                requiredSubStep: 2,
-                requiredStoryMissingText: "火山道から熱気が吹き下ろしてくる。今はまだ、里の事情を聞かずに踏み込むべきではなさそうだ。",
-                events: [
+                "x": 14,
+                "y": 1,
+                "label": "イグナ火山へ入る",
+                "log": "北の火山道から、熱と魔物の気配が流れてくる。",
+                "type": "fixedDungeon",
+                "target": "IGNIS_VOLCANO",
+                "requiredStoryStep": 2,
+                "requiredSubStep": 2,
+                "requiredStoryMissingText": "火山道から熱気が吹き下ろしてくる。今はまだ、里の事情を聞かずに踏み込むべきではなさそうだ。",
+                "events": [
                     {
-                        stepMin: 2,
-                        stepMax: 2,
-                        subMin: 2,
-                        subMax: 2,
-                        eventId: "fire_volcano_entrance"
+                        "stepMin": 2,
+                        "stepMax": 2,
+                        "subMin": 2,
+                        "subMax": 2,
+                        "eventId": "fire_volcano_entrance"
                     },
                     {
-                        stepMin: 2,
-                        stepMax: 2,
-                        subMin: 3,
-                        subMax: 4,
-                        eventId: "fire_volcano_waiting_for_holy_water"
+                        "stepMin": 2,
+                        "stepMax": 2,
+                        "subMin": 3,
+                        "subMax": 4,
+                        "eventId": "fire_volcano_waiting_for_holy_water"
                     },
                     {
-                        stepMin: 2,
-                        stepMax: 2,
-                        subMin: 5,
-                        subMax: 5,
-                        missingFlag: "volcanoCursedFlamesPurified",
-                        eventId: "fire_volcano_holy_water_used"
+                        "stepMin": 2,
+                        "stepMax": 2,
+                        "subMin": 5,
+                        "subMax": 5,
+                        "missingFlag": "volcanoCursedFlamesPurified",
+                        "eventId": "fire_volcano_holy_water_used"
                     }
                 ]
             }
         ],
-        exitPoint: {
-            area: "WORLD",
-            x: 97,
-            y: 50
+        "exitPoint": {
+            "area": "WORLD",
+            "x": 97,
+            "y": 50
         },
-        chests: [
+        "chests": [
             {
-                x: 14,
-                y: 7,
-                itemId: 4,
-                type: "item"
+                "x": 14,
+                "y": 7,
+                "itemId": 4,
+                "type": "item"
             }
         ]
     },
-    WIND_VILLAGE: {
-        name: "風の集落カザリア",
-        themeKey: "WIND_VILLAGE",
-        tileOverrides: {},
-        width: 29,
-        height: 21,
-        entryPoint: {
-            x: 14,
-            y: 18
+    "WIND_VILLAGE": {
+        "name": "風の集落カザリア",
+        "themeKey": "WIND_VILLAGE",
+        "tileOverrides": {},
+        "width": 29,
+        "height": 21,
+        "entryPoint": {
+            "x": 14,
+            "y": 18
         },
-        battleBg: "battle_bg_field",
-        tiles: [
+        "battleBg": "battle_bg_field",
+        "tiles": [
             "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
             "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
             "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
@@ -2555,236 +2555,236 @@ const FIXED_MAPS = {
             "WWWWWWWWWWWWWLLLWWWWWWWWWWWWW",
             "WWWWWWWWWWWWWSSSWWWWWWWWWWWWW"
         ],
-        mapActions: [
+        "mapActions": [
             {
-                x: 22,
-                y: 7,
-                label: "泊まる",
-                log: "風よけの宿屋がある。",
-                type: "inn"
+                "x": 22,
+                "y": 7,
+                "label": "泊まる",
+                "log": "風よけの宿屋がある。",
+                "type": "inn"
             },
             {
-                x: 19,
-                y: 7,
-                label: "道具を買う",
-                log: "森歩きに備えた道具屋だ。",
-                type: "shop",
-                shopType: "item",
-                title: "風の集落カザリア 道具屋",
-                shopRank: 22
+                "x": 19,
+                "y": 7,
+                "label": "道具を買う",
+                "log": "森歩きに備えた道具屋だ。",
+                "type": "shop",
+                "shopType": "item",
+                "title": "風の集落カザリア 道具屋",
+                "shopRank": 22
             },
             {
-                x: 6,
-                y: 7,
-                label: "武器を見る",
-                log: "軽く扱いやすい武器が並んでいる。",
-                type: "shop",
-                shopType: "weapon",
-                title: "風の集落カザリア 武器屋",
-                shopRank: 22
+                "x": 6,
+                "y": 7,
+                "label": "武器を見る",
+                "log": "軽く扱いやすい武器が並んでいる。",
+                "type": "shop",
+                "shopType": "weapon",
+                "title": "風の集落カザリア 武器屋",
+                "shopRank": 22
             },
             {
-                x: 9,
-                y: 7,
-                label: "防具を見る",
-                log: "森の魔物に備えた防具屋だ。",
-                type: "shop",
-                shopType: "armor",
-                title: "風の集落カザリア 防具屋",
-                shopRank: 22
+                "x": 9,
+                "y": 7,
+                "label": "防具を見る",
+                "log": "森の魔物に備えた防具屋だ。",
+                "type": "shop",
+                "shopType": "armor",
+                "title": "風の集落カザリア 防具屋",
+                "shopRank": 22
             },
             {
-                x: 3,
-                y: 7,
-                label: "見張りと話す",
-                log: "見張りが枝の揺れを追っている。",
-                type: "log",
-                imageKey: "overlay_town_wind_watch",
-                events: [
+                "x": 3,
+                "y": 7,
+                "label": "見張りと話す",
+                "log": "見張りが枝の揺れを追っている。",
+                "type": "log",
+                "imageKey": "overlay_town_wind_watch",
+                "events": [
                     {
-                        requiredFlag: "windVillageCleared",
-                        eventId: "town_wind_villager_1"
+                        "requiredFlag": "windVillageCleared",
+                        "eventId": "town_wind_villager_1"
                     },
                     {
-                        default: true,
-                        eventId: "town_wind_villager_1_before"
+                        "default": true,
+                        "eventId": "town_wind_villager_1_before"
                     }
                 ]
             },
             {
-                x: 22,
-                y: 12,
-                label: "集落の子と話す",
-                log: "子どもが小さな風鈴を握っている。",
-                type: "log",
-                imageKey: "overlay_npc_child",
-                events: [
+                "x": 22,
+                "y": 12,
+                "label": "集落の子と話す",
+                "log": "子どもが小さな風鈴を握っている。",
+                "type": "log",
+                "imageKey": "overlay_npc_child",
+                "events": [
                     {
-                        requiredFlag: "windVillageCleared",
-                        eventId: "town_wind_villager_2_after"
+                        "requiredFlag": "windVillageCleared",
+                        "eventId": "town_wind_villager_2_after"
                     },
                     {
-                        default: true,
-                        eventId: "town_wind_villager_2"
+                        "default": true,
+                        "eventId": "town_wind_villager_2"
                     }
                 ]
             },
             {
-                x: 10,
-                y: 12,
-                label: "風織り職人と話す",
-                log: "職人が、風を含んだ薄布を指で弾いている。",
-                type: "log",
-                events: [
+                "x": 10,
+                "y": 12,
+                "label": "風織り職人と話す",
+                "log": "職人が、風を含んだ薄布を指で弾いている。",
+                "type": "log",
+                "events": [
                     {
-                        requiredFlag: "windVillageCleared",
-                        eventId: "town_wind_villager_3_after"
+                        "requiredFlag": "windVillageCleared",
+                        "eventId": "town_wind_villager_3_after"
                     },
                     {
-                        default: true,
-                        eventId: "town_wind_villager_3"
+                        "default": true,
+                        "eventId": "town_wind_villager_3"
                     }
                 ],
-                imageKey: "overlay_town_wind_weaver"
+                "imageKey": "overlay_town_wind_weaver"
             },
             {
-                x: 5,
-                y: 12,
-                label: "村人から話を聞く",
-                log: "村人が禁忌の森の方を見つめている。",
-                type: "quest",
-                questId: "arisa_haine_forest_depths",
-                imageKey: "overlay_npc_villager",
-                lockedText: "今はまだ、禁忌の森の奥へ進むには危険が大きい。"
+                "x": 5,
+                "y": 12,
+                "label": "村人から話を聞く",
+                "log": "村人が禁忌の森の方を見つめている。",
+                "type": "quest",
+                "questId": "arisa_haine_forest_depths",
+                "imageKey": "overlay_npc_villager",
+                "lockedText": "今はまだ、禁忌の森の奥へ進むには危険が大きい。"
             },
             {
-                x: 19,
-                y: 15,
-                label: "エリーゼに話す",
-                log: "子どもたちが不安そうに身を寄せ合っている。",
-                type: "log",
-                imageKey: "overlay_npc_child",
-                events: [
+                "x": 19,
+                "y": 15,
+                "label": "エリーゼに話す",
+                "log": "子どもたちが不安そうに身を寄せ合っている。",
+                "type": "log",
+                "imageKey": "overlay_npc_child",
+                "events": [
                     {
-                        stepMin: 3,
-                        stepMax: 3,
-                        subMin: 0,
-                        subMax: 0,
-                        eventId: "wind_village_intro"
+                        "stepMin": 3,
+                        "stepMax": 3,
+                        "subMin": 0,
+                        "subMax": 0,
+                        "eventId": "wind_village_intro"
                     },
                     {
-                        stepMin: 0,
-                        stepMax: 2,
-                        eventId: "wind_village_before_story"
+                        "stepMin": 0,
+                        "stepMax": 2,
+                        "eventId": "wind_village_before_story"
                     },
                     {
-                        stepMin: 3,
-                        stepMax: 3,
-                        subMin: 1,
-                        subMax: 2,
-                        eventId: "wind_village_elise_during"
+                        "stepMin": 3,
+                        "stepMax": 3,
+                        "subMin": 1,
+                        "subMax": 2,
+                        "eventId": "wind_village_elise_during"
                     },
                     {
-                        stepMin: 4,
-                        stepMax: 99,
-                        eventId: "wind_village_after_clear"
+                        "stepMin": 4,
+                        "stepMax": 99,
+                        "eventId": "wind_village_after_clear"
                     },
                     {
-                        default: true,
-                        eventId: "wind_village_before_story"
+                        "default": true,
+                        "eventId": "wind_village_before_story"
                     }
                 ]
             },
             {
-                x: 0,
-                y: 8,
-                label: "禁忌の森へ入る",
-                log: "西の森から、淀んだ風が吹き込んでくる。",
-                type: "fixedDungeon",
-                target: "FORBIDDEN_FOREST",
-                requiredStoryStep: 3,
-                requiredSubStep: 1,
-                requiredStoryMissingText: "森の奥から、呼吸をひそめるような風が流れてくる。案内もなく進めば、すぐに道を失いそうだ。",
-                events: [
+                "x": 0,
+                "y": 8,
+                "label": "禁忌の森へ入る",
+                "log": "西の森から、淀んだ風が吹き込んでくる。",
+                "type": "fixedDungeon",
+                "target": "FORBIDDEN_FOREST",
+                "requiredStoryStep": 3,
+                "requiredSubStep": 1,
+                "requiredStoryMissingText": "森の奥から、呼吸をひそめるような風が流れてくる。案内もなく進めば、すぐに道を失いそうだ。",
+                "events": [
                     {
-                        stepMin: 3,
-                        stepMax: 3,
-                        subMin: 1,
-                        subMax: 1,
-                        missingFlag: "windForestEntryIntroduced",
-                        eventId: "wind_forest_entry"
+                        "stepMin": 3,
+                        "stepMax": 3,
+                        "subMin": 1,
+                        "subMax": 1,
+                        "missingFlag": "windForestEntryIntroduced",
+                        "eventId": "wind_forest_entry"
                     }
                 ]
             },
             {
-                x: 0,
-                y: 9,
-                label: "禁忌の森へ入る",
-                log: "西の森から、淀んだ風が吹き込んでくる。",
-                type: "fixedDungeon",
-                target: "FORBIDDEN_FOREST",
-                requiredStoryStep: 3,
-                requiredSubStep: 1,
-                requiredStoryMissingText: "森の奥から、呼吸をひそめるような風が流れてくる。案内もなく進めば、すぐに道を失いそうだ。",
-                events: [
+                "x": 0,
+                "y": 9,
+                "label": "禁忌の森へ入る",
+                "log": "西の森から、淀んだ風が吹き込んでくる。",
+                "type": "fixedDungeon",
+                "target": "FORBIDDEN_FOREST",
+                "requiredStoryStep": 3,
+                "requiredSubStep": 1,
+                "requiredStoryMissingText": "森の奥から、呼吸をひそめるような風が流れてくる。案内もなく進めば、すぐに道を失いそうだ。",
+                "events": [
                     {
-                        stepMin: 3,
-                        stepMax: 3,
-                        subMin: 1,
-                        subMax: 1,
-                        missingFlag: "windForestEntryIntroduced",
-                        eventId: "wind_forest_entry"
+                        "stepMin": 3,
+                        "stepMax": 3,
+                        "subMin": 1,
+                        "subMax": 1,
+                        "missingFlag": "windForestEntryIntroduced",
+                        "eventId": "wind_forest_entry"
                     }
                 ]
             },
             {
-                x: 0,
-                y: 10,
-                label: "禁忌の森へ入る",
-                log: "西の森から、淀んだ風が吹き込んでくる。",
-                type: "fixedDungeon",
-                target: "FORBIDDEN_FOREST",
-                requiredStoryStep: 3,
-                requiredSubStep: 1,
-                requiredStoryMissingText: "森の奥から、呼吸をひそめるような風が流れてくる。案内もなく進めば、すぐに道を失いそうだ。",
-                events: [
+                "x": 0,
+                "y": 10,
+                "label": "禁忌の森へ入る",
+                "log": "西の森から、淀んだ風が吹き込んでくる。",
+                "type": "fixedDungeon",
+                "target": "FORBIDDEN_FOREST",
+                "requiredStoryStep": 3,
+                "requiredSubStep": 1,
+                "requiredStoryMissingText": "森の奥から、呼吸をひそめるような風が流れてくる。案内もなく進めば、すぐに道を失いそうだ。",
+                "events": [
                     {
-                        stepMin: 3,
-                        stepMax: 3,
-                        subMin: 1,
-                        subMax: 1,
-                        missingFlag: "windForestEntryIntroduced",
-                        eventId: "wind_forest_entry"
+                        "stepMin": 3,
+                        "stepMax": 3,
+                        "subMin": 1,
+                        "subMax": 1,
+                        "missingFlag": "windForestEntryIntroduced",
+                        "eventId": "wind_forest_entry"
                     }
                 ]
             }
         ],
-        exitPoint: {
-            area: "WORLD",
-            x: 98,
-            y: 38
+        "exitPoint": {
+            "area": "WORLD",
+            "x": 98,
+            "y": 38
         },
-        chests: [
+        "chests": [
             {
-                x: 4,
-                y: 17,
-                itemId: 101,
-                type: "item"
+                "x": 4,
+                "y": 17,
+                "itemId": 101,
+                "type": "item"
             }
         ]
     },
-    WATER_CITY: {
-        name: "水上都市リヴァリア",
-        themeKey: "WATER_CITY",
-        tileOverrides: {},
-        width: 39,
-        height: 27,
-        entryPoint: {
-            x: 19,
-            y: 24
+    "WATER_CITY": {
+        "name": "水上都市リヴァリア",
+        "themeKey": "WATER_CITY",
+        "tileOverrides": {},
+        "width": 39,
+        "height": 27,
+        "entryPoint": {
+            "x": 19,
+            "y": 24
         },
-        battleBg: "battle_bg_field",
-        tiles: [
+        "battleBg": "battle_bg_field",
+        "tiles": [
             "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
             "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
             "WWWWWWWTTTTWWWWWWWWWWWWWWWWWTTTTTTWWWWW",
@@ -2813,301 +2813,301 @@ const FIXED_MAPS = {
             "WWWWWWWWWWWWWWWWWWWLWWWWWWWWWWWWWWWWWWW",
             "WWWWWWWWWWWWWWWWWWWSWWWWWWWWWWWWWWWWWWW"
         ],
-        mapActions: [
+        "mapActions": [
             {
-                x: 31,
-                y: 3,
-                label: "錬金所に入る",
-                log: "薬草と魔石の香りが漂う、水上都市の錬金所だ。",
-                type: "alchemy",
-                imageKey: "overlay_building_water_alchemy",
-                baseTile: "T",
-                blocksMovement: false,
-                buildingScale: 3,
-                suppressShadow: true
+                "x": 31,
+                "y": 3,
+                "label": "錬金所に入る",
+                "log": "薬草と魔石の香りが漂う、水上都市の錬金所だ。",
+                "type": "alchemy",
+                "imageKey": "overlay_building_water_alchemy",
+                "baseTile": "T",
+                "blocksMovement": false,
+                "buildingScale": 3,
+                "suppressShadow": true
             },
             {
-                x: 4,
-                y: 10,
-                label: "道具を買う",
-                log: "水路沿いの道具屋だ。",
-                type: "shop",
-                shopType: "item",
-                title: "水上都市リヴァリア 道具屋",
-                shopRank: 35
+                "x": 4,
+                "y": 10,
+                "label": "道具を買う",
+                "log": "水路沿いの道具屋だ。",
+                "type": "shop",
+                "shopType": "item",
+                "title": "水上都市リヴァリア 道具屋",
+                "shopRank": 35
             },
             {
-                x: 7,
-                y: 10,
-                label: "武器を見る",
-                log: "海底神殿に備えた武器を扱っている。",
-                type: "shop",
-                shopType: "weapon",
-                title: "水上都市リヴァリア 武器屋",
-                shopRank: 35
+                "x": 7,
+                "y": 10,
+                "label": "武器を見る",
+                "log": "海底神殿に備えた武器を扱っている。",
+                "type": "shop",
+                "shopType": "weapon",
+                "title": "水上都市リヴァリア 武器屋",
+                "shopRank": 35
             },
             {
-                x: 10,
-                y: 10,
-                label: "防具を見る",
-                log: "水と闇に強い防具を扱っている。",
-                type: "shop",
-                shopType: "armor",
-                title: "水上都市リヴァリア 防具屋",
-                shopRank: 35
+                "x": 10,
+                "y": 10,
+                "label": "防具を見る",
+                "log": "水と闇に強い防具を扱っている。",
+                "type": "shop",
+                "shopType": "armor",
+                "title": "水上都市リヴァリア 防具屋",
+                "shopRank": 35
             },
             {
-                x: 14,
-                y: 5,
-                label: "兵士と話す",
-                log: "黒鎧の兵士が橋を塞いでいる。",
-                type: "storyEvent",
-                eventId: "water_city_blockade_guard",
-                imageKey: "overlay_town_water_guard",
-                missingFlag: "waterCityCleared",
-                baseTile: "T"
+                "x": 14,
+                "y": 5,
+                "label": "兵士と話す",
+                "log": "黒鎧の兵士が橋を塞いでいる。",
+                "type": "storyEvent",
+                "eventId": "water_city_blockade_guard",
+                "imageKey": "overlay_town_water_guard",
+                "missingFlag": "waterCityCleared",
+                "baseTile": "T"
             },
             {
-                x: 24,
-                y: 5,
-                label: "兵士と話す",
-                log: "黒鎧の兵士が橋を塞いでいる。",
-                type: "storyEvent",
-                eventId: "water_city_blockade_guard",
-                imageKey: "overlay_town_water_guard",
-                missingFlag: "waterCityCleared",
-                baseTile: "T"
+                "x": 24,
+                "y": 5,
+                "label": "兵士と話す",
+                "log": "黒鎧の兵士が橋を塞いでいる。",
+                "type": "storyEvent",
+                "eventId": "water_city_blockade_guard",
+                "imageKey": "overlay_town_water_guard",
+                "missingFlag": "waterCityCleared",
+                "baseTile": "T"
             },
             {
-                x: 26,
-                y: 15,
-                label: "兵士と話す",
-                log: "黒鎧の兵士が橋を塞いでいる。",
-                type: "storyEvent",
-                eventId: "water_city_blockade_guard",
-                imageKey: "overlay_town_water_guard",
-                missingFlag: "waterCityCleared",
-                baseTile: "T"
+                "x": 26,
+                "y": 15,
+                "label": "兵士と話す",
+                "log": "黒鎧の兵士が橋を塞いでいる。",
+                "type": "storyEvent",
+                "eventId": "water_city_blockade_guard",
+                "imageKey": "overlay_town_water_guard",
+                "missingFlag": "waterCityCleared",
+                "baseTile": "T"
             },
             {
-                x: 17,
-                y: 8,
-                label: "老人と話す",
-                log: "老人がライザーク要塞の方角を眺めている。",
-                type: "log",
-                imageKey: "overlay_npc_elder",
-                events: [
+                "x": 17,
+                "y": 8,
+                "label": "老人と話す",
+                "log": "老人がライザーク要塞の方角を眺めている。",
+                "type": "log",
+                "imageKey": "overlay_npc_elder",
+                "events": [
                     {
-                        requiredFlag: "thunderFortCleared",
-                        eventId: "town_water_villager_1"
+                        "requiredFlag": "thunderFortCleared",
+                        "eventId": "town_water_villager_1"
                     },
                     {
-                        default: true,
-                        eventId: "town_water_villager_1_before"
+                        "default": true,
+                        "eventId": "town_water_villager_1_before"
                     }
                 ]
             },
             {
-                x: 32,
-                y: 13,
-                label: "船大工と話す",
-                log: "船大工が水路の流れを測っている。",
-                type: "log",
-                imageKey: "overlay_town_water_boatman",
-                events: [
+                "x": 32,
+                "y": 13,
+                "label": "船大工と話す",
+                "log": "船大工が水路の流れを測っている。",
+                "type": "log",
+                "imageKey": "overlay_town_water_boatman",
+                "events": [
                     {
-                        requiredFlag: "waterCityCleared",
-                        eventId: "town_water_villager_2_after"
+                        "requiredFlag": "waterCityCleared",
+                        "eventId": "town_water_villager_2_after"
                     },
                     {
-                        default: true,
-                        eventId: "town_water_villager_2"
+                        "default": true,
+                        "eventId": "town_water_villager_2"
                     }
                 ]
             },
             {
-                x: 13,
-                y: 14,
-                label: "元兵士と話す",
-                log: "元兵士が古い盾の傷を磨いている。",
-                type: "storyEvent",
-                eventId: "town_water_villager_3",
-                imageKey: "overlay_npc_bronze_knight"
+                "x": 13,
+                "y": 14,
+                "label": "元兵士と話す",
+                "log": "元兵士が古い盾の傷を磨いている。",
+                "type": "storyEvent",
+                "eventId": "town_water_villager_3",
+                "imageKey": "overlay_npc_bronze_knight"
             },
             {
-                x: 24,
-                y: 20,
-                label: "渡し守と話す",
-                log: "渡し守が、濡れた綱の結び目を確かめている。",
-                type: "log",
-                imageKey: "overlay_town_water_boatman",
-                events: [
+                "x": 24,
+                "y": 20,
+                "label": "渡し守と話す",
+                "log": "渡し守が、濡れた綱の結び目を確かめている。",
+                "type": "log",
+                "imageKey": "overlay_town_water_boatman",
+                "events": [
                     {
-                        requiredFlag: "waterCityCleared",
-                        eventId: "town_water_villager_4_after"
+                        "requiredFlag": "waterCityCleared",
+                        "eventId": "town_water_villager_4_after"
                     },
                     {
-                        default: true,
-                        eventId: "town_water_villager_4"
+                        "default": true,
+                        "eventId": "town_water_villager_4"
                     }
                 ]
             },
             {
-                x: 19,
-                y: 13,
-                label: "広場を調べる",
-                log: "濁った水路の音が、街の沈黙に混じっている。",
-                type: "log",
-                imageKey: "overlay_npc_dark_soldier",
-                imageVariants: [
+                "x": 19,
+                "y": 13,
+                "label": "広場を調べる",
+                "log": "濁った水路の音が、街の沈黙に混じっている。",
+                "type": "log",
+                "imageKey": "overlay_npc_dark_soldier",
+                "imageVariants": [
                     {
-                        requiredFlag: "waterCityIntroCleared",
-                        missingFlag: "waterCityCleared",
-                        imageKey: "overlay_companion_sophia"
+                        "requiredFlag": "waterCityIntroCleared",
+                        "missingFlag": "waterCityCleared",
+                        "imageKey": "overlay_companion_sophia"
                     }
                 ],
-                imageMissingFlag: "waterCityCleared",
-                baseTile: "T",
-                events: [
+                "imageMissingFlag": "waterCityCleared",
+                "baseTile": "T",
+                "events": [
                     {
-                        stepMin: 4,
-                        stepMax: 4,
-                        subMin: 0,
-                        subMax: 0,
-                        eventId: "water_city_intro"
+                        "stepMin": 4,
+                        "stepMax": 4,
+                        "subMin": 0,
+                        "subMax": 0,
+                        "eventId": "water_city_intro"
                     },
                     {
-                        stepMin: 0,
-                        stepMax: 3,
-                        eventId: "water_city_before_story"
+                        "stepMin": 0,
+                        "stepMax": 3,
+                        "eventId": "water_city_before_story"
                     },
                     {
-                        stepMin: 4,
-                        stepMax: 4,
-                        subMin: 1,
-                        subMax: 1,
-                        eventId: "water_city_cave_reminder"
+                        "stepMin": 4,
+                        "stepMax": 4,
+                        "subMin": 1,
+                        "subMax": 1,
+                        "eventId": "water_city_cave_reminder"
                     },
                     {
-                        stepMin: 4,
-                        stepMax: 4,
-                        subMin: 2,
-                        subMax: 2,
-                        eventId: "water_city_blue_crystal_report"
+                        "stepMin": 4,
+                        "stepMax": 4,
+                        "subMin": 2,
+                        "subMax": 2,
+                        "eventId": "water_city_blue_crystal_report"
                     },
                     {
-                        stepMin: 4,
-                        stepMax: 4,
-                        subMin: 3,
-                        subMax: 99,
-                        eventId: "water_city_sophia_after_meeting"
+                        "stepMin": 4,
+                        "stepMax": 4,
+                        "subMin": 3,
+                        "subMax": 99,
+                        "eventId": "water_city_sophia_after_meeting"
                     },
                     {
-                        stepMin: 5,
-                        stepMax: 99,
-                        eventId: "water_city_after_clear"
+                        "stepMin": 5,
+                        "stepMax": 99,
+                        "eventId": "water_city_after_clear"
                     },
                     {
-                        default: true,
-                        eventId: "water_city_before_story"
+                        "default": true,
+                        "eventId": "water_city_before_story"
                     }
                 ]
             },
             {
-                x: 8,
-                y: 20,
-                label: "マリーと話す",
-                log: "白いローブの女性が、避難民の無事を祈っている。",
-                type: "quest",
-                questId: "marie_water_city",
-                imageKey: "overlay_companion_marie",
-                lockedText: "マリーはまだ街の混乱を鎮めることで手一杯のようだ。"
+                "x": 8,
+                "y": 20,
+                "label": "マリーと話す",
+                "log": "白いローブの女性が、避難民の無事を祈っている。",
+                "type": "quest",
+                "questId": "marie_water_city",
+                "imageKey": "overlay_companion_marie",
+                "lockedText": "マリーはまだ街の混乱を鎮めることで手一杯のようだ。"
             },
             {
-                x: 29,
-                y: 21,
-                label: "ハヤテと話す",
-                log: "水路のそばに、落ち着きなく周囲を見渡す若者がいる。",
-                type: "quest",
-                questId: "hayate_water_city",
-                imageKey: "overlay_companion_hayate",
-                lockedText: "ハヤテはまだ、信頼できる案内人を待っているようだ。"
+                "x": 29,
+                "y": 21,
+                "label": "ハヤテと話す",
+                "log": "水路のそばに、落ち着きなく周囲を見渡す若者がいる。",
+                "type": "quest",
+                "questId": "hayate_water_city",
+                "imageKey": "overlay_companion_hayate",
+                "lockedText": "ハヤテはまだ、信頼できる案内人を待っているようだ。"
             },
             {
-                x: 31,
-                y: 10,
-                label: "シルビアと話す",
-                log: "優雅な身なりの貴人が、護衛を探している。",
-                type: "quest",
-                questId: "sylvia_water_city",
-                imageKey: "overlay_companion_sylvia",
-                lockedText: "シルビアはまだ、声をかける相手を見定めている。"
+                "x": 31,
+                "y": 10,
+                "label": "シルビアと話す",
+                "log": "優雅な身なりの貴人が、護衛を探している。",
+                "type": "quest",
+                "questId": "sylvia_water_city",
+                "imageKey": "overlay_companion_sylvia",
+                "lockedText": "シルビアはまだ、声をかける相手を見定めている。"
             },
             {
-                x: 32,
-                y: 15,
-                label: "ソフィアと話す",
-                log: "ソフィアが、神殿奥の水流について記録を読み返している。",
-                type: "quest",
-                questId: "sophia_alan_seabed_depths",
-                imageKey: "overlay_companion_sophia",
-                lockedText: "今はまだ、海底神殿の奥へ進む手段がない。"
+                "x": 32,
+                "y": 15,
+                "label": "ソフィアと話す",
+                "log": "ソフィアが、神殿奥の水流について記録を読み返している。",
+                "type": "quest",
+                "questId": "sophia_alan_seabed_depths",
+                "imageKey": "overlay_companion_sophia",
+                "lockedText": "今はまだ、海底神殿の奥へ進む手段がない。"
             },
             {
-                x: 31,
-                y: 15,
-                label: "アランと話す",
-                log: "アランが、神殿奥へ向かう水路を見つめている。",
-                type: "quest",
-                questId: "sophia_alan_seabed_depths",
-                imageKey: "overlay_companion_alan",
-                lockedText: "今はまだ、海底神殿の奥へ進む手段がない。"
+                "x": 31,
+                "y": 15,
+                "label": "アランと話す",
+                "log": "アランが、神殿奥へ向かう水路を見つめている。",
+                "type": "quest",
+                "questId": "sophia_alan_seabed_depths",
+                "imageKey": "overlay_companion_alan",
+                "lockedText": "今はまだ、海底神殿の奥へ進む手段がない。"
             }
         ],
-        exitPoint: {
-            area: "WORLD",
-            x: 68,
-            y: 22
+        "exitPoint": {
+            "area": "WORLD",
+            "x": 68,
+            "y": 22
         },
-        chests: [
+        "chests": [
             {
-                x: 7,
-                y: 3,
-                itemId: 100,
-                type: "item"
+                "x": 7,
+                "y": 3,
+                "itemId": 100,
+                "type": "item"
             },
             {
-                x: 8,
-                y: 3,
-                itemId: 7,
-                type: "item"
+                "x": 8,
+                "y": 3,
+                "itemId": 7,
+                "type": "item"
             },
             {
-                x: 9,
-                y: 3,
-                itemId: 6,
-                type: "item"
+                "x": 9,
+                "y": 3,
+                "itemId": 6,
+                "type": "item"
             },
             {
-                x: 10,
-                y: 3,
-                itemId: 99,
-                type: "item"
+                "x": 10,
+                "y": 3,
+                "itemId": 99,
+                "type": "item"
             }
         ]
     },
-    ABYSS_FIELD: {
-        name: "深淵の魔窟 外縁",
-        themeKey: "ABYSS_FIELD",
-        tileOverrides: {},
-        width: 17,
-        height: 15,
-        entryPoint: {
-            x: 8,
-            y: 12
+    "ABYSS_FIELD": {
+        "name": "深淵の魔窟 外縁",
+        "themeKey": "ABYSS_FIELD",
+        "tileOverrides": {},
+        "width": 17,
+        "height": 15,
+        "entryPoint": {
+            "x": 8,
+            "y": 12
         },
-        battleBg: "battle_bg_field",
-        tiles: [
+        "battleBg": "battle_bg_field",
+        "tiles": [
             "WWWWWWWWWWWWWWWWW",
             "WGGGGGGGWWGGGGGGW",
             "WGWWGGGGGGGGGWWGW",
@@ -3124,321 +3124,321 @@ const FIXED_MAPS = {
             "WWWWWGGGGGGGWWWWW",
             "WWWWWWWWSWWWWWWWW"
         ],
-        floorDecorations: [
+        "floorDecorations": [
             {
-                authoredPlacementId: "abyss-chasm-nw",
-                type: "image",
-                imageKey: "overlay_abyss_outer_chasm_nw",
-                x: 7,
-                y: 6,
-                blocking: false,
-                baseTile: "T"
+                "authoredPlacementId": "abyss-chasm-nw",
+                "type": "image",
+                "imageKey": "overlay_abyss_outer_chasm_nw",
+                "x": 7,
+                "y": 6,
+                "blocking": false,
+                "baseTile": "T"
             },
             {
-                authoredPlacementId: "abyss-chasm-n",
-                type: "image",
-                imageKey: "overlay_abyss_outer_chasm_n",
-                x: 8,
-                y: 6,
-                blocking: false,
-                baseTile: "T"
+                "authoredPlacementId": "abyss-chasm-n",
+                "type": "image",
+                "imageKey": "overlay_abyss_outer_chasm_n",
+                "x": 8,
+                "y": 6,
+                "blocking": false,
+                "baseTile": "T"
             },
             {
-                authoredPlacementId: "abyss-chasm-ne",
-                type: "image",
-                imageKey: "overlay_abyss_outer_chasm_ne",
-                x: 9,
-                y: 6,
-                blocking: false,
-                baseTile: "T"
+                "authoredPlacementId": "abyss-chasm-ne",
+                "type": "image",
+                "imageKey": "overlay_abyss_outer_chasm_ne",
+                "x": 9,
+                "y": 6,
+                "blocking": false,
+                "baseTile": "T"
             },
             {
-                authoredPlacementId: "abyss-chasm-w",
-                type: "image",
-                imageKey: "overlay_abyss_outer_chasm_w",
-                x: 7,
-                y: 7,
-                blocking: false,
-                baseTile: "T"
+                "authoredPlacementId": "abyss-chasm-w",
+                "type": "image",
+                "imageKey": "overlay_abyss_outer_chasm_w",
+                "x": 7,
+                "y": 7,
+                "blocking": false,
+                "baseTile": "T"
             },
             {
-                authoredPlacementId: "abyss-chasm-c",
-                type: "image",
-                imageKey: "overlay_abyss_outer_chasm_c",
-                x: 8,
-                y: 7,
-                blocking: false,
-                baseTile: "T"
+                "authoredPlacementId": "abyss-chasm-c",
+                "type": "image",
+                "imageKey": "overlay_abyss_outer_chasm_c",
+                "x": 8,
+                "y": 7,
+                "blocking": false,
+                "baseTile": "T"
             },
             {
-                authoredPlacementId: "abyss-chasm-e",
-                type: "image",
-                imageKey: "overlay_abyss_outer_chasm_e",
-                x: 9,
-                y: 7,
-                blocking: false,
-                baseTile: "T"
+                "authoredPlacementId": "abyss-chasm-e",
+                "type": "image",
+                "imageKey": "overlay_abyss_outer_chasm_e",
+                "x": 9,
+                "y": 7,
+                "blocking": false,
+                "baseTile": "T"
             },
             {
-                authoredPlacementId: "abyss-chasm-sw",
-                type: "image",
-                imageKey: "overlay_abyss_outer_chasm_sw",
-                x: 7,
-                y: 8,
-                blocking: false,
-                baseTile: "T"
+                "authoredPlacementId": "abyss-chasm-sw",
+                "type": "image",
+                "imageKey": "overlay_abyss_outer_chasm_sw",
+                "x": 7,
+                "y": 8,
+                "blocking": false,
+                "baseTile": "T"
             },
             {
-                authoredPlacementId: "abyss-chasm-s",
-                type: "image",
-                imageKey: "overlay_abyss_outer_chasm_s",
-                x: 8,
-                y: 8,
-                blocking: false,
-                baseTile: "T"
+                "authoredPlacementId": "abyss-chasm-s",
+                "type": "image",
+                "imageKey": "overlay_abyss_outer_chasm_s",
+                "x": 8,
+                "y": 8,
+                "blocking": false,
+                "baseTile": "T"
             },
             {
-                authoredPlacementId: "abyss-chasm-se",
-                type: "image",
-                imageKey: "overlay_abyss_outer_chasm_se",
-                x: 9,
-                y: 8,
-                blocking: false,
-                baseTile: "T"
+                "authoredPlacementId": "abyss-chasm-se",
+                "type": "image",
+                "imageKey": "overlay_abyss_outer_chasm_se",
+                "x": 9,
+                "y": 8,
+                "blocking": false,
+                "baseTile": "T"
             }
         ],
-        blockingObjects: [
+        "blockingObjects": [
             {
-                x: 7,
-                y: 6,
-                baseTile: "T",
-                log: "奈落が口を開けている。"
+                "x": 7,
+                "y": 6,
+                "baseTile": "T",
+                "log": "奈落が口を開けている。"
             },
             {
-                x: 8,
-                y: 6,
-                baseTile: "T",
-                log: "奈落が口を開けている。"
+                "x": 8,
+                "y": 6,
+                "baseTile": "T",
+                "log": "奈落が口を開けている。"
             },
             {
-                x: 9,
-                y: 6,
-                baseTile: "T",
-                log: "奈落が口を開けている。"
+                "x": 9,
+                "y": 6,
+                "baseTile": "T",
+                "log": "奈落が口を開けている。"
             },
             {
-                x: 7,
-                y: 7,
-                baseTile: "T",
-                log: "奈落が口を開けている。"
+                "x": 7,
+                "y": 7,
+                "baseTile": "T",
+                "log": "奈落が口を開けている。"
             },
             {
-                x: 8,
-                y: 7,
-                baseTile: "T",
-                log: "闇がどこまでも続いている。"
+                "x": 8,
+                "y": 7,
+                "baseTile": "T",
+                "log": "闇がどこまでも続いている。"
             },
             {
-                x: 9,
-                y: 7,
-                baseTile: "T",
-                log: "奈落が口を開けている。"
+                "x": 9,
+                "y": 7,
+                "baseTile": "T",
+                "log": "奈落が口を開けている。"
             },
             {
-                x: 7,
-                y: 8,
-                baseTile: "T",
-                log: "奈落が口を開けている。"
+                "x": 7,
+                "y": 8,
+                "baseTile": "T",
+                "log": "奈落が口を開けている。"
             },
             {
-                x: 8,
-                y: 8,
-                baseTile: "T",
-                log: "奈落が口を開けている。"
+                "x": 8,
+                "y": 8,
+                "baseTile": "T",
+                "log": "奈落が口を開けている。"
             },
             {
-                x: 9,
-                y: 8,
-                baseTile: "T",
-                log: "奈落が口を開けている。"
+                "x": 9,
+                "y": 8,
+                "baseTile": "T",
+                "log": "奈落が口を開けている。"
             },
             {
-                x: 8,
-                y: 4,
-                imageKey: "overlay_abyss_outer_ruined_altar",
-                drawWidth: 96,
-                drawHeight: 64,
-                baseTile: "T",
-                log: "崩れた祭壇には、古い儀式の痕跡が残っている。"
+                "x": 8,
+                "y": 4,
+                "imageKey": "overlay_abyss_outer_ruined_altar",
+                "drawWidth": 96,
+                "drawHeight": 64,
+                "baseTile": "T",
+                "log": "崩れた祭壇には、古い儀式の痕跡が残っている。"
             },
             {
-                x: 7,
-                y: 4,
-                baseTile: "T",
-                log: "崩れた祭壇が道を塞いでいる。"
+                "x": 7,
+                "y": 4,
+                "baseTile": "T",
+                "log": "崩れた祭壇が道を塞いでいる。"
             },
             {
-                x: 9,
-                y: 4,
-                baseTile: "T",
-                log: "崩れた祭壇が道を塞いでいる。"
+                "x": 9,
+                "y": 4,
+                "baseTile": "T",
+                "log": "崩れた祭壇が道を塞いでいる。"
             },
             {
-                x: 4,
-                y: 4,
-                imageKey: "overlay_abyss_outer_intact_column",
-                drawWidth: 40,
-                drawHeight: 64,
-                baseTile: "T",
-                log: "亀裂だらけの柱が、奇跡的に立ち続けている。"
+                "x": 4,
+                "y": 4,
+                "imageKey": "overlay_abyss_outer_intact_column",
+                "drawWidth": 40,
+                "drawHeight": 64,
+                "baseTile": "T",
+                "log": "亀裂だらけの柱が、奇跡的に立ち続けている。"
             },
             {
-                x: 12,
-                y: 4,
-                imageKey: "overlay_abyss_outer_intact_column",
-                drawWidth: 40,
-                drawHeight: 64,
-                baseTile: "T",
-                log: "柱の頂には、プリズムを支えた枠だけが残っている。"
+                "x": 12,
+                "y": 4,
+                "imageKey": "overlay_abyss_outer_intact_column",
+                "drawWidth": 40,
+                "drawHeight": 64,
+                "baseTile": "T",
+                "log": "柱の頂には、プリズムを支えた枠だけが残っている。"
             },
             {
-                x: 4,
-                y: 10,
-                imageKey: "overlay_abyss_outer_broken_column_stump",
-                drawWidth: 44,
-                drawHeight: 40,
-                baseTile: "T",
-                log: "折れた柱の内部から、古い金属の導線が覗いている。"
+                "x": 4,
+                "y": 10,
+                "imageKey": "overlay_abyss_outer_broken_column_stump",
+                "drawWidth": 44,
+                "drawHeight": 40,
+                "baseTile": "T",
+                "log": "折れた柱の内部から、古い金属の導線が覗いている。"
             },
             {
-                x: 12,
-                y: 10,
-                imageKey: "overlay_abyss_outer_fallen_pillar",
-                drawWidth: 64,
-                drawHeight: 64,
-                baseTile: "T",
-                log: "折れた柱には、読めない文字が刻まれている。"
+                "x": 12,
+                "y": 10,
+                "imageKey": "overlay_abyss_outer_fallen_pillar",
+                "drawWidth": 64,
+                "drawHeight": 64,
+                "baseTile": "T",
+                "log": "折れた柱には、読めない文字が刻まれている。"
             },
             {
-                x: 12,
-                y: 9,
-                baseTile: "T",
-                invisible: true,
-                log: "倒れた柱が斜めに通路を塞いでいる。"
+                "x": 12,
+                "y": 9,
+                "baseTile": "T",
+                "invisible": true,
+                "log": "倒れた柱が斜めに通路を塞いでいる。"
             },
             {
-                x: 11,
-                y: 10,
-                baseTile: "T",
-                invisible: true,
-                log: "倒れた柱が斜めに通路を塞いでいる。"
+                "x": 11,
+                "y": 10,
+                "baseTile": "T",
+                "invisible": true,
+                "log": "倒れた柱が斜めに通路を塞いでいる。"
             },
             {
-                x: 5,
-                y: 5,
-                imageKey: "overlay_abyss_outer_prism_pedestal_intact",
-                drawWidth: 34,
-                drawHeight: 30,
-                baseTile: "T",
-                log: "空になった台座。かつて何かが載せられていたようだ。"
+                "x": 5,
+                "y": 5,
+                "imageKey": "overlay_abyss_outer_prism_pedestal_intact",
+                "drawWidth": 34,
+                "drawHeight": 30,
+                "baseTile": "T",
+                "log": "空になった台座。かつて何かが載せられていたようだ。"
             },
             {
-                x: 11,
-                y: 5,
-                imageKey: "overlay_abyss_outer_prism_pedestal_collapsed",
-                drawWidth: 38,
-                drawHeight: 30,
-                baseTile: "T",
-                log: "台座は崩れ、紫色の欠片だけが散らばっている。"
+                "x": 11,
+                "y": 5,
+                "imageKey": "overlay_abyss_outer_prism_pedestal_collapsed",
+                "drawWidth": 38,
+                "drawHeight": 30,
+                "baseTile": "T",
+                "log": "台座は崩れ、紫色の欠片だけが散らばっている。"
             },
             {
-                x: 5,
-                y: 7,
-                imageKey: "overlay_abyss_outer_prism_pedestal_collapsed",
-                drawWidth: 38,
-                drawHeight: 30,
-                baseTile: "T",
-                log: "壊れた固定具が、奈落の方を向いている。"
+                "x": 5,
+                "y": 7,
+                "imageKey": "overlay_abyss_outer_prism_pedestal_collapsed",
+                "drawWidth": 38,
+                "drawHeight": 30,
+                "baseTile": "T",
+                "log": "壊れた固定具が、奈落の方を向いている。"
             },
             {
-                x: 11,
-                y: 7,
-                imageKey: "overlay_abyss_outer_prism_pedestal_intact",
-                drawWidth: 34,
-                drawHeight: 30,
-                baseTile: "T",
-                log: "六角形の窪みには、プリズムらしき傷跡がある。"
+                "x": 11,
+                "y": 7,
+                "imageKey": "overlay_abyss_outer_prism_pedestal_intact",
+                "drawWidth": 34,
+                "drawHeight": 30,
+                "baseTile": "T",
+                "log": "六角形の窪みには、プリズムらしき傷跡がある。"
             },
             {
-                x: 6,
-                y: 9,
-                imageKey: "overlay_abyss_outer_prism_pedestal_intact",
-                drawWidth: 34,
-                drawHeight: 30,
-                baseTile: "T",
-                log: "台座から伸びる古い導線は、奈落の縁で途切れている。"
+                "x": 6,
+                "y": 9,
+                "imageKey": "overlay_abyss_outer_prism_pedestal_intact",
+                "drawWidth": 34,
+                "drawHeight": 30,
+                "baseTile": "T",
+                "log": "台座から伸びる古い導線は、奈落の縁で途切れている。"
             },
             {
-                x: 10,
-                y: 9,
-                imageKey: "overlay_abyss_outer_prism_pedestal_collapsed",
-                drawWidth: 38,
-                drawHeight: 30,
-                baseTile: "T",
-                log: "崩れた台座に、微かな光を失った結晶片が残っている。"
+                "x": 10,
+                "y": 9,
+                "imageKey": "overlay_abyss_outer_prism_pedestal_collapsed",
+                "drawWidth": 38,
+                "drawHeight": 30,
+                "baseTile": "T",
+                "log": "崩れた台座に、微かな光を失った結晶片が残っている。"
             }
         ],
-        mapActions: [
+        "mapActions": [
             {
-                x: 8,
-                y: 7,
-                minimapColor: "#9c64db",
-                baseTile: "T",
-                interactionArea: {
-                    x: 7,
-                    y: 6,
-                    width: 3,
-                    height: 3
+                "x": 8,
+                "y": 7,
+                "minimapColor": "#9c64db",
+                "baseTile": "T",
+                "interactionArea": {
+                    "x": 7,
+                    "y": 6,
+                    "width": 3,
+                    "height": 3
                 },
-                interactFromAdjacent: true,
-                label: "魔窟に入る",
-                log: "闇がどこまでも続いているような穴がある。",
-                type: "abyssDungeon",
-                events: [
+                "interactFromAdjacent": true,
+                "label": "魔窟に入る",
+                "log": "闇がどこまでも続いているような穴がある。",
+                "type": "abyssDungeon",
+                "events": [
                     {
-                        stepMin: 9,
-                        stepMax: 9,
-                        missingFlag: "abyssOuterReached",
-                        eventId: "abyss_unsealed"
+                        "stepMin": 9,
+                        "stepMax": 9,
+                        "missingFlag": "abyssOuterReached",
+                        "eventId": "abyss_unsealed"
                     }
                 ]
             }
         ],
-        exitPoint: {
-            area: "WORLD",
-            x: 51,
-            y: 56
+        "exitPoint": {
+            "area": "WORLD",
+            "x": 51,
+            "y": 56
         }
     },
-    RUINED_SHRINE: {
-        name: "朽ちた祠",
-        themeKey: "RUINED_SHRINE",
-        isDungeon: true,
-        hideFloorLabel: true,
-        disableRandomEncounters: true,
-        autoExitOnPerimeter: true,
-        perimeterExitMiniMapColor: "#766746",
-        wallFaceImg: "tile_ruined_shrine_wall_face",
-        wallFaceTorchImg: "tile_ruined_shrine_wall_face_rooted",
-        tileOverrides: {},
-        width: 19,
-        height: 19,
-        entryPoint: {
-            x: 9,
-            y: 17
+    "RUINED_SHRINE": {
+        "name": "朽ちた祠",
+        "themeKey": "RUINED_SHRINE",
+        "isDungeon": true,
+        "hideFloorLabel": true,
+        "disableRandomEncounters": true,
+        "autoExitOnPerimeter": true,
+        "perimeterExitMiniMapColor": "#766746",
+        "wallFaceImg": "tile_ruined_shrine_wall_face",
+        "wallFaceTorchImg": "tile_ruined_shrine_wall_face_rooted",
+        "tileOverrides": {},
+        "width": 19,
+        "height": 19,
+        "entryPoint": {
+            "x": 9,
+            "y": 17
         },
-        battleBg: "battle_bg_dark_shrine",
-        tiles: [
+        "battleBg": "battle_bg_dark_shrine",
+        "tiles": [
             "SSSSSSSSSSSSSSSSSSS",
             "SGGGGGGGGGGGGGGGGGS",
             "SGWWWWWWWWWWWWWWWGS",
@@ -3459,342 +3459,342 @@ const FIXED_MAPS = {
             "SGGGGGGGGGGGGGGGGGS",
             "SSSSSSSSSSSSSSSSSSS"
         ],
-        floorDecorations: [
+        "floorDecorations": [
             {
-                type: "image",
-                imageKey: "overlay_ruined_shrine_raised_stage_a",
-                x: 8,
-                y: 4,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_ruined_shrine_raised_stage_a",
+                "x": 8,
+                "y": 4,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_ruined_shrine_raised_stage_b",
-                x: 9,
-                y: 4,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_ruined_shrine_raised_stage_b",
+                "x": 9,
+                "y": 4,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_ruined_shrine_raised_stage_c",
-                x: 10,
-                y: 4,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_ruined_shrine_raised_stage_c",
+                "x": 10,
+                "y": 4,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_ruined_shrine_raised_stage_d",
-                x: 8,
-                y: 5,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_ruined_shrine_raised_stage_d",
+                "x": 8,
+                "y": 5,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_ruined_shrine_raised_stage_e",
-                x: 9,
-                y: 5,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_ruined_shrine_raised_stage_e",
+                "x": 9,
+                "y": 5,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_ruined_shrine_raised_stage_f",
-                x: 10,
-                y: 5,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_ruined_shrine_raised_stage_f",
+                "x": 10,
+                "y": 5,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             }
         ],
-        blockingObjects: [
+        "blockingObjects": [
             {
-                x: 8,
-                y: 4,
-                baseTile: "T"
+                "x": 8,
+                "y": 4,
+                "baseTile": "T"
             },
             {
-                x: 10,
-                y: 4,
-                baseTile: "T"
+                "x": 10,
+                "y": 4,
+                "baseTile": "T"
             },
             {
-                x: 8,
-                y: 5,
-                baseTile: "T"
+                "x": 8,
+                "y": 5,
+                "baseTile": "T"
             },
             {
-                x: 10,
-                y: 5,
-                baseTile: "T"
+                "x": 10,
+                "y": 5,
+                "baseTile": "T"
             },
             {
-                x: 4,
-                y: 5,
-                imageKey: "overlay_ruined_shrine_pillar",
-                drawWidth: 48,
-                drawHeight: 72,
-                baseTile: "T"
+                "x": 4,
+                "y": 5,
+                "imageKey": "overlay_ruined_shrine_pillar",
+                "drawWidth": 48,
+                "drawHeight": 72,
+                "baseTile": "T"
             },
             {
-                x: 14,
-                y: 5,
-                imageKey: "overlay_ruined_shrine_pillar",
-                drawWidth: 48,
-                drawHeight: 72,
-                baseTile: "T"
+                "x": 14,
+                "y": 5,
+                "imageKey": "overlay_ruined_shrine_pillar",
+                "drawWidth": 48,
+                "drawHeight": 72,
+                "baseTile": "T"
             },
             {
-                x: 4,
-                y: 13,
-                imageKey: "overlay_ruined_shrine_pillar",
-                drawWidth: 48,
-                drawHeight: 72,
-                baseTile: "T"
+                "x": 4,
+                "y": 13,
+                "imageKey": "overlay_ruined_shrine_pillar",
+                "drawWidth": 48,
+                "drawHeight": 72,
+                "baseTile": "T"
             },
             {
-                x: 14,
-                y: 13,
-                imageKey: "overlay_ruined_shrine_pillar",
-                drawWidth: 48,
-                drawHeight: 72,
-                baseTile: "T"
+                "x": 14,
+                "y": 13,
+                "imageKey": "overlay_ruined_shrine_pillar",
+                "drawWidth": 48,
+                "drawHeight": 72,
+                "baseTile": "T"
             },
             {
-                x: 5,
-                y: 7,
-                imageKey: "maplib_dark_gargoyle_statue",
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "x": 5,
+                "y": 7,
+                "imageKey": "maplib_dark_gargoyle_statue",
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                x: 13,
-                y: 7,
-                imageKey: "maplib_dark_gargoyle_statue",
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "x": 13,
+                "y": 7,
+                "imageKey": "maplib_dark_gargoyle_statue",
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                x: 6,
-                y: 11,
-                imageKey: "maplib_dark_sealed_obelisk",
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "x": 6,
+                "y": 11,
+                "imageKey": "maplib_dark_sealed_obelisk",
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                x: 12,
-                y: 11,
-                imageKey: "maplib_dark_sealed_obelisk",
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "x": 12,
+                "y": 11,
+                "imageKey": "maplib_dark_sealed_obelisk",
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                x: 7,
-                y: 4,
-                imageKey: "maplib_ruins_ritual_brazier",
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "x": 7,
+                "y": 4,
+                "imageKey": "maplib_ruins_ritual_brazier",
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                x: 11,
-                y: 4,
-                imageKey: "maplib_ruins_ritual_brazier",
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "x": 11,
+                "y": 4,
+                "imageKey": "maplib_ruins_ritual_brazier",
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                x: 6,
-                y: 5,
-                imageKey: "maplib_ruins_ritual_brazier",
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "x": 6,
+                "y": 5,
+                "imageKey": "maplib_ruins_ritual_brazier",
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                x: 12,
-                y: 5,
-                imageKey: "maplib_ruins_ritual_brazier",
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "x": 12,
+                "y": 5,
+                "imageKey": "maplib_ruins_ritual_brazier",
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                x: 9,
-                y: 9,
-                imageKey: "overlay_ruined_shrine_ritual_astrolabe",
-                drawWidth: 40,
-                drawHeight: 40,
-                baseTile: "T"
+                "x": 9,
+                "y": 9,
+                "imageKey": "overlay_ruined_shrine_ritual_astrolabe",
+                "drawWidth": 40,
+                "drawHeight": 40,
+                "baseTile": "T"
             },
             {
-                x: 5,
-                y: 10,
-                imageKey: "maplib_ruins_weathered_rune",
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "x": 5,
+                "y": 10,
+                "imageKey": "maplib_ruins_weathered_rune",
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                x: 13,
-                y: 10,
-                imageKey: "maplib_ruins_weathered_rune",
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "x": 13,
+                "y": 10,
+                "imageKey": "maplib_ruins_weathered_rune",
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                x: 3,
-                y: 8,
-                imageKey: "overlay_ruined_shrine_rusted_sword",
-                drawWidth: 18,
-                drawHeight: 28,
-                baseTile: "T"
+                "x": 3,
+                "y": 8,
+                "imageKey": "overlay_ruined_shrine_rusted_sword",
+                "drawWidth": 18,
+                "drawHeight": 28,
+                "baseTile": "T"
             },
             {
-                x: 12,
-                y: 6,
-                imageKey: "overlay_ruined_shrine_rusted_sword",
-                drawWidth: 18,
-                drawHeight: 28,
-                baseTile: "T"
+                "x": 12,
+                "y": 6,
+                "imageKey": "overlay_ruined_shrine_rusted_sword",
+                "drawWidth": 18,
+                "drawHeight": 28,
+                "baseTile": "T"
             },
             {
-                x: 4,
-                y: 9,
-                imageKey: "overlay_ruined_shrine_rusted_sword",
-                drawWidth: 18,
-                drawHeight: 28,
-                baseTile: "T"
+                "x": 4,
+                "y": 9,
+                "imageKey": "overlay_ruined_shrine_rusted_sword",
+                "drawWidth": 18,
+                "drawHeight": 28,
+                "baseTile": "T"
             },
             {
-                x: 8,
-                y: 7,
-                imageKey: "overlay_ruined_shrine_rusted_spear",
-                drawWidth: 14,
-                drawHeight: 30,
-                baseTile: "T"
+                "x": 8,
+                "y": 7,
+                "imageKey": "overlay_ruined_shrine_rusted_spear",
+                "drawWidth": 14,
+                "drawHeight": 30,
+                "baseTile": "T"
             },
             {
-                x: 14,
-                y: 8,
-                imageKey: "overlay_ruined_shrine_rusted_spear",
-                drawWidth: 14,
-                drawHeight: 30,
-                baseTile: "T"
+                "x": 14,
+                "y": 8,
+                "imageKey": "overlay_ruined_shrine_rusted_spear",
+                "drawWidth": 14,
+                "drawHeight": 30,
+                "baseTile": "T"
             },
             {
-                x: 7,
-                y: 10,
-                imageKey: "overlay_ruined_shrine_rusted_spear",
-                drawWidth: 14,
-                drawHeight: 30,
-                baseTile: "T"
+                "x": 7,
+                "y": 10,
+                "imageKey": "overlay_ruined_shrine_rusted_spear",
+                "drawWidth": 14,
+                "drawHeight": 30,
+                "baseTile": "T"
             },
             {
-                x: 10,
-                y: 7,
-                imageKey: "overlay_ruined_shrine_rusted_axe",
-                drawWidth: 22,
-                drawHeight: 26,
-                baseTile: "T"
+                "x": 10,
+                "y": 7,
+                "imageKey": "overlay_ruined_shrine_rusted_axe",
+                "drawWidth": 22,
+                "drawHeight": 26,
+                "baseTile": "T"
             },
             {
-                x: 12,
-                y: 9,
-                imageKey: "overlay_ruined_shrine_rusted_axe",
-                drawWidth: 22,
-                drawHeight: 26,
-                baseTile: "T"
+                "x": 12,
+                "y": 9,
+                "imageKey": "overlay_ruined_shrine_rusted_axe",
+                "drawWidth": 22,
+                "drawHeight": 26,
+                "baseTile": "T"
             },
             {
-                x: 8,
-                y: 12,
-                imageKey: "overlay_ruined_shrine_rusted_axe",
-                drawWidth: 22,
-                drawHeight: 26,
-                baseTile: "T"
+                "x": 8,
+                "y": 12,
+                "imageKey": "overlay_ruined_shrine_rusted_axe",
+                "drawWidth": 22,
+                "drawHeight": 26,
+                "baseTile": "T"
             }
         ],
-        mapActions: [
+        "mapActions": [
             {
-                x: 9,
-                y: 4,
-                label: "石碑に触れる",
-                imageKey: "maplib_ruins_ancient_tablet",
-                renderAsBlockingObject: true,
-                interactFromAdjacent: true,
-                drawWidth: 32,
-                drawHeight: 40,
-                baseTile: "T",
-                minimapColor: "#8f7dff",
-                requiredItemId: 98,
-                requiredItemMissingText: "不思議な気配を感じる…",
-                log: "石碑からただならぬ気配があふれ出した……",
-                type: "boss",
-                monsterId: 902000,
-                special: true,
-                confirmText: "『災厄の楔』が石碑に呼応している……<br>ギルガメッシュに挑みますか？<br><span style='color:#f44; font-size:11px;'>※この戦いからは逃げられません</span>"
+                "x": 9,
+                "y": 4,
+                "label": "石碑に触れる",
+                "imageKey": "maplib_ruins_ancient_tablet",
+                "renderAsBlockingObject": true,
+                "interactFromAdjacent": true,
+                "drawWidth": 32,
+                "drawHeight": 40,
+                "baseTile": "T",
+                "minimapColor": "#8f7dff",
+                "requiredItemId": 98,
+                "requiredItemMissingText": "不思議な気配を感じる…",
+                "log": "石碑からただならぬ気配があふれ出した……",
+                "type": "boss",
+                "monsterId": 902000,
+                "special": true,
+                "confirmText": "『災厄の楔』が石碑に呼応している……<br>ギルガメッシュに挑みますか？<br><span style='color:#f44; font-size:11px;'>※この戦いからは逃げられません</span>"
             }
         ],
-        chests: [
+        "chests": [
             {
-                x: 3,
-                y: 14,
-                itemId: 4,
-                type: "item",
-                containerKind: "pot",
-                imageKey: "overlay_field_pot",
-                openedImageKey: "overlay_field_pot"
+                "x": 3,
+                "y": 14,
+                "itemId": 4,
+                "type": "item",
+                "containerKind": "pot",
+                "imageKey": "overlay_field_pot",
+                "openedImageKey": "overlay_field_pot"
             },
             {
-                x: 15,
-                y: 14,
-                itemId: 99,
-                type: "item",
-                containerKind: "pot",
-                imageKey: "overlay_field_pot",
-                openedImageKey: "overlay_field_pot"
+                "x": 15,
+                "y": 14,
+                "itemId": 99,
+                "type": "item",
+                "containerKind": "pot",
+                "imageKey": "overlay_field_pot",
+                "openedImageKey": "overlay_field_pot"
             }
         ],
-        exitPoint: {
-            area: "WORLD",
-            x: 58,
-            y: 56
+        "exitPoint": {
+            "area": "WORLD",
+            "x": 58,
+            "y": 56
         }
     },
-    TRIAL_ISLAND: {
-        name: "最果ての祠",
-        themeKey: "TRIAL_SHRINE",
-        isDungeon: false,
-        useDungeonWallFace: true,
-        hideFloorLabel: true,
-        disableRandomEncounters: true,
-        autoExitOnPerimeter: true,
-        perimeterExitMiniMapColor: "#76a36a",
-        wallFaceImg: "tile_trial_shrine_wall_face",
-        tileOverrides: {},
-        width: 25,
-        height: 21,
-        entryPoint: {
-            x: 12,
-            y: 19
+    "TRIAL_ISLAND": {
+        "name": "最果ての祠",
+        "themeKey": "TRIAL_SHRINE",
+        "isDungeon": false,
+        "useDungeonWallFace": true,
+        "hideFloorLabel": true,
+        "disableRandomEncounters": true,
+        "autoExitOnPerimeter": true,
+        "perimeterExitMiniMapColor": "#76a36a",
+        "wallFaceImg": "tile_trial_shrine_wall_face",
+        "tileOverrides": {},
+        "width": 25,
+        "height": 21,
+        "entryPoint": {
+            "x": 12,
+            "y": 19
         },
-        battleBg: "battle_bg_trial_shrine",
-        tiles: [
+        "battleBg": "battle_bg_trial_shrine",
+        "tiles": [
             "SSSSSSSSSSSSSSSSSSSSSSSSS",
             "SGCWWWWWWWWWWWWWWWWWWWGGS",
             "SGGWWWWWWWWWWWWWWWWWWWGGS",
@@ -3817,280 +3817,280 @@ const FIXED_MAPS = {
             "SGGGGGGGGGGGGGGGGGGGGGGGS",
             "SSSSSSSSSSSSSSSSSSSSSSSSS"
         ],
-        floorDecorations: [
+        "floorDecorations": [
             {
-                type: "image",
-                imageKey: "overlay_trial_shrine_stage_a",
-                x: 10,
-                y: 3,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_trial_shrine_stage_a",
+                "x": 10,
+                "y": 3,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_trial_shrine_stage_b",
-                x: 11,
-                y: 3,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_trial_shrine_stage_b",
+                "x": 11,
+                "y": 3,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_trial_shrine_stage_c",
-                x: 12,
-                y: 3,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_trial_shrine_stage_c",
+                "x": 12,
+                "y": 3,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_trial_shrine_stage_d",
-                x: 13,
-                y: 3,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_trial_shrine_stage_d",
+                "x": 13,
+                "y": 3,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_trial_shrine_stage_e",
-                x: 14,
-                y: 3,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_trial_shrine_stage_e",
+                "x": 14,
+                "y": 3,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_trial_shrine_stage_f",
-                x: 10,
-                y: 4,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_trial_shrine_stage_f",
+                "x": 10,
+                "y": 4,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_trial_shrine_stage_g",
-                x: 11,
-                y: 4,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_trial_shrine_stage_g",
+                "x": 11,
+                "y": 4,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_trial_shrine_stage_h",
-                x: 12,
-                y: 4,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_trial_shrine_stage_h",
+                "x": 12,
+                "y": 4,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_trial_shrine_stage_i",
-                x: 13,
-                y: 4,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_trial_shrine_stage_i",
+                "x": 13,
+                "y": 4,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_trial_shrine_stage_j",
-                x: 14,
-                y: 4,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_trial_shrine_stage_j",
+                "x": 14,
+                "y": 4,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_trial_shrine_stage_k",
-                x: 10,
-                y: 5,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_trial_shrine_stage_k",
+                "x": 10,
+                "y": 5,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_trial_shrine_stage_l",
-                x: 11,
-                y: 5,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_trial_shrine_stage_l",
+                "x": 11,
+                "y": 5,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_trial_shrine_stage_m",
-                x: 12,
-                y: 5,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_trial_shrine_stage_m",
+                "x": 12,
+                "y": 5,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_trial_shrine_stage_n",
-                x: 13,
-                y: 5,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_trial_shrine_stage_n",
+                "x": 13,
+                "y": 5,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_trial_shrine_stage_o",
-                x: 14,
-                y: 5,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_trial_shrine_stage_o",
+                "x": 14,
+                "y": 5,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             }
         ],
-        movementRegions: [
+        "movementRegions": [
             {
-                id: "raised-stage",
-                x: 10,
-                y: 3,
-                width: 5,
-                height: 3,
-                gateways: [
+                "id": "raised-stage",
+                "x": 10,
+                "y": 3,
+                "width": 5,
+                "height": 3,
+                "gateways": [
                     {
-                        inside: {
-                            x: 12,
-                            y: 5
+                        "inside": {
+                            "x": 12,
+                            "y": 5
                         },
-                        outside: {
-                            x: 12,
-                            y: 6
+                        "outside": {
+                            "x": 12,
+                            "y": 6
                         }
                     }
                 ]
             }
         ],
-        blockingObjects: [
+        "blockingObjects": [
             {
-                x: 10,
-                y: 7,
-                imageKey: "overlay_trial_shrine_statue_a",
-                drawWidth: 40,
-                drawHeight: 64,
-                baseTile: "T",
-                log: "口を開いた阿形の守護像が、挑む者の覚悟を見定めている。"
+                "x": 10,
+                "y": 7,
+                "imageKey": "overlay_trial_shrine_statue_a",
+                "drawWidth": 40,
+                "drawHeight": 64,
+                "baseTile": "T",
+                "log": "口を開いた阿形の守護像が、挑む者の覚悟を見定めている。"
             },
             {
-                x: 14,
-                y: 7,
-                imageKey: "overlay_trial_shrine_statue_un",
-                drawWidth: 40,
-                drawHeight: 64,
-                baseTile: "T",
-                log: "口を結んだ吽形の守護像が、静かに祠の奥を守っている。"
+                "x": 14,
+                "y": 7,
+                "imageKey": "overlay_trial_shrine_statue_un",
+                "drawWidth": 40,
+                "drawHeight": 64,
+                "baseTile": "T",
+                "log": "口を結んだ吽形の守護像が、静かに祠の奥を守っている。"
             }
         ],
-        mapActions: [
+        "mapActions": [
             {
-                x: 12,
-                y: 3,
-                label: "中間試練に挑む",
-                log: "祠を満たす霊光が、自らの殻を破ろうとする者の魂へ応える。",
-                type: "limitBreakTrial",
-                trialType: "mid"
+                "x": 12,
+                "y": 3,
+                "label": "中間試練に挑む",
+                "log": "祠を満たす霊光が、自らの殻を破ろうとする者の魂へ応える。",
+                "type": "limitBreakTrial",
+                "trialType": "mid"
             }
         ],
-        healSprings: [
+        "healSprings": [
             {
-                x: 6,
-                y: 13,
-                imageKey: "overlay_shrine_healing_spring",
-                drawWidth: 44,
-                drawHeight: 44,
-                shimmer: true
+                "x": 6,
+                "y": 13,
+                "imageKey": "overlay_shrine_healing_spring",
+                "drawWidth": 44,
+                "drawHeight": 44,
+                "shimmer": true
             }
         ],
-        chests: [
+        "chests": [
             {
-                x: 2,
-                y: 1,
-                itemId: 99,
-                type: "item",
-                containerKind: "pot",
-                imageKey: "overlay_field_pot",
-                openedImageKey: "overlay_field_pot",
-                baseTile: "G"
+                "x": 2,
+                "y": 1,
+                "itemId": 99,
+                "type": "item",
+                "containerKind": "pot",
+                "imageKey": "overlay_field_pot",
+                "openedImageKey": "overlay_field_pot",
+                "baseTile": "G"
             },
             {
-                x: 19,
-                y: 11,
-                itemId: 1051,
-                type: "item"
+                "x": 19,
+                "y": 11,
+                "itemId": 1051,
+                "type": "item"
             },
             {
-                x: 19,
-                y: 13,
-                itemId: 1004,
-                type: "item"
+                "x": 19,
+                "y": 13,
+                "itemId": 1004,
+                "type": "item"
             },
             {
-                x: 19,
-                y: 15,
-                trapMonsterId: 120301,
-                trapFloor: 70,
-                type: "trap"
+                "x": 19,
+                "y": 15,
+                "trapMonsterId": 120301,
+                "trapFloor": 70,
+                "type": "trap"
             }
         ],
-        exitPoint: {
-            area: "WORLD",
-            x: 2,
-            y: 3
+        "exitPoint": {
+            "area": "WORLD",
+            "x": 2,
+            "y": 3
         }
     },
-    SUMMIT_TEMPLE: {
-        name: "頂の神殿",
-        themeKey: "SUMMIT_TEMPLE",
-        isDungeon: false,
-        useDungeonWallFace: true,
-        hideFloorLabel: true,
-        disableRandomEncounters: true,
-        autoExitOnPerimeter: true,
-        perimeterExitMiniMapColor: "#76a36a",
-        wallFaceImg: "tile_summit_temple_wall_face",
-        elevatedEdges: {
-            terrainTiles: [
+    "SUMMIT_TEMPLE": {
+        "name": "頂の神殿",
+        "themeKey": "SUMMIT_TEMPLE",
+        "isDungeon": false,
+        "useDungeonWallFace": true,
+        "hideFloorLabel": true,
+        "disableRandomEncounters": true,
+        "autoExitOnPerimeter": true,
+        "perimeterExitMiniMapColor": "#76a36a",
+        "wallFaceImg": "tile_summit_temple_wall_face",
+        "elevatedEdges": {
+            "terrainTiles": [
                 "T"
             ],
-            voidTiles: [
+            "voidTiles": [
                 "^"
             ],
-            thickness: 6,
-            joinOverlap: 1,
-            cornerOverhang: 6,
-            keys: {
-                n: "overlay_summit_temple_cliff_edge_n",
-                e: "overlay_summit_temple_cliff_edge_e",
-                s: "overlay_summit_temple_cliff_edge_s",
-                w: "overlay_summit_temple_cliff_edge_w"
+            "thickness": 6,
+            "joinOverlap": 1,
+            "cornerOverhang": 6,
+            "keys": {
+                "n": "overlay_summit_temple_cliff_edge_n",
+                "e": "overlay_summit_temple_cliff_edge_e",
+                "s": "overlay_summit_temple_cliff_edge_s",
+                "w": "overlay_summit_temple_cliff_edge_w"
             }
         },
-        tileOverrides: {},
-        impassableTiles: [
+        "tileOverrides": {},
+        "impassableTiles": [
             "^"
         ],
-        width: 25,
-        height: 21,
-        entryPoint: {
-            x: 12,
-            y: 19
+        "width": 25,
+        "height": 21,
+        "entryPoint": {
+            "x": 12,
+            "y": 19
         },
-        battleBg: "battle_bg_summit_temple",
-        tiles: [
+        "battleBg": "battle_bg_summit_temple",
+        "tiles": [
             "^^^^^^^^^^^^^^^^^^^^^^^^^",
             "^^^^^^^^^^^^^^^^^^^^^^^^^",
             "^^^^^^^^^^^^^^^^^^^^^^^^^",
@@ -4113,289 +4113,289 @@ const FIXED_MAPS = {
             "SGGGGGGGGGGGGGGGGGGGGGGGS",
             "SSSSSSSSSSSSSSSSSSSSSSSSS"
         ],
-        skyOverlays: [
+        "skyOverlays": [
             {
-                imageKey: "overlay_summit_temple_cloud_bank",
-                x: 2,
-                y: 1,
-                drawWidth: 224,
-                drawHeight: 64
+                "imageKey": "overlay_summit_temple_cloud_bank",
+                "x": 2,
+                "y": 1,
+                "drawWidth": 224,
+                "drawHeight": 64
             },
             {
-                imageKey: "overlay_summit_temple_cloud_wispy",
-                x: 16,
-                y: 1,
-                drawWidth: 160,
-                drawHeight: 48
+                "imageKey": "overlay_summit_temple_cloud_wispy",
+                "x": 16,
+                "y": 1,
+                "drawWidth": 160,
+                "drawHeight": 48
             },
             {
-                imageKey: "overlay_summit_temple_cloud_compact",
-                x: 17,
-                y: 6,
-                drawWidth: 128,
-                drawHeight: 64
+                "imageKey": "overlay_summit_temple_cloud_compact",
+                "x": 17,
+                "y": 6,
+                "drawWidth": 128,
+                "drawHeight": 64
             }
         ],
-        floorDecorations: [
+        "floorDecorations": [
             {
-                type: "image",
-                imageKey: "overlay_summit_temple_stage_a",
-                x: 10,
-                y: 3,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_summit_temple_stage_a",
+                "x": 10,
+                "y": 3,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_summit_temple_stage_b",
-                x: 11,
-                y: 3,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_summit_temple_stage_b",
+                "x": 11,
+                "y": 3,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_summit_temple_stage_c",
-                x: 12,
-                y: 3,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_summit_temple_stage_c",
+                "x": 12,
+                "y": 3,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_summit_temple_stage_d",
-                x: 13,
-                y: 3,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_summit_temple_stage_d",
+                "x": 13,
+                "y": 3,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_summit_temple_stage_e",
-                x: 14,
-                y: 3,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_summit_temple_stage_e",
+                "x": 14,
+                "y": 3,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_summit_temple_stage_f",
-                x: 10,
-                y: 4,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_summit_temple_stage_f",
+                "x": 10,
+                "y": 4,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_summit_temple_stage_g",
-                x: 11,
-                y: 4,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_summit_temple_stage_g",
+                "x": 11,
+                "y": 4,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_summit_temple_stage_h",
-                x: 12,
-                y: 4,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_summit_temple_stage_h",
+                "x": 12,
+                "y": 4,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_summit_temple_stage_i",
-                x: 13,
-                y: 4,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_summit_temple_stage_i",
+                "x": 13,
+                "y": 4,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_summit_temple_stage_j",
-                x: 14,
-                y: 4,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_summit_temple_stage_j",
+                "x": 14,
+                "y": 4,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_summit_temple_stage_k",
-                x: 10,
-                y: 5,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_summit_temple_stage_k",
+                "x": 10,
+                "y": 5,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_summit_temple_stage_l",
-                x: 11,
-                y: 5,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_summit_temple_stage_l",
+                "x": 11,
+                "y": 5,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_summit_temple_stage_m",
-                x: 12,
-                y: 5,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_summit_temple_stage_m",
+                "x": 12,
+                "y": 5,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_summit_temple_stage_n",
-                x: 13,
-                y: 5,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_summit_temple_stage_n",
+                "x": 13,
+                "y": 5,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_summit_temple_stage_o",
-                x: 14,
-                y: 5,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_summit_temple_stage_o",
+                "x": 14,
+                "y": 5,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "castle_carpet_blue_silver",
-                x: 12,
-                y: 6,
-                width: 1,
-                height: 12
+                "type": "castle_carpet_blue_silver",
+                "x": 12,
+                "y": 6,
+                "width": 1,
+                "height": 12
             }
         ],
-        movementRegions: [
+        "movementRegions": [
             {
-                id: "raised-stage",
-                x: 10,
-                y: 3,
-                width: 5,
-                height: 3,
-                gateways: [
+                "id": "raised-stage",
+                "x": 10,
+                "y": 3,
+                "width": 5,
+                "height": 3,
+                "gateways": [
                     {
-                        inside: {
-                            x: 12,
-                            y: 5
+                        "inside": {
+                            "x": 12,
+                            "y": 5
                         },
-                        outside: {
-                            x: 12,
-                            y: 6
+                        "outside": {
+                            "x": 12,
+                            "y": 6
                         }
                     }
                 ]
             }
         ],
-        blockingObjects: [
+        "blockingObjects": [
             {
-                x: 10,
-                y: 6,
-                imageKey: "overlay_summit_temple_statue_angel",
-                drawWidth: 40,
-                drawHeight: 64,
-                baseTile: "T",
-                log: "剣を伏せた天使像が、挑戦者の歩みを静かに見守っている。"
+                "x": 10,
+                "y": 6,
+                "imageKey": "overlay_summit_temple_statue_angel",
+                "drawWidth": 40,
+                "drawHeight": 64,
+                "baseTile": "T",
+                "log": "剣を伏せた天使像が、挑戦者の歩みを静かに見守っている。"
             },
             {
-                x: 14,
-                y: 6,
-                imageKey: "overlay_summit_temple_statue_divine_dragon",
-                drawWidth: 40,
-                drawHeight: 64,
-                baseTile: "T",
-                log: "神竜の像が翼を畳み、山頂の聖域を守っている。"
+                "x": 14,
+                "y": 6,
+                "imageKey": "overlay_summit_temple_statue_divine_dragon",
+                "drawWidth": 40,
+                "drawHeight": 64,
+                "baseTile": "T",
+                "log": "神竜の像が翼を畳み、山頂の聖域を守っている。"
             }
         ],
-        mapActions: [
+        "mapActions": [
             {
-                x: 12,
-                y: 3,
-                label: "最終試練に挑む",
-                log: "祭壇が、極限に迫る者の名を静かに問うている。",
-                type: "limitBreakTrial",
-                trialType: "final"
+                "x": 12,
+                "y": 3,
+                "label": "最終試練に挑む",
+                "log": "祭壇が、極限に迫る者の名を静かに問うている。",
+                "type": "limitBreakTrial",
+                "trialType": "final"
             }
         ],
-        healSprings: [
+        "healSprings": [
             {
-                x: 6,
-                y: 13,
-                imageKey: "overlay_shrine_healing_spring",
-                drawWidth: 44,
-                drawHeight: 44,
-                shimmer: true
+                "x": 6,
+                "y": 13,
+                "imageKey": "overlay_shrine_healing_spring",
+                "drawWidth": 44,
+                "drawHeight": 44,
+                "shimmer": true
             }
         ],
-        chests: [
+        "chests": [
             {
-                x: 22,
-                y: 9,
-                itemId: 99,
-                type: "item",
-                containerKind: "pot",
-                imageKey: "overlay_field_pot",
-                openedImageKey: "overlay_field_pot",
-                baseTile: "G"
+                "x": 22,
+                "y": 9,
+                "itemId": 99,
+                "type": "item",
+                "containerKind": "pot",
+                "imageKey": "overlay_field_pot",
+                "openedImageKey": "overlay_field_pot",
+                "baseTile": "G"
             },
             {
-                x: 19,
-                y: 11,
-                trapMonsterId: 120303,
-                trapFloor: 190,
-                type: "trap"
+                "x": 19,
+                "y": 11,
+                "trapMonsterId": 120303,
+                "trapFloor": 190,
+                "type": "trap"
             },
             {
-                x: 19,
-                y: 13,
-                itemId: 1034,
-                type: "item"
+                "x": 19,
+                "y": 13,
+                "itemId": 1034,
+                "type": "item"
             },
             {
-                x: 19,
-                y: 15,
-                itemId: 1043,
-                type: "item"
+                "x": 19,
+                "y": 15,
+                "itemId": 1043,
+                "type": "item"
             }
         ],
-        exitPoint: {
-            area: "WORLD",
-            x: 89,
-            y: 77
+        "exitPoint": {
+            "area": "WORLD",
+            "x": 89,
+            "y": 77
         }
     }
 };
 
 const FIXED_DUNGEON_MAPS = {
-    START_CAVE: {
-        name: "北東の洞穴",
-        themeKey: "START_CAVE",
-        useDungeonWallFace: true,
-        rank: 5,
-        encounterRank: 5,
-        tileOverrides: {},
-        width: 31,
-        height: 23,
-        entryPoint: {
-            x: 15,
-            y: 20
+    "START_CAVE": {
+        "name": "北東の洞穴",
+        "themeKey": "START_CAVE",
+        "useDungeonWallFace": true,
+        "rank": 5,
+        "encounterRank": 5,
+        "tileOverrides": {},
+        "width": 31,
+        "height": 23,
+        "entryPoint": {
+            "x": 15,
+            "y": 20
         },
-        battleBg: "battle_bg_dungeon",
-        tiles: [
+        "battleBg": "battle_bg_dungeon",
+        "tiles": [
             "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
             "WWWWWWWWWWWWWWWWWTTTTTTWWWWWWWW",
             "WWWTTBTWWWWWWWWTTTTTTTTTTWWWWWW",
@@ -4420,104 +4420,104 @@ const FIXED_DUNGEON_MAPS = {
             "WWWWWWWWWWWWWWSSSWWWWWWWWWWWWWW",
             "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
         ],
-        chests: [
+        "chests": [
             {
-                x: 27,
-                y: 3,
-                itemId: 106,
-                type: "item"
+                "x": 27,
+                "y": 3,
+                "itemId": 106,
+                "type": "item"
             },
             {
-                x: 3,
-                y: 14,
-                itemId: 1,
-                type: "item"
+                "x": 3,
+                "y": 14,
+                "itemId": 1,
+                "type": "item"
             },
             {
-                x: 25,
-                y: 14,
-                itemId: 3,
-                type: "item"
+                "x": 25,
+                "y": 14,
+                "itemId": 3,
+                "type": "item"
             },
             {
-                x: 8,
-                y: 8,
-                itemId: 99,
-                type: "item"
+                "x": 8,
+                "y": 8,
+                "itemId": 99,
+                "type": "item"
             }
         ],
-        monsters: [
+        "monsters": [
             100001,
             100002,
             100003,
             100004
         ],
-        mapActions: [
+        "mapActions": [
             {
-                x: 15,
-                y: 17,
-                label: "見張りと話す",
-                log: "見張りが洞穴の封鎖を守っている。",
-                type: "log",
-                imageKey: "overlay_npc_villager",
-                hideWhenNoEvent: true,
-                events: [
+                "x": 15,
+                "y": 17,
+                "label": "見張りと話す",
+                "log": "見張りが洞穴の封鎖を守っている。",
+                "type": "log",
+                "imageKey": "overlay_npc_villager",
+                "hideWhenNoEvent": true,
+                "events": [
                     {
-                        stepMin: 0,
-                        stepMax: 0,
-                        eventId: "start_cave1"
+                        "stepMin": 0,
+                        "stepMax": 0,
+                        "eventId": "start_cave1"
                     },
                     {
-                        stepMin: 1,
-                        stepMax: 1,
-                        subMin: 1,
-                        subMax: 1,
-                        eventId: "start_cave2"
+                        "stepMin": 1,
+                        "stepMax": 1,
+                        "subMin": 1,
+                        "subMax": 1,
+                        "eventId": "start_cave2"
                     }
                 ]
             }
         ],
-        bosses: [
+        "bosses": [
             {
-                x: 5,
-                y: 2,
-                monsterId: 301000,
-                storyStepMin: 1,
-                storyStepMax: 1,
-                storyEventId: "start_boss_clear",
-                actionLabel: "巨大な化け物に挑む",
-                challengeText: "巨大な化け物が洞穴の奥を塞いでいる。\n覚悟を決めて挑みますか？"
+                "x": 5,
+                "y": 2,
+                "monsterId": 301000,
+                "storyStepMin": 1,
+                "storyStepMax": 1,
+                "storyEventId": "start_boss_clear",
+                "actionLabel": "巨大な化け物に挑む",
+                "challengeText": "巨大な化け物が洞穴の奥を塞いでいる。\n覚悟を決めて挑みますか？"
             }
         ]
     },
-    IGNIS_VOLCANO: {
-        name: "イグナ火山",
-        themeKey: "FIRE_VILLAGE",
-        rank: 12,
-        encounterRank: 12,
-        battleBg: "battle_bg_fire",
-        overlayOverrides: {
-            B: {
-                img: "overlay_npc_bronze_knight",
-                color: "#b8843a"
+    "IGNIS_VOLCANO": {
+        "name": "イグナ火山",
+        "themeKey": "FIRE_VILLAGE",
+        "rank": 12,
+        "encounterRank": 12,
+        "battleBg": "battle_bg_fire",
+        "overlayOverrides": {
+            "B": {
+                "img": "overlay_npc_bronze_knight",
+                "color": "#b8843a"
             }
         },
-        entryPoint: {
-            x: 10,
-            y: 18
+        "entryPoint": {
+            "x": 10,
+            "y": 18
         },
-        floors: [
+        "floors": [
             {
-                label: "火山道",
-                encounterRank: 12,
-                monsters: [
+                "label": "火山道",
+                "encounterRank": 12,
+                "monsters": [
                     100010,
                     100011,
                     100012
                 ],
-                width: 21,
-                height: 21,
-                tiles: [
+                "width": 21,
+                "height": 21,
+                "tiles": [
                     "WWWWWWWWWWWWWWWWWWWWW",
                     "WWWWMMMWWWWWWWWTTTTTW",
                     "WWWMMMWWWWWWWWWMMTTTW",
@@ -4540,48 +4540,48 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWTTTTMMWWWWWWW",
                     "WWWWWWWWWWSWWWWWWWWWW"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 10,
-                        y: 20,
-                        to: "EXIT",
-                        label: "里へ戻る"
+                        "x": 10,
+                        "y": 20,
+                        "to": "EXIT",
+                        "label": "里へ戻る"
                     },
                     {
-                        x: 18,
-                        y: 5,
-                        toFloor: 2,
-                        targetX: 2,
-                        targetY: 17,
-                        label: "溶岩回廊へ"
+                        "x": 18,
+                        "y": 5,
+                        "toFloor": 2,
+                        "targetX": 2,
+                        "targetY": 17,
+                        "label": "溶岩回廊へ"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 18,
-                        y: 2,
-                        itemId: 1,
-                        type: "item"
+                        "x": 18,
+                        "y": 2,
+                        "itemId": 1,
+                        "type": "item"
                     }
                 ],
-                entryPoint: {
-                    x: 10,
-                    y: 18
+                "entryPoint": {
+                    "x": 10,
+                    "y": 18
                 },
-                name: "",
-                themeKey: "FIRE_VILLAGE"
+                "name": "",
+                "themeKey": "FIRE_VILLAGE"
             },
             {
-                label: "溶岩回廊",
-                encounterRank: 14,
-                monsters: [
+                "label": "溶岩回廊",
+                "encounterRank": 14,
+                "monsters": [
                     100012,
                     100013,
                     100014
                 ],
-                width: 21,
-                height: 21,
-                tiles: [
+                "width": 21,
+                "height": 21,
+                "tiles": [
                     "WWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWMMMMMDW",
                     "WWWWWWWWWWWWWWMMMMGTW",
@@ -4604,51 +4604,51 @@ const FIXED_DUNGEON_MAPS = {
                     "WMMMMMWWWWWWWWWWWTTTW",
                     "WWWWWWWWWWWWWWWWWWWWW"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 2,
-                        y: 17,
-                        toFloor: 1,
-                        targetX: 18,
-                        targetY: 5,
-                        label: "火山道へ戻る"
+                        "x": 2,
+                        "y": 17,
+                        "toFloor": 1,
+                        "targetX": 18,
+                        "targetY": 5,
+                        "label": "火山道へ戻る"
                     },
                     {
-                        x: 19,
-                        y: 1,
-                        toFloor: 3,
-                        targetX: 10,
-                        targetY: 17,
-                        label: "火の祭壇へ"
+                        "x": 19,
+                        "y": 1,
+                        "toFloor": 3,
+                        "targetX": 10,
+                        "targetY": 17,
+                        "label": "火の祭壇へ"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 18,
-                        y: 18,
-                        itemId: 102,
-                        type: "item",
-                        rare: true
+                        "x": 18,
+                        "y": 18,
+                        "itemId": 102,
+                        "type": "item",
+                        "rare": true
                     }
                 ],
-                entryPoint: {
-                    x: 2,
-                    y: 17
+                "entryPoint": {
+                    "x": 2,
+                    "y": 17
                 },
-                name: "",
-                themeKey: "FIRE_VILLAGE"
+                "name": "",
+                "themeKey": "FIRE_VILLAGE"
             },
             {
-                label: "火の祭壇",
-                encounterRank: 16,
-                monsters: [
+                "label": "火の祭壇",
+                "encounterRank": 16,
+                "monsters": [
                     100014,
                     100015,
                     100016
                 ],
-                width: 21,
-                height: 21,
-                tiles: [
+                "width": 21,
+                "height": 21,
+                "tiles": [
                     "WWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWSWWWWWWWWWW",
                     "WWWWWWWWMMMMMWWWWWWWW",
@@ -4671,100 +4671,102 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWW"
                 ],
-                floorDecorations: [
+                "floorDecorations": [
                     {
-                        authoredPlacementId: "prism-pedestal-fire",
-                        type: "image",
-                        imageKey: "prism_pedestal_fire",
-                        x: 10,
-                        y: 4,
-                        width: 1,
-                        height: 1,
-                        drawScale: 2.7,
-                        alpha: 0.96,
-                        shimmer: true,
-                        blocking: true,
-                        baseTile: "T"
+                        "authoredPlacementId": "prism-pedestal-fire",
+                        "type": "image",
+                        "imageKey": "prism_pedestal_fire",
+                        "x": 10,
+                        "y": 4,
+                        "width": 1,
+                        "height": 1,
+                        "drawScale": 2.7,
+                        "alpha": 0.96,
+                        "shimmer": true,
+                        "shimmerDuration": 1050,
+                        "renderLayer": "object",
+                        "blocking": true,
+                        "baseTile": "T"
                     }
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 10,
-                        y: 17,
-                        toFloor: 2,
-                        targetX: 19,
-                        targetY: 1,
-                        label: "溶岩回廊へ戻る"
+                        "x": 10,
+                        "y": 17,
+                        "toFloor": 2,
+                        "targetX": 19,
+                        "targetY": 1,
+                        "label": "溶岩回廊へ戻る"
                     },
                     {
-                        x: 10,
-                        y: 1,
-                        toFloor: 4,
-                        targetX: 14,
-                        targetY: 22,
-                        label: "火山深部へ",
-                        requiredFlag: "windVillageCleared",
-                        lockedLabel: "淀んだ空気を調べる",
-                        lockedLog: "火山ガスが淀み、今は進めない。"
+                        "x": 10,
+                        "y": 1,
+                        "toFloor": 4,
+                        "targetX": 14,
+                        "targetY": 22,
+                        "label": "火山深部へ",
+                        "requiredFlag": "windVillageCleared",
+                        "lockedLabel": "淀んだ空気を調べる",
+                        "lockedLog": "火山ガスが淀み、今は進めない。"
                     }
                 ],
-                bosses: [
+                "bosses": [
                     {
-                        x: 10,
-                        y: 6,
-                        monsterId: [
+                        "x": 10,
+                        "y": 6,
+                        "monsterId": [
                             301002,
                             301001,
                             301001,
                             301001
                         ],
-                        startEventId: "fire_volcano_soldiers_encounter",
-                        storyEventId: "fire_volcano_soldiers_clear",
-                        clearedFlag: "firePrismRestored",
-                        actionLabel: "兵士に声をかける"
+                        "startEventId": "fire_volcano_soldiers_encounter",
+                        "storyEventId": "fire_volcano_soldiers_clear",
+                        "clearedFlag": "firePrismRestored",
+                        "actionLabel": "兵士に声をかける"
                     }
                 ],
-                entryPoint: {
-                    x: 10,
-                    y: 17
+                "entryPoint": {
+                    "x": 10,
+                    "y": 17
                 },
-                name: "",
-                themeKey: "FIRE_VILLAGE"
+                "name": "",
+                "themeKey": "FIRE_VILLAGE"
             },
             {
-                label: "火山深部・煤風洞",
-                encounterRank: 48,
-                monsters: [
+                "label": "火山深部・煤風洞",
+                "encounterRank": 48,
+                "monsters": [
                     100041,
                     100043,
                     100044,
                     100047
                 ],
-                enemyBoost: {
-                    statMultiplier: 1.08,
-                    elmRes: {
+                "enemyBoost": {
+                    "statMultiplier": 1.08,
+                    "elmRes": {
                         "火": 100,
                         "風": 50,
                         "水": -50
                     },
-                    elmAtk: {
+                    "elmAtk": {
                         "火": 25
                     },
-                    resists: {
-                        Poison: 60,
-                        Shock: 30,
-                        Debuff: 40
+                    "resists": {
+                        "Poison": 60,
+                        "Shock": 30,
+                        "Debuff": 40
                     }
                 },
-                rareMonsters: [
+                "rareMonsters": [
                     {
-                        id: 200201,
-                        rate: 0.06
+                        "id": 200201,
+                        "rate": 0.06
                     }
                 ],
-                width: 29,
-                height: 25,
-                tiles: [
+                "width": 29,
+                "height": 25,
+                "tiles": [
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
@@ -4791,342 +4793,342 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWWWMMTTTMMWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 14,
-                        y: 22,
-                        toFloor: 3,
-                        targetX: 10,
-                        targetY: 4,
-                        label: "火の祭壇へ戻る"
+                        "x": 14,
+                        "y": 22,
+                        "toFloor": 3,
+                        "targetX": 10,
+                        "targetY": 4,
+                        "label": "火の祭壇へ戻る"
                     },
                     {
-                        x: 14,
-                        y: 3,
-                        toFloor: 5,
-                        targetX: 14,
-                        targetY: 22,
-                        label: "炎心炉へ"
+                        "x": 14,
+                        "y": 3,
+                        "toFloor": 5,
+                        "targetX": 14,
+                        "targetY": 22,
+                        "label": "炎心炉へ"
                     }
                 ],
-                tileEffects: [
+                "tileEffects": [
                     {
-                        type: "poison",
-                        rects: [
+                        "type": "poison",
+                        "rects": [
                             {
-                                x1: 3,
-                                y1: 10,
-                                x2: 9,
-                                y2: 12
+                                "x1": 3,
+                                "y1": 10,
+                                "x2": 9,
+                                "y2": 12
                             },
                             {
-                                x1: 19,
-                                y1: 10,
-                                x2: 25,
-                                y2: 12
+                                "x1": 19,
+                                "y1": 10,
+                                "x2": 25,
+                                "y2": 12
                             }
                         ],
-                        damageRate: 0.08,
-                        message: "濃い火山ガスを吸った！"
+                        "damageRate": 0.08,
+                        "message": "濃い火山ガスを吸った！"
                     },
                     {
-                        x: 5,
-                        y: 9,
-                        type: "warp",
-                        toX: 22,
-                        toY: 17,
-                        message: "噴気孔から熱風が吹き上がった。"
+                        "x": 5,
+                        "y": 9,
+                        "type": "warp",
+                        "toX": 22,
+                        "toY": 17,
+                        "message": "噴気孔から熱風が吹き上がった。"
                     },
                     {
-                        x: 22,
-                        y: 17,
-                        type: "warp",
-                        toX: 5,
-                        toY: 9,
-                        message: "熱風に押し戻された。"
+                        "x": 22,
+                        "y": 17,
+                        "type": "warp",
+                        "toX": 5,
+                        "toY": 9,
+                        "message": "熱風に押し戻された。"
                     },
                     {
-                        x: 23,
-                        y: 19,
-                        type: "hunter",
-                        id: "volcano_deep_flame",
-                        imageKey: "overlay_dungeon_hunter_fire",
-                        monsterIds: [
+                        "x": 23,
+                        "y": 19,
+                        "type": "hunter",
+                        "id": "volcano_deep_flame",
+                        "imageKey": "overlay_dungeon_hunter_fire",
+                        "monsterIds": [
                             100050,
                             100052,
                             100054
                         ],
-                        speed: 0.65,
-                        range: 26,
-                        statMultiplier: 1.3,
-                        message: "炎を纏う強敵が迫る！"
+                        "speed": 0.65,
+                        "range": 26,
+                        "statMultiplier": 1.3,
+                        "message": "炎を纏う強敵が迫る！"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 3,
-                        y: 18,
-                        itemId: 3,
-                        type: "item"
+                        "x": 3,
+                        "y": 18,
+                        "itemId": 3,
+                        "type": "item"
                     },
                     {
-                        x: 25,
-                        y: 18,
-                        itemId: 106,
-                        type: "item",
-                        rare: true
+                        "x": 25,
+                        "y": 18,
+                        "itemId": 106,
+                        "type": "item",
+                        "rare": true
                     },
                     {
-                        x: 23,
-                        y: 10,
-                        itemId: 102,
-                        type: "item",
-                        rare: true
+                        "x": 23,
+                        "y": 10,
+                        "itemId": 102,
+                        "type": "item",
+                        "rare": true
                     },
                     {
-                        x: 14,
-                        y: 11,
-                        itemId: 103,
-                        type: "item",
-                        rare: true
+                        "x": 14,
+                        "y": 11,
+                        "itemId": 103,
+                        "type": "item",
+                        "rare": true
                     }
                 ],
-                mapActions: [
+                "mapActions": [
                     {
-                        x: 6,
-                        y: 9,
-                        label: "左の排熱弁を回す",
-                        type: "switchGate",
-                        gateId: "volcano_deep_heat_gate",
-                        switchId: "left",
-                        requiredSwitches: [
+                        "x": 6,
+                        "y": 9,
+                        "label": "左の排熱弁を回す",
+                        "type": "switchGate",
+                        "gateId": "volcano_deep_heat_gate",
+                        "switchId": "left",
+                        "requiredSwitches": [
                             "left",
                             "right"
                         ],
-                        imageKey: "maplib_volcanic_fire_rune_stone",
-                        imageColor: "#ff8a47",
-                        minimapColor: "#ff8a47",
-                        blocksMovement: true,
-                        interactFromAdjacent: true,
-                        opens: [
+                        "imageKey": "maplib_volcanic_fire_rune_stone",
+                        "imageColor": "#ff8a47",
+                        "minimapColor": "#ff8a47",
+                        "blocksMovement": true,
+                        "interactFromAdjacent": true,
+                        "opens": [
                             {
-                                x: 10,
-                                y: 5,
-                                tile: "T"
+                                "x": 10,
+                                "y": 5,
+                                "tile": "T"
                             },
                             {
-                                x: 11,
-                                y: 5,
-                                tile: "T"
+                                "x": 11,
+                                "y": 5,
+                                "tile": "T"
                             },
                             {
-                                x: 12,
-                                y: 5,
-                                tile: "T"
+                                "x": 12,
+                                "y": 5,
+                                "tile": "T"
                             },
                             {
-                                x: 13,
-                                y: 5,
-                                tile: "T"
+                                "x": 13,
+                                "y": 5,
+                                "tile": "T"
                             },
                             {
-                                x: 14,
-                                y: 5,
-                                tile: "T"
+                                "x": 14,
+                                "y": 5,
+                                "tile": "T"
                             },
                             {
-                                x: 15,
-                                y: 5,
-                                tile: "T"
+                                "x": 15,
+                                "y": 5,
+                                "tile": "T"
                             },
                             {
-                                x: 16,
-                                y: 5,
-                                tile: "T"
+                                "x": 16,
+                                "y": 5,
+                                "tile": "T"
                             },
                             {
-                                x: 17,
-                                y: 5,
-                                tile: "T"
+                                "x": 17,
+                                "y": 5,
+                                "tile": "T"
                             },
                             {
-                                x: 18,
-                                y: 5,
-                                tile: "T"
+                                "x": 18,
+                                "y": 5,
+                                "tile": "T"
                             },
                             {
-                                x: 13,
-                                y: 6,
-                                tile: "T"
+                                "x": 13,
+                                "y": 6,
+                                "tile": "T"
                             },
                             {
-                                x: 14,
-                                y: 6,
-                                tile: "T"
+                                "x": 14,
+                                "y": 6,
+                                "tile": "T"
                             },
                             {
-                                x: 15,
-                                y: 6,
-                                tile: "T"
+                                "x": 15,
+                                "y": 6,
+                                "tile": "T"
                             },
                             {
-                                x: 16,
-                                y: 6,
-                                tile: "T"
+                                "x": 16,
+                                "y": 6,
+                                "tile": "T"
                             },
                             {
-                                x: 17,
-                                y: 6,
-                                tile: "T"
+                                "x": 17,
+                                "y": 6,
+                                "tile": "T"
                             },
                             {
-                                x: 18,
-                                y: 6,
-                                tile: "T"
+                                "x": 18,
+                                "y": 6,
+                                "tile": "T"
                             }
                         ],
-                        log: "煤に埋もれた排熱弁を回した。",
-                        partialMessage: "天井の排気孔が唸った。反対側の弁も必要だ。",
-                        openMessage: "二つの排熱弁が開き、中央の熱壁が薄れていく。"
+                        "log": "煤に埋もれた排熱弁を回した。",
+                        "partialMessage": "天井の排気孔が唸った。反対側の弁も必要だ。",
+                        "openMessage": "二つの排熱弁が開き、中央の熱壁が薄れていく。"
                     },
                     {
-                        x: 22,
-                        y: 16,
-                        label: "右の排熱弁を回す",
-                        type: "switchGate",
-                        gateId: "volcano_deep_heat_gate",
-                        switchId: "right",
-                        requiredSwitches: [
+                        "x": 22,
+                        "y": 16,
+                        "label": "右の排熱弁を回す",
+                        "type": "switchGate",
+                        "gateId": "volcano_deep_heat_gate",
+                        "switchId": "right",
+                        "requiredSwitches": [
                             "left",
                             "right"
                         ],
-                        imageKey: "maplib_volcanic_fire_rune_stone",
-                        imageColor: "#ff8a47",
-                        minimapColor: "#ff8a47",
-                        blocksMovement: true,
-                        interactFromAdjacent: true,
-                        opens: [
+                        "imageKey": "maplib_volcanic_fire_rune_stone",
+                        "imageColor": "#ff8a47",
+                        "minimapColor": "#ff8a47",
+                        "blocksMovement": true,
+                        "interactFromAdjacent": true,
+                        "opens": [
                             {
-                                x: 10,
-                                y: 5,
-                                tile: "T"
+                                "x": 10,
+                                "y": 5,
+                                "tile": "T"
                             },
                             {
-                                x: 11,
-                                y: 5,
-                                tile: "T"
+                                "x": 11,
+                                "y": 5,
+                                "tile": "T"
                             },
                             {
-                                x: 12,
-                                y: 5,
-                                tile: "T"
+                                "x": 12,
+                                "y": 5,
+                                "tile": "T"
                             },
                             {
-                                x: 13,
-                                y: 5,
-                                tile: "T"
+                                "x": 13,
+                                "y": 5,
+                                "tile": "T"
                             },
                             {
-                                x: 14,
-                                y: 5,
-                                tile: "T"
+                                "x": 14,
+                                "y": 5,
+                                "tile": "T"
                             },
                             {
-                                x: 15,
-                                y: 5,
-                                tile: "T"
+                                "x": 15,
+                                "y": 5,
+                                "tile": "T"
                             },
                             {
-                                x: 16,
-                                y: 5,
-                                tile: "T"
+                                "x": 16,
+                                "y": 5,
+                                "tile": "T"
                             },
                             {
-                                x: 17,
-                                y: 5,
-                                tile: "T"
+                                "x": 17,
+                                "y": 5,
+                                "tile": "T"
                             },
                             {
-                                x: 18,
-                                y: 5,
-                                tile: "T"
+                                "x": 18,
+                                "y": 5,
+                                "tile": "T"
                             },
                             {
-                                x: 13,
-                                y: 6,
-                                tile: "T"
+                                "x": 13,
+                                "y": 6,
+                                "tile": "T"
                             },
                             {
-                                x: 14,
-                                y: 6,
-                                tile: "T"
+                                "x": 14,
+                                "y": 6,
+                                "tile": "T"
                             },
                             {
-                                x: 15,
-                                y: 6,
-                                tile: "T"
+                                "x": 15,
+                                "y": 6,
+                                "tile": "T"
                             },
                             {
-                                x: 16,
-                                y: 6,
-                                tile: "T"
+                                "x": 16,
+                                "y": 6,
+                                "tile": "T"
                             },
                             {
-                                x: 17,
-                                y: 6,
-                                tile: "T"
+                                "x": 17,
+                                "y": 6,
+                                "tile": "T"
                             },
                             {
-                                x: 18,
-                                y: 6,
-                                tile: "T"
+                                "x": 18,
+                                "y": 6,
+                                "tile": "T"
                             }
                         ],
-                        log: "赤く焼けた排熱弁を押し込んだ。",
-                        partialMessage: "中央の熱壁が揺らいだ。もう片方の弁も必要だ。",
-                        openMessage: "二つの排熱弁が開き、中央の熱壁が薄れていく。"
+                        "log": "赤く焼けた排熱弁を押し込んだ。",
+                        "partialMessage": "中央の熱壁が揺らいだ。もう片方の弁も必要だ。",
+                        "openMessage": "二つの排熱弁が開き、中央の熱壁が薄れていく。"
                     }
                 ],
-                entryPoint: {
-                    x: 14,
-                    y: 22
+                "entryPoint": {
+                    "x": 14,
+                    "y": 22
                 },
-                name: "",
-                themeKey: "FIRE_VILLAGE"
+                "name": "",
+                "themeKey": "FIRE_VILLAGE"
             },
             {
-                label: "火山深部・炎心炉",
-                encounterRank: 56,
-                monsters: [
+                "label": "火山深部・炎心炉",
+                "encounterRank": 56,
+                "monsters": [
                     100050,
                     100052,
                     100053,
                     100054
                 ],
-                enemyBoost: {
-                    statMultiplier: 1.1,
-                    elmRes: {
+                "enemyBoost": {
+                    "statMultiplier": 1.1,
+                    "elmRes": {
                         "火": 120,
                         "水": -60
                     },
-                    elmAtk: {
+                    "elmAtk": {
                         "火": 30
                     },
-                    resists: {
-                        Poison: 70,
-                        Fear: 40,
-                        Debuff: 50
+                    "resists": {
+                        "Poison": 70,
+                        "Fear": 40,
+                        "Debuff": 50
                     }
                 },
-                rareMonsters: [
+                "rareMonsters": [
                     {
-                        id: 200201,
-                        rate: 0.06
+                        "id": 200201,
+                        "rate": 0.06
                     }
                 ],
-                width: 29,
-                height: 25,
-                tiles: [
+                "width": 29,
+                "height": 25,
+                "tiles": [
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
@@ -5153,117 +5155,117 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWWWMMMMMMMWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 14,
-                        y: 22,
-                        toFloor: 4,
-                        targetX: 14,
-                        targetY: 3,
-                        label: "煤風洞へ戻る"
+                        "x": 14,
+                        "y": 22,
+                        "toFloor": 4,
+                        "targetX": 14,
+                        "targetY": 3,
+                        "label": "煤風洞へ戻る"
                     }
                 ],
-                tileEffects: [
+                "tileEffects": [
                     {
-                        type: "poison",
-                        rects: [
+                        "type": "poison",
+                        "rects": [
                             {
-                                x1: 3,
-                                y1: 9,
-                                x2: 8,
-                                y2: 12
+                                "x1": 3,
+                                "y1": 9,
+                                "x2": 8,
+                                "y2": 12
                             },
                             {
-                                x1: 20,
-                                y1: 9,
-                                x2: 25,
-                                y2: 12
+                                "x1": 20,
+                                "y1": 9,
+                                "x2": 25,
+                                "y2": 12
                             }
                         ],
-                        damageRate: 0.09,
-                        message: "炉心の煙が体を焼く！"
+                        "damageRate": 0.09,
+                        "message": "炉心の煙が体を焼く！"
                     },
                     {
-                        x: 24,
-                        y: 18,
-                        type: "hunter",
-                        id: "volcano_furnace_guard",
-                        imageKey: "overlay_dungeon_hunter_fire",
-                        monsterIds: [
+                        "x": 24,
+                        "y": 18,
+                        "type": "hunter",
+                        "id": "volcano_furnace_guard",
+                        "imageKey": "overlay_dungeon_hunter_fire",
+                        "monsterIds": [
                             100055,
                             100057,
                             100060
                         ],
-                        speed: 0.75,
-                        range: 28,
-                        statMultiplier: 1.35,
-                        message: "炉心の番人が迫る！"
+                        "speed": 0.75,
+                        "range": 28,
+                        "statMultiplier": 1.35,
+                        "message": "炉心の番人が迫る！"
                     }
                 ],
-                bosses: [
+                "bosses": [
                     {
-                        x: 14,
-                        y: 6,
-                        monsterId: 302201,
-                        questId: "karin_volcano_depths",
-                        startEventId: "quest_karin_volcano_encounter",
-                        storyEventId: "quest_karin_volcano_clear",
-                        bossStatMultiplier: 1.35,
-                        actionLabel: "炎心炉の試練に挑む",
-                        inspectLog: "守る剣を試す炎が、炉心の中心で人の形を成している。"
+                        "x": 14,
+                        "y": 6,
+                        "monsterId": 302201,
+                        "questId": "karin_volcano_depths",
+                        "startEventId": "quest_karin_volcano_encounter",
+                        "storyEventId": "quest_karin_volcano_clear",
+                        "bossStatMultiplier": 1.35,
+                        "actionLabel": "炎心炉の試練に挑む",
+                        "inspectLog": "守る剣を試す炎が、炉心の中心で人の形を成している。"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 4,
-                        y: 18,
-                        itemId: 5,
-                        type: "item"
+                        "x": 4,
+                        "y": 18,
+                        "itemId": 5,
+                        "type": "item"
                     },
                     {
-                        x: 24,
-                        y: 18,
-                        itemId: 107,
-                        type: "item",
-                        rare: true
+                        "x": 24,
+                        "y": 18,
+                        "itemId": 107,
+                        "type": "item",
+                        "rare": true
                     }
                 ],
-                entryPoint: {
-                    x: 14,
-                    y: 22
+                "entryPoint": {
+                    "x": 14,
+                    "y": 22
                 },
-                name: "",
-                themeKey: "FIRE_VILLAGE"
+                "name": "",
+                "themeKey": "FIRE_VILLAGE"
             }
         ]
     },
-    FORBIDDEN_FOREST: {
-        name: "禁忌の森",
-        themeKey: "FORBIDDEN_FOREST",
-        fixedTileOverlays: {
-            S: null
+    "FORBIDDEN_FOREST": {
+        "name": "禁忌の森",
+        "themeKey": "FORBIDDEN_FOREST",
+        "fixedTileOverlays": {
+            "S": null
         },
-        rank: 22,
-        encounterRank: 22,
-        battleBg: "battle_bg_forest",
-        entryPoint: {
-            x: 51,
-            y: 16
+        "rank": 22,
+        "encounterRank": 22,
+        "battleBg": "battle_bg_forest",
+        "entryPoint": {
+            "x": 51,
+            "y": 16
         },
-        floors: [
+        "floors": [
             {
-                label: "封じられた森・東の迷い路",
-                encounterRank: 22,
-                monsters: [
+                "label": "封じられた森・東の迷い路",
+                "encounterRank": 22,
+                "monsters": [
                     100020,
                     100021,
                     100022,
                     100023,
                     100024
                 ],
-                width: 55,
-                height: 33,
-                tiles: [
+                "width": 55,
+                "height": 33,
+                "tiles": [
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
@@ -5298,110 +5300,110 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 53,
-                        y: 16,
-                        to: "EXIT",
-                        label: "風の集落カザリアへ戻る",
-                        log: "集落へ続く森の出口だ。"
+                        "x": 53,
+                        "y": 16,
+                        "to": "EXIT",
+                        "label": "風の集落カザリアへ戻る",
+                        "log": "集落へ続く森の出口だ。"
                     },
                     {
-                        x: 3,
-                        y: 4,
-                        toFloor: 2,
-                        targetX: 35,
-                        targetY: 32,
-                        auto: true,
-                        label: "森の奥へ進む",
-                        log: "木々の切れ目から、さらに深い森へ道が続いている。"
+                        "x": 3,
+                        "y": 4,
+                        "toFloor": 2,
+                        "targetX": 35,
+                        "targetY": 32,
+                        "auto": true,
+                        "label": "森の奥へ進む",
+                        "log": "木々の切れ目から、さらに深い森へ道が続いている。"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 20,
-                        y: 6,
-                        itemId: 100,
-                        type: "item",
-                        rare: true
+                        "x": 20,
+                        "y": 6,
+                        "itemId": 100,
+                        "type": "item",
+                        "rare": true
                     }
                 ],
-                tileEffects: [
+                "tileEffects": [
                     {
-                        x: 45,
-                        y: 21,
-                        type: "warp",
-                        toX: 5,
-                        toY: 9,
-                        message: "黒い風に道を逸らされた。"
+                        "x": 45,
+                        "y": 21,
+                        "type": "warp",
+                        "toX": 5,
+                        "toY": 9,
+                        "message": "黒い風に道を逸らされた。"
                     },
                     {
-                        x: 5,
-                        y: 9,
-                        type: "warp",
-                        toX: 45,
-                        toY: 21,
-                        message: "黒い風に道を逸らされた。"
+                        "x": 5,
+                        "y": 9,
+                        "type": "warp",
+                        "toX": 45,
+                        "toY": 21,
+                        "message": "黒い風に道を逸らされた。"
                     },
                     {
-                        x: 42,
-                        y: 10,
-                        type: "warp",
-                        toX: 10,
-                        toY: 12,
-                        message: "不思議な力で移動した。"
+                        "x": 42,
+                        "y": 10,
+                        "type": "warp",
+                        "toX": 10,
+                        "toY": 12,
+                        "message": "不思議な力で移動した。"
                     },
                     {
-                        x: 42,
-                        y: 20,
-                        type: "warp",
-                        toX: 48,
-                        toY: 7,
-                        message: "不思議な力で移動した。"
+                        "x": 42,
+                        "y": 20,
+                        "type": "warp",
+                        "toX": 48,
+                        "toY": 7,
+                        "message": "不思議な力で移動した。"
                     },
                     {
-                        x: 38,
-                        y: 15,
-                        type: "warp",
-                        toX: 48,
-                        toY: 7,
-                        message: "不思議な力で移動した。"
+                        "x": 38,
+                        "y": 15,
+                        "type": "warp",
+                        "toX": 48,
+                        "toY": 7,
+                        "message": "不思議な力で移動した。"
                     }
                 ],
-                mapActions: [
+                "mapActions": [
                     {
-                        x: 42,
-                        y: 15,
-                        label: "立札を読む",
-                        log: "掠れた字で「北」と書かれているようだ…",
-                        type: "log",
-                        imageKey: "maplib_forest_decayed_roadside_sign",
-                        baseTile: "T",
-                        blocksMovement: true,
-                        interactFromAdjacent: true,
-                        minimapColor: "#d8b36a"
+                        "x": 42,
+                        "y": 15,
+                        "label": "立札を読む",
+                        "log": "掠れた字で「北」と書かれているようだ…",
+                        "type": "log",
+                        "imageKey": "maplib_forest_decayed_roadside_sign",
+                        "baseTile": "T",
+                        "blocksMovement": true,
+                        "interactFromAdjacent": true,
+                        "minimapColor": "#d8b36a"
                     }
                 ],
-                entryPoint: {
-                    x: 51,
-                    y: 16
+                "entryPoint": {
+                    "x": 51,
+                    "y": 16
                 },
-                name: "",
-                themeKey: "FORBIDDEN_FOREST"
+                "name": "",
+                "themeKey": "FORBIDDEN_FOREST"
             },
             {
-                label: "封じられた森・祈りの広場",
-                encounterRank: 24,
-                monsters: [
+                "label": "封じられた森・祈りの広場",
+                "encounterRank": 24,
+                "monsters": [
                     100021,
                     100022,
                     100023,
                     100024,
                     100025
                 ],
-                width: 41,
-                height: 37,
-                tiles: [
+                "width": 41,
+                "height": 37,
+                "tiles": [
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWSWWWWWWWWWWWWWWWWWWWW",
@@ -5440,148 +5442,148 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWWWWWWWWWWWWTTTTWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 38,
-                        y: 33,
-                        toFloor: 1,
-                        targetX: 4,
-                        targetY: 4,
-                        auto: true,
-                        label: "東の森へ戻る",
-                        log: "木々の切れ目から、来た道へ戻れそうだ。"
+                        "x": 38,
+                        "y": 33,
+                        "toFloor": 1,
+                        "targetX": 4,
+                        "targetY": 4,
+                        "auto": true,
+                        "label": "東の森へ戻る",
+                        "log": "木々の切れ目から、来た道へ戻れそうだ。"
                     },
                     {
-                        x: 20,
-                        y: 2,
-                        toDungeon: "WIND_TEMPLE",
-                        auto: true,
-                        label: "風の神殿へ入る",
-                        log: "森の北端に、風の神殿へ続く古い石門が開いている。",
-                        requiredFlag: "windForestCleansed",
-                        lockedLabel: "石門を調べる",
-                        lockedLog: "黒い風が石門を塞いでいる。祈りの広場の守護者を鎮めなければ進めなさそうだ。"
+                        "x": 20,
+                        "y": 2,
+                        "toDungeon": "WIND_TEMPLE",
+                        "auto": true,
+                        "label": "風の神殿へ入る",
+                        "log": "森の北端に、風の神殿へ続く古い石門が開いている。",
+                        "requiredFlag": "windForestCleansed",
+                        "lockedLabel": "石門を調べる",
+                        "lockedLog": "黒い風が石門を塞いでいる。祈りの広場の守護者を鎮めなければ進めなさそうだ。"
                     },
                     {
-                        x: 27,
-                        y: 6,
-                        toFloor: 3,
-                        targetX: 15,
-                        targetY: 22,
-                        label: "森の深部へ",
-                        requiredFlag: "waterCityCleared",
-                        lockedLabel: "汚染された森を調べる",
-                        lockedLog: "毒と呪いが濃く、今は進めない。"
+                        "x": 27,
+                        "y": 6,
+                        "toFloor": 3,
+                        "targetX": 15,
+                        "targetY": 22,
+                        "label": "森の深部へ",
+                        "requiredFlag": "waterCityCleared",
+                        "lockedLabel": "汚染された森を調べる",
+                        "lockedLog": "毒と呪いが濃く、今は進めない。"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 5,
-                        y: 15,
-                        itemId: 106,
-                        type: "item",
-                        rare: true
+                        "x": 5,
+                        "y": 15,
+                        "itemId": 106,
+                        "type": "item",
+                        "rare": true
                     },
                     {
-                        x: 34,
-                        y: 20,
-                        itemId: 4,
-                        type: "item"
+                        "x": 34,
+                        "y": 20,
+                        "itemId": 4,
+                        "type": "item"
                     }
                 ],
-                tileEffects: [
+                "tileEffects": [
                     {
-                        x: 25,
-                        y: 6,
-                        type: "poison",
-                        damageRate: 0.05,
-                        message: "祈りの広場に残る瘴気が肌を刺す。"
+                        "x": 25,
+                        "y": 6,
+                        "type": "poison",
+                        "damageRate": 0.05,
+                        "message": "祈りの広場に残る瘴気が肌を刺す。"
                     },
                     {
-                        x: 26,
-                        y: 6,
-                        type: "poison",
-                        damageRate: 0.05,
-                        message: "祈りの広場に残る瘴気が肌を刺す。"
+                        "x": 26,
+                        "y": 6,
+                        "type": "poison",
+                        "damageRate": 0.05,
+                        "message": "祈りの広場に残る瘴気が肌を刺す。"
                     }
                 ],
-                mapActions: [
+                "mapActions": [
                     {
-                        x: 30,
-                        y: 10,
-                        label: "朽ちた石碑を読む",
-                        log: "石碑には、森の風を鎮めた名もなき守人の印が刻まれている。",
-                        type: "log",
-                        imageKey: "overlay_dungeon_event"
+                        "x": 30,
+                        "y": 10,
+                        "label": "朽ちた石碑を読む",
+                        "log": "石碑には、森の風を鎮めた名もなき守人の印が刻まれている。",
+                        "type": "log",
+                        "imageKey": "overlay_dungeon_event"
                     },
                     {
-                        x: 20,
-                        y: 18,
-                        label: "石碑に祈る",
-                        log: "守護者を鎮めた石碑に、穏やかな風が巡っている。",
-                        type: "storyEvent",
-                        eventId: "wind_forest_guardians_after",
-                        requiredFlag: "windForestCleansed",
-                        imageKey: "overlay_dungeon_event"
+                        "x": 20,
+                        "y": 18,
+                        "label": "石碑に祈る",
+                        "log": "守護者を鎮めた石碑に、穏やかな風が巡っている。",
+                        "type": "storyEvent",
+                        "eventId": "wind_forest_guardians_after",
+                        "requiredFlag": "windForestCleansed",
+                        "imageKey": "overlay_dungeon_event"
                     }
                 ],
-                bosses: [
+                "bosses": [
                     {
-                        x: 20,
-                        y: 18,
-                        monsterId: [
+                        "x": 20,
+                        "y": 18,
+                        "monsterId": [
                             301011,
                             301012
                         ],
-                        keyRewardColor: "gold",
-                        startEventId: "wind_forest_guardians_encounter",
-                        storyEventId: "wind_forest_guardians_clear",
-                        imageKey: "overlay_dungeon_event",
-                        actionLabel: "守護者に祈る",
-                        inspectLog: "祈りの広場の中央で、黒い風に包まれた守護者がうずくまっている。"
+                        "keyRewardColor": "gold",
+                        "startEventId": "wind_forest_guardians_encounter",
+                        "storyEventId": "wind_forest_guardians_clear",
+                        "imageKey": "overlay_dungeon_event",
+                        "actionLabel": "守護者に祈る",
+                        "inspectLog": "祈りの広場の中央で、黒い風に包まれた守護者がうずくまっている。"
                     }
                 ],
-                entryPoint: {
-                    x: 35,
-                    y: 32
+                "entryPoint": {
+                    "x": 35,
+                    "y": 32
                 },
-                name: "",
-                themeKey: "FORBIDDEN_FOREST"
+                "name": "",
+                "themeKey": "FORBIDDEN_FOREST"
             },
             {
-                label: "禁忌の森深部・迷い根の庭",
-                encounterRank: 48,
-                monsters: [
+                "label": "禁忌の森深部・迷い根の庭",
+                "encounterRank": 48,
+                "monsters": [
                     100043,
                     100044,
                     100047,
                     100048
                 ],
-                enemyBoost: {
-                    statMultiplier: 1.08,
-                    elmRes: {
+                "enemyBoost": {
+                    "statMultiplier": 1.08,
+                    "elmRes": {
                         "風": 100,
                         "水": 40,
                         "火": -40
                     },
-                    elmAtk: {
+                    "elmAtk": {
                         "風": 25
                     },
-                    resists: {
-                        Poison: 80,
-                        Fear: 40,
-                        Debuff: 50
+                    "resists": {
+                        "Poison": 80,
+                        "Fear": 40,
+                        "Debuff": 50
                     }
                 },
-                rareMonsters: [
+                "rareMonsters": [
                     {
-                        id: 200201,
-                        rate: 0.06
+                        "id": 200201,
+                        "rate": 0.06
                     }
                 ],
-                width: 31,
-                height: 25,
-                tiles: [
+                "width": 31,
+                "height": 25,
+                "tiles": [
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWTTTTTTTTWWWW",
@@ -5608,144 +5610,144 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWWWWWWWWWWWWWTTTTTWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 15,
-                        y: 22,
-                        toFloor: 2,
-                        targetX: 27,
-                        targetY: 6,
-                        label: "祈りの広場へ戻る"
+                        "x": 15,
+                        "y": 22,
+                        "toFloor": 2,
+                        "targetX": 27,
+                        "targetY": 6,
+                        "label": "祈りの広場へ戻る"
                     },
                     {
-                        x: 15,
-                        y: 4,
-                        toFloor: 4,
-                        targetX: 15,
-                        targetY: 22,
-                        label: "呪風の根へ"
+                        "x": 15,
+                        "y": 4,
+                        "toFloor": 4,
+                        "targetX": 15,
+                        "targetY": 22,
+                        "label": "呪風の根へ"
                     }
                 ],
-                tileEffects: [
+                "tileEffects": [
                     {
-                        type: "poison",
-                        rects: [
+                        "type": "poison",
+                        "rects": [
                             {
-                                x1: 3,
-                                y1: 8,
-                                x2: 9,
-                                y2: 12
+                                "x1": 3,
+                                "y1": 8,
+                                "x2": 9,
+                                "y2": 12
                             },
                             {
-                                x1: 21,
-                                y1: 9,
-                                x2: 27,
-                                y2: 12
+                                "x1": 21,
+                                "y1": 9,
+                                "x2": 27,
+                                "y2": 12
                             },
                             {
-                                x1: 4,
-                                y1: 18,
-                                x2: 8,
-                                y2: 20
+                                "x1": 4,
+                                "y1": 18,
+                                "x2": 8,
+                                "y2": 20
                             },
                             {
-                                x1: 22,
-                                y1: 18,
-                                x2: 26,
-                                y2: 20
+                                "x1": 22,
+                                "y1": 18,
+                                "x2": 26,
+                                "y2": 20
                             }
                         ],
-                        damageRate: 0.075,
-                        message: "濃い瘴気がまとわりつく。"
+                        "damageRate": 0.075,
+                        "message": "濃い瘴気がまとわりつく。"
                     },
                     {
-                        x: 24,
-                        y: 19,
-                        type: "hunter",
-                        id: "forest_root_stalker",
-                        imageKey: "overlay_dungeon_hunter_forest",
-                        monsterIds: [
+                        "x": 24,
+                        "y": 19,
+                        "type": "hunter",
+                        "id": "forest_root_stalker",
+                        "imageKey": "overlay_dungeon_hunter_forest",
+                        "monsterIds": [
                             100051,
                             100053,
                             100055
                         ],
-                        speed: 0.65,
-                        range: 25,
-                        statMultiplier: 1.3,
-                        message: "呪根の追跡者が迫る！"
+                        "speed": 0.65,
+                        "range": 25,
+                        "statMultiplier": 1.3,
+                        "message": "呪根の追跡者が迫る！"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 4,
-                        y: 9,
-                        itemId: 4,
-                        type: "item"
+                        "x": 4,
+                        "y": 9,
+                        "itemId": 4,
+                        "type": "item"
                     },
                     {
-                        x: 26,
-                        y: 9,
-                        itemId: 106,
-                        type: "item",
-                        rare: true
+                        "x": 26,
+                        "y": 9,
+                        "itemId": 106,
+                        "type": "item",
+                        "rare": true
                     },
                     {
-                        x: 4,
-                        y: 19,
-                        itemId: 5,
-                        type: "item"
+                        "x": 4,
+                        "y": 19,
+                        "itemId": 5,
+                        "type": "item"
                     },
                     {
-                        x: 26,
-                        y: 19,
-                        itemId: 107,
-                        type: "item",
-                        rare: true
+                        "x": 26,
+                        "y": 19,
+                        "itemId": 107,
+                        "type": "item",
+                        "rare": true
                     }
                 ],
-                mapActions: [],
-                entryPoint: {
-                    x: 15,
-                    y: 22
+                "mapActions": [],
+                "entryPoint": {
+                    "x": 15,
+                    "y": 22
                 },
-                name: "",
-                themeKey: "FORBIDDEN_FOREST"
+                "name": "",
+                "themeKey": "FORBIDDEN_FOREST"
             },
             {
-                label: "禁忌の森深部・呪風の根",
-                encounterRank: 56,
-                monsters: [
+                "label": "禁忌の森深部・呪風の根",
+                "encounterRank": 56,
+                "monsters": [
                     100050,
                     100051,
                     100053,
                     100054
                 ],
-                enemyBoost: {
-                    statMultiplier: 1.1,
-                    elmRes: {
+                "enemyBoost": {
+                    "statMultiplier": 1.1,
+                    "elmRes": {
                         "風": 120,
                         "闇": 50,
                         "火": -50
                     },
-                    elmAtk: {
+                    "elmAtk": {
                         "風": 30,
                         "闇": 15
                     },
-                    resists: {
-                        Poison: 90,
-                        Fear: 50,
-                        Debuff: 60
+                    "resists": {
+                        "Poison": 90,
+                        "Fear": 50,
+                        "Debuff": 60
                     }
                 },
-                rareMonsters: [
+                "rareMonsters": [
                     {
-                        id: 200201,
-                        rate: 0.06
+                        "id": 200201,
+                        "rate": 0.06
                     }
                 ],
-                width: 31,
-                height: 25,
-                tiles: [
+                "width": 31,
+                "height": 25,
+                "tiles": [
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWTTTWWWWWWWWTTWWWWWWWWTTTWWWWW",
@@ -5772,151 +5774,151 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWWWWWWTTTWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 15,
-                        y: 22,
-                        toFloor: 3,
-                        targetX: 15,
-                        targetY: 4,
-                        label: "迷い根の庭へ戻る"
+                        "x": 15,
+                        "y": 22,
+                        "toFloor": 3,
+                        "targetX": 15,
+                        "targetY": 4,
+                        "label": "迷い根の庭へ戻る"
                     }
                 ],
-                tileEffects: [
+                "tileEffects": [
                     {
-                        x: 15,
-                        y: 21,
-                        type: "hunter",
-                        id: "forest_curse_guard",
-                        imageKey: "overlay_dungeon_hunter_forest",
-                        monsterIds: [
+                        "x": 15,
+                        "y": 21,
+                        "type": "hunter",
+                        "id": "forest_curse_guard",
+                        "imageKey": "overlay_dungeon_hunter_forest",
+                        "monsterIds": [
                             100055,
                             100061,
                             100063
                         ],
-                        speed: 0.75,
-                        range: 28,
-                        statMultiplier: 1.35,
-                        message: "呪風の番人が迫る！"
+                        "speed": 0.75,
+                        "range": 28,
+                        "statMultiplier": 1.35,
+                        "message": "呪風の番人が迫る！"
                     },
                     {
-                        x: 28,
-                        y: 18,
-                        type: "warp",
-                        toX: 16,
-                        toY: 8,
-                        message: "不思議な力で移動した。"
+                        "x": 28,
+                        "y": 18,
+                        "type": "warp",
+                        "toX": 16,
+                        "toY": 8,
+                        "message": "不思議な力で移動した。"
                     },
                     {
-                        x: 23,
-                        y: 15,
-                        type: "warp",
-                        toX: 15,
-                        toY: 20,
-                        message: "不思議な力で移動した。"
+                        "x": 23,
+                        "y": 15,
+                        "type": "warp",
+                        "toX": 15,
+                        "toY": 20,
+                        "message": "不思議な力で移動した。"
                     },
                     {
-                        x: 28,
-                        y: 8,
-                        type: "warp",
-                        toX: 8,
-                        toY: 10,
-                        message: "不思議な力で移動した。"
+                        "x": 28,
+                        "y": 8,
+                        "type": "warp",
+                        "toX": 8,
+                        "toY": 10,
+                        "message": "不思議な力で移動した。"
                     },
                     {
-                        x: 16,
-                        y: 8,
-                        type: "warp",
-                        toX: 28,
-                        toY: 18,
-                        message: "不思議な力で移動した。"
+                        "x": 16,
+                        "y": 8,
+                        "type": "warp",
+                        "toX": 28,
+                        "toY": 18,
+                        "message": "不思議な力で移動した。"
                     },
                     {
-                        x: 3,
-                        y: 8,
-                        type: "warp",
-                        toX: 14,
-                        toY: 14,
-                        message: "不思議な力で移動した。"
+                        "x": 3,
+                        "y": 8,
+                        "type": "warp",
+                        "toX": 14,
+                        "toY": 14,
+                        "message": "不思議な力で移動した。"
                     },
                     {
-                        x: 14,
-                        y: 14,
-                        type: "warp",
-                        toX: 3,
-                        toY: 8,
-                        message: "不思議な力で移動した。"
+                        "x": 14,
+                        "y": 14,
+                        "type": "warp",
+                        "toX": 3,
+                        "toY": 8,
+                        "message": "不思議な力で移動した。"
                     },
                     {
-                        x: 14,
-                        y: 2,
-                        type: "warp",
-                        toX: 15,
-                        toY: 20,
-                        message: "不思議な力で移動した。"
+                        "x": 14,
+                        "y": 2,
+                        "type": "warp",
+                        "toX": 15,
+                        "toY": 20,
+                        "message": "不思議な力で移動した。"
                     }
                 ],
-                bosses: [
+                "bosses": [
                     {
-                        x: 3,
-                        y: 3,
-                        monsterId: [
+                        "x": 3,
+                        "y": 3,
+                        "monsterId": [
                             302203,
                             302207
                         ],
-                        questId: "arisa_haine_forest_depths",
-                        startEventId: "quest_arisa_haine_encounter",
-                        storyEventId: "quest_arisa_haine_clear",
-                        bossStatMultiplier: 1.35,
-                        actionLabel: "呪風の根を断つ",
-                        inspectLog: "黒い風の中心で、森の根が鼓動のように膨らんでいる。"
+                        "questId": "arisa_haine_forest_depths",
+                        "startEventId": "quest_arisa_haine_encounter",
+                        "storyEventId": "quest_arisa_haine_clear",
+                        "bossStatMultiplier": 1.35,
+                        "actionLabel": "呪風の根を断つ",
+                        "inspectLog": "黒い風の中心で、森の根が鼓動のように膨らんでいる。"
                     }
                 ],
-                entryPoint: {
-                    x: 15,
-                    y: 22
+                "entryPoint": {
+                    "x": 15,
+                    "y": 22
                 },
-                name: "",
-                themeKey: "FORBIDDEN_FOREST",
-                chests: [
+                "name": "",
+                "themeKey": "FORBIDDEN_FOREST",
+                "chests": [
                     {
-                        x: 4,
-                        y: 19,
-                        itemId: 7,
-                        type: "item"
+                        "x": 4,
+                        "y": 19,
+                        "itemId": 7,
+                        "type": "item"
                     },
                     {
-                        x: 24,
-                        y: 3,
-                        itemId: 6,
-                        type: "item"
+                        "x": 24,
+                        "y": 3,
+                        "itemId": 6,
+                        "type": "item"
                     }
                 ]
             }
         ]
     },
-    WIND_TEMPLE: {
-        name: "風の神殿",
-        themeKey: "WIND_TEMPLE",
-        rank: 26,
-        encounterRank: 26,
-        battleBg: "battle_bg_wind_temple",
-        entryPoint: {
-            x: 12,
-            y: 20
+    "WIND_TEMPLE": {
+        "name": "風の神殿",
+        "themeKey": "WIND_TEMPLE",
+        "rank": 26,
+        "encounterRank": 26,
+        "battleBg": "battle_bg_wind_temple",
+        "entryPoint": {
+            "x": 12,
+            "y": 20
         },
-        floors: [
+        "floors": [
             {
-                label: "1階・風廊",
-                encounterRank: 26,
-                monsters: [
+                "label": "1階・風廊",
+                "encounterRank": 26,
+                "monsters": [
                     100024,
                     100025,
                     100026
                 ],
-                width: 25,
-                height: 24,
-                tiles: [
+                "width": 25,
+                "height": 24,
+                "tiles": [
                     "FFFFFFFFFFFFFFFFFFFFFFFFF",
                     "FWWWWWWWWWWWWWWWWWWWWWWWF",
                     "FWWWWWWWWWWWWWWWWWWWWWWWF",
@@ -5942,57 +5944,57 @@ const FIXED_DUNGEON_MAPS = {
                     "FWWWWWWWWWWWSWWWWWWWWWWWF",
                     "FFFFFFFFFFFFFFFFFFFFFFFFF"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 12,
-                        y: 22,
-                        to: "EXIT",
-                        label: "森へ戻る"
+                        "x": 12,
+                        "y": 22,
+                        "to": "EXIT",
+                        "label": "森へ戻る"
                     },
                     {
-                        x: 21,
-                        y: 11,
-                        toFloor: 2,
-                        targetX: 3,
-                        targetY: 11,
-                        label: "2階へ上がる"
+                        "x": 21,
+                        "y": 11,
+                        "toFloor": 2,
+                        "targetX": 3,
+                        "targetY": 11,
+                        "label": "2階へ上がる"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 4,
-                        y: 5,
-                        itemId: 2,
-                        type: "item"
+                        "x": 4,
+                        "y": 5,
+                        "itemId": 2,
+                        "type": "item"
                     },
                     {
-                        x: 6,
-                        y: 5,
-                        itemId: 4,
-                        type: "item"
+                        "x": 6,
+                        "y": 5,
+                        "itemId": 4,
+                        "type": "item"
                     }
                 ],
-                entryPoint: {
-                    x: 12,
-                    y: 21
+                "entryPoint": {
+                    "x": 12,
+                    "y": 21
                 },
-                name: "",
-                themeKey: "WIND_TEMPLE"
+                "name": "",
+                "themeKey": "WIND_TEMPLE"
             },
             {
-                label: "2階・旋風の回廊",
-                encounterRank: 28,
-                monsters: [
+                "label": "2階・旋風の回廊",
+                "encounterRank": 28,
+                "monsters": [
                     100026,
                     100027,
                     100028
                 ],
-                width: 25,
-                height: 24,
-                impassableTiles: [
+                "width": 25,
+                "height": 24,
+                "impassableTiles": [
                     "K"
                 ],
-                tiles: [
+                "tiles": [
                     "KKKKKKKKKKKKKKKKKKKKKKKKK",
                     "KWWWWWWWWWWWWWWWWWWWWWWWK",
                     "KWWWWWWWWWWWWWWWWWWWWWWWK",
@@ -6018,71 +6020,71 @@ const FIXED_DUNGEON_MAPS = {
                     "KWWWWWWWWWWWWWWWWWWWWWWWK",
                     "KKKKKKKKKKKKKKKKKKKKKKKKK"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 3,
-                        y: 11,
-                        toFloor: 1,
-                        targetX: 21,
-                        targetY: 11,
-                        label: "1階へ下りる"
+                        "x": 3,
+                        "y": 11,
+                        "toFloor": 1,
+                        "targetX": 21,
+                        "targetY": 11,
+                        "label": "1階へ下りる"
                     },
                     {
-                        x: 20,
-                        y: 20,
-                        toFloor: 3,
-                        targetX: 12,
-                        targetY: 19,
-                        label: "3階へ上がる"
+                        "x": 20,
+                        "y": 20,
+                        "toFloor": 3,
+                        "targetX": 12,
+                        "targetY": 19,
+                        "label": "3階へ上がる"
                     }
                 ],
-                entryPoint: {
-                    x: 3,
-                    y: 11
+                "entryPoint": {
+                    "x": 3,
+                    "y": 11
                 },
-                name: "",
-                themeKey: "WIND_TEMPLE",
-                tileEffects: [
+                "name": "",
+                "themeKey": "WIND_TEMPLE",
+                "tileEffects": [
                     {
-                        x: 3,
-                        y: 7,
-                        type: "warp",
-                        toX: 21,
-                        toY: 7,
-                        message: "不思議な力で移動した。"
+                        "x": 3,
+                        "y": 7,
+                        "type": "warp",
+                        "toX": 21,
+                        "toY": 7,
+                        "message": "不思議な力で移動した。"
                     },
                     {
-                        x: 21,
-                        y: 7,
-                        type: "warp",
-                        toX: 3,
-                        toY: 7,
-                        message: "不思議な力で移動した。"
+                        "x": 21,
+                        "y": 7,
+                        "type": "warp",
+                        "toX": 3,
+                        "toY": 7,
+                        "message": "不思議な力で移動した。"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 4,
-                        y: 20,
-                        itemId: 5,
-                        type: "item"
+                        "x": 4,
+                        "y": 20,
+                        "itemId": 5,
+                        "type": "item"
                     }
                 ]
             },
             {
-                label: "3階・風の祭壇",
-                encounterRank: 30,
-                monsters: [
+                "label": "3階・風の祭壇",
+                "encounterRank": 30,
+                "monsters": [
                     100028,
                     100029,
                     100030
                 ],
-                width: 25,
-                height: 24,
-                impassableTiles: [
+                "width": 25,
+                "height": 24,
+                "impassableTiles": [
                     "K"
                 ],
-                tiles: [
+                "tiles": [
                     "KKKKKKKKKKKKKKKKKKKKKKKKK",
                     "KWWWWWWWWWWWWWWWWWWWWWWWK",
                     "KWWWWWWWWWWWWWWWWWWWWWWWK",
@@ -6108,89 +6110,91 @@ const FIXED_DUNGEON_MAPS = {
                     "KWWWWWWWWWWWWWWWWWWWWWWWK",
                     "KKKKKKKKKKKKKKKKKKKKKKKKK"
                 ],
-                floorDecorations: [
+                "floorDecorations": [
                     {
-                        authoredPlacementId: "prism-pedestal-wind",
-                        type: "image",
-                        imageKey: "prism_pedestal_wind",
-                        x: 12,
-                        y: 8,
-                        width: 1,
-                        height: 1,
-                        drawScale: 2.7,
-                        alpha: 0.96,
-                        shimmer: true,
-                        blocking: true,
-                        baseTile: "T"
+                        "authoredPlacementId": "prism-pedestal-wind",
+                        "type": "image",
+                        "imageKey": "prism_pedestal_wind",
+                        "x": 12,
+                        "y": 8,
+                        "width": 1,
+                        "height": 1,
+                        "drawScale": 2.7,
+                        "alpha": 0.96,
+                        "shimmer": true,
+                        "shimmerDuration": 1050,
+                        "renderLayer": "object",
+                        "blocking": true,
+                        "baseTile": "T"
                     }
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 12,
-                        y: 19,
-                        toFloor: 2,
-                        targetX: 20,
-                        targetY: 20,
-                        label: "2階へ下りる"
+                        "x": 12,
+                        "y": 19,
+                        "toFloor": 2,
+                        "targetX": 20,
+                        "targetY": 20,
+                        "label": "2階へ下りる"
                     }
                 ],
-                bosses: [
+                "bosses": [
                     {
-                        x: 12,
-                        y: 10,
-                        monsterId: 301020,
-                        startEventId: "wind_temple_elicia_encounter",
-                        storyEventId: "wind_temple_clear",
-                        actionLabel: "祭壇へ進む"
+                        "x": 12,
+                        "y": 10,
+                        "monsterId": 301020,
+                        "startEventId": "wind_temple_elicia_encounter",
+                        "storyEventId": "wind_temple_clear",
+                        "actionLabel": "祭壇へ進む"
                     }
                 ],
-                entryPoint: {
-                    x: 12,
-                    y: 19
+                "entryPoint": {
+                    "x": 12,
+                    "y": 19
                 },
-                name: "",
-                themeKey: "WIND_TEMPLE"
+                "name": "",
+                "themeKey": "WIND_TEMPLE"
             }
         ]
     },
-    SEABED_TEMPLE: {
-        name: "海底神殿",
-        themeKey: "SEABED_TEMPLE",
-        rank: 35,
-        encounterRank: 35,
-        rareMonsters: [
+    "SEABED_TEMPLE": {
+        "name": "海底神殿",
+        "themeKey": "SEABED_TEMPLE",
+        "rank": 35,
+        "encounterRank": 35,
+        "rareMonsters": [
             {
-                id: 200201,
-                rate: 0.05
+                "id": 200201,
+                "rate": 0.05
             }
         ],
-        battleBg: "battle_bg_seabed",
-        overlayOverrides: {
-            B: {
-                img: "overlay_npc_dark_soldier",
-                color: "#333946"
+        "battleBg": "battle_bg_seabed",
+        "overlayOverrides": {
+            "B": {
+                "img": "overlay_npc_dark_soldier",
+                "color": "#333946"
             },
-            A: {
-                img: "overlay_npc_dark_soldier",
-                color: "#333946"
+            "A": {
+                "img": "overlay_npc_dark_soldier",
+                "color": "#333946"
             }
         },
-        entryPoint: {
-            x: 11,
-            y: 20
+        "entryPoint": {
+            "x": 11,
+            "y": 20
         },
-        floors: [
+        "floors": [
             {
-                label: "地下1階・沈水回廊",
-                encounterRank: 35,
-                monsters: [
+                "label": "地下1階・沈水回廊",
+                "encounterRank": 35,
+                "monsters": [
                     100033,
                     100034,
                     100035
                 ],
-                width: 23,
-                height: 23,
-                tiles: [
+                "width": 23,
+                "height": 23,
+                "tiles": [
                     "WWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWW",
@@ -6215,66 +6219,66 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWWTTTWWWWWWWWWW",
                     "WWWWWWWWWWWSWWWWWWWWWWW"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 11,
-                        y: 22,
-                        to: "EXIT",
-                        label: "外へ出る"
+                        "x": 11,
+                        "y": 22,
+                        "to": "EXIT",
+                        "label": "外へ出る"
                     },
                     {
-                        x: 11,
-                        y: 5,
-                        toFloor: 2,
-                        targetX: 11,
-                        targetY: 19,
-                        label: "地下2階へ下りる"
+                        "x": 11,
+                        "y": 5,
+                        "toFloor": 2,
+                        "targetX": 11,
+                        "targetY": 19,
+                        "label": "地下2階へ下りる"
                     }
                 ],
-                bosses: [
+                "bosses": [
                     {
-                        x: 19,
-                        y: 5,
-                        monsterId: [
+                        "x": 19,
+                        "y": 5,
+                        "monsterId": [
                             301022,
                             301021,
                             301021
                         ],
-                        keyRewardColors: [
+                        "keyRewardColors": [
                             "red",
                             "blue"
                         ],
-                        startEventId: "sea_temple_gate_encounter",
-                        storyEventId: "sea_temple_gate_clear",
-                        actionLabel: "兵士に話しかける"
+                        "startEventId": "sea_temple_gate_encounter",
+                        "storyEventId": "sea_temple_gate_clear",
+                        "actionLabel": "兵士に話しかける"
                     }
                 ],
-                entryPoint: {
-                    x: 11,
-                    y: 20
+                "entryPoint": {
+                    "x": 11,
+                    "y": 20
                 },
-                name: "",
-                themeKey: "CRENA_CAVE",
-                chests: [
+                "name": "",
+                "themeKey": "CRENA_CAVE",
+                "chests": [
                     {
-                        x: 3,
-                        y: 5,
-                        itemId: 14,
-                        type: "item"
+                        "x": 3,
+                        "y": 5,
+                        "itemId": 14,
+                        "type": "item"
                     }
                 ]
             },
             {
-                label: "地下2階・水門",
-                encounterRank: 37,
-                monsters: [
+                "label": "地下2階・水門",
+                "encounterRank": 37,
+                "monsters": [
                     100034,
                     100035,
                     100036
                 ],
-                width: 23,
-                height: 23,
-                tiles: [
+                "width": 23,
+                "height": 23,
+                "tiles": [
                     "WWWWWWWWWWWWWWWWWWWWWWW",
                     "WTTTWWWWWWWWWWWWWWTTTTW",
                     "WTDTWWWWWWWWWWWWWWTTTTW",
@@ -6299,82 +6303,82 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWW"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 11,
-                        y: 19,
-                        toFloor: 1,
-                        targetX: 11,
-                        targetY: 5,
-                        label: "地下1階へ上がる"
+                        "x": 11,
+                        "y": 19,
+                        "toFloor": 1,
+                        "targetX": 11,
+                        "targetY": 5,
+                        "label": "地下1階へ上がる"
                     },
                     {
-                        x: 2,
-                        y: 2,
-                        toFloor: 3,
-                        targetX: 11,
-                        targetY: 19,
-                        label: "地下3階へ下りる"
+                        "x": 2,
+                        "y": 2,
+                        "toFloor": 3,
+                        "targetX": 11,
+                        "targetY": 19,
+                        "label": "地下3階へ下りる"
                     }
                 ],
-                entryPoint: {
-                    x: 11,
-                    y: 19
+                "entryPoint": {
+                    "x": 11,
+                    "y": 19
                 },
-                name: "",
-                themeKey: "CRENA_CAVE",
-                chests: [
+                "name": "",
+                "themeKey": "CRENA_CAVE",
+                "chests": [
                     {
-                        x: 19,
-                        y: 2,
-                        itemId: 102,
-                        type: "item",
-                        rare: true
+                        "x": 19,
+                        "y": 2,
+                        "itemId": 102,
+                        "type": "item",
+                        "rare": true
                     },
                     {
-                        x: 20,
-                        y: 2,
-                        itemId: 103,
-                        type: "item",
-                        rare: true
+                        "x": 20,
+                        "y": 2,
+                        "itemId": 103,
+                        "type": "item",
+                        "rare": true
                     }
                 ],
-                bosses: [
+                "bosses": [
                     {
-                        x: 20,
-                        y: 5,
-                        monsterId: [
+                        "x": 20,
+                        "y": 5,
+                        "monsterId": [
                             301021,
                             301022,
                             301021
                         ],
-                        actionLabel: "戦う",
-                        inspectLog: "強敵の気配がする。"
+                        "actionLabel": "戦う",
+                        "inspectLog": "強敵の気配がする。"
                     },
                     {
-                        x: 20,
-                        y: 16,
-                        monsterId: [
+                        "x": 20,
+                        "y": 16,
+                        "monsterId": [
                             301021,
                             301022,
                             301021
                         ],
-                        actionLabel: "戦う",
-                        inspectLog: "強敵の気配がする。"
+                        "actionLabel": "戦う",
+                        "inspectLog": "強敵の気配がする。"
                     }
                 ]
             },
             {
-                label: "地下3階・祈祷の間",
-                encounterRank: 39,
-                monsters: [
+                "label": "地下3階・祈祷の間",
+                "encounterRank": 39,
+                "monsters": [
                     100036,
                     100037,
                     100039
                 ],
-                width: 23,
-                height: 23,
-                tiles: [
+                "width": 23,
+                "height": 23,
+                "tiles": [
                     "WWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWDWWWWWWWWWWW",
@@ -6399,98 +6403,100 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWWTTTWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWW"
                 ],
-                floorDecorations: [
+                "floorDecorations": [
                     {
-                        authoredPlacementId: "prism-pedestal-water",
-                        type: "image",
-                        imageKey: "prism_pedestal_water",
-                        x: 11,
-                        y: 7,
-                        width: 1,
-                        height: 1,
-                        drawScale: 2.7,
-                        alpha: 0.96,
-                        shimmer: true,
-                        blocking: true,
-                        baseTile: "T"
+                        "authoredPlacementId": "prism-pedestal-water",
+                        "type": "image",
+                        "imageKey": "prism_pedestal_water",
+                        "x": 11,
+                        "y": 6,
+                        "width": 1,
+                        "height": 1,
+                        "drawScale": 2.7,
+                        "alpha": 0.96,
+                        "shimmer": true,
+                        "shimmerDuration": 1050,
+                        "renderLayer": "object",
+                        "blocking": true,
+                        "baseTile": "T"
                     }
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 11,
-                        y: 19,
-                        toFloor: 2,
-                        targetX: 2,
-                        targetY: 2,
-                        label: "地下2階へ上がる"
+                        "x": 11,
+                        "y": 19,
+                        "toFloor": 2,
+                        "targetX": 2,
+                        "targetY": 2,
+                        "label": "地下2階へ上がる"
                     },
                     {
-                        x: 11,
-                        y: 2,
-                        toFloor: 4,
-                        targetX: 14,
-                        targetY: 22,
-                        label: "地下4階へ下りる",
-                        requiredFlag: "thunderFortCleared",
-                        lockedLabel: "激流を調べる",
-                        lockedLog: "激しい水流で進めない。"
+                        "x": 11,
+                        "y": 2,
+                        "toFloor": 4,
+                        "targetX": 14,
+                        "targetY": 22,
+                        "label": "地下4階へ下りる",
+                        "requiredFlag": "thunderFortCleared",
+                        "lockedLabel": "激流を調べる",
+                        "lockedLog": "激しい水流で進めない。"
                     }
                 ],
-                bosses: [
+                "bosses": [
                     {
-                        x: 11,
-                        y: 8,
-                        monsterId: [
+                        "x": 11,
+                        "y": 8,
+                        "monsterId": [
                             301030,
                             301022,
                             301022
                         ],
-                        startEventId: "water_temple_syris_encounter",
-                        storyEventId: "water_temple_clear",
-                        actionLabel: "氷の祭壇へ進む"
+                        "startEventId": "water_temple_syris_encounter",
+                        "storyEventId": "water_temple_clear",
+                        "actionLabel": "氷の祭壇へ進む"
                     }
                 ],
-                entryPoint: {
-                    x: 11,
-                    y: 19
+                "entryPoint": {
+                    "x": 11,
+                    "y": 19
                 },
-                name: "",
-                themeKey: "CRENA_CAVE"
+                "name": "",
+                "themeKey": "CRENA_CAVE"
             },
             {
-                label: "地下4階・潮環回廊",
-                encounterRank: 68,
-                monsters: [
+                "label": "地下4階・潮環回廊",
+                "encounterRank": 68,
+                "monsters": [
                     100062,
                     100064,
                     100066,
                     100067
                 ],
-                enemyBoost: {
-                    statMultiplier: 1.08,
-                    elmRes: {
+                "enemyBoost": {
+                    "statMultiplier": 1.08,
+                    "elmRes": {
                         "水": 100,
                         "火": 50,
                         "雷": -50
                     },
-                    elmAtk: {
+                    "elmAtk": {
                         "水": 25
                     },
-                    resists: {
-                        Poison: 45,
-                        Shock: 45,
-                        Debuff: 50
+                    "resists": {
+                        "Poison": 45,
+                        "Shock": 45,
+                        "Debuff": 50
                     }
                 },
-                rareMonsters: [
+                "rareMonsters": [
                     {
-                        id: 200201,
-                        rate: 0.06
+                        "id": 200201,
+                        "rate": 0.06
                     }
                 ],
-                width: 31,
-                height: 25,
-                tiles: [
+                "width": 31,
+                "height": 25,
+                "tiles": [
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWTTTTTWWWWWWWWWWWWW",
@@ -6517,233 +6523,233 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWWWWWWTTTWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 15,
-                        y: 22,
-                        toFloor: 3,
-                        targetX: 11,
-                        targetY: 2,
-                        label: "地下3階へ上がる"
+                        "x": 15,
+                        "y": 22,
+                        "toFloor": 3,
+                        "targetX": 11,
+                        "targetY": 2,
+                        "label": "地下3階へ上がる"
                     },
                     {
-                        x: 15,
-                        y: 3,
-                        toFloor: 5,
-                        targetX: 15,
-                        targetY: 22,
-                        label: "地下5階へ下りる"
+                        "x": 15,
+                        "y": 3,
+                        "toFloor": 5,
+                        "targetX": 15,
+                        "targetY": 22,
+                        "label": "地下5階へ下りる"
                     }
                 ],
-                tileEffects: [
+                "tileEffects": [
                     {
-                        type: "ice",
-                        rects: [
+                        "type": "ice",
+                        "rects": [
                             {
-                                x1: 3,
-                                y1: 9,
-                                x2: 27,
-                                y2: 10
+                                "x1": 3,
+                                "y1": 9,
+                                "x2": 27,
+                                "y2": 10
                             },
                             {
-                                x1: 10,
-                                y1: 11,
-                                x2: 20,
-                                y2: 13
+                                "x1": 10,
+                                "y1": 11,
+                                "x2": 20,
+                                "y2": 13
                             }
                         ],
-                        excludePoints: [
+                        "excludePoints": [
                             {
-                                x: 21,
-                                y: 9
+                                "x": 21,
+                                "y": 9
                             },
                             {
-                                x: 15,
-                                y: 9
+                                "x": 15,
+                                "y": 9
                             },
                             {
-                                x: 8,
-                                y: 9
+                                "x": 8,
+                                "y": 9
                             }
                         ],
-                        maxSlide: 26,
-                        message: "逆潮に押し流された。"
+                        "maxSlide": 26,
+                        "message": "逆潮に押し流された。"
                     },
                     {
-                        x: 5,
-                        y: 20,
-                        type: "warp",
-                        toX: 25,
-                        toY: 6,
-                        message: "渦潮が反対側の水路へ運んだ。"
+                        "x": 5,
+                        "y": 20,
+                        "type": "warp",
+                        "toX": 25,
+                        "toY": 6,
+                        "message": "渦潮が反対側の水路へ運んだ。"
                     },
                     {
-                        x: 25,
-                        y: 6,
-                        type: "warp",
-                        toX: 5,
-                        toY: 20,
-                        message: "水鏡が戻り道を映した。"
+                        "x": 25,
+                        "y": 6,
+                        "type": "warp",
+                        "toX": 5,
+                        "toY": 20,
+                        "message": "水鏡が戻り道を映した。"
                     },
                     {
-                        x: 25,
-                        y: 20,
-                        type: "hunter",
-                        id: "seabed_current",
-                        imageKey: "overlay_dungeon_hunter_sea",
-                        monsterIds: [
+                        "x": 25,
+                        "y": 20,
+                        "type": "hunter",
+                        "id": "seabed_current",
+                        "imageKey": "overlay_dungeon_hunter_sea",
+                        "monsterIds": [
                             100068,
                             100069,
                             100073
                         ],
-                        speed: 0.65,
-                        range: 26,
-                        statMultiplier: 1.3,
-                        message: "逆潮の番人が迫る！"
+                        "speed": 0.65,
+                        "range": 26,
+                        "statMultiplier": 1.3,
+                        "message": "逆潮の番人が迫る！"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 3,
-                        y: 6,
-                        itemId: 4,
-                        type: "item"
+                        "x": 3,
+                        "y": 6,
+                        "itemId": 4,
+                        "type": "item"
                     },
                     {
-                        x: 23,
-                        y: 20,
-                        itemId: 105,
-                        type: "item",
-                        rare: true
+                        "x": 23,
+                        "y": 20,
+                        "itemId": 105,
+                        "type": "item",
+                        "rare": true
                     },
                     {
-                        x: 3,
-                        y: 9,
-                        itemId: 5,
-                        type: "item"
+                        "x": 3,
+                        "y": 9,
+                        "itemId": 5,
+                        "type": "item"
                     },
                     {
-                        x: 26,
-                        y: 20,
-                        itemId: 106,
-                        type: "item",
-                        rare: true
+                        "x": 26,
+                        "y": 20,
+                        "itemId": 106,
+                        "type": "item",
+                        "rare": true
                     }
                 ],
-                mapActions: [
+                "mapActions": [
                     {
-                        x: 5,
-                        y: 6,
-                        label: "西の水門を下ろす",
-                        type: "switchGate",
-                        gateId: "seabed_tide_gate",
-                        switchId: "west",
-                        requiredSwitches: [
+                        "x": 5,
+                        "y": 6,
+                        "label": "西の水門を下ろす",
+                        "type": "switchGate",
+                        "gateId": "seabed_tide_gate",
+                        "switchId": "west",
+                        "requiredSwitches": [
                             "west",
                             "east"
                         ],
-                        imageKey: "maplib_water_sunken_urn",
-                        imageColor: "#59dbe8",
-                        minimapColor: "#59dbe8",
-                        blocksMovement: true,
-                        interactFromAdjacent: true,
-                        opens: [
+                        "imageKey": "maplib_water_sunken_urn",
+                        "imageColor": "#59dbe8",
+                        "minimapColor": "#59dbe8",
+                        "blocksMovement": true,
+                        "interactFromAdjacent": true,
+                        "opens": [
                             {
-                                x: 14,
-                                y: 8,
-                                tile: "T"
+                                "x": 14,
+                                "y": 8,
+                                "tile": "T"
                             },
                             {
-                                x: 15,
-                                y: 8,
-                                tile: "T"
+                                "x": 15,
+                                "y": 8,
+                                "tile": "T"
                             },
                             {
-                                x: 16,
-                                y: 8,
-                                tile: "T"
+                                "x": 16,
+                                "y": 8,
+                                "tile": "T"
                             }
                         ],
-                        log: "西の水門が低い音を立てた。",
-                        partialMessage: "中央の潮流が弱まった。反対側の水門も必要だ。",
-                        openMessage: "二つの水門が揃い、中央の逆潮が割れた。"
+                        "log": "西の水門が低い音を立てた。",
+                        "partialMessage": "中央の潮流が弱まった。反対側の水門も必要だ。",
+                        "openMessage": "二つの水門が揃い、中央の逆潮が割れた。"
                     },
                     {
-                        x: 25,
-                        y: 20,
-                        label: "東の水門を下ろす",
-                        type: "switchGate",
-                        gateId: "seabed_tide_gate",
-                        switchId: "east",
-                        requiredSwitches: [
+                        "x": 25,
+                        "y": 20,
+                        "label": "東の水門を下ろす",
+                        "type": "switchGate",
+                        "gateId": "seabed_tide_gate",
+                        "switchId": "east",
+                        "requiredSwitches": [
                             "west",
                             "east"
                         ],
-                        imageKey: "maplib_water_sunken_urn",
-                        imageColor: "#59dbe8",
-                        minimapColor: "#59dbe8",
-                        blocksMovement: true,
-                        interactFromAdjacent: true,
-                        opens: [
+                        "imageKey": "maplib_water_sunken_urn",
+                        "imageColor": "#59dbe8",
+                        "minimapColor": "#59dbe8",
+                        "blocksMovement": true,
+                        "interactFromAdjacent": true,
+                        "opens": [
                             {
-                                x: 14,
-                                y: 8,
-                                tile: "T"
+                                "x": 14,
+                                "y": 8,
+                                "tile": "T"
                             },
                             {
-                                x: 15,
-                                y: 8,
-                                tile: "T"
+                                "x": 15,
+                                "y": 8,
+                                "tile": "T"
                             },
                             {
-                                x: 16,
-                                y: 8,
-                                tile: "T"
+                                "x": 16,
+                                "y": 8,
+                                "tile": "T"
                             }
                         ],
-                        log: "東の水門が閉じ、潮の唸りが変わった。",
-                        partialMessage: "中央の潮流が弱まった。反対側の水門も必要だ。",
-                        openMessage: "二つの水門が揃い、中央の逆潮が割れた。"
+                        "log": "東の水門が閉じ、潮の唸りが変わった。",
+                        "partialMessage": "中央の潮流が弱まった。反対側の水門も必要だ。",
+                        "openMessage": "二つの水門が揃い、中央の逆潮が割れた。"
                     }
                 ],
-                entryPoint: {
-                    x: 15,
-                    y: 22
+                "entryPoint": {
+                    "x": 15,
+                    "y": 22
                 }
             },
             {
-                label: "地下5階・逆潮祭壇",
-                encounterRank: 76,
-                monsters: [
+                "label": "地下5階・逆潮祭壇",
+                "encounterRank": 76,
+                "monsters": [
                     100068,
                     100069,
                     100070,
                     100071
                 ],
-                enemyBoost: {
-                    statMultiplier: 1.1,
-                    elmRes: {
+                "enemyBoost": {
+                    "statMultiplier": 1.1,
+                    "elmRes": {
                         "水": 120,
                         "雷": -60
                     },
-                    elmAtk: {
+                    "elmAtk": {
                         "水": 30
                     },
-                    resists: {
-                        Poison: 50,
-                        Shock: 50,
-                        Debuff: 60
+                    "resists": {
+                        "Poison": 50,
+                        "Shock": 50,
+                        "Debuff": 60
                     }
                 },
-                rareMonsters: [
+                "rareMonsters": [
                     {
-                        id: 200201,
-                        rate: 0.06
+                        "id": 200201,
+                        "rate": 0.06
                     }
                 ],
-                width: 31,
-                height: 25,
-                tiles: [
+                "width": 31,
+                "height": 25,
+                "tiles": [
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
@@ -6770,110 +6776,110 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 15,
-                        y: 22,
-                        toFloor: 4,
-                        targetX: 15,
-                        targetY: 3,
-                        label: "地下4階へ上がる"
+                        "x": 15,
+                        "y": 22,
+                        "toFloor": 4,
+                        "targetX": 15,
+                        "targetY": 3,
+                        "label": "地下4階へ上がる"
                     }
                 ],
-                tileEffects: [
+                "tileEffects": [
                     {
-                        type: "ice",
-                        rects: [
+                        "type": "ice",
+                        "rects": [
                             {
-                                x1: 2,
-                                y1: 14,
-                                x2: 28,
-                                y2: 14
+                                "x1": 2,
+                                "y1": 14,
+                                "x2": 28,
+                                "y2": 14
                             },
                             {
-                                x1: 8,
-                                y1: 7,
-                                x2: 22,
-                                y2: 9
+                                "x1": 8,
+                                "y1": 7,
+                                "x2": 22,
+                                "y2": 9
                             },
                             {
-                                x1: 15,
-                                y1: 7,
-                                x2: 15,
-                                y2: 21
+                                "x1": 15,
+                                "y1": 7,
+                                "x2": 15,
+                                "y2": 21
                             }
                         ],
-                        maxSlide: 28,
-                        message: "祭壇の逆潮に引かれた。"
+                        "maxSlide": 28,
+                        "message": "祭壇の逆潮に引かれた。"
                     },
                     {
-                        x: 25,
-                        y: 17,
-                        type: "hunter",
-                        id: "seabed_altar_guard",
-                        imageKey: "overlay_dungeon_hunter_sea",
-                        monsterIds: [
+                        "x": 25,
+                        "y": 17,
+                        "type": "hunter",
+                        "id": "seabed_altar_guard",
+                        "imageKey": "overlay_dungeon_hunter_sea",
+                        "monsterIds": [
                             100073,
                             100075,
                             100080
                         ],
-                        speed: 0.75,
-                        range: 29,
-                        statMultiplier: 1.35,
-                        message: "祭壇守が水を割って迫る！"
+                        "speed": 0.75,
+                        "range": 29,
+                        "statMultiplier": 1.35,
+                        "message": "祭壇守が水を割って迫る！"
                     }
                 ],
-                bosses: [
+                "bosses": [
                     {
-                        x: 15,
-                        y: 6,
-                        monsterId: [
+                        "x": 15,
+                        "y": 6,
+                        "monsterId": [
                             302208,
                             302202
                         ],
-                        questId: "sophia_alan_seabed_depths",
-                        startEventId: "quest_sophia_alan_encounter",
-                        storyEventId: "quest_sophia_alan_clear",
-                        bossStatMultiplier: 1.35,
-                        actionLabel: "逆潮祭壇を鎮める",
-                        inspectLog: "ソフィアとアランが、祭壇を縛る逆潮の核を睨んでいる。"
+                        "questId": "sophia_alan_seabed_depths",
+                        "startEventId": "quest_sophia_alan_encounter",
+                        "storyEventId": "quest_sophia_alan_clear",
+                        "bossStatMultiplier": 1.35,
+                        "actionLabel": "逆潮祭壇を鎮める",
+                        "inspectLog": "ソフィアとアランが、祭壇を縛る逆潮の核を睨んでいる。"
                     }
                 ],
-                entryPoint: {
-                    x: 15,
-                    y: 22
+                "entryPoint": {
+                    "x": 15,
+                    "y": 22
                 }
             }
         ]
     },
-    BIG_TOWER: {
-        name: "大灯台",
-        themeKey: "BIG_TOWER",
-        rank: 30,
-        encounterRank: 30,
-        battleBg: "battle_bg_big_tower",
-        entryPoint: {
-            x: 11,
-            y: 21
+    "BIG_TOWER": {
+        "name": "大灯台",
+        "themeKey": "BIG_TOWER",
+        "rank": 30,
+        "encounterRank": 30,
+        "battleBg": "battle_bg_big_tower",
+        "entryPoint": {
+            "x": 11,
+            "y": 21
         },
-        floors: [
+        "floors": [
             {
-                label: "1階・潮風の塔道",
-                encounterRank: 30,
-                monsters: [
+                "label": "1階・潮風の塔道",
+                "encounterRank": 30,
+                "monsters": [
                     100026,
                     100027,
                     100028
                 ],
-                rareMonsters: [
+                "rareMonsters": [
                     {
-                        id: 200201,
-                        rate: 0.05
+                        "id": 200201,
+                        "rate": 0.05
                     }
                 ],
-                width: 23,
-                height: 24,
-                tiles: [
+                "width": 23,
+                "height": 24,
+                "tiles": [
                     "FFFFFFFFFFFFFFFFFFFFFFF",
                     "FWWWWWWWWWWWWWWWWWWWWWF",
                     "FWWWWWWWWWWWWWWWWWWWWWF",
@@ -6899,75 +6905,75 @@ const FIXED_DUNGEON_MAPS = {
                     "FWWWWWWWWWWSWWWWWWWWWWF",
                     "FFFFFFFFFFFFFFFFFFFFFFF"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 11,
-                        y: 22,
-                        to: "EXIT",
-                        label: "外に出る"
+                        "x": 11,
+                        "y": 22,
+                        "to": "EXIT",
+                        "label": "外に出る"
                     },
                     {
-                        x: 19,
-                        y: 4,
-                        toFloor: 2,
-                        targetX: 19,
-                        targetY: 20,
-                        label: "2階へ"
+                        "x": 19,
+                        "y": 4,
+                        "toFloor": 2,
+                        "targetX": 19,
+                        "targetY": 20,
+                        "label": "2階へ"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 3,
-                        y: 4,
-                        itemId: 1,
-                        type: "item"
+                        "x": 3,
+                        "y": 4,
+                        "itemId": 1,
+                        "type": "item"
                     },
                     {
-                        x: 18,
-                        y: 20,
-                        itemId: 14,
-                        type: "item"
+                        "x": 18,
+                        "y": 20,
+                        "itemId": 14,
+                        "type": "item"
                     }
                 ],
-                mapActions: [
+                "mapActions": [
                     {
-                        x: 5,
-                        y: 20,
-                        label: "ゼリードと話す",
-                        log: "ゼリードが、頂上に残る歪みを見上げている。",
-                        type: "quest",
-                        questId: "zelied_big_tower",
-                        imageKey: "overlay_companion_zelied",
-                        lockedText: "ゼリードはまだ、灯台の異変を見極めているようだ。"
+                        "x": 5,
+                        "y": 20,
+                        "label": "ゼリードと話す",
+                        "log": "ゼリードが、頂上に残る歪みを見上げている。",
+                        "type": "quest",
+                        "questId": "zelied_big_tower",
+                        "imageKey": "overlay_companion_zelied",
+                        "lockedText": "ゼリードはまだ、灯台の異変を見極めているようだ。"
                     }
                 ],
-                entryPoint: {
-                    x: 11,
-                    y: 21
+                "entryPoint": {
+                    "x": 11,
+                    "y": 21
                 },
-                name: "",
-                themeKey: "BIG_TOWER"
+                "name": "",
+                "themeKey": "BIG_TOWER"
             },
             {
-                label: "2階・螺旋階段",
-                encounterRank: 31,
-                monsters: [
+                "label": "2階・螺旋階段",
+                "encounterRank": 31,
+                "monsters": [
                     100027,
                     100028,
                     100029
                 ],
-                rareMonsters: [
+                "rareMonsters": [
                     {
-                        id: 200201,
-                        rate: 0.05
+                        "id": 200201,
+                        "rate": 0.05
                     }
                 ],
-                width: 23,
-                height: 24,
-                impassableTiles: [
+                "width": 23,
+                "height": 24,
+                "impassableTiles": [
                     "^"
                 ],
-                tiles: [
+                "tiles": [
                     "^^^^^^^^^^^^^^^^^^^^^^^",
                     "^WWWWWWWWWWWWWWWWWWWWW^",
                     "^WWWWWWWWWWWWWWWWWWWWW^",
@@ -6993,65 +6999,65 @@ const FIXED_DUNGEON_MAPS = {
                     "^WWWWWWWWWWWWWWWWWWWWW^",
                     "^^^^^^^^^^^^^^^^^^^^^^^"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 19,
-                        y: 20,
-                        toFloor: 1,
-                        targetX: 19,
-                        targetY: 4,
-                        label: "1階へ戻る"
+                        "x": 19,
+                        "y": 20,
+                        "toFloor": 1,
+                        "targetX": 19,
+                        "targetY": 4,
+                        "label": "1階へ戻る"
                     },
                     {
-                        x: 3,
-                        y: 4,
-                        toFloor: 3,
-                        targetX: 3,
-                        targetY: 20,
-                        label: "3階へ"
+                        "x": 3,
+                        "y": 4,
+                        "toFloor": 3,
+                        "targetX": 3,
+                        "targetY": 20,
+                        "label": "3階へ"
                     }
                 ],
-                entryPoint: {
-                    x: 19,
-                    y: 20
+                "entryPoint": {
+                    "x": 19,
+                    "y": 20
                 },
-                name: "",
-                themeKey: "BIG_TOWER",
-                chests: [
+                "name": "",
+                "themeKey": "BIG_TOWER",
+                "chests": [
                     {
-                        x: 4,
-                        y: 16,
-                        itemId: 5,
-                        type: "item"
+                        "x": 4,
+                        "y": 16,
+                        "itemId": 5,
+                        "type": "item"
                     },
                     {
-                        x: 11,
-                        y: 5,
-                        itemId: 14,
-                        type: "item"
+                        "x": 11,
+                        "y": 5,
+                        "itemId": 14,
+                        "type": "item"
                     }
                 ]
             },
             {
-                label: "3階・灯火回廊",
-                encounterRank: 32,
-                monsters: [
+                "label": "3階・灯火回廊",
+                "encounterRank": 32,
+                "monsters": [
                     100028,
                     100029,
                     100030
                 ],
-                rareMonsters: [
+                "rareMonsters": [
                     {
-                        id: 200201,
-                        rate: 0.05
+                        "id": 200201,
+                        "rate": 0.05
                     }
                 ],
-                width: 23,
-                height: 24,
-                impassableTiles: [
+                "width": 23,
+                "height": 24,
+                "impassableTiles": [
                     "^"
                 ],
-                tiles: [
+                "tiles": [
                     "^^^^^^^^^^^^^^^^^^^^^^^",
                     "^WWWWWWWWWWWWWWWWWWWWW^",
                     "^WWWWWWWWWWWWWWWWWWWWW^",
@@ -7077,65 +7083,65 @@ const FIXED_DUNGEON_MAPS = {
                     "^WWWWWWWWWWWWWWWWWWWWW^",
                     "^^^^^^^^^^^^^^^^^^^^^^^"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 3,
-                        y: 20,
-                        toFloor: 2,
-                        targetX: 3,
-                        targetY: 4,
-                        label: "2階へ戻る"
+                        "x": 3,
+                        "y": 20,
+                        "toFloor": 2,
+                        "targetX": 3,
+                        "targetY": 4,
+                        "label": "2階へ戻る"
                     },
                     {
-                        x: 19,
-                        y: 4,
-                        toFloor: 4,
-                        targetX: 3,
-                        targetY: 20,
-                        label: "4階へ"
+                        "x": 19,
+                        "y": 4,
+                        "toFloor": 4,
+                        "targetX": 3,
+                        "targetY": 20,
+                        "label": "4階へ"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 3,
-                        y: 4,
-                        itemId: 1,
-                        type: "item"
+                        "x": 3,
+                        "y": 4,
+                        "itemId": 1,
+                        "type": "item"
                     },
                     {
-                        x: 19,
-                        y: 20,
-                        itemId: 3,
-                        type: "item"
+                        "x": 19,
+                        "y": 20,
+                        "itemId": 3,
+                        "type": "item"
                     }
                 ],
-                entryPoint: {
-                    x: 3,
-                    y: 20
+                "entryPoint": {
+                    "x": 3,
+                    "y": 20
                 },
-                name: "",
-                themeKey: "BIG_TOWER"
+                "name": "",
+                "themeKey": "BIG_TOWER"
             },
             {
-                label: "4階・結界炉",
-                encounterRank: 34,
-                monsters: [
+                "label": "4階・結界炉",
+                "encounterRank": 34,
+                "monsters": [
                     100030,
                     100031,
                     100032
                 ],
-                rareMonsters: [
+                "rareMonsters": [
                     {
-                        id: 200201,
-                        rate: 0.05
+                        "id": 200201,
+                        "rate": 0.05
                     }
                 ],
-                width: 23,
-                height: 24,
-                impassableTiles: [
+                "width": 23,
+                "height": 24,
+                "impassableTiles": [
                     "^"
                 ],
-                tiles: [
+                "tiles": [
                     "^^^^^^^^^^^^^^^^^^^^^^^",
                     "^WWWWWWWWWWWWWWWWWWWWW^",
                     "^WWWWWWWWWWWWWWWWWWWWW^",
@@ -7161,87 +7167,87 @@ const FIXED_DUNGEON_MAPS = {
                     "^WWWWWWWWWWWWWWWWWWWWW^",
                     "^^^^^^^^^^^^^^^^^^^^^^^"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 3,
-                        y: 20,
-                        toFloor: 3,
-                        targetX: 19,
-                        targetY: 4,
-                        label: "3階へ戻る"
+                        "x": 3,
+                        "y": 20,
+                        "toFloor": 3,
+                        "targetX": 19,
+                        "targetY": 4,
+                        "label": "3階へ戻る"
                     },
                     {
-                        x: 19,
-                        y: 4,
-                        toFloor: 5,
-                        targetX: 19,
-                        targetY: 20,
-                        label: "5階へ"
+                        "x": 19,
+                        "y": 4,
+                        "toFloor": 5,
+                        "targetX": 19,
+                        "targetY": 20,
+                        "label": "5階へ"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 3,
-                        y: 4,
-                        itemId: 104,
-                        type: "item"
+                        "x": 3,
+                        "y": 4,
+                        "itemId": 104,
+                        "type": "item"
                     },
                     {
-                        x: 19,
-                        y: 20,
-                        itemId: 5,
-                        type: "item"
+                        "x": 19,
+                        "y": 20,
+                        "itemId": 5,
+                        "type": "item"
                     }
                 ],
-                bosses: [
+                "bosses": [
                     {
-                        x: 11,
-                        y: 12,
-                        monsterId: [
+                        "x": 11,
+                        "y": 12,
+                        "monsterId": [
                             301060,
                             301062
                         ],
-                        requiredFlag: "thunderFortCleared",
-                        inactiveTile: "G",
-                        keyRewardColor: "gold",
-                        startEventId: "big_tower_midboss_encounter",
-                        storyEventId: "big_tower_midboss_clear",
-                        actionLabel: "結界炉へ踏み込む"
+                        "requiredFlag": "thunderFortCleared",
+                        "inactiveTile": "G",
+                        "keyRewardColor": "gold",
+                        "startEventId": "big_tower_midboss_encounter",
+                        "storyEventId": "big_tower_midboss_clear",
+                        "actionLabel": "結界炉へ踏み込む"
                     }
                 ],
-                entryPoint: {
-                    x: 3,
-                    y: 20
+                "entryPoint": {
+                    "x": 3,
+                    "y": 20
                 },
-                healSprings: [
+                "healSprings": [
                     {
-                        x: 11,
-                        y: 14
+                        "x": 11,
+                        "y": 14
                     }
                 ],
-                name: "",
-                themeKey: "BIG_TOWER"
+                "name": "",
+                "themeKey": "BIG_TOWER"
             },
             {
-                label: "5階・風鳴りの壁",
-                encounterRank: 35,
-                monsters: [
+                "label": "5階・風鳴りの壁",
+                "encounterRank": 35,
+                "monsters": [
                     100031,
                     100032,
                     100033
                 ],
-                rareMonsters: [
+                "rareMonsters": [
                     {
-                        id: 200202,
-                        rate: 0.05
+                        "id": 200202,
+                        "rate": 0.05
                     }
                 ],
-                width: 23,
-                height: 24,
-                impassableTiles: [
+                "width": 23,
+                "height": 24,
+                "impassableTiles": [
                     "^"
                 ],
-                tiles: [
+                "tiles": [
                     "^^^^^^^^^^^^^^^^^^^^^^^",
                     "^WWWWWWWWWWWWWWWWWWWWW^",
                     "^WWWWWWWWWWWWWWWWWWWWW^",
@@ -7267,51 +7273,51 @@ const FIXED_DUNGEON_MAPS = {
                     "^WWWWWWWWWWWWWWWWWWWWW^",
                     "^^^^^^^^^^^^^^^^^^^^^^^"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 19,
-                        y: 20,
-                        toFloor: 4,
-                        targetX: 19,
-                        targetY: 4,
-                        label: "4階へ戻る"
+                        "x": 19,
+                        "y": 20,
+                        "toFloor": 4,
+                        "targetX": 19,
+                        "targetY": 4,
+                        "label": "4階へ戻る"
                     },
                     {
-                        x: 3,
-                        y: 4,
-                        toFloor: 6,
-                        targetX: 3,
-                        targetY: 20,
-                        label: "6階へ"
+                        "x": 3,
+                        "y": 4,
+                        "toFloor": 6,
+                        "targetX": 3,
+                        "targetY": 20,
+                        "label": "6階へ"
                     }
                 ],
-                entryPoint: {
-                    x: 19,
-                    y: 20
+                "entryPoint": {
+                    "x": 19,
+                    "y": 20
                 },
-                name: "",
-                themeKey: "BIG_TOWER"
+                "name": "",
+                "themeKey": "BIG_TOWER"
             },
             {
-                label: "6階・古い守衛室",
-                encounterRank: 36,
-                monsters: [
+                "label": "6階・古い守衛室",
+                "encounterRank": 36,
+                "monsters": [
                     100032,
                     100033,
                     100034
                 ],
-                rareMonsters: [
+                "rareMonsters": [
                     {
-                        id: 200202,
-                        rate: 0.05
+                        "id": 200202,
+                        "rate": 0.05
                     }
                 ],
-                width: 23,
-                height: 24,
-                impassableTiles: [
+                "width": 23,
+                "height": 24,
+                "impassableTiles": [
                     "^"
                 ],
-                tiles: [
+                "tiles": [
                     "^^^^^^^^^^^^^^^^^^^^^^^",
                     "^WWWWWWWWWWWWWWWWWWWWW^",
                     "^WWWWWWWWWWWWWWWWWWWWW^",
@@ -7337,65 +7343,65 @@ const FIXED_DUNGEON_MAPS = {
                     "^WWWWWWWWWWWWWWWWWWWWW^",
                     "^^^^^^^^^^^^^^^^^^^^^^^"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 3,
-                        y: 20,
-                        toFloor: 5,
-                        targetX: 3,
-                        targetY: 4,
-                        label: "5階へ戻る"
+                        "x": 3,
+                        "y": 20,
+                        "toFloor": 5,
+                        "targetX": 3,
+                        "targetY": 4,
+                        "label": "5階へ戻る"
                     },
                     {
-                        x: 19,
-                        y: 4,
-                        toFloor: 7,
-                        targetX: 19,
-                        targetY: 20,
-                        label: "7階へ"
+                        "x": 19,
+                        "y": 4,
+                        "toFloor": 7,
+                        "targetX": 19,
+                        "targetY": 20,
+                        "label": "7階へ"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 4,
-                        y: 5,
-                        itemId: 6,
-                        type: "item"
+                        "x": 4,
+                        "y": 5,
+                        "itemId": 6,
+                        "type": "item"
                     },
                     {
-                        x: 18,
-                        y: 19,
-                        itemId: 99,
-                        type: "item"
+                        "x": 18,
+                        "y": 19,
+                        "itemId": 99,
+                        "type": "item"
                     }
                 ],
-                entryPoint: {
-                    x: 3,
-                    y: 20
+                "entryPoint": {
+                    "x": 3,
+                    "y": 20
                 },
-                name: "",
-                themeKey: "BIG_TOWER"
+                "name": "",
+                "themeKey": "BIG_TOWER"
             },
             {
-                label: "7階・灯台頂上",
-                encounterRank: 40,
-                monsters: [
+                "label": "7階・灯台頂上",
+                "encounterRank": 40,
+                "monsters": [
                     100035,
                     100036,
                     100037
                 ],
-                rareMonsters: [
+                "rareMonsters": [
                     {
-                        id: 200202,
-                        rate: 0.05
+                        "id": 200202,
+                        "rate": 0.05
                     }
                 ],
-                width: 23,
-                height: 24,
-                impassableTiles: [
+                "width": 23,
+                "height": 24,
+                "impassableTiles": [
                     "^"
                 ],
-                tiles: [
+                "tiles": [
                     "^^^^^^^^^^^^^^^^^^^^^^^",
                     "^WWWWWWWWWWWWWWWWWWWWW^",
                     "^WWWWWWWWWWWWWWWWWWWWW^",
@@ -7421,102 +7427,102 @@ const FIXED_DUNGEON_MAPS = {
                     "^WWWWWWWWWWWWWWWWWWWWW^",
                     "^^^^^^^^^^^^^^^^^^^^^^^"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 19,
-                        y: 20,
-                        toFloor: 6,
-                        targetX: 19,
-                        targetY: 4,
-                        label: "6階へ戻る"
+                        "x": 19,
+                        "y": 20,
+                        "toFloor": 6,
+                        "targetX": 19,
+                        "targetY": 4,
+                        "label": "6階へ戻る"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 3,
-                        y: 5,
-                        itemId: 100,
-                        type: "item"
+                        "x": 3,
+                        "y": 5,
+                        "itemId": 100,
+                        "type": "item"
                     }
                 ],
-                bosses: [
+                "bosses": [
                     {
-                        x: 11,
-                        y: 6,
-                        monsterId: 301061,
-                        requiredFlag: "thunderFortCleared",
-                        inactiveTile: "G",
-                        startEventId: "big_tower_lilith_encounter",
-                        storyEventId: "big_tower_clear",
-                        actionLabel: "リリスと対峙する"
+                        "x": 11,
+                        "y": 6,
+                        "monsterId": 301061,
+                        "requiredFlag": "thunderFortCleared",
+                        "inactiveTile": "G",
+                        "startEventId": "big_tower_lilith_encounter",
+                        "storyEventId": "big_tower_clear",
+                        "actionLabel": "リリスと対峙する"
                     },
                     {
-                        x: 11,
-                        y: 10,
-                        monsterId: [
+                        "x": 11,
+                        "y": 10,
+                        "monsterId": [
                             301060,
                             302205
                         ],
-                        questId: "zelied_big_tower",
-                        inactiveTile: "G",
-                        mapSpriteMonsterId: 301060,
-                        startEventId: "quest_zelied_tower_echo_encounter",
-                        storyEventId: "quest_zelied_tower_echo_clear",
-                        bossStatMultiplier: 1.25,
-                        actionLabel: "灯火の残響に挑む",
-                        challengeText: "砕けた結界から、二つの影が滲み出す。\n灯火の残響に挑みますか？"
+                        "questId": "zelied_big_tower",
+                        "inactiveTile": "G",
+                        "mapSpriteMonsterId": 301060,
+                        "startEventId": "quest_zelied_tower_echo_encounter",
+                        "storyEventId": "quest_zelied_tower_echo_clear",
+                        "bossStatMultiplier": 1.25,
+                        "actionLabel": "灯火の残響に挑む",
+                        "challengeText": "砕けた結界から、二つの影が滲み出す。\n灯火の残響に挑みますか？"
                     }
                 ],
-                entryPoint: {
-                    x: 19,
-                    y: 20
+                "entryPoint": {
+                    "x": 19,
+                    "y": 20
                 },
-                name: "",
-                themeKey: "BIG_TOWER"
+                "name": "",
+                "themeKey": "BIG_TOWER"
             }
         ]
     },
-    THUNDER_FORT: {
-        name: "ライザーク要塞",
-        themeKey: "THUNDER_FORT",
-        rank: 40,
-        encounterRank: 40,
-        battleBg: "battle_bg_thunder_fort",
-        entryPoint: {
-            x: 2,
-            y: 14
+    "THUNDER_FORT": {
+        "name": "ライザーク要塞",
+        "themeKey": "THUNDER_FORT",
+        "rank": 40,
+        "encounterRank": 40,
+        "battleBg": "battle_bg_thunder_fort",
+        "entryPoint": {
+            "x": 2,
+            "y": 14
         },
-        entryPoints: {
-            west: {
-                x: 2,
-                y: 14
+        "entryPoints": {
+            "west": {
+                "x": 2,
+                "y": 14
             },
-            east: {
-                x: 30,
-                y: 14
+            "east": {
+                "x": 30,
+                "y": 14
             }
         },
-        floors: [
+        "floors": [
             {
-                label: "1階・双門外郭",
-                encounterRank: 42,
-                monsters: [
+                "label": "1階・双門外郭",
+                "encounterRank": 42,
+                "monsters": [
                     100040,
                     100041,
                     100042
                 ],
-                rareMonsters: [
+                "rareMonsters": [
                     {
-                        id: 200201,
-                        rate: 0.05
+                        "id": 200201,
+                        "rate": 0.05
                     }
                 ],
-                width: 33,
-                height: 28,
-                impassableTiles: [
+                "width": 33,
+                "height": 28,
+                "impassableTiles": [
                     "H"
                 ],
-                tiles: [
+                "tiles": [
                     "HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH",
                     "HWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWH",
                     "HWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWH",
@@ -7546,398 +7552,398 @@ const FIXED_DUNGEON_MAPS = {
                     "HWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWH",
                     "HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 1,
-                        y: 14,
-                        to: "EXIT",
-                        label: "西門から外に出る",
-                        log: "西門の向こうに、川沿いの岸辺が見える。",
-                        exitPoint: {
-                            areaKey: "WORLD",
-                            x: 45,
-                            y: 36
+                        "x": 1,
+                        "y": 14,
+                        "to": "EXIT",
+                        "label": "西門から外に出る",
+                        "log": "西門の向こうに、川沿いの岸辺が見える。",
+                        "exitPoint": {
+                            "areaKey": "WORLD",
+                            "x": 45,
+                            "y": 36
                         }
                     },
                     {
-                        x: 31,
-                        y: 14,
-                        to: "EXIT",
-                        label: "東門から外に出る",
-                        log: "門の向こうに、うっすらと光の神殿が見える。",
-                        requiredFlag: "thunderFortCleared",
-                        lockedLabel: "東門を調べる",
-                        lockedLog: "東門は雷の結界で閉ざされている…",
-                        exitPoint: {
-                            areaKey: "WORLD",
-                            x: 47,
-                            y: 36
+                        "x": 31,
+                        "y": 14,
+                        "to": "EXIT",
+                        "label": "東門から外に出る",
+                        "log": "門の向こうに、うっすらと光の神殿が見える。",
+                        "requiredFlag": "thunderFortCleared",
+                        "lockedLabel": "東門を調べる",
+                        "lockedLog": "東門は雷の結界で閉ざされている…",
+                        "exitPoint": {
+                            "areaKey": "WORLD",
+                            "x": 47,
+                            "y": 36
                         }
                     },
                     {
-                        x: 26,
-                        y: 6,
-                        toFloor: 2,
-                        targetX: 5,
-                        targetY: 23,
-                        label: "2階へ上がる"
+                        "x": 26,
+                        "y": 6,
+                        "toFloor": 2,
+                        "targetX": 5,
+                        "targetY": 23,
+                        "label": "2階へ上がる"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 18,
-                        y: 21,
-                        itemId: 3,
-                        type: "item"
+                        "x": 18,
+                        "y": 21,
+                        "itemId": 3,
+                        "type": "item"
                     },
                     {
-                        x: 7,
-                        y: 6,
-                        itemId: 1,
-                        type: "item"
+                        "x": 7,
+                        "y": 6,
+                        "itemId": 1,
+                        "type": "item"
                     }
                 ],
-                floorDecorations: [
+                "mapActions": [
                     {
-                        authoredPlacementId: "thunder-fort-guild-sign",
-                        type: "image",
-                        imageKey: "guild_sign",
-                        x: 3,
-                        y: 20,
-                        drawWidth: 64,
-                        drawHeight: 64,
-                        drawOffsetX: 22,
-                        drawOffsetY: -26,
-                        baseTile: "T"
-                    }
-                ],
-                blockingObjects: [
-                    {
-                        x: 7,
-                        y: 20,
-                        baseTile: "T",
-                        invisible: true,
-                        log: "冒険者ギルドの受付カウンターだ。"
-                    },
-                    {
-                        x: 3,
-                        y: 21,
-                        baseTile: "T",
-                        invisible: true,
-                        log: "冒険者ギルドの受付カウンターだ。"
-                    },
-                    {
-                        x: 4,
-                        y: 21,
-                        baseTile: "T",
-                        invisible: true,
-                        log: "冒険者ギルドの受付カウンターだ。"
-                    },
-                    {
-                        x: 5,
-                        y: 21,
-                        baseTile: "T",
-                        imageKey: "guild_counter",
-                        drawWidth: 160,
-                        drawHeight: 64,
-                        suppressShadow: true,
-                        log: "冒険者ギルドの受付カウンターだ。"
-                    },
-                    {
-                        x: 6,
-                        y: 21,
-                        baseTile: "T",
-                        invisible: true,
-                        log: "冒険者ギルドの受付カウンターだ。"
-                    },
-                    {
-                        x: 7,
-                        y: 21,
-                        baseTile: "T",
-                        invisible: true,
-                        log: "冒険者ギルドの受付カウンターだ。"
-                    },
-                    {
-                        x: 8,
-                        y: 19,
-                        baseTile: "T",
-                        invisible: true,
-                        log: "依頼掲示板が置かれている。"
-                    },
-                    {
-                        x: 9,
-                        y: 19,
-                        baseTile: "T",
-                        invisible: true,
-                        log: "依頼掲示板が置かれている。"
-                    },
-                    {
-                        x: 9,
-                        y: 20,
-                        baseTile: "T",
-                        invisible: true,
-                        log: "依頼掲示板が置かれている。"
-                    },
-                    {
-                        x: 27,
-                        y: 20,
-                        baseTile: "T",
-                        invisible: true,
-                        log: "簡素な寝台が並んでいる。"
-                    },
-                    {
-                        x: 29,
-                        y: 20,
-                        baseTile: "T",
-                        invisible: true,
-                        log: "簡素な寝台が並んでいる。"
-                    },
-                    {
-                        x: 27,
-                        y: 21,
-                        baseTile: "T",
-                        imageKey: "guild_bed",
-                        drawWidth: 32,
-                        drawHeight: 64,
-                        suppressShadow: true,
-                        log: "要塞の宿泊所に備えられた寝台だ。"
-                    },
-                    {
-                        x: 29,
-                        y: 21,
-                        baseTile: "T",
-                        imageKey: "guild_bed",
-                        drawWidth: 32,
-                        drawHeight: 64,
-                        suppressShadow: true,
-                        log: "要塞の宿泊所に備えられた寝台だ。"
-                    },
-                    {
-                        x: 27,
-                        y: 23,
-                        baseTile: "T",
-                        invisible: true,
-                        log: "簡素な寝台が並んでいる。"
-                    },
-                    {
-                        x: 29,
-                        y: 23,
-                        baseTile: "T",
-                        invisible: true,
-                        log: "簡素な寝台が並んでいる。"
-                    },
-                    {
-                        x: 27,
-                        y: 24,
-                        baseTile: "T",
-                        imageKey: "guild_bed",
-                        drawWidth: 32,
-                        drawHeight: 64,
-                        suppressShadow: true,
-                        log: "要塞の宿泊所に備えられた寝台だ。"
-                    },
-                    {
-                        x: 29,
-                        y: 24,
-                        baseTile: "T",
-                        imageKey: "guild_bed",
-                        drawWidth: 32,
-                        drawHeight: 64,
-                        suppressShadow: true,
-                        log: "要塞の宿泊所に備えられた寝台だ。"
-                    }
-                ],
-                mapActions: [
-                    {
-                        x: 5,
-                        y: 20,
-                        label: "受付職員と話す",
-                        log: "受付職員が丁寧に一礼した。",
-                        type: "guild",
-                        imageKey: "guild_girl",
-                        drawWidth: 32,
-                        drawHeight: 32,
-                        baseTile: "T",
-                        blocksMovement: true,
-                        interactFromAdjacent: true,
-                        interactionArea: {
-                            x: 5,
-                            y: 21,
-                            width: 1,
-                            height: 1
+                        "x": 5,
+                        "y": 20,
+                        "label": "受付職員と話す",
+                        "log": "受付職員が丁寧に一礼した。",
+                        "type": "guild",
+                        "imageKey": "guild_girl",
+                        "drawWidth": 32,
+                        "drawHeight": 32,
+                        "baseTile": "T",
+                        "blocksMovement": true,
+                        "interactFromAdjacent": true,
+                        "interactionArea": {
+                            "x": 5,
+                            "y": 21,
+                            "width": 1,
+                            "height": 1
                         },
-                        minimapArea: {
-                            x: 3,
-                            y: 21,
-                            width: 5,
-                            height: 1
+                        "minimapArea": {
+                            "x": 3,
+                            "y": 21,
+                            "width": 5,
+                            "height": 1
                         },
-                        minimapConnect: true,
-                        minimapColor: "#5bd6ff",
-                        minimapAreaColor: "#b77a32"
+                        "minimapConnect": true,
+                        "minimapColor": "#5bd6ff",
+                        "minimapAreaColor": "#b77a32"
                     },
                     {
-                        x: 8,
-                        y: 20,
-                        label: "依頼掲示板を見る",
-                        log: "各地から届いた依頼票が掲示されている。",
-                        type: "guildBoard",
-                        imageKey: "guild_questboard",
-                        renderAsBlockingObject: true,
-                        drawWidth: 64,
-                        drawHeight: 64,
-                        drawOffsetX: 12,
-                        baseTile: "T",
-                        blocksMovement: true,
-                        interactFromAdjacent: true,
-                        interactionArea: {
-                            x: 8,
-                            y: 20,
-                            width: 2,
-                            height: 1
+                        "x": 8,
+                        "y": 20,
+                        "label": "依頼掲示板を見る",
+                        "log": "各地から届いた依頼票が掲示されている。",
+                        "type": "guildBoard",
+                        "imageKey": "guild_questboard",
+                        "renderAsBlockingObject": true,
+                        "drawWidth": 64,
+                        "drawHeight": 64,
+                        "drawOffsetX": 12,
+                        "baseTile": "T",
+                        "blocksMovement": true,
+                        "interactFromAdjacent": true,
+                        "interactionArea": {
+                            "x": 8,
+                            "y": 20,
+                            "width": 2,
+                            "height": 1
                         },
-                        minimapArea: {
-                            x: 8,
-                            y: 20,
-                            width: 2,
-                            height: 1
+                        "minimapArea": {
+                            "x": 8,
+                            "y": 20,
+                            "width": 2,
+                            "height": 1
                         },
-                        minimapColor: "#d6a94a",
-                        minimapAreaColor: "#d6a94a"
+                        "minimapColor": "#d6a94a",
+                        "minimapAreaColor": "#d6a94a"
                     },
                     {
-                        x: 25,
-                        y: 20,
-                        label: "無料で休む",
-                        log: "宿泊所の係員が空いている寝台を案内してくれた。",
-                        type: "freeRest",
-                        imageKey: "guild_girl",
-                        drawWidth: 32,
-                        drawHeight: 32,
-                        baseTile: "T",
-                        blocksMovement: true,
-                        interactFromAdjacent: true
+                        "x": 25,
+                        "y": 20,
+                        "label": "無料で休む",
+                        "log": "宿泊所の係員が空いている寝台を案内してくれた。",
+                        "type": "freeRest",
+                        "imageKey": "guild_girl",
+                        "drawWidth": 32,
+                        "drawHeight": 32,
+                        "baseTile": "T",
+                        "blocksMovement": true,
+                        "interactFromAdjacent": true
                     },
                     {
-                        x: 5,
-                        y: 13,
-                        label: "リンと話す",
-                        log: "リンが、雷鳴の奥に残る魔物の気配を追っている。",
-                        type: "quest",
-                        questId: "rin_thunder_fort",
-                        complete: true,
-                        imageKey: "overlay_companion_rin",
-                        lockedText: "リンはまだ、光を導く者の到着を待っている。"
+                        "x": 5,
+                        "y": 13,
+                        "label": "リンと話す",
+                        "log": "リンが、雷鳴の奥に残る魔物の気配を追っている。",
+                        "type": "quest",
+                        "questId": "rin_thunder_fort",
+                        "complete": true,
+                        "imageKey": "overlay_companion_rin",
+                        "lockedText": "リンはまだ、光を導く者の到着を待っている。"
                     },
                     {
-                        x: 14,
-                        y: 21,
-                        label: "フリーダと話す",
-                        log: "フリーダが、高圧電流の先を見据えている。",
-                        type: "quest",
-                        questId: "frieda_baron_thunder_depths",
-                        imageKey: "overlay_companion_frieda",
-                        lockedText: "今はまだ、要塞深部の電流を越える加護が足りない。"
+                        "x": 14,
+                        "y": 21,
+                        "label": "フリーダと話す",
+                        "log": "フリーダが、高圧電流の先を見据えている。",
+                        "type": "quest",
+                        "questId": "frieda_baron_thunder_depths",
+                        "imageKey": "overlay_companion_frieda",
+                        "lockedText": "今はまだ、要塞深部の電流を越える加護が足りない。"
                     },
                     {
-                        x: 15,
-                        y: 21,
-                        label: "バロンと話す",
-                        log: "バロンが、雷の制御核へ向けて武器を握り直している。",
-                        type: "quest",
-                        questId: "frieda_baron_thunder_depths",
-                        imageKey: "overlay_companion_baron",
-                        lockedText: "今はまだ、要塞深部の電流を越える加護が足りない。"
+                        "x": 15,
+                        "y": 21,
+                        "label": "バロンと話す",
+                        "log": "バロンが、雷の制御核へ向けて武器を握り直している。",
+                        "type": "quest",
+                        "questId": "frieda_baron_thunder_depths",
+                        "imageKey": "overlay_companion_baron",
+                        "lockedText": "今はまだ、要塞深部の電流を越える加護が足りない。"
                     },
                     {
-                        x: 25,
-                        y: 13,
-                        label: "補給品を買う",
-                        log: "解放された要塞に補給隊が入っている。",
-                        type: "shop",
-                        shopType: "item",
-                        title: "ライザーク要塞 補給所",
-                        shopRank: 45,
-                        requiredFlag: "thunderFortCleared",
-                        imageKey: "overlay_npc_villager",
-                        lockedText: "まだ補給隊は入れないようだ。"
+                        "x": 25,
+                        "y": 13,
+                        "label": "補給品を買う",
+                        "log": "解放された要塞に補給隊が入っている。",
+                        "type": "shop",
+                        "shopType": "item",
+                        "title": "ライザーク要塞 補給所",
+                        "shopRank": 45,
+                        "requiredFlag": "thunderFortCleared",
+                        "imageKey": "overlay_npc_villager",
+                        "lockedText": "まだ補給隊は入れないようだ。"
                     },
                     {
-                        x: 27,
-                        y: 13,
-                        label: "武器を見る",
-                        log: "押収された武器が整備されている。",
-                        type: "shop",
-                        shopType: "weapon",
-                        title: "ライザーク要塞 武器庫",
-                        shopRank: 45,
-                        requiredFlag: "thunderFortCleared",
-                        imageKey: "overlay_npc_villager",
-                        lockedText: "武器庫は封鎖されている。"
+                        "x": 27,
+                        "y": 13,
+                        "label": "武器を見る",
+                        "log": "押収された武器が整備されている。",
+                        "type": "shop",
+                        "shopType": "weapon",
+                        "title": "ライザーク要塞 武器庫",
+                        "shopRank": 45,
+                        "requiredFlag": "thunderFortCleared",
+                        "imageKey": "overlay_npc_villager",
+                        "lockedText": "武器庫は封鎖されている。"
                     },
                     {
-                        x: 29,
-                        y: 13,
-                        label: "防具を見る",
-                        log: "雷対策の防具が並び始めている。",
-                        type: "shop",
-                        shopType: "armor",
-                        title: "ライザーク要塞 防具庫",
-                        shopRank: 45,
-                        requiredFlag: "thunderFortCleared",
-                        imageKey: "overlay_npc_villager",
-                        lockedText: "防具庫は封鎖されている。"
+                        "x": 29,
+                        "y": 13,
+                        "label": "防具を見る",
+                        "log": "雷対策の防具が並び始めている。",
+                        "type": "shop",
+                        "shopType": "armor",
+                        "title": "ライザーク要塞 防具庫",
+                        "shopRank": 45,
+                        "requiredFlag": "thunderFortCleared",
+                        "imageKey": "overlay_npc_villager",
+                        "lockedText": "防具庫は封鎖されている。"
                     },
                     {
-                        x: 20,
-                        y: 17,
-                        label: "解放兵と話す",
-                        log: "解放された兵が深く息を吐いている。",
-                        type: "storyEvent",
-                        eventId: "post_thunder_fort_base_1",
-                        requiredFlag: "thunderFortCleared",
-                        imageKey: "overlay_npc_villager",
-                        lockedText: "雷の轟きで声が届かない。"
+                        "x": 20,
+                        "y": 17,
+                        "label": "解放兵と話す",
+                        "log": "解放された兵が深く息を吐いている。",
+                        "type": "storyEvent",
+                        "eventId": "post_thunder_fort_base_1",
+                        "requiredFlag": "thunderFortCleared",
+                        "imageKey": "overlay_npc_villager",
+                        "lockedText": "雷の轟きで声が届かない。"
                     }
                 ],
-                entryPoint: {
-                    x: 2,
-                    y: 14
+                "entryPoint": {
+                    "x": 2,
+                    "y": 14
                 },
-                bosses: [
+                "bosses": [
                     {
-                        x: 16,
-                        y: 14,
-                        monsterId: 100081,
-                        keyRewardColor: "gold",
-                        actionLabel: "機械兵士と戦う",
-                        inspectLog: "一際危険なオーラを纏う機械兵士が佇んでいる…"
+                        "x": 16,
+                        "y": 14,
+                        "monsterId": 100081,
+                        "keyRewardColor": "gold",
+                        "actionLabel": "機械兵士と戦う",
+                        "inspectLog": "一際危険なオーラを纏う機械兵士が佇んでいる…"
                     }
                 ],
-                healSprings: [],
-                name: "",
-                themeKey: "THUNDER_FORT"
+                "healSprings": [],
+                "name": "",
+                "themeKey": "THUNDER_FORT",
+                "floorDecorations": [
+                    {
+                        "authoredPlacementId": "thunder-fort-guild-sign",
+                        "type": "image",
+                        "imageKey": "guild_sign",
+                        "x": 3,
+                        "y": 20,
+                        "drawWidth": 64,
+                        "drawHeight": 64,
+                        "drawOffsetX": 22,
+                        "drawOffsetY": -26,
+                        "baseTile": "T"
+                    }
+                ],
+                "blockingObjects": [
+                    {
+                        "x": 7,
+                        "y": 20,
+                        "baseTile": "T",
+                        "invisible": true,
+                        "log": "冒険者ギルドの受付カウンターだ。"
+                    },
+                    {
+                        "x": 3,
+                        "y": 21,
+                        "baseTile": "T",
+                        "invisible": true,
+                        "log": "冒険者ギルドの受付カウンターだ。"
+                    },
+                    {
+                        "x": 4,
+                        "y": 21,
+                        "baseTile": "T",
+                        "invisible": true,
+                        "log": "冒険者ギルドの受付カウンターだ。"
+                    },
+                    {
+                        "x": 5,
+                        "y": 21,
+                        "baseTile": "T",
+                        "imageKey": "guild_counter",
+                        "drawWidth": 160,
+                        "drawHeight": 64,
+                        "suppressShadow": true,
+                        "log": "冒険者ギルドの受付カウンターだ。"
+                    },
+                    {
+                        "x": 6,
+                        "y": 21,
+                        "baseTile": "T",
+                        "invisible": true,
+                        "log": "冒険者ギルドの受付カウンターだ。"
+                    },
+                    {
+                        "x": 7,
+                        "y": 21,
+                        "baseTile": "T",
+                        "invisible": true,
+                        "log": "冒険者ギルドの受付カウンターだ。"
+                    },
+                    {
+                        "x": 8,
+                        "y": 19,
+                        "baseTile": "T",
+                        "invisible": true,
+                        "log": "依頼掲示板が置かれている。"
+                    },
+                    {
+                        "x": 9,
+                        "y": 19,
+                        "baseTile": "T",
+                        "invisible": true,
+                        "log": "依頼掲示板が置かれている。"
+                    },
+                    {
+                        "x": 9,
+                        "y": 20,
+                        "baseTile": "T",
+                        "invisible": true,
+                        "log": "依頼掲示板が置かれている。"
+                    },
+                    {
+                        "x": 27,
+                        "y": 20,
+                        "baseTile": "T",
+                        "invisible": true,
+                        "log": "簡素な寝台が並んでいる。"
+                    },
+                    {
+                        "x": 29,
+                        "y": 20,
+                        "baseTile": "T",
+                        "invisible": true,
+                        "log": "簡素な寝台が並んでいる。"
+                    },
+                    {
+                        "x": 27,
+                        "y": 21,
+                        "baseTile": "T",
+                        "imageKey": "guild_bed",
+                        "drawWidth": 32,
+                        "drawHeight": 64,
+                        "suppressShadow": true,
+                        "log": "要塞の宿泊所に備えられた寝台だ。"
+                    },
+                    {
+                        "x": 29,
+                        "y": 21,
+                        "baseTile": "T",
+                        "imageKey": "guild_bed",
+                        "drawWidth": 32,
+                        "drawHeight": 64,
+                        "suppressShadow": true,
+                        "log": "要塞の宿泊所に備えられた寝台だ。"
+                    },
+                    {
+                        "x": 27,
+                        "y": 23,
+                        "baseTile": "T",
+                        "invisible": true,
+                        "log": "簡素な寝台が並んでいる。"
+                    },
+                    {
+                        "x": 29,
+                        "y": 23,
+                        "baseTile": "T",
+                        "invisible": true,
+                        "log": "簡素な寝台が並んでいる。"
+                    },
+                    {
+                        "x": 27,
+                        "y": 24,
+                        "baseTile": "T",
+                        "imageKey": "guild_bed",
+                        "drawWidth": 32,
+                        "drawHeight": 64,
+                        "suppressShadow": true,
+                        "log": "要塞の宿泊所に備えられた寝台だ。"
+                    },
+                    {
+                        "x": 29,
+                        "y": 24,
+                        "baseTile": "T",
+                        "imageKey": "guild_bed",
+                        "drawWidth": 32,
+                        "drawHeight": 64,
+                        "suppressShadow": true,
+                        "log": "要塞の宿泊所に備えられた寝台だ。"
+                    }
+                ]
             },
             {
-                label: "2階・暴走機関室",
-                encounterRank: 44,
-                monsters: [
+                "label": "2階・暴走機関室",
+                "encounterRank": 44,
+                "monsters": [
                     100042,
                     100043,
                     100044
                 ],
-                rareMonsters: [
+                "rareMonsters": [
                     {
-                        id: 200201,
-                        rate: 0.05
+                        "id": 200201,
+                        "rate": 0.05
                     }
                 ],
-                width: 33,
-                height: 28,
-                impassableTiles: [
+                "width": 33,
+                "height": 28,
+                "impassableTiles": [
                     "K"
                 ],
-                tiles: [
+                "tiles": [
                     "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK",
                     "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
                     "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
@@ -7967,77 +7973,77 @@ const FIXED_DUNGEON_MAPS = {
                     "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
                     "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 5,
-                        y: 23,
-                        toFloor: 1,
-                        targetX: 26,
-                        targetY: 6,
-                        label: "1階へ下りる"
+                        "x": 5,
+                        "y": 23,
+                        "toFloor": 1,
+                        "targetX": 26,
+                        "targetY": 6,
+                        "label": "1階へ下りる"
                     },
                     {
-                        x: 28,
-                        y: 6,
-                        toFloor: 3,
-                        targetX: 5,
-                        targetY: 23,
-                        label: "3階へ上がる"
+                        "x": 28,
+                        "y": 6,
+                        "toFloor": 3,
+                        "targetX": 5,
+                        "targetY": 23,
+                        "label": "3階へ上がる"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 5,
-                        y: 5,
-                        itemId: 102,
-                        type: "item",
-                        rare: true
+                        "x": 5,
+                        "y": 5,
+                        "itemId": 102,
+                        "type": "item",
+                        "rare": true
                     },
                     {
-                        x: 26,
-                        y: 16,
-                        itemId: 14,
-                        type: "item"
+                        "x": 26,
+                        "y": 16,
+                        "itemId": 14,
+                        "type": "item"
                     }
                 ],
-                entryPoint: {
-                    x: 5,
-                    y: 23
+                "entryPoint": {
+                    "x": 5,
+                    "y": 23
                 },
-                bosses: [
+                "bosses": [
                     {
-                        x: 16,
-                        y: 15,
-                        monsterId: 301031,
-                        keyRewardColor: "red",
-                        startEventId: "thunder_machine_gate_encounter",
-                        storyEventId: "thunder_machine_gate_clear",
-                        actionLabel: "制御盤に近づく"
+                        "x": 16,
+                        "y": 15,
+                        "monsterId": 301031,
+                        "keyRewardColor": "red",
+                        "startEventId": "thunder_machine_gate_encounter",
+                        "storyEventId": "thunder_machine_gate_clear",
+                        "actionLabel": "制御盤に近づく"
                     }
                 ],
-                name: "",
-                themeKey: "THUNDER_FORT"
+                "name": "",
+                "themeKey": "THUNDER_FORT"
             },
             {
-                label: "3階・雷鎧の防衛線",
-                encounterRank: 46,
-                monsters: [
+                "label": "3階・雷鎧の防衛線",
+                "encounterRank": 46,
+                "monsters": [
                     100044,
                     100045,
                     100046
                 ],
-                rareMonsters: [
+                "rareMonsters": [
                     {
-                        id: 200201,
-                        rate: 0.05
+                        "id": 200201,
+                        "rate": 0.05
                     }
                 ],
-                width: 33,
-                height: 28,
-                impassableTiles: [
+                "width": 33,
+                "height": 28,
+                "impassableTiles": [
                     "K"
                 ],
-                tiles: [
+                "tiles": [
                     "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK",
                     "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
                     "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
@@ -8067,83 +8073,83 @@ const FIXED_DUNGEON_MAPS = {
                     "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
                     "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 5,
-                        y: 23,
-                        toFloor: 2,
-                        targetX: 28,
-                        targetY: 6,
-                        label: "2階へ下りる"
+                        "x": 5,
+                        "y": 23,
+                        "toFloor": 2,
+                        "targetX": 28,
+                        "targetY": 6,
+                        "label": "2階へ下りる"
                     },
                     {
-                        x: 26,
-                        y: 6,
-                        toFloor: 4,
-                        targetX: 16,
-                        targetY: 23,
-                        label: "4階へ上がる"
+                        "x": 26,
+                        "y": 6,
+                        "toFloor": 4,
+                        "targetX": 16,
+                        "targetY": 23,
+                        "label": "4階へ上がる"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 24,
-                        y: 22,
-                        itemId: 4,
-                        type: "item"
+                        "x": 24,
+                        "y": 22,
+                        "itemId": 4,
+                        "type": "item"
                     },
                     {
-                        x: 26,
-                        y: 13,
-                        itemId: 14,
-                        type: "item"
+                        "x": 26,
+                        "y": 13,
+                        "itemId": 14,
+                        "type": "item"
                     }
                 ],
-                entryPoint: {
-                    x: 5,
-                    y: 23
+                "entryPoint": {
+                    "x": 5,
+                    "y": 23
                 },
-                bosses: [
+                "bosses": [
                     {
-                        x: 16,
-                        y: 14,
-                        monsterId: 301032,
-                        keyRewardColor: "blue",
-                        startEventId: "thunder_armor_gate_encounter",
-                        storyEventId: "thunder_armor_gate_clear",
-                        actionLabel: "雷鎧を停止する"
+                        "x": 16,
+                        "y": 14,
+                        "monsterId": 301032,
+                        "keyRewardColor": "blue",
+                        "startEventId": "thunder_armor_gate_encounter",
+                        "storyEventId": "thunder_armor_gate_clear",
+                        "actionLabel": "雷鎧を停止する"
                     }
                 ],
-                name: "",
-                themeKey: "THUNDER_FORT"
+                "name": "",
+                "themeKey": "THUNDER_FORT"
             },
             {
-                label: "4階・雷の中枢",
-                encounterRank: 48,
-                monsters: [
+                "label": "4階・雷の中枢",
+                "encounterRank": 48,
+                "monsters": [
                     100046,
                     100047,
                     100048
                 ],
-                rareMonsters: [
+                "rareMonsters": [
                     {
-                        id: 200201,
-                        rate: 0.05
+                        "id": 200201,
+                        "rate": 0.05
                     }
                 ],
-                width: 33,
-                height: 28,
-                impassableTiles: [
+                "width": 33,
+                "height": 28,
+                "impassableTiles": [
                     "K"
                 ],
-                tiles: [
+                "tiles": [
                     "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK",
                     "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
                     "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
-                    "KWWWWWWWWWWWWWWWTWWWWWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWWWWWUWWWWWWWWWWWWWWWK",
                     "KWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWK",
-                    "KWWWWWWWWWWWTTTTTTTTTTTUWWWWWWWWK",
-                    "KWWWWWWWWWWWTTTTTTTTTTTTWWWWWWWWK",
+                    "KWWWWWWWWWWWTTTTTTTTTWWWWWWWWWWWK",
+                    "KWWWWWWWWWWWTTTTTTTTTWWWWWWWWWWWK",
                     "KWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWK",
                     "KWWWWWWWWWWWWWWTBTWWWWWWWWWWWWWWK",
                     "KWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWK",
@@ -8166,124 +8172,126 @@ const FIXED_DUNGEON_MAPS = {
                     "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
                     "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 16,
-                        y: 23,
-                        toFloor: 3,
-                        targetX: 26,
-                        targetY: 6,
-                        label: "3階へ下りる"
+                        "x": 16,
+                        "y": 23,
+                        "toFloor": 3,
+                        "targetX": 26,
+                        "targetY": 6,
+                        "label": "3階へ下りる"
                     },
                     {
-                        x: 23,
-                        y: 5,
-                        toFloor: 5,
-                        targetX: 16,
-                        targetY: 24,
-                        label: "5階へ上がる",
-                        requiredFlag: "lightPalaceCleared",
-                        lockedLabel: "高圧電流を調べる",
-                        lockedLog: "高圧電流が迸り、今は進めない。"
+                        "x": 16,
+                        "y": 3,
+                        "toFloor": 5,
+                        "targetX": 16,
+                        "targetY": 24,
+                        "label": "5階へ上がる",
+                        "requiredFlag": "lightPalaceCleared",
+                        "lockedLabel": "高圧電流を調べる",
+                        "lockedLog": "高圧電流が迸り、今は進めない。"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 3,
-                        y: 18,
-                        itemId: 3,
-                        type: "item"
+                        "x": 3,
+                        "y": 18,
+                        "itemId": 3,
+                        "type": "item"
                     },
                     {
-                        x: 29,
-                        y: 18,
-                        itemId: 106,
-                        type: "item",
-                        rare: true
+                        "x": 29,
+                        "y": 18,
+                        "itemId": 106,
+                        "type": "item",
+                        "rare": true
                     }
                 ],
-                entryPoint: {
-                    x: 16,
-                    y: 23
+                "entryPoint": {
+                    "x": 16,
+                    "y": 23
                 },
-                bosses: [
+                "bosses": [
                     {
-                        x: 16,
-                        y: 8,
-                        monsterId: 301040,
-                        startEventId: "thunder_leonard_encounter",
-                        storyEventId: "thunder_fort_clear",
-                        actionLabel: "レナードと対峙する"
+                        "x": 16,
+                        "y": 8,
+                        "monsterId": 301040,
+                        "startEventId": "thunder_leonard_encounter",
+                        "storyEventId": "thunder_fort_clear",
+                        "actionLabel": "レナードと対峙する"
                     }
                 ],
-                name: "",
-                themeKey: "THUNDER_FORT",
-                floorDecorations: [
+                "name": "",
+                "themeKey": "THUNDER_FORT",
+                "floorDecorations": [
                     {
-                        authoredPlacementId: "prism-pedestal-thunder",
-                        type: "image",
-                        imageKey: "prism_pedestal_thunder",
-                        x: 16,
-                        y: 4,
-                        width: 1,
-                        height: 1,
-                        drawScale: 2.7,
-                        alpha: 0.96,
-                        shimmer: true,
-                        blocking: true,
-                        baseTile: "T"
+                        "authoredPlacementId": "prism-pedestal-thunder",
+                        "type": "image",
+                        "imageKey": "prism_pedestal_thunder",
+                        "x": 16,
+                        "y": 4,
+                        "width": 1,
+                        "height": 1,
+                        "drawScale": 2.7,
+                        "alpha": 0.96,
+                        "shimmer": true,
+                        "shimmerDuration": 1050,
+                        "renderLayer": "object",
+                        "blocking": true,
+                        "baseTile": "T"
                     },
                     {
-                        authoredPlacementId: "carpet-thunder-final",
-                        type: "castle_carpet",
-                        imageKey: null,
-                        x: 15,
-                        y: 7,
-                        width: 3,
-                        height: 13,
-                        blocking: false,
-                        baseTile: "T",
-                        allowedBaseTiles: null
+                        "authoredPlacementId": "carpet-thunder-final",
+                        "type": "castle_carpet",
+                        "imageKey": null,
+                        "x": 15,
+                        "y": 6,
+                        "width": 3,
+                        "height": 13,
+                        "blocking": false,
+                        "baseTile": "T",
+                        "allowedBaseTiles": null
                     }
                 ]
             },
             {
-                label: "5階・双電路",
-                encounterRank: 76,
-                monsters: [
+                "label": "5階・双電路",
+                "encounterRank": 76,
+                "monsters": [
                     100068,
                     100069,
                     100070,
                     100072
                 ],
-                enemyBoost: {
-                    statMultiplier: 1.08,
-                    elmRes: {
+                "enemyBoost": {
+                    "statMultiplier": 1.08,
+                    "elmRes": {
                         "雷": 110,
                         "水": 50,
                         "風": -50
                     },
-                    elmAtk: {
+                    "elmAtk": {
                         "雷": 28
                     },
-                    resists: {
-                        Poison: 55,
-                        Shock: 90,
-                        Debuff: 55
+                    "resists": {
+                        "Poison": 55,
+                        "Shock": 90,
+                        "Debuff": 55
                     }
                 },
-                rareMonsters: [
+                "rareMonsters": [
                     {
-                        id: 200201,
-                        rate: 0.06
+                        "id": 200201,
+                        "rate": 0.06
                     }
                 ],
-                width: 33,
-                height: 28,
-                impassableTiles: [
+                "width": 33,
+                "height": 28,
+                "impassableTiles": [
                     "K"
                 ],
-                tiles: [
+                "tiles": [
                     "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK",
                     "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
                     "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
@@ -8313,192 +8321,192 @@ const FIXED_DUNGEON_MAPS = {
                     "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
                     "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 16,
-                        y: 24,
-                        toFloor: 4,
-                        targetX: 16,
-                        targetY: 3,
-                        label: "4階へ下りる"
+                        "x": 16,
+                        "y": 24,
+                        "toFloor": 4,
+                        "targetX": 16,
+                        "targetY": 3,
+                        "label": "4階へ下りる"
                     },
                     {
-                        x: 16,
-                        y: 5,
-                        toFloor: 6,
-                        targetX: 16,
-                        targetY: 24,
-                        label: "6階へ上がる"
+                        "x": 16,
+                        "y": 5,
+                        "toFloor": 6,
+                        "targetX": 16,
+                        "targetY": 24,
+                        "label": "6階へ上がる"
                     }
                 ],
-                tileEffects: [
+                "tileEffects": [
                     {
-                        x: 3,
-                        y: 18,
-                        type: "warp",
-                        toX: 29,
-                        toY: 18,
-                        message: "雷流に弾かれた。"
+                        "x": 3,
+                        "y": 18,
+                        "type": "warp",
+                        "toX": 29,
+                        "toY": 18,
+                        "message": "雷流に弾かれた。"
                     },
                     {
-                        x: 29,
-                        y: 18,
-                        type: "warp",
-                        toX: 3,
-                        toY: 18,
-                        message: "雷流が反転した。"
+                        "x": 29,
+                        "y": 18,
+                        "type": "warp",
+                        "toX": 3,
+                        "toY": 18,
+                        "message": "雷流が反転した。"
                     },
                     {
-                        x: 26,
-                        y: 22,
-                        type: "hunter",
-                        id: "thunder_deep_guard",
-                        imageKey: "overlay_dungeon_hunter_thunder",
-                        monsterIds: [
+                        "x": 26,
+                        "y": 22,
+                        "type": "hunter",
+                        "id": "thunder_deep_guard",
+                        "imageKey": "overlay_dungeon_hunter_thunder",
+                        "monsterIds": [
                             100073,
                             100076,
                             100079
                         ],
-                        speed: 1.1,
-                        range: 29,
-                        statMultiplier: 1.3,
-                        message: "雷鎧の強敵が迫る！"
+                        "speed": 1.1,
+                        "range": 29,
+                        "statMultiplier": 1.3,
+                        "message": "雷鎧の強敵が迫る！"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 4,
-                        y: 9,
-                        itemId: 4,
-                        type: "item"
+                        "x": 4,
+                        "y": 9,
+                        "itemId": 4,
+                        "type": "item"
                     },
                     {
-                        x: 28,
-                        y: 9,
-                        itemId: 106,
-                        type: "item",
-                        rare: true
+                        "x": 28,
+                        "y": 9,
+                        "itemId": 106,
+                        "type": "item",
+                        "rare": true
                     }
                 ],
-                mapActions: [
+                "mapActions": [
                     {
-                        x: 10,
-                        y: 4,
-                        label: "左の雷導スイッチを押す",
-                        type: "switchGate",
-                        gateId: "thunder_deep_core_gate",
-                        switchId: "left",
-                        requiredSwitches: [
+                        "x": 10,
+                        "y": 4,
+                        "label": "左の雷導スイッチを押す",
+                        "type": "switchGate",
+                        "gateId": "thunder_deep_core_gate",
+                        "switchId": "left",
+                        "requiredSwitches": [
                             "left",
                             "right"
                         ],
-                        imageKey: "maplib_thunder_control_terminal",
-                        imageColor: "#67d9ff",
-                        minimapColor: "#67d9ff",
-                        blocksMovement: true,
-                        interactFromAdjacent: true,
-                        opens: [
+                        "imageKey": "maplib_thunder_control_terminal",
+                        "imageColor": "#67d9ff",
+                        "minimapColor": "#67d9ff",
+                        "blocksMovement": true,
+                        "interactFromAdjacent": true,
+                        "opens": [
                             {
-                                x: 16,
-                                y: 13,
-                                tile: "T"
+                                "x": 16,
+                                "y": 13,
+                                "tile": "T"
                             },
                             {
-                                x: 16,
-                                y: 14,
-                                tile: "T"
+                                "x": 16,
+                                "y": 14,
+                                "tile": "T"
                             },
                             {
-                                x: 16,
-                                y: 15,
-                                tile: "T"
+                                "x": 16,
+                                "y": 15,
+                                "tile": "T"
                             }
                         ],
-                        log: "左の雷導スイッチに手を置いた。",
-                        partialMessage: "中央の隔壁が青白く揺れた。右のスイッチも必要だ。",
-                        openMessage: "二つの雷導スイッチが同期し、中央奥の隔壁が消えた。"
+                        "log": "左の雷導スイッチに手を置いた。",
+                        "partialMessage": "中央の隔壁が青白く揺れた。右のスイッチも必要だ。",
+                        "openMessage": "二つの雷導スイッチが同期し、中央奥の隔壁が消えた。"
                     },
                     {
-                        x: 22,
-                        y: 4,
-                        label: "東の雷導スイッチを押す",
-                        type: "switchGate",
-                        gateId: "thunder_deep_core_gate",
-                        switchId: "right",
-                        requiredSwitches: [
+                        "x": 22,
+                        "y": 4,
+                        "label": "東の雷導スイッチを押す",
+                        "type": "switchGate",
+                        "gateId": "thunder_deep_core_gate",
+                        "switchId": "right",
+                        "requiredSwitches": [
                             "left",
                             "right"
                         ],
-                        imageKey: "maplib_thunder_control_terminal",
-                        imageColor: "#67d9ff",
-                        minimapColor: "#67d9ff",
-                        blocksMovement: true,
-                        interactFromAdjacent: true,
-                        opens: [
+                        "imageKey": "maplib_thunder_control_terminal",
+                        "imageColor": "#67d9ff",
+                        "minimapColor": "#67d9ff",
+                        "blocksMovement": true,
+                        "interactFromAdjacent": true,
+                        "opens": [
                             {
-                                x: 16,
-                                y: 13,
-                                tile: "T"
+                                "x": 16,
+                                "y": 13,
+                                "tile": "T"
                             },
                             {
-                                x: 16,
-                                y: 14,
-                                tile: "T"
+                                "x": 16,
+                                "y": 14,
+                                "tile": "T"
                             },
                             {
-                                x: 16,
-                                y: 15,
-                                tile: "T"
+                                "x": 16,
+                                "y": 15,
+                                "tile": "T"
                             }
                         ],
-                        log: "右の雷導スイッチに手を置いた。",
-                        partialMessage: "中央の隔壁が青白く揺れた。左のスイッチも必要だ。",
-                        openMessage: "二つの雷導スイッチが同期し、中央奥の隔壁が消えた。"
+                        "log": "右の雷導スイッチに手を置いた。",
+                        "partialMessage": "中央の隔壁が青白く揺れた。左のスイッチも必要だ。",
+                        "openMessage": "二つの雷導スイッチが同期し、中央奥の隔壁が消えた。"
                     }
                 ],
-                entryPoint: {
-                    x: 16,
-                    y: 24
+                "entryPoint": {
+                    "x": 16,
+                    "y": 24
                 },
-                name: "",
-                themeKey: "THUNDER_FORT"
+                "name": "",
+                "themeKey": "THUNDER_FORT"
             },
             {
-                label: "6階・制御核区",
-                encounterRank: 81,
-                monsters: [
+                "label": "6階・制御核区",
+                "encounterRank": 81,
+                "monsters": [
                     100073,
                     100074,
                     100075,
                     100076
                 ],
-                enemyBoost: {
-                    statMultiplier: 1.1,
-                    elmRes: {
+                "enemyBoost": {
+                    "statMultiplier": 1.1,
+                    "elmRes": {
                         "雷": 130,
                         "風": -60
                     },
-                    elmAtk: {
+                    "elmAtk": {
                         "雷": 32
                     },
-                    resists: {
-                        Poison: 60,
-                        Shock: 100,
-                        Debuff: 60
+                    "resists": {
+                        "Poison": 60,
+                        "Shock": 100,
+                        "Debuff": 60
                     }
                 },
-                rareMonsters: [
+                "rareMonsters": [
                     {
-                        id: 200201,
-                        rate: 0.06
+                        "id": 200201,
+                        "rate": 0.06
                     }
                 ],
-                width: 33,
-                height: 28,
-                impassableTiles: [
+                "width": 33,
+                "height": 28,
+                "impassableTiles": [
                     "K"
                 ],
-                tiles: [
+                "tiles": [
                     "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK",
                     "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
                     "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
@@ -8528,119 +8536,119 @@ const FIXED_DUNGEON_MAPS = {
                     "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
                     "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 16,
-                        y: 24,
-                        toFloor: 5,
-                        targetX: 16,
-                        targetY: 5,
-                        label: "5階へ下りる"
+                        "x": 16,
+                        "y": 24,
+                        "toFloor": 5,
+                        "targetX": 16,
+                        "targetY": 5,
+                        "label": "5階へ下りる"
                     }
                 ],
-                tileEffects: [
+                "tileEffects": [
                     {
-                        x: 26,
-                        y: 18,
-                        type: "hunter",
-                        id: "thunder_core_guard",
-                        imageKey: "overlay_dungeon_hunter_thunder",
-                        monsterIds: [
+                        "x": 26,
+                        "y": 18,
+                        "type": "hunter",
+                        "id": "thunder_core_guard",
+                        "imageKey": "overlay_dungeon_hunter_thunder",
+                        "monsterIds": [
                             100079,
                             100081,
                             100082
                         ],
-                        speed: 1.2,
-                        range: 31,
-                        statMultiplier: 1.35,
-                        message: "制御核の守衛が迫る！"
+                        "speed": 1.2,
+                        "range": 31,
+                        "statMultiplier": 1.35,
+                        "message": "制御核の守衛が迫る！"
                     }
                 ],
-                bosses: [
+                "bosses": [
                     {
-                        x: 16,
-                        y: 8,
-                        monsterId: [
+                        "x": 16,
+                        "y": 8,
+                        "monsterId": [
                             302204,
                             100082
                         ],
-                        questId: "frieda_baron_thunder_depths",
-                        startEventId: "quest_frieda_baron_encounter",
-                        storyEventId: "quest_frieda_baron_clear",
-                        bossStatMultiplier: 1.35,
-                        actionLabel: "制御核を止める",
-                        inspectLog: "フリーダとバロンが、雷の核へ同時に武器を構えている。"
+                        "questId": "frieda_baron_thunder_depths",
+                        "startEventId": "quest_frieda_baron_encounter",
+                        "storyEventId": "quest_frieda_baron_clear",
+                        "bossStatMultiplier": 1.35,
+                        "actionLabel": "制御核を止める",
+                        "inspectLog": "フリーダとバロンが、雷の核へ同時に武器を構えている。"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 6,
-                        y: 18,
-                        itemId: 6,
-                        type: "item"
+                        "x": 6,
+                        "y": 18,
+                        "itemId": 6,
+                        "type": "item"
                     },
                     {
-                        x: 26,
-                        y: 18,
-                        itemId: 107,
-                        type: "item",
-                        rare: true
+                        "x": 26,
+                        "y": 18,
+                        "itemId": 107,
+                        "type": "item",
+                        "rare": true
                     }
                 ],
-                entryPoint: {
-                    x: 16,
-                    y: 24
+                "entryPoint": {
+                    "x": 16,
+                    "y": 24
                 },
-                name: "",
-                themeKey: "THUNDER_FORT",
-                floorDecorations: [
+                "name": "",
+                "themeKey": "THUNDER_FORT",
+                "floorDecorations": [
                     {
-                        authoredPlacementId: "carpet-thunder-final",
-                        type: "castle_carpet",
-                        imageKey: null,
-                        x: 14,
-                        y: 6,
-                        width: 5,
-                        height: 5,
-                        blocking: false,
-                        baseTile: "T",
-                        allowedBaseTiles: null
+                        "authoredPlacementId": "carpet-thunder-final",
+                        "type": "castle_carpet",
+                        "imageKey": null,
+                        "x": 14,
+                        "y": 6,
+                        "width": 5,
+                        "height": 5,
+                        "blocking": false,
+                        "baseTile": "T",
+                        "allowedBaseTiles": null
                     }
                 ]
             }
         ]
     },
-    LIGHT_PALACE: {
-        name: "光の宮殿グランプリズマ",
-        themeKey: "LIGHT_PALACE",
-        useDungeonWallFace: true,
-        wallFaceImg: "tile_light_wall_face",
-        wallFaceTorchImg: "tile_light_wall_face_prism",
-        rank: 50,
-        encounterRank: 50,
-        battleBg: "battle_bg_light_palace",
-        entryPoint: {
-            x: 17,
-            y: 26
+    "LIGHT_PALACE": {
+        "name": "光の宮殿グランプリズマ",
+        "themeKey": "LIGHT_PALACE",
+        "useDungeonWallFace": true,
+        "wallFaceImg": "tile_light_wall_face",
+        "wallFaceTorchImg": "tile_light_wall_face_prism",
+        "rank": 50,
+        "encounterRank": 50,
+        "battleBg": "battle_bg_light_palace",
+        "entryPoint": {
+            "x": 17,
+            "y": 26
         },
-        floors: [
+        "floors": [
             {
-                label: "1階・白光の回廊",
-                encounterRank: 62,
-                monsters: [
+                "label": "1階・白光の回廊",
+                "encounterRank": 62,
+                "monsters": [
                     100060,
                     100061,
                     100062
                 ],
-                rareMonsters: [
+                "rareMonsters": [
                     {
-                        id: 200202,
-                        rate: 0.05
+                        "id": 200202,
+                        "rate": 0.05
                     }
                 ],
-                width: 35,
-                height: 30,
-                tiles: [
+                "width": 35,
+                "height": 30,
+                "tiles": [
                     "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
                     "IWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWI",
                     "IWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWI",
@@ -8672,151 +8680,151 @@ const FIXED_DUNGEON_MAPS = {
                     "IWWWWWWWWWWWWWWWSSSWWWWWWWWWWWWWWWI",
                     "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 17,
-                        y: 27,
-                        to: "EXIT",
-                        label: "外に出る"
+                        "x": 17,
+                        "y": 27,
+                        "to": "EXIT",
+                        "label": "外に出る"
                     },
                     {
-                        x: 17,
-                        y: 5,
-                        toFloor: 2,
-                        targetX: 5,
-                        targetY: 25,
-                        label: "2階へ上がる"
+                        "x": 17,
+                        "y": 5,
+                        "toFloor": 2,
+                        "targetX": 5,
+                        "targetY": 25,
+                        "label": "2階へ上がる"
                     },
                     {
-                        x: 7,
-                        y: 4,
-                        toFloor: 5,
-                        targetX: 13,
-                        targetY: 16,
-                        label: "地下牢へ下りる"
+                        "x": 7,
+                        "y": 4,
+                        "toFloor": 5,
+                        "targetX": 13,
+                        "targetY": 16,
+                        "label": "地下牢へ下りる"
                     },
                     {
-                        x: 16,
-                        y: 27,
-                        to: "EXIT",
-                        label: "外に出る"
+                        "x": 16,
+                        "y": 27,
+                        "to": "EXIT",
+                        "label": "外に出る"
                     },
                     {
-                        x: 18,
-                        y: 27,
-                        to: "EXIT",
-                        label: "外に出る"
+                        "x": 18,
+                        "y": 27,
+                        "to": "EXIT",
+                        "label": "外に出る"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 4,
-                        y: 6,
-                        itemId: 5,
-                        type: "item"
+                        "x": 4,
+                        "y": 6,
+                        "itemId": 5,
+                        "type": "item"
                     },
                     {
-                        x: 10,
-                        y: 8,
-                        itemId: 7,
-                        type: "item"
+                        "x": 10,
+                        "y": 8,
+                        "itemId": 7,
+                        "type": "item"
                     }
                 ],
-                entryPoint: {
-                    x: 17,
-                    y: 26
+                "entryPoint": {
+                    "x": 17,
+                    "y": 26
                 },
-                bosses: [
+                "bosses": [
                     {
-                        x: 27,
-                        y: 6,
-                        monsterId: 100089,
-                        keyRewardColor: "gold",
-                        actionLabel: "白光の番兵と戦う",
-                        inspectLog: "金の鍵を携えた番兵が白い回廊を守っている。"
+                        "x": 27,
+                        "y": 6,
+                        "monsterId": 100089,
+                        "keyRewardColor": "gold",
+                        "actionLabel": "白光の番兵と戦う",
+                        "inspectLog": "金の鍵を携えた番兵が白い回廊を守っている。"
                     }
                 ],
-                healSprings: [
+                "healSprings": [
                     {
-                        x: 17,
-                        y: 18
+                        "x": 17,
+                        "y": 18
                     }
                 ],
-                mapActions: [
+                "mapActions": [
                     {
-                        x: 24,
-                        y: 20,
-                        label: "聖薬を買う",
-                        log: "巡礼者の補給所が開かれている。",
-                        type: "shop",
-                        shopType: "item",
-                        title: "光の宮殿グランプリズマ 聖薬所",
-                        shopRank: 55,
-                        requiredFlag: "lightPalaceCleared",
-                        imageKey: "overlay_town_light_pilgrim",
-                        lockedText: "まだ巡礼者は戻っていない。"
+                        "x": 24,
+                        "y": 20,
+                        "label": "聖薬を買う",
+                        "log": "巡礼者の補給所が開かれている。",
+                        "type": "shop",
+                        "shopType": "item",
+                        "title": "光の宮殿グランプリズマ 聖薬所",
+                        "shopRank": 55,
+                        "requiredFlag": "lightPalaceCleared",
+                        "imageKey": "overlay_town_light_pilgrim",
+                        "lockedText": "まだ巡礼者は戻っていない。"
                     },
                     {
-                        x: 6,
-                        y: 20,
-                        label: "武器を見る",
-                        log: "白光を帯びた武器が整えられている。",
-                        type: "shop",
-                        shopType: "weapon",
-                        title: "光の宮殿グランプリズマ 武器庫",
-                        shopRank: 55,
-                        requiredFlag: "lightPalaceCleared",
-                        imageKey: "overlay_town_light_pilgrim",
-                        lockedText: "武器庫は沈黙している。"
+                        "x": 6,
+                        "y": 20,
+                        "label": "武器を見る",
+                        "log": "白光を帯びた武器が整えられている。",
+                        "type": "shop",
+                        "shopType": "weapon",
+                        "title": "光の宮殿グランプリズマ 武器庫",
+                        "shopRank": 55,
+                        "requiredFlag": "lightPalaceCleared",
+                        "imageKey": "overlay_town_light_pilgrim",
+                        "lockedText": "武器庫は沈黙している。"
                     },
                     {
-                        x: 10,
-                        y: 20,
-                        label: "防具を見る",
-                        log: "浄化された防具が並んでいる。",
-                        type: "shop",
-                        shopType: "armor",
-                        title: "光の宮殿グランプリズマ 防具庫",
-                        shopRank: 55,
-                        requiredFlag: "lightPalaceCleared",
-                        imageKey: "overlay_town_light_pilgrim",
-                        lockedText: "防具庫は閉ざされている。"
+                        "x": 10,
+                        "y": 20,
+                        "label": "防具を見る",
+                        "log": "浄化された防具が並んでいる。",
+                        "type": "shop",
+                        "shopType": "armor",
+                        "title": "光の宮殿グランプリズマ 防具庫",
+                        "shopRank": 55,
+                        "requiredFlag": "lightPalaceCleared",
+                        "imageKey": "overlay_town_light_pilgrim",
+                        "lockedText": "防具庫は閉ざされている。"
                     },
                     {
-                        x: 28,
-                        y: 20,
-                        label: "巡礼者と話す",
-                        log: "巡礼者が割れたステンドグラスを集めている。",
-                        type: "storyEvent",
-                        eventId: "post_light_palace_base_1",
-                        requiredFlag: "lightPalaceCleared",
-                        imageKey: "overlay_town_light_pilgrim",
-                        lockedText: "光の宮殿グランプリズマはまだ緊張に包まれている。"
+                        "x": 28,
+                        "y": 20,
+                        "label": "巡礼者と話す",
+                        "log": "巡礼者が割れたステンドグラスを集めている。",
+                        "type": "storyEvent",
+                        "eventId": "post_light_palace_base_1",
+                        "requiredFlag": "lightPalaceCleared",
+                        "imageKey": "overlay_town_light_pilgrim",
+                        "lockedText": "光の宮殿グランプリズマはまだ緊張に包まれている。"
                     }
                 ],
-                name: "",
-                themeKey: "LIGHT_PALACE"
+                "name": "",
+                "themeKey": "LIGHT_PALACE"
             },
             {
-                label: "2階・祝福の水盤",
-                encounterRank: 64,
-                monsters: [
+                "label": "2階・祝福の水盤",
+                "encounterRank": 64,
+                "monsters": [
                     100062,
                     100063,
                     100064
                 ],
-                rareMonsters: [
+                "rareMonsters": [
                     {
-                        id: 200202,
-                        rate: 0.05
+                        "id": 200202,
+                        "rate": 0.05
                     }
                 ],
-                width: 35,
-                height: 30,
-                impassableTiles: [
+                "width": 35,
+                "height": 30,
+                "impassableTiles": [
                     "^"
                 ],
-                tiles: [
+                "tiles": [
                     "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
                     "^WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW^",
                     "^WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW^",
@@ -8848,66 +8856,66 @@ const FIXED_DUNGEON_MAPS = {
                     "^WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW^",
                     "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 5,
-                        y: 25,
-                        toFloor: 1,
-                        targetX: 17,
-                        targetY: 5,
-                        label: "1階へ下りる"
+                        "x": 5,
+                        "y": 25,
+                        "toFloor": 1,
+                        "targetX": 17,
+                        "targetY": 5,
+                        "label": "1階へ下りる"
                     },
                     {
-                        x: 28,
-                        y: 7,
-                        toFloor: 3,
-                        targetX: 5,
-                        targetY: 25,
-                        label: "3階へ上がる"
+                        "x": 28,
+                        "y": 7,
+                        "toFloor": 3,
+                        "targetX": 5,
+                        "targetY": 25,
+                        "label": "3階へ上がる"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 5,
-                        y: 15,
-                        itemId: 103,
-                        type: "item",
-                        rare: true
+                        "x": 5,
+                        "y": 15,
+                        "itemId": 103,
+                        "type": "item",
+                        "rare": true
                     },
                     {
-                        x: 5,
-                        y: 5,
-                        itemId: 5,
-                        type: "item"
+                        "x": 5,
+                        "y": 5,
+                        "itemId": 5,
+                        "type": "item"
                     }
                 ],
-                entryPoint: {
-                    x: 5,
-                    y: 25
+                "entryPoint": {
+                    "x": 5,
+                    "y": 25
                 },
-                name: "",
-                themeKey: "LIGHT_PALACE"
+                "name": "",
+                "themeKey": "LIGHT_PALACE"
             },
             {
-                label: "3階・結界の聖廊",
-                encounterRank: 66,
-                monsters: [
+                "label": "3階・結界の聖廊",
+                "encounterRank": 66,
+                "monsters": [
                     100064,
                     100065,
                     100066
                 ],
-                rareMonsters: [
+                "rareMonsters": [
                     {
-                        id: 200202,
-                        rate: 0.05
+                        "id": 200202,
+                        "rate": 0.05
                     }
                 ],
-                width: 35,
-                height: 30,
-                impassableTiles: [
+                "width": 35,
+                "height": 30,
+                "impassableTiles": [
                     "^"
                 ],
-                tiles: [
+                "tiles": [
                     "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
                     "^WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW^",
                     "^WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW^",
@@ -8939,65 +8947,65 @@ const FIXED_DUNGEON_MAPS = {
                     "^WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW^",
                     "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 5,
-                        y: 25,
-                        toFloor: 2,
-                        targetX: 28,
-                        targetY: 7,
-                        label: "2階へ下りる"
+                        "x": 5,
+                        "y": 25,
+                        "toFloor": 2,
+                        "targetX": 28,
+                        "targetY": 7,
+                        "label": "2階へ下りる"
                     },
                     {
-                        x: 28,
-                        y: 6,
-                        toFloor: 4,
-                        targetX: 17,
-                        targetY: 25,
-                        label: "4階へ上がる"
+                        "x": 28,
+                        "y": 6,
+                        "toFloor": 4,
+                        "targetX": 17,
+                        "targetY": 25,
+                        "label": "4階へ上がる"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 27,
-                        y: 15,
-                        itemId: 5,
-                        type: "item"
+                        "x": 27,
+                        "y": 15,
+                        "itemId": 5,
+                        "type": "item"
                     },
                     {
-                        x: 27,
-                        y: 17,
-                        itemId: 105,
-                        type: "item"
+                        "x": 27,
+                        "y": 17,
+                        "itemId": 105,
+                        "type": "item"
                     }
                 ],
-                entryPoint: {
-                    x: 5,
-                    y: 25
+                "entryPoint": {
+                    "x": 5,
+                    "y": 25
                 },
-                name: "",
-                themeKey: "LIGHT_PALACE"
+                "name": "",
+                "themeKey": "LIGHT_PALACE"
             },
             {
-                label: "4階・光の祭壇",
-                encounterRank: 68,
-                monsters: [
+                "label": "4階・光の祭壇",
+                "encounterRank": 68,
+                "monsters": [
                     100066,
                     100067,
                     100068
                 ],
-                rareMonsters: [
+                "rareMonsters": [
                     {
-                        id: 200202,
-                        rate: 0.05
+                        "id": 200202,
+                        "rate": 0.05
                     }
                 ],
-                width: 35,
-                height: 30,
-                impassableTiles: [
+                "width": 35,
+                "height": 30,
+                "impassableTiles": [
                     "^"
                 ],
-                tiles: [
+                "tiles": [
                     "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
                     "^WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW^",
                     "^WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW^",
@@ -9029,86 +9037,88 @@ const FIXED_DUNGEON_MAPS = {
                     "^WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW^",
                     "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 17,
-                        y: 25,
-                        toFloor: 3,
-                        targetX: 28,
-                        targetY: 6,
-                        label: "3階へ下りる"
+                        "x": 17,
+                        "y": 25,
+                        "toFloor": 3,
+                        "targetX": 28,
+                        "targetY": 6,
+                        "label": "3階へ下りる"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 4,
-                        y: 20,
-                        itemId: 2,
-                        type: "item"
+                        "x": 4,
+                        "y": 20,
+                        "itemId": 2,
+                        "type": "item"
                     },
                     {
-                        x: 30,
-                        y: 20,
-                        itemId: 106,
-                        type: "item",
-                        rare: true
+                        "x": 30,
+                        "y": 20,
+                        "itemId": 106,
+                        "type": "item",
+                        "rare": true
                     }
                 ],
-                entryPoint: {
-                    x: 17,
-                    y: 25
+                "entryPoint": {
+                    "x": 17,
+                    "y": 25
                 },
-                bosses: [
+                "bosses": [
                     {
-                        x: 17,
-                        y: 11,
-                        monsterId: [
+                        "x": 17,
+                        "y": 11,
+                        "monsterId": [
                             301070,
                             301050
                         ],
-                        startEventId: "light_palace_final_encounter",
-                        storyEventId: "light_palace_clear",
-                        actionLabel: "祭壇へ進む"
+                        "startEventId": "light_palace_final_encounter",
+                        "storyEventId": "light_palace_clear",
+                        "actionLabel": "祭壇へ進む"
                     }
                 ],
-                name: "",
-                themeKey: "LIGHT_PALACE",
-                floorDecorations: [
+                "name": "",
+                "themeKey": "LIGHT_PALACE",
+                "floorDecorations": [
                     {
-                        authoredPlacementId: "prism-pedestal-light",
-                        type: "image",
-                        imageKey: "prism_pedestal_light",
-                        x: 17,
-                        y: 8,
-                        width: 1,
-                        height: 1,
-                        drawScale: 2.7,
-                        alpha: 0.96,
-                        shimmer: true,
-                        blocking: true,
-                        baseTile: "T"
+                        "authoredPlacementId": "prism-pedestal-light",
+                        "type": "image",
+                        "imageKey": "prism_pedestal_light",
+                        "x": 17,
+                        "y": 9,
+                        "width": 1,
+                        "height": 1,
+                        "drawScale": 2.7,
+                        "alpha": 0.96,
+                        "shimmer": true,
+                        "shimmerDuration": 1050,
+                        "renderLayer": "object",
+                        "blocking": true,
+                        "baseTile": "T"
                     },
                     {
-                        authoredPlacementId: "carpet-light-final",
-                        type: "castle_carpet",
-                        imageKey: null,
-                        x: 16,
-                        y: 10,
-                        width: 3,
-                        height: 10,
-                        blocking: false,
-                        baseTile: "T",
-                        allowedBaseTiles: null
+                        "authoredPlacementId": "carpet-light-final",
+                        "type": "castle_carpet",
+                        "imageKey": null,
+                        "x": 16,
+                        "y": 8,
+                        "width": 3,
+                        "height": 7,
+                        "blocking": false,
+                        "baseTile": "T",
+                        "allowedBaseTiles": null
                     }
                 ]
             },
             {
-                label: "地下牢",
-                encounterRank: 68,
-                monsters: [],
-                width: 27,
-                height: 19,
-                tiles: [
+                "label": "地下牢",
+                "encounterRank": 68,
+                "monsters": [],
+                "width": 27,
+                "height": 19,
+                "tiles": [
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWTTTWTTTWWTTTTTWWTTTWTTTWW",
@@ -9129,267 +9139,267 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWW"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 13,
-                        y: 16,
-                        toFloor: 1,
-                        targetX: 7,
-                        targetY: 4,
-                        label: "1階へ上がる"
+                        "x": 13,
+                        "y": 16,
+                        "toFloor": 1,
+                        "targetX": 7,
+                        "targetY": 4,
+                        "label": "1階へ上がる"
                     }
                 ],
-                entryPoint: {
-                    x: 13,
-                    y: 16
+                "entryPoint": {
+                    "x": 13,
+                    "y": 16
                 },
-                chests: [
+                "chests": [
                     {
-                        x: 3,
-                        y: 3,
-                        trapMonsterId: 120302,
-                        trapFloor: 140,
-                        type: "trap"
+                        "x": 3,
+                        "y": 3,
+                        "trapMonsterId": 120302,
+                        "trapFloor": 140,
+                        "type": "trap"
                     },
                     {
-                        x: 20,
-                        y: 2,
-                        itemId: 1072,
-                        type: "item",
-                        containerKind: "pot",
-                        imageKey: "overlay_field_pot",
-                        openedImageKey: "overlay_field_pot",
-                        baseTile: "T"
+                        "x": 20,
+                        "y": 2,
+                        "itemId": 1072,
+                        "type": "item",
+                        "containerKind": "pot",
+                        "imageKey": "overlay_field_pot",
+                        "openedImageKey": "overlay_field_pot",
+                        "baseTile": "T"
                     },
                     {
-                        x: 24,
-                        y: 2,
-                        itemId: 1076,
-                        type: "item",
-                        containerKind: "pot",
-                        imageKey: "overlay_field_pot",
-                        openedImageKey: "overlay_field_pot",
-                        baseTile: "T"
+                        "x": 24,
+                        "y": 2,
+                        "itemId": 1076,
+                        "type": "item",
+                        "containerKind": "pot",
+                        "imageKey": "overlay_field_pot",
+                        "openedImageKey": "overlay_field_pot",
+                        "baseTile": "T"
                     },
                     {
-                        x: 20,
-                        y: 10,
-                        itemId: 99,
-                        type: "item",
-                        containerKind: "pot",
-                        imageKey: "overlay_field_pot",
-                        openedImageKey: "overlay_field_pot",
-                        baseTile: "T"
+                        "x": 20,
+                        "y": 10,
+                        "itemId": 99,
+                        "type": "item",
+                        "containerKind": "pot",
+                        "imageKey": "overlay_field_pot",
+                        "openedImageKey": "overlay_field_pot",
+                        "baseTile": "T"
                     }
                 ],
-                blockingObjects: [
+                "blockingObjects": [
                     {
-                        x: 3,
-                        y: 5,
-                        imageKey: "overlay_light_prison_gate_horizontal",
-                        missingFlag: "lightPalacePrisonOpened"
+                        "x": 3,
+                        "y": 5,
+                        "imageKey": "overlay_light_prison_gate_horizontal",
+                        "missingFlag": "lightPalacePrisonOpened"
                     },
                     {
-                        x: 7,
-                        y: 5,
-                        imageKey: "overlay_light_prison_gate_horizontal",
-                        missingFlag: "lightPalacePrisonOpened"
+                        "x": 7,
+                        "y": 5,
+                        "imageKey": "overlay_light_prison_gate_horizontal",
+                        "missingFlag": "lightPalacePrisonOpened"
                     },
                     {
-                        x: 19,
-                        y: 5,
-                        imageKey: "overlay_light_prison_gate_horizontal",
-                        missingFlag: "lightPalacePrisonOpened"
+                        "x": 19,
+                        "y": 5,
+                        "imageKey": "overlay_light_prison_gate_horizontal",
+                        "missingFlag": "lightPalacePrisonOpened"
                     },
                     {
-                        x: 23,
-                        y: 5,
-                        imageKey: "overlay_light_prison_gate_horizontal",
-                        missingFlag: "lightPalacePrisonOpened"
+                        "x": 23,
+                        "y": 5,
+                        "imageKey": "overlay_light_prison_gate_horizontal",
+                        "missingFlag": "lightPalacePrisonOpened"
                     },
                     {
-                        x: 3,
-                        y: 13,
-                        imageKey: "overlay_light_prison_gate_horizontal",
-                        missingFlag: "lightPalacePrisonOpened"
+                        "x": 3,
+                        "y": 13,
+                        "imageKey": "overlay_light_prison_gate_horizontal",
+                        "missingFlag": "lightPalacePrisonOpened"
                     },
                     {
-                        x: 7,
-                        y: 13,
-                        imageKey: "overlay_light_prison_gate_horizontal",
-                        missingFlag: "lightPalacePrisonOpened"
+                        "x": 7,
+                        "y": 13,
+                        "imageKey": "overlay_light_prison_gate_horizontal",
+                        "missingFlag": "lightPalacePrisonOpened"
                     },
                     {
-                        x: 19,
-                        y: 13,
-                        imageKey: "overlay_light_prison_gate_horizontal",
-                        missingFlag: "lightPalacePrisonOpened"
+                        "x": 19,
+                        "y": 13,
+                        "imageKey": "overlay_light_prison_gate_horizontal",
+                        "missingFlag": "lightPalacePrisonOpened"
                     },
                     {
-                        x: 23,
-                        y: 13,
-                        imageKey: "overlay_light_prison_gate_horizontal",
-                        missingFlag: "lightPalacePrisonOpened"
+                        "x": 23,
+                        "y": 13,
+                        "imageKey": "overlay_light_prison_gate_horizontal",
+                        "missingFlag": "lightPalacePrisonOpened"
                     },
                     {
-                        x: 23,
-                        y: 10,
-                        missingFlag: "leilaJoined"
+                        "x": 23,
+                        "y": 10,
+                        "missingFlag": "leilaJoined"
                     }
                 ],
-                mapActions: [
+                "mapActions": [
                     {
-                        x: 7,
-                        y: 3,
-                        label: "国王と話す",
-                        type: "storyEvent",
-                        eventId: "light_palace_prison_king",
-                        imageKey: "overlay_light_captive_king",
-                        imageColor: "#f4d989",
-                        minimapColor: "#f4d989",
-                        missingFlag: "lightPalaceCleared"
+                        "x": 7,
+                        "y": 3,
+                        "label": "国王と話す",
+                        "type": "storyEvent",
+                        "eventId": "light_palace_prison_king",
+                        "imageKey": "overlay_light_captive_king",
+                        "imageColor": "#f4d989",
+                        "minimapColor": "#f4d989",
+                        "missingFlag": "lightPalaceCleared"
                     },
                     {
-                        x: 7,
-                        y: 3,
-                        label: "国王と話す",
-                        type: "quest",
-                        questId: "royal_star_catalyst",
-                        imageKey: "overlay_light_captive_king",
-                        imageColor: "#f4d989",
-                        minimapColor: "#f4d989",
-                        requiredFlag: "lightPalaceCleared",
-                        missingItems: [
+                        "x": 7,
+                        "y": 3,
+                        "label": "国王と話す",
+                        "type": "quest",
+                        "questId": "royal_star_catalyst",
+                        "imageKey": "overlay_light_captive_king",
+                        "imageColor": "#f4d989",
+                        "minimapColor": "#f4d989",
+                        "requiredFlag": "lightPalaceCleared",
+                        "missingItems": [
                             {
-                                id: 111,
-                                count: 1
+                                "id": 111,
+                                "count": 1
                             }
                         ]
                     },
                     {
-                        x: 7,
-                        y: 3,
-                        label: "国王と話す",
-                        type: "storyEvent",
-                        eventId: "light_palace_prison_king_after_catalyst",
-                        imageKey: "overlay_light_captive_king",
-                        imageColor: "#f4d989",
-                        minimapColor: "#f4d989",
-                        requiredItems: [
+                        "x": 7,
+                        "y": 3,
+                        "label": "国王と話す",
+                        "type": "storyEvent",
+                        "eventId": "light_palace_prison_king_after_catalyst",
+                        "imageKey": "overlay_light_captive_king",
+                        "imageColor": "#f4d989",
+                        "minimapColor": "#f4d989",
+                        "requiredItems": [
                             {
-                                id: 111,
-                                count: 1
+                                "id": 111,
+                                "count": 1
                             }
                         ]
                     },
                     {
-                        x: 23,
-                        y: 10,
-                        label: "衰弱した聖騎士を診る",
-                        type: "storyEvent",
-                        eventId: "light_palace_prison_leila",
-                        imageKey: "overlay_light_captive_leila_bed",
-                        drawWidth: 64,
-                        drawHeight: 32,
-                        imageColor: "#f5dd86",
-                        minimapColor: "#f5dd86",
-                        missingFlag: "leilaJoined"
+                        "x": 23,
+                        "y": 10,
+                        "label": "衰弱した聖騎士を診る",
+                        "type": "storyEvent",
+                        "eventId": "light_palace_prison_leila",
+                        "imageKey": "overlay_light_captive_leila_bed",
+                        "drawWidth": 64,
+                        "drawHeight": 32,
+                        "imageColor": "#f5dd86",
+                        "minimapColor": "#f5dd86",
+                        "missingFlag": "leilaJoined"
                     },
                     {
-                        x: 3,
-                        y: 11,
-                        label: "老神職と話す",
-                        type: "storyEvent",
-                        eventId: "light_palace_prison_priest_a",
-                        imageKey: "overlay_light_captive_priest_a",
-                        imageColor: "#d9dfff",
-                        minimapColor: "#d9dfff"
+                        "x": 3,
+                        "y": 11,
+                        "label": "老神職と話す",
+                        "type": "storyEvent",
+                        "eventId": "light_palace_prison_priest_a",
+                        "imageKey": "overlay_light_captive_priest_a",
+                        "imageColor": "#d9dfff",
+                        "minimapColor": "#d9dfff"
                     },
                     {
-                        x: 7,
-                        y: 11,
-                        label: "若い神職と話す",
-                        type: "storyEvent",
-                        eventId: "light_palace_prison_priest_b",
-                        imageKey: "overlay_light_captive_priest_b",
-                        imageColor: "#cfefff",
-                        minimapColor: "#cfefff"
+                        "x": 7,
+                        "y": 11,
+                        "label": "若い神職と話す",
+                        "type": "storyEvent",
+                        "eventId": "light_palace_prison_priest_b",
+                        "imageKey": "overlay_light_captive_priest_b",
+                        "imageColor": "#cfefff",
+                        "minimapColor": "#cfefff"
                     }
                 ],
-                bosses: [
+                "bosses": [
                     {
-                        x: 13,
-                        y: 3,
-                        monsterId: 301071,
-                        startEventId: "light_palace_prison_guard_encounter",
-                        storyEventId: "light_palace_prison_guard_clear",
-                        actionLabel: "地下牢の看守に挑む"
+                        "x": 13,
+                        "y": 3,
+                        "monsterId": 301071,
+                        "startEventId": "light_palace_prison_guard_encounter",
+                        "storyEventId": "light_palace_prison_guard_clear",
+                        "actionLabel": "地下牢の看守に挑む"
                     }
                 ],
-                name: "",
-                themeKey: "LIGHT_PALACE"
+                "name": "",
+                "themeKey": "LIGHT_PALACE"
             }
         ]
     },
-    GALVANIA_CAVE: {
-        name: "ガルヴァニアへの洞窟",
-        themeKey: "GALVANIA_CAVE",
-        canonicalAreaKey: "GALVANIA_CAVE",
-        rank: 70,
-        encounterRank: 70,
-        rareMonsters: [
+    "GALVANIA_CAVE": {
+        "name": "ガルヴァニアへの洞窟",
+        "themeKey": "GALVANIA_CAVE",
+        "canonicalAreaKey": "GALVANIA_CAVE",
+        "rank": 70,
+        "encounterRank": 70,
+        "rareMonsters": [
             {
-                id: 200202,
-                rate: 0.05
+                "id": 200202,
+                "rate": 0.05
             },
             {
-                id: 200203,
-                rate: 0.02
+                "id": 200203,
+                "rate": 0.02
             }
         ],
-        battleBg: "battle_bg_galvania_cave",
-        enemyBoost: {
-            statMultiplier: 1,
-            resists: {
-                Fear: 50,
-                InstantDeath: 100
+        "battleBg": "battle_bg_galvania_cave",
+        "enemyBoost": {
+            "statMultiplier": 1,
+            "resists": {
+                "Fear": 50,
+                "InstantDeath": 100
             }
         },
-        entryFloor: 1,
-        entryPoint: {
-            x: 30,
-            y: 32
+        "entryFloor": 1,
+        "entryPoint": {
+            "x": 30,
+            "y": 32
         },
-        entryPoints: {
-            north: {
-                floor: 1,
-                x: 30,
-                y: 32
+        "entryPoints": {
+            "north": {
+                "floor": 1,
+                "x": 30,
+                "y": 32
             },
-            south: {
-                floor: 6,
-                x: 56,
-                y: 32
+            "south": {
+                "floor": 6,
+                "x": 56,
+                "y": 32
             }
         },
-        entryRequiredAllyId: 204,
-        entryRequiredEntrances: [
+        "entryRequiredAllyId": 204,
+        "entryRequiredEntrances": [
             "north"
         ],
-        entryLockedEventId: "galvania_cave_north_blocked",
-        entryLockedText: "すさまじい結界でふさがれている。",
-        floors: [
+        "entryLockedEventId": "galvania_cave_north_blocked",
+        "entryLockedText": "すさまじい結界でふさがれている。",
+        "floors": [
             {
-                label: "1階・北口 黒岩の胎道",
-                encounterRank: 61,
-                monsters: [
+                "label": "1階・北口 黒岩の胎道",
+                "encounterRank": 61,
+                "monsters": [
                     100056,
                     100057,
                     100058
                 ],
-                width: 61,
-                height: 35,
-                tiles: [
+                "width": 61,
+                "height": 35,
+                "tiles": [
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGWWWWWWWWWWW",
@@ -9426,132 +9436,132 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 30,
-                        y: 32,
-                        to: "EXIT",
-                        label: "北口へ戻る",
-                        exitPoint: {
-                            areaKey: "WORLD",
-                            x: 31,
-                            y: 40
+                        "x": 30,
+                        "y": 32,
+                        "to": "EXIT",
+                        "label": "北口へ戻る",
+                        "exitPoint": {
+                            "areaKey": "WORLD",
+                            "x": 31,
+                            "y": 40
                         }
                     },
                     {
-                        x: 55,
-                        y: 3,
-                        toFloor: 2,
-                        targetX: 5,
-                        targetY: 31,
-                        label: "偽りの無限回廊へ"
+                        "x": 55,
+                        "y": 3,
+                        "toFloor": 2,
+                        "targetX": 5,
+                        "targetY": 31,
+                        "label": "偽りの無限回廊へ"
                     }
                 ],
-                tileEffects: [
+                "tileEffects": [
                     {
-                        x: 7,
-                        y: 23,
-                        type: "hunter",
-                        id: "galvania_f1_black_scout_v2",
-                        imageKey: "overlay_dungeon_hunter_shadow",
-                        monsterIds: [
+                        "x": 7,
+                        "y": 23,
+                        "type": "hunter",
+                        "id": "galvania_f1_black_scout_v2",
+                        "imageKey": "overlay_dungeon_hunter_shadow",
+                        "monsterIds": [
                             100059,
                             100063,
                             100067
                         ],
-                        speed: 0.58,
-                        range: 34,
-                        statMultiplier: 1.22,
-                        message: "黒岩の陰から魔族の斥候が襲いかかった！"
+                        "speed": 0.58,
+                        "range": 34,
+                        "statMultiplier": 1.22,
+                        "message": "黒岩の陰から魔族の斥候が襲いかかった！"
                     },
                     {
-                        x: 52,
-                        y: 13,
-                        type: "warp",
-                        toX: 41,
-                        toY: 13,
-                        message: "脆い横穴が崩れ、少し手前へ押し戻された。"
+                        "x": 52,
+                        "y": 13,
+                        "type": "warp",
+                        "toX": 41,
+                        "toY": 13,
+                        "message": "脆い横穴が崩れ、少し手前へ押し戻された。"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 18,
-                        y: 4,
-                        itemId: 99,
-                        type: "item"
+                        "x": 18,
+                        "y": 4,
+                        "itemId": 99,
+                        "type": "item"
                     },
                     {
-                        x: 5,
-                        y: 11,
-                        itemId: 14,
-                        type: "item"
+                        "x": 5,
+                        "y": 11,
+                        "itemId": 14,
+                        "type": "item"
                     },
                     {
-                        x: 29,
-                        y: 22,
-                        itemId: 5,
-                        type: "item"
+                        "x": 29,
+                        "y": 22,
+                        "itemId": 5,
+                        "type": "item"
                     },
                     {
-                        x: 39,
-                        y: 13,
-                        itemId: 6,
-                        type: "item"
+                        "x": 39,
+                        "y": 13,
+                        "itemId": 6,
+                        "type": "item"
                     },
                     {
-                        x: 52,
-                        y: 5,
-                        itemId: 99,
-                        type: "item"
+                        "x": 52,
+                        "y": 5,
+                        "itemId": 99,
+                        "type": "item"
                     },
                     {
-                        x: 48,
-                        y: 21,
-                        itemId: 7,
-                        type: "item",
-                        rare: true
+                        "x": 48,
+                        "y": 21,
+                        "itemId": 7,
+                        "type": "item",
+                        "rare": true
                     }
                 ],
-                mapActions: [
+                "mapActions": [
                     {
-                        x: 25,
-                        y: 29,
-                        label: "倒れている兵を調べる",
-                        eventId: "map_system_galvania_cave_f1_action_1",
-                        type: "storyEvent",
-                        imageKey: "overlay_dungeon_adventurer",
-                        blocksMovement: false,
-                        baseTile: "G"
+                        "x": 25,
+                        "y": 29,
+                        "label": "倒れている兵を調べる",
+                        "eventId": "map_system_galvania_cave_f1_action_1",
+                        "type": "storyEvent",
+                        "imageKey": "overlay_dungeon_adventurer",
+                        "blocksMovement": false,
+                        "baseTile": "G"
                     },
                     {
-                        x: 38,
-                        y: 13,
-                        label: "黒い道標を読む",
-                        eventId: "map_system_galvania_cave_f1_action_2",
-                        type: "storyEvent",
-                        imageKey: "overlay_dungeon_event",
-                        blocksMovement: false,
-                        baseTile: "G"
+                        "x": 38,
+                        "y": 13,
+                        "label": "黒い道標を読む",
+                        "eventId": "map_system_galvania_cave_f1_action_2",
+                        "type": "storyEvent",
+                        "imageKey": "overlay_dungeon_event",
+                        "blocksMovement": false,
+                        "baseTile": "G"
                     }
                 ],
-                entryPoint: {
-                    x: 30,
-                    y: 32
+                "entryPoint": {
+                    "x": 30,
+                    "y": 32
                 },
-                name: "",
-                themeKey: "GALVANIA_CAVE"
+                "name": "",
+                "themeKey": "GALVANIA_CAVE"
             },
             {
-                label: "2階・偽りの無限回廊",
-                encounterRank: 66,
-                monsters: [
+                "label": "2階・偽りの無限回廊",
+                "encounterRank": 66,
+                "monsters": [
                     100058,
                     100059,
                     100060
                 ],
-                width: 61,
-                height: 35,
-                tiles: [
+                "width": 61,
+                "height": 35,
+                "tiles": [
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
@@ -9588,177 +9598,177 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 5,
-                        y: 31,
-                        toFloor: 1,
-                        targetX: 54,
-                        targetY: 3,
-                        label: "黒岩の胎道へ戻る"
+                        "x": 5,
+                        "y": 31,
+                        "toFloor": 1,
+                        "targetX": 54,
+                        "targetY": 3,
+                        "label": "黒岩の胎道へ戻る"
                     },
                     {
-                        x: 55,
-                        y: 4,
-                        toFloor: 3,
-                        targetX: 5,
-                        targetY: 4,
-                        label: "溶岩の地底湖へ"
+                        "x": 55,
+                        "y": 4,
+                        "toFloor": 3,
+                        "targetX": 5,
+                        "targetY": 4,
+                        "label": "溶岩の地底湖へ"
                     }
                 ],
-                tileEffects: [
+                "tileEffects": [
                     {
-                        x: 18,
-                        y: 28,
-                        type: "warp",
-                        toX: 12,
-                        toY: 28,
-                        message: "同じ石柱の前へ戻された。"
+                        "x": 18,
+                        "y": 28,
+                        "type": "warp",
+                        "toX": 12,
+                        "toY": 28,
+                        "message": "同じ石柱の前へ戻された。"
                     },
                     {
-                        x: 25,
-                        y: 28,
-                        type: "warp",
-                        toX: 32,
-                        toY: 23,
-                        message: "道が不安定に変化した・・・"
+                        "x": 25,
+                        "y": 28,
+                        "type": "warp",
+                        "toX": 32,
+                        "toY": 23,
+                        "message": "道が不安定に変化した・・・"
                     },
                     {
-                        x: 32,
-                        y: 24,
-                        type: "warp",
-                        toX: 12,
-                        toY: 28,
-                        message: "一歩進んだはずが、また最初の柱を見上げている。"
+                        "x": 32,
+                        "y": 24,
+                        "type": "warp",
+                        "toX": 12,
+                        "toY": 28,
+                        "message": "一歩進んだはずが、また最初の柱を見上げている。"
                     },
                     {
-                        x: 46,
-                        y: 28,
-                        type: "warp",
-                        toX: 54,
-                        toY: 28,
-                        message: "闇の風に巻かれ、どこかへ移動した。"
+                        "x": 46,
+                        "y": 28,
+                        "type": "warp",
+                        "toX": 54,
+                        "toY": 28,
+                        "message": "闇の風に巻かれ、どこかへ移動した。"
                     },
                     {
-                        x: 54,
-                        y: 20,
-                        type: "warp",
-                        toX: 12,
-                        toY: 28,
-                        message: "外周を回りきったはずの道が、また入口側へつながっていた。"
+                        "x": 54,
+                        "y": 20,
+                        "type": "warp",
+                        "toX": 12,
+                        "toY": 28,
+                        "message": "外周を回りきったはずの道が、また入口側へつながっていた。"
                     },
                     {
-                        x: 50,
-                        y: 28,
-                        type: "warp",
-                        toX: 43,
-                        toY: 20,
-                        message: "内側の回廊に吸い込まれた。"
+                        "x": 50,
+                        "y": 28,
+                        "type": "warp",
+                        "toX": 43,
+                        "toY": 20,
+                        "message": "内側の回廊に吸い込まれた。"
                     },
                     {
-                        x: 20,
-                        y: 24,
-                        type: "warp",
-                        toX: 32,
-                        toY: 27,
-                        message: "どこかに移動したようだ…"
+                        "x": 20,
+                        "y": 24,
+                        "type": "warp",
+                        "toX": 32,
+                        "toY": 27,
+                        "message": "どこかに移動したようだ…"
                     },
                     {
-                        x: 36,
-                        y: 20,
-                        type: "warp",
-                        toX: 12,
-                        toY: 28,
-                        message: "輪の中心から、始まりの横穴へ放り出された。"
+                        "x": 36,
+                        "y": 20,
+                        "type": "warp",
+                        "toX": 12,
+                        "toY": 28,
+                        "message": "輪の中心から、始まりの横穴へ放り出された。"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 18,
-                        y: 16,
-                        itemId: 99,
-                        type: "item"
+                        "x": 18,
+                        "y": 16,
+                        "itemId": 99,
+                        "type": "item"
                     },
                     {
-                        x: 25,
-                        y: 13,
-                        itemId: 14,
-                        type: "item"
+                        "x": 25,
+                        "y": 13,
+                        "itemId": 14,
+                        "type": "item"
                     },
                     {
-                        x: 32,
-                        y: 17,
-                        itemId: 5,
-                        type: "item"
+                        "x": 32,
+                        "y": 17,
+                        "itemId": 5,
+                        "type": "item"
                     },
                     {
-                        x: 7,
-                        y: 20,
-                        itemId: 6,
-                        type: "item"
+                        "x": 7,
+                        "y": 20,
+                        "itemId": 6,
+                        "type": "item"
                     },
                     {
-                        x: 51,
-                        y: 20,
-                        itemId: 99,
-                        type: "item"
+                        "x": 51,
+                        "y": 20,
+                        "itemId": 99,
+                        "type": "item"
                     },
                     {
-                        x: 50,
-                        y: 24,
-                        itemId: 14,
-                        type: "item"
+                        "x": 50,
+                        "y": 24,
+                        "itemId": 14,
+                        "type": "item"
                     },
                     {
-                        x: 46,
-                        y: 14,
-                        itemId: 7,
-                        type: "item",
-                        rare: true
+                        "x": 46,
+                        "y": 14,
+                        "itemId": 7,
+                        "type": "item",
+                        "rare": true
                     }
                 ],
-                mapActions: [
+                "mapActions": [
                     {
-                        x: 12,
-                        y: 28,
-                        label: "古びた石碑を読む",
-                        eventId: "map_system_galvania_cave_f2_action_1",
-                        type: "storyEvent",
-                        imageKey: "overlay_dungeon_event",
-                        blocksMovement: false,
-                        baseTile: "T"
+                        "x": 12,
+                        "y": 28,
+                        "label": "古びた石碑を読む",
+                        "eventId": "map_system_galvania_cave_f2_action_1",
+                        "type": "storyEvent",
+                        "imageKey": "overlay_dungeon_event",
+                        "blocksMovement": false,
+                        "baseTile": "T"
                     },
                     {
-                        x: 39,
-                        y: 13,
-                        label: "煤けた足跡を調べる",
-                        eventId: "map_system_galvania_cave_f2_action_2",
-                        type: "storyEvent",
-                        imageKey: "overlay_dungeon_event",
-                        blocksMovement: false,
-                        baseTile: "T"
+                        "x": 39,
+                        "y": 13,
+                        "label": "煤けた足跡を調べる",
+                        "eventId": "map_system_galvania_cave_f2_action_2",
+                        "type": "storyEvent",
+                        "imageKey": "overlay_dungeon_event",
+                        "blocksMovement": false,
+                        "baseTile": "T"
                     }
                 ],
-                limitedMapReveal: true,
-                revealRadius: 3,
-                entryPoint: {
-                    x: 5,
-                    y: 31
+                "limitedMapReveal": true,
+                "revealRadius": 3,
+                "entryPoint": {
+                    "x": 5,
+                    "y": 31
                 },
-                name: "",
-                themeKey: "GALVANIA_CAVE"
+                "name": "",
+                "themeKey": "GALVANIA_CAVE"
             },
             {
-                label: "3階・溶岩の地底湖",
-                encounterRank: 66,
-                monsters: [
+                "label": "3階・溶岩の地底湖",
+                "encounterRank": 66,
+                "monsters": [
                     100059,
                     100060,
                     100061
                 ],
-                width: 61,
-                height: 35,
-                tiles: [
+                "width": 61,
+                "height": 35,
+                "tiles": [
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
@@ -9795,155 +9805,155 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 5,
-                        y: 4,
-                        toFloor: 2,
-                        targetX: 55,
-                        targetY: 5,
-                        label: "偽りの無限回廊へ戻る"
+                        "x": 5,
+                        "y": 4,
+                        "toFloor": 2,
+                        "targetX": 55,
+                        "targetY": 5,
+                        "label": "偽りの無限回廊へ戻る"
                     },
                     {
-                        x: 55,
-                        y: 30,
-                        toFloor: 4,
-                        targetX: 55,
-                        targetY: 30,
-                        label: "氷晶の十字滑床へ"
+                        "x": 55,
+                        "y": 30,
+                        "toFloor": 4,
+                        "targetX": 55,
+                        "targetY": 30,
+                        "label": "氷晶の十字滑床へ"
                     }
                 ],
-                tileEffects: [
+                "tileEffects": [
                     {
-                        x: 36,
-                        y: 28,
-                        type: "hunter",
-                        id: "galvania_f3_ash_daemon_v2",
-                        imageKey: "overlay_dungeon_hunter_fire",
-                        monsterIds: [
+                        "x": 36,
+                        "y": 28,
+                        "type": "hunter",
+                        "id": "galvania_f3_ash_daemon_v2",
+                        "imageKey": "overlay_dungeon_hunter_fire",
+                        "monsterIds": [
                             100064,
                             100067,
                             100068
                         ],
-                        speed: 0.48,
-                        range: 38,
-                        statMultiplier: 1.28,
-                        message: "溶岩霧の向こうから、灼熱の魔族が迫る！"
+                        "speed": 0.48,
+                        "range": 38,
+                        "statMultiplier": 1.28,
+                        "message": "溶岩霧の向こうから、灼熱の魔族が迫る！"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 8,
-                        y: 24,
-                        itemId: 14,
-                        type: "item"
+                        "x": 8,
+                        "y": 24,
+                        "itemId": 14,
+                        "type": "item"
                     },
                     {
-                        x: 38,
-                        y: 29,
-                        itemId: 99,
-                        type: "item"
+                        "x": 38,
+                        "y": 29,
+                        "itemId": 99,
+                        "type": "item"
                     },
                     {
-                        x: 56,
-                        y: 14,
-                        itemId: 6,
-                        type: "item"
+                        "x": 56,
+                        "y": 14,
+                        "itemId": 6,
+                        "type": "item"
                     },
                     {
-                        x: 34,
-                        y: 5,
-                        itemId: 5,
-                        type: "item"
+                        "x": 34,
+                        "y": 5,
+                        "itemId": 5,
+                        "type": "item"
                     },
                     {
-                        x: 27,
-                        y: 21,
-                        itemId: 99,
-                        type: "item"
+                        "x": 27,
+                        "y": 21,
+                        "itemId": 99,
+                        "type": "item"
                     },
                     {
-                        x: 49,
-                        y: 23,
-                        itemId: 14,
-                        type: "item"
+                        "x": 49,
+                        "y": 23,
+                        "itemId": 14,
+                        "type": "item"
                     },
                     {
-                        x: 28,
-                        y: 26,
-                        itemId: 7,
-                        type: "item",
-                        rare: true
+                        "x": 28,
+                        "y": 26,
+                        "itemId": 7,
+                        "type": "item",
+                        "rare": true
                     }
                 ],
-                bosses: [
+                "bosses": [
                     {
-                        x: 24,
-                        y: 26,
-                        monsterId: [
+                        "x": 24,
+                        "y": 26,
+                        "monsterId": [
                             100060,
                             100061
                         ],
-                        mapSpriteMonsterId: 100060,
-                        bossStatMultiplier: 1.3,
-                        inactiveTile: "G",
-                        startEventId: "map_system_galvania_cave_f3_boss_1",
-                        actionLabel: "黒炎の番人に挑む",
-                        challengeText: "番人を倒せば奥の赤い宝箱を取れそうだ。挑みますか？"
+                        "mapSpriteMonsterId": 100060,
+                        "bossStatMultiplier": 1.3,
+                        "inactiveTile": "G",
+                        "startEventId": "map_system_galvania_cave_f3_boss_1",
+                        "actionLabel": "黒炎の番人に挑む",
+                        "challengeText": "番人を倒せば奥の赤い宝箱を取れそうだ。挑みますか？"
                     }
                 ],
-                mapActions: [
+                "mapActions": [
                     {
-                        x: 11,
-                        y: 4,
-                        label: "焦げた石碑を読む",
-                        eventId: "map_system_galvania_cave_f3_action_1",
-                        type: "storyEvent",
-                        imageKey: "overlay_dungeon_event",
-                        blocksMovement: false,
-                        baseTile: "G"
+                        "x": 11,
+                        "y": 4,
+                        "label": "焦げた石碑を読む",
+                        "eventId": "map_system_galvania_cave_f3_action_1",
+                        "type": "storyEvent",
+                        "imageKey": "overlay_dungeon_event",
+                        "blocksMovement": false,
+                        "baseTile": "G"
                     },
                     {
-                        x: 52,
-                        y: 14,
-                        label: "折れた橋脚を調べる",
-                        eventId: "map_system_galvania_cave_f3_action_2",
-                        type: "storyEvent",
-                        imageKey: "overlay_dungeon_event",
-                        blocksMovement: false,
-                        baseTile: "G"
+                        "x": 52,
+                        "y": 14,
+                        "label": "折れた橋脚を調べる",
+                        "eventId": "map_system_galvania_cave_f3_action_2",
+                        "type": "storyEvent",
+                        "imageKey": "overlay_dungeon_event",
+                        "blocksMovement": false,
+                        "baseTile": "G"
                     },
                     {
-                        x: 7,
-                        y: 26,
-                        label: "倒れた人影を見る",
-                        eventId: "map_system_galvania_cave_f3_action_3",
-                        type: "storyEvent",
-                        imageKey: "overlay_dungeon_adventurer",
-                        blocksMovement: false,
-                        baseTile: "G"
+                        "x": 7,
+                        "y": 26,
+                        "label": "倒れた人影を見る",
+                        "eventId": "map_system_galvania_cave_f3_action_3",
+                        "type": "storyEvent",
+                        "imageKey": "overlay_dungeon_adventurer",
+                        "blocksMovement": false,
+                        "baseTile": "G"
                     }
                 ],
-                limitedMapReveal: true,
-                revealRadius: 4,
-                entryPoint: {
-                    x: 5,
-                    y: 4
+                "limitedMapReveal": true,
+                "revealRadius": 4,
+                "entryPoint": {
+                    "x": 5,
+                    "y": 4
                 },
-                name: "",
-                themeKey: "GALVANIA_CAVE"
+                "name": "",
+                "themeKey": "GALVANIA_CAVE"
             },
             {
-                label: "4階・氷晶の十字滑床",
-                encounterRank: 66,
-                monsters: [
+                "label": "4階・氷晶の十字滑床",
+                "encounterRank": 66,
+                "monsters": [
                     100058,
                     100061,
                     100062
                 ],
-                width: 61,
-                height: 35,
-                tiles: [
+                "width": 61,
+                "height": 35,
+                "tiles": [
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
@@ -9980,331 +9990,331 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 55,
-                        y: 30,
-                        toFloor: 3,
-                        targetX: 55,
-                        targetY: 29,
-                        label: "溶岩の地底湖へ戻る"
+                        "x": 55,
+                        "y": 30,
+                        "toFloor": 3,
+                        "targetX": 55,
+                        "targetY": 29,
+                        "label": "溶岩の地底湖へ戻る"
                     },
                     {
-                        x: 5,
-                        y: 4,
-                        toFloor: 5,
-                        targetX: 5,
-                        targetY: 4,
-                        label: "魔軍補給路へ"
+                        "x": 5,
+                        "y": 4,
+                        "toFloor": 5,
+                        "targetX": 5,
+                        "targetY": 4,
+                        "label": "魔軍補給路へ"
                     }
                 ],
-                tileEffects: [
+                "tileEffects": [
                     {
-                        points: [
+                        "points": [
                             {
-                                x: 16,
-                                y: 17
+                                "x": 16,
+                                "y": 17
                             },
                             {
-                                x: 17,
-                                y: 17
+                                "x": 17,
+                                "y": 17
                             },
                             {
-                                x: 18,
-                                y: 17
+                                "x": 18,
+                                "y": 17
                             },
                             {
-                                x: 19,
-                                y: 17
+                                "x": 19,
+                                "y": 17
                             },
                             {
-                                x: 20,
-                                y: 17
+                                "x": 20,
+                                "y": 17
                             },
                             {
-                                x: 21,
-                                y: 17
+                                "x": 21,
+                                "y": 17
                             },
                             {
-                                x: 22,
-                                y: 17
+                                "x": 22,
+                                "y": 17
                             },
                             {
-                                x: 23,
-                                y: 17
+                                "x": 23,
+                                "y": 17
                             },
                             {
-                                x: 24,
-                                y: 17
+                                "x": 24,
+                                "y": 17
                             },
                             {
-                                x: 25,
-                                y: 17
+                                "x": 25,
+                                "y": 17
                             },
                             {
-                                x: 26,
-                                y: 17
+                                "x": 26,
+                                "y": 17
                             },
                             {
-                                x: 27,
-                                y: 17
+                                "x": 27,
+                                "y": 17
                             },
                             {
-                                x: 28,
-                                y: 17
+                                "x": 28,
+                                "y": 17
                             },
                             {
-                                x: 29,
-                                y: 17
+                                "x": 29,
+                                "y": 17
                             },
                             {
-                                x: 30,
-                                y: 17
+                                "x": 30,
+                                "y": 17
                             },
                             {
-                                x: 31,
-                                y: 17
+                                "x": 31,
+                                "y": 17
                             },
                             {
-                                x: 32,
-                                y: 17
+                                "x": 32,
+                                "y": 17
                             },
                             {
-                                x: 33,
-                                y: 17
+                                "x": 33,
+                                "y": 17
                             },
                             {
-                                x: 34,
-                                y: 17
+                                "x": 34,
+                                "y": 17
                             },
                             {
-                                x: 35,
-                                y: 17
+                                "x": 35,
+                                "y": 17
                             },
                             {
-                                x: 36,
-                                y: 17
+                                "x": 36,
+                                "y": 17
                             },
                             {
-                                x: 37,
-                                y: 17
+                                "x": 37,
+                                "y": 17
                             },
                             {
-                                x: 38,
-                                y: 17
+                                "x": 38,
+                                "y": 17
                             },
                             {
-                                x: 39,
-                                y: 17
+                                "x": 39,
+                                "y": 17
                             },
                             {
-                                x: 40,
-                                y: 17
+                                "x": 40,
+                                "y": 17
                             },
                             {
-                                x: 41,
-                                y: 17
+                                "x": 41,
+                                "y": 17
                             },
                             {
-                                x: 42,
-                                y: 17
+                                "x": 42,
+                                "y": 17
                             },
                             {
-                                x: 43,
-                                y: 17
+                                "x": 43,
+                                "y": 17
                             },
                             {
-                                x: 44,
-                                y: 17
+                                "x": 44,
+                                "y": 17
                             },
                             {
-                                x: 45,
-                                y: 17
+                                "x": 45,
+                                "y": 17
                             },
                             {
-                                x: 31,
-                                y: 8
+                                "x": 31,
+                                "y": 8
                             },
                             {
-                                x: 31,
-                                y: 9
+                                "x": 31,
+                                "y": 9
                             },
                             {
-                                x: 31,
-                                y: 10
+                                "x": 31,
+                                "y": 10
                             },
                             {
-                                x: 31,
-                                y: 11
+                                "x": 31,
+                                "y": 11
                             },
                             {
-                                x: 31,
-                                y: 12
+                                "x": 31,
+                                "y": 12
                             },
                             {
-                                x: 31,
-                                y: 13
+                                "x": 31,
+                                "y": 13
                             },
                             {
-                                x: 31,
-                                y: 14
+                                "x": 31,
+                                "y": 14
                             },
                             {
-                                x: 31,
-                                y: 15
+                                "x": 31,
+                                "y": 15
                             },
                             {
-                                x: 31,
-                                y: 16
+                                "x": 31,
+                                "y": 16
                             },
                             {
-                                x: 31,
-                                y: 17
+                                "x": 31,
+                                "y": 17
                             },
                             {
-                                x: 31,
-                                y: 18
+                                "x": 31,
+                                "y": 18
                             },
                             {
-                                x: 31,
-                                y: 19
+                                "x": 31,
+                                "y": 19
                             },
                             {
-                                x: 31,
-                                y: 20
+                                "x": 31,
+                                "y": 20
                             },
                             {
-                                x: 31,
-                                y: 21
+                                "x": 31,
+                                "y": 21
                             },
                             {
-                                x: 31,
-                                y: 22
+                                "x": 31,
+                                "y": 22
                             },
                             {
-                                x: 31,
-                                y: 23
+                                "x": 31,
+                                "y": 23
                             },
                             {
-                                x: 31,
-                                y: 24
+                                "x": 31,
+                                "y": 24
                             },
                             {
-                                x: 31,
-                                y: 25
+                                "x": 31,
+                                "y": 25
                             },
                             {
-                                x: 31,
-                                y: 26
+                                "x": 31,
+                                "y": 26
                             }
                         ],
-                        type: "ice",
-                        maxSlide: 40,
-                        message: "氷晶の床に足を取られ、止まるまで滑った！"
+                        "type": "ice",
+                        "maxSlide": 40,
+                        "message": "氷晶の床に足を取られ、止まるまで滑った！"
                     },
                     {
-                        x: 55,
-                        y: 13,
-                        type: "hunter",
-                        id: "galvania_f4_frost_hound_v2",
-                        imageKey: "overlay_dungeon_hunter_sea",
-                        monsterIds: [
+                        "x": 55,
+                        "y": 13,
+                        "type": "hunter",
+                        "id": "galvania_f4_frost_hound_v2",
+                        "imageKey": "overlay_dungeon_hunter_sea",
+                        "monsterIds": [
                             100065,
                             100067,
                             100069
                         ],
-                        speed: 0.52,
-                        range: 34,
-                        statMultiplier: 1.28,
-                        message: "氷壁の向こうから魔犬が滑るように迫ってきた！"
+                        "speed": 0.52,
+                        "range": 34,
+                        "statMultiplier": 1.28,
+                        "message": "氷壁の向こうから魔犬が滑るように迫ってきた！"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 30,
-                        y: 5,
-                        itemId: 99,
-                        type: "item"
+                        "x": 30,
+                        "y": 5,
+                        "itemId": 99,
+                        "type": "item"
                     },
                     {
-                        x: 32,
-                        y: 29,
-                        itemId: 14,
-                        type: "item"
+                        "x": 32,
+                        "y": 29,
+                        "itemId": 14,
+                        "type": "item"
                     },
                     {
-                        x: 8,
-                        y: 28,
-                        itemId: 6,
-                        type: "item"
+                        "x": 8,
+                        "y": 28,
+                        "itemId": 6,
+                        "type": "item"
                     },
                     {
-                        x: 38,
-                        y: 21,
-                        itemId: 5,
-                        type: "item"
+                        "x": 38,
+                        "y": 21,
+                        "itemId": 5,
+                        "type": "item"
                     },
                     {
-                        x: 37,
-                        y: 11,
-                        itemId: 99,
-                        type: "item"
+                        "x": 37,
+                        "y": 11,
+                        "itemId": 99,
+                        "type": "item"
                     },
                     {
-                        x: 16,
-                        y: 31,
-                        itemId: 7,
-                        type: "item",
-                        rare: true
+                        "x": 16,
+                        "y": 31,
+                        "itemId": 7,
+                        "type": "item",
+                        "rare": true
                     }
                 ],
-                bosses: [
+                "bosses": [
                     {
-                        x: 16,
-                        y: 28,
-                        monsterId: [
+                        "x": 16,
+                        "y": 28,
+                        "monsterId": [
                             100061,
                             100062
                         ],
-                        mapSpriteMonsterId: 100061,
-                        bossStatMultiplier: 1.35,
-                        inactiveTile: "G",
-                        keyRewardColor: "gold",
-                        startEventId: "map_system_galvania_cave_f4_boss_1",
-                        actionLabel: "氷鎧の魔将に挑む",
-                        challengeText: "この魔将は通路突破に必須ではないが、倒せば金の鍵を奪えそうだ。挑みますか？"
+                        "mapSpriteMonsterId": 100061,
+                        "bossStatMultiplier": 1.35,
+                        "inactiveTile": "G",
+                        "keyRewardColor": "gold",
+                        "startEventId": "map_system_galvania_cave_f4_boss_1",
+                        "actionLabel": "氷鎧の魔将に挑む",
+                        "challengeText": "この魔将は通路突破に必須ではないが、倒せば金の鍵を奪えそうだ。挑みますか？"
                     }
                 ],
-                mapActions: [
+                "mapActions": [
                     {
-                        x: 8,
-                        y: 27,
-                        label: "氷漬けの荷物を調べる",
-                        eventId: "map_system_galvania_cave_f4_action_1",
-                        type: "storyEvent",
-                        imageKey: "overlay_dungeon_event",
-                        blocksMovement: false,
-                        baseTile: "G"
+                        "x": 8,
+                        "y": 27,
+                        "label": "氷漬けの荷物を調べる",
+                        "eventId": "map_system_galvania_cave_f4_action_1",
+                        "type": "storyEvent",
+                        "imageKey": "overlay_dungeon_event",
+                        "blocksMovement": false,
+                        "baseTile": "G"
                     }
                 ],
-                entryPoint: {
-                    x: 55,
-                    y: 30
+                "entryPoint": {
+                    "x": 55,
+                    "y": 30
                 },
-                name: "",
-                themeKey: "GALVANIA_CAVE"
+                "name": "",
+                "themeKey": "GALVANIA_CAVE"
             },
             {
-                label: "5階・魔軍補給路",
-                encounterRank: 66,
-                monsters: [
+                "label": "5階・魔軍補給路",
+                "encounterRank": 66,
+                "monsters": [
                     100061,
                     100062,
                     100063
                 ],
-                width: 61,
-                height: 35,
-                tiles: [
+                "width": 61,
+                "height": 35,
+                "tiles": [
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
@@ -10341,120 +10351,120 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 5,
-                        y: 4,
-                        toFloor: 4,
-                        targetX: 5,
-                        targetY: 5,
-                        label: "氷晶の十字滑床へ戻る"
+                        "x": 5,
+                        "y": 4,
+                        "toFloor": 4,
+                        "targetX": 5,
+                        "targetY": 5,
+                        "label": "氷晶の十字滑床へ戻る"
                     },
                     {
-                        x: 55,
-                        y: 30,
-                        toFloor: 6,
-                        targetX: 5,
-                        targetY: 30,
-                        label: "南口の白骨旧坑へ"
+                        "x": 55,
+                        "y": 30,
+                        "toFloor": 6,
+                        "targetX": 5,
+                        "targetY": 30,
+                        "label": "南口の白骨旧坑へ"
                     }
                 ],
-                tileEffects: [
+                "tileEffects": [
                     {
-                        x: 48,
-                        y: 21,
-                        type: "hunter",
-                        id: "galvania_f5_supply_overseer_v2",
-                        imageKey: "overlay_dungeon_hunter_shadow",
-                        monsterIds: [
+                        "x": 48,
+                        "y": 21,
+                        "type": "hunter",
+                        "id": "galvania_f5_supply_overseer_v2",
+                        "imageKey": "overlay_dungeon_hunter_shadow",
+                        "monsterIds": [
                             100064,
                             100067,
                             100070
                         ],
-                        speed: 0.68,
-                        range: 46,
-                        statMultiplier: 1.32,
-                        message: "補給路を巡回する上級魔族が、こちらを捕捉した！"
+                        "speed": 0.68,
+                        "range": 46,
+                        "statMultiplier": 1.32,
+                        "message": "補給路を巡回する上級魔族が、こちらを捕捉した！"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 19,
-                        y: 7,
-                        itemId: 99,
-                        type: "item"
+                        "x": 19,
+                        "y": 7,
+                        "itemId": 99,
+                        "type": "item"
                     },
                     {
-                        x: 40,
-                        y: 7,
-                        itemId: 6,
-                        type: "item"
+                        "x": 40,
+                        "y": 7,
+                        "itemId": 6,
+                        "type": "item"
                     },
                     {
-                        x: 10,
-                        y: 24,
-                        itemId: 14,
-                        type: "item"
+                        "x": 10,
+                        "y": 24,
+                        "itemId": 14,
+                        "type": "item"
                     },
                     {
-                        x: 34,
-                        y: 30,
-                        itemId: 5,
-                        type: "item"
+                        "x": 34,
+                        "y": 30,
+                        "itemId": 5,
+                        "type": "item"
                     },
                     {
-                        x: 37,
-                        y: 20,
-                        itemId: 99,
-                        type: "item"
+                        "x": 37,
+                        "y": 20,
+                        "itemId": 99,
+                        "type": "item"
                     },
                     {
-                        x: 49,
-                        y: 18,
-                        itemId: 14,
-                        type: "item"
+                        "x": 49,
+                        "y": 18,
+                        "itemId": 14,
+                        "type": "item"
                     },
                     {
-                        x: 49,
-                        y: 22,
-                        itemId: 7,
-                        type: "item",
-                        rare: true
+                        "x": 49,
+                        "y": 22,
+                        "itemId": 7,
+                        "type": "item",
+                        "rare": true
                     }
                 ],
-                mapActions: [
+                "mapActions": [
                     {
-                        x: 40,
-                        y: 8,
-                        label: "魔軍の積荷を調べる",
-                        eventId: "map_system_galvania_cave_f5_action_1",
-                        type: "storyEvent",
-                        imageKey: "overlay_dungeon_event",
-                        blocksMovement: false,
-                        baseTile: "G"
+                        "x": 40,
+                        "y": 8,
+                        "label": "魔軍の積荷を調べる",
+                        "eventId": "map_system_galvania_cave_f5_action_1",
+                        "type": "storyEvent",
+                        "imageKey": "overlay_dungeon_event",
+                        "blocksMovement": false,
+                        "baseTile": "G"
                     }
                 ],
-                limitedMapReveal: true,
-                revealRadius: 3,
-                entryPoint: {
-                    x: 5,
-                    y: 4
+                "limitedMapReveal": true,
+                "revealRadius": 3,
+                "entryPoint": {
+                    "x": 5,
+                    "y": 4
                 },
-                name: "",
-                themeKey: "GALVANIA_CAVE"
+                "name": "",
+                "themeKey": "GALVANIA_CAVE"
             },
             {
-                label: "6階・南口 白骨の旧坑",
-                encounterRank: 76,
-                monsters: [
+                "label": "6階・南口 白骨の旧坑",
+                "encounterRank": 76,
+                "monsters": [
                     100063,
                     100064,
                     100065,
                     100068
                 ],
-                width: 61,
-                height: 35,
-                tiles: [
+                "width": 61,
+                "height": 35,
+                "tiles": [
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
@@ -10491,159 +10501,159 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 5,
-                        y: 30,
-                        toFloor: 5,
-                        targetX: 55,
-                        targetY: 29,
-                        label: "魔軍補給路へ戻る"
+                        "x": 5,
+                        "y": 30,
+                        "toFloor": 5,
+                        "targetX": 55,
+                        "targetY": 29,
+                        "label": "魔軍補給路へ戻る"
                     },
                     {
-                        x: 56,
-                        y: 32,
-                        to: "EXIT",
-                        label: "南口へ出る",
-                        exitPoint: {
-                            areaKey: "WORLD",
-                            x: 35,
-                            y: 42
+                        "x": 56,
+                        "y": 32,
+                        "to": "EXIT",
+                        "label": "南口へ出る",
+                        "exitPoint": {
+                            "areaKey": "WORLD",
+                            "x": 35,
+                            "y": 42
                         },
-                        setFlag: "galvaniaCaveSouthOpened",
-                        openLog: "南口の岩戸を内側から開けた。以後、南口からも再進入できる。"
+                        "setFlag": "galvaniaCaveSouthOpened",
+                        "openLog": "南口の岩戸を内側から開けた。以後、南口からも再進入できる。"
                     }
                 ],
-                tileEffects: [
+                "tileEffects": [
                     {
-                        x: 50,
-                        y: 21,
-                        type: "hunter",
-                        id: "galvania_f6_royal_rearguard_v2",
-                        imageKey: "overlay_dungeon_hunter_shadow",
-                        monsterIds: [
+                        "x": 50,
+                        "y": 21,
+                        "type": "hunter",
+                        "id": "galvania_f6_royal_rearguard_v2",
+                        "imageKey": "overlay_dungeon_hunter_shadow",
+                        "monsterIds": [
                             100073,
                             100076,
                             100077
                         ],
-                        speed: 0.58,
-                        range: 42,
-                        statMultiplier: 1.36,
-                        message: "撤退路を守る魔族の後衛が立ちはだかった！"
+                        "speed": 0.58,
+                        "range": 42,
+                        "statMultiplier": 1.36,
+                        "message": "撤退路を守る魔族の後衛が立ちはだかった！"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 12,
-                        y: 8,
-                        itemId: 14,
-                        type: "item"
+                        "x": 12,
+                        "y": 8,
+                        "itemId": 14,
+                        "type": "item"
                     },
                     {
-                        x: 27,
-                        y: 16,
-                        itemId: 99,
-                        type: "item"
+                        "x": 27,
+                        "y": 16,
+                        "itemId": 99,
+                        "type": "item"
                     },
                     {
-                        x: 40,
-                        y: 7,
-                        itemId: 6,
-                        type: "item"
+                        "x": 40,
+                        "y": 7,
+                        "itemId": 6,
+                        "type": "item"
                     },
                     {
-                        x: 55,
-                        y: 12,
-                        itemId: 5,
-                        type: "item"
+                        "x": 55,
+                        "y": 12,
+                        "itemId": 5,
+                        "type": "item"
                     },
                     {
-                        x: 20,
-                        y: 29,
-                        itemId: 99,
-                        type: "item"
+                        "x": 20,
+                        "y": 29,
+                        "itemId": 99,
+                        "type": "item"
                     },
                     {
-                        x: 52,
-                        y: 28,
-                        itemId: 14,
-                        type: "item"
+                        "x": 52,
+                        "y": 28,
+                        "itemId": 14,
+                        "type": "item"
                     },
                     {
-                        x: 17,
-                        y: 15,
-                        itemId: 7,
-                        type: "item",
-                        rare: true
+                        "x": 17,
+                        "y": 15,
+                        "itemId": 7,
+                        "type": "item",
+                        "rare": true
                     }
                 ],
-                bosses: [
+                "bosses": [
                     {
-                        x: 17,
-                        y: 13,
-                        monsterId: [
+                        "x": 17,
+                        "y": 13,
+                        "monsterId": [
                             100062,
                             100064
                         ],
-                        mapSpriteMonsterId: 100064,
-                        bossStatMultiplier: 1.32,
-                        inactiveTile: "G",
-                        startEventId: "map_system_galvania_cave_f6_boss_1",
-                        actionLabel: "横穴の守護魔に挑む",
-                        challengeText: "この先には赤い宝箱が見える。守護魔に挑みますか？"
+                        "mapSpriteMonsterId": 100064,
+                        "bossStatMultiplier": 1.32,
+                        "inactiveTile": "G",
+                        "startEventId": "map_system_galvania_cave_f6_boss_1",
+                        "actionLabel": "横穴の守護魔に挑む",
+                        "challengeText": "この先には赤い宝箱が見える。守護魔に挑みますか？"
                     }
                 ],
-                mapActions: [],
-                entryPoint: {
-                    x: 5,
-                    y: 30
+                "mapActions": [],
+                "entryPoint": {
+                    "x": 5,
+                    "y": 30
                 },
-                entryPoints: {
-                    south: {
-                        x: 56,
-                        y: 32
+                "entryPoints": {
+                    "south": {
+                        "x": 56,
+                        "y": 32
                     }
                 },
-                southEntryPoint: {
-                    x: 56,
-                    y: 32
+                "southEntryPoint": {
+                    "x": 56,
+                    "y": 32
                 },
-                name: "",
-                themeKey: "GALVANIA_CAVE"
+                "name": "",
+                "themeKey": "GALVANIA_CAVE"
             }
         ]
     },
-    DARK_CASTLE: {
-        name: "魔王城ガルヴァニア",
-        themeKey: "DARK_CASTLE",
-        entryRequiredAllyId: 204,
-        entryLockedEventId: "locked_dark_castle",
-        entryLockedText: "王宮聖騎士の結界が道を閉ざしている。",
-        rank: 80,
-        encounterRank: 80,
-        rareMonsters: [
+    "DARK_CASTLE": {
+        "name": "魔王城ガルヴァニア",
+        "themeKey": "DARK_CASTLE",
+        "entryRequiredAllyId": 204,
+        "entryLockedEventId": "locked_dark_castle",
+        "entryLockedText": "王宮聖騎士の結界が道を閉ざしている。",
+        "rank": 80,
+        "encounterRank": 80,
+        "rareMonsters": [
             {
-                id: 200202,
-                rate: 0.05
+                "id": 200202,
+                "rate": 0.05
             }
         ],
-        battleBg: "battle_bg_dark_castle",
-        entryPoint: {
-            x: 16,
-            y: 27
+        "battleBg": "battle_bg_dark_castle",
+        "entryPoint": {
+            "x": 16,
+            "y": 27
         },
-        floors: [
+        "floors": [
             {
-                label: "本館1階・中央広間",
-                encounterRank: 66,
-                monsters: [
+                "label": "本館1階・中央広間",
+                "encounterRank": 66,
+                "monsters": [
                     100059,
                     100060,
                     100061
                 ],
-                width: 33,
-                height: 30,
-                tiles: [
+                "width": 33,
+                "height": 30,
+                "tiles": [
                     "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
                     "IWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWI",
                     "IWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWI",
@@ -10675,159 +10685,159 @@ const FIXED_DUNGEON_MAPS = {
                     "IWWWWWWWWWWWWWWWSWWWWWWWWWWWWWWWI",
                     "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII"
                 ],
-                floorDecorations: [
+                "floorDecorations": [
                     {
-                        type: "castle_carpet",
-                        x: 15,
-                        y: 21,
-                        width: 3,
-                        height: 7
+                        "type": "castle_carpet",
+                        "x": 15,
+                        "y": 21,
+                        "width": 3,
+                        "height": 7
                     }
                 ],
-                blockingObjects: [
+                "blockingObjects": [
                     {
-                        x: 15,
-                        y: 5,
-                        imageKey: "object_blocking_castle_candelabrum",
-                        drawWidth: 32,
-                        drawHeight: 48,
-                        log: "重厚な燭台が道を塞いでいる。"
+                        "x": 15,
+                        "y": 5,
+                        "imageKey": "object_blocking_castle_candelabrum",
+                        "drawWidth": 32,
+                        "drawHeight": 48,
+                        "log": "重厚な燭台が道を塞いでいる。"
                     },
                     {
-                        x: 17,
-                        y: 5,
-                        imageKey: "object_blocking_castle_candelabrum",
-                        drawWidth: 32,
-                        drawHeight: 48,
-                        log: "重厚な燭台が道を塞いでいる。"
+                        "x": 17,
+                        "y": 5,
+                        "imageKey": "object_blocking_castle_candelabrum",
+                        "drawWidth": 32,
+                        "drawHeight": 48,
+                        "log": "重厚な燭台が道を塞いでいる。"
                     }
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 16,
-                        y: 28,
-                        to: "EXIT",
-                        label: "外に出る"
+                        "x": 16,
+                        "y": 28,
+                        "to": "EXIT",
+                        "label": "外に出る"
                     },
                     {
-                        x: 4,
-                        y: 15,
-                        toFloor: 2,
-                        targetX: 28,
-                        targetY: 15,
-                        label: "西館2階へ上がる"
+                        "x": 4,
+                        "y": 15,
+                        "toFloor": 2,
+                        "targetX": 28,
+                        "targetY": 15,
+                        "label": "西館2階へ上がる"
                     },
                     {
-                        x: 28,
-                        y: 15,
-                        toFloor: 4,
-                        targetX: 4,
-                        targetY: 15,
-                        label: "東館2階へ上がる"
+                        "x": 28,
+                        "y": 15,
+                        "toFloor": 4,
+                        "targetX": 4,
+                        "targetY": 15,
+                        "label": "東館2階へ上がる"
                     },
                     {
-                        x: 16,
-                        y: 5,
-                        toFloor: 6,
-                        targetX: 16,
-                        targetY: 26,
-                        label: "本館2階へ上がる"
+                        "x": 16,
+                        "y": 5,
+                        "toFloor": 6,
+                        "targetX": 16,
+                        "targetY": 26,
+                        "label": "本館2階へ上がる"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 11,
-                        y: 8,
-                        itemId: 14,
-                        type: "item"
+                        "x": 11,
+                        "y": 8,
+                        "itemId": 14,
+                        "type": "item"
                     },
                     {
-                        x: 21,
-                        y: 8,
-                        itemId: 5,
-                        type: "item"
+                        "x": 21,
+                        "y": 8,
+                        "itemId": 5,
+                        "type": "item"
                     }
                 ],
-                bosses: [],
-                healSprings: [
+                "bosses": [],
+                "healSprings": [
                     {
-                        x: 16,
-                        y: 22
+                        "x": 16,
+                        "y": 22
                     }
                 ],
-                mapActions: [
+                "mapActions": [
                     {
-                        x: 10,
-                        y: 22,
-                        label: "闇市を見る",
-                        log: "魔族の商人が静かに品を広げている。",
-                        type: "shop",
-                        shopType: "item",
-                        title: "魔王城ガルヴァニア 闇市",
-                        shopRank: 65,
-                        requiredFlag: "darkCastleCleared",
-                        imageKey: "overlay_town_demon_guard",
-                        lockedText: "城内はまだ戦闘態勢だ。"
+                        "x": 10,
+                        "y": 22,
+                        "label": "闇市を見る",
+                        "log": "魔族の商人が静かに品を広げている。",
+                        "type": "shop",
+                        "shopType": "item",
+                        "title": "魔王城ガルヴァニア 闇市",
+                        "shopRank": 65,
+                        "requiredFlag": "darkCastleCleared",
+                        "imageKey": "overlay_town_demon_guard",
+                        "lockedText": "城内はまだ戦闘態勢だ。"
                     },
                     {
-                        x: 22,
-                        y: 20,
-                        label: "武器を見る",
-                        log: "魔族の鍛冶場から低い槌音が響く。",
-                        type: "shop",
-                        shopType: "weapon",
-                        title: "魔王城ガルヴァニア 武器庫",
-                        shopRank: 65,
-                        requiredFlag: "darkCastleCleared",
-                        imageKey: "overlay_town_demon_guard",
-                        lockedText: "武器庫には近づけない。"
+                        "x": 22,
+                        "y": 20,
+                        "label": "武器を見る",
+                        "log": "魔族の鍛冶場から低い槌音が響く。",
+                        "type": "shop",
+                        "shopType": "weapon",
+                        "title": "魔王城ガルヴァニア 武器庫",
+                        "shopRank": 65,
+                        "requiredFlag": "darkCastleCleared",
+                        "imageKey": "overlay_town_demon_guard",
+                        "lockedText": "武器庫には近づけない。"
                     },
                     {
-                        x: 22,
-                        y: 22,
-                        label: "防具を見る",
-                        log: "闇に耐える防具が並んでいる。",
-                        type: "shop",
-                        shopType: "armor",
-                        title: "魔王城ガルヴァニア 防具庫",
-                        shopRank: 65,
-                        requiredFlag: "darkCastleCleared",
-                        imageKey: "overlay_town_demon_guard",
-                        lockedText: "防具庫には近づけない。"
+                        "x": 22,
+                        "y": 22,
+                        "label": "防具を見る",
+                        "log": "闇に耐える防具が並んでいる。",
+                        "type": "shop",
+                        "shopType": "armor",
+                        "title": "魔王城ガルヴァニア 防具庫",
+                        "shopRank": 65,
+                        "requiredFlag": "darkCastleCleared",
+                        "imageKey": "overlay_town_demon_guard",
+                        "lockedText": "防具庫には近づけない。"
                     },
                     {
-                        x: 10,
-                        y: 20,
-                        label: "魔族兵と話す",
-                        log: "魔族兵が城門の修復計画を見ている。",
-                        type: "storyEvent",
-                        eventId: "post_dark_castle_base_1",
-                        requiredFlag: "darkCastleCleared",
-                        imageKey: "overlay_town_demon_guard",
-                        lockedText: "魔族兵は警戒している。"
+                        "x": 10,
+                        "y": 20,
+                        "label": "魔族兵と話す",
+                        "log": "魔族兵が城門の修復計画を見ている。",
+                        "type": "storyEvent",
+                        "eventId": "post_dark_castle_base_1",
+                        "requiredFlag": "darkCastleCleared",
+                        "imageKey": "overlay_town_demon_guard",
+                        "lockedText": "魔族兵は警戒している。"
                     }
                 ],
-                entryPoint: {
-                    x: 16,
-                    y: 27
+                "entryPoint": {
+                    "x": 16,
+                    "y": 27
                 },
-                name: "",
-                themeKey: "DARK_CASTLE"
+                "name": "",
+                "themeKey": "DARK_CASTLE"
             },
             {
-                label: "西館2階・黒影廊",
-                encounterRank: 71,
-                monsters: [
+                "label": "西館2階・黒影廊",
+                "encounterRank": 71,
+                "monsters": [
                     100061,
                     100063,
                     100064
                 ],
-                width: 33,
-                height: 30,
-                impassableTiles: [
+                "width": 33,
+                "height": 30,
+                "impassableTiles": [
                     "K"
                 ],
-                tiles: [
+                "tiles": [
                     "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK",
                     "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
                     "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
@@ -10859,95 +10869,95 @@ const FIXED_DUNGEON_MAPS = {
                     "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
                     "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 28,
-                        y: 15,
-                        toFloor: 1,
-                        targetX: 4,
-                        targetY: 15,
-                        label: "本館1階へ下りる"
+                        "x": 28,
+                        "y": 15,
+                        "toFloor": 1,
+                        "targetX": 4,
+                        "targetY": 15,
+                        "label": "本館1階へ下りる"
                     },
                     {
-                        x: 16,
-                        y: 5,
-                        toFloor: 3,
-                        targetX: 16,
-                        targetY: 26,
-                        label: "西館3階へ上がる"
+                        "x": 16,
+                        "y": 5,
+                        "toFloor": 3,
+                        "targetX": 16,
+                        "targetY": 26,
+                        "label": "西館3階へ上がる"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 6,
-                        y: 9,
-                        itemId: 2,
-                        type: "item"
+                        "x": 6,
+                        "y": 9,
+                        "itemId": 2,
+                        "type": "item"
                     },
                     {
-                        x: 6,
-                        y: 21,
-                        itemId: 105,
-                        type: "item",
-                        rare: true
+                        "x": 6,
+                        "y": 21,
+                        "itemId": 105,
+                        "type": "item",
+                        "rare": true
                     }
                 ],
-                tileEffects: [
+                "tileEffects": [
                     {
-                        x: 11,
-                        y: 15,
-                        type: "warp",
-                        toX: 23,
-                        toY: 15,
-                        message: "黒鏡の回廊が左右を入れ替えた。"
+                        "x": 11,
+                        "y": 15,
+                        "type": "warp",
+                        "toX": 23,
+                        "toY": 15,
+                        "message": "黒鏡の回廊が左右を入れ替えた。"
                     },
                     {
-                        x: 23,
-                        y: 15,
-                        type: "warp",
-                        toX: 11,
-                        toY: 15,
-                        message: "黒鏡が元の廊下へ返した。"
+                        "x": 23,
+                        "y": 15,
+                        "type": "warp",
+                        "toX": 11,
+                        "toY": 15,
+                        "message": "黒鏡が元の廊下へ返した。"
                     },
                     {
-                        x: 25,
-                        y: 22,
-                        type: "hunter",
-                        id: "dark_castle_west_patrol",
-                        imageKey: "overlay_dungeon_hunter_shadow",
-                        monsterIds: [
+                        "x": 25,
+                        "y": 22,
+                        "type": "hunter",
+                        "id": "dark_castle_west_patrol",
+                        "imageKey": "overlay_dungeon_hunter_shadow",
+                        "monsterIds": [
                             100068,
                             100069,
                             100073
                         ],
-                        speed: 1,
-                        range: 24,
-                        statMultiplier: 1.3,
-                        message: "西館の巡察兵が迫る！"
+                        "speed": 1,
+                        "range": 24,
+                        "statMultiplier": 1.3,
+                        "message": "西館の巡察兵が迫る！"
                     }
                 ],
-                bosses: [],
-                entryPoint: {
-                    x: 28,
-                    y: 15
+                "bosses": [],
+                "entryPoint": {
+                    "x": 28,
+                    "y": 15
                 },
-                name: "",
-                themeKey: "DARK_CASTLE"
+                "name": "",
+                "themeKey": "DARK_CASTLE"
             },
             {
-                label: "西館3階・結界の間",
-                encounterRank: 71,
-                monsters: [
+                "label": "西館3階・結界の間",
+                "encounterRank": 71,
+                "monsters": [
                     100064,
                     100065,
                     100066
                 ],
-                width: 33,
-                height: 30,
-                impassableTiles: [
+                "width": 33,
+                "height": 30,
+                "impassableTiles": [
                     "K"
                 ],
-                tiles: [
+                "tiles": [
                     "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK",
                     "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
                     "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
@@ -10979,63 +10989,63 @@ const FIXED_DUNGEON_MAPS = {
                     "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
                     "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 16,
-                        y: 26,
-                        toFloor: 2,
-                        targetX: 16,
-                        targetY: 5,
-                        label: "西館2階へ下りる"
+                        "x": 16,
+                        "y": 26,
+                        "toFloor": 2,
+                        "targetX": 16,
+                        "targetY": 5,
+                        "label": "西館2階へ下りる"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 10,
-                        y: 15,
-                        itemId: 7,
-                        type: "item"
+                        "x": 10,
+                        "y": 15,
+                        "itemId": 7,
+                        "type": "item"
                     },
                     {
-                        x: 22,
-                        y: 15,
-                        itemId: 102,
-                        type: "item",
-                        rare: true
+                        "x": 22,
+                        "y": 15,
+                        "itemId": 102,
+                        "type": "item",
+                        "rare": true
                     }
                 ],
-                bosses: [
+                "bosses": [
                     {
-                        x: 16,
-                        y: 7,
-                        monsterId: 301080,
-                        keyRewardColor: "blue",
-                        startEventId: "dark_castle_zeldras_encounter",
-                        storyEventId: "dark_castle_zeldras_clear",
-                        actionLabel: "西の結界へ進む"
+                        "x": 16,
+                        "y": 7,
+                        "monsterId": 301080,
+                        "keyRewardColor": "blue",
+                        "startEventId": "dark_castle_zeldras_encounter",
+                        "storyEventId": "dark_castle_zeldras_clear",
+                        "actionLabel": "西の結界へ進む"
                     }
                 ],
-                entryPoint: {
-                    x: 16,
-                    y: 26
+                "entryPoint": {
+                    "x": 16,
+                    "y": 26
                 },
-                name: "",
-                themeKey: "DARK_CASTLE"
+                "name": "",
+                "themeKey": "DARK_CASTLE"
             },
             {
-                label: "東館2階・風哭廊",
-                encounterRank: 71,
-                monsters: [
+                "label": "東館2階・風哭廊",
+                "encounterRank": 71,
+                "monsters": [
                     100061,
                     100064,
                     100065
                 ],
-                width: 33,
-                height: 30,
-                impassableTiles: [
+                "width": 33,
+                "height": 30,
+                "impassableTiles": [
                     "K"
                 ],
-                tiles: [
+                "tiles": [
                     "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK",
                     "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
                     "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
@@ -11067,95 +11077,95 @@ const FIXED_DUNGEON_MAPS = {
                     "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
                     "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 4,
-                        y: 15,
-                        toFloor: 1,
-                        targetX: 28,
-                        targetY: 15,
-                        label: "本館1階へ下りる"
+                        "x": 4,
+                        "y": 15,
+                        "toFloor": 1,
+                        "targetX": 28,
+                        "targetY": 15,
+                        "label": "本館1階へ下りる"
                     },
                     {
-                        x: 16,
-                        y: 5,
-                        toFloor: 5,
-                        targetX: 16,
-                        targetY: 26,
-                        label: "東館3階へ上がる"
+                        "x": 16,
+                        "y": 5,
+                        "toFloor": 5,
+                        "targetX": 16,
+                        "targetY": 26,
+                        "label": "東館3階へ上がる"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 25,
-                        y: 8,
-                        itemId: 2,
-                        type: "item"
+                        "x": 25,
+                        "y": 8,
+                        "itemId": 2,
+                        "type": "item"
                     },
                     {
-                        x: 25,
-                        y: 22,
-                        itemId: 105,
-                        type: "item",
-                        rare: true
+                        "x": 25,
+                        "y": 22,
+                        "itemId": 105,
+                        "type": "item",
+                        "rare": true
                     }
                 ],
-                tileEffects: [
+                "tileEffects": [
                     {
-                        x: 10,
-                        y: 15,
-                        type: "warp",
-                        toX: 22,
-                        toY: 15,
-                        message: "風哭の門が東西を反転した。"
+                        "x": 10,
+                        "y": 15,
+                        "type": "warp",
+                        "toX": 22,
+                        "toY": 15,
+                        "message": "風哭の門が東西を反転した。"
                     },
                     {
-                        x: 22,
-                        y: 15,
-                        type: "warp",
-                        toX: 10,
-                        toY: 15,
-                        message: "風哭の門が閉じた。"
+                        "x": 22,
+                        "y": 15,
+                        "type": "warp",
+                        "toX": 10,
+                        "toY": 15,
+                        "message": "風哭の門が閉じた。"
                     },
                     {
-                        x: 7,
-                        y: 22,
-                        type: "hunter",
-                        id: "dark_castle_east_patrol",
-                        imageKey: "overlay_dungeon_hunter_shadow",
-                        monsterIds: [
+                        "x": 7,
+                        "y": 22,
+                        "type": "hunter",
+                        "id": "dark_castle_east_patrol",
+                        "imageKey": "overlay_dungeon_hunter_shadow",
+                        "monsterIds": [
                             100068,
                             100070,
                             100075
                         ],
-                        speed: 1,
-                        range: 24,
-                        statMultiplier: 1.3,
-                        message: "東館の追跡者が迫る！"
+                        "speed": 1,
+                        "range": 24,
+                        "statMultiplier": 1.3,
+                        "message": "東館の追跡者が迫る！"
                     }
                 ],
-                bosses: [],
-                entryPoint: {
-                    x: 4,
-                    y: 15
+                "bosses": [],
+                "entryPoint": {
+                    "x": 4,
+                    "y": 15
                 },
-                name: "",
-                themeKey: "DARK_CASTLE"
+                "name": "",
+                "themeKey": "DARK_CASTLE"
             },
             {
-                label: "東館3階・結界の間",
-                encounterRank: 71,
-                monsters: [
+                "label": "東館3階・結界の間",
+                "encounterRank": 71,
+                "monsters": [
                     100064,
                     100066,
                     100067
                 ],
-                width: 33,
-                height: 30,
-                impassableTiles: [
+                "width": 33,
+                "height": 30,
+                "impassableTiles": [
                     "K"
                 ],
-                tiles: [
+                "tiles": [
                     "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK",
                     "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
                     "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
@@ -11187,63 +11197,63 @@ const FIXED_DUNGEON_MAPS = {
                     "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
                     "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 16,
-                        y: 26,
-                        toFloor: 4,
-                        targetX: 16,
-                        targetY: 5,
-                        label: "東館2階へ下りる"
+                        "x": 16,
+                        "y": 26,
+                        "toFloor": 4,
+                        "targetX": 16,
+                        "targetY": 5,
+                        "label": "東館2階へ下りる"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 10,
-                        y: 15,
-                        itemId: 5,
-                        type: "item"
+                        "x": 10,
+                        "y": 15,
+                        "itemId": 5,
+                        "type": "item"
                     },
                     {
-                        x: 22,
-                        y: 15,
-                        itemId: 103,
-                        type: "item",
-                        rare: true
+                        "x": 22,
+                        "y": 15,
+                        "itemId": 103,
+                        "type": "item",
+                        "rare": true
                     }
                 ],
-                bosses: [
+                "bosses": [
                     {
-                        x: 16,
-                        y: 7,
-                        monsterId: 301082,
-                        keyRewardColor: "red",
-                        startEventId: "dark_castle_elmenas_encounter",
-                        storyEventId: "dark_castle_elmenas_clear",
-                        actionLabel: "東の結界へ進む"
+                        "x": 16,
+                        "y": 7,
+                        "monsterId": 301082,
+                        "keyRewardColor": "red",
+                        "startEventId": "dark_castle_elmenas_encounter",
+                        "storyEventId": "dark_castle_elmenas_clear",
+                        "actionLabel": "東の結界へ進む"
                     }
                 ],
-                entryPoint: {
-                    x: 16,
-                    y: 26
+                "entryPoint": {
+                    "x": 16,
+                    "y": 26
                 },
-                name: "",
-                themeKey: "DARK_CASTLE"
+                "name": "",
+                "themeKey": "DARK_CASTLE"
             },
             {
-                label: "本館2階・夢幻回廊",
-                encounterRank: 76,
-                monsters: [
+                "label": "本館2階・夢幻回廊",
+                "encounterRank": 76,
+                "monsters": [
                     100068,
                     100069,
                     100070
                 ],
-                width: 33,
-                height: 30,
-                impassableTiles: [
+                "width": 33,
+                "height": 30,
+                "impassableTiles": [
                     "K"
                 ],
-                tiles: [
+                "tiles": [
                     "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK",
                     "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
                     "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
@@ -11275,105 +11285,105 @@ const FIXED_DUNGEON_MAPS = {
                     "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
                     "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 16,
-                        y: 26,
-                        toFloor: 1,
-                        targetX: 16,
-                        targetY: 5,
-                        label: "本館1階へ下りる"
+                        "x": 16,
+                        "y": 26,
+                        "toFloor": 1,
+                        "targetX": 16,
+                        "targetY": 5,
+                        "label": "本館1階へ下りる"
                     },
                     {
-                        x: 16,
-                        y: 5,
-                        toFloor: 7,
-                        targetX: 16,
-                        targetY: 26,
-                        label: "本館3階へ上がる"
+                        "x": 16,
+                        "y": 5,
+                        "toFloor": 7,
+                        "targetX": 16,
+                        "targetY": 26,
+                        "label": "本館3階へ上がる"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 6,
-                        y: 6,
-                        itemId: 6,
-                        type: "item"
+                        "x": 6,
+                        "y": 6,
+                        "itemId": 6,
+                        "type": "item"
                     },
                     {
-                        x: 25,
-                        y: 8,
-                        itemId: 104,
-                        type: "item",
-                        rare: true
+                        "x": 25,
+                        "y": 8,
+                        "itemId": 104,
+                        "type": "item",
+                        "rare": true
                     }
                 ],
-                tileEffects: [
+                "tileEffects": [
                     {
-                        x: 9,
-                        y: 10,
-                        type: "warp",
-                        toX: 23,
-                        toY: 20,
-                        message: "夢幻回廊が景色を裏返した。"
+                        "x": 9,
+                        "y": 10,
+                        "type": "warp",
+                        "toX": 23,
+                        "toY": 20,
+                        "message": "夢幻回廊が景色を裏返した。"
                     },
                     {
-                        x: 23,
-                        y: 20,
-                        type: "warp",
-                        toX: 9,
-                        toY: 10,
-                        message: "夢の継ぎ目から戻った。"
+                        "x": 23,
+                        "y": 20,
+                        "type": "warp",
+                        "toX": 9,
+                        "toY": 10,
+                        "message": "夢の継ぎ目から戻った。"
                     },
                     {
-                        x: 25,
-                        y: 9,
-                        type: "hunter",
-                        id: "dark_castle_dream_guard",
-                        imageKey: "overlay_dungeon_hunter_shadow",
-                        monsterIds: [
+                        "x": 25,
+                        "y": 9,
+                        "type": "hunter",
+                        "id": "dark_castle_dream_guard",
+                        "imageKey": "overlay_dungeon_hunter_shadow",
+                        "monsterIds": [
                             100073,
                             100076,
                             100077
                         ],
-                        speed: 0.5,
-                        range: 26,
-                        statMultiplier: 1.35,
-                        message: "夢幻の番人が迫る！"
+                        "speed": 0.5,
+                        "range": 26,
+                        "statMultiplier": 1.35,
+                        "message": "夢幻の番人が迫る！"
                     }
                 ],
-                bosses: [
+                "bosses": [
                     {
-                        x: 16,
-                        y: 13,
-                        monsterId: 301081,
-                        keyRewardColor: "gold",
-                        startEventId: "dark_castle_belet_elm_encounter",
-                        storyEventId: "dark_castle_belet_elm_clear",
-                        actionLabel: "夢幻回廊の奥へ進む"
+                        "x": 16,
+                        "y": 13,
+                        "monsterId": 301081,
+                        "keyRewardColor": "gold",
+                        "startEventId": "dark_castle_belet_elm_encounter",
+                        "storyEventId": "dark_castle_belet_elm_clear",
+                        "actionLabel": "夢幻回廊の奥へ進む"
                     }
                 ],
-                entryPoint: {
-                    x: 16,
-                    y: 26
+                "entryPoint": {
+                    "x": 16,
+                    "y": 26
                 },
-                name: "",
-                themeKey: "DARK_CASTLE"
+                "name": "",
+                "themeKey": "DARK_CASTLE"
             },
             {
-                label: "本館3階・謁見の間",
-                encounterRank: 81,
-                monsters: [
+                "label": "本館3階・謁見の間",
+                "encounterRank": 81,
+                "monsters": [
                     100073,
                     100074,
                     100075
                 ],
-                width: 33,
-                height: 30,
-                impassableTiles: [
+                "width": 33,
+                "height": 30,
+                "impassableTiles": [
                     "K"
                 ],
-                tiles: [
+                "tiles": [
                     "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK",
                     "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
                     "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
@@ -11405,124 +11415,126 @@ const FIXED_DUNGEON_MAPS = {
                     "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
                     "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 16,
-                        y: 26,
-                        toFloor: 6,
-                        targetX: 16,
-                        targetY: 5,
-                        label: "本館2階へ下りる"
+                        "x": 16,
+                        "y": 26,
+                        "toFloor": 6,
+                        "targetX": 16,
+                        "targetY": 5,
+                        "label": "本館2階へ下りる"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 10,
-                        y: 22,
-                        itemId: 7,
-                        type: "item"
+                        "x": 10,
+                        "y": 22,
+                        "itemId": 7,
+                        "type": "item"
                     },
                     {
-                        x: 11,
-                        y: 14,
-                        itemId: 100,
-                        type: "item",
-                        rare: true
+                        "x": 11,
+                        "y": 14,
+                        "itemId": 100,
+                        "type": "item",
+                        "rare": true
                     },
                     {
-                        x: 22,
-                        y: 22,
-                        itemId: 105,
-                        type: "item",
-                        rare: true
+                        "x": 22,
+                        "y": 22,
+                        "itemId": 105,
+                        "type": "item",
+                        "rare": true
                     }
                 ],
-                bosses: [
+                "bosses": [
                     {
-                        x: 16,
-                        y: 7,
-                        monsterId: 301100,
-                        startEventId: "dark_castle_zenon_encounter",
-                        storyEventId: "dark_castle_clear",
-                        actionLabel: "謁見の間へ進む"
+                        "x": 16,
+                        "y": 7,
+                        "monsterId": 301100,
+                        "startEventId": "dark_castle_zenon_encounter",
+                        "storyEventId": "dark_castle_clear",
+                        "actionLabel": "謁見の間へ進む"
                     }
                 ],
-                mapActions: [
+                "mapActions": [
                     {
-                        x: 21,
-                        y: 14,
-                        label: "玉座の間を見渡す",
-                        log: "滅びた玉座の前で、赤い空だけが静かに揺れている。",
-                        type: "log",
-                        imageKey: "overlay_dungeon_event"
+                        "x": 21,
+                        "y": 14,
+                        "label": "玉座の間を見渡す",
+                        "log": "滅びた玉座の前で、赤い空だけが静かに揺れている。",
+                        "type": "log",
+                        "imageKey": "overlay_dungeon_event"
                     }
                 ],
-                healSprings: [
+                "healSprings": [
                     {
-                        x: 21,
-                        y: 14
+                        "x": 21,
+                        "y": 14
                     }
                 ],
-                entryPoint: {
-                    x: 16,
-                    y: 26
+                "entryPoint": {
+                    "x": 16,
+                    "y": 26
                 },
-                name: "",
-                themeKey: "DARK_CASTLE",
-                floorDecorations: [
+                "name": "",
+                "themeKey": "DARK_CASTLE",
+                "floorDecorations": [
                     {
-                        authoredPlacementId: "prism-pedestal-dark",
-                        type: "image",
-                        imageKey: "prism_pedestal_dark",
-                        x: 16,
-                        y: 5,
-                        width: 1,
-                        height: 1,
-                        drawScale: 2.7,
-                        alpha: 0.96,
-                        shimmer: true,
-                        blocking: true,
-                        baseTile: "T"
+                        "authoredPlacementId": "prism-pedestal-dark",
+                        "type": "image",
+                        "imageKey": "prism_pedestal_dark",
+                        "x": 16,
+                        "y": 5,
+                        "width": 1,
+                        "height": 1,
+                        "drawScale": 2.7,
+                        "alpha": 0.96,
+                        "shimmer": true,
+                        "shimmerDuration": 1050,
+                        "renderLayer": "object",
+                        "blocking": true,
+                        "baseTile": "T"
                     },
                     {
-                        authoredPlacementId: "carpet-dark-final",
-                        type: "castle_carpet",
-                        imageKey: null,
-                        x: 15,
-                        y: 13,
-                        width: 3,
-                        height: 12,
-                        blocking: false,
-                        baseTile: "T",
-                        allowedBaseTiles: null
+                        "authoredPlacementId": "carpet-dark-final",
+                        "type": "castle_carpet",
+                        "imageKey": null,
+                        "x": 14,
+                        "y": 4,
+                        "width": 5,
+                        "height": 6,
+                        "blocking": false,
+                        "baseTile": "T",
+                        "allowedBaseTiles": null
                     }
                 ]
             }
         ]
     },
-    FOREST_WIND_HOLE: {
-        name: "森の風穴",
-        themeKey: "WIND_HOLE",
-        rank: 8,
-        encounterRank: 8,
-        battleBg: "battle_bg_wind_hole",
-        entryPoint: {
-            x: 12,
-            y: 19
+    "FOREST_WIND_HOLE": {
+        "name": "森の風穴",
+        "themeKey": "WIND_HOLE",
+        "rank": 8,
+        "encounterRank": 8,
+        "battleBg": "battle_bg_wind_hole",
+        "entryPoint": {
+            "x": 12,
+            "y": 19
         },
-        floors: [
+        "floors": [
             {
-                label: "風鳴りの洞",
-                encounterRank: 8,
-                monsters: [
+                "label": "風鳴りの洞",
+                "encounterRank": 8,
+                "monsters": [
                     100006,
                     100007,
                     100008,
                     100009
                 ],
-                width: 25,
-                height: 21,
-                tiles: [
+                "width": 25,
+                "height": 21,
+                "tiles": [
                     "WWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWTTTWWWTTTWWWWWWWTTTWWWW",
@@ -11545,100 +11557,100 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWTTTTWWWWWSWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWW"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 12,
-                        y: 19,
-                        to: "EXIT",
-                        label: "外へ出る"
+                        "x": 12,
+                        "y": 19,
+                        "to": "EXIT",
+                        "label": "外へ出る"
                     },
                     {
-                        x: 19,
-                        y: 3,
-                        toFloor: 2,
-                        targetX: 12,
-                        targetY: 18,
-                        label: "泉の奥へ"
+                        "x": 19,
+                        "y": 3,
+                        "toFloor": 2,
+                        "targetX": 12,
+                        "targetY": 18,
+                        "label": "泉の奥へ"
                     }
                 ],
-                tileEffects: [
+                "tileEffects": [
                     {
-                        x: 5,
-                        y: 9,
-                        type: "warp",
-                        toX: 18,
-                        toY: 14,
-                        message: "風穴の渦に運ばれた。"
+                        "x": 5,
+                        "y": 9,
+                        "type": "warp",
+                        "toX": 18,
+                        "toY": 14,
+                        "message": "風穴の渦に運ばれた。"
                     },
                     {
-                        x: 18,
-                        y: 14,
-                        type: "warp",
-                        toX: 5,
-                        toY: 9,
-                        message: "風穴の渦が巻き戻った。"
+                        "x": 18,
+                        "y": 14,
+                        "type": "warp",
+                        "toX": 5,
+                        "toY": 9,
+                        "message": "風穴の渦が巻き戻った。"
                     },
                     {
-                        x: 4,
-                        y: 4,
-                        type: "hunter",
-                        id: "wind_hole_stalker",
-                        imageKey: "overlay_dungeon_hunter_forest",
-                        monsterIds: [
+                        "x": 4,
+                        "y": 4,
+                        "type": "hunter",
+                        "id": "wind_hole_stalker",
+                        "imageKey": "overlay_dungeon_hunter_forest",
+                        "monsterIds": [
                             100010,
                             100014,
                             100015
                         ],
-                        speed: 0.5,
-                        range: 18,
-                        statMultiplier: 1.22,
-                        message: "黒風の魔物が迫る！"
+                        "speed": 0.5,
+                        "range": 18,
+                        "statMultiplier": 1.22,
+                        "message": "黒風の魔物が迫る！"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 9,
-                        y: 10,
-                        itemId: 4,
-                        type: "item"
+                        "x": 9,
+                        "y": 10,
+                        "itemId": 4,
+                        "type": "item"
                     },
                     {
-                        x: 3,
-                        y: 3,
-                        itemId: 100,
-                        type: "item",
-                        rare: true
+                        "x": 3,
+                        "y": 3,
+                        "itemId": 100,
+                        "type": "item",
+                        "rare": true
                     }
                 ],
-                mapActions: [
+                "mapActions": [
                     {
-                        x: 12,
-                        y: 9,
-                        label: "風の通り道を聞く",
-                        log: "洞の奥へ、低く澄んだ風の音が吸い込まれていく。",
-                        type: "log",
-                        imageKey: "overlay_dungeon_event",
-                        blocksMovement: false
+                        "x": 12,
+                        "y": 9,
+                        "label": "風の通り道を聞く",
+                        "log": "洞の奥へ、低く澄んだ風の音が吸い込まれていく。",
+                        "type": "log",
+                        "imageKey": "overlay_dungeon_event",
+                        "blocksMovement": false
                     }
                 ],
-                entryPoint: {
-                    x: 12,
-                    y: 18
+                "entryPoint": {
+                    "x": 12,
+                    "y": 18
                 },
-                name: "",
-                themeKey: "WIND_HOLE"
+                "name": "",
+                "themeKey": "WIND_HOLE"
             },
             {
-                label: "妖精の泉",
-                encounterRank: 10,
-                monsters: [
+                "label": "妖精の泉",
+                "encounterRank": 10,
+                "monsters": [
                     100008,
                     100009,
                     100010
                 ],
-                width: 25,
-                height: 21,
-                tiles: [
+                "width": 25,
+                "height": 21,
+                "tiles": [
                     "WWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWTTTWWWWWWWWWWW",
                     "WWWWWWWWWWTTTTTWWWTTTWWWW",
@@ -11661,97 +11673,97 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWWWTTTWWWWWWTTTWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWW"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 12,
-                        y: 18,
-                        toFloor: 1,
-                        targetX: 19,
-                        targetY: 4,
-                        label: "入口へ戻る"
+                        "x": 12,
+                        "y": 18,
+                        "toFloor": 1,
+                        "targetX": 19,
+                        "targetY": 4,
+                        "label": "入口へ戻る"
                     }
                 ],
-                tileEffects: [
+                "tileEffects": [
                     {
-                        x: 4,
-                        y: 4,
-                        type: "warp",
-                        toX: 20,
-                        toY: 4,
-                        message: "妖精風が泉の反対岸へ運んだ。"
+                        "x": 4,
+                        "y": 4,
+                        "type": "warp",
+                        "toX": 20,
+                        "toY": 4,
+                        "message": "妖精風が泉の反対岸へ運んだ。"
                     },
                     {
-                        x: 20,
-                        y: 4,
-                        type: "warp",
-                        toX: 4,
-                        toY: 4,
-                        message: "妖精風が泉を巡った。"
+                        "x": 20,
+                        "y": 4,
+                        "type": "warp",
+                        "toX": 4,
+                        "toY": 4,
+                        "message": "妖精風が泉を巡った。"
                     }
                 ],
-                bosses: [
+                "bosses": [
                     {
-                        x: 12,
-                        y: 4,
-                        monsterId: 301011,
-                        storyEventId: "quest_fire_holy_water_clear",
-                        actionLabel: "妖精を守る",
-                        inspectLog: "妖精の泉で、闇をまとった魔物が小さな光を追い詰めている。"
+                        "x": 12,
+                        "y": 4,
+                        "monsterId": 301011,
+                        "storyEventId": "quest_fire_holy_water_clear",
+                        "actionLabel": "妖精を守る",
+                        "inspectLog": "妖精の泉で、闇をまとった魔物が小さな光を追い詰めている。"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 3,
-                        y: 14,
-                        itemId: 4,
-                        type: "item"
+                        "x": 3,
+                        "y": 14,
+                        "itemId": 4,
+                        "type": "item"
                     },
                     {
-                        x: 21,
-                        y: 18,
-                        itemId: 101,
-                        type: "item",
-                        rare: true
+                        "x": 21,
+                        "y": 18,
+                        "itemId": 101,
+                        "type": "item",
+                        "rare": true
                     }
                 ],
-                healSprings: [
+                "healSprings": [
                     {
-                        x: 12,
-                        y: 1
+                        "x": 12,
+                        "y": 1
                     }
                 ],
-                entryPoint: {
-                    x: 12,
-                    y: 18
+                "entryPoint": {
+                    "x": 12,
+                    "y": 18
                 },
-                name: "",
-                themeKey: "WIND_HOLE"
+                "name": "",
+                "themeKey": "WIND_HOLE"
             }
         ]
     },
-    CRENA_LIMESTONE_CAVE: {
-        name: "クレナ鍾乳洞",
-        themeKey: "CRENA_CAVE",
-        rank: 23,
-        encounterRank: 23,
-        battleBg: "battle_bg_crena",
-        entryPoint: {
-            x: 13,
-            y: 21
+    "CRENA_LIMESTONE_CAVE": {
+        "name": "クレナ鍾乳洞",
+        "themeKey": "CRENA_CAVE",
+        "rank": 23,
+        "encounterRank": 23,
+        "battleBg": "battle_bg_crena",
+        "entryPoint": {
+            "x": 13,
+            "y": 21
         },
-        floors: [
+        "floors": [
             {
-                label: "地下1階・蒼滴の道",
-                encounterRank: 23,
-                monsters: [
+                "label": "地下1階・蒼滴の道",
+                "encounterRank": 23,
+                "monsters": [
                     100020,
                     100021,
                     100022,
                     100023
                 ],
-                width: 27,
-                height: 23,
-                tiles: [
+                "width": 27,
+                "height": 23,
+                "tiles": [
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWTTTWWW",
@@ -11776,104 +11788,104 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWWWWWTWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWSWWWWWWWWWWWWW"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 13,
-                        y: 21,
-                        to: "EXIT",
-                        label: "外へ出る"
+                        "x": 13,
+                        "y": 21,
+                        "to": "EXIT",
+                        "label": "外へ出る"
                     },
                     {
-                        x: 22,
-                        y: 3,
-                        toFloor: 2,
-                        targetX: 4,
-                        targetY: 20,
-                        label: "地下2階へ下りる"
+                        "x": 22,
+                        "y": 3,
+                        "toFloor": 2,
+                        "targetX": 4,
+                        "targetY": 20,
+                        "label": "地下2階へ下りる"
                     }
                 ],
-                tileEffects: [
+                "tileEffects": [
                     {
-                        x: 8,
-                        y: 10,
-                        type: "warp",
-                        toX: 19,
-                        toY: 9,
-                        message: "結晶光が鍾乳洞の反対側へ運んだ。"
+                        "x": 8,
+                        "y": 10,
+                        "type": "warp",
+                        "toX": 19,
+                        "toY": 9,
+                        "message": "結晶光が鍾乳洞の反対側へ運んだ。"
                     },
                     {
-                        x: 19,
-                        y: 9,
-                        type: "warp",
-                        toX: 8,
-                        toY: 10,
-                        message: "結晶光が元の足場へ引き戻した。"
+                        "x": 19,
+                        "y": 9,
+                        "type": "warp",
+                        "toX": 8,
+                        "toY": 10,
+                        "message": "結晶光が元の足場へ引き戻した。"
                     },
                     {
-                        x: 6,
-                        y: 18,
-                        type: "hunter",
-                        id: "crena_claw",
-                        imageKey: "overlay_dungeon_hunter_sea",
-                        monsterIds: [
+                        "x": 6,
+                        "y": 18,
+                        "type": "hunter",
+                        "id": "crena_claw",
+                        "imageKey": "overlay_dungeon_hunter_sea",
+                        "monsterIds": [
                             100028,
                             100030,
                             100032
                         ],
-                        speed: 0.5,
-                        range: 22,
-                        statMultiplier: 1.25,
-                        message: "爪痕の主が襲いかかる！"
+                        "speed": 0.5,
+                        "range": 22,
+                        "statMultiplier": 1.25,
+                        "message": "爪痕の主が襲いかかる！"
                     }
                 ],
-                mapActions: [
+                "mapActions": [
                     {
-                        x: 19,
-                        y: 17,
-                        label: "王国兵に話す",
-                        log: "王国軍が鍾乳洞を調査中だ。安全が確認できるまで、これ以上先へは通せない。",
-                        type: "log",
-                        imageKey: "overlay_npc_dark_soldier",
-                        baseTile: "T",
-                        missingFlag: "crenaRouteKnown",
-                        interactFromAdjacent: true,
-                        minimapColor: "#8f99a8"
+                        "x": 19,
+                        "y": 17,
+                        "label": "王国兵に話す",
+                        "log": "王国軍が鍾乳洞を調査中だ。安全が確認できるまで、これ以上先へは通せない。",
+                        "type": "log",
+                        "imageKey": "overlay_npc_dark_soldier",
+                        "baseTile": "T",
+                        "missingFlag": "crenaRouteKnown",
+                        "interactFromAdjacent": true,
+                        "minimapColor": "#8f99a8"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 3,
-                        y: 4,
-                        itemId: 4,
-                        type: "item"
+                        "x": 3,
+                        "y": 4,
+                        "itemId": 4,
+                        "type": "item"
                     },
                     {
-                        x: 23,
-                        y: 16,
-                        itemId: 101,
-                        type: "item",
-                        rare: true
+                        "x": 23,
+                        "y": 16,
+                        "itemId": 101,
+                        "type": "item",
+                        "rare": true
                     }
                 ],
-                entryPoint: {
-                    x: 13,
-                    y: 20
+                "entryPoint": {
+                    "x": 13,
+                    "y": 20
                 },
-                name: "",
-                themeKey: "CRENA_CAVE"
+                "name": "",
+                "themeKey": "CRENA_CAVE"
             },
             {
-                label: "地下2階・青の結晶の間",
-                encounterRank: 25,
-                monsters: [
+                "label": "地下2階・青の結晶の間",
+                "encounterRank": 25,
+                "monsters": [
                     100022,
                     100023,
                     100024,
                     100025
                 ],
-                width: 27,
-                height: 23,
-                tiles: [
+                "width": 27,
+                "height": 23,
+                "tiles": [
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWW",
@@ -11898,103 +11910,103 @@ const FIXED_DUNGEON_MAPS = {
                     "WWTTTTTTWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWW"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 4,
-                        y: 20,
-                        toFloor: 1,
-                        targetX: 22,
-                        targetY: 3,
-                        label: "地下1階へ上がる"
+                        "x": 4,
+                        "y": 20,
+                        "toFloor": 1,
+                        "targetX": 22,
+                        "targetY": 3,
+                        "label": "地下1階へ上がる"
                     },
                     {
-                        x: 23,
-                        y: 10,
-                        toFloor: 3,
-                        targetX: 3,
-                        targetY: 22,
-                        label: "地下3階へ下りる",
-                        requiredFlag: "darkCastleCleared",
-                        lockedLabel: "結界を調べる",
-                        lockedLog: "巧妙な結界に阻まれている。"
+                        "x": 23,
+                        "y": 10,
+                        "toFloor": 3,
+                        "targetX": 3,
+                        "targetY": 22,
+                        "label": "地下3階へ下りる",
+                        "requiredFlag": "darkCastleCleared",
+                        "lockedLabel": "結界を調べる",
+                        "lockedLog": "巧妙な結界に阻まれている。"
                     }
                 ],
-                tileEffects: [
+                "tileEffects": [
                     {
-                        x: 3,
-                        y: 5,
-                        type: "warp",
-                        toX: 24,
-                        toY: 14,
-                        message: "結晶光が空間を曲げた。"
+                        "x": 3,
+                        "y": 5,
+                        "type": "warp",
+                        "toX": 24,
+                        "toY": 14,
+                        "message": "結晶光が空間を曲げた。"
                     },
                     {
-                        x: 24,
-                        y: 14,
-                        type: "warp",
-                        toX: 3,
-                        toY: 5,
-                        message: "結晶光が戻り道を開いた。"
+                        "x": 24,
+                        "y": 14,
+                        "type": "warp",
+                        "toX": 3,
+                        "toY": 5,
+                        "message": "結晶光が戻り道を開いた。"
                     }
                 ],
-                mapActions: [
+                "mapActions": [
                     {
-                        x: 20,
-                        y: 9,
-                        label: "リーシアに話す",
-                        log: "リーシアが結界の前で奥の魔力を探っている。",
-                        type: "quest",
-                        questId: "licia_crena_depths",
-                        imageKey: "overlay_companion_licia",
-                        hideWhenQuestAccepted: true,
-                        lockedText: "闇の加護がなければ、この結界の奥は見えない。"
+                        "x": 20,
+                        "y": 9,
+                        "label": "リーシアに話す",
+                        "log": "リーシアが結界の前で奥の魔力を探っている。",
+                        "type": "quest",
+                        "questId": "licia_crena_depths",
+                        "imageKey": "overlay_companion_licia",
+                        "hideWhenQuestAccepted": true,
+                        "lockedText": "闇の加護がなければ、この結界の奥は見えない。"
                     }
                 ],
-                bosses: [
+                "bosses": [
                     {
-                        x: 13,
-                        y: 5,
-                        monsterId: 301021,
-                        storyEventId: "quest_water_blue_crystal_clear",
-                        actionLabel: "結晶を守る魔物に挑む",
-                        inspectLog: "青い結晶の前に、鋭い爪痕を残した魔物が佇んでいる。"
+                        "x": 13,
+                        "y": 5,
+                        "monsterId": 301021,
+                        "storyEventId": "quest_water_blue_crystal_clear",
+                        "actionLabel": "結晶を守る魔物に挑む",
+                        "inspectLog": "青い結晶の前に、鋭い爪痕を残した魔物が佇んでいる。"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 3,
-                        y: 10,
-                        itemId: 4,
-                        type: "item"
+                        "x": 3,
+                        "y": 10,
+                        "itemId": 4,
+                        "type": "item"
                     },
                     {
-                        x: 22,
-                        y: 18,
-                        itemId: 102,
-                        type: "item",
-                        rare: true
+                        "x": 22,
+                        "y": 18,
+                        "itemId": 102,
+                        "type": "item",
+                        "rare": true
                     }
                 ],
-                healSprings: [],
-                entryPoint: {
-                    x: 4,
-                    y: 20
+                "healSprings": [],
+                "entryPoint": {
+                    "x": 4,
+                    "y": 20
                 },
-                name: "",
-                themeKey: "CRENA_CAVE"
+                "name": "",
+                "themeKey": "CRENA_CAVE"
             },
             {
-                label: "地下3階・結晶裏路",
-                encounterRank: 91,
-                monsters: [
+                "label": "地下3階・結晶裏路",
+                "encounterRank": 91,
+                "monsters": [
                     100082,
                     100083,
                     100084,
                     100085
                 ],
-                enemyBoost: {
-                    statMultiplier: 1.08,
-                    elmRes: {
+                "enemyBoost": {
+                    "statMultiplier": 1.08,
+                    "elmRes": {
                         "火": 35,
                         "水": 45,
                         "風": 35,
@@ -12002,18 +12014,18 @@ const FIXED_DUNGEON_MAPS = {
                         "光": 35,
                         "闇": 60
                     },
-                    resists: {
-                        Poison: 60,
-                        Shock: 50,
-                        Fear: 50,
-                        InstantDeath: 60,
-                        Debuff: 60,
-                        Seal: 60
+                    "resists": {
+                        "Poison": 60,
+                        "Shock": 50,
+                        "Fear": 50,
+                        "InstantDeath": 60,
+                        "Debuff": 60,
+                        "Seal": 60
                     }
                 },
-                width: 29,
-                height: 25,
-                tiles: [
+                "width": 29,
+                "height": 25,
+                "tiles": [
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
@@ -12040,187 +12052,187 @@ const FIXED_DUNGEON_MAPS = {
                     "WWTTTWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 3,
-                        y: 22,
-                        toFloor: 2,
-                        targetX: 23,
-                        targetY: 10,
-                        label: "地下2階へ上がる"
+                        "x": 3,
+                        "y": 22,
+                        "toFloor": 2,
+                        "targetX": 23,
+                        "targetY": 10,
+                        "label": "地下2階へ上がる"
                     },
                     {
-                        x: 14,
-                        y: 4,
-                        toFloor: 4,
-                        targetX: 2,
-                        targetY: 22,
-                        label: "地下4階へ下りる"
+                        "x": 14,
+                        "y": 4,
+                        "toFloor": 4,
+                        "targetX": 2,
+                        "targetY": 22,
+                        "label": "地下4階へ下りる"
                     }
                 ],
-                tileEffects: [
+                "tileEffects": [
                     {
-                        type: "poison",
-                        rects: [
+                        "type": "poison",
+                        "rects": [
                             {
-                                x1: 3,
-                                y1: 10,
-                                x2: 9,
-                                y2: 12
+                                "x1": 3,
+                                "y1": 10,
+                                "x2": 9,
+                                "y2": 12
                             },
                             {
-                                x1: 20,
-                                y1: 8,
-                                x2: 26,
-                                y2: 12
+                                "x1": 20,
+                                "y1": 8,
+                                "x2": 26,
+                                "y2": 12
                             }
                         ],
-                        damageRate: 0.09,
-                        message: "結界毒が体を蝕む！"
+                        "damageRate": 0.09,
+                        "message": "結界毒が体を蝕む！"
                     },
                     {
-                        type: "ice",
-                        rects: [
+                        "type": "ice",
+                        "rects": [
                             {
-                                x1: 4,
-                                y1: 15,
-                                x2: 24,
-                                y2: 15
+                                "x1": 4,
+                                "y1": 15,
+                                "x2": 24,
+                                "y2": 15
                             },
                             {
-                                x1: 14,
-                                y1: 7,
-                                x2: 14,
-                                y2: 18
+                                "x1": 14,
+                                "y1": 7,
+                                "x2": 14,
+                                "y2": 18
                             }
                         ],
-                        excludePoints: [
+                        "excludePoints": [
                             {
-                                x: 14,
-                                y: 15
+                                "x": 14,
+                                "y": 15
                             },
                             {
-                                x: 24,
-                                y: 15
+                                "x": 24,
+                                "y": 15
                             }
                         ],
-                        maxSlide: 26,
-                        message: "結界の膜を滑った。"
+                        "maxSlide": 26,
+                        "message": "結界の膜を滑った。"
                     },
                     {
-                        x: 24,
-                        y: 19,
-                        type: "hunter",
-                        id: "crena_barrier_guard",
-                        imageKey: "overlay_dungeon_hunter_shadow",
-                        monsterIds: [
+                        "x": 24,
+                        "y": 19,
+                        "type": "hunter",
+                        "id": "crena_barrier_guard",
+                        "imageKey": "overlay_dungeon_hunter_shadow",
+                        "monsterIds": [
                             100086,
                             100089,
                             100093
                         ],
-                        speed: 0.7,
-                        range: 28,
-                        statMultiplier: 1.32,
-                        message: "結界守が迫る！"
+                        "speed": 0.7,
+                        "range": 28,
+                        "statMultiplier": 1.32,
+                        "message": "結界守が迫る！"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 4,
-                        y: 11,
-                        itemId: 103,
-                        type: "item",
-                        rare: true
+                        "x": 4,
+                        "y": 11,
+                        "itemId": 103,
+                        "type": "item",
+                        "rare": true
                     },
                     {
-                        x: 25,
-                        y: 9,
-                        itemId: 105,
-                        type: "item",
-                        rare: true
+                        "x": 25,
+                        "y": 9,
+                        "itemId": 105,
+                        "type": "item",
+                        "rare": true
                     }
                 ],
-                mapActions: [
+                "mapActions": [
                     {
-                        x: 5,
-                        y: 6,
-                        label: "上層小部屋の封晶を砕く",
-                        type: "switchGate",
-                        gateId: "crena_barrier_gate",
-                        switchId: "sw",
-                        requiredSwitches: [
+                        "x": 5,
+                        "y": 6,
+                        "label": "上層小部屋の封晶を砕く",
+                        "type": "switchGate",
+                        "gateId": "crena_barrier_gate",
+                        "switchId": "sw",
+                        "requiredSwitches": [
                             "sw",
                             "ne"
                         ],
-                        imageKey: "maplib_cave_purple_crystals",
-                        imageColor: "#c88cff",
-                        minimapColor: "#c88cff",
-                        blocksMovement: true,
-                        interactFromAdjacent: true,
-                        opens: [
+                        "imageKey": "maplib_cave_purple_crystals",
+                        "imageColor": "#c88cff",
+                        "minimapColor": "#c88cff",
+                        "blocksMovement": true,
+                        "interactFromAdjacent": true,
+                        "opens": [
                             {
-                                x: 14,
-                                y: 10,
-                                tile: "T",
-                                effectType: "ice",
-                                maxSlide: 6,
-                                effectMessage: "封晶から伸びた氷床を滑った。"
+                                "x": 14,
+                                "y": 10,
+                                "tile": "T",
+                                "effectType": "ice",
+                                "maxSlide": 6,
+                                "effectMessage": "封晶から伸びた氷床を滑った。"
                             }
                         ],
-                        log: "封晶のひとつにヒビが入った。",
-                        partialMessage: "中央の結界が薄れた。もう一つの封晶も砕く必要がある。",
-                        openMessage: "二つの封晶が砕け、中央の壁が一枚の氷床へ変わった。"
+                        "log": "封晶のひとつにヒビが入った。",
+                        "partialMessage": "中央の結界が薄れた。もう一つの封晶も砕く必要がある。",
+                        "openMessage": "二つの封晶が砕け、中央の壁が一枚の氷床へ変わった。"
                     },
                     {
-                        x: 24,
-                        y: 20,
-                        label: "南東の封晶を砕く",
-                        type: "switchGate",
-                        gateId: "crena_barrier_gate",
-                        switchId: "ne",
-                        requiredSwitches: [
+                        "x": 24,
+                        "y": 20,
+                        "label": "南東の封晶を砕く",
+                        "type": "switchGate",
+                        "gateId": "crena_barrier_gate",
+                        "switchId": "ne",
+                        "requiredSwitches": [
                             "sw",
                             "ne"
                         ],
-                        imageKey: "maplib_cave_purple_crystals",
-                        imageColor: "#c88cff",
-                        minimapColor: "#c88cff",
-                        blocksMovement: true,
-                        interactFromAdjacent: true,
-                        opens: [
+                        "imageKey": "maplib_cave_purple_crystals",
+                        "imageColor": "#c88cff",
+                        "minimapColor": "#c88cff",
+                        "blocksMovement": true,
+                        "interactFromAdjacent": true,
+                        "opens": [
                             {
-                                x: 14,
-                                y: 10,
-                                tile: "T",
-                                effectType: "ice",
-                                maxSlide: 6,
-                                effectMessage: "封晶から伸びた氷床を滑った。"
+                                "x": 14,
+                                "y": 10,
+                                "tile": "T",
+                                "effectType": "ice",
+                                "maxSlide": 6,
+                                "effectMessage": "封晶から伸びた氷床を滑った。"
                             }
                         ],
-                        log: "封晶のひとつを砕いた。",
-                        partialMessage: "中央の結界が薄れた。もう一つの封晶も砕く必要がある。",
-                        openMessage: "二つの封晶が砕け、中央の壁が一枚の氷床へ変わった。"
+                        "log": "封晶のひとつを砕いた。",
+                        "partialMessage": "中央の結界が薄れた。もう一つの封晶も砕く必要がある。",
+                        "openMessage": "二つの封晶が砕け、中央の壁が一枚の氷床へ変わった。"
                     }
                 ],
-                entryPoint: {
-                    x: 2,
-                    y: 22
+                "entryPoint": {
+                    "x": 2,
+                    "y": 22
                 },
-                name: "",
-                themeKey: "CRENA_CAVE"
+                "name": "",
+                "themeKey": "CRENA_CAVE"
             },
             {
-                label: "地下4階・結界核",
-                encounterRank: 101,
-                monsters: [
+                "label": "地下4階・結界核",
+                "encounterRank": 101,
+                "monsters": [
                     100091,
                     100092,
                     100093,
                     100094
                 ],
-                enemyBoost: {
-                    statMultiplier: 1.1,
-                    elmRes: {
+                "enemyBoost": {
+                    "statMultiplier": 1.1,
+                    "elmRes": {
                         "火": 45,
                         "水": 55,
                         "風": 45,
@@ -12228,18 +12240,18 @@ const FIXED_DUNGEON_MAPS = {
                         "光": 45,
                         "闇": 80
                     },
-                    resists: {
-                        Poison: 70,
-                        Shock: 60,
-                        Fear: 60,
-                        InstantDeath: 80,
-                        Debuff: 70,
-                        Seal: 70
+                    "resists": {
+                        "Poison": 70,
+                        "Shock": 60,
+                        "Fear": 60,
+                        "InstantDeath": 80,
+                        "Debuff": 70,
+                        "Seal": 70
                     }
                 },
-                width: 29,
-                height: 25,
-                tiles: [
+                "width": 29,
+                "height": 25,
+                "tiles": [
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
@@ -12266,118 +12278,118 @@ const FIXED_DUNGEON_MAPS = {
                     "WWTTTWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 2,
-                        y: 22,
-                        toFloor: 3,
-                        targetX: 14,
-                        targetY: 4,
-                        label: "地下3階へ上がる"
+                        "x": 2,
+                        "y": 22,
+                        "toFloor": 3,
+                        "targetX": 14,
+                        "targetY": 4,
+                        "label": "地下3階へ上がる"
                     }
                 ],
-                tileEffects: [
+                "tileEffects": [
                     {
-                        type: "poison",
-                        rects: [
+                        "type": "poison",
+                        "rects": [
                             {
-                                x1: 9,
-                                y1: 5,
-                                x2: 19,
-                                y2: 10
+                                "x1": 9,
+                                "y1": 5,
+                                "x2": 19,
+                                "y2": 10
                             }
                         ],
-                        damageRate: 0.1,
-                        message: "結界核の毒光が肌を焼く！"
+                        "damageRate": 0.1,
+                        "message": "結界核の毒光が肌を焼く！"
                     },
                     {
-                        x: 25,
-                        y: 16,
-                        type: "hunter",
-                        id: "crena_core_guard",
-                        imageKey: "overlay_dungeon_hunter_shadow",
-                        monsterIds: [
+                        "x": 25,
+                        "y": 16,
+                        "type": "hunter",
+                        "id": "crena_core_guard",
+                        "imageKey": "overlay_dungeon_hunter_shadow",
+                        "monsterIds": [
                             100095,
                             100099,
                             100103
                         ],
-                        speed: 0.8,
-                        range: 29,
-                        statMultiplier: 1.36,
-                        message: "結界核の守り手が迫る！"
+                        "speed": 0.8,
+                        "range": 29,
+                        "statMultiplier": 1.36,
+                        "message": "結界核の守り手が迫る！"
                     }
                 ],
-                bosses: [
+                "bosses": [
                     {
-                        x: 14,
-                        y: 7,
-                        monsterId: [
+                        "x": 14,
+                        "y": 7,
+                        "monsterId": [
                             100078,
                             100082,
                             100078
                         ],
-                        questId: "licia_crena_depths",
-                        startEventId: "quest_licia_encounter",
-                        storyEventId: "quest_licia_clear",
-                        bossStatMultiplier: 1.35,
-                        actionLabel: "結界核を砕く",
-                        inspectLog: "リーシアの魔力が、結界核の奥で苦しげに揺れている。"
+                        "questId": "licia_crena_depths",
+                        "startEventId": "quest_licia_encounter",
+                        "storyEventId": "quest_licia_clear",
+                        "bossStatMultiplier": 1.35,
+                        "actionLabel": "結界核を砕く",
+                        "inspectLog": "リーシアの魔力が、結界核の奥で苦しげに揺れている。"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 4,
-                        y: 16,
-                        itemId: 103,
-                        type: "item",
-                        rare: true
+                        "x": 4,
+                        "y": 16,
+                        "itemId": 103,
+                        "type": "item",
+                        "rare": true
                     },
                     {
-                        x: 25,
-                        y: 16,
-                        itemId: 105,
-                        type: "item",
-                        rare: true
+                        "x": 25,
+                        "y": 16,
+                        "itemId": 105,
+                        "type": "item",
+                        "rare": true
                     }
                 ],
-                entryPoint: {
-                    x: 2,
-                    y: 22
+                "entryPoint": {
+                    "x": 2,
+                    "y": 22
                 },
-                name: "",
-                themeKey: "CRENA_CAVE"
+                "name": "",
+                "themeKey": "CRENA_CAVE"
             }
         ]
     },
-    DARK_SHRINE_RUINS: {
-        name: "闇の神殿エクリプス跡",
-        themeKey: "DARK_SHRINE_RUINS",
-        entryRequiredAllyId: 204,
-        entryLockedEventId: "locked_dark_shrine",
-        entryLockedText: "王国聖騎士の結界が入口を閉ざしている。",
-        useDungeonWallFace: true,
-        wallFaceMode: "overlay",
-        wallFaceImg: "tile_dark_shrine_wall_face",
-        rank: 75,
-        encounterRank: 75,
-        battleBg: "battle_bg_dark_shrine",
-        entryPoint: {
-            x: 15,
-            y: 23
+    "DARK_SHRINE_RUINS": {
+        "name": "闇の神殿エクリプス跡",
+        "themeKey": "DARK_SHRINE_RUINS",
+        "entryRequiredAllyId": 204,
+        "entryLockedEventId": "locked_dark_shrine",
+        "entryLockedText": "王国聖騎士の結界が入口を閉ざしている。",
+        "useDungeonWallFace": true,
+        "wallFaceMode": "overlay",
+        "wallFaceImg": "tile_dark_shrine_wall_face",
+        "rank": 75,
+        "encounterRank": 75,
+        "battleBg": "battle_bg_dark_shrine",
+        "entryPoint": {
+            "x": 15,
+            "y": 23
         },
-        floors: [
+        "floors": [
             {
-                label: "1階・影残る拝廊",
-                encounterRank: 76,
-                monsters: [
+                "label": "1階・影残る拝廊",
+                "encounterRank": 76,
+                "monsters": [
                     100068,
                     100069,
                     100070,
                     100071
                 ],
-                width: 31,
-                height: 26,
-                tiles: [
+                "width": 31,
+                "height": 26,
+                "tiles": [
                     "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
                     "IWWWWWWWWWWWWWWWWWWWWWWWWWWWWWI",
                     "IWWWWWWWWWWWWWWWWWWWWWWWWWWWWWI",
@@ -12405,131 +12417,131 @@ const FIXED_DUNGEON_MAPS = {
                     "IWWWWWWWWWWWWWWWWWWWWWWWWWWWWWI",
                     "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIII"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 15,
-                        y: 23,
-                        to: "EXIT",
-                        label: "外へ出る"
+                        "x": 15,
+                        "y": 23,
+                        "to": "EXIT",
+                        "label": "外へ出る"
                     },
                     {
-                        x: 25,
-                        y: 6,
-                        toFloor: 2,
-                        targetX: 3,
-                        targetY: 24,
-                        label: "2階へ上がる"
+                        "x": 25,
+                        "y": 6,
+                        "toFloor": 2,
+                        "targetX": 3,
+                        "targetY": 24,
+                        "label": "2階へ上がる"
                     }
                 ],
-                tileEffects: [
+                "tileEffects": [
                     {
-                        x: 7,
-                        y: 16,
-                        type: "poison",
-                        damageRate: 0.08,
-                        message: "闇の霧が命を削る！"
+                        "x": 7,
+                        "y": 16,
+                        "type": "poison",
+                        "damageRate": 0.08,
+                        "message": "闇の霧が命を削る！"
                     },
                     {
-                        x: 6,
-                        y: 8,
-                        type: "warp",
-                        toX: 25,
-                        toY: 8,
-                        message: "影の門に呑まれた。"
+                        "x": 6,
+                        "y": 8,
+                        "type": "warp",
+                        "toX": 25,
+                        "toY": 8,
+                        "message": "影の門に呑まれた。"
                     },
                     {
-                        x: 25,
-                        y: 8,
-                        type: "warp",
-                        toX: 6,
-                        toY: 8,
-                        message: "影の門が開いた。"
+                        "x": 25,
+                        "y": 8,
+                        "type": "warp",
+                        "toX": 6,
+                        "toY": 8,
+                        "message": "影の門が開いた。"
                     },
                     {
-                        x: 23,
-                        y: 16,
-                        type: "hunter",
-                        id: "shrine_shadow",
-                        imageKey: "overlay_dungeon_hunter_shadow",
-                        monsterIds: [
+                        "x": 23,
+                        "y": 16,
+                        "type": "hunter",
+                        "id": "shrine_shadow",
+                        "imageKey": "overlay_dungeon_hunter_shadow",
+                        "monsterIds": [
                             100073,
                             100075,
                             100077
                         ],
-                        speed: 0.5,
-                        range: 26,
-                        statMultiplier: 1.35,
-                        message: "神殿の影が追ってくる！"
+                        "speed": 0.5,
+                        "range": 26,
+                        "statMultiplier": 1.35,
+                        "message": "神殿の影が追ってくる！"
                     }
                 ],
-                mapActions: [
+                "mapActions": [
                     {
-                        x: 15,
-                        y: 21,
-                        label: "クロードに声をかける",
-                        log: "クロードが、奥から漏れる闇を警戒している。",
-                        type: "quest",
-                        questId: "claude_leon_dark_shrine",
-                        imageKey: "overlay_companion_claude"
+                        "x": 15,
+                        "y": 21,
+                        "label": "クロードに声をかける",
+                        "log": "クロードが、奥から漏れる闇を警戒している。",
+                        "type": "quest",
+                        "questId": "claude_leon_dark_shrine",
+                        "imageKey": "overlay_companion_claude"
                     },
                     {
-                        x: 16,
-                        y: 21,
-                        label: "レオンに声をかける",
-                        log: "レオンが、神殿跡地に残る光の痕跡を確かめている。",
-                        type: "quest",
-                        questId: "claude_leon_dark_shrine",
-                        imageKey: "overlay_companion_leon"
+                        "x": 16,
+                        "y": 21,
+                        "label": "レオンに声をかける",
+                        "log": "レオンが、神殿跡地に残る光の痕跡を確かめている。",
+                        "type": "quest",
+                        "questId": "claude_leon_dark_shrine",
+                        "imageKey": "overlay_companion_leon"
                     }
                 ],
-                bosses: [
+                "bosses": [
                     {
-                        x: 15,
-                        y: 7,
-                        monsterId: 302206,
-                        questId: "claude_leon_dark_shrine",
-                        startEventId: "quest_claude_leon_encounter",
-                        storyEventId: "quest_claude_leon_clear",
-                        requiredFlag: "lightPalaceCleared",
-                        actionLabel: "クロードとレオンに加勢する",
-                        inspectLog: "二つの剣閃が、闇の残滓を食い止めている。"
+                        "x": 15,
+                        "y": 7,
+                        "monsterId": 302206,
+                        "questId": "claude_leon_dark_shrine",
+                        "startEventId": "quest_claude_leon_encounter",
+                        "storyEventId": "quest_claude_leon_clear",
+                        "requiredFlag": "lightPalaceCleared",
+                        "actionLabel": "クロードとレオンに加勢する",
+                        "inspectLog": "二つの剣閃が、闇の残滓を食い止めている。"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 5,
-                        y: 7,
-                        itemId: 103,
-                        type: "item",
-                        rare: true
+                        "x": 5,
+                        "y": 7,
+                        "itemId": 103,
+                        "type": "item",
+                        "rare": true
                     },
                     {
-                        x: 25,
-                        y: 18,
-                        itemId: 105,
-                        type: "item",
-                        rare: true
+                        "x": 25,
+                        "y": 18,
+                        "itemId": 105,
+                        "type": "item",
+                        "rare": true
                     }
                 ],
-                entryPoint: {
-                    x: 15,
-                    y: 23
+                "entryPoint": {
+                    "x": 15,
+                    "y": 23
                 }
             },
             {
-                label: "2階・月影の祭壇",
-                encounterRank: 96,
-                monsters: [
+                "label": "2階・月影の祭壇",
+                "encounterRank": 96,
+                "monsters": [
                     100086,
                     100087,
                     100089
                 ],
-                width: 33,
-                height: 28,
-                impassableTiles: [
+                "width": 33,
+                "height": 28,
+                "impassableTiles": [
                     "K"
                 ],
-                tiles: [
+                "tiles": [
                     "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK",
                     "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
                     "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
@@ -12559,132 +12571,132 @@ const FIXED_DUNGEON_MAPS = {
                     "KWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWK",
                     "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 3,
-                        y: 24,
-                        toFloor: 1,
-                        targetX: 25,
-                        targetY: 6,
-                        label: "1階へ下りる"
+                        "x": 3,
+                        "y": 24,
+                        "toFloor": 1,
+                        "targetX": 25,
+                        "targetY": 6,
+                        "label": "1階へ下りる"
                     }
                 ],
-                tileEffects: [
+                "tileEffects": [
                     {
-                        x: 7,
-                        y: 10,
-                        type: "ice",
-                        maxSlide: 26,
-                        message: "月光の床を滑った。"
+                        "x": 7,
+                        "y": 10,
+                        "type": "ice",
+                        "maxSlide": 26,
+                        "message": "月光の床を滑った。"
                     },
                     {
-                        x: 26,
-                        y: 10,
-                        type: "poison",
-                        damageRate: 0.08,
-                        message: "月影の闇が染み込む！"
+                        "x": 26,
+                        "y": 10,
+                        "type": "poison",
+                        "damageRate": 0.08,
+                        "message": "月影の闇が染み込む！"
                     },
                     {
-                        x: 7,
-                        y: 20,
-                        type: "warp",
-                        toX: 25,
-                        toY: 20,
-                        message: "月影が左右を反転させた。"
+                        "x": 7,
+                        "y": 20,
+                        "type": "warp",
+                        "toX": 25,
+                        "toY": 20,
+                        "message": "月影が左右を反転させた。"
                     },
                     {
-                        x: 25,
-                        y: 20,
-                        type: "warp",
-                        toX: 7,
-                        toY: 20,
-                        message: "月影が元の祭廊へ返した。"
+                        "x": 25,
+                        "y": 20,
+                        "type": "warp",
+                        "toX": 7,
+                        "toY": 20,
+                        "message": "月影が元の祭廊へ返した。"
                     }
                 ],
-                mapActions: [
+                "mapActions": [
                     {
-                        x: 16,
-                        y: 21,
-                        label: "月影の声を聞く",
-                        log: "月光の向こうから、静かな呼び声が届く。",
-                        type: "quest",
-                        questId: "luna_hidden_dark_shrine",
-                        imageKey: "overlay_companion_luna"
+                        "x": 16,
+                        "y": 21,
+                        "label": "月影の声を聞く",
+                        "log": "月光の向こうから、静かな呼び声が届く。",
+                        "type": "quest",
+                        "questId": "luna_hidden_dark_shrine",
+                        "imageKey": "overlay_companion_luna"
                     },
                     {
-                        x: 16,
-                        y: 22,
-                        label: "祭壇の残光に触れる",
-                        log: "崩れた祭壇に、月明かりのような冷たい闇が残っている。",
-                        type: "log",
-                        imageKey: "overlay_dungeon_event"
+                        "x": 16,
+                        "y": 22,
+                        "label": "祭壇の残光に触れる",
+                        "log": "崩れた祭壇に、月明かりのような冷たい闇が残っている。",
+                        "type": "log",
+                        "imageKey": "overlay_dungeon_event"
                     }
                 ],
-                bosses: [
+                "bosses": [
                     {
-                        x: 16,
-                        y: 6,
-                        monsterId: 902000,
-                        questId: "luna_hidden_dark_shrine",
-                        startEventId: "quest_luna_hidden_encounter",
-                        storyEventId: "quest_luna_hidden_clear",
-                        requiredFlag: "lightPalaceCleared",
-                        actionLabel: "月影の試練に挑む",
-                        inspectLog: "月光を飲む影が、祭壇の中央で脈打っている。"
+                        "x": 16,
+                        "y": 6,
+                        "monsterId": 902000,
+                        "questId": "luna_hidden_dark_shrine",
+                        "startEventId": "quest_luna_hidden_encounter",
+                        "storyEventId": "quest_luna_hidden_clear",
+                        "requiredFlag": "lightPalaceCleared",
+                        "actionLabel": "月影の試練に挑む",
+                        "inspectLog": "月光を飲む影が、祭壇の中央で脈打っている。"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 5,
-                        y: 10,
-                        itemId: 106,
-                        type: "item",
-                        rare: true
+                        "x": 5,
+                        "y": 10,
+                        "itemId": 106,
+                        "type": "item",
+                        "rare": true
                     },
                     {
-                        x: 27,
-                        y: 20,
-                        itemId: 107,
-                        type: "item",
-                        rare: true
+                        "x": 27,
+                        "y": 20,
+                        "itemId": 107,
+                        "type": "item",
+                        "rare": true
                     }
                 ],
-                healSprings: [
+                "healSprings": [
                     {
-                        x: 16,
-                        y: 22
+                        "x": 16,
+                        "y": 22
                     }
                 ],
-                entryPoint: {
-                    x: 3,
-                    y: 24
+                "entryPoint": {
+                    "x": 3,
+                    "y": 24
                 }
             }
         ]
     },
-    GREZELIA_FORBIDDEN: {
-        name: "禁則地グレゼリア",
-        themeKey: "GREZELIA_CAVE",
-        rank: 86,
-        encounterRank: 86,
-        battleBg: "battle_bg_grezelia",
-        entryPoint: {
-            x: 15,
-            y: 23
+    "GREZELIA_FORBIDDEN": {
+        "name": "禁則地グレゼリア",
+        "themeKey": "GREZELIA_CAVE",
+        "rank": 86,
+        "encounterRank": 86,
+        "battleBg": "battle_bg_grezelia",
+        "entryPoint": {
+            "x": 15,
+            "y": 23
         },
-        floors: [
+        "floors": [
             {
-                label: "禁則回廊",
-                encounterRank: 86,
-                monsters: [
+                "label": "禁則回廊",
+                "encounterRank": 86,
+                "monsters": [
                     100077,
                     100078,
                     100079,
                     100080
                 ],
-                width: 31,
-                height: 25,
-                tiles: [
+                "width": 31,
+                "height": 25,
+                "tiles": [
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
@@ -12711,112 +12723,112 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWWWWWWWSWWWWWWWWWWTTTTW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 15,
-                        y: 23,
-                        to: "EXIT",
-                        label: "外へ出る"
+                        "x": 15,
+                        "y": 23,
+                        "to": "EXIT",
+                        "label": "外へ出る"
                     },
                     {
-                        x: 27,
-                        y: 3,
-                        toFloor: 2,
-                        targetX: 2,
-                        targetY: 24,
-                        label: "禁奥へ"
+                        "x": 27,
+                        "y": 3,
+                        "toFloor": 2,
+                        "targetX": 2,
+                        "targetY": 24,
+                        "label": "禁奥へ"
                     }
                 ],
-                tileEffects: [
+                "tileEffects": [
                     {
-                        x: 6,
-                        y: 6,
-                        type: "warp",
-                        toX: 25,
-                        toY: 6,
-                        message: "禁則式が座標を奪った。"
+                        "x": 6,
+                        "y": 6,
+                        "type": "warp",
+                        "toX": 25,
+                        "toY": 6,
+                        "message": "禁則式が座標を奪った。"
                     },
                     {
-                        x: 25,
-                        y: 6,
-                        type: "warp",
-                        toX: 6,
-                        toY: 6,
-                        message: "禁則式が反転した。"
+                        "x": 25,
+                        "y": 6,
+                        "type": "warp",
+                        "toX": 6,
+                        "toY": 6,
+                        "message": "禁則式が反転した。"
                     },
                     {
-                        x: 26,
-                        y: 21,
-                        type: "hunter",
-                        id: "grezelia_rule",
-                        imageKey: "overlay_dungeon_hunter_shadow",
-                        monsterIds: [
+                        "x": 26,
+                        "y": 21,
+                        "type": "hunter",
+                        "id": "grezelia_rule",
+                        "imageKey": "overlay_dungeon_hunter_shadow",
+                        "monsterIds": [
                             100082,
                             100083,
                             100086
                         ],
-                        speed: 0.5,
-                        range: 28,
-                        statMultiplier: 1.35,
-                        message: "禁則の番人が迫る！"
+                        "speed": 0.5,
+                        "range": 28,
+                        "statMultiplier": 1.35,
+                        "message": "禁則の番人が迫る！"
                     }
                 ],
-                mapActions: [
+                "mapActions": [
                     {
-                        x: 15,
-                        y: 21,
-                        label: "リュウの作戦を聞く",
-                        log: "リュウが、禁則術式の崩し方を探っている。",
-                        type: "quest",
-                        questId: "ryu_minerva_grezelia",
-                        imageKey: "overlay_companion_ryu"
+                        "x": 15,
+                        "y": 21,
+                        "label": "リュウの作戦を聞く",
+                        "log": "リュウが、禁則術式の崩し方を探っている。",
+                        "type": "quest",
+                        "questId": "ryu_minerva_grezelia",
+                        "imageKey": "overlay_companion_ryu"
                     },
                     {
-                        x: 16,
-                        y: 21,
-                        label: "ミネルバの作戦を聞く",
-                        log: "ミネルバが、禁則術式の継ぎ目を読み解いている。",
-                        type: "quest",
-                        questId: "ryu_minerva_grezelia",
-                        imageKey: "overlay_companion_minerva"
+                        "x": 16,
+                        "y": 21,
+                        "label": "ミネルバの作戦を聞く",
+                        "log": "ミネルバが、禁則術式の継ぎ目を読み解いている。",
+                        "type": "quest",
+                        "questId": "ryu_minerva_grezelia",
+                        "imageKey": "overlay_companion_minerva"
                     }
                 ],
-                bosses: [],
-                chests: [
+                "bosses": [],
+                "chests": [
                     {
-                        x: 4,
-                        y: 5,
-                        itemId: 105,
-                        type: "item",
-                        rare: true
+                        "x": 4,
+                        "y": 5,
+                        "itemId": 105,
+                        "type": "item",
+                        "rare": true
                     },
                     {
-                        x: 26,
-                        y: 20,
-                        itemId: 106,
-                        type: "item",
-                        rare: true
+                        "x": 26,
+                        "y": 20,
+                        "itemId": 106,
+                        "type": "item",
+                        "rare": true
                     }
                 ],
-                entryPoint: {
-                    x: 15,
-                    y: 23
+                "entryPoint": {
+                    "x": 15,
+                    "y": 23
                 },
-                name: "",
-                themeKey: "GREZELIA_CAVE"
+                "name": "",
+                "themeKey": "GREZELIA_CAVE"
             },
             {
-                label: "禁奥の核",
-                encounterRank: 86,
-                monsters: [
+                "label": "禁奥の核",
+                "encounterRank": 86,
+                "monsters": [
                     100077,
                     100079,
                     100080,
                     100081
                 ],
-                width: 33,
-                height: 27,
-                tiles: [
+                "width": 33,
+                "height": 27,
+                "tiles": [
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
@@ -12845,103 +12857,103 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWTTWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 2,
-                        y: 24,
-                        toFloor: 1,
-                        targetX: 27,
-                        targetY: 4,
-                        label: "回廊へ戻る"
+                        "x": 2,
+                        "y": 24,
+                        "toFloor": 1,
+                        "targetX": 27,
+                        "targetY": 4,
+                        "label": "回廊へ戻る"
                     },
                     {
-                        x: 28,
-                        y: 23,
-                        toFloor: 3,
-                        targetX: 17,
-                        targetY: 26,
-                        label: "零式禁則層へ",
-                        requiredFlag: "grezeliaOuterSealBroken",
-                        lockedLabel: "封印式を調べる",
-                        lockedLog: "二重の禁則封印が道を閉ざしている。"
+                        "x": 28,
+                        "y": 23,
+                        "toFloor": 3,
+                        "targetX": 17,
+                        "targetY": 26,
+                        "label": "零式禁則層へ",
+                        "requiredFlag": "grezeliaOuterSealBroken",
+                        "lockedLabel": "封印式を調べる",
+                        "lockedLog": "二重の禁則封印が道を閉ざしている。"
                     }
                 ],
-                tileEffects: [
+                "tileEffects": [
                     {
-                        x: 6,
-                        y: 17,
-                        type: "warp",
-                        toX: 26,
-                        toY: 17,
-                        message: "術式が進行方向を反転した。"
+                        "x": 6,
+                        "y": 17,
+                        "type": "warp",
+                        "toX": 26,
+                        "toY": 17,
+                        "message": "術式が進行方向を反転した。"
                     },
                     {
-                        x: 26,
-                        y: 17,
-                        type: "warp",
-                        toX: 6,
-                        toY: 17,
-                        message: "術式が再び反転した。"
+                        "x": 26,
+                        "y": 17,
+                        "type": "warp",
+                        "toX": 6,
+                        "toY": 17,
+                        "message": "術式が再び反転した。"
                     }
                 ],
-                bosses: [
+                "bosses": [
                     {
-                        x: 16,
-                        y: 4,
-                        monsterId: 301100,
-                        questId: "ryu_minerva_grezelia",
-                        startEventId: "quest_ryu_minerva_encounter",
-                        storyEventId: "quest_ryu_minerva_clear",
-                        requiredFlag: "darkCastleCleared",
-                        actionLabel: "外殻術式を破る",
-                        inspectLog: "リュウとミネルバが、幾重にも絡む禁則術式を押さえている。"
+                        "x": 16,
+                        "y": 4,
+                        "monsterId": 301100,
+                        "questId": "ryu_minerva_grezelia",
+                        "startEventId": "quest_ryu_minerva_encounter",
+                        "storyEventId": "quest_ryu_minerva_clear",
+                        "requiredFlag": "darkCastleCleared",
+                        "actionLabel": "外殻術式を破る",
+                        "inspectLog": "リュウとミネルバが、幾重にも絡む禁則術式を押さえている。"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 3,
-                        y: 19,
-                        itemId: 106,
-                        type: "item",
-                        rare: true
+                        "x": 3,
+                        "y": 19,
+                        "itemId": 106,
+                        "type": "item",
+                        "rare": true
                     },
                     {
-                        x: 9,
-                        y: 19,
-                        itemId: 107,
-                        type: "item",
-                        rare: true
+                        "x": 9,
+                        "y": 19,
+                        "itemId": 107,
+                        "type": "item",
+                        "rare": true
                     }
                 ],
-                mapActions: [
+                "mapActions": [
                     {
-                        x: 16,
-                        y: 23,
-                        label: "禁奥の脈動を読む",
-                        log: "床下で、研究棟の心臓のような魔力が脈打っている。",
-                        type: "log",
-                        imageKey: "overlay_dungeon_event"
+                        "x": 16,
+                        "y": 23,
+                        "label": "禁奥の脈動を読む",
+                        "log": "床下で、研究棟の心臓のような魔力が脈打っている。",
+                        "type": "log",
+                        "imageKey": "overlay_dungeon_event"
                     }
                 ],
-                entryPoint: {
-                    x: 2,
-                    y: 24
+                "entryPoint": {
+                    "x": 2,
+                    "y": 24
                 },
-                name: "",
-                themeKey: "GREZELIA_CAVE"
+                "name": "",
+                "themeKey": "GREZELIA_CAVE"
             },
             {
-                label: "零式禁則層",
-                encounterRank: 91,
-                monsters: [
+                "label": "零式禁則層",
+                "encounterRank": 91,
+                "monsters": [
                     100082,
                     100083,
                     100084,
                     100085
                 ],
-                width: 35,
-                height: 29,
-                tiles: [
+                "width": 35,
+                "height": 29,
+                "tiles": [
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWTTTWWWWWWWWWWWWWWWW",
@@ -12972,96 +12984,96 @@ const FIXED_DUNGEON_MAPS = {
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
                     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
                 ],
-                floorLinks: [
+                "floorLinks": [
                     {
-                        x: 17,
-                        y: 26,
-                        toFloor: 2,
-                        targetX: 26,
-                        targetY: 23,
-                        label: "禁奥の核へ戻る"
+                        "x": 17,
+                        "y": 26,
+                        "toFloor": 2,
+                        "targetX": 26,
+                        "targetY": 23,
+                        "label": "禁奥の核へ戻る"
                     }
                 ],
-                tileEffects: [
+                "tileEffects": [
                     {
-                        x: 6,
-                        y: 8,
-                        type: "warp",
-                        toX: 17,
-                        toY: 11,
-                        message: "零式術式が左右を入れ替えた。"
+                        "x": 6,
+                        "y": 8,
+                        "type": "warp",
+                        "toX": 17,
+                        "toY": 11,
+                        "message": "零式術式が左右を入れ替えた。"
                     },
                     {
-                        x: 17,
-                        y: 11,
-                        type: "warp",
-                        toX: 6,
-                        toY: 8,
-                        message: "零式術式が再反転した。"
+                        "x": 17,
+                        "y": 11,
+                        "type": "warp",
+                        "toX": 6,
+                        "toY": 8,
+                        "message": "零式術式が再反転した。"
                     },
                     {
-                        x: 17,
-                        y: 15,
-                        type: "hunter",
-                        id: "grezelia_zero_executor",
-                        imageKey: "overlay_dungeon_hunter_shadow",
-                        monsterIds: [
+                        "x": 17,
+                        "y": 15,
+                        "type": "hunter",
+                        "id": "grezelia_zero_executor",
+                        "imageKey": "overlay_dungeon_hunter_shadow",
+                        "monsterIds": [
                             100086,
                             100089,
                             100093
                         ],
-                        speed: 2,
-                        range: 34,
-                        statMultiplier: 1.4,
-                        message: "零式執行者が二歩ずつ迫る！"
+                        "speed": 2,
+                        "range": 34,
+                        "statMultiplier": 1.4,
+                        "message": "零式執行者が二歩ずつ迫る！"
                     }
                 ],
-                mapActions: [
+                "mapActions": [
                     {
-                        x: 17,
-                        y: 24,
-                        label: "禁則の声に応える",
-                        log: "最深部から、ゼノンの声が低く響いている。",
-                        type: "quest",
-                        questId: "zenon_hidden_grezelia",
-                        imageKey: "overlay_companion_zenon"
+                        "x": 17,
+                        "y": 24,
+                        "label": "禁則の声に応える",
+                        "log": "最深部から、ゼノンの声が低く響いている。",
+                        "type": "quest",
+                        "questId": "zenon_hidden_grezelia",
+                        "imageKey": "overlay_companion_zenon"
                     }
                 ],
-                bosses: [
+                "bosses": [
                     {
-                        x: 17,
-                        y: 4,
-                        monsterId: 902000,
-                        questId: "zenon_hidden_grezelia",
-                        startEventId: "quest_zenon_hidden_encounter",
-                        storyEventId: "quest_zenon_hidden_clear",
-                        requiredFlag: "grezeliaOuterSealBroken",
-                        actionLabel: "零式禁則試練に挑む",
-                        inspectLog: "禁則の底で、意志を持つ闇がこちらを見返している。"
+                        "x": 17,
+                        "y": 4,
+                        "monsterId": 902000,
+                        "questId": "zenon_hidden_grezelia",
+                        "startEventId": "quest_zenon_hidden_encounter",
+                        "storyEventId": "quest_zenon_hidden_clear",
+                        "requiredFlag": "grezeliaOuterSealBroken",
+                        "actionLabel": "零式禁則試練に挑む",
+                        "inspectLog": "禁則の底で、意志を持つ闇がこちらを見返している。"
                     }
                 ],
-                chests: [
+                "chests": [
                     {
-                        x: 30,
-                        y: 6,
-                        itemId: 107,
-                        type: "item",
-                        rare: true
+                        "x": 30,
+                        "y": 6,
+                        "itemId": 107,
+                        "type": "item",
+                        "rare": true
                     },
                     {
-                        x: 30,
-                        y: 8,
-                        itemId: 108,
-                        type: "item",
-                        rare: true
+                        "x": 30,
+                        "y": 8,
+                        "itemId": 108,
+                        "type": "item",
+                        "rare": true
                     }
                 ],
-                entryPoint: {
-                    x: 17,
-                    y: 26
+                "entryPoint": {
+                    "x": 17,
+                    "y": 26
                 },
-                name: "",
-                themeKey: "GREZELIA_CAVE"
+                "name": "",
+                "themeKey": "GREZELIA_CAVE"
             }
         ]
     }
@@ -13069,56 +13081,40 @@ const FIXED_DUNGEON_MAPS = {
 
 const AUTHORED_MAP_PROP_PLACEMENTS = [
     {
-        id: "carpet-thunder-final",
-        areaKey: "THUNDER_FORT",
-        floor: 6,
-        x: 14,
-        y: 6,
-        width: 5,
-        height: 7,
-        type: "castle_carpet",
-        role: "decoration",
-        baseTile: "T"
+        "id": "carpet-thunder-final",
+        "areaKey": "THUNDER_FORT",
+        "floor": 6,
+        "x": 14,
+        "y": 6,
+        "width": 5,
+        "height": 7,
+        "type": "castle_carpet",
+        "role": "decoration",
+        "baseTile": "T"
     },
     {
-        id: "carpet-light-final",
-        areaKey: "LIGHT_PALACE",
-        floor: 4,
-        x: 16,
-        y: 8,
-        width: 3,
-        height: 7,
-        type: "castle_carpet",
-        role: "decoration",
-        baseTile: "T"
+        "id": "carpet-light-final",
+        "areaKey": "LIGHT_PALACE",
+        "floor": 4,
+        "x": 16,
+        "y": 8,
+        "width": 3,
+        "height": 7,
+        "type": "castle_carpet",
+        "role": "decoration",
+        "baseTile": "T"
     },
     {
-        id: "carpet-dark-final",
-        areaKey: "DARK_CASTLE",
-        floor: 7,
-        x: 14,
-        y: 4,
-        width: 5,
-        height: 6,
-        type: "castle_carpet",
-        role: "decoration",
-        baseTile: "T"
+        "id": "carpet-dark-final",
+        "areaKey": "DARK_CASTLE",
+        "floor": 7,
+        "x": 14,
+        "y": 4,
+        "width": 5,
+        "height": 6,
+        "type": "castle_carpet",
+        "role": "decoration",
+        "baseTile": "T"
     }
 ];
 
-if (typeof window !== "undefined") {
-    window.STORY_MAP_MUTATIONS = STORY_MAP_MUTATIONS;
-    window.TILE_THEMES = TILE_THEMES;
-    window.DUNGEON_WALL_FACE_THEMES = DUNGEON_WALL_FACE_THEMES;
-    window.MAP_FLOOR_DECOR_THEMES = MAP_FLOOR_DECOR_THEMES;
-    window.STORY_DATA = STORY_DATA;
-    window.SEA_ENCOUNTER_MONSTERS = SEA_ENCOUNTER_MONSTERS;
-    window.FIELD_ENCOUNTER_ZONES = FIELD_ENCOUNTER_ZONES;
-    window.WORLD_BRIDGES = WORLD_BRIDGES;
-    window.MAP_DATA = MAP_DATA;
-    window.FIXED_TILE_OVERLAYS = FIXED_TILE_OVERLAYS;
-    window.FIXED_OVERLAY_BASE_TILES = FIXED_OVERLAY_BASE_TILES;
-    window.FIXED_MAPS = FIXED_MAPS;
-    window.FIXED_DUNGEON_MAPS = FIXED_DUNGEON_MAPS;
-    window.AUTHORED_MAP_PROP_PLACEMENTS = AUTHORED_MAP_PROP_PLACEMENTS;
-}
