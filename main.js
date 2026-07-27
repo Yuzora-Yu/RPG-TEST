@@ -355,7 +355,7 @@ const App = {
 
     unlockLabels: {
         smith: '鍛冶屋',
-        craftingMenu: '加工',
+        craftingMenu: '魔道通信',
         gacha: 'ガチャ',
         abyss: '深淵の魔窟',
         dungeonMenu: 'ダンジョン',
@@ -465,8 +465,8 @@ const App = {
             App.data.progress.flags.menuUnlockMigrationV3 = true;
         }
 
-        // 鍛冶屋そのものの解放(smith)と、どこからでも工房を呼べる加工メニュー権限を分離する。
-        // 加工メニューは貴重品「星詠みの触媒器」(ID:111)の所持状態から判定する。
+        // 鍛冶屋そのものの解放(smith)と、どこからでも施設へ接続できる魔道通信権限を分離する。
+        // 魔道通信は貴重品「星詠みの触媒器」(ID:111)の所持状態から判定する。
         if (!App.data.progress.flags.menuUnlockMigrationV4) {
             App.data.progress.unlocked.craftingMenu = App.hasItem(111);
             App.data.progress.flags.menuUnlockMigrationV4 = true;
@@ -2208,6 +2208,79 @@ const App = {
             }
             if (typeof Facilities !== 'undefined') Facilities.closeModal?.('guild-scene');
             Menu.closeAll?.();
+        });
+        return true;
+    },
+
+    canTravelToGuildReception: () => {
+        if (!App.data) return false;
+        const flags = App.data.progress?.flags || {};
+        const visited = App.data.progress?.visitedFixedMaps || {};
+        return App.data.location?.area === 'THUNDER_FORT'
+            || flags.thunderFortCleared === true
+            || !!visited.THUNDER_FORT;
+    },
+
+    travelToGuildReception: () => {
+        if (!App.canTravelToGuildReception()) {
+            return { ok: false, message: 'ライザーク要塞の冒険者ギルドはまだ利用できません。' };
+        }
+        const areaKey = 'THUNDER_FORT';
+        const floorNo = 1;
+        const floorData = (typeof MapRegistry !== 'undefined' && typeof MapRegistry.getFixedDungeonFloor === 'function')
+            ? MapRegistry.getFixedDungeonFloor(areaKey, floorNo)
+            : (typeof FIXED_DUNGEON_MAPS !== 'undefined' && FIXED_DUNGEON_MAPS[areaKey]
+                ? { ...FIXED_DUNGEON_MAPS[areaKey], isDungeon: true, isFixed: true, areaKey, floor: floorNo }
+                : null);
+        if (!floorData) return { ok: false, message: 'ギルド受付のマップ情報を読み込めませんでした。' };
+
+        if (typeof Field !== 'undefined' && typeof Field.stopMove === 'function') Field.stopMove();
+        if (typeof App.clearAction === 'function') App.clearAction();
+        if (typeof Menu !== 'undefined' && typeof Menu.closeAll === 'function') Menu.closeAll();
+
+        App.data.transportMode = null;
+        const worldDest = App.getFixedMapWorldDestination?.(areaKey);
+        App.data.mapReturnPoint = worldDest
+            ? { areaKey: 'WORLD', x: Number(worldDest.x), y: Number(worldDest.y) }
+            : null;
+        App.data.location.area = areaKey;
+        App.data.location.x = 5;
+        App.data.location.y = 22;
+        if (App.data.progress) App.data.progress.floor = floorNo;
+        if (App.data.dungeon) {
+            App.data.dungeon.returnPoint = null;
+            App.data.dungeon.returnStack = [];
+            App.data.dungeon.map = null;
+            App.data.dungeon.adventurer = null;
+            App.data.dungeon.healSpring = null;
+            App.data.dungeon.abyssRift = null;
+            App.data.dungeon.pendingRiftReward = null;
+            App.data.dungeon.visitedMap = null;
+        }
+
+        Field.currentMapData = floorData;
+        Field.x = 5;
+        Field.y = 22;
+        Field.dir = 3;
+        if (typeof Dungeon !== 'undefined') Dungeon.floor = floorNo;
+
+        App.save();
+        App.changeScene('field');
+        Field.render?.();
+        Field.refreshCurrentAction?.({ silent: true });
+        Field.startIdleStep?.();
+        App.log?.('ライザーク要塞1階、冒険者ギルド受付前へ移動した！');
+        return { ok: true };
+    },
+
+    requestGuildReceptionTravel: () => {
+        if (!App.canTravelToGuildReception()) {
+            Menu.msg('ライザーク要塞の冒険者ギルドはまだ利用できません。');
+            return false;
+        }
+        Menu.confirm('ライザーク要塞1階のギルド受付前へ移動しますか？', () => {
+            const result = App.travelToGuildReception();
+            if (!result?.ok) Menu.msg(result?.message || 'ギルド受付へ移動できませんでした。');
         });
         return true;
     },

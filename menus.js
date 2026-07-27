@@ -394,6 +394,16 @@ const Menu = {
         }
     },
 
+    openMagicCommunicationGuildBoard: () => {
+        if (typeof App !== 'undefined' && typeof App.requireFeatureUnlocked === 'function' && !App.requireFeatureUnlocked('craftingMenu')) return;
+        if (typeof Guild === 'undefined' || typeof Guild.openBoard !== 'function') {
+            Menu.msg('ギルド通信を利用できません。');
+            return;
+        }
+        Menu.closeAll();
+        Guild.openBoard({ returnMode: 'magicCommunication' });
+    },
+
     // --- メインメニュー制御 ---
     openMainMenu: () => {
         Menu.installKeyboardNavigation();
@@ -436,7 +446,7 @@ const Menu = {
                 <button class="menu-btn" onclick="Menu.openSubScreen('skills')">スキル</button>
 
                 <button class="menu-btn" onclick="Menu.openSubScreen('achievements')">実績${hasUnclaimedAchievement ? badge : ''}</button>
-                ${Menu.featureButton('crafting', '加工', 'craftingMenu')}
+                ${Menu.featureButton('crafting', '魔道通信', 'craftingMenu')}
 
                 <button class="menu-btn" onclick="Menu.openSubScreen('status')">戦歴</button>
                 ${Menu.featureButton('dungeon', 'ダンジョン', 'dungeonMenu', 'background:#400040;')}

@@ -80,10 +80,10 @@ const Facilities = {
             </div>
 
             <div id="${sceneId}-modal-layer" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:2000; justify-content:center; align-items:center; padding:10px;">
-                <div style="background:#000; border:3px double #fff; width:100%; max-width:320px; padding:15px; box-sizing:border-box;">
-                    <div id="${sceneId}-modal-title" style="color:#ffd700; font-size:14px; margin-bottom:10px; border-bottom:1px solid #444; padding-bottom:5px; font-weight:bold;"></div>
-                    <div id="${sceneId}-modal-body" class="scroll-area" style="max-height:50vh; overflow-y:auto; color:#fff;"></div>
-                    <button class="btn" style="width:100%; margin-top:15px; background:#444; border:1px solid #fff; height:40px;" onclick="Facilities.closeModal('${sceneId}')">とじる</button>
+                <div id="${sceneId}-modal-window" style="background:#000; border:3px double #fff; width:100%; max-width:320px; max-height:calc(100% - 20px); padding:15px; box-sizing:border-box; display:flex; flex-direction:column;">
+                    <div id="${sceneId}-modal-title" style="color:#ffd700; font-size:14px; margin-bottom:10px; border-bottom:1px solid #444; padding-bottom:5px; font-weight:bold; flex-shrink:0;"></div>
+                    <div id="${sceneId}-modal-body" class="scroll-area" style="min-height:0; max-height:50vh; overflow-y:auto; color:#fff;"></div>
+                    <button id="${sceneId}-modal-close" class="btn" style="width:100%; margin-top:15px; background:#444; border:1px solid #fff; height:40px; flex-shrink:0;" onclick="Facilities.closeModal('${sceneId}')">とじる</button>
                 </div>
             </div>
         `;
@@ -96,8 +96,31 @@ const Facilities = {
     showModal: (sceneId, title, html, options = {}) => {
         const layer = document.getElementById(`${sceneId}-modal-layer`);
         if(!layer) return;
-        document.getElementById(`${sceneId}-modal-title`).innerText = title;
-        document.getElementById(`${sceneId}-modal-body`).innerHTML = html;
+        const titleEl = document.getElementById(`${sceneId}-modal-title`);
+        const body = document.getElementById(`${sceneId}-modal-body`);
+        const modalWindow = document.getElementById(`${sceneId}-modal-window`);
+        const closeButton = document.getElementById(`${sceneId}-modal-close`);
+        if (!titleEl || !body || !modalWindow || !closeButton) return;
+
+        titleEl.innerText = title;
+        body.innerHTML = html;
+
+        // モーダルごとのサイズ指定は毎回既定値へ戻してから適用する。
+        // 依頼掲示板のように「上部固定＋一覧だけスクロール」が必要な画面でも、
+        // 他の施設モーダルへ高さ・overflow設定を持ち越さないため。
+        layer.style.padding = options.layerPadding || '10px';
+        layer.style.alignItems = options.layerAlignItems || 'center';
+        modalWindow.style.width = options.modalWidth || '100%';
+        modalWindow.style.maxWidth = options.modalMaxWidth || '320px';
+        modalWindow.style.height = options.modalHeight || '';
+        modalWindow.style.maxHeight = options.modalMaxHeight || 'calc(100% - 20px)';
+        body.style.flex = options.bodyFlex ? '1 1 auto' : '0 1 auto';
+        body.style.minHeight = '0';
+        body.style.maxHeight = options.bodyMaxHeight || '50vh';
+        body.style.overflowY = options.bodyOverflowY || 'auto';
+        closeButton.style.marginTop = options.closeMarginTop || '15px';
+        closeButton.textContent = options.closeLabel || 'とじる';
+
         if (typeof options.onClose === 'function') {
             Facilities.modalCloseHandlers[sceneId] = options.onClose;
         } else {

@@ -348,18 +348,22 @@ if ('serviceWorker' in navigator) {
 
     <div id="sub-screen-crafting" class="sub-screen">
         <div class="header-bar">
-            <span>🛠️ 加工</span>
+            <span>📡 魔道通信</span>
             <button class="btn" onclick="Menu.closeSubScreen('crafting')">もどる</button>
         </div>
-        <div style="flex:1; display:flex; flex-direction:column; justify-content:center; gap:16px; padding:24px;">
-            <div style="text-align:center; color:#ffd770; font-size:13px; line-height:1.7;">利用する工房を選択してください。</div>
-            <button class="menu-btn" style="min-height:72px; background:#3b2112; border:1px solid #d28a54;" onclick="Menu.openCraftingBlacksmith()">
-                <span style="display:block; font-size:18px; color:#ffd86a;">鍛冶屋</span>
+        <div class="scroll-area" style="flex:1; min-height:0; display:flex; flex-direction:column; justify-content:center; gap:12px; padding:18px 24px; overflow-y:auto;">
+            <div style="text-align:center; color:#ffd770; font-size:12px; line-height:1.65;">遠隔利用する施設・ギルド窓口を選択してください。</div>
+            <button class="menu-btn" style="min-height:68px; background:#3b2112; border:1px solid #d28a54;" onclick="Menu.openCraftingBlacksmith()">
+                <span style="display:block; font-size:17px; color:#ffd86a;">鍛冶屋</span>
                 <span style="display:block; margin-top:4px; font-size:10px; color:#d8c3ad;">装備合成・装備精錬・装備強化</span>
             </button>
-            <button class="menu-btn" style="min-height:72px; background:#12283b; border:1px solid #78b8dc;" onclick="Menu.openCraftingAlchemy()">
-                <span style="display:block; font-size:18px; color:#aee8ff;">錬金所</span>
+            <button class="menu-btn" style="min-height:68px; background:#12283b; border:1px solid #78b8dc;" onclick="Menu.openCraftingAlchemy()">
+                <span style="display:block; font-size:17px; color:#aee8ff;">錬金所</span>
                 <span style="display:block; margin-top:4px; font-size:10px; color:#c4dce7;">素材から道具や香を錬成</span>
+            </button>
+            <button class="menu-btn" style="min-height:68px; background:#1d2c46; border:1px solid #8bbcff;" onclick="Menu.openMagicCommunicationGuildBoard()">
+                <span style="display:block; font-size:17px; color:#dcecff;">ギルド依頼</span>
+                <span style="display:block; margin-top:4px; font-size:10px; color:#b9cbe3;">依頼掲示板の確認・更新・受注</span>
             </button>
         </div>
         <div class="sub-screen-bottom-panel">

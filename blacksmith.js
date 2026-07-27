@@ -12,7 +12,7 @@ const MenuBlacksmith = {
         target: null, material: null, materials: [], targetOptIdx: -1, requiredCount: 0
     },
 
-    // menu: 加工メニューから開いた導線 / facility: 炎の里の施設画面から開いた導線
+    // menu: 魔道通信から開いた導線 / facility: 炎の里の施設画面から開いた導線
     entryContext: 'menu',
     returnContext: 'main',
 

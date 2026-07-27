@@ -1,10 +1,16 @@
+Cumulative changed files through 2026-07-27 guild board / magic communication update.
+
 UPDATE_REPORT_20260727.md
 UPDATE_REPORT_ITEM_TABS_20260727.md
+UPDATE_REPORT_GUILD_BOARD_MAGIC_COMM_20260727.md
 assets.js
 assets/ui/menu-icons/item-skill-book.png
 assets/ui/menu-icons/item-trait-book.png
 battle.js
+blacksmith.js
+docs/development-policy.md
 dungeon.js
+facilities.js
 guild.js
 guild_quests.js
 index.html
@@ -13,5 +19,6 @@ main.js
 menus.js
 menus_items.js
 menus_party.js
+menus_status.js
 story_logic.js
 sw.js

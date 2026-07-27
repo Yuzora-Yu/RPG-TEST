@@ -32,7 +32,7 @@ The game has become feature-rich, but the next direction is to reorganize it as 
 
 The game should not begin with every major system available. Blacksmithing, the abyss, boat travel, wing flight, dungeon transfer, and other systems should become available as the player explores the field, clears regional fixed maps, gains allies, and expands the world. Gacha-related code and assets may remain as dormant legacy/internal implementation, but gacha is not planned as a player-facing feature and must not receive an unlock route.
 
-Existing code uses `progress.unlocked` for story-gated systems. Field blacksmith access is gated by `smith`, while future main-menu access to blacksmithing and alchemy is independently gated by `craftingMenu`. Dungeon menu access keeps its own unlock check; gacha is not shown in the main menu route.
+Existing code uses `progress.unlocked` for story-gated systems. Field blacksmith access is gated by `smith`, while the main-menu **Magic Communication** route to blacksmithing, alchemy, and guild quest reception is independently gated by `craftingMenu`. Dungeon menu access keeps its own unlock check; gacha is not shown in the main menu route.
 
 Travel and key items such as `Magic Boat`, `Light Wing`, and `Sky Prism` should be treated as story rewards rather than ordinary inventory entries.
 
@@ -106,7 +106,7 @@ Proposed unlock route:
 - Fire Village clear:
   - Xiao joins.
   - The local Fire Village blacksmith facility opens.
-  - Main-menu access to blacksmithing and alchemy remains locked until a future dedicated quest unlocks `craftingMenu`.
+  - Main-menu Magic Communication access to blacksmithing, alchemy, and guild quest reception remains locked until a future dedicated quest unlocks `craftingMenu`.
   - Record the future blacksmith tutorial requirement, but do not implement it before the blacksmith UI is final.
 
 - Wind Settlement clear:
@@ -165,7 +165,7 @@ Future `progress.unlocked` should move toward this shape:
 ```js
 progress.unlocked = {
   smith: false, // local Fire Village blacksmith facility
-  craftingMenu: false, // future quest reward: menu access to blacksmithing and alchemy
+  craftingMenu: false, // future quest reward: Magic Communication access to blacksmithing, alchemy, and guild quest reception
   gacha: false, // legacy/internal; no current main-menu player route
   abyss: true,
   dungeonMenu: false,

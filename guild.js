@@ -23,6 +23,7 @@
 
     const Guild = {
         maxOffers: Math.max(1, Number(MASTER.maxOffers) || 5),
+        boardReturnMode: 'field',
         ranks: RANKS,
         rankDefinitions: RANK_DEFS,
         expThresholds: EXP_THRESHOLDS,
@@ -84,6 +85,45 @@
             if (!pool.length || Math.random() >= Math.max(0, Math.min(1, Number(def.bonusItemChance || 0)))) return [];
             const itemId = Guild.pickRandom(pool);
             return Number.isFinite(Number(itemId)) ? [{ id: Number(itemId), count: 1 }] : [];
+        },
+
+        getMinimumHuntMaterialReward(definition = {}) {
+            // 最低ランクの討伐依頼にも、必ず持ち帰れる素材を1枠付ける。
+            // 依頼IDから素材系統を決めるため、旧セーブを読み直しても報酬が変化しない。
+            const rankIndex = Math.max(0, Guild.rankIndex(definition.requiredRank || 'G'));
+            const gradeIndex = Math.max(0, Math.min(7, Math.floor(rankIndex / 2)));
+            const seedText = String(definition.id || definition.name || definition.area || 'guild-hunt');
+            let hash = 0;
+            for (let index = 0; index < seedText.length; index += 1) {
+                hash = ((hash * 31) + seedText.charCodeAt(index)) >>> 0;
+            }
+            const categoryIndex = hash % 8;
+            return { id: 2000 + categoryIndex * 8 + gradeIndex, count: 1 };
+        },
+
+        getEffectiveRewardItems(definition = {}) {
+            const rewards = (Array.isArray(definition.rewardItems) ? definition.rewardItems : [])
+                .map(reward => ({
+                    id: Number(reward?.id ?? reward?.itemId),
+                    count: Math.max(1, Math.floor(Number(reward?.count || 1)))
+                }))
+                .filter(reward => Number.isFinite(reward.id));
+            if (rewards.length) return rewards;
+            return definition.kind === 'hunt' ? [Guild.getMinimumHuntMaterialReward(definition)] : [];
+        },
+
+        getCompactRewardSummary(definition = {}) {
+            const itemRewards = Guild.getEffectiveRewardItems(definition);
+            const itemLabels = itemRewards.map(reward => {
+                const item = DB.ITEMS?.find(entry => Number(entry.id) === Number(reward.id));
+                return `${item?.name || `アイテム${reward.id}`}×${reward.count}`;
+            });
+            const equipmentCount = Array.isArray(definition.rewardEquipment) ? definition.rewardEquipment.length : 0;
+            const rewardParts = itemLabels.slice(0, 2);
+            if (itemLabels.length > 2) rewardParts.push(`ほか${itemLabels.length - 2}種`);
+            if (equipmentCount > 0) rewardParts.push(`装備${equipmentCount}枠`);
+            const itemText = rewardParts.length ? rewardParts.join('・') : 'アイテム報酬なし';
+            return `ギルドEXP +${Math.max(0, Number(definition.guildExp || 0))} / GP +${Math.max(0, Number(definition.guildPoints || 0))} / ${itemText}`;
         },
 
         getStaticDefinitions() {
@@ -195,9 +235,9 @@
                 current.daily.bonusLimit += 10;
                 App.save();
                 if (typeof Menu !== 'undefined' && typeof Menu.msg === 'function') {
-                    Menu.msg('本日のギルド依頼受注可能数が10件追加された！', () => Guild.openBoard());
+                    Menu.msg('本日のギルド依頼受注可能数が10件追加された！', () => Guild.openBoard({ preserveReturn: true }));
                 } else {
-                    Guild.openBoard();
+                    Guild.openBoard({ preserveReturn: true });
                 }
             };
             if (typeof AdManager !== 'undefined' && typeof AdManager.prepareRewardAd === 'function') {
@@ -589,6 +629,9 @@
             }
 
             if (!def) return null;
+            if (def.kind === 'hunt' && (!Array.isArray(def.rewardItems) || !def.rewardItems.length)) {
+                def.rewardItems = Guild.getEffectiveRewardItems(def);
+            }
             guildState.generatedQuests[id] = def;
             return def;
         },
@@ -622,6 +665,9 @@
                 const rarityDef = Guild.getRarityDefinition(def.rarity);
                 def.rarity = rarityDef.id;
                 if (!def.difficultyLabel) def.difficultyLabel = rarityDef.difficultyLabel || '';
+                if (def.kind === 'hunt' && (!Array.isArray(def.rewardItems) || !def.rewardItems.length)) {
+                    def.rewardItems = Guild.getEffectiveRewardItems(def);
+                }
             });
             state.generatorSerial = Math.max(0, Math.floor(Number(state.generatorSerial) || 0));
             state.generatedCompletionTotal = Math.max(0, Math.floor(Number(state.generatedCompletionTotal) || 0));
@@ -1074,7 +1120,7 @@
 
         rewardSummary(def) {
             const rows = [];
-            (def.rewardItems || []).forEach(reward => {
+            Guild.getEffectiveRewardItems(def).forEach(reward => {
                 const itemId = Number(reward.id ?? reward.itemId);
                 const item = DB.ITEMS?.find(entry => Number(entry.id) === itemId);
                 rows.push(`${item?.name || `アイテム${itemId}`} x${Math.max(1, Number(reward.count || 1))}`);
@@ -1122,7 +1168,7 @@
             const def = Guild.getDefinitions()[id];
             if (!state || !def || !Guild.isObjectiveComplete(id) || !Guild.consumeRequirements(def)) return null;
             if (!App.data.items) App.data.items = {};
-            (def.rewardItems || []).forEach(reward => {
+            Guild.getEffectiveRewardItems(def).forEach(reward => {
                 const itemId = Number(reward.id ?? reward.itemId);
                 App.data.items[itemId] = Number(App.data.items[itemId] || 0) + Math.max(1, Number(reward.count || 1));
             });
@@ -1243,6 +1289,15 @@
             return true;
         },
 
+        returnFromBoard() {
+            const mode = Guild.boardReturnMode || 'field';
+            Guild.boardReturnMode = 'field';
+            App.changeScene('field');
+            if (mode === 'magicCommunication' && typeof Menu !== 'undefined') {
+                setTimeout(() => Menu.openSubScreen?.('crafting'), 0);
+            }
+        },
+
         questCard(id, options = {}) {
             const def = Guild.getDefinitions()[id];
             const state = Guild.getQuestState(id);
@@ -1250,10 +1305,12 @@
             const ready = Guild.isObjectiveComplete(id);
             const status = ready ? '報告可能' : state.state === 'accepted' ? '受注中' : '受注可能';
             const color = ready ? '#8cff9d' : state.state === 'accepted' ? '#ffd56b' : '#b9d9ff';
-            return `<button class="btn guild-quest-entry" data-guild-quest-id="${App.escapeHtml(id)}" style="width:100%; text-align:left; margin-top:8px; padding:10px; background:#17191d; border:1px solid #655b43; color:#fff; border-radius:6px;">
+            const rewardSummary = Guild.getCompactRewardSummary(def);
+            return `<button class="btn guild-quest-entry" data-guild-quest-id="${App.escapeHtml(id)}" style="width:100%; text-align:left; margin:0 0 8px; padding:10px; background:#17191d; border:1px solid #655b43; color:#fff; border-radius:6px;">
                 <span style="display:flex; justify-content:space-between; gap:8px; align-items:center;"><strong style="display:flex; align-items:center; min-width:0;">${Guild.rarityBadgeHtml(def)}<span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${App.escapeHtml(def.name)}</span></strong><small style="color:${color}; white-space:nowrap;">${status}</small></span>
                 <span style="display:block; color:#c8b998; font-size:10px; margin-top:4px;">必要ランク ${App.escapeHtml(def.requiredRank || 'G')} / 危険度 ${App.escapeHtml(Guild.getDifficultyLabel(def))} / ${App.escapeHtml(App.getQuestKindLabel?.(def.kind) || def.kind)}</span>
-                <span style="display:block; color:#aaa; font-size:11px; line-height:1.5; margin-top:5px; white-space:pre-wrap;">${App.escapeHtml(def.objective || '')}</span>
+                <span style="display:block; color:#aaa; font-size:11px; line-height:1.45; margin-top:5px; white-space:pre-wrap;">${App.escapeHtml(def.objective || '')}</span>
+                <span style="display:block; color:#dff0c8; font-size:9px; line-height:1.45; margin-top:6px; padding-top:5px; border-top:1px solid #3c4432; white-space:normal;">報酬: ${App.escapeHtml(rewardSummary)}</span>
             </button>`;
         },
 
@@ -1282,10 +1339,10 @@
                 ${ready ? '<div style="color:#8cff9d; margin-top:8px; font-size:11px;">達成済みです。受付職員へ報告してください。</div>' : ''}
                 ${actionButton}
                 ${travelButton}
-            `, { onClose: () => Guild.openBoard() });
+            `, { onClose: () => Guild.openBoard({ preserveReturn: true }) });
             const accept = document.getElementById('guild-detail-accept');
             if (accept) accept.onclick = () => {
-                if (Guild.acceptQuest(id)) Guild.openBoard();
+                if (Guild.acceptQuest(id)) Guild.openBoard({ preserveReturn: true });
                 else if (typeof Menu !== 'undefined' && typeof Menu.msg === 'function') Menu.msg(Guild.lastAcceptError || '依頼を受注できませんでした。', () => Guild.showQuestDetail(id));
             };
             const challenge = document.getElementById('guild-detail-challenge');
@@ -1299,7 +1356,7 @@
             if (cancel) cancel.onclick = () => {
                 const execute = () => {
                     if (!Guild.cancelQuest(id)) return;
-                    Guild.openBoard();
+                    Guild.openBoard({ preserveReturn: true });
                 };
                 if (typeof Menu !== 'undefined' && typeof Menu.confirm === 'function') {
                     Menu.confirm('この依頼をキャンセルしますか？\n現在の進捗は失われます。', execute);
@@ -1309,7 +1366,10 @@
             };
         },
 
-        openBoard() {
+        openBoard(options = {}) {
+            if (options.returnMode) Guild.boardReturnMode = String(options.returnMode);
+            else if (!options.preserveReturn) Guild.boardReturnMode = 'field';
+
             const scene = document.getElementById('guild-scene');
             if (!scene || scene.style.display === 'none') App.changeScene('guild');
             const state = Guild.ensureState();
@@ -1317,20 +1377,47 @@
             const html = state.offers.map(id => Guild.questCard(id)).join('');
             const dailyInfo = Guild.getDailyAcceptInfo(state);
             const adButton = dailyInfo.adAvailable
-                ? '<button id="guild-board-ad-bonus" class="menu-btn" style="width:100%; margin-top:8px; border-color:#8bbcff; color:#dcecff;">広告を見て本日の受注枠を10件追加</button>'
-                : '<div style="margin-top:8px; font-size:10px; color:#777; text-align:center;">本日の広告による受注枠追加は使用済みです。</div>';
+                ? '<button id="guild-board-ad-bonus" class="menu-btn" style="min-height:38px; padding:7px 6px; border-color:#8bbcff; color:#dcecff; font-size:10px; line-height:1.35;">広告視聴で受注枠 +10</button>'
+                : '<button class="menu-btn" disabled style="min-height:38px; padding:7px 6px; border-color:#444; color:#666; background:#171717; font-size:10px; line-height:1.35;">広告追加済み</button>';
             Facilities.showModal('guild-scene', '依頼掲示板', `
-                <div style="font-size:11px; color:#aaa;">依頼は最大5件。Cランク以上ではSSR以上の依頼迷宮が発生します。受注中の依頼は更新しても残ります。</div>
-                <div style="margin-top:8px; padding:8px; border:1px solid #5d513a; color:${dailyInfo.remaining > 0 ? '#ffe49a' : '#ff9f9f'}; font-size:11px;">本日の受注: ${dailyInfo.used}/${dailyInfo.limit}（残り${dailyInfo.remaining}件）</div>
-                ${html || '<div style="padding:16px; color:#888;">現在紹介できる依頼はありません。</div>'}
-                <button id="guild-board-refresh" class="menu-btn" style="width:100%; margin-top:12px;">依頼を更新する</button>
-                ${adButton}
-            `, { onClose: () => App.changeScene('field') });
+                <div style="height:100%; min-height:0; display:flex; flex-direction:column;">
+                    <div style="flex-shrink:0;">
+                        <div style="font-size:10px; line-height:1.5; color:#aaa;">依頼は最大5件。Cランク以上ではSSR以上の依頼迷宮が発生します。受注中の依頼は更新しても残ります。</div>
+                        <div style="margin-top:7px; padding:8px; border:1px solid #5d513a; background:rgba(67,48,16,.18);">
+                            <div style="display:flex; justify-content:space-between; gap:8px; align-items:center; color:${dailyInfo.remaining > 0 ? '#ffe49a' : '#ff9f9f'}; font-size:11px; font-weight:bold;">
+                                <span>本日の受注: ${dailyInfo.used}/${dailyInfo.limit}</span>
+                                <span>残り ${dailyInfo.remaining}件</span>
+                            </div>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:7px;">
+                                <button id="guild-board-refresh" class="menu-btn" style="min-height:38px; padding:7px 6px; font-size:10px;">依頼を更新</button>
+                                ${adButton}
+                            </div>
+                        </div>
+                        <div style="font-size:10px; color:#ffd56b; margin:9px 2px 6px;">紹介中のギルドクエスト</div>
+                    </div>
+                    <div id="guild-board-quest-list" class="scroll-area" style="flex:1 1 auto; min-height:0; overflow-y:auto; padding-right:5px; overscroll-behavior:contain;">
+                        ${html || '<div style="padding:16px; color:#888; text-align:center;">現在紹介できる依頼はありません。</div>'}
+                    </div>
+                </div>
+            `, {
+                onClose: () => Guild.returnFromBoard(),
+                modalMaxWidth: '420px',
+                modalHeight: 'calc(100% - 24px)',
+                modalMaxHeight: 'calc(100% - 24px)',
+                bodyFlex: true,
+                bodyMaxHeight: 'none',
+                bodyOverflowY: 'hidden',
+                closeMarginTop: '9px',
+                layerPadding: '12px'
+            });
             document.querySelectorAll('.guild-quest-entry').forEach(button => {
                 button.onclick = () => Guild.showQuestDetail(button.dataset.guildQuestId);
             });
             const refresh = document.getElementById('guild-board-refresh');
-            if (refresh) refresh.onclick = () => { Guild.refreshOffers(); Guild.openBoard(); };
+            if (refresh) refresh.onclick = () => {
+                Guild.refreshOffers();
+                Guild.openBoard({ preserveReturn: true });
+            };
             const adBonus = document.getElementById('guild-board-ad-bonus');
             if (adBonus) adBonus.onclick = () => Guild.grantDailyAcceptAdBonus();
         },
