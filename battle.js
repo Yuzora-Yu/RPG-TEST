@@ -429,6 +429,20 @@ const Battle = {
             }).filter(p => p !== null);
         }
 
+        const forcedAllyAilments = Array.isArray(App.data.battle?.guildChallengeAllyAilments)
+            ? App.data.battle.guildChallengeAllyAilments
+            : [];
+        if (forcedAllyAilments.length) {
+            Battle.party.forEach(player => {
+                if (!player) return;
+                player.battleStatus = player.battleStatus || { buffs: {}, debuffs: {}, ailments: {} };
+                player.battleStatus.ailments = player.battleStatus.ailments || {};
+                forcedAllyAilments.forEach(ailment => {
+                    player.battleStatus.ailments[String(ailment)] = { turns: null, forced: true };
+                });
+            });
+        }
+
         if (Battle.party.length === 0 || Battle.party.every(p => p.isDead)) {
             App.log("戦えるメンバーがいません！");
             Battle.endBattle(true); return;
@@ -667,6 +681,7 @@ const Battle = {
             acts: clone(enemy.acts || []),
             race: enemy.race,
             image: enemy.image || null,
+            imageId: enemy.imageId ?? null,
             traits: clone(enemy.traits || []),
             passive: clone(enemy.passive || {}),
             drops: clone(enemy.drops || null),
@@ -713,6 +728,7 @@ const Battle = {
         enemy.acts = clone(snapshot.acts?.length ? snapshot.acts : (enemy.acts || base.acts || [1]));
         enemy.race = snapshot.race || enemy.race || base.race || '不明';
         enemy.image = snapshot.image || enemy.image || base.image || base.img || null;
+        enemy.imageId = snapshot.imageId ?? enemy.imageId ?? base.imageId ?? base.baseImageId ?? null;
         enemy.traits = clone(snapshot.traits ?? enemy.traits ?? base.traits ?? []);
         enemy.passive = clone(snapshot.passive ?? enemy.passive ?? base.passive ?? {});
         enemy.drops = clone(snapshot.drops ?? enemy.drops ?? base.drops ?? null);
@@ -794,6 +810,7 @@ const Battle = {
         m.elmAtk = JSON.parse(JSON.stringify(base.elmAtk || {}));
         m.elmRes = JSON.parse(JSON.stringify(base.elmRes || {}));
         m.image = base.image || base.img || m.image || null;
+        m.imageId = base.imageId ?? base.baseImageId ?? m.imageId ?? null;
         m.finDmg = 0;
         m.finRed = 0;
 
@@ -862,8 +879,8 @@ const Battle = {
     },
 
     applyMapEnemyBoost: (enemy, boost) => {
-        if (!enemy || !boost || enemy.isRare) return enemy;
-        const scale = Math.max(0.1, Number(boost.statMultiplier || boost.scale || 1) || 1);
+        if (!enemy || !boost || (enemy.isRare && boost.applyToRares !== true)) return enemy;
+        const scale = Math.max(0.1, Number(enemy.isRare ? (boost.rareStatMultiplier || boost.statMultiplier || boost.scale || 1) : (boost.statMultiplier || boost.scale || 1)) || 1);
         const scaleNumber = (value, rate, min = 0) => {
             const n = Number(value || 0);
             if (!Number.isFinite(n)) return value;
@@ -900,6 +917,22 @@ const Battle = {
         enemy.resists = JSON.parse(JSON.stringify(enemy.resists || {}));
         Object.entries(boost.resists || {}).forEach(([key, value]) => {
             enemy.resists[key] = Number(enemy.resists[key] || 0) + Number(value || 0);
+        });
+
+        enemy.traits = Array.isArray(enemy.traits) ? JSON.parse(JSON.stringify(enemy.traits)) : [];
+        (boost.traits || []).forEach(trait => {
+            const id = Number(trait?.id);
+            if (!Number.isFinite(id)) return;
+            const current = enemy.traits.find(value => Number(value?.id) === id);
+            if (current) current.level = Math.max(Number(current.level || 1), Math.max(1, Number(trait.level || 1)));
+            else enemy.traits.push({ id, level: Math.max(1, Number(trait.level || 1)), battleCount: 0 });
+        });
+
+        enemy.acts = Array.isArray(enemy.acts) ? JSON.parse(JSON.stringify(enemy.acts)) : [];
+        (boost.extraSkillIds || []).map(Number).filter(id => Number.isFinite(id) && id >= 100).forEach(id => {
+            if (!enemy.acts.some(act => Number(typeof act === 'object' ? act.id : act) === id)) {
+                enemy.acts.push({ id, rate: 20, condition: 0 });
+            }
         });
 
         enemy.mapEnemyBoost = JSON.parse(JSON.stringify(boost));
@@ -1012,8 +1045,18 @@ const Battle = {
                 storedIds.forEach((id, i) => {
                     const base = Battle.getMonsterBaseById(id);
                     if (!base) return;
-                    const m = Battle.createDeepFloorMonster(Battle.cloneMonsterBase(base), storedFloor, true);
+                    let m = Battle.createDeepFloorMonster(Battle.cloneMonsterBase(base), storedFloor, true);
                     if (!m) return;
+                    const mult = Math.max(1, Number(battleData.bossStatMultiplier || 1));
+                    if (mult > 1) {
+                        m.hp = Math.max(1, Math.floor(Number(m.hp || 1) * mult));
+                        m.baseMaxHp = Math.max(1, Math.floor(Number(m.baseMaxHp || m.hp || 1) * mult));
+                        ['atk', 'def', 'spd', 'mag', 'mdef'].forEach(key => {
+                            if (m.baseStats?.[key] !== undefined) m.baseStats[key] = Math.max(0, Math.floor(Number(m.baseStats[key] || 0) * mult));
+                            if (m[key] !== undefined) m[key] = Math.max(0, Math.floor(Number(m[key] || 0) * mult));
+                        });
+                    }
+                    m = Battle.applyMapEnemyBoost(m, battleData.guildChallengeEnemyBoost || null);
                     if (storedIds.length > 1) m.name += String.fromCharCode(65 + i);
                     newEnemies.push(m);
                 });
@@ -1022,7 +1065,11 @@ const Battle = {
                 storedIds.forEach((id, i) => {
                     const base = Battle.getMonsterBaseById(id);
                     if (!base) return;
-                    pushBase(base, i, storedIds.length, { isBossBattle: true });
+                    pushBase(base, i, storedIds.length, {
+                        isBossBattle: true,
+                        storyBossStatMultiplier: battleData.bossStatMultiplier || 1,
+                        trialEnemyBoost: battleData.guildChallengeEnemyBoost || null
+                    });
                 });
             }
             if (newEnemies.length > 0) return newEnemies;
@@ -1096,7 +1143,8 @@ const Battle = {
             if (newEnemies.length > 0) return newEnemies;
         }
 
-        if (floor >= 201) {
+        const hasConfiguredEncounterPool = !isBoss && Array.isArray(battleData.monsters) && battleData.monsters.length > 0;
+        if (floor >= 201 && !hasConfiguredEncounterPool) {
             if (isBoss) {
                 Battle.log('<span style="color:#ff0000; font-size:1em; font-weight:bold;">\u6df1\u6df5\u306e\u5b88\u8b77\u8005\u304c\u73fe\u308c\u305f\uff01</span>');
                 let candidates = (window.MonsterData?.bossMonsters || DB.MONSTERS || [])
@@ -1163,6 +1211,23 @@ const Battle = {
                 : (typeof Field !== 'undefined' && Field.currentMapData && Array.isArray(Field.currentMapData.rareMonsters) ? Field.currentMapData.rareMonsters : null);
             if (!rareDefs || rareDefs.length === 0) return null;
 
+            const mapRareChance = typeof Field !== 'undefined' && Field.currentMapData
+                ? Field.currentMapData.rareEncounterChance
+                : null;
+            const configuredChanceRaw = battleData.rareEncounterChance ?? mapRareChance;
+            if (configuredChanceRaw !== null && configuredChanceRaw !== undefined && Number.isFinite(Number(configuredChanceRaw))) {
+                const configuredChance = Math.max(0, Math.min(1, Number(configuredChanceRaw)));
+                if (configuredChance <= 0 || Math.random() >= configuredChance) return null;
+                const pool = rareDefs.slice();
+                while (pool.length > 0) {
+                    const index = Math.floor(Math.random() * pool.length);
+                    const [def] = pool.splice(index, 1);
+                    const base = Battle.getMonsterBaseById(def?.id || def?.monsterId);
+                    if (Battle.isNormalEncounterBase(base)) return base;
+                }
+                return null;
+            }
+
             for (const def of rareDefs) {
                 const rate = Math.max(0, Math.min(1, Number(def.rate ?? def.chance ?? 0)));
                 if (rate <= 0 || Math.random() >= rate) continue;
@@ -1199,7 +1264,8 @@ const Battle = {
 
             if (monsterData && !Battle.isSpecialBossBase(monsterData) && (!monsterData.isBoss || monsterData.isRare)) {
                 const m = Battle.createMonsterFromBase(monsterData, { name: (monsterData.name || '\u4e0d\u660e\u306a\u9b54\u7269') + suffix(i, normalCount) });
-                const boost = (typeof Field !== 'undefined' && Field.currentMapData?.enemyBoost) ? Field.currentMapData.enemyBoost : null;
+                const boost = battleData.guildChallengeEnemyBoost
+                    || ((typeof Field !== 'undefined' && Field.currentMapData?.enemyBoost) ? Field.currentMapData.enemyBoost : null);
                 if (m) newEnemies.push(Battle.applyMapEnemyBoost(m, boost));
             }
         }
@@ -2986,6 +3052,15 @@ findNextActor: () => {
         if (!actor || actor.hp <= 0) return;
         const b = actor.battleStatus;
         if (!b) return;
+        const forcedAilments = Array.isArray(App.data.battle?.guildChallengeAllyAilments)
+            ? App.data.battle.guildChallengeAllyAilments
+            : [];
+        if (Battle.party.includes(actor) && forcedAilments.length) {
+            b.ailments = b.ailments || {};
+            forcedAilments.forEach(ailment => {
+                b.ailments[String(ailment)] = { turns: null, forced: true };
+            });
+        }
 
         // [1] 状態異常ダメージ (行動ごとに発生)
         let dmgRate = 0;
@@ -4191,9 +4266,15 @@ findNextActor: () => {
 
     resolveMonsterImage: (monster, graphicsImages = {}) => {
         const baseName = Battle.cleanMonsterDisplayName(monster.name);
+        const baseDefinition = Battle.getMonsterBaseById(monster?.baseId || monster?.id) || {};
+        const imageSource = {
+            ...baseDefinition,
+            ...monster,
+            imageId: monster?.imageId ?? baseDefinition.imageId ?? baseDefinition.baseImageId ?? null
+        };
         const imageById = (typeof MonsterData !== 'undefined' && typeof MonsterData.getImagePath === 'function')
-            ? MonsterData.getImagePath(monster)
-            : (window.PRISMA_ASSETS?.getMonsterImagePath?.(monster) || null);
+            ? MonsterData.getImagePath(imageSource)
+            : (window.PRISMA_ASSETS?.getMonsterImagePath?.(imageSource) || null);
         const map = window.MonsterImageMap || {};
         const mapped = map[monster.baseId] || map[monster.id] || map[baseName];
         const mapSrc = mapped
@@ -4653,6 +4734,56 @@ findNextActor: () => {
         contentEl.innerHTML = html;
     },
 	
+    tryCreateSkillBookDrop: (enemy, drops) => {
+        if (!enemy || enemy.isFled || !enemy.isDead || Math.random() >= 0.005) return false;
+        if (typeof App === 'undefined' || typeof App.extractMonsterSkillIds !== 'function' || typeof App.getSkillBookItemId !== 'function') return false;
+        const base = Battle.getMonsterBaseById(enemy.baseId || enemy.id) || enemy;
+        const skillIds = Array.from(new Set([
+            ...App.extractMonsterSkillIds(base),
+            ...App.extractMonsterSkillIds(enemy)
+        ].map(Number).filter(id => Number.isFinite(id) && id >= 100)));
+        if (!skillIds.length) return false;
+        const skillId = skillIds[Math.floor(Math.random() * skillIds.length)];
+        const itemId = App.getSkillBookItemId(skillId);
+        const itemDef = DB.ITEMS.find(item => Number(item.id) === Number(itemId));
+        if (!itemDef) return false;
+        if (!App.data.items || typeof App.data.items !== 'object') App.data.items = {};
+        App.data.items[itemDef.id] = (App.data.items[itemDef.id] || 0) + 1;
+        drops.push({ name: itemDef.name, isRare: true, type: 'boss', kind: 'item', isSkillBook: true });
+        return true;
+    },
+
+    tryMonsterSkillEvolutionAfterBattle: async () => {
+        if (typeof App === 'undefined' || typeof App.getMonsterSkillEvolution !== 'function') return null;
+        const candidates = Battle.party.map(member => member?.uid ? App.getChar(member.uid) : null)
+            .filter((character, index, array) => character && App.isMonsterAlly?.(character) && array.indexOf(character) === index);
+        for (const character of candidates) {
+            const evolutions = (Array.isArray(character.skills) ? character.skills : []).map(Number)
+                .filter(id => Number.isFinite(id) && id >= 100)
+                .map(id => ({ fromId: id, to: App.getMonsterSkillEvolution(id) }))
+                .filter(entry => entry.to && !(character.skills || []).map(Number).includes(Number(entry.to.id)));
+            if (!evolutions.length || Math.random() >= 0.02) continue;
+            const selected = evolutions[Math.floor(Math.random() * evolutions.length)];
+            const from = DB.SKILLS.find(skill => Number(skill.id) === Number(selected.fromId));
+            const accepted = await new Promise(resolve => {
+                if (typeof Menu === 'undefined' || typeof Menu.confirm !== 'function') {
+                    resolve(false);
+                    return;
+                }
+                Menu.confirm(`${character.name}の「${from?.name || `スキル${selected.fromId}`}」が
+「${selected.to.name}」へ成長しそうだ！
+変化させますか？`, () => resolve(true), () => resolve(false));
+            });
+            if (!accepted) return null;
+            character.skills = Array.from(new Set((character.skills || []).map(Number)
+                .map(id => id === Number(selected.fromId) ? Number(selected.to.id) : id))).slice(0, 8);
+            character.skillBookSkills = [];
+            App.save();
+            return `<span style="color:#7fffd4; font-weight:bold;">${Battle.escapeHtml(character.name)}の「${Battle.escapeHtml(from?.name || `スキル${selected.fromId}`)}」が「${Battle.escapeHtml(selected.to.name)}」へ成長した！</span>`;
+        }
+        return null;
+    },
+
 	win: async () => {
 		// --- [修正の要点] 演出前に戦闘を「非アクティブ」にし、内部処理を完結させる ---
 		// これにより、演出中のリロード時に戦闘シーンに戻る（＝再度報酬が貰える）のを防ぎます
@@ -4735,6 +4866,21 @@ findNextActor: () => {
 		App.data.gold += totalGold;
 
 		const surviveMembers = Battle.party.filter(p => Battle.isBattleAlive(p));
+        const activeMemberByUid = new Map(Battle.party.filter(Boolean).map(member => [String(member.uid), member]));
+        const expRecipients = (Array.isArray(App.data?.characters) ? App.data.characters : [])
+            .filter(charData => charData?.uid)
+            .map(charData => {
+                const battleMember = activeMemberByUid.get(String(charData.uid)) || null;
+                const active = !!battleMember;
+                const alive = active && Battle.isBattleAlive(battleMember);
+                return {
+                    charData,
+                    battleMember,
+                    active,
+                    alive,
+                    rate: active ? (alive ? 1 : 0.5) : 0.25
+                };
+            });
 		const lbGrowthLogs = (typeof App.noteBattleVictory === 'function')
 			? App.noteBattleVictory(Battle.party.filter(p => p))
 			: [];
@@ -4917,6 +5063,25 @@ findNextActor: () => {
 			});
 		}
 
+        // 敵ごとに0.5%で、その個体が所持するID100以上のスキル書を抽選する。
+        Battle.enemies.forEach(enemy => {
+            if (Battle.tryCreateSkillBookDrop(enemy, drops)) hasRareDrop = true;
+        });
+
+        // クリア後の通常ランダムダンジョンでは、合成の壺をごく低確率で追加する。
+        const isPostgameRandomDungeon = App.data?.progress?.flags?.darkCastleCleared === true
+            && App.data?.location?.area === 'ABYSS'
+            && !App.data?.dungeon?.guildQuestRun;
+        if (isPostgameRandomDungeon && Math.random() < 0.0005) {
+            const potId = Number(window.PRISMA_SYNTHESIS_POT_ITEM_ID || 599999);
+            const pot = DB.ITEMS.find(item => Number(item.id) === potId);
+            if (pot) {
+                App.data.items[potId] = (App.data.items[potId] || 0) + 1;
+                drops.push({ name: pot.name, isRare: true, type: 'kai', kind: 'item' });
+                hasUltraRareDrop = true;
+            }
+        }
+
 		// --- [3] 深淵の魔窟限定：勝利時1%の仲間モンスター加入判定 ---
 		const monsterRecruitResult = (typeof App.tryRecruitMonsterAfterBattle === 'function')
 			? App.tryRecruitMonsterAfterBattle(Battle.enemies)
@@ -4970,6 +5135,12 @@ findNextActor: () => {
         }
 		Battle.log(`${totalGold} Goldを獲得！`);
 		Battle.log(`${totalExp} ポイントの経験値を 獲得した！`);
+        if (expRecipients.some(recipient => recipient.active && !recipient.alive)) {
+            Battle.log('<span style="color:#bbb;">戦闘不能の仲間は経験値を50%取得した。</span>');
+        }
+        if (expRecipients.some(recipient => !recipient.active)) {
+            Battle.log('<span style="color:#bbb;">控えの仲間は経験値を25%取得した。</span>');
+        }
         if (guildPromotionMessage) {
             Battle.log(`<span style="color:#ffd56b; font-weight:bold;">${Battle.escapeHtml(guildPromotionMessage).replace(/\n/g, '<br>')}</span>`);
         }
@@ -4987,21 +5158,20 @@ findNextActor: () => {
 		let hpRecovered = false; 
 		let mpRecovered = false;
 
-		// 勝利リザルトのループ処理
-		for (const p of surviveMembers) {
-			const charData = App.getChar(p.uid);
-			if (!charData) continue;
+		// 勝利リザルトの経験値処理。前衛生存100%、戦闘不能50%、控え25%。
+        for (const recipient of expRecipients) {
+            const { charData, battleMember: p, active, alive, rate } = recipient;
+            if (!charData) continue;
+            const awardedExp = Math.max(0, Math.floor(totalExp * rate));
+            const oldLv = charData.level;
 
-			const oldLv = charData.level;
+            // App.gainExp が [Lv通知, ステ上昇, スキル習得, 特性習得] の順で配列を返す
+            const lvLogs = App.gainExp(charData, awardedExp);
 
-			// App.gainExp が [Lv通知, ステ上昇, スキル習得, 特性習得] の順で配列を返す
-			const lvLogs = App.gainExp(charData, totalExp);
-
-			// 各レベルの通知と、その直後に続く成長詳細をひとまとまりで保持する。
-            // リザルト表示時は「通知 → SE完了 → 詳細 → 入力待ち」の順で進める。
+            // 各レベルの通知と、その直後に続く成長詳細をひとまとまりで保持する。
             let currentLevelEvent = null;
-			for (const msg of lvLogs) {
-				if (!msg) continue;
+            for (const msg of lvLogs) {
+                if (!msg) continue;
                 const text = String(msg);
                 if (text.includes('レベル') && text.includes('に上がった！')) {
                     currentLevelEvent = { notification: msg, details: [] };
@@ -5011,46 +5181,58 @@ findNextActor: () => {
                 } else {
                     resultLevelLooseLogs.push(msg);
                 }
-			}
+            }
 
-			// 特性の成長判定
-			let traitGrowthLog = null;
-			if (typeof PassiveSkill !== 'undefined' && PassiveSkill.checkTraitGrowth) {
-				traitGrowthLog = PassiveSkill.checkTraitGrowth(charData);
-			}
+            // 戦闘後の特性成長・回復は、従来どおり生存して戦ったメンバーだけ。
+            if (active && alive) {
+                let traitGrowthLog = null;
+                if (typeof PassiveSkill !== 'undefined' && PassiveSkill.checkTraitGrowth) {
+                    traitGrowthLog = PassiveSkill.checkTraitGrowth(charData);
+                }
+                if (traitGrowthLog) {
+                    const logs = traitGrowthLog.split('<br>');
+                    for (const log of logs) {
+                        if (log) resultTraitGrowthLogs.push(log);
+                    }
+                }
+            }
 
-			if (traitGrowthLog) {
-				const logs = traitGrowthLog.split('<br>');
-				for (const log of logs) {
-					if (log) resultTraitGrowthLogs.push(log);
-				}
-			}
-
-			// ステータス更新および回復処理
-			if (charData.level > oldLv) {
-				const stats = App.calcStats(charData);
-				p.level = charData.level;
-				p.baseMaxHp = stats.maxHp;
-				p.baseMaxMp = stats.maxMp;
-				p.hp = p.baseMaxHp;
-				p.mp = p.baseMaxMp;
-			} else {
-				if (partyHpRegen > 0 && p.hp < p.baseMaxHp) {
-					const amt = Math.floor(p.baseMaxHp * (partyHpRegen / 100));
-					if (amt > 0) {
-						p.hp = Math.min(p.baseMaxHp, p.hp + amt);
-						hpRecovered = true;
-					}
-				}
-				if (partyMpRegen > 0 && p.mp < p.baseMaxMp) {
-					const amt = Math.floor(p.baseMaxMp * (partyMpRegen / 100));
-					if (amt > 0) {
-						p.mp = Math.min(p.baseMaxMp, p.mp + amt);
-						mpRecovered = true;
-					}
-				}
-			}
-		}
+            if (p && charData.level > oldLv) {
+                const stats = App.calcStats(charData);
+                p.level = charData.level;
+                p.baseMaxHp = stats.maxHp;
+                p.baseMaxMp = stats.maxMp;
+                if (alive) {
+                    p.hp = p.baseMaxHp;
+                    p.mp = p.baseMaxMp;
+                } else {
+                    // レベルアップの全回復で戦闘不能が解除されないようにする。
+                    p.hp = 0;
+                    p.isDead = true;
+                    charData.currentHp = 0;
+                    p.mp = Math.min(p.baseMaxMp, Math.max(0, Number(p.mp || charData.currentMp || 0)));
+                }
+            } else if (p && active && alive) {
+                if (partyHpRegen > 0 && p.hp < p.baseMaxHp) {
+                    const amt = Math.floor(p.baseMaxHp * (partyHpRegen / 100));
+                    if (amt > 0) {
+                        p.hp = Math.min(p.baseMaxHp, p.hp + amt);
+                        hpRecovered = true;
+                    }
+                }
+                if (partyMpRegen > 0 && p.mp < p.baseMaxMp) {
+                    const amt = Math.floor(p.baseMaxMp * (partyMpRegen / 100));
+                    if (amt > 0) {
+                        p.mp = Math.min(p.baseMaxMp, p.mp + amt);
+                        mpRecovered = true;
+                    }
+                }
+            } else if (p && active && !alive) {
+                p.hp = 0;
+                p.isDead = true;
+                charData.currentHp = 0;
+            }
+        }
 
         for (const event of resultLevelEvents) {
             Battle.log(event.notification);
@@ -5074,6 +5256,12 @@ findNextActor: () => {
 			Battle.log(msg);
 			await Battle.resultWait(250);
 		}
+
+        const monsterSkillEvolutionLog = await Battle.tryMonsterSkillEvolutionAfterBattle();
+        if (monsterSkillEvolutionLog) {
+            Battle.log(monsterSkillEvolutionLog);
+            await Battle.resultWait(350);
+        }
 
 		const uniqueLbGrowthLogs = [];
 		const seenLbGrowthLogs = new Set();

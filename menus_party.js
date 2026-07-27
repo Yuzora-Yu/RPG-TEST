@@ -598,8 +598,9 @@ const MenuParty = {
 				const c = App.getChar ? App.getChar(id) : null;
 				return App.isMonsterAlly(c);
 			}).length;
-			if (monsterCount > 1) {
-				Menu.msg("パーティに編成できる仲間モンスターは1体だけです。");
+			const monsterLimit = typeof App.getMonsterAllyPartyLimit === 'function' ? App.getMonsterAllyPartyLimit() : 1;
+			if (monsterCount > monsterLimit) {
+				Menu.msg(`パーティに編成できる仲間モンスターは${monsterLimit}体までです。`);
 				return;
 			}
 		}

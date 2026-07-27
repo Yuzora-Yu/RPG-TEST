@@ -1584,11 +1584,11 @@ const StoryManager = {
                         background: rgba(0,0,0,0.72);
                         border: none;
                         border-radius: 2px;
-                        padding: 16px;
+                        padding: 12px 16px;
                         box-sizing: border-box;
-                        height: 148px;
-                        min-height: 148px;
-                        max-height: 148px;
+                        height: 112px;
+                        min-height: 112px;
+                        max-height: 112px;
                         overflow: hidden;
                         box-shadow: none;
                         z-index: 10;

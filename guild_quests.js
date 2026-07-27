@@ -954,7 +954,7 @@
     // 自動生成依頼の正本。実際に掲示される依頼は guild.js 側でこのテンプレートから生成し、
     // 生成結果そのものをセーブへ保存する。受注後に再読込しても討伐数・報酬・対象範囲は変化しない。
     const GUILD_QUEST_GENERATOR_MASTER = {
-        schemaVersion: 2,
+        schemaVersion: 3,
         generatedOfferRatio: 0.75,
         normalHunts: [
             {
@@ -1023,6 +1023,34 @@
                 names: ['魔王城外郭の掃討', '暗黒回廊の安全確保', 'ガルヴァニア巡回任務']
             }
         ],
+        challengeDungeons: {
+            enabled: true,
+            minGuildRank: 'C',
+            minRarity: 'SSR',
+            maxOffersOnBoard: 2,
+            offerWeight: 0.48,
+            floorRanges: {
+                SSR: [3, 5],
+                UR: [4, 7],
+                EX: [5, 9]
+            },
+            bossOnlyChance: { SSR: 0, UR: 0.30, EX: 0.50 },
+            themes: [
+                { id: 'fire', label: '灼熱', element: '火', visualThemeIds: ['ignis-volcano'], names: ['灼熱迷宮の鎮圧', '炎獄の最深部調査'] },
+                { id: 'water', label: '氷水', element: '水', visualThemeIds: ['seabed-temple', 'crena-cave'], names: ['氷水回廊の鎮圧', '蒼海迷宮の最深部調査'] },
+                { id: 'wind', label: '暴風', element: '風', visualThemeIds: ['forbidden-forest', 'forest-wind-hole'], names: ['暴風迷宮の踏破', '風穴深部の討伐任務'] },
+                { id: 'thunder', label: '雷霆', element: '雷', visualThemeIds: ['thunder-fort'], names: ['雷霆要塞の制圧', '帯電回廊の最深部調査'] },
+                { id: 'light', label: '聖光', element: '光', visualThemeIds: ['light-palace', 'great-lighthouse'], names: ['聖光迷宮の踏破', '光廊最深部の討伐任務'] },
+                { id: 'dark', label: '暗黒', element: '闇', visualThemeIds: ['dark-castle', 'dark-shrine', 'galvania-cave'], names: ['暗黒迷宮の鎮圧', '魔城深部の討伐任務'] }
+            ],
+            gimmicks: [
+                { id: 'element50', label: '敵のテーマ属性攻撃+50%', minRarity: 'SSR' },
+                { id: 'regen10', label: '敵全員が再生Lv10', minRarity: 'SSR' },
+                { id: 'guts10', label: '敵全員が根性Lv10', minRarity: 'UR' },
+                { id: 'rare50_toxic', label: 'レアモンスター率50%／味方は常に猛毒', minRarity: 'EX' },
+                { id: 'rare50_elite', label: 'レアモンスター率50%／レア以外は超強敵', minRarity: 'EX' }
+            ]
+        },
         abyss: {
             enabled: true,
             maxOffersOnBoard: 2,

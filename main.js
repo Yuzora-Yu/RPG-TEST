@@ -254,6 +254,8 @@ class Monster extends Entity {
         
         this.acts = data.acts || [1];
         this.baseId = data.id;
+        // 表示用画像IDは昇格試験など、戦闘用IDと画像アセットIDが異なる敵で必須。
+        this.imageId = data.imageId ?? data.baseImageId ?? null;
         this.actCount = data.actCount || 1;
         this.isBoss = data.isBoss || false;
         this.isRare = data.isRare || false;
@@ -721,6 +723,7 @@ const App = {
         // --- 修正点1: 読み込み失敗時に自動でデータを作成しない ---
         // これにより startGameLogic 内の判定が機能し、セーブがない場合はタイトル(main.html)へ飛びます
         if (!App.data) return;
+        App.data = App.migrateImportedSaveData(App.data);
 
         const initial = App.getInitialData();
         if (typeof App.purgeInitialInventoryEquipment === 'function') {
@@ -2392,10 +2395,38 @@ const App = {
         }).length;
     },
 
+    getMonsterAllyPartyLimit: () => {
+        const flags = App.data?.progress?.flags || {};
+        return (flags.monsterArenaSRankFirstClear === true || flags.monsterArenaSFirstClear === true) ? 2 : 1;
+    },
+
+    completeMonsterArenaRank: (rank) => {
+        const normalized = String(rank || '').toUpperCase();
+        if (!normalized) return { ok: false, message: '格闘場ランクを確認できません。' };
+        if (!App.data.progress) App.data.progress = {};
+        if (!App.data.progress.flags) App.data.progress.flags = {};
+        const flags = App.data.progress.flags;
+        if (!flags.monsterArenaClearedRanks || typeof flags.monsterArenaClearedRanks !== 'object') flags.monsterArenaClearedRanks = {};
+        const firstClear = flags.monsterArenaClearedRanks[normalized] !== true;
+        flags.monsterArenaClearedRanks[normalized] = true;
+        let potGranted = false;
+        let partyLimitUnlocked = false;
+        if (normalized === 'S' && firstClear) {
+            flags.monsterArenaSRankFirstClear = true;
+            partyLimitUnlocked = true;
+            const potId = Number(window.PRISMA_SYNTHESIS_POT_ITEM_ID || 599999);
+            if (!App.data.items || typeof App.data.items !== 'object') App.data.items = {};
+            App.data.items[potId] = Number(App.data.items[potId] || 0) + 1;
+            potGranted = true;
+        }
+        App.save();
+        return { ok: true, rank: normalized, firstClear, potGranted, partyLimitUnlocked, monsterPartyLimit: App.getMonsterAllyPartyLimit() };
+    },
+
     canAddMonsterAllyToParty: (uid = null) => {
         const target = uid ? App.getChar(uid) : null;
         if (target && !App.isMonsterAlly(target)) return true;
-        return App.getMonsterAllyInPartyCount(uid) <= 0;
+        return App.getMonsterAllyInPartyCount(uid) < App.getMonsterAllyPartyLimit();
     },
 
     getMonsterRecruitCurrentFloor: (enemy = null, baseMonster = null) => {
@@ -2684,7 +2715,7 @@ const App = {
             actCount: 1,
             resists: {},
             elmRes: {},
-            skills: skillIds,
+            skills: skillIds.slice(0, 8),
             equips: { '武器': null, '盾': null, '頭': null, '体': null, '足': null },
             traits,
             disabledTraits: [],
@@ -2746,7 +2777,7 @@ const App = {
         App.data.characters.push(saveAlly);
 
         let joinedParty = false;
-        if (Array.isArray(App.data.party) && App.getMonsterAllyInPartyCount() === 0) {
+        if (Array.isArray(App.data.party) && App.getMonsterAllyInPartyCount() < App.getMonsterAllyPartyLimit()) {
             const emptyIndex = App.data.party.findIndex(uid => !uid);
             if (emptyIndex >= 0) {
                 App.data.party[emptyIndex] = saveAlly.uid;
@@ -3025,6 +3056,7 @@ const App = {
             return false;
         }
         quests[questId] = {
+            ...(current && typeof current === 'object' ? current : {}),
             state: 'accepted',
             startedAt: Date.now(),
             completedAt: null,
@@ -3185,16 +3217,26 @@ const App = {
             return true;
         }
         if (state !== 'accepted') {
+            const storedState = App.ensureQuestState()[questId] || {};
+            // 仲間加入などの依頼は、依頼内容を機械的に先出しせず、まず当人との会話を見せる。
+            if (quest.startEventId && !storedState.introSeen && typeof StoryManager !== 'undefined' && typeof StoryManager.executeEvent === 'function') {
+                await StoryManager.executeEvent(quest.startEventId);
+                App.ensureQuestState()[questId] = {
+                    ...storedState,
+                    state: 'available',
+                    introSeen: true,
+                    introSeenAt: Date.now(),
+                    progress: storedState.progress || {}
+                };
+                App.save();
+            }
             const accepted = await App.showQuestModal(questId, {
                 offer: true,
-                statusLabel: '紹介中',
+                statusLabel: '依頼を受けますか？',
                 bodyText: quest.startText || quest.objective || quest.name,
                 defaultValue: false
             });
             if (!accepted) return false;
-            if (quest.startEventId && typeof StoryManager !== 'undefined' && typeof StoryManager.executeEvent === 'function') {
-                await StoryManager.executeEvent(quest.startEventId);
-            }
             App.acceptQuest(questId, { silent: true });
             if (App.isQuestObjectiveComplete(questId) && Array.isArray(quest.itemRequirements) && quest.itemRequirements.length > 0) {
                 if (quest.reportEventId && typeof StoryManager !== 'undefined' && typeof StoryManager.executeEvent === 'function') {
@@ -4572,13 +4614,13 @@ load: () => {
                 if (key === 'spd') incSpd = Math.max(1, Math.floor(incSpd * mult));
                 if (key === 'mag') incMag = Math.max(1, Math.floor(incMag * mult));
             });
-            if (!silent && bonusOptions.log !== false) {
+            if (!silent && bonusOptions.log !== false && label) {
                 growthBonusLogs.push(`${label} x${mult.toFixed(1)} (${keys.join(', ')})`);
             }
         };
 
         if (charData.level === 50 || charData.level === 100) {
-            applyGrowthBonus(['hp', 'mp', 'atk', 'def', 'mdef', 'spd', 'mag'], 5 + Math.random(), ''); //50レベル・100レベル成長ボーナス
+            applyGrowthBonus(['hp', 'mp', 'atk', 'def', 'mdef', 'spd', 'mag'], 5 + Math.random(), '', { log: false }); //50レベル・100レベル成長ボーナス（倍率は非表示）
         } else if (Math.random() < 0.12) {
             const keys = ['hp', 'mp', 'atk', 'def', 'mdef', 'spd', 'mag'].sort(() => Math.random() - 0.5).slice(0, Math.random() < 0.25 ? 2 : 1);
             applyGrowthBonus(keys, 2 + Math.random(), '', { log: false }); //ひらめき成長
@@ -4624,7 +4666,7 @@ load: () => {
         }
 
         // 3. スキル習得
-        const newSkill = App.checkNewSkill(charData);
+        const newSkill = App.isMonsterAlly(charData) ? null : App.checkNewSkill(charData);
         if (newSkill) {
             if(!charData.skills) charData.skills = [];
             if(!charData.skills.includes(newSkill.id)) {
@@ -5187,6 +5229,156 @@ load: () => {
         return null;
     },
 
+    getSkillBookItemId: (skillId) => {
+        const id = Math.floor(Number(skillId));
+        if (!Number.isFinite(id) || id < 100) return null;
+        return Number(window.PRISMA_SKILL_BOOK_ITEM_BASE || 600000) + id;
+    },
+
+    getSkillBookSkill: (itemOrId) => {
+        const item = (itemOrId && typeof itemOrId === 'object')
+            ? itemOrId
+            : (typeof DB !== 'undefined' ? DB.ITEMS.find(entry => Number(entry.id) === Number(itemOrId)) : null);
+        const skillId = Math.floor(Number(item?.skillId));
+        if (!Number.isFinite(skillId) || skillId < 100) return null;
+        return typeof DB !== 'undefined' ? DB.SKILLS.find(skill => Number(skill.id) === skillId) || null : null;
+    },
+
+    getSkillBookCapacity: (character) => App.isMonsterAlly(character) ? 8 : 2,
+
+    getSkillBookReplacementIds: (character) => {
+        if (!character) return [];
+        const unique = values => Array.from(new Set((Array.isArray(values) ? values : [])
+            .map(Number).filter(id => Number.isFinite(id) && id >= 100)));
+        return App.isMonsterAlly(character)
+            ? unique(character.skills)
+            : unique(character.skillBookSkills).filter(id => Array.isArray(character.skills) && character.skills.map(Number).includes(id));
+    },
+
+    learnSkillFromBook: (characterOrUid, skillId, replaceSkillId = null, options = {}) => {
+        const character = typeof characterOrUid === 'string' ? App.getChar(characterOrUid) : characterOrUid;
+        const id = Math.floor(Number(skillId));
+        const skill = typeof DB !== 'undefined' ? DB.SKILLS.find(entry => Number(entry.id) === id) : null;
+        if (!character || !skill || id < 100) return { ok: false, reason: 'invalid', message: 'スキルデータを確認できません。' };
+
+        const uniqueSkills = values => Array.from(new Set((Array.isArray(values) ? values : [])
+            .map(Number).filter(value => Number.isFinite(value) && value > 0)));
+        const uniqueBookSkills = values => uniqueSkills(values).filter(value => value >= 100);
+        character.skills = uniqueSkills(character.skills);
+        if (character.skills.includes(id)) {
+            return { ok: false, reason: 'known', message: `${character.name}はすでに${skill.name}を覚えている。` };
+        }
+
+        const isMonster = App.isMonsterAlly(character);
+        const capacity = App.getSkillBookCapacity(character);
+        const tracked = isMonster ? character.skills.filter(value => value >= 100) : uniqueBookSkills(character.skillBookSkills);
+        const replacement = replaceSkillId == null ? null : Math.floor(Number(replaceSkillId));
+        if (tracked.length >= capacity) {
+            if (!Number.isFinite(replacement) || !tracked.includes(replacement)) {
+                return { ok: false, reason: 'needsReplacement', replacementIds: tracked.slice(), capacity };
+            }
+            character.skills = character.skills.filter(value => Number(value) !== replacement);
+            if (!isMonster) character.skillBookSkills = tracked.filter(value => value !== replacement);
+        }
+
+        character.skills.push(id);
+        character.skills = uniqueSkills(character.skills);
+        if (isMonster) character.skills = character.skills.slice(0, 8);
+        if (!isMonster) {
+            character.skillBookSkills = uniqueBookSkills([...(character.skillBookSkills || []), id]).slice(-2);
+        } else {
+            character.skillBookSkills = [];
+        }
+        App.ensureCharacterBattleConfig?.(character);
+        if (options.save !== false) App.save();
+        return { ok: true, skill, replacedSkillId: replacement, character };
+    },
+
+    getMonsterSkillEvolution: (skillId) => {
+        const current = typeof DB !== 'undefined' ? DB.SKILLS.find(skill => Number(skill.id) === Number(skillId)) : null;
+        if (!current || Number(current.id) < 100) return null;
+        const type = String(current.type || '');
+        const elm = String(current.elm || '無');
+        const score = skill => {
+            const rate = Math.max(0, Number(skill?.rate || 0));
+            const base = Math.max(0, Number(skill?.base || 0));
+            const count = Math.max(1, Number(skill?.count || 1));
+            return (base + rate * 100) * count + Math.max(0, Number(skill?.mp || 0)) * 0.25;
+        };
+        const currentScore = score(current);
+        if (currentScore <= 0) return null;
+        const candidates = (DB.SKILLS || []).filter(skill => {
+            if (!skill || Number(skill.id) < 100 || Number(skill.id) === Number(current.id)) return false;
+            if (String(skill.type || '') !== type) return false;
+            if (String(skill.elm || '無') !== elm) return false;
+            return score(skill) >= currentScore * 1.12;
+        }).sort((left, right) => {
+            const scoreDiff = score(left) - score(right);
+            return scoreDiff !== 0 ? scoreDiff : Number(left.id) - Number(right.id);
+        });
+        return candidates[0] || null;
+    },
+
+    getMonsterFusionPreview: (primaryUid, materialUid, selectedSkillIds = null) => {
+        const primary = App.getChar(primaryUid);
+        const material = App.getChar(materialUid);
+        if (!primary || !material || primary.uid === material.uid || !App.isMonsterAlly(primary) || !App.isMonsterAlly(material)) {
+            return { ok: false, message: '合成する仲間モンスターを確認できません。' };
+        }
+        const allSkills = Array.from(new Set([...(primary.skills || []), ...(material.skills || [])]
+            .map(Number).filter(id => Number.isFinite(id) && id >= 100)));
+        let skills = Array.isArray(selectedSkillIds)
+            ? Array.from(new Set(selectedSkillIds.map(Number).filter(id => allSkills.includes(id))))
+            : allSkills.slice(0, 8);
+        if (skills.length > 8) skills = skills.slice(0, 8);
+        const stats = {};
+        ['hp', 'mp', 'atk', 'def', 'mag', 'mdef', 'spd'].forEach(key => {
+            const minimum = key === 'mp' ? 0 : 1;
+            stats[key] = Math.max(minimum, Math.floor((Number(primary[key] || 0) + Number(material[key] || 0)) / 4));
+        });
+        return { ok: true, primary, material, allSkills, skills, stats, requiresSkillSelection: allSkills.length > 8 };
+    },
+
+    fuseMonsterAllies: (primaryUid, materialUid, selectedSkillIds = null) => {
+        const preview = App.getMonsterFusionPreview(primaryUid, materialUid, selectedSkillIds);
+        if (!preview.ok) return preview;
+        if (preview.requiresSkillSelection && (!Array.isArray(selectedSkillIds) || preview.skills.length !== 8)) {
+            return { ...preview, ok: false, reason: 'needsSkillSelection', message: '引き継ぐスキルを8個選んでください。' };
+        }
+        const potId = Number(window.PRISMA_SYNTHESIS_POT_ITEM_ID || 599999);
+        if (Number(App.data?.items?.[potId] || 0) <= 0) return { ok: false, reason: 'noPot', message: '合成の壺を持っていません。' };
+
+        const { primary, material, skills, stats } = preview;
+        Object.assign(primary, stats, {
+            level: 1,
+            exp: 0,
+            sp: 0,
+            currentHp: stats.hp,
+            currentMp: stats.mp,
+            skills: skills.slice(0, 8),
+            skillBookSkills: [],
+            limitBreak: 0,
+            reincarnationCount: 0,
+            growthBase: { ...stats },
+            monsterFusionCount: Math.max(0, Number(primary.monsterFusionCount || 0)) + 1
+        });
+        primary.monsterAllyMeta = {
+            ...(primary.monsterAllyMeta || {}),
+            fusedAt: Date.now(),
+            absorbedMonsterId: material.monsterId || material.sourceMonsterId || null,
+            absorbedName: material.name || ''
+        };
+        App.data.characters = (App.data.characters || []).filter(character => character && character.uid !== material.uid);
+        if (Array.isArray(App.data.party)) {
+            App.data.party = App.data.party.map(uid => uid === material.uid ? null : uid);
+        }
+        App.data.items[potId]--;
+        if (App.data.items[potId] <= 0) delete App.data.items[potId];
+        App.ensureCharacterBattleConfig?.(primary);
+        App.save();
+        return { ok: true, character: primary, consumedUid: material.uid, message: `${primary.name}は新たな力を得てレベル1になった！` };
+    },
+
     migrateImportedSaveData: (loadedData) => {
         if (!loadedData || typeof loadedData !== 'object' || Array.isArray(loadedData)) return loadedData;
 
@@ -5200,6 +5392,18 @@ load: () => {
                 }
                 if (typeof App.ensureLimitBreakProgress === 'function') {
                     App.ensureLimitBreakProgress(char);
+                }
+                const uniqueCharacterSkills = values => Array.from(new Set((Array.isArray(values) ? values : [])
+                    .map(Number).filter(id => Number.isFinite(id) && id > 0)));
+                const uniqueBookSkills = values => uniqueCharacterSkills(values).filter(id => id >= 100);
+                if (char.isMonsterAlly === true) {
+                    char.skills = uniqueCharacterSkills(char.skills).filter(id => id >= 100).slice(0, 8);
+                    char.skillBookSkills = [];
+                    char.reincarnationCount = 0;
+                } else {
+                    char.skills = uniqueCharacterSkills(char.skills);
+                    char.skillBookSkills = uniqueBookSkills(char.skillBookSkills)
+                        .filter(id => char.skills.includes(id)).slice(0, 2);
                 }
             });
         }
@@ -5544,6 +5748,7 @@ load: () => {
             ? worldSurface.isSea
             : (typeof App.getWorldTileAt === 'function' && App.getWorldTileAt(Field.x, Field.y) === 'W'));
         const worldEncounter = isSeaEncounter ? null : App.getWorldEncounterProfile();
+        const mapEncounter = Field.currentMapData?.isDungeon ? Field.currentMapData : null;
 
 		App.data.battle = {
 			active: false,
@@ -5555,9 +5760,13 @@ load: () => {
 			encounterType: isSeaEncounter ? 'sea' : (worldEncounter ? 'field' : null),
             encounterZoneId: worldEncounter ? worldEncounter.id : null,
             encounterZoneName: worldEncounter ? worldEncounter.name : null,
-            encounterRank: worldEncounter ? worldEncounter.rank : null,
-			monsters: isSeaEncounter && Array.isArray(window.SEA_ENCOUNTER_MONSTERS) ? [...window.SEA_ENCOUNTER_MONSTERS] : (worldEncounter ? worldEncounter.monsters : null),
-            rareMonsters: worldEncounter ? worldEncounter.rareMonsters : null,
+            encounterRank: mapEncounter?.encounterRank || (worldEncounter ? worldEncounter.rank : null),
+			monsters: mapEncounter && Array.isArray(mapEncounter.monsters) ? [...mapEncounter.monsters] : (isSeaEncounter && Array.isArray(window.SEA_ENCOUNTER_MONSTERS) ? [...window.SEA_ENCOUNTER_MONSTERS] : (worldEncounter ? worldEncounter.monsters : null)),
+            rareMonsters: mapEncounter && Array.isArray(mapEncounter.rareMonsters) ? mapEncounter.rareMonsters.map(entry => ({ ...entry })) : (worldEncounter ? worldEncounter.rareMonsters : null),
+            rareEncounterChance: Number.isFinite(Number(mapEncounter?.rareEncounterChance)) ? Number(mapEncounter.rareEncounterChance) : null,
+            guildQuestChallengeId: mapEncounter?.guildQuestId || null,
+            guildChallengeEnemyBoost: mapEncounter?.enemyBoost ? JSON.parse(JSON.stringify(mapEncounter.enemyBoost)) : null,
+            guildChallengeAllyAilments: Array.isArray(mapEncounter?.allyAilments) ? [...mapEncounter.allyAilments] : [],
 			isAmbushed: flags.isAmbushed,
 			isPreemptive: flags.isPreemptive
 		};
@@ -7514,6 +7723,79 @@ const Field = {
         return Dungeon.isAbyssBossAt(x, y) ? { x, y } : null;
     },
 
+    getSwitchGateActions: (gateId = null) => {
+        if (!Field.currentMapData?.isFixed) return [];
+        const actions = Array.isArray(Field.currentMapData.mapActions) ? Field.currentMapData.mapActions : [];
+        return actions.filter(action => action?.type === 'switchGate'
+            && (gateId === null || String(action.gateId || 'gate') === String(gateId)));
+    },
+
+    applyCompletedSwitchGateState: (gateId, gateState, options = {}) => {
+        if (!Field.currentMapData?.isFixed || !gateState?.completed) return false;
+        const progress = App.data.progress || (App.data.progress = {});
+        const areaKey = Field.getCurrentAreaKey ? Field.getCurrentAreaKey() : App.data?.location?.area;
+        const mapKey = Field.getCurrentProgressMapKey ? Field.getCurrentProgressMapKey() : areaKey;
+        const changeKey = Field.getCurrentMapChangeKey ? Field.getCurrentMapChangeKey(areaKey) : mapKey;
+        const actions = Field.getSwitchGateActions(gateId);
+        if (!actions.length) return false;
+        if (!progress.mapChanges) progress.mapChanges = {};
+        if (!progress.mapChanges[changeKey]) progress.mapChanges[changeKey] = {};
+        let changed = false;
+        const applied = [];
+        const seen = new Set();
+        actions.flatMap(action => Array.isArray(action.opens) ? action.opens : []).forEach(open => {
+            if (!open) return;
+            const x = Number(open.x);
+            const y = Number(open.y);
+            if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+            const key = `${x},${y}`;
+            if (seen.has(key)) return;
+            seen.add(key);
+            const tile = open.tile || 'T';
+            if (progress.mapChanges[changeKey][key] !== tile) {
+                progress.mapChanges[changeKey][key] = tile;
+                changed = true;
+            }
+            applied.push(key);
+        });
+        gateState.appliedMapChangeKey = changeKey;
+        gateState.appliedOpenKeys = applied;
+        gateState.lastRestoredAt = Date.now();
+        if (changed && options.save === true && typeof App.save === 'function') App.save();
+        return changed;
+    },
+
+    restoreCompletedSwitchGates: (options = {}) => {
+        if (!Field.currentMapData?.isFixed) return false;
+        const progress = App.data.progress || (App.data.progress = {});
+        if (!progress.mapSwitches || typeof progress.mapSwitches !== 'object') return false;
+        const areaKey = Field.getCurrentAreaKey ? Field.getCurrentAreaKey() : App.data?.location?.area;
+        const mapKey = Field.getCurrentProgressMapKey ? Field.getCurrentProgressMapKey() : areaKey;
+        const sourceKeys = [...new Set([mapKey, areaKey, Field.currentMapData?.areaKey, Field.currentMapData?.canonicalAreaKey].filter(Boolean))];
+        let changed = false;
+        let canonical = progress.mapSwitches[mapKey];
+        if (!canonical || typeof canonical !== 'object' || Array.isArray(canonical)) {
+            canonical = progress.mapSwitches[mapKey] = {};
+        }
+        sourceKeys.forEach(sourceKey => {
+            const source = progress.mapSwitches[sourceKey];
+            if (!source || typeof source !== 'object' || Array.isArray(source)) return;
+            Object.entries(source).forEach(([gateId, gateState]) => {
+                if (!gateState || typeof gateState !== 'object') return;
+                if (!canonical[gateId]) canonical[gateId] = gateState;
+                else if (canonical[gateId] !== gateState) {
+                    canonical[gateId].pressed = { ...(gateState.pressed || {}), ...(canonical[gateId].pressed || {}) };
+                    canonical[gateId].completed = !!(canonical[gateId].completed || gateState.completed);
+                }
+            });
+        });
+        Object.entries(canonical).forEach(([gateId, gateState]) => {
+            if (gateState?.completed) changed = Field.applyCompletedSwitchGateState(gateId, gateState) || changed;
+        });
+        if (changed && options.save === true && typeof App.save === 'function') App.save();
+        return changed;
+    },
+
     activateSwitchGate: (action) => {
         if (!action || !Field.currentMapData?.isFixed) return false;
         const progress = App.data.progress || (App.data.progress = {});
@@ -7524,6 +7806,8 @@ const Field = {
         if (!progress.mapSwitches[mapKey]) progress.mapSwitches[mapKey] = {};
         const gateState = progress.mapSwitches[mapKey][gateId] || (progress.mapSwitches[mapKey][gateId] = { pressed: {}, completed: false });
         if (gateState.completed) {
+            Field.applyCompletedSwitchGateState(gateId, gateState, { save: true });
+            Field.refreshVisualState?.();
             App.log(action.completedMessage || 'すでに仕掛けは作動している。');
             return true;
         }
@@ -7547,23 +7831,8 @@ const Field = {
             return true;
         }
 
-        const changeKey = Field.getCurrentMapChangeKey ? Field.getCurrentMapChangeKey(Field.getCurrentAreaKey()) : mapKey;
-        if (!progress.mapChanges) progress.mapChanges = {};
-        if (!progress.mapChanges[changeKey]) progress.mapChanges[changeKey] = {};
-        const actions = (Field.currentMapData.mapActions || []).filter(a => a && a.type === 'switchGate' && (a.gateId || 'gate') === gateId);
-        const openDefs = actions.flatMap(a => Array.isArray(a.opens) ? a.opens : []).concat(Array.isArray(action.opens) ? action.opens : []);
-        const seen = new Set();
-        openDefs.forEach(open => {
-            if (!open) return;
-            const ox = Number(open.x);
-            const oy = Number(open.y);
-            if (!Number.isFinite(ox) || !Number.isFinite(oy)) return;
-            const key = `${ox},${oy}`;
-            if (seen.has(key)) return;
-            seen.add(key);
-            progress.mapChanges[changeKey][key] = open.tile || 'T';
-        });
         gateState.completed = true;
+        Field.applyCompletedSwitchGateState(gateId, gateState);
         App.log(action.openMessage || '仕掛けが作動し、道が開いた。');
         App.save();
         Field.render?.();
@@ -8464,6 +8733,8 @@ const Field = {
     },
 
     render: () => {
+        // 旧セーブで起動済みの仕掛けを、現在のマップ座標定義へ毎回冪等に再適用する。
+        Field.restoreCompletedSwitchGates?.();
         if (typeof AudioManager !== 'undefined' && typeof AudioManager.syncFieldBgm === 'function') AudioManager.syncFieldBgm();
         const canvas = document.getElementById('field-canvas'); if(!canvas) return;
         if (typeof Field.syncCanvasToWrapperSize === 'function') Field.syncCanvasToWrapperSize();

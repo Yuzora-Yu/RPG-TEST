@@ -224,7 +224,7 @@ const Dungeon = {
 		const areaKey = App.data?.location?.area;
 		const isFixedDungeonArea = !!(areaKey && typeof FIXED_DUNGEON_MAPS !== 'undefined' && FIXED_DUNGEON_MAPS[areaKey]);
 		const isInDungeon = !!(Field.currentMapData?.isDungeon || areaKey === 'ABYSS' || isFixedDungeonArea);
-		const isBossFloor = isInDungeon && Dungeon.floor > 0 && Dungeon.floor % 10 === 0;
+		const isBossFloor = isInDungeon && Dungeon.isBossFloor();
 		const isOnBossTile = isInDungeon && Dungeon.map?.[Field.y]?.[Field.x] === 'B';
 		const cannotExit = isBossFloor && isOnBossTile;
 
@@ -345,6 +345,51 @@ const Dungeon = {
         App.data.dungeon.pendingRiftReward = null;
         App.data.dungeon.visitedMap = null;
         Dungeon.loadFloor();
+    },
+
+    getGuildQuestRun: () => {
+        const run = App.data?.dungeon?.guildQuestRun;
+        return run && run.active && run.questId ? run : null;
+    },
+
+    isGuildQuestRunActive: () => !!Dungeon.getGuildQuestRun(),
+
+    startGuildQuestRun: (questId, challenge = {}) => {
+        if (!questId || !App.data?.dungeon) return false;
+        const returnPoint = {
+            x: App.data.location.x,
+            y: App.data.location.y,
+            areaKey: typeof Field.getCurrentAreaKey === 'function' ? Field.getCurrentAreaKey() : (App.data.location.area || 'WORLD'),
+            mapData: Field.currentMapData ? JSON.parse(JSON.stringify(Field.currentMapData)) : null
+        };
+        App.data.dungeon.returnPoint = returnPoint;
+        App.data.dungeon.guildQuestRun = {
+            ...JSON.parse(JSON.stringify(challenge || {})),
+            active: true,
+            completed: false,
+            questId: String(questId),
+            floorCount: Math.max(1, Number(challenge.floorCount || 1)),
+            startedAt: Date.now()
+        };
+        App.data.location.area = 'ABYSS';
+        App.data.progress.floor = 1;
+        Dungeon.floor = 1;
+        App.data.dungeon.map = null;
+        App.data.dungeon.adventurer = null;
+        App.data.dungeon.healSpring = null;
+        App.data.dungeon.abyssRift = null;
+        App.data.dungeon.trialAngel = null;
+        App.data.dungeon.keyChests = null;
+        App.data.dungeon.floorKeys = null;
+        Dungeon.clearRandomKeyState();
+        App.data.dungeon.keyGuardian = null;
+        App.data.dungeon.pendingRiftReward = null;
+        App.data.dungeon.visitedMap = null;
+        App.data.dungeon.abyssBossEncounter = null;
+        App.save();
+        Dungeon.loadFloor();
+        App.log(`${challenge.themeLabel || '変異'}の依頼迷宮へ入った。`);
+        return true;
     },
 	
     getFixedFloorDef: (mapKey = App.data?.location?.area, floorNo = App.data?.progress?.floor || 1) => {
@@ -1132,6 +1177,12 @@ const Dungeon = {
             Dungeon.changeFixedFloor((App.data.progress.floor || 1) + 1);
             return;
         }
+        const guildRun = Dungeon.getGuildQuestRun();
+        if (guildRun?.completed && Number(Dungeon.floor || 1) >= Math.max(1, Number(guildRun.floorCount || 1))) {
+            App.log('依頼迷宮の出口が開いた。');
+            Dungeon.exit(false);
+            return;
+        }
         if (typeof AudioManager !== 'undefined') AudioManager.playSe?.('stairs');
         App.data.progress.floor++;
         App.data.dungeon.map = null; 
@@ -1221,7 +1272,7 @@ const Dungeon = {
             }
             App.log(`地下 ${Dungeon.floor} 階の冒険を再開します。`);
         } else {
-            if(Dungeon.floor > App.data.dungeon.maxFloor) {
+            if(!Dungeon.isGuildQuestRunActive() && Dungeon.floor > App.data.dungeon.maxFloor) {
 				App.data.dungeon.maxFloor = Dungeon.floor;
 				
 				// 主人公の限界突破を新基準で再計算（story.jsの関数を呼び出すのが安全）
@@ -1332,6 +1383,7 @@ const Dungeon = {
     // 引数 isWipedOut が true の場合は強制的にデフォルトへ
     exit: (isWipedOut = false, forcedReturnPoint = null) => {
         const returnPoint = forcedReturnPoint || App.data.dungeon.returnPoint;
+        const leavingGuildQuestRun = Dungeon.getGuildQuestRun();
         const returnStack = Array.isArray(App.data.dungeon.returnStack) ? App.data.dungeon.returnStack : [];
         const nestedReturnPoint = (!isWipedOut && !forcedReturnPoint && returnStack.length > 0) ? returnStack.pop() : null;
 
@@ -1349,6 +1401,8 @@ const Dungeon = {
         App.data.dungeon.keyGuardian = null;
         App.data.dungeon.pendingRiftReward = null;
         App.data.dungeon.visitedMap = null;
+        App.data.dungeon.abyssBossEncounter = null;
+        App.data.dungeon.guildQuestRun = null;
         App.data.progress.floor = 0;
         
         // 保存していた帰還ポイントを一度抽出してからクリア
@@ -1422,6 +1476,10 @@ const Dungeon = {
         
         if (isWipedOut) {
             App.log("命からがら逃げ出した……");
+        } else if (leavingGuildQuestRun?.completed) {
+            App.log('依頼迷宮を攻略し、帰還した。');
+        } else if (leavingGuildQuestRun) {
+            App.log('依頼迷宮から撤退した。依頼は再挑戦できる。');
         } else {
             App.log("ダンジョンから脱出した");
         }
@@ -1597,6 +1655,22 @@ const Dungeon = {
     selectAbyssBossEncounter: (floor = Dungeon.floor) => {
         const f = Math.max(1, Number(floor || 1));
         const layout = Dungeon.getAbyssBossRoomLayout ? Dungeon.getAbyssBossRoomLayout() : { boss: { x: 5, y: 5 } };
+        const guildRun = Dungeon.getGuildQuestRun();
+        if (guildRun && f >= Math.max(1, Number(guildRun.floorCount || 1))) {
+            const ids = (Array.isArray(guildRun.bossMonsterIds) ? guildRun.bossMonsterIds : [])
+                .map(Number).filter(id => Number.isFinite(id) && id > 0);
+            const monsterIds = ids.length ? ids : [401100];
+            return {
+                active: true,
+                floor: f,
+                x: layout.boss.x,
+                y: layout.boss.y,
+                monsterIds,
+                displayMonsterId: Dungeon.getAbyssBossDisplayMonsterId(monsterIds),
+                source: 'guild-quest',
+                guildQuestId: guildRun.questId
+            };
+        }
         const monsterData = (typeof window !== 'undefined') ? window.MonsterData : null;
         const storyDisplayId = Dungeon.getAbyssStoryBossDisplayMonsterId(f);
         if (storyDisplayId) {
@@ -1681,7 +1755,7 @@ const Dungeon = {
         const floor = Math.max(1, Number(Dungeon.floor || App.data?.progress?.floor || 1));
         const encounter = App.data?.dungeon?.abyssBossEncounter;
         if (encounter && encounter.active && Number(encounter.floor) === floor) return Dungeon.normalizeAbyssBossEncounter(encounter);
-        if (floor > 0 && floor % 10 === 0 && Dungeon.hasCurrentAbyssBossTile()) {
+        if (Dungeon.isBossFloor() && Dungeon.hasCurrentAbyssBossTile()) {
             return Dungeon.ensureAbyssBossEncounter({ floor });
         }
         return null;
@@ -1726,6 +1800,11 @@ const Dungeon = {
         App.data.battle.storyWinEventId = null;
         App.data.battle.storyLossEventId = null;
         App.data.battle.abyssBossEncounter = encounter;
+        const guildRun = Dungeon.getGuildQuestRun();
+        App.data.battle.guildQuestChallengeId = guildRun?.questId || null;
+        App.data.battle.bossStatMultiplier = guildRun ? Math.max(1, Number(guildRun.bossStatMultiplier || 1)) : 1;
+        App.data.battle.guildChallengeEnemyBoost = guildRun ? JSON.parse(JSON.stringify(guildRun.enemyBoost || {})) : null;
+        App.data.battle.guildChallengeAllyAilments = guildRun ? [...(guildRun.allyAilments || [])] : [];
         App.data.battle.abyssBossPosition = {
             x: Number(x ?? encounter.x ?? 5),
             y: Number(y ?? encounter.y ?? 5),
@@ -2742,7 +2821,13 @@ const Dungeon = {
 
     isMazeFloor: () => Number(App.data?.dungeon?.genType) === 2,
 
-    isBossFloor: () => Number(Dungeon.floor || App.data?.progress?.floor || 0) > 0 && Number(Dungeon.floor || App.data?.progress?.floor || 0) % 10 === 0,
+    isBossFloor: () => {
+        const floor = Number(Dungeon.floor || App.data?.progress?.floor || 0);
+        if (floor <= 0) return false;
+        const guildRun = Dungeon.getGuildQuestRun();
+        if (guildRun) return floor >= Math.max(1, Number(guildRun.floorCount || 1));
+        return floor % 10 === 0;
+    },
 
     ensureVisitedMap: () => {
         if (!App.data?.dungeon) return null;
@@ -3448,6 +3533,8 @@ const Dungeon = {
     },
 
     getForcedVisualThemeIdForFloorPlan: (planType = App.data?.dungeon?.floorPlanType) => {
+        const guildRun = Dungeon.getGuildQuestRun();
+        if (guildRun?.visualThemeId) return String(guildRun.visualThemeId);
         // 特殊フロアは地形の意味を優先し、外観抽選で別施設の壁・床へ変えない。
         return ['flooded', 'treasure', 'boss'].includes(String(planType || '')) ? 'abyss' : null;
     },
@@ -3498,12 +3585,22 @@ const Dungeon = {
         const theme = Dungeon.ensureRandomVisualTheme(Dungeon.floor);
         const testOverride = Dungeon.getRandomVisualThemeTestOverride(Dungeon.floor);
         const battleBg = Dungeon.getRandomFloorBattleBg();
+        const guildRun = Dungeon.getGuildQuestRun();
         const mapData = {
-            name: testOverride ? `${STORY_DATA.areas['ABYSS'].name}【森固定検証】` : STORY_DATA.areas['ABYSS'].name,
+            name: guildRun ? `${guildRun.themeLabel || '変異'}の依頼迷宮` : (testOverride ? `${STORY_DATA.areas['ABYSS'].name}【森固定検証】` : STORY_DATA.areas['ABYSS'].name),
             width: Dungeon.width,
             height: Dungeon.height,
             tiles: Dungeon.map,
             isDungeon: true,
+            isGuildQuestDungeon: !!guildRun,
+            guildQuestId: guildRun?.questId || null,
+            encounterRank: guildRun ? Math.max(1, Number(guildRun.encounterRank || guildRun.power || 1)) : null,
+            monsters: guildRun ? [...(guildRun.normalMonsterIds || [])] : null,
+            rareMonsters: guildRun ? (guildRun.rareMonsterIds || []).map(id => ({ id: Number(id) })) : null,
+            // 各候補ごとの抽選ではなく、遭遇全体で指定確率を一度だけ判定する。
+            rareEncounterChance: guildRun ? Math.max(0, Math.min(1, Number(guildRun.rareChance || 0))) : null,
+            enemyBoost: guildRun ? JSON.parse(JSON.stringify(guildRun.enemyBoost || {})) : null,
+            allyAilments: guildRun ? [...(guildRun.allyAilments || [])] : [],
             themeKey: theme?.themeKey || App.data?.dungeon?.visualThemeKey || 'ABYSS',
             visualThemeId: theme?.id || App.data?.dungeon?.visualThemeId || 'abyss',
             battleBg,
@@ -3540,6 +3637,10 @@ const Dungeon = {
 
     rollRandomFloorPlan: (floor = Dungeon.floor || App.data?.progress?.floor || 1, randomValue = null, options = {}) => {
         const currentFloor = Math.max(1, Number(floor) || 1);
+        const guildRun = Dungeon.getGuildQuestRun();
+        if (guildRun) {
+            return Object.freeze({ floor: currentFloor, category: 'random', themeId: String(guildRun.visualThemeId || 'abyss'), guildQuest: true });
+        }
         const testOverride = options.ignoreTestOverride ? null : Dungeon.getRandomVisualThemeTestOverride(currentFloor);
         if (testOverride) {
             return Object.freeze({ floor: currentFloor, category: 'random', themeId: testOverride.id, testOverride: true });
@@ -3884,10 +3985,12 @@ const Dungeon = {
     generateFloor: () => {
         Dungeon.resetRandomFloorAttemptState(false);
         
-        if (Dungeon.floor > 0 && Dungeon.floor % 10 === 0) {
-            Dungeon.setRandomVisualTheme(Dungeon.randomVisualThemes.find(theme => theme.id === 'abyss'));
+        if (Dungeon.isBossFloor()) {
+            const guildRun = Dungeon.getGuildQuestRun();
+            const bossThemeId = guildRun?.visualThemeId || 'abyss';
+            Dungeon.setRandomVisualTheme(Dungeon.randomVisualThemes.find(theme => theme.id === bossThemeId) || Dungeon.randomVisualThemes.find(theme => theme.id === 'abyss'));
             App.data.dungeon.floorPlanType = 'boss';
-            App.data.dungeon.floorPlanThemeId = 'abyss';
+            App.data.dungeon.floorPlanThemeId = bossThemeId;
             Dungeon.generateAbyssBossRoom();
         } else {
             // フロア形態・外観は階層につき一度だけ抽選し、生成再試行では固定する。
@@ -4827,6 +4930,16 @@ const Dungeon = {
                 App.data.battle.eventId = null;
             }
             return;
+        }
+
+        const guildRun = Dungeon.getGuildQuestRun();
+        if (guildRun && App.data.battle?.guildQuestChallengeId === guildRun.questId) {
+            guildRun.completed = true;
+            guildRun.completedAt = Date.now();
+            if (typeof Guild !== 'undefined' && typeof Guild.markChallengeBossDefeated === 'function') {
+                Guild.markChallengeBossDefeated(guildRun.questId);
+            }
+            App.log('<span style="color:#80ffb0;">依頼迷宮の討伐目標を達成した！</span>');
         }
 
         // 10～100階のイベント戦闘は、各階の最終戦を初めて討伐した時だけ実行する。

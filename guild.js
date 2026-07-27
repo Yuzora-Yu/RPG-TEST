@@ -148,6 +148,157 @@
             return String(match?.rank || 'S').toUpperCase();
         },
 
+        rarityIndex(rarity) {
+            return Math.max(0, RARITY_DEFS.findIndex(def => def.id === String(rarity || 'R').toUpperCase()));
+        },
+
+        isRarityAtLeast(rarity, minimum) {
+            return Guild.rarityIndex(rarity) >= Guild.rarityIndex(minimum);
+        },
+
+        getLocalDateKey(date = new Date()) {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        },
+
+        ensureDailyAcceptState(state = null) {
+            const guildState = state || Guild.ensureState();
+            if (!guildState) return null;
+            const today = Guild.getLocalDateKey();
+            if (!guildState.dailyAccept || typeof guildState.dailyAccept !== 'object' || guildState.dailyAccept.dateKey !== today) {
+                guildState.dailyAccept = { dateKey: today, acceptedCount: 0, bonusLimit: 0, adUsed: false };
+            }
+            guildState.dailyAccept.acceptedCount = Math.max(0, Math.floor(Number(guildState.dailyAccept.acceptedCount) || 0));
+            guildState.dailyAccept.bonusLimit = Math.max(0, Math.floor(Number(guildState.dailyAccept.bonusLimit) || 0));
+            guildState.dailyAccept.adUsed = guildState.dailyAccept.adUsed === true;
+            return guildState.dailyAccept;
+        },
+
+        getDailyAcceptInfo(state = null) {
+            const daily = Guild.ensureDailyAcceptState(state);
+            const baseLimit = 10;
+            const limit = baseLimit + Number(daily?.bonusLimit || 0);
+            const used = Number(daily?.acceptedCount || 0);
+            return { daily, baseLimit, limit, used, remaining: Math.max(0, limit - used), adAvailable: !!daily && !daily.adUsed };
+        },
+
+        grantDailyAcceptAdBonus() {
+            const state = Guild.ensureState();
+            const info = Guild.getDailyAcceptInfo(state);
+            if (!state || !info.adAvailable) return false;
+            const grant = () => {
+                const current = Guild.getDailyAcceptInfo(state);
+                if (!current.adAvailable) return;
+                current.daily.adUsed = true;
+                current.daily.bonusLimit += 10;
+                App.save();
+                if (typeof Menu !== 'undefined' && typeof Menu.msg === 'function') {
+                    Menu.msg('本日のギルド依頼受注可能数が10件追加された！', () => Guild.openBoard());
+                } else {
+                    Guild.openBoard();
+                }
+            };
+            if (typeof AdManager !== 'undefined' && typeof AdManager.prepareRewardAd === 'function') {
+                AdManager.prepareRewardAd(grant);
+            } else {
+                grant();
+            }
+            return true;
+        },
+
+        getChallengeMaster() {
+            return GENERATOR_MASTER.challengeDungeons || {};
+        },
+
+        rollChallengeRarity(state = null) {
+            const guildState = state || Guild.ensureState();
+            const minimum = String(Guild.getChallengeMaster().minRarity || 'SSR').toUpperCase();
+            const pool = Guild.getEligibleRarities({ state: guildState }).filter(def => Guild.isRarityAtLeast(def.id, minimum));
+            if (!pool.length) return null;
+            const total = pool.reduce((sum, def) => sum + Math.max(0.01, Number(def.weight || 0)), 0);
+            let roll = Math.random() * total;
+            for (const def of pool) {
+                roll -= Math.max(0.01, Number(def.weight || 0));
+                if (roll <= 0) return def;
+            }
+            return pool[pool.length - 1];
+        },
+
+        getChallengePower(state = null, rarity = 'SSR') {
+            const guildState = state || Guild.ensureState();
+            const rankPower = (Guild.rankIndex(guildState?.rank || 'G') + 1) * 22;
+            const expPower = Math.floor(Math.sqrt(Math.max(0, Number(guildState?.exp || 0))) * 4);
+            const storyPower = Math.max(0, Number(App.data?.progress?.storyStep || 0)) * 7;
+            const floorPower = Math.max(0, Number(App.data?.dungeon?.maxFloor || 0));
+            const rarityPower = { SSR: 20, UR: 45, EX: 85 }[String(rarity || '').toUpperCase()] || 0;
+            return Math.max(35, Math.floor(Math.max(rankPower, storyPower, floorPower) + expPower + rarityPower));
+        },
+
+        getMonsterSkillIds(base) {
+            const acts = Array.isArray(base?.acts) ? base.acts : [];
+            return [...new Set(acts.map(act => Math.floor(Number(typeof act === 'object' ? act.id : act))).filter(id => id >= 100))];
+        },
+
+        monsterMatchesChallengeTheme(base, theme) {
+            if (!base || !theme?.element || typeof DB === 'undefined' || !Array.isArray(DB.SKILLS)) return false;
+            return Guild.getMonsterSkillIds(base).some(id => DB.SKILLS.find(skill => Number(skill.id) === id)?.elm === theme.element);
+        },
+
+        selectChallengeMonsterIds(theme, power, options = {}) {
+            const monsters = (typeof DB !== 'undefined' && Array.isArray(DB.MONSTERS)) ? DB.MONSTERS : [];
+            const boss = options.boss === true;
+            const rare = options.rare === true;
+            let pool = monsters.filter(base => base && !!base.isBoss === boss && !!base.isRare === rare
+                && !base.isGuildPromotionBoss && !base.isSpecialBoss && !base.isEstark);
+            const themed = pool.filter(base => Guild.monsterMatchesChallengeTheme(base, theme));
+            if (themed.length) pool = themed;
+            const withinPower = pool.filter(base => {
+                const rank = Math.max(1, Number(base.rank || base.minF || 1));
+                return rank <= Math.max(20, power * 1.35) && rank >= Math.max(1, power * 0.18);
+            });
+            if (withinPower.length) pool = withinPower;
+            pool = Array.from(new Map(pool.filter(base => Number.isFinite(Number(base.id))).map(base => [Number(base.id), base])).values());
+            const count = Math.min(pool.length, options.count || (boss ? 6 : 14));
+            const result = [];
+            const copy = pool.slice();
+            while (copy.length && result.length < count) {
+                const index = Guild.randomInt(0, copy.length - 1);
+                result.push(Number(copy.splice(index, 1)[0].id));
+            }
+            return result;
+        },
+
+        getChallengeThemeSkillIds(theme, count = 5) {
+            const pool = ((typeof DB !== 'undefined' && Array.isArray(DB.SKILLS)) ? DB.SKILLS : []).filter(skill => Number(skill?.id) >= 100
+                && skill.elm === theme?.element && !['回復', '特殊'].includes(String(skill.type || '')));
+            return pool.sort((a, b) => Number(a.id) - Number(b.id)).slice(-Math.max(1, count)).map(skill => Number(skill.id));
+        },
+
+        pickChallengeGimmicks(rarity) {
+            const master = Guild.getChallengeMaster();
+            const eligible = (Array.isArray(master.gimmicks) ? master.gimmicks : [])
+                .filter(gimmick => Guild.isRarityAtLeast(rarity, gimmick.minRarity || 'SSR'));
+            if (!eligible.length) return [];
+            const result = [];
+            if (String(rarity).toUpperCase() === 'EX') {
+                const exPool = eligible.filter(gimmick => String(gimmick.id).startsWith('rare50'));
+                // 「レア出現率50%」系はEXでも稀な特殊依頼として扱う。
+                if (exPool.length && Math.random() < 0.18) result.push(Guild.pickRandom(exPool));
+            }
+            const normalPool = eligible.filter(gimmick => !String(gimmick.id).startsWith('rare50'));
+            if (normalPool.length) result.push(Guild.pickRandom(normalPool));
+            return result.filter(Boolean);
+        },
+
+        getNonExchangeTraitBookIds() {
+            const exchangeIds = new Set(EXCHANGE.map(entry => Number(entry.itemId)).filter(Number.isFinite));
+            return ((typeof DB !== 'undefined' && Array.isArray(DB.ITEMS)) ? DB.ITEMS : [])
+                .filter(item => item?.type === '特性書' && Number(item.traitId) > 0 && !exchangeIds.has(Number(item.id)))
+                .map(item => Number(item.id));
+        },
+
         isDefinitionUnlocked(def) {
             const state = Guild.ensureState();
             if (!def || !state) return false;
@@ -193,6 +344,14 @@
                     if (!Guild.isDefinitionUnlocked(probe)) continue;
                     specs.push({ kind: 'abyss', signature, floorMin, floorMax, requiredRank });
                 }
+            }
+
+            const challenge = Guild.getChallengeMaster();
+            if (challenge.enabled !== false && Guild.rankIndex(Guild.ensureState()?.rank || 'G') >= Guild.rankIndex(challenge.minGuildRank || 'C')) {
+                (Array.isArray(challenge.themes) ? challenge.themes : []).forEach(theme => {
+                    const signature = `challenge:${theme.id}`;
+                    if (!excludedSignatures.has(signature)) specs.push({ kind: 'challenge', signature, theme });
+                });
             }
             return specs;
         },
@@ -251,6 +410,115 @@
                 };
                 delete def.targetMonsterIds;
                 delete def.spawnAreaLabel;
+            } else if (spec.kind === 'challenge') {
+                const challengeMaster = Guild.getChallengeMaster();
+                const rarityDef = Guild.rollChallengeRarity(guildState);
+                if (!rarityDef) return null;
+                const rarity = String(rarityDef.id || 'SSR').toUpperCase();
+                const theme = spec.theme || Guild.pickRandom(challengeMaster.themes || []);
+                const power = Guild.getChallengePower(guildState, rarity);
+                const floorRange = challengeMaster.floorRanges?.[rarity] || [3, 5];
+                const bossOnlyChance = Math.max(0, Math.min(1, Number(challengeMaster.bossOnlyChance?.[rarity] || 0)));
+                const bossOnly = Guild.isRarityAtLeast(rarity, 'UR') && Math.random() < bossOnlyChance;
+                const floorCount = bossOnly ? 1 : Guild.randomInt(floorRange[0], floorRange[1]);
+                const visualThemeId = Guild.pickRandom(theme?.visualThemeIds || ['abyss']) || 'abyss';
+                let normalMonsterIds = Guild.selectChallengeMonsterIds(theme, power, { count: 16 });
+                if (!normalMonsterIds.length) normalMonsterIds = Guild.selectChallengeMonsterIds(null, power, { count: 16 });
+                const rareMonsterIds = Guild.selectChallengeMonsterIds(theme, power, { rare: true, count: 5 });
+                const bossCandidates = Guild.selectChallengeMonsterIds(theme, power, { boss: true, count: rarity === 'EX' ? 8 : 6 });
+                const selectedBossId = Guild.pickRandom(bossCandidates) || 401100;
+                // 依頼生成時に最下層ボス1体を固定し、ロードで別個体へ変わらないよう保存する。
+                const bossMonsterIds = [Number(selectedBossId)];
+                const gimmicks = Guild.pickChallengeGimmicks(rarity);
+                const gimmickIds = gimmicks.map(gimmick => String(gimmick.id));
+                const rarityStatMultiplier = { SSR: 1.25, UR: 1.65, EX: 2.25 }[rarity] || 1.25;
+                // 通常敵も冒険者ランク・累積ギルド経験値・物語進行・深淵到達階層を反映して伸び続ける。
+                // ボスほど急激にはせず、既存個体の個性が残る緩やかな無上限補正とする。
+                const progressionStatMultiplier = Math.max(1, 1 + power / 400);
+                const statMultiplier = Number((rarityStatMultiplier * progressionStatMultiplier).toFixed(3));
+                const enemyBoost = {
+                    statMultiplier: gimmickIds.includes('rare50_elite') ? Number((statMultiplier * 1.9).toFixed(3)) : statMultiplier,
+                    rareStatMultiplier: statMultiplier,
+                    applyToRares: true,
+                    nameSuffix: rarity === 'EX' ? '・異常個体' : '',
+                    elmAtk: {},
+                    traits: [],
+                    extraSkillIds: Guild.getChallengeThemeSkillIds(theme, rarity === 'EX' ? 7 : 5)
+                };
+                if (gimmickIds.includes('element50') && theme?.element) enemyBoost.elmAtk[theme.element] = 50;
+                if (gimmickIds.includes('regen10')) enemyBoost.traits.push({ id: 52, level: 10 });
+                if (gimmickIds.includes('guts10')) enemyBoost.traits.push({ id: 18, level: 10 });
+                const rareChance = gimmickIds.some(idValue => idValue.startsWith('rare50')) ? 0.50 : (rarity === 'EX' ? 0.12 : rarity === 'UR' ? 0.06 : 0.03);
+                const storyStep = Math.max(0, Number(App.data?.progress?.storyStep || 0));
+                const maxFloor = Math.max(0, Number(App.data?.dungeon?.maxFloor || 0));
+                const endlessBossMultiplier = Math.max(1.5,
+                    1 + Guild.rankIndex(guildState.rank) * 0.28 + Number(guildState.exp || 0) / 850
+                    + storyStep * 0.055 + maxFloor / 120) * ({ SSR: 1.25, UR: 1.75, EX: 2.5 }[rarity] || 1.25);
+                const rewardItems = Guild.getRarityBonusRewards(rarityDef);
+                if (rarity === 'EX' && Math.random() < 0.38) {
+                    const traitBookId = Guild.pickRandom(Guild.getNonExchangeTraitBookIds());
+                    if (traitBookId) rewardItems.push({ id: traitBookId, count: 1 });
+                }
+                const guildExp = Math.max(300, Math.round(power * ({ SSR: 16, UR: 27, EX: 45 }[rarity] || 16) * (bossOnly ? 1.15 : 1)));
+                const guildPoints = Math.max(120, Math.round(power * ({ SSR: 6, UR: 11, EX: 20 }[rarity] || 6) * (bossOnly ? 1.15 : 1)));
+                const gimmickLabel = gimmicks.length ? gimmicks.map(value => value.label).join('／') : '追加ギミックなし';
+                const questName = Guild.pickRandom(theme?.names) || `${theme?.label || '変異'}迷宮の討伐任務`;
+                const generatedRequiredRank = Guild.rankIndex(challengeMaster.minGuildRank || 'C') >= Guild.rankIndex(rarityDef.minGuildRank || 'G')
+                    ? String(challengeMaster.minGuildRank || 'C')
+                    : String(rarityDef.minGuildRank || 'C');
+                def = {
+                    id,
+                    name: `${questName}${bossOnly ? '・単独決戦' : ''}`,
+                    area: `${theme?.label || '変異'}の依頼迷宮`,
+                    kind: 'guildDungeon',
+                    requiredRank: generatedRequiredRank,
+                    objective: bossOnly
+                        ? `指定された規格外ボスを撃破する。
+特殊条件: ${gimmickLabel}`
+                        : `${floorCount}階層の依頼迷宮を踏破し、最下層ボスを撃破する。
+特殊条件: ${gimmickLabel}`,
+                    startText: `ギルドが一時観測した${theme?.label || '変異'}属性の迷宮です。内容は依頼ごとに固定され、最下層の討伐確認で達成となります。`,
+                    progressText: `依頼迷宮へ挑戦し、最下層のボスを討伐してください。
+特殊条件: ${gimmickLabel}`,
+                    completeText: `${theme?.label || '変異'}の依頼迷宮における最下層ボスの討伐が確認された。`,
+                    rewardItems,
+                    rewardEquipment: [{ floor: power, plus: 3, type: '武器', label: `RANK${power} 武器+3` }],
+                    guildExp,
+                    guildPoints,
+                    guildQuest: true,
+                    rarity,
+                    difficultyLabel: rarityDef.difficultyLabel || '',
+                    repeatable: true,
+                    requestType: 'randomDungeonChallenge',
+                    reportAt: 'guildReception',
+                    generatedQuest: true,
+                    generatorKind: 'challenge',
+                    generatorKey: String(theme?.id || 'random'),
+                    generatorSignature: spec.signature,
+                    generatedAt: Date.now(),
+                    sortOrder: 3000 + guildState.generatorSerial,
+                    challenge: {
+                        version: 1,
+                        questId: id,
+                        rarity,
+                        themeId: String(theme?.id || 'random'),
+                        themeLabel: String(theme?.label || '変異'),
+                        element: theme?.element || null,
+                        visualThemeId,
+                        floorCount,
+                        bossOnly,
+                        power,
+                        encounterRank: power,
+                        normalMonsterIds,
+                        rareMonsterIds,
+                        rareChance,
+                        bossMonsterIds,
+                        bossStatMultiplier: endlessBossMultiplier,
+                        enemyBoost,
+                        allyAilments: gimmickIds.includes('rare50_toxic') ? ['ToxicPoison'] : [],
+                        gimmicks: gimmicks.map(value => ({ id: value.id, label: value.label }))
+                    }
+                };
             } else if (spec.kind === 'abyss') {
                 const abyss = GENERATOR_MASTER.abyss || {};
                 const bandSize = Math.max(1, Math.floor(Number(abyss.bandSize) || 10));
@@ -371,41 +639,64 @@
             const avoidIds = new Set(Array.isArray(options.avoidIds) ? options.avoidIds : []);
             const ratio = Math.max(0, Math.min(1, Number(GENERATOR_MASTER.generatedOfferRatio) || 0));
             let signatures = Guild.getCurrentOfferSignatures(state);
-            let specs = Guild.buildGeneratorSpecs(signatures);
             let abyssOfferCount = [...signatures].filter(signature => String(signature).startsWith('abyss:')).length;
+            let challengeOfferCount = [...signatures].filter(signature => String(signature).startsWith('challenge:')).length;
             const maxAbyssOffers = Math.max(1, Math.floor(Number(GENERATOR_MASTER.abyss?.maxOffersOnBoard) || 2));
-            const abyssOfferWeight = Math.max(0, Math.min(1, Number(GENERATOR_MASTER.abyss?.offerWeight) || 0.35));
+            const challengeMaster = Guild.getChallengeMaster();
+            const maxChallengeOffers = Math.max(1, Math.floor(Number(challengeMaster.maxOffersOnBoard) || 2));
+            const abyssWeight = Math.max(0, Math.min(1, Number(GENERATOR_MASTER.abyss?.offerWeight) || 0.35));
+            const challengeWeight = Math.max(0, Math.min(1, Number(challengeMaster.offerWeight) || 0.48));
+            let specs = Guild.buildGeneratorSpecs(signatures);
+            let forceChallenge = challengeOfferCount === 0 && specs.some(spec => spec.kind === 'challenge');
             let forceAbyss = abyssOfferCount === 0 && specs.some(spec => spec.kind === 'abyss');
             let guard = 0;
 
-            while (state.offers.length < Guild.maxOffers && guard < Guild.maxOffers * 8) {
+            const registerGenerated = (spec, def) => {
+                if (!def) return null;
+                signatures.add(spec.signature);
+                if (spec.kind === 'challenge') {
+                    challengeOfferCount += 1;
+                    forceChallenge = false;
+                }
+                if (spec.kind === 'abyss') {
+                    abyssOfferCount += 1;
+                    forceAbyss = false;
+                }
+                return def.id;
+            };
+
+            while (state.offers.length < Guild.maxOffers && guard < Guild.maxOffers * 10) {
                 guard += 1;
                 const staticCandidates = Guild.availableCandidates([...state.offers, ...avoidIds]).filter(id => {
                     const signature = Guild.getQuestGeneratorSignature(id, Guild.getStaticDefinitions()[id]);
                     return !signature || !signatures.has(signature);
                 });
-                specs = Guild.buildGeneratorSpecs(signatures).filter(spec => spec.kind !== 'abyss' || abyssOfferCount < maxAbyssOffers);
-                let generatedPreferred = forceAbyss || (specs.length > 0 && (staticCandidates.length === 0 || Math.random() < ratio));
+                specs = Guild.buildGeneratorSpecs(signatures).filter(spec => {
+                    if (spec.kind === 'abyss' && abyssOfferCount >= maxAbyssOffers) return false;
+                    if (spec.kind === 'challenge' && challengeOfferCount >= maxChallengeOffers) return false;
+                    return true;
+                });
+                const generatedPreferred = forceChallenge || forceAbyss
+                    || (specs.length > 0 && (staticCandidates.length === 0 || Math.random() < ratio));
                 let addedId = null;
 
                 if (generatedPreferred && specs.length) {
-                    const normalSpecs = specs.filter(spec => spec.kind === 'normal');
+                    const challengeSpecs = specs.filter(spec => spec.kind === 'challenge');
                     const abyssSpecs = specs.filter(spec => spec.kind === 'abyss');
+                    const normalSpecs = specs.filter(spec => spec.kind === 'normal');
                     let pool = specs;
-                    if (forceAbyss && abyssSpecs.length) pool = abyssSpecs;
-                    else if (normalSpecs.length && abyssSpecs.length) pool = Math.random() < abyssOfferWeight ? abyssSpecs : normalSpecs;
-                    else if (normalSpecs.length) pool = normalSpecs;
-                    else if (abyssSpecs.length) pool = abyssSpecs;
-                    const spec = Guild.pickRandom(pool);
-                    const def = Guild.createGeneratedQuest(spec, state);
-                    if (def) {
-                        addedId = def.id;
-                        signatures.add(spec.signature);
-                        if (spec.kind === 'abyss') {
-                            abyssOfferCount += 1;
-                            forceAbyss = false;
-                        }
+                    if (forceChallenge && challengeSpecs.length) pool = challengeSpecs;
+                    else if (forceAbyss && abyssSpecs.length) pool = abyssSpecs;
+                    else {
+                        const roll = Math.random();
+                        if (challengeSpecs.length && roll < challengeWeight) pool = challengeSpecs;
+                        else if (abyssSpecs.length && roll < challengeWeight + abyssWeight * (1 - challengeWeight)) pool = abyssSpecs;
+                        else if (normalSpecs.length) pool = normalSpecs;
+                        else if (challengeSpecs.length) pool = challengeSpecs;
+                        else if (abyssSpecs.length) pool = abyssSpecs;
                     }
+                    const spec = Guild.pickRandom(pool);
+                    addedId = registerGenerated(spec, Guild.createGeneratedQuest(spec, state));
                 }
 
                 if (!addedId && staticCandidates.length) {
@@ -414,24 +705,10 @@
 
                 if (!addedId && specs.length) {
                     const spec = Guild.pickRandom(specs);
-                    const def = Guild.createGeneratedQuest(spec, state);
-                    if (def) {
-                        addedId = def.id;
-                        signatures.add(spec.signature);
-                        if (spec.kind === 'abyss') abyssOfferCount += 1;
-                    }
+                    addedId = registerGenerated(spec, Guild.createGeneratedQuest(spec, state));
                 }
 
                 if (!addedId) break;
-                const addedDef = Guild.getDefinitions()[addedId];
-                const addedSignature = Guild.getQuestGeneratorSignature(addedId, addedDef);
-                if (addedSignature && !signatures.has(addedSignature)) {
-                    signatures.add(addedSignature);
-                    if (addedSignature.startsWith('abyss:')) {
-                        abyssOfferCount += 1;
-                        forceAbyss = false;
-                    }
-                }
                 state.questStates[addedId] = { state: 'available', progress: {} };
                 state.offers.push(addedId);
             }
@@ -601,6 +878,7 @@
 
             Guild.migrateGeneratorState(state);
             Guild.migrateStateToMaster(state);
+            Guild.ensureDailyAcceptState(state);
 
             return state;
         },
@@ -678,7 +956,14 @@
             const state = Guild.ensureState();
             if (!state || !state.offers.includes(id) || !Guild.isQuestUnlocked(id)) return false;
             if (Guild.getQuestState(id).state === 'accepted') return true;
+            const dailyInfo = Guild.getDailyAcceptInfo(state);
+            if (!dailyInfo || dailyInfo.remaining <= 0) {
+                Guild.lastAcceptError = '本日の依頼受注可能数を使い切っています。';
+                return false;
+            }
             state.questStates[id] = { state: 'accepted', startedAt: Date.now(), progress: {} };
+            dailyInfo.daily.acceptedCount += 1;
+            Guild.lastAcceptError = '';
             App.save();
             return true;
         },
@@ -732,6 +1017,7 @@
             const state = Guild.getQuestState(id);
             if (!def || state.state !== 'accepted') return false;
             if (def.kind === 'hunt') return Number(state.progress?.kills || 0) >= Math.max(1, Number(def.targetCount || 1));
+            if (def.kind === 'guildDungeon') return state.progress?.bossDefeated === true;
             if (Array.isArray(def.itemRequirements)) {
                 return def.itemRequirements.every(req => Number(App.data?.items?.[Number(req.id ?? req.itemId)] || 0) >= Math.max(1, Number(req.count || 1)));
             }
@@ -766,6 +1052,15 @@
                 return `${location}対象: ${names || '指定魔物'}
 進捗: ${current}/${required}`;
             }
+            if (def.kind === 'guildDungeon') {
+                const challenge = def.challenge || {};
+                const gimmicks = (challenge.gimmicks || []).map(value => value.label || value.id).filter(Boolean).join('／') || 'なし';
+                const status = state.progress?.bossDefeated ? '最下層ボス討伐済み' : '未討伐';
+                return `依頼迷宮: ${challenge.themeLabel || def.area || '変異迷宮'}
+階層: ${challenge.bossOnly ? 'ボス戦のみ' : `${Math.max(1, Number(challenge.floorCount || 1))}階層`}
+特殊条件: ${gimmicks}
+進捗: ${status}`;
+            }
             if (Array.isArray(def.itemRequirements)) {
                 return def.itemRequirements.map(req => {
                     const itemId = Number(req.id ?? req.itemId);
@@ -784,7 +1079,8 @@
                 const item = DB.ITEMS?.find(entry => Number(entry.id) === itemId);
                 rows.push(`${item?.name || `アイテム${itemId}`} x${Math.max(1, Number(reward.count || 1))}`);
             });
-            rows.push(`ギルド経験値 +${Number(def.guildExp || 0)}`);
+            (def.rewardEquipment || []).forEach(reward => rows.push(String(reward.label || `RANK${reward.floor || 1} 装備+${reward.plus || 0}`)));
+            rows.push(`ギルド経験値 +${Number(def.guildExp || 0)}`)
             rows.push(`ギルドポイント +${Number(def.guildPoints || 0)}`);
             return rows.join('\n');
         },
@@ -801,6 +1097,25 @@
             return true;
         },
 
+        createRewardEquipment(reward = {}) {
+            const requiredType = String(reward.type || '武器');
+            const matches = equip => requiredType === '武器'
+                ? (equip?.type === '武器' || equip?.type === 'weapon')
+                : equip?.type === requiredType;
+            let equip = null;
+            for (let attempt = 0; attempt < 80 && !matches(equip); attempt += 1) {
+                equip = App.createEquipByFloor('guildQuest', Math.max(1, Number(reward.floor || 1)), Number(reward.plus ?? 3));
+            }
+            if (!matches(equip) && Array.isArray(global.EQUIP_MASTER)) {
+                const pool = global.EQUIP_MASTER.filter(base => !base.noRandom && matches(base))
+                    .filter(base => Number(base.rank || 1) <= Math.max(1, Number(reward.floor || 1)));
+                const base = Guild.pickRandom(pool);
+                if (base && typeof App.createEquipById === 'function') equip = App.createEquipById(base.eid, Number(reward.plus ?? 3));
+            }
+            if (equip) equip.source = 'guildQuest';
+            return matches(equip) ? equip : null;
+        },
+
         reportQuest(id) {
             id = Guild.resolveQuestId(id);
             const state = Guild.ensureState();
@@ -811,6 +1126,9 @@
                 const itemId = Number(reward.id ?? reward.itemId);
                 App.data.items[itemId] = Number(App.data.items[itemId] || 0) + Math.max(1, Number(reward.count || 1));
             });
+            if (!Array.isArray(App.data.inventory)) App.data.inventory = [];
+            const equipmentRewards = (def.rewardEquipment || []).map(reward => Guild.createRewardEquipment(reward)).filter(Boolean);
+            equipmentRewards.forEach(equip => App.data.inventory.push(equip));
             state.exp += Math.max(0, Number(def.guildExp || 0));
             state.points += Math.max(0, Number(def.guildPoints || 0));
             if (def.generatedQuest) state.generatedCompletionTotal = Number(state.generatedCompletionTotal || 0) + 1;
@@ -821,7 +1139,29 @@
             Guild.fillOfferSlots({ avoidIds: [id] });
             App.save();
             if (typeof MenuStatus !== 'undefined' && typeof MenuStatus.render === 'function') MenuStatus.render();
-            return { def, guildExp: Number(def.guildExp || 0), guildPoints: Number(def.guildPoints || 0) };
+            return { def, guildExp: Number(def.guildExp || 0), guildPoints: Number(def.guildPoints || 0), equipmentRewards };
+        },
+
+        startChallengeQuest(id) {
+            id = Guild.resolveQuestId(id);
+            const def = Guild.getDefinitions()[id];
+            const questState = Guild.getQuestState(id);
+            if (!def || def.kind !== 'guildDungeon' || questState.state !== 'accepted' || questState.progress?.bossDefeated) return false;
+            if (typeof Dungeon === 'undefined' || typeof Dungeon.startGuildQuestRun !== 'function') return false;
+            if (typeof Facilities !== 'undefined' && typeof Facilities.closeModal === 'function') Facilities.closeModal('guild-scene');
+            return Dungeon.startGuildQuestRun(id, def.challenge || {});
+        },
+
+        markChallengeBossDefeated(id) {
+            id = Guild.resolveQuestId(id);
+            const state = Guild.ensureState();
+            const questState = state?.questStates?.[id];
+            if (!questState || questState.state !== 'accepted') return false;
+            if (!questState.progress || typeof questState.progress !== 'object') questState.progress = {};
+            questState.progress.bossDefeated = true;
+            questState.progress.bossDefeatedAt = Date.now();
+            App.save();
+            return true;
         },
 
         currentExpProgress() {
@@ -924,8 +1264,11 @@
             if (!def) return;
             const ready = Guild.isObjectiveComplete(id);
             const accepted = state.state === 'accepted';
+            const challengeButton = accepted && def.kind === 'guildDungeon' && !ready
+                ? `<button id="guild-detail-challenge" class="menu-btn" style="width:100%; margin-top:12px; border-color:#7ca4ff; color:#e6eeff; background:#15284b;">依頼迷宮へ挑戦</button>`
+                : '';
             const actionButton = accepted
-                ? `<button id="guild-detail-cancel" class="menu-btn" style="width:100%; margin-top:12px; border-color:#a65b5b; color:#ffd4d4;">依頼をキャンセルする</button>`
+                ? `${challengeButton}<button id="guild-detail-cancel" class="menu-btn" style="width:100%; margin-top:8px; border-color:#a65b5b; color:#ffd4d4;">依頼をキャンセルする</button>`
                 : `<button id="guild-detail-accept" class="menu-btn" style="width:100%; margin-top:12px;">受注する</button>`;
             const travelAreaKey = accepted ? App.resolveQuestTravelAreaKey?.(def) : null;
             const travelButton = travelAreaKey
@@ -942,9 +1285,11 @@
             `, { onClose: () => Guild.openBoard() });
             const accept = document.getElementById('guild-detail-accept');
             if (accept) accept.onclick = () => {
-                Guild.acceptQuest(id);
-                Guild.openBoard();
+                if (Guild.acceptQuest(id)) Guild.openBoard();
+                else if (typeof Menu !== 'undefined' && typeof Menu.msg === 'function') Menu.msg(Guild.lastAcceptError || '依頼を受注できませんでした。', () => Guild.showQuestDetail(id));
             };
+            const challenge = document.getElementById('guild-detail-challenge');
+            if (challenge) challenge.onclick = () => Guild.startChallengeQuest(id);
             const travel = document.getElementById('guild-detail-travel');
             if (travel) travel.onclick = () => {
                 Facilities.closeModal?.('guild-scene');
@@ -970,16 +1315,24 @@
             const state = Guild.ensureState();
             Guild.ensureOffers({ save: false });
             const html = state.offers.map(id => Guild.questCard(id)).join('');
+            const dailyInfo = Guild.getDailyAcceptInfo(state);
+            const adButton = dailyInfo.adAvailable
+                ? '<button id="guild-board-ad-bonus" class="menu-btn" style="width:100%; margin-top:8px; border-color:#8bbcff; color:#dcecff;">広告を見て本日の受注枠を10件追加</button>'
+                : '<div style="margin-top:8px; font-size:10px; color:#777; text-align:center;">本日の広告による受注枠追加は使用済みです。</div>';
             Facilities.showModal('guild-scene', '依頼掲示板', `
-                <div style="font-size:11px; color:#aaa;">依頼は最大5件。R・SR・SSR・UR・EXの順に討伐数と難度が上がり、ギルド経験値・GP・追加報酬も増えます。深淵の依頼は到達済み階層だけが対象となり、深層ほど報酬が増えます。更新しても受注中の依頼は残ります。</div>
+                <div style="font-size:11px; color:#aaa;">依頼は最大5件。Cランク以上ではSSR以上の依頼迷宮が発生します。受注中の依頼は更新しても残ります。</div>
+                <div style="margin-top:8px; padding:8px; border:1px solid #5d513a; color:${dailyInfo.remaining > 0 ? '#ffe49a' : '#ff9f9f'}; font-size:11px;">本日の受注: ${dailyInfo.used}/${dailyInfo.limit}（残り${dailyInfo.remaining}件）</div>
                 ${html || '<div style="padding:16px; color:#888;">現在紹介できる依頼はありません。</div>'}
                 <button id="guild-board-refresh" class="menu-btn" style="width:100%; margin-top:12px;">依頼を更新する</button>
+                ${adButton}
             `, { onClose: () => App.changeScene('field') });
             document.querySelectorAll('.guild-quest-entry').forEach(button => {
                 button.onclick = () => Guild.showQuestDetail(button.dataset.guildQuestId);
             });
             const refresh = document.getElementById('guild-board-refresh');
             if (refresh) refresh.onclick = () => { Guild.refreshOffers(); Guild.openBoard(); };
+            const adBonus = document.getElementById('guild-board-ad-bonus');
+            if (adBonus) adBonus.onclick = () => Guild.grantDailyAcceptAdBonus();
         },
 
         openReportMenu() {
@@ -999,7 +1352,8 @@
                     const result = Guild.reportQuest(button.dataset.guildQuestId);
                     if (!result) return;
                     Guild.initFacility();
-                    Facilities.showModal('guild-scene', '報告完了', `<div style="line-height:1.7;">${App.escapeHtml(result.def.completeText || '依頼を達成した。')}<br><br><span style="color:#ffd56b;">ギルド経験値 +${result.guildExp}<br>ギルドポイント +${result.guildPoints}</span></div>`);
+                    const equipmentText = (result.equipmentRewards || []).map(equip => `装備獲得: ${equip.name}${Number(equip.plus || 0) > 0 ? ` +${equip.plus}` : ''}`).join('<br>');
+                    Facilities.showModal('guild-scene', '報告完了', `<div style="line-height:1.7;">${App.escapeHtml(result.def.completeText || '依頼を達成した。')}<br><br><span style="color:#ffd56b;">ギルド経験値 +${result.guildExp}<br>ギルドポイント +${result.guildPoints}${equipmentText ? `<br>${App.escapeHtml(equipmentText).replace(/&lt;br&gt;/g, '<br>')}` : ''}</span></div>`);
                 };
             });
         },
@@ -1061,8 +1415,7 @@
             const commands = `
                 <button class="menu-btn" style="background:#000; border:1px solid #fff; height:40px; color:#fff;" onclick="Guild.openReportMenu()">クエスト報告</button>
                 <button class="menu-btn" style="background:#000; border:1px solid #fff; height:40px; color:#fff;" onclick="Guild.openTrialMenu()">昇格試験</button>
-                <button class="menu-btn" style="background:#000; border:1px solid #fff; height:40px; color:#fff;" onclick="Guild.openExchangeMenu()">GP交換</button>
-                <button class="menu-btn" style="background:#000; border:1px solid #fff; height:40px; color:#fff;" onclick="App.changeScene('field')">出る</button>`;
+                <button class="menu-btn" style="background:#000; border:1px solid #fff; height:40px; color:#fff;" onclick="Guild.openExchangeMenu()">GP交換</button>`;
             Facilities.setupBaseLayout('guild-scene', 'ライザーク冒険者ギルド', 'facility_bg_guild', commands, "App.changeScene('field')");
             const body = document.getElementById('guild-scene-msg-content');
             if (body) body.innerHTML = `

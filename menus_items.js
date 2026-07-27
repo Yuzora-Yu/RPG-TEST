@@ -9,7 +9,7 @@ const MenuItems = {
     getUseSeKey: (item) => {
         if (!item) return null;
         if (item.type === '乗り物' || item.type === '移動' || item.id === 110 || item.name === 'スカイプリズム') return 'ui_item_move';
-        if ((Number(item.id) >= 100 && Number(item.id) <= 107) || String(item.type || '').includes('育成') || item.type === '特性書') return 'ui_item_growth';
+        if ((Number(item.id) >= 100 && Number(item.id) <= 107) || String(item.type || '').includes('育成') || item.type === 'スキル書' || item.type === '特性書') return 'ui_item_growth';
         if (item.fieldGroup || item.effectKind === 'camp' || String(item.type || '').includes('回復') || String(item.type || '').includes('蘇生')) return 'ui_item_heal';
         return null;
     },
@@ -150,8 +150,13 @@ const MenuItems = {
             return;
         }
 
+        // スキル書は通常仲間の専用2枠、仲間モンスターの合計8枠を専用UIで管理する。
+        if (item.type === 'スキル書' || Number(item.skillId) >= 100) {
+            MenuItems.selectedItem = item;
+            MenuItems.openSkillBookCharacterSelection(item);
+        }
         // 特性書は、所持キャラクターと交換可能枠を専用UIで選択する。
-        if (item.type === '特性書' || Number(item.traitId) > 0) {
+        else if (item.type === '特性書' || Number(item.traitId) > 0) {
             if (item.traitBookImplemented === false) {
                 Menu.msg('この特性書はマスター登録済みですが、交換機能はまだ準備中です。');
                 return;
@@ -175,6 +180,104 @@ const MenuItems = {
         } else {
             Menu.msg("使用できないアイテムです。");
         }
+    },
+
+    getSkillBookOwnedCharacters: () => {
+        const characters = Array.isArray(App.data?.characters) ? App.data.characters.filter(Boolean) : [];
+        return characters.slice().sort((left, right) => {
+            const heroDiff = Number(!(left?.uid === 'p1' || left?.isHero || Number(left?.charId) === 301))
+                - Number(!(right?.uid === 'p1' || right?.isHero || Number(right?.charId) === 301));
+            if (heroDiff !== 0) return heroDiff;
+            const monsterDiff = Number(App.isMonsterAlly?.(left)) - Number(App.isMonsterAlly?.(right));
+            if (monsterDiff !== 0) return monsterDiff;
+            return String(left?.name || '').localeCompare(String(right?.name || ''), 'ja');
+        });
+    },
+
+    openSkillBookCharacterSelection: (item) => {
+        const skill = App.getSkillBookSkill?.(item);
+        if (!item || !skill) {
+            Menu.msg('このスキル書は使用できません。');
+            return;
+        }
+        if (Number(App.data?.items?.[item.id] || 0) <= 0) {
+            Menu.msg('アイテムを持っていません。');
+            return;
+        }
+        const choices = MenuItems.getSkillBookOwnedCharacters().map(character => {
+            const isMonster = App.isMonsterAlly?.(character);
+            const capacity = App.getSkillBookCapacity?.(character) || (isMonster ? 8 : 2);
+            const tracked = App.getSkillBookReplacementIds?.(character) || [];
+            const known = Array.isArray(character.skills) && character.skills.map(Number).includes(Number(skill.id));
+            const typeLabel = isMonster ? '仲間モンスター' : '仲間';
+            return {
+                label: `${character.name || '名前なし'}［${typeLabel}／${Math.min(tracked.length, capacity)}/${capacity}枠］${known ? ' 習得済み' : ''}`,
+                disabled: known,
+                callback: () => {
+                    if (tracked.length >= capacity) MenuItems.openSkillBookReplacementSelection(item, character);
+                    else MenuItems.applySkillBook(item, character, null);
+                }
+            };
+        });
+        if (!choices.length) {
+            Menu.msg('スキルを習得できる仲間がいません。');
+            return;
+        }
+        Menu.listChoice(`${item.name}
+習得する仲間を選んでください。`, choices);
+    },
+
+    openSkillBookReplacementSelection: (item, character) => {
+        const skill = App.getSkillBookSkill?.(item);
+        const replacementIds = App.getSkillBookReplacementIds?.(character) || [];
+        if (!skill || !replacementIds.length) {
+            MenuItems.applySkillBook(item, character, null);
+            return;
+        }
+        const choices = replacementIds.map(id => {
+            const current = DB.SKILLS.find(entry => Number(entry.id) === Number(id));
+            return {
+                label: `${current?.name || `スキル${id}`} を忘れる`,
+                callback: () => MenuItems.applySkillBook(item, character, id)
+            };
+        });
+        Menu.listChoice(`${character.name}のスキル枠は上限です。
+「${skill.name}」と入れ替えるスキルを選んでください。`, choices);
+    },
+
+    applySkillBook: (item, character, replaceSkillId = null) => {
+        const skill = App.getSkillBookSkill?.(item);
+        if (!item || !character || !skill) {
+            Menu.msg('スキル書の対象を確認できませんでした。');
+            return;
+        }
+        const replacing = replaceSkillId != null ? DB.SKILLS.find(entry => Number(entry.id) === Number(replaceSkillId)) : null;
+        const prompt = replacing
+            ? `${character.name}の「${replacing.name || `スキル${replaceSkillId}`}」を忘れ、「${skill.name}」を覚えますか？
+スキル書は1冊消費されます。`
+            : `${character.name}に「${skill.name}」を覚えさせますか？
+スキル書は1冊消費されます。`;
+        Menu.confirm(prompt, () => {
+            if (Number(App.data?.items?.[item.id] || 0) <= 0) {
+                Menu.msg('アイテムを持っていません。');
+                return;
+            }
+            const result = App.learnSkillFromBook?.(character, Number(skill.id), replaceSkillId, { save: false });
+            if (!result?.ok) {
+                if (result?.reason === 'needsReplacement') MenuItems.openSkillBookReplacementSelection(item, character);
+                else Menu.msg(result?.message || 'スキルを習得できませんでした。');
+                return;
+            }
+            App.data.items[item.id] -= 1;
+            if (App.data.items[item.id] <= 0) delete App.data.items[item.id];
+            App.save();
+            MenuItems.playUseSe(item);
+            Menu.msg(`${character.name}は「${skill.name}」を覚えた！`, () => {
+                MenuItems.selectedItem = null;
+                MenuItems.changeScreen('list');
+                Menu.renderPartyBar();
+            });
+        });
     },
 
     getTraitBookOwnedCharacters: () => {
@@ -488,16 +591,18 @@ const MenuItems = {
                     case 104: target.spd += 1; msg = `${target.name}の素早さが上がった！`; break;
                     case 105: target.def += 1; msg = `${target.name}の防御力が上がった！`; break;
                     case 106: target.sp = (target.sp || 0) + 1; msg = `${target.name}のSPが 1 増えた！`; break;
-                    case 107: 
-                        // ★修正: ターゲットのレベルが100の時だけ使用可能にする
-                        if (target.level < 100) {
+                    case 107:
+                        if (App.isMonsterAlly?.(target)) {
+                            Menu.msg("仲間モンスターには転生の実を使用できません。");
+                            success = false;
+                        } else if (target.level < 100) {
                             Menu.msg("レベルが不足しており使用できません");
-                            success = false; // アイテム消費を防ぐ
+                            success = false;
                         } else {
                             target.level = 1;
                             target.exp = 0;
                             target.reincarnationCount = (target.reincarnationCount || 0) + 1;
-                            msg = `${target.name}は 転生しレベル1に戻った！\n(転生回数: ${target.reincarnationCount}回目)`; 
+                            msg = `${target.name}は 転生しレベル1に戻った！\n(転生回数: ${target.reincarnationCount}回目)`;
                         }
                         break;
                 }
