@@ -335,7 +335,16 @@
         getNonExchangeTraitBookIds() {
             const exchangeIds = new Set(EXCHANGE.map(entry => Number(entry.itemId)).filter(Number.isFinite));
             return ((typeof DB !== 'undefined' && Array.isArray(DB.ITEMS)) ? DB.ITEMS : [])
-                .filter(item => item?.type === '特性書' && Number(item.traitId) > 0 && !exchangeIds.has(Number(item.id)))
+                .filter(item => {
+                    const traitId = Number(item?.traitId);
+                    if (item?.type !== '特性書' || !Number.isInteger(traitId) || traitId <= 0) return false;
+                    if (exchangeIds.has(Number(item.id)) || item.fieldUsable === false || item.traitBookImplemented === false) return false;
+                    if (typeof PassiveSkill !== 'undefined') {
+                        if (!PassiveSkill.MASTER?.[traitId]) return false;
+                        if (Array.isArray(PassiveSkill.TRAIT_BOOK_TRAIT_IDS) && !PassiveSkill.TRAIT_BOOK_TRAIT_IDS.includes(traitId)) return false;
+                    }
+                    return true;
+                })
                 .map(item => Number(item.id));
         },
 

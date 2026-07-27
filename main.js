@@ -644,6 +644,22 @@ const App = {
         return char.config;
     },
 
+    remapCharacterSkillConfig: (char, fromSkillId, toSkillId = null) => {
+        const config = App.ensureCharacterBattleConfig(char);
+        const fromId = Math.floor(Number(fromSkillId));
+        const toId = toSkillId == null ? null : Math.floor(Number(toSkillId));
+        if (!config || !Number.isInteger(fromId) || fromId <= 0) return config;
+
+        const remap = values => Array.from(new Set((Array.isArray(values) ? values : [])
+            .map(value => Math.floor(Number(value)))
+            .filter(value => Number.isInteger(value) && value > 0)
+            .map(value => value === fromId ? toId : value)
+            .filter(value => Number.isInteger(value) && value > 0)));
+        config.hiddenSkills = remap(config.hiddenSkills);
+        config.autoDisabledSkills = remap(config.autoDisabledSkills);
+        return config;
+    },
+
     getBattleStrategy: (char) => {
         const config = App.ensureCharacterBattleConfig(char);
         return config ? config.strategy : App.defaultBattleStrategy;
@@ -684,7 +700,7 @@ const App = {
             inventory: [],
             items: { "1": 3 }, 
             characters: [
-                { uid: 'p1', charId: 301, name: 'アルス', job: '勇者', level: 1, exp: 0, hp: 50, mp: 20, atk: 15, def: 10, mag: 10, spd: 10, equips: { '武器':null, '盾':null, '頭':null, '体':null, '足':null }, sp: 0, tree: {}, config: { fullAuto: false, hiddenSkills: [], autoDisabledSkills: [], skillUsageConfigVersion: 2, strategy: 'balanced' } }
+                { uid: 'p1', charId: 301, name: 'アルス', job: '勇者', level: 1, exp: 0, hp: 50, mp: 20, atk: 15, def: 10, mag: 10, spd: 10, equips: { '武器':null, '盾':null, '頭':null, '体':null, '足':null }, sp: 0, tree: {}, skillBookSkills: [], config: { fullAuto: false, hiddenSkills: [], autoDisabledSkills: [], skillUsageConfigVersion: 2, strategy: 'balanced' } }
             ],
             party: ['p1', null, null, null],
             gold: 500,
@@ -924,7 +940,7 @@ const App = {
 
 	// 全画像データの手動/初回ダウンロード用キャッシュ名。
 	// sw.js の RUNTIME_CACHE_NAME と揃えること。
-    fullDataCacheName: 'prisma-abyss-v3.148-prism-pedestal-render-fix-runtime',
+    fullDataCacheName: 'prisma-abyss-v3.154-system-integrity-runtime',
 
 
 	// 初回起動時の「全データを今ダウンロードしますか？」で「いいえ」を選んだ記録。
@@ -2404,11 +2420,12 @@ const App = {
             traits: [], 
             disabledTraits: [],
             tree: { ATK: 0, MAG: 0, SPD: 0, HP: 0, MP: 0, WARRIOR: 0, MAGE: 0, PRIEST: 0, M_KNIGHT: 0 },
+            skillBookSkills: [],
             config: { fullAuto: false, hiddenSkills: [], autoDisabledSkills: [], skillUsageConfigVersion: 2, strategy: 'balanced' },
             limitBreak: 0,
             lbProgress: {
                 counters: { battleWins: 0 },
-                sources: { story: 0, battle: 0, dungeon: 0, quest: 0, boss: 0, prism: 0, random: 0, gacha: 0, trial: 0, legacy: 0 },
+                sources: { story: 0, battle: 0, dungeon: 0, quest: 0, boss: 0, prism: 0, random: 0, gacha: 0, monster: 0, trial: 0, item: 0, legacy: 0 },
                 trials: { mid: false, final: false, midClearedAt: null, finalClearedAt: null }
             },
             reincarnationCount: 0
@@ -2789,6 +2806,7 @@ const App = {
             resists: {},
             elmRes: {},
             skills: skillIds.slice(0, 8),
+            skillBookSkills: [],
             equips: { '武器': null, '盾': null, '頭': null, '体': null, '足': null },
             traits,
             disabledTraits: [],
@@ -2832,17 +2850,34 @@ const App = {
 
         const existing = App.data.characters.find(c => App.isMonsterAlly(c) && Number(c.monsterId || c.sourceMonsterId) === monsterId);
         if (existing) {
-            let before = Math.floor(Number(existing.limitBreak) || 0);
-            if (typeof App.addLimitBreak === 'function') {
-                App.addLimitBreak(existing, 1, 'monster');
+            App.backfillLimitBreakLegacy?.(existing);
+            App.applyLimitBreakCap?.(existing);
+            const before = Math.max(0, Math.floor(Number(existing.limitBreak) || 0));
+            const max = Math.max(1, Math.floor(Number(App.limitBreakConfig?.max) || 99));
+            const trialCap = typeof App.getLimitBreakTrialCap === 'function'
+                ? Math.max(0, Math.floor(Number(App.getLimitBreakTrialCap(existing)) || 0))
+                : max;
+
+            let message = `【仲間モンスター】${existing.name}との絆が深まった！`;
+            let lbChanged = false;
+            if (before >= max) {
+                message = `【仲間モンスター】${existing.name}のLBはすでに最大だ。`;
+            } else if (before >= trialCap) {
+                const gateName = trialCap < 50 ? '中間試練' : '最終試練';
+                message = `【仲間モンスター】${existing.name}は${gateName}を越えるまで、これ以上LBを増やせない。`;
+            } else if (typeof App.addLimitBreak === 'function') {
+                const result = App.addLimitBreak(existing, 1, 'monster');
+                lbChanged = result.after > before;
+                message = lbChanged
+                    ? `【仲間モンスター】${existing.name}のLBが上がった！`
+                    : `【仲間モンスター】${existing.name}との絆が深まった！`;
             } else {
-                existing.limitBreak = Math.min(99, before + 1);
-            }
-            if (Math.floor(Number(existing.limitBreak) || 0) <= before) {
-                existing.limitBreak = Math.min(99, before + 1);
+                existing.limitBreak = Math.min(trialCap, max, before + 1);
+                lbChanged = existing.limitBreak > before;
+                if (lbChanged) message = `【仲間モンスター】${existing.name}のLBが上がった！`;
             }
             App.ensureCharacterBattleConfig(existing);
-            return { ok: true, existing: true, char: existing, message: `【仲間モンスター】${existing.name}のLBが上がった！` };
+            return { ok: true, existing: true, char: existing, lbChanged, message };
         }
 
         const saveAlly = App.createMonsterAllyData(enemy, base);
@@ -5356,6 +5391,7 @@ load: () => {
 
         character.skills.push(id);
         character.skills = uniqueSkills(character.skills);
+        if (Number.isFinite(replacement)) App.remapCharacterSkillConfig(character, replacement, id);
         if (isMonster) character.skills = character.skills.slice(0, 8);
         if (!isMonster) {
             character.skillBookSkills = uniqueBookSkills([...(character.skillBookSkills || []), id]).slice(-2);
@@ -5367,29 +5403,52 @@ load: () => {
         return { ok: true, skill, replacedSkillId: replacement, character };
     },
 
+    monsterSkillEvolutionChains: Object.freeze([
+        // 物理系：名称・用途が明確に連続するものだけを成長対象にする。
+        Object.freeze([102, 132]),                    // はやぶさ斬り → 超はやぶさ斬り
+        Object.freeze([112, 151]),                    // 魔人斬り → 大魔人斬り
+        Object.freeze([117, 144]),                    // やいばくだき → 真やいばくだき
+        Object.freeze([125, 147]),                    // キラージャグリング → ゴッドジャグリング
+        Object.freeze([131, 154]),                    // タイガークロー → ライガークラッシュ
+
+        // 属性呪文系。
+        Object.freeze([200, 207, 213, 224, 233]),     // メラ系
+        Object.freeze([201, 210, 217, 221, 235]),     // ヒャド系
+        Object.freeze([202, 211, 215, 222, 236]),     // バギ系
+        Object.freeze([203, 208, 214, 225, 234]),     // ドルマ系
+        Object.freeze([204, 209, 216, 223]),          // ギラ系
+        Object.freeze([205, 212, 218, 227, 232]),     // イオ系
+        Object.freeze([206, 226, 237]),               // デイン系
+        Object.freeze([219, 231]),                    // メテオ系
+
+        // ブレス・回復・状態異常系。
+        Object.freeze([300, 302, 306, 310]),          // 炎ブレス系
+        Object.freeze([301, 305, 307, 309]),          // 氷ブレス系
+        Object.freeze([303, 313, 314]),               // 闇ブレス系
+        Object.freeze([400, 401, 412, 417]),          // 単体回復系
+        Object.freeze([404, 413, 418]),               // 全体回復系
+        Object.freeze([407, 414, 419]),               // 蘇生系
+        Object.freeze([600, 602]),                    // 守備低下系
+        Object.freeze([700, 702]),                    // 毒息系
+        Object.freeze([701, 711, 712, 714]),          // 咆哮系
+        Object.freeze([706, 708, 709]),               // 即死呪文系
+        Object.freeze([707, 710])                     // 死の踊り系
+    ]),
+
     getMonsterSkillEvolution: (skillId) => {
-        const current = typeof DB !== 'undefined' ? DB.SKILLS.find(skill => Number(skill.id) === Number(skillId)) : null;
-        if (!current || Number(current.id) < 100) return null;
-        const type = String(current.type || '');
-        const elm = String(current.elm || '無');
-        const score = skill => {
-            const rate = Math.max(0, Number(skill?.rate || 0));
-            const base = Math.max(0, Number(skill?.base || 0));
-            const count = Math.max(1, Number(skill?.count || 1));
-            return (base + rate * 100) * count + Math.max(0, Number(skill?.mp || 0)) * 0.25;
-        };
-        const currentScore = score(current);
-        if (currentScore <= 0) return null;
-        const candidates = (DB.SKILLS || []).filter(skill => {
-            if (!skill || Number(skill.id) < 100 || Number(skill.id) === Number(current.id)) return false;
-            if (String(skill.type || '') !== type) return false;
-            if (String(skill.elm || '無') !== elm) return false;
-            return score(skill) >= currentScore * 1.12;
-        }).sort((left, right) => {
-            const scoreDiff = score(left) - score(right);
-            return scoreDiff !== 0 ? scoreDiff : Number(left.id) - Number(right.id);
-        });
-        return candidates[0] || null;
+        const currentId = Math.floor(Number(skillId));
+        if (!Number.isFinite(currentId) || currentId < 100 || typeof DB === 'undefined') return null;
+        const chain = App.monsterSkillEvolutionChains.find(ids => ids.includes(currentId));
+        if (!chain) return null;
+        const index = chain.indexOf(currentId);
+        if (index < 0 || index >= chain.length - 1) return null;
+        const current = DB.SKILLS.find(skill => Number(skill.id) === currentId);
+        const next = DB.SKILLS.find(skill => Number(skill.id) === Number(chain[index + 1]));
+        if (!current || !next) return null;
+        // データ編集で系統が崩れた場合は誤変化させない。
+        if (String(current.type || '') !== String(next.type || '')) return null;
+        if (String(current.elm || '無') !== String(next.elm || '無')) return null;
+        return next;
     },
 
     getMonsterFusionPreview: (primaryUid, materialUid, selectedSkillIds = null) => {
@@ -5400,9 +5459,11 @@ load: () => {
         }
         const allSkills = Array.from(new Set([...(primary.skills || []), ...(material.skills || [])]
             .map(Number).filter(id => Number.isFinite(id) && id >= 100)));
-        let skills = Array.isArray(selectedSkillIds)
-            ? Array.from(new Set(selectedSkillIds.map(Number).filter(id => allSkills.includes(id))))
-            : allSkills.slice(0, 8);
+        let skills = allSkills.length <= 8
+            ? allSkills.slice()
+            : (Array.isArray(selectedSkillIds)
+                ? Array.from(new Set(selectedSkillIds.map(Number).filter(id => allSkills.includes(id))))
+                : []);
         if (skills.length > 8) skills = skills.slice(0, 8);
         const stats = {};
         ['hp', 'mp', 'atk', 'def', 'mag', 'mdef', 'spd'].forEach(key => {
@@ -5422,6 +5483,12 @@ load: () => {
         if (Number(App.data?.items?.[potId] || 0) <= 0) return { ok: false, reason: 'noPot', message: '合成の壺を持っていません。' };
 
         const { primary, material, skills, stats } = preview;
+        const returnedEquipment = Array.from(new Set(Object.values(material.equips || {}).filter(Boolean)));
+        if (!Array.isArray(App.data.inventory)) App.data.inventory = [];
+        returnedEquipment.forEach(equip => App.data.inventory.push(equip));
+
+        const retainedSkillSet = new Set(skills.map(Number));
+        const oldConfig = (primary.config && typeof primary.config === 'object') ? primary.config : {};
         Object.assign(primary, stats, {
             level: 1,
             exp: 0,
@@ -5431,8 +5498,18 @@ load: () => {
             skills: skills.slice(0, 8),
             skillBookSkills: [],
             limitBreak: 0,
+            lbProgress: {
+                counters: { battleWins: 0 },
+                sources: { story: 0, battle: 0, dungeon: 0, quest: 0, boss: 0, prism: 0, random: 0, gacha: 0, monster: 0, trial: 0, item: 0, legacy: 0 },
+                trials: { mid: false, final: false, midClearedAt: null, finalClearedAt: null }
+            },
             reincarnationCount: 0,
             growthBase: { ...stats },
+            config: {
+                ...oldConfig,
+                hiddenSkills: (oldConfig.hiddenSkills || []).map(Number).filter(id => retainedSkillSet.has(id)),
+                autoDisabledSkills: (oldConfig.autoDisabledSkills || []).map(Number).filter(id => retainedSkillSet.has(id))
+            },
             monsterFusionCount: Math.max(0, Number(primary.monsterFusionCount || 0)) + 1
         });
         primary.monsterAllyMeta = {
@@ -5449,7 +5526,13 @@ load: () => {
         if (App.data.items[potId] <= 0) delete App.data.items[potId];
         App.ensureCharacterBattleConfig?.(primary);
         App.save();
-        return { ok: true, character: primary, consumedUid: material.uid, message: `${primary.name}は新たな力を得てレベル1になった！` };
+        return {
+            ok: true,
+            character: primary,
+            consumedUid: material.uid,
+            returnedEquipmentCount: returnedEquipment.length,
+            message: `${primary.name}は新たな力を得てレベル1になった！`
+        };
     },
 
     migrateImportedSaveData: (loadedData) => {

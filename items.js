@@ -535,16 +535,15 @@ window.ITEMS_DATA = [
         "name": "ニ刀流の特性書",
         "type": "特性書",
         "traitId": 8,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「ニ刀流」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「ニ刀流」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5109,
@@ -552,16 +551,15 @@ window.ITEMS_DATA = [
         "name": "両手持ちの特性書",
         "type": "特性書",
         "traitId": 9,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「両手持ち」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「両手持ち」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5114,
@@ -569,16 +567,15 @@ window.ITEMS_DATA = [
         "name": "体さばきの特性書",
         "type": "特性書",
         "traitId": 14,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「体さばき」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「体さばき」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5115,
@@ -586,16 +583,15 @@ window.ITEMS_DATA = [
         "name": "頑丈の特性書",
         "type": "特性書",
         "traitId": 15,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「頑丈」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「頑丈」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5116,
@@ -603,16 +599,15 @@ window.ITEMS_DATA = [
         "name": "魔法壁の特性書",
         "type": "特性書",
         "traitId": 16,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「魔法壁」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「魔法壁」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5117,
@@ -620,16 +615,15 @@ window.ITEMS_DATA = [
         "name": "心頭滅却の特性書",
         "type": "特性書",
         "traitId": 17,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「心頭滅却」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「心頭滅却」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5118,
@@ -637,16 +631,15 @@ window.ITEMS_DATA = [
         "name": "根性の特性書",
         "type": "特性書",
         "traitId": 18,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「根性」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「根性」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5119,
@@ -654,16 +647,15 @@ window.ITEMS_DATA = [
         "name": "底力の特性書",
         "type": "特性書",
         "traitId": 19,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「底力」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「底力」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5120,
@@ -671,16 +663,15 @@ window.ITEMS_DATA = [
         "name": "冷静の特性書",
         "type": "特性書",
         "traitId": 20,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「冷静」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「冷静」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5121,
@@ -688,16 +679,15 @@ window.ITEMS_DATA = [
         "name": "強靭の特性書",
         "type": "特性書",
         "traitId": 21,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「強靭」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「強靭」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5122,
@@ -705,16 +695,15 @@ window.ITEMS_DATA = [
         "name": "急所狙いの特性書",
         "type": "特性書",
         "traitId": 22,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「急所狙い」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「急所狙い」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5123,
@@ -722,16 +711,15 @@ window.ITEMS_DATA = [
         "name": "火の扱いの特性書",
         "type": "特性書",
         "traitId": 23,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「火の扱い」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「火の扱い」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5124,
@@ -739,16 +727,15 @@ window.ITEMS_DATA = [
         "name": "水の扱いの特性書",
         "type": "特性書",
         "traitId": 24,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「水の扱い」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「水の扱い」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5125,
@@ -756,16 +743,15 @@ window.ITEMS_DATA = [
         "name": "風の扱いの特性書",
         "type": "特性書",
         "traitId": 25,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「風の扱い」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「風の扱い」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5126,
@@ -773,16 +759,15 @@ window.ITEMS_DATA = [
         "name": "雷の扱いの特性書",
         "type": "特性書",
         "traitId": 26,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「雷の扱い」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「雷の扱い」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5127,
@@ -790,16 +775,15 @@ window.ITEMS_DATA = [
         "name": "光の扱いの特性書",
         "type": "特性書",
         "traitId": 27,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「光の扱い」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「光の扱い」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5128,
@@ -807,16 +791,15 @@ window.ITEMS_DATA = [
         "name": "闇の扱いの特性書",
         "type": "特性書",
         "traitId": 28,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「闇の扱い」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「闇の扱い」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5129,
@@ -824,16 +807,15 @@ window.ITEMS_DATA = [
         "name": "混沌の扱いの特性書",
         "type": "特性書",
         "traitId": 29,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「混沌の扱い」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「混沌の扱い」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5130,
@@ -841,16 +823,15 @@ window.ITEMS_DATA = [
         "name": "解析の特性書",
         "type": "特性書",
         "traitId": 30,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「解析」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「解析」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5131,
@@ -858,16 +839,15 @@ window.ITEMS_DATA = [
         "name": "呪い体質の特性書",
         "type": "特性書",
         "traitId": 31,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「呪い体質」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「呪い体質」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5132,
@@ -875,16 +855,15 @@ window.ITEMS_DATA = [
         "name": "人体知識の特性書",
         "type": "特性書",
         "traitId": 32,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「人体知識」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「人体知識」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5133,
@@ -892,16 +871,15 @@ window.ITEMS_DATA = [
         "name": "悪魔ばらいの特性書",
         "type": "特性書",
         "traitId": 33,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「悪魔ばらい」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「悪魔ばらい」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5134,
@@ -909,16 +887,15 @@ window.ITEMS_DATA = [
         "name": "獣狩りの特性書",
         "type": "特性書",
         "traitId": 34,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「獣狩り」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「獣狩り」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5135,
@@ -926,16 +903,15 @@ window.ITEMS_DATA = [
         "name": "メカニックの特性書",
         "type": "特性書",
         "traitId": 35,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「メカニック」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「メカニック」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5136,
@@ -943,16 +919,15 @@ window.ITEMS_DATA = [
         "name": "竜殺しの特性書",
         "type": "特性書",
         "traitId": 36,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「竜殺し」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「竜殺し」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5137,
@@ -960,16 +935,15 @@ window.ITEMS_DATA = [
         "name": "護衛の特性書",
         "type": "特性書",
         "traitId": 37,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「護衛」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「護衛」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5138,
@@ -977,16 +951,15 @@ window.ITEMS_DATA = [
         "name": "勇猛の特性書",
         "type": "特性書",
         "traitId": 38,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「勇猛」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「勇猛」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5139,
@@ -994,16 +967,15 @@ window.ITEMS_DATA = [
         "name": "応援の特性書",
         "type": "特性書",
         "traitId": 39,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「応援」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「応援」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5140,
@@ -1011,16 +983,15 @@ window.ITEMS_DATA = [
         "name": "司令塔の特性書",
         "type": "特性書",
         "traitId": 40,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「司令塔」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「司令塔」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5141,
@@ -1028,16 +999,15 @@ window.ITEMS_DATA = [
         "name": "警戒の特性書",
         "type": "特性書",
         "traitId": 41,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「警戒」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「警戒」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5142,
@@ -1045,16 +1015,15 @@ window.ITEMS_DATA = [
         "name": "忍び足の特性書",
         "type": "特性書",
         "traitId": 42,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「忍び足」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「忍び足」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5143,
@@ -1062,16 +1031,15 @@ window.ITEMS_DATA = [
         "name": "挑発の特性書",
         "type": "特性書",
         "traitId": 43,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「挑発」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「挑発」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5144,
@@ -1079,16 +1047,15 @@ window.ITEMS_DATA = [
         "name": "潜伏の特性書",
         "type": "特性書",
         "traitId": 44,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「潜伏」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「潜伏」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5145,
@@ -1096,16 +1063,15 @@ window.ITEMS_DATA = [
         "name": "倍返しの特性書",
         "type": "特性書",
         "traitId": 45,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「倍返し」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「倍返し」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5146,
@@ -1113,16 +1079,15 @@ window.ITEMS_DATA = [
         "name": "追い討ちの特性書",
         "type": "特性書",
         "traitId": 46,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「追い討ち」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「追い討ち」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5147,
@@ -1130,16 +1095,15 @@ window.ITEMS_DATA = [
         "name": "連携の特性書",
         "type": "特性書",
         "traitId": 47,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「連携」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「連携」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5148,
@@ -1147,16 +1111,15 @@ window.ITEMS_DATA = [
         "name": "先制の特性書",
         "type": "特性書",
         "traitId": 48,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「先制」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「先制」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5149,
@@ -1164,16 +1127,15 @@ window.ITEMS_DATA = [
         "name": "反撃の特性書",
         "type": "特性書",
         "traitId": 49,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「反撃」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「反撃」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5150,
@@ -1181,16 +1143,15 @@ window.ITEMS_DATA = [
         "name": "理力の壁の特性書",
         "type": "特性書",
         "traitId": 50,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「理力の壁」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「理力の壁」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5151,
@@ -1198,16 +1159,15 @@ window.ITEMS_DATA = [
         "name": "献身の特性書",
         "type": "特性書",
         "traitId": 51,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「献身」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「献身」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5152,
@@ -1215,16 +1175,15 @@ window.ITEMS_DATA = [
         "name": "再生の特性書",
         "type": "特性書",
         "traitId": 52,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「再生」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「再生」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5153,
@@ -1232,16 +1191,15 @@ window.ITEMS_DATA = [
         "name": "魔力循環の特性書",
         "type": "特性書",
         "traitId": 53,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「魔力循環」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「魔力循環」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5154,
@@ -1249,16 +1207,15 @@ window.ITEMS_DATA = [
         "name": "応急手当の特性書",
         "type": "特性書",
         "traitId": 54,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「応急手当」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「応急手当」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5155,
@@ -1266,16 +1223,15 @@ window.ITEMS_DATA = [
         "name": "魔力充填の特性書",
         "type": "特性書",
         "traitId": 55,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「魔力充填」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「魔力充填」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5156,
@@ -1283,16 +1239,15 @@ window.ITEMS_DATA = [
         "name": "解体の特性書",
         "type": "特性書",
         "traitId": 56,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「解体」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「解体」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5157,
@@ -1300,16 +1255,15 @@ window.ITEMS_DATA = [
         "name": "目利きの特性書",
         "type": "特性書",
         "traitId": 57,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「目利き」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「目利き」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5158,
@@ -1317,16 +1271,15 @@ window.ITEMS_DATA = [
         "name": "大器晩成の特性書",
         "type": "特性書",
         "traitId": 58,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「大器晩成」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「大器晩成」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5159,
@@ -1334,16 +1287,15 @@ window.ITEMS_DATA = [
         "name": "武の極みの特性書",
         "type": "特性書",
         "traitId": 59,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「武の極み」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「武の極み」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5160,
@@ -1351,16 +1303,15 @@ window.ITEMS_DATA = [
         "name": "魔の極みの特性書",
         "type": "特性書",
         "traitId": 60,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「魔の極み」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「魔の極み」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
         "id": 5161,
@@ -1368,16 +1319,15 @@ window.ITEMS_DATA = [
         "name": "暗殺術の特性書",
         "type": "特性書",
         "traitId": 61,
-        "traitBookImplemented": false,
         "consumable": true,
         "battleUsable": false,
-        "fieldUsable": false,
+        "fieldUsable": true,
         "target": "特性枠",
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
         "icon": "assets/ui/menu-icons/item-trait-book.png",
-        "desc": "特性「暗殺術」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
+        "desc": "交換可能な特性枠1つを「暗殺術」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     }
 
 ];

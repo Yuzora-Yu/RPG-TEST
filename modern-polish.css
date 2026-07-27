@@ -5691,8 +5691,8 @@ body.game-page #field-minimap-restore {
 }
 
 /* Menu color harmonization for secondary/detail screens. */
-body.game-page .sub-screen:not(#sub-screen-gacha) .tab-bar,
-body.game-page .sub-screen:not(#sub-screen-gacha) [id$="-tabs"],
+body.game-page .sub-screen:not(#sub-screen-gacha):not(#sub-screen-items) .tab-bar,
+body.game-page .sub-screen:not(#sub-screen-gacha):not(#sub-screen-items) [id$="-tabs"],
 body.game-page #allies-detail-content > div:first-child {
   background: linear-gradient(180deg, rgba(52, 31, 17, 0.96), rgba(19, 9, 4, 0.98)) !important;
   border: 1px solid rgba(197, 140, 61, 0.36) !important;
@@ -5700,8 +5700,8 @@ body.game-page #allies-detail-content > div:first-child {
   overflow: hidden;
 }
 
-body.game-page .sub-screen:not(#sub-screen-gacha) .tab-btn,
-body.game-page .sub-screen:not(#sub-screen-gacha) [id$="-tabs"] button,
+body.game-page .sub-screen:not(#sub-screen-gacha):not(#sub-screen-items) .tab-btn,
+body.game-page .sub-screen:not(#sub-screen-gacha):not(#sub-screen-items) [id$="-tabs"] button,
 body.game-page #allies-detail-content > div:first-child button {
   min-height: 36px;
   border: 0 !important;
@@ -5712,14 +5712,14 @@ body.game-page #allies-detail-content > div:first-child button {
   box-shadow: none !important;
 }
 
-body.game-page .sub-screen:not(#sub-screen-gacha) .tab-btn:last-child,
-body.game-page .sub-screen:not(#sub-screen-gacha) [id$="-tabs"] button:last-child,
+body.game-page .sub-screen:not(#sub-screen-gacha):not(#sub-screen-items) .tab-btn:last-child,
+body.game-page .sub-screen:not(#sub-screen-gacha):not(#sub-screen-items) [id$="-tabs"] button:last-child,
 body.game-page #allies-detail-content > div:first-child button:last-child {
   border-right: 0 !important;
 }
 
-body.game-page .sub-screen:not(#sub-screen-gacha) .tab-btn.active,
-body.game-page .sub-screen:not(#sub-screen-gacha) [id$="-tabs"] button.active,
+body.game-page .sub-screen:not(#sub-screen-gacha):not(#sub-screen-items) .tab-btn.active,
+body.game-page .sub-screen:not(#sub-screen-gacha):not(#sub-screen-items) [id$="-tabs"] button.active,
 body.game-page #sub-screen-party #party-screen-tabs button[style*="background:#ffd700"],
 body.game-page #sub-screen-party #party-screen-tabs button[style*="background: #ffd700"],
 body.game-page #allies-detail-content > div:first-child button[style*="background:#ffd700"],

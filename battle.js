@@ -4749,7 +4749,7 @@ findNextActor: () => {
         if (!itemDef) return false;
         if (!App.data.items || typeof App.data.items !== 'object') App.data.items = {};
         App.data.items[itemDef.id] = (App.data.items[itemDef.id] || 0) + 1;
-        drops.push({ name: itemDef.name, isRare: true, type: 'boss', kind: 'item', isSkillBook: true });
+        drops.push({ name: itemDef.name, isRare: true, type: enemy.isBoss ? 'boss' : 'rare', kind: 'item', isSkillBook: true });
         return true;
     },
 
@@ -4778,6 +4778,8 @@ findNextActor: () => {
             character.skills = Array.from(new Set((character.skills || []).map(Number)
                 .map(id => id === Number(selected.fromId) ? Number(selected.to.id) : id))).slice(0, 8);
             character.skillBookSkills = [];
+            App.remapCharacterSkillConfig?.(character, Number(selected.fromId), Number(selected.to.id));
+            App.ensureCharacterBattleConfig?.(character);
             App.save();
             return `<span style="color:#7fffd4; font-weight:bold;">${Battle.escapeHtml(character.name)}の「${Battle.escapeHtml(from?.name || `スキル${selected.fromId}`)}」が「${Battle.escapeHtml(selected.to.name)}」へ成長した！</span>`;
         }

@@ -102,7 +102,12 @@ PassiveSkill.normalizeDisabledTraits = function(char) {
     char.disabledTraits = normalized;
 };
 
-PassiveSkill.TRAIT_BOOK_TRAIT_IDS = Object.freeze([1, 2, 3, 4, 5, 7, 6, 10, 11, 12, 13]);
+// 特性書は、特性マスターへ登録済みの特性をすべて交換対象にする。
+// 交換所にない希少な特性書も報酬として出現するため、マスター登録済みなのに
+// 使用不能となる二重管理を避ける。
+PassiveSkill.TRAIT_BOOK_TRAIT_IDS = Object.freeze(
+    Object.keys(PassiveSkill.MASTER).map(Number).filter(Number.isInteger).sort((a, b) => a - b)
+);
 
 PassiveSkill.isHeroCharacter = function(char) {
     if (!char) return false;
