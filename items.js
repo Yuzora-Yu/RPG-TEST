@@ -295,7 +295,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "交換可能な特性枠1つを「剣」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
@@ -311,7 +311,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "交換可能な特性枠1つを「槍」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
@@ -327,7 +327,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "交換可能な特性枠1つを「斧」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
@@ -343,7 +343,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "交換可能な特性枠1つを「短剣」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
@@ -359,7 +359,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "交換可能な特性枠1つを「弓」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
@@ -375,7 +375,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "交換可能な特性枠1つを「杖」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
@@ -391,7 +391,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "交換可能な特性枠1つを「鷹の目」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
@@ -407,7 +407,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "交換可能な特性枠1つを「武術」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
@@ -423,7 +423,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "交換可能な特性枠1つを「呪文」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
@@ -439,7 +439,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "交換可能な特性枠1つを「息吹」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
@@ -455,7 +455,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "交換可能な特性枠1つを「治癒」に変更する。元の特性Lvは引き継ぐ。重複不可。使用後になくなる。"
     },
     {
@@ -543,7 +543,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「ニ刀流」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -560,7 +560,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「両手持ち」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -577,7 +577,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「体さばき」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -594,7 +594,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「頑丈」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -611,7 +611,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「魔法壁」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -628,7 +628,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「心頭滅却」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -645,7 +645,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「根性」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -662,7 +662,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「底力」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -679,7 +679,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「冷静」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -696,7 +696,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「強靭」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -713,7 +713,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「急所狙い」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -730,7 +730,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「火の扱い」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -747,7 +747,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「水の扱い」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -764,7 +764,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「風の扱い」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -781,7 +781,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「雷の扱い」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -798,7 +798,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「光の扱い」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -815,7 +815,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「闇の扱い」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -832,7 +832,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「混沌の扱い」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -849,7 +849,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「解析」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -866,7 +866,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「呪い体質」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -883,7 +883,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「人体知識」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -900,7 +900,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「悪魔ばらい」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -917,7 +917,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「獣狩り」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -934,7 +934,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「メカニック」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -951,7 +951,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「竜殺し」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -968,7 +968,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「護衛」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -985,7 +985,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「勇猛」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -1002,7 +1002,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「応援」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -1019,7 +1019,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「司令塔」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -1036,7 +1036,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「警戒」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -1053,7 +1053,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「忍び足」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -1070,7 +1070,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「挑発」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -1087,7 +1087,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「潜伏」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -1104,7 +1104,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「倍返し」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -1121,7 +1121,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「追い討ち」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -1138,7 +1138,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「連携」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -1155,7 +1155,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「先制」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -1172,7 +1172,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「反撃」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -1189,7 +1189,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「理力の壁」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -1206,7 +1206,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「献身」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -1223,7 +1223,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「再生」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -1240,7 +1240,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「魔力循環」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -1257,7 +1257,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「応急手当」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -1274,7 +1274,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「魔力充填」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -1291,7 +1291,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「解体」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -1308,7 +1308,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「目利き」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -1325,7 +1325,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「大器晩成」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -1342,7 +1342,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「武の極み」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -1359,7 +1359,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「魔の極み」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     },
     {
@@ -1376,7 +1376,7 @@ window.ITEMS_DATA = [
         "shopAvailable": false,
         "abyssDrop": false,
         "price": 0,
-        "icon": "assets/ui/menu-icons/item-growth.png",
+        "icon": "assets/ui/menu-icons/item-trait-book.png",
         "desc": "特性「暗殺術」へ交換するための書。マスター登録済みだが、交換機能は準備中。"
     }
 
@@ -3747,7 +3747,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「メタル斬り」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -3764,7 +3764,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「疾風突き」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -3781,7 +3781,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「はやぶさ斬り」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -3798,7 +3798,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ウイングアッパー」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -3815,7 +3815,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「火炎斬り」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -3832,7 +3832,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「氷結斬り」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -3849,7 +3849,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「雷鳴突き」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -3866,7 +3866,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「兜割り」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -3883,7 +3883,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ミラクルソード」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -3900,7 +3900,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ブラッドソード」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -3917,7 +3917,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ヴァイパーファング」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -3934,7 +3934,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「せいけん突き」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -3951,7 +3951,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「魔人斬り」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -3968,7 +3968,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「渾身斬り」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -3985,7 +3985,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「暗黒剣」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4002,7 +4002,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「フォースブレイク」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4019,7 +4019,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「マジックアロー」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4036,7 +4036,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「やいばくだき」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4053,7 +4053,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「サンダーボルト」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4070,7 +4070,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ぶんまわし」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4087,7 +4087,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「さみだれ斬り」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4104,7 +4104,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「さみだれ突き」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4121,7 +4121,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「氷結乱撃」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4138,7 +4138,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ばくれつけん」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4155,7 +4155,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「さみだれ剣」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4172,7 +4172,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「キラージャグリング」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4189,7 +4189,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ギガスラッシュ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4206,7 +4206,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「しんくうは」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4223,7 +4223,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「狼牙突き」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4240,7 +4240,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「オノむそう」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4257,7 +4257,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「デュアルカッター」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4274,7 +4274,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「タイガークロー」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4291,7 +4291,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「超はやぶさ斬り」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4308,7 +4308,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「不死鳥天舞」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4325,7 +4325,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「九龍連斬」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4342,7 +4342,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「天下無双」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4359,7 +4359,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「蒼天魔斬」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4376,7 +4376,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「黒の斬撃」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4393,7 +4393,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ギガスロー」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4410,7 +4410,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「絶対零刀」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4427,7 +4427,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「紫電一閃」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4444,7 +4444,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「紅蓮剣舞」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4461,7 +4461,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「超さみだれ突き」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4478,7 +4478,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「鉄甲斬」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4495,7 +4495,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「真やいばくだき」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4512,7 +4512,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「天魔旋風脚」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4529,7 +4529,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「シャイニングボウ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4546,7 +4546,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ゴッドジャグリング」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4563,7 +4563,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「邪神の爪」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4580,7 +4580,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「魔人の絶技」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4597,7 +4597,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「八刀一閃」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4614,7 +4614,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「大魔人斬り」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4631,7 +4631,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「テールスイング」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4648,7 +4648,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「紅蓮連撃」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4665,7 +4665,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ライガークラッシュ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4682,7 +4682,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ギガブレイク」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4699,7 +4699,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ゴッドハンド」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4716,7 +4716,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ラグナブレード」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4733,7 +4733,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ギガクロスブレイク」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4750,7 +4750,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「グランドクロス」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4767,7 +4767,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「グランドネビュラ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4784,7 +4784,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「疾風迅雷」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4801,7 +4801,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「アルテマソード」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4818,7 +4818,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ストックブレイク」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4835,7 +4835,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ショック」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4852,7 +4852,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「クライムハザード」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4869,7 +4869,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ラグナロク」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4886,7 +4886,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「王者の一閃」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4903,7 +4903,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「プリズマエンド」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4920,7 +4920,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「メラ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4937,7 +4937,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ヒャド」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4954,7 +4954,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「バギ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4971,7 +4971,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ドルマ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -4988,7 +4988,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ギラ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5005,7 +5005,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「イオ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5022,7 +5022,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ライデイン」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5039,7 +5039,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「メラミ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5056,7 +5056,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ドルクマ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5073,7 +5073,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ベギラマ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5090,7 +5090,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ヒャダルコ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5107,7 +5107,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「バギマ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5124,7 +5124,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「イオラ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5141,7 +5141,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「メラゾーマ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5158,7 +5158,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ドルモーア」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5175,7 +5175,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「バギクロス」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5192,7 +5192,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ベギラゴン」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5209,7 +5209,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「マヒャド」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5226,7 +5226,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「イオナズン」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5243,7 +5243,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「プチメテオ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5260,7 +5260,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ジゴスパーク」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5277,7 +5277,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「マヒャデドス」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5294,7 +5294,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「バギムーチョ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5311,7 +5311,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ギラグレイド」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5328,7 +5328,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「メラガイアー」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5345,7 +5345,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ドルマドン」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5362,7 +5362,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ギガデイン」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5379,7 +5379,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「イオグランデ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5396,7 +5396,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「シャイニング」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5413,7 +5413,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「凍てつく氷錐」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5430,7 +5430,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「裁きの雷霆」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5447,7 +5447,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「メテオ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5464,7 +5464,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「イオマータ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5481,7 +5481,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「神速メラガイアー」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5498,7 +5498,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「連続ドルマドン」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5515,7 +5515,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「氷塊マヒャデドス」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5532,7 +5532,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「烈風バギムーチョ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5549,7 +5549,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ジゴデイン」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5566,7 +5566,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ビッグバン」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5583,7 +5583,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ねんじボール」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5600,7 +5600,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ルーンショット」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5617,7 +5617,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ルーンストーム」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5634,7 +5634,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「アビスウォール」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5651,7 +5651,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「フェニックスフレア」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5668,7 +5668,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「創世の魔力」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5685,7 +5685,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「カオスショック」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5702,7 +5702,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「イルミナティブレイク」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5719,7 +5719,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ジエンド」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5736,7 +5736,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ロストプリズマ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5753,7 +5753,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「火炎の息」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5770,7 +5770,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「こごえる吹雪」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5787,7 +5787,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「はげしい炎」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5804,7 +5804,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「暗黒のきり」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5821,7 +5821,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「いなずま」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5838,7 +5838,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「かがやく息」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5855,7 +5855,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「しゃくねつ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5872,7 +5872,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「絶対零度」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5889,7 +5889,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「煉獄火炎」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5906,7 +5906,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「霜白の氷塊」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5923,7 +5923,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「紅蓮の炎」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5940,7 +5940,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ウイングダイブ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5957,7 +5957,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「シャイニングブレス」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5974,7 +5974,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ダークネスブレス」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -5991,7 +5991,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「闇の流星」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6008,7 +6008,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「魔触」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6025,7 +6025,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ホイミ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6042,7 +6042,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ベホイミ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6059,7 +6059,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「めいそう」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6076,7 +6076,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「無念無想」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6093,7 +6093,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「エリアヒール」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6110,7 +6110,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「キアリク」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6127,7 +6127,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「不撓不屈」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6144,7 +6144,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ザオラル」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6161,7 +6161,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ひかりのはどう」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6178,7 +6178,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「いやしのあめ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6195,7 +6195,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「まりょくのかぜ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6212,7 +6212,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ファストエイド」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6229,7 +6229,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ベホイム」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6246,7 +6246,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ベホマラー」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6263,7 +6263,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ザオリク」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6280,7 +6280,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「不死鳥の灰」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6297,7 +6297,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「世界樹の陽光」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6314,7 +6314,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ベホマ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6331,7 +6331,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ベホマズン」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6348,7 +6348,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ザオリーマ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6365,7 +6365,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「バイキルト」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6382,7 +6382,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「スクルト」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6399,7 +6399,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ピオリム」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6416,7 +6416,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「マジックバリア」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6433,7 +6433,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「弓聖の守り星」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6450,7 +6450,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「キラキラポーン」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6467,7 +6467,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「魔力覚醒」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6484,7 +6484,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「臥薪嘗胆」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6501,7 +6501,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「たたかいのドラム」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6518,7 +6518,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「パラディンガード」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6535,7 +6535,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「やみのころも」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6552,7 +6552,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ルカニ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6569,7 +6569,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ボミオス」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6586,7 +6586,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ルカナン」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6603,7 +6603,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ヘナトス」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6620,7 +6620,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「やみのはどう」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6637,7 +6637,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「どくのいき」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6654,7 +6654,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「おたけび」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6671,7 +6671,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「もうどくのいき」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6688,7 +6688,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「マホトーン」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6705,7 +6705,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「スキルブレイク」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6722,7 +6722,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「いてつくはどう」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6739,7 +6739,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ザキ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6756,7 +6756,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「死の踊り」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6773,7 +6773,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ザラキ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6790,7 +6790,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「ザラキーマ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6807,7 +6807,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「地獄の舞い」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6824,7 +6824,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「はげしいおたけび」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6841,7 +6841,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「おぞましいおたけび」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6858,7 +6858,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「死グモのトゲ」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6875,7 +6875,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「竜の咆哮」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 },
 {
@@ -6892,7 +6892,7 @@ window.ITEMS_DATA.push(
     "abyssDrop": false,
     "price": 0,
     "sellPrice": 0,
-    "icon": "assets/ui/menu-icons/item-growth.png",
+    "icon": "assets/ui/menu-icons/item-skill-book.png",
     "desc": "スキル「心ない天使」を仲間に習得させる。通常仲間は専用2枠、仲間モンスターは合計8枠まで。"
 }
 );

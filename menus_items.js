@@ -32,7 +32,7 @@ const MenuItems = {
     },
 
     setTab: (tab) => {
-        MenuItems.activeTab = ['tools', 'materials', 'valuables'].includes(tab) ? tab : 'tools';
+        MenuItems.activeTab = ['tools', 'growth', 'materials', 'valuables'].includes(tab) ? tab : 'tools';
         MenuItems.renderList();
     },
 
@@ -42,6 +42,12 @@ const MenuItems = {
 
     isMaterial: (def) => {
         return !!def && def.type === '素材';
+    },
+
+    isGrowth: (def) => {
+        if (!def) return false;
+        const type = String(def.type || '');
+        return type.includes('育成') || type === 'スキル書' || type === '特性書';
     },
 
     getOwnedItems: () => {
@@ -75,23 +81,28 @@ const MenuItems = {
         });
     },
 
-    renderTabs: (list, counts) => {
-        const tabWrap = document.createElement('div');
-        tabWrap.style.cssText = 'display:flex; background:#222; margin:8px; border-radius:6px; overflow:hidden; border:1px solid #444; position:sticky; top:0; z-index:5; flex-shrink:0;';
+    renderTabs: () => {
+        const tabHost = document.getElementById('item-tabs');
+        if (!tabHost) return;
+        tabHost.innerHTML = '';
 
-        const makeTab = (key, label, count) => {
+        const tabWrap = document.createElement('div');
+        tabWrap.style.cssText = 'display:flex; background:#222; margin:8px 8px 0; border-radius:6px; overflow:hidden; border:1px solid #444; flex-shrink:0;';
+
+        const makeTab = (key, label) => {
             const btn = document.createElement('button');
             const active = MenuItems.activeTab === key;
-            btn.style.cssText = `flex:1; min-width:0; padding:10px 4px; border:none; background:${active ? '#ffd700' : '#111'}; color:${active ? '#000' : '#777'}; font-weight:bold; font-size:11px; white-space:nowrap; font-family:inherit;`;
-            btn.innerText = `${label} (${count})`;
+            btn.style.cssText = `flex:1; min-width:0; padding:10px 2px; border:none; background:${active ? '#ffd700' : '#111'}; color:${active ? '#000' : '#777'}; font-weight:bold; font-size:11px; white-space:nowrap; font-family:inherit;`;
+            btn.innerText = label;
             btn.onclick = () => MenuItems.setTab(key);
             return btn;
         };
 
-        tabWrap.appendChild(makeTab('tools', '道具', counts.tools));
-        tabWrap.appendChild(makeTab('materials', '素材', counts.materials));
-        tabWrap.appendChild(makeTab('valuables', '貴重品', counts.valuables));
-        list.appendChild(tabWrap);
+        tabWrap.appendChild(makeTab('tools', '道具'));
+        tabWrap.appendChild(makeTab('growth', '育成'));
+        tabWrap.appendChild(makeTab('materials', '素材'));
+        tabWrap.appendChild(makeTab('valuables', '貴重品'));
+        tabHost.appendChild(tabWrap);
     },
 
     renderList: () => {
@@ -99,22 +110,29 @@ const MenuItems = {
         list.innerHTML = '';
 
         const allItems = MenuItems.getOwnedItems();
-        const tools = allItems.filter(it => !MenuItems.isValuable(it.def) && !MenuItems.isMaterial(it.def));
+        const growth = allItems.filter(it => MenuItems.isGrowth(it.def));
         const materials = allItems.filter(it => MenuItems.isMaterial(it.def));
         const valuables = allItems.filter(it => MenuItems.isValuable(it.def));
-        const counts = { tools: tools.length, materials: materials.length, valuables: valuables.length };
-
-        MenuItems.renderTabs(list, counts);
-
-        const currentItems = MenuItems.sortItemsForCurrentTab(
-            MenuItems.activeTab === 'valuables' ? valuables : (MenuItems.activeTab === 'materials' ? materials : tools)
+        const tools = allItems.filter(it =>
+            !MenuItems.isGrowth(it.def) &&
+            !MenuItems.isMaterial(it.def) &&
+            !MenuItems.isValuable(it.def)
         );
+
+        MenuItems.renderTabs();
+
+        const itemsByTab = { tools, growth, materials, valuables };
+        const currentItems = MenuItems.sortItemsForCurrentTab(itemsByTab[MenuItems.activeTab] || tools);
         if (currentItems.length === 0) {
+            const emptyLabels = {
+                tools: '道具を持っていません',
+                growth: '育成アイテムを持っていません',
+                materials: '素材を持っていません',
+                valuables: '貴重品を持っていません'
+            };
             const empty = document.createElement('div');
             empty.style.cssText = 'padding:24px 20px; text-align:center; color:#555;';
-            empty.innerText = MenuItems.activeTab === 'valuables'
-                ? '貴重品を持っていません'
-                : (MenuItems.activeTab === 'materials' ? '素材を持っていません' : '道具を持っていません');
+            empty.innerText = emptyLabels[MenuItems.activeTab] || emptyLabels.tools;
             list.appendChild(empty);
             return;
         }

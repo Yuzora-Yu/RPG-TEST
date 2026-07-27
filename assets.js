@@ -103,6 +103,8 @@ const PRISMA_ASSETS = {
     item_icon_heal: "assets/ui/menu-icons/item-heal.png",
     item_icon_revive: "assets/ui/menu-icons/item-revive.png",
     item_icon_growth: "assets/ui/menu-icons/item-growth.png",
+    item_icon_skill_book: "assets/ui/menu-icons/item-skill-book.png",
+    item_icon_trait_book: "assets/ui/menu-icons/item-trait-book.png",
     item_icon_key: "assets/ui/menu-icons/item-key.png",
     floor: "assets/map/terrain/terrain_grass_field.png",
     sea: "assets/map/terrain/terrain_sea.png",
@@ -673,11 +675,11 @@ const PRISMA_ASSETS = {
   // installImages: Service Worker の初回install時にキャッシュする画像全体。
   // backgroundImages: install後の再試行/補助ウォームキャッシュ用。
   cacheWarmup: {
-    version: "2026-07-26-adventurer-guild-layout-v2",
+    version: "2026-07-27-item-book-icons-v1",
     initialGraphicKeys: [
       "floor", "sea", "forest", "mountain", "Low_mountain", "cave", "house-1", "house-2", "inn", "wall", "dungeon_floor",
       "item_icon_attack", "item_icon_buff", "item_icon_debuff", "item_icon_material", "item_icon_vehicle", "item_icon_travel",
-      "item_icon_heal", "item_icon_revive", "item_icon_growth", "item_icon_key",
+      "item_icon_heal", "item_icon_revive", "item_icon_growth", "item_icon_skill_book", "item_icon_trait_book", "item_icon_key",
       "overlay_field_forest", "overlay_field_house_1", "overlay_field_house_2", "overlay_field_cave",
       "overlay_field_village",
       "overlay_decor_default_cave_dust", "overlay_decor_start_village_herbs", "overlay_decor_start_cave_damp",

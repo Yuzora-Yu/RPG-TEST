@@ -322,8 +322,10 @@ const Menu = {
     },
 
     getItemIconPath: (item) => {
-        if (item?.icon) return item.icon;
         const type = String(item?.type || '');
+        if (type === 'スキル書') return 'assets/ui/menu-icons/item-skill-book.png';
+        if (type === '特性書') return 'assets/ui/menu-icons/item-trait-book.png';
+        if (item?.icon) return item.icon;
         if (type === '攻撃道具') return 'assets/ui/menu-icons/item-attack.png';
         if (type === '強化道具') return 'assets/ui/menu-icons/item-buff.png';
         if (type === '弱体道具') return 'assets/ui/menu-icons/item-debuff.png';
