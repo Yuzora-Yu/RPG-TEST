@@ -32,8 +32,10 @@ const MenuItems = {
     },
 
     setTab: (tab) => {
-        MenuItems.activeTab = ['tools', 'growth', 'materials', 'valuables'].includes(tab) ? tab : 'tools';
-        MenuItems.renderList();
+        const nextTab = ['tools', 'growth', 'materials', 'valuables'].includes(tab) ? tab : 'tools';
+        if (MenuItems.activeTab === nextTab) return;
+        MenuItems.activeTab = nextTab;
+        MenuItems.renderList({ resetScroll: true });
     },
 
     isValuable: (def) => {
@@ -85,29 +87,55 @@ const MenuItems = {
         const tabHost = document.getElementById('item-tabs');
         if (!tabHost) return;
         tabHost.innerHTML = '';
+        tabHost.className = 'item-tab-bar';
+        tabHost.setAttribute('role', 'tablist');
+        tabHost.setAttribute('aria-label', '道具カテゴリ');
 
-        const tabWrap = document.createElement('div');
-        tabWrap.style.cssText = 'display:flex; background:#222; margin:8px 8px 0; border-radius:6px; overflow:hidden; border:1px solid #444; flex-shrink:0;';
+        const tabs = [
+            ['tools', '道具'],
+            ['growth', '育成'],
+            ['materials', '素材'],
+            ['valuables', '貴重品']
+        ];
 
-        const makeTab = (key, label) => {
-            const btn = document.createElement('button');
+        const list = document.getElementById('list-items');
+        if (list) {
+            list.setAttribute('role', 'tabpanel');
+            list.setAttribute('aria-labelledby', `item-tab-${MenuItems.activeTab}`);
+        }
+
+        tabs.forEach(([key, label], index) => {
             const active = MenuItems.activeTab === key;
-            btn.style.cssText = `flex:1; min-width:0; padding:10px 2px; border:none; background:${active ? '#ffd700' : '#111'}; color:${active ? '#000' : '#777'}; font-weight:bold; font-size:11px; white-space:nowrap; font-family:inherit;`;
-            btn.innerText = label;
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.id = `item-tab-${key}`;
+            btn.className = `item-tab-btn${active ? ' active' : ''}`;
+            btn.setAttribute('role', 'tab');
+            btn.setAttribute('aria-selected', active ? 'true' : 'false');
+            btn.setAttribute('aria-controls', 'list-items');
+            btn.tabIndex = active ? 0 : -1;
+            btn.textContent = label;
             btn.onclick = () => MenuItems.setTab(key);
-            return btn;
-        };
-
-        tabWrap.appendChild(makeTab('tools', '道具'));
-        tabWrap.appendChild(makeTab('growth', '育成'));
-        tabWrap.appendChild(makeTab('materials', '素材'));
-        tabWrap.appendChild(makeTab('valuables', '貴重品'));
-        tabHost.appendChild(tabWrap);
+            btn.onkeydown = (event) => {
+                if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+                event.preventDefault();
+                let nextIndex = index;
+                if (event.key === 'ArrowLeft') nextIndex = (index + tabs.length - 1) % tabs.length;
+                if (event.key === 'ArrowRight') nextIndex = (index + 1) % tabs.length;
+                if (event.key === 'Home') nextIndex = 0;
+                if (event.key === 'End') nextIndex = tabs.length - 1;
+                MenuItems.setTab(tabs[nextIndex][0]);
+                requestAnimationFrame(() => document.getElementById(`item-tab-${tabs[nextIndex][0]}`)?.focus());
+            };
+            tabHost.appendChild(btn);
+        });
     },
 
-    renderList: () => {
+    renderList: (options = {}) => {
         const list = document.getElementById('list-items');
+        if (!list) return;
         list.innerHTML = '';
+        if (options.resetScroll) list.scrollTop = 0;
 
         const allItems = MenuItems.getOwnedItems();
         const growth = allItems.filter(it => MenuItems.isGrowth(it.def));

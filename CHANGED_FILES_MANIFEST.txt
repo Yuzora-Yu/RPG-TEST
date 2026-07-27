@@ -1,8 +1,9 @@
-Cumulative changed files through 2026-07-27 guild board / magic communication update.
+Cumulative changed files through 2026-07-27 item tabs UI fix.
 
 UPDATE_REPORT_20260727.md
 UPDATE_REPORT_ITEM_TABS_20260727.md
 UPDATE_REPORT_GUILD_BOARD_MAGIC_COMM_20260727.md
+UPDATE_REPORT_ITEM_TABS_UI_FIX_20260727.md
 assets.js
 assets/ui/menu-icons/item-skill-book.png
 assets/ui/menu-icons/item-trait-book.png
@@ -20,5 +21,6 @@ menus.js
 menus_items.js
 menus_party.js
 menus_status.js
+modern-polish.css
 story_logic.js
 sw.js
