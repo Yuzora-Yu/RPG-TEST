@@ -17,33 +17,33 @@ vm.runInContext(read('assets.js'), context, { filename: 'assets.js' });
 vm.runInContext(read('monster-images.js'), context, { filename: 'monster-images.js' });
 
 const adoptedQuestBosses = [
-    { id: 302201, questId: 'karin_volcano_depths' },
-    { id: 302202, questId: 'sophia_alan_seabed_depths' },
-    { id: 302203, questId: 'arisa_haine_forest_depths' },
-    { id: 302204, questId: 'frieda_baron_thunder_depths' },
-    { id: 302205, questId: 'zelied_big_tower' },
-    { id: 302206, questId: 'claude_leon_dark_shrine' },
-    { id: 302207, questId: 'arisa_haine_forest_depths' },
-    { id: 302208, questId: 'sophia_alan_seabed_depths' },
+    { id: 303201, questId: 'karin_volcano_depths' },
+    { id: 303202, questId: 'sophia_alan_seabed_depths' },
+    { id: 303203, questId: 'arisa_haine_forest_depths' },
+    { id: 303204, questId: 'frieda_baron_thunder_depths' },
+    { id: 303205, questId: 'zelied_big_tower' },
+    { id: 303206, questId: 'claude_leon_dark_shrine' },
+    { id: 303207, questId: 'arisa_haine_forest_depths' },
+    { id: 303208, questId: 'sophia_alan_seabed_depths' },
 ];
 
 const adoptedNormals = [
-    { id: 200001, bandStart: 81 },
-    { id: 200002, bandStart: 86 },
-    { id: 200003, bandStart: 91 },
-    { id: 200004, bandStart: 96 },
-    { id: 200005, bandStart: 101 },
-    { id: 200006, bandStart: 106 },
-    { id: 200007, bandStart: 111 },
-    { id: 200008, bandStart: 116 },
-    { id: 200009, bandStart: 121 },
-    { id: 200010, bandStart: 126 },
-    { id: 200011, bandStart: 131 },
-    { id: 200012, bandStart: 136 },
-    { id: 200013, bandStart: 141 },
-    { id: 200014, bandStart: 146 },
-    { id: 200015, bandStart: 151 },
-    { id: 200016, bandStart: 156 },
+    { id: 805, bandStart: 81 },
+    { id: 856, bandStart: 86 },
+    { id: 905, bandStart: 91 },
+    { id: 956, bandStart: 96 },
+    { id: 1005, bandStart: 101 },
+    { id: 1056, bandStart: 106 },
+    { id: 1105, bandStart: 111 },
+    { id: 1156, bandStart: 116 },
+    { id: 1205, bandStart: 121 },
+    { id: 1256, bandStart: 126 },
+    { id: 1305, bandStart: 131 },
+    { id: 1356, bandStart: 136 },
+    { id: 1405, bandStart: 141 },
+    { id: 1456, bandStart: 146 },
+    { id: 1505, bandStart: 151 },
+    { id: 1556, bandStart: 156 },
 ];
 
 const skills = new Set((context.SKILLS_DATA || []).map(skill => Number(skill.id)));
@@ -53,7 +53,7 @@ const imageMap = context.MonsterImageMap || {};
 const battleSource = read('battle.js');
 const bookSource = read('menus_book.js');
 
-const canonicalPath = id => `assets/monsters/monster_${id}.png`;
+const canonicalPath = id => `assets/monsters/monster_${String(id).padStart(6, '0')}.png`;
 const exists = relative => fs.existsSync(path.join(root, relative));
 
 const median = values => {
@@ -209,20 +209,20 @@ for (const [file, source] of [
 }
 
 const compactStory = read('story.js').replace(/\s+/g, '');
-if (!compactStory.includes('"quest_arisa_haine_encounter":{"actions":[{"type":"CONV","value":"QUEST_ARISA_HAINE_ENCOUNTER"},{"type":"BOSS","value":[302203,302207]')) {
+if (!compactStory.includes('"quest_arisa_haine_encounter":{"actions":[{"type":"CONV","value":"QUEST_ARISA_HAINE_ENCOUNTER"},{"type":"BOSS","value":[303203,303207]')) {
     errors.push('Arisa/Haine quest battle is not connected to the adopted wind/earth bosses');
 }
-if (!compactStory.includes('"quest_zelied_tower_echo_encounter":{"actions":[{"type":"CONV","value":"QUEST_ZELIED_TOWER_ECHO_ENCOUNTER"},{"type":"BOSS","value":[301060,302205]')) {
+if (!compactStory.includes('"quest_zelied_tower_echo_encounter":{"actions":[{"type":"CONV","value":"QUEST_ZELIED_TOWER_ECHO_ENCOUNTER"},{"type":"BOSS","value":[301060,303205]')) {
     errors.push('Zelied quest battle is not connected to the adopted light boss');
 }
 
 const compactMap = read('map.js').replace(/\s+/g, '');
 const requiredMapConnections = [
-    ['karin_volcano_depths', 'monsterId:302201,questId:"karin_volcano_depths"'],
-    ['sophia_alan_seabed_depths', 'monsterId:[302208,302202],questId:"sophia_alan_seabed_depths"'],
-    ['frieda_baron_thunder_depths', 'monsterId:[302204,100082],questId:"frieda_baron_thunder_depths"'],
-    ['zelied_big_tower', 'monsterId:[301060,302205],questId:"zelied_big_tower"'],
-    ['claude_leon_dark_shrine', 'monsterId:302206,questId:"claude_leon_dark_shrine"'],
+    ['karin_volcano_depths', 'monsterId:303201,questId:"karin_volcano_depths"'],
+    ['sophia_alan_seabed_depths', 'monsterId:[303208,303202],questId:"sophia_alan_seabed_depths"'],
+    ['frieda_baron_thunder_depths', 'monsterId:[303204,901],questId:"frieda_baron_thunder_depths"'],
+    ['zelied_big_tower', 'monsterId:[301060,303205],questId:"zelied_big_tower"'],
+    ['claude_leon_dark_shrine', 'monsterId:303206,questId:"claude_leon_dark_shrine"'],
 ];
 for (const [questId, snippet] of requiredMapConnections) {
     if (!compactMap.includes(snippet)) errors.push(`map quest boss connection missing: ${questId}`);

@@ -1124,7 +1124,7 @@ const Battle = {
         }
 
         // イベント用の明示編成。通常エンカウントは最大4体だが、イベント/亀裂では5体まで許可する。
-        // 使い方例: App.data.battle.fixedEnemyIds = [100001,100002,100003,100004,100005]
+        // 使い方例: App.data.battle.fixedEnemyIds = [1,2,3,4,51]
         // または App.data.battle.exactMonsters = true; App.data.battle.monsters = [...]
         const exactEventMonsterIds = Array.isArray(battleData.fixedEnemyIds)
             ? battleData.fixedEnemyIds
@@ -1240,9 +1240,10 @@ const Battle = {
         for (let i = 0; i < normalCount; i++) {
             let monsterData = null;
             const isFixedMap = typeof Field !== 'undefined' && Field.currentMapData && Field.currentMapData.isFixed;
-            const battleMonsterIds = Array.isArray(battleData.monsters) ? battleData.monsters : null;
-            const seaMonsterIds = battleData.encounterType === 'sea' && Array.isArray(window.SEA_ENCOUNTER_MONSTERS) ? window.SEA_ENCOUNTER_MONSTERS : null;
-            const fixedMonsterIds = battleMonsterIds || seaMonsterIds || (isFixedMap && Array.isArray(Field.currentMapData.monsters) ? Field.currentMapData.monsters : null);
+            const useHabitatEncounters = battleData.useHabitatEncounters === true;
+            const battleMonsterIds = !useHabitatEncounters && Array.isArray(battleData.monsters) ? battleData.monsters : null;
+            const seaMonsterIds = !useHabitatEncounters && battleData.encounterType === 'sea' && Array.isArray(window.SEA_ENCOUNTER_MONSTERS) ? window.SEA_ENCOUNTER_MONSTERS : null;
+            const fixedMonsterIds = battleMonsterIds || seaMonsterIds || (!useHabitatEncounters && isFixedMap && Array.isArray(Field.currentMapData.monsters) ? Field.currentMapData.monsters : null);
             const hasRareMonsterPool = Array.isArray(battleData.rareMonsters)
                 || (isFixedMap && Array.isArray(Field.currentMapData.rareMonsters));
 
@@ -1252,6 +1253,17 @@ const Battle = {
                 const mid = fixedMonsterIds[Math.floor(Math.random() * fixedMonsterIds.length)];
                 const fixedBase = Battle.getMonsterBaseById(mid);
                 if (Battle.isNormalEncounterBase(fixedBase)) monsterData = fixedBase;
+            }
+
+
+            if (!monsterData && useHabitatEncounters && window.MonsterData && typeof window.MonsterData.generateEnemyForEncounter === 'function') {
+                monsterData = window.MonsterData.generateEnemyForEncounter({
+                    mapId: battleData.encounterMapId || Field.currentMapData?.mapId || null,
+                    floor: battleData.encounterFloor ?? Field.currentMapData?.floor ?? 0,
+                    abyssFloor: battleData.abyssFloor || null,
+                    rank: floor,
+                    allowRare: !!battleData.abyssFloor && !hasRareMonsterPool
+                });
             }
 
             if (!monsterData && window.MonsterData && typeof window.MonsterData.generateEnemyForFloor === 'function') {

@@ -445,7 +445,7 @@ async function runAudit() {
         '弱い状態耐性強化が、強い既存効果または残り時間を上書きします');
 
     const generatedEnemy = createUnit('generated-enemy', {
-        id: 200001, baseId: 200001, hp: 4321, baseMaxHp: 9000, mp: 77, baseMaxMp: 333,
+        id: 805, baseId: 805, hp: 4321, baseMaxHp: 9000, mp: 77, baseMaxMp: 333,
         atk: 901, def: 802, mdef: 703, spd: 604, mag: 505, hit: 123, eva: 24, cri: 15,
         exp: 4567, gold: 890, actCount: 2, acts: [{ id: 501, rate: 70 }, { id: 1, rate: 30 }],
         rank: 210, generatedFloor: 240, traits: [{ id: 18, level: 3 }], passive: { drain: true },
@@ -454,7 +454,7 @@ async function runAudit() {
     });
     const enemySnapshot = Battle.serializeEnemyState(generatedEnemy);
     const restoredEnemy = createUnit('restored-enemy', { baseStats: { atk: 1, def: 1, mdef: 1, spd: 1, mag: 1 } });
-    Battle.restoreEnemyState(restoredEnemy, enemySnapshot, { id: 200001, exp: 1, gold: 1 });
+    Battle.restoreEnemyState(restoredEnemy, enemySnapshot, { id: 805, exp: 1, gold: 1 });
     addCheck(report, 'battle-stats', restoredEnemy.hp === 4321 && restoredEnemy.mp === 77
         && restoredEnemy.baseMaxMp === 333 && restoredEnemy.atk === 901 && restoredEnemy.mdef === 703
         && restoredEnemy.actCount === 2 && restoredEnemy.acts.length === 2

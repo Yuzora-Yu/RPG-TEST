@@ -3224,8 +3224,8 @@ const STORY_MANAGER_DATA = {
                                 "type": "BOSS",
                                 "battleBg": "battle_bg_first",
                                 "value": [
-                                        100001,
-                                        100001
+                                        1,
+                                        1
                                 ]
                         }
                 ],
@@ -3269,8 +3269,8 @@ const STORY_MANAGER_DATA = {
                                 "type": "BOSS",
                                 "battleBg": "battle_bg_first",
                                 "value": [
-                                        100001,
-                                        100001
+                                        1,
+                                        1
                                 ]
                         }
                 ],
@@ -3955,7 +3955,7 @@ const STORY_MANAGER_DATA = {
         "quest_claude_leon_encounter": {
                 "actions": [
                         { "type": "CONV", "value": "QUEST_CLAUDE_LEON_ENCOUNTER" },
-                        { "type": "BOSS", "value": 302206, "winEventId": "quest_claude_leon_clear" }
+                        { "type": "BOSS", "value": 303206, "winEventId": "quest_claude_leon_clear" }
                 ],
                 "winActions": []
         },
@@ -4009,7 +4009,7 @@ const STORY_MANAGER_DATA = {
         "quest_karin_volcano_encounter": {
                 "actions": [
                         { "type": "CONV", "value": "QUEST_KARIN_VOLCANO_ENCOUNTER" },
-                        { "type": "BOSS", "value": 302201, "winEventId": "quest_karin_volcano_clear" }
+                        { "type": "BOSS", "value": 303201, "winEventId": "quest_karin_volcano_clear" }
                 ],
                 "winActions": []
         },
@@ -4029,7 +4029,7 @@ const STORY_MANAGER_DATA = {
         "quest_arisa_haine_encounter": {
                 "actions": [
                         { "type": "CONV", "value": "QUEST_ARISA_HAINE_ENCOUNTER" },
-                        { "type": "BOSS", "value": [302203, 302207], "winEventId": "quest_arisa_haine_clear" }
+                        { "type": "BOSS", "value": [303203, 303207], "winEventId": "quest_arisa_haine_clear" }
                 ],
                 "winActions": []
         },
@@ -4042,7 +4042,7 @@ const STORY_MANAGER_DATA = {
         "quest_sophia_alan_encounter": {
                 "actions": [
                         { "type": "CONV", "value": "QUEST_SOPHIA_ALAN_ENCOUNTER" },
-                        { "type": "BOSS", "value": [302208, 302202], "winEventId": "quest_sophia_alan_clear" }
+                        { "type": "BOSS", "value": [303208, 303202], "winEventId": "quest_sophia_alan_clear" }
                 ],
                 "winActions": []
         },
@@ -4055,7 +4055,7 @@ const STORY_MANAGER_DATA = {
         "quest_frieda_baron_encounter": {
                 "actions": [
                         { "type": "CONV", "value": "QUEST_FRIEDA_BARON_ENCOUNTER" },
-                        { "type": "BOSS", "value": [302204, 100082], "winEventId": "quest_frieda_baron_clear" }
+                        { "type": "BOSS", "value": [303204, 901], "winEventId": "quest_frieda_baron_clear" }
                 ],
                 "winActions": []
         },
@@ -4074,7 +4074,7 @@ const STORY_MANAGER_DATA = {
         "quest_licia_encounter": {
                 "actions": [
                         { "type": "CONV", "value": "QUEST_LICIA_ENCOUNTER" },
-                        { "type": "BOSS", "value": [100078, 100082, 100078], "winEventId": "quest_licia_clear" }
+                        { "type": "BOSS", "value": [852, 901, 852], "winEventId": "quest_licia_clear" }
                 ],
                 "winActions": []
         },
@@ -4719,7 +4719,7 @@ const STORY_MANAGER_DATA = {
         "quest_zelied_tower_echo_encounter": {
                 "actions": [
                         { "type": "CONV", "value": "QUEST_ZELIED_TOWER_ECHO_ENCOUNTER" },
-                        { "type": "BOSS", "value": [301060, 302205], "bossStatMultiplier": 1.25, "winEventId": "quest_zelied_tower_echo_clear" }
+                        { "type": "BOSS", "value": [301060, 303205], "bossStatMultiplier": 1.25, "winEventId": "quest_zelied_tower_echo_clear" }
                 ],
                 "winActions": []
         },
@@ -5292,7 +5292,7 @@ const STORY_MANAGER_DATA = {
                         {
                                 "type": "CHOICE",
                                 "text": "番人を倒せば奥の赤い宝箱を取れそうだ。挑みますか？",
-                                "yes": [{ "type": "BOSS", "value": [100060, 100061] }],
+                                "yes": [{ "type": "BOSS", "value": [652, 653] }],
                                 "no": []
                         }
                 ],
@@ -5304,7 +5304,7 @@ const STORY_MANAGER_DATA = {
                         {
                                 "type": "CHOICE",
                                 "text": "この魔将は通路突破に必須ではないが、倒せば金の鍵を奪えそうだ。挑みますか？",
-                                "yes": [{ "type": "BOSS", "value": [100061, 100062] }],
+                                "yes": [{ "type": "BOSS", "value": [653, 654] }],
                                 "no": []
                         }
                 ],
@@ -5316,7 +5316,7 @@ const STORY_MANAGER_DATA = {
                         {
                                 "type": "CHOICE",
                                 "text": "この先には赤い宝箱が見える。守護魔に挑みますか？",
-                                "yes": [{ "type": "BOSS", "value": [100062, 100064] }],
+                                "yes": [{ "type": "BOSS", "value": [654, 701] }],
                                 "no": []
                         }
                 ],

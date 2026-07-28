@@ -27,7 +27,7 @@
                 id: 'guild_promotion_f',
                 fromRank: 'G',
                 targetRank: 'F',
-                monsterId: 303100,
+                monsterId: 304100,
                 name: 'Fランク昇格試験「鉄壁を崩す者」',
                 objective: '攻守を切り替える歴戦の試験官を撃破し、実戦任務を任せられる力量を示す。'
             },
@@ -35,7 +35,7 @@
                 id: 'guild_promotion_e',
                 fromRank: 'F',
                 targetRank: 'E',
-                monsterId: 303101,
+                monsterId: 304101,
                 name: 'Eランク昇格試験「灼熱の間合い」',
                 objective: '自己強化と炎技を使い分ける試験官を破り、長期戦への対応力を示す。'
             },
@@ -43,7 +43,7 @@
                 id: 'guild_promotion_d',
                 fromRank: 'E',
                 targetRank: 'D',
-                monsterId: 303102,
+                monsterId: 304102,
                 name: 'Dランク昇格試験「疾風を捉える者」',
                 objective: '高い速度と連続攻撃を制し、変化する戦況を捉える判断力を示す。'
             },
@@ -51,7 +51,7 @@
                 id: 'guild_promotion_c',
                 fromRank: 'D',
                 targetRank: 'C',
-                monsterId: 303103,
+                monsterId: 304103,
                 name: 'Cランク昇格試験「氷壁の攻略」',
                 objective: '高い防御と回復を備えた試験官を攻略し、決定力と継戦能力を示す。'
             },
@@ -59,7 +59,7 @@
                 id: 'guild_promotion_b',
                 fromRank: 'C',
                 targetRank: 'B',
-                monsterId: 303104,
+                monsterId: 304104,
                 name: 'Bランク昇格試験「雷霆を越えて」',
                 objective: '強化解除と雷撃を操る試験官を退け、上位依頼を率いる実力を示す。'
             },
@@ -67,7 +67,7 @@
                 id: 'guild_promotion_a',
                 fromRank: 'B',
                 targetRank: 'A',
-                monsterId: 303105,
+                monsterId: 304105,
                 name: 'Aランク昇格試験「聖域の審判」',
                 objective: '攻撃・防御・回復を高水準で操る試験官を破り、英雄級の力量を示す。'
             },
@@ -75,7 +75,7 @@
                 id: 'guild_promotion_s',
                 fromRank: 'A',
                 targetRank: 'S',
-                monsterId: 303106,
+                monsterId: 304106,
                 name: 'Sランク昇格試験「極彩の証明」',
                 objective: '複数属性と弱体化を使い分ける総試験官を撃破し、最高位冒険者の資格を示す。'
             }

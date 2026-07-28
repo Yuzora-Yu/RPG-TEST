@@ -1,0 +1,8 @@
+﻿examiner_id,examiner_name,initial_source_id,source_path,dedicated_path
+304100,鉄壁の試験官ガレス,301040,assets/monsters/monster_301040.png,assets/monsters/monster_304100.png
+304101,灼刃の試験官イグナート,301010,assets/monsters/monster_301010.png,assets/monsters/monster_304101.png
+304102,迅翼の試験官シエラ,301020,assets/monsters/monster_301020.png,assets/monsters/monster_304102.png
+304103,氷城の試験官ノルン,301030,assets/monsters/monster_301030.png,assets/monsters/monster_304103.png
+304104,雷槍の試験官ヴォルグ,301050,assets/monsters/monster_301050.png,assets/monsters/monster_304104.png
+304105,聖裁の試験官アストレア,301070,assets/monsters/monster_301070.png,assets/monsters/monster_304105.png
+304106,極彩の総試験官アルカナ,301100,assets/monsters/monster_301100.png,assets/monsters/monster_304106.png

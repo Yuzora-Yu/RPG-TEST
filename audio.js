@@ -235,7 +235,7 @@
             const eventId = String(battle.eventId || '').toLowerCase();
             const fixedId = Number(battle.fixedBossId || 0);
             if (battle.isEstark || battle.isSpecialBoss || [902000, 401100, 401200].includes(fixedId)) return 'battle_secretboss';
-            if (eventId.includes('final') || eventId.includes('dark_castle_zenon') || fixedId === 100099) return 'battle_finalboss';
+            if (eventId.includes('final') || eventId.includes('dark_castle_zenon') || fixedId === 1055) return 'battle_finalboss';
             if (battle.isBossBattle && (battle.isBigBoss || battle.bossTier === 'big')) return 'battle_bigboss';
             if (battle.isBossBattle) return 'battle_midboss';
             return 'battle_normal';

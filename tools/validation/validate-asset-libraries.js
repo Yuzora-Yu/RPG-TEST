@@ -50,9 +50,9 @@ const startupImages = new Set(assets.cacheWarmup?.startupImages || []);
 const mapManifest = JSON.parse(read('assets/map/library/manifest.json'));
 const mapAssets = mapManifest.assets || [];
 const adoptedMonsterIds = [
-    200001, 200002, 200003, 200004, 200005, 200006, 200007, 200008,
-    200009, 200010, 200011, 200012, 200013, 200014, 200015, 200016,
-    302201, 302202, 302203, 302204, 302205, 302206, 302207, 302208,
+    805, 856, 905, 956, 1005, 1056, 1105, 1156,
+    1205, 1256, 1305, 1356, 1405, 1456, 1505, 1556,
+    303201, 303202, 303203, 303204, 303205, 303206, 303207, 303208,
 ];
 
 if (mapAssets.length !== 91) errors.push(`map library count is ${mapAssets.length}, expected 91`);
@@ -75,11 +75,11 @@ for (const asset of mapAssets) {
 }
 
 for (const id of adoptedMonsterIds) {
-    const relative = `assets/monsters/monster_${id}.png`;
+    const relative = `assets/monsters/monster_${String(id).padStart(6, '0')}.png`;
     expectPng(relative, 768, 768);
     if (!installImages.has(relative)) errors.push(`adopted monster missing from full cache: ${relative}`);
     if (startupImages.has(relative)) errors.push(`adopted monster must not delay startup: ${relative}`);
-    if (id >= 302201 && id <= 302208 && graphics[`monster_${id}`] !== relative) {
+    if (id >= 303201 && id <= 303208 && graphics[`monster_${id}`] !== relative) {
         errors.push(`quest boss numeric graphics alias mismatch: ${id}`);
     }
 }

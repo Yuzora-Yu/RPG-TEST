@@ -1270,11 +1270,21 @@
             return `${targetRank}ランク昇格試験に合格した！\n冒険者ランクが ${targetRank} になった。`;
         },
 
+
+        getExchangeRequiredRank(entry) {
+            const configured = String(entry?.requiredRank || 'G');
+            const item = entry?.itemId ? DB.ITEMS?.find(value => Number(value.id) === Number(entry.itemId)) : null;
+            const isBook = item?.type === 'スキル書' || item?.type === '特性書';
+            if (isBook && Guild.rankIndex(configured) < Guild.rankIndex('A')) return 'A';
+            return configured;
+        },
+
         exchange(entryId) {
             const state = Guild.ensureState();
             const entry = EXCHANGE.find(value => value.id === entryId);
             if (!state || !entry || state.points < entry.cost) return false;
-            if (entry.requiredRank && Guild.rankIndex(state.rank) < Guild.rankIndex(entry.requiredRank)) return false;
+            const requiredRank = Guild.getExchangeRequiredRank(entry);
+            if (Guild.rankIndex(state.rank) < Guild.rankIndex(requiredRank)) return false;
             state.points -= entry.cost;
             if (entry.gems) App.data.gems = Number(App.data.gems || 0) + Number(entry.gems);
             if (entry.itemId) {
@@ -1486,10 +1496,11 @@
         openExchangeMenu() {
             const state = Guild.ensureState();
             const rows = EXCHANGE.map(entry => {
-                const locked = entry.requiredRank && Guild.rankIndex(state.rank) < Guild.rankIndex(entry.requiredRank);
+                const requiredRank = Guild.getExchangeRequiredRank(entry);
+                const locked = Guild.rankIndex(state.rank) < Guild.rankIndex(requiredRank);
                 const affordable = state.points >= entry.cost && !locked;
                 return `<button class="btn guild-exchange-entry" data-exchange-id="${entry.id}" ${affordable ? '' : 'disabled'} style="width:100%; display:flex; justify-content:space-between; padding:10px; margin-top:7px; background:#202020; border:1px solid #555; color:${affordable ? '#fff' : '#777'};">
-                    <span>${App.escapeHtml(Guild.exchangeName(entry))}${locked ? ` <small>(${entry.requiredRank}ランク)</small>` : ''}</span><strong>${entry.cost} GP</strong>
+                    <span>${App.escapeHtml(Guild.exchangeName(entry))}${locked ? ` <small>(${requiredRank}ランク)</small>` : ''}</span><strong>${entry.cost} GP</strong>
                 </button>`;
             }).join('');
             Facilities.showModal('guild-scene', 'ギルドポイント交換', `<div style="color:#ffd56b;">所持: ${state.points} GP</div>${rows}`);

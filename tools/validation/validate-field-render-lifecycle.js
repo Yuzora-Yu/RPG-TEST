@@ -45,10 +45,10 @@ const requiredFiles = [
   'assets/map/overlays/overlay_dungeon_chest.png',
   'assets/map/overlays/overlay_dungeon_chest_rare.png',
   'assets/map/overlays/overlay_dungeon_stairs.png',
-  'assets/monsters/monster_100001.png',
-  'assets/monsters/monster_100002.png',
-  'assets/monsters/monster_100003.png',
-  'assets/monsters/monster_100004.png',
+  'assets/monsters/monster_000001.png',
+  'assets/monsters/monster_000002.png',
+  'assets/monsters/monster_000003.png',
+  'assets/monsters/monster_000004.png',
   'assets/monsters/monster_301000.png',
   'assets/effect/fx_phys_slash_arc.png'
 ];

@@ -1573,177 +1573,95 @@ const STORY_DATA = {
     }
 };
 
-const SEA_ENCOUNTER_MONSTERS = [
-    100033,
-    100037,
-    100044,
-    100057,
-    100059,
-    100064
-];
+const MAP_MASTER = Object.freeze({
+    LUMINA_OUTSKIRTS: { id: "MAP000001", name: "リュミナ村周辺" },
+    START_VILLAGE: { id: "MAP000002", name: "リュミナ村" },
+    START_CAVE: { id: "MAP000003", name: "北東の洞穴" },
+    FOREST_WIND_HOLE: { id: "MAP000004", name: "森の風穴" },
+    IGNISIA_OUTSKIRTS: { id: "MAP000005", name: "炎の里イグニシア周辺" },
+    FIRE_VILLAGE: { id: "MAP000006", name: "炎の里イグニシア" },
+    IGNIS_VOLCANO: { id: "MAP000007", name: "イグナ火山" },
+    KAZARIA_OUTSKIRTS: { id: "MAP000008", name: "風の集落カザリア周辺" },
+    WIND_VILLAGE: { id: "MAP000009", name: "風の集落カザリア" },
+    FORBIDDEN_FOREST: { id: "MAP000010", name: "禁忌の森" },
+    WIND_TEMPLE: { id: "MAP000011", name: "風の神殿" },
+    CRENA_OUTSKIRTS: { id: "MAP000012", name: "クレナ鍾乳洞周辺" },
+    CRENA_LIMESTONE_CAVE: { id: "MAP000013", name: "クレナ鍾乳洞" },
+    SEABED_TEMPLE_OUTSKIRTS: { id: "MAP000014", name: "海底神殿周辺" },
+    WATER_CITY: { id: "MAP000015", name: "水上都市リヴァリア" },
+    SEABED_TEMPLE: { id: "MAP000016", name: "海底神殿" },
+    SEA: { id: "MAP000017", name: "海上" },
+    THUNDER_FORT_OUTSKIRTS: { id: "MAP000018", name: "ライザーク要塞周辺" },
+    THUNDER_FORT: { id: "MAP000019", name: "ライザーク要塞" },
+    BIG_TOWER_OUTSKIRTS: { id: "MAP000020", name: "大灯台周辺" },
+    BIG_TOWER: { id: "MAP000021", name: "大灯台" },
+    LIGHT_PALACE_OUTSKIRTS: { id: "MAP000022", name: "光の宮殿グランプリズマ周辺" },
+    LIGHT_PALACE: { id: "MAP000023", name: "光の宮殿グランプリズマ" },
+    DARK_SHRINE_RUINS: { id: "MAP000024", name: "闇の神殿エクリプス跡" },
+    GALVANIA_CAVE: { id: "MAP000025", name: "ガルヴァニアへの洞窟" },
+    DARK_CASTLE_OUTSKIRTS: { id: "MAP000026", name: "魔王城ガルヴァニア周辺" },
+    DARK_CASTLE: { id: "MAP000027", name: "魔王城ガルヴァニア" },
+    TRIAL_ISLAND_OUTSKIRTS: { id: "MAP000028", name: "最果ての祠周辺" },
+    TRIAL_ISLAND: { id: "MAP000029", name: "最果ての祠" },
+    GREZELIA_FORBIDDEN: { id: "MAP000030", name: "禁則地グレゼリア" },
+    ABYSS_FIELD_OUTSKIRTS: { id: "MAP000031", name: "深淵の魔窟外縁周辺" },
+    ABYSS_FIELD: { id: "MAP000032", name: "深淵の魔窟外縁" },
+    ABYSS: { id: "MAP000033", name: "深淵" },
+    SUMMIT_TEMPLE_OUTSKIRTS: { id: "MAP000034", name: "頂の神殿周辺" },
+    SUMMIT_TEMPLE: { id: "MAP000035", name: "頂の神殿" },
+    RUINED_SHRINE: { id: "MAP000036", name: "崩壊した祠" },
+    CARMENA_OUTSKIRTS: { id: "MAP000037", name: "最果ての地カルメナ周辺" },
+    THUNDER_DUNES: { id: "MAP000038", name: "雷霆砂丘" },
+    SCREAMING_CEMETERY: { id: "MAP000039", name: "叫喚の墓地" },
+    BLACK_ROPE_PYRAMID: { id: "MAP000040", name: "黒縄のピラミッド" },
+    MAGIC_WIND_MAUSOLEUM: { id: "MAP000041", name: "魔風の霊廟" },
+    VISTA_OUTSKIRTS: { id: "MAP000042", name: "深淵都市ビスタ周辺" },
+    FROZEN_FOREST: { id: "MAP000043", name: "極寒樹林" },
+    PURGATORY_MOUNTAINS: { id: "MAP000044", name: "煉獄山脈" },
+    ICE_PENANCE_ROAD: { id: "MAP000045", name: "氷刻の浄罪路" },
+    SCORCHING_OLD_CASTLE: { id: "MAP000046", name: "灼熱の古城" },
+    LEGACION_OUTSKIRTS: { id: "MAP000047", name: "混沌魔城レガシオン周辺" },
+    RIDPALM_DREAM_CORRIDOR: { id: "MAP000048", name: "夢幻回廊リドパルム" },
+    JAGOREA_ROOT: { id: "MAP000049", name: "災禍の根ジャゴレア" },
+    CHRONO_ABYSS: { id: "MAP000050", name: "次元牢獄クロノアビス" },
+    MEDAL: { id: "MAP000051", name: "メダル王" },
+    WORLD: { id: "MAP000052", name: "地上世界" }
+});
+
+const MAP_IDS = Object.freeze(Object.keys(MAP_MASTER).reduce((ids, key) => {
+    ids[key] = MAP_MASTER[key].id;
+    return ids;
+}, {}));
+
+const FIXED_AREA_MAP_KEYS = Object.freeze({
+    START_VILLAGE: "START_VILLAGE", FIRE_VILLAGE: "FIRE_VILLAGE", WIND_VILLAGE: "WIND_VILLAGE", WATER_CITY: "WATER_CITY",
+    ABYSS_FIELD: "ABYSS_FIELD", RUINED_SHRINE: "RUINED_SHRINE", TRIAL_ISLAND: "TRIAL_ISLAND", SUMMIT_TEMPLE: "SUMMIT_TEMPLE",
+    START_CAVE: "START_CAVE", FOREST_WIND_HOLE: "FOREST_WIND_HOLE", IGNIS_VOLCANO: "IGNIS_VOLCANO",
+    FORBIDDEN_FOREST: "FORBIDDEN_FOREST", WIND_TEMPLE: "WIND_TEMPLE", CRENA_LIMESTONE_CAVE: "CRENA_LIMESTONE_CAVE",
+    SEABED_TEMPLE: "SEABED_TEMPLE", BIG_TOWER: "BIG_TOWER", THUNDER_FORT: "THUNDER_FORT", LIGHT_PALACE: "LIGHT_PALACE",
+    DARK_SHRINE_RUINS: "DARK_SHRINE_RUINS", GALVANIA_CAVE: "GALVANIA_CAVE", DARK_CASTLE: "DARK_CASTLE", GREZELIA_FORBIDDEN: "GREZELIA_FORBIDDEN"
+});
+
+const STORY_AREA_MAP_KEYS = Object.freeze({ ...FIXED_AREA_MAP_KEYS, ABYSS: "ABYSS", MEDAL: "MEDAL", WORLD: "WORLD" });
+
+const createMapFloorId = (mapId, floor = 0) => `${String(mapId || '')}-${String(Math.max(0, Number(floor) || 0)).padStart(2, '0')}`;
+
+// Deprecated compatibility export. Encounter pools now come from monsters.js habitat metadata.
+const SEA_ENCOUNTER_MONSTERS = [];
 
 const FIELD_ENCOUNTER_ZONES = [
-    {
-        id: "START_PLAINS",
-        name: "リュミナ村周辺",
-        rank: 5,
-        centerX: 58,
-        centerY: 64,
-        radius: 34,
-        monsters: [
-            100001,
-            100002,
-            100003,
-            100004,
-            100005,
-            100006
-        ]
-    },
-    {
-        id: "FIRE_FOOTHILLS",
-        name: "イグナ火山山麓",
-        rank: 12,
-        centerX: 97,
-        centerY: 49,
-        radius: 24,
-        monsters: [
-            100010,
-            100011,
-            100012,
-            100013,
-            100014
-        ]
-    },
-    {
-        id: "WIND_HIGHLANDS",
-        name: "禁忌の森外縁",
-        rank: 22,
-        centerX: 98,
-        centerY: 37,
-        radius: 20,
-        monsters: [
-            100020,
-            100021,
-            100022,
-            100023,
-            100024
-        ]
-    },
-    {
-        id: "WATER_COAST",
-        name: "水上都市リヴァリア近海",
-        rank: 35,
-        centerX: 68,
-        centerY: 21,
-        radius: 28,
-        monsters: [
-            100033,
-            100034,
-            100035,
-            100036
-        ]
-    },
-    {
-        id: "BIG_TOWER_SHORE",
-        name: "大灯台沿岸",
-        rank: 30,
-        centerX: 21,
-        centerY: 79,
-        radius: 30,
-        monsters: [
-            100026,
-            100027,
-            100028,
-            100029
-        ]
-    },
-    {
-        id: "THUNDER_FRONTIER",
-        name: "雷鳴の荒野",
-        rank: 42,
-        centerX: 45,
-        centerY: 36,
-        radius: 24,
-        monsters: [
-            100040,
-            100041,
-            100042,
-            100043
-        ]
-    },
-    {
-        id: "LIGHT_PALACE_GROVE",
-        name: "光の宮殿グランプリズマ周辺",
-        rank: 62,
-        centerX: 67,
-        centerY: 48,
-        radius: 18,
-        monsters: [
-            100060,
-            100061,
-            100062,
-            100063
-        ]
-    },
-    {
-        id: "DARK_WASTES",
-        name: "魔王城ガルヴァニア外郭",
-        rank: 60,
-        centerX: 8,
-        centerY: 50,
-        radius: 30,
-        monsters: [
-            100056,
-            100057,
-            100058,
-            100059
-        ]
-    },
-    {
-        id: "ABYSS_EDGE",
-        name: "深淵外縁",
-        rank: 70,
-        centerX: 51,
-        centerY: 55,
-        radius: 20,
-        priority: 1,
-        monsters: [
-            100064,
-            100065,
-            100066,
-            100067
-        ]
-    },
-    {
-        id: "TRIAL_ISLAND_FIELD",
-        name: "最果ての祠周辺",
-        rank: 100,
-        centerX: 2,
-        centerY: 2,
-        radius: 10,
-        priority: 2,
-        rareMonsters: [
-            {
-                id: 200203,
-                rate: 0.05
-            }
-        ]
-    },
-    {
-        id: "SUMMIT_TEMPLE_FIELD",
-        name: "頂の神殿周辺",
-        rank: 150,
-        centerX: 89,
-        centerY: 77,
-        radius: 12,
-        priority: 2,
-        rareMonsters: [
-            {
-                id: 200203,
-                rate: 0.05
-            }
-        ]
-    }
+    { id: "START_PLAINS", mapId: MAP_IDS.LUMINA_OUTSKIRTS, name: "リュミナ村周辺", rank: 5, centerX: 58, centerY: 64, radius: 34 },
+    { id: "FIRE_FOOTHILLS", mapId: MAP_IDS.IGNISIA_OUTSKIRTS, name: "炎の里イグニシア周辺", rank: 10, centerX: 97, centerY: 49, radius: 24 },
+    { id: "WIND_HIGHLANDS", mapId: MAP_IDS.KAZARIA_OUTSKIRTS, name: "風の集落カザリア周辺", rank: 20, centerX: 98, centerY: 37, radius: 20 },
+    { id: "WATER_COAST", mapId: MAP_IDS.SEABED_TEMPLE_OUTSKIRTS, name: "海底神殿周辺", rank: 40, centerX: 68, centerY: 21, radius: 28 },
+    { id: "CRENA_CAVE_FIELD", mapId: MAP_IDS.CRENA_OUTSKIRTS, name: "クレナ鍾乳洞周辺", rank: 30, centerX: 74, centerY: 16, radius: 11, priority: 2 },
+    { id: "BIG_TOWER_SHORE", mapId: MAP_IDS.BIG_TOWER_OUTSKIRTS, name: "大灯台周辺", rank: 60, centerX: 21, centerY: 79, radius: 30 },
+    { id: "THUNDER_FRONTIER", mapId: MAP_IDS.THUNDER_FORT_OUTSKIRTS, name: "ライザーク要塞周辺", rank: 55, centerX: 45, centerY: 36, radius: 24 },
+    { id: "LIGHT_PALACE_GROVE", mapId: MAP_IDS.LIGHT_PALACE_OUTSKIRTS, name: "光の宮殿グランプリズマ周辺", rank: 65, centerX: 67, centerY: 48, radius: 18 },
+    { id: "DARK_WASTES", mapId: MAP_IDS.DARK_CASTLE_OUTSKIRTS, name: "魔王城ガルヴァニア周辺", rank: 75, centerX: 8, centerY: 50, radius: 30 },
+    { id: "ABYSS_EDGE", mapId: MAP_IDS.ABYSS_FIELD_OUTSKIRTS, name: "深淵の魔窟外縁周辺", rank: 85, centerX: 51, centerY: 55, radius: 20, priority: 1 },
+    { id: "TRIAL_ISLAND_FIELD", mapId: MAP_IDS.TRIAL_ISLAND_OUTSKIRTS, name: "最果ての祠周辺", rank: 85, centerX: 2, centerY: 2, radius: 10, priority: 2, rareMonsters: [{ id: 200203, rate: 0.05 }] },
+    { id: "SUMMIT_TEMPLE_FIELD", mapId: MAP_IDS.SUMMIT_TEMPLE_OUTSKIRTS, name: "頂の神殿周辺", rank: 150, centerX: 89, centerY: 77, radius: 12, priority: 2, rareMonsters: [{ id: 200203, rate: 0.05 }] }
 ];
 
 const WORLD_BRIDGES = [
@@ -4447,10 +4365,10 @@ const FIXED_DUNGEON_MAPS = {
             }
         ],
         monsters: [
-            100001,
-            100002,
-            100003,
-            100004
+            1,
+            2,
+            3,
+            4
         ],
         mapActions: [
             {
@@ -4511,9 +4429,9 @@ const FIXED_DUNGEON_MAPS = {
                 label: "火山道",
                 encounterRank: 12,
                 monsters: [
-                    100010,
-                    100011,
-                    100012
+                    101,
+                    102,
+                    103
                 ],
                 width: 21,
                 height: 21,
@@ -4575,9 +4493,9 @@ const FIXED_DUNGEON_MAPS = {
                 label: "溶岩回廊",
                 encounterRank: 14,
                 monsters: [
-                    100012,
-                    100013,
-                    100014
+                    103,
+                    104,
+                    151
                 ],
                 width: 21,
                 height: 21,
@@ -4642,9 +4560,9 @@ const FIXED_DUNGEON_MAPS = {
                 label: "火の祭壇",
                 encounterRank: 16,
                 monsters: [
-                    100014,
-                    100015,
-                    100016
+                    151,
+                    152,
+                    153
                 ],
                 width: 21,
                 height: 21,
@@ -4737,10 +4655,10 @@ const FIXED_DUNGEON_MAPS = {
                 label: "火山深部・煤風洞",
                 encounterRank: 48,
                 monsters: [
-                    100041,
-                    100043,
-                    100044,
-                    100047
+                    451,
+                    453,
+                    454,
+                    502
                 ],
                 enemyBoost: {
                     statMultiplier: 1.08,
@@ -4854,9 +4772,9 @@ const FIXED_DUNGEON_MAPS = {
                         id: "volcano_deep_flame",
                         imageKey: "overlay_dungeon_hunter_fire",
                         monsterIds: [
-                            100050,
-                            100052,
-                            100054
+                            551,
+                            553,
+                            555
                         ],
                         speed: 0.65,
                         range: 26,
@@ -5100,10 +5018,10 @@ const FIXED_DUNGEON_MAPS = {
                 label: "火山深部・炎心炉",
                 encounterRank: 56,
                 monsters: [
-                    100050,
-                    100052,
-                    100053,
-                    100054
+                    551,
+                    553,
+                    554,
+                    555
                 ],
                 enemyBoost: {
                     statMultiplier: 1.1,
@@ -5192,9 +5110,9 @@ const FIXED_DUNGEON_MAPS = {
                         id: "volcano_furnace_guard",
                         imageKey: "overlay_dungeon_hunter_fire",
                         monsterIds: [
-                            100055,
-                            100057,
-                            100060
+                            601,
+                            603,
+                            652
                         ],
                         speed: 0.75,
                         range: 28,
@@ -5206,7 +5124,7 @@ const FIXED_DUNGEON_MAPS = {
                     {
                         x: 14,
                         y: 6,
-                        monsterId: 302201,
+                        monsterId: 303201,
                         questId: "karin_volcano_depths",
                         startEventId: "quest_karin_volcano_encounter",
                         storyEventId: "quest_karin_volcano_clear",
@@ -5257,11 +5175,11 @@ const FIXED_DUNGEON_MAPS = {
                 label: "封じられた森・東の迷い路",
                 encounterRank: 22,
                 monsters: [
-                    100020,
-                    100021,
-                    100022,
-                    100023,
-                    100024
+                    202,
+                    203,
+                    204,
+                    251,
+                    252
                 ],
                 width: 55,
                 height: 33,
@@ -5395,11 +5313,11 @@ const FIXED_DUNGEON_MAPS = {
                 label: "封じられた森・祈りの広場",
                 encounterRank: 24,
                 monsters: [
-                    100021,
-                    100022,
-                    100023,
-                    100024,
-                    100025
+                    203,
+                    204,
+                    251,
+                    252,
+                    253
                 ],
                 width: 41,
                 height: 37,
@@ -5554,10 +5472,10 @@ const FIXED_DUNGEON_MAPS = {
                 label: "禁忌の森深部・迷い根の庭",
                 encounterRank: 48,
                 monsters: [
-                    100043,
-                    100044,
-                    100047,
-                    100048
+                    453,
+                    454,
+                    502,
+                    503
                 ],
                 enemyBoost: {
                     statMultiplier: 1.08,
@@ -5667,9 +5585,9 @@ const FIXED_DUNGEON_MAPS = {
                         id: "forest_root_stalker",
                         imageKey: "overlay_dungeon_hunter_forest",
                         monsterIds: [
-                            100051,
-                            100053,
-                            100055
+                            552,
+                            554,
+                            601
                         ],
                         speed: 0.65,
                         range: 25,
@@ -5717,10 +5635,10 @@ const FIXED_DUNGEON_MAPS = {
                 label: "禁忌の森深部・呪風の根",
                 encounterRank: 56,
                 monsters: [
-                    100050,
-                    100051,
-                    100053,
-                    100054
+                    551,
+                    552,
+                    554,
+                    555
                 ],
                 enemyBoost: {
                     statMultiplier: 1.1,
@@ -5792,9 +5710,9 @@ const FIXED_DUNGEON_MAPS = {
                         id: "forest_curse_guard",
                         imageKey: "overlay_dungeon_hunter_forest",
                         monsterIds: [
-                            100055,
-                            100061,
-                            100063
+                            601,
+                            653,
+                            655
                         ],
                         speed: 0.75,
                         range: 28,
@@ -5863,8 +5781,8 @@ const FIXED_DUNGEON_MAPS = {
                         x: 3,
                         y: 3,
                         monsterId: [
-                            302203,
-                            302207
+                            303203,
+                            303207
                         ],
                         questId: "arisa_haine_forest_depths",
                         startEventId: "quest_arisa_haine_encounter",
@@ -5912,9 +5830,9 @@ const FIXED_DUNGEON_MAPS = {
                 label: "1階・風廊",
                 encounterRank: 26,
                 monsters: [
-                    100024,
-                    100025,
-                    100026
+                    252,
+                    253,
+                    254
                 ],
                 width: 25,
                 height: 24,
@@ -5985,9 +5903,9 @@ const FIXED_DUNGEON_MAPS = {
                 label: "2階・旋風の回廊",
                 encounterRank: 28,
                 monsters: [
-                    100026,
-                    100027,
-                    100028
+                    254,
+                    255,
+                    301
                 ],
                 width: 25,
                 height: 24,
@@ -6075,9 +5993,9 @@ const FIXED_DUNGEON_MAPS = {
                 label: "3階・風の祭壇",
                 encounterRank: 30,
                 monsters: [
-                    100028,
-                    100029,
-                    100030
+                    301,
+                    302,
+                    303
                 ],
                 width: 25,
                 height: 24,
@@ -6188,9 +6106,9 @@ const FIXED_DUNGEON_MAPS = {
                 label: "地下1階・沈水回廊",
                 encounterRank: 35,
                 monsters: [
-                    100033,
-                    100034,
-                    100035
+                    352,
+                    353,
+                    354
                 ],
                 width: 23,
                 height: 23,
@@ -6272,9 +6190,9 @@ const FIXED_DUNGEON_MAPS = {
                 label: "地下2階・水門",
                 encounterRank: 37,
                 monsters: [
-                    100034,
-                    100035,
-                    100036
+                    353,
+                    354,
+                    355
                 ],
                 width: 23,
                 height: 23,
@@ -6372,9 +6290,9 @@ const FIXED_DUNGEON_MAPS = {
                 label: "地下3階・祈祷の間",
                 encounterRank: 39,
                 monsters: [
-                    100036,
-                    100037,
-                    100039
+                    355,
+                    401,
+                    403
                 ],
                 width: 23,
                 height: 23,
@@ -6467,10 +6385,10 @@ const FIXED_DUNGEON_MAPS = {
                 label: "地下4階・潮環回廊",
                 encounterRank: 68,
                 monsters: [
-                    100062,
-                    100064,
-                    100066,
-                    100067
+                    654,
+                    701,
+                    703,
+                    704
                 ],
                 enemyBoost: {
                     statMultiplier: 1.08,
@@ -6598,9 +6516,9 @@ const FIXED_DUNGEON_MAPS = {
                         id: "seabed_current",
                         imageKey: "overlay_dungeon_hunter_sea",
                         monsterIds: [
-                            100068,
-                            100069,
-                            100073
+                            751,
+                            752,
+                            801
                         ],
                         speed: 0.65,
                         range: 26,
@@ -6721,10 +6639,10 @@ const FIXED_DUNGEON_MAPS = {
                 label: "地下5階・逆潮祭壇",
                 encounterRank: 76,
                 monsters: [
-                    100068,
-                    100069,
-                    100070,
-                    100071
+                    751,
+                    752,
+                    753,
+                    754
                 ],
                 enemyBoost: {
                     statMultiplier: 1.1,
@@ -6819,9 +6737,9 @@ const FIXED_DUNGEON_MAPS = {
                         id: "seabed_altar_guard",
                         imageKey: "overlay_dungeon_hunter_sea",
                         monsterIds: [
-                            100073,
-                            100075,
-                            100080
+                            801,
+                            803,
+                            854
                         ],
                         speed: 0.75,
                         range: 29,
@@ -6834,8 +6752,8 @@ const FIXED_DUNGEON_MAPS = {
                         x: 15,
                         y: 6,
                         monsterId: [
-                            302208,
-                            302202
+                            303208,
+                            303202
                         ],
                         questId: "sophia_alan_seabed_depths",
                         startEventId: "quest_sophia_alan_encounter",
@@ -6867,9 +6785,9 @@ const FIXED_DUNGEON_MAPS = {
                 label: "1階・潮風の塔道",
                 encounterRank: 30,
                 monsters: [
-                    100026,
-                    100027,
-                    100028
+                    254,
+                    255,
+                    301
                 ],
                 rareMonsters: [
                     {
@@ -6958,9 +6876,9 @@ const FIXED_DUNGEON_MAPS = {
                 label: "2階・螺旋階段",
                 encounterRank: 31,
                 monsters: [
-                    100027,
-                    100028,
-                    100029
+                    255,
+                    301,
+                    302
                 ],
                 rareMonsters: [
                     {
@@ -7042,9 +6960,9 @@ const FIXED_DUNGEON_MAPS = {
                 label: "3階・灯火回廊",
                 encounterRank: 32,
                 monsters: [
-                    100028,
-                    100029,
-                    100030
+                    301,
+                    302,
+                    303
                 ],
                 rareMonsters: [
                     {
@@ -7126,9 +7044,9 @@ const FIXED_DUNGEON_MAPS = {
                 label: "4階・結界炉",
                 encounterRank: 34,
                 monsters: [
-                    100030,
-                    100031,
-                    100032
+                    303,
+                    304,
+                    351
                 ],
                 rareMonsters: [
                     {
@@ -7232,9 +7150,9 @@ const FIXED_DUNGEON_MAPS = {
                 label: "5階・風鳴りの壁",
                 encounterRank: 35,
                 monsters: [
-                    100031,
-                    100032,
-                    100033
+                    304,
+                    351,
+                    352
                 ],
                 rareMonsters: [
                     {
@@ -7302,9 +7220,9 @@ const FIXED_DUNGEON_MAPS = {
                 label: "6階・古い守衛室",
                 encounterRank: 36,
                 monsters: [
-                    100032,
-                    100033,
-                    100034
+                    351,
+                    352,
+                    353
                 ],
                 rareMonsters: [
                     {
@@ -7386,9 +7304,9 @@ const FIXED_DUNGEON_MAPS = {
                 label: "7階・灯台頂上",
                 encounterRank: 40,
                 monsters: [
-                    100035,
-                    100036,
-                    100037
+                    354,
+                    355,
+                    401
                 ],
                 rareMonsters: [
                     {
@@ -7461,7 +7379,7 @@ const FIXED_DUNGEON_MAPS = {
                         y: 10,
                         monsterId: [
                             301060,
-                            302205
+                            303205
                         ],
                         questId: "zelied_big_tower",
                         inactiveTile: "G",
@@ -7507,9 +7425,9 @@ const FIXED_DUNGEON_MAPS = {
                 label: "1階・双門外郭",
                 encounterRank: 42,
                 monsters: [
-                    100040,
-                    100041,
-                    100042
+                    404,
+                    451,
+                    452
                 ],
                 rareMonsters: [
                     {
@@ -7764,7 +7682,7 @@ const FIXED_DUNGEON_MAPS = {
                     {
                         x: 16,
                         y: 14,
-                        monsterId: 100081,
+                        monsterId: 855,
                         keyRewardColor: "gold",
                         actionLabel: "機械兵士と戦う",
                         inspectLog: "一際危険なオーラを纏う機械兵士が佇んでいる…"
@@ -7928,9 +7846,9 @@ const FIXED_DUNGEON_MAPS = {
                 label: "2階・暴走機関室",
                 encounterRank: 44,
                 monsters: [
-                    100042,
-                    100043,
-                    100044
+                    452,
+                    453,
+                    454
                 ],
                 rareMonsters: [
                     {
@@ -8028,9 +7946,9 @@ const FIXED_DUNGEON_MAPS = {
                 label: "3階・雷鎧の防衛線",
                 encounterRank: 46,
                 monsters: [
-                    100044,
-                    100045,
-                    100046
+                    454,
+                    455,
+                    501
                 ],
                 rareMonsters: [
                     {
@@ -8127,9 +8045,9 @@ const FIXED_DUNGEON_MAPS = {
                 label: "4階・雷の中枢",
                 encounterRank: 48,
                 monsters: [
-                    100046,
-                    100047,
-                    100048
+                    501,
+                    502,
+                    503
                 ],
                 rareMonsters: [
                     {
@@ -8259,10 +8177,10 @@ const FIXED_DUNGEON_MAPS = {
                 label: "5階・双電路",
                 encounterRank: 76,
                 monsters: [
-                    100068,
-                    100069,
-                    100070,
-                    100072
+                    751,
+                    752,
+                    753,
+                    755
                 ],
                 enemyBoost: {
                     statMultiplier: 1.08,
@@ -8363,9 +8281,9 @@ const FIXED_DUNGEON_MAPS = {
                         id: "thunder_deep_guard",
                         imageKey: "overlay_dungeon_hunter_thunder",
                         monsterIds: [
-                            100073,
-                            100076,
-                            100079
+                            801,
+                            804,
+                            853
                         ],
                         speed: 1.1,
                         range: 29,
@@ -8475,10 +8393,10 @@ const FIXED_DUNGEON_MAPS = {
                 label: "6階・制御核区",
                 encounterRank: 81,
                 monsters: [
-                    100073,
-                    100074,
-                    100075,
-                    100076
+                    801,
+                    802,
+                    803,
+                    804
                 ],
                 enemyBoost: {
                     statMultiplier: 1.1,
@@ -8554,9 +8472,9 @@ const FIXED_DUNGEON_MAPS = {
                         id: "thunder_core_guard",
                         imageKey: "overlay_dungeon_hunter_thunder",
                         monsterIds: [
-                            100079,
-                            100081,
-                            100082
+                            853,
+                            855,
+                            901
                         ],
                         speed: 1.2,
                         range: 31,
@@ -8569,8 +8487,8 @@ const FIXED_DUNGEON_MAPS = {
                         x: 16,
                         y: 8,
                         monsterId: [
-                            302204,
-                            100082
+                            303204,
+                            901
                         ],
                         questId: "frieda_baron_thunder_depths",
                         startEventId: "quest_frieda_baron_encounter",
@@ -8636,9 +8554,9 @@ const FIXED_DUNGEON_MAPS = {
                 label: "1階・白光の回廊",
                 encounterRank: 62,
                 monsters: [
-                    100060,
-                    100061,
-                    100062
+                    652,
+                    653,
+                    654
                 ],
                 rareMonsters: [
                     {
@@ -8738,7 +8656,7 @@ const FIXED_DUNGEON_MAPS = {
                     {
                         x: 27,
                         y: 6,
-                        monsterId: 100089,
+                        monsterId: 954,
                         keyRewardColor: "gold",
                         actionLabel: "白光の番兵と戦う",
                         inspectLog: "金の鍵を携えた番兵が白い回廊を守っている。"
@@ -8809,9 +8727,9 @@ const FIXED_DUNGEON_MAPS = {
                 label: "2階・祝福の水盤",
                 encounterRank: 64,
                 monsters: [
-                    100062,
-                    100063,
-                    100064
+                    654,
+                    655,
+                    701
                 ],
                 rareMonsters: [
                     {
@@ -8900,9 +8818,9 @@ const FIXED_DUNGEON_MAPS = {
                 label: "3階・結界の聖廊",
                 encounterRank: 66,
                 monsters: [
-                    100064,
-                    100065,
-                    100066
+                    701,
+                    702,
+                    703
                 ],
                 rareMonsters: [
                     {
@@ -8990,9 +8908,9 @@ const FIXED_DUNGEON_MAPS = {
                 label: "4階・光の祭壇",
                 encounterRank: 68,
                 monsters: [
-                    100066,
-                    100067,
-                    100068
+                    703,
+                    704,
+                    751
                 ],
                 rareMonsters: [
                     {
@@ -9393,9 +9311,9 @@ const FIXED_DUNGEON_MAPS = {
                 label: "1階・北口 黒岩の胎道",
                 encounterRank: 61,
                 monsters: [
-                    100056,
-                    100057,
-                    100058
+                    602,
+                    603,
+                    604
                 ],
                 width: 61,
                 height: 35,
@@ -9465,9 +9383,9 @@ const FIXED_DUNGEON_MAPS = {
                         id: "galvania_f1_black_scout_v2",
                         imageKey: "overlay_dungeon_hunter_shadow",
                         monsterIds: [
-                            100059,
-                            100063,
-                            100067
+                            651,
+                            655,
+                            704
                         ],
                         speed: 0.58,
                         range: 34,
@@ -9555,9 +9473,9 @@ const FIXED_DUNGEON_MAPS = {
                 label: "2階・偽りの無限回廊",
                 encounterRank: 66,
                 monsters: [
-                    100058,
-                    100059,
-                    100060
+                    604,
+                    651,
+                    652
                 ],
                 width: 61,
                 height: 35,
@@ -9762,9 +9680,9 @@ const FIXED_DUNGEON_MAPS = {
                 label: "3階・溶岩の地底湖",
                 encounterRank: 66,
                 monsters: [
-                    100059,
-                    100060,
-                    100061
+                    651,
+                    652,
+                    653
                 ],
                 width: 61,
                 height: 35,
@@ -9831,9 +9749,9 @@ const FIXED_DUNGEON_MAPS = {
                         id: "galvania_f3_ash_daemon_v2",
                         imageKey: "overlay_dungeon_hunter_fire",
                         monsterIds: [
-                            100064,
-                            100067,
-                            100068
+                            701,
+                            704,
+                            751
                         ],
                         speed: 0.48,
                         range: 38,
@@ -9891,10 +9809,10 @@ const FIXED_DUNGEON_MAPS = {
                         x: 24,
                         y: 26,
                         monsterId: [
-                            100060,
-                            100061
+                            652,
+                            653
                         ],
-                        mapSpriteMonsterId: 100060,
+                        mapSpriteMonsterId: 652,
                         bossStatMultiplier: 1.3,
                         inactiveTile: "G",
                         startEventId: "map_system_galvania_cave_f3_boss_1",
@@ -9947,9 +9865,9 @@ const FIXED_DUNGEON_MAPS = {
                 label: "4階・氷晶の十字滑床",
                 encounterRank: 66,
                 monsters: [
-                    100058,
-                    100061,
-                    100062
+                    604,
+                    653,
+                    654
                 ],
                 width: 61,
                 height: 35,
@@ -10219,9 +10137,9 @@ const FIXED_DUNGEON_MAPS = {
                         id: "galvania_f4_frost_hound_v2",
                         imageKey: "overlay_dungeon_hunter_sea",
                         monsterIds: [
-                            100065,
-                            100067,
-                            100069
+                            702,
+                            704,
+                            752
                         ],
                         speed: 0.52,
                         range: 34,
@@ -10273,10 +10191,10 @@ const FIXED_DUNGEON_MAPS = {
                         x: 16,
                         y: 28,
                         monsterId: [
-                            100061,
-                            100062
+                            653,
+                            654
                         ],
-                        mapSpriteMonsterId: 100061,
+                        mapSpriteMonsterId: 653,
                         bossStatMultiplier: 1.35,
                         inactiveTile: "G",
                         keyRewardColor: "gold",
@@ -10308,9 +10226,9 @@ const FIXED_DUNGEON_MAPS = {
                 label: "5階・魔軍補給路",
                 encounterRank: 66,
                 monsters: [
-                    100061,
-                    100062,
-                    100063
+                    653,
+                    654,
+                    655
                 ],
                 width: 61,
                 height: 35,
@@ -10377,9 +10295,9 @@ const FIXED_DUNGEON_MAPS = {
                         id: "galvania_f5_supply_overseer_v2",
                         imageKey: "overlay_dungeon_hunter_shadow",
                         monsterIds: [
-                            100064,
-                            100067,
-                            100070
+                            701,
+                            704,
+                            753
                         ],
                         speed: 0.68,
                         range: 46,
@@ -10457,10 +10375,10 @@ const FIXED_DUNGEON_MAPS = {
                 label: "6階・南口 白骨の旧坑",
                 encounterRank: 76,
                 monsters: [
-                    100063,
-                    100064,
-                    100065,
-                    100068
+                    655,
+                    701,
+                    702,
+                    751
                 ],
                 width: 61,
                 height: 35,
@@ -10532,9 +10450,9 @@ const FIXED_DUNGEON_MAPS = {
                         id: "galvania_f6_royal_rearguard_v2",
                         imageKey: "overlay_dungeon_hunter_shadow",
                         monsterIds: [
-                            100073,
-                            100076,
-                            100077
+                            801,
+                            804,
+                            851
                         ],
                         speed: 0.58,
                         range: 42,
@@ -10592,10 +10510,10 @@ const FIXED_DUNGEON_MAPS = {
                         x: 17,
                         y: 13,
                         monsterId: [
-                            100062,
-                            100064
+                            654,
+                            701
                         ],
-                        mapSpriteMonsterId: 100064,
+                        mapSpriteMonsterId: 701,
                         bossStatMultiplier: 1.32,
                         inactiveTile: "G",
                         startEventId: "map_system_galvania_cave_f6_boss_1",
@@ -10647,9 +10565,9 @@ const FIXED_DUNGEON_MAPS = {
                 label: "本館1階・中央広間",
                 encounterRank: 66,
                 monsters: [
-                    100059,
-                    100060,
-                    100061
+                    651,
+                    652,
+                    653
                 ],
                 width: 33,
                 height: 30,
@@ -10828,9 +10746,9 @@ const FIXED_DUNGEON_MAPS = {
                 label: "西館2階・黒影廊",
                 encounterRank: 71,
                 monsters: [
-                    100061,
-                    100063,
-                    100064
+                    653,
+                    655,
+                    701
                 ],
                 width: 33,
                 height: 30,
@@ -10926,9 +10844,9 @@ const FIXED_DUNGEON_MAPS = {
                         id: "dark_castle_west_patrol",
                         imageKey: "overlay_dungeon_hunter_shadow",
                         monsterIds: [
-                            100068,
-                            100069,
-                            100073
+                            751,
+                            752,
+                            801
                         ],
                         speed: 1,
                         range: 24,
@@ -10948,9 +10866,9 @@ const FIXED_DUNGEON_MAPS = {
                 label: "西館3階・結界の間",
                 encounterRank: 71,
                 monsters: [
-                    100064,
-                    100065,
-                    100066
+                    701,
+                    702,
+                    703
                 ],
                 width: 33,
                 height: 30,
@@ -11036,9 +10954,9 @@ const FIXED_DUNGEON_MAPS = {
                 label: "東館2階・風哭廊",
                 encounterRank: 71,
                 monsters: [
-                    100061,
-                    100064,
-                    100065
+                    653,
+                    701,
+                    702
                 ],
                 width: 33,
                 height: 30,
@@ -11134,9 +11052,9 @@ const FIXED_DUNGEON_MAPS = {
                         id: "dark_castle_east_patrol",
                         imageKey: "overlay_dungeon_hunter_shadow",
                         monsterIds: [
-                            100068,
-                            100070,
-                            100075
+                            751,
+                            753,
+                            803
                         ],
                         speed: 1,
                         range: 24,
@@ -11156,9 +11074,9 @@ const FIXED_DUNGEON_MAPS = {
                 label: "東館3階・結界の間",
                 encounterRank: 71,
                 monsters: [
-                    100064,
-                    100066,
-                    100067
+                    701,
+                    703,
+                    704
                 ],
                 width: 33,
                 height: 30,
@@ -11244,9 +11162,9 @@ const FIXED_DUNGEON_MAPS = {
                 label: "本館2階・夢幻回廊",
                 encounterRank: 76,
                 monsters: [
-                    100068,
-                    100069,
-                    100070
+                    751,
+                    752,
+                    753
                 ],
                 width: 33,
                 height: 30,
@@ -11342,9 +11260,9 @@ const FIXED_DUNGEON_MAPS = {
                         id: "dark_castle_dream_guard",
                         imageKey: "overlay_dungeon_hunter_shadow",
                         monsterIds: [
-                            100073,
-                            100076,
-                            100077
+                            801,
+                            804,
+                            851
                         ],
                         speed: 0.5,
                         range: 26,
@@ -11374,9 +11292,9 @@ const FIXED_DUNGEON_MAPS = {
                 label: "本館3階・謁見の間",
                 encounterRank: 81,
                 monsters: [
-                    100073,
-                    100074,
-                    100075
+                    801,
+                    802,
+                    803
                 ],
                 width: 33,
                 height: 30,
@@ -11527,10 +11445,10 @@ const FIXED_DUNGEON_MAPS = {
                 label: "風鳴りの洞",
                 encounterRank: 8,
                 monsters: [
-                    100006,
-                    100007,
-                    100008,
-                    100009
+                    52,
+                    53,
+                    54,
+                    55
                 ],
                 width: 25,
                 height: 21,
@@ -11597,9 +11515,9 @@ const FIXED_DUNGEON_MAPS = {
                         id: "wind_hole_stalker",
                         imageKey: "overlay_dungeon_hunter_forest",
                         monsterIds: [
-                            100010,
-                            100014,
-                            100015
+                            101,
+                            151,
+                            152
                         ],
                         speed: 0.5,
                         range: 18,
@@ -11644,9 +11562,9 @@ const FIXED_DUNGEON_MAPS = {
                 label: "妖精の泉",
                 encounterRank: 10,
                 monsters: [
-                    100008,
-                    100009,
-                    100010
+                    54,
+                    55,
+                    101
                 ],
                 width: 25,
                 height: 21,
@@ -11756,10 +11674,10 @@ const FIXED_DUNGEON_MAPS = {
                 label: "地下1階・蒼滴の道",
                 encounterRank: 23,
                 monsters: [
-                    100020,
-                    100021,
-                    100022,
-                    100023
+                    202,
+                    203,
+                    204,
+                    251
                 ],
                 width: 27,
                 height: 23,
@@ -11828,9 +11746,9 @@ const FIXED_DUNGEON_MAPS = {
                         id: "crena_claw",
                         imageKey: "overlay_dungeon_hunter_sea",
                         monsterIds: [
-                            100028,
-                            100030,
-                            100032
+                            301,
+                            303,
+                            351
                         ],
                         speed: 0.5,
                         range: 22,
@@ -11878,10 +11796,10 @@ const FIXED_DUNGEON_MAPS = {
                 label: "地下2階・青の結晶の間",
                 encounterRank: 25,
                 monsters: [
-                    100022,
-                    100023,
-                    100024,
-                    100025
+                    204,
+                    251,
+                    252,
+                    253
                 ],
                 width: 27,
                 height: 23,
@@ -11999,10 +11917,10 @@ const FIXED_DUNGEON_MAPS = {
                 label: "地下3階・結晶裏路",
                 encounterRank: 91,
                 monsters: [
-                    100082,
-                    100083,
-                    100084,
-                    100085
+                    901,
+                    902,
+                    903,
+                    904
                 ],
                 enemyBoost: {
                     statMultiplier: 1.08,
@@ -12126,9 +12044,9 @@ const FIXED_DUNGEON_MAPS = {
                         id: "crena_barrier_guard",
                         imageKey: "overlay_dungeon_hunter_shadow",
                         monsterIds: [
-                            100086,
-                            100089,
-                            100093
+                            951,
+                            954,
+                            1003
                         ],
                         speed: 0.7,
                         range: 28,
@@ -12225,10 +12143,10 @@ const FIXED_DUNGEON_MAPS = {
                 label: "地下4階・結界核",
                 encounterRank: 101,
                 monsters: [
-                    100091,
-                    100092,
-                    100093,
-                    100094
+                    1001,
+                    1002,
+                    1003,
+                    1004
                 ],
                 enemyBoost: {
                     statMultiplier: 1.1,
@@ -12309,9 +12227,9 @@ const FIXED_DUNGEON_MAPS = {
                         id: "crena_core_guard",
                         imageKey: "overlay_dungeon_hunter_shadow",
                         monsterIds: [
-                            100095,
-                            100099,
-                            100103
+                            1051,
+                            1055,
+                            1104
                         ],
                         speed: 0.8,
                         range: 29,
@@ -12324,9 +12242,9 @@ const FIXED_DUNGEON_MAPS = {
                         x: 14,
                         y: 7,
                         monsterId: [
-                            100078,
-                            100082,
-                            100078
+                            852,
+                            901,
+                            852
                         ],
                         questId: "licia_crena_depths",
                         startEventId: "quest_licia_encounter",
@@ -12382,10 +12300,10 @@ const FIXED_DUNGEON_MAPS = {
                 label: "1階・影残る拝廊",
                 encounterRank: 76,
                 monsters: [
-                    100068,
-                    100069,
-                    100070,
-                    100071
+                    751,
+                    752,
+                    753,
+                    754
                 ],
                 width: 31,
                 height: 26,
@@ -12464,9 +12382,9 @@ const FIXED_DUNGEON_MAPS = {
                         id: "shrine_shadow",
                         imageKey: "overlay_dungeon_hunter_shadow",
                         monsterIds: [
-                            100073,
-                            100075,
-                            100077
+                            801,
+                            803,
+                            851
                         ],
                         speed: 0.5,
                         range: 26,
@@ -12498,7 +12416,7 @@ const FIXED_DUNGEON_MAPS = {
                     {
                         x: 15,
                         y: 7,
-                        monsterId: 302206,
+                        monsterId: 303206,
                         questId: "claude_leon_dark_shrine",
                         startEventId: "quest_claude_leon_encounter",
                         storyEventId: "quest_claude_leon_clear",
@@ -12532,9 +12450,9 @@ const FIXED_DUNGEON_MAPS = {
                 label: "2階・月影の祭壇",
                 encounterRank: 96,
                 monsters: [
-                    100086,
-                    100087,
-                    100089
+                    951,
+                    952,
+                    954
                 ],
                 width: 33,
                 height: 28,
@@ -12689,10 +12607,10 @@ const FIXED_DUNGEON_MAPS = {
                 label: "禁則回廊",
                 encounterRank: 86,
                 monsters: [
-                    100077,
-                    100078,
-                    100079,
-                    100080
+                    851,
+                    852,
+                    853,
+                    854
                 ],
                 width: 31,
                 height: 25,
@@ -12763,9 +12681,9 @@ const FIXED_DUNGEON_MAPS = {
                         id: "grezelia_rule",
                         imageKey: "overlay_dungeon_hunter_shadow",
                         monsterIds: [
-                            100082,
-                            100083,
-                            100086
+                            901,
+                            902,
+                            951
                         ],
                         speed: 0.5,
                         range: 28,
@@ -12821,10 +12739,10 @@ const FIXED_DUNGEON_MAPS = {
                 label: "禁奥の核",
                 encounterRank: 86,
                 monsters: [
-                    100077,
-                    100079,
-                    100080,
-                    100081
+                    851,
+                    853,
+                    854,
+                    855
                 ],
                 width: 33,
                 height: 27,
@@ -12946,10 +12864,10 @@ const FIXED_DUNGEON_MAPS = {
                 label: "零式禁則層",
                 encounterRank: 91,
                 monsters: [
-                    100082,
-                    100083,
-                    100084,
-                    100085
+                    901,
+                    902,
+                    903,
+                    904
                 ],
                 width: 35,
                 height: 29,
@@ -13018,9 +12936,9 @@ const FIXED_DUNGEON_MAPS = {
                         id: "grezelia_zero_executor",
                         imageKey: "overlay_dungeon_hunter_shadow",
                         monsterIds: [
-                            100086,
-                            100089,
-                            100093
+                            951,
+                            954,
+                            1003
                         ],
                         speed: 2,
                         range: 34,
@@ -13118,7 +13036,45 @@ const AUTHORED_MAP_PROP_PLACEMENTS = [
     }
 ];
 
+
+const decorateMapDefinitionsWithIds = () => {
+    Object.entries(STORY_DATA?.areas || {}).forEach(([areaKey, def]) => {
+        const mapKey = STORY_AREA_MAP_KEYS[areaKey];
+        const mapId = mapKey ? MAP_IDS[mapKey] : null;
+        if (!def || !mapId) return;
+        def.mapId = mapId;
+    });
+    STORY_DATA.worldMapId = MAP_IDS.WORLD;
+
+    Object.entries(FIXED_MAPS || {}).forEach(([areaKey, def]) => {
+        const mapKey = FIXED_AREA_MAP_KEYS[areaKey];
+        const mapId = mapKey ? MAP_IDS[mapKey] : null;
+        if (!def || !mapId) return;
+        def.mapId = mapId;
+        def.floorId = createMapFloorId(mapId, 0);
+    });
+    Object.entries(FIXED_DUNGEON_MAPS || {}).forEach(([areaKey, base]) => {
+        const mapKey = FIXED_AREA_MAP_KEYS[areaKey];
+        const mapId = mapKey ? MAP_IDS[mapKey] : null;
+        if (!base || !mapId) return;
+        base.mapId = mapId;
+        base.floorId = createMapFloorId(mapId, 1);
+        base.useHabitatEncounters = true;
+        (base.floors || []).forEach((floorDef, index) => {
+            floorDef.mapId = mapId;
+            floorDef.floorId = createMapFloorId(mapId, index + 1);
+            floorDef.useHabitatEncounters = true;
+        });
+    });
+};
+
+decorateMapDefinitionsWithIds();
+
 if (typeof window !== "undefined") {
+    window.MAP_MASTER = MAP_MASTER;
+    window.MAP_IDS = MAP_IDS;
+    window.STORY_AREA_MAP_KEYS = STORY_AREA_MAP_KEYS;
+    window.createMapFloorId = createMapFloorId;
     window.STORY_MAP_MUTATIONS = STORY_MAP_MUTATIONS;
     window.TILE_THEMES = TILE_THEMES;
     window.DUNGEON_WALL_FACE_THEMES = DUNGEON_WALL_FACE_THEMES;

@@ -13,7 +13,7 @@
       初回だけ空白になりやすい最小画像を先に取りに行くための補助。
       大量追加する場合は、まず assets.js の PRISMA_ASSETS.cacheWarmup を更新すること。
     -->
-    <link rel="preload" as="image" href="assets/monsters/monster_100001.png">
+    <link rel="preload" as="image" href="assets/monsters/monster_000001.png">
     <link rel="preload" as="image" href="assets/generated/battle-field-ai.png">
     
 <link rel="stylesheet" href="modern-polish.css">
@@ -36,7 +36,7 @@ if ('serviceWorker' in navigator) {
 			<img
 				id="initial-loading-monster-img"
 				class="initial-loading-monster"
-				src="assets/monsters/monster_100001.png"
+				src="assets/monsters/monster_000001.png"
 				alt="loading"
 			>
             <div class="initial-loading-text">Now loading...</div>
@@ -49,14 +49,8 @@ if ('serviceWorker' in navigator) {
 		if (!img) return;
 
 		const SAVE_KEY = 'QoE_SaveData_v38_BalanceFix';
-
-		// ロード画面は初回キャッシュ/プリロード対象の 100001〜100024 から選ぶ。
-		// 全モンスター画像は assets.js を正本に、sw.js の初回installキャッシュで保存する。
-		// ここを100001〜100090の完全ランダムへ戻すと、初回だけロード画面が画像待ちになりやすい。
-		const fallbackIds = Array.from(
-			{ length: 24 },
-			(_, i) => 100001 + i
-		);
+		// ロード画面は assets.js の初期候補と同じ、実在する新IDだけから選ぶ。
+		const fallbackIds = [1, 2, 3, 4, 51, 52, 53, 54, 55, 101, 102, 103, 104, 151, 152, 153, 154, 155, 201, 202, 203, 204, 251, 252];
 
 		const pickRandom = (ids) => {
 			return ids[Math.floor(Math.random() * ids.length)];
@@ -73,7 +67,7 @@ if ('serviceWorker' in navigator) {
 					.map(id => Number(id))
 					.filter(id =>
 						Number.isInteger(id) &&
-						id >= 100001
+						id > 0
 					);
 			}
 		} catch (e) {
@@ -93,20 +87,20 @@ if ('serviceWorker' in navigator) {
 		img.onerror = function () {
 			retryCount++;
 
-			// 討伐済みIDに画像がなければ、従来の100001〜100090ランダムへ切り替える
+			// 討伐済みIDに画像がなければ、実在確認済みの初期候補へ切り替える
 			if (retryCount <= 5) {
 				const fallbackId = pickRandom(fallbackIds);
-				img.src = `assets/monsters/monster_${fallbackId}.png`;
+				img.src = `assets/monsters/monster_${String(fallbackId).padStart(6, '0')}.png`;
 				return;
 			}
 
 			// 念のため最後は固定
 			img.onerror = null;
-			img.src = 'assets/monsters/monster_100001.png';
+			img.src = 'assets/monsters/monster_000001.png';
 		};
 
 		const id = pickRandom(candidateIds);
-		img.src = `assets/monsters/monster_${id}.png`;
+		img.src = `assets/monsters/monster_${String(id).padStart(6, '0')}.png`;
 	})();
 	</script>
 	

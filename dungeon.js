@@ -71,7 +71,7 @@ const Dungeon = {
     keyItemTiles: { Q: 'red', N: 'blue', O: 'gold' },
     keyItemSymbols: { red: 'Q', blue: 'N', gold: 'O' },
     keyColorLabels: { red: '赤', blue: '青', gold: '金' },
-    keyGuardianImagePath: 'assets/monsters/monster_100010.png',
+    keyGuardianImagePath: 'assets/monsters/monster_000101.png',
     // Random-dungeon appearance catalog. This is the single source of truth for both
     // map tiles (themeKey) and battle backgrounds (battleBg). Later thresholds add
     // candidates without removing earlier appearances.
@@ -627,7 +627,7 @@ const Dungeon = {
             active: false,
             isBossBattle: false,
             fixedBossId: null,
-            fixedEnemyIds: [Number(guardian.monsterId || 100010)],
+            fixedEnemyIds: [Number(guardian.monsterId || 101)],
             keyReward: {
                 color: guardian.color,
                 x: guardian.x,
@@ -2613,7 +2613,7 @@ const Dungeon = {
         const rank = Number(effect.rank || Field.currentMapData?.encounterRank || 80);
         const ids = Array.isArray(effect.monsterIds) && effect.monsterIds.length
             ? effect.monsterIds
-            : [100064, 100065, 100066];
+            : [701, 702, 703];
         const elements = ['火', '水', '風', '雷', '光', '闇'];
         const resistElm = elements[Math.floor(Math.random() * elements.length)];
         const atkElm = elements[Math.floor(Math.random() * elements.length)];
@@ -2962,7 +2962,7 @@ const Dungeon = {
         if (ids.length) {
             return Array.from({ length: 3 }, () => ids[Math.floor(Math.random() * ids.length)]);
         }
-        return [100064, 100065, 100066];
+        return [701, 702, 703];
     },
 
     getFixedTrialAngelSpawnCandidates: () => {
@@ -3592,6 +3592,10 @@ const Dungeon = {
             height: Dungeon.height,
             tiles: Dungeon.map,
             isDungeon: true,
+            mapId: window.MAP_IDS?.ABYSS || 'MAP000033',
+            floor: Math.max(1, Number(Dungeon.floor || 1)),
+            floorId: (typeof MapRegistry !== 'undefined' && MapRegistry.formatFloorId) ? MapRegistry.formatFloorId(window.MAP_IDS?.ABYSS || 'MAP000033', Dungeon.floor) : `MAP000033-${String(Math.max(1, Number(Dungeon.floor || 1))).padStart(2, '0')}`,
+            useHabitatEncounters: !guildRun,
             isGuildQuestDungeon: !!guildRun,
             guildQuestId: guildRun?.questId || null,
             encounterRank: guildRun ? Math.max(1, Number(guildRun.encounterRank || guildRun.power || 1)) : null,

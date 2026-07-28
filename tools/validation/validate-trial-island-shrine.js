@@ -128,7 +128,7 @@ vm.runInContext(read('monsters.js'), monsterContext, { filename: 'monsters.js' }
 for (const id of [120301, 120302, 120303]) {
     const monster = monsterContext.MONSTERS_DATA.find(entry => entry.id === id);
     assert(monster?.isChestTrap === true, `Mimic ${id} is not explicitly registered in monsters.js`);
-    assert(monster.image === `assets/monsters/monster_${id}.png`, `Mimic ${id} uses a split image path`);
+    assert(monster.image === `assets/monsters/monster_${String(id).padStart(6, '0')}.png`, `Mimic ${id} uses a split image path`);
     assert(fs.existsSync(path.join(root, monster.image)), `Mimic image is missing: ${monster.image}`);
 }
 assert(!read('chest-mimics.js').includes('target.push'), 'chest-mimics.js must not inject monster records at runtime');

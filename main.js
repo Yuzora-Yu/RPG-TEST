@@ -3983,6 +3983,7 @@ load: () => {
             if(!App.data.book) App.data.book = { monsters: [] }; 
             if(!App.data.book.killCounts) App.data.book.killCounts = {}; 
             if(!App.data.battle) App.data.battle = { active: false }; 
+            if (typeof App.migrateMonsterIdReferences === 'function') App.migrateMonsterIdReferences();
             if (typeof App.ensureSettings === 'function') App.ensureSettings();
             
             if(!App.data.stats) {
@@ -5825,6 +5826,75 @@ load: () => {
         return false;
     },
 
+
+    migrateMonsterIdReferences: () => {
+        if (!App.data || !globalThis.MonsterData?.normalizeId) return false;
+        const normalize = (value) => {
+            const id = globalThis.MonsterData.normalizeId(value);
+            return id === null ? value : id;
+        };
+        const singularKeys = new Set([
+            'monsterId', 'fixedBossId', 'chestTrapMonsterId', 'displayMonsterId',
+            'targetMonsterId', 'bossMonsterId', 'guardianMonsterId', 'trialMonsterId'
+        ]);
+        const arrayKeys = new Set([
+            'monsters', 'monsterIds', 'fixedEnemyIds', 'normalMonsterIds', 'rareMonsterIds',
+            'bossMonsterIds', 'targetMonsterIds', 'candidateMonsterIds'
+        ]);
+        const keyedIdMaps = new Set(['killCounts', 'defeatedBosses']);
+        let changed = false;
+        const walk = (value, parentKey = '') => {
+            if (Array.isArray(value)) {
+                if (arrayKeys.has(parentKey)) {
+                    const mapped = value.map((entry) => {
+                        if (Number.isFinite(Number(entry))) {
+                            const next = normalize(entry);
+                            if (Number(next) !== Number(entry)) changed = true;
+                            return next;
+                        }
+                        return walk(entry, parentKey);
+                    });
+                    return Array.from(new Set(mapped));
+                }
+                return value.map((entry) => walk(entry, parentKey));
+            }
+            if (!value || typeof value !== 'object') return value;
+            if (keyedIdMaps.has(parentKey)) {
+                const remapped = {};
+                Object.entries(value).forEach(([key, entryValue]) => {
+                    const numeric = Number(key);
+                    const nextKey = Number.isFinite(numeric) ? String(normalize(numeric)) : key;
+                    if (nextKey !== key) changed = true;
+                    if (parentKey === 'killCounts') {
+                        remapped[nextKey] = Number(remapped[nextKey] || 0) + Number(entryValue || 0);
+                    } else if (!(nextKey in remapped)) {
+                        remapped[nextKey] = entryValue;
+                    } else {
+                        remapped[nextKey] = remapped[nextKey] || entryValue;
+                    }
+                });
+                return remapped;
+            }
+            Object.keys(value).forEach((key) => {
+                const current = value[key];
+                if (singularKeys.has(key) && Number.isFinite(Number(current))) {
+                    const next = normalize(current);
+                    if (Number(next) !== Number(current)) changed = true;
+                    value[key] = next;
+                } else if (['enemies', 'monsters'].includes(parentKey) && ['id', 'baseId', 'imageId'].includes(key) && Number.isFinite(Number(current))) {
+                    const next = normalize(current);
+                    if (Number(next) !== Number(current)) changed = true;
+                    value[key] = next;
+                } else {
+                    value[key] = walk(current, key);
+                }
+            });
+            return value;
+        };
+        App.data = walk(App.data, 'root');
+        return changed;
+    },
+
     getWorldEncounterProfile: () => {
         if (typeof Field === 'undefined' || Field.currentMapData) return null;
         if (typeof App.isFlying === 'function' && App.isFlying()) return null;
@@ -5866,6 +5936,7 @@ load: () => {
         if (!best) return null;
         return {
             id: best.id || null,
+            mapId: best.mapId || null,
             name: best.name || 'フィールド',
             rank: Math.max(1, Number(best.rank || best.encounterRank || 1) || 1),
             monsters: Array.isArray(best.monsters) ? best.monsters.slice() : null,
@@ -5916,8 +5987,13 @@ load: () => {
 			encounterType: isSeaEncounter ? 'sea' : (worldEncounter ? 'field' : null),
             encounterZoneId: worldEncounter ? worldEncounter.id : null,
             encounterZoneName: worldEncounter ? worldEncounter.name : null,
+            encounterMapId: mapEncounter?.mapId || (isSeaEncounter ? window.MAP_IDS?.SEA : worldEncounter?.mapId) || null,
+            encounterFloorId: mapEncounter?.floorId || null,
+            encounterFloor: Math.max(0, Number(mapEncounter?.floor || 0) || 0),
+            abyssFloor: mapEncounter?.mapId === window.MAP_IDS?.ABYSS ? Math.max(1, Number(App.data.progress?.floor || 1)) : null,
+            useHabitatEncounters: !!(mapEncounter?.useHabitatEncounters || isSeaEncounter || worldEncounter?.mapId),
             encounterRank: mapEncounter?.encounterRank || (worldEncounter ? worldEncounter.rank : null),
-			monsters: mapEncounter && Array.isArray(mapEncounter.monsters) ? [...mapEncounter.monsters] : (isSeaEncounter && Array.isArray(window.SEA_ENCOUNTER_MONSTERS) ? [...window.SEA_ENCOUNTER_MONSTERS] : (worldEncounter ? worldEncounter.monsters : null)),
+			monsters: mapEncounter?.isGuildQuestDungeon && Array.isArray(mapEncounter.monsters) ? [...mapEncounter.monsters] : null,
             rareMonsters: mapEncounter && Array.isArray(mapEncounter.rareMonsters) ? mapEncounter.rareMonsters.map(entry => ({ ...entry })) : (worldEncounter ? worldEncounter.rareMonsters : null),
             rareEncounterChance: Number.isFinite(Number(mapEncounter?.rareEncounterChance)) ? Number(mapEncounter.rareEncounterChance) : null,
             guildQuestChallengeId: mapEncounter?.guildQuestId || null,
@@ -9373,7 +9449,7 @@ const Field = {
             const size = ts * 2.6;
             const px = Math.floor(cx + (ox * ts) - (size / 2));
             const py = Math.floor(cy + (oy * ts) - (size / 2));
-            const src = Field.getMonsterMapSpriteSrc ? Field.getMonsterMapSpriteSrc(monsterId) : `assets/monsters/monster_${monsterId}.png`;
+            const src = Field.getMonsterMapSpriteSrc ? Field.getMonsterMapSpriteSrc(monsterId) : `assets/monsters/monster_${String(monsterId).padStart(6, '0')}.png`;
             const img = Field.getDirectImage(src);
             if (img && img.complete && img.naturalWidth > 0) {
                 ctx.save();
@@ -9399,8 +9475,8 @@ const Field = {
             });
         }
         drawOverlayImage(App.data?.dungeon?.abyssRift, 'assets/effect/fx-abyss-vortex-ai.png', '#a34cff');
-        drawOverlayImage(App.data?.dungeon?.adventurer, 'assets/monsters/monster_100009.png', '#5bd6ff');
-        drawOverlayImage(App.data?.dungeon?.keyGuardian, 'assets/monsters/monster_100010.png', '#ffd78a');
+        drawOverlayImage(App.data?.dungeon?.adventurer, 'assets/monsters/monster_000055.png', '#5bd6ff');
+        drawOverlayImage(App.data?.dungeon?.keyGuardian, 'assets/monsters/monster_000101.png', '#ffd78a');
         drawOverlayImage(App.data?.dungeon?.trialAngel, 'assets/map/overlays/overlay_dungeon_trial_angel.png', '#fff3a6');
         drawAbyssBossSprite();
 

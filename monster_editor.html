@@ -189,7 +189,7 @@
     if (m.img) return m.img;
     const map = window.MonsterImageMap || {};
     const imageId = Number(m.imageId ?? m.id);
-    return map[m.id] || `assets/monsters/monster_${Number.isFinite(imageId) && imageId > 0 ? Math.floor(imageId) : m.id}.png`;
+    return map[m.id] || `assets/monsters/monster_${String(Number.isFinite(imageId) && imageId > 0 ? Math.floor(imageId) : m.id).padStart(6, '0')}.png`;
   }
 
   function skillLabel(id){ const s = state.skillMap.get(Number(id)); return s ? `[${s.id}] ${s.name}` : `[${id ?? "?"}] 未登録スキル`; }

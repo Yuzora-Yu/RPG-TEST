@@ -22,7 +22,7 @@
     const id = Number(monster?.baseId ?? monster?.id);
     const imageId = Number(monster?.imageId ?? monster?.baseId ?? monster?.id);
     if (!Number.isFinite(id) || id <= 0 || !Number.isFinite(imageId) || imageId <= 0) return;
-    map[Math.floor(id)] = `assets/monsters/monster_${Math.floor(imageId)}.png`;
+    map[Math.floor(id)] = `assets/monsters/monster_${String(Math.floor(imageId)).padStart(6, '0')}.png`;
   });
   root.MonsterImageMap = map;
 })(globalThis);

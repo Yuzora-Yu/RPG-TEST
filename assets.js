@@ -62,8 +62,13 @@ const normalizePrismaMonsterImageId = (monsterOrId) => {
   return Number.isFinite(id) && id > 0 ? Math.floor(id) : null;
 };
 
-const prismaMonsterImagePath = (monsterOrId) => {
+const formatPrismaMonsterImageId = (monsterOrId) => {
   const imageId = normalizePrismaMonsterImageId(monsterOrId);
+  return imageId === null ? null : String(imageId).padStart(6, '0');
+};
+
+const prismaMonsterImagePath = (monsterOrId) => {
+  const imageId = formatPrismaMonsterImageId(monsterOrId);
   return imageId === null ? null : `${PRISMA_MONSTER_IMAGE_BASE}monster_${imageId}.png`;
 };
 
@@ -332,7 +337,7 @@ const PRISMA_ASSETS = {
     overlay_town_water_boatman: "assets/map/overlays/overlay_town_water_boatman.png",
     overlay_town_light_pilgrim: "assets/map/overlays/overlay_town_light_pilgrim.png",
     overlay_town_demon_guard: "assets/map/overlays/overlay_town_demon_guard.png",
-    overlay_monster_guardian: "assets/monsters/monster_100010.png",
+    overlay_monster_guardian: "assets/monsters/monster_000101.png",
     overlay_building_fire_forge: "assets/map/overlays/overlay_building_fire_forge.png",
     overlay_building_wind_hut: "assets/map/overlays/overlay_building_wind_hut.png",
     overlay_building_water_shop: "assets/map/overlays/overlay_building_water_shop.png",
@@ -908,6 +913,7 @@ PRISMA_ASSETS.monsters = {
   files: PRISMA_MONSTER_IMAGE_FILES,
   getId: normalizePrismaMonsterId,
   getImageId: normalizePrismaMonsterImageId,
+  formatImageId: formatPrismaMonsterImageId,
   getPath: prismaMonsterImagePath,
   getKey: prismaMonsterGraphicKey,
   ensureGraphic: ensurePrismaMonsterGraphic,

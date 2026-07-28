@@ -46,14 +46,14 @@ MONSTERS = [
 # prevents a later art rebuild from silently returning the manifest to an
 # unassigned state.
 ADOPTIONS = {
-    "ashhorn_minotaur": (302201, "karin_volcano_depths:boss"),
-    "abyssal_shell_knight": (302202, "sophia_alan_seabed_depths:boss"),
-    "zephyr_manticore": (302203, "arisa_haine_forest_depths:boss"),
-    "thunder_coil_golem": (302204, "frieda_baron_thunder_depths:boss"),
-    "cathedral_chimera": (302205, "zelied_big_tower:boss"),
-    "grave_regent": (302206, "claude_leon_dark_shrine:boss"),
-    "root_titan": (302207, "arisa_haine_forest_depths:boss"),
-    "frostfang_wyrm": (302208, "sophia_alan_seabed_depths:boss"),
+    "ashhorn_minotaur": (303201, "karin_volcano_depths:boss"),
+    "abyssal_shell_knight": (303202, "sophia_alan_seabed_depths:boss"),
+    "zephyr_manticore": (303203, "arisa_haine_forest_depths:boss"),
+    "thunder_coil_golem": (303204, "frieda_baron_thunder_depths:boss"),
+    "cathedral_chimera": (303205, "zelied_big_tower:boss"),
+    "grave_regent": (303206, "claude_leon_dark_shrine:boss"),
+    "root_titan": (303207, "arisa_haine_forest_depths:boss"),
+    "frostfang_wyrm": (303208, "sophia_alan_seabed_depths:boss"),
     "cinder_imp": (110201, "abyss-band-81-85"),
     "magma_salamander": (110202, "abyss-band-86-90"),
     "tide_jelly": (110203, "abyss-band-91-95"),

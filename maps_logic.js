@@ -23,6 +23,25 @@ normalizeCoordinateActorTiles(FIXED_MAPS);
 normalizeCoordinateActorTiles(FIXED_DUNGEON_MAPS);
 
 const MapRegistry = {
+    getMapDefinition(mapIdOrKey) {
+        const value = String(mapIdOrKey || '');
+        if (!value || typeof MAP_MASTER === 'undefined') return null;
+        return MAP_MASTER[value] || Object.values(MAP_MASTER).find((entry) => String(entry?.id) === value) || null;
+    },
+
+    getMapName(mapIdOrKey) {
+        return MapRegistry.getMapDefinition(mapIdOrKey)?.name || null;
+    },
+
+    getMapIdForArea(areaKey) {
+        const mapKey = (typeof STORY_AREA_MAP_KEYS !== 'undefined') ? STORY_AREA_MAP_KEYS[areaKey] : ((typeof FIXED_AREA_MAP_KEYS !== 'undefined') ? FIXED_AREA_MAP_KEYS[areaKey] : null);
+        return mapKey && typeof MAP_IDS !== 'undefined' ? MAP_IDS[mapKey] : null;
+    },
+
+    formatFloorId(mapId, floor = 0) {
+        if (typeof createMapFloorId === 'function') return createMapFloorId(mapId, floor);
+        return `${String(mapId || '')}-${String(Math.max(0, Number(floor) || 0)).padStart(2, '0')}`;
+    },
     normalizeWorldPoint(x, y) {
         const width = (typeof MAP_DATA !== "undefined" && MAP_DATA[0]) ? MAP_DATA[0].length : 1;
         const height = (typeof MAP_DATA !== "undefined" && MAP_DATA.length) ? MAP_DATA.length : 1;
@@ -90,6 +109,9 @@ const MapRegistry = {
                 displayName: floorLabel ? `${base.name} ${floorLabel}` : base.name,
                 floor: 1,
                 floorLabel,
+                mapId: base.mapId || MapRegistry.getMapIdForArea(areaKey),
+                floorId: base.floorId || MapRegistry.formatFloorId(base.mapId || MapRegistry.getMapIdForArea(areaKey), 1),
+                useHabitatEncounters: base.useHabitatEncounters !== false,
                 themeKey: base.themeKey || areaKey,
                 tileOverrides: { ...(base.tileOverrides || {}) },
             encounterRank: base.encounterRank || base.rank || 1,
@@ -112,6 +134,9 @@ const MapRegistry = {
             displayName: `${base.name} ${floorLabel}`,
             floor: index + 1,
             floorLabel,
+            mapId: def.mapId || base.mapId || MapRegistry.getMapIdForArea(areaKey),
+            floorId: def.floorId || MapRegistry.formatFloorId(def.mapId || base.mapId || MapRegistry.getMapIdForArea(areaKey), index + 1),
+            useHabitatEncounters: def.useHabitatEncounters !== false && base.useHabitatEncounters !== false,
             totalFloors: base.floors.length,
             themeKey: def.themeKey || base.themeKey || areaKey,
             tileOverrides: { ...(base.tileOverrides || {}), ...(def.tileOverrides || {}) },

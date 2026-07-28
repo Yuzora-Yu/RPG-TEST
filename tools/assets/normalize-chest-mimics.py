@@ -27,4 +27,4 @@ def normalize(path: Path) -> None:
 
 
 for asset_id in (120301, 120302, 120303):
-    normalize(ASSET_DIR / f"monster_{asset_id}.png")
+    normalize(ASSET_DIR / f"monster_{asset_id:06d}.png")

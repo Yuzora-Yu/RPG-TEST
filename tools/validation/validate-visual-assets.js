@@ -187,7 +187,7 @@ const fixedBossIds = collectValues(mapSource, /\bmonsterId"?\s*:\s*(?:\[\s*)?(\d
 const missingBossSprites = [...fixedBossIds]
     .map(Number)
     .filter(id => id >= 100000)
-    .filter(id => !graphics.has(`monster_${id}`) && !graphics.has(`overlay_boss_${id}`) && !fs.existsSync(path.join(root, `assets/monsters/monster_${id}.png`)));
+    .filter(id => !graphics.has(`monster_${id}`) && !graphics.has(`overlay_boss_${id}`) && !fs.existsSync(path.join(root, `assets/monsters/monster_${String(id).padStart(6, '0')}.png`)));
 if (missingBossSprites.length) {
     throw new Error(`Fixed bosses missing map sprites:\n${missingBossSprites.join('\n')}`);
 }

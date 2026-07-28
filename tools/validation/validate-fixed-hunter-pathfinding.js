@@ -33,7 +33,7 @@ const blocked = Dungeon.findShortestGridPath(0, 0, 4, 0, (x, y) => y === 0 && x 
 assert(blocked === null, 'hunter pathfinder returned a route for an unreachable target');
 assert(Dungeon.findShortestGridPath(2, 1, 2, 1, () => true, 5, 3).length === 0, 'same-cell hunter path should be empty');
 
-const hunterDef = { type: 'hunter', id: 'audit_hunter', x: 0, y: 0, speed: 1, range: 99, monsterId: 100001 };
+const hunterDef = { type: 'hunter', id: 'audit_hunter', x: 0, y: 0, speed: 1, range: 99, monsterId: 1 };
 context.Field = {
     x: 4,
     y: 0,

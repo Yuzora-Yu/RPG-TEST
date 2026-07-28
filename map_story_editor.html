@@ -1100,7 +1100,7 @@
   }
 
   function firstItemId(){ return state.data.items[0]?.id || 1; }
-  function firstMonsterId(){ return state.data.monsters[0]?.id || 100001; }
+  function firstMonsterId(){ return state.data.monsters[0]?.id || 1; }
   function firstScriptId(){ return state.scripts[0] || ''; }
   function firstEventId(){ return state.events[0] || ''; }
   function itemLabel(id){ const it=state.data.items.find(i=>Number(i.id)===Number(id)); return it ? `[${it.id}] ${it.name}` : `[${id ?? '?'}] 未登録アイテム`; }

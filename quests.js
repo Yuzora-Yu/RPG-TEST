@@ -181,8 +181,8 @@
         "startEventId": "quest_marie_start",
         "reportEventId": "quest_marie_report",
         "targetMonsterIds": [
-            100033,
-            100036
+            352,
+            355
         ],
         "targetCount": 5,
         "completeText": "マリーは祈りだけでなく、杖を手にして旅に同行することを決めた。",
@@ -227,8 +227,8 @@
         "startEventId": "quest_hayate_start",
         "reportEventId": "quest_hayate_report",
         "targetMonsterIds": [
-            100033,
-            100037
+            352,
+            401
         ],
         "targetCount": 6,
         "completeText": "ハヤテは速度だけでなく覚悟も認め、仲間に加わった。",
@@ -252,8 +252,8 @@
         "startEventId": "quest_sylvia_start",
         "reportEventId": "quest_sylvia_report",
         "targetMonsterIds": [
-            100036,
-            100037
+            355,
+            401
         ],
         "targetCount": 5,
         "completeText": "シルビアは旅の危うさを承知で、支援役として仲間に加わった。",
@@ -277,8 +277,8 @@
         "startEventId": "quest_rin_start",
         "reportEventId": "quest_rin_report",
         "targetMonsterIds": [
-            100040,
-            100043
+            404,
+            453
         ],
         "targetCount": 6,
         "completeText": "リンは雷鳴に臆さぬ一行を認め、仲間に加わった。",
