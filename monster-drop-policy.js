@@ -17,7 +17,20 @@
         '魔族': [7, 2, 4],
         '人': [0, 1, 3]
     });
-    const stableNumber = monster => Math.abs(Number(monster?.id || 0));
+    const stableStringHash = value => {
+        let hash = 2166136261;
+        for (const ch of String(value || '')) {
+            hash ^= ch.codePointAt(0);
+            hash = Math.imul(hash, 16777619);
+        }
+        return Math.abs(hash >>> 0);
+    };
+    // dropSeed survives monster ID re-numbering. New monsters without a seed
+    // still receive deterministic drops from their name/race identity.
+    const stableNumber = monster => {
+        const seed = Number(monster?.dropSeed);
+        return Number.isFinite(seed) ? Math.abs(Math.floor(seed)) : stableStringHash(`${monster?.name || ''}|${monster?.race || ''}`);
+    };
     const monsterRank = monster => Math.max(1, Number(monster?.rank || monster?.minF || 1));
     const materialCategoryIndex = monster => {
         const pool = raceMaterialPools[monster?.race] || [7];
@@ -106,8 +119,8 @@
             : catalog.getMaterialItemId(categoryIndex, Math.min(7, gradeIndex + 1));
         const isElite = Number(monster.actCount || 1) >= 2;
         if (isElite) {
-            // Each ten-rank band has one two-action elite. Its rare slot is a
-            // stat-growth item, explicitly excluding reincarnation item 107.
+            // Every two-action elite uses a stat-growth item in its rare slot,
+            // explicitly excluding reincarnation item 107.
             const band = Math.max(0, Math.floor((rank - 1) / 10));
             rareId = 100 + ((band + salt) % 7);
             eliteCount += 1;
@@ -128,7 +141,7 @@
     });
 
     window.PRISMA_MONSTER_DROP_POLICY = Object.freeze({
-        version: '2026-07-17-balanced-items-v3-drop-rates',
+        version: '2026-07-28-monster-schema-v3-stable-drop-seed',
         rareCount,
         normalCount,
         eliteCount,

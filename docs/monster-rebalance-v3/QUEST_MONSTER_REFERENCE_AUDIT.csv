@@ -1,0 +1,10 @@
+﻿ファイル,依頼ID,指定エリア,対象名,新ID,MAP ID,出現階層,確認結果
+quests.js,rin_thunder_fort,ライザーク要塞,キラーナイト,504,MAP000019,1～4階,一致
+quests.js,rin_thunder_fort,ライザーク要塞,サンダーバット,505,MAP000019,1～4階,一致
+guild_quests.js,guild_prisma_patrol,光の宮殿グランプリズマ,プリズムウィスプ,603,MAP000023,1～5階,一致
+guild_quests.js,guild_prisma_patrol,光の宮殿グランプリズマ,聖域のセンチネル,605,MAP000023,1～5階,一致
+guild_quests.js,guild_galvania_patrol,魔王城ガルヴァニア,ダークバトラー強,753,MAP000027,1～7階,一致
+guild_quests.js,guild_galvania_patrol,魔王城ガルヴァニア,アークバット,751,MAP000027,1～7階,一致
+guild_quests.js,guild_abyss_suppression,深淵,終焔執事スルト,1702,MAP000033,71～75階,一致
+guild_quests.js,guild_abyss_suppression,深淵,凍獄執事コキュートス,1703,MAP000033,71～75階,一致
+guild_quests.js,guild_abyss_suppression,深淵,轟雷執事バアル,1701,MAP000033,71～75階,一致

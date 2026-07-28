@@ -337,7 +337,7 @@ const PRISMA_ASSETS = {
     overlay_town_water_boatman: "assets/map/overlays/overlay_town_water_boatman.png",
     overlay_town_light_pilgrim: "assets/map/overlays/overlay_town_light_pilgrim.png",
     overlay_town_demon_guard: "assets/map/overlays/overlay_town_demon_guard.png",
-    overlay_monster_guardian: "assets/monsters/monster_000101.png",
+    overlay_monster_guardian: "assets/monsters/monster_000103.png",
     overlay_building_fire_forge: "assets/map/overlays/overlay_building_fire_forge.png",
     overlay_building_wind_hut: "assets/map/overlays/overlay_building_wind_hut.png",
     overlay_building_water_shop: "assets/map/overlays/overlay_building_water_shop.png",

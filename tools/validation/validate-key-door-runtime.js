@@ -367,7 +367,7 @@ function validateGuardianRuntime() {
     'WWWWW'.split(''),
   ];
   Field.currentMapData = { name: 'ABYSS', width: 5, height: 5, tiles: Dungeon.map, isDungeon: true };
-  App.data.dungeon.keyGuardian = { active: true, floor: 12, x: 2, y: 2, color: 'blue', monsterId: 101 };
+  App.data.dungeon.keyGuardian = { active: true, floor: 12, x: 2, y: 2, color: 'blue', monsterId: 103 };
 
   assert(Dungeon.isKeyGuardianAt(2, 2), 'guardian position was not detected');
   assert(Dungeon.startKeyGuardianBattle(), 'guardian battle did not start');

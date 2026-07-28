@@ -169,7 +169,7 @@ const areas = [
       {
         label: "火山道",
         encounterRank: 12,
-        monsters: [101, 102, 103],
+        monsters: [103, 102, 352],
         width: 21,
         height: 21,
         tiles: floor(21, 21, (g) => {
@@ -193,7 +193,7 @@ const areas = [
       {
         label: "溶岩回廊",
         encounterRank: 14,
-        monsters: [103, 104, 151],
+        monsters: [352, 153, 151],
         width: 21,
         height: 21,
         tiles: floor(21, 21, (g) => {
@@ -215,7 +215,7 @@ const areas = [
       {
         label: "火の祭壇",
         encounterRank: 16,
-        monsters: [151, 152, 153],
+        monsters: [151, 252, 154],
         width: 21,
         height: 21,
         tiles: floor(21, 21, (g) => {
@@ -245,7 +245,7 @@ const areas = [
       {
         label: "封じられた森",
         encounterRank: 22,
-        monsters: [202, 203, 204],
+        monsters: [201, 203, 202],
         width: 23,
         height: 19,
         tiles: floor(23, 19, (g) => {
@@ -267,7 +267,7 @@ const areas = [
       {
         label: "祈りの広場",
         encounterRank: 24,
-        monsters: [204, 251, 252],
+        monsters: [202, 204, 251],
         width: 23,
         height: 19,
         tiles: floor(23, 19, (g) => {
@@ -297,7 +297,7 @@ const areas = [
       {
         label: "風廊",
         encounterRank: 26,
-        monsters: [252, 253, 254],
+        monsters: [251, 303, 301],
         width: 23,
         height: 21,
         tiles: floor(23, 21, (g) => {
@@ -318,7 +318,7 @@ const areas = [
       {
         label: "旋風の回廊",
         encounterRank: 28,
-        monsters: [254, 255, 301],
+        monsters: [301, 205, 254],
         width: 23,
         height: 21,
         tiles: floor(23, 21, (g) => {
@@ -338,7 +338,7 @@ const areas = [
       {
         label: "風の祭壇",
         encounterRank: 30,
-        monsters: [301, 302, 303],
+        monsters: [254, 253, 404],
         width: 23,
         height: 21,
         tiles: floor(23, 21, (g) => {
@@ -369,7 +369,7 @@ const areas = [
       {
         label: "沈水回廊",
         encounterRank: 35,
-        monsters: [352, 353, 301021],
+        monsters: [351, 355, 301021],
         width: 23,
         height: 23,
         tiles: floor(23, 23, (g) => {
@@ -391,7 +391,7 @@ const areas = [
       {
         label: "赤水門",
         encounterRank: 37,
-        monsters: [353, 354, 301022],
+        monsters: [355, 353, 301022],
         width: 23,
         height: 23,
         tiles: floor(23, 23, (g) => {
@@ -410,7 +410,7 @@ const areas = [
       {
         label: "祈祷の間",
         encounterRank: 39,
-        monsters: [355, 401, 301022],
+        monsters: [357, 508, 301022],
         width: 23,
         height: 23,
         tiles: floor(23, 23, (g) => {
@@ -502,7 +502,7 @@ areas.push({
     {
       label: "1階・外郭電路",
       encounterRank: 40,
-      monsters: [355, 401, 402],
+      monsters: [357, 508, 401],
       width: 17,
       height: 17,
       tiles: fortressTiles(17, 17, [8, 15], [14, 2], { symbols: { S: [8, 16], D: [14, 2], C: [[2, 2], [14, 14]] } }),
@@ -513,7 +513,7 @@ areas.push({
     {
       label: "地下1階・暴走機関室",
       encounterRank: 42,
-      monsters: [402, 403, 404],
+      monsters: [401, 406, 402],
       width: 17,
       height: 17,
       tiles: fortressTiles(17, 17, [14, 14], [2, 2], { boss: [8, 8], door: [5, 5, "X"], symbols: { U: [14, 14], D: [2, 2] } }),
@@ -524,7 +524,7 @@ areas.push({
     {
       label: "地下2階・雷鎧の防衛線",
       encounterRank: 44,
-      monsters: [404, 451, 452],
+      monsters: [402, 356, 509],
       width: 17,
       height: 17,
       tiles: fortressTiles(17, 17, [2, 14], [14, 2], { boss: [8, 8], door: [11, 5, "Y"], symbols: { U: [2, 14], D: [14, 2], C: [[2, 2], [14, 14]] } }),
@@ -536,7 +536,7 @@ areas.push({
     {
       label: "地下3階・雷の中枢",
       encounterRank: 46,
-      monsters: [452, 453, 454],
+      monsters: [509, 302, 452],
       width: 17,
       height: 17,
       tiles: fortressTiles(17, 17, [14, 14], [8, 4], { boss: [8, 4], symbols: { U: [14, 14], C: [2, 2] } }),
@@ -562,7 +562,7 @@ areas.push({
     {
       label: "1階・白光の回廊",
       encounterRank: 50,
-      monsters: [501, 502, 503],
+      monsters: [506, 502, 503],
       width: 25,
       height: 21,
       tiles: palaceTiles([12, 19], [22, 2], { symbols: { S: [12, 20], D: [22, 2], C: [[2, 2], [22, 18]] } }),
@@ -573,7 +573,7 @@ areas.push({
     {
       label: "地下1階・祝福の水盤",
       encounterRank: 52,
-      monsters: [503, 504, 551],
+      monsters: [503, 501, 504],
       width: 25,
       height: 21,
       tiles: palaceTiles([22, 18], [2, 2], { symbols: { U: [22, 18], D: [2, 2] } }),
@@ -583,7 +583,7 @@ areas.push({
     {
       label: "地下2階・結界の聖廊",
       encounterRank: 54,
-      monsters: [551, 552, 553],
+      monsters: [504, 552, 551],
       width: 25,
       height: 21,
       tiles: palaceTiles([2, 18], [22, 2], { symbols: { U: [2, 18], D: [22, 2], C: [[2, 2], [22, 18]] } }),
@@ -594,7 +594,7 @@ areas.push({
     {
       label: "地下3階・光の祭壇",
       encounterRank: 56,
-      monsters: [553, 554, 555],
+      monsters: [551, 553, 554],
       width: 25,
       height: 21,
       tiles: palaceTiles([22, 18], [12, 5], { boss: [12, 5], symbols: { U: [22, 18], C: [2, 2] } }),
@@ -620,7 +620,7 @@ areas.push({
     {
       label: "地下1階・黒鉄の門",
       encounterRank: 60,
-      monsters: [602, 603, 604],
+      monsters: [601, 505, 602],
       width: 27,
       height: 23,
       tiles: darkTiles([13, 21], [24, 2], { boss: [13, 11], symbols: { S: [13, 22], D: [24, 2], C: [[2, 2], [24, 20]] } }),
@@ -632,7 +632,7 @@ areas.push({
     {
       label: "地下2階・冥騎士の間",
       encounterRank: 65,
-      monsters: [653, 654, 655],
+      monsters: [653, 654, 753],
       width: 27,
       height: 23,
       tiles: darkTiles([24, 20], [2, 2], { boss: [13, 11], door: [8, 8, "X"], symbols: { U: [24, 20], D: [2, 2] } }),
@@ -643,7 +643,7 @@ areas.push({
     {
       label: "地下3階・闇の玉座",
       encounterRank: 70,
-      monsters: [703, 704, 751],
+      monsters: [702, 703, 652],
       width: 27,
       height: 23,
       tiles: darkTiles([2, 20], [13, 4], { boss: [13, 4], door: [13, 11, "Z"], symbols: { U: [2, 20], C: [[2, 2], [24, 20]] } }),

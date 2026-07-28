@@ -685,6 +685,7 @@ const App = {
         return {
             location: { area: 'START_VILLAGE', x: 6, y: 5 },
             settings: App.getDefaultSettings(),
+            system: { monsterIdSchemaVersion: 3 },
             progress: { 
                 floor: 0, 
                 storyStep: 0, 
@@ -5828,27 +5829,30 @@ load: () => {
 
 
     migrateMonsterIdReferences: () => {
-        if (!App.data || !globalThis.MonsterData?.normalizeId) return false;
-        const normalize = (value) => {
-            const id = globalThis.MonsterData.normalizeId(value);
+        if (!App.data || !globalThis.MonsterData?.migrateId) return false;
+        const currentVersion = Number(globalThis.MonsterData.idSchemaVersion || 3);
+        const fromVersion = Number(App.data.system?.monsterIdSchemaVersion || 2);
+        const migrate = (value) => {
+            const id = globalThis.MonsterData.migrateId(value, fromVersion);
             return id === null ? value : id;
         };
         const singularKeys = new Set([
             'monsterId', 'fixedBossId', 'chestTrapMonsterId', 'displayMonsterId',
-            'targetMonsterId', 'bossMonsterId', 'guardianMonsterId', 'trialMonsterId'
+            'targetMonsterId', 'bossMonsterId', 'guardianMonsterId', 'trialMonsterId',
+            'trapMonsterId', 'mapSpriteMonsterId', 'sourceMonsterId', 'absorbedMonsterId'
         ]);
         const arrayKeys = new Set([
             'monsters', 'monsterIds', 'fixedEnemyIds', 'normalMonsterIds', 'rareMonsterIds',
             'bossMonsterIds', 'targetMonsterIds', 'candidateMonsterIds'
         ]);
         const keyedIdMaps = new Set(['killCounts', 'defeatedBosses']);
-        let changed = false;
+        let changed = fromVersion !== currentVersion;
         const walk = (value, parentKey = '') => {
             if (Array.isArray(value)) {
                 if (arrayKeys.has(parentKey)) {
                     const mapped = value.map((entry) => {
                         if (Number.isFinite(Number(entry))) {
-                            const next = normalize(entry);
+                            const next = migrate(entry);
                             if (Number(next) !== Number(entry)) changed = true;
                             return next;
                         }
@@ -5863,7 +5867,7 @@ load: () => {
                 const remapped = {};
                 Object.entries(value).forEach(([key, entryValue]) => {
                     const numeric = Number(key);
-                    const nextKey = Number.isFinite(numeric) ? String(normalize(numeric)) : key;
+                    const nextKey = Number.isFinite(numeric) ? String(migrate(numeric)) : key;
                     if (nextKey !== key) changed = true;
                     if (parentKey === 'killCounts') {
                         remapped[nextKey] = Number(remapped[nextKey] || 0) + Number(entryValue || 0);
@@ -5878,11 +5882,11 @@ load: () => {
             Object.keys(value).forEach((key) => {
                 const current = value[key];
                 if (singularKeys.has(key) && Number.isFinite(Number(current))) {
-                    const next = normalize(current);
+                    const next = migrate(current);
                     if (Number(next) !== Number(current)) changed = true;
                     value[key] = next;
                 } else if (['enemies', 'monsters'].includes(parentKey) && ['id', 'baseId', 'imageId'].includes(key) && Number.isFinite(Number(current))) {
-                    const next = normalize(current);
+                    const next = migrate(current);
                     if (Number(next) !== Number(current)) changed = true;
                     value[key] = next;
                 } else {
@@ -5892,6 +5896,8 @@ load: () => {
             return value;
         };
         App.data = walk(App.data, 'root');
+        App.data.system = (App.data.system && typeof App.data.system === 'object') ? App.data.system : {};
+        App.data.system.monsterIdSchemaVersion = currentVersion;
         return changed;
     },
 
@@ -9475,8 +9481,8 @@ const Field = {
             });
         }
         drawOverlayImage(App.data?.dungeon?.abyssRift, 'assets/effect/fx-abyss-vortex-ai.png', '#a34cff');
-        drawOverlayImage(App.data?.dungeon?.adventurer, 'assets/monsters/monster_000055.png', '#5bd6ff');
-        drawOverlayImage(App.data?.dungeon?.keyGuardian, 'assets/monsters/monster_000101.png', '#ffd78a');
+        drawOverlayImage(App.data?.dungeon?.adventurer, 'assets/monsters/monster_000105.png', '#5bd6ff');
+        drawOverlayImage(App.data?.dungeon?.keyGuardian, 'assets/monsters/monster_000103.png', '#ffd78a');
         drawOverlayImage(App.data?.dungeon?.trialAngel, 'assets/map/overlays/overlay_dungeon_trial_angel.png', '#fff3a6');
         drawAbyssBossSprite();
 

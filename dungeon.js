@@ -71,7 +71,7 @@ const Dungeon = {
     keyItemTiles: { Q: 'red', N: 'blue', O: 'gold' },
     keyItemSymbols: { red: 'Q', blue: 'N', gold: 'O' },
     keyColorLabels: { red: '赤', blue: '青', gold: '金' },
-    keyGuardianImagePath: 'assets/monsters/monster_000101.png',
+    keyGuardianImagePath: 'assets/monsters/monster_000103.png',
     // Random-dungeon appearance catalog. This is the single source of truth for both
     // map tiles (themeKey) and battle backgrounds (battleBg). Later thresholds add
     // candidates without removing earlier appearances.
@@ -2613,7 +2613,7 @@ const Dungeon = {
         const rank = Number(effect.rank || Field.currentMapData?.encounterRank || 80);
         const ids = Array.isArray(effect.monsterIds) && effect.monsterIds.length
             ? effect.monsterIds
-            : [701, 702, 703];
+            : [507, 604, 702];
         const elements = ['火', '水', '風', '雷', '光', '闇'];
         const resistElm = elements[Math.floor(Math.random() * elements.length)];
         const atkElm = elements[Math.floor(Math.random() * elements.length)];

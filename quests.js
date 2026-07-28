@@ -181,8 +181,8 @@
         "startEventId": "quest_marie_start",
         "reportEventId": "quest_marie_report",
         "targetMonsterIds": [
-            352,
-            355
+            351,
+            357
         ],
         "targetCount": 5,
         "completeText": "マリーは祈りだけでなく、杖を手にして旅に同行することを決めた。",
@@ -227,8 +227,8 @@
         "startEventId": "quest_hayate_start",
         "reportEventId": "quest_hayate_report",
         "targetMonsterIds": [
-            352,
-            401
+            351,
+            508
         ],
         "targetCount": 6,
         "completeText": "ハヤテは速度だけでなく覚悟も認め、仲間に加わった。",
@@ -252,8 +252,8 @@
         "startEventId": "quest_sylvia_start",
         "reportEventId": "quest_sylvia_report",
         "targetMonsterIds": [
-            355,
-            401
+            357,
+            508
         ],
         "targetCount": 5,
         "completeText": "シルビアは旅の危うさを承知で、支援役として仲間に加わった。",
@@ -266,19 +266,19 @@
     },
     "rin_thunder_fort": {
         "name": "リンの雷鳴討伐",
-        "area": "雷の要塞",
+        "area": "ライザーク要塞",
         "kind": "hunt",
         "requiredAllies": [
             204
         ],
-        "objective": "レイラ加入後、雷の要塞に残るアイアンウルフとフレイムヴァインを合計6体討伐する。",
-        "startText": "リンは、雷の要塞に残るアイアンウルフとフレイムヴァインの討伐を願い出た。",
-        "progressText": "雷の要塞でアイアンウルフとフレイムヴァインを討伐し、リンへ報告しよう。",
+        "objective": "レイラ加入後、ライザーク要塞に残るキラーナイトとサンダーバットを合計6体討伐する。",
+        "startText": "リンは、ライザーク要塞に残るキラーナイトとサンダーバットの討伐を願い出た。",
+        "progressText": "ライザーク要塞でキラーナイトとサンダーバットを討伐し、リンへ報告しよう。",
         "startEventId": "quest_rin_start",
         "reportEventId": "quest_rin_report",
         "targetMonsterIds": [
-            404,
-            453
+            504,
+            505
         ],
         "targetCount": 6,
         "completeText": "リンは雷鳴に臆さぬ一行を認め、仲間に加わった。",
