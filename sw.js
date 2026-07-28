@@ -21,8 +21,8 @@ try {
   console.warn("[SW] モンスター定義を含む画像一覧の読み込みに失敗しました。画像初回キャッシュは最小限で続行します。", error);
 }
 
-const CACHE_NAME = 'prisma-abyss-region-v2-20260729';
-const RUNTIME_CACHE_NAME = 'prisma-abyss-region-v2-20260729-runtime';
+const CACHE_NAME = 'prisma-abyss-v4.20260729';
+const RUNTIME_CACHE_NAME = 'prisma-abyss-v4.20260729-runtime';
 const WARM_CACHE_META_KEY = "__prisma_abyss_warm_cache_complete__";
 
 // 起動に必要な App Shell。

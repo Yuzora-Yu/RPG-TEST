@@ -167,8 +167,8 @@
             {x:carmenaCenter,y:13,type:'abyssBlackSpring',label:'黒い泉に触れる',log:'黒い水面は鏡のように静まり返っている。',imageKey:'overlay_decor_abyss_void_dust',baseTile:'T'},
             {x:7,y:18,type:'storyEvent',eventId:'abyss_carmena_resident',label:'住人と話す',imageKey:'overlay_npc_villager',baseTile:'G'}
         ],
-        bosses:[{x:carmenaCenter-1,y:carmenaGateY,monsterId:[511010,511020],actionLabel:'二将に挑む',challengeText:'グレン将軍とレオン将軍が同時に武器を構えた。\n二人を相手に戦いますか？',storyEventId:'abyss_carmena_gate_clear',sharedEncounterTiles:[`${carmenaCenter-1},${carmenaGateY}`,`${carmenaCenter+1},${carmenaGateY}`]},
-                {x:carmenaCenter+1,y:carmenaGateY,monsterId:[511010,511020],actionLabel:'二将に挑む',challengeText:'レオン将軍とグレン将軍が同時に武器を構えた。\n二人を相手に戦いますか？',storyEventId:'abyss_carmena_gate_clear',sharedEncounterTiles:[`${carmenaCenter-1},${carmenaGateY}`,`${carmenaCenter+1},${carmenaGateY}`]}]
+        bosses:[{x:carmenaCenter-1,y:carmenaGateY,monsterId:[302001,302000],actionLabel:'二将に挑む',challengeText:'グレン将軍とレオン将軍が同時に武器を構えた。\n二人を相手に戦いますか？',storyEventId:'abyss_carmena_gate_clear',sharedEncounterTiles:[`${carmenaCenter-1},${carmenaGateY}`,`${carmenaCenter+1},${carmenaGateY}`]},
+                {x:carmenaCenter+1,y:carmenaGateY,monsterId:[302001,302000],actionLabel:'二将に挑む',challengeText:'レオン将軍とグレン将軍が同時に武器を構えた。\n二人を相手に戦いますか？',storyEventId:'abyss_carmena_gate_clear',sharedEncounterTiles:[`${carmenaCenter-1},${carmenaGateY}`,`${carmenaCenter+1},${carmenaGateY}`]}]
     });
 
     const vistaLayout = makeTown('VISTA');
@@ -327,13 +327,13 @@
     };
 
     Object.assign(globalThis.FIXED_DUNGEON_MAPS, {
-        BLACK_ROPE_PYRAMID: makeHybridDungeon({areaKey:'BLACK_ROPE_PYRAMID',name:'黒縄のピラミッド',total:6,rankLow:91,rankHigh:95,elementPenalty:{雷:-50},boss:{id:511030,name:'黒雷のレナード',storyEventId:'abyss_leonard_clear'}}),
-        MAGIC_WIND_MAUSOLEUM: makeHybridDungeon({areaKey:'MAGIC_WIND_MAUSOLEUM',name:'魔風の霊廟',total:6,rankLow:91,rankHigh:95,elementPenalty:{風:-50},boss:{id:511040,name:'死風のエリシア',storyEventId:'abyss_elicia_clear'},descending:true}),
-        ICE_PENANCE_ROAD: makeHybridDungeon({areaKey:'ICE_PENANCE_ROAD',name:'氷刻の浄罪路',total:6,rankLow:101,rankHigh:105,elementPenalty:{水:-50},boss:{id:511050,name:'極零のシーリス',storyEventId:'abyss_syris_clear'},descending:true}),
-        SCORCHING_OLD_CASTLE: makeHybridDungeon({areaKey:'SCORCHING_OLD_CASTLE',name:'灼熱の古城',total:6,rankLow:101,rankHigh:105,elementPenalty:{火:-50},boss:{id:511060,name:'焦熱のグラド',storyEventId:'abyss_grad_clear'}}),
-        RIDPALM_DREAM_CORRIDOR: makeHybridDungeon({areaKey:'RIDPALM_DREAM_CORRIDOR',name:'夢幻回廊リドパルム',total:6,rankLow:106,rankHigh:110,elementPenalty:{光:-50,闇:-50},boss:{id:511070,name:'昏迷の黒騎士ヴェルド',storyEventId:'abyss_veld_clear',unlockFlag:'abyssVeldDefeated'},nextDungeon:'JAGOREA_ROOT',procStart:2,procEnd:5,mazeFloors:[3],descending:true}),
-        JAGOREA_ROOT: makeHybridDungeon({areaKey:'JAGOREA_ROOT',name:'災禍の根ジャゴレア',total:5,rankLow:111,rankHigh:115,elementPenalty:{光:-50,闇:-50},boss:{id:511080,name:'妄執の神官ジャスパー',storyEventId:'abyss_jasper_clear'},procStart:2,procEnd:4,descending:true}),
-        CHRONO_ABYSS: makeHybridDungeon({areaKey:'CHRONO_ABYSS',name:'次元牢獄クロノアビス',total:7,rankLow:116,rankHigh:120,elementPenalty:{混沌:-50},boss:{id:511090,name:'混沌姫イルミナシア',storyEventId:'abyss_illuminacia_clear',unlockFlag:'abyssIlluminaciaDefeated'},nextDungeon:'FINAL_ALTAR',procStart:2,procEnd:6,descending:true})
+        BLACK_ROPE_PYRAMID: makeHybridDungeon({areaKey:'BLACK_ROPE_PYRAMID',name:'黒縄のピラミッド',total:6,rankLow:91,rankHigh:95,elementPenalty:{雷:-50},boss:{id:302010,name:'黒雷のレナード',storyEventId:'abyss_leonard_clear'}}),
+        MAGIC_WIND_MAUSOLEUM: makeHybridDungeon({areaKey:'MAGIC_WIND_MAUSOLEUM',name:'魔風の霊廟',total:6,rankLow:91,rankHigh:95,elementPenalty:{風:-50},boss:{id:302020,name:'死風のエリシア',storyEventId:'abyss_elicia_clear'},descending:true}),
+        ICE_PENANCE_ROAD: makeHybridDungeon({areaKey:'ICE_PENANCE_ROAD',name:'氷刻の浄罪路',total:6,rankLow:101,rankHigh:105,elementPenalty:{水:-50},boss:{id:302030,name:'極零のシーリス',storyEventId:'abyss_syris_clear'},descending:true}),
+        SCORCHING_OLD_CASTLE: makeHybridDungeon({areaKey:'SCORCHING_OLD_CASTLE',name:'灼熱の古城',total:6,rankLow:101,rankHigh:105,elementPenalty:{火:-50},boss:{id:302040,name:'焦熱のグラド',storyEventId:'abyss_grad_clear'}}),
+        RIDPALM_DREAM_CORRIDOR: makeHybridDungeon({areaKey:'RIDPALM_DREAM_CORRIDOR',name:'夢幻回廊リドパルム',total:6,rankLow:106,rankHigh:110,elementPenalty:{光:-50,闇:-50},boss:{id:302050,name:'昏迷の黒騎士ヴェルド',storyEventId:'abyss_veld_clear',unlockFlag:'abyssVeldDefeated'},nextDungeon:'JAGOREA_ROOT',procStart:2,procEnd:5,mazeFloors:[3],descending:true}),
+        JAGOREA_ROOT: makeHybridDungeon({areaKey:'JAGOREA_ROOT',name:'災禍の根ジャゴレア',total:5,rankLow:111,rankHigh:115,elementPenalty:{光:-50,闇:-50},boss:{id:302060,name:'妄執の神官ジャスパー',storyEventId:'abyss_jasper_clear'},procStart:2,procEnd:4,descending:true}),
+        CHRONO_ABYSS: makeHybridDungeon({areaKey:'CHRONO_ABYSS',name:'次元牢獄クロノアビス',total:7,rankLow:116,rankHigh:120,elementPenalty:{混沌:-50},boss:{id:302070,name:'混沌姫イルミナシア',storyEventId:'abyss_illuminacia_clear',unlockFlag:'abyssIlluminaciaDefeated'},nextDungeon:'FINAL_ALTAR',procStart:2,procEnd:6,descending:true})
     });
 
     // Final Altar: large authored map, two consecutive boss encounters.
@@ -346,8 +346,8 @@
         name:'終焉の祭壇',themeKey:'SUMMIT_TEMPLE',rank:125,encounterRank:125,width:49,height:35,tiles:rows(altar),entryPoint:{x:24,y:32},battleBg:'battle_bg_lastboss',useDungeonWallFace:true,isDungeon:true,isFixed:true,disableRandomEncounters:true,
         floorLinks:[{x:24,y:33,to:'EXIT',label:'クロノアビスへ戻る'}],
         bosses:[
-            {x:24,y:17,monsterId:[512001,512002,512003,512004,512005],clearedFlag:'abyssVegnasisDefeated',actionLabel:'魔柱に挑む',challengeText:'五つの魂が絡み合う死幻の魔柱に挑みますか？',storyEventId:'abyss_vegnasis_clear'},
-            {x:24,y:6,monsterId:512100,requiredFlag:'abyssVegnasisDefeated',clearedFlag:'abyssAzelgaragDefeated',actionLabel:'深淵王に挑む',challengeText:'深淵王アゼルガラグが祭壇の最奥で待っている。\n連戦を覚悟して挑みますか？',storyEventId:'abyss_azelgarag_clear'}
+            {x:24,y:17,monsterId:[302080,302081,302082,302083,302084],clearedFlag:'abyssVegnasisDefeated',actionLabel:'魔柱に挑む',challengeText:'五つの魂が絡み合う死幻の魔柱に挑みますか？',storyEventId:'abyss_vegnasis_clear'},
+            {x:24,y:6,monsterId:302100,requiredFlag:'abyssVegnasisDefeated',clearedFlag:'abyssAzelgaragDefeated',actionLabel:'深淵王に挑む',challengeText:'深淵王アゼルガラグが祭壇の最奥で待っている。\n連戦を覚悟して挑みますか？',storyEventId:'abyss_azelgarag_clear'}
         ],
         mapActions:[{x:24,y:4,type:'abyssPostgameCrack',requiredFlag:'abyssAzelgaragDefeated',label:'さらに深い亀裂を調べる',log:'祭壇の奥に、底の知れない亀裂が広がっている。'}]
     },1);
@@ -420,6 +420,6 @@
         elements:Object.freeze(ELEMENTS),
         protectedCarmenaCharacterIds:Object.freeze([306,402,401]),
         abyssAreaKeys:Object.freeze(new Set(['ABYSS_WORLD','CARMENA','VISTA','LEGACION','LEGACION_PRISON','LEGACION_TEMPLE','LEGACION_THRONE','THUNDER_DUNES','SCREAMING_CEMETERY','BLACK_ROPE_PYRAMID','MAGIC_WIND_MAUSOLEUM','FROZEN_FOREST','PURGATORY_MOUNTAINS','ICE_PENANCE_ROAD','SCORCHING_OLD_CASTLE','RIDPALM_DREAM_CORRIDOR','JAGOREA_ROOT','CHRONO_ABYSS','FINAL_ALTAR','ABYSS'])),
-        bossFlags:Object.freeze({511010:'abyssCarmenaGateCleared',511020:'abyssCarmenaGateCleared',511030:'abyssLeonardDefeated',511040:'abyssEliciaDefeated',511050:'abyssSyrisDefeated',511060:'abyssGradDefeated',511070:'abyssVeldDefeated',511080:'abyssJasperDefeated',511090:'abyssIlluminaciaDefeated',512001:'abyssVegnasisDefeated',512100:'abyssAzelgaragDefeated',512101:'abyssAzelgaragDefeated'})
+        bossFlags:Object.freeze({302001:'abyssCarmenaGateCleared',302000:'abyssCarmenaGateCleared',302010:'abyssLeonardDefeated',302020:'abyssEliciaDefeated',302030:'abyssSyrisDefeated',302040:'abyssGradDefeated',302050:'abyssVeldDefeated',302060:'abyssJasperDefeated',302070:'abyssIlluminaciaDefeated',302080:'abyssVegnasisDefeated',302100:'abyssAzelgaragDefeated',302101:'abyssAzelgaragDefeated'})
     });
 })();

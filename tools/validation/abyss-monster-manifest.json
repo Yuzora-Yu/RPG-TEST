@@ -1,523 +1,523 @@
 {
   "regularMonsterIds": [
-    510001,
-    510002,
-    510003,
-    510004,
-    510005,
-    510011,
-    510012,
-    510013,
-    510014,
-    510015,
-    510021,
-    510022,
-    510023,
-    510024,
-    510025,
-    510031,
-    510032,
-    510033,
-    510034,
-    510035,
-    510041,
-    510042,
-    510043,
-    510044,
-    510045,
-    510051,
-    510052,
-    510053,
-    510054,
-    510055,
-    510061,
-    510062,
-    510063,
-    510064,
-    510065,
-    510071,
-    510072,
-    510073,
-    510074,
-    510075,
-    510081,
-    510082,
-    510083,
-    510084,
-    510085,
-    510091,
-    510092,
-    510093,
-    510094,
-    510095,
-    510101,
-    510102,
-    510103,
-    510104,
-    510105
+    856,
+    857,
+    858,
+    859,
+    860,
+    905,
+    906,
+    907,
+    908,
+    909,
+    861,
+    862,
+    863,
+    864,
+    865,
+    910,
+    911,
+    912,
+    913,
+    914,
+    956,
+    957,
+    958,
+    959,
+    960,
+    1005,
+    1006,
+    1007,
+    1008,
+    1009,
+    961,
+    962,
+    963,
+    964,
+    965,
+    1010,
+    1011,
+    1012,
+    1013,
+    1014,
+    1056,
+    1057,
+    1058,
+    1059,
+    1060,
+    1105,
+    1106,
+    1107,
+    1108,
+    1109,
+    1156,
+    1157,
+    1158,
+    1159,
+    1160
   ],
   "bossMonsterIds": [
-    511010,
-    511020,
-    511030,
-    511040,
-    511050,
-    511060,
-    511070,
-    511080,
-    511090,
-    511101,
-    511102,
-    511103,
-    511104,
-    511105,
-    511106,
-    512001,
-    512002,
-    512003,
-    512004,
-    512005,
-    512100,
-    512101
+    302001,
+    302000,
+    302010,
+    302020,
+    302030,
+    302040,
+    302050,
+    302060,
+    302070,
+    502001,
+    502002,
+    502003,
+    502004,
+    502005,
+    502006,
+    302080,
+    302081,
+    302082,
+    302083,
+    302084,
+    302100,
+    302101
   ],
   "imageCopies": [
     {
-      "targetId": 510001,
+      "targetId": 856,
       "name": "雷砂のスコルピオ",
       "sourceId": 453,
-      "targetFile": "assets/monsters/monster_510001.png"
+      "targetFile": "assets/monsters/monster_000856.png"
     },
     {
-      "targetId": 510002,
+      "targetId": 857,
       "name": "轟電サンドワーム",
       "sourceId": 1853,
-      "targetFile": "assets/monsters/monster_510002.png"
+      "targetFile": "assets/monsters/monster_000857.png"
     },
     {
-      "targetId": 510003,
+      "targetId": 858,
       "name": "帯電する石像兵",
       "sourceId": 303204,
-      "targetFile": "assets/monsters/monster_510003.png"
+      "targetFile": "assets/monsters/monster_000858.png"
     },
     {
-      "targetId": 510004,
+      "targetId": 859,
       "name": "雷雲のラミア",
       "sourceId": 1951,
-      "targetFile": "assets/monsters/monster_510004.png"
+      "targetFile": "assets/monsters/monster_000859.png"
     },
     {
-      "targetId": 510005,
+      "targetId": 860,
       "name": "紫電の砂王獣",
       "sourceId": 901,
-      "targetFile": "assets/monsters/monster_510005.png"
+      "targetFile": "assets/monsters/monster_000860.png"
     },
     {
-      "targetId": 510011,
+      "targetId": 905,
       "name": "黒縄ミイラ兵",
       "sourceId": 252,
-      "targetFile": "assets/monsters/monster_510011.png"
+      "targetFile": "assets/monsters/monster_000905.png"
     },
     {
-      "targetId": 510012,
+      "targetId": 906,
       "name": "雷葬のアヌビス",
       "sourceId": 303206,
-      "targetFile": "assets/monsters/monster_510012.png"
+      "targetFile": "assets/monsters/monster_000906.png"
     },
     {
-      "targetId": 510013,
+      "targetId": 907,
       "name": "電晶スカラベ",
       "sourceId": 405,
-      "targetFile": "assets/monsters/monster_510013.png"
+      "targetFile": "assets/monsters/monster_000907.png"
     },
     {
-      "targetId": 510014,
+      "targetId": 908,
       "name": "王墓の雷術師",
       "sourceId": 406,
-      "targetFile": "assets/monsters/monster_510014.png"
+      "targetFile": "assets/monsters/monster_000908.png"
     },
     {
-      "targetId": 510015,
+      "targetId": 909,
       "name": "黒雷の番獣",
       "sourceId": 402,
-      "targetFile": "assets/monsters/monster_510015.png"
+      "targetFile": "assets/monsters/monster_000909.png"
     },
     {
-      "targetId": 510021,
+      "targetId": 861,
       "name": "嘆風の亡者",
       "sourceId": 154,
-      "targetFile": "assets/monsters/monster_510021.png"
+      "targetFile": "assets/monsters/monster_000861.png"
     },
     {
-      "targetId": 510022,
+      "targetId": 862,
       "name": "墓守りガルーダ",
       "sourceId": 404,
-      "targetFile": "assets/monsters/monster_510022.png"
+      "targetFile": "assets/monsters/monster_000862.png"
     },
     {
-      "targetId": 510023,
+      "targetId": 863,
       "name": "哭き声のバンシー",
       "sourceId": 452,
-      "targetFile": "assets/monsters/monster_510023.png"
+      "targetFile": "assets/monsters/monster_000863.png"
     },
     {
-      "targetId": 510024,
+      "targetId": 864,
       "name": "風葬の骸騎士",
       "sourceId": 357,
-      "targetFile": "assets/monsters/monster_510024.png"
+      "targetFile": "assets/monsters/monster_000864.png"
     },
     {
-      "targetId": 510025,
+      "targetId": 865,
       "name": "叫喚の墓獣",
       "sourceId": 851,
-      "targetFile": "assets/monsters/monster_510025.png"
+      "targetFile": "assets/monsters/monster_000865.png"
     },
     {
-      "targetId": 510031,
+      "targetId": 910,
       "name": "霊廟の風読師",
       "sourceId": 301082,
-      "targetFile": "assets/monsters/monster_510031.png"
+      "targetFile": "assets/monsters/monster_000910.png"
     },
     {
-      "targetId": 510032,
+      "targetId": 911,
       "name": "旋風ミイラ",
       "sourceId": 1254,
-      "targetFile": "assets/monsters/monster_510032.png"
+      "targetFile": "assets/monsters/monster_000911.png"
     },
     {
-      "targetId": 510033,
+      "targetId": 912,
       "name": "虚空のレイス",
       "sourceId": 802,
-      "targetFile": "assets/monsters/monster_510033.png"
+      "targetFile": "assets/monsters/monster_000912.png"
     },
     {
-      "targetId": 510034,
+      "targetId": 913,
       "name": "魔風の石翼獣",
       "sourceId": 556,
-      "targetFile": "assets/monsters/monster_510034.png"
+      "targetFile": "assets/monsters/monster_000913.png"
     },
     {
-      "targetId": 510035,
+      "targetId": 914,
       "name": "葬送の嵐蛇",
       "sourceId": 1653,
-      "targetFile": "assets/monsters/monster_510035.png"
+      "targetFile": "assets/monsters/monster_000914.png"
     },
     {
-      "targetId": 510041,
+      "targetId": 956,
       "name": "凍樹のトレント",
       "sourceId": 701,
-      "targetFile": "assets/monsters/monster_510041.png"
+      "targetFile": "assets/monsters/monster_000956.png"
     },
     {
-      "targetId": 510042,
+      "targetId": 957,
       "name": "氷牙フェンリル",
       "sourceId": 510,
-      "targetFile": "assets/monsters/monster_510042.png"
+      "targetFile": "assets/monsters/monster_000957.png"
     },
     {
-      "targetId": 510043,
+      "targetId": 958,
       "name": "霜衣の魔女",
       "sourceId": 1703,
-      "targetFile": "assets/monsters/monster_510043.png"
+      "targetFile": "assets/monsters/monster_000958.png"
     },
     {
-      "targetId": 510044,
+      "targetId": 959,
       "name": "白氷の甲殻獣",
       "sourceId": 303208,
-      "targetFile": "assets/monsters/monster_510044.png"
+      "targetFile": "assets/monsters/monster_000959.png"
     },
     {
-      "targetId": 510045,
+      "targetId": 960,
       "name": "極寒の森王",
       "sourceId": 1154,
-      "targetFile": "assets/monsters/monster_510045.png"
+      "targetFile": "assets/monsters/monster_000960.png"
     },
     {
-      "targetId": 510051,
+      "targetId": 1005,
       "name": "浄罪の氷僧",
       "sourceId": 401120,
-      "targetFile": "assets/monsters/monster_510051.png"
+      "targetFile": "assets/monsters/monster_001005.png"
     },
     {
-      "targetId": 510052,
+      "targetId": 1006,
       "name": "氷刻の処刑騎士",
       "sourceId": 357,
-      "targetFile": "assets/monsters/monster_510052.png"
+      "targetFile": "assets/monsters/monster_001006.png"
     },
     {
-      "targetId": 510053,
+      "targetId": 1007,
       "name": "凍涙のセイレーン",
       "sourceId": 301030,
-      "targetFile": "assets/monsters/monster_510053.png"
+      "targetFile": "assets/monsters/monster_001007.png"
     },
     {
-      "targetId": 510054,
+      "targetId": 1008,
       "name": "罪鎖の霜竜",
       "sourceId": 1153,
-      "targetFile": "assets/monsters/monster_510054.png"
+      "targetFile": "assets/monsters/monster_001008.png"
     },
     {
-      "targetId": 510055,
+      "targetId": 1009,
       "name": "無音の氷獄獣",
       "sourceId": 1055,
-      "targetFile": "assets/monsters/monster_510055.png"
+      "targetFile": "assets/monsters/monster_001009.png"
     },
     {
-      "targetId": 510061,
+      "targetId": 961,
       "name": "煉岩の火蜥蜴",
       "sourceId": 704,
-      "targetFile": "assets/monsters/monster_510061.png"
+      "targetFile": "assets/monsters/monster_000961.png"
     },
     {
-      "targetId": 510062,
+      "targetId": 962,
       "name": "熔断の山羊鬼",
       "sourceId": 303201,
-      "targetFile": "assets/monsters/monster_510062.png"
+      "targetFile": "assets/monsters/monster_000962.png"
     },
     {
-      "targetId": 510063,
+      "targetId": 963,
       "name": "灰翼の火竜",
       "sourceId": 554,
-      "targetFile": "assets/monsters/monster_510063.png"
+      "targetFile": "assets/monsters/monster_000963.png"
     },
     {
-      "targetId": 510064,
+      "targetId": 964,
       "name": "噴炎の巨岩兵",
       "sourceId": 1551,
-      "targetFile": "assets/monsters/monster_510064.png"
+      "targetFile": "assets/monsters/monster_000964.png"
     },
     {
-      "targetId": 510065,
+      "targetId": 965,
       "name": "煉獄峰の暴君",
       "sourceId": 601,
-      "targetFile": "assets/monsters/monster_510065.png"
+      "targetFile": "assets/monsters/monster_000965.png"
     },
     {
-      "targetId": 510071,
+      "targetId": 1010,
       "name": "灼城の甲冑兵",
       "sourceId": 504,
-      "targetFile": "assets/monsters/monster_510071.png"
+      "targetFile": "assets/monsters/monster_001010.png"
     },
     {
-      "targetId": 510072,
+      "targetId": 1011,
       "name": "焦土の宮廷魔導士",
       "sourceId": 1501,
-      "targetFile": "assets/monsters/monster_510072.png"
+      "targetFile": "assets/monsters/monster_001011.png"
     },
     {
-      "targetId": 510073,
+      "targetId": 1012,
       "name": "炎冠のガーゴイル",
       "sourceId": 505,
-      "targetFile": "assets/monsters/monster_510073.png"
+      "targetFile": "assets/monsters/monster_001012.png"
     },
     {
-      "targetId": 510074,
+      "targetId": 1013,
       "name": "焼尽の処刑人",
       "sourceId": 754,
-      "targetFile": "assets/monsters/monster_510074.png"
+      "targetFile": "assets/monsters/monster_001013.png"
     },
     {
-      "targetId": 510075,
+      "targetId": 1014,
       "name": "古城の紅蓮竜",
       "sourceId": 1152,
-      "targetFile": "assets/monsters/monster_510075.png"
+      "targetFile": "assets/monsters/monster_001014.png"
     },
     {
-      "targetId": 510081,
+      "targetId": 1056,
       "name": "夢蝕みのモルフォ",
       "sourceId": 403,
-      "targetFile": "assets/monsters/monster_510081.png"
+      "targetFile": "assets/monsters/monster_001056.png"
     },
     {
-      "targetId": 510082,
+      "targetId": 1057,
       "name": "光葬の巡礼者",
       "sourceId": 604,
-      "targetFile": "assets/monsters/monster_510082.png"
+      "targetFile": "assets/monsters/monster_001057.png"
     },
     {
-      "targetId": 510083,
+      "targetId": 1058,
       "name": "影縫いの幻術師",
       "sourceId": 503,
-      "targetFile": "assets/monsters/monster_510083.png"
+      "targetFile": "assets/monsters/monster_001058.png"
     },
     {
-      "targetId": 510084,
+      "targetId": 1059,
       "name": "白黒の鏡魔",
       "sourceId": 603,
-      "targetFile": "assets/monsters/monster_510084.png"
+      "targetFile": "assets/monsters/monster_001059.png"
     },
     {
-      "targetId": 510085,
+      "targetId": 1060,
       "name": "昏迷の回廊獣",
       "sourceId": 1303,
-      "targetFile": "assets/monsters/monster_510085.png"
+      "targetFile": "assets/monsters/monster_001060.png"
     },
     {
-      "targetId": 510091,
+      "targetId": 1105,
       "name": "根喰らいの天使骸",
       "sourceId": 1404,
-      "targetFile": "assets/monsters/monster_510091.png"
+      "targetFile": "assets/monsters/monster_001105.png"
     },
     {
-      "targetId": 510092,
+      "targetId": 1106,
       "name": "闇芽のアルラウネ",
       "sourceId": 701,
-      "targetFile": "assets/monsters/monster_510092.png"
+      "targetFile": "assets/monsters/monster_001106.png"
     },
     {
-      "targetId": 510093,
+      "targetId": 1107,
       "name": "災光の祭司",
       "sourceId": 1604,
-      "targetFile": "assets/monsters/monster_510093.png"
+      "targetFile": "assets/monsters/monster_001107.png"
     },
     {
-      "targetId": 510094,
+      "targetId": 1108,
       "name": "執念の根獣",
       "sourceId": 1601,
-      "targetFile": "assets/monsters/monster_510094.png"
+      "targetFile": "assets/monsters/monster_001108.png"
     },
     {
-      "targetId": 510095,
+      "targetId": 1109,
       "name": "ジャゴレアの落胤",
       "sourceId": 1452,
-      "targetFile": "assets/monsters/monster_510095.png"
+      "targetFile": "assets/monsters/monster_001109.png"
     },
     {
-      "targetId": 510101,
+      "targetId": 1156,
       "name": "時牢の番人",
       "sourceId": 1603,
-      "targetFile": "assets/monsters/monster_510101.png"
+      "targetFile": "assets/monsters/monster_001156.png"
     },
     {
-      "targetId": 510102,
+      "targetId": 1157,
       "name": "逆刻のキマイラ",
       "sourceId": 303203,
-      "targetFile": "assets/monsters/monster_510102.png"
+      "targetFile": "assets/monsters/monster_001157.png"
     },
     {
-      "targetId": 510103,
+      "targetId": 1158,
       "name": "虚時の魔女",
       "sourceId": 1901,
-      "targetFile": "assets/monsters/monster_510103.png"
+      "targetFile": "assets/monsters/monster_001158.png"
     },
     {
-      "targetId": 510104,
+      "targetId": 1159,
       "name": "次元断ちの竜兵",
       "sourceId": 1355,
-      "targetFile": "assets/monsters/monster_510104.png"
+      "targetFile": "assets/monsters/monster_001159.png"
     },
     {
-      "targetId": 510105,
+      "targetId": 1160,
       "name": "混沌牢の看守長",
       "sourceId": 1804,
-      "targetFile": "assets/monsters/monster_510105.png"
+      "targetFile": "assets/monsters/monster_001160.png"
     },
     {
-      "targetId": 511010,
+      "targetId": 302001,
       "name": "深淵門将レオン",
       "sourceId": 401010,
-      "targetFile": "assets/monsters/monster_511010.png"
+      "targetFile": "assets/monsters/monster_302001.png"
     },
     {
-      "targetId": 511020,
+      "targetId": 302000,
       "name": "深淵門将グレン",
       "sourceId": 401020,
-      "targetFile": "assets/monsters/monster_511020.png"
+      "targetFile": "assets/monsters/monster_302000.png"
     },
     {
-      "targetId": 511030,
+      "targetId": 302010,
       "name": "黒雷のレナード",
       "sourceId": 401030,
-      "targetFile": "assets/monsters/monster_511030.png"
+      "targetFile": "assets/monsters/monster_302010.png"
     },
     {
-      "targetId": 511040,
+      "targetId": 302020,
       "name": "死風のエリシア",
       "sourceId": 401040,
-      "targetFile": "assets/monsters/monster_511040.png"
+      "targetFile": "assets/monsters/monster_302020.png"
     },
     {
-      "targetId": 511050,
+      "targetId": 302030,
       "name": "極零のシーリス",
       "sourceId": 401050,
-      "targetFile": "assets/monsters/monster_511050.png"
+      "targetFile": "assets/monsters/monster_302030.png"
     },
     {
-      "targetId": 511060,
+      "targetId": 302040,
       "name": "焦熱のグラド",
       "sourceId": 401060,
-      "targetFile": "assets/monsters/monster_511060.png"
+      "targetFile": "assets/monsters/monster_302040.png"
     },
     {
-      "targetId": 511070,
+      "targetId": 302050,
       "name": "昏迷の黒騎士ヴェルド",
       "sourceId": 401070,
-      "targetFile": "assets/monsters/monster_511070.png"
+      "targetFile": "assets/monsters/monster_302050.png"
     },
     {
-      "targetId": 511080,
+      "targetId": 302060,
       "name": "妄執の神官ジャスパー",
       "sourceId": 401090,
-      "targetFile": "assets/monsters/monster_511080.png"
+      "targetFile": "assets/monsters/monster_302060.png"
     },
     {
-      "targetId": 511090,
+      "targetId": 302070,
       "name": "混沌姫イルミナシア",
       "sourceId": 401081,
-      "targetFile": "assets/monsters/monster_511090.png"
+      "targetFile": "assets/monsters/monster_302070.png"
     },
     {
-      "targetId": 511101,
+      "targetId": 502001,
       "name": "火の大精霊",
       "sourceId": 354,
-      "targetFile": "assets/monsters/monster_511101.png"
+      "targetFile": "assets/monsters/monster_502001.png"
     },
     {
-      "targetId": 511102,
+      "targetId": 502002,
       "name": "水の大精霊",
       "sourceId": 351,
-      "targetFile": "assets/monsters/monster_511102.png"
+      "targetFile": "assets/monsters/monster_502002.png"
     },
     {
-      "targetId": 511103,
+      "targetId": 502003,
       "name": "風の大精霊",
       "sourceId": 654,
-      "targetFile": "assets/monsters/monster_511103.png"
+      "targetFile": "assets/monsters/monster_502003.png"
     },
     {
-      "targetId": 511104,
+      "targetId": 502004,
       "name": "雷の大精霊",
       "sourceId": 901,
-      "targetFile": "assets/monsters/monster_511104.png"
+      "targetFile": "assets/monsters/monster_502004.png"
     },
     {
-      "targetId": 511105,
+      "targetId": 502005,
       "name": "光の大精霊",
       "sourceId": 604,
-      "targetFile": "assets/monsters/monster_511105.png"
+      "targetFile": "assets/monsters/monster_502005.png"
     },
     {
-      "targetId": 511106,
+      "targetId": 502006,
       "name": "闇の大精霊",
       "sourceId": 1053,
-      "targetFile": "assets/monsters/monster_511106.png"
+      "targetFile": "assets/monsters/monster_502006.png"
     },
     {
-      "targetId": 512000,
+      "targetId": 302080,
       "name": "死幻の魔柱ヴェグナシス共通画像",
       "sourceId": 401180,
-      "targetFile": "assets/monsters/monster_512000.png"
+      "targetFile": "assets/monsters/monster_302080.png"
     },
     {
-      "targetId": 512100,
+      "targetId": 302100,
       "name": "深淵王アゼルガラグ",
       "sourceId": 401100,
-      "targetFile": "assets/monsters/monster_512100.png"
+      "targetFile": "assets/monsters/monster_302100.png"
     },
     {
-      "targetId": 512101,
+      "targetId": 302101,
       "name": "深淵王アゼルガラグ・終極",
       "sourceId": 401190,
-      "targetFile": "assets/monsters/monster_512101.png"
+      "targetFile": "assets/monsters/monster_302101.png"
     }
   ]
 }

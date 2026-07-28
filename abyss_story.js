@@ -136,27 +136,27 @@
     });
 
     Object.assign(data.events, {
-        abyss_carmena_gate_battle: bossEvent('ABYSS_CARMENA_GATE',[511010,511020],'abyss_carmena_gate_clear'),
+        abyss_carmena_gate_battle: bossEvent('ABYSS_CARMENA_GATE',[302001,302000],'abyss_carmena_gate_clear'),
         abyss_carmena_gate_clear: clearEvent('ABYSS_CARMENA_GATE_CLEAR',['abyssCarmenaGateCleared']),
-        abyss_leonard_battle: bossEvent('ABYSS_LEONARD',511030,'abyss_leonard_clear',[{type:'LB_ADD_PARTY',charId:101,amount:5,source:'story'}]),
+        abyss_leonard_battle: bossEvent('ABYSS_LEONARD',302010,'abyss_leonard_clear',[{type:'LB_ADD_PARTY',charId:101,amount:5,source:'story'}]),
         abyss_leonard_clear: clearEvent('ABYSS_LEONARD_CLEAR',['abyssLeonardDefeated']),
-        abyss_elicia_battle: bossEvent('ABYSS_ELICIA',511040,'abyss_elicia_clear',[{type:'LB_ADD_PARTY',charId:106,amount:5,source:'story'}]),
+        abyss_elicia_battle: bossEvent('ABYSS_ELICIA',302020,'abyss_elicia_clear',[{type:'LB_ADD_PARTY',charId:106,amount:5,source:'story'}]),
         abyss_elicia_clear: clearEvent('ABYSS_ELICIA_CLEAR',['abyssEliciaDefeated']),
-        abyss_syris_battle: bossEvent('ABYSS_SYRIS',511050,'abyss_syris_clear',[{type:'LB_ADD_PARTY',charId:104,amount:5,source:'story'}]),
+        abyss_syris_battle: bossEvent('ABYSS_SYRIS',302030,'abyss_syris_clear',[{type:'LB_ADD_PARTY',charId:104,amount:5,source:'story'}]),
         abyss_syris_clear: clearEvent('ABYSS_SYRIS_CLEAR',['abyssSyrisDefeated']),
-        abyss_grad_battle: bossEvent('ABYSS_GRAD',511060,'abyss_grad_clear',[{type:'LB_ADD_PARTY',charIds:[109,110],amount:5,source:'story'}]),
+        abyss_grad_battle: bossEvent('ABYSS_GRAD',302040,'abyss_grad_clear',[{type:'LB_ADD_PARTY',charIds:[109,110],amount:5,source:'story'}]),
         abyss_grad_clear: clearEvent('ABYSS_GRAD_CLEAR',['abyssGradDefeated']),
-        abyss_veld_battle: bossEvent('ABYSS_VELD',511070,'abyss_veld_clear',[{type:'LB_ADD_PARTY',charId:204,amount:5,source:'story'}]),
+        abyss_veld_battle: bossEvent('ABYSS_VELD',302050,'abyss_veld_clear',[{type:'LB_ADD_PARTY',charId:204,amount:5,source:'story'}]),
         abyss_veld_clear: clearEvent('ABYSS_VELD_CLEAR',['abyssVeldDefeated']),
-        abyss_jasper_battle: bossEvent('ABYSS_JASPER',511080,'abyss_jasper_clear'),
+        abyss_jasper_battle: bossEvent('ABYSS_JASPER',302060,'abyss_jasper_clear'),
         abyss_jasper_clear: clearEvent('ABYSS_JASPER_CLEAR',['abyssJasperDefeated']),
-        abyss_illuminacia_battle: bossEvent('ABYSS_ILLUMINACIA',511090,'abyss_illuminacia_clear'),
+        abyss_illuminacia_battle: bossEvent('ABYSS_ILLUMINACIA',302070,'abyss_illuminacia_clear'),
         abyss_illuminacia_clear: clearEvent('ABYSS_ILLUMINACIA_CLEAR',['abyssIlluminaciaDefeated']),
-        abyss_vegnasis_battle: bossEvent('ABYSS_VEGNASIS',[512001,512002,512003,512004,512005],'abyss_vegnasis_clear'),
+        abyss_vegnasis_battle: bossEvent('ABYSS_VEGNASIS',[302080,302081,302082,302083,302084],'abyss_vegnasis_clear'),
         abyss_vegnasis_clear: clearEvent('ABYSS_VEGNASIS_CLEAR',['abyssVegnasisDefeated'],[
-            {type:'BOSS',value:512100,winEventId:'abyss_azelgarag_clear',battleBg:'battle_bg_lastboss'}
+            {type:'BOSS',value:302100,winEventId:'abyss_azelgarag_clear',battleBg:'battle_bg_lastboss'}
         ]),
-        abyss_azelgarag_battle: bossEvent('ABYSS_AZELGARAG',512100,'abyss_azelgarag_clear'),
+        abyss_azelgarag_battle: bossEvent('ABYSS_AZELGARAG',302100,'abyss_azelgarag_clear'),
         abyss_azelgarag_clear: clearEvent('ABYSS_AZELGARAG_CLEAR',['abyssAzelgaragDefeated','abyssEpilogueSeen'],[
             {type:'CREDITS',title:'深淵世界編　完',lines:['企画・シナリオ　Yuzora-Yu','制作　RPG-TEST','最果ての地カルメナ','深淵都市ビスタ','混沌魔城レガシオン','そして、まだ見ぬ深淵へ']},
             {type:'STEP',value:10},{type:'SUB',value:2},{type:'LOG',value:'深淵王を倒した。終焉の祭壇には、なお深い亀裂が残っている。'}
@@ -185,16 +185,16 @@
         });
     };
 
-    bindBossStart([511010,511020],'abyss_carmena_gate_battle');
-    bindBossStart(511030,'abyss_leonard_battle');
-    bindBossStart(511040,'abyss_elicia_battle');
-    bindBossStart(511050,'abyss_syris_battle');
-    bindBossStart(511060,'abyss_grad_battle');
-    bindBossStart(511070,'abyss_veld_battle');
-    bindBossStart(511080,'abyss_jasper_battle');
-    bindBossStart(511090,'abyss_illuminacia_battle');
-    bindBossStart([512001,512002,512003,512004,512005],'abyss_vegnasis_battle');
-    bindBossStart(512100,'abyss_azelgarag_battle');
+    bindBossStart([302001,302000],'abyss_carmena_gate_battle');
+    bindBossStart(302010,'abyss_leonard_battle');
+    bindBossStart(302020,'abyss_elicia_battle');
+    bindBossStart(302030,'abyss_syris_battle');
+    bindBossStart(302040,'abyss_grad_battle');
+    bindBossStart(302050,'abyss_veld_battle');
+    bindBossStart(302060,'abyss_jasper_battle');
+    bindBossStart(302070,'abyss_illuminacia_battle');
+    bindBossStart([302080,302081,302082,302083,302084],'abyss_vegnasis_battle');
+    bindBossStart(302100,'abyss_azelgarag_battle');
 
     const prism = globalThis.FIXED_MAPS?.LEGACION?.mapActions?.find(action => action.type === 'abyssSpiritPrism');
     if (prism) {

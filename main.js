@@ -687,7 +687,7 @@ const App = {
         return {
             location: { area: 'START_VILLAGE', x: 6, y: 5 },
             settings: App.getDefaultSettings(),
-            system: { monsterIdSchemaVersion: 3, abyssFloorSchemaVersion: 2 },
+            system: { monsterIdSchemaVersion: 4, abyssFloorSchemaVersion: 2 },
             progress: { 
                 floor: 0, 
                 storyStep: 0, 
@@ -953,7 +953,7 @@ const App = {
 
 	// 全画像データの手動/初回ダウンロード用キャッシュ名。
 	// sw.js の RUNTIME_CACHE_NAME と揃えること。
-    fullDataCacheName: 'prisma-abyss-monster-schema-v3-20260728-abyss-floor-v2-runtime',
+    fullDataCacheName: 'prisma-abyss-v4.20260729-runtime',
 
 
 	// 初回起動時の「全データを今ダウンロードしますか？」で「いいえ」を選んだ記録。
@@ -6023,7 +6023,7 @@ load: () => {
 
     migrateMonsterIdReferences: () => {
         if (!App.data || !globalThis.MonsterData?.migrateId) return false;
-        const currentVersion = Number(globalThis.MonsterData.idSchemaVersion || 3);
+        const currentVersion = Number(globalThis.MonsterData.idSchemaVersion || 4);
         const fromVersion = Number(App.data.system?.monsterIdSchemaVersion || 2);
         const migrate = (value) => {
             const id = globalThis.MonsterData.migrateId(value, fromVersion);

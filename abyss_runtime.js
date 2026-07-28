@@ -284,15 +284,15 @@
         originalBossDefeated();
         const f=flags();
         ids.map(Number).filter(Boolean).forEach(id=>{const flag=RULES.bossFlags[id];if(flag)f[flag]=true;});
-        if(ids.includes(511030))f.abyssLeonardDefeated=true;
-        if(ids.includes(511040))f.abyssEliciaDefeated=true;
-        if(ids.includes(511050))f.abyssSyrisDefeated=true;
-        if(ids.includes(511060))f.abyssGradDefeated=true;
-        if(ids.includes(511070))f.abyssVeldDefeated=true;
-        if(ids.includes(511080)){f.abyssJasperDefeated=true;App.data.items[701007]=(App.data.items[701007]||0)+1;}
-        if(ids.includes(511090))f.abyssIlluminaciaDefeated=true;
-        if(ids.some(id=>id>=512001&&id<=512005))f.abyssVegnasisDefeated=true;
-        if(ids.includes(512100)||ids.includes(512101)){f.abyssAzelgaragDefeated=true;f.abyssEpiloguePending=true;}
+        if(ids.includes(302010))f.abyssLeonardDefeated=true;
+        if(ids.includes(302020))f.abyssEliciaDefeated=true;
+        if(ids.includes(302030))f.abyssSyrisDefeated=true;
+        if(ids.includes(302040))f.abyssGradDefeated=true;
+        if(ids.includes(302050))f.abyssVeldDefeated=true;
+        if(ids.includes(302060)){f.abyssJasperDefeated=true;App.data.items[701007]=(App.data.items[701007]||0)+1;}
+        if(ids.includes(302070))f.abyssIlluminaciaDefeated=true;
+        if(ids.some(id=>id>=302080&&id<=302084))f.abyssVegnasisDefeated=true;
+        if(ids.includes(302100)||ids.includes(302101)){f.abyssAzelgaragDefeated=true;f.abyssEpiloguePending=true;}
         if(spiritElement){
             ensureStores().abyssSpiritBlessings[spiritElement]=true;
             const itemId=ABYSS_REGION_CONTENT?.spiritItemByElement?.[spiritElement];if(itemId)App.data.items[itemId]=(App.data.items[itemId]||0)+1;

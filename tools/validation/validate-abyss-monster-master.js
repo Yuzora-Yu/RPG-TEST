@@ -29,6 +29,25 @@ assert(regulars.length === 55, '通常敵55体がMonsterData.normalBasesへ登�
 assert(bosses.length === 22 && bosses.every(monster => monster.isBoss === true), '専用ボス22体が固定ボス正本へ登録済み');
 const masterIds = context.MonsterData.allBases.map(monster => Number(monster.id));
 assert(masterIds.length === new Set(masterIds).size, '全モンスター正本にID重複なし');
+const monstersSource = fs.readFileSync(path.join(root, 'monsters.js'), 'utf8');
+assert(!/const\s+ABYSS_REGION_MONSTERS\b/.test(monstersSource), '深淵通常敵の独立配列を廃止');
+assert(!/const\s+FIXED_ABYSS_REGION_BOSSES\b/.test(monstersSource), '深淵ボスの独立配列を廃止');
+assert(/モンスターID定義（正本）/.test(monstersSource) && /ID:000851~000900/.test(monstersSource) && /ID:302000~302999/.test(monstersSource) && /ID:502000~503000/.test(monstersSource), 'monsters.jsにID定義を明記');
+const expectedNormalRange = rank => {
+  const startRank = Math.floor((Number(rank) - 1) / 5) * 5 + 1;
+  const lower = ((startRank - 1) / 5) * 50 + 1;
+  return [lower, lower + 49];
+};
+assert(regulars.every(monster => {
+  const [low, high] = expectedNormalRange(monster.rank);
+  return Number(monster.id) >= low && Number(monster.id) <= high;
+}), '通常敵55体のIDが各Rank帯の正規範囲内');
+const storyBosses = bosses.filter(monster => Number(monster.id) >= 302000 && Number(monster.id) <= 302999);
+const trialBosses = bosses.filter(monster => Number(monster.id) >= 502000 && Number(monster.id) <= 503000);
+assert(storyBosses.length === 16, '深淵ストーリーボス16体を302xxxへ分類');
+assert(trialBosses.length === 6, '六属性精霊6体を502xxxへ分類');
+assert(context.MonsterData.idSchemaVersion === 4, 'モンスターIDスキーマをv4へ更新');
+assert(context.MonsterData.migrateId(510001, 3) === 856 && context.MonsterData.migrateId(511030, 3) === 302010 && context.MonsterData.migrateId(511101, 3) === 502001 && context.MonsterData.migrateId(512100, 3) === 302100, 'チェックポイント3旧IDをv4へ移行');
 
 const dungeons = [
   ['MAP000038', '雷霆砂丘', 86, 90, ['雷']],
@@ -66,29 +85,35 @@ assert(bosses.every(monster => ['normal','rare'].every(slot => {
 
 const imageIds = new Set([...regulars, ...bosses].map(monster => Number(monster.imageId ?? monster.id)));
 assert(imageIds.size === 73, '差し替え対象画像は73ファイル（通常55＋ボス専用18）');
+const replacementListRelative = 'assets/monsters/今後画像変更予定のモンスターID一覧.md';
+const replacementListPath = path.join(root, replacementListRelative);
+assert(fs.existsSync(replacementListPath), '画像フォルダ内に今後画像変更予定のモンスターID一覧.mdが存在');
+const replacementListSource = fs.existsSync(replacementListPath) ? fs.readFileSync(replacementListPath, 'utf8') : '';
+assert([...regulars, ...bosses].every(monster => replacementListSource.includes(String(Number(monster.id)).padStart(6, '0'))), '画像差し替え一覧に全77モンスターIDを記載');
+assert([...imageIds].every(imageId => replacementListSource.includes(`monster_${String(imageId).padStart(6, '0')}.png`)), '画像差し替え一覧に全73画像ファイル名を記載');
 for (const imageId of imageIds) {
   const relative = `assets/monsters/monster_${String(imageId).padStart(6, '0')}.png`;
   assert(fs.existsSync(path.join(root, relative)), `${relative} が存在`);
   assert(context.PRISMA_ASSETS.monsters.files.includes(relative), `${relative} が自動キャッシュ対象`);
 }
 
-const pillars = [512001,512002,512003,512004,512005].map(id => bosses.find(monster => Number(monster.id) === id));
+const pillars = [302080,302081,302082,302083,302084].map(id => bosses.find(monster => Number(monster.id) === id));
 assert(pillars.every(Boolean), 'ヴェグナシス5攻撃対象が正本に存在');
-assert(pillars.every((monster, index) => Number(monster.imageId) === 512000 && monster.linkedBattleGroup === 'vegnasis' && Number(monster.linkedDeathIndex) === index), 'ヴェグナシスは1グラフィック・5対象の連結定義');
+assert(pillars.every((monster, index) => Number(monster.imageId) === 302080 && monster.linkedBattleGroup === 'vegnasis' && Number(monster.linkedDeathIndex) === index), 'ヴェグナシスは1グラフィック・5対象の連結定義');
 assert(pillars.every(monster => Number(monster.gutsLevel) >= 10), 'ヴェグナシス全対象に高い根性レベル');
-assert(fs.existsSync(path.join(root, 'assets/monsters/monster_512000.png')), 'ヴェグナシス共通差し替え画像が存在');
-const firstForm = bosses.find(monster => Number(monster.id) === 512100);
-const finalForm = bosses.find(monster => Number(monster.id) === 512101);
-assert(firstForm && finalForm && Number(firstForm.imageId) === 512100 && Number(finalForm.imageId) === 512101, 'アゼルガラグ2形態を別ID・別画像で正本化');
-assert(Number(firstForm?.phaseTransitionMonsterId) === 512101 && firstForm?.phaseTransitionConversation === 'ABYSS_AZELGARAG_TRANSFORM' && finalForm?.isAzelgaragFinalForm === true, 'アゼルガラグ形態移行の正本参照が相互に整合');
+assert(fs.existsSync(path.join(root, 'assets/monsters/monster_302080.png')), 'ヴェグナシス共通差し替え画像が存在');
+const firstForm = bosses.find(monster => Number(monster.id) === 302100);
+const finalForm = bosses.find(monster => Number(monster.id) === 302101);
+assert(firstForm && finalForm && Number(firstForm.imageId) === 302100 && Number(finalForm.imageId) === 302101, 'アゼルガラグ2形態を別ID・別画像で正本化');
+assert(Number(firstForm?.phaseTransitionMonsterId) === 302101 && firstForm?.phaseTransitionConversation === 'ABYSS_AZELGARAG_TRANSFORM' && finalForm?.isAzelgaragFinalForm === true, 'アゼルガラグ形態移行の正本参照が相互に整合');
 
 const altarSource = fs.readFileSync(path.join(root, 'abyss_region.js'), 'utf8');
 const storySource = fs.readFileSync(path.join(root, 'abyss_story.js'), 'utf8');
 const battleSource = fs.readFileSync(path.join(root, 'abyss_battle.js'), 'utf8');
-assert(/monsterId:\[512001,512002,512003,512004,512005\]/.test(altarSource), '終焉の祭壇にヴェグナシス5対象を配置');
-assert(/value:512100/.test(storySource) && /winEventId:'abyss_azelgarag_clear'/.test(storySource), 'ヴェグナシス勝利後にアゼルガラグへ連戦');
+assert(/monsterId:\[302080,302081,302082,302083,302084\]/.test(altarSource), '終焉の祭壇にヴェグナシス5対象を配置');
+assert(/value:302100/.test(storySource) && /winEventId:'abyss_azelgarag_clear'/.test(storySource), 'ヴェグナシス勝利後にアゼルガラグへ連戦');
 assert(/VEGNASIS_IDS/.test(battleSource) && /vegnasis-shared-visual/.test(battleSource), 'ヴェグナシス専用戦闘・共有描画フックが有効');
-assert(/512100/.test(battleSource) && /512101/.test(battleSource) && /ABYSS_AZELGARAG_TRANSFORM/.test(battleSource), 'アゼルガラグ第二形態移行フックが有効');
+assert(/302100/.test(battleSource) && /302101/.test(battleSource) && /ABYSS_AZELGARAG_TRANSFORM/.test(battleSource), 'アゼルガラグ第二形態移行フックが有効');
 
 const contentSource = fs.readFileSync(path.join(root, 'abyss_content.js'), 'utf8');
 assert(!/\.push\s*\(/.test(contentSource), 'abyss_content.jsにマスターデータの実行時pushなし');

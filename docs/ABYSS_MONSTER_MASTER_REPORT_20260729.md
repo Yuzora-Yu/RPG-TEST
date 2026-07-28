@@ -1,12 +1,12 @@
 # 深淵新規モンスター正本化・画像流用記録
 
-- 通常モンスター55体を `monsters.js` の `ABYSS_REGION_MONSTERS` へ追加。
-- 固定ボス22体を `monsters.js` の `FIXED_ABYSS_REGION_BOSSES` へ追加。
+- 通常モンスター55体を `monsters.js` の Rank帯ごとの `MONSTER_BANDS_1_200` へ統合。
+- 固定ボス22体を `monsters.js` の 既存の `FIXED_BOSS_MONSTERS` へ統合。
 - 生息MAPから通常遭遇候補を解決し、旧ランダム深淵の階層バンドには混入しない。
 - 通常敵のドロップは既存と同じ `monster-drop-policy.js` が `dropSeed` から確定する。固定ボスの通常報酬は `monsters.js` に明示した。
 - 全通常敵は `abyssRecruitable: true`。深淵仲間化側の共通判定から除外しない。
-- 各モンスターは自身の新規画像IDを使用し、後日 `assets/monsters/monster_<新ID>.png` の差し替えだけで変更可能。
-- ヴェグナシスの5攻撃対象は共通専用画像 `monster_512000.png` を参照する。アゼルガラグ第二形態は `monster_512101.png` を別画像化。
+- 各モンスターは自身の新規画像IDを使用し、後日 `assets/monsters/monster_<6桁ID>.png` の差し替えだけで変更可能。
+- ヴェグナシスの5攻撃対象は共通専用画像 `monster_302080.png` を参照する。アゼルガラグ第二形態は `monster_302101.png` を別画像化。
 - 新規スキル `700101` は `skills.js`、結晶片・オクタプリズマは `items.js` へ移動し、`abyss_content.js` はIDレジストリだけにした。
 
 ## ダンジョン別通常敵数

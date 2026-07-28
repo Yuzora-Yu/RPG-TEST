@@ -3,8 +3,8 @@
     'use strict';
     if (!globalThis.Battle || !globalThis.App) return;
 
-    const VEGNASIS_IDS = new Set([512001,512002,512003,512004,512005]);
-    const AZELGARAG_IDS = new Set([512100,512101]);
+    const VEGNASIS_IDS = new Set([302080,302081,302082,302083,302084]);
+    const AZELGARAG_IDS = new Set([302100,302101]);
     const OCTAPRISM_ID = 701008;
     const SEALED_SKILL_IDS = Object.freeze([166,245,700101]);
     const unitId = unit => Number(unit?.baseId || unit?.id || 0);
@@ -126,16 +126,16 @@
     const originalUpdateDeadState = Battle.updateDeadState.bind(Battle);
     Battle.updateDeadState = () => {
         // First form never enters the normal death pipeline. It is replaced in-place by the final form.
-        const phaseIndex = (Battle.enemies || []).findIndex(enemy => unitId(enemy) === 512100 && Number(enemy.hp || 0) <= 0 && !enemy.abyssPhaseTransitioned);
+        const phaseIndex = (Battle.enemies || []).findIndex(enemy => unitId(enemy) === 302100 && Number(enemy.hp || 0) <= 0 && !enemy.abyssPhaseTransitioned);
         if (phaseIndex >= 0) {
             const old = Battle.enemies[phaseIndex];
             old.abyssPhaseTransitioned = true;
-            const base = Battle.getMonsterBaseById?.(512101) || globalThis.MonsterData?.getMonsterById?.(512101);
+            const base = Battle.getMonsterBaseById?.(302101) || globalThis.MonsterData?.getMonsterById?.(302101);
             const finalForm = base ? Battle.createMonsterFromBase(base, {isBossBattle:true,name:base.name}) : null;
             if (finalForm) {
                 if (App.data?.battle?.abyssOctaprismUsed) applyOctaprismToEnemy(finalForm);
                 Battle.enemies[phaseIndex] = finalForm;
-                App.data.battle.fixedBossId = 512101;
+                App.data.battle.fixedBossId = 302101;
                 App.data.battle.abyssAzelgaragPhase = 2;
                 Battle.party.forEach(member => {
                     if (!member) return;
