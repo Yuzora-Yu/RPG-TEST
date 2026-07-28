@@ -766,7 +766,8 @@ const App = {
             const area = loc.area;
             
             // 現在のビルドに存在するエリアか判定
-            const isWorld = (area === 'WORLD');
+            const worldDef = (typeof WORLD_MAPS !== 'undefined' && WORLD_MAPS[area]) || null;
+            const isWorld = !!worldDef;
             const isAbyss = (area === 'ABYSS');
             const isFixed = (typeof FIXED_MAPS !== 'undefined' && FIXED_MAPS[area]);
             const isDungeonMap = (typeof FIXED_DUNGEON_MAPS !== 'undefined' && FIXED_DUNGEON_MAPS[area]);
@@ -775,6 +776,17 @@ const App = {
                 // エリア自体が存在しない（削除・改名された）場合は初期位置へ
                 console.warn(`[Recovery] 非存在エリア '${area}' を検知。初期位置へ復旧します。`);
                 App.data.location = JSON.parse(JSON.stringify(initial.location));
+            } else if (isWorld) {
+                const tiles = worldDef.tiles;
+                const width = Array.isArray(tiles) && tiles[0] ? tiles[0].length : 0;
+                const height = Array.isArray(tiles) ? tiles.length : 0;
+                if (!Number.isFinite(Number(loc.x)) || !Number.isFinite(Number(loc.y)) ||
+                    Number(loc.x) < 0 || Number(loc.y) < 0 || Number(loc.x) >= width || Number(loc.y) >= height) {
+                    const destination = worldDef.skyPrismDestination || { x: 0, y: 0 };
+                    loc.x = Number(destination.x);
+                    loc.y = Number(destination.y);
+                }
+                loc.worldKey = worldDef.key || area;
             } else if (isFixed || isDungeonMap) {
                 // 固定マップの場合、座標が現在のマップの範囲内か判定。
                 // 複数階固定ダンジョンは MapRegistry から現在階の実体を取得する。
@@ -867,6 +879,10 @@ const App = {
             const isCurrentFixedMap = (typeof FIXED_MAPS !== 'undefined' && FIXED_MAPS[currentArea]) ||
                 (typeof FIXED_DUNGEON_MAPS !== 'undefined' && FIXED_DUNGEON_MAPS[currentArea]);
             if (isCurrentFixedMap) App.discoverFixedMap(currentArea, { save: false, silent: true });
+            const currentWorldKey = App.data.location.worldKey || STORY_DATA?.areas?.[currentArea]?.worldKey || currentArea;
+            if (typeof WORLD_MAPS !== 'undefined' && WORLD_MAPS[currentWorldKey]?.skyPrismEligible && currentWorldKey !== 'WORLD') {
+                App.discoverFixedMap(currentWorldKey, { save: false, silent: true });
+            }
         }
 
         // 3. stats の補完
@@ -889,6 +905,10 @@ const App = {
         if (!App.data.dungeon) App.data.dungeon = JSON.parse(JSON.stringify(initial.dungeon));
         if (App.data.transportMode === undefined) App.data.transportMode = null;
         if (App.data.mapReturnPoint === undefined) App.data.mapReturnPoint = null;
+        const loadedWorldDef = (typeof WORLD_MAPS !== 'undefined' && WORLD_MAPS[App.data.location?.worldKey || App.data.location?.area]) || null;
+        if (loadedWorldDef && loadedWorldDef.allowBoat === false && loadedWorldDef.allowFlight === false) {
+            App.data.transportMode = null;
+        }
 
         // 5.5. 設定の補完
         App.ensureSettings();
@@ -1948,11 +1968,25 @@ const App = {
     },
 
     hasMagicBoat: () => {
+        const worldDef = (typeof MapRegistry !== 'undefined' && MapRegistry.getWorldDefinition)
+            ? MapRegistry.getWorldDefinition()
+            : null;
+        if (worldDef?.allowBoat === false) return false;
         return App.isFeatureUnlocked('boat') || App.hasItem(108) || !!App.data?.progress?.flags?.hasShip;
     },
 
-    isFlying: () => App.data?.transportMode === 'flying',
-    isBoating: () => App.data?.transportMode === 'boat',
+    isFlying: () => {
+        const worldDef = (typeof MapRegistry !== 'undefined' && MapRegistry.getWorldDefinition)
+            ? MapRegistry.getWorldDefinition()
+            : null;
+        return worldDef?.allowFlight !== false && App.data?.transportMode === 'flying';
+    },
+    isBoating: () => {
+        const worldDef = (typeof MapRegistry !== 'undefined' && MapRegistry.getWorldDefinition)
+            ? MapRegistry.getWorldDefinition()
+            : null;
+        return worldDef?.allowBoat !== false && App.data?.transportMode === 'boat';
+    },
 
     ensureFixedMapDiscoveryStore: () => {
         if (!App.data) return {};
@@ -1965,6 +1999,9 @@ const App = {
 
     getFixedMapDef: (areaKey) => {
         if (!areaKey) return null;
+        if (typeof WORLD_MAPS !== 'undefined' && WORLD_MAPS[areaKey] && areaKey !== 'WORLD') {
+            return { key: areaKey, def: WORLD_MAPS[areaKey], kind: 'world' };
+        }
         if (typeof FIXED_MAPS !== 'undefined' && FIXED_MAPS[areaKey]) {
             return { key: areaKey, def: FIXED_MAPS[areaKey], kind: 'field' };
         }
@@ -2012,6 +2049,17 @@ const App = {
         const nextVisited = new Set(visited);
         nextVisited.add(areaKey);
 
+        const worldDef = (typeof WORLD_MAPS !== 'undefined' && WORLD_MAPS[areaKey]) || null;
+        if (worldDef?.skyPrismDestination) {
+            return {
+                areaKey,
+                worldKey: worldDef.key || areaKey,
+                x: Number(worldDef.skyPrismDestination.x),
+                y: Number(worldDef.skyPrismDestination.y),
+                sourceAreaKey: areaKey
+            };
+        }
+
         const area = STORY_DATA.areas[areaKey];
         if (area && Number.isFinite(Number(area.centerX)) && Number.isFinite(Number(area.centerY))) {
             return { areaKey, x: Number(area.centerX), y: Number(area.centerY), sourceAreaKey: areaKey };
@@ -2055,6 +2103,15 @@ const App = {
             DARK_CASTLE: 70,
             GREZELIA_FORBIDDEN: 80,
             ABYSS_FIELD: 90,
+            ABYSS_WORLD: 91,
+            CARMENA: 92,
+            THUNDER_DUNES: 93,
+            SCREAMING_CEMETERY: 94,
+            VISTA: 101,
+            FROZEN_FOREST: 102,
+            PURGATORY_MOUNTAINS: 103,
+            LEGACION: 111,
+            RIDPALM_DREAM_CORRIDOR: 112,
             TRIAL_ISLAND: 120,
             SUMMIT_TEMPLE: 150,
             RUINED_SHRINE: 300
@@ -2067,6 +2124,10 @@ const App = {
             seen.add(areaKey);
 
             const storyArea = (typeof STORY_DATA !== 'undefined' && STORY_DATA.areas) ? STORY_DATA.areas[areaKey] : null;
+            const worldDef = (typeof MapRegistry !== 'undefined' && MapRegistry.getWorldDefinition)
+                ? MapRegistry.getWorldDefinition(storyArea?.worldKey || 'WORLD')
+                : null;
+            if (worldDef?.skyPrismEligible === false) return;
             const dest = App.getFixedMapWorldDestination(areaKey);
             const record = visited[areaKey] || null;
             const discovered = !!record;
@@ -2092,6 +2153,7 @@ const App = {
         }
         if (typeof FIXED_MAPS !== 'undefined') Object.keys(FIXED_MAPS).forEach(push);
         if (typeof FIXED_DUNGEON_MAPS !== 'undefined') Object.keys(FIXED_DUNGEON_MAPS).forEach(push);
+        if (typeof WORLD_MAPS !== 'undefined') Object.keys(WORLD_MAPS).filter(key => key !== 'WORLD').forEach(push);
 
         return entries.sort((a, b) => (a.rank - b.rank) || a.name.localeCompare(b.name, 'ja'));
     },
@@ -2109,6 +2171,7 @@ const App = {
             kind: info.kind,
             worldX: dest ? dest.x : null,
             worldY: dest ? dest.y : null,
+            worldKey: dest?.worldKey || STORY_DATA?.areas?.[areaKey]?.worldKey || (info.kind === 'world' ? areaKey : 'WORLD'),
             parentAreaKey: dest?.parentAreaKey || null,
             foundAt: current?.foundAt || Date.now()
         };
@@ -2118,6 +2181,7 @@ const App = {
             current.kind !== entry.kind ||
             Number(current.worldX) !== Number(entry.worldX) ||
             Number(current.worldY) !== Number(entry.worldY) ||
+            (current.worldKey || 'WORLD') !== entry.worldKey ||
             (current.parentAreaKey || null) !== entry.parentAreaKey;
 
         if (!changed) return false;
@@ -2154,9 +2218,35 @@ const App = {
         if (!visited[areaKey]) return { ok: false, message: 'まだ発見していない場所には移動できない。' };
 
         const info = App.getFixedMapDef(areaKey);
-        const localDest = App.getFixedMapLocalEntranceDestination?.(areaKey) || null;
+        if (!info) return { ok: false, message: 'この場所の定義が見つかりません。' };
+        const targetWorldKey = info.kind === 'world'
+            ? areaKey
+            : ((typeof STORY_DATA !== 'undefined' && STORY_DATA.areas?.[areaKey]?.worldKey) || visited[areaKey]?.worldKey || 'WORLD');
+        const targetWorld = (typeof MapRegistry !== 'undefined' && MapRegistry.getWorldDefinition)
+            ? MapRegistry.getWorldDefinition(targetWorldKey)
+            : null;
+        if (targetWorld?.skyPrismEligible === false) {
+            return { ok: false, message: '深淵世界はスカイプリズムの座標に定着しない。' };
+        }
         const dest = App.getFixedMapWorldDestination(areaKey);
-        if (!info || !dest) return { ok: false, message: 'この場所のフィールド座標が見つかりません。' };
+        if (!dest) return { ok: false, message: 'この場所のフィールド座標が見つかりません。' };
+        const authoredEntry = info.kind === 'field' && info.def?.skyPrismEntryPoint
+            ? info.def.skyPrismEntryPoint
+            : null;
+        const localDest = authoredEntry
+            ? {
+                areaKey,
+                parentAreaKey: areaKey,
+                parentDef: info.def,
+                parentMapDef: info.def,
+                parentKind: 'field',
+                parentFloor: 0,
+                x: Number(authoredEntry.x),
+                y: Number(authoredEntry.y),
+                worldX: Number(dest.x),
+                worldY: Number(dest.y)
+            }
+            : (App.getFixedMapLocalEntranceDestination?.(areaKey) || null);
 
         App.data.items[110] = (Number(App.data.items[110]) || 0) - 1;
         if (App.data.items[110] <= 0) delete App.data.items[110];
@@ -2167,14 +2257,16 @@ const App = {
         App.data.transportMode = null;
         if (localDest) {
             App.data.mapReturnPoint = Number.isFinite(localDest.worldX) && Number.isFinite(localDest.worldY)
-                ? { areaKey: 'WORLD', x: localDest.worldX, y: localDest.worldY }
+                ? { areaKey: targetWorldKey, worldKey: targetWorldKey, x: localDest.worldX, y: localDest.worldY }
                 : null;
             App.data.location.area = localDest.parentAreaKey;
+            App.data.location.worldKey = targetWorldKey;
             App.data.location.x = localDest.x;
             App.data.location.y = localDest.y;
         } else {
             App.data.mapReturnPoint = null;
-            App.data.location.area = 'WORLD';
+            App.data.location.area = targetWorldKey;
+            App.data.location.worldKey = targetWorldKey;
             App.data.location.x = dest.x;
             App.data.location.y = dest.y;
         }
@@ -2334,12 +2426,15 @@ const App = {
     },
 
     getWorldTileAt: (x, y) => {
-        if (typeof MAP_DATA === 'undefined' || !MAP_DATA[0]) return 'W';
-        const mapW = MAP_DATA[0].length;
-        const mapH = MAP_DATA.length;
+        const worldMap = (typeof MapRegistry !== 'undefined' && MapRegistry.getActiveWorldMap)
+            ? MapRegistry.getActiveWorldMap()
+            : (typeof SURFACE_WORLD_MAP_DATA !== 'undefined' ? SURFACE_WORLD_MAP_DATA : null);
+        if (!worldMap?.[0]) return 'W';
+        const mapW = worldMap[0].length;
+        const mapH = worldMap.length;
         const tx = ((Number(x) % mapW) + mapW) % mapW;
         const ty = ((Number(y) % mapH) + mapH) % mapH;
-        return String(MAP_DATA[ty][tx] || 'W').toUpperCase();
+        return String(worldMap[ty][tx] || 'W').toUpperCase();
     },
 
     isWorldLandingTile: (tile) => {
@@ -2352,7 +2447,14 @@ const App = {
             Menu.msg("光の翼を持っていません。");
             return false;
         }
-        if (Field.currentMapData || App.data.location.area !== 'WORLD') {
+        const worldDef = (typeof MapRegistry !== 'undefined' && MapRegistry.getWorldDefinition)
+            ? MapRegistry.getWorldDefinition()
+            : null;
+        if (worldDef?.allowFlight === false) {
+            Menu.msg("深淵の空間では、光の翼は力を失っている。");
+            return false;
+        }
+        if (Field.currentMapData || (MapRegistry?.getActiveWorldKey?.() || App.data.location.area) !== 'WORLD') {
             Menu.msg("光の翼はフィールドで使おう。");
             return false;
         }
@@ -2386,6 +2488,23 @@ const App = {
         unlocked[key] = true;
         App.save();
         if (!already) App.log(`【システム解放】${App.getFeatureUnlockLabel(key)}が利用可能になった！`);
+    },
+
+    reconcileDerivedProgressFlags: () => {
+        const flags = App.data?.progress?.flags;
+        const rules = (typeof DERIVED_PROGRESS_FLAGS !== 'undefined' && Array.isArray(DERIVED_PROGRESS_FLAGS))
+            ? DERIVED_PROGRESS_FLAGS
+            : [];
+        if (!flags || typeof flags !== 'object') return false;
+        let changed = false;
+        rules.forEach(rule => {
+            if (!rule?.flag || !Array.isArray(rule.requires)) return;
+            if (rule.requires.every(required => !!flags[required]) && !flags[rule.flag]) {
+                flags[rule.flag] = true;
+                changed = true;
+            }
+        });
+        return changed;
     },
 
     /**
@@ -2929,8 +3048,10 @@ const App = {
             ? Field.getCurrentAreaKey()
             : App.data.location?.area;
         if (String(area || '') === 'ABYSS') return true;
-        const abyssAreaKeys = globalThis.ABYSS_REGION_RULES?.abyssAreaKeys;
-        return abyssAreaKeys instanceof Set && abyssAreaKeys.has(String(area || ''));
+        const worldKey = (typeof MapRegistry !== 'undefined' && MapRegistry.getActiveWorldKey)
+            ? MapRegistry.getActiveWorldKey()
+            : App.data.location?.worldKey;
+        return worldKey === 'ABYSS_WORLD';
     },
 
     tryRecruitMonsterAfterBattle: (enemies) => {
@@ -3984,6 +4105,67 @@ const App = {
         } 
     },
 
+    migrateAbyssRegionSave: () => {
+        if (!App.data) return;
+        App.data.location = App.data.location || { area: 'WORLD', x: 58, y: 65, worldKey: 'WORLD' };
+        App.data.progress = App.data.progress || {};
+        App.data.progress.flags = App.data.progress.flags || {};
+        App.data.progress.unlocked = App.data.progress.unlocked || {};
+        App.data.dungeon = App.data.dungeon || {};
+        App.data.system = App.data.system || {};
+        if (!App.data.progress.fixedProceduralFloors || typeof App.data.progress.fixedProceduralFloors !== 'object') {
+            App.data.progress.fixedProceduralFloors = {};
+        }
+        if (!App.data.progress.fixedProceduralRunIds || typeof App.data.progress.fixedProceduralRunIds !== 'object') {
+            App.data.progress.fixedProceduralRunIds = {};
+        }
+        if (!App.data.progress.abyssSpiritBlessings || typeof App.data.progress.abyssSpiritBlessings !== 'object') {
+            App.data.progress.abyssSpiritBlessings = {};
+        }
+
+        const currentArea = String(App.data.location.area || 'WORLD');
+        const master = globalThis.ABYSS_REGION_MASTER;
+        const isAbyssArea = Array.isArray(master?.areaKeys) && master.areaKeys.includes(currentArea);
+        const declaredWorld = STORY_DATA?.areas?.[currentArea]?.worldKey;
+        App.data.location.worldKey = currentArea === 'ABYSS_WORLD' || declaredWorld === 'ABYSS_WORLD' || isAbyssArea
+            ? 'ABYSS_WORLD'
+            : 'WORLD';
+
+        Object.keys(App.data.progress.fixedProceduralFloors).forEach(key => {
+            if (typeof Dungeon !== 'undefined' && !Dungeon.isValidFixedProceduralFloor(App.data.progress.fixedProceduralFloors[key])) {
+                delete App.data.progress.fixedProceduralFloors[key];
+            }
+        });
+
+        const version = Number(App.data.system.abyssRegionSchemaVersion || 0);
+        if (version < 4) {
+            const flags = App.data.progress.flags;
+            const oldComplete = !!(flags.abyssAzelgaragDefeated || flags.abyssEpilogueSeen || flags.abyssCleared
+                || flags.abyssStoryCleared || Number(App.data.dungeon.storyMaxFloor || 0) >= 100);
+            if (oldComplete) {
+                [
+                    'abyssFirstEntered', 'abyssCarmenaGateCleared', 'abyssLeonardDefeated', 'abyssEliciaDefeated',
+                    'abyssFirstBarrierCleared', 'abyssSyrisDefeated', 'abyssGradDefeated', 'abyssSecondBarrierCleared',
+                    'abyssLegacionNorthGateOpen', 'abyssVeldDefeated', 'abyssJasperDefeated', 'abyssIlluminaciaDefeated',
+                    'abyssVegnasisDefeated', 'abyssAzelgaragDefeated', 'abyssEpilogueSeen', 'abyssRandomUnlocked',
+                    'abyssDungeonMenuUnlocked'
+                ].forEach(flag => { flags[flag] = true; });
+                App.data.progress.unlocked.dungeonMenu = true;
+                App.data.dungeon.abyssMode = 'random';
+            } else if (currentArea === 'ABYSS') {
+                flags.abyssFirstEntered = true;
+                App.data.location = { area: 'CARMENA', worldKey: 'ABYSS_WORLD', x: 19, y: 25 };
+                App.data.progress.floor = 0;
+                App.data.dungeon.map = null;
+            }
+            // 旧追加モジュールの可変階キャッシュは契約が異なるため、安全に再生成する。
+            delete App.data.progress.abyssProceduralFloors;
+            delete App.data.progress.abyssRegionRunIds;
+            App.data.system.abyssRegionSchemaVersion = 4;
+        }
+        if (typeof App.reconcileDerivedProgressFlags === 'function') App.reconcileDerivedProgressFlags();
+    },
+
 load: () => { 
     try { 
         const j = localStorage.getItem(CONST.SAVE_KEY); 
@@ -4021,6 +4203,7 @@ load: () => {
             if (typeof App.syncDerivedLimitBreaks === 'function') {
                 App.syncDerivedLimitBreaks();
             }
+            App.migrateAbyssRegionSave();
         } 
     } catch(e) { console.error(e); } 
 },
@@ -4221,6 +4404,53 @@ load: () => {
     /* ==========================================================================
     main.js - App.calcStats (オーラ系特性反映版)
     ========================================================================== */
+
+    ensureAbyssRegionProgress: () => {
+        if (!App.data.progress) App.data.progress = {};
+        if (!App.data.progress.abyssSpiritBlessings || typeof App.data.progress.abyssSpiritBlessings !== 'object') {
+            App.data.progress.abyssSpiritBlessings = {};
+        }
+        return App.data.progress;
+    },
+
+    getEnvironmentalElementModifiers: (char) => {
+        const master = globalThis.ABYSS_REGION_MASTER;
+        const result = {};
+        const elements = Array.isArray(master?.elements) ? master.elements : (CONST.ELEMENTS || []);
+        elements.forEach(element => { result[element] = 0; });
+        if (!master) return result;
+
+        const currentArea = typeof Field !== 'undefined' && typeof Field.getCurrentAreaKey === 'function'
+            ? Field.getCurrentAreaKey()
+            : App.data?.location?.area;
+        const flags = App.data?.progress?.flags || {};
+        if (currentArea === 'CARMENA' && !flags.abyssCarmenaGateCleared
+            && !master.protectedCarmenaCharacterIds.includes(Number(char?.charId))) {
+            elements.forEach(element => { result[element] -= 100; });
+        }
+
+        const mapPenalty = (typeof Field !== 'undefined' ? Field.currentMapData?.elementPenalty : null)
+            || (typeof FIXED_DUNGEON_MAPS !== 'undefined' ? FIXED_DUNGEON_MAPS[currentArea]?.elementPenalty : null)
+            || null;
+        if (mapPenalty) Object.entries(mapPenalty).forEach(([element, value]) => {
+            result[element] = (result[element] || 0) + Number(value || 0);
+        });
+
+        const battleActive = globalThis.Battle?.active === true;
+        const spiritElement = battleActive ? App.data?.battle?.abyssSpiritElement : null;
+        if (spiritElement) result[spiritElement] = (result[spiritElement] || 0) - 50;
+
+        const blessings = App.ensureAbyssRegionProgress().abyssSpiritBlessings;
+        Object.keys(blessings).filter(element => blessings[element]).forEach(element => {
+            result[element] = (result[element] || 0) + 20;
+        });
+        if (battleActive && App.data?.battle?.abyssSpiritFinalBlessing) {
+            Object.keys(blessings).filter(element => blessings[element]).forEach(element => {
+                result[element] = (result[element] || 0) + 30;
+            });
+        }
+        return result;
+    },
 
     calcStats: (char) => {
     // DBのマスタデータを取得 (基礎ステータス参照用)
@@ -4668,6 +4898,15 @@ load: () => {
 	
 	// ★新規追加：習得スキルの書き戻し
     s.skills = Array.from(allSkillIds);
+
+    // 地域・戦闘環境の補正は最終値へ一度だけ合成し、表示用の内訳も同じ計算結果から渡す。
+    const environmentalModifiers = App.getEnvironmentalElementModifiers(char);
+    s.environmentalElmRes = {};
+    Object.entries(environmentalModifiers).forEach(([element, value]) => {
+        if (!Number(value)) return;
+        s.elmRes[element] = (s.elmRes[element] || 0) + Number(value);
+        s.environmentalElmRes[element] = Number(value);
+    });
 
     return s;
 },
@@ -5989,16 +6228,19 @@ load: () => {
     },
 
     isWorldEncounterConnected: (fromX, fromY, toX, toY, maxSteps = 80) => {
-        if (typeof MAP_DATA === 'undefined' || !Array.isArray(MAP_DATA) || !MAP_DATA[0]) return true;
-        const mapH = MAP_DATA.length;
-        const mapW = MAP_DATA[0].length;
+        const worldMap = (typeof MapRegistry !== 'undefined' && MapRegistry.getActiveWorldMap)
+            ? MapRegistry.getActiveWorldMap()
+            : (typeof SURFACE_WORLD_MAP_DATA !== 'undefined' ? SURFACE_WORLD_MAP_DATA : null);
+        if (!Array.isArray(worldMap) || !worldMap[0]) return true;
+        const mapH = worldMap.length;
+        const mapW = worldMap[0].length;
         const sx = ((Number(fromX) % mapW) + mapW) % mapW;
         const sy = ((Number(fromY) % mapH) + mapH) % mapH;
         const tx = ((Number(toX) % mapW) + mapW) % mapW;
         const ty = ((Number(toY) % mapH) + mapH) % mapH;
         if (sx === tx && sy === ty) return true;
-        if (!App.isWorldEncounterLandTile(MAP_DATA[sy]?.[sx])) return false;
-        if (!App.isWorldEncounterLandTile(MAP_DATA[ty]?.[tx])) return false;
+        if (!App.isWorldEncounterLandTile(worldMap[sy]?.[sx])) return false;
+        if (!App.isWorldEncounterLandTile(worldMap[ty]?.[tx])) return false;
 
         const limit = Math.max(1, Number(maxSteps || 80));
         const queue = [{ x: sx, y: sy, d: 0 }];
@@ -6011,7 +6253,7 @@ load: () => {
                 const ny = ((p.y + dy) % mapH + mapH) % mapH;
                 const key = `${nx},${ny}`;
                 if (seen.has(key)) continue;
-                if (!App.isWorldEncounterLandTile(MAP_DATA[ny]?.[nx])) continue;
+                if (!App.isWorldEncounterLandTile(worldMap[ny]?.[nx])) continue;
                 if (nx === tx && ny === ty) return true;
                 seen.add(key);
                 queue.push({ x: nx, y: ny, d: p.d + 1 });
@@ -6101,8 +6343,11 @@ load: () => {
             ? MapRegistry.getWorldSurfaceAt(Field.x, Field.y)
             : null;
         if (surface?.isSea) return null;
+        const activeWorldKey = (typeof MapRegistry !== 'undefined' && MapRegistry.getActiveWorldKey)
+            ? MapRegistry.getActiveWorldKey()
+            : 'WORLD';
         const zones = (typeof window !== 'undefined' && Array.isArray(window.FIELD_ENCOUNTER_ZONES))
-            ? window.FIELD_ENCOUNTER_ZONES
+            ? window.FIELD_ENCOUNTER_ZONES.filter(zone => String(zone.worldKey || 'WORLD') === activeWorldKey)
             : [];
         if (zones.length === 0) return null;
         const x = Number(Field.x || 0);
@@ -6525,8 +6770,9 @@ const Field = {
             Field.y = App.data.location.y;
 
             if (!Field.currentMapData) {
-                const mapW = (typeof MAP_DATA !== 'undefined' && MAP_DATA[0]) ? MAP_DATA[0].length : 100;
-                const mapH = (typeof MAP_DATA !== 'undefined') ? MAP_DATA.length : 100;
+                const worldMap = Field.getActiveWorldMap();
+                const mapW = worldMap?.[0]?.length || 100;
+                const mapH = worldMap?.length || 100;
                 Field.x = (Field.x % mapW + mapW) % mapW;
                 Field.y = (Field.y % mapH + mapH) % mapH;
             }
@@ -6593,6 +6839,9 @@ const Field = {
         App.data.location.x = Field.x;
         App.data.location.y = Field.y;
         if (typeof App.discoverFixedMap === 'function') App.discoverFixedMap(targetAreaKey, { save: false });
+        if (App.data.location.worldKey === 'ABYSS_WORLD' && typeof App.discoverFixedMap === 'function') {
+            App.discoverFixedMap('ABYSS_WORLD', { save: false, silent: true });
+        }
         App.log(`${areaDef.name}に入った`);
         App.save();
         App.changeScene('field');
@@ -6615,6 +6864,12 @@ const Field = {
             if (dungeonEntry) return dungeonEntry[0];
         }
         return Field.currentMapData.isDungeon ? 'DEFAULT' : 'WORLD';
+    },
+
+    getActiveWorldMap: () => {
+        return (typeof MapRegistry !== 'undefined' && MapRegistry.getActiveWorldMap)
+            ? MapRegistry.getActiveWorldMap()
+            : (typeof SURFACE_WORLD_MAP_DATA !== 'undefined' ? SURFACE_WORLD_MAP_DATA : []);
     },
 
     getCurrentProgressMapKey: () => {
@@ -6805,7 +7060,7 @@ const Field = {
     drawFullMap: (canvas) => {
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
-        const tileRows = Field.currentMapData?.tiles || (typeof MAP_DATA !== 'undefined' ? MAP_DATA : []);
+        const tileRows = Field.currentMapData?.tiles || Field.getActiveWorldMap();
         const actualMapHeight = Array.isArray(tileRows) ? tileRows.length : 0;
         const actualMapWidth = Array.isArray(tileRows)
             ? tileRows.reduce((max, row) => Math.max(max, Array.isArray(row) ? row.length : String(row || '').length), 0)
@@ -6896,7 +7151,10 @@ const Field = {
     getCurrentTileTheme: (areaKey = null) => {
         const key = areaKey || Field.getCurrentAreaKey();
         const mapDef = Field.currentMapData || null;
-        const themeKey = mapDef?.themeKey || key;
+        const worldDef = !mapDef && typeof MapRegistry !== 'undefined' && MapRegistry.getWorldDefinition
+            ? MapRegistry.getWorldDefinition()
+            : null;
+        const themeKey = mapDef?.themeKey || worldDef?.themeKey || key;
 
         // 優先順位:
         // 1. DEFAULT: 足りない記号の保険
@@ -6905,6 +7163,7 @@ const Field = {
         return {
             ...(TILE_THEMES['DEFAULT'] || {}),
             ...(TILE_THEMES[themeKey] || TILE_THEMES[key] || {}),
+            ...(worldDef?.tileOverrides || {}),
             ...(mapDef?.tileOverrides || {})
         };
     },
@@ -7224,12 +7483,20 @@ const Field = {
 
     getFixedChestTileSign: (chestDef = null) => {
         if (!chestDef) return null;
+        if (typeof Dungeon !== 'undefined' && Dungeon.isFixedChestOpenedAt(Number(chestDef.x), Number(chestDef.y))) return null;
         const rare = chestDef.rare === true || chestDef.type === 'rare' || chestDef.chestType === 'rare';
         return rare ? 'R' : 'C';
     },
 
     getMapDrawParts: (tileSign, tileX = null, tileY = null) => {
         const upper = String(tileSign || 'W').toUpperCase();
+        if (Field.currentMapData?.isFixed && (upper === 'C' || upper === 'R') &&
+            tileX !== null && tileY !== null && typeof Dungeon !== 'undefined' &&
+            Dungeon.isFixedChestOpenedAt(tileX, tileY)) {
+            const chestDef = Field.getFixedChestAt ? Field.getFixedChestAt(tileX, tileY) : null;
+            const baseTile = String(chestDef?.baseTile || 'T').toUpperCase();
+            return { upper: baseTile, baseTile, overlayConfig: null, worldOverlay: false, logicalUpper: upper };
+        }
         // A perimeter auto-exit cell is logically S, but visually it is authored
         // terrain. Rendering it as an S object would add lift/contact shadows to
         // every repeated cell and expose seams outside the map.
@@ -7595,10 +7862,10 @@ const Field = {
             : 0;
         const mapW = Field.currentMapData
             ? Math.max(1, actualMapW || Number(Field.currentMapData.width || 0))
-            : (typeof MAP_DATA !== 'undefined' ? MAP_DATA[0].length : 50);
+            : (Field.getActiveWorldMap()?.[0]?.length || 50);
         const mapH = Field.currentMapData
             ? Math.max(1, actualMapH || Number(Field.currentMapData.height || 0))
-            : (typeof MAP_DATA !== 'undefined' ? MAP_DATA.length : 32);
+            : (Field.getActiveWorldMap()?.length || 32);
 
         ctx.save();
         ctx.globalAlpha = 0.56;
@@ -7646,8 +7913,9 @@ const Field = {
                             if (Field.isFixedBossDefeatedAt(bossDef, tx, ty, progressKey)) tile = 'G';
                         }
                     }
-                } else if (typeof MAP_DATA !== 'undefined') {
-                    tile = MAP_DATA[((ty % mapH) + mapH) % mapH][((tx % mapW) + mapW) % mapW];
+                } else {
+                    const worldMap = Field.getActiveWorldMap();
+                    tile = worldMap[((ty % mapH) + mapH) % mapH][((tx % mapW) + mapW) % mapW];
                 }
 
                 if (!visible) continue;
@@ -7747,7 +8015,8 @@ const Field = {
                 }
             }
         } else {
-            nextTile = MAP_DATA[((tileY % mapH) + mapH) % mapH][((tileX % mapW) + mapW) % mapW];
+            const worldMap = Field.getActiveWorldMap();
+            nextTile = worldMap[((tileY % mapH) + mapH) % mapH][((tileX % mapW) + mapW) % mapW];
         }
         return String(nextTile || 'W').toUpperCase();
     },
@@ -7786,14 +8055,15 @@ const Field = {
             return { tile, x, y, areaKey, isWorld: false };
         }
 
-        if (typeof MAP_DATA === 'undefined' || !MAP_DATA[0]) return null;
-        const mapW = MAP_DATA[0].length;
-        const mapH = MAP_DATA.length;
+        const worldMap = Field.getActiveWorldMap();
+        if (!worldMap?.[0]) return null;
+        const mapW = worldMap[0].length;
+        const mapH = worldMap.length;
         const x = ((Number(Field.x) % mapW) + mapW) % mapW;
         const y = ((Number(Field.y) % mapH) + mapH) % mapH;
-        const tile = String(MAP_DATA[y][x] || 'W').toUpperCase();
+        const tile = String(worldMap[y][x] || 'W').toUpperCase();
 
-        return { tile, x, y, areaKey: 'WORLD', isWorld: true };
+        return { tile, x, y, areaKey: MapRegistry?.getActiveWorldKey?.() || 'WORLD', isWorld: true };
     },
 
     // 水没フロアでも船に切り替えるのは水面上だけ。床・足場・階段では通常の主人公を描く。
@@ -7834,6 +8104,11 @@ const Field = {
     // クエスト受注中かつクエスト側のボス討伐が未達なら、座標側だけに残った
     // defeatedBosses は古い記録とみなし、ボスを復帰させる。
     isFixedBossDefeatedAt: (bossDef, x, y, progressKey = null, options = {}) => {
+        const flags = App.data?.progress?.flags || {};
+        const clearedFlags = Array.isArray(bossDef?.clearedFlags)
+            ? bossDef.clearedFlags
+            : (bossDef?.clearedFlag ? [bossDef.clearedFlag] : []);
+        if (clearedFlags.some(flag => !!flags[flag])) return true;
         const key = progressKey || Field.getCurrentProgressMapKey?.();
         const posKey = `${Number(x)},${Number(y)}`;
         const defeated = !!(key && App.data?.progress?.defeatedBosses?.[key]?.includes(posKey));
@@ -8467,6 +8742,39 @@ const Field = {
             return;
         }
 
+        if (action.type === 'elementalTrialPrism') {
+            const progress = App.ensureAbyssRegionProgress();
+            const elements = Array.isArray(action.elements) ? action.elements : [];
+            const nextElement = elements.find(element => !progress.abyssSpiritBlessings[element]);
+            if (!nextElement) {
+                App.log(action.completedText || '六つのプリズムは、認めた者へ穏やかな光を返している。');
+                return;
+            }
+            const bossId = Number(action.bossByElement?.[nextElement]);
+            if (!bossId) {
+                App.log('プリズムは沈黙している。');
+                return;
+            }
+            App.data.battle = {
+                active: false,
+                isBossBattle: true,
+                isSpecialBoss: false,
+                isEstark: false,
+                fixedBossId: bossId,
+                abyssSpiritElement: nextElement,
+                fixedTrialElement: nextElement,
+                fixedTrialRewardItemId: Number(action.rewardItemByElement?.[nextElement] || 0),
+                fixedTrialCompletionItemId: Number(action.completionItemId || 0),
+                fixedTrialRequiredElements: elements.slice(),
+                bossStatMultiplier: Number(action.bossStatMultiplier || 1),
+                suppressFixedBossDefeat: true,
+                enemies: []
+            };
+            App.save();
+            App.changeScene('battle');
+            return;
+        }
+
         if (action.log && action.type !== 'quest' && action.type !== 'questBoard' && action.type !== 'guildBoard') App.log(action.log);
 
         const progressEventId = Field.resolveMapActionEventId(action);
@@ -8490,6 +8798,37 @@ const Field = {
                     y: Number(action.returnY ?? Field.y)
                 }
             });
+            return;
+        }
+
+        if (action.type === 'returnPortal') {
+            const fallbackAreaKey = action.fallbackAreaKey || 'WORLD';
+            const saved = action.useSavedReturnPoint === false ? null : App.data.mapReturnPoint;
+            const target = saved?.areaKey
+                ? saved
+                : {
+                    areaKey: fallbackAreaKey,
+                    worldKey: action.fallbackWorldKey || STORY_DATA?.areas?.[fallbackAreaKey]?.worldKey || 'WORLD',
+                    x: action.fallbackX,
+                    y: action.fallbackY
+                };
+            const fixedDef = target.mapData || (typeof FIXED_MAPS !== 'undefined' && FIXED_MAPS[target.areaKey]
+                ? { ...FIXED_MAPS[target.areaKey], isFixed: true, isDungeon: FIXED_MAPS[target.areaKey].isDungeon === true, areaKey: target.areaKey }
+                : null);
+            App.data.mapReturnPoint = null;
+            App.data.transportMode = null;
+            App.data.location.area = target.areaKey || 'WORLD';
+            App.data.location.worldKey = target.worldKey || STORY_DATA?.areas?.[target.areaKey]?.worldKey || 'WORLD';
+            Field.currentMapData = fixedDef;
+            const entryPoint = fixedDef?.entryPoint || { x: 0, y: 0 };
+            Field.x = Number.isFinite(Number(target.x)) ? Number(target.x) : Number(entryPoint.x);
+            Field.y = Number.isFinite(Number(target.y)) ? Number(target.y) : Number(entryPoint.y);
+            App.data.location.x = Field.x;
+            App.data.location.y = Field.y;
+            App.save();
+            App.changeScene('field');
+            Field.render?.();
+            Field.refreshCurrentAction?.({ silent: true });
             return;
         }
 
@@ -8913,11 +9252,12 @@ const Field = {
             }
             return 'battle_bg_field';
         }
-        const mapW = MAP_DATA[0].length, mapH = MAP_DATA.length;
+        const worldMap = Field.getActiveWorldMap();
+        const mapW = worldMap[0].length, mapH = worldMap.length;
         const tx = ((Field.x % mapW) + mapW) % mapW, ty = ((Field.y % mapH) + mapH) % mapH;
         const surface = typeof MapRegistry !== 'undefined' && MapRegistry.getWorldSurfaceAt
             ? MapRegistry.getWorldSurfaceAt(tx, ty)
-            : { tile: MAP_DATA[ty][tx].toUpperCase(), isBridge: false, isSea: MAP_DATA[ty][tx].toUpperCase() === 'W' };
+            : { tile: worldMap[ty][tx].toUpperCase(), isBridge: false, isSea: false };
         const tile = surface.tile;
         if (surface.isBridge) return 'battle_bg_field';
         if (surface.isSea) return 'battle_bg_sea';
@@ -9083,15 +9423,17 @@ const Field = {
             if (tile === 'C' || tile === 'R') {
                 const opened = Field.currentMapData.isFixed && typeof Dungeon !== 'undefined' &&
                     Dungeon.isFixedChestOpenedAt(nx, ny);
+                if (opened) {
+                    tile = String(chestDef?.baseTile || 'T').toUpperCase();
+                } else {
                 const container = typeof Dungeon !== 'undefined' && Dungeon.getContainerPresentation
                     ? Dungeon.getContainerPresentation(chestDef)
                     : { opened: '空箱が置かれている。', blocked: '宝箱が道を塞いでいる。' };
-                App.log(opened
-                    ? container.opened
-                    : (tile === 'R' ? '赤い宝箱が道を塞いでいる。' : container.blocked));
+                App.log(tile === 'R' ? '赤い宝箱が道を塞いでいる。' : container.blocked);
                 keepCurrentTileAction({ bump: true });
                 Field.render();
                 return;
+                }
             }
 
             const isFloodedRandomFloor = !!(Field.currentMapData.isDungeon && !Field.currentMapData.isFixed && App.data?.dungeon?.isFloodedFloor);
@@ -9194,15 +9536,19 @@ const Field = {
             if (typeof Field.startIdleStep === 'function') Field.startIdleStep();
 			
         } else {
-            const mapW = MAP_DATA[0].length, mapH = MAP_DATA.length;
+            const activeWorldMap = Field.getActiveWorldMap();
+            const mapW = activeWorldMap[0].length, mapH = activeWorldMap.length;
             nx = (nx + mapW) % mapW; ny = (ny + mapH) % mapH;
             const surface = typeof MapRegistry !== 'undefined' && MapRegistry.getWorldSurfaceAt
                 ? MapRegistry.getWorldSurfaceAt(nx, ny)
-                : { tile: MAP_DATA[ny][nx].toUpperCase(), isBridge: false, isSea: MAP_DATA[ny][nx].toUpperCase() === 'W' };
+                : { tile: activeWorldMap[ny][nx].toUpperCase(), isBridge: false, isSea: activeWorldMap[ny][nx].toUpperCase() === 'W', isImpassable: activeWorldMap[ny][nx].toUpperCase() === 'M' };
             const tile = surface.tile;
             const isBridge = surface.isBridge;
             const isFlying = typeof App.isFlying === 'function' && App.isFlying();
-            if (!isFlying && tile === 'M') { App.log("険しい岩山だ"); keepCurrentTileAction({ bump: true }); Field.render(); return; }
+            if (!isFlying && surface.isImpassable) {
+                App.log(tile === 'M' ? "険しい岩山だ" : "深淵の断崖に阻まれている");
+                keepCurrentTileAction({ bump: true }); Field.render(); return;
+            }
             if (!isFlying && surface.isSea) {
                 if (!App.hasMagicBoat || !App.hasMagicBoat()) { App.log("海は船がないと渡れない…"); keepCurrentTileAction({ bump: true }); Field.render(); return; }
                 if (App.data.transportMode !== 'boat') App.log("魔法の小舟で海へ漕ぎ出した。");
@@ -9264,8 +9610,9 @@ const Field = {
         const cx = w/2, cy = h/2;
         const rangeX = Math.floor(FIELD_VIEW_TILES / 2) + 1;
         const rangeY = Math.ceil(h / (2 * ts)) + 1;
-        const mapW = Field.currentMapData ? Field.currentMapData.width : (typeof MAP_DATA !== 'undefined' ? MAP_DATA[0].length : 50);
-        const mapH = Field.currentMapData ? Field.currentMapData.height : (typeof MAP_DATA !== 'undefined' ? MAP_DATA.length : 32);
+        const activeWorldMap = Field.getActiveWorldMap();
+        const mapW = Field.currentMapData ? Field.currentMapData.width : (activeWorldMap?.[0]?.length || 50);
+        const mapH = Field.currentMapData ? Field.currentMapData.height : (activeWorldMap?.length || 32);
         const g = (typeof GRAPHICS !== 'undefined' && GRAPHICS.images) ? GRAPHICS.images : {};
         
         const areaKey = Field.getCurrentAreaKey();
@@ -9880,7 +10227,8 @@ const Field = {
                         minimapVisible = false;
                     }
                 } else {
-                    mtile = MAP_DATA[((mty % mapH) + mapH) % mapH][((mtx % mapW) + mapW) % mapW];
+                    const worldMap = Field.getActiveWorldMap();
+                    mtile = worldMap[((mty % mapH) + mapH) % mapH][((mtx % mapW) + mapW) % mapW];
                 }
 
                 if (!minimapVisible) continue;

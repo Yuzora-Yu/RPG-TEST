@@ -50,7 +50,8 @@
 
     const getApp = () => (typeof App !== 'undefined' ? App : null);
     const getDungeon = () => (typeof Dungeon !== 'undefined' ? Dungeon : null);
-    const getWorldMap = () => (typeof MAP_DATA !== 'undefined' ? MAP_DATA : null);
+    const getWorldMap = () => window.MapRegistry?.getActiveWorldMap?.()
+        || (typeof SURFACE_WORLD_MAP_DATA !== 'undefined' ? SURFACE_WORLD_MAP_DATA : null);
     const renderShared = window.MapRenderShared;
 
     const isBuildingTexture = (key) => BUILDING_PREFIXES.some(prefix => String(key || '').startsWith(prefix));

@@ -15,7 +15,7 @@ const assert = (condition, message) => condition ? checks.push(message) : failur
     [302080, {id:302080,gutsLevel:10,linkedDeathIndex:0}],
     [302081, {id:302081,gutsLevel:10,linkedDeathIndex:1}]
   ]);
-  const Battle = {
+  let Battle = {
     active:false,auto:true,phase:'init',enemies:[],party:[],
     startInputPhase(){ this.phase='input'; },
     init(){ this.active=true; },
@@ -36,7 +36,7 @@ const assert = (condition, message) => condition ? checks.push(message) : failur
     data:{battle:{active:true,fixedBossId:302100},progress:{abyssSpiritBlessings:{}},items:{701008:1}},
     save(){}
   };
-  const ItemRuntime = {
+  let ItemRuntime = {
     isBattleUsable(){ return false; },
     getBattleTargetType(){ return 'single'; },
     applyBattleItem(){ return {handled:false}; }
@@ -55,7 +55,17 @@ const assert = (condition, message) => condition ? checks.push(message) : failur
   };
   context.window=context; context.globalThis=context;
   vm.createContext(context);
-  vm.runInContext(fs.readFileSync(path.join(root,'abyss_battle.js'),'utf8'), context, {filename:'abyss_battle.js'});
+  vm.runInContext(`${fs.readFileSync(path.join(root,'battle.js'),'utf8')}\nglobalThis.Battle = Battle;`, context, {filename:'battle.js'});
+  Battle = context.Battle;
+  Battle.getMonsterBaseById = id => monsterBases.get(Number(id)) || null;
+  Battle.createMonsterFromBase = base => ({baseId:base.id,id:base.id,name:base.name,hp:base.hp,mp:base.mp,baseMaxHp:base.hp,baseMaxMp:base.mp,baseStats:{atk:base.atk,def:base.def,spd:base.spd,mag:base.mag,mdef:base.mdef},acts:[...(base.acts||[])],isDead:false});
+  Battle.updateAutoButton = () => {};
+  Battle.renderEnemies = () => {};
+  Battle.renderPartyStatus = () => {};
+  Battle.refreshPartyFormationAuras = () => {};
+  Battle.log = message => logs.push(String(message));
+  vm.runInContext(fs.readFileSync(path.join(root,'item_runtime.js'),'utf8'), context, {filename:'item_runtime.js'});
+  ItemRuntime = context.ItemRuntime;
 
   // Azelgarag phase transition must replace the enemy without normal victory processing.
   Battle.party=[{uid:'p1',hp:1,mp:0,baseMaxHp:1000,baseMaxMp:250,isDead:true,battleStatus:{buffs:{},debuffs:{},ailments:{}}}];
@@ -70,14 +80,14 @@ const assert = (condition, message) => condition ? checks.push(message) : failur
   // Octaprism must be battle-limited, non-consumable, and seal the three designated skills.
   App.data.battle={active:true,fixedBossId:302101,abyssOctaprismUsed:false};
   Battle.enemies=[Battle.createMonsterFromBase(monsterBases.get(302101))];
-  const octaResult=context.ItemRuntime.applyBattleItem({item:{id:701008},command:{actor:{name:'シャニー'}}});
+  const octaResult=ItemRuntime.applyBattleItem({Battle,App,item:{id:701008},command:{actor:{name:'シャニー'}}});
   const finalEnemy=Battle.enemies[0];
   assert(octaResult.handled===true && octaResult.consumed===false && App.data.battle.abyssOctaprismUsed===true, 'オクタプリズマはアゼルガラグ戦のみ一度だけ非消費で発動する');
   assert(['atk','def','spd','mag','mdef'].every(key=>finalEnemy.battleStatus.debuffs[key]?.val===0.7), 'オクタプリズマが深淵王の全能力を低下させる');
   assert([166,245,700101].every(id=>finalEnemy.abyssSealedSkillIds.includes(id)), 'ラグナロク・カオスショック・混沌の衣を封印する');
   finalEnemy.acts=[166,1,245];
-  assert(Battle.decideEnemyAction(finalEnemy)===1 && finalEnemy.acts.length===3, '封印スキルを行動候補から一時除外し、元データを破壊しない');
-  assert(context.ItemRuntime.isBattleUsable({id:701008})===false, '使用後のオクタプリズマは再使用できない');
+  assert(Battle.decideEnemyAction(finalEnemy)?.type==='enemy_attack' && finalEnemy.acts.length===3, '封印スキルを行動候補から一時除外し、元データを破壊しない');
+  assert(ItemRuntime.isBattleUsable({id:701008})===false, '使用後のオクタプリズマは再使用できない');
 
   // Vagnasis fallen-part hook must strengthen and fully heal every remaining target.
   App.data.battle={active:true,fixedBossId:[302080,302081]};

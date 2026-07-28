@@ -170,12 +170,72 @@ const Battle = {
         return Number.isFinite(turn) && turn > 0 ? turn : 3;
     },
 
+    abyssVegnasisIds: Object.freeze([302080, 302081, 302082, 302083, 302084]),
+    abyssAzelgaragIds: Object.freeze([302100, 302101]),
+    abyssSealedSkillIds: Object.freeze([166, 245, 700101]),
+
+    getUnitBaseId: (unit) => Number(unit?.baseId || unit?.id || 0),
+
+    ensureUnitBattleStatus: (unit) => {
+        unit.battleStatus = unit.battleStatus || { buffs: {}, debuffs: {}, ailments: {} };
+        unit.battleStatus.buffs = unit.battleStatus.buffs || {};
+        unit.battleStatus.debuffs = unit.battleStatus.debuffs || {};
+        unit.battleStatus.ailments = unit.battleStatus.ailments || {};
+        return unit.battleStatus;
+    },
+
+    queueBattleConversation: (scriptKey) => {
+        if (!scriptKey || !globalThis.StoryManager?.showConversation) return;
+        if (Battle.specialCutsceneAutoBefore === undefined) {
+            Battle.specialCutsceneAutoBefore = !!Battle.auto;
+            Battle.auto = false;
+            Battle.updateAutoButton?.();
+        }
+        const previous = Battle.pendingBattleEvent || Promise.resolve();
+        Battle.pendingBattleEvent = previous.then(async () => {
+            Battle.phase = 'battle_event';
+            await StoryManager.showConversation(scriptKey);
+            StoryManager.endConversation();
+        });
+    },
+
+    awaitPendingBattleEvent: async () => {
+        if (!Battle.pendingBattleEvent) return;
+        try {
+            await Battle.pendingBattleEvent;
+        } finally {
+            Battle.pendingBattleEvent = null;
+            const restoreAuto = Battle.specialCutsceneAutoBefore;
+            Battle.specialCutsceneAutoBefore = undefined;
+            if (restoreAuto !== undefined) {
+                Battle.auto = !!restoreAuto;
+                Battle.updateAutoButton?.();
+            }
+        }
+    },
+
+    applyOctaprismToEnemy: (enemy) => {
+        if (!enemy || !Battle.abyssAzelgaragIds.includes(Battle.getUnitBaseId(enemy))) return;
+        const status = Battle.ensureUnitBattleStatus(enemy);
+        ['atk', 'def', 'spd', 'mag', 'mdef'].forEach(key => {
+            status.debuffs[key] = { val: 0.7, turns: null, source: 'octaprism' };
+        });
+        enemy.abyssSealedSkillIds = Battle.abyssSealedSkillIds.slice();
+    },
+
     tryGutsSurvive: (unit, hpBeforeDamage) => {
         if (!unit || Number(hpBeforeDamage) < 2) return false;
         const gutsChance = (typeof PassiveSkill !== 'undefined') ? PassiveSkill.getSumValue(unit, 'guts_mult') : 0;
         if (gutsChance > 0 && Math.random() * 100 < gutsChance) {
             unit.hp = 1;
             Battle.log(`${unit.name}は 根性で 踏みとどまった！`);
+            return true;
+        }
+        const unitId = Battle.getUnitBaseId(unit);
+        const level = Number(unit?.gutsLevel || Battle.getMonsterBaseById?.(unitId)?.gutsLevel || 0);
+        if (Battle.abyssVegnasisIds.includes(unitId) && level > 0 && Math.random() * 100 < Math.min(78, 18 + level * 5)) {
+            unit.hp = 1;
+            Battle.log(`${unit.name}は深淵の根性で踏みとどまった！`);
             return true;
         }
         return false;
@@ -318,6 +378,21 @@ const Battle = {
     },
 
     init: () => {
+        const fixedBossIds = (Array.isArray(App.data?.battle?.fixedBossId)
+            ? App.data.battle.fixedBossId
+            : [App.data?.battle?.fixedBossId]).map(Number).filter(Number.isFinite);
+        const isVegnasisBattle = fixedBossIds.some(id => Battle.abyssVegnasisIds.includes(id));
+        const spiritBlessings = App.data?.progress?.abyssSpiritBlessings || {};
+        const recognizedSpirits = ['火', '水', '風', '雷', '光', '闇'].filter(element => spiritBlessings[element]);
+        if (App.data?.battle) {
+            App.data.battle.abyssSpiritFinalBlessing = isVegnasisBattle && recognizedSpirits.length > 0;
+            if (!isVegnasisBattle) delete App.data.battle.abyssSpiritFinalBlessing;
+        }
+        Battle.openingBattleConversation = isVegnasisBattle && recognizedSpirits.length > 0
+            ? 'ABYSS_SPIRIT_FINAL_BLESSING'
+            : null;
+        Battle.pendingBattleEvent = null;
+        Battle.specialCutsceneAutoBefore = undefined;
         Battle.active = true;
         Battle.phase = 'init';
         Battle.commandQueue = [];
@@ -1436,6 +1511,15 @@ const Battle = {
 
     startInputPhase: () => {
         if (!Battle.active) return;
+        if (Battle.openingBattleConversation) {
+            const scriptKey = Battle.openingBattleConversation;
+            Battle.openingBattleConversation = null;
+            Battle.queueBattleConversation(scriptKey);
+            Battle.awaitPendingBattleEvent().then(() => {
+                if (Battle.active) Battle.startInputPhase();
+            });
+            return;
+        }
         Battle.phase = 'input';
         Battle.commandQueue = [];
         Battle.currentActorIndex = 0;
@@ -2665,6 +2749,13 @@ findNextActor: () => {
     decideEnemyAction: (e) => {
         // 生の行動データを取得
         let rawActs = e.acts || [];
+        const sealedSkillIds = new Set([
+            ...(e?.abyssSealedSkillIds || []),
+            ...(App.data?.battle?.abyssSealedSkillIds || [])
+        ].map(Number));
+        if (sealedSkillIds.size) {
+            rawActs = rawActs.filter(action => !sealedSkillIds.has(Number(typeof action === 'object' ? action.id : action)));
+        }
         if (rawActs.length === 0) rawActs = [{ id: 1, rate: 100, condition: 0 }];
 		
         // ① 行動フラグと制約によるフィルタリング
@@ -4158,6 +4249,38 @@ findNextActor: () => {
     },
 	
     updateDeadState: () => {
+        // 深淵王第一形態は通常の死亡処理へ入れず、同じ戦闘内で第二形態へ置換する。
+        const phaseIndex = (Battle.enemies || []).findIndex(enemy =>
+            Battle.getUnitBaseId(enemy) === 302100 && Number(enemy.hp || 0) <= 0 && !enemy.abyssPhaseTransitioned
+        );
+        if (phaseIndex >= 0) {
+            const oldForm = Battle.enemies[phaseIndex];
+            oldForm.abyssPhaseTransitioned = true;
+            const base = Battle.getMonsterBaseById?.(302101) || globalThis.MonsterData?.getMonsterById?.(302101);
+            const finalForm = base ? Battle.createMonsterFromBase(base, { isBossBattle: true, name: base.name }) : null;
+            if (finalForm) {
+                if (App.data?.battle?.abyssOctaprismUsed) Battle.applyOctaprismToEnemy(finalForm);
+                Battle.enemies[phaseIndex] = finalForm;
+                App.data.battle.fixedBossId = 302101;
+                App.data.battle.abyssAzelgaragPhase = 2;
+                Battle.party.forEach(member => {
+                    if (!member) return;
+                    member.isDead = false;
+                    member.hp = Math.max(1, Number(member.baseMaxHp || member.hp || 1));
+                    member.mp = Math.max(0, Number(member.baseMaxMp || member.mp || 0));
+                    const status = Battle.ensureUnitBattleStatus(member);
+                    ['atk', 'def', 'spd', 'mag', 'mdef'].forEach(key => {
+                        status.buffs[key] = { val: 1.3, turns: null, source: 'light_god' };
+                    });
+                });
+                Battle.queueBattleConversation('ABYSS_AZELGARAG_TRANSFORM');
+                Battle.log('光の神の加護が一行を満たした！');
+            }
+        }
+
+        const livingPillarsBefore = new Set((Battle.enemies || []).filter(enemy =>
+            Battle.abyssVegnasisIds.includes(Battle.getUnitBaseId(enemy)) && !enemy.isDead && !enemy.isFled
+        ));
         let partyAuraDirty = false;
         [...Battle.party, ...Battle.enemies].forEach(e => {
             if (e && e.hp <= 0 && !e.isFled) {
@@ -4172,6 +4295,31 @@ findNextActor: () => {
             }
         });
         if (partyAuraDirty) Battle.refreshPartyFormationAuras();
+
+        const newlyFallenPillars = (Battle.enemies || []).filter(enemy =>
+            Battle.abyssVegnasisIds.includes(Battle.getUnitBaseId(enemy))
+            && livingPillarsBefore.has(enemy) && enemy.isDead && !enemy.abyssFallHandled
+        );
+        newlyFallenPillars.forEach(enemy => {
+            enemy.abyssFallHandled = true;
+            const remaining = Battle.enemies.filter(other =>
+                Battle.abyssVegnasisIds.includes(Battle.getUnitBaseId(other))
+                && !other.isDead && !other.isFled && Number(other.hp || 0) > 0
+            );
+            remaining.forEach(other => {
+                other.baseMaxHp = Math.max(1, Math.floor(Number(other.baseMaxHp || other.hp || 1) * 1.18));
+                other.baseMaxMp = Math.max(0, Math.floor(Number(other.baseMaxMp || other.mp || 0) * 1.12));
+                other.hp = other.baseMaxHp;
+                other.mp = other.baseMaxMp;
+                ['atk', 'def', 'spd', 'mag', 'mdef'].forEach(key => {
+                    if (other.baseStats?.[key] !== undefined) other.baseStats[key] = Math.max(1, Math.floor(Number(other.baseStats[key]) * 1.18));
+                    if (other[key] !== undefined) other[key] = Math.max(1, Math.floor(Number(other[key]) * 1.18));
+                });
+            });
+            const linkedIndex = Number(enemy.linkedDeathIndex ?? Battle.getMonsterBaseById?.(Battle.getUnitBaseId(enemy))?.linkedDeathIndex ?? 0) + 1;
+            Battle.queueBattleConversation(`ABYSS_VEGNASIS_FALL_${Math.max(1, Math.min(5, linkedIndex))}`);
+            if (remaining.length) Battle.log('倒れた魔柱の力が残る柱へ流れ、傷が完全に塞がった！');
+        });
     },
 
     checkFinish: () => {
@@ -4564,6 +4712,23 @@ findNextActor: () => {
             };
             container.appendChild(div);
         });
+
+        // ヴェグナシスは戦闘対象を五つ持つが、外見は一体の魔柱として描く。
+        const pillarEnemies = Battle.enemies.filter(enemy => Battle.abyssVegnasisIds.includes(Battle.getUnitBaseId(enemy)));
+        if (pillarEnemies.length) {
+            container.querySelectorAll('.enemy-sprite img').forEach(image => { image.style.opacity = '0'; });
+            const sourceEnemy = pillarEnemies.find(enemy => !enemy.isDead) || pillarEnemies[0];
+            const imageInfo = Battle.resolveMonsterImage?.(sourceEnemy, g);
+            if (imageInfo?.src) {
+                const sharedImage = document.createElement('img');
+                sharedImage.className = 'vegnasis-shared-visual';
+                sharedImage.alt = '死幻の魔柱ヴェグナシス';
+                sharedImage.src = imageInfo.src;
+                sharedImage.onerror = () => { if (imageInfo.fallback) sharedImage.src = imageInfo.fallback; };
+                sharedImage.style.cssText = 'position:absolute;left:50%;bottom:58px;width:min(52%,310px);height:auto;aspect-ratio:1/1;object-fit:contain;object-position:center bottom;transform:translateX(-50%);filter:drop-shadow(0 8px 10px rgba(0,0,0,.75));z-index:30;pointer-events:none;';
+                container.appendChild(sharedImage);
+            }
+        }
     },
 
     renderPartyStatus: () => {

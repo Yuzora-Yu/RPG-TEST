@@ -71,6 +71,10 @@
             { name:'シャニー', text:'倒すたび、残った魂へ力が流れる。\nそれでも、一つずつ解き放つしかない。', charId:306 },
             { name:'魔王ゼノン', text:'五つの怨念ごと斬り伏せる。\n王の前座にしては、悪趣味が過ぎるぞ。', charId:402 }
         ],
+        ABYSS_SPIRIT_FINAL_BLESSING: [
+            { name:'システム', text:'認められた精霊のプリズムが呼応し、幾重もの光が一行を包んだ。' },
+            { name:'シャニー', text:'精霊たちが、この戦いだけ力を重ねてくれている。\n五つの属性を恐れず、魂の結び目を断とう。', charId:306 }
+        ],
         ABYSS_VEGNASIS_FALL_1: [{name:'黒雷のレナード',text:'……盾よ。雷は、もう私を縛らぬ。\n残る者を頼む。'}],
         ABYSS_VEGNASIS_FALL_2: [{name:'死風のエリシア',text:'風が……家々の灯りへ帰っていく。\n押し流すだけの風では、なかった。'}],
         ABYSS_VEGNASIS_FALL_3: [{name:'極零のシーリス',text:'水底にも……朝は届くのね。\n凍らせた声を、連れていって。'}],
@@ -149,7 +153,7 @@
         abyss_veld_battle: bossEvent('ABYSS_VELD',302050,'abyss_veld_clear',[{type:'LB_ADD_PARTY',charId:204,amount:5,source:'story'}]),
         abyss_veld_clear: clearEvent('ABYSS_VELD_CLEAR',['abyssVeldDefeated']),
         abyss_jasper_battle: bossEvent('ABYSS_JASPER',302060,'abyss_jasper_clear'),
-        abyss_jasper_clear: clearEvent('ABYSS_JASPER_CLEAR',['abyssJasperDefeated']),
+        abyss_jasper_clear: clearEvent('ABYSS_JASPER_CLEAR',['abyssJasperDefeated'],[{type:'ITEM',id:701007,count:1}]),
         abyss_illuminacia_battle: bossEvent('ABYSS_ILLUMINACIA',302070,'abyss_illuminacia_clear'),
         abyss_illuminacia_clear: clearEvent('ABYSS_ILLUMINACIA_CLEAR',['abyssIlluminaciaDefeated']),
         abyss_vegnasis_battle: bossEvent('ABYSS_VEGNASIS',[302080,302081,302082,302083,302084],'abyss_vegnasis_clear'),
@@ -170,37 +174,4 @@
         abyss_legacion_prison: {actions:[{type:'CONV',value:'ABYSS_LEGACION_PRISON'}],winActions:[]}
     });
 
-    const bindBossStart = (monsterId, eventId) => {
-        const ids = Array.isArray(monsterId) ? monsterId.map(Number) : [Number(monsterId)];
-        Object.values(globalThis.FIXED_MAPS || {}).forEach(map => (map?.bosses || []).forEach(boss => {
-            const bossIds = (Array.isArray(boss.monsterId) ? boss.monsterId : [boss.monsterId]).map(Number);
-            if (ids.every(id => bossIds.includes(id))) boss.startEventId = eventId;
-        }));
-        Object.values(globalThis.FIXED_DUNGEON_MAPS || {}).forEach(base => {
-            const floors = base?.floors || [base];
-            floors.forEach(floor => (floor?.bosses || []).forEach(boss => {
-                const bossIds = (Array.isArray(boss.monsterId) ? boss.monsterId : [boss.monsterId]).map(Number);
-                if (ids.every(id => bossIds.includes(id))) boss.startEventId = eventId;
-            }));
-        });
-    };
-
-    bindBossStart([302001,302000],'abyss_carmena_gate_battle');
-    bindBossStart(302010,'abyss_leonard_battle');
-    bindBossStart(302020,'abyss_elicia_battle');
-    bindBossStart(302030,'abyss_syris_battle');
-    bindBossStart(302040,'abyss_grad_battle');
-    bindBossStart(302050,'abyss_veld_battle');
-    bindBossStart(302060,'abyss_jasper_battle');
-    bindBossStart(302070,'abyss_illuminacia_battle');
-    bindBossStart([302080,302081,302082,302083,302084],'abyss_vegnasis_battle');
-    bindBossStart(302100,'abyss_azelgarag_battle');
-
-    const prism = globalThis.FIXED_MAPS?.LEGACION?.mapActions?.find(action => action.type === 'abyssSpiritPrism');
-    if (prism) {
-        prism.requiredFlag = 'abyssSpiritPrismKnown';
-        prism.lockedText = '六色のプリズムは沈黙している。城の神官なら、何か知っているかもしれない。';
-    }
-    const crack = globalThis.FIXED_DUNGEON_MAPS?.FINAL_ALTAR?.mapActions?.find(action => action.type === 'abyssPostgameCrack');
-    if (crack) crack.requiredFlag = 'abyssEpilogueSeen';
 })();

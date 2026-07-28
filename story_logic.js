@@ -74,6 +74,27 @@ const StoryManager = {
     getObjectiveText: function(data = null) {
         if (!data && typeof App !== 'undefined') data = App.data;
         const progress = data?.progress || {};
+        const flags = progress.flags || {};
+        const currentArea = (typeof Field !== 'undefined' && typeof Field.getCurrentAreaKey === 'function')
+            ? Field.getCurrentAreaKey()
+            : data?.location?.area;
+        const abyssAreas = globalThis.ABYSS_REGION_MASTER?.areaKeys || [];
+        const hasEnteredAbyssRegion = !!flags.abyssFirstEntered
+            || abyssAreas.includes(String(currentArea || ''))
+            || !!flags.abyssCarmenaGateCleared;
+        if (hasEnteredAbyssRegion) {
+            if (!flags.abyssCarmenaGateCleared) return 'カルメナ北門を守る二将を倒そう';
+            if (!flags.abyssLeonardDefeated || !flags.abyssEliciaDefeated) return '東西の楔を倒し、第一層の結界を解こう';
+            if (!flags.abyssSyrisDefeated || !flags.abyssGradDefeated) return 'ビスタの先で二つの楔を倒そう';
+            if (!flags.abyssLegacionNorthGateOpen) return 'レガシオンの謁見の間へ向かおう';
+            if (!flags.abyssVeldDefeated) return '夢幻回廊リドパルムの最深部へ進もう';
+            if (!flags.abyssJasperDefeated) return '災禍の根ジャゴレアでジャスパーを追おう';
+            if (!flags.abyssIlluminaciaDefeated) return '混沌の結晶片で地下神殿の封印門を開こう';
+            if (!flags.abyssVegnasisDefeated) return '終焉の祭壇で死幻の魔柱を倒そう';
+            if (!flags.abyssAzelgaragDefeated) return '深淵王アゼルガラグを倒そう';
+            if (!flags.abyssEpilogueSeen) return '深淵王との戦いを見届けよう';
+            if (!flags.abyssRandomUnlocked) return '終焉の祭壇に残った亀裂を調べよう';
+        }
 
         if (this.isMainStoryComplete(progress)) {
             return this.getDungeonObjectiveText(data);
@@ -1268,6 +1289,7 @@ const StoryManager = {
                 }
             });
             App.save();
+            App.reconcileDerivedProgressFlags?.();
         }
 
         if (action.type === 'ITEM') {

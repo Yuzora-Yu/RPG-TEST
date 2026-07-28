@@ -21,8 +21,8 @@ try {
   console.warn("[SW] モンスター定義を含む画像一覧の読み込みに失敗しました。画像初回キャッシュは最小限で続行します。", error);
 }
 
-const CACHE_NAME = 'prisma-abyss-v4.20260729';
-const RUNTIME_CACHE_NAME = 'prisma-abyss-v4.20260729-runtime';
+const CACHE_NAME = 'prisma-abyss-v5.20260729';
+const RUNTIME_CACHE_NAME = 'prisma-abyss-v5.20260729-runtime';
 const WARM_CACHE_META_KEY = "__prisma_abyss_warm_cache_complete__";
 
 // 起動に必要な App Shell。
@@ -41,7 +41,6 @@ const PRECACHE_FILES = [
   "map_render_shared.js",
   "polish.js",
   "main.js",
-  "abyss_runtime.js",
   "audio_manifest.js",
   "audio.js",
   "save_crypto.js",
@@ -71,7 +70,6 @@ const PRECACHE_FILES = [
   "skills.js",
   "characters.js",
   "battle.js",
-  "abyss_battle.js",
   "equips.js",
   "blacksmith.js",
   "dungeon.js",
@@ -83,7 +81,6 @@ const PRECACHE_FILES = [
   "job_data.js",
   "map.js",
   "maps_logic.js",
-  "abyss_region.js",
   "story.js",
   "story_logic.js",
   "abyss_story.js",

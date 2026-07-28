@@ -7055,6 +7055,8 @@ window.ITEMS_DATA.push(
             item.type !== '貴重品' &&
             item.type !== '乗り物' &&
             item.type !== '移動' &&
+            item.type !== 'スキル書' &&
+            item.type !== '特性書' &&
             item.medalOnly !== true &&
             item.abyssDrop !== false &&
             Number(item.rank || 1) <= maxRank

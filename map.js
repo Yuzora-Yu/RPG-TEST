@@ -1530,6 +1530,95 @@ const STORY_DATA = {
                 color: "#6d2534"
             }
         },
+        ABYSS_WORLD: {
+            name: "深淵世界",
+            rank: 86,
+            worldKey: "ABYSS_WORLD"
+        },
+        CARMENA: {
+            name: "最果ての地カルメナ",
+            rank: 86,
+            worldKey: "ABYSS_WORLD",
+            centerX: 38,
+            centerY: 57,
+            fieldTile: { img: "overlay_field_town", color: "#45364f" }
+        },
+        THUNDER_DUNES: {
+            name: "雷霆砂丘",
+            rank: 86,
+            worldKey: "ABYSS_WORLD",
+            centerX: 11,
+            centerY: 47,
+            fieldTile: { img: "overlay_field_cave", color: "#d8b44d" },
+            entryRequiredFlag: "abyssCarmenaGateCleared",
+            entryLockedText: "カルメナの門を守る二将が、外への道を封じている。"
+        },
+        SCREAMING_CEMETERY: {
+            name: "叫喚の墓地",
+            rank: 86,
+            worldKey: "ABYSS_WORLD",
+            centerX: 62,
+            centerY: 50,
+            fieldTile: { img: "overlay_field_ruins", color: "#7a8d78" },
+            entryRequiredFlag: "abyssCarmenaGateCleared",
+            entryLockedText: "カルメナの門を守る二将が、外への道を封じている。"
+        },
+        VISTA: {
+            name: "深淵都市ビスタ",
+            rank: 96,
+            worldKey: "ABYSS_WORLD",
+            centerX: 38,
+            centerY: 39,
+            entrances: [
+                { x: 38, y: 39, entryKey: "southwest", label: "南西門" },
+                { x: 38, y: 34, entryKey: "northeast", label: "北東門" }
+            ],
+            fieldTile: { img: "overlay_field_town", color: "#6f5c88" },
+            entryRequiredFlag: "abyssFirstBarrierCleared",
+            entryLockedText: "二つの結界が都市を包み、門に触れることすらできない。"
+        },
+        FROZEN_FOREST: {
+            name: "極寒樹林",
+            rank: 96,
+            worldKey: "ABYSS_WORLD",
+            centerX: 18,
+            centerY: 26,
+            fieldTile: { img: "overlay_field_cave", color: "#80bfe3" },
+            entryRequiredFlag: "abyssFirstBarrierCleared"
+        },
+        PURGATORY_MOUNTAINS: {
+            name: "煉獄山脈",
+            rank: 96,
+            worldKey: "ABYSS_WORLD",
+            centerX: 56,
+            centerY: 29,
+            fieldTile: { img: "overlay_field_cave", color: "#d85b3a" },
+            entryRequiredFlag: "abyssFirstBarrierCleared"
+        },
+        LEGACION: {
+            name: "混沌魔城レガシオン",
+            rank: 106,
+            worldKey: "ABYSS_WORLD",
+            centerX: 38,
+            centerY: 19,
+            entrances: [
+                { x: 38, y: 19, entryKey: "south", label: "南門" },
+                { x: 38, y: 17, entryKey: "north", label: "北門", requiredFlag: "abyssLegacionNorthGateOpen", lockedText: "北門は城内から閉ざされている。皇帝家の末裔との謁見が必要だ。" }
+            ],
+            fieldTile: { img: "overlay_field_darkcastle", color: "#54315f" },
+            entryRequiredFlag: "abyssSecondBarrierCleared",
+            entryLockedText: "第二層の結界が魔城への道を閉ざしている。"
+        },
+        RIDPALM_DREAM_CORRIDOR: {
+            name: "夢幻回廊リドパルム",
+            rank: 106,
+            worldKey: "ABYSS_WORLD",
+            centerX: 38,
+            centerY: 10,
+            fieldTile: { img: "overlay_field_temple", color: "#8f7dff" },
+            entryRequiredFlag: "abyssLegacionNorthGateOpen",
+            entryLockedText: "レガシオンの北門は閉ざされている。皇帝家の末裔に謁見する必要がある。"
+        },
         RUINED_SHRINE: {
             name: "朽ちた祠",
             rank: 300,
@@ -1674,6 +1763,9 @@ const FIELD_ENCOUNTER_ZONES = [
     { id: "LIGHT_PALACE_GROVE", mapId: MAP_IDS.LIGHT_PALACE_OUTSKIRTS, name: "光の宮殿グランプリズマ周辺", rank: 61, centerX: 67, centerY: 48, radius: 18 },
     { id: "DARK_WASTES", mapId: MAP_IDS.DARK_CASTLE_OUTSKIRTS, name: "魔王城ガルヴァニア周辺", rank: 71, centerX: 8, centerY: 50, radius: 30 },
     { id: "ABYSS_EDGE", mapId: MAP_IDS.ABYSS_FIELD_OUTSKIRTS, name: "深淵の魔窟外縁周辺", rank: 81, centerX: 51, centerY: 55, radius: 20, priority: 1 },
+    { id: "ABYSS_CARMENA_FIELD", worldKey: "ABYSS_WORLD", mapId: MAP_IDS.CARMENA_OUTSKIRTS, name: "カルメナ周辺", rank: 88, centerX: 38, centerY: 52, radius: 20, rect: { x1: 0, y1: 40, x2: 77, y2: 63 }, priority: 1 },
+    { id: "ABYSS_VISTA_FIELD", worldKey: "ABYSS_WORLD", mapId: MAP_IDS.VISTA_OUTSKIRTS, name: "ビスタ周辺", rank: 98, centerX: 38, centerY: 30, radius: 22, rect: { x1: 0, y1: 20, x2: 77, y2: 39 }, priority: 2 },
+    { id: "ABYSS_LEGACION_FIELD", worldKey: "ABYSS_WORLD", mapId: MAP_IDS.LEGACION_OUTSKIRTS, name: "レガシオン周辺", rank: 108, centerX: 38, centerY: 10, radius: 20, rect: { x1: 0, y1: 0, x2: 77, y2: 19 }, priority: 3 },
     { id: "TRIAL_ISLAND_FIELD", mapId: MAP_IDS.TRIAL_ISLAND_OUTSKIRTS, name: "最果ての祠周辺", rank: 81, centerX: 2, centerY: 2, radius: 10, priority: 2, rareMonsters: [{ id: 200203, rate: 0.05 }] },
     { id: "SUMMIT_TEMPLE_FIELD", mapId: MAP_IDS.SUMMIT_TEMPLE_OUTSKIRTS, name: "頂の神殿周辺", rank: 146, centerX: 89, centerY: 77, radius: 12, priority: 2, rareMonsters: [{ id: 200203, rate: 0.05 }] }
 ];
@@ -1789,9 +1881,147 @@ const SURFACE_WORLD_MAP_DATA = [
     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
 ];
 
-// WORLD_MAPS is populated by world-content modules. MAP_DATA remains the compatibility
-// entry point, but resolves to the active world so rendering, movement, encounters,
-// and validation never diverge between the surface and the Abyss world.
+// 第二世界は地上マップへの座標上書きではなく、独立した正式ワールドデータとして保持する。
+// 下記配列は制作時に地形を作図して確定した正本であり、実行時には生成・変形しない。
+const ABYSS_WORLD_MAP_DATA = [
+    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGWWWWWWWWWWWWWWWWWWWWWW",
+    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGGGGMGGGGGGGWWWWWWWWWWWWWWW",
+    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGWWWWWWWWW",
+    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGMGGMGGMGGGGGGGGGGGGGGGGGGGGGGWWWWWW",
+    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGGGGGGGGGGGGGGGGGGGMGGGGGGGGGGGGWWWW",
+    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGGGGGGGGGGMGGGGGGGGGGGGGGGGGGGGGGGGWWW",
+    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGGGGGGGGGGGGGGGGGGGGMGGGGGGGGMGGGGGGWW",
+    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGMGGGGGGGGGGGGGGGGGGGGGGGMGGGGGGGGGGGGGGGGGGWW",
+    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGMGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGMGGGGGGWWW",
+    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGTGGGGGMGGGGGGGGGGGGGGGGGGGGGGGGGGGGGWWWW",
+    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGTGMGGGGGGGGGGGGGGGGMGGGGGGGGGGGGGGGWWWWW",
+    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGTGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGWWWWWWW",
+    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGTGGGGGGGGGGGGGGGGGMGGGGGGGGGGGGWWWWWWWWW",
+    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGTGGGGGGGGGGGGGMGGGGGGGGGGGGWWWWWWWWWWWWW",
+    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGTGGGGGWWWWWWGGGGGGGGWWWWWWWWWWWWWWWWWWWW",
+    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGTGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGTMGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWTGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGTGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+    "WWWWWWWWWWWWWFFFFFFFFFFWWWWWWWWWWWGGGGTGGGGWWWWWWWWWWWWWWWWWRRRRWWWWWWWWWWWWWW",
+    "WWWWWWWWWWFFFFFFFFFFFFFFFWWWWWWWWWGGGGTGGGGWWWWWWWWWWWWWRRRRRRRRRMRWWWWWWWWWWW",
+    "WWWWWWWWWFFMFFFFFFFFFFFFFFFFFFGGGGGMGGTGGGGGGGGGRRRRRWRRRRRMRRRRRRRRRWWWWWWWWW",
+    "WWWWWWWFMFFFFFFFFFFFFFFFFFFFFFGGGGGGGGTGGGGGGGGGRRRRMRRRRRRRRRRRRRRRRRWWWWWWWW",
+    "WWWWWWWFFFFFFFFFFFMFFFFFFFFFFFGGGGGGGGTGGGGGGMGGRRRRRRRRRRRRRRRRRRRRRRRWWWWWWW",
+    "WWWWWWFMFFFFFFFFFFTTFFFFFFFFFFGGGGGGGGTGGGGGGGGGRRRRRRRRRRRRRRRRRRRRRRRRWWWWWW",
+    "WWWWWWFFFFFFFFFFFFFMTTMFFMFFFFGGGGGGGGTGGGGGGGGGRRRRRRRRRRRRRRRRRRRRRRRRWWWWWW",
+    "WWWWWWWFFFFFFFFFFFFFFFTTTFFFFFGGGGGGGGTGGGGGGGGGRMRRRRMRRRRMRRRRRRRRRRRRWWWWWW",
+    "WWWWWWWFFFFFFMFFFFFFFFFFFTTFFFGGMGGGGGTGGGGGGGGGRRRRRRRTTRRRRRRRRRRRRRRRWWWWWW",
+    "WWWWWWWWFFFFFFFFFFFFFFFFFFFTTTGGGGGGGGTGGGGGGGGGRRRTTTTRRRRRRRRRRRRMRRRRWWWWWW",
+    "WWWWWWWWWFFFFFFFFFFFFFFFFFMFFFTTGGGGGGTGGGGGGGGTTTTRRRRRRRRRRRRRRRRRMRRRWWWWWW",
+    "WWWWWWWWWWFFFFFFFFFFFFFFFFFFFFGGTTTGGGTGGGGGTTTGRRMRRRRRRRRRRRRMRRRRRRRWWWWWWW",
+    "WWWWWWWWWWWWFFFFFMFFFFFFFFFFFFGGGGGTTGTGTTTTGGGGRRRRRWRRRRRRRRRRRRRRRWWWWWWWWW",
+    "WWWWWWWWWWWWWWWFFFFFWWWWWWWWWWWWWGGGGTTTGGGGWWWWWWWWWWWWRRMRRRRRMRRWWWWWWWWWWW",
+    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGTGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+    "WWWWWWWWWWWWWHWWWWWWWWWWWWWWWWWWWWGGGGTGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+    "WWWWWWWWHHHHHHHHHHHWWWWWWWWWWWWWWGGGGGTGMGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+    "WWWWWWHHHHHHHHHHHHHHHWWWWWWWWWWWGGGGGGTGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+    "WWWWWHHHHHHHHHHHHHHHHHWWWHHGGGGGMGGGGGTGGGGGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWW",
+    "WWWWHHHHHHHHHHHHHHHHHHHHHHHGGGGGGGGGGGTGGGGGGGGGGGGGLLLLLLLWWMLLLLLLLLMWWWWWWW",
+    "WWWWHHHHHHHHHHHMHHHHHHHHHHHGGGGGGGGGGGTGGGMGGGGGGGGGLLLLLLLLLLLLLLLLLLLLWWWWWW",
+    "WWWWHHHHHHHHHHHHHHHHHHHHHHHGGGGGGGGGGGTGGGGGGGGGGGGGLLLLLLLLLLLLMLLLLLLLLLWWWW",
+    "WWWWHHHHHHHTTHHHHHHHHHHHHMHGGGGGGGGGGGTGGGGGGGGMGGGGLLLLLLLLLLLLLLLLLLLLLLLWWW",
+    "WWWWHHHHHHHHHTTTHHHHHHHHHHHGGGGGGGGGGGTGGGGGGGGGGGGGLLLLLLLLLLLLLLMLLLLLLLLWWW",
+    "WWWWHHHHHHHHHHHHTTHHHHHHHHHGGGGGGGGGGGTGGGGGGGGGGGGGLLLLLLLLLLLLLLLLLLMLLLLLWW",
+    "WWWWHHHHHHHHHHHHHHTTTHHHHHHGGMMMGGGGGGTGGGGGGGGGGGGGLLLLLLLLLTTLLLLLLLLLLLLLWW",
+    "WWWWWHHHHHHHHHHHHHHHHTTTHHHGGGGGGGGGGGTGGGGGGGGGGGGMLLLLLTTTTLLLLLLMLLLLLLLWWW",
+    "WWWWWWHHHHHHMHHHHHHHHHHHTTHGGGGGGGGGGGTGGGGGGGGGGGGGLLTTTLLLLLLLLLLLLLLLLLLWWW",
+    "WWWWWWHHHHMHHHHHHHHHHHHHHHTTTGGGGGGGGGTMGGGGGGGGGGTTTTLLLLLLLLLLLLLLLLLLLMWWWW",
+    "WWWWWWWHHMHHHHHHHHHHHHHHHHHMGTTTGGGGGGTGGGGGGGGTTTGGLLLLLLLLLLLLLLLLLLLLLLWWWW",
+    "WWWWWWWWHHHHHHHHHMHHHHHHHHHGGGGGTTGGGMTGGGGGTTTGGGGGLLLLLLLLLLLLLLLLLLLLLWWWWW",
+    "WWWWWWWWWWHHHHHHHHHHHHHHHHHMGGGGGGTTTGTGTTTTGGGGGGGGLMLLLLLLLLLLLLLLLLLWWWWWWW",
+    "WWWWWWWWWWWHHHHHHHHHHHHHMHMGMGGGGGGGGTTTGGGGGGGGGGGGLLLLLLLLLLLLLLLWWWWWWWWWWW",
+    "WWWWWWWWWWWWWHHHHHHHHHHHHHHMGGGGGGGGGGGGGGGGGGGGGGGGLLLLLMLLLLLLWWWWWWWWWWWWWW",
+    "WWWWWWWWWWWWWWWWHHHHMHHHHHHGGGGGGGGGGGGGGGGGGMGGGGGGLLLLLLLLLWWWWWWWWWWWWWWWWW",
+    "WWWWWWWWWWWWWWWWWWWHMHHHHHHGGGGGGGGGGGGGGGGGGGGGGGGGLLLLLWWWWWWWWWWWWWWWWWWWWW",
+    "WWWWWWWWWWWWWWWWWWWWWWWWWHHGGGGGGGGGGGGGGGGMGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWW",
+    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWGGGGGGGGGGGGGGGGGWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+];
+
+const WORLD_MAPS = Object.freeze({
+    WORLD: Object.freeze({
+        key: "WORLD",
+        name: "地上世界",
+        mapId: MAP_IDS.WORLD,
+        tiles: SURFACE_WORLD_MAP_DATA,
+        bridges: WORLD_BRIDGES,
+        seaTiles: Object.freeze(["W"]),
+        impassableTiles: Object.freeze(["M"]),
+        allowBoat: true,
+        allowFlight: true,
+        skyPrismEligible: true
+    }),
+    ABYSS_WORLD: Object.freeze({
+        key: "ABYSS_WORLD",
+        name: "深淵世界",
+        mapId: MAP_IDS.ABYSS_WORLD,
+        tiles: ABYSS_WORLD_MAP_DATA,
+        bridges: [],
+        themeKey: "ABYSS_FIELD",
+        tileOverrides: Object.freeze({
+            W: Object.freeze({ img: "tile_abyss_outer_wall", variants: Object.freeze(["tile_abyss_outer_wall", "tile_abyss_outer_wall_2", "tile_abyss_outer_wall_3", "tile_abyss_outer_wall_4"]), color: "#100b18" }),
+            M: Object.freeze({ img: "tile_abyss_outer_wall_2", variants: Object.freeze(["tile_abyss_outer_wall_2", "tile_abyss_outer_wall_3", "tile_abyss_outer_wall_4"]), color: "#21152d" }),
+            T: Object.freeze({ img: "tile_abyss_path", color: "#51435f" }),
+            G: Object.freeze({ img: "tile_abyss_grass", color: "#394744" }),
+            F: Object.freeze({ img: "tile_abyss_grass", color: "#253b35" }),
+            L: Object.freeze({ img: "tile_poison_bog", color: "#45533b" })
+        }),
+        seaTiles: Object.freeze([]),
+        impassableTiles: Object.freeze(["W", "M"]),
+        skyPrismDestination: Object.freeze({ x: 38, y: 57 }),
+        allowBoat: false,
+        allowFlight: false,
+        skyPrismEligible: true
+    })
+});
+
+const DERIVED_PROGRESS_FLAGS = Object.freeze([
+    Object.freeze({ flag: "abyssFirstBarrierCleared", requires: Object.freeze(["abyssLeonardDefeated", "abyssEliciaDefeated"]) }),
+    Object.freeze({ flag: "abyssSecondBarrierCleared", requires: Object.freeze(["abyssSyrisDefeated", "abyssGradDefeated"]) })
+]);
+
+// 深淵地域に共通する環境・進行規則の正本。
+// MAP定義と同じロード段階で確定させ、後続スクリプトによる実行時追加を禁止する。
+const ABYSS_REGION_MASTER = Object.freeze({
+    worldKey: "ABYSS_WORLD",
+    elements: Object.freeze(["火", "水", "風", "雷", "光", "闇", "混沌"]),
+    protectedCarmenaCharacterIds: Object.freeze([306, 402, 401]),
+    areaKeys: Object.freeze([
+        "ABYSS_WORLD", "CARMENA", "VISTA", "LEGACION", "LEGACION_PRISON", "LEGACION_TEMPLE",
+        "LEGACION_THRONE", "THUNDER_DUNES", "SCREAMING_CEMETERY", "BLACK_ROPE_PYRAMID",
+        "MAGIC_WIND_MAUSOLEUM", "FROZEN_FOREST", "PURGATORY_MOUNTAINS", "ICE_PENANCE_ROAD",
+        "SCORCHING_OLD_CASTLE", "RIDPALM_DREAM_CORRIDOR", "JAGOREA_ROOT", "CHRONO_ABYSS",
+        "FINAL_ALTAR", "ABYSS"
+    ]),
+    bossFlags: Object.freeze({
+        302001: "abyssCarmenaGateCleared",
+        302000: "abyssCarmenaGateCleared",
+        302010: "abyssLeonardDefeated",
+        302020: "abyssEliciaDefeated",
+        302030: "abyssSyrisDefeated",
+        302040: "abyssGradDefeated",
+        302050: "abyssVeldDefeated",
+        302060: "abyssJasperDefeated",
+        302070: "abyssIlluminaciaDefeated",
+        302080: "abyssVegnasisDefeated",
+        302100: "abyssAzelgaragDefeated",
+        302101: "abyssAzelgaragDefeated"
+    })
+});
+
+// MAP_DATA is retained as the compatibility entry point for existing renderers.
 const MAP_DATA = new Proxy(SURFACE_WORLD_MAP_DATA, {
     get(target, property, receiver) {
         const location = globalThis.App?.data?.location || {};
@@ -1801,7 +2031,7 @@ const MAP_DATA = new Proxy(SURFACE_WORLD_MAP_DATA, {
         const worldKey = explicitWorldKey === 'ABYSS_WORLD' || area === 'ABYSS_WORLD' || areaWorldKey === 'ABYSS_WORLD'
             ? 'ABYSS_WORLD'
             : 'WORLD';
-        const active = globalThis.WORLD_MAPS?.[worldKey]?.tiles;
+        const active = WORLD_MAPS[worldKey]?.tiles;
         return Reflect.get(Array.isArray(active) ? active : target, property, receiver);
     }
 });
@@ -2102,6 +2332,202 @@ const FIXED_OVERLAY_BASE_TILES = {
 };
 
 const FIXED_MAPS = {
+    CARMENA: {
+        name: "最果ての地カルメナ",
+        themeKey: "ABYSS_FIELD",
+        tileOverrides: {},
+        width: 39,
+        height: 29,
+        entryPoint: { x: 19, y: 25 },
+        skyPrismEntryPoint: { x: 19, y: 25 },
+        battleBg: "battle_bg_abyss_boss",
+        tiles: [
+            "WWWWWWWWWWWWWWWWWWWSWWWWWWWWWWWWWWWWWWW",
+            "WWGGGGGGGGGGGGGGGGGTGGGGGGGGGGGGGGGGGWW",
+            "WWGWWWWWWWWWWWWWWWBTBWWWWWWWWWWWWWWWGWW",
+            "WWMGGGGGGGGGGGGGGGTTTGGGGGGGGGGGGGGGMWW",
+            "WWMMGGGGGGGGGGGGGGTTTGGGGGGGGGGGGGGMMWW",
+            "WWMGGGGTTTTTTTTTTTTTTTTTTTTTTTTTGGGGMWW",
+            "WWMGGGGTGGGGGGGGGGTTTGGGGGGGGGGTGGGGMWW",
+            "WWMGGGGIGGGGGGGGGGTTTGGGGGGGGGGVGGGGMWW",
+            "WWMMGGGTGGGGGGGGGGTTTGGGGGGGGGGTGGGMMWW",
+            "WWMGGGGTGGGGGGTTTTTTTTTTTGGGGGGTGGGGMWW",
+            "WWMGGGGTGGGGGGTTMTTTTTMTTGGGGGGTGGGGMWW",
+            "WWMGGTTTTTTTTTTTTTTTTTTTTTTTTTTTTTGGMWW",
+            "WWMMGTTTTTTTTTTTTTTTTTTTTTTTTTTTTTGMMWW",
+            "WWMGGTTTTTTTTTTTTTTTTTTTTTTTTTTTTTGGMWW",
+            "WWMGGGGGGGGGGGTTTTTTTTTTTGGGGGGGGGGGMWW",
+            "WWMGGGGGGGGGGGTTMTTTTTMTTGGGGGGGGGGGMWW",
+            "WWMMGGGGHGGGGGTTTTTTTTTTTGGGGGHGGGGMMWW",
+            "WWMGGGGGGGGGGGGGGGTTTGGGGGGGGGGGGGGGMWW",
+            "WWMGGGGGGGGGGGGGGGTTTGGGGGGGGGGGGGGGMWW",
+            "WWMGGGGTTTTTTTTTTTTTTTTTTTTTTTTTGGGGMWW",
+            "WWMMGGGTTTTTTTTTTTTTTTTTTTTTTTTTGGGMMWW",
+            "WWMGGGGTTTTTTTTTTTTTTTTTTTTTTTTTGGGGMWW",
+            "WWMGGGGGTGGGGGGGGGTTTGGGGGGGGGTGGGGGMWW",
+            "WWMGGGGGHGGGGGGGGGTTTGGGGGGGGGHGGGGGMWW",
+            "WWMMGGGGTTTTTTTTTTTTTTTTTTTTTTTGGGGMMWW",
+            "WWMGGGGGGGGGGGGGTTTTTTTGGGGGGGGGGGGGMWW",
+            "WWMGGGGGGGGGGGGGTTTTTTTGGGGGGGGGGGGGMWW",
+            "WWGGGGGGGGGGGGGGTTTTTTTGGGGGGGGGGGGGGWW",
+            "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+        ],
+        mapActions: [
+            { x: 7, y: 7, type: "inn", label: "宿に泊まる", log: "黒曜石の壁に、淡い灯がともっている。" },
+            { x: 31, y: 7, type: "shop", shopType: "item", title: "カルメナ 道具屋", shopRank: 90, label: "道具を買う" },
+            { x: 19, y: 26, type: "returnPortal", useSavedReturnPoint: false, fallbackAreaKey: "ABYSS_FIELD", fallbackWorldKey: "WORLD", fallbackX: 8, fallbackY: 12, label: "黒い泉から地上へ戻る", log: "黒い水面の奥に、地上へ続く光が揺れている。", imageKey: "overlay_abyss_black_spring", baseTile: "T" },
+            { x: 8, y: 16, type: "storyEvent", eventId: "abyss_carmena_resident", label: "住人と話す", imageKey: "overlay_npc_villager", baseTile: "G" },
+            { x: 30, y: 16, type: "storyEvent", eventId: "abyss_carmena_resident", label: "住人と話す", imageKey: "overlay_npc_villager", baseTile: "G" }
+        ],
+        blockingObjects: [
+            { x: 19, y: 2, missingFlag: "abyssCarmenaGateCleared", imageKey: "overlay_light_prison_gate_horizontal", drawWidth: 32, drawHeight: 32, log: "二将の背後で、北門が固く閉ざされている。" }
+        ],
+        bosses: [
+            {
+                x: 18,
+                y: 2,
+                monsterId: [302001, 302000],
+                mapSpriteMonsterId: 302001,
+                defeatGroupId: "carmena_gate_generals",
+                clearedFlag: "abyssCarmenaGateCleared",
+                startEventId: "abyss_carmena_gate_battle",
+                storyEventId: "abyss_carmena_gate_clear",
+                actionLabel: "二将に挑む",
+                challengeText: "グレン将軍とレオン将軍が同時に武器を構えた。\n二人を相手に戦いますか？"
+            },
+            {
+                x: 20,
+                y: 2,
+                monsterId: [302001, 302000],
+                mapSpriteMonsterId: 302000,
+                defeatGroupId: "carmena_gate_generals",
+                clearedFlag: "abyssCarmenaGateCleared",
+                startEventId: "abyss_carmena_gate_battle",
+                storyEventId: "abyss_carmena_gate_clear",
+                actionLabel: "二将に挑む",
+                challengeText: "レオン将軍とグレン将軍が同時に武器を構えた。\n二人を相手に戦いますか？"
+            }
+        ],
+        exitPoint: { area: "ABYSS_WORLD", worldKey: "ABYSS_WORLD", x: 38, y: 57 },
+        worldExits: [
+            { x: 19, y: 0, area: "ABYSS_WORLD", worldKey: "ABYSS_WORLD", worldX: 38, worldY: 57, requiredFlag: "abyssCarmenaGateCleared", lockedText: "二将が門を守っている。" }
+        ]
+    },
+    VISTA: {
+        name: "深淵都市ビスタ",
+        themeKey: "DARK_CASTLE",
+        width: 43,
+        height: 31,
+        entryPoint: { x: 3, y: 27 },
+        entryPoints: { southwest: { x: 3, y: 27 }, northeast: { x: 39, y: 3 } },
+        battleBg: "battle_bg_field",
+        tiles: [
+            "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+            "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+            "WWGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGWW",
+            "WWMGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGTTTTTTTSW",
+            "WWMGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGTGGGGGMWW",
+            "WWMMGGGGTGGGGGGGGGGGGGGGGGGGGGGGGGTTGGGMMWW",
+            "WWMGGGGGIGGGGGGGGGGGGGGGGGGGGGGGGGTVGGGGMWW",
+            "WWMGGGGGTGGGGGGGGGGGGGGGGGGGGGGGGGTTGGGGMWW",
+            "WWMGGTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTGGGMWW",
+            "WWMGGGGGTGGGGGGGGGGGGGGGGGGTTTTTTTTTGGGGMWW",
+            "WWMMGGGGTGGGGGGGGGGGGGGGGGGTGGGGGGGTGGGMMWW",
+            "WWMGGGGGTGGGGGGGGGGGGGGGGGGTGGGGGGGTGGGGMWW",
+            "WWMGGGGGTGGGGGGGGTTTTTTTTTTTGGGGGGGTGGGGMWW",
+            "WWMGGGGGTGGGGGGGGTTTTTTTTTTTGGGGGGGTGGGGMWW",
+            "WWMGGGGGTGGGGGGGGTTTTTTTTTTTGGGGGGGTGGGGMWW",
+            "WWMMGGGGTGGGGGGGGTMTTTTTMTTGGGGGGGGTGGGMMWW",
+            "WWMGGGGGTGGGGGGGGTTTTTTTTTTGGGGGGGGTGGGGMWW",
+            "WWMGGGGGTGGGGGGGGTTTTTTTTTTGGGGGGGGTGGGGMWW",
+            "WWMGGGGGTGGGGGGGTTMTTTTTMTTGGGGGGGGTGGGGMWW",
+            "WWMGGGGGTGGGGGGGTTTTTTTTTTTGGGGGGGGTGGGGMWW",
+            "WWMMGGGGTGGGGGGGTGGGGGGGGGGGGGGGGGGTGGGMMWW",
+            "WWMGGGGGTGGGGGGGTGGGGGGGGGGGGGGGGGGTGGGGMWW",
+            "WWMGGGTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTGGGMWW",
+            "WWMGGGGGTTTTTTTTTGGGGGGGGGGGGGGGGGGTGGGGMWW",
+            "WWMGGGGGHTGGGGGGGGGGGGGGGGGGGGGGGGGHGGGGMWW",
+            "WWMMGGGGTTGGGGGGGGGGGGGGGGGGGGGGGGGTGGGMMWW",
+            "WWMGGGGGGTGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGMWW",
+            "WSTTTTTTTTGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGMWW",
+            "WWGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGWW",
+            "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+            "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+        ],
+        mapActions: [
+            { x: 8, y: 6, type: "inn", label: "宿に泊まる" },
+            { x: 35, y: 6, type: "shop", shopType: "item", title: "ビスタ 初級技法書店", shopRank: 35, itemIds: [600101, 600119, 600200, 600202, 600300, 600400], label: "技法書を見る" },
+            { x: 8, y: 24, type: "shop", shopType: "item", title: "ビスタ 道具屋", shopRank: 100, label: "道具を買う" },
+            { x: 18, y: 16, type: "storyEvent", eventId: "abyss_vista_recruitment_guide", label: "魔物使いと話す", imageKey: "overlay_npc_villager", baseTile: "T" }
+        ],
+        exitPoint: { area: "ABYSS_WORLD", worldKey: "ABYSS_WORLD", x: 38, y: 39 },
+        worldExits: [
+            { x: 1, y: 27, area: "ABYSS_WORLD", worldKey: "ABYSS_WORLD", worldX: 38, worldY: 39 },
+            { x: 41, y: 3, area: "ABYSS_WORLD", worldKey: "ABYSS_WORLD", worldX: 38, worldY: 34 }
+        ]
+    },
+    LEGACION: {
+        name: "混沌魔城レガシオン",
+        themeKey: "DARK_CASTLE",
+        width: 49,
+        height: 37,
+        entryPoint: { x: 24, y: 34 },
+        entryPoints: { south: { x: 24, y: 34 }, north: { x: 24, y: 2 } },
+        battleBg: "battle_bg_lastboss",
+        tiles: [
+            "WWWWWWWWWWWWWWWWWWWWWWWWSWWWWWWWWWWWWWWWWWWWWWWWW",
+            "WWGGGGGGGGGGGGGGGGGGGGGGTGGGGGGGGGGGGGGGGGGGGGGWW",
+            "WWMGGGGGWWWWWWWWWWWWWWWWTWWWWWWWWWWWWWWWWGGGGGMWW",
+            "WWMGGGGGWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWGGGGGMWW",
+            "WWMGGGGGWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWGGGGGMWW",
+            "WWMGGGGGWWTTTTGGGGGGGGGGTGGGGGGGGGGTTTTWWGGGGGMWW",
+            "WWMGGGGGWWTTTTGGGGGGGGGGTGGGGGGGGGGTTTTWWGGGGGMWW",
+            "WWMGGGGGWWTTTTGGGGGGGGGGTGGGGGGGGGGTTTTWWGGGGGMWW",
+            "WWMGGGGGWWTTTTGGGGGGGGGGTGGGGGGGGGGTTTTWWGGGGGMWW",
+            "WWMGGGGGWWTTTTGGGGGGGGGGTGGGGGGGGGGTTTTWWGGGGGMWW",
+            "WWMGGGGGWWTTTTGGGGGGGGGGTGGGGGGGGGGTTTTWWGGGGGMWW",
+            "WWMGGGGGWWTTTTGGGGGGGGGGTGGGGGGGGGGTTTTWWGGGGGMWW",
+            "WWMGGGGGWWTTTTGGGGGGGGGGTGGGGGGGGGGTTTTWWGGGGGMWW",
+            "WWMGGGGGWWTTTTGGGGGGGGGGTGGGGGGGGGGTTTTWWGGGGGMWW",
+            "WWMGGGGGWWTTTTGGGGGGGGGGTGGGGGGGGGGTTTTWWGGGGGMWW",
+            "WWMGGGGGWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWGGGGGMWW",
+            "WWMGGGGGWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWGGGGGMWW",
+            "WWWWWWWWWWWWWWWWWWWWWWWTTTWWWWWWWWWWWWWWWWWWWWWWW",
+            "WWWWWWWWWWWWWWWWWWWWWWWTTTWWWWWWWWWWWWWWWWWWWWWWW",
+            "WWMGGGGGGGGGGGGGGGGGGGGGTGGGGGGGGGGGGGGGGGGGGGMWW",
+            "WWMGGGGGTGGGGGGGGGGGGGGGTGGGGGGGGGGGGGGGTGGGGGMWW",
+            "WWMGGGGGTGGGGGGGGGGGGGGGTGGGGGGGGGGGGGGGTGGGGGMWW",
+            "WWMGGGGGTGGGGGGGGGTTTTTTTTTTTTTGGGGGGGGGTGGGGGMWW",
+            "WWMGGGGGHGGGGGGGGGTTTTTTTTTTTTTGGGGGGGGGHGGGGGMWW",
+            "WWMGGGGGTGGGGGGGGGTTTTTTTTTTTTTGGGGGGGGGTGGGGGMWW",
+            "WWMGGTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTGGMWW",
+            "WWMGGGGGTGGGGGGGGGTTTTTTTTTTTTTGGGGGGGGGTGGGGGMWW",
+            "WWMGGGGGTGGGGGGGGGTTTTTTTTTTTTTGGGGGGGGGTGGGGGMWW",
+            "WWMGGGGGTGGGGGGGGGTTTTTTTTTTTTTGGGGGGGGGTGGGGGMWW",
+            "WWMGGGGGTGGGGGGGGGTTTTTTTTTTTTTGGGGGGGGGTGGGGGMWW",
+            "WWMGGGGGHGGGGGGGGGGGGGGGTGGGGGGGGGGGGGGGHGGGGGMWW",
+            "WWMGGGGGTGGGGGGGGGGGGGGGTGGGGGGGGGGGGGGGTGGGGGMWW",
+            "WWMGGGGTTTTTTTTTITTTTTTTTTTTTTTTVTTTTTTTTTGGGGMWW",
+            "WWMGGGGGTGGGGGGGGGGGGGGGTGGGGGGGGGGGGGGGTGGGGGMWW",
+            "WWMGGGGGTGGGGGGGGGGGGGGGTGGGGGGGGGGGGGGGTGGGGGMWW",
+            "WWGGGGGGGGGGGGGGGGGGGGGGTGGGGGGGGGGGGGGGGGGGGGGWW",
+            "WWWWWWWWWWWWWWWWWWWWWWWWSWWWWWWWWWWWWWWWWWWWWWWWW"
+        ],
+        mapActions: [
+            { x: 8, y: 23, type: "blacksmith", label: "鍛冶を頼む" },
+            { x: 40, y: 23, type: "alchemy", label: "錬金を行う" },
+            { x: 8, y: 30, type: "guild", label: "冒険者ギルドへ" },
+            { x: 40, y: 30, type: "storyEvent", eventId: "abyss_legacion_arena_notice", label: "格闘場を見る", imageKey: "overlay_npc_villager", baseTile: "T" },
+            { x: 24, y: 5, type: "fixedMap", target: "LEGACION_THRONE", returnX: 24, returnY: 6, label: "二階へ上がる" },
+            { x: 14, y: 12, type: "fixedMap", target: "LEGACION_PRISON", returnX: 14, returnY: 13, label: "地下牢へ下りる" },
+            { x: 34, y: 12, type: "fixedMap", target: "LEGACION_TEMPLE", returnX: 34, returnY: 13, label: "地下神殿へ下りる" }
+        ],
+        exitPoint: { area: "ABYSS_WORLD", worldKey: "ABYSS_WORLD", x: 38, y: 19 },
+        worldExits: [
+            { x: 24, y: 36, area: "ABYSS_WORLD", worldKey: "ABYSS_WORLD", worldX: 38, worldY: 19 },
+            { x: 24, y: 0, area: "ABYSS_WORLD", worldKey: "ABYSS_WORLD", worldX: 38, worldY: 17, requiredFlag: "abyssLegacionNorthGateOpen", lockedText: "北門はまだ閉ざされている。" }
+        ]
+    },
     START_VILLAGE: {
         name: "リュミナ村",
         themeKey: "START_VILLAGE",
@@ -4327,6 +4753,199 @@ const FIXED_MAPS = {
             x: 89,
             y: 77
         }
+    },
+    LEGACION_PRISON: {
+        "name": "混沌魔城レガシオン 地下牢",
+        "themeKey": "DARK_CASTLE",
+        "width": 31,
+        "height": 21,
+        "tiles": [
+            "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+            "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+            "WWTTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
+            "WWTTWWWWWTWWWWWTWWWWWTWWWWWTTWW",
+            "WWTTWGGGWTWGGGWTWGGGWTWGGGWTTWW",
+            "WWTTWGGGWTWGGGWTWGGGWTWGGGWTTWW",
+            "WWTTWGGGWTWGGGWTWGGGWTWGGGWTTWW",
+            "WWTTWGGGWTWGGGWTWGGGWTWGGGWTTWW",
+            "WWTTWWWWWTWWWWWTWWWWWTWWWWWTTWW",
+            "WWTTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
+            "WWTTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
+            "WWTTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
+            "WWTTWWWWWTWWWWWTWWWWWTWWWWWTTWW",
+            "WWTTWGGGWTWGGGWTWGGGWTWGGGWTTWW",
+            "WWTTWGGGWTWGGGWTWGGGWTWGGGWTTWW",
+            "WWTTWGGGWTWGGGWTWGGGWTWGGGWTTWW",
+            "WWTTWGGGWTWGGGWTWGGGWTWGGGWTTWW",
+            "WWTTWWWWWTWWWWWTWWWWWTWWWWWTTWW",
+            "WWTTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
+            "WWWWWWWWWWWWWWWTWWWWWWWWWWWWWWW",
+            "WWWWWWWWWWWWWWWSWWWWWWWWWWWWWWW"
+        ],
+        "entryPoint": {
+            "x": 15,
+            "y": 18
+        },
+        "battleBg": "battle_bg_lastboss",
+        "exitPoint": {
+            "area": "LEGACION",
+            "x": 13,
+            "y": 12
+        },
+        "mapActions": [
+            {
+                "x": 8,
+                "y": 6,
+                "type": "storyEvent",
+                "eventId": "abyss_legacion_prison",
+                "label": "牢内を調べる",
+                "baseTile": "G"
+            },
+            {
+                "x": 22,
+                "y": 14,
+                "type": "storyEvent",
+                "eventId": "abyss_legacion_prison",
+                "label": "囚人と話す",
+                "imageKey": "overlay_npc_villager",
+                "baseTile": "G"
+            }
+        ],
+        "mapId": "MAP000058",
+        "floorId": "MAP000058-00",
+        "useHabitatEncounters": true
+    },
+    LEGACION_TEMPLE: {
+        "name": "混沌魔城レガシオン 地下神殿",
+        "themeKey": "DARK_CASTLE",
+        "width": 33,
+        "height": 23,
+        "tiles": [
+            "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+            "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+            "WWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
+            "WWTTTWWWWWWWWWWWWWWWWWWWWWWWTTTWW",
+            "WWTTTWTTTTTTTTTTTTTTTTTTTTTWTTTWW",
+            "WWTTTWTTTTTTTTTTTTTTTTTTTTTWTTTWW",
+            "WWTTTWTMTTTTTTTTTTTTTTTTTMTWTTTWW",
+            "WWTTTWTTTTTTTTTTTTTTTTTTTTTWTTTWW",
+            "WWTTTWTTTTTTTTTTTTTTTTTTTTTWTTTWW",
+            "WWTTTWTTTTTTTTTTTTTTTTTTTTTWTTTWW",
+            "WWTTTWTMTTTTTTTTTTTTTTTTTMTWTTTWW",
+            "WWTTTWTTTTTTTTTTTTTTTTTTTTTWTTTWW",
+            "WWTTTWTTTTTTTTTTTTTTTTTTTTTWTTTWW",
+            "WWTTTWTTTTTTTTTTTTTTTTTTTTTWTTTWW",
+            "WWTTTWTMTTTTTTTTTTTTTTTTTMTWTTTWW",
+            "WWTTTWTTTTTTTTTTTTTTTTTTTTTWTTTWW",
+            "WWTTTWTTTTTTTTTTTTTTTTTTTTTWTTTWW",
+            "WWTTTWTTTTTTTTTTTTTTTTTTTTTWTTTWW",
+            "WWTTTWWWWWWWWWWWTWWWWWWWWWWWTTTWW",
+            "WWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
+            "WWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
+            "WWWWWWWWWWWWWWWWTWWWWWWWWWWWWWWWW",
+            "WWWWWWWWWWWWWWWWSWWWWWWWWWWWWWWWW"
+        ],
+        "entryPoint": {
+            "x": 16,
+            "y": 20
+        },
+        "battleBg": "battle_bg_lastboss",
+        "exitPoint": {
+            "area": "LEGACION",
+            "x": 27,
+            "y": 12
+        },
+        "mapActions": [
+            {
+                "x": 16,
+                "y": 5,
+                "type": "fixedDungeon",
+                "target": "CHRONO_ABYSS",
+                "requiredItemId": 701007,
+                "requiredItemMissingText": "封印門は、混沌の核を求めている。",
+                "label": "封印門を開く"
+            }
+        ],
+        "mapId": "MAP000059",
+        "floorId": "MAP000059-00",
+        "useHabitatEncounters": true
+    },
+    LEGACION_THRONE: {
+        "name": "混沌魔城レガシオン 二階謁見の間",
+        "themeKey": "DARK_CASTLE",
+        "width": 35,
+        "height": 23,
+        "tiles": [
+            "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+            "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+            "WWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
+            "WWTTWWWWWWWWWWWWWWWWWWWWWWWWWWWTTWW",
+            "WWTTWTTTTTTTTGGGGGGGGGTTTTTTTTWTTWW",
+            "WWTTWTTTTTTTTGGGGGGGGGTTTTTTTTWTTWW",
+            "WWTTWTTTTTTTTGGGGGGGGGTTTTTTTTWTTWW",
+            "WWTTWTTTTTTTTGGGGTGGGGTTTTTTTTWTTWW",
+            "WWTTWTTTTTTTTTTTTTTTTTTTTTTTTTWTTWW",
+            "WWTTWTTTTTTTTTTTTTTTTTTTTTTTTTWTTWW",
+            "WWTTWTTTTTTTTTTTTTTTTTTTTTTTTTWTTWW",
+            "WWTTWTTTTTTTTTTTTTTTTTTTTTTTTTWTTWW",
+            "WWTTWTTTTTTTTTTTTTTTTTTTTTTTTTWTTWW",
+            "WWTTWTTTTTTTTTTTTTTTTTTTTTTTTTWTTWW",
+            "WWTTWTTTTTTTTTTTTTTTTTTTTTTTTTWTTWW",
+            "WWTTWTTTTTTTTTTTTTTTTTTTTTTTTTWTTWW",
+            "WWTTWTTTTTTTTTTTTTTTTTTTTTTTTTWTTWW",
+            "WWTTWTTTTTTTTTTTTTTTTTTTTTTTTTWTTWW",
+            "WWTTWWWWWWWWWWWWWTWWWWWWWWWWWWWTTWW",
+            "WWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
+            "WWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
+            "WWWWWWWWWWWWWWWWWTWWWWWWWWWWWWWWWWW",
+            "WWWWWWWWWWWWWWWWWSWWWWWWWWWWWWWWWWW"
+        ],
+        "entryPoint": {
+            "x": 17,
+            "y": 20
+        },
+        "battleBg": "battle_bg_lastboss",
+        "exitPoint": {
+            "area": "LEGACION",
+            "x": 20,
+            "y": 9
+        },
+        "mapActions": [
+            {
+                "x": 17,
+                "y": 6,
+                "type": "storyEvent",
+                "eventId": "abyss_legacion_audience",
+                "label": "皇帝家の末裔と話す",
+                "imageKey": "overlay_npc_villager",
+                "baseTile": "G"
+            },
+            {
+                "x": 10,
+                "y": 11,
+                "type": "storyEvent",
+                "eventId": "abyss_legacion_priest",
+                "label": "神官と話す",
+                "imageKey": "overlay_npc_villager",
+                "baseTile": "T"
+            },
+            {
+                "x": 24,
+                "y": 11,
+                "type": "elementalTrialPrism",
+                "requiredFlag": "abyssSpiritPrismKnown",
+                "lockedText": "まだ、プリズムの声を聞き取ることができない。",
+                "elements": ["火", "水", "風", "雷", "光", "闇"],
+                "bossByElement": { "火": 502001, "水": 502002, "風": 502003, "雷": 502004, "光": 502005, "闇": 502006 },
+                "rewardItemByElement": { "火": 701001, "水": 701002, "風": 701003, "雷": 701004, "光": 701005, "闇": 701006 },
+                "completionItemId": 701008,
+                "label": "プリズムに触れる",
+                "log": "六つの色が、こちらの意志を測るように明滅している。"
+            }
+        ],
+        "mapId": "MAP000060",
+        "floorId": "MAP000060-00",
+        "useHabitatEncounters": true
     }
 };
 
@@ -13026,6 +13645,2228 @@ const FIXED_DUNGEON_MAPS = {
                 themeKey: "GREZELIA_CAVE"
             }
         ]
+    },
+    THUNDER_DUNES: {
+        "name": "雷霆砂丘",
+        "themeKey": "THUNDER_DUNES",
+        "useDungeonWallFace": true,
+        "rank": 88,
+        "encounterRank": 88,
+        "width": 39,
+        "height": 27,
+        "tiles": [
+            "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+            "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+            "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+            "WWWTTTTTTTTTWWWWWWWDWWWWWWWTTTTTTTTTWWW",
+            "WWWTTTTTTTTTWWWWWWWTWWWWWWWTTTTTTTTTWWW",
+            "WWWTTTTTTTTTWWWWWWWTWWWWWWWTTTTTTTTTWWW",
+            "WWWTTTTTTTTTWWWWWWWTWWWWWWWTTTTTTTTTWWW",
+            "WWWTTTTTTTTTWWWWWWWTWWWWWWWTTTTTTTTTWWW",
+            "WWWTTTTTTTTTWWWWWWWTWWWWWWWTTTTTTTTTWWW",
+            "WWWTTTTTTTTTWWWWWWWTWWWWWWWTTTTTTTTTWWW",
+            "WWWWWWWWTWWWWWWTTTTTTTTTWWWWWWTWWWWWWWW",
+            "WWWWWWWWWTWWWWWTTTTTTTTTWWWWWTWWWWWWWWW",
+            "WWWWWWWWWWTWWWWTTTTTTTTTWWWWTWWWWWWWWWW",
+            "WWWWWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWWWWW",
+            "WWWWWWWWWWWTWWWTTTTTTTTTWWWWTWWWWWWWWWW",
+            "WWWWWWWWWWTWWWWTTTTTTTTTWWWWWTWWWWWWWWW",
+            "WWWWWWWWWTWWWWWTTTTTTTTTWTTTTTTTTTTTWWW",
+            "WWWTTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTTWWW",
+            "WWWTTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTTWWW",
+            "WWWTTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTTWWW",
+            "WWWTTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTTWWW",
+            "WWWTTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTTWWW",
+            "WWWTTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTTWWW",
+            "WWWTTTTTTTTTTTWWWWWSWWWWWTTTTTTTTTTTWWW",
+            "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+            "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+            "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+        ],
+        "entryPoint": {
+            "x": 19,
+            "y": 23
+        },
+        "battleBg": "battle_bg_dungeon",
+        "isDungeon": true,
+        "isFixed": true,
+        "elementPenalty": {
+            "雷": -50
+        },
+        "floorLinks": [
+            {
+                "x": 19,
+                "y": 23,
+                "to": "EXIT",
+                "label": "外へ戻る"
+            },
+            {
+                "x": 19,
+                "y": 3,
+                "toDungeon": "BLACK_ROPE_PYRAMID",
+                "label": "奥へ進む"
+            }
+        ],
+        "mapId": "MAP000038",
+        "floorId": "MAP000038-01",
+        "useHabitatEncounters": true
+    },
+    SCREAMING_CEMETERY: {
+        "name": "叫喚の墓地",
+        "themeKey": "SCREAMING_CEMETERY",
+        "useDungeonWallFace": true,
+        "rank": 88,
+        "encounterRank": 88,
+        "width": 39,
+        "height": 27,
+        "tiles": [
+            "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+            "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+            "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+            "WWWTTTTTTTTTWWWWWWWDWWWWWWWTTTTTTTTTWWW",
+            "WWWTTTTTTTTTWWWWWWWTWWWWWWWTTTTTTTTTWWW",
+            "WWWTTTTTTTTTWWWWWWWTWWWWWWWTTTTTTTTTWWW",
+            "WWWTTTTTTTTTWWWWWWWTWWWWWWWTTTTTTTTTWWW",
+            "WWWTTTTTTTTTWWWWWWWTWWWWWWWTTTTTTTTTWWW",
+            "WWWTTTTTTTTTWWWWWWWTWWWWWWWTTTTTTTTTWWW",
+            "WWWTTTTTTTTTWWWWWWWTWWWWWWWTTTTTTTTTWWW",
+            "WWWWWWWWTWWWWWWTTTTTTTTTWWWWWWTWWWWWWWW",
+            "WWWWWWWWWTWWWWWTTTTTTTTTWWWWWTWWWWWWWWW",
+            "WWWWWWWWWWTWWWWTTTTTTTTTWWWWTWWWWWWWWWW",
+            "WWWWWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWWWWW",
+            "WWWWWWWWWWWTWWWTTTTTTTTTWWWWTWWWWWWWWWW",
+            "WWWWWWWWWWTWWWWTTTTTTTTTWWWWWTWWWWWWWWW",
+            "WWWWWWWWWTWWWWWTTTTTTTTTWTTTTTTTTTTTWWW",
+            "WWWTTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTTWWW",
+            "WWWTTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTTWWW",
+            "WWWTTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTTWWW",
+            "WWWTTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTTWWW",
+            "WWWTTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTTWWW",
+            "WWWTTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTTWWW",
+            "WWWTTTTTTTTTTTWWWWWSWWWWWTTTTTTTTTTTWWW",
+            "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+            "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+            "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+        ],
+        "entryPoint": {
+            "x": 19,
+            "y": 23
+        },
+        "battleBg": "battle_bg_dungeon",
+        "isDungeon": true,
+        "isFixed": true,
+        "elementPenalty": {
+            "風": -50
+        },
+        "floorLinks": [
+            {
+                "x": 19,
+                "y": 23,
+                "to": "EXIT",
+                "label": "外へ戻る"
+            },
+            {
+                "x": 19,
+                "y": 3,
+                "toDungeon": "MAGIC_WIND_MAUSOLEUM",
+                "label": "奥へ進む"
+            }
+        ],
+        "mapId": "MAP000039",
+        "floorId": "MAP000039-01",
+        "useHabitatEncounters": true
+    },
+    FROZEN_FOREST: {
+        "name": "極寒樹林",
+        "themeKey": "FROZEN_FOREST",
+        "useDungeonWallFace": true,
+        "rank": 98,
+        "encounterRank": 98,
+        "battleBg": "battle_bg_dungeon",
+        "isDungeon": true,
+        "isFixed": true,
+        "elementPenalty": {
+            "水": -50
+        },
+        "floors": [
+            {
+                "name": "極寒樹林",
+                "themeKey": "FROZEN_FOREST",
+                "useDungeonWallFace": true,
+                "rank": 98,
+                "encounterRank": 98,
+                "width": 39,
+                "height": 27,
+                "tiles": [
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWTTTTTTTTTWWWWWWWWWWWWWWWTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTWWWWWWWWWWWWWWWTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTWWWWWWWWWWWWWWWTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTWWWWWWWWWWWWWWWTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTWWWWWWWWWWWWWWWTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTWWWWWWWWWWWWWWWTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTWWWWWWWWWWWWWWWTTTTTTTTTWWW",
+                    "WWWWWWWWTWWWWWWTTTTTTTTTWWWWWWTWWWWWWWW",
+                    "WWWWWWWWWTWWWWWTTTTTTTTTWWWWWTWWWWWWWWW",
+                    "WWWWWWWWWWTWWWWTTTTTTTTTWWWWTWWWWWWWWWW",
+                    "WWWDTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTSWWW",
+                    "WWWWWWWWWWWTWWWTTTTTTTTTWWWWTWWWWWWWWWW",
+                    "WWWWWWWWWWTWWWWTTTTTTTTTWWWWWTWWWWWWWWW",
+                    "WWWWWWWWWTWWWWWTTTTTTTTTWTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTWWWWWWWWWWWTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTWWWWWWWWWWWTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTWWWWWWWWWWWTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTWWWWWWWWWWWTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTWWWWWWWWWWWTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTWWWWWWWWWWWTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTWWWWWWWWWWWTTTTTTTTTTTWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                "entryPoint": {
+                    "x": 35,
+                    "y": 13
+                },
+                "battleBg": "battle_bg_dungeon",
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "水": -50
+                },
+                "floorLinks": [
+                    {
+                        "x": 35,
+                        "y": 13,
+                        "to": "EXIT",
+                        "label": "外へ戻る"
+                    },
+                    {
+                        "toDungeon": null,
+                        "toFloor": 2,
+                        "label": "さらに奥へ"
+                    }
+                ],
+                "mapId": "MAP000043",
+                "floorId": "MAP000043-01",
+                "useHabitatEncounters": true,
+                "floorLabel": "東域"
+            },
+            {
+                "name": "極寒樹林",
+                "themeKey": "FROZEN_FOREST",
+                "useDungeonWallFace": true,
+                "rank": 98,
+                "encounterRank": 98,
+                "width": 39,
+                "height": 27,
+                "tiles": [
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWTTTTTTTTTWWWWWWWWWWWWWWWTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTWWWWWWWWWWWWWWWTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTWWWWWWWWWWWWWWWTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTWWWWWWWWWWWWWWWTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTWWWWWWWWWWWWWWWTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTWWWWWWWWWWWWWWWTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTWWWWWWWWWWWWWWWTTTTTTTTTWWW",
+                    "WWWWWWWWTWWWWWWTTTTTTTTTWWWWWWTWWWWWWWW",
+                    "WWWWWWWWWTWWWWWTTTTTTTTTWWWWWTWWWWWWWWW",
+                    "WWWWWWWWWWTWWWWTTTTTTTTTWWWWTWWWWWWWWWW",
+                    "WWWDTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTSWWW",
+                    "WWWWWWWWWWWTWWWTTTTTTTTTWWWWTWWWWWWWWWW",
+                    "WWWWWWWWWWTWWWWTTTTTTTTTWWWWWTWWWWWWWWW",
+                    "WWWWWWWWWTWWWWWTTTTTTTTTWTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTWWWWWWWWWWWTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTWWWWWWWWWWWTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTWWWWWWWWWWWTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTWWWWWWWWWWWTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTWWWWWWWWWWWTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTWWWWWWWWWWWTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTWWWWWWWWWWWTTTTTTTTTTTWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                "entryPoint": {
+                    "x": 35,
+                    "y": 13
+                },
+                "battleBg": "battle_bg_dungeon",
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "水": -50
+                },
+                "floorLinks": [
+                    {
+                        "x": 35,
+                        "y": 13,
+                        "toFloor": 1,
+                        "label": "前の区域へ"
+                    },
+                    {
+                        "x": 3,
+                        "y": 13,
+                        "toDungeon": "ICE_PENANCE_ROAD",
+                        "label": "最深部へ"
+                    }
+                ],
+                "mapId": "MAP000043",
+                "floorId": "MAP000043-02",
+                "useHabitatEncounters": true,
+                "floorLabel": "西域"
+            }
+        ],
+        "mapId": "MAP000043",
+        "floorId": "MAP000043-01",
+        "useHabitatEncounters": true
+    },
+    PURGATORY_MOUNTAINS: {
+        "name": "煉獄山脈",
+        "themeKey": "PURGATORY_MOUNTAINS",
+        "useDungeonWallFace": true,
+        "rank": 98,
+        "encounterRank": 98,
+        "battleBg": "battle_bg_dungeon",
+        "isDungeon": true,
+        "isFixed": true,
+        "elementPenalty": {
+            "火": -50
+        },
+        "floors": [
+            {
+                "name": "煉獄山脈",
+                "themeKey": "PURGATORY_MOUNTAINS",
+                "useDungeonWallFace": true,
+                "rank": 98,
+                "encounterRank": 98,
+                "width": 39,
+                "height": 27,
+                "tiles": [
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWTTTTTTTTTWWWWWWWWWWWWWWWTTTTTTTTDWWW",
+                    "WWWTTTTTTTTTWWWWWWWWWWWWWWWTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTWWWWWWWWWWWWWWWTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTWWWWWWWWWWWWWWWTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTWWWWWWWWWWWWWWWTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTWWWWWWWWWWWWWWWTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTWWWWWWWWWWWWWWWTTTTTTTTTWWW",
+                    "WWWWWWWWTWWWWWWTTTTTTTTTWWWWTWTWWWWWWWW",
+                    "WWWWWWWWWTWWWWWTTTTTTTTTWWWTWTWWWWWWWWW",
+                    "WWWWWWWWWWTWWWWTTTTTTTTTWWTWTWWWWWWWWWW",
+                    "WWWWWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWWWWW",
+                    "WWWWWWWWWWWTWTWTTTTTTTTTWWWWTWWWWWWWWWW",
+                    "WWWWWWWWWWTWTWWTTTTTTTTTWWWWWTWWWWWWWWW",
+                    "WWWWWWWWWTWTWWWTTTTTTTTTWTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTWWWWWWWWWWWTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTWWWWWWWWWWWTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTWWWWWWWWWWWTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTWWWWWWWWWWWTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTWWWWWWWWWWWTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTWWWWWWWWWWWTTTTTTTTTTTWWW",
+                    "WWWTSTTTTTTTTTWWWWWWWWWWWTTTTTTTTTTTWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                "entryPoint": {
+                    "x": 4,
+                    "y": 23
+                },
+                "battleBg": "battle_bg_dungeon",
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "火": -50
+                },
+                "floorLinks": [
+                    {
+                        "x": 4,
+                        "y": 23,
+                        "to": "EXIT",
+                        "label": "外へ戻る"
+                    },
+                    {
+                        "toDungeon": null,
+                        "toFloor": 2,
+                        "label": "さらに奥へ"
+                    }
+                ],
+                "mapId": "MAP000044",
+                "floorId": "MAP000044-01",
+                "useHabitatEncounters": true,
+                "floorLabel": "東域"
+            },
+            {
+                "name": "煉獄山脈",
+                "themeKey": "PURGATORY_MOUNTAINS",
+                "useDungeonWallFace": true,
+                "rank": 98,
+                "encounterRank": 98,
+                "width": 39,
+                "height": 27,
+                "tiles": [
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWTTTTTTTTTWWWWWWWWWWWWWWWTTTTTTTTDWWW",
+                    "WWWTTTTTTTTTWWWWWWWWWWWWWWWTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTWWWWWWWWWWWWWWWTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTWWWWWWWWWWWWWWWTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTWWWWWWWWWWWWWWWTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTWWWWWWWWWWWWWWWTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTWWWWWWWWWWWWWWWTTTTTTTTTWWW",
+                    "WWWWWWWWTWWWWWWTTTTTTTTTWWWWTWTWWWWWWWW",
+                    "WWWWWWWWWTWWWWWTTTTTTTTTWWWTWTWWWWWWWWW",
+                    "WWWWWWWWWWTWWWWTTTTTTTTTWWTWTWWWWWWWWWW",
+                    "WWWWWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWWWWW",
+                    "WWWWWWWWWWWTWTWTTTTTTTTTWWWWTWWWWWWWWWW",
+                    "WWWWWWWWWWTWTWWTTTTTTTTTWWWWWTWWWWWWWWW",
+                    "WWWWWWWWWTWTWWWTTTTTTTTTWTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTWWWWWWWWWWWTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTWWWWWWWWWWWTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTWWWWWWWWWWWTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTWWWWWWWWWWWTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTWWWWWWWWWWWTTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTTWWWWWWWWWWWTTTTTTTTTTTWWW",
+                    "WWWTSTTTTTTTTTWWWWWWWWWWWTTTTTTTTTTTWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                "entryPoint": {
+                    "x": 4,
+                    "y": 23
+                },
+                "battleBg": "battle_bg_dungeon",
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "火": -50
+                },
+                "floorLinks": [
+                    {
+                        "x": 4,
+                        "y": 23,
+                        "toFloor": 1,
+                        "label": "前の区域へ"
+                    },
+                    {
+                        "x": 35,
+                        "y": 3,
+                        "toDungeon": "SCORCHING_OLD_CASTLE",
+                        "label": "最深部へ"
+                    }
+                ],
+                "mapId": "MAP000044",
+                "floorId": "MAP000044-02",
+                "useHabitatEncounters": true,
+                "floorLabel": "西域"
+            }
+        ],
+        "mapId": "MAP000044",
+        "floorId": "MAP000044-01",
+        "useHabitatEncounters": true
+    },
+    BLACK_ROPE_PYRAMID: {
+        "name": "黒縄のピラミッド",
+        "themeKey": "BLACK_ROPE_PYRAMID",
+        "rank": 91,
+        "encounterRank": 91,
+        "battleBg": "battle_bg_dungeon",
+        "useDungeonWallFace": true,
+        "isDungeon": true,
+        "isFixed": true,
+        "elementPenalty": {
+            "雷": -50
+        },
+        "floors": [
+            {
+                "label": "1層",
+                "floor": 1,
+                "rank": 91,
+                "encounterRank": 91,
+                "width": 37,
+                "height": 27,
+                "tiles": [
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWTTTTTTTTTTWWWWWDWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWTTTTTTTWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWTTTTTTTWWTTTTTTTTTTWWW",
+                    "WWWWWWWWTWWWWWWTTTTTTTWWWWWWTWWWWWWWW",
+                    "WWWWWWWWWTWWWWWTTTTTTTWWWWWTWWWWWWWWW",
+                    "WWWWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWSWWWTTTTTTTTTTTTWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                "entryPoint": {
+                    "x": 18,
+                    "y": 23
+                },
+                "battleBg": "battle_bg_dungeon",
+                "themeKey": "BLACK_ROPE_PYRAMID",
+                "useDungeonWallFace": true,
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "雷": -50
+                },
+                "floorLinks": [
+                    {
+                        "x": 18,
+                        "y": 23,
+                        "to": "EXIT",
+                        "label": "外へ戻る"
+                    },
+                    {
+                        "x": 18,
+                        "y": 3,
+                        "toFloor": 2,
+                        "label": "次の階へ"
+                    }
+                ],
+                "bosses": [],
+                "mapId": "MAP000040",
+                "floorId": "MAP000040-01",
+                "useHabitatEncounters": true
+            },
+            {
+                "label": "2層",
+                "floor": 2,
+                "procedural": true,
+                "forceMaze": false,
+                "wideProcedural": false,
+                "rank": 91,
+                "encounterRank": 91,
+                "themeKey": "BLACK_ROPE_PYRAMID",
+                "battleBg": "battle_bg_dungeon",
+                "useDungeonWallFace": true,
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "雷": -50
+                },
+                "mapId": "MAP000040",
+                "floorId": "MAP000040-02",
+                "useHabitatEncounters": true
+            },
+            {
+                "label": "3層",
+                "floor": 3,
+                "procedural": true,
+                "forceMaze": false,
+                "wideProcedural": false,
+                "rank": 91,
+                "encounterRank": 91,
+                "themeKey": "BLACK_ROPE_PYRAMID",
+                "battleBg": "battle_bg_dungeon",
+                "useDungeonWallFace": true,
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "雷": -50
+                },
+                "mapId": "MAP000040",
+                "floorId": "MAP000040-03",
+                "useHabitatEncounters": true
+            },
+            {
+                "label": "4層",
+                "floor": 4,
+                "procedural": true,
+                "forceMaze": false,
+                "wideProcedural": false,
+                "rank": 95,
+                "encounterRank": 95,
+                "themeKey": "BLACK_ROPE_PYRAMID",
+                "battleBg": "battle_bg_dungeon",
+                "useDungeonWallFace": true,
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "雷": -50
+                },
+                "mapId": "MAP000040",
+                "floorId": "MAP000040-04",
+                "useHabitatEncounters": true
+            },
+            {
+                "label": "5層",
+                "floor": 5,
+                "procedural": true,
+                "forceMaze": false,
+                "wideProcedural": false,
+                "rank": 95,
+                "encounterRank": 95,
+                "themeKey": "BLACK_ROPE_PYRAMID",
+                "battleBg": "battle_bg_dungeon",
+                "useDungeonWallFace": true,
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "雷": -50
+                },
+                "mapId": "MAP000040",
+                "floorId": "MAP000040-05",
+                "useHabitatEncounters": true
+            },
+            {
+                "label": "6層",
+                "floor": 6,
+                "rank": 95,
+                "encounterRank": 95,
+                "width": 37,
+                "height": 27,
+                "tiles": [
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWTTTTTTTTTTWWWWWBWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWTTTTTTTWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWTTTTTTTWWTTTTTTTTTTWWW",
+                    "WWWWWWWWTWWWWWWTTTTTTTWWWWWWTWWWWWWWW",
+                    "WWWWWWWWWTWWWWWTTTTTTTWWWWWTWWWWWWWWW",
+                    "WWWWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWUWWWTTTTTTTTTTTTWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                "entryPoint": {
+                    "x": 18,
+                    "y": 23
+                },
+                "battleBg": "battle_bg_dungeon",
+                "themeKey": "BLACK_ROPE_PYRAMID",
+                "useDungeonWallFace": true,
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "雷": -50
+                },
+                "floorLinks": [
+                    {
+                        "x": 18,
+                        "y": 23,
+                        "toFloor": 5,
+                        "label": "前の階へ"
+                    }
+                ],
+                "bosses": [
+                    {
+                        "x": 18,
+                        "y": 3,
+                "monsterId": 302010,
+                "clearedFlag": "abyssLeonardDefeated",
+                "startEventId": "abyss_leonard_battle",
+                        "actionLabel": "対峙する",
+                        "challengeText": "黒雷のレナードに挑みますか？",
+                        "storyEventId": "abyss_leonard_clear"
+                    }
+                ],
+                "mapId": "MAP000040",
+                "floorId": "MAP000040-06",
+                "useHabitatEncounters": true
+            }
+        ],
+        "mapId": "MAP000040",
+        "floorId": "MAP000040-01",
+        "useHabitatEncounters": true
+    },
+    MAGIC_WIND_MAUSOLEUM: {
+        "name": "魔風の霊廟",
+        "themeKey": "MAGIC_WIND_MAUSOLEUM",
+        "rank": 91,
+        "encounterRank": 91,
+        "battleBg": "battle_bg_dungeon",
+        "useDungeonWallFace": true,
+        "isDungeon": true,
+        "isFixed": true,
+        "elementPenalty": {
+            "風": -50
+        },
+        "floors": [
+            {
+                "label": "1層",
+                "floor": 1,
+                "rank": 91,
+                "encounterRank": 91,
+                "width": 37,
+                "height": 27,
+                "tiles": [
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWTTTTTTTTTTWWWWWSWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWTTTTTTTWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWTTTTTTTWWTTTTTTTTTTWWW",
+                    "WWWWWWWWTWWWWWWTTTTTTTWWWWWWTWWWWWWWW",
+                    "WWWWWWWWWTWWWWWTTTTTTTWWWWWTWWWWWWWWW",
+                    "WWWWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWDWWWTTTTTTTTTTTTWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                "entryPoint": {
+                    "x": 18,
+                    "y": 3
+                },
+                "battleBg": "battle_bg_dungeon",
+                "themeKey": "MAGIC_WIND_MAUSOLEUM",
+                "useDungeonWallFace": true,
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "風": -50
+                },
+                "floorLinks": [
+                    {
+                        "x": 18,
+                        "y": 3,
+                        "to": "EXIT",
+                        "label": "外へ戻る"
+                    },
+                    {
+                        "x": 18,
+                        "y": 23,
+                        "toFloor": 2,
+                        "label": "次の階へ"
+                    }
+                ],
+                "bosses": [],
+                "mapId": "MAP000041",
+                "floorId": "MAP000041-01",
+                "useHabitatEncounters": true
+            },
+            {
+                "label": "2層",
+                "floor": 2,
+                "procedural": true,
+                "forceMaze": false,
+                "wideProcedural": false,
+                "rank": 91,
+                "encounterRank": 91,
+                "themeKey": "MAGIC_WIND_MAUSOLEUM",
+                "battleBg": "battle_bg_dungeon",
+                "useDungeonWallFace": true,
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "風": -50
+                },
+                "mapId": "MAP000041",
+                "floorId": "MAP000041-02",
+                "useHabitatEncounters": true
+            },
+            {
+                "label": "3層",
+                "floor": 3,
+                "procedural": true,
+                "forceMaze": false,
+                "wideProcedural": false,
+                "rank": 91,
+                "encounterRank": 91,
+                "themeKey": "MAGIC_WIND_MAUSOLEUM",
+                "battleBg": "battle_bg_dungeon",
+                "useDungeonWallFace": true,
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "風": -50
+                },
+                "mapId": "MAP000041",
+                "floorId": "MAP000041-03",
+                "useHabitatEncounters": true
+            },
+            {
+                "label": "4層",
+                "floor": 4,
+                "procedural": true,
+                "forceMaze": false,
+                "wideProcedural": false,
+                "rank": 95,
+                "encounterRank": 95,
+                "themeKey": "MAGIC_WIND_MAUSOLEUM",
+                "battleBg": "battle_bg_dungeon",
+                "useDungeonWallFace": true,
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "風": -50
+                },
+                "mapId": "MAP000041",
+                "floorId": "MAP000041-04",
+                "useHabitatEncounters": true
+            },
+            {
+                "label": "5層",
+                "floor": 5,
+                "procedural": true,
+                "forceMaze": false,
+                "wideProcedural": false,
+                "rank": 95,
+                "encounterRank": 95,
+                "themeKey": "MAGIC_WIND_MAUSOLEUM",
+                "battleBg": "battle_bg_dungeon",
+                "useDungeonWallFace": true,
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "風": -50
+                },
+                "mapId": "MAP000041",
+                "floorId": "MAP000041-05",
+                "useHabitatEncounters": true
+            },
+            {
+                "label": "6層",
+                "floor": 6,
+                "rank": 95,
+                "encounterRank": 95,
+                "width": 37,
+                "height": 27,
+                "tiles": [
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWTTTTTTTTTTWWWWWUWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWTTTTTTTWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWTTTTTTTWWTTTTTTTTTTWWW",
+                    "WWWWWWWWTWWWWWWTTTTTTTWWWWWWTWWWWWWWW",
+                    "WWWWWWWWWTWWWWWTTTTTTTWWWWWTWWWWWWWWW",
+                    "WWWWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWBWWWTTTTTTTTTTTTWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                "entryPoint": {
+                    "x": 18,
+                    "y": 3
+                },
+                "battleBg": "battle_bg_dungeon",
+                "themeKey": "MAGIC_WIND_MAUSOLEUM",
+                "useDungeonWallFace": true,
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "風": -50
+                },
+                "floorLinks": [
+                    {
+                        "x": 18,
+                        "y": 3,
+                        "toFloor": 5,
+                        "label": "前の階へ"
+                    }
+                ],
+                "bosses": [
+                    {
+                        "x": 18,
+                        "y": 23,
+                "monsterId": 302020,
+                "clearedFlag": "abyssEliciaDefeated",
+                "startEventId": "abyss_elicia_battle",
+                        "actionLabel": "対峙する",
+                        "challengeText": "死風のエリシアに挑みますか？",
+                        "storyEventId": "abyss_elicia_clear"
+                    }
+                ],
+                "mapId": "MAP000041",
+                "floorId": "MAP000041-06",
+                "useHabitatEncounters": true
+            }
+        ],
+        "mapId": "MAP000041",
+        "floorId": "MAP000041-01",
+        "useHabitatEncounters": true
+    },
+    ICE_PENANCE_ROAD: {
+        "name": "氷刻の浄罪路",
+        "themeKey": "ICE_PENANCE_ROAD",
+        "rank": 101,
+        "encounterRank": 101,
+        "battleBg": "battle_bg_dungeon",
+        "useDungeonWallFace": true,
+        "isDungeon": true,
+        "isFixed": true,
+        "elementPenalty": {
+            "水": -50
+        },
+        "floors": [
+            {
+                "label": "1層",
+                "floor": 1,
+                "rank": 101,
+                "encounterRank": 101,
+                "width": 37,
+                "height": 27,
+                "tiles": [
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWTTTTTTTTTTWWWWWSWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWTTTTTTTWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWTTTTTTTWWTTTTTTTTTTWWW",
+                    "WWWWWWWWTWWWWWWTTTTTTTWWWWWWTWWWWWWWW",
+                    "WWWWWWWWWTWWWWWTTTTTTTWWWWWTWWWWWWWWW",
+                    "WWWWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWDWWWTTTTTTTTTTTTWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                "entryPoint": {
+                    "x": 18,
+                    "y": 3
+                },
+                "battleBg": "battle_bg_dungeon",
+                "themeKey": "ICE_PENANCE_ROAD",
+                "useDungeonWallFace": true,
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "水": -50
+                },
+                "floorLinks": [
+                    {
+                        "x": 18,
+                        "y": 3,
+                        "to": "EXIT",
+                        "label": "外へ戻る"
+                    },
+                    {
+                        "x": 18,
+                        "y": 23,
+                        "toFloor": 2,
+                        "label": "次の階へ"
+                    }
+                ],
+                "bosses": [],
+                "mapId": "MAP000045",
+                "floorId": "MAP000045-01",
+                "useHabitatEncounters": true
+            },
+            {
+                "label": "2層",
+                "floor": 2,
+                "procedural": true,
+                "forceMaze": false,
+                "wideProcedural": false,
+                "rank": 101,
+                "encounterRank": 101,
+                "themeKey": "ICE_PENANCE_ROAD",
+                "battleBg": "battle_bg_dungeon",
+                "useDungeonWallFace": true,
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "水": -50
+                },
+                "mapId": "MAP000045",
+                "floorId": "MAP000045-02",
+                "useHabitatEncounters": true
+            },
+            {
+                "label": "3層",
+                "floor": 3,
+                "procedural": true,
+                "forceMaze": false,
+                "wideProcedural": false,
+                "rank": 101,
+                "encounterRank": 101,
+                "themeKey": "ICE_PENANCE_ROAD",
+                "battleBg": "battle_bg_dungeon",
+                "useDungeonWallFace": true,
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "水": -50
+                },
+                "mapId": "MAP000045",
+                "floorId": "MAP000045-03",
+                "useHabitatEncounters": true
+            },
+            {
+                "label": "4層",
+                "floor": 4,
+                "procedural": true,
+                "forceMaze": false,
+                "wideProcedural": false,
+                "rank": 105,
+                "encounterRank": 105,
+                "themeKey": "ICE_PENANCE_ROAD",
+                "battleBg": "battle_bg_dungeon",
+                "useDungeonWallFace": true,
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "水": -50
+                },
+                "mapId": "MAP000045",
+                "floorId": "MAP000045-04",
+                "useHabitatEncounters": true
+            },
+            {
+                "label": "5層",
+                "floor": 5,
+                "procedural": true,
+                "forceMaze": false,
+                "wideProcedural": false,
+                "rank": 105,
+                "encounterRank": 105,
+                "themeKey": "ICE_PENANCE_ROAD",
+                "battleBg": "battle_bg_dungeon",
+                "useDungeonWallFace": true,
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "水": -50
+                },
+                "mapId": "MAP000045",
+                "floorId": "MAP000045-05",
+                "useHabitatEncounters": true
+            },
+            {
+                "label": "6層",
+                "floor": 6,
+                "rank": 105,
+                "encounterRank": 105,
+                "width": 37,
+                "height": 27,
+                "tiles": [
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWTTTTTTTTTTWWWWWUWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWTTTTTTTWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWTTTTTTTWWTTTTTTTTTTWWW",
+                    "WWWWWWWWTWWWWWWTTTTTTTWWWWWWTWWWWWWWW",
+                    "WWWWWWWWWTWWWWWTTTTTTTWWWWWTWWWWWWWWW",
+                    "WWWWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWBWWWTTTTTTTTTTTTWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                "entryPoint": {
+                    "x": 18,
+                    "y": 3
+                },
+                "battleBg": "battle_bg_dungeon",
+                "themeKey": "ICE_PENANCE_ROAD",
+                "useDungeonWallFace": true,
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "水": -50
+                },
+                "floorLinks": [
+                    {
+                        "x": 18,
+                        "y": 3,
+                        "toFloor": 5,
+                        "label": "前の階へ"
+                    }
+                ],
+                "bosses": [
+                    {
+                        "x": 18,
+                        "y": 23,
+                "monsterId": 302030,
+                "clearedFlag": "abyssSyrisDefeated",
+                "startEventId": "abyss_syris_battle",
+                        "actionLabel": "対峙する",
+                        "challengeText": "極零のシーリスに挑みますか？",
+                        "storyEventId": "abyss_syris_clear"
+                    }
+                ],
+                "mapId": "MAP000045",
+                "floorId": "MAP000045-06",
+                "useHabitatEncounters": true
+            }
+        ],
+        "mapId": "MAP000045",
+        "floorId": "MAP000045-01",
+        "useHabitatEncounters": true
+    },
+    SCORCHING_OLD_CASTLE: {
+        "name": "灼熱の古城",
+        "themeKey": "SCORCHING_OLD_CASTLE",
+        "rank": 101,
+        "encounterRank": 101,
+        "battleBg": "battle_bg_dungeon",
+        "useDungeonWallFace": true,
+        "isDungeon": true,
+        "isFixed": true,
+        "elementPenalty": {
+            "火": -50
+        },
+        "floors": [
+            {
+                "label": "1層",
+                "floor": 1,
+                "rank": 101,
+                "encounterRank": 101,
+                "width": 37,
+                "height": 27,
+                "tiles": [
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWTTTTTTTTTTWWWWWDWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWTTTTTTTWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWTTTTTTTWWTTTTTTTTTTWWW",
+                    "WWWWWWWWTWWWWWWTTTTTTTWWWWWWTWWWWWWWW",
+                    "WWWWWWWWWTWWWWWTTTTTTTWWWWWTWWWWWWWWW",
+                    "WWWWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWSWWWTTTTTTTTTTTTWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                "entryPoint": {
+                    "x": 18,
+                    "y": 23
+                },
+                "battleBg": "battle_bg_dungeon",
+                "themeKey": "SCORCHING_OLD_CASTLE",
+                "useDungeonWallFace": true,
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "火": -50
+                },
+                "floorLinks": [
+                    {
+                        "x": 18,
+                        "y": 23,
+                        "to": "EXIT",
+                        "label": "外へ戻る"
+                    },
+                    {
+                        "x": 18,
+                        "y": 3,
+                        "toFloor": 2,
+                        "label": "次の階へ"
+                    }
+                ],
+                "bosses": [],
+                "mapId": "MAP000046",
+                "floorId": "MAP000046-01",
+                "useHabitatEncounters": true
+            },
+            {
+                "label": "2層",
+                "floor": 2,
+                "procedural": true,
+                "forceMaze": false,
+                "wideProcedural": false,
+                "rank": 101,
+                "encounterRank": 101,
+                "themeKey": "SCORCHING_OLD_CASTLE",
+                "battleBg": "battle_bg_dungeon",
+                "useDungeonWallFace": true,
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "火": -50
+                },
+                "mapId": "MAP000046",
+                "floorId": "MAP000046-02",
+                "useHabitatEncounters": true
+            },
+            {
+                "label": "3層",
+                "floor": 3,
+                "procedural": true,
+                "forceMaze": false,
+                "wideProcedural": false,
+                "rank": 101,
+                "encounterRank": 101,
+                "themeKey": "SCORCHING_OLD_CASTLE",
+                "battleBg": "battle_bg_dungeon",
+                "useDungeonWallFace": true,
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "火": -50
+                },
+                "mapId": "MAP000046",
+                "floorId": "MAP000046-03",
+                "useHabitatEncounters": true
+            },
+            {
+                "label": "4層",
+                "floor": 4,
+                "procedural": true,
+                "forceMaze": false,
+                "wideProcedural": false,
+                "rank": 105,
+                "encounterRank": 105,
+                "themeKey": "SCORCHING_OLD_CASTLE",
+                "battleBg": "battle_bg_dungeon",
+                "useDungeonWallFace": true,
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "火": -50
+                },
+                "mapId": "MAP000046",
+                "floorId": "MAP000046-04",
+                "useHabitatEncounters": true
+            },
+            {
+                "label": "5層",
+                "floor": 5,
+                "procedural": true,
+                "forceMaze": false,
+                "wideProcedural": false,
+                "rank": 105,
+                "encounterRank": 105,
+                "themeKey": "SCORCHING_OLD_CASTLE",
+                "battleBg": "battle_bg_dungeon",
+                "useDungeonWallFace": true,
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "火": -50
+                },
+                "mapId": "MAP000046",
+                "floorId": "MAP000046-05",
+                "useHabitatEncounters": true
+            },
+            {
+                "label": "6層",
+                "floor": 6,
+                "rank": 105,
+                "encounterRank": 105,
+                "width": 37,
+                "height": 27,
+                "tiles": [
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWTTTTTTTTTTWWWWWBWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWTTTTTTTWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWTTTTTTTWWTTTTTTTTTTWWW",
+                    "WWWWWWWWTWWWWWWTTTTTTTWWWWWWTWWWWWWWW",
+                    "WWWWWWWWWTWWWWWTTTTTTTWWWWWTWWWWWWWWW",
+                    "WWWWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWUWWWTTTTTTTTTTTTWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                "entryPoint": {
+                    "x": 18,
+                    "y": 23
+                },
+                "battleBg": "battle_bg_dungeon",
+                "themeKey": "SCORCHING_OLD_CASTLE",
+                "useDungeonWallFace": true,
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "火": -50
+                },
+                "floorLinks": [
+                    {
+                        "x": 18,
+                        "y": 23,
+                        "toFloor": 5,
+                        "label": "前の階へ"
+                    }
+                ],
+                "bosses": [
+                    {
+                        "x": 18,
+                        "y": 3,
+                "monsterId": 302040,
+                "clearedFlag": "abyssGradDefeated",
+                "startEventId": "abyss_grad_battle",
+                        "actionLabel": "対峙する",
+                        "challengeText": "焦熱のグラドに挑みますか？",
+                        "storyEventId": "abyss_grad_clear"
+                    }
+                ],
+                "mapId": "MAP000046",
+                "floorId": "MAP000046-06",
+                "useHabitatEncounters": true
+            }
+        ],
+        "mapId": "MAP000046",
+        "floorId": "MAP000046-01",
+        "useHabitatEncounters": true
+    },
+    RIDPALM_DREAM_CORRIDOR: {
+        "name": "夢幻回廊リドパルム",
+        "themeKey": "RIDPALM_DREAM_CORRIDOR",
+        "rank": 106,
+        "encounterRank": 106,
+        "battleBg": "battle_bg_dungeon",
+        "useDungeonWallFace": true,
+        "isDungeon": true,
+        "isFixed": true,
+        "elementPenalty": {
+            "光": -50,
+            "闇": -50
+        },
+        "floors": [
+            {
+                "label": "1層",
+                "floor": 1,
+                "rank": 106,
+                "encounterRank": 106,
+                "width": 37,
+                "height": 27,
+                "tiles": [
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWTTTTTTTTTTWWWWWSWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWTTTTTTTWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWTTTTTTTWWTTTTTTTTTTWWW",
+                    "WWWWWWWWTWWWWWWTTTTTTTWWWWWWTWWWWWWWW",
+                    "WWWWWWWWWTWWWWWTTTTTTTWWWWWTWWWWWWWWW",
+                    "WWWWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWDWWWTTTTTTTTTTTTWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                "entryPoint": {
+                    "x": 18,
+                    "y": 3
+                },
+                "battleBg": "battle_bg_dungeon",
+                "themeKey": "RIDPALM_DREAM_CORRIDOR",
+                "useDungeonWallFace": true,
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "光": -50,
+                    "闇": -50
+                },
+                "floorLinks": [
+                    {
+                        "x": 18,
+                        "y": 3,
+                        "to": "EXIT",
+                        "label": "外へ戻る"
+                    },
+                    {
+                        "x": 18,
+                        "y": 23,
+                        "toFloor": 2,
+                        "label": "次の階へ"
+                    }
+                ],
+                "bosses": [],
+                "mapId": "MAP000048",
+                "floorId": "MAP000048-01",
+                "useHabitatEncounters": true
+            },
+            {
+                "label": "2層",
+                "floor": 2,
+                "procedural": true,
+                "forceMaze": false,
+                "wideProcedural": true,
+                "rank": 106,
+                "encounterRank": 106,
+                "themeKey": "RIDPALM_DREAM_CORRIDOR",
+                "battleBg": "battle_bg_dungeon",
+                "useDungeonWallFace": true,
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "光": -50,
+                    "闇": -50
+                },
+                "mapId": "MAP000048",
+                "floorId": "MAP000048-02",
+                "useHabitatEncounters": true
+            },
+            {
+                "label": "3層",
+                "floor": 3,
+                "procedural": true,
+                "forceMaze": true,
+                "wideProcedural": true,
+                "rank": 106,
+                "encounterRank": 106,
+                "themeKey": "RIDPALM_DREAM_CORRIDOR",
+                "battleBg": "battle_bg_dungeon",
+                "useDungeonWallFace": true,
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "光": -50,
+                    "闇": -50
+                },
+                "mapId": "MAP000048",
+                "floorId": "MAP000048-03",
+                "useHabitatEncounters": true
+            },
+            {
+                "label": "4層",
+                "floor": 4,
+                "procedural": true,
+                "forceMaze": false,
+                "wideProcedural": true,
+                "rank": 110,
+                "encounterRank": 110,
+                "themeKey": "RIDPALM_DREAM_CORRIDOR",
+                "battleBg": "battle_bg_dungeon",
+                "useDungeonWallFace": true,
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "光": -50,
+                    "闇": -50
+                },
+                "mapId": "MAP000048",
+                "floorId": "MAP000048-04",
+                "useHabitatEncounters": true
+            },
+            {
+                "label": "5層",
+                "floor": 5,
+                "procedural": true,
+                "forceMaze": false,
+                "wideProcedural": true,
+                "rank": 110,
+                "encounterRank": 110,
+                "themeKey": "RIDPALM_DREAM_CORRIDOR",
+                "battleBg": "battle_bg_dungeon",
+                "useDungeonWallFace": true,
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "光": -50,
+                    "闇": -50
+                },
+                "mapId": "MAP000048",
+                "floorId": "MAP000048-05",
+                "useHabitatEncounters": true
+            },
+            {
+                "label": "6層",
+                "floor": 6,
+                "rank": 110,
+                "encounterRank": 110,
+                "width": 37,
+                "height": 27,
+                "tiles": [
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWTTTTTTTTTTWWWWWUWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWTTTTTTTWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWTTTTTTTWWTTTTTTTTTTWWW",
+                    "WWWWWWWWTWWWWWWTTTTTTTWWWWWWTWWWWWWWW",
+                    "WWWWWWWWWTWWWWWTTTTTTTWWWWWTWWWWWWWWW",
+                    "WWWWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWBWWWTTTTTTTTTTTTWWW",
+                    "WWWWWWWWWWWWWWWWWWDWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                "entryPoint": {
+                    "x": 18,
+                    "y": 3
+                },
+                "battleBg": "battle_bg_dungeon",
+                "themeKey": "RIDPALM_DREAM_CORRIDOR",
+                "useDungeonWallFace": true,
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "光": -50,
+                    "闇": -50
+                },
+                "floorLinks": [
+                    {
+                        "x": 18,
+                        "y": 3,
+                        "toFloor": 5,
+                        "label": "前の階へ"
+                    },
+                    {
+                        "x": 18,
+                        "y": 24,
+                        "toDungeon": "JAGOREA_ROOT",
+                        "label": "さらに奥へ進む",
+                        "requiredFlag": "abyssVeldDefeated",
+                        "lockedLog": "倒したはずの魔力が道を閉ざしている。"
+                    }
+                ],
+                "bosses": [
+                    {
+                        "x": 18,
+                        "y": 23,
+                "monsterId": 302050,
+                "clearedFlag": "abyssVeldDefeated",
+                "startEventId": "abyss_veld_battle",
+                        "actionLabel": "対峙する",
+                        "challengeText": "昏迷の黒騎士ヴェルドに挑みますか？",
+                        "storyEventId": "abyss_veld_clear"
+                    }
+                ],
+                "mapId": "MAP000048",
+                "floorId": "MAP000048-06",
+                "useHabitatEncounters": true
+            }
+        ],
+        "mapId": "MAP000048",
+        "floorId": "MAP000048-01",
+        "useHabitatEncounters": true
+    },
+    JAGOREA_ROOT: {
+        "name": "災禍の根ジャゴレア",
+        "themeKey": "JAGOREA_ROOT",
+        "rank": 111,
+        "encounterRank": 111,
+        "battleBg": "battle_bg_dungeon",
+        "useDungeonWallFace": true,
+        "isDungeon": true,
+        "isFixed": true,
+        "elementPenalty": {
+            "光": -50,
+            "闇": -50
+        },
+        "floors": [
+            {
+                "label": "1層",
+                "floor": 1,
+                "rank": 111,
+                "encounterRank": 111,
+                "width": 37,
+                "height": 27,
+                "tiles": [
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWTTTTTTTTTTWWWWWSWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWTTTTTTTWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWTTTTTTTWWTTTTTTTTTTWWW",
+                    "WWWWWWWWTWWWWWWTTTTTTTWWWWWWTWWWWWWWW",
+                    "WWWWWWWWWTWWWWWTTTTTTTWWWWWTWWWWWWWWW",
+                    "WWWWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWDWWWTTTTTTTTTTTTWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                "entryPoint": {
+                    "x": 18,
+                    "y": 3
+                },
+                "battleBg": "battle_bg_dungeon",
+                "themeKey": "JAGOREA_ROOT",
+                "useDungeonWallFace": true,
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "光": -50,
+                    "闇": -50
+                },
+                "floorLinks": [
+                    {
+                        "x": 18,
+                        "y": 3,
+                        "to": "EXIT",
+                        "label": "外へ戻る"
+                    },
+                    {
+                        "x": 18,
+                        "y": 23,
+                        "toFloor": 2,
+                        "label": "次の階へ"
+                    }
+                ],
+                "bosses": [],
+                "mapId": "MAP000049",
+                "floorId": "MAP000049-01",
+                "useHabitatEncounters": true
+            },
+            {
+                "label": "2層",
+                "floor": 2,
+                "procedural": true,
+                "forceMaze": false,
+                "wideProcedural": true,
+                "rank": 111,
+                "encounterRank": 111,
+                "themeKey": "JAGOREA_ROOT",
+                "battleBg": "battle_bg_dungeon",
+                "useDungeonWallFace": true,
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "光": -50,
+                    "闇": -50
+                },
+                "mapId": "MAP000049",
+                "floorId": "MAP000049-02",
+                "useHabitatEncounters": true
+            },
+            {
+                "label": "3層",
+                "floor": 3,
+                "procedural": true,
+                "forceMaze": false,
+                "wideProcedural": true,
+                "rank": 111,
+                "encounterRank": 111,
+                "themeKey": "JAGOREA_ROOT",
+                "battleBg": "battle_bg_dungeon",
+                "useDungeonWallFace": true,
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "光": -50,
+                    "闇": -50
+                },
+                "mapId": "MAP000049",
+                "floorId": "MAP000049-03",
+                "useHabitatEncounters": true
+            },
+            {
+                "label": "4層",
+                "floor": 4,
+                "procedural": true,
+                "forceMaze": false,
+                "wideProcedural": true,
+                "rank": 115,
+                "encounterRank": 115,
+                "themeKey": "JAGOREA_ROOT",
+                "battleBg": "battle_bg_dungeon",
+                "useDungeonWallFace": true,
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "光": -50,
+                    "闇": -50
+                },
+                "mapId": "MAP000049",
+                "floorId": "MAP000049-04",
+                "useHabitatEncounters": true
+            },
+            {
+                "label": "5層",
+                "floor": 5,
+                "rank": 115,
+                "encounterRank": 115,
+                "width": 37,
+                "height": 27,
+                "tiles": [
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWTTTTTTTTTTWWWWWUWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWTTTTTTTWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWTTTTTTTWWTTTTTTTTTTWWW",
+                    "WWWWWWWWTWWWWWWTTTTTTTWWWWWWTWWWWWWWW",
+                    "WWWWWWWWWTWWWWWTTTTTTTWWWWWTWWWWWWWWW",
+                    "WWWWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWBWWWTTTTTTTTTTTTWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                "entryPoint": {
+                    "x": 18,
+                    "y": 3
+                },
+                "battleBg": "battle_bg_dungeon",
+                "themeKey": "JAGOREA_ROOT",
+                "useDungeonWallFace": true,
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "光": -50,
+                    "闇": -50
+                },
+                "floorLinks": [
+                    {
+                        "x": 18,
+                        "y": 3,
+                        "toFloor": 4,
+                        "label": "前の階へ"
+                    }
+                ],
+                "bosses": [
+                    {
+                        "x": 18,
+                        "y": 23,
+                "monsterId": 302060,
+                "clearedFlag": "abyssJasperDefeated",
+                "startEventId": "abyss_jasper_battle",
+                        "actionLabel": "対峙する",
+                        "challengeText": "妄執の神官ジャスパーに挑みますか？",
+                        "storyEventId": "abyss_jasper_clear"
+                    }
+                ],
+                "mapId": "MAP000049",
+                "floorId": "MAP000049-05",
+                "useHabitatEncounters": true
+            }
+        ],
+        "mapId": "MAP000049",
+        "floorId": "MAP000049-01",
+        "useHabitatEncounters": true
+    },
+    CHRONO_ABYSS: {
+        "name": "次元牢獄クロノアビス",
+        "themeKey": "CHRONO_ABYSS",
+        "rank": 116,
+        "encounterRank": 116,
+        "battleBg": "battle_bg_dungeon",
+        "useDungeonWallFace": true,
+        "isDungeon": true,
+        "isFixed": true,
+        "elementPenalty": {
+            "混沌": -50
+        },
+        "floors": [
+            {
+                "label": "1層",
+                "floor": 1,
+                "rank": 116,
+                "encounterRank": 116,
+                "width": 37,
+                "height": 27,
+                "tiles": [
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWTTTTTTTTTTWWWWWSWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWTTTTTTTWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWTTTTTTTWWTTTTTTTTTTWWW",
+                    "WWWWWWWWTWWWWWWTTTTTTTWWWWWWTWWWWWWWW",
+                    "WWWWWWWWWTWWWWWTTTTTTTWWWWWTWWWWWWWWW",
+                    "WWWWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWDWWWTTTTTTTTTTTTWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                "entryPoint": {
+                    "x": 18,
+                    "y": 3
+                },
+                "battleBg": "battle_bg_dungeon",
+                "themeKey": "CHRONO_ABYSS",
+                "useDungeonWallFace": true,
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "混沌": -50
+                },
+                "floorLinks": [
+                    {
+                        "x": 18,
+                        "y": 3,
+                        "to": "EXIT",
+                        "label": "外へ戻る"
+                    },
+                    {
+                        "x": 18,
+                        "y": 23,
+                        "toFloor": 2,
+                        "label": "次の階へ"
+                    }
+                ],
+                "bosses": [],
+                "mapId": "MAP000050",
+                "floorId": "MAP000050-01",
+                "useHabitatEncounters": true
+            },
+            {
+                "label": "2層",
+                "floor": 2,
+                "procedural": true,
+                "forceMaze": false,
+                "wideProcedural": false,
+                "rank": 116,
+                "encounterRank": 116,
+                "themeKey": "CHRONO_ABYSS",
+                "battleBg": "battle_bg_dungeon",
+                "useDungeonWallFace": true,
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "混沌": -50
+                },
+                "mapId": "MAP000050",
+                "floorId": "MAP000050-02",
+                "useHabitatEncounters": true
+            },
+            {
+                "label": "3層",
+                "floor": 3,
+                "procedural": true,
+                "forceMaze": false,
+                "wideProcedural": false,
+                "rank": 116,
+                "encounterRank": 116,
+                "themeKey": "CHRONO_ABYSS",
+                "battleBg": "battle_bg_dungeon",
+                "useDungeonWallFace": true,
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "混沌": -50
+                },
+                "mapId": "MAP000050",
+                "floorId": "MAP000050-03",
+                "useHabitatEncounters": true
+            },
+            {
+                "label": "4層",
+                "floor": 4,
+                "procedural": true,
+                "forceMaze": false,
+                "wideProcedural": false,
+                "rank": 120,
+                "encounterRank": 120,
+                "themeKey": "CHRONO_ABYSS",
+                "battleBg": "battle_bg_dungeon",
+                "useDungeonWallFace": true,
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "混沌": -50
+                },
+                "mapId": "MAP000050",
+                "floorId": "MAP000050-04",
+                "useHabitatEncounters": true
+            },
+            {
+                "label": "5層",
+                "floor": 5,
+                "procedural": true,
+                "forceMaze": false,
+                "wideProcedural": false,
+                "rank": 120,
+                "encounterRank": 120,
+                "themeKey": "CHRONO_ABYSS",
+                "battleBg": "battle_bg_dungeon",
+                "useDungeonWallFace": true,
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "混沌": -50
+                },
+                "mapId": "MAP000050",
+                "floorId": "MAP000050-05",
+                "useHabitatEncounters": true
+            },
+            {
+                "label": "6層",
+                "floor": 6,
+                "procedural": true,
+                "forceMaze": false,
+                "wideProcedural": false,
+                "rank": 120,
+                "encounterRank": 120,
+                "themeKey": "CHRONO_ABYSS",
+                "battleBg": "battle_bg_dungeon",
+                "useDungeonWallFace": true,
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "混沌": -50
+                },
+                "mapId": "MAP000050",
+                "floorId": "MAP000050-06",
+                "useHabitatEncounters": true
+            },
+            {
+                "label": "7層",
+                "floor": 7,
+                "rank": 120,
+                "encounterRank": 120,
+                "width": 37,
+                "height": 27,
+                "tiles": [
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWTTTTTTTTTTWWWWWUWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWWWWTWWWWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWTTTTTTTWWTTTTTTTTTTWWW",
+                    "WWWTTTTTTTTTTWWTTTTTTTWWTTTTTTTTTTWWW",
+                    "WWWWWWWWTWWWWWWTTTTTTTWWWWWWTWWWWWWWW",
+                    "WWWWWWWWWTWWWWWTTTTTTTWWWWWTWWWWWWWWW",
+                    "WWWWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWTTTTTTTWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWTTTTTTTTTTTTTTTTTWWWWWWWWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWTWWWTTTTTTTTTTTTWWW",
+                    "WWWWTTTTTTTTTTTWWWBWWWTTTTTTTTTTTTWWW",
+                    "WWWWWWWWWWWWWWWWWWDWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+                    "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+                ],
+                "entryPoint": {
+                    "x": 18,
+                    "y": 3
+                },
+                "battleBg": "battle_bg_dungeon",
+                "themeKey": "CHRONO_ABYSS",
+                "useDungeonWallFace": true,
+                "isDungeon": true,
+                "isFixed": true,
+                "elementPenalty": {
+                    "混沌": -50
+                },
+                "floorLinks": [
+                    {
+                        "x": 18,
+                        "y": 3,
+                        "toFloor": 6,
+                        "label": "前の階へ"
+                    },
+                    {
+                        "x": 18,
+                        "y": 24,
+                        "toDungeon": "FINAL_ALTAR",
+                        "label": "さらに奥へ進む",
+                        "requiredFlag": "abyssIlluminaciaDefeated",
+                        "lockedLog": "倒したはずの魔力が道を閉ざしている。"
+                    }
+                ],
+                "bosses": [
+                    {
+                        "x": 18,
+                        "y": 23,
+                "monsterId": 302070,
+                "clearedFlag": "abyssIlluminaciaDefeated",
+                "startEventId": "abyss_illuminacia_battle",
+                        "actionLabel": "対峙する",
+                        "challengeText": "混沌姫イルミナシアに挑みますか？",
+                        "storyEventId": "abyss_illuminacia_clear"
+                    }
+                ],
+                "mapId": "MAP000050",
+                "floorId": "MAP000050-07",
+                "useHabitatEncounters": true
+            }
+        ],
+        "mapId": "MAP000050",
+        "floorId": "MAP000050-01",
+        "useHabitatEncounters": true
+    },
+    FINAL_ALTAR: {
+        "name": "終焉の祭壇",
+        "themeKey": "SUMMIT_TEMPLE",
+        "rank": 125,
+        "encounterRank": 125,
+        "width": 49,
+        "height": 35,
+        "tiles": [
+            "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+            "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+            "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+            "WWWWWWWWWWWWWWTTTTTTTTTTTTTTTTTTTTTWWWWWWWWWWWWWW",
+            "WWWWWWWWWWWWWWTTTTTTTTTTTTTTTTTTTTTWWWWWWWWWWWWWW",
+            "WWWWWWWWWWWWWWTTTTTTTTTTTTTTTTTTTTTWWWWWWWWWWWWWW",
+            "WWWWWWWWWWWWWWTTTTTTTTTTBTTTTTTTTTTWWWWWWWWWWWWWW",
+            "WWWWWWWWWWWWWWTTTTTTTTTTTTTTTTTTTTTWWWWWWWWWWWWWW",
+            "WWWWWWWWWWWWWWTTTTTTTTTTTTTTTTTTTTTWWWWWWWWWWWWWW",
+            "WWWWWWWWWWWWWWTTTTTTTTTTTTTTTTTTTTTWWWWWWWWWWWWWW",
+            "WWWWWWWWWWWWWWTTTTTTTTTTTTTTTTTTTTTWWWWWWWWWWWWWW",
+            "WWWWWWWWWWWWWWTTTTTTTTTTTTTTTTTTTTTWWWWWWWWWWWWWW",
+            "WWWWWWWWWWWWWWTTTTTTTTTTTTTTTTTTTTTWWWWWWWWWWWWWW",
+            "WWWWWWWWTTTTTWWWWWWWWWWWTWWWWWWWWWWWTTTTTWWWWWWWW",
+            "WWWWWWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWWWWWWW",
+            "WWWWWWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWWWWWWW",
+            "WWWWWWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWWWWWWW",
+            "WWWWWWWWTTTTTTTTTTTTTTTTBTTTTTTTTTTTTTTTTWWWWWWWW",
+            "WWWWWWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWWWWWWW",
+            "WWWWWWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWWWWWWW",
+            "WWWWWWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWWWWWWW",
+            "WWWWWWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWWWWWWW",
+            "WWWWWWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWWWWWWW",
+            "WWWWWWWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWWWWWWW",
+            "WWWTTTTWWWWWWWWWWWWWWWWWTWWWWWWWWWWWWWWWWWTTTTWWW",
+            "WWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+            "WWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+            "WWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+            "WWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+            "WWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+            "WWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+            "WWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+            "WWWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWWW",
+            "WWWWWWWWWWWWWWWWWWWWWWWWSWWWWWWWWWWWWWWWWWWWWWWWW",
+            "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+        ],
+        "entryPoint": {
+            "x": 24,
+            "y": 32
+        },
+        "battleBg": "battle_bg_lastboss",
+        "useDungeonWallFace": true,
+        "isDungeon": true,
+        "isFixed": true,
+        "disableRandomEncounters": true,
+        "floorLinks": [
+            {
+                "x": 24,
+                "y": 33,
+                "to": "EXIT",
+                "label": "クロノアビスへ戻る"
+            }
+        ],
+        "bosses": [
+            {
+                "x": 24,
+                "y": 17,
+                "monsterId": [
+                    302080,
+                    302081,
+                    302082,
+                    302083,
+                    302084
+                ],
+                "clearedFlag": "abyssVegnasisDefeated",
+                "startEventId": "abyss_vegnasis_battle",
+                "actionLabel": "魔柱に挑む",
+                "challengeText": "五つの魂が絡み合う死幻の魔柱に挑みますか？",
+                "storyEventId": "abyss_vegnasis_clear"
+            },
+            {
+                "x": 24,
+                "y": 6,
+                "monsterId": 302100,
+                "requiredFlag": "abyssVegnasisDefeated",
+                "clearedFlag": "abyssAzelgaragDefeated",
+                "startEventId": "abyss_azelgarag_battle",
+                "actionLabel": "深淵王に挑む",
+                "challengeText": "深淵王アゼルガラグが祭壇の最奥で待っている。\n連戦を覚悟して挑みますか？",
+                "storyEventId": "abyss_azelgarag_clear"
+            }
+        ],
+        "mapActions": [
+            {
+                "x": 24,
+                "y": 4,
+                "type": "storyEvent",
+                "eventId": "abyss_postgame_crack",
+                "requiredFlag": "abyssEpilogueSeen",
+                "lockedText": "亀裂はまだ固く閉ざされている。",
+                "label": "さらに深い亀裂を調べる",
+                "log": "祭壇の奥に、底の知れない亀裂が広がっている。"
+            }
+        ],
+        "mapId": "MAP000057",
+        "floorId": "MAP000057-01",
+        "useHabitatEncounters": true
     }
 };
 
@@ -13116,6 +15957,10 @@ if (typeof window !== "undefined") {
     window.FIELD_ENCOUNTER_ZONES = FIELD_ENCOUNTER_ZONES;
     window.WORLD_BRIDGES = WORLD_BRIDGES;
     window.SURFACE_WORLD_MAP_DATA = SURFACE_WORLD_MAP_DATA;
+    window.ABYSS_WORLD_MAP_DATA = ABYSS_WORLD_MAP_DATA;
+    window.WORLD_MAPS = WORLD_MAPS;
+    window.DERIVED_PROGRESS_FLAGS = DERIVED_PROGRESS_FLAGS;
+    window.ABYSS_REGION_MASTER = ABYSS_REGION_MASTER;
     window.MAP_DATA = MAP_DATA;
     window.FIXED_TILE_OVERLAYS = FIXED_TILE_OVERLAYS;
     window.FIXED_OVERLAY_BASE_TILES = FIXED_OVERLAY_BASE_TILES;

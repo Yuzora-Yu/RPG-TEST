@@ -42,9 +42,30 @@ const MapRegistry = {
         if (typeof createMapFloorId === 'function') return createMapFloorId(mapId, floor);
         return `${String(mapId || '')}-${String(Math.max(0, Number(floor) || 0)).padStart(2, '0')}`;
     },
+
+    getActiveWorldKey() {
+        const location = (typeof App !== 'undefined' && App.data?.location) || {};
+        const areaKey = String(location.area || 'WORLD');
+        const explicitWorldKey = String(location.worldKey || '').toUpperCase();
+        const areaWorldKey = String((typeof STORY_DATA !== 'undefined' && STORY_DATA.areas?.[areaKey]?.worldKey) || '').toUpperCase();
+        return (explicitWorldKey === 'ABYSS_WORLD' || areaKey === 'ABYSS_WORLD' || areaWorldKey === 'ABYSS_WORLD')
+            ? 'ABYSS_WORLD'
+            : 'WORLD';
+    },
+
+    getWorldDefinition(worldKey = null) {
+        const key = String(worldKey || MapRegistry.getActiveWorldKey() || 'WORLD');
+        return (typeof WORLD_MAPS !== 'undefined' && WORLD_MAPS[key]) || null;
+    },
+
+    getActiveWorldMap() {
+        return MapRegistry.getWorldDefinition()?.tiles || ((typeof SURFACE_WORLD_MAP_DATA !== 'undefined') ? SURFACE_WORLD_MAP_DATA : MAP_DATA);
+    },
+
     normalizeWorldPoint(x, y) {
-        const width = (typeof MAP_DATA !== "undefined" && MAP_DATA[0]) ? MAP_DATA[0].length : 1;
-        const height = (typeof MAP_DATA !== "undefined" && MAP_DATA.length) ? MAP_DATA.length : 1;
+        const activeMap = MapRegistry.getActiveWorldMap();
+        const width = Array.isArray(activeMap) && activeMap[0] ? activeMap[0].length : 1;
+        const height = Array.isArray(activeMap) ? activeMap.length : 1;
         return {
             x: ((Number(x) % width) + width) % width,
             y: ((Number(y) % height) + height) % height
@@ -52,9 +73,9 @@ const MapRegistry = {
     },
 
     getWorldBridgeAt(x, y) {
-        if (typeof WORLD_BRIDGES === "undefined") return null;
         const point = MapRegistry.normalizeWorldPoint(x, y);
-        return WORLD_BRIDGES.find(bridge => Number(bridge.x) === point.x && Number(bridge.y) === point.y) || null;
+        const bridges = MapRegistry.getWorldDefinition()?.bridges || [];
+        return bridges.find(bridge => Number(bridge.x) === point.x && Number(bridge.y) === point.y) || null;
     },
 
     isWorldBridgeAt(x, y) {
@@ -65,15 +86,20 @@ const MapRegistry = {
     // 橋の基礎タイルは W だが、ゲーム上は海ではなく陸上として扱う。
     getWorldSurfaceAt(x, y) {
         const point = MapRegistry.normalizeWorldPoint(x, y);
-        const tile = String((typeof MAP_DATA !== "undefined" ? MAP_DATA[point.y]?.[point.x] : '') || '').toUpperCase();
+        const activeMap = MapRegistry.getActiveWorldMap();
+        const tile = String(activeMap?.[point.y]?.[point.x] || '').toUpperCase();
         const bridge = MapRegistry.getWorldBridgeAt(point.x, point.y);
+        const worldDef = MapRegistry.getWorldDefinition();
+        const seaTiles = Array.isArray(worldDef?.seaTiles) ? worldDef.seaTiles : ['W'];
+        const impassableTiles = Array.isArray(worldDef?.impassableTiles) ? worldDef.impassableTiles : ['M'];
         return {
             x: point.x,
             y: point.y,
             tile,
             bridge,
             isBridge: !!bridge,
-            isSea: tile === 'W' && !bridge
+            isSea: seaTiles.includes(tile) && !bridge,
+            isImpassable: impassableTiles.includes(tile) && !bridge
         };
     },
 
@@ -125,7 +151,7 @@ const MapRegistry = {
         const index = Math.min(base.floors.length - 1, floor - 1);
         const def = base.floors[index];
         const floorLabel = def.label || `${index + 1}階`;
-        return {
+        const resolved = {
             ...base,
             ...def,
             areaKey,
@@ -147,6 +173,10 @@ const MapRegistry = {
             isDungeon: true,
             isFixed: true
         };
+        if (def.procedural && typeof Dungeon !== "undefined" && typeof Dungeon.getOrCreateFixedProceduralFloor === "function") {
+            return Dungeon.getOrCreateFixedProceduralFloor(areaKey, index + 1, resolved);
+        }
+        return resolved;
     },
 
     // 固有ダンジョンの入口が街・集落など別の固定MAP内にある場合、その実座標を返す。
@@ -215,7 +245,13 @@ const MapRegistry = {
         const base = MapRegistry.getFixedDungeonBase(areaKey);
         const progressAreaKey = base?.canonicalAreaKey || areaKey;
         if (base && Array.isArray(base.floors) && base.floors.length > 0) {
-            return `${progressAreaKey}:F${Math.max(1, Number(floorNo || 1))}`;
+            const normalizedFloor = Math.max(1, Number(floorNo || 1));
+            const floorTemplate = base.floors[normalizedFloor - 1];
+            if (floorTemplate?.procedural) {
+                const runId = Math.max(1, Number(globalThis.App?.data?.progress?.fixedProceduralRunIds?.[areaKey] || 1));
+                return `${progressAreaKey}:R${runId}:F${normalizedFloor}`;
+            }
+            return `${progressAreaKey}:F${normalizedFloor}`;
         }
         return progressAreaKey;
     },
@@ -433,7 +469,9 @@ const MapRegistry = {
         const point = MapRegistry.normalizeWorldPoint(x, y);
         const wx = point.x;
         const wy = point.y;
+        const activeWorldKey = MapRegistry.getActiveWorldKey();
         for (const [key, area] of Object.entries(STORY_DATA.areas)) {
+            if (String(area.worldKey || 'WORLD') !== activeWorldKey) continue;
             if (Array.isArray(area.entrances)) {
                 const entrance = area.entrances.find(pos => Number(pos.x) === wx && Number(pos.y) === wy);
                 if (entrance) return [key, { ...area, centerX: wx, centerY: wy, _entryKey: entrance.entryKey || null, _entryLabel: entrance.label || null }];

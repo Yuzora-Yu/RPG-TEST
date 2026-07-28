@@ -107,12 +107,12 @@ const finalForm = bosses.find(monster => Number(monster.id) === 302101);
 assert(firstForm && finalForm && Number(firstForm.imageId) === 302100 && Number(finalForm.imageId) === 302101, 'アゼルガラグ2形態を別ID・別画像で正本化');
 assert(Number(firstForm?.phaseTransitionMonsterId) === 302101 && firstForm?.phaseTransitionConversation === 'ABYSS_AZELGARAG_TRANSFORM' && finalForm?.isAzelgaragFinalForm === true, 'アゼルガラグ形態移行の正本参照が相互に整合');
 
-const altarSource = fs.readFileSync(path.join(root, 'abyss_region.js'), 'utf8');
+const altarSource = fs.readFileSync(path.join(root, 'map.js'), 'utf8');
 const storySource = fs.readFileSync(path.join(root, 'abyss_story.js'), 'utf8');
-const battleSource = fs.readFileSync(path.join(root, 'abyss_battle.js'), 'utf8');
-assert(/monsterId:\[302080,302081,302082,302083,302084\]/.test(altarSource), '終焉の祭壇にヴェグナシス5対象を配置');
+const battleSource = fs.readFileSync(path.join(root, 'battle.js'), 'utf8');
+assert(/"monsterId":\s*\[\s*302080,\s*302081,\s*302082,\s*302083,\s*302084\s*\]/.test(altarSource), '終焉の祭壇にヴェグナシス5対象を配置');
 assert(/value:302100/.test(storySource) && /winEventId:'abyss_azelgarag_clear'/.test(storySource), 'ヴェグナシス勝利後にアゼルガラグへ連戦');
-assert(/VEGNASIS_IDS/.test(battleSource) && /vegnasis-shared-visual/.test(battleSource), 'ヴェグナシス専用戦闘・共有描画フックが有効');
+assert(/abyssVegnasisIds/.test(battleSource) && /vegnasis-shared-visual/.test(battleSource), 'ヴェグナシス専用戦闘・共有描画が戦闘正本に統合されている');
 assert(/302100/.test(battleSource) && /302101/.test(battleSource) && /ABYSS_AZELGARAG_TRANSFORM/.test(battleSource), 'アゼルガラグ第二形態移行フックが有効');
 
 const contentSource = fs.readFileSync(path.join(root, 'abyss_content.js'), 'utf8');
@@ -121,9 +121,9 @@ assert(skillsById.has(700101), '混沌の衣がskills.js正本に存在');
 assert([701001,701002,701003,701004,701005,701006,701007,701008].every(id => itemsById.has(id)), '結晶片・オクタプリズマがitems.js正本に存在');
 
 const mainSource = fs.readFileSync(path.join(root, 'main.js'), 'utf8');
-const runtimeSource = fs.readFileSync(path.join(root, 'abyss_runtime.js'), 'utf8');
-assert(/ABYSS_REGION_RULES\?\.abyssAreaKeys/.test(mainSource), '仲間化許可判定が深淵エリア正本を参照');
-assert(!/App\.isMonsterRecruitBattleAllowed\s*=/.test(runtimeSource), '仲間化判定をabyss_runtime.jsで上書きしない');
+const indexSource = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+assert(/ABYSS_REGION_MASTER/.test(mainSource) && /worldKey\s*===\s*'ABYSS_WORLD'/.test(mainSource), '仲間化許可判定と地域処理が深淵エリア正本を参照');
+assert(!/abyss_region\.js|abyss_runtime\.js|abyss_battle\.js/.test(indexSource), '旧深淵ランタイム上書きモジュールを読み込まない');
 
 if (failures.length) {
   console.error(`Abyss monster master validation failed (${failures.length}):`);

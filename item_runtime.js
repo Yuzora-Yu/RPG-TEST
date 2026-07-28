@@ -12,6 +12,13 @@
     const isAlive = target => !!target && !target.isFled && !target.isDead && Number(target.hp || 0) > 0;
     const isBattleUsable = item => {
         if (!item) return false;
+        if (Number(item.id) === 701008) {
+            const Battle = globalThis.Battle;
+            return !!Battle && !globalThis.App?.data?.battle?.abyssOctaprismUsed
+                && (Battle.enemies || []).some(enemy =>
+                    Battle.abyssAzelgaragIds?.includes(Battle.getUnitBaseId?.(enemy)) && !enemy.isDead
+                );
+        }
         if (item.battleUsable !== undefined) return item.battleUsable === true;
         return ['HP回復', 'MP回復', '蘇生', '状態異常回復'].includes(item.type);
     };
@@ -22,6 +29,7 @@
     };
     const getBattleTargetType = item => {
         if (!item) return 'ally';
+        if (Number(item.id) === 701008) return 'all_enemy';
         if (item.effectKind === 'damage' || item.effectKind === 'debuff') {
             if (item.target === '全体') return 'all_enemy';
             if (item.target === 'ランダム') return 'random';
@@ -208,6 +216,22 @@
         return effected;
     };
     const applyBattleItem = ({ Battle, App, item, command }) => {
+        if (Number(item?.id) === 701008) {
+            const targets = (Battle.enemies || []).filter(enemy =>
+                Battle.abyssAzelgaragIds?.includes(Battle.getUnitBaseId?.(enemy)) && !enemy.isDead
+            );
+            if (!targets.length || App.data?.battle?.abyssOctaprismUsed) {
+                Battle.log('オクタプリズマは今は力を示さない。');
+                return { handled: true, consumed: false, effected: 0 };
+            }
+            Battle.log(`${command?.actor?.name || '一行'}はオクタプリズマを掲げた！`);
+            targets.forEach(enemy => Battle.applyOctaprismToEnemy(enemy));
+            App.data.battle.abyssOctaprismUsed = true;
+            App.data.battle.abyssSealedSkillIds = Battle.abyssSealedSkillIds.slice();
+            Battle.log('八面の光が深淵王の全能力を弱め、ラグナロク・カオスショック・混沌の衣を封じた！');
+            App.save?.();
+            return { handled: true, consumed: false, effected: targets.length };
+        }
         if (!isBattleUsable(item)) return { handled: false, consumed: false, effected: 0 };
         if (!consume(App, item)) {
             Battle.log(`${item.name}はもう残っていない！`);

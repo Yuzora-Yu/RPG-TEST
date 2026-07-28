@@ -115,6 +115,13 @@ const Dungeon = {
     keyItemSymbols: { red: 'Q', blue: 'N', gold: 'O' },
     keyColorLabels: { red: '赤', blue: '青', gold: '金' },
     keyGuardianImagePath: 'assets/monsters/monster_000103.png',
+    isRandomChestRewardEligible: (item) => {
+        if (!item || Number(item.id) <= 0) return false;
+        const type = String(item.type || '');
+        return type !== '貴重品' && type !== '乗り物' && type !== '移動'
+            && type !== 'スキル書' && type !== '特性書'
+            && item.medalOnly !== true && item.abyssDrop !== false;
+    },
     // Random-dungeon appearance catalog. This is the single source of truth for both
     // map tiles (themeKey) and battle backgrounds (battleBg). Later thresholds add
     // candidates without removing earlier appearances.
@@ -162,6 +169,16 @@ const Dungeon = {
                 ? [bossDef.keyRewardColor || bossDef.keyColor]
                 : [];
         const keyRewardColors = rawKeyRewardColors.filter(Boolean);
+        const defeatGroupId = bossDef?.defeatGroupId ? String(bossDef.defeatGroupId) : null;
+        const defeatGroupPositions = defeatGroupId && Array.isArray(currentMapDef?.bosses)
+            ? currentMapDef.bosses
+                .filter(entry => String(entry?.defeatGroupId || '') === defeatGroupId)
+                .map(entry => ({ x: Number(entry.x), y: Number(entry.y) }))
+                .filter(entry => Number.isFinite(entry.x) && Number.isFinite(entry.y))
+            : [{ x: fx, y: fy }];
+        const clearedFlags = Array.isArray(bossDef?.clearedFlags)
+            ? bossDef.clearedFlags.filter(Boolean)
+            : (bossDef?.clearedFlag ? [bossDef.clearedFlag] : []);
 
         return {
             type: 'fixedBoss',
@@ -170,6 +187,9 @@ const Dungeon = {
             progressKey,
             mapId: currentMapDef?.id || currentMapDef?.key || currentMapDef?.areaKey || areaKey || null,
             fixedBossPosition: { x: fx, y: fy },
+            defeatGroupId,
+            defeatGroupPositions,
+            clearedFlags,
             fixedQuestId: bossDef?.questId || null,
             bossStatMultiplier: Math.max(1, Number(bossDef?.bossStatMultiplier || 1) || 1),
             fixedKeyReward: keyRewardColors.length ? {
@@ -1063,6 +1083,9 @@ const Dungeon = {
             fixedBossId,
             fixedBossPosition: fixedBossContext?.fixedBossPosition || { x: Number(x), y: Number(y) },
             fixedBossProgressKey: fixedBossContext?.progressKey || null,
+            fixedBossDefeatGroupId: fixedBossContext?.defeatGroupId || null,
+            fixedBossDefeatGroupPositions: fixedBossContext?.defeatGroupPositions || null,
+            fixedBossClearedFlags: fixedBossContext?.clearedFlags || null,
             fixedQuestId: fixedBossContext?.fixedQuestId || bossDef?.questId || null,
             bossStatMultiplier: fixedBossContext?.bossStatMultiplier || Math.max(1, Number(bossDef?.bossStatMultiplier || 1) || 1),
             fixedKeyReward: fixedBossContext?.fixedKeyReward || null,
@@ -1153,6 +1176,177 @@ const Dungeon = {
         }
     },
 
+    ensureFixedProceduralStores: () => {
+        if (!App.data.progress) App.data.progress = {};
+        if (!App.data.progress.fixedProceduralFloors || typeof App.data.progress.fixedProceduralFloors !== 'object') {
+            App.data.progress.fixedProceduralFloors = {};
+        }
+        if (!App.data.progress.fixedProceduralRunIds || typeof App.data.progress.fixedProceduralRunIds !== 'object') {
+            App.data.progress.fixedProceduralRunIds = {};
+        }
+        return App.data.progress;
+    },
+
+    isValidFixedProceduralFloor: (floorDef) => {
+        if (!floorDef || !Array.isArray(floorDef.tiles) || floorDef.tiles.length < 3) return false;
+        const width = Number(floorDef.width || floorDef.tiles[0]?.length || 0);
+        const height = Number(floorDef.height || floorDef.tiles.length);
+        const rectangular = Number.isInteger(width) && width >= 3 && height === floorDef.tiles.length
+            && floorDef.tiles.every(row => (typeof row === 'string' || Array.isArray(row)) && row.length === width);
+        if (!rectangular) return false;
+        if (!floorDef.generatedFromAbyssLogic || !Array.isArray(floorDef.chests)) return true;
+        const items = globalThis.DB?.ITEMS || globalThis.ITEMS_DATA || [];
+        return floorDef.chests.every(chest => {
+            const item = items.find(entry => Number(entry.id) === Number(chest?.itemId));
+            return Dungeon.isRandomChestRewardEligible(item);
+        });
+    },
+
+    beginFixedProceduralRun: (areaKey) => {
+        const base = typeof FIXED_DUNGEON_MAPS !== 'undefined' ? FIXED_DUNGEON_MAPS[areaKey] : null;
+        if (!base?.floors?.some(floor => floor?.procedural)) return;
+        const progress = Dungeon.ensureFixedProceduralStores();
+        progress.fixedProceduralRunIds[areaKey] = Math.max(0, Number(progress.fixedProceduralRunIds[areaKey] || 0)) + 1;
+        const prefix = `${areaKey}:`;
+        Object.keys(progress.fixedProceduralFloors)
+            .filter(key => key.startsWith(prefix))
+            .forEach(key => delete progress.fixedProceduralFloors[key]);
+    },
+
+    getOrCreateFixedProceduralFloor: (areaKey, floorNo, template) => {
+        const progress = Dungeon.ensureFixedProceduralStores();
+        if (!Number(progress.fixedProceduralRunIds[areaKey])) progress.fixedProceduralRunIds[areaKey] = 1;
+        const runId = Math.max(1, Number(progress.fixedProceduralRunIds[areaKey]));
+        const cacheKey = `${areaKey}:R${runId}:F${Number(floorNo)}`;
+        const cached = progress.fixedProceduralFloors[cacheKey];
+        if (Dungeon.isValidFixedProceduralFloor(cached)) return JSON.parse(JSON.stringify(cached));
+
+        const previousDungeonData = JSON.parse(JSON.stringify(App.data.dungeon || {}));
+        const previousDungeonState = {
+            floor: Dungeon.floor,
+            width: Dungeon.width,
+            height: Dungeon.height,
+            map: Dungeon.map,
+            lastGenVariant: Dungeon.lastGenVariant
+        };
+        const previousFieldState = { x: Field.x, y: Field.y, currentMapData: Field.currentMapData };
+        let generated = [];
+        try {
+            App.data.dungeon = { ...previousDungeonData };
+            Dungeon.floor = Math.max(1, Number(template.encounterRank || template.rank || floorNo));
+            Dungeon.buildRandomFloorLayout(Object.freeze({
+                floor: Dungeon.floor,
+                category: template.forceMaze ? 'maze' : 'abyss',
+                themeId: 'abyss'
+            }));
+            const raw = Array.isArray(Dungeon.map) ? Dungeon.map : [];
+            const width = Math.max(0, ...raw.map(row => row?.length || 0));
+            generated = raw.map(row => Array.from({ length: width }, (_, x) => {
+                const tile = String(row?.[x] || 'W').toUpperCase();
+                return tile === 'W' ? 'W' : ((tile === 'C' || tile === 'R') ? tile : 'T');
+            }));
+        } catch (error) {
+            console.warn(`[FixedDungeon] ${areaKey} ${floorNo}階の可変MAP生成に失敗したため、安全な代替構造を使用します。`, error);
+        } finally {
+            App.data.dungeon = previousDungeonData;
+            Dungeon.floor = previousDungeonState.floor;
+            Dungeon.width = previousDungeonState.width;
+            Dungeon.height = previousDungeonState.height;
+            Dungeon.map = previousDungeonState.map;
+            Dungeon.lastGenVariant = previousDungeonState.lastGenVariant;
+            Field.x = previousFieldState.x;
+            Field.y = previousFieldState.y;
+            Field.currentMapData = previousFieldState.currentMapData;
+        }
+
+        if (!generated.length || !generated[0]?.length) {
+            const width = template.wideProcedural ? 51 : 39;
+            const height = template.wideProcedural ? 37 : 29;
+            generated = Array.from({ length: height }, (_, y) => Array.from({ length: width }, (_, x) =>
+                (x === 0 || y === 0 || x === width - 1 || y === height - 1) ? 'W' : 'T'
+            ));
+        }
+
+        if (template.wideProcedural && (generated[0].length < 49 || generated.length < 35)) {
+            const source = generated;
+            const width = 51;
+            const height = 37;
+            generated = Array.from({ length: height }, () => Array(width).fill('W'));
+            const offsetX = 2;
+            const offsetY = Math.max(2, Math.floor((height - source.length) / 2));
+            source.forEach((row, y) => row.forEach((tile, x) => {
+                if (y + offsetY < height - 1 && x + offsetX < width - 1) generated[y + offsetY][x + offsetX] = tile;
+            }));
+            const chamberLeft = 29;
+            for (let y = 3; y <= height - 4; y++) {
+                for (let x = chamberLeft; x <= width - 3; x++) {
+                    generated[y][x] = (x === chamberLeft || x === width - 3 || y === 3 || y === height - 4) ? 'W' : 'T';
+                }
+            }
+            const midY = Math.floor(height / 2);
+            for (let x = Math.max(2, offsetX + (source[0]?.length || 0) - 3); x <= chamberLeft + 2; x++) generated[midY][x] = 'T';
+        }
+
+        const neighbors = (x, y) => [[1, 0], [-1, 0], [0, 1], [0, -1]]
+            .map(([dx, dy]) => ({ x: x + dx, y: y + dy }))
+            .filter(point => point.y >= 0 && point.y < generated.length && point.x >= 0 && point.x < generated[0].length && generated[point.y][point.x] !== 'W');
+        const farthest = (start) => {
+            const queue = [{ ...start, distance: 0 }];
+            const seen = new Set([`${start.x},${start.y}`]);
+            let result = queue[0];
+            for (let index = 0; index < queue.length; index++) {
+                const current = queue[index];
+                if (current.distance > result.distance) result = current;
+                neighbors(current.x, current.y).forEach(next => {
+                    const key = `${next.x},${next.y}`;
+                    if (seen.has(key)) return;
+                    seen.add(key);
+                    queue.push({ ...next, distance: current.distance + 1 });
+                });
+            }
+            return { x: result.x, y: result.y };
+        };
+        generated.forEach(row => row.forEach((tile, x) => {
+            if (['S', 'D', 'U', 'B'].includes(tile)) row[x] = 'T';
+        }));
+        const walkable = [];
+        generated.forEach((row, y) => row.forEach((tile, x) => {
+            if (tile !== 'W' && tile !== 'C' && tile !== 'R') walkable.push({ x, y });
+        }));
+        const entryPoint = farthest(walkable[0] || { x: 1, y: 1 });
+        const exitPoint = farthest(entryPoint);
+        generated[entryPoint.y][entryPoint.x] = 'U';
+        generated[exitPoint.y][exitPoint.x] = 'D';
+        const itemCandidates = (globalThis.DB?.ITEMS || globalThis.ITEMS_DATA || []).filter(item => {
+            const rank = Number(item?.rank || 1);
+            return Dungeon.isRandomChestRewardEligible(item)
+                && rank <= Number(template.encounterRank || 1)
+                && Number(item.price || 0) >= 0;
+        });
+        const pickItemId = () => itemCandidates[Math.floor(Math.random() * itemCandidates.length)]?.id || 1;
+        const chests = [];
+        generated.forEach((row, y) => row.forEach((tile, x) => {
+            if (tile === 'C' || tile === 'R') chests.push({ x, y, itemId: pickItemId(), rare: tile === 'R' });
+        }));
+        const result = {
+            ...template,
+            procedural: false,
+            generatedFromAbyssLogic: true,
+            proceduralRunId: runId,
+            width: generated[0].length,
+            height: generated.length,
+            tiles: generated.map(row => row.join('')),
+            entryPoint,
+            chests,
+            floorLinks: [
+                { x: entryPoint.x, y: entryPoint.y, toFloor: Number(floorNo) - 1, label: '前の階へ' },
+                { x: exitPoint.x, y: exitPoint.y, toFloor: Number(floorNo) + 1, label: '次の階へ' }
+            ]
+        };
+        progress.fixedProceduralFloors[cacheKey] = result;
+        return JSON.parse(JSON.stringify(result));
+    },
+
     startFixed: (mapKey, options = {}) => {
         const gate = Dungeon.canEnterFixedDungeon(mapKey, options);
         if (!gate.ok) {
@@ -1166,6 +1360,7 @@ const Dungeon = {
         const baseDef = (typeof MapRegistry !== 'undefined' && MapRegistry.getFixedDungeonBase)
             ? MapRegistry.getFixedDungeonBase(mapKey)
             : ((typeof FIXED_DUNGEON_MAPS !== 'undefined') ? FIXED_DUNGEON_MAPS[mapKey] : null);
+        if (App.data?.location?.area !== mapKey) Dungeon.beginFixedProceduralRun(mapKey);
         const entryFromKey = (options.entryKey && baseDef?.entryPoints && baseDef.entryPoints[options.entryKey])
             ? baseDef.entryPoints[options.entryKey]
             : null;
@@ -2185,7 +2380,7 @@ const Dungeon = {
                     // アイテム
                     const item = window.PRISMA_ITEM_CATALOG?.pickAbyssChestItem
                         ? window.PRISMA_ITEM_CATALOG.pickAbyssChestItem(floor)
-                        : DB.ITEMS.find(i => i.id !== 99 && i.type !== '貴重品' && i.rank <= floor);
+                        : DB.ITEMS.find(i => i.id !== 99 && Dungeon.isRandomChestRewardEligible(i) && i.rank <= floor);
                     if (!item) {
                         App.log('宝箱を開けた！<br>中身は空だった…。');
                         App.save();
@@ -5051,6 +5246,25 @@ const Dungeon = {
                 return;
             }
             if (App.data.battle?.suppressFixedBossDefeat) {
+                const trialElement = App.data.battle?.fixedTrialElement;
+                if (trialElement) {
+                    const progress = typeof App.ensureAbyssRegionProgress === 'function'
+                        ? App.ensureAbyssRegionProgress()
+                        : (App.data.progress || (App.data.progress = {}));
+                    if (!progress.abyssSpiritBlessings) progress.abyssSpiritBlessings = {};
+                    progress.abyssSpiritBlessings[trialElement] = true;
+                    const rewardItemId = Number(App.data.battle.fixedTrialRewardItemId || 0);
+                    if (rewardItemId) App.data.items[rewardItemId] = (App.data.items[rewardItemId] || 0) + 1;
+                    const requiredElements = Array.isArray(App.data.battle.fixedTrialRequiredElements)
+                        ? App.data.battle.fixedTrialRequiredElements
+                        : [];
+                    const completionItemId = Number(App.data.battle.fixedTrialCompletionItemId || 0);
+                    if (completionItemId && requiredElements.length
+                        && requiredElements.every(element => progress.abyssSpiritBlessings[element])) {
+                        App.data.items[completionItemId] = Math.max(1, Number(App.data.items[completionItemId] || 0));
+                    }
+                    App.save();
+                }
                 return;
             }
                 const areaKey = Field.getCurrentAreaKey();
@@ -5072,9 +5286,23 @@ const Dungeon = {
 			if (!App.data.progress.defeatedBosses) App.data.progress.defeatedBosses = {};
 			if (!App.data.progress.defeatedBosses[progressKey]) App.data.progress.defeatedBosses[progressKey] = [];
 			
-			if (!App.data.progress.defeatedBosses[progressKey].includes(posKey)) {
-				App.data.progress.defeatedBosses[progressKey].push(posKey);
-			}
+                const groupPositions = Array.isArray(App.data.battle?.fixedBossDefeatGroupPositions)
+                    ? App.data.battle.fixedBossDefeatGroupPositions
+                    : (Array.isArray(activeFixedBossContext?.defeatGroupPositions)
+                        ? activeFixedBossContext.defeatGroupPositions
+                        : [{ x: bossX, y: bossY }]);
+                groupPositions.forEach(position => {
+                    const groupPosKey = `${Number(position.x)},${Number(position.y)}`;
+                    if (!App.data.progress.defeatedBosses[progressKey].includes(groupPosKey)) {
+                        App.data.progress.defeatedBosses[progressKey].push(groupPosKey);
+                    }
+                });
+                const clearedFlags = Array.isArray(App.data.battle?.fixedBossClearedFlags)
+                    ? App.data.battle.fixedBossClearedFlags
+                    : (Array.isArray(activeFixedBossContext?.clearedFlags) ? activeFixedBossContext.clearedFlags : []);
+                clearedFlags.filter(Boolean).forEach(flag => {
+                    App.data.progress.flags[flag] = true;
+                });
             const fixedKeyReward = App.data.battle?.fixedKeyReward;
             const fixedKeyRewardColors = Array.isArray(fixedKeyReward?.colors)
                 ? fixedKeyReward.colors
