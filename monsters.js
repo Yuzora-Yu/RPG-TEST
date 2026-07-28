@@ -1860,6 +1860,7 @@ function generateEnemyForEncounter(options = {}) {
 function getHabitatLabels(monsterOrId) {
   const monster = typeof monsterOrId === 'object' ? monsterOrId : getMonsterById(monsterOrId);
   if (!monster) return [];
+
   const mapName = (mapId) => {
     const registryName = globalThis.MapRegistry?.getMapName?.(mapId);
     if (registryName) return registryName;
@@ -1867,23 +1868,32 @@ function getHabitatLabels(monsterOrId) {
     const entry = Object.values(defs).find((value) => String(value?.id) === String(mapId));
     return entry?.name || String(mapId || '不明');
   };
+
+  // 図鑑の階層表記を全MAPで統一する。
+  // 0階は「周辺」「海上」など階層を持たないエリアを表すため表示しない。
   const rangeLabel = (range) => {
     const from = normalizeEncounterFloor(range?.from ?? range?.start ?? range, 0);
     const to = normalizeEncounterFloor(range?.to ?? range?.end ?? from, from);
     if (from === 0 && to === 0) return '';
     return from === to ? `${from}階` : `${from}～${to}階`;
   };
-  const labels = (monster.habitats || []).map((habitat) => {
-    const floors = Array.isArray(habitat?.floors) ? habitat.floors.map(rangeLabel).filter(Boolean) : [];
-    return `${mapName(habitat?.mapId)}${floors.length ? `（${floors.join('・')}）` : ''}`;
-  });
-  (monster.abyssFloors || []).forEach((range) => {
-    const from = normalizeEncounterFloor(range?.from ?? range?.start ?? range, 0);
-    const to = normalizeEncounterFloor(range?.to ?? range?.end ?? from, from);
-    const f = String(from).padStart(2, '0');
-    const t = String(to).padStart(2, '0');
-    labels.push(from === to ? `深淵${f}` : `深淵${f}～深淵${t}`);
-  });
+
+  const formatAreaLabel = (name, ranges) => {
+    const floors = Array.isArray(ranges) ? ranges.map(rangeLabel).filter(Boolean) : [];
+    return `${name}${floors.length ? `（${floors.join('・')}）` : ''}`;
+  };
+
+  const labels = (monster.habitats || []).map((habitat) =>
+    formatAreaLabel(mapName(habitat?.mapId), habitat?.floors)
+  );
+
+  // 深淵も通常MAPと同じ「エリア名（○～○階）」形式で表示する。
+  // 例: 深淵（101～105階）
+  if (Array.isArray(monster.abyssFloors) && monster.abyssFloors.length > 0) {
+    const abyssMapId = globalThis.MAP_IDS?.ABYSS || 'MAP000033';
+    labels.push(formatAreaLabel(mapName(abyssMapId), monster.abyssFloors));
+  }
+
   return Array.from(new Set(labels.filter(Boolean)));
 }
 
