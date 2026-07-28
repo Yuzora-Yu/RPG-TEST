@@ -442,6 +442,7 @@ const App = {
             App.data.progress.unlocked.smith = !!App.data.progress.flags.fireVillageCleared;
             App.data.progress.unlocked.dungeonMenu = Number(App.data.dungeon?.tryCount || 0) > 0 ||
                 Number(App.data.dungeon?.maxFloor || 0) > 0 ||
+                Number(App.data.dungeon?.storyMaxFloor || 0) > 0 ||
                 App.data.location?.area === 'ABYSS';
             App.data.progress.flags.menuUnlockMigrationV1 = true;
         }
@@ -459,6 +460,7 @@ const App = {
             const enteredAbyss = !!App.data.progress.flags.abyssFirstEntered ||
                 Number(App.data.dungeon?.tryCount || 0) > 0 ||
                 Number(App.data.dungeon?.maxFloor || 0) > 0 ||
+                Number(App.data.dungeon?.storyMaxFloor || 0) > 0 ||
                 App.data.location?.area === 'ABYSS';
             App.data.progress.flags.abyssFirstEntered = enteredAbyss;
             App.data.progress.unlocked.teleport = enteredAbyss;
@@ -685,7 +687,7 @@ const App = {
         return {
             location: { area: 'START_VILLAGE', x: 6, y: 5 },
             settings: App.getDefaultSettings(),
-            system: { monsterIdSchemaVersion: 3 },
+            system: { monsterIdSchemaVersion: 3, abyssFloorSchemaVersion: 2 },
             progress: { 
                 floor: 0, 
                 storyStep: 0, 
@@ -712,15 +714,25 @@ const App = {
                 exp: 0 
             },
             dungeon: { 
-                maxFloor: 0, 
-                tryCount: 0, 
+                maxFloor: 0,
+                storyMaxFloor: 0,
+                tryCount: 0,
+                storyTryCount: 0,
+                randomTryCount: 0,
+                abyssMode: 'story', 
                 returnPoint: null,
                 map: null,
                 width: 30,
                 height: 30
             },
             stats: { 
-                wipeoutCount: 0, 
+                wipeoutCount: 0,
+                totalSteps: 0, totalBattles: 0, totalChestsOpened: 0,
+                totalQuestCompletions: 0, totalGuildQuestCompletions: 0,
+                totalAlchemyCrafts: 0, totalAlchemyItemsCrafted: 0,
+                totalBlacksmithActions: 0, blacksmithSynthesisCount: 0,
+                blacksmithRefineAttempts: 0, blacksmithRefineSuccesses: 0,
+                blacksmithEnhanceAttempts: 0, blacksmithEnhanceSuccesses: 0,
                 maxGold: 0, 
                 maxGems: 0, 
                 maxDamage: { val: 0, actor: '未記録', skill: '-' } 
@@ -941,7 +953,7 @@ const App = {
 
 	// 全画像データの手動/初回ダウンロード用キャッシュ名。
 	// sw.js の RUNTIME_CACHE_NAME と揃えること。
-    fullDataCacheName: 'prisma-abyss-v3.154-system-integrity-runtime',
+    fullDataCacheName: 'prisma-abyss-monster-schema-v3-20260728-abyss-floor-v2-runtime',
 
 
 	// 初回起動時の「全データを今ダウンロードしますか？」で「いいえ」を選んだ記録。
@@ -1842,28 +1854,33 @@ const App = {
     getVirtualFloor: () => {
         const data = App.data;
         if (!data) return 1;
-        const areaKey = data.location.area;
-        
-        // 深淵の魔窟 100階以上の特別処理
-        if (areaKey === 'ABYSS' && data.progress.floor >= 100) {
-            return data.progress.floor;
-        }
+        const areaKey = data.location?.area;
 
-        // STORY_DATA から設定を読み込む (朽ちた祠なら 300 が返る)
-        const areaDef = STORY_DATA.areas[areaKey];
-        if (areaDef) {
-            // 深淵の魔窟（100階未満）の段階的ランクアップ
-            if (areaKey === 'ABYSS') {
-                const f = data.progress.floor;
-                if (f <= 20) return 70;
-                if (f <= 40) return 80;
-                if (f <= 75) return 90;
-                return 100;
+        // 深淵は「画面に表示する階層」と「報酬・装備品質に使う階層」を分離する。
+        // ランダム深淵1階は旧101階相当、ランダム深淵101階は旧201階相当。
+        if (areaKey === 'ABYSS') {
+            const displayFloor = Math.max(1, Math.floor(Number(data.progress?.floor) || 1));
+            const abyssMode = globalThis.ABYSS_FLOOR_RULES?.getMode?.(data)
+                || data.dungeon?.abyssMode
+                || 'story';
+
+            if (globalThis.ABYSS_FLOOR_RULES?.isRandomMode?.(abyssMode)) {
+                return Math.max(1, Number(
+                    globalThis.ABYSS_FLOOR_RULES.getBalanceFloor(displayFloor, abyssMode)
+                ) || displayFloor + 100);
             }
-            return areaDef.rank;
+
+            // 物語深淵は従来の成長帯を維持する。
+            if (displayFloor >= 100) return displayFloor;
+            if (displayFloor <= 20) return 70;
+            if (displayFloor <= 40) return 80;
+            if (displayFloor <= 75) return 90;
+            return 100;
         }
 
-        return 1;
+        // STORY_DATA から設定を読み込む（朽ちた祠なら300が返る）。
+        const areaDef = STORY_DATA.areas[areaKey];
+        return areaDef ? areaDef.rank : 1;
     },
 
     purgeInitialInventoryEquipment: () => {
@@ -1915,6 +1932,7 @@ const App = {
         return !!App.data.progress?.flags?.abyssFirstEntered ||
             Number(App.data.dungeon?.tryCount || 0) > 0 ||
             Number(App.data.dungeon?.maxFloor || 0) > 0 ||
+            Number(App.data.dungeon?.storyMaxFloor || 0) > 0 ||
             App.data.location?.area === 'ABYSS';
     },
 
@@ -3203,6 +3221,7 @@ const App = {
             startedAt: current?.startedAt || Date.now(),
             completedAt: Date.now()
         };
+        App.incrementLifetimeStat('totalQuestCompletions', 1, { save: false });
 
         if (quest.consumeItemsOnComplete === true && itemRequirements.length > 0) {
             itemRequirements.forEach(requirement => {
@@ -3587,7 +3606,7 @@ const App = {
 
             if (isHero) {
                 const storyStep = App.data.progress ? Number(App.data.progress.storyStep || 0) : 0;
-                const maxFloor = App.data.dungeon ? Number(App.data.dungeon.maxFloor || 0) : 0;
+                const maxFloor = App.getAbyssLegacyProgressFloor ? App.getAbyssLegacyProgressFloor() : (App.data.dungeon ? Number(App.data.dungeon.maxFloor || 0) : 0);
                 p.sources.story = App.clampLimitBreakPart(storyStep, cfg.heroStoryMax);
                 p.sources.battle = App.clampLimitBreakPart(battleSteps, cfg.heroBattleMax);
                 p.sources.dungeon = Math.max(0, Math.floor(Math.max(0, maxFloor - 1) / 10) * 5);
@@ -5537,6 +5556,172 @@ load: () => {
         };
     },
 
+    getLifetimeStatDefaults: () => ({
+        totalSteps: 0, totalBattles: 0, totalChestsOpened: 0,
+        totalQuestCompletions: 0, totalGuildQuestCompletions: 0,
+        totalAlchemyCrafts: 0, totalAlchemyItemsCrafted: 0,
+        totalBlacksmithActions: 0, blacksmithSynthesisCount: 0,
+        blacksmithRefineAttempts: 0, blacksmithRefineSuccesses: 0,
+        blacksmithEnhanceAttempts: 0, blacksmithEnhanceSuccesses: 0
+    }),
+
+    ensureLifetimeStats: (data = App.data) => {
+        if (!data) return null;
+        if (!data.stats || typeof data.stats !== 'object' || Array.isArray(data.stats)) data.stats = {};
+        Object.entries(App.getLifetimeStatDefaults()).forEach(([key, fallback]) => {
+            const value = Number(data.stats[key]);
+            data.stats[key] = Number.isFinite(value) ? Math.max(0, Math.floor(value)) : fallback;
+        });
+        return data.stats;
+    },
+
+    incrementLifetimeStat: (key, amount = 1, options = {}) => {
+        const stats = App.ensureLifetimeStats();
+        if (!stats || !(key in App.getLifetimeStatDefaults())) return 0;
+        stats[key] = Math.max(0, Number(stats[key] || 0) + Number(amount || 0));
+        if (options.save !== false && typeof App.save === 'function') App.save();
+        return stats[key];
+    },
+
+    getAbyssLegacyProgressFloor: (data = App.data) => {
+        const dungeon = data?.dungeon || {};
+        const storyFloor = Math.max(0, Number(dungeon.storyMaxFloor || 0));
+        const randomFloor = Math.max(0, Number(dungeon.maxFloor || 0));
+        return Math.max(storyFloor, randomFloor > 0 ? randomFloor + 100 : 0);
+    },
+
+    getNormalQuestCompletionCount: (data = App.data) => {
+        const quests = data?.progress?.quests || {};
+        const derived = Object.values(quests).filter(entry => entry?.state === 'completed').length;
+        return Math.max(derived, Number(data?.stats?.totalQuestCompletions || 0));
+    },
+
+    getGuildQuestCompletionCount: (data = App.data) => {
+        const guild = data?.progress?.guild || {};
+        const staticTotal = Object.values(guild.completionCounts || {}).reduce((sum, value) => sum + Math.max(0, Number(value || 0)), 0);
+        const generated = Math.max(0, Number(guild.generatedCompletionTotal || 0));
+        return Math.max(staticTotal + generated, Number(data?.stats?.totalGuildQuestCompletions || 0));
+    },
+
+    migrateAbyssFloorSchemaData: (data) => {
+        if (!data || typeof data !== 'object') return data;
+        data.system = data.system && typeof data.system === 'object' ? data.system : {};
+        data.progress = data.progress && typeof data.progress === 'object' ? data.progress : {};
+        data.progress.flags = data.progress.flags && typeof data.progress.flags === 'object' ? data.progress.flags : {};
+        data.dungeon = data.dungeon && typeof data.dungeon === 'object' ? data.dungeon : {};
+        const targetVersion = Number(globalThis.ABYSS_FLOOR_RULES?.SCHEMA_VERSION || 2);
+        const fromVersion = Number(data.system.abyssFloorSchemaVersion || 1);
+        if (fromVersion >= targetVersion) {
+            data.dungeon.storyMaxFloor = Math.max(0, Number(data.dungeon.storyMaxFloor || 0));
+            data.dungeon.maxFloor = Math.max(0, Number(data.dungeon.maxFloor || 0));
+            data.dungeon.storyTryCount = Math.max(0, Number(data.dungeon.storyTryCount || 0));
+            data.dungeon.randomTryCount = Math.max(0, Number(data.dungeon.randomTryCount || 0));
+            data.dungeon.abyssMode = globalThis.ABYSS_FLOOR_RULES?.normalizeMode(data.dungeon.abyssMode, data.progress.flags.abyssRandomUnlocked ? 'random' : 'story') || 'story';
+            return data;
+        }
+
+        const legacyMax = Math.max(0, Math.floor(Number(data.dungeon.maxFloor || 0)));
+        const legacyTryCount = Math.max(0, Math.floor(Number(data.dungeon.tryCount || 0)));
+        data.dungeon.storyMaxFloor = Math.min(100, legacyMax);
+        data.dungeon.maxFloor = Math.max(0, legacyMax - 100);
+        data.dungeon.storyTryCount = legacyMax <= 100 ? legacyTryCount : 0;
+        data.dungeon.randomTryCount = 0;
+        // 旧仕様では物語・ランダムの挑戦回数を分けていなかったため、101階以降へ到達済みの履歴は推測せず未分類として保持する。
+        data.dungeon.legacyUnclassifiedAbyssTryCount = legacyMax > 100 ? legacyTryCount : 0;
+        if (data.progress.flags.abyssFloor100EpilogueCleared || legacyMax > 100) data.progress.flags.abyssRandomUnlocked = true;
+
+        const inAbyss = data.location?.area === 'ABYSS';
+        const activeLegacyFloor = Math.max(1, Number(data.progress.floor || 1));
+        const activeRandom = inAbyss && activeLegacyFloor >= 101;
+        data.dungeon.abyssMode = activeRandom ? 'random' : 'story';
+        const convertFloor = value => {
+            const floor = Number(value);
+            return Number.isFinite(floor) && floor >= 101 ? Math.max(1, Math.floor(floor) - 100) : value;
+        };
+        if (activeRandom) data.progress.floor = convertFloor(data.progress.floor);
+        ['abyssBossEncounter','adventurer','healSpring','abyssRift','trialAngel','keyGuardian'].forEach(key => {
+            const obj = data.dungeon[key];
+            if (!obj || typeof obj !== 'object') return;
+            if (activeRandom) {
+                if ('floor' in obj) obj.floor = convertFloor(obj.floor);
+                if ('targetFloor' in obj) obj.targetFloor = convertFloor(obj.targetFloor);
+                if (key === 'abyssBossEncounter') {
+                    obj.displayFloor = convertFloor(obj.displayFloor ?? obj.floor);
+                    obj.floor = obj.displayFloor;
+                    obj.mode = 'random';
+                    obj.balanceFloor = Math.max(101, Number(obj.balanceFloor || (Number(obj.displayFloor || 1) + 100)));
+                }
+            }
+        });
+        ['keyChests','floorKeys'].forEach(key => {
+            if (activeRandom && Array.isArray(data.dungeon[key])) data.dungeon[key].forEach(entry => { if (entry && 'floor' in entry) entry.floor = convertFloor(entry.floor); });
+        });
+        if (activeRandom && data.dungeon.visitedMap && typeof data.dungeon.visitedMap === 'object' && 'floor' in data.dungeon.visitedMap) {
+            data.dungeon.visitedMap.floor = convertFloor(data.dungeon.visitedMap.floor);
+        }
+        if (activeRandom && data.dungeon.visualThemeAudit && typeof data.dungeon.visualThemeAudit === 'object' && 'floor' in data.dungeon.visualThemeAudit) {
+            data.dungeon.visualThemeAudit.floor = convertFloor(data.dungeon.visualThemeAudit.floor);
+        }
+
+        // 旧形式の乱数状態キー（ABYSS:F101）を、モードを含む新形式
+        // （ABYSS:random:F1 / ABYSS:story:F1）へ全件移行する。
+        if (data.dungeon.randomKeys && typeof data.dungeon.randomKeys === 'object' && !Array.isArray(data.dungeon.randomKeys)) {
+            const migratedRandomKeys = {};
+            const mergeKeyState = (current, incoming) => {
+                if (!current) return incoming;
+                if (!incoming || typeof incoming !== 'object') return current;
+                const merged = { ...current, ...incoming };
+                const order = [
+                    ...(Array.isArray(current._order) ? current._order : []),
+                    ...(Array.isArray(incoming._order) ? incoming._order : [])
+                ];
+                if (order.length > 0) merged._order = Array.from(new Set(order));
+                return merged;
+            };
+            Object.entries(data.dungeon.randomKeys).forEach(([scope, state]) => {
+                const match = /^ABYSS:F(\d+)$/.exec(String(scope));
+                let targetScope = scope;
+                if (match) {
+                    const legacyFloor = Math.max(1, Number(match[1]) || 1);
+                    const mode = legacyFloor >= 101 ? 'random' : 'story';
+                    const displayFloor = mode === 'random' ? legacyFloor - 100 : legacyFloor;
+                    targetScope = `ABYSS:${mode}:F${displayFloor}`;
+                }
+                migratedRandomKeys[targetScope] = mergeKeyState(migratedRandomKeys[targetScope], state);
+            });
+            data.dungeon.randomKeys = migratedRandomKeys;
+        }
+
+        // 戦闘中セーブも、表示階層だけを新仕様へ移し、生成済み個体の能力・報酬階層は維持する。
+        const battle = data.battle && typeof data.battle === 'object' ? data.battle : null;
+        if (battle && inAbyss) {
+            battle.abyssMode = activeRandom ? 'random' : 'story';
+            const legacyBattleFloor = Math.max(1, Number(battle.abyssFloor || activeLegacyFloor || 1));
+            battle.abyssFloor = activeRandom ? convertFloor(legacyBattleFloor) : legacyBattleFloor;
+            battle.abyssBalanceFloor = activeRandom
+                ? Math.max(101, Number(battle.abyssBalanceFloor || legacyBattleFloor))
+                : Math.max(1, Number(battle.abyssBalanceFloor || battle.abyssFloor));
+            if (battle.abyssBossEncounter && typeof battle.abyssBossEncounter === 'object') {
+                const encounter = battle.abyssBossEncounter;
+                const legacyEncounterFloor = Math.max(1, Number(encounter.displayFloor ?? encounter.floor ?? legacyBattleFloor));
+                encounter.displayFloor = activeRandom ? convertFloor(legacyEncounterFloor) : legacyEncounterFloor;
+                encounter.floor = encounter.displayFloor;
+                encounter.mode = battle.abyssMode;
+                encounter.balanceFloor = activeRandom
+                    ? Math.max(101, Number(encounter.balanceFloor || legacyEncounterFloor))
+                    : Math.max(1, Number(encounter.balanceFloor || encounter.displayFloor));
+            }
+            if (battle.abyssBossPosition && typeof battle.abyssBossPosition === 'object' && 'floor' in battle.abyssBossPosition) {
+                battle.abyssBossPosition.floor = activeRandom ? convertFloor(battle.abyssBossPosition.floor) : battle.abyssBossPosition.floor;
+            }
+            if (activeRandom && 'riftDisplayFloor' in battle) battle.riftDisplayFloor = convertFloor(battle.riftDisplayFloor);
+        }
+        // 旧ランダム深淵で生成済みの地形・宝箱・特殊イベントは、旧表示階層がそのまま
+        // 新しいバランス階層に相当するため保持する。表示用の階層値だけを上で移行する。
+        data.system.abyssFloorSchemaVersion = targetVersion;
+        return data;
+    },
+
     migrateImportedSaveData: (loadedData) => {
         if (!loadedData || typeof loadedData !== 'object' || Array.isArray(loadedData)) return loadedData;
 
@@ -5592,6 +5777,9 @@ load: () => {
         if (typeof data.stats.totalSteps !== 'number') data.stats.totalSteps = 0;
         if (typeof data.stats.totalBattles !== 'number') data.stats.totalBattles = 0;
         if (typeof data.stats.startTime !== 'number') data.stats.startTime = Date.now();
+        App.ensureLifetimeStats(data);
+        data.stats.totalQuestCompletions = Math.max(Number(data.stats.totalQuestCompletions || 0), Object.values(data.progress?.quests || {}).filter(entry => entry?.state === 'completed').length);
+        data.stats.totalGuildQuestCompletions = Math.max(Number(data.stats.totalGuildQuestCompletions || 0), App.getGuildQuestCompletionCount(data));
 
         if (!data.settings || typeof data.settings !== 'object' || Array.isArray(data.settings)) data.settings = {};
         if (!['normal', 'fast', 'fastest'].includes(data.settings.battleSpeed)) data.settings.battleSpeed = 'normal';
@@ -5607,6 +5795,7 @@ load: () => {
         data.settings.bgmVolume = data.settings.fieldBgmVolume;
         data.settings.seVolume = data.settings.uiSeVolume;
 
+        App.migrateAbyssFloorSchemaData(data);
         return data;
     },
 
@@ -5996,7 +6185,9 @@ load: () => {
             encounterMapId: mapEncounter?.mapId || (isSeaEncounter ? window.MAP_IDS?.SEA : worldEncounter?.mapId) || null,
             encounterFloorId: mapEncounter?.floorId || null,
             encounterFloor: Math.max(0, Number(mapEncounter?.floor || 0) || 0),
-            abyssFloor: mapEncounter?.mapId === window.MAP_IDS?.ABYSS ? Math.max(1, Number(App.data.progress?.floor || 1)) : null,
+            abyssFloor: mapEncounter?.mapId === window.MAP_IDS?.ABYSS && mapEncounter?.useHabitatEncounters ? Math.max(1, Number(App.data.progress?.floor || 1)) : null,
+            abyssMode: mapEncounter?.abyssMode || null,
+            abyssBalanceFloor: mapEncounter?.balanceFloor || null,
             useHabitatEncounters: !!(mapEncounter?.useHabitatEncounters || isSeaEncounter || worldEncounter?.mapId),
             encounterRank: mapEncounter?.encounterRank || (worldEncounter ? worldEncounter.rank : null),
 			monsters: mapEncounter?.isGuildQuestDungeon && Array.isArray(mapEncounter.monsters) ? [...mapEncounter.monsters] : null,
@@ -6302,7 +6493,9 @@ const Field = {
                         Field.currentMapData = Dungeon.createRandomFieldMapData();
                     }
                 } else {
-                    App.data.location.area = 'WORLD';
+                    // 深淵セーブで生成済みマップが欠落していても、現在地をワールドへ
+                    // 書き換えない。起動シーケンス側の Dungeon.loadFloor() に再生成を任せる。
+                    if (typeof Dungeon !== 'undefined') Dungeon.floor = App.data.progress.floor || 1;
                     Field.currentMapData = null;
                 }
             } else {
@@ -8642,7 +8835,7 @@ const Field = {
         if (battleData.battleBg) return battleData.battleBg;
         const currentFloor = Math.max(0, Number(App.data?.progress?.floor || 0));
         const isAbyssBoss = App.data?.location?.area === 'ABYSS' && battleData.isBossBattle && !battleData.isRiftBattle;
-        if (isAbyssBoss && currentFloor === 200) return 'battle_bg_abyss_floor_200';
+        if (isAbyssBoss && globalThis.ABYSS_FLOOR_RULES?.getBalanceFloor?.(currentFloor, App.data?.battle?.abyssMode || App.data?.dungeon?.abyssMode) === 200) return 'battle_bg_abyss_floor_200';
         if (isAbyssBoss) return 'battle_bg_abyss_boss';
         if (battleData.isSpecialBoss || battleData.isEstark) return 'battle_bg_lastboss';
         if (battleData.encounterType === 'sea') return 'battle_bg_sea';

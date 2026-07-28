@@ -550,7 +550,9 @@ const MenuBlacksmith = {
             const matIdx = App.data.inventory.findIndex(i => i.id === MenuBlacksmith.state.material.id);
             if (matIdx > -1) App.data.inventory.splice(matIdx, 1);
             
-            App.refreshAllSynergies(); 
+            App.refreshAllSynergies();
+            App.incrementLifetimeStat?.('totalBlacksmithActions', 1, { save: false });
+            App.incrementLifetimeStat?.('blacksmithSynthesisCount', 1, { save: false });
             MenuBlacksmith.gainExp(50); 
             App.save();
             
@@ -598,9 +600,12 @@ const MenuBlacksmith = {
         Menu.confirm(`【精錬】費用: ${gem} GEM / 成功率: ${rate}%\n成功するとランクアップし数値が${nextR}の下限値へリセットされます。`, async () => {
             await MenuBlacksmith.playStartSeAndWait();
             App.data.gems -= gem;
+            App.incrementLifetimeStat?.('totalBlacksmithActions', 1, { save: false });
+            App.incrementLifetimeStat?.('blacksmithRefineAttempts', 1, { save: false });
             if (Math.random()*100 < rate) {
                 const opt = MenuBlacksmith.state.target.opts[MenuBlacksmith.state.targetOptIdx];
                 opt.rarity = nextR; opt.val = rule ? rule.min[nextR] : opt.val;
+                App.incrementLifetimeStat?.('blacksmithRefineSuccesses', 1, { save: false });
                 MenuBlacksmith.gainExp(60); App.save(); Menu.msg("精錬成功！", () => MenuBlacksmith.renderOptionList_Refine());
             } else { MenuBlacksmith.gainExp(15); App.save(); Menu.msg("精錬失敗...", () => MenuBlacksmith.renderOptionList_Refine()); }
         });
@@ -692,7 +697,10 @@ const MenuBlacksmith = {
             // ★重要：使用した素材リストを完全に空にする
             MenuBlacksmith.state.materials = []; 
 
+            App.incrementLifetimeStat?.('totalBlacksmithActions', 1, { save: false });
+            App.incrementLifetimeStat?.('blacksmithEnhanceAttempts', 1, { save: false });
             if (Math.random() * 100 < successRate) {
+                App.incrementLifetimeStat?.('blacksmithEnhanceSuccesses', 1, { save: false });
                 opt.val += inc; 
                 if (rule && opt.val > rule.max[opt.rarity]) opt.val = rule.max[opt.rarity];
                 MenuBlacksmith.gainExp(25); 

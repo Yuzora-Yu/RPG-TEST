@@ -408,6 +408,8 @@
                 if (App.data.items[entry.itemId] <= 0) delete App.data.items[entry.itemId];
             });
             App.data.items[result.item.id] = Alchemy.owned(result.item.id) + 1;
+            App.incrementLifetimeStat?.('totalAlchemyCrafts', 1, { save: false });
+            App.incrementLifetimeStat?.('totalAlchemyItemsCrafted', 1, { save: false });
             Alchemy.randomSelection = {};
             App.save();
             Alchemy.renderHome();
@@ -502,6 +504,8 @@
             });
             const made = recipe.outputCount * batches;
             App.data.items[recipe.outputItemId] = Alchemy.owned(recipe.outputItemId) + made;
+            App.incrementLifetimeStat?.('totalAlchemyCrafts', batches, { save: false });
+            App.incrementLifetimeStat?.('totalAlchemyItemsCrafted', made, { save: false });
             App.save();
             Alchemy.renderHome();
             Alchemy.renderRecipeModal();

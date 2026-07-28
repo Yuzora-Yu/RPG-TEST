@@ -50,15 +50,17 @@ const ACHIEVEMENTS_DATA = [
     { id: 204, type: "DMG", goal: 1000, category: "戦闘", title: "魔神の一撃", desc: "最大ダメージ 1,000突破", rewards: [{ type: 'GEM', val: 1500 }] },
     { id: 205, type: "DMG", goal: 3000, category: "戦闘", title: "天を砕く一撃", desc: "最大ダメージ 3,000突破", rewards: [{ type: 'GEM', val: 3000 }] },
 
-    // --- 3. 到達階層 ---
-    { id: 301, type: "FLOOR", goal: 11, category: "探索", title: "深淵の入り口", desc: "ダンジョン 11階に到達", rewards: [{ type: 'GEM', val: 100 }] },
-    { id: 302, type: "FLOOR", goal: 31, category: "探索", title: "中層の覇者", desc: "ダンジョン 31階に到達", rewards: [{ type: 'GEM', val: 500 }] },
-    { id: 303, type: "FLOOR", goal: 51, category: "探索", title: "奈落を識る者", desc: "ダンジョン 51階に到達", rewards: [{ type: 'GEM', val: 1000 }] },
-    { id: 304, type: "FLOOR", goal: 101, category: "探索", title: "深淵を越えし者", desc: "ダンジョン 101階に到達", rewards: [
+    // --- 3. 深淵到達階層 ---
+    // 既存ID 301～305 は旧セーブの解除状態と報酬受取状態を壊さないよう、
+    // 旧階層と同じ地点を指す条件として維持する。
+    { id: 301, type: "STORY_FLOOR", goal: 11, category: "探索", title: "深淵の入り口", desc: "物語深淵 11階に到達", rewards: [{ type: 'GEM', val: 100 }] },
+    { id: 302, type: "STORY_FLOOR", goal: 31, category: "探索", title: "中層の覇者", desc: "物語深淵 31階に到達", rewards: [{ type: 'GEM', val: 500 }] },
+    { id: 303, type: "STORY_FLOOR", goal: 51, category: "探索", title: "奈落を識る者", desc: "物語深淵 51階に到達", rewards: [{ type: 'GEM', val: 1000 }] },
+    { id: 304, type: "RANDOM_FLOOR", goal: 1, category: "探索", title: "深淵を越えし者", desc: "ランダム深淵 1階に到達（旧101階相当）", rewards: [
         { type: 'GEM', val: 3000 },
         { type: 'ITEM', id: 107, val: 1 }
     ] },
-    { id: 305, type: "FLOOR", goal: 201, category: "探索", title: "真装備の探索者", desc: "ダンジョン 201階に到達", rewards: [
+    { id: 305, type: "RANDOM_FLOOR", goal: 101, category: "探索", title: "真装備の探索者", desc: "ランダム深淵 101階に到達（旧201階相当）", rewards: [
         { type: 'GEM', val: 5000 },
         { type: 'ITEM', id: 106, val: 10 }
     ] },
@@ -152,7 +154,42 @@ const ACHIEVEMENTS_DATA = [
     { id: 1501, type: "MAP_DISCOVER", goal: 2, category: "探索", title: "旅の道標", desc: "固有MAPを2か所発見する", rewards: [{ type: 'ITEM', id: 110, val: 1 }] },
     { id: 1502, type: "MAP_DISCOVER", goal: 4, category: "探索", title: "空路の開拓者", desc: "固有MAPを4か所発見する", rewards: [{ type: 'ITEM', id: 110, val: 2 }] },
     { id: 1503, type: "MAP_DISCOVER", goal: 7, category: "探索", title: "世界を巡る者", desc: "固有MAPを7か所発見する", rewards: [{ type: 'ITEM', id: 110, val: 3 }] },
-    { id: 1504, type: "MAP_DISCOVER", goal: 10, category: "探索", title: "地平の記録者", desc: "固有MAPを10か所発見する", rewards: [{ type: 'ITEM', id: 110, val: 5 }] }
+    { id: 1504, type: "MAP_DISCOVER", goal: 10, category: "探索", title: "地平の記録者", desc: "固有MAPを10か所発見する", rewards: [{ type: 'ITEM', id: 110, val: 5 }] },
+
+    // --- 15. クエスト / ギルド ---
+    { id: 1601, type: "QUEST_CLEAR", goal: 1, category: "依頼", title: "最初の依頼", desc: "通常クエストを1件クリア", rewards: [{ type:'GEM', val:100 }] },
+    { id: 1602, type: "QUEST_CLEAR", goal: 10, category: "依頼", title: "頼れる冒険者", desc: "通常クエストを10件クリア", rewards: [{ type:'GEM', val:500 }] },
+    { id: 1603, type: "QUEST_CLEAR", goal: 25, category: "依頼", title: "各地の問題解決者", desc: "通常クエストを25件クリア", rewards: [{ type:'GEM', val:1200 }] },
+    { id: 1604, type: "QUEST_CLEAR", goal: 50, category: "依頼", title: "万事解決", desc: "通常クエストを50件クリア", rewards: [{ type:'ITEM', id:106, val:3 }] },
+    { id: 1701, type: "GUILD_QUEST_CLEAR", goal: 1, category: "ギルド", title: "ギルドの初仕事", desc: "ギルド依頼を1件クリア", rewards: [{ type:'GEM', val:100 }] },
+    { id: 1702, type: "GUILD_QUEST_CLEAR", goal: 10, category: "ギルド", title: "依頼の常連", desc: "ギルド依頼を10件クリア", rewards: [{ type:'GEM', val:500 }] },
+    { id: 1703, type: "GUILD_QUEST_CLEAR", goal: 50, category: "ギルド", title: "ギルドの主力", desc: "ギルド依頼を50件クリア", rewards: [{ type:'GEM', val:1500 }] },
+    { id: 1704, type: "GUILD_QUEST_CLEAR", goal: 100, category: "ギルド", title: "百の依頼を成す者", desc: "ギルド依頼を100件クリア", rewards: [{ type:'ITEM', id:107, val:1 }] },
+    { id: 1801, type: "GUILD_RANK", goal: 2, category: "ギルド", title: "Fランク冒険者", desc: "冒険者ランクFに昇格", rewards: [{ type:'GEM', val:150 }] },
+    { id: 1802, type: "GUILD_RANK", goal: 4, category: "ギルド", title: "Dランク冒険者", desc: "冒険者ランクDに昇格", rewards: [{ type:'GEM', val:500 }] },
+    { id: 1803, type: "GUILD_RANK", goal: 6, category: "ギルド", title: "Bランク冒険者", desc: "冒険者ランクBに昇格", rewards: [{ type:'GEM', val:1200 }] },
+    { id: 1804, type: "GUILD_RANK", goal: 7, category: "ギルド", title: "Aランク冒険者", desc: "冒険者ランクAに昇格", rewards: [{ type:'GEM', val:2000 }] },
+    { id: 1805, type: "GUILD_RANK", goal: 8, category: "ギルド", title: "最高位冒険者", desc: "冒険者ランクSに昇格", rewards: [{ type:'ITEM', id:107, val:1 }] },
+
+    // --- 16. 錬金 / 鍛冶の累計 ---
+    { id: 1901, type: "ALCHEMY_COUNT", goal: 1, category: "錬金", title: "初めての錬成", desc: "錬金を1回行う", rewards: [{ type:'GEM', val:100 }] },
+    { id: 1902, type: "ALCHEMY_COUNT", goal: 25, category: "錬金", title: "錬金術の習熟", desc: "錬金を25回行う", rewards: [{ type:'GEM', val:500 }] },
+    { id: 1903, type: "ALCHEMY_COUNT", goal: 100, category: "錬金", title: "百錬成", desc: "錬金を100回行う", rewards: [{ type:'GEM', val:1500 }] },
+    { id: 1904, type: "ALCHEMY_COUNT", goal: 500, category: "錬金", title: "万物の調合者", desc: "錬金を500回行う", rewards: [{ type:'ITEM', id:106, val:5 }] },
+    { id: 2001, type: "BLACKSMITH_COUNT", goal: 1, category: "鍛冶", title: "最初の槌音", desc: "鍛冶を1回行う", rewards: [{ type:'GEM', val:100 }] },
+    { id: 2002, type: "BLACKSMITH_COUNT", goal: 25, category: "鍛冶", title: "工房の常連", desc: "鍛冶を25回行う", rewards: [{ type:'GEM', val:500 }] },
+    { id: 2003, type: "BLACKSMITH_COUNT", goal: 100, category: "鍛冶", title: "百打の職人", desc: "鍛冶を100回行う", rewards: [{ type:'GEM', val:1500 }] },
+    { id: 2004, type: "BLACKSMITH_COUNT", goal: 500, category: "鍛冶", title: "神工への道", desc: "鍛冶を500回行う", rewards: [{ type:'ITEM', id:107, val:1 }] },
+    { id: 2101, type: "BATTLE_COUNT", goal: 100, category: "戦闘", title: "百戦の経験", desc: "戦闘に100回勝利", rewards: [{ type:'GEM', val:500 }] },
+    { id: 2102, type: "BATTLE_COUNT", goal: 1000, category: "戦闘", title: "千戦の覇者", desc: "戦闘に1,000回勝利", rewards: [{ type:'GEM', val:2000 }] },
+    { id: 2201, type: "STORY_FLOOR", goal: 100, category: "物語", title: "物語深淵の踏破", desc: "物語深淵100階に到達", rewards: [{ type:'GEM', val:3000 }] },
+
+    // --- 17. 再編後ランダム深淵の追加到達目標 ---
+    { id: 2301, type: "RANDOM_FLOOR", goal: 25, category: "探索", title: "再編された深淵", desc: "ランダム深淵25階に到達", rewards: [{ type:'GEM', val:500 }] },
+    { id: 2302, type: "RANDOM_FLOOR", goal: 50, category: "探索", title: "深層観測者", desc: "ランダム深淵50階に到達", rewards: [{ type:'GEM', val:1000 }] },
+    { id: 2303, type: "RANDOM_FLOOR", goal: 100, category: "探索", title: "旧二百階の到達者", desc: "ランダム深淵100階に到達（旧200階相当）", rewards: [{ type:'GEM', val:2500 }] },
+    { id: 2304, type: "RANDOM_FLOOR", goal: 200, category: "探索", title: "無限深層の探索者", desc: "ランダム深淵200階に到達", rewards: [{ type:'ITEM', id:106, val:10 }] }
+
 ];
 
 const AchievementManager = {
@@ -244,7 +281,9 @@ const AchievementManager = {
         switch (ach.type) {
             case "LV": return Number(hero.level) || 0;
             case "DMG": return Number(stats.maxDamage && stats.maxDamage.val) || 0;
-            case "FLOOR": return Math.max(Number(dungeon.maxFloor) || 0, Number(progress.floor) || 0);
+            case "FLOOR":
+            case "RANDOM_FLOOR": return Number(dungeon.maxFloor) || 0;
+            case "STORY_FLOOR": return Number(dungeon.storyMaxFloor) || 0;
             case "STORY": return Number(progress.storyStep) || 0;
             case "SMITH": return Number(smith.level) || 0;
             case "BOOK": return Array.isArray(book) ? new Set(book).size : 0;
@@ -263,6 +302,15 @@ const AchievementManager = {
             case "MEDAL": return Number(stats.totalMedals) || Number((App.data.items || {})[99]) || 0;
             case "KILL_TOTAL": return AchievementManager.sumKillCounts();
             case "WIPEOUT": return Number(stats.wipeoutCount) || 0;
+            case "QUEST_CLEAR": return App.getNormalQuestCompletionCount ? App.getNormalQuestCompletionCount() : Number(stats.totalQuestCompletions) || 0;
+            case "GUILD_QUEST_CLEAR": return App.getGuildQuestCompletionCount ? App.getGuildQuestCompletionCount() : Number(stats.totalGuildQuestCompletions) || 0;
+            case "GUILD_RANK": {
+                const order = ['G','F','E','D','C','B','A','S'];
+                return Math.max(1, order.indexOf(String(progress.guild?.rank || 'G')) + 1);
+            }
+            case "ALCHEMY_COUNT": return Number(stats.totalAlchemyCrafts) || 0;
+            case "BLACKSMITH_COUNT": return Number(stats.totalBlacksmithActions) || 0;
+            case "BATTLE_COUNT": return Number(stats.totalBattles) || 0;
             case "LIMIT_BREAK": return Math.max(0, ...chars.map(c => Number(c.limitBreak) || 0));
             case "SKILL_TREE": return Math.max(0, ...chars.map(c => Object.values(c.tree || {}).reduce((sum, v) => sum + (Number(v) || 0), 0)));
             case "EQUIP_EX": return equips.filter(eq => (eq.opts || []).some(o => String(o.rarity || '').toUpperCase() === 'EX')).length;

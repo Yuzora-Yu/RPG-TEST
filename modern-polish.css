@@ -5417,17 +5417,24 @@ body.game-page #field-map-modal-canvas {
 }
 
 body.game-page #story-ui-overlay {
+  position: absolute !important;
+  inset: 0 !important;
   width: 100% !important;
   height: 100% !important;
-  max-width: 450px;
-  max-height: 900px;
+  max-width: none !important;
+  max-height: none !important;
+  box-sizing: border-box !important;
   overflow: hidden;
 }
 
 body.game-page #story-ui-overlay .story-ui-stage {
+  position: relative;
   width: 100% !important;
-  max-width: 450px;
-  margin: 0 auto;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
 }
 
 body.game-page #story-ui-overlay .story-text-window {
@@ -6036,8 +6043,11 @@ body.game-page #canvas-wrapper {
 
 body.game-page #story-ui-overlay {
   inset: 0 !important;
-  width: auto !important;
-  height: auto !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  max-height: none !important;
 }
 
 body.game-page #field-info-box {

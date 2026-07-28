@@ -59,9 +59,10 @@
         getEligibleRarities(options = {}) {
             const guildState = options.state || Guild.ensureState();
             const floorMax = Math.max(0, Math.floor(Number(options.floorMax || 0)));
+            const balanceFloorMax = floorMax > 0 ? Guild.getRandomAbyssBalanceFloor(floorMax) : 0;
             return RARITY_DEFS.filter(def => {
                 if (Guild.rankIndex(guildState?.rank || 'G') < Guild.rankIndex(def.minGuildRank || 'G')) return false;
-                if (floorMax > 0 && floorMax < Math.max(1, Math.floor(Number(def.minAbyssFloor || 1)))) return false;
+                if (balanceFloorMax > 0 && balanceFloorMax < Math.max(1, Math.floor(Number(def.minAbyssFloor || 1)))) return false;
                 return Number(def.weight || 0) > 0;
             });
         },
@@ -181,9 +182,16 @@
             return signatures;
         },
 
+        getRandomAbyssBalanceFloor(floor) {
+            const displayFloor = Math.max(1, Math.floor(Number(floor) || 1));
+            return globalThis.ABYSS_FLOOR_RULES?.getBalanceFloor
+                ? globalThis.ABYSS_FLOOR_RULES.getBalanceFloor(displayFloor, 'random')
+                : displayFloor + 100;
+        },
+
         rankForAbyssFloor(floor) {
             const bands = Array.isArray(GENERATOR_MASTER.abyss?.rankBands) ? GENERATOR_MASTER.abyss.rankBands : [];
-            const value = Math.max(1, Math.floor(Number(floor) || 1));
+            const value = Guild.getRandomAbyssBalanceFloor(floor);
             const match = bands.find(entry => value <= Math.max(1, Math.floor(Number(entry.maxFloor) || 1)));
             return String(match?.rank || 'S').toUpperCase();
         },
@@ -271,7 +279,10 @@
             const rankPower = (Guild.rankIndex(guildState?.rank || 'G') + 1) * 22;
             const expPower = Math.floor(Math.sqrt(Math.max(0, Number(guildState?.exp || 0))) * 4);
             const storyPower = Math.max(0, Number(App.data?.progress?.storyStep || 0)) * 7;
-            const floorPower = Math.max(0, Number(App.data?.dungeon?.maxFloor || 0));
+            const floorPower = Math.max(0, Number(
+                App.getAbyssLegacyProgressFloor?.() ||
+                (Number(App.data?.dungeon?.maxFloor || 0) > 0 ? Number(App.data.dungeon.maxFloor) + 100 : Number(App.data?.dungeon?.storyMaxFloor || 0))
+            ));
             const rarityPower = { SSR: 20, UR: 45, EX: 85 }[String(rarity || '').toUpperCase()] || 0;
             return Math.max(35, Math.floor(Math.max(rankPower, storyPower, floorPower) + expPower + rarityPower));
         },
@@ -355,7 +366,13 @@
             const required = def.requiredRank || 'G';
             const unlockFlags = Array.isArray(def.unlockFlags) ? def.unlockFlags : [];
             const requiredMaxAbyssFloor = Math.max(0, Math.floor(Number(def.requiredMaxAbyssFloor || 0)));
-            const reachedAbyssFloor = Math.max(0, Math.floor(Number(App.data?.dungeon?.maxFloor || 0)));
+            const scopeMode = String(def.requiredAbyssMode || def.huntScope?.abyssMode || '');
+            const requiredAbyssMode = scopeMode === 'story' || scopeMode === 'random'
+                ? scopeMode
+                : (unlockFlags.includes('abyssRandomUnlocked') ? 'random' : 'story');
+            const reachedAbyssFloor = requiredAbyssMode === 'story'
+                ? Math.max(0, Math.floor(Number(App.data?.dungeon?.storyMaxFloor || 0)))
+                : Math.max(0, Math.floor(Number(App.data?.dungeon?.maxFloor || 0)));
             return Guild.rankIndex(state.rank) >= Guild.rankIndex(required)
                 && unlockFlags.every(flag => !!flags[flag])
                 && (!requiredMaxAbyssFloor || reachedAbyssFloor >= requiredMaxAbyssFloor);
@@ -379,7 +396,7 @@
             );
             const minFloor = Math.max(1, Math.floor(Number(abyss.minFloor) || 1));
             const bandSize = Math.max(1, Math.floor(Number(abyss.bandSize) || 10));
-            if (abyss.enabled !== false && flags.abyssFirstEntered && reached >= minFloor) {
+            if (abyss.enabled !== false && flags.abyssRandomUnlocked && reached >= minFloor) {
                 for (let floorMin = minFloor; floorMin <= reached; floorMin += bandSize) {
                     const floorMax = Math.min(reached, floorMin + bandSize - 1);
                     const signature = `abyss:${floorMin}-${floorMax}`;
@@ -387,7 +404,7 @@
                     const requiredRank = Guild.rankForAbyssFloor(floorMax);
                     const probe = {
                         requiredRank,
-                        unlockFlags: ['abyssFirstEntered'],
+                        unlockFlags: ['abyssRandomUnlocked'],
                         requiredMaxAbyssFloor: floorMax
                     };
                     if (!Guild.isDefinitionUnlocked(probe)) continue;
@@ -499,7 +516,10 @@
                 if (gimmickIds.includes('guts10')) enemyBoost.traits.push({ id: 18, level: 10 });
                 const rareChance = gimmickIds.some(idValue => idValue.startsWith('rare50')) ? 0.50 : (rarity === 'EX' ? 0.12 : rarity === 'UR' ? 0.06 : 0.03);
                 const storyStep = Math.max(0, Number(App.data?.progress?.storyStep || 0));
-                const maxFloor = Math.max(0, Number(App.data?.dungeon?.maxFloor || 0));
+                const maxFloor = Math.max(0, Number(
+                    App.getAbyssLegacyProgressFloor?.() ||
+                    (Number(App.data?.dungeon?.maxFloor || 0) > 0 ? Number(App.data.dungeon.maxFloor) + 100 : Number(App.data?.dungeon?.storyMaxFloor || 0))
+                ));
                 const endlessBossMultiplier = Math.max(1.5,
                     1 + Guild.rankIndex(guildState.rank) * 0.28 + Number(guildState.exp || 0) / 850
                     + storyStep * 0.055 + maxFloor / 120) * ({ SSR: 1.25, UR: 1.75, EX: 2.5 }[rarity] || 1.25);
@@ -571,7 +591,8 @@
             } else if (spec.kind === 'abyss') {
                 const abyss = GENERATOR_MASTER.abyss || {};
                 const bandSize = Math.max(1, Math.floor(Number(abyss.bandSize) || 10));
-                const bandIndex = Math.max(1, Math.ceil(Number(spec.floorMax || 1) / bandSize));
+                const balanceFloorMax = Guild.getRandomAbyssBalanceFloor(spec.floorMax);
+                const bandIndex = Math.max(1, Math.ceil(balanceFloorMax / bandSize));
                 const stepEvery = Math.max(1, Math.floor(Number(abyss.countStepEveryBands) || 4));
                 const countStep = Math.floor((bandIndex - 1) / stepEvery);
                 const rarityDef = Guild.rollRarity({ state: guildState, floorMax: spec.floorMax });
@@ -598,15 +619,15 @@
                 def = {
                     id,
                     name: `${namePrefix}・${rangeLabel}`,
-                    area: `深淵の魔窟 ${rangeLabel}`,
+                    area: `ランダム深淵 ${rangeLabel}`,
                     kind: 'hunt',
-                    unlockFlags: ['abyssFirstEntered'],
+                    unlockFlags: ['abyssRandomUnlocked'],
                     requiredMaxAbyssFloor: spec.floorMax,
-                    objective: `深淵の魔窟 ${rangeLabel}で、通常戦闘の魔物を合計${count}体討伐する。`,
-                    startText: `到達済みの観測路 ${rangeLabel}について、魔物の間引き依頼が発行された。種類は問わない。`,
-                    progressText: `深淵の魔窟 ${rangeLabel}で通常戦闘の魔物を${count}体討伐し、ライザーク要塞のギルド受付へ報告しよう。`,
+                    objective: `ランダム深淵 ${rangeLabel}で、通常戦闘の魔物を合計${count}体討伐する。`,
+                    startText: `到達済みのランダム深淵 ${rangeLabel}について、魔物の間引き依頼が発行された。種類は問わない。`,
+                    progressText: `ランダム深淵 ${rangeLabel}で通常戦闘の魔物を${count}体討伐し、ライザーク要塞のギルド受付へ報告しよう。`,
                     targetCount: count,
-                    completeText: `深淵の魔窟 ${rangeLabel}の観測路が安定し、巡回依頼を完了した。`,
+                    completeText: `ランダム深淵 ${rangeLabel}の観測路が安定し、巡回依頼を完了した。`,
                     rewardItems: Guild.getRarityBonusRewards(rarityDef),
                     requiredRank: generatedRequiredRank,
                     guildExp,
@@ -623,12 +644,13 @@
                     huntScope: {
                         mode: 'floorRange',
                         areaKeys: ['ABYSS'],
-                        label: '深淵の魔窟',
+                        label: 'ランダム深淵',
                         floorMin: spec.floorMin,
                         floorMax: spec.floorMax,
+                        abyssMode: 'random',
                         normalBattlesOnly: true
                     },
-                    spawnAreaLabel: `深淵の魔窟 ${rangeLabel}`,
+                    spawnAreaLabel: `ランダム深淵 ${rangeLabel}`,
                     generatedQuest: true,
                     generatorKind: 'abyss',
                     generatorKey: `${spec.floorMin}-${spec.floorMax}`,
@@ -660,16 +682,58 @@
             });
         },
 
+        migrateGeneratedAbyssQuestDefinition(def, storedVersion = 0) {
+            if (!def || def.generatorKind !== 'abyss' || storedVersion >= 5) return def;
+            const scope = def.huntScope && typeof def.huntScope === 'object' ? def.huntScope : {};
+            const oldFloorMin = Math.max(1, Math.floor(Number(scope.floorMin || 1)));
+            const oldFloorMax = Math.max(oldFloorMin, Math.floor(Number(scope.floorMax || oldFloorMin)));
+            const randomMode = oldFloorMin > 100;
+            const floorMin = randomMode ? Math.max(1, oldFloorMin - 100) : oldFloorMin;
+            const floorMax = randomMode ? Math.max(floorMin, oldFloorMax - 100) : oldFloorMax;
+            const abyssMode = randomMode ? 'random' : 'story';
+            const areaLabel = randomMode ? 'ランダム深淵' : '物語深淵';
+            const rangeLabel = `地下${floorMin}～${floorMax}階`;
+            const count = Math.max(1, Math.floor(Number(def.targetCount || 1)));
+            const namePrefix = String(def.name || '深淵巡回').replace(/・地下\d+～\d+階.*$/, '') || '深淵巡回';
+
+            def.name = `${namePrefix}・${rangeLabel}`;
+            def.area = `${areaLabel} ${rangeLabel}`;
+            def.unlockFlags = [randomMode ? 'abyssRandomUnlocked' : 'abyssFirstEntered'];
+            def.requiredMaxAbyssFloor = floorMax;
+            def.objective = `${areaLabel} ${rangeLabel}で、通常戦闘の魔物を合計${count}体討伐する。`;
+            def.startText = `到達済みの${areaLabel} ${rangeLabel}について、魔物の間引き依頼が発行された。種類は問わない。`;
+            def.progressText = `${areaLabel} ${rangeLabel}で通常戦闘の魔物を${count}体討伐し、ライザーク要塞のギルド受付へ報告しよう。`;
+            def.regionKey = 'ABYSS';
+            def.huntScope = {
+                ...scope,
+                mode: 'floorRange',
+                areaKeys: ['ABYSS'],
+                label: areaLabel,
+                floorMin,
+                floorMax,
+                abyssMode,
+                normalBattlesOnly: true
+            };
+            def.spawnAreaLabel = `${areaLabel} ${rangeLabel}`;
+            def.generatorKey = `${floorMin}-${floorMax}`;
+            def.generatorSignature = randomMode
+                ? `abyss:${floorMin}-${floorMax}`
+                : `legacy-story-abyss:${floorMin}-${floorMax}`;
+            return def;
+        },
+
         migrateGeneratorState(state) {
             if (!state) return;
             if (!state.generatedQuests || typeof state.generatedQuests !== 'object' || Array.isArray(state.generatedQuests)) {
                 state.generatedQuests = {};
             }
+            const storedVersion = Math.max(0, Math.floor(Number(state.generatorSchemaVersion) || 0));
             Object.entries(state.generatedQuests).forEach(([id, def]) => {
                 if (!def || typeof def !== 'object' || Array.isArray(def) || def.generatedQuest !== true || String(def.id || '') !== String(id)) {
                     delete state.generatedQuests[id];
                     return;
                 }
+                Guild.migrateGeneratedAbyssQuestDefinition(def, storedVersion);
                 if (!def.rarity) def.rarity = 'R';
                 const rarityDef = Guild.getRarityDefinition(def.rarity);
                 def.rarity = rarityDef.id;
@@ -680,7 +744,6 @@
             });
             state.generatorSerial = Math.max(0, Math.floor(Number(state.generatorSerial) || 0));
             state.generatedCompletionTotal = Math.max(0, Math.floor(Number(state.generatedCompletionTotal) || 0));
-            const storedVersion = Math.max(0, Math.floor(Number(state.generatorSchemaVersion) || 0));
             if (storedVersion < GENERATOR_SCHEMA_VERSION) {
                 state.offers = (state.offers || []).filter(id => state.questStates?.[id]?.state === 'accepted');
                 state.generatorSchemaVersion = GENERATOR_SCHEMA_VERSION;
@@ -786,6 +849,7 @@
                 label: String(raw.label || def?.area || '').trim(),
                 floorMin,
                 floorMax,
+                abyssMode: raw.abyssMode ? String(raw.abyssMode) : '',
                 normalBattlesOnly: raw.normalBattlesOnly === true
             };
         },
@@ -809,6 +873,7 @@
                     : !!(currentMap?.isDungeon || areaKey === 'ABYSS'),
                 isFixed: context.isFixed !== undefined ? !!context.isFixed : !!currentMap?.isFixed,
                 floor: Math.max(1, Number(context.floor || currentMap?.floor || App.data?.progress?.floor || 1)),
+                abyssMode: String(context.abyssMode || App.data?.battle?.abyssMode || App.data?.dungeon?.abyssMode || currentMap?.abyssMode || ''),
                 isBossBattle: context.isBossBattle !== undefined
                     ? !!context.isBossBattle
                     : !!App.data?.battle?.isBossBattle,
@@ -825,6 +890,7 @@
             if (!battle.countsForGuildQuests || battle.guildPromotionTrial) return false;
             const battleKeys = new Set([battle.areaKey, battle.canonicalAreaKey].filter(Boolean));
             if (scope.areaKeys.length && !scope.areaKeys.some(key => battleKeys.has(key))) return false;
+            if (scope.abyssMode && battle.abyssMode !== scope.abyssMode) return false;
             if ((scope.mode === 'dungeon' || scope.mode === 'floorRange') && !battle.isDungeon) return false;
             if (scope.normalBattlesOnly && battle.isBossBattle) return false;
             if (scope.mode === 'floorRange' && (battle.floor < scope.floorMin || battle.floor > scope.floorMax)) return false;
@@ -1188,6 +1254,7 @@
             state.points += Math.max(0, Number(def.guildPoints || 0));
             if (def.generatedQuest) state.generatedCompletionTotal = Number(state.generatedCompletionTotal || 0) + 1;
             else state.completionCounts[id] = Number(state.completionCounts[id] || 0) + 1;
+            App.incrementLifetimeStat?.('totalGuildQuestCompletions', 1, { save: false });
             state.questStates[id] = { state: 'completed', completedAt: Date.now(), progress: {} };
             state.offers = state.offers.filter(offerId => offerId !== id);
             Guild.pruneGeneratedQuests(state);
@@ -1270,21 +1337,11 @@
             return `${targetRank}ランク昇格試験に合格した！\n冒険者ランクが ${targetRank} になった。`;
         },
 
-
-        getExchangeRequiredRank(entry) {
-            const configured = String(entry?.requiredRank || 'G');
-            const item = entry?.itemId ? DB.ITEMS?.find(value => Number(value.id) === Number(entry.itemId)) : null;
-            const isBook = item?.type === 'スキル書' || item?.type === '特性書';
-            if (isBook && Guild.rankIndex(configured) < Guild.rankIndex('A')) return 'A';
-            return configured;
-        },
-
         exchange(entryId) {
             const state = Guild.ensureState();
             const entry = EXCHANGE.find(value => value.id === entryId);
             if (!state || !entry || state.points < entry.cost) return false;
-            const requiredRank = Guild.getExchangeRequiredRank(entry);
-            if (Guild.rankIndex(state.rank) < Guild.rankIndex(requiredRank)) return false;
+            if (entry.requiredRank && Guild.rankIndex(state.rank) < Guild.rankIndex(entry.requiredRank)) return false;
             state.points -= entry.cost;
             if (entry.gems) App.data.gems = Number(App.data.gems || 0) + Number(entry.gems);
             if (entry.itemId) {
@@ -1496,11 +1553,10 @@
         openExchangeMenu() {
             const state = Guild.ensureState();
             const rows = EXCHANGE.map(entry => {
-                const requiredRank = Guild.getExchangeRequiredRank(entry);
-                const locked = Guild.rankIndex(state.rank) < Guild.rankIndex(requiredRank);
+                const locked = entry.requiredRank && Guild.rankIndex(state.rank) < Guild.rankIndex(entry.requiredRank);
                 const affordable = state.points >= entry.cost && !locked;
                 return `<button class="btn guild-exchange-entry" data-exchange-id="${entry.id}" ${affordable ? '' : 'disabled'} style="width:100%; display:flex; justify-content:space-between; padding:10px; margin-top:7px; background:#202020; border:1px solid #555; color:${affordable ? '#fff' : '#777'};">
-                    <span>${App.escapeHtml(Guild.exchangeName(entry))}${locked ? ` <small>(${requiredRank}ランク)</small>` : ''}</span><strong>${entry.cost} GP</strong>
+                    <span>${App.escapeHtml(Guild.exchangeName(entry))}${locked ? ` <small>(${entry.requiredRank}ランク)</small>` : ''}</span><strong>${entry.cost} GP</strong>
                 </button>`;
             }).join('');
             Facilities.showModal('guild-scene', 'ギルドポイント交換', `<div style="color:#ffd56b;">所持: ${state.points} GP</div>${rows}`);

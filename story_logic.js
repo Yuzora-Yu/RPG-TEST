@@ -22,7 +22,8 @@ const StoryManager = {
 
     storyObjectives: (typeof STORY_MANAGER_DATA !== "undefined" && STORY_MANAGER_DATA.storyObjectives) ? STORY_MANAGER_DATA.storyObjectives : {},
 
-    dungeonObjectiveMilestones: (typeof STORY_MANAGER_DATA !== "undefined" && STORY_MANAGER_DATA.dungeonObjectiveMilestones) ? STORY_MANAGER_DATA.dungeonObjectiveMilestones : [],
+    storyDungeonObjectiveMilestones: (typeof STORY_MANAGER_DATA !== "undefined" && STORY_MANAGER_DATA.storyDungeonObjectiveMilestones) ? STORY_MANAGER_DATA.storyDungeonObjectiveMilestones : [],
+    randomDungeonObjectiveMilestones: (typeof STORY_MANAGER_DATA !== "undefined" && STORY_MANAGER_DATA.randomDungeonObjectiveMilestones) ? STORY_MANAGER_DATA.randomDungeonObjectiveMilestones : [],
 
     getProgressKey: function(progress) {
         const step = Number(progress?.storyStep || 0);
@@ -42,14 +43,22 @@ const StoryManager = {
     getDungeonObjectiveText: function(data) {
         const dungeon = data?.dungeon || {};
         const progress = data?.progress || {};
-        const maxFloor = Number(dungeon.maxFloor || progress.maxFloor || 0);
-        const tryCount = Number(dungeon.tryCount || 0);
+        const randomUnlocked = !!progress.flags?.abyssRandomUnlocked;
+        const maxFloor = randomUnlocked
+            ? Number(dungeon.maxFloor || 0)
+            : Number(dungeon.storyMaxFloor || progress.maxFloor || 0);
+        const tryCount = randomUnlocked
+            ? Number(dungeon.randomTryCount || 0)
+            : Number(dungeon.storyTryCount || dungeon.tryCount || 0);
 
         if (maxFloor <= 0 && tryCount <= 0) {
             return "メニューからダンジョンに挑戦しよう";
         }
 
-        for (const milestone of this.dungeonObjectiveMilestones) {
+        const milestones = randomUnlocked
+            ? this.randomDungeonObjectiveMilestones
+            : this.storyDungeonObjectiveMilestones;
+        for (const milestone of milestones) {
             if (maxFloor < milestone.floor) return milestone.text;
         }
 
@@ -1297,7 +1306,7 @@ const StoryManager = {
         if (action.type === 'START_ABYSS_DUNGEON') {
             if (typeof Dungeon !== 'undefined' && typeof Dungeon.enter === 'function') {
                 this.prepareMapTransfer();
-                Dungeon.enter();
+                Dungeon.enter({ mode: 'story' });
                 return 'BREAK';
             }
         }

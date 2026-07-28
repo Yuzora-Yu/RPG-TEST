@@ -89,6 +89,11 @@ const MenuStatus = {
         const dungeon = App.data.dungeon || { maxFloor: 0, tryCount: 0 };
         const progress = App.data.progress || {};
         const storyProgress = `${progress.storyStep || 0}-${progress.subStep || 0}`;
+        const normalQuestClears = App.getNormalQuestCompletionCount?.() || Number(stats.totalQuestCompletions || 0);
+        const guildQuestClears = App.getGuildQuestCompletionCount?.() || Number(stats.totalGuildQuestCompletions || 0);
+        const guildRank = String(progress.guild?.rank || 'G');
+        const storyMaxFloor = Number(dungeon.storyMaxFloor || 0);
+        const randomMaxFloor = Number(dungeon.maxFloor || 0);
         
         // モンスター図鑑の計算
         const bookCount = App.data.book ? App.data.book.monsters.length : 0;
@@ -122,8 +127,14 @@ const MenuStatus = {
                     <span style="background:#ffd700; width:3px; height:12px; display:inline-block;"></span> 冒険の足跡
                 </div>
                 ${row('ストーリー進行度', storyProgress, '#fff', '16px')}
-                ${row('ダンジョン最高到達', `${dungeon.maxFloor || 0} 階`, '#ffd700', '16px')}
-                ${row('ダンジョン挑戦回数', `${dungeon.tryCount || 0} 回`)}
+                ${row('物語深淵 最高到達', `${storyMaxFloor} 階`, '#d7b8ff', '16px')}
+                ${row('ランダム深淵 最高到達', `${randomMaxFloor} 階`, '#ffd700', '16px')}
+                ${row('深淵挑戦回数（合計）', `${dungeon.tryCount || 0} 回`)}
+                ${row('物語 / ランダム挑戦', `${dungeon.storyTryCount || 0} / ${dungeon.randomTryCount || 0} 回`)}
+                ${Number(dungeon.legacyUnclassifiedAbyssTryCount || 0) > 0 ? row('旧仕様の未分類挑戦', `${Number(dungeon.legacyUnclassifiedAbyssTryCount || 0)} 回`, '#aaa') : ''}
+                ${row('冒険者ランク', `${guildRank}ランク`, '#ffd56b')}
+                ${row('通常クエストクリア', `${normalQuestClears} 件`, '#9fd8ff')}
+                ${row('ギルド依頼クリア', `${guildQuestClears} 件`, '#8cff9d')}
                 ${row('モンスター図鑑進捗', `${bookCount} / ${totalMonsters} 種 (${bookRate}%)`, '#44ff44')}
                 ${row('全滅回数', `${stats.wipeoutCount || 0} 回`, '#ff4444')}
             </div>
@@ -135,6 +146,18 @@ const MenuStatus = {
                 ${row('累計獲得Gold', `${(stats.totalGoldEarned || 0).toLocaleString()} gold`)}
                 ${row('累計獲得GEM',  `${(stats.totalGemsEarned || 0).toLocaleString()} GEM`)}
                 ${row('累計獲得メダル', `${(stats.totalMedals || 0).toLocaleString()} 枚`)}
+            </div>
+
+            <div style="background:rgba(255,255,255,0.05); border:1px solid #6b78aa; border-radius:8px; padding:12px; margin-bottom:15px;">
+                <div style="font-size:10px; color:#9cb7ff; margin-bottom:8px; display:flex; align-items:center; gap:5px;"><span style="background:#9cb7ff; width:3px; height:12px; display:inline-block;"></span> 生産の記録</div>
+                ${row('錬金回数', `${Number(stats.totalAlchemyCrafts || 0).toLocaleString()} 回`)}
+                ${row('錬成アイテム数', `${Number(stats.totalAlchemyItemsCrafted || 0).toLocaleString()} 個`)}
+                ${row('鍛冶回数', `${Number(stats.totalBlacksmithActions || 0).toLocaleString()} 回`)}
+                ${row('装備合成', `${Number(stats.blacksmithSynthesisCount || 0).toLocaleString()} 回`)}
+                ${row('精錬 成功 / 挑戦', `${Number(stats.blacksmithRefineSuccesses || 0).toLocaleString()} / ${Number(stats.blacksmithRefineAttempts || 0).toLocaleString()}`)}
+                ${row('強化 成功 / 挑戦', `${Number(stats.blacksmithEnhanceSuccesses || 0).toLocaleString()} / ${Number(stats.blacksmithEnhanceAttempts || 0).toLocaleString()}`)}
+                ${row('戦闘勝利数', `${Number(stats.totalBattles || 0).toLocaleString()} 回`)}
+                ${row('宝箱開封数', `${Number(stats.totalChestsOpened || 0).toLocaleString()} 個`)}
             </div>
 
             <div style="background:rgba(255,255,255,0.05); border:1px solid #f44; border-radius:8px; padding:12px; margin-bottom:15px;">

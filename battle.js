@@ -950,6 +950,9 @@ const Battle = {
             if (fixedRank) floor = Math.max(1, Number(fixedRank) || floor);
         }
         const battleData = App.data.battle || {};
+        const abyssMode = battleData.abyssMode || (typeof Dungeon !== 'undefined' ? Dungeon.getAbyssMode?.() : null);
+        const abyssDisplayFloor = Math.max(1, Number(battleData.abyssFloor || App.data.progress.floor || floor));
+        const abyssBalanceFloor = Math.max(1, Number(battleData.abyssBalanceFloor || (globalThis.ABYSS_FLOOR_RULES?.getBalanceFloor?.(abyssDisplayFloor, abyssMode)) || floor));
         if (!isBoss && battleData.encounterRank) {
             floor = Math.max(1, Number(battleData.encounterRank) || floor);
         }
@@ -1038,9 +1041,9 @@ const Battle = {
 
         const storedAbyssBoss = battleData.abyssBossEncounter;
         if (isBoss && storedAbyssBoss && Array.isArray(storedAbyssBoss.monsterIds) && storedAbyssBoss.monsterIds.length > 0) {
-            const storedFloor = Math.max(1, Number(storedAbyssBoss.floor) || floor);
+            const storedFloor = Math.max(1, Number(storedAbyssBoss.balanceFloor || battleData.abyssBalanceFloor || storedAbyssBoss.floor) || floor);
             const storedIds = storedAbyssBoss.monsterIds.map(id => Number(id)).filter(id => Number.isFinite(id));
-            if (storedFloor >= 201) {
+            if (storedAbyssBoss.source === 'deep-random' || storedFloor >= 201) {
                 Battle.log('<span style="color:#ff0000; font-size:1em; font-weight:bold;">深淵の守護者が現れた！</span>');
                 storedIds.forEach((id, i) => {
                     const base = Battle.getMonsterBaseById(id);
@@ -1124,7 +1127,7 @@ const Battle = {
         }
 
         // イベント用の明示編成。通常エンカウントは最大4体だが、イベント/亀裂では5体まで許可する。
-        // 使い方例: App.data.battle.fixedEnemyIds = [1,2,3,4,51]
+        // 使い方例: App.data.battle.fixedEnemyIds = [100001,100002,100003,100004,100005]
         // または App.data.battle.exactMonsters = true; App.data.battle.monsters = [...]
         const exactEventMonsterIds = Array.isArray(battleData.fixedEnemyIds)
             ? battleData.fixedEnemyIds
@@ -1144,7 +1147,9 @@ const Battle = {
         }
 
         const hasConfiguredEncounterPool = !isBoss && Array.isArray(battleData.monsters) && battleData.monsters.length > 0;
-        if (floor >= 201 && !hasConfiguredEncounterPool) {
+        const isRandomEndless = globalThis.ABYSS_FLOOR_RULES?.isEndlessFloor?.(abyssDisplayFloor, abyssMode) === true;
+        if ((isRandomEndless || floor >= 201) && !hasConfiguredEncounterPool) {
+            const deepScaleFloor = isRandomEndless ? abyssBalanceFloor : floor;
             if (isBoss) {
                 Battle.log('<span style="color:#ff0000; font-size:1em; font-weight:bold;">\u6df1\u6df5\u306e\u5b88\u8b77\u8005\u304c\u73fe\u308c\u305f\uff01</span>');
                 let candidates = (window.MonsterData?.bossMonsters || DB.MONSTERS || [])
@@ -1164,7 +1169,7 @@ const Battle = {
                     const index = Math.floor(Math.random() * pool.length);
                     const [base] = pool.splice(index, 1);
                     if (!base) continue;
-                    const m = Battle.createDeepFloorMonster(Battle.cloneMonsterBase(base), floor, true);
+                    const m = Battle.createDeepFloorMonster(Battle.cloneMonsterBase(base), deepScaleFloor, true);
                     if (!m) continue;
                     if (count > 1) m.name += String.fromCharCode(65 + i);
                     newEnemies.push(m);
@@ -1182,7 +1187,7 @@ const Battle = {
                 for (let i = 0; i < normalCount; i++) {
                     const base = candidates[Math.floor(Math.random() * candidates.length)];
                     if (!base) continue;
-                    const m = Battle.createDeepFloorMonster(Battle.cloneMonsterBase(base), floor, false);
+                    const m = Battle.createDeepFloorMonster(Battle.cloneMonsterBase(base), deepScaleFloor, false);
                     if (!m) continue;
                     if (normalCount > 1) m.name += String.fromCharCode(65 + i);
                     newEnemies.push(m);
@@ -1195,7 +1200,7 @@ const Battle = {
             Battle.log('\u5f37\u5927\u306a\u9b54\u7269\u304c\u73fe\u308c\u305f\uff01');
             let bosses = [];
             if (window.MonsterData && typeof window.MonsterData.getBossesForFloor === 'function') {
-                bosses = window.MonsterData.getBossesForFloor(floor) || [];
+                bosses = window.MonsterData.getBossesForFloor(abyssMode === 'random' ? abyssBalanceFloor : floor) || [];
             }
             if (bosses.length === 0 && window.MonsterData && typeof window.MonsterData.getBossesForFloor === 'function') {
                 bosses = window.MonsterData.getBossesForFloor(200) || [];
@@ -1240,10 +1245,9 @@ const Battle = {
         for (let i = 0; i < normalCount; i++) {
             let monsterData = null;
             const isFixedMap = typeof Field !== 'undefined' && Field.currentMapData && Field.currentMapData.isFixed;
-            const useHabitatEncounters = battleData.useHabitatEncounters === true;
-            const battleMonsterIds = !useHabitatEncounters && Array.isArray(battleData.monsters) ? battleData.monsters : null;
-            const seaMonsterIds = !useHabitatEncounters && battleData.encounterType === 'sea' && Array.isArray(window.SEA_ENCOUNTER_MONSTERS) ? window.SEA_ENCOUNTER_MONSTERS : null;
-            const fixedMonsterIds = battleMonsterIds || seaMonsterIds || (!useHabitatEncounters && isFixedMap && Array.isArray(Field.currentMapData.monsters) ? Field.currentMapData.monsters : null);
+            const battleMonsterIds = Array.isArray(battleData.monsters) ? battleData.monsters : null;
+            const seaMonsterIds = battleData.encounterType === 'sea' && Array.isArray(window.SEA_ENCOUNTER_MONSTERS) ? window.SEA_ENCOUNTER_MONSTERS : null;
+            const fixedMonsterIds = battleMonsterIds || seaMonsterIds || (isFixedMap && Array.isArray(Field.currentMapData.monsters) ? Field.currentMapData.monsters : null);
             const hasRareMonsterPool = Array.isArray(battleData.rareMonsters)
                 || (isFixedMap && Array.isArray(Field.currentMapData.rareMonsters));
 
@@ -1255,17 +1259,15 @@ const Battle = {
                 if (Battle.isNormalEncounterBase(fixedBase)) monsterData = fixedBase;
             }
 
-
-            if (!monsterData && useHabitatEncounters && window.MonsterData && typeof window.MonsterData.generateEnemyForEncounter === 'function') {
+            if (!monsterData && battleData.useHabitatEncounters && window.MonsterData && typeof window.MonsterData.generateEnemyForEncounter === 'function') {
                 monsterData = window.MonsterData.generateEnemyForEncounter({
-                    mapId: battleData.encounterMapId || Field.currentMapData?.mapId || null,
-                    floor: battleData.encounterFloor ?? Field.currentMapData?.floor ?? 0,
-                    abyssFloor: battleData.abyssFloor || null,
-                    rank: floor,
-                    allowRare: !!battleData.abyssFloor && !hasRareMonsterPool
+                    mapId: battleData.encounterMapId,
+                    floor: battleData.encounterFloor,
+                    abyssFloor: battleData.abyssFloor,
+                    rank: battleData.encounterRank || floor,
+                    allowRare: !fixedMonsterIds && !hasRareMonsterPool
                 });
             }
-
             if (!monsterData && window.MonsterData && typeof window.MonsterData.generateEnemyForFloor === 'function') {
                 monsterData = window.MonsterData.generateEnemyForFloor(floor, { allowRare: !fixedMonsterIds && !hasRareMonsterPool });
             }
@@ -4205,6 +4207,7 @@ findNextActor: () => {
             isDungeon: !!(currentMap?.isDungeon || areaKey === 'ABYSS'),
             isFixed: !!currentMap?.isFixed,
             floor: Math.max(1, Number(currentMap?.floor || App.data?.progress?.floor || 1)),
+            abyssMode: String(App.data?.battle?.abyssMode || App.data?.dungeon?.abyssMode || currentMap?.abyssMode || ''),
             isBossBattle: !!App.data?.battle?.isBossBattle,
             guildPromotionTrial: !!App.data?.battle?.guildPromotionTrial,
             countsForGuildQuests: !App.data?.battle?.excludeGuildQuestProgress
@@ -4841,8 +4844,19 @@ findNextActor: () => {
 			// 2. フィールド（ワールドマップ）の場合: storystep * 5 を使用
 			const step = App.data.progress.storyStep || 0;
 			floor = Math.max(1, step * 5); // 0にならないよう最低1を担保
+		} else if (App.data?.location?.area === 'ABYSS' &&
+            globalThis.ABYSS_FLOOR_RULES?.isRandomMode?.(App.data?.battle?.abyssMode || App.data?.dungeon?.abyssMode)) {
+            // 3. ランダム深淵は表示階層ではなく旧来のバランス階層で報酬を決める。
+            floor = Math.max(1, Number(
+                App.data?.battle?.abyssBalanceFloor ||
+                Field.currentMapData?.balanceFloor ||
+                globalThis.ABYSS_FLOOR_RULES.getBalanceFloor(
+                    App.data?.battle?.abyssFloor || App.data?.progress?.floor || 1,
+                    'random'
+                )
+            ) || 1);
 		}
-		// 3. それ以外（アビス等のランダムダンジョン）: そのまま progress.floor を使用
+		// 4. 物語深淵・ギルド依頼迷宮は従来どおり表示階層を使用する。
 
 			let totalExp = 0, totalGold = 0;
 			const drops = []; 
@@ -5085,6 +5099,7 @@ findNextActor: () => {
         // クリア後の通常ランダムダンジョンでは、合成の壺をごく低確率で追加する。
         const isPostgameRandomDungeon = App.data?.progress?.flags?.darkCastleCleared === true
             && App.data?.location?.area === 'ABYSS'
+            && globalThis.ABYSS_FLOOR_RULES?.isRandomMode?.(App.data?.battle?.abyssMode || App.data?.dungeon?.abyssMode) === true
             && !App.data?.dungeon?.guildQuestRun;
         if (isPostgameRandomDungeon && Math.random() < 0.0005) {
             const potId = Number(window.PRISMA_SYNTHESIS_POT_ITEM_ID || 599999);

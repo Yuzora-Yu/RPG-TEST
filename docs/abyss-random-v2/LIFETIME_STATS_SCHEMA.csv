@@ -1,0 +1,16 @@
+﻿キー,内容,加算タイミング,旧セーブ移行
+totalQuestCompletions,通常クエストクリア数,未完了→完了が確定した時,完了済みクエスト状態から復元
+totalGuildQuestCompletions,ギルド依頼クリア数,受付で報告が確定した時,固定依頼回数＋生成依頼累計から復元
+totalAlchemyCrafts,錬金回数,錬金結果が確定した時,推測せず0から開始
+totalAlchemyItemsCrafted,錬成アイテム数,生成個数が確定した時,推測せず0から開始
+totalBlacksmithActions,鍛冶回数,合成・精錬・強化の実行確定時,推測せず0から開始
+blacksmithSynthesisCount,装備合成回数,合成結果が確定した時,推測せず0から開始
+blacksmithRefineAttempts,精錬挑戦数,素材・費用消費後の抽選時,推測せず0から開始
+blacksmithRefineSuccesses,精錬成功数,精錬成功時,推測せず0から開始
+blacksmithEnhanceAttempts,強化挑戦数,素材・費用消費後の抽選時,推測せず0から開始
+blacksmithEnhanceSuccesses,強化成功数,強化成功時,推測せず0から開始
+totalBattles,戦闘勝利数,勝利処理が確定した時,既存値を維持
+totalChestsOpened,宝箱開封数,未開封箱を開けた時,既存固定宝箱は従来記録から補完可能
+storyTryCount,物語深淵挑戦数,物語深淵開始時,正確に分類可能な旧履歴のみ移行
+randomTryCount,ランダム深淵挑戦数,ランダム深淵開始時,旧履歴は推測せず未分類へ保持
+legacyUnclassifiedAbyssTryCount,旧仕様の未分類挑戦数,移行時のみ,旧101階以降到達済みセーブの旧合計を保持
