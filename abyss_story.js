@@ -24,8 +24,9 @@
     Object.assign(data.scripts, {
         ABYSS_CARMENA_GATE: [
             { name:'システム', text:'北門の前で、二人の将軍が同時に武器を構えた。\n黒い空気が鎧の隙間から流れ、町を覆う淀みと結びついている。' },
-            ...cloneScript('ABYSS_FLOOR_020_GLEN_GUARDIAN'),
-            ...cloneScript('ABYSS_FLOOR_010_LEON_GUARDIAN'),
+            { name:'グレン将軍', text:'ここより先は、深淵王の領域。\n地上の者を一歩たりとも通すわけにはいかぬ。' },
+            { name:'レオン将軍', text:'退け。これは二将に下された最後の命令だ。\n我らの命が尽きぬ限り、北門は開かない。' },
+            { name:'ジョセフ', text:'町の連中まで巻き込んで守る門に、何の意味がある。\nその命令ごと、ここで止める。', charId:101 },
             { name:'シャニー', text:'二人を縛る力が、カルメナの汚染を支えている。\nここで断てば、みんなの体も元に戻る。', charId:306 },
             { name:'魔王ゼノン', text:'ならば二将まとめて引導を渡す。\n門を開けろ。深淵の王へ至る道を、我らが切り拓く。', charId:402 }
         ],
@@ -40,10 +41,18 @@
         ABYSS_LEONARD_CLEAR: cloneScript('ABYSS_FLOOR_030_CLEAR', { '雷楔のレナード':'黒雷のレナード' }),
         ABYSS_ELICIA: cloneScript('ABYSS_FLOOR_040_ELICIA', { '風楔のエリシア':'死風のエリシア' }),
         ABYSS_ELICIA_CLEAR: cloneScript('ABYSS_FLOOR_040_CLEAR', { '風楔のエリシア':'死風のエリシア' }),
+        ABYSS_FIRST_BARRIER_CLEAR: [
+            { name:'システム', text:'雷と風、二つの結界核が失われた。\n深淵都市ビスタを覆っていた第一層の結界が砕け、南西門への道が開いた。' },
+            { name:'シャニー', text:'ビスタの向こうへ進める。\nでも、さらに北には別の結界が残っている。', charId:306 }
+        ],
         ABYSS_SYRIS: cloneScript('ABYSS_FLOOR_050_SYRIS', { '氷楔のシーリス':'極零のシーリス' }),
         ABYSS_SYRIS_CLEAR: cloneScript('ABYSS_FLOOR_050_CLEAR', { '氷楔のシーリス':'極零のシーリス' }),
         ABYSS_GRAD: cloneScript('ABYSS_FLOOR_060_GRAD', { '炎楔のグラド':'焦熱のグラド' }),
         ABYSS_GRAD_CLEAR: cloneScript('ABYSS_FLOOR_060_CLEAR', { '炎楔のグラド':'焦熱のグラド' }),
+        ABYSS_SECOND_BARRIER_CLEAR: [
+            { name:'システム', text:'水と火、残る二つの結界核が消滅した。\n混沌魔城レガシオンを閉ざしていた第二層の結界が崩れ去った。' },
+            { name:'魔王ゼノン', text:'これで魔城までの道は繋がった。\n深淵王の喉元へ、ようやく刃が届く。', charId:402 }
+        ],
         ABYSS_VELD: cloneScript('ABYSS_FLOOR_070_VELD', { '混沌の騎士ヴェルド':'昏迷の黒騎士ヴェルド' }),
         ABYSS_VELD_CLEAR: cloneScript('ABYSS_FLOOR_070_VELD_CLEAR', { '混沌の騎士ヴェルド':'昏迷の黒騎士ヴェルド' }),
         ABYSS_JASPER: cloneScript('ABYSS_FLOOR_090_JASPER'),
@@ -112,7 +121,7 @@
             { name:'システム', text:'クリア後深淵とダンジョンメニューが解放された。' }
         ],
         ABYSS_CARMENA_RESIDENT: [
-            { name:'カルメナの住人', text:'黒い泉は見た目ほど禍々しくない。\n深淵の瘴気を沈め、傷ついた者の力を戻してくれる。' },
+            { name:'カルメナの住人', text:'黒い泉は、あなたたちが落ちてきた地上の裂け目へ通じている。\n帰る必要があるなら、泉の水面に触れるといい。' },
             { name:'カルメナの住人', text:'ただ、北門の二将が町の淀みを強めている。\nあれを退けない限り、外へ出ても体がもたないだろう。' }
         ],
         ABYSS_VISTA_RECRUITMENT: [
@@ -127,7 +136,7 @@
         ],
         ABYSS_LEGACION_PRIEST: [
             { name:'レガシオンの神官', text:'あなたたちには、強い属性の加護が幾重にも重なっているようですね。' },
-            { name:'レガシオンの神官', text:'もしや、古いプリズムに宿る声も聞こえるのではありませんか。\n城内の六色のプリズムへ触れれば、大精霊が応えるかもしれません。' }
+            { name:'レガシオンの神官', text:'もしや、プリズムに宿る声も聞こえるのではありませんか。\n地上で救った六属性のプリズムを訪ねれば、それぞれの大精霊が応えるかもしれません。' }
         ],
         ABYSS_LEGACION_PRISON: [{name:'システム',text:'地下牢には壊れた鎖と空の檻だけが残っている。\n奥の壁から、地下神殿へ続く重い魔力が伝わってくる。'}]
     });
@@ -143,13 +152,13 @@
         abyss_carmena_gate_battle: bossEvent('ABYSS_CARMENA_GATE',[302001,302000],'abyss_carmena_gate_clear'),
         abyss_carmena_gate_clear: clearEvent('ABYSS_CARMENA_GATE_CLEAR',['abyssCarmenaGateCleared']),
         abyss_leonard_battle: bossEvent('ABYSS_LEONARD',302010,'abyss_leonard_clear',[{type:'LB_ADD_PARTY',charId:101,amount:5,source:'story'}]),
-        abyss_leonard_clear: clearEvent('ABYSS_LEONARD_CLEAR',['abyssLeonardDefeated']),
+        abyss_leonard_clear: clearEvent('ABYSS_LEONARD_CLEAR',['abyssLeonardDefeated'],[{type:'IF_FLAG',key:'abyssFirstBarrierCleared',then:[{type:'CONV',value:'ABYSS_FIRST_BARRIER_CLEAR'}]}]),
         abyss_elicia_battle: bossEvent('ABYSS_ELICIA',302020,'abyss_elicia_clear',[{type:'LB_ADD_PARTY',charId:106,amount:5,source:'story'}]),
-        abyss_elicia_clear: clearEvent('ABYSS_ELICIA_CLEAR',['abyssEliciaDefeated']),
+        abyss_elicia_clear: clearEvent('ABYSS_ELICIA_CLEAR',['abyssEliciaDefeated'],[{type:'IF_FLAG',key:'abyssFirstBarrierCleared',then:[{type:'CONV',value:'ABYSS_FIRST_BARRIER_CLEAR'}]}]),
         abyss_syris_battle: bossEvent('ABYSS_SYRIS',302030,'abyss_syris_clear',[{type:'LB_ADD_PARTY',charId:104,amount:5,source:'story'}]),
-        abyss_syris_clear: clearEvent('ABYSS_SYRIS_CLEAR',['abyssSyrisDefeated']),
+        abyss_syris_clear: clearEvent('ABYSS_SYRIS_CLEAR',['abyssSyrisDefeated'],[{type:'IF_FLAG',key:'abyssSecondBarrierCleared',then:[{type:'CONV',value:'ABYSS_SECOND_BARRIER_CLEAR'}]}]),
         abyss_grad_battle: bossEvent('ABYSS_GRAD',302040,'abyss_grad_clear',[{type:'LB_ADD_PARTY',charIds:[109,110],amount:5,source:'story'}]),
-        abyss_grad_clear: clearEvent('ABYSS_GRAD_CLEAR',['abyssGradDefeated']),
+        abyss_grad_clear: clearEvent('ABYSS_GRAD_CLEAR',['abyssGradDefeated'],[{type:'IF_FLAG',key:'abyssSecondBarrierCleared',then:[{type:'CONV',value:'ABYSS_SECOND_BARRIER_CLEAR'}]}]),
         abyss_veld_battle: bossEvent('ABYSS_VELD',302050,'abyss_veld_clear',[{type:'LB_ADD_PARTY',charId:204,amount:5,source:'story'}]),
         abyss_veld_clear: clearEvent('ABYSS_VELD_CLEAR',['abyssVeldDefeated']),
         abyss_jasper_battle: bossEvent('ABYSS_JASPER',302060,'abyss_jasper_clear'),

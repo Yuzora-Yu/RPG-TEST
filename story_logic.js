@@ -1275,6 +1275,7 @@ const StoryManager = {
             if (!data.flags) data.flags = {};
             const key = action.key || action.value;
             if (key) data.flags[key] = action.state !== undefined ? !!action.state : true;
+            App.reconcileDerivedProgressFlags?.();
             App.save();
             if (action.refreshField === true) this.refreshFieldAfterStoryStateChange();
         }

@@ -223,6 +223,7 @@ const Battle = {
 
     queueBattleConversation: (scriptKey) => {
         if (!scriptKey || !globalThis.StoryManager?.showConversation) return;
+        Battle.phase = 'battle_event';
         if (Battle.specialCutsceneAutoBefore === undefined) {
             Battle.specialCutsceneAutoBefore = !!Battle.auto;
             Battle.auto = false;
@@ -4532,7 +4533,9 @@ findNextActor: () => {
 	renderEnemies: () => {
 		const container = Battle.getEl('enemy-container');
 		if(!container) return;
-		container.innerHTML = ''; // 以前の描画をクリア
+        const retainedVegnasisVisual = container.querySelector('.vegnasis-shared-visual');
+        if (retainedVegnasisVisual) retainedVegnasisVisual.remove();
+		container.innerHTML = ''; // 戦闘対象UIだけを再構築し、共有画像ノードは再利用する
 		const g = (typeof GRAPHICS !== 'undefined' && GRAPHICS.images) ? GRAPHICS.images : {};
 		
 		// 【判定準備】敵の総数とボスバトルフラグを取得
@@ -4757,7 +4760,7 @@ findNextActor: () => {
             const sourceEnemy = pillarEnemies.find(enemy => !enemy.isDead) || pillarEnemies[0];
             const imageInfo = Battle.resolveMonsterImage?.(sourceEnemy, g);
             if (imageInfo?.src) {
-                const sharedImage = document.createElement('img');
+                const sharedImage = retainedVegnasisVisual || document.createElement('img');
                 sharedImage.className = 'vegnasis-shared-visual';
                 sharedImage.alt = '死幻の魔柱ヴェグナシス';
                 sharedImage.src = imageInfo.src;

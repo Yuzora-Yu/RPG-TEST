@@ -3057,7 +3057,15 @@ const App = {
     tryRecruitMonsterAfterBattle: (enemies) => {
         if (!App.isMonsterRecruitBattleAllowed()) return null;
         if (!Array.isArray(enemies) || enemies.length === 0) return null;
-        const candidates = enemies.filter(e => e && e.isDead && !e.isFled && (e.baseId || e.id));
+        const candidates = enemies.filter(enemy => {
+            if (!enemy || !enemy.isDead || enemy.isFled || !(enemy.baseId || enemy.id)) return false;
+            const base = (typeof Battle !== 'undefined' && Battle.getMonsterBaseById)
+                ? Battle.getMonsterBaseById(enemy.baseId || enemy.id)
+                : null;
+            if (!base || base.abyssRecruitable === false) return false;
+            return !base.isBoss && !base.isRare && !base.isSpecialBoss && !base.isEstark
+                && !enemy.isBoss && !enemy.isRare && !enemy.isSpecialBoss && !enemy.isEstark;
+        });
         if (candidates.length === 0) return null;
         if (Math.random() >= App.monsterRecruitConfig.chance) return null;
 

@@ -15886,17 +15886,6 @@ const FIXED_DUNGEON_MAPS = {
                 "actionLabel": "魔柱に挑む",
                 "challengeText": "五つの魂が絡み合う死幻の魔柱に挑みますか？",
                 "storyEventId": "abyss_vegnasis_clear"
-            },
-            {
-                "x": 24,
-                "y": 6,
-                "monsterId": 302100,
-                "requiredFlag": "abyssVegnasisDefeated",
-                "clearedFlag": "abyssAzelgaragDefeated",
-                "startEventId": "abyss_azelgarag_battle",
-                "actionLabel": "深淵王に挑む",
-                "challengeText": "深淵王アゼルガラグが祭壇の最奥で待っている。\n連戦を覚悟して挑みますか？",
-                "storyEventId": "abyss_azelgarag_clear"
             }
         ],
         "mapActions": [
