@@ -387,7 +387,11 @@ window.SKILLS_DATA = [
     { "id": 714, "name": "竜の咆哮",
       "type": "特殊", "target": "全体", "mp": 50, "rate": 1, "count": 1, "base": 0, "priority": -20, "SuccessRate": 190, "PercentDamage": 0.1, "turn": 1, "buff_reset": true, "Fear": true, "desc": "激しく咆哮し敵全体を怯ませていい効果を消し去る" },
     { "id": 715, "name": "心ない天使",
-      "type": "特殊", "target": "単体", "mp": 99, "rate": 0, "count": 1, "base": 0, "desc": "無慈悲な一撃", "priority": -5, "SuccessRate": 100, "PercentDamage": 0.99 }
+      "type": "特殊", "target": "単体", "mp": 99, "rate": 0, "count": 1, "base": 0, "desc": "無慈悲な一撃", "priority": -5, "SuccessRate": 100, "PercentDamage": 0.99 },
+    { "id": 700101, "name": "混沌の衣",
+      "type": "強化", "target": "自分", "mp": 120, "rate": 0, "count": 1, "base": 0,
+      "desc": "混沌をまとい、全能力と属性耐性を高める", "turn": 5,
+      "buff": {"atk": 1.35, "def": 1.35, "spd": 1.2, "mag": 1.35, "mdef": 1.35, "elmResUp": 40} }
 ];
 
 window.PRISMA_SKILL_ORDER = Object.freeze({

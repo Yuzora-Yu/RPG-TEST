@@ -203,7 +203,6 @@
         Object.entries(modifiers).forEach(([element,value])=>{if(!value)return;stats.elmRes[element]=(stats.elmRes[element]||0)+value;stats.environmentalElmRes[element]=value;});
         return stats;
     };
-    App.isMonsterRecruitBattleAllowed=()=>isAbyssArea(Field.getCurrentAreaKey?.()||App.data?.location?.area);
 
     const originalHasMagicBoat=App.hasMagicBoat.bind(App);
     App.hasMagicBoat=()=>App.data?.location?.area==='ABYSS_WORLD'?false:originalHasMagicBoat();

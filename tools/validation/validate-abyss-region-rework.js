@@ -1,3 +1,4 @@
+const fs = require('fs');
 const path = require('path');
 const { createRuntimeContext, loadMapRuntime } = require('./validation-helpers');
 
@@ -108,38 +109,54 @@ const contentRt = createRuntimeContext(root);
 contentRt.context.window = contentRt.context;
 contentRt.runFile('skills.js', 'globalThis.SKILLS_DATA = window.SKILLS_DATA;');
 contentRt.runFile('items.js', 'globalThis.ITEMS_DATA = window.ITEMS_DATA;');
+contentRt.runFile('assets.js');
 contentRt.runFile('monsters.js');
-const preMonsterIds = new Set(contentRt.context.MonsterData.allBases.map(monster => Number(monster.id)));
-const preImageIds = new Set(contentRt.context.MonsterData.allBases.map(monster => Number(monster.imageId ?? monster.id)).filter(Number.isFinite));
-const preItemIds = new Set(contentRt.context.ITEMS_DATA.map(item => Number(item.id)));
-const preSkillIds = new Set(contentRt.context.SKILLS_DATA.map(skill => Number(skill.id)));
 contentRt.runFile('abyss_content.js');
+contentRt.runFile('monster-drop-policy.js');
 const cc = contentRt.context;
-const regularIds = [...cc.ABYSS_REGION_CONTENT.regularMonsterIds];
-const bossIds = [...cc.ABYSS_REGION_CONTENT.bossMonsterIds];
-assert(regularIds.length === 55 && new Set(regularIds).size === 55, '新規通常モンスター55体が重複なく登録されている');
-assert(bossIds.length === 22 && new Set(bossIds).size === 22, '新規ボス22体が重複なく登録されている');
-assert(regularIds.every(id => !preMonsterIds.has(id)) && bossIds.every(id => !preMonsterIds.has(id)), '新規モンスターIDが既存正本と衝突しない');
-assert(cc.ABYSS_REGION_CONTENT.itemIds.every(id => !preItemIds.has(Number(id))), '深淵新規アイテムIDが既存正本と衝突しない');
-assert(cc.ABYSS_REGION_CONTENT.skillIds.every(id => !preSkillIds.has(Number(id))), '深淵新規スキルIDが既存正本と衝突しない');
+const regularIds = [...cc.ABYSS_REGION_CONTENT.regularMonsterIds].map(Number);
+const bossIds = [...cc.ABYSS_REGION_CONTENT.bossMonsterIds].map(Number);
+const regularMonsters = cc.MonsterData.normalBases.filter(monster => regularIds.includes(Number(monster.id)));
+const bossMonsters = cc.MonsterData.bossMonsters.filter(monster => bossIds.includes(Number(monster.id)));
+assert(regularIds.length === 55 && new Set(regularIds).size === 55, '新規通常モンスター55体が重複なくIDレジストリへ登録されている');
+assert(bossIds.length === 22 && new Set(bossIds).size === 22, '新規ボス22体が重複なくIDレジストリへ登録されている');
+assert(regularMonsters.length === 55 && regularMonsters.every(monster => cc.MonsterData.allBases.includes(monster)), '通常モンスター55体がmonsters.js正本の通常敵として登録されている');
+assert(bossMonsters.length === 22 && bossMonsters.every(monster => monster.isBoss === true), '専用ボス22体がmonsters.js正本の固定ボスとして登録されている');
+const allMasterIds = cc.MonsterData.allBases.map(monster => Number(monster.id));
+assert(new Set(allMasterIds).size === allMasterIds.length, 'モンスター正本全体にID重複がない');
+const contentSource = fs.readFileSync(path.join(root, 'abyss_content.js'), 'utf8');
+assert(!/\.push\s*\(/.test(contentSource) && !/MONSTERS_DATA\s*=/.test(contentSource), 'abyss_content.jsはモンスター・アイテム・スキル正本を実行時追加しない');
 
-const byMap = new Map();
-cc.MonsterData.normalBases.filter(monster => regularIds.includes(Number(monster.id))).forEach(monster => {
-  (monster.habitats || []).forEach(habitat => {
-    if (!byMap.has(habitat.mapId)) byMap.set(habitat.mapId, []);
-    byMap.get(habitat.mapId).push(monster);
-  });
-});
-const primaryMonsterMaps = ['MAP000038','MAP000040','MAP000039','MAP000041','MAP000043','MAP000045','MAP000044','MAP000046','MAP000048','MAP000049','MAP000050'];
-primaryMonsterMaps.forEach(mapId => {
-  const unique = new Set((byMap.get(mapId) || []).map(monster => Number(monster.id)));
-  assert(unique.size === 5, `${mapId} に新規通常モンスター5体が生息する`);
+const dungeonRanks = {
+  MAP000038:[86,90], MAP000040:[91,95], MAP000039:[86,90], MAP000041:[91,95],
+  MAP000043:[96,100], MAP000045:[101,105], MAP000044:[96,100], MAP000046:[101,105],
+  MAP000048:[106,110], MAP000049:[111,115], MAP000050:[116,120]
+};
+Object.entries(dungeonRanks).forEach(([mapId, [low, high]]) => {
+  const monsters = regularMonsters.filter(monster => (monster.habitats || []).some(habitat => habitat.mapId === mapId));
+  assert(monsters.length === 5 && new Set(monsters.map(monster => Number(monster.id))).size === 5, `${mapId} に完全新規通常モンスター5体が生息する`);
+  assert(monsters.every(monster => Number(monster.rank) >= low && Number(monster.rank) <= high), `${mapId} の新規通常敵Rankが${low}～${high}に収まる`);
 });
 const allSkills = new Set(cc.SKILLS_DATA.map(skill => Number(skill.id)));
-const newMonsters = cc.MonsterData.allBases.filter(monster => regularIds.includes(Number(monster.id)) || bossIds.includes(Number(monster.id)));
-assert(newMonsters.every(monster => (monster.acts || []).every(action => allSkills.has(Number(typeof action === 'object' ? action.id : action)))), '新規モンスターの使用スキルがすべて正本に存在する');
-assert(newMonsters.every(monster => preImageIds.has(Number(monster.imageId ?? monster.id))), '暫定流用画像はすべて既存モンスター画像IDを参照している');
-assert(cc.ABYSS_REGION_CONTENT.vistaSkillBookItemIds.every(id => cc.ITEMS_DATA.some(item => Number(item.id) === Number(id))), 'ビスタ販売技法書6種がアイテム正本に存在する');
+const allItems = new Set(cc.ITEMS_DATA.map(item => Number(item.id)));
+const newMonsters = [...regularMonsters, ...bossMonsters];
+assert(newMonsters.every(monster => Array.isArray(monster.acts) && monster.acts.length > 0 && monster.acts.every(action => allSkills.has(Number(typeof action === 'object' ? action.id : action)))), '新規モンスターの使用スキルがすべてskills.js正本に存在する');
+assert(regularMonsters.every(monster => Number(monster.imageId) === Number(monster.id)), '通常敵はそれぞれ固有の新規画像IDを参照する');
+assert(regularMonsters.every(monster => monster.abyssRecruitable === true && Number.isFinite(Number(monster.dropSeed))), '通常敵55体は深淵仲間化対象かつ安定ドロップシードを持つ');
+assert(regularMonsters.every(monster => ['normal','rare'].every(slot => allItems.has(Number(monster.drops?.[slot]?.id)))), '通常敵のドロップアイテムが既存ドロップ正本から解決される');
+const imageIds = new Set(newMonsters.map(monster => Number(monster.imageId ?? monster.id)));
+assert([...imageIds].every(imageId => fs.existsSync(path.join(root, 'assets/monsters', `monster_${String(imageId).padStart(6, '0')}.png`))), '新規モンスターが参照する暫定画像ファイルがすべて存在する');
+assert([...imageIds].every(imageId => cc.PRISMA_ASSETS.monsters.files.includes(`assets/monsters/monster_${String(imageId).padStart(6, '0')}.png`)), '新規画像がassets.jsの自動キャッシュ対象へ登録される');
+const pillars = bossMonsters.filter(monster => Number(monster.id) >= 512001 && Number(monster.id) <= 512005);
+assert(pillars.length === 5 && pillars.every((monster, index) => Number(monster.imageId) === 512000 && monster.linkedBattleGroup === 'vegnasis' && Number(monster.linkedDeathIndex) === index && Number(monster.gutsLevel) >= 10), 'ヴェグナシスは1画像・5攻撃対象・高根性の連結ボスとして正本化されている');
+assert(Number(bossMonsters.find(monster => Number(monster.id) === 512100)?.imageId) === 512100 && Number(bossMonsters.find(monster => Number(monster.id) === 512101)?.imageId) === 512101, 'アゼルガラグ第一・第二形態は別の差し替え用画像IDを持つ');
+assert(cc.ABYSS_REGION_CONTENT.itemIds.every(id => allItems.has(Number(id))) && allItems.has(701008), '結晶片とオクタプリズマがitems.js正本に存在する');
+assert(cc.ABYSS_REGION_CONTENT.skillIds.every(id => allSkills.has(Number(id))) && allSkills.has(700101), '混沌の衣がskills.js正本に存在する');
+const expectedVistaPrices = new Map([[600101,18000],[600119,24000],[600200,18000],[600202,22000],[600300,26000],[600400,18000]]);
+assert([...expectedVistaPrices].every(([id, price]) => {
+  const item = cc.ITEMS_DATA.find(entry => Number(entry.id) === id);
+  return item?.shopAvailable === true && Number(item.price) === price;
+}), 'ビスタ販売用の技法書6種がitems.js正本で購入可能になっている');
 
 // Runtime migration and environmental modifiers.
 function runtimeContext(data) {
@@ -274,9 +291,8 @@ let protectedStats = procRt.context.App.calcStats({charId:306});
 assert(['火','水','風','雷','光','闇','混沌'].every(element=>carmenaStats.environmentalElmRes[element]===-100), 'カルメナ汚染は対象者の全属性耐性を-100%する');
 assert(Object.keys(protectedStats.environmentalElmRes).length===0, 'シャニーはカルメナ汚染の対象外である');
 const recruitAreas = ['ABYSS_WORLD','CARMENA','THUNDER_DUNES','BLACK_ROPE_PYRAMID','VISTA','LEGACION','FINAL_ALTAR','ABYSS'];
-assert(recruitAreas.every(area=>{procApp.data.location.area=area;procField.currentMapData=area==='ABYSS_WORLD'?null:{isFixed:true};return procRt.context.App.isMonsterRecruitBattleAllowed();}), '新規深淵全域とクリア後ランダム深淵で低確率仲間化が有効である');
-procApp.data.location.area='WORLD';procField.currentMapData=null;
-assert(procRt.context.App.isMonsterRecruitBattleAllowed()===false, '地上世界へ深淵魔物仲間化条件を漏らさない');
+assert(recruitAreas.every(area=>procRt.context.AbyssRegionRuntime.isAbyssArea(area)), '新規深淵全域とクリア後ランダム深淵が仲間化許可エリア正本に含まれる');
+assert(procRt.context.AbyssRegionRuntime.isAbyssArea('WORLD')===false, '地上世界を深淵魔物仲間化エリアへ含めない');
 
 if (failures.length) {
   console.error(`Abyss region rework validation failed (${failures.length}):`);

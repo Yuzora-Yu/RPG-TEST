@@ -2925,8 +2925,12 @@ const App = {
 
     isMonsterRecruitBattleAllowed: () => {
         if (!App.data) return false;
-        const area = App.data.location?.area;
-        return area === 'ABYSS';
+        const area = (typeof Field !== 'undefined' && typeof Field.getCurrentAreaKey === 'function')
+            ? Field.getCurrentAreaKey()
+            : App.data.location?.area;
+        if (String(area || '') === 'ABYSS') return true;
+        const abyssAreaKeys = globalThis.ABYSS_REGION_RULES?.abyssAreaKeys;
+        return abyssAreaKeys instanceof Set && abyssAreaKeys.has(String(area || ''));
     },
 
     tryRecruitMonsterAfterBattle: (enemies) => {

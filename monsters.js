@@ -1009,6 +1009,7201 @@ const MONSTER_BANDS_1_200 = [
   }
 ];
 
+// 深淵ワールドの通常モンスター正本。
+// 通常深淵の階層バンドへ混ぜず、生息MAPから遭遇候補を解決する。
+const ABYSS_REGION_MONSTERS = [
+  {
+    "hit": 106,
+    "eva": 5,
+    "cri": 10,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "雷": 55,
+      "風": -35
+    },
+    "resists": {
+      "Poison": 55,
+      "ToxicPoison": 55,
+      "Shock": 65,
+      "Fear": 70,
+      "InstantDeath": 100,
+      "Debuff": 55,
+      "Seal": 60
+    },
+    "traits": [],
+    "archives": [
+      "雷を帯びた尾針で砂中から獲物を刺す。硬い殻は放電のたび青白く明滅する。"
+    ],
+    "id": 510001,
+    "imageId": 510001,
+    "habitats": [
+      {
+        "mapId": "MAP000038",
+        "floors": [
+          {
+            "from": 1,
+            "to": 99
+          }
+        ]
+      },
+      {
+        "mapId": "MAP000037",
+        "floors": [
+          {
+            "from": 1,
+            "to": 999
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "雷砂のスコルピオ",
+    "race": "獣",
+    "rank": 86,
+    "minF": 86,
+    "hp": 900,
+    "mp": 142,
+    "atk": 302,
+    "def": 190,
+    "spd": 173,
+    "mag": 146,
+    "mdef": 163,
+    "gold": 3200,
+    "exp": 1800,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 35,
+        "condition": 0
+      },
+      {
+        "id": 106,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 118,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 700,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510001,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 106,
+    "eva": 2,
+    "cri": 4,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "雷": 55,
+      "風": -35
+    },
+    "resists": {
+      "Poison": 55,
+      "ToxicPoison": 55,
+      "Shock": 65,
+      "Fear": 70,
+      "InstantDeath": 100,
+      "Debuff": 55,
+      "Seal": 60
+    },
+    "traits": [],
+    "archives": [
+      "砂丘の地下を走る巨大な魔虫。地表へ出る直前、砂粒が雷鳴のように震える。"
+    ],
+    "id": 510002,
+    "imageId": 510002,
+    "habitats": [
+      {
+        "mapId": "MAP000038",
+        "floors": [
+          {
+            "from": 1,
+            "to": 99
+          }
+        ]
+      },
+      {
+        "mapId": "MAP000037",
+        "floors": [
+          {
+            "from": 1,
+            "to": 999
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "轟電サンドワーム",
+    "race": "獣",
+    "rank": 87,
+    "minF": 87,
+    "hp": 1112,
+    "mp": 155,
+    "atk": 244,
+    "def": 236,
+    "spd": 131,
+    "mag": 138,
+    "mdef": 213,
+    "gold": 3445,
+    "exp": 1925,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 35,
+        "condition": 0
+      },
+      {
+        "id": 118,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 304,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 601,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510002,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 106,
+    "eva": 2,
+    "cri": 4,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "雷": 55,
+      "風": -35
+    },
+    "resists": {
+      "Poison": 55,
+      "ToxicPoison": 55,
+      "Shock": 65,
+      "Fear": 70,
+      "InstantDeath": 100,
+      "Debuff": 55,
+      "Seal": 60
+    },
+    "traits": [],
+    "archives": [
+      "落雷を蓄える石像兵。盾で受けた衝撃を電撃に変えて返す。"
+    ],
+    "id": 510003,
+    "imageId": 510003,
+    "habitats": [
+      {
+        "mapId": "MAP000038",
+        "floors": [
+          {
+            "from": 1,
+            "to": 99
+          }
+        ]
+      },
+      {
+        "mapId": "MAP000037",
+        "floors": [
+          {
+            "from": 1,
+            "to": 999
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "帯電する石像兵",
+    "race": "無生物",
+    "rank": 88,
+    "minF": 88,
+    "hp": 1145,
+    "mp": 158,
+    "atk": 248,
+    "def": 240,
+    "spd": 134,
+    "mag": 140,
+    "mdef": 216,
+    "gold": 3690,
+    "exp": 2050,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 35,
+        "condition": 0
+      },
+      {
+        "id": 106,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 138,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 501,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510003,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 106,
+    "eva": 7,
+    "cri": 5,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "雷": 55,
+      "風": -35
+    },
+    "resists": {
+      "Poison": 55,
+      "ToxicPoison": 55,
+      "Shock": 65,
+      "Fear": 70,
+      "InstantDeath": 100,
+      "Debuff": 55,
+      "Seal": 60
+    },
+    "traits": [],
+    "archives": [
+      "帯電した雲をまとって砂上を滑る蛇魔。遠雷に紛れて術を放つ。"
+    ],
+    "id": 510004,
+    "imageId": 510004,
+    "habitats": [
+      {
+        "mapId": "MAP000038",
+        "floors": [
+          {
+            "from": 1,
+            "to": 99
+          }
+        ]
+      },
+      {
+        "mapId": "MAP000037",
+        "floors": [
+          {
+            "from": 1,
+            "to": 999
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "雷雲のラミア",
+    "race": "魔族",
+    "rank": 89,
+    "minF": 89,
+    "hp": 863,
+    "mp": 252,
+    "atk": 77,
+    "def": 156,
+    "spd": 179,
+    "mag": 329,
+    "mdef": 232,
+    "gold": 3935,
+    "exp": 2175,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 15,
+        "condition": 0
+      },
+      {
+        "id": 206,
+        "rate": 35,
+        "condition": 0
+      },
+      {
+        "id": 226,
+        "rate": 30,
+        "condition": 0
+      },
+      {
+        "id": 230,
+        "rate": 20,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510004,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 106,
+    "eva": 9,
+    "cri": 14,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": true,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "雷": 55,
+      "風": -35
+    },
+    "resists": {
+      "Poison": 55,
+      "ToxicPoison": 55,
+      "Shock": 65,
+      "Fear": 70,
+      "InstantDeath": 100,
+      "Debuff": 55,
+      "Seal": 60
+    },
+    "traits": [],
+    "archives": [
+      "砂嵐の中心に棲む獣王。紫電を角へ集め、群れごと踏み砕く。"
+    ],
+    "id": 510005,
+    "imageId": 510005,
+    "habitats": [
+      {
+        "mapId": "MAP000038",
+        "floors": [
+          {
+            "from": 1,
+            "to": 99
+          }
+        ]
+      },
+      {
+        "mapId": "MAP000037",
+        "floors": [
+          {
+            "from": 1,
+            "to": 999
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "紫電の砂王獣",
+    "race": "獣",
+    "rank": 90,
+    "minF": 90,
+    "hp": 1492,
+    "mp": 237,
+    "atk": 315,
+    "def": 227,
+    "spd": 197,
+    "mag": 315,
+    "mdef": 228,
+    "gold": 6897,
+    "exp": 3795,
+    "actCount": 2,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 155,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 226,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 711,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 705,
+        "rate": 15,
+        "condition": 2
+      }
+    ],
+    "dropSeed": 510005,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 107,
+    "eva": 5,
+    "cri": 10,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "雷": 55,
+      "風": -35
+    },
+    "resists": {
+      "Poison": 60,
+      "ToxicPoison": 60,
+      "Shock": 70,
+      "Fear": 75,
+      "InstantDeath": 100,
+      "Debuff": 60,
+      "Seal": 65
+    },
+    "traits": [],
+    "archives": [
+      "黒縄で骨を縛られた守墓兵。朽ちた剣には雷が残っている。"
+    ],
+    "id": 510011,
+    "imageId": 510011,
+    "habitats": [
+      {
+        "mapId": "MAP000040",
+        "floors": [
+          {
+            "from": 1,
+            "to": 3
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "黒縄ミイラ兵",
+    "race": "死霊",
+    "rank": 91,
+    "minF": 91,
+    "hp": 1035,
+    "mp": 158,
+    "atk": 329,
+    "def": 206,
+    "spd": 189,
+    "mag": 159,
+    "mdef": 178,
+    "gold": 4425,
+    "exp": 2425,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 35,
+        "condition": 0
+      },
+      {
+        "id": 106,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 118,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 701,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510011,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 107,
+    "eva": 5,
+    "cri": 10,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "雷": 55,
+      "風": -35
+    },
+    "resists": {
+      "Poison": 60,
+      "ToxicPoison": 60,
+      "Shock": 70,
+      "Fear": 75,
+      "InstantDeath": 100,
+      "Debuff": 60,
+      "Seal": 65
+    },
+    "traits": [],
+    "archives": [
+      "王墓の門を巡回する獣頭の戦士。侵入者の足音を電気で探る。"
+    ],
+    "id": 510012,
+    "imageId": 510012,
+    "habitats": [
+      {
+        "mapId": "MAP000040",
+        "floors": [
+          {
+            "from": 1,
+            "to": 3
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "雷葬のアヌビス",
+    "race": "獣人",
+    "rank": 92,
+    "minF": 92,
+    "hp": 1062,
+    "mp": 160,
+    "atk": 334,
+    "def": 209,
+    "spd": 192,
+    "mag": 162,
+    "mdef": 180,
+    "gold": 4670,
+    "exp": 2550,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 35,
+        "condition": 0
+      },
+      {
+        "id": 118,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 226,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 703,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510012,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 107,
+    "eva": 12,
+    "cri": 12,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "雷": 55,
+      "風": -35
+    },
+    "resists": {
+      "Poison": 60,
+      "ToxicPoison": 60,
+      "Shock": 70,
+      "Fear": 75,
+      "InstantDeath": 100,
+      "Debuff": 60,
+      "Seal": 65
+    },
+    "traits": [],
+    "archives": [
+      "雷晶を背負う甲虫。壁面を走り、術者の詠唱へ放電を浴びせる。"
+    ],
+    "id": 510013,
+    "imageId": 510013,
+    "habitats": [
+      {
+        "mapId": "MAP000040",
+        "floors": [
+          {
+            "from": 1,
+            "to": 3
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "電晶スカラベ",
+    "race": "獣",
+    "rank": 93,
+    "minF": 93,
+    "hp": 1002,
+    "mp": 196,
+    "atk": 299,
+    "def": 174,
+    "spd": 239,
+    "mag": 258,
+    "mdef": 183,
+    "gold": 4915,
+    "exp": 2675,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 35,
+        "condition": 0
+      },
+      {
+        "id": 106,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 304,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 601,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510013,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 107,
+    "eva": 7,
+    "cri": 5,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "雷": 55,
+      "風": -35
+    },
+    "resists": {
+      "Poison": 60,
+      "ToxicPoison": 60,
+      "Shock": 70,
+      "Fear": 75,
+      "InstantDeath": 100,
+      "Debuff": 60,
+      "Seal": 65
+    },
+    "traits": [],
+    "archives": [
+      "王家の雷呪を守る術師。棺の刻印を媒介に雷霆を連ねる。"
+    ],
+    "id": 510014,
+    "imageId": 510014,
+    "habitats": [
+      {
+        "mapId": "MAP000040",
+        "floors": [
+          {
+            "from": 4,
+            "to": 99
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "王墓の雷術師",
+    "race": "魔族",
+    "rank": 94,
+    "minF": 94,
+    "hp": 982,
+    "mp": 278,
+    "atk": 83,
+    "def": 168,
+    "spd": 194,
+    "mag": 358,
+    "mdef": 251,
+    "gold": 5160,
+    "exp": 2800,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 206,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 226,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 230,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 503,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510014,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 107,
+    "eva": 9,
+    "cri": 14,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": true,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "雷": 55,
+      "風": -35
+    },
+    "resists": {
+      "Poison": 60,
+      "ToxicPoison": 60,
+      "Shock": 70,
+      "Fear": 75,
+      "InstantDeath": 100,
+      "Debuff": 60,
+      "Seal": 65
+    },
+    "traits": [],
+    "archives": [
+      "最奥の石棺を守る黒い魔獣。傷を負うほど雷雲を濃くする。"
+    ],
+    "id": 510015,
+    "imageId": 510015,
+    "habitats": [
+      {
+        "mapId": "MAP000040",
+        "floors": [
+          {
+            "from": 4,
+            "to": 99
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "黒雷の番獣",
+    "race": "獣",
+    "rank": 95,
+    "minF": 95,
+    "hp": 1692,
+    "mp": 260,
+    "atk": 342,
+    "def": 245,
+    "spd": 213,
+    "mag": 343,
+    "mdef": 246,
+    "gold": 8918,
+    "exp": 4826,
+    "actCount": 2,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 155,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 230,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 237,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 711,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510015,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 106,
+    "eva": 7,
+    "cri": 5,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "風": 55,
+      "雷": -35
+    },
+    "resists": {
+      "Poison": 55,
+      "ToxicPoison": 55,
+      "Shock": 65,
+      "Fear": 70,
+      "InstantDeath": 100,
+      "Debuff": 55,
+      "Seal": 60
+    },
+    "traits": [],
+    "archives": [
+      "墓標の隙間を漂う亡者。嘆き声が風となり、旅人の足を止める。"
+    ],
+    "id": 510021,
+    "imageId": 510021,
+    "habitats": [
+      {
+        "mapId": "MAP000039",
+        "floors": [
+          {
+            "from": 1,
+            "to": 99
+          }
+        ]
+      },
+      {
+        "mapId": "MAP000037",
+        "floors": [
+          {
+            "from": 1,
+            "to": 999
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "嘆風の亡者",
+    "race": "死霊",
+    "rank": 86,
+    "minF": 86,
+    "hp": 792,
+    "mp": 238,
+    "atk": 73,
+    "def": 148,
+    "spd": 170,
+    "mag": 312,
+    "mdef": 220,
+    "gold": 3200,
+    "exp": 1800,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 15,
+        "condition": 0
+      },
+      {
+        "id": 114,
+        "rate": 35,
+        "condition": 0
+      },
+      {
+        "id": 202,
+        "rate": 30,
+        "condition": 0
+      },
+      {
+        "id": 703,
+        "rate": 20,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510021,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 106,
+    "eva": 12,
+    "cri": 12,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "風": 55,
+      "雷": -35
+    },
+    "resists": {
+      "Poison": 55,
+      "ToxicPoison": 55,
+      "Shock": 65,
+      "Fear": 70,
+      "InstantDeath": 100,
+      "Debuff": 55,
+      "Seal": 60
+    },
+    "traits": [],
+    "archives": [
+      "墓地上空を旋回する翼獣。羽ばたきだけで古い墓石を削る。"
+    ],
+    "id": 510022,
+    "imageId": 510022,
+    "habitats": [
+      {
+        "mapId": "MAP000039",
+        "floors": [
+          {
+            "from": 1,
+            "to": 99
+          }
+        ]
+      },
+      {
+        "mapId": "MAP000037",
+        "floors": [
+          {
+            "from": 1,
+            "to": 999
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "墓守りガルーダ",
+    "race": "獣",
+    "rank": 87,
+    "minF": 87,
+    "hp": 853,
+    "mp": 175,
+    "atk": 270,
+    "def": 158,
+    "spd": 216,
+    "mag": 233,
+    "mdef": 166,
+    "gold": 3445,
+    "exp": 1925,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 35,
+        "condition": 0
+      },
+      {
+        "id": 103,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 127,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 311,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510022,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 106,
+    "eva": 7,
+    "cri": 5,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "風": 55,
+      "雷": -35
+    },
+    "resists": {
+      "Poison": 55,
+      "ToxicPoison": 55,
+      "Shock": 65,
+      "Fear": 70,
+      "InstantDeath": 100,
+      "Debuff": 55,
+      "Seal": 60
+    },
+    "traits": [],
+    "archives": [
+      "埋葬されなかった声が形を得た死霊。泣き声で魔法を封じる。"
+    ],
+    "id": 510023,
+    "imageId": 510023,
+    "habitats": [
+      {
+        "mapId": "MAP000039",
+        "floors": [
+          {
+            "from": 1,
+            "to": 99
+          }
+        ]
+      },
+      {
+        "mapId": "MAP000037",
+        "floors": [
+          {
+            "from": 1,
+            "to": 999
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "哭き声のバンシー",
+    "race": "死霊",
+    "rank": 88,
+    "minF": 88,
+    "hp": 840,
+    "mp": 248,
+    "atk": 75,
+    "def": 153,
+    "spd": 176,
+    "mag": 324,
+    "mdef": 228,
+    "gold": 3690,
+    "exp": 2050,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 202,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 211,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 703,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 601,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510023,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 106,
+    "eva": 2,
+    "cri": 4,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "風": 55,
+      "雷": -35
+    },
+    "resists": {
+      "Poison": 55,
+      "ToxicPoison": 55,
+      "Shock": 65,
+      "Fear": 70,
+      "InstantDeath": 100,
+      "Debuff": 55,
+      "Seal": 60
+    },
+    "traits": [],
+    "archives": [
+      "風化した鎧に亡霊が宿った騎士。刃の軌跡に真空の傷を残す。"
+    ],
+    "id": 510024,
+    "imageId": 510024,
+    "habitats": [
+      {
+        "mapId": "MAP000039",
+        "floors": [
+          {
+            "from": 1,
+            "to": 99
+          }
+        ]
+      },
+      {
+        "mapId": "MAP000037",
+        "floors": [
+          {
+            "from": 1,
+            "to": 999
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "風葬の骸騎士",
+    "race": "死霊",
+    "rank": 89,
+    "minF": 89,
+    "hp": 1177,
+    "mp": 162,
+    "atk": 252,
+    "def": 244,
+    "spd": 136,
+    "mag": 143,
+    "mdef": 220,
+    "gold": 3935,
+    "exp": 2175,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 35,
+        "condition": 0
+      },
+      {
+        "id": 103,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 127,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 602,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510024,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 106,
+    "eva": 9,
+    "cri": 14,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": true,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "風": 55,
+      "雷": -35
+    },
+    "resists": {
+      "Poison": 55,
+      "ToxicPoison": 55,
+      "Shock": 65,
+      "Fear": 70,
+      "InstantDeath": 100,
+      "Debuff": 55,
+      "Seal": 60
+    },
+    "traits": [],
+    "archives": [
+      "無数の叫びを喰らって育った墓獣。咆哮と暴風を同時に放つ。"
+    ],
+    "id": 510025,
+    "imageId": 510025,
+    "habitats": [
+      {
+        "mapId": "MAP000039",
+        "floors": [
+          {
+            "from": 1,
+            "to": 99
+          }
+        ]
+      },
+      {
+        "mapId": "MAP000037",
+        "floors": [
+          {
+            "from": 1,
+            "to": 999
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "叫喚の墓獣",
+    "race": "獣",
+    "rank": 90,
+    "minF": 90,
+    "hp": 1492,
+    "mp": 237,
+    "atk": 315,
+    "def": 227,
+    "spd": 197,
+    "mag": 315,
+    "mdef": 228,
+    "gold": 6897,
+    "exp": 3795,
+    "actCount": 2,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 132,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 215,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 311,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 711,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510025,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 107,
+    "eva": 7,
+    "cri": 5,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "風": 55,
+      "雷": -35
+    },
+    "resists": {
+      "Poison": 60,
+      "ToxicPoison": 60,
+      "Shock": 70,
+      "Fear": 75,
+      "InstantDeath": 100,
+      "Debuff": 60,
+      "Seal": 65
+    },
+    "traits": [],
+    "archives": [
+      "霊廟の気流を読み、死者の声を術へ変える風の司祭。"
+    ],
+    "id": 510031,
+    "imageId": 510031,
+    "habitats": [
+      {
+        "mapId": "MAP000041",
+        "floors": [
+          {
+            "from": 1,
+            "to": 3
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "霊廟の風読師",
+    "race": "魔族",
+    "rank": 91,
+    "minF": 91,
+    "hp": 911,
+    "mp": 262,
+    "atk": 79,
+    "def": 161,
+    "spd": 185,
+    "mag": 341,
+    "mdef": 240,
+    "gold": 4425,
+    "exp": 2425,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 211,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 215,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 601,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 503,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510031,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 107,
+    "eva": 12,
+    "cri": 12,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "風": 55,
+      "雷": -35
+    },
+    "resists": {
+      "Poison": 60,
+      "ToxicPoison": 60,
+      "Shock": 70,
+      "Fear": 75,
+      "InstantDeath": 100,
+      "Debuff": 60,
+      "Seal": 65
+    },
+    "traits": [],
+    "archives": [
+      "葬衣を旋風のように翻す亡者。近づく者を墓室の壁へ叩きつける。"
+    ],
+    "id": 510032,
+    "imageId": 510032,
+    "habitats": [
+      {
+        "mapId": "MAP000041",
+        "floors": [
+          {
+            "from": 1,
+            "to": 3
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "旋風ミイラ",
+    "race": "死霊",
+    "rank": 92,
+    "minF": 92,
+    "hp": 977,
+    "mp": 193,
+    "atk": 294,
+    "def": 172,
+    "spd": 235,
+    "mag": 254,
+    "mdef": 180,
+    "gold": 4670,
+    "exp": 2550,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 35,
+        "condition": 0
+      },
+      {
+        "id": 103,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 127,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 703,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510032,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 107,
+    "eva": 7,
+    "cri": 5,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "風": 55,
+      "雷": -35
+    },
+    "resists": {
+      "Poison": 60,
+      "ToxicPoison": 60,
+      "Shock": 70,
+      "Fear": 75,
+      "InstantDeath": 100,
+      "Debuff": 60,
+      "Seal": 65
+    },
+    "traits": [],
+    "archives": [
+      "空洞だけを残して漂う死霊。触れた空間から音と熱を奪う。"
+    ],
+    "id": 510033,
+    "imageId": 510033,
+    "habitats": [
+      {
+        "mapId": "MAP000041",
+        "floors": [
+          {
+            "from": 1,
+            "to": 3
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "虚空のレイス",
+    "race": "死霊",
+    "rank": 93,
+    "minF": 93,
+    "hp": 958,
+    "mp": 272,
+    "atk": 82,
+    "def": 166,
+    "spd": 191,
+    "mag": 352,
+    "mdef": 247,
+    "gold": 4915,
+    "exp": 2675,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 15,
+        "condition": 0
+      },
+      {
+        "id": 202,
+        "rate": 35,
+        "condition": 0
+      },
+      {
+        "id": 215,
+        "rate": 30,
+        "condition": 0
+      },
+      {
+        "id": 704,
+        "rate": 20,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510033,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 107,
+    "eva": 2,
+    "cri": 4,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "風": 55,
+      "雷": -35
+    },
+    "resists": {
+      "Poison": 60,
+      "ToxicPoison": 60,
+      "Shock": 70,
+      "Fear": 75,
+      "InstantDeath": 100,
+      "Debuff": 60,
+      "Seal": 65
+    },
+    "traits": [],
+    "archives": [
+      "霊廟の屋根を守る石翼像。動くたび石粉を巻き上げる。"
+    ],
+    "id": 510034,
+    "imageId": 510034,
+    "habitats": [
+      {
+        "mapId": "MAP000041",
+        "floors": [
+          {
+            "from": 4,
+            "to": 99
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "魔風の石翼獣",
+    "race": "無生物",
+    "rank": 94,
+    "minF": 94,
+    "hp": 1339,
+    "mp": 178,
+    "atk": 274,
+    "def": 263,
+    "spd": 147,
+    "mag": 155,
+    "mdef": 238,
+    "gold": 5160,
+    "exp": 2800,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 35,
+        "condition": 0
+      },
+      {
+        "id": 127,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 311,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 701,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510034,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 107,
+    "eva": 9,
+    "cri": 14,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": true,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "風": 55,
+      "雷": -35
+    },
+    "resists": {
+      "Poison": 60,
+      "ToxicPoison": 60,
+      "Shock": 70,
+      "Fear": 75,
+      "InstantDeath": 100,
+      "Debuff": 60,
+      "Seal": 65
+    },
+    "traits": [],
+    "archives": [
+      "葬送歌に呼ばれて現れる嵐蛇。長い胴で通路を塞ぎ風を圧縮する。"
+    ],
+    "id": 510035,
+    "imageId": 510035,
+    "habitats": [
+      {
+        "mapId": "MAP000041",
+        "floors": [
+          {
+            "from": 4,
+            "to": 99
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "葬送の嵐蛇",
+    "race": "竜",
+    "rank": 95,
+    "minF": 95,
+    "hp": 1692,
+    "mp": 260,
+    "atk": 342,
+    "def": 245,
+    "spd": 213,
+    "mag": 343,
+    "mdef": 246,
+    "gold": 8918,
+    "exp": 4826,
+    "actCount": 2,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 161,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 222,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 236,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 714,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510035,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 108,
+    "eva": 2,
+    "cri": 4,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "水": 55,
+      "火": -35
+    },
+    "resists": {
+      "Poison": 65,
+      "ToxicPoison": 65,
+      "Shock": 75,
+      "Fear": 80,
+      "InstantDeath": 100,
+      "Debuff": 65,
+      "Seal": 70
+    },
+    "traits": [],
+    "archives": [
+      "根まで凍りながら動く古樹。枝先の氷を槍のように落とす。"
+    ],
+    "id": 510041,
+    "imageId": 510041,
+    "habitats": [
+      {
+        "mapId": "MAP000043",
+        "floors": [
+          {
+            "from": 1,
+            "to": 99
+          }
+        ]
+      },
+      {
+        "mapId": "MAP000042",
+        "floors": [
+          {
+            "from": 1,
+            "to": 999
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "凍樹のトレント",
+    "race": "植物",
+    "rank": 96,
+    "minF": 96,
+    "hp": 1404,
+    "mp": 184,
+    "atk": 282,
+    "def": 271,
+    "spd": 152,
+    "mag": 160,
+    "mdef": 245,
+    "gold": 5650,
+    "exp": 3050,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 35,
+        "condition": 0
+      },
+      {
+        "id": 105,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 210,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 601,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510041,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 108,
+    "eva": 12,
+    "cri": 12,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "水": 55,
+      "火": -35
+    },
+    "resists": {
+      "Poison": 65,
+      "ToxicPoison": 65,
+      "Shock": 75,
+      "Fear": 80,
+      "InstantDeath": 100,
+      "Debuff": 65,
+      "Seal": 70
+    },
+    "traits": [],
+    "archives": [
+      "雪煙に紛れて獲物を囲む氷狼。牙に触れた傷から体温を奪う。"
+    ],
+    "id": 510042,
+    "imageId": 510042,
+    "habitats": [
+      {
+        "mapId": "MAP000043",
+        "floors": [
+          {
+            "from": 1,
+            "to": 99
+          }
+        ]
+      },
+      {
+        "mapId": "MAP000042",
+        "floors": [
+          {
+            "from": 1,
+            "to": 999
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "氷牙フェンリル",
+    "race": "獣",
+    "rank": 97,
+    "minF": 97,
+    "hp": 1101,
+    "mp": 211,
+    "atk": 318,
+    "def": 185,
+    "spd": 254,
+    "mag": 275,
+    "mdef": 195,
+    "gold": 5895,
+    "exp": 3175,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 35,
+        "condition": 0
+      },
+      {
+        "id": 105,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 301,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 132,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510042,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 108,
+    "eva": 7,
+    "cri": 5,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "水": 55,
+      "火": -35
+    },
+    "resists": {
+      "Poison": 65,
+      "ToxicPoison": 65,
+      "Shock": 75,
+      "Fear": 80,
+      "InstantDeath": 100,
+      "Debuff": 65,
+      "Seal": 70
+    },
+    "traits": [],
+    "archives": [
+      "霜を衣としてまとう魔女。吐息で術式を凍らせ、別の形へ組み替える。"
+    ],
+    "id": 510043,
+    "imageId": 510043,
+    "habitats": [
+      {
+        "mapId": "MAP000043",
+        "floors": [
+          {
+            "from": 1,
+            "to": 99
+          }
+        ]
+      },
+      {
+        "mapId": "MAP000042",
+        "floors": [
+          {
+            "from": 1,
+            "to": 999
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "霜衣の魔女",
+    "race": "魔族",
+    "rank": 98,
+    "minF": 98,
+    "hp": 1077,
+    "mp": 298,
+    "atk": 89,
+    "def": 178,
+    "spd": 206,
+    "mag": 381,
+    "mdef": 266,
+    "gold": 6140,
+    "exp": 3300,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 15,
+        "condition": 0
+      },
+      {
+        "id": 210,
+        "rate": 35,
+        "condition": 0
+      },
+      {
+        "id": 221,
+        "rate": 30,
+        "condition": 0
+      },
+      {
+        "id": 503,
+        "rate": 20,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510043,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 108,
+    "eva": 2,
+    "cri": 4,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "水": 55,
+      "火": -35
+    },
+    "resists": {
+      "Poison": 65,
+      "ToxicPoison": 65,
+      "Shock": 75,
+      "Fear": 80,
+      "InstantDeath": 100,
+      "Debuff": 65,
+      "Seal": 70
+    },
+    "traits": [],
+    "archives": [
+      "氷殻を重ねた爬獣。動きは鈍いが、正面からの攻撃をほとんど通さない。"
+    ],
+    "id": 510044,
+    "imageId": 510044,
+    "habitats": [
+      {
+        "mapId": "MAP000043",
+        "floors": [
+          {
+            "from": 1,
+            "to": 99
+          }
+        ]
+      },
+      {
+        "mapId": "MAP000042",
+        "floors": [
+          {
+            "from": 1,
+            "to": 999
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "白氷の甲殻獣",
+    "race": "竜",
+    "rank": 99,
+    "minF": 99,
+    "hp": 1501,
+    "mp": 194,
+    "atk": 295,
+    "def": 283,
+    "spd": 159,
+    "mag": 168,
+    "mdef": 256,
+    "gold": 6385,
+    "exp": 3425,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 35,
+        "condition": 0
+      },
+      {
+        "id": 105,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 305,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 602,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510044,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 108,
+    "eva": 9,
+    "cri": 14,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": true,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "水": 55,
+      "火": -35
+    },
+    "resists": {
+      "Poison": 65,
+      "ToxicPoison": 65,
+      "Shock": 75,
+      "Fear": 80,
+      "InstantDeath": 100,
+      "Debuff": 65,
+      "Seal": 70
+    },
+    "traits": [],
+    "archives": [
+      "極寒樹林の奥で眠る古竜。翼を開くだけで森一帯に吹雪が起こる。"
+    ],
+    "id": 510045,
+    "imageId": 510045,
+    "habitats": [
+      {
+        "mapId": "MAP000043",
+        "floors": [
+          {
+            "from": 1,
+            "to": 99
+          }
+        ]
+      },
+      {
+        "mapId": "MAP000042",
+        "floors": [
+          {
+            "from": 1,
+            "to": 999
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "極寒の森王",
+    "race": "竜",
+    "rank": 100,
+    "minF": 100,
+    "hp": 1891,
+    "mp": 283,
+    "atk": 368,
+    "def": 263,
+    "spd": 229,
+    "mag": 370,
+    "mdef": 265,
+    "gold": 10940,
+    "exp": 5858,
+    "actCount": 2,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 221,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 305,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 307,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 714,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510045,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 109,
+    "eva": 7,
+    "cri": 5,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "水": 55,
+      "火": -35
+    },
+    "resists": {
+      "Poison": 70,
+      "ToxicPoison": 70,
+      "Shock": 80,
+      "Fear": 85,
+      "InstantDeath": 100,
+      "Debuff": 70,
+      "Seal": 75
+    },
+    "traits": [],
+    "archives": [
+      "罪人の祈りを凍らせて集める僧。氷像を盾にして傷を癒やす。"
+    ],
+    "id": 510051,
+    "imageId": 510051,
+    "habitats": [
+      {
+        "mapId": "MAP000045",
+        "floors": [
+          {
+            "from": 1,
+            "to": 3
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "浄罪の氷僧",
+    "race": "死霊",
+    "rank": 101,
+    "minF": 101,
+    "hp": 1148,
+    "mp": 312,
+    "atk": 93,
+    "def": 186,
+    "spd": 215,
+    "mag": 398,
+    "mdef": 278,
+    "gold": 6875,
+    "exp": 3675,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 15,
+        "condition": 0
+      },
+      {
+        "id": 210,
+        "rate": 35,
+        "condition": 0
+      },
+      {
+        "id": 221,
+        "rate": 30,
+        "condition": 0
+      },
+      {
+        "id": 404,
+        "rate": 20,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510051,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 109,
+    "eva": 5,
+    "cri": 10,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "水": 55,
+      "火": -35
+    },
+    "resists": {
+      "Poison": 70,
+      "ToxicPoison": 70,
+      "Shock": 80,
+      "Fear": 85,
+      "InstantDeath": 100,
+      "Debuff": 70,
+      "Seal": 75
+    },
+    "traits": [],
+    "archives": [
+      "処刑具を刃へ作り替えた亡霊騎士。足元から氷の杭を伸ばす。"
+    ],
+    "id": 510052,
+    "imageId": 510052,
+    "habitats": [
+      {
+        "mapId": "MAP000045",
+        "floors": [
+          {
+            "from": 1,
+            "to": 3
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "氷刻の処刑騎士",
+    "race": "死霊",
+    "rank": 102,
+    "minF": 102,
+    "hp": 1332,
+    "mp": 190,
+    "atk": 389,
+    "def": 241,
+    "spd": 222,
+    "mag": 189,
+    "mdef": 209,
+    "gold": 7120,
+    "exp": 3800,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 35,
+        "condition": 0
+      },
+      {
+        "id": 105,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 135,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 221,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510052,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 109,
+    "eva": 7,
+    "cri": 5,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "水": 55,
+      "火": -35
+    },
+    "resists": {
+      "Poison": 70,
+      "ToxicPoison": 70,
+      "Shock": 80,
+      "Fear": 85,
+      "InstantDeath": 100,
+      "Debuff": 70,
+      "Seal": 75
+    },
+    "traits": [],
+    "archives": [
+      "凍った涙を歌へ変える魔性。歌声を聞いた者は指先から動かなくなる。"
+    ],
+    "id": 510053,
+    "imageId": 510053,
+    "habitats": [
+      {
+        "mapId": "MAP000045",
+        "floors": [
+          {
+            "from": 1,
+            "to": 3
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "凍涙のセイレーン",
+    "race": "魔族",
+    "rank": 103,
+    "minF": 103,
+    "hp": 1196,
+    "mp": 322,
+    "atk": 95,
+    "def": 191,
+    "spd": 221,
+    "mag": 410,
+    "mdef": 285,
+    "gold": 7365,
+    "exp": 3925,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 221,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 235,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 703,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 601,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510053,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 109,
+    "eva": 2,
+    "cri": 4,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "水": 55,
+      "火": -35
+    },
+    "resists": {
+      "Poison": 70,
+      "ToxicPoison": 70,
+      "Shock": 80,
+      "Fear": 85,
+      "InstantDeath": 100,
+      "Debuff": 70,
+      "Seal": 75
+    },
+    "traits": [],
+    "archives": [
+      "鎖の痕を鱗に刻んだ霜竜。暴れるほど周囲の温度が下がる。"
+    ],
+    "id": 510054,
+    "imageId": 510054,
+    "habitats": [
+      {
+        "mapId": "MAP000045",
+        "floors": [
+          {
+            "from": 4,
+            "to": 99
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "罪鎖の霜竜",
+    "race": "竜",
+    "rank": 104,
+    "minF": 104,
+    "hp": 1663,
+    "mp": 210,
+    "atk": 317,
+    "def": 302,
+    "spd": 170,
+    "mag": 180,
+    "mdef": 274,
+    "gold": 7610,
+    "exp": 4050,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 35,
+        "condition": 0
+      },
+      {
+        "id": 305,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 307,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 714,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510054,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 109,
+    "eva": 9,
+    "cri": 14,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": true,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "水": 55,
+      "火": -35
+    },
+    "resists": {
+      "Poison": 70,
+      "ToxicPoison": 70,
+      "Shock": 80,
+      "Fear": 85,
+      "InstantDeath": 100,
+      "Debuff": 70,
+      "Seal": 75
+    },
+    "traits": [],
+    "archives": [
+      "音の届かない氷獄から現れる獣。気配を消したまま喉元へ迫る。"
+    ],
+    "id": 510055,
+    "imageId": 510055,
+    "habitats": [
+      {
+        "mapId": "MAP000045",
+        "floors": [
+          {
+            "from": 4,
+            "to": 99
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "無音の氷獄獣",
+    "race": "獣",
+    "rank": 105,
+    "minF": 105,
+    "hp": 2091,
+    "mp": 306,
+    "atk": 395,
+    "def": 281,
+    "spd": 245,
+    "mag": 397,
+    "mdef": 283,
+    "gold": 12961,
+    "exp": 6889,
+    "actCount": 2,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 132,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 235,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 307,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 711,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510055,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 108,
+    "eva": 12,
+    "cri": 12,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "火": 55,
+      "水": -35
+    },
+    "resists": {
+      "Poison": 65,
+      "ToxicPoison": 65,
+      "Shock": 75,
+      "Fear": 80,
+      "InstantDeath": 100,
+      "Debuff": 65,
+      "Seal": 70
+    },
+    "traits": [],
+    "archives": [
+      "溶岩の割れ目を泳ぐ火蜥蜴。尾で散らした火の粉が遅れて爆ぜる。"
+    ],
+    "id": 510061,
+    "imageId": 510061,
+    "habitats": [
+      {
+        "mapId": "MAP000044",
+        "floors": [
+          {
+            "from": 1,
+            "to": 99
+          }
+        ]
+      },
+      {
+        "mapId": "MAP000042",
+        "floors": [
+          {
+            "from": 1,
+            "to": 999
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "煉岩の火蜥蜴",
+    "race": "竜",
+    "rank": 96,
+    "minF": 96,
+    "hp": 1076,
+    "mp": 207,
+    "atk": 313,
+    "def": 182,
+    "spd": 250,
+    "mag": 271,
+    "mdef": 192,
+    "gold": 5650,
+    "exp": 3050,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 35,
+        "condition": 0
+      },
+      {
+        "id": 104,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 302,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 700,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510061,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 108,
+    "eva": 5,
+    "cri": 10,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "火": 55,
+      "水": -35
+    },
+    "resists": {
+      "Poison": 65,
+      "ToxicPoison": 65,
+      "Shock": 75,
+      "Fear": 80,
+      "InstantDeath": 100,
+      "Debuff": 65,
+      "Seal": 70
+    },
+    "traits": [],
+    "archives": [
+      "焼けた斧を振るう山羊鬼。岩壁ごと獲物を断ち切ろうとする。"
+    ],
+    "id": 510062,
+    "imageId": 510062,
+    "habitats": [
+      {
+        "mapId": "MAP000044",
+        "floors": [
+          {
+            "from": 1,
+            "to": 99
+          }
+        ]
+      },
+      {
+        "mapId": "MAP000042",
+        "floors": [
+          {
+            "from": 1,
+            "to": 999
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "熔断の山羊鬼",
+    "race": "獣人",
+    "rank": 97,
+    "minF": 97,
+    "hp": 1197,
+    "mp": 176,
+    "atk": 362,
+    "def": 225,
+    "spd": 207,
+    "mag": 175,
+    "mdef": 195,
+    "gold": 5895,
+    "exp": 3175,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 35,
+        "condition": 0
+      },
+      {
+        "id": 104,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 153,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 711,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510062,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 108,
+    "eva": 12,
+    "cri": 12,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "火": 55,
+      "水": -35
+    },
+    "resists": {
+      "Poison": 65,
+      "ToxicPoison": 65,
+      "Shock": 75,
+      "Fear": 80,
+      "InstantDeath": 100,
+      "Debuff": 65,
+      "Seal": 70
+    },
+    "traits": [],
+    "archives": [
+      "灰を翼膜にまとった火竜。飛び立つたび山肌へ赤い火線を引く。"
+    ],
+    "id": 510063,
+    "imageId": 510063,
+    "habitats": [
+      {
+        "mapId": "MAP000044",
+        "floors": [
+          {
+            "from": 1,
+            "to": 99
+          }
+        ]
+      },
+      {
+        "mapId": "MAP000042",
+        "floors": [
+          {
+            "from": 1,
+            "to": 999
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "灰翼の火竜",
+    "race": "竜",
+    "rank": 98,
+    "minF": 98,
+    "hp": 1126,
+    "mp": 214,
+    "atk": 323,
+    "def": 187,
+    "spd": 258,
+    "mag": 279,
+    "mdef": 197,
+    "gold": 6140,
+    "exp": 3300,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 35,
+        "condition": 0
+      },
+      {
+        "id": 302,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 306,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 310,
+        "rate": 15,
+        "condition": 2
+      }
+    ],
+    "dropSeed": 510063,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 108,
+    "eva": 2,
+    "cri": 4,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "火": 55,
+      "水": -35
+    },
+    "resists": {
+      "Poison": 65,
+      "ToxicPoison": 65,
+      "Shock": 75,
+      "Fear": 80,
+      "InstantDeath": 100,
+      "Debuff": 65,
+      "Seal": 70
+    },
+    "traits": [],
+    "archives": [
+      "噴火口の岩が集まって生まれた巨兵。胴の亀裂から炎を吐く。"
+    ],
+    "id": 510064,
+    "imageId": 510064,
+    "habitats": [
+      {
+        "mapId": "MAP000044",
+        "floors": [
+          {
+            "from": 1,
+            "to": 99
+          }
+        ]
+      },
+      {
+        "mapId": "MAP000042",
+        "floors": [
+          {
+            "from": 1,
+            "to": 999
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "噴炎の巨岩兵",
+    "race": "無生物",
+    "rank": 99,
+    "minF": 99,
+    "hp": 1501,
+    "mp": 194,
+    "atk": 295,
+    "def": 283,
+    "spd": 159,
+    "mag": 168,
+    "mdef": 256,
+    "gold": 6385,
+    "exp": 3425,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 35,
+        "condition": 0
+      },
+      {
+        "id": 104,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 306,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 501,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510064,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 108,
+    "eva": 9,
+    "cri": 14,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": true,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "火": 55,
+      "水": -35
+    },
+    "resists": {
+      "Poison": 65,
+      "ToxicPoison": 65,
+      "Shock": 75,
+      "Fear": 80,
+      "InstantDeath": 100,
+      "Debuff": 65,
+      "Seal": 70
+    },
+    "traits": [],
+    "archives": [
+      "煉獄山脈の峰を支配する魔将。火口の魔力を鎧へ流し込む。"
+    ],
+    "id": 510065,
+    "imageId": 510065,
+    "habitats": [
+      {
+        "mapId": "MAP000044",
+        "floors": [
+          {
+            "from": 1,
+            "to": 99
+          }
+        ]
+      },
+      {
+        "mapId": "MAP000042",
+        "floors": [
+          {
+            "from": 1,
+            "to": 999
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "煉獄峰の暴君",
+    "race": "魔族",
+    "rank": 100,
+    "minF": 100,
+    "hp": 1891,
+    "mp": 283,
+    "atk": 368,
+    "def": 263,
+    "spd": 229,
+    "mag": 370,
+    "mdef": 265,
+    "gold": 10940,
+    "exp": 5858,
+    "actCount": 2,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 153,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 224,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 310,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 711,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510065,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 109,
+    "eva": 2,
+    "cri": 4,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "火": 55,
+      "水": -35
+    },
+    "resists": {
+      "Poison": 70,
+      "ToxicPoison": 70,
+      "Shock": 80,
+      "Fear": 85,
+      "InstantDeath": 100,
+      "Debuff": 70,
+      "Seal": 75
+    },
+    "traits": [],
+    "archives": [
+      "古城の城壁と同じ鉱石で造られた甲冑兵。熱した刃を休みなく振るう。"
+    ],
+    "id": 510071,
+    "imageId": 510071,
+    "habitats": [
+      {
+        "mapId": "MAP000046",
+        "floors": [
+          {
+            "from": 1,
+            "to": 3
+          }
+        ]
+      },
+      {
+        "mapId": "MAP000047",
+        "floors": [
+          {
+            "from": 1,
+            "to": 999
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "灼城の甲冑兵",
+    "race": "無生物",
+    "rank": 101,
+    "minF": 101,
+    "hp": 1566,
+    "mp": 200,
+    "atk": 304,
+    "def": 290,
+    "spd": 163,
+    "mag": 173,
+    "mdef": 263,
+    "gold": 6875,
+    "exp": 3675,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 35,
+        "condition": 0
+      },
+      {
+        "id": 104,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 153,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 602,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510071,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 109,
+    "eva": 7,
+    "cri": 5,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "火": 55,
+      "水": -35
+    },
+    "resists": {
+      "Poison": 70,
+      "ToxicPoison": 70,
+      "Shock": 80,
+      "Fear": 85,
+      "InstantDeath": 100,
+      "Debuff": 70,
+      "Seal": 75
+    },
+    "traits": [],
+    "archives": [
+      "滅びた宮廷の術式を守る魔導士。焦土の記憶を炎として再現する。"
+    ],
+    "id": 510072,
+    "imageId": 510072,
+    "habitats": [
+      {
+        "mapId": "MAP000046",
+        "floors": [
+          {
+            "from": 1,
+            "to": 3
+          }
+        ]
+      },
+      {
+        "mapId": "MAP000047",
+        "floors": [
+          {
+            "from": 1,
+            "to": 999
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "焦土の宮廷魔導士",
+    "race": "魔族",
+    "rank": 102,
+    "minF": 102,
+    "hp": 1172,
+    "mp": 318,
+    "atk": 94,
+    "def": 188,
+    "spd": 218,
+    "mag": 404,
+    "mdef": 282,
+    "gold": 7120,
+    "exp": 3800,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 213,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 224,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 233,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 500,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510072,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 109,
+    "eva": 12,
+    "cri": 12,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "火": 55,
+      "水": -35
+    },
+    "resists": {
+      "Poison": 70,
+      "ToxicPoison": 70,
+      "Shock": 80,
+      "Fear": 85,
+      "InstantDeath": 100,
+      "Debuff": 70,
+      "Seal": 75
+    },
+    "traits": [],
+    "archives": [
+      "尖塔に巣食う翼魔。石の皮膚を赤熱させて急降下する。"
+    ],
+    "id": 510073,
+    "imageId": 510073,
+    "habitats": [
+      {
+        "mapId": "MAP000046",
+        "floors": [
+          {
+            "from": 1,
+            "to": 3
+          }
+        ]
+      },
+      {
+        "mapId": "MAP000047",
+        "floors": [
+          {
+            "from": 1,
+            "to": 999
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "炎冠のガーゴイル",
+    "race": "魔族",
+    "rank": 103,
+    "minF": 103,
+    "hp": 1250,
+    "mp": 232,
+    "atk": 347,
+    "def": 200,
+    "spd": 276,
+    "mag": 301,
+    "mdef": 212,
+    "gold": 7365,
+    "exp": 3925,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 35,
+        "condition": 0
+      },
+      {
+        "id": 104,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 306,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 701,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510073,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 109,
+    "eva": 5,
+    "cri": 10,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "火": 55,
+      "水": -35
+    },
+    "resists": {
+      "Poison": 70,
+      "ToxicPoison": 70,
+      "Shock": 80,
+      "Fear": 85,
+      "InstantDeath": 100,
+      "Debuff": 70,
+      "Seal": 75
+    },
+    "traits": [],
+    "archives": [
+      "焼けた大剣を引きずる処刑人。標的を逃がさず一撃ずつ追い詰める。"
+    ],
+    "id": 510074,
+    "imageId": 510074,
+    "habitats": [
+      {
+        "mapId": "MAP000046",
+        "floors": [
+          {
+            "from": 4,
+            "to": 99
+          }
+        ]
+      },
+      {
+        "mapId": "MAP000047",
+        "floors": [
+          {
+            "from": 1,
+            "to": 999
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "焼尽の処刑人",
+    "race": "魔族",
+    "rank": 104,
+    "minF": 104,
+    "hp": 1386,
+    "mp": 196,
+    "atk": 400,
+    "def": 248,
+    "spd": 228,
+    "mag": 194,
+    "mdef": 214,
+    "gold": 7610,
+    "exp": 4050,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 35,
+        "condition": 0
+      },
+      {
+        "id": 153,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 135,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 224,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510074,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 109,
+    "eva": 9,
+    "cri": 14,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": true,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "火": 55,
+      "水": -35
+    },
+    "resists": {
+      "Poison": 70,
+      "ToxicPoison": 70,
+      "Shock": 80,
+      "Fear": 85,
+      "InstantDeath": 100,
+      "Debuff": 70,
+      "Seal": 75
+    },
+    "traits": [],
+    "archives": [
+      "古城の地下で育った紅蓮竜。吐息が石床を溶かし退路を塞ぐ。"
+    ],
+    "id": 510075,
+    "imageId": 510075,
+    "habitats": [
+      {
+        "mapId": "MAP000046",
+        "floors": [
+          {
+            "from": 4,
+            "to": 99
+          }
+        ]
+      },
+      {
+        "mapId": "MAP000047",
+        "floors": [
+          {
+            "from": 1,
+            "to": 999
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "古城の紅蓮竜",
+    "race": "竜",
+    "rank": 105,
+    "minF": 105,
+    "hp": 2091,
+    "mp": 306,
+    "atk": 395,
+    "def": 281,
+    "spd": 245,
+    "mag": 397,
+    "mdef": 283,
+    "gold": 12961,
+    "exp": 6889,
+    "actCount": 2,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 224,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 306,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 310,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 714,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510075,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 110,
+    "eva": 12,
+    "cri": 12,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "闇": 55,
+      "光": -35
+    },
+    "resists": {
+      "Poison": 75,
+      "ToxicPoison": 75,
+      "Shock": 85,
+      "Fear": 90,
+      "InstantDeath": 100,
+      "Debuff": 75,
+      "Seal": 80
+    },
+    "traits": [],
+    "archives": [
+      "夢の明暗を鱗粉にして散らす魔蝶。眠った者の記憶を少しずつ喰う。"
+    ],
+    "id": 510081,
+    "imageId": 510081,
+    "habitats": [
+      {
+        "mapId": "MAP000048",
+        "floors": [
+          {
+            "from": 1,
+            "to": 3
+          }
+        ]
+      },
+      {
+        "mapId": "MAP000047",
+        "floors": [
+          {
+            "from": 1,
+            "to": 999
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "夢蝕みのモルフォ",
+    "race": "獣",
+    "rank": 106,
+    "minF": 106,
+    "hp": 1325,
+    "mp": 243,
+    "atk": 361,
+    "def": 208,
+    "spd": 288,
+    "mag": 313,
+    "mdef": 220,
+    "gold": 8100,
+    "exp": 4300,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 35,
+        "condition": 0
+      },
+      {
+        "id": 214,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 225,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 703,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510081,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 110,
+    "eva": 7,
+    "cri": 5,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "光": 55,
+      "闇": -35
+    },
+    "resists": {
+      "Poison": 75,
+      "ToxicPoison": 75,
+      "Shock": 85,
+      "Fear": 90,
+      "InstantDeath": 100,
+      "Debuff": 75,
+      "Seal": 80
+    },
+    "traits": [],
+    "archives": [
+      "光を弔いの布へ織り込んだ巡礼者。祈りとともに眩い刃を放つ。"
+    ],
+    "id": 510082,
+    "imageId": 510082,
+    "habitats": [
+      {
+        "mapId": "MAP000048",
+        "floors": [
+          {
+            "from": 1,
+            "to": 3
+          }
+        ]
+      },
+      {
+        "mapId": "MAP000047",
+        "floors": [
+          {
+            "from": 1,
+            "to": 999
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "光葬の巡礼者",
+    "race": "精霊",
+    "rank": 107,
+    "minF": 107,
+    "hp": 1291,
+    "mp": 342,
+    "atk": 100,
+    "def": 201,
+    "spd": 233,
+    "mag": 433,
+    "mdef": 301,
+    "gold": 8345,
+    "exp": 4425,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 126,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 218,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 228,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 408,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510082,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 110,
+    "eva": 7,
+    "cri": 5,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "闇": 55,
+      "光": -35
+    },
+    "resists": {
+      "Poison": 75,
+      "ToxicPoison": 75,
+      "Shock": 85,
+      "Fear": 90,
+      "InstantDeath": 100,
+      "Debuff": 75,
+      "Seal": 80
+    },
+    "traits": [],
+    "archives": [
+      "影を糸のように操る幻術師。相手の動きを写した偽像を作る。"
+    ],
+    "id": 510083,
+    "imageId": 510083,
+    "habitats": [
+      {
+        "mapId": "MAP000048",
+        "floors": [
+          {
+            "from": 1,
+            "to": 3
+          }
+        ]
+      },
+      {
+        "mapId": "MAP000047",
+        "floors": [
+          {
+            "from": 1,
+            "to": 999
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "影縫いの幻術師",
+    "race": "魔族",
+    "rank": 108,
+    "minF": 108,
+    "hp": 1315,
+    "mp": 348,
+    "atk": 102,
+    "def": 203,
+    "spd": 236,
+    "mag": 439,
+    "mdef": 305,
+    "gold": 8590,
+    "exp": 4550,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 114,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 225,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 704,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 601,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510083,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 110,
+    "eva": 2,
+    "cri": 4,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "光": 40,
+      "闇": 40,
+      "混沌": 20
+    },
+    "resists": {
+      "Poison": 75,
+      "ToxicPoison": 75,
+      "Shock": 85,
+      "Fear": 90,
+      "InstantDeath": 100,
+      "Debuff": 75,
+      "Seal": 80
+    },
+    "traits": [],
+    "archives": [
+      "光と闇を両面に映す鏡魔。受けた術を歪めて撃ち返す。"
+    ],
+    "id": 510084,
+    "imageId": 510084,
+    "habitats": [
+      {
+        "mapId": "MAP000048",
+        "floors": [
+          {
+            "from": 4,
+            "to": 99
+          }
+        ]
+      },
+      {
+        "mapId": "MAP000047",
+        "floors": [
+          {
+            "from": 1,
+            "to": 999
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "白黒の鏡魔",
+    "race": "精霊",
+    "rank": 109,
+    "minF": 109,
+    "hp": 1825,
+    "mp": 226,
+    "atk": 339,
+    "def": 322,
+    "spd": 182,
+    "mag": 193,
+    "mdef": 292,
+    "gold": 8835,
+    "exp": 4675,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 218,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 225,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 227,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 503,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510084,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 110,
+    "eva": 9,
+    "cri": 14,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": true,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "闇": 50,
+      "光": -30,
+      "混沌": 20
+    },
+    "resists": {
+      "Poison": 75,
+      "ToxicPoison": 75,
+      "Shock": 85,
+      "Fear": 90,
+      "InstantDeath": 100,
+      "Debuff": 75,
+      "Seal": 80
+    },
+    "traits": [],
+    "archives": [
+      "回廊で迷った夢が獣となったもの。視線を合わせると方向感覚を奪われる。"
+    ],
+    "id": 510085,
+    "imageId": 510085,
+    "habitats": [
+      {
+        "mapId": "MAP000048",
+        "floors": [
+          {
+            "from": 4,
+            "to": 99
+          }
+        ]
+      },
+      {
+        "mapId": "MAP000047",
+        "floors": [
+          {
+            "from": 1,
+            "to": 999
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "昏迷の回廊獣",
+    "race": "獣",
+    "rank": 110,
+    "minF": 110,
+    "hp": 2291,
+    "mp": 329,
+    "atk": 421,
+    "def": 299,
+    "spd": 261,
+    "mag": 424,
+    "mdef": 302,
+    "gold": 14982,
+    "exp": 7920,
+    "actCount": 2,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 132,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 234,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 314,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 711,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510085,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 111,
+    "eva": 12,
+    "cri": 12,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "光": 30,
+      "闇": 55
+    },
+    "resists": {
+      "Poison": 80,
+      "ToxicPoison": 80,
+      "Shock": 90,
+      "Fear": 95,
+      "InstantDeath": 100,
+      "Debuff": 80,
+      "Seal": 85
+    },
+    "traits": [],
+    "archives": [
+      "根に取り込まれた天使の骸。残った光が闇の枝から漏れている。"
+    ],
+    "id": 510091,
+    "imageId": 510091,
+    "habitats": [
+      {
+        "mapId": "MAP000049",
+        "floors": [
+          {
+            "from": 1,
+            "to": 99
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "根喰らいの天使骸",
+    "race": "死霊",
+    "rank": 111,
+    "minF": 111,
+    "hp": 1449,
+    "mp": 261,
+    "atk": 385,
+    "def": 221,
+    "spd": 306,
+    "mag": 334,
+    "mdef": 234,
+    "gold": 9325,
+    "exp": 4925,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 126,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 225,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 312,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 703,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510091,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 111,
+    "eva": 7,
+    "cri": 5,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "闇": 55,
+      "光": -35
+    },
+    "resists": {
+      "Poison": 80,
+      "ToxicPoison": 80,
+      "Shock": 90,
+      "Fear": 95,
+      "InstantDeath": 100,
+      "Debuff": 80,
+      "Seal": 85
+    },
+    "traits": [],
+    "archives": [
+      "闇を養分に咲く魔樹。蔓が触れた相手の魔力を根へ吸い上げる。"
+    ],
+    "id": 510092,
+    "imageId": 510092,
+    "habitats": [
+      {
+        "mapId": "MAP000049",
+        "floors": [
+          {
+            "from": 1,
+            "to": 99
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "闇芽のアルラウネ",
+    "race": "植物",
+    "rank": 112,
+    "minF": 112,
+    "hp": 1410,
+    "mp": 368,
+    "atk": 107,
+    "def": 213,
+    "spd": 248,
+    "mag": 462,
+    "mdef": 320,
+    "gold": 9570,
+    "exp": 5050,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 15,
+        "condition": 0
+      },
+      {
+        "id": 214,
+        "rate": 35,
+        "condition": 0
+      },
+      {
+        "id": 225,
+        "rate": 30,
+        "condition": 0
+      },
+      {
+        "id": 700,
+        "rate": 20,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510092,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 111,
+    "eva": 7,
+    "cri": 5,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "光": 55,
+      "闇": -35
+    },
+    "resists": {
+      "Poison": 80,
+      "ToxicPoison": 80,
+      "Shock": 90,
+      "Fear": 95,
+      "InstantDeath": 100,
+      "Debuff": 80,
+      "Seal": 85
+    },
+    "traits": [],
+    "archives": [
+      "災いを光として崇める祭司。祈りのたび根脈が脈打つ。"
+    ],
+    "id": 510093,
+    "imageId": 510093,
+    "habitats": [
+      {
+        "mapId": "MAP000049",
+        "floors": [
+          {
+            "from": 1,
+            "to": 99
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "災光の祭司",
+    "race": "魔族",
+    "rank": 113,
+    "minF": 113,
+    "hp": 1434,
+    "mp": 372,
+    "atk": 108,
+    "def": 216,
+    "spd": 251,
+    "mag": 468,
+    "mdef": 324,
+    "gold": 9815,
+    "exp": 5175,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 218,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 227,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 604,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 408,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510093,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 111,
+    "eva": 5,
+    "cri": 10,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "闇": 40,
+      "混沌": 30,
+      "光": -25
+    },
+    "resists": {
+      "Poison": 80,
+      "ToxicPoison": 80,
+      "Shock": 90,
+      "Fear": 95,
+      "InstantDeath": 100,
+      "Debuff": 80,
+      "Seal": 85
+    },
+    "traits": [],
+    "archives": [
+      "切られても根から這い戻る魔獣。執念だけで傷口を塞ぐ。"
+    ],
+    "id": 510094,
+    "imageId": 510094,
+    "habitats": [
+      {
+        "mapId": "MAP000049",
+        "floors": [
+          {
+            "from": 1,
+            "to": 99
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "執念の根獣",
+    "race": "獣",
+    "rank": 114,
+    "minF": 114,
+    "hp": 1656,
+    "mp": 226,
+    "atk": 454,
+    "def": 280,
+    "spd": 259,
+    "mag": 221,
+    "mdef": 243,
+    "gold": 10060,
+    "exp": 5300,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 148,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 234,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 313,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 711,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510094,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 111,
+    "eva": 9,
+    "cri": 14,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": true,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "混沌": 55,
+      "光": 20,
+      "闇": 20
+    },
+    "resists": {
+      "Poison": 80,
+      "ToxicPoison": 80,
+      "Shock": 90,
+      "Fear": 95,
+      "InstantDeath": 100,
+      "Debuff": 80,
+      "Seal": 85
+    },
+    "traits": [],
+    "archives": [
+      "ジャゴレアの根から分かれた幼体。光と闇を区別せず飲み込む。"
+    ],
+    "id": 510095,
+    "imageId": 510095,
+    "habitats": [
+      {
+        "mapId": "MAP000049",
+        "floors": [
+          {
+            "from": 1,
+            "to": 99
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "ジャゴレアの落胤",
+    "race": "魔族",
+    "rank": 115,
+    "minF": 115,
+    "hp": 2491,
+    "mp": 352,
+    "atk": 448,
+    "def": 317,
+    "spd": 278,
+    "mag": 451,
+    "mdef": 320,
+    "gold": 17003,
+    "exp": 8951,
+    "actCount": 2,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 238,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 242,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 315,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 705,
+        "rate": 15,
+        "condition": 2
+      }
+    ],
+    "dropSeed": 510095,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 112,
+    "eva": 2,
+    "cri": 4,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "混沌": 55,
+      "雷": -25
+    },
+    "resists": {
+      "Poison": 85,
+      "ToxicPoison": 85,
+      "Shock": 95,
+      "Fear": 100,
+      "InstantDeath": 100,
+      "Debuff": 85,
+      "Seal": 90
+    },
+    "traits": [],
+    "archives": [
+      "時間の歯車を胸に埋めた番人。侵入者の動きを一瞬だけ遅らせる。"
+    ],
+    "id": 510101,
+    "imageId": 510101,
+    "habitats": [
+      {
+        "mapId": "MAP000050",
+        "floors": [
+          {
+            "from": 1,
+            "to": 99
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "時牢の番人",
+    "race": "機械",
+    "rank": 116,
+    "minF": 116,
+    "hp": 2052,
+    "mp": 248,
+    "atk": 369,
+    "def": 349,
+    "spd": 198,
+    "mag": 210,
+    "mdef": 318,
+    "gold": 10550,
+    "exp": 5550,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 35,
+        "condition": 0
+      },
+      {
+        "id": 157,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 220,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 602,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510101,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 112,
+    "eva": 12,
+    "cri": 12,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "混沌": 55,
+      "光": -25
+    },
+    "resists": {
+      "Poison": 85,
+      "ToxicPoison": 85,
+      "Shock": 95,
+      "Fear": 100,
+      "InstantDeath": 100,
+      "Debuff": 85,
+      "Seal": 90
+    },
+    "traits": [],
+    "archives": [
+      "異なる時代の獣が継ぎ合わされた魔物。攻撃の間合いが絶えず変わる。"
+    ],
+    "id": 510102,
+    "imageId": 510102,
+    "habitats": [
+      {
+        "mapId": "MAP000050",
+        "floors": [
+          {
+            "from": 1,
+            "to": 99
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "逆刻のキマイラ",
+    "race": "獣",
+    "rank": 117,
+    "minF": 117,
+    "hp": 1598,
+    "mp": 283,
+    "atk": 414,
+    "def": 237,
+    "spd": 329,
+    "mag": 360,
+    "mdef": 251,
+    "gold": 10795,
+    "exp": 5675,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 148,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 239,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 315,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 711,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510102,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 112,
+    "eva": 7,
+    "cri": 5,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "混沌": 60,
+      "光": -30
+    },
+    "resists": {
+      "Poison": 85,
+      "ToxicPoison": 85,
+      "Shock": 95,
+      "Fear": 100,
+      "InstantDeath": 100,
+      "Debuff": 85,
+      "Seal": 90
+    },
+    "traits": [],
+    "archives": [
+      "失われた時間を珠に封じる魔女。砕けた未来を混沌の術へ変える。"
+    ],
+    "id": 510103,
+    "imageId": 510103,
+    "habitats": [
+      {
+        "mapId": "MAP000050",
+        "floors": [
+          {
+            "from": 1,
+            "to": 99
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "虚時の魔女",
+    "race": "魔族",
+    "rank": 118,
+    "minF": 118,
+    "hp": 1552,
+    "mp": 398,
+    "atk": 115,
+    "def": 228,
+    "spd": 266,
+    "mag": 496,
+    "mdef": 343,
+    "gold": 11040,
+    "exp": 5800,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 220,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 238,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 245,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 604,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510103,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 112,
+    "eva": 5,
+    "cri": 10,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "混沌": 55,
+      "闇": 30
+    },
+    "resists": {
+      "Poison": 85,
+      "ToxicPoison": 85,
+      "Shock": 95,
+      "Fear": 100,
+      "InstantDeath": 100,
+      "Debuff": 85,
+      "Seal": 90
+    },
+    "traits": [],
+    "archives": [
+      "次元の裂け目を刃にまとわせる竜兵。防具ごと空間を切り離す。"
+    ],
+    "id": 510104,
+    "imageId": 510104,
+    "habitats": [
+      {
+        "mapId": "MAP000050",
+        "floors": [
+          {
+            "from": 1,
+            "to": 99
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "次元断ちの竜兵",
+    "race": "竜人",
+    "rank": 119,
+    "minF": 119,
+    "hp": 1791,
+    "mp": 242,
+    "atk": 482,
+    "def": 296,
+    "spd": 274,
+    "mag": 234,
+    "mdef": 257,
+    "gold": 11285,
+    "exp": 5925,
+    "actCount": 1,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 157,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 165,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 315,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 714,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "dropSeed": 510104,
+    "abyssRecruitable": true
+  },
+  {
+    "hit": 112,
+    "eva": 9,
+    "cri": 14,
+    "isBoss": false,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "isElite": true,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "混沌": 70,
+      "光": 20,
+      "闇": 20
+    },
+    "resists": {
+      "Poison": 85,
+      "ToxicPoison": 85,
+      "Shock": 95,
+      "Fear": 100,
+      "InstantDeath": 100,
+      "Debuff": 85,
+      "Seal": 90
+    },
+    "traits": [],
+    "archives": [
+      "牢獄の時間流を管理する看守長。戦場そのものを混沌へ傾ける。"
+    ],
+    "id": 510105,
+    "imageId": 510105,
+    "habitats": [
+      {
+        "mapId": "MAP000050",
+        "floors": [
+          {
+            "from": 1,
+            "to": 99
+          }
+        ]
+      }
+    ],
+    "abyssFloors": [],
+    "name": "混沌牢の看守長",
+    "race": "魔族",
+    "rank": 120,
+    "minF": 120,
+    "hp": 2691,
+    "mp": 375,
+    "atk": 474,
+    "def": 335,
+    "spd": 294,
+    "mag": 478,
+    "mdef": 338,
+    "gold": 19024,
+    "exp": 9982,
+    "actCount": 2,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 238,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 242,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 245,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 705,
+        "rate": 15,
+        "condition": 2
+      }
+    ],
+    "dropSeed": 510105,
+    "abyssRecruitable": true
+  }
+];
+
+// 深淵ワールドの固定ボス正本。イベント側はこのIDだけを参照する。
+const FIXED_ABYSS_REGION_BOSSES = [
+  {
+    "hit": 140,
+    "eva": 12,
+    "cri": 18,
+    "isBoss": true,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "drops": {
+      "normal": {
+        "id": 105,
+        "rate": 100
+      },
+      "rare": {
+        "id": 106,
+        "rate": 5
+      }
+    },
+    "elmRes": {
+      "光": 70
+    },
+    "resists": {
+      "Poison": 100,
+      "ToxicPoison": 100,
+      "Shock": 90,
+      "Fear": 200,
+      "InstantDeath": 200,
+      "Debuff": 80,
+      "Seal": 120
+    },
+    "traits": [
+      {
+        "id": 19,
+        "level": 5
+      },
+      {
+        "id": 52,
+        "level": 3
+      }
+    ],
+    "archives": [
+      "カルメナ北門を守る剣将。光をまとった連撃で退路を断つ。"
+    ],
+    "id": 511010,
+    "imageId": 511010,
+    "name": "深淵門将レオン",
+    "race": "魔族",
+    "rank": 85,
+    "minF": 85,
+    "hp": 10500,
+    "mp": 900,
+    "atk": 285,
+    "def": 275,
+    "spd": 230,
+    "mag": 250,
+    "mdef": 270,
+    "gold": 0,
+    "exp": 0,
+    "actCount": 2,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 156,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 227,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 408,
+        "rate": 25,
+        "condition": 2
+      }
+    ]
+  },
+  {
+    "hit": 140,
+    "eva": 12,
+    "cri": 18,
+    "isBoss": true,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "drops": {
+      "normal": {
+        "id": 102,
+        "rate": 100
+      },
+      "rare": {
+        "id": 106,
+        "rate": 5
+      }
+    },
+    "elmRes": {
+      "闇": 70
+    },
+    "resists": {
+      "Poison": 100,
+      "ToxicPoison": 100,
+      "Shock": 90,
+      "Fear": 200,
+      "InstantDeath": 200,
+      "Debuff": 80,
+      "Seal": 120
+    },
+    "traits": [
+      {
+        "id": 19,
+        "level": 5
+      },
+      {
+        "id": 52,
+        "level": 3
+      }
+    ],
+    "archives": [
+      "カルメナ北門を守る獣将。重い一撃と混沌の術を同時に操る。"
+    ],
+    "id": 511020,
+    "imageId": 511020,
+    "name": "深淵門将グレン",
+    "race": "魔族",
+    "rank": 85,
+    "minF": 85,
+    "hp": 11500,
+    "mp": 850,
+    "atk": 305,
+    "def": 300,
+    "spd": 205,
+    "mag": 265,
+    "mdef": 285,
+    "gold": 0,
+    "exp": 0,
+    "actCount": 2,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 157,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 225,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 408,
+        "rate": 25,
+        "condition": 2
+      }
+    ]
+  },
+  {
+    "hit": 140,
+    "eva": 12,
+    "cri": 18,
+    "isBoss": true,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "drops": {
+      "normal": {
+        "id": 99,
+        "rate": 100
+      },
+      "rare": {
+        "id": 106,
+        "rate": 5
+      }
+    },
+    "elmRes": {
+      "雷": 70
+    },
+    "resists": {
+      "Poison": 100,
+      "ToxicPoison": 100,
+      "Shock": 90,
+      "Fear": 200,
+      "InstantDeath": 200,
+      "Debuff": 80,
+      "Seal": 120
+    },
+    "traits": [
+      {
+        "id": 19,
+        "level": 5
+      },
+      {
+        "id": 52,
+        "level": 3
+      }
+    ],
+    "archives": [
+      "黒雷を受け入れたレナード。雷霆を連ね、結界の核を守る。"
+    ],
+    "id": 511030,
+    "imageId": 511030,
+    "name": "黒雷のレナード",
+    "race": "魔族",
+    "rank": 95,
+    "minF": 95,
+    "hp": 15500,
+    "mp": 1200,
+    "atk": 340,
+    "def": 325,
+    "spd": 275,
+    "mag": 365,
+    "mdef": 335,
+    "gold": 0,
+    "exp": 0,
+    "actCount": 2,
+    "acts": [
+      {
+        "id": 118,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 226,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 230,
+        "rate": 30,
+        "condition": 0
+      },
+      {
+        "id": 237,
+        "rate": 25,
+        "condition": 2
+      }
+    ]
+  },
+  {
+    "hit": 140,
+    "eva": 12,
+    "cri": 18,
+    "isBoss": true,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "drops": {
+      "normal": {
+        "id": 99,
+        "rate": 100
+      },
+      "rare": {
+        "id": 106,
+        "rate": 5
+      }
+    },
+    "elmRes": {
+      "風": 70
+    },
+    "resists": {
+      "Poison": 100,
+      "ToxicPoison": 100,
+      "Shock": 90,
+      "Fear": 200,
+      "InstantDeath": 200,
+      "Debuff": 80,
+      "Seal": 120
+    },
+    "traits": [
+      {
+        "id": 19,
+        "level": 5
+      },
+      {
+        "id": 52,
+        "level": 3
+      }
+    ],
+    "archives": [
+      "死者の風をまとったエリシア。速度と風術で戦列を崩す。"
+    ],
+    "id": 511040,
+    "imageId": 511040,
+    "name": "死風のエリシア",
+    "race": "魔族",
+    "rank": 95,
+    "minF": 95,
+    "hp": 15000,
+    "mp": 1250,
+    "atk": 315,
+    "def": 300,
+    "spd": 320,
+    "mag": 370,
+    "mdef": 330,
+    "gold": 0,
+    "exp": 0,
+    "actCount": 2,
+    "acts": [
+      {
+        "id": 127,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 215,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 222,
+        "rate": 30,
+        "condition": 0
+      },
+      {
+        "id": 236,
+        "rate": 25,
+        "condition": 2
+      }
+    ]
+  },
+  {
+    "hit": 140,
+    "eva": 12,
+    "cri": 18,
+    "isBoss": true,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "drops": {
+      "normal": {
+        "id": 99,
+        "rate": 100
+      },
+      "rare": {
+        "id": 106,
+        "rate": 5
+      }
+    },
+    "elmRes": {
+      "水": 70
+    },
+    "resists": {
+      "Poison": 100,
+      "ToxicPoison": 100,
+      "Shock": 90,
+      "Fear": 200,
+      "InstantDeath": 200,
+      "Debuff": 80,
+      "Seal": 120
+    },
+    "traits": [
+      {
+        "id": 19,
+        "level": 5
+      },
+      {
+        "id": 52,
+        "level": 3
+      }
+    ],
+    "archives": [
+      "極零の力に囚われたシーリス。氷結と回復を織り交ぜる。"
+    ],
+    "id": 511050,
+    "imageId": 511050,
+    "name": "極零のシーリス",
+    "race": "魔族",
+    "rank": 105,
+    "minF": 105,
+    "hp": 19000,
+    "mp": 1500,
+    "atk": 350,
+    "def": 390,
+    "spd": 285,
+    "mag": 405,
+    "mdef": 410,
+    "gold": 0,
+    "exp": 0,
+    "actCount": 2,
+    "acts": [
+      {
+        "id": 139,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 221,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 235,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 307,
+        "rate": 30,
+        "condition": 2
+      }
+    ]
+  },
+  {
+    "hit": 140,
+    "eva": 12,
+    "cri": 18,
+    "isBoss": true,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "drops": {
+      "normal": {
+        "id": 99,
+        "rate": 100
+      },
+      "rare": {
+        "id": 106,
+        "rate": 5
+      }
+    },
+    "elmRes": {
+      "火": 70
+    },
+    "resists": {
+      "Poison": 100,
+      "ToxicPoison": 100,
+      "Shock": 90,
+      "Fear": 200,
+      "InstantDeath": 200,
+      "Debuff": 80,
+      "Seal": 120
+    },
+    "traits": [
+      {
+        "id": 19,
+        "level": 5
+      },
+      {
+        "id": 52,
+        "level": 3
+      }
+    ],
+    "archives": [
+      "焦熱を鎧としたグラド。炎の連撃で長期戦を許さない。"
+    ],
+    "id": 511060,
+    "imageId": 511060,
+    "name": "焦熱のグラド",
+    "race": "魔族",
+    "rank": 105,
+    "minF": 105,
+    "hp": 19500,
+    "mp": 1450,
+    "atk": 390,
+    "def": 365,
+    "spd": 300,
+    "mag": 420,
+    "mdef": 375,
+    "gold": 0,
+    "exp": 0,
+    "actCount": 2,
+    "acts": [
+      {
+        "id": 155,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 224,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 243,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 310,
+        "rate": 30,
+        "condition": 2
+      }
+    ]
+  },
+  {
+    "hit": 140,
+    "eva": 12,
+    "cri": 18,
+    "isBoss": true,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "drops": {
+      "normal": {
+        "id": 99,
+        "rate": 100
+      },
+      "rare": {
+        "id": 106,
+        "rate": 5
+      }
+    },
+    "elmRes": {
+      "闇": 70
+    },
+    "resists": {
+      "Poison": 100,
+      "ToxicPoison": 100,
+      "Shock": 90,
+      "Fear": 200,
+      "InstantDeath": 200,
+      "Debuff": 80,
+      "Seal": 120
+    },
+    "traits": [
+      {
+        "id": 19,
+        "level": 5
+      },
+      {
+        "id": 52,
+        "level": 3
+      }
+    ],
+    "archives": [
+      "夢と闇に沈んだ黒騎士ヴェルド。光と闇の境を断ち切る。"
+    ],
+    "id": 511070,
+    "imageId": 511070,
+    "name": "昏迷の黒騎士ヴェルド",
+    "race": "魔族",
+    "rank": 110,
+    "minF": 110,
+    "hp": 22000,
+    "mp": 1750,
+    "atk": 410,
+    "def": 420,
+    "spd": 330,
+    "mag": 430,
+    "mdef": 440,
+    "gold": 0,
+    "exp": 0,
+    "actCount": 2,
+    "acts": [
+      {
+        "id": 140,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 166,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 234,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 314,
+        "rate": 30,
+        "condition": 2
+      }
+    ]
+  },
+  {
+    "hit": 140,
+    "eva": 12,
+    "cri": 18,
+    "isBoss": true,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "drops": {
+      "normal": {
+        "id": 99,
+        "rate": 100
+      },
+      "rare": {
+        "id": 106,
+        "rate": 5
+      }
+    },
+    "elmRes": {
+      "混沌": 70
+    },
+    "resists": {
+      "Poison": 100,
+      "ToxicPoison": 100,
+      "Shock": 90,
+      "Fear": 200,
+      "InstantDeath": 200,
+      "Debuff": 80,
+      "Seal": 120
+    },
+    "traits": [
+      {
+        "id": 19,
+        "level": 5
+      },
+      {
+        "id": 52,
+        "level": 3
+      }
+    ],
+    "archives": [
+      "災禍の根へ祈りを捧げ続ける神官。執念が混沌を増幅する。"
+    ],
+    "id": 511080,
+    "imageId": 511080,
+    "name": "妄執の神官ジャスパー",
+    "race": "魔族",
+    "rank": 115,
+    "minF": 115,
+    "hp": 25000,
+    "mp": 1900,
+    "atk": 405,
+    "def": 445,
+    "spd": 315,
+    "mag": 470,
+    "mdef": 465,
+    "gold": 0,
+    "exp": 0,
+    "actCount": 2,
+    "acts": [
+      {
+        "id": 160,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 227,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 232,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 247,
+        "rate": 30,
+        "condition": 2
+      }
+    ]
+  },
+  {
+    "hit": 140,
+    "eva": 12,
+    "cri": 18,
+    "isBoss": true,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "drops": {
+      "normal": {
+        "id": 99,
+        "rate": 100
+      },
+      "rare": {
+        "id": 106,
+        "rate": 5
+      }
+    },
+    "elmRes": {
+      "混沌": 70
+    },
+    "resists": {
+      "Poison": 100,
+      "ToxicPoison": 100,
+      "Shock": 90,
+      "Fear": 200,
+      "InstantDeath": 200,
+      "Debuff": 80,
+      "Seal": 120
+    },
+    "traits": [
+      {
+        "id": 19,
+        "level": 5
+      },
+      {
+        "id": 52,
+        "level": 3
+      }
+    ],
+    "archives": [
+      "次元牢獄を統べる混沌姫。旧きリリスの力を完全に解放している。"
+    ],
+    "id": 511090,
+    "imageId": 511090,
+    "name": "混沌姫イルミナシア",
+    "race": "魔族",
+    "rank": 120,
+    "minF": 120,
+    "hp": 29000,
+    "mp": 2200,
+    "atk": 455,
+    "def": 470,
+    "spd": 360,
+    "mag": 510,
+    "mdef": 490,
+    "gold": 0,
+    "exp": 0,
+    "actCount": 3,
+    "acts": [
+      {
+        "id": 157,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 238,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 245,
+        "rate": 30,
+        "condition": 0
+      },
+      {
+        "id": 315,
+        "rate": 25,
+        "condition": 2
+      }
+    ]
+  },
+  {
+    "hit": 140,
+    "eva": 12,
+    "cri": 18,
+    "isBoss": true,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "火": 70
+    },
+    "resists": {
+      "Poison": 100,
+      "ToxicPoison": 100,
+      "Shock": 90,
+      "Fear": 200,
+      "InstantDeath": 200,
+      "Debuff": 80,
+      "Seal": 120
+    },
+    "traits": [
+      {
+        "id": 19,
+        "level": 5
+      },
+      {
+        "id": 52,
+        "level": 3
+      }
+    ],
+    "archives": [
+      "炎のプリズムに宿る大精霊。火の加護に耐える者を試す。"
+    ],
+    "id": 511101,
+    "imageId": 511101,
+    "name": "火の大精霊",
+    "race": "魔族",
+    "rank": 112,
+    "minF": 112,
+    "hp": 24000,
+    "mp": 1800,
+    "atk": 390,
+    "def": 400,
+    "spd": 330,
+    "mag": 470,
+    "mdef": 420,
+    "gold": 0,
+    "exp": 0,
+    "actCount": 2,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 224,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 233,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 310,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 503,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "abyssSpiritElement": "火"
+  },
+  {
+    "hit": 140,
+    "eva": 12,
+    "cri": 18,
+    "isBoss": true,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "水": 70
+    },
+    "resists": {
+      "Poison": 100,
+      "ToxicPoison": 100,
+      "Shock": 90,
+      "Fear": 200,
+      "InstantDeath": 200,
+      "Debuff": 80,
+      "Seal": 120
+    },
+    "traits": [
+      {
+        "id": 19,
+        "level": 5
+      },
+      {
+        "id": 52,
+        "level": 3
+      }
+    ],
+    "archives": [
+      "水のプリズムに宿る大精霊。氷と癒やしを同時に操る。"
+    ],
+    "id": 511102,
+    "imageId": 511102,
+    "name": "水の大精霊",
+    "race": "魔族",
+    "rank": 112,
+    "minF": 112,
+    "hp": 24000,
+    "mp": 1800,
+    "atk": 360,
+    "def": 430,
+    "spd": 315,
+    "mag": 475,
+    "mdef": 455,
+    "gold": 0,
+    "exp": 0,
+    "actCount": 2,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 221,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 235,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 307,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 404,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "abyssSpiritElement": "水"
+  },
+  {
+    "hit": 140,
+    "eva": 12,
+    "cri": 18,
+    "isBoss": true,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "風": 70
+    },
+    "resists": {
+      "Poison": 100,
+      "ToxicPoison": 100,
+      "Shock": 90,
+      "Fear": 200,
+      "InstantDeath": 200,
+      "Debuff": 80,
+      "Seal": 120
+    },
+    "traits": [
+      {
+        "id": 19,
+        "level": 5
+      },
+      {
+        "id": 52,
+        "level": 3
+      }
+    ],
+    "archives": [
+      "風のプリズムに宿る大精霊。目で追えない速さで間合いを変える。"
+    ],
+    "id": 511103,
+    "imageId": 511103,
+    "name": "風の大精霊",
+    "race": "魔族",
+    "rank": 112,
+    "minF": 112,
+    "hp": 23500,
+    "mp": 1800,
+    "atk": 375,
+    "def": 365,
+    "spd": 390,
+    "mag": 465,
+    "mdef": 420,
+    "gold": 0,
+    "exp": 0,
+    "actCount": 2,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 222,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 236,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 311,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 502,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "abyssSpiritElement": "風"
+  },
+  {
+    "hit": 140,
+    "eva": 12,
+    "cri": 18,
+    "isBoss": true,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "雷": 70
+    },
+    "resists": {
+      "Poison": 100,
+      "ToxicPoison": 100,
+      "Shock": 90,
+      "Fear": 200,
+      "InstantDeath": 200,
+      "Debuff": 80,
+      "Seal": 120
+    },
+    "traits": [
+      {
+        "id": 19,
+        "level": 5
+      },
+      {
+        "id": 52,
+        "level": 3
+      }
+    ],
+    "archives": [
+      "雷のプリズムに宿る大精霊。連続する雷霆で守りを砕く。"
+    ],
+    "id": 511104,
+    "imageId": 511104,
+    "name": "雷の大精霊",
+    "race": "魔族",
+    "rank": 112,
+    "minF": 112,
+    "hp": 24000,
+    "mp": 1800,
+    "atk": 405,
+    "def": 390,
+    "spd": 350,
+    "mag": 470,
+    "mdef": 420,
+    "gold": 0,
+    "exp": 0,
+    "actCount": 2,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 226,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 230,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 237,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 601,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "abyssSpiritElement": "雷"
+  },
+  {
+    "hit": 140,
+    "eva": 12,
+    "cri": 18,
+    "isBoss": true,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "光": 70
+    },
+    "resists": {
+      "Poison": 100,
+      "ToxicPoison": 100,
+      "Shock": 90,
+      "Fear": 200,
+      "InstantDeath": 200,
+      "Debuff": 80,
+      "Seal": 120
+    },
+    "traits": [
+      {
+        "id": 19,
+        "level": 5
+      },
+      {
+        "id": 52,
+        "level": 3
+      }
+    ],
+    "archives": [
+      "光のプリズムに宿る大精霊。裁きと浄化の光を放つ。"
+    ],
+    "id": 511105,
+    "imageId": 511105,
+    "name": "光の大精霊",
+    "race": "魔族",
+    "rank": 112,
+    "minF": 112,
+    "hp": 24500,
+    "mp": 1850,
+    "atk": 380,
+    "def": 410,
+    "spd": 340,
+    "mag": 485,
+    "mdef": 450,
+    "gold": 0,
+    "exp": 0,
+    "actCount": 2,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 227,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 228,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 312,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 408,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "abyssSpiritElement": "光"
+  },
+  {
+    "hit": 140,
+    "eva": 12,
+    "cri": 18,
+    "isBoss": true,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "闇": 70
+    },
+    "resists": {
+      "Poison": 100,
+      "ToxicPoison": 100,
+      "Shock": 90,
+      "Fear": 200,
+      "InstantDeath": 200,
+      "Debuff": 80,
+      "Seal": 120
+    },
+    "traits": [
+      {
+        "id": 19,
+        "level": 5
+      },
+      {
+        "id": 52,
+        "level": 3
+      }
+    ],
+    "archives": [
+      "闇のプリズムに宿る大精霊。影を重ねて魔力を封じる。"
+    ],
+    "id": 511106,
+    "imageId": 511106,
+    "name": "闇の大精霊",
+    "race": "魔族",
+    "rank": 112,
+    "minF": 112,
+    "hp": 24500,
+    "mp": 1850,
+    "atk": 390,
+    "def": 400,
+    "spd": 350,
+    "mag": 490,
+    "mdef": 445,
+    "gold": 0,
+    "exp": 0,
+    "actCount": 2,
+    "acts": [
+      {
+        "id": 1,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 225,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 234,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 314,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 604,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "abyssSpiritElement": "闇"
+  },
+  {
+    "hit": 140,
+    "eva": 12,
+    "cri": 18,
+    "isBoss": true,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "雷": 70
+    },
+    "resists": {
+      "Poison": 100,
+      "ToxicPoison": 100,
+      "Shock": 90,
+      "Fear": 200,
+      "InstantDeath": 200,
+      "Debuff": 80,
+      "Seal": 120
+    },
+    "traits": [
+      {
+        "id": 19,
+        "level": 5
+      },
+      {
+        "id": 52,
+        "level": 3
+      }
+    ],
+    "archives": [
+      "ヴェグナシスに混ぜられたレナードの雷核。"
+    ],
+    "id": 512001,
+    "imageId": 512000,
+    "name": "雷柱レナード",
+    "race": "魔族",
+    "rank": 122,
+    "minF": 122,
+    "hp": 15500,
+    "mp": 1800,
+    "atk": 430,
+    "def": 420,
+    "spd": 335,
+    "mag": 465,
+    "mdef": 430,
+    "gold": 0,
+    "exp": 0,
+    "actCount": 2,
+    "acts": [
+      {
+        "id": 106,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 226,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 230,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 237,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 601,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "sharedVisualGroup": "vegnasis",
+    "linkedBattleGroup": "vegnasis",
+    "linkedDeathIndex": 0,
+    "gutsLevel": 10
+  },
+  {
+    "hit": 140,
+    "eva": 12,
+    "cri": 18,
+    "isBoss": true,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "風": 70
+    },
+    "resists": {
+      "Poison": 100,
+      "ToxicPoison": 100,
+      "Shock": 90,
+      "Fear": 200,
+      "InstantDeath": 200,
+      "Debuff": 80,
+      "Seal": 120
+    },
+    "traits": [
+      {
+        "id": 19,
+        "level": 5
+      },
+      {
+        "id": 52,
+        "level": 3
+      }
+    ],
+    "archives": [
+      "ヴェグナシスに混ぜられたエリシアの風核。"
+    ],
+    "id": 512002,
+    "imageId": 512000,
+    "name": "風柱エリシア",
+    "race": "魔族",
+    "rank": 122,
+    "minF": 122,
+    "hp": 15000,
+    "mp": 1800,
+    "atk": 405,
+    "def": 390,
+    "spd": 390,
+    "mag": 470,
+    "mdef": 420,
+    "gold": 0,
+    "exp": 0,
+    "actCount": 2,
+    "acts": [
+      {
+        "id": 103,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 222,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 236,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 311,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 601,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "sharedVisualGroup": "vegnasis",
+    "linkedBattleGroup": "vegnasis",
+    "linkedDeathIndex": 1,
+    "gutsLevel": 10
+  },
+  {
+    "hit": 140,
+    "eva": 12,
+    "cri": 18,
+    "isBoss": true,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "水": 70
+    },
+    "resists": {
+      "Poison": 100,
+      "ToxicPoison": 100,
+      "Shock": 90,
+      "Fear": 200,
+      "InstantDeath": 200,
+      "Debuff": 80,
+      "Seal": 120
+    },
+    "traits": [
+      {
+        "id": 19,
+        "level": 5
+      },
+      {
+        "id": 52,
+        "level": 3
+      }
+    ],
+    "archives": [
+      "ヴェグナシスに混ぜられたシーリスの水核。"
+    ],
+    "id": 512003,
+    "imageId": 512000,
+    "name": "水柱シーリス",
+    "race": "魔族",
+    "rank": 122,
+    "minF": 122,
+    "hp": 16000,
+    "mp": 1850,
+    "atk": 390,
+    "def": 445,
+    "spd": 330,
+    "mag": 475,
+    "mdef": 455,
+    "gold": 0,
+    "exp": 0,
+    "actCount": 2,
+    "acts": [
+      {
+        "id": 105,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 221,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 235,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 307,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 503,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "sharedVisualGroup": "vegnasis",
+    "linkedBattleGroup": "vegnasis",
+    "linkedDeathIndex": 2,
+    "gutsLevel": 10
+  },
+  {
+    "hit": 140,
+    "eva": 12,
+    "cri": 18,
+    "isBoss": true,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "火": 70
+    },
+    "resists": {
+      "Poison": 100,
+      "ToxicPoison": 100,
+      "Shock": 90,
+      "Fear": 200,
+      "InstantDeath": 200,
+      "Debuff": 80,
+      "Seal": 120
+    },
+    "traits": [
+      {
+        "id": 19,
+        "level": 5
+      },
+      {
+        "id": 52,
+        "level": 3
+      }
+    ],
+    "archives": [
+      "ヴェグナシスに混ぜられたグラドの火核。"
+    ],
+    "id": 512004,
+    "imageId": 512000,
+    "name": "火柱グラド",
+    "race": "魔族",
+    "rank": 122,
+    "minF": 122,
+    "hp": 16000,
+    "mp": 1800,
+    "atk": 450,
+    "def": 415,
+    "spd": 345,
+    "mag": 470,
+    "mdef": 430,
+    "gold": 0,
+    "exp": 0,
+    "actCount": 2,
+    "acts": [
+      {
+        "id": 104,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 224,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 233,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 310,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 500,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "sharedVisualGroup": "vegnasis",
+    "linkedBattleGroup": "vegnasis",
+    "linkedDeathIndex": 3,
+    "gutsLevel": 10
+  },
+  {
+    "hit": 140,
+    "eva": 12,
+    "cri": 18,
+    "isBoss": true,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "闇": 70
+    },
+    "resists": {
+      "Poison": 100,
+      "ToxicPoison": 100,
+      "Shock": 90,
+      "Fear": 200,
+      "InstantDeath": 200,
+      "Debuff": 80,
+      "Seal": 120
+    },
+    "traits": [
+      {
+        "id": 19,
+        "level": 5
+      },
+      {
+        "id": 52,
+        "level": 3
+      }
+    ],
+    "archives": [
+      "ヴェグナシスに混ぜられたヴェルドの闇核。"
+    ],
+    "id": 512005,
+    "imageId": 512000,
+    "name": "闇柱ヴェルド",
+    "race": "魔族",
+    "rank": 122,
+    "minF": 122,
+    "hp": 15500,
+    "mp": 1900,
+    "atk": 420,
+    "def": 410,
+    "spd": 355,
+    "mag": 485,
+    "mdef": 440,
+    "gold": 0,
+    "exp": 0,
+    "actCount": 2,
+    "acts": [
+      {
+        "id": 114,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 225,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 234,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 314,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 604,
+        "rate": 15,
+        "condition": 0
+      }
+    ],
+    "sharedVisualGroup": "vegnasis",
+    "linkedBattleGroup": "vegnasis",
+    "linkedDeathIndex": 4,
+    "gutsLevel": 10
+  },
+  {
+    "hit": 140,
+    "eva": 12,
+    "cri": 18,
+    "isBoss": true,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "混沌": 70
+    },
+    "resists": {
+      "Poison": 100,
+      "ToxicPoison": 100,
+      "Shock": 90,
+      "Fear": 200,
+      "InstantDeath": 200,
+      "Debuff": 80,
+      "Seal": 120
+    },
+    "traits": [
+      {
+        "id": 19,
+        "level": 5
+      },
+      {
+        "id": 52,
+        "level": 3
+      }
+    ],
+    "archives": [
+      "深淵世界の王。混沌を衣として祭壇の最奥に立つ。"
+    ],
+    "id": 512100,
+    "imageId": 512100,
+    "name": "深淵王アゼルガラグ",
+    "race": "魔族",
+    "rank": 125,
+    "minF": 125,
+    "hp": 38000,
+    "mp": 2600,
+    "atk": 500,
+    "def": 520,
+    "spd": 365,
+    "mag": 535,
+    "mdef": 520,
+    "gold": 0,
+    "exp": 0,
+    "actCount": 3,
+    "acts": [
+      {
+        "id": 166,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 245,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 700101,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 315,
+        "rate": 30,
+        "condition": 2
+      }
+    ],
+    "phaseTransitionMonsterId": 512101,
+    "phaseTransitionConversation": "ABYSS_AZELGARAG_TRANSFORM",
+    "octaprismTarget": true
+  },
+  {
+    "hit": 140,
+    "eva": 12,
+    "cri": 18,
+    "isBoss": true,
+    "isRare": false,
+    "isEstark": false,
+    "isSpecialBoss": false,
+    "drops": {
+      "normal": {
+        "id": null,
+        "rate": 0
+      },
+      "rare": {
+        "id": null,
+        "rate": 0
+      }
+    },
+    "elmRes": {
+      "混沌": 70
+    },
+    "resists": {
+      "Poison": 100,
+      "ToxicPoison": 100,
+      "Shock": 90,
+      "Fear": 200,
+      "InstantDeath": 200,
+      "Debuff": 80,
+      "Seal": 120
+    },
+    "traits": [
+      {
+        "id": 19,
+        "level": 5
+      },
+      {
+        "id": 52,
+        "level": 3
+      }
+    ],
+    "archives": [
+      "光の加護に抗い、深淵そのものへ変じたアゼルガラグの終極形態。"
+    ],
+    "id": 512101,
+    "imageId": 512101,
+    "name": "深淵王アゼルガラグ・終極",
+    "race": "魔族",
+    "rank": 130,
+    "minF": 130,
+    "hp": 48000,
+    "mp": 3000,
+    "atk": 560,
+    "def": 585,
+    "spd": 405,
+    "mag": 600,
+    "mdef": 580,
+    "gold": 0,
+    "exp": 0,
+    "actCount": 3,
+    "acts": [
+      {
+        "id": 166,
+        "rate": 20,
+        "condition": 0
+      },
+      {
+        "id": 245,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 700101,
+        "rate": 25,
+        "condition": 0
+      },
+      {
+        "id": 315,
+        "rate": 30,
+        "condition": 2
+      }
+    ],
+    "isAzelgaragFinalForm": true,
+    "octaprismTarget": true,
+    "gutsLevel": 12
+  }
+];
+
 const FIXED_RARE_MONSTERS = [
   {"hit":100,"eva":25,"cri":20,"isBoss":false,"isRare":true,"isEstark":false,"isSpecialBoss":false,"drops":{"normal":{"id":102,"rate":20},"rare":{"id":106,"rate":10}},"elmRes":{"火":120,"水":120,"風":120,"雷":120,"光":120,"闇":120,"混沌":120,"json":0},"resists":{"Poison":100,"Shock":100,"Fear":50,"InstantDeath":100,"Debuff":100,"Seal":100},"traits":[],"archives":["とても固く逃げ足が速いが、倒すと大きな経験を得られるとして人気の魔物。"],"id":200201,"name":"メタルジェリー","race":"粘体","rank":10,"minF":1,"hp":2,"mp":67,"atk":3,"def":9999,"spd":210,"mag":23,"mdef":9999,"gold":50,"exp":2000,"actCount":1,"acts":[{"id":1,"rate":20,"condition":0},{"id":200,"rate":20,"condition":0},{"id":9,"rate":60,"condition":0}]},
   {"hit":100,"eva":25,"cri":20,"isBoss":false,"isRare":true,"isEstark":false,"isSpecialBoss":false,"drops":{"normal":{"id":103,"rate":20},"rare":{"id":106,"rate":10}},"elmRes":{"火":1000,"水":1000,"風":1000,"雷":1000,"光":1000,"闇":1000,"混沌":1000,"json":0},"resists":{"Poison":100,"Shock":100,"Fear":50,"InstantDeath":1000,"Debuff":100,"Seal":100},"traits":[],"archives":[],"id":200202,"name":"ロンリーメタル","race":"粘体","rank":60,"minF":51,"hp":4,"mp":67,"atk":8,"def":9999,"spd":336,"mag":106,"mdef":9999,"gold":200,"exp":20000,"actCount":1,"acts":[{"id":1,"rate":10,"condition":0},{"id":209,"rate":25,"condition":0},{"id":9,"rate":45,"condition":0}]},
@@ -1959,14 +9154,22 @@ const CHEST_TRAP_MONSTERS = [
   {"hit":138,"eva":18,"cri":20,"isBoss":false,"isRare":false,"isEstark":false,"isSpecialBoss":false,"isElite":true,"isChestTrap":true,"drops":{"normal":{"id":99,"rate":100},"rare":{"id":106,"rate":5}},"elmRes":{"火":45,"水":45,"雷":35,"風":35,"光":10,"闇":70,"混沌":60},"resists":{"Poison":95,"ToxicPoison":95,"Shock":85,"Fear":100,"Seal":95,"Debuff":70,"InstantDeath":100},"traits":[],"archives":["深層の混沌が宝匣を核に実体化したもの。二度の行動で獲物の退路を断つ。"],"id":120303,"name":"深淵宝匣アケロン","race":"無生物","rank":190,"minF":151,"hp":7020,"mp":1080,"atk":885,"def":942,"spd":603,"mag":957,"mdef":978,"gold":42000,"exp":63000,"actCount":2,"acts":[{"id":1,"rate":30,"condition":0},{"id":161,"rate":20,"condition":0},{"id":238,"rate":20,"condition":0},{"id":315,"rate":15,"condition":2},{"id":705,"rate":15,"condition":0}]}
 ];
 
+const ALL_FIXED_BOSS_MONSTERS = [
+  ...FIXED_BOSS_MONSTERS,
+  ...FIXED_ABYSS_REGION_BOSSES,
+];
+
 const FIXED_MONSTERS = [
   ...FIXED_RARE_MONSTERS,
-  ...FIXED_BOSS_MONSTERS,
+  ...ALL_FIXED_BOSS_MONSTERS,
   ...FIXED_SPECIAL_BOSSES,
   ...CHEST_TRAP_MONSTERS,
 ];
 
-const NORMAL_MONSTER_BASES = MONSTER_BANDS_1_200.flatMap((band) => band.monsters);
+const NORMAL_MONSTER_BASES = [
+  ...MONSTER_BANDS_1_200.flatMap((band) => band.monsters),
+  ...ABYSS_REGION_MONSTERS,
+];
 
 const ALL_MONSTER_BASES = [
   ...NORMAL_MONSTER_BASES,
@@ -2134,7 +9337,7 @@ function isAbyssRandomBossCandidate(monster) {
 }
 
 function getBossesForFloor(floor) {
-  return FIXED_BOSS_MONSTERS
+  return ALL_FIXED_BOSS_MONSTERS
     .filter((monster) => monster.isBoss && !monster.isRare && !monster.isEstark && !monster.isSpecialBoss && isAbyssRandomBossCandidate(monster) && monster.minF === floor)
     .map(cloneMonsterData);
 }
@@ -2268,8 +9471,8 @@ globalThis.MonsterData = {
   bands: MONSTER_BANDS_1_200,
   normalBases: NORMAL_MONSTER_BASES,
   rareMonsters: FIXED_RARE_MONSTERS,
-  bossMonsters: FIXED_BOSS_MONSTERS,
-  guildPromotionBosses: FIXED_BOSS_MONSTERS.filter((monster) => monster.isGuildPromotionBoss),
+  bossMonsters: ALL_FIXED_BOSS_MONSTERS,
+  guildPromotionBosses: ALL_FIXED_BOSS_MONSTERS.filter((monster) => monster.isGuildPromotionBoss),
   specialBosses: FIXED_SPECIAL_BOSSES,
   chestTrapMonsters: CHEST_TRAP_MONSTERS,
   fixedMonsters: FIXED_MONSTERS,

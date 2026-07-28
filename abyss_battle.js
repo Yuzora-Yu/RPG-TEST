@@ -3,7 +3,7 @@
     'use strict';
     if (!globalThis.Battle || !globalThis.App) return;
 
-    const VAGNASIS_IDS = new Set([512001,512002,512003,512004,512005]);
+    const VEGNASIS_IDS = new Set([512001,512002,512003,512004,512005]);
     const AZELGARAG_IDS = new Set([512100,512101]);
     const OCTAPRISM_ID = 701008;
     const SEALED_SKILL_IDS = Object.freeze([166,245,700101]);
@@ -66,14 +66,14 @@
     const originalInit = Battle.init.bind(Battle);
     Battle.init = () => {
         const ids = battleIds();
-        const isVagnasis = ids.some(id => VAGNASIS_IDS.has(id));
+        const isVegnasis = ids.some(id => VEGNASIS_IDS.has(id));
         const blessings = App.data?.progress?.abyssSpiritBlessings || {};
         const recognized = ['火','水','風','雷','光','闇'].filter(element => blessings[element]);
         if (App.data?.battle) {
-            App.data.battle.abyssSpiritFinalBlessing = isVagnasis && recognized.length > 0;
-            if (!isVagnasis) delete App.data.battle.abyssSpiritFinalBlessing;
+            App.data.battle.abyssSpiritFinalBlessing = isVegnasis && recognized.length > 0;
+            if (!isVegnasis) delete App.data.battle.abyssSpiritFinalBlessing;
         }
-        if (isVagnasis && recognized.length > 0 && storyScripts) {
+        if (isVegnasis && recognized.length > 0 && storyScripts) {
             storyScripts.ABYSS_SPIRIT_FINAL_BLESSING = [
                 {name:'システム',text:`${recognized.join('・')}のプリズムが呼応し、認められた精霊の光が一行を包んだ。`},
                 {name:'シャニー',text:'精霊たちが、この戦いだけ力を重ねてくれている。\n五つの属性を恐れず、魂の結び目を断とう。',charId:306}
@@ -89,7 +89,7 @@
     Battle.tryGutsSurvive = (unit, hpBeforeDamage) => {
         if (originalTryGuts(unit, hpBeforeDamage)) return true;
         const level = Number(unit?.gutsLevel || Battle.getMonsterBaseById?.(unitId(unit))?.gutsLevel || 0);
-        if (VAGNASIS_IDS.has(unitId(unit)) && Number(hpBeforeDamage) >= 2 && level > 0) {
+        if (VEGNASIS_IDS.has(unitId(unit)) && Number(hpBeforeDamage) >= 2 && level > 0) {
             const chance = Math.min(78, 18 + level * 5);
             if (Math.random() * 100 < chance) {
                 unit.hp = 1;
@@ -153,15 +153,15 @@
         }
 
         const aliveBefore = new Set((Battle.enemies || [])
-            .filter(enemy => VAGNASIS_IDS.has(unitId(enemy)) && !enemy.isDead && !enemy.isFled)
+            .filter(enemy => VEGNASIS_IDS.has(unitId(enemy)) && !enemy.isDead && !enemy.isFled)
             .map(enemy => enemy));
         originalUpdateDeadState();
         const newlyFallen = (Battle.enemies || []).filter(enemy =>
-            VAGNASIS_IDS.has(unitId(enemy)) && aliveBefore.has(enemy) && enemy.isDead && !enemy.abyssFallHandled
+            VEGNASIS_IDS.has(unitId(enemy)) && aliveBefore.has(enemy) && enemy.isDead && !enemy.abyssFallHandled
         );
         newlyFallen.forEach(enemy => {
             enemy.abyssFallHandled = true;
-            const remaining = Battle.enemies.filter(other => VAGNASIS_IDS.has(unitId(other)) && !other.isDead && !other.isFled && Number(other.hp || 0) > 0);
+            const remaining = Battle.enemies.filter(other => VEGNASIS_IDS.has(unitId(other)) && !other.isDead && !other.isFled && Number(other.hp || 0) > 0);
             remaining.forEach(other => {
                 other.baseMaxHp = Math.max(1, Math.floor(Number(other.baseMaxHp || other.hp || 1) * 1.18));
                 other.baseMaxMp = Math.max(0, Math.floor(Number(other.baseMaxMp || other.mp || 0) * 1.12));
@@ -182,11 +182,11 @@
     Battle.renderEnemies = () => {
         originalRenderEnemies();
         const enemies = Battle.enemies || [];
-        if (!enemies.some(enemy => VAGNASIS_IDS.has(unitId(enemy)))) return;
+        if (!enemies.some(enemy => VEGNASIS_IDS.has(unitId(enemy)))) return;
         const container = Battle.getEl?.('enemy-container') || document.getElementById('enemy-container');
         if (!container) return;
         container.querySelectorAll('.enemy-sprite img').forEach(img => { img.style.opacity = '0'; });
-        const sourceEnemy = enemies.find(enemy => VAGNASIS_IDS.has(unitId(enemy)) && !enemy.isDead) || enemies.find(enemy => VAGNASIS_IDS.has(unitId(enemy)));
+        const sourceEnemy = enemies.find(enemy => VEGNASIS_IDS.has(unitId(enemy)) && !enemy.isDead) || enemies.find(enemy => VEGNASIS_IDS.has(unitId(enemy)));
         const imageInfo = Battle.resolveMonsterImage?.(sourceEnemy, globalThis.GRAPHICS?.images || {});
         if (!imageInfo?.src) return;
         const shared = document.createElement('img');
