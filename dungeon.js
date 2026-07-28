@@ -2264,7 +2264,10 @@ const Dungeon = {
             return;
         }
 
-        Dungeon.map[y][x] = 'T'; 
+        Dungeon.map[y][x] = 'T';
+        // 開封状態を描画だけでなく探索正本へ即時反映する。
+        // この後の擬態箱・種・空箱などの早期returnでも、再読込時に宝箱へ戻らない。
+        Dungeon.saveMapData();
         Field.render();
         
         let msg = "";
