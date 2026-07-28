@@ -531,8 +531,24 @@ const MenuAllies = {
             const archiveBtn = `<button class="btn" style="width:100%; margin-top:5px; background:#602060; font-size:11px;" onclick="MenuAllyDetail.init(MenuAllies.getSelectedChar())">キャラクター詳細を見る</button>`;
             
             const ailmentLabels = { Poison:'毒', ToxicPoison:'猛毒', Shock:'感電', Fear:'怯え', Debuff:'弱体', InstantDeath:'即死', SkillSeal:'技封', SpellSeal:'魔封', HealSeal:'癒封' };
+            const environmentalElmRes = s.environmentalElmRes || {};
+            const environmentEntries = CONST.ELEMENTS
+                .map(element => [element, Number(environmentalElmRes[element] || 0)])
+                .filter(([, value]) => value !== 0);
+            const environmentSummary = environmentEntries.length
+                ? `<div style="margin-bottom:7px; padding:6px; border:1px solid #8a5a79; border-radius:4px; background:#2a1825; font-size:10px; color:#f0c7e5;">環境による属性耐性補正：${environmentEntries.map(([element,value]) => `${element}${value > 0 ? '+' : ''}${value}%`).join(' / ')}</div>`
+                : '';
+            const resistanceDisplay = element => {
+                const total = Number(s.elmRes?.[element] || 0);
+                const modifier = Number(environmentalElmRes[element] || 0);
+                const modifierHtml = modifier === 0
+                    ? ''
+                    : `<span style="margin-left:3px; color:${modifier < 0 ? '#ff8aa8' : '#8cffb0'}; font-size:8px;">(${modifier > 0 ? '+' : ''}${modifier})</span>`;
+                return `${total}%${modifierHtml}`;
+            };
 
             contentHtml = `
+                ${environmentSummary}
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom:8px;">
                     <div style="background:#332222; border:1px solid #554444; border-radius:4px; padding:4px; text-align:center; font-size:11px;">
                         <div style="color:#aaa; font-size:9px;">与ダメージ</div><div style="color:#f88; font-weight:bold;">+${s.finDmg}%</div>
@@ -549,9 +565,9 @@ const MenuAllies = {
                         </div>
                     </div>
                     <div style="background:#222; border:1px solid #444; border-radius:4px; padding:4px;">
-                        <div style="font-size:9px; color:#88f; margin-bottom:3px; text-align:center; border-bottom:1px solid #333;">属性耐性</div>
+                        <div style="font-size:9px; color:#88f; margin-bottom:3px; text-align:center; border-bottom:1px solid #333;">属性耐性（環境込み）</div>
                         <div style="display:flex; flex-direction:column; gap:1px;">
-                            ${CONST.ELEMENTS.map(e => `<div style="display:flex; justify-content:space-between; background:#2a2a2a; padding:1px 3px; border-radius:2px; font-size:9px;"><span style="color:#aaa;">${e}</span><span>${s.elmRes[e]||0}%</span></div>`).join('')}
+                            ${CONST.ELEMENTS.map(e => `<div style="display:flex; justify-content:space-between; background:#2a2a2a; padding:1px 3px; border-radius:2px; font-size:9px;"><span style="color:#aaa;">${e}</span><span>${resistanceDisplay(e)}</span></div>`).join('')}
                         </div>
                     </div>
                     <div style="background:#222; border:1px solid #444; border-radius:4px; padding:4px;">

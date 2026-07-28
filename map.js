@@ -1794,8 +1794,13 @@ const SURFACE_WORLD_MAP_DATA = [
 // and validation never diverge between the surface and the Abyss world.
 const MAP_DATA = new Proxy(SURFACE_WORLD_MAP_DATA, {
     get(target, property, receiver) {
-        const area = String(globalThis.App?.data?.location?.area || 'WORLD').toUpperCase();
-        const worldKey = area === 'ABYSS_WORLD' ? 'ABYSS_WORLD' : 'WORLD';
+        const location = globalThis.App?.data?.location || {};
+        const area = String(location.area || 'WORLD').toUpperCase();
+        const explicitWorldKey = String(location.worldKey || '').toUpperCase();
+        const areaWorldKey = String(globalThis.STORY_DATA?.areas?.[area]?.worldKey || '').toUpperCase();
+        const worldKey = explicitWorldKey === 'ABYSS_WORLD' || area === 'ABYSS_WORLD' || areaWorldKey === 'ABYSS_WORLD'
+            ? 'ABYSS_WORLD'
+            : 'WORLD';
         const active = globalThis.WORLD_MAPS?.[worldKey]?.tiles;
         return Reflect.get(Array.isArray(active) ? active : target, property, receiver);
     }

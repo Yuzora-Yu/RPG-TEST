@@ -6349,6 +6349,20 @@ const Field = {
     // Field側で床の上に重ねる。既存の宝箱/階段/壁判定に影響させないため。
     directImageCache: {},
 
+    // Fixed and generated maps share one rectangular tile contract. Saved procedural
+    // floors from older builds can contain sparse rows, so every renderer/movement
+    // path reads through this accessor instead of indexing a row blindly.
+    getMapTileAt: (mapData, x, y, fallback = 'W') => {
+        const tx = Number(x);
+        const ty = Number(y);
+        if (!mapData || !Number.isInteger(tx) || !Number.isInteger(ty) || tx < 0 || ty < 0) return fallback;
+        const row = Array.isArray(mapData.tiles) ? mapData.tiles[ty] : null;
+        let tile;
+        if (typeof row === 'string') tile = row.charAt(tx);
+        else if (Array.isArray(row)) tile = row[tx];
+        return tile === undefined || tile === null || tile === '' ? fallback : tile;
+    },
+
     // マップ遷移・会話完了・遅延画像読込後に、背景とオブジェクトを含む静的層を即時再構築する。
     // 通常の render() だけではPhaserが同一署名と判断し、主人公しか更新しない場合がある。
     refreshVisualState: () => {
@@ -6557,11 +6571,15 @@ const Field = {
         const areaDef = FIXED_MAPS[targetAreaKey];
         App.data.mapReturnPoint = options.returnPoint || {
             areaKey: App.data.location.area || 'WORLD',
+            worldKey: App.data.location.worldKey || (MapRegistry?.getActiveWorldKey?.() || 'WORLD'),
             x: Field.x,
-            y: Field.y
+            y: Field.y,
+            mapData: Field.currentMapData ? JSON.parse(JSON.stringify(Field.currentMapData)) : null
         };
         App.data.transportMode = null;
         App.data.location.area = targetAreaKey;
+        App.data.location.worldKey = STORY_DATA?.areas?.[targetAreaKey]?.worldKey
+            || (targetAreaKey === 'ABYSS_WORLD' ? 'ABYSS_WORLD' : (App.data.mapReturnPoint?.worldKey || 'WORLD'));
         Field.currentMapData = {
             ...areaDef,
             isFixed: true,
@@ -6581,7 +6599,7 @@ const Field = {
     },
 
     getCurrentAreaKey: () => {
-        if (!Field.currentMapData) return 'WORLD';
+        if (!Field.currentMapData) return MapRegistry?.getActiveWorldKey?.() || App.data?.location?.worldKey || 'WORLD';
         const locArea = App.data.location.area;
         if (locArea && (
             STORY_DATA.areas[locArea] ||
@@ -7620,7 +7638,7 @@ const Field = {
                         const key = `${tx},${ty}`;
                         tile = App.data.progress.mapChanges?.[progressKey]?.[key]
                             || App.data.progress.mapChanges?.[areaKey]?.[key]
-                            || Field.currentMapData.tiles[ty][tx];
+                            || Field.getMapTileAt(Field.currentMapData, tx, ty);
                         if (String(tile || '').toUpperCase() === 'B') {
                             const bossDef = (typeof MapRegistry !== 'undefined' && MapRegistry.findFixedBoss)
                                 ? MapRegistry.findFixedBoss(Field.currentMapData, tx, ty)
@@ -7705,11 +7723,11 @@ const Field = {
             const inBounds = tileX >= 0 && tileX < mapW && tileY >= 0 && tileY < mapH;
             const sourceX = Math.max(0, Math.min(mapW - 1, Number(tileX)));
             const sourceY = Math.max(0, Math.min(mapH - 1, Number(tileY)));
-            nextTile = Field.currentMapData.tiles?.[sourceY]?.[sourceX] || 'W';
+            nextTile = Field.getMapTileAt(Field.currentMapData, sourceX, sourceY, 'W');
             if (inBounds) {
                 const posKey = `${tileX},${tileY}`;
                 const changeKey = Field.getCurrentMapChangeKey ? Field.getCurrentMapChangeKey(areaKey) : areaKey;
-                nextTile = App.data.progress.mapChanges?.[changeKey]?.[posKey] || App.data.progress.mapChanges?.[areaKey]?.[posKey] || Field.currentMapData.tiles[tileY][tileX];
+                nextTile = App.data.progress.mapChanges?.[changeKey]?.[posKey] || App.data.progress.mapChanges?.[areaKey]?.[posKey] || Field.getMapTileAt(Field.currentMapData, tileX, tileY);
                 if (Field.currentMapData.isFixed) {
                     const progressKey = Field.getCurrentProgressMapKey();
                     if (nextTile === 'B' && typeof MapRegistry !== 'undefined' && MapRegistry.findFixedBoss) {
@@ -7753,7 +7771,7 @@ const Field = {
 
             const posKey = `${x},${y}`;
             const changeKey = Field.getCurrentMapChangeKey ? Field.getCurrentMapChangeKey(areaKey) : areaKey;
-            let tile = App.data.progress.mapChanges?.[changeKey]?.[posKey] || App.data.progress.mapChanges?.[areaKey]?.[posKey] || Field.currentMapData.tiles[y][x];
+            let tile = App.data.progress.mapChanges?.[changeKey]?.[posKey] || App.data.progress.mapChanges?.[areaKey]?.[posKey] || Field.getMapTileAt(Field.currentMapData, x, y);
             tile = String(tile || 'W').toUpperCase();
 
             if (Field.currentMapData.isFixed) {
@@ -8109,7 +8127,7 @@ const Field = {
     },
 
     getAdjacentFixedBoss: () => {
-        if (!Field.currentMapData?.isFixed || !Field.currentMapData?.isDungeon || typeof MapRegistry === 'undefined') return null;
+        if (!Field.currentMapData?.isFixed || typeof MapRegistry === 'undefined') return null;
         const directions = {
             0: [0, 1],
             1: [-1, 0],
@@ -8133,7 +8151,7 @@ const Field = {
             if (seen.has(posKey)) continue;
             seen.add(posKey);
             if (x < 0 || y < 0 || x >= Field.currentMapData.width || y >= Field.currentMapData.height) continue;
-            const tile = String(Field.currentMapData.tiles[y]?.[x] || '').toUpperCase();
+            const tile = String(Field.getMapTileAt(Field.currentMapData, x, y, '')).toUpperCase();
             if (tile !== 'B') continue;
             const bossDef = MapRegistry.findFixedBoss?.(Field.currentMapData, x, y);
             if (Field.isFixedBossDefeatedAt(bossDef, x, y, progressKey)) continue;
@@ -9006,7 +9024,7 @@ const Field = {
 			//let tile = Field.currentMapData.tiles[ny][nx].toUpperCase();
 			// ★修正: 書き換えられたタイルがあればそれを優先、なければ元のタイルを参照
             const changeKey = Field.getCurrentMapChangeKey ? Field.getCurrentMapChangeKey(areaKey) : areaKey;
-			let tile = (App.data.progress.mapChanges?.[changeKey]?.[`${nx},${ny}`] || App.data.progress.mapChanges?.[areaKey]?.[`${nx},${ny}`] || Field.currentMapData.tiles[ny][nx]).toUpperCase();
+			let tile = (App.data.progress.mapChanges?.[changeKey]?.[`${nx},${ny}`] || App.data.progress.mapChanges?.[areaKey]?.[`${nx},${ny}`] || Field.getMapTileAt(Field.currentMapData, nx, ny)).toUpperCase();
             let chestDef = null;
 
             // ★追加: 固定宝箱/ボスの判定を移動前に行う (撃破・取得済みなら通り抜け可能にする)
@@ -9123,6 +9141,7 @@ const Field = {
                         : fallback;
                     App.data.mapReturnPoint = null;
                     App.data.location.area = exit.area || 'WORLD';
+                    App.data.location.worldKey = (exit.worldKey || exit.area || 'WORLD') === 'ABYSS_WORLD' ? 'ABYSS_WORLD' : 'WORLD';
                     App.data.transportMode = null;
                     Field.x = Number(exit.x); Field.y = Number(exit.y);
                     App.data.location.x = Field.x; App.data.location.y = Field.y;
@@ -9848,7 +9867,7 @@ const Field = {
                             : ak;
                         mtile = App.data.progress.mapChanges?.[progressKey]?.[pk]
                             || App.data.progress.mapChanges?.[ak]?.[pk]
-                            || Field.currentMapData.tiles[mty][mtx];
+                            || Field.getMapTileAt(Field.currentMapData, mtx, mty);
                         if (String(mtile || '').toUpperCase() === 'B') {
                             const bossDef = (typeof MapRegistry !== 'undefined' && MapRegistry.findFixedBoss)
                                 ? MapRegistry.findFixedBoss(Field.currentMapData, mtx, mty)

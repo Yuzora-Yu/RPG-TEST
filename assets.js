@@ -542,6 +542,7 @@ const PRISMA_ASSETS = {
     overlay_summit_temple_cliff_edge_s: "assets/map/overlays/overlay_summit_temple_cliff_edge_s.png",
     overlay_summit_temple_cliff_edge_w: "assets/map/overlays/overlay_summit_temple_cliff_edge_w.png",
     overlay_shrine_healing_spring: "assets/map/overlays/overlay_shrine_healing_spring.png",
+    overlay_abyss_black_spring: "assets/map/overlays/overlay_abyss_black_spring.png",
     overlay_summit_temple_stage_a: "assets/map/overlays/overlay_summit_temple_stage_variant_a.png",
     overlay_summit_temple_stage_b: "assets/map/overlays/overlay_summit_temple_stage_variant_b.png",
     overlay_summit_temple_stage_c: "assets/map/overlays/overlay_summit_temple_stage_variant_c.png",

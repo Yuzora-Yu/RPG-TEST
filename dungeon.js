@@ -379,6 +379,7 @@ const Dungeon = {
 		}
 
         App.data.location.area = 'ABYSS';
+        App.data.location.worldKey = 'ABYSS_WORLD';
         App.data.progress.floor = normalizedStartFloor;
         App.data.dungeon.tryCount = Number(App.data.dungeon.tryCount || 0) + 1;
         if (mode === 'random') App.data.dungeon.randomTryCount = Number(App.data.dungeon.randomTryCount || 0) + 1;
@@ -410,6 +411,7 @@ const Dungeon = {
             x: App.data.location.x,
             y: App.data.location.y,
             areaKey: typeof Field.getCurrentAreaKey === 'function' ? Field.getCurrentAreaKey() : (App.data.location.area || 'WORLD'),
+            worldKey: App.data.location.worldKey || (MapRegistry?.getActiveWorldKey?.() || 'WORLD'),
             mapData: Field.currentMapData ? JSON.parse(JSON.stringify(Field.currentMapData)) : null
         };
         App.data.dungeon.returnPoint = returnPoint;
@@ -422,6 +424,7 @@ const Dungeon = {
             startedAt: Date.now()
         };
         App.data.location.area = 'ABYSS';
+        App.data.location.worldKey = App.data.dungeon.returnPoint?.worldKey || 'WORLD';
         App.data.dungeon.abyssMode = 'guild';
         App.data.progress.floor = 1;
         Dungeon.floor = 1;
@@ -827,6 +830,7 @@ const Dungeon = {
                 x: Number(link.exitPoint.x),
                 y: Number(link.exitPoint.y),
                 areaKey: link.exitPoint.areaKey || link.exitPoint.area || 'WORLD',
+                worldKey: link.exitPoint.worldKey || link.exitPoint.areaKey || link.exitPoint.area || 'WORLD',
                 mapData: link.exitPoint.mapData || null
             } : null;
             Dungeon.exit(false, forced);
@@ -1175,6 +1179,7 @@ const Dungeon = {
             x: App.data.location.x,
             y: App.data.location.y,
             areaKey: App.data.location.area || 'WORLD',
+            worldKey: App.data.location.worldKey || (MapRegistry?.getActiveWorldKey?.() || 'WORLD'),
             mapData: Field.currentMapData ? JSON.parse(JSON.stringify(Field.currentMapData)) : null
         });
         if (options.nestedReturn) {
@@ -1188,6 +1193,7 @@ const Dungeon = {
         App.data.progress.floor = areaDef.floor || 1;
         Dungeon.floor = App.data.progress.floor;
         App.data.location.area = mapKey;
+        App.data.location.worldKey = STORY_DATA?.areas?.[mapKey]?.worldKey || App.data.location.worldKey || 'WORLD';
         App.data.dungeon.map = null;
         App.data.dungeon.adventurer = null;
         App.data.dungeon.healSpring = null;
@@ -1471,6 +1477,7 @@ const Dungeon = {
         let targetX = 58;
         let targetY = 65;
         let targetArea = 'WORLD';
+        let targetWorldKey = 'WORLD';
         let targetMapData = null; 
 
         // 1. 全滅しておらず、かつ帰還データがある場合は一旦その場所を仮セット
@@ -1478,6 +1485,7 @@ const Dungeon = {
             targetX = returnPoint.x;
             targetY = returnPoint.y;
             targetArea = returnPoint.areaKey;
+            targetWorldKey = returnPoint.worldKey || STORY_DATA?.areas?.[targetArea]?.worldKey || (targetArea === 'ABYSS_WORLD' ? 'ABYSS_WORLD' : 'WORLD');
             targetMapData = returnPoint.mapData;
         }
 
@@ -1506,16 +1514,19 @@ const Dungeon = {
                 targetX = 39;
                 targetY = 57;
                 targetArea = 'ABYSS_WORLD';
+                targetWorldKey = 'ABYSS_WORLD';
             } else {
                 targetX = 58;
                 targetY = 65;
                 targetArea = 'WORLD';
+                targetWorldKey = 'WORLD';
             }
             targetMapData = null;
         }
 
         // アプリケーションデータへの反映
         App.data.location.area = targetArea;
+        App.data.location.worldKey = targetWorldKey;
         App.data.location.x = targetX;
         App.data.location.y = targetY;
         

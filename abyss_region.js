@@ -130,22 +130,50 @@
         const width = kind === 'LEGACION' ? 41 : 33;
         const height = kind === 'LEGACION' ? 33 : 25;
         const b = grid(width, height, 'W');
+        const centerX = Math.floor(width / 2);
+        const centerY = Math.floor(height / 2);
         fillRect(b, 1, 1, width - 2, height - 2, 'G');
-        // Main roads and varied building blocks inspired by compact SFC-era town planning.
-        line(b, Math.floor(width/2), 2, Math.floor(width/2), height-2, 'T');
-        line(b, 2, Math.floor(height/2), width-3, Math.floor(height/2), 'T');
-        room(b, 2, 2, 9, 8); room(b, width-10, 2, width-3, 8);
-        room(b, 3, height-10, 11, height-3); room(b, width-12, height-10, width-3, height-3);
-        if (kind !== 'CARMENA') { room(b, 12, 4, 20, 10); room(b, 12, height-11, 20, height-4); }
-        if (kind === 'LEGACION') {
-            fillRect(b, 9, 2, width-10, 14, 'W');
-            room(b, 12, 3, width-13, 13, 'T');
-            line(b, Math.floor(width/2), 13, Math.floor(width/2), height-2, 'T');
+
+        // Main streets are the accessibility spine. Every authored building receives
+        // an actual doorway connected to one of these roads; facilities are never
+        // placed inside a sealed decorative room.
+        line(b, centerX, 2, centerX, height - 2, 'T');
+        line(b, 2, centerY, width - 3, centerY, 'T');
+        room(b, 2, 2, 9, 8);
+        room(b, width - 10, 2, width - 3, 8);
+        room(b, 3, height - 10, 11, height - 3);
+        room(b, width - 12, height - 10, width - 3, height - 3);
+
+        const connectDoor = (doorX, doorY, roadX, roadY) => {
+            stamp(b, doorX, doorY, 'T');
+            line(b, doorX, doorY, roadX, roadY, 'T');
+        };
+        connectDoor(5, 8, 5, centerY);
+        connectDoor(width - 6, 8, width - 6, centerY);
+        connectDoor(7, height - 10, 7, centerY);
+        connectDoor(width - 7, height - 10, width - 7, centerY);
+
+        if (kind !== 'CARMENA') {
+            room(b, 12, 4, 20, 10);
+            room(b, 12, height - 11, 20, height - 4);
+            connectDoor(16, 10, 16, centerY);
+            connectDoor(16, height - 11, 16, centerY);
         }
-        // Town exits.
-        stamp(b, Math.floor(width/2), height-1, 'S');
-        stamp(b, Math.floor(width/2), 1, 'S');
-        if (kind === 'VISTA') { stamp(b, 1, height-5, 'S'); stamp(b, width-2, 4, 'S'); }
+        if (kind === 'LEGACION') {
+            fillRect(b, 9, 2, width - 10, 14, 'W');
+            room(b, 12, 3, width - 13, 13, 'T');
+            stamp(b, centerX, 13, 'T');
+            line(b, centerX, 13, centerX, height - 2, 'T');
+        }
+
+        stamp(b, centerX, height - 1, 'S');
+        stamp(b, centerX, 1, 'S');
+        if (kind === 'VISTA') {
+            stamp(b, 1, height - 5, 'S');
+            stamp(b, width - 2, 4, 'S');
+            line(b, 1, height - 5, centerX, centerY, 'T');
+            line(b, width - 2, 4, centerX, centerY, 'T');
+        }
         return { width, height, tiles: rows(b) };
     };
 
@@ -153,22 +181,29 @@
     const carmenaGateY = 2;
     const carmenaCenter = Math.floor(carmenaLayout.width / 2);
     const carmenaTiles = carmenaLayout.tiles.map(row => row.split(''));
+    // The southern black spring is the permanent route back to the surface. It is
+    // independent of the northern gate battle.
     carmenaTiles[carmenaLayout.height - 1][carmenaCenter] = 'W';
-    carmenaTiles[carmenaGateY][carmenaCenter-1] = 'B';
-    carmenaTiles[carmenaGateY][carmenaCenter+1] = 'B';
-    // North exit stays behind the bosses and becomes traversable after victory.
+    carmenaTiles[carmenaLayout.height - 2][carmenaCenter] = 'T';
+    // A continuous gate wall prevents walking around the two visible generals.
+    for (let x = 1; x <= carmenaLayout.width - 2; x++) carmenaTiles[carmenaGateY][x] = 'W';
+    carmenaTiles[carmenaGateY][carmenaCenter - 1] = 'B';
+    carmenaTiles[carmenaGateY][carmenaCenter + 1] = 'B';
     carmenaLayout.tiles = carmenaTiles.map(row => row.join(''));
+    const carmenaBossTiles = [`${carmenaCenter - 1},${carmenaGateY}`, `${carmenaCenter + 1},${carmenaGateY}`];
 
     globalThis.FIXED_MAPS.CARMENA = decorate('CARMENA', {
         name:'最果ての地カルメナ', themeKey:'ABYSS_FIELD', ...carmenaLayout, entryPoint:{x:carmenaCenter,y:carmenaLayout.height-3}, battleBg:'battle_bg_abyss_boss', exitPoint:{area:ABYSS_WORLD_KEY,x:39,y:57}, worldExits:[{x:carmenaCenter,y:1,area:ABYSS_WORLD_KEY,worldX:39,worldY:57,requiredFlag:'abyssCarmenaGateCleared',lockedText:'二将が門を守っている。'}],
         mapActions:[
             {x:5,y:6,type:'inn',label:'宿に泊まる',log:'黒曜石の壁に、淡い灯がともっている。'},
             {x:carmenaLayout.width-6,y:6,type:'shop',shopType:'item',title:'カルメナ 道具屋',shopRank:90,label:'道具を買う'},
-            {x:carmenaCenter,y:13,type:'abyssBlackSpring',label:'黒い泉に触れる',log:'黒い水面は鏡のように静まり返っている。',imageKey:'overlay_decor_abyss_void_dust',baseTile:'T'},
+            {x:carmenaCenter,y:carmenaLayout.height-2,type:'abyssReturnSpring',label:'黒い泉から地上へ戻る',log:'黒い水面の奥に、地上へ続く光が揺れている。',imageKey:'overlay_abyss_black_spring',baseTile:'T'},
             {x:7,y:18,type:'storyEvent',eventId:'abyss_carmena_resident',label:'住人と話す',imageKey:'overlay_npc_villager',baseTile:'G'}
         ],
-        bosses:[{x:carmenaCenter-1,y:carmenaGateY,monsterId:[302001,302000],actionLabel:'二将に挑む',challengeText:'グレン将軍とレオン将軍が同時に武器を構えた。\n二人を相手に戦いますか？',storyEventId:'abyss_carmena_gate_clear',sharedEncounterTiles:[`${carmenaCenter-1},${carmenaGateY}`,`${carmenaCenter+1},${carmenaGateY}`]},
-                {x:carmenaCenter+1,y:carmenaGateY,monsterId:[302001,302000],actionLabel:'二将に挑む',challengeText:'レオン将軍とグレン将軍が同時に武器を構えた。\n二人を相手に戦いますか？',storyEventId:'abyss_carmena_gate_clear',sharedEncounterTiles:[`${carmenaCenter-1},${carmenaGateY}`,`${carmenaCenter+1},${carmenaGateY}`]}]
+        bosses:[
+            {x:carmenaCenter-1,y:carmenaGateY,monsterId:[302001,302000],mapSpriteMonsterId:302001,actionLabel:'二将に挑む',challengeText:'グレン将軍とレオン将軍が同時に武器を構えた。\n二人を相手に戦いますか？',storyEventId:'abyss_carmena_gate_clear',sharedEncounterTiles:carmenaBossTiles},
+            {x:carmenaCenter+1,y:carmenaGateY,monsterId:[302001,302000],mapSpriteMonsterId:302000,actionLabel:'二将に挑む',challengeText:'レオン将軍とグレン将軍が同時に武器を構えた。\n二人を相手に戦いますか？',storyEventId:'abyss_carmena_gate_clear',sharedEncounterTiles:carmenaBossTiles}
+        ]
     });
 
     const vistaLayout = makeTown('VISTA');
@@ -363,6 +398,38 @@
         (base.floors||[]).forEach((floor,index)=>{floor.mapId=MAP[key];floor.floorId=`${MAP[key]}-${String(index+1).padStart(2,'0')}`;floor.useHabitatEncounters=true;});
     });
 
+    const buildProceduralFallbackFloor = (areaKey, floorNo, template) => {
+        const width = template?.wideProcedural ? 51 : 39;
+        const height = template?.wideProcedural ? 37 : 29;
+        const board = grid(width, height, 'W');
+        fillRect(board, 1, 1, width - 2, height - 2, 'T');
+        for (let y = 5; y < height - 4; y += 6) {
+            for (let x = 3; x < width - 3; x++) if ((x + y) % 8 !== 0) board[y][x] = 'W';
+            stamp(board, Math.floor(width / 2), y, 'T');
+        }
+        const entry = { x: Math.floor(width / 2), y: height - 3 };
+        const exit = { x: Math.floor(width / 2), y: 2 };
+        stamp(board, entry.x, entry.y, 'U');
+        stamp(board, exit.x, exit.y, 'D');
+        return {
+            ...template,
+            areaKey,
+            floor:Number(floorNo),
+            width,
+            height,
+            tiles:rows(board),
+            entryPoint:entry,
+            floorLinks:[
+                {x:entry.x,y:entry.y,toFloor:Number(floorNo)-1,label:'前の階へ'},
+                {x:exit.x,y:exit.y,toFloor:Number(floorNo)+1,label:'次の階へ'}
+            ],
+            procedural:false,
+            generatedFromAbyssLogic:true,
+            isDungeon:true,
+            isFixed:true
+        };
+    };
+
     const originalGetFixedFloor = globalThis.MapRegistry.getFixedDungeonFloor.bind(globalThis.MapRegistry);
     const originalNormalizeWorldPoint = globalThis.MapRegistry.normalizeWorldPoint.bind(globalThis.MapRegistry);
     const originalGetWorldAreaAt = globalThis.MapRegistry.getWorldAreaAt.bind(globalThis.MapRegistry);
@@ -370,7 +437,12 @@
 
     Object.assign(globalThis.MapRegistry, {
         getActiveWorldKey() {
-            return String(globalThis.App?.data?.location?.area || 'WORLD') === ABYSS_WORLD_KEY ? ABYSS_WORLD_KEY : 'WORLD';
+            const location = globalThis.App?.data?.location || {};
+            const areaKey = String(location.area || 'WORLD');
+            const explicit = String(location.worldKey || '').toUpperCase();
+            const areaWorld = String(globalThis.STORY_DATA?.areas?.[areaKey]?.worldKey || '').toUpperCase();
+            if (explicit === ABYSS_WORLD_KEY || areaKey === ABYSS_WORLD_KEY || areaWorld === ABYSS_WORLD_KEY) return ABYSS_WORLD_KEY;
+            return 'WORLD';
         },
         getWorldDefinition(worldKey = null) {
             return globalThis.WORLD_MAPS?.[worldKey || this.getActiveWorldKey()] || globalThis.WORLD_MAPS?.WORLD || null;
@@ -411,7 +483,7 @@
             const baseResult=originalGetFixedFloor(areaKey,floorNo);
             if(!baseResult?.procedural) return baseResult;
             if(globalThis.AbyssRegionRuntime?.getProceduralFloor) return globalThis.AbyssRegionRuntime.getProceduralFloor(areaKey,Number(floorNo),baseResult);
-            return baseResult;
+            return buildProceduralFallbackFloor(areaKey, Number(floorNo), baseResult);
         }
     });
 

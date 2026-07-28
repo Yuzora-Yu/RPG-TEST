@@ -56,12 +56,30 @@
         }
         return map;
     };
-    const normalizeGeneratedMap = raw => raw.map(row => row.map(tile => {
-        const upper=String(tile||'W').toUpperCase();
-        if(upper==='W')return 'W';
-        if(upper==='C'||upper==='R')return upper;
-        return 'T';
-    }));
+    const normalizeGeneratedMap = raw => {
+        if (!Array.isArray(raw) || raw.length < 3) return [];
+        const sourceRows = Array.from({ length: raw.length }, (_, y) => {
+            const row = raw[y];
+            if (typeof row === 'string') return row.split('');
+            if (Array.isArray(row)) return row.slice();
+            return [];
+        });
+        const width = Math.max(0, ...sourceRows.map(row => row.length));
+        if (width < 3) return [];
+        return sourceRows.map(row => Array.from({ length: width }, (_, x) => {
+            const upper = String(row[x] || 'W').toUpperCase();
+            if (upper === 'W') return 'W';
+            if (upper === 'C' || upper === 'R') return upper;
+            return 'T';
+        }));
+    };
+    const hasRectangularTiles = floorDef => {
+        if (!floorDef || !Array.isArray(floorDef.tiles) || floorDef.tiles.length < 3) return false;
+        const width = Number(floorDef.width || (typeof floorDef.tiles[0] === 'string' ? floorDef.tiles[0].length : floorDef.tiles[0]?.length));
+        const height = Number(floorDef.height || floorDef.tiles.length);
+        if (!Number.isInteger(width) || width < 3 || height !== floorDef.tiles.length) return false;
+        return floorDef.tiles.every(row => (typeof row === 'string' || Array.isArray(row)) && row.length === width);
+    };
 
     const generateProcedural = (areaKey, floor, template, runId) => {
         const savedDungeonObject=clone(App.data.dungeon||{});
@@ -111,13 +129,22 @@
     globalThis.AbyssRegionRuntime = {
         isAbyssArea,
         ensureStores,
-        getWorldKey: () => (App.data?.location?.area === 'ABYSS_WORLD' ? 'ABYSS_WORLD' : 'WORLD'),
+        getWorldKey: () => (MapRegistry?.getActiveWorldKey?.() || (App.data?.location?.worldKey === 'ABYSS_WORLD' ? 'ABYSS_WORLD' : 'WORLD')),
         getProceduralFloor(areaKey,floor,template){
             const progress=ensureStores();
             if(!Number(progress.abyssRegionRunIds[areaKey])) progress.abyssRegionRunIds[areaKey]=1;
             const runId=Math.max(1,Number(progress.abyssRegionRunIds[areaKey]));
             const key=keyOf(areaKey,floor,runId);
-            if(!progress.abyssProceduralFloors[key]) progress.abyssProceduralFloors[key]=generateProcedural(areaKey,floor,template,runId);
+            const cached=progress.abyssProceduralFloors[key];
+            if(!hasRectangularTiles(cached)){
+                delete progress.abyssProceduralFloors[key];
+                progress.abyssProceduralFloors[key]=generateProcedural(areaKey,floor,template,runId);
+                if(App.data?.location?.area===areaKey&&Number(App.data?.progress?.floor||0)===Number(floor)){
+                    const entry=progress.abyssProceduralFloors[key].entryPoint||{x:1,y:1};
+                    App.data.location.x=Number(entry.x);App.data.location.y=Number(entry.y);
+                    Field.x=App.data.location.x;Field.y=App.data.location.y;
+                }
+            }
             return clone(progress.abyssProceduralFloors[key]);
         },
         beginDungeonRun(areaKey){
@@ -159,7 +186,13 @@
             const progress=ensureStores(),f=flags();
             App.data.system=App.data.system||{};
             const schemaVersion=Number(App.data.system.abyssRegionSchemaVersion||0);
-            if(schemaVersion>=2)return;
+            const currentArea=String(App.data.location?.area||'WORLD');
+            const areaWorld=STORY_DATA?.areas?.[currentArea]?.worldKey;
+            App.data.location.worldKey=(currentArea==='ABYSS_WORLD'||areaWorld==='ABYSS_WORLD'||isAbyssArea(currentArea))?'ABYSS_WORLD':'WORLD';
+            Object.keys(progress.abyssProceduralFloors).forEach(key=>{
+                if(!hasRectangularTiles(progress.abyssProceduralFloors[key])) delete progress.abyssProceduralFloors[key];
+            });
+            if(schemaVersion>=3)return;
             // Completed old story Abyss saves remain postgame-complete. Partial old runs restart at Carmena,
             // because the former story floors no longer exist in the new canonical route.
             const oldComplete=!!(
@@ -190,7 +223,7 @@
                 }
             }
             AbyssRegionRuntime.updateBarrierFlags();
-            App.data.system.abyssRegionSchemaVersion=2;
+            App.data.system.abyssRegionSchemaVersion=3;
         }
     };
 
@@ -205,16 +238,37 @@
     };
 
     const originalHasMagicBoat=App.hasMagicBoat.bind(App);
-    App.hasMagicBoat=()=>App.data?.location?.area==='ABYSS_WORLD'?false:originalHasMagicBoat();
+    App.hasMagicBoat=()=>AbyssRegionRuntime.getWorldKey()==='ABYSS_WORLD'?false:originalHasMagicBoat();
     const originalIsFlying=App.isFlying.bind(App);
-    App.isFlying=()=>App.data?.location?.area==='ABYSS_WORLD'?false:originalIsFlying();
+    App.isFlying=()=>AbyssRegionRuntime.getWorldKey()==='ABYSS_WORLD'?false:originalIsFlying();
     const originalUseWing=App.useLightWing?.bind(App);
     if(originalUseWing)App.useLightWing=()=>{
-        if(App.data?.location?.area==='ABYSS_WORLD'){Menu?.msg?.('深淵の空間では、光の翼は力を失っている。');return false;}
+        if(AbyssRegionRuntime.getWorldKey()==='ABYSS_WORLD'){Menu?.msg?.('深淵の空間では、光の翼は力を失っている。');return false;}
         return originalUseWing();
     };
     const originalSkyTravel=App.useSkyPrismTo?.bind(App);
     if(originalSkyTravel)App.useSkyPrismTo=(areaKey)=>{
+        // The surface-side Abyss entrance remains the registered prism destination,
+        // but its arrival point is Carmena itself. The second world is never added as
+        // a direct prism destination.
+        if(areaKey==='ABYSS_FIELD'&&FIXED_MAPS?.CARMENA){
+            const result=originalSkyTravel(areaKey);
+            if(!result?.ok)return result;
+            const outer=FIXED_MAPS?.ABYSS_FIELD;
+            const fallbackEntry=outer?.entryPoint||{x:8,y:12};
+            Field.enterFixedMap('CARMENA',{
+                returnPoint:{
+                    areaKey:'ABYSS_FIELD',
+                    worldKey:'WORLD',
+                    x:Number(fallbackEntry.x),
+                    y:Number(fallbackEntry.y),
+                    mapData:outer?{...clone(outer),isFixed:true,isDungeon:outer.isDungeon===true,areaKey:'ABYSS_FIELD'}:null
+                }
+            });
+            Field.render?.();
+            Field.refreshCurrentAction?.({silent:true});
+            return{ok:true,message:'最果ての地カルメナへ移動した！',silentSuccess:true};
+        }
         const area=STORY_DATA?.areas?.[areaKey];
         if(area?.worldKey==='ABYSS_WORLD'||isAbyssArea(areaKey))return{ok:false,message:'深淵世界はスカイプリズムの座標に定着しない。'};
         return originalSkyTravel(areaKey);
@@ -236,12 +290,12 @@
     };
 
     const originalFieldArea=Field.getCurrentAreaKey.bind(Field);
-    Field.getCurrentAreaKey=()=>!Field.currentMapData?(App.data?.location?.area==='ABYSS_WORLD'?'ABYSS_WORLD':'WORLD'):originalFieldArea();
+    Field.getCurrentAreaKey=()=>!Field.currentMapData?(MapRegistry?.getActiveWorldKey?.()||'WORLD'):originalFieldArea();
     Field.getActiveWorldMap=()=>MapRegistry.getActiveWorldMap?.()||MAP_DATA;
 
     const originalEnterFixed=Field.enterFixedMap.bind(Field);
     Field.enterFixedMap=(areaKey,options={})=>{
-        if(App.data?.location?.area==='ABYSS_WORLD')App.data.transportMode=null;
+        if(AbyssRegionRuntime.getWorldKey()==='ABYSS_WORLD')App.data.transportMode=null;
         return originalEnterFixed(areaKey,options);
     };
 
@@ -254,9 +308,22 @@
 
     const originalExecuteMapAction=Field.executeMapAction.bind(Field);
     Field.executeMapAction=(action)=>{
-        if(action?.type==='abyssBlackSpring'){
-            App.data.party.map(uid=>App.getChar(uid)).filter(Boolean).forEach(char=>{const s=App.calcStats(char);char.currentHp=s.maxHp;char.currentMp=s.maxMp;});
-            App.log('黒い泉の静かな力が、傷と魔力を満たした。');App.save();Menu?.renderPartyBar?.();return;
+        if(action?.type==='abyssReturnSpring'){
+            const outer=FIXED_MAPS?.ABYSS_FIELD;
+            const fallbackEntry=outer?.entryPoint||{x:8,y:12};
+            const saved=App.data.mapReturnPoint;
+            const target=(saved&&saved.areaKey)?saved:{areaKey:'ABYSS_FIELD',worldKey:'WORLD',x:fallbackEntry.x,y:fallbackEntry.y,mapData:outer?{...clone(outer),isFixed:true,isDungeon:outer.isDungeon===true,areaKey:'ABYSS_FIELD'}:null};
+            const targetDef=target.mapData||(FIXED_MAPS?.[target.areaKey]?{...clone(FIXED_MAPS[target.areaKey]),isFixed:true,isDungeon:FIXED_MAPS[target.areaKey].isDungeon===true,areaKey:target.areaKey}:null);
+            App.data.mapReturnPoint=null;
+            App.data.transportMode=null;
+            App.data.location.area=target.areaKey||'WORLD';
+            App.data.location.worldKey=target.worldKey||STORY_DATA?.areas?.[target.areaKey]?.worldKey||'WORLD';
+            Field.currentMapData=targetDef;
+            Field.x=Number(target.x ?? targetDef?.entryPoint?.x ?? fallbackEntry.x);
+            Field.y=Number(target.y ?? targetDef?.entryPoint?.y ?? fallbackEntry.y);
+            App.data.location.x=Field.x;App.data.location.y=Field.y;
+            App.log('黒い泉を抜け、地上へ戻った。');
+            App.save();App.changeScene('field');Field.render?.();Field.refreshCurrentAction?.({silent:true});return;
         }
         if(action?.type==='abyssSpiritPrism'){
             const elements=['火','水','風','雷','光','闇'];
