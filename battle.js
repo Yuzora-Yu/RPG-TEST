@@ -174,6 +174,43 @@ const Battle = {
     abyssAzelgaragIds: Object.freeze([302100, 302101]),
     abyssSealedSkillIds: Object.freeze([166, 245, 700101]),
 
+    completeAbyssElementalTrial: (drops = []) => {
+        const battleData = App.data?.battle || {};
+        const element = String(battleData.fixedTrialElement || battleData.abyssSpiritElement || '');
+        if (!element || !Number.isFinite(Number(battleData.fixedTrialRewardItemId))) return [];
+
+        const progress = App.ensureAbyssRegionProgress?.() || App.data.progress || {};
+        progress.flags = progress.flags || {};
+        progress.abyssSpiritBlessings = progress.abyssSpiritBlessings || {};
+        if (progress.abyssSpiritBlessings[element]) return [];
+
+        const messages = [];
+        progress.abyssSpiritBlessings[element] = true;
+        const rewardId = Number(battleData.fixedTrialRewardItemId || 0);
+        if (rewardId > 0) {
+            App.data.items[rewardId] = Number(App.data.items[rewardId] || 0) + 1;
+            const item = (DB.ITEMS || []).find(entry => Number(entry.id) === rewardId);
+            drops.push({ name: item?.name || `${element}の結晶片`, isRare: true, type: 'boss', kind: 'item' });
+        }
+        messages.push(`${element}の精霊に認められ、全員の${element}属性耐性が20%上昇した！`);
+
+        const required = Array.isArray(battleData.fixedTrialRequiredElements)
+            ? battleData.fixedTrialRequiredElements.map(String)
+            : ['火', '水', '風', '雷', '光', '闇'];
+        if (required.length > 0 && required.every(key => progress.abyssSpiritBlessings[key])
+            && !progress.flags.abyssAllSpiritTrialsCleared) {
+            progress.flags.abyssAllSpiritTrialsCleared = true;
+            const completionId = Number(battleData.fixedTrialCompletionItemId || 0);
+            if (completionId > 0) {
+                App.data.items[completionId] = Number(App.data.items[completionId] || 0) + 1;
+                const item = (DB.ITEMS || []).find(entry => Number(entry.id) === completionId);
+                drops.push({ name: item?.name || 'オクタプリズマ', isRare: true, type: 'kai', kind: 'item' });
+            }
+            messages.push('六属性すべての精霊に認められた。');
+        }
+        return messages;
+    },
+
     getUnitBaseId: (unit) => Number(unit?.baseId || unit?.id || 0),
 
     ensureUnitBattleStatus: (unit) => {
@@ -5272,10 +5309,13 @@ findNextActor: () => {
 			});
 		}
 
-        // 敵ごとに0.5%で、その個体が所持するID100以上のスキル書を抽選する。
-        Battle.enemies.forEach(enemy => {
-            if (Battle.tryCreateSkillBookDrop(enemy, drops)) hasRareDrop = true;
-        });
+		// 敵ごとに0.5%で、その個体が所持するID100以上のスキル書を抽選する。
+		Battle.enemies.forEach(enemy => {
+		    if (Battle.tryCreateSkillBookDrop(enemy, drops)) hasRareDrop = true;
+		});
+
+        const elementalTrialMessages = Battle.completeAbyssElementalTrial(drops);
+        if (elementalTrialMessages.length) hasRareDrop = true;
 
         // クリア後の通常ランダムダンジョンでは、合成の壺をごく低確率で追加する。
         const isPostgameRandomDungeon = App.data?.progress?.flags?.darkCastleCleared === true
@@ -5357,6 +5397,9 @@ findNextActor: () => {
 		if (monsterRecruitResult && monsterRecruitResult.message) {
 			Battle.log(`<span style="color:#7fffd4; font-weight:bold;">${monsterRecruitResult.message}</span>`);
 		}
+        elementalTrialMessages.forEach(message => {
+            Battle.log(`<span style="color:#9fe8ff; font-weight:bold;">${Battle.escapeHtml(message)}</span>`);
+        });
 
 		const resultLevelEvents = [];
         const resultLevelLooseLogs = [];

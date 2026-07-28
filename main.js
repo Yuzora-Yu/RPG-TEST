@@ -8765,7 +8765,7 @@ const Field = {
                 fixedTrialElement: nextElement,
                 fixedTrialRewardItemId: Number(action.rewardItemByElement?.[nextElement] || 0),
                 fixedTrialCompletionItemId: Number(action.completionItemId || 0),
-                fixedTrialRequiredElements: elements.slice(),
+                fixedTrialRequiredElements: (Array.isArray(action.requiredElements) ? action.requiredElements : elements).slice(),
                 bossStatMultiplier: Number(action.bossStatMultiplier || 1),
                 suppressFixedBossDefeat: true,
                 enemies: []

@@ -1975,7 +1975,9 @@ const WORLD_MAPS = Object.freeze({
             M: Object.freeze({ img: "tile_abyss_outer_wall_2", variants: Object.freeze(["tile_abyss_outer_wall_2", "tile_abyss_outer_wall_3", "tile_abyss_outer_wall_4"]), color: "#21152d" }),
             T: Object.freeze({ img: "tile_abyss_path", color: "#51435f" }),
             G: Object.freeze({ img: "tile_abyss_grass", color: "#394744" }),
-            F: Object.freeze({ img: "tile_abyss_grass", color: "#253b35" }),
+            H: Object.freeze({ img: "tile_abyss_outer_prism_paving", variants: Object.freeze(["tile_abyss_outer_prism_paving", "tile_abyss_outer_prism_paving_2", "tile_abyss_outer_prism_paving_3", "tile_abyss_outer_prism_paving_4"]), color: "#7a6941" }),
+            F: Object.freeze({ img: "tile_ice_slide", color: "#426674" }),
+            R: Object.freeze({ img: "tile_magma", color: "#69362f" }),
             L: Object.freeze({ img: "tile_poison_bog", color: "#45533b" })
         }),
         seaTiles: Object.freeze([]),
@@ -4928,19 +4930,6 @@ const FIXED_MAPS = {
                 "label": "神官と話す",
                 "imageKey": "overlay_npc_villager",
                 "baseTile": "T"
-            },
-            {
-                "x": 24,
-                "y": 11,
-                "type": "elementalTrialPrism",
-                "requiredFlag": "abyssSpiritPrismKnown",
-                "lockedText": "まだ、プリズムの声を聞き取ることができない。",
-                "elements": ["火", "水", "風", "雷", "光", "闇"],
-                "bossByElement": { "火": 502001, "水": 502002, "風": 502003, "雷": 502004, "光": 502005, "闇": 502006 },
-                "rewardItemByElement": { "火": 701001, "水": 701002, "風": 701003, "雷": 701004, "光": 701005, "闇": 701006 },
-                "completionItemId": 701008,
-                "label": "プリズムに触れる",
-                "log": "六つの色が、こちらの意志を測るように明滅している。"
             }
         ],
         "mapId": "MAP000060",
@@ -5256,6 +5245,16 @@ const FIXED_DUNGEON_MAPS = {
                         renderLayer: "object",
                         blocking: true,
                         baseTile: "T"
+                    }
+                ],
+                mapActions: [
+                    {
+                        x: 10, y: 4, type: "elementalTrialPrism", element: "火",
+                        requiredFlags: ["abyssSpiritPrismKnown", "firePrismRestored"],
+                        lockedText: "火のプリズムは、まだこちらの声に応えない。",
+                        elements: ["火"], requiredElements: ["火", "水", "風", "雷", "光", "闇"],
+                        bossByElement: { "火": 502001 }, rewardItemByElement: { "火": 701001 },
+                        completionItemId: 701008, label: "火のプリズムに呼びかける"
                     }
                 ],
                 floorLinks: [
@@ -6697,6 +6696,16 @@ const FIXED_DUNGEON_MAPS = {
                         baseTile: "T"
                     }
                 ],
+                mapActions: [
+                    {
+                        x: 12, y: 8, type: "elementalTrialPrism", element: "風",
+                        requiredFlags: ["abyssSpiritPrismKnown", "windVillageCleared"],
+                        lockedText: "風のプリズムは、まだこちらの声に応えない。",
+                        elements: ["風"], requiredElements: ["火", "水", "風", "雷", "光", "闇"],
+                        bossByElement: { "風": 502003 }, rewardItemByElement: { "風": 701003 },
+                        completionItemId: 701008, label: "風のプリズムに呼びかける"
+                    }
+                ],
                 floorLinks: [
                     {
                         x: 12,
@@ -6988,6 +6997,16 @@ const FIXED_DUNGEON_MAPS = {
                         renderLayer: "object",
                         blocking: true,
                         baseTile: "T"
+                    }
+                ],
+                mapActions: [
+                    {
+                        x: 11, y: 7, type: "elementalTrialPrism", element: "水",
+                        requiredFlags: ["abyssSpiritPrismKnown", "waterCityCleared"],
+                        lockedText: "水のプリズムは、まだこちらの声に応えない。",
+                        elements: ["水"], requiredElements: ["火", "水", "風", "雷", "光", "闇"],
+                        bossByElement: { "水": 502002 }, rewardItemByElement: { "水": 701002 },
+                        completionItemId: 701008, label: "水のプリズムに呼びかける"
                     }
                 ],
                 floorLinks: [
@@ -8822,6 +8841,16 @@ const FIXED_DUNGEON_MAPS = {
                         baseTile: "T",
                         allowedBaseTiles: null
                     }
+                ],
+                mapActions: [
+                    {
+                        x: 16, y: 4, type: "elementalTrialPrism", element: "雷",
+                        requiredFlags: ["abyssSpiritPrismKnown", "thunderFortCleared"],
+                        lockedText: "雷のプリズムは、まだこちらの声に応えない。",
+                        elements: ["雷"], requiredElements: ["火", "水", "風", "雷", "光", "闇"],
+                        bossByElement: { "雷": 502004 }, rewardItemByElement: { "雷": 701004 },
+                        completionItemId: 701008, label: "雷のプリズムに呼びかける"
+                    }
                 ]
             },
             {
@@ -9678,6 +9707,16 @@ const FIXED_DUNGEON_MAPS = {
                         blocking: false,
                         baseTile: "T",
                         allowedBaseTiles: null
+                    }
+                ],
+                mapActions: [
+                    {
+                        x: 17, y: 8, type: "elementalTrialPrism", element: "光",
+                        requiredFlags: ["abyssSpiritPrismKnown", "lightPalaceCleared"],
+                        lockedText: "光のプリズムは、まだこちらの声に応えない。",
+                        elements: ["光"], requiredElements: ["火", "水", "風", "雷", "光", "闇"],
+                        bossByElement: { "光": 502005 }, rewardItemByElement: { "光": 701005 },
+                        completionItemId: 701008, label: "光のプリズムに呼びかける"
                     }
                 ]
             },
@@ -12034,6 +12073,14 @@ const FIXED_DUNGEON_MAPS = {
                         log: "滅びた玉座の前で、赤い空だけが静かに揺れている。",
                         type: "log",
                         imageKey: "overlay_dungeon_event"
+                    },
+                    {
+                        x: 16, y: 5, type: "elementalTrialPrism", element: "闇",
+                        requiredFlags: ["abyssSpiritPrismKnown", "darkCastleCleared"],
+                        lockedText: "闇のプリズムは、まだこちらの声に応えない。",
+                        elements: ["闇"], requiredElements: ["火", "水", "風", "雷", "光", "闇"],
+                        bossByElement: { "闇": 502006 }, rewardItemByElement: { "闇": 701006 },
+                        completionItemId: 701008, label: "闇のプリズムに呼びかける"
                     }
                 ],
                 healSprings: [
