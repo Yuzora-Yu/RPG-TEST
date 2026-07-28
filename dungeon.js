@@ -20,7 +20,7 @@ const ABYSS_FLOOR_RULES = Object.freeze({
     getMode(data = globalThis.App?.data) {
         const guildRun = data?.dungeon?.guildQuestRun;
         if (guildRun?.active && guildRun?.questId) return 'guild';
-        return this.normalizeMode(data?.dungeon?.abyssMode, data?.progress?.flags?.abyssRandomUnlocked ? 'random' : 'story');
+        return 'random';
     },
     getBalanceFloor(displayFloor, mode = null) {
         const floor = this.normalizeFloor(displayFloor);
@@ -284,14 +284,15 @@ const Dungeon = {
         if (isInDungeon) {
             const modeLabel = Dungeon.isGuildQuestRunActive()
                 ? 'ギルド依頼迷宮'
-                : (Dungeon.isRandomAbyss() ? 'ランダム深淵' : '物語深淵');
+                : (Field.currentMapData?.isFixed && areaKey !== 'ABYSS'
+                    ? (Field.currentMapData.displayName || Field.currentMapData.name || '深淵の迷宮')
+                    : 'ランダム深淵');
             content.innerHTML = `
                 <div style="max-width:420px; margin:0 auto; display:flex; flex-direction:column; gap:14px;">
                     <div style="font-size:22px; color:#ffd700; text-align:center; margin-bottom:4px;">${modeLabel}</div>
                     <div style="border:1px solid rgba(244,201,93,0.48); border-radius:8px; padding:14px; background:rgba(255,255,255,0.04); line-height:1.6;">
                         <div style="font-size:12px; color:#aaa;">現在地</div>
                         <div style="font-size:20px; color:#fff; font-weight:bold;">地下 ${Dungeon.floor || App.data.progress.floor || 1} 階</div>
-                        ${Dungeon.isRandomAbyss() ? `<div style="font-size:10px;color:#9fc8ff;margin-top:4px;">旧バランス階層 ${Dungeon.getBalanceFloor()} 階相当</div>` : ''}
                     </div>
                     <button class="menu-btn" style="width:100%; min-height:52px; ${cannotExit ? 'opacity:0.45;' : ''}" ${cannotExit ? 'disabled' : ''} onclick="Dungeon.exitFromMenu()">
                         ${cannotExit ? '今は脱出できない' : 'ダンジョンから脱出する'}
@@ -320,17 +321,17 @@ const Dungeon = {
             </section>`;
         };
 
-        const storyHtml = renderMode('story', '物語深淵', '物語ボスとイベントが配置された従来の1～100階です。');
         const randomHtml = Dungeon.isRandomAbyssUnlocked()
-            ? renderMode('random', 'ランダム深淵', '旧101階以降を新1階から探索します。報酬・強化は旧階層相当で計算されます。')
-            : '';
-        content.innerHTML = `<div style="max-width:420px;margin:0 auto;display:flex;flex-direction:column;gap:13px;"><div style="font-size:22px;color:#ffd700;text-align:center;">深淵へ挑む</div>${storyHtml}${randomHtml}</div>`;
+            ? renderMode('random', 'ランダム深淵', 'さらに深く続く亀裂を探索します。入るたびに構造と宝箱の位置が変化します。')
+            : '<div style="border:1px solid rgba(244,201,93,.28);border-radius:9px;padding:16px;color:#aaa;line-height:1.7;">終焉の祭壇に生じた亀裂を見つけると解放されます。</div>';
+        content.innerHTML = `<div style="max-width:420px;margin:0 auto;display:flex;flex-direction:column;gap:13px;"><div style="font-size:22px;color:#ffd700;text-align:center;">深淵へ挑む</div>${randomHtml}</div>`;
     },
 
-	startFromMenu: (startFloor, mode = 'random') => {
+	startFromMenu: (startFloor) => {
+		if (!Dungeon.isRandomAbyssUnlocked()) { App.log('終焉の祭壇の亀裂は、まだ見つかっていない。'); return; }
 		if (typeof App !== 'undefined' && typeof App.requireFeatureUnlocked === 'function' && !App.requireFeatureUnlocked('abyss')) return;
 		if (typeof Menu !== 'undefined') Menu.closeAll();
-		Dungeon.start(startFloor, { mode });
+		Dungeon.start(startFloor, { mode: 'random' });
 	},
 
 	exitFromMenu: () => {
@@ -340,15 +341,16 @@ const Dungeon = {
 		});
 	},
 	
-	enter: (options = {}) => {
+	enter: () => {
 		if (typeof App !== 'undefined' && typeof App.requireFeatureUnlocked === 'function' && !App.requireFeatureUnlocked('abyss')) return;
+		if (!Dungeon.isRandomAbyssUnlocked()) { App.log('終焉の祭壇の亀裂は、まだ見つかっていない。'); return; }
 		if (typeof App !== 'undefined' && typeof App.unlockFeature === 'function') App.unlockFeature('dungeonMenu');
 		if (typeof Menu !== 'undefined' && typeof Menu.openSubScreen === 'function') {
 			Menu.openSubScreen('dungeon');
 			return;
 		}
 
-		Dungeon.start(1, { mode: options.mode || (Dungeon.isRandomAbyssUnlocked() ? 'random' : 'story') });
+		Dungeon.start(1, { mode: 'random' });
 	},
 	
     // --- ダンジョン突入・進行 ---
@@ -357,11 +359,13 @@ const Dungeon = {
 		if (typeof App !== 'undefined' && typeof App.unlockFeature === 'function') App.unlockFeature('dungeonMenu');
 		if (!App.data.progress.flags) App.data.progress.flags = {};
 		if (!App.data.progress.unlocked) App.data.progress.unlocked = {};
-        const requestedMode = ABYSS_FLOOR_RULES.normalizeMode(options.mode, Dungeon.isRandomAbyssUnlocked() ? 'random' : 'story');
-        const mode = requestedMode === 'random' && !Dungeon.isRandomAbyssUnlocked() ? 'story' : requestedMode;
-        const normalizedStartFloor = mode === 'story'
-            ? Math.min(100, ABYSS_FLOOR_RULES.normalizeFloor(startFloor))
-            : ABYSS_FLOOR_RULES.normalizeFloor(startFloor);
+        const requestedMode = ABYSS_FLOOR_RULES.normalizeMode(options.mode, 'random');
+        const mode = requestedMode === 'guild' ? 'guild' : 'random';
+        if (mode === 'random' && !Dungeon.isRandomAbyssUnlocked()) {
+            App.log('終焉の祭壇の亀裂は、まだ見つかっていない。');
+            return false;
+        }
+        const normalizedStartFloor = ABYSS_FLOOR_RULES.normalizeFloor(startFloor);
         App.data.dungeon.abyssMode = mode;
 		App.data.progress.flags.abyssFirstEntered = true;
 		App.data.progress.unlocked.teleport = true;
@@ -377,7 +381,6 @@ const Dungeon = {
         App.data.location.area = 'ABYSS';
         App.data.progress.floor = normalizedStartFloor;
         App.data.dungeon.tryCount = Number(App.data.dungeon.tryCount || 0) + 1;
-        if (mode === 'story') App.data.dungeon.storyTryCount = Number(App.data.dungeon.storyTryCount || 0) + 1;
         if (mode === 'random') App.data.dungeon.randomTryCount = Number(App.data.dungeon.randomTryCount || 0) + 1;
         App.data.dungeon.map = null;
         App.data.dungeon.adventurer = null;
@@ -1478,16 +1481,19 @@ const Dungeon = {
             targetMapData = returnPoint.mapData;
         }
 
-        // 2. ★安全装置: 帰還先のタイルが「進行不可能」でないかチェック
+        // 2. ★安全装置: 帰還先が属するワールド定義または固定マップを正本として判定する。
         let isSafe = true;
         try {
-            if (!targetMapData || targetArea === 'WORLD') {
-                // ワールドマップの場合: W(海) または M(岩山) なら危険
-                const tile = MAP_DATA[targetY][targetX].toUpperCase();
+            const worldDef = (typeof WORLD_MAPS !== 'undefined' && WORLD_MAPS[targetArea]) ? WORLD_MAPS[targetArea] : null;
+            if (!targetMapData && worldDef) {
+                const worldTiles = worldDef.tiles;
+                const tile = String(worldTiles?.[targetY]?.[targetX] || 'W').toUpperCase();
+                if (tile === 'W' || tile === 'M') isSafe = false;
+            } else if (!targetMapData && targetArea === 'WORLD') {
+                const tile = String(MAP_DATA?.[targetY]?.[targetX] || 'W').toUpperCase();
                 if (tile === 'W' || tile === 'M') isSafe = false;
             } else {
-                // 街や村（固定マップ）の場合: W(壁) なら危険
-                const tile = targetMapData.tiles[targetY][targetX].toUpperCase();
+                const tile = String(targetMapData?.tiles?.[targetY]?.[targetX] || 'W').toUpperCase();
                 if (tile === 'W') isSafe = false;
             }
         } catch (e) {
@@ -1496,9 +1502,15 @@ const Dungeon = {
 
         if (!isSafe) {
             App.log("<span style='color:#f88;'>帰還先が不安定だったため、安全な場所へ移動しました。</span>");
-            targetX = 58;
-            targetY = 65;
-            targetArea = 'WORLD';
+            if (targetArea === 'ABYSS_WORLD' && typeof WORLD_MAPS !== 'undefined' && WORLD_MAPS.ABYSS_WORLD) {
+                targetX = 39;
+                targetY = 57;
+                targetArea = 'ABYSS_WORLD';
+            } else {
+                targetX = 58;
+                targetY = 65;
+                targetArea = 'WORLD';
+            }
             targetMapData = null;
         }
 

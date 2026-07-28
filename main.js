@@ -440,10 +440,10 @@ const App = {
         // 段階開放導入前はsmith/abyssが常時trueだったため、一度だけ実進行から再構築する。
         if (!App.data.progress.flags.menuUnlockMigrationV1) {
             App.data.progress.unlocked.smith = !!App.data.progress.flags.fireVillageCleared;
-            App.data.progress.unlocked.dungeonMenu = Number(App.data.dungeon?.tryCount || 0) > 0 ||
-                Number(App.data.dungeon?.maxFloor || 0) > 0 ||
-                Number(App.data.dungeon?.storyMaxFloor || 0) > 0 ||
-                App.data.location?.area === 'ABYSS';
+            App.data.progress.unlocked.dungeonMenu = !!(
+                App.data.progress.flags.abyssDungeonMenuUnlocked ||
+                App.data.progress.flags.abyssRandomUnlocked
+            );
             App.data.progress.flags.menuUnlockMigrationV1 = true;
         }
 
@@ -6539,7 +6539,7 @@ const Field = {
         }
     },
 
-    enterFixedMap: (targetAreaKey) => {
+    enterFixedMap: (targetAreaKey, options = {}) => {
         if (!targetAreaKey || typeof FIXED_MAPS === 'undefined' || !FIXED_MAPS[targetAreaKey]) return;
         if (targetAreaKey === 'ABYSS_FIELD' && !App.data?.progress?.flags?.darkCastleCleared) {
             App.log('属性が不均質に混ざり合っている…');
@@ -6551,7 +6551,7 @@ const Field = {
             return;
         }
         const areaDef = FIXED_MAPS[targetAreaKey];
-        App.data.mapReturnPoint = {
+        App.data.mapReturnPoint = options.returnPoint || {
             areaKey: App.data.location.area || 'WORLD',
             x: Field.x,
             y: Field.y
@@ -6564,8 +6564,10 @@ const Field = {
             isDungeon: areaDef.isDungeon === true,
             areaKey: targetAreaKey
         };
-        Field.x = areaDef.entryPoint ? areaDef.entryPoint.x : Math.floor(areaDef.width / 2);
-        Field.y = areaDef.entryPoint ? areaDef.entryPoint.y : areaDef.height - 3;
+        const requestedEntry = options.entryKey && areaDef.entryPoints ? areaDef.entryPoints[options.entryKey] : null;
+        const entryPoint = requestedEntry || areaDef.entryPoint || { x: Math.floor(areaDef.width / 2), y: areaDef.height - 3 };
+        Field.x = Number(entryPoint.x);
+        Field.y = Number(entryPoint.y);
         App.data.location.x = Field.x;
         App.data.location.y = Field.y;
         if (typeof App.discoverFixedMap === 'function') App.discoverFixedMap(targetAreaKey, { save: false });
@@ -8457,6 +8459,18 @@ const Field = {
             return;
         }
 
+        if (action.type === 'fixedMap' && action.target && typeof Field.enterFixedMap === 'function') {
+            Field.enterFixedMap(action.target, {
+                entryKey: action.entryKey || null,
+                returnPoint: action.returnPoint || {
+                    areaKey: Field.getCurrentAreaKey?.() || App.data.location.area,
+                    x: Number(action.returnX ?? Field.x),
+                    y: Number(action.returnY ?? Field.y)
+                }
+            });
+            return;
+        }
+
         if (action.type === 'fixedDungeon' && action.target && typeof Dungeon !== 'undefined' && Dungeon.startFixed) {
             Dungeon.startFixed(action.target);
             return;
@@ -8464,7 +8478,11 @@ const Field = {
 
         if (action.type === 'abyssDungeon' && typeof Dungeon !== 'undefined') {
             if (!App.requireFeatureUnlocked('abyss')) return;
-            Dungeon.enter();
+            if (action.target && typeof FIXED_MAPS !== 'undefined' && FIXED_MAPS[action.target]) {
+                Field.enterFixedMap(action.target);
+            } else {
+                Dungeon.enter();
+            }
             return;
         }
 
@@ -8710,7 +8728,19 @@ const Field = {
 
         if (targetAreaKey && typeof FIXED_MAPS !== 'undefined' && FIXED_MAPS[targetAreaKey]) {
             const areaDef = FIXED_MAPS[targetAreaKey];
-            App.setAction(`${areaDef.name}に入る`, () => Field.enterFixedMap(targetAreaKey));
+            App.setAction(`${areaDef.name}に入る`, () => {
+                const flags = App.data?.progress?.flags || {};
+                const storyArea = (typeof STORY_DATA !== 'undefined' && STORY_DATA.areas) ? STORY_DATA.areas[targetAreaKey] : null;
+                const entranceDef = Array.isArray(storyArea?.entrances)
+                    ? storyArea.entrances.find(entry => (entry.entryKey || null) === (targetEntryKey || null))
+                    : null;
+                const requiredFlags = [storyArea?.entryRequiredFlag, entranceDef?.requiredFlag].filter(Boolean);
+                if (requiredFlags.some(flag => !flags[flag])) {
+                    App.log(entranceDef?.lockedText || storyArea?.entryLockedText || '結界に阻まれ、今は入れない。');
+                    return;
+                }
+                Field.enterFixedMap(targetAreaKey, { entryKey: targetEntryKey || null });
+            });
         } else if (targetAreaKey && typeof FIXED_DUNGEON_MAPS !== 'undefined' && FIXED_DUNGEON_MAPS[targetAreaKey]) {
             const areaDef = FIXED_DUNGEON_MAPS[targetAreaKey];
             const labelPrefix = targetEntryLabel ? `${areaDef.name}・${targetEntryLabel}` : areaDef.name;
@@ -9065,20 +9095,34 @@ const Field = {
             if (tile === 'S' && !Field.currentMapData.isDungeon) {
                 const areaKey = App.data.location.area;
                 if (typeof FIXED_MAPS !== 'undefined' && FIXED_MAPS[areaKey]) {
+                    const mapDef = FIXED_MAPS[areaKey];
+                    const flags = App.data?.progress?.flags || {};
+                    const localExit = Array.isArray(mapDef.worldExits)
+                        ? mapDef.worldExits.find(exitDef => Number(exitDef.x) === Number(nx) && Number(exitDef.y) === Number(ny))
+                        : null;
+                    if (localExit?.requiredFlag && !flags[localExit.requiredFlag]) {
+                        App.log(localExit.lockedText || '門は固く閉ざされている。');
+                        keepCurrentTileAction({ bump: true });
+                        Field.render();
+                        return;
+                    }
                     const saved = App.data.mapReturnPoint;
                     const areaDef = (typeof STORY_DATA !== 'undefined' && STORY_DATA.areas) ? STORY_DATA.areas[areaKey] : null;
-                    const fallback = areaDef
-                        ? { area: 'WORLD', x: areaDef.centerX, y: areaDef.centerY }
-                        : (FIXED_MAPS[areaKey].exitPoint || { area: 'WORLD', x: Field.x, y: Field.y });
-                    const exit = (saved && saved.areaKey === 'WORLD')
-                        ? { area: 'WORLD', x: saved.x, y: saved.y }
+                    const fallback = localExit
+                        ? { area: localExit.area || areaDef?.worldKey || 'WORLD', x: localExit.worldX, y: localExit.worldY }
+                        : (mapDef.exitPoint || (areaDef
+                            ? { area: areaDef.worldKey || 'WORLD', x: areaDef.centerX, y: areaDef.centerY }
+                            : { area: 'WORLD', x: Field.x, y: Field.y }));
+                    const savedWorld = saved && typeof WORLD_MAPS !== 'undefined' && WORLD_MAPS[saved.areaKey];
+                    const exit = (!localExit && savedWorld)
+                        ? { area: saved.areaKey, x: saved.x, y: saved.y }
                         : fallback;
                     App.data.mapReturnPoint = null;
-                    App.data.location.area = 'WORLD';
+                    App.data.location.area = exit.area || 'WORLD';
                     App.data.transportMode = null;
-                    Field.x = exit.x; Field.y = exit.y;
-                    App.data.location.x = exit.x; App.data.location.y = exit.y;
-                    Field.currentMapData = null; 
+                    Field.x = Number(exit.x); Field.y = Number(exit.y);
+                    App.data.location.x = Field.x; App.data.location.y = Field.y;
+                    Field.currentMapData = null;
                     App.log("フィールドへ出た");
                     App.save(); Field.render();
                     if (typeof Field.startIdleStep === 'function') Field.startIdleStep();

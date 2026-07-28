@@ -88,11 +88,11 @@ const MenuStatus = {
         const stats = App.data.stats || {};
         const dungeon = App.data.dungeon || { maxFloor: 0, tryCount: 0 };
         const progress = App.data.progress || {};
+        const flags = progress.flags || {};
         const storyProgress = `${progress.storyStep || 0}-${progress.subStep || 0}`;
         const normalQuestClears = App.getNormalQuestCompletionCount?.() || Number(stats.totalQuestCompletions || 0);
         const guildQuestClears = App.getGuildQuestCompletionCount?.() || Number(stats.totalGuildQuestCompletions || 0);
         const guildRank = String(progress.guild?.rank || 'G');
-        const storyMaxFloor = Number(dungeon.storyMaxFloor || 0);
         const randomMaxFloor = Number(dungeon.maxFloor || 0);
         
         // モンスター図鑑の計算
@@ -127,11 +127,10 @@ const MenuStatus = {
                     <span style="background:#ffd700; width:3px; height:12px; display:inline-block;"></span> 冒険の足跡
                 </div>
                 ${row('ストーリー進行度', storyProgress, '#fff', '16px')}
-                ${row('物語深淵 最高到達', `${storyMaxFloor} 階`, '#d7b8ff', '16px')}
+                ${row('深淵世界の踏破', flags.abyssAzelgaragDefeated ? '達成' : '攻略中', '#d7b8ff', '16px')}
                 ${row('ランダム深淵 最高到達', `${randomMaxFloor} 階`, '#ffd700', '16px')}
                 ${row('深淵挑戦回数（合計）', `${dungeon.tryCount || 0} 回`)}
-                ${row('物語 / ランダム挑戦', `${dungeon.storyTryCount || 0} / ${dungeon.randomTryCount || 0} 回`)}
-                ${Number(dungeon.legacyUnclassifiedAbyssTryCount || 0) > 0 ? row('旧仕様の未分類挑戦', `${Number(dungeon.legacyUnclassifiedAbyssTryCount || 0)} 回`, '#aaa') : ''}
+                ${row('ランダム深淵の挑戦', `${dungeon.randomTryCount || 0} 回`)}
                 ${row('冒険者ランク', `${guildRank}ランク`, '#ffd56b')}
                 ${row('通常クエストクリア', `${normalQuestClears} 件`, '#9fd8ff')}
                 ${row('ギルド依頼クリア', `${guildQuestClears} 件`, '#8cff9d')}

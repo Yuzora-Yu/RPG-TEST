@@ -1,23 +1,27 @@
-# Code / data files changed or added
-assets.js
-docs/monster-rebalance-v3/MONSTER_DROP_CHANGE_AUDIT.csv
-docs/monster-rebalance-v3/MONSTER_ID_MIGRATION_V2_TO_V3.csv
-docs/monster-rebalance-v3/MONSTER_IMAGE_RENAME_MAP_V3.csv
-docs/monster-rebalance-v3/MONSTER_REBALANCE_AUDIT.csv
-docs/monster-rebalance-v3/MONSTER_SKILL_CHANGE_AUDIT.csv
-docs/monster-rebalance-v3/QUEST_MONSTER_REFERENCE_AUDIT.csv
-docs/monster-rebalance-v3/README.md
-docs/monster-rebalance-v3/モンスター修正_入力原本.csv
-dungeon.js
-guild_quests.js
-main.js
+[UPDATED: 13]
 map.js
-monster-drop-policy.js
-monsters.js
-quests.js
+dungeon.js
+menus_status.js
+battle.js
+story.js
+guild_quests.js
+index.html
+main.js
+facilities.js
+achievements.js
 sw.js
-tools/rebuild-fixed-dungeons.js
-tools/validation/validate-key-door-runtime.js
+story_logic.js
+guild.js
 
-# Full replacement folder included
-assets/monsters/ (271 PNG files; replace the existing folder as a whole)
+[NEW: 8]
+abyss_content.js
+abyss_story.js
+abyss_region.js
+abyss_runtime.js
+abyss_battle.js
+tools/validation/validate-abyss-battle.js
+tools/validation/validate-abyss-region-rework.js
+docs/scenario/abyss-region.md
+
+[DELETED]
+なし

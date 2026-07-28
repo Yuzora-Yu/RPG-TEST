@@ -1201,6 +1201,9 @@ const StoryManager = {
         
         if (action.type === 'SUB')  { data.subStep = action.value; }
         if (action.type === 'LOG')   App.log(action.value);
+        if (action.type === 'CREDITS') {
+            await this.showCredits(action);
+        }
 
         if (action.type === 'QUEST_ACCEPT' && typeof App.acceptQuest === 'function') {
             App.acceptQuest(action.value || action.questId, { silent: true });
@@ -1303,10 +1306,21 @@ const StoryManager = {
             }
         }
 
-        if (action.type === 'START_ABYSS_DUNGEON') {
-            if (typeof Dungeon !== 'undefined' && typeof Dungeon.enter === 'function') {
+        if (action.type === 'START_FIXED_MAP') {
+            if (typeof Field !== 'undefined' && typeof Field.enterFixedMap === 'function' && action.value) {
                 this.prepareMapTransfer();
-                Dungeon.enter({ mode: 'story' });
+                Field.enterFixedMap(action.value, { entryKey: action.entryKey || null });
+                return 'BREAK';
+            }
+        }
+
+        if (action.type === 'START_ABYSS_DUNGEON') {
+            if (typeof Dungeon !== 'undefined') {
+                this.prepareMapTransfer();
+                const mode = action.mode || 'story';
+                const floor = Math.max(1, Number(action.floor || 1));
+                if (action.direct === true && typeof Dungeon.start === 'function') Dungeon.start(floor, { mode });
+                else if (typeof Dungeon.enter === 'function') Dungeon.enter({ mode });
                 return 'BREAK';
             }
         }
@@ -1525,6 +1539,62 @@ const StoryManager = {
             };
             box.appendChild(menu);
         });
+    },
+
+
+    /**
+     * ストーリー正本から呼び出す汎用エンドロール。
+     */
+    showCredits: async function(options = {}) {
+        const existing = document.getElementById('story-credits-overlay');
+        if (existing) existing.remove();
+        const overlay = document.createElement('div');
+        overlay.id = 'story-credits-overlay';
+        overlay.setAttribute('role', 'dialog');
+        overlay.setAttribute('aria-label', options.title || 'エンドロール');
+        overlay.style.cssText = [
+            'position:fixed','inset:0','z-index:4200','background:radial-gradient(circle at 50% 35%, #22243d 0%, #080911 58%, #000 100%)',
+            'color:#fff','display:flex','align-items:center','justify-content:center','overflow:hidden','font-family:serif'
+        ].join(';');
+        const roll = document.createElement('div');
+        roll.style.cssText = 'width:min(88vw,720px);text-align:center;line-height:2.15;letter-spacing:.08em;transform:translateY(70vh);animation:storyCreditsRoll 16s linear forwards;';
+        const title = document.createElement('h1');
+        title.textContent = options.title || 'THE END';
+        title.style.cssText = 'font-size:clamp(24px,5vw,46px);margin:0 0 10vh;color:#f1e7ba;text-shadow:0 0 18px rgba(255,255,255,.4);';
+        roll.appendChild(title);
+        (Array.isArray(options.lines) ? options.lines : []).forEach(line => {
+            const p = document.createElement('p');
+            p.textContent = String(line || '');
+            p.style.cssText = 'margin:3.5vh 0;font-size:clamp(14px,2.8vw,22px);';
+            roll.appendChild(p);
+        });
+        const end = document.createElement('p');
+        end.textContent = '画面を押して戻る';
+        end.style.cssText = 'margin:13vh 0 30vh;font-size:14px;opacity:.72;';
+        roll.appendChild(end);
+        overlay.appendChild(roll);
+        if (!document.getElementById('story-credits-style')) {
+            const style = document.createElement('style');
+            style.id = 'story-credits-style';
+            style.textContent = '@keyframes storyCreditsRoll{0%{transform:translateY(70vh)}100%{transform:translateY(-105%)}}';
+            document.head.appendChild(style);
+        }
+        document.body.appendChild(overlay);
+        if (typeof AudioManager !== 'undefined') AudioManager.stopBgm?.(600);
+        await new Promise(resolve => {
+            let closable = false;
+            const timer = setTimeout(() => { closable = true; }, 1200);
+            const finish = () => {
+                if (!closable) return;
+                clearTimeout(timer);
+                overlay.removeEventListener('click', finish);
+                overlay.remove();
+                resolve();
+            };
+            overlay.addEventListener('click', finish);
+            setTimeout(() => { closable = true; }, 16000);
+        });
+        if (typeof AudioManager !== 'undefined') AudioManager.syncForScene?.('field');
     },
 
     /**

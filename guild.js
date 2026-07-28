@@ -683,22 +683,22 @@
         },
 
         migrateGeneratedAbyssQuestDefinition(def, storedVersion = 0) {
-            if (!def || def.generatorKind !== 'abyss' || storedVersion >= 5) return def;
+            if (!def || def.generatorKind !== 'abyss' || storedVersion >= 6) return def;
             const scope = def.huntScope && typeof def.huntScope === 'object' ? def.huntScope : {};
             const oldFloorMin = Math.max(1, Math.floor(Number(scope.floorMin || 1)));
             const oldFloorMax = Math.max(oldFloorMin, Math.floor(Number(scope.floorMax || oldFloorMin)));
-            const randomMode = oldFloorMin > 100;
-            const floorMin = randomMode ? Math.max(1, oldFloorMin - 100) : oldFloorMin;
-            const floorMax = randomMode ? Math.max(floorMin, oldFloorMax - 100) : oldFloorMax;
-            const abyssMode = randomMode ? 'random' : 'story';
-            const areaLabel = randomMode ? 'ランダム深淵' : '物語深淵';
+            const wasLegacyRandom = oldFloorMin > 100;
+            const floorMin = wasLegacyRandom ? Math.max(1, oldFloorMin - 100) : oldFloorMin;
+            const floorMax = wasLegacyRandom ? Math.max(floorMin, oldFloorMax - 100) : oldFloorMax;
+            const abyssMode = 'random';
+            const areaLabel = 'ランダム深淵';
             const rangeLabel = `地下${floorMin}～${floorMax}階`;
             const count = Math.max(1, Math.floor(Number(def.targetCount || 1)));
             const namePrefix = String(def.name || '深淵巡回').replace(/・地下\d+～\d+階.*$/, '') || '深淵巡回';
 
             def.name = `${namePrefix}・${rangeLabel}`;
             def.area = `${areaLabel} ${rangeLabel}`;
-            def.unlockFlags = [randomMode ? 'abyssRandomUnlocked' : 'abyssFirstEntered'];
+            def.unlockFlags = ['abyssRandomUnlocked'];
             def.requiredMaxAbyssFloor = floorMax;
             def.objective = `${areaLabel} ${rangeLabel}で、通常戦闘の魔物を合計${count}体討伐する。`;
             def.startText = `到達済みの${areaLabel} ${rangeLabel}について、魔物の間引き依頼が発行された。種類は問わない。`;
@@ -716,9 +716,7 @@
             };
             def.spawnAreaLabel = `${areaLabel} ${rangeLabel}`;
             def.generatorKey = `${floorMin}-${floorMax}`;
-            def.generatorSignature = randomMode
-                ? `abyss:${floorMin}-${floorMax}`
-                : `legacy-story-abyss:${floorMin}-${floorMax}`;
+            def.generatorSignature = `abyss:${floorMin}-${floorMax}`;
             return def;
         },
 

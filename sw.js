@@ -16,13 +16,13 @@ try {
   // assets.js の汎用登録処理へ monsters.js の全定義を渡し、
   // monster_<ID>.png を全量キャッシュへ自動登録する。
   // Service Worker内では DOM/Image を生成せず、構築済み配列だけを参照する。
-  importScripts("assets.js", "monsters.js", "monster-images.js");
+  importScripts("assets.js", "monsters.js", "abyss_content.js", "monster-images.js");
 } catch (error) {
   console.warn("[SW] モンスター定義を含む画像一覧の読み込みに失敗しました。画像初回キャッシュは最小限で続行します。", error);
 }
 
-const CACHE_NAME = 'prisma-abyss-monster-schema-v3-20260728-abyss-floor-v2';
-const RUNTIME_CACHE_NAME = 'prisma-abyss-monster-schema-v3-20260728-abyss-floor-v2-runtime';
+const CACHE_NAME = 'prisma-abyss-region-v1-20260728';
+const RUNTIME_CACHE_NAME = 'prisma-abyss-region-v1-20260728-runtime';
 const WARM_CACHE_META_KEY = "__prisma_abyss_warm_cache_complete__";
 
 // 起動に必要な App Shell。
@@ -41,6 +41,7 @@ const PRECACHE_FILES = [
   "map_render_shared.js",
   "polish.js",
   "main.js",
+  "abyss_runtime.js",
   "audio_manifest.js",
   "audio.js",
   "save_crypto.js",
@@ -63,12 +64,14 @@ const PRECACHE_FILES = [
   "item_runtime.js",
   "gacha.js",
   "monsters.js",
+  "abyss_content.js",
   "chest-mimics.js",
   "monster-drop-policy.js",
   "monster-images.js",
   "skills.js",
   "characters.js",
   "battle.js",
+  "abyss_battle.js",
   "equips.js",
   "blacksmith.js",
   "dungeon.js",
@@ -80,8 +83,10 @@ const PRECACHE_FILES = [
   "job_data.js",
   "map.js",
   "maps_logic.js",
+  "abyss_region.js",
   "story.js",
   "story_logic.js",
+  "abyss_story.js",
   "opening.js",
   "quests.js",
   "passiveSkill.js",

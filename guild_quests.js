@@ -674,35 +674,23 @@
             "areaKeys": [
                 "ABYSS"
             ],
-            "label": "深淵の魔窟",
+            "label": "ランダム深淵",
             "abyssMode": "random"
         },
-        "spawnAreaLabel": "深淵の魔窟 地下71～75階",
+        "spawnAreaLabel": "ランダム深淵 地下71～75階",
         "requiredMaxAbyssFloor": 71
     },
     "guild_abyss_patrol_051_060": {
-        "name": "深淵巡回・第五十一～六十階",
-        "area": "物語深淵 地下51～60階",
+        "name": "深淵巡回・水炎の境界",
+        "area": "極寒樹林・煉獄山脈周辺",
         "kind": "hunt",
-        "unlockFlags": [
-            "abyssFirstEntered"
-        ],
-        "requiredMaxAbyssFloor": 60,
-        "objective": "物語深淵 地下51～60階で、通常戦闘の魔物を合計8体討伐する。",
-        "startText": "第五十階層を越えた観測隊から、次の十階層に棲む魔物の間引き依頼が届いた。種類は問わない。",
-        "progressText": "物語深淵 地下51～60階で通常戦闘の魔物を8体討伐し、ライザーク要塞のギルド受付へ報告しよう。",
+        "unlockFlags": ["abyssFirstBarrierCleared"],
+        "objective": "極寒樹林、氷刻の浄罪路、煉獄山脈、灼熱の古城で通常戦闘の魔物を合計8体討伐する。",
+        "startText": "ビスタの北に広がる水と炎の領域で、街道を脅かす魔物の間引きを頼みたい。種類は問わない。",
+        "progressText": "水と炎の領域で通常戦闘の魔物を8体討伐し、冒険者ギルドへ報告しよう。",
         "targetCount": 8,
-        "completeText": "観測路の安全が確保され、深層探索用の補給品を受け取った。",
-        "rewardItems": [
-            {
-                "id": 1041,
-                "count": 1
-            },
-            {
-                "id": 2019,
-                "count": 1
-            }
-        ],
+        "completeText": "二つの街道の安全が確保され、深淵由来の補給品を受け取った。",
+        "rewardItems": [{"id":1041,"count":1},{"id":2019,"count":1}],
         "requiredRank": "D",
         "guildExp": 216,
         "guildPoints": 85,
@@ -710,45 +698,28 @@
         "rarity": "R",
         "repeatable": true,
         "id": "guild_abyss_patrol_051_060",
-        "regionKey": "ABYSS",
+        "regionKey": "ABYSS_WORLD",
         "requestType": "hunt",
         "reportAt": "guildReception",
         "sortOrder": 151,
         "huntScope": {
-            "mode": "floorRange",
-            "areaKeys": [
-                "ABYSS"
-            ],
-            "label": "物語深淵",
-            "floorMin": 51,
-            "floorMax": 60,
-            "abyssMode": "story",
+            "mode": "monster",
+            "areaKeys": ["FROZEN_FOREST","ICE_PENANCE_ROAD","PURGATORY_MOUNTAINS","SCORCHING_OLD_CASTLE"],
+            "label": "水と炎の領域",
             "normalBattlesOnly": true
         }
     },
     "guild_abyss_patrol_081_090": {
-        "name": "深淵巡回・第八十一～九十階",
-        "area": "物語深淵 地下81～90階",
+        "name": "深淵巡回・光闇の深層",
+        "area": "夢幻回廊リドパルム・災禍の根ジャゴレア",
         "kind": "hunt",
-        "unlockFlags": [
-            "abyssFirstEntered"
-        ],
-        "requiredMaxAbyssFloor": 90,
-        "objective": "物語深淵 地下81～90階で、通常戦闘の魔物を合計9体討伐する。",
-        "startText": "中層の足場を維持するため、第八十一階から九十階に出現する魔物の討伐を求められた。",
-        "progressText": "物語深淵 地下81～90階で通常戦闘の魔物を9体討伐し、ライザーク要塞のギルド受付へ報告しよう。",
+        "unlockFlags": ["abyssLegacionNorthGateOpen"],
+        "objective": "夢幻回廊リドパルムと災禍の根ジャゴレアで通常戦闘の魔物を合計9体討伐する。",
+        "startText": "レガシオン北方の光と闇が交わる領域で、調査路を確保するための討伐依頼が出ている。",
+        "progressText": "リドパルムかジャゴレアで通常戦闘の魔物を9体討伐し、冒険者ギルドへ報告しよう。",
         "targetCount": 9,
-        "completeText": "中層の巡回路が安定し、観測隊から希少素材が支給された。",
-        "rewardItems": [
-            {
-                "id": 1042,
-                "count": 1
-            },
-            {
-                "id": 2021,
-                "count": 1
-            }
-        ],
+        "completeText": "北方調査路が安定し、希少な深淵素材が支給された。",
+        "rewardItems": [{"id":1042,"count":1},{"id":2021,"count":1}],
         "requiredRank": "C",
         "guildExp": 308,
         "guildPoints": 122,
@@ -756,19 +727,14 @@
         "rarity": "R",
         "repeatable": true,
         "id": "guild_abyss_patrol_081_090",
-        "regionKey": "ABYSS",
+        "regionKey": "ABYSS_WORLD",
         "requestType": "hunt",
         "reportAt": "guildReception",
         "sortOrder": 152,
         "huntScope": {
-            "mode": "floorRange",
-            "areaKeys": [
-                "ABYSS"
-            ],
-            "label": "物語深淵",
-            "floorMin": 81,
-            "floorMax": 90,
-            "abyssMode": "story",
+            "mode": "monster",
+            "areaKeys": ["RIDPALM_DREAM_CORRIDOR","JAGOREA_ROOT"],
+            "label": "光と闇の深層",
             "normalBattlesOnly": true
         }
     },
@@ -781,7 +747,7 @@
         ],
         "requiredMaxAbyssFloor": 20,
         "objective": "ランダム深淵 地下11～20階で、通常戦闘の魔物を合計10体討伐する。",
-        "startText": "再編後のランダム深淵、第十一階から二十階の観測路を守る掃討依頼が発行された。",
+        "startText": "ランダム深淵、第十一階から二十階の観測路を守る掃討依頼が発行された。",
         "progressText": "ランダム深淵 地下11～20階で通常戦闘の魔物を10体討伐し、ライザーク要塞のギルド受付へ報告しよう。",
         "targetCount": 10,
         "completeText": "観測器の搬入路が開かれ、深層由来の素材を受け取った。",
@@ -960,7 +926,7 @@
     // 自動生成依頼の正本。実際に掲示される依頼は guild.js 側でこのテンプレートから生成し、
     // 生成結果そのものをセーブへ保存する。受注後に再読込しても討伐数・報酬・対象範囲は変化しない。
     const GUILD_QUEST_GENERATOR_MASTER = {
-        schemaVersion: 5,
+        schemaVersion: 6,
         generatedOfferRatio: 0.75,
         normalHunts: [
             {

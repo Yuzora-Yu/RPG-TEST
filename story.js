@@ -29,16 +29,12 @@ const STORY_MANAGER_DATA = {
         "7-0": "光の神殿へ入り、儀式の真相を追おう",
         "8-0": "魔王城へ向かい、闇のプリズムの真実を確かめよう",
         "9-0": "世界の中心に開いた深淵への亀裂を調べよう",
-        "10-0": "深淵の魔窟に挑み、混沌の根源を断とう",
-        "10-1": "深淵100階の戦いを終え、一度地上へ戻ろう",
-        "10-2": "光の翼を得て、深淵のさらに奥を目指そう"
+        "10-0": "深淵の魔窟の先に広がる異界を探索しよう",
+        "10-1": "四つの楔を倒し、深淵を覆う結界を解こう",
+        "10-2": "終焉の祭壇で混沌の根源を断とう"
 },
 
-    storyDungeonObjectiveMilestones: [
-        { floor: 11, text: "物語深淵10階を目指そう！" },
-        { floor: 51, text: "物語深淵50階を目指そう！" },
-        { floor: 101, text: "物語深淵100階を踏破しよう！" }
-    ],
+    storyDungeonObjectiveMilestones: [],
 
     randomDungeonObjectiveMilestones: [
         { floor: 11, text: "ランダム深淵10階を目指そう！" },
@@ -3476,7 +3472,12 @@ const STORY_MANAGER_DATA = {
                                 "value": 0
                         },
                         {
-                                "type": "START_ABYSS_DUNGEON"
+                                "type": "FLAG",
+                                "key": "abyssFirstEntered"
+                        },
+                        {
+                                "type": "START_FIXED_MAP",
+                                "value": "CARMENA"
                         }
                 ],
                 "winActions": []

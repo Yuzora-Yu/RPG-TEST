@@ -53,14 +53,14 @@ const ACHIEVEMENTS_DATA = [
     // --- 3. 深淵到達階層 ---
     // 既存ID 301～305 は旧セーブの解除状態と報酬受取状態を壊さないよう、
     // 旧階層と同じ地点を指す条件として維持する。
-    { id: 301, type: "STORY_FLOOR", goal: 11, category: "探索", title: "深淵の入り口", desc: "物語深淵 11階に到達", rewards: [{ type: 'GEM', val: 100 }] },
-    { id: 302, type: "STORY_FLOOR", goal: 31, category: "探索", title: "中層の覇者", desc: "物語深淵 31階に到達", rewards: [{ type: 'GEM', val: 500 }] },
-    { id: 303, type: "STORY_FLOOR", goal: 51, category: "探索", title: "奈落を識る者", desc: "物語深淵 51階に到達", rewards: [{ type: 'GEM', val: 1000 }] },
-    { id: 304, type: "RANDOM_FLOOR", goal: 1, category: "探索", title: "深淵を越えし者", desc: "ランダム深淵 1階に到達（旧101階相当）", rewards: [
+    { id: 301, type: "FLAG", flag: "abyssCarmenaGateCleared", goal: 1, category: "探索", title: "最果ての門", desc: "カルメナの北門を解放", rewards: [{ type: 'GEM', val: 100 }] },
+    { id: 302, type: "FLAG", flag: "abyssFirstBarrierCleared", goal: 1, category: "探索", title: "第一層の解放者", desc: "深淵都市ビスタを覆う結界を解除", rewards: [{ type: 'GEM', val: 500 }] },
+    { id: 303, type: "FLAG", flag: "abyssSecondBarrierCleared", goal: 1, category: "探索", title: "第二層の解放者", desc: "混沌魔城レガシオンを覆う結界を解除", rewards: [{ type: 'GEM', val: 1000 }] },
+    { id: 304, type: "RANDOM_FLOOR", goal: 1, category: "探索", title: "深淵を越えし者", desc: "ランダム深淵 1階に到達", rewards: [
         { type: 'GEM', val: 3000 },
         { type: 'ITEM', id: 107, val: 1 }
     ] },
-    { id: 305, type: "RANDOM_FLOOR", goal: 101, category: "探索", title: "真装備の探索者", desc: "ランダム深淵 101階に到達（旧201階相当）", rewards: [
+    { id: 305, type: "RANDOM_FLOOR", goal: 101, category: "探索", title: "真装備の探索者", desc: "ランダム深淵 101階に到達", rewards: [
         { type: 'GEM', val: 5000 },
         { type: 'ITEM', id: 106, val: 10 }
     ] },
@@ -182,12 +182,12 @@ const ACHIEVEMENTS_DATA = [
     { id: 2004, type: "BLACKSMITH_COUNT", goal: 500, category: "鍛冶", title: "神工への道", desc: "鍛冶を500回行う", rewards: [{ type:'ITEM', id:107, val:1 }] },
     { id: 2101, type: "BATTLE_COUNT", goal: 100, category: "戦闘", title: "百戦の経験", desc: "戦闘に100回勝利", rewards: [{ type:'GEM', val:500 }] },
     { id: 2102, type: "BATTLE_COUNT", goal: 1000, category: "戦闘", title: "千戦の覇者", desc: "戦闘に1,000回勝利", rewards: [{ type:'GEM', val:2000 }] },
-    { id: 2201, type: "STORY_FLOOR", goal: 100, category: "物語", title: "物語深淵の踏破", desc: "物語深淵100階に到達", rewards: [{ type:'GEM', val:3000 }] },
+    { id: 2201, type: "FLAG", flag: "abyssAzelgaragDefeated", goal: 1, category: "物語", title: "深淵王の終焉", desc: "深淵王アゼルガラグを撃破", rewards: [{ type:'GEM', val:3000 }] },
 
     // --- 17. 再編後ランダム深淵の追加到達目標 ---
-    { id: 2301, type: "RANDOM_FLOOR", goal: 25, category: "探索", title: "再編された深淵", desc: "ランダム深淵25階に到達", rewards: [{ type:'GEM', val:500 }] },
+    { id: 2301, type: "RANDOM_FLOOR", goal: 25, category: "探索", title: "深層への歩み", desc: "ランダム深淵25階に到達", rewards: [{ type:'GEM', val:500 }] },
     { id: 2302, type: "RANDOM_FLOOR", goal: 50, category: "探索", title: "深層観測者", desc: "ランダム深淵50階に到達", rewards: [{ type:'GEM', val:1000 }] },
-    { id: 2303, type: "RANDOM_FLOOR", goal: 100, category: "探索", title: "旧二百階の到達者", desc: "ランダム深淵100階に到達（旧200階相当）", rewards: [{ type:'GEM', val:2500 }] },
+    { id: 2303, type: "RANDOM_FLOOR", goal: 100, category: "探索", title: "百層の到達者", desc: "ランダム深淵100階に到達", rewards: [{ type:'GEM', val:2500 }] },
     { id: 2304, type: "RANDOM_FLOOR", goal: 200, category: "探索", title: "無限深層の探索者", desc: "ランダム深淵200階に到達", rewards: [{ type:'ITEM', id:106, val:10 }] }
 
 ];
@@ -284,6 +284,7 @@ const AchievementManager = {
             case "FLOOR":
             case "RANDOM_FLOOR": return Number(dungeon.maxFloor) || 0;
             case "STORY_FLOOR": return Number(dungeon.storyMaxFloor) || 0;
+            case "FLAG": return progress.flags?.[ach.flag] ? 1 : 0;
             case "STORY": return Number(progress.storyStep) || 0;
             case "SMITH": return Number(smith.level) || 0;
             case "BOOK": return Array.isArray(book) ? new Set(book).size : 0;

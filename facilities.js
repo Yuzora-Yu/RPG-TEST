@@ -4,7 +4,7 @@
 
 const Facilities = {
     teleportFloor: 1,
-    teleportMode: 'story',
+    teleportMode: 'random',
     modalCloseHandlers: Object.create(null),
 
     // 施設背景は assets.js / GRAPHICS を使わず、このファイルから直接参照する
@@ -170,59 +170,33 @@ const Facilities = {
         });
     },
 
-    getAbyssTeleportMode: (requestedMode = Facilities.teleportMode) => {
-        const randomUnlocked = !!App.data?.progress?.flags?.abyssRandomUnlocked;
-        const normalized = globalThis.ABYSS_FLOOR_RULES?.normalizeMode
-            ? globalThis.ABYSS_FLOOR_RULES.normalizeMode(requestedMode, randomUnlocked ? 'random' : 'story')
-            : (requestedMode === 'random' ? 'random' : 'story');
-        return normalized === 'random' && randomUnlocked ? 'random' : 'story';
-    },
+    getAbyssTeleportMode: () => 'random',
 
-    getAbyssTeleportMaxFloor: (mode = Facilities.teleportMode) => {
-        const normalizedMode = Facilities.getAbyssTeleportMode(mode);
+    getAbyssTeleportMaxFloor: () => {
         const dungeon = App.data?.dungeon || {};
-        const recorded = normalizedMode === 'random'
-            ? Number(dungeon.maxFloor || 0)
-            : Number(dungeon.storyMaxFloor || 0);
-        return Math.max(1, Math.floor(recorded || 1));
+        return Math.max(1, Math.floor(Number(dungeon.maxFloor || 0) || 1));
     },
 
-    getAbyssTeleportCost: (displayFloor = Facilities.teleportFloor, mode = Facilities.teleportMode) => {
+    getAbyssTeleportCost: (displayFloor = Facilities.teleportFloor) => {
         const floor = Math.max(1, Math.floor(Number(displayFloor) || 1));
-        const normalizedMode = Facilities.getAbyssTeleportMode(mode);
         const balanceFloor = globalThis.ABYSS_FLOOR_RULES?.getBalanceFloor
-            ? globalThis.ABYSS_FLOOR_RULES.getBalanceFloor(floor, normalizedMode)
-            : (normalizedMode === 'random' ? floor + 100 : floor);
+            ? globalThis.ABYSS_FLOOR_RULES.getBalanceFloor(floor, 'random')
+            : floor + 100;
         return Math.max(0, Math.floor(balanceFloor * 10000));
     },
 
-    openTeleport: (requestedMode = null) => {
-        if (typeof App !== 'undefined' && typeof App.hasEnteredAbyss === 'function' && !App.hasEnteredAbyss()) return;
+    openTeleport: () => {
+        if (!App.data?.progress?.flags?.abyssRandomUnlocked) return Menu.msg('転送先となる深層の亀裂は、まだ見つかっていない。');
         if (typeof App !== 'undefined' && typeof App.requireFeatureUnlocked === 'function' && !App.requireFeatureUnlocked('teleport')) return;
 
-        Facilities.teleportMode = Facilities.getAbyssTeleportMode(
-            requestedMode || Facilities.teleportMode || (App.data?.progress?.flags?.abyssRandomUnlocked ? 'random' : 'story')
-        );
-        const maxF = Facilities.getAbyssTeleportMaxFloor(Facilities.teleportMode);
+        Facilities.teleportMode = 'random';
+        const maxF = Facilities.getAbyssTeleportMaxFloor();
         Facilities.teleportFloor = Math.max(1, Math.min(maxF, Number(Facilities.teleportFloor || 1)));
-
-        const randomUnlocked = !!App.data?.progress?.flags?.abyssRandomUnlocked;
-        const modeLabel = Facilities.teleportMode === 'random' ? 'ランダム深淵' : '物語深淵';
-        const balanceFloor = globalThis.ABYSS_FLOOR_RULES?.getBalanceFloor
-            ? globalThis.ABYSS_FLOOR_RULES.getBalanceFloor(Facilities.teleportFloor, Facilities.teleportMode)
-            : (Facilities.teleportMode === 'random' ? Facilities.teleportFloor + 100 : Facilities.teleportFloor);
-        const modeButtons = randomUnlocked ? `
-            <div style="display:flex;gap:8px;margin-bottom:12px;">
-                <button class="btn" style="flex:1;${Facilities.teleportMode === 'story' ? 'border-color:#ffd700;color:#fff;' : ''}" onclick="Facilities.openTeleport('story')">物語深淵</button>
-                <button class="btn" style="flex:1;${Facilities.teleportMode === 'random' ? 'border-color:#80c8ff;color:#fff;' : ''}" onclick="Facilities.openTeleport('random')">ランダム深淵</button>
-            </div>` : '';
 
         Facilities.showModal('inn-scene', "行き先を選択", `
             <div style="text-align:center;">
-                ${modeButtons}
-                <div style="font-size:13px;color:#fff;margin-bottom:5px;">${modeLabel}</div>
-                <div id="inn-tele-balance" style="font-size:11px;color:#aaa;margin-bottom:5px;">${Facilities.teleportMode === 'random' ? `旧バランス階層 ${balanceFloor}階相当` : `バランス階層 ${balanceFloor}階`}</div>
-                <div id="inn-tele-cost" style="font-size:12px;color:#ffd700;margin-bottom:15px;">必要額: ${Facilities.getAbyssTeleportCost(Facilities.teleportFloor, Facilities.teleportMode).toLocaleString()} Gold</div>
+                <div style="font-size:13px;color:#fff;margin-bottom:8px;">ランダム深淵</div>
+                <div id="inn-tele-cost" style="font-size:12px;color:#ffd700;margin-bottom:15px;">必要額: ${Facilities.getAbyssTeleportCost(Facilities.teleportFloor).toLocaleString()} Gold</div>
                 <div style="display:flex;justify-content:center;align-items:center;gap:8px;margin-bottom:20px;">
                     <button class="btn" style="width:40px;height:35px;" onclick="Facilities.updateTele(-10)">-10</button>
                     <button class="btn" style="width:40px;height:35px;" onclick="Facilities.updateTele(-1)">-1</button>
@@ -236,35 +210,25 @@ const Facilities = {
     },
 
     updateTele: (val) => {
-        const maxF = Facilities.getAbyssTeleportMaxFloor(Facilities.teleportMode);
+        const maxF = Facilities.getAbyssTeleportMaxFloor();
         Facilities.teleportFloor = Math.max(1, Math.min(maxF, Facilities.teleportFloor + Number(val || 0)));
         const el = document.getElementById('inn-tele-disp-val');
         if (el) el.innerText = Facilities.teleportFloor + "F";
-        const balanceFloor = globalThis.ABYSS_FLOOR_RULES?.getBalanceFloor
-            ? globalThis.ABYSS_FLOOR_RULES.getBalanceFloor(Facilities.teleportFloor, Facilities.teleportMode)
-            : (Facilities.teleportMode === 'random' ? Facilities.teleportFloor + 100 : Facilities.teleportFloor);
-        const balanceEl = document.getElementById('inn-tele-balance');
-        if (balanceEl) balanceEl.innerText = Facilities.teleportMode === 'random'
-            ? `旧バランス階層 ${balanceFloor}階相当`
-            : `バランス階層 ${balanceFloor}階`;
         const costEl = document.getElementById('inn-tele-cost');
-        if (costEl) costEl.innerText = `必要額: ${Facilities.getAbyssTeleportCost(Facilities.teleportFloor, Facilities.teleportMode).toLocaleString()} Gold`;
+        if (costEl) costEl.innerText = `必要額: ${Facilities.getAbyssTeleportCost(Facilities.teleportFloor).toLocaleString()} Gold`;
     },
 
     execTele: () => {
-        if (typeof App !== 'undefined' && typeof App.hasEnteredAbyss === 'function' && !App.hasEnteredAbyss()) return;
+        if (!App.data?.progress?.flags?.abyssRandomUnlocked) return Menu.msg('転送先となる深層の亀裂は、まだ見つかっていない。');
         if (typeof App !== 'undefined' && typeof App.requireFeatureUnlocked === 'function' && !App.requireFeatureUnlocked('teleport')) return;
-        const mode = Facilities.getAbyssTeleportMode(Facilities.teleportMode);
-        const maxF = Facilities.getAbyssTeleportMaxFloor(mode);
-        Facilities.teleportFloor = Math.max(1, Math.min(maxF, Number(Facilities.teleportFloor || 1)));
-        const cost = Facilities.getAbyssTeleportCost(Facilities.teleportFloor, mode);
+        Facilities.teleportFloor = Math.max(1, Math.min(Facilities.getAbyssTeleportMaxFloor(), Number(Facilities.teleportFloor || 1)));
+        const cost = Facilities.getAbyssTeleportCost(Facilities.teleportFloor);
         if (App.data.gold < cost) return Menu.msg("ゴールドが 足りません。");
-        const label = mode === 'random' ? 'ランダム深淵' : '物語深淵';
-        Menu.confirm(`${label} ${Facilities.teleportFloor}階への転送には ${cost.toLocaleString()} Gold 必要です。よろしいですか？`, () => {
+        Menu.confirm(`ランダム深淵 ${Facilities.teleportFloor}階への転送には ${cost.toLocaleString()} Gold 必要です。よろしいですか？`, () => {
             App.data.gold -= cost;
             App.save();
             Facilities.closeModal('inn-scene');
-            if (typeof Dungeon !== 'undefined') Dungeon.start(Facilities.teleportFloor, { mode });
+            if (typeof Dungeon !== 'undefined') Dungeon.start(Facilities.teleportFloor, { mode: 'random' });
         });
     },
 
@@ -998,7 +962,7 @@ const Facilities = {
         const title = config.title || Facilities.shopTypeLabels[type] || '店';
         const rank = Math.max(1, Number(config.shopRank || config.rank || Facilities.getCurrentAreaShopRank()) || 1);
         const area = App?.data?.location?.area || 'WORLD';
-        App.data.currentShop = { type, title, rank, area, mode: 'home', openedAt: Date.now() };
+        App.data.currentShop = { type, title, rank, area, itemIds: Array.isArray(config.itemIds) ? config.itemIds.map(Number).filter(Number.isFinite) : null, mode: 'home', openedAt: Date.now() };
         Facilities.shopSelectedKey = null;
         Facilities.shopPendingTrade = null;
         App.changeScene('shop');
@@ -1182,7 +1146,13 @@ const Facilities = {
         `, true);
     },
 
-    getItemShopLineup: (rank = 1) => {
+    getItemShopLineup: (rank = 1, itemIds = null) => {
+        if (Array.isArray(itemIds) && itemIds.length) {
+            const order = new Map(itemIds.map((id, index) => [Number(id), index]));
+            return (DB.ITEMS || [])
+                .filter(item => order.has(Number(item.id)) && Number(item.price || 0) > 0)
+                .sort((a, b) => order.get(Number(a.id)) - order.get(Number(b.id)));
+        }
         // Offensive and battle-control consumables are obtained from drops,
         // treasure and medal exchange rather than ordinary item shops.
         const excludedEffectKinds = new Set(['damage', 'buff', 'debuff']);
@@ -1221,7 +1191,7 @@ const Facilities = {
         const cfg = App?.data?.currentShop || { rank: Facilities.getCurrentAreaShopRank() };
         const list = document.getElementById('shop-list') || document.getElementById('shop-scene-msg-content');
         if (!list) return;
-        const items = Facilities.getItemShopLineup(cfg.rank);
+        const items = Facilities.getItemShopLineup(cfg.rank, cfg.itemIds);
         if (items.length === 0) {
             list.innerHTML = `<div class="shop-empty-list">品切れです。</div>`;
             Facilities.setShopHelp('品物がありません。');

@@ -695,6 +695,13 @@ const Battle = {
             isRare: !!enemy.isRare,
             isSpecialBoss: !!enemy.isSpecialBoss,
             isEstark: !!enemy.isEstark,
+            gutsLevel: Number(enemy.gutsLevel || 0),
+            linkedDeathIndex: Number.isFinite(Number(enemy.linkedDeathIndex)) ? Number(enemy.linkedDeathIndex) : null,
+            linkedBattleGroup: enemy.linkedBattleGroup || null,
+            sharedVisualGroup: enemy.sharedVisualGroup || null,
+            abyssFallHandled: enemy.abyssFallHandled === true,
+            abyssPhaseTransitioned: enemy.abyssPhaseTransitioned === true,
+            abyssSealedSkillIds: clone(enemy.abyssSealedSkillIds || []),
             battleStatus: clone(enemy.battleStatus || { buffs: {}, debuffs: {}, ailments: {} })
         };
     },
@@ -742,6 +749,13 @@ const Battle = {
         enemy.isRare = !!(snapshot.isRare || base.isRare);
         enemy.isEstark = !!(snapshot.isEstark || base.isEstark);
         enemy.isSpecialBoss = !!(snapshot.isSpecialBoss || base.isSpecialBoss || enemy.isEstark);
+        enemy.gutsLevel = finiteOr(snapshot.gutsLevel, enemy.gutsLevel ?? base.gutsLevel ?? 0);
+        enemy.linkedDeathIndex = Number.isFinite(Number(snapshot.linkedDeathIndex)) ? Number(snapshot.linkedDeathIndex) : (base.linkedDeathIndex ?? null);
+        enemy.linkedBattleGroup = snapshot.linkedBattleGroup || enemy.linkedBattleGroup || base.linkedBattleGroup || null;
+        enemy.sharedVisualGroup = snapshot.sharedVisualGroup || enemy.sharedVisualGroup || base.sharedVisualGroup || null;
+        enemy.abyssFallHandled = snapshot.abyssFallHandled === true;
+        enemy.abyssPhaseTransitioned = snapshot.abyssPhaseTransitioned === true;
+        enemy.abyssSealedSkillIds = clone(snapshot.abyssSealedSkillIds || []);
         enemy.battleStatus = clone(snapshot.battleStatus || { buffs: {}, debuffs: {}, ailments: {} });
         enemy.isDead = enemy.hp <= 0;
         return enemy;
@@ -2909,6 +2923,7 @@ findNextActor: () => {
                     await Battle.onActionEnd(actor); // 行動直後のダメージ/リジェネ
                     // 怯え停止でも継続ダメージ後の死亡確定・画面更新・勝敗判定は省略しない。
                     Battle.updateDeadState();
+                    if (typeof Battle.awaitPendingBattleEvent === 'function') await Battle.awaitPendingBattleEvent();
                     Battle.renderEnemies();
                     Battle.renderPartyStatus();
                     if (Battle.checkFinish()) return;
@@ -2943,6 +2958,7 @@ findNextActor: () => {
             
             // 死亡状態の更新
             Battle.updateDeadState();
+            if (typeof Battle.awaitPendingBattleEvent === 'function') await Battle.awaitPendingBattleEvent();
 
             Battle.renderEnemies(); Battle.renderPartyStatus();
             if (Battle.checkFinish()) return;

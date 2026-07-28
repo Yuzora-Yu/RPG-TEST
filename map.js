@@ -1625,7 +1625,15 @@ const MAP_MASTER = Object.freeze({
     JAGOREA_ROOT: { id: "MAP000049", name: "災禍の根ジャゴレア" },
     CHRONO_ABYSS: { id: "MAP000050", name: "次元牢獄クロノアビス" },
     MEDAL: { id: "MAP000051", name: "メダル王" },
-    WORLD: { id: "MAP000052", name: "地上世界" }
+    WORLD: { id: "MAP000052", name: "地上世界" },
+    ABYSS_WORLD: { id: "MAP000053", name: "深淵世界" },
+    CARMENA: { id: "MAP000054", name: "最果ての地カルメナ" },
+    VISTA: { id: "MAP000055", name: "深淵都市ビスタ" },
+    LEGACION: { id: "MAP000056", name: "混沌魔城レガシオン" },
+    FINAL_ALTAR: { id: "MAP000057", name: "終焉の祭壇" },
+    LEGACION_PRISON: { id: "MAP000058", name: "混沌魔城レガシオン 地下牢" },
+    LEGACION_TEMPLE: { id: "MAP000059", name: "混沌魔城レガシオン 地下神殿" },
+    LEGACION_THRONE: { id: "MAP000060", name: "混沌魔城レガシオン 二階謁見の間" }
 });
 
 const MAP_IDS = Object.freeze(Object.keys(MAP_MASTER).reduce((ids, key) => {
@@ -1639,10 +1647,16 @@ const FIXED_AREA_MAP_KEYS = Object.freeze({
     START_CAVE: "START_CAVE", FOREST_WIND_HOLE: "FOREST_WIND_HOLE", IGNIS_VOLCANO: "IGNIS_VOLCANO",
     FORBIDDEN_FOREST: "FORBIDDEN_FOREST", WIND_TEMPLE: "WIND_TEMPLE", CRENA_LIMESTONE_CAVE: "CRENA_LIMESTONE_CAVE",
     SEABED_TEMPLE: "SEABED_TEMPLE", BIG_TOWER: "BIG_TOWER", THUNDER_FORT: "THUNDER_FORT", LIGHT_PALACE: "LIGHT_PALACE",
-    DARK_SHRINE_RUINS: "DARK_SHRINE_RUINS", GALVANIA_CAVE: "GALVANIA_CAVE", DARK_CASTLE: "DARK_CASTLE", GREZELIA_FORBIDDEN: "GREZELIA_FORBIDDEN"
+    DARK_SHRINE_RUINS: "DARK_SHRINE_RUINS", GALVANIA_CAVE: "GALVANIA_CAVE", DARK_CASTLE: "DARK_CASTLE", GREZELIA_FORBIDDEN: "GREZELIA_FORBIDDEN",
+    CARMENA: "CARMENA", VISTA: "VISTA", LEGACION: "LEGACION", FINAL_ALTAR: "FINAL_ALTAR",
+    LEGACION_PRISON: "LEGACION_PRISON", LEGACION_TEMPLE: "LEGACION_TEMPLE", LEGACION_THRONE: "LEGACION_THRONE",
+    THUNDER_DUNES: "THUNDER_DUNES", SCREAMING_CEMETERY: "SCREAMING_CEMETERY", BLACK_ROPE_PYRAMID: "BLACK_ROPE_PYRAMID",
+    MAGIC_WIND_MAUSOLEUM: "MAGIC_WIND_MAUSOLEUM", FROZEN_FOREST: "FROZEN_FOREST", PURGATORY_MOUNTAINS: "PURGATORY_MOUNTAINS",
+    ICE_PENANCE_ROAD: "ICE_PENANCE_ROAD", SCORCHING_OLD_CASTLE: "SCORCHING_OLD_CASTLE", RIDPALM_DREAM_CORRIDOR: "RIDPALM_DREAM_CORRIDOR",
+    JAGOREA_ROOT: "JAGOREA_ROOT", CHRONO_ABYSS: "CHRONO_ABYSS"
 });
 
-const STORY_AREA_MAP_KEYS = Object.freeze({ ...FIXED_AREA_MAP_KEYS, ABYSS: "ABYSS", MEDAL: "MEDAL", WORLD: "WORLD" });
+const STORY_AREA_MAP_KEYS = Object.freeze({ ...FIXED_AREA_MAP_KEYS, ABYSS: "ABYSS", MEDAL: "MEDAL", WORLD: "WORLD", ABYSS_WORLD: "ABYSS_WORLD" });
 
 const createMapFloorId = (mapId, floor = 0) => `${String(mapId || '')}-${String(Math.max(0, Number(floor) || 0)).padStart(2, '0')}`;
 
@@ -1682,7 +1696,7 @@ const WORLD_BRIDGES = [
     }
 ];
 
-const MAP_DATA = [
+const SURFACE_WORLD_MAP_DATA = [
     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
     "WMMMLWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
     "WMGTTWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
@@ -1774,6 +1788,18 @@ const MAP_DATA = [
     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
 ];
+
+// WORLD_MAPS is populated by world-content modules. MAP_DATA remains the compatibility
+// entry point, but resolves to the active world so rendering, movement, encounters,
+// and validation never diverge between the surface and the Abyss world.
+const MAP_DATA = new Proxy(SURFACE_WORLD_MAP_DATA, {
+    get(target, property, receiver) {
+        const area = String(globalThis.App?.data?.location?.area || 'WORLD').toUpperCase();
+        const worldKey = area === 'ABYSS_WORLD' ? 'ABYSS_WORLD' : 'WORLD';
+        const active = globalThis.WORLD_MAPS?.[worldKey]?.tiles;
+        return Reflect.get(Array.isArray(active) ? active : target, property, receiver);
+    }
+});
 
 const FIXED_TILE_OVERLAYS = {
     DEFAULT_FIELD: {
@@ -3322,6 +3348,7 @@ const FIXED_MAPS = {
                 label: "魔窟に入る",
                 log: "闇がどこまでも続いているような穴がある。",
                 type: "abyssDungeon",
+                target: "CARMENA",
                 events: [
                     {
                         stepMin: 9,
@@ -13083,6 +13110,7 @@ if (typeof window !== "undefined") {
     window.SEA_ENCOUNTER_MONSTERS = SEA_ENCOUNTER_MONSTERS;
     window.FIELD_ENCOUNTER_ZONES = FIELD_ENCOUNTER_ZONES;
     window.WORLD_BRIDGES = WORLD_BRIDGES;
+    window.SURFACE_WORLD_MAP_DATA = SURFACE_WORLD_MAP_DATA;
     window.MAP_DATA = MAP_DATA;
     window.FIXED_TILE_OVERLAYS = FIXED_TILE_OVERLAYS;
     window.FIXED_OVERLAY_BASE_TILES = FIXED_OVERLAY_BASE_TILES;
