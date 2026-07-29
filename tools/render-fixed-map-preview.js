@@ -8,9 +8,9 @@ context.globalThis = context;
 vm.createContext(context);
 
 const mapCode = fs.readFileSync(path.join(root, 'map.js'), 'utf8');
-vm.runInContext(`${mapCode}\nglobalThis.__MAPS__ = { FIXED_MAPS, FIXED_TILE_OVERLAYS, FIXED_OVERLAY_BASE_TILES };`, context, { filename: 'map.js' });
+vm.runInContext(`${mapCode}\nglobalThis.__MAPS__ = { FIXED_MAPS, FIXED_DUNGEON_MAPS, FIXED_TILE_OVERLAYS, FIXED_OVERLAY_BASE_TILES };`, context, { filename: 'map.js' });
 
-const { FIXED_MAPS, FIXED_TILE_OVERLAYS, FIXED_OVERLAY_BASE_TILES } = context.__MAPS__;
+const { FIXED_MAPS, FIXED_DUNGEON_MAPS, FIXED_TILE_OVERLAYS, FIXED_OVERLAY_BASE_TILES } = context.__MAPS__;
 
 const colors = {
   W: '#172118',
@@ -81,7 +81,20 @@ function svgFor(def) {
   return `<svg viewBox="0 0 ${def.width * tile} ${def.height * tile}" width="${def.width * tile}" height="${def.height * tile}">${rects.join('')}</svg>`;
 }
 
-const cards = Object.entries(FIXED_MAPS).map(([key, def]) => `
+const abyssKeys = new Set([
+  'THUNDER_DUNES', 'SCREAMING_CEMETERY', 'BLACK_ROPE_PYRAMID', 'MAGIC_WIND_MAUSOLEUM',
+  'FROZEN_FOREST', 'PURGATORY_MOUNTAINS', 'ICE_PENANCE_ROAD', 'SCORCHING_OLD_CASTLE',
+  'RIDPALM_DREAM_CORRIDOR', 'JAGOREA_ROOT', 'CHRONO_ABYSS', 'FINAL_ALTAR'
+]);
+const previewEntries = [
+  ...Object.entries(FIXED_MAPS).map(([key, def]) => ({ key, def })),
+  ...Object.entries(FIXED_DUNGEON_MAPS)
+    .filter(([key]) => abyssKeys.has(key))
+    .flatMap(([key, base]) => (base.floors || [base])
+      .filter(def => def?.tiles && !def.procedural)
+      .map((def, index) => ({ key: `${key}:${def.floor || index + 1}`, def: { ...base, ...def, name: `${base.name} ${def.label || ''}`.trim() } })))
+];
+const cards = previewEntries.map(({ key, def }) => `
   <article class="card">
     <h2>${escapeHtml(def.name)} <span>${escapeHtml(key)}</span></h2>
     ${svgFor(def)}

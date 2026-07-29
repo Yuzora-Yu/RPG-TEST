@@ -107,10 +107,15 @@ const finalForm = bosses.find(monster => Number(monster.id) === 302101);
 assert(firstForm && finalForm && Number(firstForm.imageId) === 302100 && Number(finalForm.imageId) === 302101, 'アゼルガラグ2形態を別ID・別画像で正本化');
 assert(Number(firstForm?.phaseTransitionMonsterId) === 302101 && firstForm?.phaseTransitionConversation === 'ABYSS_AZELGARAG_TRANSFORM' && finalForm?.isAzelgaragFinalForm === true, 'アゼルガラグ形態移行の正本参照が相互に整合');
 
-const altarSource = fs.readFileSync(path.join(root, 'map.js'), 'utf8');
 const storySource = fs.readFileSync(path.join(root, 'abyss_story.js'), 'utf8');
 const battleSource = fs.readFileSync(path.join(root, 'battle.js'), 'utf8');
-assert(/"monsterId":\s*\[\s*302080,\s*302081,\s*302082,\s*302083,\s*302084\s*\]/.test(altarSource), '終焉の祭壇にヴェグナシス5対象を配置');
+const mapContext = { console, Math, setTimeout, clearTimeout, tileEntry: (img, color) => ({ img, color }) };
+mapContext.window = mapContext;
+mapContext.globalThis = mapContext;
+vm.createContext(mapContext);
+vm.runInContext(`${fs.readFileSync(path.join(root, 'map.js'), 'utf8')}\nglobalThis.FIXED_DUNGEON_MAPS = FIXED_DUNGEON_MAPS;`, mapContext, { filename: 'map.js' });
+const altarBossIds = mapContext.FIXED_DUNGEON_MAPS?.FINAL_ALTAR?.bosses?.[0]?.monsterId;
+assert(Array.isArray(altarBossIds) && altarBossIds.join(',') === '302080,302081,302082,302083,302084', '終焉の祭壇にヴェグナシス5対象を配置');
 assert(/value:302100/.test(storySource) && /winEventId:'abyss_azelgarag_clear'/.test(storySource), 'ヴェグナシス勝利後にアゼルガラグへ連戦');
 assert(/abyssVegnasisIds/.test(battleSource) && /vegnasis-shared-visual/.test(battleSource), 'ヴェグナシス専用戦闘・共有描画が戦闘正本に統合されている');
 assert(/302100/.test(battleSource) && /302101/.test(battleSource) && /ABYSS_AZELGARAG_TRANSFORM/.test(battleSource), 'アゼルガラグ第二形態移行フックが有効');

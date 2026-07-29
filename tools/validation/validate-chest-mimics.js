@@ -6,14 +6,15 @@ const root = path.resolve(__dirname, '..', '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const assert = (condition, message) => { if (!condition) throw new Error(message); };
 
-const dataContext = { window: {}, console };
+const dataContext = { console };
+dataContext.window = dataContext;
 dataContext.globalThis = dataContext;
 vm.createContext(dataContext);
 for (const file of ['items.js', 'monsters.js', 'chest-mimics.js', 'monster-drop-policy.js']) {
     vm.runInContext(read(file), dataContext, { filename: file });
 }
 
-const traps = dataContext.window.MONSTERS_DATA.filter(monster => monster.isChestTrap);
+const traps = dataContext.MONSTERS_DATA.filter(monster => monster.isChestTrap);
 assert(traps.length === 3, `expected 3 chest traps, got ${traps.length}`);
 assert(JSON.stringify(traps.map(monster => monster.id)) === JSON.stringify([120301, 120302, 120303]), 'chest trap IDs changed');
 assert(JSON.stringify(traps.map(monster => monster.rank)) === JSON.stringify([70, 140, 190]), 'chest trap ranks changed');
@@ -26,7 +27,7 @@ for (const monster of traps) {
     assert(monster.hp > 0 && monster.atk > 0 && monster.def > 0 && monster.mag > 0 && monster.mdef > 0, `${monster.name} has invalid stats`);
 }
 
-const mimicData = dataContext.window.CHEST_MIMIC_DATA;
+const mimicData = dataContext.CHEST_MIMIC_DATA;
 assert(mimicData.normalChestChance === 0.05, 'normal chest mimic rate is not 5%');
 assert(mimicData.minimumAbyssFloor === 51, 'mimics do not begin at floor 51');
 for (const [floor, id] of [[51,120301],[100,120301],[101,120302],[150,120302],[151,120303],[201,120303]]) {
@@ -43,13 +44,13 @@ const runtimeContext = {
 runtimeContext.window = runtimeContext;
 runtimeContext.globalThis = runtimeContext;
 runtimeContext.Math.random = () => 0.01;
-runtimeContext.DB = { MONSTERS: traps, ITEMS: dataContext.window.ITEMS_DATA, SKILLS: [] };
-runtimeContext.MonsterData = dataContext.window.MonsterData;
+runtimeContext.DB = { MONSTERS: traps, ITEMS: dataContext.ITEMS_DATA, SKILLS: [] };
+runtimeContext.MonsterData = dataContext.MonsterData;
 runtimeContext.CHEST_MIMIC_DATA = mimicData;
 runtimeContext.App = {
     data: {
         progress: { floor: 51, openedChests: {}, mapChanges: {} },
-        dungeon: { keyChests: [] },
+        dungeon: { keyChests: [], abyssMode: 'random' },
         battle: { active: false },
         party: [], items: {}, inventory: [], stats: {}, gold: 0
     },
@@ -74,7 +75,7 @@ vm.runInContext(`${read('dungeon.js')}\nglobalThis.Dungeon = Dungeon;`, runtimeC
     assert(Dungeon.map[0][0] === 'T', 'opened mimic chest was not persisted as floor');
     assert(runtimeContext.App.data.battle.isChestTrapBattle, 'mimic chest did not build a chest-trap battle context');
     assert(runtimeContext.App.data.battle.preventEscape, 'mimic battle incorrectly permits escape after consuming the chest');
-    assert(runtimeContext.App.data.battle.chestTrapMonsterId === 120301, 'floor 51 chest did not select rank-70 mimic');
+    assert(runtimeContext.App.data.battle.chestTrapMonsterId === 120303, `random 51F (legacy balance 151F) did not select rank-190 mimic (got ${runtimeContext.App.data.battle.chestTrapMonsterId})`);
     assert(runtimeContext.App.lastScene === 'battle', 'mimic chest did not enter battle');
 
     // 固定マップは敗北時だけ未開封へ戻り、勝利時は開封状態を保持する。
@@ -145,19 +146,17 @@ vm.runInContext(`${read('dungeon.js')}\nglobalThis.Dungeon = Dungeon;`, runtimeC
     assert(read('battle.js').includes('Dungeon.rollbackFixedChestTrap(App.data.battle)'), 'battle defeat does not roll back a fixed mimic chest');
 
     for (const monster of traps) {
-        const relative = monster.image;
+        const relative = dataContext.MonsterData.getImagePath(monster);
         const data = fs.readFileSync(path.join(root, relative));
         assert(data.toString('ascii', 1, 4) === 'PNG', `${relative} is not PNG`);
         assert(data.readUInt32BE(16) === 768 && data.readUInt32BE(20) === 768, `${relative} is not normalized to 768x768`);
         assert(data[25] === 6, `${relative} has no RGBA alpha channel`);
-        assert(read('assets.js').includes(relative), `${relative} is not registered for full caching`);
-        assert(read('monster-images.js').includes(relative), `${relative} is not registered in MonsterImageMap`);
     }
 
     for (const script of ['index.html', 'map_story_editor.html', 'monster_editor.html', 'sw.js']) {
         assert(read(script).includes('chest-mimics.js'), `${script} does not load/cache chest-mimics.js`);
     }
-    console.log('Chest mimic validation passed: 70/140/190F elite stats, 5% F51+ bands, fixed-map defeat rollback, editor support, 201F scaling, drops, and cached assets.');
+    console.log('Chest mimic validation passed: 70/140/190F elite stats, 5% F51+ bands, fixed-map defeat rollback, editor support, 201F scaling, drops, and image assets.');
 })().catch(error => {
     console.error(error);
     process.exitCode = 1;

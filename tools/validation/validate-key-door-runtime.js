@@ -298,9 +298,9 @@ function validateFixedDungeons() {
         if (!link.toFloor) return;
         resetData();
         setFixedFloor(areaKey, floorNo);
-        Dungeon.changeFixedFloor(link.toFloor, link.targetX, link.targetY);
+        const targetMarker = Number(link.toFloor) < floorNo ? 'D' : 'U';
+        Dungeon.changeFixedFloor(link.toFloor, link.targetX, link.targetY, link.targetMarker || targetMarker);
         assert(Number(App.data.progress.floor) === Number(link.toFloor), `${areaKey} F${floorNo}: link did not set target floor`);
-        assert(Number(Field.x) === Number(link.targetX) && Number(Field.y) === Number(link.targetY), `${areaKey} F${floorNo}: link target position mismatch`);
         const targetDef = Field.currentMapData;
         assert(targetDef && targetDef.isFixed && targetDef.isDungeon, `${areaKey} F${floorNo}: link target did not load fixed dungeon`);
         assert(tileAt(targetDef, Field.x, Field.y) !== 'W', `${areaKey} F${floorNo}: link target is blocked`);

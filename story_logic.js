@@ -89,7 +89,12 @@ const StoryManager = {
             if (!flags.abyssLegacionNorthGateOpen) return 'レガシオンの謁見の間へ向かおう';
             if (!flags.abyssVeldDefeated) return '夢幻回廊リドパルムの最深部へ進もう';
             if (!flags.abyssJasperDefeated) return '災禍の根ジャゴレアでジャスパーを追おう';
-            if (!flags.abyssIlluminaciaDefeated) return '混沌の結晶片で地下神殿の封印門を開こう';
+            if (!flags.abyssIlluminaciaDefeated) {
+                const insideChronoRoute = flags.abyssChronoGateOpened || ['CHRONO_ABYSS', 'FINAL_ALTAR'].includes(String(currentArea || ''));
+                return insideChronoRoute
+                    ? '次元牢獄クロノアビスの最深部へ進もう'
+                    : '混沌の結晶片で地下神殿の封印門を開こう';
+            }
             if (!flags.abyssVegnasisDefeated) return '終焉の祭壇で死幻の魔柱を倒そう';
             if (!flags.abyssAzelgaragDefeated) return '深淵王アゼルガラグを倒そう';
             if (!flags.abyssEpilogueSeen) return '深淵王との戦いを見届けよう';

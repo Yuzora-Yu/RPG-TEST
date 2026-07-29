@@ -801,7 +801,7 @@ const Dungeon = {
         Dungeon.saveMapData();
     },
 
-    changeFixedFloor: (toFloor, targetX = null, targetY = null) => {
+    changeFixedFloor: (toFloor, targetX = null, targetY = null, targetMarker = null) => {
         if (typeof AudioManager !== 'undefined') AudioManager.playSe?.('stairs');
         const areaKey = App.data.location.area;
         const nextDef = Dungeon.getFixedFloorDef(areaKey, toFloor);
@@ -823,8 +823,18 @@ const Dungeon = {
 
         Field.currentMapData = nextDef;
         if (typeof Dungeon.resetFixedHunterStateForCurrentMap === 'function') Dungeon.resetFixedHunterStateForCurrentMap();
-        Field.x = targetX !== null && targetX !== undefined ? Number(targetX) : (nextDef.entryPoint?.x || 1);
-        Field.y = targetY !== null && targetY !== undefined ? Number(targetY) : (nextDef.entryPoint?.y || 1);
+        let resolvedTarget = null;
+        if (targetX !== null && targetX !== undefined && targetY !== null && targetY !== undefined) {
+            resolvedTarget = { x: Number(targetX), y: Number(targetY) };
+        } else if (targetMarker && Array.isArray(nextDef.tiles)) {
+            const marker = String(targetMarker).toUpperCase();
+            for (let y = 0; y < nextDef.tiles.length && !resolvedTarget; y++) {
+                const x = String(nextDef.tiles[y] || '').toUpperCase().indexOf(marker);
+                if (x >= 0) resolvedTarget = { x, y };
+            }
+        }
+        Field.x = resolvedTarget?.x ?? (nextDef.entryPoint?.x || 1);
+        Field.y = resolvedTarget?.y ?? (nextDef.entryPoint?.y || 1);
         App.data.location.x = Field.x;
         App.data.location.y = Field.y;
         Dungeon.rollTrialAngelSpawn({ fixed: true });
@@ -861,7 +871,9 @@ const Dungeon = {
             return true;
         }
         if (link.toFloor !== undefined && link.toFloor !== null) {
-            Dungeon.changeFixedFloor(link.toFloor, link.targetX, link.targetY);
+            const currentFloor = Math.max(1, Number(Field.currentMapData?.floor || App.data.progress?.floor || 1));
+            const targetMarker = Number(link.toFloor) < currentFloor ? 'D' : 'U';
+            Dungeon.changeFixedFloor(link.toFloor, link.targetX, link.targetY, link.targetMarker || targetMarker);
             return true;
         }
         return false;
@@ -5249,25 +5261,9 @@ const Dungeon = {
                 return;
             }
             if (App.data.battle?.suppressFixedBossDefeat) {
-                const trialElement = App.data.battle?.fixedTrialElement;
-                if (trialElement) {
-                    const progress = typeof App.ensureAbyssRegionProgress === 'function'
-                        ? App.ensureAbyssRegionProgress()
-                        : (App.data.progress || (App.data.progress = {}));
-                    if (!progress.abyssSpiritBlessings) progress.abyssSpiritBlessings = {};
-                    progress.abyssSpiritBlessings[trialElement] = true;
-                    const rewardItemId = Number(App.data.battle.fixedTrialRewardItemId || 0);
-                    if (rewardItemId) App.data.items[rewardItemId] = (App.data.items[rewardItemId] || 0) + 1;
-                    const requiredElements = Array.isArray(App.data.battle.fixedTrialRequiredElements)
-                        ? App.data.battle.fixedTrialRequiredElements
-                        : [];
-                    const completionItemId = Number(App.data.battle.fixedTrialCompletionItemId || 0);
-                    if (completionItemId && requiredElements.length
-                        && requiredElements.every(element => progress.abyssSpiritBlessings[element])) {
-                        App.data.items[completionItemId] = Math.max(1, Number(App.data.items[completionItemId] || 0));
-                    }
-                    App.save();
-                }
+                // 精霊試練の加護・結晶片・六属性完了報酬は、ドロップ表示と同じ
+                // Battle.completeAbyssElementalTrial が唯一の正本。ここでは通常の
+                // 固定ボス撃破マス処理だけを抑止し、報酬を重複加算しない。
                 return;
             }
                 const areaKey = Field.getCurrentAreaKey();

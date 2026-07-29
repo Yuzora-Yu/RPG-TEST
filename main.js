@@ -973,7 +973,7 @@ const App = {
 
 	// 全画像データの手動/初回ダウンロード用キャッシュ名。
 	// sw.js の RUNTIME_CACHE_NAME と揃えること。
-    fullDataCacheName: 'prisma-abyss-v4.20260729-runtime',
+    fullDataCacheName: 'prisma-abyss-v8.20260729-runtime',
 
 
 	// 初回起動時の「全データを今ダウンロードしますか？」で「いいえ」を選んだ記録。
@@ -4134,7 +4134,9 @@ const App = {
         const currentArea = String(App.data.location.area || 'WORLD');
         const master = globalThis.ABYSS_REGION_MASTER;
         const isAbyssArea = Array.isArray(master?.areaKeys) && master.areaKeys.includes(currentArea);
-        const declaredWorld = STORY_DATA?.areas?.[currentArea]?.worldKey;
+        // タイトル画面では map.js 読込前にもセーブ移行が走る。
+        // 未宣言の STORY_DATA を直接参照せず、読込済みの場合だけ正本を参照する。
+        const declaredWorld = globalThis.STORY_DATA?.areas?.[currentArea]?.worldKey;
         App.data.location.worldKey = currentArea === 'ABYSS_WORLD' || declaredWorld === 'ABYSS_WORLD' || isAbyssArea
             ? 'ABYSS_WORLD'
             : 'WORLD';
@@ -8841,6 +8843,13 @@ const Field = {
         }
 
         if (action.type === 'fixedDungeon' && action.target && typeof Dungeon !== 'undefined' && Dungeon.startFixed) {
+            if (action.setFlagOnUse) {
+                App.data.progress = App.data.progress || {};
+                App.data.progress.flags = App.data.progress.flags || {};
+                App.data.progress.flags[action.setFlagOnUse] = true;
+            }
+            if (action.log) App.log(action.log);
+            App.save();
             Dungeon.startFixed(action.target);
             return;
         }

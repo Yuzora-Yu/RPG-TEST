@@ -4,7 +4,8 @@ const vm = require('vm');
 
 const root = path.resolve(__dirname, '..', '..');
 const mapSource = fs.readFileSync(path.join(root, 'map.js'), 'utf8');
-const storySource = fs.readFileSync(path.join(root, 'story.js'), 'utf8');
+const storySource = fs.readFileSync(path.join(root, 'story.js'), 'utf8')
+    + '\n' + fs.readFileSync(path.join(root, 'abyss_story.js'), 'utf8');
 const mainSource = fs.readFileSync(path.join(root, 'main.js'), 'utf8');
 const context = { console, window: {} };
 context.globalThis = context;
@@ -69,16 +70,16 @@ function inspectMap(key, mapDef, label) {
         if (action.blocksMovement !== false && !action.label) {
             errors.push(`${label}: blocking actor has no interaction label at ${coord}`);
         }
-        if (action.eventId && !storySource.includes(`"${action.eventId}"`)) {
+        if (action.eventId && !storySource.includes(action.eventId)) {
             errors.push(`${label}: missing story event ${action.eventId}`);
         }
         for (const eventId of action.cycleEventIds || []) {
-            if (eventId && !storySource.includes(`"${eventId}"`)) {
+            if (eventId && !storySource.includes(eventId)) {
                 errors.push(`${label}: missing cycled story event ${eventId}`);
             }
         }
         for (const event of action.events || []) {
-            if (event.eventId && !storySource.includes(`"${event.eventId}"`)) {
+            if (event.eventId && !storySource.includes(event.eventId)) {
                 errors.push(`${label}: missing progress story event ${event.eventId}`);
             }
         }

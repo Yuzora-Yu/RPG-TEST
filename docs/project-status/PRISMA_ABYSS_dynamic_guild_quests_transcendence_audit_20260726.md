@@ -1,4 +1,4 @@
-# PRISMA ABYSS ギルド依頼自動生成・超越の実 実装確認報告
+# PRISMA ABYSS ギルド依頼自動生成・超越の実 実装確認履歴
 
 作成日: 2026-07-26  
 対象: `RPG-TEST_guild-counter-abyss-traitbooks_cumulative_patch` を基準とした累積修正

@@ -49,6 +49,7 @@ const { context, runFile } = loadMapRuntime(root, { context: {
 
 runFile('dungeon.js', 'globalThis.Dungeon = Dungeon;');
 runFile('story.js', 'globalThis.STORY_MANAGER_DATA = STORY_MANAGER_DATA;');
+runFile('abyss_story.js');
 runFile('story_logic.js', 'globalThis.StoryManager = StoryManager;');
 
 const { FIXED_MAPS, FIXED_DUNGEON_MAPS, MapRegistry } = context;
@@ -162,8 +163,10 @@ Object.entries(FIXED_DUNGEON_MAPS).forEach(([key, base]) => {
         if (!link.toFloor) return;
         const target = MapRegistry.getFixedDungeonFloor(key, link.toFloor);
         assert(target, `FIXED_DUNGEON_MAPS.${key}.F${i + 1}: missing target floor ${link.toFloor}`);
-        const tile = String(target.tiles[Number(link.targetY)]?.[Number(link.targetX)] || 'W').toUpperCase();
-        assert(tile !== 'W', `FIXED_DUNGEON_MAPS.${key}.F${i + 1}: link target ${link.toFloor}:${link.targetX},${link.targetY} is blocked`);
+        const targetX = Number.isFinite(Number(link.targetX)) ? Number(link.targetX) : Number(target.entryPoint?.x);
+        const targetY = Number.isFinite(Number(link.targetY)) ? Number(link.targetY) : Number(target.entryPoint?.y);
+        const tile = String(target.tiles[targetY]?.[targetX] || 'W').toUpperCase();
+        assert(tile !== 'W', `FIXED_DUNGEON_MAPS.${key}.F${i + 1}: link target ${link.toFloor}:${targetX},${targetY} is blocked`);
       });
     });
   } else {

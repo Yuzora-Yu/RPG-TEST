@@ -20,7 +20,7 @@ function loadMonsters() {
     const context = { console, window: {} };
     vm.createContext(context);
     vm.runInContext(fs.readFileSync(`${root}/monsters.js`, 'utf8'), context, { filename: 'monsters.js' });
-    return new Map(context.window.MONSTERS_DATA.map(monster => [Number(monster.id), monster]));
+    return new Map(context.MONSTERS_DATA.map(monster => [Number(monster.id), monster]));
 }
 
 const { maps, areas } = loadMaps();

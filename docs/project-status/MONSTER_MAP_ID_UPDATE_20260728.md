@@ -1,4 +1,4 @@
-# Monster / Map ID update (2026-07-28)
+# Monster / Map ID update history (2026-07-28)
 
 - Normal monsters: 196 IDs reassigned into 50-ID blocks per five Rank bands.
 - Quest bosses: 302201-302208 -> 303201-303208.

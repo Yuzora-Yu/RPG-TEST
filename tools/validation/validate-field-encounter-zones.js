@@ -16,10 +16,10 @@ vm.runInContext(questsCode, context, { filename: 'quests.js' });
 const dungeonCode = fs.readFileSync(`${root}/dungeon.js`, 'utf8');
 
 const { MAP_DATA, FIELD_ENCOUNTER_ZONES, STORY_DATA, FIXED_DUNGEON_MAPS, MapRegistry } = context;
-const QUEST_DATA = context.window.QUEST_DATA;
+const QUEST_DATA = context.QUEST_DATA || context.window.QUEST_DATA;
 const CHARACTERS_DATA = context.window.CHARACTERS_DATA;
 const ITEMS_DATA = context.window.ITEMS_DATA;
-const getMonsterById = context.window.MonsterData?.getMonsterById;
+const getMonsterById = context.MonsterData?.getMonsterById || context.window.MonsterData?.getMonsterById;
 const mapH = MAP_DATA.length;
 const mapW = MAP_DATA[0].length;
 
@@ -104,12 +104,12 @@ assert(lightProfile?.id === 'LIGHT_PALACE_GROVE', `light center: expected LIGHT_
 
 const trialProfile = getProfile(2, 2);
 assert(trialProfile?.id === 'TRIAL_ISLAND_FIELD', `trial island: expected TRIAL_ISLAND_FIELD, got ${trialProfile?.id || 'none'}`);
-assert(Number(trialProfile.rank) === 100, `trial island: expected rank 100, got ${trialProfile.rank}`);
+assert(Number(trialProfile.rank) === 81, `trial island: expected rank 81, got ${trialProfile.rank}`);
 assert(trialProfile.rareMonsters?.some(m => Number(m.id) === 200203 && Number(m.rate) === 0.05), 'trial island: missing 5% Metal Lord rare monster');
 
 const summitProfile = getProfile(89, 77);
 assert(summitProfile?.id === 'SUMMIT_TEMPLE_FIELD', `summit temple: expected SUMMIT_TEMPLE_FIELD, got ${summitProfile?.id || 'none'}`);
-assert(Number(summitProfile.rank) === 150, `summit temple: expected rank 150, got ${summitProfile.rank}`);
+assert(Number(summitProfile.rank) === 146, `summit temple: expected rank 146, got ${summitProfile.rank}`);
 assert(summitProfile.rareMonsters?.some(m => Number(m.id) === 200203 && Number(m.rate) === 0.05), 'summit temple: missing 5% Metal Lord rare monster');
 
 [

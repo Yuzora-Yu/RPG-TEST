@@ -13,6 +13,7 @@ questsRuntime.runInContext(fs.readFileSync(path.join(root, 'quests.js'), 'utf8')
 const data = context.STORY_MANAGER_DATA;
 const scripts = data?.scripts || {};
 const events = data?.events || {};
+const battleSource = fs.readFileSync(path.join(root, 'battle.js'), 'utf8');
 const errors = [];
 const warnings = [];
 const referencedScripts = new Set();
@@ -68,17 +69,28 @@ for (const [eventId, event] of Object.entries(events)) {
     visitActions(event?.loseActions, `${eventId}.loseActions`);
 }
 
+// 戦闘中会話は story event を介さず battle.js から同期実行される。
+// 固定IDと、柱撃破時の番号付きテンプレート参照を会話利用として数える。
+for (const scriptId of Object.keys(scripts)) {
+    if (battleSource.includes(`'${scriptId}'`) || battleSource.includes(`"${scriptId}"`)) referencedScripts.add(scriptId);
+    if (scriptId.startsWith('ABYSS_VEGNASIS_FALL_') && battleSource.includes('ABYSS_VEGNASIS_FALL_')) referencedScripts.add(scriptId);
+}
+
 function collectMapEventRefs(mapDef, owner) {
+    const localRefs = new Set();
     for (const action of mapDef?.mapActions || []) {
-        if (action.eventId) referencedEvents.add(action.eventId);
-        for (const variant of action.events || []) if (variant?.eventId) referencedEvents.add(variant.eventId);
-        for (const eventId of action.cycleEventIds || []) referencedEvents.add(eventId);
+        if (action.eventId) localRefs.add(action.eventId);
+        for (const variant of action.events || []) if (variant?.eventId) localRefs.add(variant.eventId);
+        for (const eventId of action.cycleEventIds || []) localRefs.add(eventId);
     }
     for (const boss of mapDef?.bosses || []) {
-        if (boss.startEventId) referencedEvents.add(boss.startEventId);
-        if (boss.storyEventId) referencedEvents.add(boss.storyEventId);
+        if (boss.startEventId) localRefs.add(boss.startEventId);
+        if (boss.storyEventId) localRefs.add(boss.storyEventId);
     }
-    for (const eventId of referencedEvents) if (!events[eventId]) fail(`${owner}: missing story event ${eventId}`);
+    for (const eventId of localRefs) {
+        referencedEvents.add(eventId);
+        if (!events[eventId]) fail(`${owner}: missing story event ${eventId}`);
+    }
 }
 
 for (const [mapId, mapDef] of Object.entries(context.FIXED_MAPS || {})) collectMapEventRefs(mapDef, `FIXED_MAPS.${mapId}`);

@@ -55,9 +55,9 @@
         ],
         ABYSS_VELD: cloneScript('ABYSS_FLOOR_070_VELD', { '混沌の騎士ヴェルド':'昏迷の黒騎士ヴェルド' }),
         ABYSS_VELD_CLEAR: cloneScript('ABYSS_FLOOR_070_VELD_CLEAR', { '混沌の騎士ヴェルド':'昏迷の黒騎士ヴェルド' }),
-        ABYSS_JASPER: cloneScript('ABYSS_FLOOR_090_JASPER'),
+        ABYSS_JASPER: cloneScript('ABYSS_FLOOR_090_JASPER', { '暗黒神官ジャスパー':'妄執の神官ジャスパー' }),
         ABYSS_JASPER_CLEAR: [
-            ...cloneScript('ABYSS_FLOOR_090_JASPER_CLEAR'),
+            ...cloneScript('ABYSS_FLOOR_090_JASPER_CLEAR', { '暗黒神官ジャスパー':'妄執の神官ジャスパー' }),
             { name:'システム', text:'ジャゴレアの根元に、濁った光を放つ結晶が残された。\n混沌の結晶片を手に入れた。' }
         ],
         ABYSS_ILLUMINACIA: [

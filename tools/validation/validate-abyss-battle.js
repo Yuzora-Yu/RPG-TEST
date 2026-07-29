@@ -34,6 +34,11 @@ const assert = (condition, message) => condition ? checks.push(message) : failur
   };
   const App = {
     data:{battle:{active:true,fixedBossId:302100},progress:{abyssSpiritBlessings:{}},items:{701008:1}},
+    ensureAbyssRegionProgress(){
+      this.data.progress=this.data.progress||{};
+      this.data.progress.abyssSpiritBlessings=this.data.progress.abyssSpiritBlessings||{};
+      return this.data.progress;
+    },
     save(){}
   };
   let ItemRuntime = {
@@ -44,6 +49,9 @@ const assert = (condition, message) => condition ? checks.push(message) : failur
   const context = {
     console, Promise, setTimeout, clearTimeout,
     Battle, App, ItemRuntime,
+    DB:{ITEMS:[
+      {id:701001,name:'火の結晶片'},{id:701006,name:'闇の結晶片'},{id:701008,name:'オクタプリズマ'}
+    ]},
     STORY_MANAGER_DATA:{scripts:{}},
     StoryManager:{
       async showConversation(key){ conversations.push(key); },
@@ -98,6 +106,7 @@ const assert = (condition, message) => condition ? checks.push(message) : failur
   assert(fallen.isDead===true && fallen.abyssFallHandled===true, '魔柱1対象の撃破を一度だけ確定する');
   assert(remaining.baseMaxHp===1180 && remaining.hp===1180 && remaining.baseMaxMp===112 && remaining.mp===112, '対象撃破ごとに残存魔柱を強化しHP・MPを全回復する');
   assert(['atk','def','spd','mag','mdef'].every(key=>remaining.baseStats[key]===118), '残存魔柱の各能力を段階強化する');
+  assert(Battle.phase==='battle_event', '魔柱撃破と同時に入力・オート進行を戦闘イベント状態へ停止する');
   await Battle.awaitPendingBattleEvent();
   assert(conversations.includes('ABYSS_VEGNASIS_FALL_1'), '魔柱撃破ごとの戦闘中会話を実行する');
 
@@ -108,6 +117,22 @@ const assert = (condition, message) => condition ? checks.push(message) : failur
   assert(Battle.auto===false, '戦闘中イベント開始時にオートを一時停止する');
   await Battle.awaitPendingBattleEvent();
   assert(Battle.auto===true, '戦闘中イベント終了後にオート状態を復元する');
+
+  // Every elemental trial must award its shard once and the sixth grants Octaprisma.
+  App.data.items={};
+  App.data.progress={flags:{},abyssSpiritBlessings:{}};
+  App.data.battle={fixedTrialElement:'火',abyssSpiritElement:'火',fixedTrialRewardItemId:701001,fixedTrialCompletionItemId:701008,fixedTrialRequiredElements:['火','水','風','雷','光','闇']};
+  let trialDrops=[];
+  const firstTrialMessages=Battle.completeAbyssElementalTrial(trialDrops);
+  assert(App.data.progress.abyssSpiritBlessings['火']===true && App.data.items[701001]===1, '精霊勝利時に属性加護と対応する結晶片を一度付与する');
+  Battle.completeAbyssElementalTrial(trialDrops);
+  assert(App.data.items[701001]===1, '同じ精霊試練の勝利処理を再開しても結晶片を重複付与しない');
+  Object.assign(App.data.progress.abyssSpiritBlessings,{水:true,風:true,雷:true,光:true});
+  App.data.battle={fixedTrialElement:'闇',abyssSpiritElement:'闇',fixedTrialRewardItemId:701006,fixedTrialCompletionItemId:701008,fixedTrialRequiredElements:['火','水','風','雷','光','闇']};
+  trialDrops=[];
+  const finalTrialMessages=Battle.completeAbyssElementalTrial(trialDrops);
+  assert(App.data.items[701006]===1 && App.data.items[701008]===1 && App.data.progress.flags.abyssAllSpiritTrialsCleared===true, '六属性すべての承認時だけオクタプリズマを付与する');
+  assert(firstTrialMessages.length===1 && finalTrialMessages.length===2, '精霊承認と全制覇の結果メッセージを戦闘リザルトへ返す');
 
   if (failures.length) {
     console.error(`Abyss battle validation failed (${failures.length}):`);
