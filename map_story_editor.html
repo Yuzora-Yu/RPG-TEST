@@ -517,13 +517,29 @@
   function bossDefAt(map,x,y){
     return (map.bosses || []).find(b => Number(b.x) === Number(x) && Number(b.y) === Number(y)) || null;
   }
+  function mapActorPlacements(actor){
+    const placements=[{x:Number(actor?.x),y:Number(actor?.y)}];
+    (actor?.states||[]).forEach(actorState=>{
+      if(!actorState?.placement) return;
+      placements.push({
+        x:Number(actorState.placement.x ?? actor.x),
+        y:Number(actorState.placement.y ?? actor.y)
+      });
+    });
+    return [...new Map(placements.map(point=>[`${point.x},${point.y}`,point])).values()];
+  }
+  function objectCoversCell(list,o,x,y){
+    if(list==='floorDecorations') return x>=Number(o.x)&&x<Number(o.x)+Math.max(1,Number(o.width||1))&&y>=Number(o.y)&&y<Number(o.y)+Math.max(1,Number(o.height||1));
+    if(list==='mapActors') return mapActorPlacements(o).some(point=>point.x===Number(x)&&point.y===Number(y));
+    return Number(o.x)===Number(x)&&Number(o.y)===Number(y);
+  }
 
   function coordinateObjectSummaryHtml(map){
     const x=state.selectedCoord.x, y=state.selectedCoord.y;
-    const lists = ['chests','bosses','floorLinks','mapActions','tileEffects','healSprings','floorDecorations','blockingObjects'];
+    const lists = ['chests','bosses','floorLinks','mapActors','mapActions','tileEffects','healSprings','floorDecorations','blockingObjects'];
     const hits=[];
     lists.forEach(list => (map[list] || []).forEach((o,i) => {
-      const covers=list==='floorDecorations' ? x>=Number(o.x)&&x<Number(o.x)+Math.max(1,Number(o.width||1))&&y>=Number(o.y)&&y<Number(o.y)+Math.max(1,Number(o.height||1)) : Number(o.x)===x&&Number(o.y)===y;
+      const covers=objectCoversCell(list,o,x,y);
       if(covers) hits.push(`<span class="pill">${esc(list)}#${i}</span> ${esc(labelForObject(list,o))}`);
     }));
     const tile = (map.tiles?.[y] || '')[x] || '';
@@ -532,6 +548,7 @@
   function labelForObject(list,o){
     if (list==='chests') return o.trapMonsterId ? `TRAP ${monsterLabel(o.trapMonsterId)}` : itemLabel(o.itemId);
     if (list==='bosses') return monsterLabel(o.monsterId || o.monsterIds);
+    if (list==='mapActors') return `[${o.placementId ?? '?'}] ${o.name || o.actorId || '配置キャラ'} / ${(o.states || []).length}状態`;
     if (list==='mapActions') return `${o.label || o.type || ''} ${o.eventId || o.questId || ''}`;
     if (list==='floorLinks') return `${o.label || ''} -> ${o.to || o.toFloor || ''}`;
     if (list==='tileEffects') return o.type || JSON.stringify(o);
@@ -540,10 +557,10 @@
     return o.label || o.type || JSON.stringify(o);
   }
   function objectSectionsHtml(map){
-    return ['chests','bosses','floorLinks','mapActions','tileEffects','healSprings','floorDecorations','blockingObjects'].map(list => objectSectionHtml(list, map[list] || [])).join('');
+    return ['chests','bosses','floorLinks','mapActors','mapActions','tileEffects','healSprings','floorDecorations','blockingObjects'].map(list => objectSectionHtml(list, map[list] || [])).join('');
   }
   function objectSectionHtml(list, arr){
-    return `<details ${['chests','bosses','mapActions'].includes(list)?'open':''}><summary style="cursor:pointer;color:var(--accent);font-weight:900;margin:12px 0 8px">${esc(list)} <span class="pill">${arr.length}</span></summary><div class="toolbar" style="margin-bottom:8px"><button class="btn small primary" data-act="addObject" data-list="${esc(list)}">選択座標に追加</button></div><div class="object-list">${arr.map((o,i)=>`<div class="object-row"><div><span class="pill">#${i}</span><div class="mini">x:${esc(o.x)}, y:${esc(o.y)}</div></div><textarea id="obj_${list}_${i}">${esc(JSON.stringify(o,null,2))}</textarea>${list==='chests'?chestQuickEditorHtml(o,i):''}<div class="grid"><button class="btn small green" data-act="applyObject" data-list="${esc(list)}" data-index="${i}">反映</button><button class="btn small red" data-act="deleteObject" data-list="${esc(list)}" data-index="${i}">削除</button></div></div>`).join('') || '<div class="hint">未登録</div>'}</div></details>`;
+    return `<details ${['chests','bosses','mapActors','mapActions'].includes(list)?'open':''}><summary style="cursor:pointer;color:var(--accent);font-weight:900;margin:12px 0 8px">${esc(list)} <span class="pill">${arr.length}</span></summary><div class="toolbar" style="margin-bottom:8px"><button class="btn small primary" data-act="addObject" data-list="${esc(list)}">選択座標に追加</button></div><div class="object-list">${arr.map((o,i)=>`<div class="object-row"><div><span class="pill">#${i}</span><div class="mini">x:${esc(o.x)}, y:${esc(o.y)}</div></div><textarea id="obj_${list}_${i}">${esc(JSON.stringify(o,null,2))}</textarea>${list==='chests'?chestQuickEditorHtml(o,i):''}<div class="grid"><button class="btn small green" data-act="applyObject" data-list="${esc(list)}" data-index="${i}">反映</button><button class="btn small red" data-act="deleteObject" data-list="${esc(list)}" data-index="${i}">削除</button></div></div>`).join('') || '<div class="hint">未登録</div>'}</div></details>`;
   }
   function chestQuickEditorHtml(chest, index){
     const isTrap=chest.trapMonsterId!==undefined&&chest.trapMonsterId!==null;
@@ -554,10 +571,15 @@
   function addObject(list){
     const ent=selectedMapEntity(); if (!ent) return; const map=ent.get(); if (!Array.isArray(map[list])) map[list]=[];
     const {x,y}=state.selectedCoord;
+    const highestPlacementId=Math.max(0,...(map.mapActors||[]).map(actor=>Number(actor.placementId)||0));
+    const nextPlacementId=Math.max(highestPlacementId+1,Number(map.nextActorPlacementId)||1);
+    if(list==='mapActors'&&nextPlacementId>1000){alert('このMAP／階層の配置キャラIDは上限1000に達しています。別MAPへの分割を検討してください。');return;}
+    if(list==='mapActors') map.nextActorPlacementId=nextPlacementId+1;
     const skeletons = {
       chests:{x,y,itemId:firstItemId(),type:'item'},
       bosses:{x,y,monsterId:firstMonsterId(),actionLabel:'戦う',inspectLog:'強敵の気配がする。'},
       floorLinks:{x,y,toFloor:1,targetX:x,targetY:y,label:'階段を使う'},
+      mapActors:{placementId:nextPlacementId,actorId:`actor_${nextPlacementId}`,name:'配置キャラ',x,y,imageKey:'overlay_npc_villager',states:[{stateId:'default',priority:0,when:{},action:{label:'話す',type:'storyEvent',eventId:firstEventId()}}]},
       mapActions:{x,y,label:'調べる',log:'何かがある。',type:'event',eventId:firstEventId()},
       tileEffects:{x,y,type:'warp',toX:x,toY:y,message:'不思議な力で移動した。'},
       healSprings:{x,y,label:'回復する',message:'体力が回復した。'},
@@ -931,6 +953,10 @@
     });
     (map.blockingObjects||[]).forEach(o=>drawMarker(Number(o.x),Number(o.y),'#','#6f819b',o.imageKey,{scale:1,drawWidth:o.drawWidth,drawHeight:o.drawHeight}));
     (map.floorLinks||[]).forEach(s=>drawMarker(Number(s.x),Number(s.y),'S','#d7b45a', type==='dungeon'?'stairs_dungeon':'stairs',{scale:1}));
+    (map.mapActors||[]).forEach(a=>{
+      const ax=Number(a.x), ay=Number(a.y);
+      drawMarker(ax,ay,'A',a.imageColor||'#62d7ff',a.imageKey,{scale:1,drawWidth:a.drawWidth,drawHeight:a.drawHeight});
+    });
     (map.mapActions||[]).forEach(a=>{
       const ax=Number(a.x), ay=Number(a.y);
       const physicalTile=['C','R','B','D','U'].includes(String(map.tiles?.[ay] || '')[ax]?.toUpperCase());
@@ -1016,7 +1042,7 @@
   function isCellReserved(map,x,y){
     const sign=String(map.tiles?.[y]||'')[x]?.toUpperCase();
     if(!sign || !['T','G'].includes(sign)) return true;
-    return ['chests','bosses','floorLinks','mapActions','healSprings','blockingObjects'].some(list=>(map[list]||[]).some(o=>Number(o.x)===x&&Number(o.y)===y));
+    return ['chests','bosses','floorLinks','mapActors','mapActions','healSprings','blockingObjects'].some(list=>(map[list]||[]).some(o=>objectCoversCell(list,o,x,y)));
   }
   function placePropAt(x,y){
     const ent=selectedMapEntity(); if(!ent || ent.type==='world' || !state.selectedProp) return;
@@ -1095,7 +1121,7 @@
   }
   function updateCoordInfo(){
     const map=selectedMap(); const {x,y}=state.selectedCoord; const tile=(map.tiles?.[y]||'')[x] || '';
-    const objs=[]; ['chests','bosses','floorLinks','mapActions','tileEffects','healSprings','floorDecorations','blockingObjects'].forEach(list => (map[list]||[]).forEach((o,i)=>{const covers=list==='floorDecorations'?x>=Number(o.x)&&x<Number(o.x)+Math.max(1,Number(o.width||1))&&y>=Number(o.y)&&y<Number(o.y)+Math.max(1,Number(o.height||1)):Number(o.x)===x&&Number(o.y)===y;if(covers) objs.push(`${list}#${i}: ${labelForObject(list,o)}`);}));
+    const objs=[]; ['chests','bosses','floorLinks','mapActors','mapActions','tileEffects','healSprings','floorDecorations','blockingObjects'].forEach(list => (map[list]||[]).forEach((o,i)=>{if(objectCoversCell(list,o,x,y)) objs.push(`${list}#${i}: ${labelForObject(list,o)}`);}));
     $('coordInfo').innerHTML = `<b>座標</b> <span class="kbd">x:${x}, y:${y}</span> / tile <span class="kbd">${esc(tile)}</span><br>${objs.length?objs.map(esc).join('<br>'):'<span class="hint">クリックで座標選択。ペンモードならタイルを塗れます。</span>'}`;
   }
 
@@ -1107,7 +1133,7 @@
   function monsterLabel(id){ const ids=Array.isArray(id)?id:[id]; return ids.map(one=>{ const m=state.data.monsters.find(x=>Number(x.id)===Number(one)); return m ? `[${m.id}] ${m.name}` : `[${one ?? '?'}] 未登録モンスター`; }).join(', '); }
 
   function runValidation(update=true){
-    const out=[]; const itemIds=new Set(state.data.items.map(i=>Number(i.id))); const monsterIds=new Set(state.data.monsters.map(m=>Number(m.id))); const scriptIds=new Set(Object.keys(state.data.storyManagerData.scripts||{})); const eventIds=new Set(Object.keys(state.data.storyManagerData.events||{})); const dungeonIds=new Set(Object.keys(state.data.fixedDungeonMaps||{})); const mutationIds=new Set(Object.keys(state.data.storyMapMutations||{})); const assetIds=new Set(Object.keys(state.data.graphics||{}));
+    const out=[]; const itemIds=new Set(state.data.items.map(i=>Number(i.id))); const monsterIds=new Set(state.data.monsters.map(m=>Number(m.id))); const scriptIds=new Set(Object.keys(state.data.storyManagerData.scripts||{})); const eventIds=new Set(Object.keys(state.data.storyManagerData.events||{})); const questIds=new Set(Object.keys(state.data.quests||{})); const dungeonIds=new Set(Object.keys(state.data.fixedDungeonMaps||{})); const mutationIds=new Set(Object.keys(state.data.storyMapMutations||{})); const assetIds=new Set(Object.keys(state.data.graphics||{}));
     const add=(level,where,message)=>out.push({level,where,message});
     state.maps.forEach(ent=>{ const m=ent.get(); const rows=m.tiles || []; const w=m.width || rowWidth(rows); const h=m.height || rows.length; if(rows.length!==h) add('error',ent.name,`height ${h} と tiles行数 ${rows.length} が一致しません`); rows.forEach((r,y)=>{ if(String(r).length!==w) add('error',`${ent.name} y=${y}`,`width ${w} と行長 ${String(r).length} が一致しません`); }); const theme=getTheme(m); rows.forEach((r,y)=>String(r).split('').forEach((ch,x)=>{ const upper=String(ch).toUpperCase(); const has=theme[ch]||theme[upper]||mergeOverlayMap(state.data.fixedTileOverlays||{},m)[upper]; if(!has) add('warn',`${ent.name} (${x},${y})`,`未定義タイル '${ch}'`); })); const checkCoord=(o,list,i)=>{ if(!Number.isInteger(Number(o.x))||!Number.isInteger(Number(o.y))||Number(o.x)<0||Number(o.y)<0||Number(o.x)>=w||Number(o.y)>=h) add('error',`${ent.name} ${list}#${i}`,`座標が範囲外です x=${o.x}, y=${o.y}`); };
       (m.chests||[]).forEach((c,i)=>{ checkCoord(c,'chests',i); if(c.trapMonsterId!==undefined&&c.trapMonsterId!==null){const monster=state.data.monsters.find(entry=>Number(entry.id)===Number(c.trapMonsterId));if(!monster)add('error',`${ent.name} chests#${i}`,`trapMonsterId ${c.trapMonsterId} が monsters.js / chest-mimics.js にありません`);else if(!monster.isChestTrap)add('error',`${ent.name} chests#${i}`,`monsterId ${c.trapMonsterId} は宝箱トラップではありません`);}else if(c.itemId!==undefined&&c.itemId!==null&&!itemIds.has(Number(c.itemId)))add('error',`${ent.name} chests#${i}`,`itemId ${c.itemId} が items.js にありません`); });
@@ -1115,6 +1141,9 @@
       (m.floorLinks||[]).forEach((f,i)=>checkCoord(f,'floorLinks',i));
       (m.tileEffects||[]).forEach((f,i)=>{if(Number.isFinite(Number(f.x))&&Number.isFinite(Number(f.y)))checkCoord(f,'tileEffects',i);const cells=tileEffectCells(f,w,h);if(!cells.length)add('warn',`${ent.name} tileEffects#${i}`,'効果範囲が空です');});
       (m.healSprings||[]).forEach((f,i)=>checkCoord(f,'healSprings',i));
+      const placementIds=new Set(),actorIds=new Set();
+      if((m.mapActors||[]).length){const highestIssued=Math.max(...(m.mapActors||[]).map(actor=>Number(actor.placementId)||0));const nextIssued=Number(m.nextActorPlacementId);if(!Number.isInteger(nextIssued)||nextIssued<=highestIssued||nextIssued>1001)add('error',ent.name,`nextActorPlacementId ${m.nextActorPlacementId} は発行済み最大ID ${highestIssued} より大きい値にしてください`);}
+      (m.mapActors||[]).forEach((actor,i)=>{const where=`${ent.name} mapActors#${i}`;checkCoord(actor,'mapActors',i);const placementId=Number(actor.placementId);if(!Number.isInteger(placementId)||placementId<1||placementId>1000)add('error',where,'placementId はMAP／階層内の1～1000で指定してください');else if(placementIds.has(placementId))add('error',where,`placementId ${placementId} が重複しています`);else placementIds.add(placementId);const actorId=String(actor.actorId||'');if(!/^[a-z][a-z0-9_]*$/.test(actorId))add('error',where,'actorId は英小文字・数字・_の安定名にしてください');else if(actorIds.has(actorId))add('error',where,`actorId ${actorId} が重複しています`);else actorIds.add(actorId);if(actor.imageKey&&!assetIds.has(actor.imageKey))add('warn',where,`imageKey ${actor.imageKey} がPRISMA_ASSETS.graphicsにありません`);const stateIds=new Set(),priorities=new Set();(actor.states||[]).forEach((actorState,j)=>{const stateWhere=`${where}.states#${j}`;const stateId=String(actorState.stateId||'');if(!stateId)add('error',stateWhere,'stateIdがありません');else if(stateIds.has(stateId))add('error',stateWhere,`stateId ${stateId} が重複しています`);else stateIds.add(stateId);const priority=Number(actorState.priority);if(!Number.isFinite(priority))add('error',stateWhere,'priorityは数値で指定してください');else if(priorities.has(priority))add('error',stateWhere,`priority ${priority} が重複しています`);else priorities.add(priority);const placement={...actor,...(actorState.placement||{})};checkCoord(placement,'mapActors state placement',j);if(actorState.placement?.imageKey&&!assetIds.has(actorState.placement.imageKey))add('warn',stateWhere,`imageKey ${actorState.placement.imageKey} がPRISMA_ASSETS.graphicsにありません`);const action=actorState.action||{};if(!action.type)add('error',stateWhere,'action.typeがありません');if(action.eventId&&!eventIds.has(action.eventId))add('warn',stateWhere,`eventId ${action.eventId} がStoryManager.eventsにありません`);if(action.questId&&!questIds.has(action.questId))add('warn',stateWhere,`questId ${action.questId} がQUEST_DATAにありません`);});if(!(actor.states||[]).length)add('error',where,'statesがありません');});
       (m.mapActions||[]).forEach((a,i)=>{ checkCoord(a,'mapActions',i); if(a.eventId && !eventIds.has(a.eventId)) add('warn',`${ent.name} mapActions#${i}`,`eventId ${a.eventId} が StoryManager.events にありません`); if(a.imageKey && !assetIds.has(a.imageKey)) add('warn',`${ent.name} mapActions#${i}`,`imageKey ${a.imageKey} が PRISMA_ASSETS.graphics にありません`); });
       (m.floorDecorations||[]).forEach((d,i)=>{checkCoord(d,'floorDecorations',i);const dw=Math.max(1,Number(d.width||1)),dh=Math.max(1,Number(d.height||1));if(Number(d.x)+dw>w||Number(d.y)+dh>h)add('error',`${ent.name} floorDecorations#${i}`,'敷物・装飾の範囲がマップ外へ出ています');if(d.imageKey&&!assetIds.has(d.imageKey))add('error',`${ent.name} floorDecorations#${i}`,`imageKey ${d.imageKey} が PRISMA_ASSETS.graphics にありません`);if(!d.imageKey&&!TEXTILE_EDITOR_STYLES[d.type])add('warn',`${ent.name} floorDecorations#${i}`,`未対応の装飾 type ${d.type}`);if(d.drawScale!==undefined&&(!Number.isFinite(Number(d.drawScale))||Number(d.drawScale)<=0))add('error',`${ent.name} floorDecorations#${i}`,'drawScale は0より大きい数値にしてください');if(d.shimmer!==undefined&&typeof d.shimmer!=='boolean')add('warn',`${ent.name} floorDecorations#${i}`,'shimmer は true / false で指定してください');if(d.renderLayer!==undefined&&!['ground','object'].includes(String(d.renderLayer).toLowerCase()))add('error',`${ent.name} floorDecorations#${i}`,'renderLayer は ground または object を指定してください');});
       (m.blockingObjects||[]).forEach((o,i)=>{checkCoord(o,'blockingObjects',i);if(o.imageKey&&!assetIds.has(o.imageKey))add('error',`${ent.name} blockingObjects#${i}`,`imageKey ${o.imageKey} が PRISMA_ASSETS.graphics にありません`);const sign=String(rows?.[Number(o.y)]||'')[Number(o.x)]?.toUpperCase();if(sign&&!['T','G'].includes(sign))add('warn',`${ent.name} blockingObjects#${i}`,`通行不能小物が通常床以外の ${sign} 上にあります`);});

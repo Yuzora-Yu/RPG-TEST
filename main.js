@@ -973,7 +973,7 @@ const App = {
 
 	// 全画像データの手動/初回ダウンロード用キャッシュ名。
 	// sw.js の RUNTIME_CACHE_NAME と揃えること。
-    fullDataCacheName: 'prisma-abyss-v11.20260729-runtime',
+    fullDataCacheName: 'prisma-abyss-v15.20260729-runtime',
 
 
 	// 初回起動時の「全データを今ダウンロードしますか？」で「いいえ」を選んだ記録。
@@ -6484,8 +6484,7 @@ load: () => {
             mapId: best.mapId || null,
             name: best.name || 'フィールド',
             rank: Math.max(1, Number(best.rank || best.encounterRank || 1) || 1),
-            monsters: Array.isArray(best.monsters) ? best.monsters.slice() : null,
-            rareMonsters: Array.isArray(best.rareMonsters) ? best.rareMonsters.map(entry => ({ ...entry })) : null
+            monsters: null
         };
     },
 
@@ -6541,8 +6540,6 @@ load: () => {
             useHabitatEncounters: !!(mapEncounter?.useHabitatEncounters || isSeaEncounter || worldEncounter?.mapId),
             encounterRank: mapEncounter?.encounterRank || (worldEncounter ? worldEncounter.rank : null),
 			monsters: mapEncounter?.isGuildQuestDungeon && Array.isArray(mapEncounter.monsters) ? [...mapEncounter.monsters] : null,
-            rareMonsters: mapEncounter && Array.isArray(mapEncounter.rareMonsters) ? mapEncounter.rareMonsters.map(entry => ({ ...entry })) : (worldEncounter ? worldEncounter.rareMonsters : null),
-            rareEncounterChance: Number.isFinite(Number(mapEncounter?.rareEncounterChance)) ? Number(mapEncounter.rareEncounterChance) : null,
             guildQuestChallengeId: mapEncounter?.guildQuestId || null,
             guildChallengeEnemyBoost: mapEncounter?.enemyBoost ? JSON.parse(JSON.stringify(mapEncounter.enemyBoost)) : null,
             guildChallengeAllyAilments: Array.isArray(mapEncounter?.allyAilments) ? [...mapEncounter.allyAilments] : [],

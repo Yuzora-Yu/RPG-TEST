@@ -78,7 +78,12 @@ for (const scriptId of Object.keys(scripts)) {
 
 function collectMapEventRefs(mapDef, owner) {
     const localRefs = new Set();
-    for (const action of mapDef?.mapActions || []) {
+    const authoredActions = [
+        ...(mapDef?.mapActions || []),
+        ...(mapDef?.mapActors || []).flatMap(actor =>
+            (actor.states || []).map(state => state.action || {})),
+    ];
+    for (const action of authoredActions) {
         if (action.eventId) localRefs.add(action.eventId);
         for (const variant of action.events || []) if (variant?.eventId) localRefs.add(variant.eventId);
         for (const eventId of action.cycleEventIds || []) localRefs.add(eventId);

@@ -9,22 +9,17 @@ function assert(condition, message) {
 
 function loadMaps() {
     const context = { console, window: {}, tileEntry: (img, color) => ({ img, color }) };
+    context.window = context;
     context.globalThis = context;
     vm.createContext(context);
-    const source = fs.readFileSync(`${root}/map.js`, 'utf8');
-    vm.runInContext(`${source}\nglobalThis.__MAPS__ = FIXED_DUNGEON_MAPS;\nglobalThis.__AREAS__ = STORY_DATA.areas;`, context, { filename: 'map.js' });
-    return { maps: context.__MAPS__, areas: context.__AREAS__ };
+    for (const file of ['map.js', 'maps_logic.js', 'monsters.js']) {
+        vm.runInContext(fs.readFileSync(`${root}/${file}`, 'utf8'), context, { filename: file });
+    }
+    return { maps: context.FIXED_DUNGEON_MAPS, areas: context.STORY_DATA.areas, registry: context.MapRegistry, monsterData: context.MonsterData };
 }
 
-function loadMonsters() {
-    const context = { console, window: {} };
-    vm.createContext(context);
-    vm.runInContext(fs.readFileSync(`${root}/monsters.js`, 'utf8'), context, { filename: 'monsters.js' });
-    return new Map(context.MONSTERS_DATA.map(monster => [Number(monster.id), monster]));
-}
-
-const { maps, areas } = loadMaps();
-const monstersById = loadMonsters();
+const { maps, areas, registry, monsterData } = loadMaps();
+const monstersById = new Map(monsterData.allBases.map(monster => [Number(monster.id), monster]));
 let floorRosterCount = 0;
 let hunterRosterCount = 0;
 
@@ -36,18 +31,19 @@ for (const [areaKey, base] of Object.entries(maps)) {
 
     for (const [floorIndex, floor] of (base.floors || []).entries()) {
         const label = `${areaKey}:F${floorIndex + 1}`;
-        const roster = (floor.monsters || []).map(id => monstersById.get(Number(id)));
-        for (const [index, monster] of roster.entries()) {
-            const id = Number(floor.monsters[index]);
-            assert(monster, `${label}: unknown encounter monster ${id}`);
+        assert(!Array.isArray(floor.monsters), `${label}: map-local encounter roster must not override monsters.js habitats`);
+        const mapId = floor.mapId || base.mapId;
+        const roster = monsterData.getEncounterCandidates({ mapId, floor: floorIndex + 1 });
+        for (const monster of roster) {
+            const id = Number(monster.id);
+            assert(monstersById.has(id), `${label}: unknown habitat monster ${id}`);
             assert(!monster.isBoss && !monster.isSpecialBoss && !monster.isChestTrap, `${label}: boss/trap ${id} is mixed into ordinary encounters`);
             floorRosterCount++;
         }
 
         const hunters = (floor.tileEffects || []).filter(effect => effect?.type === 'hunter');
         if (!hunters.length) continue;
-        assert(roster.length > 0, `${label}: hunter rank cannot be checked without a floor roster`);
-        const floorMaxRank = Math.max(...roster.map(monster => Number(monster.rank || 0)));
+        assert(roster.length > 0, `${label}: hunter floor has no monsters.js habitat candidates`);
         for (const hunter of hunters) {
             assert(Array.isArray(hunter.monsterIds) && hunter.monsterIds.length > 0, `${label}/${hunter.id}: empty hunter roster`);
             assert(Number(hunter.statMultiplier) >= 1 && Number(hunter.statMultiplier) <= 1.5, `${label}/${hunter.id}: hunter multiplier must remain in the audited 1.00-1.50 range`);
@@ -55,28 +51,11 @@ for (const [areaKey, base] of Object.entries(maps)) {
                 const monster = monstersById.get(Number(id));
                 assert(monster, `${label}/${hunter.id}: unknown hunter monster ${id}`);
                 assert(!monster.isBoss && !monster.isSpecialBoss && !monster.isChestTrap && !monster.isRare, `${label}/${hunter.id}: boss/special/rare ${id} cannot be selected as a hunter`);
-                const offset = Number(monster.rank || 0) - floorMaxRank;
-                assert(offset === 5 || offset === 10, `${label}/${hunter.id}: ${monster.name} is ${offset} ranks above the floor; expected one or two rank bands (+5/+10)`);
                 hunterRosterCount++;
             }
         }
     }
 }
-
-const finalFloorRanks = areaKey => {
-    const floors = maps[areaKey]?.floors || [];
-    const floor = floors[floors.length - 1];
-    return (floor?.monsters || []).map(id => Number(monstersById.get(Number(id))?.rank || 0));
-};
-const maxRank = values => Math.max(...values);
-const minRank = values => Math.min(...values);
-const galvaniaFinal = finalFloorRanks('GALVANIA_CAVE');
-const castleFinal = finalFloorRanks('DARK_CASTLE');
-const grezeliaOuter = maps.GREZELIA_FORBIDDEN.floors[0].monsters.map(id => monstersById.get(Number(id)).rank);
-const grezeliaDeep = maps.GREZELIA_FORBIDDEN.floors[2].monsters.map(id => monstersById.get(Number(id)).rank);
-assert(maxRank(galvaniaFinal) + 5 === minRank(castleFinal), 'DARK_CASTLE final roster must be one rank band above GALVANIA_CAVE final roster');
-assert(maxRank(castleFinal) + 5 === minRank(grezeliaOuter), 'GREZELIA_FORBIDDEN must be one rank band above the new DARK_CASTLE roster');
-assert(maxRank(grezeliaOuter) + 5 === minRank(grezeliaDeep), 'GREZELIA_FORBIDDEN deep roster must be one rank band above its outer roster');
 
 const expectedDepthGates = [
     ['IGNIS_VOLCANO', 2, 4, 'windVillageCleared'],
@@ -93,9 +72,10 @@ for (const [areaKey, fromIndex, toFloor, flag] of expectedDepthGates) {
 const crenaArea = areas.CRENA_LIMESTONE_CAVE;
 assert(!crenaArea.entryRequiredFlag, 'CRENA_LIMESTONE_CAVE must allow pre-request exploration up to the investigation cordon');
 const crenaFloor = maps.CRENA_LIMESTONE_CAVE.floors[0];
-const soldier = (crenaFloor.mapActions || []).find(action => Number(action.x) === 19 && Number(action.y) === 17);
+const soldier = (crenaFloor.mapActors || []).find(actor => Number(actor.x) === 19 && Number(actor.y) === 17);
+const soldierState = soldier?.states?.[0];
 assert(soldier?.imageKey === 'overlay_npc_dark_soldier', 'CRENA F1 investigation soldier is missing at (19,17)');
-assert(soldier?.missingFlag === 'crenaRouteKnown', 'CRENA F1 investigation soldier must disappear when Leila gives the crystal objective');
+assert(soldierState?.when?.missingFlag === 'crenaRouteKnown', 'CRENA F1 investigation soldier must disappear when Leila gives the crystal objective');
 assert(soldier?.interactFromAdjacent === true, 'CRENA F1 investigation soldier must be spoken to from an adjacent tile');
 
-console.log(`Fixed encounter roster validation passed: ${floorRosterCount} floor entries, ${hunterRosterCount} hunter entries, depth gates, tier hierarchy, and the Crena investigation cordon are consistent.`);
+console.log(`Fixed encounter roster validation passed: ${floorRosterCount} monsters.js habitat entries, ${hunterRosterCount} authored hunter entries, depth gates, and the Crena investigation cordon are consistent.`);

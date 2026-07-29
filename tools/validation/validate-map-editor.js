@@ -56,6 +56,9 @@ for (const marker of [
     'chestQuickEditorHtml(',
     'applyChestMode(',
     'trapMonsterId',
+    "mapActors:{placementId:nextPlacementId",
+    'mapActorPlacements(actor)',
+    "if(list==='mapActors') return mapActorPlacements(o)",
 ]) {
     assert(editorSource.includes(marker), `Editor runtime feature is missing: ${marker}`);
 }
@@ -115,6 +118,19 @@ const validateEventReferences = (mapDef, label) => {
         }
         for (const event of action.events || []) {
             if (event?.eventId) assert(storyEventIds.has(event.eventId), `${label} mapActions#${index}.events is missing: ${event.eventId}`);
+        }
+    }
+    for (const [actorIndex, actor] of (mapDef.mapActors || []).entries()) {
+        for (const [stateIndex, actorState] of (actor.states || []).entries()) {
+            const action = actorState?.action || {};
+            if (action.eventId) {
+                assert(storyEventIds.has(action.eventId),
+                    `${label} mapActors#${actorIndex}.states#${stateIndex}.eventId is missing: ${action.eventId}`);
+            }
+            for (const eventId of action.cycleEventIds || []) {
+                assert(storyEventIds.has(eventId),
+                    `${label} mapActors#${actorIndex}.states#${stateIndex}.cycleEventIds is missing: ${eventId}`);
+            }
         }
     }
 };

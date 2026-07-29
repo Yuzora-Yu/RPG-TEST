@@ -8,9 +8,9 @@ context.globalThis = context;
 vm.createContext(context);
 
 const mapCode = fs.readFileSync(path.join(root, 'map.js'), 'utf8');
-vm.runInContext(`${mapCode}\nglobalThis.__MAPS__ = { FIXED_MAPS, FIXED_DUNGEON_MAPS, FIXED_TILE_OVERLAYS, FIXED_OVERLAY_BASE_TILES };`, context, { filename: 'map.js' });
+vm.runInContext(`${mapCode}\nglobalThis.__MAPS__ = { WORLD_MAPS, FIXED_MAPS, FIXED_DUNGEON_MAPS, FIXED_TILE_OVERLAYS, FIXED_OVERLAY_BASE_TILES };`, context, { filename: 'map.js' });
 
-const { FIXED_MAPS, FIXED_DUNGEON_MAPS, FIXED_TILE_OVERLAYS, FIXED_OVERLAY_BASE_TILES } = context.__MAPS__;
+const { WORLD_MAPS, FIXED_MAPS, FIXED_DUNGEON_MAPS, FIXED_TILE_OVERLAYS, FIXED_OVERLAY_BASE_TILES } = context.__MAPS__;
 
 const colors = {
   W: '#172118',
@@ -87,6 +87,7 @@ const abyssKeys = new Set([
   'RIDPALM_DREAM_CORRIDOR', 'JAGOREA_ROOT', 'CHRONO_ABYSS', 'FINAL_ALTAR'
 ]);
 const previewEntries = [
+  { key: 'ABYSS_WORLD', def: { ...WORLD_MAPS.ABYSS_WORLD, width: 78, height: 64 } },
   ...Object.entries(FIXED_MAPS).map(([key, def]) => ({ key, def })),
   ...Object.entries(FIXED_DUNGEON_MAPS)
     .filter(([key]) => abyssKeys.has(key))

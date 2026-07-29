@@ -86,7 +86,7 @@ for (const [areaKey, base] of Object.entries(FIXED_DUNGEON_MAPS)) {
       const withIce = createFixedNavigationGraph(def, start, MapRegistry);
       assert(withoutIce && withIce, `${areaKey} F${floor}: navigation graph could not be built from ${start.x},${start.y}`);
       navigationStatesChecked += withIce.states.size;
-      for (const target of getNavigationTargets(def)) {
+      for (const target of getNavigationTargets(def, MapRegistry)) {
         if (!withoutIce.hasPosition(target.reaches)) continue;
         importantTargetsChecked += 1;
         assert(

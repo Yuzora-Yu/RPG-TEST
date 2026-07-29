@@ -15,6 +15,7 @@ vm.createContext(context);
 for (const file of ['items.js', 'monsters.js', 'quests.js', 'guild_quests.js', 'guild_master.js', 'map.js']) {
     vm.runInContext(fs.readFileSync(path.join(root, file), 'utf8'), context, { filename: file });
 }
+vm.runInContext(`${fs.readFileSync(path.join(root, 'maps_logic.js'), 'utf8')}\nglobalThis.MapRegistry = MapRegistry;`, context, { filename: 'maps_logic.js' });
 
 const normalQuests = context.QUEST_DATA || {};
 const guildQuests = context.GUILD_QUEST_DATA || {};
@@ -48,7 +49,7 @@ visitMaps(context.FIXED_DUNGEON_MAPS);
 const guildFloor = context.FIXED_DUNGEON_MAPS?.THUNDER_FORT?.floors?.[0];
 if (!guildFloor) throw new Error('THUNDER_FORT floor 1 is unavailable.');
 const guildBoardActions = (guildFloor.mapActions || []).filter(action => action?.type === 'guildBoard');
-const guildReceptionActions = (guildFloor.mapActions || []).filter(action => action?.type === 'guild');
+const guildReceptionActions = context.MapRegistry.getMapActions(guildFloor).filter(action => action?.type === 'guild');
 if (guildBoardActions.length !== 1) throw new Error(`Raizark must have one guildBoard action, found ${guildBoardActions.length}.`);
 if (guildReceptionActions.length !== 1) throw new Error(`Raizark must have one guild reception action, found ${guildReceptionActions.length}.`);
 if (Number(guildBoardActions[0].drawOffsetX) !== 12) throw new Error('Guild board drawOffsetX must be 12px.');

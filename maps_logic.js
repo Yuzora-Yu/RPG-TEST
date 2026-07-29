@@ -4,21 +4,32 @@ const normalizeCoordinateActorTiles = (mapDefs) => {
     Object.values(mapDefs || {}).forEach(mapDef => {
         const targets = Array.isArray(mapDef.floors) ? mapDef.floors : [mapDef];
         targets.forEach(target => {
-            if (!Array.isArray(target?.tiles) || !Array.isArray(target?.mapActions)) return;
+            if (!Array.isArray(target?.tiles)) return;
             const rows = target.tiles.map(row => String(row).split(""));
-            target.mapActions.forEach(action => {
-                if (!action?.imageKey) return;
-                const x = Number(action.x);
-                const y = Number(action.y);
+            const normalizePlacement = (placement) => {
+                if (!placement?.imageKey) return;
+                const x = Number(placement.x);
+                const y = Number(placement.y);
                 if (!Number.isInteger(x) || !Number.isInteger(y) || !rows[y]?.[x]) return;
-                rows[y][x] = action.baseTile || (rows[y][x] === "G" ? "G" : "T");
+                rows[y][x] = placement.baseTile || (rows[y][x] === "G" ? "G" : "T");
+            };
+            (target.mapActions || []).forEach(action => {
+                if (!action?.imageKey) return;
+                normalizePlacement(action);
+            });
+            (target.mapActors || []).forEach(actor => {
+                normalizePlacement(actor);
+                (actor.states || []).forEach(state => {
+                    if (!state?.placement) return;
+                    normalizePlacement({ ...actor, ...state.placement });
+                });
             });
             target.tiles = rows.map(row => row.join(""));
         });
     });
 };
 
-// 住人やクエスト人物はmapActionsの座標・画像を正本とし、地形文字へNPC記号を残さない。
+// 住人やクエスト人物はmapActors（旧定義はmapActions）の座標・画像を正本とし、地形文字へNPC記号を残さない。
 normalizeCoordinateActorTiles(FIXED_MAPS);
 normalizeCoordinateActorTiles(FIXED_DUNGEON_MAPS);
 
@@ -141,7 +152,6 @@ const MapRegistry = {
                 themeKey: base.themeKey || areaKey,
                 tileOverrides: { ...(base.tileOverrides || {}) },
             encounterRank: base.encounterRank || base.rank || 1,
-            rareMonsters: Array.isArray(base.rareMonsters) ? base.rareMonsters : undefined,
             enemyBoost: base.enemyBoost,
             isDungeon: true,
             isFixed: true
@@ -168,7 +178,6 @@ const MapRegistry = {
             tileOverrides: { ...(base.tileOverrides || {}), ...(def.tileOverrides || {}) },
             encounterRank: def.encounterRank || base.encounterRank || base.rank || 1,
             monsters: Array.isArray(def.monsters) ? def.monsters : base.monsters,
-            rareMonsters: Array.isArray(def.rareMonsters) ? def.rareMonsters : base.rareMonsters,
             enemyBoost: def.enemyBoost || base.enemyBoost,
             isDungeon: true,
             isFixed: true
@@ -187,7 +196,7 @@ const MapRegistry = {
 
         if (typeof FIXED_MAPS !== "undefined") {
             Object.entries(FIXED_MAPS).forEach(([parentAreaKey, parentDef]) => {
-                const actions = Array.isArray(parentDef?.mapActions) ? parentDef.mapActions : [];
+                const actions = MapRegistry.getMapActions(parentDef);
                 actions.forEach(action => {
                     if (!action || (action.target !== areaKey && action.targetAreaKey !== areaKey)) return;
                     const x = Number(action.x);
@@ -216,7 +225,7 @@ const MapRegistry = {
                         const parentMapDef = MapRegistry.getFixedDungeonFloor(parentAreaKey, floorNo) || floorDef;
                         candidates.push({ parentAreaKey, parentDef, parentMapDef, parentKind: 'dungeon', parentFloor: floorNo, action: link, x, y });
                     });
-                    const actions = Array.isArray(floorDef?.mapActions) ? floorDef.mapActions : [];
+                    const actions = MapRegistry.getMapActions(floorDef);
                     actions.forEach(action => {
                         if (!action || (action.target !== areaKey && action.targetAreaKey !== areaKey)) return;
                         const x = Number(action.x);
@@ -256,6 +265,62 @@ const MapRegistry = {
         return progressAreaKey;
     },
 
+    // 配置キャラ正本から、既存mapActionと同じ実行契約を持つ状態候補を組み立てる。
+    // placementIdはMAP／階層内で一意、actorIdは人が読むための安定名とする。
+    // statesはpriority降順で評価し、現在のフラグ・所持品・クエスト状態に合う一件だけが使われる。
+    getMapActorActionCandidates(mapDef) {
+        if (!mapDef || !Array.isArray(mapDef.mapActors)) return [];
+        const mapScope = String(mapDef.floorId || mapDef.mapId || mapDef.areaKey || mapDef.name || 'MAP');
+        const candidates = [];
+        mapDef.mapActors.forEach((actor, actorIndex) => {
+            if (!actor || actor.active === false) return;
+            const {
+                states: _states,
+                action: _defaultAction,
+                actionDefaults: _actionDefaults,
+                ...basePlacement
+            } = actor;
+            const states = Array.isArray(actor.states) && actor.states.length
+                ? actor.states
+                : [{ stateId: 'default', priority: 0, action: actor.action || {} }];
+            const sortedStates = states.map((state, stateIndex) => ({ state, stateIndex }))
+                .sort((a, b) => (Number(b.state?.priority || 0) - Number(a.state?.priority || 0)) || (a.stateIndex - b.stateIndex));
+            sortedStates.forEach(({ state, stateIndex }) => {
+                if (!state || state.active === false || state.visible === false || state.action === null) return;
+                const placement = { ...basePlacement, ...(state.placement || {}) };
+                const when = state.when || {};
+                const action = { ...(actor.actionDefaults || {}), ...(state.action || {}) };
+                const placementId = Number(actor.placementId);
+                const actorId = String(actor.actorId || actor.name || `actor_${actorIndex + 1}`);
+                const actorKey = `${mapScope}:${Number.isInteger(placementId) ? placementId : actorId}`;
+                candidates.push({
+                    ...placement,
+                    ...when,
+                    ...action,
+                    x: Number(placement.x),
+                    y: Number(placement.y),
+                    actorName: actor.name || actorId,
+                    actorId,
+                    placementId,
+                    actorKey,
+                    actorStateId: String(state.stateId || `state_${stateIndex + 1}`),
+                    actorStatePriority: Number(state.priority || 0),
+                    conversationKey: action.conversationKey || actor.conversationKey || actorKey,
+                    isMapActorState: true
+                });
+            });
+        });
+        return candidates;
+    },
+
+    getMapActions(mapDef) {
+        if (!mapDef) return [];
+        return [
+            ...(Array.isArray(mapDef.mapActions) ? mapDef.mapActions : []),
+            ...MapRegistry.getMapActorActionCandidates(mapDef)
+        ];
+    },
+
     isMapActionRuntimeAvailable(action) {
         if (!action) return false;
         // 同一座標に進行状態別のmapActionが複数ある場合は、現在利用可能なものを選ぶ。
@@ -268,8 +333,8 @@ const MapRegistry = {
     },
 
     findMapAction(mapDef, x, y) {
-        if (!mapDef || !Array.isArray(mapDef.mapActions)) return null;
-        const matches = mapDef.mapActions.filter(action =>
+        if (!mapDef) return null;
+        const matches = MapRegistry.getMapActions(mapDef).filter(action =>
             Number(action.x) === Number(x) && Number(action.y) === Number(y)
         );
         return matches.find(action => MapRegistry.isMapActionRuntimeAvailable(action)) || null;
@@ -308,16 +373,16 @@ const MapRegistry = {
     findMapActionInteractionCell(mapDef, x, y) {
         const exact = MapRegistry.findMapAction(mapDef, x, y);
         if (exact) return exact;
-        if (!mapDef || !Array.isArray(mapDef.mapActions)) return null;
-        return mapDef.mapActions.find(action =>
+        if (!mapDef) return null;
+        return MapRegistry.getMapActions(mapDef).find(action =>
             MapRegistry.isPointInMapActionArea(action, x, y) &&
             MapRegistry.isMapActionRuntimeAvailable(action)
         ) || null;
     },
 
     findMapActionMinimapCell(mapDef, x, y) {
-        if (!mapDef || !Array.isArray(mapDef.mapActions)) return null;
-        return mapDef.mapActions.find(action =>
+        if (!mapDef) return null;
+        return MapRegistry.getMapActions(mapDef).find(action =>
             MapRegistry.isPointInMapActionMinimapArea(action, x, y) &&
             MapRegistry.isMapActionRuntimeAvailable(action)
         ) || null;
@@ -338,14 +403,41 @@ const MapRegistry = {
     isProgressEntryActive(entry) {
         if (!entry || entry.active === false) return false;
         const flags = (typeof App !== 'undefined' && App.data?.progress?.flags) || {};
+        const items = (typeof App !== 'undefined' && App.data?.items) || {};
         const requiredFlags = Array.isArray(entry.requiredFlags)
             ? entry.requiredFlags
             : (entry.requiredFlag ? [entry.requiredFlag] : []);
         const missingFlags = Array.isArray(entry.missingFlags)
             ? entry.missingFlags
             : (entry.missingFlag ? [entry.missingFlag] : []);
-        return requiredFlags.every(flag => !!flags[flag])
-            && missingFlags.every(flag => !flags[flag]);
+        if (!requiredFlags.every(flag => !!flags[flag]) || !missingFlags.every(flag => !flags[flag])) return false;
+
+        const normalizeItemRequirements = (value) => {
+            if (!value) return [];
+            const list = Array.isArray(value) ? value : [value];
+            return list.map(requirement => {
+                if (typeof requirement === 'number' || typeof requirement === 'string') {
+                    return { id: Number(requirement), count: 1 };
+                }
+                return {
+                    id: Number(requirement?.id ?? requirement?.itemId),
+                    count: Math.max(1, Math.floor(Number(requirement?.count) || 1))
+                };
+            }).filter(requirement => Number.isFinite(requirement.id));
+        };
+        const requiredItems = normalizeItemRequirements(entry.requiredItems);
+        const missingItems = normalizeItemRequirements(entry.missingItems);
+        if (!requiredItems.every(requirement => Number(items[requirement.id] || 0) >= requirement.count)) return false;
+        if (!missingItems.every(requirement => Number(items[requirement.id] || 0) < requirement.count)) return false;
+
+        if (entry.requiredStoryStep !== undefined) {
+            const step = Number((typeof App !== 'undefined' && App.data?.progress?.storyStep) || 0);
+            const subStep = Number((typeof App !== 'undefined' && App.data?.progress?.subStep) || 0);
+            const requiredStep = Number(entry.requiredStoryStep);
+            const requiredSubStep = Number(entry.requiredSubStep || 0);
+            if (!(step > requiredStep || (step === requiredStep && subStep >= requiredSubStep))) return false;
+        }
+        return true;
     },
 
     findBlockingObject(mapDef, x, y) {
@@ -419,7 +511,7 @@ const MapRegistry = {
         return occupies(mapDef.floorLinks)
             || occupies(mapDef.chests)
             || occupies(mapDef.bosses)
-            || occupies(mapDef.mapActions)
+            || !!MapRegistry.findMapAction(mapDef, tx, ty)
             || occupies(mapDef.blockingObjects, true)
             || (Array.isArray(mapDef.floorDecorations) && mapDef.floorDecorations.some(decoration =>
                 decoration?.blocking === true &&

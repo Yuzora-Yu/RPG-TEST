@@ -3880,9 +3880,6 @@ const Dungeon = {
             guildQuestId: guildRun?.questId || null,
             encounterRank: guildRun ? Math.max(1, Number(guildRun.encounterRank || guildRun.power || 1)) : (Dungeon.isStoryAbyss() ? Dungeon.floor : null),
             monsters: guildRun ? [...(guildRun.normalMonsterIds || [])] : null,
-            rareMonsters: guildRun ? (guildRun.rareMonsterIds || []).map(id => ({ id: Number(id) })) : null,
-            // 各候補ごとの抽選ではなく、遭遇全体で指定確率を一度だけ判定する。
-            rareEncounterChance: guildRun ? Math.max(0, Math.min(1, Number(guildRun.rareChance || 0))) : null,
             enemyBoost: guildRun ? JSON.parse(JSON.stringify(guildRun.enemyBoost || {})) : null,
             allyAilments: guildRun ? [...(guildRun.allyAilments || [])] : [],
             themeKey: theme?.themeKey || App.data?.dungeon?.visualThemeKey || 'ABYSS',

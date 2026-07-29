@@ -1847,8 +1847,8 @@ const FIELD_ENCOUNTER_ZONES = [
     { id: "ABYSS_CARMENA_FIELD", worldKey: "ABYSS_WORLD", mapId: MAP_IDS.CARMENA_OUTSKIRTS, name: "カルメナ周辺", rank: 88, centerX: 31, centerY: 52, radius: 24, rect: { x1: 0, y1: 39, x2: 77, y2: 63 }, priority: 1 },
     { id: "ABYSS_VISTA_FIELD", worldKey: "ABYSS_WORLD", mapId: MAP_IDS.VISTA_OUTSKIRTS, name: "ビスタ周辺", rank: 98, centerX: 42, centerY: 32, radius: 24, rect: { x1: 0, y1: 23, x2: 77, y2: 38 }, priority: 2 },
     { id: "ABYSS_LEGACION_FIELD", worldKey: "ABYSS_WORLD", mapId: MAP_IDS.LEGACION_OUTSKIRTS, name: "レガシオン周辺", rank: 108, centerX: 44, centerY: 15, radius: 20, rect: { x1: 0, y1: 0, x2: 77, y2: 22 }, priority: 3 },
-    { id: "TRIAL_ISLAND_FIELD", mapId: MAP_IDS.TRIAL_ISLAND_OUTSKIRTS, name: "最果ての祠周辺", rank: 81, centerX: 2, centerY: 2, radius: 10, priority: 2, rareMonsters: [{ id: 200203, rate: 0.05 }] },
-    { id: "SUMMIT_TEMPLE_FIELD", mapId: MAP_IDS.SUMMIT_TEMPLE_OUTSKIRTS, name: "頂の神殿周辺", rank: 146, centerX: 89, centerY: 77, radius: 12, priority: 2, rareMonsters: [{ id: 200203, rate: 0.05 }] }
+    { id: "TRIAL_ISLAND_FIELD", mapId: MAP_IDS.TRIAL_ISLAND_OUTSKIRTS, name: "最果ての祠周辺", rank: 81, centerX: 2, centerY: 2, radius: 10, priority: 2 },
+    { id: "SUMMIT_TEMPLE_FIELD", mapId: MAP_IDS.SUMMIT_TEMPLE_OUTSKIRTS, name: "頂の神殿周辺", rank: 146, centerX: 89, centerY: 77, radius: 12, priority: 2 }
 ];
 
 const WORLD_BRIDGES = [
@@ -2463,14 +2463,126 @@ const FIXED_MAPS = {
             "WWWWWWWWWWWWWWWWWGGTGGWWWWWWWWWWWWWWWWW",
             "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
         ],
+        nextActorPlacementId: 5,
+        mapActors: [
+            {
+                "placementId": 1,
+                "actorId": "abyss_carmena_resident_old_kingdom",
+                "name": "老人",
+                "x": 7,
+                "y": 12,
+                "imageKey": "overlay_npc_elder",
+                "baseTile": "T",
+                "states": [
+                    {
+                        "stateId": "abyss_carmena_resident_old_kingdom",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "type": "storyEvent",
+                            "eventId": "abyss_carmena_resident_old_kingdom",
+                            "label": "老人と話す"
+                        }
+                    }
+                ]
+            },
+            {
+                "placementId": 2,
+                "actorId": "abyss_carmena_resident_gate_child",
+                "name": "子ども",
+                "x": 28,
+                "y": 11,
+                "imageKey": "overlay_npc_child",
+                "baseTile": "T",
+                "states": [
+                    {
+                        "stateId": "abyss_carmena_resident_gate_child",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "type": "storyEvent",
+                            "eventId": "abyss_carmena_resident_gate_child",
+                            "label": "子どもと話す"
+                        }
+                    }
+                ]
+            },
+            {
+                "placementId": 3,
+                "actorId": "abyss_carmena_resident_rations",
+                "name": "宿の手伝い",
+                "x": 14,
+                "y": 21,
+                "imageKey": "overlay_npc_villager",
+                "baseTile": "T",
+                "states": [
+                    {
+                        "stateId": "abyss_carmena_resident_rations",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "type": "storyEvent",
+                            "eventId": "abyss_carmena_resident_rations",
+                            "label": "宿の手伝いと話す"
+                        }
+                    }
+                ]
+            },
+            {
+                "placementId": 4,
+                "actorId": "abyss_carmena_resident_spring",
+                "name": "泉辺の男",
+                "x": 23,
+                "y": 23,
+                "imageKey": "overlay_npc_villager",
+                "baseTile": "G",
+                "states": [
+                    {
+                        "stateId": "abyss_carmena_resident_spring",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "type": "storyEvent",
+                            "eventId": "abyss_carmena_resident_spring",
+                            "label": "泉辺の男と話す"
+                        }
+                    }
+                ]
+            }
+        ],
         mapActions: [
-            { x: 10, y: 20, type: "inn", label: "宿に泊まる", log: "黒曜石の壁に、淡い灯がともっている。", suppressEventMarker: true },
-            { x: 30, y: 19, type: "shop", shopType: "item", title: "カルメナ 道具屋", shopRank: 90, label: "道具を買う", suppressEventMarker: true },
-            { x: 19, y: 26, type: "returnPortal", useSavedReturnPoint: false, fallbackAreaKey: "ABYSS_FIELD", fallbackWorldKey: "WORLD", fallbackX: 8, fallbackY: 12, label: "黒い泉から地上へ戻る", log: "黒い水面の奥に、地上へ続く光が揺れている。", imageKey: "overlay_abyss_black_spring", baseTile: "T" },
-            { x: 7, y: 12, type: "storyEvent", eventId: "abyss_carmena_resident_old_kingdom", label: "老人と話す", imageKey: "overlay_npc_elder", baseTile: "T" },
-            { x: 28, y: 11, type: "storyEvent", eventId: "abyss_carmena_resident_gate_child", label: "子どもと話す", imageKey: "overlay_npc_child", baseTile: "T" },
-            { x: 14, y: 21, type: "storyEvent", eventId: "abyss_carmena_resident_rations", label: "宿の手伝いと話す", imageKey: "overlay_npc_villager", baseTile: "T" },
-            { x: 23, y: 23, type: "storyEvent", eventId: "abyss_carmena_resident_spring", label: "泉辺の男と話す", imageKey: "overlay_npc_villager", baseTile: "G" }
+            {
+                "x": 10,
+                "y": 20,
+                "type": "inn",
+                "label": "宿に泊まる",
+                "log": "黒曜石の壁に、淡い灯がともっている。",
+                "suppressEventMarker": true
+            },
+            {
+                "x": 30,
+                "y": 19,
+                "type": "shop",
+                "shopType": "item",
+                "title": "カルメナ 道具屋",
+                "shopRank": 90,
+                "label": "道具を買う",
+                "suppressEventMarker": true
+            },
+            {
+                "x": 19,
+                "y": 26,
+                "type": "returnPortal",
+                "useSavedReturnPoint": false,
+                "fallbackAreaKey": "ABYSS_FIELD",
+                "fallbackWorldKey": "WORLD",
+                "fallbackX": 8,
+                "fallbackY": 12,
+                "label": "黒い泉から地上へ戻る",
+                "log": "黒い水面の奥に、地上へ続く光が揺れている。",
+                "imageKey": "overlay_abyss_black_spring",
+                "baseTile": "T"
+            }
         ],
         blockingObjects: [
             { x: 19, y: 2, missingFlag: "abyssCarmenaGateCleared", imageKey: "overlay_light_prison_gate_horizontal", drawWidth: 32, drawHeight: 32, log: "二将の背後で、北門が固く閉ざされている。" }
@@ -2553,17 +2665,170 @@ const FIXED_MAPS = {
             "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
             "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
         ],
+        nextActorPlacementId: 6,
+        mapActors: [
+            {
+                "placementId": 1,
+                "actorId": "abyss_vista_recruitment_guide",
+                "name": "魔物使い",
+                "x": 31,
+                "y": 21,
+                "imageKey": "overlay_npc_villager",
+                "baseTile": "T",
+                "states": [
+                    {
+                        "stateId": "abyss_vista_recruitment_guide",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "type": "storyEvent",
+                            "eventId": "abyss_vista_recruitment_guide",
+                            "label": "魔物使いと話す"
+                        }
+                    }
+                ]
+            },
+            {
+                "placementId": 2,
+                "actorId": "abyss_vista_scavenger",
+                "name": "拾い屋",
+                "x": 8,
+                "y": 21,
+                "imageKey": "overlay_npc_villager",
+                "baseTile": "G",
+                "states": [
+                    {
+                        "stateId": "abyss_vista_scavenger",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "type": "storyEvent",
+                            "eventId": "abyss_vista_scavenger",
+                            "label": "拾い屋と話す"
+                        }
+                    }
+                ]
+            },
+            {
+                "placementId": 3,
+                "actorId": "abyss_vista_widow",
+                "name": "石段の女",
+                "x": 26,
+                "y": 23,
+                "imageKey": "overlay_npc_villager",
+                "baseTile": "T",
+                "states": [
+                    {
+                        "stateId": "abyss_vista_widow",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "type": "storyEvent",
+                            "eventId": "abyss_vista_widow",
+                            "label": "石段の女と話す"
+                        }
+                    }
+                ]
+            },
+            {
+                "placementId": 4,
+                "actorId": "abyss_vista_toll_keeper",
+                "name": "北区の門番",
+                "x": 14,
+                "y": 7,
+                "imageKey": "overlay_npc_bronze_knight",
+                "baseTile": "T",
+                "states": [
+                    {
+                        "stateId": "abyss_vista_toll_keeper",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "type": "storyEvent",
+                            "eventId": "abyss_vista_toll_keeper",
+                            "label": "北区の門番と話す"
+                        }
+                    }
+                ]
+            },
+            {
+                "placementId": 5,
+                "actorId": "abyss_vista_lamplighter",
+                "name": "灯守",
+                "x": 35,
+                "y": 9,
+                "imageKey": "overlay_npc_villager",
+                "baseTile": "T",
+                "states": [
+                    {
+                        "stateId": "abyss_vista_lamplighter",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "type": "storyEvent",
+                            "eventId": "abyss_vista_lamplighter",
+                            "label": "灯守と話す"
+                        }
+                    }
+                ]
+            }
+        ],
         mapActions: [
-            { x: 9, y: 5, type: "inn", label: "北区の宿に泊まる", suppressEventMarker: true },
-            { x: 28, y: 5, type: "shop", shopType: "item", title: "ビスタ 初級技法書店", shopRank: 35, itemIds: [600101, 600119, 600200, 600202, 600300, 600400], label: "技法書を見る", suppressEventMarker: true },
-            { x: 8, y: 22, type: "shop", shopType: "item", title: "ビスタ 道具屋", shopRank: 100, label: "道具を買う", suppressEventMarker: true },
-            { x: 31, y: 21, type: "storyEvent", eventId: "abyss_vista_recruitment_guide", label: "魔物使いと話す", imageKey: "overlay_npc_villager", baseTile: "T" },
-            { x: 8, y: 21, type: "storyEvent", eventId: "abyss_vista_scavenger", label: "拾い屋と話す", imageKey: "overlay_npc_villager", baseTile: "G" },
-            { x: 26, y: 23, type: "storyEvent", eventId: "abyss_vista_widow", label: "石段の女と話す", imageKey: "overlay_npc_villager", baseTile: "T" },
-            { x: 14, y: 7, type: "storyEvent", eventId: "abyss_vista_toll_keeper", label: "北区の門番と話す", imageKey: "overlay_npc_bronze_knight", baseTile: "T" },
-            { x: 35, y: 9, type: "storyEvent", eventId: "abyss_vista_lamplighter", label: "灯守と話す", imageKey: "overlay_npc_villager", baseTile: "T" },
-            { x: 11, y: 19, type: "fixedMap", target: "VISTA_UNDERPASS", entryKey: "south", returnX: 11, returnY: 20, label: "地下通路へ下りる" },
-            { x: 32, y: 10, type: "fixedMap", target: "VISTA_UNDERPASS", entryKey: "north", returnX: 32, returnY: 9, label: "地下通路へ下りる" }
+            {
+                "x": 9,
+                "y": 5,
+                "type": "inn",
+                "label": "北区の宿に泊まる",
+                "suppressEventMarker": true
+            },
+            {
+                "x": 28,
+                "y": 5,
+                "type": "shop",
+                "shopType": "item",
+                "title": "ビスタ 初級技法書店",
+                "shopRank": 35,
+                "itemIds": [
+                    600101,
+                    600119,
+                    600200,
+                    600202,
+                    600300,
+                    600400
+                ],
+                "label": "技法書を見る",
+                "suppressEventMarker": true
+            },
+            {
+                "x": 8,
+                "y": 22,
+                "type": "shop",
+                "shopType": "item",
+                "title": "ビスタ 道具屋",
+                "shopRank": 100,
+                "label": "道具を買う",
+                "suppressEventMarker": true
+            },
+            {
+                "x": 11,
+                "y": 19,
+                "type": "fixedMap",
+                "target": "VISTA_UNDERPASS",
+                "entryKey": "south",
+                "returnX": 11,
+                "returnY": 20,
+                "label": "地下通路へ下りる"
+            },
+            {
+                "x": 32,
+                "y": 10,
+                "type": "fixedMap",
+                "target": "VISTA_UNDERPASS",
+                "entryKey": "north",
+                "returnX": 32,
+                "returnY": 9,
+                "label": "地下通路へ下りる"
+            }
         ],
         exitPoint: { area: "ABYSS_WORLD", worldKey: "ABYSS_WORLD", x: 37, y: 40 },
         worldExits: [
@@ -2602,11 +2867,68 @@ const FIXED_MAPS = {
             "WWTTTTTTTWWWWWWWWWWWWWWWWWWWWWWWWWW",
             "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
         ],
+        nextActorPlacementId: 3,
+        mapActors: [
+            {
+                "placementId": 1,
+                "actorId": "abyss_vista_underpass_worker",
+                "name": "補修工",
+                "x": 11,
+                "y": 13,
+                "imageKey": "overlay_npc_villager",
+                "baseTile": "T",
+                "states": [
+                    {
+                        "stateId": "abyss_vista_underpass_worker",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "type": "storyEvent",
+                            "eventId": "abyss_vista_underpass_worker",
+                            "label": "補修工と話す"
+                        }
+                    }
+                ]
+            },
+            {
+                "placementId": 2,
+                "actorId": "abyss_vista_underpass_children",
+                "name": "子ども",
+                "x": 26,
+                "y": 7,
+                "imageKey": "overlay_npc_child",
+                "baseTile": "T",
+                "states": [
+                    {
+                        "stateId": "abyss_vista_underpass_children",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "type": "storyEvent",
+                            "eventId": "abyss_vista_underpass_children",
+                            "label": "子どもと話す"
+                        }
+                    }
+                ]
+            }
+        ],
         mapActions: [
-            { x: 3, y: 18, type: "fixedMap", target: "VISTA", entryKey: "underpassSouth", label: "南区へ戻る" },
-            { x: 30, y: 3, type: "fixedMap", target: "VISTA", entryKey: "underpassNorth", label: "北区へ上がる" },
-            { x: 11, y: 13, type: "storyEvent", eventId: "abyss_vista_underpass_worker", label: "補修工と話す", imageKey: "overlay_npc_villager", baseTile: "T" },
-            { x: 26, y: 7, type: "storyEvent", eventId: "abyss_vista_underpass_children", label: "子どもと話す", imageKey: "overlay_npc_child", baseTile: "T" }
+            {
+                "x": 3,
+                "y": 18,
+                "type": "fixedMap",
+                "target": "VISTA",
+                "entryKey": "underpassSouth",
+                "label": "南区へ戻る"
+            },
+            {
+                "x": 30,
+                "y": 3,
+                "type": "fixedMap",
+                "target": "VISTA",
+                "entryKey": "underpassNorth",
+                "label": "北区へ上がる"
+            }
         ],
         chests: [
             { x: 5, y: 6, itemId: 14, type: "item", baseTile: "T" },
@@ -2664,18 +2986,164 @@ const FIXED_MAPS = {
             "WWWWWWWWWWWWWWGGGGGGGGGGTGGGGGGGGGGWWWWWWWWWWWWWW",
             "WWWWWWWWWWWWWWWWWWWWWWWWSWWWWWWWWWWWWWWWWWWWWWWWW"
         ],
+        nextActorPlacementId: 6,
+        mapActors: [
+            {
+                "placementId": 1,
+                "actorId": "abyss_legacion_arena_notice",
+                "name": "格闘場",
+                "x": 38,
+                "y": 33,
+                "imageKey": "overlay_npc_villager",
+                "baseTile": "T",
+                "states": [
+                    {
+                        "stateId": "abyss_legacion_arena_notice",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "type": "storyEvent",
+                            "eventId": "abyss_legacion_arena_notice",
+                            "label": "格闘場を見る"
+                        }
+                    }
+                ]
+            },
+            {
+                "placementId": 2,
+                "actorId": "abyss_legacion_smith_apprentice",
+                "name": "鍛冶場の徒弟",
+                "x": 14,
+                "y": 27,
+                "imageKey": "overlay_npc_villager",
+                "baseTile": "G",
+                "states": [
+                    {
+                        "stateId": "abyss_legacion_smith_apprentice",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "type": "storyEvent",
+                            "eventId": "abyss_legacion_smith_apprentice",
+                            "label": "鍛冶場の徒弟と話す"
+                        }
+                    }
+                ]
+            },
+            {
+                "placementId": 3,
+                "actorId": "abyss_legacion_guild_clerk",
+                "name": "記録係",
+                "x": 32,
+                "y": 27,
+                "imageKey": "overlay_npc_villager",
+                "baseTile": "G",
+                "states": [
+                    {
+                        "stateId": "abyss_legacion_guild_clerk",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "type": "storyEvent",
+                            "eventId": "abyss_legacion_guild_clerk",
+                            "label": "記録係と話す"
+                        }
+                    }
+                ]
+            },
+            {
+                "placementId": 4,
+                "actorId": "abyss_legacion_castle_servant",
+                "name": "城勤めの女",
+                "x": 17,
+                "y": 21,
+                "imageKey": "overlay_npc_villager",
+                "baseTile": "G",
+                "states": [
+                    {
+                        "stateId": "abyss_legacion_castle_servant",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "type": "storyEvent",
+                            "eventId": "abyss_legacion_castle_servant",
+                            "label": "城勤めの女と話す"
+                        }
+                    }
+                ]
+            },
+            {
+                "placementId": 5,
+                "actorId": "abyss_legacion_wall_vendor",
+                "name": "商人",
+                "x": 41,
+                "y": 25,
+                "imageKey": "overlay_npc_villager",
+                "baseTile": "G",
+                "states": [
+                    {
+                        "stateId": "abyss_legacion_wall_vendor",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "type": "storyEvent",
+                            "eventId": "abyss_legacion_wall_vendor",
+                            "label": "商人と話す"
+                        }
+                    }
+                ]
+            }
+        ],
         mapActions: [
-            { x: 8, y: 28, type: "blacksmith", label: "鍛冶を頼む", suppressEventMarker: true },
-            { x: 40, y: 28, type: "alchemy", label: "錬金を行う", suppressEventMarker: true },
-            { x: 10, y: 32, type: "guild", label: "冒険者ギルドへ", suppressEventMarker: true },
-            { x: 38, y: 33, type: "storyEvent", eventId: "abyss_legacion_arena_notice", label: "格闘場を見る", imageKey: "overlay_npc_villager", baseTile: "T" },
-            { x: 14, y: 27, type: "storyEvent", eventId: "abyss_legacion_smith_apprentice", label: "鍛冶場の徒弟と話す", imageKey: "overlay_npc_villager", baseTile: "G" },
-            { x: 32, y: 27, type: "storyEvent", eventId: "abyss_legacion_guild_clerk", label: "記録係と話す", imageKey: "overlay_npc_villager", baseTile: "G" },
-            { x: 17, y: 21, type: "storyEvent", eventId: "abyss_legacion_castle_servant", label: "城勤めの女と話す", imageKey: "overlay_npc_villager", baseTile: "G" },
-            { x: 41, y: 25, type: "storyEvent", eventId: "abyss_legacion_wall_vendor", label: "商人と話す", imageKey: "overlay_npc_villager", baseTile: "G" },
-            { x: 24, y: 5, type: "fixedMap", target: "LEGACION_UPPER_GALLERY", entryKey: "center", returnX: 24, returnY: 6, label: "上層回廊へ上がる" },
-            { x: 14, y: 12, type: "fixedMap", target: "LEGACION_PRISON", returnX: 14, returnY: 13, label: "地下牢へ下りる" },
-            { x: 34, y: 12, type: "fixedMap", target: "LEGACION_TEMPLE", returnX: 34, returnY: 13, label: "地下神殿へ下りる" }
+            {
+                "x": 8,
+                "y": 28,
+                "type": "blacksmith",
+                "label": "鍛冶を頼む",
+                "suppressEventMarker": true
+            },
+            {
+                "x": 40,
+                "y": 28,
+                "type": "alchemy",
+                "label": "錬金を行う",
+                "suppressEventMarker": true
+            },
+            {
+                "x": 10,
+                "y": 32,
+                "type": "guild",
+                "label": "冒険者ギルドへ",
+                "suppressEventMarker": true
+            },
+            {
+                "x": 24,
+                "y": 5,
+                "type": "fixedMap",
+                "target": "LEGACION_UPPER_GALLERY",
+                "entryKey": "center",
+                "returnX": 24,
+                "returnY": 6,
+                "label": "上層回廊へ上がる"
+            },
+            {
+                "x": 14,
+                "y": 12,
+                "type": "fixedMap",
+                "target": "LEGACION_PRISON",
+                "returnX": 14,
+                "returnY": 13,
+                "label": "地下牢へ下りる"
+            },
+            {
+                "x": 34,
+                "y": 12,
+                "type": "fixedMap",
+                "target": "LEGACION_TEMPLE",
+                "returnX": 34,
+                "returnY": 13,
+                "label": "地下神殿へ下りる"
+            }
         ],
         exitPoint: { area: "ABYSS_WORLD", worldKey: "ABYSS_WORLD", x: 42, y: 21 },
         worldExits: [
@@ -2716,13 +3184,88 @@ const FIXED_MAPS = {
             "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
             "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
         ],
+        nextActorPlacementId: 3,
+        mapActors: [
+            {
+                "placementId": 1,
+                "actorId": "abyss_legacion_gallery_page",
+                "name": "小姓",
+                "x": 8,
+                "y": 9,
+                "imageKey": "overlay_npc_child",
+                "baseTile": "T",
+                "states": [
+                    {
+                        "stateId": "abyss_legacion_gallery_page",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "type": "storyEvent",
+                            "eventId": "abyss_legacion_gallery_page",
+                            "label": "小姓と話す"
+                        }
+                    }
+                ]
+            },
+            {
+                "placementId": 2,
+                "actorId": "abyss_legacion_archivist",
+                "name": "記録官",
+                "x": 32,
+                "y": 9,
+                "imageKey": "overlay_npc_villager",
+                "baseTile": "T",
+                "states": [
+                    {
+                        "stateId": "abyss_legacion_archivist",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "type": "storyEvent",
+                            "eventId": "abyss_legacion_archivist",
+                            "label": "記録官と話す"
+                        }
+                    }
+                ]
+            }
+        ],
         mapActions: [
-            { x: 20, y: 16, type: "fixedMap", target: "LEGACION", returnX: 24, returnY: 6, label: "城内一階へ戻る" },
-            { x: 20, y: 2, type: "fixedMap", target: "LEGACION_THRONE", returnX: 20, returnY: 3, label: "謁見の間へ進む" },
-            { x: 4, y: 8, type: "fixedMap", target: "LEGACION_WEST_TOWER", returnX: 5, returnY: 8, label: "西塔へ入る" },
-            { x: 36, y: 8, type: "fixedMap", target: "LEGACION_EAST_TOWER", returnX: 35, returnY: 8, label: "東塔へ入る" },
-            { x: 8, y: 9, type: "storyEvent", eventId: "abyss_legacion_gallery_page", label: "小姓と話す", imageKey: "overlay_npc_child", baseTile: "T" },
-            { x: 32, y: 9, type: "storyEvent", eventId: "abyss_legacion_archivist", label: "記録官と話す", imageKey: "overlay_npc_villager", baseTile: "T" }
+            {
+                "x": 20,
+                "y": 16,
+                "type": "fixedMap",
+                "target": "LEGACION",
+                "returnX": 24,
+                "returnY": 6,
+                "label": "城内一階へ戻る"
+            },
+            {
+                "x": 20,
+                "y": 2,
+                "type": "fixedMap",
+                "target": "LEGACION_THRONE",
+                "returnX": 20,
+                "returnY": 3,
+                "label": "謁見の間へ進む"
+            },
+            {
+                "x": 4,
+                "y": 8,
+                "type": "fixedMap",
+                "target": "LEGACION_WEST_TOWER",
+                "returnX": 5,
+                "returnY": 8,
+                "label": "西塔へ入る"
+            },
+            {
+                "x": 36,
+                "y": 8,
+                "type": "fixedMap",
+                "target": "LEGACION_EAST_TOWER",
+                "returnX": 35,
+                "returnY": 8,
+                "label": "東塔へ入る"
+            }
         ],
         chests: [
             { x: 4, y: 3, itemId: 14, type: "item", baseTile: "T" },
@@ -2764,10 +3307,46 @@ const FIXED_MAPS = {
             "WWWWWWWWWWWWWWWWWWWWWWW",
             "WWWWWWWWWWWWWWWWWWWWWWW"
         ],
+        nextActorPlacementId: 2,
+        mapActors: [
+            {
+                "placementId": 1,
+                "actorId": "abyss_legacion_west_sentry",
+                "name": "衛兵",
+                "x": 5,
+                "y": 11,
+                "imageKey": "overlay_npc_bronze_knight",
+                "baseTile": "T",
+                "states": [
+                    {
+                        "stateId": "abyss_legacion_west_sentry",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "type": "storyEvent",
+                            "eventId": "abyss_legacion_west_sentry",
+                            "label": "衛兵と話す"
+                        }
+                    }
+                ]
+            }
+        ],
         mapActions: [
-            { x: 11, y: 20, type: "fixedMap", target: "LEGACION_UPPER_GALLERY", entryKey: "westUpper", label: "上層回廊へ戻る" },
-            { x: 11, y: 2, type: "log", label: "西塔の頂を調べる", log: "崩れた狭間から、城下町と閉ざされた南の荒野が見える。" },
-            { x: 5, y: 11, type: "storyEvent", eventId: "abyss_legacion_west_sentry", label: "衛兵と話す", imageKey: "overlay_npc_bronze_knight", baseTile: "T" }
+            {
+                "x": 11,
+                "y": 20,
+                "type": "fixedMap",
+                "target": "LEGACION_UPPER_GALLERY",
+                "entryKey": "westUpper",
+                "label": "上層回廊へ戻る"
+            },
+            {
+                "x": 11,
+                "y": 2,
+                "type": "log",
+                "label": "西塔の頂を調べる",
+                "log": "崩れた狭間から、城下町と閉ざされた南の荒野が見える。"
+            }
         ],
         chests: [
             { x: 4, y: 4, itemId: 14, type: "item", baseTile: "T" },
@@ -2809,10 +3388,46 @@ const FIXED_MAPS = {
             "WWWWWWWWWWWWWWWWWWWWWWW",
             "WWWWWWWWWWWWWWWWWWWWWWW"
         ],
+        nextActorPlacementId: 2,
+        mapActors: [
+            {
+                "placementId": 1,
+                "actorId": "abyss_legacion_east_observer",
+                "name": "観測士",
+                "x": 17,
+                "y": 11,
+                "imageKey": "overlay_npc_villager",
+                "baseTile": "T",
+                "states": [
+                    {
+                        "stateId": "abyss_legacion_east_observer",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "type": "storyEvent",
+                            "eventId": "abyss_legacion_east_observer",
+                            "label": "観測士と話す"
+                        }
+                    }
+                ]
+            }
+        ],
         mapActions: [
-            { x: 11, y: 20, type: "fixedMap", target: "LEGACION_UPPER_GALLERY", entryKey: "eastUpper", label: "上層回廊へ戻る" },
-            { x: 11, y: 2, type: "log", label: "東塔の頂を調べる", log: "北の空に、夢幻回廊の輪郭だけが揺れている。" },
-            { x: 17, y: 11, type: "storyEvent", eventId: "abyss_legacion_east_observer", label: "観測士と話す", imageKey: "overlay_npc_villager", baseTile: "T" }
+            {
+                "x": 11,
+                "y": 20,
+                "type": "fixedMap",
+                "target": "LEGACION_UPPER_GALLERY",
+                "entryKey": "eastUpper",
+                "label": "上層回廊へ戻る"
+            },
+            {
+                "x": 11,
+                "y": 2,
+                "type": "log",
+                "label": "東塔の頂を調べる",
+                "log": "北の空に、夢幻回廊の輪郭だけが揺れている。"
+            }
         ],
         chests: [
             { x: 18, y: 4, itemId: 14, type: "item", baseTile: "T" },
@@ -2848,108 +3463,159 @@ const FIXED_MAPS = {
             "WWWWWWGGWWWWWWW",
             "WWWWWWSSWWWWWWW"
         ],
-        mapActions: [
+        nextActorPlacementId: 5,
+        mapActors: [
             {
-                x: 2,
-                y: 9,
-                label: "道具を買う",
-                log: "道具屋の看板が出ている。",
-                type: "shop",
-                shopType: "item",
-                title: "リュミナ村 道具屋",
-                shopRank: 5
-            },
-            {
-                x: 8,
-                y: 5,
-                label: "武器を見る",
-                log: "簡素な武器が並んでいる。",
-                type: "shop",
-                shopType: "weapon",
-                title: "リュミナ村 武器屋",
-                shopRank: 5
-            },
-            {
-                x: 10,
-                y: 5,
-                label: "防具を見る",
-                log: "旅支度用の防具が並んでいる。",
-                type: "shop",
-                shopType: "armor",
-                title: "リュミナ村 防具屋",
-                shopRank: 5
-            },
-            {
-                x: 11,
-                y: 9,
-                label: "村人と話す",
-                log: "村人が、北東の穴を見つめている。",
-                type: "storyEvent",
-                conversationKey: "lumina_villager_sinkhole",
-                eventId: "town_start_villager_1_a",
-                imageKey: "overlay_npc_villager",
-                baseTile: "G"
-            },
-            {
-                x: 13,
-                y: 3,
-                label: "村の若者と話す",
-                log: "若者が木剣を握りしめている。",
-                type: "storyEvent",
-                conversationKey: "lumina_villager_youth",
-                eventId: "town_start_villager_2_a",
-                imageKey: "overlay_npc_bronze_knight",
-                baseTile: "G"
-            },
-            {
-                x: 3,
-                y: 2,
-                label: "薬草摘みと話す",
-                log: "籠を抱えた女性が、葉についた泥を払っている。",
-                type: "storyEvent",
-                conversationKey: "lumina_villager_herbalist",
-                eventId: "town_start_villager_3_a",
-                imageKey: "overlay_npc_villager",
-                baseTile: "G"
-            },
-            {
-                x: 6,
-                y: 4,
-                label: "長老と話す",
-                log: "長老が旅人を待っている。",
-                type: "log",
-                imageKey: "overlay_npc_elder",
-                events: [
+                "placementId": 1,
+                "actorId": "town_start_villager_1_a",
+                "name": "村人",
+                "x": 11,
+                "y": 9,
+                "imageKey": "overlay_npc_villager",
+                "baseTile": "G",
+                "states": [
                     {
-                        stepMin: 0,
-                        stepMax: 0,
-                        eventId: "start_adventure"
-                    },
-                    {
-                        stepMin: 1,
-                        stepMax: 1,
-                        eventId: "start_adventure2"
-                    },
-                    {
-                        stepMin: 2,
-                        stepMax: 2,
-                        subMin: 0,
-                        subMax: 0,
-                        eventId: "start_adventure3"
-                    },
-                    {
-                        default: true,
-                        eventId: "start_village_elder_after"
+                        "stateId": "town_start_villager_1_a",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "label": "村人と話す",
+                            "log": "村人が、北東の穴を見つめている。",
+                            "type": "storyEvent",
+                            "conversationKey": "lumina_villager_sinkhole",
+                            "eventId": "town_start_villager_1_a"
+                        }
                     }
                 ]
             },
             {
-                x: 11,
-                y: 1,
-                label: "洞穴に入る",
-                log: "北東の洞穴から冷たい風が吹いている。",
-                type: "fixedDungeon",
-                target: "START_CAVE"
+                "placementId": 2,
+                "actorId": "town_start_villager_2_a",
+                "name": "村の若者",
+                "x": 13,
+                "y": 3,
+                "imageKey": "overlay_npc_bronze_knight",
+                "baseTile": "G",
+                "states": [
+                    {
+                        "stateId": "town_start_villager_2_a",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "label": "村の若者と話す",
+                            "log": "若者が木剣を握りしめている。",
+                            "type": "storyEvent",
+                            "conversationKey": "lumina_villager_youth",
+                            "eventId": "town_start_villager_2_a"
+                        }
+                    }
+                ]
+            },
+            {
+                "placementId": 3,
+                "actorId": "town_start_villager_3_a",
+                "name": "薬草摘み",
+                "x": 3,
+                "y": 2,
+                "imageKey": "overlay_npc_villager",
+                "baseTile": "G",
+                "states": [
+                    {
+                        "stateId": "town_start_villager_3_a",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "label": "薬草摘みと話す",
+                            "log": "籠を抱えた女性が、葉についた泥を払っている。",
+                            "type": "storyEvent",
+                            "conversationKey": "lumina_villager_herbalist",
+                            "eventId": "town_start_villager_3_a"
+                        }
+                    }
+                ]
+            },
+            {
+                "placementId": 4,
+                "actorId": "npc_elder",
+                "name": "長老",
+                "x": 6,
+                "y": 4,
+                "imageKey": "overlay_npc_elder",
+                "states": [
+                    {
+                        "stateId": "log",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "label": "長老と話す",
+                            "log": "長老が旅人を待っている。",
+                            "type": "log",
+                            "events": [
+                                {
+                                    "stepMin": 0,
+                                    "stepMax": 0,
+                                    "eventId": "start_adventure"
+                                },
+                                {
+                                    "stepMin": 1,
+                                    "stepMax": 1,
+                                    "eventId": "start_adventure2"
+                                },
+                                {
+                                    "stepMin": 2,
+                                    "stepMax": 2,
+                                    "subMin": 0,
+                                    "subMax": 0,
+                                    "eventId": "start_adventure3"
+                                },
+                                {
+                                    "default": true,
+                                    "eventId": "start_village_elder_after"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        ],
+        mapActions: [
+            {
+                "x": 2,
+                "y": 9,
+                "label": "道具を買う",
+                "log": "道具屋の看板が出ている。",
+                "type": "shop",
+                "shopType": "item",
+                "title": "リュミナ村 道具屋",
+                "shopRank": 5
+            },
+            {
+                "x": 8,
+                "y": 5,
+                "label": "武器を見る",
+                "log": "簡素な武器が並んでいる。",
+                "type": "shop",
+                "shopType": "weapon",
+                "title": "リュミナ村 武器屋",
+                "shopRank": 5
+            },
+            {
+                "x": 10,
+                "y": 5,
+                "label": "防具を見る",
+                "log": "旅支度用の防具が並んでいる。",
+                "type": "shop",
+                "shopType": "armor",
+                "title": "リュミナ村 防具屋",
+                "shopRank": 5
+            },
+            {
+                "x": 11,
+                "y": 1,
+                "label": "洞穴に入る",
+                "log": "北東の洞穴から冷たい風が吹いている。",
+                "type": "fixedDungeon",
+                "target": "START_CAVE"
             }
         ],
         exitPoint: {
@@ -2992,186 +3658,237 @@ const FIXED_MAPS = {
             "WWMMMMTTTTTTTTTTTTTTTTTMMMMWW",
             "WWWWWWWWWWWWWSSSWWWWWWWWWWWWW"
         ],
+        nextActorPlacementId: 5,
+        mapActors: [
+            {
+                "placementId": 1,
+                "actorId": "town_fire_villager_2",
+                "name": "里の人",
+                "x": 18,
+                "y": 9,
+                "imageKey": "overlay_town_fire_resident",
+                "states": [
+                    {
+                        "stateId": "town_fire_villager_2",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "label": "里の人と話す",
+                            "log": "里の西を気にしているようだ。",
+                            "type": "storyEvent",
+                            "eventId": "town_fire_villager_2"
+                        }
+                    }
+                ]
+            },
+            {
+                "placementId": 2,
+                "actorId": "town_fire_coal_carrier",
+                "name": "炭運び",
+                "x": 10,
+                "y": 13,
+                "imageKey": "overlay_town_fire_coal_carrier",
+                "states": [
+                    {
+                        "stateId": "log",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "label": "炭運びと話す",
+                            "log": "煤だらけの男が、背負い籠を下ろした。",
+                            "type": "log",
+                            "events": [
+                                {
+                                    "requiredFlag": "fireVillageCleared",
+                                    "eventId": "town_fire_villager_3_after"
+                                },
+                                {
+                                    "default": true,
+                                    "eventId": "town_fire_villager_3"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "placementId": 3,
+                "actorId": "karin_volcano_depths",
+                "name": "カリン",
+                "x": 19,
+                "y": 4,
+                "imageKey": "overlay_companion_karin",
+                "states": [
+                    {
+                        "stateId": "karin_volcano_depths",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "label": "カリンと話す",
+                            "log": "女侍が佇んでいる",
+                            "type": "quest",
+                            "questId": "karin_volcano_depths",
+                            "lockedText": "カリンはまだ、火山ガスが晴れる時を待っている。"
+                        }
+                    }
+                ]
+            },
+            {
+                "placementId": 4,
+                "actorId": "npc_elder",
+                "name": "里の長",
+                "x": 14,
+                "y": 15,
+                "imageKey": "overlay_npc_elder",
+                "states": [
+                    {
+                        "stateId": "log",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "label": "里の長に話す",
+                            "log": "里の長が弱まった炎を見つめている。",
+                            "type": "log",
+                            "events": [
+                                {
+                                    "stepMin": 2,
+                                    "stepMax": 2,
+                                    "subMin": 1,
+                                    "subMax": 1,
+                                    "eventId": "fire_village_consult"
+                                },
+                                {
+                                    "stepMin": 0,
+                                    "stepMax": 1,
+                                    "eventId": "fire_village_elder_before_story"
+                                },
+                                {
+                                    "stepMin": 2,
+                                    "stepMax": 2,
+                                    "subMin": 2,
+                                    "subMax": 2,
+                                    "eventId": "fire_village_elder_during_volcano"
+                                },
+                                {
+                                    "stepMin": 2,
+                                    "stepMax": 2,
+                                    "subMin": 3,
+                                    "subMax": 3,
+                                    "eventId": "fire_village_holy_water_briefing"
+                                },
+                                {
+                                    "stepMin": 2,
+                                    "stepMax": 2,
+                                    "subMin": 4,
+                                    "subMax": 6,
+                                    "eventId": "fire_village_elder_during_volcano"
+                                },
+                                {
+                                    "stepMin": 2,
+                                    "stepMax": 2,
+                                    "subMin": 7,
+                                    "subMax": 7,
+                                    "eventId": "fire_village_report"
+                                },
+                                {
+                                    "stepMin": 3,
+                                    "stepMax": 99,
+                                    "eventId": "fire_village_elder_after_clear"
+                                },
+                                {
+                                    "default": true,
+                                    "eventId": "fire_village_elder_idle"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        ],
         mapActions: [
             {
-                x: 21,
-                y: 14,
-                label: "泊まる",
-                log: "熱気をしのげる宿屋がある。",
-                type: "inn"
+                "x": 21,
+                "y": 14,
+                "label": "泊まる",
+                "log": "熱気をしのげる宿屋がある。",
+                "type": "inn"
             },
             {
-                x: 21,
-                y: 17,
-                label: "道具を買う",
-                log: "火山探索向けの道具屋だ。",
-                type: "shop",
-                shopType: "item",
-                title: "炎の里イグニシア 道具屋",
-                shopRank: 12
+                "x": 21,
+                "y": 17,
+                "label": "道具を買う",
+                "log": "火山探索向けの道具屋だ。",
+                "type": "shop",
+                "shopType": "item",
+                "title": "炎の里イグニシア 道具屋",
+                "shopRank": 12
             },
             {
-                x: 7,
-                y: 14,
-                label: "武器を見る",
-                log: "鍛冶火が赤く揺れる武器屋だ。",
-                type: "shop",
-                shopType: "weapon",
-                title: "炎の里イグニシア 武器屋",
-                shopRank: 12
+                "x": 7,
+                "y": 14,
+                "label": "武器を見る",
+                "log": "鍛冶火が赤く揺れる武器屋だ。",
+                "type": "shop",
+                "shopType": "weapon",
+                "title": "炎の里イグニシア 武器屋",
+                "shopRank": 12
             },
             {
-                x: 7,
-                y: 17,
-                label: "防具を見る",
-                log: "火山の熱に耐える防具を扱っている。",
-                type: "shop",
-                shopType: "armor",
-                title: "炎の里イグニシア 防具屋",
-                shopRank: 12
+                "x": 7,
+                "y": 17,
+                "label": "防具を見る",
+                "log": "火山の熱に耐える防具を扱っている。",
+                "type": "shop",
+                "shopType": "armor",
+                "title": "炎の里イグニシア 防具屋",
+                "shopRank": 12
             },
             {
-                x: 8,
-                y: 4,
-                label: "鍛冶屋を訪ねる",
-                log: "鍛冶師が炉の縁に手を置いている。",
-                type: "blacksmith",
-                imageKey: "overlay_town_fire_blacksmith",
-                events: [
+                "x": 8,
+                "y": 4,
+                "label": "鍛冶屋を訪ねる",
+                "log": "鍛冶師が炉の縁に手を置いている。",
+                "type": "blacksmith",
+                "imageKey": "overlay_town_fire_blacksmith",
+                "events": [
                     {
-                        missingFlag: "fireVillageCleared",
-                        eventId: "town_fire_villager_1_before"
+                        "missingFlag": "fireVillageCleared",
+                        "eventId": "town_fire_villager_1_before"
                     }
                 ]
             },
             {
-                x: 18,
-                y: 9,
-                label: "里の人と話す",
-                log: "里の西を気にしているようだ。",
-                type: "storyEvent",
-                eventId: "town_fire_villager_2",
-                imageKey: "overlay_town_fire_resident"
-            },
-            {
-                x: 10,
-                y: 13,
-                label: "炭運びと話す",
-                log: "煤だらけの男が、背負い籠を下ろした。",
-                type: "log",
-                imageKey: "overlay_town_fire_coal_carrier",
-                events: [
+                "x": 14,
+                "y": 1,
+                "label": "イグナ火山へ入る",
+                "log": "北の火山道から、熱と魔物の気配が流れてくる。",
+                "type": "fixedDungeon",
+                "target": "IGNIS_VOLCANO",
+                "requiredStoryStep": 2,
+                "requiredSubStep": 2,
+                "requiredStoryMissingText": "火山道から熱気が吹き下ろしてくる。今はまだ、里の事情を聞かずに踏み込むべきではなさそうだ。",
+                "events": [
                     {
-                        requiredFlag: "fireVillageCleared",
-                        eventId: "town_fire_villager_3_after"
+                        "stepMin": 2,
+                        "stepMax": 2,
+                        "subMin": 2,
+                        "subMax": 2,
+                        "eventId": "fire_volcano_entrance"
                     },
                     {
-                        default: true,
-                        eventId: "town_fire_villager_3"
-                    }
-                ]
-            },
-            {
-                x: 19,
-                y: 4,
-                label: "カリンと話す",
-                log: "女侍が佇んでいる",
-                type: "quest",
-                questId: "karin_volcano_depths",
-                imageKey: "overlay_companion_karin",
-                lockedText: "カリンはまだ、火山ガスが晴れる時を待っている。"
-            },
-            {
-                x: 14,
-                y: 15,
-                label: "里の長に話す",
-                log: "里の長が弱まった炎を見つめている。",
-                type: "log",
-                imageKey: "overlay_npc_elder",
-                events: [
-                    {
-                        stepMin: 2,
-                        stepMax: 2,
-                        subMin: 1,
-                        subMax: 1,
-                        eventId: "fire_village_consult"
+                        "stepMin": 2,
+                        "stepMax": 2,
+                        "subMin": 3,
+                        "subMax": 4,
+                        "eventId": "fire_volcano_waiting_for_holy_water"
                     },
                     {
-                        stepMin: 0,
-                        stepMax: 1,
-                        eventId: "fire_village_elder_before_story"
-                    },
-                    {
-                        stepMin: 2,
-                        stepMax: 2,
-                        subMin: 2,
-                        subMax: 2,
-                        eventId: "fire_village_elder_during_volcano"
-                    },
-                    {
-                        stepMin: 2,
-                        stepMax: 2,
-                        subMin: 3,
-                        subMax: 3,
-                        eventId: "fire_village_holy_water_briefing"
-                    },
-                    {
-                        stepMin: 2,
-                        stepMax: 2,
-                        subMin: 4,
-                        subMax: 6,
-                        eventId: "fire_village_elder_during_volcano"
-                    },
-                    {
-                        stepMin: 2,
-                        stepMax: 2,
-                        subMin: 7,
-                        subMax: 7,
-                        eventId: "fire_village_report"
-                    },
-                    {
-                        stepMin: 3,
-                        stepMax: 99,
-                        eventId: "fire_village_elder_after_clear"
-                    },
-                    {
-                        default: true,
-                        eventId: "fire_village_elder_idle"
-                    }
-                ]
-            },
-            {
-                x: 14,
-                y: 1,
-                label: "イグナ火山へ入る",
-                log: "北の火山道から、熱と魔物の気配が流れてくる。",
-                type: "fixedDungeon",
-                target: "IGNIS_VOLCANO",
-                requiredStoryStep: 2,
-                requiredSubStep: 2,
-                requiredStoryMissingText: "火山道から熱気が吹き下ろしてくる。今はまだ、里の事情を聞かずに踏み込むべきではなさそうだ。",
-                events: [
-                    {
-                        stepMin: 2,
-                        stepMax: 2,
-                        subMin: 2,
-                        subMax: 2,
-                        eventId: "fire_volcano_entrance"
-                    },
-                    {
-                        stepMin: 2,
-                        stepMax: 2,
-                        subMin: 3,
-                        subMax: 4,
-                        eventId: "fire_volcano_waiting_for_holy_water"
-                    },
-                    {
-                        stepMin: 2,
-                        stepMax: 2,
-                        subMin: 5,
-                        subMax: 5,
-                        missingFlag: "volcanoCursedFlamesPurified",
-                        eventId: "fire_volcano_holy_water_used"
+                        "stepMin": 2,
+                        "stepMax": 2,
+                        "subMin": 5,
+                        "subMax": 5,
+                        "missingFlag": "volcanoCursedFlamesPurified",
+                        "eventId": "fire_volcano_holy_water_used"
                     }
                 ]
             }
@@ -3224,206 +3941,269 @@ const FIXED_MAPS = {
             "WWWWWWWWWWWWWLLLWWWWWWWWWWWWW",
             "WWWWWWWWWWWWWSSSWWWWWWWWWWWWW"
         ],
+        nextActorPlacementId: 6,
+        mapActors: [
+            {
+                "placementId": 1,
+                "actorId": "town_wind_watch",
+                "name": "見張り",
+                "x": 3,
+                "y": 7,
+                "imageKey": "overlay_town_wind_watch",
+                "states": [
+                    {
+                        "stateId": "log",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "label": "見張りと話す",
+                            "log": "見張りが枝の揺れを追っている。",
+                            "type": "log",
+                            "events": [
+                                {
+                                    "requiredFlag": "windVillageCleared",
+                                    "eventId": "town_wind_villager_1"
+                                },
+                                {
+                                    "default": true,
+                                    "eventId": "town_wind_villager_1_before"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "placementId": 2,
+                "actorId": "npc_child",
+                "name": "集落の子",
+                "x": 22,
+                "y": 12,
+                "imageKey": "overlay_npc_child",
+                "states": [
+                    {
+                        "stateId": "log",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "label": "集落の子と話す",
+                            "log": "子どもが小さな風鈴を握っている。",
+                            "type": "log",
+                            "events": [
+                                {
+                                    "requiredFlag": "windVillageCleared",
+                                    "eventId": "town_wind_villager_2_after"
+                                },
+                                {
+                                    "default": true,
+                                    "eventId": "town_wind_villager_2"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "placementId": 3,
+                "actorId": "town_wind_weaver",
+                "name": "風織り職人",
+                "x": 10,
+                "y": 12,
+                "imageKey": "overlay_town_wind_weaver",
+                "states": [
+                    {
+                        "stateId": "log",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "label": "風織り職人と話す",
+                            "log": "職人が、風を含んだ薄布を指で弾いている。",
+                            "type": "log",
+                            "events": [
+                                {
+                                    "requiredFlag": "windVillageCleared",
+                                    "eventId": "town_wind_villager_3_after"
+                                },
+                                {
+                                    "default": true,
+                                    "eventId": "town_wind_villager_3"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "placementId": 4,
+                "actorId": "arisa_haine_forest_depths",
+                "name": "村人",
+                "x": 5,
+                "y": 12,
+                "imageKey": "overlay_npc_villager",
+                "states": [
+                    {
+                        "stateId": "arisa_haine_forest_depths",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "label": "村人から話を聞く",
+                            "log": "村人が禁忌の森の方を見つめている。",
+                            "type": "quest",
+                            "questId": "arisa_haine_forest_depths",
+                            "lockedText": "今はまだ、禁忌の森の奥へ進むには危険が大きい。"
+                        }
+                    }
+                ]
+            },
+            {
+                "placementId": 5,
+                "actorId": "npc_child_2",
+                "name": "エリーゼ",
+                "x": 19,
+                "y": 15,
+                "imageKey": "overlay_npc_child",
+                "states": [
+                    {
+                        "stateId": "log",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "label": "エリーゼに話す",
+                            "log": "子どもたちが不安そうに身を寄せ合っている。",
+                            "type": "log",
+                            "events": [
+                                {
+                                    "stepMin": 3,
+                                    "stepMax": 3,
+                                    "subMin": 0,
+                                    "subMax": 0,
+                                    "eventId": "wind_village_intro"
+                                },
+                                {
+                                    "stepMin": 0,
+                                    "stepMax": 2,
+                                    "eventId": "wind_village_before_story"
+                                },
+                                {
+                                    "stepMin": 3,
+                                    "stepMax": 3,
+                                    "subMin": 1,
+                                    "subMax": 2,
+                                    "eventId": "wind_village_elise_during"
+                                },
+                                {
+                                    "stepMin": 4,
+                                    "stepMax": 99,
+                                    "eventId": "wind_village_after_clear"
+                                },
+                                {
+                                    "default": true,
+                                    "eventId": "wind_village_before_story"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        ],
         mapActions: [
             {
-                x: 22,
-                y: 7,
-                label: "泊まる",
-                log: "風よけの宿屋がある。",
-                type: "inn"
+                "x": 22,
+                "y": 7,
+                "label": "泊まる",
+                "log": "風よけの宿屋がある。",
+                "type": "inn"
             },
             {
-                x: 19,
-                y: 7,
-                label: "道具を買う",
-                log: "森歩きに備えた道具屋だ。",
-                type: "shop",
-                shopType: "item",
-                title: "風の集落カザリア 道具屋",
-                shopRank: 22
+                "x": 19,
+                "y": 7,
+                "label": "道具を買う",
+                "log": "森歩きに備えた道具屋だ。",
+                "type": "shop",
+                "shopType": "item",
+                "title": "風の集落カザリア 道具屋",
+                "shopRank": 22
             },
             {
-                x: 6,
-                y: 7,
-                label: "武器を見る",
-                log: "軽く扱いやすい武器が並んでいる。",
-                type: "shop",
-                shopType: "weapon",
-                title: "風の集落カザリア 武器屋",
-                shopRank: 22
+                "x": 6,
+                "y": 7,
+                "label": "武器を見る",
+                "log": "軽く扱いやすい武器が並んでいる。",
+                "type": "shop",
+                "shopType": "weapon",
+                "title": "風の集落カザリア 武器屋",
+                "shopRank": 22
             },
             {
-                x: 9,
-                y: 7,
-                label: "防具を見る",
-                log: "森の魔物に備えた防具屋だ。",
-                type: "shop",
-                shopType: "armor",
-                title: "風の集落カザリア 防具屋",
-                shopRank: 22
+                "x": 9,
+                "y": 7,
+                "label": "防具を見る",
+                "log": "森の魔物に備えた防具屋だ。",
+                "type": "shop",
+                "shopType": "armor",
+                "title": "風の集落カザリア 防具屋",
+                "shopRank": 22
             },
             {
-                x: 3,
-                y: 7,
-                label: "見張りと話す",
-                log: "見張りが枝の揺れを追っている。",
-                type: "log",
-                imageKey: "overlay_town_wind_watch",
-                events: [
+                "x": 0,
+                "y": 8,
+                "label": "禁忌の森へ入る",
+                "log": "西の森から、淀んだ風が吹き込んでくる。",
+                "type": "fixedDungeon",
+                "target": "FORBIDDEN_FOREST",
+                "requiredStoryStep": 3,
+                "requiredSubStep": 1,
+                "requiredStoryMissingText": "森の奥から、呼吸をひそめるような風が流れてくる。案内もなく進めば、すぐに道を失いそうだ。",
+                "events": [
                     {
-                        requiredFlag: "windVillageCleared",
-                        eventId: "town_wind_villager_1"
-                    },
-                    {
-                        default: true,
-                        eventId: "town_wind_villager_1_before"
+                        "stepMin": 3,
+                        "stepMax": 3,
+                        "subMin": 1,
+                        "subMax": 1,
+                        "missingFlag": "windForestEntryIntroduced",
+                        "eventId": "wind_forest_entry"
                     }
                 ]
             },
             {
-                x: 22,
-                y: 12,
-                label: "集落の子と話す",
-                log: "子どもが小さな風鈴を握っている。",
-                type: "log",
-                imageKey: "overlay_npc_child",
-                events: [
+                "x": 0,
+                "y": 9,
+                "label": "禁忌の森へ入る",
+                "log": "西の森から、淀んだ風が吹き込んでくる。",
+                "type": "fixedDungeon",
+                "target": "FORBIDDEN_FOREST",
+                "requiredStoryStep": 3,
+                "requiredSubStep": 1,
+                "requiredStoryMissingText": "森の奥から、呼吸をひそめるような風が流れてくる。案内もなく進めば、すぐに道を失いそうだ。",
+                "events": [
                     {
-                        requiredFlag: "windVillageCleared",
-                        eventId: "town_wind_villager_2_after"
-                    },
-                    {
-                        default: true,
-                        eventId: "town_wind_villager_2"
+                        "stepMin": 3,
+                        "stepMax": 3,
+                        "subMin": 1,
+                        "subMax": 1,
+                        "missingFlag": "windForestEntryIntroduced",
+                        "eventId": "wind_forest_entry"
                     }
                 ]
             },
             {
-                x: 10,
-                y: 12,
-                label: "風織り職人と話す",
-                log: "職人が、風を含んだ薄布を指で弾いている。",
-                type: "log",
-                events: [
+                "x": 0,
+                "y": 10,
+                "label": "禁忌の森へ入る",
+                "log": "西の森から、淀んだ風が吹き込んでくる。",
+                "type": "fixedDungeon",
+                "target": "FORBIDDEN_FOREST",
+                "requiredStoryStep": 3,
+                "requiredSubStep": 1,
+                "requiredStoryMissingText": "森の奥から、呼吸をひそめるような風が流れてくる。案内もなく進めば、すぐに道を失いそうだ。",
+                "events": [
                     {
-                        requiredFlag: "windVillageCleared",
-                        eventId: "town_wind_villager_3_after"
-                    },
-                    {
-                        default: true,
-                        eventId: "town_wind_villager_3"
-                    }
-                ],
-                imageKey: "overlay_town_wind_weaver"
-            },
-            {
-                x: 5,
-                y: 12,
-                label: "村人から話を聞く",
-                log: "村人が禁忌の森の方を見つめている。",
-                type: "quest",
-                questId: "arisa_haine_forest_depths",
-                imageKey: "overlay_npc_villager",
-                lockedText: "今はまだ、禁忌の森の奥へ進むには危険が大きい。"
-            },
-            {
-                x: 19,
-                y: 15,
-                label: "エリーゼに話す",
-                log: "子どもたちが不安そうに身を寄せ合っている。",
-                type: "log",
-                imageKey: "overlay_npc_child",
-                events: [
-                    {
-                        stepMin: 3,
-                        stepMax: 3,
-                        subMin: 0,
-                        subMax: 0,
-                        eventId: "wind_village_intro"
-                    },
-                    {
-                        stepMin: 0,
-                        stepMax: 2,
-                        eventId: "wind_village_before_story"
-                    },
-                    {
-                        stepMin: 3,
-                        stepMax: 3,
-                        subMin: 1,
-                        subMax: 2,
-                        eventId: "wind_village_elise_during"
-                    },
-                    {
-                        stepMin: 4,
-                        stepMax: 99,
-                        eventId: "wind_village_after_clear"
-                    },
-                    {
-                        default: true,
-                        eventId: "wind_village_before_story"
-                    }
-                ]
-            },
-            {
-                x: 0,
-                y: 8,
-                label: "禁忌の森へ入る",
-                log: "西の森から、淀んだ風が吹き込んでくる。",
-                type: "fixedDungeon",
-                target: "FORBIDDEN_FOREST",
-                requiredStoryStep: 3,
-                requiredSubStep: 1,
-                requiredStoryMissingText: "森の奥から、呼吸をひそめるような風が流れてくる。案内もなく進めば、すぐに道を失いそうだ。",
-                events: [
-                    {
-                        stepMin: 3,
-                        stepMax: 3,
-                        subMin: 1,
-                        subMax: 1,
-                        missingFlag: "windForestEntryIntroduced",
-                        eventId: "wind_forest_entry"
-                    }
-                ]
-            },
-            {
-                x: 0,
-                y: 9,
-                label: "禁忌の森へ入る",
-                log: "西の森から、淀んだ風が吹き込んでくる。",
-                type: "fixedDungeon",
-                target: "FORBIDDEN_FOREST",
-                requiredStoryStep: 3,
-                requiredSubStep: 1,
-                requiredStoryMissingText: "森の奥から、呼吸をひそめるような風が流れてくる。案内もなく進めば、すぐに道を失いそうだ。",
-                events: [
-                    {
-                        stepMin: 3,
-                        stepMax: 3,
-                        subMin: 1,
-                        subMax: 1,
-                        missingFlag: "windForestEntryIntroduced",
-                        eventId: "wind_forest_entry"
-                    }
-                ]
-            },
-            {
-                x: 0,
-                y: 10,
-                label: "禁忌の森へ入る",
-                log: "西の森から、淀んだ風が吹き込んでくる。",
-                type: "fixedDungeon",
-                target: "FORBIDDEN_FOREST",
-                requiredStoryStep: 3,
-                requiredSubStep: 1,
-                requiredStoryMissingText: "森の奥から、呼吸をひそめるような風が流れてくる。案内もなく進めば、すぐに道を失いそうだ。",
-                events: [
-                    {
-                        stepMin: 3,
-                        stepMax: 3,
-                        subMin: 1,
-                        subMax: 1,
-                        missingFlag: "windForestEntryIntroduced",
-                        eventId: "wind_forest_entry"
+                        "stepMin": 3,
+                        "stepMax": 3,
+                        "subMin": 1,
+                        "subMax": 1,
+                        "missingFlag": "windForestEntryIntroduced",
+                        "eventId": "wind_forest_entry"
                     }
                 ]
             }
@@ -3482,255 +4262,417 @@ const FIXED_MAPS = {
             "WWWWWWWWWWWWWWWWWWWLWWWWWWWWWWWWWWWWWWW",
             "WWWWWWWWWWWWWWWWWWWSWWWWWWWWWWWWWWWWWWW"
         ],
+        nextActorPlacementId: 14,
+        mapActors: [
+            {
+                "placementId": 1,
+                "actorId": "water_city_blockade_guard",
+                "name": "兵士",
+                "x": 14,
+                "y": 5,
+                "imageKey": "overlay_town_water_guard",
+                "baseTile": "T",
+                "states": [
+                    {
+                        "stateId": "water_city_blockade_guard",
+                        "priority": 0,
+                        "when": {
+                            "missingFlag": "waterCityCleared"
+                        },
+                        "action": {
+                            "label": "兵士と話す",
+                            "log": "黒鎧の兵士が橋を塞いでいる。",
+                            "type": "storyEvent",
+                            "eventId": "water_city_blockade_guard"
+                        }
+                    }
+                ]
+            },
+            {
+                "placementId": 2,
+                "actorId": "water_city_blockade_guard_2",
+                "name": "兵士",
+                "x": 24,
+                "y": 5,
+                "imageKey": "overlay_town_water_guard",
+                "baseTile": "T",
+                "states": [
+                    {
+                        "stateId": "water_city_blockade_guard",
+                        "priority": 0,
+                        "when": {
+                            "missingFlag": "waterCityCleared"
+                        },
+                        "action": {
+                            "label": "兵士と話す",
+                            "log": "黒鎧の兵士が橋を塞いでいる。",
+                            "type": "storyEvent",
+                            "eventId": "water_city_blockade_guard"
+                        }
+                    }
+                ]
+            },
+            {
+                "placementId": 3,
+                "actorId": "water_city_blockade_guard_3",
+                "name": "兵士",
+                "x": 26,
+                "y": 15,
+                "imageKey": "overlay_town_water_guard",
+                "baseTile": "T",
+                "states": [
+                    {
+                        "stateId": "water_city_blockade_guard",
+                        "priority": 0,
+                        "when": {
+                            "missingFlag": "waterCityCleared"
+                        },
+                        "action": {
+                            "label": "兵士と話す",
+                            "log": "黒鎧の兵士が橋を塞いでいる。",
+                            "type": "storyEvent",
+                            "eventId": "water_city_blockade_guard"
+                        }
+                    }
+                ]
+            },
+            {
+                "placementId": 4,
+                "actorId": "npc_elder",
+                "name": "老人",
+                "x": 17,
+                "y": 8,
+                "imageKey": "overlay_npc_elder",
+                "states": [
+                    {
+                        "stateId": "log",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "label": "老人と話す",
+                            "log": "老人がライザーク要塞の方角を眺めている。",
+                            "type": "log",
+                            "events": [
+                                {
+                                    "requiredFlag": "thunderFortCleared",
+                                    "eventId": "town_water_villager_1"
+                                },
+                                {
+                                    "default": true,
+                                    "eventId": "town_water_villager_1_before"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "placementId": 5,
+                "actorId": "town_water_boatman",
+                "name": "船大工",
+                "x": 32,
+                "y": 13,
+                "imageKey": "overlay_town_water_boatman",
+                "states": [
+                    {
+                        "stateId": "log",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "label": "船大工と話す",
+                            "log": "船大工が水路の流れを測っている。",
+                            "type": "log",
+                            "events": [
+                                {
+                                    "requiredFlag": "waterCityCleared",
+                                    "eventId": "town_water_villager_2_after"
+                                },
+                                {
+                                    "default": true,
+                                    "eventId": "town_water_villager_2"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "placementId": 6,
+                "actorId": "town_water_villager_3",
+                "name": "元兵士",
+                "x": 13,
+                "y": 14,
+                "imageKey": "overlay_npc_bronze_knight",
+                "states": [
+                    {
+                        "stateId": "town_water_villager_3",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "label": "元兵士と話す",
+                            "log": "元兵士が古い盾の傷を磨いている。",
+                            "type": "storyEvent",
+                            "eventId": "town_water_villager_3"
+                        }
+                    }
+                ]
+            },
+            {
+                "placementId": 7,
+                "actorId": "town_water_boatman_2",
+                "name": "渡し守",
+                "x": 24,
+                "y": 20,
+                "imageKey": "overlay_town_water_boatman",
+                "states": [
+                    {
+                        "stateId": "log",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "label": "渡し守と話す",
+                            "log": "渡し守が、濡れた綱の結び目を確かめている。",
+                            "type": "log",
+                            "events": [
+                                {
+                                    "requiredFlag": "waterCityCleared",
+                                    "eventId": "town_water_villager_4_after"
+                                },
+                                {
+                                    "default": true,
+                                    "eventId": "town_water_villager_4"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "placementId": 8,
+                "actorId": "npc_dark_soldier",
+                "name": "広場を調べる",
+                "x": 19,
+                "y": 13,
+                "imageKey": "overlay_npc_dark_soldier",
+                "baseTile": "T",
+                "states": [
+                    {
+                        "stateId": "log",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "label": "広場を調べる",
+                            "log": "濁った水路の音が、街の沈黙に混じっている。",
+                            "type": "log",
+                            "imageVariants": [
+                                {
+                                    "requiredFlag": "waterCityIntroCleared",
+                                    "missingFlag": "waterCityCleared",
+                                    "imageKey": "overlay_companion_sophia"
+                                }
+                            ],
+                            "imageMissingFlag": "waterCityCleared",
+                            "events": [
+                                {
+                                    "stepMin": 4,
+                                    "stepMax": 4,
+                                    "subMin": 0,
+                                    "subMax": 0,
+                                    "eventId": "water_city_intro"
+                                },
+                                {
+                                    "stepMin": 0,
+                                    "stepMax": 3,
+                                    "eventId": "water_city_before_story"
+                                },
+                                {
+                                    "stepMin": 4,
+                                    "stepMax": 4,
+                                    "subMin": 1,
+                                    "subMax": 1,
+                                    "eventId": "water_city_cave_reminder"
+                                },
+                                {
+                                    "stepMin": 4,
+                                    "stepMax": 4,
+                                    "subMin": 2,
+                                    "subMax": 2,
+                                    "eventId": "water_city_blue_crystal_report"
+                                },
+                                {
+                                    "stepMin": 4,
+                                    "stepMax": 4,
+                                    "subMin": 3,
+                                    "subMax": 99,
+                                    "eventId": "water_city_sophia_after_meeting"
+                                },
+                                {
+                                    "stepMin": 5,
+                                    "stepMax": 99,
+                                    "eventId": "water_city_after_clear"
+                                },
+                                {
+                                    "default": true,
+                                    "eventId": "water_city_before_story"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "placementId": 9,
+                "actorId": "marie_water_city",
+                "name": "マリー",
+                "x": 8,
+                "y": 20,
+                "imageKey": "overlay_companion_marie",
+                "states": [
+                    {
+                        "stateId": "marie_water_city",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "label": "マリーと話す",
+                            "log": "白いローブの女性が、避難民の無事を祈っている。",
+                            "type": "quest",
+                            "questId": "marie_water_city",
+                            "lockedText": "マリーはまだ街の混乱を鎮めることで手一杯のようだ。"
+                        }
+                    }
+                ]
+            },
+            {
+                "placementId": 10,
+                "actorId": "hayate_water_city",
+                "name": "ハヤテ",
+                "x": 29,
+                "y": 21,
+                "imageKey": "overlay_companion_hayate",
+                "states": [
+                    {
+                        "stateId": "hayate_water_city",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "label": "ハヤテと話す",
+                            "log": "水路のそばに、落ち着きなく周囲を見渡す若者がいる。",
+                            "type": "quest",
+                            "questId": "hayate_water_city",
+                            "lockedText": "ハヤテはまだ、信頼できる案内人を待っているようだ。"
+                        }
+                    }
+                ]
+            },
+            {
+                "placementId": 11,
+                "actorId": "sylvia_water_city",
+                "name": "シルビア",
+                "x": 31,
+                "y": 10,
+                "imageKey": "overlay_companion_sylvia",
+                "states": [
+                    {
+                        "stateId": "sylvia_water_city",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "label": "シルビアと話す",
+                            "log": "優雅な身なりの貴人が、護衛を探している。",
+                            "type": "quest",
+                            "questId": "sylvia_water_city",
+                            "lockedText": "シルビアはまだ、声をかける相手を見定めている。"
+                        }
+                    }
+                ]
+            },
+            {
+                "placementId": 12,
+                "actorId": "sophia_alan_seabed_depths",
+                "name": "ソフィア",
+                "x": 32,
+                "y": 15,
+                "imageKey": "overlay_companion_sophia",
+                "states": [
+                    {
+                        "stateId": "sophia_alan_seabed_depths",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "label": "ソフィアと話す",
+                            "log": "ソフィアが、神殿奥の水流について記録を読み返している。",
+                            "type": "quest",
+                            "questId": "sophia_alan_seabed_depths",
+                            "lockedText": "今はまだ、海底神殿の奥へ進む手段がない。"
+                        }
+                    }
+                ]
+            },
+            {
+                "placementId": 13,
+                "actorId": "sophia_alan_seabed_depths_2",
+                "name": "アラン",
+                "x": 31,
+                "y": 15,
+                "imageKey": "overlay_companion_alan",
+                "states": [
+                    {
+                        "stateId": "sophia_alan_seabed_depths",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "label": "アランと話す",
+                            "log": "アランが、神殿奥へ向かう水路を見つめている。",
+                            "type": "quest",
+                            "questId": "sophia_alan_seabed_depths",
+                            "lockedText": "今はまだ、海底神殿の奥へ進む手段がない。"
+                        }
+                    }
+                ]
+            }
+        ],
         mapActions: [
             {
-                x: 31,
-                y: 3,
-                label: "錬金所に入る",
-                log: "薬草と魔石の香りが漂う、水上都市の錬金所だ。",
-                type: "alchemy",
-                imageKey: "overlay_building_water_alchemy",
-                baseTile: "T",
-                blocksMovement: false,
-                buildingScale: 3,
-                suppressShadow: true
+                "x": 31,
+                "y": 3,
+                "label": "錬金所に入る",
+                "log": "薬草と魔石の香りが漂う、水上都市の錬金所だ。",
+                "type": "alchemy",
+                "imageKey": "overlay_building_water_alchemy",
+                "baseTile": "T",
+                "blocksMovement": false,
+                "buildingScale": 3,
+                "suppressShadow": true
             },
             {
-                x: 4,
-                y: 10,
-                label: "道具を買う",
-                log: "水路沿いの道具屋だ。",
-                type: "shop",
-                shopType: "item",
-                title: "水上都市リヴァリア 道具屋",
-                shopRank: 35
+                "x": 4,
+                "y": 10,
+                "label": "道具を買う",
+                "log": "水路沿いの道具屋だ。",
+                "type": "shop",
+                "shopType": "item",
+                "title": "水上都市リヴァリア 道具屋",
+                "shopRank": 35
             },
             {
-                x: 7,
-                y: 10,
-                label: "武器を見る",
-                log: "海底神殿に備えた武器を扱っている。",
-                type: "shop",
-                shopType: "weapon",
-                title: "水上都市リヴァリア 武器屋",
-                shopRank: 35
+                "x": 7,
+                "y": 10,
+                "label": "武器を見る",
+                "log": "海底神殿に備えた武器を扱っている。",
+                "type": "shop",
+                "shopType": "weapon",
+                "title": "水上都市リヴァリア 武器屋",
+                "shopRank": 35
             },
             {
-                x: 10,
-                y: 10,
-                label: "防具を見る",
-                log: "水と闇に強い防具を扱っている。",
-                type: "shop",
-                shopType: "armor",
-                title: "水上都市リヴァリア 防具屋",
-                shopRank: 35
-            },
-            {
-                x: 14,
-                y: 5,
-                label: "兵士と話す",
-                log: "黒鎧の兵士が橋を塞いでいる。",
-                type: "storyEvent",
-                eventId: "water_city_blockade_guard",
-                imageKey: "overlay_town_water_guard",
-                missingFlag: "waterCityCleared",
-                baseTile: "T"
-            },
-            {
-                x: 24,
-                y: 5,
-                label: "兵士と話す",
-                log: "黒鎧の兵士が橋を塞いでいる。",
-                type: "storyEvent",
-                eventId: "water_city_blockade_guard",
-                imageKey: "overlay_town_water_guard",
-                missingFlag: "waterCityCleared",
-                baseTile: "T"
-            },
-            {
-                x: 26,
-                y: 15,
-                label: "兵士と話す",
-                log: "黒鎧の兵士が橋を塞いでいる。",
-                type: "storyEvent",
-                eventId: "water_city_blockade_guard",
-                imageKey: "overlay_town_water_guard",
-                missingFlag: "waterCityCleared",
-                baseTile: "T"
-            },
-            {
-                x: 17,
-                y: 8,
-                label: "老人と話す",
-                log: "老人がライザーク要塞の方角を眺めている。",
-                type: "log",
-                imageKey: "overlay_npc_elder",
-                events: [
-                    {
-                        requiredFlag: "thunderFortCleared",
-                        eventId: "town_water_villager_1"
-                    },
-                    {
-                        default: true,
-                        eventId: "town_water_villager_1_before"
-                    }
-                ]
-            },
-            {
-                x: 32,
-                y: 13,
-                label: "船大工と話す",
-                log: "船大工が水路の流れを測っている。",
-                type: "log",
-                imageKey: "overlay_town_water_boatman",
-                events: [
-                    {
-                        requiredFlag: "waterCityCleared",
-                        eventId: "town_water_villager_2_after"
-                    },
-                    {
-                        default: true,
-                        eventId: "town_water_villager_2"
-                    }
-                ]
-            },
-            {
-                x: 13,
-                y: 14,
-                label: "元兵士と話す",
-                log: "元兵士が古い盾の傷を磨いている。",
-                type: "storyEvent",
-                eventId: "town_water_villager_3",
-                imageKey: "overlay_npc_bronze_knight"
-            },
-            {
-                x: 24,
-                y: 20,
-                label: "渡し守と話す",
-                log: "渡し守が、濡れた綱の結び目を確かめている。",
-                type: "log",
-                imageKey: "overlay_town_water_boatman",
-                events: [
-                    {
-                        requiredFlag: "waterCityCleared",
-                        eventId: "town_water_villager_4_after"
-                    },
-                    {
-                        default: true,
-                        eventId: "town_water_villager_4"
-                    }
-                ]
-            },
-            {
-                x: 19,
-                y: 13,
-                label: "広場を調べる",
-                log: "濁った水路の音が、街の沈黙に混じっている。",
-                type: "log",
-                imageKey: "overlay_npc_dark_soldier",
-                imageVariants: [
-                    {
-                        requiredFlag: "waterCityIntroCleared",
-                        missingFlag: "waterCityCleared",
-                        imageKey: "overlay_companion_sophia"
-                    }
-                ],
-                imageMissingFlag: "waterCityCleared",
-                baseTile: "T",
-                events: [
-                    {
-                        stepMin: 4,
-                        stepMax: 4,
-                        subMin: 0,
-                        subMax: 0,
-                        eventId: "water_city_intro"
-                    },
-                    {
-                        stepMin: 0,
-                        stepMax: 3,
-                        eventId: "water_city_before_story"
-                    },
-                    {
-                        stepMin: 4,
-                        stepMax: 4,
-                        subMin: 1,
-                        subMax: 1,
-                        eventId: "water_city_cave_reminder"
-                    },
-                    {
-                        stepMin: 4,
-                        stepMax: 4,
-                        subMin: 2,
-                        subMax: 2,
-                        eventId: "water_city_blue_crystal_report"
-                    },
-                    {
-                        stepMin: 4,
-                        stepMax: 4,
-                        subMin: 3,
-                        subMax: 99,
-                        eventId: "water_city_sophia_after_meeting"
-                    },
-                    {
-                        stepMin: 5,
-                        stepMax: 99,
-                        eventId: "water_city_after_clear"
-                    },
-                    {
-                        default: true,
-                        eventId: "water_city_before_story"
-                    }
-                ]
-            },
-            {
-                x: 8,
-                y: 20,
-                label: "マリーと話す",
-                log: "白いローブの女性が、避難民の無事を祈っている。",
-                type: "quest",
-                questId: "marie_water_city",
-                imageKey: "overlay_companion_marie",
-                lockedText: "マリーはまだ街の混乱を鎮めることで手一杯のようだ。"
-            },
-            {
-                x: 29,
-                y: 21,
-                label: "ハヤテと話す",
-                log: "水路のそばに、落ち着きなく周囲を見渡す若者がいる。",
-                type: "quest",
-                questId: "hayate_water_city",
-                imageKey: "overlay_companion_hayate",
-                lockedText: "ハヤテはまだ、信頼できる案内人を待っているようだ。"
-            },
-            {
-                x: 31,
-                y: 10,
-                label: "シルビアと話す",
-                log: "優雅な身なりの貴人が、護衛を探している。",
-                type: "quest",
-                questId: "sylvia_water_city",
-                imageKey: "overlay_companion_sylvia",
-                lockedText: "シルビアはまだ、声をかける相手を見定めている。"
-            },
-            {
-                x: 32,
-                y: 15,
-                label: "ソフィアと話す",
-                log: "ソフィアが、神殿奥の水流について記録を読み返している。",
-                type: "quest",
-                questId: "sophia_alan_seabed_depths",
-                imageKey: "overlay_companion_sophia",
-                lockedText: "今はまだ、海底神殿の奥へ進む手段がない。"
-            },
-            {
-                x: 31,
-                y: 15,
-                label: "アランと話す",
-                log: "アランが、神殿奥へ向かう水路を見つめている。",
-                type: "quest",
-                questId: "sophia_alan_seabed_depths",
-                imageKey: "overlay_companion_alan",
-                lockedText: "今はまだ、海底神殿の奥へ進む手段がない。"
+                "x": 10,
+                "y": 10,
+                "label": "防具を見る",
+                "log": "水と闇に強い防具を扱っている。",
+                "type": "shop",
+                "shopType": "armor",
+                "title": "水上都市リヴァリア 防具屋",
+                "shopRank": 35
             }
         ],
         exitPoint: {
@@ -5086,7 +6028,73 @@ const FIXED_MAPS = {
             "x": 14,
             "y": 13
         },
-        "mapActions": [
+        nextActorPlacementId: 4,
+        mapActors: [
+            {
+                "placementId": 1,
+                "actorId": "abyss_legacion_prison",
+                "name": "囚人",
+                "x": 21,
+                "y": 14,
+                "imageKey": "overlay_npc_villager",
+                "baseTile": "T",
+                "states": [
+                    {
+                        "stateId": "abyss_legacion_prison",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "type": "storyEvent",
+                            "eventId": "abyss_legacion_prison",
+                            "label": "囚人と話す"
+                        }
+                    }
+                ]
+            },
+            {
+                "placementId": 2,
+                "actorId": "abyss_legacion_prison_mother",
+                "name": "牢前の母",
+                "x": 5,
+                "y": 9,
+                "imageKey": "overlay_npc_villager",
+                "baseTile": "T",
+                "states": [
+                    {
+                        "stateId": "abyss_legacion_prison_mother",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "type": "storyEvent",
+                            "eventId": "abyss_legacion_prison_mother",
+                            "label": "牢前の母と話す"
+                        }
+                    }
+                ]
+            },
+            {
+                "placementId": 3,
+                "actorId": "abyss_legacion_prison_guard",
+                "name": "牢番",
+                "x": 23,
+                "y": 11,
+                "imageKey": "overlay_npc_bronze_knight",
+                "baseTile": "T",
+                "states": [
+                    {
+                        "stateId": "abyss_legacion_prison_guard",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "type": "storyEvent",
+                            "eventId": "abyss_legacion_prison_guard",
+                            "label": "牢番と話す"
+                        }
+                    }
+                ]
+            }
+        ],
+        mapActions: [
             {
                 "x": 9,
                 "y": 6,
@@ -5094,33 +6102,6 @@ const FIXED_MAPS = {
                 "eventId": "abyss_legacion_prison",
                 "label": "牢内を調べる",
                 "baseTile": "G"
-            },
-            {
-                "x": 21,
-                "y": 14,
-                "type": "storyEvent",
-                "eventId": "abyss_legacion_prison",
-                "label": "囚人と話す",
-                "imageKey": "overlay_npc_villager",
-                "baseTile": "T"
-            },
-            {
-                "x": 5,
-                "y": 9,
-                "type": "storyEvent",
-                "eventId": "abyss_legacion_prison_mother",
-                "label": "牢前の母と話す",
-                "imageKey": "overlay_npc_villager",
-                "baseTile": "T"
-            },
-            {
-                "x": 23,
-                "y": 11,
-                "type": "storyEvent",
-                "eventId": "abyss_legacion_prison_guard",
-                "label": "牢番と話す",
-                "imageKey": "overlay_npc_bronze_knight",
-                "baseTile": "T"
             }
         ],
         "mapId": "MAP000058",
@@ -5167,7 +6148,31 @@ const FIXED_MAPS = {
             "x": 34,
             "y": 13
         },
-        "mapActions": [
+        nextActorPlacementId: 2,
+        mapActors: [
+            {
+                "placementId": 1,
+                "actorId": "abyss_legacion_temple_acolyte",
+                "name": "侍祭",
+                "x": 11,
+                "y": 11,
+                "imageKey": "overlay_npc_villager",
+                "baseTile": "T",
+                "states": [
+                    {
+                        "stateId": "abyss_legacion_temple_acolyte",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "type": "storyEvent",
+                            "eventId": "abyss_legacion_temple_acolyte",
+                            "label": "侍祭と話す"
+                        }
+                    }
+                ]
+            }
+        ],
+        mapActions: [
             {
                 "x": 16,
                 "y": 5,
@@ -5178,15 +6183,6 @@ const FIXED_MAPS = {
                 "setFlagOnUse": "abyssChronoGateOpened",
                 "log": "混沌の結晶片が封印門に共鳴し、次元を隔てていた鎖がほどけた。",
                 "label": "封印門を開く"
-            },
-            {
-                "x": 11,
-                "y": 11,
-                "type": "storyEvent",
-                "eventId": "abyss_legacion_temple_acolyte",
-                "label": "侍祭と話す",
-                "imageKey": "overlay_npc_villager",
-                "baseTile": "T"
             }
         ],
         "mapId": "MAP000059",
@@ -5233,26 +6229,52 @@ const FIXED_MAPS = {
             "x": 20,
             "y": 3
         },
-        "mapActions": [
+        nextActorPlacementId: 3,
+        mapActors: [
             {
+                "placementId": 1,
+                "actorId": "abyss_legacion_audience",
+                "name": "皇帝家の末裔",
                 "x": 17,
                 "y": 6,
-                "type": "storyEvent",
-                "eventId": "abyss_legacion_audience",
-                "label": "皇帝家の末裔と話す",
                 "imageKey": "overlay_npc_villager",
-                "baseTile": "G"
+                "baseTile": "G",
+                "states": [
+                    {
+                        "stateId": "abyss_legacion_audience",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "type": "storyEvent",
+                            "eventId": "abyss_legacion_audience",
+                            "label": "皇帝家の末裔と話す"
+                        }
+                    }
+                ]
             },
             {
+                "placementId": 2,
+                "actorId": "abyss_legacion_priest",
+                "name": "神官",
                 "x": 10,
                 "y": 11,
-                "type": "storyEvent",
-                "eventId": "abyss_legacion_priest",
-                "label": "神官と話す",
                 "imageKey": "overlay_npc_villager",
-                "baseTile": "T"
+                "baseTile": "T",
+                "states": [
+                    {
+                        "stateId": "abyss_legacion_priest",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "type": "storyEvent",
+                            "eventId": "abyss_legacion_priest",
+                            "label": "神官と話す"
+                        }
+                    }
+                ]
             }
         ],
+        mapActions: [],
         "mapId": "MAP000060",
         "floorId": "MAP000060-00",
         "useHabitatEncounters": true
@@ -6024,37 +7046,45 @@ const FIXED_DUNGEON_MAPS = {
                 type: "item"
             }
         ],
-        monsters: [
-            1,
-            2,
-            3,
-            4
-        ],
-        mapActions: [
+        nextActorPlacementId: 2,
+        mapActors: [
             {
-                x: 15,
-                y: 17,
-                label: "見張りと話す",
-                log: "見張りが洞穴の封鎖を守っている。",
-                type: "log",
-                imageKey: "overlay_npc_villager",
-                hideWhenNoEvent: true,
-                events: [
+                "placementId": 1,
+                "actorId": "npc_villager",
+                "name": "見張り",
+                "x": 15,
+                "y": 17,
+                "imageKey": "overlay_npc_villager",
+                "states": [
                     {
-                        stepMin: 0,
-                        stepMax: 0,
-                        eventId: "start_cave1"
-                    },
-                    {
-                        stepMin: 1,
-                        stepMax: 1,
-                        subMin: 1,
-                        subMax: 1,
-                        eventId: "start_cave2"
+                        "stateId": "log",
+                        "priority": 0,
+                        "when": {},
+                        "action": {
+                            "label": "見張りと話す",
+                            "log": "見張りが洞穴の封鎖を守っている。",
+                            "type": "log",
+                            "hideWhenNoEvent": true,
+                            "events": [
+                                {
+                                    "stepMin": 0,
+                                    "stepMax": 0,
+                                    "eventId": "start_cave1"
+                                },
+                                {
+                                    "stepMin": 1,
+                                    "stepMax": 1,
+                                    "subMin": 1,
+                                    "subMax": 1,
+                                    "eventId": "start_cave2"
+                                }
+                            ]
+                        }
                     }
                 ]
             }
         ],
+        mapActions: [],
         bosses: [
             {
                 x: 5,
@@ -6088,11 +7118,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "火山道",
                 encounterRank: 12,
-                monsters: [
-                    103,
-                    102,
-                    352
-                ],
                 width: 21,
                 height: 21,
                 tiles: [
@@ -6152,11 +7177,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "溶岩回廊",
                 encounterRank: 14,
-                monsters: [
-                    352,
-                    153,
-                    151
-                ],
                 width: 21,
                 height: 21,
                 tiles: [
@@ -6219,11 +7239,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "火の祭壇",
                 encounterRank: 16,
-                monsters: [
-                    151,
-                    252,
-                    154
-                ],
                 width: 21,
                 height: 21,
                 tiles: [
@@ -6324,12 +7339,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "火山深部・煤風洞",
                 encounterRank: 48,
-                monsters: [
-                    356,
-                    302,
-                    452,
-                    502
-                ],
                 enemyBoost: {
                     statMultiplier: 1.08,
                     elmRes: {
@@ -6346,12 +7355,6 @@ const FIXED_DUNGEON_MAPS = {
                         Debuff: 40
                     }
                 },
-                rareMonsters: [
-                    {
-                        id: 200201,
-                        rate: 0.06
-                    }
-                ],
                 width: 29,
                 height: 25,
                 tiles: [
@@ -6687,12 +7690,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "火山深部・炎心炉",
                 encounterRank: 56,
-                monsters: [
-                    504,
-                    551,
-                    553,
-                    554
-                ],
                 enemyBoost: {
                     statMultiplier: 1.1,
                     elmRes: {
@@ -6708,12 +7705,6 @@ const FIXED_DUNGEON_MAPS = {
                         Debuff: 50
                     }
                 },
-                rareMonsters: [
-                    {
-                        id: 200201,
-                        rate: 0.06
-                    }
-                ],
                 width: 29,
                 height: 25,
                 tiles: [
@@ -6844,13 +7835,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "封じられた森・東の迷い路",
                 encounterRank: 22,
-                monsters: [
-                    201,
-                    203,
-                    202,
-                    204,
-                    251
-                ],
                 width: 55,
                 height: 33,
                 tiles: [
@@ -6982,13 +7966,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "封じられた森・祈りの広場",
                 encounterRank: 24,
-                monsters: [
-                    203,
-                    202,
-                    204,
-                    251,
-                    303
-                ],
                 width: 41,
                 height: 37,
                 tiles: [
@@ -7141,12 +8118,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "禁忌の森深部・迷い根の庭",
                 encounterRank: 48,
-                monsters: [
-                    302,
-                    452,
-                    502,
-                    503
-                ],
                 enemyBoost: {
                     statMultiplier: 1.08,
                     elmRes: {
@@ -7163,12 +8134,6 @@ const FIXED_DUNGEON_MAPS = {
                         Debuff: 50
                     }
                 },
-                rareMonsters: [
-                    {
-                        id: 200201,
-                        rate: 0.06
-                    }
-                ],
                 width: 31,
                 height: 25,
                 tiles: [
@@ -7304,12 +8269,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "禁忌の森深部・呪風の根",
                 encounterRank: 56,
-                monsters: [
-                    504,
-                    552,
-                    553,
-                    554
-                ],
                 enemyBoost: {
                     statMultiplier: 1.1,
                     elmRes: {
@@ -7327,12 +8286,6 @@ const FIXED_DUNGEON_MAPS = {
                         Debuff: 60
                     }
                 },
-                rareMonsters: [
-                    {
-                        id: 200201,
-                        rate: 0.06
-                    }
-                ],
                 width: 31,
                 height: 25,
                 tiles: [
@@ -7499,11 +8452,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "1階・風廊",
                 encounterRank: 26,
-                monsters: [
-                    251,
-                    303,
-                    301
-                ],
                 width: 25,
                 height: 24,
                 tiles: [
@@ -7572,11 +8520,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "2階・旋風の回廊",
                 encounterRank: 28,
-                monsters: [
-                    301,
-                    205,
-                    254
-                ],
                 width: 25,
                 height: 24,
                 impassableTiles: [
@@ -7662,11 +8605,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "3階・風の祭壇",
                 encounterRank: 30,
-                monsters: [
-                    254,
-                    253,
-                    404
-                ],
                 width: 25,
                 height: 24,
                 impassableTiles: [
@@ -7760,12 +8698,6 @@ const FIXED_DUNGEON_MAPS = {
         themeKey: "SEABED_TEMPLE",
         rank: 35,
         encounterRank: 35,
-        rareMonsters: [
-            {
-                id: 200201,
-                rate: 0.05
-            }
-        ],
         battleBg: "battle_bg_seabed",
         overlayOverrides: {
             B: {
@@ -7785,11 +8717,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "地下1階・沈水回廊",
                 encounterRank: 35,
-                monsters: [
-                    351,
-                    355,
-                    353
-                ],
                 width: 23,
                 height: 23,
                 tiles: [
@@ -7869,11 +8796,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "地下2階・水門",
                 encounterRank: 37,
-                monsters: [
-                    355,
-                    353,
-                    357
-                ],
                 width: 23,
                 height: 23,
                 tiles: [
@@ -7969,11 +8891,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "地下3階・祈祷の間",
                 encounterRank: 39,
-                monsters: [
-                    357,
-                    508,
-                    406
-                ],
                 width: 23,
                 height: 23,
                 tiles: [
@@ -8074,12 +8991,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "地下4階・潮環回廊",
                 encounterRank: 68,
-                monsters: [
-                    654,
-                    507,
-                    702,
-                    703
-                ],
                 enemyBoost: {
                     statMultiplier: 1.08,
                     elmRes: {
@@ -8096,12 +9007,6 @@ const FIXED_DUNGEON_MAPS = {
                         Debuff: 50
                     }
                 },
-                rareMonsters: [
-                    {
-                        id: 200201,
-                        rate: 0.06
-                    }
-                ],
                 width: 31,
                 height: 25,
                 tiles: [
@@ -8328,12 +9233,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "地下5階・逆潮祭壇",
                 encounterRank: 76,
-                monsters: [
-                    652,
-                    751,
-                    754,
-                    701
-                ],
                 enemyBoost: {
                     statMultiplier: 1.1,
                     elmRes: {
@@ -8349,12 +9248,6 @@ const FIXED_DUNGEON_MAPS = {
                         Debuff: 60
                     }
                 },
-                rareMonsters: [
-                    {
-                        id: 200201,
-                        rate: 0.06
-                    }
-                ],
                 width: 31,
                 height: 25,
                 tiles: [
@@ -8474,17 +9367,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "1階・潮風の塔道",
                 encounterRank: 30,
-                monsters: [
-                    301,
-                    205,
-                    254
-                ],
-                rareMonsters: [
-                    {
-                        id: 200201,
-                        rate: 0.05
-                    }
-                ],
                 width: 23,
                 height: 24,
                 tiles: [
@@ -8543,18 +9425,32 @@ const FIXED_DUNGEON_MAPS = {
                         type: "item"
                     }
                 ],
-                mapActions: [
+                nextActorPlacementId: 2,
+                mapActors: [
                     {
-                        x: 5,
-                        y: 20,
-                        label: "ゼリードと話す",
-                        log: "ゼリードが、頂上に残る歪みを見上げている。",
-                        type: "quest",
-                        questId: "zelied_big_tower",
-                        imageKey: "overlay_companion_zelied",
-                        lockedText: "ゼリードはまだ、灯台の異変を見極めているようだ。"
+                        "placementId": 1,
+                        "actorId": "zelied_big_tower",
+                        "name": "ゼリード",
+                        "x": 5,
+                        "y": 20,
+                        "imageKey": "overlay_companion_zelied",
+                        "states": [
+                            {
+                                "stateId": "zelied_big_tower",
+                                "priority": 0,
+                                "when": {},
+                                "action": {
+                                    "label": "ゼリードと話す",
+                                    "log": "ゼリードが、頂上に残る歪みを見上げている。",
+                                    "type": "quest",
+                                    "questId": "zelied_big_tower",
+                                    "lockedText": "ゼリードはまだ、灯台の異変を見極めているようだ。"
+                                }
+                            }
+                        ]
                     }
                 ],
+                mapActions: [],
                 entryPoint: {
                     x: 11,
                     y: 21
@@ -8565,17 +9461,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "2階・螺旋階段",
                 encounterRank: 31,
-                monsters: [
-                    205,
-                    254,
-                    253
-                ],
-                rareMonsters: [
-                    {
-                        id: 200201,
-                        rate: 0.05
-                    }
-                ],
                 width: 23,
                 height: 24,
                 impassableTiles: [
@@ -8649,17 +9534,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "3階・灯火回廊",
                 encounterRank: 32,
-                monsters: [
-                    254,
-                    253,
-                    404
-                ],
-                rareMonsters: [
-                    {
-                        id: 200201,
-                        rate: 0.05
-                    }
-                ],
                 width: 23,
                 height: 24,
                 impassableTiles: [
@@ -8733,17 +9607,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "4階・結界炉",
                 encounterRank: 34,
-                monsters: [
-                    404,
-                    305,
-                    354
-                ],
-                rareMonsters: [
-                    {
-                        id: 200201,
-                        rate: 0.05
-                    }
-                ],
                 width: 23,
                 height: 24,
                 impassableTiles: [
@@ -8839,17 +9702,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "5階・風鳴りの壁",
                 encounterRank: 35,
-                monsters: [
-                    305,
-                    354,
-                    351
-                ],
-                rareMonsters: [
-                    {
-                        id: 200202,
-                        rate: 0.05
-                    }
-                ],
                 width: 23,
                 height: 24,
                 impassableTiles: [
@@ -8909,17 +9761,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "6階・古い守衛室",
                 encounterRank: 36,
-                monsters: [
-                    354,
-                    351,
-                    355
-                ],
-                rareMonsters: [
-                    {
-                        id: 200202,
-                        rate: 0.05
-                    }
-                ],
                 width: 23,
                 height: 24,
                 impassableTiles: [
@@ -8993,17 +9834,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "7階・灯台頂上",
                 encounterRank: 40,
-                monsters: [
-                    353,
-                    357,
-                    508
-                ],
-                rareMonsters: [
-                    {
-                        id: 200202,
-                        rate: 0.05
-                    }
-                ],
                 width: 23,
                 height: 24,
                 impassableTiles: [
@@ -9114,17 +9944,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "1階・双門外郭",
                 encounterRank: 42,
-                monsters: [
-                    402,
-                    356,
-                    509
-                ],
-                rareMonsters: [
-                    {
-                        id: 200201,
-                        rate: 0.05
-                    }
-                ],
                 width: 33,
                 height: 28,
                 impassableTiles: [
@@ -9211,157 +10030,272 @@ const FIXED_DUNGEON_MAPS = {
                         type: "item"
                     }
                 ],
+                nextActorPlacementId: 10,
+                mapActors: [
+                    {
+                        "placementId": 1,
+                        "actorId": "guild_girl",
+                        "name": "受付職員",
+                        "x": 5,
+                        "y": 20,
+                        "imageKey": "guild_girl",
+                        "drawWidth": 32,
+                        "drawHeight": 32,
+                        "baseTile": "T",
+                        "blocksMovement": true,
+                        "interactFromAdjacent": true,
+                        "interactionArea": {
+                            "x": 5,
+                            "y": 21,
+                            "width": 1,
+                            "height": 1
+                        },
+                        "minimapArea": {
+                            "x": 3,
+                            "y": 21,
+                            "width": 5,
+                            "height": 1
+                        },
+                        "minimapConnect": true,
+                        "minimapColor": "#5bd6ff",
+                        "states": [
+                            {
+                                "stateId": "guild",
+                                "priority": 0,
+                                "when": {},
+                                "action": {
+                                    "label": "受付職員と話す",
+                                    "log": "受付職員が丁寧に一礼した。",
+                                    "type": "guild",
+                                    "minimapAreaColor": "#b77a32"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "placementId": 2,
+                        "actorId": "guild_girl_2",
+                        "name": "無料で休む",
+                        "x": 25,
+                        "y": 20,
+                        "imageKey": "guild_girl",
+                        "drawWidth": 32,
+                        "drawHeight": 32,
+                        "baseTile": "T",
+                        "blocksMovement": true,
+                        "interactFromAdjacent": true,
+                        "states": [
+                            {
+                                "stateId": "freerest",
+                                "priority": 0,
+                                "when": {},
+                                "action": {
+                                    "label": "無料で休む",
+                                    "log": "宿泊所の係員が空いている寝台を案内してくれた。",
+                                    "type": "freeRest"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "placementId": 3,
+                        "actorId": "rin_thunder_fort",
+                        "name": "リン",
+                        "x": 5,
+                        "y": 13,
+                        "imageKey": "overlay_companion_rin",
+                        "states": [
+                            {
+                                "stateId": "rin_thunder_fort",
+                                "priority": 0,
+                                "when": {},
+                                "action": {
+                                    "label": "リンと話す",
+                                    "log": "リンが、雷鳴の奥に残る魔物の気配を追っている。",
+                                    "type": "quest",
+                                    "questId": "rin_thunder_fort",
+                                    "complete": true,
+                                    "lockedText": "リンはまだ、光を導く者の到着を待っている。"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "placementId": 4,
+                        "actorId": "frieda_baron_thunder_depths",
+                        "name": "フリーダ",
+                        "x": 14,
+                        "y": 21,
+                        "imageKey": "overlay_companion_frieda",
+                        "states": [
+                            {
+                                "stateId": "frieda_baron_thunder_depths",
+                                "priority": 0,
+                                "when": {},
+                                "action": {
+                                    "label": "フリーダと話す",
+                                    "log": "フリーダが、高圧電流の先を見据えている。",
+                                    "type": "quest",
+                                    "questId": "frieda_baron_thunder_depths",
+                                    "lockedText": "今はまだ、要塞深部の電流を越える加護が足りない。"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "placementId": 5,
+                        "actorId": "frieda_baron_thunder_depths_2",
+                        "name": "バロン",
+                        "x": 15,
+                        "y": 21,
+                        "imageKey": "overlay_companion_baron",
+                        "states": [
+                            {
+                                "stateId": "frieda_baron_thunder_depths",
+                                "priority": 0,
+                                "when": {},
+                                "action": {
+                                    "label": "バロンと話す",
+                                    "log": "バロンが、雷の制御核へ向けて武器を握り直している。",
+                                    "type": "quest",
+                                    "questId": "frieda_baron_thunder_depths",
+                                    "lockedText": "今はまだ、要塞深部の電流を越える加護が足りない。"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "placementId": 6,
+                        "actorId": "npc_villager",
+                        "name": "補給品を買う",
+                        "x": 25,
+                        "y": 13,
+                        "imageKey": "overlay_npc_villager",
+                        "states": [
+                            {
+                                "stateId": "shop",
+                                "priority": 0,
+                                "when": {
+                                    "requiredFlag": "thunderFortCleared"
+                                },
+                                "action": {
+                                    "label": "補給品を買う",
+                                    "log": "解放された要塞に補給隊が入っている。",
+                                    "type": "shop",
+                                    "shopType": "item",
+                                    "title": "ライザーク要塞 補給所",
+                                    "shopRank": 45,
+                                    "lockedText": "まだ補給隊は入れないようだ。"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "placementId": 7,
+                        "actorId": "npc_villager_2",
+                        "name": "武器",
+                        "x": 27,
+                        "y": 13,
+                        "imageKey": "overlay_npc_villager",
+                        "states": [
+                            {
+                                "stateId": "shop",
+                                "priority": 0,
+                                "when": {
+                                    "requiredFlag": "thunderFortCleared"
+                                },
+                                "action": {
+                                    "label": "武器を見る",
+                                    "log": "押収された武器が整備されている。",
+                                    "type": "shop",
+                                    "shopType": "weapon",
+                                    "title": "ライザーク要塞 武器庫",
+                                    "shopRank": 45,
+                                    "lockedText": "武器庫は封鎖されている。"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "placementId": 8,
+                        "actorId": "npc_villager_3",
+                        "name": "防具",
+                        "x": 29,
+                        "y": 13,
+                        "imageKey": "overlay_npc_villager",
+                        "states": [
+                            {
+                                "stateId": "shop",
+                                "priority": 0,
+                                "when": {
+                                    "requiredFlag": "thunderFortCleared"
+                                },
+                                "action": {
+                                    "label": "防具を見る",
+                                    "log": "雷対策の防具が並び始めている。",
+                                    "type": "shop",
+                                    "shopType": "armor",
+                                    "title": "ライザーク要塞 防具庫",
+                                    "shopRank": 45,
+                                    "lockedText": "防具庫は封鎖されている。"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "placementId": 9,
+                        "actorId": "post_thunder_fort_base_1",
+                        "name": "解放兵",
+                        "x": 20,
+                        "y": 17,
+                        "imageKey": "overlay_npc_villager",
+                        "states": [
+                            {
+                                "stateId": "post_thunder_fort_base_1",
+                                "priority": 0,
+                                "when": {
+                                    "requiredFlag": "thunderFortCleared"
+                                },
+                                "action": {
+                                    "label": "解放兵と話す",
+                                    "log": "解放された兵が深く息を吐いている。",
+                                    "type": "storyEvent",
+                                    "eventId": "post_thunder_fort_base_1",
+                                    "lockedText": "雷の轟きで声が届かない。"
+                                }
+                            }
+                        ]
+                    }
+                ],
                 mapActions: [
                     {
-                        x: 5,
-                        y: 20,
-                        label: "受付職員と話す",
-                        log: "受付職員が丁寧に一礼した。",
-                        type: "guild",
-                        imageKey: "guild_girl",
-                        drawWidth: 32,
-                        drawHeight: 32,
-                        baseTile: "T",
-                        blocksMovement: true,
-                        interactFromAdjacent: true,
-                        interactionArea: {
-                            x: 5,
-                            y: 21,
-                            width: 1,
-                            height: 1
+                        "x": 8,
+                        "y": 20,
+                        "label": "依頼掲示板を見る",
+                        "log": "各地から届いた依頼票が掲示されている。",
+                        "type": "guildBoard",
+                        "imageKey": "guild_questboard",
+                        "renderAsBlockingObject": true,
+                        "drawWidth": 64,
+                        "drawHeight": 64,
+                        "drawOffsetX": 12,
+                        "baseTile": "T",
+                        "blocksMovement": true,
+                        "interactFromAdjacent": true,
+                        "interactionArea": {
+                            "x": 8,
+                            "y": 20,
+                            "width": 2,
+                            "height": 1
                         },
-                        minimapArea: {
-                            x: 3,
-                            y: 21,
-                            width: 5,
-                            height: 1
+                        "minimapArea": {
+                            "x": 8,
+                            "y": 20,
+                            "width": 2,
+                            "height": 1
                         },
-                        minimapConnect: true,
-                        minimapColor: "#5bd6ff",
-                        minimapAreaColor: "#b77a32"
-                    },
-                    {
-                        x: 8,
-                        y: 20,
-                        label: "依頼掲示板を見る",
-                        log: "各地から届いた依頼票が掲示されている。",
-                        type: "guildBoard",
-                        imageKey: "guild_questboard",
-                        renderAsBlockingObject: true,
-                        drawWidth: 64,
-                        drawHeight: 64,
-                        drawOffsetX: 12,
-                        baseTile: "T",
-                        blocksMovement: true,
-                        interactFromAdjacent: true,
-                        interactionArea: {
-                            x: 8,
-                            y: 20,
-                            width: 2,
-                            height: 1
-                        },
-                        minimapArea: {
-                            x: 8,
-                            y: 20,
-                            width: 2,
-                            height: 1
-                        },
-                        minimapColor: "#d6a94a",
-                        minimapAreaColor: "#d6a94a"
-                    },
-                    {
-                        x: 25,
-                        y: 20,
-                        label: "無料で休む",
-                        log: "宿泊所の係員が空いている寝台を案内してくれた。",
-                        type: "freeRest",
-                        imageKey: "guild_girl",
-                        drawWidth: 32,
-                        drawHeight: 32,
-                        baseTile: "T",
-                        blocksMovement: true,
-                        interactFromAdjacent: true
-                    },
-                    {
-                        x: 5,
-                        y: 13,
-                        label: "リンと話す",
-                        log: "リンが、雷鳴の奥に残る魔物の気配を追っている。",
-                        type: "quest",
-                        questId: "rin_thunder_fort",
-                        complete: true,
-                        imageKey: "overlay_companion_rin",
-                        lockedText: "リンはまだ、光を導く者の到着を待っている。"
-                    },
-                    {
-                        x: 14,
-                        y: 21,
-                        label: "フリーダと話す",
-                        log: "フリーダが、高圧電流の先を見据えている。",
-                        type: "quest",
-                        questId: "frieda_baron_thunder_depths",
-                        imageKey: "overlay_companion_frieda",
-                        lockedText: "今はまだ、要塞深部の電流を越える加護が足りない。"
-                    },
-                    {
-                        x: 15,
-                        y: 21,
-                        label: "バロンと話す",
-                        log: "バロンが、雷の制御核へ向けて武器を握り直している。",
-                        type: "quest",
-                        questId: "frieda_baron_thunder_depths",
-                        imageKey: "overlay_companion_baron",
-                        lockedText: "今はまだ、要塞深部の電流を越える加護が足りない。"
-                    },
-                    {
-                        x: 25,
-                        y: 13,
-                        label: "補給品を買う",
-                        log: "解放された要塞に補給隊が入っている。",
-                        type: "shop",
-                        shopType: "item",
-                        title: "ライザーク要塞 補給所",
-                        shopRank: 45,
-                        requiredFlag: "thunderFortCleared",
-                        imageKey: "overlay_npc_villager",
-                        lockedText: "まだ補給隊は入れないようだ。"
-                    },
-                    {
-                        x: 27,
-                        y: 13,
-                        label: "武器を見る",
-                        log: "押収された武器が整備されている。",
-                        type: "shop",
-                        shopType: "weapon",
-                        title: "ライザーク要塞 武器庫",
-                        shopRank: 45,
-                        requiredFlag: "thunderFortCleared",
-                        imageKey: "overlay_npc_villager",
-                        lockedText: "武器庫は封鎖されている。"
-                    },
-                    {
-                        x: 29,
-                        y: 13,
-                        label: "防具を見る",
-                        log: "雷対策の防具が並び始めている。",
-                        type: "shop",
-                        shopType: "armor",
-                        title: "ライザーク要塞 防具庫",
-                        shopRank: 45,
-                        requiredFlag: "thunderFortCleared",
-                        imageKey: "overlay_npc_villager",
-                        lockedText: "防具庫は封鎖されている。"
-                    },
-                    {
-                        x: 20,
-                        y: 17,
-                        label: "解放兵と話す",
-                        log: "解放された兵が深く息を吐いている。",
-                        type: "storyEvent",
-                        eventId: "post_thunder_fort_base_1",
-                        requiredFlag: "thunderFortCleared",
-                        imageKey: "overlay_npc_villager",
-                        lockedText: "雷の轟きで声が届かない。"
+                        "minimapColor": "#d6a94a",
+                        "minimapAreaColor": "#d6a94a"
                     }
                 ],
                 entryPoint: {
@@ -9535,17 +10469,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "2階・暴走機関室",
                 encounterRank: 44,
-                monsters: [
-                    509,
-                    302,
-                    452
-                ],
-                rareMonsters: [
-                    {
-                        id: 200201,
-                        rate: 0.05
-                    }
-                ],
                 width: 33,
                 height: 28,
                 impassableTiles: [
@@ -9635,17 +10558,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "3階・雷鎧の防衛線",
                 encounterRank: 46,
-                monsters: [
-                    452,
-                    358,
-                    506
-                ],
-                rareMonsters: [
-                    {
-                        id: 200201,
-                        rate: 0.05
-                    }
-                ],
                 width: 33,
                 height: 28,
                 impassableTiles: [
@@ -9734,17 +10646,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "4階・雷の中枢",
                 encounterRank: 48,
-                monsters: [
-                    506,
-                    502,
-                    503
-                ],
-                rareMonsters: [
-                    {
-                        id: 200201,
-                        rate: 0.05
-                    }
-                ],
                 width: 33,
                 height: 28,
                 impassableTiles: [
@@ -9876,12 +10777,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "5階・双電路",
                 encounterRank: 76,
-                monsters: [
-                    652,
-                    751,
-                    754,
-                    755
-                ],
                 enemyBoost: {
                     statMultiplier: 1.08,
                     elmRes: {
@@ -9898,12 +10793,6 @@ const FIXED_DUNGEON_MAPS = {
                         Debuff: 55
                     }
                 },
-                rareMonsters: [
-                    {
-                        id: 200201,
-                        rate: 0.06
-                    }
-                ],
                 width: 33,
                 height: 28,
                 impassableTiles: [
@@ -10092,12 +10981,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "6階・制御核区",
                 encounterRank: 81,
-                monsters: [
-                    801,
-                    803,
-                    802,
-                    655
-                ],
                 enemyBoost: {
                     statMultiplier: 1.1,
                     elmRes: {
@@ -10113,12 +10996,6 @@ const FIXED_DUNGEON_MAPS = {
                         Debuff: 60
                     }
                 },
-                rareMonsters: [
-                    {
-                        id: 200201,
-                        rate: 0.06
-                    }
-                ],
                 width: 33,
                 height: 28,
                 impassableTiles: [
@@ -10253,17 +11130,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "1階・白光の回廊",
                 encounterRank: 62,
-                monsters: [
-                    651,
-                    653,
-                    654
-                ],
-                rareMonsters: [
-                    {
-                        id: 200202,
-                        rate: 0.05
-                    }
-                ],
                 width: 35,
                 height: 30,
                 tiles: [
@@ -10368,75 +11234,118 @@ const FIXED_DUNGEON_MAPS = {
                         y: 18
                     }
                 ],
-                mapActions: [
+                nextActorPlacementId: 5,
+                mapActors: [
                     {
-                        x: 24,
-                        y: 20,
-                        label: "聖薬を買う",
-                        log: "巡礼者の補給所が開かれている。",
-                        type: "shop",
-                        shopType: "item",
-                        title: "光の宮殿グランプリズマ 聖薬所",
-                        shopRank: 55,
-                        requiredFlag: "lightPalaceCleared",
-                        imageKey: "overlay_town_light_pilgrim",
-                        lockedText: "まだ巡礼者は戻っていない。"
+                        "placementId": 1,
+                        "actorId": "town_light_pilgrim",
+                        "name": "聖薬を買う",
+                        "x": 24,
+                        "y": 20,
+                        "imageKey": "overlay_town_light_pilgrim",
+                        "states": [
+                            {
+                                "stateId": "shop",
+                                "priority": 0,
+                                "when": {
+                                    "requiredFlag": "lightPalaceCleared"
+                                },
+                                "action": {
+                                    "label": "聖薬を買う",
+                                    "log": "巡礼者の補給所が開かれている。",
+                                    "type": "shop",
+                                    "shopType": "item",
+                                    "title": "光の宮殿グランプリズマ 聖薬所",
+                                    "shopRank": 55,
+                                    "lockedText": "まだ巡礼者は戻っていない。"
+                                }
+                            }
+                        ]
                     },
                     {
-                        x: 6,
-                        y: 20,
-                        label: "武器を見る",
-                        log: "白光を帯びた武器が整えられている。",
-                        type: "shop",
-                        shopType: "weapon",
-                        title: "光の宮殿グランプリズマ 武器庫",
-                        shopRank: 55,
-                        requiredFlag: "lightPalaceCleared",
-                        imageKey: "overlay_town_light_pilgrim",
-                        lockedText: "武器庫は沈黙している。"
+                        "placementId": 2,
+                        "actorId": "town_light_pilgrim_2",
+                        "name": "武器",
+                        "x": 6,
+                        "y": 20,
+                        "imageKey": "overlay_town_light_pilgrim",
+                        "states": [
+                            {
+                                "stateId": "shop",
+                                "priority": 0,
+                                "when": {
+                                    "requiredFlag": "lightPalaceCleared"
+                                },
+                                "action": {
+                                    "label": "武器を見る",
+                                    "log": "白光を帯びた武器が整えられている。",
+                                    "type": "shop",
+                                    "shopType": "weapon",
+                                    "title": "光の宮殿グランプリズマ 武器庫",
+                                    "shopRank": 55,
+                                    "lockedText": "武器庫は沈黙している。"
+                                }
+                            }
+                        ]
                     },
                     {
-                        x: 10,
-                        y: 20,
-                        label: "防具を見る",
-                        log: "浄化された防具が並んでいる。",
-                        type: "shop",
-                        shopType: "armor",
-                        title: "光の宮殿グランプリズマ 防具庫",
-                        shopRank: 55,
-                        requiredFlag: "lightPalaceCleared",
-                        imageKey: "overlay_town_light_pilgrim",
-                        lockedText: "防具庫は閉ざされている。"
+                        "placementId": 3,
+                        "actorId": "town_light_pilgrim_3",
+                        "name": "防具",
+                        "x": 10,
+                        "y": 20,
+                        "imageKey": "overlay_town_light_pilgrim",
+                        "states": [
+                            {
+                                "stateId": "shop",
+                                "priority": 0,
+                                "when": {
+                                    "requiredFlag": "lightPalaceCleared"
+                                },
+                                "action": {
+                                    "label": "防具を見る",
+                                    "log": "浄化された防具が並んでいる。",
+                                    "type": "shop",
+                                    "shopType": "armor",
+                                    "title": "光の宮殿グランプリズマ 防具庫",
+                                    "shopRank": 55,
+                                    "lockedText": "防具庫は閉ざされている。"
+                                }
+                            }
+                        ]
                     },
                     {
-                        x: 28,
-                        y: 20,
-                        label: "巡礼者と話す",
-                        log: "巡礼者が割れたステンドグラスを集めている。",
-                        type: "storyEvent",
-                        eventId: "post_light_palace_base_1",
-                        requiredFlag: "lightPalaceCleared",
-                        imageKey: "overlay_town_light_pilgrim",
-                        lockedText: "光の宮殿グランプリズマはまだ緊張に包まれている。"
+                        "placementId": 4,
+                        "actorId": "post_light_palace_base_1",
+                        "name": "巡礼者",
+                        "x": 28,
+                        "y": 20,
+                        "imageKey": "overlay_town_light_pilgrim",
+                        "states": [
+                            {
+                                "stateId": "post_light_palace_base_1",
+                                "priority": 0,
+                                "when": {
+                                    "requiredFlag": "lightPalaceCleared"
+                                },
+                                "action": {
+                                    "label": "巡礼者と話す",
+                                    "log": "巡礼者が割れたステンドグラスを集めている。",
+                                    "type": "storyEvent",
+                                    "eventId": "post_light_palace_base_1",
+                                    "lockedText": "光の宮殿グランプリズマはまだ緊張に包まれている。"
+                                }
+                            }
+                        ]
                     }
                 ],
+                mapActions: [],
                 name: "",
                 themeKey: "LIGHT_PALACE"
             },
             {
                 label: "2階・祝福の水盤",
                 encounterRank: 64,
-                monsters: [
-                    654,
-                    753,
-                    507
-                ],
-                rareMonsters: [
-                    {
-                        id: 200202,
-                        rate: 0.05
-                    }
-                ],
                 width: 35,
                 height: 30,
                 impassableTiles: [
@@ -10517,17 +11426,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "3階・結界の聖廊",
                 encounterRank: 66,
-                monsters: [
-                    507,
-                    604,
-                    702
-                ],
-                rareMonsters: [
-                    {
-                        id: 200202,
-                        rate: 0.05
-                    }
-                ],
                 width: 35,
                 height: 30,
                 impassableTiles: [
@@ -10607,17 +11505,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "4階・光の祭壇",
                 encounterRank: 68,
-                monsters: [
-                    702,
-                    703,
-                    652
-                ],
-                rareMonsters: [
-                    {
-                        id: 200202,
-                        rate: 0.05
-                    }
-                ],
                 width: 35,
                 height: 30,
                 impassableTiles: [
@@ -10743,7 +11630,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "地下牢",
                 encounterRank: 68,
-                monsters: [],
                 width: 27,
                 height: 19,
                 tiles: [
@@ -10875,85 +11761,140 @@ const FIXED_DUNGEON_MAPS = {
                         missingFlag: "leilaJoined"
                     }
                 ],
-                mapActions: [
+                nextActorPlacementId: 5,
+                mapActors: [
                     {
-                        x: 7,
-                        y: 3,
-                        label: "国王と話す",
-                        type: "storyEvent",
-                        eventId: "light_palace_prison_king",
-                        imageKey: "overlay_light_captive_king",
-                        imageColor: "#f4d989",
-                        minimapColor: "#f4d989",
-                        missingFlag: "lightPalaceCleared"
-                    },
-                    {
-                        x: 7,
-                        y: 3,
-                        label: "国王と話す",
-                        type: "quest",
-                        questId: "royal_star_catalyst",
-                        imageKey: "overlay_light_captive_king",
-                        imageColor: "#f4d989",
-                        minimapColor: "#f4d989",
-                        requiredFlag: "lightPalaceCleared",
-                        missingItems: [
+                        "placementId": 1,
+                        "actorId": "captive_king",
+                        "name": "幽閉された国王",
+                        "x": 7,
+                        "y": 3,
+                        "imageKey": "overlay_light_captive_king",
+                        "imageColor": "#f4d989",
+                        "minimapColor": "#f4d989",
+                        "states": [
                             {
-                                id: 111,
-                                count: 1
+                                "stateId": "after_catalyst",
+                                "priority": 300,
+                                "when": {
+                                    "requiredFlag": "lightPalaceCleared",
+                                    "requiredItems": [
+                                        {
+                                            "id": 111,
+                                            "count": 1
+                                        }
+                                    ]
+                                },
+                                "action": {
+                                    "label": "国王と話す",
+                                    "type": "storyEvent",
+                                    "eventId": "light_palace_prison_king_after_catalyst"
+                                }
+                            },
+                            {
+                                "stateId": "catalyst_quest",
+                                "priority": 200,
+                                "when": {
+                                    "requiredFlag": "lightPalaceCleared",
+                                    "missingItems": [
+                                        {
+                                            "id": 111,
+                                            "count": 1
+                                        }
+                                    ]
+                                },
+                                "action": {
+                                    "label": "国王と話す",
+                                    "type": "quest",
+                                    "questId": "royal_star_catalyst"
+                                }
+                            },
+                            {
+                                "stateId": "before_palace_clear",
+                                "priority": 100,
+                                "when": {
+                                    "missingFlag": "lightPalaceCleared"
+                                },
+                                "action": {
+                                    "label": "国王と話す",
+                                    "type": "storyEvent",
+                                    "eventId": "light_palace_prison_king"
+                                }
                             }
                         ]
                     },
                     {
-                        x: 7,
-                        y: 3,
-                        label: "国王と話す",
-                        type: "storyEvent",
-                        eventId: "light_palace_prison_king_after_catalyst",
-                        imageKey: "overlay_light_captive_king",
-                        imageColor: "#f4d989",
-                        minimapColor: "#f4d989",
-                        requiredItems: [
+                        "placementId": 2,
+                        "actorId": "light_palace_prison_leila",
+                        "name": "衰弱した聖騎士",
+                        "x": 23,
+                        "y": 10,
+                        "imageKey": "overlay_light_captive_leila_bed",
+                        "drawWidth": 64,
+                        "drawHeight": 32,
+                        "imageColor": "#f5dd86",
+                        "minimapColor": "#f5dd86",
+                        "states": [
                             {
-                                id: 111,
-                                count: 1
+                                "stateId": "light_palace_prison_leila",
+                                "priority": 0,
+                                "when": {
+                                    "missingFlag": "leilaJoined"
+                                },
+                                "action": {
+                                    "label": "衰弱した聖騎士を診る",
+                                    "type": "storyEvent",
+                                    "eventId": "light_palace_prison_leila"
+                                }
                             }
                         ]
                     },
                     {
-                        x: 23,
-                        y: 10,
-                        label: "衰弱した聖騎士を診る",
-                        type: "storyEvent",
-                        eventId: "light_palace_prison_leila",
-                        imageKey: "overlay_light_captive_leila_bed",
-                        drawWidth: 64,
-                        drawHeight: 32,
-                        imageColor: "#f5dd86",
-                        minimapColor: "#f5dd86",
-                        missingFlag: "leilaJoined"
+                        "placementId": 3,
+                        "actorId": "light_palace_prison_priest_a",
+                        "name": "老神職",
+                        "x": 3,
+                        "y": 11,
+                        "imageKey": "overlay_light_captive_priest_a",
+                        "imageColor": "#d9dfff",
+                        "minimapColor": "#d9dfff",
+                        "states": [
+                            {
+                                "stateId": "light_palace_prison_priest_a",
+                                "priority": 0,
+                                "when": {},
+                                "action": {
+                                    "label": "老神職と話す",
+                                    "type": "storyEvent",
+                                    "eventId": "light_palace_prison_priest_a"
+                                }
+                            }
+                        ]
                     },
                     {
-                        x: 3,
-                        y: 11,
-                        label: "老神職と話す",
-                        type: "storyEvent",
-                        eventId: "light_palace_prison_priest_a",
-                        imageKey: "overlay_light_captive_priest_a",
-                        imageColor: "#d9dfff",
-                        minimapColor: "#d9dfff"
-                    },
-                    {
-                        x: 7,
-                        y: 11,
-                        label: "若い神職と話す",
-                        type: "storyEvent",
-                        eventId: "light_palace_prison_priest_b",
-                        imageKey: "overlay_light_captive_priest_b",
-                        imageColor: "#cfefff",
-                        minimapColor: "#cfefff"
+                        "placementId": 4,
+                        "actorId": "light_palace_prison_priest_b",
+                        "name": "若い神職",
+                        "x": 7,
+                        "y": 11,
+                        "imageKey": "overlay_light_captive_priest_b",
+                        "imageColor": "#cfefff",
+                        "minimapColor": "#cfefff",
+                        "states": [
+                            {
+                                "stateId": "light_palace_prison_priest_b",
+                                "priority": 0,
+                                "when": {},
+                                "action": {
+                                    "label": "若い神職と話す",
+                                    "type": "storyEvent",
+                                    "eventId": "light_palace_prison_priest_b"
+                                }
+                            }
+                        ]
                     }
                 ],
+                mapActions: [],
                 bosses: [
                     {
                         x: 13,
@@ -10975,16 +11916,6 @@ const FIXED_DUNGEON_MAPS = {
         canonicalAreaKey: "GALVANIA_CAVE",
         rank: 70,
         encounterRank: 70,
-        rareMonsters: [
-            {
-                id: 200202,
-                rate: 0.05
-            },
-            {
-                id: 200203,
-                rate: 0.02
-            }
-        ],
         battleBg: "battle_bg_galvania_cave",
         enemyBoost: {
             statMultiplier: 1,
@@ -11020,11 +11951,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "1階・北口 黒岩の胎道",
                 encounterRank: 61,
-                monsters: [
-                    601,
-                    505,
-                    602
-                ],
                 width: 61,
                 height: 35,
                 tiles: [
@@ -11150,26 +12076,41 @@ const FIXED_DUNGEON_MAPS = {
                         rare: true
                     }
                 ],
+                nextActorPlacementId: 2,
+                mapActors: [
+                    {
+                        "placementId": 1,
+                        "actorId": "map_system_galvania_cave_f1_action_1",
+                        "name": "倒れている兵を調べる",
+                        "x": 25,
+                        "y": 29,
+                        "imageKey": "overlay_dungeon_adventurer",
+                        "blocksMovement": false,
+                        "baseTile": "G",
+                        "states": [
+                            {
+                                "stateId": "map_system_galvania_cave_f1_action_1",
+                                "priority": 0,
+                                "when": {},
+                                "action": {
+                                    "label": "倒れている兵を調べる",
+                                    "eventId": "map_system_galvania_cave_f1_action_1",
+                                    "type": "storyEvent"
+                                }
+                            }
+                        ]
+                    }
+                ],
                 mapActions: [
                     {
-                        x: 25,
-                        y: 29,
-                        label: "倒れている兵を調べる",
-                        eventId: "map_system_galvania_cave_f1_action_1",
-                        type: "storyEvent",
-                        imageKey: "overlay_dungeon_adventurer",
-                        blocksMovement: false,
-                        baseTile: "G"
-                    },
-                    {
-                        x: 38,
-                        y: 13,
-                        label: "黒い道標を読む",
-                        eventId: "map_system_galvania_cave_f1_action_2",
-                        type: "storyEvent",
-                        imageKey: "overlay_dungeon_event",
-                        blocksMovement: false,
-                        baseTile: "G"
+                        "x": 38,
+                        "y": 13,
+                        "label": "黒い道標を読む",
+                        "eventId": "map_system_galvania_cave_f1_action_2",
+                        "type": "storyEvent",
+                        "imageKey": "overlay_dungeon_event",
+                        "blocksMovement": false,
+                        "baseTile": "G"
                     }
                 ],
                 entryPoint: {
@@ -11182,11 +12123,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "2階・偽りの無限回廊",
                 encounterRank: 66,
-                monsters: [
-                    602,
-                    451,
-                    651
-                ],
                 width: 61,
                 height: 35,
                 tiles: [
@@ -11389,11 +12325,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "3階・溶岩の地底湖",
                 encounterRank: 66,
-                monsters: [
-                    451,
-                    651,
-                    653
-                ],
                 width: 61,
                 height: 35,
                 tiles: [
@@ -11530,36 +12461,51 @@ const FIXED_DUNGEON_MAPS = {
                         challengeText: "番人を倒せば奥の赤い宝箱を取れそうだ。挑みますか？"
                     }
                 ],
+                nextActorPlacementId: 2,
+                mapActors: [
+                    {
+                        "placementId": 1,
+                        "actorId": "map_system_galvania_cave_f3_action_3",
+                        "name": "倒れた人影",
+                        "x": 7,
+                        "y": 26,
+                        "imageKey": "overlay_dungeon_adventurer",
+                        "blocksMovement": false,
+                        "baseTile": "G",
+                        "states": [
+                            {
+                                "stateId": "map_system_galvania_cave_f3_action_3",
+                                "priority": 0,
+                                "when": {},
+                                "action": {
+                                    "label": "倒れた人影を見る",
+                                    "eventId": "map_system_galvania_cave_f3_action_3",
+                                    "type": "storyEvent"
+                                }
+                            }
+                        ]
+                    }
+                ],
                 mapActions: [
                     {
-                        x: 11,
-                        y: 4,
-                        label: "焦げた石碑を読む",
-                        eventId: "map_system_galvania_cave_f3_action_1",
-                        type: "storyEvent",
-                        imageKey: "overlay_dungeon_event",
-                        blocksMovement: false,
-                        baseTile: "G"
+                        "x": 11,
+                        "y": 4,
+                        "label": "焦げた石碑を読む",
+                        "eventId": "map_system_galvania_cave_f3_action_1",
+                        "type": "storyEvent",
+                        "imageKey": "overlay_dungeon_event",
+                        "blocksMovement": false,
+                        "baseTile": "G"
                     },
                     {
-                        x: 52,
-                        y: 14,
-                        label: "折れた橋脚を調べる",
-                        eventId: "map_system_galvania_cave_f3_action_2",
-                        type: "storyEvent",
-                        imageKey: "overlay_dungeon_event",
-                        blocksMovement: false,
-                        baseTile: "G"
-                    },
-                    {
-                        x: 7,
-                        y: 26,
-                        label: "倒れた人影を見る",
-                        eventId: "map_system_galvania_cave_f3_action_3",
-                        type: "storyEvent",
-                        imageKey: "overlay_dungeon_adventurer",
-                        blocksMovement: false,
-                        baseTile: "G"
+                        "x": 52,
+                        "y": 14,
+                        "label": "折れた橋脚を調べる",
+                        "eventId": "map_system_galvania_cave_f3_action_2",
+                        "type": "storyEvent",
+                        "imageKey": "overlay_dungeon_event",
+                        "blocksMovement": false,
+                        "baseTile": "G"
                     }
                 ],
                 limitedMapReveal: true,
@@ -11574,11 +12520,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "4階・氷晶の十字滑床",
                 encounterRank: 66,
-                monsters: [
-                    602,
-                    653,
-                    654
-                ],
                 width: 61,
                 height: 35,
                 tiles: [
@@ -11935,11 +12876,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "5階・魔軍補給路",
                 encounterRank: 66,
-                monsters: [
-                    653,
-                    654,
-                    753
-                ],
                 width: 61,
                 height: 35,
                 tiles: [
@@ -12084,12 +13020,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "6階・南口 白骨の旧坑",
                 encounterRank: 76,
-                monsters: [
-                    753,
-                    507,
-                    604,
-                    652
-                ],
                 width: 61,
                 height: 35,
                 tiles: [
@@ -12259,12 +13189,6 @@ const FIXED_DUNGEON_MAPS = {
         entryLockedText: "王宮聖騎士の結界が道を閉ざしている。",
         rank: 80,
         encounterRank: 80,
-        rareMonsters: [
-            {
-                id: 200202,
-                rate: 0.05
-            }
-        ],
         battleBg: "battle_bg_dark_castle",
         entryPoint: {
             x: 16,
@@ -12274,11 +13198,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "本館1階・中央広間",
                 encounterRank: 66,
-                monsters: [
-                    451,
-                    651,
-                    653
-                ],
                 width: 33,
                 height: 30,
                 tiles: [
@@ -12393,58 +13312,112 @@ const FIXED_DUNGEON_MAPS = {
                         y: 22
                     }
                 ],
-                mapActions: [
+                nextActorPlacementId: 5,
+                mapActors: [
                     {
-                        x: 10,
-                        y: 22,
-                        label: "闇市を見る",
-                        log: "魔族の商人が静かに品を広げている。",
-                        type: "shop",
-                        shopType: "item",
-                        title: "魔王城ガルヴァニア 闇市",
-                        shopRank: 65,
-                        requiredFlag: "darkCastleCleared",
-                        imageKey: "overlay_town_demon_guard",
-                        lockedText: "城内はまだ戦闘態勢だ。"
+                        "placementId": 1,
+                        "actorId": "town_demon_guard",
+                        "name": "闇市",
+                        "x": 10,
+                        "y": 22,
+                        "imageKey": "overlay_town_demon_guard",
+                        "states": [
+                            {
+                                "stateId": "shop",
+                                "priority": 0,
+                                "when": {
+                                    "requiredFlag": "darkCastleCleared"
+                                },
+                                "action": {
+                                    "label": "闇市を見る",
+                                    "log": "魔族の商人が静かに品を広げている。",
+                                    "type": "shop",
+                                    "shopType": "item",
+                                    "title": "魔王城ガルヴァニア 闇市",
+                                    "shopRank": 65,
+                                    "lockedText": "城内はまだ戦闘態勢だ。"
+                                }
+                            }
+                        ]
                     },
                     {
-                        x: 22,
-                        y: 20,
-                        label: "武器を見る",
-                        log: "魔族の鍛冶場から低い槌音が響く。",
-                        type: "shop",
-                        shopType: "weapon",
-                        title: "魔王城ガルヴァニア 武器庫",
-                        shopRank: 65,
-                        requiredFlag: "darkCastleCleared",
-                        imageKey: "overlay_town_demon_guard",
-                        lockedText: "武器庫には近づけない。"
+                        "placementId": 2,
+                        "actorId": "town_demon_guard_2",
+                        "name": "武器",
+                        "x": 22,
+                        "y": 20,
+                        "imageKey": "overlay_town_demon_guard",
+                        "states": [
+                            {
+                                "stateId": "shop",
+                                "priority": 0,
+                                "when": {
+                                    "requiredFlag": "darkCastleCleared"
+                                },
+                                "action": {
+                                    "label": "武器を見る",
+                                    "log": "魔族の鍛冶場から低い槌音が響く。",
+                                    "type": "shop",
+                                    "shopType": "weapon",
+                                    "title": "魔王城ガルヴァニア 武器庫",
+                                    "shopRank": 65,
+                                    "lockedText": "武器庫には近づけない。"
+                                }
+                            }
+                        ]
                     },
                     {
-                        x: 22,
-                        y: 22,
-                        label: "防具を見る",
-                        log: "闇に耐える防具が並んでいる。",
-                        type: "shop",
-                        shopType: "armor",
-                        title: "魔王城ガルヴァニア 防具庫",
-                        shopRank: 65,
-                        requiredFlag: "darkCastleCleared",
-                        imageKey: "overlay_town_demon_guard",
-                        lockedText: "防具庫には近づけない。"
+                        "placementId": 3,
+                        "actorId": "town_demon_guard_3",
+                        "name": "防具",
+                        "x": 22,
+                        "y": 22,
+                        "imageKey": "overlay_town_demon_guard",
+                        "states": [
+                            {
+                                "stateId": "shop",
+                                "priority": 0,
+                                "when": {
+                                    "requiredFlag": "darkCastleCleared"
+                                },
+                                "action": {
+                                    "label": "防具を見る",
+                                    "log": "闇に耐える防具が並んでいる。",
+                                    "type": "shop",
+                                    "shopType": "armor",
+                                    "title": "魔王城ガルヴァニア 防具庫",
+                                    "shopRank": 65,
+                                    "lockedText": "防具庫には近づけない。"
+                                }
+                            }
+                        ]
                     },
                     {
-                        x: 10,
-                        y: 20,
-                        label: "魔族兵と話す",
-                        log: "魔族兵が城門の修復計画を見ている。",
-                        type: "storyEvent",
-                        eventId: "post_dark_castle_base_1",
-                        requiredFlag: "darkCastleCleared",
-                        imageKey: "overlay_town_demon_guard",
-                        lockedText: "魔族兵は警戒している。"
+                        "placementId": 4,
+                        "actorId": "post_dark_castle_base_1",
+                        "name": "魔族兵",
+                        "x": 10,
+                        "y": 20,
+                        "imageKey": "overlay_town_demon_guard",
+                        "states": [
+                            {
+                                "stateId": "post_dark_castle_base_1",
+                                "priority": 0,
+                                "when": {
+                                    "requiredFlag": "darkCastleCleared"
+                                },
+                                "action": {
+                                    "label": "魔族兵と話す",
+                                    "log": "魔族兵が城門の修復計画を見ている。",
+                                    "type": "storyEvent",
+                                    "eventId": "post_dark_castle_base_1",
+                                    "lockedText": "魔族兵は警戒している。"
+                                }
+                            }
+                        ]
                     }
                 ],
+                mapActions: [],
                 entryPoint: {
                     x: 16,
                     y: 27
@@ -12455,11 +13428,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "西館2階・黒影廊",
                 encounterRank: 71,
-                monsters: [
-                    653,
-                    753,
-                    507
-                ],
                 width: 33,
                 height: 30,
                 impassableTiles: [
@@ -12575,11 +13543,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "西館3階・結界の間",
                 encounterRank: 71,
-                monsters: [
-                    507,
-                    604,
-                    702
-                ],
                 width: 33,
                 height: 30,
                 impassableTiles: [
@@ -12663,11 +13626,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "東館2階・風哭廊",
                 encounterRank: 71,
-                monsters: [
-                    653,
-                    507,
-                    604
-                ],
                 width: 33,
                 height: 30,
                 impassableTiles: [
@@ -12783,11 +13741,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "東館3階・結界の間",
                 encounterRank: 71,
-                monsters: [
-                    507,
-                    702,
-                    703
-                ],
                 width: 33,
                 height: 30,
                 impassableTiles: [
@@ -12871,11 +13824,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "本館2階・夢幻回廊",
                 encounterRank: 76,
-                monsters: [
-                    652,
-                    751,
-                    754
-                ],
                 width: 33,
                 height: 30,
                 impassableTiles: [
@@ -13001,11 +13949,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "本館3階・謁見の間",
                 encounterRank: 81,
-                monsters: [
-                    801,
-                    803,
-                    802
-                ],
                 width: 33,
                 height: 30,
                 impassableTiles: [
@@ -13162,12 +14105,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "風鳴りの洞",
                 encounterRank: 8,
-                monsters: [
-                    54,
-                    104,
-                    51,
-                    105
-                ],
                 width: 25,
                 height: 21,
                 tiles: [
@@ -13279,11 +14216,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "妖精の泉",
                 encounterRank: 10,
-                monsters: [
-                    51,
-                    105,
-                    103
-                ],
                 width: 25,
                 height: 21,
                 tiles: [
@@ -13391,12 +14323,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "地下1階・蒼滴の道",
                 encounterRank: 23,
-                monsters: [
-                    201,
-                    203,
-                    202,
-                    204
-                ],
                 width: 27,
                 height: 23,
                 tiles: [
@@ -13474,20 +14400,35 @@ const FIXED_DUNGEON_MAPS = {
                         message: "爪痕の主が襲いかかる！"
                     }
                 ],
-                mapActions: [
+                nextActorPlacementId: 2,
+                mapActors: [
                     {
-                        x: 19,
-                        y: 17,
-                        label: "王国兵に話す",
-                        log: "王国軍が鍾乳洞を調査中だ。安全が確認できるまで、これ以上先へは通せない。",
-                        type: "log",
-                        imageKey: "overlay_npc_dark_soldier",
-                        baseTile: "T",
-                        missingFlag: "crenaRouteKnown",
-                        interactFromAdjacent: true,
-                        minimapColor: "#8f99a8"
+                        "placementId": 1,
+                        "actorId": "npc_dark_soldier",
+                        "name": "王国兵",
+                        "x": 19,
+                        "y": 17,
+                        "imageKey": "overlay_npc_dark_soldier",
+                        "baseTile": "T",
+                        "interactFromAdjacent": true,
+                        "minimapColor": "#8f99a8",
+                        "states": [
+                            {
+                                "stateId": "log",
+                                "priority": 0,
+                                "when": {
+                                    "missingFlag": "crenaRouteKnown"
+                                },
+                                "action": {
+                                    "label": "王国兵に話す",
+                                    "log": "王国軍が鍾乳洞を調査中だ。安全が確認できるまで、これ以上先へは通せない。",
+                                    "type": "log"
+                                }
+                            }
+                        ]
                     }
                 ],
+                mapActions: [],
                 chests: [
                     {
                         x: 3,
@@ -13513,12 +14454,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "地下2階・青の結晶の間",
                 encounterRank: 25,
-                monsters: [
-                    202,
-                    204,
-                    251,
-                    303
-                ],
                 width: 27,
                 height: 23,
                 tiles: [
@@ -13585,19 +14520,33 @@ const FIXED_DUNGEON_MAPS = {
                         message: "結晶光が戻り道を開いた。"
                     }
                 ],
-                mapActions: [
+                nextActorPlacementId: 2,
+                mapActors: [
                     {
-                        x: 20,
-                        y: 9,
-                        label: "リーシアに話す",
-                        log: "リーシアが結界の前で奥の魔力を探っている。",
-                        type: "quest",
-                        questId: "licia_crena_depths",
-                        imageKey: "overlay_companion_licia",
-                        hideWhenQuestAccepted: true,
-                        lockedText: "闇の加護がなければ、この結界の奥は見えない。"
+                        "placementId": 1,
+                        "actorId": "licia_crena_depths",
+                        "name": "リーシア",
+                        "x": 20,
+                        "y": 9,
+                        "imageKey": "overlay_companion_licia",
+                        "states": [
+                            {
+                                "stateId": "licia_crena_depths",
+                                "priority": 0,
+                                "when": {},
+                                "action": {
+                                    "label": "リーシアに話す",
+                                    "log": "リーシアが結界の前で奥の魔力を探っている。",
+                                    "type": "quest",
+                                    "questId": "licia_crena_depths",
+                                    "hideWhenQuestAccepted": true,
+                                    "lockedText": "闇の加護がなければ、この結界の奥は見えない。"
+                                }
+                            }
+                        ]
                     }
                 ],
+                mapActions: [],
                 bosses: [
                     {
                         x: 13,
@@ -13634,12 +14583,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "地下3階・結晶裏路",
                 encounterRank: 91,
-                monsters: [
-                    902,
-                    904,
-                    901,
-                    903
-                ],
                 enemyBoost: {
                     statMultiplier: 1.08,
                     elmRes: {
@@ -13860,12 +14803,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "地下4階・結界核",
                 encounterRank: 101,
-                monsters: [
-                    1003,
-                    1001,
-                    1004,
-                    1002
-                ],
                 enemyBoost: {
                     statMultiplier: 1.1,
                     elmRes: {
@@ -14017,12 +14954,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "1階・影残る拝廊",
                 encounterRank: 76,
-                monsters: [
-                    652,
-                    751,
-                    754,
-                    701
-                ],
                 width: 31,
                 height: 26,
                 tiles: [
@@ -14110,26 +15041,52 @@ const FIXED_DUNGEON_MAPS = {
                         message: "神殿の影が追ってくる！"
                     }
                 ],
-                mapActions: [
+                nextActorPlacementId: 3,
+                mapActors: [
                     {
-                        x: 15,
-                        y: 21,
-                        label: "クロードに声をかける",
-                        log: "クロードが、奥から漏れる闇を警戒している。",
-                        type: "quest",
-                        questId: "claude_leon_dark_shrine",
-                        imageKey: "overlay_companion_claude"
+                        "placementId": 1,
+                        "actorId": "claude_leon_dark_shrine",
+                        "name": "クロード",
+                        "x": 15,
+                        "y": 21,
+                        "imageKey": "overlay_companion_claude",
+                        "states": [
+                            {
+                                "stateId": "claude_leon_dark_shrine",
+                                "priority": 0,
+                                "when": {},
+                                "action": {
+                                    "label": "クロードに声をかける",
+                                    "log": "クロードが、奥から漏れる闇を警戒している。",
+                                    "type": "quest",
+                                    "questId": "claude_leon_dark_shrine"
+                                }
+                            }
+                        ]
                     },
                     {
-                        x: 16,
-                        y: 21,
-                        label: "レオンに声をかける",
-                        log: "レオンが、神殿跡地に残る光の痕跡を確かめている。",
-                        type: "quest",
-                        questId: "claude_leon_dark_shrine",
-                        imageKey: "overlay_companion_leon"
+                        "placementId": 2,
+                        "actorId": "claude_leon_dark_shrine_2",
+                        "name": "レオン",
+                        "x": 16,
+                        "y": 21,
+                        "imageKey": "overlay_companion_leon",
+                        "states": [
+                            {
+                                "stateId": "claude_leon_dark_shrine",
+                                "priority": 0,
+                                "when": {},
+                                "action": {
+                                    "label": "レオンに声をかける",
+                                    "log": "レオンが、神殿跡地に残る光の痕跡を確かめている。",
+                                    "type": "quest",
+                                    "questId": "claude_leon_dark_shrine"
+                                }
+                            }
+                        ]
                     }
                 ],
+                mapActions: [],
                 bosses: [
                     {
                         x: 15,
@@ -14167,11 +15124,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "2階・月影の祭壇",
                 encounterRank: 96,
-                monsters: [
-                    951,
-                    953,
-                    952
-                ],
                 width: 33,
                 height: 28,
                 impassableTiles: [
@@ -14249,30 +15201,45 @@ const FIXED_DUNGEON_MAPS = {
                         message: "月影が元の祭廊へ返した。"
                     }
                 ],
+                nextActorPlacementId: 2,
+                mapActors: [
+                    {
+                        "placementId": 1,
+                        "actorId": "luna_hidden_dark_shrine",
+                        "name": "月影の声",
+                        "x": 16,
+                        "y": 21,
+                        "imageKey": "overlay_companion_luna",
+                        "states": [
+                            {
+                                "stateId": "luna_hidden_dark_shrine",
+                                "priority": 0,
+                                "when": {},
+                                "action": {
+                                    "label": "月影の声を聞く",
+                                    "log": "月光の向こうから、静かな呼び声が届く。",
+                                    "type": "quest",
+                                    "questId": "luna_hidden_dark_shrine"
+                                }
+                            }
+                        ]
+                    }
+                ],
                 mapActions: [
                     {
-                        x: 16,
-                        y: 21,
-                        label: "月影の声を聞く",
-                        log: "月光の向こうから、静かな呼び声が届く。",
-                        type: "quest",
-                        questId: "luna_hidden_dark_shrine",
-                        imageKey: "overlay_companion_luna"
-                    },
-                    {
-                        x: 16,
-                        y: 22,
-                        label: "祭壇の残光に触れる",
-                        log: "崩れた祭壇に、月明かりのような冷たい闇が残っている。",
-                        type: "log",
-                        imageKey: "overlay_dungeon_event"
+                        "x": 16,
+                        "y": 22,
+                        "label": "祭壇の残光に触れる",
+                        "log": "崩れた祭壇に、月明かりのような冷たい闇が残っている。",
+                        "type": "log",
+                        "imageKey": "overlay_dungeon_event"
                     }
                 ],
                 bosses: [
                     {
                         x: 16,
                         y: 6,
-                        monsterId: 902000,
+                        monsterId: 401170,
                         questId: "luna_hidden_dark_shrine",
                         startEventId: "quest_luna_hidden_encounter",
                         storyEventId: "quest_luna_hidden_clear",
@@ -14324,12 +15291,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "禁則回廊",
                 encounterRank: 86,
-                monsters: [
-                    854,
-                    851,
-                    853,
-                    855
-                ],
                 width: 31,
                 height: 25,
                 tiles: [
@@ -14409,26 +15370,52 @@ const FIXED_DUNGEON_MAPS = {
                         message: "禁則の番人が迫る！"
                     }
                 ],
-                mapActions: [
+                nextActorPlacementId: 3,
+                mapActors: [
                     {
-                        x: 15,
-                        y: 21,
-                        label: "リュウの作戦を聞く",
-                        log: "リュウが、禁則術式の崩し方を探っている。",
-                        type: "quest",
-                        questId: "ryu_minerva_grezelia",
-                        imageKey: "overlay_companion_ryu"
+                        "placementId": 1,
+                        "actorId": "ryu_minerva_grezelia",
+                        "name": "リュウの作戦",
+                        "x": 15,
+                        "y": 21,
+                        "imageKey": "overlay_companion_ryu",
+                        "states": [
+                            {
+                                "stateId": "ryu_minerva_grezelia",
+                                "priority": 0,
+                                "when": {},
+                                "action": {
+                                    "label": "リュウの作戦を聞く",
+                                    "log": "リュウが、禁則術式の崩し方を探っている。",
+                                    "type": "quest",
+                                    "questId": "ryu_minerva_grezelia"
+                                }
+                            }
+                        ]
                     },
                     {
-                        x: 16,
-                        y: 21,
-                        label: "ミネルバの作戦を聞く",
-                        log: "ミネルバが、禁則術式の継ぎ目を読み解いている。",
-                        type: "quest",
-                        questId: "ryu_minerva_grezelia",
-                        imageKey: "overlay_companion_minerva"
+                        "placementId": 2,
+                        "actorId": "ryu_minerva_grezelia_2",
+                        "name": "ミネルバの作戦",
+                        "x": 16,
+                        "y": 21,
+                        "imageKey": "overlay_companion_minerva",
+                        "states": [
+                            {
+                                "stateId": "ryu_minerva_grezelia",
+                                "priority": 0,
+                                "when": {},
+                                "action": {
+                                    "label": "ミネルバの作戦を聞く",
+                                    "log": "ミネルバが、禁則術式の継ぎ目を読み解いている。",
+                                    "type": "quest",
+                                    "questId": "ryu_minerva_grezelia"
+                                }
+                            }
+                        ]
                     }
                 ],
+                mapActions: [],
                 bosses: [],
                 chests: [
                     {
@@ -14456,12 +15443,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "禁奥の核",
                 encounterRank: 86,
-                monsters: [
-                    854,
-                    853,
-                    855,
-                    852
-                ],
                 width: 33,
                 height: 27,
                 tiles: [
@@ -14581,12 +15562,6 @@ const FIXED_DUNGEON_MAPS = {
             {
                 label: "零式禁則層",
                 encounterRank: 91,
-                monsters: [
-                    902,
-                    904,
-                    901,
-                    903
-                ],
                 width: 35,
                 height: 29,
                 tiles: [
@@ -14664,22 +15639,36 @@ const FIXED_DUNGEON_MAPS = {
                         message: "零式執行者が二歩ずつ迫る！"
                     }
                 ],
-                mapActions: [
+                nextActorPlacementId: 2,
+                mapActors: [
                     {
-                        x: 17,
-                        y: 24,
-                        label: "禁則の声に応える",
-                        log: "最深部から、ゼノンの声が低く響いている。",
-                        type: "quest",
-                        questId: "zenon_hidden_grezelia",
-                        imageKey: "overlay_companion_zenon"
+                        "placementId": 1,
+                        "actorId": "zenon_hidden_grezelia",
+                        "name": "禁則の声に応える",
+                        "x": 17,
+                        "y": 24,
+                        "imageKey": "overlay_companion_zenon",
+                        "states": [
+                            {
+                                "stateId": "zenon_hidden_grezelia",
+                                "priority": 0,
+                                "when": {},
+                                "action": {
+                                    "label": "禁則の声に応える",
+                                    "log": "最深部から、ゼノンの声が低く響いている。",
+                                    "type": "quest",
+                                    "questId": "zenon_hidden_grezelia"
+                                }
+                            }
+                        ]
                     }
                 ],
+                mapActions: [],
                 bosses: [
                     {
                         x: 17,
                         y: 4,
-                        monsterId: 902000,
+                        monsterId: 401180,
                         questId: "zenon_hidden_grezelia",
                         startEventId: "quest_zenon_hidden_encounter",
                         storyEventId: "quest_zenon_hidden_clear",

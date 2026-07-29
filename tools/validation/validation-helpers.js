@@ -97,10 +97,15 @@ function findTileEffect(mapDef, x, y) {
     const occupies = (list) => Array.isArray(list) && list.some(entry =>
       Number(entry?.x) === Number(x) && Number(entry?.y) === Number(y)
     );
+    const actorOccupies = Array.isArray(mapDef.mapActors) && mapDef.mapActors.some(actor => {
+      const placements = [actor, ...(actor.states || []).map(state => ({ ...actor, ...(state?.placement || {}) }))];
+      return placements.some(placement => Number(placement?.x) === Number(x) && Number(placement?.y) === Number(y));
+    });
     return !occupies(mapDef.floorLinks)
       && !occupies(mapDef.chests)
       && !occupies(mapDef.bosses)
       && !occupies(mapDef.mapActions)
+      && !actorOccupies
       && !occupies(mapDef.blockingObjects)
       && !occupies(mapDef.healSprings);
   }) || null;

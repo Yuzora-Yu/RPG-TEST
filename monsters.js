@@ -1406,8 +1406,7 @@ function generateEnemyForEncounter(options = {}) {
   const rankFallback = Math.max(1, normalizeEncounterFloor(options.rank, normalizeEncounterFloor(options.floor, 1)));
 
   if (allowRare) {
-    const rareFloor = abyssFloor > 0 ? Math.min(200, 100 + abyssFloor) : rankFallback;
-    const rare = tryGenerateRareMonster(rareFloor);
+    const rare = tryGenerateRareMonster(rankFallback);
     if (rare) return rare;
   }
 
@@ -1512,28 +1511,46 @@ function getBossesByIds(ids) {
     .map(cloneMonsterData);
 }
 
-function getRareCandidatesForFloor(floor) {
-  const id = floor <= 50 ? 200201 : floor <= 100 ? 200202 : floor <= 150 ? 200203 : 200204;
+const RARE_ENCOUNTER_RANK_BANDS = Object.freeze([
+  Object.freeze({ from: 31, to: 70, monsterId: 200201 }),
+  Object.freeze({ from: 71, to: 105, monsterId: 200202 }),
+  Object.freeze({ from: 106, to: 150, monsterId: 200203 }),
+  Object.freeze({ from: 151, to: Infinity, monsterId: 200204 })
+]);
+const RARE_ENCOUNTER_RATE = 0.02;
+
+function getRareMonsterIdForRank(rank) {
+  const value = Math.max(1, Math.floor(Number(rank) || 1));
+  return RARE_ENCOUNTER_RANK_BANDS.find(band => value >= band.from && value <= band.to)?.monsterId || null;
+}
+
+function getRareCandidatesForRank(rank) {
+  const id = getRareMonsterIdForRank(rank);
+  if (id === null) return [];
   const monster = FIXED_RARE_MONSTERS.find((m) => m.id === id);
   return monster ? [monster] : [];
 }
 
-function getRareEncounterRate(floor) {
-  if (floor >= 101) return 0.03;
-  if (floor >= 50) return 0.025;
-  if (floor >= 20) return 0.02;
-  if (floor >= 5) return 0.015;
-  return 0;
+function getRareCandidatesForFloor(floor) {
+  return getRareCandidatesForRank(floor);
 }
 
-function tryGenerateRareMonster(floor) {
-  const candidates = getRareCandidatesForFloor(floor);
+function getRareEncounterRateForRank(rank) {
+  return getRareMonsterIdForRank(rank) === null ? 0 : RARE_ENCOUNTER_RATE;
+}
+
+function getRareEncounterRate(floor) {
+  return getRareEncounterRateForRank(floor);
+}
+
+function tryGenerateRareMonster(rank) {
+  const candidates = getRareCandidatesForRank(rank);
 
   if (candidates.length === 0) {
     return null;
   }
 
-  if (Math.random() >= getRareEncounterRate(floor)) {
+  if (Math.random() >= getRareEncounterRateForRank(rank)) {
     return null;
   }
 
@@ -1652,7 +1669,10 @@ globalThis.MonsterData = {
   getSpecialBossesForFloor,
   getBossesByIds,
   getRareCandidatesForFloor,
+  getRareCandidatesForRank,
+  getRareMonsterIdForRank,
   getRareEncounterRate,
+  getRareEncounterRateForRank,
   tryGenerateRareMonster,
   getMonsterById,
   getChestTrapById,

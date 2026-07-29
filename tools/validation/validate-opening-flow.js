@@ -129,7 +129,8 @@ const startVillage = mapContext.__MAPS?.START_VILLAGE;
 const villageCaveEntrance = (startVillage?.mapActions || []).find(action => action.target === 'START_CAVE');
 if (!villageCaveEntrance) errors.push('START_CAVE entrance action is missing from Lumina village');
 if (villageCaveEntrance?.imageKey) errors.push('unwanted villager image remains on the village cave entrance');
-const caveGuard = (mapContext.__DUNGEONS?.START_CAVE?.mapActions || []).find(action => action.x === 15 && action.y === 17);
+const caveGuardActor = (mapContext.__DUNGEONS?.START_CAVE?.mapActors || []).find(actor => actor.x === 15 && actor.y === 17);
+const caveGuard = { ...caveGuardActor, ...(caveGuardActor?.states?.[0]?.action || {}) };
 if (caveGuard?.imageKey !== 'overlay_npc_villager') errors.push('existing START_CAVE lookout does not use the villager image');
 if (!Array.isArray(caveGuard?.events) || caveGuard.events.length < 2) errors.push('existing START_CAVE lookout events are incomplete');
 const expectedResidentEvents = [
@@ -137,7 +138,8 @@ const expectedResidentEvents = [
     'town_start_villager_2_a',
     'town_start_villager_3_a'
 ];
-const villageResidents = (startVillage?.mapActions || []).filter(action => expectedResidentEvents.includes(action.eventId));
+const villageResidents = (startVillage?.mapActors || []).filter(actor =>
+    actor.states?.some(state => expectedResidentEvents.includes(state.action?.eventId)));
 if (villageResidents.length !== expectedResidentEvents.length) {
     errors.push(`expected ${expectedResidentEvents.length} authored Lumina residents, found ${villageResidents.length}`);
 }

@@ -46,12 +46,23 @@ assert(action('quest_water_blue_crystal_clear', 'ITEM', entry => Number(entry.id
 assert(action('quest_water_blue_crystal_clear', 'SUB', entry => entry.value === 2), 'Blue-crystal victory does not return the objective to Sophia.');
 assert(action('water_city_blue_crystal_report', 'FLAG', entry => entry.key === 'seabedTempleRouteOpened'), 'Sophia report does not open the Seabed Temple route.');
 
-const waterCityPlaza = context.FIXED_MAPS.WATER_CITY.mapActions.find(entry => Number(entry.x) === 19 && Number(entry.y) === 13);
+const waterCityPlazaActor = context.FIXED_MAPS.WATER_CITY.mapActors.find(entry => Number(entry.x) === 19 && Number(entry.y) === 13);
+const waterCityPlaza = { ...waterCityPlazaActor, ...(waterCityPlazaActor?.states?.[0]?.action || {}) };
 const sophiaVariant = waterCityPlaza?.imageVariants?.find(entry => entry.imageKey === 'overlay_companion_sophia');
 assert(waterCityPlaza?.imageKey === 'overlay_npc_dark_soldier', 'Water City plaza no longer shows the soldier before the intro battle.');
 assert(sophiaVariant?.requiredFlag === 'waterCityIntroCleared' && sophiaVariant?.missingFlag === 'waterCityCleared', 'Water City plaza Sophia state is not bounded between intro victory and city clear.');
 assert(waterCityPlaza?.imageMissingFlag === 'waterCityCleared', 'Water City plaza actor is not removed after city clear.');
 assert(mainSource.includes('resolveMapActionImageKey') && mainSource.includes('action.imageVariants'), 'Flag-driven map actor image variants are not resolved by Field.');
+const resolvePlazaImage = flags => {
+    if (waterCityPlaza.imageMissingFlag && flags[waterCityPlaza.imageMissingFlag]) return null;
+    const variant = (waterCityPlaza.imageVariants || []).find(entry =>
+        (!entry.requiredFlag || flags[entry.requiredFlag]) &&
+        (!entry.missingFlag || !flags[entry.missingFlag]));
+    return variant?.imageKey || waterCityPlaza.imageKey || null;
+};
+assert(resolvePlazaImage({}) === 'overlay_npc_dark_soldier', 'Water City plaza must show the soldier before the intro victory.');
+assert(resolvePlazaImage({ waterCityIntroCleared: true }) === 'overlay_companion_sophia', 'Water City plaza must replace the soldier with Sophia after the intro victory.');
+assert(resolvePlazaImage({ waterCityIntroCleared: true, waterCityCleared: true }) === null, 'Water City plaza actor must disappear after the city is cleared.');
 const waterCityRelocation = (story.scripts?.WATER_CITY_SOPHIA || [])
     .flatMap(line => Array.isArray(line?.commands) ? line.commands : [])
     .find(command => command?.op === 'MOVE_PLAYER');
@@ -63,8 +74,8 @@ assert(storyLogicSource.includes("case 'MOVE_PLAYER':") && storyLogicSource.incl
 
 assert(areas.FOREST_WIND_HOLE.entryRequiredFlag === 'windHoleRouteKnown', 'Forest Wind Hole can be entered before its story reveal.');
 assert(!areas.CRENA_LIMESTONE_CAVE.entryRequiredFlag, 'Crena Cave should allow early exploration up to the royal-army cordon.');
-const crenaCordon = dungeons.CRENA_LIMESTONE_CAVE.floors[0].mapActions?.find(action => Number(action.x) === 19 && Number(action.y) === 17);
-assert(crenaCordon?.imageKey === 'overlay_npc_dark_soldier' && crenaCordon?.missingFlag === 'crenaRouteKnown', 'Crena Cave story cordon is not removed by Sophia/Leila crystal routing.');
+const crenaCordon = dungeons.CRENA_LIMESTONE_CAVE.floors[0].mapActors?.find(actor => Number(actor.x) === 19 && Number(actor.y) === 17);
+assert(crenaCordon?.imageKey === 'overlay_npc_dark_soldier' && crenaCordon?.states?.[0]?.when?.missingFlag === 'crenaRouteKnown', 'Crena Cave story cordon is not removed by Sophia/Leila crystal routing.');
 assert(areas.SEABED_TEMPLE.entryRequiredFlag === 'seabedTempleRouteOpened', 'Seabed Temple can be entered before the blue crystal is delivered.');
 assert(areas.FOREST_WIND_HOLE.entryEventStoryStep === 2 && areas.CRENA_LIMESTONE_CAVE.entryEventStoryStep === 4, 'New-dungeon entrance scenes are not limited to their main-story chapters.');
 assert(mainSource.includes('areaDef.entryRequiredFlag') && mainSource.includes('areaDef.entryEventId') &&
@@ -121,6 +132,19 @@ const grezelia = dungeons.GREZELIA_FORBIDDEN;
 assert(grezelia?.floors?.length >= 3, 'Grezelia must have a true third, highest-difficulty layer.');
 assert(grezelia.floors[1].floorLinks?.some(link => link.toFloor === 3 && link.requiredFlag === 'grezeliaOuterSealBroken'), 'Grezelia zero layer is not sealed behind the outer boss.');
 assert(grezelia.floors[2].bosses?.some(boss => boss.questId === 'zenon_hidden_grezelia'), 'Zenon hidden trial is not placed at the true deepest layer.');
+
+const lunaTrialBoss = dungeons.DARK_SHRINE_RUINS.floors
+    .flatMap(floor => floor.bosses || [])
+    .find(boss => boss.questId === 'luna_hidden_dark_shrine');
+const zenonTrialBoss = grezelia.floors
+    .flatMap(floor => floor.bosses || [])
+    .find(boss => boss.questId === 'zenon_hidden_grezelia');
+assert(Number(lunaTrialBoss?.monsterId) === 401170 &&
+    Number(action('quest_luna_hidden_encounter', 'BOSS')?.value) === 401170,
+    'Luna recruitment trial must use monster 401170 in both map and story masters.');
+assert(Number(zenonTrialBoss?.monsterId) === 401180 &&
+    Number(action('quest_zenon_hidden_encounter', 'BOSS')?.value) === 401180,
+    'Zenon recruitment trial must use monster 401180 in both map and story masters.');
 
 console.log('Main-story routing validation passed.');
 console.log('Fire Village -> Wind Hole -> Ignis Volcano and Water City -> Crena cordon release -> Seabed Temple are mandatory routes.');

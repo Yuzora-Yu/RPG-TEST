@@ -1274,6 +1274,18 @@ const Battle = {
         }
 
         const hasConfiguredEncounterPool = !isBoss && Array.isArray(battleData.monsters) && battleData.monsters.length > 0;
+        const rareEncounterRank = Math.max(1, Number(battleData.abyssBalanceFloor || battleData.encounterRank || floor) || 1);
+        if (!isBoss && window.MonsterData && typeof window.MonsterData.tryGenerateRareMonster === 'function') {
+            const rareBase = window.MonsterData.tryGenerateRareMonster(rareEncounterRank);
+            if (rareBase && Battle.isNormalEncounterBase(rareBase)) {
+                const rareEnemy = Battle.createMonsterFromBase(rareBase, { name: rareBase.name || '\u4e0d\u660e\u306a\u9b54\u7269' });
+                if (rareEnemy) {
+                    newEnemies.push(rareEnemy);
+                    Battle.log(`<span style="color:#ffd45c;font-weight:bold;">${rareEnemy.name}</span> \u304c\u73fe\u308c\u305f\uff01`);
+                    return newEnemies;
+                }
+            }
+        }
         const isRandomEndless = globalThis.ABYSS_FLOOR_RULES?.isEndlessFloor?.(abyssDisplayFloor, abyssMode) === true;
         if ((isRandomEndless || floor >= 201) && !hasConfiguredEncounterPool) {
             const deepScaleFloor = isRandomEndless ? abyssBalanceFloor : floor;
@@ -1337,48 +1349,11 @@ const Battle = {
         }
 
         Battle.log('\u9b54\u7269\u304c\u73fe\u308c\u305f\uff01');
-        const pickRareEncounterMonster = () => {
-            const rareDefs = Array.isArray(battleData.rareMonsters)
-                ? battleData.rareMonsters
-                : (typeof Field !== 'undefined' && Field.currentMapData && Array.isArray(Field.currentMapData.rareMonsters) ? Field.currentMapData.rareMonsters : null);
-            if (!rareDefs || rareDefs.length === 0) return null;
-
-            const mapRareChance = typeof Field !== 'undefined' && Field.currentMapData
-                ? Field.currentMapData.rareEncounterChance
-                : null;
-            const configuredChanceRaw = battleData.rareEncounterChance ?? mapRareChance;
-            if (configuredChanceRaw !== null && configuredChanceRaw !== undefined && Number.isFinite(Number(configuredChanceRaw))) {
-                const configuredChance = Math.max(0, Math.min(1, Number(configuredChanceRaw)));
-                if (configuredChance <= 0 || Math.random() >= configuredChance) return null;
-                const pool = rareDefs.slice();
-                while (pool.length > 0) {
-                    const index = Math.floor(Math.random() * pool.length);
-                    const [def] = pool.splice(index, 1);
-                    const base = Battle.getMonsterBaseById(def?.id || def?.monsterId);
-                    if (Battle.isNormalEncounterBase(base)) return base;
-                }
-                return null;
-            }
-
-            for (const def of rareDefs) {
-                const rate = Math.max(0, Math.min(1, Number(def.rate ?? def.chance ?? 0)));
-                if (rate <= 0 || Math.random() >= rate) continue;
-                const base = Battle.getMonsterBaseById(def.id || def.monsterId);
-                if (Battle.isNormalEncounterBase(base)) return base;
-            }
-            return null;
-        };
-
         for (let i = 0; i < normalCount; i++) {
             let monsterData = null;
             const isFixedMap = typeof Field !== 'undefined' && Field.currentMapData && Field.currentMapData.isFixed;
             const battleMonsterIds = Array.isArray(battleData.monsters) ? battleData.monsters : null;
-            const seaMonsterIds = battleData.encounterType === 'sea' && Array.isArray(window.SEA_ENCOUNTER_MONSTERS) ? window.SEA_ENCOUNTER_MONSTERS : null;
-            const fixedMonsterIds = battleMonsterIds || seaMonsterIds || (isFixedMap && Array.isArray(Field.currentMapData.monsters) ? Field.currentMapData.monsters : null);
-            const hasRareMonsterPool = Array.isArray(battleData.rareMonsters)
-                || (isFixedMap && Array.isArray(Field.currentMapData.rareMonsters));
-
-            monsterData = pickRareEncounterMonster();
+            const fixedMonsterIds = battleMonsterIds;
 
             if (!monsterData && fixedMonsterIds && fixedMonsterIds.length > 0) {
                 const mid = fixedMonsterIds[Math.floor(Math.random() * fixedMonsterIds.length)];
@@ -1391,12 +1366,12 @@ const Battle = {
                     mapId: battleData.encounterMapId,
                     floor: battleData.encounterFloor,
                     abyssFloor: battleData.abyssFloor,
-                    rank: battleData.encounterRank || floor,
-                    allowRare: !fixedMonsterIds && !hasRareMonsterPool
+                    rank: battleData.abyssBalanceFloor || battleData.encounterRank || floor,
+                    allowRare: false
                 });
             }
-            if (!monsterData && window.MonsterData && typeof window.MonsterData.generateEnemyForFloor === 'function') {
-                monsterData = window.MonsterData.generateEnemyForFloor(floor, { allowRare: !fixedMonsterIds && !hasRareMonsterPool });
+            if (!monsterData && !battleData.useHabitatEncounters && window.MonsterData && typeof window.MonsterData.generateEnemyForFloor === 'function') {
+                monsterData = window.MonsterData.generateEnemyForFloor(floor, { allowRare: false });
             }
 
             if (!monsterData && typeof window.generateEnemy === 'function') {

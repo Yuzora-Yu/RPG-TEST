@@ -13,8 +13,15 @@ function samePosition(a, b) {
   return number(a?.x) === number(b?.x) && number(a?.y) === number(b?.y);
 }
 
+function getAuthoredActions(mapDef, MapRegistry) {
+  return typeof MapRegistry?.getMapActions === 'function'
+    ? MapRegistry.getMapActions(mapDef)
+    : (mapDef.mapActions || []);
+}
+
 function createFixedNavigationGraph(mapDef, start, MapRegistry, options = {}) {
-  const switches = (mapDef.mapActions || []).filter(action => action?.type === 'switchGate');
+  const authoredActions = getAuthoredActions(mapDef, MapRegistry);
+  const switches = authoredActions.filter(action => action?.type === 'switchGate');
   const bosses = mapDef.bosses || [];
   const width = number(mapDef.width || String(mapDef.tiles?.[0] || '').length);
   const height = number(mapDef.height || mapDef.tiles?.length || 0);
@@ -54,7 +61,7 @@ function createFixedNavigationGraph(mapDef, start, MapRegistry, options = {}) {
     if (tile === 'B') return false;
     if ((mapDef.chests || []).some(chest => number(chest.x) === x && number(chest.y) === y)) return false;
     if ((mapDef.blockingObjects || []).some(object => object?.active !== false && number(object.x) === x && number(object.y) === y)) return false;
-    const action = (mapDef.mapActions || []).find(candidate => number(candidate?.x) === x && number(candidate?.y) === y);
+    const action = authoredActions.find(candidate => number(candidate?.x) === x && number(candidate?.y) === y);
     if (action?.imageKey && action.blocksMovement !== false) return false;
     return true;
   };
@@ -183,7 +190,7 @@ function createFixedNavigationGraph(mapDef, start, MapRegistry, options = {}) {
   };
 }
 
-function getNavigationTargets(mapDef) {
+function getNavigationTargets(mapDef, MapRegistry) {
   const targets = [];
   for (const link of mapDef.floorLinks || []) {
     targets.push({ type: 'link', x: number(link.x), y: number(link.y), reaches: state => samePosition(state, link) });
@@ -200,7 +207,7 @@ function getNavigationTargets(mapDef) {
       reaches: state => Math.abs(state.x - number(boss.x)) + Math.abs(state.y - number(boss.y)) === 1,
     });
   }
-  for (const action of mapDef.mapActions || []) {
+  for (const action of getAuthoredActions(mapDef, MapRegistry)) {
     const adjacent = action.interactFromAdjacent === true;
     targets.push({
       type: 'action', x: number(action.x), y: number(action.y),

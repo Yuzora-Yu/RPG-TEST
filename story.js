@@ -3974,7 +3974,7 @@ const STORY_MANAGER_DATA = {
         "quest_luna_hidden_encounter": {
                 "actions": [
                         { "type": "CONV", "value": "QUEST_LUNA_ENCOUNTER" },
-                        { "type": "BOSS", "value": 902000, "winEventId": "quest_luna_hidden_clear" }
+                        { "type": "BOSS", "value": 401170, "winEventId": "quest_luna_hidden_clear" }
                 ],
                 "winActions": []
         },
@@ -4001,7 +4001,7 @@ const STORY_MANAGER_DATA = {
         "quest_zenon_hidden_encounter": {
                 "actions": [
                         { "type": "CONV", "value": "QUEST_ZENON_ENCOUNTER" },
-                        { "type": "BOSS", "value": 902000, "winEventId": "quest_zenon_hidden_clear" }
+                        { "type": "BOSS", "value": 401180, "winEventId": "quest_zenon_hidden_clear" }
                 ],
                 "winActions": []
         },

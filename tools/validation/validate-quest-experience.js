@@ -225,7 +225,7 @@ for (const { areaKey, floor, boss } of questBosses) {
     if (battleAction.winEventId !== boss.storyEventId || !context.STORY_MANAGER_DATA.events?.[battleAction.winEventId]) {
         throw new Error(`Quest boss encounter is not connected to its existing victory event: ${areaKey} ${boss.startEventId}`);
     }
-    const actions = floor.mapActions || [];
+    const actions = context.MapRegistry.getMapActions(floor);
     const hasQuestGiver = actions.some(action => action.questId === boss.questId) ||
         mapSource.includes(`questId: "${boss.questId}"`) ||
         mapSource.includes(`"questId": "${boss.questId}"`);
@@ -234,7 +234,7 @@ for (const { areaKey, floor, boss } of questBosses) {
 
 const crenaFloors = context.FIXED_DUNGEON_MAPS?.CRENA_LIMESTONE_CAVE?.floors || [];
 const crenaGateFloor = crenaFloors[1];
-const liciaGate = crenaGateFloor?.mapActions?.find(action => action.questId === 'licia_crena_depths');
+const liciaGate = context.MapRegistry.getMapActions(crenaGateFloor).find(action => action.questId === 'licia_crena_depths');
 if (!liciaGate || Number(liciaGate.x) !== 20 || Number(liciaGate.y) !== 9 ||
     liciaGate.imageKey !== 'overlay_companion_licia' || liciaGate.hideWhenQuestAccepted !== true) {
     throw new Error('Licia must block the crystal-room corridor at (20,9) and disappear immediately after quest acceptance.');
@@ -273,9 +273,9 @@ const reportRequiredCompanionQuests = [
     'ryu_minerva_grezelia',
 ];
 const authoredQuestActions = [
-    ...Object.values(context.FIXED_MAPS || {}).flatMap(map => map.mapActions || []),
+    ...Object.values(context.FIXED_MAPS || {}).flatMap(map => context.MapRegistry.getMapActions(map)),
     ...Object.values(context.FIXED_DUNGEON_MAPS || {}).flatMap(dungeon =>
-        (dungeon.floors || []).flatMap(floor => floor.mapActions || [])),
+        (dungeon.floors || []).flatMap(floor => context.MapRegistry.getMapActions(floor))),
 ];
 for (const questId of reportRequiredCompanionQuests) {
     const giverActions = authoredQuestActions.filter(action => action.questId === questId);

@@ -141,7 +141,7 @@ function validateFixedDef(name, def) {
     assert(tile !== 'W', `${name}: boss ${boss.x},${boss.y} is blocked by ${tile}`);
   });
 
-  (def.mapActions || []).forEach((action) => {
+  MapRegistry.getMapActions(def).forEach((action) => {
     const tile = at(Number(action.x), Number(action.y));
     assert(tile !== 'W', `${name}: map action ${action.label || action.type} ${action.x},${action.y} is blocked`);
     if (action.type === 'fixedDungeon') {
@@ -175,7 +175,7 @@ Object.entries(FIXED_DUNGEON_MAPS).forEach(([key, base]) => {
 });
 
 const windHoleFirstFloor = MapRegistry.getFixedDungeonFloor('FOREST_WIND_HOLE', 1);
-const windRouteAction = (windHoleFirstFloor.mapActions || []).find(action => Number(action.x) === 12 && Number(action.y) === 9);
+const windRouteAction = MapRegistry.getMapActions(windHoleFirstFloor).find(action => Number(action.x) === 12 && Number(action.y) === 9);
 assert(windRouteAction?.blocksMovement === false, 'FOREST_WIND_HOLE F1: the wind-route event blocks the only progression corridor');
 const windRouteGraph = createFixedNavigationGraph(windHoleFirstFloor, windHoleFirstFloor.entryPoint, MapRegistry);
 const windRouteExit = (windHoleFirstFloor.floorLinks || []).find(link => Number(link.toFloor) === 2);
@@ -187,7 +187,7 @@ assert(mapSource.includes('STORY_MAP_MUTATIONS') && mapSource.includes('START_CA
 assert(mapsLogicSource.includes('applyStoryMapMutation') && mapsLogicSource.includes('STORY_MAP_MUTATIONS'), 'Story map mutations must be applied by maps_logic.js.');
 let storyMapActionsChecked = 0;
 const validateStoryMapActions = (area, def) => {
-  (def.mapActions || []).forEach(action => {
+  MapRegistry.getMapActions(def).forEach(action => {
     const eventIds = [
       action.eventId,
       ...(action.events || []).map(entry => entry?.eventId)

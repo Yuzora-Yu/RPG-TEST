@@ -105,44 +105,14 @@ assert(lightProfile?.id === 'LIGHT_PALACE_GROVE', `light center: expected LIGHT_
 const trialProfile = getProfile(2, 2);
 assert(trialProfile?.id === 'TRIAL_ISLAND_FIELD', `trial island: expected TRIAL_ISLAND_FIELD, got ${trialProfile?.id || 'none'}`);
 assert(Number(trialProfile.rank) === 81, `trial island: expected rank 81, got ${trialProfile.rank}`);
-assert(trialProfile.rareMonsters?.some(m => Number(m.id) === 200203 && Number(m.rate) === 0.05), 'trial island: missing 5% Metal Lord rare monster');
+assert(context.MonsterData.getRareMonsterIdForRank(trialProfile.rank) === 200202, 'trial island: Rank 81 must resolve rare monster 200202');
 
 const summitProfile = getProfile(89, 77);
 assert(summitProfile?.id === 'SUMMIT_TEMPLE_FIELD', `summit temple: expected SUMMIT_TEMPLE_FIELD, got ${summitProfile?.id || 'none'}`);
 assert(Number(summitProfile.rank) === 146, `summit temple: expected rank 146, got ${summitProfile.rank}`);
-assert(summitProfile.rareMonsters?.some(m => Number(m.id) === 200203 && Number(m.rate) === 0.05), 'summit temple: missing 5% Metal Lord rare monster');
-
-[
-  ['BIG_TOWER', 1, 200201],
-  ['BIG_TOWER', 2, 200201],
-  ['BIG_TOWER', 3, 200201],
-  ['BIG_TOWER', 4, 200201],
-  ['BIG_TOWER', 5, 200202],
-  ['BIG_TOWER', 6, 200202],
-  ['BIG_TOWER', 7, 200202],
-  ['THUNDER_FORT', 1, 200201],
-  ['THUNDER_FORT', 2, 200201],
-  ['THUNDER_FORT', 3, 200201],
-  ['THUNDER_FORT', 4, 200201],
-  ['LIGHT_PALACE', 1, 200202],
-  ['LIGHT_PALACE', 2, 200202],
-  ['LIGHT_PALACE', 3, 200202],
-  ['LIGHT_PALACE', 4, 200202],
-  ['SEABED_TEMPLE', 1, 200201],
-  ['SEABED_TEMPLE', 2, 200201],
-  ['SEABED_TEMPLE', 3, 200201],
-  ['DARK_CASTLE', 1, 200202],
-  ['DARK_CASTLE', 2, 200202],
-  ['DARK_CASTLE', 3, 200202],
-  ['DARK_CASTLE', 4, 200202],
-  ['DARK_CASTLE', 5, 200202],
-  ['DARK_CASTLE', 6, 200202],
-  ['DARK_CASTLE', 7, 200202],
-].forEach(([area, floor, rareId]) => {
-  const def = MapRegistry.getFixedDungeonFloor(area, floor);
-  assert(def, `${area} F${floor}: missing floor`);
-  assert(def.rareMonsters?.some(m => Number(m.id) === rareId && Number(m.rate) === 0.05), `${area} F${floor}: missing 5% rare monster ${rareId}`);
-});
+assert(context.MonsterData.getRareMonsterIdForRank(summitProfile.rank) === 200203, 'summit temple: Rank 146 must resolve rare monster 200203');
+assert(!FIELD_ENCOUNTER_ZONES.some(zone => Array.isArray(zone.monsters) || Array.isArray(zone.rareMonsters)),
+  'field encounter zones must not override monsters.js habitats or Rank-based rare monsters');
 
 [
   ['FOREST_WIND_HOLE', 79, 44],

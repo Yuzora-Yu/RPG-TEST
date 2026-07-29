@@ -16,7 +16,7 @@ window.SKILLS_DATA = [
     { "id": 9, "name": "逃げる",
       "type": "特殊", "target": "自分", "mp": 0, "rate": 0, "count": 0, "base": 20, "desc": "戦闘から離脱" },
     { "id": 100, "name": "メタル斬り",
-      "type": "物理", "target": "単体", "mp": 2, "rate": 0, "count": 1, "base": 1, "desc": "メタルに固定ダメージ", "fix": true },
+      "type": "物理", "target": "単体", "mp": 2, "rate": 0, "count": 1, "base": 2, "desc": "メタルに固定ダメージ", "fix": true },
     { "id": 101, "name": "疾風突き",
       "type": "物理", "target": "単体", "mp": 2, "rate": 0.5, "count": 1, "base": 0, "desc": "疾風の如き速さの一撃", "priority": 2 },
     { "id": 102, "name": "はやぶさ斬り",

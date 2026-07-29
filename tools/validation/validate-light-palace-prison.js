@@ -44,9 +44,10 @@ context.App.data.progress.flags.lightPalacePrisonOpened = true;
 assert(gates.every(entry => context.__REGISTRY.findBlockingObject(prison, entry.x, entry.y) === null),
     'Opened prison gates still participate in collision lookup');
 
-const actions = prison?.mapActions || [];
+const legacyActions = prison?.mapActions || [];
+const actions = context.__REGISTRY.getMapActions(prison);
+const actorActions = context.__REGISTRY.getMapActorActionCandidates(prison);
 for (const eventId of [
-    'light_palace_prison_king',
     'light_palace_prison_priest_a',
     'light_palace_prison_priest_b',
     'light_palace_prison_leila'
@@ -55,6 +56,17 @@ for (const eventId of [
     assert(action, `Missing basement prisoner action: ${eventId}`);
     assert(action && prison.tiles?.[action.y]?.[action.x] === 'T', `Prisoner action is not on floor: ${eventId}`);
 }
+const king = (prison?.mapActors || []).find(actor => actor.actorId === 'captive_king');
+assert(king?.placementId === 1 && king?.x === 7 && king?.y === 3,
+    'The captive king must be one stable map actor at placementId 1 and (7,3)');
+assert(actorActions.filter(action => action.actorId === 'captive_king').length === 3,
+    'The captive king must expose exactly three flag/item-driven states');
+assert(actorActions.some(action => action.eventId === 'light_palace_prison_king'),
+    'The captive king pre-clear event state is missing');
+assert(!legacyActions.some(action => action.eventId === 'light_palace_prison_king'
+    || action.eventId === 'light_palace_prison_king_after_catalyst'
+    || action.questId === 'royal_star_catalyst'),
+    'The captive king is still duplicated in legacy mapActions');
 const leila = actions.find(entry => entry.eventId === 'light_palace_prison_leila');
 assert(leila?.x === 24 && leila?.y === 10, 'Leila must occupy the upper-center cell of the lower-right room');
 assert(leila?.imageKey === 'overlay_light_captive_leila_bed' && leila?.drawWidth === 64 && leila?.drawHeight === 32,

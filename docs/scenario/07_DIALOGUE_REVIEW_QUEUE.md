@@ -661,3 +661,12 @@ Updated: 2026-06-26
 - implemented script key:
 - implemented date:
 - validation:
+# 2026-07-29 カルメナ住民会話
+
+- 対象: 現行 `abyss_carmena_resident`
+- 懸念: 同一会話を複数住民へ流用しており、カルメナの生活・圧政・異なる時代から来た住民という土地固有性が出ていない。
+- 選択肢: 現行維持 / 軽微修正 / `27_CARMENA_RESIDENT_DIALOGUE_DRAFT_20260729.md` の四イベントへ分割
+- Codex推奨: 四イベントへ分割。ただし新規会話のためユーザー承認後に実装する。
+- 状態: 解決済み
+- ユーザー承認: 2026-07-29「深淵の会話は実装してOK。どんどん住人増やして」
+- 実装: `abyss_story.js` の四専用スクリプト、`map.js` の四固有住民へ置換
