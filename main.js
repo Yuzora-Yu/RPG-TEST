@@ -973,7 +973,7 @@ const App = {
 
 	// 全画像データの手動/初回ダウンロード用キャッシュ名。
 	// sw.js の RUNTIME_CACHE_NAME と揃えること。
-    fullDataCacheName: 'prisma-abyss-v8.20260729-runtime',
+    fullDataCacheName: 'prisma-abyss-v11.20260729-runtime',
 
 
 	// 初回起動時の「全データを今ダウンロードしますか？」で「いいえ」を選んだ記録。
@@ -2082,40 +2082,48 @@ const App = {
         const entries = [];
         const seen = new Set();
         const visited = App.ensureFixedMapDiscoveryStore ? App.ensureFixedMapDiscoveryStore() : (App.data?.progress?.visitedFixedMaps || {});
-        // スカイプリズム専用の表示順。戦闘難度などに使う各MAP本来のrankとは分離する。
-        const skyPrismRankByArea = {
-            START_VILLAGE: 1,
-            START_CAVE: 5,
-            FOREST_WIND_HOLE: 8,
-            FIRE_VILLAGE: 10,
-            IGNIS_VOLCANO: 12,
-            WIND_VILLAGE: 20,
-            FORBIDDEN_FOREST: 22,
-            WIND_TEMPLE: 26,
-            WATER_CITY: 30,
-            CRENA_LIMESTONE_CAVE: 32,
-            SEABED_TEMPLE: 35,
-            THUNDER_FORT: 40,
-            BIG_TOWER: 50,
-            LIGHT_PALACE: 60,
-            DARK_SHRINE_RUINS: 65,
-            GALVANIA_CAVE: 68,
-            DARK_CASTLE: 70,
-            GREZELIA_FORBIDDEN: 80,
-            ABYSS_FIELD: 90,
-            ABYSS_WORLD: 91,
-            CARMENA: 92,
-            THUNDER_DUNES: 93,
-            SCREAMING_CEMETERY: 94,
-            VISTA: 101,
-            FROZEN_FOREST: 102,
-            PURGATORY_MOUNTAINS: 103,
-            LEGACION: 111,
-            RIDPALM_DREAM_CORRIDOR: 112,
-            TRIAL_ISLAND: 120,
-            SUMMIT_TEMPLE: 150,
-            RUINED_SHRINE: 300
-        };
+        // スカイプリズムの移動先正本。
+        // 町やダンジョンへ初めて到着した時点で発見済みになり、ここに記載した入口だけを記憶する。
+        // 同一施設内の地下・塔・回廊などは、固定MAPとして存在しても移動先には登録しない。
+        const skyPrismAreaOrder = Object.freeze([
+            'START_VILLAGE',
+            'START_CAVE',
+            'FOREST_WIND_HOLE',
+            'FIRE_VILLAGE',
+            'IGNIS_VOLCANO',
+            'WIND_VILLAGE',
+            'FORBIDDEN_FOREST',
+            'WIND_TEMPLE',
+            'WATER_CITY',
+            'CRENA_LIMESTONE_CAVE',
+            'SEABED_TEMPLE',
+            'THUNDER_FORT',
+            'BIG_TOWER',
+            'LIGHT_PALACE',
+            'DARK_SHRINE_RUINS',
+            'GALVANIA_CAVE',
+            'DARK_CASTLE',
+            'GREZELIA_FORBIDDEN',
+            'ABYSS_FIELD',
+            'TRIAL_ISLAND',
+            'CARMENA',
+            'THUNDER_DUNES',
+            'BLACK_ROPE_PYRAMID',
+            'SCREAMING_CEMETERY',
+            'MAGIC_WIND_MAUSOLEUM',
+            'VISTA',
+            'FROZEN_FOREST',
+            'ICE_PENANCE_ROAD',
+            'PURGATORY_MOUNTAINS',
+            'SCORCHING_OLD_CASTLE',
+            'LEGACION',
+            'RIDPALM_DREAM_CORRIDOR',
+            'JAGOREA_ROOT',
+            'CHRONO_ABYSS',
+            'FINAL_ALTAR',
+            'SUMMIT_TEMPLE',
+            'RUINED_SHRINE'
+        ]);
 
         const push = (areaKey) => {
             if (!areaKey || seen.has(areaKey)) return;
@@ -2123,19 +2131,13 @@ const App = {
             if (!info) return;
             seen.add(areaKey);
 
-            const storyArea = (typeof STORY_DATA !== 'undefined' && STORY_DATA.areas) ? STORY_DATA.areas[areaKey] : null;
-            const worldDef = (typeof MapRegistry !== 'undefined' && MapRegistry.getWorldDefinition)
-                ? MapRegistry.getWorldDefinition(storyArea?.worldKey || 'WORLD')
-                : null;
-            if (worldDef?.skyPrismEligible === false) return;
+            // ワールドマップそのものの移動可否と、その世界に属する町・ダンジョンの移動可否は別契約。
+            // 深淵世界は直接の移動先にしないが、発見済みのカルメナ等はスカイプリズムへ登録する。
+            if (info.kind === 'world' && info.def?.skyPrismEligible === false) return;
             const dest = App.getFixedMapWorldDestination(areaKey);
             const record = visited[areaKey] || null;
             const discovered = !!record;
-            const configuredRank = skyPrismRankByArea[areaKey];
-            const sourceRank = Number(storyArea?.rank ?? info.def.rank ?? info.def.encounterRank ?? 0);
-            const rank = Number.isFinite(configuredRank)
-                ? configuredRank
-                : 10000 + (Number.isFinite(sourceRank) ? sourceRank : 0);
+            const rank = skyPrismAreaOrder.indexOf(areaKey);
 
             entries.push({
                 areaKey,
@@ -2148,12 +2150,7 @@ const App = {
             });
         };
 
-        if (typeof STORY_DATA !== 'undefined' && STORY_DATA.areas) {
-            Object.keys(STORY_DATA.areas).forEach(push);
-        }
-        if (typeof FIXED_MAPS !== 'undefined') Object.keys(FIXED_MAPS).forEach(push);
-        if (typeof FIXED_DUNGEON_MAPS !== 'undefined') Object.keys(FIXED_DUNGEON_MAPS).forEach(push);
-        if (typeof WORLD_MAPS !== 'undefined') Object.keys(WORLD_MAPS).filter(key => key !== 'WORLD').forEach(push);
+        skyPrismAreaOrder.forEach(push);
 
         return entries.sort((a, b) => (a.rank - b.rank) || a.name.localeCompare(b.name, 'ja'));
     },
@@ -2225,7 +2222,7 @@ const App = {
         const targetWorld = (typeof MapRegistry !== 'undefined' && MapRegistry.getWorldDefinition)
             ? MapRegistry.getWorldDefinition(targetWorldKey)
             : null;
-        if (targetWorld?.skyPrismEligible === false) {
+        if (info.kind === 'world' && targetWorld?.skyPrismEligible === false) {
             return { ok: false, message: '深淵世界はスカイプリズムの座標に定着しない。' };
         }
         const dest = App.getFixedMapWorldDestination(areaKey);
@@ -4172,6 +4169,100 @@ const App = {
             delete App.data.progress.abyssProceduralFloors;
             delete App.data.progress.abyssRegionRunIds;
             App.data.system.abyssRegionSchemaVersion = 4;
+        }
+        if (version < 5) {
+            const flags = App.data.progress.flags;
+            // 旧版は前半ダンジョンから後半へ直結していたため、後半ボス到達済みのセーブには
+            // 新しい「横断済み」を補完し、世界地図へ戻っても進行を失わないようにする。
+            if (flags.abyssLeonardDefeated) flags.abyssThunderDunesCrossed = true;
+            if (flags.abyssEliciaDefeated) flags.abyssScreamingCemeteryCrossed = true;
+            if (flags.abyssSyrisDefeated) flags.abyssFrozenForestCrossed = true;
+            if (flags.abyssGradDefeated) flags.abyssPurgatoryMountainsCrossed = true;
+
+            const safeAbyssWorldPoint = () => {
+                if (flags.abyssLegacionNorthGateOpen) return { x: 40, y: 12 };
+                if (flags.abyssSecondBarrierCleared || flags.abyssSyrisDefeated || flags.abyssGradDefeated) return { x: 38, y: 16 };
+                if (flags.abyssFirstBarrierCleared || flags.abyssLeonardDefeated || flags.abyssEliciaDefeated) return { x: 40, y: 34 };
+                return { x: 38, y: 58 };
+            };
+            const repairAbyssWorldPoint = point => {
+                if (!point || String(point.areaKey || point.area || '') !== 'ABYSS_WORLD') return;
+                const tiles = globalThis.WORLD_MAPS?.ABYSS_WORLD?.tiles;
+                const tile = String(tiles?.[Number(point.y)]?.[Number(point.x)] || 'W').toUpperCase();
+                if (!['W', 'M'].includes(tile)) return;
+                Object.assign(point, safeAbyssWorldPoint(), { worldKey: 'ABYSS_WORLD' });
+            };
+            if (currentArea === 'ABYSS_WORLD') {
+                const tile = String(globalThis.WORLD_MAPS?.ABYSS_WORLD?.tiles?.[Number(App.data.location.y)]?.[Number(App.data.location.x)] || 'W').toUpperCase();
+                if (['W', 'M'].includes(tile)) Object.assign(App.data.location, safeAbyssWorldPoint());
+            }
+            repairAbyssWorldPoint(App.data.mapReturnPoint);
+            repairAbyssWorldPoint(App.data.dungeon.returnPoint);
+            if (Array.isArray(App.data.dungeon.returnStack)) App.data.dungeon.returnStack.forEach(repairAbyssWorldPoint);
+            App.data.system.abyssRegionSchemaVersion = 5;
+        }
+        if (version < 6) {
+            // v5の深淵世界は、誤った五層地形と旧座標を使用していた。
+            // 既知の拠点座標は新しい主大陸・独立区画へ対応づけ、不明な世界座標はカルメナ前へ退避する。
+            const abyssWorldPointMigration = new Map([
+                ['38,58', { x: 24, y: 58 }],
+                ['12,48', { x: 16, y: 51 }],
+                ['64,49', { x: 54, y: 53 }],
+                ['38,37', { x: 37, y: 40 }],
+                ['40,34', { x: 40, y: 37 }],
+                ['22,28', { x: 24, y: 31 }],
+                ['56,28', { x: 58, y: 32 }],
+                ['38,16', { x: 42, y: 21 }],
+                ['40,12', { x: 43, y: 19 }],
+                ['40,6', { x: 45, y: 12 }],
+                ['8,41', { x: 6, y: 44 }],
+                ['12,39', { x: 8, y: 40 }],
+                ['70,41', { x: 72, y: 54 }],
+                ['66,39', { x: 71, y: 48 }],
+                ['8,18', { x: 6, y: 27 }],
+                ['12,17', { x: 8, y: 24 }],
+                ['70,18', { x: 71, y: 28 }],
+                ['66,17', { x: 70, y: 24 }]
+            ]);
+            const migrateAbyssWorldPoint = point => {
+                if (!point || String(point.areaKey || point.area || '') !== 'ABYSS_WORLD') return;
+                const migrated = abyssWorldPointMigration.get(`${Number(point.x)},${Number(point.y)}`) || { x: 24, y: 58 };
+                Object.assign(point, migrated, { worldKey: 'ABYSS_WORLD' });
+            };
+            if (currentArea === 'ABYSS_WORLD') {
+                const migrated = abyssWorldPointMigration.get(`${Number(App.data.location.x)},${Number(App.data.location.y)}`) || { x: 24, y: 58 };
+                Object.assign(App.data.location, migrated, { area: 'ABYSS_WORLD', worldKey: 'ABYSS_WORLD' });
+            }
+            migrateAbyssWorldPoint(App.data.mapReturnPoint);
+            migrateAbyssWorldPoint(App.data.dungeon.returnPoint);
+            if (Array.isArray(App.data.dungeon.returnStack)) App.data.dungeon.returnStack.forEach(migrateAbyssWorldPoint);
+            App.data.system.abyssRegionSchemaVersion = 6;
+        }
+        if (version < 7) {
+            // v6の楕円状地形から、ビスタ・レガシオンを正式な関門とする作図済み地形へ移行する。
+            const v6AnchorMigration = new Map([
+                ['6,46', { x: 6, y: 44 }],
+                ['8,43', { x: 8, y: 40 }],
+                ['71,53', { x: 72, y: 54 }],
+                ['69,49', { x: 71, y: 48 }]
+            ]);
+            const repairConceptWorldPoint = point => {
+                if (!point || String(point.areaKey || point.area || '') !== 'ABYSS_WORLD') return;
+                const migrated = v6AnchorMigration.get(`${Number(point.x)},${Number(point.y)}`);
+                if (migrated) Object.assign(point, migrated, { worldKey: 'ABYSS_WORLD' });
+                const tile = String(globalThis.WORLD_MAPS?.ABYSS_WORLD?.tiles?.[Number(point.y)]?.[Number(point.x)] || 'W').toUpperCase();
+                if (['W', 'M'].includes(tile)) Object.assign(point, { x: 24, y: 58, worldKey: 'ABYSS_WORLD' });
+            };
+            if (currentArea === 'ABYSS_WORLD') {
+                const migrated = v6AnchorMigration.get(`${Number(App.data.location.x)},${Number(App.data.location.y)}`);
+                if (migrated) Object.assign(App.data.location, migrated);
+                const tile = String(globalThis.WORLD_MAPS?.ABYSS_WORLD?.tiles?.[Number(App.data.location.y)]?.[Number(App.data.location.x)] || 'W').toUpperCase();
+                if (['W', 'M'].includes(tile)) Object.assign(App.data.location, { x: 24, y: 58 });
+            }
+            repairConceptWorldPoint(App.data.mapReturnPoint);
+            repairConceptWorldPoint(App.data.dungeon.returnPoint);
+            if (Array.isArray(App.data.dungeon.returnStack)) App.data.dungeon.returnStack.forEach(repairConceptWorldPoint);
+            App.data.system.abyssRegionSchemaVersion = 7;
         }
         if (typeof App.reconcileDerivedProgressFlags === 'function') App.reconcileDerivedProgressFlags();
     },

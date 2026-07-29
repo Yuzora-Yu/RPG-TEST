@@ -120,15 +120,71 @@
             { name:'魔王ゼノン', text:'王を失ってなお力だけが残ったか。\nよかろう。腕試しの穴として、何度でも踏破してやる。', charId:402 },
             { name:'システム', text:'クリア後深淵とダンジョンメニューが解放された。' }
         ],
-        ABYSS_CARMENA_RESIDENT: [
-            { name:'カルメナの住人', text:'黒い泉は、あなたたちが落ちてきた地上の裂け目へ通じている。\n帰る必要があるなら、泉の水面に触れるといい。' },
-            { name:'カルメナの住人', text:'ただ、北門の二将が町の淀みを強めている。\nあれを退けない限り、外へ出ても体がもたないだろう。' }
+        ABYSS_CARMENA_RESIDENT_SPRING: [
+            { name:'泉辺の男', text:'その水面を、あまり長く見るな。\n帰りたい場所の匂いがする。' },
+            { name:'泉辺の男', text:'俺には麦を焼く匂いだった。\n飛び込んだよ。三度もな。' },
+            { name:'泉辺の男', text:'戻ってきた時には、靴の泥だけ増えていた。' }
+        ],
+        ABYSS_CARMENA_RESIDENT_RATIONS: [
+            { name:'宿の手伝い', text:'四人分。……違う、三人分でいい。' },
+            { name:'宿の手伝い', text:'北門へ連れていかれた人の皿まで並べると、\n宿の主人が怒るんだ。' },
+            { name:'宿の手伝い', text:'片づけるのは、もう少し後にする。' }
+        ],
+        ABYSS_CARMENA_RESIDENT_OLD_KINGDOM: [
+            { name:'古い外套の老人', text:'王都の鐘が、昼なのに七つ鳴った。\nそこから先は、ここだ。' },
+            { name:'古い外套の老人', text:'国の名か。……お前さんの地図には無いだろうよ。' },
+            { name:'古い外套の老人', text:'若い連中は、わしが作った昔話だと言う。\nあいつらの祖父より、わしのほうが後から来たのにな。' }
+        ],
+        ABYSS_CARMENA_RESIDENT_GATE_CHILD: [
+            { name:'門を見張る子', text:'鎧の人が、今日は二回こっちを見た。' },
+            { name:'門を見張る子', text:'三回見た日は、誰かいなくなる。\nだから、数えてる。' },
+            { name:'門を見張る子', text:'……いま、二回だよ。' }
         ],
         ABYSS_VISTA_RECRUITMENT: [
             { name:'ビスタの魔物使い', text:'深淵の魔物でも、まれに地上から差す光へ触れて、憎しみを手放すことがある。' },
             { name:'ビスタの魔物使い', text:'そうなった魔物は、倒した者の強さではなく心を見て、旅へ加わることがある。\n期待しすぎるほど多くはないが、決して零ではない。' }
         ],
+        ABYSS_VISTA_SCAVENGER: [
+            { name:'南区の拾い屋', text:'墓地の風が止んだ朝は、鉄くずを拾いに行く。\n止まらない朝は、戸を板で塞ぐ。' },
+            { name:'南区の拾い屋', text:'暦なんて要らない。\n生き残るには、それで十分だった。' }
+        ],
+        ABYSS_VISTA_WIDOW: [
+            { name:'石段の女', text:'地下道の壁に、夫の名を刻んである。\n北へ働きに出たきり、戻らなかったから。' },
+            { name:'石段の女', text:'道が繋がれば帰ってくるなんて、もう思ってない。\nでも、名前まで塞がれるのは嫌なの。' }
+        ],
+        ABYSS_VISTA_TOLL_KEEPER: [
+            { name:'北区の門番', text:'昔は地下道を通るたび、パンを一切れ納めた。\n町を割った連中への通行税さ。' },
+            { name:'北区の門番', text:'今は取らん。\n南の子どもが、痩せすぎた。' }
+        ],
+        ABYSS_VISTA_LAMPLIGHTER: [
+            { name:'灯守', text:'この灯は消すなと言われて、親父から継いだ。\n誰が帰るための灯かは、親父も知らなかった。' },
+            { name:'灯守', text:'最近、炎が北へ傾く。\nレガシオンの結界が弱っているのかもしれん。' }
+        ],
+        ABYSS_VISTA_UNDERPASS_WORKER: [
+            { name:'地下道の補修工', text:'天井が鳴ったら、壁際へ寄れ。\n走ると、上の町ごと落ちてくる。' },
+            { name:'地下道の補修工', text:'南と北が口を利かなくても、下水と崩落は待ってくれん。\nだから俺たちは、両方の壁を直す。' }
+        ],
+        ABYSS_VISTA_UNDERPASS_CHILDREN: [
+            { name:'地下道の子ども', text:'ここなら南区の子とも遊べるんだ。\n大人は暗くて危ないって言うけど。' },
+            { name:'地下道の子ども', text:'地上のほうが、みんな怖い顔してるよ。' }
+        ],
         ABYSS_LEGACION_ARENA: [{name:'格闘場の係員',text:'ここはモンスター格闘場だ。\nいまは闘技場の整備中だが、門と観客席はいつでも使えるよう保っている。'}],
+        ABYSS_LEGACION_SMITH_APPRENTICE: [
+            { name:'鍛冶場の徒弟', text:'親方は、深淵の鉄は泣き声で硬さが分かると言う。\n俺には全部、同じ悲鳴に聞こえる。' },
+            { name:'鍛冶場の徒弟', text:'だから毎朝、一本ずつ打つ。\nいつか違いが分かるまで。' }
+        ],
+        ABYSS_LEGACION_GUILD_CLERK: [
+            { name:'ギルドの記録係', text:'依頼書は三冊ある。\n未帰還、捜索打切り、名前不明。' },
+            { name:'ギルドの記録係', text:'達成済みの帳面は薄い。\nそれでも捨てない。戻った者が、自分の名を探すから。' }
+        ],
+        ABYSS_LEGACION_CASTLE_SERVANT: [
+            { name:'城勤めの女', text:'皇帝家が滅びたあとも、食卓には八枚の皿を置く。\n城の決まりは、主より長生きするものよ。' },
+            { name:'城勤めの女', text:'末裔様は一枚でよいと仰る。\nだから七枚は、空のまま磨いている。' }
+        ],
+        ABYSS_LEGACION_WALL_VENDOR: [
+            { name:'城壁下の商人', text:'北門が開けば客が増える。\n増えるのが客だけなら、ありがたいんだがね。' },
+            { name:'城壁下の商人', text:'夢幻回廊から戻る連中は、影の数が合わない。\n勘定は日が差す場所でやることにしてる。' }
+        ],
         ABYSS_LEGACION_AUDIENCE: [
             { name:'深淵皇帝家の末裔', text:'二層の結界を越えた者よ。\n我らの都へ、失われた道を繋いでくれたことに礼を言う。' },
             { name:'深淵皇帝家の末裔', text:'北門の先に、夢幻回廊リドパルムがある。\n深淵王へ至る者だけが通れるよう、いま門を開こう。' },
@@ -138,7 +194,35 @@
             { name:'レガシオンの神官', text:'あなたたちには、強い属性の加護が幾重にも重なっているようですね。' },
             { name:'レガシオンの神官', text:'もしや、プリズムに宿る声も聞こえるのではありませんか。\n地上で救った六属性のプリズムを訪ねれば、それぞれの大精霊が応えるかもしれません。' }
         ],
-        ABYSS_LEGACION_PRISON: [{name:'システム',text:'地下牢には壊れた鎖と空の檻だけが残っている。\n奥の壁から、地下神殿へ続く重い魔力が伝わってくる。'}]
+        ABYSS_LEGACION_PRISON: [{name:'システム',text:'地下牢には壊れた鎖と空の檻だけが残っている。\n奥の壁から、地下神殿へ続く重い魔力が伝わってくる。'}],
+        ABYSS_LEGACION_PRISON_MOTHER: [
+            { name:'牢前に座る母', text:'息子は罪人じゃない。\n城壁の外に朝があると言っただけ。' },
+            { name:'牢前に座る母', text:'檻は空なのに、あの子は帰らない。\nだから私だけでも、ここで待つ。' }
+        ],
+        ABYSS_LEGACION_PRISON_GUARD: [
+            { name:'老いた牢番', text:'鍵はもう掛けていない。\nだが、開いた扉を怖がって出ない者もいた。' },
+            { name:'老いた牢番', text:'牢は鉄で作るとは限らん。\n長く務めて、ようやく知った。' }
+        ],
+        ABYSS_LEGACION_TEMPLE_ACOLYTE: [
+            { name:'地下神殿の侍祭', text:'祈りは上へ届くものだと思っていました。\nここでは、唱えるほど下から返事が来る。' },
+            { name:'地下神殿の侍祭', text:'だから声にせず、灯だけを供えています。' }
+        ],
+        ABYSS_LEGACION_GALLERY_PAGE: [
+            { name:'上層回廊の小姓', text:'西塔の鐘は過去を、東塔の鏡は未来を見るそうです。' },
+            { name:'上層回廊の小姓', text:'今を見張る者がいないので、僕がここに立っています。' }
+        ],
+        ABYSS_LEGACION_ARCHIVIST: [
+            { name:'城の記録官', text:'プリズム崩壊の夜、王国は消えたのではない。\n土地も人も、儀式の影へ落ちた。' },
+            { name:'城の記録官', text:'その記録を禁書にした者たちも、いまは同じ影の中だ。' }
+        ],
+        ABYSS_LEGACION_WEST_SENTRY: [
+            { name:'西塔の衛兵', text:'氷の森が青く光る夜は、城壁まで冷える。\n毛布を二枚、見張り台へ持ち込むんだ。' },
+            { name:'西塔の衛兵', text:'規則では一枚だ。\n二枚目は、帰らない相棒の分ということにしている。' }
+        ],
+        ABYSS_LEGACION_EAST_OBSERVER: [
+            { name:'東塔の観測士', text:'煉獄山脈の火は、星の代わりになる。\n揺れ方で、明日の風向きも分かる。' },
+            { name:'東塔の観測士', text:'本物の星か。\n一度でいいから、動かない光を見てみたい。' }
+        ]
     });
 
     const bossEvent = (conversation, boss, clearEvent, extraActions = []) => ({
@@ -175,12 +259,32 @@
             {type:'STEP',value:10},{type:'SUB',value:2},{type:'LOG',value:'深淵王を倒した。終焉の祭壇には、なお深い亀裂が残っている。'}
         ]),
         abyss_postgame_crack: clearEvent('ABYSS_POSTGAME_CRACK',['abyssRandomUnlocked','abyssDungeonMenuUnlocked'],[{type:'START_ABYSS_DUNGEON',mode:'random',floor:1,direct:true}]),
-        abyss_carmena_resident: {actions:[{type:'CONV',value:'ABYSS_CARMENA_RESIDENT'}],winActions:[]},
+        abyss_carmena_resident_spring: {actions:[{type:'CONV',value:'ABYSS_CARMENA_RESIDENT_SPRING'}],winActions:[]},
+        abyss_carmena_resident_rations: {actions:[{type:'CONV',value:'ABYSS_CARMENA_RESIDENT_RATIONS'}],winActions:[]},
+        abyss_carmena_resident_old_kingdom: {actions:[{type:'CONV',value:'ABYSS_CARMENA_RESIDENT_OLD_KINGDOM'}],winActions:[]},
+        abyss_carmena_resident_gate_child: {actions:[{type:'CONV',value:'ABYSS_CARMENA_RESIDENT_GATE_CHILD'}],winActions:[]},
         abyss_vista_recruitment_guide: {actions:[{type:'CONV',value:'ABYSS_VISTA_RECRUITMENT'}],winActions:[]},
+        abyss_vista_scavenger: {actions:[{type:'CONV',value:'ABYSS_VISTA_SCAVENGER'}],winActions:[]},
+        abyss_vista_widow: {actions:[{type:'CONV',value:'ABYSS_VISTA_WIDOW'}],winActions:[]},
+        abyss_vista_toll_keeper: {actions:[{type:'CONV',value:'ABYSS_VISTA_TOLL_KEEPER'}],winActions:[]},
+        abyss_vista_lamplighter: {actions:[{type:'CONV',value:'ABYSS_VISTA_LAMPLIGHTER'}],winActions:[]},
+        abyss_vista_underpass_worker: {actions:[{type:'CONV',value:'ABYSS_VISTA_UNDERPASS_WORKER'}],winActions:[]},
+        abyss_vista_underpass_children: {actions:[{type:'CONV',value:'ABYSS_VISTA_UNDERPASS_CHILDREN'}],winActions:[]},
         abyss_legacion_arena_notice: {actions:[{type:'CONV',value:'ABYSS_LEGACION_ARENA'}],winActions:[]},
+        abyss_legacion_smith_apprentice: {actions:[{type:'CONV',value:'ABYSS_LEGACION_SMITH_APPRENTICE'}],winActions:[]},
+        abyss_legacion_guild_clerk: {actions:[{type:'CONV',value:'ABYSS_LEGACION_GUILD_CLERK'}],winActions:[]},
+        abyss_legacion_castle_servant: {actions:[{type:'CONV',value:'ABYSS_LEGACION_CASTLE_SERVANT'}],winActions:[]},
+        abyss_legacion_wall_vendor: {actions:[{type:'CONV',value:'ABYSS_LEGACION_WALL_VENDOR'}],winActions:[]},
         abyss_legacion_audience: {actions:[{type:'CONV',value:'ABYSS_LEGACION_AUDIENCE'},{type:'FLAG',key:'abyssLegacionNorthGateOpen'}],winActions:[]},
         abyss_legacion_priest: {actions:[{type:'CONV',value:'ABYSS_LEGACION_PRIEST'},{type:'FLAG',key:'abyssSpiritPrismKnown'}],winActions:[]},
-        abyss_legacion_prison: {actions:[{type:'CONV',value:'ABYSS_LEGACION_PRISON'}],winActions:[]}
+        abyss_legacion_prison: {actions:[{type:'CONV',value:'ABYSS_LEGACION_PRISON'}],winActions:[]},
+        abyss_legacion_prison_mother: {actions:[{type:'CONV',value:'ABYSS_LEGACION_PRISON_MOTHER'}],winActions:[]},
+        abyss_legacion_prison_guard: {actions:[{type:'CONV',value:'ABYSS_LEGACION_PRISON_GUARD'}],winActions:[]},
+        abyss_legacion_temple_acolyte: {actions:[{type:'CONV',value:'ABYSS_LEGACION_TEMPLE_ACOLYTE'}],winActions:[]},
+        abyss_legacion_gallery_page: {actions:[{type:'CONV',value:'ABYSS_LEGACION_GALLERY_PAGE'}],winActions:[]},
+        abyss_legacion_archivist: {actions:[{type:'CONV',value:'ABYSS_LEGACION_ARCHIVIST'}],winActions:[]},
+        abyss_legacion_west_sentry: {actions:[{type:'CONV',value:'ABYSS_LEGACION_WEST_SENTRY'}],winActions:[]},
+        abyss_legacion_east_observer: {actions:[{type:'CONV',value:'ABYSS_LEGACION_EAST_OBSERVER'}],winActions:[]}
     });
 
 })();
