@@ -4459,19 +4459,13 @@ const FIXED_MAPS = {
                     {
                         "stateId": "log",
                         "priority": 0,
-                        "when": {},
+                        "when": {
+                            "missingFlag": "waterCityIntroCleared"
+                        },
                         "action": {
                             "label": "広場を調べる",
                             "log": "濁った水路の音が、街の沈黙に混じっている。",
                             "type": "log",
-                            "imageVariants": [
-                                {
-                                    "requiredFlag": "waterCityIntroCleared",
-                                    "missingFlag": "waterCityCleared",
-                                    "imageKey": "overlay_companion_sophia"
-                                }
-                            ],
-                            "imageMissingFlag": "waterCityCleared",
                             "events": [
                                 {
                                     "stepMin": 4,
@@ -4484,32 +4478,6 @@ const FIXED_MAPS = {
                                     "stepMin": 0,
                                     "stepMax": 3,
                                     "eventId": "water_city_before_story"
-                                },
-                                {
-                                    "stepMin": 4,
-                                    "stepMax": 4,
-                                    "subMin": 1,
-                                    "subMax": 1,
-                                    "eventId": "water_city_cave_reminder"
-                                },
-                                {
-                                    "stepMin": 4,
-                                    "stepMax": 4,
-                                    "subMin": 2,
-                                    "subMax": 2,
-                                    "eventId": "water_city_blue_crystal_report"
-                                },
-                                {
-                                    "stepMin": 4,
-                                    "stepMax": 4,
-                                    "subMin": 3,
-                                    "subMax": 99,
-                                    "eventId": "water_city_sophia_after_meeting"
-                                },
-                                {
-                                    "stepMin": 5,
-                                    "stepMax": 99,
-                                    "eventId": "water_city_after_clear"
                                 },
                                 {
                                     "default": true,
@@ -4588,16 +4556,64 @@ const FIXED_MAPS = {
             },
             {
                 "placementId": 12,
-                "actorId": "sophia_alan_seabed_depths",
+                "actorId": "sophia_water_city",
                 "name": "ソフィア",
                 "x": 32,
                 "y": 15,
                 "imageKey": "overlay_companion_sophia",
                 "states": [
                     {
+                        "stateId": "water_city_plaza",
+                        "priority": 10,
+                        "when": {
+                            "requiredFlag": "waterCityIntroCleared",
+                            "missingFlag": "waterCityCleared"
+                        },
+                        "placement": {
+                            "x": 19,
+                            "y": 13
+                        },
+                        "action": {
+                            "label": "ソフィアと話す",
+                            "type": "log",
+                            "events": [
+                                {
+                                    "stepMin": 4,
+                                    "stepMax": 4,
+                                    "subMin": 1,
+                                    "subMax": 1,
+                                    "eventId": "water_city_cave_reminder"
+                                },
+                                {
+                                    "stepMin": 4,
+                                    "stepMax": 4,
+                                    "subMin": 2,
+                                    "subMax": 2,
+                                    "eventId": "water_city_blue_crystal_report"
+                                },
+                                {
+                                    "stepMin": 4,
+                                    "stepMax": 4,
+                                    "subMin": 3,
+                                    "subMax": 99,
+                                    "eventId": "water_city_sophia_after_meeting"
+                                },
+                                {
+                                    "default": true,
+                                    "eventId": "water_city_sophia_after_meeting"
+                                }
+                            ]
+                        }
+                    },
+                    {
                         "stateId": "sophia_alan_seabed_depths",
-                        "priority": 0,
-                        "when": {},
+                        "priority": 20,
+                        "when": {
+                            "requiredFlags": [
+                                "waterCityCleared",
+                                "thunderFortCleared"
+                            ]
+                        },
                         "action": {
                             "label": "ソフィアと話す",
                             "log": "ソフィアが、神殿奥の水流について記録を読み返している。",
@@ -4619,7 +4635,12 @@ const FIXED_MAPS = {
                     {
                         "stateId": "sophia_alan_seabed_depths",
                         "priority": 0,
-                        "when": {},
+                        "when": {
+                            "requiredFlags": [
+                                "waterCityCleared",
+                                "thunderFortCleared"
+                            ]
+                        },
                         "action": {
                             "label": "アランと話す",
                             "log": "アランが、神殿奥へ向かう水路を見つめている。",

@@ -1981,6 +1981,7 @@ findNextActor: () => {
         const effectType = data ? data.type : '通常攻撃';
         const isPhysical = (!data || effectType === '物理' || effectType === '通常攻撃');
         const baseDmg = data ? (data.base || 0) : 0;
+        const isFixedDamage = data?.fix === true;
         const count = data && typeof data.count === 'number' ? Math.max(1, data.count) : 1;
 
         const directEffectOnly = !!data && ['回復', '蘇生', '強化', '弱体', '特殊', 'MP回復'].includes(effectType);
@@ -2012,11 +2013,11 @@ findNextActor: () => {
 
         if (baseDmgCalc < 1) baseDmgCalc = 1;
 
-        let rate = data && data.rate !== undefined ? data.rate : 1.0;
+        let rate = isFixedDamage ? 1.0 : (data && data.rate !== undefined ? data.rate : 1.0);
         let cutRate = 0;
         let bonusRate = 0;
 
-        if (data && data.elm) {
+        if (!isFixedDamage && data && data.elm) {
             bonusRate += (Battle.getBattleStat(actor, 'elmAtk') || {})[data.elm] || 0;
             const res = (target.getStat ? target.getStat('elmRes') : (target.elmRes || {})) || {};
             let pierce = 0;
@@ -2032,20 +2033,20 @@ findNextActor: () => {
             cutRate += finalRes;
         }
 
-        bonusRate += Battle.getBattleStat(actor, 'finDmg') || 0;
+        if (!isFixedDamage) bonusRate += Battle.getBattleStat(actor, 'finDmg') || 0;
         let finRed = Battle.getBattleStat(target, 'finRed') || 0;
         if (finRed > 80) finRed = 80;
         cutRate += finRed;
 
         let dmg = Math.floor(baseDmgCalc * rate * count * (1 + bonusRate / 100) * (1 - cutRate / 100));
-        if (isPhysical) {
+        if (!isFixedDamage && isPhysical) {
             if (actor.formation === 'back' && !['弓', '短剣', '杖'].includes(actor.weaponType)) dmg *= 0.5;
             if (target.formation === 'back') dmg *= 0.5;
         }
         if (typeof PassiveSkill !== 'undefined') {
             const damageKey = isPhysical ? 'physical_dmg_pct' : (effectType === '魔法' ? 'magic_dmg_pct' : (effectType === 'ブレス' ? 'breath_dmg_pct' : null));
             const reduceKey = isPhysical ? 'physical_reduce_pct' : (effectType === '魔法' ? 'magic_reduce_pct' : (effectType === 'ブレス' ? 'breath_reduce_pct' : null));
-            if (damageKey) dmg *= 1 + PassiveSkill.getSumValue(actor, damageKey) / 100;
+            if (!isFixedDamage && damageKey) dmg *= 1 + PassiveSkill.getSumValue(actor, damageKey) / 100;
             if (reduceKey) dmg *= 1 - PassiveSkill.getSumValue(target, reduceKey) / 100;
         }
         if (target.status?.defend) dmg *= 0.5;
@@ -3809,6 +3810,7 @@ findNextActor: () => {
                         targetToHit = pool[Math.floor(Math.random() * pool.length)];
                     }
                     if (!Battle.isBattleAlive(targetToHit)) { if (skillScope !== 'ランダム') break; continue; }
+                    const isFixedDamage = data?.fix === true;
 
                     // --- 特性 19:献身 (かばう) ---
                     if (!isSupport) {
@@ -3896,7 +3898,7 @@ findNextActor: () => {
 					let isCrit = false;
 					let ailmentChanceMult = 1.0;
 
-					if (effectType !== 'ブレス') {
+					if (!isFixedDamage && effectType !== 'ブレス') {
 						// 装備・特性分はcalcStats済みなので、スキル固有値と戦闘ステータスだけを合算する。
 						const totalCritRate = Number(data?.critRate ?? 0) +
 											  (Battle.getBattleStat(actor, 'cri') || 0);
@@ -3950,16 +3952,16 @@ findNextActor: () => {
 					if (baseDmgCalc < 1) baseDmgCalc = (Math.random() < 0.3) ? 1 : 0;
 
 					// --- [4] 特性・シナジーによる最終倍率計算フェーズ ---
-					let totalMult = currentSkillRate; // 二刀流等の補正済み倍率
+					let totalMult = isFixedDamage ? 1 : currentSkillRate; // 固定ダメージはスキル倍率・二刀流倍率を参照しない
 
 					// 隊列補正（物理のみ）
-					if (isPhysical) {
+					if (!isFixedDamage && isPhysical) {
 						if (actor.formation === 'back' && !['弓', '短剣', '杖'].includes(actor.weaponType)) totalMult *= 0.5;
 						if (targetToHit.formation === 'back') totalMult *= 0.5;
 					}
 
 					// 特性(PassiveSkill)による種族特効・属性強化
-					if (typeof PassiveSkill !== 'undefined') {
+					if (!isFixedDamage && typeof PassiveSkill !== 'undefined') {
 						if (targetToHit.race === '死霊' || targetToHit.race === '魔族') totalMult *= (1 + PassiveSkill.getSumValue(actor, 'anti_demon_pct') / 100);
 						if (targetToHit.race === '獣' || targetToHit.race === '獣人') totalMult *= (1 + PassiveSkill.getSumValue(actor, 'anti_beast_pct') / 100);
 						if (targetToHit.race === '機械' || targetToHit.race === '無生物') totalMult *= (1 + PassiveSkill.getSumValue(actor, 'anti_machine_pct') / 100);
@@ -3991,7 +3993,7 @@ findNextActor: () => {
 					
 
                     let bonusRate = 0, cutRate = 0, isImmune = false;
-                    if (element) {
+                    if (!isFixedDamage && element) {
                         bonusRate += (Battle.getBattleStat(actor, 'elmAtk') || {})[element] || 0;
                         let pierce = 0;
                         if (typeof PassiveSkill !== 'undefined') {
@@ -4002,14 +4004,17 @@ findNextActor: () => {
                         const finalRes = ((targetToHit.getStat('elmRes') || {})[element] || 0) + (targetToHit.battleStatus.buffs['elmResUp']?.val || 0) - (targetToHit.battleStatus.debuffs['elmResDown']?.val || 0) - pierce;
                         if (finalRes >= 100) isImmune = true; else cutRate += finalRes;
                     }
-                    bonusRate += Battle.getBattleStat(actor, 'finDmg') || 0;
-                    bonusRate += PassiveSkill.getSumValue(actor, 'dmg_pct');
+                    if (!isFixedDamage) {
+                        bonusRate += Battle.getBattleStat(actor, 'finDmg') || 0;
+                        bonusRate += PassiveSkill.getSumValue(actor, 'dmg_pct');
+                    }
                     let finRed = Battle.getBattleStat(targetToHit, 'finRed') || 0;
                     
 					if (isCoveringHit) finRed += PassiveSkill.getSumValue(targetToHit, 'cover_reduce_mult');
                     if (finRed > 80) finRed = 80; cutRate += finRed;
 
-                    let dmg = Math.floor(baseDmgCalc * totalMult * (1.0 + bonusRate / 100) * (1.0 - cutRate / 100) * (0.85 + Math.random() * 0.3));
+                    const variance = isFixedDamage ? 1 : (0.85 + Math.random() * 0.3);
+                    let dmg = Math.floor(baseDmgCalc * totalMult * (1.0 + bonusRate / 100) * (1.0 - cutRate / 100) * variance);
                     
 					// ★設計思想の反映: ダメージ計算の最後にタイプ別特性を計算
 					if (typeof PassiveSkill !== 'undefined') {
@@ -4028,7 +4033,7 @@ findNextActor: () => {
 						}
 
 						// 最終乗算 (1.0 + 補正/100)
-						dmg = Math.floor(dmg * (1 + typeDmgPct / 100));
+						if (!isFixedDamage) dmg = Math.floor(dmg * (1 + typeDmgPct / 100));
 						dmg = Math.floor(dmg * (1 - typeRedPct / 100));
 					}
 					

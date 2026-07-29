@@ -1,4 +1,4 @@
-/* equips.js - direct source equipment balance generated 2026-05-19 */
+/* equips.js - direct source equipment balance generated 2026-07-29 */
 const EQUIP_MASTER = [
     {
         "eid": 1,
@@ -226,7 +226,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "斧",
         "data": {
-            "atk": 7,
+            "atk": 8,
             "spd": -2,
             "hit": -10
         },
@@ -241,8 +241,8 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "短剣",
         "data": {
-            "atk": 6,
-            "mag": 6,
+            "atk": 3,
+            "mag": 3,
             "cri": 5
         },
         "possibleOpts": [],
@@ -297,8 +297,8 @@ const EQUIP_MASTER = [
         "type": "盾",
         "baseName": "盾",
         "data": {
-            "def": 5,
-            "mdef": 4
+            "def": 6,
+            "mdef": 3
         },
         "possibleOpts": [],
         "traits": []
@@ -311,10 +311,10 @@ const EQUIP_MASTER = [
         "type": "盾",
         "baseName": "腕輪",
         "data": {
-            "atk": 4,
-            "def": 4,
-            "mag": 4,
-            "mdef": 4
+            "atk": 3,
+            "def": 3,
+            "mag": 3,
+            "mdef": 3
         },
         "possibleOpts": [],
         "traits": []
@@ -328,9 +328,9 @@ const EQUIP_MASTER = [
         "baseName": "兜",
         "data": {
             "def": 4,
-            "mdef": 3,
-            "hp": 7,
-            "mp": 10
+            "mdef": 2,
+            "hp": 8,
+            "mp": 8
         },
         "possibleOpts": [],
         "traits": []
@@ -343,10 +343,10 @@ const EQUIP_MASTER = [
         "type": "頭",
         "baseName": "帽子",
         "data": {
-            "def": 3,
+            "def": 2,
             "mdef": 4,
-            "hp": 10,
-            "mp": 7
+            "hp": 8,
+            "mp": 8
         },
         "possibleOpts": [],
         "traits": []
@@ -359,8 +359,8 @@ const EQUIP_MASTER = [
         "type": "体",
         "baseName": "鎧",
         "data": {
-            "def": 5,
-            "mdef": 4
+            "def": 4,
+            "mdef": 3
         },
         "possibleOpts": [],
         "traits": []
@@ -373,9 +373,9 @@ const EQUIP_MASTER = [
         "type": "体",
         "baseName": "ローブ",
         "data": {
-            "def": 4,
-            "mag": 4,
-            "mdef": 4
+            "def": 3,
+            "mag": 3,
+            "mdef": 3
         },
         "possibleOpts": [],
         "traits": []
@@ -388,8 +388,8 @@ const EQUIP_MASTER = [
         "type": "足",
         "baseName": "ブーツ",
         "data": {
-            "def": 4,
-            "spd": 4
+            "def": 3,
+            "spd": 3
         },
         "possibleOpts": [],
         "traits": []
@@ -402,7 +402,7 @@ const EQUIP_MASTER = [
         "type": "足",
         "baseName": "くつ",
         "data": {
-            "spd": 5,
+            "spd": 4,
             "eva": 5
         },
         "possibleOpts": [],
@@ -416,7 +416,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "剣",
         "data": {
-            "atk": 10,
+            "atk": 9,
             "hit": 10
         },
         "possibleOpts": [],
@@ -450,8 +450,8 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "短剣",
         "data": {
-            "atk": 9,
-            "mag": 9,
+            "atk": 5,
+            "mag": 5,
             "cri": 5,
             "attack_Poison": 10
         },
@@ -466,7 +466,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "杖",
         "data": {
-            "mag": 10
+            "mag": 11
         },
         "possibleOpts": [],
         "traits": []
@@ -479,7 +479,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "槍",
         "data": {
-            "atk": 10
+            "atk": 11
         },
         "possibleOpts": [],
         "traits": []
@@ -492,7 +492,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "弓",
         "data": {
-            "atk": 10,
+            "atk": 11,
             "cri": 5,
             "hit": -15
         },
@@ -507,8 +507,8 @@ const EQUIP_MASTER = [
         "type": "盾",
         "baseName": "盾",
         "data": {
-            "def": 9,
-            "mdef": 7
+            "def": 8,
+            "mdef": 6
         },
         "possibleOpts": [],
         "traits": []
@@ -521,10 +521,10 @@ const EQUIP_MASTER = [
         "type": "盾",
         "baseName": "腕輪",
         "data": {
-            "atk": 5,
-            "def": 7,
-            "mag": 5,
-            "mdef": 7
+            "atk": 4,
+            "def": 5,
+            "mag": 4,
+            "mdef": 6
         },
         "possibleOpts": [],
         "traits": []
@@ -539,8 +539,8 @@ const EQUIP_MASTER = [
         "data": {
             "def": 6,
             "mdef": 4,
-            "hp": 11,
-            "mp": 16
+            "hp": 12,
+            "mp": 13
         },
         "possibleOpts": [],
         "traits": []
@@ -555,8 +555,8 @@ const EQUIP_MASTER = [
         "data": {
             "def": 4,
             "mdef": 6,
-            "hp": 16,
-            "mp": 11
+            "hp": 13,
+            "mp": 12
         },
         "possibleOpts": [],
         "traits": []
@@ -570,7 +570,7 @@ const EQUIP_MASTER = [
         "baseName": "鎧",
         "data": {
             "def": 7,
-            "mdef": 6,
+            "mdef": 4,
             "finRed": 3
         },
         "possibleOpts": [],
@@ -584,9 +584,9 @@ const EQUIP_MASTER = [
         "type": "体",
         "baseName": "ローブ",
         "data": {
-            "def": 6,
-            "mag": 6,
-            "mdef": 7
+            "def": 4,
+            "mag": 5,
+            "mdef": 5
         },
         "possibleOpts": [],
         "traits": []
@@ -599,8 +599,8 @@ const EQUIP_MASTER = [
         "type": "足",
         "baseName": "ブーツ",
         "data": {
-            "def": 6,
-            "spd": 6
+            "def": 4,
+            "spd": 4
         },
         "possibleOpts": [],
         "traits": []
@@ -641,7 +641,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "斧",
         "data": {
-            "atk": 15,
+            "atk": 16,
             "spd": -4,
             "hit": -10
         },
@@ -656,8 +656,8 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "短剣",
         "data": {
-            "atk": 10,
-            "mag": 10,
+            "atk": 8,
+            "mag": 8,
             "cri": 5,
             "attack_InstantDeath": 2
         },
@@ -679,7 +679,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "杖",
         "data": {
-            "mag": 13
+            "mag": 15
         },
         "possibleOpts": [],
         "traits": [
@@ -697,7 +697,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "槍",
         "data": {
-            "atk": 13
+            "atk": 14
         },
         "possibleOpts": [],
         "traits": []
@@ -710,7 +710,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "弓",
         "data": {
-            "atk": 13,
+            "atk": 14,
             "cri": 7,
             "hit": -15
         },
@@ -742,7 +742,7 @@ const EQUIP_MASTER = [
             "atk": 6,
             "def": 8,
             "mag": 6,
-            "mdef": 8
+            "mdef": 9
         },
         "possibleOpts": [],
         "traits": []
@@ -755,10 +755,10 @@ const EQUIP_MASTER = [
         "type": "頭",
         "baseName": "兜",
         "data": {
-            "def": 7,
+            "def": 8,
             "mdef": 5,
-            "hp": 14,
-            "mp": 20
+            "hp": 16,
+            "mp": 17
         },
         "possibleOpts": [],
         "traits": []
@@ -772,9 +772,9 @@ const EQUIP_MASTER = [
         "baseName": "帽子",
         "data": {
             "def": 5,
-            "mdef": 7,
-            "hp": 20,
-            "mp": 14
+            "mdef": 8,
+            "hp": 17,
+            "mp": 16
         },
         "possibleOpts": [],
         "traits": []
@@ -788,7 +788,7 @@ const EQUIP_MASTER = [
         "baseName": "鎧",
         "data": {
             "def": 9,
-            "mdef": 7,
+            "mdef": 6,
             "finRed": 5
         },
         "possibleOpts": [],
@@ -802,8 +802,8 @@ const EQUIP_MASTER = [
         "type": "体",
         "baseName": "ローブ",
         "data": {
-            "def": 7,
-            "mag": 7,
+            "def": 6,
+            "mag": 8,
             "mdef": 8
         },
         "possibleOpts": [],
@@ -817,8 +817,8 @@ const EQUIP_MASTER = [
         "type": "足",
         "baseName": "ブーツ",
         "data": {
-            "def": 7,
-            "spd": 7
+            "def": 6,
+            "spd": 6
         },
         "possibleOpts": [],
         "traits": []
@@ -872,7 +872,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "斧",
         "data": {
-            "atk": 16,
+            "atk": 20,
             "spd": -5,
             "hit": -10,
             "elmAtk": {
@@ -890,8 +890,8 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "短剣",
         "data": {
-            "atk": 12,
-            "mag": 12,
+            "atk": 10,
+            "mag": 10,
             "cri": 5
         },
         "possibleOpts": [],
@@ -910,7 +910,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "槍",
         "data": {
-            "atk": 16,
+            "atk": 18,
             "finRed": 5,
             "elmAtk": {
                 "光": 10
@@ -927,7 +927,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "弓",
         "data": {
-            "atk": 16,
+            "atk": 18,
             "cri": 10,
             "hit": -15,
             "attack_Poison": 10
@@ -948,7 +948,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "杖",
         "data": {
-            "mag": 16
+            "mag": 18
         },
         "possibleOpts": [],
         "traits": []
@@ -962,7 +962,7 @@ const EQUIP_MASTER = [
         "baseName": "盾",
         "data": {
             "def": 14,
-            "mdef": 9
+            "mdef": 11
         },
         "possibleOpts": [],
         "traits": [
@@ -981,9 +981,9 @@ const EQUIP_MASTER = [
         "baseName": "腕輪",
         "data": {
             "atk": 8,
-            "def": 8,
+            "def": 10,
             "mag": 8,
-            "mdef": 9
+            "mdef": 11
         },
         "possibleOpts": [],
         "traits": []
@@ -996,10 +996,10 @@ const EQUIP_MASTER = [
         "type": "頭",
         "baseName": "兜",
         "data": {
-            "def": 8,
-            "mdef": 6,
-            "hp": 16,
-            "mp": 23
+            "def": 10,
+            "mdef": 7,
+            "hp": 20,
+            "mp": 22
         },
         "possibleOpts": [],
         "traits": []
@@ -1012,10 +1012,10 @@ const EQUIP_MASTER = [
         "type": "頭",
         "baseName": "帽子",
         "data": {
-            "def": 6,
-            "mdef": 8,
-            "hp": 23,
-            "mp": 16
+            "def": 7,
+            "mdef": 10,
+            "hp": 22,
+            "mp": 20
         },
         "possibleOpts": [],
         "traits": []
@@ -1028,7 +1028,7 @@ const EQUIP_MASTER = [
         "type": "体",
         "baseName": "鎧",
         "data": {
-            "def": 11,
+            "def": 12,
             "mdef": 8,
             "finRed": 8
         },
@@ -1044,7 +1044,7 @@ const EQUIP_MASTER = [
         "baseName": "ローブ",
         "data": {
             "def": 8,
-            "mag": 8,
+            "mag": 10,
             "mdef": 10,
             "elmRes": {
                 "光": 5
@@ -1080,7 +1080,7 @@ const EQUIP_MASTER = [
         "type": "足",
         "baseName": "くつ",
         "data": {
-            "spd": 11,
+            "spd": 12,
             "eva": 5
         },
         "possibleOpts": [],
@@ -1094,7 +1094,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "剣",
         "data": {
-            "atk": 16,
+            "atk": 18,
             "hit": 10
         },
         "possibleOpts": [],
@@ -1113,7 +1113,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "斧",
         "data": {
-            "atk": 19,
+            "atk": 24,
             "spd": -5,
             "cri": 30,
             "hit": -30
@@ -1129,8 +1129,8 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "短剣",
         "data": {
-            "atk": 13,
-            "mag": 13,
+            "atk": 12,
+            "mag": 12,
             "cri": 5
         },
         "possibleOpts": [],
@@ -1144,7 +1144,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "杖",
         "data": {
-            "mag": 17
+            "mag": 22
         },
         "possibleOpts": [],
         "traits": [
@@ -1162,7 +1162,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "槍",
         "data": {
-            "atk": 17,
+            "atk": 21,
             "elmAtk": {
                 "水": 10
             }
@@ -1178,7 +1178,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "弓",
         "data": {
-            "atk": 17,
+            "atk": 21,
             "cri": 12,
             "hit": -15
         },
@@ -1193,8 +1193,8 @@ const EQUIP_MASTER = [
         "type": "盾",
         "baseName": "盾",
         "data": {
-            "def": 15,
-            "mdef": 11
+            "def": 17,
+            "mdef": 13
         },
         "possibleOpts": [],
         "traits": [
@@ -1212,10 +1212,10 @@ const EQUIP_MASTER = [
         "type": "盾",
         "baseName": "腕輪",
         "data": {
-            "atk": 8,
-            "def": 9,
-            "mag": 8,
-            "mdef": 11
+            "atk": 10,
+            "def": 12,
+            "mag": 10,
+            "mdef": 14
         },
         "possibleOpts": [],
         "traits": []
@@ -1228,10 +1228,10 @@ const EQUIP_MASTER = [
         "type": "頭",
         "baseName": "兜",
         "data": {
-            "def": 9,
-            "mdef": 6,
-            "hp": 18,
-            "mp": 25
+            "def": 12,
+            "mdef": 8,
+            "hp": 24,
+            "mp": 26
         },
         "possibleOpts": [],
         "traits": []
@@ -1244,10 +1244,10 @@ const EQUIP_MASTER = [
         "type": "頭",
         "baseName": "帽子",
         "data": {
-            "def": 6,
-            "mdef": 9,
-            "hp": 25,
-            "mp": 18
+            "def": 8,
+            "mdef": 12,
+            "hp": 26,
+            "mp": 24
         },
         "possibleOpts": [],
         "traits": []
@@ -1260,8 +1260,8 @@ const EQUIP_MASTER = [
         "type": "体",
         "baseName": "鎧",
         "data": {
-            "def": 12,
-            "mdef": 9,
+            "def": 14,
+            "mdef": 10,
             "finRed": 10
         },
         "possibleOpts": [],
@@ -1275,9 +1275,9 @@ const EQUIP_MASTER = [
         "type": "体",
         "baseName": "ローブ",
         "data": {
-            "def": 9,
-            "mag": 9,
-            "mdef": 11,
+            "def": 10,
+            "mag": 12,
+            "mdef": 12,
             "elmRes": {
                 "火": 5,
                 "水": 5,
@@ -1296,8 +1296,8 @@ const EQUIP_MASTER = [
         "type": "足",
         "baseName": "ブーツ",
         "data": {
-            "def": 9,
-            "spd": 9
+            "def": 10,
+            "spd": 10
         },
         "possibleOpts": [],
         "traits": []
@@ -1310,7 +1310,7 @@ const EQUIP_MASTER = [
         "type": "足",
         "baseName": "くつ",
         "data": {
-            "spd": 12,
+            "spd": 14,
             "eva": 5
         },
         "possibleOpts": [],
@@ -1324,7 +1324,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "剣",
         "data": {
-            "atk": 17,
+            "atk": 22,
             "hit": 10
         },
         "possibleOpts": [],
@@ -1338,7 +1338,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "斧",
         "data": {
-            "atk": 20,
+            "atk": 30,
             "spd": -6,
             "hit": -10
         },
@@ -1353,8 +1353,8 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "短剣",
         "data": {
-            "atk": 15,
-            "mag": 15,
+            "atk": 16,
+            "mag": 16,
             "cri": 5,
             "attack_Fear": 10
         },
@@ -1369,7 +1369,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "杖",
         "data": {
-            "mag": 19
+            "mag": 28
         },
         "possibleOpts": [],
         "traits": []
@@ -1382,7 +1382,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "槍",
         "data": {
-            "atk": 19
+            "atk": 26
         },
         "possibleOpts": [],
         "traits": []
@@ -1395,7 +1395,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "弓",
         "data": {
-            "atk": 19,
+            "atk": 26,
             "cri": 15,
             "hit": -15
         },
@@ -1410,8 +1410,8 @@ const EQUIP_MASTER = [
         "type": "盾",
         "baseName": "盾",
         "data": {
-            "def": 16,
-            "mdef": 12,
+            "def": 21,
+            "mdef": 16,
             "resists_Debuff": 5
         },
         "possibleOpts": [],
@@ -1425,10 +1425,10 @@ const EQUIP_MASTER = [
         "type": "盾",
         "baseName": "腕輪",
         "data": {
-            "atk": 9,
-            "def": 11,
-            "mag": 9,
-            "mdef": 12
+            "atk": 12,
+            "def": 15,
+            "mag": 12,
+            "mdef": 17
         },
         "possibleOpts": [],
         "traits": []
@@ -1441,10 +1441,10 @@ const EQUIP_MASTER = [
         "type": "頭",
         "baseName": "兜",
         "data": {
-            "def": 10,
-            "mdef": 7,
-            "hp": 20,
-            "mp": 28
+            "def": 15,
+            "mdef": 10,
+            "hp": 29,
+            "mp": 31
         },
         "possibleOpts": [],
         "traits": [
@@ -1462,10 +1462,10 @@ const EQUIP_MASTER = [
         "type": "頭",
         "baseName": "帽子",
         "data": {
-            "def": 7,
-            "mdef": 10,
-            "hp": 28,
-            "mp": 20
+            "def": 10,
+            "mdef": 15,
+            "hp": 31,
+            "mp": 29
         },
         "possibleOpts": [],
         "traits": [
@@ -1483,8 +1483,8 @@ const EQUIP_MASTER = [
         "type": "体",
         "baseName": "鎧",
         "data": {
-            "def": 13,
-            "mdef": 10,
+            "def": 17,
+            "mdef": 12,
             "elmRes": {
                 "火": 10
             }
@@ -1505,9 +1505,9 @@ const EQUIP_MASTER = [
         "type": "体",
         "baseName": "ローブ",
         "data": {
-            "def": 10,
-            "mag": 10,
-            "mdef": 12
+            "def": 12,
+            "mag": 15,
+            "mdef": 15
         },
         "possibleOpts": [],
         "traits": []
@@ -1520,8 +1520,8 @@ const EQUIP_MASTER = [
         "type": "足",
         "baseName": "ブーツ",
         "data": {
-            "def": 10,
-            "spd": 10
+            "def": 12,
+            "spd": 12
         },
         "possibleOpts": [],
         "traits": []
@@ -1534,7 +1534,7 @@ const EQUIP_MASTER = [
         "type": "足",
         "baseName": "くつ",
         "data": {
-            "spd": 13,
+            "spd": 17,
             "eva": 5
         },
         "possibleOpts": [],
@@ -1548,7 +1548,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "剣",
         "data": {
-            "atk": 19,
+            "atk": 27,
             "hit": 10,
             "eva": 10
         },
@@ -1563,7 +1563,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "斧",
         "data": {
-            "atk": 22,
+            "atk": 35,
             "spd": -6,
             "hit": -10
         },
@@ -1583,8 +1583,8 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "短剣",
         "data": {
-            "atk": 15,
-            "mag": 15,
+            "atk": 19,
+            "mag": 19,
             "cri": 5,
             "elmAtk": {
                 "火": 10
@@ -1601,7 +1601,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "杖",
         "data": {
-            "mag": 20,
+            "mag": 33,
             "elmAtk": {
                 "火": 5,
                 "水": 5,
@@ -1620,7 +1620,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "槍",
         "data": {
-            "atk": 20,
+            "atk": 31,
             "elmAtk": {
                 "火": 10
             }
@@ -1641,7 +1641,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "弓",
         "data": {
-            "atk": 20,
+            "atk": 31,
             "cri": 18,
             "hit": -15,
             "elmAtk": {
@@ -1664,8 +1664,8 @@ const EQUIP_MASTER = [
         "type": "盾",
         "baseName": "盾",
         "data": {
-            "def": 18,
-            "mdef": 12,
+            "def": 24,
+            "mdef": 19,
             "elmRes": {
                 "光": 10
             }
@@ -1686,10 +1686,10 @@ const EQUIP_MASTER = [
         "type": "盾",
         "baseName": "腕輪",
         "data": {
-            "atk": 9,
-            "def": 11,
-            "mag": 9,
-            "mdef": 12,
+            "atk": 15,
+            "def": 18,
+            "mag": 15,
+            "mdef": 20,
             "resists_Debuff": 10
         },
         "possibleOpts": [],
@@ -1703,10 +1703,10 @@ const EQUIP_MASTER = [
         "type": "頭",
         "baseName": "兜",
         "data": {
-            "def": 10,
-            "mdef": 7,
-            "hp": 21,
-            "mp": 30
+            "def": 17,
+            "mdef": 12,
+            "hp": 34,
+            "mp": 36
         },
         "possibleOpts": [],
         "traits": []
@@ -1719,10 +1719,10 @@ const EQUIP_MASTER = [
         "type": "頭",
         "baseName": "帽子",
         "data": {
-            "def": 7,
-            "mdef": 10,
-            "hp": 30,
-            "mp": 21
+            "def": 12,
+            "mdef": 17,
+            "hp": 36,
+            "mp": 34
         },
         "possibleOpts": [],
         "traits": []
@@ -1735,8 +1735,8 @@ const EQUIP_MASTER = [
         "type": "体",
         "baseName": "鎧",
         "data": {
-            "def": 14,
-            "mdef": 10
+            "def": 20,
+            "mdef": 14
         },
         "possibleOpts": [],
         "traits": [
@@ -1754,9 +1754,9 @@ const EQUIP_MASTER = [
         "type": "体",
         "baseName": "ローブ",
         "data": {
-            "def": 11,
-            "mag": 11,
-            "mdef": 13,
+            "def": 14,
+            "mag": 18,
+            "mdef": 18,
             "elmRes": {
                 "光": 10
             }
@@ -1772,8 +1772,8 @@ const EQUIP_MASTER = [
         "type": "足",
         "baseName": "ブーツ",
         "data": {
-            "def": 10,
-            "spd": 10
+            "def": 15,
+            "spd": 15
         },
         "possibleOpts": [],
         "traits": []
@@ -1786,7 +1786,7 @@ const EQUIP_MASTER = [
         "type": "足",
         "baseName": "くつ",
         "data": {
-            "spd": 14,
+            "spd": 20,
             "eva": 5
         },
         "possibleOpts": [],
@@ -1800,7 +1800,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "剣",
         "data": {
-            "atk": 20,
+            "atk": 31,
             "cri": 10,
             "hit": 10
         },
@@ -1815,7 +1815,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "斧",
         "data": {
-            "atk": 23,
+            "atk": 41,
             "spd": -6,
             "hit": -10,
             "attack_Fear": 10
@@ -1831,8 +1831,8 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "短剣",
         "data": {
-            "atk": 16,
-            "mag": 16,
+            "atk": 23,
+            "mag": 23,
             "cri": 5,
             "attack_Poison": 15
         },
@@ -1847,7 +1847,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "杖",
         "data": {
-            "mag": 22,
+            "mag": 39,
             "finDmg": 10
         },
         "possibleOpts": [],
@@ -1861,7 +1861,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "槍",
         "data": {
-            "atk": 22,
+            "atk": 35,
             "cri": 5,
             "hit": 5
         },
@@ -1876,7 +1876,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "弓",
         "data": {
-            "atk": 22,
+            "atk": 35,
             "cri": 20,
             "hit": -15
         },
@@ -1891,8 +1891,8 @@ const EQUIP_MASTER = [
         "type": "盾",
         "baseName": "盾",
         "data": {
-            "def": 19,
-            "mdef": 14,
+            "def": 28,
+            "mdef": 21,
             "elmRes": {
                 "火": 10,
                 "水": 10,
@@ -1911,10 +1911,10 @@ const EQUIP_MASTER = [
         "type": "盾",
         "baseName": "腕輪",
         "data": {
-            "atk": 10,
-            "def": 12,
-            "mag": 10,
-            "mdef": 14
+            "atk": 17,
+            "def": 20,
+            "mag": 17,
+            "mdef": 24
         },
         "possibleOpts": [],
         "traits": [
@@ -1932,10 +1932,10 @@ const EQUIP_MASTER = [
         "type": "頭",
         "baseName": "兜",
         "data": {
-            "def": 11,
-            "mdef": 8,
-            "hp": 23,
-            "mp": 32,
+            "def": 20,
+            "mdef": 13,
+            "hp": 38,
+            "mp": 42,
             "resists_Fear": 10
         },
         "possibleOpts": [],
@@ -1949,10 +1949,10 @@ const EQUIP_MASTER = [
         "type": "頭",
         "baseName": "帽子",
         "data": {
-            "def": 8,
-            "mdef": 11,
-            "hp": 32,
-            "mp": 23
+            "def": 13,
+            "mdef": 20,
+            "hp": 42,
+            "mp": 38
         },
         "possibleOpts": [],
         "traits": []
@@ -1965,8 +1965,8 @@ const EQUIP_MASTER = [
         "type": "体",
         "baseName": "鎧",
         "data": {
-            "def": 15,
-            "mdef": 11,
+            "def": 23,
+            "mdef": 17,
             "finRed": 10
         },
         "possibleOpts": [],
@@ -1980,9 +1980,9 @@ const EQUIP_MASTER = [
         "type": "体",
         "baseName": "ローブ",
         "data": {
-            "def": 12,
-            "mag": 12,
-            "mdef": 14
+            "def": 17,
+            "mag": 20,
+            "mdef": 21
         },
         "possibleOpts": [],
         "traits": []
@@ -1995,8 +1995,8 @@ const EQUIP_MASTER = [
         "type": "足",
         "baseName": "ブーツ",
         "data": {
-            "def": 11,
-            "spd": 11
+            "def": 17,
+            "spd": 17
         },
         "possibleOpts": [],
         "traits": [
@@ -2014,7 +2014,7 @@ const EQUIP_MASTER = [
         "type": "足",
         "baseName": "くつ",
         "data": {
-            "spd": 15,
+            "spd": 24,
             "eva": 5
         },
         "possibleOpts": [],
@@ -2033,7 +2033,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "剣",
         "data": {
-            "atk": 20,
+            "atk": 36,
             "hit": 10,
             "elmAtk": {
                 "雷": 10
@@ -2050,7 +2050,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "斧",
         "data": {
-            "atk": 25,
+            "atk": 46,
             "spd": -7,
             "hit": -10,
             "attack_Fear": 10
@@ -2071,8 +2071,8 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "短剣",
         "data": {
-            "atk": 17,
-            "mag": 17,
+            "atk": 26,
+            "mag": 26,
             "cri": 5,
             "elmAtk": {
                 "雷": 10
@@ -2096,7 +2096,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "杖",
         "data": {
-            "mag": 23,
+            "mag": 44,
             "elmAtk": {
                 "火": 10
             }
@@ -2117,7 +2117,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "槍",
         "data": {
-            "atk": 23,
+            "atk": 40,
             "finDmg": 5
         },
         "possibleOpts": [],
@@ -2131,7 +2131,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "弓",
         "data": {
-            "atk": 23,
+            "atk": 40,
             "cri": 20,
             "hit": -15,
             "elmAtk": {
@@ -2149,8 +2149,8 @@ const EQUIP_MASTER = [
         "type": "盾",
         "baseName": "盾",
         "data": {
-            "def": 19,
-            "mdef": 15,
+            "def": 31,
+            "mdef": 24,
             "resists_Debuff": 15
         },
         "possibleOpts": [],
@@ -2164,10 +2164,10 @@ const EQUIP_MASTER = [
         "type": "盾",
         "baseName": "腕輪",
         "data": {
-            "atk": 10,
-            "def": 14,
-            "mag": 10,
-            "mdef": 15
+            "atk": 20,
+            "def": 23,
+            "mag": 20,
+            "mdef": 27
         },
         "possibleOpts": [],
         "traits": []
@@ -2180,10 +2180,10 @@ const EQUIP_MASTER = [
         "type": "頭",
         "baseName": "兜",
         "data": {
-            "def": 12,
-            "mdef": 8,
-            "hp": 24,
-            "mp": 34
+            "def": 22,
+            "mdef": 15,
+            "hp": 43,
+            "mp": 47
         },
         "possibleOpts": [],
         "traits": []
@@ -2196,10 +2196,10 @@ const EQUIP_MASTER = [
         "type": "頭",
         "baseName": "帽子",
         "data": {
-            "def": 8,
-            "mdef": 12,
-            "hp": 34,
-            "mp": 24,
+            "def": 15,
+            "mdef": 22,
+            "hp": 47,
+            "mp": 43,
             "resists_SpellSeal": 10
         },
         "possibleOpts": [],
@@ -2213,8 +2213,8 @@ const EQUIP_MASTER = [
         "type": "体",
         "baseName": "鎧",
         "data": {
-            "def": 16,
-            "mdef": 12,
+            "def": 26,
+            "mdef": 19,
             "finRed": 10
         },
         "possibleOpts": [],
@@ -2228,9 +2228,9 @@ const EQUIP_MASTER = [
         "type": "体",
         "baseName": "ローブ",
         "data": {
-            "def": 13,
-            "mag": 13,
-            "mdef": 14,
+            "def": 19,
+            "mag": 23,
+            "mdef": 24,
             "elmRes": {
                 "光": 15,
                 "闇": 15
@@ -2252,8 +2252,8 @@ const EQUIP_MASTER = [
         "type": "足",
         "baseName": "ブーツ",
         "data": {
-            "def": 12,
-            "spd": 12,
+            "def": 20,
+            "spd": 20,
             "elmRes": {
                 "闇": 15
             }
@@ -2269,7 +2269,7 @@ const EQUIP_MASTER = [
         "type": "足",
         "baseName": "くつ",
         "data": {
-            "spd": 16,
+            "spd": 27,
             "eva": 5
         },
         "possibleOpts": [],
@@ -2283,7 +2283,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "剣",
         "data": {
-            "atk": 29,
+            "atk": 40,
             "hit": 10,
             "elmAtk": {
                 "風": 10
@@ -2301,7 +2301,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "斧",
         "data": {
-            "atk": 33,
+            "atk": 52,
             "spd": -9,
             "hit": -10,
             "elmAtk": {
@@ -2320,8 +2320,8 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "短剣",
         "data": {
-            "atk": 23,
-            "mag": 23,
+            "atk": 30,
+            "mag": 30,
             "cri": 10,
             "attack_Poison": 15
         },
@@ -2336,7 +2336,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "杖",
         "data": {
-            "mag": 32,
+            "mag": 50,
             "finDmg": 10
         },
         "possibleOpts": [],
@@ -2355,7 +2355,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "槍",
         "data": {
-            "atk": 32,
+            "atk": 45,
             "elmAtk": {
                 "光": 15
             }
@@ -2371,7 +2371,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "弓",
         "data": {
-            "atk": 32,
+            "atk": 45,
             "cri": 20,
             "hit": -15,
             "attack_InstantDeath": 5
@@ -2387,8 +2387,8 @@ const EQUIP_MASTER = [
         "type": "盾",
         "baseName": "盾",
         "data": {
-            "def": 27,
-            "mdef": 20,
+            "def": 35,
+            "mdef": 27,
             "elmRes": {
                 "闇": 20
             }
@@ -2404,10 +2404,10 @@ const EQUIP_MASTER = [
         "type": "盾",
         "baseName": "腕輪",
         "data": {
-            "atk": 14,
-            "def": 18,
-            "mag": 14,
-            "mdef": 20,
+            "atk": 22,
+            "def": 26,
+            "mag": 22,
+            "mdef": 30,
             "finDmg": 5
         },
         "possibleOpts": [],
@@ -2421,10 +2421,10 @@ const EQUIP_MASTER = [
         "type": "頭",
         "baseName": "兜",
         "data": {
-            "def": 16,
-            "mdef": 11,
-            "hp": 33,
-            "mp": 46,
+            "def": 25,
+            "mdef": 17,
+            "hp": 48,
+            "mp": 52,
             "resists_Fear": 20
         },
         "possibleOpts": [],
@@ -2438,10 +2438,10 @@ const EQUIP_MASTER = [
         "type": "頭",
         "baseName": "帽子",
         "data": {
-            "def": 11,
-            "mdef": 16,
-            "hp": 46,
-            "mp": 33,
+            "def": 17,
+            "mdef": 25,
+            "hp": 52,
+            "mp": 48,
             "resists_SpellSeal": 20
         },
         "possibleOpts": [],
@@ -2455,8 +2455,8 @@ const EQUIP_MASTER = [
         "type": "体",
         "baseName": "鎧",
         "data": {
-            "def": 22,
-            "mdef": 16,
+            "def": 29,
+            "mdef": 21,
             "finRed": 10,
             "elmRes": {
                 "雷": 20
@@ -2478,9 +2478,9 @@ const EQUIP_MASTER = [
         "type": "体",
         "baseName": "ローブ",
         "data": {
-            "def": 17,
-            "mag": 17,
-            "mdef": 20,
+            "def": 21,
+            "mag": 26,
+            "mdef": 27,
             "elmRes": {
                 "闇": 20
             }
@@ -2501,8 +2501,8 @@ const EQUIP_MASTER = [
         "type": "足",
         "baseName": "ブーツ",
         "data": {
-            "def": 16,
-            "spd": 16
+            "def": 22,
+            "spd": 22
         },
         "possibleOpts": [],
         "traits": [
@@ -2520,7 +2520,7 @@ const EQUIP_MASTER = [
         "type": "足",
         "baseName": "くつ",
         "data": {
-            "spd": 22,
+            "spd": 30,
             "eva": 10
         },
         "possibleOpts": [],
@@ -2534,7 +2534,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "剣",
         "data": {
-            "atk": 29,
+            "atk": 45,
             "hit": 10
         },
         "possibleOpts": [],
@@ -2548,7 +2548,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "斧",
         "data": {
-            "atk": 36,
+            "atk": 59,
             "spd": -10,
             "hit": -10,
             "attack_Fear": 10
@@ -2569,8 +2569,8 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "短剣",
         "data": {
-            "atk": 25,
-            "mag": 25,
+            "atk": 34,
+            "mag": 34,
             "cri": 10,
             "attack_Poison": 15
         },
@@ -2585,7 +2585,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "杖",
         "data": {
-            "mag": 33
+            "mag": 56
         },
         "possibleOpts": [],
         "traits": [
@@ -2603,7 +2603,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "槍",
         "data": {
-            "atk": 33,
+            "atk": 51,
             "finRed": 5
         },
         "possibleOpts": [],
@@ -2622,7 +2622,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "弓",
         "data": {
-            "atk": 33,
+            "atk": 51,
             "cri": 25,
             "hit": -20
         },
@@ -2642,8 +2642,8 @@ const EQUIP_MASTER = [
         "type": "盾",
         "baseName": "盾",
         "data": {
-            "def": 27,
-            "mdef": 20,
+            "def": 39,
+            "mdef": 30,
             "resists_Debuff": 20
         },
         "possibleOpts": [],
@@ -2657,10 +2657,10 @@ const EQUIP_MASTER = [
         "type": "盾",
         "baseName": "腕輪",
         "data": {
-            "atk": 15,
-            "def": 19,
-            "mag": 15,
-            "mdef": 20
+            "atk": 24,
+            "def": 29,
+            "mag": 24,
+            "mdef": 33
         },
         "possibleOpts": [],
         "traits": []
@@ -2673,10 +2673,10 @@ const EQUIP_MASTER = [
         "type": "頭",
         "baseName": "兜",
         "data": {
-            "def": 17,
-            "mdef": 12,
-            "hp": 34,
-            "mp": 48
+            "def": 28,
+            "mdef": 19,
+            "hp": 53,
+            "mp": 58
         },
         "possibleOpts": [],
         "traits": [
@@ -2694,10 +2694,10 @@ const EQUIP_MASTER = [
         "type": "頭",
         "baseName": "帽子",
         "data": {
-            "def": 12,
-            "mdef": 17,
-            "hp": 48,
-            "mp": 34
+            "def": 19,
+            "mdef": 28,
+            "hp": 58,
+            "mp": 53
         },
         "possibleOpts": [],
         "traits": [
@@ -2715,8 +2715,8 @@ const EQUIP_MASTER = [
         "type": "体",
         "baseName": "鎧",
         "data": {
-            "def": 23,
-            "mdef": 17,
+            "def": 32,
+            "mdef": 23,
             "finRed": 10
         },
         "possibleOpts": [],
@@ -2735,9 +2735,9 @@ const EQUIP_MASTER = [
         "type": "体",
         "baseName": "ローブ",
         "data": {
-            "def": 18,
-            "mag": 18,
-            "mdef": 20
+            "def": 23,
+            "mag": 29,
+            "mdef": 30
         },
         "possibleOpts": [],
         "traits": []
@@ -2750,8 +2750,8 @@ const EQUIP_MASTER = [
         "type": "足",
         "baseName": "ブーツ",
         "data": {
-            "def": 17,
-            "spd": 17
+            "def": 24,
+            "spd": 24
         },
         "possibleOpts": [],
         "traits": []
@@ -2764,7 +2764,7 @@ const EQUIP_MASTER = [
         "type": "足",
         "baseName": "くつ",
         "data": {
-            "spd": 23,
+            "spd": 33,
             "eva": 10
         },
         "possibleOpts": [],
@@ -2778,7 +2778,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "剣",
         "data": {
-            "atk": 30,
+            "atk": 50,
             "hit": 10,
             "elmAtk": {
                 "雷": 15
@@ -2800,7 +2800,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "斧",
         "data": {
-            "atk": 38,
+            "atk": 65,
             "spd": -10,
             "hit": -10,
             "attack_Fear": 10
@@ -2821,8 +2821,8 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "短剣",
         "data": {
-            "atk": 25,
-            "mag": 25,
+            "atk": 38,
+            "mag": 38,
             "cri": 10,
             "attack_InstantDeath": 3
         },
@@ -2837,7 +2837,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "杖",
         "data": {
-            "mag": 35
+            "mag": 63
         },
         "possibleOpts": [],
         "traits": []
@@ -2850,7 +2850,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "槍",
         "data": {
-            "atk": 35,
+            "atk": 56,
             "hit": 10,
             "elmAtk": {
                 "風": 20
@@ -2872,7 +2872,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "弓",
         "data": {
-            "atk": 35,
+            "atk": 56,
             "cri": 25,
             "hit": -20
         },
@@ -2887,8 +2887,8 @@ const EQUIP_MASTER = [
         "type": "盾",
         "baseName": "盾",
         "data": {
-            "def": 28,
-            "mdef": 22,
+            "def": 42,
+            "mdef": 32,
             "elmRes": {
                 "火": 10,
                 "水": 10,
@@ -2911,10 +2911,10 @@ const EQUIP_MASTER = [
         "type": "盾",
         "baseName": "腕輪",
         "data": {
-            "atk": 15,
-            "def": 19,
-            "mag": 15,
-            "mdef": 22
+            "atk": 27,
+            "def": 32,
+            "mag": 27,
+            "mdef": 36
         },
         "possibleOpts": [],
         "traits": []
@@ -2927,10 +2927,10 @@ const EQUIP_MASTER = [
         "type": "頭",
         "baseName": "兜",
         "data": {
-            "def": 17,
-            "mdef": 12,
-            "hp": 36,
-            "mp": 50,
+            "def": 30,
+            "mdef": 21,
+            "hp": 59,
+            "mp": 63,
             "resists_Fear": 25
         },
         "possibleOpts": [],
@@ -2949,10 +2949,10 @@ const EQUIP_MASTER = [
         "type": "頭",
         "baseName": "帽子",
         "data": {
-            "def": 12,
-            "mdef": 17,
-            "hp": 50,
-            "mp": 36,
+            "def": 21,
+            "mdef": 30,
+            "hp": 63,
+            "mp": 59,
             "resists_SpellSeal": 25
         },
         "possibleOpts": [],
@@ -2971,8 +2971,8 @@ const EQUIP_MASTER = [
         "type": "体",
         "baseName": "鎧",
         "data": {
-            "def": 24,
-            "mdef": 17,
+            "def": 35,
+            "mdef": 25,
             "finRed": 15
         },
         "possibleOpts": [],
@@ -2986,9 +2986,9 @@ const EQUIP_MASTER = [
         "type": "体",
         "baseName": "ローブ",
         "data": {
-            "def": 19,
-            "mag": 19,
-            "mdef": 21,
+            "def": 25,
+            "mag": 32,
+            "mdef": 33,
             "elmRes": {
                 "光": 20
             }
@@ -3009,8 +3009,8 @@ const EQUIP_MASTER = [
         "type": "足",
         "baseName": "ブーツ",
         "data": {
-            "def": 17,
-            "spd": 17,
+            "def": 27,
+            "spd": 27,
             "resists_Shock": 40
         },
         "possibleOpts": [],
@@ -3029,7 +3029,7 @@ const EQUIP_MASTER = [
         "type": "足",
         "baseName": "くつ",
         "data": {
-            "spd": 24,
+            "spd": 36,
             "eva": 10
         },
         "possibleOpts": [],
@@ -3043,7 +3043,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "剣",
         "data": {
-            "atk": 32,
+            "atk": 56,
             "hit": 10,
             "elmAtk": {
                 "火": 15
@@ -3060,7 +3060,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "斧",
         "data": {
-            "atk": 39,
+            "atk": 72,
             "spd": -10,
             "hit": -10,
             "elmAtk": {
@@ -3078,8 +3078,8 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "短剣",
         "data": {
-            "atk": 26,
-            "mag": 26,
+            "atk": 42,
+            "mag": 42,
             "cri": 10,
             "attack_Poison": 20
         },
@@ -3099,7 +3099,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "杖",
         "data": {
-            "mag": 36,
+            "mag": 69,
             "finRed": 10
         },
         "possibleOpts": [],
@@ -3118,7 +3118,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "槍",
         "data": {
-            "atk": 36,
+            "atk": 62,
             "elmAtk": {
                 "火": 20
             }
@@ -3134,7 +3134,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "弓",
         "data": {
-            "atk": 36,
+            "atk": 62,
             "cri": 25,
             "hit": -20
         },
@@ -3149,8 +3149,8 @@ const EQUIP_MASTER = [
         "type": "盾",
         "baseName": "盾",
         "data": {
-            "def": 30,
-            "mdef": 23,
+            "def": 46,
+            "mdef": 35,
             "elmRes": {
                 "火": 30
             }
@@ -3166,10 +3166,10 @@ const EQUIP_MASTER = [
         "type": "盾",
         "baseName": "腕輪",
         "data": {
-            "atk": 16,
-            "def": 20,
-            "mag": 16,
-            "mdef": 23,
+            "atk": 29,
+            "def": 34,
+            "mag": 29,
+            "mdef": 39,
             "resists_Debuff": 30
         },
         "possibleOpts": [],
@@ -3183,10 +3183,10 @@ const EQUIP_MASTER = [
         "type": "頭",
         "baseName": "兜",
         "data": {
-            "def": 18,
-            "mdef": 13,
-            "hp": 37,
-            "mp": 52,
+            "def": 33,
+            "mdef": 22,
+            "hp": 64,
+            "mp": 69,
             "resists_Fear": 30
         },
         "possibleOpts": [],
@@ -3200,10 +3200,10 @@ const EQUIP_MASTER = [
         "type": "頭",
         "baseName": "帽子",
         "data": {
-            "def": 13,
-            "mdef": 18,
-            "hp": 52,
-            "mp": 37
+            "def": 22,
+            "mdef": 33,
+            "hp": 69,
+            "mp": 64
         },
         "possibleOpts": [],
         "traits": []
@@ -3216,8 +3216,8 @@ const EQUIP_MASTER = [
         "type": "体",
         "baseName": "鎧",
         "data": {
-            "def": 25,
-            "mdef": 18,
+            "def": 38,
+            "mdef": 28,
             "finRed": 15,
             "elmRes": {
                 "火": 20
@@ -3234,9 +3234,9 @@ const EQUIP_MASTER = [
         "type": "体",
         "baseName": "ローブ",
         "data": {
-            "def": 20,
-            "mag": 20,
-            "mdef": 22,
+            "def": 28,
+            "mag": 34,
+            "mdef": 36,
             "elmRes": {
                 "火": 10,
                 "水": 10,
@@ -3255,8 +3255,8 @@ const EQUIP_MASTER = [
         "type": "足",
         "baseName": "ブーツ",
         "data": {
-            "def": 18,
-            "spd": 18
+            "def": 29,
+            "spd": 29
         },
         "possibleOpts": [],
         "traits": []
@@ -3269,7 +3269,7 @@ const EQUIP_MASTER = [
         "type": "足",
         "baseName": "くつ",
         "data": {
-            "spd": 25,
+            "spd": 40,
             "eva": 10
         },
         "possibleOpts": [],
@@ -3283,7 +3283,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "剣",
         "data": {
-            "atk": 33,
+            "atk": 61,
             "hit": 10,
             "elmAtk": {
                 "闇": 15
@@ -3306,7 +3306,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "斧",
         "data": {
-            "atk": 41,
+            "atk": 78,
             "spd": -11,
             "hit": -10
         },
@@ -3321,8 +3321,8 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "短剣",
         "data": {
-            "atk": 28,
-            "mag": 28,
+            "atk": 46,
+            "mag": 46,
             "cri": 10,
             "attack_InstantDeath": 5
         },
@@ -3337,7 +3337,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "杖",
         "data": {
-            "mag": 38,
+            "mag": 76,
             "finRed": 10,
             "finDmg": 10
         },
@@ -3352,7 +3352,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "槍",
         "data": {
-            "atk": 38
+            "atk": 67
         },
         "possibleOpts": [],
         "traits": []
@@ -3365,7 +3365,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "弓",
         "data": {
-            "atk": 38,
+            "atk": 67,
             "cri": 25,
             "hit": -20,
             "elmAtk": {
@@ -3383,8 +3383,8 @@ const EQUIP_MASTER = [
         "type": "盾",
         "baseName": "盾",
         "data": {
-            "def": 31,
-            "mdef": 23,
+            "def": 49,
+            "mdef": 37,
             "finRed": 10,
             "resists_Debuff": 30
         },
@@ -3404,10 +3404,10 @@ const EQUIP_MASTER = [
         "type": "盾",
         "baseName": "腕輪",
         "data": {
-            "atk": 16,
-            "def": 20,
-            "mag": 16,
-            "mdef": 23
+            "atk": 32,
+            "def": 37,
+            "mag": 32,
+            "mdef": 42
         },
         "possibleOpts": [],
         "traits": []
@@ -3420,10 +3420,10 @@ const EQUIP_MASTER = [
         "type": "頭",
         "baseName": "兜",
         "data": {
-            "def": 19,
-            "mdef": 13,
-            "hp": 38,
-            "mp": 54,
+            "def": 35,
+            "mdef": 24,
+            "hp": 70,
+            "mp": 74,
             "resists_InstantDeath": 20
         },
         "possibleOpts": [],
@@ -3437,10 +3437,10 @@ const EQUIP_MASTER = [
         "type": "頭",
         "baseName": "帽子",
         "data": {
-            "def": 13,
-            "mdef": 19,
-            "hp": 54,
-            "mp": 38
+            "def": 24,
+            "mdef": 35,
+            "hp": 74,
+            "mp": 70
         },
         "possibleOpts": [],
         "traits": []
@@ -3453,8 +3453,8 @@ const EQUIP_MASTER = [
         "type": "体",
         "baseName": "鎧",
         "data": {
-            "def": 26,
-            "mdef": 19,
+            "def": 41,
+            "mdef": 30,
             "finRed": 20
         },
         "possibleOpts": [],
@@ -3468,9 +3468,9 @@ const EQUIP_MASTER = [
         "type": "体",
         "baseName": "ローブ",
         "data": {
-            "def": 20,
-            "mag": 20,
-            "mdef": 23,
+            "def": 30,
+            "mag": 37,
+            "mdef": 39,
             "elmRes": {
                 "闇": 20
             }
@@ -3486,8 +3486,8 @@ const EQUIP_MASTER = [
         "type": "足",
         "baseName": "ブーツ",
         "data": {
-            "def": 19,
-            "spd": 19
+            "def": 32,
+            "spd": 32
         },
         "possibleOpts": [],
         "traits": []
@@ -3500,7 +3500,7 @@ const EQUIP_MASTER = [
         "type": "足",
         "baseName": "くつ",
         "data": {
-            "spd": 26,
+            "spd": 43,
             "eva": 10
         },
         "possibleOpts": [],
@@ -3514,7 +3514,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "剣",
         "data": {
-            "atk": 35,
+            "atk": 66,
             "cri": 15,
             "hit": 10
         },
@@ -3529,7 +3529,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "斧",
         "data": {
-            "atk": 42,
+            "atk": 85,
             "spd": -11,
             "hit": -10,
             "attack_Fear": 15
@@ -3550,8 +3550,8 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "短剣",
         "data": {
-            "atk": 29,
-            "mag": 29,
+            "atk": 50,
+            "mag": 50,
             "cri": 10,
             "attack_Poison": 20,
             "attack_InstantDeath": 5
@@ -3567,7 +3567,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "杖",
         "data": {
-            "mag": 38,
+            "mag": 82,
             "finDmg": 10
         },
         "possibleOpts": [],
@@ -3581,7 +3581,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "槍",
         "data": {
-            "atk": 38,
+            "atk": 73,
             "cri": 10
         },
         "possibleOpts": [],
@@ -3595,7 +3595,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "弓",
         "data": {
-            "atk": 38,
+            "atk": 73,
             "cri": 25,
             "hit": -20
         },
@@ -3615,8 +3615,8 @@ const EQUIP_MASTER = [
         "type": "盾",
         "baseName": "盾",
         "data": {
-            "def": 32,
-            "mdef": 24,
+            "def": 53,
+            "mdef": 40,
             "elmRes": {
                 "火": 15,
                 "水": 15,
@@ -3641,10 +3641,10 @@ const EQUIP_MASTER = [
         "type": "盾",
         "baseName": "腕輪",
         "data": {
-            "atk": 18,
-            "def": 22,
-            "mag": 18,
-            "mdef": 24,
+            "atk": 34,
+            "def": 40,
+            "mag": 34,
+            "mdef": 45,
             "finDmg": 10
         },
         "possibleOpts": [],
@@ -3663,10 +3663,10 @@ const EQUIP_MASTER = [
         "type": "頭",
         "baseName": "兜",
         "data": {
-            "def": 20,
-            "mdef": 14,
-            "hp": 40,
-            "mp": 56,
+            "def": 38,
+            "mdef": 26,
+            "hp": 75,
+            "mp": 80,
             "resists_Fear": 50,
             "resists_InstantDeath": 50
         },
@@ -3690,10 +3690,10 @@ const EQUIP_MASTER = [
         "type": "頭",
         "baseName": "帽子",
         "data": {
-            "def": 14,
-            "mdef": 20,
-            "hp": 56,
-            "mp": 40,
+            "def": 26,
+            "mdef": 38,
+            "hp": 80,
+            "mp": 75,
             "resists_SpellSeal": 50
         },
         "possibleOpts": [],
@@ -3712,8 +3712,8 @@ const EQUIP_MASTER = [
         "type": "体",
         "baseName": "鎧",
         "data": {
-            "def": 26,
-            "mdef": 20,
+            "def": 44,
+            "mdef": 32,
             "finRed": 20,
             "resists_SkillSeal": 50,
             "resists_SpellSeal": 50
@@ -3738,9 +3738,9 @@ const EQUIP_MASTER = [
         "type": "体",
         "baseName": "ローブ",
         "data": {
-            "def": 21,
-            "mag": 21,
-            "mdef": 24,
+            "def": 32,
+            "mag": 40,
+            "mdef": 42,
             "resists_HealSeal": 50
         },
         "possibleOpts": [],
@@ -3763,8 +3763,8 @@ const EQUIP_MASTER = [
         "type": "足",
         "baseName": "ブーツ",
         "data": {
-            "def": 20,
-            "spd": 20,
+            "def": 34,
+            "spd": 34,
             "resists_Shock": 70
         },
         "possibleOpts": [],
@@ -3783,7 +3783,7 @@ const EQUIP_MASTER = [
         "type": "足",
         "baseName": "くつ",
         "data": {
-            "spd": 26,
+            "spd": 46,
             "eva": 10
         },
         "possibleOpts": [],
@@ -3802,7 +3802,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "剣",
         "data": {
-            "atk": 36,
+            "atk": 72,
             "hit": 10,
             "elmAtk": {
                 "闇": 15
@@ -3820,7 +3820,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "斧",
         "data": {
-            "atk": 44,
+            "atk": 93,
             "spd": -12,
             "hit": -10,
             "elmAtk": {
@@ -3838,8 +3838,8 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "短剣",
         "data": {
-            "atk": 29,
-            "mag": 29,
+            "atk": 55,
+            "mag": 55,
             "cri": 10,
             "attack_InstantDeath": 7
         },
@@ -3854,7 +3854,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "杖",
         "data": {
-            "mag": 39,
+            "mag": 90,
             "elmAtk": {
                 "光": 10,
                 "闇": 10
@@ -3871,7 +3871,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "槍",
         "data": {
-            "atk": 39,
+            "atk": 80,
             "elmAtk": {
                 "闇": 20
             }
@@ -3892,7 +3892,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "弓",
         "data": {
-            "atk": 39,
+            "atk": 80,
             "cri": 25,
             "hit": -20
         },
@@ -3907,8 +3907,8 @@ const EQUIP_MASTER = [
         "type": "盾",
         "baseName": "盾",
         "data": {
-            "def": 34,
-            "mdef": 24,
+            "def": 56,
+            "mdef": 42,
             "finRed": 10,
             "elmRes": {
                 "闇": 30
@@ -3925,10 +3925,10 @@ const EQUIP_MASTER = [
         "type": "盾",
         "baseName": "腕輪",
         "data": {
-            "atk": 18,
-            "def": 22,
-            "mag": 18,
-            "mdef": 24,
+            "atk": 37,
+            "def": 43,
+            "mag": 37,
+            "mdef": 48,
             "elmAtk": {
                 "火": 20
             }
@@ -3944,10 +3944,10 @@ const EQUIP_MASTER = [
         "type": "頭",
         "baseName": "兜",
         "data": {
-            "def": 20,
-            "mdef": 14,
-            "hp": 41,
-            "mp": 58,
+            "def": 41,
+            "mdef": 28,
+            "hp": 81,
+            "mp": 86,
             "resists_Fear": 40
         },
         "possibleOpts": [],
@@ -3961,10 +3961,10 @@ const EQUIP_MASTER = [
         "type": "頭",
         "baseName": "帽子",
         "data": {
-            "def": 14,
-            "mdef": 20,
-            "hp": 58,
-            "mp": 41
+            "def": 28,
+            "mdef": 41,
+            "hp": 86,
+            "mp": 81
         },
         "possibleOpts": [],
         "traits": []
@@ -3977,8 +3977,8 @@ const EQUIP_MASTER = [
         "type": "体",
         "baseName": "鎧",
         "data": {
-            "def": 27,
-            "mdef": 20
+            "def": 47,
+            "mdef": 34
         },
         "possibleOpts": [],
         "traits": []
@@ -3991,9 +3991,9 @@ const EQUIP_MASTER = [
         "type": "体",
         "baseName": "ローブ",
         "data": {
-            "def": 22,
-            "mag": 22,
-            "mdef": 25,
+            "def": 34,
+            "mag": 43,
+            "mdef": 45,
             "resists_Debuff": 30
         },
         "possibleOpts": [],
@@ -4007,8 +4007,8 @@ const EQUIP_MASTER = [
         "type": "足",
         "baseName": "ブーツ",
         "data": {
-            "def": 20,
-            "spd": 20
+            "def": 37,
+            "spd": 37
         },
         "possibleOpts": [],
         "traits": [
@@ -4026,7 +4026,7 @@ const EQUIP_MASTER = [
         "type": "足",
         "baseName": "くつ",
         "data": {
-            "spd": 27,
+            "spd": 50,
             "eva": 10
         },
         "possibleOpts": [],
@@ -4040,7 +4040,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "剣",
         "data": {
-            "atk": 36,
+            "atk": 78,
             "hit": 10,
             "eva": 10
         },
@@ -4060,7 +4060,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "斧",
         "data": {
-            "atk": 45,
+            "atk": 101,
             "spd": -12,
             "hit": -10
         },
@@ -4080,8 +4080,8 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "短剣",
         "data": {
-            "atk": 30,
-            "mag": 30,
+            "atk": 60,
+            "mag": 60,
             "cri": 10,
             "attack_Poison": 20
         },
@@ -4101,7 +4101,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "杖",
         "data": {
-            "mag": 41,
+            "mag": 98,
             "finRed": 10
         },
         "possibleOpts": [],
@@ -4120,7 +4120,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "槍",
         "data": {
-            "atk": 41,
+            "atk": 86,
             "finRed": 10
         },
         "possibleOpts": [],
@@ -4134,7 +4134,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "弓",
         "data": {
-            "atk": 41,
+            "atk": 86,
             "cri": 25,
             "hit": -20,
             "elmAtk": {
@@ -4152,8 +4152,8 @@ const EQUIP_MASTER = [
         "type": "盾",
         "baseName": "盾",
         "data": {
-            "def": 34,
-            "mdef": 26,
+            "def": 60,
+            "mdef": 45,
             "finRed": 10,
             "resists_Debuff": 30
         },
@@ -4173,10 +4173,10 @@ const EQUIP_MASTER = [
         "type": "盾",
         "baseName": "腕輪",
         "data": {
-            "atk": 19,
-            "def": 23,
-            "mag": 19,
-            "mdef": 26,
+            "atk": 40,
+            "def": 46,
+            "mag": 40,
+            "mdef": 52,
             "resists_Fear": 40
         },
         "possibleOpts": [],
@@ -4190,10 +4190,10 @@ const EQUIP_MASTER = [
         "type": "頭",
         "baseName": "兜",
         "data": {
-            "def": 21,
-            "mdef": 15,
-            "hp": 42,
-            "mp": 60,
+            "def": 44,
+            "mdef": 30,
+            "hp": 87,
+            "mp": 93,
             "resists_Fear": 50
         },
         "possibleOpts": [],
@@ -4207,10 +4207,10 @@ const EQUIP_MASTER = [
         "type": "頭",
         "baseName": "帽子",
         "data": {
-            "def": 15,
-            "mdef": 21,
-            "hp": 60,
-            "mp": 42
+            "def": 30,
+            "mdef": 44,
+            "hp": 93,
+            "mp": 87
         },
         "possibleOpts": [],
         "traits": []
@@ -4223,8 +4223,8 @@ const EQUIP_MASTER = [
         "type": "体",
         "baseName": "鎧",
         "data": {
-            "def": 28,
-            "mdef": 21,
+            "def": 50,
+            "mdef": 37,
             "finRed": 20,
             "resists_SkillSeal": 45
         },
@@ -4239,9 +4239,9 @@ const EQUIP_MASTER = [
         "type": "体",
         "baseName": "ローブ",
         "data": {
-            "def": 22,
-            "mag": 22,
-            "mdef": 25,
+            "def": 37,
+            "mag": 46,
+            "mdef": 48,
             "resists_HealSeal": 40
         },
         "possibleOpts": [],
@@ -4255,8 +4255,8 @@ const EQUIP_MASTER = [
         "type": "足",
         "baseName": "ブーツ",
         "data": {
-            "def": 21,
-            "spd": 21
+            "def": 40,
+            "spd": 40
         },
         "possibleOpts": [],
         "traits": []
@@ -4269,7 +4269,7 @@ const EQUIP_MASTER = [
         "type": "足",
         "baseName": "くつ",
         "data": {
-            "spd": 28,
+            "spd": 53,
             "eva": 10,
             "resists_Shock": 45
         },
@@ -4289,7 +4289,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "剣",
         "data": {
-            "atk": 38,
+            "atk": 84,
             "hit": 10,
             "finDmg": 15
         },
@@ -4304,7 +4304,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "斧",
         "data": {
-            "atk": 45,
+            "atk": 110,
             "spd": -12,
             "hit": -10,
             "elmAtk": {
@@ -4323,8 +4323,8 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "短剣",
         "data": {
-            "atk": 30,
-            "mag": 30,
+            "atk": 64,
+            "mag": 64,
             "cri": 10,
             "attack_Poison": 30,
             "attack_InstantDeath": 8
@@ -4347,7 +4347,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "杖",
         "data": {
-            "mag": 42,
+            "mag": 106,
             "resists_SpellSeal": 30
         },
         "possibleOpts": [],
@@ -4361,7 +4361,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "槍",
         "data": {
-            "atk": 42,
+            "atk": 93,
             "finDmg": 10
         },
         "possibleOpts": [],
@@ -4375,7 +4375,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "弓",
         "data": {
-            "atk": 42,
+            "atk": 93,
             "cri": 25,
             "hit": -20,
             "elmAtk": {
@@ -4398,8 +4398,8 @@ const EQUIP_MASTER = [
         "type": "盾",
         "baseName": "盾",
         "data": {
-            "def": 35,
-            "mdef": 27,
+            "def": 63,
+            "mdef": 47,
             "finRed": 15,
             "elmRes": {
                 "雷": 30
@@ -4416,10 +4416,10 @@ const EQUIP_MASTER = [
         "type": "盾",
         "baseName": "腕輪",
         "data": {
-            "atk": 19,
-            "def": 23,
-            "mag": 19,
-            "mdef": 27,
+            "atk": 42,
+            "def": 50,
+            "mag": 42,
+            "mdef": 55,
             "elmAtk": {
                 "混沌": 15
             }
@@ -4435,10 +4435,10 @@ const EQUIP_MASTER = [
         "type": "頭",
         "baseName": "兜",
         "data": {
-            "def": 21,
-            "mdef": 15,
-            "hp": 44,
-            "mp": 62,
+            "def": 46,
+            "mdef": 32,
+            "hp": 93,
+            "mp": 99,
             "resists_Fear": 60
         },
         "possibleOpts": [],
@@ -4457,10 +4457,10 @@ const EQUIP_MASTER = [
         "type": "頭",
         "baseName": "帽子",
         "data": {
-            "def": 15,
-            "mdef": 21,
-            "hp": 62,
-            "mp": 44,
+            "def": 32,
+            "mdef": 46,
+            "hp": 99,
+            "mp": 93,
             "resists_HealSeal": 50
         },
         "possibleOpts": [],
@@ -4479,8 +4479,8 @@ const EQUIP_MASTER = [
         "type": "体",
         "baseName": "鎧",
         "data": {
-            "def": 29,
-            "mdef": 21,
+            "def": 54,
+            "mdef": 39,
             "resists_Debuff": 40
         },
         "possibleOpts": [],
@@ -4499,9 +4499,9 @@ const EQUIP_MASTER = [
         "type": "体",
         "baseName": "ローブ",
         "data": {
-            "def": 23,
-            "mag": 23,
-            "mdef": 26,
+            "def": 39,
+            "mag": 50,
+            "mdef": 52,
             "elmRes": {
                 "混沌": 20
             }
@@ -4517,8 +4517,8 @@ const EQUIP_MASTER = [
         "type": "足",
         "baseName": "ブーツ",
         "data": {
-            "def": 21,
-            "spd": 21
+            "def": 42,
+            "spd": 42
         },
         "possibleOpts": [],
         "traits": []
@@ -4531,7 +4531,7 @@ const EQUIP_MASTER = [
         "type": "足",
         "baseName": "くつ",
         "data": {
-            "spd": 29,
+            "spd": 57,
             "eva": 15
         },
         "possibleOpts": [],
@@ -4545,7 +4545,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "剣",
         "data": {
-            "atk": 39,
+            "atk": 90,
             "hit": 10,
             "finDmg": 15,
             "elmAtk": {
@@ -4568,7 +4568,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "斧",
         "data": {
-            "atk": 46,
+            "atk": 118,
             "spd": -13,
             "hit": -10,
             "elmAtk": {
@@ -4586,8 +4586,8 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "短剣",
         "data": {
-            "atk": 32,
-            "mag": 32,
+            "atk": 69,
+            "mag": 69,
             "cri": 10,
             "elmAtk": {
                 "混沌": 20
@@ -4608,7 +4608,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "杖",
         "data": {
-            "mag": 44,
+            "mag": 114,
             "finDmg": 10,
             "elmAtk": {
                 "混沌": 20
@@ -4625,7 +4625,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "槍",
         "data": {
-            "atk": 44,
+            "atk": 99,
             "finDmg": 10,
             "elmAtk": {
                 "光": 20
@@ -4647,7 +4647,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "弓",
         "data": {
-            "atk": 44,
+            "atk": 99,
             "cri": 30,
             "hit": -20
         },
@@ -4662,8 +4662,8 @@ const EQUIP_MASTER = [
         "type": "盾",
         "baseName": "盾",
         "data": {
-            "def": 36,
-            "mdef": 27,
+            "def": 67,
+            "mdef": 50,
             "finRed": 15,
             "elmRes": {
                 "光": 30
@@ -4685,10 +4685,10 @@ const EQUIP_MASTER = [
         "type": "盾",
         "baseName": "腕輪",
         "data": {
-            "atk": 20,
-            "def": 24,
-            "mag": 20,
-            "mdef": 27
+            "atk": 45,
+            "def": 53,
+            "mag": 45,
+            "mdef": 59
         },
         "possibleOpts": [],
         "traits": []
@@ -4701,10 +4701,10 @@ const EQUIP_MASTER = [
         "type": "頭",
         "baseName": "兜",
         "data": {
-            "def": 22,
-            "mdef": 16,
-            "hp": 45,
-            "mp": 63,
+            "def": 49,
+            "mdef": 34,
+            "hp": 99,
+            "mp": 106,
             "resists_InstantDeath": 40
         },
         "possibleOpts": [],
@@ -4718,10 +4718,10 @@ const EQUIP_MASTER = [
         "type": "頭",
         "baseName": "帽子",
         "data": {
-            "def": 16,
-            "mdef": 22,
-            "hp": 63,
-            "mp": 45
+            "def": 34,
+            "mdef": 49,
+            "hp": 106,
+            "mp": 99
         },
         "possibleOpts": [],
         "traits": []
@@ -4734,8 +4734,8 @@ const EQUIP_MASTER = [
         "type": "体",
         "baseName": "鎧",
         "data": {
-            "def": 30,
-            "mdef": 22,
+            "def": 57,
+            "mdef": 42,
             "finRed": 20
         },
         "possibleOpts": [],
@@ -4754,9 +4754,9 @@ const EQUIP_MASTER = [
         "type": "体",
         "baseName": "ローブ",
         "data": {
-            "def": 24,
-            "mag": 24,
-            "mdef": 27,
+            "def": 42,
+            "mag": 53,
+            "mdef": 55,
             "elmRes": {
                 "火": 20,
                 "水": 20,
@@ -4775,8 +4775,8 @@ const EQUIP_MASTER = [
         "type": "足",
         "baseName": "ブーツ",
         "data": {
-            "def": 22,
-            "spd": 22
+            "def": 45,
+            "spd": 45
         },
         "possibleOpts": [],
         "traits": []
@@ -4789,7 +4789,7 @@ const EQUIP_MASTER = [
         "type": "足",
         "baseName": "くつ",
         "data": {
-            "spd": 30,
+            "spd": 60,
             "eva": 15
         },
         "possibleOpts": [],
@@ -4803,7 +4803,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "剣",
         "data": {
-            "atk": 45,
+            "atk": 96,
             "hit": 10,
             "elmAtk": {
                 "混沌": 20
@@ -4825,7 +4825,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "斧",
         "data": {
-            "atk": 54,
+            "atk": 126,
             "spd": -15,
             "hit": -10,
             "attack_Fear": 20
@@ -4848,8 +4848,8 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "短剣",
         "data": {
-            "atk": 36,
-            "mag": 36,
+            "atk": 74,
+            "mag": 74,
             "cri": 15,
             "attack_Poison": 50,
             "attack_InstantDeath": 10
@@ -4870,7 +4870,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "杖",
         "data": {
-            "mag": 49,
+            "mag": 122,
             "resists_SpellSeal": 50
         },
         "possibleOpts": [],
@@ -4889,7 +4889,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "槍",
         "data": {
-            "atk": 49,
+            "atk": 106,
             "finDmg": 10,
             "elmAtk": {
                 "混沌": 20
@@ -4911,7 +4911,7 @@ const EQUIP_MASTER = [
         "type": "武器",
         "baseName": "弓",
         "data": {
-            "atk": 49,
+            "atk": 106,
             "cri": 40,
             "hit": -25,
             "finDmg": 20
@@ -4932,8 +4932,8 @@ const EQUIP_MASTER = [
         "type": "盾",
         "baseName": "盾",
         "data": {
-            "def": 42,
-            "mdef": 31,
+            "def": 70,
+            "mdef": 52,
             "finRed": 15,
             "elmRes": {
                 "混沌": 30
@@ -4964,10 +4964,10 @@ const EQUIP_MASTER = [
         "type": "盾",
         "baseName": "腕輪",
         "data": {
-            "atk": 23,
-            "def": 28,
-            "mag": 23,
-            "mdef": 31,
+            "atk": 48,
+            "def": 56,
+            "mag": 48,
+            "mdef": 62,
             "finDmg": 20,
             "resists_Debuff": 50
         },
@@ -4991,10 +4991,10 @@ const EQUIP_MASTER = [
         "type": "頭",
         "baseName": "兜",
         "data": {
-            "def": 25,
-            "mdef": 18,
-            "hp": 51,
-            "mp": 73,
+            "def": 52,
+            "mdef": 36,
+            "hp": 105,
+            "mp": 112,
             "resists_Fear": 50,
             "resists_InstantDeath": 50
         },
@@ -5014,10 +5014,10 @@ const EQUIP_MASTER = [
         "type": "頭",
         "baseName": "帽子",
         "data": {
-            "def": 18,
-            "mdef": 25,
-            "hp": 73,
-            "mp": 51,
+            "def": 36,
+            "mdef": 52,
+            "hp": 112,
+            "mp": 105,
             "resists_SpellSeal": 50,
             "resists_HealSeal": 50
         },
@@ -5037,8 +5037,8 @@ const EQUIP_MASTER = [
         "type": "体",
         "baseName": "鎧",
         "data": {
-            "def": 34,
-            "mdef": 25,
+            "def": 60,
+            "mdef": 44,
             "finRed": 25,
             "resists_SkillSeal": 50
         },
@@ -5062,9 +5062,9 @@ const EQUIP_MASTER = [
         "type": "体",
         "baseName": "ローブ",
         "data": {
-            "def": 27,
-            "mag": 27,
-            "mdef": 31,
+            "def": 44,
+            "mag": 56,
+            "mdef": 58,
             "elmRes": {
                 "混沌": 20
             },
@@ -5090,8 +5090,8 @@ const EQUIP_MASTER = [
         "type": "足",
         "baseName": "ブーツ",
         "data": {
-            "def": 25,
-            "spd": 25,
+            "def": 48,
+            "spd": 48,
             "resists_Shock": 50
         },
         "possibleOpts": [],
@@ -5114,7 +5114,7 @@ const EQUIP_MASTER = [
         "type": "足",
         "baseName": "くつ",
         "data": {
-            "spd": 34,
+            "spd": 64,
             "eva": 20,
             "resists_Shock": 50
         },
