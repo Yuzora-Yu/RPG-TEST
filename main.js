@@ -5180,6 +5180,37 @@ load: () => {
         return logs;
     },
 
+    getCurrentAbyssEquipOptionElements: () => {
+        const mapData = (typeof Field !== 'undefined') ? Field.currentMapData : null;
+        const mapId = String(mapData?.mapId || '');
+        const abyssDungeonMapIds = new Set([
+            'MAP000038', 'MAP000039', 'MAP000040', 'MAP000041',
+            'MAP000043', 'MAP000044', 'MAP000045', 'MAP000046',
+            'MAP000048', 'MAP000049', 'MAP000050'
+        ]);
+        if (!mapData?.isDungeon || !abyssDungeonMapIds.has(mapId)) return [];
+        return Object.entries(mapData.elementPenalty || {})
+            .filter(([, value]) => Number(value) < 0)
+            .map(([element]) => String(element));
+    },
+
+    pickEquipOptionRule: (allowedKeys) => {
+        let candidates = DB.OPT_RULES.filter(rule => allowedKeys.includes(rule.key));
+        if (candidates.length === 0) candidates = DB.OPT_RULES.slice();
+
+        // 深淵の属性ダンジョンでは、その攻略属性の攻撃・耐性オプションを3倍重みで抽選する。
+        // 取得装備そのものへ通常オプションとして記録し、戦闘時の後付け補正にはしない。
+        const preferredElements = new Set(App.getCurrentAbyssEquipOptionElements());
+        const weighted = [];
+        candidates.forEach(rule => {
+            const isPreferredElement = preferredElements.has(String(rule.elm || ''))
+                && (rule.key === 'elmAtk' || rule.key === 'elmRes');
+            const weight = isPreferredElement ? 3 : 1;
+            for (let i = 0; i < weight; i++) weighted.push(rule);
+        });
+        return weighted[Math.floor(Math.random() * weighted.length)];
+    },
+
 	/* main.js: App.createEquipByFloor 関数 */
 	createEquipByFloor: (source, floor = null, fixedPlus = null) => {
 		const targetFloor = (floor !== null) ? floor : App.getVirtualFloor();
@@ -5297,9 +5328,7 @@ load: () => {
 			let allowedKeys = [...new Set([...baseDefaults, ...masterOpts])];
 
 			for(let i=0; i<plus; i++) {
-				let optCandidates = DB.OPT_RULES.filter(rule => allowedKeys.includes(rule.key));
-				if (optCandidates.length === 0) optCandidates = DB.OPT_RULES;
-				const rule = optCandidates[Math.floor(Math.random() * optCandidates.length)];
+				const rule = App.pickEquipOptionRule(allowedKeys);
 				let rarity = 'N';
 				const tierRatio = Math.min(1, targetFloor / 200);
 				const rarRnd = Math.random() + (tierRatio * 0.15);
@@ -5410,9 +5439,7 @@ load: () => {
 			};
 			let allowedKeys = [...new Set([...(BASE_OPTS_MAP[eq.baseName] || []), ...(base.possibleOpts || [])])];
 			for(let i=0; i<plus; i++) {
-				let optCandidates = DB.OPT_RULES.filter(rule => allowedKeys.includes(rule.key));
-				if (optCandidates.length === 0) optCandidates = DB.OPT_RULES;
-				const rule = optCandidates[Math.floor(Math.random() * optCandidates.length)];
+				const rule = App.pickEquipOptionRule(allowedKeys);
 				let rarity = 'N';
 				const tierRatio = Math.min(1, targetFloor / 200);
 				const rarRnd = Math.random() + (tierRatio * 0.15);

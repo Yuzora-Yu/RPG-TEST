@@ -4325,9 +4325,11 @@ findNextActor: () => {
                 && !other.isDead && !other.isFled && Number(other.hp || 0) > 0
             );
             remaining.forEach(other => {
+                const hpBeforeStrengthening = Math.max(1, Number(other.hp || 1));
                 other.baseMaxHp = Math.max(1, Math.floor(Number(other.baseMaxHp || other.hp || 1) * 1.18));
                 other.baseMaxMp = Math.max(0, Math.floor(Number(other.baseMaxMp || other.mp || 0) * 1.12));
-                other.hp = other.baseMaxHp;
+                const recovery = Math.max(1, Math.floor(other.baseMaxHp * 0.20));
+                other.hp = Math.min(other.baseMaxHp, hpBeforeStrengthening + recovery);
                 other.mp = other.baseMaxMp;
                 ['atk', 'def', 'spd', 'mag', 'mdef'].forEach(key => {
                     if (other.baseStats?.[key] !== undefined) other.baseStats[key] = Math.max(1, Math.floor(Number(other.baseStats[key]) * 1.18));
@@ -4336,7 +4338,7 @@ findNextActor: () => {
             });
             const linkedIndex = Number(enemy.linkedDeathIndex ?? Battle.getMonsterBaseById?.(Battle.getUnitBaseId(enemy))?.linkedDeathIndex ?? 0) + 1;
             Battle.queueBattleConversation(`ABYSS_VEGNASIS_FALL_${Math.max(1, Math.min(5, linkedIndex))}`);
-            if (remaining.length) Battle.log('倒れた魔柱の力が残る柱へ流れ、傷が完全に塞がった！');
+            if (remaining.length) Battle.log('倒れた魔柱の力が残る柱へ流れ、傷がわずかに塞がった！');
         });
     },
 

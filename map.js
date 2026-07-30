@@ -6855,17 +6855,17 @@ const makeAuthoredAbyssDungeon = ({ name, themeKey, rank, mapId, elementPenalty,
 const ABYSS_AUTHORED_DUNGEONS = Object.freeze((() => {
     const G = ABYSS_FIXED_GRIDS;
     const common = {
-        THUNDER_DUNES: { name: '雷霆砂丘', themeKey: 'THUNDER_FORT', rank: 88, mapId: 'MAP000038', elementPenalty: { 雷: -50 } },
-        SCREAMING_CEMETERY: { name: '叫喚の墓地', themeKey: 'FORBIDDEN_FOREST', rank: 88, mapId: 'MAP000039', elementPenalty: { 風: -50 } },
-        BLACK_ROPE_PYRAMID: { name: '黒縄のピラミッド', themeKey: 'THUNDER_FORT', rank: 91, mapId: 'MAP000040', elementPenalty: { 雷: -50 } },
-        MAGIC_WIND_MAUSOLEUM: { name: '魔風の霊廟', themeKey: 'DARK_SHRINE_RUINS', rank: 91, mapId: 'MAP000041', elementPenalty: { 風: -50 } },
-        FROZEN_FOREST: { name: '極寒樹林', themeKey: 'FORBIDDEN_FOREST', rank: 98, mapId: 'MAP000043', elementPenalty: { 水: -50 } },
-        PURGATORY_MOUNTAINS: { name: '煉獄山脈', themeKey: 'FIRE_VILLAGE', rank: 98, mapId: 'MAP000044', elementPenalty: { 火: -50 } },
-        ICE_PENANCE_ROAD: { name: '氷刻の浄罪路', themeKey: 'SEABED_TEMPLE', rank: 101, mapId: 'MAP000045', elementPenalty: { 水: -50 } },
-        SCORCHING_OLD_CASTLE: { name: '灼熱の古城', themeKey: 'DARK_CASTLE', rank: 101, mapId: 'MAP000046', elementPenalty: { 火: -50 } },
-        RIDPALM_DREAM_CORRIDOR: { name: '夢幻回廊リドパルム', themeKey: 'LIGHT_PALACE', rank: 106, mapId: 'MAP000048', elementPenalty: { 光: -50, 闇: -50 } },
-        JAGOREA_ROOT: { name: '災禍の根ジャゴレア', themeKey: 'DARK_SHRINE_RUINS', rank: 111, mapId: 'MAP000049', elementPenalty: { 光: -50, 闇: -50 } },
-        CHRONO_ABYSS: { name: '次元牢獄クロノアビス', themeKey: 'DARK_CASTLE', rank: 116, mapId: 'MAP000050', elementPenalty: { 混沌: -50 } }
+        THUNDER_DUNES: { name: '雷霆砂丘', themeKey: 'THUNDER_FORT', rank: 88, mapId: 'MAP000038', elementPenalty: { 雷: -20 } },
+        SCREAMING_CEMETERY: { name: '叫喚の墓地', themeKey: 'FORBIDDEN_FOREST', rank: 88, mapId: 'MAP000039', elementPenalty: { 風: -20 } },
+        BLACK_ROPE_PYRAMID: { name: '黒縄のピラミッド', themeKey: 'THUNDER_FORT', rank: 91, mapId: 'MAP000040', elementPenalty: { 雷: -20 } },
+        MAGIC_WIND_MAUSOLEUM: { name: '魔風の霊廟', themeKey: 'DARK_SHRINE_RUINS', rank: 91, mapId: 'MAP000041', elementPenalty: { 風: -20 } },
+        FROZEN_FOREST: { name: '極寒樹林', themeKey: 'FORBIDDEN_FOREST', rank: 98, mapId: 'MAP000043', elementPenalty: { 水: -20 } },
+        PURGATORY_MOUNTAINS: { name: '煉獄山脈', themeKey: 'FIRE_VILLAGE', rank: 98, mapId: 'MAP000044', elementPenalty: { 火: -20 } },
+        ICE_PENANCE_ROAD: { name: '氷刻の浄罪路', themeKey: 'SEABED_TEMPLE', rank: 101, mapId: 'MAP000045', elementPenalty: { 水: -20 } },
+        SCORCHING_OLD_CASTLE: { name: '灼熱の古城', themeKey: 'DARK_CASTLE', rank: 101, mapId: 'MAP000046', elementPenalty: { 火: -20 } },
+        RIDPALM_DREAM_CORRIDOR: { name: '夢幻回廊リドパルム', themeKey: 'LIGHT_PALACE', rank: 106, mapId: 'MAP000048', elementPenalty: { 光: -20, 闇: -20 } },
+        JAGOREA_ROOT: { name: '災禍の根ジャゴレア', themeKey: 'DARK_SHRINE_RUINS', rank: 111, mapId: 'MAP000049', elementPenalty: { 光: -20, 闇: -20 } },
+        CHRONO_ABYSS: { name: '次元牢獄クロノアビス', themeKey: 'DARK_CASTLE', rank: 116, mapId: 'MAP000050', elementPenalty: { 混沌: -20 } }
     };
     const fixed = (key, grid, options) => makeAuthoredAbyssFloor({
         grid,
