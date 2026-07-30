@@ -7551,12 +7551,7 @@ const Field = {
             if (bossDef?.imageKey && typeof GRAPHICS !== 'undefined' && GRAPHICS.data?.[bossDef.imageKey]) {
                 config = { img: bossDef.imageKey, color: bossDef.color || config.color || '#db3b4d' };
             } else {
-            const bossMonsterIds = (Array.isArray(bossDef?.monsterId) ? bossDef.monsterId : [bossDef?.monsterId])
-                .map(id => Number(id))
-                .filter(id => Number.isFinite(id) && id > 0);
-            // 3体編成は配置順の中央（2番目）を代表スプライトとして描画する。
-            const rawMonsterId = bossMonsterIds.length === 3 ? bossMonsterIds[1] : bossMonsterIds[0];
-            const monsterId = Number(bossDef?.mapSpriteMonsterId || rawMonsterId);
+            const monsterId = Number(Field.resolveFixedBossMapSpriteMonsterId?.(bossDef));
             const graphicKey = Number.isFinite(monsterId) && Field.getMonsterMapSpriteKey
                 ? Field.getMonsterMapSpriteKey(monsterId)
                 : (Number.isFinite(monsterId) ? `monster_${monsterId}` : '');
@@ -8732,6 +8727,40 @@ const Field = {
         if (byId) return byId;
         const key = Field.getMonsterMapSpriteKey ? Field.getMonsterMapSpriteKey(monsterId) : null;
         return key && typeof GRAPHICS !== 'undefined' ? (GRAPHICS.data?.[key] || null) : null;
+    },
+
+    resolveFixedBossMapSpriteMonsterId: (bossDef) => {
+        if (!bossDef) return null;
+        const flags = App.data?.progress?.flags || {};
+        const storyStep = Number(App.data?.progress?.storyStep || 0);
+        const subStep = Number(App.data?.progress?.subStep || 0);
+        const variants = Array.isArray(bossDef.mapSpriteVariants) ? bossDef.mapSpriteVariants : [];
+        const matchesVariant = (variant) => {
+            if (!variant) return false;
+            const requiredFlags = Array.isArray(variant.requiredFlags)
+                ? variant.requiredFlags
+                : (variant.requiredFlag ? [variant.requiredFlag] : []);
+            const missingFlags = Array.isArray(variant.missingFlags)
+                ? variant.missingFlags
+                : (variant.missingFlag ? [variant.missingFlag] : []);
+            const stepMin = variant.storyStepMin !== undefined ? Number(variant.storyStepMin) : -Infinity;
+            const stepMax = variant.storyStepMax !== undefined ? Number(variant.storyStepMax) : Infinity;
+            const subMin = variant.storySubMin !== undefined ? Number(variant.storySubMin) : -Infinity;
+            const subMax = variant.storySubMax !== undefined ? Number(variant.storySubMax) : Infinity;
+            return requiredFlags.every(flag => !!flags[flag]) &&
+                missingFlags.every(flag => !flags[flag]) &&
+                storyStep >= stepMin && storyStep <= stepMax &&
+                subStep >= subMin && subStep <= subMax;
+        };
+        const variant = variants.find(matchesVariant);
+        const configuredId = variant?.monsterId ?? variant?.mapSpriteMonsterId ?? bossDef.mapSpriteMonsterId;
+        if (Number.isFinite(Number(configuredId)) && Number(configuredId) > 0) return Number(configuredId);
+
+        const bossMonsterIds = (Array.isArray(bossDef.monsterId) ? bossDef.monsterId : [bossDef.monsterId])
+            .map(id => Number(id))
+            .filter(id => Number.isFinite(id) && id > 0);
+        // 3体編成は配置順の中央（2番目）を代表スプライトとして描画する。
+        return bossMonsterIds.length === 3 ? bossMonsterIds[1] : (bossMonsterIds[0] || null);
     },
 
     ensureFieldVisualLayer: () => {

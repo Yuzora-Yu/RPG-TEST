@@ -7344,6 +7344,13 @@ const FIXED_DUNGEON_MAPS = {
                             301001,
                             301001
                         ],
+                        mapSpriteVariants: [
+                            {
+                                requiredFlag: "fireVolcanoSoldiersCleared",
+                                missingFlag: "firePrismRestored",
+                                monsterId: 301010
+                            }
+                        ],
                         startEventId: "fire_volcano_soldiers_encounter",
                         storyEventId: "fire_volcano_soldiers_clear",
                         clearedFlag: "firePrismRestored",
@@ -8111,6 +8118,8 @@ const FIXED_DUNGEON_MAPS = {
                         eventId: "wind_forest_guardians_after",
                         requiredFlag: "windForestCleansed",
                         imageKey: "overlay_dungeon_event",
+                        // 同じ座標のボスマスBを画像付きイベント正規化で床Tへ潰さない。
+                        // 戦闘前は石碑を描画したBマス、討伐後は回復イベントとして使う。
                         baseTile: "B"
                     }
                 ],
@@ -8125,8 +8134,10 @@ const FIXED_DUNGEON_MAPS = {
                         keyRewardColor: "gold",
                         startEventId: "wind_forest_guardians_encounter",
                         storyEventId: "wind_forest_guardians_clear",
-                        actionLabel: "守護者に祈る",
-                        inspectLog: "祈りの広場の中央で、黒い風に包まれた守護者がうずくまっている。"
+                        // ボス原画はMAPに出さず、戦闘前から石碑を表示する。
+                        imageKey: "overlay_dungeon_event",
+                        actionLabel: "石碑を調べる",
+                        inspectLog: "祈りの広場の中央に、黒い風をまとった石碑が立っている。"
                     }
                 ],
                 entryPoint: {

@@ -5022,11 +5022,21 @@ findNextActor: () => {
         const isBossBattle = App.data.battle && App.data.battle.isBossBattle;
         const eventId = (App.data.battle && App.data.battle.eventId) ? App.data.battle.eventId : null;
         const storyWinEventId = App.data.battle?.storyWinEventId || null;
+        const fixedStoryEventId = App.data.battle?.fixedStoryEventId || null;
         const keyReward = App.data.battle?.keyReward || App.data.battle?.fixedKeyReward || null;
         const fixedHunter = App.data.battle?.fixedHunter || null;
         const guildPromotionTarget = App.data.battle?.guildPromotionTarget || null;
         let guildPromotionMessage = null;
 		
+		// 戦闘データはフィールド復帰時に初期化されるため、勝利後会話で使う
+		// ボス画像・座標をイベント予約と同時に progress へ退避する。
+		const postBattleVisualEventId = storyWinEventId || fixedStoryEventId || eventId;
+		const postBattleVisualPhase = (storyWinEventId || fixedStoryEventId) ? 'actions' : 'win';
+		if (isBossBattle && postBattleVisualEventId && typeof StoryManager !== 'undefined' &&
+			typeof StoryManager.capturePostBattleBossVisualContext === 'function') {
+			StoryManager.capturePostBattleBossVisualContext(postBattleVisualEventId, App.data.battle, postBattleVisualPhase);
+		}
+
 		// --- [追加] 演出前にイベントを予約し、セーブデータに含める ---
 		if (isBossBattle && eventId) {
 			if (!App.data.progress) App.data.progress = {};

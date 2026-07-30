@@ -817,53 +817,162 @@ const StoryManager = {
         else if (typeof Field.render === 'function') Field.render();
     },
 
-    getPostBattleBossVisualContext: function(eventId) {
-        const battle = App?.data?.battle || null;
-        if (!battle || !battle.isBossBattle) return null;
-        const related = battle.eventId === eventId || battle.storyWinEventId === eventId || App?.data?.progress?.pendingBattleWinEventId === eventId;
-        if (!related) return null;
+    resolvePostBattleBossSpriteConfig: function(event) {
+        const raw = event?.postBattleBossSprite;
+        const explicitlyDisabled = raw === false || event?.skipAutoPostBattleBossSprite === true || event?.keepPostBattleBossSprite === false;
+        if (explicitlyDisabled) return { enabled: false };
+        if (raw && typeof raw === 'object') {
+            return {
+                enabled: raw.enabled !== false,
+                monsterId: Number.isFinite(Number(raw.monsterId)) ? Number(raw.monsterId) : null,
+                size: Math.max(0.5, Number(raw.size || raw.sizeTiles || 2) || 2),
+                zIndex: Number.isFinite(Number(raw.zIndex ?? raw.z)) ? Number(raw.zIndex ?? raw.z) : 4
+            };
+        }
+        return { enabled: true, monsterId: null, size: 2, zIndex: 4 };
+    },
 
-        const rawId = Array.isArray(battle.fixedBossId) ? battle.fixedBossId[0] : battle.fixedBossId;
-        const monsterId = Number(rawId || 0);
-        if (!monsterId || !Number.isFinite(monsterId)) return null;
+    selectPostBattleBossMonsterId: function(rawIds) {
+        const ids = (Array.isArray(rawIds) ? rawIds : [rawIds])
+            .map(id => Number(id))
+            .filter(id => Number.isFinite(id) && id > 0);
+        if (!ids.length) return null;
+        // 3体編成はMAP描画と同じく中央の敵を代表ボスとして扱う。
+        return ids.length === 3 ? ids[1] : ids[0];
+    },
 
-        const pos = battle.fixedBossPosition
+    capturePostBattleBossVisualContext: function(eventId, battle = null, phase = 'actions') {
+        const source = battle || App?.data?.battle || null;
+        const targetEventId = String(eventId || '');
+        if (!source?.isBossBattle || !targetEventId) return false;
+
+        const ids = (Array.isArray(source.fixedBossId) ? source.fixedBossId : [source.fixedBossId])
+            .map(id => Number(id))
+            .filter(id => Number.isFinite(id) && id > 0);
+        if (!ids.length) return false;
+        const pos = source.fixedBossPosition
             || App?.data?.progress?.activeFixedBossContext?.fixedBossPosition
-            || (typeof Field !== 'undefined' && typeof Field.getLastFixedBossEventPosition === 'function' ? Field.getLastFixedBossEventPosition() : null)
             || (typeof Field !== 'undefined' ? { x: Field.x, y: Field.y } : null);
-        if (!pos) return null;
+        if (!Number.isFinite(Number(pos?.x)) || !Number.isFinite(Number(pos?.y))) return false;
 
-        return { monsterId, x: Number(pos.x), y: Number(pos.y) };
+        const progress = App.data.progress || (App.data.progress = {});
+        progress.pendingPostBattleBossVisual = {
+            eventId: targetEventId,
+            phase: phase === 'win' ? 'win' : 'actions',
+            monsterIds: ids,
+            monsterId: this.selectPostBattleBossMonsterId(ids),
+            position: { x: Number(pos.x), y: Number(pos.y) },
+            progressKey: source.fixedBossProgressKey || null
+        };
+        return true;
+    },
+
+    getPostBattleBossVisualContext: function(eventId, event = null, phase = 'actions') {
+        const targetEventId = String(eventId || '');
+        const spriteConfig = this.resolvePostBattleBossSpriteConfig(event);
+        const pending = App?.data?.progress?.pendingPostBattleBossVisual || null;
+        const pendingMatches = pending && String(pending.eventId || '') === targetEventId &&
+            String(pending.phase || 'actions') === String(phase || 'actions');
+        if (pendingMatches) {
+            const monsterId = Number(spriteConfig.monsterId || pending.monsterId || pending.monsterIds?.[0] || 0);
+            const pos = pending.position;
+            if (Number.isFinite(monsterId) && monsterId > 0 && Number.isFinite(Number(pos?.x)) && Number.isFinite(Number(pos?.y))) {
+                return { monsterId, x: Number(pos.x), y: Number(pos.y), config: spriteConfig };
+            }
+        }
+
+        const battle = App?.data?.battle || null;
+        const battleRelated = battle?.isBossBattle && (
+            String(battle.eventId || '') === targetEventId ||
+            String(battle.storyWinEventId || '') === targetEventId ||
+            String(battle.fixedStoryEventId || '') === targetEventId
+        );
+        if (battleRelated) {
+            const rawId = this.selectPostBattleBossMonsterId(battle.fixedBossId);
+            const monsterId = Number(spriteConfig.monsterId || rawId || 0);
+            const pos = battle.fixedBossPosition
+                || App?.data?.progress?.activeFixedBossContext?.fixedBossPosition
+                || (typeof Field !== 'undefined' ? { x: Field.x, y: Field.y } : null);
+            if (Number.isFinite(monsterId) && monsterId > 0 && Number.isFinite(Number(pos?.x)) && Number.isFinite(Number(pos?.y))) {
+                return { monsterId, x: Number(pos.x), y: Number(pos.y), config: spriteConfig };
+            }
+        }
+
+        const last = App?.data?.progress?.lastFixedBossEvent || null;
+        const lastRelated = last && (
+            String(last.eventId || '') === targetEventId ||
+            String(last.storyEventId || '') === targetEventId
+        );
+        if (lastRelated) {
+            const rawId = this.selectPostBattleBossMonsterId(last.monsterId);
+            const monsterId = Number(spriteConfig.monsterId || rawId || 0);
+            const pos = last.position;
+            if (Number.isFinite(monsterId) && monsterId > 0 && Number.isFinite(Number(pos?.x)) && Number.isFinite(Number(pos?.y))) {
+                return { monsterId, x: Number(pos.x), y: Number(pos.y), config: spriteConfig };
+            }
+        }
+        return null;
+    },
+
+    actionsContainConversation: function(actions) {
+        if (!Array.isArray(actions)) return false;
+        return actions.some(action => {
+            if (!action) return false;
+            if (action.type === 'CONV') return true;
+            return ['then', 'else', 'otherwise', 'yes', 'no'].some(key => this.actionsContainConversation(action[key]));
+        });
     },
 
     eventHasConversationAction: function(event, phase = 'actions') {
         const actions = phase === 'win' ? event?.winActions : event?.actions;
-        return Array.isArray(actions) && actions.some(action => action && action.type === 'CONV');
+        return this.actionsContainConversation(actions);
     },
 
     showPostBattleBossSpriteForEvent: function(eventId, event, phase = 'actions') {
-        if (!event || event.skipAutoPostBattleBossSprite || event.keepPostBattleBossSprite === false) return false;
+        const spriteConfig = this.resolvePostBattleBossSpriteConfig(event);
+        if (!event || !spriteConfig.enabled) return false;
         if (!this.eventHasConversationAction(event, phase)) return false;
         // 明示的なフィールド演出を持つイベントは、そのスクリプト側の SHOW/CLEANUP に任せる。
         if (this.eventHasFieldVisualFlow(eventId, phase)) return false;
         if (typeof Field === 'undefined' || typeof Field.putFieldVisualSprite !== 'function') return false;
 
-        const ctx = this.getPostBattleBossVisualContext(eventId);
+        const ctx = this.getPostBattleBossVisualContext(eventId, event, phase);
         if (!ctx) return false;
         const src = (typeof Field.getMonsterMapSpriteSrc === 'function')
             ? Field.getMonsterMapSpriteSrc(ctx.monsterId)
             : ((typeof MonsterData !== 'undefined' && typeof MonsterData.getImagePath === 'function')
                 ? MonsterData.getImagePath(ctx.monsterId)
                 : window.PRISMA_ASSETS?.getMonsterImagePath?.(ctx.monsterId));
-        Field.putFieldVisualSprite('field-visual-post-battle-boss', src, { x: ctx.x, y: ctx.y }, 2, 'z-index:4;');
+        if (!src) return false;
+        const img = Field.putFieldVisualSprite(
+            'field-visual-post-battle-boss',
+            src,
+            { x: ctx.x, y: ctx.y },
+            ctx.config?.size || spriteConfig.size || 2,
+            `z-index:${ctx.config?.zIndex ?? spriteConfig.zIndex ?? 4};`
+        );
+        if (img?.dataset) {
+            img.dataset.postBattleEventId = String(eventId || '');
+            img.dataset.postBattlePhase = String(phase || 'actions');
+        }
         return true;
     },
 
-    cleanupPostBattleBossSprite: function() {
-        const img = document.getElementById('field-visual-post-battle-boss');
-        if (img) img.remove();
-        const layer = document.getElementById('field-visual-cutscene-layer');
+    cleanupPostBattleBossSprite: function(eventId = null, phase = null) {
+        const img = typeof document !== 'undefined' ? document.getElementById('field-visual-post-battle-boss') : null;
+        const imageEventMatches = !eventId || String(img?.dataset?.postBattleEventId || '') === String(eventId);
+        const imagePhaseMatches = !phase || String(img?.dataset?.postBattlePhase || 'actions') === String(phase);
+        if (img && imageEventMatches && imagePhaseMatches) img.remove();
+        const layer = typeof document !== 'undefined' ? document.getElementById('field-visual-cutscene-layer') : null;
         if (layer && layer.children.length === 0) layer.remove();
+        const progress = App?.data?.progress;
+        const pending = progress?.pendingPostBattleBossVisual;
+        const eventMatches = !eventId || String(pending?.eventId || '') === String(eventId);
+        const phaseMatches = !phase || String(pending?.phase || 'actions') === String(phase);
+        if (pending && eventMatches && phaseMatches) {
+            delete progress.pendingPostBattleBossVisual;
+            if (typeof App !== 'undefined' && typeof App.save === 'function') App.save();
+        }
     },
 	/**
      * 中断されたイベントまたは会話があれば再開する
@@ -958,9 +1067,7 @@ const StoryManager = {
         if (!isSubEvent && this.active) return;
         if (!isSubEvent) this.active = true;
 
-        const autoPostBattleBossSprite = !isSubEvent
-            ? this.showPostBattleBossSpriteForEvent(eventId, event, 'actions')
-            : false;
+        if (!isSubEvent) this.showPostBattleBossSpriteForEvent(eventId, event, 'actions');
 
         try {
             for (let i = startActionIndex; i < event.actions.length; i++) {
@@ -986,7 +1093,7 @@ const StoryManager = {
             // ここで呼ぶことで、会話・選択肢・ストーリー進行後にボタンが消えっぱなしになるのを防ぐ。
             if (!isSubEvent) this.refreshFieldAfterStoryStateChange();
         } finally {
-            if (autoPostBattleBossSprite) this.cleanupPostBattleBossSprite();
+            this.cleanupPostBattleBossSprite(eventId, 'actions');
         }
     },
 
@@ -999,7 +1106,7 @@ const StoryManager = {
         if (!event || !event.winActions) return;
 
         this.active = true;
-        const autoPostBattleBossSprite = this.showPostBattleBossSpriteForEvent(eventId, event, 'win');
+        this.showPostBattleBossSpriteForEvent(eventId, event, 'win');
 
         try {
             for (let i = startActionIndex; i < event.winActions.length; i++) {
@@ -1019,7 +1126,7 @@ const StoryManager = {
             // 戦闘勝利後イベントが終わってフィールドへ戻った際、現在地タイルのボタンを復元する。
             this.refreshFieldAfterStoryStateChange();
         } finally {
-            if (autoPostBattleBossSprite) this.cleanupPostBattleBossSprite();
+            this.cleanupPostBattleBossSprite(eventId, 'win');
         }
     },
 

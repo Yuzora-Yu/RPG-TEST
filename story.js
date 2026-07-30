@@ -3513,7 +3513,7 @@ const STORY_MANAGER_DATA = {
         },
         "thunder_fort_clear": {
                 "restartOnResume": true,
-                "skipAutoPostBattleBossSprite": true,
+                "postBattleBossSprite": false,
                 "actions": [
                         {
                                 "type": "CONV",
@@ -4255,6 +4255,10 @@ const STORY_MANAGER_DATA = {
                 "winActions": []
         },
         "fire_volcano_soldiers_clear": {
+                "postBattleBossSprite": {
+                        "enabled": true,
+                        "monsterId": 301010
+                },
                 "actions": [
                         {
                                 "type": "CONV",
