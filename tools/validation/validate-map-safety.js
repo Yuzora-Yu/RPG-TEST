@@ -136,9 +136,9 @@ function validateFixedDef(name, def) {
 
   (def.bosses || []).forEach((boss) => {
     const tile = at(Number(boss.x), Number(boss.y));
-    // maps_logic.js は固定ボスを bosses[] で管理し、描画前に旧B記号を
-    // 基礎床へ正規化する。現行ランタイムを正として、壁上配置だけを拒否する。
-    assert(tile !== 'W', `${name}: boss ${boss.x},${boss.y} is blocked by ${tile}`);
+    // 固定ボスの描画・接触・アクション判定はランタイム上のBマスを共有する。
+    // 同座標の画像付き戦後イベントがbaseTile未指定でBを床へ戻す回帰もここで検出する。
+    assert(tile === 'B', `${name}: boss ${boss.x},${boss.y} must remain B at runtime, got ${tile}`);
   });
 
   MapRegistry.getMapActions(def).forEach((action) => {

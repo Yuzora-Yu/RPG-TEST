@@ -8110,7 +8110,8 @@ const FIXED_DUNGEON_MAPS = {
                         type: "storyEvent",
                         eventId: "wind_forest_guardians_after",
                         requiredFlag: "windForestCleansed",
-                        imageKey: "overlay_dungeon_event"
+                        imageKey: "overlay_dungeon_event",
+                        baseTile: "B"
                     }
                 ],
                 bosses: [
@@ -8124,7 +8125,6 @@ const FIXED_DUNGEON_MAPS = {
                         keyRewardColor: "gold",
                         startEventId: "wind_forest_guardians_encounter",
                         storyEventId: "wind_forest_guardians_clear",
-                        imageKey: "overlay_dungeon_event",
                         actionLabel: "守護者に祈る",
                         inspectLog: "祈りの広場の中央で、黒い風に包まれた守護者がうずくまっている。"
                     }
