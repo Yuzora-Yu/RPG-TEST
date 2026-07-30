@@ -14294,7 +14294,10 @@ const FIXED_DUNGEON_MAPS = {
                     {
                         x: 12,
                         y: 4,
-                        monsterId: 301011,
+                        monsterId: [
+                            154,
+                            154
+                        ],
                         storyEventId: "quest_fire_holy_water_clear",
                         actionLabel: "妖精を守る",
                         inspectLog: "妖精の泉で、闇をまとった魔物が小さな光を追い詰めている。"
