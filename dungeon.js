@@ -122,6 +122,36 @@ const Dungeon = {
             && type !== 'スキル書' && type !== '特性書'
             && item.medalOnly !== true && item.abyssDrop !== false;
     },
+
+    // アイテムIDはマップエディタやセーブ復元経由で文字列になる可能性があるため、
+    // 固定コンテナを含む取得処理では数値化して照合する。
+    findItemDefinition: (itemId) => {
+        const numericId = Number(itemId);
+        if (!Number.isFinite(numericId) || typeof DB === 'undefined' || !Array.isArray(DB.ITEMS)) return null;
+        return DB.ITEMS.find(item => Number(item?.id) === numericId) || null;
+    },
+
+    recordMedalAcquisition: (count = 1) => {
+        const amount = Math.max(0, Math.floor(Number(count) || 0));
+        if (amount <= 0) return Number(App.data?.stats?.totalMedals || 0);
+        if (typeof App.incrementLifetimeStat === 'function') {
+            return App.incrementLifetimeStat('totalMedals', amount, { save: false });
+        }
+        if (!App.data.stats || typeof App.data.stats !== 'object' || Array.isArray(App.data.stats)) App.data.stats = {};
+        App.data.stats.totalMedals = Math.max(0, Number(App.data.stats.totalMedals || 0) + amount);
+        return App.data.stats.totalMedals;
+    },
+
+    grantContainerItem: (itemId, count = 1) => {
+        const item = Dungeon.findItemDefinition(itemId);
+        const amount = Math.max(1, Math.floor(Number(count) || 1));
+        if (!item) return null;
+        if (!App.data.items || typeof App.data.items !== 'object' || Array.isArray(App.data.items)) App.data.items = {};
+        const numericId = Number(item.id);
+        App.data.items[numericId] = Number(App.data.items[numericId] || 0) + amount;
+        if (numericId === 99) Dungeon.recordMedalAcquisition(amount);
+        return item;
+    },
     // Random-dungeon appearance catalog. This is the single source of truth for both
     // map tiles (themeKey) and battle backgrounds (battleBg). Later thresholds add
     // candidates without removing earlier appearances.
@@ -677,7 +707,7 @@ const Dungeon = {
             },
             chest: {
                 kind: 'chest', closed: '宝箱がある。', blocked: '宝箱が道を塞いでいる。',
-                opened: '開いたままの空箱がある。', action: '調べる', inspect: '宝箱を開けた！', empty: '宝箱は空だった…'
+                opened: '開いたままの空箱がある。', action: '調べる', inspect: '宝箱を開けた！', empty: 'なにもなかった。'
             }
         };
         const base = defaults[kind] || defaults.chest;
@@ -2227,9 +2257,9 @@ const Dungeon = {
             if (typeof AudioManager !== 'undefined') AudioManager.playSe?.('chest_open');
 
             if (chestDef) {
-                App.data.progress.openedChests[progressKey].push(posKey);
-                if (typeof App.incrementLifetimeStat === 'function') App.incrementLifetimeStat('totalChestsOpened', 1, { save: false });
                 if (chestDef.trapMonsterId !== undefined && chestDef.trapMonsterId !== null) {
+                    App.data.progress.openedChests[progressKey].push(posKey);
+                    if (typeof App.incrementLifetimeStat === 'function') App.incrementLifetimeStat('totalChestsOpened', 1, { save: false });
                     App.save();
                     Field.render();
                     await Dungeon.waitForChestTrapReveal();
@@ -2240,17 +2270,34 @@ const Dungeon = {
                     return;
                 }
                 if (chestDef.keyColor) {
+                    App.data.progress.openedChests[progressKey].push(posKey);
+                    if (typeof App.incrementLifetimeStat === 'function') App.incrementLifetimeStat('totalChestsOpened', 1, { save: false });
                     Dungeon.grantDungeonKey(chestDef.keyColor, 'chest');
                     App.save();
                     Field.render();
                     return;
                 }
-                const item = DB.ITEMS.find(i => i.id === chestDef.itemId);
-                if (item) {
-                    App.data.items[item.id] = (App.data.items[item.id] || 0) + 1;
+
+                const hasItemReward = chestDef.itemId !== undefined && chestDef.itemId !== null;
+                if (hasItemReward) {
+                    const item = Dungeon.grantContainerItem(chestDef.itemId, chestDef.count || 1);
+                    if (!item) {
+                        // 中身の定義が解決できない場合は開封済みにしない。
+                        // 旧処理では先に開封済み座標を保存していたため、取得失敗後も永久に空箱になっていた。
+                        console.error('[FixedContainer] item definition not found', {
+                            areaKey, progressKey, x, y, itemId: chestDef.itemId, chestDef
+                        });
+                        App.log('中身を取得できなかった。宝箱はまだ開いていない。');
+                        Field.render();
+                        return;
+                    }
+                    App.data.progress.openedChests[progressKey].push(posKey);
+                    if (typeof App.incrementLifetimeStat === 'function') App.incrementLifetimeStat('totalChestsOpened', 1, { save: false });
                     App.log(container.inspect);
                     App.log(`<span style="color:#ffd700;">${item.name}</span> を手に入れた！`);
                 } else {
+                    App.data.progress.openedChests[progressKey].push(posKey);
+                    if (typeof App.incrementLifetimeStat === 'function') App.incrementLifetimeStat('totalChestsOpened', 1, { save: false });
                     App.log(container.empty);
                 }
             } else {
@@ -2378,15 +2425,9 @@ const Dungeon = {
             // --- 【優先度3】ID99（メダル）の判定（出たら終了） ---
             // bonusNormal をここで使用
             else if (Math.random() * 100 < (15 + bonusNormal)) {
-                const item = DB.ITEMS.find(i => i.id === 99);
-                if(item) { 
-                    App.data.items[item.id] = (App.data.items[item.id]||0)+1; 
-					
-					// ★累計獲得メダル（消費しても減らない）
-					if (!App.data.stats) App.data.stats = {};
-					App.data.stats.totalMedals = (App.data.stats.totalMedals || 0) + 1;
-					
-                    msg = `<span style="color:#ffd700;">${item.name}</span>`; 
+                const item = Dungeon.grantContainerItem(99, 1);
+                if (item) {
+                    msg = `<span style="color:#ffd700;">${item.name}</span>`;
                 }
             }
             // --- 【優先度4】アイテム or GOLD（並列/最終候補） ---

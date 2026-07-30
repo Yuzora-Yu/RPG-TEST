@@ -727,7 +727,7 @@ const App = {
             },
             stats: { 
                 wipeoutCount: 0,
-                totalSteps: 0, totalBattles: 0, totalChestsOpened: 0,
+                totalSteps: 0, totalBattles: 0, totalChestsOpened: 0, totalMedals: 0,
                 totalQuestCompletions: 0, totalGuildQuestCompletions: 0,
                 totalAlchemyCrafts: 0, totalAlchemyItemsCrafted: 0,
                 totalBlacksmithActions: 0, blacksmithSynthesisCount: 0,
@@ -5928,7 +5928,7 @@ load: () => {
     },
 
     getLifetimeStatDefaults: () => ({
-        totalSteps: 0, totalBattles: 0, totalChestsOpened: 0,
+        totalSteps: 0, totalBattles: 0, totalChestsOpened: 0, totalMedals: 0,
         totalQuestCompletions: 0, totalGuildQuestCompletions: 0,
         totalAlchemyCrafts: 0, totalAlchemyItemsCrafted: 0,
         totalBlacksmithActions: 0, blacksmithSynthesisCount: 0,
@@ -7520,17 +7520,26 @@ const Field = {
         if ((upper === 'C' || upper === 'R') && x !== null && y !== null) {
             const chestDef = Field.getFixedChestAt ? Field.getFixedChestAt(x, y) : null;
             const opened = typeof Dungeon !== 'undefined' && Dungeon.isFixedChestOpenedAt(x, y);
-            if (chestDef?.imageKey) {
+            const presentation = typeof Dungeon !== 'undefined' && Dungeon.getContainerPresentation
+                ? Dungeon.getContainerPresentation(chestDef)
+                : { kind: 'chest' };
+            const isChest = presentation.kind === 'chest';
+
+            // 固定マップ・固定ダンジョンの宝箱は、取得後も空箱として残す。
+            // ランダム生成ダンジョンは currentMapData.isFixed === false のため、
+            // この分岐へ入らず、開封時に従来どおり床タイルへ置換される。
+            if (opened && isChest) {
+                config = {
+                    ...config,
+                    img: chestDef?.openedImageKey
+                        || (upper === 'R' ? 'overlay_dungeon_chest_rare_empty' : 'overlay_dungeon_chest_empty'),
+                    color: chestDef?.color || '#665b52'
+                };
+            } else if (chestDef?.imageKey) {
                 config = {
                     ...config,
                     img: opened ? (chestDef.openedImageKey || chestDef.imageKey) : chestDef.imageKey,
                     color: chestDef.color || config.color
-                };
-            } else if (opened) {
-                config = {
-                    ...config,
-                    img: upper === 'R' ? 'overlay_dungeon_chest_rare_empty' : 'overlay_dungeon_chest_empty',
-                    color: '#665b52'
                 };
             }
         }
@@ -7608,20 +7617,21 @@ const Field = {
 
     getFixedChestTileSign: (chestDef = null) => {
         if (!chestDef) return null;
-        if (typeof Dungeon !== 'undefined' && Dungeon.isFixedChestOpenedAt(Number(chestDef.x), Number(chestDef.y))) return null;
+        const opened = typeof Dungeon !== 'undefined'
+            && Dungeon.isFixedChestOpenedAt(Number(chestDef.x), Number(chestDef.y));
+        const presentation = typeof Dungeon !== 'undefined' && Dungeon.getContainerPresentation
+            ? Dungeon.getContainerPresentation(chestDef)
+            : { kind: 'chest' };
+        // 今回、開封後も残すのは宝箱だけ。ツボ・タルは既存の挙動を維持する。
+        if (opened && presentation.kind !== 'chest') return null;
         const rare = chestDef.rare === true || chestDef.type === 'rare' || chestDef.chestType === 'rare';
         return rare ? 'R' : 'C';
     },
 
     getMapDrawParts: (tileSign, tileX = null, tileY = null) => {
         const upper = String(tileSign || 'W').toUpperCase();
-        if (Field.currentMapData?.isFixed && (upper === 'C' || upper === 'R') &&
-            tileX !== null && tileY !== null && typeof Dungeon !== 'undefined' &&
-            Dungeon.isFixedChestOpenedAt(tileX, tileY)) {
-            const chestDef = Field.getFixedChestAt ? Field.getFixedChestAt(tileX, tileY) : null;
-            const baseTile = String(chestDef?.baseTile || 'T').toUpperCase();
-            return { upper: baseTile, baseTile, overlayConfig: null, worldOverlay: false, logicalUpper: upper };
-        }
+        // 固定マップの開封済み宝箱も C/R の論理タイルを維持し、
+        // getFixedTileOverlayConfig() で空箱オーバーレイへ差し替える。
         // A perimeter auto-exit cell is logically S, but visually it is authored
         // terrain. Rendering it as an S object would add lift/contact shadows to
         // every repeated cell and expose seams outside the map.
@@ -9555,17 +9565,18 @@ const Field = {
             if (tile === 'C' || tile === 'R') {
                 const opened = Field.currentMapData.isFixed && typeof Dungeon !== 'undefined' &&
                     Dungeon.isFixedChestOpenedAt(nx, ny);
-                if (opened) {
-                    tile = String(chestDef?.baseTile || 'T').toUpperCase();
-                } else {
                 const container = typeof Dungeon !== 'undefined' && Dungeon.getContainerPresentation
                     ? Dungeon.getContainerPresentation(chestDef)
-                    : { opened: '空箱が置かれている。', blocked: '宝箱が道を塞いでいる。' };
-                App.log(tile === 'R' ? '赤い宝箱が道を塞いでいる。' : container.blocked);
+                    : { opened: '開いたままの空箱がある。', blocked: '宝箱が道を塞いでいる。' };
+                if (opened) {
+                    // 固定マップの空箱は表示だけでなく障害物としても残す。
+                    App.log(container.opened);
+                } else {
+                    App.log(tile === 'R' ? '赤い宝箱が道を塞いでいる。' : container.blocked);
+                }
                 keepCurrentTileAction({ bump: true });
                 Field.render();
                 return;
-                }
             }
 
             const isFloodedRandomFloor = !!(Field.currentMapData.isDungeon && !Field.currentMapData.isFixed && App.data?.dungeon?.isFloodedFloor);
