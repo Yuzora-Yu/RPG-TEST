@@ -455,15 +455,31 @@ const App = {
         }
 
         // 旧セーブの初回深淵進入履歴だけを復元する。
+        // 追憶の魔境は内部的にarea=ABYSSを共用するが、本編深淵の進入履歴には含めない。
         // 転送の扉はランダム深淵解放まで表示しないため、進入履歴とは分離する。
         if (!App.data.progress.flags.menuUnlockMigrationV3) {
+            const activeMode = globalThis.ABYSS_FLOOR_RULES?.getMode?.(App.data)
+                || App.data.dungeon?.abyssMode
+                || '';
+            const isMemoryRealmActive = globalThis.ABYSS_FLOOR_RULES?.isMemoryMode?.(activeMode) === true;
             const enteredAbyss = !!App.data.progress.flags.abyssFirstEntered ||
-                Number(App.data.dungeon?.tryCount || 0) > 0 ||
+                Number(App.data.dungeon?.storyTryCount || 0) > 0 ||
+                Number(App.data.dungeon?.randomTryCount || 0) > 0 ||
                 Number(App.data.dungeon?.maxFloor || 0) > 0 ||
                 Number(App.data.dungeon?.storyMaxFloor || 0) > 0 ||
-                App.data.location?.area === 'ABYSS';
+                (!isMemoryRealmActive && App.data.location?.area === 'ABYSS');
             App.data.progress.flags.abyssFirstEntered = enteredAbyss;
             App.data.progress.flags.menuUnlockMigrationV3 = true;
+        }
+
+        // 追憶の魔境追加直後の版ではmemoryTryCountと同時に深淵通算tryCountも増えていた。
+        // 一度だけ追憶分を差し引き、深淵の挑戦回数・RUN実績・進入推定を汚染しないよう補正する。
+        if (!App.data.progress.flags.memoryRealmIsolationMigrationV1) {
+            const memoryRuns = Math.max(0, Number(App.data.dungeon?.memoryTryCount || 0));
+            if (memoryRuns > 0) {
+                App.data.dungeon.tryCount = Math.max(0, Number(App.data.dungeon?.tryCount || 0) - memoryRuns);
+            }
+            App.data.progress.flags.memoryRealmIsolationMigrationV1 = true;
         }
 
         // v5: 旧版で「初回深淵進入」と同時に開いていた宿屋の転送扉を、
@@ -980,7 +996,7 @@ const App = {
 
 	// 全画像データの手動/初回ダウンロード用キャッシュ名。
 	// sw.js の RUNTIME_CACHE_NAME と揃えること。
-    fullDataCacheName: 'prisma-abyss-v16.20260729-runtime',
+    fullDataCacheName: 'prisma-abyss-v17.20260801-runtime',
 
 
 	// 初回起動時の「全データを今ダウンロードしますか？」で「いいえ」を選んだ記録。
@@ -1891,10 +1907,11 @@ const App = {
                 || data.dungeon?.abyssMode
                 || 'story';
 
-            if (globalThis.ABYSS_FLOOR_RULES?.isRandomMode?.(abyssMode)) {
+            if (globalThis.ABYSS_FLOOR_RULES?.isRandomMode?.(abyssMode)
+                || globalThis.ABYSS_FLOOR_RULES?.isMemoryMode?.(abyssMode)) {
                 return Math.max(1, Number(
                     globalThis.ABYSS_FLOOR_RULES.getBalanceFloor(displayFloor, abyssMode)
-                ) || displayFloor + 100);
+                ) || displayFloor + (globalThis.ABYSS_FLOOR_RULES?.isMemoryMode?.(abyssMode) ? 90 : 100));
             }
 
             // 物語深淵は従来の成長帯を維持する。
@@ -1956,11 +1973,16 @@ const App = {
 
     hasEnteredAbyss: () => {
         if (!App.data) return false;
+        const activeMode = globalThis.ABYSS_FLOOR_RULES?.getMode?.(App.data)
+            || App.data.dungeon?.abyssMode
+            || '';
+        const isMemoryRealmActive = globalThis.ABYSS_FLOOR_RULES?.isMemoryMode?.(activeMode) === true;
         return !!App.data.progress?.flags?.abyssFirstEntered ||
-            Number(App.data.dungeon?.tryCount || 0) > 0 ||
+            Number(App.data.dungeon?.storyTryCount || 0) > 0 ||
+            Number(App.data.dungeon?.randomTryCount || 0) > 0 ||
             Number(App.data.dungeon?.maxFloor || 0) > 0 ||
             Number(App.data.dungeon?.storyMaxFloor || 0) > 0 ||
-            App.data.location?.area === 'ABYSS';
+            (!isMemoryRealmActive && App.data.location?.area === 'ABYSS');
     },
 
     requireFeatureUnlocked: (key) => {
@@ -4155,12 +4177,20 @@ const App = {
         const currentArea = String(App.data.location.area || 'WORLD');
         const master = globalThis.ABYSS_REGION_MASTER;
         const isAbyssArea = Array.isArray(master?.areaKeys) && master.areaKeys.includes(currentArea);
+        const activeAbyssMode = globalThis.ABYSS_FLOOR_RULES?.getMode?.(App.data)
+            || App.data.dungeon?.abyssMode
+            || '';
+        const isMemoryRealmActive = globalThis.ABYSS_FLOOR_RULES?.isMemoryMode?.(activeAbyssMode) === true;
         // タイトル画面では map.js 読込前にもセーブ移行が走る。
         // 未宣言の STORY_DATA を直接参照せず、読込済みの場合だけ正本を参照する。
         const declaredWorld = globalThis.STORY_DATA?.areas?.[currentArea]?.worldKey;
-        App.data.location.worldKey = currentArea === 'ABYSS_WORLD' || declaredWorld === 'ABYSS_WORLD' || isAbyssArea
-            ? 'ABYSS_WORLD'
-            : 'WORLD';
+        // 追憶の魔境は地上世界上の入口から入る独立コンテンツ。内部areaがABYSSでも
+        // セーブ再開時にABYSS_WORLDへ矯正せず、帰還元の世界を維持する。
+        App.data.location.worldKey = isMemoryRealmActive
+            ? (App.data.dungeon?.returnPoint?.worldKey || App.data.location.worldKey || 'WORLD')
+            : (currentArea === 'ABYSS_WORLD' || declaredWorld === 'ABYSS_WORLD' || isAbyssArea
+                ? 'ABYSS_WORLD'
+                : 'WORLD');
 
         Object.keys(App.data.progress.fixedProceduralFloors).forEach(key => {
             if (typeof Dungeon !== 'undefined' && !Dungeon.isValidFixedProceduralFloor(App.data.progress.fixedProceduralFloors[key])) {
@@ -4183,7 +4213,7 @@ const App = {
                 ].forEach(flag => { flags[flag] = true; });
                 App.data.progress.unlocked.dungeonMenu = true;
                 App.data.dungeon.abyssMode = 'random';
-            } else if (currentArea === 'ABYSS') {
+            } else if (currentArea === 'ABYSS' && !isMemoryRealmActive) {
                 flags.abyssFirstEntered = true;
                 App.data.location = { area: 'CARMENA', worldKey: 'ABYSS_WORLD', x: 19, y: 25 };
                 App.data.progress.floor = 0;

@@ -477,7 +477,9 @@ const Dungeon = {
             ? (App.data.dungeon.returnPoint?.worldKey || 'WORLD')
             : 'ABYSS_WORLD';
         App.data.progress.floor = normalizedStartFloor;
-        App.data.dungeon.tryCount = Number(App.data.dungeon.tryCount || 0) + 1;
+        // tryCountは深淵系の通算として既存実績・表示に使われるため、
+        // 独立コンテンツの追憶の魔境はmemoryTryCountだけを増やす。
+        if (mode !== 'memory') App.data.dungeon.tryCount = Number(App.data.dungeon.tryCount || 0) + 1;
         if (mode === 'random') App.data.dungeon.randomTryCount = Number(App.data.dungeon.randomTryCount || 0) + 1;
         if (mode === 'memory') App.data.dungeon.memoryTryCount = Number(App.data.dungeon.memoryTryCount || 0) + 1;
         App.data.dungeon.map = null;

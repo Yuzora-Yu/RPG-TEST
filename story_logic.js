@@ -79,8 +79,16 @@ const StoryManager = {
             ? Field.getCurrentAreaKey()
             : data?.location?.area;
         const abyssAreas = globalThis.ABYSS_REGION_MASTER?.areaKeys || [];
+        // 追憶の魔境は既存ダンジョン基盤の都合で内部areaにABYSSを使うが、
+        // 本編の深淵地域へ入ったことにはしない。既に本編深淵へ到達済みなら
+        // abyssFirstEnteredを正本として従来どおり深淵側の目的を表示する。
+        const activeAbyssMode = globalThis.ABYSS_FLOOR_RULES?.getMode?.(data)
+            || data?.dungeon?.abyssMode
+            || '';
+        const isMemoryRealmActive = globalThis.ABYSS_FLOOR_RULES?.isMemoryMode?.(activeAbyssMode) === true;
+        const isCurrentAbyssStoryArea = !isMemoryRealmActive && abyssAreas.includes(String(currentArea || ''));
         const hasEnteredAbyssRegion = !!flags.abyssFirstEntered
-            || abyssAreas.includes(String(currentArea || ''))
+            || isCurrentAbyssStoryArea
             || !!flags.abyssCarmenaGateCleared;
         if (hasEnteredAbyssRegion) {
             if (!flags.abyssCarmenaGateCleared) return 'カルメナ北門を守る二将を倒そう';
