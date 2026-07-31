@@ -625,8 +625,10 @@ const TILE_THEMES = {
             ]
         },
         "^": {
-            img: null,
-            color: "#ffffff",
+            // 光の宮殿の外周は通行不能の光壁。単色フォールバックだと
+            // 画面端で白い方眼だけが連続して見えるため、宮殿壁テクスチャを敷く。
+            img: "tile_light_wall",
+            color: "#d9ded4",
             terrain: true
         },
         W: {
@@ -7847,7 +7849,7 @@ const FIXED_DUNGEON_MAPS = {
                     {
                         x: 24,
                         y: 18,
-                        itemId: 102,
+                        itemId: 107,
                         type: "item",
                         rare: true
                     }
@@ -8300,7 +8302,7 @@ const FIXED_DUNGEON_MAPS = {
                     {
                         x: 26,
                         y: 19,
-                        itemId: 103,
+                        itemId: 107,
                         type: "item",
                         rare: true
                     }
@@ -11134,7 +11136,7 @@ const FIXED_DUNGEON_MAPS = {
                     {
                         x: 26,
                         y: 18,
-                        itemId: 100,
+                        itemId: 107,
                         type: "item",
                         rare: true
                     }
@@ -14097,7 +14099,8 @@ const FIXED_DUNGEON_MAPS = {
                 ],
                 healSprings: [
                     {
-                        x: 21,
+                        // 玉座前の調査イベント (21,14) と重ならない位置へ分離。
+                        x: 20,
                         y: 14
                     }
                 ],
@@ -15311,14 +15314,15 @@ const FIXED_DUNGEON_MAPS = {
                     {
                         x: 27,
                         y: 20,
-                        itemId: 102,
+                        itemId: 107,
                         type: "item",
                         rare: true
                     }
                 ],
                 healSprings: [
                     {
-                        x: 16,
+                        // 祭壇の残光イベント (16,22) を維持し、泉だけ左側へ分離。
+                        x: 14,
                         y: 22
                     }
                 ],
@@ -15589,7 +15593,7 @@ const FIXED_DUNGEON_MAPS = {
                     {
                         x: 9,
                         y: 19,
-                        itemId: 103,
+                        itemId: 107,
                         type: "item",
                         rare: true
                     }
@@ -15733,14 +15737,14 @@ const FIXED_DUNGEON_MAPS = {
                     {
                         x: 30,
                         y: 6,
-                        itemId: 100,
+                        itemId: 107,
                         type: "item",
                         rare: true
                     },
                     {
                         x: 30,
                         y: 8,
-                        itemId: 101,
+                        itemId: 108,
                         type: "item",
                         rare: true
                     }

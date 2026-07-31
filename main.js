@@ -710,7 +710,7 @@ const App = {
         return {
             location: { area: 'START_VILLAGE', x: 6, y: 5 },
             settings: App.getDefaultSettings(),
-            system: { monsterIdSchemaVersion: 4, abyssFloorSchemaVersion: 2 },
+            system: { monsterIdSchemaVersion: 4, abyssFloorSchemaVersion: 2, monsterAllySkillPointSchemaVersion: 1 },
             progress: { 
                 floor: 0, 
                 storyStep: 0, 
@@ -2639,6 +2639,84 @@ const App = {
 
     isMonsterAlly: (char) => !!(char && char.isMonsterAlly === true),
 
+    // 現在スキルツリーへ消費済みのSP総数を、各ツリーの累積コストから復元する。
+    // 未使用SPだけを見て互換補填すると、既に習得へ使った分を二重に失うため、総獲得SPで判定する。
+    getCharacterSpentSkillPoints: (char) => {
+        if (!char || !char.tree || typeof char.tree !== 'object') return 0;
+        const skillTrees = (typeof CONST !== 'undefined' && CONST.SKILL_TREES)
+            ? CONST.SKILL_TREES
+            : globalThis.CONST?.SKILL_TREES;
+        if (!skillTrees) return 0;
+
+        return Object.entries(char.tree).reduce((total, [key, rawLevel]) => {
+            const treeDef = skillTrees[key];
+            if (!treeDef || !Array.isArray(treeDef.costs) || treeDef.costs.length === 0) return total;
+            const level = Math.max(0, Math.min(treeDef.costs.length, Math.floor(Number(rawLevel) || 0)));
+            if (level <= 0) return total;
+            return total + Math.max(0, Math.floor(Number(treeDef.costs[level - 1]) || 0));
+        }, 0);
+    },
+
+    // 仲間モンスターは通常加入時にも、Lv2以降のレベルアップ分に相当するSPを持つ。
+    // 既存セーブでは「未使用SP + 消費済みSP」が Lv-1 未満の場合だけ不足分を補填する。
+    ensureMonsterAllyLevelSkillPoints: (char, options = {}) => {
+        if (!App.isMonsterAlly(char)) return { changed: false, granted: 0, target: 0, total: 0 };
+
+        const level = Math.max(1, Math.floor(Number(char.level) || 1));
+        const target = Math.max(0, level - 1);
+        const currentSp = Math.max(0, Math.floor(Number(char.sp) || 0));
+        const spentSp = App.getCharacterSpentSkillPoints(char);
+        const currentTotal = currentSp + spentSp;
+        const granted = Math.max(0, target - currentTotal);
+
+        char.sp = currentSp + granted;
+        if (!char.monsterAllyMeta || typeof char.monsterAllyMeta !== 'object' || Array.isArray(char.monsterAllyMeta)) {
+            char.monsterAllyMeta = {};
+        }
+        if (options.mark !== false) {
+            char.monsterAllyMeta.skillPointGrantVersion = 1;
+            char.monsterAllyMeta.skillPointLevelTarget = target;
+            if (granted > 0) {
+                char.monsterAllyMeta.skillPointCompatGranted = Math.max(
+                    0,
+                    Math.floor(Number(char.monsterAllyMeta.skillPointCompatGranted) || 0)
+                ) + granted;
+            }
+        }
+
+        return {
+            changed: granted > 0 || currentSp !== Number(char.sp),
+            granted,
+            target,
+            spent: spentSp,
+            total: currentTotal + granted
+        };
+    },
+
+    // 追憶・深淵で既に加入済みの仲間モンスターへ一度だけSPを補填する。
+    // system側のスキーマ番号を正本にするため、ロードを繰り返しても再配布されない。
+    migrateMonsterAllySkillPointsV1: (data = App.data) => {
+        if (!data || typeof data !== 'object') return { changed: false, granted: 0, count: 0 };
+        if (!data.system || typeof data.system !== 'object' || Array.isArray(data.system)) data.system = {};
+        if (Number(data.system.monsterAllySkillPointSchemaVersion || 0) >= 1) {
+            return { changed: false, granted: 0, count: 0 };
+        }
+
+        let granted = 0;
+        let count = 0;
+        if (Array.isArray(data.characters)) {
+            data.characters.forEach(char => {
+                const result = App.ensureMonsterAllyLevelSkillPoints(char, { mark: true });
+                if (result.granted > 0) {
+                    granted += result.granted;
+                    count++;
+                }
+            });
+        }
+        data.system.monsterAllySkillPointSchemaVersion = 1;
+        return { changed: true, granted, count };
+    },
+
     getHeroCharacter: () => {
         if (!App.data || !Array.isArray(App.data.characters)) return null;
         return App.data.characters.find(c => c && (c.uid === 'p1' || c.isHero || Number(c.charId) === 301)) || App.data.characters[0] || null;
@@ -2959,7 +3037,8 @@ const App = {
             rarity: App.getMonsterRecruitRarity(base, enemy),
             level: joinLevel,
             exp: 0,
-            sp: 0,
+            // 新規加入時点で、そのレベルまで通常育成した場合と同じ Lv-1 SP を所持する。
+            sp: Math.max(0, joinLevel - 1),
             hp: hpMp.hp,
             mp: hpMp.mp,
             atk: atkMag.atk,
@@ -3000,7 +3079,9 @@ const App = {
                 originalName: base.name || enemy.name || '',
                 originalRank: base.rank || base.generatedFloor || base.minF || enemy.rank || null,
                 originalIsBoss: !!(base.isBoss || enemy.isBoss),
-                originalIsSpecialBoss: !!(base.isSpecialBoss || base.isEstark || enemy.isSpecialBoss || enemy.isEstark)
+                originalIsSpecialBoss: !!(base.isSpecialBoss || base.isEstark || enemy.isSpecialBoss || enemy.isEstark),
+                skillPointGrantVersion: 1,
+                skillPointLevelTarget: Math.max(0, joinLevel - 1)
             }
         };
 
@@ -6175,6 +6256,9 @@ load: () => {
                 }
             });
         }
+
+        // 仲間モンスターの加入時SP仕様導入前のセーブへ、一度だけ Lv-1 相当まで補填する。
+        App.migrateMonsterAllySkillPointsV1(data);
 
         if (!data.book || typeof data.book !== 'object' || Array.isArray(data.book)) data.book = { monsters: [] };
         if (!Array.isArray(data.book.monsters)) data.book.monsters = [];

@@ -1147,6 +1147,18 @@
       (m.mapActions||[]).forEach((a,i)=>{ checkCoord(a,'mapActions',i); if(a.eventId && !eventIds.has(a.eventId)) add('warn',`${ent.name} mapActions#${i}`,`eventId ${a.eventId} が StoryManager.events にありません`); if(a.imageKey && !assetIds.has(a.imageKey)) add('warn',`${ent.name} mapActions#${i}`,`imageKey ${a.imageKey} が PRISMA_ASSETS.graphics にありません`); });
       (m.floorDecorations||[]).forEach((d,i)=>{checkCoord(d,'floorDecorations',i);const dw=Math.max(1,Number(d.width||1)),dh=Math.max(1,Number(d.height||1));if(Number(d.x)+dw>w||Number(d.y)+dh>h)add('error',`${ent.name} floorDecorations#${i}`,'敷物・装飾の範囲がマップ外へ出ています');if(d.imageKey&&!assetIds.has(d.imageKey))add('error',`${ent.name} floorDecorations#${i}`,`imageKey ${d.imageKey} が PRISMA_ASSETS.graphics にありません`);if(!d.imageKey&&!TEXTILE_EDITOR_STYLES[d.type])add('warn',`${ent.name} floorDecorations#${i}`,`未対応の装飾 type ${d.type}`);if(d.drawScale!==undefined&&(!Number.isFinite(Number(d.drawScale))||Number(d.drawScale)<=0))add('error',`${ent.name} floorDecorations#${i}`,'drawScale は0より大きい数値にしてください');if(d.shimmer!==undefined&&typeof d.shimmer!=='boolean')add('warn',`${ent.name} floorDecorations#${i}`,'shimmer は true / false で指定してください');if(d.renderLayer!==undefined&&!['ground','object'].includes(String(d.renderLayer).toLowerCase()))add('error',`${ent.name} floorDecorations#${i}`,'renderLayer は ground または object を指定してください');});
       (m.blockingObjects||[]).forEach((o,i)=>{checkCoord(o,'blockingObjects',i);if(o.imageKey&&!assetIds.has(o.imageKey))add('error',`${ent.name} blockingObjects#${i}`,`imageKey ${o.imageKey} が PRISMA_ASSETS.graphics にありません`);const sign=String(rows?.[Number(o.y)]||'')[Number(o.x)]?.toUpperCase();if(sign&&!['T','G'].includes(sign))add('warn',`${ent.name} blockingObjects#${i}`,`通行不能小物が通常床以外の ${sign} 上にあります`);});
+      // 回復の泉は現在地アクションを優先するため、同じ座標にイベントや設備を置くと
+      // 下側のオブジェクトが描画・操作ともに隠れる。エディタ出力前に再発を止める。
+      (m.healSprings||[]).forEach((spring,springIndex)=>{
+        const sx=Number(spring.x),sy=Number(spring.y);
+        const conflictLists=['chests','bosses','floorLinks','mapActors','mapActions','blockingObjects'];
+        conflictLists.forEach(list=>(m[list]||[]).forEach((object,objectIndex)=>{
+          if(objectCoversCell(list,object,sx,sy)) add('error',`${ent.name} healSprings#${springIndex}`,`回復の泉 (${sx},${sy}) が ${list}#${objectIndex} と重複しています`);
+        }));
+        (m.healSprings||[]).forEach((other,otherIndex)=>{
+          if(otherIndex>springIndex&&Number(other.x)===sx&&Number(other.y)===sy) add('error',`${ent.name} healSprings#${springIndex}`,`回復の泉 (${sx},${sy}) が healSprings#${otherIndex} と重複しています`);
+        });
+      });
     });
     (state.data.fieldEncounterZones||[]).forEach((z,i)=>{ (z.monsters||[]).forEach(mid=>{ if(!monsterIds.has(Number(mid))) add('error',`FIELD_ENCOUNTER_ZONES#${i}`,`monster ${mid} が monsters.js にありません`); }); (z.rareMonsters||[]).forEach((r,j)=>{ if(!monsterIds.has(Number(r.id))) add('error',`FIELD_ENCOUNTER_ZONES#${i}.rare#${j}`,`monster ${r.id} が monsters.js にありません`); if(Number(r.rate)<0||Number(r.rate)>1) add('warn',`FIELD_ENCOUNTER_ZONES#${i}.rare#${j}`,`rate ${r.rate} は0〜1推奨です`); }); });
     Object.entries(state.data.storyManagerData.events||{}).forEach(([id,ev])=>{ ['actions','winActions'].forEach(phase=>{ (ev[phase]||[]).forEach((a,i)=>validateAction(a,`${id}.${phase}#${i}`)); }); });
