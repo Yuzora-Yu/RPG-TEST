@@ -132,6 +132,8 @@ const CONST = {
 	}
 };
 
+window.refreshSkillBookItemMetadata?.();
+
 const DB = {
     SKILLS: window.SKILLS_DATA || [],
     ITEMS: window.ITEMS_DATA || [],

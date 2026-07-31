@@ -2015,6 +2015,8 @@ const App = {
         if (typeof FIXED_DUNGEON_MAPS !== 'undefined' && FIXED_DUNGEON_MAPS[areaKey]) {
             return { key: areaKey, def: FIXED_DUNGEON_MAPS[areaKey], kind: 'dungeon' };
         }
+        const storyArea = (typeof STORY_DATA !== 'undefined' && STORY_DATA.areas) ? STORY_DATA.areas[areaKey] : null;
+        if (storyArea?.skyPrismVirtual) return { key:areaKey, def:storyArea, kind:'virtual' };
         return null;
     },
 
@@ -2112,6 +2114,7 @@ const App = {
             'DARK_CASTLE',
             'GREZELIA_FORBIDDEN',
             'ABYSS_FIELD',
+            'MEMORY_REALM',
             'TRIAL_ISLAND',
             'CARMENA',
             'THUNDER_DUNES',
@@ -2136,6 +2139,7 @@ const App = {
             if (!areaKey || seen.has(areaKey)) return;
             const info = App.getFixedMapDef(areaKey);
             if (!info) return;
+            const storyArea = (typeof STORY_DATA !== 'undefined' && STORY_DATA.areas) ? STORY_DATA.areas[areaKey] : null;
             seen.add(areaKey);
 
             // ワールドマップそのものの移動可否と、その世界に属する町・ダンジョンの移動可否は別契約。
@@ -3067,6 +3071,9 @@ const App = {
                 ? Battle.getMonsterBaseById(enemy.baseId || enemy.id)
                 : null;
             if (!base || base.abyssRecruitable === false) return false;
+            const memoryMode = globalThis.ABYSS_FLOOR_RULES?.isMemoryMode?.(App.data?.battle?.abyssMode || App.data?.dungeon?.abyssMode) === true;
+            const allowedMemoryBoss = memoryMode && typeof Dungeon !== 'undefined' && Dungeon.isMemoryRealmBossId?.(base.id || enemy.baseId || enemy.id);
+            if (allowedMemoryBoss) return !base.isRare && !base.isSpecialBoss && !base.isEstark && !enemy.isRare && !enemy.isSpecialBoss && !enemy.isEstark;
             return !base.isBoss && !base.isRare && !base.isSpecialBoss && !base.isEstark
                 && !enemy.isBoss && !enemy.isRare && !enemy.isSpecialBoss && !enemy.isEstark;
         });
@@ -6524,6 +6531,7 @@ load: () => {
 
 	tryRandomEncounter: (rate = null) => {
 		if (!App.data) return false;
+        if (Field.currentMapData?.randomEncounterDisabled) return false;
 		if (App.encounterTransitioning) return true;
 		if (App.data.battle && App.data.battle.active) return true;
 
@@ -6573,7 +6581,10 @@ load: () => {
             abyssBalanceFloor: mapEncounter?.balanceFloor || null,
             useHabitatEncounters: !!(mapEncounter?.useHabitatEncounters || isSeaEncounter || worldEncounter?.mapId),
             encounterRank: mapEncounter?.encounterRank || (worldEncounter ? worldEncounter.rank : null),
-			monsters: mapEncounter?.isGuildQuestDungeon && Array.isArray(mapEncounter.monsters) ? [...mapEncounter.monsters] : null,
+			monsters: Array.isArray(mapEncounter?.monsters) ? [...mapEncounter.monsters] : null,
+            exactMonsters: !!mapEncounter?.exactMonsters,
+            memoryRealm: !!mapEncounter?.memoryRealm,
+            memoryElements: Array.isArray(mapEncounter?.memoryElements) ? [...mapEncounter.memoryElements] : [],
             guildQuestChallengeId: mapEncounter?.guildQuestId || null,
             guildChallengeEnemyBoost: mapEncounter?.enemyBoost ? JSON.parse(JSON.stringify(mapEncounter.enemyBoost)) : null,
             guildChallengeAllyAilments: Array.isArray(mapEncounter?.allyAilments) ? [...mapEncounter.allyAilments] : [],
@@ -9053,6 +9064,16 @@ const Field = {
             return;
         }
 
+        if (action.type === 'memoryInn' && typeof Dungeon !== 'undefined' && typeof Dungeon.useMemoryRealmInn === 'function') {
+            Dungeon.useMemoryRealmInn(action.cost);
+            return;
+        }
+
+        if (action.type === 'memoryExit' && typeof Dungeon !== 'undefined') {
+            Dungeon.exit(false);
+            return;
+        }
+
         if (action.type === 'shop' && typeof Facilities !== 'undefined' && typeof Facilities.openShopFromField === 'function') {
             Facilities.openShopFromField(action);
             return;
@@ -9265,7 +9286,12 @@ const Field = {
             }
         }
 
-        if (targetAreaKey && typeof FIXED_MAPS !== 'undefined' && FIXED_MAPS[targetAreaKey]) {
+        if (targetAreaKey === 'MEMORY_REALM') {
+            App.setAction('追憶の魔境へ入る', () => {
+                if (typeof App.discoverFixedMap === 'function') App.discoverFixedMap('MEMORY_REALM', { save:false });
+                Dungeon.startMemoryRealm();
+            });
+        } else if (targetAreaKey && typeof FIXED_MAPS !== 'undefined' && FIXED_MAPS[targetAreaKey]) {
             const areaDef = FIXED_MAPS[targetAreaKey];
             App.setAction(`${areaDef.name}に入る`, () => {
                 const flags = App.data?.progress?.flags || {};
@@ -9403,7 +9429,8 @@ const Field = {
         const battleData = App.data?.battle || {};
         if (battleData.battleBg) return battleData.battleBg;
         const currentFloor = Math.max(0, Number(App.data?.progress?.floor || 0));
-        const isAbyssBoss = App.data?.location?.area === 'ABYSS' && battleData.isBossBattle && !battleData.isRiftBattle;
+        const isMemoryRealmBattle = globalThis.ABYSS_FLOOR_RULES?.isMemoryMode?.(battleData.abyssMode || App.data?.dungeon?.abyssMode) === true;
+        const isAbyssBoss = App.data?.location?.area === 'ABYSS' && battleData.isBossBattle && !battleData.isRiftBattle && !isMemoryRealmBattle;
         if (isAbyssBoss && globalThis.ABYSS_FLOOR_RULES?.getBalanceFloor?.(currentFloor, App.data?.battle?.abyssMode || App.data?.dungeon?.abyssMode) === 200) return 'battle_bg_abyss_floor_200';
         if (isAbyssBoss) return 'battle_bg_abyss_boss';
         if (battleData.isSpecialBoss || battleData.isEstark) return 'battle_bg_lastboss';

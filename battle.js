@@ -902,7 +902,7 @@ const Battle = {
 
     getEquipmentRewardFloor: (enemy, fallbackFloor = 1) => {
         const base = Battle.getMonsterBaseById(enemy?.baseId || enemy?.id) || {};
-        const raw = enemy?.generatedFloor ?? enemy?.rewardRank ?? enemy?.rank ?? base.generatedFloor ?? base.rewardRank ?? base.rank ?? base.minF ?? fallbackFloor;
+        const raw = enemy?.memoryRewardRank ?? enemy?.generatedFloor ?? enemy?.rewardRank ?? enemy?.rank ?? base.generatedFloor ?? base.rewardRank ?? base.rank ?? base.minF ?? fallbackFloor;
         return Math.max(1, Math.floor(Number(raw) || Number(fallbackFloor) || 1));
     },
 
@@ -1170,6 +1170,16 @@ const Battle = {
         if (isBoss && storedAbyssBoss && Array.isArray(storedAbyssBoss.monsterIds) && storedAbyssBoss.monsterIds.length > 0) {
             const storedFloor = Math.max(1, Number(storedAbyssBoss.balanceFloor || battleData.abyssBalanceFloor || storedAbyssBoss.floor) || floor);
             const storedIds = storedAbyssBoss.monsterIds.map(id => Number(id)).filter(id => Number.isFinite(id));
+            if (storedAbyssBoss.source === 'memory-realm') {
+                Battle.log('<span style="color:#d8b5ff; font-weight:bold;">追憶の最奥から、強大な記憶が具現化した！</span>');
+                storedIds.forEach((id, i) => {
+                    const base = Battle.getMonsterBaseById(id);
+                    const enemy = Battle.createMemoryRealmMonster(base, 120, { isBossBattle:true, elements:battleData.memoryElements || [] });
+                    if (enemy && storedIds.length > 1) enemy.name += String.fromCharCode(65 + i);
+                    if (enemy) newEnemies.push(enemy);
+                });
+                return newEnemies;
+            }
             if (storedAbyssBoss.source === 'deep-random' || storedFloor >= 201) {
                 Battle.log('<span style="color:#ff0000; font-size:1em; font-weight:bold;">深淵の守護者が現れた！</span>');
                 storedIds.forEach((id, i) => {
@@ -1275,7 +1285,7 @@ const Battle = {
 
         const hasConfiguredEncounterPool = !isBoss && Array.isArray(battleData.monsters) && battleData.monsters.length > 0;
         const rareEncounterRank = Math.max(1, Number(battleData.abyssBalanceFloor || battleData.encounterRank || floor) || 1);
-        if (!isBoss && window.MonsterData && typeof window.MonsterData.tryGenerateRareMonster === 'function') {
+        if (!isBoss && abyssMode !== 'memory' && window.MonsterData && typeof window.MonsterData.tryGenerateRareMonster === 'function') {
             const rareBase = window.MonsterData.tryGenerateRareMonster(rareEncounterRank);
             if (rareBase && Battle.isNormalEncounterBase(rareBase)) {
                 const rareEnemy = Battle.createMonsterFromBase(rareBase, { name: rareBase.name || '\u4e0d\u660e\u306a\u9b54\u7269' });
@@ -1335,6 +1345,19 @@ const Battle = {
             return newEnemies;
         }
 
+        if (!isBoss && abyssMode === 'memory') {
+            Battle.log('<span style="color:#d8b5ff;">強化された魔物の記憶が現れた！</span>');
+            const pool = Array.isArray(battleData.monsters) ? battleData.monsters.map(Number).filter(Number.isFinite) : [];
+            for (let i = 0; i < normalCount; i++) {
+                const id = pool[Math.floor(Math.random() * pool.length)];
+                const base = Battle.getMonsterBaseById(id) || globalThis.MonsterData?.generateBandMonster?.(Math.min(85, Math.max(1, Number(floor) - 90)));
+                const enemy = Battle.createMemoryRealmMonster(base, abyssBalanceFloor, { isBossBattle:false, elements:battleData.memoryElements || [] });
+                if (enemy && normalCount > 1) enemy.name += String.fromCharCode(65 + i);
+                if (enemy) newEnemies.push(enemy);
+            }
+            return newEnemies;
+        }
+
         if (isBoss) {
             Battle.log('\u5f37\u5927\u306a\u9b54\u7269\u304c\u73fe\u308c\u305f\uff01');
             let bosses = [];
@@ -1386,6 +1409,104 @@ const Battle = {
             }
         }
         return newEnemies;
+    },
+
+    getMemoryRealmSkillCandidates: (targetRank, elements = [], preferMagic = false) => {
+        const elementSet = new Set((elements || []).map(String));
+        const rank = Math.max(91, Number(targetRank || 91));
+        // Rank91～120では高位技を中心にする。MPだけでなく倍率・固定威力・手数も評価する。
+        const targetMp = Math.max(20, Math.floor(rank * 0.55));
+        const targetPower = Math.max(1.8, rank / 38);
+        return (DB.SKILLS || []).filter(skill => {
+            const id = Number(skill?.id);
+            if (!Number.isFinite(id) || id < 100 || id >= 700000) return false;
+            if (!['物理','魔法','特殊','強化'].includes(String(skill.type || ''))) return false;
+            if (skill.instantDeath || skill.escape || skill.revive || skill.fullRestore) return false;
+            const target = String(skill.target || '');
+            if (target.includes('味方') && !String(skill.type || '').includes('強化')) return false;
+            return true;
+        }).map(skill => {
+            const count = Math.max(1, Number(skill.count || 1));
+            const power = Math.max(Number(skill.rate || 0) * count, Number(skill.base || 0) / Math.max(1, rank));
+            let score = 120 - Math.abs(Number(skill.mp || 0) - targetMp) * 0.9;
+            score += Math.min(75, power * 18);
+            score -= Math.abs(power - targetPower) * 7;
+            if (elementSet.has(String(skill.elm || skill.element || ''))) score += 100;
+            if (preferMagic && skill.type === '魔法') score += 45;
+            if (!preferMagic && skill.type === '物理') score += 45;
+            if (skill.type === '特殊' || skill.type === '強化') score += 10;
+            return { skill, score: score + Math.random() * 25 };
+        }).sort((a,b) => b.score - a.score).map(entry => entry.skill);
+    },
+
+    applyMemoryRealmSkillLoadout: (enemy, base, targetRank, elements, isBoss) => {
+        if (!enemy) return enemy;
+        const preferMagic = Number(base?.mag || 0) > Number(base?.atk || 0);
+        const pool = Battle.getMemoryRealmSkillCandidates(targetRank, elements, preferMagic);
+        const count = isBoss ? 6 : 3;
+        const acts = [{ id:1, rate:isBoss ? 18 : 30, condition:0 }];
+        for (const skill of pool) {
+            if (acts.length >= count + 1) break;
+            if (acts.some(act => Number(act.id) === Number(skill.id))) continue;
+            acts.push({ id:Number(skill.id), rate:isBoss ? 20 : 24, condition:0 });
+        }
+        enemy.acts = acts;
+        enemy.memoryElements = [...(elements || [])];
+        return enemy;
+    },
+
+    getMemoryRealmItemDropCandidates: (targetRank) => {
+        const rank = Math.max(1, Math.floor(Number(targetRank) || 1));
+        const eligible = (DB.ITEMS || []).filter(item => {
+            if (!item) return false;
+            if (['貴重品','乗り物','移動','スキル書','特性書'].includes(String(item.type || ''))) return false;
+            if (item.medalOnly === true || item.abyssDrop === false) return false;
+            return Number(item.rank || 1) <= rank;
+        });
+        if (!eligible.length) return [];
+        // 現在Rank以下で最も近いマスタRankを正本にし、低Rank消耗品へ逆戻りしない。
+        const nearestRank = Math.max(...eligible.map(item => Math.max(1, Number(item.rank || 1))));
+        return eligible.filter(item => Math.max(1, Number(item.rank || 1)) === nearestRank);
+    },
+
+    createMemoryRealmMonster: (base, targetRank, options = {}) => {
+        if (!base) return null;
+        const original = Battle.cloneMonsterBase(base);
+        const storyBossAsNormal = !options.isBossBattle && typeof Dungeon !== 'undefined' && Dungeon.isMemoryRealmBossId?.(original.id);
+        const rareAsNormal = !options.isBossBattle && !!original.isRare;
+        let scalingBase = Battle.cloneMonsterBase(original);
+        if (storyBossAsNormal || rareAsNormal) {
+            const referenceRank = Math.max(1, Math.min(85, Number(original.rank || original.minF || 85)));
+            const reference = globalThis.MonsterData?.generateBandMonster?.(referenceRank) || globalThis.MonsterData?.generateBandMonster?.(85);
+            if (reference) {
+                ['hp','mp','atk','def','spd','mag','mdef','exp','gold'].forEach(key => { scalingBase[key] = Number(reference[key] || scalingBase[key] || 1); });
+                scalingBase.rank = Number(reference.rank || referenceRank);
+            }
+            scalingBase.isBoss = false;
+            scalingBase.isSpecialBoss = false;
+            scalingBase.isEstark = false;
+            scalingBase.isRare = false;
+            scalingBase.drops = null;
+        }
+        const enemy = Battle.createDeepFloorMonster(scalingBase, Math.max(91, Number(targetRank) || 91), !!options.isBossBattle);
+        if (!enemy) return null;
+        enemy.id = Number(original.id);
+        enemy.baseId = Number(original.id);
+        enemy.name = original.name || enemy.name;
+        enemy.image = original.image || original.img || enemy.image;
+        enemy.imageId = original.imageId ?? original.baseImageId ?? enemy.imageId;
+        enemy.rank = Math.max(91, Number(targetRank) || 91);
+        enemy.generatedFloor = enemy.rank;
+        enemy.memoryRewardRank = enemy.rank;
+        enemy.memoryRealm = true;
+        enemy.drops = null;
+        enemy.race = original.race || enemy.race;
+        enemy.isBoss = !!options.isBossBattle;
+        enemy.isSpecialBoss = false;
+        enemy.isEstark = false;
+        enemy.isRare = false;
+        Battle.applyMemoryRealmSkillLoadout(enemy, original, enemy.rank, options.elements || [], !!options.isBossBattle);
+        return enemy;
     },
 
 /**
@@ -5058,14 +5179,15 @@ findNextActor: () => {
 			const step = App.data.progress.storyStep || 0;
 			floor = Math.max(1, step * 5); // 0にならないよう最低1を担保
 		} else if (App.data?.location?.area === 'ABYSS' &&
-            globalThis.ABYSS_FLOOR_RULES?.isRandomMode?.(App.data?.battle?.abyssMode || App.data?.dungeon?.abyssMode)) {
+            (globalThis.ABYSS_FLOOR_RULES?.isRandomMode?.(App.data?.battle?.abyssMode || App.data?.dungeon?.abyssMode) ||
+             globalThis.ABYSS_FLOOR_RULES?.isMemoryMode?.(App.data?.battle?.abyssMode || App.data?.dungeon?.abyssMode))) {
             // 3. ランダム深淵は表示階層ではなく旧来のバランス階層で報酬を決める。
             floor = Math.max(1, Number(
                 App.data?.battle?.abyssBalanceFloor ||
                 Field.currentMapData?.balanceFloor ||
                 globalThis.ABYSS_FLOOR_RULES.getBalanceFloor(
                     App.data?.battle?.abyssFloor || App.data?.progress?.floor || 1,
-                    'random'
+                    App.data?.battle?.abyssMode || App.data?.dungeon?.abyssMode || 'random'
                 )
             ) || 1);
 		}
@@ -5220,7 +5342,9 @@ findNextActor: () => {
 			Battle.enemies.forEach(e => {
 				if (e.isFled) return;
 				const base = Battle.getMonsterBaseById(e.baseId || e.id) || e;
-				const monsterDrops = base.drops;
+				// 追憶の魔境では元モンスター固有の低Rank／物語ボス報酬を持ち込まず、
+				// 強化後Rankに連動する汎用ドロップへ統一する。
+				const monsterDrops = e.memoryRealm ? null : base.drops;
 				const rewardFloor = Battle.getEquipmentRewardFloor(e, floor);
 
 				// 1. レアドロップ判定 (独立)
@@ -5250,8 +5374,9 @@ findNextActor: () => {
 				}
 				
 				// 2. 装備ドロップ判定 (独立)
-				const isBoss = !!(base.isBoss || e.isBoss);
-				const equipChance = isBoss ? 100 : 8; 
+				// 雑魚枠で出た物語ボスは、外見と仲間化IDだけを保持し報酬上は通常敵として扱う。
+				const isBoss = e.memoryRealm ? !!e.isBoss : !!(base.isBoss || e.isBoss);
+				const equipChance = isBoss ? 100 : 8;
 				if (Math.random() * 100 < equipChance) {
 					let eq;
 					if (isBoss && Math.random() < 0.02) {
@@ -5293,7 +5418,10 @@ findNextActor: () => {
 					}
 				} else {
 					if (Math.random() * 100 < (10 + bonusNormal)) {
-						const candidates = DB.ITEMS.filter(i => i.rank <= Math.min(200, floor) && i.type !== '貴重品' && i.id < 100);
+                        const memoryMode = globalThis.ABYSS_FLOOR_RULES?.isMemoryMode?.(App.data?.battle?.abyssMode || App.data?.dungeon?.abyssMode) === true;
+						const candidates = memoryMode
+                            ? Battle.getMemoryRealmItemDropCandidates(floor)
+                            : DB.ITEMS.filter(i => i.rank <= Math.min(200, floor) && i.type !== '貴重品' && i.id < 100);
 						if (candidates.length > 0) {
 							const item = candidates[Math.floor(Math.random() * candidates.length)];
 							App.data.items[item.id] = (App.data.items[item.id] || 0) + 1;

@@ -1397,6 +1397,14 @@ const STORY_DATA = {
                 color: "#5bd6ff"
             }
         },
+        MEMORY_REALM: {
+            name: "追憶の魔境",
+            rank: 91,
+            centerX: 9,
+            centerY: 59,
+            skyPrismVirtual: true,
+            fieldTile: { img: "overlay_field_ruins", color: "#a477c8" }
+        },
         SEABED_TEMPLE: {
             name: "海底神殿",
             rank: 35,
@@ -1802,7 +1810,8 @@ const MAP_MASTER = Object.freeze({
     VISTA_UNDERPASS: { id: "MAP000061", name: "深淵都市ビスタ 地下通路" },
     LEGACION_UPPER_GALLERY: { id: "MAP000062", name: "混沌魔城レガシオン 上層回廊" },
     LEGACION_WEST_TOWER: { id: "MAP000063", name: "混沌魔城レガシオン 西塔" },
-    LEGACION_EAST_TOWER: { id: "MAP000064", name: "混沌魔城レガシオン 東塔" }
+    LEGACION_EAST_TOWER: { id: "MAP000064", name: "混沌魔城レガシオン 東塔" },
+    MEMORY_REALM: { id: "MAP000065", name: "追憶の魔境" }
 });
 
 const MAP_IDS = Object.freeze(Object.keys(MAP_MASTER).reduce((ids, key) => {
@@ -9014,6 +9023,8 @@ const FIXED_DUNGEON_MAPS = {
                             301022,
                             301022
                         ],
+                        // 海底神殿3階は編成中央ではなく、指定画像301030をMAP代表にする。
+                        mapSpriteMonsterId: 301030,
                         startEventId: "water_temple_syris_encounter",
                         storyEventId: "water_temple_clear",
                         actionLabel: "氷の祭壇へ進む"

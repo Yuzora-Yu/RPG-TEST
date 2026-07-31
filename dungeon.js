@@ -8,31 +8,37 @@ const ABYSS_FLOOR_RULES = Object.freeze({
     MODE_STORY: 'story',
     MODE_RANDOM: 'random',
     MODE_GUILD: 'guild',
+    MODE_MEMORY: 'memory',
     RANDOM_BALANCE_OFFSET: 100,
+    MEMORY_BALANCE_OFFSET: 90,
     RANDOM_ENDLESS_START_FLOOR: 101,
     normalizeFloor(value, fallback = 1) {
         const floor = Math.floor(Number(value));
         return Number.isFinite(floor) ? Math.max(1, floor) : Math.max(1, Math.floor(Number(fallback) || 1));
     },
     normalizeMode(mode, fallback = 'story') {
-        return ['story', 'random', 'guild'].includes(String(mode)) ? String(mode) : fallback;
+        return ['story', 'random', 'guild', 'memory'].includes(String(mode)) ? String(mode) : fallback;
     },
     getMode(data = globalThis.App?.data) {
         const guildRun = data?.dungeon?.guildQuestRun;
         if (guildRun?.active && guildRun?.questId) return 'guild';
-        return 'random';
+        return this.normalizeMode(data?.dungeon?.abyssMode, 'random');
     },
     getBalanceFloor(displayFloor, mode = null) {
         const floor = this.normalizeFloor(displayFloor);
-        return this.normalizeMode(mode || this.getMode()) === 'random'
-            ? floor + this.RANDOM_BALANCE_OFFSET
-            : floor;
+        const normalizedMode = this.normalizeMode(mode || this.getMode());
+        if (normalizedMode === 'random') return floor + this.RANDOM_BALANCE_OFFSET;
+        if (normalizedMode === 'memory') return floor + this.MEMORY_BALANCE_OFFSET;
+        return floor;
     },
     isRandomMode(mode = null) {
         return this.normalizeMode(mode || this.getMode()) === 'random';
     },
     isStoryMode(mode = null) {
         return this.normalizeMode(mode || this.getMode()) === 'story';
+    },
+    isMemoryMode(mode = null) {
+        return this.normalizeMode(mode || this.getMode()) === 'memory';
     },
     isEndlessFloor(displayFloor, mode = null) {
         return this.isRandomMode(mode) && this.normalizeFloor(displayFloor) >= this.RANDOM_ENDLESS_START_FLOOR;
@@ -45,6 +51,29 @@ globalThis.ABYSS_FLOOR_RULES = ABYSS_FLOOR_RULES;
 
 const Dungeon = {
     floor: 0, width: 30, height: 30, map: [], pendingAction: null,
+
+    memoryRealmName: '追憶の魔境',
+    memoryRealmMaxFloor: 30,
+    memoryRealmBossIds: Object.freeze([
+        301010, 301020, 301030, 301040, 301050, 301061, 301070, 301080, 301081, 301082,
+        301100, 303201, 303202, 303203, 303204, 303205, 303206, 303207, 303208
+    ]),
+    memoryRealmRestFloors: Object.freeze([10, 20]),
+    memoryRealmThemes: Object.freeze([
+        Object.freeze({ id:'start-cave', label:'北東の洞穴', sourceMapIds:['MAP000001','MAP000003'], themeKey:'START_CAVE', battleBg:'battle_bg_dungeon', elements:['無','風'] }),
+        Object.freeze({ id:'wind-hole', label:'森の風穴', sourceMapIds:['MAP000004'], themeKey:'WIND_HOLE', battleBg:'battle_bg_wind_hole', elements:['風'] }),
+        Object.freeze({ id:'ignis', label:'イグナ火山', sourceMapIds:['MAP000005','MAP000007'], themeKey:'FIRE_VILLAGE', battleBg:'battle_bg_fire', elements:['火'] }),
+        Object.freeze({ id:'forbidden', label:'禁忌の森・風の神殿', sourceMapIds:['MAP000008','MAP000010','MAP000011'], themeKey:'FORBIDDEN_FOREST', battleBg:'battle_bg_forest', elements:['風'] }),
+        Object.freeze({ id:'crena', label:'クレナ鍾乳洞', sourceMapIds:['MAP000012','MAP000013'], themeKey:'CRENA_CAVE', battleBg:'battle_bg_crena', elements:['水'] }),
+        Object.freeze({ id:'seabed', label:'海底神殿', sourceMapIds:['MAP000014','MAP000016','MAP000017'], themeKey:'SEABED_TEMPLE', battleBg:'battle_bg_seabed', elements:['水','雷'] }),
+        Object.freeze({ id:'thunder', label:'雷の要塞', sourceMapIds:['MAP000018','MAP000019'], themeKey:'THUNDER_FORT', battleBg:'battle_bg_thunder_fort', elements:['雷'] }),
+        Object.freeze({ id:'tower', label:'大灯台', sourceMapIds:['MAP000020','MAP000021'], themeKey:'BIG_TOWER', battleBg:'battle_bg_big_tower', elements:['雷','光'] }),
+        Object.freeze({ id:'light', label:'光の宮殿', sourceMapIds:['MAP000022','MAP000023'], themeKey:'LIGHT_PALACE', battleBg:'battle_bg_light_palace', elements:['光'], wallFaceImg:'tile_light_wall_face', wallFaceTorchImg:'tile_light_wall_face_prism' }),
+        Object.freeze({ id:'dark-shrine', label:'闇の神殿跡', sourceMapIds:['MAP000024'], themeKey:'DARK_SHRINE_RUINS', battleBg:'battle_bg_dark_shrine', elements:['闇'] }),
+        Object.freeze({ id:'galvania', label:'ガルヴァニア洞窟', sourceMapIds:['MAP000025'], themeKey:'GALVANIA_CAVE', battleBg:'battle_bg_galvania_cave', elements:['闇'] }),
+        Object.freeze({ id:'dark-castle', label:'魔王城', sourceMapIds:['MAP000026','MAP000027'], themeKey:'DARK_CASTLE', battleBg:'battle_bg_dark_castle', elements:['闇'] }),
+        Object.freeze({ id:'grezelia', label:'禁足地グレゼリア', sourceMapIds:['MAP000028','MAP000030','MAP000031'], themeKey:'GREZELIA_CAVE', battleBg:'battle_bg_grezelia', elements:['闇','混沌'] })
+    ]),
 
     // ランダム生成ダンジョン内の特殊オブジェクト設定。
     // タイル文字を増やすと既存の宝箱/階段/エンカウント処理に影響しやすいため、
@@ -257,12 +286,15 @@ const Dungeon = {
     getAbyssMode: () => ABYSS_FLOOR_RULES.getMode(App.data),
     isStoryAbyss: () => ABYSS_FLOOR_RULES.isStoryMode(Dungeon.getAbyssMode()),
     isRandomAbyss: () => ABYSS_FLOOR_RULES.isRandomMode(Dungeon.getAbyssMode()),
+    isMemoryRealm: () => ABYSS_FLOOR_RULES.isMemoryMode(Dungeon.getAbyssMode()),
+    isMemoryRealmBossId: (id) => Dungeon.memoryRealmBossIds.includes(Number(id)),
     getBalanceFloor: (floor = Dungeon.floor, mode = null) => ABYSS_FLOOR_RULES.getBalanceFloor(floor, mode || Dungeon.getAbyssMode()),
     getModeMaxFloor: (mode = Dungeon.getAbyssMode()) => {
         const dungeon = App.data?.dungeon || {};
-        return ABYSS_FLOOR_RULES.normalizeMode(mode) === 'story'
-            ? Math.max(0, Number(dungeon.storyMaxFloor || 0))
-            : Math.max(0, Number(dungeon.maxFloor || 0));
+        const normalized = ABYSS_FLOOR_RULES.normalizeMode(mode);
+        if (normalized === 'story') return Math.max(0, Number(dungeon.storyMaxFloor || 0));
+        if (normalized === 'memory') return Math.max(0, Number(dungeon.memoryMaxFloor || 0));
+        return Math.max(0, Number(dungeon.maxFloor || 0));
     },
     isRandomAbyssUnlocked: () => !!App.data?.progress?.flags?.abyssRandomUnlocked,
 
@@ -332,11 +364,13 @@ const Dungeon = {
         const cannotExit = isBossFloor && isOnBossTile;
 
         if (isInDungeon) {
-            const modeLabel = Dungeon.isGuildQuestRunActive()
-                ? 'ギルド依頼迷宮'
-                : (Field.currentMapData?.isFixed && areaKey !== 'ABYSS'
-                    ? (Field.currentMapData.displayName || Field.currentMapData.name || '深淵の迷宮')
-                    : 'ランダム深淵');
+            const modeLabel = Dungeon.isMemoryRealm()
+                ? Dungeon.memoryRealmName
+                : (Dungeon.isGuildQuestRunActive()
+                    ? 'ギルド依頼迷宮'
+                    : (Field.currentMapData?.isFixed && areaKey !== 'ABYSS'
+                        ? (Field.currentMapData.displayName || Field.currentMapData.name || '深淵の迷宮')
+                        : 'ランダム深淵'));
             content.innerHTML = `
                 <div style="max-width:420px; margin:0 auto; display:flex; flex-direction:column; gap:14px;">
                     <div style="font-size:22px; color:#ffd700; text-align:center; margin-bottom:4px;">${modeLabel}</div>
@@ -405,36 +439,45 @@ const Dungeon = {
 	
     // --- ダンジョン突入・進行 ---
     start: (startFloor, options = {}) => {
-		if (typeof App !== 'undefined' && typeof App.requireFeatureUnlocked === 'function' && !App.requireFeatureUnlocked('abyss')) return;
-		if (typeof App !== 'undefined' && typeof App.unlockFeature === 'function') App.unlockFeature('dungeonMenu');
+        const requestedMode = ABYSS_FLOOR_RULES.normalizeMode(options.mode, 'random');
+        const mode = requestedMode === 'guild' ? 'guild' : (requestedMode === 'memory' ? 'memory' : 'random');
+        if (mode !== 'memory') {
+            if (typeof App !== 'undefined' && typeof App.requireFeatureUnlocked === 'function' && !App.requireFeatureUnlocked('abyss')) return false;
+            if (typeof App !== 'undefined' && typeof App.unlockFeature === 'function') App.unlockFeature('dungeonMenu');
+        }
 		if (!App.data.progress.flags) App.data.progress.flags = {};
 		if (!App.data.progress.unlocked) App.data.progress.unlocked = {};
-        const requestedMode = ABYSS_FLOOR_RULES.normalizeMode(options.mode, 'random');
-        const mode = requestedMode === 'guild' ? 'guild' : 'random';
         if (mode === 'random' && !Dungeon.isRandomAbyssUnlocked()) {
             App.log('終焉の祭壇の亀裂は、まだ見つかっていない。');
             return false;
         }
-        const normalizedStartFloor = ABYSS_FLOOR_RULES.normalizeFloor(startFloor);
+        const normalizedStartFloor = mode === 'memory' ? 1 : ABYSS_FLOOR_RULES.normalizeFloor(startFloor);
         App.data.dungeon.abyssMode = mode;
-		App.data.progress.flags.abyssFirstEntered = true;
-		// 転送の扉はランダム深淵の解放状態だけに同期する。
-		// ギルド依頼迷宮や初回進入だけで先行表示しない。
-		App.data.progress.unlocked.teleport = !!App.data.progress.flags.abyssRandomUnlocked;
+        if (mode !== 'memory') {
+		    App.data.progress.flags.abyssFirstEntered = true;
+		    // 転送の扉はランダム深淵の解放状態だけに同期する。
+		    // ギルド依頼迷宮や初回進入だけで先行表示しない。
+		    App.data.progress.unlocked.teleport = !!App.data.progress.flags.abyssRandomUnlocked;
+        }
 		if (!App.data.dungeon.returnPoint) {
 			App.data.dungeon.returnPoint = {
 				x: App.data.location.x,
 				y: App.data.location.y,
 				areaKey: typeof Field.getCurrentAreaKey === 'function' ? Field.getCurrentAreaKey() : 'WORLD',
+                worldKey: App.data.location.worldKey || (typeof MapRegistry !== 'undefined' && MapRegistry.getActiveWorldKey ? MapRegistry.getActiveWorldKey() : 'WORLD'),
                 mapData: Field.currentMapData ? JSON.parse(JSON.stringify(Field.currentMapData)) : null
 			};
 		}
 
         App.data.location.area = 'ABYSS';
-        App.data.location.worldKey = 'ABYSS_WORLD';
+        // 追憶の魔境は地上世界上の独立入口なので、描画・帰還用worldKeyを地上側に保つ。
+        App.data.location.worldKey = mode === 'memory'
+            ? (App.data.dungeon.returnPoint?.worldKey || 'WORLD')
+            : 'ABYSS_WORLD';
         App.data.progress.floor = normalizedStartFloor;
         App.data.dungeon.tryCount = Number(App.data.dungeon.tryCount || 0) + 1;
         if (mode === 'random') App.data.dungeon.randomTryCount = Number(App.data.dungeon.randomTryCount || 0) + 1;
+        if (mode === 'memory') App.data.dungeon.memoryTryCount = Number(App.data.dungeon.memoryTryCount || 0) + 1;
         App.data.dungeon.map = null;
         App.data.dungeon.adventurer = null;
         App.data.dungeon.healSpring = null;
@@ -447,7 +490,21 @@ const Dungeon = {
         App.data.dungeon.pendingRiftReward = null;
         App.data.dungeon.visitedMap = null;
         App.data.dungeon.abyssBossEncounter = null;
+        App.data.dungeon.memoryRewardChests = null;
+        App.data.dungeon.memoryBossCleared = false;
+        App.data.dungeon.memoryRestFloor = false;
+        App.data.dungeon.memoryThemeId = null;
+        App.data.dungeon.memoryMonsterPool = null;
         Dungeon.loadFloor();
+        return true;
+    },
+
+    startMemoryRealm: () => {
+        if (typeof App !== 'undefined' && typeof App.discoverFixedMap === 'function') {
+            App.discoverFixedMap('MEMORY_REALM', { save: false });
+        }
+        App.log('<span style="color:#c9a7ff;">追憶の魔境へ足を踏み入れた。挑戦は1階から始まる。</span>');
+        return Dungeon.start(1, { mode: 'memory' });
     },
 
     getGuildQuestRun: () => {
@@ -1469,6 +1526,11 @@ const Dungeon = {
     },
 
     nextFloor: () => {
+        if (Dungeon.isMemoryRealm() && Number(App.data?.progress?.floor || Dungeon.floor || 1) >= Dungeon.memoryRealmMaxFloor) {
+            App.log('最奥のゲートから地上へ戻ってください。');
+            App.clearAction?.();
+            return;
+        }
         if (Dungeon.isStoryAbyss() && Number(App.data?.progress?.floor || Dungeon.floor || 1) >= 100) {
             App.log('物語深淵は100階で踏破済みです。メニューから帰還し、ランダム深淵へ挑戦してください。');
             App.clearAction?.();
@@ -1497,6 +1559,11 @@ const Dungeon = {
         App.data.dungeon.keyGuardian = null;
         App.data.dungeon.pendingRiftReward = null;
         App.data.dungeon.visitedMap = null;
+        App.data.dungeon.memoryRewardChests = null;
+        App.data.dungeon.memoryBossCleared = false;
+        App.data.dungeon.memoryRestFloor = false;
+        App.data.dungeon.memoryThemeId = null;
+        App.data.dungeon.memoryMonsterPool = null;
         Dungeon.loadFloor();
     },
 
@@ -1517,7 +1584,18 @@ const Dungeon = {
             Dungeon.map = App.data.dungeon.map;
             Dungeon.width = App.data.dungeon.width;
             Dungeon.height = App.data.dungeon.height;
-            Dungeon.ensureRandomVisualTheme(Dungeon.floor);
+            if (Dungeon.isMemoryRealm()) {
+                const memoryTheme = Dungeon.getMemoryRealmTheme();
+                Dungeon.setRandomVisualTheme({
+                    id: `memory-${memoryTheme.id}`,
+                    themeKey: memoryTheme.themeKey,
+                    battleBg: memoryTheme.battleBg,
+                    wallFaceImg: memoryTheme.wallFaceImg || null,
+                    wallFaceTorchImg: memoryTheme.wallFaceTorchImg || null
+                });
+            } else {
+                Dungeon.ensureRandomVisualTheme(Dungeon.floor);
+            }
             // v3.18以前に保存された階層にも、孤立した1マス壁が残っている場合がある。
             // 復元時に地形だけ整形し、階段・鍵・宝箱など既存の進行状態は維持する。
             const removedIsolatedWalls = Dungeon.removeIsolatedWallTiles(Dungeon.map);
@@ -1572,10 +1650,11 @@ const Dungeon = {
             } else if (App.data.dungeon.abyssBossEncounter && Number(App.data.dungeon.abyssBossEncounter.floor) !== Number(Dungeon.floor)) {
                 App.data.dungeon.abyssBossEncounter = null;
             }
-            App.log(`地下 ${Dungeon.floor} 階の冒険を再開します。`);
+            App.log(Dungeon.isMemoryRealm() ? `追憶の魔境 ${Dungeon.floor}階の探索を再開します。` : `地下 ${Dungeon.floor} 階の冒険を再開します。`);
         } else {
             if (!Dungeon.isGuildQuestRunActive() && Dungeon.floor > Dungeon.getModeMaxFloor()) {
                 if (Dungeon.isStoryAbyss()) App.data.dungeon.storyMaxFloor = Dungeon.floor;
+                else if (Dungeon.isMemoryRealm()) App.data.dungeon.memoryMaxFloor = Math.min(Dungeon.memoryRealmMaxFloor, Dungeon.floor);
                 else App.data.dungeon.maxFloor = Dungeon.floor;
 				
 				// 主人公の限界突破を新基準で再計算（story.jsの関数を呼び出すのが安全）
@@ -1705,6 +1784,11 @@ const Dungeon = {
         App.data.dungeon.pendingRiftReward = null;
         App.data.dungeon.visitedMap = null;
         App.data.dungeon.abyssBossEncounter = null;
+        App.data.dungeon.memoryRewardChests = null;
+        App.data.dungeon.memoryBossCleared = false;
+        App.data.dungeon.memoryRestFloor = false;
+        App.data.dungeon.memoryThemeId = null;
+        App.data.dungeon.memoryMonsterPool = null;
         App.data.dungeon.guildQuestRun = null;
         App.data.progress.floor = 0;
         
@@ -1787,6 +1871,8 @@ const Dungeon = {
             App.data.progress.floor = 0;
             Dungeon.floor = 0;
         }
+        // ダンジョン外で追憶専用判定が残留しないよう、退出完了時に通常モードへ戻す。
+        if (Dungeon.isMemoryRealm()) App.data.dungeon.abyssMode = 'random';
         
         App.save();
         App.changeScene('field');
@@ -1923,7 +2009,25 @@ const Dungeon = {
         return table[f] || null;
     },
 
-    getAbyssBossRoomLayout: () => ({
+    getAbyssBossRoomLayout: () => Dungeon.isMemoryRealm() ? ({
+        id: 'memory-realm-final-v1',
+        width: 15,
+        height: 21,
+        centerX: 7,
+        boss: { x: 7, y: 8 },
+        entry: { x: 7, y: 19 },
+        stair: { x: 7, y: 1 },
+        spring: { x: 7, y: 3 },
+        rareChest: { x: 7, y: 5 },
+        rewardChests: [
+            { id:'equip-1', type:'equipment', x:3, y:5 },
+            { id:'equip-2', type:'equipment', x:5, y:5 },
+            { id:'skill', type:'skillBook', x:7, y:5 },
+            { id:'equip-3', type:'equipment', x:9, y:5 },
+            { id:'trait', type:'traitBook', x:11, y:5 }
+        ],
+        exitGate: { x: 7, y: 1 }
+    }) : ({
         id: 'narrow-v2',
         width: 9,
         height: 21,
@@ -1980,6 +2084,10 @@ const Dungeon = {
         const balanceFloor = Dungeon.getBalanceFloor(displayFloor, mode);
         const layout = Dungeon.getAbyssBossRoomLayout ? Dungeon.getAbyssBossRoomLayout() : { boss: { x: 5, y: 5 } };
         const guildRun = Dungeon.getGuildQuestRun();
+        if (mode === 'memory') {
+            const bossId = Dungeon.memoryRealmBossIds[Math.floor(Math.random() * Dungeon.memoryRealmBossIds.length)] || 301010;
+            return { active:true, floor:displayFloor, displayFloor, balanceFloor:120, mode, x:layout.boss.x, y:layout.boss.y, monsterIds:[bossId], displayMonsterId:bossId, source:'memory-realm' };
+        }
         if (guildRun && displayFloor >= Math.max(1, Number(guildRun.floorCount || 1))) {
             const ids = (Array.isArray(guildRun.bossMonsterIds) ? guildRun.bossMonsterIds : []).map(Number).filter(id => Number.isFinite(id) && id > 0);
             const monsterIds = ids.length ? ids : [401100];
@@ -2091,6 +2199,10 @@ const Dungeon = {
         App.data.battle.abyssMode = ABYSS_FLOOR_RULES.normalizeMode(encounter.mode, Dungeon.getAbyssMode());
         App.data.battle.abyssFloor = ABYSS_FLOOR_RULES.normalizeFloor(encounter.displayFloor ?? encounter.floor);
         App.data.battle.abyssBalanceFloor = Math.max(1, Number(encounter.balanceFloor) || Dungeon.getBalanceFloor(App.data.battle.abyssFloor, App.data.battle.abyssMode));
+        App.data.battle.memoryRealm = Dungeon.isMemoryRealm();
+        App.data.battle.memoryElements = Dungeon.isMemoryRealm()
+            ? [...(Dungeon.getMemoryRealmTheme()?.elements || [])]
+            : [];
         const guildRun = Dungeon.getGuildQuestRun();
         App.data.battle.guildQuestChallengeId = guildRun?.questId || null;
         App.data.battle.bossStatMultiplier = guildRun ? Math.max(1, Number(guildRun.bossStatMultiplier || 1)) : 1;
@@ -2313,6 +2425,7 @@ const Dungeon = {
         }
 
         // --- 2. ランダム生成ダンジョン（深淵の魔窟）の処理 ---
+        if (Dungeon.isMemoryRealm() && Dungeon.openMemoryRewardChest(x, y)) return;
         if (typeof AudioManager !== 'undefined') AudioManager.playSe?.('chest_open');
         const keyChest = Dungeon.findRandomKeyChest(x, y);
         if (keyChest) {
@@ -3136,6 +3249,7 @@ const Dungeon = {
         if (floor <= 0) return false;
         const guildRun = Dungeon.getGuildQuestRun();
         if (guildRun) return floor >= Math.max(1, Number(guildRun.floorCount || 1));
+        if (Dungeon.isMemoryRealm()) return floor === Dungeon.memoryRealmMaxFloor;
         return floor % 10 === 0;
     },
 
@@ -3188,7 +3302,9 @@ const Dungeon = {
 
     getFloorArrivalMessage: () => {
         const floor = Number(Dungeon.floor || App.data?.progress?.floor || 0);
-        const lines = [`地下 ${floor} 階に到達した`];
+        const lines = [Dungeon.isMemoryRealm()
+            ? `追憶の魔境 ${floor}階に到達した（Rank${Dungeon.getBalanceFloor(floor, 'memory')}相当）`
+            : `地下 ${floor} 階に到達した`];
 
         if (Dungeon.isBossFloor()) {
             lines.push('通路の奥から強大な気配を感じる…');
@@ -3423,6 +3539,13 @@ const Dungeon = {
         // 宝物庫フロアは報酬部屋として独立させる。
         // 冒険者/泉/裂け目まで重なると、宝物庫の見せ場が散るため出さない。
         if (App.data.dungeon.isTreasureRoom) return;
+
+        // 追憶の魔境では地上ダンジョンの再現を優先し、深淵固有の冒険者・裂け目・試練天使は出さない。
+        // 回復の泉だけは通常確率で配置できる。
+        if (Dungeon.isMemoryRealm()) {
+            Dungeon.rollHealSpringSpawn();
+            return;
+        }
 
         // 迷路フロアだけは、冒険者・泉・裂け目を例外的に100%出す。
         // 通常フロアは各SpawnRateに従う。
@@ -3812,6 +3935,7 @@ const Dungeon = {
             App.data.dungeon.abyssRift = null;
             App.data.dungeon.trialAngel = null;
             App.data.dungeon.abyssBossEncounter = null;
+            App.data.dungeon.memoryMonsterPool = null;
             if (!keepVisited) App.data.dungeon.visitedMap = null;
             App.data.dungeon.genType = null;
             App.data.dungeon.genVariant = null;
@@ -3902,35 +4026,224 @@ const Dungeon = {
         return App.data?.dungeon?.visualBattleBg || 'battle_bg_dungeon';
     },
 
+    getMemoryRealmTheme: () => {
+        const currentId = App.data?.dungeon?.memoryThemeId;
+        return Dungeon.memoryRealmThemes.find(theme => theme.id === currentId) || Dungeon.memoryRealmThemes[0];
+    },
+
+    rollMemoryRealmTheme: () => {
+        const themes = Dungeon.memoryRealmThemes;
+        const theme = themes[Math.floor(Math.random() * themes.length)] || themes[0];
+        App.data.dungeon.memoryThemeId = theme.id;
+        Dungeon.setRandomVisualTheme({
+            id: `memory-${theme.id}`,
+            themeKey: theme.themeKey,
+            battleBg: theme.battleBg,
+            wallFaceImg: theme.wallFaceImg || null,
+            wallFaceTorchImg: theme.wallFaceTorchImg || null
+        });
+        return theme;
+    },
+
+    getMemoryRealmMonsterPool: (theme = Dungeon.getMemoryRealmTheme()) => {
+        const mapIds = new Set((theme?.sourceMapIds || []).map(String));
+        const normal = Array.isArray(globalThis.MonsterData?.normalBases) ? globalThis.MonsterData.normalBases : [];
+        const ids = normal.filter(monster => {
+            const rank = Number(monster?.rank || monster?.minF || 0);
+            if (rank < 1 || rank > 85 || monster?.isRare || monster?.isSpecialBoss || monster?.isEstark) return false;
+            return (monster.habitats || []).some(habitat => mapIds.has(String(habitat?.mapId || '')));
+        }).map(monster => Number(monster.id)).filter(Number.isFinite);
+        const unique = [...new Set(ids)];
+        // 生息地を持たないRank1～85のレアモンスターも、追憶として低確率で候補へ加える。
+        // 通常の深淵レア抽選は使わず、強化後Rankへ正規化して出現させる。
+        const rareCandidates = Array.isArray(globalThis.MonsterData?.rareMonsters)
+            ? globalThis.MonsterData.rareMonsters.filter(monster => {
+                const rank = Number(monster?.rank || monster?.minF || 0);
+                return rank >= 1 && rank <= 85 && !monster?.isSpecialBoss && !monster?.isEstark;
+            })
+            : [];
+        if (rareCandidates.length && Math.random() < 0.08) {
+            unique.push(Number(rareCandidates[Math.floor(Math.random() * rareCandidates.length)]?.id));
+        }
+        // 指定された物語ボスは低確率で通常編成にも混ざる。戦闘生成時に通常敵相当へ正規化する。
+        if (Math.random() < 0.18) unique.push(Dungeon.memoryRealmBossIds[Math.floor(Math.random() * Dungeon.memoryRealmBossIds.length)]);
+        if (!unique.length) {
+            return normal.filter(monster => Number(monster?.rank || 0) >= 1 && Number(monster?.rank || 0) <= 85)
+                .map(monster => Number(monster.id)).filter(Number.isFinite);
+        }
+        return [...new Set(unique)];
+    },
+
+    getMemoryRealmMonsterPoolForCurrentFloor: (theme = Dungeon.getMemoryRealmTheme()) => {
+        if (!App.data?.dungeon) return Dungeon.getMemoryRealmMonsterPool(theme);
+        const floor = Math.max(1, Number(Dungeon.floor || App.data?.progress?.floor || 1));
+        const stored = App.data.dungeon.memoryMonsterPool;
+        if (stored && Number(stored.floor) === floor && stored.themeId === theme?.id && Array.isArray(stored.ids) && stored.ids.length) {
+            return [...stored.ids];
+        }
+        const ids = Dungeon.getMemoryRealmMonsterPool(theme);
+        App.data.dungeon.memoryMonsterPool = { floor, themeId: theme?.id || null, ids:[...ids] };
+        return ids;
+    },
+
+    getMemoryRealmMapActions: () => {
+        if (!Dungeon.isMemoryRealm()) return [];
+        const floor = Number(Dungeon.floor || 1);
+        if (Dungeon.memoryRealmRestFloors.includes(floor)) {
+            const rank = floor === 10 ? 100 : 110;
+            const cost = floor === 10 ? 50000 : 100000;
+            return [
+                { x:3, y:4, type:'shop', shopType:'item', shopRank:rank, title:`追憶の道具屋 Rank${rank}`, label:'道具屋', imageKey:'overlay_field_shop', blocksMovement:true, interactFromAdjacent:true },
+                { x:7, y:4, type:'shop', shopType:'weapon', shopRank:rank, title:`追憶の武器屋 Rank${rank}`, label:'武器屋', imageKey:'overlay_field_weapon', blocksMovement:true, interactFromAdjacent:true },
+                { x:11, y:4, type:'shop', shopType:'armor', shopRank:rank, title:`追憶の防具屋 Rank${rank}`, label:'防具屋', imageKey:'overlay_field_weapon', blocksMovement:true, interactFromAdjacent:true },
+                { x:15, y:4, type:'memoryInn', cost, label:`宿屋（${cost.toLocaleString()}G）`, imageKey:'overlay_field_inn', blocksMovement:true, interactFromAdjacent:true },
+                { x:19, y:4, type:'blacksmith', label:'鍛冶屋', imageKey:'overlay_field_smith', blocksMovement:true, interactFromAdjacent:true },
+                { x:21, y:10, type:'alchemy', label:'錬金屋', imageKey:'overlay_building_water_alchemy', blocksMovement:true, interactFromAdjacent:true }
+            ];
+        }
+        if (floor === Dungeon.memoryRealmMaxFloor && App.data?.dungeon?.memoryBossCleared) {
+            const layout = Dungeon.getAbyssBossRoomLayout();
+            return [{ x:layout.exitGate.x, y:layout.exitGate.y, type:'memoryExit', label:'地上へ戻る', imageKey:'overlay_dungeon_portal', blocksMovement:true, interactFromAdjacent:true }];
+        }
+        return [];
+    },
+
+    generateMemoryRealmRestFloor: () => {
+        const w = 25, h = 17;
+        Dungeon.width = w; Dungeon.height = h;
+        Dungeon.map = Array.from({length:h}, (_, y) => Array.from({length:w}, (_, x) => (x === 0 || y === 0 || x === w-1 || y === h-1) ? 'W' : 'T'));
+        // 施設前の通路と上階への階段を必ず確保する。
+        Dungeon.map[2][12] = 'S';
+        Field.x = 12; Field.y = 14;
+        App.data.dungeon.memoryRestFloor = true;
+        App.data.dungeon.floorPlanType = 'memory-rest';
+        Dungeon.rollMemoryRealmTheme();
+    },
+
+    useMemoryRealmInn: (cost = 50000) => {
+        const amount = Math.max(1, Math.floor(Number(cost) || 50000));
+        if (Number(App.data?.gold || 0) < amount) {
+            Menu.msg(`宿泊には ${amount.toLocaleString()} Gold 必要です。`);
+            return false;
+        }
+        Menu.confirm(`${amount.toLocaleString()} Goldで休み、HP・MPを全回復しますか？`, () => {
+            App.data.gold -= amount;
+            (App.data.characters || []).forEach(character => {
+                const stats = App.calcStats(character);
+                character.currentHp = stats.maxHp;
+                character.currentMp = stats.maxMp;
+            });
+            App.save();
+            Menu.msg('静かな休息により、体力が全回復した！');
+            Field.refreshCurrentAction?.({ silent:true });
+        });
+        return true;
+    },
+
+    createMemoryRareEquipment: () => {
+        const targetRarities = ['SSR', 'UR', 'EX'];
+        const equip = Dungeon.createEquipWithMinRarity(120, 3, targetRarities);
+        if (!equip || !Array.isArray(equip.opts) || !equip.opts.length) return equip;
+
+        // createEquipWithMinRarity() は各オプションを高レアへ寄せるが、
+        // 将来ルール側に低レア限定オプションが追加されても、宝箱の「レア装備」保証を失わないよう
+        // 最低1枠をSSR以上へ確定補正する。
+        if (!equip.opts.some(opt => targetRarities.includes(String(opt?.rarity || '')))) {
+            const index = equip.opts.findIndex(opt => {
+                const rule = (DB.OPT_RULES || []).find(entry => entry.key === opt?.key && (!opt?.elm || entry.elm === opt.elm));
+                return rule && targetRarities.some(rarity => rule.allowed?.includes(rarity));
+            });
+            if (index >= 0) {
+                const current = equip.opts[index];
+                const rule = (DB.OPT_RULES || []).find(entry => entry.key === current?.key && (!current?.elm || entry.elm === current.elm));
+                const rarity = [...targetRarities].reverse().find(candidate => rule?.allowed?.includes(candidate)) || 'SSR';
+                const min = Number(rule?.min?.[rarity] || 1);
+                const max = Math.max(min, Number(rule?.max?.[rarity] || min));
+                equip.opts[index] = { ...current, rarity, val: Dungeon.randInt(min, max) };
+            }
+        }
+        return equip;
+    },
+
+    openMemoryRewardChest: (x, y) => {
+        const chests = Array.isArray(App.data?.dungeon?.memoryRewardChests) ? App.data.dungeon.memoryRewardChests : [];
+        const chest = chests.find(entry => entry.active && Number(entry.x) === Number(x) && Number(entry.y) === Number(y));
+        if (!chest) return false;
+        chest.active = false;
+        if (Dungeon.map?.[y]?.[x]) Dungeon.map[y][x] = 'T';
+        let rewardName = '何も入っていなかった。';
+        if (chest.type === 'equipment') {
+            const equip = Dungeon.createMemoryRareEquipment();
+            if (equip) {
+                App.data.inventory.push(equip);
+                rewardName = equip.name;
+            }
+        } else {
+            const itemType = chest.type === 'traitBook' ? '特性書' : 'スキル書';
+            const pool = (DB.ITEMS || []).filter(item => item?.type === itemType && Number(item.rank || 1) <= 120 && item.medalOnly !== true);
+            const item = pool[Math.floor(Math.random() * pool.length)] || null;
+            if (item) {
+                App.data.items[item.id] = Number(App.data.items[item.id] || 0) + 1;
+                rewardName = item.name;
+            }
+        }
+        if (typeof App.incrementLifetimeStat === 'function') App.incrementLifetimeStat('totalChestsOpened', 1, { save:false });
+        App.log(`<span style="color:#ffd700;">${rewardName}を手に入れた！</span>`);
+        Dungeon.saveMapData();
+        Field.render();
+        return true;
+    },
+
     createRandomFieldMapData: () => {
-        const theme = Dungeon.ensureRandomVisualTheme(Dungeon.floor);
+        const isMemory = Dungeon.isMemoryRealm();
+        const memoryTheme = isMemory ? Dungeon.getMemoryRealmTheme() : null;
+        const theme = isMemory
+            ? Dungeon.setRandomVisualTheme({
+                id: `memory-${memoryTheme.id}`,
+                themeKey: memoryTheme.themeKey,
+                battleBg: memoryTheme.battleBg,
+                wallFaceImg: memoryTheme.wallFaceImg || null,
+                wallFaceTorchImg: memoryTheme.wallFaceTorchImg || null
+            })
+            : Dungeon.ensureRandomVisualTheme(Dungeon.floor);
         const testOverride = Dungeon.getRandomVisualThemeTestOverride(Dungeon.floor);
         const battleBg = Dungeon.getRandomFloorBattleBg();
         const guildRun = Dungeon.getGuildQuestRun();
+        const memoryFloor = Math.max(1, Number(Dungeon.floor || 1));
+        const memoryRest = isMemory && Dungeon.memoryRealmRestFloors.includes(memoryFloor);
+        const memoryBossFloor = isMemory && memoryFloor === Dungeon.memoryRealmMaxFloor;
         const mapData = {
-            name: guildRun ? `${guildRun.themeLabel || '変異'}の依頼迷宮` : (testOverride ? `${STORY_DATA.areas['ABYSS'].name}【森固定検証】` : STORY_DATA.areas['ABYSS'].name),
+            name: isMemory ? `${Dungeon.memoryRealmName}${memoryRest ? '・休憩所' : ''}` : (guildRun ? `${guildRun.themeLabel || '変異'}の依頼迷宮` : (testOverride ? `${STORY_DATA.areas['ABYSS'].name}【森固定検証】` : STORY_DATA.areas['ABYSS'].name)),
             width: Dungeon.width,
             height: Dungeon.height,
             tiles: Dungeon.map,
             isDungeon: true,
-            mapId: window.MAP_IDS?.ABYSS || 'MAP000033',
+            mapId: isMemory ? (window.MAP_IDS?.MEMORY_REALM || 'MAP000065') : (window.MAP_IDS?.ABYSS || 'MAP000033'),
             floor: Math.max(1, Number(Dungeon.floor || 1)),
-            floorId: (typeof MapRegistry !== 'undefined' && MapRegistry.formatFloorId) ? MapRegistry.formatFloorId(window.MAP_IDS?.ABYSS || 'MAP000033', Dungeon.floor) : `MAP000033-${String(Math.max(1, Number(Dungeon.floor || 1))).padStart(2, '0')}`,
+            floorId: (typeof MapRegistry !== 'undefined' && MapRegistry.formatFloorId)
+                ? MapRegistry.formatFloorId(isMemory ? (window.MAP_IDS?.MEMORY_REALM || 'MAP000065') : (window.MAP_IDS?.ABYSS || 'MAP000033'), Dungeon.floor)
+                : `${isMemory ? 'MAP000065' : 'MAP000033'}-${String(Math.max(1, Number(Dungeon.floor || 1))).padStart(2, '0')}`,
             abyssMode: Dungeon.getAbyssMode(),
             balanceFloor: Dungeon.getBalanceFloor(),
-            useHabitatEncounters: !guildRun && Dungeon.isRandomAbyss(),
+            useHabitatEncounters: !isMemory && !guildRun && Dungeon.isRandomAbyss(),
             isGuildQuestDungeon: !!guildRun,
             guildQuestId: guildRun?.questId || null,
-            encounterRank: guildRun ? Math.max(1, Number(guildRun.encounterRank || guildRun.power || 1)) : (Dungeon.isStoryAbyss() ? Dungeon.floor : null),
-            monsters: guildRun ? [...(guildRun.normalMonsterIds || [])] : null,
+            encounterRank: isMemory ? Dungeon.getBalanceFloor(memoryFloor, 'memory') : (guildRun ? Math.max(1, Number(guildRun.encounterRank || guildRun.power || 1)) : (Dungeon.isStoryAbyss() ? Dungeon.floor : null)),
+            monsters: isMemory && !memoryRest && !memoryBossFloor ? Dungeon.getMemoryRealmMonsterPoolForCurrentFloor(memoryTheme) : (guildRun ? [...(guildRun.normalMonsterIds || [])] : null),
+            // monstersは固定編成ではなく、そのフロアの抽選候補プール。
+            exactMonsters: false,
+            memoryRealm: isMemory,
+            memoryElements: memoryTheme?.elements ? [...memoryTheme.elements] : [],
+            randomEncounterDisabled: memoryRest || memoryBossFloor,
+            mapActions: isMemory ? Dungeon.getMemoryRealmMapActions() : [],
             enemyBoost: guildRun ? JSON.parse(JSON.stringify(guildRun.enemyBoost || {})) : null,
             allyAilments: guildRun ? [...(guildRun.allyAilments || [])] : [],
-            themeKey: theme?.themeKey || App.data?.dungeon?.visualThemeKey || 'ABYSS',
-            visualThemeId: theme?.id || App.data?.dungeon?.visualThemeId || 'abyss',
+            themeKey: memoryTheme?.themeKey || theme?.themeKey || App.data?.dungeon?.visualThemeKey || 'ABYSS',
+            visualThemeId: memoryTheme ? `memory-${memoryTheme.id}` : (theme?.id || App.data?.dungeon?.visualThemeId || 'abyss'),
             battleBg,
             visualTestOverride: !!testOverride,
-            wallFaceImg: theme?.wallFaceImg || null,
-            wallFaceTorchImg: theme?.wallFaceTorchImg || null
+            wallFaceImg: memoryTheme?.wallFaceImg || theme?.wallFaceImg || null,
+            wallFaceTorchImg: memoryTheme?.wallFaceTorchImg || theme?.wallFaceTorchImg || null
         };
         App.data.dungeon.visualThemeAudit = {
             floor: Number(Dungeon.floor || 0),
@@ -3963,6 +4276,10 @@ const Dungeon = {
         const currentFloor = Math.max(1, Number(floor) || 1);
         const balanceFloor = Dungeon.getBalanceFloor(currentFloor);
         const guildRun = Dungeon.getGuildQuestRun();
+        if (Dungeon.isMemoryRealm()) {
+            const theme = Dungeon.getMemoryRealmTheme();
+            return Object.freeze({ floor:currentFloor, category:'random', floorPlanType:'memory-surface', themeId:`memory-${theme.id}`, memoryRealm:true });
+        }
         if (guildRun) {
             return Object.freeze({ floor: currentFloor, category: 'random', themeId: String(guildRun.visualThemeId || 'abyss'), guildQuest: true });
         }
@@ -3997,6 +4314,13 @@ const Dungeon = {
 
     applyRandomFloorPlan: (plan) => {
         if (!App.data?.dungeon || !plan) return null;
+        if (plan.memoryRealm) {
+            const memoryTheme = Dungeon.getMemoryRealmTheme();
+            App.data.dungeon.floorPlanType = 'memory-surface';
+            App.data.dungeon.floorPlanThemeId = `memory-${memoryTheme.id}`;
+            Dungeon.setRandomVisualTheme({ id:`memory-${memoryTheme.id}`, themeKey:memoryTheme.themeKey, battleBg:memoryTheme.battleBg, wallFaceImg:memoryTheme.wallFaceImg || null, wallFaceTorchImg:memoryTheme.wallFaceTorchImg || null });
+            return memoryTheme;
+        }
         const theme = Dungeon.randomVisualThemes.find(entry => entry.id === plan.themeId)
             || Dungeon.randomVisualThemes.find(entry => entry.id === 'abyss')
             || Dungeon.randomVisualThemes[0];
@@ -4309,11 +4633,25 @@ const Dungeon = {
 
     generateFloor: () => {
         Dungeon.resetRandomFloorAttemptState(false);
+        if (Dungeon.isMemoryRealm()) {
+            App.data.dungeon.memoryBossCleared = false;
+            App.data.dungeon.memoryRewardChests = null;
+            App.data.dungeon.memoryRestFloor = false;
+            if (Dungeon.memoryRealmRestFloors.includes(Number(Dungeon.floor))) {
+                Dungeon.generateMemoryRealmRestFloor();
+                Field.currentMapData = Dungeon.createRandomFieldMapData();
+                App.data.location.x = Field.x;
+                App.data.location.y = Field.y;
+                return;
+            }
+            if (!Dungeon.isBossFloor()) Dungeon.rollMemoryRealmTheme();
+        }
         
         if (Dungeon.isBossFloor()) {
             const guildRun = Dungeon.getGuildQuestRun();
-            const bossThemeId = guildRun?.visualThemeId || 'abyss';
-            Dungeon.setRandomVisualTheme(Dungeon.randomVisualThemes.find(theme => theme.id === bossThemeId) || Dungeon.randomVisualThemes.find(theme => theme.id === 'abyss'));
+            const memoryTheme = Dungeon.isMemoryRealm() ? Dungeon.rollMemoryRealmTheme() : null;
+            const bossThemeId = memoryTheme ? `memory-${memoryTheme.id}` : (guildRun?.visualThemeId || 'abyss');
+            if (!memoryTheme) Dungeon.setRandomVisualTheme(Dungeon.randomVisualThemes.find(theme => theme.id === bossThemeId) || Dungeon.randomVisualThemes.find(theme => theme.id === 'abyss'));
             App.data.dungeon.floorPlanType = 'boss';
             App.data.dungeon.floorPlanThemeId = bossThemeId;
             Dungeon.generateAbyssBossRoom();
@@ -4369,7 +4707,9 @@ const Dungeon = {
         }
 
         for (let y = 2; y <= layout.entry.y; y++) {
-            for (let x = cx - 1; x <= cx + 1; x++) {
+            const minX = Dungeon.isMemoryRealm() && y <= 9 ? 2 : cx - 1;
+            const maxX = Dungeon.isMemoryRealm() && y <= 9 ? layout.width - 3 : cx + 1;
+            for (let x = minX; x <= maxX; x++) {
                 Dungeon.map[y][x] = 'T';
             }
         }
@@ -5367,6 +5707,25 @@ const Dungeon = {
 		} 
 		// 2. ランダムダンジョン（ABYSS）の場合
 		else if (isAbyss) {
+            if (Dungeon.isMemoryRealm()) {
+                const layout = Dungeon.getAbyssBossRoomLayout();
+                const bossPos = App.data.battle?.abyssBossPosition || App.data.dungeon.abyssBossEncounter || layout.boss;
+                if (Dungeon.map?.[bossPos.y]?.[bossPos.x]) Dungeon.map[bossPos.y][bossPos.x] = 'T';
+                (layout.rewardChests || []).forEach(chest => {
+                    if (Dungeon.map?.[chest.y]?.[chest.x]) Dungeon.map[chest.y][chest.x] = 'R';
+                });
+                Dungeon.map[layout.exitGate.y][layout.exitGate.x] = 'T';
+                App.data.dungeon.memoryRewardChests = (layout.rewardChests || []).map(chest => ({ ...chest, floor:Dungeon.floor, active:true }));
+                App.data.dungeon.memoryBossCleared = true;
+                App.data.dungeon.healSpring = { active:true, floor:Dungeon.floor, x:layout.spring.x, y:layout.spring.y, image:Dungeon.healSpringImagePath };
+                if (App.data.dungeon.abyssBossEncounter) App.data.dungeon.abyssBossEncounter.active = false;
+                App.data.progress.flags.memoryRealmCleared = true;
+                if (typeof AchievementManager !== 'undefined' && AchievementManager.checkProgress) AchievementManager.checkProgress({ save:false });
+                App.log('<span style="color:#80ffb0;">追憶の魔境を踏破した！ 宝箱と帰還ゲートが現れた。</span>');
+                Dungeon.saveMapData();
+                Field.currentMapData = Dungeon.createRandomFieldMapData();
+                App.clearAction();
+            } else {
 			// ボス撃破後の報酬配置。ボスの奥に階段・泉・レア宝箱を開放する。
 			// 配置座標は getAbyssBossRoomLayout() と対応している。
 			const layout = Dungeon.getAbyssBossRoomLayout ? Dungeon.getAbyssBossRoomLayout() : {
@@ -5408,6 +5767,7 @@ const Dungeon = {
 
 			// ボス撃破直後は足元にアクションを出さず、部屋上部の階段まで歩かせる。
 			App.clearAction();
+            }
 		}
 		// 3. それ以外（村でのイベントボスなど）
 		else {

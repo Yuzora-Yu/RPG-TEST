@@ -183,6 +183,7 @@ const ACHIEVEMENTS_DATA = [
     { id: 2101, type: "BATTLE_COUNT", goal: 100, category: "戦闘", title: "百戦の経験", desc: "戦闘に100回勝利", rewards: [{ type:'GEM', val:500 }] },
     { id: 2102, type: "BATTLE_COUNT", goal: 1000, category: "戦闘", title: "千戦の覇者", desc: "戦闘に1,000回勝利", rewards: [{ type:'GEM', val:2000 }] },
     { id: 2201, type: "FLAG", flag: "abyssAzelgaragDefeated", goal: 1, category: "物語", title: "深淵王の終焉", desc: "深淵王アゼルガラグを撃破", rewards: [{ type:'GEM', val:3000 }] },
+    { id: 2401, type: "FLAG", flag: "memoryRealmCleared", goal: 1, category: "探索", title: "追憶を越えし者", desc: "追憶の魔境30階を踏破", rewards: [] },
 
     // --- 17. 再編後ランダム深淵の追加到達目標 ---
     { id: 2301, type: "RANDOM_FLOOR", goal: 25, category: "探索", title: "深層への歩み", desc: "ランダム深淵25階に到達", rewards: [{ type:'GEM', val:500 }] },
@@ -360,7 +361,13 @@ const AchievementManager = {
             }
             if (progress.completed && !state.completed) {
                 state.completed = true;
+                // 報酬なし実績は受取操作を要求せず、その場で記録完了にする。
+                if (!Array.isArray(ach.rewards) || ach.rewards.length === 0) state.claimed = true;
                 newlyCompleted += 1;
+                changed = true;
+            } else if (state.completed && !state.claimed && (!Array.isArray(ach.rewards) || ach.rewards.length === 0)) {
+                // 旧セーブ上で報酬なし実績が未受取のまま残った場合も自動修復する。
+                state.claimed = true;
                 changed = true;
             }
         });
@@ -393,6 +400,7 @@ const AchievementManager = {
     },
 
     getRewardText: (rewards = []) => {
+        if (!Array.isArray(rewards) || rewards.length === 0) return 'なし';
         return rewards.map((r) => {
             if (r.type === 'GEM') return `${r.val || 0} GEM`;
             if (r.type === 'GOLD') return `${r.val || 0} GOLD`;

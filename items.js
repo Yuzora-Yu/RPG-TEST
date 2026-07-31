@@ -7092,3 +7092,26 @@ window.ITEMS_DATA.push(
         }
     });
 })();
+
+
+// スキル書の表示名・説明はskillIdを正本とし、スキル名称変更へ自動追従させる。
+(() => {
+    'use strict';
+    const refresh = () => {
+        const items = Array.isArray(window.ITEMS_DATA) ? window.ITEMS_DATA : [];
+        const skills = Array.isArray(window.SKILLS_DATA) ? window.SKILLS_DATA : [];
+        const byId = new Map(skills.map(skill => [Number(skill?.id), skill]));
+        items.forEach(item => {
+            if (item?.type !== 'スキル書' || !Number.isFinite(Number(item.skillId))) return;
+            const skill = byId.get(Number(item.skillId));
+            if (!skill) return;
+            const skillName = String(skill.name || `Skill ${item.skillId}`);
+            const skillDesc = String(skill.desc || '効果説明なし');
+            item.name = `${skillName}のスキル書`;
+            item.desc = `スキル「${skillName}」を仲間に習得させる。スキル効果：${skillDesc}`;
+        });
+        return items;
+    };
+    window.refreshSkillBookItemMetadata = refresh;
+    refresh();
+})();
