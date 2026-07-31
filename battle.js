@@ -878,7 +878,11 @@ const Battle = {
             enemy[key] = restored;
             if (enemy.baseStats) enemy.baseStats[key] = restored;
         });
-        ['hit', 'eva', 'cri', 'finDmg', 'finRed'].forEach(key => {
+        enemy.hit = Battle.normalizeMonsterHitRate(
+            snapshot.hit ?? enemy.hit ?? base.hit,
+            100
+        );
+        ['eva', 'cri', 'finDmg', 'finRed'].forEach(key => {
             enemy[key] = finiteOr(snapshot[key], enemy[key] ?? base[key] ?? 0);
         });
         if (snapshot.exp !== undefined) enemy.exp = finiteOr(snapshot.exp, base.exp || 0);
@@ -957,6 +961,20 @@ const Battle = {
         return hasPersonal ? personal : Math.max(0, Number(base?.[key] || 0));
     },
 
+    // モンスターマスターの命中は絶対値（100 = 基準命中）を正本とする。
+    // 旧データには「基準100への加算値」を 1～49 で保存した個体があるため、
+    // 読み込み時に 100 + 値へ補正して、1～49%として扱われる事故を防ぐ。
+    normalizeMonsterHitRate: (rawValue, fallback = 100) => {
+        if (globalThis.MonsterData && typeof globalThis.MonsterData.normalizeHitRate === 'function') {
+            return globalThis.MonsterData.normalizeHitRate(rawValue, fallback);
+        }
+        const value = Number(rawValue);
+        const base = Math.max(1, Number(fallback) || 100);
+        if (!Number.isFinite(value) || value <= 0) return base;
+        if (value < 50) return base + value;
+        return value;
+    },
+
     setupEnemyStats: (m, base, isBossBattle = false) => {
         if (!m || !base) return m;
         m.atk = m.baseStats?.atk || base.atk || m.atk;
@@ -964,7 +982,7 @@ const Battle = {
         m.spd = m.baseStats?.spd || base.spd || m.spd;
         m.mag = m.baseStats?.mag || base.mag || m.mag;
         m.mdef = m.baseStats?.mdef || base.mdef || m.mdef || 0;
-        m.hit = base.hit || 100;
+        m.hit = Battle.normalizeMonsterHitRate(base.hit, 100);
         m.eva = base.eva || 0;
         m.cri = base.cri || 0;
         m.id = base.id;
@@ -1577,7 +1595,7 @@ const Battle = {
         m.mdef           = Math.floor(((base.mdef || base.mag) / rank) * floor * randMult);
 
         // ★修正: 命中・回避・会心は階層倍率を適用せず、0〜20のランダム加算に留める
-        m.hit = (base.hit || 100) + Math.floor(Math.random() * 21);
+        m.hit = Battle.normalizeMonsterHitRate(base.hit, 100) + Math.floor(Math.random() * 21);
         m.eva = (base.eva || 0)   + Math.floor(Math.random() * 21);
         m.cri = (base.cri || 0)   + Math.floor(Math.random() * 21);
 

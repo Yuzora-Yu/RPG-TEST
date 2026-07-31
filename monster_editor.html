@@ -122,7 +122,9 @@
     m.race = m.race ?? "";
     m.rank = Number(m.rank ?? 1);
     m.minF = Number(m.minF ?? 1);
-    for (const k of ["hp","mp","atk","def","spd","mag","mdef","hit","eva","cri","gold","exp","actCount"]) m[k] = Number(m[k] ?? (k === "actCount" ? 1 : 0));
+    for (const k of ["hp","mp","atk","def","spd","mag","mdef","hit","eva","cri","gold","exp","actCount"]) m[k] = Number(m[k] ?? (k === "actCount" ? 1 : (k === "hit" ? 100 : 0)));
+    if (!Number.isFinite(m.hit) || m.hit <= 0) m.hit = 100;
+    else if (m.hit < 50) m.hit = 100 + m.hit;
     for (const k of flagFields) m[k] = Boolean(m[k]);
     m.acts = Array.isArray(m.acts) ? m.acts.map(normalizeAct) : [];
     m.drops = normalizeDrops(m.drops, m.drop);
@@ -329,7 +331,7 @@
           <div><label>offsetType</label><select data-field="_offsetType"><option value=""${!m._offsetType ? " selected" : ""}>通常</option><option value="low_1_5"${m._offsetType === "low_1_5" ? " selected" : ""}>low_1_5</option><option value="low_6_10"${m._offsetType === "low_6_10" ? " selected" : ""}>low_6_10</option></select></div>
         </div>
       </div>
-      <div class="card" style="grid-column:1/-1"><h2>ステータス</h2><div class="grid cols-6">${["hp","mp","atk","def","spd","mag","mdef","hit","eva","cri"].map((k) => `<div><label>${k}</label><input data-field="${k}" type="number" value="${esc(m[k])}"></div>`).join("")}</div></div>
+      <div class="card" style="grid-column:1/-1"><h2>ステータス</h2><div class="grid cols-6">${["hp","mp","atk","def","spd","mag","mdef","hit","eva","cri"].map((k) => `<div><label>${k === "hit" ? "hit（100=標準）" : k}</label><input data-field="${k}" type="number" value="${esc(m[k])}"></div>`).join("")}</div></div>
     </div>`;
   }
 
@@ -376,7 +378,7 @@
   function addMonster(){
     const maxId = Math.max(0, ...state.monsters.map((m) => Number(m.id) || 0));
     const band = inferBand(1);
-    const m = normalizeMonster({ id: Math.floor(maxId) + 1, name: "新規モンスター", race: "粘体", rank: 1, minF: 1, hp: 10, mp: 0, atk: 8, def: 4, spd: 5, mag: 4, mdef: 4, hit: 0, eva: 0, cri: 0, gold: 10, exp: 10, actCount: 1, acts: [{ id: 1, rate: 100, condition: 0 }], drops: { normal: { id: null, rate: 0 }, rare: { id: null, rate: 0 } }, elmRes: {}, resists: {}, traits: [], archives: [] }, { group: "band", bandStart: band.start, bandEnd: band.end, offsetType: band.offsetType });
+    const m = normalizeMonster({ id: Math.floor(maxId) + 1, name: "新規モンスター", race: "粘体", rank: 1, minF: 1, hp: 10, mp: 0, atk: 8, def: 4, spd: 5, mag: 4, mdef: 4, hit: 100, eva: 0, cri: 0, gold: 10, exp: 10, actCount: 1, acts: [{ id: 1, rate: 100, condition: 0 }], drops: { normal: { id: null, rate: 0 }, rare: { id: null, rate: 0 } }, elmRes: {}, resists: {}, traits: [], archives: [] }, { group: "band", bandStart: band.start, bandEnd: band.end, offsetType: band.offsetType });
     state.monsters.push(m); state.selectedUid = m._uid; state.tab = "basic"; refreshRawJson(); render();
   }
 
