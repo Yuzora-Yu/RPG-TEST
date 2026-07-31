@@ -3919,8 +3919,8 @@ const App = {
         midGate: 49,
         finalGate: 98,
         heroStoryMax: 20,
-        heroBattleMax: 20,
-        allyBattleMax: 20,
+        heroBattleMax: 70,
+        allyBattleMax: 70,
         randomBattleChance: 0.002,
         midTrialBossId: 401120,
         finalTrialBossId: 401130
@@ -3932,7 +3932,7 @@ const App = {
 
     getBattleLimitBreakSteps: (battleWins) => {
         const wins = Math.max(0, Math.floor(Number(battleWins) || 0));
-        const max = App.limitBreakConfig.heroBattleMax || 20;
+        const max = App.limitBreakConfig.heroBattleMax || 70;
         if (wins < 20) return 0;
 
         let steps = 1;
@@ -3941,6 +3941,7 @@ const App = {
             { count: 4, interval: 50 },   // +2〜+5
             { count: 5, interval: 100 },  // +6〜+10
             { count: 10, interval: 200 }, // +11〜+20
+            { count: 50, interval: 200 }, // +21〜+70（後半の既存ペースを維持）
         ];
 
         for (const tier of tiers) {

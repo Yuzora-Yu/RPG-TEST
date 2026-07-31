@@ -294,10 +294,10 @@ const MenuAllyDetail = {
         const sourceRows = [];
         if (isHero) {
             sourceRows.push(row('ストーリー進行', sourceVal('story'), Number(cfg.heroStoryMax || 20)));
-            sourceRows.push(row('戦闘回数', sourceVal('battle'), Number(cfg.heroBattleMax || 20), `${battleWins}戦 / ${battleStep}戦ごとに進行`));
+            sourceRows.push(row('戦闘回数', sourceVal('battle'), Number(cfg.heroBattleMax || 70), `${battleWins}戦 / ${battleStep}戦ごとに進行`));
             sourceRows.push(row('探索深度', sourceVal('dungeon'), null, '深い階層の到達分。試練上限により反映待ちになることがあります。'));
         } else {
-            sourceRows.push(row('パーティ戦闘', sourceVal('battle'), Number(cfg.allyBattleMax || 20), `${battleWins}戦 / ${battleStep}戦ごとに進行`));
+            sourceRows.push(row('パーティ戦闘', sourceVal('battle'), Number(cfg.allyBattleMax || 70), `${battleWins}戦 / ${battleStep}戦ごとに進行`));
         }
 
         sourceRows.push(row('クエスト', sourceVal('quest'), null, '今後追加予定'));

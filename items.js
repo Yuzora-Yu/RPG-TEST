@@ -461,7 +461,7 @@ window.ITEMS_DATA = [
     {
         "id": 123,
         "rank": 99,
-        "name": "超越の実",
+        "name": "グロウプリズム",
         "type": "育成",
         "effectKind": "limitBreak",
         "limitBreakAmount": 1,
