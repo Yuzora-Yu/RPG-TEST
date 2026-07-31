@@ -255,9 +255,9 @@ requiredDungeons.forEach(key => {
 assert(new Set(authoredFixedHashes).size === authoredFixedHashes.length, '深淵の固定階に同一レイアウト流用がない');
 assert(c.FIXED_DUNGEON_MAPS.RIDPALM_DREAM_CORRIDOR.floors[2].forceMaze === true, 'リドパルム3層は迷路確定');
 const penalties = {
-    THUNDER_DUNES:{雷:-50}, BLACK_ROPE_PYRAMID:{雷:-50}, SCREAMING_CEMETERY:{風:-50}, MAGIC_WIND_MAUSOLEUM:{風:-50},
-    FROZEN_FOREST:{水:-50}, ICE_PENANCE_ROAD:{水:-50}, PURGATORY_MOUNTAINS:{火:-50}, SCORCHING_OLD_CASTLE:{火:-50},
-    RIDPALM_DREAM_CORRIDOR:{光:-50,闇:-50}, JAGOREA_ROOT:{光:-50,闇:-50}, CHRONO_ABYSS:{混沌:-50}
+    THUNDER_DUNES:{雷:-20}, BLACK_ROPE_PYRAMID:{雷:-20}, SCREAMING_CEMETERY:{風:-20}, MAGIC_WIND_MAUSOLEUM:{風:-20},
+    FROZEN_FOREST:{水:-20}, ICE_PENANCE_ROAD:{水:-20}, PURGATORY_MOUNTAINS:{火:-20}, SCORCHING_OLD_CASTLE:{火:-20},
+    RIDPALM_DREAM_CORRIDOR:{光:-20,闇:-20}, JAGOREA_ROOT:{光:-20,闇:-20}, CHRONO_ABYSS:{混沌:-20}
 };
 Object.entries(penalties).forEach(([key, expected]) => {
     assert(JSON.stringify(c.FIXED_DUNGEON_MAPS[key].elementPenalty) === JSON.stringify(expected), `${key}: 属性耐性低下を正本定義`);
@@ -307,6 +307,12 @@ assert(!/DB\.MONSTERS\s*=|DB\.MONSTERS\.(?:push|splice)|Object\.assign\(\s*DB\.M
 assert(/completeAbyssElementalTrial/.test(battleSource) && /abyssAllSpiritTrialsCleared/.test(battleSource), '六属性試練の結晶片・耐性加護・全制覇報酬を勝利処理へ接続');
 assert(!/suppressFixedBossDefeat[\s\S]{0,1200}fixedTrialRewardItemId/.test(dungeonSource), '精霊試練報酬をDungeon固定ボス後処理で重複加算しない');
 assert(/ABYSS_FIRST_BARRIER_CLEAR/.test(abyssStorySource) && /ABYSS_SECOND_BARRIER_CLEAR/.test(abyssStorySource), '第一・第二結界解除の専用会話を作成');
+assert(/getCurrentAbyssEquipOptionElements/.test(mainSource)
+    && /rule\.key === 'elmAtk' \|\| rule\.key === 'elmRes'/.test(mainSource)
+    && /const weight = isPreferredElement \? 3 : 1/.test(mainSource),
+    'Abyss matching elemental attack/resistance options use triple draw weight');
+assert((mainSource.match(/App\.pickEquipOptionRule\(allowedKeys\)/g) || []).length === 2,
+    'Both equipment generation paths share the Abyss elemental option draw');
 const abyssScripts = c.STORY_MANAGER_DATA?.scripts || {};
 [
     ['ABYSS_LEONARD', '黒雷のレナード'],

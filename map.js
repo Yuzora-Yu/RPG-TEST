@@ -2956,7 +2956,11 @@ const FIXED_MAPS = {
         height: 37,
         entryPoint: { x: 24, y: 34 },
         skyPrismEntryPoint: { x: 24, y: 34 },
-        entryPoints: { south: { x: 24, y: 34 }, north: { x: 24, y: 2 } },
+        entryPoints: {
+            south: { x: 24, y: 34 },
+            north: { x: 24, y: 2 },
+            upperCenter: { x: 24, y: 6 }
+        },
         battleBg: "battle_bg_lastboss",
         tiles: [
             "WWWWWWWWWWWWWWWWWWWWWWWWSWWWWWWWWWWWWWWWWWWWWWWWW",
@@ -3170,8 +3174,8 @@ const FIXED_MAPS = {
         entryPoint: { x: 20, y: 16 },
         entryPoints: {
             center: { x: 20, y: 16 },
-            westUpper: { x: 5, y: 9 },
-            eastUpper: { x: 35, y: 9 }
+            westUpper: { x: 5, y: 8 },
+            eastUpper: { x: 35, y: 8 }
         },
         battleBg: "battle_bg_lastboss",
         tiles: [
@@ -3246,6 +3250,7 @@ const FIXED_MAPS = {
                 "y": 16,
                 "type": "fixedMap",
                 "target": "LEGACION",
+                "entryKey": "upperCenter",
                 "returnX": 24,
                 "returnY": 6,
                 "label": "城内一階へ戻る"
@@ -6824,12 +6829,11 @@ const makeAuthoredAbyssFloor = ({ grid, label, floor, rank, themeKey, mapId, ent
     floorId: `${mapId}-${String(floor).padStart(2, '0')}`,
     useHabitatEncounters: true
 });
-const makeAbyssProceduralFloor = ({ label, floor, rank, themeKey, mapId, forceMaze = false, wideProcedural = false }) => ({
+const makeAbyssProceduralFloor = ({ label, floor, rank, themeKey, mapId, forceMaze = false }) => ({
     label,
     floor,
     procedural: true,
     forceMaze,
-    wideProcedural,
     rank,
     encounterRank: rank,
     themeKey,
@@ -6994,7 +6998,7 @@ const ABYSS_AUTHORED_DUNGEONS = Object.freeze((() => {
 
     result.JAGOREA_ROOT = makeAuthoredAbyssDungeon({ ...common.JAGOREA_ROOT, floors: [
         fixed('JAGOREA_ROOT', G.JAGOREA_ENTRY, { label: '1層', floor: 1, entryMarker: 'S', floorLinks: [authoredAbyssLink(G.JAGOREA_ENTRY, 'S', { to: 'EXIT', label: 'リドパルムへ戻る' }), authoredAbyssLink(G.JAGOREA_ENTRY, 'D', { toFloor: 2, label: '2層へ進む' })], chests: [authoredAbyssChest(3, 2, 14), authoredAbyssChest(27, 18, 7, true)] }),
-        procedural('JAGOREA_ROOT', 2, { wideProcedural: true }), procedural('JAGOREA_ROOT', 3, { wideProcedural: true }), procedural('JAGOREA_ROOT', 4, { wideProcedural: true }),
+        procedural('JAGOREA_ROOT', 2), procedural('JAGOREA_ROOT', 3), procedural('JAGOREA_ROOT', 4),
         fixed('JAGOREA_ROOT', G.JAGOREA_BOSS, { label: '5層', floor: 5, rank: 115, entryMarker: 'U', floorLinks: [authoredAbyssLink(G.JAGOREA_BOSS, 'U', { toFloor: 4, label: '4層へ戻る' })], bosses: [authoredAbyssBoss(G.JAGOREA_BOSS, 302060, 'abyssJasperDefeated', 'abyss_jasper_battle', 'abyss_jasper_clear', '妄執の神官ジャスパーに挑みますか？')], chests: [authoredAbyssChest(3, 2, 6), authoredAbyssChest(27, 18, 7, true)] })
     ] });
     result.CHRONO_ABYSS = makeAuthoredAbyssDungeon({ ...common.CHRONO_ABYSS, floors: [

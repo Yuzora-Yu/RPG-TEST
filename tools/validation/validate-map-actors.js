@@ -61,14 +61,35 @@ for (const marker of ['getAdjacentChest', 'prepareAdjacentChestAction', "tile ==
     if (!mainSource.includes(marker)) errors.push(`missing adjacent chest interaction marker: ${marker}`);
 }
 function inspectMap(key, mapDef, label) {
-    const occupied = new Set();
+    const occupied = new Map();
+    const requiredFlags = action => new Set([
+        ...(Array.isArray(action?.requiredFlags) ? action.requiredFlags : []),
+        ...(action?.requiredFlag ? [action.requiredFlag] : [])
+    ]);
+    const missingFlags = action => new Set([
+        ...(Array.isArray(action?.missingFlags) ? action.missingFlags : []),
+        ...(action?.missingFlag ? [action.missingFlag] : [])
+    ]);
+    const canCoexist = (left, right) => {
+        const leftRequired = requiredFlags(left);
+        const rightRequired = requiredFlags(right);
+        const leftMissing = missingFlags(left);
+        const rightMissing = missingFlags(right);
+        if ([...leftRequired].some(flag => rightMissing.has(flag))) return false;
+        if ([...rightRequired].some(flag => leftMissing.has(flag))) return false;
+        return true;
+    };
     const validatePlacement = (action, actorLabel) => {
         actors++;
         const x = Number(action.x);
         const y = Number(action.y);
         const coord = `${x},${y}`;
-        if (occupied.has(coord)) errors.push(`${label}: duplicate actor coordinate ${coord}`);
-        occupied.add(coord);
+        const priorPlacements = occupied.get(coord) || [];
+        if (priorPlacements.some(prior => canCoexist(prior, action))) {
+            errors.push(`${label}: duplicate simultaneously-visible actor coordinate ${coord}`);
+        }
+        priorPlacements.push(action);
+        occupied.set(coord, priorPlacements);
         const tile = String(mapDef.tiles?.[y]?.[x] || 'W').toUpperCase();
         if (tile === 'W') errors.push(`${label}: actor placed on wall at ${coord}`);
         const isVisibleEntranceActor = tile === 'D' && action.type === 'fixedDungeon';
@@ -138,7 +159,7 @@ function inspectMap(key, mapDef, label) {
             if (!action.type) errors.push(`${label}:${actorId}:${stateId}: action.type is missing`);
             if (!action.label) errors.push(`${label}:${actorId}:${stateId}: action.label is missing`);
             if (action.eventId && !storySource.includes(action.eventId)) errors.push(`${label}:${actorId}:${stateId}: missing story event ${action.eventId}`);
-            const placement = { ...actor, ...(state?.placement || {}) };
+            const placement = { ...actor, ...(state?.when || {}), ...(state?.placement || {}) };
             positions.set(`${Number(placement.x)},${Number(placement.y)}`, placement);
         }
         if (!(actor.states || []).length) errors.push(`${label}:${actorId}: states are missing`);

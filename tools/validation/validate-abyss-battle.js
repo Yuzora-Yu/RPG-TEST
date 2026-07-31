@@ -97,14 +97,14 @@ const assert = (condition, message) => condition ? checks.push(message) : failur
   assert(Battle.decideEnemyAction(finalEnemy)?.type==='enemy_attack' && finalEnemy.acts.length===3, '封印スキルを行動候補から一時除外し、元データを破壊しない');
   assert(ItemRuntime.isBattleUsable({id:701008})===false, '使用後のオクタプリズマは再使用できない');
 
-  // Vagnasis fallen-part hook must strengthen and fully heal every remaining target.
+  // Vagnasis fallen-part hook must strengthen remaining targets but only heal 20% max HP.
   App.data.battle={active:true,fixedBossId:[302080,302081]};
   const fallen={baseId:302080,id:302080,name:'雷柱レナード',hp:0,mp:0,baseMaxHp:1000,baseMaxMp:100,isDead:false,linkedDeathIndex:0};
   const remaining={baseId:302081,id:302081,name:'風柱エリシア',hp:200,mp:30,baseMaxHp:1000,baseMaxMp:100,isDead:false,baseStats:{atk:100,def:100,spd:100,mag:100,mdef:100},atk:100,def:100,spd:100,mag:100,mdef:100};
   Battle.enemies=[fallen,remaining];
   Battle.updateDeadState();
   assert(fallen.isDead===true && fallen.abyssFallHandled===true, '魔柱1対象の撃破を一度だけ確定する');
-  assert(remaining.baseMaxHp===1180 && remaining.hp===1180 && remaining.baseMaxMp===112 && remaining.mp===112, '対象撃破ごとに残存魔柱を強化しHP・MPを全回復する');
+  assert(remaining.baseMaxHp===1180 && remaining.hp===436 && remaining.baseMaxMp===112 && remaining.mp===112, '対象撃破ごとに残存魔柱を強化し、HP回復を最大HPの20%に抑える');
   assert(['atk','def','spd','mag','mdef'].every(key=>remaining.baseStats[key]===118), '残存魔柱の各能力を段階強化する');
   assert(Battle.phase==='battle_event', '魔柱撃破と同時に入力・オート進行を戦闘イベント状態へ停止する');
   await Battle.awaitPendingBattleEvent();

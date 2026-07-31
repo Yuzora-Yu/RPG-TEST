@@ -46,23 +46,47 @@ assert(action('quest_water_blue_crystal_clear', 'ITEM', entry => Number(entry.id
 assert(action('quest_water_blue_crystal_clear', 'SUB', entry => entry.value === 2), 'Blue-crystal victory does not return the objective to Sophia.');
 assert(action('water_city_blue_crystal_report', 'FLAG', entry => entry.key === 'seabedTempleRouteOpened'), 'Sophia report does not open the Seabed Temple route.');
 
-const waterCityPlazaActor = context.FIXED_MAPS.WATER_CITY.mapActors.find(entry => Number(entry.x) === 19 && Number(entry.y) === 13);
-const waterCityPlaza = { ...waterCityPlazaActor, ...(waterCityPlazaActor?.states?.[0]?.action || {}) };
-const sophiaVariant = waterCityPlaza?.imageVariants?.find(entry => entry.imageKey === 'overlay_companion_sophia');
-assert(waterCityPlaza?.imageKey === 'overlay_npc_dark_soldier', 'Water City plaza no longer shows the soldier before the intro battle.');
-assert(sophiaVariant?.requiredFlag === 'waterCityIntroCleared' && sophiaVariant?.missingFlag === 'waterCityCleared', 'Water City plaza Sophia state is not bounded between intro victory and city clear.');
-assert(waterCityPlaza?.imageMissingFlag === 'waterCityCleared', 'Water City plaza actor is not removed after city clear.');
-assert(mainSource.includes('resolveMapActionImageKey') && mainSource.includes('action.imageVariants'), 'Flag-driven map actor image variants are not resolved by Field.');
-const resolvePlazaImage = flags => {
-    if (waterCityPlaza.imageMissingFlag && flags[waterCityPlaza.imageMissingFlag]) return null;
-    const variant = (waterCityPlaza.imageVariants || []).find(entry =>
-        (!entry.requiredFlag || flags[entry.requiredFlag]) &&
-        (!entry.missingFlag || !flags[entry.missingFlag]));
-    return variant?.imageKey || waterCityPlaza.imageKey || null;
+const waterCityActors = context.FIXED_MAPS.WATER_CITY.mapActors;
+const waterCitySoldier = waterCityActors.find(entry => entry.actorId === 'npc_dark_soldier');
+const waterCitySophia = waterCityActors.find(entry => entry.actorId === 'sophia_water_city');
+const waterCityAlan = waterCityActors.find(entry => entry.actorId === 'sophia_alan_seabed_depths_2');
+assert(waterCitySoldier && waterCitySophia && waterCitySoldier.placementId !== waterCitySophia.placementId,
+    'Water City soldier and Sophia must be separate map actors with separate placement IDs.');
+assert(waterCitySoldier.states?.length === 1 && waterCitySoldier.states[0]?.when?.missingFlag === 'waterCityIntroCleared',
+    'Water City soldier must exist only before the intro victory.');
+assert(!waterCitySoldier.states[0]?.action?.imageVariants,
+    'Water City soldier must not change identity through an image variant.');
+const sophiaPlazaState = waterCitySophia.states?.find(state => state.stateId === 'water_city_plaza');
+const sophiaQuestState = waterCitySophia.states?.find(state => state.stateId === 'sophia_alan_seabed_depths');
+assert(sophiaPlazaState?.when?.requiredFlag === 'waterCityIntroCleared' && sophiaPlazaState?.when?.missingFlag === 'waterCityCleared' &&
+    Number(sophiaPlazaState?.placement?.x) === 19 && Number(sophiaPlazaState?.placement?.y) === 13,
+    'Sophia plaza state must exist at (19,13) only between intro victory and city clear.');
+assert(sophiaQuestState?.when?.requiredFlags?.includes('waterCityCleared') && sophiaQuestState?.when?.requiredFlags?.includes('thunderFortCleared') &&
+    Number(waterCitySophia.x) === 32 && Number(waterCitySophia.y) === 15,
+    'Sophia recruitment-quest state must move to (32,15) after Thunder Fort clear.');
+assert(waterCityAlan?.states?.[0]?.when?.requiredFlags?.includes('waterCityCleared') &&
+    waterCityAlan?.states?.[0]?.when?.requiredFlags?.includes('thunderFortCleared'),
+    'Alan must not appear at the recruitment-quest position before Thunder Fort clear.');
+const actorStateIsVisible = (state, flags) => {
+    const when = state?.when || {};
+    return (!when.requiredFlag || !!flags[when.requiredFlag]) &&
+        (!when.requiredFlags || when.requiredFlags.every(flag => !!flags[flag])) &&
+        (!when.missingFlag || !flags[when.missingFlag]);
 };
-assert(resolvePlazaImage({}) === 'overlay_npc_dark_soldier', 'Water City plaza must show the soldier before the intro victory.');
-assert(resolvePlazaImage({ waterCityIntroCleared: true }) === 'overlay_companion_sophia', 'Water City plaza must replace the soldier with Sophia after the intro victory.');
-assert(resolvePlazaImage({ waterCityIntroCleared: true, waterCityCleared: true }) === null, 'Water City plaza actor must disappear after the city is cleared.');
+const visibleWaterActors = flags => waterCityActors.flatMap(actor => (actor.states || []).filter(state => actorStateIsVisible(state, flags)).map(state => ({
+    actorId: actor.actorId,
+    x: Number(state.placement?.x ?? actor.x),
+    y: Number(state.placement?.y ?? actor.y)
+})));
+assert(visibleWaterActors({}).some(entry => entry.actorId === 'npc_dark_soldier' && entry.x === 19 && entry.y === 13),
+    'Water City plaza must show the soldier before the intro victory.');
+assert(visibleWaterActors({ waterCityIntroCleared: true }).some(entry => entry.actorId === 'sophia_water_city' && entry.x === 19 && entry.y === 13),
+    'Water City plaza must show Sophia after the intro victory.');
+assert(!visibleWaterActors({ waterCityIntroCleared: true, waterCityCleared: true }).some(entry => entry.x === 19 && entry.y === 13),
+    'Water City plaza actor must disappear after the city is cleared.');
+assert(visibleWaterActors({ waterCityIntroCleared: true, waterCityCleared: true, thunderFortCleared: true })
+    .some(entry => entry.actorId === 'sophia_water_city' && entry.x === 32 && entry.y === 15),
+    'Sophia must reappear at her recruitment-quest position after Thunder Fort clear.');
 const waterCityRelocation = (story.scripts?.WATER_CITY_SOPHIA || [])
     .flatMap(line => Array.isArray(line?.commands) ? line.commands : [])
     .find(command => command?.op === 'MOVE_PLAYER');

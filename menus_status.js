@@ -285,11 +285,14 @@ const MenuStatus = {
         const canGuildTravel = typeof App.canTravelToGuildReception === 'function' && App.canTravelToGuildReception();
         const rows = acceptedIds.map(id => {
             const def = defs[id];
+            const questState = state.questStates?.[id] || {};
             const ready = Guild.isObjectiveComplete(id);
             const travelAreaKey = App.resolveQuestTravelAreaKey?.(def) || '';
+            const canStartGuildDungeon = def.kind === 'guildDungeon' && !ready && !questState.progress?.bossDefeated;
             return `<div style="padding:9px 10px; margin-bottom:6px; border:1px solid ${ready ? '#5f8d52' : '#4b4435'}; border-radius:5px; background:rgba(255,255,255,.045);">
                 <div style="display:flex; justify-content:space-between; gap:8px; align-items:center;"><strong style="font-size:12px; color:#fff; display:flex; align-items:center; min-width:0;">${Guild.rarityBadgeHtml?.(def) || ''}<span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(def.name)}</span></strong><span style="font-size:10px; color:${ready ? '#8cff9d' : '#ffd56b'};">${ready ? '報告可能' : '進行中'}</span></div>
                 <div style="font-size:10px; color:#aaa; margin-top:5px; white-space:pre-wrap;">${escapeHtml(Guild.targetSummary(id))}</div>
+                ${canStartGuildDungeon ? `<button class="btn" style="width:100%; margin-top:7px; padding:6px; border-color:#7ca4ff; color:#e6eeff; background:#15284b;" onclick="MenuStatus.startGuildChallenge('${escapeHtml(id)}')">依頼迷宮へ挑戦</button>` : ''}
                 ${travelAreaKey ? `<button class="btn" style="width:100%; margin-top:7px; padding:6px; border-color:#5c96b5; color:#dff4ff; background:#183445;" onclick="MenuStatus.travelToGuildQuest('${escapeHtml(id)}')">対象エリア入口へ移動</button>` : ''}
             </div>`;
         }).join('');
@@ -345,6 +348,24 @@ const MenuStatus = {
             return false;
         }
         return App.requestSkyPrismTravelTo?.(areaKey, def?.area || def?.name || areaKey) || false;
+    },
+
+    startGuildChallenge: (questId) => {
+        if (typeof Guild === 'undefined' || typeof Guild.startChallengeQuest !== 'function') {
+            Menu.msg('依頼迷宮を開始できません。');
+            return false;
+        }
+        const resolvedId = Guild.resolveQuestId?.(questId) || questId;
+        const def = Guild.getDefinitions?.()[resolvedId];
+        const questState = Guild.getQuestState?.(resolvedId);
+        if (!def || def.kind !== 'guildDungeon' || questState?.state !== 'accepted' || questState?.progress?.bossDefeated) {
+            Menu.msg('この依頼迷宮は現在開始できません。');
+            return false;
+        }
+        if (typeof Menu !== 'undefined' && typeof Menu.closeAll === 'function') Menu.closeAll();
+        const started = Guild.startChallengeQuest(resolvedId);
+        if (!started) Menu.msg('依頼迷宮を開始できませんでした。');
+        return !!started;
     }
 };
 

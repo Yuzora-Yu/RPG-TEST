@@ -76,6 +76,7 @@ assert(regulars.every(monster => monster.abyssRecruitable === true), '通常敵5
 assert(regulars.every(monster => Number.isFinite(Number(monster.dropSeed))), '通常敵55体に安定ドロップシードあり');
 assert(regulars.every(monster => Array.isArray(monster.archives) && monster.archives.some(Boolean)), '通常敵55体に図鑑説明あり');
 assert(regulars.every(monster => Array.isArray(monster.acts) && monster.acts.length >= 4), '通常敵55体に個別行動セットあり');
+assert(regulars.every(monster => Number(monster.actCount) === 1), '深淵追加通常敵55体は全員1回行動');
 assert([...regulars, ...bosses].every(monster => monster.acts.every(action => skillsById.has(Number(typeof action === 'object' ? action.id : action)))), '全新規敵の使用スキルがskills.js正本に存在');
 assert(regulars.every(monster => ['normal','rare'].every(slot => itemsById.has(Number(monster.drops?.[slot]?.id)) && Number(monster.drops?.[slot]?.rate) > 0)), '通常敵55体の通常・レアドロップが有効');
 assert(bosses.every(monster => ['normal','rare'].every(slot => {
@@ -100,7 +101,12 @@ for (const imageId of imageIds) {
 const pillars = [302080,302081,302082,302083,302084].map(id => bosses.find(monster => Number(monster.id) === id));
 assert(pillars.every(Boolean), 'ヴェグナシス5攻撃対象が正本に存在');
 assert(pillars.every((monster, index) => Number(monster.imageId) === 302080 && monster.linkedBattleGroup === 'vegnasis' && Number(monster.linkedDeathIndex) === index), 'ヴェグナシスは1グラフィック・5対象の連結定義');
+assert(pillars.every(monster => Number(monster.actCount) === 1), 'ヴェグナシス5柱は各1回行動');
+assert(pillars.find(monster => Number(monster.id) === 302082)?.acts.some(action => Number(action.id) === 413), '水柱シーリスが全体回復行動を持つ');
+const veldPillar = pillars.find(monster => Number(monster.id) === 302084);
+assert(['火','水','風','雷','光','闇','混沌'].every(element => Number(veldPillar?.elmRes?.[element] || 0) >= 45), '闇柱ヴェルドは全属性に高い耐性を持つ');
 assert(pillars.every(monster => Number(monster.gutsLevel) >= 10), 'ヴェグナシス全対象に高い根性レベル');
+assert(bosses.every(monster => Number(monster.exp) > 0), '深淵専用ボス22体に経験値報酬を設定');
 assert(fs.existsSync(path.join(root, 'assets/monsters/monster_302080.png')), 'ヴェグナシス共通差し替え画像が存在');
 const firstForm = bosses.find(monster => Number(monster.id) === 302100);
 const finalForm = bosses.find(monster => Number(monster.id) === 302101);

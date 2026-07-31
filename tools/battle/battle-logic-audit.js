@@ -551,6 +551,58 @@ async function runAudit() {
     addCheck(report, 'status-proc', rt.logs.some(line => line.includes('HPが10回復')),
         '回復ログが実際に増えたHPではなく、上限超過前の計算量を表示します');
 
+    const fixedActor = createUnit('fixed-damage-actor', {
+        hp: 400, atk: 9999, mag: 9999, finDmg: 500, cri: 100,
+        formation: 'back', elmAtk: { 火: 500 }
+    });
+    const fixedTarget = createUnit('fixed-damage-target', {
+        hp: 5000, baseMaxHp: 5000, def: 9999, mdef: 9999,
+        formation: 'back', race: '魔族', elmRes: { 火: 100 }
+    });
+    const fixedSkill = {
+        id: 9208, name: '固定ダメージ監査', type: '物理', target: '単体', mp: 0,
+        rate: 0, count: 1, base: 999, fix: true, elm: '火', critRate: 100, isPerfect: true
+    };
+    Battle.party = [fixedActor];
+    Battle.enemies = [fixedTarget];
+    rt.PassiveSkill.getSumValue = (unit, key) => {
+        if (unit === fixedActor && ['dmg_pct', 'physical_dmg_pct', 'anti_demon_pct', 'low_hp_dmg_mult'].includes(key)) return 500;
+        return 0;
+    };
+    rt.setRandom(0.99);
+    await Battle.processAction({ type: 'skill', actor: fixedActor, data: fixedSkill, target: fixedTarget, targetScope: '単体', isEnemy: false });
+    addCheck(report, 'fixed-damage', fixedTarget.hp === 4001,
+        `固定ダメージがbase値そのものにならず、攻撃側補正・能力・防御・属性耐性・乱数の影響を受けます (${5000 - fixedTarget.hp})`);
+
+    const reducedFixedTarget = createUnit('reduced-fixed-target', {
+        hp: 5000, baseMaxHp: 5000, def: 9999, mdef: 9999, finRed: 20,
+        status: { defend: true }, elmRes: { 火: 100 }
+    });
+    Battle.enemies = [reducedFixedTarget];
+    rt.PassiveSkill.getSumValue = (unit, key) => unit === reducedFixedTarget && key === 'physical_reduce_pct' ? 25 : 0;
+    await Battle.processAction({ type: 'skill', actor: fixedActor, data: fixedSkill, target: reducedFixedTarget, targetScope: '単体', isEnemy: false });
+    addCheck(report, 'fixed-damage', reducedFixedTarget.hp === 4701,
+        `固定ダメージへ被ダメージ軽減・物理軽減・防御姿勢だけを適用できません (${5000 - reducedFixedTarget.hp})`);
+    addCheck(report, 'fixed-damage', Battle.estimateAutoDamage(fixedActor, fixedSkill, createUnit('fixed-estimate-target', { def: 9999, elmRes: { 火: 100 } })) === 999,
+        '固定ダメージのオート評価値が実ダメージ契約と一致しません');
+    rt.PassiveSkill.getSumValue = () => 0;
+    const metalSlash = skills.find(skill => Number(skill.id) === 100);
+    const lostPrisma = skills.find(skill => Number(skill.id) === 248);
+    const metalTarget = createUnit('metal-slash-target', { hp: 100, baseMaxHp: 100, def: 9999 });
+    Battle.party = [fixedActor];
+    Battle.enemies = [metalTarget];
+    rt.setRandom(0.5);
+    await Battle.processAction({ type: 'skill', actor: fixedActor, data: metalSlash, target: metalTarget, targetScope: '単体', isEnemy: false });
+    addCheck(report, 'fixed-damage', metalTarget.hp === 98, `メタル斬りがbase:2の固定ダメージになりません (${100 - metalTarget.hp})`);
+    const lostTargets = [
+        createUnit('lost-prisma-target-a', { hp: 2000, baseMaxHp: 2000, mdef: 9999 }),
+        createUnit('lost-prisma-target-b', { hp: 2000, baseMaxHp: 2000, mdef: 9999 })
+    ];
+    Battle.enemies = lostTargets;
+    await Battle.processAction({ type: 'skill', actor: fixedActor, data: lostPrisma, target: 'all_enemy', targetScope: '全体', isEnemy: false });
+    addCheck(report, 'fixed-damage', lostTargets.every(target => target.hp === 1001),
+        `ロストプリズマが各対象へbase:999の固定ダメージになりません (${lostTargets.map(target => 2000 - target.hp).join(',')})`);
+
     const dualMpSkill = { id: 9202, name: '二刀MP回復監査', type: 'MP回復', target: '自分', mp: 0, rate: 0, count: 1, base: 10, SuccessRate: 100 };
     const dualActor = createUnit('dual-actor', {
         mp: 0,

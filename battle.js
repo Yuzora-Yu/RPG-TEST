@@ -3350,10 +3350,18 @@ findNextActor: () => {
                     if (fearWoreOff) Battle.log(`${actor.name}の 怯え が解けた！`);
                     await Battle.onActionEnd(actor); // 行動直後のダメージ/リジェネ
                     // 怯え停止でも継続ダメージ後の死亡確定・画面更新・勝敗判定は省略しない。
-                    Battle.updateDeadState();
+                    const deathState = Battle.updateDeadState();
                     if (typeof Battle.awaitPendingBattleEvent === 'function') await Battle.awaitPendingBattleEvent();
                     Battle.renderEnemies();
                     Battle.renderPartyStatus();
+                    if (deathState?.restartInputAfterEvent) {
+                        Battle.isPreemptive = false;
+                        Battle.isAmbushed = false;
+                        Battle.commandQueue = [];
+                        Battle.saveBattleState();
+                        Battle.startInputPhase();
+                        return;
+                    }
                     if (Battle.checkFinish()) return;
                     continue;
                 } else if (fearWoreOff) {
@@ -3385,10 +3393,20 @@ findNextActor: () => {
             await Battle.onActionEnd(actor);
             
             // 死亡状態の更新
-            Battle.updateDeadState();
+            const deathState = Battle.updateDeadState();
             if (typeof Battle.awaitPendingBattleEvent === 'function') await Battle.awaitPendingBattleEvent();
 
             Battle.renderEnemies(); Battle.renderPartyStatus();
+            if (deathState?.restartInputAfterEvent) {
+                // 第一形態の行動キューやターン終了処理を第二形態へ持ち越さない。
+                // 変身会話終了後に、新しい戦闘フェーズとして入力を再開する。
+                Battle.isPreemptive = false;
+                Battle.isAmbushed = false;
+                Battle.commandQueue = [];
+                Battle.saveBattleState();
+                Battle.startInputPhase();
+                return;
+            }
             if (Battle.checkFinish()) return;
             await Battle.resultWait(500);
 			Battle.log("<br>"); 
@@ -4593,7 +4611,10 @@ findNextActor: () => {
     },
 	
     updateDeadState: () => {
-        // 深淵王第一形態は通常の死亡処理へ入れず、同じ戦闘内で第二形態へ置換する。
+        let restartInputAfterEvent = false;
+
+        // 深淵王第一形態は通常の死亡・勝利処理へ入れず、同じ戦闘内で第二形態へ置換する。
+        // 置換後は現在ターンを明示的に終了し、変身会話後に新しい入力フェーズを開始する。
         const phaseIndex = (Battle.enemies || []).findIndex(enemy =>
             Battle.getUnitBaseId(enemy) === 302100 && Number(enemy.hp || 0) <= 0 && !enemy.abyssPhaseTransitioned
         );
@@ -4608,9 +4629,11 @@ findNextActor: () => {
                 Battle.assignDuplicateMonsterSuffixes(Battle.enemies);
                 App.data.battle.fixedBossId = 302101;
                 App.data.battle.abyssAzelgaragPhase = 2;
+                App.data.battle.abyssAzelgaragTransitionComplete = true;
                 Battle.party.forEach(member => {
                     if (!member) return;
                     member.isDead = false;
+                    member.hasDiedThisTurn = false;
                     member.hp = Math.max(1, Number(member.baseMaxHp || member.hp || 1));
                     member.mp = Math.max(0, Number(member.baseMaxMp || member.mp || 0));
                     const status = Battle.ensureUnitBattleStatus(member);
@@ -4620,19 +4643,17 @@ findNextActor: () => {
                 });
                 Battle.queueBattleConversation('ABYSS_AZELGARAG_TRANSFORM');
                 Battle.log('光の神の加護が一行を満たした！');
+                restartInputAfterEvent = true;
             }
         }
 
-        const livingPillarsBefore = new Set((Battle.enemies || []).filter(enemy =>
-            Battle.abyssVegnasisIds.includes(Battle.getUnitBaseId(enemy)) && !enemy.isDead && !enemy.isFled
-        ));
         let partyAuraDirty = false;
         [...Battle.party, ...Battle.enemies].forEach(e => {
             if (e && e.hp <= 0 && !e.isFled) {
                 const newlyDead = !e.isDead;
                 e.hp = 0;
                 e.isDead = true;
-				// ★追加：このターン中に死んだことを記録する
+                // このターン中に死んだことを記録する。
                 e.hasDiedThisTurn = true;
                 if (e.status) e.status.defend = false;
                 e.battleStatus = { buffs: {}, debuffs: {}, ailments: {} };
@@ -4641,14 +4662,19 @@ findNextActor: () => {
         });
         if (partyAuraDirty) Battle.refreshPartyFormationAuras();
 
+        // processAction 内の markDefeated() が先に isDead を立てるため、
+        // 「更新直前に生存していたか」ではなく、未処理の死亡柱を正本として検出する。
         const newlyFallenPillars = (Battle.enemies || []).filter(enemy =>
             Battle.abyssVegnasisIds.includes(Battle.getUnitBaseId(enemy))
-            && livingPillarsBefore.has(enemy) && enemy.isDead && !enemy.abyssFallHandled
+            && !enemy.abyssFallHandled
+            && !enemy.isFled
+            && (enemy.isDead || Number(enemy.hp || 0) <= 0)
         );
         newlyFallenPillars.forEach(enemy => {
             enemy.abyssFallHandled = true;
             const remaining = Battle.enemies.filter(other =>
                 Battle.abyssVegnasisIds.includes(Battle.getUnitBaseId(other))
+                && other !== enemy
                 && !other.isDead && !other.isFled && Number(other.hp || 0) > 0
             );
             remaining.forEach(other => {
@@ -4665,8 +4691,10 @@ findNextActor: () => {
             });
             const linkedIndex = Number(enemy.linkedDeathIndex ?? Battle.getMonsterBaseById?.(Battle.getUnitBaseId(enemy))?.linkedDeathIndex ?? 0) + 1;
             Battle.queueBattleConversation(`ABYSS_VEGNASIS_FALL_${Math.max(1, Math.min(5, linkedIndex))}`);
-            if (remaining.length) Battle.log('倒れた魔柱の力が残る柱へ流れ、傷がわずかに塞がった！');
+            if (remaining.length) Battle.log('倒れた魔柱の力が残る柱へ流れ、傷が塞がり、力が増した！');
         });
+
+        return { restartInputAfterEvent };
     },
 
     checkFinish: () => {
