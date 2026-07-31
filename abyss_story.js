@@ -112,13 +112,16 @@
             { name:'深淵王アゼルガラグ', text:'異なるまま……並び立つか。\nそれもまた、混沌とは違う一つの答え……。' },
             { name:'シャニー', text:'答えは一つじゃない。\nだから、誰かが全部を終わらせて決める必要もない。', charId:306 },
             { name:'ジョセフ', text:'帰ろうぜ。\n地上にも、ここにも、俺たちを待ってる奴がいる。', charId:101 },
+            { name:'リュシオン', text:'その前に、これを託しましょう。\n空へ逃れるためではなく、自ら選んだ道を越えるための光です。', charId:501 },
+            { name:'システム', text:'光の神リュシオンの加護が、静かに背へ宿った。\n光の翼を手に入れた！' },
+            { name:'リュシオン', text:'異なる光を抱いたまま、進みなさい。\nあなたたちが帰る空も、これから選ぶ道も、その翼は拒みません。', charId:501 },
             { name:'システム', text:'一行は光の道を通り、地上へ帰還した。\n終焉の祭壇には、消え切らない小さな亀裂だけが残った。' }
         ],
         ABYSS_POSTGAME_CRACK: [
             { name:'システム', text:'終焉の祭壇を再び訪れると、最奥の亀裂が以前より深く口を開けていた。' },
             { name:'シャニー', text:'物語を縛っていた深淵とは違う。\nここから先は、入るたびに形を変える底なしの迷宮。', charId:306 },
             { name:'魔王ゼノン', text:'王を失ってなお力だけが残ったか。\nよかろう。腕試しの穴として、何度でも踏破してやる。', charId:402 },
-            { name:'システム', text:'クリア後深淵とダンジョンメニューが解放された。' }
+            { name:'システム', text:'クリア後深淵、ダンジョンメニュー、宿屋の転送の扉が解放された。' }
         ],
         ABYSS_CARMENA_RESIDENT_SPRING: [
             { name:'泉辺の男', text:'その水面を、あまり長く見るな。\n帰りたい場所の匂いがする。' },
@@ -249,16 +252,41 @@
         abyss_jasper_clear: clearEvent('ABYSS_JASPER_CLEAR',['abyssJasperDefeated'],[{type:'ITEM',id:701007,count:1}]),
         abyss_illuminacia_battle: bossEvent('ABYSS_ILLUMINACIA',302070,'abyss_illuminacia_clear'),
         abyss_illuminacia_clear: clearEvent('ABYSS_ILLUMINACIA_CLEAR',['abyssIlluminaciaDefeated']),
-        abyss_vegnasis_battle: bossEvent('ABYSS_VEGNASIS',[302080,302081,302082,302083,302084],'abyss_vegnasis_clear'),
+        abyss_final_altar_encounter: {
+            actions:[
+                {
+                    type:'IF_FLAG', key:'abyssVegnasisDefeated',
+                    then:[
+                        {type:'CONV',value:'ABYSS_AZELGARAG'},
+                        {type:'BOSS',value:302100,winEventId:'abyss_azelgarag_clear',battleBg:'battle_bg_lastboss'}
+                    ],
+                    else:[
+                        {type:'CONV',value:'ABYSS_VEGNASIS'},
+                        {type:'BOSS',value:[302080,302081,302082,302083,302084],winEventId:'abyss_vegnasis_clear',battleBg:'battle_bg_lastboss',deferFixedBossDefeat:true}
+                    ]
+                }
+            ],
+            winActions:[]
+        },
+        abyss_vegnasis_battle: {
+            actions:[
+                {type:'CONV',value:'ABYSS_VEGNASIS'},
+                {type:'BOSS',value:[302080,302081,302082,302083,302084],winEventId:'abyss_vegnasis_clear',battleBg:'battle_bg_lastboss',deferFixedBossDefeat:true}
+            ],
+            winActions:[]
+        },
         abyss_vegnasis_clear: clearEvent('ABYSS_VEGNASIS_CLEAR',['abyssVegnasisDefeated'],[
+            {type:'CONV',value:'ABYSS_AZELGARAG'},
             {type:'BOSS',value:302100,winEventId:'abyss_azelgarag_clear',battleBg:'battle_bg_lastboss'}
         ]),
         abyss_azelgarag_battle: bossEvent('ABYSS_AZELGARAG',302100,'abyss_azelgarag_clear'),
         abyss_azelgarag_clear: clearEvent('ABYSS_AZELGARAG_CLEAR',['abyssAzelgaragDefeated','abyssEpilogueSeen'],[
+            {type:'IF_ITEM',id:109,count:1,then:[],else:[{type:'ITEM',id:109,count:1}]},
+            {type:'UNLOCK',value:'wing'},
             {type:'CREDITS',title:'深淵世界編　完',lines:['企画・シナリオ　Yuzora-Yu','制作　RPG-TEST','最果ての地カルメナ','深淵都市ビスタ','混沌魔城レガシオン','そして、まだ見ぬ深淵へ']},
-            {type:'STEP',value:10},{type:'SUB',value:2},{type:'LOG',value:'深淵王を倒した。終焉の祭壇には、なお深い亀裂が残っている。'}
+            {type:'STEP',value:10},{type:'SUB',value:2},{type:'LOG',value:'深淵王を倒し、リュシオンから光の翼を授かった。終焉の祭壇には、なお深い亀裂が残っている。'}
         ]),
-        abyss_postgame_crack: clearEvent('ABYSS_POSTGAME_CRACK',['abyssRandomUnlocked','abyssDungeonMenuUnlocked'],[{type:'START_ABYSS_DUNGEON',mode:'random',floor:1,direct:true}]),
+        abyss_postgame_crack: clearEvent('ABYSS_POSTGAME_CRACK',['abyssRandomUnlocked','abyssDungeonMenuUnlocked'],[{type:'UNLOCK',value:['dungeonMenu','teleport']},{type:'START_ABYSS_DUNGEON',mode:'random',floor:1,direct:true}]),
         abyss_carmena_resident_spring: {actions:[{type:'CONV',value:'ABYSS_CARMENA_RESIDENT_SPRING'}],winActions:[]},
         abyss_carmena_resident_rations: {actions:[{type:'CONV',value:'ABYSS_CARMENA_RESIDENT_RATIONS'}],winActions:[]},
         abyss_carmena_resident_old_kingdom: {actions:[{type:'CONV',value:'ABYSS_CARMENA_RESIDENT_OLD_KINGDOM'}],winActions:[]},

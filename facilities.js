@@ -141,9 +141,9 @@ const Facilities = {
     // --- 1. 宿屋 ---
     initInn: () => {
         const exitFn = "App.changeScene('field')";
-        const teleportOpen = typeof App !== 'undefined' && typeof App.hasEnteredAbyss === 'function'
-            ? App.hasEnteredAbyss()
-            : (typeof App !== 'undefined' && Number(App.data?.dungeon?.tryCount || 0) > 0);
+        const teleportOpen = typeof App !== 'undefined' && typeof App.isFeatureUnlocked === 'function'
+            ? App.isFeatureUnlocked('teleport')
+            : !!(typeof App !== 'undefined' && App.data?.progress?.flags?.abyssRandomUnlocked);
         const teleportButton = teleportOpen
             ? `<button class="menu-btn" style="background:#000; border:1px solid #fff; height:40px; color:#fff;" onclick="Facilities.openTeleport()">転送の扉</button>`
             : '';

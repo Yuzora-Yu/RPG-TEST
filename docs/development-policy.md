@@ -34,7 +34,7 @@ The game should not begin with every major system available. Blacksmithing, the 
 
 Existing code uses `progress.unlocked` for story-gated systems. Field blacksmith access is gated by `smith`, while the main-menu **Magic Communication** route to blacksmithing, alchemy, and guild quest reception is independently gated by `craftingMenu`. Dungeon menu access keeps its own unlock check; gacha is not shown in the main menu route.
 
-Travel and key items such as `Magic Boat`, `Light Wing`, and `Sky Prism` should be treated as story rewards rather than ordinary inventory entries.
+`Magic Boat` and `Light Wing` are progression-linked travel items. `Light Wing` is a unique Final Altar reward from Lycion. `Sky Prism` is intentionally an ordinary consumable sold by normal item shops; its destination list is limited by discovered-map records rather than by an acquisition event.
 
 ## Main Game Scope
 
@@ -122,11 +122,11 @@ Proposed unlock route:
 
 - Thunder Fortress clear:
   - Joseph joins.
-  - Medal King becomes available.
-  - Small medal exchange route opens.
+  - Medal King remains a reachable map facility with no story-clear prerequisite; the fortress may still explain small medals.
 
 - Light Palace clear:
-  - Layla joins.
+  - The prison rescue route opens. Layla does not join at the altar.
+  - Returning to the prison and giving Layla one World Tree Leaf restores and recruits her.
   - Abyss and reincarnation foreshadowing.
   - Reserve light/dark teaching goals for the post-UI-completion tutorial pass.
 
@@ -146,17 +146,17 @@ Proposed unlock route:
   - Additional Light Palace event opens.
   - One Reincarnation Fruit is granted.
 
-- Light Palace post-floor-40 event viewed:
-  - Abyss floor 41+ opens.
-  - Inn dungeon-transfer service opens.
-  - Endless exploration opens for fixed regional dungeons.
+- Light Palace clear:
+  - The prison rescue route opens. Layla joins only after the party returns to the prison and gives her one World Tree Leaf.
 
-- Abyss floor 100 clear:
-  - Light Wing opens.
+- Final Altar / Azelgarag clear:
+  - Lycion grants the Light Wing. It is not a Medal King reward.
 
-Inn transfer logic already exists. It should eventually be gated by something like `progress.unlocked.teleport`.
+- Postgame Final Altar crack event:
+  - Random Abyss and the dungeon menu open.
+  - The inn dungeon-transfer door becomes visible and usable at the same time.
 
-Current gate override (2026-07-14): hide the inn transfer door completely until the save has entered the Abyss at least once. First entry records `abyssFirstEntered` and unlocks `teleport`; older saves infer this from Abyss attempts, maximum floor, or an Abyss location.
+Inn transfer visibility and use are both gated by `progress.flags.abyssRandomUnlocked` / `progress.unlocked.teleport`. `abyssFirstEntered` is history only and must not reveal the door. Older saves that already own the legacy random-Abyss clear state may preserve access through migration.
 
 ## Unlock State Shape
 
@@ -205,8 +205,8 @@ Planned story joins:
 - Thunder Fortress clear:
   - Joseph
 
-- Light Palace clear:
-  - Layla
+- Light Palace prison rescue after clear:
+  - Layla (give one World Tree Leaf)
 
 - Demon Castle arrival event battle victory:
   - Shanny
@@ -255,13 +255,13 @@ Water City:
 
 Thunder Fortress:
 
-- Medal King
+- Medal King facility tile; no story-clear prerequisite
 
 Light Palace:
 
-- Post-Abyss-floor-40 event
-- Reincarnation Fruit reward
-- Abyss floor 41+ unlock event
+- Final battle and prison rescue route
+- Layla recovery by World Tree Leaf
+- Abyss and reincarnation foreshadowing
 
 Demon Castle:
 
@@ -285,16 +285,19 @@ Proposed Abyss stages:
   - Light Palace event opens.
   - One Reincarnation Fruit is granted.
 
-- After Light Palace event:
-  - Abyss floor 41+ opens.
-  - Inn transfer service opens.
-  - Regional endless exploration opens.
+- After Light Palace clear:
+  - The party must return to the prison and spend one World Tree Leaf to restore and recruit Layla.
+  - Regional endless exploration remains a separate system decision and is not an inn-transfer visibility condition.
 
-- Floor 100 clear:
-  - Light Wing opens.
+- Final Altar / Azelgarag clear:
+  - Lycion grants the Light Wing.
 
-- Floor 150+:
-  - High-difficulty bosses assuming reincarnation.
+- Final Altar postgame crack:
+  - Random Abyss opens.
+  - The inn transfer door appears and becomes usable.
+
+- Random Abyss high floors:
+  - High-difficulty bosses may assume reincarnation.
 
 ## Regional Endless Exploration
 
@@ -519,10 +522,10 @@ Examples:
   - Boat acquisition event and sea travel explanation.
 
 - Thunder Fortress soldier:
-  - Medal King and small medal explanation.
+  - Medal King and small medal explanation. The explanation is not an unlock gate.
 
 - Light Palace priestess:
-  - Abyss, reincarnation, and floor 41+ explanation.
+  - Layla's prison condition, Abyss foreshadowing, and reincarnation explanation.
 
 ## Tutorial Policy
 

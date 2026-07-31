@@ -3208,9 +3208,8 @@ const STORY_MANAGER_DATA = {
                 {"name": "ジョセフ", "text": "休むなら今のうちだ。\n次に潜る時は、きっと引き返す理由の方が少なくなる。", "charId": 101},
                 {"name": "レイラ", "text": "父の剣は、ここにあります。\n悲しみを置いていくためではなく、連れて進むために。", "charId": 204},
                 {"name": "シャニー", "text": "闇も、まだ震えてる。\n守り抜かれたものの奥で、別の何かが口を開けている。", "charId": 306},
-                {"name": "リュシオン", "text": "ならば、この翼を。\n空へ逃げるためではなく、さらに深く降りるための光です。"},
-                {"name": "システム", "text": "光の神リュシオンの加護が、静かに背へ宿った。\n光の翼を手に入れた！"},
-                {"name": "リュシオン", "text": "行きなさい。\n混沌そのものへ届く道は、あなたたちが選ぶ一歩の先にあります。"}
+                {"name": "リュシオン", "text": "今は地上で息を整えなさい。\n終焉の祭壇に残る王の影を断った時、次の道を越える光を託しましょう。", "charId": 501},
+                {"name": "システム", "text": "深淵の奥に残る気配は消えていない。\n一行は、終焉の祭壇へ至る道を探すことにした。"}
         ],
 },
 
@@ -5110,13 +5109,10 @@ const STORY_MANAGER_DATA = {
         "abyss_floor_100_epilogue": {
                 "actions": [
                         { "type": "CONV", "value": "ABYSS_FLOOR_100_EPILOGUE" },
-                        { "type": "ITEM", "id": 109, "count": 1 },
-                        { "type": "UNLOCK", "value": "wing" },
                         { "type": "FLAG", "key": "abyssFloor100EpilogueCleared" },
-                        { "type": "FLAG", "key": "abyssRandomUnlocked" },
                         { "type": "STEP", "value": 10 },
                         { "type": "SUB", "value": 2 },
-                        { "type": "LOG", "value": "光の翼を得た。深淵のさらに奥へ進もう。" }
+                        { "type": "LOG", "value": "終焉の祭壇へ至る道を探し、深淵王の影を断とう。" }
                 ],
                 "winActions": []
         },

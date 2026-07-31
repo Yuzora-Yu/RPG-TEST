@@ -1,7 +1,7 @@
 # 16_IMPLEMENTATION_PATCH_NOTES_20260629
 
-Status: implementation proposal  
-Purpose: 現時点でJSへ反映する前に確定すべきイベント導線・台詞差し替え案。
+Status: adopted / implemented (2026-07-31 canonical correction)  
+Purpose: 採用済みの光の宮殿後導線と、当時の検討記録を保持する。現行挙動は `story.js` を正とする。
 
 ## 1. 光の宮殿勝利後イベント
 
@@ -11,14 +11,13 @@ Purpose: 現時点でJSへ反映する前に確定すべきイベント導線・
 - 本来は、戦闘終了後に一度牢屋へ戻り、レイラと会話して加入する導線だったはず。
 - ジャスパーの台詞から魔王城への導線を作り、シャオが魔王軍誤認を強める方が自然。
 
-### Correct direction
+### Adopted direction
 
-- ジャスパーは闇のプリズムへの執着を口にする。
-- 「魔王」が敵に聞こえる台詞を残す。
 - ジャスパーとヴェルドは次元の裂け目へ飲み込まれる。
-- シャオが魔王軍への疑念を確信に近づける。
-- レイラ加入はこの場では発生しない。
-- 目的ログは「宮殿の牢屋でレイラの様子を確認しよう」へ。
+- レイラ加入は最奥戦勝利時には発生しない。
+- 地下牢の看守を倒して牢を開き、レイラの容体を確認する。
+- 光の宮殿クリア後も衰弱が残るため、世界樹の葉（item `5`）を渡すことで回復・加入する。
+- レイラ加入後、聖騎士の術式を越えて魔王城方面へ進める。
 
 ### Proposed dialogue
 
@@ -31,15 +30,15 @@ Purpose: 現時点でJSへ反映する前に確定すべきイベント導線・
 { "name": "シャオ", "text": "闇のプリズムまで失ったら終わりだ。行こう、魔王城へ。", "charId": 105 }
 ```
 
-### Event action change
+### Implemented event actions
 
-For `light_palace_clear` and `light_palace_overpower_clear`:
+For `light_palace_clear`, `light_palace_overpower_clear`, and `light_palace_prison_leila`:
 
 - Remove immediate `{ type: "ALLY", value: 204 }`.
 - Do not log `レイラが仲間に加わった。魔王城へ向かおう。`
 - Add flag such as `lightPalaceCleared`.
 - Add objective/log: `宮殿の牢屋でレイラの様子を確認しよう。`
-- Keep story step before dark castle until Layla joins, or add substep such as `7-1` / `7-2` if logic allows.
+- `lightPalaceCleared` と `leilaJoined` を分離し、魔王城方面の通行はレイラ加入判定で止める。
 
 ## 2. 光の宮殿牢屋・レイラ加入イベント
 

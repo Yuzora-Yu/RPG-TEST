@@ -1,33 +1,17 @@
 # 24_IMPLEMENTATION_HOLD_POINTS_20260629
 
-Status: hold / needs user decision before fix
+Status: partially resolved; remaining items still require decisions
 
 2026-06-29の `prisma_abyss_latest_files_20260629.zip` 読み込み後、即時反映せず保留した実装項目。
 
-## 1. 光の宮殿後、レイラ即加入をやめる導線
+## 1. 光の宮殿後、レイラ即加入をやめる導線 — 解決済み
 
-Source:
+2026-07-31に採用済み。
 
-- `16_IMPLEMENTATION_PATCH_NOTES_20260629.md`
-
-Proposal:
-
-- `light_palace_clear` / `light_palace_overpower_clear` でレイラを即加入させない。
-- 戦闘後は「宮殿の牢屋でレイラの様子を確認しよう」へ誘導する。
-- 牢屋でレイラ加入イベントを起こす。
-- レイラ未加入のままガルヴァニア洞窟北口へ行くと、兵士に止められ、牢屋へ戻るヒントを出す。
-
-Hold reason:
-
-- 現行のメイン導線、`storyStep` / `subStep`、目的ログ、マップ通行、イベント座標が連動する。
-- `ALLY 204` のタイミングをずらすと、既存の魔王城導線・ガルヴァニア洞窟進行に影響する可能性が高い。
-- 実装する場合は、フラグ設計、目的文、封鎖イベント、レイラ加入イベントを一括で入れる必要がある。
-
-Decision needed:
-
-- 採用するか。
-- 採用する場合、レイラ加入地点を光の宮殿牢屋に固定するか。
-- `storyStep` を `7-1` / `7-2` のように増やすか、既存step内のflagで管理するか。
+- 光の宮殿最奥戦では `lightPalaceCleared` のみを立て、レイラを即加入させない。
+- 地下牢で看守を倒し、世界樹の葉（item `5`）をレイラへ渡すと加入する。
+- `leilaJoined` と実加入状態を魔王城方面の通行条件に使用する。
+- 現行正本は `story.js`、`docs/main-story-plot-prism-arc-20260608.md`、`docs/implemented-story-flow-20260608.md`。
 
 ## 2. `TOWN_FIRE_VILLAGER_2_BEFORE_REWRITE`
 

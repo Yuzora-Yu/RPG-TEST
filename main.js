@@ -349,7 +349,7 @@ const App = {
         dungeonMenu: false,
         teleport: false,
         boat: false,
-        wing: true,
+        wing: false,
         fixedDungeonEndless: true
     },
 
@@ -375,7 +375,7 @@ const App = {
         106: 15, // エリーゼ
         104: 21, // ケイト
         101: 28, // ジョセフ
-        204: 40, // レイラ（光の宮殿クリア後）
+        204: 40, // レイラ（光の宮殿クリア後、地下牢で世界樹の葉を渡して加入）
         306: 49,  // シャニー（魔王城クリア後）
         
         //サブクエスト加入キャラクター
@@ -454,8 +454,8 @@ const App = {
             App.data.progress.flags.menuUnlockMigrationV2 = true;
         }
 
-        // 宿屋の転送扉は深淵へ一度でも実際に潜入した後だけ表示する。
-        // 旧セーブはtryCount/maxFloor/現在地から初潜入済み状態を復元する。
+        // 旧セーブの初回深淵進入履歴だけを復元する。
+        // 転送の扉はランダム深淵解放まで表示しないため、進入履歴とは分離する。
         if (!App.data.progress.flags.menuUnlockMigrationV3) {
             const enteredAbyss = !!App.data.progress.flags.abyssFirstEntered ||
                 Number(App.data.dungeon?.tryCount || 0) > 0 ||
@@ -463,8 +463,14 @@ const App = {
                 Number(App.data.dungeon?.storyMaxFloor || 0) > 0 ||
                 App.data.location?.area === 'ABYSS';
             App.data.progress.flags.abyssFirstEntered = enteredAbyss;
-            App.data.progress.unlocked.teleport = enteredAbyss;
             App.data.progress.flags.menuUnlockMigrationV3 = true;
+        }
+
+        // v5: 旧版で「初回深淵進入」と同時に開いていた宿屋の転送扉を、
+        // ランダム深淵解放フラグへ一本化する。既存セーブも一度だけ補正する。
+        if (!App.data.progress.flags.menuUnlockMigrationV5) {
+            App.data.progress.unlocked.teleport = !!App.data.progress.flags.abyssRandomUnlocked;
+            App.data.progress.flags.menuUnlockMigrationV5 = true;
         }
 
         // 鍛冶屋そのものの解放(smith)と、どこからでも施設へ接続できる魔道通信権限を分離する。
@@ -473,8 +479,9 @@ const App = {
             App.data.progress.unlocked.craftingMenu = App.hasItem(111);
             App.data.progress.flags.menuUnlockMigrationV4 = true;
         }
-        // 所持品を正本とし、ロード時にも表示用のunlock状態を同期する。
+        // 所持品・物語フラグを正本とし、ロード時にも表示用のunlock状態を同期する。
         App.data.progress.unlocked.craftingMenu = App.hasItem(111);
+        App.data.progress.unlocked.teleport = !!App.data.progress.flags.abyssRandomUnlocked;
 
         return App.data.progress.unlocked;
     },

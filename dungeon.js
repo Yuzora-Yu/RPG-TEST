@@ -418,7 +418,9 @@ const Dungeon = {
         const normalizedStartFloor = ABYSS_FLOOR_RULES.normalizeFloor(startFloor);
         App.data.dungeon.abyssMode = mode;
 		App.data.progress.flags.abyssFirstEntered = true;
-		App.data.progress.unlocked.teleport = true;
+		// 転送の扉はランダム深淵の解放状態だけに同期する。
+		// ギルド依頼迷宮や初回進入だけで先行表示しない。
+		App.data.progress.unlocked.teleport = !!App.data.progress.flags.abyssRandomUnlocked;
 		if (!App.data.dungeon.returnPoint) {
 			App.data.dungeon.returnPoint = {
 				x: App.data.location.x,

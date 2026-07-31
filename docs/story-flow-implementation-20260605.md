@@ -1,5 +1,7 @@
 # ストーリー実装フローまとめ 2026-06-05
 
+> 2026-07-31補正: この文書は初期実装履歴。現行仕様ではレイラは光の宮殿勝利時に即加入せず、地下牢で世界樹の葉を渡して加入する。光の翼は終焉の祭壇でアゼルガラグ討伐後にリュシオンから授かる。
+
 ## 実装方針
 
 既存の `story.js` の開始村、開始洞窟、開始洞窟ボスのイベント座標は変更せず、その後の本編を `storyStep` 3 から 10 まで拡張した。
@@ -18,7 +20,7 @@
 | 6 | 深淵入口 | `ABYSS_FIELD` x8 y7, step 5 | `abyss_unsealed` | 深淵探索解放 |
 | 7 | 大塔 | 固定ボス `401050` 勝利後 | `big_tower_clear` | 大塔結界破壊。雷の要塞へ誘導 |
 | 8 | 雷の要塞 | 固定ボス `401030` 勝利後 | `thunder_fort_clear` | ジョセフ加入。雷の要塞クリア |
-| 9 | 光の宮殿 | 固定ボス `401130` 勝利後 | `light_palace_clear` | レイラ加入。魔王城へ誘導 |
+| 9 | 光の宮殿 | 最奥戦勝利後 | `light_palace_clear` | 宮殿浄化。地下牢のレイラ救出へ誘導 |
 | 10 | 魔王城 | 固定ボス `401100` 勝利後 | `dark_castle_clear` | シャニー加入。メインストーリークリア |
 
 ## 追加会話スクリプト
@@ -32,7 +34,7 @@
 | `STORY_ABYSS_UNSEALED` | `abyss_unsealed` | ガイルとサラが深淵探索の危険性を受け止める |
 | `STORY_BIG_TOWER_CLEAR` | `big_tower_clear` | 大塔の結界破壊により雷の要塞が次目標になる |
 | `STORY_THUNDER_CLEAR` | `thunder_fort_clear` | ジョセフが自分の迷いを認め、同行する |
-| `STORY_LIGHT_CLEAR` | `light_palace_clear` | レイラが「裁きではなく救い」の導線で魔王城同行を決意 |
+| `LIGHT_PALACE_CLEAR` / `LIGHT_PALACE_LEILA_RECOVERY_JOIN` | `light_palace_clear` / `light_palace_prison_leila` | 宮殿浄化後、世界樹の葉で回復したレイラが魔王城同行を決意 |
 | `STORY_DARK_CLEAR` | `dark_castle_clear` | シャニーを敵ではなく人として呼び戻し、加入と本編クリアへ接続 |
 
 ## 加入キャラクター
@@ -45,7 +47,7 @@
 | エリーゼ | 106 | `wind_village_clear` |
 | ケイト | 104 | `water_city_clear` |
 | ジョセフ | 101 | `thunder_fort_clear` |
-| レイラ | 204 | `light_palace_clear` |
+| レイラ | 204 | `light_palace_prison_leila`（光の宮殿クリア後、世界樹の葉を消費） |
 | シャニー | 306 | `dark_castle_clear` |
 
 ## 解放フラグと入手物

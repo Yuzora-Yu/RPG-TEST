@@ -6994,7 +6994,13 @@ const ABYSS_AUTHORED_DUNGEONS = Object.freeze((() => {
     result.FINAL_ALTAR = { name: '終焉の祭壇', ...makeAuthoredAbyssFloor({
         grid: G.FINAL_ALTAR, label: '終焉の祭壇', floor: 1, rank: 120, themeKey: 'FINAL_ALTAR', mapId: 'MAP000057', entryMarker: 'S', disableRandomEncounters: true,
         floorLinks: [authoredAbyssLink(G.FINAL_ALTAR, 'S', { to: 'EXIT', label: 'クロノアビスへ戻る' })],
-        bosses: [authoredAbyssBoss(G.FINAL_ALTAR, [302080,302081,302082,302083,302084], 'abyssVegnasisDefeated', 'abyss_vegnasis_battle', 'abyss_vegnasis_clear', '五つの魂が絡み合う死幻の魔柱に挑みますか？')],
+        bosses: [{
+            ...authoredAbyssBoss(G.FINAL_ALTAR, [302080,302081,302082,302083,302084], 'abyssAzelgaragDefeated', 'abyss_final_altar_encounter', 'abyss_azelgarag_clear', '終焉の祭壇を支配するものに挑みますか？'),
+            mapSpriteVariants: [
+                { requiredFlag: 'abyssVegnasisDefeated', missingFlag: 'abyssAzelgaragDefeated', monsterId: 302100 }
+            ],
+            actionLabel: '最後の敵に挑む'
+        }],
         chests: [authoredAbyssChest(8, 20, 6), authoredAbyssChest(32, 20, 7, true)],
         mapActions: [{ ...findAuthoredAbyssMarker(G.FINAL_ALTAR, 'D'), type: 'storyEvent', eventId: 'abyss_postgame_crack', requiredFlag: 'abyssEpilogueSeen', lockedText: '亀裂はまだ固く閉ざされている。', label: 'さらに深い亀裂を調べる', log: '祭壇の奥に、底の知れない亀裂が広がっている。' }]
     }) };

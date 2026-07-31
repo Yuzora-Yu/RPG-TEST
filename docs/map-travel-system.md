@@ -24,16 +24,21 @@ This document records the current fixed-map, transport, and travel-item implemen
 - `main.js` stores discovered fixed maps in `App.data.progress.visitedFixedMaps`.
 - `App.discoverFixedMap(areaKey)` records fixed field maps and fixed dungeons when entered or recovered from existing saves.
 - `App.getAllFixedMapDiscoveryEntries()` builds the travel list used by `Sky Prism`.
-- `Sky Prism` is item `110`. It can move to discovered fixed-map destinations from non-dungeon locations and is consumed on success.
+- `Sky Prism` is item `110`. It is intentionally included in ordinary item-shop stock. It can move to discovered fixed-map destinations from non-dungeon locations and is consumed on success.
 - Dungeon travel is intentionally blocked by `App.isInDungeonForSkyPrism()` for the abyss, random dungeons, and fixed dungeons.
 
 ## Transport
 
 - `App.data.transportMode` is the current transport state: `null`, `"boat"`, or `"flying"`.
 - `Magic Boat` is item `108`. It is a key item; owning it allows world-map sea movement. Sea movement sets `transportMode` to `"boat"` and uses sea encounter settings.
-- `Light Wing` is item `109`. It is a reusable vehicle item; using it on the world map sets `transportMode` to `"flying"`.
+- `Light Wing` is item `109`. It is granted by Lycion after Azelgarag is defeated at the Final Altar and is not a Medal King reward. It is a reusable vehicle item; using it on the world map sets `transportMode` to `"flying"`.
 - While flying, normal encounters and world tile actions are suppressed. `OK` attempts landing through `App.tryLandFromFlight()`.
 - Landing is allowed on non-sea and non-mountain world tiles.
+
+## Facilities
+
+- Medal King has no story-clear prerequisite. Reaching the facility is sufficient to use the exchange.
+- The inn transfer door is hidden until random Abyss is unlocked. It appears only when `abyssRandomUnlocked` / `unlocked.teleport` is true.
 
 ## Encounters
 
