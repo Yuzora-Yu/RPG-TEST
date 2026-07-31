@@ -582,8 +582,10 @@ const Battle = {
                 const m = new Monster(base, 1.0);
                 return Battle.restoreEnemyState(m, e, base);
             }).filter(enemy => enemy !== null);
+            Battle.assignDuplicateMonsterSuffixes(Battle.enemies);
         } else {
             Battle.enemies = Battle.generateNewEnemies(isBoss || isSpecialBoss, fixedId);
+            Battle.assignDuplicateMonsterSuffixes(Battle.enemies);
             Battle.enemies.forEach(e => Battle.initBattleStatus(e));
             
             // 生成された敵データと共に eventId も保存
@@ -764,6 +766,47 @@ const Battle = {
         return JSON.parse(JSON.stringify(base));
     },
 
+    // 同名の敵が複数いる場合だけ A/B/C... を付ける。
+    // 旧処理で混成編成の全員に付いた識別文字も、ここで一度取り除いて再採番する。
+    getEnemyCanonicalDisplayName: (enemy) => {
+        if (!enemy) return '不明な魔物';
+        const stored = String(enemy.displayBaseName || '').trim();
+        if (stored) return stored;
+
+        const current = String(enemy.name || '').trim();
+        const base = Battle.getMonsterBaseById?.(enemy.baseId || enemy.id);
+        const masterName = String(base?.name || '').trim();
+        if (masterName && current.startsWith(masterName)) {
+            let modifier = current.slice(masterName.length);
+            modifier = modifier
+                .replace(/^[A-Z](?=$|[・\s])/, '')
+                .replace(/[A-Z]$/, '');
+            return `${masterName}${modifier}`.trim() || masterName;
+        }
+
+        return current.replace(/[A-Z]$/, '').trim() || masterName || '不明な魔物';
+    },
+
+    assignDuplicateMonsterSuffixes: (enemies = []) => {
+        if (!Array.isArray(enemies) || enemies.length === 0) return enemies;
+        const records = enemies.map(enemy => ({
+            enemy,
+            baseName: Battle.getEnemyCanonicalDisplayName(enemy)
+        }));
+        const counts = new Map();
+        records.forEach(({ baseName }) => counts.set(baseName, (counts.get(baseName) || 0) + 1));
+        const indices = new Map();
+        records.forEach(({ enemy, baseName }) => {
+            const index = indices.get(baseName) || 0;
+            indices.set(baseName, index + 1);
+            enemy.displayBaseName = baseName;
+            enemy.name = counts.get(baseName) > 1
+                ? `${baseName}${String.fromCharCode(65 + index)}`
+                : baseName;
+        });
+        return enemies;
+    },
+
     serializeEnemyState: (enemy) => {
         if (!enemy) return null;
         const clone = value => value == null ? value : JSON.parse(JSON.stringify(value));
@@ -786,6 +829,7 @@ const Battle = {
             exp: Number.isFinite(Number(enemy.exp)) ? Number(enemy.exp) : undefined,
             gold: Number.isFinite(Number(enemy.gold)) ? Number(enemy.gold) : undefined,
             name: enemy.name,
+            displayBaseName: enemy.displayBaseName || null,
             rank: enemy.rank,
             minF: enemy.minF,
             rewardRank: enemy.rewardRank,
@@ -840,6 +884,7 @@ const Battle = {
         if (snapshot.exp !== undefined) enemy.exp = finiteOr(snapshot.exp, base.exp || 0);
         if (snapshot.gold !== undefined) enemy.gold = finiteOr(snapshot.gold, base.gold || 0);
         enemy.name = snapshot.name || enemy.name;
+        enemy.displayBaseName = snapshot.displayBaseName || null;
         enemy.rank = snapshot.rank ?? enemy.rank ?? base.rank ?? 1;
         enemy.minF = snapshot.minF ?? enemy.minF ?? base.minF ?? enemy.rank;
         enemy.rewardRank = snapshot.rewardRank ?? enemy.rewardRank;
@@ -4400,6 +4445,7 @@ findNextActor: () => {
             if (finalForm) {
                 if (App.data?.battle?.abyssOctaprismUsed) Battle.applyOctaprismToEnemy(finalForm);
                 Battle.enemies[phaseIndex] = finalForm;
+                Battle.assignDuplicateMonsterSuffixes(Battle.enemies);
                 App.data.battle.fixedBossId = 302101;
                 App.data.battle.abyssAzelgaragPhase = 2;
                 Battle.party.forEach(member => {
@@ -5455,7 +5501,7 @@ findNextActor: () => {
             }
         }
 
-		// --- [3] 深淵の魔窟限定：勝利時1%の仲間モンスター加入判定 ---
+		// --- [3] 深淵系ダンジョン限定：撃破した対象1体ごとに1%の仲間加入判定 ---
 		const monsterRecruitResult = (typeof App.tryRecruitMonsterAfterBattle === 'function')
 			? App.tryRecruitMonsterAfterBattle(Battle.enemies)
 			: null;

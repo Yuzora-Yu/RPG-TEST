@@ -3078,16 +3078,26 @@ const App = {
                 && !enemy.isBoss && !enemy.isRare && !enemy.isSpecialBoss && !enemy.isEstark;
         });
         if (candidates.length === 0) return null;
-        if (Math.random() >= App.monsterRecruitConfig.chance) return null;
 
-        const enemy = candidates[Math.floor(Math.random() * candidates.length)];
-        const base = (typeof Battle !== 'undefined' && Battle.getMonsterBaseById) ? Battle.getMonsterBaseById(enemy.baseId || enemy.id) : null;
-        const result = App.addOrLimitBreakMonsterAlly(enemy, base);
-        if (result && result.ok) {
-            if (typeof App.save === 'function') App.save();
-            return result;
-        }
-        return null;
+        // 戦闘単位の1回抽選ではなく、撃破した加入可能個体ごとに独立して1%抽選する。
+        // 同種が複数成功した場合も各個体を処理し、2体目以降は既存仲間のLB判定になる。
+        const results = [];
+        candidates.forEach(enemy => {
+            if (Math.random() >= App.monsterRecruitConfig.chance) return;
+            const base = (typeof Battle !== 'undefined' && Battle.getMonsterBaseById)
+                ? Battle.getMonsterBaseById(enemy.baseId || enemy.id)
+                : null;
+            const result = App.addOrLimitBreakMonsterAlly(enemy, base);
+            if (result && result.ok) results.push(result);
+        });
+        if (results.length === 0) return null;
+
+        if (typeof App.save === 'function') App.save();
+        return {
+            ok: true,
+            results,
+            message: results.map(result => result.message).filter(Boolean).join('<br>')
+        };
     },
 
     ensureQuestState: () => {

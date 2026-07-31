@@ -56,8 +56,10 @@ const Dungeon = {
     memoryRealmMaxFloor: 30,
     memoryRealmBossIds: Object.freeze([
         301010, 301020, 301030, 301040, 301050, 301061, 301070, 301080, 301081, 301082,
-        301100, 303201, 303202, 303203, 303204, 303205, 303206, 303207, 303208
+        303201, 303202, 303203, 303204, 303205, 303206, 303207, 303208
     ]),
+    // 追憶の魔境では、モチーフにかかわらず支援・魔法系の5種を全エリア共通候補にする。
+    memoryRealmGlobalMonsterIds: Object.freeze([503, 507, 604, 752, 654]),
     memoryRealmRestFloors: Object.freeze([10, 20]),
     memoryRealmThemes: Object.freeze([
         Object.freeze({ id:'start-cave', label:'北東の洞穴', sourceMapIds:['MAP000001','MAP000003'], themeKey:'START_CAVE', battleBg:'battle_bg_dungeon', elements:['無','風'] }),
@@ -2064,6 +2066,10 @@ const Dungeon = {
         encounter.displayFloor = floor;
         encounter.mode = ABYSS_FLOOR_RULES.normalizeMode(encounter.mode, Dungeon.getAbyssMode());
         encounter.balanceFloor = Math.max(1, Number(encounter.balanceFloor) || Dungeon.getBalanceFloor(floor, encounter.mode));
+        if (encounter.mode === 'memory') {
+            ids = ids.filter(id => Dungeon.isMemoryRealmBossId(id));
+            if (ids.length === 0) ids = [Dungeon.memoryRealmBossIds[0] || 301010];
+        }
         const storyDisplayId = Dungeon.getAbyssStoryBossDisplayMonsterId(floor);
         const monsterData = (typeof window !== 'undefined') ? window.MonsterData : null;
         if (encounter.mode === 'story' && storyDisplayId && ids.includes(Number(storyDisplayId)) && monsterData && typeof monsterData.getBossesForFloor === 'function') {
@@ -4053,7 +4059,7 @@ const Dungeon = {
             if (rank < 1 || rank > 85 || monster?.isRare || monster?.isSpecialBoss || monster?.isEstark) return false;
             return (monster.habitats || []).some(habitat => mapIds.has(String(habitat?.mapId || '')));
         }).map(monster => Number(monster.id)).filter(Number.isFinite);
-        const unique = [...new Set(ids)];
+        const unique = [...new Set([...ids, ...Dungeon.memoryRealmGlobalMonsterIds])];
         // 生息地を持たないRank1～85のレアモンスターも、追憶として低確率で候補へ加える。
         // 通常の深淵レア抽選は使わず、強化後Rankへ正規化して出現させる。
         const rareCandidates = Array.isArray(globalThis.MonsterData?.rareMonsters)
@@ -4079,7 +4085,12 @@ const Dungeon = {
         const floor = Math.max(1, Number(Dungeon.floor || App.data?.progress?.floor || 1));
         const stored = App.data.dungeon.memoryMonsterPool;
         if (stored && Number(stored.floor) === floor && stored.themeId === theme?.id && Array.isArray(stored.ids) && stored.ids.length) {
-            return [...stored.ids];
+            const ids = [...new Set([
+                ...stored.ids.map(Number).filter(id => Number.isFinite(id) && id !== 301100),
+                ...Dungeon.memoryRealmGlobalMonsterIds
+            ])];
+            stored.ids = [...ids];
+            return ids;
         }
         const ids = Dungeon.getMemoryRealmMonsterPool(theme);
         App.data.dungeon.memoryMonsterPool = { floor, themeId: theme?.id || null, ids:[...ids] };
