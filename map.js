@@ -7847,7 +7847,7 @@ const FIXED_DUNGEON_MAPS = {
                     {
                         x: 24,
                         y: 18,
-                        itemId: 107,
+                        itemId: 102,
                         type: "item",
                         rare: true
                     }
@@ -8300,7 +8300,7 @@ const FIXED_DUNGEON_MAPS = {
                     {
                         x: 26,
                         y: 19,
-                        itemId: 107,
+                        itemId: 103,
                         type: "item",
                         rare: true
                     }
@@ -11134,7 +11134,7 @@ const FIXED_DUNGEON_MAPS = {
                     {
                         x: 26,
                         y: 18,
-                        itemId: 107,
+                        itemId: 100,
                         type: "item",
                         rare: true
                     }
@@ -15311,7 +15311,7 @@ const FIXED_DUNGEON_MAPS = {
                     {
                         x: 27,
                         y: 20,
-                        itemId: 107,
+                        itemId: 102,
                         type: "item",
                         rare: true
                     }
@@ -15589,7 +15589,7 @@ const FIXED_DUNGEON_MAPS = {
                     {
                         x: 9,
                         y: 19,
-                        itemId: 107,
+                        itemId: 103,
                         type: "item",
                         rare: true
                     }
@@ -15733,14 +15733,14 @@ const FIXED_DUNGEON_MAPS = {
                     {
                         x: 30,
                         y: 6,
-                        itemId: 107,
+                        itemId: 100,
                         type: "item",
                         rare: true
                     },
                     {
                         x: 30,
                         y: 8,
-                        itemId: 108,
+                        itemId: 101,
                         type: "item",
                         rare: true
                     }
