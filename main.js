@@ -710,7 +710,7 @@ const App = {
         return {
             location: { area: 'START_VILLAGE', x: 6, y: 5 },
             settings: App.getDefaultSettings(),
-            system: { monsterIdSchemaVersion: 4, abyssFloorSchemaVersion: 2, monsterAllySkillPointSchemaVersion: 1 },
+            system: { monsterIdSchemaVersion: 4, abyssFloorSchemaVersion: 2, monsterAllySkillPointSchemaVersion: 1, monsterAllyGrowthSchemaVersion: 1 },
             progress: { 
                 floor: 0, 
                 storyStep: 0, 
@@ -2639,6 +2639,192 @@ const App = {
 
     isMonsterAlly: (char) => !!(char && char.isMonsterAlly === true),
 
+    // 仲間モンスターの成長係数は、加入時の実ステータスそのものを使わない。
+    // 高Rank個体の数百～数千という値をそのまま growthBase にすると、通常仲間の数倍～数十倍成長するため、
+    // 通常仲間の growthBase 中央値を総量の基準にし、モンスター固有の得意・苦手だけを比率として残す。
+    monsterAllyGrowthConfig: Object.freeze({
+        schemaVersion: 1,
+        stats: Object.freeze(['hp', 'mp', 'atk', 'def', 'mag', 'mdef', 'spd']),
+        labels: Object.freeze({ hp:'HP', mp:'MP', atk:'攻撃', def:'防御', mag:'魔力', mdef:'魔防', spd:'速さ' }),
+        minMultiplier: 0.62,
+        maxMultiplier: 1.42
+    }),
+
+    getMedianNumber: (values, fallback = 1) => {
+        const sorted = (Array.isArray(values) ? values : [])
+            .map(Number).filter(Number.isFinite).sort((a, b) => a - b);
+        if (!sorted.length) return Number(fallback) || 1;
+        const mid = Math.floor(sorted.length / 2);
+        return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+    },
+
+    getMonsterAllyGrowthBenchmarks: () => {
+        if (App._monsterAllyGrowthBenchmarks) return App._monsterAllyGrowthBenchmarks;
+        const keys = App.monsterAllyGrowthConfig.stats;
+        const fallbackGrowth = { hp:43, mp:17, atk:42, def:27, mag:38, mdef:34, spd:32 };
+        const fallbackInitial = { hp:35, mp:12, atk:20, def:18, mag:20, mdef:19, spd:18 };
+        const masters = (window.CHARACTERS_DATA || []).filter(master => master && master.growthBase);
+        const growthBase = {};
+        const initialBase = {};
+        keys.forEach(key => {
+            growthBase[key] = Math.max(1, Math.round(App.getMedianNumber(
+                masters.map(master => master.growthBase?.[key]), fallbackGrowth[key]
+            )));
+            initialBase[key] = Math.max(key === 'mp' ? 0 : 1, Math.round(App.getMedianNumber(
+                masters.map(master => master[key]), fallbackInitial[key]
+            )));
+        });
+        App._monsterAllyGrowthBenchmarks = Object.freeze({
+            growthBase: Object.freeze(growthBase),
+            initialBase: Object.freeze(initialBase)
+        });
+        return App._monsterAllyGrowthBenchmarks;
+    },
+
+    // 同レベルの通常仲間が持つ、おおよその素ステータス中央値を決定論的に求める。
+    // 実キャラクターをランダム成長させて比較しないため、セーブ移行時にも同じ結果になる。
+    getMonsterAllyGrowthReferenceStats: (level = 1) => {
+        const lv = Math.max(1, Math.min(100, Math.floor(Number(level) || 1)));
+        const keys = App.monsterAllyGrowthConfig.stats;
+        const benchmarks = App.getMonsterAllyGrowthBenchmarks();
+        const masters = (window.CHARACTERS_DATA || []).filter(master => master && master.growthBase);
+        const result = {};
+        keys.forEach(key => {
+            const statMult = (key === 'hp' || key === 'mp') ? 2.0 : 1.0;
+            const flatAverage = (key === 'hp' || key === 'mp') ? 3.0 : 1.0;
+            const estimates = masters.map(master => {
+                const initial = Math.max(key === 'mp' ? 0 : 1, Number(master[key] ?? benchmarks.initialBase[key]) || 0);
+                const growth = Math.max(1, Number(master.growthBase?.[key] ?? benchmarks.growthBase[key]) || 1);
+                return initial + (lv - 1) * (growth * 0.06 * statMult + flatAverage);
+            });
+            const fallback = benchmarks.initialBase[key] + (lv - 1) * (benchmarks.growthBase[key] * 0.06 * statMult + flatAverage);
+            result[key] = Math.max(key === 'mp' ? 1 : 1, App.getMedianNumber(estimates, fallback));
+        });
+        return result;
+    },
+
+    buildMonsterAllyGrowthProfile: (sourceStats = {}, level = 1) => {
+        const keys = App.monsterAllyGrowthConfig.stats;
+        const benchmarks = App.getMonsterAllyGrowthBenchmarks();
+        const reference = App.getMonsterAllyGrowthReferenceStats(level);
+        const ratios = {};
+        keys.forEach(key => {
+            const value = Math.max(0, Number(sourceStats[key]) || 0);
+            ratios[key] = Math.max(0.03, value / Math.max(1, Number(reference[key]) || 1));
+        });
+
+        // 全体的に強い／弱いという加入時パワー差は初期値へ残し、成長総量には持ち込まない。
+        // 幾何平均からの相対比だけを使うことで、モンスターらしい能力配分を成長へ写す。
+        const geometricMean = Math.exp(keys.reduce((sum, key) => sum + Math.log(ratios[key]), 0) / keys.length);
+        const relative = {};
+        keys.forEach(key => { relative[key] = ratios[key] / Math.max(0.0001, geometricMean); });
+
+        const ordered = [...keys].sort((a, b) => relative[b] - relative[a]);
+        const strengths = ordered.slice(0, 2);
+        const weaknesses = ordered.slice(-2).reverse();
+        const multipliers = {};
+        keys.forEach(key => {
+            multipliers[key] = Math.max(0.68, Math.min(1.32, Math.pow(relative[key], 0.72)));
+        });
+
+        // 上位2項目と下位2項目には最低限の差を保証し、得意・苦手が成長結果で埋もれないようにする。
+        if (strengths[0]) multipliers[strengths[0]] = Math.max(multipliers[strengths[0]], 1.30);
+        if (strengths[1]) multipliers[strengths[1]] = Math.max(multipliers[strengths[1]], 1.17);
+        if (weaknesses[0]) multipliers[weaknesses[0]] = Math.min(multipliers[weaknesses[0]], 0.70);
+        if (weaknesses[1]) multipliers[weaknesses[1]] = Math.min(multipliers[weaknesses[1]], 0.84);
+
+        // 通常仲間の中央値と総成長量を揃えた後、個性の範囲だけを残す。
+        const baseTotal = keys.reduce((sum, key) => sum + benchmarks.growthBase[key], 0);
+        const weightedTotal = keys.reduce((sum, key) => sum + benchmarks.growthBase[key] * multipliers[key], 0);
+        const normalize = weightedTotal > 0 ? baseTotal / weightedTotal : 1;
+        keys.forEach(key => {
+            multipliers[key] = Math.max(
+                App.monsterAllyGrowthConfig.minMultiplier,
+                Math.min(App.monsterAllyGrowthConfig.maxMultiplier, multipliers[key] * normalize)
+            );
+        });
+
+        const growthBase = {};
+        keys.forEach(key => {
+            growthBase[key] = Math.max(1, Math.round(benchmarks.growthBase[key] * multipliers[key]));
+        });
+        return { growthBase, strengths, weaknesses, multipliers, reference };
+    },
+
+    applyMonsterAllyGrowthProfile: (char, options = {}) => {
+        if (!App.isMonsterAlly(char)) return { changed:false, profile:null };
+        const level = Math.max(1, Math.min(100, Math.floor(Number(char.level) || 1)));
+        const source = options.sourceStats || {
+            hp: char.hp, mp: char.mp, atk: char.atk, def: char.def,
+            mag: char.mag, mdef: char.mdef, spd: char.spd
+        };
+        const profile = App.buildMonsterAllyGrowthProfile(source, level);
+        char.growthBase = { ...profile.growthBase };
+        if (!char.monsterAllyMeta || typeof char.monsterAllyMeta !== 'object' || Array.isArray(char.monsterAllyMeta)) {
+            char.monsterAllyMeta = {};
+        }
+        char.monsterAllyMeta.growthProfileVersion = App.monsterAllyGrowthConfig.schemaVersion;
+        char.monsterAllyMeta.growthStrengths = [...profile.strengths];
+        char.monsterAllyMeta.growthWeaknesses = [...profile.weaknesses];
+        char.monsterAllyMeta.growthMultipliers = Object.fromEntries(
+            Object.entries(profile.multipliers).map(([key, value]) => [key, Number(value.toFixed(4))])
+        );
+        return { changed:true, profile };
+    },
+
+    migrateMonsterAllyGrowthV1: (data = App.data) => {
+        if (!data || typeof data !== 'object') return { changed:false, count:0 };
+        if (!data.system || typeof data.system !== 'object' || Array.isArray(data.system)) data.system = {};
+        if (Number(data.system.monsterAllyGrowthSchemaVersion || 0) >= App.monsterAllyGrowthConfig.schemaVersion) {
+            return { changed:false, count:0 };
+        }
+        let count = 0;
+        if (Array.isArray(data.characters)) {
+            data.characters.forEach(char => {
+                if (!App.isMonsterAlly(char)) return;
+                App.applyMonsterAllyGrowthProfile(char);
+                count++;
+            });
+        }
+        data.system.monsterAllyGrowthSchemaVersion = App.monsterAllyGrowthConfig.schemaVersion;
+        return { changed:true, count };
+    },
+
+    releaseMonsterAlly: (uid) => {
+        if (!App.data || !Array.isArray(App.data.characters)) return { ok:false, message:'仲間データを確認できません。' };
+        const index = App.data.characters.findIndex(char => String(char?.uid) === String(uid));
+        if (index < 0) return { ok:false, message:'対象の仲間が見つかりません。' };
+        const char = App.data.characters[index];
+        if (!App.isMonsterAlly(char)) return { ok:false, message:'仲間モンスター以外は逃がせません。' };
+        if (App.data?.battle?.active) return { ok:false, message:'戦闘中は仲間を逃がせません。' };
+
+        if (!Array.isArray(App.data.inventory)) App.data.inventory = [];
+        const returnedEquips = [];
+        const seenEquips = new Set();
+        if (char.equips && typeof char.equips === 'object') {
+            Object.keys(char.equips).forEach(part => {
+                const equip = char.equips[part];
+                if (equip && typeof equip === 'object' && !seenEquips.has(equip)) {
+                    seenEquips.add(equip);
+                    App.data.inventory.push(equip);
+                    returnedEquips.push(equip);
+                }
+                char.equips[part] = null;
+            });
+        }
+
+        if (Array.isArray(App.data.party)) {
+            App.data.party = App.data.party.map(memberUid => String(memberUid) === String(char.uid) ? null : memberUid);
+        }
+        App.data.characters.splice(index, 1);
+        App.save();
+        return {
+            ok:true,
+            name:char.name || char.job || '仲間モンスター',
+            returnedEquipCount:returnedEquips.length
+        };
+    },
+
     // 現在スキルツリーへ消費済みのSP総数を、各ツリーの累積コストから復元する。
     // 未使用SPだけを見て互換補填すると、既に習得へ使った分を二重に失うため、総獲得SPで判定する。
     getCharacterSpentSkillPoints: (char) => {
@@ -3025,6 +3211,10 @@ const App = {
 
         const traits = App.generateMonsterRecruitTraitsForLevel(joinLevel, base, enemy);
         const monsterImage = App.getMonsterRecruitImagePath(base, enemy);
+        const growthProfile = App.buildMonsterAllyGrowthProfile({
+            hp: hpMp.hp, mp: hpMp.mp, atk: atkMag.atk, def: defMdef.def,
+            mag: atkMag.mag, mdef: defMdef.mdef, spd
+        }, joinLevel);
 
         const saveAlly = {
             uid,
@@ -3070,10 +3260,7 @@ const App = {
             img: monsterImage,
             image: monsterImage,
             race: base.race || enemy.race || '魔物',
-            growthBase: {
-                hp: hpMp.hp, mp: hpMp.mp, atk: atkMag.atk, def: defMdef.def,
-                mag: atkMag.mag, mdef: defMdef.mdef, spd
-            },
+            growthBase: { ...growthProfile.growthBase },
             monsterAllyMeta: {
                 joinedAt: Date.now(),
                 originalName: base.name || enemy.name || '',
@@ -3081,7 +3268,14 @@ const App = {
                 originalIsBoss: !!(base.isBoss || enemy.isBoss),
                 originalIsSpecialBoss: !!(base.isSpecialBoss || base.isEstark || enemy.isSpecialBoss || enemy.isEstark),
                 skillPointGrantVersion: 1,
-                skillPointLevelTarget: Math.max(0, joinLevel - 1)
+                skillPointLevelTarget: Math.max(0, joinLevel - 1),
+                joinLevel,
+                growthProfileVersion: App.monsterAllyGrowthConfig.schemaVersion,
+                growthStrengths: [...growthProfile.strengths],
+                growthWeaknesses: [...growthProfile.weaknesses],
+                growthMultipliers: Object.fromEntries(
+                    Object.entries(growthProfile.multipliers).map(([key, value]) => [key, Number(value.toFixed(4))])
+                )
             }
         };
 
@@ -6260,6 +6454,10 @@ load: () => {
         // 仲間モンスターの加入時SP仕様導入前のセーブへ、一度だけ Lv-1 相当まで補填する。
         App.migrateMonsterAllySkillPointsV1(data);
 
+        // 高Rank時の実ステータスを growthBase に保存していた旧セーブを一度だけ補正する。
+        // 現在値・レベル・習得内容は変えず、以後のレベルアップ係数だけを通常仲間相当に正規化する。
+        App.migrateMonsterAllyGrowthV1(data);
+
         if (!data.book || typeof data.book !== 'object' || Array.isArray(data.book)) data.book = { monsters: [] };
         if (!Array.isArray(data.book.monsters)) data.book.monsters = [];
         if (!data.book.killCounts || typeof data.book.killCounts !== 'object' || Array.isArray(data.book.killCounts)) data.book.killCounts = {};
@@ -9306,9 +9504,7 @@ const Field = {
 
             // 回復の泉。触れただけでは回復せず、ボタン押下で初めて回復する。
             // 床の上に重ねて表示しているため、通常タイルとは別に現在地座標で判定する。
-            if (typeof Dungeon !== 'undefined' && typeof Dungeon.isHealSpringAt === 'function' && Dungeon.isHealSpringAt(x, y)) {
-                logIfNeeded('清らかな泉が湧いている。');
-                App.setAction('泉で回復', () => Dungeon.useHealSpring());
+            if (typeof Dungeon !== 'undefined' && typeof Dungeon.prepareHealSpringActionAt === 'function' && Dungeon.prepareHealSpringActionAt(x, y, { silent })) {
                 return true;
             }
 
@@ -9379,6 +9575,11 @@ const Field = {
                 }
                 if (Dungeon.prepareFixedTileAction(tile, x, y, { silent })) return true;
             }
+
+            // 泉がイベント・階段・装飾と同じマスに置かれて通行不能でも、隣接マスから利用できる。
+            // 現在地固有のイベントを優先した後に評価し、通常の階段や会話ボタンを奪わない。
+            if (typeof Dungeon !== 'undefined' && typeof Dungeon.prepareAdjacentHealSpringAction === 'function' &&
+                Dungeon.prepareAdjacentHealSpringAction({ silent })) return true;
 
             if (tile === 'V' || tile === 'H' || tile === 'A' || tile === 'J' || tile === 'R' || tile === 'B') {
                 logIfNeeded('何か気になるものがある。');

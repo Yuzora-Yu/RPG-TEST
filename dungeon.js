@@ -58,8 +58,16 @@ const Dungeon = {
         301010, 301020, 301030, 301040, 301050, 301061, 301070, 301080, 301081, 301082,
         303201, 303202, 303203, 303204, 303205, 303206, 303207, 303208
     ]),
-    // 追憶の魔境では、モチーフにかかわらず支援・魔法系の5種を全エリア共通候補にする。
-    memoryRealmGlobalMonsterIds: Object.freeze([503, 507, 604, 752, 654]),
+    // 追憶の魔境では、モチーフにかかわらず役割固定の6種を全エリア共通候補にする。
+    memoryRealmGlobalMonsterIds: Object.freeze([503, 507, 604, 752, 654, 655]),
+    memoryRealmGlobalMonsterProfiles: Object.freeze({
+        503: Object.freeze({ role:'magic', elements:Object.freeze(['火']) }),
+        507: Object.freeze({ role:'magic', elements:Object.freeze(['水']) }),
+        604: Object.freeze({ role:'magic', elements:Object.freeze(['光']) }),
+        752: Object.freeze({ role:'physical', elements:Object.freeze(['闇']) }),
+        654: Object.freeze({ role:'magic', elements:Object.freeze(['風']), allPartyHeal:true }),
+        655: Object.freeze({ role:'physical', elements:Object.freeze(['雷']) })
+    }),
     memoryRealmRestFloors: Object.freeze([10, 20]),
     memoryRealmThemes: Object.freeze([
         Object.freeze({ id:'start-cave', label:'北東の洞穴', sourceMapIds:['MAP000001','MAP000003'], themeKey:'START_CAVE', battleBg:'battle_bg_dungeon', elements:['無','風'] }),
@@ -290,6 +298,7 @@ const Dungeon = {
     isRandomAbyss: () => ABYSS_FLOOR_RULES.isRandomMode(Dungeon.getAbyssMode()),
     isMemoryRealm: () => ABYSS_FLOOR_RULES.isMemoryMode(Dungeon.getAbyssMode()),
     isMemoryRealmBossId: (id) => Dungeon.memoryRealmBossIds.includes(Number(id)),
+    getMemoryRealmGlobalMonsterProfile: (id) => Dungeon.memoryRealmGlobalMonsterProfiles?.[Number(id)] || null,
     getBalanceFloor: (floor = Dungeon.floor, mode = null) => ABYSS_FLOOR_RULES.getBalanceFloor(floor, mode || Dungeon.getAbyssMode()),
     getModeMaxFloor: (mode = Dungeon.getAbyssMode()) => {
         const dungeon = App.data?.dungeon || {};
@@ -2255,11 +2264,7 @@ const Dungeon = {
         Dungeon.tickAdventurerMovement();
 
         // 回復の泉。触れただけでは回復せず、ボタン押下で初めて回復する。
-        if (Dungeon.isHealSpringAt(x, y)) {
-            App.log('<span style="color:#80ffb0;">清らかな泉が湧いている。</span>');
-            App.setAction('泉で回復', () => Dungeon.useHealSpring());
-            return;
-        }
+        if (Dungeon.prepareHealSpringActionAt(x, y, { silent:false })) return;
 
         // 溶岩マス。通行はできるが、乗るたびに最大HPの3%ダメージ。
         // その後の通常エンカウント判定は床と同様に行う。
@@ -2622,12 +2627,41 @@ const Dungeon = {
         return springs.find(s => s && Number(s.x) === Number(x) && Number(s.y) === Number(y)) || null;
     },
 
-    isHealSpringAt: (x, y) => {
-        if (Dungeon.getFixedHealSpringAt(x, y)) return true;
+    getRandomHealSpringAt: (x, y) => {
         const spring = App.data?.dungeon?.healSpring;
-        if (!spring || !spring.active) return false;
-        if (Number(spring.floor) !== Number(Dungeon.floor)) return false;
-        return Number(spring.x) === Number(x) && Number(spring.y) === Number(y);
+        if (!spring || !spring.active) return null;
+        if (Number(spring.floor) !== Number(Dungeon.floor)) return null;
+        return Number(spring.x) === Number(x) && Number(spring.y) === Number(y) ? spring : null;
+    },
+
+    getHealSpringAt: (x, y) => Dungeon.getFixedHealSpringAt(x, y) || Dungeon.getRandomHealSpringAt(x, y),
+
+    isHealSpringAt: (x, y) => !!Dungeon.getHealSpringAt(x, y),
+
+    getAdjacentHealSpring: (x = Field.x, y = Field.y) => {
+        const points = [
+            { x:Number(x), y:Number(y) - 1 },
+            { x:Number(x) + 1, y:Number(y) },
+            { x:Number(x), y:Number(y) + 1 },
+            { x:Number(x) - 1, y:Number(y) }
+        ];
+        for (const point of points) {
+            const spring = Dungeon.getHealSpringAt(point.x, point.y);
+            if (spring) return { ...spring, x:point.x, y:point.y };
+        }
+        return null;
+    },
+
+    prepareHealSpringActionAt: (x, y, options = {}) => {
+        if (!Dungeon.isHealSpringAt(x, y)) return false;
+        if (options.silent === false) App.log('<span style="color:#80ffb0;">清らかな泉が湧いている。</span>');
+        App.setAction('泉で回復', () => Dungeon.useHealSpring(x, y));
+        return true;
+    },
+
+    prepareAdjacentHealSpringAction: (options = {}) => {
+        const spring = Dungeon.getAdjacentHealSpring(Field.x, Field.y);
+        return spring ? Dungeon.prepareHealSpringActionAt(spring.x, spring.y, options) : false;
     },
 
     isAbyssRiftAt: (x, y) => {
@@ -2637,10 +2671,10 @@ const Dungeon = {
         return Number(rift.x) === Number(x) && Number(rift.y) === Number(y);
     },
 
-    useHealSpring: () => {
-        const fixedSpring = Dungeon.getFixedHealSpringAt(Field.x, Field.y);
-        const spring = App.data?.dungeon?.healSpring;
-        if (!fixedSpring && (!spring || !spring.active)) {
+    useHealSpring: (targetX = Field.x, targetY = Field.y) => {
+        const fixedSpring = Dungeon.getFixedHealSpringAt(targetX, targetY);
+        const spring = Dungeon.getRandomHealSpringAt(targetX, targetY);
+        if (!fixedSpring && !spring) {
             if (typeof App.clearAction === 'function') App.clearAction();
             return;
         }

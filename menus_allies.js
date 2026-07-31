@@ -473,6 +473,40 @@ const MenuAllies = {
         `;
     },
 	
+    confirmReleaseMonster: () => {
+        const char = MenuAllies.getSelectedChar();
+        if (!char || !App.isMonsterAlly?.(char)) return;
+        const equippedCount = char.equips && typeof char.equips === 'object'
+            ? new Set(Object.values(char.equips).filter(Boolean)).size
+            : 0;
+        const partyText = Array.isArray(App.data?.party) && App.data.party.includes(char.uid)
+            ? '\n現在のパーティ編成からも外れます。'
+            : '';
+        const equipText = equippedCount > 0
+            ? `\n装備中の${equippedCount}個は装備袋へ戻します。`
+            : '';
+        Menu.confirm(
+            `${char.name}を逃がしますか？${partyText}${equipText}\nこの操作は取り消せません。`,
+            () => {
+                const result = App.releaseMonsterAlly?.(char.uid);
+                if (!result?.ok) {
+                    Menu.msg(result?.message || '仲間を逃がせませんでした。');
+                    return;
+                }
+                MenuAllies.selectedChar = null;
+                MenuAllies.selectedUid = null;
+                MenuAllies.targetPart = null;
+                MenuAllies.selectedEquip = null;
+                Menu.renderPartyBar?.();
+                MenuAllies.renderList();
+                const returned = Number(result.returnedEquipCount || 0) > 0
+                    ? `（装備${result.returnedEquipCount}個を袋へ戻しました）`
+                    : '';
+                Menu.msg(`${result.name}を野へ帰しました。${returned}`);
+            }
+        );
+    },
+
     renderDetail: () => {
         const c = MenuAllies.getSelectedChar();
         if (!c) {
@@ -569,6 +603,9 @@ const MenuAllies = {
             const allocBtn = (c.uid === 'p1') ? `<button class="btn" style="width:100%; margin-top:5px; background:#444400; font-size:11px;" onclick="MenuAllies.openAllocModal()">ボーナスPt振分 (残:${freeAllocPt})</button>` : '';
             const treeBtn = `<button class="btn" style="width:100%; margin-top:5px; background:#004444; font-size:11px;" onclick="MenuAllies.openTreeView()">スキル習得画面へ (SP:${c.sp||0})</button>`;
             const archiveBtn = `<button class="btn" style="width:100%; margin-top:5px; background:#602060; font-size:11px;" onclick="MenuAllyDetail.init(MenuAllies.getSelectedChar())">キャラクター詳細を見る</button>`;
+            const releaseBtn = App.isMonsterAlly?.(c)
+                ? `<button class="btn" style="width:100%; margin-top:10px; background:#5a2020; border-color:#b85a5a; color:#ffd6d6; font-size:11px;" onclick="MenuAllies.confirmReleaseMonster()">この仲間モンスターを逃がす</button>`
+                : '';
             
             const ailmentLabels = { Poison:'毒', ToxicPoison:'猛毒', Shock:'感電', Fear:'怯え', Debuff:'弱体', InstantDeath:'即死', SkillSeal:'技封', SpellSeal:'魔封', HealSeal:'癒封' };
             const environmentalElmRes = s.environmentalElmRes || {};
@@ -624,6 +661,7 @@ const MenuAllies = {
                     ${treeBtn}
                     ${allocBtn}
                     ${archiveBtn}
+                    ${releaseBtn}
                 </div>`;
         } else if (MenuAllies.currentTab === 2) {
 			// --- 装備タブ (堅牢化 + 精度統一 + 属性比較完全版) ---

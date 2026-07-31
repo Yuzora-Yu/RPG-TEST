@@ -847,6 +847,12 @@ const Battle = {
             resists: clone(enemy.resists || {}),
             mapEnemyBoost: clone(enemy.mapEnemyBoost || null),
             storyBossStatMultiplier: enemy.storyBossStatMultiplier || null,
+            memoryRealm: enemy.memoryRealm === true,
+            memoryRarePreserveDrops: enemy.memoryRarePreserveDrops === true,
+            memoryRewardRank: Number.isFinite(Number(enemy.memoryRewardRank)) ? Number(enemy.memoryRewardRank) : undefined,
+            memoryElements: clone(enemy.memoryElements || []),
+            memoryRoleProfile: enemy.memoryRoleProfile || null,
+            absoluteElementImmunity: enemy.absoluteElementImmunity === true,
             isRiftEnemy: !!enemy.isRiftEnemy,
             isBoss: !!enemy.isBoss,
             isRare: !!enemy.isRare,
@@ -906,6 +912,12 @@ const Battle = {
         enemy.resists = clone(snapshot.resists ?? enemy.resists ?? base.resists ?? {});
         enemy.mapEnemyBoost = clone(snapshot.mapEnemyBoost ?? enemy.mapEnemyBoost ?? null);
         enemy.storyBossStatMultiplier = snapshot.storyBossStatMultiplier ?? enemy.storyBossStatMultiplier ?? null;
+        enemy.memoryRealm = snapshot.memoryRealm === true || enemy.memoryRealm === true;
+        enemy.memoryRarePreserveDrops = snapshot.memoryRarePreserveDrops === true || enemy.memoryRarePreserveDrops === true;
+        enemy.memoryRewardRank = snapshot.memoryRewardRank ?? enemy.memoryRewardRank;
+        enemy.memoryElements = clone(snapshot.memoryElements ?? enemy.memoryElements ?? []);
+        enemy.memoryRoleProfile = snapshot.memoryRoleProfile ?? enemy.memoryRoleProfile ?? null;
+        enemy.absoluteElementImmunity = snapshot.absoluteElementImmunity === true || enemy.absoluteElementImmunity === true;
         enemy.isRiftEnemy = snapshot.isRiftEnemy === true;
         enemy.isBoss = !!(snapshot.isBoss || base.isBoss);
         enemy.isRare = !!(snapshot.isRare || base.isRare);
@@ -1474,9 +1486,11 @@ const Battle = {
         return newEnemies;
     },
 
-    getMemoryRealmSkillCandidates: (targetRank, elements = [], preferMagic = false) => {
+    getMemoryRealmSkillCandidates: (targetRank, elements = [], preferMagic = false, options = {}) => {
         const elementSet = new Set((elements || []).map(String));
         const rank = Math.max(91, Number(targetRank || 91));
+        const strictElements = options.strictElements === true;
+        const preferredType = options.preferredType || (preferMagic ? '魔法' : '物理');
         // Rank91～120では高位技を中心にする。MPだけでなく倍率・固定威力・手数も評価する。
         const targetMp = Math.max(20, Math.floor(rank * 0.55));
         const targetPower = Math.max(1.8, rank / 38);
@@ -1487,6 +1501,9 @@ const Battle = {
             if (skill.instantDeath || skill.escape || skill.revive || skill.fullRestore) return false;
             const target = String(skill.target || '');
             if (target.includes('味方') && !String(skill.type || '').includes('強化')) return false;
+            if (options.attackOnly === true && !['物理','魔法'].includes(String(skill.type || ''))) return false;
+            if (strictElements && elementSet.size > 0 && !elementSet.has(String(skill.elm || skill.element || ''))) return false;
+            if (options.strictType === true && String(skill.type || '') !== preferredType) return false;
             return true;
         }).map(skill => {
             const count = Math.max(1, Number(skill.count || 1));
@@ -1495,26 +1512,86 @@ const Battle = {
             score += Math.min(75, power * 18);
             score -= Math.abs(power - targetPower) * 7;
             if (elementSet.has(String(skill.elm || skill.element || ''))) score += 100;
-            if (preferMagic && skill.type === '魔法') score += 45;
-            if (!preferMagic && skill.type === '物理') score += 45;
+            if (String(skill.type || '') === preferredType) score += 45;
             if (skill.type === '特殊' || skill.type === '強化') score += 10;
             return { skill, score: score + Math.random() * 25 };
         }).sort((a,b) => b.score - a.score).map(entry => entry.skill);
     },
 
+    getMemoryRealmAllPartyHealSkill: (targetRank) => {
+        const rank = Math.max(91, Number(targetRank || 91));
+        const targetMp = Math.max(25, Math.floor(rank * 0.55));
+        const candidates = (DB.SKILLS || []).filter(skill =>
+            String(skill?.type || '') === '回復' &&
+            String(skill?.target || '').includes('全体') &&
+            skill?.revive !== true && skill?.fullRestore !== true &&
+            Number.isFinite(Number(skill?.id))
+        );
+        return candidates.map(skill => {
+            const healing = Number(skill.base || 0) + Number(skill.rate || 0) * rank;
+            const score = healing - Math.abs(Number(skill.mp || 0) - targetMp) * 1.5;
+            return { skill, score };
+        }).sort((a,b) => b.score - a.score)[0]?.skill || null;
+    },
+
+    applyMemoryRealmStatProfile: (enemy, profile) => {
+        if (!enemy || !profile) return enemy;
+        const scaleStat = (key, mult, min = 1) => {
+            const current = Number(enemy.baseStats?.[key] ?? enemy[key] ?? 0);
+            const value = Math.max(min, Math.floor(current * mult));
+            if (enemy.baseStats && key in enemy.baseStats) enemy.baseStats[key] = value;
+            enemy[key] = value;
+        };
+        if (profile.role === 'magic') {
+            scaleStat('mag', 1.35);
+            scaleStat('mdef', 1.15);
+            scaleStat('atk', 0.62);
+            enemy.mp = Math.max(1, Math.floor(Number(enemy.mp || 0) * 1.3));
+            enemy.baseMaxMp = Math.max(enemy.mp, Math.floor(Number(enemy.baseMaxMp || enemy.mp) * 1.3));
+        } else if (profile.role === 'physical') {
+            scaleStat('atk', 1.35);
+            scaleStat('def', 1.15);
+            scaleStat('mag', 0.62);
+            enemy.hp = Math.max(1, Math.floor(Number(enemy.hp || 1) * 1.12));
+            enemy.baseMaxHp = Math.max(enemy.hp, Math.floor(Number(enemy.baseMaxHp || enemy.hp) * 1.12));
+        }
+        enemy.elmAtk = JSON.parse(JSON.stringify(enemy.elmAtk || {}));
+        (profile.elements || []).forEach(element => {
+            enemy.elmAtk[element] = Math.max(Number(enemy.elmAtk[element] || 0), 30);
+        });
+        enemy.memoryRoleProfile = profile.role || null;
+        return enemy;
+    },
+
     applyMemoryRealmSkillLoadout: (enemy, base, targetRank, elements, isBoss) => {
         if (!enemy) return enemy;
-        const preferMagic = Number(base?.mag || 0) > Number(base?.atk || 0);
-        const pool = Battle.getMemoryRealmSkillCandidates(targetRank, elements, preferMagic);
-        const count = isBoss ? 6 : 3;
-        const acts = [{ id:1, rate:isBoss ? 18 : 30, condition:0 }];
+        const profile = (typeof Dungeon !== 'undefined' && typeof Dungeon.getMemoryRealmGlobalMonsterProfile === 'function')
+            ? Dungeon.getMemoryRealmGlobalMonsterProfile(base?.id ?? enemy.baseId ?? enemy.id)
+            : null;
+        const effectiveElements = profile?.elements ? [...profile.elements] : [...(elements || [])];
+        const preferMagic = profile ? profile.role === 'magic' : Number(base?.mag || 0) > Number(base?.atk || 0);
+        const pool = Battle.getMemoryRealmSkillCandidates(targetRank, effectiveElements, preferMagic, profile ? {
+            strictElements: true,
+            strictType: true,
+            attackOnly: true,
+            preferredType: profile.role === 'magic' ? '魔法' : '物理'
+        } : {});
+        const count = isBoss ? 6 : (profile ? 3 : 3);
+        const acts = [{ id:1, rate:isBoss ? 18 : (profile ? 18 : 30), condition:0 }];
         for (const skill of pool) {
             if (acts.length >= count + 1) break;
             if (acts.some(act => Number(act.id) === Number(skill.id))) continue;
-            acts.push({ id:Number(skill.id), rate:isBoss ? 20 : 24, condition:0 });
+            acts.push({ id:Number(skill.id), rate:isBoss ? 20 : (profile ? 26 : 24), condition:0 });
+        }
+        if (profile?.allPartyHeal) {
+            const healSkill = Battle.getMemoryRealmAllPartyHealSkill(targetRank);
+            if (healSkill && !acts.some(act => Number(act.id) === Number(healSkill.id))) {
+                acts.push({ id:Number(healSkill.id), rate:32, condition:0 });
+            }
         }
         enemy.acts = acts;
-        enemy.memoryElements = [...(elements || [])];
+        enemy.memoryElements = effectiveElements;
+        if (profile) Battle.applyMemoryRealmStatProfile(enemy, profile);
         return enemy;
     },
 
@@ -1532,13 +1609,74 @@ const Battle = {
         return eligible.filter(item => Math.max(1, Number(item.rank || 1)) === nearestRank);
     },
 
+    createMemoryRealmRareMonster: (base, targetRank) => {
+        if (!base) return null;
+        const original = Battle.cloneMonsterBase(base);
+        const enemy = Battle.createMonsterFromBase(original, { isBossBattle:false });
+        if (!enemy) return null;
+        const sourceRank = Math.max(1, Number(original.rank || original.minF || 1));
+        const rank = Math.max(91, Number(targetRank) || 91);
+        const rewardScale = Math.max(1, rank / sourceRank);
+        const elements = (typeof CONST !== 'undefined' && Array.isArray(CONST.ELEMENTS))
+            ? CONST.ELEMENTS
+            : ['火','水','風','雷','光','闇','混沌'];
+
+        // メタル系の個性は「低HP・極端な防御・属性無効・高報酬・逃走行動」。
+        // 通常のRank比例ステータス化を通すと全て失われるため、専用生成で保持する。
+        enemy.id = Number(original.id);
+        enemy.baseId = Number(original.id);
+        enemy.name = original.name || enemy.name;
+        enemy.image = original.image || original.img || enemy.image;
+        enemy.imageId = original.imageId ?? original.baseImageId ?? enemy.imageId;
+        enemy.rank = rank;
+        enemy.generatedFloor = rank;
+        enemy.memoryRewardRank = rank;
+        enemy.memoryRealm = true;
+        enemy.memoryRarePreserveDrops = true;
+        enemy.absoluteElementImmunity = true;
+        enemy.isBoss = false;
+        enemy.isRare = true;
+        enemy.isSpecialBoss = false;
+        enemy.isEstark = false;
+        enemy.race = original.race || enemy.race;
+
+        enemy.hp = Math.max(1, Math.floor(Number(original.hp || 1)));
+        enemy.baseMaxHp = enemy.hp;
+        enemy.mp = Math.max(0, Math.floor(Number(original.mp || 0)));
+        enemy.baseMaxMp = enemy.mp;
+        enemy.atk = Math.max(1, Math.floor(Number(original.atk || 1)));
+        enemy.def = Math.max(9999, Math.floor(Number(original.def || 9999)));
+        enemy.spd = Math.max(1, Math.floor(Number(original.spd || 1) * Math.max(1, Math.sqrt(rewardScale))));
+        enemy.mag = Math.max(1, Math.floor(Number(original.mag || 1)));
+        enemy.mdef = Math.max(9999, Math.floor(Number(original.mdef || original.def || 9999)));
+        enemy.baseStats = enemy.baseStats || {};
+        Object.assign(enemy.baseStats, { atk:enemy.atk, def:enemy.def, spd:enemy.spd, mag:enemy.mag, mdef:enemy.mdef });
+        enemy.hit = Battle.normalizeMonsterHitRate(original.hit, 100);
+        enemy.eva = Math.max(0, Number(original.eva || 0));
+        enemy.cri = Math.max(0, Number(original.cri || 0));
+        enemy.exp = Math.max(1, Math.floor(Number(original.exp || 1) * rewardScale));
+        enemy.gold = Math.max(0, Math.floor(Number(original.gold || 0) * rewardScale));
+        enemy.actCount = Math.max(1, Number(original.actCount || 1));
+        enemy.acts = JSON.parse(JSON.stringify(original.acts || [{ id:9, rate:100, condition:0 }]));
+        enemy.traits = JSON.parse(JSON.stringify(original.traits || []));
+        enemy.resists = JSON.parse(JSON.stringify(original.resists || {}));
+        enemy.elmRes = JSON.parse(JSON.stringify(original.elmRes || {}));
+        elements.forEach(element => {
+            enemy.elmRes[element] = Math.max(100, Number(enemy.elmRes[element] || 0));
+        });
+        enemy.drops = JSON.parse(JSON.stringify(original.drops || null));
+        return enemy;
+    },
+
     createMemoryRealmMonster: (base, targetRank, options = {}) => {
         if (!base) return null;
         const original = Battle.cloneMonsterBase(base);
         const storyBossAsNormal = !options.isBossBattle && typeof Dungeon !== 'undefined' && Dungeon.isMemoryRealmBossId?.(original.id);
         const rareAsNormal = !options.isBossBattle && !!original.isRare;
+        if (rareAsNormal) return Battle.createMemoryRealmRareMonster(original, targetRank);
+
         let scalingBase = Battle.cloneMonsterBase(original);
-        if (storyBossAsNormal || rareAsNormal) {
+        if (storyBossAsNormal) {
             const referenceRank = Math.max(1, Math.min(85, Number(original.rank || original.minF || 85)));
             const reference = globalThis.MonsterData?.generateBandMonster?.(referenceRank) || globalThis.MonsterData?.generateBandMonster?.(85);
             if (reference) {
@@ -2201,6 +2339,7 @@ findNextActor: () => {
         let cutRate = 0;
         let bonusRate = 0;
 
+        if (data?.elm && target.absoluteElementImmunity === true) return 0;
         if (!isFixedDamage && data && data.elm) {
             bonusRate += (Battle.getBattleStat(actor, 'elmAtk') || {})[data.elm] || 0;
             const res = (target.getStat ? target.getStat('elmRes') : (target.elmRes || {})) || {};
@@ -3672,6 +3811,7 @@ findNextActor: () => {
                         let bonusRate = 0, cutRate = 0, isImmune = false; 
                         
                         if (element) {
+                            if (targetToHit.absoluteElementImmunity === true) isImmune = true;
                             const elmAtkVal = (Battle.getBattleStat(actor, 'elmAtk') || {})[element] || 0;
                             bonusRate += elmAtkVal;
                             
@@ -3690,7 +3830,9 @@ findNextActor: () => {
                             const debuffRes = (targetToHit.battleStatus.debuffs['elmResDown'] || {}).val || 0; 
                             
                             let resVal = baseRes + buffRes - debuffRes - pierce;
-                            if (resVal >= 100) isImmune = true; else cutRate += resVal;             
+                            if (!isImmune) {
+                                if (resVal >= 100) isImmune = true; else cutRate += resVal;
+                            }
                         }
                         
                         const finDmgVal = Battle.getBattleStat(actor, 'finDmg') || 0; bonusRate += finDmgVal;
@@ -4176,8 +4318,8 @@ findNextActor: () => {
 					}
 					
 
-                    let bonusRate = 0, cutRate = 0, isImmune = false;
-                    if (!isFixedDamage && element) {
+                    let bonusRate = 0, cutRate = 0, isImmune = element && targetToHit.absoluteElementImmunity === true;
+                    if (!isImmune && !isFixedDamage && element) {
                         bonusRate += (Battle.getBattleStat(actor, 'elmAtk') || {})[element] || 0;
                         let pierce = 0;
                         if (typeof PassiveSkill !== 'undefined') {
@@ -5408,7 +5550,7 @@ findNextActor: () => {
 				const base = Battle.getMonsterBaseById(e.baseId || e.id) || e;
 				// 追憶の魔境では元モンスター固有の低Rank／物語ボス報酬を持ち込まず、
 				// 強化後Rankに連動する汎用ドロップへ統一する。
-				const monsterDrops = e.memoryRealm ? null : base.drops;
+				const monsterDrops = (e.memoryRealm && !e.memoryRarePreserveDrops) ? null : base.drops;
 				const rewardFloor = Battle.getEquipmentRewardFloor(e, floor);
 
 				// 1. レアドロップ判定 (独立)
