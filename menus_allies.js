@@ -28,6 +28,46 @@ const MenuAllies = {
 		'"': '&quot;',
 		"'": '&#39;'
 	}[ch])),
+
+    getSkillTreeStepSkillIds: (step) => {
+        const ids = [];
+        const append = (value) => {
+            if (Array.isArray(value)) {
+                value.forEach(append);
+                return;
+            }
+            const id = Number(value);
+            if (Number.isFinite(id) && id > 0 && !ids.includes(id)) ids.push(id);
+        };
+
+        append(step?.skillId);
+        append(step?.skillIds);
+        return ids;
+    },
+
+    getSkillTreeStepDescription: (step) => {
+        const rawDescription = String(step?.desc || '').trim();
+        const skillIds = MenuAllies.getSkillTreeStepSkillIds(step);
+        if (skillIds.length === 0) return rawDescription;
+
+        const skillMaster = (typeof DB !== 'undefined' && Array.isArray(DB.SKILLS))
+            ? DB.SKILLS
+            : ((typeof window !== 'undefined' && Array.isArray(window.SKILLS_DATA)) ? window.SKILLS_DATA : []);
+        const skillNames = skillIds.map(skillId => {
+            const skill = skillMaster.find(entry => Number(entry?.id) === skillId);
+            return skill?.name || `不明なスキル(ID:${skillId})`;
+        });
+
+        // desc に残っている旧スキル名は表示に使用せず、能力補正部分だけを残す。
+        const baseDescription = rawDescription
+            .replace(/\s*\/\s*[^/]*習得\s*$/u, '')
+            .replace(/^[^/]*習得\s*$/u, '')
+            .replace(/\s*\/\s*$/u, '')
+            .trim();
+        const learnDescription = `${skillNames.join('・')}習得`;
+
+        return baseDescription ? `${baseDescription} / ${learnDescription}` : learnDescription;
+    },
 	
     setHeaderButton: (label, handler) => {
         const btn = document.getElementById('allies-header-back-btn')
@@ -1839,7 +1879,8 @@ const MenuAllies = {
                 const reqTotal = treeDef.costs[currentLevel];
                 const cost = reqTotal - ((currentLevel > 0) ? treeDef.costs[currentLevel-1] : 0);
                 const canAfford = (sp >= cost);
-                html += `<div style="display:flex; justify-content:space-between; align-items:center;"><div style="font-size:12px;">次: <span style="color:#fff;">${nextStep.desc}</span></div><button class="btn" style="font-size:11px; padding:4px 8px; background:${canAfford?'#d00':'#333'};" onclick="MenuAllies.unlockTree('${key}', ${cost})" ${canAfford?'':'disabled'}>習得 SP:${cost}</button></div>`;
+                const nextStepDescription = MenuAllies.escapeHtml(MenuAllies.getSkillTreeStepDescription(nextStep));
+                html += `<div style="display:flex; justify-content:space-between; align-items:center;"><div style="font-size:12px;">次: <span style="color:#fff;">${nextStepDescription}</span></div><button class="btn" style="font-size:11px; padding:4px 8px; background:${canAfford?'#d00':'#333'};" onclick="MenuAllies.unlockTree('${key}', ${cost})" ${canAfford?'':'disabled'}>習得 SP:${cost}</button></div>`;
             } else { html += `<div style="font-size:12px; text-align:center; color:#4f4;">MASTER!</div>`; }
             div.innerHTML = html; list.appendChild(div);
         }
