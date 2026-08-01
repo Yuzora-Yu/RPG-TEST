@@ -6,6 +6,8 @@ This document records the current long-term development direction. Treat it as a
 
 Story, character relationship, and hidden-setting references are archived under `docs/story-bible/`.
 
+All implemented story regions, including the Abyss and post-surface chapters, must be stored in `story.js`. Region-specific runtime append files must not make the editor and game load different scenario sets.
+
 The current non-negotiable directives are recorded in `docs/CURRENT_PRODUCT_DIRECTIVES_20260714.md`. They supersede older notes about dialogue length, tutorial timing, cache confirmation, and future gacha use.
 
 Opening asset delivery is staged: before play begins, preload Lumina Village, the opening Jelly battle, and the complete pre-opening first-cave battle set (map tiles, regular enemies, boss, and field/dungeon battle backgrounds). Play the paper-theater opening after the first-cave clear report `PROLOGUE3` advances the save to `storyStep: 2 / subStep: 1`, then present the full-image download choice.

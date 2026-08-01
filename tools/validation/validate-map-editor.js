@@ -6,7 +6,6 @@ const root = path.resolve(__dirname, '..', '..');
 const editorSource = fs.readFileSync(path.join(root, 'map_story_editor.html'), 'utf8');
 const mapSource = fs.readFileSync(path.join(root, 'map.js'), 'utf8');
 const storySource = fs.readFileSync(path.join(root, 'story.js'), 'utf8');
-const abyssStorySource = fs.readFileSync(path.join(root, 'abyss_story.js'), 'utf8');
 const assetsSource = fs.readFileSync(path.join(root, 'assets.js'), 'utf8');
 const phaserFieldSource = fs.readFileSync(path.join(root, 'phaser-field.js'), 'utf8');
 const mainSource = fs.readFileSync(path.join(root, 'main.js'), 'utf8');
@@ -83,7 +82,7 @@ const context = { console };
 context.window = context;
 vm.createContext(context);
 vm.runInContext(
-    `${sharedRenderSource}\n${assetsSource}\n${mapSource}\n${storySource}\n${abyssStorySource}\n;globalThis.__EDITOR_VALIDATION__ = { PRISMA_ASSETS, PRISMA_MAP_CHIP_LIBRARY_GROUPS, PRISMA_MAP_CHIP_DECORATION_SLUGS, MAP_FLOOR_DECOR_THEMES, DUNGEON_WALL_FACE_THEMES, WORLD_BRIDGES, FIXED_MAPS, FIXED_DUNGEON_MAPS, STORY_MANAGER_DATA, MapRenderShared };`,
+    `${sharedRenderSource}\n${assetsSource}\n${mapSource}\n${storySource}\n;globalThis.__EDITOR_VALIDATION__ = { PRISMA_ASSETS, PRISMA_MAP_CHIP_LIBRARY_GROUPS, PRISMA_MAP_CHIP_DECORATION_SLUGS, MAP_FLOOR_DECOR_THEMES, DUNGEON_WALL_FACE_THEMES, WORLD_BRIDGES, FIXED_MAPS, FIXED_DUNGEON_MAPS, STORY_MANAGER_DATA, MapRenderShared };`,
     context,
     { filename: 'editor-runtime-data.js' }
 );

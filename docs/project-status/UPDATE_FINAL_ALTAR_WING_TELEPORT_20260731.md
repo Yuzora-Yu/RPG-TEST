@@ -39,7 +39,7 @@
 
 ## 会話・イベントログCSV
 
-- `story.js` と `abyss_story.js` の全スクリプトを収録した。
+- 当時の `story.js` と `abyss_story.js` の全スクリプトを収録した。現在は両者を `story.js` に統合済み。
 - 村人を含む会話951行、ストーリーイベントLOG 26行、直接 `App.log` 78行、マップ定義の `log` / `inspectLog` / `lockedLog` / `openLog` / `lockedText` 218行を出力した。
 - 合計1273行。イベント参照、分岐、戦闘、フラグ、加入、アイテム、解放、会話内フィールド演出を `演出備考` にコード形式で記録した。
 - 再出力用に `tools/export-story-dialogue-csv.js` を追加した。

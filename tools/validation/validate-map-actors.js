@@ -4,8 +4,7 @@ const vm = require('vm');
 
 const root = path.resolve(__dirname, '..', '..');
 const mapSource = fs.readFileSync(path.join(root, 'map.js'), 'utf8');
-const storySource = fs.readFileSync(path.join(root, 'story.js'), 'utf8')
-    + '\n' + fs.readFileSync(path.join(root, 'abyss_story.js'), 'utf8');
+const storySource = fs.readFileSync(path.join(root, 'story.js'), 'utf8');
 const mainSource = fs.readFileSync(path.join(root, 'main.js'), 'utf8');
 const context = { console, window: {} };
 context.globalThis = context;

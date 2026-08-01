@@ -881,7 +881,11 @@ const StoryManager = {
         const pending = App?.data?.progress?.pendingPostBattleBossVisual || null;
         const pendingMatches = pending && String(pending.eventId || '') === targetEventId &&
             String(pending.phase || 'actions') === String(phase || 'actions');
-        if (pendingMatches) {
+        const currentProgressKey = typeof Field !== 'undefined' && typeof Field.getCurrentProgressMapKey === 'function'
+            ? Field.getCurrentProgressMapKey()
+            : null;
+        const pendingMapMatches = !pending?.progressKey || !currentProgressKey || String(pending.progressKey) === String(currentProgressKey);
+        if (pendingMatches && pendingMapMatches) {
             const monsterId = Number(spriteConfig.monsterId || pending.monsterId || pending.monsterIds?.[0] || 0);
             const pos = pending.position;
             if (Number.isFinite(monsterId) && monsterId > 0 && Number.isFinite(Number(pos?.x)) && Number.isFinite(Number(pos?.y))) {
@@ -942,27 +946,16 @@ const StoryManager = {
         if (!this.eventHasConversationAction(event, phase)) return false;
         // 明示的なフィールド演出を持つイベントは、そのスクリプト側の SHOW/CLEANUP に任せる。
         if (this.eventHasFieldVisualFlow(eventId, phase)) return false;
-        if (typeof Field === 'undefined' || typeof Field.putFieldVisualSprite !== 'function') return false;
+        if (typeof Field === 'undefined') return false;
 
         const ctx = this.getPostBattleBossVisualContext(eventId, event, phase);
         if (!ctx) return false;
-        const src = (typeof Field.getMonsterMapSpriteSrc === 'function')
-            ? Field.getMonsterMapSpriteSrc(ctx.monsterId)
-            : ((typeof MonsterData !== 'undefined' && typeof MonsterData.getImagePath === 'function')
-                ? MonsterData.getImagePath(ctx.monsterId)
-                : window.PRISMA_ASSETS?.getMonsterImagePath?.(ctx.monsterId));
-        if (!src) return false;
-        const img = Field.putFieldVisualSprite(
-            'field-visual-post-battle-boss',
-            src,
-            { x: ctx.x, y: ctx.y },
-            ctx.config?.size || spriteConfig.size || 2,
-            `z-index:${ctx.config?.zIndex ?? spriteConfig.zIndex ?? 4};`
-        );
-        if (img?.dataset) {
-            img.dataset.postBattleEventId = String(eventId || '');
-            img.dataset.postBattlePhase = String(phase || 'actions');
-        }
+        // 戦後ボスはカットシーン用DOM最前面レイヤーではなく、通常MAPオブジェクトと
+        // 同じ行深度で描画する。Phaser/Canvas双方の通常描画が pending context を参照する。
+        const legacyImg = typeof document !== 'undefined' ? document.getElementById('field-visual-post-battle-boss') : null;
+        if (legacyImg) legacyImg.remove();
+        if (typeof Field.refreshVisualState === 'function') Field.refreshVisualState();
+        else if (typeof Field.render === 'function') Field.render();
         return true;
     },
 
@@ -980,6 +973,8 @@ const StoryManager = {
         if (pending && eventMatches && phaseMatches) {
             delete progress.pendingPostBattleBossVisual;
             if (typeof App !== 'undefined' && typeof App.save === 'function') App.save();
+            if (typeof Field !== 'undefined' && typeof Field.refreshVisualState === 'function') Field.refreshVisualState();
+            else if (typeof Field !== 'undefined' && typeof Field.render === 'function') Field.render();
         }
     },
 	/**

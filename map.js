@@ -2434,16 +2434,22 @@ const FIXED_OVERLAY_BASE_TILES = {
 };
 
 const FIXED_MAPS = {
-    CARMENA: {
-        name: "最果ての地カルメナ",
-        themeKey: "ABYSS_FIELD",
-        tileOverrides: {},
-        width: 39,
-        height: 29,
-        entryPoint: { x: 19, y: 25 },
-        skyPrismEntryPoint: { x: 19, y: 25 },
-        battleBg: "battle_bg_abyss_boss",
-        tiles: [
+    "CARMENA": {
+        "name": "最果ての地カルメナ",
+        "themeKey": "ABYSS_FIELD",
+        "tileOverrides": {},
+        "width": 39,
+        "height": 29,
+        "entryPoint": {
+            "x": 19,
+            "y": 25
+        },
+        "skyPrismEntryPoint": {
+            "x": 19,
+            "y": 25
+        },
+        "battleBg": "battle_bg_abyss_boss",
+        "tiles": [
             "WWWWWWWWWWWWWWWWWWWSWWWWWWWWWWWWWWWWWWW",
             "WWWWWWWWWWWWWWWWWGGGGGGGWWWWWWWWWWWWWWW",
             "WWWWWWWWWWWWWWGGGGBTBGGGGGGGWWWWWWWWWWW",
@@ -2474,8 +2480,8 @@ const FIXED_MAPS = {
             "WWWWWWWWWWWWWWWWWGGTGGWWWWWWWWWWWWWWWWW",
             "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
         ],
-        nextActorPlacementId: 5,
-        mapActors: [
+        "nextActorPlacementId": 5,
+        "mapActors": [
             {
                 "placementId": 1,
                 "actorId": "abyss_carmena_resident_old_kingdom",
@@ -2561,7 +2567,7 @@ const FIXED_MAPS = {
                 ]
             }
         ],
-        mapActions: [
+        "mapActions": [
             {
                 "x": 10,
                 "y": 20,
@@ -2595,55 +2601,103 @@ const FIXED_MAPS = {
                 "baseTile": "T"
             }
         ],
-        blockingObjects: [
-            { x: 19, y: 2, missingFlag: "abyssCarmenaGateCleared", imageKey: "overlay_light_prison_gate_horizontal", drawWidth: 32, drawHeight: 32, log: "二将の背後で、北門が固く閉ざされている。" }
-        ],
-        bosses: [
+        "blockingObjects": [
             {
-                x: 18,
-                y: 2,
-                monsterId: [302001, 302000],
-                mapSpriteMonsterId: 302001,
-                defeatGroupId: "carmena_gate_generals",
-                clearedFlag: "abyssCarmenaGateCleared",
-                startEventId: "abyss_carmena_gate_battle",
-                storyEventId: "abyss_carmena_gate_clear",
-                actionLabel: "二将に挑む",
-                challengeText: "グレン将軍とレオン将軍が同時に武器を構えた。\n二人を相手に戦いますか？"
-            },
-            {
-                x: 20,
-                y: 2,
-                monsterId: [302001, 302000],
-                mapSpriteMonsterId: 302000,
-                defeatGroupId: "carmena_gate_generals",
-                clearedFlag: "abyssCarmenaGateCleared",
-                startEventId: "abyss_carmena_gate_battle",
-                storyEventId: "abyss_carmena_gate_clear",
-                actionLabel: "二将に挑む",
-                challengeText: "レオン将軍とグレン将軍が同時に武器を構えた。\n二人を相手に戦いますか？"
+                "x": 19,
+                "y": 2,
+                "missingFlag": "abyssCarmenaGateCleared",
+                "imageKey": "overlay_light_prison_gate_horizontal",
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "log": "二将の背後で、北門が固く閉ざされている。"
             }
         ],
-        exitPoint: { area: "ABYSS_WORLD", worldKey: "ABYSS_WORLD", x: 24, y: 58 },
-        worldExits: [
-            { x: 19, y: 0, area: "ABYSS_WORLD", worldKey: "ABYSS_WORLD", worldX: 24, worldY: 58, requiredFlag: "abyssCarmenaGateCleared", lockedText: "二将が門を守っている。" }
-        ]
-    },
-    VISTA: {
-        name: "深淵都市ビスタ",
-        themeKey: "DARK_CASTLE",
-        width: 43,
-        height: 31,
-        entryPoint: { x: 3, y: 27 },
-        skyPrismEntryPoint: { x: 3, y: 27 },
-        entryPoints: {
-            southwest: { x: 3, y: 27 },
-            northeast: { x: 39, y: 3 },
-            underpassSouth: { x: 11, y: 20 },
-            underpassNorth: { x: 32, y: 9 }
+        "bosses": [
+            {
+                "x": 18,
+                "y": 2,
+                "monsterId": [
+                    302001,
+                    302000
+                ],
+                "mapSpriteMonsterId": 302001,
+                "defeatGroupId": "carmena_gate_generals",
+                "clearedFlag": "abyssCarmenaGateCleared",
+                "startEventId": "abyss_carmena_gate_battle",
+                "storyEventId": "abyss_carmena_gate_clear",
+                "actionLabel": "二将に挑む",
+                "challengeText": "グレン将軍とレオン将軍が同時に武器を構えた。\n二人を相手に戦いますか？"
+            },
+            {
+                "x": 20,
+                "y": 2,
+                "monsterId": [
+                    302001,
+                    302000
+                ],
+                "mapSpriteMonsterId": 302000,
+                "defeatGroupId": "carmena_gate_generals",
+                "clearedFlag": "abyssCarmenaGateCleared",
+                "startEventId": "abyss_carmena_gate_battle",
+                "storyEventId": "abyss_carmena_gate_clear",
+                "actionLabel": "二将に挑む",
+                "challengeText": "レオン将軍とグレン将軍が同時に武器を構えた。\n二人を相手に戦いますか？"
+            }
+        ],
+        "exitPoint": {
+            "area": "ABYSS_WORLD",
+            "worldKey": "ABYSS_WORLD",
+            "x": 24,
+            "y": 58
         },
-        battleBg: "battle_bg_field",
-        tiles: [
+        "worldExits": [
+            {
+                "x": 19,
+                "y": 0,
+                "area": "ABYSS_WORLD",
+                "worldKey": "ABYSS_WORLD",
+                "worldX": 24,
+                "worldY": 58,
+                "requiredFlag": "abyssCarmenaGateCleared",
+                "lockedText": "二将が門を守っている。"
+            }
+        ],
+        "mapId": "MAP000054",
+        "floorId": "MAP000054-00"
+    },
+    "VISTA": {
+        "name": "深淵都市ビスタ",
+        "themeKey": "DARK_CASTLE",
+        "width": 43,
+        "height": 31,
+        "entryPoint": {
+            "x": 3,
+            "y": 27
+        },
+        "skyPrismEntryPoint": {
+            "x": 3,
+            "y": 27
+        },
+        "entryPoints": {
+            "southwest": {
+                "x": 3,
+                "y": 27
+            },
+            "northeast": {
+                "x": 39,
+                "y": 3
+            },
+            "underpassSouth": {
+                "x": 11,
+                "y": 20
+            },
+            "underpassNorth": {
+                "x": 32,
+                "y": 9
+            }
+        },
+        "battleBg": "battle_bg_field",
+        "tiles": [
             "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
             "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
             "WWWWWWWWGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGWWW",
@@ -2676,8 +2730,8 @@ const FIXED_MAPS = {
             "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
             "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
         ],
-        nextActorPlacementId: 6,
-        mapActors: [
+        "nextActorPlacementId": 6,
+        "mapActors": [
             {
                 "placementId": 1,
                 "actorId": "abyss_vista_recruitment_guide",
@@ -2784,7 +2838,7 @@ const FIXED_MAPS = {
                 ]
             }
         ],
-        mapActions: [
+        "mapActions": [
             {
                 "x": 9,
                 "y": 5,
@@ -2841,21 +2895,54 @@ const FIXED_MAPS = {
                 "label": "地下通路へ下りる"
             }
         ],
-        exitPoint: { area: "ABYSS_WORLD", worldKey: "ABYSS_WORLD", x: 37, y: 40 },
-        worldExits: [
-            { x: 1, y: 27, area: "ABYSS_WORLD", worldKey: "ABYSS_WORLD", worldX: 37, worldY: 40 },
-            { x: 41, y: 3, area: "ABYSS_WORLD", worldKey: "ABYSS_WORLD", worldX: 40, worldY: 37 }
-        ]
+        "exitPoint": {
+            "area": "ABYSS_WORLD",
+            "worldKey": "ABYSS_WORLD",
+            "x": 37,
+            "y": 40
+        },
+        "worldExits": [
+            {
+                "x": 1,
+                "y": 27,
+                "area": "ABYSS_WORLD",
+                "worldKey": "ABYSS_WORLD",
+                "worldX": 37,
+                "worldY": 40
+            },
+            {
+                "x": 41,
+                "y": 3,
+                "area": "ABYSS_WORLD",
+                "worldKey": "ABYSS_WORLD",
+                "worldX": 40,
+                "worldY": 37
+            }
+        ],
+        "mapId": "MAP000055",
+        "floorId": "MAP000055-00"
     },
-    VISTA_UNDERPASS: {
-        name: "深淵都市ビスタ 地下通路",
-        themeKey: "DARK_CASTLE",
-        width: 35,
-        height: 21,
-        entryPoint: { x: 3, y: 18 },
-        entryPoints: { south: { x: 3, y: 18 }, north: { x: 30, y: 3 } },
-        battleBg: "battle_bg_dungeon",
-        tiles: [
+    "VISTA_UNDERPASS": {
+        "name": "深淵都市ビスタ 地下通路",
+        "themeKey": "DARK_CASTLE",
+        "width": 35,
+        "height": 21,
+        "entryPoint": {
+            "x": 3,
+            "y": 18
+        },
+        "entryPoints": {
+            "south": {
+                "x": 3,
+                "y": 18
+            },
+            "north": {
+                "x": 30,
+                "y": 3
+            }
+        },
+        "battleBg": "battle_bg_dungeon",
+        "tiles": [
             "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
             "WWWWWWWWWWWWWWWWWWWWWWWWWWTTTTTTTWW",
             "WWWWWWWWWWWWWWWWWWWWWWWWWWTTTTTTTWW",
@@ -2878,8 +2965,8 @@ const FIXED_MAPS = {
             "WWTTTTTTTWWWWWWWWWWWWWWWWWWWWWWWWWW",
             "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
         ],
-        nextActorPlacementId: 3,
-        mapActors: [
+        "nextActorPlacementId": 3,
+        "mapActors": [
             {
                 "placementId": 1,
                 "actorId": "abyss_vista_underpass_worker",
@@ -2923,7 +3010,7 @@ const FIXED_MAPS = {
                 ]
             }
         ],
-        mapActions: [
+        "mapActions": [
             {
                 "x": 3,
                 "y": 18,
@@ -2941,25 +3028,57 @@ const FIXED_MAPS = {
                 "label": "北区へ上がる"
             }
         ],
-        chests: [
-            { x: 5, y: 6, itemId: 14, type: "item", baseTile: "T" },
-            { x: 29, y: 15, itemId: 7, type: "item", rare: true, baseTile: "T" }
+        "chests": [
+            {
+                "x": 5,
+                "y": 6,
+                "itemId": 14,
+                "type": "item",
+                "baseTile": "T"
+            },
+            {
+                "x": 29,
+                "y": 15,
+                "itemId": 7,
+                "type": "item",
+                "rare": true,
+                "baseTile": "T"
+            }
         ],
-        mapId: "MAP000061",
-        floorId: "MAP000061-00",
-        useHabitatEncounters: true
+        "mapId": "MAP000061",
+        "floorId": "MAP000061-00",
+        "useHabitatEncounters": true
     },
-    LEGACION: {
-        worldKey: "ABYSS_WORLD",
-        name: "混沌魔城レガシオン",
-        themeKey: "DARK_CASTLE",
-        width: 49,
-        height: 37,
-        entryPoint: { x: 24, y: 34 },
-        skyPrismEntryPoint: { x: 24, y: 34 },
-        entryPoints: { south: { x: 24, y: 34 }, north: { x: 24, y: 2 }, upper: { x: 24, y: 6 } },
-        battleBg: "battle_bg_lastboss",
-        tiles: [
+    "LEGACION": {
+        "worldKey": "ABYSS_WORLD",
+        "name": "混沌魔城レガシオン",
+        "themeKey": "DARK_CASTLE",
+        "width": 49,
+        "height": 37,
+        "entryPoint": {
+            "x": 24,
+            "y": 34
+        },
+        "skyPrismEntryPoint": {
+            "x": 24,
+            "y": 34
+        },
+        "entryPoints": {
+            "south": {
+                "x": 24,
+                "y": 34
+            },
+            "north": {
+                "x": 24,
+                "y": 2
+            },
+            "upper": {
+                "x": 24,
+                "y": 6
+            }
+        },
+        "battleBg": "battle_bg_lastboss",
+        "tiles": [
             "WWWWWWWWWWWWWWWWWWWWWWWWSWWWWWWWWWWWWWWWWWWWWWWWW",
             "WWWWWGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGWWWWW",
             "WWWWWGGGGGGGGGGGGGGGGGGGTGGGGGGGGGGGGGGGGGGGWWWWW",
@@ -2998,8 +3117,8 @@ const FIXED_MAPS = {
             "WWWWWWWWWWWWWWGGGGGGGGGGTGGGGGGGGGGWWWWWWWWWWWWWW",
             "WWWWWWWWWWWWWWWWWWWWWWWWSWWWWWWWWWWWWWWWWWWWWWWWW"
         ],
-        nextActorPlacementId: 6,
-        mapActors: [
+        "nextActorPlacementId": 6,
+        "mapActors": [
             {
                 "placementId": 1,
                 "actorId": "abyss_legacion_arena_notice",
@@ -3106,7 +3225,7 @@ const FIXED_MAPS = {
                 ]
             }
         ],
-        mapActions: [
+        "mapActions": [
             {
                 "x": 8,
                 "y": 28,
@@ -3157,54 +3276,85 @@ const FIXED_MAPS = {
                 "label": "地下神殿へ下りる"
             }
         ],
-        exitPoint: { area: "ABYSS_WORLD", worldKey: "ABYSS_WORLD", x: 42, y: 21 },
-        worldExits: [
-            { x: 24, y: 36, area: "ABYSS_WORLD", worldKey: "ABYSS_WORLD", worldX: 42, worldY: 21 },
-            { x: 24, y: 0, area: "ABYSS_WORLD", worldKey: "ABYSS_WORLD", worldX: 43, worldY: 19, requiredFlag: "abyssLegacionNorthGateOpen", lockedText: "北門はまだ閉ざされている。" }
-        ]
-    },
-    LEGACION_UPPER_GALLERY: {
-        worldKey: "ABYSS_WORLD",
-        name: "混沌魔城レガシオン 上層回廊",
-        themeKey: "DARK_CASTLE",
-        width: 41,
-        height: 19,
-        entryPoint: { x: 20, y: 16 },
-        entryPoints: {
-            center: { x: 20, y: 16 },
-            westUpper: { x: 5, y: 9 },
-            eastUpper: { x: 35, y: 9 }
+        "exitPoint": {
+            "area": "ABYSS_WORLD",
+            "worldKey": "ABYSS_WORLD",
+            "x": 42,
+            "y": 21
         },
-        battleBg: "battle_bg_lastboss",
-        tiles: [
-            "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-            "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-            "WWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
-            "WWTTCTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTCTTWW",
-            "WWTTTTTTTWTTTTTTTTTTTTTTTTTTTTTWTTTTTTTWW",
-            "WWTTTTTTTWWWWWWWTWWWTWWWTWWWWWWWTTTTTTTWW",
-            "WWTTTTTTTWTTTTTTTTTTTTTTTTTTTTTWTTTTTTTWW",
-            "WWTTTTTTTWTTTTTTTTTTTTTTTTTTTTTWTTTTTTTWW",
-            "WWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
-            "WWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
-            "WWTTTTTTTWTTTTTTTTTTTTTTTTTTTTTWTTTTTTTWW",
-            "WWTTTTTTTWTTTTTTTTTTTTTTTTTTTTTWTTTTTTTWW",
-            "WWTTTTTTTWTTTTTTTTTTTTTTTTTTTTTWTTTTTTTWW",
-            "WWTTTTTTTWWWWWWWTWWWTWWWTWWWWWWWTTTTTTTWW",
-            "WWTTTTTTTWTTTTTTTTTTTTTTTTTTTTTWTTTTTTTWW",
-            "WWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
-            "WWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
-            "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-            "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+        "worldExits": [
+            {
+                "x": 24,
+                "y": 36,
+                "area": "ABYSS_WORLD",
+                "worldKey": "ABYSS_WORLD",
+                "worldX": 42,
+                "worldY": 21
+            },
+            {
+                "x": 24,
+                "y": 0,
+                "area": "ABYSS_WORLD",
+                "worldKey": "ABYSS_WORLD",
+                "worldX": 43,
+                "worldY": 19,
+                "requiredFlag": "abyssLegacionNorthGateOpen",
+                "lockedText": "北門はまだ閉ざされている。"
+            }
         ],
-        nextActorPlacementId: 3,
-        mapActors: [
+        "mapId": "MAP000056",
+        "floorId": "MAP000056-00"
+    },
+    "LEGACION_UPPER_GALLERY": {
+        "worldKey": "ABYSS_WORLD",
+        "mapKind": "castleInterior",
+        "regionKey": "LEGACION",
+        "name": "混沌魔城レガシオン 上層回廊",
+        "themeKey": "DARK_CASTLE",
+        "width": 29,
+        "height": 13,
+        "entryPoint": {
+            "x": 14,
+            "y": 10
+        },
+        "entryPoints": {
+            "center": {
+                "x": 14,
+                "y": 10
+            },
+            "westUpper": {
+                "x": 3,
+                "y": 6
+            },
+            "eastUpper": {
+                "x": 25,
+                "y": 6
+            }
+        },
+        "battleBg": "battle_bg_lastboss",
+        "tiles": [
+            "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+            "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+            "WWTTTTTTTTTTTTTTTTTTTTTTTTTWW",
+            "WWTTCTTTTTTTTTTTTTTTTTTCTTTWW",
+            "WWTTTTTTTTTTTTTTTTTTTTTTTTTWW",
+            "WWTTTTTTTTTTTTTTTTTTTTTTTTTWW",
+            "WWTTTTTTTTTTTTTTTTTTTTTTTTTWW",
+            "WWTTTTTTTTTTTTTTTTTTTTTTTTTWW",
+            "WWTTTTTTTTTTTTTTTTTTTTTTTTTWW",
+            "WWTTTTTTTTTTTTTTTTTTTTTTTTTWW",
+            "WWTTTTTTTTTTTTTTTTTTTTTTTTTWW",
+            "WWWWWWWWWWWWWWTWWWWWWWWWWWWWW",
+            "WWWWWWWWWWWWWWSWWWWWWWWWWWWWW"
+        ],
+        "nextActorPlacementId": 3,
+        "mapActors": [
             {
                 "placementId": 1,
                 "actorId": "abyss_legacion_gallery_page",
                 "name": "小姓",
-                "x": 8,
-                "y": 9,
+                "x": 7,
+                "y": 7,
                 "imageKey": "overlay_npc_child",
                 "baseTile": "T",
                 "states": [
@@ -3224,8 +3374,8 @@ const FIXED_MAPS = {
                 "placementId": 2,
                 "actorId": "abyss_legacion_archivist",
                 "name": "記録官",
-                "x": 32,
-                "y": 9,
+                "x": 21,
+                "y": 7,
                 "imageKey": "overlay_npc_villager",
                 "baseTile": "T",
                 "states": [
@@ -3242,10 +3392,10 @@ const FIXED_MAPS = {
                 ]
             }
         ],
-        mapActions: [
+        "mapActions": [
             {
-                "x": 20,
-                "y": 16,
+                "x": 14,
+                "y": 10,
                 "type": "fixedMap",
                 "target": "LEGACION",
                 "entryKey": "upper",
@@ -3254,82 +3404,96 @@ const FIXED_MAPS = {
                 "label": "城内一階へ戻る"
             },
             {
-                "x": 20,
+                "x": 14,
                 "y": 2,
                 "type": "fixedMap",
                 "target": "LEGACION_THRONE",
-                "returnX": 20,
-                "returnY": 3,
                 "label": "謁見の間へ進む"
             },
             {
-                "x": 4,
-                "y": 8,
+                "x": 2,
+                "y": 6,
                 "type": "fixedMap",
                 "target": "LEGACION_WEST_TOWER",
-                "returnX": 5,
-                "returnY": 8,
                 "label": "西塔へ入る"
             },
             {
-                "x": 36,
-                "y": 8,
+                "x": 26,
+                "y": 6,
                 "type": "fixedMap",
                 "target": "LEGACION_EAST_TOWER",
-                "returnX": 35,
-                "returnY": 8,
                 "label": "東塔へ入る"
             }
         ],
-        chests: [
-            { x: 4, y: 3, itemId: 14, type: "item", baseTile: "T" },
-            { x: 36, y: 3, itemId: 7, type: "item", rare: true, baseTile: "T" }
+        "chests": [
+            {
+                "x": 4,
+                "y": 3,
+                "itemId": 14,
+                "type": "item",
+                "baseTile": "T"
+            },
+            {
+                "x": 24,
+                "y": 3,
+                "itemId": 7,
+                "type": "item",
+                "rare": true,
+                "baseTile": "T"
+            }
         ],
-        mapId: "MAP000062",
-        floorId: "MAP000062-00",
-        useHabitatEncounters: true
+        "floorDecorations": [
+            {
+                "type": "castle_carpet",
+                "x": 13,
+                "y": 2,
+                "width": 3,
+                "height": 9,
+                "blocking": false
+            }
+        ],
+        "mapId": "MAP000062",
+        "floorId": "MAP000062-00",
+        "useHabitatEncounters": false
     },
-    LEGACION_WEST_TOWER: {
-        worldKey: "ABYSS_WORLD",
-        name: "混沌魔城レガシオン 西塔",
-        themeKey: "DARK_CASTLE",
-        width: 23,
-        height: 23,
-        entryPoint: { x: 11, y: 20 },
-        battleBg: "battle_bg_lastboss",
-        tiles: [
-            "WWWWWWWWWWWWWWWWWWWWWWW",
-            "WWWWWWWWWWWWWWWWWWWWWWW",
-            "WWTTTTTTTTTTTTTTTTTTTWW",
-            "WWTTTTTTTTTTTTTTTTTTTWW",
-            "WWTTCTTTTTTTTTTTTTTTTWW",
-            "WWTTTWWWWWWTWWWWWWTTTWW",
-            "WWTTTWWWWWWTWWWWWWTTTWW",
-            "WWTTTWWWWWWTWWWWWWTTTWW",
-            "WWTTTWWWTTTTTTTWWWTTTWW",
-            "WWTTTWWWTTTTTTTWWWTTTWW",
-            "WWTTTWWWTTTTTTTWWWTTTWW",
-            "WWTTTTTTTTTCTTTTTTTTTWW",
-            "WWTTTWWWTTTTTTTWWWTTTWW",
-            "WWTTTWWWTTTTTTTWWWTTTWW",
-            "WWTTTWWWTTTTTTTWWWTTTWW",
-            "WWTTTWWWWWWTWWWWWWTTTWW",
-            "WWTTTWWWWWWTWWWWWWTTTWW",
-            "WWTTTWWWWWWTWWWWWWTTTWW",
-            "WWTTTTTTTTTTTTTTTTTTTWW",
-            "WWTTTTTTTTTTTTTTTTTTTWW",
-            "WWTTTTTTTTTTTTTTTTTTTWW",
-            "WWWWWWWWWWWWWWWWWWWWWWW",
-            "WWWWWWWWWWWWWWWWWWWWWWW"
+    "LEGACION_WEST_TOWER": {
+        "worldKey": "ABYSS_WORLD",
+        "mapKind": "castleInterior",
+        "regionKey": "LEGACION",
+        "name": "混沌魔城レガシオン 西塔",
+        "themeKey": "DARK_CASTLE",
+        "width": 17,
+        "height": 15,
+        "entryPoint": {
+            "x": 8,
+            "y": 12
+        },
+        "battleBg": "battle_bg_lastboss",
+        "tiles": [
+            "WWWWWWWWWWWWWWWWW",
+            "WWWWWWWWWWWWWWWWW",
+            "WWTTTTTTTTTTTTTWW",
+            "WWTTCTTTTTTCTTTWW",
+            "WWTTTWWWTWWWTTTWW",
+            "WWTTTWWWTWWWTTTWW",
+            "WWTTTTTTTTTTTTTWW",
+            "WWTTTTTTTTTTTTTWW",
+            "WWTTTTTTTTTTTTTWW",
+            "WWTTTWWWTWWWTTTWW",
+            "WWTTTWWWTWWWTTTWW",
+            "WWTTTTTTTTTTTTTWW",
+            "WWTTTTTTTTTTTTTWW",
+            "WWWWWWWWTWWWWWWWW",
+            "WWWWWWWWSWWWWWWWW"
         ],
-        nextActorPlacementId: 2,
-        mapActors: [
+        "nextActorPlacementId": 2,
+        "mapActors": [
             {
                 "placementId": 1,
                 "actorId": "abyss_legacion_west_sentry",
                 "name": "衛兵",
-                "x": 5,
-                "y": 11,
+                "x": 4,
+                "y": 7,
                 "imageKey": "overlay_npc_bronze_knight",
                 "baseTile": "T",
                 "states": [
@@ -3346,72 +3510,82 @@ const FIXED_MAPS = {
                 ]
             }
         ],
-        mapActions: [
+        "mapActions": [
             {
-                "x": 11,
-                "y": 20,
+                "x": 8,
+                "y": 12,
                 "type": "fixedMap",
                 "target": "LEGACION_UPPER_GALLERY",
                 "entryKey": "westUpper",
                 "label": "上層回廊へ戻る"
             },
             {
-                "x": 11,
+                "x": 8,
                 "y": 2,
                 "type": "log",
                 "label": "西塔の頂を調べる",
                 "log": "崩れた狭間から、城下町と閉ざされた南の荒野が見える。"
             }
         ],
-        chests: [
-            { x: 4, y: 4, itemId: 14, type: "item", baseTile: "T" },
-            { x: 11, y: 11, itemId: 7, type: "item", rare: true, baseTile: "T" }
+        "chests": [
+            {
+                "x": 4,
+                "y": 3,
+                "itemId": 14,
+                "type": "item",
+                "baseTile": "T"
+            },
+            {
+                "x": 12,
+                "y": 3,
+                "itemId": 7,
+                "type": "item",
+                "rare": true,
+                "baseTile": "T"
+            }
         ],
-        mapId: "MAP000063",
-        floorId: "MAP000063-00",
-        useHabitatEncounters: true
+        "mapId": "MAP000063",
+        "floorId": "MAP000063-00",
+        "useHabitatEncounters": false
     },
-    LEGACION_EAST_TOWER: {
-        worldKey: "ABYSS_WORLD",
-        name: "混沌魔城レガシオン 東塔",
-        themeKey: "DARK_CASTLE",
-        width: 23,
-        height: 23,
-        entryPoint: { x: 11, y: 20 },
-        battleBg: "battle_bg_lastboss",
-        tiles: [
-            "WWWWWWWWWWWWWWWWWWWWWWW",
-            "WWWWWWWWWWWWWWWWWWWWWWW",
-            "WWTTTTTTTTTTTTTTTTTTTWW",
-            "WWTTTTTTTTTTTTTTTTTTTWW",
-            "WWTTTTTTTTTTTTTTTTCTTWW",
-            "WWTTTWWWWWWTWWWWWWTTTWW",
-            "WWTTTWWWWWWTWWWWWWTTTWW",
-            "WWTTTWWWWWWTWWWWWWTTTWW",
-            "WWTTTWWWTTTTTTTWWWTTTWW",
-            "WWTTTWWWTTTTTTTWWWTTTWW",
-            "WWTTTWWWTTTTTTTWWWTTTWW",
-            "WWTTTTTTTTTCTTTTTTTTTWW",
-            "WWTTTWWWTTTTTTTWWWTTTWW",
-            "WWTTTWWWTTTTTTTWWWTTTWW",
-            "WWTTTWWWTTTTTTTWWWTTTWW",
-            "WWTTTWWWWWWTWWWWWWTTTWW",
-            "WWTTTWWWWWWTWWWWWWTTTWW",
-            "WWTTTWWWWWWTWWWWWWTTTWW",
-            "WWTTTTTTTTTTTTTTTTTTTWW",
-            "WWTTTTTTTTTTTTTTTTTTTWW",
-            "WWTTTTTTTTTTTTTTTTTTTWW",
-            "WWWWWWWWWWWWWWWWWWWWWWW",
-            "WWWWWWWWWWWWWWWWWWWWWWW"
+    "LEGACION_EAST_TOWER": {
+        "worldKey": "ABYSS_WORLD",
+        "mapKind": "castleInterior",
+        "regionKey": "LEGACION",
+        "name": "混沌魔城レガシオン 東塔",
+        "themeKey": "DARK_CASTLE",
+        "width": 17,
+        "height": 15,
+        "entryPoint": {
+            "x": 8,
+            "y": 12
+        },
+        "battleBg": "battle_bg_lastboss",
+        "tiles": [
+            "WWWWWWWWWWWWWWWWW",
+            "WWWWWWWWWWWWWWWWW",
+            "WWTTTTTTTTTTTTTWW",
+            "WWTTCTTTTTTCTTTWW",
+            "WWTTTWWWTWWWTTTWW",
+            "WWTTTWWWTWWWTTTWW",
+            "WWTTTTTTTTTTTTTWW",
+            "WWTTTTTTTTTTTTTWW",
+            "WWTTTTTTTTTTTTTWW",
+            "WWTTTWWWTWWWTTTWW",
+            "WWTTTWWWTWWWTTTWW",
+            "WWTTTTTTTTTTTTTWW",
+            "WWTTTTTTTTTTTTTWW",
+            "WWWWWWWWTWWWWWWWW",
+            "WWWWWWWWSWWWWWWWW"
         ],
-        nextActorPlacementId: 2,
-        mapActors: [
+        "nextActorPlacementId": 2,
+        "mapActors": [
             {
                 "placementId": 1,
                 "actorId": "abyss_legacion_east_observer",
                 "name": "観測士",
-                "x": 17,
-                "y": 11,
+                "x": 12,
+                "y": 7,
                 "imageKey": "overlay_npc_villager",
                 "baseTile": "T",
                 "states": [
@@ -3428,43 +3602,56 @@ const FIXED_MAPS = {
                 ]
             }
         ],
-        mapActions: [
+        "mapActions": [
             {
-                "x": 11,
-                "y": 20,
+                "x": 8,
+                "y": 12,
                 "type": "fixedMap",
                 "target": "LEGACION_UPPER_GALLERY",
                 "entryKey": "eastUpper",
                 "label": "上層回廊へ戻る"
             },
             {
-                "x": 11,
+                "x": 8,
                 "y": 2,
                 "type": "log",
                 "label": "東塔の頂を調べる",
                 "log": "北の空に、夢幻回廊の輪郭だけが揺れている。"
             }
         ],
-        chests: [
-            { x: 18, y: 4, itemId: 14, type: "item", baseTile: "T" },
-            { x: 11, y: 11, itemId: 7, type: "item", rare: true, baseTile: "T" }
+        "chests": [
+            {
+                "x": 4,
+                "y": 3,
+                "itemId": 8,
+                "type": "item",
+                "baseTile": "T"
+            },
+            {
+                "x": 12,
+                "y": 3,
+                "itemId": 9,
+                "type": "item",
+                "rare": true,
+                "baseTile": "T"
+            }
         ],
-        mapId: "MAP000064",
-        floorId: "MAP000064-00",
-        useHabitatEncounters: true
+        "mapId": "MAP000064",
+        "floorId": "MAP000064-00",
+        "useHabitatEncounters": false
     },
-    START_VILLAGE: {
-        name: "リュミナ村",
-        themeKey: "START_VILLAGE",
-        tileOverrides: {},
-        width: 15,
-        height: 13,
-        entryPoint: {
-            x: 7,
-            y: 10
+    "START_VILLAGE": {
+        "name": "リュミナ村",
+        "themeKey": "START_VILLAGE",
+        "tileOverrides": {},
+        "width": 15,
+        "height": 13,
+        "entryPoint": {
+            "x": 7,
+            "y": 10
         },
-        battleBg: "battle_bg_field",
-        tiles: [
+        "battleBg": "battle_bg_field",
+        "tiles": [
             "WWWWWWWWWWWWWWW",
             "WWWWWWWWWWWDWWW",
             "WGHGHWWWGGGGWWW",
@@ -3479,8 +3666,8 @@ const FIXED_MAPS = {
             "WWWWWWGGWWWWWWW",
             "WWWWWWSSWWWWWWW"
         ],
-        nextActorPlacementId: 5,
-        mapActors: [
+        "nextActorPlacementId": 5,
+        "mapActors": [
             {
                 "placementId": 1,
                 "actorId": "town_start_villager_1_a",
@@ -3594,7 +3781,7 @@ const FIXED_MAPS = {
                 ]
             }
         ],
-        mapActions: [
+        "mapActions": [
             {
                 "x": 2,
                 "y": 9,
@@ -3634,24 +3821,26 @@ const FIXED_MAPS = {
                 "target": "START_CAVE"
             }
         ],
-        exitPoint: {
-            area: "WORLD",
-            x: 58,
-            y: 65
-        }
-    },
-    FIRE_VILLAGE: {
-        name: "炎の里イグニシア",
-        themeKey: "FIRE_VILLAGE",
-        tileOverrides: {},
-        width: 29,
-        height: 21,
-        entryPoint: {
-            x: 14,
-            y: 18
+        "exitPoint": {
+            "area": "WORLD",
+            "x": 58,
+            "y": 65
         },
-        battleBg: "battle_bg_fire",
-        tiles: [
+        "mapId": "MAP000002",
+        "floorId": "MAP000002-00"
+    },
+    "FIRE_VILLAGE": {
+        "name": "炎の里イグニシア",
+        "themeKey": "FIRE_VILLAGE",
+        "tileOverrides": {},
+        "width": 29,
+        "height": 21,
+        "entryPoint": {
+            "x": 14,
+            "y": 18
+        },
+        "battleBg": "battle_bg_fire",
+        "tiles": [
             "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
             "WWWWWWWWWWWWWWDWWWWWWWWWWWWWW",
             "WWMMMMMMMMTTTTTTTTTMMMMMMMMWW",
@@ -3674,8 +3863,8 @@ const FIXED_MAPS = {
             "WWMMMMTTTTTTTTTTTTTTTTTMMMMWW",
             "WWWWWWWWWWWWWSSSWWWWWWWWWWWWW"
         ],
-        nextActorPlacementId: 5,
-        mapActors: [
+        "nextActorPlacementId": 5,
+        "mapActors": [
             {
                 "placementId": 1,
                 "actorId": "town_fire_villager_2",
@@ -3821,7 +4010,7 @@ const FIXED_MAPS = {
                 ]
             }
         ],
-        mapActions: [
+        "mapActions": [
             {
                 "x": 21,
                 "y": 14,
@@ -3909,32 +4098,34 @@ const FIXED_MAPS = {
                 ]
             }
         ],
-        exitPoint: {
-            area: "WORLD",
-            x: 97,
-            y: 50
+        "exitPoint": {
+            "area": "WORLD",
+            "x": 97,
+            "y": 50
         },
-        chests: [
+        "chests": [
             {
-                x: 14,
-                y: 7,
-                itemId: 4,
-                type: "item"
+                "x": 14,
+                "y": 7,
+                "itemId": 4,
+                "type": "item"
             }
-        ]
+        ],
+        "mapId": "MAP000006",
+        "floorId": "MAP000006-00"
     },
-    WIND_VILLAGE: {
-        name: "風の集落カザリア",
-        themeKey: "WIND_VILLAGE",
-        tileOverrides: {},
-        width: 29,
-        height: 21,
-        entryPoint: {
-            x: 14,
-            y: 18
+    "WIND_VILLAGE": {
+        "name": "風の集落カザリア",
+        "themeKey": "WIND_VILLAGE",
+        "tileOverrides": {},
+        "width": 29,
+        "height": 21,
+        "entryPoint": {
+            "x": 14,
+            "y": 18
         },
-        battleBg: "battle_bg_field",
-        tiles: [
+        "battleBg": "battle_bg_field",
+        "tiles": [
             "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
             "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
             "WWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
@@ -3957,8 +4148,8 @@ const FIXED_MAPS = {
             "WWWWWWWWWWWWWLLLWWWWWWWWWWWWW",
             "WWWWWWWWWWWWWSSSWWWWWWWWWWWWW"
         ],
-        nextActorPlacementId: 6,
-        mapActors: [
+        "nextActorPlacementId": 6,
+        "mapActors": [
             {
                 "placementId": 1,
                 "actorId": "town_wind_watch",
@@ -4122,7 +4313,7 @@ const FIXED_MAPS = {
                 ]
             }
         ],
-        mapActions: [
+        "mapActions": [
             {
                 "x": 22,
                 "y": 7,
@@ -4224,32 +4415,34 @@ const FIXED_MAPS = {
                 ]
             }
         ],
-        exitPoint: {
-            area: "WORLD",
-            x: 98,
-            y: 38
+        "exitPoint": {
+            "area": "WORLD",
+            "x": 98,
+            "y": 38
         },
-        chests: [
+        "chests": [
             {
-                x: 4,
-                y: 17,
-                itemId: 101,
-                type: "item"
+                "x": 4,
+                "y": 17,
+                "itemId": 101,
+                "type": "item"
             }
-        ]
+        ],
+        "mapId": "MAP000009",
+        "floorId": "MAP000009-00"
     },
-    WATER_CITY: {
-        name: "水上都市リヴァリア",
-        themeKey: "WATER_CITY",
-        tileOverrides: {},
-        width: 39,
-        height: 27,
-        entryPoint: {
-            x: 19,
-            y: 24
+    "WATER_CITY": {
+        "name": "水上都市リヴァリア",
+        "themeKey": "WATER_CITY",
+        "tileOverrides": {},
+        "width": 39,
+        "height": 27,
+        "entryPoint": {
+            "x": 19,
+            "y": 24
         },
-        battleBg: "battle_bg_field",
-        tiles: [
+        "battleBg": "battle_bg_field",
+        "tiles": [
             "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
             "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
             "WWWWWWWTTTTWWWWWWWWWWWWWWWWWTTTTTTWWWWW",
@@ -4278,8 +4471,8 @@ const FIXED_MAPS = {
             "WWWWWWWWWWWWWWWWWWWLWWWWWWWWWWWWWWWWWWW",
             "WWWWWWWWWWWWWWWWWWWSWWWWWWWWWWWWWWWWWWW"
         ],
-        nextActorPlacementId: 14,
-        mapActors: [
+        "nextActorPlacementId": 14,
+        "mapActors": [
             {
                 "placementId": 1,
                 "actorId": "water_city_blockade_guard",
@@ -4668,7 +4861,7 @@ const FIXED_MAPS = {
                 ]
             }
         ],
-        mapActions: [
+        "mapActions": [
             {
                 "x": 31,
                 "y": 3,
@@ -4712,50 +4905,52 @@ const FIXED_MAPS = {
                 "shopRank": 35
             }
         ],
-        exitPoint: {
-            area: "WORLD",
-            x: 68,
-            y: 22
+        "exitPoint": {
+            "area": "WORLD",
+            "x": 68,
+            "y": 22
         },
-        chests: [
+        "chests": [
             {
-                x: 7,
-                y: 3,
-                itemId: 100,
-                type: "item"
+                "x": 7,
+                "y": 3,
+                "itemId": 100,
+                "type": "item"
             },
             {
-                x: 8,
-                y: 3,
-                itemId: 7,
-                type: "item"
+                "x": 8,
+                "y": 3,
+                "itemId": 7,
+                "type": "item"
             },
             {
-                x: 9,
-                y: 3,
-                itemId: 6,
-                type: "item"
+                "x": 9,
+                "y": 3,
+                "itemId": 6,
+                "type": "item"
             },
             {
-                x: 10,
-                y: 3,
-                itemId: 99,
-                type: "item"
+                "x": 10,
+                "y": 3,
+                "itemId": 99,
+                "type": "item"
             }
-        ]
+        ],
+        "mapId": "MAP000015",
+        "floorId": "MAP000015-00"
     },
-    ABYSS_FIELD: {
-        name: "深淵の魔窟 外縁",
-        themeKey: "ABYSS_FIELD",
-        tileOverrides: {},
-        width: 17,
-        height: 15,
-        entryPoint: {
-            x: 8,
-            y: 12
+    "ABYSS_FIELD": {
+        "name": "深淵の魔窟 外縁",
+        "themeKey": "ABYSS_FIELD",
+        "tileOverrides": {},
+        "width": 17,
+        "height": 15,
+        "entryPoint": {
+            "x": 8,
+            "y": 12
         },
-        battleBg: "battle_bg_field",
-        tiles: [
+        "battleBg": "battle_bg_field",
+        "tiles": [
             "WWWWWWWWWWWWWWWWW",
             "WGGGGGGGWWGGGGGGW",
             "WGWWGGGGGGGGGWWGW",
@@ -4772,322 +4967,324 @@ const FIXED_MAPS = {
             "WWWWWGGGGGGGWWWWW",
             "WWWWWWWWSWWWWWWWW"
         ],
-        floorDecorations: [
+        "floorDecorations": [
             {
-                authoredPlacementId: "abyss-chasm-nw",
-                type: "image",
-                imageKey: "overlay_abyss_outer_chasm_nw",
-                x: 7,
-                y: 6,
-                blocking: false,
-                baseTile: "T"
+                "authoredPlacementId": "abyss-chasm-nw",
+                "type": "image",
+                "imageKey": "overlay_abyss_outer_chasm_nw",
+                "x": 7,
+                "y": 6,
+                "blocking": false,
+                "baseTile": "T"
             },
             {
-                authoredPlacementId: "abyss-chasm-n",
-                type: "image",
-                imageKey: "overlay_abyss_outer_chasm_n",
-                x: 8,
-                y: 6,
-                blocking: false,
-                baseTile: "T"
+                "authoredPlacementId": "abyss-chasm-n",
+                "type": "image",
+                "imageKey": "overlay_abyss_outer_chasm_n",
+                "x": 8,
+                "y": 6,
+                "blocking": false,
+                "baseTile": "T"
             },
             {
-                authoredPlacementId: "abyss-chasm-ne",
-                type: "image",
-                imageKey: "overlay_abyss_outer_chasm_ne",
-                x: 9,
-                y: 6,
-                blocking: false,
-                baseTile: "T"
+                "authoredPlacementId": "abyss-chasm-ne",
+                "type": "image",
+                "imageKey": "overlay_abyss_outer_chasm_ne",
+                "x": 9,
+                "y": 6,
+                "blocking": false,
+                "baseTile": "T"
             },
             {
-                authoredPlacementId: "abyss-chasm-w",
-                type: "image",
-                imageKey: "overlay_abyss_outer_chasm_w",
-                x: 7,
-                y: 7,
-                blocking: false,
-                baseTile: "T"
+                "authoredPlacementId": "abyss-chasm-w",
+                "type": "image",
+                "imageKey": "overlay_abyss_outer_chasm_w",
+                "x": 7,
+                "y": 7,
+                "blocking": false,
+                "baseTile": "T"
             },
             {
-                authoredPlacementId: "abyss-chasm-c",
-                type: "image",
-                imageKey: "overlay_abyss_outer_chasm_c",
-                x: 8,
-                y: 7,
-                blocking: false,
-                baseTile: "T"
+                "authoredPlacementId": "abyss-chasm-c",
+                "type": "image",
+                "imageKey": "overlay_abyss_outer_chasm_c",
+                "x": 8,
+                "y": 7,
+                "blocking": false,
+                "baseTile": "T"
             },
             {
-                authoredPlacementId: "abyss-chasm-e",
-                type: "image",
-                imageKey: "overlay_abyss_outer_chasm_e",
-                x: 9,
-                y: 7,
-                blocking: false,
-                baseTile: "T"
+                "authoredPlacementId": "abyss-chasm-e",
+                "type": "image",
+                "imageKey": "overlay_abyss_outer_chasm_e",
+                "x": 9,
+                "y": 7,
+                "blocking": false,
+                "baseTile": "T"
             },
             {
-                authoredPlacementId: "abyss-chasm-sw",
-                type: "image",
-                imageKey: "overlay_abyss_outer_chasm_sw",
-                x: 7,
-                y: 8,
-                blocking: false,
-                baseTile: "T"
+                "authoredPlacementId": "abyss-chasm-sw",
+                "type": "image",
+                "imageKey": "overlay_abyss_outer_chasm_sw",
+                "x": 7,
+                "y": 8,
+                "blocking": false,
+                "baseTile": "T"
             },
             {
-                authoredPlacementId: "abyss-chasm-s",
-                type: "image",
-                imageKey: "overlay_abyss_outer_chasm_s",
-                x: 8,
-                y: 8,
-                blocking: false,
-                baseTile: "T"
+                "authoredPlacementId": "abyss-chasm-s",
+                "type": "image",
+                "imageKey": "overlay_abyss_outer_chasm_s",
+                "x": 8,
+                "y": 8,
+                "blocking": false,
+                "baseTile": "T"
             },
             {
-                authoredPlacementId: "abyss-chasm-se",
-                type: "image",
-                imageKey: "overlay_abyss_outer_chasm_se",
-                x: 9,
-                y: 8,
-                blocking: false,
-                baseTile: "T"
+                "authoredPlacementId": "abyss-chasm-se",
+                "type": "image",
+                "imageKey": "overlay_abyss_outer_chasm_se",
+                "x": 9,
+                "y": 8,
+                "blocking": false,
+                "baseTile": "T"
             }
         ],
-        blockingObjects: [
+        "blockingObjects": [
             {
-                x: 7,
-                y: 6,
-                baseTile: "T",
-                log: "奈落が口を開けている。"
+                "x": 7,
+                "y": 6,
+                "baseTile": "T",
+                "log": "奈落が口を開けている。"
             },
             {
-                x: 8,
-                y: 6,
-                baseTile: "T",
-                log: "奈落が口を開けている。"
+                "x": 8,
+                "y": 6,
+                "baseTile": "T",
+                "log": "奈落が口を開けている。"
             },
             {
-                x: 9,
-                y: 6,
-                baseTile: "T",
-                log: "奈落が口を開けている。"
+                "x": 9,
+                "y": 6,
+                "baseTile": "T",
+                "log": "奈落が口を開けている。"
             },
             {
-                x: 7,
-                y: 7,
-                baseTile: "T",
-                log: "奈落が口を開けている。"
+                "x": 7,
+                "y": 7,
+                "baseTile": "T",
+                "log": "奈落が口を開けている。"
             },
             {
-                x: 8,
-                y: 7,
-                baseTile: "T",
-                log: "闇がどこまでも続いている。"
+                "x": 8,
+                "y": 7,
+                "baseTile": "T",
+                "log": "闇がどこまでも続いている。"
             },
             {
-                x: 9,
-                y: 7,
-                baseTile: "T",
-                log: "奈落が口を開けている。"
+                "x": 9,
+                "y": 7,
+                "baseTile": "T",
+                "log": "奈落が口を開けている。"
             },
             {
-                x: 7,
-                y: 8,
-                baseTile: "T",
-                log: "奈落が口を開けている。"
+                "x": 7,
+                "y": 8,
+                "baseTile": "T",
+                "log": "奈落が口を開けている。"
             },
             {
-                x: 8,
-                y: 8,
-                baseTile: "T",
-                log: "奈落が口を開けている。"
+                "x": 8,
+                "y": 8,
+                "baseTile": "T",
+                "log": "奈落が口を開けている。"
             },
             {
-                x: 9,
-                y: 8,
-                baseTile: "T",
-                log: "奈落が口を開けている。"
+                "x": 9,
+                "y": 8,
+                "baseTile": "T",
+                "log": "奈落が口を開けている。"
             },
             {
-                x: 8,
-                y: 4,
-                imageKey: "overlay_abyss_outer_ruined_altar",
-                drawWidth: 96,
-                drawHeight: 64,
-                baseTile: "T",
-                log: "崩れた祭壇には、古い儀式の痕跡が残っている。"
+                "x": 8,
+                "y": 4,
+                "imageKey": "overlay_abyss_outer_ruined_altar",
+                "drawWidth": 96,
+                "drawHeight": 64,
+                "baseTile": "T",
+                "log": "崩れた祭壇には、古い儀式の痕跡が残っている。"
             },
             {
-                x: 7,
-                y: 4,
-                baseTile: "T",
-                log: "崩れた祭壇が道を塞いでいる。"
+                "x": 7,
+                "y": 4,
+                "baseTile": "T",
+                "log": "崩れた祭壇が道を塞いでいる。"
             },
             {
-                x: 9,
-                y: 4,
-                baseTile: "T",
-                log: "崩れた祭壇が道を塞いでいる。"
+                "x": 9,
+                "y": 4,
+                "baseTile": "T",
+                "log": "崩れた祭壇が道を塞いでいる。"
             },
             {
-                x: 4,
-                y: 4,
-                imageKey: "overlay_abyss_outer_intact_column",
-                drawWidth: 40,
-                drawHeight: 64,
-                baseTile: "T",
-                log: "亀裂だらけの柱が、奇跡的に立ち続けている。"
+                "x": 4,
+                "y": 4,
+                "imageKey": "overlay_abyss_outer_intact_column",
+                "drawWidth": 40,
+                "drawHeight": 64,
+                "baseTile": "T",
+                "log": "亀裂だらけの柱が、奇跡的に立ち続けている。"
             },
             {
-                x: 12,
-                y: 4,
-                imageKey: "overlay_abyss_outer_intact_column",
-                drawWidth: 40,
-                drawHeight: 64,
-                baseTile: "T",
-                log: "柱の頂には、プリズムを支えた枠だけが残っている。"
+                "x": 12,
+                "y": 4,
+                "imageKey": "overlay_abyss_outer_intact_column",
+                "drawWidth": 40,
+                "drawHeight": 64,
+                "baseTile": "T",
+                "log": "柱の頂には、プリズムを支えた枠だけが残っている。"
             },
             {
-                x: 4,
-                y: 10,
-                imageKey: "overlay_abyss_outer_broken_column_stump",
-                drawWidth: 44,
-                drawHeight: 40,
-                baseTile: "T",
-                log: "折れた柱の内部から、古い金属の導線が覗いている。"
+                "x": 4,
+                "y": 10,
+                "imageKey": "overlay_abyss_outer_broken_column_stump",
+                "drawWidth": 44,
+                "drawHeight": 40,
+                "baseTile": "T",
+                "log": "折れた柱の内部から、古い金属の導線が覗いている。"
             },
             {
-                x: 12,
-                y: 10,
-                imageKey: "overlay_abyss_outer_fallen_pillar",
-                drawWidth: 64,
-                drawHeight: 64,
-                baseTile: "T",
-                log: "折れた柱には、読めない文字が刻まれている。"
+                "x": 12,
+                "y": 10,
+                "imageKey": "overlay_abyss_outer_fallen_pillar",
+                "drawWidth": 64,
+                "drawHeight": 64,
+                "baseTile": "T",
+                "log": "折れた柱には、読めない文字が刻まれている。"
             },
             {
-                x: 12,
-                y: 9,
-                baseTile: "T",
-                invisible: true,
-                log: "倒れた柱が斜めに通路を塞いでいる。"
+                "x": 12,
+                "y": 9,
+                "baseTile": "T",
+                "invisible": true,
+                "log": "倒れた柱が斜めに通路を塞いでいる。"
             },
             {
-                x: 11,
-                y: 10,
-                baseTile: "T",
-                invisible: true,
-                log: "倒れた柱が斜めに通路を塞いでいる。"
+                "x": 11,
+                "y": 10,
+                "baseTile": "T",
+                "invisible": true,
+                "log": "倒れた柱が斜めに通路を塞いでいる。"
             },
             {
-                x: 5,
-                y: 5,
-                imageKey: "overlay_abyss_outer_prism_pedestal_intact",
-                drawWidth: 34,
-                drawHeight: 30,
-                baseTile: "T",
-                log: "空になった台座。かつて何かが載せられていたようだ。"
+                "x": 5,
+                "y": 5,
+                "imageKey": "overlay_abyss_outer_prism_pedestal_intact",
+                "drawWidth": 34,
+                "drawHeight": 30,
+                "baseTile": "T",
+                "log": "空になった台座。かつて何かが載せられていたようだ。"
             },
             {
-                x: 11,
-                y: 5,
-                imageKey: "overlay_abyss_outer_prism_pedestal_collapsed",
-                drawWidth: 38,
-                drawHeight: 30,
-                baseTile: "T",
-                log: "台座は崩れ、紫色の欠片だけが散らばっている。"
+                "x": 11,
+                "y": 5,
+                "imageKey": "overlay_abyss_outer_prism_pedestal_collapsed",
+                "drawWidth": 38,
+                "drawHeight": 30,
+                "baseTile": "T",
+                "log": "台座は崩れ、紫色の欠片だけが散らばっている。"
             },
             {
-                x: 5,
-                y: 7,
-                imageKey: "overlay_abyss_outer_prism_pedestal_collapsed",
-                drawWidth: 38,
-                drawHeight: 30,
-                baseTile: "T",
-                log: "壊れた固定具が、奈落の方を向いている。"
+                "x": 5,
+                "y": 7,
+                "imageKey": "overlay_abyss_outer_prism_pedestal_collapsed",
+                "drawWidth": 38,
+                "drawHeight": 30,
+                "baseTile": "T",
+                "log": "壊れた固定具が、奈落の方を向いている。"
             },
             {
-                x: 11,
-                y: 7,
-                imageKey: "overlay_abyss_outer_prism_pedestal_intact",
-                drawWidth: 34,
-                drawHeight: 30,
-                baseTile: "T",
-                log: "六角形の窪みには、プリズムらしき傷跡がある。"
+                "x": 11,
+                "y": 7,
+                "imageKey": "overlay_abyss_outer_prism_pedestal_intact",
+                "drawWidth": 34,
+                "drawHeight": 30,
+                "baseTile": "T",
+                "log": "六角形の窪みには、プリズムらしき傷跡がある。"
             },
             {
-                x: 6,
-                y: 9,
-                imageKey: "overlay_abyss_outer_prism_pedestal_intact",
-                drawWidth: 34,
-                drawHeight: 30,
-                baseTile: "T",
-                log: "台座から伸びる古い導線は、奈落の縁で途切れている。"
+                "x": 6,
+                "y": 9,
+                "imageKey": "overlay_abyss_outer_prism_pedestal_intact",
+                "drawWidth": 34,
+                "drawHeight": 30,
+                "baseTile": "T",
+                "log": "台座から伸びる古い導線は、奈落の縁で途切れている。"
             },
             {
-                x: 10,
-                y: 9,
-                imageKey: "overlay_abyss_outer_prism_pedestal_collapsed",
-                drawWidth: 38,
-                drawHeight: 30,
-                baseTile: "T",
-                log: "崩れた台座に、微かな光を失った結晶片が残っている。"
+                "x": 10,
+                "y": 9,
+                "imageKey": "overlay_abyss_outer_prism_pedestal_collapsed",
+                "drawWidth": 38,
+                "drawHeight": 30,
+                "baseTile": "T",
+                "log": "崩れた台座に、微かな光を失った結晶片が残っている。"
             }
         ],
-        mapActions: [
+        "mapActions": [
             {
-                x: 8,
-                y: 7,
-                minimapColor: "#9c64db",
-                baseTile: "T",
-                interactionArea: {
-                    x: 7,
-                    y: 6,
-                    width: 3,
-                    height: 3
+                "x": 8,
+                "y": 7,
+                "minimapColor": "#9c64db",
+                "baseTile": "T",
+                "interactionArea": {
+                    "x": 7,
+                    "y": 6,
+                    "width": 3,
+                    "height": 3
                 },
-                interactFromAdjacent: true,
-                label: "魔窟に入る",
-                log: "闇がどこまでも続いているような穴がある。",
-                type: "abyssDungeon",
-                target: "CARMENA",
-                events: [
+                "interactFromAdjacent": true,
+                "label": "魔窟に入る",
+                "log": "闇がどこまでも続いているような穴がある。",
+                "type": "abyssDungeon",
+                "target": "CARMENA",
+                "events": [
                     {
-                        stepMin: 9,
-                        stepMax: 9,
-                        missingFlag: "abyssOuterReached",
-                        eventId: "abyss_unsealed"
+                        "stepMin": 9,
+                        "stepMax": 9,
+                        "missingFlag": "abyssOuterReached",
+                        "eventId": "abyss_unsealed"
                     }
                 ]
             }
         ],
-        exitPoint: {
-            area: "WORLD",
-            x: 51,
-            y: 56
-        }
-    },
-    RUINED_SHRINE: {
-        name: "朽ちた祠",
-        themeKey: "RUINED_SHRINE",
-        isDungeon: true,
-        hideFloorLabel: true,
-        disableRandomEncounters: true,
-        autoExitOnPerimeter: true,
-        perimeterExitMiniMapColor: "#766746",
-        wallFaceImg: "tile_ruined_shrine_wall_face",
-        wallFaceTorchImg: "tile_ruined_shrine_wall_face_rooted",
-        tileOverrides: {},
-        width: 19,
-        height: 19,
-        entryPoint: {
-            x: 9,
-            y: 17
+        "exitPoint": {
+            "area": "WORLD",
+            "x": 51,
+            "y": 56
         },
-        battleBg: "battle_bg_dark_shrine",
-        tiles: [
+        "mapId": "MAP000032",
+        "floorId": "MAP000032-00"
+    },
+    "RUINED_SHRINE": {
+        "name": "朽ちた祠",
+        "themeKey": "RUINED_SHRINE",
+        "isDungeon": true,
+        "hideFloorLabel": true,
+        "disableRandomEncounters": true,
+        "autoExitOnPerimeter": true,
+        "perimeterExitMiniMapColor": "#766746",
+        "wallFaceImg": "tile_ruined_shrine_wall_face",
+        "wallFaceTorchImg": "tile_ruined_shrine_wall_face_rooted",
+        "tileOverrides": {},
+        "width": 19,
+        "height": 19,
+        "entryPoint": {
+            "x": 9,
+            "y": 17
+        },
+        "battleBg": "battle_bg_dark_shrine",
+        "tiles": [
             "SSSSSSSSSSSSSSSSSSS",
             "SGGGGGGGGGGGGGGGGGS",
             "SGWWWWWWWWWWWWWWWGS",
@@ -5108,342 +5305,344 @@ const FIXED_MAPS = {
             "SGGGGGGGGGGGGGGGGGS",
             "SSSSSSSSSSSSSSSSSSS"
         ],
-        floorDecorations: [
+        "floorDecorations": [
             {
-                type: "image",
-                imageKey: "overlay_ruined_shrine_raised_stage_a",
-                x: 8,
-                y: 4,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_ruined_shrine_raised_stage_a",
+                "x": 8,
+                "y": 4,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_ruined_shrine_raised_stage_b",
-                x: 9,
-                y: 4,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_ruined_shrine_raised_stage_b",
+                "x": 9,
+                "y": 4,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_ruined_shrine_raised_stage_c",
-                x: 10,
-                y: 4,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_ruined_shrine_raised_stage_c",
+                "x": 10,
+                "y": 4,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_ruined_shrine_raised_stage_d",
-                x: 8,
-                y: 5,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_ruined_shrine_raised_stage_d",
+                "x": 8,
+                "y": 5,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_ruined_shrine_raised_stage_e",
-                x: 9,
-                y: 5,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_ruined_shrine_raised_stage_e",
+                "x": 9,
+                "y": 5,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_ruined_shrine_raised_stage_f",
-                x: 10,
-                y: 5,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_ruined_shrine_raised_stage_f",
+                "x": 10,
+                "y": 5,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             }
         ],
-        blockingObjects: [
+        "blockingObjects": [
             {
-                x: 8,
-                y: 4,
-                baseTile: "T"
+                "x": 8,
+                "y": 4,
+                "baseTile": "T"
             },
             {
-                x: 10,
-                y: 4,
-                baseTile: "T"
+                "x": 10,
+                "y": 4,
+                "baseTile": "T"
             },
             {
-                x: 8,
-                y: 5,
-                baseTile: "T"
+                "x": 8,
+                "y": 5,
+                "baseTile": "T"
             },
             {
-                x: 10,
-                y: 5,
-                baseTile: "T"
+                "x": 10,
+                "y": 5,
+                "baseTile": "T"
             },
             {
-                x: 4,
-                y: 5,
-                imageKey: "overlay_ruined_shrine_pillar",
-                drawWidth: 48,
-                drawHeight: 72,
-                baseTile: "T"
+                "x": 4,
+                "y": 5,
+                "imageKey": "overlay_ruined_shrine_pillar",
+                "drawWidth": 48,
+                "drawHeight": 72,
+                "baseTile": "T"
             },
             {
-                x: 14,
-                y: 5,
-                imageKey: "overlay_ruined_shrine_pillar",
-                drawWidth: 48,
-                drawHeight: 72,
-                baseTile: "T"
+                "x": 14,
+                "y": 5,
+                "imageKey": "overlay_ruined_shrine_pillar",
+                "drawWidth": 48,
+                "drawHeight": 72,
+                "baseTile": "T"
             },
             {
-                x: 4,
-                y: 13,
-                imageKey: "overlay_ruined_shrine_pillar",
-                drawWidth: 48,
-                drawHeight: 72,
-                baseTile: "T"
+                "x": 4,
+                "y": 13,
+                "imageKey": "overlay_ruined_shrine_pillar",
+                "drawWidth": 48,
+                "drawHeight": 72,
+                "baseTile": "T"
             },
             {
-                x: 14,
-                y: 13,
-                imageKey: "overlay_ruined_shrine_pillar",
-                drawWidth: 48,
-                drawHeight: 72,
-                baseTile: "T"
+                "x": 14,
+                "y": 13,
+                "imageKey": "overlay_ruined_shrine_pillar",
+                "drawWidth": 48,
+                "drawHeight": 72,
+                "baseTile": "T"
             },
             {
-                x: 5,
-                y: 7,
-                imageKey: "maplib_dark_gargoyle_statue",
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "x": 5,
+                "y": 7,
+                "imageKey": "maplib_dark_gargoyle_statue",
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                x: 13,
-                y: 7,
-                imageKey: "maplib_dark_gargoyle_statue",
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "x": 13,
+                "y": 7,
+                "imageKey": "maplib_dark_gargoyle_statue",
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                x: 6,
-                y: 11,
-                imageKey: "maplib_dark_sealed_obelisk",
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "x": 6,
+                "y": 11,
+                "imageKey": "maplib_dark_sealed_obelisk",
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                x: 12,
-                y: 11,
-                imageKey: "maplib_dark_sealed_obelisk",
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "x": 12,
+                "y": 11,
+                "imageKey": "maplib_dark_sealed_obelisk",
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                x: 7,
-                y: 4,
-                imageKey: "maplib_ruins_ritual_brazier",
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "x": 7,
+                "y": 4,
+                "imageKey": "maplib_ruins_ritual_brazier",
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                x: 11,
-                y: 4,
-                imageKey: "maplib_ruins_ritual_brazier",
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "x": 11,
+                "y": 4,
+                "imageKey": "maplib_ruins_ritual_brazier",
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                x: 6,
-                y: 5,
-                imageKey: "maplib_ruins_ritual_brazier",
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "x": 6,
+                "y": 5,
+                "imageKey": "maplib_ruins_ritual_brazier",
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                x: 12,
-                y: 5,
-                imageKey: "maplib_ruins_ritual_brazier",
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "x": 12,
+                "y": 5,
+                "imageKey": "maplib_ruins_ritual_brazier",
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                x: 9,
-                y: 9,
-                imageKey: "overlay_ruined_shrine_ritual_astrolabe",
-                drawWidth: 40,
-                drawHeight: 40,
-                baseTile: "T"
+                "x": 9,
+                "y": 9,
+                "imageKey": "overlay_ruined_shrine_ritual_astrolabe",
+                "drawWidth": 40,
+                "drawHeight": 40,
+                "baseTile": "T"
             },
             {
-                x: 5,
-                y: 10,
-                imageKey: "maplib_ruins_weathered_rune",
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "x": 5,
+                "y": 10,
+                "imageKey": "maplib_ruins_weathered_rune",
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                x: 13,
-                y: 10,
-                imageKey: "maplib_ruins_weathered_rune",
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "x": 13,
+                "y": 10,
+                "imageKey": "maplib_ruins_weathered_rune",
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                x: 3,
-                y: 8,
-                imageKey: "overlay_ruined_shrine_rusted_sword",
-                drawWidth: 18,
-                drawHeight: 28,
-                baseTile: "T"
+                "x": 3,
+                "y": 8,
+                "imageKey": "overlay_ruined_shrine_rusted_sword",
+                "drawWidth": 18,
+                "drawHeight": 28,
+                "baseTile": "T"
             },
             {
-                x: 12,
-                y: 6,
-                imageKey: "overlay_ruined_shrine_rusted_sword",
-                drawWidth: 18,
-                drawHeight: 28,
-                baseTile: "T"
+                "x": 12,
+                "y": 6,
+                "imageKey": "overlay_ruined_shrine_rusted_sword",
+                "drawWidth": 18,
+                "drawHeight": 28,
+                "baseTile": "T"
             },
             {
-                x: 4,
-                y: 9,
-                imageKey: "overlay_ruined_shrine_rusted_sword",
-                drawWidth: 18,
-                drawHeight: 28,
-                baseTile: "T"
+                "x": 4,
+                "y": 9,
+                "imageKey": "overlay_ruined_shrine_rusted_sword",
+                "drawWidth": 18,
+                "drawHeight": 28,
+                "baseTile": "T"
             },
             {
-                x: 8,
-                y: 7,
-                imageKey: "overlay_ruined_shrine_rusted_spear",
-                drawWidth: 14,
-                drawHeight: 30,
-                baseTile: "T"
+                "x": 8,
+                "y": 7,
+                "imageKey": "overlay_ruined_shrine_rusted_spear",
+                "drawWidth": 14,
+                "drawHeight": 30,
+                "baseTile": "T"
             },
             {
-                x: 14,
-                y: 8,
-                imageKey: "overlay_ruined_shrine_rusted_spear",
-                drawWidth: 14,
-                drawHeight: 30,
-                baseTile: "T"
+                "x": 14,
+                "y": 8,
+                "imageKey": "overlay_ruined_shrine_rusted_spear",
+                "drawWidth": 14,
+                "drawHeight": 30,
+                "baseTile": "T"
             },
             {
-                x: 7,
-                y: 10,
-                imageKey: "overlay_ruined_shrine_rusted_spear",
-                drawWidth: 14,
-                drawHeight: 30,
-                baseTile: "T"
+                "x": 7,
+                "y": 10,
+                "imageKey": "overlay_ruined_shrine_rusted_spear",
+                "drawWidth": 14,
+                "drawHeight": 30,
+                "baseTile": "T"
             },
             {
-                x: 10,
-                y: 7,
-                imageKey: "overlay_ruined_shrine_rusted_axe",
-                drawWidth: 22,
-                drawHeight: 26,
-                baseTile: "T"
+                "x": 10,
+                "y": 7,
+                "imageKey": "overlay_ruined_shrine_rusted_axe",
+                "drawWidth": 22,
+                "drawHeight": 26,
+                "baseTile": "T"
             },
             {
-                x: 12,
-                y: 9,
-                imageKey: "overlay_ruined_shrine_rusted_axe",
-                drawWidth: 22,
-                drawHeight: 26,
-                baseTile: "T"
+                "x": 12,
+                "y": 9,
+                "imageKey": "overlay_ruined_shrine_rusted_axe",
+                "drawWidth": 22,
+                "drawHeight": 26,
+                "baseTile": "T"
             },
             {
-                x: 8,
-                y: 12,
-                imageKey: "overlay_ruined_shrine_rusted_axe",
-                drawWidth: 22,
-                drawHeight: 26,
-                baseTile: "T"
+                "x": 8,
+                "y": 12,
+                "imageKey": "overlay_ruined_shrine_rusted_axe",
+                "drawWidth": 22,
+                "drawHeight": 26,
+                "baseTile": "T"
             }
         ],
-        mapActions: [
+        "mapActions": [
             {
-                x: 9,
-                y: 4,
-                label: "石碑に触れる",
-                imageKey: "maplib_ruins_ancient_tablet",
-                renderAsBlockingObject: true,
-                interactFromAdjacent: true,
-                drawWidth: 32,
-                drawHeight: 40,
-                baseTile: "T",
-                minimapColor: "#8f7dff",
-                requiredItemId: 98,
-                requiredItemMissingText: "不思議な気配を感じる…",
-                log: "石碑からただならぬ気配があふれ出した……",
-                type: "boss",
-                monsterId: 902000,
-                special: true,
-                confirmText: "『災厄の楔』が石碑に呼応している……<br>ギルガメッシュに挑みますか？<br><span style='color:#f44; font-size:11px;'>※この戦いからは逃げられません</span>"
+                "x": 9,
+                "y": 4,
+                "label": "石碑に触れる",
+                "imageKey": "maplib_ruins_ancient_tablet",
+                "renderAsBlockingObject": true,
+                "interactFromAdjacent": true,
+                "drawWidth": 32,
+                "drawHeight": 40,
+                "baseTile": "T",
+                "minimapColor": "#8f7dff",
+                "requiredItemId": 98,
+                "requiredItemMissingText": "不思議な気配を感じる…",
+                "log": "石碑からただならぬ気配があふれ出した……",
+                "type": "boss",
+                "monsterId": 902000,
+                "special": true,
+                "confirmText": "『災厄の楔』が石碑に呼応している……<br>ギルガメッシュに挑みますか？<br><span style='color:#f44; font-size:11px;'>※この戦いからは逃げられません</span>"
             }
         ],
-        chests: [
+        "chests": [
             {
-                x: 3,
-                y: 14,
-                itemId: 4,
-                type: "item",
-                containerKind: "pot",
-                imageKey: "overlay_field_pot",
-                openedImageKey: "overlay_field_pot"
+                "x": 3,
+                "y": 14,
+                "itemId": 4,
+                "type": "item",
+                "containerKind": "pot",
+                "imageKey": "overlay_field_pot",
+                "openedImageKey": "overlay_field_pot"
             },
             {
-                x: 15,
-                y: 14,
-                itemId: 99,
-                type: "item",
-                containerKind: "pot",
-                imageKey: "overlay_field_pot",
-                openedImageKey: "overlay_field_pot"
+                "x": 15,
+                "y": 14,
+                "itemId": 99,
+                "type": "item",
+                "containerKind": "pot",
+                "imageKey": "overlay_field_pot",
+                "openedImageKey": "overlay_field_pot"
             }
         ],
-        exitPoint: {
-            area: "WORLD",
-            x: 58,
-            y: 56
-        }
-    },
-    TRIAL_ISLAND: {
-        name: "最果ての祠",
-        themeKey: "TRIAL_SHRINE",
-        isDungeon: false,
-        useDungeonWallFace: true,
-        hideFloorLabel: true,
-        disableRandomEncounters: true,
-        autoExitOnPerimeter: true,
-        perimeterExitMiniMapColor: "#76a36a",
-        wallFaceImg: "tile_trial_shrine_wall_face",
-        tileOverrides: {},
-        width: 25,
-        height: 21,
-        entryPoint: {
-            x: 12,
-            y: 19
+        "exitPoint": {
+            "area": "WORLD",
+            "x": 58,
+            "y": 56
         },
-        battleBg: "battle_bg_trial_shrine",
-        tiles: [
+        "mapId": "MAP000036",
+        "floorId": "MAP000036-00"
+    },
+    "TRIAL_ISLAND": {
+        "name": "最果ての祠",
+        "themeKey": "TRIAL_SHRINE",
+        "isDungeon": false,
+        "useDungeonWallFace": true,
+        "hideFloorLabel": true,
+        "disableRandomEncounters": true,
+        "autoExitOnPerimeter": true,
+        "perimeterExitMiniMapColor": "#76a36a",
+        "wallFaceImg": "tile_trial_shrine_wall_face",
+        "tileOverrides": {},
+        "width": 25,
+        "height": 21,
+        "entryPoint": {
+            "x": 12,
+            "y": 19
+        },
+        "battleBg": "battle_bg_trial_shrine",
+        "tiles": [
             "SSSSSSSSSSSSSSSSSSSSSSSSS",
             "SGCWWWWWWWWWWWWWWWWWWWGGS",
             "SGGWWWWWWWWWWWWWWWWWWWGGS",
@@ -5466,280 +5665,282 @@ const FIXED_MAPS = {
             "SGGGGGGGGGGGGGGGGGGGGGGGS",
             "SSSSSSSSSSSSSSSSSSSSSSSSS"
         ],
-        floorDecorations: [
+        "floorDecorations": [
             {
-                type: "image",
-                imageKey: "overlay_trial_shrine_stage_a",
-                x: 10,
-                y: 3,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_trial_shrine_stage_a",
+                "x": 10,
+                "y": 3,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_trial_shrine_stage_b",
-                x: 11,
-                y: 3,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_trial_shrine_stage_b",
+                "x": 11,
+                "y": 3,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_trial_shrine_stage_c",
-                x: 12,
-                y: 3,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_trial_shrine_stage_c",
+                "x": 12,
+                "y": 3,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_trial_shrine_stage_d",
-                x: 13,
-                y: 3,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_trial_shrine_stage_d",
+                "x": 13,
+                "y": 3,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_trial_shrine_stage_e",
-                x: 14,
-                y: 3,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_trial_shrine_stage_e",
+                "x": 14,
+                "y": 3,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_trial_shrine_stage_f",
-                x: 10,
-                y: 4,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_trial_shrine_stage_f",
+                "x": 10,
+                "y": 4,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_trial_shrine_stage_g",
-                x: 11,
-                y: 4,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_trial_shrine_stage_g",
+                "x": 11,
+                "y": 4,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_trial_shrine_stage_h",
-                x: 12,
-                y: 4,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_trial_shrine_stage_h",
+                "x": 12,
+                "y": 4,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_trial_shrine_stage_i",
-                x: 13,
-                y: 4,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_trial_shrine_stage_i",
+                "x": 13,
+                "y": 4,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_trial_shrine_stage_j",
-                x: 14,
-                y: 4,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_trial_shrine_stage_j",
+                "x": 14,
+                "y": 4,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_trial_shrine_stage_k",
-                x: 10,
-                y: 5,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_trial_shrine_stage_k",
+                "x": 10,
+                "y": 5,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_trial_shrine_stage_l",
-                x: 11,
-                y: 5,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_trial_shrine_stage_l",
+                "x": 11,
+                "y": 5,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_trial_shrine_stage_m",
-                x: 12,
-                y: 5,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_trial_shrine_stage_m",
+                "x": 12,
+                "y": 5,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_trial_shrine_stage_n",
-                x: 13,
-                y: 5,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_trial_shrine_stage_n",
+                "x": 13,
+                "y": 5,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_trial_shrine_stage_o",
-                x: 14,
-                y: 5,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_trial_shrine_stage_o",
+                "x": 14,
+                "y": 5,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             }
         ],
-        movementRegions: [
+        "movementRegions": [
             {
-                id: "raised-stage",
-                x: 10,
-                y: 3,
-                width: 5,
-                height: 3,
-                gateways: [
+                "id": "raised-stage",
+                "x": 10,
+                "y": 3,
+                "width": 5,
+                "height": 3,
+                "gateways": [
                     {
-                        inside: {
-                            x: 12,
-                            y: 5
+                        "inside": {
+                            "x": 12,
+                            "y": 5
                         },
-                        outside: {
-                            x: 12,
-                            y: 6
+                        "outside": {
+                            "x": 12,
+                            "y": 6
                         }
                     }
                 ]
             }
         ],
-        blockingObjects: [
+        "blockingObjects": [
             {
-                x: 10,
-                y: 7,
-                imageKey: "overlay_trial_shrine_statue_a",
-                drawWidth: 40,
-                drawHeight: 64,
-                baseTile: "T",
-                log: "口を開いた阿形の守護像が、挑む者の覚悟を見定めている。"
+                "x": 10,
+                "y": 7,
+                "imageKey": "overlay_trial_shrine_statue_a",
+                "drawWidth": 40,
+                "drawHeight": 64,
+                "baseTile": "T",
+                "log": "口を開いた阿形の守護像が、挑む者の覚悟を見定めている。"
             },
             {
-                x: 14,
-                y: 7,
-                imageKey: "overlay_trial_shrine_statue_un",
-                drawWidth: 40,
-                drawHeight: 64,
-                baseTile: "T",
-                log: "口を結んだ吽形の守護像が、静かに祠の奥を守っている。"
+                "x": 14,
+                "y": 7,
+                "imageKey": "overlay_trial_shrine_statue_un",
+                "drawWidth": 40,
+                "drawHeight": 64,
+                "baseTile": "T",
+                "log": "口を結んだ吽形の守護像が、静かに祠の奥を守っている。"
             }
         ],
-        mapActions: [
+        "mapActions": [
             {
-                x: 12,
-                y: 3,
-                label: "中間試練に挑む",
-                log: "祠を満たす霊光が、自らの殻を破ろうとする者の魂へ応える。",
-                type: "limitBreakTrial",
-                trialType: "mid"
+                "x": 12,
+                "y": 3,
+                "label": "中間試練に挑む",
+                "log": "祠を満たす霊光が、自らの殻を破ろうとする者の魂へ応える。",
+                "type": "limitBreakTrial",
+                "trialType": "mid"
             }
         ],
-        healSprings: [
+        "healSprings": [
             {
-                x: 6,
-                y: 13,
-                imageKey: "overlay_shrine_healing_spring",
-                drawWidth: 44,
-                drawHeight: 44,
-                shimmer: true
+                "x": 6,
+                "y": 13,
+                "imageKey": "overlay_shrine_healing_spring",
+                "drawWidth": 44,
+                "drawHeight": 44,
+                "shimmer": true
             }
         ],
-        chests: [
+        "chests": [
             {
-                x: 2,
-                y: 1,
-                itemId: 99,
-                type: "item",
-                containerKind: "pot",
-                imageKey: "overlay_field_pot",
-                openedImageKey: "overlay_field_pot",
-                baseTile: "G"
+                "x": 2,
+                "y": 1,
+                "itemId": 99,
+                "type": "item",
+                "containerKind": "pot",
+                "imageKey": "overlay_field_pot",
+                "openedImageKey": "overlay_field_pot",
+                "baseTile": "G"
             },
             {
-                x: 19,
-                y: 11,
-                itemId: 1051,
-                type: "item"
+                "x": 19,
+                "y": 11,
+                "itemId": 1051,
+                "type": "item"
             },
             {
-                x: 19,
-                y: 13,
-                itemId: 1004,
-                type: "item"
+                "x": 19,
+                "y": 13,
+                "itemId": 1004,
+                "type": "item"
             },
             {
-                x: 19,
-                y: 15,
-                trapMonsterId: 120301,
-                trapFloor: 70,
-                type: "trap"
+                "x": 19,
+                "y": 15,
+                "trapMonsterId": 120301,
+                "trapFloor": 70,
+                "type": "trap"
             }
         ],
-        exitPoint: {
-            area: "WORLD",
-            x: 2,
-            y: 3
-        }
+        "exitPoint": {
+            "area": "WORLD",
+            "x": 2,
+            "y": 3
+        },
+        "mapId": "MAP000029",
+        "floorId": "MAP000029-00"
     },
-    SUMMIT_TEMPLE: {
-        name: "頂の神殿",
-        themeKey: "SUMMIT_TEMPLE",
-        isDungeon: false,
-        useDungeonWallFace: true,
-        hideFloorLabel: true,
-        disableRandomEncounters: true,
-        autoExitOnPerimeter: true,
-        perimeterExitMiniMapColor: "#76a36a",
-        wallFaceImg: "tile_summit_temple_wall_face",
-        elevatedEdges: {
-            terrainTiles: [
+    "SUMMIT_TEMPLE": {
+        "name": "頂の神殿",
+        "themeKey": "SUMMIT_TEMPLE",
+        "isDungeon": false,
+        "useDungeonWallFace": true,
+        "hideFloorLabel": true,
+        "disableRandomEncounters": true,
+        "autoExitOnPerimeter": true,
+        "perimeterExitMiniMapColor": "#76a36a",
+        "wallFaceImg": "tile_summit_temple_wall_face",
+        "elevatedEdges": {
+            "terrainTiles": [
                 "T"
             ],
-            voidTiles: [
+            "voidTiles": [
                 "^"
             ],
-            thickness: 6,
-            joinOverlap: 1,
-            cornerOverhang: 6,
-            keys: {
-                n: "overlay_summit_temple_cliff_edge_n",
-                e: "overlay_summit_temple_cliff_edge_e",
-                s: "overlay_summit_temple_cliff_edge_s",
-                w: "overlay_summit_temple_cliff_edge_w"
+            "thickness": 6,
+            "joinOverlap": 1,
+            "cornerOverhang": 6,
+            "keys": {
+                "n": "overlay_summit_temple_cliff_edge_n",
+                "e": "overlay_summit_temple_cliff_edge_e",
+                "s": "overlay_summit_temple_cliff_edge_s",
+                "w": "overlay_summit_temple_cliff_edge_w"
             }
         },
-        tileOverrides: {},
-        impassableTiles: [
+        "tileOverrides": {},
+        "impassableTiles": [
             "^"
         ],
-        width: 25,
-        height: 21,
-        entryPoint: {
-            x: 12,
-            y: 19
+        "width": 25,
+        "height": 21,
+        "entryPoint": {
+            "x": 12,
+            "y": 19
         },
-        battleBg: "battle_bg_summit_temple",
-        tiles: [
+        "battleBg": "battle_bg_summit_temple",
+        "tiles": [
             "^^^^^^^^^^^^^^^^^^^^^^^^^",
             "^^^^^^^^^^^^^^^^^^^^^^^^^",
             "^^^^^^^^^^^^^^^^^^^^^^^^^",
@@ -5762,303 +5963,301 @@ const FIXED_MAPS = {
             "SGGGGGGGGGGGGGGGGGGGGGGGS",
             "SSSSSSSSSSSSSSSSSSSSSSSSS"
         ],
-        skyOverlays: [
+        "skyOverlays": [
             {
-                imageKey: "overlay_summit_temple_cloud_bank",
-                x: 2,
-                y: 1,
-                drawWidth: 224,
-                drawHeight: 64
+                "imageKey": "overlay_summit_temple_cloud_bank",
+                "x": 2,
+                "y": 1,
+                "drawWidth": 224,
+                "drawHeight": 64
             },
             {
-                imageKey: "overlay_summit_temple_cloud_wispy",
-                x: 16,
-                y: 1,
-                drawWidth: 160,
-                drawHeight: 48
+                "imageKey": "overlay_summit_temple_cloud_wispy",
+                "x": 16,
+                "y": 1,
+                "drawWidth": 160,
+                "drawHeight": 48
             },
             {
-                imageKey: "overlay_summit_temple_cloud_compact",
-                x: 17,
-                y: 6,
-                drawWidth: 128,
-                drawHeight: 64
+                "imageKey": "overlay_summit_temple_cloud_compact",
+                "x": 17,
+                "y": 6,
+                "drawWidth": 128,
+                "drawHeight": 64
             }
         ],
-        floorDecorations: [
+        "floorDecorations": [
             {
-                type: "image",
-                imageKey: "overlay_summit_temple_stage_a",
-                x: 10,
-                y: 3,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_summit_temple_stage_a",
+                "x": 10,
+                "y": 3,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_summit_temple_stage_b",
-                x: 11,
-                y: 3,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_summit_temple_stage_b",
+                "x": 11,
+                "y": 3,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_summit_temple_stage_c",
-                x: 12,
-                y: 3,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_summit_temple_stage_c",
+                "x": 12,
+                "y": 3,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_summit_temple_stage_d",
-                x: 13,
-                y: 3,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_summit_temple_stage_d",
+                "x": 13,
+                "y": 3,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_summit_temple_stage_e",
-                x: 14,
-                y: 3,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_summit_temple_stage_e",
+                "x": 14,
+                "y": 3,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_summit_temple_stage_f",
-                x: 10,
-                y: 4,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_summit_temple_stage_f",
+                "x": 10,
+                "y": 4,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_summit_temple_stage_g",
-                x: 11,
-                y: 4,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_summit_temple_stage_g",
+                "x": 11,
+                "y": 4,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_summit_temple_stage_h",
-                x: 12,
-                y: 4,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_summit_temple_stage_h",
+                "x": 12,
+                "y": 4,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_summit_temple_stage_i",
-                x: 13,
-                y: 4,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_summit_temple_stage_i",
+                "x": 13,
+                "y": 4,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_summit_temple_stage_j",
-                x: 14,
-                y: 4,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_summit_temple_stage_j",
+                "x": 14,
+                "y": 4,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_summit_temple_stage_k",
-                x: 10,
-                y: 5,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_summit_temple_stage_k",
+                "x": 10,
+                "y": 5,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_summit_temple_stage_l",
-                x: 11,
-                y: 5,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_summit_temple_stage_l",
+                "x": 11,
+                "y": 5,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_summit_temple_stage_m",
-                x: 12,
-                y: 5,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_summit_temple_stage_m",
+                "x": 12,
+                "y": 5,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_summit_temple_stage_n",
-                x: 13,
-                y: 5,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_summit_temple_stage_n",
+                "x": 13,
+                "y": 5,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "image",
-                imageKey: "overlay_summit_temple_stage_o",
-                x: 14,
-                y: 5,
-                drawWidth: 32,
-                drawHeight: 32,
-                baseTile: "T"
+                "type": "image",
+                "imageKey": "overlay_summit_temple_stage_o",
+                "x": 14,
+                "y": 5,
+                "drawWidth": 32,
+                "drawHeight": 32,
+                "baseTile": "T"
             },
             {
-                type: "castle_carpet_blue_silver",
-                x: 12,
-                y: 6,
-                width: 1,
-                height: 12
+                "type": "castle_carpet_blue_silver",
+                "x": 12,
+                "y": 6,
+                "width": 1,
+                "height": 12
             }
         ],
-        movementRegions: [
+        "movementRegions": [
             {
-                id: "raised-stage",
-                x: 10,
-                y: 3,
-                width: 5,
-                height: 3,
-                gateways: [
+                "id": "raised-stage",
+                "x": 10,
+                "y": 3,
+                "width": 5,
+                "height": 3,
+                "gateways": [
                     {
-                        inside: {
-                            x: 12,
-                            y: 5
+                        "inside": {
+                            "x": 12,
+                            "y": 5
                         },
-                        outside: {
-                            x: 12,
-                            y: 6
+                        "outside": {
+                            "x": 12,
+                            "y": 6
                         }
                     }
                 ]
             }
         ],
-        blockingObjects: [
+        "blockingObjects": [
             {
-                x: 10,
-                y: 6,
-                imageKey: "overlay_summit_temple_statue_angel",
-                drawWidth: 40,
-                drawHeight: 64,
-                baseTile: "T",
-                log: "剣を伏せた天使像が、挑戦者の歩みを静かに見守っている。"
+                "x": 10,
+                "y": 6,
+                "imageKey": "overlay_summit_temple_statue_angel",
+                "drawWidth": 40,
+                "drawHeight": 64,
+                "baseTile": "T",
+                "log": "剣を伏せた天使像が、挑戦者の歩みを静かに見守っている。"
             },
             {
-                x: 14,
-                y: 6,
-                imageKey: "overlay_summit_temple_statue_divine_dragon",
-                drawWidth: 40,
-                drawHeight: 64,
-                baseTile: "T",
-                log: "神竜の像が翼を畳み、山頂の聖域を守っている。"
+                "x": 14,
+                "y": 6,
+                "imageKey": "overlay_summit_temple_statue_divine_dragon",
+                "drawWidth": 40,
+                "drawHeight": 64,
+                "baseTile": "T",
+                "log": "神竜の像が翼を畳み、山頂の聖域を守っている。"
             }
         ],
-        mapActions: [
+        "mapActions": [
             {
-                x: 12,
-                y: 3,
-                label: "最終試練に挑む",
-                log: "祭壇が、極限に迫る者の名を静かに問うている。",
-                type: "limitBreakTrial",
-                trialType: "final"
+                "x": 12,
+                "y": 3,
+                "label": "最終試練に挑む",
+                "log": "祭壇が、極限に迫る者の名を静かに問うている。",
+                "type": "limitBreakTrial",
+                "trialType": "final"
             }
         ],
-        healSprings: [
+        "healSprings": [
             {
-                x: 6,
-                y: 13,
-                imageKey: "overlay_shrine_healing_spring",
-                drawWidth: 44,
-                drawHeight: 44,
-                shimmer: true
+                "x": 6,
+                "y": 13,
+                "imageKey": "overlay_shrine_healing_spring",
+                "drawWidth": 44,
+                "drawHeight": 44,
+                "shimmer": true
             }
         ],
-        chests: [
+        "chests": [
             {
-                x: 22,
-                y: 9,
-                itemId: 99,
-                type: "item",
-                containerKind: "pot",
-                imageKey: "overlay_field_pot",
-                openedImageKey: "overlay_field_pot",
-                baseTile: "G"
+                "x": 22,
+                "y": 9,
+                "itemId": 99,
+                "type": "item",
+                "containerKind": "pot",
+                "imageKey": "overlay_field_pot",
+                "openedImageKey": "overlay_field_pot",
+                "baseTile": "G"
             },
             {
-                x: 19,
-                y: 11,
-                trapMonsterId: 120303,
-                trapFloor: 190,
-                type: "trap"
+                "x": 19,
+                "y": 11,
+                "trapMonsterId": 120303,
+                "trapFloor": 190,
+                "type": "trap"
             },
             {
-                x: 19,
-                y: 13,
-                itemId: 1034,
-                type: "item"
+                "x": 19,
+                "y": 13,
+                "itemId": 1034,
+                "type": "item"
             },
             {
-                x: 19,
-                y: 15,
-                itemId: 1043,
-                type: "item"
+                "x": 19,
+                "y": 15,
+                "itemId": 1043,
+                "type": "item"
             }
         ],
-        exitPoint: {
-            area: "WORLD",
-            x: 89,
-            y: 77
-        }
+        "exitPoint": {
+            "area": "WORLD",
+            "x": 89,
+            "y": 77
+        },
+        "mapId": "MAP000035",
+        "floorId": "MAP000035-00"
     },
-    LEGACION_PRISON: {
-        worldKey: "ABYSS_WORLD",
+    "LEGACION_PRISON": {
+        "worldKey": "ABYSS_WORLD",
+        "mapKind": "castleInterior",
+        "regionKey": "LEGACION",
         "name": "混沌魔城レガシオン 地下牢",
         "themeKey": "DARK_CASTLE",
-        "width": 31,
-        "height": 21,
+        "width": 23,
+        "height": 15,
         "tiles": [
-            "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-            "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-            "WWTTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
-            "WWTTWWWWWTWWWWWTWWWWWTWWWWWTTWW",
-            "WWTTWGGGWTWGGGWTWGGGWTWGGGWTTWW",
-            "WWTTWGGGWTWGGGWTWGGGWTWGGGWTTWW",
-            "WWTTWGGGWTWGGGWTWGGGWTWGGGWTTWW",
-            "WWTTWGGGWTWGGGWTWGGGWTWGGGWTTWW",
-            "WWTTWWWWWTWWWWWTWWWWWTWWWWWTTWW",
-            "WWTTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
-            "WWTTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
-            "WWTTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
-            "WWTTWWWWWTWWWWWTWWWWWTWWWWWTTWW",
-            "WWTTWGGGWTWGGGWTWGGGWTWGGGWTTWW",
-            "WWTTWGGGWTWGGGWTWGGGWTWGGGWTTWW",
-            "WWTTWGGGWTWGGGWTWGGGWTWGGGWTTWW",
-            "WWTTWGGGWTWGGGWTWGGGWTWGGGWTTWW",
-            "WWTTWWWWWTWWWWWTWWWWWTWWWWWTTWW",
-            "WWTTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
-            "WWWWWWWWWWWWWWWTWWWWWWWWWWWWWWW",
-            "WWWWWWWWWWWWWWWSWWWWWWWWWWWWWWW"
+            "WWWWWWWWWWWWWWWWWWWWWWW",
+            "WWWWWWWWWWWWWWWWWWWWWWW",
+            "WWGGGGGWWWTTTWWWGGGGGWW",
+            "WWGGGGGWWWTTTWWWGGGGGWW",
+            "WWGGGGGWWWTTTWWWGGGGGWW",
+            "WWWWTWWWWWTTTWWWWWTWWWW",
+            "WWTTTTTTTTTTTTTTTTTTTWW",
+            "WWTTTTTTTTTTTTTTTTTTTWW",
+            "WWTTTTTTTTTTTTTTTTTTTWW",
+            "WWWWTWWWWWTTTWWWWWTWWWW",
+            "WWGGGGGWWWTTTWWWGGGGGWW",
+            "WWGGGGGWWWTTTWWWGGGGGWW",
+            "WWGGGGGWWWTTTWWWGGGGGWW",
+            "WWTTTTTTTTTTTTTTTTTTTWW",
+            "WWWWWWWWWWWSWWWWWWWWWWW"
         ],
         "entryPoint": {
-            "x": 15,
-            "y": 18
+            "x": 11,
+            "y": 13
         },
         "battleBg": "battle_bg_lastboss",
         "exitPoint": {
@@ -6066,16 +6265,16 @@ const FIXED_MAPS = {
             "x": 14,
             "y": 13
         },
-        nextActorPlacementId: 4,
-        mapActors: [
+        "nextActorPlacementId": 4,
+        "mapActors": [
             {
                 "placementId": 1,
                 "actorId": "abyss_legacion_prison",
                 "name": "囚人",
-                "x": 21,
-                "y": 14,
+                "x": 18,
+                "y": 11,
                 "imageKey": "overlay_npc_villager",
-                "baseTile": "T",
+                "baseTile": "G",
                 "states": [
                     {
                         "stateId": "abyss_legacion_prison",
@@ -6093,10 +6292,10 @@ const FIXED_MAPS = {
                 "placementId": 2,
                 "actorId": "abyss_legacion_prison_mother",
                 "name": "牢前の母",
-                "x": 5,
-                "y": 9,
+                "x": 4,
+                "y": 3,
                 "imageKey": "overlay_npc_villager",
-                "baseTile": "T",
+                "baseTile": "G",
                 "states": [
                     {
                         "stateId": "abyss_legacion_prison_mother",
@@ -6114,8 +6313,8 @@ const FIXED_MAPS = {
                 "placementId": 3,
                 "actorId": "abyss_legacion_prison_guard",
                 "name": "牢番",
-                "x": 23,
-                "y": 11,
+                "x": 11,
+                "y": 7,
                 "imageKey": "overlay_npc_bronze_knight",
                 "baseTile": "T",
                 "states": [
@@ -6132,54 +6331,99 @@ const FIXED_MAPS = {
                 ]
             }
         ],
-        mapActions: [
+        "mapActions": [
             {
-                "x": 9,
-                "y": 6,
+                "x": 4,
+                "y": 5,
+                "type": "storyEvent",
+                "eventId": "abyss_legacion_prison_mother",
+                "label": "牢越しに母親へ声をかける",
+                "baseTile": "T",
+                "interactFromAdjacent": true,
+                "blocksMovement": true,
+                "suppressEventMarker": true
+            },
+            {
+                "x": 18,
+                "y": 9,
                 "type": "storyEvent",
                 "eventId": "abyss_legacion_prison",
+                "label": "牢内の囚人へ声をかける",
+                "baseTile": "T",
+                "interactFromAdjacent": true,
+                "blocksMovement": true,
+                "suppressEventMarker": true
+            },
+            {
+                "x": 18,
+                "y": 5,
+                "type": "log",
                 "label": "牢内を調べる",
-                "baseTile": "G"
+                "log": "湿った石床に、古い鎖だけが残されている。",
+                "baseTile": "T",
+                "interactFromAdjacent": true,
+                "blocksMovement": true,
+                "suppressEventMarker": true
+            }
+        ],
+        "blockingObjects": [
+            {
+                "x": 4,
+                "y": 5,
+                "imageKey": "overlay_light_prison_gate_horizontal",
+                "log": "錆びた牢門が行く手を塞いでいる。"
+            },
+            {
+                "x": 18,
+                "y": 5,
+                "imageKey": "overlay_light_prison_gate_horizontal",
+                "log": "錆びた牢門が行く手を塞いでいる。"
+            },
+            {
+                "x": 4,
+                "y": 9,
+                "imageKey": "overlay_light_prison_gate_horizontal",
+                "log": "錆びた牢門が行く手を塞いでいる。"
+            },
+            {
+                "x": 18,
+                "y": 9,
+                "imageKey": "overlay_light_prison_gate_horizontal",
+                "log": "錆びた牢門が行く手を塞いでいる。"
             }
         ],
         "mapId": "MAP000058",
         "floorId": "MAP000058-00",
-        "useHabitatEncounters": true
+        "useHabitatEncounters": false
     },
-    LEGACION_TEMPLE: {
-        worldKey: "ABYSS_WORLD",
+    "LEGACION_TEMPLE": {
+        "worldKey": "ABYSS_WORLD",
+        "mapKind": "castleInterior",
+        "regionKey": "LEGACION",
         "name": "混沌魔城レガシオン 地下神殿",
         "themeKey": "DARK_CASTLE",
-        "width": 33,
-        "height": 23,
+        "width": 21,
+        "height": 15,
         "tiles": [
-            "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-            "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-            "WWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
-            "WWTTTWWWWWWWWWWWWWWWWWWWWWWWTTTWW",
-            "WWTTTWTTTTTTTTTTTTTTTTTTTTTWTTTWW",
-            "WWTTTWTTTTTTTTTTTTTTTTTTTTTWTTTWW",
-            "WWTTTWTMTTTTTTTTTTTTTTTTTMTWTTTWW",
-            "WWTTTWTTTTTTTTTTTTTTTTTTTTTWTTTWW",
-            "WWTTTWTTTTTTTTTTTTTTTTTTTTTWTTTWW",
-            "WWTTTWTTTTTTTTTTTTTTTTTTTTTWTTTWW",
-            "WWTTTWTMTTTTTTTTTTTTTTTTTMTWTTTWW",
-            "WWTTTWTTTTTTTTTTTTTTTTTTTTTWTTTWW",
-            "WWTTTWTTTTTTTTTTTTTTTTTTTTTWTTTWW",
-            "WWTTTWTTTTTTTTTTTTTTTTTTTTTWTTTWW",
-            "WWTTTWTMTTTTTTTTTTTTTTTTTMTWTTTWW",
-            "WWTTTWTTTTTTTTTTTTTTTTTTTTTWTTTWW",
-            "WWTTTWTTTTTTTTTTTTTTTTTTTTTWTTTWW",
-            "WWTTTWTTTTTTTTTTTTTTTTTTTTTWTTTWW",
-            "WWTTTWWWWWWWWWWWTWWWWWWWWWWWTTTWW",
-            "WWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
-            "WWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
-            "WWWWWWWWWWWWWWWWTWWWWWWWWWWWWWWWW",
-            "WWWWWWWWWWWWWWWWSWWWWWWWWWWWWWWWW"
+            "WWWWWWWWWWWWWWWWWWWWW",
+            "WWWWWWWWWWWWWWWWWWWWW",
+            "WWTTTTTTTTTTTTTTTTTWW",
+            "WWTTTTTTTTTTTTTTTTTWW",
+            "WWTTTWWTTTTTTTWWTTTWW",
+            "WWTTTWWTTTTTTTWWTTTWW",
+            "WWTTTTTTTTTTTTTTTTTWW",
+            "WWTTTTTTTTTTTTTTTTTWW",
+            "WWTTTTTTTTTTTTTTTTTWW",
+            "WWTTTWWTTTTTTTWWTTTWW",
+            "WWTTTWWTTTTTTTWWTTTWW",
+            "WWTTTTTTTTTTTTTTTTTWW",
+            "WWTTTTTTTTTTTTTTTTTWW",
+            "WWWWWWWWWWTWWWWWWWWWW",
+            "WWWWWWWWWWSWWWWWWWWWW"
         ],
         "entryPoint": {
-            "x": 16,
-            "y": 20
+            "x": 10,
+            "y": 12
         },
         "battleBg": "battle_bg_lastboss",
         "exitPoint": {
@@ -6187,14 +6431,14 @@ const FIXED_MAPS = {
             "x": 34,
             "y": 13
         },
-        nextActorPlacementId: 2,
-        mapActors: [
+        "nextActorPlacementId": 2,
+        "mapActors": [
             {
                 "placementId": 1,
                 "actorId": "abyss_legacion_temple_acolyte",
                 "name": "侍祭",
-                "x": 11,
-                "y": 11,
+                "x": 6,
+                "y": 8,
                 "imageKey": "overlay_npc_villager",
                 "baseTile": "T",
                 "states": [
@@ -6211,72 +6455,76 @@ const FIXED_MAPS = {
                 ]
             }
         ],
-        mapActions: [
+        "mapActions": [
             {
-                "x": 16,
-                "y": 5,
+                "x": 10,
+                "y": 3,
                 "type": "fixedDungeon",
                 "target": "CHRONO_ABYSS",
                 "requiredItemId": 701007,
                 "requiredItemMissingText": "封印門は、混沌の核を求めている。",
                 "setFlagOnUse": "abyssChronoGateOpened",
                 "log": "混沌の結晶片が封印門に共鳴し、次元を隔てていた鎖がほどけた。",
-                "label": "封印門を開く"
+                "label": "封印門を開く",
+                "interactFromAdjacent": true,
+                "blocksMovement": true
+            }
+        ],
+        "floorDecorations": [
+            {
+                "type": "castle_carpet_blue_silver",
+                "x": 9,
+                "y": 3,
+                "width": 3,
+                "height": 10,
+                "blocking": false
             }
         ],
         "mapId": "MAP000059",
         "floorId": "MAP000059-00",
-        "useHabitatEncounters": true
+        "useHabitatEncounters": false
     },
-    LEGACION_THRONE: {
-        worldKey: "ABYSS_WORLD",
+    "LEGACION_THRONE": {
+        "worldKey": "ABYSS_WORLD",
+        "mapKind": "castleInterior",
+        "regionKey": "LEGACION",
         "name": "混沌魔城レガシオン 二階謁見の間",
         "themeKey": "DARK_CASTLE",
-        "width": 35,
-        "height": 23,
+        "width": 17,
+        "height": 13,
         "tiles": [
-            "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-            "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-            "WWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
-            "WWTTWWWWWWWWWWWWWWWWWWWWWWWWWWWTTWW",
-            "WWTTWTTTTTTTTGGGGGGGGGTTTTTTTTWTTWW",
-            "WWTTWTTTTTTTTGGGGGGGGGTTTTTTTTWTTWW",
-            "WWTTWTTTTTTTTGGGGGGGGGTTTTTTTTWTTWW",
-            "WWTTWTTTTTTTTGGGGTGGGGTTTTTTTTWTTWW",
-            "WWTTWTTTTTTTTTTTTTTTTTTTTTTTTTWTTWW",
-            "WWTTWTTTTTTTTTTTTTTTTTTTTTTTTTWTTWW",
-            "WWTTWTTTTTTTTTTTTTTTTTTTTTTTTTWTTWW",
-            "WWTTWTTTTTTTTTTTTTTTTTTTTTTTTTWTTWW",
-            "WWTTWTTTTTTTTTTTTTTTTTTTTTTTTTWTTWW",
-            "WWTTWTTTTTTTTTTTTTTTTTTTTTTTTTWTTWW",
-            "WWTTWTTTTTTTTTTTTTTTTTTTTTTTTTWTTWW",
-            "WWTTWTTTTTTTTTTTTTTTTTTTTTTTTTWTTWW",
-            "WWTTWTTTTTTTTTTTTTTTTTTTTTTTTTWTTWW",
-            "WWTTWTTTTTTTTTTTTTTTTTTTTTTTTTWTTWW",
-            "WWTTWWWWWWWWWWWWWTWWWWWWWWWWWWWTTWW",
-            "WWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
-            "WWTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTWW",
-            "WWWWWWWWWWWWWWWWWTWWWWWWWWWWWWWWWWW",
-            "WWWWWWWWWWWWWWWWWSWWWWWWWWWWWWWWWWW"
+            "WWWWWWWWWWWWWWWWW",
+            "WWWWWWWWWWWWWWWWW",
+            "WWTTTTTTGTTTTTTWW",
+            "WWTTTTTTGTTTTTTWW",
+            "WWTTTTTTTTTTTTTWW",
+            "WWTTTTTTTTTTTTTWW",
+            "WWTTTTTTTTTTTTTWW",
+            "WWTTTTTTTTTTTTTWW",
+            "WWTTTTTTTTTTTTTWW",
+            "WWTTTTTTTTTTTTTWW",
+            "WWTTTTTTTTTTTTTWW",
+            "WWWWWWWWTWWWWWWWW",
+            "WWWWWWWWSWWWWWWWW"
         ],
         "entryPoint": {
-            "x": 17,
-            "y": 20
+            "x": 8,
+            "y": 10
         },
         "battleBg": "battle_bg_lastboss",
         "exitPoint": {
             "area": "LEGACION_UPPER_GALLERY",
-            "x": 20,
+            "x": 14,
             "y": 3
         },
-        nextActorPlacementId: 3,
-        mapActors: [
+        "nextActorPlacementId": 3,
+        "mapActors": [
             {
                 "placementId": 1,
                 "actorId": "abyss_legacion_audience",
                 "name": "皇帝家の末裔",
-                "x": 17,
-                "y": 6,
+                "x": 8,
+                "y": 3,
                 "imageKey": "overlay_npc_villager",
                 "baseTile": "G",
                 "states": [
@@ -6296,8 +6544,8 @@ const FIXED_MAPS = {
                 "placementId": 2,
                 "actorId": "abyss_legacion_priest",
                 "name": "神官",
-                "x": 10,
-                "y": 11,
+                "x": 4,
+                "y": 7,
                 "imageKey": "overlay_npc_villager",
                 "baseTile": "T",
                 "states": [
@@ -6314,10 +6562,20 @@ const FIXED_MAPS = {
                 ]
             }
         ],
-        mapActions: [],
+        "mapActions": [],
+        "floorDecorations": [
+            {
+                "type": "castle_carpet",
+                "x": 7,
+                "y": 3,
+                "width": 3,
+                "height": 8,
+                "blocking": false
+            }
+        ],
         "mapId": "MAP000060",
         "floorId": "MAP000060-00",
-        "useHabitatEncounters": true
+        "useHabitatEncounters": false
     }
 };
 

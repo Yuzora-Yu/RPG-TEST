@@ -6127,21 +6127,21 @@ load: () => {
 
     monsterSkillEvolutionChains: Object.freeze([
         // 物理系：名称・用途が明確に連続するものだけを成長対象にする。
-        Object.freeze([102, 132]),                    // はやぶさ斬り → 超はやぶさ斬り
-        Object.freeze([112, 151]),                    // 魔人斬り → 大魔人斬り
-        Object.freeze([117, 144]),                    // やいばくだき → 真やいばくだき
-        Object.freeze([125, 147]),                    // キラージャグリング → ゴッドジャグリング
-        Object.freeze([131, 154]),                    // タイガークロー → ライガークラッシュ
+        Object.freeze([102, 132]),                    // 二段斬り → クアドリア
+        Object.freeze([112, 151]),                    // 羅刹斬り → 羅刹一文字
+        Object.freeze([117, 144]),                    // 刃砕き → 力脈断ち
+        Object.freeze([125, 147]),                    // 道化の刃 → アルレッキーノ
+        Object.freeze([131, 154]),                    // 虎爪 → レグルスの五爪
 
         // 属性呪文系。
-        Object.freeze([200, 207, 213, 224, 233]),     // メラ系
-        Object.freeze([201, 210, 217, 221, 235]),     // ヒャド系
-        Object.freeze([202, 211, 215, 222, 236]),     // バギ系
-        Object.freeze([203, 208, 214, 225, 234]),     // ドルマ系
-        Object.freeze([204, 209, 216, 223]),          // ギラ系
-        Object.freeze([205, 212, 218, 227, 232]),     // イオ系
-        Object.freeze([206, 226, 237]),               // デイン系
-        Object.freeze([219, 231]),                    // メテオ系
+        Object.freeze([200, 207, 213, 224, 233]),     // 炎・単体魔法系
+        Object.freeze([201, 210, 217, 221, 235]),     // 水・単体魔法系
+        Object.freeze([202, 211, 215, 222, 236]),     // 風・単体魔法系
+        Object.freeze([203, 208, 214, 225, 234]),     // 闇・単体魔法系
+        Object.freeze([204, 209, 216, 223]),          // 炎・全体魔法系
+        Object.freeze([205, 212, 218, 227, 232]),     // 光・全体魔法系
+        Object.freeze([206, 226, 237]),               // 雷魔法系
+        Object.freeze([219, 231]),                    // 星魔法系
 
         // ブレス・回復・状態異常系。
         Object.freeze([300, 302, 306, 310]),          // 炎ブレス系
@@ -9111,6 +9111,15 @@ const Field = {
         return key && typeof GRAPHICS !== 'undefined' ? (GRAPHICS.data?.[key] || null) : null;
     },
 
+    getPostBattleBossVisualContext: () => {
+        const pending = App.data?.progress?.pendingPostBattleBossVisual;
+        if (!pending || typeof StoryManager === 'undefined') return null;
+        const eventId = String(pending.eventId || '');
+        const event = StoryManager.events?.[eventId] || null;
+        if (!event || typeof StoryManager.getPostBattleBossVisualContext !== 'function') return null;
+        return StoryManager.getPostBattleBossVisualContext(eventId, event, pending.phase || 'actions');
+    },
+
     resolveFixedBossMapSpriteMonsterId: (bossDef) => {
         if (!bossDef) return null;
         const flags = App.data?.progress?.flags || {};
@@ -10681,6 +10690,33 @@ const Field = {
             }
         };
 
+        const drawPostBattleBossSprite = () => {
+            const visual = Field.getPostBattleBossVisualContext?.();
+            if (!visual) return;
+            const ox = Number(visual.x) - Number(Field.x);
+            const oy = Number(visual.y) - Number(Field.y);
+            if (Math.abs(ox) > rangeX + 2 || Math.abs(oy) > rangeY + 2) return;
+            const sizeTiles = Math.max(0.5, Number(visual.config?.size || 2));
+            const size = ts * sizeTiles;
+            const anchorX = cx + (ox * ts);
+            const anchorY = cy + (oy * ts) + ts / 2;
+            const src = Field.getMonsterMapSpriteSrc?.(visual.monsterId);
+            const img = Field.getDirectImage(src);
+            drawFootShadow(anchorX - ts / 2, anchorY - ts, 0, 0.28, ts * 0.62, ts * 0.16);
+            if (img && img.complete && img.naturalWidth > 0) {
+                ctx.save();
+                ctx.drawImage(img, anchorX - size / 2, anchorY - size, size, size);
+                ctx.restore();
+            } else {
+                ctx.save();
+                ctx.fillStyle = '#c78cff';
+                ctx.beginPath();
+                ctx.arc(anchorX, anchorY - size / 2, ts * 0.52, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        };
+
         drawOverlayImage(App.data?.dungeon?.healSpring, Dungeon.healSpringImagePath || 'assets/map/overlays/overlay_shrine_healing_spring.png', '#80ffb0');
         if (Field.currentMapData?.isFixed && Field.getFixedHealSpringsForCurrentFloor) {
             Field.getFixedHealSpringsForCurrentFloor().forEach(s => {
@@ -10695,6 +10731,9 @@ const Field = {
         drawOverlayImage(App.data?.dungeon?.keyGuardian, 'assets/monsters/monster_000103.png', '#ffd78a');
         drawOverlayImage(App.data?.dungeon?.trialAngel, 'assets/map/overlays/overlay_dungeon_trial_angel.png', '#fff3a6');
         drawAbyssBossSprite();
+        // 通常MAPボスと同じく主人公より前の専用DOMレイヤーを使わず、
+        // MAPオブジェクト描画の段階で戦後会話中のボスを保持する。
+        drawPostBattleBossSprite();
 
         // 4. 壁際の影は、溶岩・宝箱・階段・常設泉などの上から最後に重ねる。
         // プレイヤーまで暗くしないよう、プレイヤー描画の直前で止める。

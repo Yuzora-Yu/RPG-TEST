@@ -113,7 +113,7 @@ const finalForm = bosses.find(monster => Number(monster.id) === 302101);
 assert(firstForm && finalForm && Number(firstForm.imageId) === 302100 && Number(finalForm.imageId) === 302101, 'アゼルガラグ2形態を別ID・別画像で正本化');
 assert(Number(firstForm?.phaseTransitionMonsterId) === 302101 && firstForm?.phaseTransitionConversation === 'ABYSS_AZELGARAG_TRANSFORM' && finalForm?.isAzelgaragFinalForm === true, 'アゼルガラグ形態移行の正本参照が相互に整合');
 
-const storySource = fs.readFileSync(path.join(root, 'abyss_story.js'), 'utf8');
+const storySource = fs.readFileSync(path.join(root, 'story.js'), 'utf8');
 const battleSource = fs.readFileSync(path.join(root, 'battle.js'), 'utf8');
 const mapContext = { console, Math, setTimeout, clearTimeout, tileEntry: (img, color) => ({ img, color }) };
 mapContext.window = mapContext;

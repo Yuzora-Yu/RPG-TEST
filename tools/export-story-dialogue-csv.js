@@ -14,7 +14,7 @@ function loadStoryData() {
     sandbox.window = sandbox;
     sandbox.globalThis = sandbox;
     vm.createContext(sandbox);
-    for (const file of ['story.js', 'abyss_story.js']) {
+    for (const file of ['story.js']) {
         vm.runInContext(fs.readFileSync(path.join(root, file), 'utf8'), sandbox, { filename: file });
     }
     if (!sandbox.STORY_MANAGER_DATA) throw new Error('STORY_MANAGER_DATA could not be loaded.');

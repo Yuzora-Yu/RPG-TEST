@@ -34,11 +34,13 @@ This document records the current responsibility of each runtime JavaScript file
 - `skills.js`: skill master data.
 - `items.js`: item master data, including transport/travel items such as `Magic Boat`, `Light Wing`, and `Sky Prism`.
 - `map.js`: world map data, story area coordinates, fixed field maps, fixed dungeon floors, tile themes, fixed-tile overlay rules, world field-tile overrides, and sea encounter monster IDs.
-- `story.js`: story area data, event flow, and story progress helpers.
+- `story.js`: all editable story data for both the surface world and the Abyss, including scripts, events, objectives, and progress milestones. Runtime execution helpers remain in `story_logic.js`.
 - `achievements.js`: achievement master data, progress checks, and reward grants.
 - `news.js`: in-game news data.
 - `sw.js`: PWA/service worker app shell cache, runtime asset cache, and background image warm cache.
 - `serve-local.js`: local static file server for development verification.
+
+`abyss_story.js` was retired. Splitting story data by region made the editor and runtime load different event sets, so `story.js` is now the single story-data source of truth.
 
 Large-file split candidates remain `battle.js` and `main.js`. Split them only after behavior is stable and the new module boundary can be verified with gameplay smoke tests.
 

@@ -12,7 +12,6 @@ const runtime = loadMapRuntime(root, { context: { App: { data: { location: { are
 runtime.context.window = runtime.context;
 runtime.context.MAP_IDS = runtime.context.window.MAP_IDS;
 runtime.runFile('story.js', 'globalThis.STORY_MANAGER_DATA = STORY_MANAGER_DATA;');
-runtime.runFile('abyss_story.js');
 const c = runtime.context;
 
 const tileAt = (tiles, x, y) => String(tiles?.[y]?.[x] || 'W').toUpperCase();
@@ -264,7 +263,11 @@ Object.entries(penalties).forEach(([key, expected]) => {
 });
 
 const finalBosses = c.FIXED_DUNGEON_MAPS.FINAL_ALTAR.bosses || [];
-assert(finalBosses.length === 1 && finalBosses[0].clearedFlag === 'abyssVegnasisDefeated', '終焉の祭壇MAPはヴェグナシスだけを起点とし、重複するアゼルガラグ着火点を持たない');
+assert(finalBosses.length === 1 && finalBosses[0].clearedFlag === 'abyssAzelgaragDefeated'
+    && finalBosses[0].startEventId === 'abyss_final_altar_encounter'
+    && Array.isArray(finalBosses[0].mapSpriteVariants)
+    && finalBosses[0].mapSpriteVariants.some(state => state.requiredFlag === 'abyssVegnasisDefeated' && Number(state.monsterId) === 302100),
+    '終焉の祭壇MAPは単一ボスマスをヴェグナシス段階／アゼルガラグ段階で共有する');
 assert(finalBosses.every(boss => !!boss.startEventId), '終焉の祭壇ボス開始イベントをMAP正本から参照');
 const chain = c.STORY_MANAGER_DATA.events.abyss_vegnasis_clear.actions || [];
 assert(chain.some(action => action.type === 'BOSS' && Number(action.value) === 302100 && action.winEventId === 'abyss_azelgarag_clear'), 'ヴェグナシス後にアゼルガラグへ連戦');
@@ -285,7 +288,7 @@ const mapsLogicSource = read('maps_logic.js');
 const dungeonSource = read('dungeon.js');
 const mainSource = read('main.js');
 const battleSource = read('battle.js');
-const abyssStorySource = read('abyss_story.js');
+const abyssStorySource = read('story.js');
 const storyLogicSource = read('story_logic.js');
 const itemsSource = read('items.js');
 const swSource = read('sw.js');
@@ -297,7 +300,9 @@ assert(/type\s*!==\s*'スキル書'/.test(itemsSource) && /type\s*!==\s*'特性�
 assert(/Dungeon\.map\[y\]\[x\]\s*=\s*'T';[\s\S]{0,240}Dungeon\.saveMapData\(\);[\s\S]{0,120}Field\.render\(\);/.test(dungeonSource), 'ランダム宝箱は報酬分岐より前に床化して保存');
 assert(/const targetMarker = Number\(link\.toFloor\) < currentFloor \? 'D' : 'U'/.test(dungeonSource)
     && /String\(nextDef\.tiles\[y\]/.test(dungeonSource), '固定階と可変階の往復は進行方向に対応する階段へ着地');
-assert(/if \(opened\) \{\s*tile = String\(chestDef\?\.baseTile \|\| 'T'\)/s.test(mainSource), '開封済み固定宝箱を床として通行可能にする');
+assert(/openedChest[\s\S]{0,220}shouldRemoveOpenedFixedChest[\s\S]{0,220}getOpenedFixedChestBaseTile/.test(mainSource)
+    && /isFixedChestOpenedAt\(x, y\)[\s\S]{0,220}shouldRemoveOpenedFixedChest/.test(mainSource),
+    '開封済み固定宝箱を描画・現在地・移動判定で床として通行可能にする');
 assert(/App\.data\.location\.area = targetWorldKey/.test(mainSource) && /skyPrismEntryPoint/.test(mainSource), 'スカイプリズムで第二ワールドとカルメナ内部へ正式移動');
 assert(/getEnvironmentalElementModifiers/.test(mainSource) && /environmentalElmRes/.test(mainSource), '環境耐性をApp.calcStats正本へ統合');
 assert(/migrateAbyssRegionSave/.test(mainSource) && /abyssRegionSchemaVersion\s*=\s*7/.test(mainSource) && /abyssThunderDunesCrossed/.test(mainSource), '適用済み旧セーブの横断フラグ・座標移行をApp.loadへ統合');

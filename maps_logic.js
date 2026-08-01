@@ -1,5 +1,56 @@
 /* maps_logic.js - generated split from original map.js. Keep editor output out of this file. */
 
+const FIXED_MAP_COORDINATE_LIST_KEYS = Object.freeze([
+    'chests', 'bosses', 'floorLinks', 'mapActors', 'mapActions',
+    'tileEffects', 'healSprings', 'floorDecorations', 'blockingObjects'
+]);
+
+// 地上・深淵、町・城・固定ダンジョンを同じ編集／実行契約へ揃える。
+// map.js は配置データの正本、maps_logic.js は欠損配列・寸法・識別情報を
+// 冪等に補う共通層とし、深淵だけの別形式を作らない。
+const normalizeFixedMapSchema = (fieldDefs, dungeonDefs) => {
+    const normalizeOne = (target, context = {}) => {
+        if (!target || typeof target !== 'object') return target;
+        const rows = Array.isArray(target.tiles) ? target.tiles.map(row => String(row)) : [];
+        if (!Number.isFinite(Number(target.width)) && rows.length) {
+            target.width = Math.max(0, ...rows.map(row => row.length));
+        }
+        if (!Number.isFinite(Number(target.height)) && rows.length) target.height = rows.length;
+        if (!target.entryPoint && Number(target.width) > 0 && Number(target.height) > 0) {
+            target.entryPoint = { x: Math.floor(Number(target.width) / 2), y: Math.max(1, Number(target.height) - 2) };
+        }
+        // 固定ダンジョン階は base 定義の配列を継承できるため、未定義を空配列で
+        // 上書きしない。固定エリアとダンジョン基底だけを完全な編集形へ揃える。
+        if (context.fillLists !== false) {
+            FIXED_MAP_COORDINATE_LIST_KEYS.forEach(key => {
+                if (!Array.isArray(target[key])) target[key] = [];
+            });
+        }
+        target.areaKey = target.areaKey || context.areaKey || null;
+        target.regionKey = target.regionKey || context.regionKey || context.areaKey || null;
+        target.mapKind = target.mapKind || context.mapKind || 'field';
+        return target;
+    };
+
+    Object.entries(fieldDefs || {}).forEach(([areaKey, def]) => {
+        normalizeOne(def, { areaKey, regionKey: def?.regionKey || areaKey, mapKind: def?.mapKind || 'field' });
+    });
+    Object.entries(dungeonDefs || {}).forEach(([areaKey, base]) => {
+        normalizeOne(base, { areaKey, regionKey: base?.regionKey || areaKey, mapKind: 'dungeon' });
+        if (Array.isArray(base?.floors)) {
+            base.floors.forEach((floor, index) => normalizeOne(floor, {
+                areaKey,
+                regionKey: base.regionKey || areaKey,
+                mapKind: 'dungeonFloor',
+                floor: index + 1,
+                fillLists: false
+            }));
+        }
+    });
+};
+
+normalizeFixedMapSchema(FIXED_MAPS, FIXED_DUNGEON_MAPS);
+
 const normalizeCoordinateActorTiles = (mapDefs) => {
     Object.values(mapDefs || {}).forEach(mapDef => {
         const targets = Array.isArray(mapDef.floors) ? mapDef.floors : [mapDef];
@@ -658,6 +709,8 @@ const MapRegistry = {
 
 if (typeof window !== "undefined") {
     window.MapRegistry = MapRegistry;
+    window.normalizeFixedMapSchema = normalizeFixedMapSchema;
+    window.FIXED_MAP_COORDINATE_LIST_KEYS = FIXED_MAP_COORDINATE_LIST_KEYS;
     window.FIXED_TILE_OVERLAYS = FIXED_TILE_OVERLAYS;
     window.FIXED_OVERLAY_BASE_TILES = FIXED_OVERLAY_BASE_TILES;
     window.SEA_ENCOUNTER_MONSTERS = SEA_ENCOUNTER_MONSTERS;

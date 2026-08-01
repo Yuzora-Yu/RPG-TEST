@@ -49,7 +49,6 @@ const { context, runFile } = loadMapRuntime(root, { context: {
 
 runFile('dungeon.js', 'globalThis.Dungeon = Dungeon;');
 runFile('story.js', 'globalThis.STORY_MANAGER_DATA = STORY_MANAGER_DATA;');
-runFile('abyss_story.js');
 runFile('story_logic.js', 'globalThis.StoryManager = StoryManager;');
 
 const { FIXED_MAPS, FIXED_DUNGEON_MAPS, MapRegistry } = context;

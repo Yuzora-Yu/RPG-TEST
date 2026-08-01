@@ -60,7 +60,6 @@ function loadStoryRuntime(root, options = {}) {
 function loadMapStoryRuntime(root, options = {}) {
   const runtime = loadMapRuntime(root, options);
   runtime.runFile('story.js', 'globalThis.STORY_MANAGER_DATA = STORY_MANAGER_DATA;');
-  runtime.runFile('abyss_story.js');
   runtime.runFile('story_logic.js', 'globalThis.StoryManager = StoryManager;');
   return runtime;
 }

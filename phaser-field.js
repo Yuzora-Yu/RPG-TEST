@@ -852,6 +852,36 @@
         }
     };
 
+    const drawPostBattleBossObject = (scene, field) => {
+        if (typeof field.getPostBattleBossVisualContext !== 'function') return;
+        const visual = field.getPostBattleBossVisualContext();
+        if (!visual) return;
+        const monsterId = Number(visual.monsterId);
+        const x = Number(visual.x);
+        const y = Number(visual.y);
+        if (!Number.isFinite(monsterId) || !Number.isFinite(x) || !Number.isFinite(y)) return;
+
+        const px = x * TILE_SIZE + TILE_SIZE / 2;
+        const py = y * TILE_SIZE + TILE_SIZE;
+        const key = field.getMonsterMapSpriteKey
+            ? field.getMonsterMapSpriteKey(monsterId)
+            : `monster_${monsterId}`;
+        const sizeTiles = Math.max(0.5, Number(visual.config?.size || 2));
+        // 通常の固定ボスと同じ行深度。主人公は y*100+88 なので、同じ行では
+        // 主人公が前、上下行では位置関係に応じて自然に前後する。
+        const depth = y * 100 + 84;
+        addShadow(scene, px + 3, py - 2, Math.max(30, TILE_SIZE * sizeTiles * 0.58), 0.29, depth - 3);
+        if (!addImage(scene, key, px, py, {
+            width: TILE_SIZE * sizeTiles,
+            height: TILE_SIZE * sizeTiles,
+            depth
+        })) {
+            const marker = scene.add.circle(px, py - TILE_SIZE / 2, 15, 0xc78cff, 0.95);
+            marker.setDepth(depth);
+            state.worldObjects.push(marker);
+        }
+    };
+
     const miniTileColor = (field, tile, x, y) => {
         if (typeof field.getMiniMapTileColor === 'function') {
             return colorToInt(field.getMiniMapTileColor(tile, x, y), 0x333333);
@@ -1101,6 +1131,7 @@
             progress.storyStep || 0,
             progress.subStep || 0,
             JSON.stringify(progress.flags || {}),
+            JSON.stringify(progress.pendingPostBattleBossVisual || null),
             special,
             randomDungeonMapSignature,
             JSON.stringify(progress.mapChanges?.[progressKey] || {}),
@@ -1230,6 +1261,7 @@
             });
         }
 
+        drawPostBattleBossObject(scene, field);
         drawPlayer(scene, field);
         drawAtmosphere(scene, field);
         if (typeof field.drawHudMinimap === 'function') field.drawHudMinimap();

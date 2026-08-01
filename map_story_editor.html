@@ -272,6 +272,8 @@
     if (act === 'resizeMap') resizeSelectedMap();
     if (act === 'removeAtCoord') removePlacementAt(state.selectedCoord.x, state.selectedCoord.y, btn.dataset.kind || 'all');
     if (act === 'clearManagedHazard') clearManagedHazard(btn.dataset.hazard || state.selectedHazard);
+    if (act === 'addTransitionPreset') addTransitionPreset(btn.dataset.kind || 'up');
+    if (act === 'addPrisonGatePreset') addPrisonGatePreset();
   }
 
   function renderAll(){ renderNav(); renderList(); renderMain(); drawMap(); }
@@ -328,11 +330,14 @@
           <div><label>名前</label><input id="mapName" value="${esc(map.name || '')}"></div>
           <div><label>themeKey</label><select id="mapTheme">${themeOptions(themeKey)}</select></div>
           <div><label>battleBg</label><input id="mapBattleBg" value="${esc(map.battleBg || '')}"></div>
+          <div><label>mapKind</label><input id="mapKind" value="${esc(map.mapKind || (ent?.type==='dungeon'?'dungeonFloor':'field'))}"></div>
+          <div><label>regionKey</label><input id="mapRegionKey" value="${esc(map.regionKey || ent?.base?.regionKey || ent?.id || '')}"></div>
           <div><label>選択座標</label><input value="x:${state.selectedCoord.x}, y:${state.selectedCoord.y}" readonly></div>
         </div>
         <div class="toolbar" style="margin-top:10px"><button class="btn green" data-act="resizeMap">基本設定を反映/リサイズ</button><span class="hint">リサイズ時、足りない部分は選択中タイルで埋めます。</span></div>
       </div>
       ${placementToolsHtml(map, ent)}
+      ${transitionPresetHtml(ent)}
       <div class="card"><h2>地形タイル一覧 <span class="pill">選択中: ${esc(state.selectedTile)}</span></h2><div class="tile-palette">${tilePaletteHtml(map)}</div></div>
       <div class="card"><h2>座標オブジェクト</h2>${coordinateObjectSummaryHtml(map)}${objectSectionsHtml(map)}</div>
       <div class="card"><h2>詳細JSON <span class="hint">既存機能の全キーをここで編集できます</span></h2><textarea id="mapJson" class="jsonbox">${esc(state.jsonDraft)}</textarea><div class="toolbar" style="margin-top:10px"><button class="btn green" data-act="applyMapJson">JSONを反映</button></div></div>
@@ -364,6 +369,11 @@
     const w=Math.max(1, Math.floor(num($('mapWidth').value, map.width || rowWidth(map.tiles))));
     const h=Math.max(1, Math.floor(num($('mapHeight').value, map.height || (map.tiles||[]).length)));
     map.width=w; map.height=h; map.tiles = normalizeRows(map.tiles || [], w, h).map(r => r.replace(/T/g, state.selectedTile || 'T'));
+    if($('mapName')) map.name=$('mapName').value;
+    if($('mapTheme')) map.themeKey=$('mapTheme').value;
+    if($('mapBattleBg')) map.battleBg=$('mapBattleBg').value;
+    if($('mapKind')) map.mapKind=$('mapKind').value || (ent.type==='dungeon'?'dungeonFloor':'field');
+    if($('mapRegionKey')) map.regionKey=$('mapRegionKey').value || ent.id;
     if (ent.type === 'world') state.data.mapData = map.tiles; else ent.set(map);
     state.jsonDraft=''; markDirty(); rebuildEntities(); renderAll();
   }
@@ -556,6 +566,91 @@
     if (list==='blockingObjects') return o.imageKey || o.label || 'blocking object';
     return o.label || o.type || JSON.stringify(o);
   }
+  function transitionPresetHtml(ent){
+    if(!ent || ent.type==='world') return '';
+    return `<div class="card"><h2>移動・門テンプレート <span class="hint">選択座標へ地形と接続定義を同時配置</span></h2>
+      <div class="toolbar">
+        <button class="btn small primary" data-act="addTransitionPreset" data-kind="up">上り階段</button>
+        <button class="btn small primary" data-act="addTransitionPreset" data-kind="down">下り階段</button>
+        <button class="btn small green" data-act="addTransitionPreset" data-kind="floor">床移動</button>
+        <button class="btn small green" data-act="addTransitionPreset" data-kind="exit">外へ出る床</button>
+        <button class="btn small gold" data-act="addTransitionPreset" data-kind="fixedMap">別エリアへの扉</button>
+        <button class="btn small" data-act="addPrisonGatePreset">牢屋門</button>
+      </div>
+      <div class="mini">固定ダンジョンの階段・床移動は floorLinks、固定エリア同士の階段・床・扉は mapActions(type: fixedMap)、外周床は exitPoint、牢屋門は blockingObjects と隣接イベントを同時に作成します。</div>
+    </div>`;
+  }
+
+  function replaceMapTileAt(map,x,y,tile){
+    const width=Number(map.width||rowWidth(map.tiles)); const height=Number(map.height||(map.tiles||[]).length);
+    const rows=normalizeRows(map.tiles||[],width,height);
+    if(x<0||y<0||x>=width||y>=height) throw new Error('選択座標がマップ範囲外です');
+    rows[y]=rows[y].slice(0,x)+String(tile||'T').charAt(0)+rows[y].slice(x+1);
+    map.tiles=rows;
+  }
+
+  function addTransitionPreset(kind){
+    const ent=selectedMapEntity(); if(!ent || ent.type==='world') return;
+    const map=ent.get(); const {x,y}=state.selectedCoord;
+    try{
+      if(kind==='fixedMap'){
+        const target=prompt('接続先の固定エリアID（例: LEGACION_THRONE）'); if(!target) return;
+        const entryKey=prompt('接続先 entryKey（不要なら空欄）','')||'';
+        replaceMapTileAt(map,x,y,'T');
+        if(!Array.isArray(map.mapActions)) map.mapActions=[];
+        map.mapActions=map.mapActions.filter(a=>!(Number(a.x)===x&&Number(a.y)===y&&a.type==='fixedMap'));
+        map.mapActions.push({x,y,type:'fixedMap',target,...(entryKey?{entryKey}:{}),label:'扉を開く',interactFromAdjacent:true});
+      }else if(ent.type==='dungeon'){
+        if(!Array.isArray(map.floorLinks)) map.floorLinks=[];
+        map.floorLinks=map.floorLinks.filter(link=>!(Number(link.x)===x&&Number(link.y)===y));
+        if(kind==='exit'){
+          replaceMapTileAt(map,x,y,'S');
+          map.floorLinks.push({x,y,to:'EXIT',label:'外に出る'});
+        }else{
+          const currentFloor=Number(map.floor||ent.floor||1);
+          const defaultTarget=kind==='up'?currentFloor+1:kind==='down'?Math.max(1,currentFloor-1):currentFloor+1;
+          const toFloor=Number(prompt('移動先の階番号',String(defaultTarget))); if(!Number.isFinite(toFloor)||toFloor<1) return;
+          const targetX=Number(prompt('移動先X',String(x))); const targetY=Number(prompt('移動先Y',String(y)));
+          const tile=kind==='up'?'U':kind==='down'?'D':'S';
+          replaceMapTileAt(map,x,y,tile);
+          map.floorLinks.push({x,y,toFloor,targetX:Number.isFinite(targetX)?targetX:x,targetY:Number.isFinite(targetY)?targetY:y,label:kind==='floor'?'床を移動する':'階段を使う',...(kind==='floor'?{auto:true,transitionStyle:'floor'}:{})});
+        }
+      }else if(kind==='exit'){
+        const area=prompt('退出先エリアID（WORLD / ABYSS_WORLD / 固定エリアID）',String(map.exitPoint?.area||map.worldKey||'WORLD')); if(!area) return;
+        const targetX=Number(prompt('退出先X',String(map.exitPoint?.x??0))); const targetY=Number(prompt('退出先Y',String(map.exitPoint?.y??0)));
+        replaceMapTileAt(map,x,y,'S');
+        map.exitPoint={area,...((area==='WORLD'||area==='ABYSS_WORLD')?{worldKey:area}:{}),x:Number.isFinite(targetX)?targetX:0,y:Number.isFinite(targetY)?targetY:0};
+      }else{
+        const target=prompt('接続先の固定エリアID（例: LEGACION_THRONE）'); if(!target) return;
+        const entryKey=prompt('接続先 entryKey（不要なら空欄）','')||'';
+        const tile=kind==='up'?'U':kind==='down'?'D':'S';
+        replaceMapTileAt(map,x,y,tile);
+        if(!Array.isArray(map.mapActions)) map.mapActions=[];
+        map.mapActions=map.mapActions.filter(a=>!(Number(a.x)===x&&Number(a.y)===y&&a.type==='fixedMap'));
+        map.mapActions.push({x,y,type:'fixedMap',target,...(entryKey?{entryKey}:{}),label:kind==='floor'?'床を移動する':'階段を使う'});
+      }
+      ent.set(map); state.jsonDraft=''; markDirty(); renderAll();
+    }catch(e){ alert(e.message); }
+  }
+
+  function addPrisonGatePreset(){
+    const ent=selectedMapEntity(); if(!ent || ent.type==='world') return;
+    const map=ent.get(); const {x,y}=state.selectedCoord;
+    const eventId=prompt('門越しに起動するeventId（表示だけなら空欄）','')||'';
+    try{
+      replaceMapTileAt(map,x,y,'T');
+      if(!Array.isArray(map.blockingObjects)) map.blockingObjects=[];
+      map.blockingObjects=map.blockingObjects.filter(o=>!(Number(o.x)===x&&Number(o.y)===y));
+      map.blockingObjects.push({x,y,imageKey:'overlay_light_prison_gate_horizontal',log:'牢門が行く手を塞いでいる。'});
+      if(eventId){
+        if(!Array.isArray(map.mapActions)) map.mapActions=[];
+        map.mapActions=map.mapActions.filter(a=>!(Number(a.x)===x&&Number(a.y)===y));
+        map.mapActions.push({x,y,type:'storyEvent',eventId,label:'牢越しに話す',interactFromAdjacent:true,blocksMovement:true,suppressEventMarker:true,baseTile:'T'});
+      }
+      ent.set(map); state.jsonDraft=''; markDirty(); renderAll();
+    }catch(e){ alert(e.message); }
+  }
+
   function objectSectionsHtml(map){
     return ['chests','bosses','floorLinks','mapActors','mapActions','tileEffects','healSprings','floorDecorations','blockingObjects'].map(list => objectSectionHtml(list, map[list] || [])).join('');
   }

@@ -1,6 +1,6 @@
 # カルメナ住民会話 草稿 2026-07-29
 
-> 状態: 2026-07-29 ユーザー承認済み。四イベントへ分割して `abyss_story.js` と `map.js` へ実装。
+> 状態: 2026-07-29 ユーザー承認済み。四イベントへ分割して、現在の `story.js` と `map.js` へ実装。
 
 ## 狙い
 
@@ -107,5 +107,5 @@ Date: 2026-07-29
 
 ### Implemented files
 
-- `abyss_story.js`
+- `story.js`（旧 `abyss_story.js` の内容を統合）
 - `map.js`

@@ -57,6 +57,7 @@ const PRECACHE_FILES = [
   "menus_skill_detail.js",
   "menus_trait_detail.js",
   "menus_exchange.js",
+  "tutorial.js",
   "menus_news_detail.js",
   "menus_achievements.js",
   "database.js",

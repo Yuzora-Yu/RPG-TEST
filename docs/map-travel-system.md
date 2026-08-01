@@ -6,9 +6,23 @@ This document records the current fixed-map, transport, and travel-item implemen
 
 - `map.js` is the source of truth for world coordinates, fixed field maps, fixed dungeon maps, tile themes, and overlay rules.
 - `STORY_DATA.areas` owns each named area's world coordinate, rank, and optional `fieldTile` for world-map landmark rendering.
-- `FIXED_MAPS` owns field-style fixed maps such as villages, abyss outer field, and shrine-style areas.
+- `FIXED_MAPS` owns field-style fixed maps such as villages, castles, Abyss towns, and interior rooms.
 - `FIXED_DUNGEON_MAPS` owns fixed dungeon bases and floor arrays. `MapRegistry.getFixedDungeonFloor()` merges base and floor data for runtime use.
+- Surface and Abyss definitions use the same coordinate-list contract: `floorLinks`, `mapActions`, `mapActors`, `chests`, `bosses`, `healSprings`, `floorDecorations`, and `blockingObjects`. `normalizeFixedMapSchema()` supplies shared metadata and missing list containers without introducing an Abyss-only runtime format.
+- `mapKind` and `regionKey` are editor-facing metadata. They describe purpose and grouping without changing movement rules.
 - `MapRegistry` also owns fixed-map helpers for map actions, floor links, fixed chests, fixed bosses, world coordinate lookup, overlay lookup, and stair direction labels.
+
+## Editor Transition Templates
+
+`map_story_editor.html` edits both surface and Abyss fixed maps from the same registries. The selected coordinate can create the following paired terrain/data definitions:
+
+- In a fixed dungeon, up/down stairs and floor transfers use tile `U` / `D` / `S` plus a `floorLinks` destination.
+- In a field-style fixed area, stairs and floor transfers use tile `U` / `D` / `S` plus a `mapActions` entry with `type: "fixedMap"`.
+- A fixed-dungeon exit uses tile `S` plus `to: "EXIT"`; a field-style fixed-area exit uses tile `S` plus `exitPoint`.
+- A door to another fixed area uses a `mapActions` entry with `type: "fixedMap"`.
+- A prison gate uses a blocking gate object and an optional adjacent story event.
+
+This keeps collision, rendering, action labels, entry points, and editor output in one definition instead of placing transition behavior in map-specific code.
 
 ## Tile Rendering
 
