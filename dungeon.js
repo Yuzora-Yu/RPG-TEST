@@ -250,9 +250,15 @@ const Dungeon = {
             ? bossDef.clearedFlags.filter(Boolean)
             : (bossDef?.clearedFlag ? [bossDef.clearedFlag] : []);
 
+        const nonce = `boss-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
+        const startEventId = bossDef.startEventId || null;
+        const battleChainId = `${areaKey || 'MAP'}:${startEventId || bossDef.monsterId || 'boss'}:${fx},${fy}:${nonce}`;
         return {
             type: 'fixedBoss',
-            startEventId: bossDef.startEventId || null,
+            nonce,
+            battleChainId,
+            phase: 0,
+            startEventId,
             areaKey,
             progressKey,
             mapId: currentMapDef?.id || currentMapDef?.key || currentMapDef?.areaKey || areaKey || null,
@@ -1156,7 +1162,9 @@ const Dungeon = {
                         App.data.progress.activeFixedBossContext = fixedBossContext;
                         if (typeof App.save === 'function') App.save();
                     }
-                    StoryManager.executeEvent(bossDef.startEventId);
+                    StoryManager.executeEvent(bossDef.startEventId, false, 0, 0, {
+                        meta: { battleChainId: fixedBossContext?.battleChainId || null }
+                    });
                 });
                 return true;
             }
@@ -1224,6 +1232,10 @@ const Dungeon = {
             return !!(base?.isSpecialBoss || base?.isEstark || numericId === 902000);
         });
         const fixedBossContext = Dungeon.buildFixedBossBattleContext(bossDef, x, y, mapDef);
+        if (fixedBossContext) {
+            if (!App.data.progress) App.data.progress = {};
+            App.data.progress.activeFixedBossContext = fixedBossContext;
+        }
 
         App.data.battle = {
             active: false,
@@ -1240,6 +1252,9 @@ const Dungeon = {
             bossStatMultiplier: fixedBossContext?.bossStatMultiplier || Math.max(1, Number(bossDef?.bossStatMultiplier || 1) || 1),
             fixedKeyReward: fixedBossContext?.fixedKeyReward || null,
             fixedStoryEventId: bossDef?.storyEventId || null,
+            battleChainId: fixedBossContext?.battleChainId || null,
+            battleChainPhase: fixedBossContext?.phase || 0,
+            fixedBossContextNonce: fixedBossContext?.nonce || null,
             enemies: []
         };
         App.save();
@@ -1834,7 +1849,7 @@ const Dungeon = {
 
     // --- 脱出処理 (安全装置付き) ---
     // 引数 isWipedOut が true の場合は強制的にデフォルトへ
-    exit: (isWipedOut = false, forcedReturnPoint = null) => {
+    exit: (isWipedOut = false, forcedReturnPoint = null, options = {}) => {
         const returnPoint = forcedReturnPoint || App.data.dungeon.returnPoint;
         const leavingGuildQuestRun = Dungeon.getGuildQuestRun();
         const returnStack = Array.isArray(App.data.dungeon.returnStack) ? App.data.dungeon.returnStack : [];
@@ -1945,19 +1960,22 @@ const Dungeon = {
         // ダンジョン外で追憶専用判定が残留しないよう、退出完了時に通常モードへ戻す。
         if (Dungeon.isMemoryRealm()) App.data.dungeon.abyssMode = 'random';
         
-        App.save();
-        App.changeScene('field');
+        if (options.save !== false) App.save();
+        if (options.changeScene !== false) App.changeScene('field');
         
-        if (isWipedOut) {
-            App.log("命からがら逃げ出した……");
-        } else if (leavingGuildQuestRun?.completed) {
-            App.log('依頼迷宮を攻略し、帰還した。');
-        } else if (leavingGuildQuestRun) {
-            App.log('依頼迷宮から撤退した。依頼は再挑戦できる。');
-        } else {
-            App.log("ダンジョンから脱出した");
+        if (options.log !== false) {
+            if (isWipedOut) {
+                App.log("命からがら逃げ出した……");
+            } else if (leavingGuildQuestRun?.completed) {
+                App.log('依頼迷宮を攻略し、帰還した。');
+            } else if (leavingGuildQuestRun) {
+                App.log('依頼迷宮から撤退した。依頼は再挑戦できる。');
+            } else {
+                App.log("ダンジョンから脱出した");
+            }
         }
-        App.clearAction();
+        if (options.clearAction !== false) App.clearAction();
+        return { x: targetX, y: targetY, area: targetArea, worldKey: targetWorldKey };
     },
 	
     // --- 移動・イベント処理 (全文) ---
@@ -3846,7 +3864,6 @@ const Dungeon = {
             active: true,
             itemName: eq.name,
         };
-        if (App.data.progress) delete App.data.progress.pendingBattleWinEventId;
         App.log('<span style="color:#c78cff;">亀裂の根源を打ち破った！</span>');
         App.save();
     },
@@ -3856,7 +3873,8 @@ const Dungeon = {
         if (!pending || !pending.active) return false;
 
         const itemName = pending.itemName || '輝く装備+3';
-        App.data.dungeon.pendingRiftReward = null;
+        pending.status = 'running';
+        pending.startedAt = pending.startedAt || Date.now();
         App.save();
 
         const lines = [
@@ -3864,19 +3882,36 @@ const Dungeon = {
             { charId: 1000, name: 'システム', text: '根源が消滅し、その跡から輝く装備を見つけた！！' },
             { charId: 1000, name: 'システム', text: `${itemName}を手に入れた！` }
         ];
+        const key = '__DUNGEON_ABYSS_RIFT_REWARD__';
+        let shown = false;
 
-        if (typeof StoryManager !== 'undefined' && typeof StoryManager.showConversation === 'function') {
-            const key = '__DUNGEON_ABYSS_RIFT_REWARD__';
-            StoryManager.scripts[key] = lines;
-            StoryManager.active = true;
-            await StoryManager.showConversation(key, 0);
-            StoryManager.endConversation();
-            delete StoryManager.scripts[key];
-        } else {
-            App.log(`亀裂の根源を打ち破った！<br>根源が消滅し、その跡から輝く装備を見つけた！！<br>${itemName}を手に入れた！`);
+        try {
+            if (typeof StoryManager !== 'undefined' && typeof StoryManager.showConversation === 'function') {
+                StoryManager.scripts[key] = lines;
+                StoryManager.active = true;
+                await StoryManager.showConversation(key, 0);
+                StoryManager.endConversation();
+                shown = true;
+            }
+        } catch (error) {
+            // 報酬自体は勝利commit済み。会話UIの故障で同じ場所を永久に塞がない。
+            console.error('[Dungeon] pending rift reward conversation failed:', error);
+            pending.status = 'error';
+            pending.error = String(error?.message || error);
+            App.save();
+        } finally {
+            if (typeof StoryManager !== 'undefined' && StoryManager.scripts) delete StoryManager.scripts[key];
         }
 
+        if (!shown) {
+            App.log(`亀裂の根源を打ち破った！<br>根源が消滅し、その跡から輝く装備を見つけた！！<br>${itemName}を手に入れた！`);
+        }
         App.log(`<span style="color:#ffd700;">${itemName}を手に入れた！</span>`);
+        if (App.data?.dungeon?.pendingRiftReward === pending) {
+            pending.status = 'completed';
+            App.data.dungeon.pendingRiftReward = null;
+            App.save();
+        }
 
         if (typeof Field !== 'undefined') {
             if (typeof Field.refreshCurrentAction === 'function') Field.refreshCurrentAction({ silent: true });
@@ -5738,8 +5773,16 @@ const Dungeon = {
                 }
                 const fixedStoryEventId = App.data.battle?.fixedStoryEventId;
                 if (fixedStoryEventId) {
-                    if (!App.data.progress) App.data.progress = {};
-                    App.data.progress.pendingEventId = fixedStoryEventId;
+                    if (typeof StoryManager !== 'undefined' && typeof StoryManager.queueEvent === 'function') {
+                        StoryManager.queueEvent(fixedStoryEventId, 'actions', {
+                            save: false,
+                            dedupeKey: `fixed-battle:${App.data.battle?.battleId || App.data.battle?.battleChainId || 'unknown'}:${fixedStoryEventId}`,
+                            meta: { battleChainId: App.data.battle?.battleChainId || null }
+                        });
+                    } else {
+                        if (!App.data.progress) App.data.progress = {};
+                        App.data.progress.pendingEventId = fixedStoryEventId;
+                    }
                 }
                 App.clearAction();
                 App.save();
@@ -5753,7 +5796,23 @@ const Dungeon = {
                 return;
             }
                 const areaKey = Field.getCurrentAreaKey();
-                const activeFixedBossContext = App.data.progress?.activeFixedBossContext || null;
+                const candidateFixedBossContext = App.data.progress?.activeFixedBossContext || null;
+                const currentMapId = Field.currentMapData
+                    ? (Field.currentMapData.id || Field.currentMapData.key || Field.currentMapData.areaKey || areaKey)
+                    : areaKey;
+                const currentChainId = App.data.battle?.battleChainId || null;
+                const contextChainId = candidateFixedBossContext?.battleChainId || null;
+                const battlePosition = App.data.battle?.fixedBossPosition || null;
+                const legacyPositionMatches = candidateFixedBossContext && !contextChainId &&
+                    String(candidateFixedBossContext.areaKey || '') === String(areaKey || '') &&
+                    String(candidateFixedBossContext.mapId || candidateFixedBossContext.areaKey || '') === String(currentMapId || '') &&
+                    Number(candidateFixedBossContext.fixedBossPosition?.x) === Number(battlePosition?.x) &&
+                    Number(candidateFixedBossContext.fixedBossPosition?.y) === Number(battlePosition?.y);
+                const activeFixedBossContext = candidateFixedBossContext &&
+                    ((currentChainId && contextChainId && String(currentChainId) === String(contextChainId)) || legacyPositionMatches)
+                    ? candidateFixedBossContext
+                    : null;
+                if (candidateFixedBossContext && !activeFixedBossContext) delete App.data.progress.activeFixedBossContext;
                 const progressKey = App.data.battle?.fixedBossProgressKey || activeFixedBossContext?.progressKey || Dungeon.getFixedProgressKey(areaKey);
                 const fixedBossPosition = App.data.battle?.fixedBossPosition || activeFixedBossContext?.fixedBossPosition;
                 const bossX = Number.isFinite(Number(fixedBossPosition?.x)) ? Number(fixedBossPosition.x) : Field.x;
@@ -5799,14 +5858,22 @@ const Dungeon = {
             });
             const fixedStoryEventId = App.data.battle?.fixedStoryEventId;
             if (fixedStoryEventId) {
-                if (!App.data.progress) App.data.progress = {};
-                App.data.progress.pendingEventId = fixedStoryEventId;
+                if (typeof StoryManager !== 'undefined' && typeof StoryManager.queueEvent === 'function') {
+                    StoryManager.queueEvent(fixedStoryEventId, 'actions', {
+                        save: false,
+                        dedupeKey: `fixed-battle:${App.data.battle?.battleId || App.data.battle?.battleChainId || 'unknown'}:${fixedStoryEventId}`,
+                        meta: { battleChainId: App.data.battle?.battleChainId || null }
+                    });
+                } else {
+                    if (!App.data.progress) App.data.progress = {};
+                    App.data.progress.pendingEventId = fixedStoryEventId;
+                }
             }
             const fixedQuestId = App.data.battle?.fixedQuestId;
             if (fixedQuestId && typeof App.markQuestBossDefeated === 'function') {
-                App.markQuestBossDefeated(fixedQuestId);
+                App.markQuestBossDefeated(fixedQuestId, { save: false });
             }
-            if (App.data.progress?.activeFixedBossContext) {
+            if (activeFixedBossContext && App.data.progress?.activeFixedBossContext === activeFixedBossContext) {
                 delete App.data.progress.activeFixedBossContext;
             }
 			App.clearAction();

@@ -1671,6 +1671,11 @@ const App = {
             }
         }
 		
+        // 勝敗表示中に終了したセーブは、フィールド初期化より先に確定済み結果を清掃する。
+        if (typeof Battle !== 'undefined' && typeof Battle.recoverCommittedBattleResult === 'function') {
+            Battle.recoverCommittedBattleResult();
+        }
+
 		// ★最重要修正: 戦闘復帰前にFieldを初期化してマップデータを復元する
         // これにより FIXED_DUNGEON_MAPS 等の背景設定が Battle.init 前に読み込まれます
         Field.init();
@@ -2512,12 +2517,13 @@ const App = {
     /**
      * 機能を解放する (鍛冶屋・ガチャ等)
      */
-    unlockFeature: (key) => {
+    unlockFeature: (key, options = {}) => {
         const unlocked = App.ensureUnlockState();
         const already = !!unlocked[key];
         unlocked[key] = true;
-        App.save();
-        if (!already) App.log(`【システム解放】${App.getFeatureUnlockLabel(key)}が利用可能になった！`);
+        if (options.save !== false) App.save();
+        if (!already && options.silent !== true) App.log(`【システム解放】${App.getFeatureUnlockLabel(key)}が利用可能になった！`);
+        return !already;
     },
 
     reconcileDerivedProgressFlags: () => {
@@ -2560,8 +2566,8 @@ const App = {
                     if (!options.silent) App.log(`【仲間加入】${existing.name}がパーティに加わった！`);
                 }
             }
-            if (changed) App.save();
-            return;
+            if (changed && options.save !== false) App.save();
+            return existing;
         }
 
 
@@ -2623,12 +2629,13 @@ const App = {
                 joinedParty = true;
             }
         }
-        App.save();
+        if (options.save !== false) App.save();
         if (!options.silent) {
             App.log(joinedParty
                 ? `なんと ${saveAlly.name}が仲間に加わった！`
                 : `なんと ${saveAlly.name}が仲間に加わった！`);
         }
+        return saveAlly;
     },
 
     monsterRecruitConfig: {
@@ -3640,7 +3647,7 @@ const App = {
             completedAt: null,
             progress: {}
         };
-        App.save();
+        if (options.save !== false) App.save();
         if (typeof MenuStatus !== 'undefined' && typeof MenuStatus.render === 'function') MenuStatus.render();
         return true;
     },
@@ -3698,15 +3705,15 @@ const App = {
             });
         }
         if (Array.isArray(quest.rewardAllies)) {
-            quest.rewardAllies.forEach(charId => App.addStoryAlly(charId, { silent: true }));
+            quest.rewardAllies.forEach(charId => App.addStoryAlly(charId, { silent: true, save: false }));
         }
 
-        App.save();
+        if (options.save !== false) App.save();
         if (typeof MenuStatus !== 'undefined' && typeof MenuStatus.render === 'function') MenuStatus.render();
         return true;
     },
 
-    noteQuestKills: (monsterIds = [], battleContext = {}) => {
+    noteQuestKills: (monsterIds = [], battleContext = {}, options = {}) => {
         if (!Array.isArray(monsterIds) || monsterIds.length === 0) return [];
         const quests = App.ensureQuestState();
         const updated = [];
@@ -3724,18 +3731,18 @@ const App = {
         const guildUpdated = (typeof Guild !== 'undefined' && typeof Guild.noteQuestKills === 'function')
             ? Guild.noteQuestKills(monsterIds, battleContext, { save: false })
             : [];
-        if (updated.length || guildUpdated.length) App.save();
+        if ((updated.length || guildUpdated.length) && options.save !== false) App.save();
         return [...updated, ...guildUpdated];
     },
 
-    markQuestBossDefeated: (questId) => {
+    markQuestBossDefeated: (questId, options = {}) => {
         const quest = App.getQuestDefinition(questId);
         const state = App.getQuestState(questId);
         if (!quest || quest.kind !== 'boss' || state.state !== 'accepted') return false;
         if (!state.progress || typeof state.progress !== 'object') state.progress = {};
         state.progress.bossDefeated = true;
         state.progress.bossDefeatedAt = Date.now();
-        App.save();
+        if (options.save !== false) App.save();
         return true;
     },
 
@@ -4649,8 +4656,30 @@ load: () => {
 
     serializeSaveData: (data) => JSON.stringify(data, App.saveJsonReplacer),
 
+    beginSaveTransaction: () => {
+        App.saveTransactionDepth = Math.max(0, Number(App.saveTransactionDepth || 0)) + 1;
+        return App.saveTransactionDepth;
+    },
+
+    commitSaveTransaction: () => {
+        App.saveTransactionDepth = Math.max(0, Number(App.saveTransactionDepth || 0) - 1);
+        if (App.saveTransactionDepth > 0) return true;
+        const shouldSave = App.saveTransactionPending === true;
+        App.saveTransactionPending = false;
+        return shouldSave ? App.save() : true;
+    },
+
+    cancelSaveTransaction: () => {
+        App.saveTransactionDepth = 0;
+        App.saveTransactionPending = false;
+    },
+
     save: () => {
         if (!App.data) return false;
+        if (Number(App.saveTransactionDepth || 0) > 0) {
+            App.saveTransactionPending = true;
+            return true;
+        }
         let saved = false;
         try {
             if (Field.ready) {
@@ -5492,7 +5521,7 @@ load: () => {
     /**
      * レベルアップ処理
      */
-    gainExp: (charData, expGain) => {
+    gainExp: (charData, expGain, options = {}) => {
         if (!charData.exp) charData.exp = 0;
         charData.exp += expGain;
         let logs = [];
@@ -5506,7 +5535,7 @@ load: () => {
                 logs.push(...App.applyLevelUpGrowth(charData));
             } else { break; }
         }
-        App.save();
+        if (options.save !== false) App.save();
         return logs;
     },
 
@@ -6981,14 +7010,15 @@ load: () => {
                         resumed = StoryManager.resumeActiveConversation();
                     }
 
-                    // 2. 新規予約されている通常イベント
-                    if (!resumed && typeof StoryManager.resumePendingEvent === 'function') {
+                    // 2. token付き予約キューを、種別に関係なく登録順で1件ずつ再開する。
+                    if (!resumed && typeof StoryManager.resumePendingStoryEvent === 'function') {
+                        resumed = StoryManager.resumePendingStoryEvent();
+                    } else if (!resumed && typeof StoryManager.resumePendingEvent === 'function') {
+                        // 旧StoryManagerとの互換経路。
                         resumed = StoryManager.resumePendingEvent();
-                    }
-
-                    // 3. バトル勝利後の報酬・後日談イベント
-                    if (!resumed && typeof StoryManager.resumePendingBattleWinEvent === 'function') {
-                        resumed = StoryManager.resumePendingBattleWinEvent();
+                        if (!resumed && typeof StoryManager.resumePendingBattleWinEvent === 'function') {
+                            resumed = StoryManager.resumePendingBattleWinEvent();
+                        }
                     }
 
                     // 深淵の裂け目戦の勝利後報酬。
@@ -6996,6 +7026,12 @@ load: () => {
                     if (!resumed && App.data?.dungeon?.pendingRiftReward?.active &&
                         typeof Dungeon !== 'undefined' && typeof Dungeon.resumePendingRiftReward === 'function') {
                         resumed = Dungeon.resumePendingRiftReward();
+                    }
+
+                    // リザルト表示中断で保留されたモンスター仲間のスキル成長確認。
+                    if (!resumed && App.data?.progress?.pendingMonsterSkillEvolution &&
+                        typeof Battle !== 'undefined' && typeof Battle.resumePendingMonsterSkillEvolution === 'function') {
+                        resumed = Battle.resumePendingMonsterSkillEvolution();
                     }
 
                     // 現在地タイルのアクション再評価。
@@ -7287,7 +7323,7 @@ const Field = {
     },
 
     enterFixedMap: (targetAreaKey, options = {}) => {
-        if (!targetAreaKey || !Field.isFixedMapAreaKey(targetAreaKey)) return;
+        if (!targetAreaKey || !Field.isFixedMapAreaKey(targetAreaKey)) return false;
         if (targetAreaKey === 'ABYSS_FIELD' && !App.data?.progress?.flags?.darkCastleCleared) {
             App.log('属性が不均質に混ざり合っている…');
             if (typeof StoryManager !== 'undefined' && typeof StoryManager.executeEvent === 'function') {
@@ -7295,7 +7331,7 @@ const Field = {
             } else if (typeof App.showMessage === 'function') {
                 App.showMessage('ケイト「魔力汚染がひどすぎます…入ったら、正気ではいられない。\n入る方法を探すしかなさそうです」');
             }
-            return;
+            return false;
         }
 
         const areaDef = FIXED_MAPS[targetAreaKey];
@@ -7337,6 +7373,7 @@ const Field = {
         if (options.silentLog !== true) App.log(`${areaDef.name}に入った`);
         App.save();
         App.changeScene('field');
+        return true;
     },
 
     getCurrentAreaKey: () => {

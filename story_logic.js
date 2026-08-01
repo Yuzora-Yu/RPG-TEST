@@ -249,7 +249,7 @@ const StoryManager = {
                     existing.limitBreak = targetLb;
                     existing.reason = options.reason || existing.reason || 'story_event';
                     App.applyTemporaryStoryPower();
-                    if (typeof App.save === 'function') App.save();
+                    if (!options.skipSave && typeof App.save === 'function') App.save();
                     return true;
                 }
 
@@ -268,7 +268,7 @@ const StoryManager = {
                 };
 
                 App.applyTemporaryStoryPower();
-                if (typeof App.save === 'function') App.save();
+                if (!options.skipSave && typeof App.save === 'function') App.save();
                 if (typeof Menu !== 'undefined' && typeof Menu.renderPartyBar === 'function') Menu.renderPartyBar();
                 return true;
             };
@@ -977,74 +977,431 @@ const StoryManager = {
             else if (typeof Field !== 'undefined' && typeof Field.render === 'function') Field.render();
         }
     },
-	/**
+
+    // ==========================================
+    // 進行イベント・予約イベントの永続ジャーナル
+    // ==========================================
+    createEventToken: function(prefix = 'evt') {
+        const random = Math.random().toString(36).slice(2, 10);
+        return `${prefix}-${Date.now().toString(36)}-${random}`;
+    },
+
+    getEventPathKey: function(path = []) {
+        return (Array.isArray(path) ? path : [path]).map(part => String(part)).join('/');
+    },
+
+    normalizeActiveEventJournal: function(active, fallback = {}) {
+        if (!active || typeof active !== 'object') active = {};
+        active.token = active.token || fallback.token || this.createEventToken('evt');
+        active.eventId = active.eventId || fallback.eventId || null;
+        active.phase = active.phase || fallback.phase || 'actions';
+        active.status = active.status || 'running';
+        active.currentPath = Array.isArray(active.currentPath)
+            ? active.currentPath
+            : (Number.isFinite(Number(active.actionIndex)) ? [Number(active.actionIndex)] : null);
+        active.completedActions = active.completedActions && typeof active.completedActions === 'object'
+            ? active.completedActions
+            : {};
+        active.selectedBranches = active.selectedBranches && typeof active.selectedBranches === 'object'
+            ? active.selectedBranches
+            : {};
+        active.effectStates = active.effectStates && typeof active.effectStates === 'object'
+            ? active.effectStates
+            : {};
+        active.meta = active.meta && typeof active.meta === 'object' ? active.meta : (fallback.meta || {});
+        active.startedAt = Number(active.startedAt || Date.now());
+        return active;
+    },
+
+    ensureEventJournal: function() {
+        const progress = App?.data?.progress;
+        if (!progress) return null;
+        if (!progress.eventJournal || typeof progress.eventJournal !== 'object') {
+            progress.eventJournal = { version: 2, queue: [], active: null };
+        }
+        const journal = progress.eventJournal;
+        journal.version = 2;
+        if (!Array.isArray(journal.queue)) journal.queue = [];
+        let nextSequence = Math.max(1, Number(journal.nextSequence || 1));
+        journal.queue.forEach(entry => {
+            if (!entry || Number.isFinite(Number(entry.sequence))) return;
+            entry.sequence = nextSequence++;
+        });
+        journal.nextSequence = Math.max(nextSequence, ...journal.queue.map(entry => Number(entry?.sequence || 0) + 1));
+
+        const migrateLegacyQueue = (eventId, phase, legacyKey) => {
+            if (!eventId) return;
+            const exists = journal.queue.some(entry => entry && entry.eventId === eventId && entry.phase === phase && entry.status !== 'completed');
+            if (!exists) {
+                journal.queue.push({
+                    token: this.createEventToken(phase === 'win' ? 'win' : 'evt'),
+                    eventId,
+                    phase,
+                    status: 'queued',
+                    sequence: journal.nextSequence++,
+                    createdAt: Date.now(),
+                    meta: { migratedFrom: legacyKey }
+                });
+            }
+            delete progress[legacyKey];
+        };
+        migrateLegacyQueue(progress.pendingEventId, 'actions', 'pendingEventId');
+        migrateLegacyQueue(progress.pendingBattleWinEventId, 'win', 'pendingBattleWinEventId');
+
+        if (!journal.active && progress.activeEvent) {
+            const legacy = progress.activeEvent;
+            const active = this.normalizeActiveEventJournal({
+                ...legacy,
+                token: legacy.token || this.createEventToken('evt'),
+                currentPath: Array.isArray(legacy.currentPath)
+                    ? legacy.currentPath
+                    : [Math.max(0, Number(legacy.actionIndex || 0))],
+                completedActions: legacy.completedActions || {},
+                selectedBranches: legacy.selectedBranches || {},
+                effectStates: legacy.effectStates || {},
+                meta: legacy.meta || { migratedFrom: 'activeEvent' }
+            });
+            const actionIndex = Math.max(0, Number(legacy.actionIndex || 0));
+            for (let i = 0; i < actionIndex; i++) active.completedActions[String(i)] = true;
+
+            // v1カーソルで世界樹の葉消費後に止まったレイラ加入セーブを救済する。
+            // 回復会話まで到達している場合は選択済み分岐と消費済み命令を復元する。
+            // 会話情報も残っていない曖昧な狭い窓では、葉を1枚だけ戻して再選択可能にする。
+            if (legacy.eventId === 'light_palace_prison_leila' &&
+                !progress.flags?.leilaJoined && progress.flags?.lightPalaceCleared) {
+                const conversationKey = String(progress.activeConversation?.key || '');
+                const branchPaths = {
+                    outer: '0',
+                    item: '0/then/1',
+                    choice: '0/then/1/then/0',
+                    consume: '0/then/1/then/0/yes/0'
+                };
+                if (conversationKey === 'LIGHT_PALACE_LEILA_RECOVERY_JOIN') {
+                    active.selectedBranches[branchPaths.outer] = 'then';
+                    active.selectedBranches[branchPaths.item] = 'then';
+                    active.selectedBranches[branchPaths.choice] = 'yes';
+                    active.completedActions[branchPaths.consume] = true;
+                    active.meta.legacyRecovery = 'leila-consumed-leaf';
+                } else if (!conversationKey && Number(App.data?.items?.[5] || 0) <= 0) {
+                    if (!App.data.items) App.data.items = {};
+                    App.data.items[5] = 1;
+                    active.meta.legacyRecovery = 'leila-restored-leaf';
+                }
+            }
+            journal.active = active;
+        }
+
+        if (journal.active) {
+            journal.active = this.normalizeActiveEventJournal(journal.active);
+            progress.activeEvent = journal.active;
+        } else if (progress.activeEvent) {
+            delete progress.activeEvent;
+        }
+        return journal;
+    },
+
+    queueEvent: function(eventId, phase = 'actions', options = {}) {
+        if (!eventId) return null;
+        const journal = this.ensureEventJournal();
+        if (!journal) return null;
+        const normalizedPhase = phase === 'win' ? 'win' : 'actions';
+        const dedupeKey = options.dedupeKey || null;
+        const existing = dedupeKey
+            ? journal.queue.find(entry => entry && entry.status !== 'completed' && entry.dedupeKey === dedupeKey)
+            : null;
+        if (existing) {
+            existing.meta = { ...(existing.meta || {}), ...(options.meta || {}) };
+            if (options.save !== false) App.save();
+            return existing;
+        }
+        const entry = {
+            token: options.token || this.createEventToken(normalizedPhase === 'win' ? 'win' : 'evt'),
+            eventId,
+            phase: normalizedPhase,
+            status: 'queued',
+            dedupeKey,
+            sequence: Number(journal.nextSequence || 1),
+            createdAt: Date.now(),
+            meta: options.meta && typeof options.meta === 'object' ? { ...options.meta } : {}
+        };
+        journal.nextSequence = entry.sequence + 1;
+        journal.queue.push(entry);
+        if (options.save !== false) App.save();
+        return entry;
+    },
+
+    activateQueuedEvent: function(entry) {
+        const progress = App?.data?.progress;
+        const journal = this.ensureEventJournal();
+        if (!progress || !journal || !entry) return null;
+        entry.status = 'running';
+        entry.startedAt = entry.startedAt || Date.now();
+        const active = this.normalizeActiveEventJournal({
+            token: entry.token,
+            eventId: entry.eventId,
+            phase: entry.phase,
+            status: 'running',
+            currentPath: null,
+            completedActions: entry.completedActions || {},
+            selectedBranches: entry.selectedBranches || {},
+            effectStates: entry.effectStates || {},
+            meta: entry.meta || {},
+            startedAt: entry.startedAt
+        });
+        journal.active = active;
+        progress.activeEvent = active;
+        App.save();
+        return active;
+    },
+
+    beginEventExecution: function(eventId, phase = 'actions', options = {}) {
+        const progress = App?.data?.progress;
+        const journal = this.ensureEventJournal();
+        if (!progress || !journal) return null;
+        let active = journal.active;
+        if (!active || active.eventId !== eventId || active.phase !== phase || (options.token && active.token !== options.token)) {
+            active = this.normalizeActiveEventJournal({
+                token: options.token || this.createEventToken(phase === 'win' ? 'win' : 'evt'),
+                eventId,
+                phase,
+                status: 'running',
+                currentPath: null,
+                completedActions: {},
+                selectedBranches: {},
+                effectStates: {},
+                meta: options.meta || {}
+            });
+            const startActionIndex = Math.max(0, Number(options.startActionIndex || 0));
+            for (let i = 0; i < startActionIndex; i++) active.completedActions[String(i)] = true;
+            journal.active = active;
+        }
+        active.status = 'running';
+        active.error = null;
+        active.meta = { ...(active.meta || {}), ...(options.meta || {}) };
+        progress.activeEvent = active;
+        return active;
+    },
+
+    completeEventExecution: function(active) {
+        const progress = App?.data?.progress;
+        const journal = this.ensureEventJournal();
+        if (!progress || !journal) return;
+        const token = active?.token || journal.active?.token || null;
+        if (token) journal.queue = journal.queue.filter(entry => entry?.token !== token);
+        journal.active = null;
+        delete progress.activeEvent;
+        delete progress.activeConversation;
+        this.isTyping = false;
+        this.active = false;
+        this.endConversation();
+        App.save();
+    },
+
+    failEventExecution: function(active, error) {
+        const progress = App?.data?.progress;
+        const journal = this.ensureEventJournal();
+        const message = String(error?.message || error || '不明なイベントエラー');
+        if (active) {
+            active.status = 'error';
+            active.error = { message, at: Date.now(), path: active.currentPath || null };
+            if (journal) journal.active = active;
+            if (progress) progress.activeEvent = active;
+        }
+        this.isTyping = false;
+        this.active = false;
+        this.dismissChoiceUI({ hideOverlay: true });
+        this.endConversation();
+        App.save();
+        console.error('[StoryManager] event execution failed:', error);
+        App.log(`<span style="color:#ff8b8b;">イベント処理を中断しました。再読込すると同じ位置から再試行します。<br>${this.escapeHtml ? this.escapeHtml(message) : message}</span>`);
+    },
+
+    recoverPendingMapTransfer: function() {
+        const progress = App?.data?.progress;
+        const pending = progress?.pendingMapTransfer;
+        const journal = this.ensureEventJournal();
+        const active = journal?.active;
+        if (!pending || !active || pending.sourceEventToken !== active.token) return false;
+        const area = String(App.data?.location?.area || '');
+        let arrived = false;
+        if (pending.targetType === 'fixedMap' || pending.targetType === 'fixedDungeon') {
+            arrived = area === String(pending.targetId || '');
+        } else if (pending.targetType === 'abyss') {
+            arrived = area === 'ABYSS';
+        }
+        if (!arrived) return false;
+        const key = this.getEventPathKey(pending.actionPath || active.currentPath || []);
+        if (key) active.completedActions[key] = true;
+        delete progress.pendingMapTransfer;
+        this.completeEventExecution(active);
+        return true;
+    },
+
+    persistEventCursor: function(active, path) {
+        const progress = App?.data?.progress;
+        const journal = this.ensureEventJournal();
+        if (!active || !progress || !journal) return;
+        active.currentPath = Array.isArray(path) ? [...path] : null;
+        active.status = 'running';
+        journal.active = active;
+        progress.activeEvent = active;
+        App.save();
+    },
+
+    runEventActionList: async function(actions, rootEventId, phase, active, options = {}) {
+        if (!Array.isArray(actions)) return null;
+        const prefix = Array.isArray(options.prefix) ? options.prefix : [];
+        const runtimeEventId = options.runtimeEventId || rootEventId;
+        for (let i = 0; i < actions.length; i++) {
+            const action = actions[i];
+            if (!action) continue;
+            const path = [...prefix, i];
+            const pathKey = this.getEventPathKey(path);
+            if (active.completedActions[pathKey]) continue;
+
+            this.persistEventCursor(active, path);
+            let result = null;
+
+            if (action.type === 'IF_FLAG' || action.type === 'IF' || action.type === 'IF_ITEM' || action.type === 'CHOICE') {
+                let branchName = active.selectedBranches[pathKey];
+                if (!branchName) {
+                    if (action.type === 'IF_FLAG' || action.type === 'IF') {
+                        const key = action.key || action.flag || action.value;
+                        const expected = action.state !== undefined ? !!action.state : true;
+                        const actual = key ? !!(App.data.progress.flags && App.data.progress.flags[key]) : false;
+                        branchName = (actual === expected) ? 'then' : (Array.isArray(action.else) ? 'else' : 'otherwise');
+                    } else if (action.type === 'IF_ITEM') {
+                        const itemId = Number(action.id ?? action.itemId ?? action.value);
+                        const requiredCount = Math.max(1, Math.floor(Number(action.count) || 1));
+                        branchName = Number(App.data?.items?.[itemId] || 0) >= requiredCount
+                            ? 'then'
+                            : (Array.isArray(action.else) ? 'else' : 'otherwise');
+                    } else {
+                        const isYes = await this.showChoice(action.text);
+                        branchName = isYes ? 'yes' : 'no';
+                    }
+                    active.selectedBranches[pathKey] = branchName;
+                    App.save();
+                }
+                const branch = action[branchName] || (branchName === 'otherwise' ? action.else : null) || [];
+                result = await this.runEventActionList(branch, rootEventId, phase, active, {
+                    prefix: [...path, branchName],
+                    runtimeEventId
+                });
+            } else if (action.type === 'EVENT') {
+                const subEvent = this.events[action.value];
+                if (!subEvent?.actions) throw new Error(`サブイベントが見つかりません: ${action.value}`);
+                result = await this.runEventActionList(subEvent.actions, rootEventId, phase, active, {
+                    prefix: [...path, `event:${action.value}`],
+                    runtimeEventId: action.value
+                });
+            } else {
+                const conversation = App.data?.progress?.activeConversation;
+                const sameConversationAction = action.type === 'CONV' && conversation?.key === action.value;
+                const lineIndex = sameConversationAction
+                    ? Math.max(0, Number(conversation.index || 0))
+                    : ((options.initialLineIndex && prefix.length === 0 && i === 0) ? options.initialLineIndex : 0);
+                result = await this.processAction(action, runtimeEventId, lineIndex, {
+                    managed: true,
+                    deferSave: true,
+                    activeEvent: active,
+                    rootEventId,
+                    phase,
+                    path
+                });
+            }
+
+            if (result === 'BREAK' || result === 'BREAK_COMPLETE') {
+                active.completedActions[pathKey] = true;
+                active.currentPath = path;
+                active.status = result === 'BREAK_COMPLETE' ? 'completed' : 'suspended';
+                if (result === 'BREAK_COMPLETE') {
+                    const pendingTransfer = App.data?.progress?.pendingMapTransfer;
+                    if (pendingTransfer?.sourceEventToken === active.token &&
+                        this.getEventPathKey(pendingTransfer.actionPath || []) === pathKey) {
+                        delete App.data.progress.pendingMapTransfer;
+                    }
+                    this.completeEventExecution(active);
+                } else App.save();
+                return 'BREAK';
+            }
+
+            active.completedActions[pathKey] = true;
+            active.currentPath = null;
+            delete App.data.progress.activeConversation;
+            App.save();
+        }
+        return null;
+    },
+
+    /**
      * 中断されたイベントまたは会話があれば再開する
      */
     resumeActiveConversation: function() {
         const data = App.data ? App.data.progress : null;
-        if (!data || (!data.activeEvent && !data.activeConversation)) return false;
+        if (!data) return false;
+        if (this.recoverPendingMapTransfer()) return true;
+        const journal = this.ensureEventJournal();
+        const active = journal?.active;
+        if (!active && !data.activeConversation) return false;
 
-        // 実行責任を引き受けたことを即座に返し、main.js側の重複動作を止める
+        this.active = false;
+        this.isTyping = false;
         (async () => {
-            let { eventId, actionIndex, phase } = data.activeEvent || {};
-            actionIndex = Number(actionIndex || 0);
-            let lineIndex = data.activeConversation ? Number(data.activeConversation.index || 0) : 0;
-
-            // フィールド演出を会話と会話の間に挟むイベントでも、イベント自体は
-            // 冒頭から再実行しない。会話再開時に、その会話番号までの表示状態だけを
-            // story.js 側で復元することで、他イベントにも流用できる形にする。
-
-            if (phase === 'win') {
-                await this.onBattleWin(eventId, actionIndex, lineIndex);
-            } else if (eventId) {
-                await this.executeEvent(eventId, false, actionIndex, lineIndex);
+            if (active?.eventId) {
+                const event = this.events[active.eventId];
+                if (event?.restartOnResume === true) {
+                    active.currentPath = null;
+                    delete data.activeConversation;
+                    App.save();
+                }
+                if (active.phase === 'win') {
+                    await this.onBattleWin(active.eventId, 0, 0, { token: active.token, resume: true, meta: active.meta });
+                } else {
+                    await this.executeEvent(active.eventId, false, 0, 0, { token: active.token, resume: true, meta: active.meta });
+                }
             } else if (data.activeConversation) {
                 const key = data.activeConversation.key;
-                await this.showConversation(key, lineIndex);
+                await this.showConversation(key, Number(data.activeConversation.index || 0));
                 this.endConversation();
             }
         })();
         return true;
     },
 
-    /**
-     * 勝利後イベントのレジューム（インデックス指定対応版）
-     */
+    resumeQueuedEventByPhase: function(phase = null) {
+        const journal = this.ensureEventJournal();
+        if (!journal || journal.active) return false;
+        const entry = journal.queue
+            .filter(item => item && (!phase || item.phase === phase) && ['queued', 'running'].includes(item.status))
+            .sort((a, b) => Number(a.sequence || a.createdAt || 0) - Number(b.sequence || b.createdAt || 0))[0];
+        if (!entry) return false;
+        const active = this.activateQueuedEvent(entry);
+        if (!active) return false;
+        this.active = false;
+        this.isTyping = false;
+        (async () => {
+            if (phase === 'win') {
+                await this.onBattleWin(entry.eventId, 0, 0, { token: entry.token, resume: true, meta: entry.meta });
+            } else {
+                await this.executeEvent(entry.eventId, false, 0, 0, { token: entry.token, resume: true, meta: entry.meta });
+            }
+        })();
+        return true;
+    },
+
+    resumePendingStoryEvent: function() {
+        return this.resumeQueuedEventByPhase(null);
+    },
+
     resumePendingBattleWinEvent: function() {
-        const data = App.data ? App.data.progress : null;
-        if (!data || !data.pendingBattleWinEventId) return false;
-
-        const eventId = data.pendingBattleWinEventId;
-        delete data.pendingBattleWinEventId; // 二重起動防止のため即座に削除
-        this.active = false;
-        this.isTyping = false;
-        App.save();
-
-        (async () => {
-            await this.onBattleWin(eventId, 0, 0);
-        })();
-        return true;
+        return this.resumeQueuedEventByPhase('win');
     },
 
-    /**
-     * 通常予約イベントのレジューム
-     */
     resumePendingEvent: function() {
-        const data = App.data ? App.data.progress : null;
-        if (!data || !data.pendingEventId) return false;
-
-        const eventId = data.pendingEventId;
-        delete data.pendingEventId;
-        this.active = false;
-        this.isTyping = false;
-        App.save();
-
-        (async () => {
-            await this.executeEvent(eventId, false, 0, 0);
-        })();
-        return true;
+        return this.resumeQueuedEventByPhase('actions');
     },
-	
+
 	// ==========================================
     // 1. 会話スクリプト (scripts)
     // ==========================================
@@ -1062,39 +1419,42 @@ const StoryManager = {
      * @param {number} startActionIndex 命令の開始位置
      * @param {number} startLineIndex セリフの開始位置
      */
-    executeEvent: async function(eventId, isSubEvent = false, startActionIndex = 0, startLineIndex = 0) {
-        const data = App.data.progress;
+    executeEvent: async function(eventId, isSubEvent = false, startActionIndex = 0, startLineIndex = 0, options = {}) {
         const event = this.events[eventId];
-        if (!event || !event.actions) return;
+        if (!event || !Array.isArray(event.actions)) return false;
 
-        if (!isSubEvent && this.active) return;
-        if (!isSubEvent) this.active = true;
+        // 旧EVENT命令の直接呼出し互換。新ランナーではサブイベントも同じジャーナルへ展開する。
+        if (isSubEvent) {
+            for (let i = Math.max(0, Number(startActionIndex || 0)); i < event.actions.length; i++) {
+                const lineIdx = i === Number(startActionIndex || 0) ? startLineIndex : 0;
+                const result = await this.processAction(event.actions[i], eventId, lineIdx);
+                if (result === 'BREAK' || result === 'BREAK_COMPLETE') return result;
+            }
+            return true;
+        }
 
-        if (!isSubEvent) this.showPostBattleBossSpriteForEvent(eventId, event, 'actions');
+        const journal = this.ensureEventJournal();
+        if (this.active && journal?.active && journal.active.eventId !== eventId) return false;
+        const active = this.beginEventExecution(eventId, 'actions', {
+            token: options.token,
+            meta: options.meta,
+            startActionIndex
+        });
+        if (!active) return false;
+        this.active = true;
+        this.showPostBattleBossSpriteForEvent(eventId, event, 'actions');
 
         try {
-            for (let i = startActionIndex; i < event.actions.length; i++) {
-                if (!isSubEvent) {
-                    data.activeEvent = { eventId: eventId, actionIndex: i, phase: 'actions' };
-                    App.save();
-                }
-                // 初回ループ時のみ引数の startLineIndex を適用
-                const lineIdx = (i === startActionIndex) ? startLineIndex : 0;
-                const result = await this.processAction(event.actions[i], eventId, lineIdx);
-                if (result === 'BREAK') return;
-            }
-            
-            if (!isSubEvent) {
-                delete data.activeEvent;
-                this.active = false;
-                this.endConversation();
-            }
-            App.save();
-
-            // イベント完了後も同じタイル上にいる場合は、現在地アクションを再評価する。
-            // main.js 側の Field.refreshCurrentAction() が正本。
-            // ここで呼ぶことで、会話・選択肢・ストーリー進行後にボタンが消えっぱなしになるのを防ぐ。
-            if (!isSubEvent) this.refreshFieldAfterStoryStateChange();
+            const result = await this.runEventActionList(event.actions, eventId, 'actions', active, {
+                initialLineIndex: startLineIndex
+            });
+            if (result === 'BREAK') return true;
+            this.completeEventExecution(active);
+            this.refreshFieldAfterStoryStateChange();
+            return true;
+        } catch (error) {
+            this.failEventExecution(active, error);
+            return false;
         } finally {
             this.cleanupPostBattleBossSprite(eventId, 'actions');
         }
@@ -1103,51 +1463,94 @@ const StoryManager = {
     /**
      * 勝利後イベント実行
      */
-    onBattleWin: async function(eventId, startActionIndex = 0, startLineIndex = 0) {
-        const data = App.data.progress;
+    onBattleWin: async function(eventId, startActionIndex = 0, startLineIndex = 0, options = {}) {
         const event = this.events[eventId];
-        if (!event || !event.winActions) return;
+        if (!event || !Array.isArray(event.winActions)) return false;
+        const active = this.beginEventExecution(eventId, 'win', {
+            token: options.token,
+            meta: options.meta,
+            startActionIndex
+        });
+        if (!active) return false;
 
         this.active = true;
         this.showPostBattleBossSpriteForEvent(eventId, event, 'win');
-
         try {
-            for (let i = startActionIndex; i < event.winActions.length; i++) {
-                data.activeEvent = { eventId: eventId, actionIndex: i, phase: 'win' };
-                App.save();
-
-                const lineIdx = (i === startActionIndex) ? startLineIndex : 0;
-                const result = await this.processAction(event.winActions[i], eventId, lineIdx);
-                if (result === 'BREAK') return;
-            }
-
-            delete data.activeEvent;
-            this.active = false;
-            this.endConversation();
-            App.save();
-
-            // 戦闘勝利後イベントが終わってフィールドへ戻った際、現在地タイルのボタンを復元する。
+            const result = await this.runEventActionList(event.winActions, eventId, 'win', active, {
+                initialLineIndex: startLineIndex
+            });
+            if (result === 'BREAK') return true;
+            this.completeEventExecution(active);
             this.refreshFieldAfterStoryStateChange();
+            return true;
+        } catch (error) {
+            this.failEventExecution(active, error);
+            return false;
         } finally {
             this.cleanupPostBattleBossSprite(eventId, 'win');
         }
     },
 
     /**
-     * 会話イベント中にダンジョンへ遷移する前の後始末。
-     * ここを通さないと StoryManager.active や activeConversation が保存に残り、
-     * 遷移先で移動・メニュー操作が塞がれたままになる。
+     * 会話イベント中にMAP遷移する前のUI後始末。
+     * activeEvent は遷移成功が確認できるまで残し、失敗時に同じ命令から再試行できるようにする。
      */
-    prepareMapTransfer: function() {
+    prepareMapTransfer: function(options = {}) {
         const data = App?.data?.progress;
-        if (data) {
-            delete data.activeEvent;
-            delete data.activeConversation;
-        }
+        if (data) delete data.activeConversation;
         this.isTyping = false;
         this.active = false;
         this.endConversation();
-        if (typeof App !== 'undefined' && typeof App.save === 'function') App.save();
+        if (options.save !== false && typeof App !== 'undefined' && typeof App.save === 'function') App.save();
+    },
+
+    performMapTransfer: function(targetType, targetId, transferOptions = {}, context = {}) {
+        const progress = App?.data?.progress;
+        const active = context.activeEvent || this.ensureEventJournal()?.active || null;
+        if (!progress || !active) throw new Error('MAP遷移元イベントを特定できません。');
+        const token = this.createEventToken('map');
+        progress.pendingMapTransfer = {
+            token,
+            sourceEventToken: active.token,
+            sourceEventId: active.eventId,
+            actionPath: Array.isArray(context.path) ? [...context.path] : active.currentPath,
+            targetType,
+            targetId: targetId || null,
+            entryKey: transferOptions.entryKey || null,
+            mode: transferOptions.mode || null,
+            floor: transferOptions.floor || null,
+            status: 'requested',
+            requestedAt: Date.now()
+        };
+        App.save();
+        this.prepareMapTransfer({ save: false });
+
+        let result = false;
+        if (targetType === 'fixedDungeon') {
+            result = !!(typeof Dungeon !== 'undefined' && typeof Dungeon.startFixed === 'function' &&
+                Dungeon.startFixed(targetId, transferOptions));
+        } else if (targetType === 'fixedMap') {
+            result = !!(typeof Field !== 'undefined' && typeof Field.enterFixedMap === 'function' &&
+                Field.enterFixedMap(targetId, transferOptions));
+        } else if (targetType === 'abyss') {
+            if (typeof Dungeon === 'undefined') result = false;
+            else if (transferOptions.direct === true && typeof Dungeon.start === 'function') {
+                result = Dungeon.start(transferOptions.floor || 1, { mode: transferOptions.mode || 'story' }) !== false;
+            } else if (typeof Dungeon.enter === 'function') {
+                Dungeon.enter({ mode: transferOptions.mode || 'story' });
+                result = true;
+            }
+        }
+
+        if (!result) {
+            progress.pendingMapTransfer.status = 'error';
+            progress.pendingMapTransfer.error = 'target_rejected';
+            App.save();
+            throw new Error(`MAP遷移に失敗しました: ${targetType}:${targetId || ''}`);
+        }
+        progress.pendingMapTransfer.status = 'arrived';
+        progress.pendingMapTransfer.arrivedAt = Date.now();
+        return true;
     },
 
     /**
@@ -1155,12 +1558,75 @@ const StoryManager = {
      * 通常のゲームオーバー処理は呼ばず、暗転・全滅ログ・HP0表示を挟んでから、
      * 指定割合で復帰させて次の会話へ進める。
      */
-    playStoryDefeatEffect: async function(action = {}) {
-        const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+    playStoryDefeatEffect: async function(action = {}, context = {}) {
+        const wait = (ms) => new Promise(resolve => setTimeout(resolve, Math.max(0, Number(ms) || 0)));
         const partyUids = Array.isArray(App.data?.party) ? App.data.party.filter(Boolean) : [];
         const targets = Array.isArray(App.data?.characters)
             ? App.data.characters.filter(c => c && partyUids.includes(c.uid))
             : [];
+        const active = context.activeEvent || this.ensureEventJournal()?.active || null;
+        const pathKey = this.getEventPathKey(context.path || active?.currentPath || []);
+        if (active && !active.effectStates) active.effectStates = {};
+        const effectState = active && pathKey
+            ? (active.effectStates[pathKey] || (active.effectStates[pathKey] = { status: 'pending' }))
+            : { status: 'pending' };
+        const normalWipeout = action.normalWipeout || action.useNormalWipeout;
+
+        // 副作用は演出より先に一度だけ確定する。演出中に再読込されても、
+        // 全滅回数・HP・帰還先を二重適用せず同じアクションを安全に再表示できる。
+        if (effectState.status !== 'committed') {
+            if (App.data?.stats) App.data.stats.wipeoutCount = (App.data.stats.wipeoutCount || 0) + 1;
+            effectState.normalWipeout = !!normalWipeout;
+            effectState.targets = [];
+
+            if (normalWipeout) {
+                targets.forEach(c => {
+                    c.currentHp = 1;
+                    delete c.battleStatus;
+                    effectState.targets.push({ uid: c.uid, hp: 1, mp: Math.max(0, Number(c.currentMp || 0)) });
+                });
+                if (App.data) App.data.battle = { active: false };
+                if (typeof Dungeon !== 'undefined' && typeof Dungeon.exit === 'function') {
+                    effectState.returnPoint = Dungeon.exit(true, null, {
+                        save: false,
+                        changeScene: false,
+                        log: false,
+                        clearAction: false
+                    });
+                } else if (typeof App !== 'undefined') {
+                    App.data.location.area = 'WORLD';
+                    App.data.location.worldKey = 'WORLD';
+                    App.data.location.x = 58;
+                    App.data.location.y = 65;
+                    effectState.returnPoint = { area: 'WORLD', worldKey: 'WORLD', x: 58, y: 65 };
+                }
+            } else {
+                const hpRate = Math.max(0.01, Math.min(1, Number(action.recoverRate ?? 0.35)));
+                const mpRate = Math.max(0, Math.min(1, Number(action.recoverMpRate ?? 0.25)));
+                targets.forEach(c => {
+                    const stats = typeof App.calcStats === 'function' ? App.calcStats(c) : { maxHp: c.hp || 1, maxMp: c.mp || 0 };
+                    const hp = Math.max(1, Math.floor((Number(stats.maxHp) || 1) * hpRate));
+                    const mp = Math.max(Number(c.currentMp || 0), Math.floor((Number(stats.maxMp) || 0) * mpRate));
+                    c.currentHp = hp;
+                    c.currentMp = mp;
+                    delete c.battleStatus;
+                    effectState.targets.push({ uid: c.uid, hp, mp });
+                });
+            }
+            effectState.status = 'committed';
+            effectState.committedAt = Date.now();
+            App.save();
+        }
+
+        const restoreCommittedTargets = () => {
+            (effectState.targets || []).forEach(snapshot => {
+                const c = App.getChar?.(snapshot.uid) || targets.find(target => target.uid === snapshot.uid);
+                if (!c) return;
+                c.currentHp = Math.max(0, Number(snapshot.hp || 0));
+                c.currentMp = Math.max(0, Number(snapshot.mp || 0));
+                delete c.battleStatus;
+            });
+        };
 
         let fade = document.getElementById('story-defeat-fade');
         if (!fade) {
@@ -1194,70 +1660,28 @@ const StoryManager = {
 
         if (action.log) App.log(action.log);
         else App.log('パーティは全滅した……。');
-        if (App.data?.stats) App.data.stats.wipeoutCount = (App.data.stats.wipeoutCount || 0) + 1;
 
-        // 通常全滅と同じ扱いにしたいイベント用。
-        // HP1でダンジョンから強制脱出し、始まりの村前へ戻ってから後続会話を続ける。
-        if (action.normalWipeout || action.useNormalWipeout) {
-            targets.forEach(c => {
-                c.currentHp = 1;
-                delete c.battleStatus;
-            });
-            if (App.data) App.data.battle = { active: false };
-            App.save();
+        if (normalWipeout) {
+            restoreCommittedTargets();
             if (typeof Menu !== 'undefined' && typeof Menu.renderPartyBar === 'function') Menu.renderPartyBar();
-
             await wait(Number(action.downWait || 900));
-
-            if (typeof Dungeon !== 'undefined' && typeof Dungeon.exit === 'function') {
-                Dungeon.exit(true);
-            } else if (typeof App !== 'undefined') {
-                App.data.location.area = 'WORLD';
-                App.data.location.x = 58;
-                App.data.location.y = 65;
-                if (typeof Field !== 'undefined') {
-                    Field.currentMapData = null;
-                    Field.x = 58;
-                    Field.y = 65;
-                }
-                if (typeof App.changeScene === 'function') App.changeScene('field');
-            }
-
+            if (typeof App.changeScene === 'function') App.changeScene('field');
             await wait(Number(action.fadeHold || 650));
-            fade.style.opacity = '0';
-            await wait(460);
-            fade.remove();
+        } else {
+            // HP0は保存データへ書き戻さない。暗転中は敗北ログだけを表示し、
+            // pagehide等の自動保存が入っても回復後の確定状態を壊さない。
+            await wait(Number(action.downWait || 900));
+            restoreCommittedTargets();
             if (typeof Menu !== 'undefined' && typeof Menu.renderPartyBar === 'function') Menu.renderPartyBar();
-            if (typeof Field !== 'undefined' && typeof Field.refreshCurrentAction === 'function') {
-                Field.refreshCurrentAction({ silent: true });
-            }
-            return;
+            await wait(Number(action.fadeHold || 450));
         }
-		
-        targets.forEach(c => {
-            c.currentHp = 0;
-            delete c.battleStatus;
-        });
-        App.save();
-        if (typeof Menu !== 'undefined' && typeof Menu.renderPartyBar === 'function') Menu.renderPartyBar();
 
-        await wait(Number(action.downWait || 900));
-
-        const hpRate = Math.max(0.01, Math.min(1, Number(action.recoverRate ?? 0.35)));
-        const mpRate = Math.max(0, Math.min(1, Number(action.recoverMpRate ?? 0.25)));
-        targets.forEach(c => {
-            const stats = typeof App.calcStats === 'function' ? App.calcStats(c) : { maxHp: c.hp || 1, maxMp: c.mp || 0 };
-            c.currentHp = Math.max(1, Math.floor((Number(stats.maxHp) || 1) * hpRate));
-            c.currentMp = Math.max(Number(c.currentMp || 0), Math.floor((Number(stats.maxMp) || 0) * mpRate));
-            delete c.battleStatus;
-        });
-        App.save();
-        if (typeof Menu !== 'undefined' && typeof Menu.renderPartyBar === 'function') Menu.renderPartyBar();
-
-        await wait(Number(action.fadeHold || 450));
         fade.style.opacity = '0';
         await wait(460);
         fade.remove();
+        if (typeof Field !== 'undefined' && typeof Field.refreshCurrentAction === 'function') {
+            Field.refreshCurrentAction({ silent: true });
+        }
     },
 
     /**
@@ -1266,14 +1690,15 @@ const StoryManager = {
      * @param {string} eventId 
      * @param {number} lineIndex 再開時のセリフ番号
      */
-    processAction: async function(action, eventId, lineIndex = 0) {
+    processAction: async function(action, eventId, lineIndex = 0, context = {}) {
         const data = App.data.progress;
+        const deferSave = context.deferSave === true;
         
         // CONV命令時に lineIndex を渡す
         if (action.type === 'CONV') await this.showConversation(action.value, lineIndex);
         
         if (action.type === 'ALLY') {
-            App.addStoryAlly(action.value);
+            App.addStoryAlly(action.value, { save: !deferSave });
             this.refreshFieldAfterStoryStateChange();
         }
         
@@ -1289,7 +1714,8 @@ const StoryManager = {
                 App.activateTemporaryStoryPower({
                     id: action.id || 'story_temp_power',
                     limitBreak: action.value ?? 99,
-                    reason: eventId || 'story_event'
+                    reason: eventId || 'story_event',
+                    skipSave: deferSave
                 });
             }
         }
@@ -1297,7 +1723,7 @@ const StoryManager = {
         if (action.type === 'TEMP_LB_CLEAR') {
             this.installTemporaryStoryPowerApi();
             if (typeof App.clearTemporaryStoryPower === 'function') {
-                App.clearTemporaryStoryPower({ id: action.id || null });
+                App.clearTemporaryStoryPower({ id: action.id || null, skipSave: deferSave });
             }
             this.syncHeroLimitBreak();
             if (typeof Menu !== 'undefined') Menu.renderPartyBar();
@@ -1319,7 +1745,7 @@ const StoryManager = {
                     App.log(`${char.name || '仲間'}の絆が深まった。`);
                 }
             });
-            if (typeof App.save === 'function') App.save();
+            if (!deferSave && typeof App.save === 'function') App.save();
             if (typeof Menu !== 'undefined') Menu.renderPartyBar();
         }
         
@@ -1330,7 +1756,7 @@ const StoryManager = {
                 c.currentHp = stats.maxHp;
                 c.currentMp = stats.maxMp;
             });
-            App.save();
+            if (!deferSave) App.save();
             if (typeof Menu !== 'undefined') Menu.renderPartyBar();
             App.log("不思議な力で体力が回復した！");
         }
@@ -1342,16 +1768,16 @@ const StoryManager = {
         }
 
         if (action.type === 'QUEST_ACCEPT' && typeof App.acceptQuest === 'function') {
-            App.acceptQuest(action.value || action.questId, { silent: true });
+            App.acceptQuest(action.value || action.questId, { silent: true, save: !deferSave });
         }
 
         if (action.type === 'QUEST_COMPLETE' && typeof App.completeQuest === 'function') {
-            App.completeQuest(action.value || action.questId, { silent: true });
+            App.completeQuest(action.value || action.questId, { silent: true, save: !deferSave });
             this.refreshFieldAfterStoryStateChange();
         }
 
         if (action.type === 'STORY_DEFEAT') {
-            await this.playStoryDefeatEffect(action);
+            await this.playStoryDefeatEffect(action, context);
         }
 
         if (action.type === 'FIELD_CUTSCENE' || action.type === 'MAP_VISUAL') {
@@ -1366,7 +1792,7 @@ const StoryManager = {
                 if (storyOverlay) storyOverlay.style.display = 'none';
                 await OpeningSequence.play(action.options || {});
                 data.flags[flagKey] = true;
-                App.save();
+                if (!deferSave) App.save();
             }
         }
 
@@ -1391,20 +1817,20 @@ const StoryManager = {
             const key = action.key || action.value;
             if (key) data.flags[key] = action.state !== undefined ? !!action.state : true;
             App.reconcileDerivedProgressFlags?.();
-            App.save();
+            if (!deferSave) App.save();
             if (action.refreshField === true) this.refreshFieldAfterStoryStateChange();
         }
 
         if (action.type === 'UNLOCK') {
             const keys = Array.isArray(action.value) ? action.value : [action.value];
             keys.filter(Boolean).forEach(key => {
-                if (typeof App.unlockFeature === 'function') App.unlockFeature(key);
+                if (typeof App.unlockFeature === 'function') App.unlockFeature(key, { save: !deferSave });
                 else {
                     if (!data.unlocked || typeof data.unlocked !== 'object' || Array.isArray(data.unlocked)) data.unlocked = {};
                     data.unlocked[key] = true;
                 }
             });
-            App.save();
+            if (!deferSave) App.save();
             App.reconcileDerivedProgressFlags?.();
         }
 
@@ -1416,7 +1842,7 @@ const StoryManager = {
                 App.data.items[itemId] = Number(App.data.items[itemId] || 0) + count;
                 const item = (DB.ITEMS || []).find(i => Number(i.id) === itemId);
                 App.log(`${item?.name || `アイテム${itemId}`}を手に入れた！`);
-                App.save();
+                if (!deferSave) App.save();
             }
         }
 
@@ -1430,40 +1856,45 @@ const StoryManager = {
                 else delete App.data.items[itemId];
                 const item = (DB.ITEMS || []).find(i => Number(i.id) === itemId);
                 if (action.silent !== true) App.log(`${item?.name || `アイテム${itemId}`}を渡した。`);
-                App.save();
+                if (!deferSave) App.save();
             }
         }
         
-        if (action.type === 'EVENT') await this.executeEvent(action.value, true);
+        if (action.type === 'EVENT' && !context.managed) await this.executeEvent(action.value, true);
 
         if (action.type === 'START_FIXED_DUNGEON') {
-            if (typeof Dungeon !== 'undefined' && typeof Dungeon.startFixed === 'function' && action.value) {
-                this.prepareMapTransfer();
-                Dungeon.startFixed(action.value);
-                return 'BREAK';
-            }
+            if (!action.value) throw new Error('固定ダンジョンIDが指定されていません。');
+            this.performMapTransfer('fixedDungeon', action.value, {
+                entryKey: action.entryKey || null,
+                floor: action.floor || null,
+                nestedReturn: action.nestedReturn === true
+            }, context);
+            return 'BREAK_COMPLETE';
         }
 
         if (action.type === 'START_FIXED_MAP') {
-            if (typeof Field !== 'undefined' && typeof Field.enterFixedMap === 'function' && action.value) {
-                this.prepareMapTransfer();
-                Field.enterFixedMap(action.value, { entryKey: action.entryKey || null });
-                return 'BREAK';
-            }
+            if (!action.value) throw new Error('固定MAP IDが指定されていません。');
+            this.performMapTransfer('fixedMap', action.value, {
+                entryKey: action.entryKey || null,
+                targetX: action.targetX,
+                targetY: action.targetY,
+                replaceReturnPoint: action.replaceReturnPoint === true
+            }, context);
+            return 'BREAK_COMPLETE';
         }
 
         if (action.type === 'START_ABYSS_DUNGEON') {
-            if (typeof Dungeon !== 'undefined') {
-                this.prepareMapTransfer();
-                const mode = action.mode || 'story';
-                const floor = Math.max(1, Number(action.floor || 1));
-                if (action.direct === true && typeof Dungeon.start === 'function') Dungeon.start(floor, { mode });
-                else if (typeof Dungeon.enter === 'function') Dungeon.enter({ mode });
-                return 'BREAK';
-            }
+            const mode = action.mode || 'story';
+            const floor = Math.max(1, Number(action.floor || 1));
+            this.performMapTransfer('abyss', 'ABYSS', {
+                direct: action.direct === true,
+                mode,
+                floor
+            }, context);
+            return 'BREAK_COMPLETE';
         }
 
-        if (action.type === 'IF_FLAG' || action.type === 'IF') {
+        if (!context.managed && (action.type === 'IF_FLAG' || action.type === 'IF')) {
             const key = action.key || action.flag || action.value;
             const expected = action.state !== undefined ? !!action.state : true;
             const actual = key ? !!(data.flags && data.flags[key]) : false;
@@ -1477,7 +1908,7 @@ const StoryManager = {
         }
 
 
-        if (action.type === 'IF_ITEM') {
+        if (!context.managed && action.type === 'IF_ITEM') {
             const itemId = Number(action.id ?? action.itemId ?? action.value);
             const requiredCount = Math.max(1, Math.floor(Number(action.count) || 1));
             const ownedCount = Number(App.data?.items?.[itemId] || 0);
@@ -1490,7 +1921,7 @@ const StoryManager = {
             }
         }
 
-        if (action.type === 'CHOICE') {
+        if (!context.managed && action.type === 'CHOICE') {
             const isYes = await this.showChoice(action.text);
             const branch = isYes ? action.yes : action.no;
             if (branch && branch.length > 0) {
@@ -1503,26 +1934,21 @@ const StoryManager = {
         
         if (action.type === 'MAP_CHANGE') {
             if (typeof MapRegistry !== 'undefined' && typeof MapRegistry.applyStoryMapMutation === 'function') {
-                MapRegistry.applyStoryMapMutation(action.value || action.key);
+                MapRegistry.applyStoryMapMutation(action.value || action.key, { save: !deferSave });
             }
         }
 
         if (action.type === 'BOSS') {
-            delete data.activeEvent;
-            delete data.activeConversation;
-            this.endConversation();
-            this.active = false;
-            this.isTyping = false;
             const requestedBossId = action.value !== undefined ? action.value : null;
             const requestedIds = (Array.isArray(requestedBossId) ? requestedBossId : [requestedBossId])
                 .map(id => Number(id))
                 .filter(id => Number.isFinite(id));
+            if (!requestedIds.length) throw new Error(`ボスIDが指定されていません: ${eventId || 'unknown'}`);
+
             let fixedBossId = requestedBossId;
             let abyssBossEncounter = null;
-
-            // 深淵のストーリー階でも、代表IDだけでなく同じminFの編成全体を戦闘へ渡す。
-            // 100階の別フェーズ編成など、イベント側が複数IDを明示している場合は上書きしない。
-            if (App.data?.location?.area === 'ABYSS' && requestedIds.length === 1 && typeof Dungeon !== 'undefined' && typeof Dungeon.getCurrentAbyssBossEncounter === 'function') {
+            if (App.data?.location?.area === 'ABYSS' && requestedIds.length === 1 &&
+                typeof Dungeon !== 'undefined' && typeof Dungeon.getCurrentAbyssBossEncounter === 'function') {
                 const currentEncounter = Dungeon.getCurrentAbyssBossEncounter();
                 const encounterIds = (currentEncounter?.monsterIds || [])
                     .map(id => Number(id))
@@ -1533,62 +1959,92 @@ const StoryManager = {
                 }
             }
 
-            const ids = Array.isArray(fixedBossId) ? fixedBossId : [fixedBossId].filter(id => id !== null);
+            const ids = (Array.isArray(fixedBossId) ? fixedBossId : [fixedBossId])
+                .map(id => Number(id))
+                .filter(id => Number.isFinite(id));
+            const monsterApi = (typeof window !== 'undefined' ? window.MonsterData : globalThis.MonsterData);
+            const missingIds = ids.filter(id => !monsterApi?.getMonsterById?.(id));
+            if (missingIds.length) throw new Error(`ボスデータが見つかりません: ${missingIds.join(', ')}`);
             const isSpecialBoss = ids.some(id => {
-                const base = window.MonsterData?.getMonsterById?.(Number(id));
-                return base?.isSpecialBoss || base?.isEstark || Number(id) === 902000;
+                const base = monsterApi.getMonsterById(id);
+                return base?.isSpecialBoss || base?.isEstark || id === 902000;
             });
 
-		const activeFixedBossContext = (App.data.progress?.activeFixedBossContext?.type === 'fixedBoss' &&
-			typeof Field !== 'undefined' && Field.currentMapData?.isFixed)
-			? App.data.progress.activeFixedBossContext
-			: null;
-		const actionFixedBossPosition = action.fixedBossPosition || action.position || null;
-		const contextFixedBossPosition = activeFixedBossContext?.fixedBossPosition || null;
-		const sourceFixedBossPosition = actionFixedBossPosition || contextFixedBossPosition;
-		const fixedBossPosition = Number.isFinite(Number(sourceFixedBossPosition?.x)) && Number.isFinite(Number(sourceFixedBossPosition?.y))
-			? { x: Number(sourceFixedBossPosition.x), y: Number(sourceFixedBossPosition.y) }
-			: null;
-		const rawKeyRewardColors = Array.isArray(action.keyRewardColors)
-			? action.keyRewardColors
-			: action.keyRewardColor
-				? [action.keyRewardColor]
-				: action.keyColor
-					? [action.keyColor]
-					: [];
+            const progress = App.data.progress || (App.data.progress = {});
+            const candidateContext = progress.activeFixedBossContext?.type === 'fixedBoss'
+                ? progress.activeFixedBossContext
+                : null;
+            const currentAreaKey = (typeof Field !== 'undefined' && typeof Field.getCurrentAreaKey === 'function')
+                ? Field.getCurrentAreaKey()
+                : App.data?.location?.area;
+            const currentMapId = (typeof Field !== 'undefined' && Field.currentMapData)
+                ? (Field.currentMapData.id || Field.currentMapData.key || Field.currentMapData.areaKey || currentAreaKey)
+                : currentAreaKey;
+            const inheritedChainId = context.activeEvent?.meta?.battleChainId || null;
+            const eventMatches = candidateContext && (
+                String(candidateContext.startEventId || '') === String(eventId || '') ||
+                (inheritedChainId && String(candidateContext.battleChainId || '') === String(inheritedChainId))
+            );
+            const activeFixedBossContext = candidateContext &&
+                String(candidateContext.areaKey || '') === String(currentAreaKey || '') &&
+                String(candidateContext.mapId || candidateContext.areaKey || '') === String(currentMapId || currentAreaKey || '') &&
+                eventMatches
+                ? candidateContext
+                : null;
+            if (candidateContext && !activeFixedBossContext) delete progress.activeFixedBossContext;
 
-		const keyRewardColors = rawKeyRewardColors.filter(Boolean);
-		const contextKeyReward = activeFixedBossContext?.fixedKeyReward || null;
-		const fixedKeyReward = keyRewardColors.length > 0 ? {
-			colors: keyRewardColors,
-			color: keyRewardColors[0], // 既存処理互換用
-			x: fixedBossPosition?.x ?? ((typeof Field !== 'undefined') ? Field.x : null),
-			y: fixedBossPosition?.y ?? ((typeof Field !== 'undefined') ? Field.y : null),
-			scopeKey: (typeof Dungeon !== 'undefined' && typeof Dungeon.getKeyScopeKey === 'function')
-				? Dungeon.getKeyScopeKey()
-				: null
-		} : (contextKeyReward ? { ...contextKeyReward } : null);
+            const actionFixedBossPosition = action.fixedBossPosition || action.position || null;
+            const sourceFixedBossPosition = actionFixedBossPosition || activeFixedBossContext?.fixedBossPosition || null;
+            const fixedBossPosition = Number.isFinite(Number(sourceFixedBossPosition?.x)) && Number.isFinite(Number(sourceFixedBossPosition?.y))
+                ? { x: Number(sourceFixedBossPosition.x), y: Number(sourceFixedBossPosition.y) }
+                : null;
+            const rawKeyRewardColors = Array.isArray(action.keyRewardColors)
+                ? action.keyRewardColors
+                : action.keyRewardColor
+                    ? [action.keyRewardColor]
+                    : action.keyColor
+                        ? [action.keyColor]
+                        : [];
+            const keyRewardColors = rawKeyRewardColors.filter(Boolean);
+            const contextKeyReward = activeFixedBossContext?.fixedKeyReward || null;
+            const fixedKeyReward = keyRewardColors.length > 0 ? {
+                colors: keyRewardColors,
+                color: keyRewardColors[0],
+                x: fixedBossPosition?.x ?? ((typeof Field !== 'undefined') ? Field.x : null),
+                y: fixedBossPosition?.y ?? ((typeof Field !== 'undefined') ? Field.y : null),
+                scopeKey: (typeof Dungeon !== 'undefined' && typeof Dungeon.getKeyScopeKey === 'function')
+                    ? Dungeon.getKeyScopeKey()
+                    : null
+            } : (contextKeyReward ? { ...contextKeyReward } : null);
 
-		App.data.battle = {
-			active: false,
-			isBossBattle: true,
-			battleBg: action.battleBg || null,
-			fixedBossId: fixedBossId,
-            abyssBossEncounter: abyssBossEncounter,
-			fixedBossPosition: fixedBossPosition,
-			fixedBossProgressKey: action.fixedBossProgressKey || action.progressKey || activeFixedBossContext?.progressKey || null,
-			fixedQuestId: action.fixedQuestId || activeFixedBossContext?.fixedQuestId || null,
-			bossStatMultiplier: action.bossStatMultiplier || action.bossScale || activeFixedBossContext?.bossStatMultiplier || null,
-			isSpecialBoss: isSpecialBoss,
-			isEstark: isSpecialBoss,
-			suppressFixedBossDefeat: !!(action.suppressFixedBossDefeat || action.deferFixedBossDefeat || action.markFixedBossDefeated === false),
-			eventId: eventId,
-			fixedKeyReward: fixedKeyReward,
-			isAmbushed: !!action.ambush,
-			storyWinEventId: action.winEventId || null,
-			storyLossEventId: action.lossEventId || null
-		};
-            App.save(); 
+            const battleChainId = action.battleChainId || activeFixedBossContext?.battleChainId || inheritedChainId ||
+                `battle-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+            App.data.battle = {
+                active: false,
+                isBossBattle: true,
+                battleBg: action.battleBg || null,
+                fixedBossId,
+                abyssBossEncounter,
+                fixedBossPosition,
+                fixedBossProgressKey: action.fixedBossProgressKey || action.progressKey || activeFixedBossContext?.progressKey || null,
+                fixedQuestId: action.fixedQuestId || activeFixedBossContext?.fixedQuestId || null,
+                bossStatMultiplier: action.bossStatMultiplier || action.bossScale || activeFixedBossContext?.bossStatMultiplier || null,
+                isSpecialBoss,
+                isEstark: isSpecialBoss,
+                suppressFixedBossDefeat: !!(action.suppressFixedBossDefeat || action.deferFixedBossDefeat || action.markFixedBossDefeated === false),
+                eventId,
+                fixedKeyReward: fixedKeyReward,
+                isAmbushed: !!action.ambush,
+                storyWinEventId: action.winEventId || null,
+                storyLossEventId: action.lossEventId || null,
+                battleChainId,
+                battleChainPhase: Math.max(0, Number(action.battleChainPhase ?? activeFixedBossContext?.phase ?? 0)),
+                fixedBossContextNonce: activeFixedBossContext?.nonce || null
+            };
+            if (!deferSave) App.save();
+            this.isTyping = false;
+            this.active = false;
+            this.endConversation();
             const startBattleScene = () => App.changeScene('battle');
             if (typeof App.playEncounterTransition === 'function') {
                 if (typeof App.lockFieldInput === 'function') App.lockFieldInput(1800);
@@ -1596,8 +2052,9 @@ const StoryManager = {
             } else {
                 startBattleScene();
             }
-            return 'BREAK'; 
+            return 'BREAK_COMPLETE';
         }
+
     },
 	
 	// ==========================================

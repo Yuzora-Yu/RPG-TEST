@@ -165,7 +165,7 @@ const MapRegistry = {
         };
     },
 
-    applyStoryMapMutation(mutationKey) {
+    applyStoryMapMutation(mutationKey, options = {}) {
         const mutation = STORY_MAP_MUTATIONS[mutationKey];
         if (!mutation || typeof App === "undefined" || !App.data?.progress) return false;
         if (!App.data.progress.mapChanges) App.data.progress.mapChanges = {};
@@ -173,8 +173,8 @@ const MapRegistry = {
         mutation.changes.forEach(change => {
             App.data.progress.mapChanges[mutation.area][`${change.x},${change.y}`] = change.tile;
         });
-        if (typeof App.save === "function") App.save();
-        if (typeof Field !== "undefined" && Field.ready) Field.render();
+        if (options.save !== false && typeof App.save === "function") App.save();
+        if (options.render !== false && typeof Field !== "undefined" && Field.ready) Field.render();
         return true;
     },
 
