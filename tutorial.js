@@ -3,6 +3,7 @@
    --------------------------------------------------------------------------
    - ゲーム進行側からは TutorialModal.open('tutorial-id') で呼び出せます。
    - 一覧やページ内容は TUTORIAL_DATA を編集してください。
+   - 現在の39件は本文・画像とも仮案です。各 pages 配列へページを追加できます。
    - 画像は assets/tutorial/0001.png のように管理する想定です。
    ========================================================================== */
 (() => {
@@ -10,102 +11,665 @@
 
     const TUTORIAL_DATA = [
         {
-            id: 'adventure-basics',
-            title: '冒険の基本',
-            description: '目的地、マップ、メニューの基本操作',
-            pages: [
+            "no": "T01",
+            "id": "t01-bulk-download",
+            "title": "画像をまとめてダウンロード",
+            "description": "初回画像取得とオフライン利用について",
+            "phase": "初回起動",
+            "screen": "初回画像ダウンロード確認",
+            "triggerHint": "初回起動かつ画像キャッシュ選択が未回答",
+            "pages": [
                 {
-                    title: '冒険の始まり！',
-                    image: 'assets/tutorial/0001.png',
-                    imageAlt: 'フィールド画面とミニレーダーの説明',
-                    body: 'さあ、いよいよ冒険の始まりだ！\n\n「ミニレーダー」の「目的地」を目指そう！'
-                },
-                {
-                    title: 'マップを活用しよう',
-                    image: 'assets/tutorial/0002.png',
-                    imageAlt: 'ワールドマップの説明',
-                    body: 'ミニレーダーで大体の方角をつかみ、詳細なマップで現在地や目的地を確認しよう。\n\n遺跡や洞窟の探索では特に便利だぞ！'
-                },
-                {
-                    title: 'メニューで準備を整えよう！',
-                    image: 'assets/tutorial/0003.png',
-                    imageAlt: 'メニュー画面の説明',
-                    body: 'メニューでは所持品や装備、仲間の状態、各種設定を確認できる。\n\n一度見たチュートリアルも「お知らせ ＞ チュートリアル」から見返せるぞ！'
+                    "title": "画像をまとめて取得しよう",
+                    "image": "assets/tutorial/0001.png",
+                    "imageAlt": "画像の一括ダウンロード確認画面",
+                    "body": "ゲームで使う画像を最初にまとめてダウンロードできます。\n\n通信量は増えますが、その後の画像表示が安定し、オフラインでも遊びやすくなります。設定は後から変更できます。"
                 }
             ]
         },
         {
-            id: 'battle-basics',
-            title: '戦闘の基本',
-            description: 'コマンド、対象選択、AUTOの使い方',
-            pages: [
+            "no": "T02",
+            "id": "t02-hero-setup",
+            "title": "主人公を設定しよう",
+            "description": "主人公の名前と画像の設定",
+            "phase": "ニューゲーム",
+            "screen": "主人公設定",
+            "triggerHint": "新規ゲーム開始",
+            "pages": [
                 {
-                    title: 'コマンドを選ぼう',
-                    image: 'assets/tutorial/0011.png',
-                    imageAlt: '戦闘コマンドの説明',
-                    body: '行動する仲間のコマンドを選び、攻撃や回復の対象を決めよう。\n\n迷った時は通常攻撃から試すのがおすすめだ。'
-                },
-                {
-                    title: 'スキルを使いこなそう',
-                    image: 'assets/tutorial/0012.png',
-                    imageAlt: '戦闘スキルの説明',
-                    body: 'スキルはMPを消費する代わりに、強力な攻撃や回復などの効果を発揮する。\n\n消費MPと対象範囲を確認して使おう。'
-                },
-                {
-                    title: 'AUTOと作戦',
-                    image: 'assets/tutorial/0013.png',
-                    imageAlt: 'AUTO戦闘と作戦の説明',
-                    body: 'AUTOを使うと、仲間が設定された作戦に従って行動する。\n\n周回する時は戦闘速度もあわせて調整しよう。'
+                    "title": "主人公を設定しよう",
+                    "image": "assets/tutorial/0002.png",
+                    "imageAlt": "主人公の名前と画像を設定する画面",
+                    "body": "主人公の名前を入力して冒険を始めよう。\n\n主人公画像の設定は任意です。あとから変更できる場合は、設定や主人公画面からいつでも見直せます。"
                 }
             ]
         },
         {
-            id: 'dungeon-basics',
-            title: 'ダンジョン探索',
-            description: '階段、宝箱、鍵、脱出の基本',
-            pages: [
+            "no": "T03",
+            "id": "t03-basic-attack",
+            "title": "攻撃してみよう",
+            "description": "戦闘コマンドと攻撃対象の選択",
+            "phase": "開始直後",
+            "screen": "オープニング戦闘",
+            "triggerHint": "opening battle、tutorialBattleStep=0",
+            "pages": [
                 {
-                    title: '階層を探索しよう',
-                    image: 'assets/tutorial/0021.png',
-                    imageAlt: 'ダンジョン探索の説明',
-                    body: 'ダンジョンでは階段を見つけて次の階層へ進もう。\n\n移動中に魔物と遭遇することがあるため、残りHPにも注意しよう。'
-                },
-                {
-                    title: '宝箱と鍵',
-                    image: 'assets/tutorial/0022.png',
-                    imageAlt: '宝箱と鍵の説明',
-                    body: '宝箱や扉には鍵が必要な場合がある。\n\n同じ色の鍵を手に入れたら、対応する場所を探してみよう。'
-                },
-                {
-                    title: '危険なら脱出しよう',
-                    image: 'assets/tutorial/0023.png',
-                    imageAlt: 'ダンジョン脱出の説明',
-                    body: '探索を続けるのが危険な時は、メニューから脱出できる。\n\nボス戦など、脱出できない場面へ進む前には準備を整えよう。'
+                    "title": "攻撃してみよう",
+                    "image": "assets/tutorial/0003.png",
+                    "imageAlt": "攻撃コマンドと敵の対象選択画面",
+                    "body": "行動する仲間のコマンドから「攻撃」を選ぼう。\n\n次に攻撃したい敵を選ぶと行動が決定します。まずは通常攻撃で戦闘の流れをつかもう。"
                 }
             ]
         },
         {
-            id: 'equipment-growth',
-            title: '装備と育成',
-            description: '装備変更、能力比較、スキル育成',
-            pages: [
+            "no": "T04",
+            "id": "t04-skill-and-mp",
+            "title": "スキルを使おう",
+            "description": "スキル、MP、攻撃・回復範囲について",
+            "phase": "開始直後",
+            "screen": "オープニング戦闘",
+            "triggerHint": "使用可能スキルあり、かつHP減少または有効な攻撃スキルあり",
+            "pages": [
                 {
-                    title: '装備を変更しよう',
-                    image: 'assets/tutorial/0031.png',
-                    imageAlt: '装備変更画面の説明',
-                    body: '新しい装備を手に入れたら、装備画面で現在の装備と比較しよう。\n\n能力値だけでなく、装備に付いた効果も重要だ。'
-                },
+                    "title": "スキルを使おう",
+                    "image": "assets/tutorial/0004.png",
+                    "imageAlt": "スキル一覧とMP、対象範囲の説明画面",
+                    "body": "スキルはMPを消費する代わりに、強力な攻撃や回復などの効果を発揮します。\n\n消費MP、効果、対象範囲を確認して、必要な相手を選ぼう。"
+                }
+            ]
+        },
+        {
+            "no": "T05",
+            "id": "t05-field-controls",
+            "title": "フィールドを歩こう",
+            "description": "移動、決定、調べる操作",
+            "phase": "最初の村",
+            "screen": "フィールド操作",
+            "triggerHint": "firstFieldControl=true",
+            "pages": [
                 {
-                    title: '仲間の役割を考えよう',
-                    image: 'assets/tutorial/0032.png',
-                    imageAlt: 'パーティ編成の説明',
-                    body: '前衛・後衛や仲間の得意分野を考えて編成しよう。\n\n強敵に苦戦した時は、装備と作戦を見直すのも有効だ。'
-                },
+                    "title": "フィールドを歩こう",
+                    "image": "assets/tutorial/0005.png",
+                    "imageAlt": "フィールドの方向ボタンとOKボタン",
+                    "body": "方向ボタンでフィールドを移動できます。\n\n人物や宝箱、入口などの前に立って「OK」を押すと、話す・調べる・中へ入るといった行動ができます。"
+                }
+            ]
+        },
+        {
+            "no": "T06",
+            "id": "t06-objective-hud",
+            "title": "次の目的を確認しよう",
+            "description": "目的表示で次の行動を確認",
+            "phase": "最初の村",
+            "screen": "目的表示HUD",
+            "triggerHint": "T05完了かつobjectiveHud初表示",
+            "pages": [
                 {
-                    title: 'スキルを育てよう',
-                    image: 'assets/tutorial/0033.png',
-                    imageAlt: 'スキル育成画面の説明',
-                    body: '獲得したSPを使って、仲間の能力やスキルを育てられる。\n\n未使用のSPがたまっていないか定期的に確認しよう。'
+                    "title": "次の目的を確認しよう",
+                    "image": "assets/tutorial/0006.png",
+                    "imageAlt": "フィールド画面上部の目的表示",
+                    "body": "次に何をすればよいか迷った時は、画面上部の「目的」を確認しよう。\n\n行き先や倒す相手など、物語を進めるための手がかりが表示されます。"
+                }
+            ]
+        },
+        {
+            "no": "T07",
+            "id": "t07-minimap",
+            "title": "ミニマップを活用しよう",
+            "description": "現在地と周囲の地形を確認",
+            "phase": "最初の村",
+            "screen": "ミニマップ",
+            "triggerHint": "fieldSteps>=10 and minimapTutorial未完了",
+            "pages": [
+                {
+                    "title": "ミニマップを活用しよう",
+                    "image": "assets/tutorial/0007.png",
+                    "imageAlt": "現在地と周囲の地形を示すミニマップ",
+                    "body": "ミニマップには現在地と周囲の地形が表示されます。\n\n出口や目的地のおおよその方向を確かめながら進むと、探索しやすくなります。"
+                }
+            ]
+        },
+        {
+            "no": "T08",
+            "id": "t08-main-menu",
+            "title": "メニューを開こう",
+            "description": "冒険の準備を行うメインメニュー",
+            "phase": "仲間加入直後",
+            "screen": "メインメニュー",
+            "triggerHint": "partySize>=3 and mainMenu未使用",
+            "pages": [
+                {
+                    "title": "メニューを開こう",
+                    "image": "assets/tutorial/0008.png",
+                    "imageAlt": "フィールド画面のMENUボタン",
+                    "body": "「MENU」から冒険の準備や各種確認ができます。\n\n仲間の編成、装備、アイテム、スキル、設定などを見直したい時に開こう。"
+                }
+            ]
+        },
+        {
+            "no": "T09",
+            "id": "t09-party-formation",
+            "title": "パーティを編成しよう",
+            "description": "戦闘メンバーと並び順の変更",
+            "phase": "仲間加入直後",
+            "screen": "パーティ編成",
+            "triggerHint": "partySize>=3 and partyFormationTutorial未完了",
+            "pages": [
+                {
+                    "title": "パーティを編成しよう",
+                    "image": "assets/tutorial/0009.png",
+                    "imageAlt": "パーティメンバーの編成画面",
+                    "body": "パーティ編成では、戦闘に参加する仲間と並び順を変更できます。\n\n仲間が増えたら、それぞれの役割や敵との相性に合わせてメンバーを選ぼう。"
+                }
+            ]
+        },
+        {
+            "no": "T10",
+            "id": "t10-character-status",
+            "title": "仲間の詳細を確認しよう",
+            "description": "能力、装備、スキル、特性の確認",
+            "phase": "仲間加入後",
+            "screen": "キャラクターステータス",
+            "triggerHint": "firstOpen=allies/status",
+            "pages": [
+                {
+                    "title": "仲間の詳細を確認しよう",
+                    "image": "assets/tutorial/0010.png",
+                    "imageAlt": "キャラクター詳細の各タブ",
+                    "body": "キャラクター画面では、能力値、装備、習得スキル、特性やシナジーを確認できます。\n\nタブを切り替えて、仲間の得意分野や成長状況を把握しよう。"
+                }
+            ]
+        },
+        {
+            "no": "T11",
+            "id": "t11-change-equipment",
+            "title": "装備を変更しよう",
+            "description": "装備候補と能力差の比較",
+            "phase": "序盤",
+            "screen": "装備",
+            "triggerHint": "inventoryに未装備品あり and firstOpen=equipment",
+            "pages": [
+                {
+                    "title": "装備を変更しよう",
+                    "image": "assets/tutorial/0011.png",
+                    "imageAlt": "装備変更と能力比較の画面",
+                    "body": "変更したい装備枠を選び、所持している装備から候補を選ぼう。\n\n変更前後の能力値だけでなく、装備固有の効果も比べることが大切です。"
+                }
+            ]
+        },
+        {
+            "no": "T12",
+            "id": "t12-equipment-options",
+            "title": "装備の付与効果を見よう",
+            "description": "オプション、特性、シナジーの読み方",
+            "phase": "序盤～中盤",
+            "screen": "装備オプション・特性・シナジー",
+            "triggerHint": "equipment.opts.length>0 or traits.length>0",
+            "pages": [
+                {
+                    "title": "装備の付与効果を見よう",
+                    "image": "assets/tutorial/0012.png",
+                    "imageAlt": "装備オプションと特性、シナジー表示",
+                    "body": "同じ名前の装備でも、付与されたオプションによって性能が異なることがあります。\n\n特性の組み合わせでシナジーが発生する場合もあるので、装備詳細を確認しよう。"
+                }
+            ]
+        },
+        {
+            "no": "T13",
+            "id": "t13-use-items",
+            "title": "アイテムを使おう",
+            "description": "回復アイテムと使用対象の選択",
+            "phase": "序盤",
+            "screen": "アイテム",
+            "triggerHint": "hasFieldUsableHealingItem and anyMemberHP<maxHP",
+            "pages": [
+                {
+                    "title": "アイテムを使おう",
+                    "image": "assets/tutorial/0013.png",
+                    "imageAlt": "アイテム一覧と使用対象選択画面",
+                    "body": "アイテムには、移動中に使える回復品、戦闘中に使う道具、錬金などで使う素材があります。\n\n使用できるアイテムを選び、効果を与える仲間を選ぼう。"
+                }
+            ]
+        },
+        {
+            "no": "T14",
+            "id": "t14-skill-growth",
+            "title": "SPで仲間を育てよう",
+            "description": "SPを使った能力・スキル育成",
+            "phase": "序盤",
+            "screen": "スキル・育成",
+            "triggerHint": "anyMemberSP>0 and skillGrowthTutorial未完了",
+            "pages": [
+                {
+                    "title": "SPで仲間を育てよう",
+                    "image": "assets/tutorial/0014.png",
+                    "imageAlt": "SPを使用するスキル育成画面",
+                    "body": "獲得したSPを使うと、仲間の能力やスキルを成長させられます。\n\n習得後の効果と必要SPを確認して、育成したい項目を選ぼう。"
+                }
+            ]
+        },
+        {
+            "no": "T15",
+            "id": "t15-defense-and-escape",
+            "title": "防御と逃走を使おう",
+            "description": "被害軽減、逃走、状態表示の確認",
+            "phase": "初洞窟前後",
+            "screen": "通常戦闘",
+            "triggerHint": "normalBattleCount=1",
+            "pages": [
+                {
+                    "title": "防御と逃走を使おう",
+                    "image": "assets/tutorial/0015.png",
+                    "imageAlt": "戦闘中の防御、逃走、状態表示",
+                    "body": "防御を選ぶと、そのターンに受けるダメージを抑えられます。危険な戦闘では逃走も選べます。\n\n敵味方のHP、MP、状態変化は画面の表示から確認しよう。"
+                }
+            ]
+        },
+        {
+            "no": "T16",
+            "id": "t16-auto-and-speed",
+            "title": "AUTOと戦闘速度を使おう",
+            "description": "自動戦闘と進行速度の変更",
+            "phase": "初洞窟前後",
+            "screen": "AUTO・戦闘速度",
+            "triggerHint": "normalBattleWins>=1 and autoTutorial未完了",
+            "pages": [
+                {
+                    "title": "AUTOと戦闘速度を使おう",
+                    "image": "assets/tutorial/0016.png",
+                    "imageAlt": "戦闘画面のAUTOと速度変更ボタン",
+                    "body": "AUTOを有効にすると、仲間が設定された作戦に従って自動で行動します。\n\n戦闘速度も変更できるので、周回や連戦では好みの速さに調整しよう。"
+                }
+            ]
+        },
+        {
+            "no": "T17",
+            "id": "t17-battle-strategy",
+            "title": "仲間の作戦を決めよう",
+            "description": "仲間ごとのAUTO行動方針",
+            "phase": "仲間加入後",
+            "screen": "作戦",
+            "triggerHint": "partySize>=3 and autoEnabled and strategyTutorial未完了",
+            "pages": [
+                {
+                    "title": "仲間の作戦を決めよう",
+                    "image": "assets/tutorial/0017.png",
+                    "imageAlt": "仲間ごとの作戦設定画面",
+                    "body": "作戦では、仲間ごとにAUTO中の行動方針を設定できます。\n\n攻撃重視、回復重視、MP節約など、役割に合った方針を選ぼう。"
+                }
+            ]
+        },
+        {
+            "no": "T18",
+            "id": "t18-auto-skill-settings",
+            "title": "AUTOで使うスキルを選ぼう",
+            "description": "自動使用スキルの詳細設定",
+            "phase": "中盤",
+            "screen": "AUTO詳細設定",
+            "triggerHint": "learnedSkills>=3 and characterConfigFirstOpen",
+            "pages": [
+                {
+                    "title": "AUTOで使うスキルを選ぼう",
+                    "image": "assets/tutorial/0018.png",
+                    "imageAlt": "AUTOで使用しないスキルの設定画面",
+                    "body": "AUTO中に使わせたくないスキルは、キャラクター設定から除外できます。\n\n大切なスキルやMP消費の大きいスキルを調整して、戦い方を細かく整えよう。"
+                }
+            ]
+        },
+        {
+            "no": "T19",
+            "id": "t19-dungeon-exploration",
+            "title": "ダンジョンを探索しよう",
+            "description": "階段、宝箱、敵との遭遇",
+            "phase": "初洞窟",
+            "screen": "固定ダンジョン",
+            "triggerHint": "firstFixedDungeonEntry",
+            "pages": [
+                {
+                    "title": "ダンジョンを探索しよう",
+                    "image": "assets/tutorial/0019.png",
+                    "imageAlt": "階段と宝箱があるダンジョン画面",
+                    "body": "ダンジョンでは階段を探して次の階層へ進みます。\n\n宝箱や調べられる場所の前では「OK」を押そう。移動中に魔物と遭遇することもあります。"
+                }
+            ]
+        },
+        {
+            "no": "T20",
+            "id": "t20-dungeon-escape",
+            "title": "危険な時は脱出しよう",
+            "description": "ダンジョンからの途中脱出と制限",
+            "phase": "初洞窟",
+            "screen": "ダンジョン脱出",
+            "triggerHint": "dungeonFloor>=2 or partyHpRate<0.4",
+            "pages": [
+                {
+                    "title": "危険な時は脱出しよう",
+                    "image": "assets/tutorial/0020.png",
+                    "imageAlt": "ダンジョンメニューの脱出操作",
+                    "body": "探索を続けるのが危険な時は、ダンジョンメニューから脱出できます。\n\nボス戦や特定の場面では脱出できないことがあるため、先へ進む前に準備しよう。"
+                }
+            ]
+        },
+        {
+            "no": "T21",
+            "id": "t21-colored-keys",
+            "title": "色の鍵を使おう",
+            "description": "赤・青・金の鍵と対応する扉",
+            "phase": "初洞窟",
+            "screen": "鍵・扉",
+            "triggerHint": "firstKeyGranted(scope,color)",
+            "pages": [
+                {
+                    "title": "色の鍵を使おう",
+                    "image": "assets/tutorial/0021.png",
+                    "imageAlt": "色付きの鍵と対応する扉・宝箱",
+                    "body": "鍵は同じ色の扉や宝箱を開ける時に使い、使用すると消費されます。\n\n物語のダンジョンとアビスなどでは鍵の所持数が分かれているので、画面の鍵表示を確認しよう。"
+                }
+            ]
+        },
+        {
+            "no": "T22",
+            "id": "t22-trap-chests",
+            "title": "宝箱の罠に注意しよう",
+            "description": "罠や特殊な結果がある宝箱",
+            "phase": "ダンジョン探索",
+            "screen": "罠・特殊宝箱",
+            "triggerHint": "firstChestTrap or firstSpecialChest",
+            "pages": [
+                {
+                    "title": "宝箱の罠に注意しよう",
+                    "image": "assets/tutorial/0022.png",
+                    "imageAlt": "罠や特殊効果が発生する宝箱",
+                    "body": "宝箱にはアイテムだけでなく、罠や特別な出来事が仕掛けられていることがあります。\n\n残りHPや周囲の状況を確認してから開けよう。"
+                }
+            ]
+        },
+        {
+            "no": "T23",
+            "id": "t23-boss-preparation",
+            "title": "ボス戦に備えよう",
+            "description": "強敵戦の前に行う準備",
+            "phase": "初ボス前",
+            "screen": "ボス戦",
+            "triggerHint": "firstBossTileEnter and bossBattle未開始",
+            "pages": [
+                {
+                    "title": "ボス戦に備えよう",
+                    "image": "assets/tutorial/0023.png",
+                    "imageAlt": "ボス戦前の確認画面",
+                    "body": "この先では強敵との戦いが始まります。戦闘開始後は、通常の方法で脱出できない場合があります。\n\nHP・MPの回復、装備、パーティ編成、作戦を確認してから進もう。"
+                }
+            ]
+        },
+        {
+            "no": "T24",
+            "id": "t24-story-viewer",
+            "title": "物語の見方",
+            "description": "紙芝居の自動送りとスキップ",
+            "phase": "初洞窟クリア後",
+            "screen": "紙芝居オープニング",
+            "triggerHint": "PROLOGUE3完了後のopening開始",
+            "pages": [
+                {
+                    "title": "物語の見方",
+                    "image": "assets/tutorial/0024.png",
+                    "imageAlt": "紙芝居形式の物語画面とスキップ操作",
+                    "body": "物語の場面は自動で進みます。\n\nもう一度見る必要がない時や先へ進みたい時は、スキップ操作を利用できます。"
+                }
+            ]
+        },
+        {
+            "no": "T25",
+            "id": "t25-inn",
+            "title": "宿屋で休もう",
+            "description": "ゴールドを使ったパーティの全回復",
+            "phase": "施設利用",
+            "screen": "宿屋",
+            "triggerHint": "firstInnOpen and anyResourceNotFull",
+            "pages": [
+                {
+                    "title": "宿屋で休もう",
+                    "image": "assets/tutorial/0025.png",
+                    "imageAlt": "宿屋の休息・回復画面",
+                    "body": "宿屋ではゴールドを支払い、パーティ全員のHPやMPを回復できます。\n\n長い探索や強敵との戦いへ向かう前に、十分に休んでおこう。"
+                }
+            ]
+        },
+        {
+            "no": "T26",
+            "id": "t26-shop",
+            "title": "ショップを利用しよう",
+            "description": "アイテムの購入、売却、数量指定",
+            "phase": "施設利用",
+            "screen": "ショップ",
+            "triggerHint": "firstShopOpen",
+            "pages": [
+                {
+                    "title": "ショップを利用しよう",
+                    "image": "assets/tutorial/0026.png",
+                    "imageAlt": "ショップの購入・売却画面",
+                    "body": "ショップでは、所持金、商品の価格、現在の所持数を確認して購入できます。\n\n不要になったアイテムは売却できます。数量と売却品を確認してから決定しよう。"
+                }
+            ]
+        },
+        {
+            "no": "T27",
+            "id": "t27-blacksmith",
+            "title": "鍛冶を使い分けよう",
+            "description": "合成、強化、精錬の違い",
+            "phase": "火の村報告後",
+            "screen": "鍛冶",
+            "triggerHint": "smithUnlocked and firstBlacksmithOpen",
+            "pages": [
+                {
+                    "title": "鍛冶を使い分けよう",
+                    "image": "assets/tutorial/0027.png",
+                    "imageAlt": "鍛冶の合成・強化・精錬選択画面",
+                    "body": "合成は装備を掛け合わせ、強化は素材を使ってオプション値を伸ばします。精錬ではGEMを使い、オプションの段階を引き上げます。\n\n実行前に成功率、必要素材、消費する装備やGEMを確認しよう。"
+                }
+            ]
+        },
+        {
+            "no": "T28",
+            "id": "t28-alchemy",
+            "title": "錬金で道具を作ろう",
+            "description": "レシピ、必要素材、作成数の選択",
+            "phase": "施設利用",
+            "screen": "錬金",
+            "triggerHint": "firstAlchemyOpen and craftableEntries>0",
+            "pages": [
+                {
+                    "title": "錬金で道具を作ろう",
+                    "image": "assets/tutorial/0028.png",
+                    "imageAlt": "錬金のレシピ・素材・作成数選択画面",
+                    "body": "カテゴリとレシピを選び、必要素材と所持数を確認して錬成しよう。作成数を指定すれば、複数個をまとめて作れます。\n\n素材を自由に選ぶ錬成は、通常のレシピ錬成とは異なる方法で行います。"
+                }
+            ]
+        },
+        {
+            "no": "T29",
+            "id": "t29-adventurer-guild",
+            "title": "ギルドの依頼を受けよう",
+            "description": "依頼の受注、進捗、報告、ランク",
+            "phase": "施設利用",
+            "screen": "冒険者ギルド",
+            "triggerHint": "firstGuildBoardOpen",
+            "pages": [
+                {
+                    "title": "ギルドの依頼を受けよう",
+                    "image": "assets/tutorial/0029.png",
+                    "imageAlt": "冒険者ギルドの依頼板と報告画面",
+                    "body": "依頼板から仕事を選んで受注し、条件を達成したら受付へ報告しよう。\n\n報酬としてギルドEXP、GP、アイテムなどを獲得でき、ランクが上がると新しい依頼や交換先が広がります。"
+                }
+            ]
+        },
+        {
+            "no": "T30",
+            "id": "t30-monster-bestiary",
+            "title": "モンスター図鑑を見よう",
+            "description": "倒した魔物の情報を確認",
+            "phase": "収集要素",
+            "screen": "モンスター図鑑",
+            "triggerHint": "bestiaryUniqueCount=1",
+            "pages": [
+                {
+                    "title": "モンスター図鑑を見よう",
+                    "image": "assets/tutorial/0030.png",
+                    "imageAlt": "モンスター図鑑の一覧・詳細画面",
+                    "body": "倒した魔物の情報は、モンスター図鑑へ記録されます。\n\n遭遇した魔物や討伐状況を振り返り、冒険の記録を集めよう。"
+                }
+            ]
+        },
+        {
+            "no": "T31",
+            "id": "t31-achievements",
+            "title": "実績を確認しよう",
+            "description": "実績の達成状況とプレイ記録",
+            "phase": "収集要素",
+            "screen": "実績",
+            "triggerHint": "firstAchievementCompleted",
+            "pages": [
+                {
+                    "title": "実績を確認しよう",
+                    "image": "assets/tutorial/0031.png",
+                    "imageAlt": "実績の達成一覧と進行状況画面",
+                    "body": "冒険や戦闘などのプレイ記録に応じて、さまざまな実績を達成できます。\n\n実績画面で達成済みの項目と、次に狙える条件を確認しよう。"
+                }
+            ]
+        },
+        {
+            "no": "T32",
+            "id": "t32-magic-boat",
+            "title": "魔法の舟で海を渡ろう",
+            "description": "乗船、水上移動、上陸",
+            "phase": "水の神殿クリア後",
+            "screen": "魔法の舟",
+            "triggerHint": "item108取得 or boatUnlocked",
+            "pages": [
+                {
+                    "title": "魔法の舟で海を渡ろう",
+                    "image": "assets/tutorial/0032.png",
+                    "imageAlt": "魔法の舟で水上を移動するフィールド画面",
+                    "body": "魔法の舟を使うと水上を移動でき、これまで行けなかった地域へ進めるようになります。\n\n舟に乗り降りできる場所を探して、新しい土地を探索しよう。"
+                }
+            ]
+        },
+        {
+            "no": "T33",
+            "id": "t33-magic-communication",
+            "title": "魔法通信を使おう",
+            "description": "離れた場所から施設を利用",
+            "phase": "光の宮殿後",
+            "screen": "魔法通信",
+            "triggerHint": "item111取得 or craftingMenuUnlocked",
+            "pages": [
+                {
+                    "title": "魔法通信を使おう",
+                    "image": "assets/tutorial/0033.png",
+                    "imageAlt": "魔法通信から各施設を選ぶ画面",
+                    "body": "魔法通信を使うと、現在地から鍛冶、錬金、ギルドなどの施設へアクセスできます。\n\n新しい製作機能が増えるのではなく、すでに解放した施設を離れた場所から利用できる便利な機能です。"
+                }
+            ]
+        },
+        {
+            "no": "T34",
+            "id": "t34-story-abyss",
+            "title": "深淵を探索しよう",
+            "description": "ストーリーアビスの階層進行と到達記録",
+            "phase": "深淵解放後",
+            "screen": "アビス・ストーリーモード",
+            "triggerHint": "abyssUnlocked and firstStoryAbyssEntry",
+            "pages": [
+                {
+                    "title": "深淵を探索しよう",
+                    "image": "assets/tutorial/0034.png",
+                    "imageAlt": "ストーリーアビスの階層選択・探索画面",
+                    "body": "深淵は、階層を進んで到達記録を伸ばしていく長期探索です。\n\n通常のダンジョンとは進み方、鍵の扱い、帰還条件などが異なるため、開始前の案内を確認しよう。"
+                }
+            ]
+        },
+        {
+            "no": "T35",
+            "id": "t35-abyss-modes",
+            "title": "2つのアビスを使い分けよう",
+            "description": "物語側とランダム探索側の進行・再開",
+            "phase": "エンディング後",
+            "screen": "ランダムアビス・ダンジョンメニュー",
+            "triggerHint": "abyssRandomUnlocked and dungeonMenuUnlocked",
+            "pages": [
+                {
+                    "title": "2つのアビスを使い分けよう",
+                    "image": "assets/tutorial/0035.png",
+                    "imageAlt": "2種類のアビスを選択するダンジョンメニュー",
+                    "body": "物語で進む深淵と、周回向けのランダムアビスでは、到達記録や進行状況が別に管理されます。\n\n到達済みの階層やチェックポイントを利用して、目的に合うモードから探索を再開しよう。"
+                }
+            ]
+        },
+        {
+            "no": "T36",
+            "id": "t36-inn-teleport",
+            "title": "宿屋から深層へ移動しよう",
+            "description": "到達済みアビス階層への転送",
+            "phase": "エンディング後",
+            "screen": "宿屋テレポート",
+            "triggerHint": "teleportUnlocked and firstInnOpenAfterUnlock",
+            "pages": [
+                {
+                    "title": "宿屋から深層へ移動しよう",
+                    "image": "assets/tutorial/0036.png",
+                    "imageAlt": "宿屋のアビス階層テレポート画面",
+                    "body": "宿屋のテレポートを使うと、到達済みのランダムアビス階層へ移動できます。\n\n転送費用は行き先によって変わります。所持金と選択階層を確認して利用しよう。"
+                }
+            ]
+        },
+        {
+            "no": "T37",
+            "id": "t37-reincarnation",
+            "title": "転生でさらに強くなろう",
+            "description": "転生で失うものと引き継ぐ成長",
+            "phase": "高レベル到達",
+            "screen": "転生・周回育成",
+            "triggerHint": "reincarnationEligible and firstReincarnationOpen",
+            "pages": [
+                {
+                    "title": "転生でさらに強くなろう",
+                    "image": "assets/tutorial/0037.png",
+                    "imageAlt": "転生前後のリセット・引き継ぎ比較画面",
+                    "body": "転生すると一部の成長がリセットされる代わりに、次の育成へ引き継げる恒久的な力を得られます。\n\n実行前に、リセットされる項目、残る項目、得られる効果を必ず確認しよう。"
+                }
+            ]
+        },
+        {
+            "no": "T38",
+            "id": "t38-save-data",
+            "title": "セーブデータを守ろう",
+            "description": "バックアップ、復元、更新、削除",
+            "phase": "任意",
+            "screen": "設定・データ管理",
+            "triggerHint": "firstDataManagementOpen",
+            "pages": [
+                {
+                    "title": "セーブデータを守ろう",
+                    "image": "assets/tutorial/0038.png",
+                    "imageAlt": "セーブ書き出し・復元・更新・削除の設定画面",
+                    "body": "端末変更やブラウザデータの消去に備えて、セーブデータを書き出して保管しよう。\n\n復元、アプリ更新、セーブ削除はそれぞれ役割が異なります。削除などの取り消せない操作は、内容を確認してから実行してください。"
+                }
+            ]
+        },
+        {
+            "no": "T39",
+            "id": "t39-tutorial-archive",
+            "title": "チュートリアルを見返そう",
+            "description": "一度見た遊び方の再確認",
+            "phase": "全期間",
+            "screen": "チュートリアル再閲覧",
+            "triggerHint": "anyTutorialCompleted",
+            "pages": [
+                {
+                    "title": "チュートリアルを見返そう",
+                    "image": "assets/tutorial/0039.png",
+                    "imageAlt": "お知らせメニューのチュートリアル一覧画面",
+                    "body": "一度表示された説明は、「メニュー ＞ お知らせ ＞ チュートリアル」から見返せます。\n\n操作や施設の使い方を忘れた時は、見出しを選んでもう一度確認しよう。"
                 }
             ]
         }
@@ -140,9 +704,13 @@
             }
 
             const normalized = {
+                no: String(tutorial.no || ''),
                 id: tutorial.id.trim(),
                 title: String(tutorial.title || 'チュートリアル'),
                 description: String(tutorial.description || ''),
+                phase: String(tutorial.phase || ''),
+                screen: String(tutorial.screen || ''),
+                triggerHint: String(tutorial.triggerHint || ''),
                 pages: tutorial.pages.map((page, index) => ({
                     title: String(page?.title || `${index + 1}ページ`),
                     image: String(page?.image || ''),
@@ -164,9 +732,12 @@
 
         getTutorials() {
             return this.tutorials.map(tutorial => ({
+                no: tutorial.no,
                 id: tutorial.id,
                 title: tutorial.title,
                 description: tutorial.description,
+                phase: tutorial.phase,
+                screen: tutorial.screen,
                 pageCount: tutorial.pages.length
             }));
         },
