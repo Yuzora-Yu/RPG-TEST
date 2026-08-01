@@ -51,6 +51,7 @@ globalThis.ABYSS_FLOOR_RULES = ABYSS_FLOOR_RULES;
 
 const Dungeon = {
     floor: 0, width: 30, height: 30, map: [], pendingAction: null,
+    fixedProceduralGenerationVersion: 3,
 
     memoryRealmName: '追憶の魔境',
     memoryRealmMaxFloor: 30,
@@ -529,6 +530,10 @@ const Dungeon = {
 
     startGuildQuestRun: (questId, challenge = {}) => {
         if (!questId || !App.data?.dungeon) return false;
+        if (Dungeon.isGuildQuestRunActive()) {
+            App.log('すでに依頼迷宮を探索中だ。');
+            return false;
+        }
         const returnPoint = {
             x: App.data.location.x,
             y: App.data.location.y,
@@ -761,51 +766,31 @@ const Dungeon = {
         return !!App.data.progress.openedChests?.[progressKey]?.includes(`${Number(x)},${Number(y)}`);
     },
 
-    removeFixedProceduralChestAt: (x, y, mapDef = null) => {
-        const target = mapDef || Field.currentMapData;
-        if (!target?.isFixed || target.generatedFromAbyssLogic !== true) return false;
-        const tx = Number(x);
-        const ty = Number(y);
-        if (!Number.isInteger(tx) || !Number.isInteger(ty)) return false;
+    shouldRemoveOpenedFixedChest: (mapDef = Field.currentMapData) => !!(
+        mapDef?.isFixed && mapDef?.generatedFromAbyssLogic === true
+    ),
 
-        const replaceTile = (def) => {
-            if (!def || !Array.isArray(def.tiles) || ty < 0 || ty >= def.tiles.length) return false;
-            const row = String(def.tiles[ty] || '');
-            if (tx < 0 || tx >= row.length) return false;
-            const tile = row[tx]?.toUpperCase();
-            if (tile !== 'C' && tile !== 'R') return false;
-            def.tiles[ty] = `${row.slice(0, tx)}T${row.slice(tx + 1)}`;
-            if (Array.isArray(def.chests)) {
-                def.chests = def.chests.filter(chest => Number(chest?.x) !== tx || Number(chest?.y) !== ty);
-            }
-            return true;
-        };
-
-        let changed = replaceTile(target);
-        const areaKey = Field.getCurrentAreaKey?.() || App.data?.location?.area;
-        const floorNo = Math.max(1, Number(target.floor || App.data?.progress?.floor || Dungeon.floor || 1));
-        const runId = Math.max(1, Number(target.proceduralRunId || App.data?.progress?.fixedProceduralRunIds?.[areaKey] || 1));
-        const cacheKey = `${areaKey}:R${runId}:F${floorNo}`;
-        const cached = App.data?.progress?.fixedProceduralFloors?.[cacheKey];
-        if (cached && cached !== target) changed = replaceTile(cached) || changed;
-        return changed;
+    getOpenedFixedChestBaseTile: (chestDef = null, mapDef = Field.currentMapData) => {
+        const explicit = String(chestDef?.baseTile || '').toUpperCase();
+        if (explicit && !['C', 'R'].includes(explicit)) return explicit;
+        const source = mapDef && Number.isFinite(Number(chestDef?.x)) && Number.isFinite(Number(chestDef?.y))
+            ? String(mapDef.tiles?.[Number(chestDef.y)] || '')[Number(chestDef.x)]
+            : '';
+        if (source && !['C', 'R'].includes(String(source).toUpperCase())) return String(source).toUpperCase();
+        return 'T';
     },
 
-    applyOpenedFixedProceduralChests: (mapDef = null) => {
-        const target = mapDef || Field.currentMapData;
-        if (!target?.isFixed || target.generatedFromAbyssLogic !== true) return false;
-        const areaKey = Field.getCurrentAreaKey?.() || App.data?.location?.area;
-        const progressKey = Dungeon.getFixedProgressKey(areaKey);
-        const opened = App.data?.progress?.openedChests?.[progressKey];
-        if (!Array.isArray(opened) || opened.length === 0) return false;
-        let changed = false;
-        opened.forEach(posKey => {
-            const [x, y] = String(posKey).split(',').map(Number);
-            if (Number.isInteger(x) && Number.isInteger(y)) {
-                changed = Dungeon.removeFixedProceduralChestAt(x, y, target) || changed;
-            }
-        });
-        return changed;
+    markFixedChestOpened: (progressKey, posKey, x, y, chestDef = null, mapDef = Field.currentMapData) => {
+        if (!App.data.progress.openedChests) App.data.progress.openedChests = {};
+        if (!Array.isArray(App.data.progress.openedChests[progressKey])) App.data.progress.openedChests[progressKey] = [];
+        if (!App.data.progress.openedChests[progressKey].includes(posKey)) {
+            App.data.progress.openedChests[progressKey].push(posKey);
+        }
+        if (Dungeon.shouldRemoveOpenedFixedChest(mapDef)) {
+            if (!App.data.progress.mapChanges) App.data.progress.mapChanges = {};
+            if (!App.data.progress.mapChanges[progressKey]) App.data.progress.mapChanges[progressKey] = {};
+            App.data.progress.mapChanges[progressKey][posKey] = Dungeon.getOpenedFixedChestBaseTile(chestDef, mapDef);
+        }
     },
 
     getContainerPresentation: (containerDef = null) => {
@@ -935,6 +920,10 @@ const Dungeon = {
         const next = opened.filter(entry => String(entry) !== posKey);
         if (next.length === opened.length) return false;
         App.data.progress.openedChests[progressKey] = next;
+        if (App.data?.progress?.mapChanges?.[progressKey]) {
+            delete App.data.progress.mapChanges[progressKey][posKey];
+            if (Object.keys(App.data.progress.mapChanges[progressKey]).length === 0) delete App.data.progress.mapChanges[progressKey];
+        }
         App.save();
         return true;
     },
@@ -971,7 +960,6 @@ const Dungeon = {
         App.data.dungeon.visitedMap = null;
 
         Field.currentMapData = nextDef;
-        Dungeon.applyOpenedFixedProceduralChests(nextDef);
         if (typeof Dungeon.resetFixedHunterStateForCurrentMap === 'function') Dungeon.resetFixedHunterStateForCurrentMap();
         let resolvedTarget = null;
         if (targetX !== null && targetX !== undefined && targetY !== null && targetY !== undefined) {
@@ -1062,7 +1050,6 @@ const Dungeon = {
                 x: Number(exitPoint.x),
                 y: Number(exitPoint.y),
                 areaKey: exitPoint.areaKey || exitPoint.area || 'WORLD',
-                worldKey: exitPoint.worldKey || App.data?.location?.worldKey || null,
                 mapData: exitPoint.mapData || null
             } : null;
             Dungeon.exit(false, forced);
@@ -1358,6 +1345,7 @@ const Dungeon = {
             && floorDef.tiles.every(row => (typeof row === 'string' || Array.isArray(row)) && row.length === width);
         if (!rectangular) return false;
         if (!floorDef.generatedFromAbyssLogic || !Array.isArray(floorDef.chests)) return true;
+        if (Number(floorDef.proceduralGenerationVersion || 0) !== Number(Dungeon.fixedProceduralGenerationVersion)) return false;
         const items = globalThis.DB?.ITEMS || globalThis.ITEMS_DATA || [];
         return floorDef.chests.every(chest => {
             const item = items.find(entry => Number(entry.id) === Number(chest?.itemId));
@@ -1382,21 +1370,7 @@ const Dungeon = {
         const runId = Math.max(1, Number(progress.fixedProceduralRunIds[areaKey]));
         const cacheKey = `${areaKey}:R${runId}:F${Number(floorNo)}`;
         const cached = progress.fixedProceduralFloors[cacheKey];
-        // 旧ジャゴレア生成は右側へ巨大な矩形区画を後付けしており、既存セーブの
-        // キャッシュにもその形が残る。対象階だけ一度破棄して通常生成へ戻す。
-        const isLegacyJagoreaWideFloor = areaKey === 'JAGOREA_ROOT' && cached && (
-            cached.wideProcedural === true
-            || Number(cached.width || 0) >= 49
-            || Number(cached.height || 0) >= 35
-        );
-        if (!isLegacyJagoreaWideFloor && Dungeon.isValidFixedProceduralFloor(cached)) {
-            return JSON.parse(JSON.stringify(cached));
-        }
-        if (cached) delete progress.fixedProceduralFloors[cacheKey];
-        if (isLegacyJagoreaWideFloor && App.data?.progress?.openedChests) {
-            // 再生成後の別座標へ旧開封履歴を誤適用しない。
-            delete App.data.progress.openedChests[cacheKey];
-        }
+        if (Dungeon.isValidFixedProceduralFloor(cached)) return JSON.parse(JSON.stringify(cached));
 
         const previousDungeonData = JSON.parse(JSON.stringify(App.data.dungeon || {}));
         const previousDungeonState = {
@@ -1408,6 +1382,7 @@ const Dungeon = {
         };
         const previousFieldState = { x: Field.x, y: Field.y, currentMapData: Field.currentMapData };
         let generated = [];
+        let generatedAnchor = null;
         try {
             App.data.dungeon = { ...previousDungeonData };
             Dungeon.floor = Math.max(1, Number(template.encounterRank || template.rank || floorNo));
@@ -1422,6 +1397,9 @@ const Dungeon = {
                 const tile = String(row?.[x] || 'W').toUpperCase();
                 return tile === 'W' ? 'W' : ((tile === 'C' || tile === 'R') ? tile : 'T');
             }));
+            if (Number.isFinite(Number(Field.x)) && Number.isFinite(Number(Field.y))) {
+                generatedAnchor = { x: Number(Field.x), y: Number(Field.y) };
+            }
         } catch (error) {
             console.warn(`[FixedDungeon] ${areaKey} ${floorNo}階の可変MAP生成に失敗したため、安全な代替構造を使用します。`, error);
         } finally {
@@ -1447,6 +1425,42 @@ const Dungeon = {
         const neighbors = (x, y) => [[1, 0], [-1, 0], [0, 1], [0, -1]]
             .map(([dx, dy]) => ({ x: x + dx, y: y + dy }))
             .filter(point => point.y >= 0 && point.y < generated.length && point.x >= 0 && point.x < generated[0].length && generated[point.y][point.x] !== 'W');
+
+        // 可変階は入口・出口・宝箱をすべて同じ連結領域へ収める。
+        // 旧ジャゴレアで発生した、右側だけ巨大な独立区画になる生成結果や、
+        // 到達不能な小島へ宝箱が残る結果は、生成開始点を含む連結領域以外を壁へ戻して破棄する。
+        const connectedComponents = [];
+        const componentSeen = new Set();
+        for (let y = 0; y < generated.length; y++) {
+            for (let x = 0; x < generated[0].length; x++) {
+                const startKey = `${x},${y}`;
+                if (generated[y][x] === 'W' || componentSeen.has(startKey)) continue;
+                const component = [];
+                const queue = [{ x, y }];
+                componentSeen.add(startKey);
+                for (let index = 0; index < queue.length; index++) {
+                    const current = queue[index];
+                    component.push(current);
+                    neighbors(current.x, current.y).forEach(next => {
+                        const key = `${next.x},${next.y}`;
+                        if (componentSeen.has(key)) return;
+                        componentSeen.add(key);
+                        queue.push(next);
+                    });
+                }
+                connectedComponents.push(component);
+            }
+        }
+        const anchorKey = generatedAnchor ? `${generatedAnchor.x},${generatedAnchor.y}` : null;
+        const anchoredComponent = anchorKey
+            ? connectedComponents.find(component => component.some(point => `${point.x},${point.y}` === anchorKey))
+            : null;
+        const mainComponent = anchoredComponent || connectedComponents.sort((a, b) => b.length - a.length)[0] || [];
+        const mainCells = new Set(mainComponent.map(point => `${point.x},${point.y}`));
+        generated.forEach((row, y) => row.forEach((tile, x) => {
+            if (tile !== 'W' && !mainCells.has(`${x},${y}`)) row[x] = 'W';
+        }));
+
         const farthest = (start) => {
             const queue = [{ ...start, distance: 0 }];
             const seen = new Set([`${start.x},${start.y}`]);
@@ -1489,6 +1503,7 @@ const Dungeon = {
             ...template,
             procedural: false,
             generatedFromAbyssLogic: true,
+            proceduralGenerationVersion: Dungeon.fixedProceduralGenerationVersion,
             proceduralRunId: runId,
             width: generated[0].length,
             height: generated.length,
@@ -1559,7 +1574,6 @@ const Dungeon = {
         App.data.dungeon.visitedMap = null;
 
         Field.currentMapData = areaDef;
-        Dungeon.applyOpenedFixedProceduralChests(areaDef);
         if (typeof Dungeon.resetFixedHunterStateForCurrentMap === 'function') Dungeon.resetFixedHunterStateForCurrentMap();
 
         const selectedEntry = entryFromKey
@@ -1630,7 +1644,6 @@ const Dungeon = {
         if (typeof FIXED_DUNGEON_MAPS !== 'undefined' && FIXED_DUNGEON_MAPS[areaKey]) {
             Dungeon.floor = App.data.progress.floor || 1;
             Field.currentMapData = Dungeon.getFixedFloorDef(areaKey, Dungeon.floor);
-            Dungeon.applyOpenedFixedProceduralChests(Field.currentMapData);
             if (typeof Dungeon.resetFixedHunterStateForCurrentMap === 'function') Dungeon.resetFixedHunterStateForCurrentMap();
             App.changeScene('field');
             return;
@@ -1823,7 +1836,6 @@ const Dungeon = {
     // 引数 isWipedOut が true の場合は強制的にデフォルトへ
     exit: (isWipedOut = false, forcedReturnPoint = null) => {
         const returnPoint = forcedReturnPoint || App.data.dungeon.returnPoint;
-        const sourceWorldKey = App.data?.location?.worldKey || 'WORLD';
         const leavingGuildQuestRun = Dungeon.getGuildQuestRun();
         const returnStack = Array.isArray(App.data.dungeon.returnStack) ? App.data.dungeon.returnStack : [];
         const nestedReturnPoint = (!isWipedOut && !forcedReturnPoint && returnStack.length > 0) ? returnStack.pop() : null;
@@ -1867,24 +1879,8 @@ const Dungeon = {
             targetX = returnPoint.x;
             targetY = returnPoint.y;
             targetArea = returnPoint.areaKey;
-            targetWorldKey = returnPoint.worldKey || STORY_DATA?.areas?.[targetArea]?.worldKey || (targetArea === 'ABYSS_WORLD' ? 'ABYSS_WORLD' : sourceWorldKey);
+            targetWorldKey = returnPoint.worldKey || STORY_DATA?.areas?.[targetArea]?.worldKey || (targetArea === 'ABYSS_WORLD' ? 'ABYSS_WORLD' : 'WORLD');
             targetMapData = returnPoint.mapData;
-        }
-
-        // 固定マップ間の出口は定義名と座標だけを持つことがある。
-        // その場合もワールドへ誤送還せず、固定マップ定義を復元して接続先へ戻す。
-        if (!targetMapData && typeof FIXED_MAPS !== 'undefined' && FIXED_MAPS[targetArea]) {
-            const fixedDef = FIXED_MAPS[targetArea];
-            targetMapData = {
-                ...fixedDef,
-                isFixed: true,
-                isDungeon: fixedDef.isDungeon === true,
-                areaKey: targetArea
-            };
-            targetWorldKey = returnPoint?.worldKey
-                || fixedDef.worldKey
-                || STORY_DATA?.areas?.[targetArea]?.worldKey
-                || sourceWorldKey;
         }
 
         // 2. ★安全装置: 帰還先が属するワールド定義または固定マップを正本として判定する。
@@ -2438,6 +2434,7 @@ const Dungeon = {
                 ? MapRegistry.findFixedChest(mapDef, x, y)
                 : (mapDef?.chests ? mapDef.chests.find(c => Number(c.x) === Number(x) && Number(c.y) === Number(y)) : null);
             const container = Dungeon.getContainerPresentation(chestDef);
+            const markOpened = () => Dungeon.markFixedChestOpened(progressKey, posKey, x, y, chestDef, mapDef);
             
             if (App.data.progress.openedChests[progressKey].includes(posKey)) {
                 App.log(container.empty);
@@ -2447,9 +2444,8 @@ const Dungeon = {
 
             if (chestDef) {
                 if (chestDef.trapMonsterId !== undefined && chestDef.trapMonsterId !== null) {
-                    App.data.progress.openedChests[progressKey].push(posKey);
+                    markOpened();
                     if (typeof App.incrementLifetimeStat === 'function') App.incrementLifetimeStat('totalChestsOpened', 1, { save: false });
-                    Dungeon.removeFixedProceduralChestAt(x, y, mapDef);
                     App.save();
                     Field.render();
                     await Dungeon.waitForChestTrapReveal();
@@ -2460,10 +2456,9 @@ const Dungeon = {
                     return;
                 }
                 if (chestDef.keyColor) {
-                    App.data.progress.openedChests[progressKey].push(posKey);
+                    markOpened();
                     if (typeof App.incrementLifetimeStat === 'function') App.incrementLifetimeStat('totalChestsOpened', 1, { save: false });
                     Dungeon.grantDungeonKey(chestDef.keyColor, 'chest');
-                    Dungeon.removeFixedProceduralChestAt(x, y, mapDef);
                     App.save();
                     Field.render();
                     return;
@@ -2482,21 +2477,20 @@ const Dungeon = {
                         Field.render();
                         return;
                     }
-                    App.data.progress.openedChests[progressKey].push(posKey);
+                    markOpened();
                     if (typeof App.incrementLifetimeStat === 'function') App.incrementLifetimeStat('totalChestsOpened', 1, { save: false });
                     App.log(container.inspect);
                     App.log(`<span style="color:#ffd700;">${item.name}</span> を手に入れた！`);
                 } else {
-                    App.data.progress.openedChests[progressKey].push(posKey);
+                    markOpened();
                     if (typeof App.incrementLifetimeStat === 'function') App.incrementLifetimeStat('totalChestsOpened', 1, { save: false });
                     App.log(container.empty);
                 }
             } else {
-                App.data.progress.openedChests[progressKey].push(posKey);
+                markOpened();
                 if (typeof App.incrementLifetimeStat === 'function') App.incrementLifetimeStat('totalChestsOpened', 1, { save: false });
                 App.log(container.empty);
             }
-            Dungeon.removeFixedProceduralChestAt(x, y, mapDef);
             App.save();
             Field.render(); 
             return;

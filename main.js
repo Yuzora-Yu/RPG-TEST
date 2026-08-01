@@ -7202,12 +7202,17 @@ const Field = {
                 if(typeof Dungeon !== 'undefined') Dungeon.floor = App.data.progress.floor || fixedFloor.floor || 1;
             }
             else if (typeof FIXED_MAPS !== 'undefined' && FIXED_MAPS[areaKey]) {
+                const fixedMapDef = FIXED_MAPS[areaKey];
                 Field.currentMapData = {
-                    ...FIXED_MAPS[areaKey],
+                    ...fixedMapDef,
                     isFixed: true,
-                    isDungeon: FIXED_MAPS[areaKey].isDungeon === true,
+                    isDungeon: fixedMapDef.isDungeon === true,
                     areaKey
                 };
+                // 内部固定MAPの旧セーブで worldKey が地上へ落ちていても、
+                // MAP定義を正本として所属世界を復元する。
+                const fixedWorldKey = fixedMapDef.worldKey || STORY_DATA?.areas?.[areaKey]?.worldKey;
+                if (fixedWorldKey) App.data.location.worldKey = fixedWorldKey;
             }
             else if (areaKey === 'ABYSS') {
                 if (App.data.dungeon && App.data.dungeon.map) {
@@ -7269,8 +7274,20 @@ const Field = {
         }
     },
 
+    isFixedMapAreaKey: (areaKey) => !!(areaKey && typeof FIXED_MAPS !== 'undefined' && FIXED_MAPS[areaKey]),
+
+    getFixedMapWorldKey: (areaKey, fallback = null) => {
+        if (!Field.isFixedMapAreaKey(areaKey)) return fallback || 'WORLD';
+        return FIXED_MAPS[areaKey]?.worldKey
+            || STORY_DATA?.areas?.[areaKey]?.worldKey
+            || fallback
+            || App.data?.location?.worldKey
+            || App.data?.mapReturnPoint?.worldKey
+            || 'WORLD';
+    },
+
     enterFixedMap: (targetAreaKey, options = {}) => {
-        if (!targetAreaKey || typeof FIXED_MAPS === 'undefined' || !FIXED_MAPS[targetAreaKey]) return;
+        if (!targetAreaKey || !Field.isFixedMapAreaKey(targetAreaKey)) return;
         if (targetAreaKey === 'ABYSS_FIELD' && !App.data?.progress?.flags?.darkCastleCleared) {
             App.log('属性が不均質に混ざり合っている…');
             if (typeof StoryManager !== 'undefined' && typeof StoryManager.executeEvent === 'function') {
@@ -7280,18 +7297,27 @@ const Field = {
             }
             return;
         }
+
         const areaDef = FIXED_MAPS[targetAreaKey];
-        App.data.mapReturnPoint = options.returnPoint || {
-            areaKey: App.data.location.area || 'WORLD',
-            worldKey: App.data.location.worldKey || (MapRegistry?.getActiveWorldKey?.() || 'WORLD'),
-            x: Field.x,
-            y: Field.y,
-            mapData: Field.currentMapData ? JSON.parse(JSON.stringify(Field.currentMapData)) : null
-        };
+        const sourceIsFixedMap = !!Field.currentMapData?.isFixed && Field.isFixedMapAreaKey(App.data?.location?.area);
+        const shouldReplaceRootReturn = options.replaceReturnPoint === true || !sourceIsFixedMap || !App.data.mapReturnPoint;
+        if (shouldReplaceRootReturn) {
+            const supplied = options.returnPoint || {};
+            App.data.mapReturnPoint = {
+                areaKey: supplied.areaKey || App.data.location.area || 'WORLD',
+                worldKey: supplied.worldKey || App.data.location.worldKey || (MapRegistry?.getActiveWorldKey?.() || 'WORLD'),
+                x: Number.isFinite(Number(supplied.x)) ? Number(supplied.x) : Number(Field.x),
+                y: Number.isFinite(Number(supplied.y)) ? Number(supplied.y) : Number(Field.y),
+                mapData: supplied.mapData !== undefined
+                    ? supplied.mapData
+                    : (Field.currentMapData ? JSON.parse(JSON.stringify(Field.currentMapData)) : null)
+            };
+        }
+
+        const sourceWorldKey = App.data.location.worldKey || App.data.mapReturnPoint?.worldKey || 'WORLD';
         App.data.transportMode = null;
         App.data.location.area = targetAreaKey;
-        App.data.location.worldKey = STORY_DATA?.areas?.[targetAreaKey]?.worldKey
-            || (targetAreaKey === 'ABYSS_WORLD' ? 'ABYSS_WORLD' : (App.data.mapReturnPoint?.worldKey || 'WORLD'));
+        App.data.location.worldKey = Field.getFixedMapWorldKey(targetAreaKey, sourceWorldKey);
         Field.currentMapData = {
             ...areaDef,
             isFixed: true,
@@ -7300,15 +7326,15 @@ const Field = {
         };
         const requestedEntry = options.entryKey && areaDef.entryPoints ? areaDef.entryPoints[options.entryKey] : null;
         const entryPoint = requestedEntry || areaDef.entryPoint || { x: Math.floor(areaDef.width / 2), y: areaDef.height - 3 };
-        Field.x = Number(entryPoint.x);
-        Field.y = Number(entryPoint.y);
+        Field.x = Number.isFinite(Number(options.targetX)) ? Number(options.targetX) : Number(entryPoint.x);
+        Field.y = Number.isFinite(Number(options.targetY)) ? Number(options.targetY) : Number(entryPoint.y);
         App.data.location.x = Field.x;
         App.data.location.y = Field.y;
         if (typeof App.discoverFixedMap === 'function') App.discoverFixedMap(targetAreaKey, { save: false });
         if (App.data.location.worldKey === 'ABYSS_WORLD' && typeof App.discoverFixedMap === 'function') {
             App.discoverFixedMap('ABYSS_WORLD', { save: false, silent: true });
         }
-        App.log(`${areaDef.name}に入った`);
+        if (options.silentLog !== true) App.log(`${areaDef.name}に入った`);
         App.save();
         App.changeScene('field');
     },
@@ -7866,6 +7892,10 @@ const Field = {
                 : { kind: 'chest' };
             const isChest = presentation.kind === 'chest';
 
+            // 深淵固定ダンジョン内の自動生成階だけは、通常のランダム深淵と同様に
+            // 開封済み宝箱を完全に消す。空箱が通路を塞いで進行不能になるのを防ぐ。
+            if (opened && Dungeon.shouldRemoveOpenedFixedChest?.(Field.currentMapData)) return null;
+
             // 固定マップ・固定ダンジョンの宝箱は、取得後も空箱として残す。
             // ランダム生成ダンジョンは currentMapData.isFixed === false のため、
             // この分岐へ入らず、開封時に従来どおり床タイルへ置換される。
@@ -7958,7 +7988,8 @@ const Field = {
         const presentation = typeof Dungeon !== 'undefined' && Dungeon.getContainerPresentation
             ? Dungeon.getContainerPresentation(chestDef)
             : { kind: 'chest' };
-        // 今回、開封後も残すのは宝箱だけ。ツボ・タルは既存の挙動を維持する。
+        if (opened && Dungeon.shouldRemoveOpenedFixedChest?.(Field.currentMapData)) return null;
+        // 通常の固定MAPでは、開封後も残すのは宝箱だけ。ツボ・タルは既存の挙動を維持する。
         if (opened && presentation.kind !== 'chest') return null;
         const rare = chestDef.rare === true || chestDef.type === 'rare' || chestDef.chestType === 'rare';
         return rare ? 'R' : 'C';
@@ -8480,8 +8511,13 @@ const Field = {
                     // エディタが chests[] だけを出力してもゲーム内で表示・調査できるようにする。
                     if (nextTile !== 'B') {
                         const chestDef = Field.getFixedChestAt ? Field.getFixedChestAt(tileX, tileY) : null;
-                        const chestTile = Field.getFixedChestTileSign ? Field.getFixedChestTileSign(chestDef) : null;
-                        if (chestTile) nextTile = chestTile;
+                        const opened = chestDef && typeof Dungeon !== 'undefined' && Dungeon.isFixedChestOpenedAt(tileX, tileY);
+                        if (opened && Dungeon.shouldRemoveOpenedFixedChest?.(Field.currentMapData)) {
+                            nextTile = Dungeon.getOpenedFixedChestBaseTile?.(chestDef, Field.currentMapData) || 'T';
+                        } else {
+                            const chestTile = Field.getFixedChestTileSign ? Field.getFixedChestTileSign(chestDef) : null;
+                            if (chestTile) nextTile = chestTile;
+                        }
                     }
                 }
             }
@@ -8520,6 +8556,11 @@ const Field = {
                     const bossDef = MapRegistry.findFixedBoss(Field.currentMapData, x, y);
                     if (Field.isFixedBossDefeatedAt(bossDef, x, y, progressKey)) tile = 'G';
                     else if (!Field.isFixedBossAvailable(bossDef)) tile = bossDef?.inactiveTile || 'G';
+                }
+                const chestDef = Field.getFixedChestAt ? Field.getFixedChestAt(x, y) : null;
+                if (chestDef && typeof Dungeon !== 'undefined' && Dungeon.isFixedChestOpenedAt(x, y)
+                    && Dungeon.shouldRemoveOpenedFixedChest?.(Field.currentMapData)) {
+                    tile = Dungeon.getOpenedFixedChestBaseTile?.(chestDef, Field.currentMapData) || 'T';
                 }
             }
 
@@ -9297,10 +9338,16 @@ const Field = {
         if (action.type === 'fixedMap' && action.target && typeof Field.enterFixedMap === 'function') {
             Field.enterFixedMap(action.target, {
                 entryKey: action.entryKey || null,
+                targetX: action.targetX,
+                targetY: action.targetY,
+                // 固定MAP同士の移動ではワールド帰還点を上書きしない。
+                // returnX/returnY は既存データ互換用に残すが、接続先は entryKey/targetX/targetY を正本にする。
                 returnPoint: action.returnPoint || {
                     areaKey: Field.getCurrentAreaKey?.() || App.data.location.area,
+                    worldKey: App.data.location.worldKey,
                     x: Number(action.returnX ?? Field.x),
-                    y: Number(action.returnY ?? Field.y)
+                    y: Number(action.returnY ?? Field.y),
+                    mapData: Field.currentMapData ? JSON.parse(JSON.stringify(Field.currentMapData)) : null
                 }
             });
             return;
@@ -9920,8 +9967,13 @@ const Field = {
                 }
 
                 chestDef = Field.getFixedChestAt ? Field.getFixedChestAt(nx, ny) : null;
-                const chestTile = Field.getFixedChestTileSign ? Field.getFixedChestTileSign(chestDef) : null;
-                if (chestTile) tile = chestTile;
+                const openedChest = chestDef && typeof Dungeon !== 'undefined' && Dungeon.isFixedChestOpenedAt(nx, ny);
+                if (openedChest && Dungeon.shouldRemoveOpenedFixedChest?.(Field.currentMapData)) {
+                    tile = Dungeon.getOpenedFixedChestBaseTile?.(chestDef, Field.currentMapData) || 'T';
+                } else {
+                    const chestTile = Field.getFixedChestTileSign ? Field.getFixedChestTileSign(chestDef) : null;
+                    if (chestTile) tile = chestTile;
+                }
             } else if (tile === 'B' && areaKey === 'ABYSS' && typeof Dungeon !== 'undefined' && typeof Dungeon.prepareAbyssBossTileAction === 'function') {
                 Dungeon.prepareAbyssBossTileAction(nx, ny, { silent: false });
                 keepCurrentTileAction({ bump: true });
@@ -10005,17 +10057,36 @@ const Field = {
                     const saved = App.data.mapReturnPoint;
                     const areaDef = (typeof STORY_DATA !== 'undefined' && STORY_DATA.areas) ? STORY_DATA.areas[areaKey] : null;
                     const fallback = localExit
-                        ? { area: localExit.area || areaDef?.worldKey || 'WORLD', x: localExit.worldX, y: localExit.worldY }
+                        ? {
+                            area: localExit.area || areaDef?.worldKey || 'WORLD',
+                            worldKey: localExit.worldKey || areaDef?.worldKey || null,
+                            x: localExit.worldX,
+                            y: localExit.worldY,
+                            entryKey: localExit.entryKey || null
+                        }
                         : (mapDef.exitPoint || (areaDef
-                            ? { area: areaDef.worldKey || 'WORLD', x: areaDef.centerX, y: areaDef.centerY }
-                            : { area: 'WORLD', x: Field.x, y: Field.y }));
+                            ? { area: areaDef.worldKey || 'WORLD', worldKey: areaDef.worldKey || 'WORLD', x: areaDef.centerX, y: areaDef.centerY }
+                            : { area: 'WORLD', worldKey: 'WORLD', x: Field.x, y: Field.y }));
+
+                    // 地下牢・地下神殿・謁見の間など、出口が別の固定MAPを指す場合は
+                    // ワールドへ落とさず、接続先の固定MAPと座標をそのまま復元する。
+                    if (Field.isFixedMapAreaKey(fallback?.area)) {
+                        Field.enterFixedMap(fallback.area, {
+                            entryKey: fallback.entryKey || null,
+                            targetX: fallback.x,
+                            targetY: fallback.y,
+                            silentLog: true
+                        });
+                        return;
+                    }
+
                     const savedWorld = saved && typeof WORLD_MAPS !== 'undefined' && WORLD_MAPS[saved.areaKey];
                     const exit = (!localExit && savedWorld)
-                        ? { area: saved.areaKey, x: saved.x, y: saved.y }
+                        ? { area: saved.areaKey, worldKey: saved.worldKey || saved.areaKey, x: saved.x, y: saved.y }
                         : fallback;
                     App.data.mapReturnPoint = null;
                     App.data.location.area = exit.area || 'WORLD';
-                    App.data.location.worldKey = (exit.worldKey || exit.area || 'WORLD') === 'ABYSS_WORLD' ? 'ABYSS_WORLD' : 'WORLD';
+                    App.data.location.worldKey = exit.worldKey || exit.area || 'WORLD';
                     App.data.transportMode = null;
                     Field.x = Number(exit.x); Field.y = Number(exit.y);
                     App.data.location.x = Field.x; App.data.location.y = Field.y;

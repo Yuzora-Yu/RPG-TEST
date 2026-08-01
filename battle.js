@@ -252,6 +252,32 @@ const Battle = {
         }
     },
 
+    // 形態移行は「同じターンの残りコマンド」を継続すると、既に消えた第一形態の
+    // 行動・ターン終了処理・勝敗判定が混ざる。会話終了後に現在ターンを破棄し、
+    // 第二形態を先頭にした新しい入力フェーズとして再開する。
+    restartInputAfterPhaseTransition: () => {
+        if (!Battle.phaseTransitionRestartPending) return false;
+        Battle.phaseTransitionRestartPending = false;
+        Battle.commandQueue = [];
+        Battle.currentActorIndex = 0;
+        Battle.isPreemptive = false;
+        Battle.isAmbushed = false;
+        [...(Battle.party || []), ...(Battle.enemies || [])].forEach(unit => {
+            if (!unit) return;
+            unit.turnProcessed = false;
+            unit.hasDiedThisTurn = false;
+        });
+        Battle.renderEnemies();
+        Battle.renderPartyStatus();
+        Battle.saveBattleState();
+        // AUTO時は startInputPhase() から即座に次の executeTurn() が始まり得る。
+        // 旧ターンの async スタックを先に完全終了させてから、新ターンを開始する。
+        setTimeout(() => {
+            if (Battle.active && Battle.phase !== 'result') Battle.startInputPhase();
+        }, 0);
+        return true;
+    },
+
     applyOctaprismToEnemy: (enemy) => {
         if (!enemy || !Battle.abyssAzelgaragIds.includes(Battle.getUnitBaseId(enemy))) return;
         const status = Battle.ensureUnitBattleStatus(enemy);
@@ -431,6 +457,7 @@ const Battle = {
             : null;
         Battle.pendingBattleEvent = null;
         Battle.specialCutsceneAutoBefore = undefined;
+        Battle.phaseTransitionRestartPending = false;
         Battle.active = true;
         Battle.phase = 'init';
         Battle.commandQueue = [];
@@ -3350,18 +3377,11 @@ findNextActor: () => {
                     if (fearWoreOff) Battle.log(`${actor.name}の 怯え が解けた！`);
                     await Battle.onActionEnd(actor); // 行動直後のダメージ/リジェネ
                     // 怯え停止でも継続ダメージ後の死亡確定・画面更新・勝敗判定は省略しない。
-                    const deathState = Battle.updateDeadState();
+                    Battle.updateDeadState();
                     if (typeof Battle.awaitPendingBattleEvent === 'function') await Battle.awaitPendingBattleEvent();
+                    if (Battle.restartInputAfterPhaseTransition?.()) return;
                     Battle.renderEnemies();
                     Battle.renderPartyStatus();
-                    if (deathState?.restartInputAfterEvent) {
-                        Battle.isPreemptive = false;
-                        Battle.isAmbushed = false;
-                        Battle.commandQueue = [];
-                        Battle.saveBattleState();
-                        Battle.startInputPhase();
-                        return;
-                    }
                     if (Battle.checkFinish()) return;
                     continue;
                 } else if (fearWoreOff) {
@@ -3393,20 +3413,11 @@ findNextActor: () => {
             await Battle.onActionEnd(actor);
             
             // 死亡状態の更新
-            const deathState = Battle.updateDeadState();
+            Battle.updateDeadState();
             if (typeof Battle.awaitPendingBattleEvent === 'function') await Battle.awaitPendingBattleEvent();
+            if (Battle.restartInputAfterPhaseTransition?.()) return;
 
             Battle.renderEnemies(); Battle.renderPartyStatus();
-            if (deathState?.restartInputAfterEvent) {
-                // 第一形態の行動キューやターン終了処理を第二形態へ持ち越さない。
-                // 変身会話終了後に、新しい戦闘フェーズとして入力を再開する。
-                Battle.isPreemptive = false;
-                Battle.isAmbushed = false;
-                Battle.commandQueue = [];
-                Battle.saveBattleState();
-                Battle.startInputPhase();
-                return;
-            }
             if (Battle.checkFinish()) return;
             await Battle.resultWait(500);
 			Battle.log("<br>"); 
@@ -4611,10 +4622,7 @@ findNextActor: () => {
     },
 	
     updateDeadState: () => {
-        let restartInputAfterEvent = false;
-
-        // 深淵王第一形態は通常の死亡・勝利処理へ入れず、同じ戦闘内で第二形態へ置換する。
-        // 置換後は現在ターンを明示的に終了し、変身会話後に新しい入力フェーズを開始する。
+        // 深淵王第一形態は通常の死亡処理へ入れず、同じ戦闘内で第二形態へ置換する。
         const phaseIndex = (Battle.enemies || []).findIndex(enemy =>
             Battle.getUnitBaseId(enemy) === 302100 && Number(enemy.hp || 0) <= 0 && !enemy.abyssPhaseTransitioned
         );
@@ -4624,26 +4632,33 @@ findNextActor: () => {
             const base = Battle.getMonsterBaseById?.(302101) || globalThis.MonsterData?.getMonsterById?.(302101);
             const finalForm = base ? Battle.createMonsterFromBase(base, { isBossBattle: true, name: base.name }) : null;
             if (finalForm) {
+                finalForm.isDead = false;
+                finalForm.isFled = false;
+                finalForm.hasDiedThisTurn = false;
+                finalForm.hp = Math.max(1, Number(finalForm.baseMaxHp || finalForm.maxHp || finalForm.hp || base.hp || 1));
+                finalForm.mp = Math.max(0, Number(finalForm.baseMaxMp || finalForm.maxMp || finalForm.mp || base.mp || 0));
                 if (App.data?.battle?.abyssOctaprismUsed) Battle.applyOctaprismToEnemy(finalForm);
                 Battle.enemies[phaseIndex] = finalForm;
                 Battle.assignDuplicateMonsterSuffixes(Battle.enemies);
-                App.data.battle.fixedBossId = 302101;
-                App.data.battle.abyssAzelgaragPhase = 2;
-                App.data.battle.abyssAzelgaragTransitionComplete = true;
+                if (App.data?.battle) {
+                    App.data.battle.fixedBossId = 302101;
+                    App.data.battle.abyssAzelgaragPhase = 2;
+                }
                 Battle.party.forEach(member => {
                     if (!member) return;
                     member.isDead = false;
+                    member.isFled = false;
+                    member.hp = Math.max(1, Number(member.baseMaxHp || member.maxHp || member.hp || 1));
+                    member.mp = Math.max(0, Number(member.baseMaxMp || member.maxMp || member.mp || 0));
                     member.hasDiedThisTurn = false;
-                    member.hp = Math.max(1, Number(member.baseMaxHp || member.hp || 1));
-                    member.mp = Math.max(0, Number(member.baseMaxMp || member.mp || 0));
                     const status = Battle.ensureUnitBattleStatus(member);
                     ['atk', 'def', 'spd', 'mag', 'mdef'].forEach(key => {
                         status.buffs[key] = { val: 1.3, turns: null, source: 'light_god' };
                     });
                 });
+                Battle.phaseTransitionRestartPending = true;
                 Battle.queueBattleConversation('ABYSS_AZELGARAG_TRANSFORM');
                 Battle.log('光の神の加護が一行を満たした！');
-                restartInputAfterEvent = true;
             }
         }
 
@@ -4662,39 +4677,40 @@ findNextActor: () => {
         });
         if (partyAuraDirty) Battle.refreshPartyFormationAuras();
 
-        // processAction 内の markDefeated() が先に isDead を立てるため、
-        // 「更新直前に生存していたか」ではなく、未処理の死亡柱を正本として検出する。
+        // ダメージ確定側の markDefeated() が updateDeadState() より先に isDead を立てるため、
+        // 「直前まで生存していた柱」ではなく「未処理の死亡柱」を正本にする。
+        // これにより単体・全体攻撃、継続ダメージ、戦闘途中セーブ復帰のすべてで発火する。
         const newlyFallenPillars = (Battle.enemies || []).filter(enemy =>
             Battle.abyssVegnasisIds.includes(Battle.getUnitBaseId(enemy))
-            && !enemy.abyssFallHandled
-            && !enemy.isFled
-            && (enemy.isDead || Number(enemy.hp || 0) <= 0)
+            && enemy.isDead && !enemy.isFled && !enemy.abyssFallHandled
         );
-        newlyFallenPillars.forEach(enemy => {
-            enemy.abyssFallHandled = true;
-            const remaining = Battle.enemies.filter(other =>
-                Battle.abyssVegnasisIds.includes(Battle.getUnitBaseId(other))
-                && other !== enemy
-                && !other.isDead && !other.isFled && Number(other.hp || 0) > 0
-            );
-            remaining.forEach(other => {
-                const hpBeforeStrengthening = Math.max(1, Number(other.hp || 1));
-                other.baseMaxHp = Math.max(1, Math.floor(Number(other.baseMaxHp || other.hp || 1) * 1.18));
-                other.baseMaxMp = Math.max(0, Math.floor(Number(other.baseMaxMp || other.mp || 0) * 1.12));
-                const recovery = Math.max(1, Math.floor(other.baseMaxHp * 0.20));
-                other.hp = Math.min(other.baseMaxHp, hpBeforeStrengthening + recovery);
-                other.mp = other.baseMaxMp;
-                ['atk', 'def', 'spd', 'mag', 'mdef'].forEach(key => {
-                    if (other.baseStats?.[key] !== undefined) other.baseStats[key] = Math.max(1, Math.floor(Number(other.baseStats[key]) * 1.18));
-                    if (other[key] !== undefined) other[key] = Math.max(1, Math.floor(Number(other[key]) * 1.18));
+        newlyFallenPillars
+            .sort((a, b) => Number(a.linkedDeathIndex ?? Battle.getMonsterBaseById?.(Battle.getUnitBaseId(a))?.linkedDeathIndex ?? 0)
+                - Number(b.linkedDeathIndex ?? Battle.getMonsterBaseById?.(Battle.getUnitBaseId(b))?.linkedDeathIndex ?? 0))
+            .forEach(enemy => {
+                enemy.abyssFallHandled = true;
+                const remaining = Battle.enemies.filter(other =>
+                    Battle.abyssVegnasisIds.includes(Battle.getUnitBaseId(other))
+                    && !other.isDead && !other.isFled && Number(other.hp || 0) > 0
+                );
+                remaining.forEach(other => {
+                    const hpBeforeStrengthening = Math.max(1, Number(other.hp || 1));
+                    other.baseMaxHp = Math.max(1, Math.floor(Number(other.baseMaxHp || other.maxHp || other.hp || 1) * 1.18));
+                    other.maxHp = other.baseMaxHp;
+                    other.baseMaxMp = Math.max(0, Math.floor(Number(other.baseMaxMp || other.maxMp || other.mp || 0) * 1.12));
+                    other.maxMp = other.baseMaxMp;
+                    const recovery = Math.max(1, Math.floor(other.baseMaxHp * 0.20));
+                    other.hp = Math.min(other.baseMaxHp, hpBeforeStrengthening + recovery);
+                    other.mp = other.baseMaxMp;
+                    ['atk', 'def', 'spd', 'mag', 'mdef'].forEach(key => {
+                        if (other.baseStats?.[key] !== undefined) other.baseStats[key] = Math.max(1, Math.floor(Number(other.baseStats[key]) * 1.18));
+                        if (other[key] !== undefined) other[key] = Math.max(1, Math.floor(Number(other[key]) * 1.18));
+                    });
                 });
+                const linkedIndex = Number(enemy.linkedDeathIndex ?? Battle.getMonsterBaseById?.(Battle.getUnitBaseId(enemy))?.linkedDeathIndex ?? 0) + 1;
+                Battle.queueBattleConversation(`ABYSS_VEGNASIS_FALL_${Math.max(1, Math.min(5, linkedIndex))}`);
+                if (remaining.length) Battle.log('倒れた魔柱の力が残る柱へ流れ、傷が塞がり、力が増した！');
             });
-            const linkedIndex = Number(enemy.linkedDeathIndex ?? Battle.getMonsterBaseById?.(Battle.getUnitBaseId(enemy))?.linkedDeathIndex ?? 0) + 1;
-            Battle.queueBattleConversation(`ABYSS_VEGNASIS_FALL_${Math.max(1, Math.min(5, linkedIndex))}`);
-            if (remaining.length) Battle.log('倒れた魔柱の力が残る柱へ流れ、傷が塞がり、力が増した！');
-        });
-
-        return { restartInputAfterEvent };
     },
 
     checkFinish: () => {
@@ -6022,6 +6038,7 @@ findNextActor: () => {
     },
 
     endBattle: (isGameOver = false) => {
+        Battle.phaseTransitionRestartPending = false;
         if (Battle.phase === 'result' && Battle.resultProcessing && !Battle.resultReadyToEnd && !isGameOver) {
             Battle.handleResultTap();
             return;

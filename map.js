@@ -2950,17 +2950,14 @@ const FIXED_MAPS = {
         useHabitatEncounters: true
     },
     LEGACION: {
+        worldKey: "ABYSS_WORLD",
         name: "混沌魔城レガシオン",
         themeKey: "DARK_CASTLE",
         width: 49,
         height: 37,
         entryPoint: { x: 24, y: 34 },
         skyPrismEntryPoint: { x: 24, y: 34 },
-        entryPoints: {
-            south: { x: 24, y: 34 },
-            north: { x: 24, y: 2 },
-            upperCenter: { x: 24, y: 6 }
-        },
+        entryPoints: { south: { x: 24, y: 34 }, north: { x: 24, y: 2 }, upper: { x: 24, y: 6 } },
         battleBg: "battle_bg_lastboss",
         tiles: [
             "WWWWWWWWWWWWWWWWWWWWWWWWSWWWWWWWWWWWWWWWWWWWWWWWW",
@@ -3167,6 +3164,7 @@ const FIXED_MAPS = {
         ]
     },
     LEGACION_UPPER_GALLERY: {
+        worldKey: "ABYSS_WORLD",
         name: "混沌魔城レガシオン 上層回廊",
         themeKey: "DARK_CASTLE",
         width: 41,
@@ -3174,8 +3172,8 @@ const FIXED_MAPS = {
         entryPoint: { x: 20, y: 16 },
         entryPoints: {
             center: { x: 20, y: 16 },
-            westUpper: { x: 5, y: 8 },
-            eastUpper: { x: 35, y: 8 }
+            westUpper: { x: 5, y: 9 },
+            eastUpper: { x: 35, y: 9 }
         },
         battleBg: "battle_bg_lastboss",
         tiles: [
@@ -3250,7 +3248,7 @@ const FIXED_MAPS = {
                 "y": 16,
                 "type": "fixedMap",
                 "target": "LEGACION",
-                "entryKey": "upperCenter",
+                "entryKey": "upper",
                 "returnX": 24,
                 "returnY": 6,
                 "label": "城内一階へ戻る"
@@ -3292,6 +3290,7 @@ const FIXED_MAPS = {
         useHabitatEncounters: true
     },
     LEGACION_WEST_TOWER: {
+        worldKey: "ABYSS_WORLD",
         name: "混沌魔城レガシオン 西塔",
         themeKey: "DARK_CASTLE",
         width: 23,
@@ -3373,6 +3372,7 @@ const FIXED_MAPS = {
         useHabitatEncounters: true
     },
     LEGACION_EAST_TOWER: {
+        worldKey: "ABYSS_WORLD",
         name: "混沌魔城レガシオン 東塔",
         themeKey: "DARK_CASTLE",
         width: 23,
@@ -6028,6 +6028,7 @@ const FIXED_MAPS = {
         }
     },
     LEGACION_PRISON: {
+        worldKey: "ABYSS_WORLD",
         "name": "混沌魔城レガシオン 地下牢",
         "themeKey": "DARK_CASTLE",
         "width": 31,
@@ -6146,6 +6147,7 @@ const FIXED_MAPS = {
         "useHabitatEncounters": true
     },
     LEGACION_TEMPLE: {
+        worldKey: "ABYSS_WORLD",
         "name": "混沌魔城レガシオン 地下神殿",
         "themeKey": "DARK_CASTLE",
         "width": 33,
@@ -6227,6 +6229,7 @@ const FIXED_MAPS = {
         "useHabitatEncounters": true
     },
     LEGACION_THRONE: {
+        worldKey: "ABYSS_WORLD",
         "name": "混沌魔城レガシオン 二階謁見の間",
         "themeKey": "DARK_CASTLE",
         "width": 35,
@@ -7327,6 +7330,7 @@ const FIXED_DUNGEON_MAPS = {
                 mapActions: [
                     {
                         x: 10, y: 4, type: "elementalTrialPrism", element: "火",
+                        interactFromAdjacent: true, blocksMovement: true,
                         requiredFlags: ["abyssSpiritPrismKnown", "firePrismRestored"],
                         lockedText: "火のプリズムは、まだこちらの声に応えない。",
                         elements: ["火"], requiredElements: ["火", "水", "風", "雷", "光", "闇"],
@@ -8710,6 +8714,7 @@ const FIXED_DUNGEON_MAPS = {
                 mapActions: [
                     {
                         x: 12, y: 8, type: "elementalTrialPrism", element: "風",
+                        interactFromAdjacent: true, blocksMovement: true,
                         requiredFlags: ["abyssSpiritPrismKnown", "windVillageCleared"],
                         lockedText: "風のプリズムは、まだこちらの声に応えない。",
                         elements: ["風"], requiredElements: ["火", "水", "風", "雷", "光", "闇"],
@@ -8992,6 +8997,7 @@ const FIXED_DUNGEON_MAPS = {
                 mapActions: [
                     {
                         x: 11, y: 7, type: "elementalTrialPrism", element: "水",
+                        interactFromAdjacent: true, blocksMovement: true,
                         requiredFlags: ["abyssSpiritPrismKnown", "waterCityCleared"],
                         lockedText: "水のプリズムは、まだこちらの声に応えない。",
                         elements: ["水"], requiredElements: ["火", "水", "風", "雷", "光", "闇"],
@@ -10821,6 +10827,7 @@ const FIXED_DUNGEON_MAPS = {
                 mapActions: [
                     {
                         x: 16, y: 4, type: "elementalTrialPrism", element: "雷",
+                        interactFromAdjacent: true, blocksMovement: true,
                         requiredFlags: ["abyssSpiritPrismKnown", "thunderFortCleared"],
                         lockedText: "雷のプリズムは、まだこちらの声に応えない。",
                         elements: ["雷"], requiredElements: ["火", "水", "風", "雷", "光", "闇"],
@@ -11674,6 +11681,7 @@ const FIXED_DUNGEON_MAPS = {
                 mapActions: [
                     {
                         x: 17, y: 8, type: "elementalTrialPrism", element: "光",
+                        interactFromAdjacent: true, blocksMovement: true,
                         requiredFlags: ["abyssSpiritPrismKnown", "lightPalaceCleared"],
                         lockedText: "光のプリズムは、まだこちらの声に応えない。",
                         elements: ["光"], requiredElements: ["火", "水", "風", "雷", "光", "闇"],
@@ -14094,6 +14102,7 @@ const FIXED_DUNGEON_MAPS = {
                     },
                     {
                         x: 16, y: 5, type: "elementalTrialPrism", element: "闇",
+                        interactFromAdjacent: true, blocksMovement: true,
                         requiredFlags: ["abyssSpiritPrismKnown", "darkCastleCleared"],
                         lockedText: "闇のプリズムは、まだこちらの声に応えない。",
                         elements: ["闇"], requiredElements: ["火", "水", "風", "雷", "光", "闇"],
