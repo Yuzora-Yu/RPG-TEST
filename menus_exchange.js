@@ -254,9 +254,7 @@ const MenuExchange = {
             : [];
 
         return `
-            <div style="margin-bottom:11px; padding:10px 12px; border:1px solid #4e4832; border-radius:7px; background:rgba(255,215,0,0.06); color:#bcb18b; font-size:11px; line-height:1.6;">
-                見出しを選ぶと、一度見たチュートリアルを最初のページから確認できます。
-            </div>
+
             <div style="font-size:12px; color:#ffd700; margin-bottom:10px; border-left:3px solid #ffd700; padding-left:8px;">チュートリアル一覧</div>
             <div id="tutorial-list">
                 ${tutorials.length ? tutorials.map((tutorial, index) => `
