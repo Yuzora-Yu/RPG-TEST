@@ -5419,10 +5419,50 @@ const STORY_MANAGER_DATA = {
             { name:'シャニー', text:'精霊たちが、この戦いだけ力を重ねてくれている。\n五つの属性を恐れず、魂の結び目を断とう。', charId:306 }
         ],
         ABYSS_VEGNASIS_FALL_1: [{name:'黒雷のレナード',text:'……盾よ。雷は、もう私を縛らぬ。\n残る者を頼む。'}],
+        ABYSS_VEGNASIS_FALL_1_ABSORB: [
+            {name:'黒雷のレナード',text:'……盾よ。雷は、もう私を縛らぬ。\n残る者を頼む。'},
+            {name:'システム',text:'黒雷の力が ヴェグナシス本体に取り込まれた……！'}
+        ],
         ABYSS_VEGNASIS_FALL_2: [{name:'死風のエリシア',text:'風が……家々の灯りへ帰っていく。\n押し流すだけの風では、なかった。'}],
+        ABYSS_VEGNASIS_FALL_2_ABSORB: [
+            {name:'死風のエリシア',text:'風が……家々の灯りへ帰っていく。\n押し流すだけの風では、なかった。'},
+            {name:'システム',text:'死風の力が ヴェグナシス本体に取り込まれた……！'}
+        ],
         ABYSS_VEGNASIS_FALL_3: [{name:'極零のシーリス',text:'水底にも……朝は届くのね。\n凍らせた声を、連れていって。'}],
+        ABYSS_VEGNASIS_FALL_3_ABSORB: [
+            {name:'極零のシーリス',text:'水底にも……朝は届くのね。\n凍らせた声を、連れていって。'},
+            {name:'システム',text:'極零の力が ヴェグナシス本体に取り込まれた……！'}
+        ],
         ABYSS_VEGNASIS_FALL_4: [{name:'焦熱のグラド',text:'小さな灯か……。\n灰より先に、守り抜いてみせろ。'}],
+        ABYSS_VEGNASIS_FALL_4_ABSORB: [
+            {name:'焦熱のグラド',text:'小さな灯か……。\n灰より先に、守り抜いてみせろ。'},
+            {name:'システム',text:'焦熱の力が ヴェグナシス本体に取り込まれた……！'}
+        ],
         ABYSS_VEGNASIS_FALL_5: [{name:'昏迷の黒騎士ヴェルド',text:'レイラ……顔を上げろ。\n最後の門は、お前たちの手で開け。'}],
+        ABYSS_VEGNASIS_FALL_5_ABSORB: [
+            {name:'昏迷の黒騎士ヴェルド',text:'レイラ……顔を上げろ。\n最後の門は、お前たちの手で開け。'},
+            {name:'システム',text:'昏迷の闇の力が ヴェグナシス本体に取り込まれた……！'}
+        ],
+        ABYSS_VEGNASIS_LAST_STAND_1: [
+            {name:'黒雷のレナード',text:'ジョセフ……まだ剣を振れるなら、私を止めろ。\nこの雷で、もう誰の盾も焼かせるな。'},
+            {name:'システム',text:'四柱の力が黒雷へ重なった。\n雷柱の傷が塞がり、三つの雷鳴が同時に走る。'}
+        ],
+        ABYSS_VEGNASIS_LAST_STAND_2: [
+            {name:'死風のエリシア',text:'お願い……この風を止めて。\n家々の灯りを、もう一つも消したくない。'},
+            {name:'システム',text:'四柱の力が死風へ重なった。\n風柱の傷が塞がり、三つの風音が祭壇を裂く。'}
+        ],
+        ABYSS_VEGNASIS_LAST_STAND_3: [
+            {name:'極零のシーリス',text:'止めて……。この冷たさで、もう誰の声も凍らせたくないの。\n朝が来る前に、私を眠らせて。'},
+            {name:'システム',text:'四柱の力が極零へ重なった。\n水柱の傷が塞がり、三つの冷気が脈打ち始める。'}
+        ],
+        ABYSS_VEGNASIS_LAST_STAND_4: [
+            {name:'焦熱のグラド',text:'来い。俺ごと、この火を止めろ。\n守るべき灯まで灰にする前に。'},
+            {name:'システム',text:'四柱の力が焦熱へ重なった。\n火柱の傷が塞がり、三つの炎が一度に燃え上がる。'}
+        ],
+        ABYSS_VEGNASIS_LAST_STAND_5: [
+            {name:'昏迷の黒騎士ヴェルド',text:'レイラ……止めてくれ。\nこの剣で、もうお前を泣かせたくはない。'},
+            {name:'システム',text:'四柱の力が昏迷の闇へ重なった。\n闇柱の傷が塞がり、三つの剣気が静かに立ち上がる。'}
+        ],
         ABYSS_VEGNASIS_CLEAR: [
             { name:'システム', text:'最後の魂が解け、死幻の魔柱は音もなく崩れ落ちた。\n祭壇の最奥で、深淵王がゆっくりと立ち上がる。' },
             { name:'シャニー', text:'休ませてはくれない。\nでも、ここで止まれば、五人をまた深淵へ渡すことになる。', charId:306 }
@@ -5617,8 +5657,8 @@ const STORY_MANAGER_DATA = {
         abyss_azelgarag_clear: clearEvent('ABYSS_AZELGARAG_CLEAR',['abyssAzelgaragDefeated','abyssEpilogueSeen'],[
             {type:'IF_ITEM',id:109,count:1,then:[],else:[{type:'ITEM',id:109,count:1}]},
             {type:'UNLOCK',value:'wing'},
-            {type:'CREDITS',title:'深淵世界編　完',lines:['企画・シナリオ　Yuzora-Yu','制作　RPG-TEST','最果ての地カルメナ','深淵都市ビスタ','混沌魔城レガシオン','そして、まだ見ぬ深淵へ']},
-            {type:'STEP',value:10},{type:'SUB',value:2},{type:'LOG',value:'深淵王を倒し、リュシオンから光の翼を授かった。終焉の祭壇には、なお深い亀裂が残っている。'}
+            {type:'CREDITS',title:'深淵世界編　完',lines:['ゲームデザイン　夕空','制作　Yuzora-Games','BGM・SE　魔王魂 様','使用　ChatGPT','','','To be continued…']},
+            {type:'STEP',value:10},{type:'SUB',value:2},{type:'LOG',value:'終焉の祭壇には、なお深い亀裂が残っている・・・'}
         ]),
         abyss_postgame_crack: clearEvent('ABYSS_POSTGAME_CRACK',['abyssRandomUnlocked','abyssDungeonMenuUnlocked'],[{type:'UNLOCK',value:['dungeonMenu','teleport']},{type:'START_ABYSS_DUNGEON',mode:'random',floor:1,direct:true}]),
         abyss_carmena_resident_spring: {actions:[{type:'CONV',value:'ABYSS_CARMENA_RESIDENT_SPRING'}],winActions:[]},

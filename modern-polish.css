@@ -6382,3 +6382,243 @@ body.game-page #sub-screen-items #list-items {
   overscroll-behavior: contain;
 }
 
+
+/* =========================================================
+   ヴェグナシス戦: 五つの戦闘対象 + 一枚の共有本体画像
+   - HP/選択UIは五柱それぞれに保持
+   - 攻撃・被ダメージ演出は共有本体画像へ集約
+   - 本体画像は最後の一柱が倒れた時だけ消える
+========================================================= */
+body.game-page #enemy-container.vegnasis-formation {
+  display: block !important;
+  position: relative !important;
+  padding: 12px 6px 6px !important;
+  isolation: isolate;
+}
+
+body.game-page #enemy-container.vegnasis-formation::after {
+  left: 15% !important;
+  right: 15% !important;
+  bottom: 58px !important;
+  height: 26px !important;
+  z-index: 18;
+}
+
+body.game-page #enemy-container.vegnasis-formation .shared-visual-target {
+  box-sizing: border-box;
+  min-width: 0;
+  cursor: pointer;
+  border: 1px solid rgba(220, 231, 244, 0.42) !important;
+  border-radius: 7px;
+  background: linear-gradient(180deg, rgba(16, 22, 34, 0.94), rgba(3, 6, 12, 0.94)) !important;
+  box-shadow: 0 2px 7px rgba(0, 0, 0, 0.72), inset 0 0 10px rgba(105, 145, 180, 0.08);
+  transition: transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease !important;
+}
+
+body.game-page #enemy-container.vegnasis-formation .shared-visual-target:hover,
+body.game-page #enemy-container.vegnasis-formation .shared-visual-target:active {
+  transform: translateX(-50%) translateY(-2px) !important;
+  border-color: rgba(255, 220, 112, 0.94) !important;
+  box-shadow: 0 0 12px rgba(255, 210, 86, 0.38), 0 3px 9px rgba(0, 0, 0, 0.8);
+}
+
+body.game-page #enemy-container.vegnasis-formation .shared-visual-target.is-defeated {
+  cursor: default;
+  opacity: 0.52;
+  filter: grayscale(0.85);
+  border-color: rgba(145, 145, 145, 0.34) !important;
+  background: rgba(7, 8, 11, 0.9) !important;
+}
+
+body.game-page #enemy-container.vegnasis-formation .shared-visual-target.is-defeated:hover,
+body.game-page #enemy-container.vegnasis-formation .shared-visual-target.is-defeated:active {
+  transform: translateX(-50%) !important;
+  box-shadow: 0 2px 7px rgba(0, 0, 0, 0.72);
+}
+
+body.game-page #enemy-container.vegnasis-formation .enemy-status-panel {
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 5px 3px 4px;
+}
+
+body.game-page #enemy-container.vegnasis-formation .enemy-name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body.game-page #enemy-container.vegnasis-formation .enemy-hp-bar {
+  box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.9), 0 0 4px rgba(255, 62, 79, 0.25);
+}
+
+body.game-page #enemy-container.vegnasis-formation .enemy-hp-percent,
+body.game-page #enemy-container.vegnasis-formation .enemy-defeated-label {
+  margin-top: 2px;
+  font-size: 8px;
+  line-height: 1;
+  font-weight: 800;
+  color: #d8e4ef;
+}
+
+body.game-page #enemy-container.vegnasis-formation .enemy-defeated-label {
+  color: #9ba0a8;
+  letter-spacing: 0.08em;
+}
+
+body.game-page .shared-enemy-visual.vegnasis-shared-visual {
+  position: absolute;
+  left: 50%;
+  bottom: 58px;
+  width: min(54%, 320px);
+  aspect-ratio: 1 / 1;
+  transform: translateX(-50%);
+  z-index: 30;
+  pointer-events: none;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  transform-origin: center bottom;
+}
+
+body.game-page .shared-enemy-visual.vegnasis-shared-visual > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  filter:
+    drop-shadow(0 8px 0 rgba(0, 0, 0, 0.24))
+    drop-shadow(0 0 2px rgba(225, 240, 255, 0.74))
+    drop-shadow(0 15px 20px rgba(0, 0, 0, 0.8)) !important;
+}
+
+/* PolishBattleFX が共有本体ノードへ付与するクラス。位置transformは親に残し、画像だけを動かす。 */
+body.game-page .shared-enemy-visual.battle-hit-shake > img {
+  animation: fx-enemy-hit-shake 320ms cubic-bezier(.25, .8, .25, 1);
+  filter: brightness(1.48) saturate(1.32) drop-shadow(0 8px 12px rgba(0, 0, 0, 0.72)) !important;
+}
+
+body.game-page .shared-enemy-visual.battle-enemy-action > img {
+  animation: fx-enemy-action 380ms cubic-bezier(.18, .9, .25, 1);
+}
+
+body.game-page .shared-enemy-visual.battle-boss-flash > img {
+  animation: boss-white-flash 260ms steps(2, end);
+}
+
+/* 被ダメージ時はボス白フラッシュが揺れanimationを上書きしないよう、一つのanimationへ合成する。 */
+body.game-page .shared-enemy-visual.battle-hit-shake.battle-boss-flash > img {
+  animation: vegnasis-shared-hit-flash 320ms cubic-bezier(.25, .8, .25, 1);
+}
+
+body.game-page .shared-enemy-visual.battle-heal-pulse > img {
+  animation: fx-heal-pulse 440ms ease-out;
+}
+
+/* 柱崩壊ごとに祭壇を暗くし、亀裂を増やす。 */
+body.game-page #battle-scene.vegnasis-battle {
+  --vegnasis-darkness: 0;
+  --vegnasis-cracks: 0;
+  --vegnasis-vignette: 0.12;
+}
+body.game-page #battle-scene.vegnasis-stage-1 {
+  --vegnasis-darkness: 0.10;
+  --vegnasis-cracks: 0.22;
+  --vegnasis-vignette: 0.24;
+}
+body.game-page #battle-scene.vegnasis-stage-2 {
+  --vegnasis-darkness: 0.18;
+  --vegnasis-cracks: 0.40;
+  --vegnasis-vignette: 0.34;
+}
+body.game-page #battle-scene.vegnasis-stage-3 {
+  --vegnasis-darkness: 0.27;
+  --vegnasis-cracks: 0.62;
+  --vegnasis-vignette: 0.45;
+}
+body.game-page #battle-scene.vegnasis-stage-4 {
+  --vegnasis-darkness: 0.36;
+  --vegnasis-cracks: 0.88;
+  --vegnasis-vignette: 0.58;
+}
+
+body.game-page #enemy-container.vegnasis-formation .vegnasis-atmosphere {
+  position: absolute;
+  inset: 0;
+  z-index: 12;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+body.game-page #enemy-container.vegnasis-formation .vegnasis-atmosphere::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 44%, transparent 20%, rgba(0, 0, 0, var(--vegnasis-vignette)) 82%),
+    rgba(0, 0, 0, var(--vegnasis-darkness));
+  transition: background 420ms ease;
+}
+
+body.game-page #enemy-container.vegnasis-formation .vegnasis-atmosphere::after {
+  content: "";
+  position: absolute;
+  inset: -6%;
+  opacity: var(--vegnasis-cracks);
+  background:
+    linear-gradient(68deg, transparent 0 46%, rgba(121, 74, 164, 0.7) 47% 48%, transparent 49% 100%),
+    linear-gradient(112deg, transparent 0 57%, rgba(75, 142, 158, 0.56) 58% 59%, transparent 60% 100%),
+    linear-gradient(24deg, transparent 0 66%, rgba(156, 75, 106, 0.5) 67% 68%, transparent 69% 100%),
+    linear-gradient(148deg, transparent 0 71%, rgba(143, 117, 189, 0.48) 72% 73%, transparent 74% 100%);
+  background-size: 47% 76%, 54% 88%, 66% 52%, 72% 67%;
+  background-position: 0 4%, 100% 0, 8% 100%, 100% 92%;
+  background-repeat: no-repeat;
+  filter: drop-shadow(0 0 5px rgba(119, 71, 164, 0.72));
+  transition: opacity 420ms ease;
+}
+
+body.game-page .vegnasis-shift-flash {
+  position: absolute;
+  inset: 0;
+  z-index: 76;
+  pointer-events: none;
+  background: rgba(209, 225, 255, 0.88);
+  mix-blend-mode: screen;
+  animation: vegnasis-shift-flash 780ms ease-out forwards;
+}
+body.game-page .vegnasis-shift-flash[data-element="thunder"] { background: rgba(255, 245, 142, 0.94); }
+body.game-page .vegnasis-shift-flash[data-element="wind"] { background: rgba(139, 255, 192, 0.88); }
+body.game-page .vegnasis-shift-flash[data-element="water"] { background: rgba(157, 226, 255, 0.91); }
+body.game-page .vegnasis-shift-flash[data-element="fire"] { background: rgba(255, 139, 77, 0.92); }
+body.game-page .vegnasis-shift-flash[data-element="dark"] { background: rgba(165, 91, 234, 0.9); }
+body.game-page .vegnasis-shift-flash.is-final {
+  animation-name: vegnasis-final-shift-flash;
+  animation-duration: 1080ms;
+}
+
+@keyframes vegnasis-shared-hit-flash {
+  0%, 100% { transform: translateX(0); filter: brightness(1) saturate(1); }
+  20% { transform: translateX(-7px); filter: brightness(3.2) saturate(0); }
+  42% { transform: translateX(6px); filter: brightness(1.55) saturate(1.28); }
+  62% { transform: translateX(-4px); filter: brightness(2.5) saturate(0.35); }
+  82% { transform: translateX(3px); filter: brightness(1.35) saturate(1.18); }
+}
+
+@keyframes vegnasis-shift-flash {
+  0% { opacity: 0; }
+  12% { opacity: 1; }
+  28% { opacity: 0.16; }
+  43% { opacity: 0.82; }
+  100% { opacity: 0; }
+}
+
+@keyframes vegnasis-final-shift-flash {
+  0% { opacity: 0; filter: contrast(1); }
+  12% { opacity: 1; filter: contrast(1.7); }
+  26% { opacity: 0.12; }
+  38% { opacity: 0.94; filter: contrast(2.1); }
+  58% { opacity: 0.20; }
+  72% { opacity: 0.72; }
+  100% { opacity: 0; filter: contrast(1); }
+}

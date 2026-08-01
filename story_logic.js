@@ -91,22 +91,22 @@ const StoryManager = {
             || isCurrentAbyssStoryArea
             || !!flags.abyssCarmenaGateCleared;
         if (hasEnteredAbyssRegion) {
-            if (!flags.abyssCarmenaGateCleared) return 'カルメナ北門を守る二将を倒そう';
-            if (!flags.abyssLeonardDefeated || !flags.abyssEliciaDefeated) return '東西の楔を倒し、第一層の結界を解こう';
-            if (!flags.abyssSyrisDefeated || !flags.abyssGradDefeated) return 'ビスタの先で二つの楔を倒そう';
+            if (!flags.abyssCarmenaGateCleared) return 'カルメナで情報を集めよう';
+            if (!flags.abyssLeonardDefeated || !flags.abyssEliciaDefeated) return '雷と風の結界を解こう';
+            if (!flags.abyssSyrisDefeated || !flags.abyssGradDefeated) return '火と水の結界を解こう';
             if (!flags.abyssLegacionNorthGateOpen) return 'レガシオンの謁見の間へ向かおう';
             if (!flags.abyssVeldDefeated) return '夢幻回廊リドパルムの最深部へ進もう';
-            if (!flags.abyssJasperDefeated) return '災禍の根ジャゴレアでジャスパーを追おう';
+            if (!flags.abyssJasperDefeated) return '災禍の根ジャゴレアの最深部へ進もう';
             if (!flags.abyssIlluminaciaDefeated) {
                 const insideChronoRoute = flags.abyssChronoGateOpened || ['CHRONO_ABYSS', 'FINAL_ALTAR'].includes(String(currentArea || ''));
                 return insideChronoRoute
                     ? '次元牢獄クロノアビスの最深部へ進もう'
                     : '混沌の結晶片で地下神殿の封印門を開こう';
             }
-            if (!flags.abyssVegnasisDefeated) return '終焉の祭壇で死幻の魔柱を倒そう';
-            if (!flags.abyssAzelgaragDefeated) return '深淵王アゼルガラグを倒そう';
-            if (!flags.abyssEpilogueSeen) return '深淵王との戦いを見届けよう';
-            if (!flags.abyssRandomUnlocked) return '終焉の祭壇に残った亀裂を調べよう';
+            if (!flags.abyssVegnasisDefeated) return '終焉の祭壇を調べよう';
+            if (!flags.abyssAzelgaragDefeated) return '深淵王を打ち倒そう！';
+            if (!flags.abyssEpilogueSeen) return '深淵王を打ち倒そう！';
+            if (!flags.abyssRandomUnlocked) return '終焉の祭壇奥の亀裂を調べよう';
         }
 
         if (this.isMainStoryComplete(progress)) {

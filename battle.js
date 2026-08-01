@@ -174,6 +174,129 @@ const Battle = {
     abyssAzelgaragIds: Object.freeze([302100, 302101]),
     abyssSealedSkillIds: Object.freeze([166, 245, 700101]),
 
+    makeBattleUnitId: () => `enemy-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`,
+
+    ensureEnemyBattleIdentity: (enemy, options = {}) => {
+        if (!enemy) return null;
+        if (options.battleUnitId) enemy.battleUnitId = options.battleUnitId;
+        else if (!enemy.battleUnitId) enemy.battleUnitId = Battle.makeBattleUnitId();
+        enemy.phaseIndex = Math.max(1, Number(options.phaseIndex || enemy.phaseIndex || 1));
+        enemy.phaseRootId = Number(options.phaseRootId || enemy.phaseRootId || Battle.getUnitBaseId(enemy) || 0) || null;
+        return enemy;
+    },
+
+    getLinkedBattleGroup: (enemy) => {
+        if (!enemy) return null;
+        const base = Battle.getMonsterBaseById?.(Battle.getUnitBaseId(enemy));
+        return enemy.linkedBattleGroup || base?.linkedBattleGroup || null;
+    },
+
+    getSharedVisualGroup: (enemy) => {
+        if (!enemy) return null;
+        const base = Battle.getMonsterBaseById?.(Battle.getUnitBaseId(enemy));
+        return enemy.sharedVisualGroup || base?.sharedVisualGroup || null;
+    },
+
+    getSharedVisualMembers: (groupName) => {
+        if (!groupName) return [];
+        return (Battle.enemies || []).filter(enemy => Battle.getSharedVisualGroup(enemy) === groupName);
+    },
+
+    isVegnasisPillar: (enemy) => Battle.getLinkedBattleGroup(enemy) === 'vegnasis',
+
+    ensureLinkedInitialState: (enemy) => {
+        if (!enemy || !Battle.getLinkedBattleGroup(enemy)) return null;
+        if (!enemy.linkedInitialState) {
+            enemy.linkedInitialState = {
+                maxHp: Math.max(1, Number(enemy.baseMaxHp || enemy.maxHp || enemy.hp || 1)),
+                maxMp: Math.max(0, Number(enemy.baseMaxMp || enemy.maxMp || enemy.mp || 0)),
+                atk: Math.max(0, Number(enemy.atk ?? enemy.baseStats?.atk ?? 0)),
+                def: Math.max(0, Number(enemy.def ?? enemy.baseStats?.def ?? 0)),
+                spd: Math.max(0, Number(enemy.spd ?? enemy.baseStats?.spd ?? 0)),
+                mag: Math.max(0, Number(enemy.mag ?? enemy.baseStats?.mag ?? 0)),
+                mdef: Math.max(0, Number(enemy.mdef ?? enemy.baseStats?.mdef ?? 0)),
+                actCount: Math.max(1, Number(enemy.actCount || 1)),
+                acts: JSON.parse(JSON.stringify(enemy.acts || []))
+            };
+        }
+        return enemy.linkedInitialState;
+    },
+
+    initializeLinkedBattleGroups: () => {
+        (Battle.enemies || []).forEach(enemy => {
+            Battle.ensureEnemyBattleIdentity(enemy);
+            Battle.ensureLinkedInitialState(enemy);
+        });
+        const pillars = (Battle.enemies || []).filter(Battle.isVegnasisPillar);
+        if (!pillars.length) return;
+        const handled = pillars.filter(enemy => enemy.abyssFallHandled).length;
+        if (App.data?.battle) {
+            App.data.battle.vegnasisFallCount = Math.max(Number(App.data.battle.vegnasisFallCount || 0), handled);
+        }
+        const alive = pillars.filter(Battle.isBattleAlive);
+        if (alive.length === 1 && handled >= pillars.length - 1 && !alive[0].vegnasisFinalAwakened) {
+            Battle.awakenVegnasisFinalPillar(alive[0], { silent: true });
+        }
+    },
+
+    getVegnasisProfile: (enemy) => {
+        const base = Battle.getMonsterBaseById?.(Battle.getUnitBaseId(enemy)) || {};
+        return {
+            element: String(enemy?.vegnasisElement || base.vegnasisElement || ''),
+            elementKey: String(enemy?.vegnasisElementKey || base.vegnasisElementKey || 'chaos'),
+            powerName: String(enemy?.vegnasisPowerName || base.vegnasisPowerName || '深淵'),
+            lastStandConversation: enemy?.vegnasisLastStandConversation || base.vegnasisLastStandConversation || null
+        };
+    },
+
+    getLinkedBattleGroupSkillPool: (groupName) => {
+        const seen = new Set();
+        const result = [];
+        (DB.MONSTERS || []).filter(base => base?.linkedBattleGroup === groupName).forEach(base => {
+            (base.acts || []).forEach(raw => {
+                const act = (typeof raw === 'object' && raw) ? raw : { id: raw, rate: 100, condition: 0 };
+                const id = Number(act.id);
+                if (!Number.isFinite(id) || seen.has(id)) return;
+                seen.add(id);
+                result.push({ ...JSON.parse(JSON.stringify(act)), id });
+            });
+        });
+        return result;
+    },
+
+    awakenVegnasisFinalPillar: (enemy, options = {}) => {
+        if (!enemy || enemy.vegnasisFinalAwakened) return false;
+        const initial = Battle.ensureLinkedInitialState(enemy);
+        if (!initial) return false;
+        const scale = 1.5;
+        enemy.baseMaxHp = Math.max(1, Math.floor(initial.maxHp * scale));
+        enemy.maxHp = enemy.baseMaxHp;
+        enemy.hp = enemy.baseMaxHp;
+        enemy.baseMaxMp = Math.max(0, Math.floor(initial.maxMp * scale));
+        enemy.maxMp = enemy.baseMaxMp;
+        enemy.mp = enemy.baseMaxMp;
+        ['atk', 'def', 'spd', 'mag', 'mdef'].forEach(key => {
+            const value = Math.max(0, Math.floor(Number(initial[key] || 0) * scale));
+            enemy[key] = value;
+            if (enemy.baseStats) enemy.baseStats[key] = value;
+        });
+        const pooledActs = Battle.getLinkedBattleGroupSkillPool('vegnasis');
+        if (pooledActs.length) enemy.acts = pooledActs;
+        enemy.actCount = 3;
+        enemy.isDead = false;
+        enemy.isFled = false;
+        enemy.hasDiedThisTurn = false;
+        enemy.vegnasisFinalAwakened = true;
+        if (App.data?.battle) {
+            App.data.battle.vegnasisFinalAwakenedUnitId = enemy.battleUnitId || null;
+        }
+        if (!options.silent) {
+            Battle.log(`${enemy.name}は四柱の力を取り込み、完全に傷を癒した！`);
+            Battle.log(`${enemy.name}の全能力が初期値の1.5倍となり、3回行動を開始した！`);
+        }
+        return true;
+    },
+
     completeAbyssElementalTrial: (drops = []) => {
         const battleData = App.data?.battle || {};
         const element = String(battleData.fixedTrialElement || battleData.abyssSpiritElement || '');
@@ -227,6 +350,25 @@ const Battle = {
         return App.data.battle.cutsceneQueue;
     },
 
+    playBattleCutsceneVisual: (effect) => {
+        if (!effect || typeof document === 'undefined') return;
+        if (effect.type === 'vegnasis-fall' || effect.type === 'vegnasis-final') {
+            const stage = Math.max(0, Math.min(4, Number(effect.stage || App.data?.battle?.vegnasisFallCount || 0)));
+            if (App.data?.battle) App.data.battle.vegnasisFallCount = Math.max(Number(App.data.battle.vegnasisFallCount || 0), stage);
+            Battle.renderEnemies?.();
+            const scene = Battle.getEl('battle-scene');
+            if (!scene) return;
+            const old = scene.querySelector('.vegnasis-shift-flash');
+            if (old) old.remove();
+            const flash = document.createElement('div');
+            flash.className = `vegnasis-shift-flash ${effect.type === 'vegnasis-final' ? 'is-final' : ''}`;
+            flash.dataset.element = String(effect.elementKey || 'chaos');
+            flash.setAttribute('aria-hidden', 'true');
+            scene.appendChild(flash);
+            setTimeout(() => flash.remove(), effect.type === 'vegnasis-final' ? 1100 : 800);
+        }
+    },
+
     queueBattleConversation: (scriptKey, options = {}) => {
         if (!scriptKey || !globalThis.StoryManager?.showConversation) return Promise.resolve(false);
         const persistId = options.persistId || null;
@@ -239,6 +381,7 @@ const Battle = {
                     scriptKey,
                     status: 'queued',
                     resumePhase: options.resumePhase || 'input',
+                    visualEffect: options.visualEffect ? JSON.parse(JSON.stringify(options.visualEffect)) : null,
                     createdAt: Date.now()
                 });
                 Battle.saveBattleState();
@@ -262,6 +405,7 @@ const Battle = {
                 persistentEntry.startedAt = persistentEntry.startedAt || Date.now();
                 App.save();
             }
+            Battle.playBattleCutsceneVisual(persistentEntry?.visualEffect || options.visualEffect || null);
             let conversationSucceeded = false;
             try {
                 await StoryManager.showConversation(scriptKey);
@@ -340,6 +484,161 @@ const Battle = {
             }, 50);
         };
         setTimeout(resume, 0);
+        return true;
+    },
+
+    getPhaseTransitionConfig: (enemy) => {
+        if (!enemy) return null;
+        const base = Battle.getMonsterBaseById?.(Battle.getUnitBaseId(enemy));
+        if (!base) return null;
+        const nested = (base.phaseTransition && typeof base.phaseTransition === 'object') ? base.phaseTransition : {};
+        const nextMonsterId = Number(nested.monsterId ?? base.phaseTransitionMonsterId);
+        if (!Number.isFinite(nextMonsterId) || nextMonsterId <= 0) return null;
+        return {
+            nextMonsterId,
+            conversation: nested.conversation || base.phaseTransitionConversation || null,
+            effects: nested.effects || base.phaseTransitionEffects || null,
+            preserveOctaprism: nested.preserveOctaprism === true || base.phaseTransitionPreserveOctaprism === true,
+            resumePhase: nested.resumePhase || 'input'
+        };
+    },
+
+    recordDefeatedPhase: (enemy) => {
+        if (!enemy || !App.data?.battle) return null;
+        Battle.ensureEnemyBattleIdentity(enemy);
+        if (!Array.isArray(App.data.battle.defeatedPhases)) App.data.battle.defeatedPhases = [];
+        const baseId = Battle.getUnitBaseId(enemy);
+        const key = `${enemy.battleUnitId}:${enemy.phaseIndex}:${baseId}`;
+        const existing = App.data.battle.defeatedPhases.find(entry => entry?.key === key);
+        if (existing) return existing;
+        const snapshot = Battle.serializeEnemyState(enemy);
+        snapshot.hp = 0;
+        const entry = {
+            key,
+            battleUnitId: enemy.battleUnitId,
+            phaseIndex: Math.max(1, Number(enemy.phaseIndex || 1)),
+            baseId,
+            snapshot,
+            defeatedAt: Date.now()
+        };
+        App.data.battle.defeatedPhases.push(entry);
+        return entry;
+    },
+
+    collectDefeatedEnemiesForResult: () => {
+        const results = [];
+        const seen = new Set();
+        const add = (enemy, key) => {
+            if (!enemy || seen.has(key)) return;
+            seen.add(key);
+            results.push(enemy);
+        };
+        (App.data?.battle?.defeatedPhases || []).forEach(entry => {
+            const snapshot = entry?.snapshot;
+            if (!snapshot) return;
+            add({
+                ...JSON.parse(JSON.stringify(snapshot)),
+                id: Number(snapshot.baseId || entry.baseId),
+                baseId: Number(snapshot.baseId || entry.baseId),
+                baseMaxHp: Math.max(1, Number(snapshot.maxHp || 1)),
+                baseMaxMp: Math.max(0, Number(snapshot.maxMp || 0)),
+                isDead: true,
+                isFled: false,
+                battleUnitId: entry.battleUnitId,
+                phaseIndex: entry.phaseIndex,
+                isPhaseRewardSnapshot: true
+            }, entry.key || `${entry.battleUnitId}:${entry.phaseIndex}:${entry.baseId}`);
+        });
+        (Battle.enemies || []).forEach(enemy => {
+            if (!enemy?.isDead || enemy.isFled) return;
+            Battle.ensureEnemyBattleIdentity(enemy);
+            add(enemy, `${enemy.battleUnitId}:${enemy.phaseIndex}:${Battle.getUnitBaseId(enemy)}`);
+        });
+        return results;
+    },
+
+    applyPhaseTransitionEffects: (effects) => {
+        if (!effects || typeof effects !== 'object') return;
+        const partyEffect = effects.party;
+        if (partyEffect && typeof partyEffect === 'object') {
+            (Battle.party || []).forEach(member => {
+                if (!member) return;
+                if (partyEffect.revive === true) {
+                    member.isDead = false;
+                    member.isFled = false;
+                    member.hasDiedThisTurn = false;
+                }
+                if (partyEffect.fullRestore === true) {
+                    member.hp = Math.max(1, Number(member.baseMaxHp || member.maxHp || member.hp || 1));
+                    member.mp = Math.max(0, Number(member.baseMaxMp || member.maxMp || member.mp || 0));
+                }
+                const status = Battle.ensureUnitBattleStatus(member);
+                Object.entries(partyEffect.buffs || {}).forEach(([key, raw]) => {
+                    const val = Number(raw);
+                    if (!Number.isFinite(val) || val <= 0) return;
+                    status.buffs[key] = {
+                        val,
+                        turns: partyEffect.turns ?? null,
+                        source: partyEffect.source || 'phase_transition'
+                    };
+                });
+            });
+        }
+        if (effects.log) Battle.log(String(effects.log));
+    },
+
+    transitionEnemyPhase: (enemy, index, config) => {
+        if (!enemy || !config || enemy.phaseTransitioned || enemy.abyssPhaseTransitioned) return false;
+        const nextBase = Battle.getMonsterBaseById?.(config.nextMonsterId);
+        if (!nextBase) {
+            console.error(`[Battle] phase transition target is missing: ${config.nextMonsterId}`);
+            return false;
+        }
+        // 次形態の生成に成功してから旧形態を確定する。
+        // マスタ不整合や生成例外で、旧形態だけが移行済みになる状態を作らない。
+        const nextForm = Battle.createMonsterFromBase(nextBase, { isBossBattle: true, name: nextBase.name });
+        if (!nextForm) return false;
+        Battle.ensureEnemyBattleIdentity(enemy);
+        Battle.recordDefeatedPhase(enemy);
+        enemy.phaseTransitioned = true;
+        enemy.abyssPhaseTransitioned = true;
+        Battle.ensureEnemyBattleIdentity(nextForm, {
+            battleUnitId: enemy.battleUnitId,
+            phaseIndex: Number(enemy.phaseIndex || 1) + 1,
+            phaseRootId: enemy.phaseRootId || Battle.getUnitBaseId(enemy)
+        });
+        nextForm.isDead = false;
+        nextForm.isFled = false;
+        nextForm.hasDiedThisTurn = false;
+        nextForm.hp = Math.max(1, Number(nextForm.baseMaxHp || nextForm.maxHp || nextForm.hp || nextBase.hp || 1));
+        nextForm.mp = Math.max(0, Number(nextForm.baseMaxMp || nextForm.maxMp || nextForm.mp || nextBase.mp || 0));
+        if ((config.preserveOctaprism || App.data?.battle?.abyssOctaprismUsed) &&
+            App.data?.battle?.abyssOctaprismUsed && Battle.abyssAzelgaragIds.includes(Battle.getUnitBaseId(nextForm))) {
+            Battle.applyOctaprismToEnemy(nextForm);
+        }
+        Battle.enemies[index] = nextForm;
+        Battle.assignDuplicateMonsterSuffixes(Battle.enemies);
+
+        if (App.data?.battle) {
+            const fixedBossId = App.data.battle.fixedBossId;
+            const oldId = Battle.getUnitBaseId(enemy);
+            if (Array.isArray(fixedBossId)) {
+                App.data.battle.fixedBossId = fixedBossId.map(id => Number(id) === oldId ? config.nextMonsterId : id);
+            } else if (Number(fixedBossId) === oldId) {
+                App.data.battle.fixedBossId = config.nextMonsterId;
+            }
+            App.data.battle.phaseTransitionCount = Math.max(1, Number(App.data.battle.phaseTransitionCount || 0) + 1);
+            App.data.battle.currentPhaseMonsterId = config.nextMonsterId;
+        }
+        Battle.applyPhaseTransitionEffects(config.effects);
+        Battle.phaseTransitionRestartPending = true;
+        Battle.saveBattleState();
+        if (config.conversation) {
+            Battle.queueBattleConversation(config.conversation, {
+                persistId: `${config.conversation}:${nextForm.battleUnitId}:${nextForm.phaseIndex}`,
+                resumePhase: config.resumePhase || 'input'
+            });
+        }
         return true;
     },
 
@@ -526,7 +825,8 @@ const Battle = {
         Battle.openingBattleConversations = persistedCutscenes.map(entry => ({
             scriptKey: entry.scriptKey,
             persistId: entry.id,
-            resumePhase: entry.resumePhase || 'input'
+            resumePhase: entry.resumePhase || 'input',
+            visualEffect: entry.visualEffect || null
         }));
         if (isVegnasisBattle && recognizedSpirits.length > 0 && !App.data?.battle?.abyssSpiritFinalBlessingShown) {
             Battle.openingBattleConversations.push({ scriptKey: 'ABYSS_SPIRIT_FINAL_BLESSING', persistId: null });
@@ -710,10 +1010,19 @@ const Battle = {
                 keyReward: keyReward,
                 isAmbushed: Battle.isAmbushed, // フラグ維持用
                 isPreemptive: Battle.isPreemptive,
+                defeatedPhases: [],
+                phaseTransitionCount: 0,
+                currentPhaseMonsterId: null,
+                ...(isVegnasisBattle ? {
+                    vegnasisFallCount: 0,
+                    vegnasisFinalAwakenedUnitId: null
+                } : {}),
                 enemies: Battle.enemies.map(Battle.serializeEnemyState).filter(Boolean)
             };
             App.save();
         }
+
+        Battle.initializeLinkedBattleGroups();
 
         if (typeof AudioManager !== 'undefined') AudioManager.syncForScene?.('battle');
 
@@ -966,6 +1275,16 @@ const Battle = {
             linkedDeathIndex: Number.isFinite(Number(enemy.linkedDeathIndex)) ? Number(enemy.linkedDeathIndex) : null,
             linkedBattleGroup: enemy.linkedBattleGroup || null,
             sharedVisualGroup: enemy.sharedVisualGroup || null,
+            vegnasisElement: enemy.vegnasisElement || null,
+            vegnasisElementKey: enemy.vegnasisElementKey || null,
+            vegnasisPowerName: enemy.vegnasisPowerName || null,
+            vegnasisLastStandConversation: enemy.vegnasisLastStandConversation || null,
+            battleUnitId: enemy.battleUnitId || null,
+            phaseIndex: Math.max(1, Number(enemy.phaseIndex || 1)),
+            phaseRootId: Number(enemy.phaseRootId || enemy.baseId || enemy.id || 0) || null,
+            phaseTransitioned: enemy.phaseTransitioned === true,
+            linkedInitialState: clone(enemy.linkedInitialState || null),
+            vegnasisFinalAwakened: enemy.vegnasisFinalAwakened === true,
             abyssFallHandled: enemy.abyssFallHandled === true,
             abyssPhaseTransitioned: enemy.abyssPhaseTransitioned === true,
             abyssSealedSkillIds: clone(enemy.abyssSealedSkillIds || []),
@@ -1031,6 +1350,16 @@ const Battle = {
         enemy.linkedDeathIndex = Number.isFinite(Number(snapshot.linkedDeathIndex)) ? Number(snapshot.linkedDeathIndex) : (base.linkedDeathIndex ?? null);
         enemy.linkedBattleGroup = snapshot.linkedBattleGroup || enemy.linkedBattleGroup || base.linkedBattleGroup || null;
         enemy.sharedVisualGroup = snapshot.sharedVisualGroup || enemy.sharedVisualGroup || base.sharedVisualGroup || null;
+        enemy.vegnasisElement = snapshot.vegnasisElement || enemy.vegnasisElement || base.vegnasisElement || null;
+        enemy.vegnasisElementKey = snapshot.vegnasisElementKey || enemy.vegnasisElementKey || base.vegnasisElementKey || null;
+        enemy.vegnasisPowerName = snapshot.vegnasisPowerName || enemy.vegnasisPowerName || base.vegnasisPowerName || null;
+        enemy.vegnasisLastStandConversation = snapshot.vegnasisLastStandConversation || enemy.vegnasisLastStandConversation || base.vegnasisLastStandConversation || null;
+        enemy.battleUnitId = snapshot.battleUnitId || enemy.battleUnitId || Battle.makeBattleUnitId();
+        enemy.phaseIndex = Math.max(1, finiteOr(snapshot.phaseIndex, enemy.phaseIndex || 1));
+        enemy.phaseRootId = finiteOr(snapshot.phaseRootId, enemy.phaseRootId || base.id || enemy.baseId || enemy.id || 0) || null;
+        enemy.phaseTransitioned = snapshot.phaseTransitioned === true || snapshot.abyssPhaseTransitioned === true;
+        enemy.linkedInitialState = clone(snapshot.linkedInitialState || enemy.linkedInitialState || null);
+        enemy.vegnasisFinalAwakened = snapshot.vegnasisFinalAwakened === true;
         enemy.abyssFallHandled = snapshot.abyssFallHandled === true;
         enemy.abyssPhaseTransitioned = snapshot.abyssPhaseTransitioned === true;
         enemy.abyssSealedSkillIds = clone(snapshot.abyssSealedSkillIds || []);
@@ -1117,6 +1446,13 @@ const Battle = {
         m.elmRes = JSON.parse(JSON.stringify(base.elmRes || {}));
         m.image = base.image || base.img || m.image || null;
         m.imageId = base.imageId ?? base.baseImageId ?? m.imageId ?? null;
+        m.linkedDeathIndex = Number.isFinite(Number(base.linkedDeathIndex)) ? Number(base.linkedDeathIndex) : (m.linkedDeathIndex ?? null);
+        m.linkedBattleGroup = base.linkedBattleGroup || m.linkedBattleGroup || null;
+        m.sharedVisualGroup = base.sharedVisualGroup || m.sharedVisualGroup || null;
+        m.vegnasisElement = base.vegnasisElement || m.vegnasisElement || null;
+        m.vegnasisElementKey = base.vegnasisElementKey || m.vegnasisElementKey || null;
+        m.vegnasisPowerName = base.vegnasisPowerName || m.vegnasisPowerName || null;
+        m.vegnasisLastStandConversation = base.vegnasisLastStandConversation || m.vegnasisLastStandConversation || null;
         m.finDmg = 0;
         m.finRed = 0;
 
@@ -1150,6 +1486,8 @@ const Battle = {
         m.baseId = clone.id;
         m.actCount = clone.actCount || 1;
         Battle.setupEnemyStats(m, clone, !!options.isBossBattle);
+        Battle.ensureEnemyBattleIdentity(m, options);
+        Battle.ensureLinkedInitialState(m);
         if (options.forceSpecialBoss) {
             m.isSpecialBoss = true;
             m.isEstark = clone.isEstark || true;
@@ -1954,7 +2292,8 @@ const Battle = {
             const entry = Battle.openingBattleConversations.shift();
             Battle.queueBattleConversation(entry.scriptKey, {
                 persistId: entry.persistId || null,
-                resumePhase: entry.resumePhase || 'input'
+                resumePhase: entry.resumePhase || 'input',
+                visualEffect: entry.visualEffect || null
             });
             Battle.awaitPendingBattleEvent().then(() => {
                 if (Battle.active) Battle.startInputPhase();
@@ -4701,48 +5040,13 @@ findNextActor: () => {
     },
 	
     updateDeadState: () => {
-        // 深淵王第一形態は通常の死亡処理へ入れず、同じ戦闘内で第二形態へ置換する。
-        const phaseIndex = (Battle.enemies || []).findIndex(enemy =>
-            Battle.getUnitBaseId(enemy) === 302100 && Number(enemy.hp || 0) <= 0 && !enemy.abyssPhaseTransitioned
-        );
-        if (phaseIndex >= 0) {
-            const oldForm = Battle.enemies[phaseIndex];
-            oldForm.abyssPhaseTransitioned = true;
-            const base = Battle.getMonsterBaseById?.(302101) || globalThis.MonsterData?.getMonsterById?.(302101);
-            const finalForm = base ? Battle.createMonsterFromBase(base, { isBossBattle: true, name: base.name }) : null;
-            if (finalForm) {
-                finalForm.isDead = false;
-                finalForm.isFled = false;
-                finalForm.hasDiedThisTurn = false;
-                finalForm.hp = Math.max(1, Number(finalForm.baseMaxHp || finalForm.maxHp || finalForm.hp || base.hp || 1));
-                finalForm.mp = Math.max(0, Number(finalForm.baseMaxMp || finalForm.maxMp || finalForm.mp || base.mp || 0));
-                if (App.data?.battle?.abyssOctaprismUsed) Battle.applyOctaprismToEnemy(finalForm);
-                Battle.enemies[phaseIndex] = finalForm;
-                Battle.assignDuplicateMonsterSuffixes(Battle.enemies);
-                if (App.data?.battle) {
-                    App.data.battle.fixedBossId = 302101;
-                    App.data.battle.abyssAzelgaragPhase = 2;
-                }
-                Battle.party.forEach(member => {
-                    if (!member) return;
-                    member.isDead = false;
-                    member.isFled = false;
-                    member.hp = Math.max(1, Number(member.baseMaxHp || member.maxHp || member.hp || 1));
-                    member.mp = Math.max(0, Number(member.baseMaxMp || member.maxMp || member.mp || 0));
-                    member.hasDiedThisTurn = false;
-                    const status = Battle.ensureUnitBattleStatus(member);
-                    ['atk', 'def', 'spd', 'mag', 'mdef'].forEach(key => {
-                        status.buffs[key] = { val: 1.3, turns: null, source: 'light_god' };
-                    });
-                });
-                Battle.phaseTransitionRestartPending = true;
-                Battle.queueBattleConversation('ABYSS_AZELGARAG_TRANSFORM', {
-                    persistId: 'ABYSS_AZELGARAG_TRANSFORM',
-                    resumePhase: 'input'
-                });
-                Battle.log('光の神の加護が一行を満たした！');
-            }
-        }
+        // 形態変化はモンスターIDを個別判定せず、マスタの phaseTransition 設定を正本にする。
+        // これにより第二・第三形態が追加されても同じ戦闘チェーンと図鑑記録で処理できる。
+        (Battle.enemies || []).slice().forEach((enemy, index) => {
+            if (!enemy || Number(enemy.hp || 0) > 0 || enemy.isFled || enemy.phaseTransitioned || enemy.abyssPhaseTransitioned) return;
+            const config = Battle.getPhaseTransitionConfig(enemy);
+            if (config) Battle.transitionEnemyPhase(enemy, index, config);
+        });
 
         let partyAuraDirty = false;
         [...Battle.party, ...Battle.enemies].forEach(e => {
@@ -4759,23 +5063,44 @@ findNextActor: () => {
         });
         if (partyAuraDirty) Battle.refreshPartyFormationAuras();
 
-        // ダメージ確定側の markDefeated() が updateDeadState() より先に isDead を立てるため、
-        // 「直前まで生存していた柱」ではなく「未処理の死亡柱」を正本にする。
-        // これにより単体・全体攻撃、継続ダメージ、戦闘途中セーブ復帰のすべてで発火する。
-        const newlyFallenPillars = (Battle.enemies || []).filter(enemy =>
-            Battle.abyssVegnasisIds.includes(Battle.getUnitBaseId(enemy))
-            && enemy.isDead && !enemy.isFled && !enemy.abyssFallHandled
-        );
-        newlyFallenPillars
+        const pillars = (Battle.enemies || []).filter(Battle.isVegnasisPillar);
+        if (!pillars.length) return;
+
+        // 全体攻撃で全柱が同時に0になっても、最後に残る一柱の専用段階を必ず作る。
+        // 未覚醒の段階で生存柱が0になった場合は、未処理柱の最後の一体をHP1で残す。
+        const unhandledDead = pillars
+            .filter(enemy => enemy.isDead && !enemy.isFled && !enemy.abyssFallHandled)
             .sort((a, b) => Number(a.linkedDeathIndex ?? Battle.getMonsterBaseById?.(Battle.getUnitBaseId(a))?.linkedDeathIndex ?? 0)
-                - Number(b.linkedDeathIndex ?? Battle.getMonsterBaseById?.(Battle.getUnitBaseId(b))?.linkedDeathIndex ?? 0))
-            .forEach(enemy => {
-                enemy.abyssFallHandled = true;
-                const remaining = Battle.enemies.filter(other =>
-                    Battle.abyssVegnasisIds.includes(Battle.getUnitBaseId(other))
-                    && !other.isDead && !other.isFled && Number(other.hp || 0) > 0
-                );
+                - Number(b.linkedDeathIndex ?? Battle.getMonsterBaseById?.(Battle.getUnitBaseId(b))?.linkedDeathIndex ?? 0));
+        const finalAlreadyAwakened = pillars.some(enemy => enemy.vegnasisFinalAwakened);
+        if (!finalAlreadyAwakened && !pillars.some(Battle.isBattleAlive) && unhandledDead.length > 0) {
+            const survivor = unhandledDead.pop();
+            survivor.hp = 1;
+            survivor.isDead = false;
+            survivor.isFled = false;
+            survivor.hasDiedThisTurn = false;
+        }
+
+        // markDefeated() が先に isDead を立てるため、「未処理の死亡柱」を正本にする。
+        // 複数同時撃破時も、崩壊会話は柱番号順に積み、最後の覚醒会話は全崩壊会話の後へ積む。
+        const newlyFallenPillars = pillars
+            .filter(enemy => enemy.isDead && !enemy.isFled && !enemy.abyssFallHandled)
+            .sort((a, b) => Number(a.linkedDeathIndex ?? Battle.getMonsterBaseById?.(Battle.getUnitBaseId(a))?.linkedDeathIndex ?? 0)
+                - Number(b.linkedDeathIndex ?? Battle.getMonsterBaseById?.(Battle.getUnitBaseId(b))?.linkedDeathIndex ?? 0));
+
+        newlyFallenPillars.forEach(enemy => {
+            enemy.abyssFallHandled = true;
+            const remaining = pillars.filter(other => Battle.isBattleAlive(other));
+            const fallCount = pillars.filter(other => other.abyssFallHandled).length;
+            if (App.data?.battle) {
+                App.data.battle.vegnasisFallCount = Math.max(Number(App.data.battle.vegnasisFallCount || 0), fallCount);
+            }
+
+            // 最終一柱になる前だけ、従来の段階強化を残す。
+            // 最終一柱は後段で「初期値の1.5倍」へ再構築するため、累積倍率を持ち込まない。
+            if (remaining.length > 1) {
                 remaining.forEach(other => {
+                    Battle.ensureLinkedInitialState(other);
                     const hpBeforeStrengthening = Math.max(1, Number(other.hp || 1));
                     other.baseMaxHp = Math.max(1, Math.floor(Number(other.baseMaxHp || other.maxHp || other.hp || 1) * 1.18));
                     other.maxHp = other.baseMaxHp;
@@ -4785,18 +5110,59 @@ findNextActor: () => {
                     other.hp = Math.min(other.baseMaxHp, hpBeforeStrengthening + recovery);
                     other.mp = other.baseMaxMp;
                     ['atk', 'def', 'spd', 'mag', 'mdef'].forEach(key => {
-                        if (other.baseStats?.[key] !== undefined) other.baseStats[key] = Math.max(1, Math.floor(Number(other.baseStats[key]) * 1.18));
+                        if (other.baseStats?.[key] !== undefined) {
+                            other.baseStats[key] = Math.max(1, Math.floor(Number(other.baseStats[key]) * 1.18));
+                        }
                         if (other[key] !== undefined) other[key] = Math.max(1, Math.floor(Number(other[key]) * 1.18));
                     });
                 });
-                const linkedIndex = Number(enemy.linkedDeathIndex ?? Battle.getMonsterBaseById?.(Battle.getUnitBaseId(enemy))?.linkedDeathIndex ?? 0) + 1;
-                const fallScriptKey = `ABYSS_VEGNASIS_FALL_${Math.max(1, Math.min(5, linkedIndex))}`;
-                Battle.queueBattleConversation(fallScriptKey, {
-                    persistId: `${fallScriptKey}:${Battle.getUnitBaseId(enemy)}`,
-                    resumePhase: 'input'
-                });
-                if (remaining.length) Battle.log('倒れた魔柱の力が残る柱へ流れ、傷が塞がり、力が増した！');
+            }
+
+            const linkedIndex = Number(
+                enemy.linkedDeathIndex ??
+                Battle.getMonsterBaseById?.(Battle.getUnitBaseId(enemy))?.linkedDeathIndex ??
+                0
+            ) + 1;
+            const baseFallScriptKey = `ABYSS_VEGNASIS_FALL_${Math.max(1, Math.min(5, linkedIndex))}`;
+            const profile = Battle.getVegnasisProfile(enemy);
+            const fallScriptKey = remaining.length ? `${baseFallScriptKey}_ABSORB` : baseFallScriptKey;
+            Battle.saveBattleState();
+            Battle.queueBattleConversation(fallScriptKey, {
+                persistId: `${fallScriptKey}:${enemy.battleUnitId || Battle.getUnitBaseId(enemy)}:${fallCount}`,
+                resumePhase: 'input',
+                visualEffect: {
+                    type: 'vegnasis-fall',
+                    stage: Math.min(4, fallCount),
+                    elementKey: profile.elementKey
+                }
             });
+            if (remaining.length) {
+                Battle.log(`${profile.powerName}の力がヴェグナシス本体へ流れ込んだ！`);
+            }
+        });
+
+        // 四柱の崩壊会話をすべて予約した後で、最後の一柱を専用形態へ覚醒させる。
+        const remainingAfterFalls = pillars.filter(Battle.isBattleAlive);
+        const handledCount = pillars.filter(enemy => enemy.abyssFallHandled).length;
+        if (remainingAfterFalls.length === 1 && handledCount >= pillars.length - 1 &&
+            !remainingAfterFalls[0].vegnasisFinalAwakened) {
+            const finalPillar = remainingAfterFalls[0];
+            Battle.awakenVegnasisFinalPillar(finalPillar);
+            const finalProfile = Battle.getVegnasisProfile(finalPillar);
+            Battle.saveBattleState();
+            if (finalProfile.lastStandConversation) {
+                Battle.queueBattleConversation(finalProfile.lastStandConversation, {
+                    persistId: `${finalProfile.lastStandConversation}:${finalPillar.battleUnitId || Battle.getUnitBaseId(finalPillar)}`,
+                    resumePhase: 'input',
+                    visualEffect: {
+                        type: 'vegnasis-final',
+                        stage: 4,
+                        elementKey: finalProfile.elementKey
+                    }
+                });
+            }
+        }
+
     },
 
     checkFinish: () => {
@@ -4971,96 +5337,91 @@ findNextActor: () => {
 	
 	renderEnemies: () => {
 		const container = Battle.getEl('enemy-container');
-		if(!container) return;
-        const retainedVegnasisVisual = container.querySelector('.vegnasis-shared-visual');
-        if (retainedVegnasisVisual) retainedVegnasisVisual.remove();
-		container.innerHTML = ''; // 戦闘対象UIだけを再構築し、共有画像ノードは再利用する
+		if (!container) return;
+		container.innerHTML = '';
 		const g = (typeof GRAPHICS !== 'undefined' && GRAPHICS.images) ? GRAPHICS.images : {};
-		
-		// 【判定準備】敵の総数とボスバトルフラグを取得
+
 		const totalCount = Battle.enemies.length;
 		const isBoss = App.data.battle ? App.data.battle.isBossBattle : false;
-        // 1〜4体は既存の横並びを維持。
-        // 5体だけ、亀裂・イベント・一部ボス用の特別隊形にする。
-        const useFiveEnemyFormation = totalCount === 5;
+        const vegnasisEnemies = Battle.getSharedVisualMembers('vegnasis');
+        const isVegnasisBattle = vegnasisEnemies.length > 0;
+        const useFiveEnemyFormation = totalCount === 5 && !isVegnasisBattle;
 
         container.classList.toggle('enemy-five-formation', useFiveEnemyFormation);
+        container.classList.toggle('vegnasis-formation', isVegnasisBattle);
         container.classList.toggle('enemy-two-row-layout', false);
         container.style.position = 'relative';
         container.style.justifyContent = 'center';
         container.style.alignItems = 'flex-end';
-        container.style.display = useFiveEnemyFormation ? 'block' : 'flex';
+        container.style.display = (useFiveEnemyFormation || isVegnasisBattle) ? 'block' : 'flex';
 
-		// Special boss layout: ギルガメッシュは単体の巨大表示を維持。
+        const scene = Battle.getEl('battle-scene');
+        if (scene) {
+            const stage = isVegnasisBattle
+                ? Math.max(0, Math.min(4, Number(App.data?.battle?.vegnasisFallCount || 0)))
+                : 0;
+            scene.dataset.vegnasisStage = String(stage);
+            scene.classList.toggle('vegnasis-battle', isVegnasisBattle);
+            for (let i = 0; i <= 4; i += 1) {
+                scene.classList.toggle(`vegnasis-stage-${i}`, isVegnasisBattle && stage === i);
+            }
+        }
+
 		const hasShowcaseBoss = Battle.enemies.some(enemy => {
             const id = Number(enemy.id);
             const baseId = Number(enemy.baseId);
-            return enemy.isSpecialBoss || enemy.isEstark || id === 902000 || baseId === 902000 || id === 401200 || baseId === 401200 || id === 401100 || baseId === 401100 || id === 302101 || baseId === 302101;
+            return enemy.isSpecialBoss || enemy.isEstark || id === 902000 || baseId === 902000 ||
+                id === 401200 || baseId === 401200 || id === 401100 || baseId === 401100 ||
+                id === 302101 || baseId === 302101;
         });
         const hasSpecialBoss = hasShowcaseBoss && totalCount === 1;
 
-		// デフォルトのレイアウト変数（ここを以下のif文で上書きしていく）
-		let widthPerEnemy = 20; 
-		let scaleFactor = 1.0; 
+		let widthPerEnemy = 20;
+		let scaleFactor = 1.0;
 		let maxPixelWidth = 100;
-		let paddingBottomVal = "30px"; 
+		let paddingBottomVal = "30px";
 		let marginTopVal = "5px";
 
-		/* --- レイアウト決定の優先順位ロジック --- */
-
-		// 1位：特殊ボスがいる場合（最優先・巨大表示）
 		if (hasSpecialBoss) {
 			widthPerEnemy = 65;
 			maxPixelWidth = 450;
 			paddingBottomVal = "15px";
 			marginTopVal = "-30px";
 			scaleFactor = 1.2;
-		} 
-		// 2位：ボスが1体だけの場合
-		else if (isBoss && totalCount === 1) {
-			widthPerEnemy = 40;  
-			scaleFactor = 1.0;   
+		} else if (isBoss && totalCount === 1) {
+			widthPerEnemy = 40;
+			scaleFactor = 1.0;
 			maxPixelWidth = 200;
 			paddingBottomVal = "5px";
 			marginTopVal = "-10px";
-		} 
-		// 3位：ボスが4体並ぶ場合（現行維持）
-		else if (isBoss && totalCount === 4) { 
+		} else if (isBoss && totalCount === 4) {
 			widthPerEnemy = 22;
 			scaleFactor = 0.8;
 			paddingBottomVal = "0px";
-		}
-		// 4位：ボスが3体の場合
-		else if (isBoss && totalCount === 3) { 
+		} else if (isBoss && totalCount === 3) {
 			widthPerEnemy = 29;
-			scaleFactor = 0.95; 
+			scaleFactor = 0.95;
 			maxPixelWidth = 155;
 			paddingBottomVal = "5px";
 			marginTopVal = "-10px";
-		}
-		// 5位：ボスが2体の場合
-		else if (isBoss && totalCount === 2) { 
+		} else if (isBoss && totalCount === 2) {
 			widthPerEnemy = 37;
-			scaleFactor = 1.0; 
+			scaleFactor = 1.0;
 			maxPixelWidth = 200;
 			paddingBottomVal = "5px";
 			marginTopVal = "10px";
-		}
-		// 5体編成だけ、前3＋後2の特別隊形。1〜4体は既存と同じ。
-		else if (useFiveEnemyFormation) { 
+		} else if (useFiveEnemyFormation) {
 			widthPerEnemy = 24;
 			scaleFactor = 0.86;
             maxPixelWidth = 118;
             paddingBottomVal = "0px";
             marginTopVal = "-4px";
-		}
-		else { 
+		} else {
 			widthPerEnemy = 30;
-			scaleFactor = 1.0; 
+			scaleFactor = 1.0;
 		}
 
         const fiveEnemyPosition = (index) => {
-            // 5体編成: 前列中央を主役として少し大きく、左右と後列はやや小さくする。
             const positions = [
                 { left: 24, bottom: 4,  z: 42, width: 22, maxWidth: 108, scale: 0.80, labelTop: '-7px', imgY: '8px' },
                 { left: 50, bottom: 0,  z: 52, width: 28, maxWidth: 138, scale: 0.94, labelTop: '-5px', imgY: '9px' },
@@ -5071,13 +5432,32 @@ findNextActor: () => {
             return positions[index] || positions[1];
         };
 
-        // 実際の描画ループ
+        const vegnasisStatusPosition = (enemy, fallbackIndex) => {
+            const rawIndex = Number(
+                enemy?.linkedDeathIndex ??
+                Battle.getMonsterBaseById?.(Battle.getUnitBaseId(enemy))?.linkedDeathIndex ??
+                fallbackIndex
+            );
+            const index = Math.max(0, Math.min(4, Number.isFinite(rawIndex) ? rawIndex : fallbackIndex));
+            return {
+                left: 10 + index * 20,
+                bottom: 8,
+                width: 18.5,
+                maxWidth: 112,
+                z: 54 + index
+            };
+        };
+
         Battle.enemies.forEach((e, index) => {
             const div = document.createElement('div');
-            div.className = `enemy-sprite`;
+            const sharedVisualGroup = Battle.getSharedVisualGroup(e);
+            const isSharedVisualTarget = !!sharedVisualGroup;
+            div.className = `enemy-sprite${isSharedVisualTarget ? ' shared-visual-target' : ''}`;
             div.dataset.battleIndex = String(index);
             if (e.id !== undefined) div.dataset.enemyId = String(e.id);
-            
+            if (e.battleUnitId) div.dataset.battleUnitId = String(e.battleUnitId);
+            if (sharedVisualGroup) div.dataset.sharedVisualGroup = String(sharedVisualGroup);
+
             let perEnemyWidth = widthPerEnemy;
             let perEnemyMaxPixelWidth = maxPixelWidth;
             let perEnemyScaleFactor = scaleFactor;
@@ -5091,7 +5471,30 @@ findNextActor: () => {
                 perEnemyMarginTopVal = "-18px";
             }
 
-            if (useFiveEnemyFormation) {
+            if (isVegnasisBattle && sharedVisualGroup === 'vegnasis') {
+                const pos = vegnasisStatusPosition(e, index);
+                perEnemyWidth = pos.width;
+                perEnemyMaxPixelWidth = pos.maxWidth;
+                perEnemyScaleFactor = 1;
+                perEnemyMarginTopVal = "0";
+                div.style.cssText = `
+                    position: absolute;
+                    left: ${pos.left}%;
+                    bottom: ${pos.bottom}px;
+                    width: ${perEnemyWidth}%;
+                    max-width: ${perEnemyMaxPixelWidth}px;
+                    min-height: 48px;
+                    margin: 0;
+                    overflow: visible;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: flex-end;
+                    align-items: center;
+                    padding: 0;
+                    transform: translateX(-50%);
+                    z-index: ${pos.z};
+                `;
+            } else if (useFiveEnemyFormation) {
                 const pos = fiveEnemyPosition(index);
                 perEnemyWidth = pos.width;
                 perEnemyMaxPixelWidth = pos.maxWidth;
@@ -5116,10 +5519,10 @@ findNextActor: () => {
                 `;
             } else {
                 div.style.cssText = `
-                    position: relative; 
-                    width: ${perEnemyWidth}%; 
+                    position: relative;
+                    width: ${perEnemyWidth}%;
                     max-width: ${perEnemyMaxPixelWidth}px;
-                    margin: 0 1% -0px 1%;
+                    margin: 0 1%;
                     overflow: visible;
                     display: flex;
                     flex-direction: column;
@@ -5129,83 +5532,115 @@ findNextActor: () => {
                 `;
             }
 
-            // 死んでいる、または逃げた場合は表示を隠す。
-            // ただし、screen方式の全体エフェクトで遅延ダメージ演出を待っている敵は、
-            // 演出より先に消えないよう一時的に表示を保持する。
             const keepDefeatedVisible = !e.isFled && window.PolishBattleFX &&
                 typeof window.PolishBattleFX.shouldKeepDefeatedVisible === 'function' &&
                 window.PolishBattleFX.shouldKeepDefeatedVisible(e);
-            if (e.isFled || (e.hp <= 0 && !keepDefeatedVisible)) {
+            const defeated = e.isFled || (Number(e.hp || 0) <= 0 && !keepDefeatedVisible);
+
+            if (defeated && !isSharedVisualTarget) {
                 div.style.visibility = 'hidden';
                 container.appendChild(div);
                 return;
             }
             if (keepDefeatedVisible) div.classList.add('enemy-defeat-hold');
-            
+            if (defeated && isSharedVisualTarget) div.classList.add('is-defeated');
+
             const imageInfo = Battle.resolveMonsterImage(e, g);
             const src = Battle.escapeAttr(imageInfo.src);
             const fallback = Battle.escapeAttr(imageInfo.fallback);
             div.style.border = 'none';
             div.style.background = 'transparent';
-            const imgHtml = `<img src="${src}" onerror="this.onerror=null;this.src='${fallback}';" style="
-                width: 100%; 
-                aspect-ratio: 1/1; 
-                object-fit: contain; 
-                object-position: center bottom;
-                filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5)); 
-                display: block;
-                --enemy-img-y: ${imgTranslateY};
-                transform: translateY(var(--enemy-img-y));
-            ">`;
+
+            const imgHtml = isSharedVisualTarget
+                ? ''
+                : `<img src="${src}" onerror="this.onerror=null;this.src='${fallback}';" style="
+                    width: 100%;
+                    aspect-ratio: 1/1;
+                    object-fit: contain;
+                    object-position: center bottom;
+                    filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5));
+                    display: block;
+                    --enemy-img-y: ${imgTranslateY};
+                    transform: translateY(var(--enemy-img-y));
+                ">`;
+
             const displayHp = (window.PolishBattleFX && typeof window.PolishBattleFX.hpDisplayForEnemy === 'function')
                 ? window.PolishBattleFX.hpDisplayForEnemy(e, e.hp)
                 : e.hp;
-            const hpPer = (e.baseMaxHp > 0) ? Math.max(0, Math.min(100, (displayHp / e.baseMaxHp) * 100)) : 0;
+            const hpPer = (e.baseMaxHp > 0)
+                ? Math.max(0, Math.min(100, (displayHp / e.baseMaxHp) * 100))
+                : 0;
             const hpRatio = e.baseMaxHp > 0 ? displayHp / e.baseMaxHp : 0;
-            const nameColor = hpRatio < 0.5 ? '#ff4' : '#fff';
-            
+            const nameColor = defeated ? '#8b8b8b' : (hpRatio < 0.5 ? '#ff4' : '#fff');
+            const statusText = defeated
+                ? '<div class="enemy-defeated-label">解放済</div>'
+                : `<div class="enemy-hp-percent">${Math.max(0, Math.ceil(hpPer))}%</div>`;
+
             div.innerHTML = `
                 ${imgHtml}
-                <div style="
-                    width: 140%;
+                <div class="enemy-status-panel" style="
+                    width: ${isSharedVisualTarget ? '100%' : '140%'};
                     margin-top: ${perEnemyMarginTopVal};
-                    display: flex; 
-                    flex-direction: column; 
-                    align-items: center; 
-                    z-index: 10; 
-                    pointer-events: none; 
-                    transform: scale(${perEnemyScaleFactor}); 
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    z-index: 10;
+                    pointer-events: none;
+                    transform: scale(${perEnemyScaleFactor});
                     transform-origin: top center;
                     text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;">
-                    <div class="enemy-name" style="font-size: 10px; color: ${nameColor}; font-weight:bold; white-space: nowrap; margin-bottom: 2px;">${e.name}</div>
-                    <div class="enemy-hp-bar" style="width: 60%; height: 4px; border: 1px solid #000; background: #333; border-radius: 2px;">
-                        <div class="enemy-hp-val" style="width:${hpPer}%; height:100%; background:#ff4444; transition:width 0.2s; border-radius: 1px;"></div>
+                    <div class="enemy-name" style="font-size:${isSharedVisualTarget ? '9px' : '10px'}; color:${nameColor}; font-weight:bold; white-space:nowrap; margin-bottom:2px;">${e.name}</div>
+                    <div class="enemy-hp-bar" style="width:${isSharedVisualTarget ? '92%' : '60%'}; height:${isSharedVisualTarget ? '7px' : '4px'}; border:1px solid #000; background:#333; border-radius:3px;">
+                        <div class="enemy-hp-val" style="width:${defeated ? 0 : hpPer}%; height:100%; background:#ff4444; transition:width 0.2s; border-radius:2px;"></div>
                     </div>
+                    ${statusText}
                 </div>`;
-                
-            div.onclick = (event) => { 
-                event.stopPropagation(); 
-                if(Battle.phase==='target_select' && (Battle.selectingAction==='attack'||Battle.selectingAction==='skill')) { 
-                    Battle.selectTarget(e); 
-                } 
-            };
+
+            if (!defeated) {
+                div.onclick = (event) => {
+                    event.stopPropagation();
+                    if (Battle.phase === 'target_select' &&
+                        (Battle.selectingAction === 'attack' || Battle.selectingAction === 'skill')) {
+                        Battle.selectTarget(e);
+                    }
+                };
+            }
             container.appendChild(div);
         });
 
-        // ヴェグナシスは戦闘対象を五つ持つが、外見は一体の魔柱として描く。
-        const pillarEnemies = Battle.enemies.filter(enemy => Battle.abyssVegnasisIds.includes(Battle.getUnitBaseId(enemy)));
-        if (pillarEnemies.length) {
-            container.querySelectorAll('.enemy-sprite img').forEach(image => { image.style.opacity = '0'; });
-            const sourceEnemy = pillarEnemies.find(enemy => !enemy.isDead) || pillarEnemies[0];
-            const imageInfo = Battle.resolveMonsterImage?.(sourceEnemy, g);
-            if (imageInfo?.src) {
-                const sharedImage = retainedVegnasisVisual || document.createElement('img');
-                sharedImage.className = 'vegnasis-shared-visual';
-                sharedImage.alt = '死幻の魔柱ヴェグナシス';
-                sharedImage.src = imageInfo.src;
-                sharedImage.onerror = () => { if (imageInfo.fallback) sharedImage.src = imageInfo.fallback; };
-                sharedImage.style.cssText = 'position:absolute;left:50%;bottom:58px;width:min(52%,310px);height:auto;aspect-ratio:1/1;object-fit:contain;object-position:center bottom;transform:translateX(-50%);filter:drop-shadow(0 8px 10px rgba(0,0,0,.75));z-index:30;pointer-events:none;';
-                container.appendChild(sharedImage);
+        if (isVegnasisBattle) {
+            const atmosphere = document.createElement('div');
+            atmosphere.className = 'vegnasis-atmosphere';
+            atmosphere.dataset.stage = String(Math.max(0, Math.min(4, Number(App.data?.battle?.vegnasisFallCount || 0))));
+            atmosphere.setAttribute('aria-hidden', 'true');
+            container.appendChild(atmosphere);
+
+            const visibleMembers = vegnasisEnemies.filter(enemy => {
+                if (Battle.isBattleAlive(enemy)) return true;
+                return !enemy.isFled && window.PolishBattleFX &&
+                    typeof window.PolishBattleFX.shouldKeepDefeatedVisible === 'function' &&
+                    window.PolishBattleFX.shouldKeepDefeatedVisible(enemy);
+            });
+            const sourceEnemy = visibleMembers[0] || null;
+
+            // 五柱は一枚の画像を共有する。1〜4柱目の撃破では残し、
+            // 最後の柱の撃破エフェクトが完了した時だけ共有画像を消す。
+            if (sourceEnemy) {
+                const imageInfo = Battle.resolveMonsterImage?.(sourceEnemy, g);
+                if (imageInfo?.src) {
+                    const sharedVisual = document.createElement('div');
+                    sharedVisual.className = 'shared-enemy-visual vegnasis-shared-visual';
+                    sharedVisual.dataset.sharedVisualGroup = 'vegnasis';
+                    sharedVisual.setAttribute('aria-label', '死幻の魔柱ヴェグナシス');
+                    const sharedImage = document.createElement('img');
+                    sharedImage.alt = '死幻の魔柱ヴェグナシス';
+                    sharedImage.src = imageInfo.src;
+                    sharedImage.onerror = () => {
+                        if (imageInfo.fallback) sharedImage.src = imageInfo.fallback;
+                    };
+                    sharedVisual.appendChild(sharedImage);
+                    container.appendChild(sharedVisual);
+                }
             }
         }
     },
@@ -5583,13 +6018,16 @@ findNextActor: () => {
 		// 4. 物語深淵・ギルド依頼迷宮は従来どおり表示階層を使用する。
 
 			let totalExp = 0, totalGold = 0;
-			const drops = []; 
+			const drops = [];
+            // 形態変化前に倒した形態も、最終形態と同じ戦闘結果へ含める。
+            // マスタの phaseTransition 設定だけで第二・第三形態以降も図鑑・討伐数・報酬へ記録される。
+            const defeatedResultEnemies = Battle.collectDefeatedEnemiesForResult();
 			const defeatedMonsterIds = [];
 		let hasRareDrop = false;      // 白フラッシュ用
 		let hasUltraRareDrop = false; // 赤黒フラッシュ用
 
 		// --- [1] 内部データ集計（討伐数・図鑑・経験値・ゴールドの計算） ---
-		Battle.enemies.forEach(e => {
+		defeatedResultEnemies.forEach(e => {
 			if (e.isDead && !e.isFled) {
 				const id = e.baseId || e.id;
 					if (id) {
@@ -5683,7 +6121,7 @@ findNextActor: () => {
 
 		// --- [2] 報酬アイテムの生成と確定 ---
 		if (isEstark) {
-			const specialEnemy = Battle.enemies.find(e => e.isSpecialBoss || e.isEstark || Number(e.id) === 902000 || Number(e.baseId) === 902000);
+			const specialEnemy = defeatedResultEnemies.find(e => e.isSpecialBoss || e.isEstark || Number(e.id) === 902000 || Number(e.baseId) === 902000);
 			if (specialEnemy) {
 				const specialId = specialEnemy.baseId || specialEnemy.id || 902000;
 				const killCount = (App.data.book.killCounts && App.data.book.killCounts[specialId]) ? App.data.book.killCounts[specialId] : 1;
@@ -5728,7 +6166,7 @@ findNextActor: () => {
 				}
 			}
 		} else {
-			Battle.enemies.forEach(e => {
+			defeatedResultEnemies.forEach(e => {
 				if (e.isFled) return;
 				const base = Battle.getMonsterBaseById(e.baseId || e.id) || e;
 				// 追憶の魔境では元モンスター固有の低Rank／物語ボス報酬を持ち込まず、
@@ -5822,7 +6260,7 @@ findNextActor: () => {
 		}
 
 		// 敵ごとに0.5%で、その個体が所持するID100以上のスキル書を抽選する。
-		Battle.enemies.forEach(enemy => {
+		defeatedResultEnemies.forEach(enemy => {
 		    if (Battle.tryCreateSkillBookDrop(enemy, drops)) hasRareDrop = true;
 		});
 

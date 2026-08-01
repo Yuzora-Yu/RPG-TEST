@@ -146,8 +146,9 @@ function validateSourceOrdering() {
     ], 'loss transaction');
 
     assert(/id === 302101 \|\| baseId === 302101/.test(battle), 'Azelgarag form 2 is not in showcase-boss sizing');
-    assert(battle.includes("persistId: 'ABYSS_AZELGARAG_TRANSFORM'") && battle.includes('restartInputAfterPhaseTransition'),
-        'Azelgarag transition is not persisted and restarted through a fresh input phase');
+    assert(battle.includes('getPhaseTransitionConfig') && battle.includes('recordDefeatedPhase') &&
+        battle.includes('persistId: `${config.conversation}:') && battle.includes('restartInputAfterPhaseTransition'),
+        'Generic monster phase transition is not persisted, recorded, and restarted through a fresh input phase');
     assert(battle.includes('cutsceneQueue') && battle.includes('awaitPendingBattleEvent'),
         'battle cutscene wait state is not persisted');
     assert(story.includes('effectStates') && story.includes('selectedBranches') && story.includes('completedActions'),

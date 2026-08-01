@@ -586,6 +586,17 @@
       const foundByIndex = nodes.find((node) => node.dataset?.battleIndex === String(index));
       return foundByIndex || nodes[index] || null;
     },
+    sharedVisualNodeForUnit(unit) {
+      if (!unit || !this.isEnemy(unit) || typeof Battle === "undefined") return null;
+      const group = typeof Battle.getSharedVisualGroup === "function"
+        ? Battle.getSharedVisualGroup(unit)
+        : unit.sharedVisualGroup;
+      if (!group) return null;
+      const container = byId("enemy-container");
+      if (!container) return null;
+      return Array.from(container.querySelectorAll(".shared-enemy-visual"))
+        .find((node) => node.dataset?.sharedVisualGroup === String(group)) || null;
+    },
     isBossTarget(unit) {
       return !!(
         this.isEnemy(unit) &&
@@ -850,7 +861,9 @@
       if (!layer || !scene) return null;
       let el = null;
       if (this.isEnemy(unit)) {
-        el = this.nodeForUnit("enemy-container", unit, Battle.enemies);
+        // Shared-image groups keep individual HP/target nodes while routing visual FX to one body image.
+        el = this.sharedVisualNodeForUnit(unit) ||
+          this.nodeForUnit("enemy-container", unit, Battle.enemies);
       } else if (this.isParty(unit)) {
         el = this.nodeForUnit("battle-party-bar", unit, Battle.party);
       }
