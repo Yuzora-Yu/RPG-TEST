@@ -2,7 +2,7 @@
 const PRISMA_OPENING_PAGES = [
     { text: '五年前のあの日　王都では「大いなる祝福」の儀式が行われた。', effect: 'prism', focus: '50% 46%', startScale: 1.02, endScale: 1.12, startX: '0%', endX: '0%', startY: '2%', endY: '-1%' },
     { text: '六つの属性は一つに混じり　白く瞬いたあと　音もなく割れた。', effect: 'rupture', focus: '50% 43%', startScale: 1.1, endScale: 1.24, startX: '0%', endX: '0%', startY: '0%', endY: '-2%' },
-    { text: '六色の破片は空へ散り、地は裂け　大陸は分割された。', effect: 'rupture', focus: '50% 58%', startScale: 1.18, endScale: 1.05, startX: '0%', endX: '0%', startY: '-2%', endY: '3%' },
+    { text: '六色の破片は空へ散り 地は裂け　大陸は分割された。', effect: 'rupture', focus: '50% 58%', startScale: 1.18, endScale: 1.05, startX: '0%', endX: '0%', startY: '-2%', endY: '3%' },
     { text: '同じ夜　山奥の村がひとつ　底知れぬ闇に呑まれ　地図から消えた。', effect: 'abyss', focus: '72% 38%', startScale: 1.08, endScale: 1.18, startX: '-1%', endX: '1%', startY: '1%', endY: '-1%' },
     { text: '今もまた　地の底から　あの夜と同じ闇が忍びよっていた。', effect: 'abyss', focus: '50% 68%', startScale: 1.08, endScale: 1.18, startX: '0%', endX: '0%', startY: '-1%', endY: '2%' },
     { text: 'そして東では　炉の火までもが人の手を離れようとしている。', effect: 'embers', focus: '20% 52%', startScale: 1.12, endScale: 1.22, startX: '1%', endX: '-2%', startY: '0%', endY: '-1%' },
