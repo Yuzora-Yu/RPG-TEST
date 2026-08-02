@@ -202,6 +202,42 @@ const Battle = {
         return (Battle.enemies || []).filter(enemy => Battle.getSharedVisualGroup(enemy) === groupName);
     },
 
+    getSharedVisualProfile: (groupName) => {
+        const members = Battle.getSharedVisualMembers(groupName);
+        let name = '';
+        let title = '';
+        for (const enemy of members) {
+            const base = Battle.getMonsterBaseById?.(Battle.getUnitBaseId(enemy)) || {};
+            if (!name) name = String(enemy?.sharedVisualName || base.sharedVisualName || '');
+            if (!title) title = String(enemy?.sharedVisualTitle || base.sharedVisualTitle || '');
+            if (name && title) break;
+        }
+        return {
+            name: name || String(groupName || ''),
+            title
+        };
+    },
+
+    getSharedVisualHpSummary: (groupName) => {
+        const members = Battle.getSharedVisualMembers(groupName);
+        const fx = (typeof window !== 'undefined') ? window.PolishBattleFX : null;
+        const summary = members.reduce((result, enemy) => {
+            const maxHp = Math.max(1, Number(enemy?.baseMaxHp || enemy?.maxHp || enemy?.hp || 1));
+            const rawHp = (fx && typeof fx.hpDisplayForEnemy === 'function')
+                ? fx.hpDisplayForEnemy(enemy, enemy?.hp)
+                : enemy?.hp;
+            const currentHp = Math.max(0, Math.min(maxHp, Number(rawHp || 0)));
+            result.currentHp += currentHp;
+            result.maxHp += maxHp;
+            if (Battle.isBattleAlive(enemy)) result.aliveCount += 1;
+            return result;
+        }, { currentHp: 0, maxHp: 0, aliveCount: 0, totalCount: members.length });
+        summary.percent = summary.maxHp > 0
+            ? Math.max(0, Math.min(100, (summary.currentHp / summary.maxHp) * 100))
+            : 0;
+        return summary;
+    },
+
     isVegnasisPillar: (enemy) => Battle.getLinkedBattleGroup(enemy) === 'vegnasis',
 
     ensureLinkedInitialState: (enemy) => {
@@ -5355,18 +5391,6 @@ findNextActor: () => {
         container.style.alignItems = 'flex-end';
         container.style.display = (useFiveEnemyFormation || isVegnasisBattle) ? 'block' : 'flex';
 
-        const scene = Battle.getEl('battle-scene');
-        if (scene) {
-            const stage = isVegnasisBattle
-                ? Math.max(0, Math.min(4, Number(App.data?.battle?.vegnasisFallCount || 0)))
-                : 0;
-            scene.dataset.vegnasisStage = String(stage);
-            scene.classList.toggle('vegnasis-battle', isVegnasisBattle);
-            for (let i = 0; i <= 4; i += 1) {
-                scene.classList.toggle(`vegnasis-stage-${i}`, isVegnasisBattle && stage === i);
-            }
-        }
-
 		const hasShowcaseBoss = Battle.enemies.some(enemy => {
             const id = Number(enemy.id);
             const baseId = Number(enemy.baseId);
@@ -5432,25 +5456,13 @@ findNextActor: () => {
             return positions[index] || positions[1];
         };
 
-        const vegnasisStatusPosition = (enemy, fallbackIndex) => {
-            const rawIndex = Number(
-                enemy?.linkedDeathIndex ??
-                Battle.getMonsterBaseById?.(Battle.getUnitBaseId(enemy))?.linkedDeathIndex ??
-                fallbackIndex
-            );
-            const index = Math.max(0, Math.min(4, Number.isFinite(rawIndex) ? rawIndex : fallbackIndex));
-            return {
-                left: 10 + index * 20,
-                bottom: 8,
-                width: 18.5,
-                maxWidth: 112,
-                z: 54 + index
-            };
-        };
-
         Battle.enemies.forEach((e, index) => {
-            const div = document.createElement('div');
             const sharedVisualGroup = Battle.getSharedVisualGroup(e);
+            // ヴェグナシスは内部の五柱を個別管理するが、戦場上は一体のボスとして描画する。
+            // 単体対象の選択肢は battle-target-window 側に残すため、ここでは五つのカードを作らない。
+            if (isVegnasisBattle && sharedVisualGroup === 'vegnasis') return;
+
+            const div = document.createElement('div');
             const isSharedVisualTarget = !!sharedVisualGroup;
             div.className = `enemy-sprite${isSharedVisualTarget ? ' shared-visual-target' : ''}`;
             div.dataset.battleIndex = String(index);
@@ -5471,30 +5483,7 @@ findNextActor: () => {
                 perEnemyMarginTopVal = "-18px";
             }
 
-            if (isVegnasisBattle && sharedVisualGroup === 'vegnasis') {
-                const pos = vegnasisStatusPosition(e, index);
-                perEnemyWidth = pos.width;
-                perEnemyMaxPixelWidth = pos.maxWidth;
-                perEnemyScaleFactor = 1;
-                perEnemyMarginTopVal = "0";
-                div.style.cssText = `
-                    position: absolute;
-                    left: ${pos.left}%;
-                    bottom: ${pos.bottom}px;
-                    width: ${perEnemyWidth}%;
-                    max-width: ${perEnemyMaxPixelWidth}px;
-                    min-height: 48px;
-                    margin: 0;
-                    overflow: visible;
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: flex-end;
-                    align-items: center;
-                    padding: 0;
-                    transform: translateX(-50%);
-                    z-index: ${pos.z};
-                `;
-            } else if (useFiveEnemyFormation) {
+            if (useFiveEnemyFormation) {
                 const pos = fiveEnemyPosition(index);
                 perEnemyWidth = pos.width;
                 perEnemyMaxPixelWidth = pos.maxWidth;
@@ -5574,7 +5563,7 @@ findNextActor: () => {
             const nameColor = defeated ? '#8b8b8b' : (hpRatio < 0.5 ? '#ff4' : '#fff');
             const statusText = defeated
                 ? '<div class="enemy-defeated-label">解放済</div>'
-                : `<div class="enemy-hp-percent">${Math.max(0, Math.ceil(hpPer))}%</div>`;
+                : '';
 
             div.innerHTML = `
                 ${imgHtml}
@@ -5609,12 +5598,6 @@ findNextActor: () => {
         });
 
         if (isVegnasisBattle) {
-            const atmosphere = document.createElement('div');
-            atmosphere.className = 'vegnasis-atmosphere';
-            atmosphere.dataset.stage = String(Math.max(0, Math.min(4, Number(App.data?.battle?.vegnasisFallCount || 0))));
-            atmosphere.setAttribute('aria-hidden', 'true');
-            container.appendChild(atmosphere);
-
             const visibleMembers = vegnasisEnemies.filter(enemy => {
                 if (Battle.isBattleAlive(enemy)) return true;
                 return !enemy.isFled && window.PolishBattleFX &&
@@ -5624,16 +5607,18 @@ findNextActor: () => {
             const sourceEnemy = visibleMembers[0] || null;
 
             // 五柱は一枚の画像を共有する。1〜4柱目の撃破では残し、
-            // 最後の柱の撃破エフェクトが完了した時だけ共有画像を消す。
+            // 最後の柱の撃破エフェクトが完了した時だけ共有画像と統合HP表示を消す。
             if (sourceEnemy) {
+                const profile = Battle.getSharedVisualProfile('vegnasis');
+                const hpSummary = Battle.getSharedVisualHpSummary('vegnasis');
                 const imageInfo = Battle.resolveMonsterImage?.(sourceEnemy, g);
                 if (imageInfo?.src) {
                     const sharedVisual = document.createElement('div');
                     sharedVisual.className = 'shared-enemy-visual vegnasis-shared-visual';
                     sharedVisual.dataset.sharedVisualGroup = 'vegnasis';
-                    sharedVisual.setAttribute('aria-label', '死幻の魔柱ヴェグナシス');
+                    sharedVisual.setAttribute('aria-label', [profile.title, profile.name].filter(Boolean).join(' '));
                     const sharedImage = document.createElement('img');
-                    sharedImage.alt = '死幻の魔柱ヴェグナシス';
+                    sharedImage.alt = [profile.title, profile.name].filter(Boolean).join(' ');
                     sharedImage.src = imageInfo.src;
                     sharedImage.onerror = () => {
                         if (imageInfo.fallback) sharedImage.src = imageInfo.fallback;
@@ -5641,6 +5626,22 @@ findNextActor: () => {
                     sharedVisual.appendChild(sharedImage);
                     container.appendChild(sharedVisual);
                 }
+
+                const bossHud = document.createElement('div');
+                bossHud.className = 'vegnasis-boss-hud';
+                bossHud.dataset.sharedVisualGroup = 'vegnasis';
+                bossHud.setAttribute('role', 'group');
+                bossHud.setAttribute('aria-label', profile.name);
+                bossHud.innerHTML = `
+                    <div class="vegnasis-boss-name">${Battle.escapeHtml(profile.name)}</div>
+                    <div class="vegnasis-aggregate-hp-bar" role="progressbar"
+                        aria-label="${Battle.escapeAttr(profile.name)}のHP"
+                        aria-valuemin="0"
+                        aria-valuemax="${hpSummary.maxHp}"
+                        aria-valuenow="${hpSummary.currentHp}">
+                        <div class="vegnasis-aggregate-hp-value" style="width:${hpSummary.percent}%"></div>
+                    </div>`;
+                container.appendChild(bossHud);
             }
         }
     },

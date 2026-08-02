@@ -420,6 +420,25 @@
       const enemies = Battle.enemies || [];
       const index = enemies.indexOf(unit);
       if (index < 0) return;
+
+      const sharedGroup = typeof Battle.getSharedVisualGroup === "function"
+        ? Battle.getSharedVisualGroup(unit)
+        : unit.sharedVisualGroup;
+      if (sharedGroup && typeof Battle.getSharedVisualHpSummary === "function") {
+        const container = byId("enemy-container");
+        const hud = container?.querySelector(`.vegnasis-boss-hud[data-shared-visual-group="${String(sharedGroup)}"]`);
+        if (!hud) return;
+        const summary = Battle.getSharedVisualHpSummary(sharedGroup);
+        const bar = hud.querySelector(".vegnasis-aggregate-hp-value");
+        if (bar) bar.style.width = `${summary.percent}%`;
+        const hpBar = hud.querySelector(".vegnasis-aggregate-hp-bar");
+        if (hpBar) {
+          hpBar.setAttribute("aria-valuemax", String(summary.maxHp));
+          hpBar.setAttribute("aria-valuenow", String(summary.currentHp));
+        }
+        return;
+      }
+
       const el = this.nodeForUnit("enemy-container", unit, enemies);
       if (!el) return;
       const hp = Math.max(0, Number(unit.hp || 0));
@@ -861,7 +880,7 @@
       if (!layer || !scene) return null;
       let el = null;
       if (this.isEnemy(unit)) {
-        // Shared-image groups keep individual HP/target nodes while routing visual FX to one body image.
+        // Shared-image groups keep individual combat units internally while routing every visual effect to one body image.
         el = this.sharedVisualNodeForUnit(unit) ||
           this.nodeForUnit("enemy-container", unit, Battle.enemies);
       } else if (this.isParty(unit)) {

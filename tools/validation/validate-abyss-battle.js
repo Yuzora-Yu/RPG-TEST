@@ -18,7 +18,7 @@ const assert = (condition, message) => condition ? checks.push(message) : failur
     {id:302084,name:'闇柱ヴェルド',linkedDeathIndex:4,vegnasisElementKey:'dark',vegnasisPowerName:'昏迷の闇',vegnasisLastStandConversation:'ABYSS_VEGNASIS_LAST_STAND_5',acts:[114]}
   ].map(base => ({
     ...base, hp:1000, mp:100, atk:100, def:100, spd:100, mag:100, mdef:100, actCount:1,
-    gutsLevel:10, linkedBattleGroup:'vegnasis', sharedVisualGroup:'vegnasis'
+    gutsLevel:10, linkedBattleGroup:'vegnasis', sharedVisualGroup:'vegnasis', sharedVisualName:'ヴェグナシス'
   }));
   const monsterBases = new Map([
     [302100, {
@@ -193,7 +193,7 @@ const assert = (condition, message) => condition ? checks.push(message) : failur
   await Battle.awaitPendingBattleEvent();
   assert(Battle.auto===true, '戦闘中イベント終了後にオート状態を復元する');
 
-  // Shared-image rendering keeps five status/target nodes and removes only the body image after the final defeat.
+  // Shared-image rendering exposes one boss name and one aggregate HP bar while keeping five units internally.
   class FakeClassList {
     constructor(){ this.values=new Set(); }
     add(...names){ names.forEach(name=>this.values.add(name)); }
@@ -222,18 +222,31 @@ const assert = (condition, message) => condition ? checks.push(message) : failur
   Battle.renderEnemies=renderEnemiesImpl;
   App.data.battle={active:true,isBossBattle:true,vegnasisFallCount:0};
   Battle.enemies=pillarBases.map(base=>makePillar(base));
+  const fullSummary=Battle.getSharedVisualHpSummary('vegnasis');
+  assert(fullSummary.currentHp===fullSummary.maxHp && fullSummary.totalCount===5, '統合HPは内部の5柱すべてのHPを合算する');
   Battle.renderEnemies();
-  assert(fakeContainer.children.filter(node=>String(node.className).includes('enemy-sprite')).length===5, '共有画像戦でも5柱それぞれのHP・選択ノードを描画する');
+  assert(fakeContainer.children.filter(node=>String(node.className).includes('enemy-sprite')).length===0, '戦場上には柱別カードを描画しない');
   assert(fakeContainer.children.filter(node=>String(node.className).includes('shared-enemy-visual')).length===1, 'ヴェグナシス本体画像は5柱で1枚だけ共有する');
-  assert(fakeContainer.children.filter(node=>String(node.className).includes('enemy-sprite')).every(node=>node.innerHTML.includes('enemy-hp-bar')), '4・5体目を含む全柱に常時HPゲージを描画する');
+  const bossHud=fakeContainer.children.find(node=>String(node.className).includes('vegnasis-boss-hud'));
+  assert(!!bossHud && bossHud.innerHTML.includes('ヴェグナシス') && bossHud.innerHTML.includes('vegnasis-aggregate-hp-bar'), 'ヴェグナシス名と統合HPバーを一つだけ描画する');
+  assert(!bossHud.innerHTML.includes('vegnasis-aggregate-hp-percent') && !bossHud.innerHTML.includes('%</div>'), '統合HPは数値パーセントを表示せずバーだけで示す');
+  Battle.enemies[0].hp=Math.floor(Battle.enemies[0].baseMaxHp/2);
+  const damagedSummary=Battle.getSharedVisualHpSummary('vegnasis');
+  assert(damagedSummary.currentHp<damagedSummary.maxHp && damagedSummary.percent<100, 'いずれかの柱の被ダメージを統合HPへ反映する');
   Battle.enemies.forEach(enemy=>{ enemy.hp=0; enemy.isDead=true; });
   Battle.renderEnemies();
   assert(fakeContainer.children.filter(node=>String(node.className).includes('shared-enemy-visual')).length===0, '最後の柱撃破後は共有本体画像を描画しない');
+  assert(fakeContainer.children.filter(node=>String(node.className).includes('vegnasis-boss-hud')).length===0, '最後の柱撃破後は統合HP表示も消す');
 
+  const battleSource=fs.readFileSync(path.join(root,'battle.js'),'utf8');
   const polishSource=fs.readFileSync(path.join(root,'polish.js'),'utf8');
   const cssSource=fs.readFileSync(path.join(root,'modern-polish.css'),'utf8');
   assert(polishSource.includes('sharedVisualNodeForUnit') && polishSource.includes('this.sharedVisualNodeForUnit(unit) ||'), 'どの柱の被ダメージ・行動エフェクトも共有本体画像へルーティングする');
-  assert(cssSource.includes('.shared-visual-target') && cssSource.includes('.vegnasis-shared-visual') && cssSource.includes('.vegnasis-atmosphere'), '5柱UI・共有画像・段階暗転/亀裂の専用スタイルを定義する');
+  assert(polishSource.includes('vegnasis-aggregate-hp-value') && polishSource.includes('getSharedVisualHpSummary'), '柱別HP更新時も統合HPバーを更新する');
+  assert(!battleSource.includes('enemy-hp-percent') && !battleSource.includes('vegnasis-aggregate-hp-percent'), '通常戦闘を含めHP残量パーセント表示を追加しない');
+  assert(!polishSource.includes('vegnasis-aggregate-hp-percent') && !cssSource.includes('.vegnasis-aggregate-hp-percent'), 'ヴェグナシス統合HPも数値パーセントを表示しない');
+  assert(cssSource.includes('.vegnasis-shared-visual') && cssSource.includes('.vegnasis-boss-hud') && cssSource.includes('.vegnasis-shift-flash'), '共有画像・統合HP・柱撃破フラッシュの専用スタイルを定義する');
+  assert(!cssSource.includes('.vegnasis-atmosphere') && !cssSource.includes('--vegnasis-cracks'), '背景暗転とひび割れ演出を削除する');
 
   // Every elemental trial must award its shard once and the sixth grants Octaprisma.
   App.data.items={};
