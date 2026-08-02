@@ -6441,6 +6441,12 @@ body.game-page #enemy-container.vegnasis-formation .vegnasis-boss-hud {
   transform: translateX(-50%);
   z-index: 58;
   pointer-events: none;
+  /* 通常の単体スペシャルボスと同じく、140%幅のstatus-panelを親の中央へ配置する。 */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  overflow: visible;
 }
 
 /* PolishBattleFX が共有本体ノードへ付与するクラス。位置transformは親に残し、画像だけを動かす。 */
@@ -6510,4 +6516,94 @@ body.game-page .vegnasis-shift-flash.is-final {
   58% { opacity: 0.20; }
   72% { opacity: 0.72; }
   100% { opacity: 0; filter: contrast(1); }
+}
+
+/* =========================================================
+   汎用・形態移行演出
+   第一形態と次形態を交互に表示し、最終フラッシュ後に次形態へ固定する。
+   形態移行中だけ通常の敵DOMを隠し、演出専用レイヤーへ描画を一本化する。
+========================================================= */
+body.game-page #enemy-container.phase-form-transition-active > .enemy-sprite,
+body.game-page #enemy-container.phase-form-transition-active > .shared-enemy-visual,
+body.game-page #enemy-container.phase-form-transition-active > .vegnasis-boss-hud {
+  visibility: hidden !important;
+}
+
+body.game-page .phase-form-transition-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 92;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: hidden;
+  pointer-events: none;
+  isolation: isolate;
+}
+
+body.game-page .phase-form-transition-image {
+  display: block;
+  width: min(65%, 450px);
+  max-height: calc(100% - 8px);
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+  object-position: center bottom;
+  transform: scale(1.2) translateY(8px);
+  transform-origin: center bottom;
+  filter:
+    drop-shadow(0 8px 0 rgba(0, 0, 0, 0.22))
+    drop-shadow(0 0 2px rgba(255, 255, 255, 0.9))
+    drop-shadow(0 14px 22px rgba(0, 0, 0, 0.72)) !important;
+  opacity: 1;
+}
+
+body.game-page .phase-form-transition-image.is-first-form {
+  animation: phase-form-old-pulse 520ms ease-in-out infinite alternate;
+}
+
+body.game-page .phase-form-transition-image.is-second-form {
+  animation: phase-form-new-pulse 420ms ease-in-out infinite alternate;
+}
+
+body.game-page .phase-form-transition-flash {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  opacity: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 48%, rgba(255, 255, 255, 1) 0 14%, rgba(220, 231, 255, 0.9) 32%, rgba(160, 117, 255, 0.42) 58%, transparent 78%);
+  mix-blend-mode: screen;
+}
+
+body.game-page .phase-form-transition-flash.is-active {
+  animation: phase-form-swap-flash 240ms ease-out forwards;
+}
+
+body.game-page .phase-form-transition-flash.is-active.is-strong {
+  animation: phase-form-final-flash 510ms cubic-bezier(.12, .75, .18, 1) forwards;
+}
+
+@keyframes phase-form-old-pulse {
+  from { filter: brightness(0.82) saturate(0.85) drop-shadow(0 12px 18px rgba(0, 0, 0, 0.72)) !important; }
+  to { filter: brightness(1.06) saturate(1.08) drop-shadow(0 0 12px rgba(116, 66, 190, 0.48)) drop-shadow(0 12px 18px rgba(0, 0, 0, 0.72)) !important; }
+}
+
+@keyframes phase-form-new-pulse {
+  from { filter: brightness(0.92) saturate(1.02) drop-shadow(0 0 7px rgba(176, 117, 255, 0.44)) drop-shadow(0 12px 18px rgba(0, 0, 0, 0.72)) !important; }
+  to { filter: brightness(1.18) saturate(1.24) drop-shadow(0 0 18px rgba(214, 174, 255, 0.72)) drop-shadow(0 12px 18px rgba(0, 0, 0, 0.72)) !important; }
+}
+
+@keyframes phase-form-swap-flash {
+  0% { opacity: 0; }
+  32% { opacity: 0.96; }
+  58% { opacity: 0.74; }
+  100% { opacity: 0; }
+}
+
+@keyframes phase-form-final-flash {
+  0% { opacity: 0; transform: scale(0.82); }
+  28% { opacity: 1; transform: scale(1.02); }
+  54% { opacity: 1; transform: scale(1.12); }
+  100% { opacity: 0; transform: scale(1.28); }
 }
